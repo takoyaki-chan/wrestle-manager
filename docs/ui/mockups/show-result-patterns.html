@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>試合結果画面 デザイン案比較 — Wrestle Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   共通トークン
+   ============================================================ */
+:root {
+  /* Stage */
+  --stage-bg:          #060606;
+  --stage-bg-deep:     #000000;
+  --stage-panel:       rgba(20,18,15,0.62);
+  --stage-panel-deep:  rgba(10,9,7,0.80);
+  --stage-border:      rgba(200,190,170,0.08);
+  --stage-border-lit:  rgba(212,168,67,0.22);
+  --stage-border-main: rgba(212,168,67,0.42);
+
+  --stage-text-main:   #e8e6e0;
+  --stage-text-sub:    rgba(232,230,224,0.55);
+  --stage-text-dim:    rgba(232,230,224,0.28);
+  --stage-text-quiet:  rgba(232,230,224,0.16);
+
+  --gold:        #d4a843;
+  --gold-light:  #f0d078;
+  --gold-deep:   #b8912e;
+
+  --c-positive:  #6fa28c;
+  --c-warning:   #d07a3e;
+  --c-negative:  #c0524a;
+  --c-info:      #6d94b8;
+  --c-rivalry:   #e17055;
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-label:   'Oswald', sans-serif;
+  --font-body:    'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  color: var(--stage-text-main);
+  background: #0a0907;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   パターン切替スイッチャー
+   ============================================================ */
+.ps-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: rgba(8,7,5,0.96);
+  border-bottom: 1px solid rgba(212,168,67,0.25);
+  padding: 10px 16px;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  backdrop-filter: blur(8px);
+}
+.ps-label {
+  color: var(--gold); font-weight: 700;
+  margin-right: 10px;
+  font-family: var(--font-label);
+  font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+}
+.ps-btn {
+  background: rgba(200,190,170,0.06);
+  border: 1px solid rgba(200,190,170,0.18);
+  color: var(--stage-text-sub);
+  padding: 7px 14px; border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: all .15s ease;
+}
+.ps-btn:hover {
+  background: rgba(212,168,67,0.1);
+  border-color: rgba(212,168,67,0.4);
+  color: var(--gold-light);
+}
+.ps-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #14110a;
+  font-weight: 700;
+}
+.ps-btn-desc {
+  font-size: 9px; display: block; opacity: 0.75; letter-spacing: 1px;
+  margin-top: 2px; font-weight: 400;
+}
+.ps-hint {
+  color: var(--stage-text-dim); font-size: 10px;
+  letter-spacing: 0.5px; margin-left: auto;
+  font-family: var(--font-label);
+}
+
+/* パターン表示制御 */
+.pattern { display: none; }
+.pattern.active { display: block; }
+
+/* ============================================================
+   ===== Pattern A: Arena Spotlight（現状改修版） =====
+   ============================================================ */
+.pa-overlay {
+  position: fixed; inset: 58px 0 0 0;
+  background: var(--stage-bg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pa-overlay::before {
+  content: ''; position: fixed; inset: 58px 0 0 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(ellipse 140% 80% at 50% 0%, transparent 60%, rgba(0,0,0,0.55) 100%),
+    radial-gradient(ellipse 140% 60% at 50% 100%, transparent 60%, rgba(0,0,0,0.65) 100%);
+}
+.pa-overlay::after {
+  content: ''; position: fixed; top: 58px; left: 50%; transform: translateX(-50%);
+  width: 900px; height: 240px; pointer-events: none; z-index: 1;
+  background: radial-gradient(ellipse at center top, rgba(212,168,67,0.1) 0%, transparent 60%);
+}
+.pa-container {
+  position: relative; z-index: 2;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+/* Header */
+.pa-header {
+  text-align: center;
+  padding: 40px 0 24px;
+  position: relative;
+}
+.pa-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 140px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.6;
+}
+.pa-kicker {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.pa-title {
+  font-family: var(--font-display);
+  font-size: 44px;
+  letter-spacing: 5px;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff 30%, var(--gold-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+.pa-sub {
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--stage-text-sub);
+  text-transform: uppercase;
+}
+.pa-sub .dot { color: var(--stage-text-quiet); margin: 0 10px; }
+
+/* Attendance — 中央寄せ縦積み */
+.pa-attend {
+  margin: 28px auto 0;
+  padding: 26px 32px 22px;
+  max-width: 480px;
+  text-align: center;
+  background: var(--stage-panel);
+  border: 1px solid var(--stage-border);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.pa-attend.is-sellout {
+  border-color: var(--stage-border-main);
+  box-shadow: inset 0 0 40px rgba(212,168,67,0.05);
+}
+.pa-attend.is-sellout::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.pa-attend-label {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 3px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.pa-attend-venue {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--stage-text-main);
+  letter-spacing: 1.5px;
+  margin-bottom: 14px;
+}
+.pa-attend-num-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.pa-attend-num {
+  font-family: var(--font-display);
+  font-size: 62px;
+  line-height: 0.92;
+  letter-spacing: 3px;
+  color: var(--stage-text-main);
+}
+.pa-attend.is-sellout .pa-attend-num {
+  color: var(--gold);
+  text-shadow: 0 0 24px rgba(212,168,67,0.5);
+}
+.pa-attend-num-unit {
+  font-family: var(--font-label);
+  font-size: 14px;
+  color: var(--stage-text-sub);
+  letter-spacing: 2px;
+}
+.pa-attend-cap {
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  margin-bottom: 14px;
+}
+.pa-attend-bar {
+  width: 100%; height: 5px;
+  background: rgba(200,190,170,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.pa-attend-bar-fill { height: 100%; border-radius: 3px; }
+.pa-attend.is-sellout .pa-attend-bar-fill { background: linear-gradient(90deg, var(--gold-deep), var(--gold-light)); }
+.pa-attend.is-good    .pa-attend-bar-fill { background: var(--c-positive); }
+.pa-attend.is-neutral .pa-attend-bar-fill { background: var(--c-info); }
+.pa-attend-rating {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.pa-attend-rating.is-hot  { color: var(--gold-light); }
+.pa-attend-rating.is-good { color: var(--c-positive); }
+.pa-attend-rating .pct {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 1.5px;
+  margin-left: 4px;
+  color: var(--stage-text-sub);
+}
+
+/* Summary */
+.pa-summary {
+  margin: 16px 0 0;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--stage-text-sub);
+  text-transform: uppercase;
+  border-top: 1px solid var(--stage-border);
+  border-bottom: 1px solid var(--stage-border);
+}
+.pa-summary-item { display: flex; align-items: center; gap: 8px; }
+.pa-summary-item .label { color: var(--stage-text-dim); }
+.pa-summary-item .value {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 2px;
+  color: var(--stage-text-main);
+}
+.pa-summary-stars { display: inline-flex; gap: 1px; font-family: serif; }
+.pa-summary-stars .star { color: var(--stage-text-quiet); font-size: 14px; line-height: 1; }
+.pa-summary-stars .star.on { color: var(--gold); }
+
+/* Match card */
+.pa-matches { margin: 24px 0 0; display: flex; flex-direction: column; gap: 18px; }
+.pa-mcard {
+  background: var(--stage-panel);
+  border: 1px solid var(--stage-border);
+  border-radius: 12px;
+  padding: 24px 24px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.pa-mcard.is-main {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,168,67,0.09), transparent 70%),
+    var(--stage-panel-deep);
+  border-color: var(--stage-border-main);
+  padding: 28px 24px 22px;
+  box-shadow: inset 0 1px 0 rgba(212,168,67,0.15);
+}
+.pa-mcard.is-main::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.7;
+}
+.pa-mcard-header { text-align: center; margin-bottom: 20px; }
+.pa-mcard-num {
+  font-family: var(--font-display);
+  letter-spacing: 4px;
+  color: var(--stage-text-dim);
+  font-size: 12px;
+}
+.pa-mcard.is-main .pa-mcard-num {
+  color: var(--gold);
+  font-size: 16px;
+  letter-spacing: 5px;
+}
+.pa-mcard-num-accent { color: var(--gold); margin-right: 4px; }
+.pa-mcard-tags {
+  margin-top: 8px;
+  display: inline-flex; flex-wrap: wrap; gap: 6px;
+  justify-content: center;
+}
+.pa-mcard-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px;
+  border-radius: 2px;
+  font-family: var(--font-label);
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.pa-mcard-tag.is-first {
+  color: var(--c-info);
+  background: rgba(109,148,184,0.1);
+  border-color: rgba(109,148,184,0.3);
+}
+
+.pa-mcard-fighters {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.pa-char {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+}
+.pa-bubble-slot { min-height: 20px; width: 100%; margin-bottom: 10px; }
+.pa-portrait {
+  width: 130px; height: 195px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--stage-border);
+  background: linear-gradient(180deg, #1a1816, #0a0907);
+  transition: border-color .2s;
+}
+.pa-portrait img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  display: block;
+}
+.pa-name {
+  font-size: 14px; font-weight: 700;
+  color: var(--stage-text-sub);
+  margin-top: 10px;
+  letter-spacing: 1px;
+}
+
+/* OVR 大型化 */
+.pa-ovr {
+  margin-top: 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+}
+.pa-ovr-label {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2.5px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  line-height: 1;
+}
+.pa-ovr-value {
+  font-family: var(--font-display);
+  font-size: 38px;
+  letter-spacing: 1px;
+  color: var(--stage-text-sub);
+  line-height: 1;
+  margin-top: 2px;
+}
+.pa-char.is-winner .pa-ovr-value { color: var(--gold-light); }
+.pa-char.is-loser  .pa-ovr-value { color: var(--stage-text-dim); }
+
+.pa-mcard.is-main .pa-char.is-winner .pa-portrait { width: 160px; height: 240px; border-width: 3px; }
+.pa-mcard.is-main .pa-char.is-loser  .pa-portrait { width: 130px; height: 195px; }
+.pa-mcard.is-main .pa-char.is-winner .pa-ovr-value { font-size: 46px; }
+
+.pa-char.is-winner .pa-portrait {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(212,168,67,0.15), 0 0 28px rgba(212,168,67,0.22);
+}
+.pa-char.is-winner .pa-name { color: var(--gold); font-weight: 900; font-size: 15px; }
+.pa-char.is-loser .pa-portrait { border-color: rgba(200,190,170,0.12); opacity: 0.82; }
+.pa-char.is-loser .pa-name { color: var(--stage-text-dim); }
+
+.pa-vs {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 8px;
+  padding-bottom: 110px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--stage-text-quiet);
+  letter-spacing: 3px;
+  font-size: 26px;
+}
+.pa-mcard.is-main .pa-vs { font-size: 34px; color: rgba(212,168,67,0.25); padding-bottom: 135px; }
+
+.pa-result { text-align: center; margin-bottom: 14px; }
+.pa-result-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 20px;
+  font-family: var(--font-label);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  border-radius: 2px;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+  color: #14110a;
+}
+.pa-result-badge .name {
+  font-family: var(--font-body);
+  font-weight: 900; font-size: 13px;
+  letter-spacing: 0.5px; text-transform: none;
+}
+
+.pa-finish { text-align: center; margin-bottom: 12px; }
+.pa-finish-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 3px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.pa-finish-move {
+  font-size: 14px; color: var(--stage-text-main);
+  font-weight: 700; letter-spacing: 0.5px;
+}
+.pa-finish-turns {
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 1.5px;
+  color: var(--stage-text-dim); margin-left: 10px;
+}
+
+.pa-mq {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; margin-bottom: 14px;
+}
+.pa-mq-stars { display: inline-flex; gap: 2px; font-family: serif; }
+.pa-mq-stars .star { color: var(--stage-text-quiet); font-size: 16px; }
+.pa-mq-stars .star.on { color: var(--gold); }
+.pa-mcard.is-main .pa-mq-stars .star { font-size: 20px; }
+.pa-mq-label {
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.pa-mq-value {
+  font-family: var(--font-display);
+  font-size: 17px; letter-spacing: 1.5px;
+  color: var(--stage-text-main);
+}
+.pa-mcard.is-main .pa-mq-value { font-size: 22px; color: var(--gold); }
+.pa-mq-bonus {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--c-info);
+}
+
+.pa-hp {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--stage-border);
+}
+.pa-hp-half { flex: 1; display: flex; align-items: center; gap: 6px; }
+.pa-hp-half.is-left { flex-direction: row-reverse; }
+.pa-hp-center {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  width: 28px; text-align: center;
+}
+.pa-hp-name { font-size: 10px; color: var(--stage-text-dim); letter-spacing: 0.5px; white-space: nowrap; max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
+.pa-hp-val {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--stage-text-sub);
+  white-space: nowrap; min-width: 46px;
+}
+.pa-hp-half.is-left .pa-hp-val { text-align: left; }
+.pa-hp-half.is-right .pa-hp-val { text-align: right; }
+.pa-hp-track {
+  flex: 1; height: 4px;
+  background: rgba(200,190,170,0.06);
+  border-radius: 2px; overflow: hidden;
+  max-width: 180px;
+}
+.pa-hp-half.is-left .pa-hp-track { direction: rtl; }
+.pa-hp-fill { height: 100%; border-radius: 2px; }
+.pa-hp-fill.is-healthy { background: var(--c-positive); }
+.pa-hp-fill.is-danger  { background: var(--c-negative); }
+
+.pa-log-toggle {
+  margin-top: 14px;
+  cursor: pointer; list-style: none;
+  text-align: center;
+}
+.pa-log-toggle::-webkit-details-marker { display: none; }
+.pa-log-toggle-label {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.pa-log-toggle-label::before { content: '▸ '; }
+details[open] .pa-log-toggle-label::before { content: '▾ '; }
+.pa-log-body {
+  margin-top: 10px; padding: 12px;
+  max-height: 220px; overflow-y: auto;
+  font-size: 11px; line-height: 1.7;
+  color: var(--stage-text-sub);
+  background: rgba(0,0,0,0.28);
+  border: 1px solid var(--stage-border);
+  border-radius: 4px;
+}
+
+/* Heat band */
+.pa-heat {
+  margin: 28px 0 0; text-align: center;
+  padding: 14px 16px;
+  border-top: 1px solid var(--stage-border);
+  border-bottom: 1px solid var(--stage-border);
+}
+.pa-heat-kicker {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 3px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.pa-heat-value {
+  font-family: var(--font-display);
+  font-size: 22px; letter-spacing: 3px;
+  color: var(--stage-text-main);
+}
+
+/* Close button */
+.pa-close-area { margin: 32px 0 0; text-align: center; }
+.pa-close-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 40px;
+  font-family: var(--font-label);
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: #14110a;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+  border: none; border-radius: 4px;
+  cursor: pointer;
+  transition: all .2s ease;
+  box-shadow: 0 2px 14px rgba(212,168,67,0.25);
+}
+.pa-close-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(212,168,67,0.4); }
+
+/* ============================================================
+   ===== Pattern B: Broadcast Scoreboard =====
+   ============================================================ */
+.pb-overlay {
+  position: fixed; inset: 58px 0 0 0;
+  background: var(--stage-bg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pb-overlay::before {
+  content: ''; position: fixed; inset: 58px 0 0 0; pointer-events: none; z-index: 1;
+  background: radial-gradient(ellipse 120% 60% at 50% 0%, rgba(212,168,67,0.05), transparent 50%);
+}
+.pb-container {
+  position: relative; z-index: 2;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+/* Top banner */
+.pb-banner {
+  position: relative;
+  margin-top: 16px;
+  padding: 22px 24px 18px;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(212,168,67,0.08) 0%, rgba(0,0,0,0) 100%);
+  border-bottom: 1px solid rgba(212,168,67,0.15);
+}
+.pb-banner::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.pb-live {
+  display: inline-block;
+  background: rgba(212,168,67,0.12);
+  border: 1px solid rgba(212,168,67,0.3);
+  color: var(--gold);
+  font-family: var(--font-label);
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 3px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.pb-banner-title {
+  font-family: var(--font-display);
+  font-size: 30px; letter-spacing: 4px;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(212,168,67,0.3);
+  margin-bottom: 4px;
+}
+.pb-banner-sub {
+  font-family: var(--font-label);
+  font-size: 12px; letter-spacing: 3px;
+  color: var(--stage-text-sub);
+  text-transform: uppercase;
+}
+.pb-banner-sub .dot { color: var(--stage-text-quiet); margin: 0 8px; }
+
+/* Horizontal scoreboard strip */
+.pb-score-strip {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  border-bottom: 1px solid rgba(200,190,170,0.08);
+}
+.pb-score-cell {
+  text-align: center;
+  padding: 14px 10px;
+  border-right: 1px solid rgba(200,190,170,0.08);
+}
+.pb-score-cell:last-child { border-right: none; }
+.pb-score-val {
+  font-family: var(--font-display);
+  font-size: 24px; letter-spacing: 1.5px;
+  color: var(--gold);
+  line-height: 1;
+}
+.pb-score-val.is-neutral { color: var(--stage-text-main); }
+.pb-score-lbl {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.pb-score-cell.is-attend .pb-score-val { font-size: 32px; }
+.pb-score-stars { display: inline-flex; gap: 1px; font-family: serif; font-size: 13px; line-height: 1; }
+.pb-score-stars .star { color: var(--stage-text-quiet); }
+.pb-score-stars .star.on { color: var(--gold); }
+
+/* Divider */
+.pb-divider {
+  text-align: center;
+  font-family: var(--font-label);
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--stage-text-dim);
+  padding: 8px 0 6px;
+  background: rgba(200,190,170,0.02);
+  border-bottom: 1px solid rgba(200,190,170,0.08);
+  text-transform: uppercase;
+}
+
+/* Match row (horizontal 3-column: fighter | result | fighter) */
+.pb-matches { padding: 0; }
+.pb-mrow {
+  display: grid;
+  grid-template-columns: 1fr 220px 1fr;
+  gap: 0;
+  padding: 20px 18px;
+  border-bottom: 1px solid rgba(200,190,170,0.06);
+  position: relative;
+  transition: background .15s;
+}
+.pb-mrow:hover { background: rgba(255,255,255,0.015); }
+.pb-mrow.is-main {
+  background:
+    linear-gradient(180deg, rgba(212,168,67,0.08) 0%, transparent 100%),
+    rgba(255,255,255,0.02);
+  border-left: 2px solid var(--gold);
+  padding: 26px 18px;
+}
+.pb-mrow.is-main::before {
+  content: 'MAIN EVENT';
+  position: absolute;
+  top: 8px; left: 12px;
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 2px; font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+/* Fighter block */
+.pb-fighter {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.pb-fighter.is-left { flex-direction: row-reverse; text-align: right; }
+.pb-portrait {
+  width: 80px; height: 120px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid var(--stage-border);
+  background: linear-gradient(180deg, #1a1816, #0a0907);
+  flex-shrink: 0;
+}
+.pb-portrait img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+}
+.pb-mrow.is-main .pb-portrait { width: 100px; height: 150px; }
+.pb-fighter.is-winner .pb-portrait {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(212,168,67,0.28);
+}
+.pb-fighter.is-loser .pb-portrait { opacity: 0.78; }
+
+.pb-fighter-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.pb-fighter-name {
+  font-size: 15px; font-weight: 700;
+  color: var(--stage-text-sub);
+  letter-spacing: 0.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pb-fighter.is-winner .pb-fighter-name { color: var(--gold); font-weight: 900; }
+.pb-mrow.is-main .pb-fighter.is-winner .pb-fighter-name { font-size: 17px; }
+.pb-fighter-meta {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 1.5px;
+  color: var(--stage-text-quiet);
+  text-transform: uppercase;
+}
+.pb-fighter-ovr {
+  display: flex; align-items: baseline; gap: 6px; margin-top: 2px;
+}
+.pb-fighter.is-left .pb-fighter-ovr { justify-content: flex-end; }
+.pb-fighter-ovr .lbl {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.pb-fighter-ovr .val {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: 1px;
+  color: var(--stage-text-sub);
+}
+.pb-fighter.is-winner .pb-fighter-ovr .val { color: var(--gold-light); }
+.pb-fighter.is-loser .pb-fighter-ovr .val { color: var(--stage-text-dim); }
+.pb-mrow.is-main .pb-fighter-ovr .val { font-size: 40px; }
+
+/* Center result column */
+.pb-result {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-left: 1px solid rgba(200,190,170,0.06);
+  border-right: 1px solid rgba(200,190,170,0.06);
+}
+.pb-result-vs {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--stage-text-quiet);
+}
+.pb-result-winner {
+  font-family: var(--font-label);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.pb-result-finish {
+  font-size: 12px;
+  color: var(--stage-text-main);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.3px;
+}
+.pb-result-turns {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 1.5px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.pb-result-mq {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 2px;
+}
+.pb-result-mq-stars { display: inline-flex; gap: 1px; font-family: serif; }
+.pb-result-mq-stars .star { color: var(--stage-text-quiet); font-size: 13px; line-height: 1; }
+.pb-result-mq-stars .star.on { color: var(--gold); }
+.pb-result-mq-val {
+  font-family: var(--font-display);
+  font-size: 15px; letter-spacing: 1px;
+  color: var(--gold);
+}
+
+/* Match tags (sub line) */
+.pb-mrow-tags {
+  grid-column: 1 / -1;
+  display: flex; gap: 6px; justify-content: center;
+  padding-top: 10px;
+  margin-top: 12px;
+  border-top: 1px dashed rgba(200,190,170,0.08);
+}
+.pb-tag {
+  font-family: var(--font-label);
+  font-size: 9px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 2px;
+  border: 1px solid transparent;
+}
+.pb-tag.is-first {
+  color: var(--c-info);
+  background: rgba(109,148,184,0.1);
+  border-color: rgba(109,148,184,0.3);
+}
+
+/* HP mini bar */
+.pb-hp-mini {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 8px;
+  padding-top: 10px; margin-top: 8px;
+  border-top: 1px dashed rgba(200,190,170,0.08);
+}
+.pb-hp-mini-half { flex: 1; display: flex; align-items: center; gap: 6px; }
+.pb-hp-mini-half.is-left { flex-direction: row-reverse; }
+.pb-hp-mini-label {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 1.5px;
+  color: var(--stage-text-dim); text-transform: uppercase;
+  min-width: 24px;
+}
+.pb-hp-mini-val {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--stage-text-sub);
+  min-width: 50px;
+}
+.pb-hp-mini-half.is-left .pb-hp-mini-val { text-align: left; }
+.pb-hp-mini-half.is-right .pb-hp-mini-val { text-align: right; }
+.pb-hp-mini-track {
+  flex: 1; height: 3px;
+  background: rgba(200,190,170,0.06);
+  border-radius: 2px; overflow: hidden;
+  max-width: 200px;
+}
+.pb-hp-mini-half.is-left .pb-hp-mini-track { direction: rtl; }
+.pb-hp-mini-fill { height: 100%; border-radius: 2px; }
+.pb-hp-mini-fill.is-healthy { background: var(--c-positive); }
+.pb-hp-mini-fill.is-danger  { background: var(--c-negative); }
+
+/* Summary footer */
+.pb-footer {
+  padding: 20px 24px;
+  text-align: center;
+  background: rgba(255,255,255,0.015);
+  border-top: 1px solid rgba(200,190,170,0.08);
+  display: flex; justify-content: center; align-items: center; gap: 28px;
+}
+.pb-footer-heat {
+  font-family: var(--font-label);
+  font-size: 12px; letter-spacing: 2px;
+  color: var(--stage-text-sub);
+  text-transform: uppercase;
+}
+.pb-footer-heat .val {
+  font-family: var(--font-display);
+  font-size: 18px; letter-spacing: 2px;
+  color: var(--stage-text-main);
+  margin-left: 6px;
+}
+.pb-close-btn {
+  padding: 12px 36px;
+  font-family: var(--font-label);
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: #14110a;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+  border: none; border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 14px rgba(212,168,67,0.25);
+}
+.pb-close-btn:hover { box-shadow: 0 4px 20px rgba(212,168,67,0.4); }
+
+/* ============================================================
+   ===== Pattern C: Face-off Duel（派閥F02対峙型流用） =====
+   ============================================================ */
+.pc-overlay {
+  position: fixed; inset: 58px 0 0 0;
+  background: var(--stage-bg-deep);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pc-overlay::before {
+  content: ''; position: fixed; inset: 58px 0 0 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(ellipse 100% 70% at 50% 30%, rgba(212,168,67,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 120% 80% at 50% 100%, rgba(0,0,0,0.9), transparent 50%);
+}
+.pc-container {
+  position: relative; z-index: 2;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 24px 40px;
+}
+
+/* Show title header */
+.pc-header {
+  text-align: center;
+  padding: 32px 0 20px;
+  position: relative;
+}
+.pc-kicker {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 6px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.pc-title {
+  font-family: var(--font-display);
+  font-size: 38px; letter-spacing: 5px;
+  background: linear-gradient(180deg, #fff 30%, var(--gold-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+.pc-sub {
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--stage-text-sub); text-transform: uppercase;
+}
+.pc-sub .dot { color: var(--stage-text-quiet); margin: 0 8px; }
+
+/* Show-level info bar (attend + heat + MQ) */
+.pc-showbar {
+  margin: 16px auto 24px;
+  padding: 14px 24px;
+  display: flex; justify-content: center; align-items: center; gap: 36px;
+  border-top: 1px solid var(--stage-border);
+  border-bottom: 1px solid var(--stage-border);
+  max-width: 720px;
+}
+.pc-showbar-item { text-align: center; }
+.pc-showbar-val {
+  font-family: var(--font-display);
+  font-size: 22px; letter-spacing: 1.5px;
+  color: var(--gold);
+  line-height: 1;
+}
+.pc-showbar-val.is-neutral { color: var(--stage-text-main); }
+.pc-showbar-lbl {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase; margin-top: 3px;
+}
+.pc-showbar-venue {
+  font-size: 13px;
+  color: var(--stage-text-sub);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+
+/* Match tabs (1試合ずつ見せる) */
+.pc-match-tabs {
+  display: flex; justify-content: center; gap: 8px;
+  margin-bottom: 18px;
+}
+.pc-match-tab {
+  padding: 9px 22px;
+  background: rgba(200,190,170,0.04);
+  border: 1px solid rgba(200,190,170,0.1);
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 2.5px;
+  color: var(--stage-text-sub);
+  text-transform: uppercase;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.pc-match-tab.is-active {
+  background: rgba(212,168,67,0.12);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.pc-match-tab.is-main .pc-match-tab-star {
+  color: var(--gold);
+  margin-right: 4px;
+}
+
+/* Duel stage — 1試合分 */
+.pc-duel { display: none; }
+.pc-duel.is-active { display: block; }
+
+/* Title band */
+.pc-duel-titleband {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.pc-duel-num {
+  font-family: var(--font-display);
+  font-size: 20px; letter-spacing: 5px;
+  color: var(--stage-text-dim);
+  margin-bottom: 6px;
+}
+.pc-duel.is-main .pc-duel-num {
+  font-size: 26px;
+  color: var(--gold);
+  letter-spacing: 6px;
+}
+.pc-duel-num-star { color: var(--gold); margin-right: 8px; }
+.pc-duel-tags {
+  display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+}
+.pc-tag {
+  font-family: var(--font-label);
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+}
+.pc-tag.is-first {
+  color: var(--c-info);
+  background: rgba(109,148,184,0.1);
+  border-color: rgba(109,148,184,0.3);
+}
+
+/* Dual stage — 左右対峙 */
+.pc-duel-stage {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: stretch;
+  padding: 24px 8px;
+  position: relative;
+}
+
+.pc-side {
+  display: flex; flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+.pc-side.is-left { align-items: flex-end; padding-right: 12px; }
+.pc-side.is-right { align-items: flex-start; padding-left: 12px; }
+
+.pc-side-portrait {
+  width: 220px; height: 330px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--stage-border);
+  background: linear-gradient(180deg, #1a1816, #0a0907);
+  position: relative;
+}
+.pc-side-portrait img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  display: block;
+}
+.pc-duel.is-main .pc-side-portrait { width: 250px; height: 375px; }
+
+.pc-side.is-winner .pc-side-portrait {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(212,168,67,0.15), 0 0 40px rgba(212,168,67,0.22);
+}
+.pc-side.is-loser .pc-side-portrait {
+  border-color: rgba(200,190,170,0.12);
+  opacity: 0.8;
+}
+
+.pc-side-info {
+  margin-top: 14px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+}
+.pc-side-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--stage-text-sub);
+  letter-spacing: 1px;
+}
+.pc-side.is-winner .pc-side-name {
+  color: var(--gold); font-weight: 900; font-size: 20px;
+}
+.pc-side-meta {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--stage-text-quiet);
+  text-transform: uppercase;
+}
+
+/* Big OVR */
+.pc-side-ovr {
+  margin-top: 6px;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.pc-side-ovr-lbl {
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.pc-side-ovr-val {
+  font-family: var(--font-display);
+  font-size: 56px;
+  line-height: 0.9;
+  letter-spacing: 1px;
+  color: var(--stage-text-sub);
+}
+.pc-side.is-winner .pc-side-ovr-val { color: var(--gold-light); }
+.pc-side.is-loser  .pc-side-ovr-val { color: var(--stage-text-dim); }
+
+/* Speech bubble */
+.pc-side-bubble {
+  margin-top: 12px;
+  position: relative;
+  background: rgba(245,240,230,0.96);
+  color: #1a1713;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  max-width: 220px;
+}
+.pc-side-bubble::before {
+  content: '';
+  position: absolute;
+  top: -6px; left: 50%; transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-bottom-color: rgba(245,240,230,0.96);
+  border-top: 0;
+  width: 0; height: 0;
+}
+
+/* Center VS */
+.pc-center {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 0 8px;
+  min-width: 100px;
+}
+.pc-center-vs {
+  font-family: var(--font-display);
+  font-size: 56px;
+  letter-spacing: 5px;
+  color: rgba(212,168,67,0.4);
+  line-height: 1;
+  margin-bottom: 12px;
+  text-shadow: 0 0 30px rgba(212,168,67,0.25);
+}
+.pc-duel.is-main .pc-center-vs {
+  font-size: 72px;
+  color: rgba(212,168,67,0.55);
+}
+.pc-center-line {
+  width: 1px; height: 80px;
+  background: linear-gradient(180deg, transparent, var(--gold), transparent);
+  opacity: 0.3;
+}
+
+/* Result panel — 決まり手 + MQ (下部) */
+.pc-resultpanel {
+  margin-top: 20px;
+  padding: 20px 32px;
+  background:
+    radial-gradient(ellipse 80% 80% at 50% 0%, rgba(212,168,67,0.07), transparent 70%),
+    rgba(18,16,13,0.65);
+  border: 1px solid var(--stage-border-lit);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  position: relative;
+}
+.pc-resultpanel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.6;
+}
+.pc-resultpanel-cell {
+  text-align: center;
+  border-right: 1px solid var(--stage-border);
+  padding-right: 24px;
+}
+.pc-resultpanel-cell:last-child { border-right: none; padding-right: 0; }
+.pc-resultpanel-cell:first-child { text-align: left; padding-right: 24px; }
+.pc-resultpanel-lbl {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2.5px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.pc-resultpanel-winner-name {
+  font-family: var(--font-body);
+  font-size: 18px; font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+.pc-resultpanel-finish {
+  font-size: 14px; color: var(--stage-text-main);
+  font-weight: 700; line-height: 1.4;
+}
+.pc-resultpanel-turns {
+  margin-top: 4px;
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 1.5px;
+  color: var(--stage-text-dim); text-transform: uppercase;
+}
+.pc-resultpanel-mq {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.pc-resultpanel-mq-stars { display: inline-flex; gap: 2px; font-family: serif; }
+.pc-resultpanel-mq-stars .star { color: var(--stage-text-quiet); font-size: 18px; line-height: 1; }
+.pc-resultpanel-mq-stars .star.on { color: var(--gold); }
+.pc-resultpanel-mq-value {
+  font-family: var(--font-display);
+  font-size: 30px; letter-spacing: 1.5px;
+  color: var(--gold); line-height: 1;
+}
+.pc-resultpanel-mq-bonus {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--c-info);
+}
+
+/* HP bar (compact) */
+.pc-hp-section {
+  margin-top: 16px;
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.pc-hp-half { flex: 1; display: flex; align-items: center; gap: 8px; }
+.pc-hp-half.is-left { flex-direction: row-reverse; }
+.pc-hp-center {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--stage-text-dim); text-align: center;
+  min-width: 30px;
+}
+.pc-hp-val {
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 1px;
+  color: var(--stage-text-sub); min-width: 54px;
+}
+.pc-hp-half.is-left .pc-hp-val { text-align: left; }
+.pc-hp-half.is-right .pc-hp-val { text-align: right; }
+.pc-hp-track { flex: 1; height: 4px; background: rgba(200,190,170,0.06); border-radius: 2px; overflow: hidden; max-width: 240px; }
+.pc-hp-half.is-left .pc-hp-track { direction: rtl; }
+.pc-hp-fill { height: 100%; border-radius: 2px; }
+.pc-hp-fill.is-healthy { background: var(--c-positive); }
+.pc-hp-fill.is-danger { background: var(--c-negative); }
+
+/* Log */
+.pc-log { margin-top: 12px; text-align: center; }
+.pc-log-toggle {
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  list-style: none;
+}
+.pc-log-toggle::-webkit-details-marker { display: none; }
+.pc-log-toggle::before { content: '▸ '; }
+details[open] > .pc-log-toggle::before { content: '▾ '; }
+.pc-log-body {
+  margin: 10px auto 0; padding: 14px;
+  max-width: 640px;
+  max-height: 220px; overflow-y: auto;
+  font-size: 11px; line-height: 1.7;
+  color: var(--stage-text-sub);
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--stage-border);
+  border-radius: 4px;
+  text-align: left;
+}
+
+/* Close */
+.pc-close-area { margin: 36px 0 0; text-align: center; }
+.pc-close-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 40px;
+  font-family: var(--font-label);
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: #14110a;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+  border: none; border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 14px rgba(212,168,67,0.25);
+}
+.pc-close-btn:hover { box-shadow: 0 6px 24px rgba(212,168,67,0.4); }
+
+/* Scrollbar（全パターン共通） */
+.pa-overlay::-webkit-scrollbar,
+.pb-overlay::-webkit-scrollbar,
+.pc-overlay::-webkit-scrollbar { width: 10px; }
+.pa-overlay::-webkit-scrollbar-thumb,
+.pb-overlay::-webkit-scrollbar-thumb,
+.pc-overlay::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.2); border-radius: 5px; }
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     パターン切替スイッチャー
+     ============================================================ -->
+<div class="ps-bar">
+  <span class="ps-label">Pattern:</span>
+  <button class="ps-btn active" data-pattern="a">
+    A — Arena Spotlight
+    <span class="ps-btn-desc">中央寄せ縦積み / 現状案改修</span>
+  </button>
+  <button class="ps-btn" data-pattern="b">
+    B — Broadcast Scoreboard
+    <span class="ps-btn-desc">TV中継風 / 水平スコアカード</span>
+  </button>
+  <button class="ps-btn" data-pattern="c">
+    C — Face-off Duel
+    <span class="ps-btn-desc">1画面1試合 / 派閥F02対峙型</span>
+  </button>
+  <span class="ps-hint">全案 Stage 純黒 #060606 / 同一試合データ</span>
+</div>
+
+<!-- ============================================================
+     ★★★ Pattern A: Arena Spotlight ★★★
+     ============================================================ -->
+<div class="pattern pattern-a active">
+<div class="pa-overlay">
+  <div class="pa-container">
+
+    <div class="pa-header">
+      <div class="pa-kicker">Weekly Show</div>
+      <div class="pa-title">第 14 回 定期興行</div>
+      <div class="pa-sub">Year 1 <span class="dot">·</span> Week 14 <span class="dot">·</span> 4月 第2週</div>
+    </div>
+
+    <!-- 動員バナー（中央寄せ縦積み） -->
+    <div class="pa-attend is-sellout">
+      <div class="pa-attend-label">Venue</div>
+      <div class="pa-attend-venue">公民館</div>
+      <div class="pa-attend-num-wrap">
+        <span class="pa-attend-num">132</span>
+        <span class="pa-attend-num-unit">AUDIENCE</span>
+      </div>
+      <div class="pa-attend-cap">/ 150 CAP</div>
+      <div class="pa-attend-bar"><div class="pa-attend-bar-fill" style="width:88%"></div></div>
+      <div class="pa-attend-rating is-hot">✨ 大入り ！<span class="pct">88%</span></div>
+    </div>
+
+    <div class="pa-summary">
+      <div class="pa-summary-item">
+        <span class="label">Average MQ</span>
+        <span class="pa-summary-stars">
+          <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </span>
+        <span class="value">27</span>
+      </div>
+      <div class="pa-summary-item">
+        <span class="label">Heat</span>
+        <span class="value">Neutral</span>
+      </div>
+      <div class="pa-summary-item">
+        <span class="label">Matches</span>
+        <span class="value">2</span>
+      </div>
+    </div>
+
+    <div class="pa-matches">
+
+      <!-- Main event -->
+      <div class="pa-mcard is-main">
+        <div class="pa-mcard-header">
+          <div class="pa-mcard-num"><span class="pa-mcard-num-accent">★</span> Main Event</div>
+          <div class="pa-mcard-tags"><span class="pa-mcard-tag is-first">✨ 初顔合わせ</span></div>
+        </div>
+
+        <div class="pa-mcard-fighters">
+          <div class="pa-char is-loser">
+            <div class="pa-bubble-slot"></div>
+            <div class="pa-portrait"><img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'"></div>
+            <div class="pa-name">椿山 みさき</div>
+            <div class="pa-ovr">
+              <span class="pa-ovr-label">OVR</span>
+              <span class="pa-ovr-value">48</span>
+            </div>
+          </div>
+          <div class="pa-vs">VS</div>
+          <div class="pa-char is-winner">
+            <div class="pa-bubble-slot"></div>
+            <div class="pa-portrait"><img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'"></div>
+            <div class="pa-name">赤沼 紗稀</div>
+            <div class="pa-ovr">
+              <span class="pa-ovr-label">OVR</span>
+              <span class="pa-ovr-value">72</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pa-result">
+          <span class="pa-result-badge">🏆 <span class="name">赤沼 紗稀</span> WIN</span>
+        </div>
+
+        <div class="pa-finish">
+          <span class="pa-finish-label">Finish</span>
+          <span class="pa-finish-move">ツームストン・パイルドライバー → 3カウント</span>
+          <span class="pa-finish-turns">8 TURNS</span>
+        </div>
+
+        <div class="pa-mq">
+          <span class="pa-mq-stars">
+            <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </span>
+          <span class="pa-mq-label">MQ</span>
+          <span class="pa-mq-value">21</span>
+          <span class="pa-mq-bonus">(初顔合わせ +2)</span>
+        </div>
+
+        <div class="pa-hp">
+          <div class="pa-hp-half is-left">
+            <span class="pa-hp-name">椿山 みさき</span>
+            <span class="pa-hp-val">6 / 73</span>
+            <div class="pa-hp-track"><div class="pa-hp-fill is-danger" style="width:8%"></div></div>
+          </div>
+          <div class="pa-hp-center">HP</div>
+          <div class="pa-hp-half is-right">
+            <div class="pa-hp-track"><div class="pa-hp-fill is-healthy" style="width:26%"></div></div>
+            <span class="pa-hp-val">20 / 77</span>
+            <span class="pa-hp-name">赤沼 紗稀</span>
+          </div>
+        </div>
+
+        <details>
+          <summary class="pa-log-toggle"><span class="pa-log-toggle-label">試合ログ</span></summary>
+          <div class="pa-log-body">
+            <div>[T1] ロックアップから赤沼がコーナーに押し込む</div>
+            <div>[T2-7] 攻防の応酬、椿山のスピンキックが1発ヒット</div>
+            <div>[T8] 赤沼 ツームストン・パイルドライバー → 3カウント</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- 第1試合 -->
+      <div class="pa-mcard">
+        <div class="pa-mcard-header">
+          <div class="pa-mcard-num">第 1 試合</div>
+          <div class="pa-mcard-tags"><span class="pa-mcard-tag is-first">✨ 初顔合わせ</span></div>
+        </div>
+
+        <div class="pa-mcard-fighters">
+          <div class="pa-char is-loser">
+            <div class="pa-bubble-slot"></div>
+            <div class="pa-portrait"><img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'"></div>
+            <div class="pa-name">黒岩 千晶</div>
+            <div class="pa-ovr">
+              <span class="pa-ovr-label">OVR</span>
+              <span class="pa-ovr-value">55</span>
+            </div>
+          </div>
+          <div class="pa-vs">VS</div>
+          <div class="pa-char is-winner">
+            <div class="pa-bubble-slot"></div>
+            <div class="pa-portrait"><img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'"></div>
+            <div class="pa-name">沢登 鮎</div>
+            <div class="pa-ovr">
+              <span class="pa-ovr-label">OVR</span>
+              <span class="pa-ovr-value">68</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pa-result">
+          <span class="pa-result-badge">🏆 <span class="name">沢登 鮎</span> WIN</span>
+        </div>
+
+        <div class="pa-finish">
+          <span class="pa-finish-label">Finish</span>
+          <span class="pa-finish-move">シットアウト・パワーボム → 3カウント</span>
+          <span class="pa-finish-turns">11 TURNS</span>
+        </div>
+
+        <div class="pa-mq">
+          <span class="pa-mq-stars">
+            <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </span>
+          <span class="pa-mq-label">MQ</span>
+          <span class="pa-mq-value">32</span>
+          <span class="pa-mq-bonus">(初顔合わせ +2)</span>
+        </div>
+
+        <div class="pa-hp">
+          <div class="pa-hp-half is-left">
+            <span class="pa-hp-name">黒岩 千晶</span>
+            <span class="pa-hp-val">0 / 77</span>
+            <div class="pa-hp-track"><div class="pa-hp-fill is-danger" style="width:0%"></div></div>
+          </div>
+          <div class="pa-hp-center">HP</div>
+          <div class="pa-hp-half is-right">
+            <div class="pa-hp-track"><div class="pa-hp-fill is-healthy" style="width:45%"></div></div>
+            <span class="pa-hp-val">39 / 87</span>
+            <span class="pa-hp-name">沢登 鮎</span>
+          </div>
+        </div>
+
+        <details>
+          <summary class="pa-log-toggle"><span class="pa-log-toggle-label">試合ログ</span></summary>
+          <div class="pa-log-body">
+            <div>[T1-11] 中盤戦長引き、最後は沢登がシットアウト・パワーボム</div>
+          </div>
+        </details>
+      </div>
+
+    </div>
+
+    <div class="pa-heat">
+      <div class="pa-heat-kicker">Heat Status</div>
+      <div class="pa-heat-value">Neutral</div>
+    </div>
+
+    <div class="pa-close-area">
+      <button class="pa-close-btn">結果を確認 →</button>
+    </div>
+
+  </div>
+</div>
+</div>
+<!-- /Pattern A -->
+
+<!-- ============================================================
+     ★★★ Pattern B: Broadcast Scoreboard ★★★
+     ============================================================ -->
+<div class="pattern pattern-b">
+<div class="pb-overlay">
+  <div class="pb-container">
+
+    <!-- Top banner -->
+    <div class="pb-banner">
+      <div class="pb-live">● ON AIR</div>
+      <div class="pb-banner-title">第 14 回 定期興行</div>
+      <div class="pb-banner-sub">Weekly Show<span class="dot">·</span>Year 1 · Week 14<span class="dot">·</span>4月 第2週</div>
+    </div>
+
+    <!-- Horizontal scoreboard strip -->
+    <div class="pb-score-strip">
+      <div class="pb-score-cell is-attend">
+        <div class="pb-score-val">132<span style="font-size:14px;color:var(--stage-text-dim);margin-left:4px;">/150</span></div>
+        <div class="pb-score-lbl">公民館 · 大入り 88%</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-stars">
+          <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <div class="pb-score-val" style="margin-top:3px">27</div>
+        <div class="pb-score-lbl">Avg MQ</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">NEUTRAL</div>
+        <div class="pb-score-lbl">Heat</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">2</div>
+        <div class="pb-score-lbl">Matches</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">0</div>
+        <div class="pb-score-lbl">Injuries</div>
+      </div>
+    </div>
+
+    <div class="pb-divider">Match Results</div>
+
+    <div class="pb-matches">
+
+      <!-- Match row: Main event -->
+      <div class="pb-mrow is-main">
+        <div class="pb-fighter is-left is-loser">
+          <div class="pb-portrait"><img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'"></div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">椿山 みさき</div>
+            <div class="pb-fighter-meta">Challenger</div>
+            <div class="pb-fighter-ovr">
+              <span class="val">48</span>
+              <span class="lbl">OVR</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-result">
+          <div class="pb-result-vs">VS</div>
+          <div class="pb-result-winner">🏆 赤沼 紗稀 WIN</div>
+          <div class="pb-result-finish">ツームストン・パイルドライバー → 3カウント</div>
+          <div class="pb-result-turns">8 Turns</div>
+          <div class="pb-result-mq">
+            <span class="pb-result-mq-stars">
+              <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </span>
+            <span>MQ</span>
+            <span class="pb-result-mq-val">21</span>
+          </div>
+        </div>
+
+        <div class="pb-fighter is-right is-winner">
+          <div class="pb-portrait"><img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'"></div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">赤沼 紗稀</div>
+            <div class="pb-fighter-meta">Winner</div>
+            <div class="pb-fighter-ovr">
+              <span class="lbl">OVR</span>
+              <span class="val">72</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-mrow-tags">
+          <span class="pb-tag is-first">✨ 初顔合わせ</span>
+        </div>
+
+        <div class="pb-hp-mini">
+          <div class="pb-hp-mini-half is-left">
+            <span class="pb-hp-mini-val">6 / 73</span>
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-danger" style="width:8%"></div></div>
+          </div>
+          <div class="pb-hp-mini-label">HP</div>
+          <div class="pb-hp-mini-half is-right">
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-healthy" style="width:26%"></div></div>
+            <span class="pb-hp-mini-val">20 / 77</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Match row: 第1試合 -->
+      <div class="pb-mrow">
+        <div class="pb-fighter is-left is-loser">
+          <div class="pb-portrait"><img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'"></div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">黒岩 千晶</div>
+            <div class="pb-fighter-meta">Match 1</div>
+            <div class="pb-fighter-ovr">
+              <span class="val">55</span>
+              <span class="lbl">OVR</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-result">
+          <div class="pb-result-vs">VS</div>
+          <div class="pb-result-winner">🏆 沢登 鮎 WIN</div>
+          <div class="pb-result-finish">シットアウト・パワーボム → 3カウント</div>
+          <div class="pb-result-turns">11 Turns</div>
+          <div class="pb-result-mq">
+            <span class="pb-result-mq-stars">
+              <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </span>
+            <span>MQ</span>
+            <span class="pb-result-mq-val">32</span>
+          </div>
+        </div>
+
+        <div class="pb-fighter is-right is-winner">
+          <div class="pb-portrait"><img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'"></div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">沢登 鮎</div>
+            <div class="pb-fighter-meta">Winner</div>
+            <div class="pb-fighter-ovr">
+              <span class="lbl">OVR</span>
+              <span class="val">68</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-mrow-tags">
+          <span class="pb-tag is-first">✨ 初顔合わせ</span>
+        </div>
+
+        <div class="pb-hp-mini">
+          <div class="pb-hp-mini-half is-left">
+            <span class="pb-hp-mini-val">0 / 77</span>
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-danger" style="width:0%"></div></div>
+          </div>
+          <div class="pb-hp-mini-label">HP</div>
+          <div class="pb-hp-mini-half is-right">
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-healthy" style="width:45%"></div></div>
+            <span class="pb-hp-mini-val">39 / 87</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="pb-footer">
+      <div class="pb-footer-heat">Heat<span class="val">NEUTRAL</span></div>
+      <button class="pb-close-btn">結果を確認 →</button>
+    </div>
+
+  </div>
+</div>
+</div>
+<!-- /Pattern B -->
+
+<!-- ============================================================
+     ★★★ Pattern C: Face-off Duel ★★★
+     ============================================================ -->
+<div class="pattern pattern-c">
+<div class="pc-overlay">
+  <div class="pc-container">
+
+    <div class="pc-header">
+      <div class="pc-kicker">Weekly Show</div>
+      <div class="pc-title">第 14 回 定期興行</div>
+      <div class="pc-sub">Year 1 <span class="dot">·</span> Week 14 <span class="dot">·</span> 4月 第2週</div>
+    </div>
+
+    <!-- Show-level summary bar -->
+    <div class="pc-showbar">
+      <div class="pc-showbar-item">
+        <div class="pc-showbar-val is-neutral">132<span style="font-size:12px;color:var(--stage-text-dim);margin-left:3px;">/150</span></div>
+        <div class="pc-showbar-lbl">Audience · 88%</div>
+        <div class="pc-showbar-venue">公民館</div>
+      </div>
+      <div class="pc-showbar-item">
+        <div class="pc-showbar-val">27</div>
+        <div class="pc-showbar-lbl">Avg MQ</div>
+      </div>
+      <div class="pc-showbar-item">
+        <div class="pc-showbar-val is-neutral">Neutral</div>
+        <div class="pc-showbar-lbl">Heat</div>
+      </div>
+    </div>
+
+    <!-- Match tabs -->
+    <div class="pc-match-tabs">
+      <button class="pc-match-tab is-main is-active" data-duel="main"><span class="pc-match-tab-star">★</span>Main Event</button>
+      <button class="pc-match-tab" data-duel="m1">第 1 試合</button>
+    </div>
+
+    <!-- Duel 1: Main event -->
+    <div class="pc-duel is-main is-active" id="duel-main">
+      <div class="pc-duel-titleband">
+        <div class="pc-duel-num"><span class="pc-duel-num-star">★</span> MAIN EVENT</div>
+        <div class="pc-duel-tags">
+          <span class="pc-tag is-first">✨ 初顔合わせ</span>
+        </div>
+      </div>
+
+      <div class="pc-duel-stage">
+        <div class="pc-side is-left is-loser">
+          <div class="pc-side-portrait">
+            <img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'">
+          </div>
+          <div class="pc-side-info">
+            <div class="pc-side-name">椿山 みさき</div>
+            <div class="pc-side-meta">Challenger</div>
+            <div class="pc-side-ovr">
+              <span class="pc-side-ovr-lbl">OVR</span>
+              <span class="pc-side-ovr-val">48</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pc-center">
+          <div class="pc-center-vs">VS</div>
+          <div class="pc-center-line"></div>
+        </div>
+
+        <div class="pc-side is-right is-winner">
+          <div class="pc-side-portrait">
+            <img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'">
+          </div>
+          <div class="pc-side-info">
+            <div class="pc-side-name">赤沼 紗稀</div>
+            <div class="pc-side-meta">🏆 Winner</div>
+            <div class="pc-side-ovr">
+              <span class="pc-side-ovr-lbl">OVR</span>
+              <span class="pc-side-ovr-val">72</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result panel -->
+      <div class="pc-resultpanel">
+        <div class="pc-resultpanel-cell">
+          <div class="pc-resultpanel-lbl">🏆 Winner</div>
+          <div class="pc-resultpanel-winner-name">赤沼 紗稀</div>
+        </div>
+        <div class="pc-resultpanel-cell">
+          <div class="pc-resultpanel-lbl">Finish</div>
+          <div class="pc-resultpanel-finish">ツームストン・<br>パイルドライバー</div>
+          <div class="pc-resultpanel-turns">3 カウント · 8 Turns</div>
+        </div>
+        <div class="pc-resultpanel-cell">
+          <div class="pc-resultpanel-lbl">Match Quality</div>
+          <div class="pc-resultpanel-mq">
+            <div class="pc-resultpanel-mq-stars">
+              <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </div>
+            <div class="pc-resultpanel-mq-value">21</div>
+            <div class="pc-resultpanel-mq-bonus">初顔合わせ +2</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pc-hp-section">
+        <div class="pc-hp-half is-left">
+          <span class="pc-hp-val">6 / 73</span>
+          <div class="pc-hp-track"><div class="pc-hp-fill is-danger" style="width:8%"></div></div>
+        </div>
+        <div class="pc-hp-center">HP</div>
+        <div class="pc-hp-half is-right">
+          <div class="pc-hp-track"><div class="pc-hp-fill is-healthy" style="width:26%"></div></div>
+          <span class="pc-hp-val">20 / 77</span>
+        </div>
+      </div>
+
+      <div class="pc-log">
+        <details>
+          <summary class="pc-log-toggle">試合ログ</summary>
+          <div class="pc-log-body">
+            <div>[T1] ロックアップから赤沼がコーナーに押し込む</div>
+            <div>[T2-7] 攻防の応酬、椿山のスピンキックが1発ヒット</div>
+            <div>[T8] 赤沼 ツームストン・パイルドライバー → 3カウント</div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Duel 2: 第1試合 -->
+    <div class="pc-duel" id="duel-m1">
+      <div class="pc-duel-titleband">
+        <div class="pc-duel-num">第 1 試 合</div>
+        <div class="pc-duel-tags">
+          <span class="pc-tag is-first">✨ 初顔合わせ</span>
+        </div>
+      </div>
+
+      <div class="pc-duel-stage">
+        <div class="pc-side is-left is-loser">
+          <div class="pc-side-portrait">
+            <img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'">
+          </div>
+          <div class="pc-side-info">
+            <div class="pc-side-name">黒岩 千晶</div>
+            <div class="pc-side-meta">Match 1</div>
+            <div class="pc-side-ovr">
+              <span class="pc-side-ovr-lbl">OVR</span>
+              <span class="pc-side-ovr-val">55</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pc-center">
+          <div class="pc-center-vs">VS</div>
+          <div class="pc-center-line"></div>
+        </div>
+
+        <div class="pc-side is-right is-winner">
+          <div class="pc-side-portrait">
+            <img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'">
+          </div>
+          <div class="pc-side-info">
+            <div class="pc-side-name">沢登 鮎</div>
+            <div class="pc-side-meta">🏆 Winner</div>
+            <div class="pc-side-ovr">
+              <span class="pc-side-ovr-lbl">OVR</span>
+              <span class="pc-side-ovr-val">68</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pc-resultpanel">
+        <div class="pc-resultpanel-cell">
+          <div class="pc-resultpanel-lbl">🏆 Winner</div>
+          <div class="pc-resultpanel-winner-name">沢登 鮎</div>
+        </div>
+        <div class="pc-resultpanel-cell">
+          <div class="pc-resultpanel-lbl">Finish</div>
+          <div class="pc-resultpanel-finish">シットアウト・<br>パワーボム</div>
+          <div class="pc-resultpanel-turns">3 カウント · 11 Turns</div>
+        </div>
+        <div class="pc-resultpanel-cell">
+          <div class="pc-resultpanel-lbl">Match Quality</div>
+          <div class="pc-resultpanel-mq">
+            <div class="pc-resultpanel-mq-stars">
+              <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </div>
+            <div class="pc-resultpanel-mq-value">32</div>
+            <div class="pc-resultpanel-mq-bonus">初顔合わせ +2</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pc-hp-section">
+        <div class="pc-hp-half is-left">
+          <span class="pc-hp-val">0 / 77</span>
+          <div class="pc-hp-track"><div class="pc-hp-fill is-danger" style="width:0%"></div></div>
+        </div>
+        <div class="pc-hp-center">HP</div>
+        <div class="pc-hp-half is-right">
+          <div class="pc-hp-track"><div class="pc-hp-fill is-healthy" style="width:45%"></div></div>
+          <span class="pc-hp-val">39 / 87</span>
+        </div>
+      </div>
+
+      <div class="pc-log">
+        <details>
+          <summary class="pc-log-toggle">試合ログ</summary>
+          <div class="pc-log-body">
+            <div>[T1-11] 中盤戦長引き、最後は沢登がシットアウト・パワーボム</div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="pc-close-area">
+      <button class="pc-close-btn">結果を確認 →</button>
+    </div>
+
+  </div>
+</div>
+</div>
+<!-- /Pattern C -->
+
+<script>
+  // パターン切替
+  const patternBtns = document.querySelectorAll('[data-pattern]');
+  const patterns = document.querySelectorAll('.pattern');
+  patternBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      patternBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const target = btn.dataset.pattern;
+      patterns.forEach(p => p.classList.toggle('active', p.classList.contains('pattern-' + target)));
+      window.scrollTo({ top: 0 });
+    });
+  });
+
+  // Pattern C: 試合タブ切替
+  const duelTabs = document.querySelectorAll('.pc-match-tab');
+  const duels = document.querySelectorAll('.pc-duel');
+  duelTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      duelTabs.forEach(t => t.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      const target = tab.dataset.duel;
+      duels.forEach(d => d.classList.toggle('is-active', d.id === 'duel-' + target));
+    });
+  });
+</script>
+
+</body>
+</html>

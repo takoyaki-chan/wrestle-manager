@@ -57,13 +57,30 @@
   --accent-hostility: #d07a3e;   /* 対立度の橙 */
   --accent-faction-feud: #c38c54; /* 派閥抗争バッジ（accent-faction-1 と同系統）*/
   /* Stage（試合・シネマティックイベント共通の純黒トークン） */
-  --stage-bg: #000000;
-  --stage-bg-deep: #050505;
-  --stage-panel: rgba(18,17,14,0.92);
+  --stage-bg: #060606;
+  --stage-bg-deep: #000000;
+  --stage-panel: rgba(20,18,15,0.62);
+  --stage-panel-deep: rgba(10,9,7,0.80);
+  --stage-border: rgba(200,190,170,0.08);
+  --stage-border-lit: rgba(212,168,67,0.22);
+  --stage-border-main: rgba(212,168,67,0.42);
   --stage-accent-gold: var(--gold);
   --stage-text-main: #e8e6e0;
   --stage-text-sub: rgba(232,230,224,0.55);
   --stage-text-dim: rgba(232,230,224,0.28);
+  --stage-text-quiet: rgba(232,230,224,0.16);
+  /* Gold variants */
+  --gold-deep: #b8912e;
+  /* Semantic colors（試合後画面の状態表現、既存トークンのエイリアス） */
+  --c-positive: var(--accent-faction-4);
+  --c-warning: var(--accent-hostility);
+  --c-negative: #c0524a;
+  --c-info: var(--accent-faction-2);
+  --c-rivalry: #e17055;
+  /* Label/display font shortcuts (Pattern B) */
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-label: 'Oswald', sans-serif;
+  --font-body: 'Noto Sans JP', sans-serif;
   /* Office（シネマティックイベントのクリーム系エイリアス） */
   --office-bg: var(--bg-dark);
   --office-panel-cream: #d4ccb8;
@@ -2370,51 +2387,166 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .smc-skip-all button{padding:10px 0;border:1px solid #333;background:rgba(200,190,170,0.03);color:#777;border-radius:6px;font-size:13px;cursor:pointer;width:100%;font-family:inherit}
 .smc-skip-all button:hover{border-color:#666;color:#999}
 
-/* ===== Show Result ===== */
-.show-summary-bar{text-align:center;padding:10px 16px;border-bottom:1px solid rgba(200,190,170,0.04)}
-.show-attend-banner{text-align:center;padding:12px 16px;margin:12px 16px 0;border-radius:8px}
-.show-attend-num{font-size:24px;font-weight:900;letter-spacing:1px}
-.show-attend-bar-wrap{height:6px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden;max-width:280px;margin:6px auto 0}
-.show-attend-bar-fill{height:100%;border-radius:3px}
-.show-attend-pct{font-size:12px;font-weight:700;margin-top:4px}
-.show-results-area{padding:12px 16px 4px;display:flex;flex-direction:column;gap:12px}
-.sr-card{border-radius:10px;overflow:hidden;padding:16px}
-.sr-label-row{text-align:center;margin-bottom:10px;line-height:1.8;color:rgba(200,190,170,0.25);font-size:11px}
-.sr-match-num{display:block;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:rgba(255,255,255,0.4);margin-bottom:2px}
-.sr-fighters{display:flex;align-items:flex-end;justify-content:center;gap:0;margin-bottom:12px}
-.sr-char{display:flex;flex-direction:column;align-items:center;width:200px;flex-shrink:0}
-.sr-char .bubble-slot{min-height:60px;display:flex;flex-direction:column;justify-content:flex-end;width:100%}
-.sr-char .bubble-slot.empty{min-height:60px}
-.sr-char .portrait-wrap{overflow:hidden;border-radius:7px}
-.sr-char .portrait-wrap img{width:100%;height:100%;object-fit:cover;display:block}
-.sr-char .fname{font-size:13px;font-weight:700;margin-top:6px;text-align:center}
-.sr-char.winner .portrait-wrap{border:3px solid rgba(212,168,67,0.6);box-shadow:0 0 16px rgba(212,168,67,0.2)}
-.sr-char.winner .fname{color:var(--gold)}
-.sr-char.loser .portrait-wrap{border:2px solid rgba(200,190,170,0.12)}
-.sr-char.loser .fname{color:var(--text-sub)}
-.card-main .sr-char.winner .portrait-wrap{width:140px;height:140px}
-.card-main .sr-char.loser .portrait-wrap{width:100px;height:100px}
-.card-main .sr-char{width:200px}
-.card-sub .sr-char.winner .portrait-wrap{width:110px;height:110px}
-.card-sub .sr-char.loser .portrait-wrap{width:80px;height:80px}
-.card-sub .sr-char{width:170px}
-.sr-vs{display:flex;align-items:center;justify-content:center;min-width:44px;padding:0 4px;align-self:flex-end;padding-bottom:50px}
-.sr-vs-text{font-family:'Bebas Neue',sans-serif;font-weight:700;color:rgba(200,190,170,0.12);letter-spacing:2px}
-.card-main .sr-vs-text{font-size:28px}
-.card-sub .sr-vs-text{font-size:22px}
-.sr-bubble{margin-bottom:8px;width:100%}
-.sr-bubble .bname{font-size:9px;font-weight:600;text-align:center;margin-bottom:3px}
-.sr-bubble .bname.win{color:var(--gold)}
-.sr-bubble .bname.lose{color:#e17055}
-.sr-bubble .btext{background:#f0f0f0;color:#222;padding:7px 10px;border-radius:8px;font-size:11px;text-align:center;line-height:1.5;position:relative}
-.sr-bubble .btail{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:#f0f0f0}
-.sr-win-badge{text-align:center;margin-bottom:8px}
-.sr-win-badge span{display:inline-block;padding:4px 14px;border-radius:4px;font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--gold),#b8912e);color:#1a1a2e}
-.sr-finish{text-align:center;font-size:12px;color:var(--text-sub);margin-bottom:4px}
-.sr-mq-row{text-align:center;margin-bottom:8px}
-.sr-heat-info{text-align:center;padding:8px 16px;font-size:13px}
-.sr-close-area{padding:8px 16px 18px;text-align:center}
-.sr-close-btn{padding:10px 28px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;letter-spacing:1px;color:#1a1a2e;background:linear-gradient(135deg,#b8912e,var(--gold))}
+/* ============================================================
+   Show Result — Pattern B "Broadcast Scoreboard" (Stage カテゴリ)
+   ※モックアップ正本: docs/ui/mockups/show-result-pattern-b.html
+   ============================================================ */
+.show-result-overlay:has(.pb-container){background:var(--stage-bg);padding:0}
+.show-result-overlay:has(.pb-container) .show-result-box{background:transparent;border:none;border-radius:0;max-width:none;width:100%;padding:0;margin:0}
+.show-result-overlay:has(.pb-container)::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse 120% 60% at 50% 0%,rgba(212,168,67,0.05),transparent 50%)}
+.pb-container{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:0 16px 40px}
+.pb-banner{position:relative;margin-top:16px;padding:24px 24px 20px;text-align:center;background:linear-gradient(180deg,rgba(212,168,67,0.08) 0%,rgba(0,0,0,0) 100%);border-bottom:1px solid rgba(212,168,67,0.15)}
+.pb-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.pb-live{display:inline-block;background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3);color:var(--gold);font-family:var(--font-label);font-size:10px;font-weight:800;letter-spacing:3px;padding:3px 12px;border-radius:20px;margin-bottom:10px}
+.pb-live.is-special{background:rgba(240,208,120,0.15);border-color:var(--gold-light);color:var(--gold-light)}
+.pb-banner-title{font-family:var(--font-display);font-size:32px;letter-spacing:4px;color:var(--gold);text-shadow:0 0 20px rgba(212,168,67,0.3);margin-bottom:6px}
+.pb-banner-title.is-special{font-size:36px;background:linear-gradient(180deg,var(--gold-light) 0%,var(--gold) 60%,var(--gold-deep) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pb-banner-sub{font-family:var(--font-label);font-size:12px;letter-spacing:3px;color:var(--stage-text-sub);text-transform:uppercase}
+.pb-banner-sub .dot{color:var(--stage-text-quiet);margin:0 8px}
+
+.pb-score-strip{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr;border-bottom:1px solid rgba(200,190,170,0.08)}
+.pb-score-cell{text-align:center;padding:14px 10px;border-right:1px solid rgba(200,190,170,0.08)}
+.pb-score-cell:last-child{border-right:none}
+.pb-score-val{font-family:var(--font-display);font-size:24px;letter-spacing:1.5px;color:var(--gold);line-height:1}
+.pb-score-val.is-neutral{color:var(--stage-text-main)}
+.pb-score-val .small{font-size:14px;color:var(--stage-text-dim);margin-left:4px}
+.pb-score-lbl{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase;margin-top:4px}
+.pb-score-cell.is-attend{padding:12px 16px}
+.pb-score-cell.is-attend .pb-score-val{font-size:32px}
+.pb-score-attend-bar{width:100%;max-width:200px;margin:8px auto 6px;height:4px;background:rgba(200,190,170,0.08);border-radius:2px;overflow:hidden;position:relative}
+.pb-score-attend-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.pb-score-attend-bar-fill.is-sellout{background:linear-gradient(90deg,var(--gold-deep),var(--gold-light))}
+.pb-score-attend-bar-fill.is-good{background:var(--c-positive)}
+.pb-score-attend-bar-fill.is-neutral{background:var(--c-info)}
+.pb-score-attend-bar-fill.is-weak{background:var(--c-warning)}
+.pb-score-attend-bar-fill.is-empty{background:var(--c-negative)}
+.pb-score-attend-venue{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase;margin-top:4px}
+.pb-score-attend-rating{font-size:11px;font-weight:700;margin-top:2px;letter-spacing:0.5px}
+.pb-score-attend-rating.is-sellout{color:var(--gold-light)}
+.pb-score-attend-rating.is-good{color:var(--c-positive)}
+.pb-score-attend-rating.is-neutral{color:var(--c-info)}
+.pb-score-attend-rating.is-weak{color:var(--c-warning)}
+.pb-score-attend-rating.is-empty{color:var(--c-negative)}
+.pb-score-attend-rating .pct{font-family:var(--font-display);font-size:13px;letter-spacing:1px;margin-left:3px;color:inherit;opacity:0.85}
+.pb-score-stars{display:inline-flex;gap:1px;font-family:serif;font-size:13px;line-height:1}
+.pb-score-stars .star{color:var(--stage-text-quiet)}
+.pb-score-stars .star.on{color:var(--gold)}
+
+.pb-divider{text-align:center;font-family:var(--font-label);font-size:10px;font-weight:800;letter-spacing:4px;color:var(--stage-text-dim);padding:8px 0 6px;background:rgba(200,190,170,0.02);border-bottom:1px solid rgba(200,190,170,0.08);text-transform:uppercase}
+
+.pb-matches{padding:0}
+.pb-mrow{display:grid;grid-template-columns:1fr 240px 1fr;gap:0;padding:22px 20px 18px;border-bottom:1px solid rgba(200,190,170,0.06);position:relative;transition:background .15s}
+.pb-mrow:hover{background:rgba(255,255,255,0.012)}
+.pb-mrow.is-main{background:linear-gradient(180deg,rgba(212,168,67,0.07) 0%,transparent 60%),rgba(255,255,255,0.015);border-left:2px solid var(--gold);padding:32px 20px 24px}
+.pb-mrow.is-main::before{content:'★ MAIN EVENT';position:absolute;top:10px;left:16px;font-family:var(--font-label);font-size:10px;letter-spacing:2.5px;font-weight:700;color:var(--gold);text-transform:uppercase}
+
+.pb-fighter{display:flex;align-items:center;gap:14px}
+.pb-fighter.is-left{flex-direction:row-reverse;text-align:right}
+.pb-portrait-wrap{position:relative;flex-shrink:0}
+.pb-portrait{width:86px;height:129px;border-radius:6px;overflow:hidden;border:2px solid var(--stage-border);background:linear-gradient(180deg,#1a1816,#0a0907);flex-shrink:0;transition:box-shadow .2s}
+.pb-portrait img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.pb-portrait-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:28px;color:var(--stage-text-dim);letter-spacing:2px}
+.pb-mrow.is-main .pb-portrait{width:108px;height:162px}
+.pb-fighter.is-winner .pb-portrait{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,168,67,0.15),0 0 20px rgba(212,168,67,0.3)}
+.pb-fighter.is-loser .pb-portrait{opacity:0.78}
+.pb-fighter.is-draw .pb-portrait{border-color:rgba(208,122,62,0.4);box-shadow:0 0 18px rgba(208,122,62,0.15)}
+
+.pb-fighter-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.pb-fighter-name{font-size:16px;font-weight:700;color:var(--stage-text-sub);letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb-fighter-name a{color:inherit;text-decoration:none}
+.pb-fighter-name a:hover{text-decoration:underline}
+.pb-fighter.is-winner .pb-fighter-name{color:var(--gold);font-weight:900}
+.pb-fighter.is-draw .pb-fighter-name{color:var(--c-warning)}
+.pb-mrow.is-main .pb-fighter.is-winner .pb-fighter-name{font-size:18px}
+.pb-fighter-meta{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-quiet);text-transform:uppercase}
+.pb-fighter-ovr{display:flex;align-items:baseline;gap:6px;margin-top:3px}
+.pb-fighter.is-left .pb-fighter-ovr{justify-content:flex-end}
+.pb-fighter-ovr .lbl{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase}
+.pb-fighter-ovr .val{font-family:var(--font-display);font-size:38px;line-height:1;letter-spacing:1px;color:var(--stage-text-sub)}
+.pb-fighter.is-winner .pb-fighter-ovr .val{color:var(--gold-light)}
+.pb-fighter.is-loser .pb-fighter-ovr .val{color:var(--stage-text-dim)}
+.pb-fighter.is-draw .pb-fighter-ovr .val{color:var(--c-warning)}
+.pb-mrow.is-main .pb-fighter-ovr .val{font-size:46px}
+
+.pb-result{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 16px;border-left:1px solid rgba(200,190,170,0.06);border-right:1px solid rgba(200,190,170,0.06)}
+.pb-result-vs{font-family:var(--font-display);font-size:16px;letter-spacing:3px;color:var(--stage-text-quiet)}
+.pb-result-winner{font-family:var(--font-label);font-size:11px;font-weight:700;letter-spacing:2.5px;color:var(--gold);text-transform:uppercase;white-space:nowrap}
+.pb-result-winner.is-draw{color:var(--c-warning)}
+.pb-result-finish{font-size:12px;color:var(--stage-text-main);font-weight:700;line-height:1.4;letter-spacing:0.3px;text-align:center}
+.pb-result-turns{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-dim);text-transform:uppercase}
+.pb-result-mq{display:flex;align-items:center;gap:5px;margin-top:3px}
+.pb-result-mq-stars{display:inline-flex;gap:1px;font-family:serif}
+.pb-result-mq-stars .star{color:var(--stage-text-quiet);font-size:13px;line-height:1}
+.pb-result-mq-stars .star.on{color:var(--gold)}
+.pb-result-mq-val{font-family:var(--font-display);font-size:16px;letter-spacing:1px;color:var(--gold)}
+.pb-mrow.is-main .pb-result-mq-val{font-size:20px}
+.pb-result-finish .sub{display:block;font-size:10px;color:var(--stage-text-dim);font-weight:400;margin-top:2px}
+
+.pb-mrow-tags{grid-column:1 / -1;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding-top:12px;margin-top:12px;border-top:1px dashed rgba(200,190,170,0.08)}
+.pb-tag{font-family:var(--font-label);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:2px;border:1px solid transparent}
+.pb-tag.is-first{color:var(--c-info);background:rgba(109,148,184,0.1);border-color:rgba(109,148,184,0.3)}
+.pb-tag.is-title{color:var(--gold);background:rgba(212,168,67,0.1);border-color:rgba(212,168,67,0.3)}
+.pb-tag.is-rivalry{color:var(--c-rivalry);background:rgba(225,112,85,0.1);border-color:rgba(225,112,85,0.3)}
+.pb-tag.is-spotlight{color:var(--gold-light);background:rgba(240,208,120,0.08);border-color:rgba(240,208,120,0.25)}
+.pb-tag.is-stale{color:var(--stage-text-dim);background:rgba(200,190,170,0.04);border-color:rgba(200,190,170,0.18)}
+.pb-tag.is-tag{color:var(--c-info);background:rgba(109,148,184,0.08);border-color:rgba(109,148,184,0.35);letter-spacing:2px}
+
+.pb-hp-mini{grid-column:1 / -1;display:flex;align-items:center;gap:8px;padding-top:10px;margin-top:10px;border-top:1px dashed rgba(200,190,170,0.08)}
+.pb-hp-mini-half{flex:1;display:flex;align-items:center;gap:6px}
+.pb-hp-mini-half.is-left{flex-direction:row-reverse}
+.pb-hp-mini-label{font-family:var(--font-label);font-size:9px;letter-spacing:1.5px;color:var(--stage-text-dim);text-transform:uppercase;min-width:24px}
+.pb-hp-mini-val{font-family:var(--font-label);font-size:10px;letter-spacing:1px;color:var(--stage-text-sub);min-width:50px}
+.pb-hp-mini-half.is-left .pb-hp-mini-val{text-align:left}
+.pb-hp-mini-half.is-right .pb-hp-mini-val{text-align:right}
+.pb-hp-mini-track{flex:1;height:3px;background:rgba(200,190,170,0.06);border-radius:2px;overflow:hidden;max-width:220px}
+.pb-hp-mini-half.is-left .pb-hp-mini-track{direction:rtl}
+.pb-hp-mini-fill{height:100%;border-radius:2px}
+.pb-hp-mini-fill.is-healthy{background:var(--c-positive)}
+.pb-hp-mini-fill.is-warning{background:var(--c-warning)}
+.pb-hp-mini-fill.is-danger{background:var(--c-negative)}
+
+.pb-dialogue{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:rgba(245,240,230,0.96);color:#1a1713;padding:8px 13px 10px;border-radius:8px;font-size:12px;line-height:1.55;box-shadow:0 3px 12px rgba(0,0,0,0.5);min-width:150px;max-width:220px;white-space:normal;text-align:center;z-index:3}
+.pb-dialogue::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);width:0;height:0;border:7px solid transparent;border-top-color:rgba(245,240,230,0.96);border-bottom:0}
+.pb-dialogue-speaker{font-family:var(--font-label);font-size:9px;letter-spacing:1.5px;font-weight:700;text-transform:uppercase;margin-bottom:3px;text-align:center}
+.pb-dialogue-speaker.is-winner{color:var(--gold-deep)}
+.pb-dialogue-speaker.is-loser{color:var(--c-rivalry)}
+.pb-dialogue-speaker.is-draw{color:var(--c-warning)}
+.pb-mrow.has-dialogue{padding-top:92px}
+.pb-mrow.has-dialogue.is-main{padding-top:104px}
+
+.pb-injury{grid-column:1 / -1;margin-top:14px;padding:10px 14px;background:rgba(192,82,74,0.08);border:1px solid rgba(192,82,74,0.25);border-radius:4px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--stage-text-sub);border-left:3px solid var(--c-negative)}
+.pb-injury-label{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--c-negative);text-transform:uppercase;font-weight:700;white-space:nowrap}
+.pb-injury-item{color:var(--stage-text-sub)}
+.pb-injury-item .type{color:var(--c-negative);font-weight:700}
+.pb-injury-item .name{color:var(--stage-text-main);font-weight:700}
+
+.pb-footer{padding:20px 24px;text-align:center;background:rgba(255,255,255,0.015);border-top:1px solid rgba(200,190,170,0.08);display:flex;justify-content:center;align-items:center;gap:28px}
+.pb-footer-heat{font-family:var(--font-label);font-size:12px;letter-spacing:2px;color:var(--stage-text-sub);text-transform:uppercase}
+.pb-footer-heat .val{font-family:var(--font-display);font-size:18px;letter-spacing:2px;color:var(--stage-text-main);margin-left:6px}
+.pb-footer-heat .val.is-hot{color:var(--c-rivalry)}
+.pb-footer-heat .val.is-cold{color:var(--c-info)}
+.pb-close-btn{padding:12px 36px;font-family:var(--font-label);font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#14110a;background:linear-gradient(135deg,var(--gold-deep),var(--gold));border:none;border-radius:4px;cursor:pointer;box-shadow:0 2px 14px rgba(212,168,67,0.25)}
+.pb-close-btn:hover{box-shadow:0 4px 20px rgba(212,168,67,0.4)}
+
+/* Tag match: 2選手詰め横並び（肖像サイズはシングルと同じ） */
+.pb-fighter.is-tag{gap:10px}
+.pb-fighter.is-tag .pb-tag-members{display:flex;gap:6px;align-items:flex-start}
+.pb-fighter.is-left.is-tag .pb-tag-members{flex-direction:row-reverse}
+.pb-tag-member{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;max-width:110px}
+.pb-tag-member-name{font-size:11px;font-weight:700;color:var(--stage-text-sub);letter-spacing:0.3px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.pb-tag-member-name a{color:inherit;text-decoration:none}
+.pb-tag-member-name a:hover{text-decoration:underline}
+.pb-fighter.is-tag.is-winner .pb-tag-member-name{color:var(--gold);font-weight:900}
+.pb-fighter.is-tag.is-draw .pb-tag-member-name{color:var(--c-warning)}
+.pb-tag-member-ovr{display:flex;align-items:baseline;gap:4px;justify-content:center}
+.pb-tag-member-ovr .lbl{font-family:var(--font-label);font-size:8px;letter-spacing:1.5px;color:var(--stage-text-dim);text-transform:uppercase}
+.pb-tag-member-ovr .val{font-family:var(--font-display);font-size:22px;line-height:1;color:var(--stage-text-sub);letter-spacing:0.5px}
+.pb-fighter.is-tag.is-winner .pb-tag-member-ovr .val{color:var(--gold-light)}
+.pb-fighter.is-tag.is-loser .pb-tag-member-ovr .val{color:var(--stage-text-dim)}
+.pb-fighter.is-tag.is-draw .pb-tag-member-ovr .val{color:var(--c-warning)}
+.pb-fighter.is-tag .pb-tag-member-badge{font-family:var(--font-label);font-size:8px;letter-spacing:1.5px;color:var(--stage-text-quiet);text-transform:uppercase;margin-top:-1px}
+.pb-fighter.is-tag.is-winner .pb-tag-member.is-finisher .pb-tag-member-badge,
+.pb-fighter.is-tag.is-loser .pb-tag-member.is-pinned .pb-tag-member-badge{color:var(--gold)}
 .mq-stars{display:inline-flex;gap:1px;margin-right:4px}
 .mq-star{font-size:12px}
 

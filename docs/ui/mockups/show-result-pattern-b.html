@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>試合結果 Pattern B 詳細案 — Wrestle Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   共通トークン
+   ============================================================ */
+:root {
+  --stage-bg:          #060606;
+  --stage-bg-deep:     #000000;
+  --stage-panel:       rgba(20,18,15,0.62);
+  --stage-panel-deep:  rgba(10,9,7,0.80);
+  --stage-border:      rgba(200,190,170,0.08);
+  --stage-border-lit:  rgba(212,168,67,0.22);
+  --stage-border-main: rgba(212,168,67,0.42);
+
+  --stage-text-main:   #e8e6e0;
+  --stage-text-sub:    rgba(232,230,224,0.55);
+  --stage-text-dim:    rgba(232,230,224,0.28);
+  --stage-text-quiet:  rgba(232,230,224,0.16);
+
+  --gold:        #d4a843;
+  --gold-light:  #f0d078;
+  --gold-deep:   #b8912e;
+
+  --c-positive:  #6fa28c;
+  --c-warning:   #d07a3e;
+  --c-negative:  #c0524a;
+  --c-info:      #6d94b8;
+  --c-rivalry:   #e17055;
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-label:   'Oswald', sans-serif;
+  --font-body:    'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  color: var(--stage-text-main);
+  background: #0a0907;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   バリアント切替スイッチャー
+   ============================================================ */
+.ps-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: rgba(8,7,5,0.96);
+  border-bottom: 1px solid rgba(212,168,67,0.25);
+  padding: 10px 16px;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  backdrop-filter: blur(8px);
+}
+.ps-label {
+  color: var(--gold); font-weight: 700;
+  margin-right: 10px;
+  font-family: var(--font-label);
+  font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+}
+.ps-btn {
+  background: rgba(200,190,170,0.06);
+  border: 1px solid rgba(200,190,170,0.18);
+  color: var(--stage-text-sub);
+  padding: 7px 14px; border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: all .15s ease;
+}
+.ps-btn:hover {
+  background: rgba(212,168,67,0.1);
+  border-color: rgba(212,168,67,0.4);
+  color: var(--gold-light);
+}
+.ps-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #14110a;
+  font-weight: 700;
+}
+.ps-btn-desc {
+  font-size: 9px; display: block; opacity: 0.75; letter-spacing: 1px;
+  margin-top: 2px; font-weight: 400;
+}
+.ps-hint {
+  color: var(--stage-text-dim); font-size: 10px;
+  letter-spacing: 0.5px; margin-left: auto;
+  font-family: var(--font-label);
+}
+
+.variant { display: none; }
+.variant.active { display: block; }
+
+/* ============================================================
+   Broadcast Scoreboard 共通（pb-）
+   ============================================================ */
+.pb-overlay {
+  position: fixed; inset: 58px 0 0 0;
+  background: var(--stage-bg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pb-overlay::before {
+  content: ''; position: fixed; inset: 58px 0 0 0; pointer-events: none; z-index: 1;
+  background: radial-gradient(ellipse 120% 60% at 50% 0%, rgba(212,168,67,0.05), transparent 50%);
+}
+.pb-container {
+  position: relative; z-index: 2;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+/* Top banner */
+.pb-banner {
+  position: relative;
+  margin-top: 16px;
+  padding: 24px 24px 20px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(212,168,67,0.08) 0%, rgba(0,0,0,0) 100%);
+  border-bottom: 1px solid rgba(212,168,67,0.15);
+}
+.pb-banner::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.pb-live {
+  display: inline-block;
+  background: rgba(212,168,67,0.12);
+  border: 1px solid rgba(212,168,67,0.3);
+  color: var(--gold);
+  font-family: var(--font-label);
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 3px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.pb-live.is-special {
+  background: rgba(240,208,120,0.15);
+  border-color: var(--gold-light);
+  color: var(--gold-light);
+}
+.pb-banner-title {
+  font-family: var(--font-display);
+  font-size: 32px; letter-spacing: 4px;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(212,168,67,0.3);
+  margin-bottom: 6px;
+}
+.pb-banner-title.is-special {
+  font-size: 36px;
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 60%, var(--gold-deep) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.pb-banner-sub {
+  font-family: var(--font-label);
+  font-size: 12px; letter-spacing: 3px;
+  color: var(--stage-text-sub);
+  text-transform: uppercase;
+}
+.pb-banner-sub .dot { color: var(--stage-text-quiet); margin: 0 8px; }
+
+/* Horizontal scoreboard strip */
+.pb-score-strip {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr;
+  border-bottom: 1px solid rgba(200,190,170,0.08);
+}
+.pb-score-cell {
+  text-align: center;
+  padding: 14px 10px;
+  border-right: 1px solid rgba(200,190,170,0.08);
+}
+.pb-score-cell:last-child { border-right: none; }
+.pb-score-val {
+  font-family: var(--font-display);
+  font-size: 24px; letter-spacing: 1.5px;
+  color: var(--gold);
+  line-height: 1;
+}
+.pb-score-val.is-neutral { color: var(--stage-text-main); }
+.pb-score-val .small {
+  font-size: 14px; color: var(--stage-text-dim); margin-left: 4px;
+}
+.pb-score-lbl {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* 動員セル: 数値 + バー + ラベル */
+.pb-score-cell.is-attend { padding: 12px 16px; }
+.pb-score-cell.is-attend .pb-score-val { font-size: 32px; }
+.pb-score-attend-bar {
+  width: 100%; max-width: 200px;
+  margin: 8px auto 6px;
+  height: 4px;
+  background: rgba(200,190,170,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.pb-score-attend-bar-fill {
+  height: 100%; border-radius: 2px;
+  transition: width .6s ease;
+}
+.pb-score-attend-bar-fill.is-sellout { background: linear-gradient(90deg, var(--gold-deep), var(--gold-light)); }
+.pb-score-attend-bar-fill.is-good    { background: var(--c-positive); }
+.pb-score-attend-bar-fill.is-neutral { background: var(--c-info); }
+.pb-score-attend-bar-fill.is-weak    { background: var(--c-warning); }
+.pb-score-attend-bar-fill.is-empty   { background: var(--c-negative); }
+.pb-score-attend-venue {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.pb-score-attend-rating {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.pb-score-attend-rating.is-hot  { color: var(--gold-light); }
+.pb-score-attend-rating.is-good { color: var(--c-positive); }
+.pb-score-attend-rating.is-weak { color: var(--c-warning); }
+.pb-score-attend-rating.is-empty { color: var(--c-negative); }
+.pb-score-attend-rating .pct {
+  font-family: var(--font-display);
+  font-size: 13px; letter-spacing: 1px;
+  margin-left: 3px;
+  color: inherit; opacity: 0.85;
+}
+
+.pb-score-stars { display: inline-flex; gap: 1px; font-family: serif; font-size: 13px; line-height: 1; }
+.pb-score-stars .star { color: var(--stage-text-quiet); }
+.pb-score-stars .star.on { color: var(--gold); }
+
+/* Divider */
+.pb-divider {
+  text-align: center;
+  font-family: var(--font-label);
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--stage-text-dim);
+  padding: 8px 0 6px;
+  background: rgba(200,190,170,0.02);
+  border-bottom: 1px solid rgba(200,190,170,0.08);
+  text-transform: uppercase;
+}
+
+/* Match row */
+.pb-matches { padding: 0; }
+.pb-mrow {
+  display: grid;
+  grid-template-columns: 1fr 240px 1fr;
+  gap: 0;
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(200,190,170,0.06);
+  position: relative;
+  transition: background .15s;
+}
+.pb-mrow:hover { background: rgba(255,255,255,0.012); }
+.pb-mrow.is-main {
+  background:
+    linear-gradient(180deg, rgba(212,168,67,0.07) 0%, transparent 60%),
+    rgba(255,255,255,0.015);
+  border-left: 2px solid var(--gold);
+  padding: 32px 20px 24px;
+}
+.pb-mrow.is-main::before {
+  content: '★ MAIN EVENT';
+  position: absolute;
+  top: 10px; left: 16px;
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2.5px; font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+/* Fighter block */
+.pb-fighter {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.pb-fighter.is-left { flex-direction: row-reverse; text-align: right; }
+
+/* Portrait wrapper — bubble を absolute で載せるためのアンカー */
+.pb-portrait-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.pb-portrait {
+  width: 86px; height: 129px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid var(--stage-border);
+  background: linear-gradient(180deg, #1a1816, #0a0907);
+  flex-shrink: 0;
+  transition: box-shadow .2s;
+}
+.pb-portrait img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+}
+.pb-mrow.is-main .pb-portrait { width: 108px; height: 162px; }
+.pb-fighter.is-winner .pb-portrait {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(212,168,67,0.15), 0 0 20px rgba(212,168,67,0.3);
+}
+.pb-fighter.is-loser .pb-portrait { opacity: 0.78; }
+.pb-fighter.is-draw .pb-portrait {
+  border-color: rgba(208,122,62,0.4);
+  box-shadow: 0 0 18px rgba(208,122,62,0.15);
+}
+
+.pb-fighter-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.pb-fighter-name {
+  font-size: 16px; font-weight: 700;
+  color: var(--stage-text-sub);
+  letter-spacing: 0.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pb-fighter.is-winner .pb-fighter-name { color: var(--gold); font-weight: 900; }
+.pb-fighter.is-draw .pb-fighter-name { color: var(--c-warning); }
+.pb-mrow.is-main .pb-fighter.is-winner .pb-fighter-name { font-size: 18px; }
+.pb-fighter-meta {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 1.5px;
+  color: var(--stage-text-quiet);
+  text-transform: uppercase;
+}
+.pb-fighter-ovr {
+  display: flex; align-items: baseline; gap: 6px; margin-top: 3px;
+}
+.pb-fighter.is-left .pb-fighter-ovr { justify-content: flex-end; }
+.pb-fighter-ovr .lbl {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.pb-fighter-ovr .val {
+  font-family: var(--font-display);
+  font-size: 38px;
+  line-height: 1;
+  letter-spacing: 1px;
+  color: var(--stage-text-sub);
+}
+.pb-fighter.is-winner .pb-fighter-ovr .val { color: var(--gold-light); }
+.pb-fighter.is-loser .pb-fighter-ovr .val { color: var(--stage-text-dim); }
+.pb-fighter.is-draw .pb-fighter-ovr .val { color: var(--c-warning); }
+.pb-mrow.is-main .pb-fighter-ovr .val { font-size: 46px; }
+
+/* Center result column */
+.pb-result {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  border-left: 1px solid rgba(200,190,170,0.06);
+  border-right: 1px solid rgba(200,190,170,0.06);
+}
+.pb-result-vs {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: var(--stage-text-quiet);
+}
+.pb-result-winner {
+  font-family: var(--font-label);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--gold);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pb-result-winner.is-draw { color: var(--c-warning); }
+.pb-result-finish {
+  font-size: 12px;
+  color: var(--stage-text-main);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.3px;
+  text-align: center;
+}
+.pb-result-turns {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 1.5px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.pb-result-mq {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 3px;
+}
+.pb-result-mq-stars { display: inline-flex; gap: 1px; font-family: serif; }
+.pb-result-mq-stars .star { color: var(--stage-text-quiet); font-size: 13px; line-height: 1; }
+.pb-result-mq-stars .star.on { color: var(--gold); }
+.pb-result-mq-val {
+  font-family: var(--font-display);
+  font-size: 16px; letter-spacing: 1px;
+  color: var(--gold);
+}
+.pb-mrow.is-main .pb-result-mq-val { font-size: 20px; }
+
+/* Tags */
+.pb-mrow-tags {
+  grid-column: 1 / -1;
+  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px dashed rgba(200,190,170,0.08);
+}
+.pb-tag {
+  font-family: var(--font-label);
+  font-size: 9px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 2px;
+  border: 1px solid transparent;
+}
+.pb-tag.is-first {
+  color: var(--c-info);
+  background: rgba(109,148,184,0.1);
+  border-color: rgba(109,148,184,0.3);
+}
+.pb-tag.is-title {
+  color: var(--gold);
+  background: rgba(212,168,67,0.1);
+  border-color: rgba(212,168,67,0.3);
+}
+.pb-tag.is-rivalry {
+  color: var(--c-rivalry);
+  background: rgba(225,112,85,0.1);
+  border-color: rgba(225,112,85,0.3);
+}
+.pb-tag.is-spotlight {
+  color: var(--gold-light);
+  background: rgba(240,208,120,0.08);
+  border-color: rgba(240,208,120,0.25);
+}
+.pb-tag.is-tag {
+  color: var(--c-info);
+  background: rgba(109,148,184,0.08);
+  border-color: rgba(109,148,184,0.35);
+  letter-spacing: 2px;
+}
+
+/* HP mini */
+.pb-hp-mini {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 8px;
+  padding-top: 10px; margin-top: 10px;
+  border-top: 1px dashed rgba(200,190,170,0.08);
+}
+.pb-hp-mini-half { flex: 1; display: flex; align-items: center; gap: 6px; }
+.pb-hp-mini-half.is-left { flex-direction: row-reverse; }
+.pb-hp-mini-label {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 1.5px;
+  color: var(--stage-text-dim); text-transform: uppercase;
+  min-width: 24px;
+}
+.pb-hp-mini-val {
+  font-family: var(--font-label);
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--stage-text-sub);
+  min-width: 50px;
+}
+.pb-hp-mini-half.is-left .pb-hp-mini-val { text-align: left; }
+.pb-hp-mini-half.is-right .pb-hp-mini-val { text-align: right; }
+.pb-hp-mini-track {
+  flex: 1; height: 3px;
+  background: rgba(200,190,170,0.06);
+  border-radius: 2px; overflow: hidden;
+  max-width: 220px;
+}
+.pb-hp-mini-half.is-left .pb-hp-mini-track { direction: rtl; }
+.pb-hp-mini-fill { height: 100%; border-radius: 2px; }
+.pb-hp-mini-fill.is-healthy { background: var(--c-positive); }
+.pb-hp-mini-fill.is-warning { background: var(--c-warning); }
+.pb-hp-mini-fill.is-danger  { background: var(--c-negative); }
+
+/* ============================================================
+   Dialogue（セリフ）— 肖像の真上に配置、しっぽ下向き
+   ============================================================ */
+.pb-dialogue {
+  position: absolute;
+  bottom: calc(100% + 10px);  /* 肖像の上端から 10px 離す */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(245,240,230,0.96);
+  color: #1a1713;
+  padding: 8px 13px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.55;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.5);
+  min-width: 150px;
+  max-width: 220px;
+  white-space: normal;
+  text-align: center;
+  z-index: 3;
+}
+
+/* しっぽ（下向き、肖像を指す） */
+.pb-dialogue::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border: 7px solid transparent;
+  border-top-color: rgba(245,240,230,0.96);
+  border-bottom: 0;
+}
+
+.pb-dialogue-speaker {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 1.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+  text-align: center;
+}
+.pb-dialogue-speaker.is-winner { color: var(--gold-deep); }
+.pb-dialogue-speaker.is-loser  { color: var(--c-rivalry); }
+.pb-dialogue-speaker.is-draw   { color: var(--c-warning); }
+
+/* バブルがある試合行の上部パディングを増やす */
+.pb-mrow.has-dialogue { padding-top: 92px; }
+.pb-mrow.has-dialogue.is-main { padding-top: 104px; }
+
+/* ============================================================
+   Injury report
+   ============================================================ */
+.pb-injury {
+  grid-column: 1 / -1;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(192,82,74,0.08);
+  border: 1px solid rgba(192,82,74,0.25);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--stage-text-sub);
+  border-left: 3px solid var(--c-negative);
+}
+.pb-injury-label {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--c-negative); text-transform: uppercase;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pb-injury-item {
+  color: var(--stage-text-sub);
+}
+.pb-injury-item .type { color: var(--c-negative); font-weight: 700; }
+.pb-injury-item .name { color: var(--stage-text-main); font-weight: 700; }
+
+/* Footer */
+.pb-footer {
+  padding: 20px 24px;
+  text-align: center;
+  background: rgba(255,255,255,0.015);
+  border-top: 1px solid rgba(200,190,170,0.08);
+  display: flex; justify-content: center; align-items: center; gap: 28px;
+}
+.pb-footer-heat {
+  font-family: var(--font-label);
+  font-size: 12px; letter-spacing: 2px;
+  color: var(--stage-text-sub);
+  text-transform: uppercase;
+}
+.pb-footer-heat .val {
+  font-family: var(--font-display);
+  font-size: 18px; letter-spacing: 2px;
+  color: var(--stage-text-main);
+  margin-left: 6px;
+}
+.pb-footer-heat .val.is-hot { color: var(--c-rivalry); }
+.pb-close-btn {
+  padding: 12px 36px;
+  font-family: var(--font-label);
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: #14110a;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+  border: none; border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 14px rgba(212,168,67,0.25);
+}
+.pb-close-btn:hover { box-shadow: 0 4px 20px rgba(212,168,67,0.4); }
+
+/* ------------------------------------------------------------
+   Tag match — 2選手を左右に詰めて横並び
+   ------------------------------------------------------------ */
+.pb-fighter.is-tag { gap: 10px; }
+.pb-fighter.is-tag .pb-tag-members {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.pb-fighter.is-left.is-tag .pb-tag-members { flex-direction: row-reverse; }
+.pb-tag-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 110px;
+}
+.pb-tag-member-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--stage-text-sub);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+.pb-fighter.is-tag.is-winner .pb-tag-member-name { color: var(--gold); font-weight: 900; }
+.pb-fighter.is-tag.is-draw .pb-tag-member-name { color: var(--c-warning); }
+.pb-tag-member-ovr {
+  display: flex; align-items: baseline; gap: 4px; justify-content: center;
+}
+.pb-tag-member-ovr .lbl {
+  font-family: var(--font-label);
+  font-size: 8px; letter-spacing: 1.5px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.pb-tag-member-ovr .val {
+  font-family: var(--font-display);
+  font-size: 22px; line-height: 1;
+  color: var(--stage-text-sub);
+  letter-spacing: 0.5px;
+}
+.pb-fighter.is-tag.is-winner .pb-tag-member-ovr .val { color: var(--gold-light); }
+.pb-fighter.is-tag.is-loser  .pb-tag-member-ovr .val { color: var(--stage-text-dim); }
+.pb-fighter.is-tag.is-draw   .pb-tag-member-ovr .val { color: var(--c-warning); }
+.pb-fighter.is-tag .pb-tag-member-badge {
+  font-family: var(--font-label);
+  font-size: 8px; letter-spacing: 1.5px;
+  color: var(--stage-text-quiet);
+  text-transform: uppercase;
+  margin-top: -1px;
+}
+.pb-fighter.is-tag.is-winner .pb-tag-member.is-finisher .pb-tag-member-badge,
+.pb-fighter.is-tag.is-loser  .pb-tag-member.is-pinned   .pb-tag-member-badge {
+  color: var(--gold);
+}
+
+/* Scrollbar */
+.pb-overlay::-webkit-scrollbar { width: 10px; }
+.pb-overlay::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.2); border-radius: 5px; }
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     バリアント切替スイッチャー
+     ============================================================ -->
+<div class="ps-bar">
+  <span class="ps-label">Pattern B Variant:</span>
+  <button class="ps-btn active" data-variant="v1">
+    V1 — Weekly / No Dialogue
+    <span class="ps-btn-desc">通常興行 / セリフなし + 動員バー</span>
+  </button>
+  <button class="ps-btn" data-variant="v2">
+    V2 — Special w/ Dialogue
+    <span class="ps-btn-desc">特別興行 / タイトル戦 + 因縁セリフ</span>
+  </button>
+  <button class="ps-btn" data-variant="v3">
+    V3 — Tag Match
+    <span class="ps-btn-desc">タッグマッチ / 2対2 / 代表HP</span>
+  </button>
+  <span class="ps-hint">動員プログレスバー追加 / セリフバブル追加 / タッグ行</span>
+</div>
+
+<!-- ============================================================
+     ★★★ Variant 1: Weekly — 通常興行 セリフなし（動員バー追加） ★★★
+     ============================================================ -->
+<div class="variant variant-v1 active">
+<div class="pb-overlay">
+  <div class="pb-container">
+
+    <!-- Top banner -->
+    <div class="pb-banner">
+      <div class="pb-live">● ON AIR</div>
+      <div class="pb-banner-title">第 14 回 定期興行</div>
+      <div class="pb-banner-sub">Weekly Show<span class="dot">·</span>Year 1 · Week 14<span class="dot">·</span>4月 第2週</div>
+    </div>
+
+    <!-- Scoreboard strip with attendance bar -->
+    <div class="pb-score-strip">
+      <div class="pb-score-cell is-attend">
+        <div class="pb-score-val">132<span class="small">/ 150</span></div>
+        <div class="pb-score-attend-bar">
+          <div class="pb-score-attend-bar-fill is-good" style="width:88%"></div>
+        </div>
+        <div class="pb-score-attend-venue">公民館</div>
+        <div class="pb-score-attend-rating is-good">✨ 大入り<span class="pct">88%</span></div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-stars">
+          <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <div class="pb-score-val" style="margin-top:3px">27</div>
+        <div class="pb-score-lbl">Avg MQ</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">NEUTRAL</div>
+        <div class="pb-score-lbl">Heat</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">2</div>
+        <div class="pb-score-lbl">Matches</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">0</div>
+        <div class="pb-score-lbl">Injuries</div>
+      </div>
+    </div>
+
+    <div class="pb-divider">Match Results</div>
+
+    <div class="pb-matches">
+
+      <!-- Main event -->
+      <div class="pb-mrow is-main">
+        <div class="pb-fighter is-left is-loser">
+          <div class="pb-portrait-wrap">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">椿山 みさき</div>
+            <div class="pb-fighter-meta">Challenger</div>
+            <div class="pb-fighter-ovr"><span class="val">48</span><span class="lbl">OVR</span></div>
+          </div>
+        </div>
+
+        <div class="pb-result">
+          <div class="pb-result-vs">VS</div>
+          <div class="pb-result-winner">🏆 赤沼 紗稀 WIN</div>
+          <div class="pb-result-finish">ツームストン・パイルドライバー → 3カウント</div>
+          <div class="pb-result-turns">8 Turns</div>
+          <div class="pb-result-mq">
+            <span class="pb-result-mq-stars">
+              <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </span>
+            <span>MQ</span>
+            <span class="pb-result-mq-val">21</span>
+          </div>
+        </div>
+
+        <div class="pb-fighter is-right is-winner">
+          <div class="pb-portrait-wrap">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">赤沼 紗稀</div>
+            <div class="pb-fighter-meta">Winner</div>
+            <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">72</span></div>
+          </div>
+        </div>
+
+        <div class="pb-mrow-tags">
+          <span class="pb-tag is-first">✨ 初顔合わせ</span>
+        </div>
+
+        <div class="pb-hp-mini">
+          <div class="pb-hp-mini-half is-left">
+            <span class="pb-hp-mini-val">6 / 73</span>
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-danger" style="width:8%"></div></div>
+          </div>
+          <div class="pb-hp-mini-label">HP</div>
+          <div class="pb-hp-mini-half is-right">
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-healthy" style="width:26%"></div></div>
+            <span class="pb-hp-mini-val">20 / 77</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第1試合 -->
+      <div class="pb-mrow">
+        <div class="pb-fighter is-left is-loser">
+          <div class="pb-portrait-wrap">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">黒岩 千晶</div>
+            <div class="pb-fighter-meta">Match 1</div>
+            <div class="pb-fighter-ovr"><span class="val">55</span><span class="lbl">OVR</span></div>
+          </div>
+        </div>
+
+        <div class="pb-result">
+          <div class="pb-result-vs">VS</div>
+          <div class="pb-result-winner">🏆 沢登 鮎 WIN</div>
+          <div class="pb-result-finish">シットアウト・パワーボム → 3カウント</div>
+          <div class="pb-result-turns">11 Turns</div>
+          <div class="pb-result-mq">
+            <span class="pb-result-mq-stars">
+              <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </span>
+            <span>MQ</span>
+            <span class="pb-result-mq-val">32</span>
+          </div>
+        </div>
+
+        <div class="pb-fighter is-right is-winner">
+          <div class="pb-portrait-wrap">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">沢登 鮎</div>
+            <div class="pb-fighter-meta">Winner</div>
+            <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">68</span></div>
+          </div>
+        </div>
+
+        <div class="pb-mrow-tags">
+          <span class="pb-tag is-first">✨ 初顔合わせ</span>
+        </div>
+
+        <div class="pb-hp-mini">
+          <div class="pb-hp-mini-half is-left">
+            <span class="pb-hp-mini-val">0 / 77</span>
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-danger" style="width:0%"></div></div>
+          </div>
+          <div class="pb-hp-mini-label">HP</div>
+          <div class="pb-hp-mini-half is-right">
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-healthy" style="width:45%"></div></div>
+            <span class="pb-hp-mini-val">39 / 87</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="pb-footer">
+      <div class="pb-footer-heat">Heat<span class="val">NEUTRAL</span></div>
+      <button class="pb-close-btn">結果を確認 →</button>
+    </div>
+
+  </div>
+</div>
+</div>
+<!-- /Variant 1 -->
+
+<!-- ============================================================
+     ★★★ Variant 2: Special — 特別興行 タイトル戦 + 因縁セリフ ★★★
+     ============================================================ -->
+<div class="variant variant-v2">
+<div class="pb-overlay">
+  <div class="pb-container">
+
+    <!-- Top banner (Special) -->
+    <div class="pb-banner">
+      <div class="pb-live is-special">⭐ MONTHLY SPECIAL</div>
+      <div class="pb-banner-title is-special">特 別 興 行</div>
+      <div class="pb-banner-sub">Year 3 · Week 24<span class="dot">·</span>6月 最終週</div>
+    </div>
+
+    <!-- Scoreboard strip -->
+    <div class="pb-score-strip">
+      <div class="pb-score-cell is-attend">
+        <div class="pb-score-val">1,850<span class="small">/ 1,800</span></div>
+        <div class="pb-score-attend-bar">
+          <div class="pb-score-attend-bar-fill is-sellout" style="width:100%"></div>
+        </div>
+        <div class="pb-score-attend-venue">市民体育館</div>
+        <div class="pb-score-attend-rating is-hot">🔥 超満員<span class="pct">103%</span></div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-stars">
+          <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span>
+        </div>
+        <div class="pb-score-val" style="margin-top:3px">74</div>
+        <div class="pb-score-lbl">Avg MQ</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val" style="color:var(--c-rivalry)">HOT</div>
+        <div class="pb-score-lbl">Heat</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">2</div>
+        <div class="pb-score-lbl">Matches</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val" style="color:var(--c-negative)">2</div>
+        <div class="pb-score-lbl">Injuries</div>
+      </div>
+    </div>
+
+    <div class="pb-divider">Match Results</div>
+
+    <div class="pb-matches">
+
+      <!-- Main event: タイトル戦 + 因縁 + セリフあり -->
+      <div class="pb-mrow is-main has-dialogue">
+        <div class="pb-fighter is-left is-loser">
+          <div class="pb-portrait-wrap">
+            <div class="pb-dialogue">
+              <div class="pb-dialogue-speaker is-loser">椿山 みさき</div>
+              「この借り、絶対に返す」
+            </div>
+            <div class="pb-portrait"><img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">椿山 みさき</div>
+            <div class="pb-fighter-meta">Challenger</div>
+            <div class="pb-fighter-ovr"><span class="val">58</span><span class="lbl">OVR</span></div>
+          </div>
+        </div>
+
+        <div class="pb-result">
+          <div class="pb-result-vs">VS</div>
+          <div class="pb-result-winner">🏆 赤沼 紗稀 WIN</div>
+          <div class="pb-result-finish">ツームストン・パイルドライバー → 3カウント</div>
+          <div class="pb-result-turns">18 Turns</div>
+          <div class="pb-result-mq">
+            <span class="pb-result-mq-stars">
+              <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span>
+            </span>
+            <span>MQ</span>
+            <span class="pb-result-mq-val">82</span>
+          </div>
+        </div>
+
+        <div class="pb-fighter is-right is-winner">
+          <div class="pb-portrait-wrap">
+            <div class="pb-dialogue">
+              <div class="pb-dialogue-speaker is-winner">🏆 赤沼 紗稀</div>
+              「まだ私の方が上だ」
+            </div>
+            <div class="pb-portrait"><img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">赤沼 紗稀</div>
+            <div class="pb-fighter-meta">Champion · V3</div>
+            <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">78</span></div>
+          </div>
+        </div>
+
+        <div class="pb-mrow-tags">
+          <span class="pb-tag is-title">🏆 タイトルマッチ</span>
+          <span class="pb-tag is-rivalry">⚔ 因縁</span>
+          <span class="pb-tag is-spotlight">📺 取材中</span>
+        </div>
+
+        <div class="pb-hp-mini">
+          <div class="pb-hp-mini-half is-left">
+            <span class="pb-hp-mini-val">4 / 82</span>
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-danger" style="width:5%"></div></div>
+          </div>
+          <div class="pb-hp-mini-label">HP</div>
+          <div class="pb-hp-mini-half is-right">
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-warning" style="width:24%"></div></div>
+            <span class="pb-hp-mini-val">22 / 92</span>
+          </div>
+        </div>
+
+        <div class="pb-injury">
+          <span class="pb-injury-label">🏥 Injury</span>
+          <span class="pb-injury-item"><span class="type">打撲</span> <span class="name">椿山 みさき</span> 全治 2週間</span>
+        </div>
+      </div>
+
+      <!-- 第1試合 — セリフあり（引分試合） -->
+      <div class="pb-mrow has-dialogue">
+        <div class="pb-fighter is-left is-draw">
+          <div class="pb-portrait-wrap">
+            <div class="pb-dialogue">
+              <div class="pb-dialogue-speaker is-draw">沢登 鮎</div>
+              「まだ決着はついてない」
+            </div>
+            <div class="pb-portrait"><img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">沢登 鮎</div>
+            <div class="pb-fighter-meta">Match 1</div>
+            <div class="pb-fighter-ovr"><span class="val">68</span><span class="lbl">OVR</span></div>
+          </div>
+        </div>
+
+        <div class="pb-result">
+          <div class="pb-result-vs">VS</div>
+          <div class="pb-result-winner is-draw">DRAW 時間切れ</div>
+          <div class="pb-result-finish">30分時間切れ</div>
+          <div class="pb-result-turns">30 Turns</div>
+          <div class="pb-result-mq">
+            <span class="pb-result-mq-stars">
+              <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span>
+            </span>
+            <span>MQ</span>
+            <span class="pb-result-mq-val">71</span>
+          </div>
+        </div>
+
+        <div class="pb-fighter is-right is-draw">
+          <div class="pb-portrait-wrap">
+            <div class="pb-dialogue">
+              <div class="pb-dialogue-speaker is-draw">黒岩 千晶</div>
+              「次は…きっちり決める」
+            </div>
+            <div class="pb-portrait"><img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">黒岩 千晶</div>
+            <div class="pb-fighter-meta">Match 1</div>
+            <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">55</span></div>
+          </div>
+        </div>
+
+        <div class="pb-mrow-tags">
+          <span class="pb-tag is-rivalry">⚔ 因縁</span>
+        </div>
+
+        <div class="pb-hp-mini">
+          <div class="pb-hp-mini-half is-left">
+            <span class="pb-hp-mini-val">8 / 85</span>
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-danger" style="width:9%"></div></div>
+          </div>
+          <div class="pb-hp-mini-label">HP</div>
+          <div class="pb-hp-mini-half is-right">
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-danger" style="width:8%"></div></div>
+            <span class="pb-hp-mini-val">7 / 83</span>
+          </div>
+        </div>
+
+        <div class="pb-injury">
+          <span class="pb-injury-label">🏥 Injury</span>
+          <span class="pb-injury-item"><span class="type">肩の痛み</span> <span class="name">沢登 鮎</span> 全治 1週間</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="pb-footer">
+      <div class="pb-footer-heat">Heat<span class="val is-hot">🔥 HOT</span></div>
+      <button class="pb-close-btn">結果を確認 →</button>
+    </div>
+
+  </div>
+</div>
+</div>
+<!-- /Variant 2 -->
+
+<!-- ============================================================
+     ★★★ Variant 3: Tag Match — タッグマッチ 2対2 ★★★
+     ============================================================ -->
+<div class="variant variant-v3">
+<div class="pb-overlay">
+  <div class="pb-container">
+
+    <!-- Top banner -->
+    <div class="pb-banner">
+      <div class="pb-live">● ON AIR</div>
+      <div class="pb-banner-title">第 22 回 定期興行</div>
+      <div class="pb-banner-sub">Weekly Show<span class="dot">·</span>Year 2 · Week 22<span class="dot">·</span>6月 第2週</div>
+    </div>
+
+    <!-- Scoreboard strip -->
+    <div class="pb-score-strip">
+      <div class="pb-score-cell is-attend">
+        <div class="pb-score-val">420<span class="small">/ 500</span></div>
+        <div class="pb-score-attend-bar">
+          <div class="pb-score-attend-bar-fill is-good" style="width:84%"></div>
+        </div>
+        <div class="pb-score-attend-venue">小ホール</div>
+        <div class="pb-score-attend-rating is-good">✨ 大入り<span class="pct">84%</span></div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-stars">
+          <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <div class="pb-score-val" style="margin-top:3px">58</div>
+        <div class="pb-score-lbl">Avg MQ</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">NEUTRAL</div>
+        <div class="pb-score-lbl">Heat</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">2</div>
+        <div class="pb-score-lbl">Matches</div>
+      </div>
+      <div class="pb-score-cell">
+        <div class="pb-score-val is-neutral">0</div>
+        <div class="pb-score-lbl">Injuries</div>
+      </div>
+    </div>
+
+    <div class="pb-divider">Match Results</div>
+
+    <div class="pb-matches">
+
+      <!-- Main event: Tag Match -->
+      <div class="pb-mrow is-main">
+        <div class="pb-fighter is-left is-tag is-loser">
+          <div class="pb-tag-members">
+            <div class="pb-tag-member">
+              <div class="pb-portrait-wrap">
+                <div class="pb-portrait"><img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'"></div>
+              </div>
+              <div class="pb-tag-member-name">椿山 みさき</div>
+              <div class="pb-tag-member-ovr"><span class="val">58</span><span class="lbl">OVR</span></div>
+            </div>
+            <div class="pb-tag-member is-pinned">
+              <div class="pb-portrait-wrap">
+                <div class="pb-portrait"><img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'"></div>
+              </div>
+              <div class="pb-tag-member-name">黒岩 千晶</div>
+              <div class="pb-tag-member-ovr"><span class="val">55</span><span class="lbl">OVR</span></div>
+              <div class="pb-tag-member-badge">◆ FALLEN</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-result">
+          <div class="pb-result-vs">VS</div>
+          <div class="pb-result-winner">🏆 右チーム WIN</div>
+          <div class="pb-result-finish">ツームストン・パイルドライバー → 3カウント<br><span style="font-size:10px;color:var(--stage-text-dim);font-weight:400">赤沼 が 黒岩 をフォール</span></div>
+          <div class="pb-result-turns">14 Turns</div>
+          <div class="pb-result-mq">
+            <span class="pb-result-mq-stars">
+              <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span>
+            </span>
+            <span>MQ</span>
+            <span class="pb-result-mq-val">64</span>
+          </div>
+        </div>
+
+        <div class="pb-fighter is-right is-tag is-winner">
+          <div class="pb-tag-members">
+            <div class="pb-tag-member is-finisher">
+              <div class="pb-portrait-wrap">
+                <div class="pb-portrait"><img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'"></div>
+              </div>
+              <div class="pb-tag-member-name">赤沼 紗稀</div>
+              <div class="pb-tag-member-ovr"><span class="val">72</span><span class="lbl">OVR</span></div>
+              <div class="pb-tag-member-badge">★ FINISHER</div>
+            </div>
+            <div class="pb-tag-member">
+              <div class="pb-portrait-wrap">
+                <div class="pb-portrait"><img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'"></div>
+              </div>
+              <div class="pb-tag-member-name">沢登 鮎</div>
+              <div class="pb-tag-member-ovr"><span class="val">68</span><span class="lbl">OVR</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-mrow-tags">
+          <span class="pb-tag is-tag">TAG MATCH</span>
+          <span class="pb-tag is-first">✨ 初顔合わせ</span>
+        </div>
+
+        <!-- 代表HP: 決定打を打った勝者 × フォールされた敗者 -->
+        <div class="pb-hp-mini">
+          <div class="pb-hp-mini-half is-left">
+            <span class="pb-hp-mini-val">0 / 83</span>
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-danger" style="width:0%"></div></div>
+          </div>
+          <div class="pb-hp-mini-label">HP<span style="display:block;font-size:8px;color:var(--stage-text-quiet);letter-spacing:1px;margin-top:2px">REPRESENTATIVE</span></div>
+          <div class="pb-hp-mini-half is-right">
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-warning" style="width:28%"></div></div>
+            <span class="pb-hp-mini-val">24 / 86</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第1試合: シングル -->
+      <div class="pb-mrow">
+        <div class="pb-fighter is-left is-loser">
+          <div class="pb-portrait-wrap">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">椿山 みさき</div>
+            <div class="pb-fighter-meta">Match 1</div>
+            <div class="pb-fighter-ovr"><span class="val">58</span><span class="lbl">OVR</span></div>
+          </div>
+        </div>
+
+        <div class="pb-result">
+          <div class="pb-result-vs">VS</div>
+          <div class="pb-result-winner">🏆 沢登 鮎 WIN</div>
+          <div class="pb-result-finish">シットアウト・パワーボム → 3カウント</div>
+          <div class="pb-result-turns">9 Turns</div>
+          <div class="pb-result-mq">
+            <span class="pb-result-mq-stars">
+              <span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </span>
+            <span>MQ</span>
+            <span class="pb-result-mq-val">52</span>
+          </div>
+        </div>
+
+        <div class="pb-fighter is-right is-winner">
+          <div class="pb-portrait-wrap">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'"></div>
+          </div>
+          <div class="pb-fighter-info">
+            <div class="pb-fighter-name">沢登 鮎</div>
+            <div class="pb-fighter-meta">Winner</div>
+            <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">68</span></div>
+          </div>
+        </div>
+
+        <div class="pb-hp-mini">
+          <div class="pb-hp-mini-half is-left">
+            <span class="pb-hp-mini-val">4 / 83</span>
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-danger" style="width:5%"></div></div>
+          </div>
+          <div class="pb-hp-mini-label">HP</div>
+          <div class="pb-hp-mini-half is-right">
+            <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill is-healthy" style="width:42%"></div></div>
+            <span class="pb-hp-mini-val">36 / 86</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="pb-footer">
+      <div class="pb-footer-heat">Heat<span class="val">NEUTRAL</span></div>
+      <button class="pb-close-btn">結果を確認 →</button>
+    </div>
+
+  </div>
+</div>
+</div>
+<!-- /Variant 3 -->
+
+<script>
+  const variantBtns = document.querySelectorAll('[data-variant]');
+  const variants = document.querySelectorAll('.variant');
+  variantBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      variantBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const target = btn.dataset.variant;
+      variants.forEach(v => v.classList.toggle('active', v.classList.contains('variant-' + target)));
+      window.scrollTo({ top: 0 });
+    });
+  });
+</script>
+
+</body>
+</html>
