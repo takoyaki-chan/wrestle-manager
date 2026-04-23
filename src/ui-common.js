@@ -8222,59 +8222,22 @@ function _renderB3MatchPreview(event, playerFighter, challenger) {
   overlay.classList.add('active');
 }
 
-// ── B3 試合結果画面 (showResultOverlay) ──────────────────────────────────
+// ── B3 試合結果画面 (Pattern B: pb-container) ──────────────────────────────────
 function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const orgName = event.orgName || '他団体';
   const orgCfg = RIVAL_ORGS.find(o => o.id === event.orgId) || { color: '#e74c3c', emoji: '' };
   const eColor = orgCfg.color;
-  const eLight = _lightenColor(eColor);
-  const pColor = '#74b9ff';
   const won = matchResult.winner === 'left';
   const draw = matchResult.winner === 'draw';
   const winChar = won ? playerFighter : challenger;
   const loseChar = won ? challenger : playerFighter;
-  const winName = winChar.name;
-  const loseName = loseChar.name;
-  const borderColor = won ? '#27ae60' : draw ? '#888' : '#e74c3c';
 
-  // ヘッダー
-  let html = `<div style="text-align:center;padding:8px 0 4px;border-bottom:2px solid ${borderColor};margin-bottom:12px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:#aaa">Challenge Match</div>
-    <div style="font-size:18px;font-weight:700;letter-spacing:3px;color:#e8e0d0">⚔️ 挑戦状 — 結果</div>
-    <div style="font-size:12px;color:var(--text-sub);margin-top:2px">vs ${orgName}</div>
-  </div>`;
+  const leftCls = draw ? 'is-draw' : (won ? 'is-winner' : 'is-loser');
+  const rightCls = draw ? 'is-draw' : (won ? 'is-loser' : 'is-winner');
 
-  // 勝者バッジ
-  if (draw) {
-    html += `<div style="text-align:center;padding:8px;font-size:16px;font-weight:700;color:#888">🤝 DRAW</div>`;
-  } else {
-    html += `<div style="text-align:center;padding:8px;font-size:16px;font-weight:700;color:#daa520">🏆 ${winName} 勝利</div>`;
-  }
-
-  // 選手肖像（左右レイアウト）
-  const wSize = 120, lSize = 88;
-  const wFace = getPortraitUrl(winChar.id);
-  const lFace = getPortraitUrl(loseChar.id);
-  const wColor = won ? pColor : eLight;
-  const lColor = won ? eLight : pColor;
-  html += `<div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin:8px 0 12px">
-    <div style="text-align:center">
-      <div style="width:${wSize}px;height:${wSize}px;border-radius:50%;border:3px solid gold;box-shadow:0 0 12px rgba(218,165,32,0.4);overflow:hidden;margin:0 auto">
-        ${wFace ? `<img src="${wFace}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-      </div>
-      <div style="font-weight:700;font-size:14px;color:gold;margin-top:4px">${winName}</div>
-    </div>
-    <div style="text-align:center">
-      <div style="width:${lSize}px;height:${lSize}px;border-radius:50%;border:2px solid #555;opacity:0.7;overflow:hidden;margin:0 auto">
-        ${lFace ? `<img src="${lFace}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-      </div>
-      <div style="font-weight:600;font-size:12px;color:var(--text-sub);margin-top:4px">${loseName}</div>
-    </div>
-  </div>`;
-
-  // セリフ吹き出し
+  // セリフ
   let winLine = '', loseLine = '';
   if (!draw) {
     winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
@@ -8284,49 +8247,80 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
       loseLine = typeof WAR_POST_DIALOGUE !== 'undefined' ? pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) : '';
     }
   }
-  if (winLine) {
-    html += `<div style="background:#f0f0f0;border-radius:8px;padding:10px 14px;margin:0 8px 6px;text-align:center">
-      <div style="font-size:11px;font-weight:600;color:${won ? pColor : eColor};margin-bottom:2px">${winName}</div>
-      <div style="font-size:13px;color:#222">「${winLine}」</div>
-    </div>`;
-  }
-  if (loseLine) {
-    html += `<div style="background:#f0f0f0;border-radius:8px;padding:10px 14px;margin:0 8px 6px;text-align:center">
-      <div style="font-size:11px;font-weight:600;color:${won ? eColor : pColor};margin-bottom:2px">${loseName}</div>
-      <div style="font-size:13px;color:#222">「${loseLine}」</div>
-    </div>`;
-  }
+  const playerLine = won ? winLine : loseLine;
+  const challengerLine = won ? loseLine : winLine;
+  const hasDialogue = !!(playerLine || challengerLine);
 
-  // 決まり手 + ターン数
-  const finLabel = Engine.formatFinish(matchResult.finType, matchResult.finMove);
-  html += `<div style="text-align:center;font-size:12px;color:var(--text-sub);margin:8px 0 4px">
-    ${finLabel} / ${matchResult.turns || '?'}ターン
+  // verdict
+  let verdictLabel, verdictColor;
+  if (draw) { verdictLabel = '⚖ DRAW'; verdictColor = 'var(--c-warning)'; }
+  else if (won) { verdictLabel = '🏆 WIN'; verdictColor = 'var(--gold)'; }
+  else { verdictLabel = '💀 LOSE'; verdictColor = 'var(--c-negative)'; }
+
+  let winnerLabel;
+  if (draw) winnerLabel = 'DRAW';
+  else winnerLabel = `🏆 ${escHtml(winChar.name)} WIN`;
+
+  const playerOrgName = G.orgName || 'プレイヤー団体';
+
+  let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
+
+  html += `<div class="pb-banner">
+    <div class="pb-live is-b3">⚔ CHALLENGE MATCH</div>
+    <div class="pb-banner-title is-b3">挑 戦 状 — 結 果</div>
+    <div class="pb-banner-sub">${escHtml(playerOrgName)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(orgCfg.emoji || '')} ${escHtml(orgName)}</div>
   </div>`;
 
-  // MQ
-  const _mqSc = _mqColor(matchResult.mq || 0);
-  const mqStars = matchResult.mq >= 90 ? '★★★★★' : matchResult.mq >= 80 ? '★★★★' : matchResult.mq >= 70 ? '★★★' : matchResult.mq >= 55 ? '★★' : matchResult.mq >= 40 ? '★' : '';
-  html += `<div style="text-align:center;font-size:14px;font-weight:700;${_scale6Style(_mqSc)};margin-bottom:8px">
-    ${mqStars ? `<span style="color:${_mqSc.color}">${mqStars}</span> ` : ''}MQ ${matchResult.mq || '?'}
+  // Scoreboard 4: Opponent / Verdict / MQ / Finish
+  html += `<div class="pb-score-strip" style="grid-template-columns:1.2fr 1fr 1fr 1.2fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:${eColor};font-size:16px">${escHtml(orgName)}</div>
+      <div class="pb-score-lbl">Opponent</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:${verdictColor};font-size:20px">${verdictLabel}</div>
+      <div class="pb-score-lbl">Result</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(matchResult.mq || 0)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${matchResult.mq || 0}</div>
+      <div class="pb-score-lbl">MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(matchResult.finType, matchResult.finMove))}</div>
+      <div class="pb-score-lbl">Finish</div>
+    </div>
   </div>`;
 
-  // HPバー
-  const hpL = matchResult.hpLeft || { final: 50, max: 100 };
-  const hpR = matchResult.hpRight || { final: 50, max: 100 };
-  html += _hpComparisonBar(playerFighter.name, hpL, challenger.name, hpR);
+  // 試合行 1つ (is-main is-b3)
+  html += `<div class="pb-matches">`;
+  html += `<div class="pb-divider is-main">⚔ CHALLENGE MATCH</div>`;
 
-  // 試合ログ
-  if (matchResult.log && matchResult.log.length > 0) {
-    html += `<details style="margin-top:8px;font-size:11px;color:var(--text-sub)">
-      <summary style="cursor:pointer;font-weight:600;padding:4px 0">試合ログ</summary>
-      <div style="max-height:200px;overflow-y:auto;padding:4px 8px;background:rgba(0,0,0,0.2);border-radius:4px;margin-top:4px">
-        ${matchResult.log.map(l => `<div>${l}</div>`).join('')}
-      </div>
-    </details>`;
-  }
+  const leftBlock = _pbFighterBlock('left', playerFighter, leftCls, playerOrgName, playerLine)
+    .replace('pb-fighter is-left', 'pb-fighter is-left is-player-side');
+  const rightBlock = _pbFighterBlock('right', challenger, rightCls, orgName, challengerLine)
+    .replace('pb-fighter is-right', 'pb-fighter is-right is-enemy-side');
 
-  // 了解ボタン
-  html += `<button class="btn" style="width:100%;padding:10px;font-size:13px;font-weight:600;margin-top:12px" onclick="App.closeB3Result()">了解</button>`;
+  html += `<div class="pb-mrow is-main is-b3${hasDialogue ? ' has-dialogue' : ''}">`;
+  html += leftBlock;
+  html += _pbResultColumn({
+    winnerLabel,
+    winnerIsDraw: draw,
+    finishText: Engine.formatFinish(matchResult.finType, matchResult.finMove),
+    turns: matchResult.turns || 0,
+    mq: matchResult.mq || 0
+  });
+  html += rightBlock;
+  if (matchResult.hpLeft && matchResult.hpRight) html += _pbHpMini(matchResult.hpLeft, matchResult.hpRight);
+  html += `</div>`;
+  html += `</div>`; // .pb-matches
+
+  // Footer
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.closeB3Result()">了解</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
