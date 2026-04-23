@@ -6665,12 +6665,14 @@ const App = {
     }
 
     // Phase 3a: 派閥イベント表示（F01/F02/F03 モーダル）
+    // 大型イベント（B1〜B4）と同週に衝突した場合は、派閥モーダルを翌週以降に持ち越す。
+    // _pendingFactionEvent を G に残しておけば、次週の tickWeek 派閥パイプラインが
+    // pending 検知で新規抽選をスキップし（src/management.js:7456）、次週の表示ループで
+    // 自然にモーダル化される。重複トリガーは発生しない。
     const pendingFactionEvent = G._pendingFactionEvent || null;
-    if (G._pendingFactionEvent) {
+    if (pendingFactionEvent && !pendingLargeEvent) {
       const { _pendingFactionEvent: _, ...cleanFe } = G;
       G = cleanFe;
-    }
-    if (pendingFactionEvent) {
       const factionDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 650;
       setTimeout(() => App.handleFactionEvent(pendingFactionEvent), factionDelay);
     }
