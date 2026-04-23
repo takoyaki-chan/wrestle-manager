@@ -5062,230 +5062,171 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const ppvName = G.ppvName || 'GRAND FINAL';
-  const rankings = G.rankings || [];
-  const pRank = Engine.ranking.getPlayerRank(rankings);
-  const reward = PPV_REWARD[pRank] || PPV_REWARD[4];
-  const avgMQ = results.length > 0 ? Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length) : 0;
+  const validResults = results.filter(r => r);
+  const avgMQ = validResults.length > 0 ? Math.round(validResults.reduce((s, r) => s + r.mq, 0) / validResults.length) : 0;
+  const bestMQ = validResults.length > 0 ? Math.max(...validResults.map(r => r.mq)) : 0;
+  const heat = getHeatLevel();
+  const heatFooterCls = (heat.id === 'hot' || heat.id === 'on_fire') ? 'is-hot' :
+                       (heat.id === 'cold' || heat.id === 'ice_cold') ? 'is-cold' : '';
 
-  let html = '';
-  // ═══ ヘッダー ═══
-  html += `<div style="text-align:center;padding:28px 20px 22px;background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(180,80,40,0.12));border:1px solid rgba(212,168,67,0.3);border-radius:12px;margin-bottom:18px">`;
-  html += `<div style="font-size:12px;letter-spacing:3px;color:rgba(255,255,255,0.3);margin-bottom:4px">PPV GRAND FINAL</div>`;
-  html += `<div class="show-result-title" style="font-size:24px;font-weight:900;background:linear-gradient(180deg,#fff 20%,#f0d078);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px">「${ppvName}」結果</div>`;
-  html += `<div>${mqStars(avgMQ)} <span style="font-size:14px;color:var(--text-sub)">平均MQ: ${avgMQ}</span></div>`;
-  if (heatChange && heatChange.oldId !== heatChange.newId) {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-top:6px">${heatChange.newEmoji} Heat: ${heatChange.oldLabel} → ${heatChange.newLabel}（集客×${heatChange.newMult}）</div>`;
-  }
-  html += `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.2);border-radius:16px;font-size:11px;color:var(--text-sub);margin-top:10px">🏆 特設リング</div>`;
-  html += `</div>`;
+  let html = `<div class="pb-container">`;
 
-  // ═══ 各試合結果（メインイベント→前座の順） ═══
+  // Banner
+  html += `<div class="pb-banner">
+    <div class="pb-live is-ppv">🏆 GRAND FINAL</div>
+    <div class="pb-banner-title is-ppv">${escHtml(ppvName)}</div>
+    <div class="pb-banner-sub">Year ${G.year || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>頂上決戦</div>
+  </div>`;
+
+  // Scoreboard: Avg MQ / Best MQ / Heat / Matches
+  html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr 1fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(avgMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
+      <div class="pb-score-lbl">Avg MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(bestMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${bestMQ}</div>
+      <div class="pb-score-lbl">Best MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" ${heatFooterCls === 'is-hot' ? 'style="color:var(--c-rivalry)"' : heatFooterCls === 'is-cold' ? 'style="color:var(--c-info)"' : 'class="is-neutral"'}>${escHtml(heat.label.toUpperCase())}</div>
+      <div class="pb-score-lbl">Heat</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val is-neutral">${validResults.length}</div>
+      <div class="pb-score-lbl">Matches</div>
+    </div>
+  </div>`;
+
+  html += `<div class="pb-matches">`;
+
   const total = card.length;
+  const summitIdx = card.findIndex(m => m.isSummit);
   let shownMainLabel = false;
+  let shownUndercardLabel = false;
+
   for (let di = total - 1; di >= 0; di--) {
     const match = card[di];
     const r = results[di];
     if (!r) continue;
-    const matchNum = di + 1;
     const isMain = match.isSummit;
+    const matchNum = di + 1;
+
+    // Section dividers
+    if (isMain && !shownMainLabel) {
+      html += `<div class="pb-divider is-main">🏆 MAIN EVENT — 頂上決戦</div>`;
+      shownMainLabel = true;
+    } else if (!isMain && !shownUndercardLabel && shownMainLabel) {
+      html += `<div class="pb-divider">UNDERCARD</div>`;
+      shownUndercardLabel = true;
+    }
+
     const isDraw = r.winner === 'draw';
     const leftIsWinner = r.winner === 'left';
     const rightIsWinner = r.winner === 'right';
+    const leftCls = isDraw ? 'is-draw' : (leftIsWinner ? 'is-winner' : 'is-loser');
+    const rightCls = isDraw ? 'is-draw' : (rightIsWinner ? 'is-winner' : 'is-loser');
 
-    // セクションラベル
-    if (isMain && !shownMainLabel) {
-      html += `<div style="text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.2);margin:16px 0 10px">🏆 MAIN EVENT — 頂上決戦</div>`;
-      shownMainLabel = true;
-    } else if (!isMain && shownMainLabel && di === total - 2) {
-      html += `<div style="text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.2);margin:16px 0 10px">UNDERCARD</div>`;
-    }
-
-    // カード外枠スタイル
-    const cardBorder = isMain
-      ? 'border:1.5px solid rgba(212,168,67,0.4);background:linear-gradient(180deg,rgba(212,168,67,0.08),rgba(212,168,67,0.02))'
-      : 'border:1px solid var(--border)';
-
-    // ラベル行
-    const matchLabel = isMain ? '<span style="color:var(--gold);font-weight:600">🏆 頂上決戦</span>' : `第${matchNum}試合`;
-    const rivalryTag = match.isRivalry ? ' <span style="color:#e74c3c">🔥因縁</span>' : '';
-    const resolutionTag = r.rivalryResolved ? ' <span style="color:#d63031;font-weight:700">⚡決着！</span>' : '';
-    const rivalBonusTag = r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : '';
-    const freshTag = r.freshnessBonus ? ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">${r.freshnessBonus > 0 ? '✨' : '😐'}${r.freshnessLabel}</span>` : '';
-    const titleTag = r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : '';
-
-    html += `<div style="padding:16px;margin-bottom:10px;border-radius:10px;${cardBorder}">`;
-    html += `<div style="font-size:11px;color:rgba(255,255,255,0.25);margin-bottom:10px">${matchLabel}${titleTag}${rivalryTag}${resolutionTag}${rivalBonusTag}${freshTag}</div>`;
-
-    if (isDraw) {
-      // ─── 引き分け ───
-      const drawSize = isMain ? 160 : 120;
-      const drawOvrL = Engine.util.ov(r.left);
-      const drawOvrR = Engine.util.ov(r.right);
-      const _drawStatColors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6'];
-      const _drawStatBar = (f) => `<div style="display:flex;flex-direction:column;gap:3px;width:130px">${['PW','SP','TE','ST','MN'].map((lb,i) => {
-        const k = ['pw','sp','te','st','mn'][i]; const v = f[k]||0; const pct = Math.min(100, v);
-        return `<div style="display:flex;align-items:center;gap:4px;font-size:10px">
-          <span style="width:18px;color:rgba(255,255,255,0.35);flex-shrink:0;text-align:right">${lb}</span>
-          <div style="flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;min-width:40px">
-            <div style="width:${pct}%;height:100%;background:${_drawStatColors[i]};border-radius:3px"></div>
-          </div>
-          <span style="width:22px;text-align:right;color:rgba(255,255,255,0.55);flex-shrink:0">${v}</span>
-        </div>`;
-      }).join('')}</div>`;
-      html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
-          <div style="border-radius:12px;overflow:hidden">${portraitImg(r.left.id, drawSize, 'portrait-match')}</div>
-          <div style="margin-top:6px;font-size:14px">${fLink(r.left, {source:'roster', skipQueue:true})}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">OVR ${drawOvrL}</div>
-          <div style="margin-top:3px">${_drawStatBar(r.left)}</div>
-        </div>
-        <div style="font-size:16px;font-weight:700;padding:4px 14px;background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f39c12;border-radius:4px;flex-shrink:0;align-self:center">DRAW</div>
-        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
-          <div style="border-radius:12px;overflow:hidden">${portraitImg(r.right.id, drawSize, 'portrait-match')}</div>
-          <div style="margin-top:6px;font-size:14px">${fLink(r.right, {source:'roster', skipQueue:true})}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">OVR ${drawOvrR}</div>
-          <div style="margin-top:3px">${_drawStatBar(r.right)}</div>
-        </div>
-      </div>`;
-      html += `<div style="text-align:center;margin-bottom:8px;font-size:13px;color:var(--text-sub)">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
-      html += `<div style="text-align:center;margin-bottom:10px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${_ppvBonusTags(r, mqBonuses, di)}</span></div>`;
-    } else {
-      // ─── 勝敗あり ───
+    // Dialogue triggers
+    let winLine = '', loseLine = '';
+    let coachPraise = null;
+    if (!isDraw) {
       const winF = leftIsWinner ? r.left : r.right;
       const loseF = leftIsWinner ? r.right : r.left;
-      const winnerId = winF.id;
-      const loserId = loseF.id;
-      // ポートレイトサイズ
-      const winSize = isMain ? 160 : 120;
-      const loseSize = isMain ? 100 : 80;
+      const winChar = ALL_CHARS.find(c => c.id === winF.id);
+      const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
 
-      // 吹き出し判定
-      let winBubble = '';
-      let loseBubble = '';
-      // 因縁リアクション（rivalry≥40）
       if (r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 30) {
-        const winChar = ALL_CHARS.find(c => c.id === winnerId);
-        const loseChar = ALL_CHARS.find(c => c.id === loserId);
         const ovrW = Engine.util.ov(winF);
         const ovrL = Engine.util.ov(loseF);
         const isUpsetRivalry = ovrW < ovrL - 8;
         const winPool = isUpsetRivalry && UPSET_RIVALRY_LINES ? UPSET_RIVALRY_LINES.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
         const losePool = isUpsetRivalry && UPSET_RIVALRY_LINES?.loserLines ? UPSET_RIVALRY_LINES.loserLines : RIVALRY_MATCH_REACTION.loserLines;
-        const winLine = pickDialogueLine(winPool, winChar);
-        const loseLine = pickDialogueLine(losePool, loseChar);
-        winBubble = _ppvBubble(winF.name, winLine, true);
-        loseBubble = _ppvBubble(loseF.name, loseLine, false);
-      }
-      // PPVメインイベント勝利演出（自団体選手が頂上決戦に勝った場合）
-      let coachPraiseBubble = '';
-      if (isMain && !winBubble) {
-        const winOrgId = winF._ppvOrgId || null;
-        if (winOrgId === 'player') {
-          const winChar = ALL_CHARS.find(c => c.id === winnerId);
-          const victoryLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
-          winBubble = _ppvBubble(winF.name, victoryLine, true);
-          // コーチ称賛コメント
-          const coach = Engine.coach.getCharCoach(G, winnerId);
-          if (coach) {
-            const praiseIdx = Math.floor(Math.random() * PPV_COACH_PRAISE_LINES.length);
-            coachPraiseBubble = _ppvCoachBubble(coach.name, PPV_COACH_PRAISE_LINES[praiseIdx]);
-          }
+        winLine = pickDialogueLine(winPool, winChar);
+        loseLine = pickDialogueLine(losePool, loseChar);
+      } else if (isMain && winF._ppvOrgId === 'player') {
+        winLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
+        const coach = Engine.coach.getCharCoach(G, winF.id);
+        if (coach) {
+          const praiseIdx = Math.floor(Math.random() * PPV_COACH_PRAISE_LINES.length);
+          coachPraise = { name: coach.name, line: PPV_COACH_PRAISE_LINES[praiseIdx] };
         }
-      }
-
-      // 勝者ポートレイト枠スタイル
-      const winPortraitStyle = isMain
-        ? `border:2px solid rgba(212,168,67,0.5);box-shadow:0 0 24px rgba(212,168,67,0.15);border-radius:7px`
-        : `border:1.5px solid rgba(46,204,113,0.25);border-radius:7px`;
-      const losePortraitStyle = `border:1px solid rgba(200,190,170,0.08);border-radius:7px;opacity:0.65`;
-      const winNameColor = isMain ? 'color:var(--gold);' : '';
-
-      // OVR/パラメータ取得
-      const ovrW = Engine.util.ov(winF);
-      const ovrLose = Engine.util.ov(loseF);
-      const _ppvStatLabels = ['PW','SP','TE','ST','MN'];
-      const _ppvStatKeys = ['pw','sp','te','st','mn'];
-      const _ppvStatColors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6'];
-      const _ppvStatBar = (f, compact) => {
-        const mw = compact ? 110 : 140;
-        return `<div style="display:flex;flex-direction:column;gap:3px;width:${mw}px">${_ppvStatKeys.map((k,i) => {
-          const v = f[k]||0; const pct = Math.min(100, v);
-          return `<div style="display:flex;align-items:center;gap:4px;font-size:${compact?9:10}px">
-            <span style="width:18px;color:rgba(255,255,255,0.35);flex-shrink:0;text-align:right">${_ppvStatLabels[i]}</span>
-            <div style="flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;min-width:40px">
-              <div style="width:${pct}%;height:100%;background:${_ppvStatColors[i]};border-radius:3px"></div>
-            </div>
-            <span style="width:22px;text-align:right;color:rgba(255,255,255,0.55);flex-shrink:0">${v}</span>
-          </div>`;
-        }).join('')}</div>`;
-      };
-
-      html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">`;
-      // 勝者列
-      html += `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;max-width:55%">`;
-      if (winBubble) html += winBubble;
-      html += `<div style="${winPortraitStyle};overflow:hidden;border-radius:12px">${portraitImg(winnerId, winSize, 'portrait-match winner')}</div>`;
-      html += `<div style="margin-top:6px;font-size:15px;font-weight:700;${winNameColor}">${fLink(winF, {source:'roster', skipQueue:true})}</div>`;
-      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin-top:2px">OVR ${ovrW}</div>`;
-      html += `<div style="margin-top:3px">${_ppvStatBar(winF, false)}</div>`;
-      html += `</div>`;
-      // VS
-      html += `<div style="font-size:14px;color:rgba(200,190,170,0.12);padding-bottom:${loseSize * 0.5}px;flex-shrink:0;align-self:flex-end">VS</div>`;
-      // 敗者列
-      html += `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;max-width:38%">`;
-      if (loseBubble) html += loseBubble;
-      html += `<div style="${losePortraitStyle};overflow:hidden;border-radius:12px">${portraitImg(loserId, loseSize, 'portrait-match loser')}</div>`;
-      html += `<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.4)">${fLink(loseF, {source:'roster', bold:false, skipQueue:true})}</div>`;
-      html += `<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px">OVR ${ovrLose}</div>`;
-      html += `<div style="margin-top:3px">${_ppvStatBar(loseF, true)}</div>`;
-      html += `</div>`;
-      html += `</div>`;
-
-      // 勝利バッジ
-      html += `<div style="text-align:center;margin-bottom:8px"><span style="display:inline-block;padding:4px 14px;border-radius:4px;font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)">🏆 ${winF.name} 勝利</span></div>`;
-      // 決まり手
-      html += `<div style="text-align:center;font-size:12px;color:var(--text-sub);margin-bottom:6px">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
-      // MQ行
-      html += `<div style="text-align:center;margin-bottom:10px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${_ppvBonusTags(r, mqBonuses, di)}</span></div>`;
-      // コーチ称賛（メインイベント勝利時のみ）
-      if (coachPraiseBubble) {
-        html += `<div style="margin-top:12px;max-width:320px;margin-left:auto;margin-right:auto">${coachPraiseBubble}</div>`;
       }
     }
 
-    // HPバー (UI共通ルール① center-out symmetric)
-    html += _hpComparisonBar(r.left.name, r.hpLeft, r.right.name, r.hpRight);
+    const leftLine = leftIsWinner ? winLine : (!isDraw ? loseLine : '');
+    const rightLine = rightIsWinner ? winLine : (!isDraw ? loseLine : '');
+    const hasDialogue = !!(leftLine || rightLine);
 
-    // 試合ログ
-    html += `<details style="margin-top:8px"><summary style="font-size:10px;color:rgba(255,255,255,0.18);cursor:pointer">試合ログを見る</summary>
-      <div style="font-size:10px;color:rgba(255,255,255,0.22);margin-top:4px;padding:6px 8px;background:rgba(0,0,0,0.25);border-radius:4px;max-height:160px;overflow-y:auto;line-height:1.6">
-        ${r.log.map(l => `<div>${l}</div>`).join('')}
-      </div>
-    </details>`;
+    // Tags
+    const tags = [];
+    if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
+    if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">⚡ 決着！</span>`);
+    else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
+    if (r.freshnessBonus) {
+      if (r.freshnessBonus > 0) tags.push(`<span class="pb-tag is-first">✨ ${escHtml(r.freshnessLabel || '初顔合わせ')}</span>`);
+      else tags.push(`<span class="pb-tag is-stale">😐 ${escHtml(r.freshnessLabel || 'フレッシュ度低')}</span>`);
+    }
 
+    // Meta: org name for PPV
+    const metaLeft = r.left._ppvOrgName || (isMain ? 'Summit' : `Match ${matchNum}`);
+    const metaRight = r.right._ppvOrgName || (isMain ? 'Summit' : `Match ${matchNum}`);
+
+    let winnerLabel;
+    if (isDraw) winnerLabel = 'DRAW';
+    else {
+      const winF = leftIsWinner ? r.left : r.right;
+      winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
+    }
+
+    const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+    html += `<div class="${rowCls}">`;
+    html += _pbFighterBlock('left', r.left, leftCls, metaLeft, leftLine);
+    html += _pbResultColumn({
+      winnerLabel,
+      winnerIsDraw: isDraw,
+      finishText: Engine.formatFinish(r.finType, r.finMove),
+      turns: r.turns,
+      mq: r.mq
+    });
+    html += _pbFighterBlock('right', r.right, rightCls, metaRight, rightLine);
+    if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
+    if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
+    if (coachPraise) {
+      html += `<div class="pb-coach-praise">
+        <span class="pb-coach-praise-label">🎓 Coach</span>
+        <div class="pb-coach-praise-text"><span class="coach-name">${escHtml(coachPraise.name)}</span>「${escHtml(coachPraise.line)}」</div>
+      </div>`;
+    }
     html += `</div>`;
   }
 
-  // ═══ 対戦pt & ヒート ═══
-  html += `<div style="text-align:center;padding:14px 16px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:8px;margin:18px 0 16px">`;
-  const summitIdx = card.findIndex(m => m.isSummit);
+  html += `</div>`; // .pb-matches
+
+  // Footer: 対戦pt + Heat + button
+  let footerExtras = '';
   if (summitIdx >= 0 && results[summitIdx]) {
     const sr = results[summitIdx];
-    const winnerOrgId = sr.winner === 'left' ? card[summitIdx].left._ppvOrgId : card[summitIdx].right._ppvOrgId;
-    const playerInSummit = card[summitIdx].left._ppvOrgId === 'player' || card[summitIdx].right._ppvOrgId === 'player';
-    if (playerInSummit) {
+    const leftOrg = card[summitIdx].left._ppvOrgId;
+    const rightOrg = card[summitIdx].right._ppvOrgId;
+    const winnerOrgId = sr.winner === 'left' ? leftOrg : sr.winner === 'right' ? rightOrg : null;
+    const playerInSummit = leftOrg === 'player' || rightOrg === 'player';
+    if (playerInSummit && winnerOrgId) {
       const playerWon = winnerOrgId === 'player';
-      html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">対戦pt: ${playerWon ? '+' : '-'}${BATTLE_POINT_CFG.summit}（頂上決戦${playerWon ? '勝利' : '敗北'}）</div>`;
+      const sign = playerWon ? '+' : '-';
+      footerExtras = `<div class="pb-footer-heat" style="color:${playerWon ? 'var(--gold)' : 'var(--c-negative)'}">BP<span class="val">${sign}${BATTLE_POINT_CFG.summit}</span></div>`;
     }
   }
-  if (heatChange && heatChange.oldId !== heatChange.newId) {
-    html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">${heatChange.newEmoji} Heat: ${heatChange.oldLabel} → ${heatChange.newLabel}（集客倍率 ×${heatChange.newMult}）</div>`;
-  }
-  html += `</div>`;
 
-  html += `<div class="btn-row" style="margin-top:16px;justify-content:center">`;
-  html += `<button class="btn btn-gold" onclick="App.closePPVResult()">オフシーズンへ →</button>`;
-  html += `</div>`;
+  html += `<div class="pb-footer">
+    ${footerExtras}
+    <div class="pb-footer-heat">Heat<span class="val ${heatFooterCls}">${heat.emoji} ${escHtml(heat.label.toUpperCase())}</span></div>
+    <button type="button" class="pb-close-btn" onclick="App.closePPVResult()">オフシーズンへ →</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -5352,113 +5293,124 @@ function renderPPVTVResult(card, results, ppvName) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
 
-  const validMQs = results.filter((r, i) => card[i] && r).map(r => r.mq);
-  const avgMQ = validMQs.length > 0 ? Math.round(validMQs.reduce((s, v) => s + v, 0) / validMQs.length) : 0;
-  const bestMQ = validMQs.length > 0 ? Math.max(...validMQs) : 0;
+  const validResults = results.filter((r, i) => card[i] && r);
+  const avgMQ = validResults.length > 0 ? Math.round(validResults.reduce((s, r) => s + r.mq, 0) / validResults.length) : 0;
+  const bestMQ = validResults.length > 0 ? Math.max(...validResults.map(r => r.mq)) : 0;
+
   const total = card.length;
-
-  // MQカラースケール（6段階: 冷灰→輝く金）
-  function _mqCol(mq) {
-    if (mq >= 80) return '#f0d078';
-    if (mq >= 70) return '#d4a843';
-    if (mq >= 60) return '#c4853a';
-    if (mq >= 50) return '#b89870';
-    if (mq >= 40) return '#8090a8';
-    return '#607080';
-  }
-  function _mqGlow(mq) { return mq >= 80 ? 'text-shadow:0 0 14px rgba(240,208,120,0.45)' : ''; }
-
-  // 表示順: サミット→残りを逆順
   const summitIdx = card.findIndex(m => m.isSummit);
   const sortedIdx = [];
   if (summitIdx >= 0) sortedIdx.push(summitIdx);
   for (let i = total - 1; i >= 0; i--) { if (i !== summitIdx) sortedIdx.push(i); }
 
-  // セクション判定
-  function _section(pos) {
-    if (pos === 0) return 'main';
-    if (pos === 1) return 'semi';
-    return 'under';
-  }
-  const SECTION_LABEL = { main: '✦ MAIN EVENT ✦', semi: 'SEMI FINAL', under: 'UNDERCARD' };
-
   // 感情テキスト（bestMQ帯で分岐）
   const emotionText =
-    bestMQ >= 80 ? '「……すごい試合だった。来年こそ、あの舞台で戦う」' :
-    bestMQ >= 70 ? '「いい大会だった。来年は、絶対にあの舞台に立つ」' :
-    bestMQ >= 55 ? '「まだ差がある。でも来年は必ず——」' :
-                   '「来年こそは、この舞台に……」';
+    bestMQ >= 80 ? '……すごい試合だった。来年こそ、あの舞台で戦う' :
+    bestMQ >= 70 ? 'いい大会だった。来年は、絶対にあの舞台に立つ' :
+    bestMQ >= 55 ? 'まだ差がある。でも来年は必ず——' :
+                   '来年こそは、この舞台に……';
 
-  let html = '';
+  let html = `<div class="pb-container">`;
 
-  // バナー
-  html += `<div class="ppvtv-banner">
-    <div class="ppvtv-live-badge">LIVE ON TV</div>
-    <div class="ppvtv-name">${ppvName || 'GRAND FINAL'}</div>
-    <div class="ppvtv-sub">今年は出場枠に届かなかった——テレビの前で、大会を見届ける</div>
+  // Banner: PPV TV (青系バッジ、プレイヤー不参加なので控えめ)
+  html += `<div class="pb-banner">
+    <div class="pb-live is-ppvtv">📺 PPV 観戦</div>
+    <div class="pb-banner-title is-ppvtv">${escHtml(ppvName || 'GRAND FINAL')}</div>
+    <div class="pb-banner-sub">Year ${G.year || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>テレビの前で</div>
   </div>`;
 
-  // サマリー行
-  html += `<div class="ppvtv-summary">
-    <div class="ppvtv-summary-item">
-      <div class="ppvtv-summary-val">${total}</div>
-      <div class="ppvtv-summary-lbl">MATCHES</div>
+  // Scoreboard: Avg MQ / Best MQ / Matches
+  html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(avgMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
+      <div class="pb-score-lbl">Avg MQ</div>
     </div>
-    <div class="ppvtv-summary-item">
-      <div class="ppvtv-summary-val" style="color:${_mqCol(avgMQ)}">${avgMQ}</div>
-      <div class="ppvtv-summary-lbl">AVG MQ</div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(bestMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${bestMQ}</div>
+      <div class="pb-score-lbl">Best MQ</div>
     </div>
-    <div class="ppvtv-summary-item">
-      <div class="ppvtv-summary-val" style="color:${_mqCol(bestMQ)};${_mqGlow(bestMQ)}">${bestMQ}</div>
-      <div class="ppvtv-summary-lbl">BEST MQ</div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val is-neutral">${validResults.length}</div>
+      <div class="pb-score-lbl">Matches</div>
     </div>
   </div>`;
 
-  // 試合リスト
-  let lastSection = null;
+  html += `<div class="pb-matches">`;
+  let shownMainLabel = false;
+  let shownUndercardLabel = false;
+
   sortedIdx.forEach((di, pos) => {
     const match = card[di];
     const r = results[di];
     if (!r) return;
+    const isMain = match.isSummit;
 
-    const section = _section(pos);
-    if (section !== lastSection) {
-      html += `<div class="ppvtv-divider${section === 'main' ? ' ppvtv-divider-main' : ''}">${SECTION_LABEL[section]}</div>`;
-      lastSection = section;
+    if (isMain && !shownMainLabel) {
+      html += `<div class="pb-divider is-main">🏆 MAIN EVENT — 頂上決戦</div>`;
+      shownMainLabel = true;
+    } else if (!isMain && !shownUndercardLabel && shownMainLabel) {
+      html += `<div class="pb-divider">UNDERCARD</div>`;
+      shownUndercardLabel = true;
     }
 
     const isDraw = r.winner === 'draw';
-    const wFighter = isDraw ? match.left : (r.winner === 'left' ? match.left : match.right);
-    const lFighter = isDraw ? match.right : (r.winner === 'left' ? match.right : match.left);
-    const col = _mqCol(r.mq);
-    const glow = _mqGlow(r.mq);
-    const finishText = Engine.formatFinish(r.finType, r.finMove);
+    const leftIsWinner = r.winner === 'left';
+    const rightIsWinner = r.winner === 'right';
+    const leftCls = isDraw ? 'is-draw' : (leftIsWinner ? 'is-winner' : 'is-loser');
+    const rightCls = isDraw ? 'is-draw' : (rightIsWinner ? 'is-winner' : 'is-loser');
 
-    html += `<div class="ppvtv-row${section === 'main' ? ' ppvtv-row-main' : ''}">
-      <div class="ppvtv-fighter">
-        ${portraitImg(wFighter.id, 48, 'ppvtv-portrait ppvtv-portrait-win')}
-        <div class="ppvtv-fighter-name">${wFighter.name}</div>
-        <div class="ppvtv-win-mark">${isDraw ? 'DRAW' : 'WIN'}</div>
-      </div>
-      <div class="ppvtv-center">
-        <div class="ppvtv-mq" style="color:${col};${glow}">${r.mq}</div>
-        <div class="ppvtv-mq-lbl">MQ</div>
-        <div class="ppvtv-bar"><div class="ppvtv-bar-fill" style="width:${r.mq}%;background:${col}"></div></div>
-        <div class="ppvtv-finish">${finishText}</div>
-      </div>
-      <div class="ppvtv-fighter ppvtv-fighter-lose">
-        ${portraitImg(lFighter.id, 48, 'ppvtv-portrait')}
-        <div class="ppvtv-fighter-name">${lFighter.name}</div>
-        <div class="ppvtv-win-mark" style="visibility:hidden">—</div>
-      </div>
-    </div>`;
+    // 頂上決戦勝者のみセリフ
+    let winLine = '';
+    if (isMain && !isDraw) {
+      const winF = leftIsWinner ? match.left : match.right;
+      const winChar = ALL_CHARS.find(c => c.id === winF.id);
+      if (winChar) winLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
+    }
+    const leftLine = leftIsWinner ? winLine : '';
+    const rightLine = rightIsWinner ? winLine : '';
+    const hasDialogue = !!(leftLine || rightLine);
+
+    const metaLeft = match.left._ppvOrgName || '—';
+    const metaRight = match.right._ppvOrgName || '—';
+
+    let winnerLabel;
+    if (isDraw) winnerLabel = 'DRAW';
+    else {
+      const winF = leftIsWinner ? match.left : match.right;
+      winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
+    }
+
+    const tags = [];
+    if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
+    if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
+
+    const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+    html += `<div class="${rowCls}">`;
+    html += _pbFighterBlock('left', match.left, leftCls, metaLeft, leftLine);
+    html += _pbResultColumn({
+      winnerLabel,
+      winnerIsDraw: isDraw,
+      finishText: Engine.formatFinish(r.finType, r.finMove),
+      turns: r.turns,
+      mq: r.mq
+    });
+    html += _pbFighterBlock('right', match.right, rightCls, metaRight, rightLine);
+    if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
+    if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
+    html += `</div>`;
   });
 
-  // 感情テキスト
-  html += `<div class="ppvtv-emotion"><div class="ppvtv-emotion-quote">${emotionText}</div></div>`;
+  html += `</div>`; // .pb-matches
 
-  // ボタン
-  html += `<div class="ppvtv-btn-row"><button class="btn btn-gold" onclick="App.closePPVTV()">オフシーズンへ →</button></div>`;
+  // Footer: 感情テキスト + button
+  html += `<div class="pb-footer" style="flex-direction:column;gap:12px">
+    <div style="font-size:13px;color:var(--stage-text-sub);font-style:italic;line-height:1.8;text-align:center;max-width:540px">「${escHtml(emotionText)}」</div>
+    <button type="button" class="pb-close-btn" onclick="App.closePPVTV()">オフシーズンへ →</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
