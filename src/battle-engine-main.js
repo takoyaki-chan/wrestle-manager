@@ -1005,6 +1005,7 @@ function _executePinStep(idx){
     _showFinishClickBox(step.label, () => _advancePinStep());
   } else if (step.kind === 'damage') {
     showCutin(step.fighter, step.side, step.text, step.cssCls);
+    setTimeout(() => { if (S.pendingCutin) dismissCutin(); }, 1500);
   }
 }
 

@@ -46,16 +46,17 @@ const DRAFT_MARK_MUL_SENS = {
 // ────────────────────── §5 定数 ──────────────────────
 
 // §5.2 ティア別参加率テーブル (クリア前)
+// ai-draft-balance-spec-v0.1 §2.1 で素材・原石・有望を改訂
 const DRAFT_PARTICIPATION = {
   normal: {
-    org_s: { superElite: 0.95, elite: 0.90, promising: 0.80, raw: 0.30, material: 0.05 },
-    org_a: { superElite: 0.75, elite: 0.70, promising: 0.60, raw: 0.50, material: 0.15 },
+    org_s: { superElite: 0.95, elite: 0.90, promising: 0.80, raw: 0.30, material: 0.00 },
+    org_a: { superElite: 0.75, elite: 0.70, promising: 0.60, raw: 0.50, material: 0.10 },
     org_b: { superElite: 0.35, elite: 0.30, promising: 0.50, raw: 0.60, material: 0.25 },
   },
   // §5.7 クリア後
   elevated: {
-    org_s: { superElite: 0.98, elite: 0.95, promising: 0.85, raw: 0.40, material: 0.10 },
-    org_a: { superElite: 0.85, elite: 0.80, promising: 0.70, raw: 0.55, material: 0.25 },
+    org_s: { superElite: 0.98, elite: 0.95, promising: 0.80, raw: 0.05, material: 0.00 },
+    org_a: { superElite: 0.85, elite: 0.80, promising: 0.60, raw: 0.50, material: 0.20 },
     org_b: { superElite: 0.55, elite: 0.50, promising: 0.65, raw: 0.65, material: 0.30 },
   },
 };
@@ -100,6 +101,44 @@ const DRAFT_MARK_THRESHOLDS = {
 // §5.6 表示ノイズ確率
 const DRAFT_MARK_NOISE = { accurate: 0.80, stronger: 0.10, weaker: 0.10 };
 
+// ═══════════════════════════════════════════════════════
+//  ai-draft-balance-spec-v0.1 追加定数
+// ═══════════════════════════════════════════════════════
+
+// §1.1 年間獲得目安（leagueElevated連動）
+const DRAFT_ORG_YEARLY_CAP = {
+  normal: {
+    org_s: { min: 3, max: 4 },  // EMPRESS
+    org_a: { min: 2, max: 3 },  // NOVA
+    org_b: { min: 1, max: 2 },  // CRESCENT
+  },
+  elevated: {
+    org_s: { min: 3, max: 4 },
+    org_a: { min: 3, max: 4 },
+    org_b: { min: 2, max: 3 },
+  },
+};
+
+// §1.3 超過時の参加率倍率
+const DRAFT_CAP_OVERFLOW_MUL = {
+  withinRange: 1.0,
+  atMax:       0.3,
+  overMax:     0.05,
+};
+
+// §4.2 シーズン気分
+const DRAFT_SEASON_MOOD_DIST = {
+  normal:   { active: 0.30, normal: 0.50, passive: 0.20 },
+  elevated: { active: 0.50, normal: 0.40, passive: 0.10 },
+};
+
+// §4.4 気分の効果
+const DRAFT_SEASON_MOOD_EFFECT = {
+  active:  { capDelta: +1, rateMul: 1.1 },
+  normal:  { capDelta:  0, rateMul: 1.0 },
+  passive: { capDelta: -1, rateMul: 0.9 },
+};
+
 // §6 EMPRESS安全網
 const DRAFT_EMPRESS_SAFETY = {
   orgId: 'org_s',
@@ -117,8 +156,8 @@ function _getYouthBonus(age) {
 
 function _getRosterFillMul(currentSize, idealSize) {
   const gap = currentSize - idealSize;
-  if (gap >= 2) return 0;     // 理想+2以上 → 不参加（絶対に取らない）
-  if (gap >= 0) return 0.15;  // 理想達成済み → 15%のみ参加（ほぼ不参加）
+  if (gap >= 2) return 0;     // 理想+2以上 → 不参加（ハードキャップ）
+  if (gap >= 0) return 0;     // ai-draft-balance §3: 充足時は参加しない
   if (gap >= -2) return 1.0;  // 理想 -1〜-2名 → 通常
   if (gap >= -4) return 1.3;  // 理想 -3〜-4名 → 積極的
   return 1.6;                  // 理想 -5名以下 → 非常に積極的
@@ -166,6 +205,30 @@ Engine.draftNegotiation = {
     const currentSize = (aiData ? (aiData.roster || []).length : idealRoster) + draftAcquired;
     const fillMul = _getRosterFillMul(currentSize, idealRoster);
     baseRate = Math.min(1.0, baseRate * fillMul);
+
+    // ── ai-draft-balance §1: 年間獲得目安（ソフト上限）─────
+    const capTable = leagueElevated ? DRAFT_ORG_YEARLY_CAP.elevated : DRAFT_ORG_YEARLY_CAP.normal;
+    const cap = capTable[orgId] || capTable.org_b;
+    const acquired = (state._draftOrgAcquired || {})[orgId] || 0;
+
+    // §4: シーズン気分による上限調整
+    const mood = (aiData && aiData.seasonMood) || 'normal';
+    const moodEffect = DRAFT_SEASON_MOOD_EFFECT[mood] || DRAFT_SEASON_MOOD_EFFECT.normal;
+    const effectiveMax = Math.max(1, cap.max + moodEffect.capDelta);
+
+    // §1.3: 超過時の参加率倍率
+    let overflowMul;
+    if (acquired < effectiveMax) {
+      overflowMul = DRAFT_CAP_OVERFLOW_MUL.withinRange;
+    } else if (acquired === effectiveMax) {
+      overflowMul = DRAFT_CAP_OVERFLOW_MUL.atMax;
+    } else {
+      overflowMul = DRAFT_CAP_OVERFLOW_MUL.overMax;
+    }
+    baseRate = Math.min(1.0, baseRate * overflowMul);
+
+    // §4: 気分による参加率倍率
+    baseRate = Math.min(1.0, baseRate * moodEffect.rateMul);
 
     // 参加判定
     if (Engine.rng.float(rng) >= baseRate) {
@@ -678,9 +741,15 @@ Engine.draftNegotiation = {
 
   // ── 検証用: auto-simでセリ結果を集計 ──
   // spec §4.9: ◎ honmei 対手がいる場合の勝率で評価
-  runValidation(seasons, seed) {
+  // ai-draft-balance §7: options.playerMode で 'serious' | 'absent' を切り替え
+  //   'serious' (既定): 価格3.5倍まで粘るプレイヤー（既存挙動）
+  //   'absent'        : プレイヤー不参加（AI同士の獲得数分布を測定する用）
+  runValidation(seasons, seed, options) {
     const totalSeasons = seasons || 100;
     const baseSeed = seed || 42;
+    const opts = options || {};
+    const playerMode = opts.playerMode || 'serious';
+    const leagueElevated = !!opts.leagueElevated;
     const stats = {
       totalNegotiations: 0,
       playerWins: 0, contested: 0,
@@ -696,6 +765,14 @@ Engine.draftNegotiation = {
       contestedBids: 0,
     };
 
+    // ai-draft-balance §7.1 拡張メトリクス
+    const orgPickStats = {
+      org_s: { total: 0, byTier: { superElite: 0, elite: 0, promising: 0, raw: 0, material: 0 } },
+      org_a: { total: 0, byTier: { superElite: 0, elite: 0, promising: 0, raw: 0, material: 0 } },
+      org_b: { total: 0, byTier: { superElite: 0, elite: 0, promising: 0, raw: 0, material: 0 } },
+    };
+    const orgPickPerSeason = { org_s: [], org_a: [], org_b: [] };
+
     // §4.9 "プレイヤー本気": 標準で粘り、価格が基準の3.5倍を超えたら降りる
     // candidateId→assessedValue のルックアップ用マップ
     const assessedMap = {};
@@ -704,18 +781,30 @@ Engine.draftNegotiation = {
       if (currentBid > assessed * 3.5) return 'drop';
       return 'standard';
     };
+    // プレイヤー不参加: 初回から降り
+    const absentPlayerFn = () => 'drop';
+    const playerFn = playerMode === 'absent' ? absentPlayerFn : seriousPlayerFn;
 
     for (let s = 0; s < totalSeasons; s++) {
       const seasonSeed = baseSeed + s * 7919;
       const rng = Engine.rng.create(seasonSeed);
 
+      // シーズン気分の抽選（実ゲームの offWeek 5 相当）
+      const moodRng = Engine.rng.create(Engine.rng.derive(seasonSeed, s + 1, 0xD00D));
+      const moodDist = leagueElevated ? DRAFT_SEASON_MOOD_DIST.elevated : DRAFT_SEASON_MOOD_DIST.normal;
+      const pickMood = () => {
+        const r = Engine.rng.float(moodRng);
+        if (r < moodDist.active) return 'active';
+        if (r < moodDist.active + moodDist.normal) return 'normal';
+        return 'passive';
+      };
       const mockState = {
         aiOrgs: {
-          org_s: { roster: Array(14).fill(null).map((_, i) => ({ id: 9000 + i })) },
-          org_a: { roster: Array(11).fill(null).map((_, i) => ({ id: 9100 + i })) },
-          org_b: { roster: Array(8).fill(null).map((_, i) => ({ id: 9200 + i })) },
+          org_s: { roster: Array(14).fill(null).map((_, i) => ({ id: 9000 + i })), seasonMood: pickMood() },
+          org_a: { roster: Array(11).fill(null).map((_, i) => ({ id: 9100 + i })), seasonMood: pickMood() },
+          org_b: { roster: Array(8).fill(null).map((_, i) => ({ id: 9200 + i })), seasonMood: pickMood() },
         },
-        leagueElevated: false,
+        leagueElevated: leagueElevated,
         dormantPool: [],
         roster: [],
         freeAgents: [],
@@ -748,7 +837,7 @@ Engine.draftNegotiation = {
       }
 
       const draftResult = Engine.draftNegotiation.runFullDraft(
-        candidates, mockState, seriousPlayerFn, rng
+        candidates, mockState, playerFn, rng
       );
 
       for (const r of draftResult.results) {
@@ -756,6 +845,15 @@ Engine.draftNegotiation = {
         const participating = r.interests.filter(i => i.participating);
         const honmeiCount = participating.filter(i => i.mark === 'honmei').length;
         stats.totalRounds += r.rounds;
+
+        // ai-draft-balance §7.1: AI団体別ティア別獲得数
+        if (r.winner && r.winner !== 'player' && r.winner !== null && orgPickStats[r.winner]) {
+          orgPickStats[r.winner].total++;
+          const tierKey = r.candidate.assessedTier || 'material';
+          if (orgPickStats[r.winner].byTier[tierKey] !== undefined) {
+            orgPickStats[r.winner].byTier[tierKey]++;
+          }
+        }
 
         if (participating.length > 0) {
           stats.contested++;
@@ -777,6 +875,12 @@ Engine.draftNegotiation = {
           if (honmeiCount >= 3) { stats.honmei3_n++; if (isPlayerWin) stats.honmei3_win++; }
         }
       }
+
+      // このシーズンのAI団体獲得数を記録
+      const oa = draftResult.orgAcquired || {};
+      orgPickPerSeason.org_s.push(oa.org_s || 0);
+      orgPickPerSeason.org_a.push(oa.org_a || 0);
+      orgPickPerSeason.org_b.push(oa.org_b || 0);
     }
 
     const n = stats.totalNegotiations || 1;
@@ -795,6 +899,40 @@ Engine.draftNegotiation = {
       flowThrough: stats.flowThrough,
       avgRounds_contested: (stats.totalRounds / Math.max(1, stats.contested)).toFixed(1),
       avgBidRatio: (stats.totalBidRatio / Math.max(1, stats.contestedBids)).toFixed(2),
+      // ai-draft-balance §7.1 拡張
+      orgPickAverage: {
+        org_s: (orgPickStats.org_s.total / totalSeasons).toFixed(2),
+        org_a: (orgPickStats.org_a.total / totalSeasons).toFixed(2),
+        org_b: (orgPickStats.org_b.total / totalSeasons).toFixed(2),
+      },
+      orgPickTierDist: orgPickStats,
+      orgPickMax: {
+        org_s: Math.max(0, ...orgPickPerSeason.org_s),
+        org_a: Math.max(0, ...orgPickPerSeason.org_a),
+        org_b: Math.max(0, ...orgPickPerSeason.org_b),
+      },
+      over6PicksRate: {
+        org_s: pct(orgPickPerSeason.org_s.filter(n => n >= 6).length, totalSeasons),
+        org_a: pct(orgPickPerSeason.org_a.filter(n => n >= 6).length, totalSeasons),
+        org_b: pct(orgPickPerSeason.org_b.filter(n => n >= 6).length, totalSeasons),
+      },
+      under2PicksRate: {
+        org_s: pct(orgPickPerSeason.org_s.filter(n => n <= 2).length, totalSeasons),
+        org_a: pct(orgPickPerSeason.org_a.filter(n => n <= 2).length, totalSeasons),
+        org_b: pct(orgPickPerSeason.org_b.filter(n => n <= 2).length, totalSeasons),
+      },
+      pickCountHistogram: (() => {
+        const bucket = (arr) => {
+          const h = {};
+          for (const n of arr) h[n] = (h[n] || 0) + 1;
+          return h;
+        };
+        return {
+          org_s: bucket(orgPickPerSeason.org_s),
+          org_a: bucket(orgPickPerSeason.org_a),
+          org_b: bucket(orgPickPerSeason.org_b),
+        };
+      })(),
     };
   },
 };

@@ -4234,6 +4234,7 @@ const Engine = {
           coaches: [],
           coachAssign: {},
           titles: Engine.rival.createAITitles(),
+          seasonMood: 'normal',  // ai-draft-balance §4: 初期は標準
         };
       });
       return { aiOrgs: Engine.rival.ensureAICoachStaffing(rng, orgs, [], false), rivalOrgNames: nameMap };
@@ -10709,6 +10710,22 @@ const Engine = {
         s = { ...s, aiOrgs: updatedAiOrgs };
         if (s.freeAgents) {
           s = { ...s, freeAgents: s.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+        }
+
+        // ai-draft-balance §4: シーズン気分の抽選
+        {
+          const moodRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season + 1, 0xD00D));
+          const moodDist = s.leagueElevated ? DRAFT_SEASON_MOOD_DIST.elevated : DRAFT_SEASON_MOOD_DIST.normal;
+          const updatedAiOrgsWithMood = {};
+          for (const [orgId, orgData] of Object.entries(s.aiOrgs || {})) {
+            const r = Engine.rng.float(moodRng);
+            let newMood;
+            if (r < moodDist.active) newMood = 'active';
+            else if (r < moodDist.active + moodDist.normal) newMood = 'normal';
+            else newMood = 'passive';
+            updatedAiOrgsWithMood[orgId] = { ...orgData, seasonMood: newMood };
+          }
+          s = { ...s, aiOrgs: updatedAiOrgsWithMood };
         }
 
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
