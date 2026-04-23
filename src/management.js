@@ -7452,6 +7452,8 @@ const Engine = {
       if (s._pendingFactionEvent) {
         // 何もしない（前週から持ち越しのモーダルが解決されるまで待つ）
       } else {
+        // F05H 復帰: hiatus 派閥のリーダー怪我回復をサイレントに active へ戻す
+        s = Engine.factions.applyHiatusRecovery(s);
         // F06 streak 更新（ピック前に今週分を反映）
         s = Engine.factions.updateF06Streaks(s);
         // 1) F03/F01/F02/F04-F08 いずれかの条件が成立していれば pending を立てて処理を保留

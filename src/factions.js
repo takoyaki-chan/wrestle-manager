@@ -119,8 +119,8 @@ Engine.factions = {
     const factions = (state.factions || []);
     if (factions.length < 2) return { eligible: false };
 
-    // 未抗争ペアのみ対象
-    const pool = factions.filter(f => !f.inHostility);
+    // 未抗争ペアのみ対象（活動休止中の派閥は除外）
+    const pool = factions.filter(f => !f.inHostility && f.status !== 'hiatus');
     if (pool.length < 2) return { eligible: false };
 
     let bestPair = null, bestAvg = -1;
@@ -173,6 +173,7 @@ Engine.factions = {
       leaderId,
       memberIds: [...new Set(memberIds)],
       type,
+      status: 'active', // 'active' | 'hiatus' | 'dissolved'
       authoritativeTag: !!options.authoritativeTag,
       dictatorTag: !!options.dictatorTag,
       momentum: 0,
@@ -737,8 +738,9 @@ Engine.factions = {
     };
   },
 
-  // ── §9.3 フック: リーダー喪失検出（roster 外 or 長期重傷）──
-  // return: { factionId, reason:'departure'|'retirement'|'longInjury' } | null
+  // ── §9.3 フック: リーダー喪失検出（roster 外）──
+  // return: { factionId, reason:'departure'|'retirement' } | null
+  // ※ 長期重傷は F05H（活動休止）へ分離。本関数は roster 不在のみ検知する
   detectLeaderLoss(state) {
     if (!state.factions || state.factions.length === 0) return null;
     const roster = state.roster || [];
@@ -746,22 +748,81 @@ Engine.factions = {
     const retiredIds = new Set((state.retiredFighters || []).map(c => c.id));
 
     for (const f of state.factions) {
+      if (f.status === 'dissolved') continue;
       const leader = rosterMap.get(f.leaderId);
       if (!leader) {
-        // リーダーがロスター不在
+        // リーダーがロスター不在（引退 or 退団）
         const reason = retiredIds.has(f.leaderId) ? 'retirement' : 'departure';
         return { factionId: f.id, reason };
-      }
-      // 長期重傷（8週以上の injury）
-      if (leader.injury && (leader.injury.weeksLeft || 0) >= 8) {
-        return { factionId: f.id, reason: 'longInjury' };
       }
     }
     return null;
   },
 
-  // ── §8 週次イベント抽選（F03 > F08 > F04 > F05 > F07 > F06 > F02 > F01 の優先順）──
-  // return: { eventId:'F01'|'F02'|'F03'|'F04'|'F05'|'F06'|'F07'|'F08'|null, payload }
+  // ── §9.10 F05H フック: 活動休止トリガー検出 ────────────────
+  // リーダーが 8週以上の長期離脱（怪我）状態に入った active 派閥を検知
+  // return: { factionId, estimatedWeeks } | null
+  detectHiatusTrigger(state) {
+    if (!state.factions || state.factions.length === 0) return null;
+    const roster = state.roster || [];
+    const rosterMap = new Map(roster.map(c => [c.id, c]));
+    for (const f of state.factions) {
+      if (f.status !== 'active') continue;
+      const leader = rosterMap.get(f.leaderId);
+      if (!leader) continue;
+      const weeksLeft = (leader.injury && leader.injury.weeksLeft) || 0;
+      if (weeksLeft >= 8) {
+        return { factionId: f.id, estimatedWeeks: weeksLeft };
+      }
+    }
+    return null;
+  },
+
+  // ── §9.10 F05H フック: 活動休止の自動復帰検出（通知なし・ログのみ）──
+  // hiatus 派閥のリーダーが復帰可能（怪我回復）な状態になったら status を active に戻す
+  applyHiatusRecovery(state) {
+    if (!state.factions || state.factions.length === 0) return state;
+    const roster = state.roster || [];
+    const rosterMap = new Map(roster.map(c => [c.id, c]));
+    let changed = false;
+    const newFactions = state.factions.map(f => {
+      if (f.status !== 'hiatus') return f;
+      const leader = rosterMap.get(f.leaderId);
+      if (!leader) return f; // 不在なら F03 経路に委ねる
+      const weeksLeft = (leader.injury && leader.injury.weeksLeft) || 0;
+      if (weeksLeft === 0) {
+        changed = true;
+        if (typeof console !== 'undefined') {
+          console.log(`[WM Faction] ${f.name} resumed activity (leader ${leader.name} recovered)`);
+        }
+        return { ...f, status: 'active' };
+      }
+      return f;
+    });
+    return changed ? { ...state, factions: newFactions } : state;
+  },
+
+  // ── §9.10 F05H 適用（status='hiatus' へ遷移、通知のみ）──
+  applyF05HResult(state, payload) {
+    const factionId = payload && payload.factionId;
+    if (factionId == null) return { state, resultText: '' };
+    const faction = (state.factions || []).find(f => f.id === factionId);
+    if (!faction) return { state, resultText: '' };
+    const newFactions = state.factions.map(f => {
+      if (f.id !== factionId) return f;
+      return { ...f, status: 'hiatus', inHostility: false, momentum: 0 };
+    });
+    if (typeof console !== 'undefined') {
+      console.log(`[WM Faction] ${faction.name} entered hiatus (leader absent ${payload.estimatedWeeks || 8}w+)`);
+    }
+    return {
+      state: { ...state, factions: newFactions },
+      resultText: `派閥「${faction.name}」は旗を畳み、活動を一時休止した。`,
+    };
+  },
+
+  // ── §8 週次イベント抽選（F03 > F05H > F08 > F04 > F05 > F07 > F06 > F02 > F01 の優先順）──
+  // return: { eventId:'F01'|'F02'|'F03'|'F04'|'F05'|'F05H'|'F06'|'F07'|'F08'|null, payload }
   pickWeeklyEvent(state, rng) {
     const cfg = FACTION_CONFIG;
 
@@ -777,6 +838,23 @@ Engine.factions = {
           factionName: faction ? faction.name : '派閥',
           reason: leaderLoss.reason,
           ...branch,
+        },
+      };
+    }
+
+    // 1.5) F05H（活動休止: リーダー長期離脱 8週以上、即時発動 100%）
+    const hiatusTrig = this.detectHiatusTrigger(state);
+    if (hiatusTrig) {
+      const fac = state.factions.find(f => f.id === hiatusTrig.factionId);
+      const leader = (state.roster || []).find(c => c.id === (fac ? fac.leaderId : -1));
+      return {
+        eventId: 'F05H',
+        payload: {
+          factionId: hiatusTrig.factionId,
+          factionName: fac ? fac.name : '派閥',
+          leaderId: fac ? fac.leaderId : null,
+          leaderName: leader ? leader.name : '???',
+          estimatedWeeks: hiatusTrig.estimatedWeeks,
         },
       };
     }
@@ -1162,6 +1240,7 @@ Engine.factions = {
     let best = null;
     for (const f of factions) {
       if (this._isHostile(f)) continue; // 忠誠型のみ
+      if (f.status === 'hiatus') continue; // 活動休止派閥は除外
       if (f.memberIds.length < cfg.f05MinFactionSize) continue;
       const key = this._f05Key(f.id);
       if (!this._isCooldownReady(state, key, cfg.eventCooldown.F05)) continue;

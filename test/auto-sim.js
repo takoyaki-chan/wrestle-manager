@@ -208,6 +208,9 @@ function autoHandleFactionEvent(G, simRng) {
     } else if (fe.eventId === 'F03') {
       const r = Engine.factions.applyF03Result(s, fe.payload, rng);
       if (r && r.state) s = r.state;
+    } else if (fe.eventId === 'F05H') {
+      const r = Engine.factions.applyF05HResult(s, fe.payload);
+      if (r && r.state) s = r.state;
     } else if (fe.eventId === 'F04' || fe.eventId === 'F05' || fe.eventId === 'F06' || fe.eventId === 'F07' || fe.eventId === 'F08') {
       const choices = ['A', 'B', 'C'];
       const choiceId = choices[Math.floor(Engine.rng.float(simRng) * 3)];

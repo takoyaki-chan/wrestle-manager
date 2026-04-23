@@ -7250,6 +7250,16 @@ const App = {
         renderWeekScreen();
         showFactionEventResult(result.resultText, () => {});
       });
+    } else if (eventId === 'F05H') {
+      // F05H 活動休止（通知のみ・選択肢なし）
+      showFactionHiatusModal(payload, G, () => {
+        const result = Engine.factions.applyF05HResult(G, payload);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
     } else if (eventId === 'F05') {
       showFactionF05Modal(payload, G, (choiceId) => {
         if (!choiceId) return;
