@@ -267,7 +267,10 @@ Engine.battle = {
                 finishPhase = ph.name;
                 finMove = mv.n;
                 log.push(isSubPin ? `★ ${atk.name}、${mv.n}でギブアップ！` : `★ ${atk.name}、${mv.n}からのフォールで3カウント！`);
-                if (recordFrames) _turnPinAttempt = 'success';
+                if (recordFrames) {
+                  _turnPinAttempt = 'success';
+                  if (isSubPin) _turnKickout = { count: 0, escapeType: 'gu' };
+                }
               } else {
                 def.gritTurns = eng.gritDuration;
                 log.push(`  → フォール！ だが${def.name}がカウント2で返した！`);
