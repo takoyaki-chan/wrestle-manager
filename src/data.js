@@ -1359,6 +1359,9 @@ const FACTION_CONFIG = {
   joinRate: { 60: 0.20, 70: 0.40, 80: 0.60 },
   joinMomentumHighMult: 1.5,
   joinMomentumLowMult: 0.7,
+  // §2.2 加入判定（v0.2 追加: 人数偏り対策）
+  joinSizeMult: { 4: 1.0, 6: 0.6, 7: 0.3, 8: 0.0 },  // 派閥サイズ→加入率倍率（キーは「以下」の閾値）
+  soloFactionFreezeSize: 5,  // 単独派閥がこのサイズ以上なら加入凍結
   // §2.3 離脱判定
   leaveBondThreshold: 40,
   leaveRate: 0.10,

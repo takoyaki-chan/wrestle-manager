@@ -157,6 +157,18 @@ Engine.factions = {
     return !!(f && (f.type === 'rivalrous' || f.inHostility === true));
   },
 
+  // v0.2: 派閥サイズに応じた加入率倍率（人数偏り対策）
+  _getJoinSizeMult(size) {
+    const cfg = FACTION_CONFIG;
+    const thresholds = Object.keys(cfg.joinSizeMult)
+      .map(Number)
+      .sort((a, b) => a - b);
+    for (const t of thresholds) {
+      if (size <= t) return cfg.joinSizeMult[t];
+    }
+    return 0.0;
+  },
+
   // ── 派閥生成 ──────────────────────────────────────────────
   createFaction(state, leaderId, memberIds, options = {}) {
     const roster = state.roster || [];
@@ -370,7 +382,13 @@ Engine.factions = {
 
     // ── 加入判定 ──
     const newFactions = s.factions.map(f => ({ ...f, memberIds: [...f.memberIds] }));
+
+    // v0.2: 単独派閥の加入凍結判定（派閥数 === 1 かつ サイズ ≥ soloFactionFreezeSize）
+    const soloFreeze = newFactions.length === 1
+      && newFactions[0].memberIds.length >= cfg.soloFactionFreezeSize;
+
     for (const f of newFactions) {
+      if (soloFreeze) continue;  // v0.2: 単独派閥凍結時はスキップ
       const candidates = [...rosterIds].filter(id => !assigned.has(id));
       for (const candId of candidates) {
         if (f.memberIds.includes(candId)) continue;
@@ -384,6 +402,8 @@ Engine.factions = {
           if (f.momentum > 30) rate *= cfg.joinMomentumHighMult;
           else if (f.momentum < -30) rate *= cfg.joinMomentumLowMult;
         }
+        // v0.2: サイズ倍率適用
+        rate *= this._getJoinSizeMult(f.memberIds.length);
         if (Engine.rng.float(rng) < rate) {
           f.memberIds.push(candId);
           assigned.add(candId);

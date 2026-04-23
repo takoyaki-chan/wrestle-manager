@@ -1,6 +1,6 @@
 # 派閥システム 仕様書 v0.1
 
-> **ステータス**: 🟢 Phase 1〜3d 実装済み（v0.7 / v1.0 機能完成）
+> **ステータス**: 🟢 Phase 1〜3d + Phase 1b 実装済み（v0.8 / v1.0 機能完成 + 人数偏り対策）
 > **作成日**: 2026-04-21
 > **依存**: relationship-system-spec-v2.0.md / trust-system-spec-v2.1.md / large-event-spec-v1.0.md / personality-archetype-spec-v1.0.md / economy-spec-v2.0.md（集客）
 > **実装予定箇所**: factions.js（新規）, management.js（統合・フック追加）, data.js（FACTION_EVENTS 等）, ui-render.js（データベース派閥比較タブ・相関図レイヤー・団体タブ派閥セクション）, ui-common.js（F01〜F08モーダル）
@@ -120,6 +120,16 @@ GameState.factionEventCooldowns = {
 - 勢いによる修正（対立型のみ）:
   - 派閥の勢い +30超: 加入率 ×1.5 🔧
   - 派閥の勢い -30未満: 加入率 ×0.7 🔧
+- **サイズ倍率（v0.8 追加 / 人数偏り対策）** 🔧: 勢い修正の**後**に派閥サイズ（加入前）で乗算
+  - 3〜4 人: ×1.0
+  - 5〜6 人: ×0.6
+  - 7 人: ×0.3
+  - 8 人以上: ×0.0（実質ストップ）
+- **単独派閥の加入凍結（v0.8 追加）** 🔧: 派閥数 1 かつサイズ 5 人以上の状態では、新規加入判定そのものをスキップ。凍結解除条件は以下のいずれか:
+  1. 第二派閥誕生（F01 再発火 / F02 / F05-B 分裂）
+  2. 当該派閥の F05-B 分裂（上記 1 の一種）
+  3. メンバー脱退でサイズが 4 人以下に戻る
+  （状態フラグは持たず、毎週条件評価）
 - UI通知: ログに静かに「○○が○○組に加わったようだ」
 
 ### §2.3 メンバー離脱（寝返り以外）
@@ -889,10 +899,42 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 | v0.5 | 2026-04-22 | Phase 3b 実装: F04 寝返り / F05 派閥内亀裂 / F06 和解の兆し / F07 リーダーの横暴 / F08 対立ヒートアップ の演出モーダル + `applyF0XChoice` + 6×6 セリフ + F08-A 直接対決ディレクティブ（`_pendingF08Directive` でカード編成強制組込み + 集客 appeal 加算 + 試合結果 1.5× 反映）+ `faction.f07RebukeCount` による authoritativeTag 解除 + F06 streak 追跡（`G.factionReconciliationStreak`）+ §8.3 優先順 F03>F08>F04>F05>F07>F06>F02>F01 + 各イベント個別クールダウン。auto-sim 2 シード × 100 シーズン ALL CLEAR |
 | v0.6 | 2026-04-22 | Phase 3c 実装: 相関図「🎭 派閥オーバーレイ」を**団体フィルタ連動型トグル**として実装（当初の「第4ビューモード」方式から実機検証を経て方向転換）。`_relmapFactionOverlay`/`_relmapSavedCenterId` 状態追加。団体フィルタ ON + 🎭 ON のときのみ、CENTER 選手を退避してフラット表示に切替 + 派閥円（外接円）+ 派閥名ラベル + 👑リーダー/⭐幹部マーカー（別レイヤー `relmapFactionMarkerLayer`）+ 抗争オレンジ破線（両派閥がフィルタ内の時のみ、1.5〜3.5px、数値なし）+ 非派閥メンバー斥力（keepR ベース）。派閥重複所属のデータ破綻対応として `Engine.factions._dedupeFactionMembers` + `reconcileRoster` 週次修復 + `_migrated_faction_dedupe_v1` マイグレーション追加。auto-sim 30 シーズン ALL CLEAR |
 | v0.7 | 2026-04-22 | Phase 3d 実装（派閥 v1.0 完成）: 派閥構造が bond/rivalry に波及する週次処理 `Engine.factions.processFactionInfluenceOnRelationships(state, rng)` 新設。6 効果を実装: (1) 派閥内結束 bond +0.15/週 全ペア / (2) 抗争越境敵意 rivalry +0.3/週 敵対派閥メンバー全組み合わせ / (3) 寝返り磁力 rivalry +0.5/週 敵メンバーとの bond 平均 60+ な選手 → 敵リーダー方向 / (4) 権威化の下向き圧 bond +0.1/週 `authoritativeTag` リーダー → メンバー一方向 / (5) 独裁化の亀裂 rivalry +0.2/週 `dictatorTag` 派閥メンバー全ペア / (6) 消滅余波 bond -5〜-10（1 派閥 1 回ロール）を `_dissolveFaction` で元メンバー全ペアに適用。通常の `processWeeklyDecay` は素通しで **加算で重ねる**。RNG `0xFA19`（週次）/ `0xFA1A`（消滅余波）追加。ヘルパー `_applyRivalryDirected` / `_applyRivalryBetweenMembers` / `_collectHostilePairs` / `_applyTurncoatMagnetism` 追加。tickWeek 派閥パイプラインに `processWeeklyMemberChanges` の後・`processWeeklyHostilityDecay` の前へ挿入。auto-sim 10 シード × 100 シーズン ALL CLEAR |
+| v0.8 | 2026-04-23 | Phase 1b 実装（人数偏り対策）: §2.2 メンバー加入に2つのブレーキを追加。(1) サイズベース加入率減衰 `joinSizeMult: {4:1.0, 6:0.6, 7:0.3, 8:0.0}`（勢い修正の後に乗算）/ (2) 単独派閥の加入凍結 `soloFactionFreezeSize:5`（派閥数 1 かつ サイズ 5 人以上で加入判定スキップ、解除条件は第二派閥誕生/分裂/脱退）。ヘルパー `_getJoinSizeMult(size)` 追加、`processWeeklyMemberChanges` 加入ブロックのみ修正（離脱ロジック・trust 更新・§2.6 80% 解散・F05-B 分裂ロジック・RNG は一切変更なし）。auto-sim 5 シード × 100 シーズン ALL CLEAR（engine-integrity）。**分布実測は auto-sim で不可能**（auto-sim 初期プレイヤーロスター 5 名、`minRosterSize:10` 未満で派閥が形成されない）→ 検証は実機プレイに委任 |
 
 ---
 
-## §17 実装状況（2026-04-22）
+## §17 実装状況（2026-04-23）
+
+### Phase 1b 完了（人数偏り対策, v0.8, 2026-04-23）
+
+**背景:**
+
+派閥 v1.0（Phase 3d）運用中、1 派閥へのメンバー集中（9〜10 人規模）が発生し、第二派閥が生まれず抗争も起きない停滞ケースが判明。§2.2 加入条件は「既存メンバーとの bond 平均 60 以上」のみで、派閥が大きくなるほど「既存メンバー」の母集団が増え、平均 bond が高く出やすい構造的偏り。加えて Phase 3d の「派閥内結束 bond +0.15/週」が高止まりを加速。§2.6 80% 解散のみが唯一のブレーキだが、それは物語上手遅れの状態。
+
+**実装:**
+
+- `FACTION_CONFIG` に `joinSizeMult: {4:1.0, 6:0.6, 7:0.3, 8:0.0}` / `soloFactionFreezeSize: 5` を追加（`src/data.js`）
+- `Engine.factions._getJoinSizeMult(size)` ヘルパー追加（`_isHostile` 近辺、昇順 threshold チェック）
+- `processWeeklyMemberChanges` 加入判定ブロックに:
+  - ループ先頭で `soloFreeze = (newFactions.length === 1 && newFactions[0].memberIds.length >= soloFactionFreezeSize)` を評価、true なら全 faction の加入判定をスキップ
+  - 既存の勢い修正の**後**に `rate *= this._getJoinSizeMult(f.memberIds.length)` を乗算
+- 離脱判定・trust 更新・§2.6 80% 解散判定・F05-B 分裂ロジック・RNG は一切変更なし
+
+**凍結解除（自動判定、状態フラグなし）:**
+
+1. 第二派閥誕生（F01 再発火 / F02 / F05-B 分裂）→ 次週 `newFactions.length >= 2` で解除
+2. F05-B 分裂（上記の一種）
+3. メンバー脱退でサイズ 4 人以下 → 次週 `memberIds.length < 5` で解除
+
+**検証:**
+
+- auto-sim 5 シード × 100 シーズン ALL CLEAR（engine-integrity）
+- **分布実測は auto-sim で不可能**: auto-sim 初期プレイヤーロスター 5 名、`minRosterSize:10` 未満で派閥が形成されない（計測 5300 週で派閥イベント 0 件、最大派閥サイズ 0）。分布 3 指標（サイズ≥8 半減 / 派閥数≥2 増加 / §2.6 80% 解散減少）は実機プレイに委任
+
+**次フェーズ接続:**
+
+- 本ブレーキ 2 本ですり抜けるケースが実測されたら、Phase 1b-2 として案C（F05 発火確率ブースト）を追加
+- Phase 1d 予定の F09 派閥対抗戦 + 抗争ポイント制閾値調整のための基礎データ採取は、v0.8 導入後の実プレイで収集
 
 ### Phase 3d 完了（bond/rivalry 連動カタログ, v0.7, 2026-04-22）→ **派閥システム v1.0 完成**
 
