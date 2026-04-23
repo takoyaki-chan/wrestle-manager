@@ -417,12 +417,29 @@ F06〜F08（亀裂・吸収など）は将来同じフレームワークに乗�
 
 ## 音響設計
 
+以下は UI 表現としての設計。実装側の実際の登録値は [src/app.js](../../../src/app.js) `FACTION_AUDIO_MAP`（v7 §2-1 / §2-3 確定）に準拠。
+
 | イベント | 開幕SE | BGM | 進行SE | 決定SE |
 |---|---|---|---|---|
 | F01 | ノックの音（新規 or `f13_lockup_v4.mp3` 流用） | `Soft Bids, Sharp Minds.mp3` 低音量ループ | ページ送り（既存`click`） | 判を押す音（新規） or `f13_lockup_v4.mp3` |
-| F02 | 銅鑼 `f07_gong_v1.mp3` | `bgm_tension_v1.mp3` ループ | 既存`click` | 既存`click`（重め） |
+| F02（対峙） | 銅鑼 `f07_gong_v1.mp3` | `bgm_tension_v1.mp3` ループ | 既存`click` | 既存`click`（重め） |
 | F03 | 低い鐘 `f06_fin_chime_v1.mp3` | `MusMus-BGM-052.mp3` 1ループのみ（ループしない） | なし | なし（続けるボタンのみ） |
 | F04 | ノックの音 | `Soft Bids, Sharp Minds.mp3` 低音量ループ | 既存`click` | 既存`click` |
+| F05（派閥内亀裂） | — | `Soft Bids, Sharp Minds.mp3` 穏やかループ（× 0.14） | 既存`click` | 既存`click` |
+| F06（和解の兆し） | — | `Soft Bids, Sharp Minds.mp3` やや明るめループ（× 0.16） | 既存`click` | 終止 `f06_fin_chime_v1.mp3`（× 0.10、閉じる時1打） |
+| F07（リーダー横暴） | — | `bgm_tension_v1.mp3` 抑えめループ（× 0.15） | 既存`click` | 既存`click` |
+| F08（対立ヒートアップ） | 冒頭 stinger `f07_gong_v1.mp3`（× 0.15、150ms遅延） | `bgm_tension_v1.mp3` ループ（× 0.17） | 既存`click` | 既存`click` |
+| F05H（活動休止） | — | `Soft Bids, Sharp Minds.mp3` 控えめループ（× 0.10） | なし | 終止 `f06_fin_chime_v1.mp3`（× 0.09、閉じる時1打、F03 と区別しつつ旗を畳む感触） |
+| F02① ignite | 冒頭 stinger `f07_gong_v1.mp3`（× 0.15、150ms遅延） | `bgm_tension_v1.mp3` 一段上げループ（× 0.18） | 既存`click` | 既存`click` |
+| F02② peace | — | `Soft Bids, Sharp Minds.mp3` 穏やかループ（× 0.12） | 既存`click` | 終止 `f06_fin_chime_v1.mp3`（× 0.10） |
+| F02③ resolution | — | `bgm_tension_v1.mp3` ループ（× 0.17） | 既存`click` | 既存`click` |
+| F02④ endless | — | `bgm_tension_v1.mp3` 低音量長フェード（× 0.10、終わらない感触） | 既存`click` | stinger なし |
+
+**意図メモ**:
+- F06 は和解なので Soft をやや明るめ（0.14→0.16）にし、終止 chime で「終わりの合図」を添える。
+- F07 は内面的な重苦しさを表すため tension を抑えめ（0.15）に敷く。
+- F08 は F02 系（対峙/ignite）と統一感を持たせるために冒頭 gong を採用。
+- F05H は F03（解散＝旗を降ろす）と区別しつつ、同じ chime を一段小さく（0.09）して「再起可能な保留」を示唆する。
 
 ### 新規調達が必要な音（あれば望ましい、なくても可）
 

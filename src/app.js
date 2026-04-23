@@ -997,11 +997,11 @@ const FACTION_AUDIO_MAP = {
   F03:            { src: FACTION_AUDIO.SOFT,    volume: 0.10,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.09 } },
   F04:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
   F05H:           { src: FACTION_AUDIO.SOFT,    volume: 0.10,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.09 } },
-  // 未規定（F05/F06/F07/F08）: Soft Bids デフォルト相当の穏やかなフォールバック
+  // §2-3 v7 確定（faction-events.md §音響設計 表拡張に準拠）
   F05:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
-  F06:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
-  F07:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
-  F08:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
+  F06:            { src: FACTION_AUDIO.SOFT,    volume: 0.16,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.10 } },
+  F07:            { src: FACTION_AUDIO.TENSION, volume: 0.15 },
+  F08:            { src: FACTION_AUDIO.TENSION, volume: 0.17, openStinger:  { src: FACTION_AUDIO.GONG,  volume: 0.15 } },
 };
 
 // 派閥イベントモーダル開幕時: BGM 切替 + openStinger
