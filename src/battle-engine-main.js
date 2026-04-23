@@ -227,17 +227,22 @@ function startReplay(data){
   S._isBigMatch = !!(mi.matchTier && mi.matchTier >= 2);
   clearTimeout(S.autoTimer);
 
-  // HP はフレームスキーマから取るが、初期値として result の hpLeft/hpRight から mhp を計算
-  // match-engine.js の hpBase/hpScale: Tier1=50+st*1.20, Tier2=85+st*1.20
-  const hpBase  = S._isBigMatch ? 85 : 50;
-  const hpScale = 1.20;
-  const mk = (c) => {
-    const st  = clamp(c.st || 60, 0, 100);
-    const mhp = Math.round(hpBase + st * hpScale);
+  // mhp は match-engine.js が計算した実値を result.hpLeft/hpRight.max から受け取る。
+  // (iframe 側で再計算すると Tier/eff()/スケール値の二重管理でズレる — 111% 事故の原因)
+  const resMhpL = (data.result && data.result.hpLeft && data.result.hpLeft.max) || 0;
+  const resMhpR = (data.result && data.result.hpRight && data.result.hpRight.max) || 0;
+  const fallbackMhp = (c) => {
+    const st = clamp(c.st || 60, 0, 100);
+    const hpBase  = S._isBigMatch ? 85 : 50;
+    const hpScale = S._isBigMatch ? 1.10 : 0.90;
+    return Math.round(hpBase + st * hpScale);
+  };
+  const mk = (c, realMhp) => {
+    const mhp = realMhp > 0 ? realMhp : fallbackMhp(c);
     return { ...c, hp: mhp, mhp, gritTurns: 0, kickoutCount: 0 };
   };
-  S.L = mk(data.left);
-  S.R = mk(data.right);
+  S.L = mk(data.left,  resMhpL);
+  S.R = mk(data.right, resMhpR);
 
   renderMatchFrame();
   try { sfx.gongStart(); } catch(e){}
