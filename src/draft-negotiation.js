@@ -741,9 +741,15 @@ Engine.draftNegotiation = {
 
   // ── 検証用: auto-simでセリ結果を集計 ──
   // spec §4.9: ◎ honmei 対手がいる場合の勝率で評価
-  runValidation(seasons, seed) {
+  // ai-draft-balance §7: options.playerMode で 'serious' | 'absent' を切り替え
+  //   'serious' (既定): 価格3.5倍まで粘るプレイヤー（既存挙動）
+  //   'absent'        : プレイヤー不参加（AI同士の獲得数分布を測定する用）
+  runValidation(seasons, seed, options) {
     const totalSeasons = seasons || 100;
     const baseSeed = seed || 42;
+    const opts = options || {};
+    const playerMode = opts.playerMode || 'serious';
+    const leagueElevated = !!opts.leagueElevated;
     const stats = {
       totalNegotiations: 0,
       playerWins: 0, contested: 0,
@@ -775,18 +781,30 @@ Engine.draftNegotiation = {
       if (currentBid > assessed * 3.5) return 'drop';
       return 'standard';
     };
+    // プレイヤー不参加: 初回から降り
+    const absentPlayerFn = () => 'drop';
+    const playerFn = playerMode === 'absent' ? absentPlayerFn : seriousPlayerFn;
 
     for (let s = 0; s < totalSeasons; s++) {
       const seasonSeed = baseSeed + s * 7919;
       const rng = Engine.rng.create(seasonSeed);
 
+      // シーズン気分の抽選（実ゲームの offWeek 5 相当）
+      const moodRng = Engine.rng.create(Engine.rng.derive(seasonSeed, s + 1, 0xD00D));
+      const moodDist = leagueElevated ? DRAFT_SEASON_MOOD_DIST.elevated : DRAFT_SEASON_MOOD_DIST.normal;
+      const pickMood = () => {
+        const r = Engine.rng.float(moodRng);
+        if (r < moodDist.active) return 'active';
+        if (r < moodDist.active + moodDist.normal) return 'normal';
+        return 'passive';
+      };
       const mockState = {
         aiOrgs: {
-          org_s: { roster: Array(14).fill(null).map((_, i) => ({ id: 9000 + i })), seasonMood: 'normal' },
-          org_a: { roster: Array(11).fill(null).map((_, i) => ({ id: 9100 + i })), seasonMood: 'normal' },
-          org_b: { roster: Array(8).fill(null).map((_, i) => ({ id: 9200 + i })), seasonMood: 'normal' },
+          org_s: { roster: Array(14).fill(null).map((_, i) => ({ id: 9000 + i })), seasonMood: pickMood() },
+          org_a: { roster: Array(11).fill(null).map((_, i) => ({ id: 9100 + i })), seasonMood: pickMood() },
+          org_b: { roster: Array(8).fill(null).map((_, i) => ({ id: 9200 + i })), seasonMood: pickMood() },
         },
-        leagueElevated: false,
+        leagueElevated: leagueElevated,
         dormantPool: [],
         roster: [],
         freeAgents: [],
@@ -819,7 +837,7 @@ Engine.draftNegotiation = {
       }
 
       const draftResult = Engine.draftNegotiation.runFullDraft(
-        candidates, mockState, seriousPlayerFn, rng
+        candidates, mockState, playerFn, rng
       );
 
       for (const r of draftResult.results) {
@@ -903,6 +921,18 @@ Engine.draftNegotiation = {
         org_a: pct(orgPickPerSeason.org_a.filter(n => n <= 2).length, totalSeasons),
         org_b: pct(orgPickPerSeason.org_b.filter(n => n <= 2).length, totalSeasons),
       },
+      pickCountHistogram: (() => {
+        const bucket = (arr) => {
+          const h = {};
+          for (const n of arr) h[n] = (h[n] || 0) + 1;
+          return h;
+        };
+        return {
+          org_s: bucket(orgPickPerSeason.org_s),
+          org_a: bucket(orgPickPerSeason.org_a),
+          org_b: bucket(orgPickPerSeason.org_b),
+        };
+      })(),
     };
   },
 };
