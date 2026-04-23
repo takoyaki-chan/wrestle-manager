@@ -962,8 +962,70 @@ const Audio = (() => {
       if (_bgmMuted) { BGM.stop(); FileBGM.stop(); } else BGM.playForState();
       savePrefs();
     },
+    // ── 派閥イベント演出用: ワンショット stinger（BGM に触れない） ──
+    // SE マスターボリューム適用、全体 mute 時は無音
+    stinger(src, volume = 0.15) {
+      try {
+        if (_muted) return;
+        const a = new window.Audio(src);
+        a.volume = Math.min(1.0, volume * _sfxMasterVol);
+        a.play().catch(() => {});
+      } catch(e) {}
+    },
   };
 })();
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  FACTION EVENT AUDIO MAP (v6 §2-1)                       ║
+// ║  handoff-v6 の BGM/stinger 登録表をデータ化              ║
+// ╚══════════════════════════════════════════════════════════╝
+const FACTION_AUDIO = {
+  SOFT:    '../bgm/Soft Bids, Sharp Minds.mp3',
+  TENSION: '../bgm/bgm_tension_v1.mp3',
+  GONG:    '../bgm/f07_gong_v1.mp3',
+  CHIME:   '../bgm/f06_fin_chime_v1.mp3',
+};
+// 各イベントの { src, volume, openStinger?, closeStinger? }
+// closeStinger は結果モーダルの「閉じる」クリック時に fadeOut 直前で再生
+const FACTION_AUDIO_MAP = {
+  F01:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
+  F02:            { src: FACTION_AUDIO.TENSION, volume: 0.17 },
+  F02_IGNITE:     { src: FACTION_AUDIO.TENSION, volume: 0.18, openStinger:  { src: FACTION_AUDIO.GONG,  volume: 0.15 } },
+  F02_PEACE:      { src: FACTION_AUDIO.SOFT,    volume: 0.12,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.10 } },
+  F02_RESOLUTION: { src: FACTION_AUDIO.TENSION, volume: 0.17 },
+  F02_ENDLESS:    { src: FACTION_AUDIO.TENSION, volume: 0.10 },
+  F03:            { src: FACTION_AUDIO.SOFT,    volume: 0.10,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.09 } },
+  F04:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
+  F05H:           { src: FACTION_AUDIO.SOFT,    volume: 0.10,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.09 } },
+  // 未規定（F05/F06/F07/F08）: Soft Bids デフォルト相当の穏やかなフォールバック
+  F05:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
+  F06:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
+  F07:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
+  F08:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
+};
+
+// 派閥イベントモーダル開幕時: BGM 切替 + openStinger
+// 既存 BGM (management/tension chiptune 等) は FileBGM.play が内部で止める
+function _factionAudioOpen(eventId) {
+  const cfg = FACTION_AUDIO_MAP[eventId];
+  if (!cfg) return;
+  try { Audio.fileBgm.play(cfg.src, { loop: true, volume: cfg.volume }); } catch(e) {}
+  if (cfg.openStinger) {
+    // BGM が立ち上がる気配を見せてから1発鳴らす（fadeOut と重ならないように 150ms 遅延）
+    setTimeout(() => { try { Audio.stinger(cfg.openStinger.src, cfg.openStinger.volume); } catch(e) {} }, 150);
+  }
+}
+
+// 派閥イベント結果モーダル「閉じる」クリック時:
+// closeStinger → BGM fadeOut → playForState で通常 BGM を復帰
+function _factionAudioClose(eventId) {
+  const cfg = FACTION_AUDIO_MAP[eventId];
+  if (cfg && cfg.closeStinger) {
+    try { Audio.stinger(cfg.closeStinger.src, cfg.closeStinger.volume); } catch(e) {}
+  }
+  try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
+  setTimeout(() => { try { Audio.bgm.playForState(); } catch(e) {} }, 1600);
+}
 
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -7229,7 +7291,10 @@ const App = {
   // Phase 3a: 派閥イベントUIフロー制御（F01/F02/F03）
   handleFactionEvent(event) {
     const { eventId, payload } = event;
+    // 結果モーダル「閉じる」時に stinger + BGM fadeOut + 通常 BGM 復帰
+    const finalizeAudio = () => _factionAudioClose(eventId);
     if (eventId === 'F01') {
+      _factionAudioOpen(eventId);
       showFactionF01Modal(payload, G, (choiceId) => {
         if (!choiceId) return;
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA13));
@@ -7238,9 +7303,10 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F02') {
+      _factionAudioOpen(eventId);
       showFactionF02Modal(payload, G, (choiceId) => {
         if (!choiceId) return;
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA23));
@@ -7249,10 +7315,11 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F02_PEACE') {
       // v4 §2-1: F02② 沈静化（通知のみ・選択肢なし）
+      _factionAudioOpen(eventId);
       showFactionF02PeaceModal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA27));
         const result = Engine.factions.applyF02PeaceResult(G, payload, rng);
@@ -7260,10 +7327,11 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F02_IGNITE') {
       // v4 §2-1: F02① 発火（興行開始時、通知のみ・選択肢なし）
+      _factionAudioOpen(eventId);
       showFactionF02IgniteModal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA26));
         const result = Engine.factions.applyF02IgniteResult(G, payload, rng);
@@ -7271,10 +7339,11 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F02_RESOLUTION') {
       // v4 §2-1: F02③ 決着（試合直後、通知のみ・選択肢なし）
+      _factionAudioOpen(eventId);
       showFactionF02ResolutionModal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA24));
         const result = Engine.factions.applyF02ResolutionResult(G, payload, rng);
@@ -7282,10 +7351,11 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F02_ENDLESS') {
       // v4 §2-1: F02④ 無限抗争（通知のみ・選択肢なし）
+      _factionAudioOpen(eventId);
       showFactionF02EndlessModal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA25));
         const result = Engine.factions.applyF02EndlessResult(G, payload, rng);
@@ -7293,9 +7363,10 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F03') {
+      _factionAudioOpen(eventId);
       showFactionF03Modal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA33));
         const result = Engine.factions.applyF03Result(G, payload, rng);
@@ -7303,9 +7374,10 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F04') {
+      _factionAudioOpen(eventId);
       showFactionF04Modal(payload, G, (choiceId) => {
         if (!choiceId) return;
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA14));
@@ -7314,19 +7386,21 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F05H') {
       // F05H 活動休止（通知のみ・選択肢なし）
+      _factionAudioOpen(eventId);
       showFactionHiatusModal(payload, G, () => {
         const result = Engine.factions.applyF05HResult(G, payload);
         G = { ...result.state };
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F05') {
+      _factionAudioOpen(eventId);
       showFactionF05Modal(payload, G, (choiceId) => {
         if (!choiceId) return;
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA15));
@@ -7335,9 +7409,10 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F06') {
+      _factionAudioOpen(eventId);
       showFactionF06Modal(payload, G, (choiceId) => {
         if (!choiceId) return;
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA16));
@@ -7346,9 +7421,10 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F07') {
+      _factionAudioOpen(eventId);
       showFactionF07Modal(payload, G, (choiceId) => {
         if (!choiceId) return;
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA17));
@@ -7357,9 +7433,10 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     } else if (eventId === 'F08') {
+      _factionAudioOpen(eventId);
       showFactionF08Modal(payload, G, (choiceId) => {
         if (!choiceId) return;
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA18));
@@ -7368,7 +7445,7 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, () => {});
+        showFactionEventResult(result.resultText, finalizeAudio);
       });
     }
   },

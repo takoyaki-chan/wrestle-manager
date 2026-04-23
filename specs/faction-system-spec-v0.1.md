@@ -590,6 +590,45 @@ MQ加算は一切しない。
 
 ---
 
+### §9.10 F05H 活動休止（リーダー長期離脱）
+
+F03（リーダー喪失＝解散）と並ぶが、**旗を降ろすのではなく畳む**イベント。リーダーが長期離脱（怪我）中の派閥は解散ではなく活動休止 `status: 'hiatus'` に退避し、リーダー復帰で自動的に `active` へ戻る。
+
+**発火条件**:
+- `status === 'active'` の派閥のリーダーが怪我状態 `injury.weeksLeft >= 8`
+- 即時発動 100%（確率ゲートなし、`pickWeeklyEvent` 内で F03 の次に最優先で評価）
+- 選択肢なし（通知のみ）
+
+**影響**:
+- `faction.status` を `'hiatus'` へ遷移
+- `inHostility = false` へ解除（対立型→通常型退避）
+- `momentum = 0` リセット
+- `factionTimeline` にエントリ追加（ログのみ）
+- 派閥メンバーの trust / bond / rivalry には直接影響しない（離脱の事実のみを記述）
+
+**クールダウン**: なし（status が `hiatus` の間は `checkF05HConditions` が false を返す）
+
+**自動復帰**:
+- 毎週 `applyHiatusRecovery` が `hiatus` 派閥を走査
+- リーダーの `injury.weeksLeft === 0` になれば `status` を `active` へ戻す
+- 通知なし（ログのみ）。復帰演出は将来の F07 系で検討
+- リーダーがロスターから消えていた場合は `hiatus` のまま据え置き（次週以降に F03 経路へ委ねる）
+
+**F03 との区別**:
+- F03＝旗を降ろす（復帰不可・解散）
+- F05H＝旗を畳んで棚に置く（再起可能な保留）
+- 長期重傷での解散を避けるためのセーフガード。リーダー退団・引退は F03 へ、長期怪我は F05H へルーティング
+
+**演出**: 追悼型 Stage 全画面、ただし「戻ってくるまで」という時限つき待機トーン。BGM は `Soft Bids, Sharp Minds.mp3` を `SOFT_VOL × 0.7` 低音量で、終止に `f06_fin_chime_v1.mp3` を控えめに1打。
+
+**実装参照**:
+- `Engine.factions.detectHiatusTrigger(state)` — 毎週判定
+- `Engine.factions.applyF05HResult(state, payload)` — 状態遷移
+- `Engine.factions.applyHiatusRecovery(state)` — 自動復帰
+- UI モーダル: `showFactionHiatusModal` (ui-common.js)、ディスパッチャ: `handleFactionEvent` eventId `'F05H'`
+
+---
+
 ### §9.11 F02 進展 4 種
 
 F02「派閥抗争の勃発」発火後、抗争は以下 4 経路のいずれかで進展する。UI モーダルは ui-common.js 実装済み、エンジン配線は `src/factions.js` の該当関数群。優先順位は pickWeeklyEvent で `F02_ENDLESS > F02_PEACE > ... > F02 > F01`、試合フック経由の `F02_IGNITE` / `F02_RESOLUTION` は `!s._pendingFactionEvent` ガードで早い者勝ち。
