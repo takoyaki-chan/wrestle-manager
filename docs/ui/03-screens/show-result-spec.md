@@ -2,7 +2,7 @@
 
 **ファイル**：`docs/ui/03-screens/show-result.md`
 **最終更新**：2026-04-23 / v1.0
-**実装状況**：Phase 1（通常/特別興行）+ Phase 2（PPV/PPV TV）完了。Phase 3/4 未着手。詳細: `plans/post-match-redesign-session-handoff.md`
+**実装状況**：Phase 1（通常/特別興行）+ Phase 2（PPV/PPV TV）+ Phase 3（対抗戦最終/進行）完了。Phase 4 未着手。詳細: `plans/post-match-redesign-session-handoff.md`
 
 ---
 
@@ -479,7 +479,7 @@ Pattern A 時代の `<details>` は Pattern B では削除方向。試合行を�
 |---|---|---|
 | U-01 | 試合ログ `<details>` の継続/廃止 | Phase 1 実装時にユーザーに確認。暫定は**継続**（Pattern B 風にスタイル調整） |
 | U-02 | PPV コーチ称賛バブルの位置 | Phase 2 実装時にモックアップで確認。暫定：試合行下部の独立ブロック |
-| U-03 | 対抗戦 #5 の敵エースセリフセクション | Phase 3 実装時に Pattern B 風にモックアップ更新。暫定：既存レイアウトを Stage カラーに寄せる |
+| U-03 | 対抗戦 #5 の敵エースセリフセクション | 決定：Phase 3 で `.pb-ace-area`（160px肖像 + 金枠 + Stageトーン独立セクション、敵団体色左ボーダー）で実装。敗北時 `.is-defeated` で grayscale |
 | U-04 | JT 優勝発表 #8 で「Ceremony 化」するか | 決定：**Pattern B 準拠で実装**（Ceremony化しない）。将来的にアップグレードの余地あり |
 | U-05 | 試合行内の負傷バッジの配置 | モックアップ V2 準拠（試合行内下部、該当選手のみ）|
 

@@ -12,7 +12,7 @@
 |---|---|---|---|
 | 1 | 通常興行 / 特別興行（`renderShowResult`） | ✅ 完了 | `93868a8` |
 | 2 | PPV GRAND FINAL / PPV TV観戦（`renderPPVResult` / `renderPPVTVResult`） | ✅ 完了 | `5d3590d` |
-| 3 | 対抗戦最終 / 対抗戦進行（`renderWarFinalResult` / `renderWarMatchPreview`） | ⏳ 未着手 | — |
+| 3 | 対抗戦最終 / 対抗戦進行（`renderWarFinalResult` / `renderWarMatchPreview`） | ✅ 完了 | （次コミット） |
 | 4 | JT各試合 / JT優勝 / B3挑戦状 / B2対立決着 | ⏳ 未着手 | — |
 
 **次セッションで Phase 3 から再開**。元ハンドオフは `plans/post-match-redesign-handoff.md`（Phase 3-4 の指示文が §6, §7）。

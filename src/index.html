@@ -2558,6 +2558,50 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .pb-fighter.is-tag .pb-tag-member-badge{font-family:var(--font-label);font-size:8px;letter-spacing:1.5px;color:var(--stage-text-quiet);text-transform:uppercase;margin-top:-1px}
 .pb-fighter.is-tag.is-winner .pb-tag-member.is-finisher .pb-tag-member-badge,
 .pb-fighter.is-tag.is-loser .pb-tag-member.is-pinned .pb-tag-member-badge{color:var(--gold)}
+/* Phase 3: War variant */
+.pb-live.is-war{background:rgba(225,112,85,0.14);border-color:rgba(225,112,85,0.5);color:var(--c-rivalry);letter-spacing:3.5px}
+.pb-banner-title.is-war{font-size:38px;background:linear-gradient(180deg,#fff 0%,#ffd9cc 50%,var(--c-rivalry) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 28px rgba(225,112,85,0.3);letter-spacing:6px}
+.pb-fighter.is-player-side .pb-portrait{box-shadow:inset 4px 0 0 var(--c-info),0 0 0 1px rgba(109,148,184,0.15)}
+.pb-fighter.is-left.is-player-side .pb-portrait{box-shadow:inset -4px 0 0 var(--c-info),0 0 0 1px rgba(109,148,184,0.15)}
+.pb-fighter.is-enemy-side .pb-portrait{box-shadow:inset 4px 0 0 var(--pb-enemy-color,#e74c3c),0 0 0 1px rgba(231,76,60,0.15)}
+.pb-fighter.is-left.is-enemy-side .pb-portrait{box-shadow:inset -4px 0 0 var(--pb-enemy-color,#e74c3c),0 0 0 1px rgba(231,76,60,0.15)}
+.pb-fighter.is-player-side.is-winner .pb-portrait{box-shadow:inset 4px 0 0 var(--c-info),0 0 0 1px rgba(212,168,67,0.15),0 0 20px rgba(212,168,67,0.3)}
+.pb-fighter.is-left.is-player-side.is-winner .pb-portrait{box-shadow:inset -4px 0 0 var(--c-info),0 0 0 1px rgba(212,168,67,0.15),0 0 20px rgba(212,168,67,0.3)}
+.pb-fighter.is-enemy-side.is-winner .pb-portrait{box-shadow:inset 4px 0 0 var(--pb-enemy-color,#e74c3c),0 0 0 1px rgba(212,168,67,0.15),0 0 20px rgba(212,168,67,0.3)}
+.pb-fighter.is-left.is-enemy-side.is-winner .pb-portrait{box-shadow:inset -4px 0 0 var(--pb-enemy-color,#e74c3c),0 0 0 1px rgba(212,168,67,0.15),0 0 20px rgba(212,168,67,0.3)}
+.pb-fighter.is-player-side .pb-fighter-meta{color:var(--c-info)}
+.pb-fighter.is-enemy-side .pb-fighter-meta{color:var(--pb-enemy-color,#e74c3c)}
+.pb-mrow.is-resolved{padding:12px 20px;border-bottom:1px solid rgba(200,190,170,0.05)}
+.pb-mrow.is-resolved .pb-portrait{width:56px;height:84px}
+.pb-mrow.is-resolved .pb-fighter-ovr .val{font-size:24px}
+.pb-mrow.is-resolved .pb-fighter-name{font-size:14px}
+.pb-mrow.is-resolved.has-dialogue{padding-top:72px}
+.pb-mrow.is-pending{grid-template-columns:1fr;padding:10px 20px;opacity:0.32;border-bottom:1px dashed rgba(200,190,170,0.05)}
+.pb-mrow.is-pending .pb-pending-text{font-family:var(--font-label);font-size:11px;letter-spacing:2px;color:var(--stage-text-quiet);text-align:center;text-transform:uppercase}
+.pb-mrow.is-upcoming{background:linear-gradient(180deg,rgba(109,148,184,0.04) 0%,transparent 40%,rgba(225,112,85,0.04) 100%);border-left:2px solid var(--c-rivalry);padding:32px 20px 24px}
+.pb-mrow.is-upcoming::before{content:'⚔ NEXT MATCH';position:absolute;top:10px;left:16px;font-family:var(--font-label);font-size:10px;letter-spacing:2.5px;font-weight:700;color:var(--c-rivalry);text-transform:uppercase}
+.pb-war-actions{grid-column:1 / -1;display:flex;gap:10px;justify-content:center;padding-top:14px;margin-top:14px;border-top:1px dashed rgba(200,190,170,0.08)}
+.pb-war-btn{padding:10px 22px;font-family:var(--font-label);font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border-radius:4px;cursor:pointer;transition:all .15s}
+.pb-war-btn.is-watch{color:#14110a;background:linear-gradient(135deg,var(--gold-deep),var(--gold));border:none;box-shadow:0 2px 14px rgba(212,168,67,0.25)}
+.pb-war-btn.is-watch:hover{box-shadow:0 4px 20px rgba(212,168,67,0.4)}
+.pb-war-btn.is-skip{background:transparent;color:var(--stage-text-sub);border:1px solid var(--stage-border-lit)}
+.pb-war-btn.is-skip:hover{color:var(--stage-text-main);border-color:var(--stage-border-main)}
+.pb-war-skipall{text-align:center;padding:16px}
+.pb-war-skipall button{background:transparent;color:var(--stage-text-sub);border:1px solid var(--stage-border-lit);padding:8px 18px;font-family:var(--font-label);font-size:11px;letter-spacing:2px;text-transform:uppercase;border-radius:3px;cursor:pointer}
+.pb-war-skipall button:hover{color:var(--c-rivalry);border-color:rgba(225,112,85,0.4)}
+.pb-ace-area{margin-top:20px;padding:20px 24px;background:var(--stage-panel-deep);border:1px solid var(--stage-border-lit);border-left:3px solid var(--pb-enemy-color,#e74c3c);display:grid;grid-template-columns:160px 1fr;gap:20px;align-items:center}
+.pb-ace-label{grid-column:1 / -1;font-family:var(--font-label);font-size:10px;letter-spacing:3px;color:var(--stage-text-dim);text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--stage-border);margin-bottom:4px;text-align:center}
+.pb-ace-portrait-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.pb-ace-portrait{width:140px;height:210px;border:1px solid var(--pb-enemy-color,#e74c3c);background:rgba(0,0,0,0.5);overflow:hidden;position:relative;box-shadow:0 0 24px rgba(0,0,0,0.5)}
+.pb-ace-portrait img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.pb-ace-portrait.is-defeated img{filter:grayscale(0.7) brightness(0.7)}
+.pb-ace-name{font-size:14px;font-weight:700;letter-spacing:1px;color:var(--pb-enemy-color,#e74c3c);text-align:center}
+.pb-ace-speech{display:flex;flex-direction:column;gap:8px}
+.pb-ace-speaker{font-family:var(--font-label);font-size:10px;font-weight:700;letter-spacing:2px;color:var(--pb-enemy-color,#e74c3c);text-transform:uppercase}
+.pb-ace-bubble{background:rgba(245,240,230,0.96);color:#1a1713;padding:16px 20px;border-radius:8px;font-size:14px;line-height:1.8;box-shadow:0 3px 14px rgba(0,0,0,0.5);position:relative}
+.pb-ace-bubble::after{content:'';position:absolute;top:50%;right:100%;transform:translateY(-50%);width:0;height:0;border:8px solid transparent;border-right-color:rgba(245,240,230,0.96);border-left:0}
+.pb-war-flavor{text-align:center;font-size:13px;font-style:italic;line-height:1.8;color:var(--stage-text-sub);padding:10px 16px;margin:0 0 4px}
+.pb-war-flavor em{font-style:italic;color:var(--gold-light)}
 .mq-stars{display:inline-flex;gap:1px;margin-right:4px}
 .mq-star{font-size:12px}
 
