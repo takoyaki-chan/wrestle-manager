@@ -10437,7 +10437,7 @@ function _jtAnimateCounter(from, to, dur, el, colorFn) {
   requestAnimationFrame(tick);
 }
 
-// ===== CHAMPION (V6: trophy → upper → CHAMPION → name → org → speech) =====
+// ===== CHAMPION (Pattern B pb-container) =====
 function renderJuniorTournamentResult() {
   const jt = App._jtPreview;
   if (!jt) return;
@@ -10452,108 +10452,142 @@ function renderJuniorTournamentResult() {
   const { rounds, champion, runnerUp, semiFinalists } = result;
   const season = G.season;
   const upperUrl = getUpperUrl(champion.id);
+  const PRIZE = Engine.juniorTournament.PRIZE;
+
+  // チャンピオンの通算MQ + 決勝MQ + path
+  let totalMQ = 0;
+  let finalMQ = 0;
+  const pathParts = [];
+  rounds.forEach((round, ri) => {
+    const abbr = round.name === 'final' ? 'F' : round.name === 'semiFinal' ? 'SF' : 'QF';
+    const champMatch = round.matches.find(m => m.left.id === champion.id || m.right.id === champion.id);
+    if (champMatch) {
+      totalMQ += champMatch.mq;
+      if (ri === rounds.length - 1) finalMQ = champMatch.mq;
+      pathParts.push(abbr);
+    }
+  });
+  const pathText = pathParts.join(' → ');
+  const champOvr = champion.ovr != null ? champion.ovr : Engine.util.ov(_jtFighterShim(champion));
 
   // 優勝スピーチ
   const champLine = getJuniorTournamentLine('champion', champion.personality || 'normal', champion.archetype || '_default');
 
-  let html = `<div class="jt-phase">優勝</div>`;
-  html += `<div class="jt-wrap">${_jtHeader()}`;
+  let html = `<div class="pb-container">`;
 
-  // チャンピオンカード
-  html += `<div class="jt-ch jt-su">`;
-  html += `<div class="jt-ch-trophy">🏆</div>`;
-  if (upperUrl) {
-    html += `<div class="jt-ch-img"><img src="${upperUrl}" alt="${champion.name}"></div>`;
-  }
-  html += `<div class="cl">CHAMPION</div>`;
-  html += `<div class="cn">${champion.name}</div>`;
-  html += `<div class="co">${champion._orgName || ''}</div>`;
+  html += `<div class="pb-banner">
+    <div class="pb-live is-jt-champ">🏆 JT CHAMPION</div>
+    <div class="pb-banner-title is-jt-champ">第${season}回 ジュニアトーナメント 優勝</div>
+    <div class="pb-banner-sub">${escHtml(champion.name)}<span class="dot">·</span>${escHtml(champion._orgName || '')}</div>
+  </div>`;
+
+  // Scoreboard: Path / Total MQ / Final MQ / Prize / OVR
+  html += `<div class="pb-score-strip" style="grid-template-columns:1.2fr 1fr 1fr 1fr 1fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:18px;color:var(--gold-light);font-family:var(--font-label);letter-spacing:2px">${escHtml(pathText)}</div>
+      <div class="pb-score-lbl">Path</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(Math.round(totalMQ / Math.max(1, pathParts.length)))}</div>
+      <div class="pb-score-val" style="margin-top:3px">${totalMQ}</div>
+      <div class="pb-score-lbl">Total MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(finalMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${finalMQ}</div>
+      <div class="pb-score-lbl">Final MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:var(--gold);font-size:22px">¥${PRIZE.champion}<span style="font-size:12px"> 万</span></div>
+      <div class="pb-score-lbl">Prize</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:var(--gold-light)">${champOvr}</div>
+      <div class="pb-score-lbl">OVR</div>
+    </div>
+  </div>`;
+
+  // Champion card
+  html += `<div class="pb-champion-card">`;
   if (champLine) {
-    html += `<div class="jt-ch-bub"><div class="sp">${champion.name}</div>「${champLine}」</div>`;
+    html += `<div class="pb-champion-bubble">
+      <div class="pb-champion-bubble-speaker">🏆 ${escHtml(champion.name)}</div>
+      「${escHtml(champLine)}」
+    </div>`;
   }
-  html += `<div style="font-size:12px;color:var(--gold);margin-top:14px">賞金 ¥${Engine.juniorTournament.PRIZE.champion}万</div>`;
+  html += `<div class="pb-champion-portrait">
+    ${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(champion.name)}" onerror="this.style.display='none'">` : ''}
+    <div class="pb-champion-trophy">🏆</div>
+  </div>`;
+  html += `<div class="pb-champion-label">CHAMPION</div>`;
+  html += `<div class="pb-champion-name">${escHtml(champion.name)}</div>`;
+  html += `<div class="pb-champion-org">${escHtml(champion._orgName || '')}</div>`;
   html += `</div>`;
 
-  // 準優勝
+  // Runner-up + semifinalists
+  const subEntries = [];
   if (runnerUp) {
-    html += `<div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin:14px auto;max-width:420px;display:flex;align-items:center;gap:10px">`;
-    html += portraitImg(runnerUp.id || runnerUp.portrait, 36);
-    html += `<div style="flex:1"><div style="font-size:13px;font-weight:600">準優勝: ${runnerUp.name}</div><div style="font-size:11px;color:var(--text-dim)">${runnerUp._orgName || ''} — 賞金 ¥${Engine.juniorTournament.PRIZE.runnerUp}万</div></div>`;
-    html += `</div>`;
+    subEntries.push({ f: runnerUp, labelCls: 'is-runnerup', labelText: '2nd Place', prize: PRIZE.runnerUp });
   }
-
-  // 3-4位
-  if (semiFinalists && semiFinalists.length > 0) {
-    html += `<div style="padding:10px;border:1px solid var(--border);border-radius:8px;margin:10px auto;max-width:420px">`;
-    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">3-4位（準決勝敗退）</div>`;
+  if (semiFinalists) {
     semiFinalists.forEach(sf => {
-      if (!sf) return;
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">`;
-      html += portraitImg(sf.id || sf.portrait, 28);
-      html += `<span style="font-size:12px">${sf.name}</span>`;
-      html += `<span style="font-size:10px;color:var(--text-dim);margin-left:auto">${sf._orgName || ''}</span>`;
-      html += `</div>`;
+      if (sf) subEntries.push({ f: sf, labelCls: 'is-semifinalist', labelText: 'Semifinalist', prize: PRIZE.semiFinal });
+    });
+  }
+  if (subEntries.length > 0) {
+    html += `<div class="pb-champion-sub">`;
+    subEntries.forEach(e => {
+      const face = getPortraitUrl(e.f.id);
+      html += `<div class="pb-champion-sub-card ${e.labelCls}">
+        <div class="pb-champion-sub-portrait">${face ? `<img src="${face}" alt="" onerror="this.style.display='none'">` : `<span class="pb-champion-sub-init">${escHtml((e.f.name || '?')[0])}</span>`}</div>
+        <div class="pb-champion-sub-info">
+          <div class="pb-champion-sub-label">${e.labelText}</div>
+          <div class="pb-champion-sub-name">${escHtml(e.f.name)}</div>
+          <div class="pb-champion-sub-org">${escHtml(e.f._orgName || '')}<span class="pb-champion-sub-prize">¥${e.prize}万</span></div>
+        </div>
+      </div>`;
     });
     html += `</div>`;
   }
 
-  // 全試合結果
-  html += `<div style="margin:14px auto;max-width:420px">`;
-  html += `<div style="font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.2);margin-bottom:8px;text-align:center">全試合結果</div>`;
-  rounds.forEach(round => {
-    const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
-    round.matches.forEach(match => {
-      const lWin = match.winnerId === match.left.id;
-      const wName = lWin ? match.left.name : match.right.name;
-      const lName = lWin ? match.right.name : match.left.name;
-      html += `<div style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:4px;font-size:12px;display:flex;align-items:center;gap:6px">`;
-      html += `<span style="color:var(--text-dim);min-width:48px">${roundLabel}</span>`;
-      html += `<span style="color:#2ecc71;font-weight:600">${wName}</span>`;
-      html += `<span style="color:var(--text-dim)">def.</span>`;
-      html += `<span>${lName}</span>`;
-      html += `<span style="margin-left:auto;color:var(--text-sub)">${mqStars(match.mq)} ${match.mq}</span>`;
-      html += `</div>`;
-    });
-  });
-  html += `</div>`;
-
-  // 自団体の獲得賞金サマリー
-  const PRIZE = Engine.juniorTournament.PRIZE;
+  // プレイヤー団体賞金サマリー
   const playerIds = new Set((G.roster || []).map(f => f.id));
   let totalPrize = 0;
   const prizeDetails = [];
   if (champion && playerIds.has(champion.id)) {
     totalPrize += PRIZE.champion;
-    prizeDetails.push(`${champion.name}（優勝）¥${PRIZE.champion}万`);
+    prizeDetails.push({ name: champion.name, rank: '優勝', amt: PRIZE.champion });
   }
   if (runnerUp && playerIds.has(runnerUp.id)) {
     totalPrize += PRIZE.runnerUp;
-    prizeDetails.push(`${runnerUp.name}（準優勝）¥${PRIZE.runnerUp}万`);
+    prizeDetails.push({ name: runnerUp.name, rank: '準優勝', amt: PRIZE.runnerUp });
   }
   if (semiFinalists) {
     semiFinalists.forEach(sf => {
       if (sf && playerIds.has(sf.id)) {
         totalPrize += PRIZE.semiFinal;
-        prizeDetails.push(`${sf.name}（3-4位）¥${PRIZE.semiFinal}万`);
+        prizeDetails.push({ name: sf.name, rank: '3-4位', amt: PRIZE.semiFinal });
       }
     });
   }
   if (totalPrize > 0) {
-    html += `<div style="max-width:420px;margin:14px auto;padding:14px 16px;background:rgba(212,168,83,0.08);border:1px solid rgba(212,168,83,0.25);border-radius:10px;text-align:center">`;
-    html += `<div style="font-size:11px;color:var(--gold);letter-spacing:2px;margin-bottom:8px">💰 自団体の獲得賞金</div>`;
-    prizeDetails.forEach(d => {
-      html += `<div style="font-size:12px;color:var(--text-main);margin-bottom:3px">${d}</div>`;
-    });
-    html += `<div style="font-size:18px;font-weight:900;color:var(--gold);margin-top:8px;font-family:'Oswald',sans-serif">合計 ¥${totalPrize}万</div>`;
-    html += `</div>`;
+    html += `<div class="pb-champion-prizebox">
+      <div class="pb-champion-prizebox-label">💰 自団体の獲得賞金</div>
+      <div class="pb-champion-prizebox-list">
+        ${prizeDetails.map(d => `<div class="pb-champion-prizebox-item"><span class="n">${escHtml(d.name)}</span><span class="r">${d.rank}</span><span class="a">¥${d.amt}万</span></div>`).join('')}
+      </div>
+      <div class="pb-champion-prizebox-total">合計 <span>¥${totalPrize}万</span></div>
+    </div>`;
   } else {
-    html += `<div style="max-width:420px;margin:14px auto;text-align:center;font-size:12px;color:var(--text-dim)">自団体からの入賞者はいませんでした</div>`;
+    html += `<div class="pb-champion-prizebox is-empty">自団体からの入賞者はいませんでした</div>`;
   }
 
-  // 閉じるボタン
-  html += `<div class="jt-bt" style="max-width:420px;margin:18px auto">`;
-  html += `<button class="btn btn-gold" style="width:100%;padding:12px;font-size:14px;font-weight:700" onclick="App.finalizeJuniorTournament()">閉じる</button>`;
-  html += `</div></div>`;
+  // Footer
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.finalizeJuniorTournament()">閉じる</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
