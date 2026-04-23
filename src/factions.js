@@ -1884,6 +1884,7 @@ Engine.factions = {
       leaderBId: best.B.leaderId,
       leaderAName: best.lA.name,
       leaderBName: best.lB.name,
+      hostilityPeak: Math.round(best.peak),
     };
   },
 
@@ -1953,71 +1954,43 @@ Engine.factions = {
 
   // ── §9.5 F05 派閥内亀裂 選択適用 ──
   // A: 助言（60%で回避）/ B: 分裂（即時） / C: 静観（70%で自然分裂）
+  // v2 改訂: 社長は派閥の内紛に介入しない（特定派閥の肩を持つ＝他派閥の信頼を損なう）。
+  // UI 側は選択肢なしの「見守る」1 ボタンのみ。ここでは choiceId を無視し、
+  // 旧 'C 静観' の挙動（70% 自然分裂 / 30% 据え置き）を単一パスとして適用する。
   applyF05Choice(state, payload, choiceId, rng) {
-    const { factionId, factionName, leaderId, leaderName, dissidentIds, ringleaderId, ringleaderName } = payload;
+    const { factionId, factionName, dissidentIds, ringleaderId, ringleaderName } = payload;
     let s = state;
     const cdKey = this._f05Key(factionId);
     s = this._markCooldown(s, cdKey);
 
     const roster = s.roster || [];
-    const splitFaction = () => {
-      // 元派閥から dissidents を除外
-      let ns = {
+    if (Engine.rng.float(rng) < 0.70) {
+      // 自然分裂
+      s = {
         ...s,
         factions: (s.factions || []).map(f => f.id === factionId
           ? { ...f, memberIds: f.memberIds.filter(id => !dissidentIds.includes(id)) }
           : f),
       };
-      // 新派閥: ringleader をリーダーに loyal 派閥成立
       const ringleader = roster.find(c => c.id === ringleaderId);
-      if (ringleader) {
-        ns = this.createFaction(ns, ringleaderId, dissidentIds, { type: 'loyal' });
-      }
-      return ns;
-    };
-
-    if (choiceId === 'A') {
-      // 助言: リーダー/不満分子 trust +3〜+5、60%で回避
-      const tLeader = 3 + Math.floor(Engine.rng.float(rng) * 3);
-      const tDiss = 3 + Math.floor(Engine.rng.float(rng) * 3);
-      s = this._applyTrustToMembers(s, [leaderId], tLeader);
-      s = this._applyTrustToMembers(s, dissidentIds, tDiss);
-      if (Engine.rng.float(rng) < 0.60) {
-        return { state: s, resultText: `${leaderName}への助言が効いた。${factionName}の亀裂は今は塞がった。` };
-      }
-      // 回避失敗: 次の F05 発動で再判定可
-      return { state: s, resultText: `助言はしたが、${factionName}の水面下のささくれは消えていない。` };
-    }
-    if (choiceId === 'B') {
-      // 分裂成立
-      s = splitFaction();
-      s = this._applyTrustToMembers(s, [leaderId], -(8 + Math.floor(Engine.rng.float(rng) * 5)));
-      if (typeof console !== 'undefined') console.log(`[WM Faction] F05 split: ${factionName} → ${ringleaderName}組 (${dissidentIds.length} members)`);
-      return { state: s, resultText: `${factionName}は割れた。${ringleaderName}を中心とした新派閥が生まれ、旗が二本立つ。` };
-    }
-    // 'C' 静観
-    if (Engine.rng.float(rng) < 0.70) {
-      s = splitFaction();
+      if (ringleader) s = this.createFaction(s, ringleaderId, dissidentIds, { type: 'loyal' });
+      if (typeof console !== 'undefined') console.log(`[WM Faction] F05 split (natural): ${factionName} → ${ringleaderName}組 (${dissidentIds.length} members)`);
       return { state: s, resultText: `見守るうち、${factionName}は自然に割れた。${ringleaderName}が旗を掲げる。` };
     }
     return { state: s, resultText: `${factionName}の亀裂は、とりあえず破裂には至らなかった。` };
   },
 
-  // ── §9.6 F06 和解の兆し 選択適用 ──
-  // A: 後押し（コスト100万）/ B: 自然 / C: 煽る
+  // ── §9.6 F06 和解の兆し 選択適用（v2 改訂：2択）──
+  // A: そっと結束を後押しする（コストなし、敵対度 -15〜-25、両リーダー trust +3〜+5、bond +3〜+5）
+  // B: 何もしない（介入なし、自然減衰に任せる）
+  // 旧 C「煽る」は廃止。旧 A の「和解興行コスト100万」も廃止。
   applyF06Choice(state, payload, choiceId, rng) {
     const { factionAId, factionBId, factionAName, factionBName } = payload;
     let s = state;
     const cdKey = this._f06Key(factionAId, factionBId);
     s = this._markCooldown(s, cdKey);
-    const cfg = FACTION_CONFIG;
 
     if (choiceId === 'A') {
-      // コスト 100 万（UI 側で事前チェック済み想定、ここでも控える）
-      const funds = s.funds || 0;
-      if (funds >= cfg.f06Cost) {
-        s = { ...s, funds: funds - cfg.f06Cost };
-      }
       const d = -(15 + Math.floor(Engine.rng.float(rng) * 11));
       s = this.applyHostilityChange(s, factionAId, factionBId, d);
       s = this.applyHostilityChange(s, factionBId, factionAId, d);
@@ -2040,17 +2013,10 @@ Engine.factions = {
       const tB = 3 + Math.floor(Engine.rng.float(rng) * 3);
       if (payloadLeaderA) s = this._applyTrustToMembers(s, [payloadLeaderA], tA);
       if (payloadLeaderB) s = this._applyTrustToMembers(s, [payloadLeaderB], tB);
-      return { state: s, resultText: `合同練習の席で、強ばっていた視線がほどけた。${factionAName}と${factionBName}は、距離を取り戻し始めている。` };
+      return { state: s, resultText: `強ばっていた視線が、静かにほどけた。${factionAName}と${factionBName}は、距離を取り戻し始めている。` };
     }
-    if (choiceId === 'B') {
-      const d = -(5 + Math.floor(Engine.rng.float(rng) * 6));
-      s = this.applyHostilityChange(s, factionAId, factionBId, d);
-      s = this.applyHostilityChange(s, factionBId, factionAId, d);
-      return { state: s, resultText: `社長は手を出さず、時間に任せた。空気は少しだけ和らいだ。` };
-    }
-    // 'C' 煽る
-    s = this._applyLockerRoomMorale(s, -(3 + Math.floor(Engine.rng.float(rng) * 3)));
-    return { state: s, resultText: `社長は和解の兆しを拾わなかった。それどころか、燻る火を仄かに煽った。` };
+    // 'B' 何もしない（介入なし・自然減衰は外部 tick に任せる）
+    return { state: s, resultText: `社長は手を出さなかった。和解の兆しは、時間に委ねられた。` };
   },
 
   // ── §9.7 F07 リーダーの横暴 選択適用 ──
@@ -2115,16 +2081,17 @@ Engine.factions = {
     return { state: s, resultText: `${leaderName}ではなく別の幹部を重用した。${factionName}の中に、新たな対立軸がくすぶっている。` };
   },
 
-  // ── §9.8 F08 対立ヒートアップ 選択適用 ──
-  // A: 直接対決 / B: 別興行 / C: 警告
+  // ── §9.8 F08 対立ヒートアップ 選択適用（v2 改訂）──
+  // A: 直接対決をメインに組む（CD 24 週を立てる）
+  // B: 仲裁する（敵対度 80 超では条件未達、UI 側で disabled。到達してもここでは何もしない）
+  // C: 煽らず、組まず（熱は持続・CD は立てない → 再判定継続）
   applyF08Choice(state, payload, choiceId, rng) {
     const { factionAId, factionBId, factionAName, factionBName, leaderAId, leaderBId } = payload;
     let s = state;
-    const cdKey = this._f08Key(factionAId, factionBId);
-    s = this._markCooldown(s, cdKey);
-    const cfg = FACTION_CONFIG;
 
     if (choiceId === 'A') {
+      // CD を立てる
+      s = this._markCooldown(s, this._f08Key(factionAId, factionBId));
       // 直接対決 directive を立てる（次興行カード編成で参照）
       s = {
         ...s,
@@ -2139,33 +2106,11 @@ Engine.factions = {
       return { state: s, resultText: `${factionAName}と${factionBName}、両リーダーの直接対決を次興行のメインに据えると決めた。` };
     }
     if (choiceId === 'B') {
-      // 別興行（コスト200万）
-      const funds = s.funds || 0;
-      if (funds >= cfg.f08AlternativeCost) {
-        s = { ...s, funds: funds - cfg.f08AlternativeCost };
-      }
-      const d = -(5 + Math.floor(Engine.rng.float(rng) * 6));
-      s = this.applyHostilityChange(s, factionAId, factionBId, d);
-      s = this.applyHostilityChange(s, factionBId, factionAId, d);
-      return { state: s, resultText: `両派閥のリーダーを別興行に振り分けた。熱は当面、裏に籠もる。` };
+      // UI 側で disabled のはずだが、安全弁として no-op（CD も立てない）
+      return { state: s, resultText: '' };
     }
-    // 'C' 警告
-    if (leaderAId) s = this._applyTrustToMembers(s, [leaderAId], -(3 + Math.floor(Engine.rng.float(rng) * 3)));
-    if (leaderBId) s = this._applyTrustToMembers(s, [leaderBId], -(3 + Math.floor(Engine.rng.float(rng) * 3)));
-    const d = -(10 + Math.floor(Engine.rng.float(rng) * 6));
-    s = this.applyHostilityChange(s, factionAId, factionBId, d);
-    s = this.applyHostilityChange(s, factionBId, factionAId, d);
-    // 両リーダー相互 bond +2〜+3（連帯感）
-    if (leaderAId && leaderBId && s.relationships) {
-      const bd = 2 + Math.floor(Engine.rng.float(rng) * 2);
-      const kAB = `${leaderAId}>${leaderBId}`, kBA = `${leaderBId}>${leaderAId}`;
-      let rels = { ...s.relationships };
-      if (rels[kAB]) rels[kAB] = { ...rels[kAB], bond: Engine.util.clamp(rels[kAB].bond + bd, 0, 100) };
-      if (rels[kBA]) rels[kBA] = { ...rels[kBA], bond: Engine.util.clamp(rels[kBA].bond + bd, 0, 100) };
-      s = { ...s, relationships: rels };
-    }
-    s = this._applyLockerRoomMorale(s, 2 + Math.floor(Engine.rng.float(rng) * 2));
-    return { state: s, resultText: `両リーダーを呼び出し、社長権限で頭を抑えた。火は一時沈静化したが、焦げ跡は残る。` };
+    // 'C' 煽らず、組まず — CD を立てずに次週以降も再判定
+    return { state: s, resultText: `社長は、この熱に直接触れなかった。煽りもせず、組みもせず。火はしばらく燻り続ける。` };
   },
 
 

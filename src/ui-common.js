@@ -7017,323 +7017,419 @@ function showFactionF04Modal(payload, state, onChoice) {
   }
 }
 
-// F05: 派閥内亀裂（3シーン＋結果）
+// F05: 派閥内に火種（Office 応接室型 / 通知のみ・選択肢なし）
+// 03-screens §4 / モック faction-events-f05-f08-rework.html §F05:
+//   社長は派閥の内紛に介入する立場ではないため「見守る」1ボタンのみ。
+//   裏で bond/hostility は進行し、決裂すれば F03 へ自然流入する。
 function showFactionF05Modal(payload, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF05Modal(payload, state, onChoice)); return; }
+
   const roster = state ? (state.roster || []) : [];
   const ringleader = roster.find(c => c.id === payload.ringleaderId);
+  const leader = roster.find(c => c.id === payload.leaderId);
+  const ringleaderName = payload.ringleaderName || (ringleader ? ringleader.name : '???');
+  const ringleaderSurname = ringleader ? _factionSurname(ringleader) : ringleaderName;
+  const leaderSurname = leader ? _factionSurname(leader) : (payload.leaderName || '');
+  const ringleaderUrl = ringleader ? _factionUpperUrl(ringleader.id) : '';
+  const ringleaderMeta = ringleader
+    ? `AGE ${ringleader.age || '—'} ・ OVR ${Engine.util.ov(ringleader)} ・ ${String(ringleader.style || '').toUpperCase() || 'FIGHTER'} ・ ${String(payload.factionName || '')}`
+    : '';
+  const line = _factionLine(FACTION_F05_DISSIDENT_LINES, ringleader,
+    Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA51));
 
-  let scene = 1;
-  const render = () => {
-    if (scene === 1) {
-      _factionModalBox(`
-        <div class="faction-event-title">⚙ 派閥内の軋み</div>
-        <div class="faction-event-narration">
-          「${payload.factionName}」の内側に、ほつれた糸が見える。<br>
-          ${payload.leaderName}への不満を抱えた者たちが、肩を寄せ合って声を潜めている。
+  const centerPortrait = ringleaderUrl
+    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${ringleaderUrl}')"></div>`
+    : `<div class="fevt-subject-portrait-wrap"></div>`;
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtF05Overlay">
+      <div class="fevt-report-card f05">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">⚙ 派閥内に火種</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ FOR YOUR INFORMATION</div>
         </div>
-        <button class="btn faction-event-next">次へ ▶</button>
-      `);
-    } else if (scene === 2) {
-      const line = _factionLine(FACTION_F05_DISSIDENT_LINES, ringleader,
-        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA51));
-      _factionModalBox(`
-        <div class="faction-event-scene">
-          <div class="faction-event-portrait-wrap">${_factionPortrait(ringleader, 96)}</div>
-          <div class="faction-event-bubble">
-            <div class="faction-event-name">${ringleader ? ringleader.name : '???'}</div>
-            <div class="faction-event-dialogue">「${line || '……もう、ついていけない。'}」</div>
+        ${_factionReporterStrip(state, '社長。お耳に入れておきます。あの組、中で軋みが出てるみたいです')}
+        <div class="fevt-subject-stage">
+          <div class="fevt-subject-trio">
+            ${centerPortrait}
+          </div>
+          <div class="fevt-subject-name">${String(ringleaderName)}</div>
+          <div class="fevt-subject-org">${ringleaderMeta}</div>
+          <div class="fevt-subject-divider"></div>
+          <div class="fevt-observation-note">
+            練習後のロッカーでの会話が減った。<span class="marker">${String(ringleaderSurname)}</span>はリーダー
+            <span class="marker">${String(leaderSurname)}</span>の方針に
+            <span class="marker hostile">不満を抱えている</span>ようだ。<br>
+            まだ表には出ていないが、このまま放っておけば派閥が割れるかもしれない。
+          </div>
+          <div class="fevt-quote hostile">
+            <div class="fevt-quote-speaker">${String(ringleaderName)}</div>
+            ${String(line || '……もう、ついていけない。')}
           </div>
         </div>
-        <button class="btn faction-event-next">次へ ▶</button>
-      `);
-    } else if (scene === 3) {
-      _factionModalBox(`
-        <div class="faction-event-title">⚙ 社長の判断</div>
-        <div class="faction-event-prompt">
-          ${payload.factionName}の亀裂に、どう向き合う？
+        <div class="fevt-decision-prompt" style="padding-bottom:24px">
+          <button class="fevt-continue-btn" id="fevtF05Continue" style="color:var(--cream-text-sub);border-color:rgba(100,85,50,0.3);background:rgba(255,255,255,0.3)">見 守 る ✓</button>
         </div>
-        <div class="faction-event-choices">
-          <button class="btn faction-event-choice" data-choice="A">
-            <span class="faction-choice-label">A: リーダーに助言する</span>
-            <span class="faction-choice-hint">修復を促す。60%で分裂回避</span>
-          </button>
-          <button class="btn faction-event-choice" data-choice="B">
-            <span class="faction-choice-label">B: 不満分子に味方する</span>
-            <span class="faction-choice-hint">${ringleader ? ringleader.name : '不満分子'}を核に新派閥を結成。元派閥は大きく揺らぐ</span>
-          </button>
-          <button class="btn faction-event-choice" data-choice="C">
-            <span class="faction-choice-label">C: 静観する</span>
-            <span class="faction-choice-hint">成り行き任せ。70%で自然分裂</span>
-          </button>
-        </div>
-      `);
-      const box = document.getElementById('careBox');
-      if (box) {
-        box.querySelectorAll('.faction-event-choice').forEach(btn => {
-          btn.addEventListener('click', function() {
-            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-            if (onChoice) onChoice(this.dataset.choice);
-          });
-        });
-      }
-      return;
-    }
-    const box = document.getElementById('careBox');
-    if (box) {
-      const nextBtn = box.querySelector('.faction-event-next');
-      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
-    }
-  };
-  render();
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+
+  const btn = root.querySelector('#fevtF05Continue');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      // 通知のみ。applyF05Choice 側で choiceId は無視されるが互換で 'X' を渡す
+      if (onChoice) onChoice('X');
+    });
+  }
 }
 
-// F06: 和解の兆し（3シーン＋結果）
+// F06: 和解の兆し（Office 応接室型 / 2択：A そっと後押し / B 何もしない）
+// モック faction-events-f05-f08-rework.html §F06:
+//   旧 A「和解興行」削除。もう熱が抜けたものを興行化しない。
+//   新 A は旧 B「自然に任せる」相当の弱い後押し（コストなし）。
 function showFactionF06Modal(payload, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF06Modal(payload, state, onChoice)); return; }
+
   const roster = state ? (state.roster || []) : [];
   const leaderA = roster.find(c => c.id === payload.leaderAId);
   const leaderB = roster.find(c => c.id === payload.leaderBId);
-  // 片方のリーダーを代表して雑談風セリフに。seed で決定性
-  const seedPick = (state.season || 0) + (state.week || 0);
-  const ambientFighter = (seedPick % 2 === 0) ? leaderA : leaderB;
-  const funds = (state && typeof state.funds === 'number') ? state.funds : 0;
-  const cost = (typeof FACTION_CONFIG !== 'undefined') ? FACTION_CONFIG.f06Cost : 1_000_000;
-  const canAfford = funds >= cost;
+  const leaderAName = leaderA ? leaderA.name : (payload.leaderAName || '???');
+  const leaderBName = leaderB ? leaderB.name : (payload.leaderBName || '???');
+  const leaderASurname = leaderA ? _factionSurname(leaderA) : leaderAName;
+  const leaderBSurname = leaderB ? _factionSurname(leaderB) : leaderBName;
+  const leaderAUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
+  const leaderBUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
+  const factionAName = payload.factionAName || '派閥A';
+  const factionBName = payload.factionBName || '派閥B';
 
-  let scene = 1;
-  const render = () => {
-    if (scene === 1) {
-      _factionModalBox(`
-        <div class="faction-event-title">🌱 和解の兆し</div>
-        <div class="faction-event-narration">
-          抗争状態にあった「${payload.factionAName}」と「${payload.factionBName}」。<br>
-          その両派閥のメンバーが、廊下で何気ない言葉を交わしている。<br>
-          硬かった視線が、少しほどけている。
+  // 敵対度平均（表示用）
+  let hostAvg = '—';
+  if (state && state.factionHostility && Engine && Engine.factions && Engine.factions._hostKey) {
+    const hAB = state.factionHostility[Engine.factions._hostKey(payload.factionAId, payload.factionBId)] || 0;
+    const hBA = state.factionHostility[Engine.factions._hostKey(payload.factionBId, payload.factionAId)] || 0;
+    hostAvg = Math.round((hAB + hBA) / 2);
+  }
+
+  // 代表セリフ（leaderB の諦観風）。seed 決定性
+  const seedPick = (state && state.season || 0) + (state && state.week || 0);
+  const speaker = (seedPick % 2 === 0) ? leaderB : leaderA;
+  const speakerName = speaker ? speaker.name : leaderBName;
+  const line = _factionLine(FACTION_F06_AMBIENT_LINES, speaker,
+    Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA61));
+
+  const leftPortrait = leaderAUrl
+    ? `<div class="fevt-pair-portrait" style="background-image:url('${leaderAUrl}');background-size:cover;background-position:center 20%"></div>`
+    : `<div class="fevt-pair-portrait"></div>`;
+  const rightPortrait = leaderBUrl
+    ? `<div class="fevt-pair-portrait" style="background-image:url('${leaderBUrl}');background-size:cover;background-position:center 20%"></div>`
+    : `<div class="fevt-pair-portrait"></div>`;
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtF06Overlay">
+      <div class="fevt-report-card f06">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">🌱 和解の兆し</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        <button class="btn faction-event-next">次へ ▶</button>
-      `);
-    } else if (scene === 2) {
-      const line = _factionLine(FACTION_F06_AMBIENT_LINES, ambientFighter,
-        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA61));
-      _factionModalBox(`
-        <div class="faction-event-scene">
-          <div class="faction-event-portrait-wrap">${_factionPortrait(ambientFighter, 88)}</div>
-          <div class="faction-event-bubble">
-            <div class="faction-event-name">${ambientFighter ? ambientFighter.name : '???'}</div>
-            <div class="faction-event-dialogue">「${line || '……もう、いいかな。'}」</div>
+        ${_factionReporterStrip(state, 'あの2組、もう揉めてませんよ。先週の合同練習でも、普通に挨拶してました')}
+        <div class="fevt-subject-stage">
+          <div class="fevt-subject-pair">
+            ${leftPortrait}
+            <div class="fevt-pair-bridge">↔</div>
+            ${rightPortrait}
+          </div>
+          <div class="fevt-subject-name">${String(factionAName)} ・ ${String(factionBName)}</div>
+          <div class="fevt-subject-org">FORMER RIVALS ・ HOSTILITY ${hostAvg} / 100</div>
+          <div class="fevt-subject-divider"></div>
+          <div class="fevt-observation-note">
+            対立が始まって以来、両派閥のリーダー<span class="marker">${String(leaderASurname)}</span>と<span class="marker">${String(leaderBSurname)}</span>の間にあった棘は、
+            ここ数週間で<span class="marker peace">明らかに和らいで</span>いる。<br>
+            メンバー間でも私的な交流が戻り始めた。社長の一押しがあれば、抗争は完全に終結する。
+          </div>
+          <div class="fevt-quote peace">
+            <div class="fevt-quote-speaker">${String(speakerName)}</div>
+            ${String(line || '……もう、いいかな。あの人とぶつかり続ける理由も、正直、思い出せないし。')}
           </div>
         </div>
-        <button class="btn faction-event-next">次へ ▶</button>
-      `);
-    } else if (scene === 3) {
-      const disabledAttr = canAfford ? '' : ' disabled';
-      const hintA = canAfford
-        ? '合同練習・打ち上げを企画。対立は大きく収束し、抗争状態が終わる可能性が高い'
-        : `資金不足（¥${cost.toLocaleString()}必要）`;
-      _factionModalBox(`
-        <div class="faction-event-title">🌱 社長の判断</div>
-        <div class="faction-event-prompt">
-          この兆しを、どう扱う？
+        <div class="fevt-decision-prompt">この空気を、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-tray two">
+          <div class="fevt-decision-card" data-choice="A">
+            <div class="fevt-decision-letter">A</div>
+            <div class="fevt-decision-label">そっと結束を後押しする</div>
+            <div class="fevt-decision-hint">敵対度を一気に解消、両リーダー trust +3〜+5。大々的な興行は組まない、静かな終結</div>
+          </div>
+          <div class="fevt-decision-card" data-choice="B">
+            <div class="fevt-decision-letter">B</div>
+            <div class="fevt-decision-label">何もしない</div>
+            <div class="fevt-decision-hint">介入なし。自然減衰に任せる（CD 16週まで再判定なし）</div>
+          </div>
         </div>
-        <div class="faction-event-choices">
-          <button class="btn faction-event-choice" data-choice="A"${disabledAttr}>
-            <span class="faction-choice-label">A: 和解を後押しする（コスト ¥${cost.toLocaleString()}）</span>
-            <span class="faction-choice-hint">${hintA}</span>
-          </button>
-          <button class="btn faction-event-choice" data-choice="B">
-            <span class="faction-choice-label">B: 自然に任せる</span>
-            <span class="faction-choice-hint">緩やかに対立度が下がる。戻る可能性もあり</span>
-          </button>
-          <button class="btn faction-event-choice" data-choice="C">
-            <span class="faction-choice-label">C: むしろ煽る</span>
-            <span class="faction-choice-hint">ロッカールーム士気に影響。抗争は続く</span>
-          </button>
-        </div>
-      `);
-      const box = document.getElementById('careBox');
-      if (box) {
-        box.querySelectorAll('.faction-event-choice').forEach(btn => {
-          btn.addEventListener('click', function() {
-            if (this.disabled) return;
-            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-            if (onChoice) onChoice(this.dataset.choice);
-          });
-        });
-      }
-      return;
-    }
-    const box = document.getElementById('careBox');
-    if (box) {
-      const nextBtn = box.querySelector('.faction-event-next');
-      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
-    }
-  };
-  render();
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const choice = this.dataset.choice;
+      if (!choice) return;
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onChoice) onChoice(choice);
+    });
+  });
 }
 
-// F07: リーダーの横暴（3シーン＋結果）
+// F07: リーダーの要求（Office 応接室型 / 3択：認める / 釘刺し / 別幹部）
+// モック faction-events-f05-f08-rework.html §F07:
+//   trio 配置（follower + leader + follower）＋リーダーセリフ＋具体的数値ヒント。
+//   「dictator」→「独裁化」と日本語で明示。
 function showFactionF07Modal(payload, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF07Modal(payload, state, onChoice)); return; }
+
   const roster = state ? (state.roster || []) : [];
   const leader = roster.find(c => c.id === payload.leaderId);
+  const leaderName = leader ? leader.name : (payload.leaderName || '???');
+  const leaderSurname = leader ? _factionSurname(leader) : leaderName;
+  const leaderUrl = leader ? _factionUpperUrl(leader.id) : '';
+  const faction = (state && state.factions || []).find(f => f.id === payload.factionId);
+  const memberIds = faction ? (faction.memberIds || []) : [];
+  const memberCount = memberIds.length;
+  // フォロワー 2 名: リーダー除き OVR 降順から
+  const followers = memberIds
+    .filter(id => id !== payload.leaderId)
+    .map(id => roster.find(c => c.id === id))
+    .filter(Boolean)
+    .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+  const fol1 = followers[0] || null;
+  const fol2 = followers[1] || null;
 
-  let scene = 1;
-  const render = () => {
-    if (scene === 1) {
-      _factionModalBox(`
-        <div class="faction-event-title">👑 リーダーの要求</div>
-        <div class="faction-event-narration">
-          「${payload.factionName}」のリーダー、${payload.leaderName}が社長室を訪れた。<br>
-          その声には、団体内での派閥の地位を当然のものと見る色合いが滲んでいる。
+  const leaderMeta = leader
+    ? `AGE ${leader.age || '—'} ・ OVR ${Engine.util.ov(leader)} ・ FACTION LEADER ・ ${String(payload.factionName || '')}（${memberCount}名）`
+    : `FACTION LEADER ・ ${String(payload.factionName || '')}`;
+
+  const line = _factionLine(FACTION_F07_LEADER_LINES, leader,
+    Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA71));
+
+  const leftFol = fol1
+    ? `<div class="fevt-follower-portrait" style="background-image:url('${_factionUpperUrl(fol1.id)}');background-size:cover;background-position:center 20%"></div>`
+    : `<div class="fevt-follower-portrait"></div>`;
+  const rightFol = fol2
+    ? `<div class="fevt-follower-portrait right" style="background-image:url('${_factionUpperUrl(fol2.id)}');background-size:cover;background-position:center 20%"></div>`
+    : `<div class="fevt-follower-portrait right"></div>`;
+  const centerLeader = leaderUrl
+    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}')"></div>`
+    : `<div class="fevt-subject-portrait-wrap"></div>`;
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtF07Overlay">
+      <div class="fevt-report-card f07">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">👑 リーダーの要求</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        <button class="btn faction-event-next">次へ ▶</button>
-      `);
-    } else if (scene === 2) {
-      const line = _factionLine(FACTION_F07_LEADER_LINES, leader,
-        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA71));
-      _factionModalBox(`
-        <div class="faction-event-scene">
-          <div class="faction-event-portrait-wrap">${_factionPortrait(leader, 96)}</div>
-          <div class="faction-event-bubble">
-            <div class="faction-event-name">${leader ? leader.name : '???'}</div>
-            <div class="faction-event-dialogue">「${line || '……うちの連中のこと、もう少し考えてほしい。'}」</div>
+        ${_factionReporterStrip(state, (leaderSurname || 'リーダー') + 'さんが社長室に向かいました。後ろに数名ついてます。多分、いつもの話です')}
+        <div class="fevt-subject-stage">
+          <div class="fevt-subject-trio">
+            ${leftFol}
+            ${centerLeader}
+            ${rightFol}
+          </div>
+          <div class="fevt-subject-name">${String(leaderName)}</div>
+          <div class="fevt-subject-org">${leaderMeta}</div>
+          <div class="fevt-subject-divider"></div>
+          <div class="fevt-observation-note">
+            <span class="marker">${String(leaderSurname)}</span>は、自分の派閥の地位を当然のものと見なしている。<br>
+            要求の内容は明示されない——「うちの子らを大事にしろ」という、抽象的な圧。<br>
+            後ろに控える2人の存在が、要求の重さを物語る。
+          </div>
+          <div class="fevt-quote leader">
+            <div class="fevt-quote-speaker">${String(leaderName)}</div>
+            ${String(line || '……うちの連中のこと、もう少し考えてほしい。')}
           </div>
         </div>
-        <button class="btn faction-event-next">次へ ▶</button>
-      `);
-    } else if (scene === 3) {
-      _factionModalBox(`
-        <div class="faction-event-title">👑 社長の判断</div>
-        <div class="faction-event-prompt">
-          ${payload.leaderName}の要求に、どう応える？
+        <div class="fevt-decision-prompt">この要求を、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-tray">
+          <div class="fevt-decision-card" data-choice="A">
+            <div class="fevt-decision-letter">A</div>
+            <div class="fevt-decision-label">権威を認める</div>
+            <div class="fevt-decision-hint">
+              リーダーの威圧に折れて、派閥の発言力を黙認する。<br>
+              リーダー信頼 <strong>+5</strong>／非メンバー信頼 <strong>-3〜-6</strong>／ロッカー士気 <strong>-3〜-5</strong>。<br>
+              <strong style="color:#7a1414">この派閥が「独裁化」する</strong>（派閥内の緊張が増し、F07 が再び起きやすくなる）
+            </div>
+          </div>
+          <div class="fevt-decision-card" data-choice="B">
+            <div class="fevt-decision-letter">B</div>
+            <div class="fevt-decision-label">釘を刺す</div>
+            <div class="fevt-decision-hint">
+              「特別扱いはしない、ここは皆の団体だ」と返す。<br>
+              リーダー信頼 <strong>-8〜-12</strong>／非メンバー信頼 <strong>+2〜+3</strong>。<br>
+              4回累積でこの派閥の「権威型」資格そのものを剥がせる
+            </div>
+          </div>
+          <div class="fevt-decision-card" data-choice="C">
+            <div class="fevt-decision-letter">C</div>
+            <div class="fevt-decision-label">別の幹部を立てる</div>
+            <div class="fevt-decision-hint">
+              リーダーを通さず、副リーダー格を表に出す。<br>
+              リーダー信頼 <strong>-5〜-8</strong>／別幹部信頼 <strong>+5〜+8</strong>。<br>
+              「権威型」資格は剥がれるが、派閥内に新たな対立軸が生まれる
+            </div>
+          </div>
         </div>
-        <div class="faction-event-choices">
-          <button class="btn faction-event-choice" data-choice="A">
-            <span class="faction-choice-label">A: 権威を認める</span>
-            <span class="faction-choice-hint">リーダー心証は上がる。他の選手は退き、士気は下がる</span>
-          </button>
-          <button class="btn faction-event-choice" data-choice="B">
-            <span class="faction-choice-label">B: 釘を刺す</span>
-            <span class="faction-choice-hint">リーダーに強い反発。積み上げればいずれ権威を剥がせる</span>
-          </button>
-          <button class="btn faction-event-choice" data-choice="C">
-            <span class="faction-choice-label">C: 別の幹部を重用する</span>
-            <span class="faction-choice-hint">派閥内に新たな対立軸が生まれる。権威タグは外れる</span>
-          </button>
-        </div>
-      `);
-      const box = document.getElementById('careBox');
-      if (box) {
-        box.querySelectorAll('.faction-event-choice').forEach(btn => {
-          btn.addEventListener('click', function() {
-            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-            if (onChoice) onChoice(this.dataset.choice);
-          });
-        });
-      }
-      return;
-    }
-    const box = document.getElementById('careBox');
-    if (box) {
-      const nextBtn = box.querySelector('.faction-event-next');
-      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
-    }
-  };
-  render();
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const choice = this.dataset.choice;
+      if (!choice) return;
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onChoice) onChoice(choice);
+    });
+  });
 }
 
-// F08: 対立ヒートアップ（4シーン＋結果）
+// F08: 対立ヒートアップ（Office 応接室型 / duel 配置 / 3択：直接対決 / 仲裁条件未達 / 煽らず組まず）
+// モック faction-events-f05-f08-rework.html §F08:
+//   subject-duel（2人並び VS）＋両リーダー肖像直下に吹き出し。
+//   旧 B「別興行コスト200万」を削除し、B は「仲裁する（条件未達）」として disabled 表示のみ。
+//   C は「煽らず組まず」。熱を持続させるため cooldown は立てない（apply 側で処理）。
 function showFactionF08Modal(payload, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF08Modal(payload, state, onChoice)); return; }
+
   const roster = state ? (state.roster || []) : [];
   const leaderA = roster.find(c => c.id === payload.leaderAId);
   const leaderB = roster.find(c => c.id === payload.leaderBId);
-  const funds = (state && typeof state.funds === 'number') ? state.funds : 0;
-  const cost = (typeof FACTION_CONFIG !== 'undefined') ? FACTION_CONFIG.f08AlternativeCost : 2_000_000;
-  const canAffordB = funds >= cost;
+  const leaderAName = leaderA ? leaderA.name : (payload.leaderAName || '???');
+  const leaderBName = leaderB ? leaderB.name : (payload.leaderBName || '???');
+  const leaderAUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
+  const leaderBUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
+  const leaderAOvr = leaderA ? Engine.util.ov(leaderA) : '—';
+  const leaderBOvr = leaderB ? Engine.util.ov(leaderB) : '—';
+  const factionAName = payload.factionAName || '派閥A';
+  const factionBName = payload.factionBName || '派閥B';
+  const hostilityPeak = payload.hostilityPeak != null ? payload.hostilityPeak : '—';
 
-  let scene = 1;
-  const render = () => {
-    if (scene === 1) {
-      _factionModalBox(`
-        <div class="faction-event-title">🔥 対立ヒートアップ</div>
-        <div class="faction-event-narration">
-          「${payload.factionAName}」と「${payload.factionBName}」の敵意は、もう言葉で収まる段階ではない。<br>
-          練習場ですれ違うたび、視線が火花を飛ばしている。
+  const lineA = _factionLine(FACTION_F08_LEADER_LINES, leaderA,
+    Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA81));
+  const lineB = _factionLine(FACTION_F08_LEADER_LINES, leaderB,
+    Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA82));
+
+  const aPortrait = leaderAUrl
+    ? `<div class="fevt-duel-portrait" style="background-image:url('${leaderAUrl}');background-size:cover;background-position:center 20%"></div>`
+    : `<div class="fevt-duel-portrait"></div>`;
+  const bPortrait = leaderBUrl
+    ? `<div class="fevt-duel-portrait" style="background-image:url('${leaderBUrl}');background-size:cover;background-position:center 20%"></div>`
+    : `<div class="fevt-duel-portrait"></div>`;
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtF08Overlay">
+      <div class="fevt-report-card f08">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">🔥 対立ヒートアップ</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ HOSTILITY ${hostilityPeak} / 100</div>
         </div>
-        <button class="btn faction-event-next">次へ ▶</button>
-      `);
-    } else if (scene === 2) {
-      const line = _factionLine(FACTION_F08_LEADER_LINES, leaderA,
-        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA81));
-      _factionModalBox(`
-        <div class="faction-event-scene">
-          <div class="faction-event-portrait-wrap">${_factionPortrait(leaderA, 96)}</div>
-          <div class="faction-event-bubble">
-            <div class="faction-event-name">${leaderA ? leaderA.name : '???'}</div>
-            <div class="faction-event-dialogue">「${line || '……もう、話し合いでは済まない。'}」</div>
+        ${_factionReporterStrip(state, '……もう、止めても無駄だと思います。両方とも、リングで決着つける覚悟です')}
+        <div class="fevt-subject-stage">
+          <div class="fevt-subject-duel">
+            <div class="col">
+              ${aPortrait}
+              <div class="fevt-duel-faction">FACTION ・ ${String(factionAName)}</div>
+              <div class="fevt-duel-name">${String(leaderAName)}</div>
+              <div class="fevt-duel-org">LEADER ・ OVR ${leaderAOvr}</div>
+              <div class="fevt-bubble left">
+                <span class="fevt-bubble-name">${String(leaderAName)}</span>
+                ${String(lineA || '……もう、話し合いでは済まない。あの人とは、リングの上でしか答えが出ない。')}
+              </div>
+            </div>
+            <div class="fevt-duel-vs">VS</div>
+            <div class="col right">
+              ${bPortrait}
+              <div class="fevt-duel-faction">FACTION ・ ${String(factionBName)}</div>
+              <div class="fevt-duel-name">${String(leaderBName)}</div>
+              <div class="fevt-duel-org">LEADER ・ OVR ${leaderBOvr}</div>
+              <div class="fevt-bubble right">
+                <span class="fevt-bubble-name">${String(leaderBName)}</span>
+                ${String(lineB || 'いいでしょう。逃げも隠れもしない。来週、メインで、決着をつけましょう。')}
+              </div>
+            </div>
+          </div>
+          <div class="fevt-subject-divider" style="margin-top:18px"></div>
+          <div class="fevt-observation-note">
+            両派閥の敵対度は <span class="marker hostile">${hostilityPeak}/100</span>。
+            ロッカールームの緊張は限界に近く、メンバー全員が次の興行のカード編成を待っている。<br>
+            この熱を、どこに着火させるかは社長の手の中にある。
           </div>
         </div>
-        <button class="btn faction-event-next">次へ ▶</button>
-      `);
-    } else if (scene === 3) {
-      const line = _factionLine(FACTION_F08_LEADER_LINES, leaderB,
-        Engine.rng.derive(state.rngSeed || 1, state.season, state.week, 0xFA82));
-      _factionModalBox(`
-        <div class="faction-event-scene">
-          <div class="faction-event-portrait-wrap">${_factionPortrait(leaderB, 96)}</div>
-          <div class="faction-event-bubble">
-            <div class="faction-event-name">${leaderB ? leaderB.name : '???'}</div>
-            <div class="faction-event-dialogue">「${line || '……リングで、答えを出す。'}」</div>
+        <div class="fevt-decision-prompt">この熱を、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-tray">
+          <div class="fevt-decision-card" data-choice="A">
+            <div class="fevt-decision-letter">A</div>
+            <div class="fevt-decision-label">直接対決をメインに組む</div>
+            <div class="fevt-decision-hint">F08直接対決ボーナス MQ +15〜+20、集客 +12%。負けた派閥は崩壊リスク</div>
+          </div>
+          <div class="fevt-decision-card label-disabled" data-choice="B">
+            <div class="fevt-decision-letter">B</div>
+            <div class="fevt-decision-label">仲裁する（条件未達）</div>
+            <div class="fevt-decision-hint">敵対度80超では仲裁不能。敵対度70未満で再判定</div>
+          </div>
+          <div class="fevt-decision-card" data-choice="C">
+            <div class="fevt-decision-letter">C</div>
+            <div class="fevt-decision-label">煽らず、組まず</div>
+            <div class="fevt-decision-hint">熱は持続。次興行に持ち越し。CD 24週は走らない（再判定継続）</div>
           </div>
         </div>
-        <button class="btn faction-event-next">次へ ▶</button>
-      `);
-    } else if (scene === 4) {
-      const disabledB = canAffordB ? '' : ' disabled';
-      const hintB = canAffordB
-        ? `両リーダーを別興行に振り分ける（一時沈静化）`
-        : `資金不足（¥${cost.toLocaleString()}必要）`;
-      _factionModalBox(`
-        <div class="faction-event-title">🔥 社長の判断</div>
-        <div class="faction-event-prompt">
-          この熱を、どう扱う？
-        </div>
-        <div class="faction-event-choices">
-          <button class="btn faction-event-choice" data-choice="A">
-            <span class="faction-choice-label">A: 直接対決のカードを組む</span>
-            <span class="faction-choice-hint">次興行のメインで両リーダー激突。試合結果が対立度を大きく動かす</span>
-          </button>
-          <button class="btn faction-event-choice" data-choice="B"${disabledB}>
-            <span class="faction-choice-label">B: 別興行に振り分ける（コスト ¥${cost.toLocaleString()}）</span>
-            <span class="faction-choice-hint">${hintB}</span>
-          </button>
-          <button class="btn faction-event-choice" data-choice="C">
-            <span class="faction-choice-label">C: 両リーダーを呼び出して警告</span>
-            <span class="faction-choice-hint">社長権限で圧縮。対立度は下がるが、両者に角が立つ</span>
-          </button>
-        </div>
-      `);
-      const box = document.getElementById('careBox');
-      if (box) {
-        box.querySelectorAll('.faction-event-choice').forEach(btn => {
-          btn.addEventListener('click', function() {
-            if (this.disabled) return;
-            if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-            if (onChoice) onChoice(this.dataset.choice);
-          });
-        });
-      }
-      return;
-    }
-    const box = document.getElementById('careBox');
-    if (box) {
-      const nextBtn = box.querySelector('.faction-event-next');
-      if (nextBtn) nextBtn.addEventListener('click', () => { scene++; render(); });
-    }
-  };
-  render();
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      if (this.classList.contains('label-disabled')) return;
+      const choice = this.dataset.choice;
+      if (!choice) return;
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onChoice) onChoice(choice);
+    });
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
