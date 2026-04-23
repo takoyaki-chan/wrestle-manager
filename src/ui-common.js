@@ -4,6 +4,15 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /** 画像+イニシャルフォールバック付きimgタグ生成。onerror時にイニシャル円を表示 */
 function _imgOrInitial(url, charId, size, extraStyle = '') {
   const ch = ALL_CHARS.find(c => c.id === charId);
@@ -64,7 +73,7 @@ function _drainPopupQueue() {
 }
 
 document.addEventListener('click', (event) => {
-  const closeBtn = event.target.closest('.sr-close-btn');
+  const closeBtn = event.target.closest('.pb-close-btn, .sr-close-btn');
   if (!closeBtn) return;
   event.preventDefault();
   event.stopPropagation();
@@ -204,42 +213,6 @@ function acceptWarChallenge() {
 
 // ── War Match Preview Renderer ──
 /** 対抗戦ヘッダー共通（試合進行・結果で再利用） */
-function _warHeader(orgCfg, playerOrgName, enemyOrgName, playerScore, enemyScore, resolved, total, statusCfg) {
-  const eColor = orgCfg.color || '#e74c3c';
-  const eLight = _lightenColor(eColor);
-  const pctFill = total > 0 ? Math.round(resolved / total * 100) : 0;
-  return `<div class="war-header">
-    <div class="war-header-bg">
-      <img src="../image/battle-bg_venue_4.webp" alt="" onerror="this.style.display='none'">
-      <div class="split-left" style="background:linear-gradient(90deg,rgba(52,152,219,0.2) 0%,rgba(52,152,219,0.05) 70%,transparent 100%)"></div>
-      <div class="split-right" style="background:linear-gradient(-90deg,${_rgba(eColor,0.25)} 0%,${_rgba(eColor,0.05)} 70%,transparent 100%)"></div>
-      <div class="vignette"></div>
-    </div>
-    <div class="war-header-content">
-      <div class="war-title-area">
-        <div class="war-sup" style="color:${eColor}">${statusCfg.supText || '⚔ Interpromotional War'}</div>
-        <div class="war-main-title">${statusCfg.mainTitle || '対 抗 戦'}</div>
-      </div>
-      <div class="scoreboard">
-        <div class="sb-side left">
-          <div class="sb-org-name" style="color:#74b9ff">${orgIconHtml('player', 36)}${playerOrgName}</div>
-          ${statusCfg.playerSub ? `<div class="sb-org-sub">${statusCfg.playerSub}</div>` : ''}
-        </div>
-        <div class="sb-center">
-          <div class="sb-ring" style="border:3px solid rgba(200,190,170,0.1);box-shadow:0 0 40px ${_rgba(eColor,0.2)},inset 0 0 30px rgba(0,0,0,0.5);background:radial-gradient(circle,rgba(16,16,30,0.95),rgba(10,10,20,0.98))">
-            ${statusCfg.scoreHtml || `<div class="sb-score"><span class="s-left" style="color:#74b9ff">${playerScore}</span><span class="s-dash">—</span><span class="s-right" style="color:${eLight}">${enemyScore}</span></div>`}
-            ${statusCfg.statusLabel || ''}
-          </div>
-        </div>
-        <div class="sb-side right">
-          <div class="sb-org-name" style="color:${eLight}">${orgIconHtml(orgCfg.id || '', 36)}${enemyOrgName}</div>
-          ${statusCfg.enemySub ? `<div class="sb-org-sub">${statusCfg.enemySub}</div>` : ''}
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="progress-bar"><div class="progress-fill" style="width:${pctFill}%;background:linear-gradient(90deg,#74b9ff,#3498db)"></div></div>`;
-}
 function _rgba(hex, a) {
   const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   return `rgba(${r},${g},${b},${a})`;
@@ -292,26 +265,56 @@ function renderWarMatchPreview() {
 
   const orgCfg = RIVAL_ORGS.find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c', emoji:''};
   const eColor = orgCfg.color;
-  const eLight = _lightenColor(eColor);
-  const pColor = '#74b9ff';
 
   const resolved = wp.results.filter(r => r !== null).length;
   const total = wp.card.length;
   let playerWins = 0, aiWins = 0;
   wp.results.forEach(r => { if (r) { if (r.playerWon) playerWins++; else aiWins++; } });
 
-  const statusText = playerWins > aiWins ? '勝ち越し中' : playerWins === aiWins ? (resolved > 0 ? 'タイ' : '試合開始') : '負け越し中';
-  const statusColor = playerWins > aiWins ? pColor : playerWins === aiWins ? '#888' : '#e74c3c';
-
   let nextIdx = -1;
   for (let i = 0; i < total; i++) { if (wp.results[i] === null) { nextIdx = i; break; } }
 
-  let html = _warHeader(orgCfg, G.orgName || 'プレイヤー団体', ev.opponentName, playerWins, aiWins, resolved, total, {
-    statusLabel: `<div class="sb-status" style="color:${statusColor}">${statusText}</div>`
-  });
+  const statusText = playerWins > aiWins ? '勝ち越し中' : playerWins === aiWins ? (resolved > 0 ? 'タイ' : '試合開始') : '負け越し中';
+  const statusColor = playerWins > aiWins ? 'var(--c-info)' : playerWins === aiWins ? 'var(--stage-text-sub)' : 'var(--c-negative)';
+  const nextMatch = nextIdx >= 0 ? wp.card[nextIdx] : null;
+  const nextLabel = nextMatch ? `${nextMatch.playerFighter.name} vs ${nextMatch.aiFighter.name}` : '—';
 
-  html += `<div class="match-wrap">`;
-  // 表示: メイン(上) → 前座(下)
+  const tierLabel = orgCfg.tier === 'S' ? 'Sランク王者' : orgCfg.tier === 'A' ? 'Aランク挑戦者' : 'Bランク';
+  const playerOrgName = G.orgName || 'プレイヤー団体';
+
+  let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
+
+  html += `<div class="pb-banner">
+    <div class="pb-live is-war">⚔ WAR</div>
+    <div class="pb-banner-title is-war">対 抗 戦</div>
+    <div class="pb-banner-sub">${escHtml(playerOrgName)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(orgCfg.emoji || '')} ${escHtml(ev.opponentName)}<span class="dot">·</span>${escHtml(tierLabel)}</div>
+  </div>`;
+
+  // Scoreboard: Score / Status / Remaining / Next
+  html += `<div class="pb-score-strip" style="grid-template-columns:1.2fr 1fr 1fr 1.6fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val"><span style="color:var(--c-info)">${playerWins}</span><span style="color:var(--stage-text-dim);margin:0 8px">—</span><span style="color:${eColor}">${aiWins}</span></div>
+      <div class="pb-score-lbl">Score</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:${statusColor};font-size:18px">${escHtml(statusText)}</div>
+      <div class="pb-score-lbl">Status</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val is-neutral">${total - resolved}<span style="font-size:14px;color:var(--stage-text-dim)"> / ${total}</span></div>
+      <div class="pb-score-lbl">Remaining</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(nextLabel)}</div>
+      <div class="pb-score-lbl">Next</div>
+    </div>
+  </div>`;
+
+  // Matches: メイン → 前座
+  html += `<div class="pb-matches">`;
+  let shownMainLabel = false;
+  let shownUndercardLabel = false;
+
   for (let di = total - 1; di >= 0; di--) {
     const idx = di;
     const m = wp.card[idx];
@@ -320,107 +323,79 @@ function renderWarMatchPreview() {
     const result = wp.results[idx];
     const isResolved = result !== null;
     const isNext = idx === nextIdx;
+    const isPending = !isResolved && !isNext;
     const matchNum = idx + 1;
+    const isMain = idx === total - 1;
+
+    if (isMain && !shownMainLabel) {
+      html += `<div class="pb-divider is-main">⚔ MAIN — 第 ${matchNum} 試合</div>`;
+      shownMainLabel = true;
+    } else if (!isMain && !shownUndercardLabel && shownMainLabel) {
+      html += `<div class="pb-divider">UNDERCARD</div>`;
+      shownUndercardLabel = true;
+    }
 
     if (isResolved) {
-      // 完了: コンパクト1行 + 勝利台詞
-      const wName = result.playerWon ? pf.name : af.name;
-      const lName = result.playerWon ? af.name : pf.name;
-      const wColor = result.playerWon ? pColor : eLight;
-      const wFace = getPortraitUrl(result.winnerId || (result.playerWon ? pf.id : af.id));
-      html += `<div class="war-md">
-        <div class="war-md-n">第${matchNum}試合</div>
-        <div class="war-md-c"><div class="war-md-main"><div class="war-md-w"><span class="w" style="color:${wColor}">✓ ${wName}</span> <span style="color:#555">def.</span> ${lName}</div><div class="war-md-r">${Engine.formatFinish(result.finType, result.finMove)}</div></div><div class="war-md-mq" style="${_scale6Style(_mqColor(result.mq))}">MQ ${result.mq}</div></div>
-        ${result.victoryLine ? `<div class="war-md-vl"><div class="war-md-vl-face">${wFace ? `<img src="${wFace}" alt="">` : ''}</div><div class="war-md-vl-text"><span class="war-md-vl-name" style="color:${wColor}">${result.winnerName || wName}</span>「${result.victoryLine}」</div></div>` : ''}
-      </div>`;
+      const playerWon = result.playerWon;
+      const leftCls = playerWon ? 'is-winner' : 'is-loser';
+      const rightCls = playerWon ? 'is-loser' : 'is-winner';
+      const leftLine = (playerWon && result.victoryLine) ? result.victoryLine : '';
+      const rightLine = (!playerWon && result.victoryLine) ? result.victoryLine : '';
+      const hasDialogue = !!result.victoryLine;
+
+      const leftBlock = _pbFighterBlock('left', pf, leftCls, playerOrgName, leftLine)
+        .replace('pb-fighter is-left', 'pb-fighter is-left is-player-side');
+      const rightBlock = _pbFighterBlock('right', af, rightCls, ev.opponentName, rightLine)
+        .replace('pb-fighter is-right', 'pb-fighter is-right is-enemy-side');
+      const winnerLabel = `🏆 ${escHtml(playerWon ? pf.name : af.name)} WIN`;
+
+      html += `<div class="pb-mrow is-resolved${hasDialogue ? ' has-dialogue' : ''}">`;
+      html += leftBlock;
+      html += _pbResultColumn({
+        winnerLabel,
+        winnerIsDraw: false,
+        finishText: Engine.formatFinish(result.finType, result.finMove),
+        turns: result.turns || 0,
+        mq: result.mq
+      });
+      html += rightBlock;
+      html += `</div>`;
     } else if (isNext) {
-      // 現在の試合: 大カード
-      const ovrL = Engine.util.ov(pf), ovrR = Engine.util.ov(af);
-      const standL = getStandUrl(pf.id, Engine.util.ov(pf)), standR = getStandUrl(af.id, Engine.util.ov(af));
       const lineL = pickDialogueLine(PPV_OPPONENT_LINES, pf);
       const lineR = pickDialogueLine(PPV_OPPONENT_LINES, af);
+      const hasDialogue = !!(lineL || lineR);
 
-      html += `<div class="war-mc" style="border:2px solid transparent;border-image:linear-gradient(90deg,#3498db,#444,${eColor}) 1">
-        <div class="mc-split-bg">
-          <div class="mc-bg-left" style="background:linear-gradient(135deg,rgba(52,152,219,0.08),rgba(10,10,25,0.98) 60%)"></div>
-          <div class="mc-bg-right" style="background:linear-gradient(-135deg,${_rgba(eColor,0.08)},rgba(10,10,25,0.98) 60%)"></div>
-          <div class="mc-bg-center"></div>
-        </div>
-        <div class="mc-inner">
-          <div class="mc-mn">第 ${matchNum} 試 合</div>`;
+      const leftBlock = _pbFighterBlock('left', pf, '', playerOrgName, lineL || '')
+        .replace('pb-fighter is-left', 'pb-fighter is-left is-player-side');
+      const rightBlock = _pbFighterBlock('right', af, '', ev.opponentName, lineR || '')
+        .replace('pb-fighter is-right', 'pb-fighter is-right is-enemy-side');
 
-      // セリフ
-      if (lineL || lineR) {
-        html += `<div class="mc-dl">`;
-        if (lineL) html += `<div class="mc-dlc left"><div class="mc-dlb"><div class="mc-dlsp" style="color:#3498db">${pf.name}</div>「${lineL}」</div></div>`;
-        if (lineR) html += `<div class="mc-dlc right"><div class="mc-dlb"><div class="mc-dlsp" style="color:${eColor}">${af.name}</div>「${lineR}」</div></div>`;
-        html += `</div>`;
-      }
-
-      // スタンド画像
-      html += `<div class="mc-va">
-        <div class="mc-fc left">
-          <div class="mc-fi">
-            <div class="mc-fn">${pf.name}</div>
-            <div class="mc-fo" style="color:${pColor}">${G.orgName || 'プレイヤー団体'}</div>
-            <div class="mc-fol">OVR</div>
-            <div class="mc-fov" style="background:linear-gradient(180deg,${pColor},#3498db);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrL}</div>
-          </div>
-          <div class="mc-fp">${standL ? `<img src="${standL}" alt="" onerror="this.style.display='none'">` : ''}</div>
-        </div>
-        <div class="mc-vsf">
-          <div class="mc-vst" style="background:linear-gradient(180deg,#fff,#aaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(200,190,170,0.15))">VS</div>
-        </div>
-        <div class="mc-fc right">
-          <div class="mc-fp">${standR ? `<img src="${standR}" alt="" onerror="this.style.display='none'">` : ''}</div>
-          <div class="mc-fi">
-            <div class="mc-fn">${af.name}</div>
-            <div class="mc-fo" style="color:${eLight}">${orgCfg.emoji || ''} ${ev.opponentName}</div>
-            <div class="mc-fol">OVR</div>
-            <div class="mc-fov" style="background:linear-gradient(180deg,${eLight},${eColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrR}</div>
-          </div>
-        </div>
+      html += `<div class="pb-mrow is-upcoming${hasDialogue ? ' has-dialogue' : ''}">`;
+      html += leftBlock;
+      html += `<div class="pb-result">
+        <div class="pb-result-vs">VS</div>
+        <div class="pb-result-winner" style="color:var(--c-rivalry);font-size:18px">第 ${matchNum} 試合</div>
+        <div class="pb-result-finish sub" style="color:var(--stage-text-sub)">次の試合</div>
       </div>`;
-
-      // ステータスバー
-      html += `<div class="mc-stats">`;
-      html += _warStatRow('PW', pf.pw||0, af.pw||0, 'pw', pColor, eLight);
-      html += _warStatRow('SP', pf.sp||0, af.sp||0, 'sp', pColor, eLight);
-      html += _warStatRow('TE', pf.te||0, af.te||0, 'te', pColor, eLight);
-      html += _warStatRow('ST', pf.st||0, af.st||0, 'st', pColor, eLight);
-      html += _warStatRow('MN', pf.mn||0, af.mn||0, 'mn', pColor, eLight);
-
-      // トレイト
-      const pTraits = (pf.traits || []).slice(0, 3);
-      const aTraits = (af.traits || []).slice(0, 3);
-      if (pTraits.length || aTraits.length) {
-        html += `<div class="mc-traits" style="padding-left:0;padding-right:0;margin-top:4px">
-          <div class="mc-ts left">${pTraits.map(t => `<span class="mc-tt">${typeof t === 'string' ? t : t.name || t}</span>`).join('')}</div>
-          <div class="mc-tdiv"></div>
-          <div class="mc-ts right">${aTraits.map(t => `<span class="mc-tt">${typeof t === 'string' ? t : t.name || t}</span>`).join('')}</div>
-        </div>`;
-      }
+      html += rightBlock;
+      html += `<div class="pb-war-actions">
+        <button type="button" class="pb-war-btn is-watch" onclick="App.warWatchMatch(${idx})">🎬 試合を観る</button>
+        <button type="button" class="pb-war-btn is-skip" onclick="App.warSkipMatch(${idx})">≫ スキップ</button>
+      </div>`;
       html += `</div>`;
-
-      // ボタン
-      html += `<div class="mc-act">
-        <button class="mc-bw" style="border:2px solid ${eColor};background:linear-gradient(135deg,${_rgba(eColor,0.15)},${_rgba(eColor,0.03)})" onclick="App.warWatchMatch(${idx})">🎬 試合を観る</button>
-        <button class="mc-bs" onclick="App.warSkipMatch(${idx})">≫ スキップ</button>
-      </div>`;
-
-      html += `</div></div>`;
-    } else {
-      // 未到達: 霧表示
-      html += `<div class="war-mw"><div class="war-mw-h">第${matchNum}試合</div><div class="war-mw-n">${pf.name} vs ${af.name}</div></div>`;
+    } else if (isPending) {
+      html += `<div class="pb-mrow is-pending"><div class="pb-pending-text">第${matchNum}試合 — ${escHtml(pf.name)} vs ${escHtml(af.name)}</div></div>`;
     }
   }
-  html += `</div>`;
+  html += `</div>`; // .pb-matches
 
   // Skip all
   const remaining = wp.results.filter(r => r === null).length;
-  if (remaining > 0) {
-    html += `<div class="war-skip-all"><button onclick="App.warSkipAll()">残り全試合をスキップ（${remaining}試合）</button></div>`;
+  if (remaining > 1) {
+    html += `<div class="pb-war-skipall"><button type="button" onclick="App.warSkipAll()">残り全試合をスキップ（${remaining}試合）</button></div>`;
   }
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -447,100 +422,136 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
 
   const orgCfg = RIVAL_ORGS.find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c', emoji:''};
   const eColor = orgCfg.color;
-  const eLight = _lightenColor(eColor);
   const total = results.length;
+  const validResults = results.filter(r => r);
+  const avgMQ = validResults.length > 0 ? Math.round(validResults.reduce((s, r) => s + r.mq, 0) / validResults.length) : 0;
+  const heat = getHeatLevel();
+  const heatFooterCls = (heat.id === 'hot' || heat.id === 'on_fire') ? 'is-hot' :
+                       (heat.id === 'cold' || heat.id === 'ice_cold') ? 'is-cold' : '';
 
   // Find enemy ace for dialogue
   const aiOrg = Engine.rival.getOrgInfo(G.aiOrgs, ev.opponentOrgId);
   const enemyAce = aiOrg ? Engine.event.getAce(aiOrg.roster) : (results[0] ? results[0].aiFighter : null);
 
-  // 勝敗ラベル
-  const winLabel = playerWins > aiWins ? '🏆 勝 ち 越 し ！' : playerWins === aiWins ? '引 き 分 け' : '負 け 越 し …';
-  const scoreLabelHtml = eventWon
-    ? `<div class="sb-win-label">${winLabel}</div>`
-    : `<div style="margin-top:2px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:${playerWins === aiWins ? '#888' : '#e74c3c'}">${winLabel}</div>`;
+  // 勝敗ラベル + 色
+  let verdictLabel, verdictColor;
+  if (playerWins > aiWins) { verdictLabel = '🏆 勝ち越し'; verdictColor = 'var(--gold)'; }
+  else if (playerWins === aiWins) { verdictLabel = '⚖ 引き分け'; verdictColor = 'var(--c-warning)'; }
+  else { verdictLabel = '💀 負け越し'; verdictColor = 'var(--c-negative)'; }
 
-  // フレーバーテキスト
   const tierLabel = orgCfg.tier === 'S' ? 'Sランク王者' : orgCfg.tier === 'A' ? 'Aランク挑戦者' : 'Bランク';
-  let flavorHtml = '';
+  const playerOrgName = G.orgName || 'プレイヤー団体';
+
+  let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
+
+  // Banner
+  html += `<div class="pb-banner">
+    <div class="pb-live is-war">⚔ WAR</div>
+    <div class="pb-banner-title is-war">対 抗 戦 結 果</div>
+    <div class="pb-banner-sub">${escHtml(playerOrgName)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(orgCfg.emoji || '')} ${escHtml(ev.opponentName)}<span class="dot">·</span>${escHtml(tierLabel)}</div>
+  </div>`;
+
+  // Scoreboard: Score / Verdict / Avg MQ / Heat
+  html += `<div class="pb-score-strip" style="grid-template-columns:1.2fr 1fr 1fr 1fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val"><span style="color:var(--c-info)">${playerWins}</span><span style="color:var(--stage-text-dim);margin:0 8px">—</span><span style="color:${eColor}">${aiWins}</span></div>
+      <div class="pb-score-lbl">Score</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:${verdictColor};font-size:20px">${verdictLabel}</div>
+      <div class="pb-score-lbl">Result</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(avgMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
+      <div class="pb-score-lbl">Avg MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" ${heatFooterCls === 'is-hot' ? 'style="color:var(--c-rivalry)"' : heatFooterCls === 'is-cold' ? 'style="color:var(--c-info)"' : 'class="is-neutral"'}>${escHtml(heat.label.toUpperCase())}</div>
+      <div class="pb-score-lbl">Heat</div>
+    </div>
+  </div>`;
+
+  // Flavor
   if (eventWon) {
-    flavorHtml = `<div class="flavor-text"><em>${tierLabel}・${ev.opponentName}に勝利！</em><br>団体の格が上がった！</div>`;
+    html += `<div class="pb-war-flavor"><em>${escHtml(tierLabel)}・${escHtml(ev.opponentName)}に勝利！</em>団体の格が上がった。</div>`;
   } else if (playerWins < aiWins) {
-    flavorHtml = `<div class="flavor-text" style="color:var(--text-sub)">${tierLabel}・${ev.opponentName}に敗北…<br>悔しさをバネに這い上がれ</div>`;
+    html += `<div class="pb-war-flavor">${escHtml(tierLabel)}・${escHtml(ev.opponentName)}に敗北…悔しさをバネに這い上がれ。</div>`;
   }
 
-  let html = _warHeader(orgCfg, G.orgName || 'プレイヤー団体', ev.opponentName, playerWins, aiWins, total, total, {
-    supText: '⚔ Interpromotional War — Result',
-    mainTitle: '対 抗 戦 結 果',
-    scoreHtml: `<div class="sb-score-grid"><span class="s-num" style="color:#74b9ff">${playerWins}</span><span class="s-dash">—</span><span class="s-num" style="color:${eLight}">${aiWins}</span></div>`,
-    statusLabel: scoreLabelHtml
-  });
+  // Matches: メイン→降順
+  html += `<div class="pb-matches">`;
+  for (let di = total - 1; di >= 0; di--) {
+    const r = results[di];
+    if (!r) continue;
+    const isMain = di === total - 1;
+    const matchNum = di + 1;
 
-  html += flavorHtml;
+    if (isMain) {
+      html += `<div class="pb-divider is-main">⚔ MAIN — 第 ${matchNum} 試合</div>`;
+    } else if (di === total - 2) {
+      html += `<div class="pb-divider">UNDERCARD</div>`;
+    }
 
-  // 各試合結果
-  html += `<div class="results-area">`;
-  results.forEach((r, i) => {
-    const pFace = getPortraitUrl(r.playerFighter.id);
-    const aFace = getPortraitUrl(r.aiFighter.id);
-    html += `<div class="match-result-card">
-      <div class="mr-label">第 ${i+1} 試 合</div>
-      <div class="mr-fighters">
-        <div class="mr-fighter ${r.playerWon ? 'win' : 'lose'}">
-          ${pFace ? `<img src="${pFace}" class="portrait" alt="" onerror="this.style.display='none'">` : `<div class="portrait" style="width:72px;height:72px;background:#222;display:flex;align-items:center;justify-content:center;font-size:24px">${r.playerFighter.name.charAt(0)}</div>`}
-          <div class="fname">${r.playerFighter.name}</div>
-        </div>
-        <div class="mr-vs-area"><div class="mr-vs-text">VS</div></div>
-        <div class="mr-fighter ${r.playerWon ? 'lose-enemy' : 'win-enemy'}">
-          ${aFace ? `<img src="${aFace}" class="portrait" alt="" onerror="this.style.display='none'"  style="border-color:${r.playerWon ? '' : eColor}">` : `<div class="portrait" style="width:72px;height:72px;background:#222;display:flex;align-items:center;justify-content:center;font-size:24px">${r.aiFighter.name.charAt(0)}</div>`}
-          <div class="fname">${r.aiFighter.name}</div>
-        </div>
-      </div>
-      <div class="mr-result-info">
-        <span class="mr-result-tag ${r.playerWon ? 'win' : 'lose'}">${r.playerWon ? 'WIN' : 'LOSE'}</span>
-        <span class="mr-mq" style="${_scale6Style(_mqColor(r.mq))}">MQ ${r.mq}</span>
-        <span class="mr-finish">${Engine.formatFinish(r.finType, r.finMove)}</span>
-      </div>
-      ${r.victoryLine ? `<div class="mr-victory-line"><span class="mr-vl-name">${r.winnerName || (r.playerWon ? r.playerFighter.name : r.aiFighter.name)}</span>「${r.victoryLine}」</div>` : ''}
-    </div>`;
-  });
-  html += `</div>`;
+    const pf = r.playerFighter;
+    const af = r.aiFighter;
+    const playerWon = r.playerWon;
+    const leftCls = playerWon ? 'is-winner' : 'is-loser';
+    const rightCls = playerWon ? 'is-loser' : 'is-winner';
+    // 左: プレイヤー / 右: 敵
+    // side accent classes
+    const leftBlock = _pbFighterBlock('left', pf, `${leftCls}`, playerOrgName, r.victoryLine && playerWon ? r.victoryLine : '')
+      .replace('pb-fighter is-left', 'pb-fighter is-left is-player-side');
+    const rightBlock = _pbFighterBlock('right', af, `${rightCls}`, ev.opponentName, r.victoryLine && !playerWon ? r.victoryLine : '')
+      .replace('pb-fighter is-right', 'pb-fighter is-right is-enemy-side');
 
-  // 報酬
-  html += `<div class="war-rewards">`;
-  if (eventWon) {
-    html += `<div style="display:flex;align-items:center;gap:4px"><span style="color:var(--gold)">⬆</span> 団体人気UP</div>`;
+    const winnerLabel = `🏆 ${escHtml(playerWon ? pf.name : af.name)} WIN`;
+    const hasDialogue = !!r.victoryLine;
+    const rowCls = `pb-mrow${isMain ? ' is-main' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+
+    html += `<div class="${rowCls}">`;
+    html += leftBlock;
+    html += _pbResultColumn({
+      winnerLabel,
+      winnerIsDraw: false,
+      finishText: Engine.formatFinish(r.finType, r.finMove),
+      turns: r.turns || 0,
+      mq: r.mq
+    });
+    html += rightBlock;
+    if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
+    html += `</div>`;
   }
-  html += `<div style="display:flex;align-items:center;gap:4px"><span style="color:var(--gold)">⚔</span> 対戦ptボーナス</div>`;
-  html += `<div style="display:flex;align-items:center;gap:4px"><span style="color:var(--green)">📈</span> Heat変動</div>`;
-  html += `</div>`;
+  html += `</div>`; // .pb-matches
 
   // 敵エースセリフ
   if (enemyAce) {
-    const dialogue = getWarPostDialogue(enemyAce, G.orgName || 'あんたの団体', eventWon, playerWins, aiWins);
+    const dialogue = getWarPostDialogue(enemyAce, playerOrgName, eventWon, playerWins, aiWins);
     const upperUrl = getUpperUrl(enemyAce.id);
-    const dialogueHtml = dialogue.replace(/\n/g, '<br>');
+    const dialogueHtml = escHtml(dialogue).replace(/\n/g, '<br>');
 
-    html += `<div class="ace-area">
-      <div class="ace-img-wrap">
-        <div class="ace-upper${eventWon ? ' defeated' : ''}">
-          ${upperUrl ? `<img src="${upperUrl}" alt="${enemyAce.name}" onerror="this.style.display='none'">` : ''}
+    html += `<div class="pb-ace-area">
+      <div class="pb-ace-label">${escHtml(ev.opponentName)} — Ace Statement</div>
+      <div class="pb-ace-portrait-wrap">
+        <div class="pb-ace-portrait${eventWon ? ' is-defeated' : ''}">
+          ${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(enemyAce.name)}" onerror="this.style.display='none'">` : ''}
         </div>
-        <div class="ace-name" style="color:${eColor}">${enemyAce.name}</div>
+        <div class="pb-ace-name">${escHtml(enemyAce.name)}</div>
       </div>
-      <div class="ace-speech">
-        <div class="ace-bubble">
-          <div class="speaker" style="color:${eColor}">${ev.opponentName}エース — ${enemyAce.name}</div>
-          <p>「${dialogueHtml}」</p>
-        </div>
+      <div class="pb-ace-speech">
+        <div class="pb-ace-speaker">${escHtml(ev.opponentName)}エース — ${escHtml(enemyAce.name)}</div>
+        <div class="pb-ace-bubble">「${dialogueHtml}」</div>
       </div>
     </div>`;
   }
 
-  // 閉じるボタン
-  html += `<div class="war-close-area">
-    <button class="war-close-btn" onclick="closeWarFinalResult(${eventWon})">閉じる</button>
+  // Footer
+  html += `<div class="pb-footer">
+    <div class="pb-footer-heat">Heat<span class="val ${heatFooterCls}">${heat.emoji} ${escHtml(heat.label.toUpperCase())}</span></div>
+    <button type="button" class="pb-close-btn" onclick="closeWarFinalResult(${eventWon})">閉じる</button>
   </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -3596,238 +3607,317 @@ function renderShowResult(results, injuryResults) {
   _pendingMatchDialogues = [];
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
+
   const special = isSpecialShow(G.week);
   const ppv = isPPV(G.week);
-  const showName = ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `第${G.totalShows}回 定期興行`;
   const avgMQ = Math.round(results.reduce((s,r) => s + r.mq, 0) / results.length);
   const heat = getHeatLevel();
 
-  // ヘッダー
-  let html = `<div class="show-header">
-    <div class="show-label">Weekly Show</div>
-    <div class="show-title">${showName}</div>
-  </div>`;
-
-  // サマリーバー
-  html += `<div class="show-summary-bar">
-    <span style="font-size:13px">
-      <span class="mq-stars">${[1,2,3,4,5].map(s => `<span class="mq-star" style="color:${avgMQ >= s*20 ? 'var(--gold)' : 'rgba(200,190,170,0.15)'}">★</span>`).join('')}</span>
-      <span style="color:var(--text-sub)">平均MQ: ${avgMQ}</span>
-    </span>
-    <span style="margin-left:16px;font-size:13px;color:${heat.color}">${heat.emoji} Heat: ${heat.label}（集客×${heat.mult}）</span>
-  </div>`;
-
-  // 観客動員バナー
   const venue = VENUES[G.showVenue];
   const attendance = G.lastShowAttendance || 0;
   const cap = venue.cap;
   const occRate = cap > 0 ? attendance / cap : 0;
   const occPct = Math.round(occRate * 100);
   const occEntry = OCCUPANCY_BONUS.find(b => occRate >= b.min) || OCCUPANCY_BONUS[OCCUPANCY_BONUS.length - 1];
-  const isSellout = occRate >= 0.95;
-  const isGoodCrowd = occRate >= 0.80;
-  const attendBorder = isSellout ? 'var(--gold)' : isGoodCrowd ? '#2ecc71' : occRate >= 0.60 ? 'var(--border)' : '#e74c3c';
-  const attendBg = isSellout ? 'rgba(212,168,67,0.08)' : isGoodCrowd ? 'rgba(46,204,113,0.08)' : occRate >= 0.60 ? 'rgba(200,190,170,0.03)' : 'rgba(231,76,60,0.08)';
-  const barColor = isSellout ? 'linear-gradient(90deg,var(--gold),#f1c40f)' : isGoodCrowd ? 'linear-gradient(90deg,#2ecc71,#27ae60)' : occRate >= 0.60 ? '#3498db' : occRate >= 0.40 ? '#e67e22' : '#e74c3c';
+  const attendCls = _pbAttendClass(occRate);
 
-  html += `<div class="show-attend-banner" style="border:1px solid ${attendBorder};background:${attendBg}">
-    <div style="font-size:12px;color:var(--text-sub)">${venue.name}</div>
-    <div class="show-attend-num" style="color:${isSellout ? 'var(--gold)' : isGoodCrowd ? '#2ecc71' : 'var(--text-main)'}${isSellout ? ';text-shadow:0 0 12px rgba(212,168,67,0.5)' : ''}">
-      ${isSellout ? '🎉 ' : ''}${attendance.toLocaleString()}人${isSellout ? ' 🎉' : ''}
-    </div>
-    <div style="font-size:11px;color:var(--text-dim)">/ ${cap.toLocaleString()}席</div>
-    <div class="show-attend-bar-wrap"><div class="show-attend-bar-fill" style="width:${Math.min(occPct,100)}%;background:${barColor}"></div></div>
-    <div class="show-attend-pct" style="color:${isSellout ? 'var(--gold)' : isGoodCrowd ? '#2ecc71' : 'var(--text-sub)'}">${occEntry.label}（${occPct}%）</div>
+  // 週ラベル（月/週）
+  const week = G.week || 1;
+  const monthIdx = Math.floor((week - 1) / 4) + 1;
+  const weekInMonth = ((week - 1) % 4) + 1;
+  const monthLabel = `${monthIdx}月 第${weekInMonth}週`;
+
+  // Banner
+  const liveText = special ? '⭐ MONTHLY SPECIAL' : '● ON AIR';
+  const liveCls = special ? 'pb-live is-special' : 'pb-live';
+  const titleCls = special ? 'pb-banner-title is-special' : 'pb-banner-title';
+  const showName = special ? '特 別 興 行' : `第 ${G.totalShows} 回 定期興行`;
+
+  let html = `<div class="pb-container">`;
+  html += `<div class="pb-banner">
+    <div class="${liveCls}">${liveText}</div>
+    <div class="${titleCls}">${escHtml(showName)}</div>
+    <div class="pb-banner-sub">Year ${G.year || 1}<span class="dot">·</span>Week ${week}<span class="dot">·</span>${monthLabel}</div>
   </div>`;
 
-  // 各試合結果カード
-  html += `<div class="show-results-area">`;
-  const _srValidMatches = G.lastShowResults === results ? (App._showPreview?.validMatches || G.showCard.filter(m => m.matchType === 'tag' ? (m.teamA?.fighter1 > 0) : (m.left > 0 && m.right > 0))) : G.showCard;
+  // Scoreboard strip — 5 cells
+  const avgStarsHtml = _pbStars(avgMQ);
+  const heatScoreCls = (heat.id === 'hot' || heat.id === 'on_fire') ? 'is-hot' :
+                      (heat.id === 'cold' || heat.id === 'ice_cold') ? 'is-cold' : 'is-neutral';
+  const heatScoreVal = heat.label.toUpperCase();
+  const injuryCount = injuryResults.length;
+  html += `<div class="pb-score-strip">
+    <div class="pb-score-cell is-attend">
+      <div class="pb-score-val">${attendance.toLocaleString()}<span class="small">/ ${cap.toLocaleString()}</span></div>
+      <div class="pb-score-attend-bar"><div class="pb-score-attend-bar-fill ${attendCls}" style="width:${Math.min(occPct,100)}%"></div></div>
+      <div class="pb-score-attend-venue">${escHtml(venue.name)}</div>
+      <div class="pb-score-attend-rating ${attendCls}">${escHtml(occEntry.label)}<span class="pct">${occPct}%</span></div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${avgStarsHtml}</div>
+      <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
+      <div class="pb-score-lbl">Avg MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val ${heatScoreCls === 'is-neutral' ? 'is-neutral' : ''}" ${heatScoreCls === 'is-hot' ? 'style="color:var(--c-rivalry)"' : heatScoreCls === 'is-cold' ? 'style="color:var(--c-info)"' : ''}>${heatScoreVal}</div>
+      <div class="pb-score-lbl">Heat</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val is-neutral">${results.length}</div>
+      <div class="pb-score-lbl">Matches</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val ${injuryCount > 0 ? '' : 'is-neutral'}" ${injuryCount > 0 ? 'style="color:var(--c-negative)"' : ''}>${injuryCount}</div>
+      <div class="pb-score-lbl">Injuries</div>
+    </div>
+  </div>`;
+
+  html += `<div class="pb-divider">Match Results</div>`;
+  html += `<div class="pb-matches">`;
+
+  const _srValidMatches = G.lastShowResults === results
+    ? (App._showPreview?.validMatches || G.showCard.filter(m => m.matchType === 'tag' ? (m.teamA?.fighter1 > 0) : (m.left > 0 && m.right > 0)))
+    : G.showCard;
+
   results.forEach((r, i) => {
     const isMain = i === 0;
-    const matchLabel = isMain ? '★ メインイベント' : `第${results.length - i}試合`;
-    const cardClass = isMain ? 'card-main' : 'card-sub';
-    const cardBorder = isMain ? '1.5px solid rgba(212,168,67,0.4)' : '1px solid rgba(200,190,170,0.08)';
-    const cardBg = isMain ? 'linear-gradient(180deg,rgba(212,168,67,0.08),rgba(212,168,67,0.02))' : 'rgba(0,0,0,0.25)';
+    const spotlightInMatch = G.mediaSpotlight && (
+      (r.left && G.mediaSpotlight.fighterId === r.left.id) ||
+      (r.right && G.mediaSpotlight.fighterId === r.right.id)
+    );
+    const injuriesThisMatch = injuryResults.filter(ir => {
+      const ids = r.matchType === 'tag'
+        ? (() => {
+            const sm = _srValidMatches[i];
+            if (!sm || sm.matchType !== 'tag') return [];
+            return [sm.teamA?.fighter1, sm.teamA?.fighter2, sm.teamB?.fighter1, sm.teamB?.fighter2].filter(Boolean);
+          })()
+        : [r.left?.id, r.right?.id];
+      return ids.includes(ir.id);
+    });
 
-    // ── タッグマッチ結果カード ──
+    // Tags
+    const tags = [];
+    if (r.matchType === 'tag') tags.push(`<span class="pb-tag is-tag">TAG MATCH</span>`);
+    if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
+    if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">⚡ 決着！</span>`);
+    else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
+    if (r.freshnessBonus) {
+      if (r.freshnessBonus > 0) tags.push(`<span class="pb-tag is-first">✨ ${escHtml(r.freshnessLabel || '初顔合わせ')}</span>`);
+      else tags.push(`<span class="pb-tag is-stale">😐 ${escHtml(r.freshnessLabel || 'フレッシュ度低')}</span>`);
+    }
+    if (spotlightInMatch) tags.push(`<span class="pb-tag is-spotlight">📺 取材中</span>`);
+
+    // ── Tag match ──
     if (r.matchType === 'tag') {
       const sm = _srValidMatches[i];
       if (!sm || sm.matchType !== 'tag') return;
-      const tA1 = G.roster.find(c => c.id === sm.teamA.fighter1) || (G.retiredFighters||[]).find(c => c.id === sm.teamA.fighter1);
-      const tA2 = G.roster.find(c => c.id === sm.teamA.fighter2) || (G.retiredFighters||[]).find(c => c.id === sm.teamA.fighter2);
-      const tB1 = G.roster.find(c => c.id === sm.teamB.fighter1) || (G.retiredFighters||[]).find(c => c.id === sm.teamB.fighter1);
-      const tB2 = G.roster.find(c => c.id === sm.teamB.fighter2) || (G.retiredFighters||[]).find(c => c.id === sm.teamB.fighter2);
+      const findF = id => G.roster.find(c => c.id === id) || (G.retiredFighters||[]).find(c => c.id === id);
+      const tA1 = findF(sm.teamA.fighter1);
+      const tA2 = findF(sm.teamA.fighter2);
+      const tB1 = findF(sm.teamB.fighter1);
+      const tB2 = findF(sm.teamB.fighter2);
       const isDraw = r.winner === 'draw';
-      let winNames = 'DRAW';
-      if (r.winner === 'teamA') winNames = `${tA1?.name||'?'} & ${tA2?.name||'?'}`;
-      else if (r.winner === 'teamB') winNames = `${tB1?.name||'?'} & ${tB2?.name||'?'}`;
-      html += `<div class="sr-card ${cardClass}" style="border:${cardBorder};background:${cardBg}">`;
-      html += `<div class="sr-label-row"><span class="sr-match-num" ${isMain ? 'style="color:var(--gold);font-size:16px"' : ''}>${matchLabel}</span> <span class="smc-tag-badge">TAG MATCH</span></div>`;
-      html += `<div class="smc-tag-arena" style="padding:12px">
-        <div class="smc-tag-team">${[tA1,tA2].map(f => f ? `<div style="text-align:center">${portraitImg(f.id, 64)}<div style="font-size:12px;font-weight:700;margin-top:2px">${f.name}</div></div>` : '').join('')}</div>
-        <div class="smc-vs"><div class="smc-vs-text">VS</div></div>
-        <div class="smc-tag-team">${[tB1,tB2].map(f => f ? `<div style="text-align:center">${portraitImg(f.id, 64)}<div style="font-size:12px;font-weight:700;margin-top:2px">${f.name}</div></div>` : '').join('')}</div>
-      </div>`;
-      html += `<div class="sr-win-badge"><span>${isDraw ? 'DRAW' : `🏆 ${winNames} 勝利`}</span></div>`;
-      html += `<div class="sr-finish">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
-      html += `<div class="sr-mq-row">
-        <span class="mq-stars">${[1,2,3,4,5].map(s => `<span class="mq-star" style="color:${r.mq >= s*20 ? 'var(--gold)' : 'rgba(200,190,170,0.15)'}">★</span>`).join('')}</span>
-        <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}</span>
-      </div>`;
+      const aWin = r.winner === 'teamA';
+      const bWin = r.winner === 'teamB';
+      const leftCls = isDraw ? 'is-draw' : (aWin ? 'is-winner' : 'is-loser');
+      const rightCls = isDraw ? 'is-draw' : (bWin ? 'is-winner' : 'is-loser');
+
+      const winnerLabel = isDraw ? 'DRAW' : (aWin ? '🏆 左チーム WIN' : '🏆 右チーム WIN');
+      const rowCls = `pb-mrow${isMain ? ' is-main' : ''}`;
+      html += `<div class="${rowCls}">`;
+      html += _pbTagFighterBlock('left', [tA1, tA2], leftCls);
+      html += _pbResultColumn({
+        winnerLabel,
+        winnerIsDraw: isDraw,
+        finishText: Engine.formatFinish(r.finType, r.finMove),
+        turns: r.turns,
+        mq: r.mq
+      });
+      html += _pbTagFighterBlock('right', [tB1, tB2], rightCls);
+      if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
+      if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
+      if (injuriesThisMatch.length) html += _pbInjuryBlock(injuriesThisMatch);
       html += `</div>`;
       return;
     }
 
-    // ── シングルマッチ結果カード ──
+    // ── Single match ──
     const isDraw = r.winner === 'draw';
     const leftIsWinner = r.winner === 'left';
     const rightIsWinner = r.winner === 'right';
+    const leftCls = isDraw ? 'is-draw' : (leftIsWinner ? 'is-winner' : 'is-loser');
+    const rightCls = isDraw ? 'is-draw' : (rightIsWinner ? 'is-winner' : 'is-loser');
 
-    const spotlightInMatch = G.mediaSpotlight && (G.mediaSpotlight.fighterId === r.left.id || G.mediaSpotlight.fighterId === r.right.id);
-
-    // タグ行
-    const tags = [];
-    if (r.isTitleMatch) tags.push(`<span style="color:var(--gold)">🏆 タイトルマッチ</span>`);
-    if (r.rivalryBonus) tags.push(`<span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>`);
-    if (r.freshnessBonus) tags.push(`<span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">${r.freshnessBonus > 0 ? '✨' : '😐'}${r.freshnessLabel}</span>`);
-    if (spotlightInMatch) tags.push(`<span class="media-spotlight-badge">📺 取材中</span>`);
-
-    html += `<div class="sr-card ${cardClass}" style="border:${cardBorder};background:${cardBg}">`;
-
-    // ラベル行
-    html += `<div class="sr-label-row">
-      <span class="sr-match-num" ${isMain ? 'style="color:var(--gold);font-size:16px"' : ''}>${matchLabel}</span>
-      ${tags.length ? '<br>' + tags.join(' ') : ''}
-    </div>`;
-
-    if (isDraw) {
-      // DRAW: 簡易表示
-      const faceL = getPortraitUrl(r.left.id);
-      const faceR = getPortraitUrl(r.right.id);
-      html += `<div class="sr-fighters">
-        <div class="sr-char" style="width:170px">
-          <div class="bubble-slot empty"></div>
-          <div class="portrait-wrap" style="width:110px;height:110px;border:2px solid rgba(243,156,18,0.4)">
-            ${faceL ? `<img src="${faceL}" alt="" onerror="this.style.display='none'">` : portraitImg(r.left.id, 110)}
-          </div>
-          <div class="fname">${fLink(r.left, {source:'roster', skipQueue:true})}</div>
-        </div>
-        <div class="sr-vs"><div class="sr-vs-text">VS</div></div>
-        <div class="sr-char" style="width:170px">
-          <div class="bubble-slot empty"></div>
-          <div class="portrait-wrap" style="width:110px;height:110px;border:2px solid rgba(243,156,18,0.4)">
-            ${faceR ? `<img src="${faceR}" alt="" onerror="this.style.display='none'">` : portraitImg(r.right.id, 110)}
-          </div>
-          <div class="fname">${fLink(r.right, {source:'roster', skipQueue:true})}</div>
-        </div>
-      </div>
-      <div class="sr-win-badge"><span style="background:rgba(243,156,18,0.2);color:#f39c12">DRAW</span></div>`;
-    } else {
+    // Dialogue (rivalry 30+)
+    const hasRivalryDialogue = !isDraw && r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 30;
+    let winLine = '', loseLine = '';
+    if (hasRivalryDialogue) {
       const winF = leftIsWinner ? r.left : r.right;
       const loseF = leftIsWinner ? r.right : r.left;
-      const faceL = getPortraitUrl(r.left.id);
-      const faceR = getPortraitUrl(r.right.id);
-
-      // セリフ生成（因縁30+）
-      const hasRivalryDialogue = !isDraw && r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 30;
-      let winLine = '', loseLine = '';
-      if (hasRivalryDialogue) {
-        const winChar = ALL_CHARS.find(c => c.id === winF.id);
-        const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
-        const ovrW = Engine.util.ov(winF);
-        const ovrLose = Engine.util.ov(loseF);
-        const isUpsetRivalry = ovrW < ovrLose - 8;
-        const winPool = isUpsetRivalry && UPSET_RIVALRY_LINES ? UPSET_RIVALRY_LINES.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
-        const losePool = isUpsetRivalry && UPSET_RIVALRY_LINES?.loserLines ? UPSET_RIVALRY_LINES.loserLines : RIVALRY_MATCH_REACTION.loserLines;
-        winLine = pickDialogueLine(winPool, winChar);
-        loseLine = pickDialogueLine(losePool, loseChar);
-      }
-
-      // 左右のキャラHTML
-      const makeSrChar = (fighter, isWinner, faceUrl, line) => {
-        const cls = isWinner ? 'winner' : 'loser';
-        const bubbleCls = line ? '' : ' empty';
-        let bubbleHtml = '';
-        if (line) {
-          const bnameCls = isWinner ? 'win' : 'lose';
-          const namePrefix = isWinner ? '🏆 ' : '';
-          bubbleHtml = `<div class="sr-bubble">
-            <div class="bname ${bnameCls}">${namePrefix}${fighter.name}</div>
-            <div class="btext">「${line}」<div class="btail"></div></div>
-          </div>`;
-        }
-        return `<div class="sr-char ${cls}">
-          <div class="bubble-slot${bubbleCls}">${bubbleHtml}</div>
-          <div class="portrait-wrap">
-            ${faceUrl ? `<img src="${faceUrl}" alt="" onerror="this.style.display='none'">` : portraitImg(fighter.id, 110)}
-          </div>
-          <div class="fname">${fLink(fighter, {source:'roster', bold:isWinner, skipQueue:true})}</div>
-        </div>`;
-      };
-
-      html += `<div class="sr-fighters">
-        ${makeSrChar(r.left, leftIsWinner, faceL, leftIsWinner ? (hasRivalryDialogue ? winLine : '') : (hasRivalryDialogue ? loseLine : ''))}
-        <div class="sr-vs"><div class="sr-vs-text">VS</div></div>
-        ${makeSrChar(r.right, rightIsWinner, faceR, rightIsWinner ? (hasRivalryDialogue ? winLine : '') : (hasRivalryDialogue ? loseLine : ''))}
-      </div>`;
-
-      html += `<div class="sr-win-badge"><span>🏆 ${winF.name} 勝利</span></div>`;
+      const winChar = ALL_CHARS.find(c => c.id === winF.id);
+      const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
+      const ovrW = Engine.util.ov(winF);
+      const ovrLose = Engine.util.ov(loseF);
+      const isUpsetRivalry = ovrW < ovrLose - 8;
+      const winPool = isUpsetRivalry && UPSET_RIVALRY_LINES ? UPSET_RIVALRY_LINES.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
+      const losePool = isUpsetRivalry && UPSET_RIVALRY_LINES?.loserLines ? UPSET_RIVALRY_LINES.loserLines : RIVALRY_MATCH_REACTION.loserLines;
+      winLine = pickDialogueLine(winPool, winChar);
+      loseLine = pickDialogueLine(losePool, loseChar);
     }
 
-    // 決まり手
-    html += `<div class="sr-finish">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
+    const leftLine = leftIsWinner ? winLine : (!isDraw ? loseLine : '');
+    const rightLine = rightIsWinner ? winLine : (!isDraw ? loseLine : '');
+    const hasDialogue = !!(leftLine || rightLine);
 
-    // MQ行
-    const mqBonusTags = [];
-    if (r.isTitleMatch) mqBonusTags.push(`<span style="color:var(--gold)">(王座+5)</span>`);
-    // titleGapPenalty — MQ外部ボーナス整理で廃止
-    if (r.rivalryBonus) mqBonusTags.push(`<span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>`);
-    // coachMQBonus — MQ外部ボーナス整理で廃止
-    if (r.freshnessBonus) mqBonusTags.push(`<span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>`);
+    const metaLeft = isMain ? (leftIsWinner ? 'Winner' : isDraw ? 'Draw' : 'Challenger') : `Match ${results.length - i}`;
+    const metaRight = isMain ? (rightIsWinner ? 'Winner' : isDraw ? 'Draw' : 'Challenger') : `Match ${results.length - i}`;
 
-    html += `<div class="sr-mq-row">
-      <span class="mq-stars">${[1,2,3,4,5].map(s => `<span class="mq-star" style="color:${r.mq >= s*20 ? 'var(--gold)' : 'rgba(200,190,170,0.15)'}">★</span>`).join('')}</span>
-      <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}</span>
-      ${mqBonusTags.map(t => `<span style="font-size:11px">${t}</span>`).join(' ')}
-    </div>`;
+    let winnerLabel;
+    if (isDraw) winnerLabel = 'DRAW';
+    else {
+      const winF = leftIsWinner ? r.left : r.right;
+      winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
+    }
 
-    // HPバー
-    html += _hpComparisonBar(r.left.name, r.hpLeft, r.right.name, r.hpRight);
-
-    // 試合ログ
-    html += `<details style="margin-top:8px"><summary style="font-size:12px;color:var(--text-dim);cursor:pointer">試合ログを見る</summary>
-      <div style="font-size:11px;color:var(--text-sub);margin-top:4px;max-height:200px;overflow-y:auto">
-        ${r.log.map(l => `<div style="padding:2px 0">${l}</div>`).join('')}
-      </div>
-    </details>`;
-
-    html += `</div>`; // sr-card
-  });
-  html += `</div>`; // show-results-area
-
-  // Heat情報
-  html += `<div class="sr-heat-info"><span style="color:${heat.color}">${heat.emoji} Heat: ${heat.label}</span></div>`;
-
-  // 負傷報告
-  if (injuryResults.length > 0) {
-    html += `<div style="margin:4px 16px 12px;padding:10px 14px;background:rgba(214,48,49,0.1);border:1px solid rgba(214,48,49,0.3);border-radius:6px">
-      <div style="font-size:13px;font-weight:700;color:#e17055;margin-bottom:6px">🏥 負傷報告</div>`;
-    injuryResults.forEach(ir => {
-      html += `<div style="font-size:13px;color:var(--text-sub);padding:3px 0">
-        <span style="color:${ir.injury.color}">${ir.injury.type}</span> ${fLink(ir, {source:'roster', size:'13px'})} — 全治${ir.injury.weeksLeft}週間
-      </div>`;
+    const rowCls = `pb-mrow${isMain ? ' is-main' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+    html += `<div class="${rowCls}">`;
+    html += _pbFighterBlock('left', r.left, leftCls, metaLeft, leftLine);
+    html += _pbResultColumn({
+      winnerLabel,
+      winnerIsDraw: isDraw,
+      finishText: Engine.formatFinish(r.finType, r.finMove),
+      turns: r.turns,
+      mq: r.mq
     });
-    html += '</div>';
-  }
+    html += _pbFighterBlock('right', r.right, rightCls, metaRight, rightLine);
+    if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
+    if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
+    if (injuriesThisMatch.length) html += _pbInjuryBlock(injuriesThisMatch);
+    html += `</div>`;
+  });
 
-  // 閉じるボタン
-  html += `<div class="sr-close-area">
-    <button type="button" class="sr-close-btn" onclick="closeShowResult()">結果を確認 →</button>
+  html += `</div>`; // .pb-matches
+
+  // Footer
+  const heatFooterCls = (heat.id === 'hot' || heat.id === 'on_fire') ? 'is-hot' :
+                       (heat.id === 'cold' || heat.id === 'ice_cold') ? 'is-cold' : '';
+  html += `<div class="pb-footer">
+    <div class="pb-footer-heat">Heat<span class="val ${heatFooterCls}">${heat.emoji} ${escHtml(heat.label.toUpperCase())}</span></div>
+    <button type="button" class="pb-close-btn" onclick="closeShowResult()">結果を確認 →</button>
   </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
+}
+
+// ── Pattern B ヘルパー（試合結果画面共通） ──
+function _pbAttendClass(occRate) {
+  if (occRate >= 0.95) return 'is-sellout';
+  if (occRate >= 0.80) return 'is-good';
+  if (occRate >= 0.60) return 'is-neutral';
+  if (occRate >= 0.40) return 'is-weak';
+  return 'is-empty';
+}
+
+function _pbStars(mq) {
+  return [1,2,3,4,5].map(s => `<span class="star${mq >= s*20 ? ' on' : ''}">★</span>`).join('');
+}
+
+function _pbPortraitImg(fighter) {
+  const url = getUpperUrl(fighter.id);
+  if (url) return `<img src="${url}" alt="${escHtml(fighter.name || '')}" onerror="this.style.display='none'">`;
+  const initial = (fighter.name || '?').charAt(0);
+  return `<div class="pb-portrait-placeholder">${escHtml(initial)}</div>`;
+}
+
+function _pbFighterBlock(side, fighter, stateCls, metaText, dialogueLine) {
+  const nameLink = fLink(fighter, { source: 'roster', skipQueue: true });
+  const ovr = Engine.util.ov(fighter);
+  const isWinnerForSpeaker = stateCls === 'is-winner';
+  const isDrawForSpeaker = stateCls === 'is-draw';
+  let bubbleHtml = '';
+  if (dialogueLine) {
+    const speakerCls = isDrawForSpeaker ? 'is-draw' : (isWinnerForSpeaker ? 'is-winner' : 'is-loser');
+    const prefix = isWinnerForSpeaker ? '🏆 ' : '';
+    bubbleHtml = `<div class="pb-dialogue">
+      <div class="pb-dialogue-speaker ${speakerCls}">${prefix}${escHtml(fighter.name)}</div>
+      「${escHtml(dialogueLine)}」
+    </div>`;
+  }
+  const ovrHtml = side === 'left'
+    ? `<span class="val">${ovr}</span><span class="lbl">OVR</span>`
+    : `<span class="lbl">OVR</span><span class="val">${ovr}</span>`;
+  return `<div class="pb-fighter is-${side} ${stateCls}">
+    <div class="pb-portrait-wrap">
+      ${bubbleHtml}
+      <div class="pb-portrait">${_pbPortraitImg(fighter)}</div>
+    </div>
+    <div class="pb-fighter-info">
+      <div class="pb-fighter-name">${nameLink}</div>
+      <div class="pb-fighter-meta">${escHtml(metaText)}</div>
+      <div class="pb-fighter-ovr">${ovrHtml}</div>
+    </div>
+  </div>`;
+}
+
+function _pbTagFighterBlock(side, members, stateCls) {
+  const mems = members.filter(m => m).map(m => {
+    const ovr = Engine.util.ov(m);
+    const nameLink = fLink(m, { source: 'roster', skipQueue: true });
+    return `<div class="pb-tag-member">
+      <div class="pb-portrait-wrap">
+        <div class="pb-portrait">${_pbPortraitImg(m)}</div>
+      </div>
+      <div class="pb-tag-member-name">${nameLink}</div>
+      <div class="pb-tag-member-ovr"><span class="val">${ovr}</span><span class="lbl">OVR</span></div>
+    </div>`;
+  }).join('');
+  return `<div class="pb-fighter is-${side} is-tag ${stateCls}">
+    <div class="pb-tag-members">${mems}</div>
+  </div>`;
+}
+
+function _pbResultColumn({ winnerLabel, winnerIsDraw, finishText, turns, mq }) {
+  return `<div class="pb-result">
+    <div class="pb-result-vs">VS</div>
+    <div class="pb-result-winner ${winnerIsDraw ? 'is-draw' : ''}">${winnerLabel}</div>
+    <div class="pb-result-finish">${escHtml(finishText)}</div>
+    <div class="pb-result-turns">${turns} Turns</div>
+    <div class="pb-result-mq">
+      <span class="pb-result-mq-stars">${_pbStars(mq)}</span>
+      <span>MQ</span>
+      <span class="pb-result-mq-val">${mq}</span>
+    </div>
+  </div>`;
+}
+
+function _pbHpMini(hpL, hpR) {
+  const lPct = hpL.max > 0 ? Math.round(hpL.final / hpL.max * 100) : 0;
+  const rPct = hpR.max > 0 ? Math.round(hpR.final / hpR.max * 100) : 0;
+  const lFillCls = lPct > 30 ? 'is-healthy' : lPct > 10 ? 'is-warning' : 'is-danger';
+  const rFillCls = rPct > 30 ? 'is-healthy' : rPct > 10 ? 'is-warning' : 'is-danger';
+  return `<div class="pb-hp-mini">
+    <div class="pb-hp-mini-half is-left">
+      <span class="pb-hp-mini-val">${hpL.final} / ${hpL.max}</span>
+      <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill ${lFillCls}" style="width:${lPct}%"></div></div>
+    </div>
+    <div class="pb-hp-mini-label">HP</div>
+    <div class="pb-hp-mini-half is-right">
+      <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill ${rFillCls}" style="width:${rPct}%"></div></div>
+      <span class="pb-hp-mini-val">${hpR.final} / ${hpR.max}</span>
+    </div>
+  </div>`;
+}
+
+function _pbInjuryBlock(injuries) {
+  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(ir.injury.type)}</span> <span class="name">${escHtml(ir.name)}</span> 全治 ${ir.injury.weeksLeft}週間</span>`).join('');
+  return `<div class="pb-injury">
+    <span class="pb-injury-label">🏥 Injury</span>
+    ${items}
+  </div>`;
 }
 
 // Legacy function aliases for onclick handlers in UI
@@ -4974,230 +5064,171 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const ppvName = G.ppvName || 'GRAND FINAL';
-  const rankings = G.rankings || [];
-  const pRank = Engine.ranking.getPlayerRank(rankings);
-  const reward = PPV_REWARD[pRank] || PPV_REWARD[4];
-  const avgMQ = results.length > 0 ? Math.round(results.reduce((s, r) => s + r.mq, 0) / results.length) : 0;
+  const validResults = results.filter(r => r);
+  const avgMQ = validResults.length > 0 ? Math.round(validResults.reduce((s, r) => s + r.mq, 0) / validResults.length) : 0;
+  const bestMQ = validResults.length > 0 ? Math.max(...validResults.map(r => r.mq)) : 0;
+  const heat = getHeatLevel();
+  const heatFooterCls = (heat.id === 'hot' || heat.id === 'on_fire') ? 'is-hot' :
+                       (heat.id === 'cold' || heat.id === 'ice_cold') ? 'is-cold' : '';
 
-  let html = '';
-  // ═══ ヘッダー ═══
-  html += `<div style="text-align:center;padding:28px 20px 22px;background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(180,80,40,0.12));border:1px solid rgba(212,168,67,0.3);border-radius:12px;margin-bottom:18px">`;
-  html += `<div style="font-size:12px;letter-spacing:3px;color:rgba(255,255,255,0.3);margin-bottom:4px">PPV GRAND FINAL</div>`;
-  html += `<div class="show-result-title" style="font-size:24px;font-weight:900;background:linear-gradient(180deg,#fff 20%,#f0d078);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px">「${ppvName}」結果</div>`;
-  html += `<div>${mqStars(avgMQ)} <span style="font-size:14px;color:var(--text-sub)">平均MQ: ${avgMQ}</span></div>`;
-  if (heatChange && heatChange.oldId !== heatChange.newId) {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-top:6px">${heatChange.newEmoji} Heat: ${heatChange.oldLabel} → ${heatChange.newLabel}（集客×${heatChange.newMult}）</div>`;
-  }
-  html += `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.2);border-radius:16px;font-size:11px;color:var(--text-sub);margin-top:10px">🏆 特設リング</div>`;
-  html += `</div>`;
+  let html = `<div class="pb-container">`;
 
-  // ═══ 各試合結果（メインイベント→前座の順） ═══
+  // Banner
+  html += `<div class="pb-banner">
+    <div class="pb-live is-ppv">🏆 GRAND FINAL</div>
+    <div class="pb-banner-title is-ppv">${escHtml(ppvName)}</div>
+    <div class="pb-banner-sub">Year ${G.year || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>頂上決戦</div>
+  </div>`;
+
+  // Scoreboard: Avg MQ / Best MQ / Heat / Matches
+  html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr 1fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(avgMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
+      <div class="pb-score-lbl">Avg MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(bestMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${bestMQ}</div>
+      <div class="pb-score-lbl">Best MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" ${heatFooterCls === 'is-hot' ? 'style="color:var(--c-rivalry)"' : heatFooterCls === 'is-cold' ? 'style="color:var(--c-info)"' : 'class="is-neutral"'}>${escHtml(heat.label.toUpperCase())}</div>
+      <div class="pb-score-lbl">Heat</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val is-neutral">${validResults.length}</div>
+      <div class="pb-score-lbl">Matches</div>
+    </div>
+  </div>`;
+
+  html += `<div class="pb-matches">`;
+
   const total = card.length;
+  const summitIdx = card.findIndex(m => m.isSummit);
   let shownMainLabel = false;
+  let shownUndercardLabel = false;
+
   for (let di = total - 1; di >= 0; di--) {
     const match = card[di];
     const r = results[di];
     if (!r) continue;
-    const matchNum = di + 1;
     const isMain = match.isSummit;
+    const matchNum = di + 1;
+
+    // Section dividers
+    if (isMain && !shownMainLabel) {
+      html += `<div class="pb-divider is-main">🏆 MAIN EVENT — 頂上決戦</div>`;
+      shownMainLabel = true;
+    } else if (!isMain && !shownUndercardLabel && shownMainLabel) {
+      html += `<div class="pb-divider">UNDERCARD</div>`;
+      shownUndercardLabel = true;
+    }
+
     const isDraw = r.winner === 'draw';
     const leftIsWinner = r.winner === 'left';
     const rightIsWinner = r.winner === 'right';
+    const leftCls = isDraw ? 'is-draw' : (leftIsWinner ? 'is-winner' : 'is-loser');
+    const rightCls = isDraw ? 'is-draw' : (rightIsWinner ? 'is-winner' : 'is-loser');
 
-    // セクションラベル
-    if (isMain && !shownMainLabel) {
-      html += `<div style="text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.2);margin:16px 0 10px">🏆 MAIN EVENT — 頂上決戦</div>`;
-      shownMainLabel = true;
-    } else if (!isMain && shownMainLabel && di === total - 2) {
-      html += `<div style="text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.2);margin:16px 0 10px">UNDERCARD</div>`;
-    }
-
-    // カード外枠スタイル
-    const cardBorder = isMain
-      ? 'border:1.5px solid rgba(212,168,67,0.4);background:linear-gradient(180deg,rgba(212,168,67,0.08),rgba(212,168,67,0.02))'
-      : 'border:1px solid var(--border)';
-
-    // ラベル行
-    const matchLabel = isMain ? '<span style="color:var(--gold);font-weight:600">🏆 頂上決戦</span>' : `第${matchNum}試合`;
-    const rivalryTag = match.isRivalry ? ' <span style="color:#e74c3c">🔥因縁</span>' : '';
-    const resolutionTag = r.rivalryResolved ? ' <span style="color:#d63031;font-weight:700">⚡決着！</span>' : '';
-    const rivalBonusTag = r.rivalryBonus ? ` <span style="color:${r.rivalryBonus.color}">${r.rivalryBonus.emoji}${r.rivalryBonus.label}</span>` : '';
-    const freshTag = r.freshnessBonus ? ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">${r.freshnessBonus > 0 ? '✨' : '😐'}${r.freshnessLabel}</span>` : '';
-    const titleTag = r.isTitleMatch ? ' <span style="color:var(--gold)">🏆 タイトルマッチ</span>' : '';
-
-    html += `<div style="padding:16px;margin-bottom:10px;border-radius:10px;${cardBorder}">`;
-    html += `<div style="font-size:11px;color:rgba(255,255,255,0.25);margin-bottom:10px">${matchLabel}${titleTag}${rivalryTag}${resolutionTag}${rivalBonusTag}${freshTag}</div>`;
-
-    if (isDraw) {
-      // ─── 引き分け ───
-      const drawSize = isMain ? 160 : 120;
-      const drawOvrL = Engine.util.ov(r.left);
-      const drawOvrR = Engine.util.ov(r.right);
-      const _drawStatColors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6'];
-      const _drawStatBar = (f) => `<div style="display:flex;flex-direction:column;gap:3px;width:130px">${['PW','SP','TE','ST','MN'].map((lb,i) => {
-        const k = ['pw','sp','te','st','mn'][i]; const v = f[k]||0; const pct = Math.min(100, v);
-        return `<div style="display:flex;align-items:center;gap:4px;font-size:10px">
-          <span style="width:18px;color:rgba(255,255,255,0.35);flex-shrink:0;text-align:right">${lb}</span>
-          <div style="flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;min-width:40px">
-            <div style="width:${pct}%;height:100%;background:${_drawStatColors[i]};border-radius:3px"></div>
-          </div>
-          <span style="width:22px;text-align:right;color:rgba(255,255,255,0.55);flex-shrink:0">${v}</span>
-        </div>`;
-      }).join('')}</div>`;
-      html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
-          <div style="border-radius:12px;overflow:hidden">${portraitImg(r.left.id, drawSize, 'portrait-match')}</div>
-          <div style="margin-top:6px;font-size:14px">${fLink(r.left, {source:'roster', skipQueue:true})}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">OVR ${drawOvrL}</div>
-          <div style="margin-top:3px">${_drawStatBar(r.left)}</div>
-        </div>
-        <div style="font-size:16px;font-weight:700;padding:4px 14px;background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f39c12;border-radius:4px;flex-shrink:0;align-self:center">DRAW</div>
-        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
-          <div style="border-radius:12px;overflow:hidden">${portraitImg(r.right.id, drawSize, 'portrait-match')}</div>
-          <div style="margin-top:6px;font-size:14px">${fLink(r.right, {source:'roster', skipQueue:true})}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">OVR ${drawOvrR}</div>
-          <div style="margin-top:3px">${_drawStatBar(r.right)}</div>
-        </div>
-      </div>`;
-      html += `<div style="text-align:center;margin-bottom:8px;font-size:13px;color:var(--text-sub)">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
-      html += `<div style="text-align:center;margin-bottom:10px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${_ppvBonusTags(r, mqBonuses, di)}</span></div>`;
-    } else {
-      // ─── 勝敗あり ───
+    // Dialogue triggers
+    let winLine = '', loseLine = '';
+    let coachPraise = null;
+    if (!isDraw) {
       const winF = leftIsWinner ? r.left : r.right;
       const loseF = leftIsWinner ? r.right : r.left;
-      const winnerId = winF.id;
-      const loserId = loseF.id;
-      // ポートレイトサイズ
-      const winSize = isMain ? 160 : 120;
-      const loseSize = isMain ? 100 : 80;
+      const winChar = ALL_CHARS.find(c => c.id === winF.id);
+      const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
 
-      // 吹き出し判定
-      let winBubble = '';
-      let loseBubble = '';
-      // 因縁リアクション（rivalry≥40）
       if (r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 30) {
-        const winChar = ALL_CHARS.find(c => c.id === winnerId);
-        const loseChar = ALL_CHARS.find(c => c.id === loserId);
         const ovrW = Engine.util.ov(winF);
         const ovrL = Engine.util.ov(loseF);
         const isUpsetRivalry = ovrW < ovrL - 8;
         const winPool = isUpsetRivalry && UPSET_RIVALRY_LINES ? UPSET_RIVALRY_LINES.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
         const losePool = isUpsetRivalry && UPSET_RIVALRY_LINES?.loserLines ? UPSET_RIVALRY_LINES.loserLines : RIVALRY_MATCH_REACTION.loserLines;
-        const winLine = pickDialogueLine(winPool, winChar);
-        const loseLine = pickDialogueLine(losePool, loseChar);
-        winBubble = _ppvBubble(winF.name, winLine, true);
-        loseBubble = _ppvBubble(loseF.name, loseLine, false);
-      }
-      // PPVメインイベント勝利演出（自団体選手が頂上決戦に勝った場合）
-      let coachPraiseBubble = '';
-      if (isMain && !winBubble) {
-        const winOrgId = winF._ppvOrgId || null;
-        if (winOrgId === 'player') {
-          const winChar = ALL_CHARS.find(c => c.id === winnerId);
-          const victoryLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
-          winBubble = _ppvBubble(winF.name, victoryLine, true);
-          // コーチ称賛コメント
-          const coach = Engine.coach.getCharCoach(G, winnerId);
-          if (coach) {
-            const praiseIdx = Math.floor(Math.random() * PPV_COACH_PRAISE_LINES.length);
-            coachPraiseBubble = _ppvCoachBubble(coach.name, PPV_COACH_PRAISE_LINES[praiseIdx]);
-          }
+        winLine = pickDialogueLine(winPool, winChar);
+        loseLine = pickDialogueLine(losePool, loseChar);
+      } else if (isMain && winF._ppvOrgId === 'player') {
+        winLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
+        const coach = Engine.coach.getCharCoach(G, winF.id);
+        if (coach) {
+          const praiseIdx = Math.floor(Math.random() * PPV_COACH_PRAISE_LINES.length);
+          coachPraise = { name: coach.name, line: PPV_COACH_PRAISE_LINES[praiseIdx] };
         }
-      }
-
-      // 勝者ポートレイト枠スタイル
-      const winPortraitStyle = isMain
-        ? `border:2px solid rgba(212,168,67,0.5);box-shadow:0 0 24px rgba(212,168,67,0.15);border-radius:7px`
-        : `border:1.5px solid rgba(46,204,113,0.25);border-radius:7px`;
-      const losePortraitStyle = `border:1px solid rgba(200,190,170,0.08);border-radius:7px;opacity:0.65`;
-      const winNameColor = isMain ? 'color:var(--gold);' : '';
-
-      // OVR/パラメータ取得
-      const ovrW = Engine.util.ov(winF);
-      const ovrLose = Engine.util.ov(loseF);
-      const _ppvStatLabels = ['PW','SP','TE','ST','MN'];
-      const _ppvStatKeys = ['pw','sp','te','st','mn'];
-      const _ppvStatColors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6'];
-      const _ppvStatBar = (f, compact) => {
-        const mw = compact ? 110 : 140;
-        return `<div style="display:flex;flex-direction:column;gap:3px;width:${mw}px">${_ppvStatKeys.map((k,i) => {
-          const v = f[k]||0; const pct = Math.min(100, v);
-          return `<div style="display:flex;align-items:center;gap:4px;font-size:${compact?9:10}px">
-            <span style="width:18px;color:rgba(255,255,255,0.35);flex-shrink:0;text-align:right">${_ppvStatLabels[i]}</span>
-            <div style="flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;min-width:40px">
-              <div style="width:${pct}%;height:100%;background:${_ppvStatColors[i]};border-radius:3px"></div>
-            </div>
-            <span style="width:22px;text-align:right;color:rgba(255,255,255,0.55);flex-shrink:0">${v}</span>
-          </div>`;
-        }).join('')}</div>`;
-      };
-
-      html += `<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">`;
-      // 勝者列
-      html += `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;max-width:55%">`;
-      if (winBubble) html += winBubble;
-      html += `<div style="${winPortraitStyle};overflow:hidden;border-radius:12px">${portraitImg(winnerId, winSize, 'portrait-match winner')}</div>`;
-      html += `<div style="margin-top:6px;font-size:15px;font-weight:700;${winNameColor}">${fLink(winF, {source:'roster', skipQueue:true})}</div>`;
-      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin-top:2px">OVR ${ovrW}</div>`;
-      html += `<div style="margin-top:3px">${_ppvStatBar(winF, false)}</div>`;
-      html += `</div>`;
-      // VS
-      html += `<div style="font-size:14px;color:rgba(200,190,170,0.12);padding-bottom:${loseSize * 0.5}px;flex-shrink:0;align-self:flex-end">VS</div>`;
-      // 敗者列
-      html += `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;max-width:38%">`;
-      if (loseBubble) html += loseBubble;
-      html += `<div style="${losePortraitStyle};overflow:hidden;border-radius:12px">${portraitImg(loserId, loseSize, 'portrait-match loser')}</div>`;
-      html += `<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.4)">${fLink(loseF, {source:'roster', bold:false, skipQueue:true})}</div>`;
-      html += `<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px">OVR ${ovrLose}</div>`;
-      html += `<div style="margin-top:3px">${_ppvStatBar(loseF, true)}</div>`;
-      html += `</div>`;
-      html += `</div>`;
-
-      // 勝利バッジ
-      html += `<div style="text-align:center;margin-bottom:8px"><span style="display:inline-block;padding:4px 14px;border-radius:4px;font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--gold),#b8912e);color:var(--bg-dark)">🏆 ${winF.name} 勝利</span></div>`;
-      // 決まり手
-      html += `<div style="text-align:center;font-size:12px;color:var(--text-sub);margin-bottom:6px">${Engine.formatFinish(r.finType, r.finMove)} / ${r.turns}ターン</div>`;
-      // MQ行
-      html += `<div style="text-align:center;margin-bottom:10px">${mqStars(r.mq)} <span style="font-size:13px;color:var(--text-sub)">MQ: ${r.mq}${_ppvBonusTags(r, mqBonuses, di)}</span></div>`;
-      // コーチ称賛（メインイベント勝利時のみ）
-      if (coachPraiseBubble) {
-        html += `<div style="margin-top:12px;max-width:320px;margin-left:auto;margin-right:auto">${coachPraiseBubble}</div>`;
       }
     }
 
-    // HPバー (UI共通ルール① center-out symmetric)
-    html += _hpComparisonBar(r.left.name, r.hpLeft, r.right.name, r.hpRight);
+    const leftLine = leftIsWinner ? winLine : (!isDraw ? loseLine : '');
+    const rightLine = rightIsWinner ? winLine : (!isDraw ? loseLine : '');
+    const hasDialogue = !!(leftLine || rightLine);
 
-    // 試合ログ
-    html += `<details style="margin-top:8px"><summary style="font-size:10px;color:rgba(255,255,255,0.18);cursor:pointer">試合ログを見る</summary>
-      <div style="font-size:10px;color:rgba(255,255,255,0.22);margin-top:4px;padding:6px 8px;background:rgba(0,0,0,0.25);border-radius:4px;max-height:160px;overflow-y:auto;line-height:1.6">
-        ${r.log.map(l => `<div>${l}</div>`).join('')}
-      </div>
-    </details>`;
+    // Tags
+    const tags = [];
+    if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
+    if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">⚡ 決着！</span>`);
+    else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
+    if (r.freshnessBonus) {
+      if (r.freshnessBonus > 0) tags.push(`<span class="pb-tag is-first">✨ ${escHtml(r.freshnessLabel || '初顔合わせ')}</span>`);
+      else tags.push(`<span class="pb-tag is-stale">😐 ${escHtml(r.freshnessLabel || 'フレッシュ度低')}</span>`);
+    }
 
+    // Meta: org name for PPV
+    const metaLeft = r.left._ppvOrgName || (isMain ? 'Summit' : `Match ${matchNum}`);
+    const metaRight = r.right._ppvOrgName || (isMain ? 'Summit' : `Match ${matchNum}`);
+
+    let winnerLabel;
+    if (isDraw) winnerLabel = 'DRAW';
+    else {
+      const winF = leftIsWinner ? r.left : r.right;
+      winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
+    }
+
+    const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+    html += `<div class="${rowCls}">`;
+    html += _pbFighterBlock('left', r.left, leftCls, metaLeft, leftLine);
+    html += _pbResultColumn({
+      winnerLabel,
+      winnerIsDraw: isDraw,
+      finishText: Engine.formatFinish(r.finType, r.finMove),
+      turns: r.turns,
+      mq: r.mq
+    });
+    html += _pbFighterBlock('right', r.right, rightCls, metaRight, rightLine);
+    if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
+    if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
+    if (coachPraise) {
+      html += `<div class="pb-coach-praise">
+        <span class="pb-coach-praise-label">🎓 Coach</span>
+        <div class="pb-coach-praise-text"><span class="coach-name">${escHtml(coachPraise.name)}</span>「${escHtml(coachPraise.line)}」</div>
+      </div>`;
+    }
     html += `</div>`;
   }
 
-  // ═══ 対戦pt & ヒート ═══
-  html += `<div style="text-align:center;padding:14px 16px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:8px;margin:18px 0 16px">`;
-  const summitIdx = card.findIndex(m => m.isSummit);
+  html += `</div>`; // .pb-matches
+
+  // Footer: 対戦pt + Heat + button
+  let footerExtras = '';
   if (summitIdx >= 0 && results[summitIdx]) {
     const sr = results[summitIdx];
-    const winnerOrgId = sr.winner === 'left' ? card[summitIdx].left._ppvOrgId : card[summitIdx].right._ppvOrgId;
-    const playerInSummit = card[summitIdx].left._ppvOrgId === 'player' || card[summitIdx].right._ppvOrgId === 'player';
-    if (playerInSummit) {
+    const leftOrg = card[summitIdx].left._ppvOrgId;
+    const rightOrg = card[summitIdx].right._ppvOrgId;
+    const winnerOrgId = sr.winner === 'left' ? leftOrg : sr.winner === 'right' ? rightOrg : null;
+    const playerInSummit = leftOrg === 'player' || rightOrg === 'player';
+    if (playerInSummit && winnerOrgId) {
       const playerWon = winnerOrgId === 'player';
-      html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">対戦pt: ${playerWon ? '+' : '-'}${BATTLE_POINT_CFG.summit}（頂上決戦${playerWon ? '勝利' : '敗北'}）</div>`;
+      const sign = playerWon ? '+' : '-';
+      footerExtras = `<div class="pb-footer-heat" style="color:${playerWon ? 'var(--gold)' : 'var(--c-negative)'}">BP<span class="val">${sign}${BATTLE_POINT_CFG.summit}</span></div>`;
     }
   }
-  if (heatChange && heatChange.oldId !== heatChange.newId) {
-    html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">${heatChange.newEmoji} Heat: ${heatChange.oldLabel} → ${heatChange.newLabel}（集客倍率 ×${heatChange.newMult}）</div>`;
-  }
-  html += `</div>`;
 
-  html += `<div class="btn-row" style="margin-top:16px;justify-content:center">`;
-  html += `<button class="btn btn-gold" onclick="App.closePPVResult()">オフシーズンへ →</button>`;
-  html += `</div>`;
+  html += `<div class="pb-footer">
+    ${footerExtras}
+    <div class="pb-footer-heat">Heat<span class="val ${heatFooterCls}">${heat.emoji} ${escHtml(heat.label.toUpperCase())}</span></div>
+    <button type="button" class="pb-close-btn" onclick="App.closePPVResult()">オフシーズンへ →</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -5264,113 +5295,124 @@ function renderPPVTVResult(card, results, ppvName) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
 
-  const validMQs = results.filter((r, i) => card[i] && r).map(r => r.mq);
-  const avgMQ = validMQs.length > 0 ? Math.round(validMQs.reduce((s, v) => s + v, 0) / validMQs.length) : 0;
-  const bestMQ = validMQs.length > 0 ? Math.max(...validMQs) : 0;
+  const validResults = results.filter((r, i) => card[i] && r);
+  const avgMQ = validResults.length > 0 ? Math.round(validResults.reduce((s, r) => s + r.mq, 0) / validResults.length) : 0;
+  const bestMQ = validResults.length > 0 ? Math.max(...validResults.map(r => r.mq)) : 0;
+
   const total = card.length;
-
-  // MQカラースケール（6段階: 冷灰→輝く金）
-  function _mqCol(mq) {
-    if (mq >= 80) return '#f0d078';
-    if (mq >= 70) return '#d4a843';
-    if (mq >= 60) return '#c4853a';
-    if (mq >= 50) return '#b89870';
-    if (mq >= 40) return '#8090a8';
-    return '#607080';
-  }
-  function _mqGlow(mq) { return mq >= 80 ? 'text-shadow:0 0 14px rgba(240,208,120,0.45)' : ''; }
-
-  // 表示順: サミット→残りを逆順
   const summitIdx = card.findIndex(m => m.isSummit);
   const sortedIdx = [];
   if (summitIdx >= 0) sortedIdx.push(summitIdx);
   for (let i = total - 1; i >= 0; i--) { if (i !== summitIdx) sortedIdx.push(i); }
 
-  // セクション判定
-  function _section(pos) {
-    if (pos === 0) return 'main';
-    if (pos === 1) return 'semi';
-    return 'under';
-  }
-  const SECTION_LABEL = { main: '✦ MAIN EVENT ✦', semi: 'SEMI FINAL', under: 'UNDERCARD' };
-
   // 感情テキスト（bestMQ帯で分岐）
   const emotionText =
-    bestMQ >= 80 ? '「……すごい試合だった。来年こそ、あの舞台で戦う」' :
-    bestMQ >= 70 ? '「いい大会だった。来年は、絶対にあの舞台に立つ」' :
-    bestMQ >= 55 ? '「まだ差がある。でも来年は必ず——」' :
-                   '「来年こそは、この舞台に……」';
+    bestMQ >= 80 ? '……すごい試合だった。来年こそ、あの舞台で戦う' :
+    bestMQ >= 70 ? 'いい大会だった。来年は、絶対にあの舞台に立つ' :
+    bestMQ >= 55 ? 'まだ差がある。でも来年は必ず——' :
+                   '来年こそは、この舞台に……';
 
-  let html = '';
+  let html = `<div class="pb-container">`;
 
-  // バナー
-  html += `<div class="ppvtv-banner">
-    <div class="ppvtv-live-badge">LIVE ON TV</div>
-    <div class="ppvtv-name">${ppvName || 'GRAND FINAL'}</div>
-    <div class="ppvtv-sub">今年は出場枠に届かなかった——テレビの前で、大会を見届ける</div>
+  // Banner: PPV TV (青系バッジ、プレイヤー不参加なので控えめ)
+  html += `<div class="pb-banner">
+    <div class="pb-live is-ppvtv">📺 PPV 観戦</div>
+    <div class="pb-banner-title is-ppvtv">${escHtml(ppvName || 'GRAND FINAL')}</div>
+    <div class="pb-banner-sub">Year ${G.year || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>テレビの前で</div>
   </div>`;
 
-  // サマリー行
-  html += `<div class="ppvtv-summary">
-    <div class="ppvtv-summary-item">
-      <div class="ppvtv-summary-val">${total}</div>
-      <div class="ppvtv-summary-lbl">MATCHES</div>
+  // Scoreboard: Avg MQ / Best MQ / Matches
+  html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(avgMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
+      <div class="pb-score-lbl">Avg MQ</div>
     </div>
-    <div class="ppvtv-summary-item">
-      <div class="ppvtv-summary-val" style="color:${_mqCol(avgMQ)}">${avgMQ}</div>
-      <div class="ppvtv-summary-lbl">AVG MQ</div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(bestMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${bestMQ}</div>
+      <div class="pb-score-lbl">Best MQ</div>
     </div>
-    <div class="ppvtv-summary-item">
-      <div class="ppvtv-summary-val" style="color:${_mqCol(bestMQ)};${_mqGlow(bestMQ)}">${bestMQ}</div>
-      <div class="ppvtv-summary-lbl">BEST MQ</div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val is-neutral">${validResults.length}</div>
+      <div class="pb-score-lbl">Matches</div>
     </div>
   </div>`;
 
-  // 試合リスト
-  let lastSection = null;
+  html += `<div class="pb-matches">`;
+  let shownMainLabel = false;
+  let shownUndercardLabel = false;
+
   sortedIdx.forEach((di, pos) => {
     const match = card[di];
     const r = results[di];
     if (!r) return;
+    const isMain = match.isSummit;
 
-    const section = _section(pos);
-    if (section !== lastSection) {
-      html += `<div class="ppvtv-divider${section === 'main' ? ' ppvtv-divider-main' : ''}">${SECTION_LABEL[section]}</div>`;
-      lastSection = section;
+    if (isMain && !shownMainLabel) {
+      html += `<div class="pb-divider is-main">🏆 MAIN EVENT — 頂上決戦</div>`;
+      shownMainLabel = true;
+    } else if (!isMain && !shownUndercardLabel && shownMainLabel) {
+      html += `<div class="pb-divider">UNDERCARD</div>`;
+      shownUndercardLabel = true;
     }
 
     const isDraw = r.winner === 'draw';
-    const wFighter = isDraw ? match.left : (r.winner === 'left' ? match.left : match.right);
-    const lFighter = isDraw ? match.right : (r.winner === 'left' ? match.right : match.left);
-    const col = _mqCol(r.mq);
-    const glow = _mqGlow(r.mq);
-    const finishText = Engine.formatFinish(r.finType, r.finMove);
+    const leftIsWinner = r.winner === 'left';
+    const rightIsWinner = r.winner === 'right';
+    const leftCls = isDraw ? 'is-draw' : (leftIsWinner ? 'is-winner' : 'is-loser');
+    const rightCls = isDraw ? 'is-draw' : (rightIsWinner ? 'is-winner' : 'is-loser');
 
-    html += `<div class="ppvtv-row${section === 'main' ? ' ppvtv-row-main' : ''}">
-      <div class="ppvtv-fighter">
-        ${portraitImg(wFighter.id, 48, 'ppvtv-portrait ppvtv-portrait-win')}
-        <div class="ppvtv-fighter-name">${wFighter.name}</div>
-        <div class="ppvtv-win-mark">${isDraw ? 'DRAW' : 'WIN'}</div>
-      </div>
-      <div class="ppvtv-center">
-        <div class="ppvtv-mq" style="color:${col};${glow}">${r.mq}</div>
-        <div class="ppvtv-mq-lbl">MQ</div>
-        <div class="ppvtv-bar"><div class="ppvtv-bar-fill" style="width:${r.mq}%;background:${col}"></div></div>
-        <div class="ppvtv-finish">${finishText}</div>
-      </div>
-      <div class="ppvtv-fighter ppvtv-fighter-lose">
-        ${portraitImg(lFighter.id, 48, 'ppvtv-portrait')}
-        <div class="ppvtv-fighter-name">${lFighter.name}</div>
-        <div class="ppvtv-win-mark" style="visibility:hidden">—</div>
-      </div>
-    </div>`;
+    // 頂上決戦勝者のみセリフ
+    let winLine = '';
+    if (isMain && !isDraw) {
+      const winF = leftIsWinner ? match.left : match.right;
+      const winChar = ALL_CHARS.find(c => c.id === winF.id);
+      if (winChar) winLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
+    }
+    const leftLine = leftIsWinner ? winLine : '';
+    const rightLine = rightIsWinner ? winLine : '';
+    const hasDialogue = !!(leftLine || rightLine);
+
+    const metaLeft = match.left._ppvOrgName || '—';
+    const metaRight = match.right._ppvOrgName || '—';
+
+    let winnerLabel;
+    if (isDraw) winnerLabel = 'DRAW';
+    else {
+      const winF = leftIsWinner ? match.left : match.right;
+      winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
+    }
+
+    const tags = [];
+    if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
+    if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
+
+    const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+    html += `<div class="${rowCls}">`;
+    html += _pbFighterBlock('left', match.left, leftCls, metaLeft, leftLine);
+    html += _pbResultColumn({
+      winnerLabel,
+      winnerIsDraw: isDraw,
+      finishText: Engine.formatFinish(r.finType, r.finMove),
+      turns: r.turns,
+      mq: r.mq
+    });
+    html += _pbFighterBlock('right', match.right, rightCls, metaRight, rightLine);
+    if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
+    if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
+    html += `</div>`;
   });
 
-  // 感情テキスト
-  html += `<div class="ppvtv-emotion"><div class="ppvtv-emotion-quote">${emotionText}</div></div>`;
+  html += `</div>`; // .pb-matches
 
-  // ボタン
-  html += `<div class="ppvtv-btn-row"><button class="btn btn-gold" onclick="App.closePPVTV()">オフシーズンへ →</button></div>`;
+  // Footer: 感情テキスト + button
+  html += `<div class="pb-footer" style="flex-direction:column;gap:12px">
+    <div style="font-size:13px;color:var(--stage-text-sub);font-style:italic;line-height:1.8;text-align:center;max-width:540px">「${escHtml(emotionText)}」</div>
+    <button type="button" class="pb-close-btn" onclick="App.closePPVTV()">オフシーズンへ →</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -8144,59 +8186,22 @@ function _renderB3MatchPreview(event, playerFighter, challenger) {
   overlay.classList.add('active');
 }
 
-// ── B3 試合結果画面 (showResultOverlay) ──────────────────────────────────
+// ── B3 試合結果画面 (Pattern B: pb-container) ──────────────────────────────────
 function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const orgName = event.orgName || '他団体';
   const orgCfg = RIVAL_ORGS.find(o => o.id === event.orgId) || { color: '#e74c3c', emoji: '' };
   const eColor = orgCfg.color;
-  const eLight = _lightenColor(eColor);
-  const pColor = '#74b9ff';
   const won = matchResult.winner === 'left';
   const draw = matchResult.winner === 'draw';
   const winChar = won ? playerFighter : challenger;
   const loseChar = won ? challenger : playerFighter;
-  const winName = winChar.name;
-  const loseName = loseChar.name;
-  const borderColor = won ? '#27ae60' : draw ? '#888' : '#e74c3c';
 
-  // ヘッダー
-  let html = `<div style="text-align:center;padding:8px 0 4px;border-bottom:2px solid ${borderColor};margin-bottom:12px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:#aaa">Challenge Match</div>
-    <div style="font-size:18px;font-weight:700;letter-spacing:3px;color:#e8e0d0">⚔️ 挑戦状 — 結果</div>
-    <div style="font-size:12px;color:var(--text-sub);margin-top:2px">vs ${orgName}</div>
-  </div>`;
+  const leftCls = draw ? 'is-draw' : (won ? 'is-winner' : 'is-loser');
+  const rightCls = draw ? 'is-draw' : (won ? 'is-loser' : 'is-winner');
 
-  // 勝者バッジ
-  if (draw) {
-    html += `<div style="text-align:center;padding:8px;font-size:16px;font-weight:700;color:#888">🤝 DRAW</div>`;
-  } else {
-    html += `<div style="text-align:center;padding:8px;font-size:16px;font-weight:700;color:#daa520">🏆 ${winName} 勝利</div>`;
-  }
-
-  // 選手肖像（左右レイアウト）
-  const wSize = 120, lSize = 88;
-  const wFace = getPortraitUrl(winChar.id);
-  const lFace = getPortraitUrl(loseChar.id);
-  const wColor = won ? pColor : eLight;
-  const lColor = won ? eLight : pColor;
-  html += `<div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin:8px 0 12px">
-    <div style="text-align:center">
-      <div style="width:${wSize}px;height:${wSize}px;border-radius:50%;border:3px solid gold;box-shadow:0 0 12px rgba(218,165,32,0.4);overflow:hidden;margin:0 auto">
-        ${wFace ? `<img src="${wFace}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-      </div>
-      <div style="font-weight:700;font-size:14px;color:gold;margin-top:4px">${winName}</div>
-    </div>
-    <div style="text-align:center">
-      <div style="width:${lSize}px;height:${lSize}px;border-radius:50%;border:2px solid #555;opacity:0.7;overflow:hidden;margin:0 auto">
-        ${lFace ? `<img src="${lFace}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-      </div>
-      <div style="font-weight:600;font-size:12px;color:var(--text-sub);margin-top:4px">${loseName}</div>
-    </div>
-  </div>`;
-
-  // セリフ吹き出し
+  // セリフ
   let winLine = '', loseLine = '';
   if (!draw) {
     winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
@@ -8206,49 +8211,80 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
       loseLine = typeof WAR_POST_DIALOGUE !== 'undefined' ? pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) : '';
     }
   }
-  if (winLine) {
-    html += `<div style="background:#f0f0f0;border-radius:8px;padding:10px 14px;margin:0 8px 6px;text-align:center">
-      <div style="font-size:11px;font-weight:600;color:${won ? pColor : eColor};margin-bottom:2px">${winName}</div>
-      <div style="font-size:13px;color:#222">「${winLine}」</div>
-    </div>`;
-  }
-  if (loseLine) {
-    html += `<div style="background:#f0f0f0;border-radius:8px;padding:10px 14px;margin:0 8px 6px;text-align:center">
-      <div style="font-size:11px;font-weight:600;color:${won ? eColor : pColor};margin-bottom:2px">${loseName}</div>
-      <div style="font-size:13px;color:#222">「${loseLine}」</div>
-    </div>`;
-  }
+  const playerLine = won ? winLine : loseLine;
+  const challengerLine = won ? loseLine : winLine;
+  const hasDialogue = !!(playerLine || challengerLine);
 
-  // 決まり手 + ターン数
-  const finLabel = Engine.formatFinish(matchResult.finType, matchResult.finMove);
-  html += `<div style="text-align:center;font-size:12px;color:var(--text-sub);margin:8px 0 4px">
-    ${finLabel} / ${matchResult.turns || '?'}ターン
+  // verdict
+  let verdictLabel, verdictColor;
+  if (draw) { verdictLabel = '⚖ DRAW'; verdictColor = 'var(--c-warning)'; }
+  else if (won) { verdictLabel = '🏆 WIN'; verdictColor = 'var(--gold)'; }
+  else { verdictLabel = '💀 LOSE'; verdictColor = 'var(--c-negative)'; }
+
+  let winnerLabel;
+  if (draw) winnerLabel = 'DRAW';
+  else winnerLabel = `🏆 ${escHtml(winChar.name)} WIN`;
+
+  const playerOrgName = G.orgName || 'プレイヤー団体';
+
+  let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
+
+  html += `<div class="pb-banner">
+    <div class="pb-live is-b3">⚔ CHALLENGE MATCH</div>
+    <div class="pb-banner-title is-b3">挑 戦 状 — 結 果</div>
+    <div class="pb-banner-sub">${escHtml(playerOrgName)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(orgCfg.emoji || '')} ${escHtml(orgName)}</div>
   </div>`;
 
-  // MQ
-  const _mqSc = _mqColor(matchResult.mq || 0);
-  const mqStars = matchResult.mq >= 90 ? '★★★★★' : matchResult.mq >= 80 ? '★★★★' : matchResult.mq >= 70 ? '★★★' : matchResult.mq >= 55 ? '★★' : matchResult.mq >= 40 ? '★' : '';
-  html += `<div style="text-align:center;font-size:14px;font-weight:700;${_scale6Style(_mqSc)};margin-bottom:8px">
-    ${mqStars ? `<span style="color:${_mqSc.color}">${mqStars}</span> ` : ''}MQ ${matchResult.mq || '?'}
+  // Scoreboard 4: Opponent / Verdict / MQ / Finish
+  html += `<div class="pb-score-strip" style="grid-template-columns:1.2fr 1fr 1fr 1.2fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:${eColor};font-size:16px">${escHtml(orgName)}</div>
+      <div class="pb-score-lbl">Opponent</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:${verdictColor};font-size:20px">${verdictLabel}</div>
+      <div class="pb-score-lbl">Result</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(matchResult.mq || 0)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${matchResult.mq || 0}</div>
+      <div class="pb-score-lbl">MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(matchResult.finType, matchResult.finMove))}</div>
+      <div class="pb-score-lbl">Finish</div>
+    </div>
   </div>`;
 
-  // HPバー
-  const hpL = matchResult.hpLeft || { final: 50, max: 100 };
-  const hpR = matchResult.hpRight || { final: 50, max: 100 };
-  html += _hpComparisonBar(playerFighter.name, hpL, challenger.name, hpR);
+  // 試合行 1つ (is-main is-b3)
+  html += `<div class="pb-matches">`;
+  html += `<div class="pb-divider is-main">⚔ CHALLENGE MATCH</div>`;
 
-  // 試合ログ
-  if (matchResult.log && matchResult.log.length > 0) {
-    html += `<details style="margin-top:8px;font-size:11px;color:var(--text-sub)">
-      <summary style="cursor:pointer;font-weight:600;padding:4px 0">試合ログ</summary>
-      <div style="max-height:200px;overflow-y:auto;padding:4px 8px;background:rgba(0,0,0,0.2);border-radius:4px;margin-top:4px">
-        ${matchResult.log.map(l => `<div>${l}</div>`).join('')}
-      </div>
-    </details>`;
-  }
+  const leftBlock = _pbFighterBlock('left', playerFighter, leftCls, playerOrgName, playerLine)
+    .replace('pb-fighter is-left', 'pb-fighter is-left is-player-side');
+  const rightBlock = _pbFighterBlock('right', challenger, rightCls, orgName, challengerLine)
+    .replace('pb-fighter is-right', 'pb-fighter is-right is-enemy-side');
 
-  // 了解ボタン
-  html += `<button class="btn" style="width:100%;padding:10px;font-size:13px;font-weight:600;margin-top:12px" onclick="App.closeB3Result()">了解</button>`;
+  html += `<div class="pb-mrow is-main is-b3${hasDialogue ? ' has-dialogue' : ''}">`;
+  html += leftBlock;
+  html += _pbResultColumn({
+    winnerLabel,
+    winnerIsDraw: draw,
+    finishText: Engine.formatFinish(matchResult.finType, matchResult.finMove),
+    turns: matchResult.turns || 0,
+    mq: matchResult.mq || 0
+  });
+  html += rightBlock;
+  if (matchResult.hpLeft && matchResult.hpRight) html += _pbHpMini(matchResult.hpLeft, matchResult.hpRight);
+  html += `</div>`;
+  html += `</div>`; // .pb-matches
+
+  // Footer
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.closeB3Result()">了解</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -8340,144 +8376,113 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
   overlay.classList.add('active');
 }
 
-// ── B2 試合結果画面 (showResultOverlay) ──────────────────────────────────
+// ── B2 試合結果画面 (Pattern B: pb-container) ──────────────────────────────────
 function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
-  const pColor = '#9b59b6';
-  const eColor = '#e74c3c';
   const draw = matchResult.winner === 'draw';
-  const won1 = matchResult.winner === 'left'; // fighter1 won
+  const won1 = matchResult.winner === 'left';
   const winChar = won1 ? f1 : f2;
   const loseChar = won1 ? f2 : f1;
-  const winName = draw ? '' : winChar.name;
-  const loseName = draw ? '' : loseChar.name;
-  const borderColor = '#27ae60';
 
-  // ヘッダー
-  let html = `<div style="text-align:center;padding:8px 0 4px;border-bottom:2px solid ${borderColor};margin-bottom:12px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:#aaa">Conflict Resolution</div>
-    <div style="font-size:18px;font-weight:700;letter-spacing:3px;color:#e8e0d0">💥 決着の試合 — 結果</div>
-  </div>`;
+  const leftCls = draw ? 'is-draw' : (won1 ? 'is-winner' : 'is-loser');
+  const rightCls = draw ? 'is-draw' : (won1 ? 'is-loser' : 'is-winner');
 
-  // 介入バフ表示
-  if (interventionChoice === 0) {
-    html += `<div style="text-align:center;font-size:11px;color:#2ecc71;margin-bottom:8px">🤫 ${f1.name}を激励済み（OVR+5バフ）</div>`;
-  } else if (interventionChoice === 1) {
-    html += `<div style="text-align:center;font-size:11px;color:#2ecc71;margin-bottom:8px">🤫 ${f2.name}を激励済み（OVR+5バフ）</div>`;
-  }
-
-  // 勝者バッジ
-  if (draw) {
-    html += `<div style="text-align:center;padding:8px;font-size:16px;font-weight:700;color:#888">🤝 DRAW — 互いの実力を認め合った</div>`;
-  } else {
-    html += `<div style="text-align:center;padding:8px;font-size:16px;font-weight:700;color:#daa520">🏆 ${winName} 勝利</div>`;
-  }
-
-  // 選手肖像
-  const wSize = 120, lSize = 88;
+  let winLine = '', loseLine = '';
   if (!draw) {
-    const wFace = getPortraitUrl(winChar.id);
-    const lFace = getPortraitUrl(loseChar.id);
-    html += `<div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin:8px 0 12px">
-      <div style="text-align:center">
-        <div style="width:${wSize}px;height:${wSize}px;border-radius:50%;border:3px solid gold;box-shadow:0 0 12px rgba(218,165,32,0.4);overflow:hidden;margin:0 auto">
-          ${wFace ? `<img src="${wFace}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-        </div>
-        <div style="font-weight:700;font-size:14px;color:gold;margin-top:4px">${winName}</div>
-      </div>
-      <div style="text-align:center">
-        <div style="width:${lSize}px;height:${lSize}px;border-radius:50%;border:2px solid #555;opacity:0.7;overflow:hidden;margin:0 auto">
-          ${lFace ? `<img src="${lFace}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-        </div>
-        <div style="font-weight:600;font-size:12px;color:var(--text-sub);margin-top:4px">${loseName}</div>
-      </div>
-    </div>`;
-  } else {
-    const f1Face = getPortraitUrl(f1.id);
-    const f2Face = getPortraitUrl(f2.id);
-    html += `<div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin:8px 0 12px">
-      <div style="text-align:center">
-        <div style="width:100px;height:100px;border-radius:50%;border:2px solid #888;overflow:hidden;margin:0 auto">
-          ${f1Face ? `<img src="${f1Face}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-        </div>
-        <div style="font-weight:600;font-size:13px;color:var(--text-main);margin-top:4px">${f1.name}</div>
-      </div>
-      <div style="text-align:center">
-        <div style="width:100px;height:100px;border-radius:50%;border:2px solid #888;overflow:hidden;margin:0 auto">
-          ${f2Face ? `<img src="${f2Face}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-        </div>
-        <div style="font-weight:600;font-size:13px;color:var(--text-main);margin-top:4px">${f2.name}</div>
-      </div>
-    </div>`;
+    winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
+    loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
   }
+  const f1Line = draw ? '' : (won1 ? winLine : loseLine);
+  const f2Line = draw ? '' : (won1 ? loseLine : winLine);
+  const hasDialogue = !!(f1Line || f2Line);
 
-  // セリフ吹き出し（因縁系）
-  if (!draw) {
-    const winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
-    const loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
-    if (winLine) {
-      html += `<div style="background:#f0f0f0;border-radius:8px;padding:10px 14px;margin:0 8px 6px;text-align:center">
-        <div style="font-size:11px;font-weight:600;color:${won1 ? pColor : eColor};margin-bottom:2px">${winName}</div>
-        <div style="font-size:13px;color:#222">「${winLine}」</div>
-      </div>`;
-    }
-    if (loseLine) {
-      html += `<div style="background:#f0f0f0;border-radius:8px;padding:10px 14px;margin:0 8px 6px;text-align:center">
-        <div style="font-size:11px;font-weight:600;color:${won1 ? eColor : pColor};margin-bottom:2px">${loseName}</div>
-        <div style="font-size:13px;color:#222">「${loseLine}」</div>
-      </div>`;
-    }
-  }
+  let verdictLabel, verdictColor;
+  if (draw) { verdictLabel = '⚖ DRAW'; verdictColor = 'var(--c-warning)'; }
+  else { verdictLabel = `🏆 ${escHtml(winChar.name)}`; verdictColor = 'var(--gold)'; }
 
-  // 決まり手 + ターン数
-  const finLabel = Engine.formatFinish(matchResult.finType, matchResult.finMove);
-  html += `<div style="text-align:center;font-size:12px;color:var(--text-sub);margin:8px 0 4px">
-    ${finLabel} / ${matchResult.turns || '?'}ターン
-  </div>`;
+  let winnerLabel;
+  if (draw) winnerLabel = 'DRAW';
+  else winnerLabel = `🏆 ${escHtml(winChar.name)} WIN`;
 
-  // MQ
-  const _mqSc = _mqColor(matchResult.mq || 0);
-  const mqStars = matchResult.mq >= 90 ? '★★★★★' : matchResult.mq >= 80 ? '★★★★' : matchResult.mq >= 70 ? '★★★' : matchResult.mq >= 55 ? '★★' : matchResult.mq >= 40 ? '★' : '';
-  html += `<div style="text-align:center;font-size:14px;font-weight:700;${_scale6Style(_mqSc)};margin-bottom:8px">
-    ${mqStars ? `<span style="color:${_mqSc.color}">${mqStars}</span> ` : ''}MQ ${matchResult.mq || '?'}
-  </div>`;
+  // 介入ラベル
+  let interventionLabel = '放置（介入なし）';
+  if (interventionChoice === 0) interventionLabel = `🤫 ${f1.name}を激励`;
+  else if (interventionChoice === 1) interventionLabel = `🤫 ${f2.name}を激励`;
 
-  // HPバー
-  const hpL = matchResult.hpLeft || { final: 50, max: 100 };
-  const hpR = matchResult.hpRight || { final: 50, max: 100 };
-  html += _hpComparisonBar(f1.name, hpL, f2.name, hpR);
-
-  // 対立解決サマリーパネル
-  // 信頼/士気はマスクデータ。質的表現で表示し生数値は出さない(CLAUDE.md 数値哲学)
+  // 関係性変動 (ビジュアル向け簡略表記)
   const intensePenalty = interventionChoice !== 2 && ((interventionChoice === 0 && !won1) || (interventionChoice === 1 && won1));
-  html += `<div style="border:1px solid #27ae60;border-radius:8px;padding:10px 14px;margin:10px 8px;background:rgba(39,174,96,0.05)">
-    <div style="font-size:12px;font-weight:700;color:#27ae60;margin-bottom:6px">対立解決</div>`;
+  const relationText = draw ? '互いに認め合う' : (intensePenalty ? '深い亀裂' : '小さな揺らぎ');
+
+  let html = `<div class="pb-container">`;
+
+  html += `<div class="pb-banner">
+    <div class="pb-live is-b2">💥 CONFLICT RESOLUTION</div>
+    <div class="pb-banner-title is-b2">決 着 の 試 合 — 結 果</div>
+    <div class="pb-banner-sub">${escHtml(f1.name)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(f2.name)}</div>
+  </div>`;
+
+  // 介入選択バナー
+  if (interventionChoice === 0 || interventionChoice === 1) {
+    html += `<div class="pb-b2-intervention">${escHtml(interventionLabel)}（OVR+5バフ適用）</div>`;
+  }
+
+  // Scoreboard 4: Intervention / Verdict / MQ / Bond/Rivalry 変動
+  html += `<div class="pb-score-strip" style="grid-template-columns:1.3fr 1.2fr 1fr 1.2fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:13px;color:var(--stage-text-main)">${interventionChoice === 2 ? '放置' : (interventionChoice === 0 ? `${escHtml(f1.name)}激励` : `${escHtml(f2.name)}激励`)}</div>
+      <div class="pb-score-lbl">Intervention</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:${verdictColor};font-size:18px">${verdictLabel}</div>
+      <div class="pb-score-lbl">Result</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(matchResult.mq || 0)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${matchResult.mq || 0}</div>
+      <div class="pb-score-lbl">MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:13px;color:var(--c-rivalry)">${escHtml(relationText)}</div>
+      <div class="pb-score-lbl">Relationship</div>
+    </div>
+  </div>`;
+
+  // 試合行
+  html += `<div class="pb-matches">`;
+  html += `<div class="pb-divider is-main">💥 CONFLICT — 決着の試合</div>`;
+  html += `<div class="pb-mrow is-main is-b2${hasDialogue ? ' has-dialogue' : ''}">`;
+  html += _pbFighterBlock('left', f1, leftCls, f1.style || '—', f1Line);
+  html += _pbResultColumn({
+    winnerLabel,
+    winnerIsDraw: draw,
+    finishText: Engine.formatFinish(matchResult.finType, matchResult.finMove),
+    turns: matchResult.turns || 0,
+    mq: matchResult.mq || 0
+  });
+  html += _pbFighterBlock('right', f2, rightCls, f2.style || '—', f2Line);
+  if (matchResult.hpLeft && matchResult.hpRight) html += _pbHpMini(matchResult.hpLeft, matchResult.hpRight);
+  html += `</div>`;
+  html += `</div>`; // .pb-matches
+
+  // 対立解決サマリー (質的表現、数値非表示 — CLAUDE.md 数値哲学)
+  html += `<div class="pb-b2-resolution">
+    <div class="pb-b2-resolution-label">💭 対立解決</div>`;
   if (!draw) {
-    html += `<div style="font-size:11px;color:var(--text-main);line-height:1.8">
-      <div>✅ ${winName}: 信頼が大きく上がり、気持ちにも張りが戻った</div>
-      <div>❌ ${loseName}: ${intensePenalty ? '信頼が大きく揺らぎ、わだかまりを残した' : '信頼がわずかに揺らいだが、気持ちは立て直している'}</div>
-    </div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-positive)">✅</span><span><b>${escHtml(winChar.name)}</b>：信頼が大きく上がり、気持ちにも張りが戻った</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-negative)">❌</span><span><b>${escHtml(loseChar.name)}</b>：${intensePenalty ? '信頼が大きく揺らぎ、わだかまりを残した' : '信頼がわずかに揺らいだが、気持ちは立て直している'}</span></div>`;
   } else {
-    html += `<div style="font-size:11px;color:var(--text-main);line-height:1.8">
-      <div>🤝 ${f1.name}: 互いに力を認め合い、信頼が少し上がった</div>
-      <div>🤝 ${f2.name}: 互いに力を認め合い、信頼が少し上がった</div>
-    </div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f1.name)}</b>：互いに力を認め合い、信頼が少し上がった</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f2.name)}</b>：互いに力を認め合い、信頼が少し上がった</span></div>`;
   }
   html += `</div>`;
 
-  // 試合ログ
-  if (matchResult.log && matchResult.log.length > 0) {
-    html += `<details style="margin-top:8px;font-size:11px;color:var(--text-sub)">
-      <summary style="cursor:pointer;font-weight:600;padding:4px 0">試合ログ</summary>
-      <div style="max-height:200px;overflow-y:auto;padding:4px 8px;background:rgba(0,0,0,0.2);border-radius:4px;margin-top:4px">
-        ${matchResult.log.map(l => `<div>${l}</div>`).join('')}
-      </div>
-    </details>`;
-  }
+  // Footer
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.closeB2Result()">了解</button>
+  </div>`;
 
-  // 了解ボタン
-  html += `<button class="btn" style="width:100%;padding:10px;font-size:13px;font-weight:600;margin-top:12px" onclick="App.closeB2Result()">了解</button>`;
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -10243,7 +10248,14 @@ function _jtFocusCard(match, roundName, ri, mi) {
   return h;
 }
 
-// ===== MATCH RESULT (winner upper image + HP bar) =====
+/** JT 用: trimmed fighter (ovr のみ持つ) を _pbFighterBlock が使えるように拡張 */
+function _jtFighterShim(f) {
+  if (f == null) return f;
+  if (f.pw != null && f.sp != null) return f;
+  return { ...f, pw: f.ovr, sp: f.ovr, te: f.ovr, st: f.ovr, mn: f.ovr };
+}
+
+// ===== MATCH RESULT (Pattern B: pb-container) =====
 function renderJuniorTournamentMatchResult(ri, mi) {
   const jt = App._jtPreview;
   if (!jt) return;
@@ -10256,92 +10268,84 @@ function renderJuniorTournamentMatchResult(ri, mi) {
 
   const round = jt.result.rounds[ri];
   const match = round.matches[mi];
-  const winner = match.winnerId === match.left.id ? match.left : match.right;
-  const loser = match.winnerId === match.left.id ? match.right : match.left;
+  const rounds = jt.result.rounds;
+  const totalMatchesInTournament = rounds.reduce((s, r) => s + r.matches.length, 0);
+  let matchPos = 0;
+  for (let r = 0; r < ri; r++) matchPos += rounds[r].matches.length;
+  matchPos += mi + 1;
+
+  const isFinal = ri === rounds.length - 1;
   const roundLabel = round.name === 'final' ? '🏆 決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
-  const upperUrl = getUpperUrl(winner.id);
-
-  // 勝者セリフ
-  const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default');
-
-  let html = `<div class="jt-phase">${roundLabel} 結果</div>`;
-  html += `<div class="jt-wrap">${_jtHeader()}`;
-
-  // フォーカスカード（結果モード）
-  const standL = getStandUrl(match.left.id, match.left.ovr);
-  const standR = getStandUrl(match.right.id, match.right.ovr);
   const lWin = match.winnerId === match.left.id;
-  const rWin = match.winnerId === match.right.id;
-  html += `<div class="jt-mf jt-su">`;
-  html += `<div class="jt-mf-lb">${roundLabel} — 第${mi + 1}試合</div>`;
-  html += `<div class="jt-mf-names">`;
-  html += `<div class="jt-mf-nm"><div class="n" style="${lWin ? 'color:#2ecc71' : 'opacity:.35'}">${match.left.name}</div><div class="o">${match.left._orgName || ''} OVR${match.left.ovr}</div></div>`;
-  html += `<div class="jt-mf-vl"></div>`;
-  html += `<div class="jt-mf-nm"><div class="n" style="${rWin ? 'color:#2ecc71' : 'opacity:.35'}">${match.right.name}</div><div class="o">${match.right._orgName || ''} OVR${match.right.ovr}</div></div>`;
-  html += `</div>`;
-  html += `<div class="jt-mf-stands">`;
-  html += `<div class="st left"><img src="${standL}" alt="${match.left.name}" onerror="this.style.opacity=0"></div>`;
-  html += `<div class="vs-mark">VS</div>`;
-  html += `<div class="st right"><img src="${standR}" alt="${match.right.name}" onerror="this.style.opacity=0"></div>`;
-  html += `</div>`;
-  html += `<div class="jt-mf-res"><span class="w">WIN: ${winner.name}</span> — ${mqStars(match.mq)} MQ${match.mq}</div>`;
-  html += `</div>`;
+  const winner = lWin ? match.left : match.right;
+  const leftF = _jtFighterShim(match.left);
+  const rightF = _jtFighterShim(match.right);
 
-  // 勝者セリフ（upper画像の上）
-  if (winLine) {
-    html += `<div class="jt-bub jt-su" style="max-width:280px;margin:10px auto 4px"><div class="sp gd">${winner.name}</div>「${winLine}」</div>`;
-  }
+  const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default');
+  const leftCls = lWin ? 'is-winner' : 'is-loser';
+  const rightCls = lWin ? 'is-loser' : 'is-winner';
+  const leftLine = lWin ? (winLine || '') : '';
+  const rightLine = lWin ? '' : (winLine || '');
+  const hasDialogue = !!winLine;
 
-  // 勝者 upper 画像
-  if (upperUrl) {
-    html += `<div class="jt-win-up jt-su" style="animation-delay:.2s">`;
-    html += `<div class="jt-win-up-img"><img src="${upperUrl}" alt="${winner.name}" onerror="this.style.display='none'"></div>`;
-    html += `</div>`;
-  }
+  const metaLeft = `${match.left._orgName || ''}`.trim() || '—';
+  const metaRight = `${match.right._orgName || ''}`.trim() || '—';
+  const winnerLabel = `🏆 ${escHtml(winner.name)} WIN`;
+  const seasonLabel = `第${G.season}回 JT`;
 
-  // 体力バー（決勝以外：勝者のコンディション推移を表示）
-  const isFinal = ri === jt.result.rounds.length - 1;
-  if (!isFinal) {
-    const winnerHp = match.winner === 'left' ? match.hpLeft : match.hpRight;
-    const hpCur = winnerHp ? winnerHp.final : 50;
-    const hpMax = winnerHp ? winnerHp.max : 100;
-    const beforePct = 100; // 試合前は100%
-    const afterDmgPct = Math.max(0, Math.round(hpCur / Math.max(1, hpMax) * 100));
-    const postCond = Math.max(20, Math.round(hpCur / Math.max(1, hpMax) * 80));
-    const recovery = Engine.juniorTournament.CONDITION_RECOVERY;
-    const afterRecPct = Math.min(100, postCond + recovery);
-    const dmgAmt = beforePct - afterDmgPct;
-    const barColor = v => v >= 80 ? '#2ecc71' : v >= 60 ? '#f39c12' : v >= 40 ? '#e74c3c' : '#8e44ad';
-    const pctColor = v => v >= 70 ? '#2ecc71' : v >= 50 ? '#f39c12' : '#e74c3c';
-    html += `<div class="jt-hp jt-su" style="animation-delay:.3s" id="jtHpBox">`;
-    html += `<div class="jt-hp-h"><div class="jt-hp-av"><img src="${getPortraitUrl(winner.id)}" alt="" onerror="this.style.opacity=0"></div>`;
-    html += `<div class="jt-hp-nm">${winner.name} の体調</div>`;
-    html += `<div class="jt-hp-pct" id="jtHpPct" style="color:${pctColor(beforePct)}">${beforePct}%</div></div>`;
-    html += `<div class="jt-hp-bar"><div class="jt-hp-fill" id="jtHpFill" style="width:${beforePct}%;background:${barColor(beforePct)};transition:width 1.2s cubic-bezier(.4,0,.2,1),background .3s"></div></div>`;
-    html += `<div class="jt-hp-lbl"><span>💥 ダメージ -${dmgAmt}%</span><span>💊 回復 +${recovery}%</span></div>`;
-    html += `</div>`;
-    // HP アニメーション: 減少 → 回復
-    setTimeout(() => {
-      const fill = document.getElementById('jtHpFill');
-      const pct = document.getElementById('jtHpPct');
-      if (!fill || !pct) return;
-      // Phase 1: ダメージ（減少）
-      fill.style.width = afterDmgPct + '%';
-      fill.style.background = barColor(afterDmgPct);
-      _jtAnimateCounter(beforePct, afterDmgPct, 1200, pct, pctColor);
-      // Phase 2: 回復
-      setTimeout(() => {
-        fill.style.transition = 'width 1s cubic-bezier(.16,1,.3,1),background .3s';
-        fill.style.width = afterRecPct + '%';
-        fill.style.background = barColor(afterRecPct);
-        _jtAnimateCounter(afterDmgPct, afterRecPct, 1000, pct, pctColor);
-      }, 2200);
-    }, 600);
-  }
+  let html = `<div class="pb-container">`;
 
-  // ボタン
-  html += `<div class="jt-bt jt-su" style="animation-delay:.4s"><button class="btn btn-gold" onclick="App.jtAdvanceAfterResult(${ri},${mi})">次へ →</button></div>`;
+  html += `<div class="pb-banner">
+    <div class="pb-live is-jt">🥇 JUNIOR TOURNAMENT</div>
+    <div class="pb-banner-title is-jt">${escHtml(roundLabel)}</div>
+    <div class="pb-banner-sub">${escHtml(seasonLabel)}<span class="dot">·</span>Match ${matchPos} / ${totalMatchesInTournament}<span class="dot">·</span>${isFinal ? 'Final' : `第${mi + 1}試合`}</div>
+  </div>`;
+
+  // Scoreboard: Round / Match / MQ / Finish
+  html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr 1.2fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:var(--gold-light);font-size:20px">${escHtml(roundLabel)}</div>
+      <div class="pb-score-lbl">Round</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val is-neutral">${matchPos}<span style="font-size:14px;color:var(--stage-text-dim)"> / ${totalMatchesInTournament}</span></div>
+      <div class="pb-score-lbl">Match</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(match.mq)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${match.mq}</div>
+      <div class="pb-score-lbl">MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(match.finType, match.finMove))}</div>
+      <div class="pb-score-lbl">Finish</div>
+    </div>
+  </div>`;
+
+  // 試合行（1試合のみ、メイン扱い）
+  html += `<div class="pb-matches">`;
+  html += `<div class="pb-divider is-main">${isFinal ? '🏆 FINAL' : '⚔ MATCH'} — ${escHtml(roundLabel)}</div>`;
+  html += `<div class="pb-mrow is-main is-jt${hasDialogue ? ' has-dialogue' : ''}">`;
+  html += _pbFighterBlock('left', leftF, leftCls, metaLeft, leftLine);
+  html += _pbResultColumn({
+    winnerLabel,
+    winnerIsDraw: false,
+    finishText: Engine.formatFinish(match.finType, match.finMove),
+    turns: match.turns || 0,
+    mq: match.mq
+  });
+  html += _pbFighterBlock('right', rightF, rightCls, metaRight, rightLine);
+  if (match.hpLeft && match.hpRight) html += _pbHpMini(match.hpLeft, match.hpRight);
   html += `</div>`;
+  html += `</div>`; // .pb-matches
+
+  // Footer
+  const nextLabel = isFinal ? '優勝発表へ →' : '次の試合へ →';
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.jtAdvanceAfterResult(${ri},${mi})">${nextLabel}</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -10360,7 +10364,7 @@ function _jtAnimateCounter(from, to, dur, el, colorFn) {
   requestAnimationFrame(tick);
 }
 
-// ===== CHAMPION (V6: trophy → upper → CHAMPION → name → org → speech) =====
+// ===== CHAMPION (Pattern B pb-container) =====
 function renderJuniorTournamentResult() {
   const jt = App._jtPreview;
   if (!jt) return;
@@ -10375,108 +10379,142 @@ function renderJuniorTournamentResult() {
   const { rounds, champion, runnerUp, semiFinalists } = result;
   const season = G.season;
   const upperUrl = getUpperUrl(champion.id);
+  const PRIZE = Engine.juniorTournament.PRIZE;
+
+  // チャンピオンの通算MQ + 決勝MQ + path
+  let totalMQ = 0;
+  let finalMQ = 0;
+  const pathParts = [];
+  rounds.forEach((round, ri) => {
+    const abbr = round.name === 'final' ? 'F' : round.name === 'semiFinal' ? 'SF' : 'QF';
+    const champMatch = round.matches.find(m => m.left.id === champion.id || m.right.id === champion.id);
+    if (champMatch) {
+      totalMQ += champMatch.mq;
+      if (ri === rounds.length - 1) finalMQ = champMatch.mq;
+      pathParts.push(abbr);
+    }
+  });
+  const pathText = pathParts.join(' → ');
+  const champOvr = champion.ovr != null ? champion.ovr : Engine.util.ov(_jtFighterShim(champion));
 
   // 優勝スピーチ
   const champLine = getJuniorTournamentLine('champion', champion.personality || 'normal', champion.archetype || '_default');
 
-  let html = `<div class="jt-phase">優勝</div>`;
-  html += `<div class="jt-wrap">${_jtHeader()}`;
+  let html = `<div class="pb-container">`;
 
-  // チャンピオンカード
-  html += `<div class="jt-ch jt-su">`;
-  html += `<div class="jt-ch-trophy">🏆</div>`;
-  if (upperUrl) {
-    html += `<div class="jt-ch-img"><img src="${upperUrl}" alt="${champion.name}"></div>`;
-  }
-  html += `<div class="cl">CHAMPION</div>`;
-  html += `<div class="cn">${champion.name}</div>`;
-  html += `<div class="co">${champion._orgName || ''}</div>`;
+  html += `<div class="pb-banner">
+    <div class="pb-live is-jt-champ">🏆 JT CHAMPION</div>
+    <div class="pb-banner-title is-jt-champ">第${season}回 ジュニアトーナメント 優勝</div>
+    <div class="pb-banner-sub">${escHtml(champion.name)}<span class="dot">·</span>${escHtml(champion._orgName || '')}</div>
+  </div>`;
+
+  // Scoreboard: Path / Total MQ / Final MQ / Prize / OVR
+  html += `<div class="pb-score-strip" style="grid-template-columns:1.2fr 1fr 1fr 1fr 1fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:18px;color:var(--gold-light);font-family:var(--font-label);letter-spacing:2px">${escHtml(pathText)}</div>
+      <div class="pb-score-lbl">Path</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(Math.round(totalMQ / Math.max(1, pathParts.length)))}</div>
+      <div class="pb-score-val" style="margin-top:3px">${totalMQ}</div>
+      <div class="pb-score-lbl">Total MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(finalMQ)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${finalMQ}</div>
+      <div class="pb-score-lbl">Final MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:var(--gold);font-size:22px">¥${PRIZE.champion}<span style="font-size:12px"> 万</span></div>
+      <div class="pb-score-lbl">Prize</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:var(--gold-light)">${champOvr}</div>
+      <div class="pb-score-lbl">OVR</div>
+    </div>
+  </div>`;
+
+  // Champion card
+  html += `<div class="pb-champion-card">`;
   if (champLine) {
-    html += `<div class="jt-ch-bub"><div class="sp">${champion.name}</div>「${champLine}」</div>`;
+    html += `<div class="pb-champion-bubble">
+      <div class="pb-champion-bubble-speaker">🏆 ${escHtml(champion.name)}</div>
+      「${escHtml(champLine)}」
+    </div>`;
   }
-  html += `<div style="font-size:12px;color:var(--gold);margin-top:14px">賞金 ¥${Engine.juniorTournament.PRIZE.champion}万</div>`;
+  html += `<div class="pb-champion-portrait">
+    ${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(champion.name)}" onerror="this.style.display='none'">` : ''}
+    <div class="pb-champion-trophy">🏆</div>
+  </div>`;
+  html += `<div class="pb-champion-label">CHAMPION</div>`;
+  html += `<div class="pb-champion-name">${escHtml(champion.name)}</div>`;
+  html += `<div class="pb-champion-org">${escHtml(champion._orgName || '')}</div>`;
   html += `</div>`;
 
-  // 準優勝
+  // Runner-up + semifinalists
+  const subEntries = [];
   if (runnerUp) {
-    html += `<div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin:14px auto;max-width:420px;display:flex;align-items:center;gap:10px">`;
-    html += portraitImg(runnerUp.id || runnerUp.portrait, 36);
-    html += `<div style="flex:1"><div style="font-size:13px;font-weight:600">準優勝: ${runnerUp.name}</div><div style="font-size:11px;color:var(--text-dim)">${runnerUp._orgName || ''} — 賞金 ¥${Engine.juniorTournament.PRIZE.runnerUp}万</div></div>`;
-    html += `</div>`;
+    subEntries.push({ f: runnerUp, labelCls: 'is-runnerup', labelText: '2nd Place', prize: PRIZE.runnerUp });
   }
-
-  // 3-4位
-  if (semiFinalists && semiFinalists.length > 0) {
-    html += `<div style="padding:10px;border:1px solid var(--border);border-radius:8px;margin:10px auto;max-width:420px">`;
-    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">3-4位（準決勝敗退）</div>`;
+  if (semiFinalists) {
     semiFinalists.forEach(sf => {
-      if (!sf) return;
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">`;
-      html += portraitImg(sf.id || sf.portrait, 28);
-      html += `<span style="font-size:12px">${sf.name}</span>`;
-      html += `<span style="font-size:10px;color:var(--text-dim);margin-left:auto">${sf._orgName || ''}</span>`;
-      html += `</div>`;
+      if (sf) subEntries.push({ f: sf, labelCls: 'is-semifinalist', labelText: 'Semifinalist', prize: PRIZE.semiFinal });
+    });
+  }
+  if (subEntries.length > 0) {
+    html += `<div class="pb-champion-sub">`;
+    subEntries.forEach(e => {
+      const face = getPortraitUrl(e.f.id);
+      html += `<div class="pb-champion-sub-card ${e.labelCls}">
+        <div class="pb-champion-sub-portrait">${face ? `<img src="${face}" alt="" onerror="this.style.display='none'">` : `<span class="pb-champion-sub-init">${escHtml((e.f.name || '?')[0])}</span>`}</div>
+        <div class="pb-champion-sub-info">
+          <div class="pb-champion-sub-label">${e.labelText}</div>
+          <div class="pb-champion-sub-name">${escHtml(e.f.name)}</div>
+          <div class="pb-champion-sub-org">${escHtml(e.f._orgName || '')}<span class="pb-champion-sub-prize">¥${e.prize}万</span></div>
+        </div>
+      </div>`;
     });
     html += `</div>`;
   }
 
-  // 全試合結果
-  html += `<div style="margin:14px auto;max-width:420px">`;
-  html += `<div style="font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.2);margin-bottom:8px;text-align:center">全試合結果</div>`;
-  rounds.forEach(round => {
-    const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
-    round.matches.forEach(match => {
-      const lWin = match.winnerId === match.left.id;
-      const wName = lWin ? match.left.name : match.right.name;
-      const lName = lWin ? match.right.name : match.left.name;
-      html += `<div style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:4px;font-size:12px;display:flex;align-items:center;gap:6px">`;
-      html += `<span style="color:var(--text-dim);min-width:48px">${roundLabel}</span>`;
-      html += `<span style="color:#2ecc71;font-weight:600">${wName}</span>`;
-      html += `<span style="color:var(--text-dim)">def.</span>`;
-      html += `<span>${lName}</span>`;
-      html += `<span style="margin-left:auto;color:var(--text-sub)">${mqStars(match.mq)} ${match.mq}</span>`;
-      html += `</div>`;
-    });
-  });
-  html += `</div>`;
-
-  // 自団体の獲得賞金サマリー
-  const PRIZE = Engine.juniorTournament.PRIZE;
+  // プレイヤー団体賞金サマリー
   const playerIds = new Set((G.roster || []).map(f => f.id));
   let totalPrize = 0;
   const prizeDetails = [];
   if (champion && playerIds.has(champion.id)) {
     totalPrize += PRIZE.champion;
-    prizeDetails.push(`${champion.name}（優勝）¥${PRIZE.champion}万`);
+    prizeDetails.push({ name: champion.name, rank: '優勝', amt: PRIZE.champion });
   }
   if (runnerUp && playerIds.has(runnerUp.id)) {
     totalPrize += PRIZE.runnerUp;
-    prizeDetails.push(`${runnerUp.name}（準優勝）¥${PRIZE.runnerUp}万`);
+    prizeDetails.push({ name: runnerUp.name, rank: '準優勝', amt: PRIZE.runnerUp });
   }
   if (semiFinalists) {
     semiFinalists.forEach(sf => {
       if (sf && playerIds.has(sf.id)) {
         totalPrize += PRIZE.semiFinal;
-        prizeDetails.push(`${sf.name}（3-4位）¥${PRIZE.semiFinal}万`);
+        prizeDetails.push({ name: sf.name, rank: '3-4位', amt: PRIZE.semiFinal });
       }
     });
   }
   if (totalPrize > 0) {
-    html += `<div style="max-width:420px;margin:14px auto;padding:14px 16px;background:rgba(212,168,83,0.08);border:1px solid rgba(212,168,83,0.25);border-radius:10px;text-align:center">`;
-    html += `<div style="font-size:11px;color:var(--gold);letter-spacing:2px;margin-bottom:8px">💰 自団体の獲得賞金</div>`;
-    prizeDetails.forEach(d => {
-      html += `<div style="font-size:12px;color:var(--text-main);margin-bottom:3px">${d}</div>`;
-    });
-    html += `<div style="font-size:18px;font-weight:900;color:var(--gold);margin-top:8px;font-family:'Oswald',sans-serif">合計 ¥${totalPrize}万</div>`;
-    html += `</div>`;
+    html += `<div class="pb-champion-prizebox">
+      <div class="pb-champion-prizebox-label">💰 自団体の獲得賞金</div>
+      <div class="pb-champion-prizebox-list">
+        ${prizeDetails.map(d => `<div class="pb-champion-prizebox-item"><span class="n">${escHtml(d.name)}</span><span class="r">${d.rank}</span><span class="a">¥${d.amt}万</span></div>`).join('')}
+      </div>
+      <div class="pb-champion-prizebox-total">合計 <span>¥${totalPrize}万</span></div>
+    </div>`;
   } else {
-    html += `<div style="max-width:420px;margin:14px auto;text-align:center;font-size:12px;color:var(--text-dim)">自団体からの入賞者はいませんでした</div>`;
+    html += `<div class="pb-champion-prizebox is-empty">自団体からの入賞者はいませんでした</div>`;
   }
 
-  // 閉じるボタン
-  html += `<div class="jt-bt" style="max-width:420px;margin:18px auto">`;
-  html += `<button class="btn btn-gold" style="width:100%;padding:12px;font-size:14px;font-weight:700" onclick="App.finalizeJuniorTournament()">閉じる</button>`;
-  html += `</div></div>`;
+  // Footer
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.finalizeJuniorTournament()">閉じる</button>
+  </div>`;
+
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');

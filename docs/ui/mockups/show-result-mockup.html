@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>試合結果画面 モックアップ — Wrestle Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Design Tokens（階層1準拠 / Stage カテゴリ）
+   ============================================================ */
+:root {
+  /* Stage（純黒） */
+  --stage-bg:          #060606;
+  --stage-bg-deep:     #000000;
+  --stage-panel:       rgba(20,18,15,0.62);
+  --stage-panel-deep:  rgba(10,9,7,0.80);
+  --stage-border:      rgba(200,190,170,0.08);
+  --stage-border-lit:  rgba(212,168,67,0.22);
+  --stage-border-main: rgba(212,168,67,0.42);
+
+  --stage-text-main:   #e8e6e0;
+  --stage-text-sub:    rgba(232,230,224,0.55);
+  --stage-text-dim:    rgba(232,230,224,0.28);
+  --stage-text-quiet:  rgba(232,230,224,0.16);
+
+  /* Gold（共通アクセント） */
+  --gold:        #d4a843;
+  --gold-light:  #f0d078;
+  --gold-deep:   #b8912e;
+  --gold-glow:   rgba(212,168,67,0.32);
+
+  /* Semantic */
+  --c-positive:  #6fa28c;  /* 勝利・満員（Foundations派閥色4に揃える抑えめ緑） */
+  --c-warning:   #d07a3e;  /* 警告・空席目立つ（accent-hostility相当） */
+  --c-negative:  #c0524a;  /* 負傷・ガラガラ */
+  --c-info:      #6d94b8;  /* 情報・初顔合わせ（faction2相当） */
+  --c-rivalry:   #e17055;  /* 因縁 */
+
+  /* Typography */
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-label:   'Oswald', sans-serif;
+  --font-body:    'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+
+  /* Spacing */
+  --space-2xs: 2px;
+  --space-xs:  4px;
+  --space-sm:  6px;
+  --space-md:  8px;
+  --space-lg:  12px;
+  --space-xl:  16px;
+  --space-2xl: 20px;
+  --space-3xl: 24px;
+  --space-4xl: 32px;
+
+  /* Radius */
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  color: var(--stage-text-main);
+  background: #0a0907;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   Dev Switcher（モックアップ専用 / 本番では削除）
+   ============================================================ */
+.dev-switcher {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: rgba(8,7,5,0.96);
+  border-bottom: 1px solid rgba(212,168,67,0.25);
+  padding: 10px 16px;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  font-family: var(--font-label); font-size: 11px; letter-spacing: 1.5px;
+  backdrop-filter: blur(8px);
+}
+.dev-label {
+  color: var(--gold); font-weight: 700;
+  margin-right: 6px; text-transform: uppercase;
+}
+.dev-btn {
+  background: rgba(200,190,170,0.06);
+  border: 1px solid rgba(200,190,170,0.18);
+  color: var(--stage-text-sub);
+  padding: 5px 11px; border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit; font-size: 10px;
+  letter-spacing: 1px; text-transform: uppercase;
+  transition: all .15s ease;
+}
+.dev-btn:hover {
+  background: rgba(212,168,67,0.1);
+  border-color: rgba(212,168,67,0.4);
+  color: var(--gold-light);
+}
+.dev-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #14110a;
+  font-weight: 700;
+}
+.dev-sep { width: 1px; height: 14px; background: rgba(200,190,170,0.2); margin: 0 4px; }
+.dev-hint {
+  color: var(--stage-text-dim); font-size: 10px;
+  letter-spacing: 0.5px; margin-left: auto;
+}
+
+/* ============================================================
+   Show Result Overlay（Stage テイクオーバー）
+   ============================================================ */
+.stage-overlay {
+  position: fixed;
+  inset: 58px 0 0 0;  /* dev-switcherの分だけ下げる（本番では 0 0 0 0） */
+  background: var(--stage-bg);
+  overflow-y: auto;
+  z-index: 100;
+  -webkit-overflow-scrolling: touch;
+}
+/* 上下にうっすらと暗転ビネット（暗闇の奥行き） */
+.stage-overlay::before {
+  content: ''; position: fixed; inset: 58px 0 0 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(ellipse 140% 80% at 50% 0%, transparent 60%, rgba(0,0,0,0.55) 100%),
+    radial-gradient(ellipse 140% 60% at 50% 100%, transparent 60%, rgba(0,0,0,0.65) 100%);
+}
+/* 中央上部のスポットライト */
+.stage-overlay::after {
+  content: ''; position: fixed; top: 58px; left: 50%; transform: translateX(-50%);
+  width: 900px; height: 200px; pointer-events: none; z-index: 1;
+  background: radial-gradient(ellipse at center top, rgba(212,168,67,0.08) 0%, transparent 60%);
+}
+
+.stage-container {
+  position: relative; z-index: 2;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+/* ============================================================
+   Show Header（興行タイトルバンド）
+   ============================================================ */
+.sh-header {
+  text-align: center;
+  padding: 40px 0 24px;
+  position: relative;
+}
+.sh-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 140px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.6;
+}
+.sh-kicker {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.sh-title {
+  font-family: var(--font-display);
+  font-size: 44px;
+  letter-spacing: 5px;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff 30%, var(--gold-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+.sh-title.is-special {
+  background: linear-gradient(180deg, #fff 20%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.sh-title.is-ppv {
+  font-size: 52px;
+  letter-spacing: 7px;
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 0 40px rgba(212,168,67,0.3);
+}
+.sh-sub {
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--stage-text-sub);
+  text-transform: uppercase;
+}
+.sh-sub .dot { color: var(--stage-text-quiet); margin: 0 10px; }
+
+/* ============================================================
+   Attendance Banner（動員バナー）
+   ============================================================ */
+.sh-attend {
+  margin: 24px 0 0;
+  padding: 22px 24px;
+  background: var(--stage-panel);
+  border: 1px solid var(--stage-border);
+  border-radius: var(--radius-lg);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-xl);
+  position: relative;
+  overflow: hidden;
+}
+.sh-attend.is-sellout {
+  border-color: var(--stage-border-main);
+  box-shadow:
+    inset 0 0 40px rgba(212,168,67,0.05),
+    0 0 24px rgba(212,168,67,0.08);
+}
+.sh-attend.is-sellout::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.sh-attend-meta {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.sh-attend-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.sh-attend-venue {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--stage-text-main);
+  letter-spacing: 1px;
+}
+.sh-attend-rating {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--stage-text-sub);
+  letter-spacing: 1px;
+}
+.sh-attend-rating.is-hot { color: var(--gold-light); }
+.sh-attend-rating.is-good { color: var(--c-positive); }
+.sh-attend-rating.is-weak { color: var(--c-warning); }
+.sh-attend-rating.is-empty { color: var(--c-negative); }
+
+.sh-attend-center {
+  text-align: center;
+}
+.sh-attend-num {
+  font-family: var(--font-display);
+  font-size: 54px;
+  line-height: 0.92;
+  letter-spacing: 3px;
+  color: var(--stage-text-main);
+  display: block;
+}
+.sh-attend.is-sellout .sh-attend-num {
+  color: var(--gold);
+  text-shadow: 0 0 24px rgba(212,168,67,0.5);
+}
+.sh-attend-unit {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--stage-text-dim);
+}
+.sh-attend-cap {
+  margin-top: 6px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--stage-text-dim);
+}
+
+.sh-attend-gauge {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+}
+.sh-attend-pct {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: var(--stage-text-main);
+  line-height: 1;
+}
+.sh-attend.is-sellout .sh-attend-pct { color: var(--gold); }
+.sh-attend.is-good .sh-attend-pct { color: var(--c-positive); }
+.sh-attend.is-weak .sh-attend-pct { color: var(--c-warning); }
+.sh-attend.is-empty .sh-attend-pct { color: var(--c-negative); }
+
+.sh-attend-pct-unit {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  margin-left: 2px;
+}
+.sh-attend-bar {
+  width: 140px; height: 3px;
+  background: rgba(200,190,170,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.sh-attend-bar-fill { height: 100%; border-radius: 2px; }
+.sh-attend.is-sellout .sh-attend-bar-fill { background: linear-gradient(90deg, var(--gold-deep), var(--gold-light)); }
+.sh-attend.is-good    .sh-attend-bar-fill { background: var(--c-positive); }
+.sh-attend.is-neutral .sh-attend-bar-fill { background: var(--c-info); }
+.sh-attend.is-weak    .sh-attend-bar-fill { background: var(--c-warning); }
+.sh-attend.is-empty   .sh-attend-bar-fill { background: var(--c-negative); }
+
+/* ============================================================
+   Summary Strip（Heat / 平均MQ）
+   ============================================================ */
+.sh-summary {
+  margin: 10px 0 0;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--stage-text-sub);
+  text-transform: uppercase;
+  border-top: 1px solid var(--stage-border);
+  border-bottom: 1px solid var(--stage-border);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0));
+}
+.sh-summary-item { display: flex; align-items: center; gap: 8px; }
+.sh-summary-item .label { color: var(--stage-text-dim); }
+.sh-summary-item .value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: var(--stage-text-main);
+}
+.sh-summary-stars {
+  display: inline-flex; gap: 1px; font-family: serif;
+}
+.sh-summary-stars .star { color: var(--stage-text-quiet); font-size: 14px; line-height: 1; }
+.sh-summary-stars .star.on { color: var(--gold); }
+.sh-summary-heat.is-hot { color: var(--c-rivalry); }
+.sh-summary-heat.is-cold { color: var(--c-info); }
+.sh-summary-heat.is-neutral { color: var(--stage-text-sub); }
+
+/* ============================================================
+   Match Cards（試合カード）
+   ============================================================ */
+.sh-matches {
+  margin: 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.mcard {
+  background: var(--stage-panel);
+  border: 1px solid var(--stage-border);
+  border-radius: var(--radius-xl);
+  padding: 24px 24px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* メインイベント — 金で縁取り、スポットライト感 */
+.mcard.is-main {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,168,67,0.09), transparent 70%),
+    var(--stage-panel-deep);
+  border-color: var(--stage-border-main);
+  padding: 28px 24px 22px;
+  box-shadow:
+    inset 0 1px 0 rgba(212,168,67,0.15),
+    0 0 0 1px rgba(212,168,67,0.05),
+    0 4px 24px rgba(0,0,0,0.4);
+}
+.mcard.is-main::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.7;
+}
+
+/* メインイベント特別興行 */
+.mcard.is-main.is-special::before {
+  background: linear-gradient(90deg, transparent, var(--gold-light), var(--gold), var(--gold-light), transparent);
+  opacity: 0.9;
+}
+
+/* ──── カード上部: ラベル行 ──── */
+.mcard-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.mcard-num {
+  font-family: var(--font-display);
+  letter-spacing: 4px;
+  color: var(--stage-text-dim);
+  font-size: 12px;
+  line-height: 1;
+}
+.mcard.is-main .mcard-num {
+  color: var(--gold);
+  font-size: 16px;
+  letter-spacing: 5px;
+}
+.mcard-num-accent {
+  color: var(--gold);
+  margin-right: 4px;
+}
+
+/* タグ行 */
+.mcard-tags {
+  margin-top: 8px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+.mcard-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 2px;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.mcard-tag.is-title {
+  color: var(--gold);
+  background: rgba(212,168,67,0.1);
+  border-color: rgba(212,168,67,0.3);
+}
+.mcard-tag.is-rivalry {
+  color: var(--c-rivalry);
+  background: rgba(225,112,85,0.1);
+  border-color: rgba(225,112,85,0.3);
+}
+.mcard-tag.is-first {
+  color: var(--c-info);
+  background: rgba(109,148,184,0.1);
+  border-color: rgba(109,148,184,0.3);
+}
+.mcard-tag.is-spotlight {
+  color: var(--gold-light);
+  background: rgba(240,208,120,0.08);
+  border-color: rgba(240,208,120,0.25);
+}
+.mcard-tag.is-tag {
+  color: var(--c-info);
+  background: rgba(109,148,184,0.08);
+  border-color: rgba(109,148,184,0.25);
+}
+
+/* ──── ファイター領域 ──── */
+.mcard-fighters {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.mcard-char {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+}
+.mcard-bubble-slot {
+  min-height: 60px;
+  width: 100%;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  margin-bottom: 10px;
+}
+.mcard-char .mcard-portrait {
+  width: 120px; height: 180px;   /* upper 画像のアスペクト 2:3 */
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--stage-border);
+  background: linear-gradient(180deg, #1a1816, #0a0907);
+  transition: border-color .2s;
+  position: relative;
+}
+.mcard-char .mcard-portrait img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;   /* 上半身を優先 */
+  display: block;
+}
+.mcard-char .mcard-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--stage-text-sub);
+  margin-top: 10px;
+  letter-spacing: 1px;
+}
+
+/* OVR 表記（選手名直下、全選手に付与） */
+.mcard-ovr {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.mcard-ovr-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.mcard-ovr-value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: var(--stage-text-sub);
+  line-height: 1;
+}
+.mcard-char.is-winner .mcard-ovr-value { color: var(--gold-light); }
+.mcard-char.is-loser  .mcard-ovr-value { color: var(--stage-text-dim); }
+.mcard-char.is-draw   .mcard-ovr-value { color: var(--c-warning); }
+
+/* タイトル戦など、さらに meta を付けたい場合 */
+.mcard-char .mcard-meta {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--stage-text-quiet);
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* メインイベントでのサイズアップ（アスペクト維持） */
+.mcard.is-main .mcard-char.is-winner .mcard-portrait { width: 150px; height: 225px; border-width: 3px; }
+.mcard.is-main .mcard-char.is-loser  .mcard-portrait { width: 120px; height: 180px; }
+
+/* 勝者 — 金で縁取り、光のオーラ */
+.mcard-char.is-winner .mcard-portrait {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 1px rgba(212,168,67,0.15),
+    0 0 28px rgba(212,168,67,0.22);
+}
+.mcard-char.is-winner .mcard-name {
+  color: var(--gold);
+  font-weight: 900;
+}
+.mcard.is-main .mcard-char.is-winner .mcard-name { font-size: 15px; }
+
+/* 敗者 — 薄く */
+.mcard-char.is-loser .mcard-portrait {
+  border-color: rgba(200,190,170,0.12);
+  opacity: 0.82;
+}
+.mcard-char.is-loser .mcard-name {
+  color: var(--stage-text-dim);
+}
+
+/* 引分 */
+.mcard-char.is-draw .mcard-portrait {
+  border-color: rgba(208,122,62,0.4);
+  box-shadow: 0 0 16px rgba(208,122,62,0.12);
+}
+.mcard-char.is-draw .mcard-name { color: var(--c-warning); }
+
+/* VS */
+.mcard-vs {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 8px;
+  padding-bottom: 86px;  /* portrait center alignment (縦長肖像に合わせる) */
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--stage-text-quiet);
+  letter-spacing: 3px;
+  font-size: 22px;
+}
+.mcard.is-main .mcard-vs {
+  font-size: 30px;
+  color: rgba(212,168,67,0.25);
+  padding-bottom: 110px;
+}
+
+/* 吹き出し */
+.mcard-bubble {
+  position: relative;
+  background: rgba(245,240,230,0.96);
+  color: #1a1713;
+  padding: 9px 12px;
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.mcard-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -6px; left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: rgba(245,240,230,0.96);
+  border-bottom: 0;
+  width: 0; height: 0;
+}
+.mcard-bubble-name {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+  text-align: center;
+}
+.mcard-bubble-name.is-winner { color: var(--gold-deep); font-weight: 700; }
+.mcard-bubble-name.is-loser  { color: var(--c-rivalry); font-weight: 700; }
+
+/* ──── 勝者バッジ ──── */
+.mcard-result {
+  text-align: center;
+  margin-bottom: 14px;
+}
+.mcard-result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 20px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  border-radius: 2px;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+  color: #14110a;
+}
+.mcard-result-badge.is-draw {
+  background: rgba(208,122,62,0.18);
+  color: var(--c-warning);
+  border: 1px solid rgba(208,122,62,0.4);
+}
+.mcard-result-badge .mcard-result-name {
+  font-family: var(--font-body);
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: none;
+}
+
+/* ──── フィニッシュ・MQ行 ──── */
+.mcard-finish {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.mcard-finish-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.mcard-finish-move {
+  font-size: 14px;
+  color: var(--stage-text-main);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.mcard-finish-turns {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--stage-text-dim);
+  margin-left: 10px;
+}
+
+.mcard-mq {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.mcard-mq-stars {
+  display: inline-flex; gap: 2px; font-family: serif;
+}
+.mcard-mq-stars .star { color: var(--stage-text-quiet); font-size: 16px; line-height: 1; }
+.mcard-mq-stars .star.on { color: var(--gold); }
+.mcard.is-main .mcard-mq-stars .star { font-size: 20px; }
+.mcard-mq-label {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+}
+.mcard-mq-value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 1.5px;
+  color: var(--stage-text-main);
+}
+.mcard.is-main .mcard-mq-value { font-size: 20px; color: var(--gold); }
+.mcard-mq-bonuses {
+  display: inline-flex; gap: 6px;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.mcard-mq-bonus.is-title { color: var(--gold); }
+.mcard-mq-bonus.is-rivalry { color: var(--c-rivalry); }
+.mcard-mq-bonus.is-fresh { color: var(--c-info); }
+
+/* ──── HPバー ──── */
+.mcard-hp {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--stage-border);
+}
+.mcard-hp-half {
+  flex: 1; display: flex; align-items: center; gap: 6px;
+}
+.mcard-hp-half.is-left { flex-direction: row-reverse; }
+.mcard-hp-center {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  width: 28px; text-align: center;
+}
+.mcard-hp-name {
+  font-size: 10px;
+  color: var(--stage-text-dim);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mcard-hp-val {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--stage-text-sub);
+  white-space: nowrap;
+  min-width: 46px;
+}
+.mcard-hp-half.is-left .mcard-hp-val { text-align: left; }
+.mcard-hp-half.is-right .mcard-hp-val { text-align: right; }
+.mcard-hp-track {
+  flex: 1; height: 4px;
+  background: rgba(200,190,170,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  max-width: 180px;
+}
+.mcard-hp-half.is-left .mcard-hp-track { direction: rtl; }
+.mcard-hp-fill { height: 100%; border-radius: 2px; }
+.mcard-hp-fill.is-healthy { background: var(--c-positive); }
+.mcard-hp-fill.is-warning { background: var(--c-warning); }
+.mcard-hp-fill.is-danger  { background: var(--c-negative); }
+
+/* ──── 試合ログ開閉 ──── */
+.mcard-log-toggle {
+  margin-top: 14px;
+  cursor: pointer;
+  list-style: none;
+  text-align: center;
+}
+.mcard-log-toggle::-webkit-details-marker { display: none; }
+.mcard-log-toggle-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  transition: color .15s;
+}
+.mcard-log-toggle:hover .mcard-log-toggle-label { color: var(--gold); }
+.mcard-log-toggle-label::before { content: '▸ '; }
+details[open] .mcard-log-toggle-label::before { content: '▾ '; }
+.mcard-log-body {
+  margin-top: 10px;
+  padding: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--stage-text-sub);
+  background: rgba(0,0,0,0.28);
+  border: 1px solid var(--stage-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+}
+.mcard-log-body > div { padding: 2px 0; }
+
+/* ============================================================
+   タッグマッチ専用レイアウト
+   ============================================================ */
+.mcard-tag-fighters {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.mcard-tag-team {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.mcard-tag-member { text-align: center; }
+.mcard-tag-member .mcard-portrait {
+  width: 78px; height: 117px;   /* 2:3 縦長 */
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 2px solid var(--stage-border);
+  background: linear-gradient(180deg, #1a1816, #0a0907);
+}
+.mcard-tag-member .mcard-portrait img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+.mcard-tag-member.is-winner .mcard-portrait {
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(212,168,67,0.2);
+}
+.mcard-tag-member.is-loser .mcard-portrait {
+  opacity: 0.78;
+}
+.mcard-tag-name {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 6px;
+  color: var(--stage-text-sub);
+  letter-spacing: 0.5px;
+}
+.mcard-tag-member.is-winner .mcard-tag-name { color: var(--gold); }
+.mcard-tag-ovr {
+  margin-top: 2px;
+  display: flex; justify-content: center;
+  align-items: baseline; gap: 3px;
+}
+.mcard-tag-ovr .lbl {
+  font-family: var(--font-label);
+  font-size: 9px; letter-spacing: 1.5px;
+  color: var(--stage-text-dim); text-transform: uppercase;
+}
+.mcard-tag-ovr .val {
+  font-family: var(--font-display);
+  font-size: 13px; letter-spacing: 0.5px;
+  color: var(--stage-text-sub); line-height: 1;
+}
+.mcard-tag-member.is-winner .mcard-tag-ovr .val { color: var(--gold-light); }
+.mcard-tag-member.is-loser .mcard-tag-ovr .val { color: var(--stage-text-dim); }
+
+/* ============================================================
+   Injury Report（負傷報告）
+   ============================================================ */
+.sh-injury {
+  margin: 24px 0 0;
+  padding: 16px 20px;
+  background: rgba(192,82,74,0.08);
+  border: 1px solid rgba(192,82,74,0.3);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid var(--c-negative);
+}
+.sh-injury-label {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  color: var(--c-negative);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+.sh-injury-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: var(--stage-text-sub);
+}
+.sh-injury-row + .sh-injury-row { border-top: 1px dashed rgba(192,82,74,0.15); }
+.sh-injury-type {
+  font-weight: 700;
+  color: var(--c-negative);
+}
+.sh-injury-name { color: var(--stage-text-main); font-weight: 700; }
+.sh-injury-weeks {
+  margin-left: auto;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--stage-text-dim);
+}
+
+/* ============================================================
+   Heat Info Band
+   ============================================================ */
+.sh-heat {
+  margin: 28px 0 0;
+  text-align: center;
+  padding: 14px 16px;
+  border-top: 1px solid var(--stage-border);
+  border-bottom: 1px solid var(--stage-border);
+}
+.sh-heat-kicker {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--stage-text-dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.sh-heat-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--stage-text-main);
+}
+.sh-heat-value.is-hot { color: var(--c-rivalry); }
+.sh-heat-value.is-cold { color: var(--c-info); }
+.sh-heat-value.is-neutral { color: var(--stage-text-main); }
+
+/* ============================================================
+   Close Button（次へ）
+   ============================================================ */
+.sh-close-area {
+  margin: 32px 0 0;
+  text-align: center;
+}
+.sh-close-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 40px;
+  font-family: var(--font-label);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #14110a;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all .2s ease;
+  box-shadow:
+    0 2px 14px rgba(212,168,67,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.sh-close-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 24px rgba(212,168,67,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.sh-close-btn:active { transform: translateY(0); }
+.sh-close-btn .arrow {
+  font-family: var(--font-display);
+  font-size: 18px;
+  transition: transform .2s;
+}
+.sh-close-btn:hover .arrow { transform: translateX(3px); }
+
+/* ============================================================
+   Scroll
+   ============================================================ */
+.stage-overlay::-webkit-scrollbar { width: 10px; }
+.stage-overlay::-webkit-scrollbar-track { background: transparent; }
+.stage-overlay::-webkit-scrollbar-thumb {
+  background: rgba(212,168,67,0.2);
+  border-radius: 5px;
+}
+.stage-overlay::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.4); }
+
+/* シナリオ切替: 指定シナリオだけ表示 */
+.scenario { display: none; }
+.scenario.active { display: block; }
+
+</style>
+</head>
+<body>
+
+<!-- 開発スイッチャー（本番では削除） -->
+<div class="dev-switcher">
+  <span class="dev-label">Scenario:</span>
+  <button class="dev-btn active" data-scenario="weekly">Weekly</button>
+  <button class="dev-btn" data-scenario="special">Special</button>
+  <button class="dev-btn" data-scenario="ppv">PPV Final</button>
+  <span class="dev-sep"></span>
+  <span class="dev-label">Attendance:</span>
+  <button class="dev-btn" data-attend="sellout">Sellout</button>
+  <button class="dev-btn active" data-attend="good">Good</button>
+  <button class="dev-btn" data-attend="weak">Weak</button>
+  <button class="dev-btn" data-attend="empty">Empty</button>
+  <span class="dev-hint">純黒背景 / Stage カテゴリ適用</span>
+</div>
+
+<!-- ============================================================
+     Scenario 1: 通常興行（WEEKLY SHOW）
+     ============================================================ -->
+<div class="stage-overlay scenario active" id="scenario-weekly">
+  <div class="stage-container">
+
+    <!-- Header -->
+    <div class="sh-header">
+      <div class="sh-kicker">Weekly Show</div>
+      <div class="sh-title">第 14 回 定期興行</div>
+      <div class="sh-sub">Year 1 <span class="dot">·</span> Week 14 <span class="dot">·</span> 4月 第2週</div>
+    </div>
+
+    <!-- Attendance -->
+    <div class="sh-attend is-good" id="attend-weekly">
+      <div class="sh-attend-meta">
+        <span class="sh-attend-label">Venue</span>
+        <span class="sh-attend-venue">公民館</span>
+        <span class="sh-attend-rating is-good">✨ 大入り</span>
+      </div>
+      <div class="sh-attend-center">
+        <span class="sh-attend-num" id="attend-num-weekly">132</span>
+        <span class="sh-attend-unit">AUDIENCE</span>
+        <div class="sh-attend-cap" id="attend-cap-weekly">/ 150 CAP</div>
+      </div>
+      <div class="sh-attend-gauge">
+        <div>
+          <span class="sh-attend-pct" id="attend-pct-weekly">88</span><span class="sh-attend-pct-unit">%</span>
+        </div>
+        <div class="sh-attend-bar"><div class="sh-attend-bar-fill" id="attend-fill-weekly" style="width:88%"></div></div>
+      </div>
+    </div>
+
+    <!-- Summary strip -->
+    <div class="sh-summary">
+      <div class="sh-summary-item">
+        <span class="label">Average MQ</span>
+        <span class="sh-summary-stars">
+          <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </span>
+        <span class="value">27</span>
+      </div>
+      <div class="sh-summary-item">
+        <span class="label">Heat</span>
+        <span class="value sh-summary-heat is-neutral">Neutral</span>
+      </div>
+      <div class="sh-summary-item">
+        <span class="label">Matches</span>
+        <span class="value">2</span>
+      </div>
+    </div>
+
+    <!-- Matches -->
+    <div class="sh-matches">
+
+      <!-- Main event（椿山 vs 赤沼） -->
+      <div class="mcard is-main">
+        <div class="mcard-header">
+          <div class="mcard-num"><span class="mcard-num-accent">★</span> Main Event</div>
+          <div class="mcard-tags">
+            <span class="mcard-tag is-first">✨ 初顔合わせ</span>
+          </div>
+        </div>
+
+        <div class="mcard-fighters">
+          <div class="mcard-char is-loser">
+            <div class="mcard-bubble-slot"></div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">椿山 みさき</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">48</span>
+            </div>
+          </div>
+          <div class="mcard-vs">VS</div>
+          <div class="mcard-char is-winner">
+            <div class="mcard-bubble-slot"></div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">赤沼 紗稀</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">72</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mcard-result">
+          <span class="mcard-result-badge">
+            🏆 <span class="mcard-result-name">赤沼 紗稀</span> WIN
+          </span>
+        </div>
+
+        <div class="mcard-finish">
+          <span class="mcard-finish-label">Finish</span>
+          <span class="mcard-finish-move">ツームストン・パイルドライバー → 3カウント</span>
+          <span class="mcard-finish-turns">8 TURNS</span>
+        </div>
+
+        <div class="mcard-mq">
+          <span class="mcard-mq-stars">
+            <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </span>
+          <span class="mcard-mq-label">MQ</span>
+          <span class="mcard-mq-value">21</span>
+          <span class="mcard-mq-bonuses">
+            <span class="mcard-mq-bonus is-fresh">(初顔合わせ +2)</span>
+          </span>
+        </div>
+
+        <div class="mcard-hp">
+          <div class="mcard-hp-half is-left">
+            <span class="mcard-hp-name">椿山 みさき</span>
+            <span class="mcard-hp-val">6 / 73</span>
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-danger" style="width:8%"></div></div>
+          </div>
+          <div class="mcard-hp-center">HP</div>
+          <div class="mcard-hp-half is-right">
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-healthy" style="width:26%"></div></div>
+            <span class="mcard-hp-val">20 / 77</span>
+            <span class="mcard-hp-name">赤沼 紗稀</span>
+          </div>
+        </div>
+
+        <details>
+          <summary class="mcard-log-toggle">
+            <span class="mcard-log-toggle-label">試合ログ</span>
+          </summary>
+          <div class="mcard-log-body">
+            <div>[T1] ロックアップから赤沼がコーナーに押し込む</div>
+            <div>[T2] 椿山 ドロップキック → 赤沼のけぞる</div>
+            <div>[T3] 赤沼 ラリアット → 椿山 ダウン</div>
+            <div>[T4] 赤沼 フェイスロック → 椿山 ロープエスケープ</div>
+            <div>[T5] 椿山 スピンキック炸裂 → 会場沸く</div>
+            <div>[T6] 赤沼 体勢を立て直して前進</div>
+            <div>[T7] 赤沼 ツームストン・パイルドライバー投下</div>
+            <div>[T8] 3カウント — 赤沼 紗稀 勝利</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- 第1試合（黒岩 vs 沢登） -->
+      <div class="mcard">
+        <div class="mcard-header">
+          <div class="mcard-num">第 1 試合</div>
+          <div class="mcard-tags">
+            <span class="mcard-tag is-first">✨ 初顔合わせ</span>
+          </div>
+        </div>
+
+        <div class="mcard-fighters">
+          <div class="mcard-char is-loser">
+            <div class="mcard-bubble-slot"></div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">黒岩 千晶</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">55</span>
+            </div>
+          </div>
+          <div class="mcard-vs">VS</div>
+          <div class="mcard-char is-winner">
+            <div class="mcard-bubble-slot"></div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">沢登 鮎</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">68</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mcard-result">
+          <span class="mcard-result-badge">
+            🏆 <span class="mcard-result-name">沢登 鮎</span> WIN
+          </span>
+        </div>
+
+        <div class="mcard-finish">
+          <span class="mcard-finish-label">Finish</span>
+          <span class="mcard-finish-move">シットアウト・パワーボム → 3カウント</span>
+          <span class="mcard-finish-turns">11 TURNS</span>
+        </div>
+
+        <div class="mcard-mq">
+          <span class="mcard-mq-stars">
+            <span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </span>
+          <span class="mcard-mq-label">MQ</span>
+          <span class="mcard-mq-value">32</span>
+          <span class="mcard-mq-bonuses">
+            <span class="mcard-mq-bonus is-fresh">(初顔合わせ +2)</span>
+          </span>
+        </div>
+
+        <div class="mcard-hp">
+          <div class="mcard-hp-half is-left">
+            <span class="mcard-hp-name">黒岩 千晶</span>
+            <span class="mcard-hp-val">0 / 77</span>
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-danger" style="width:0%"></div></div>
+          </div>
+          <div class="mcard-hp-center">HP</div>
+          <div class="mcard-hp-half is-right">
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-healthy" style="width:45%"></div></div>
+            <span class="mcard-hp-val">39 / 87</span>
+            <span class="mcard-hp-name">沢登 鮎</span>
+          </div>
+        </div>
+
+        <details>
+          <summary class="mcard-log-toggle">
+            <span class="mcard-log-toggle-label">試合ログ</span>
+          </summary>
+          <div class="mcard-log-body">
+            <div>[T1] 試合開始 ゴング</div>
+            <div>[T2] 黒岩 タックル → 沢登 打点高く受ける</div>
+            <div>[T3-8] 打撃の応酬 中盤戦長引く</div>
+            <div>[T9] 沢登 コーナーからの跳躍</div>
+            <div>[T10] 沢登 シットアウト・パワーボム</div>
+            <div>[T11] 3カウント — 沢登 鮎 勝利</div>
+          </div>
+        </details>
+      </div>
+
+    </div>
+
+    <!-- Heat -->
+    <div class="sh-heat">
+      <div class="sh-heat-kicker">Heat Status</div>
+      <div class="sh-heat-value is-neutral">Neutral</div>
+    </div>
+
+    <!-- Close -->
+    <div class="sh-close-area">
+      <button class="sh-close-btn">
+        結果を確認 <span class="arrow">→</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     Scenario 2: 特別興行（タイトル戦 + 因縁セリフ + タッグ）
+     ============================================================ -->
+<div class="stage-overlay scenario" id="scenario-special">
+  <div class="stage-container">
+
+    <div class="sh-header">
+      <div class="sh-kicker">Monthly Special</div>
+      <div class="sh-title is-special">⭐ 特 別 興 行</div>
+      <div class="sh-sub">Year 3 <span class="dot">·</span> Week 48 <span class="dot">·</span> 12月</div>
+    </div>
+
+    <div class="sh-attend is-sellout" id="attend-special">
+      <div class="sh-attend-meta">
+        <span class="sh-attend-label">Venue</span>
+        <span class="sh-attend-venue">市民体育館</span>
+        <span class="sh-attend-rating is-hot">🔥 超満員</span>
+      </div>
+      <div class="sh-attend-center">
+        <span class="sh-attend-num" id="attend-num-special">1,850</span>
+        <span class="sh-attend-unit">AUDIENCE</span>
+        <div class="sh-attend-cap" id="attend-cap-special">/ 1,800 CAP</div>
+      </div>
+      <div class="sh-attend-gauge">
+        <div>
+          <span class="sh-attend-pct" id="attend-pct-special">103</span><span class="sh-attend-pct-unit">%</span>
+        </div>
+        <div class="sh-attend-bar"><div class="sh-attend-bar-fill" id="attend-fill-special" style="width:100%"></div></div>
+      </div>
+    </div>
+
+    <div class="sh-summary">
+      <div class="sh-summary-item">
+        <span class="label">Average MQ</span>
+        <span class="sh-summary-stars">
+          <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span>
+        </span>
+        <span class="value">74</span>
+      </div>
+      <div class="sh-summary-item">
+        <span class="label">Heat</span>
+        <span class="value sh-summary-heat is-hot">Hot</span>
+      </div>
+      <div class="sh-summary-item">
+        <span class="label">Matches</span>
+        <span class="value">3</span>
+      </div>
+    </div>
+
+    <div class="sh-matches">
+
+      <!-- Main event: タイトル戦 + 因縁セリフ -->
+      <div class="mcard is-main is-special">
+        <div class="mcard-header">
+          <div class="mcard-num"><span class="mcard-num-accent">★</span> Main Event</div>
+          <div class="mcard-tags">
+            <span class="mcard-tag is-title">🏆 タイトルマッチ</span>
+            <span class="mcard-tag is-rivalry">⚔ 因縁</span>
+            <span class="mcard-tag is-spotlight">📺 取材中</span>
+          </div>
+        </div>
+
+        <div class="mcard-fighters">
+          <div class="mcard-char is-loser">
+            <div class="mcard-bubble-slot">
+              <div class="mcard-bubble">
+                <div class="mcard-bubble-name is-loser">椿山 みさき</div>
+                <div>「この借り、絶対に返す」</div>
+              </div>
+            </div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">椿山 みさき</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">58</span>
+            </div>
+            <div class="mcard-meta">Challenger</div>
+          </div>
+          <div class="mcard-vs">VS</div>
+          <div class="mcard-char is-winner">
+            <div class="mcard-bubble-slot">
+              <div class="mcard-bubble">
+                <div class="mcard-bubble-name is-winner">🏆 赤沼 紗稀</div>
+                <div>「まだ私の方が上だ」</div>
+              </div>
+            </div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">赤沼 紗稀</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">78</span>
+            </div>
+            <div class="mcard-meta">Champion · V3</div>
+          </div>
+        </div>
+
+        <div class="mcard-result">
+          <span class="mcard-result-badge">
+            🏆 <span class="mcard-result-name">赤沼 紗稀</span> WIN
+          </span>
+        </div>
+
+        <div class="mcard-finish">
+          <span class="mcard-finish-label">Finish</span>
+          <span class="mcard-finish-move">ツームストン・パイルドライバー → 3カウント</span>
+          <span class="mcard-finish-turns">18 TURNS</span>
+        </div>
+
+        <div class="mcard-mq">
+          <span class="mcard-mq-stars">
+            <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span>
+          </span>
+          <span class="mcard-mq-label">MQ</span>
+          <span class="mcard-mq-value">82</span>
+          <span class="mcard-mq-bonuses">
+            <span class="mcard-mq-bonus is-title">(王座 +5)</span>
+            <span class="mcard-mq-bonus is-rivalry">(宿敵 +6)</span>
+          </span>
+        </div>
+
+        <div class="mcard-hp">
+          <div class="mcard-hp-half is-left">
+            <span class="mcard-hp-name">椿山 みさき</span>
+            <span class="mcard-hp-val">4 / 82</span>
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-danger" style="width:5%"></div></div>
+          </div>
+          <div class="mcard-hp-center">HP</div>
+          <div class="mcard-hp-half is-right">
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-warning" style="width:24%"></div></div>
+            <span class="mcard-hp-val">22 / 92</span>
+            <span class="mcard-hp-name">赤沼 紗稀</span>
+          </div>
+        </div>
+
+        <details>
+          <summary class="mcard-log-toggle">
+            <span class="mcard-log-toggle-label">試合ログ (18ターン)</span>
+          </summary>
+          <div class="mcard-log-body">
+            <div>[T1] 試合開始 ゴング — 両者 中央で睨み合い</div>
+            <div>[T2-5] 序盤 テクニカルな攻防 椿山のキックがヒット</div>
+            <div>[T6] 赤沼 カウンター・ラリアット</div>
+            <div>[T7-10] 中盤 相打ちの応酬</div>
+            <div>[T11] 椿山 スピニング・パンチ → 大ダメージ</div>
+            <div>[T12] 赤沼 ピンチ 場外へ</div>
+            <div>[T13] 椿山 トップロープから場外ダイブ</div>
+            <div>[T14] 赤沼 リングに戻り 体勢を立て直す</div>
+            <div>[T15] 椿山 フィニッシャー狙い → 切り返し</div>
+            <div>[T16] 赤沼 カウンターからコーナーに押し込む</div>
+            <div>[T17] 赤沼 トップロープからダイビング・エルボー</div>
+            <div>[T18] 赤沼 ツームストン・パイルドライバー → 3カウント</div>
+            <div>— 赤沼 紗稀 防衛成功 (V3) —</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- 第2試合: タッグマッチ -->
+      <div class="mcard">
+        <div class="mcard-header">
+          <div class="mcard-num">第 2 試合</div>
+          <div class="mcard-tags">
+            <span class="mcard-tag is-tag">Tag Match</span>
+          </div>
+        </div>
+
+        <div class="mcard-tag-fighters">
+          <div class="mcard-tag-team">
+            <div class="mcard-tag-member is-winner">
+              <div class="mcard-portrait">
+                <img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'">
+              </div>
+              <div class="mcard-tag-name">沢登 鮎</div>
+              <div class="mcard-tag-ovr"><span class="lbl">OVR</span><span class="val">68</span></div>
+            </div>
+            <div class="mcard-tag-member is-winner">
+              <div class="mcard-portrait">
+                <img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'">
+              </div>
+              <div class="mcard-tag-name">黒岩 千晶</div>
+              <div class="mcard-tag-ovr"><span class="lbl">OVR</span><span class="val">55</span></div>
+            </div>
+          </div>
+          <div class="mcard-vs">VS</div>
+          <div class="mcard-tag-team">
+            <div class="mcard-tag-member is-loser">
+              <div class="mcard-portrait">
+                <img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'">
+              </div>
+              <div class="mcard-tag-name">椿山 みさき</div>
+              <div class="mcard-tag-ovr"><span class="lbl">OVR</span><span class="val">58</span></div>
+            </div>
+            <div class="mcard-tag-member is-loser">
+              <div class="mcard-portrait">
+                <img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'">
+              </div>
+              <div class="mcard-tag-name">赤沼 紗稀</div>
+              <div class="mcard-tag-ovr"><span class="lbl">OVR</span><span class="val">78</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mcard-result">
+          <span class="mcard-result-badge">
+            🏆 <span class="mcard-result-name">沢登 & 黒岩</span> WIN
+          </span>
+        </div>
+
+        <div class="mcard-finish">
+          <span class="mcard-finish-label">Finish</span>
+          <span class="mcard-finish-move">ダブルチーム・パワーボム → 3カウント</span>
+          <span class="mcard-finish-turns">14 TURNS</span>
+        </div>
+
+        <div class="mcard-mq">
+          <span class="mcard-mq-stars">
+            <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span>
+          </span>
+          <span class="mcard-mq-label">MQ</span>
+          <span class="mcard-mq-value">68</span>
+        </div>
+
+        <details>
+          <summary class="mcard-log-toggle">
+            <span class="mcard-log-toggle-label">試合ログ</span>
+          </summary>
+          <div class="mcard-log-body">
+            <div>[T1-14] タッグマッチのログダミー</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- 第1試合: 引き分け -->
+      <div class="mcard">
+        <div class="mcard-header">
+          <div class="mcard-num">第 1 試合</div>
+          <div class="mcard-tags">
+            <span class="mcard-tag is-rivalry">⚔ 因縁</span>
+          </div>
+        </div>
+
+        <div class="mcard-fighters">
+          <div class="mcard-char is-draw">
+            <div class="mcard-bubble-slot"></div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">沢登 鮎</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">68</span>
+            </div>
+            <div class="mcard-meta">30分時間切れ</div>
+          </div>
+          <div class="mcard-vs">VS</div>
+          <div class="mcard-char is-draw">
+            <div class="mcard-bubble-slot"></div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">黒岩 千晶</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">55</span>
+            </div>
+            <div class="mcard-meta">30分時間切れ</div>
+          </div>
+        </div>
+
+        <div class="mcard-result">
+          <span class="mcard-result-badge is-draw">
+            <span class="mcard-result-name">DRAW</span> 時間切れ
+          </span>
+        </div>
+
+        <div class="mcard-finish">
+          <span class="mcard-finish-label">Finish</span>
+          <span class="mcard-finish-move">時間切れ引き分け</span>
+          <span class="mcard-finish-turns">30 TURNS</span>
+        </div>
+
+        <div class="mcard-mq">
+          <span class="mcard-mq-stars">
+            <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span>
+          </span>
+          <span class="mcard-mq-label">MQ</span>
+          <span class="mcard-mq-value">71</span>
+          <span class="mcard-mq-bonuses">
+            <span class="mcard-mq-bonus is-rivalry">(因縁 +4)</span>
+          </span>
+        </div>
+
+        <div class="mcard-hp">
+          <div class="mcard-hp-half is-left">
+            <span class="mcard-hp-name">沢登 鮎</span>
+            <span class="mcard-hp-val">8 / 85</span>
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-danger" style="width:9%"></div></div>
+          </div>
+          <div class="mcard-hp-center">HP</div>
+          <div class="mcard-hp-half is-right">
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-danger" style="width:8%"></div></div>
+            <span class="mcard-hp-val">7 / 83</span>
+            <span class="mcard-hp-name">黒岩 千晶</span>
+          </div>
+        </div>
+
+        <details>
+          <summary class="mcard-log-toggle">
+            <span class="mcard-log-toggle-label">試合ログ</span>
+          </summary>
+          <div class="mcard-log-body">
+            <div>[T1-30] 30ターンに及ぶ熱戦…時間切れ</div>
+          </div>
+        </details>
+      </div>
+
+    </div>
+
+    <!-- Injury report -->
+    <div class="sh-injury">
+      <div class="sh-injury-label">🏥 Injury Report</div>
+      <div class="sh-injury-row">
+        <span class="sh-injury-type">打撲</span>
+        <span class="sh-injury-name">椿山 みさき</span>
+        <span class="sh-injury-weeks">全治 2週間</span>
+      </div>
+      <div class="sh-injury-row">
+        <span class="sh-injury-type">肩の痛み</span>
+        <span class="sh-injury-name">沢登 鮎</span>
+        <span class="sh-injury-weeks">全治 1週間</span>
+      </div>
+    </div>
+
+    <div class="sh-heat">
+      <div class="sh-heat-kicker">Heat Status</div>
+      <div class="sh-heat-value is-hot">🔥 Hot ・ 集客 ×1.1</div>
+    </div>
+
+    <div class="sh-close-area">
+      <button class="sh-close-btn">
+        結果を確認 <span class="arrow">→</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     Scenario 3: PPV GRAND FINAL
+     ============================================================ -->
+<div class="stage-overlay scenario" id="scenario-ppv">
+  <div class="stage-container">
+
+    <div class="sh-header">
+      <div class="sh-kicker">Year-End Finale</div>
+      <div class="sh-title is-ppv">PPV GRAND FINAL</div>
+      <div class="sh-sub">Year 5 <span class="dot">·</span> Week 48 <span class="dot">·</span> 12月 年間頂上決戦</div>
+    </div>
+
+    <div class="sh-attend is-sellout" id="attend-ppv">
+      <div class="sh-attend-meta">
+        <span class="sh-attend-label">Venue</span>
+        <span class="sh-attend-venue">東京ドーム</span>
+        <span class="sh-attend-rating is-hot">🔥 超満員</span>
+      </div>
+      <div class="sh-attend-center">
+        <span class="sh-attend-num" id="attend-num-ppv">52,400</span>
+        <span class="sh-attend-unit">AUDIENCE</span>
+        <div class="sh-attend-cap" id="attend-cap-ppv">/ 55,000 CAP</div>
+      </div>
+      <div class="sh-attend-gauge">
+        <div>
+          <span class="sh-attend-pct" id="attend-pct-ppv">95</span><span class="sh-attend-pct-unit">%</span>
+        </div>
+        <div class="sh-attend-bar"><div class="sh-attend-bar-fill" id="attend-fill-ppv" style="width:95%"></div></div>
+      </div>
+    </div>
+
+    <div class="sh-summary">
+      <div class="sh-summary-item">
+        <span class="label">Average MQ</span>
+        <span class="sh-summary-stars">
+          <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span>
+        </span>
+        <span class="value">88</span>
+      </div>
+      <div class="sh-summary-item">
+        <span class="label">Heat</span>
+        <span class="value sh-summary-heat is-hot">Blazing</span>
+      </div>
+      <div class="sh-summary-item">
+        <span class="label">Matches</span>
+        <span class="value">7</span>
+      </div>
+    </div>
+
+    <div class="sh-matches">
+
+      <!-- Main event PPV -->
+      <div class="mcard is-main is-special">
+        <div class="mcard-header">
+          <div class="mcard-num"><span class="mcard-num-accent">★</span> Main Event</div>
+          <div class="mcard-tags">
+            <span class="mcard-tag is-title">🏆 王座決定戦</span>
+            <span class="mcard-tag is-rivalry">⚔ 宿敵</span>
+            <span class="mcard-tag is-spotlight">📺 取材中</span>
+          </div>
+        </div>
+
+        <div class="mcard-fighters">
+          <div class="mcard-char is-winner">
+            <div class="mcard-bubble-slot">
+              <div class="mcard-bubble">
+                <div class="mcard-bubble-name is-winner">🏆 椿山 みさき</div>
+                <div>「ここまで…長かった」</div>
+              </div>
+            </div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_tsubakiyama_m.webp" alt="椿山 みさき" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">椿山 みさき</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">78</span>
+            </div>
+            <div class="mcard-meta">New Champion</div>
+          </div>
+          <div class="mcard-vs">VS</div>
+          <div class="mcard-char is-loser">
+            <div class="mcard-bubble-slot">
+              <div class="mcard-bubble">
+                <div class="mcard-bubble-name is-loser">赤沼 紗稀</div>
+                <div>「…いい時代が来たな」</div>
+              </div>
+            </div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_akanuma_s.webp" alt="赤沼 紗稀" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">赤沼 紗稀</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">82</span>
+            </div>
+            <div class="mcard-meta">Former Champion</div>
+          </div>
+        </div>
+
+        <div class="mcard-result">
+          <span class="mcard-result-badge">
+            🏆 <span class="mcard-result-name">椿山 みさき</span> WIN
+          </span>
+        </div>
+
+        <div class="mcard-finish">
+          <span class="mcard-finish-label">Finish</span>
+          <span class="mcard-finish-move">スピニング・パンチ → 3カウント</span>
+          <span class="mcard-finish-turns">24 TURNS</span>
+        </div>
+
+        <div class="mcard-mq">
+          <span class="mcard-mq-stars">
+            <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span>
+          </span>
+          <span class="mcard-mq-label">MQ</span>
+          <span class="mcard-mq-value">94</span>
+          <span class="mcard-mq-bonuses">
+            <span class="mcard-mq-bonus is-title">(王座 +5)</span>
+            <span class="mcard-mq-bonus is-rivalry">(宿敵 +6)</span>
+          </span>
+        </div>
+
+        <div class="mcard-hp">
+          <div class="mcard-hp-half is-left">
+            <span class="mcard-hp-name">椿山 みさき</span>
+            <span class="mcard-hp-val">12 / 88</span>
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-danger" style="width:14%"></div></div>
+          </div>
+          <div class="mcard-hp-center">HP</div>
+          <div class="mcard-hp-half is-right">
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-danger" style="width:2%"></div></div>
+            <span class="mcard-hp-val">2 / 94</span>
+            <span class="mcard-hp-name">赤沼 紗稀</span>
+          </div>
+        </div>
+
+        <details>
+          <summary class="mcard-log-toggle">
+            <span class="mcard-log-toggle-label">試合ログ (24ターン)</span>
+          </summary>
+          <div class="mcard-log-body">
+            <div>[T1-24] 長期戦のログ…最後に椿山がスピニング・パンチで王座奪取</div>
+            <div>— 椿山 みさき 新王者 —</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- PPV 第6試合（簡略） -->
+      <div class="mcard">
+        <div class="mcard-header">
+          <div class="mcard-num">第 6 試合</div>
+        </div>
+        <div class="mcard-fighters">
+          <div class="mcard-char is-winner">
+            <div class="mcard-bubble-slot"></div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_sawanobori_a.webp" alt="沢登 鮎" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">沢登 鮎</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">68</span>
+            </div>
+          </div>
+          <div class="mcard-vs">VS</div>
+          <div class="mcard-char is-loser">
+            <div class="mcard-bubble-slot"></div>
+            <div class="mcard-portrait">
+              <img src="../../../image/upper/upper_kuroiwa_c.webp" alt="黒岩 千晶" onerror="this.style.display='none'">
+            </div>
+            <div class="mcard-name">黒岩 千晶</div>
+            <div class="mcard-ovr">
+              <span class="mcard-ovr-label">OVR</span>
+              <span class="mcard-ovr-value">55</span>
+            </div>
+          </div>
+        </div>
+        <div class="mcard-result">
+          <span class="mcard-result-badge">🏆 <span class="mcard-result-name">沢登 鮎</span> WIN</span>
+        </div>
+        <div class="mcard-finish">
+          <span class="mcard-finish-label">Finish</span>
+          <span class="mcard-finish-move">シットアウト・パワーボム → 3カウント</span>
+          <span class="mcard-finish-turns">16 TURNS</span>
+        </div>
+        <div class="mcard-mq">
+          <span class="mcard-mq-stars">
+            <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span>
+          </span>
+          <span class="mcard-mq-label">MQ</span>
+          <span class="mcard-mq-value">79</span>
+        </div>
+        <div class="mcard-hp">
+          <div class="mcard-hp-half is-left">
+            <span class="mcard-hp-name">沢登 鮎</span>
+            <span class="mcard-hp-val">34 / 88</span>
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-healthy" style="width:39%"></div></div>
+          </div>
+          <div class="mcard-hp-center">HP</div>
+          <div class="mcard-hp-half is-right">
+            <div class="mcard-hp-track"><div class="mcard-hp-fill is-danger" style="width:6%"></div></div>
+            <span class="mcard-hp-val">5 / 82</span>
+            <span class="mcard-hp-name">黒岩 千晶</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sh-heat">
+      <div class="sh-heat-kicker">Heat Status</div>
+      <div class="sh-heat-value is-hot">🔥 Blazing ・ 集客 ×1.2</div>
+    </div>
+
+    <div class="sh-close-area">
+      <button class="sh-close-btn">
+        結果を確認 <span class="arrow">→</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /* ==================================================
+     シナリオ切替
+     ================================================== */
+  const scenarioBtns = document.querySelectorAll('[data-scenario]');
+  const scenarios = document.querySelectorAll('.scenario');
+  scenarioBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      scenarioBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const target = btn.dataset.scenario;
+      scenarios.forEach(s => s.classList.toggle('active', s.id === 'scenario-' + target));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  /* ==================================================
+     Attendance パターン切替（現在アクティブなシナリオに適用）
+     ================================================== */
+  const attendBtns = document.querySelectorAll('[data-attend]');
+
+  const ATTEND_PATTERNS = {
+    weekly: {
+      sellout: { num: '148', cap: '/ 150 CAP', pct: '98', fill: '98%',  rating: '🔥 超満員',  rKlass: 'is-hot',    bKlass: 'is-sellout' },
+      good:    { num: '132', cap: '/ 150 CAP', pct: '88', fill: '88%',  rating: '✨ 大入り',  rKlass: 'is-good',   bKlass: 'is-good' },
+      weak:    { num: '64',  cap: '/ 150 CAP', pct: '43', fill: '43%',  rating: '➖ まずまず', rKlass: 'is-weak',   bKlass: 'is-weak' },
+      empty:   { num: '22',  cap: '/ 150 CAP', pct: '15', fill: '15%',  rating: '😰 ガラガラ', rKlass: 'is-empty',  bKlass: 'is-empty' },
+    },
+    special: {
+      sellout: { num: '1,850', cap: '/ 1,800 CAP', pct: '103', fill: '100%', rating: '🔥 超満員',  rKlass: 'is-hot',   bKlass: 'is-sellout' },
+      good:    { num: '1,520', cap: '/ 1,800 CAP', pct: '84',  fill: '84%',  rating: '✨ 大入り',  rKlass: 'is-good',  bKlass: 'is-good' },
+      weak:    { num: '820',   cap: '/ 1,800 CAP', pct: '46',  fill: '46%',  rating: '➖ まずまず', rKlass: 'is-weak',  bKlass: 'is-weak' },
+      empty:   { num: '280',   cap: '/ 1,800 CAP', pct: '16',  fill: '16%',  rating: '😰 ガラガラ', rKlass: 'is-empty', bKlass: 'is-empty' },
+    },
+    ppv: {
+      sellout: { num: '54,200', cap: '/ 55,000 CAP', pct: '99',  fill: '99%', rating: '🔥 超満員',  rKlass: 'is-hot',   bKlass: 'is-sellout' },
+      good:    { num: '52,400', cap: '/ 55,000 CAP', pct: '95',  fill: '95%', rating: '🔥 超満員',  rKlass: 'is-hot',   bKlass: 'is-sellout' },
+      weak:    { num: '26,800', cap: '/ 55,000 CAP', pct: '49',  fill: '49%', rating: '➖ まずまず', rKlass: 'is-weak',  bKlass: 'is-weak' },
+      empty:   { num: '8,400',  cap: '/ 55,000 CAP', pct: '15',  fill: '15%', rating: '😰 ガラガラ', rKlass: 'is-empty', bKlass: 'is-empty' },
+    }
+  };
+
+  function applyAttend(scenario, mode) {
+    const pattern = ATTEND_PATTERNS[scenario][mode];
+    if (!pattern) return;
+    const banner = document.getElementById('attend-' + scenario);
+    const numEl = document.getElementById('attend-num-' + scenario);
+    const capEl = document.getElementById('attend-cap-' + scenario);
+    const pctEl = document.getElementById('attend-pct-' + scenario);
+    const fillEl = document.getElementById('attend-fill-' + scenario);
+    if (!banner) return;
+
+    numEl.textContent = pattern.num;
+    capEl.textContent = pattern.cap;
+    pctEl.textContent = pattern.pct;
+    fillEl.style.width = pattern.fill;
+
+    banner.className = 'sh-attend ' + pattern.bKlass;
+    const ratingEl = banner.querySelector('.sh-attend-rating');
+    ratingEl.className = 'sh-attend-rating ' + pattern.rKlass;
+    ratingEl.textContent = pattern.rating;
+  }
+
+  attendBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      attendBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = btn.dataset.attend;
+      ['weekly', 'special', 'ppv'].forEach(s => applyAttend(s, mode));
+    });
+  });
+</script>
+
+</body>
+</html>
