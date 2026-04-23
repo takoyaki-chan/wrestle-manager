@@ -434,14 +434,13 @@ MQ加算は一切しない。
 
 **効果の基本（全選択肢共通）:** 既存の派閥A・Bに `inHostility: true` フラグを立てる。派閥そのものは新規作成せず、すでに存在している派閥に抗争状態を付与する。
 
-**選択肢と効果:**
+**選択肢と効果（v4 §2-1 で 3 択に統合）:**
 
 | 選択 | 効果 |
 |------|------|
-| A: 派閥A側に立つ | 両派閥 inHostility=true、Aリーダー trust **+5〜+8**、Bリーダー trust **-5〜-8**、対立度 A→B=55〜70, B→A=65〜80、勢い A+20〜+30, B-10〜-20 |
-| B: 派閥B側に立つ | A/B逆転版 |
-| C: 両者を呼び出して調停 | 両派閥 inHostility=true、両リーダー trust **-3〜-5**、対立度両方向 30〜45（対称）、勢い両方0 |
-| D: 静観する | 両派閥 inHostility=true、対立度は平均 rivalry を継承、勢い両方0、trust変動なし |
+| A: 煽る（抗争を公式戦に仕立てる） | 両派閥 inHostility=true、対立度 両方向 +55〜70、勢い 両派閥 +10〜+20、ロッカールーム士気 **-3〜-5**、`factionPendingIgnite` 登録（4週以内にリーダー戦が組まれれば F02① ignite 発火） |
+| B: 仲裁 | 両派閥 inHostility=true、両リーダー trust **-3〜-5**、対立度両方向 30〜45（対称）、勢い両方0、`f02MediationWatches` 登録（12週以内に hostility が -20 以上減衰＋ロッカー士気 55+ 維持で F02② peace 発火） |
+| C: 介入しない | 両派閥 inHostility=true、対立度は平均 rivalry を継承、勢い両方0、trust変動なし |
 
 **抗争の終了:** 対立度が自然減衰で両方向ともに 0 になった時点で `inHostility` フラグをクリアし、勢いを 0 リセット（§4.2 `processWeeklyHostilityDecay` 内で処理）。抗争は「派閥の属性」ではなく「一時的な状態」として扱う。
 
@@ -588,6 +587,94 @@ MQ加算は一切しない。
 | C: 両リーダーを呼び出して警告 | 両リーダー trust **-3〜-5**、対立度両方向 **-10〜-15**（社長権限圧縮）、ロッカールーム士気 **+2〜+3**、両リーダー相互 bond 一時 **+2〜+3**（社長に抑えつけられた奇妙な連帯） |
 
 **演出**: 中量版〜やや重め。練習場での視線の衝突、廊下ですれ違うシーン。
+
+---
+
+### §9.11 F02 進展 4 種
+
+F02「派閥抗争の勃発」発火後、抗争は以下 4 経路のいずれかで進展する。UI モーダルは ui-common.js 実装済み、エンジン配線は `src/factions.js` の該当関数群。優先順位は pickWeeklyEvent で `F02_ENDLESS > F02_PEACE > ... > F02 > F01`、試合フック経由の `F02_IGNITE` / `F02_RESOLUTION` は `!s._pendingFactionEvent` ガードで早い者勝ち。
+
+#### §9.11.1 F02① ignite（発火）
+
+**発火条件**:
+- `state.factionPendingIgnite` が登録済み（F02 時に選択肢 **A: 煽る** を選んだ場合に登録）
+- 興行カードに両派閥リーダー同士のシングル試合が含まれる
+- `expireWeek`（登録時 + 4週）未超過
+
+**影響**:
+- 両方向 hostility **+12**
+- `factionTimeline` に `IGNITE` エントリ追加
+- `factionPendingIgnite` 消費（null 化）
+
+**クールダウン**: なし（`expireWeek` 超過時は `expireF02PendingIgnite` がサイレントクリア）
+
+**演出**: 試合開始前の通過点モーダル。抗争が公式戦の形を得た瞬間。
+
+---
+
+#### §9.11.2 F02② peace（沈静化）
+
+**発火条件**:
+- `state.f02MediationWatches` に登録された watch が存在（F02 時に選択肢 **B: 仲裁** を選んだ場合、`deadlineWeek = 登録週 + 12` で登録）
+- 両方向 hostility が **base から -20 以上減衰**（仲裁時点 hostility からの下げ幅）
+- `state.lockerRoomMorale ≥ 55`
+
+**影響**:
+- 両方向 hostility **-40**
+- 両派閥 momentum 0 リセット
+- `inHostility = false` 解除（対立型→通常型へ戻る）
+- 両リーダー間 bond **+3**
+- 対応 watch 削除
+- `factionTimeline` に `PEACE` エントリ追加
+
+**クールダウン**: なし（deadline 超過時は `sweepF02PeaceWatches` がサイレント削除）
+
+**演出**: 和解シーン中量版。リング外で両リーダーが視線を交わす。
+
+---
+
+#### §9.11.3 F02③ resolution（決着）
+
+**発火条件**:
+- 両派閥リーダー同士の試合（シングル）でドロー以外の結果
+- 両方向 hostility **≥60**
+- 試合結果フック 4 パス（finalizeShow / executeShow / finalizeWar / finalizePPV）で判定
+
+**影響**:
+- 勝者派閥 momentum **+18〜+25**、敗者派閥 momentum **-22〜-25**
+- 勝者リーダー trust **+6〜+8**、敗者リーダー trust **-3〜-5**
+- 勝者派閥メンバー→リーダー bond **+5〜+8**、敗者派閥メンバー→リーダー bond **-6〜-9**
+- 両方向 hostility **-40**
+- 敗者派閥下位 2〜3 名 trust **-4〜-6**
+- `factionTimeline` に `RESOLVED` エントリ追加
+
+**クールダウン**: なし（hostility リセットで再燃まで時間を要する自然 CD）
+
+**連鎖**: 敗者派閥は momentum 大幅ダウンで自然消滅経路（F03 `checkDissolutionConditions`）に入りやすい。専用モーダルは持たず F03 へフォールスルー。
+
+**演出**: 試合終了直後の重量版。勝者派閥歓喜、敗者派閥のメンバーが離れていく。
+
+---
+
+#### §9.11.4 F02④ endless（無限抗争）
+
+**発火条件**:
+- 両方向 hostility 平均 **≥55** が **52週連続**（`factionEndlessStreak[pairKey]` で管理）
+- クールダウン **52週**
+
+**影響**:
+- 両派閥メンバー全員の `mentalCoeff` **-0.02**（0.85 床）
+- `factionTimeline` に `ENDLESS` エントリ追加
+- streak リセット、CD マーク
+
+**クールダウン**: 52週
+
+**演出**: 重量版の諦念トーン。終わりの見えない抗争の重さを描く。
+
+**FACTION_CONFIG 定数**:
+- `f02EndlessHostilityMinAverage: 55`
+- `f02EndlessStreakWeeks: 52`
+- `f02EndlessCooldown: 52`
 
 ---
 

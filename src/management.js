@@ -7447,6 +7447,10 @@ const Engine = {
       if (!s.factionHostility || typeof s.factionHostility !== 'object') s = { ...s, factionHostility: {} };
       if (!s.factionEventCooldowns || typeof s.factionEventCooldowns !== 'object') s = { ...s, factionEventCooldowns: {} };
       if (!s.factionReconciliationStreak || typeof s.factionReconciliationStreak !== 'object') s = { ...s, factionReconciliationStreak: {} };
+      // v4 §2-1 F02 進展4種用のフィールド初期化
+      if (!s.factionEndlessStreak || typeof s.factionEndlessStreak !== 'object') s = { ...s, factionEndlessStreak: {} };
+      if (!Array.isArray(s.f02MediationWatches)) s = { ...s, f02MediationWatches: [] };
+      // factionPendingIgnite は null 許容なので初期化不要
 
       // 既に pending 派閥イベントが残っている場合は、プレイヤーが解決するまで派閥パイプライン全体をスキップ
       if (s._pendingFactionEvent) {
@@ -7456,6 +7460,12 @@ const Engine = {
         s = Engine.factions.applyHiatusRecovery(s);
         // F06 streak 更新（ピック前に今週分を反映）
         s = Engine.factions.updateF06Streaks(s);
+        // v4 §2-1: F02④ endless streak 更新（ピック前に今週分を反映）
+        s = Engine.factions.updateF02EndlessStreaks(s);
+        // v4 §2-1: F02① pending ignite の期限切れクリーンアップ
+        s = Engine.factions.expireF02PendingIgnite(s);
+        // v4 §2-1: F02② 仲裁 watch の期限切れ掃除
+        s = Engine.factions.sweepF02PeaceWatches(s);
         // 1) F03/F01/F02/F04-F08 いずれかの条件が成立していれば pending を立てて処理を保留
         const picked = Engine.factions.pickWeeklyEvent(s, evtRng);
         if (picked.eventId) {
@@ -7662,6 +7672,14 @@ const Engine = {
     let rivalries = { ...s.rivalries };
     let titles = { ...s.titles, world: { ...s.titles.world } };
     const events = [];
+
+    // ── v4 §2-1: F02① ignite 判定（リーダー同士のカードが組まれていれば発火） ──
+    if (Engine.factions && typeof Engine.factions.checkF02IgniteTrigger === 'function' && !s._pendingFactionEvent) {
+      const ig = Engine.factions.checkF02IgniteTrigger(s, validMatches);
+      if (ig.eligible) {
+        s = { ...s, _pendingFactionEvent: { eventId: 'F02_IGNITE', payload: ig.payload } };
+      }
+    }
 
     // v1.5s25: Pass 1 — バトル結果生成（外部MQボーナスなし・メタデータのみ記録）
     const rawResults = validMatches.map(m => {
@@ -8142,6 +8160,20 @@ const Engine = {
       // Phase 4: 興行コンテキストの関係値反映 (C-04, C-05, C-06, C-10)
       const showCtxRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE5C));
       s = Engine.relationships.applyShowContextEffects(s, validMatches, results, preShowLosingStreaks, showCtxRng);
+    }
+
+    // ── v4 §2-1: F02③ 決着 判定（リーダー同士の敵対試合で両方向hostility≥60） ──
+    if (Engine.factions && typeof Engine.factions.rollResolutionAfterMatch === 'function' && !s._pendingFactionEvent) {
+      for (let i = 0; i < validMatches.length; i++) {
+        const m = validMatches[i]; const r = results[i];
+        if (!m || !r || m.matchType === 'tag') continue;
+        const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : null);
+        const loserId  = r.winner === 'left' ? m.right : (r.winner === 'right' ? m.left : null);
+        const isDraw = r.winner === 'draw';
+        const resRes = Engine.factions.rollResolutionAfterMatch(s, { winnerId, loserId, isDraw });
+        s = resRes.state;
+        if (resRes.pendingEvent) { s = { ...s, _pendingFactionEvent: resRes.pendingEvent }; break; }
+      }
     }
 
     // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える
@@ -9863,6 +9895,20 @@ const Engine = {
           relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
         });
         s = { ...s, relationships: relState.relationships, relationshipCounters: relState.relationshipCounters };
+      }
+
+      // ── v4 §2-1: F02③ 決着 判定（PPV） ──
+      if (Engine.factions && typeof Engine.factions.rollResolutionAfterMatch === 'function' && !s._pendingFactionEvent) {
+        for (let i = 0; i < results.length; i++) {
+          const match = card[i]; const r = results[i];
+          if (!match || !r) continue;
+          const winnerId = r.winner === 'left' ? match.left.id : (r.winner === 'right' ? match.right.id : null);
+          const loserId  = r.winner === 'left' ? match.right.id : (r.winner === 'right' ? match.left.id : null);
+          const isDraw = r.winner === 'draw';
+          const resRes = Engine.factions.rollResolutionAfterMatch(s, { winnerId, loserId, isDraw });
+          s = resRes.state;
+          if (resRes.pendingEvent) { s = { ...s, _pendingFactionEvent: resRes.pendingEvent }; break; }
+        }
       }
 
       // Step 5-6: matchupLog 記録（プレイヤー選手が参加した試合のみ）

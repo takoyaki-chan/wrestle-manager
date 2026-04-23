@@ -201,8 +201,9 @@ function autoHandleFactionEvent(G, simRng) {
       const r = Engine.factions.applyF01Choice(s, fe.payload, choiceId, rng);
       if (r && r.state) s = r.state;
     } else if (fe.eventId === 'F02') {
-      const choices = ['A', 'B', 'C', 'D'];
-      const choiceId = choices[Math.floor(Engine.rng.float(simRng) * 4)];
+      // v4: 3択化 (A=煽る / B=仲裁 / C=介入しない)
+      const choices = ['A', 'B', 'C'];
+      const choiceId = choices[Math.floor(Engine.rng.float(simRng) * 3)];
       const r = Engine.factions.applyF02Choice(s, fe.payload, choiceId, rng);
       if (r && r.state) s = r.state;
     } else if (fe.eventId === 'F03') {
@@ -210,6 +211,18 @@ function autoHandleFactionEvent(G, simRng) {
       if (r && r.state) s = r.state;
     } else if (fe.eventId === 'F05H') {
       const r = Engine.factions.applyF05HResult(s, fe.payload);
+      if (r && r.state) s = r.state;
+    } else if (fe.eventId === 'F02_RESOLUTION') {
+      const r = Engine.factions.applyF02ResolutionResult(s, fe.payload, rng);
+      if (r && r.state) s = r.state;
+    } else if (fe.eventId === 'F02_ENDLESS') {
+      const r = Engine.factions.applyF02EndlessResult(s, fe.payload, rng);
+      if (r && r.state) s = r.state;
+    } else if (fe.eventId === 'F02_IGNITE') {
+      const r = Engine.factions.applyF02IgniteResult(s, fe.payload, rng);
+      if (r && r.state) s = r.state;
+    } else if (fe.eventId === 'F02_PEACE') {
+      const r = Engine.factions.applyF02PeaceResult(s, fe.payload, rng);
       if (r && r.state) s = r.state;
     } else if (fe.eventId === 'F04' || fe.eventId === 'F05' || fe.eventId === 'F06' || fe.eventId === 'F07' || fe.eventId === 'F08') {
       const choices = ['A', 'B', 'C'];

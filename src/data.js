@@ -1408,6 +1408,10 @@ const FACTION_CONFIG = {
   f06HostilityMaxAverage: 25,    // 両方向平均
   f06StreakWeeks: 8,             // 8週継続
   f06Cost: 1_000_000,            // 100万
+  // §9.11 F02④ endless（無限抗争）
+  f02EndlessHostilityMinAverage: 55, // 両方向平均
+  f02EndlessStreakWeeks: 52,         // 52週継続
+  f02EndlessCooldown: 52,            // 52週CD
   // §9.7 F07 リーダーの横暴
   f07TrustMinThreshold: 60,
   f07RebukeMaxCount: 4,          // 4回で authoritativeTag 除去

@@ -821,6 +821,109 @@ Engine.factions = {
     };
   },
 
+  // ── §9.11 F02③ 決着: 試合結果フック ───────────────────────
+  // matchContext: { winnerId, loserId, isDraw, matchTier? }
+  // return: { state, pendingEvent? }  pendingEvent は caller が _pendingFactionEvent に積む
+  // 条件: 両者が別派閥のリーダー、両派閥とも inHostility=true、両方向 hostility >= 60、ドローでない
+  rollResolutionAfterMatch(state, matchContext) {
+    if (!state || !matchContext) return { state };
+    const { winnerId, loserId, isDraw } = matchContext;
+    if (isDraw) return { state };
+    if (winnerId == null || loserId == null) return { state };
+    const factions = state.factions || [];
+    const facW = factions.find(f => f.leaderId === winnerId);
+    const facL = factions.find(f => f.leaderId === loserId);
+    if (!facW || !facL) return { state };
+    if (facW.id === facL.id) return { state };
+    if (!this._isHostile(facW) || !this._isHostile(facL)) return { state };
+    const hWL = (state.factionHostility || {})[this._hostKey(facW.id, facL.id)] || 0;
+    const hLW = (state.factionHostility || {})[this._hostKey(facL.id, facW.id)] || 0;
+    if (hWL < 60 || hLW < 60) return { state };
+
+    const pendingEvent = {
+      eventId: 'F02_RESOLUTION',
+      payload: {
+        winnerId, loserId,
+        winnerFactionId: facW.id, loserFactionId: facL.id,
+        winnerFactionName: facW.name, loserFactionName: facL.name,
+      },
+    };
+    return { state, pendingEvent };
+  },
+
+  // ── §9.11 F02③ 決着 結果適用（UI "続ける" で実効）──
+  applyF02ResolutionResult(state, payload, rng) {
+    const cfg = FACTION_CONFIG;
+    if (!payload) return { state, resultText: '' };
+    const { winnerId, loserId, winnerFactionId, loserFactionId } = payload;
+    let s = state;
+    const factions = s.factions || [];
+    const facW = factions.find(f => f.id === winnerFactionId);
+    const facL = factions.find(f => f.id === loserFactionId);
+    if (!facW || !facL) return { state: s, resultText: '' };
+
+    const floatR = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+
+    // 勢い: 勝者 +18〜25 / 敗者 -22〜-25
+    s = this.applyMomentumChange(s, facW.id, floatR(18, 25));
+    s = this.applyMomentumChange(s, facL.id, -floatR(22, 25));
+
+    // リーダー信頼 (勝者 +6〜8, 敗者 -3〜-5)
+    s = this._applyTrustToMembers(s, [winnerId], floatR(6, 8));
+    s = this._applyTrustToMembers(s, [loserId], -floatR(3, 5));
+
+    // 求心力 = members→leader bond（勝者 +5〜8 / 敗者 -6〜-9）
+    const wMembers = facW.memberIds.filter(id => id !== facW.leaderId);
+    const lMembers = facL.memberIds.filter(id => id !== facL.leaderId);
+    const wBond = floatR(5, 8);
+    const lBond = -floatR(6, 9);
+    for (const mid of wMembers) s = this._applyBondDirected(s, mid, facW.leaderId, wBond);
+    for (const mid of lMembers) s = this._applyBondDirected(s, mid, facL.leaderId, lBond);
+
+    // 両派閥間 hostility -40 (完全解消せず、決着後の冷静として残す)
+    s = this.applyHostilityChange(s, facW.id, facL.id, -40);
+    s = this.applyHostilityChange(s, facL.id, facW.id, -40);
+
+    // 敗者派閥の下位 2〜3 名に trust ペナルティ (離脱リスク = trust 下押し)
+    const roster = s.roster || [];
+    const ovrMap = new Map();
+    roster.forEach(c => ovrMap.set(c.id, Engine.util.ov(c)));
+    const bottomMembers = facL.memberIds
+      .filter(id => id !== facL.leaderId)
+      .map(id => ({ id, ovr: ovrMap.get(id) || 0 }))
+      .sort((a, b) => a.ovr - b.ovr)
+      .slice(0, 2 + Math.floor(Engine.rng.float(rng) * 2)) // 2〜3 名
+      .map(x => x.id);
+    if (bottomMembers.length > 0) {
+      s = this._applyTrustToMembers(s, bottomMembers, -floatR(4, 6));
+    }
+
+    // factionTimeline に RESOLVED エントリ追記
+    if (Array.isArray(s.factionTimeline)) {
+      s = {
+        ...s,
+        factionTimeline: [
+          ...s.factionTimeline,
+          {
+            type: 'F02_RESOLVED',
+            season: s.season, week: s.week,
+            winnerFactionId, loserFactionId,
+            winnerId, loserId,
+          },
+        ],
+      };
+    }
+
+    if (typeof console !== 'undefined') {
+      console.log(`[WM Faction] F02 resolved: ${facW.name} (winner) vs ${facL.name} (loser)`);
+    }
+
+    return {
+      state: s,
+      resultText: `「${facW.name}」が「${facL.name}」を下した。リング上で、ようやく決着がついた。`,
+    };
+  },
+
   // ── §8 週次イベント抽選（F03 > F05H > F08 > F04 > F05 > F07 > F06 > F02 > F01 の優先順）──
   // return: { eventId:'F01'|'F02'|'F03'|'F04'|'F05'|'F05H'|'F06'|'F07'|'F08'|null, payload }
   pickWeeklyEvent(state, rng) {
@@ -857,6 +960,18 @@ Engine.factions = {
           estimatedWeeks: hiatusTrig.estimatedWeeks,
         },
       };
+    }
+
+    // 1.7) F02_ENDLESS（無限抗争: 両方向hostility平均≥55 が52週継続、即時発動 100%）
+    const endlessTrig = this.checkF02EndlessCondition(state);
+    if (endlessTrig.eligible) {
+      return { eventId: 'F02_ENDLESS', payload: endlessTrig };
+    }
+
+    // 1.8) F02_PEACE（仲裁による沈静化、watch 条件到達で即時発動 100%）
+    const peaceCheck = this.checkF02PeaceConditions(state);
+    if (peaceCheck.eligible) {
+      return { eventId: 'F02_PEACE', payload: peaceCheck.payload };
     }
 
     // 2) F08（対立ヒートアップ、確率 50%）
@@ -978,14 +1093,16 @@ Engine.factions = {
     return { state: s, resultText: `${leaderName}を中心とした集まりを静かに見守ることにした。` };
   },
 
-  // ── §9.2 F02 選択肢効果適用（派閥抗争の勃発）──
-  // choiceId: 'A'=派閥A側 / 'B'=派閥B側 / 'C'=調停 / 'D'=静観
-  // 既存の2派閥に inHostility フラグを立て、対立度・勢いを注入する
+  // ── §9.2 F02 選択肢効果適用（派閥抗争の勃発、v4 3択版）──
+  // choiceId: 'A'=煽る / 'B'=仲裁 / 'C'=介入しない
+  // 既存の2派閥に inHostility フラグを立て、対立度・勢いを注入する。
+  // 'A'=煽る は F02① ignite（次興行でのメインカード化）へ繋がる pending を登録し、
+  // 'B'=仲裁 は F02② peace watch を登録する（§2-1 ignite/peace は Step 3/4 で参照）
   applyF02Choice(state, payload, choiceId, rng) {
-    const { factionAId, factionBId, leaderAId, leaderBId, leaderAName, leaderBName, avgCrossRivalry } = payload;
+    const { factionAId, factionBId, leaderAId, leaderBId, leaderAName, leaderBName, factionAName, factionBName, avgCrossRivalry } = payload;
     let s = state;
 
-    // 両派閥に inHostility フラグを立てる（A/B/C/D 全ケースで抗争状態に入る）
+    // 両派閥に inHostility フラグを立てる（全ケースで抗争状態に入る）
     const markHostile = (st) => ({
       ...st,
       factions: (st.factions || []).map(f => {
@@ -1001,41 +1118,71 @@ Engine.factions = {
     const B = s.factions.find(f => f.id === factionBId);
     if (!A || !B) return { state: s, resultText: '' };
 
-    if (choiceId === 'A' || choiceId === 'B') {
-      const favored = choiceId === 'A' ? A : B;
-      const neglected = choiceId === 'A' ? B : A;
-      const favoredLeaderId = choiceId === 'A' ? leaderAId : leaderBId;
-      const neglectedLeaderId = choiceId === 'A' ? leaderBId : leaderAId;
-      const favTrust = 5 + Math.floor(Engine.rng.float(rng) * 4);
-      const negTrust = -(5 + Math.floor(Engine.rng.float(rng) * 4));
-      s = this._applyTrustToMembers(s, [favoredLeaderId], favTrust);
-      s = this._applyTrustToMembers(s, [neglectedLeaderId], negTrust);
-      const h1 = 55 + Math.floor(Engine.rng.float(rng) * 16);
-      const h2 = 65 + Math.floor(Engine.rng.float(rng) * 16);
-      s = this.applyHostilityChange(s, favored.id, neglected.id, h1);
-      s = this.applyHostilityChange(s, neglected.id, favored.id, h2);
-      const mf = 20 + Math.floor(Engine.rng.float(rng) * 11);
-      const mn = -(10 + Math.floor(Engine.rng.float(rng) * 11));
-      s = this.applyMomentumChange(s, favored.id, mf);
-      s = this.applyMomentumChange(s, neglected.id, mn);
+    if (choiceId === 'A') {
+      // 煽る: 抗争を公式戦に仕立てる。両方向 hostility を強めに注入し、両派閥の勢いをブースト、
+      //        ロッカールーム士気は -3〜-5（社長が火に油を注いだ代償）。
+      //        factionPendingIgnite を立て、次週以降のメイン自動組込み検出に使う（Step 3 で消費）。
+      const h1 = 55 + Math.floor(Engine.rng.float(rng) * 16);      // 55〜70
+      const h2 = 55 + Math.floor(Engine.rng.float(rng) * 16);      // 55〜70
+      s = this.applyHostilityChange(s, A.id, B.id, h1);
+      s = this.applyHostilityChange(s, B.id, A.id, h2);
+      const mA = 10 + Math.floor(Engine.rng.float(rng) * 11);      // +10〜+20
+      const mB = 10 + Math.floor(Engine.rng.float(rng) * 11);
+      s = this.applyMomentumChange(s, A.id, mA);
+      s = this.applyMomentumChange(s, B.id, mB);
+      const moralePen = -(3 + Math.floor(Engine.rng.float(rng) * 3)); // -3〜-5
+      s = this._applyLockerRoomMorale(s, moralePen);
+      // 発火予約（Step 3 で消費する）。期限は 4 週（興行が挟まれなければ失効）
+      const now = this._absWeek(s);
+      s = {
+        ...s,
+        factionPendingIgnite: {
+          factionAId: A.id, factionBId: B.id,
+          leaderAId, leaderBId,
+          factionAName: factionAName || A.name, factionBName: factionBName || B.name,
+          scheduledFromWeek: now,
+          expireWeek: now + 4,
+        },
+      };
       return {
         state: s,
-        resultText: choiceId === 'A'
-          ? `${leaderAName}側に立つ方針を取った。${leaderBName}には割り切った眼差しが残る。`
-          : `${leaderBName}側に立つ方針を取った。${leaderAName}には割り切った眼差しが残る。`,
+        resultText: `${leaderAName}と${leaderBName}の争いをリングに持ち込む方針を取った。観客はこの火種を見逃さないだろう。`,
       };
     }
-    if (choiceId === 'C') {
+    if (choiceId === 'B') {
+      // 仲裁: 両リーダーを呼び出して矛を収めさせる。対立度は低めに残し、仲裁労で両者に一時的な不満、勢いは 0 リセット。
+      //        f02MediationWatches に登録し、8〜12週以内に hostility 減衰＋士気維持なら F02② peace 発火（Step 4 で消費）。
       const t1 = -(3 + Math.floor(Engine.rng.float(rng) * 3));
       const t2 = -(3 + Math.floor(Engine.rng.float(rng) * 3));
       s = this._applyTrustToMembers(s, [leaderAId], t1);
       s = this._applyTrustToMembers(s, [leaderBId], t2);
-      const h = 30 + Math.floor(Engine.rng.float(rng) * 16);
-      s = this.applyHostilityChange(s, A.id, B.id, h);
-      s = this.applyHostilityChange(s, B.id, A.id, h);
-      return { state: s, resultText: `両者を呼び出し、団体のために筋を通させた。空気は張り詰めたまま。` };
+      const h1 = 30 + Math.floor(Engine.rng.float(rng) * 16);  // 30〜45
+      const h2 = 30 + Math.floor(Engine.rng.float(rng) * 16);
+      s = this.applyHostilityChange(s, A.id, B.id, h1);
+      s = this.applyHostilityChange(s, B.id, A.id, h2);
+      // 勢いは 0 リセット（両派閥）
+      s = this.applyMomentumChange(s, A.id, -A.momentum);
+      s = this.applyMomentumChange(s, B.id, -B.momentum);
+      // peace watch 登録
+      const now = this._absWeek(s);
+      const hABBase = (s.factionHostility || {})[this._hostKey(A.id, B.id)] || 0;
+      const hBABase = (s.factionHostility || {})[this._hostKey(B.id, A.id)] || 0;
+      const watches = Array.isArray(s.f02MediationWatches) ? s.f02MediationWatches.slice() : [];
+      // 同ペアの重複は排除
+      const pairKey = this._sortedPairKey(A.id, B.id);
+      const filtered = watches.filter(w => this._sortedPairKey(w.factionAId, w.factionBId) !== pairKey);
+      filtered.push({
+        factionAId: A.id, factionBId: B.id,
+        leaderAId, leaderBId,
+        factionAName: factionAName || A.name, factionBName: factionBName || B.name,
+        baseHostilityAB: hABBase, baseHostilityBA: hBABase,
+        startWeek: now,
+        deadlineWeek: now + 12,
+      });
+      s = { ...s, f02MediationWatches: filtered };
+      return { state: s, resultText: `両者を呼び出し、団体のために筋を通させた。火種は残ったが、空気はひとまず収まった。` };
     }
-    // 'D' 静観
+    // 'C' 介入しない: 対立度は平均 rivalry を継承、勢いは 0、trust 変動なし
     const inherit = Math.max(0, Math.min(100, Math.round(avgCrossRivalry || 0)));
     if (inherit > 0) {
       s = this.applyHostilityChange(s, A.id, B.id, inherit);
@@ -1359,6 +1506,322 @@ Engine.factions = {
       if (!validKeys.has(key)) delete streaks[key];
     }
     return { ...state, factionReconciliationStreak: streaks };
+  },
+
+  // ── §9.11 F02④ endless streak 更新（週次、両方向hostility平均≥55を連続カウント） ──
+  updateF02EndlessStreaks(state) {
+    const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
+    const streaks = { ...(state.factionEndlessStreak || {}) };
+    const validKeys = new Set();
+    for (let i = 0; i < factions.length; i++) {
+      for (let j = i + 1; j < factions.length; j++) {
+        const A = factions[i], B = factions[j];
+        if (!this._isHostile(A) || !this._isHostile(B)) continue;
+        const hAB = (state.factionHostility || {})[this._hostKey(A.id, B.id)] || 0;
+        const hBA = (state.factionHostility || {})[this._hostKey(B.id, A.id)] || 0;
+        const avg = (hAB + hBA) / 2;
+        const pairKey = this._sortedPairKey(A.id, B.id);
+        if (avg >= cfg.f02EndlessHostilityMinAverage) {
+          streaks[pairKey] = (streaks[pairKey] || 0) + 1;
+          validKeys.add(pairKey);
+        } else {
+          if (streaks[pairKey]) delete streaks[pairKey];
+        }
+      }
+    }
+    for (const key of Object.keys(streaks)) {
+      if (!validKeys.has(key)) delete streaks[key];
+    }
+    return { ...state, factionEndlessStreak: streaks };
+  },
+
+  // ── §9.11 F02④ endless 発火条件チェック ──
+  _f02EndlessKey(fAId, fBId) { return `F02E:${this._sortedPairKey(fAId, fBId)}`; },
+  checkF02EndlessCondition(state) {
+    const cfg = FACTION_CONFIG;
+    const streaks = state.factionEndlessStreak || {};
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+    for (const [pairKey, weekCount] of Object.entries(streaks)) {
+      if (weekCount < cfg.f02EndlessStreakWeeks) continue;
+      const [idAStr, idBStr] = pairKey.split('|');
+      const idA = Number(idAStr), idB = Number(idBStr);
+      const facA = factions.find(f => f.id === idA);
+      const facB = factions.find(f => f.id === idB);
+      if (!facA || !facB) continue;
+      if (!this._isHostile(facA) || !this._isHostile(facB)) continue;
+      const cdKey = this._f02EndlessKey(idA, idB);
+      if (!this._isCooldownReady(state, cdKey, cfg.f02EndlessCooldown)) continue;
+      const leaderA = roster.find(c => c.id === facA.leaderId);
+      const leaderB = roster.find(c => c.id === facB.leaderId);
+      return {
+        eligible: true,
+        factionAId: idA, factionBId: idB,
+        factionAName: facA.name, factionBName: facB.name,
+        leaderAId: facA.leaderId, leaderBId: facB.leaderId,
+        leaderAName: leaderA ? leaderA.name : '???',
+        leaderBName: leaderB ? leaderB.name : '???',
+        weeksContinued: weekCount,
+      };
+    }
+    return { eligible: false };
+  },
+
+  // ── §9.11 F02④ endless 結果適用（UI "続ける" で実効）──
+  applyF02EndlessResult(state, payload, rng) {
+    if (!payload) return { state, resultText: '' };
+    const { factionAId, factionBId, factionAName, factionBName } = payload;
+    let s = state;
+    const factions = s.factions || [];
+    const facA = factions.find(f => f.id === factionAId);
+    const facB = factions.find(f => f.id === factionBId);
+    if (!facA || !facB) return { state: s, resultText: '' };
+
+    // CD マーク
+    s = this._markCooldown(s, this._f02EndlessKey(factionAId, factionBId));
+
+    // 両派閥メンバーに mentalCoeff -0.02（cap あり）
+    const affectedIds = new Set([...facA.memberIds, ...facB.memberIds]);
+    const roster = (s.roster || []).map(c => {
+      if (!affectedIds.has(c.id)) return c;
+      const cur = typeof c.mentalCoeff === 'number' ? c.mentalCoeff : 1.0;
+      const next = Math.max(0.85, cur - 0.02);
+      return { ...c, mentalCoeff: next };
+    });
+    s = { ...s, roster };
+
+    // factionTimeline に ENDLESS エントリ追記
+    if (Array.isArray(s.factionTimeline)) {
+      s = {
+        ...s,
+        factionTimeline: [
+          ...s.factionTimeline,
+          {
+            type: 'F02_ENDLESS',
+            season: s.season, week: s.week,
+            factionAId, factionBId,
+            weeksContinued: payload.weeksContinued,
+          },
+        ],
+      };
+    }
+
+    // streak カウンタリセット（次の52週を再カウント）
+    if (s.factionEndlessStreak) {
+      const updated = { ...s.factionEndlessStreak };
+      delete updated[this._sortedPairKey(factionAId, factionBId)];
+      s = { ...s, factionEndlessStreak: updated };
+    }
+
+    if (typeof console !== 'undefined') {
+      console.log(`[WM Faction] F02 endless triggered: ${factionAName} vs ${factionBName} (${payload.weeksContinued}週)`);
+    }
+
+    return {
+      state: s,
+      resultText: `「${factionAName}」と「${factionBName}」の抗争は、もはや決着の気配すら見せない。終わらない戦いが、団体の空気を重くしていく。`,
+    };
+  },
+
+  // ── §9.11 F02① ignite 検出: 興行カードに両リーダーの試合が組まれているか ──
+  // 返り値: { eligible: true, payload } | { eligible: false }
+  checkF02IgniteTrigger(state, showCard) {
+    const pi = state.factionPendingIgnite;
+    if (!pi) return { eligible: false };
+    if (!Array.isArray(showCard) || showCard.length === 0) return { eligible: false };
+    const { leaderAId, leaderBId } = pi;
+    // showCard には left/right (シングル) と teamA/teamB (タッグ) が混在。ここではシングルのみ判定。
+    const hit = showCard.some(m => {
+      if (!m || m.matchType === 'tag') return false;
+      return (m.left === leaderAId && m.right === leaderBId) ||
+             (m.left === leaderBId && m.right === leaderAId);
+    });
+    if (!hit) return { eligible: false };
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+    const facA = factions.find(f => f.id === pi.factionAId);
+    const facB = factions.find(f => f.id === pi.factionBId);
+    if (!facA || !facB) return { eligible: false };
+    const hAB = (state.factionHostility || {})[this._hostKey(facA.id, facB.id)] || 0;
+    const hBA = (state.factionHostility || {})[this._hostKey(facB.id, facA.id)] || 0;
+    const membersA = facA.memberIds.map(id => (roster.find(c => c.id === id) || {}).name).filter(Boolean);
+    const membersB = facB.memberIds.map(id => (roster.find(c => c.id === id) || {}).name).filter(Boolean);
+    return {
+      eligible: true,
+      payload: {
+        factionAId: facA.id, factionBId: facB.id,
+        leaderAId, leaderBId,
+        leaderAName: (roster.find(c => c.id === leaderAId) || {}).name || '???',
+        leaderBName: (roster.find(c => c.id === leaderBId) || {}).name || '???',
+        factionAName: facA.name, factionBName: facB.name,
+        hostilityA: hAB, hostilityB: hBA,
+        membersA, membersB,
+      },
+    };
+  },
+
+  // ── §9.11 F02① ignite 結果適用（UI "続ける" で実効）──
+  applyF02IgniteResult(state, payload, rng) {
+    if (!payload) return { state, resultText: '' };
+    const { factionAId, factionBId, factionAName, factionBName } = payload;
+    let s = state;
+    const factions = s.factions || [];
+    const facA = factions.find(f => f.id === factionAId);
+    const facB = factions.find(f => f.id === factionBId);
+    if (!facA || !facB) return { state: s, resultText: '' };
+
+    // hostility +12 両方向（火種が公式戦になって悪化）
+    s = this.applyHostilityChange(s, facA.id, facB.id, 12);
+    s = this.applyHostilityChange(s, facB.id, facA.id, 12);
+
+    // factionTimeline に IGNITE エントリ追記
+    if (Array.isArray(s.factionTimeline)) {
+      s = {
+        ...s,
+        factionTimeline: [
+          ...s.factionTimeline,
+          {
+            type: 'F02_IGNITE',
+            season: s.season, week: s.week,
+            factionAId, factionBId,
+          },
+        ],
+      };
+    }
+
+    // 発火予約を消費（どちらのケースでも1回限り）
+    const { factionPendingIgnite: _, ...rest } = s;
+    s = rest;
+
+    if (typeof console !== 'undefined') {
+      console.log(`[WM Faction] F02 ignite fired: ${factionAName} vs ${factionBName}`);
+    }
+
+    return {
+      state: s,
+      resultText: `${factionAName}と${factionBName}の火種は、ついにリングで燃え上がる。`,
+    };
+  },
+
+  // ── §9.11 F02② peace 期限切れ watch を一掃（management.js パイプライン用） ──
+  sweepF02PeaceWatches(state) {
+    const watches = Array.isArray(state.f02MediationWatches) ? state.f02MediationWatches : [];
+    if (watches.length === 0) return state;
+    const now = this._absWeek(state);
+    const kept = watches.filter(w => !(typeof w.deadlineWeek === 'number' && now > w.deadlineWeek));
+    if (kept.length === watches.length) return state;
+    return { ...state, f02MediationWatches: kept };
+  },
+
+  // ── §9.11 F02② peace 発火条件チェック（pickWeeklyEvent 用、純粋関数） ──
+  // 条件: hostility 両方向とも base から -20 以上減衰 + state.lockerRoomMorale >= 55
+  // 返り値: { eligible: bool, payload? }
+  checkF02PeaceConditions(state) {
+    const watches = Array.isArray(state.f02MediationWatches) ? state.f02MediationWatches : [];
+    if (watches.length === 0) return { eligible: false };
+    const morale = typeof state.lockerRoomMorale === 'number' ? state.lockerRoomMorale : 60;
+    if (morale < 55) return { eligible: false };
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+    for (const w of watches) {
+      const facA = factions.find(f => f.id === w.factionAId);
+      const facB = factions.find(f => f.id === w.factionBId);
+      if (!facA || !facB) continue;
+      const hAB = (state.factionHostility || {})[this._hostKey(facA.id, facB.id)] || 0;
+      const hBA = (state.factionHostility || {})[this._hostKey(facB.id, facA.id)] || 0;
+      const dropAB = w.baseHostilityAB - hAB;
+      const dropBA = w.baseHostilityBA - hBA;
+      if (dropAB >= 20 && dropBA >= 20) {
+        return {
+          eligible: true,
+          payload: {
+            factionAId: facA.id, factionBId: facB.id,
+            leaderAId: w.leaderAId, leaderBId: w.leaderBId,
+            leaderAName: (roster.find(c => c.id === w.leaderAId) || {}).name || '???',
+            leaderBName: (roster.find(c => c.id === w.leaderBId) || {}).name || '???',
+            factionAName: facA.name, factionBName: facB.name,
+          },
+        };
+      }
+    }
+    return { eligible: false };
+  },
+
+  // ── §9.11 F02② peace 結果適用（UI "続ける" で実効）──
+  applyF02PeaceResult(state, payload, rng) {
+    if (!payload) return { state, resultText: '' };
+    const { factionAId, factionBId, leaderAId, leaderBId, factionAName, factionBName } = payload;
+    let s = state;
+    const factions = s.factions || [];
+    const facA = factions.find(f => f.id === factionAId);
+    const facB = factions.find(f => f.id === factionBId);
+    if (!facA || !facB) return { state: s, resultText: '' };
+
+    // hostility -40 両方向
+    s = this.applyHostilityChange(s, facA.id, facB.id, -40);
+    s = this.applyHostilityChange(s, facB.id, facA.id, -40);
+    // momentum = 0 リセット
+    s = this.applyMomentumChange(s, facA.id, -facA.momentum);
+    s = this.applyMomentumChange(s, facB.id, -facB.momentum);
+    // inHostility を解除（冷戦終結）
+    s = {
+      ...s,
+      factions: (s.factions || []).map(f => {
+        if (f.id === factionAId || f.id === factionBId) return { ...f, inHostility: false };
+        return f;
+      }),
+    };
+    // 両リーダー間 bond +3
+    if (leaderAId != null && leaderBId != null) {
+      s = this._applyBondDirected(s, leaderAId, leaderBId, 3);
+      s = this._applyBondDirected(s, leaderBId, leaderAId, 3);
+    }
+
+    // 対応する watch を削除
+    if (Array.isArray(s.f02MediationWatches)) {
+      const pairKey = this._sortedPairKey(factionAId, factionBId);
+      const kept = s.f02MediationWatches.filter(w => this._sortedPairKey(w.factionAId, w.factionBId) !== pairKey);
+      s = { ...s, f02MediationWatches: kept };
+    }
+
+    if (Array.isArray(s.factionTimeline)) {
+      s = {
+        ...s,
+        factionTimeline: [
+          ...s.factionTimeline,
+          {
+            type: 'F02_PEACE',
+            season: s.season, week: s.week,
+            factionAId, factionBId,
+          },
+        ],
+      };
+    }
+
+    if (typeof console !== 'undefined') {
+      console.log(`[WM Faction] F02 peace fired: ${factionAName} vs ${factionBName}`);
+    }
+
+    return {
+      state: s,
+      resultText: `${factionAName}と${factionBName}の対立は、社長の仲裁によって沈静化した。まだ完全な和解ではないが、互いに矛を収める段階に入った。`,
+    };
+  },
+
+  // ── §9.11 F02① ignite 期限切れ: 4週経過しても興行が挟まれなければ失効 ──
+  expireF02PendingIgnite(state) {
+    const pi = state.factionPendingIgnite;
+    if (!pi) return state;
+    const now = this._absWeek(state);
+    if (typeof pi.expireWeek === 'number' && now > pi.expireWeek) {
+      const { factionPendingIgnite: _, ...rest } = state;
+      if (typeof console !== 'undefined') {
+        console.log(`[WM Faction] F02 pending ignite expired (${pi.factionAName} vs ${pi.factionBName})`);
+      }
+      return rest;
+    }
+    return state;
   },
 
   // ── §9.7 F07 リーダーの横暴 ──

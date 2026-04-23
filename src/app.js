@@ -4635,6 +4635,14 @@ const App = {
     // Phase 4: 興行前の連敗数を記録（C-05/C-06判定用）
     const preShowLosingStreaks = new Map(roster.map(c => [c.id, c.losingStreak || 0]));
 
+    // ── v4 §2-1: F02① ignite 判定（リーダー同士のカードが組まれていれば発火） ──
+    if (Engine.factions && typeof Engine.factions.checkF02IgniteTrigger === 'function' && !s._pendingFactionEvent) {
+      const ig = Engine.factions.checkF02IgniteTrigger(s, validMatches);
+      if (ig.eligible) {
+        s = { ...s, _pendingFactionEvent: { eventId: 'F02_IGNITE', payload: ig.payload } };
+      }
+    }
+
     // Rivalry & coach bonuses (タッグはスキップ)
     const confrontationPairs = sp.confrontationPairs || [];
     const deferredRivalryIdxs = []; // 因縁決着候補ペアの recordRivalry を MQ確定後まで保留
@@ -5035,6 +5043,20 @@ const App = {
       if (executed && typeof console !== 'undefined') console.log('[WM Faction] F08 directive resolved by direct match');
       const { _pendingF08Directive: _, ...rest } = s;
       s = rest;
+    }
+
+    // ── v4 §2-1: F02③ 決着 判定（リーダー同士の敵対試合で両方向hostility≥60） ──
+    if (Engine.factions && typeof Engine.factions.rollResolutionAfterMatch === 'function' && !s._pendingFactionEvent) {
+      for (let i = 0; i < validMatches.length; i++) {
+        const m = validMatches[i]; const r = results[i];
+        if (!m || !r || m.matchType === 'tag') continue;
+        const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : null);
+        const loserId  = r.winner === 'left' ? m.right : (r.winner === 'right' ? m.left : null);
+        const isDraw = r.winner === 'draw';
+        const res = Engine.factions.rollResolutionAfterMatch(s, { winnerId, loserId, isDraw });
+        s = res.state;
+        if (res.pendingEvent) { s = { ...s, _pendingFactionEvent: res.pendingEvent }; break; }
+      }
     }
 
     // v1.2: タイトルマッチ実施時に絶対週数を記録
@@ -7229,6 +7251,50 @@ const App = {
         renderWeekScreen();
         showFactionEventResult(result.resultText, () => {});
       });
+    } else if (eventId === 'F02_PEACE') {
+      // v4 §2-1: F02② 沈静化（通知のみ・選択肢なし）
+      showFactionF02PeaceModal(payload, G, () => {
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA27));
+        const result = Engine.factions.applyF02PeaceResult(G, payload, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F02_IGNITE') {
+      // v4 §2-1: F02① 発火（興行開始時、通知のみ・選択肢なし）
+      showFactionF02IgniteModal(payload, G, () => {
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA26));
+        const result = Engine.factions.applyF02IgniteResult(G, payload, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F02_RESOLUTION') {
+      // v4 §2-1: F02③ 決着（試合直後、通知のみ・選択肢なし）
+      showFactionF02ResolutionModal(payload, G, () => {
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA24));
+        const result = Engine.factions.applyF02ResolutionResult(G, payload, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
+    } else if (eventId === 'F02_ENDLESS') {
+      // v4 §2-1: F02④ 無限抗争（通知のみ・選択肢なし）
+      showFactionF02EndlessModal(payload, G, () => {
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA25));
+        const result = Engine.factions.applyF02EndlessResult(G, payload, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        showFactionEventResult(result.resultText, () => {});
+      });
     } else if (eventId === 'F03') {
       showFactionF03Modal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA33));
@@ -8336,6 +8402,19 @@ const App = {
           { min: 2, max: 4 }, { min: 0, max: 0 }, warRelRng);
       }
       G = { ...G, relationships: relState.relationships };
+    }
+
+    // ── v4 §2-1: F02③ 決着 判定（対抗戦） ──
+    if (Engine.factions && typeof Engine.factions.rollResolutionAfterMatch === 'function' && !G._pendingFactionEvent) {
+      for (let i = 0; i < wp.results.length; i++) {
+        const r = wp.results[i];
+        if (!r || !r.playerFighter || !r.aiFighter) continue;
+        const winnerId = r.playerWon ? r.playerFighter.id : r.aiFighter.id;
+        const loserId  = r.playerWon ? r.aiFighter.id : r.playerFighter.id;
+        const res = Engine.factions.rollResolutionAfterMatch(G, { winnerId, loserId, isDraw: false });
+        G = res.state;
+        if (res.pendingEvent) { G = { ...G, _pendingFactionEvent: res.pendingEvent }; break; }
+      }
     }
 
     Storage.autoSave();
