@@ -2,7 +2,7 @@
 
 **ファイル**：`docs/ui/03-screens/show-result.md`
 **最終更新**：2026-04-23 / v1.0
-**実装状況**：モックアップ確定・Phase別実装待ち（ハンドオフ: `plans/post-match-redesign-handoff.md`）
+**実装状況**：Phase 1（通常/特別興行）+ Phase 2（PPV/PPV TV）完了。Phase 3/4 未着手。詳細: `plans/post-match-redesign-session-handoff.md`
 
 ---
 
