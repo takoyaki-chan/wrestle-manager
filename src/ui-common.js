@@ -8412,144 +8412,113 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
   overlay.classList.add('active');
 }
 
-// ── B2 試合結果画面 (showResultOverlay) ──────────────────────────────────
+// ── B2 試合結果画面 (Pattern B: pb-container) ──────────────────────────────────
 function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
-  const pColor = '#9b59b6';
-  const eColor = '#e74c3c';
   const draw = matchResult.winner === 'draw';
-  const won1 = matchResult.winner === 'left'; // fighter1 won
+  const won1 = matchResult.winner === 'left';
   const winChar = won1 ? f1 : f2;
   const loseChar = won1 ? f2 : f1;
-  const winName = draw ? '' : winChar.name;
-  const loseName = draw ? '' : loseChar.name;
-  const borderColor = '#27ae60';
 
-  // ヘッダー
-  let html = `<div style="text-align:center;padding:8px 0 4px;border-bottom:2px solid ${borderColor};margin-bottom:12px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:#aaa">Conflict Resolution</div>
-    <div style="font-size:18px;font-weight:700;letter-spacing:3px;color:#e8e0d0">💥 決着の試合 — 結果</div>
-  </div>`;
+  const leftCls = draw ? 'is-draw' : (won1 ? 'is-winner' : 'is-loser');
+  const rightCls = draw ? 'is-draw' : (won1 ? 'is-loser' : 'is-winner');
 
-  // 介入バフ表示
-  if (interventionChoice === 0) {
-    html += `<div style="text-align:center;font-size:11px;color:#2ecc71;margin-bottom:8px">🤫 ${f1.name}を激励済み（OVR+5バフ）</div>`;
-  } else if (interventionChoice === 1) {
-    html += `<div style="text-align:center;font-size:11px;color:#2ecc71;margin-bottom:8px">🤫 ${f2.name}を激励済み（OVR+5バフ）</div>`;
-  }
-
-  // 勝者バッジ
-  if (draw) {
-    html += `<div style="text-align:center;padding:8px;font-size:16px;font-weight:700;color:#888">🤝 DRAW — 互いの実力を認め合った</div>`;
-  } else {
-    html += `<div style="text-align:center;padding:8px;font-size:16px;font-weight:700;color:#daa520">🏆 ${winName} 勝利</div>`;
-  }
-
-  // 選手肖像
-  const wSize = 120, lSize = 88;
+  let winLine = '', loseLine = '';
   if (!draw) {
-    const wFace = getPortraitUrl(winChar.id);
-    const lFace = getPortraitUrl(loseChar.id);
-    html += `<div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin:8px 0 12px">
-      <div style="text-align:center">
-        <div style="width:${wSize}px;height:${wSize}px;border-radius:50%;border:3px solid gold;box-shadow:0 0 12px rgba(218,165,32,0.4);overflow:hidden;margin:0 auto">
-          ${wFace ? `<img src="${wFace}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-        </div>
-        <div style="font-weight:700;font-size:14px;color:gold;margin-top:4px">${winName}</div>
-      </div>
-      <div style="text-align:center">
-        <div style="width:${lSize}px;height:${lSize}px;border-radius:50%;border:2px solid #555;opacity:0.7;overflow:hidden;margin:0 auto">
-          ${lFace ? `<img src="${lFace}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-        </div>
-        <div style="font-weight:600;font-size:12px;color:var(--text-sub);margin-top:4px">${loseName}</div>
-      </div>
-    </div>`;
-  } else {
-    const f1Face = getPortraitUrl(f1.id);
-    const f2Face = getPortraitUrl(f2.id);
-    html += `<div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin:8px 0 12px">
-      <div style="text-align:center">
-        <div style="width:100px;height:100px;border-radius:50%;border:2px solid #888;overflow:hidden;margin:0 auto">
-          ${f1Face ? `<img src="${f1Face}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-        </div>
-        <div style="font-weight:600;font-size:13px;color:var(--text-main);margin-top:4px">${f1.name}</div>
-      </div>
-      <div style="text-align:center">
-        <div style="width:100px;height:100px;border-radius:50%;border:2px solid #888;overflow:hidden;margin:0 auto">
-          ${f2Face ? `<img src="${f2Face}" alt="" style="width:100%;height:100%;object-fit:cover">` : ''}
-        </div>
-        <div style="font-weight:600;font-size:13px;color:var(--text-main);margin-top:4px">${f2.name}</div>
-      </div>
-    </div>`;
+    winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
+    loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
   }
+  const f1Line = draw ? '' : (won1 ? winLine : loseLine);
+  const f2Line = draw ? '' : (won1 ? loseLine : winLine);
+  const hasDialogue = !!(f1Line || f2Line);
 
-  // セリフ吹き出し（因縁系）
-  if (!draw) {
-    const winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
-    const loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
-    if (winLine) {
-      html += `<div style="background:#f0f0f0;border-radius:8px;padding:10px 14px;margin:0 8px 6px;text-align:center">
-        <div style="font-size:11px;font-weight:600;color:${won1 ? pColor : eColor};margin-bottom:2px">${winName}</div>
-        <div style="font-size:13px;color:#222">「${winLine}」</div>
-      </div>`;
-    }
-    if (loseLine) {
-      html += `<div style="background:#f0f0f0;border-radius:8px;padding:10px 14px;margin:0 8px 6px;text-align:center">
-        <div style="font-size:11px;font-weight:600;color:${won1 ? eColor : pColor};margin-bottom:2px">${loseName}</div>
-        <div style="font-size:13px;color:#222">「${loseLine}」</div>
-      </div>`;
-    }
-  }
+  let verdictLabel, verdictColor;
+  if (draw) { verdictLabel = '⚖ DRAW'; verdictColor = 'var(--c-warning)'; }
+  else { verdictLabel = `🏆 ${escHtml(winChar.name)}`; verdictColor = 'var(--gold)'; }
 
-  // 決まり手 + ターン数
-  const finLabel = Engine.formatFinish(matchResult.finType, matchResult.finMove);
-  html += `<div style="text-align:center;font-size:12px;color:var(--text-sub);margin:8px 0 4px">
-    ${finLabel} / ${matchResult.turns || '?'}ターン
-  </div>`;
+  let winnerLabel;
+  if (draw) winnerLabel = 'DRAW';
+  else winnerLabel = `🏆 ${escHtml(winChar.name)} WIN`;
 
-  // MQ
-  const _mqSc = _mqColor(matchResult.mq || 0);
-  const mqStars = matchResult.mq >= 90 ? '★★★★★' : matchResult.mq >= 80 ? '★★★★' : matchResult.mq >= 70 ? '★★★' : matchResult.mq >= 55 ? '★★' : matchResult.mq >= 40 ? '★' : '';
-  html += `<div style="text-align:center;font-size:14px;font-weight:700;${_scale6Style(_mqSc)};margin-bottom:8px">
-    ${mqStars ? `<span style="color:${_mqSc.color}">${mqStars}</span> ` : ''}MQ ${matchResult.mq || '?'}
-  </div>`;
+  // 介入ラベル
+  let interventionLabel = '放置（介入なし）';
+  if (interventionChoice === 0) interventionLabel = `🤫 ${f1.name}を激励`;
+  else if (interventionChoice === 1) interventionLabel = `🤫 ${f2.name}を激励`;
 
-  // HPバー
-  const hpL = matchResult.hpLeft || { final: 50, max: 100 };
-  const hpR = matchResult.hpRight || { final: 50, max: 100 };
-  html += _hpComparisonBar(f1.name, hpL, f2.name, hpR);
-
-  // 対立解決サマリーパネル
-  // 信頼/士気はマスクデータ。質的表現で表示し生数値は出さない(CLAUDE.md 数値哲学)
+  // 関係性変動 (ビジュアル向け簡略表記)
   const intensePenalty = interventionChoice !== 2 && ((interventionChoice === 0 && !won1) || (interventionChoice === 1 && won1));
-  html += `<div style="border:1px solid #27ae60;border-radius:8px;padding:10px 14px;margin:10px 8px;background:rgba(39,174,96,0.05)">
-    <div style="font-size:12px;font-weight:700;color:#27ae60;margin-bottom:6px">対立解決</div>`;
+  const relationText = draw ? '互いに認め合う' : (intensePenalty ? '深い亀裂' : '小さな揺らぎ');
+
+  let html = `<div class="pb-container">`;
+
+  html += `<div class="pb-banner">
+    <div class="pb-live is-b2">💥 CONFLICT RESOLUTION</div>
+    <div class="pb-banner-title is-b2">決 着 の 試 合 — 結 果</div>
+    <div class="pb-banner-sub">${escHtml(f1.name)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(f2.name)}</div>
+  </div>`;
+
+  // 介入選択バナー
+  if (interventionChoice === 0 || interventionChoice === 1) {
+    html += `<div class="pb-b2-intervention">${escHtml(interventionLabel)}（OVR+5バフ適用）</div>`;
+  }
+
+  // Scoreboard 4: Intervention / Verdict / MQ / Bond/Rivalry 変動
+  html += `<div class="pb-score-strip" style="grid-template-columns:1.3fr 1.2fr 1fr 1.2fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:13px;color:var(--stage-text-main)">${interventionChoice === 2 ? '放置' : (interventionChoice === 0 ? `${escHtml(f1.name)}激励` : `${escHtml(f2.name)}激励`)}</div>
+      <div class="pb-score-lbl">Intervention</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:${verdictColor};font-size:18px">${verdictLabel}</div>
+      <div class="pb-score-lbl">Result</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(matchResult.mq || 0)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${matchResult.mq || 0}</div>
+      <div class="pb-score-lbl">MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:13px;color:var(--c-rivalry)">${escHtml(relationText)}</div>
+      <div class="pb-score-lbl">Relationship</div>
+    </div>
+  </div>`;
+
+  // 試合行
+  html += `<div class="pb-matches">`;
+  html += `<div class="pb-divider is-main">💥 CONFLICT — 決着の試合</div>`;
+  html += `<div class="pb-mrow is-main is-b2${hasDialogue ? ' has-dialogue' : ''}">`;
+  html += _pbFighterBlock('left', f1, leftCls, f1.style || '—', f1Line);
+  html += _pbResultColumn({
+    winnerLabel,
+    winnerIsDraw: draw,
+    finishText: Engine.formatFinish(matchResult.finType, matchResult.finMove),
+    turns: matchResult.turns || 0,
+    mq: matchResult.mq || 0
+  });
+  html += _pbFighterBlock('right', f2, rightCls, f2.style || '—', f2Line);
+  if (matchResult.hpLeft && matchResult.hpRight) html += _pbHpMini(matchResult.hpLeft, matchResult.hpRight);
+  html += `</div>`;
+  html += `</div>`; // .pb-matches
+
+  // 対立解決サマリー (質的表現、数値非表示 — CLAUDE.md 数値哲学)
+  html += `<div class="pb-b2-resolution">
+    <div class="pb-b2-resolution-label">💭 対立解決</div>`;
   if (!draw) {
-    html += `<div style="font-size:11px;color:var(--text-main);line-height:1.8">
-      <div>✅ ${winName}: 信頼が大きく上がり、気持ちにも張りが戻った</div>
-      <div>❌ ${loseName}: ${intensePenalty ? '信頼が大きく揺らぎ、わだかまりを残した' : '信頼がわずかに揺らいだが、気持ちは立て直している'}</div>
-    </div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-positive)">✅</span><span><b>${escHtml(winChar.name)}</b>：信頼が大きく上がり、気持ちにも張りが戻った</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-negative)">❌</span><span><b>${escHtml(loseChar.name)}</b>：${intensePenalty ? '信頼が大きく揺らぎ、わだかまりを残した' : '信頼がわずかに揺らいだが、気持ちは立て直している'}</span></div>`;
   } else {
-    html += `<div style="font-size:11px;color:var(--text-main);line-height:1.8">
-      <div>🤝 ${f1.name}: 互いに力を認め合い、信頼が少し上がった</div>
-      <div>🤝 ${f2.name}: 互いに力を認め合い、信頼が少し上がった</div>
-    </div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f1.name)}</b>：互いに力を認め合い、信頼が少し上がった</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f2.name)}</b>：互いに力を認め合い、信頼が少し上がった</span></div>`;
   }
   html += `</div>`;
 
-  // 試合ログ
-  if (matchResult.log && matchResult.log.length > 0) {
-    html += `<details style="margin-top:8px;font-size:11px;color:var(--text-sub)">
-      <summary style="cursor:pointer;font-weight:600;padding:4px 0">試合ログ</summary>
-      <div style="max-height:200px;overflow-y:auto;padding:4px 8px;background:rgba(0,0,0,0.2);border-radius:4px;margin-top:4px">
-        ${matchResult.log.map(l => `<div>${l}</div>`).join('')}
-      </div>
-    </details>`;
-  }
+  // Footer
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.closeB2Result()">了解</button>
+  </div>`;
 
-  // 了解ボタン
-  html += `<button class="btn" style="width:100%;padding:10px;font-size:13px;font-weight:600;margin-top:12px" onclick="App.closeB2Result()">了解</button>`;
+  html += `</div>`; // .pb-container
 
   box.innerHTML = html;
   overlay.classList.add('active');
