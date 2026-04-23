@@ -213,42 +213,6 @@ function acceptWarChallenge() {
 
 // ── War Match Preview Renderer ──
 /** 対抗戦ヘッダー共通（試合進行・結果で再利用） */
-function _warHeader(orgCfg, playerOrgName, enemyOrgName, playerScore, enemyScore, resolved, total, statusCfg) {
-  const eColor = orgCfg.color || '#e74c3c';
-  const eLight = _lightenColor(eColor);
-  const pctFill = total > 0 ? Math.round(resolved / total * 100) : 0;
-  return `<div class="war-header">
-    <div class="war-header-bg">
-      <img src="../image/battle-bg_venue_4.webp" alt="" onerror="this.style.display='none'">
-      <div class="split-left" style="background:linear-gradient(90deg,rgba(52,152,219,0.2) 0%,rgba(52,152,219,0.05) 70%,transparent 100%)"></div>
-      <div class="split-right" style="background:linear-gradient(-90deg,${_rgba(eColor,0.25)} 0%,${_rgba(eColor,0.05)} 70%,transparent 100%)"></div>
-      <div class="vignette"></div>
-    </div>
-    <div class="war-header-content">
-      <div class="war-title-area">
-        <div class="war-sup" style="color:${eColor}">${statusCfg.supText || '⚔ Interpromotional War'}</div>
-        <div class="war-main-title">${statusCfg.mainTitle || '対 抗 戦'}</div>
-      </div>
-      <div class="scoreboard">
-        <div class="sb-side left">
-          <div class="sb-org-name" style="color:#74b9ff">${orgIconHtml('player', 36)}${playerOrgName}</div>
-          ${statusCfg.playerSub ? `<div class="sb-org-sub">${statusCfg.playerSub}</div>` : ''}
-        </div>
-        <div class="sb-center">
-          <div class="sb-ring" style="border:3px solid rgba(200,190,170,0.1);box-shadow:0 0 40px ${_rgba(eColor,0.2)},inset 0 0 30px rgba(0,0,0,0.5);background:radial-gradient(circle,rgba(16,16,30,0.95),rgba(10,10,20,0.98))">
-            ${statusCfg.scoreHtml || `<div class="sb-score"><span class="s-left" style="color:#74b9ff">${playerScore}</span><span class="s-dash">—</span><span class="s-right" style="color:${eLight}">${enemyScore}</span></div>`}
-            ${statusCfg.statusLabel || ''}
-          </div>
-        </div>
-        <div class="sb-side right">
-          <div class="sb-org-name" style="color:${eLight}">${orgIconHtml(orgCfg.id || '', 36)}${enemyOrgName}</div>
-          ${statusCfg.enemySub ? `<div class="sb-org-sub">${statusCfg.enemySub}</div>` : ''}
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="progress-bar"><div class="progress-fill" style="width:${pctFill}%;background:linear-gradient(90deg,#74b9ff,#3498db)"></div></div>`;
-}
 function _rgba(hex, a) {
   const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   return `rgba(${r},${g},${b},${a})`;
