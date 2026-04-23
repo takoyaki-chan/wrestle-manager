@@ -5647,6 +5647,29 @@ function _renderNextGrowthPopup() {
     btnLabel = '待ってた';
     tone = 'positive';
     Audio.play('event');
+  } else if (ev.type === 'milestone') {
+    const STAT_JA = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ', mn:'メンタル' };
+    let icon, label, isGold;
+    if (ev.subtype === 'ovr') {
+      icon = ev.value >= 95 ? '👑' : ev.value >= 80 ? '🏆' : '🏅';
+      label = `総合力 ${ev.value} 到達`;
+      isGold = ev.value >= 80;
+    } else if (ev.subtype === 'pop') {
+      icon = ev.value >= 80 ? '🌟' : '✨';
+      label = `人気 ${ev.value} 到達`;
+      isGold = ev.value >= 80;
+    } else {
+      icon = '⚡';
+      label = `${STAT_JA[ev.stat] || ev.stat} 極限到達`;
+      isGold = true;
+    }
+    title = `${icon} ${label}`;
+    message = ev.line || '';
+    detail = '';
+    btnLabel = isGold ? '素晴らしい' : 'よくやった';
+    tone = isGold ? 'milestone-gold' : 'milestone';
+    ev.category = 'MILESTONE';
+    Audio.play(isGold ? 'award' : 'event');
   }
 
   // 顔画像
@@ -5665,11 +5688,13 @@ function _renderNextGrowthPopup() {
   // スナップショット追記（あれば）
   const snapHtml = ev.snapshotText ? `<div class="log-snapshot" style="margin-top:8px;font-size:11px">\u{1F4AD} ${ev.snapshotText}</div>` : '';
 
+  const categoryHtml = ev.category ? `<div class="growth-event-category">${ev.category}</div>` : '';
   box.className = `growth-event-box ${tone}`;
   box.innerHTML = `
     <div class="growth-event-face">${faceHtml}</div>
     <div class="growth-event-name">${fighter ? fighter.name : ''}</div>
     ${hintHtml}
+    ${categoryHtml}
     <div class="growth-event-title">${title}</div>
     <div class="growth-event-msg">${message}</div>
     ${detail ? `<div class="growth-event-detail">${detail}</div>` : ''}
@@ -5935,11 +5960,17 @@ function showDecisionTargetModal(docId, state) {
 
   // 候補選手の絞り込み(書類別 + cooldown)
   const roster = state.roster || [];
-  let candidates = roster.filter(f => !f.isRental && !f.injury);
-  if (docId === 'bonus') {
-    candidates = candidates.filter(f => (f.trust != null ? f.trust : 50) < 60);
-  } else if (docId === 'encourage' || docId === 'refresh_leave') {
-    candidates = candidates.filter(f => f.slump || f.motivationLoss);
+  let candidates;
+  if (docId === 'special_treatment') {
+    // 例外: 怪我中(残り2週間以上)の選手のみが対象
+    candidates = roster.filter(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+  } else {
+    candidates = roster.filter(f => !f.isRental && !f.injury);
+    if (docId === 'bonus') {
+      candidates = candidates.filter(f => (f.trust != null ? f.trust : 50) < 60);
+    } else if (docId === 'encourage' || docId === 'refresh_leave') {
+      candidates = candidates.filter(f => f.slump || f.motivationLoss);
+    }
   }
   // cooldown 除外(選手単位)
   const cooldown = doc.cooldown != null ? doc.cooldown : 1;
@@ -5975,6 +6006,9 @@ function showDecisionTargetModal(docId, state) {
     let statusCls = '';
     if (docId === 'encourage' || docId === 'refresh_leave') {
       statusLabel = f.slump ? 'スランプ' : 'モチベ喪失';
+      statusCls = ' slump';
+    } else if (docId === 'special_treatment' && f.injury) {
+      statusLabel = `全治${f.injury.weeksLeft || '?'}週`;
       statusCls = ' slump';
     }
     // bonus/trainer/media はラベルなし(信頼度は絶対に出さない)

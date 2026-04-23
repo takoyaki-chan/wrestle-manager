@@ -13575,6 +13575,12 @@ Engine.shachoshitsu = {
       return morale < 60;
     }
 
+    // has_injured: 怪我で離脱中(残り2週間以上)の「現役・非レンタル」選手が1人以上
+    // 1週間の怪我に特別治療を使う意味がない(短縮後も最低1週残る)ため、2週以上に限定
+    if (cond === 'has_injured') {
+      return roster.some(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+    }
+
     // 未知の条件IDは「発動不可」として安全側に倒す
     return false;
   },
@@ -13770,6 +13776,20 @@ Engine.shachoshitsu = {
         f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', gb.weeks, currentFinalMult);
         f._trainerBuff = { weeksLeft: gb.weeks, mult: gb.mult };
         events.push(`💪 ${f.name}に専属トレーナー(${gb.weeks}週間 成長+${Math.round((gb.mult - 1) * 100)}%)`);
+      } else if (docId === 'special_treatment') {
+        // 怪我選手の回復期間を確率ベースで短縮(executeSpecialTreatment と同じロジック)
+        if (!f.injury) return { error: 'not_injured' };
+        const cur = f.injury.weeksLeft || 0;
+        const healRng = Engine.rng.create(
+          Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xBE60, fighterId)
+        );
+        const roll = Engine.rng.float(healRng);
+        let reduction = roll < 0.30 ? 1 : roll < 0.60 ? 2 : roll < 0.85 ? 3 : 4;
+        if (cur >= 8) reduction += 1;
+        const reduced = Math.max(1, cur - reduction);
+        f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
+        events.push(`🏥 ${f.name}に特別治療を実施(${cur}週→${reduced}週)`);
+        changes.push({ label: '離脱期間', emoji: '🏥', text: `${cur}週 → ${reduced}週に短縮` });
       } else if (docId === 'media') {
         // Phase 8: condition/orgPopDelta は固定、trust のみ不確実性
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('media', f);
@@ -13806,9 +13826,10 @@ Engine.shachoshitsu = {
         }
         changes.push({ label: '信頼度', emoji: '🤝', text: trustText });
         changes.push({ label: '成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
-      } else if (_after.trust !== _before.trust) {
+      } else if (docId !== 'special_treatment' && _after.trust !== _before.trust) {
         // bonus / refresh_leave / encourage / media は従来通り即時表示
         // describeChange は最終 delta の大きさから質的表現を返すので、不確実性は自然に反映される
+        // special_treatment は trust に触れないので除外(変化通知が出ないようにする)
         changes.push({ label: '信頼度', emoji: '🤝', text: Engine.trust.describeChange(_after.trust - _before.trust) });
       }
       if (_after.condition !== _before.condition) {

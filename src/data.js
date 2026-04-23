@@ -12436,7 +12436,7 @@ const NOTIF_DIALOGUES = {
 // 「💬 声をかける」として直接実行される(社長自らの自発的行動)。
 // DECISION_DOCS.encourage の定義自体は Engine.shachoshitsu.execute で再利用される。
 const DECISION_DOC_ORDER = [
-  'bonus', 'refresh_leave', 'party',
+  'bonus', 'refresh_leave', 'special_treatment', 'party',
   'trainer', 'camp', 'media',
 ];
 
@@ -12476,6 +12476,23 @@ const DECISION_DOCS = {
     effectSummary: '信頼がわずかに上がる(スランプ/モチベ喪失なら回復促進も)',
     recommendation: '気になる選手のポップアップから直接実行する。机には並ばない。',
     effect: { target: 'individual', trust: 0.77, slumpMomentum: { high: 4.0, low: 2.5 } },
+  },
+  special_treatment: {
+    id: 'special_treatment',
+    label: '特別治療指示書',
+    category: 'care',
+    categoryLabel: '選手ケア',
+    icon: '🏥',
+    cost: 200,
+    decisionCost: 1,
+    activationCondition: 'has_injured',
+    minOrgPop: 0,
+    cooldown: 1,
+    body: '離脱中の選手に専門医を手配し、復帰を早める',
+    detailText: '専門医による集中ケアを正式に発注。怪我からの離脱期間を確率的に短縮する、復帰前倒しの一手。確実な短縮量は治療結果次第。',
+    effectSummary: '対象選手の離脱期間が1〜4週短縮される',
+    recommendation: '主力選手や王座挑戦が控えている選手の離脱が痛手なときに。離脱が長引いている怪我ほど短縮量も大きくなりやすい。',
+    effect: { target: 'individual', special: 'treatment' },
   },
   refresh_leave: {
     id: 'refresh_leave',
@@ -12599,12 +12616,12 @@ const DECISION_DOCS = {
 // 性格 × 書類 マトリクス (6性格 × 7書類)
 // spec §6.3 の shy は project に存在しないため除外。
 const DECISION_PERSONALITY_MULT = {
-  normal:    { bonus: 1.00, encourage: 1.00, refresh_leave: 1.00, party: 1.00, trainer: 1.00, camp: 1.00, media: 1.00 },
-  bold:      { bonus: 0.80, encourage: 0.70, refresh_leave: 0.90, party: 1.00, trainer: 1.20, camp: 1.20, media: 1.00 },
-  quiet:     { bonus: 1.00, encourage: 1.20, refresh_leave: 1.10, party: 0.70, trainer: 1.00, camp: 0.90, media: 0.60 },
-  easygoing: { bonus: 1.10, encourage: 1.00, refresh_leave: 1.00, party: 1.20, trainer: 0.90, camp: 1.10, media: 1.10 },
-  earnest:   { bonus: 0.90, encourage: 1.20, refresh_leave: 1.10, party: 0.90, trainer: 1.30, camp: 1.20, media: 1.00 },
-  emotional: { bonus: 1.30, encourage: 1.40, refresh_leave: 1.20, party: 1.10, trainer: 1.00, camp: 1.10, media: 1.20 },
+  normal:    { bonus: 1.00, encourage: 1.00, refresh_leave: 1.00, special_treatment: 1.00, party: 1.00, trainer: 1.00, camp: 1.00, media: 1.00 },
+  bold:      { bonus: 0.80, encourage: 0.70, refresh_leave: 0.90, special_treatment: 1.00, party: 1.00, trainer: 1.20, camp: 1.20, media: 1.00 },
+  quiet:     { bonus: 1.00, encourage: 1.20, refresh_leave: 1.10, special_treatment: 1.00, party: 0.70, trainer: 1.00, camp: 0.90, media: 0.60 },
+  easygoing: { bonus: 1.10, encourage: 1.00, refresh_leave: 1.00, special_treatment: 1.00, party: 1.20, trainer: 0.90, camp: 1.10, media: 1.10 },
+  earnest:   { bonus: 0.90, encourage: 1.20, refresh_leave: 1.10, special_treatment: 1.00, party: 0.90, trainer: 1.30, camp: 1.20, media: 1.00 },
+  emotional: { bonus: 1.30, encourage: 1.40, refresh_leave: 1.20, special_treatment: 1.00, party: 1.10, trainer: 1.00, camp: 1.10, media: 1.20 },
 };
 
 // アーキタイプ × 書類 マトリクス (normal 以外の4種)
@@ -13368,6 +13385,51 @@ const CARE_REACTION_DIALOGUES = {
         '休暇……っ……気を遣ってくれたのね、ふふ、嬉しいわ……'
       ],
     }
+  },
+  special_treatment: {
+    normal: {
+      _default: [
+        '専門の先生まで…ありがとうございます。早く戻ります',
+        'こんなに気にかけていただけるなんて…必ず復帰します',
+      ],
+      polite: ['ご丁寧な治療を…ありがとうございます。一日でも早く戻ります'],
+      ojousama: ['まあ…そこまでしてくださるなんて。早く戻りますわ'],
+      composed: ['…ありがとう。リング、待たせちゃ悪いね'],
+    },
+    bold: {
+      _default: [
+        '早く戻る…！ こんなとこで止まってられない！',
+        'すぐ治します！次の試合は絶対ものにする！',
+      ],
+      delinquent: ['しゃあ！すぐ治して暴れに戻るぜ！'],
+      cool: ['…無駄にはしない。すぐ戻る'],
+      composed: ['…早く戻るよ。ありがとう'],
+    },
+    quiet: {
+      _default: ['…ありがとうございます。早く、戻ります'],
+      cool: ['…感謝する。早く戻る'],
+      polite: ['…そんなに気遣っていただいて。早く戻ります'],
+    },
+    easygoing: {
+      _default: ['うわ、専門医まで…！ 早く戻りますね〜！'],
+      delinquent: ['マジか！すぐ治してくる！'],
+      seductive: ['ふふ、こんなに大事にされたら、頑張らなきゃ'],
+    },
+    earnest: {
+      _default: [
+        'こんなに気にかけてもらえるなんて…必ず期待に応えます',
+        '…私のためにここまで…早く戻って、結果でお返しします',
+      ],
+      polite: ['…ご厚意に甘えます。必ず復帰してお返しいたします'],
+      ojousama: ['そこまでお気遣いを…必ずや復帰してお応えしますわ'],
+      composed: ['…そこまでしてくれるんだ。早く戻って返すよ'],
+    },
+    emotional: {
+      _default: [
+        '…っ、こんなにしてもらって…っ、絶対早く戻ります…！',
+      ],
+      seductive: ['そこまで…してくれるの…っ、嬉しい……早く戻るわ……'],
+    },
   },
   party: {
     normal: {

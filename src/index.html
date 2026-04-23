@@ -1637,6 +1637,16 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .growth-event-box.slump-end{border-color:rgba(46,204,113,0.35);box-shadow:0 0 22px rgba(46,204,113,0.1)}
 .growth-event-box.motivation-loss{border-color:rgba(149,165,166,0.35)}
 .growth-event-box.motivation-recovery{border-color:rgba(46,204,113,0.35);box-shadow:0 0 22px rgba(46,204,113,0.1)}
+.growth-event-box.milestone-gold{border-color:rgba(212,168,67,0.55);box-shadow:0 0 44px rgba(212,168,67,0.25),inset 0 0 32px rgba(212,168,67,0.04);
+  background:linear-gradient(180deg,rgba(212,168,67,0.04),var(--panel-bg) 40%)}
+.growth-event-box.milestone-gold .growth-event-title{color:var(--gold-light);text-shadow:0 0 18px rgba(240,208,120,0.35)}
+.growth-event-box.milestone-gold .growth-event-face{border-color:rgba(212,168,67,0.55);box-shadow:0 0 22px rgba(212,168,67,0.22)}
+.growth-event-box.milestone{border-color:rgba(74,143,212,0.38);box-shadow:0 0 28px rgba(74,143,212,0.14)}
+.growth-event-box.milestone .growth-event-title{color:var(--blue)}
+.growth-event-box.milestone .growth-event-face{border-color:rgba(74,143,212,0.35)}
+.growth-event-category{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:4px;
+  color:var(--gold);margin-bottom:6px;text-transform:uppercase;opacity:0.8}
+.growth-event-box.milestone .growth-event-category{color:var(--blue)}
 .growth-event-face{width:120px;height:120px;border-radius:50%;margin:0 auto 14px;
   border:3px solid rgba(200,190,170,0.15);overflow:hidden;background:var(--card-bg)}
 .growth-event-face img{width:100%;height:100%;object-fit:cover}
@@ -4756,7 +4766,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <p>専属トレーナー・合宿は「刺した瞬間に信頼が上がる」のではなく、<strong>バフ期間中にじわじわと信頼が育っていく</strong>設計です。トレーナーなら4週間、合宿なら2週間かけて、選手は「社長が投資してくれている」と実感していきます。選手ポップアップに「🏋️ 専属トレーナー 残り○週 — 信頼もじわじわ育つ」と表示されます。他の書類(ボーナス・休暇・慰労会・メディア)はその場で効きます。</p>
             <p><strong style="color:var(--gold)">社長の自発的行動：</strong></p>
             <p>・<strong>💬 声をかける</strong>（無料）→ 選手ポップアップから実行。決裁枠を消費しない、社長自ら足を運ぶ行為です。信頼が揺らぎ始めた選手(緑のバーで静かに誘い)、スランプ・モチベ喪失の選手や信頼が大きく下がった選手(オレンジで脈動)にボタンが表示されます。</p>
-            <p>・<strong>🏥 特別治療</strong>（200万）→ 怪我発生時のポップアップから実行。離脱期間を1〜4週短縮</p>
+            <p>・<strong>🏥 特別治療指示書</strong>（200万 / ⚡1）→ 社長室の机から実行。離脱中の選手がいるときに机に並びます。回復期間を1〜4週短縮(8週以上の重傷ならさらに+1週)。</p>
           </div>
         </div>
 

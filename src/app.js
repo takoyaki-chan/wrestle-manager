@@ -6023,7 +6023,6 @@ const App = {
     });
 
     // v0.96: Show injury popups (only non-retirement injuries)
-    // 社長室 Phase 5: 怪我ポップアップに「特別治療」選択肢を統合
     const injuries = App._lastInjuries || [];
     injuries.forEach((ir, i) => {
       // v1.3-3: Skip retirement injuries (they get their own popup)
@@ -6031,20 +6030,11 @@ const App = {
       const ch = G.roster.find(c => c.name === ir.name);
       if (!ch || !ir.injury) return;
       hasEventPopups = true;
-      const SPECIAL_TREATMENT_COST = 200;
       setTimeout(() => {
-        // 発火時点での資金を参照(複数の怪我が連続表示されるので毎回チェック)
-        const canAfford = (G.funds || 0) >= SPECIAL_TREATMENT_COST;
         showEventPopup({
           type: 'fighter', id: ch.id, name: ch.name, tone: 'negative',
           message: pickQuote('injury'),
           detail: `🏥 ${ir.injury.type} — 全治${ir.injury.weeksLeft}週間`,
-          action: {
-            label: `🏥 特別治療を実施する（${SPECIAL_TREATMENT_COST}万）`,
-            disabled: !canAfford,
-            disabledHint: canAfford ? null : `資金が足りません(必要: ${SPECIAL_TREATMENT_COST}万)`,
-            onClick: () => App.executeSpecialTreatment(ch.id),
-          },
         });
       }, i * 100);
     });
@@ -6512,10 +6502,6 @@ const App = {
         if (pendingMilestone.type === 'ovr') msLabel = `総合力${pendingMilestone.value}到達`;
         else if (pendingMilestone.type === 'pop') msLabel = `人気${pendingMilestone.value}到達`;
         else msLabel = `${STAT_JA[pendingMilestone.stat] || pendingMilestone.stat}が限界に到達`;
-        const msMsg = `🔔 ${msF.name} — ${msLabel}！「${msLine}」`;
-        const msSound = (pendingMilestone.type === 'ovr' && pendingMilestone.value >= 80) || pendingMilestone.type === 'cap' ? 'award' : 'notify';
-        const msDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 800;
-        setTimeout(() => { Audio.play(msSound); showToast(msMsg, 7000); }, msDelay);
         // growthLogにマイルストーン記録
         const msRoster = G.roster.map(c => {
           if (c.id !== msF.id) return c;
@@ -6525,6 +6511,15 @@ const App = {
           }] };
         });
         G = { ...G, roster: msRoster };
+        const msDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 800;
+        setTimeout(() => showGrowthEventPopups([{
+          type: 'milestone',
+          subtype: pendingMilestone.type,
+          fighterId: pendingMilestone.fighterId,
+          value: pendingMilestone.value,
+          stat: pendingMilestone.stat,
+          line: msLine,
+        }]), msDelay);
       }
     }
 
@@ -7924,6 +7919,7 @@ const App = {
     if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return { ok: false }; }
     if (result.error === 'fighter_not_found') { showToast('選手が見つかりません'); return { ok: false }; }
     if (result.error === 'not_slump') { showToast('スランプ中の選手ではありません'); return { ok: false }; }
+    if (result.error === 'not_injured') { showToast('怪我をしていない選手には使用できません'); return { ok: false }; }
     if (result.error === 'cooldown') { showToast('今週はすでに決裁済みです'); return { ok: false }; }
     if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません(${result.required} 必要)`); return { ok: false }; }
     if (result.error === 'condition_not_met') { showToast('この書類の発動条件を満たしていません'); return { ok: false }; }
