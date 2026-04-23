@@ -4,5 +4,6 @@ notion_db.html
 tools/tmp_xlsx/
 audio-mixer.html
 .claude/worktrees/
+.claude/scheduled_tasks.lock
 .codex-temp/
 test/_*.json
