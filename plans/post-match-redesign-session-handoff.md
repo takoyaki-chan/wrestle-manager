@@ -12,10 +12,13 @@
 |---|---|---|---|
 | 1 | 通常興行 / 特別興行（`renderShowResult`） | ✅ 完了 | `93868a8` |
 | 2 | PPV GRAND FINAL / PPV TV観戦（`renderPPVResult` / `renderPPVTVResult`） | ✅ 完了 | `5d3590d` |
-| 3 | 対抗戦最終 / 対抗戦進行（`renderWarFinalResult` / `renderWarMatchPreview`） | ✅ 完了 | （次コミット） |
-| 4 | JT各試合 / JT優勝 / B3挑戦状 / B2対立決着 | ⏳ 未着手 | — |
+| 3 | 対抗戦最終 / 対抗戦進行（`renderWarFinalResult` / `renderWarMatchPreview`） | ✅ 完了 | `287b43a` |
+| 4a | JT各試合結果（`renderJuniorTournamentMatchResult`） | ✅ 完了 | `be04ec9` |
+| 4b | JT優勝発表（`renderJuniorTournamentResult`） | ✅ 完了 | `04a71d2` |
+| 4c | B3挑戦状結果（`_renderB3MatchResult`） | ✅ 完了 | `8bdc96e` |
+| 4d | B2対立決着（`_renderB2MatchResult`） | ✅ 完了 | `e5ffcef` |
 
-**次セッションで Phase 3 から再開**。元ハンドオフは `plans/post-match-redesign-handoff.md`（Phase 3-4 の指示文が §6, §7）。
+**全 Phase 完了（2026-04-23）**。残タスク：旧 CSS（`.war-*`/`.mc-*`/`.ace-*`/`.jt-ch`/`.jt-mf-stands`/`.ppvtv-*` 等）の `grep -rn` 未使用確認後まとめ削除は別セッションで。`_warHeader` ヘルパーは Phase 3 完了時点で未使用（削除可）。ただし `_warStatRow` は B3/B2 *試合前* preview でまだ使用中のため保持。
 
 ---
 
