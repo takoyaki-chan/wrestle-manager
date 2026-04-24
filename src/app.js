@@ -4420,7 +4420,9 @@ const App = {
     };
 
     // 宣戦布告ポップアップは各試合がフォーカスされた瞬間に表示（renderMatchPreview内で制御）
-    renderMatchPreview();
+    App._checkAndShowPreShowMilestone(function() {
+      renderMatchPreview();
+    });
   },
 
   _fillMissingShowPreviewResults() {
@@ -4855,7 +4857,6 @@ const App = {
       alert('試合結果の確定に失敗しました。カードに不整合がある可能性があります。');
       return;
     }
-    App._checkAndShowPreShowMilestone(function() {
     let s = { ...G, totalShows: G.totalShows + 1, weekPhase: 'showExec' };
     // forcedRest（S3休養願い）フラグをクリア — この興行後は通常参加可能に戻す
     let roster = s.roster.map(c => c.forcedRest ? { ...c, forcedRest: false } : { ...c });
@@ -5753,7 +5754,6 @@ const App = {
         }
       }, maxWaitMs);
     }
-    }); // _checkAndShowPreShowMilestone callback end
   },
 
   // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
