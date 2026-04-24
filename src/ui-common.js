@@ -270,6 +270,20 @@ function _mdlCClose() {
   if (overlay) overlay.classList.remove('active');
 }
 
+/** D型モーダルを開く — html を #mdlDBox に注入して表示 */
+function _mdlDOpen(html) {
+  const box = document.getElementById('mdlDBox');
+  const overlay = document.getElementById('mdlDOverlay');
+  if (!box || !overlay) return;
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+/** D型モーダルを閉じる */
+function _mdlDClose() {
+  const overlay = document.getElementById('mdlDOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
 /** A型 subject-stage: 選手の上半身 + 名前 + メタ + 仕切り線
  *  opts.small: 120x160 (default 140x184)
  *  opts.speech: 頭上吹き出しに表示するセリフ(文字列)
@@ -852,8 +866,6 @@ function closeWarFinalResult(eventWon) {
 // ── R3 モーダル: 仲良し退団/引退演出 ──
 function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
   if (_isPopupActive()) { _popupQueue.push(() => showR3Modal({ fighterName, fighterFace, departedName, reason, line })); return; }
-  const overlay = document.createElement('div');
-  overlay.className = 'r3-modal-overlay';
 
   const isRetired = reason && (reason.includes('引退') || reason === 'retired');
   const departureText = isRetired
@@ -861,38 +873,31 @@ function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
     : `${departedName} が去った。`;
 
   const faceHtml = fighterFace
-    ? `<div class="r3-modal-face"><img src="${fighterFace}" alt="${fighterName}" /></div>`
+    ? `<div class="mdl-d-face" style="background-image:url('${fighterFace}')"></div>`
     : '';
 
-  overlay.innerHTML = `
-    <div class="r3-modal">
-      ${faceHtml}
-      <p class="r3-modal-departure">${departureText}</p>
-      <p class="r3-modal-name">${fighterName}</p>
-      <p class="r3-modal-line">${line}</p>
-      <button class="r3-modal-close">閉じる</button>
+  _mdlDOpen(`
+    ${faceHtml}
+    <div class="mdl-d-speaker">${fighterName}</div>
+    <div class="mdl-d-body">${departureText}</div>
+    <div class="mdl-d-body italic">${line}</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue()">閉じる</button>
     </div>
-  `;
-
-  overlay.querySelector('.r3-modal-close').addEventListener('click', () => {
-    overlay.remove();
-    _drainPopupQueue();
-  });
-
-  document.body.appendChild(overlay);
+  `);
 }
 
 function showConfirm(msg, yesLabel, onYes) {
   Audio.play('notify');
-  const overlay = document.getElementById('confirmOverlay');
-  const box = document.getElementById('confirmBox');
   window._confirmYes = onYes;
-  box.innerHTML = `<div style="margin-bottom:16px;font-size:14px">${msg}</div>
-    <div class="btn-row" style="justify-content:center">
-      <button class="btn btn-gold" onclick="document.getElementById('confirmOverlay').classList.remove('active');if(window._confirmYes)window._confirmYes()">${yesLabel}</button>
-      <button class="btn btn-blue" onclick="document.getElementById('confirmOverlay').classList.remove('active')">いいえ</button>
-    </div>`;
-  overlay.classList.add('active');
+  _mdlDOpen(`
+    <div class="mdl-d-title">確認</div>
+    <div class="mdl-d-body">${msg}</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="_mdlDClose();if(window._confirmYes)window._confirmYes()">${yesLabel}</button>
+      <button class="mdl-d-btn secondary" onclick="_mdlDClose()">いいえ</button>
+    </div>
+  `);
 }
 
 function showRosterOverflowSigningModal(pending) {
@@ -9089,9 +9094,7 @@ function closeCareModal() {
 function showNotifEventToast(event) {
   if (!event) return;
   if (_isPopupActive()) { _popupQueue.push(() => showNotifEventToast(event)); return; }
-  const overlay = document.getElementById('notifModalOverlay');
-  const box = document.getElementById('notifModalBox');
-  if (!overlay || !box) { showToast(event.text || ''); return; }
+  if (!document.getElementById('mdlDOverlay')) { showToast(event.text || ''); return; }
 
   const isWarning = event.type === 'N5'
     || event.type === 'N_isolation'
@@ -9102,36 +9105,40 @@ function showNotifEventToast(event) {
 
   const f1Id = event.fighter;
   const f2Id = event.fighter2;
+  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
   let portraitsHtml = '';
   if (f1Id != null && f2Id != null) {
-    portraitsHtml = `<div class="notif-modal-portraits">${portraitImg(f1Id, 100, 'notif-modal-face dual')}${portraitImg(f2Id, 100, 'notif-modal-face dual')}</div>`;
+    portraitsHtml = `<div style="display:flex;gap:12px;justify-content:center;margin-bottom:10px">
+      <div class="mdl-d-face" style="background-image:url('${_fUrl(f1Id)}');width:52px;height:52px;margin:0"></div>
+      <div class="mdl-d-face" style="background-image:url('${_fUrl(f2Id)}');width:52px;height:52px;margin:0"></div>
+    </div>`;
   } else if (f1Id != null) {
-    portraitsHtml = `<div class="notif-modal-portraits">${portraitImg(f1Id, 120, 'notif-modal-face')}</div>`;
+    portraitsHtml = `<div class="mdl-d-face" style="background-image:url('${_fUrl(f1Id)}')"></div>`;
   }
 
-  const textHtml = event.text ? `<div class="notif-modal-text">${event.text}</div>` : '';
-  const detailHtml = event.detail ? `<div class="notif-modal-detail">${event.detail}</div>` : '';
-  const dialogueHtml = event.dialogue ? `<div class="notif-modal-dialogue">「${event.dialogue}」</div>` : '';
+  const textHtml    = event.text     ? `<div class="mdl-d-body">${event.text}</div>`         : '';
+  const detailHtml  = event.detail   ? `<div class="mdl-d-detail">${event.detail}</div>`     : '';
+  const dialogueHtml = event.dialogue ? `<div class="mdl-d-body italic">${event.dialogue}</div>` : '';
 
-  box.className = 'notif-modal-box' + (isWarning ? ' notif-warning' : '');
-  box.innerHTML = `
+  const box = document.getElementById('mdlDBox');
+  if (box) box.className = 'mdl-d-box' + (isWarning ? ' urgent' : '');
+  _mdlDOpen(`
     ${portraitsHtml}
     ${textHtml}
     ${detailHtml}
     ${dialogueHtml}
-    <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
-  `;
-  overlay.classList.add('active');
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="closeNotifModal()">OK</button>
+    </div>
+  `);
   Audio.play('event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
 
 function closeNotifModal() {
-  const overlay = document.getElementById('notifModalOverlay');
-  if (overlay) overlay.classList.remove('active');
+  _mdlDClose();
   clearTimeout(window._notifModalTimer);
-  // P4-P6: Glimpseキューの次を表示
   _glimpseQueue.shift();
   if (_glimpseQueue.length > 0) {
     setTimeout(_renderNextGlimpse, 200);
@@ -9157,50 +9164,43 @@ function showPostMatchDialogues(dialogues) {
 
 function _renderNextMatchDialogue() {
   if (_matchDialogueQueue.length === 0) return;
+  if (!document.getElementById('mdlDOverlay')) { _matchDialogueQueue.shift(); return; }
   const d = _matchDialogueQueue[0];
-
-  const overlay = document.getElementById('notifModalOverlay');
-  const box = document.getElementById('notifModalBox');
-  if (!overlay || !box) { _matchDialogueQueue.shift(); return; }
 
   const rb = d.rivalryBonus || {};
   const rivalryColor = rb.color || '#e17055';
+  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
 
-  box.className = 'notif-modal-box notif-dramatic';
-  box.innerHTML = `
-    <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;letter-spacing:1px">${d.matchLabel || ''} ${rb.emoji || '🔥'}${rb.label || '因縁'}</div>
-    <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:16px">
+  const box = document.getElementById('mdlDBox');
+  if (box) box.className = 'mdl-d-box';
+  _mdlDOpen(`
+    <div class="mdl-d-speaker">${d.matchLabel || ''} ${rb.emoji || '🔥'}${rb.label || '因縁'}</div>
+    <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:14px">
       <div style="text-align:center">
-        ${portraitImg(d.winnerId, 130, 'notif-modal-face')}
-        <div style="margin-top:6px;font-size:14px;font-weight:700;color:var(--gold)">${d.winnerName}</div>
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(d.winnerId)}');width:68px;height:68px;margin:0 auto 4px"></div>
+        <div style="font-size:12px;font-weight:700;color:var(--gold)">${d.winnerName}</div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:30px">
-        <span style="font-size:28px;filter:drop-shadow(0 0 8px ${rivalryColor})">⚔️</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:24px">
+        <span style="font-size:24px;filter:drop-shadow(0 0 6px ${rivalryColor})">⚔️</span>
       </div>
       <div style="text-align:center">
-        ${portraitImg(d.loserId, 100, 'notif-modal-face')}
-        <div style="margin-top:6px;font-size:13px;color:var(--text-sub)">${d.loserName}</div>
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(d.loserId)}');width:52px;height:52px;margin:0 auto 4px"></div>
+        <div style="margin-top:5px;font-size:11px;color:var(--lite-text-sub)">${d.loserName}</div>
       </div>
     </div>
-    <div style="margin-bottom:12px;padding:12px 16px;background:rgba(212,168,67,0.08);border-left:3px solid var(--gold);border-radius:4px">
-      <div style="font-size:11px;color:var(--gold);margin-bottom:4px;font-weight:700">WINNER</div>
-      <div style="font-size:15px;color:var(--text-main);line-height:1.6">${d.winnerName}:「${d.winLine}」</div>
+    <div class="mdl-d-detail">WINNER ・ ${d.winnerName}「${d.winLine}」</div>
+    <div class="mdl-d-detail warn">LOSER ・ ${d.loserName}「${d.loseLine}」</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="closeMatchDialogue()">OK</button>
     </div>
-    <div style="margin-bottom:16px;padding:12px 16px;background:rgba(231,76,60,0.06);border-left:3px solid ${rivalryColor};border-radius:4px">
-      <div style="font-size:11px;color:${rivalryColor};margin-bottom:4px;font-weight:700">LOSER</div>
-      <div style="font-size:15px;color:var(--text-sub);line-height:1.6">${d.loserName}:「${d.loseLine}」</div>
-    </div>
-    <button class="notif-modal-btn" onclick="closeMatchDialogue()">OK</button>
-  `;
-  overlay.classList.add('active');
+  `);
   Audio.play('event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeMatchDialogue, 60000);
 }
 
 function closeMatchDialogue() {
-  const overlay = document.getElementById('notifModalOverlay');
-  if (overlay) overlay.classList.remove('active');
+  _mdlDClose();
   clearTimeout(window._notifModalTimer);
   _matchDialogueQueue.shift();
   if (_matchDialogueQueue.length > 0) {
@@ -9248,85 +9248,82 @@ function _renderNextGlimpse() {
 }
 
 function _renderGlimpseA(glimpse) {
-  const overlay = document.getElementById('notifModalOverlay');
-  const box = document.getElementById('notifModalBox');
-  if (!overlay || !box) { _glimpseQueue.shift(); return; }
+  if (!document.getElementById('mdlDOverlay')) { _glimpseQueue.shift(); return; }
 
-  const toneClass = glimpse.tone === 'gold' ? 'notif-gold'
-    : glimpse.tone === 'warning' || glimpse.tone === 'danger' ? 'notif-warning'
-    : glimpse.tone === 'dramatic' ? 'notif-dramatic' : '';
+  const toneBoxCls = glimpse.tone === 'gold' ? ' positive'
+    : glimpse.tone === 'warning' || glimpse.tone === 'danger' ? ' urgent' : '';
 
-  let portraitsHtml = '';
+  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
+  let headerHtml = '';
   if (glimpse.targetId) {
-    // 二人表示（bond/rivalry）— 発信者を大きく強調
     const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
     const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
-    portraitsHtml = `<div class="notif-modal-portraits" style="gap:6px;align-items:flex-end">
-      ${portraitImg(glimpse.speakerId, 140, 'notif-modal-face dual')}
-      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:24px">
-        <span style="font-size:32px;filter:drop-shadow(0 0 8px ${axisColor})">${axisIcon}</span>
-        <span style="font-size:22px;font-weight:900;color:${axisColor};letter-spacing:2px;text-shadow:0 0 12px ${axisColor}">→</span>
+    headerHtml = `
+      <div style="display:flex;gap:10px;align-items:flex-end;justify-content:center;margin-bottom:10px">
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}');width:72px;height:72px;margin:0"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:18px">
+          <span style="font-size:26px;filter:drop-shadow(0 0 6px ${axisColor})">${axisIcon}</span>
+          <span style="font-size:18px;font-weight:900;color:${axisColor}">→</span>
+        </div>
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.targetId)}');width:52px;height:52px;margin:0"></div>
       </div>
-      ${portraitImg(glimpse.targetId, 90, 'notif-modal-face dual')}
-    </div>
-    <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:8px">
-      <span style="font-size:16px;font-weight:700;color:var(--text-main)">${glimpse.speakerName}</span>
-      <span style="font-size:14px;color:${axisColor};font-weight:700">→</span>
-      <span style="font-size:13px;color:var(--text-dim)">${glimpse.targetName}</span>
-    </div>`;
+      <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:700;color:var(--lite-text-main)">${glimpse.speakerName}</span>
+        <span style="font-size:12px;color:${axisColor};font-weight:700">→</span>
+        <span style="font-size:12px;color:var(--lite-text-sub)">${glimpse.targetName}</span>
+      </div>
+      <div class="mdl-d-speaker">${glimpse.label}</div>`;
   } else {
-    // 一人表示（trust）
-    portraitsHtml = `<div class="notif-modal-portraits">
-      ${portraitImg(glimpse.speakerId, 120, 'notif-modal-face')}
-    </div>
-    <div style="font-size:14px;color:var(--text-sub);margin-bottom:8px">${glimpse.speakerName}</div>`;
+    headerHtml = `
+      <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}')"></div>
+      <div class="mdl-d-speaker">${glimpse.speakerName} ・ ${glimpse.label}</div>`;
   }
 
-  box.className = 'notif-modal-box' + (toneClass ? ` ${toneClass}` : '');
-  box.innerHTML = `
-    ${portraitsHtml}
-    <div style="font-size:13px;color:var(--text-dim);margin-bottom:10px">${glimpse.label}</div>
-    <div class="notif-modal-dialogue">「${glimpse.dialogue}」</div>
-    <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
-  `;
-  overlay.classList.add('active');
+  const box = document.getElementById('mdlDBox');
+  if (box) box.className = `mdl-d-box${toneBoxCls}`;
+  _mdlDOpen(`
+    ${headerHtml}
+    <div class="mdl-d-body italic">${glimpse.dialogue}</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="closeNotifModal()">見届ける</button>
+    </div>
+  `);
   Audio.play(glimpse.tone === 'gold' ? 'award' : 'event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
 
 function _renderGlimpseB(glimpse) {
-  const overlay = document.getElementById('notifModalOverlay');
-  const box = document.getElementById('notifModalBox');
-  if (!overlay || !box) { _glimpseQueue.shift(); return; }
+  if (!document.getElementById('mdlDOverlay')) { _glimpseQueue.shift(); return; }
 
+  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
   let portraitsHtml = '';
   if (glimpse.targetId) {
     const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
     const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
-    portraitsHtml = `<div class="notif-modal-portraits" style="gap:4px;align-items:flex-end">
-      ${portraitImg(glimpse.speakerId, 110, 'notif-modal-face dual')}
-      <div style="display:flex;flex-direction:column;align-items:center;gap:1px;padding-bottom:16px">
-        <span style="font-size:24px;filter:drop-shadow(0 0 6px ${axisColor})">${axisIcon}</span>
-        <span style="font-size:18px;font-weight:900;color:${axisColor}">→</span>
-      </div>
-      ${portraitImg(glimpse.targetId, 70, 'notif-modal-face dual')}
-    </div>`;
+    portraitsHtml = `
+      <div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;margin-bottom:8px">
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}');width:60px;height:60px;margin:0"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;padding-bottom:14px">
+          <span style="font-size:20px;filter:drop-shadow(0 0 4px ${axisColor})">${axisIcon}</span>
+          <span style="font-size:15px;font-weight:900;color:${axisColor}">→</span>
+        </div>
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.targetId)}');width:44px;height:44px;margin:0"></div>
+      </div>`;
   } else {
-    portraitsHtml = `<div class="notif-modal-portraits">
-      ${portraitImg(glimpse.speakerId, 100, 'notif-modal-face')}
-    </div>`;
+    portraitsHtml = `<div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}')"></div>`;
   }
 
-  box.className = 'notif-modal-box';
-  box.innerHTML = `
+  const box = document.getElementById('mdlDBox');
+  if (box) box.className = 'mdl-d-box';
+  _mdlDOpen(`
     ${portraitsHtml}
-    <div style="font-size:13px;color:var(--text-sub);margin-bottom:4px">${glimpse.speakerName}</div>
-    <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">${glimpse.label}</div>
-    <div class="notif-modal-dialogue">「${glimpse.dialogue}」</div>
-    <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
-  `;
-  overlay.classList.add('active');
+    <div class="mdl-d-speaker">${glimpse.speakerName} ・ ${glimpse.label}</div>
+    <div class="mdl-d-body italic">${glimpse.dialogue}</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="closeNotifModal()">見届ける</button>
+    </div>
+  `);
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
