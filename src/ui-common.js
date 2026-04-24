@@ -140,6 +140,113 @@ function _mdlASeasonLabel(state) {
   return `WEEK ${String(week).padStart(2, '0')} ・ ${season}Y`;
 }
 
+// ─────────────────────────────────────────────────────────────
+// 統一モーダル mdl-b-* ヘルパー (Phase 2)
+// ステージ演出型(B-1〜B-5)の共通パーツ
+// ─────────────────────────────────────────────────────────────
+
+/** B型モーダルを開く。variant: 'default' | 'sepia' | 'rival' | 'gold' */
+function _mdlBOpen(html, variant) {
+  const overlay = document.getElementById('mdlBOverlay');
+  if (!overlay) return false;
+  overlay.className = 'mdl-b-overlay' + (variant && variant !== 'default' ? ' ' + variant : '');
+  overlay.innerHTML = html;
+  // 次フレームでactive化(トランジションを走らせる)
+  void overlay.offsetWidth;
+  overlay.classList.add('active');
+  return true;
+}
+
+/** B型モーダルを閉じる */
+function _mdlBClose() {
+  const overlay = document.getElementById('mdlBOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    // 600ms後に中身をクリア(fadeOut完了後)
+    setTimeout(() => { if (!overlay.classList.contains('active')) overlay.innerHTML = ''; }, 650);
+  }
+}
+
+/** B型 タイトル帯。titleCls: clash|victory|rival|milestone|dissolve など */
+function _mdlBTitleBand(title, titleCls, sub) {
+  return `<div class="mdl-b-title-band">
+    <div class="mdl-b-title-main${titleCls ? ' ' + titleCls : ''}">${title || ''}</div>
+    <div class="mdl-b-title-divider"></div>
+    ${sub ? `<div class="mdl-b-title-sub">${sub}</div>` : ''}
+  </div>`;
+}
+
+/** B型 頭上吹き出し。variant: default|rival|gold|soft, size: 'large'|null */
+function _mdlBSpeech(speaker, text, variant, size) {
+  if (!text) return '';
+  const v = variant && variant !== 'default' ? ' ' + variant : '';
+  const sz = size === 'large' ? ' large' : '';
+  return `<div class="mdl-b-speech${v}">
+    ${speaker ? `<div class="mdl-b-speech-speaker">${speaker}</div>` : ''}
+    <div class="mdl-b-speech-text${sz}">${text}</div>
+  </div>`;
+}
+
+/** B型 選手カラム(対峙構図用)。side: 'left'|'right', speech: {speaker,text,variant} | null, flag: {cls,label} */
+function _mdlBCol(fighter, opts) {
+  opts = opts || {};
+  const upperUrl = fighter && typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  const imgHtml = upperUrl
+    ? `<img class="mdl-b-upper" src="${upperUrl}" alt="" onerror="this.style.display='none'">`
+    : '';
+  const speech = opts.speech
+    ? _mdlBSpeech(opts.speech.speaker, opts.speech.text, opts.speech.variant, opts.speech.size)
+    : '';
+  const flag = opts.flag
+    ? `<div class="mdl-b-flag ${opts.flag.cls || 'a'}">${opts.flag.label}</div>`
+    : '';
+  const colCls = 'mdl-b-col' + (opts.side === 'right' ? ' right' : '');
+  const nameMeta = fighter
+    ? `<div class="mdl-b-name">${fighter.name || ''}</div>
+       <div class="mdl-b-org">${opts.meta || `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''}`}</div>`
+    : '';
+  return `<div class="${colCls}">
+    ${flag}
+    <div class="mdl-b-upper-wrap">
+      ${speech}
+      ${imgHtml}
+    </div>
+    ${nameMeta}
+  </div>`;
+}
+
+/** B型 ソロステージ(1選手中央)。opts.sepia で sepia 影 */
+function _mdlBSoloStage(fighter, speech, opts) {
+  opts = opts || {};
+  const upperUrl = fighter && typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  const sizeStyle = opts.large ? 'style="width:300px;height:360px"' : '';
+  const imgHtml = upperUrl
+    ? `<img class="mdl-b-upper" src="${upperUrl}" alt="" ${sizeStyle} onerror="this.style.display='none'">`
+    : '';
+  const speechHtml = speech
+    ? _mdlBSpeech(speech.speaker, speech.text, speech.variant, speech.size)
+    : '';
+  const stageCls = 'mdl-b-solo-stage' + (opts.sepia ? ' sepia' : '');
+  const nameMeta = fighter
+    ? `<div class="mdl-b-name" style="margin-top:16px${opts.sepia ? ';color:rgba(232,220,200,0.9)' : ''}">${fighter.name || ''}</div>
+       <div class="mdl-b-org"${opts.sepia ? ' style="color:rgba(200,180,150,0.7)"' : ''}>${opts.meta || `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''}`}</div>`
+    : '';
+  return `<div class="${stageCls}">
+    <div class="mdl-b-upper-wrap">
+      ${speechHtml}
+      ${imgHtml}
+    </div>
+    ${nameMeta}
+  </div>`;
+}
+
+/** B型 アクション行(ボタン群)。buttons: [{label, sub, primary, onclick}] */
+function _mdlBActions(buttons) {
+  return `<div class="mdl-b-decision">${buttons.map(b =>
+    `<button class="mdl-b-btn${b.primary ? ' primary' : ''}"${b.id ? ` id="${b.id}"` : ''}>${b.label}${b.sub ? `<span class="mdl-b-btn-label">${b.sub}</span>` : ''}</button>`
+  ).join('')}</div>`;
+}
+
 /** A型 subject-stage: 選手の上半身 + 名前 + メタ + 仕切り線
  *  opts.small: 120x160 (default 140x184)
  *  opts.speech: 頭上吹き出しに表示するセリフ(文字列)
@@ -1383,75 +1490,77 @@ function _renderRetirementPopup() {
   }
   const r = _retirementPopupQueue[0];
   const f = r.fighter;
-  const box = document.getElementById('retirementPopupBox');
   const isInjury = r.route === 'injury_wear' || r.route === 'injury_career_ending';
 
-  // Face
-  let faceHtml = '';
-  const url = getPortraitUrl(f.id);
-  if (url) faceHtml = `<img src="${url}" alt="">`;
-  else {
-    const ch = ALL_CHARS.find(c => c.id === f.id);
-    faceHtml = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,rgba(200,200,200,0.1),rgba(0,0,0,0.2))">${ch ? ch.name.charAt(0) : '?'}</div>`;
-  }
-
-  // Career years
   const careerYears = f.careerSeasons || Math.max(1, (f.age || 17) - (f.debutAge || 17));
-  const dividerText = `━━ ${careerYears}年間の軌跡 ━━`;
-
-  // Career summary
-  const summary = r.summary || [];
-  const careerHtml = summary.length > 0
-    ? summary.map(item => `<div class="retirement-popup-career-item"><span class="retirement-popup-career-icon">${item.icon}</span><span>${item.text}</span></div>`).join('')
-    : '<div style="color:var(--text-dim);text-align:center">記録なし</div>';
-
-  // Record
   const wins = f.wins || 0, losses = f.losses || 0, draws = f.draws || 0;
-  const recordText = `通算 ${wins}勝 ${losses}敗${draws > 0 ? ` ${draws}分` : ''}`;
+  const summary = r.summary || [];
+  const title = isInjury ? '無 念 の 引 退' : '旅 　 立 ち';
+  const sub = isInjury ? `FAREWELL ・ INJURY` : `FAREWELL ・ ${careerYears} YEARS`;
+  const meta = `AGE ${f.age || '—'} ・ CAREER ${careerYears} YEARS`;
 
-  // Injury note
-  let injuryNote = '';
-  if (isInjury && r.injuryType) {
-    injuryNote = `<div class="retirement-popup-injury-note">🏥 ${r.injuryType}</div>`;
-  }
-
-  // Vacancy note
-  let vacancyNote = '';
-  if (r.wasChampion) {
-    vacancyNote = `<div class="retirement-popup-vacancy">🏆 王座返上</div>`;
-  }
-
-  // Button label
-  const btnLabel = isInjury ? '……' : '送り出す';
-
-  // §3: 引き留めボタン（wear 40-79、retainCount < 2、シーズン末のみ）
-  const canRetain = r.canRetain && !isInjury;
-  const retainCount = f.retainCount || 0;
-  const retainBtnHtml = canRetain
-    ? `<button class="retirement-popup-btn" onclick="doRetainFighter(${f.id})" style="background:rgba(46,204,113,0.15);border-color:rgba(46,204,113,0.4);color:#2ecc71;margin-top:6px">🤝 引き留める（あと${2 - retainCount}回）</button>`
+  // 引退選手のキャリアハイライトをB型ステージ下に挟む
+  const careerHtml = summary.length > 0
+    ? `<div style="max-width:560px;margin:0 auto 18px;background:rgba(20,18,15,0.55);border:1px solid rgba(200,180,150,0.12);border-radius:6px;padding:12px 16px">
+         <div style="font-family:var(--font-label);font-size:10px;color:rgba(200,180,150,0.7);letter-spacing:2px;text-align:center;margin-bottom:8px">━━ ${careerYears}年間の軌跡 ━━</div>
+         ${summary.map(item => `<div style="font-size:13px;color:rgba(232,220,200,0.88);line-height:1.7;display:flex;gap:8px;align-items:baseline">
+           <span style="font-size:14px">${item.icon}</span><span>${item.text}</span>
+         </div>`).join('')}
+       </div>`
     : '';
 
-  box.className = `retirement-popup${isInjury ? ' injury' : ''}`;
-  box.innerHTML = `
-    <div class="retirement-popup-face">${faceHtml}</div>
-    <div class="retirement-popup-name">${f.name}</div>
-    <div class="retirement-popup-age">${f.age || '?'}歳</div>
-    <div class="retirement-popup-divider">${dividerText}</div>
-    <div class="retirement-popup-career">${careerHtml}</div>
-    <div class="retirement-popup-record">${recordText}</div>
-    ${injuryNote}${vacancyNote}
-    <div class="retirement-popup-line">${r.line}</div>
-    <button class="retirement-popup-btn" onclick="closeRetirementPopup()">${btnLabel}</button>
-    ${retainBtnHtml}
+  const statsRow = `
+    <div class="mdl-b-stats-row">
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">TOTAL RECORD</div>
+        <div class="mdl-b-stat-value small" style="font-size:16px">${wins}W ${losses}L${draws > 0 ? ` ${draws}D` : ''}</div></div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">CAREER</div>
+        <div class="mdl-b-stat-value">${careerYears}<span style="font-size:14px">Y</span></div></div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">CAREER HIGH</div>
+        <div class="mdl-b-stat-value">OVR ${f.peakOVR || (typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : '—')}</div></div>
+    </div>`;
+
+  const notes = [
+    isInjury && r.injuryType ? `🏥 ${r.injuryType}` : '',
+    r.wasChampion ? '🏆 王座返上' : ''
+  ].filter(Boolean).join('　');
+  const noteHtml = notes ? `<div style="text-align:center;color:rgba(200,180,150,0.85);font-size:13px;margin-bottom:10px">${notes}</div>` : '';
+
+  const btnLabel = isInjury ? '— …… —' : '— 見 送 る —';
+  const canRetain = r.canRetain && !isInjury;
+  const retainCount = f.retainCount || 0;
+  const retainBtn = canRetain
+    ? { label: `🤝 引き留める（あと${2 - retainCount}回）`, id: 'mdlBRetainBtn' }
+    : null;
+  const buttons = [{ label: btnLabel, primary: true, id: 'mdlBRetireClose' }];
+  if (retainBtn) buttons.push(retainBtn);
+
+  const html = `
+    ${_mdlBTitleBand(title, 'dissolve', sub)}
+    ${_mdlBSoloStage(f, { speaker: f.name, text: r.line, variant: 'soft', size: 'large' }, { sepia: true, meta })}
+    ${noteHtml}
+    ${statsRow}
+    ${careerHtml}
+    ${_mdlBActions(buttons)}
   `;
-  document.getElementById('retirementPopupOverlay').classList.add('active');
+
+  _mdlBOpen(html, 'sepia');
   Audio.play(isInjury ? 'error' : 'event');
+
+  setTimeout(() => {
+    const btn = document.getElementById('mdlBRetireClose');
+    if (btn) btn.addEventListener('click', closeRetirementPopup);
+    const retain = document.getElementById('mdlBRetainBtn');
+    if (retain) retain.addEventListener('click', () => doRetainFighter(f.id));
+  }, 50);
 }
 
 function closeRetirementPopup() {
   // B4タレント活動§13: チャンピオン怪我引退後の社長への一言
   const justClosed = _retirementPopupQueue[0];
-  document.getElementById('retirementPopupOverlay').classList.remove('active');
+  _mdlBClose();
+  // 互換: 旧オーバーレイのactiveも解除
+  const legacy = document.getElementById('retirementPopupOverlay');
+  if (legacy) legacy.classList.remove('active');
   _retirementPopupQueue.shift();
 
   if (justClosed && justClosed.championWorryLine) {
@@ -1501,25 +1610,32 @@ function _showChampionWorryBubble(fighter, line, onClose) {
 
 // ── 引退勧告結果ポップアップ ────────────────
 function showRetireAdviseResultPopup(accepted, fighter, line) {
-  const url = getPortraitUrl(fighter.id);
-  const faceHtml = url
-    ? `<img src="${url}" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid ${accepted ? 'var(--gold)' : '#e74c3c'}">`
-    : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(200,190,170,0.08);display:flex;align-items:center;justify-content:center;font-size:32px">${fighter.name.charAt(0)}</div>`;
-  const box = document.getElementById('retirementPopupBox');
-  const headerColor = accepted ? 'var(--gold)' : '#e74c3c';
-  const headerText  = accepted ? '🌅 引退を受諾' : '💢 引退を拒否';
-  const subText     = accepted
-    ? `${fighter.name} がラストラン状態に入りました。<br>次の興行で引退試合を組みましょう。`
-    : `${fighter.name} に断られました。${fighter.proveMode > 0 ? '🔥 見返しモード（4週間MQ+2）発動！' : 'ロッカールームに影響が出ました。'}`;
-  box.innerHTML = `
-    <div style="text-align:center;margin-bottom:12px">${faceHtml}</div>
-    <div style="text-align:center;font-size:18px;font-weight:700;color:${headerColor};margin-bottom:4px">${headerText}</div>
-    <div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:14px">${subText}</div>
-    <div style="background:rgba(200,190,170,0.04);border-radius:6px;padding:12px 14px;font-size:14px;color:var(--text);line-height:1.7;text-align:center;border-left:3px solid ${headerColor};margin-bottom:14px">「${line}」</div>
-    <button class="retirement-popup-btn" onclick="document.getElementById('retirementPopupOverlay').classList.remove('active')">閉じる</button>
+  const title = accepted ? '引 退 受 諾' : '引 退 拒 否';
+  const titleCls = accepted ? 'dissolve' : 'rival';
+  const sub = accepted
+    ? 'LAST RUN BEGINS'
+    : (fighter.proveMode > 0 ? 'PROVE MODE ACTIVATED' : 'REJECTED');
+  const variant = accepted ? 'sepia' : 'rival';
+  const speechVariant = accepted ? 'soft' : 'rival';
+
+  const subText = accepted
+    ? `ラストラン状態に入りました。次の興行で引退試合を組みましょう。`
+    : (fighter.proveMode > 0 ? '🔥 見返しモード（4週間MQ+2）発動！' : 'ロッカールームに影響が出ました。');
+
+  const html = `
+    ${_mdlBTitleBand(title, titleCls, sub)}
+    ${_mdlBSoloStage(fighter, { speaker: fighter.name, text: line, variant: speechVariant, size: 'large' }, { sepia: accepted })}
+    <div class="mdl-b-atmosphere" style="margin-bottom:14px">${subText}</div>
+    ${_mdlBActions([{ label: '— 閉 じ る —', primary: true, id: 'mdlBRetireAdviseClose' }])}
   `;
-  document.getElementById('retirementPopupOverlay').classList.add('active');
+
+  _mdlBOpen(html, variant);
   Audio.play(accepted ? 'event' : 'error');
+
+  setTimeout(() => {
+    const btn = document.getElementById('mdlBRetireAdviseClose');
+    if (btn) btn.addEventListener('click', () => _mdlBClose());
+  }, 50);
 }
 
 // ── 因縁決着ポップアップ（宣戦布告 / 決着 共用）────────────────
@@ -1561,11 +1677,9 @@ function _renderRivalryPopup() {
     return;
   }
   const o = _rivalryPopupQueue[0];
-  const box = document.getElementById('rivalryPopupBox');
 
   if (o.phase === 'confrontation') {
     // 宣戦布告
-    // rivalry帯別のテキストプール選択（personality×archetype対応）
     const rivalryVal = o.rivalry || 0;
     const leftFighter = ALL_CHARS.find(c => c.id === o.leftId);
     const rightFighter = ALL_CHARS.find(c => c.id === o.rightId);
@@ -1585,55 +1699,34 @@ function _renderRivalryPopup() {
     }
     const leftLine = pickDialogueLine(attackerPool, leftFighter);
     const rightLine = pickDialogueLine(defenderPool, rightFighter);
-    const headerEmoji = rivalryVal >= 70 ? '💥' : '🔥';
-    const headerText = rivalryVal >= 70 ? '宿命の対決！' : '宿敵対決！';
+    const title = rivalryVal >= 70 ? '因 縁 勃 発' : '宿 敵 対 決';
+    const sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
 
-    box.className = `rivalry-popup${o.isFate ? ' fate' : ''}`;
-    box.innerHTML = `
-      <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
-      <div class="rivalry-popup-stage">
-        <div class="rivalry-popup-fighter-l">
-          ${_rivalryUpperHtml(o.leftId, null)}
-          <div class="rivalry-popup-fighter-name">${o.leftName}</div>
+    const html = `
+      ${_mdlBTitleBand(title, 'rival', sub)}
+      <div class="mdl-b-dual-stage">
+        ${_mdlBCol(leftFighter || { name: o.leftName, id: o.leftId }, {
+          side: 'left',
+          speech: { speaker: o.leftName, text: leftLine, variant: 'rival' }
+        })}
+        <div class="mdl-b-vs-col">
+          <div class="mdl-b-silent-mark">— 決 裂 —<span>THE LINE IS DRAWN</span></div>
         </div>
-        <div class="rivalry-popup-vs-col">
-          <div class="rivalry-popup-vs-icon">VS</div>
-        </div>
-        <div class="rivalry-popup-fighter-r">
-          ${_rivalryUpperHtml(o.rightId, 'rivalry-popup-upper-r')}
-          <div class="rivalry-popup-fighter-name">${o.rightName}</div>
-        </div>
+        ${_mdlBCol(rightFighter || { name: o.rightName, id: o.rightId }, {
+          side: 'right',
+          speech: { speaker: o.rightName, text: rightLine, variant: 'rival' }
+        })}
       </div>
-      <div class="rivalry-popup-dialogue">
-        <div class="rivalry-popup-bubble">
-          <div class="rivalry-popup-bubble-speaker">${o.leftName}</div>
-          <div class="rivalry-popup-bubble-text">${leftLine}</div>
-        </div>
-        <div class="rivalry-popup-bubble">
-          <div class="rivalry-popup-bubble-speaker">${o.rightName}</div>
-          <div class="rivalry-popup-bubble-text">${rightLine}</div>
-        </div>
-      </div>
-      <div class="rivalry-popup-btn-row">
-        <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">閉じる</button>
-      </div>
+      ${_mdlBActions([{ label: '— 見 届 け る —', primary: true, id: 'mdlBRivalryClose' }])}
     `;
-    const overlay = document.getElementById('rivalryPopupOverlay');
-    box.style.opacity = '0';
-    box.style.transform = 'scale(0.9)';
-    overlay.classList.add('active');
-    setTimeout(() => {
-      Audio.play(o.isFate ? 'fate_confrontation' : 'rivalry_confrontation');
-      box.style.transition = 'opacity 0.3s, transform 0.3s';
-      box.style.opacity = '1';
-      box.style.transform = 'scale(1)';
-    }, 350);
+
+    _mdlBOpen(html, 'rival');
+    setTimeout(() => Audio.play(o.isFate ? 'fate_confrontation' : 'rivalry_confrontation'), 350);
 
   } else {
     // 決着
     const isGoodRival = o.resolutionType === 'goodRival';
     const isBitter = o.resolutionType === 'bitter';
-    // 好敵手/宿怨は専用セリフプール、それ以外は既存セリフ
     const winLineObj = isGoodRival ? GOODRIVAL_RESOLUTION_LINES.winner
       : isBitter ? BITTER_RESOLUTION_LINES.winner
       : (o.isFate ? RIVALRY_RESOLUTION_LINES.fateWinner : RIVALRY_RESOLUTION_LINES.winner);
@@ -1644,64 +1737,59 @@ function _renderRivalryPopup() {
     const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
     const winLine = pickDialogueLine(winLineObj, winFighter);
     const loseLine = pickDialogueLine(loseLineObj, loseFighter);
-    const headerEmoji = isBitter ? '💀' : isGoodRival ? '🤝' : (o.isFate ? '💥' : '⚡');
-    const headerText = isBitter ? '宿怨決着！' : isGoodRival ? '好敵手誕生！' : (o.isSecondResolution ? '宿命の相手 ── 最終決着！' : (o.isFate ? '宿命の相手決着！' : '宿敵決着！'));
+    const title = isBitter ? '宿 怨 決 着'
+      : isGoodRival ? '好 敵 手 誕 生'
+      : (o.isSecondResolution ? '最 終 決 着' : (o.isFate ? '宿命の相手 決着' : '宿 敵 決 着'));
+    const sub = isBitter ? 'BITTER RIVALRY ・ FINAL'
+      : isGoodRival ? 'GOOD RIVALS ・ MUTUAL RESPECT'
+      : 'RIVALRY RESOLVED';
+    const speechVariant = isBitter ? 'rival' : (isGoodRival || o.isFate ? 'gold' : 'rival');
+    const titleCls = isGoodRival ? 'victory' : 'rival';
+    const overlayVariant = isGoodRival ? 'gold' : 'rival';
 
-    const useFateLines = o.isFate;
-    box.className = `rivalry-popup resolution${useFateLines ? ' fate' : ''}`;
-    const goodRivalMsg = isGoodRival
-      ? `<div class="rivalry-popup-goodrival">🤝 ふたりは「好敵手」になった</div>`
-      : isBitter
-        ? `<div class="rivalry-popup-goodrival">💀 ふたりは「宿怨」になった</div>`
-        : '';
-    box.innerHTML = `
-      <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
-      <div class="rivalry-popup-stage">
-        <div class="rivalry-popup-fighter-l">
-          ${_rivalryUpperHtml(o.winnerId, null)}
-          <div class="rivalry-popup-fighter-name">${o.winnerName}</div>
+    const bonusLine = `📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}`;
+    const tagLine = isGoodRival ? '🤝 ふたりは「好敵手」になった'
+      : isBitter ? '💀 ふたりは「宿怨」になった'
+      : '';
+
+    const html = `
+      ${_mdlBTitleBand(title, titleCls, sub)}
+      <div class="mdl-b-dual-stage">
+        ${_mdlBCol(winFighter || { name: o.winnerName, id: o.winnerId }, {
+          side: 'left',
+          speech: { speaker: o.winnerName, text: winLine, variant: speechVariant }
+        })}
+        <div class="mdl-b-vs-col">
+          <div class="mdl-b-silent-mark">— 決 着 —<span>SETTLED</span></div>
         </div>
-        <div class="rivalry-popup-vs-col">
-          <div class="rivalry-popup-vs-icon">VS</div>
-        </div>
-        <div class="rivalry-popup-fighter-r">
-          ${_rivalryUpperHtml(o.loserId, 'rivalry-popup-upper-r')}
-          <div class="rivalry-popup-fighter-name">${o.loserName}</div>
-        </div>
+        ${_mdlBCol(loseFighter || { name: o.loserName, id: o.loserId }, {
+          side: 'right',
+          speech: { speaker: o.loserName, text: loseLine, variant: speechVariant }
+        })}
       </div>
-      <div class="rivalry-popup-dialogue">
-        <div class="rivalry-popup-bubble">
-          <div class="rivalry-popup-bubble-speaker">${o.winnerName}</div>
-          <div class="rivalry-popup-bubble-text">${winLine}</div>
-        </div>
-        <div class="rivalry-popup-bubble">
-          <div class="rivalry-popup-bubble-speaker">${o.loserName}</div>
-          <div class="rivalry-popup-bubble-text">${loseLine}</div>
-        </div>
+      <div class="mdl-b-atmosphere" style="margin-bottom:12px">
+        ${bonusLine}
+        ${tagLine ? `<br><span style="color:var(--gold-light);font-size:14px;font-weight:700">${tagLine}</span>` : ''}
       </div>
-      <div class="rivalry-popup-bonus">
-        📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}
-      </div>
-      ${goodRivalMsg}
-      <div class="rivalry-popup-btn-row">
-        <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">OK</button>
-      </div>
+      ${_mdlBActions([{ label: '— 見 届 け る —', primary: true, id: 'mdlBRivalryClose' }])}
     `;
-    const overlay = document.getElementById('rivalryPopupOverlay');
-    box.style.opacity = '0';
-    box.style.transform = 'scale(0.9)';
-    overlay.classList.add('active');
-    setTimeout(() => {
-      Audio.play((o.isFate || o.resolutionType === 'goodRival' || o.resolutionType === 'bitter') ? 'fate_resolution' : 'rivalry_resolution');
-      box.style.transition = 'opacity 0.3s, transform 0.3s';
-      box.style.opacity = '1';
-      box.style.transform = 'scale(1)';
-    }, 300);
+
+    _mdlBOpen(html, overlayVariant);
+    setTimeout(() => Audio.play((o.isFate || isGoodRival || isBitter) ? 'fate_resolution' : 'rivalry_resolution'), 300);
   }
+
+  // 閉じるボタンのハンドラ
+  setTimeout(() => {
+    const btn = document.getElementById('mdlBRivalryClose');
+    if (btn) btn.addEventListener('click', closeRivalryPopup);
+  }, 50);
 }
 
 function closeRivalryPopup() {
-  document.getElementById('rivalryPopupOverlay').classList.remove('active');
+  _mdlBClose();
+  // 旧オーバーレイのactiveも念のため解除(互換)
+  const legacy = document.getElementById('rivalryPopupOverlay');
+  if (legacy) legacy.classList.remove('active');
   _rivalryPopupQueue.shift();
   if (_rivalryPopupQueue.length > 0) {
     setTimeout(_renderRivalryPopup, 300);
@@ -6198,37 +6286,51 @@ function showNewspaperPanel(articles, onDone) {
 // ─────────────────────────────────────────────────────────────────────────────
 function showMilestoneEvent(evt, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showMilestoneEvent(evt, onChoice)); return; }
-  const overlay = document.getElementById('milestoneOverlay');
-  const box = document.getElementById('milestoneBox');
-  if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
 
-  // Phase 1: ナレーション + 3択表示
-  let html = `<div class="milestone-title">${evt.title}</div>`;
-  html += `<div class="milestone-narration">${evt.narration || ''}</div>`;
-  evt.choices.forEach((c, i) => {
-    html += `<button class="milestone-choice" data-idx="${i}">${c.label}</button>`;
-  });
-  box.innerHTML = html;
+  // Phase 1: ナレーション + 3択(B-5型 ゴールドステージ)
+  const title = (evt.title || '').replace(/^[\W\s]+/, '') || evt.title || 'MILESTONE';
+  const sub = 'MILESTONE ACHIEVED';
+  const choicesHtml = evt.choices.map((c, i) =>
+    `<button class="mdl-b-btn${i === 0 ? ' primary' : ''}" data-idx="${i}">${c.label}</button>`
+  ).join('');
 
-  // 選択肢クリック → Phase 2: 結果表示
-  box.querySelectorAll('.milestone-choice').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const idx = parseInt(this.dataset.idx);
-      const choice = evt.choices[idx];
-      Audio.play('event');
-      box.innerHTML = `<div class="milestone-title">${evt.title}</div>
-        <div class="milestone-result">${choice.result}</div>
-        <div class="milestone-effect">${choice.effectLabel}</div>
-        <button class="milestone-choice" style="text-align:center;border-color:var(--gold)" id="milestoneClose">閉じる</button>`;
-      document.getElementById('milestoneClose').addEventListener('click', function() {
-        overlay.classList.remove('active');
-        if (onChoice) onChoice(idx);
-        _drainPopupQueue();
+  const html = `
+    ${_mdlBTitleBand(title, 'milestone', sub)}
+    <div class="mdl-b-atmosphere" style="max-width:640px;white-space:pre-line">${evt.narration || ''}</div>
+    <div class="mdl-b-decision" id="mdlBMilestoneChoices">${choicesHtml}</div>
+  `;
+
+  if (!_mdlBOpen(html, 'gold')) { if (onChoice) onChoice(-1); return; }
+  Audio.play('event');
+
+  setTimeout(() => {
+    document.querySelectorAll('#mdlBMilestoneChoices .mdl-b-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const idx = parseInt(this.dataset.idx);
+        const choice = evt.choices[idx];
+        Audio.play('event');
+        // Phase 2: 結果を同じオーバーレイに差し替え
+        const resultHtml = `
+          ${_mdlBTitleBand(title, 'milestone', sub)}
+          <div class="mdl-b-solo-line" style="max-width:720px;white-space:pre-line">${choice.result}</div>
+          <div style="text-align:center;margin:6px 0 22px">
+            <div style="display:inline-block;padding:10px 30px;border:1px solid var(--gold);color:var(--gold-light);font-family:var(--font-label);font-size:13px;letter-spacing:4px;background:rgba(212,168,67,0.08);border-radius:2px">${choice.effectLabel}</div>
+          </div>
+          ${_mdlBActions([{ label: '— 閉 じ る —', primary: true, id: 'mdlBMilestoneClose' }])}
+        `;
+        const overlay = document.getElementById('mdlBOverlay');
+        if (overlay) overlay.innerHTML = resultHtml;
+        setTimeout(() => {
+          const close = document.getElementById('mdlBMilestoneClose');
+          if (close) close.addEventListener('click', () => {
+            _mdlBClose();
+            if (onChoice) onChoice(idx);
+            _drainPopupQueue();
+          });
+        }, 50);
       });
     });
-  });
-
-  overlay.classList.add('active');
+  }, 50);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
