@@ -1609,7 +1609,7 @@ function _renderRosterDetailPanel(c, hired) {
   tab1 += `<div style="margin-top:8px;display:flex;gap:16px;font-size:11px;color:#4a4638">
     <div>人気 <b style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</b></div>
     <div>体調 <b style="${_scale6Style(_condColor(Math.round(c.condition)))}">${Math.round(c.condition)}</b></div>
-    <div>給与 <b style="color:#1e1c16">${getSalary(c)}万</b>/シーズン</div>
+    <div>給与 <b style="color:#1e1c16">${getSalary(c)}万</b>/週</div>
   </div>`;
 
   // === Tab 2: 成長経過 ===
