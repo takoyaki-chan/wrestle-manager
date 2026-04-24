@@ -11748,6 +11748,46 @@ const MILESTONE_EVENTS = [
         effectLabel: '因縁成立しやすくなる（3週間）'
       }
     ]
+  },
+  // ── D層: ドーム到達マイルストーン（dome-milestone-spec-v0.3）──
+  {
+    id: 'first_dome_show',
+    trigger: { type: 'venue', venueIdx: 9, timing: 'preShow' },
+    titleMain: '到 　 達',
+    titleSub: 'THE DOME',
+    narration: [
+      'ドーム。',
+      '日本のプロレス界で、頂点を意味する三文字。',
+      'この会場に名を刻むことは、団体にとって一つの到達点であり、',
+      '同時に、新たな始まりでもある。',
+      '控室のドアの前で、一度立ち止まった。',
+      '息を整え、扉を開ける。',
+      '——選手たちが、待っている。'
+    ],
+    narrationGaps: [4],
+    visualVariant: 'arrival',
+    dialogueKey: 'dome_firstshow',
+    continueLabel: '試 合 に 向 か う',
+    choices: []
+  },
+  {
+    id: 'first_dome_sellout',
+    trigger: { type: 'venue_occupancy', venueIdx: 9, minOccupancy: 0.95, timing: 'postShow' },
+    titleMain: '満 　 員',
+    titleSub: 'FULL HOUSE',
+    narration: [
+      '満員のドーム。',
+      'かつて、日本のプロレス興行における最大の到達点とされてきた景色。',
+      '三万の観客席のすべてが埋まり、彼らは今、この団体の名を呼んでいる。',
+      '最終試合の鐘が鳴り、選手たちがリングから引き上げる。',
+      '照明が落ち、客電が灯っても——',
+      '拍手は、しばらく鳴り止まなかった。'
+    ],
+    narrationGaps: [3],
+    visualVariant: 'triumph',
+    dialogueKey: 'dome_sellout',
+    continueLabel: '控 室 へ 戻 る',
+    choices: []
   }
 ];
 
