@@ -8280,13 +8280,23 @@ function _renderDbFactions() {
       </div>`;
     }
 
+    const FLAVOR_MAP = {
+      bond_first:   { label: '結束型',   desc: '絆でまとまりやすい派閥' },
+      meritocratic: { label: '実力主義', desc: '実力ある選手が集まりやすい派閥' },
+      neutral:      { label: '自然型',   desc: '自然発生的にまとまった派閥' },
+    };
+    const flavor = f.flavor && FLAVOR_MAP[f.flavor] ? f.flavor : 'neutral';
+    const flavorInfo = FLAVOR_MAP[flavor];
+
     let cardHtml = `<div id="faction-card-${f.id}" class="db-faction-card ${isHostile(f) ? 'is-rivalrous' : 'is-loyal'}" style="--faction-accent:var(${accentVar})">`;
     cardHtml += `<div class="db-faction-header">`;
     cardHtml += `<span class="db-faction-name">${f.name}</span>`;
     if (f.authoritativeTag) cardHtml += `<span class="db-faction-tag db-faction-tag-auth">👑 権威型</span>`;
     if (f.dictatorTag) cardHtml += `<span class="db-faction-tag db-faction-tag-dict">⚠ 独裁化</span>`;
+    cardHtml += `<span class="db-faction-flavor-badge">${flavorInfo.label}</span>`;
     cardHtml += `<span class="db-faction-count">${f.memberIds.length}名</span>`;
     cardHtml += `</div>`;
+    cardHtml += `<div class="db-faction-flavor-desc">${flavorInfo.desc}</div>`;
 
     cardHtml += `<div class="db-faction-faces">`;
     cardHtml += `<div class="db-faction-leader-col">${faceTile(leader, 'lg', true, false)}</div>`;
