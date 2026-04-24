@@ -7295,7 +7295,7 @@ const App = {
       if (!triggered) continue;
       G = { ...G, milestones: { ...(G.milestones || {}), [evt.id]: true } };
       const speakers = App._resolveSpotlightFighters(G);
-      App.showCeremonyEvent(evt, speakers, onDone);
+      showCeremonyEvent(evt, speakers, onDone);
       return;
     }
     onDone();
