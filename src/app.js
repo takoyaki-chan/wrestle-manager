@@ -5018,6 +5018,11 @@ const App = {
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     // 興行結果画面で動員数を表示するためにstateに保存
     s = { ...s, lastShowAttendance: preAttendance };
+    // D層 first_dome_sellout: postShow トリガー設定
+    if (s.showVenue === 9 && !(s.milestones?.first_dome_sellout)) {
+      const _domeCap = VENUES[9]?.cap || 22500;
+      if (preAttendance / _domeCap >= 0.95) s = { ...s, _pendingDomeSelloutCeremony: true };
+    }
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
     if (crowdMQ.total !== 0) {
       results.forEach(r => { r.mq = Engine.util.clamp(r.mq + crowdMQ.total, 5, 100); });
@@ -6135,6 +6140,18 @@ const App = {
         refreshAll();
       }
       return;
+    }
+    // D層 postShow: 超満員ドームセレモニー（tickWeek 前に発火）
+    if (G._pendingDomeSelloutCeremony) {
+      const { _pendingDomeSelloutCeremony: _, ...cleanG } = G;
+      G = { ...cleanG, milestones: { ...(cleanG.milestones || {}), first_dome_sellout: true } };
+      const domeEvt = MILESTONE_EVENTS.find(e => e.id === 'first_dome_sellout');
+      if (domeEvt) {
+        resultOverlay.classList.remove('active');
+        const speakers = App._resolveSpotlightFighters(G);
+        showCeremonyEvent(domeEvt, speakers, () => { App.closeShowResult(); });
+        return;
+      }
     }
     App._closingShowResult = true;
     try {
