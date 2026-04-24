@@ -6763,16 +6763,17 @@ const Engine = {
           && !pendingNotifEvent && !pendingChoiceEvent && !pendingTeamSpirit && roster.length > 0) {
         const airRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBF10));
         const morale = G.lockerRoomMorale != null ? G.lockerRoomMorale : 60;
-        const lowTrust = roster.filter(f => (f.trust != null ? f.trust : 50) < 45);
-        const veryLowTrust = roster.filter(f => (f.trust != null ? f.trust : 50) < 30);
-        const highTrust = roster.filter(f => (f.trust != null ? f.trust : 50) >= 70);
+        const ownedRoster = roster.filter(f => !f.isRental);
+        const lowTrust = ownedRoster.filter(f => (f.trust != null ? f.trust : 50) < 45);
+        const veryLowTrust = ownedRoster.filter(f => (f.trust != null ? f.trust : 50) < 30);
+        const highTrust = ownedRoster.filter(f => (f.trust != null ? f.trust : 50) >= 70);
 
         let airTone = null;
         if (veryLowTrust.length >= 2 || morale < 35) {
           airTone = 'danger';
         } else if (veryLowTrust.length >= 1 || lowTrust.length >= 3 || morale < 50) {
           airTone = 'warning';
-        } else if (highTrust.length >= roster.length * 0.6 && morale >= 70) {
+        } else if (ownedRoster.length > 0 && highTrust.length >= ownedRoster.length * 0.6 && morale >= 70) {
           airTone = 'good';
         }
 
@@ -13166,6 +13167,7 @@ Engine.trust = {
     const departedName = (meta && meta.name) || '';
     const reason = (meta && meta.reason) || '';
     return roster.map(f => {
+      if (f.isRental) return f;
       const key = Engine.relationships._key(f.id, departedId);
       const r = relationships[key];
       if (!r || !Engine.relationships.isPositiveBond(r.bond)) return f;
@@ -13223,7 +13225,7 @@ Engine.trust = {
     });
 
     // §13.5 P-後輩への好影響: trust 70+の選手数（怪我なし）
-    const seniorCount = roster.filter(f => !f.injury && (f.trust != null ? f.trust : 50) >= 70).length;
+    const seniorCount = roster.filter(f => !f.injury && !f.isRental && (f.trust != null ? f.trust : 50) >= 70).length;
 
     // Phase 2: 蓄積型不満の判定用コンテキスト（ロスター全体の給与・OVR情報をキャッシュ）
     const activeRoster = roster.filter(f => !f.injury && !f.isRental);
@@ -13342,7 +13344,7 @@ Engine.trust = {
         const grievanceResult = Engine.trust.calcGrievanceDelta(updated, rosterContext, titles, state);
         let grievanceDelta = grievanceResult.delta;
         // リーダー気質: grievance軽減（-30%）
-        if (grievanceDelta < 0 && (state.roster || []).some(c => c.id !== updated.id && Traits.has(c, 'リーダー気質') && !c.injury)) {
+        if (grievanceDelta < 0 && (state.roster || []).some(c => c.id !== updated.id && !c.isRental && Traits.has(c, 'リーダー気質') && !c.injury)) {
           grievanceDelta *= 0.7;
         }
         delta += grievanceDelta;
@@ -13398,6 +13400,7 @@ Engine.trust = {
     const current = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
     let delta = 0;
     const rosterArr = trustResult.roster || [];
+    const ownedRoster = rosterArr.filter(f => !f.isRental);
 
     // ── 平均回帰: baseline=55への12%/週 ──
     const baseline = 55;
@@ -13413,7 +13416,7 @@ Engine.trust = {
     }
 
     // ── trust<40の選手ごとの連続関数ペナルティ ──
-    rosterArr.forEach(f => {
+    ownedRoster.forEach(f => {
       const trust = f.trust != null ? f.trust : 50;
       if (trust < 40) {
         delta -= (40 - trust) / 40 * 3.06;
@@ -13421,24 +13424,24 @@ Engine.trust = {
     });
 
     // ── ロスターサイズ税（8人超で-0.15/人/週） ──
-    const ownCount = rosterArr.filter(f => !f.isRental).length;
+    const ownCount = ownedRoster.length;
     delta -= Math.max(0, ownCount - 8) * 0.15;
 
     // ── 負傷者負荷 ──
-    const injuredCount = rosterArr.filter(f => f.injury && !f.isRental).length;
+    const injuredCount = ownedRoster.filter(f => f.injury).length;
     if (injuredCount >= 3) delta -= 0.5;
     if (injuredCount >= 5) delta -= 0.5;
 
     // ── ムードメーカー: +1.5/週、morale70超で半減 ──
-    const hasMoodMaker = rosterArr.some(f => Traits.has(f, 'ムードメーカー') && !f.injury);
+    const hasMoodMaker = ownedRoster.some(f => Traits.has(f, 'ムードメーカー') && !f.injury);
     if (hasMoodMaker) {
       delta += current > 70 ? 0.75 : 1.5;
     }
 
     // ── 人望: trust<50の選手数に比例（最大+1.2） ──
-    const hasNinbo = rosterArr.some(f => Traits.has(f, '人望') && !f.injury);
+    const hasNinbo = ownedRoster.some(f => Traits.has(f, '人望') && !f.injury);
     if (hasNinbo) {
-      const troubledCount = rosterArr.filter(f => !f.injury && !f.isRental && (f.trust ?? 50) < 50).length;
+      const troubledCount = ownedRoster.filter(f => !f.injury && (f.trust ?? 50) < 50).length;
       delta += Math.min(1.2, 0.3 * troubledCount);
     }
 
