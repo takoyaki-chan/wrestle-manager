@@ -1324,3 +1324,51 @@ function showSp(side, text, cls){
   el.className = `speech-bubble ${cls} visible`;
   _spTimers[side] = setTimeout(() => { el.classList.remove('visible'); _spTimers[side] = null; }, 1800);
 }
+
+function _narrationHtml(nar){
+  if (!nar || !nar.text) {
+    return '<div class="nar-empty">隧ｦ蜷磯幕蟋・窶・NEXT TURN繧呈款縺励※縺上□縺輔＞</div>';
+  }
+  return `<div class="nar-line nar-main show${nar.dramatic ? ' dramatic' : ''}">${escHtml(nar.text)}</div>`;
+}
+
+function _narrateFrame(fr){
+  if (!fr) return { text: '', dramatic: false };
+  if (fr.winner) {
+    if (S.pinSeqPending) return { text: '窶ｦ・・ｼ・', dramatic: true };
+    return { text: '豎ｺ逹・・', dramatic: true };
+  }
+
+  const action = fr.action;
+  if (!action) return { text: (fr.logLines || []).join(' '), dramatic: false };
+
+  const atk = action.atkSide === 'left' ? S.L : S.R;
+  const def = action.atkSide === 'left' ? S.R : S.L;
+  if (!atk || !def) return { text: action.move || '', dramatic: false };
+
+  if (action.kind === 'miss') {
+    return { text: `${atk.name}縺ｮ${action.move || ''} 竊・縺九ｏ縺輔ｌ縺滂ｼ・`, dramatic: false };
+  }
+  if (action.kind === 'counter') {
+    return { text: `${atk.name}縺後き繧ｦ繝ｳ繧ｿ繝ｼ・・${action.move || ''} 竊・${def.name}縺ｫ${action.dmg}繝繝｡繝ｼ繧ｸ`, dramatic: true };
+  }
+
+  return {
+    text: `${atk.name}縺ｮ${action.move || ''} 竊・${def.name}縺ｫ${action.dmg}繝繝｡繝ｼ繧ｸ`,
+    dramatic: !!action.isCrit,
+  };
+}
+
+function _updateCenter(fr){
+  const box = document.getElementById('centerPanel');
+  if (!box) return;
+  const move = fr && fr.action ? (fr.action.move || '---') : '---';
+  const mv2 = document.getElementById('moveV');
+  if (mv2){ mv2.textContent = move; mv2.classList.remove('move-pop'); void mv2.offsetWidth; mv2.classList.add('move-pop'); }
+  const tl = document.getElementById('turnLbl');
+  if (tl && fr) tl.textContent = `繧ｿ繝ｼ繝ｳ ${fr.turn}`;
+  const pill = document.getElementById('pill');
+  if (pill && fr) pill.textContent = fr.phase || '';
+  const narBox = document.getElementById('narBox');
+  if (narBox) narBox.innerHTML = _narrationHtml(_narrateFrame(fr));
+}
