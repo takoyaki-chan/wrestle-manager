@@ -2624,7 +2624,7 @@ function getTraitQuote(category, char) {
 // v1.0: Get a draft-context quote for a specific character
 function getDraftQuote(char) {
   const pool = EVENT_DRAFT_INTEREST_LINES;
-  if (!pool) return pickQuote('draftJoin');
+  if (!pool) return getTraitQuote('draftJoin', char);
   return pickDialogueLine(pool, char);
 }
 
@@ -2661,7 +2661,7 @@ function getRentalQuote(char) {
 // v1.0: Get a draft "interest" line (when focused, before picking)
 function getDraftInterestLine(char) {
   const pool = EVENT_DRAFT_INTEREST_LINES;
-  if (!pool) return pickQuote('draftJoin');
+  if (!pool) return getTraitQuote('draftJoin', char);
   return pickDialogueLine(pool, char);
 }
 
