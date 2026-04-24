@@ -1028,6 +1028,170 @@ function _factionAudioClose(eventId) {
 }
 
 
+// ── D層セレモニーイベント BGM制御 ──
+function _ceremAudioOpen(visualVariant) {
+  const src = visualVariant === 'arrival'
+    ? '../bgm/bgm_kaimaku_v1.mp3'
+    : '../bgm/8bit-ending-theme_Loop.ogg';
+  try { Audio.fileBgm.play(src, { loop: true, volume: 0.10 }); } catch(e) {}
+}
+function _ceremAudioClose() {
+  try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
+  setTimeout(() => { try { Audio.bgm.playForState(); } catch(e) {} }, 1600);
+}
+
+// D層セレモニーイベント本体
+// evt: MILESTONE_EVENTSエントリ（dialogueKey/narration/narrationGaps/visualVariant/continueLabel）
+// speakers: [{fighter, roleLabel}, ...] (_resolveSpotlightFighters の戻り値)
+// onContinue: 続けるボタンクリック時のコールバック
+function showCeremonyEvent(evt, speakers, onContinue) {
+  // タイトルサブ動的生成
+  let titleSub = evt.titleSub;
+  if (evt.visualVariant === 'arrival') {
+    titleSub = evt.titleSub + ' ・ WEEK ' + G.week;
+  } else if (evt.visualVariant === 'triumph') {
+    const att = (G.lastShowAttendance || 0).toLocaleString();
+    titleSub = evt.titleSub + ' ・ ' + att + ' ATTENDED';
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'cerem-overlay ' + (evt.visualVariant || '');
+  overlay.style.zIndex = '920';
+  overlay.style.position = 'fixed';
+  overlay.style.inset = '0';
+
+  const narrationGaps = evt.narrationGaps || [];
+
+  // Phase 1 HTML
+  const narLines = (evt.narration || []).map((line, i) => {
+    const gapClass = narrationGaps.includes(i) ? ' gap' : '';
+    return `<span class="cerem-nar-line${gapClass}" data-nar-idx="${i}">${line}</span>`;
+  }).join('');
+
+  // Phase 2: speakers
+  const speakerHtml = speakers.map(({ fighter, roleLabel }) => {
+    const line = App.resolveDomeLine(fighter, evt.dialogueKey);
+    const portraitSrc = `../image/upper/${fighter.id}.webp`;
+    const isTriumph = evt.visualVariant === 'triumph' ? ' triumph-glow' : '';
+    return `
+      <div class="cerem-speaker">
+        <div class="cerem-bubble-wrap">
+          <div class="cerem-bubble">${line}</div>
+        </div>
+        <div class="cerem-portrait${isTriumph}">
+          <img src="${portraitSrc}" alt="${fighter.name}"
+            style="width:100%;height:100%;object-fit:cover;object-position:top"
+            onerror="this.style.display='none'">
+        </div>
+        <div class="cerem-role-label">${roleLabel}</div>
+        <div class="cerem-speaker-name">${fighter.name}</div>
+      </div>`;
+  }).join('');
+
+  overlay.innerHTML = `
+    <!-- Phase 1: Narration -->
+    <div class="cerem-phase active" data-phase="1">
+      <div class="cerem-phase-zone top">
+        <div class="cerem-title-band">
+          <div class="cerem-title-main ${evt.visualVariant || ''}">${evt.titleMain}</div>
+          <div class="cerem-title-divider"></div>
+          <div class="cerem-title-sub">${titleSub}</div>
+        </div>
+      </div>
+      <div class="cerem-phase-zone mid">
+        <div class="cerem-narration">${narLines}</div>
+      </div>
+      <div class="cerem-phase-zone bottom"></div>
+    </div>
+    <!-- Phase 2: Characters -->
+    <div class="cerem-phase" data-phase="2">
+      <div class="cerem-phase-zone top"></div>
+      <div class="cerem-phase-zone mid">
+        <div class="cerem-trio">${speakerHtml}</div>
+      </div>
+      <div class="cerem-phase-zone bottom">
+        <button class="cerem-continue-btn">${evt.continueLabel || '続ける'}</button>
+      </div>
+    </div>
+    <div class="cerem-hint">▼ クリックで進む</div>
+    <button class="cerem-skip" data-cerem-skip>▷ SKIP</button>
+  `;
+
+  document.body.appendChild(overlay);
+  _ceremAudioOpen(evt.visualVariant);
+
+  // SceneController ロジック
+  const phase1El = overlay.querySelector('[data-phase="1"]');
+  const phase2El = overlay.querySelector('[data-phase="2"]');
+  const narEls = Array.from(overlay.querySelectorAll('.cerem-nar-line'));
+  const speakerEls = Array.from(overlay.querySelectorAll('.cerem-speaker'));
+  const continueBtn = overlay.querySelector('.cerem-continue-btn');
+  const hint = overlay.querySelector('.cerem-hint');
+  let phase = 1;
+  let step = 0;
+  let transitioning = false;
+
+  function closeCeremony() {
+    overlay.remove();
+    _ceremAudioClose();
+    onContinue();
+  }
+
+  function skipAll() {
+    if (transitioning) return;
+    narEls.forEach(el => el.classList.add('shown'));
+    phase1El.classList.remove('active');
+    setTimeout(() => {
+      phase = 2; step = speakerEls.length;
+      phase2El.classList.add('active');
+      speakerEls.forEach(el => el.classList.add('shown'));
+      hint.classList.add('hidden');
+      setTimeout(() => continueBtn.classList.add('shown'), 400);
+    }, 500);
+  }
+
+  function toPhase2() {
+    transitioning = true;
+    hint.classList.add('hidden');
+    phase1El.classList.remove('active');
+    setTimeout(() => {
+      phase = 2; step = 0;
+      phase2El.classList.add('active');
+      setTimeout(() => {
+        hint.classList.remove('hidden');
+        transitioning = false;
+      }, 1000);
+    }, 1100);
+  }
+
+  function advance() {
+    if (transitioning) return;
+    if (phase === 1) {
+      if (step < narEls.length) {
+        narEls[step].classList.add('shown');
+        step++;
+      } else {
+        toPhase2();
+      }
+    } else {
+      if (step < speakerEls.length) {
+        speakerEls[step].classList.add('shown');
+        step++;
+        if (step >= speakerEls.length) {
+          hint.classList.add('hidden');
+          setTimeout(() => continueBtn.classList.add('shown'), 800);
+        }
+      }
+    }
+  }
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target.closest('.cerem-continue-btn')) { closeCeremony(); return; }
+    if (e.target.closest('[data-cerem-skip]')) { skipAll(); return; }
+    advance();
+  });
+}
+
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 6b: MISSION SYSTEM (v0.96)                       ║
 // ║  Guided progression — pure functions, no DOM              ║
