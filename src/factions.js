@@ -389,10 +389,12 @@ Engine.factions = {
       }
       if (bestCandId === null) continue;
 
-      // 確率: ((bond - 60) / 40) × joinMaxRate × momentum補正
+      // 確率: ((bond - 60) / 40) × joinMaxRate × momentum補正 × サイズ逓減
       const baseRate = ((bestBond - 60) / 40) * cfg.joinMaxRate;
       const momentumMult = Math.max(0.3, Math.min(2.0, 1 + (f.momentum || 0) * cfg.joinMomentumScale));
-      const rate = Math.min(baseRate * momentumMult, 0.95);
+      const overDecay = Math.max(0, f.memberIds.length - cfg.joinSizeDecayStart);
+      const sizeMult = Math.max(0, 1 - overDecay * cfg.joinSizeDecayRate);
+      const rate = Math.min(baseRate * momentumMult * sizeMult, 0.95);
 
       if (Engine.rng.float(rng) < rate) {
         f.memberIds.push(bestCandId);

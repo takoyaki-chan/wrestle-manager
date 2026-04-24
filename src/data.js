@@ -1358,7 +1358,9 @@ const FACTION_CONFIG = {
   joinBondThreshold: 60,
   joinMaxRate: 0.50,         // bond100のとき最大50%/週
   joinMomentumScale: 0.006,  // momentum×0.006が確率への乗数（+100→×1.6、-50→×0.7）
-  soloFactionFreezeSize: 5,  // 単独派閥がこのサイズ以上なら加入凍結
+  soloFactionFreezeSize: 8,  // 単独派閥がこのサイズ以上なら加入凍結
+  joinSizeDecayStart: 5,     // このサイズを超えると加入率が逓減し始める
+  joinSizeDecayRate: 0.4,    // サイズが1増えるごとに ×(1 - decayRate) ずつ低下
   // §2.3 離脱判定
   leaveBondThreshold: 40,
   leaveRate: 0.10,
