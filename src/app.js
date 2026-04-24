@@ -7305,6 +7305,13 @@ const App = {
   _checkAndShowMilestone(onDone) {
     const evt = App._checkMilestones();
     if (!evt) { onDone(); return; }
+    // D層イベント（choices なし）はセレモニー演出
+    if (!evt.choices || evt.choices.length === 0) {
+      G = { ...G, milestones: { ...(G.milestones || {}), [evt.id]: true } };
+      const speakers = App._resolveSpotlightFighters(G);
+      showCeremonyEvent(evt, speakers, onDone);
+      return;
+    }
     // first_rivalry はナレーション動的生成
     let displayEvt = evt;
     if (evt.id === 'first_rivalry' && !evt.narration) {
