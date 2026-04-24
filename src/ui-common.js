@@ -86,10 +86,34 @@ function _mdlAOpen(html, opts) {
   const overlay = document.getElementById('mdlAOverlay');
   const card = document.getElementById('mdlACard');
   if (!overlay || !card) return false;
-  card.className = (opts && opts.narrow) ? 'mdl-a-card narrow' : 'mdl-a-card';
+  card.className = ['mdl-a-card',
+    opts && opts.dark   ? 'dark'   : '',
+    opts && opts.narrow ? 'narrow' : '',
+    opts && opts.wide   ? 'wide'   : '',
+  ].filter(Boolean).join(' ');
   card.innerHTML = html;
   overlay.classList.add('active');
   return true;
+}
+
+/** A型ダーク版: 吹き出し遅延表示 + クリックで即時表示 */
+function _mdlAAttachSpeechHandlers(overlay, card) {
+  const speeches = card.querySelectorAll('.mdl-a-speech.delayed');
+  const pendings  = card.querySelectorAll('.mdl-a-speech-pending');
+  const tapHint   = card.querySelector('.mdl-a-tap-hint');
+  if (!speeches.length) return;
+  const showNow = (e) => {
+    if (e && e.target === overlay) return;
+    speeches.forEach(s => s.classList.add('show-now'));
+    pendings.forEach(p => p.classList.add('hide'));
+    if (tapHint) tapHint.classList.add('hide');
+    card.removeEventListener('click', showNow);
+  };
+  card.addEventListener('click', showNow);
+  setTimeout(() => {
+    pendings.forEach(p => p.classList.add('hide'));
+    if (tapHint) tapHint.classList.add('hide');
+  }, 5000);
 }
 
 /** A型モーダルを閉じる */
@@ -386,62 +410,72 @@ function showWarChallenge() {
   if (!ev || ev.type !== 'war') return;
   Audio.play('war');
 
-  // Switch to war BGM (file-based) at challenge arrival
   try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {}
 
   const aiOrg = Engine.rival.getOrgInfo(G.aiOrgs, ev.opponentOrgId);
   if (!aiOrg) { skipEvent(); return; }
 
-  // Find enemy ace (highest OVR, non-injured)
   const enemyAce = Engine.event.getAce(aiOrg.roster);
   if (!enemyAce) { skipEvent(); return; }
 
-  const orgCfg = RIVAL_ORGS.find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c'};
-
-  const dialogue = getWarChallengeDialogue(enemyAce, G.orgName || 'あんたの団体');
   const aceOvr = Engine.util.ov(enemyAce);
-
-  const overlay = document.getElementById('confirmOverlay');
-  const box = document.getElementById('confirmBox');
-
-  // Build dramatic popup
-  let html = '';
-  // Dark gradient header with "挑戦状" badge
-  html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:20px 20px 16px;background:linear-gradient(180deg,${orgCfg.color}30,transparent);border-radius:12px 12px 0 0">`;
-  html += `<div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:${orgCfg.color};margin-bottom:8px;text-transform:uppercase">📜 挑 戦 状 📜</div>`;
-  html += `<div style="font-size:18px;font-weight:900;color:var(--text-main)">${orgIconHtml(ev.opponentOrgId, 48)}${ev.opponentName}</div>`;
-  html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">${ev.matchCount}試合の団体対決</div>`;
-  html += `</div>`;
-
-  // Enemy ace portrait (large, central)
-  const aceUrl = getPortraitUrl(enemyAce.id);
-  html += `<div style="text-align:center;margin:20px 0 12px">`;
-  if (aceUrl) {
-    html += `<img src="${aceUrl}" style="width:140px;height:140px;border-radius:50%;border:4px solid ${orgCfg.color};box-shadow:0 0 30px ${orgCfg.color}44,0 0 60px ${orgCfg.color}22;object-fit:cover" alt="">`;
-  } else {
-    const initial = enemyAce.name.charAt(0);
-    html += `<div style="width:140px;height:140px;border-radius:50%;border:4px solid ${orgCfg.color};box-shadow:0 0 30px ${orgCfg.color}44;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${orgCfg.color}33,${orgCfg.color}11);font-size:53px;font-weight:900;color:${orgCfg.color}">${initial}</div>`;
-  }
-  html += `<div style="margin-top:8px;font-size:16px;font-weight:700;color:${orgCfg.color}">${enemyAce.name}</div>`;
-  html += `<div style="font-size:11px;color:var(--text-sub)">OVR ${aceOvr} ・ ${enemyAce.style}</div>`;
-  html += `</div>`;
-
-  // Dialogue bubble
+  const dialogue = getWarChallengeDialogue(enemyAce, G.orgName || 'あんたの団体');
   const dialogueHtml = dialogue.replace(/\n/g, '<br>');
-  html += `<div style="background:var(--panel-bg);border:1px solid ${orgCfg.color}44;border-radius:12px;padding:16px 20px;margin:0 8px 16px;position:relative">`;
-  html += `<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${orgCfg.color}44"></div>`;
-  html += `<p style="font-size:14px;line-height:1.7;text-align:center;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
-  html += `</div>`;
+  const upperUrl = getUpperUrl(enemyAce.id);
+  const portraitStyle = upperUrl
+    ? `background-image:url('${upperUrl}')`
+    : `background:linear-gradient(135deg,#3a2820,#1a1208)`;
+  const seasonMeta = `FROM ${(ev.opponentName || '').toUpperCase()} ・ ${ev.matchCount}試合`;
 
-  // Accept / Decline buttons
-  html += `<div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:12px">この挑戦を受けますか？</div>`;
-  html += `<div class="btn-row" style="justify-content:center;gap:12px">`;
-  html += `<button class="btn btn-gold" style="min-width:140px;padding:12px 24px;font-size:15px;font-weight:700" onclick="document.getElementById('confirmOverlay').classList.remove('active');acceptWarChallenge()">⚔ 受けて立つ！</button>`;
-  html += `<button class="btn" style="min-width:100px;padding:12px 20px;font-size:13px;background:var(--bg-mid);color:var(--text-sub)" onclick="document.getElementById('confirmOverlay').classList.remove('active');skipEvent()">辞退する</button>`;
-  html += `</div>`;
+  const html =
+    `<div class="mdl-a-header danger">
+      <div class="mdl-a-header-title">📜 対 抗 戦 ・ 挑 戦 状</div>
+      <div class="mdl-a-header-meta">${seasonMeta}</div>
+    </div>
+    ${_mdlAReporterStrip(G, `${ev.opponentName}から正式な対抗戦の申し入れが届きました`)}
+    <div class="mdl-a-subject-stage danger" style="padding-top:88px">
+      <div class="mdl-a-portrait-wrap">
+        <div class="mdl-a-speech-pending">…</div>
+        <div class="mdl-a-speech danger delayed">
+          <div class="mdl-a-speech-speaker">${enemyAce.name.toUpperCase()}</div>
+          <div class="mdl-a-speech-text large">${dialogueHtml}</div>
+        </div>
+        <div class="mdl-a-subject-portrait big danger" style="${portraitStyle}"></div>
+      </div>
+      <div class="mdl-a-subject-name danger">${enemyAce.name}</div>
+      <div class="mdl-a-subject-org danger">${ev.opponentName} ・ ACE</div>
+      <div class="mdl-a-subject-ovr danger"><span class="label">OVR</span>${aceOvr}</div>
+      <div class="mdl-a-subject-divider"></div>
+      <div class="mdl-a-observation"><span class="marker danger">${ev.matchCount}試合の団体対決</span>。敗北はランクにも影響します。</div>
+    </div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+    <div class="mdl-a-prompt">この挑戦、どう受けますか？</div>
+    <div class="mdl-a-decision-tray two">
+      <div class="mdl-a-decision-card danger-accent" data-war-choice="accept">
+        <div class="mdl-a-decision-letter">⚔ 受けて立つ</div>
+        <div class="mdl-a-decision-label">対抗戦を受諾する</div>
+        <div class="mdl-a-decision-hint">試合カード編成へ進む</div>
+      </div>
+      <div class="mdl-a-decision-card" data-war-choice="decline">
+        <div class="mdl-a-decision-letter">辞退</div>
+        <div class="mdl-a-decision-label">今回は見送る</div>
+        <div class="mdl-a-decision-hint negative">団体評価↓ ／ 関係悪化</div>
+      </div>
+    </div>`;
 
-  box.innerHTML = html;
-  overlay.classList.add('active');
+  _mdlAOpen(html, { dark: true, narrow: true });
+
+  const overlay = document.getElementById('mdlAOverlay');
+  const card    = document.getElementById('mdlACard');
+  _mdlAAttachSpeechHandlers(overlay, card);
+
+  card.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-war-choice]');
+    if (!btn) return;
+    _mdlAClose();
+    if (btn.dataset.warChoice === 'accept') acceptWarChallenge();
+    else skipEvent();
+  });
 }
 
 // ── Accept War: open match preview (like show) ──
@@ -8269,32 +8303,85 @@ if (typeof window !== 'undefined') {
 // ─────────────────────────────────────────────────────────────────────────────
 function showLargeEventModal(event, state, step, onChoice) {
   if (step === 0 && _isPopupActive()) { _popupQueue.push(() => showLargeEventModal(event, state, step, onChoice)); return; }
+
+  const roster = state ? (state.roster || []) : [];
+
+  // B2/B3 → ダーク A 型テンプレ (mdlAOverlay)
+  if (event.type === 'B2' || event.type === 'B3') {
+    const overlay = document.getElementById('mdlAOverlay');
+    const card    = document.getElementById('mdlACard');
+    if (!overlay || !card) { if (onChoice) onChoice(-1); return; }
+
+    let html = '', cardCls = 'mdl-a-card dark';
+    if (event.type === 'B2') {
+      if (step === 0)      { html = _buildB2Step1(event, state, roster); }
+      else if (step === 1) { html = _buildB2Step2(event, state, roster); }
+      else                 { html = _buildB2Step3(event, state, roster); cardCls += ' narrow'; }
+    } else {
+      if (step === 0)      { html = _buildB3Step1(event, state);          cardCls += ' narrow'; }
+      else if (step === 1) { html = _buildB3Step2(event, state, roster);  cardCls += ' wide'; }
+      else                 { html = _buildB3Step3(event, state, roster);  cardCls += ' narrow'; }
+    }
+
+    card.className = cardCls;
+    card.innerHTML  = html;
+    overlay.classList.add('active');
+    _mdlAAttachSpeechHandlers(overlay, card);
+
+    const closeAndChoice = (idx) => {
+      overlay.classList.remove('active');
+      Audio.play('click');
+      if (onChoice) onChoice(idx);
+    };
+
+    // step 2: "次へ" → frame 3b 差し替え
+    if (step >= 2) {
+      const nextBtn = card.querySelector('[data-mdla-next]');
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          Audio.play('click');
+          const html3b = event.type === 'B2'
+            ? _buildB2Step3b(event, state, roster)
+            : _buildB3Step3b(event, state, roster);
+          card.className = 'mdl-a-card dark narrow';
+          card.innerHTML  = html3b;
+          _mdlAAttachSpeechHandlers(overlay, card);
+          card.querySelectorAll('[data-choice]').forEach(b =>
+            b.addEventListener('click', () => closeAndChoice(0)));
+        });
+      }
+    }
+
+    card.querySelectorAll('[data-choice]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        if (this.hasAttribute('disabled')) return;
+        closeAndChoice(parseInt(this.dataset.choice));
+      });
+    });
+
+    // 代表選手カード (B3 step1)
+    card.querySelectorAll('[data-fighter-id]').forEach(c => {
+      c.addEventListener('click', function() {
+        closeAndChoice(parseInt(this.dataset.fighterId));
+      });
+    });
+    return;
+  }
+
+  // B1/B4 — 既存 careOverlay
   const overlay = document.getElementById('careOverlay');
   const box = document.getElementById('careBox');
   if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
 
-  const roster = state ? (state.roster || []) : [];
   let html = '';
-
   switch (event.type) {
     case 'B1': html = _buildB1Modal(event, state, roster); break;
-    case 'B2':
-      if (step === 0) html = _buildB2Step1(event, state, roster);
-      else if (step === 1) html = _buildB2Step2(event, state, roster);
-      else html = _buildB2Step3(event, state, roster);
-      break;
-    case 'B3':
-      if (step === 0) html = _buildB3Step1(event, state);
-      else if (step === 1) html = _buildB3Step2(event, state, roster);
-      else html = _buildB3Step3(event, state, roster);
-      break;
     case 'B4': html = _buildB4Modal(event, state, roster); break;
     default: html = '<div class="care-title">不明なイベント</div><button class="btn" data-choice="0">閉じる</button>';
   }
 
   box.innerHTML = html;
 
-  // ボタンイベント（通常の選択肢）
   box.querySelectorAll('.btn[data-choice]').forEach(btn => {
     btn.addEventListener('click', function() {
       if (this.hasAttribute('disabled')) return;
@@ -8305,7 +8392,6 @@ function showLargeEventModal(event, state, step, onChoice) {
     });
   });
 
-  // 選手選択グリッド（B3 Step2, B4）
   box.querySelectorAll('.large-evt-fighter-pick').forEach(card => {
     card.addEventListener('click', function() {
       overlay.classList.remove('active');
@@ -8363,101 +8449,230 @@ function _buildB1Modal(event, state, roster) {
 function _buildB2Step1(event, state, roster) {
   const f1 = roster.find(f => f.id === event.fighter1);
   const f2 = roster.find(f => f.id === event.fighter2);
-  const face1 = f1 ? portraitImg(f1.id, 72, 'care-reaction-portrait') : '';
-  const face2 = f2 ? portraitImg(f2.id, 72, 'care-reaction-portrait') : '';
+  const u1 = f1 ? getUpperUrl(f1.id) : '';
+  const u2 = f2 ? getUpperUrl(f2.id) : '';
+  const p1s = u1 ? `background-image:url('${u1}')` : 'background:#2a1a14';
+  const p2s = u2 ? `background-image:url('${u2}')` : 'background:#2a1a14';
+  const n1 = f1 ? f1.name : (event.name1 || '?');
+  const n2 = f2 ? f2.name : (event.name2 || '?');
+  const o1 = f1 ? Engine.util.ov(f1) : '?';
+  const o2 = f2 ? Engine.util.ov(f2) : '?';
+  const weekMeta = _mdlASeasonLabel(state);
+  const reporterLine = event.detail || '練習場で大きな衝突があったようです';
 
-  let html = `<div class="care-title" style="border-bottom:1px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">💥 選手間の深刻な対立</div>`;
-
-  if (event.detail) {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
-  }
-
-  // 2人の選手のセリフを並べる
-  if (f1) {
-    html += `<div class="care-reaction" style="border-color:#e74c3c;margin-bottom:8px">
-      ${face1}
-      <div class="care-reaction-bubble" style="border-color:#e74c3c">
-        <strong style="font-size:12px;color:var(--text-dim)">${f1.name}</strong><br>
-        「${event.dialogue || '…'}」
+  return `
+    <div class="mdl-a-header danger">
+      <div class="mdl-a-header-title">💥 選 手 間 の 深 刻 な 対 立</div>
+      <div class="mdl-a-header-meta">INTERNAL CONFLICT ・ ${weekMeta}</div>
+    </div>
+    ${_mdlAReporterStrip(state, reporterLine)}
+    <div class="mdl-a-duo-stage" style="padding-top:108px">
+      <div class="mdl-a-duo-col">
+        <div class="mdl-a-portrait-wrap">
+          <div class="mdl-a-speech-pending">…</div>
+          <div class="mdl-a-speech danger delayed">
+            <div class="mdl-a-speech-speaker">${n1.toUpperCase()}</div>
+            <div class="mdl-a-speech-text">${event.dialogue || '…'}</div>
+          </div>
+          <div class="mdl-a-duo-portrait" style="${p1s}"></div>
+        </div>
+        <div class="mdl-a-duo-name">${n1}</div>
+        <div class="mdl-a-duo-org">OVR ${o1}</div>
+      </div>
+      <div class="mdl-a-duo-col">
+        <div class="mdl-a-portrait-wrap">
+          <div class="mdl-a-speech-pending">…</div>
+          <div class="mdl-a-speech danger delayed">
+            <div class="mdl-a-speech-speaker">${n2.toUpperCase()}</div>
+            <div class="mdl-a-speech-text">${event.dialogue2 || '…'}</div>
+          </div>
+          <div class="mdl-a-duo-portrait" style="${p2s}"></div>
+        </div>
+        <div class="mdl-a-duo-name">${n2}</div>
+        <div class="mdl-a-duo-org">OVR ${o2}</div>
+      </div>
+    </div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+    <div class="mdl-a-prompt" style="padding-top:20px">社長として、どう対処しますか？</div>
+    <div class="mdl-a-decision-tray">
+      <div class="mdl-a-decision-card" data-choice="0">
+        <div class="mdl-a-decision-letter">A</div>
+        <div class="mdl-a-decision-label">話し合いで解決</div>
+        <div class="mdl-a-decision-hint positive">両者の信頼↑ ／ 士気回復</div>
+      </div>
+      <div class="mdl-a-decision-card danger-accent" data-choice="1">
+        <div class="mdl-a-decision-letter">B</div>
+        <div class="mdl-a-decision-label">試合で決着させる</div>
+        <div class="mdl-a-decision-hint">勝者↑↑ ／ 敗者↓</div>
+      </div>
+      <div class="mdl-a-decision-card" data-choice="2">
+        <div class="mdl-a-decision-letter">C</div>
+        <div class="mdl-a-decision-label">放置する</div>
+        <div class="mdl-a-decision-hint negative">両者の信頼↓↓ ／ 士気低下</div>
       </div>
     </div>`;
-  }
-  if (f2) {
-    html += `<div class="care-reaction" style="border-color:#e74c3c">
-      ${face2}
-      <div class="care-reaction-bubble" style="border-color:#e74c3c">
-        <strong style="font-size:12px;color:var(--text-dim)">${f2.name}</strong><br>
-        「${event.dialogue2 || '…'}」
-      </div>
-    </div>`;
-  }
-
-  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">';
-  html += `<button class="btn" data-choice="0" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>話し合いで解決</span><span style="font-size:11px;color:var(--text-dim)">両者の信頼が上がる、士気も回復</span></button>`;
-  html += `<button class="btn" data-choice="1" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>試合で決着させる</span><span style="font-size:11px;color:var(--text-dim)">勝者の信頼が大きく上がる、敗者は下がる</span></button>`;
-  html += `<button class="btn" data-choice="2" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>放置する</span><span style="font-size:11px;color:var(--text-dim)">両者の信頼が大きく下がる、士気も低下</span></button>`;
-  html += '</div>';
-  return html;
 }
 
 // ── B2 Step 2: 介入選択 ───────────────────────────────────────────────────
 function _buildB2Step2(event, state, roster) {
   const f1 = roster.find(f => f.id === event.fighter1);
   const f2 = roster.find(f => f.id === event.fighter2);
+  const n1 = f1 ? f1.name : (event.name1 || '?');
+  const n2 = f2 ? f2.name : (event.name2 || '?');
+  const o1 = f1 ? Engine.util.ov(f1) : '?';
+  const o2 = f2 ? Engine.util.ov(f2) : '?';
+  const u1 = f1 ? getUpperUrl(f1.id) : '';
+  const u2 = f2 ? getUpperUrl(f2.id) : '';
+  const p1s = u1 ? `background-image:url('${u1}')` : 'background:#2a1a14';
+  const p2s = u2 ? `background-image:url('${u2}')` : 'background:#2a1a14';
 
-  let html = `<div class="care-title" style="border-bottom:1px solid #9b59b6;padding-bottom:10px;margin-bottom:12px">🤫 試合前の介入</div>`;
-  html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">
-    試合の前に、どちらかに声をかけますか？<br>
-    <span style="font-size:11px;color:var(--text-dim)">激励された選手は試合でわずかに有利になります</span>
-  </div>`;
-
-  html += '<div style="display:flex;flex-direction:column;gap:8px">';
-  const n1 = f1 ? f1.name : event.name1;
-  const n2 = f2 ? f2.name : event.name2;
-  const ovr1 = f1 ? Engine.util.ov(f1) : '?';
-  const ovr2 = f2 ? Engine.util.ov(f2) : '?';
-  html += `<button class="btn" data-choice="0" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>${n1}を激励する（OVR ${ovr1}）</span><span style="font-size:11px;color:var(--text-dim)">OVR+5バフ</span></button>`;
-  html += `<button class="btn" data-choice="1" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>${n2}を激励する（OVR ${ovr2}）</span><span style="font-size:11px;color:var(--text-dim)">OVR+5バフ</span></button>`;
-  html += `<button class="btn" data-choice="2" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>介入しない</span><span style="font-size:11px;color:var(--text-dim)">純粋な実力勝負</span></button>`;
-  html += '</div>';
-  return html;
+  return `
+    <div class="mdl-a-header">
+      <div class="mdl-a-header-title">🤝 ど う 立 ち 会 い ま す か</div>
+      <div class="mdl-a-header-meta">INTERVENTION ・ ${_mdlASeasonLabel(state)}</div>
+    </div>
+    ${_mdlAReporterStrip(state, '試合で決着をつけさせることにしました。社長の立ち位置を決めてください')}
+    <div class="mdl-a-vs-stage">
+      <div class="mdl-a-vs-row">
+        <div class="mdl-a-vs-fighter">
+          <div class="mdl-a-vs-upper" style="${p1s}"></div>
+          <div class="mdl-a-vs-name">${n1}</div>
+          <div class="mdl-a-vs-ovr">OVR ${o1}</div>
+        </div>
+        <div class="mdl-a-vs-mark">VS</div>
+        <div class="mdl-a-vs-fighter">
+          <div class="mdl-a-vs-upper" style="${p2s}"></div>
+          <div class="mdl-a-vs-name">${n2}</div>
+          <div class="mdl-a-vs-ovr">OVR ${o2}</div>
+        </div>
+      </div>
+    </div>
+    <div class="mdl-a-prompt">どう介入しますか？</div>
+    <div class="mdl-a-decision-tray">
+      <div class="mdl-a-decision-card" data-choice="2">
+        <div class="mdl-a-decision-letter">A</div>
+        <div class="mdl-a-decision-label">介入しない</div>
+        <div class="mdl-a-decision-hint">純粋な実力勝負</div>
+      </div>
+      <div class="mdl-a-decision-card" data-choice="0">
+        <div class="mdl-a-decision-letter">B</div>
+        <div class="mdl-a-decision-label">${n1}を後押し</div>
+        <div class="mdl-a-decision-hint">${n1}信頼↑ ／ ${n2}↓</div>
+      </div>
+      <div class="mdl-a-decision-card" data-choice="1">
+        <div class="mdl-a-decision-letter">C</div>
+        <div class="mdl-a-decision-label">${n2}を後押し</div>
+        <div class="mdl-a-decision-hint">${n2}信頼↑ ／ ${n1}↓</div>
+      </div>
+    </div>`;
 }
 
-// ── B2 Step 3: 試合結果 ───────────────────────────────────────────────────
+// ── B2 Step 3: 勝者コマ (frame 3a) ────────────────────────────────────────
 function _buildB2Step3(event, state, roster) {
   const result = event.matchResult;
-  if (!result) return '<div class="care-title">試合結果</div><button class="btn" data-choice="0">閉じる</button>';
+  if (!result) return '<div class="mdl-a-header"><div class="mdl-a-header-title">試合結果</div></div><div class="mdl-a-prompt"><button class="mdl-a-continue-btn" data-choice="0">閉じる</button></div>';
 
   const f1 = roster.find(f => f.id === event.fighter1);
   const f2 = roster.find(f => f.id === event.fighter2);
-  const n1 = f1 ? f1.name : event.name1;
-  const n2 = f2 ? f2.name : event.name2;
+  const isDraw = result.winner === 'draw';
+  const winnerF = !isDraw ? (result.winner === 'fighter1' ? f1 : f2) : null;
+  const loserF  = !isDraw ? (result.winner === 'fighter1' ? f2 : f1) : null;
+  const displayF = winnerF || f1;
+  const displayName = displayF ? displayF.name : '?';
+  const upperUrl = displayF ? getUpperUrl(displayF.id) : '';
+  const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a2520';
 
-  let resultText = '';
-  let emoji = '';
-  if (result.winner === 'draw') {
-    resultText = `${n1}と${n2}は引き分け。互いの実力を認め合った。`;
-    emoji = '🤝';
-  } else {
-    const winnerName = result.winner === 'fighter1' ? n1 : n2;
-    const loserName = result.winner === 'fighter1' ? n2 : n1;
-    resultText = `${winnerName}が${loserName}に勝利！ 対立に決着がついた。`;
-    emoji = '🏆';
-  }
+  const verdictJp  = isDraw ? '引き分け' : '勝 利';
+  const verdictEn  = isDraw ? 'DRAW' : 'VICTORY';
+  const verdictCls = isDraw ? 'draw' : 'victory';
+  const speechCls  = isDraw ? '' : 'gold';
 
-  let html = `<div class="care-title" style="border-bottom:1px solid #27ae60;padding-bottom:10px;margin-bottom:12px">${emoji} 決着の試合 — 結果</div>`;
-  html += `<div style="font-size:14px;text-align:center;padding:20px 10px;line-height:1.8">
-    <div style="font-size:16px;font-weight:700;margin-bottom:12px">${resultText}</div>
-    <div style="font-size:12px;color:var(--text-dim)">MQ: ${result.mq || '?'}</div>
-  </div>`;
-  html += `<button class="btn" data-choice="0" style="width:100%;padding:10px;font-size:13px;font-weight:600">了解</button>`;
-  return html;
+  const winnerLine = isDraw
+    ? '互いの実力を認め合った。'
+    : (typeof pickDialogueLine === 'function' && typeof RIVALRY_RESOLUTION_LINES !== 'undefined'
+        ? (pickDialogueLine(RIVALRY_RESOLUTION_LINES.winner, winnerF) || 'これで、はっきりさせた')
+        : 'これで、はっきりさせた');
+
+  const n1 = f1 ? f1.name : (event.name1 || '?');
+  const n2 = f2 ? f2.name : (event.name2 || '?');
+  const resultRow = isDraw
+    ? `<div class="mdl-a-result-row"><span>結果</span><strong>引き分け</strong></div>`
+    : `<div class="mdl-a-result-row"><span>${winnerF ? winnerF.name : ''}の信頼</span><span class="pos">+8</span></div>
+       <div class="mdl-a-result-row"><span>${loserF ? loserF.name : ''}の信頼</span><span class="neg">−4</span></div>
+       <div class="mdl-a-result-row"><span>両者の士気</span><strong>一旦リセット</strong></div>`;
+
+  const closePart = isDraw
+    ? `<div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-choice="0">— 了 解 —</button></div>`
+    : `<div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+       <div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-mdla-next>— 次 へ —</button></div>`;
+
+  return `
+    <div class="mdl-a-header">
+      <div class="mdl-a-header-title">${isDraw ? '🤝 対立の結果' : '✨ 対 立 の 決 着'}</div>
+      <div class="mdl-a-header-meta">${isDraw ? 'DRAW' : 'RESOLVED ・ 1 / 2'}</div>
+    </div>
+    ${_mdlAReporterStrip(state, '決着がつきました')}
+    <div class="mdl-a-subject-stage" style="padding-top:30px">
+      <div class="mdl-a-result-verdict">
+        <div class="mdl-a-result-verdict-jp ${verdictCls}">${verdictJp}</div>
+        <div class="mdl-a-result-verdict-en ${verdictCls}">${verdictEn}</div>
+      </div>
+      <div class="mdl-a-portrait-wrap" style="margin-top:20px">
+        <div class="mdl-a-speech-pending">…</div>
+        <div class="mdl-a-speech ${speechCls} delayed">
+          <div class="mdl-a-speech-speaker">${displayName.toUpperCase()}</div>
+          <div class="mdl-a-speech-text">${winnerLine}</div>
+        </div>
+        <div class="mdl-a-subject-portrait" style="${portraitStyle}"></div>
+      </div>
+      <div class="mdl-a-subject-name">${displayName}</div>
+      <div class="mdl-a-subject-org">${displayF ? `AGE ${displayF.age || '—'} ・ OVR ${Engine.util.ov(displayF)}` : ''}</div>
+      <div class="mdl-a-result-summary">${resultRow}</div>
+    </div>
+    ${closePart}`;
+}
+
+// ── B2 Step 3b: 敗者コマ (frame 3b) ──────────────────────────────────────
+function _buildB2Step3b(event, state, roster) {
+  const result = event.matchResult;
+  const f1 = roster.find(f => f.id === event.fighter1);
+  const f2 = roster.find(f => f.id === event.fighter2);
+  const loserF = result && result.winner !== 'draw'
+    ? (result.winner === 'fighter1' ? f2 : f1)
+    : f2;
+  const loserName = loserF ? loserF.name : '?';
+  const upperUrl = loserF ? getUpperUrl(loserF.id) : '';
+  const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a2520';
+  const loserLine = (typeof pickDialogueLine === 'function' && typeof RIVALRY_RESOLUTION_LINES !== 'undefined')
+    ? (pickDialogueLine(RIVALRY_RESOLUTION_LINES.loser, loserF) || '……覚えてなさいよ。次は絶対に、私が勝つ')
+    : '……覚えてなさいよ。次は絶対に、私が勝つ';
+
+  return `
+    <div class="mdl-a-header">
+      <div class="mdl-a-header-title">😔 敗 者 の 声</div>
+      <div class="mdl-a-header-meta">AFTERMATH ・ 2 / 2</div>
+    </div>
+    ${_mdlAReporterStrip(state, `${loserName}は納得していないようです…`)}
+    <div class="mdl-a-subject-stage defeat" style="padding-top:96px">
+      <div class="mdl-a-portrait-wrap">
+        <div class="mdl-a-speech-pending">…</div>
+        <div class="mdl-a-speech resentment delayed">
+          <div class="mdl-a-speech-speaker">${loserName.toUpperCase()}</div>
+          <div class="mdl-a-speech-text">${loserLine}</div>
+        </div>
+        <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
+      </div>
+      <div style="margin-top:12px"><div class="mdl-a-defeat-badge">DEFEATED ・ 敗 者</div></div>
+      <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${loserName}</div>
+      <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${loserF ? `AGE ${loserF.age || '—'} ・ OVR ${Engine.util.ov(loserF)}` : ''}</div>
+      <div class="mdl-a-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
+        胸の内に、<span class="marker danger">新たな火種</span>がくすぶり始めた。
+      </div>
+    </div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" data-choice="0">— 見 届 け る —</button>
+    </div>`;
 }
 
 // ── B3 Step 1: 挑戦状オファー ──────────────────────────────────────────────
@@ -8465,101 +8680,207 @@ function _buildB3Step1(event, state) {
   const challenger = event.challenger || {};
   const orgName = event.orgName || '他団体';
   const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
-  const face = portraitImg(challenger.id, 72, 'care-reaction-portrait');
+  const upperUrl = challenger.id ? getUpperUrl(challenger.id) : '';
+  const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a1a14';
 
-  let html = `<div class="care-title" style="border-bottom:2px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">⚔️ ${orgName}からの挑戦状</div>`;
-
-  if (event.detail) {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
-  }
-
-  // 挑戦者の挑発的なセリフ
-  html += `<div class="care-reaction" style="border-color:#e74c3c">
-    ${face}
-    <div class="care-reaction-bubble" style="border-color:#e74c3c">
-      <strong style="font-size:12px;color:var(--text-dim)">${challenger.name || '???'}（${orgName}・OVR ${cOvr}）</strong><br>
-      「${event.challengerDialogue || '…'}」
+  return `
+    <div class="mdl-a-header danger">
+      <div class="mdl-a-header-title">⚔ ${orgName}からの挑戦状</div>
+      <div class="mdl-a-header-meta">CHALLENGE LETTER ・ ${_mdlASeasonLabel(state)}</div>
     </div>
-  </div>`;
-
-  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">';
-  html += `<button class="btn" data-choice="0" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;border-color:#e74c3c">
-    <span>受けて立つ</span><span style="font-size:11px;color:var(--text-dim)">代表選手を選んで対戦</span></button>`;
-  html += `<button class="btn" data-choice="1" style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>断る</span><span style="font-size:11px;color:var(--text-dim)">ペナルティなし</span></button>`;
-  html += '</div>';
-  return html;
+    ${_mdlAReporterStrip(state, `興行会場に${orgName}の関係者が来ています`)}
+    <div class="mdl-a-subject-stage danger" style="padding-top:88px">
+      <div class="mdl-a-portrait-wrap">
+        <div class="mdl-a-speech-pending">…</div>
+        <div class="mdl-a-speech danger delayed">
+          <div class="mdl-a-speech-speaker">${(challenger.name || '???').toUpperCase()}</div>
+          <div class="mdl-a-speech-text large">${event.challengerDialogue || '…'}</div>
+        </div>
+        <div class="mdl-a-subject-portrait big danger" style="${portraitStyle}"></div>
+      </div>
+      <div class="mdl-a-subject-name danger">${challenger.name || '???'}</div>
+      <div class="mdl-a-subject-org danger">${orgName}</div>
+      <div class="mdl-a-subject-ovr danger"><span class="label">OVR</span>${cOvr}</div>
+      <div class="mdl-a-subject-divider"></div>
+      <div class="mdl-a-observation">リングで語り合おう、と<span class="marker danger">挑戦状</span>を突きつけてきた。</div>
+    </div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+    <div class="mdl-a-prompt">この挑戦状、どうしますか？</div>
+    <div class="mdl-a-decision-tray two">
+      <div class="mdl-a-decision-card danger-accent" data-choice="0">
+        <div class="mdl-a-decision-letter">受けて立つ</div>
+        <div class="mdl-a-decision-label">代表選手を選んで対戦</div>
+        <div class="mdl-a-decision-hint">次の画面で代表を選択</div>
+      </div>
+      <div class="mdl-a-decision-card" data-choice="1">
+        <div class="mdl-a-decision-letter">断る</div>
+        <div class="mdl-a-decision-label">今回は辞退する</div>
+        <div class="mdl-a-decision-hint">ペナルティなし</div>
+      </div>
+    </div>`;
 }
 
 // ── B3 Step 2: 代表選手選択 ────────────────────────────────────────────────
 function _buildB3Step2(event, state, roster) {
   const available = roster.filter(f => !f.injury && !f.isRental);
   const challenger = event.challenger || {};
+  const orgName = event.orgName || '他団体';
   const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
+  const cUpperUrl = challenger.id ? getUpperUrl(challenger.id) : '';
+  const cStyle = cUpperUrl ? `background-image:url('${cUpperUrl}')` : 'background:#2a1a14';
 
-  let html = `<div class="care-title" style="border-bottom:1px solid #e74c3c;padding-bottom:10px;margin-bottom:12px">🥊 代表選手を選べ</div>`;
-  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">対戦相手: ${challenger.name || '???'}（OVR ${cOvr}）</div>`;
-
-  html += '<div class="large-evt-roster-grid">';
-  available.forEach(f => {
+  const candidateCards = available.slice(0, 8).map(f => {
     const ovr = Engine.util.ov(f);
-    const face = portraitImg(f.id, 72, '');
-    html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
-      ${face}
-      <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}</div>
-      <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr}</div>
+    const uUrl = getUpperUrl(f.id);
+    const us = uUrl ? `background-image:url('${uUrl}')` : 'background:#2a2520';
+    return `<div class="mdl-a-candidate-card" data-fighter-id="${f.id}">
+      <div class="mdl-a-candidate-upper" style="${us}"></div>
+      <div class="mdl-a-candidate-name">${f.name}</div>
+      <div class="mdl-a-candidate-ovr-label">OVR</div>
+      <div class="mdl-a-candidate-ovr">${ovr}</div>
     </div>`;
-  });
-  html += '</div>';
-  return html;
+  }).join('');
+
+  return `
+    <div class="mdl-a-header danger">
+      <div class="mdl-a-header-title">🥊 代表選手を選んでください</div>
+      <div class="mdl-a-header-meta">SELECT YOUR CHAMPION</div>
+    </div>
+    ${_mdlAReporterStrip(state, 'どの選手を送り出しますか？')}
+    <div class="mdl-a-candidate-stage">
+      <div class="mdl-a-opponent-bar">
+        <div class="mdl-a-opponent-upper" style="${cStyle}"></div>
+        <div class="mdl-a-opponent-text">
+          <div class="mdl-a-opponent-label">OPPONENT ・ 対戦相手</div>
+          <div class="mdl-a-opponent-name">${challenger.name || '???'}</div>
+          <div class="mdl-a-opponent-meta">${orgName}${challenger.style ? ' ・ ' + challenger.style : ''}</div>
+        </div>
+        <div class="mdl-a-opponent-ovr">${cOvr}</div>
+      </div>
+      <div class="mdl-a-candidate-title">— CANDIDATES ・ 自団体の代表候補 —</div>
+      <div class="mdl-a-candidate-grid">${candidateCards}</div>
+    </div>
+    <div class="mdl-a-prompt" style="padding-bottom:24px">クリックで代表を決定します</div>`;
 }
 
-// ── B3 Step 3: 挑戦状結果 ──────────────────────────────────────────────────
+// ── B3 Step 3: 結果コマ (frame 3a) ────────────────────────────────────────
 function _buildB3Step3(event, state, roster) {
   const result = event.matchResult;
-  if (!result) return '<div class="care-title">挑戦状 結果</div><button class="btn" data-choice="0">閉じる</button>';
+  if (!result) return '<div class="mdl-a-header"><div class="mdl-a-header-title">挑戦状 結果</div></div><div class="mdl-a-prompt"><button class="mdl-a-continue-btn" data-choice="0">閉じる</button></div>';
 
   const challenger = event.challenger || {};
   const orgName = event.orgName || '他団体';
   const playerFighter = roster.find(f => f.id === event.selectedFighterId);
   const pName = playerFighter ? playerFighter.name : '代表選手';
+  const won  = result.winner === 'left';
+  const lost = result.winner === 'right';
+  const isDraw = !won && !lost;
 
-  let resultText = '', emoji = '', challengerLine = '';
+  const upperUrl = playerFighter ? getUpperUrl(playerFighter.id) : '';
+  const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a2520';
+  const verdictJp  = won ? '勝 利' : lost ? '敗 北' : '引き分け';
+  const verdictEn  = won ? 'VICTORY' : lost ? 'DEFEAT' : 'DRAW';
+  const verdictCls = won ? 'victory' : lost ? 'defeat' : 'draw';
+  const speechCls  = won ? 'gold' : lost ? 'danger' : '';
+  const pLine      = isDraw ? '互角の戦いを見せた。' : won ? 'この試合は、譲れなかった' : '…';
 
-  if (result.winner === 'left') {
-    resultText = `${pName}が${challenger.name || '???'}に勝利！ ${orgName}を返り討ちにした！`;
-    emoji = '🎉';
-    challengerLine = typeof WAR_POST_DIALOGUE !== 'undefined'
-      ? pickDialogueLine(WAR_POST_DIALOGUE.result_lose, challenger) : '…';
-  } else if (result.winner === 'right') {
-    resultText = `${pName}が${challenger.name || '???'}に敗北… ${orgName}の前に屈した。`;
-    emoji = '😞';
-    challengerLine = typeof WAR_POST_DIALOGUE !== 'undefined'
-      ? pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) : '…';
-  } else {
-    resultText = `${pName}と${challenger.name || '???'}は引き分け。互角の戦いを見せた。`;
-    emoji = '🤼';
-    challengerLine = '…次はこうはいかない';
-  }
+  const resultRows = `
+    <div class="mdl-a-result-row"><span>対戦相手</span><strong>${challenger.name || '???'}（${orgName}）</strong></div>
+    <div class="mdl-a-result-row"><span>MQ</span><span class="gold">${result.mq ? '★' + result.mq : '?'}</span></div>`;
 
-  let html = `<div class="care-title" style="border-bottom:2px solid ${result.winner === 'left' ? '#27ae60' : '#e74c3c'};padding-bottom:10px;margin-bottom:12px">${emoji} 挑戦状 — 結果</div>`;
-  html += `<div style="font-size:15px;text-align:center;padding:16px 10px;line-height:1.8;font-weight:700">${resultText}</div>`;
-  html += `<div style="font-size:12px;color:var(--text-dim);text-align:center;margin-bottom:12px">MQ: ${result.mq || '?'}</div>`;
+  const closePart = isDraw
+    ? `<div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-choice="0">— 了 解 —</button></div>`
+    : `<div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+       <div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-mdla-next>— 次 へ —</button></div>`;
 
-  // 挑戦者の反応セリフ
-  if (challengerLine) {
-    const face = portraitImg(challenger.id, 40, 'care-reaction-portrait');
-    html += `<div class="care-reaction" style="border-color:#e74c3c;margin-bottom:14px">
-      ${face}
-      <div class="care-reaction-bubble" style="border-color:#e74c3c">
-        <strong style="font-size:11px;color:var(--text-dim)">${challenger.name || '???'}</strong><br>
-        「${challengerLine}」
+  const headerTitle = won ? '🏆 挑 戦 状 ・ 結 果' : lost ? '😞 挑 戦 状 ・ 結 果' : '🤼 引き分け';
+  const headerMeta  = isDraw ? 'DRAW' : 'RESULT ・ 1 / 2';
+
+  return `
+    <div class="mdl-a-header${lost ? ' danger' : ''}">
+      <div class="mdl-a-header-title">${headerTitle}</div>
+      <div class="mdl-a-header-meta">${headerMeta}</div>
+    </div>
+    ${_mdlAReporterStrip(state, '試合、終わりました')}
+    <div class="mdl-a-subject-stage" style="padding-top:30px">
+      <div class="mdl-a-result-verdict">
+        <div class="mdl-a-result-verdict-jp ${verdictCls}">${verdictJp}</div>
+        <div class="mdl-a-result-verdict-en ${verdictCls}">${verdictEn}</div>
       </div>
-    </div>`;
+      <div class="mdl-a-portrait-wrap" style="margin-top:20px">
+        <div class="mdl-a-speech-pending">…</div>
+        <div class="mdl-a-speech ${speechCls} delayed">
+          <div class="mdl-a-speech-speaker">${pName.toUpperCase()}</div>
+          <div class="mdl-a-speech-text">${pLine}</div>
+        </div>
+        <div class="mdl-a-subject-portrait" style="${portraitStyle}${won ? ';box-shadow:0 0 32px rgba(240,208,120,0.3)' : ''}"></div>
+      </div>
+      <div class="mdl-a-subject-name">${pName}</div>
+      <div class="mdl-a-subject-org">${playerFighter ? `AGE ${playerFighter.age || '—'} ・ OVR ${Engine.util.ov(playerFighter)}` : ''}</div>
+      <div class="mdl-a-result-summary">${resultRows}</div>
+    </div>
+    ${closePart}`;
+}
+
+// ── B3 Step 3b: 敵陣反応 (frame 3b) ──────────────────────────────────────
+function _buildB3Step3b(event, state, roster) {
+  const result = event.matchResult || {};
+  const challenger = event.challenger || {};
+  const orgName = event.orgName || '他団体';
+  const won = result.winner === 'left';  // player won
+  const upperUrl = challenger.id ? getUpperUrl(challenger.id) : '';
+  const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a1a14';
+  const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
+
+  // 元コードのセリフデータを優先:
+  //   敵が負けた → BITTER_RESOLUTION_LINES.loser (恨み)
+  //   敵が勝った → WAR_POST_DIALOGUE.result_win (勝利宣言)
+  let challengerLine;
+  if (won) {
+    challengerLine = (typeof pickDialogueLine === 'function' && typeof BITTER_RESOLUTION_LINES !== 'undefined')
+      ? (pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
+      : '……この借り、必ず返してやる';
+  } else {
+    challengerLine = (typeof WAR_POST_DIALOGUE !== 'undefined' && typeof pickDialogueLine === 'function')
+      ? (pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
+      : '……どうだ、これが実力の差だ';
   }
 
-  html += `<button class="btn" data-choice="0" style="width:100%;padding:10px;font-size:13px;font-weight:600">了解</button>`;
-  return html;
+  const speechVariant = won ? 'resentment' : 'danger';
+  const headerTitle   = won ? '😠 敵 陣 の 反 応' : '😤 敵 の 勝 利 宣 言';
+  const reporterLine  = won
+    ? `${orgName}側は怒りを隠せない様子です…`
+    : `${orgName}側は勝利を誇示しています`;
+  const observationText = won
+    ? `${orgName}との<span class="marker danger">因縁</span>は、まだ終わっていない。`
+    : `${orgName}の<span class="marker danger">挑発</span>に、どう応えるか——`;
+
+  return `
+    <div class="mdl-a-header danger">
+      <div class="mdl-a-header-title">${headerTitle}</div>
+      <div class="mdl-a-header-meta">OPPONENT AFTERMATH ・ 2 / 2</div>
+    </div>
+    ${_mdlAReporterStrip(state, reporterLine)}
+    <div class="mdl-a-subject-stage defeat" style="padding-top:96px">
+      <div class="mdl-a-portrait-wrap">
+        <div class="mdl-a-speech-pending">…</div>
+        <div class="mdl-a-speech ${speechVariant} delayed">
+          <div class="mdl-a-speech-speaker">${(challenger.name || '???').toUpperCase()}</div>
+          <div class="mdl-a-speech-text">${challengerLine}</div>
+        </div>
+        <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
+      </div>
+      <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED ・ 敗 者' : 'VICTOR ・ 勝 者'}</div></div>
+      <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
+      <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${orgName} ・ OVR ${cOvr}</div>
+      <div class="mdl-a-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
+        ${observationText}
+      </div>
+    </div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" data-choice="0">— 見 届 け る —</button>
+    </div>`;
 }
 
 // ── B3 VS対峙画面 (showResultOverlay) ─────────────────────────────────────
