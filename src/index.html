@@ -5013,6 +5013,64 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* A型 選択状態マーカー(対象選手選択モーダル用) */
+.mdl-a-decision-card.is-selected {
+  border-color: var(--cream-gold) !important;
+  background: linear-gradient(180deg, rgba(212,168,67,0.18), rgba(212,168,67,0.06)) !important;
+  box-shadow: 0 6px 16px rgba(212,168,67,0.25), inset 0 0 0 1px var(--cream-gold) !important;
+  transform: translateY(-2px);
+}
+.mdl-a-decision-card.is-selected::before { opacity: 1 !important; width: 4px !important; }
+.mdl-a-decision-card.is-selected::after {
+  content: '✓'; position: absolute; top: 6px; right: 8px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--cream-gold); color: #fff;
+  font-size: 12px; font-weight: 700; line-height: 20px; text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* A型 頭上吹き出し(結果報告ヒーロー用、クリーム背景) */
+.mdl-a-speech {
+  position: absolute;
+  bottom: calc(100% + 16px); left: 50%;
+  transform: translateX(-50%);
+  background: rgba(250,246,236,0.97);
+  border: 1.5px solid rgba(122,101,48,0.5);
+  border-radius: 10px;
+  padding: 10px 16px;
+  min-width: 220px; max-width: 340px;
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  color: #2a2518; line-height: 1.6; letter-spacing: 0.3px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+  text-align: center; z-index: 10;
+  animation: mdlASpeechIn 600ms cubic-bezier(0.22,1,0.36,1) 400ms both;
+}
+.mdl-a-speech::after {
+  content: ''; position: absolute;
+  top: 100%; left: 50%; transform: translateX(-50%);
+  border: 9px solid transparent; border-top-color: rgba(122,101,48,0.5);
+}
+.mdl-a-speech::before {
+  content: ''; position: absolute;
+  top: calc(100% - 2px); left: 50%; transform: translateX(-50%);
+  border: 8px solid transparent; border-top-color: rgba(250,246,236,0.97);
+  z-index: 1;
+}
+.mdl-a-speech-text { font-style: italic; }
+.mdl-a-speech-text::before { content: '「'; color: rgba(120,100,60,0.55); }
+.mdl-a-speech-text::after  { content: '」'; color: rgba(120,100,60,0.55); }
+
+/* 頭上吹き出しのための余白確保付き肖像ラッパ */
+.mdl-a-subject-portrait-speechable {
+  position: relative; display: inline-block;
+  margin-top: 70px; /* 吹き出し分の上余白 */
+}
+
+@keyframes mdlASpeechIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 /* ============================================================
    TEMPLATE B — ステージ演出型
    ============================================================ */

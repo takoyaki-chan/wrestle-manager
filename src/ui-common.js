@@ -140,7 +140,10 @@ function _mdlASeasonLabel(state) {
   return `WEEK ${String(week).padStart(2, '0')} ・ ${season}Y`;
 }
 
-/** A型 subject-stage: 選手の上半身 + 名前 + メタ + 仕切り線 */
+/** A型 subject-stage: 選手の上半身 + 名前 + メタ + 仕切り線
+ *  opts.small: 120x160 (default 140x184)
+ *  opts.speech: 頭上吹き出しに表示するセリフ(文字列)
+ */
 function _mdlASubjectStage(fighter, bodyHtml, opts) {
   const size = (opts && opts.small) ? { w: 120, h: 160 } : { w: 140, h: 184 };
   let portraitHtml = '';
@@ -150,7 +153,14 @@ function _mdlASubjectStage(fighter, bodyHtml, opts) {
     const bg = upperUrl
       ? `background-image:url('${upperUrl}')`
       : (faceUrl ? `background-image:url('${faceUrl}')` : '');
-    portraitHtml = `<div class="mdl-a-subject-portrait-wrap" style="width:${size.w}px;height:${size.h}px;${bg}"></div>`;
+    const speech = opts && opts.speech
+      ? `<div class="mdl-a-speech"><div class="mdl-a-speech-text">${opts.speech}</div></div>`
+      : '';
+    const wrapCls = speech ? 'mdl-a-subject-portrait-speechable' : '';
+    portraitHtml = `<div class="${wrapCls}">
+      ${speech}
+      <div class="mdl-a-subject-portrait-wrap" style="width:${size.w}px;height:${size.h}px;${bg}"></div>
+    </div>`;
   }
   const meta = fighter
     ? `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''} ・ ${String(fighter.style || '').toUpperCase() || 'FIGHTER'}`
@@ -6283,8 +6293,8 @@ function showDecisionTargetModal(docId, state) {
     const bg = faceUrl
       ? `background-image:url('${faceUrl}');background-size:cover;background-position:center`
       : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
-    const selected = i === 0 ? ' data-selected="1"' : '';
-    return `<div class="mdl-a-decision-card" data-id="${f.id}" style="text-align:center"${selected}>
+    const selCls = i === 0 ? ' is-selected' : '';
+    return `<div class="mdl-a-decision-card${selCls}" data-id="${f.id}" style="text-align:center">
       <div style="width:72px;height:72px;margin:0 auto 8px;${bg};background-color:#2a2520;border:2px solid var(--cream-gold-dark);border-radius:50%"></div>
       <div class="mdl-a-decision-label" style="margin-bottom:4px">${lastName}</div>
       <div style="font-family:var(--font-label);font-size:9px;color:var(--cream-gold);letter-spacing:1.5px;margin-bottom:6px">AGE ${f.age || '—'} ・ OVR ${Engine.util.ov(f)}</div>
@@ -6292,20 +6302,23 @@ function showDecisionTargetModal(docId, state) {
     </div>`;
   }).join('');
 
+  const stageBody = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:12px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="display:flex;justify-content:center;gap:18px;align-items:baseline;font-size:13px;color:var(--cream-text-main);margin-bottom:14px">
+      <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">COST</span><strong style="color:var(--cream-gold-dark)">${costText}</strong></span>
+      <span style="color:rgba(122,101,48,0.3)">|</span>
+      <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">DP</span><strong>⚡${doc.decisionCost}</strong></span>
+    </div>
+    <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">CANDIDATES ・ 候 補 者</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px" id="mdlADecisionGrid">
+      ${candidateCards}
+    </div>
+  `;
+
   const html = `
     ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
     ${_mdlAReporterStrip(state, '対象となる選手を選んでください')}
-    <div style="padding:18px 24px 14px;background:var(--office-panel-cream-card)">
-      <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:12px;text-align:center">${doc.detailText || ''}</div>
-      <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:4px">COST</div>
-      <div style="text-align:center;font-size:13px;color:var(--cream-text-main);margin-bottom:12px">
-        <strong style="color:var(--cream-gold-dark)">${costText}</strong>　・　決裁ポイント <strong>⚡${doc.decisionCost}</strong>
-      </div>
-      <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">CANDIDATES ・ 候 補 者</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px" id="mdlADecisionGrid">
-        ${candidateCards}
-      </div>
-    </div>
+    <div class="mdl-a-subject-stage">${stageBody}</div>
     <div class="mdl-a-prompt" style="padding-top:14px">選択後、決裁ボタンを押してください</div>
     <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
       <button class="mdl-a-continue-btn" id="mdlADecisionCancel">— 取 消 —</button>
@@ -6323,21 +6336,9 @@ function showDecisionTargetModal(docId, state) {
       const el = e.target.closest('.mdl-a-decision-card');
       if (!el) return;
       selectedFighterId = parseInt(el.dataset.id);
-      grid.querySelectorAll('.mdl-a-decision-card').forEach(c => c.removeAttribute('data-selected'));
-      el.setAttribute('data-selected', '1');
-      el.style.borderColor = 'var(--cream-gold)';
-      el.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-      grid.querySelectorAll('.mdl-a-decision-card:not([data-selected])').forEach(c => {
-        c.style.borderColor = '';
-        c.style.boxShadow = '';
-      });
+      grid.querySelectorAll('.mdl-a-decision-card').forEach(c => c.classList.remove('is-selected'));
+      el.classList.add('is-selected');
     });
-    // 初期選択のスタイル反映
-    const initSel = grid.querySelector('[data-selected="1"]');
-    if (initSel) {
-      initSel.style.borderColor = 'var(--cream-gold)';
-      initSel.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-    }
   }
   document.getElementById('mdlADecisionCancel').addEventListener('click', () => {
     Audio.play('click');
@@ -6455,11 +6456,6 @@ function showDecisionResultModal(displayData) {
     toneBadge = `<div class="mdl-a-result-badge failure">💤 あまり響かなかった</div>`;
   }
 
-  // セリフブロック
-  const speechHtml = text
-    ? `<div style="background:rgba(255,255,255,0.5);border-left:3px solid var(--cream-gold);border-radius:0 4px 4px 0;padding:12px 16px;margin:10px auto 6px;max-width:480px;text-align:left;font-size:14px;color:var(--cream-text-main);line-height:1.7;font-style:italic">「${text}」</div>`
-    : '';
-
   // 参加者グリッド(team書類のみ)
   let rosterHtml = '';
   if (isTeam && fighters.length > 0) {
@@ -6518,10 +6514,9 @@ function showDecisionResultModal(displayData) {
     </div>`;
   }
 
-  // subject-stage: hero がいれば上半身、いなければ説明のみ
+  // subject-stage: hero がいれば上半身(+頭上吹き出し)、いなければ説明のみ
   const stageBody = `
     ${toneBadge}
-    ${speechHtml}
     ${rosterHtml}
     ${flavorHtml}
     ${changesHtml}
@@ -6529,7 +6524,7 @@ function showDecisionResultModal(displayData) {
   `;
 
   const subjectHtml = hero
-    ? _mdlASubjectStage(hero, stageBody, { small: true })
+    ? _mdlASubjectStage(hero, stageBody, { small: true, speech: text })
     : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
 
   const html = `
