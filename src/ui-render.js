@@ -4803,43 +4803,34 @@ function renderScoutCompetitionModal(cand, baseCost, discount) {
   const tierCfg = Engine.scout.getTierConfig(cand.assessedTier || 'material');
   const compCost = Math.round(baseCost * (cand._compMultiplier || 1.5));
   const winRate = Math.round((cand._bidWinRate || 0.5) * 100);
+  const candId = cand.id;
 
-  const modal = document.createElement('div');
-  modal.id = 'scoutCompModal';
-  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;animation:fadeIn 0.2s';
-  modal.innerHTML = `<div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:360px;width:90%">
-    <h3 style="color:#e74c3c;margin-bottom:12px;text-align:center">⚔ 他団体との競合発生！</h3>
-    <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:4px">${cand.name}</div>
-      <div style="font-size:12px;color:var(--text-dim)">${tierCfg.label} / ${cand.style} / ${cand.age}歳</div>
+  const box = document.getElementById('mdlDBox');
+  const overlay = document.getElementById('mdlDOverlay');
+  if (!box || !overlay) return;
+
+  box.innerHTML = `
+    <div class="mdl-d-title urgent">⚔ 他団体との競合発生！</div>
+    <div class="mdl-d-speaker">${cand.name} ・ ${tierCfg.label} / ${cand.style} / ${cand.age}歳</div>
+    <div class="mdl-d-detail">
+      通常契約金: <strong>${baseCost}万</strong> &nbsp;|&nbsp;
+      競合上乗せ (×${cand._compMultiplier}): <strong style="color:#ff9080">${compCost}万</strong> &nbsp;|&nbsp;
+      通常額勝率: <strong style="color:var(--gold)">${winRate}%</strong>
     </div>
-    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;font-size:12px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <span>通常契約金:</span><span style="color:var(--gold)">${baseCost}万</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <span>競合上乗せ (×${cand._compMultiplier}):</span><span style="color:#e74c3c;font-weight:700">${compCost}万</span>
-      </div>
-      <div style="display:flex;justify-content:space-between">
-        <span>通常額での勝率:</span><span style="color:#f39c12">${winRate}%</span>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'pay')" class="btn btn-gold" style="width:100%" ${G.funds >= compCost ? '' : 'disabled'}>
+    <div class="mdl-d-actions" style="flex-direction:column;gap:8px">
+      <button class="mdl-d-btn primary" onclick="document.getElementById('mdlDOverlay').classList.remove('active');scoutResolve(${candId},'pay')" ${G.funds >= compCost ? '' : 'disabled'}>
         💰 上乗せ確定獲得 (${compCost}万)
       </button>
-      <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'gamble')" class="btn btn-blue" style="width:100%">
+      <button class="mdl-d-btn secondary" onclick="document.getElementById('mdlDOverlay').classList.remove('active');scoutResolve(${candId},'gamble')">
         🎲 通常額で勝負 (${baseCost}万 / 勝率${winRate}%)
       </button>
-      <button onclick="document.getElementById('scoutCompModal').remove(); scoutResolve(${cand.id},'skip')" class="btn" style="width:100%;background:rgba(200,190,170,0.04);border:1px solid rgba(200,190,170,0.1);color:var(--text-dim)">
+      <button class="mdl-d-btn secondary" onclick="document.getElementById('mdlDOverlay').classList.remove('active');scoutResolve(${candId},'skip')">
         ❌ 諦める
       </button>
     </div>
-  </div>`;
-  // Remove existing modal if any
-  const existing = document.getElementById('scoutCompModal');
-  if (existing) existing.remove();
-  document.body.appendChild(modal);
+  `;
+  box.className = 'mdl-d-box urgent';
+  overlay.classList.add('active');
 }
 
 // ╔══════════════════════════════════════════════════════════╗

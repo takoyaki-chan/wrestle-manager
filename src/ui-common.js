@@ -39,7 +39,9 @@ const _POPUP_OVERLAY_IDS = [
   'growthEventOverlay', 'eventPopupOverlay', 'retirementPopupOverlay',
   'rivalryPopupOverlay', 'newspaperOverlay', 'seasonFanfareOverlay',
   'milestoneOverlay', 'awardsOverlay', 'careModalOverlay', 'notifModalOverlay',
-  'careOverlay', 'fighterPopupOverlay', 'coachTooltipOverlay', 'showResultOverlay'
+  'careOverlay', 'fighterPopupOverlay', 'coachTooltipOverlay', 'showResultOverlay',
+  // 統一モーダル(Phase 0以降)
+  'mdlAOverlay', 'mdlBOverlay', 'mdlCOverlay', 'mdlDOverlay'
 ];
 let _popupQueue = [];
 
@@ -70,6 +72,250 @@ function _drainPopupQueue() {
       next();
     }
   }, 200);
+}
+
+// ─────────────────────────────────────────────────────────────
+// 統一モーダル mdl-a-* ヘルパー (Phase 1)
+// 社長室型モーダル(A-1〜A-6)の共通パーツをまとめる。
+// 派閥イベント(fevt-*)の _factionReporterStrip などを参考にしているが、
+// クラス名は本番用 mdl-a-* に置き換えている。
+// ─────────────────────────────────────────────────────────────
+
+/** A型モーダルを開く */
+function _mdlAOpen(html, opts) {
+  const overlay = document.getElementById('mdlAOverlay');
+  const card = document.getElementById('mdlACard');
+  if (!overlay || !card) return false;
+  card.className = (opts && opts.narrow) ? 'mdl-a-card narrow' : 'mdl-a-card';
+  card.innerHTML = html;
+  overlay.classList.add('active');
+  return true;
+}
+
+/** A型モーダルを閉じる */
+function _mdlAClose() {
+  const overlay = document.getElementById('mdlAOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+/** A型ヘッダーHTML */
+function _mdlAHeader(title, meta, opts) {
+  const urgent = opts && opts.urgent ? ' urgent' : '';
+  return `<div class="mdl-a-header${urgent}">
+    <div class="mdl-a-header-title">${title || ''}</div>
+    <div class="mdl-a-header-meta">${meta || ''}</div>
+  </div>`;
+}
+
+/** A型 reporter-strip(コーチ or 古参選手の取次) */
+function _mdlAReporterStrip(state, line) {
+  let url = '', name = 'BLACKWELL COACH';
+  if (typeof _factionPickReporter === 'function') {
+    const pick = _factionPickReporter(state);
+    if (pick && pick.kind === 'coach') {
+      url = (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(pick.ref.id) : '';
+      name = `${String(pick.ref.name)} コーチ`;
+    } else if (pick && pick.kind === 'veteran') {
+      url = (typeof getUpperUrl === 'function') ? getUpperUrl(pick.ref.id) : '';
+      name = String(pick.ref.name);
+    }
+  }
+  const bg = url
+    ? `background-image:url('${url}'),linear-gradient(135deg,#5a4a3a,#3a2d22);background-size:cover;background-position:center`
+    : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
+  return `<div class="mdl-a-reporter-strip">
+    <div class="mdl-a-reporter-portrait" style="${bg}"></div>
+    <div class="mdl-a-reporter-text">
+      <div class="mdl-a-reporter-name">${name}</div>
+      <div class="mdl-a-reporter-line">${String(line || '')}</div>
+    </div>
+  </div>`;
+}
+
+/** A型 季節ラベル */
+function _mdlASeasonLabel(state) {
+  const s = state || (typeof G !== 'undefined' ? G : {});
+  const season = s.season || 1;
+  const week = s.week || 1;
+  return `WEEK ${String(week).padStart(2, '0')} ・ ${season}Y`;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 統一モーダル mdl-b-* ヘルパー (Phase 2)
+// ステージ演出型(B-1〜B-5)の共通パーツ
+// ─────────────────────────────────────────────────────────────
+
+/** B型モーダルを開く。variant: 'default' | 'sepia' | 'rival' | 'gold' */
+function _mdlBOpen(html, variant) {
+  const overlay = document.getElementById('mdlBOverlay');
+  if (!overlay) return false;
+  overlay.className = 'mdl-b-overlay' + (variant && variant !== 'default' ? ' ' + variant : '');
+  overlay.innerHTML = html;
+  // 次フレームでactive化(トランジションを走らせる)
+  void overlay.offsetWidth;
+  overlay.classList.add('active');
+  return true;
+}
+
+/** B型モーダルを閉じる */
+function _mdlBClose() {
+  const overlay = document.getElementById('mdlBOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    // 600ms後に中身をクリア(fadeOut完了後)
+    setTimeout(() => { if (!overlay.classList.contains('active')) overlay.innerHTML = ''; }, 650);
+  }
+}
+
+/** B型 タイトル帯。titleCls: clash|victory|rival|milestone|dissolve など */
+function _mdlBTitleBand(title, titleCls, sub) {
+  return `<div class="mdl-b-title-band">
+    <div class="mdl-b-title-main${titleCls ? ' ' + titleCls : ''}">${title || ''}</div>
+    <div class="mdl-b-title-divider"></div>
+    ${sub ? `<div class="mdl-b-title-sub">${sub}</div>` : ''}
+  </div>`;
+}
+
+/** B型 頭上吹き出し。variant: default|rival|gold|soft, size: 'large'|null */
+function _mdlBSpeech(speaker, text, variant, size) {
+  if (!text) return '';
+  const v = variant && variant !== 'default' ? ' ' + variant : '';
+  const sz = size === 'large' ? ' large' : '';
+  return `<div class="mdl-b-speech${v}">
+    ${speaker ? `<div class="mdl-b-speech-speaker">${speaker}</div>` : ''}
+    <div class="mdl-b-speech-text${sz}">${text}</div>
+  </div>`;
+}
+
+/** B型 選手カラム(対峙構図用)。side: 'left'|'right', speech: {speaker,text,variant} | null, flag: {cls,label} */
+function _mdlBCol(fighter, opts) {
+  opts = opts || {};
+  const upperUrl = fighter && typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  const imgHtml = upperUrl
+    ? `<img class="mdl-b-upper" src="${upperUrl}" alt="" onerror="this.style.display='none'">`
+    : '';
+  const speech = opts.speech
+    ? _mdlBSpeech(opts.speech.speaker, opts.speech.text, opts.speech.variant, opts.speech.size)
+    : '';
+  const flag = opts.flag
+    ? `<div class="mdl-b-flag ${opts.flag.cls || 'a'}">${opts.flag.label}</div>`
+    : '';
+  const colCls = 'mdl-b-col' + (opts.side === 'right' ? ' right' : '');
+  const nameMeta = fighter
+    ? `<div class="mdl-b-name">${fighter.name || ''}</div>
+       <div class="mdl-b-org">${opts.meta || `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''}`}</div>`
+    : '';
+  return `<div class="${colCls}">
+    ${flag}
+    <div class="mdl-b-upper-wrap">
+      ${speech}
+      ${imgHtml}
+    </div>
+    ${nameMeta}
+  </div>`;
+}
+
+/** B型 ソロステージ(1選手中央)。opts.sepia で sepia 影 */
+function _mdlBSoloStage(fighter, speech, opts) {
+  opts = opts || {};
+  const upperUrl = fighter && typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  const sizeStyle = opts.large ? 'style="width:300px;height:360px"' : '';
+  const imgHtml = upperUrl
+    ? `<img class="mdl-b-upper" src="${upperUrl}" alt="" ${sizeStyle} onerror="this.style.display='none'">`
+    : '';
+  const speechHtml = speech
+    ? _mdlBSpeech(speech.speaker, speech.text, speech.variant, speech.size)
+    : '';
+  const stageCls = 'mdl-b-solo-stage' + (opts.sepia ? ' sepia' : '');
+  const nameMeta = fighter
+    ? `<div class="mdl-b-name" style="margin-top:16px${opts.sepia ? ';color:rgba(232,220,200,0.9)' : ''}">${fighter.name || ''}</div>
+       <div class="mdl-b-org"${opts.sepia ? ' style="color:rgba(200,180,150,0.7)"' : ''}>${opts.meta || `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''}`}</div>`
+    : '';
+  return `<div class="${stageCls}">
+    <div class="mdl-b-upper-wrap">
+      ${speechHtml}
+      ${imgHtml}
+    </div>
+    ${nameMeta}
+  </div>`;
+}
+
+/** B型 アクション行(ボタン群)。buttons: [{label, sub, primary, onclick}] */
+function _mdlBActions(buttons) {
+  return `<div class="mdl-b-decision">${buttons.map(b =>
+    `<button class="mdl-b-btn${b.primary ? ' primary' : ''}"${b.id ? ` id="${b.id}"` : ''}>${b.label}${b.sub ? `<span class="mdl-b-btn-label">${b.sub}</span>` : ''}</button>`
+  ).join('')}</div>`;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 統一モーダル mdl-c-* ヘルパー (Phase 3)
+// 情報パネル型(C-1〜C-3)の共通パーツ
+// ─────────────────────────────────────────────────────────────
+
+/** C型モーダルを開く。opts.wide / opts.compact でカード幅変更 */
+function _mdlCOpen(html, opts) {
+  const overlay = document.getElementById('mdlCOverlay');
+  const card    = document.getElementById('mdlCCard');
+  if (!overlay || !card) return false;
+  card.className = 'mdl-c-card' + (opts && opts.wide ? ' wide' : opts && opts.compact ? ' compact' : '');
+  card.innerHTML = html;
+  void overlay.offsetWidth;
+  overlay.classList.add('active');
+  return true;
+}
+
+/** C型モーダルを閉じる */
+function _mdlCClose() {
+  const overlay = document.getElementById('mdlCOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+/** D型モーダルを開く — html を #mdlDBox に注入して表示 */
+function _mdlDOpen(html) {
+  const box = document.getElementById('mdlDBox');
+  const overlay = document.getElementById('mdlDOverlay');
+  if (!box || !overlay) return;
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+/** D型モーダルを閉じる */
+function _mdlDClose() {
+  const overlay = document.getElementById('mdlDOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+/** A型 subject-stage: 選手の上半身 + 名前 + メタ + 仕切り線
+ *  opts.small: 120x160 (default 140x184)
+ *  opts.speech: 頭上吹き出しに表示するセリフ(文字列)
+ */
+function _mdlASubjectStage(fighter, bodyHtml, opts) {
+  const size = (opts && opts.small) ? { w: 120, h: 160 } : { w: 140, h: 184 };
+  let portraitHtml = '';
+  if (fighter) {
+    const upperUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(fighter.id) : '';
+    const faceUrl  = (typeof getPortraitUrl === 'function') ? getPortraitUrl(fighter.id) : '';
+    const bg = upperUrl
+      ? `background-image:url('${upperUrl}')`
+      : (faceUrl ? `background-image:url('${faceUrl}')` : '');
+    const speech = opts && opts.speech
+      ? `<div class="mdl-a-speech"><div class="mdl-a-speech-text">${opts.speech}</div></div>`
+      : '';
+    const wrapCls = speech ? 'mdl-a-subject-portrait-speechable' : '';
+    portraitHtml = `<div class="${wrapCls}">
+      ${speech}
+      <div class="mdl-a-subject-portrait-wrap" style="width:${size.w}px;height:${size.h}px;${bg}"></div>
+    </div>`;
+  }
+  const meta = fighter
+    ? `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''} ・ ${String(fighter.style || '').toUpperCase() || 'FIGHTER'}`
+    : '';
+  return `<div class="mdl-a-subject-stage">
+    ${portraitHtml}
+    ${fighter ? `<div class="mdl-a-subject-name">${fighter.name || ''}</div>` : ''}
+    ${fighter ? `<div class="mdl-a-subject-org">${meta}</div>` : ''}
+    <div class="mdl-a-subject-divider"></div>
+    ${bodyHtml || ''}
+  </div>`;
 }
 
 document.addEventListener('click', (event) => {
@@ -620,8 +866,6 @@ function closeWarFinalResult(eventWon) {
 // ── R3 モーダル: 仲良し退団/引退演出 ──
 function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
   if (_isPopupActive()) { _popupQueue.push(() => showR3Modal({ fighterName, fighterFace, departedName, reason, line })); return; }
-  const overlay = document.createElement('div');
-  overlay.className = 'r3-modal-overlay';
 
   const isRetired = reason && (reason.includes('引退') || reason === 'retired');
   const departureText = isRetired
@@ -629,81 +873,93 @@ function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
     : `${departedName} が去った。`;
 
   const faceHtml = fighterFace
-    ? `<div class="r3-modal-face"><img src="${fighterFace}" alt="${fighterName}" /></div>`
+    ? `<div class="mdl-d-face" style="background-image:url('${fighterFace}')"></div>`
     : '';
 
-  overlay.innerHTML = `
-    <div class="r3-modal">
-      ${faceHtml}
-      <p class="r3-modal-departure">${departureText}</p>
-      <p class="r3-modal-name">${fighterName}</p>
-      <p class="r3-modal-line">${line}</p>
-      <button class="r3-modal-close">閉じる</button>
+  _mdlDOpen(`
+    ${faceHtml}
+    <div class="mdl-d-speaker">${fighterName}</div>
+    <div class="mdl-d-body">${departureText}</div>
+    <div class="mdl-d-body italic">${line}</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue()">閉じる</button>
     </div>
-  `;
-
-  overlay.querySelector('.r3-modal-close').addEventListener('click', () => {
-    overlay.remove();
-    _drainPopupQueue();
-  });
-
-  document.body.appendChild(overlay);
+  `);
 }
 
 function showConfirm(msg, yesLabel, onYes) {
   Audio.play('notify');
-  const overlay = document.getElementById('confirmOverlay');
-  const box = document.getElementById('confirmBox');
   window._confirmYes = onYes;
-  box.innerHTML = `<div style="margin-bottom:16px;font-size:14px">${msg}</div>
-    <div class="btn-row" style="justify-content:center">
-      <button class="btn btn-gold" onclick="document.getElementById('confirmOverlay').classList.remove('active');if(window._confirmYes)window._confirmYes()">${yesLabel}</button>
-      <button class="btn btn-blue" onclick="document.getElementById('confirmOverlay').classList.remove('active')">いいえ</button>
-    </div>`;
-  overlay.classList.add('active');
+  _mdlDOpen(`
+    <div class="mdl-d-title">確認</div>
+    <div class="mdl-d-body">${msg}</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="_mdlDClose();if(window._confirmYes)window._confirmYes()">${yesLabel}</button>
+      <button class="mdl-d-btn secondary" onclick="_mdlDClose()">いいえ</button>
+    </div>
+  `);
 }
 
 function showRosterOverflowSigningModal(pending) {
   if (!pending) return;
-  const overlay = document.getElementById('showResultOverlay');
-  const box = document.getElementById('showResultBox');
   const fighter = pending.fighter || {};
   const releaseCandidates = (G.roster || []).filter(c => !c.isRental && !c.lastRun);
   const sourceLabel = pending.source === 'negotiation' ? '交渉成立選手' : '加入予定選手';
-  let html = '';
-  html += `<div style="text-align:center;font-size:20px;font-weight:900;color:var(--gold);margin-bottom:12px">所属上限に達しています</div>`;
-  html += `<div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:14px">1名解雇すると、この選手と契約できます。</div>`;
-  html += `<div style="padding:12px 14px;margin-bottom:14px;border-radius:10px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.22)">`;
-  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${sourceLabel}</div>`;
-  html += `<div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px">${fighter.name || '選手'}</div>`;
-  html += `<div style="font-size:12px;color:var(--text-sub)">OVR ${Engine.util.ov(fighter || {})} ｜ ${fighter.age || '?'}歳 ｜ 契約金 ${pending.cost || 0}万</div>`;
-  html += `</div>`;
+
+  const fighterBlock = `
+    <div style="background:rgba(255,255,255,0.5);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:10px 14px;margin:10px auto 12px;max-width:460px;text-align:center">
+      <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-bottom:4px">${sourceLabel}</div>
+      <div style="font-size:16px;font-weight:700;color:var(--cream-text-main);margin-bottom:4px">${fighter.name || '選手'}</div>
+      <div style="font-size:12px;color:var(--cream-text-sub)">OVR ${Engine.util.ov(fighter || {})} ・ ${fighter.age || '?'}歳 ・ 契約金 ${pending.cost || 0}万</div>
+    </div>`;
+
+  let candidatesHtml = '';
   if (releaseCandidates.length === 0) {
-    html += `<div style="font-size:13px;color:var(--text-sub);text-align:center;margin-bottom:14px">解雇できる所属選手がいません。</div>`;
+    candidatesHtml = `<div class="mdl-a-observation centered" style="color:var(--accent-negative);font-size:13px">解雇できる所属選手がいません。</div>`;
   } else {
-    html += `<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">解雇する選手を選んでください</div>`;
-    html += `<div style="display:grid;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:12px">`;
+    candidatesHtml += `<div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin:12px 0 8px">RELEASE ・ 解 雇 す る 選 手</div>`;
+    candidatesHtml += `<div style="display:grid;gap:6px;max-height:280px;overflow-y:auto;padding:0 8px">`;
     releaseCandidates.forEach(c => {
-      html += `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(200,190,170,0.03);border:1px solid rgba(200,190,170,0.08)">`;
-      html += `<div><div style="font-size:14px;font-weight:700;color:var(--text)">${c.name}</div><div style="font-size:12px;color:var(--text-sub)">OVR ${ov(c)} ｜ ${c.age || '?'}歳</div></div>`;
-      html += `<button class="btn btn-gold" style="padding:8px 12px;font-size:12px;white-space:nowrap" onclick="confirmRosterOverflowSigning(${c.id})">解雇して契約</button>`;
-      html += `</div>`;
+      candidatesHtml += `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;border-radius:4px;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15)">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--cream-text-main)">${c.name}</div>
+          <div style="font-size:11px;color:var(--cream-text-sub)">OVR ${ov(c)} ・ ${c.age || '?'}歳</div>
+        </div>
+        <button class="mdl-a-continue-btn" style="padding:6px 12px;font-size:11px;letter-spacing:2px;background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)" onclick="confirmRosterOverflowSigning(${c.id})">解雇して契約</button>
+      </div>`;
     });
-    html += `</div>`;
+    candidatesHtml += `</div>`;
   }
-  html += `<div style="display:flex;justify-content:center"><button class="btn" style="min-width:120px;padding:10px 22px;background:var(--bg-mid);color:var(--text-sub)" onclick="cancelRosterOverflowSigning()">やめる</button></div>`;
-  box.innerHTML = html;
-  overlay.classList.add('active');
+
+  const stageBody = `
+    <div class="mdl-a-observation centered" style="font-size:14px;line-height:1.9;max-width:460px">
+      新契約を結ぶと、<span class="marker">ロスター定員を超過</span>します。<br>
+      既存選手の１名と契約を解除する必要があります。
+    </div>
+    ${fighterBlock}
+    ${candidatesHtml}
+  `;
+
+  const html = `
+    ${_mdlAHeader('⚠ ロスター超過のお知らせ', `URGENT ・ ${_mdlASeasonLabel(G)}`, { urgent: true })}
+    ${_mdlAReporterStrip(G, '社長、判断をお願いします')}
+    <div class="mdl-a-subject-stage">${stageBody}</div>
+    <div class="mdl-a-prompt" style="padding-bottom:22px">
+      <button class="mdl-a-continue-btn" onclick="cancelRosterOverflowSigning()">— 契約を見送る —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html, { narrow: true })) return;
   Audio.play('notify');
 }
 
 function confirmRosterOverflowSigning(releaseId) {
-  document.getElementById('showResultOverlay').classList.remove('active');
+  _mdlAClose();
   App.confirmRosterOverflowSigning(releaseId);
 }
 
 function cancelRosterOverflowSigning() {
-  document.getElementById('showResultOverlay').classList.remove('active');
+  _mdlAClose();
   App.cancelRosterOverflowSigning();
 }
 
@@ -1095,11 +1351,70 @@ let _eventPopupQueue = [];
 let _autoCloseTimer = null;
 
 function showEventPopup(opts) {
-  // opts: { type: 'fighter'|'coach', id, name, emoji?, message, detail?, tone: 'positive'|'negative'|'gold' }
+  // opts: { type: 'fighter'|'coach', id, name, emoji?, message, detail?, tone: 'positive'|'negative'|'gold',
+  //         choices?: [{ label, hint?, tone?, onSelect }] — あれば A-5(mdl-a)で描画 }
+  // A-5 分岐: choices を持つ場合は専用の A 型モーダルに流す
+  if (opts && Array.isArray(opts.choices) && opts.choices.length > 0) {
+    _showEventPopupAsChoice(opts);
+    return;
+  }
   _eventPopupQueue.push(opts);
   if (_eventPopupQueue.length === 1) {
-    _enqueuePopup(() => _renderEventPopup());
+    _enqueuePopup(() => _renderEventPopupAsC3());
   }
+}
+
+/** A-5: 選手要望型(選択肢付き eventPopup)を mdl-a で描画 */
+function _showEventPopupAsChoice(opts) {
+  const run = () => {
+    const fighter = opts.type === 'fighter' && opts.id != null
+      ? (G.roster || []).find(f => f.id === opts.id) || { id: opts.id, name: opts.name }
+      : null;
+
+    const bubbleHtml = `<div style="background:rgba(255,255,255,0.5);border-left:3px solid var(--cream-gold);border-radius:0 4px 4px 0;padding:12px 16px;margin-top:14px;max-width:440px;margin-left:auto;margin-right:auto;text-align:left;font-size:14px;color:var(--cream-text-main);line-height:1.7;font-style:italic">「${opts.message || ''}」</div>`;
+    const detailHtml = opts.detail ? `<div class="mdl-a-observation centered" style="margin-top:10px;font-size:12px">${opts.detail}</div>` : '';
+
+    const subjectHtml = fighter
+      ? _mdlASubjectStage(fighter, bubbleHtml + detailHtml, { small: true })
+      : `<div class="mdl-a-subject-stage">${bubbleHtml}${detailHtml}</div>`;
+
+    const choices = opts.choices;
+    const trayCls = choices.length === 2 ? 'mdl-a-decision-tray two' : 'mdl-a-decision-tray';
+    const trayCards = choices.map((c, i) => {
+      const letter = c.letter || String.fromCharCode(65 + i);
+      const hintTone = c.tone === 'positive' ? 'positive' : c.tone === 'negative' ? 'negative' : '';
+      return `<div class="mdl-a-decision-card" data-idx="${i}" style="text-align:center">
+        <div class="mdl-a-decision-letter">${letter}</div>
+        <div class="mdl-a-decision-label">${c.label || ''}</div>
+        ${c.hint ? `<div class="mdl-a-decision-hint ${hintTone}">${c.hint}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    const html = `
+      ${_mdlAHeader(opts.title || '💬 選手からの申し入れ', _mdlASeasonLabel(G))}
+      ${_mdlAReporterStrip(G, opts.reporterLine || '本人が直接お話ししたいそうです')}
+      ${subjectHtml}
+      <div class="mdl-a-prompt">${opts.prompt || 'この申し入れ、どう受けますか？'}</div>
+      <div class="${trayCls}">${trayCards}</div>
+    `;
+
+    if (!_mdlAOpen(html, { narrow: choices.length <= 2 })) return;
+
+    const card = document.getElementById('mdlACard');
+    card.querySelectorAll('.mdl-a-decision-card').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.idx);
+        Audio.play('click');
+        const choice = choices[idx];
+        _mdlAClose();
+        if (choice && typeof choice.onSelect === 'function') choice.onSelect(idx);
+        if (typeof opts.onChoice === 'function') opts.onChoice(idx);
+      });
+    });
+    Audio.play(opts.sound || (opts.tone === 'negative' ? 'error' : opts.tone === 'gold' ? 'award' : 'event'));
+  };
+
+  _enqueuePopup(run);
 }
 
 function _renderEventPopup() {
@@ -1164,12 +1479,60 @@ function _renderEventPopup() {
   if (o.autoCloseMs) _autoCloseTimer = setTimeout(closeEventPopup, o.autoCloseMs);
 }
 
+/** C-3: choices なし eventPopup を mdlCOverlay で描画 */
+function _renderEventPopupAsC3() {
+  if (_eventPopupQueue.length === 0) return;
+  const o = _eventPopupQueue[0];
+
+  let faceStyle = 'background-color:rgba(212,168,67,0.1)';
+  if (o.type === 'fighter' && o.id) {
+    const url = getPortraitUrl(o.id);
+    if (url) faceStyle += `;background-image:url('${url}')`;
+  } else if (o.type === 'coach' && o.id) {
+    const url = getCoachPortraitUrl(o.id);
+    if (url) faceStyle += `;background-image:url('${url}')`;
+  }
+
+  let actionHtml = '';
+  if (o.action && typeof o.action === 'object' && o.action.label) {
+    const disabled = !!o.action.disabled;
+    const hint = disabled && o.action.disabledHint
+      ? `<div class="event-popup-action-hint">${o.action.disabledHint}</div>` : '';
+    actionHtml = `${hint}<button class="event-popup-action${disabled ? ' is-disabled' : ''}" id="eventPopupActionBtn"${disabled ? ' disabled' : ''}>${o.action.label}</button>`;
+  }
+
+  const html = `
+    <div style="padding:24px 20px 12px;text-align:center">
+      <div style="width:120px;height:120px;margin:0 auto 12px;border-radius:50%;${faceStyle};background-size:cover;background-position:top center;border:3px solid rgba(212,168,67,0.5);box-shadow:0 4px 20px rgba(0,0,0,0.4)"></div>
+      <div style="font-size:18px;font-weight:700;color:var(--info-text-main);margin-bottom:4px">${o.name || ''}</div>
+    </div>
+    <div class="mdl-c-body" style="padding-top:4px">
+      <div class="mdl-c-comment-block">${o.message || ''}</div>
+      ${o.detail ? `<div style="font-size:12px;color:var(--info-text-dim);margin-top:8px;text-align:center">${o.detail}</div>` : ''}
+      ${actionHtml}
+    </div>
+    <div class="mdl-c-footer" style="justify-content:center">
+      <button class="mdl-c-footer-btn" onclick="closeEventPopup()">${o.action ? '閉じる' : 'OK'}</button>
+    </div>
+  `;
+
+  _mdlCOpen(html, { compact: true });
+
+  if (o.action && !o.action.disabled && typeof o.action.onClick === 'function') {
+    const btn = document.getElementById('eventPopupActionBtn');
+    if (btn) btn.addEventListener('click', () => o.action.onClick());
+  }
+
+  Audio.play(o.sound || (o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'award' : 'event'));
+  if (o.autoCloseMs) _autoCloseTimer = setTimeout(closeEventPopup, o.autoCloseMs);
+}
+
 function closeEventPopup() {
   clearTimeout(_autoCloseTimer); _autoCloseTimer = null;
-  document.getElementById('eventPopupOverlay').classList.remove('active');
+  _mdlCClose();
   _eventPopupQueue.shift();
   if (_eventPopupQueue.length > 0) {
-    setTimeout(_renderEventPopup, 200);
+    setTimeout(_renderEventPopupAsC3, 200);
   } else if (_onEventPopupQueueEmpty) {
     const cb = _onEventPopupQueueEmpty;
     _onEventPopupQueueEmpty = null;
@@ -1203,75 +1566,77 @@ function _renderRetirementPopup() {
   }
   const r = _retirementPopupQueue[0];
   const f = r.fighter;
-  const box = document.getElementById('retirementPopupBox');
   const isInjury = r.route === 'injury_wear' || r.route === 'injury_career_ending';
 
-  // Face
-  let faceHtml = '';
-  const url = getPortraitUrl(f.id);
-  if (url) faceHtml = `<img src="${url}" alt="">`;
-  else {
-    const ch = ALL_CHARS.find(c => c.id === f.id);
-    faceHtml = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,rgba(200,200,200,0.1),rgba(0,0,0,0.2))">${ch ? ch.name.charAt(0) : '?'}</div>`;
-  }
-
-  // Career years
   const careerYears = f.careerSeasons || Math.max(1, (f.age || 17) - (f.debutAge || 17));
-  const dividerText = `━━ ${careerYears}年間の軌跡 ━━`;
-
-  // Career summary
-  const summary = r.summary || [];
-  const careerHtml = summary.length > 0
-    ? summary.map(item => `<div class="retirement-popup-career-item"><span class="retirement-popup-career-icon">${item.icon}</span><span>${item.text}</span></div>`).join('')
-    : '<div style="color:var(--text-dim);text-align:center">記録なし</div>';
-
-  // Record
   const wins = f.wins || 0, losses = f.losses || 0, draws = f.draws || 0;
-  const recordText = `通算 ${wins}勝 ${losses}敗${draws > 0 ? ` ${draws}分` : ''}`;
+  const summary = r.summary || [];
+  const title = isInjury ? '無 念 の 引 退' : '旅 　 立 ち';
+  const sub = isInjury ? `FAREWELL ・ INJURY` : `FAREWELL ・ ${careerYears} YEARS`;
+  const meta = `AGE ${f.age || '—'} ・ CAREER ${careerYears} YEARS`;
 
-  // Injury note
-  let injuryNote = '';
-  if (isInjury && r.injuryType) {
-    injuryNote = `<div class="retirement-popup-injury-note">🏥 ${r.injuryType}</div>`;
-  }
-
-  // Vacancy note
-  let vacancyNote = '';
-  if (r.wasChampion) {
-    vacancyNote = `<div class="retirement-popup-vacancy">🏆 王座返上</div>`;
-  }
-
-  // Button label
-  const btnLabel = isInjury ? '……' : '送り出す';
-
-  // §3: 引き留めボタン（wear 40-79、retainCount < 2、シーズン末のみ）
-  const canRetain = r.canRetain && !isInjury;
-  const retainCount = f.retainCount || 0;
-  const retainBtnHtml = canRetain
-    ? `<button class="retirement-popup-btn" onclick="doRetainFighter(${f.id})" style="background:rgba(46,204,113,0.15);border-color:rgba(46,204,113,0.4);color:#2ecc71;margin-top:6px">🤝 引き留める（あと${2 - retainCount}回）</button>`
+  // 引退選手のキャリアハイライトをB型ステージ下に挟む
+  const careerHtml = summary.length > 0
+    ? `<div style="max-width:560px;margin:0 auto 18px;background:rgba(20,18,15,0.55);border:1px solid rgba(200,180,150,0.12);border-radius:6px;padding:12px 16px">
+         <div style="font-family:var(--font-label);font-size:10px;color:rgba(200,180,150,0.7);letter-spacing:2px;text-align:center;margin-bottom:8px">━━ ${careerYears}年間の軌跡 ━━</div>
+         ${summary.map(item => `<div style="font-size:13px;color:rgba(232,220,200,0.88);line-height:1.7;display:flex;gap:8px;align-items:baseline">
+           <span style="font-size:14px">${item.icon}</span><span>${item.text}</span>
+         </div>`).join('')}
+       </div>`
     : '';
 
-  box.className = `retirement-popup${isInjury ? ' injury' : ''}`;
-  box.innerHTML = `
-    <div class="retirement-popup-face">${faceHtml}</div>
-    <div class="retirement-popup-name">${f.name}</div>
-    <div class="retirement-popup-age">${f.age || '?'}歳</div>
-    <div class="retirement-popup-divider">${dividerText}</div>
-    <div class="retirement-popup-career">${careerHtml}</div>
-    <div class="retirement-popup-record">${recordText}</div>
-    ${injuryNote}${vacancyNote}
-    <div class="retirement-popup-line">${r.line}</div>
-    <button class="retirement-popup-btn" onclick="closeRetirementPopup()">${btnLabel}</button>
-    ${retainBtnHtml}
+  const statsRow = `
+    <div class="mdl-b-stats-row">
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">TOTAL RECORD</div>
+        <div class="mdl-b-stat-value small" style="font-size:16px">${wins}W ${losses}L${draws > 0 ? ` ${draws}D` : ''}</div></div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">CAREER</div>
+        <div class="mdl-b-stat-value">${careerYears}<span style="font-size:14px">Y</span></div></div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">CAREER HIGH</div>
+        <div class="mdl-b-stat-value">OVR ${f.peakOVR || (typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : '—')}</div></div>
+    </div>`;
+
+  const notes = [
+    isInjury && r.injuryType ? `🏥 ${r.injuryType}` : '',
+    r.wasChampion ? '🏆 王座返上' : ''
+  ].filter(Boolean).join('　');
+  const noteHtml = notes ? `<div style="text-align:center;color:rgba(200,180,150,0.85);font-size:13px;margin-bottom:10px">${notes}</div>` : '';
+
+  const btnLabel = isInjury ? '— …… —' : '— 見 送 る —';
+  const canRetain = r.canRetain && !isInjury;
+  const retainCount = f.retainCount || 0;
+  const retainBtn = canRetain
+    ? { label: `🤝 引き留める（あと${2 - retainCount}回）`, id: 'mdlBRetainBtn' }
+    : null;
+  const buttons = [{ label: btnLabel, primary: true, id: 'mdlBRetireClose' }];
+  if (retainBtn) buttons.push(retainBtn);
+
+  const html = `
+    ${_mdlBTitleBand(title, 'dissolve', sub)}
+    ${_mdlBSoloStage(f, { speaker: f.name, text: r.line, variant: 'soft', size: 'large' }, { sepia: true, meta })}
+    ${noteHtml}
+    ${statsRow}
+    ${careerHtml}
+    ${_mdlBActions(buttons)}
   `;
-  document.getElementById('retirementPopupOverlay').classList.add('active');
+
+  _mdlBOpen(html, 'sepia');
   Audio.play(isInjury ? 'error' : 'event');
+
+  setTimeout(() => {
+    const btn = document.getElementById('mdlBRetireClose');
+    if (btn) btn.addEventListener('click', closeRetirementPopup);
+    const retain = document.getElementById('mdlBRetainBtn');
+    if (retain) retain.addEventListener('click', () => doRetainFighter(f.id));
+  }, 50);
 }
 
 function closeRetirementPopup() {
   // B4タレント活動§13: チャンピオン怪我引退後の社長への一言
   const justClosed = _retirementPopupQueue[0];
-  document.getElementById('retirementPopupOverlay').classList.remove('active');
+  _mdlBClose();
+  // 互換: 旧オーバーレイのactiveも解除
+  const legacy = document.getElementById('retirementPopupOverlay');
+  if (legacy) legacy.classList.remove('active');
   _retirementPopupQueue.shift();
 
   if (justClosed && justClosed.championWorryLine) {
@@ -1321,25 +1686,32 @@ function _showChampionWorryBubble(fighter, line, onClose) {
 
 // ── 引退勧告結果ポップアップ ────────────────
 function showRetireAdviseResultPopup(accepted, fighter, line) {
-  const url = getPortraitUrl(fighter.id);
-  const faceHtml = url
-    ? `<img src="${url}" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid ${accepted ? 'var(--gold)' : '#e74c3c'}">`
-    : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(200,190,170,0.08);display:flex;align-items:center;justify-content:center;font-size:32px">${fighter.name.charAt(0)}</div>`;
-  const box = document.getElementById('retirementPopupBox');
-  const headerColor = accepted ? 'var(--gold)' : '#e74c3c';
-  const headerText  = accepted ? '🌅 引退を受諾' : '💢 引退を拒否';
-  const subText     = accepted
-    ? `${fighter.name} がラストラン状態に入りました。<br>次の興行で引退試合を組みましょう。`
-    : `${fighter.name} に断られました。${fighter.proveMode > 0 ? '🔥 見返しモード（4週間MQ+2）発動！' : 'ロッカールームに影響が出ました。'}`;
-  box.innerHTML = `
-    <div style="text-align:center;margin-bottom:12px">${faceHtml}</div>
-    <div style="text-align:center;font-size:18px;font-weight:700;color:${headerColor};margin-bottom:4px">${headerText}</div>
-    <div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:14px">${subText}</div>
-    <div style="background:rgba(200,190,170,0.04);border-radius:6px;padding:12px 14px;font-size:14px;color:var(--text);line-height:1.7;text-align:center;border-left:3px solid ${headerColor};margin-bottom:14px">「${line}」</div>
-    <button class="retirement-popup-btn" onclick="document.getElementById('retirementPopupOverlay').classList.remove('active')">閉じる</button>
+  const title = accepted ? '引 退 受 諾' : '引 退 拒 否';
+  const titleCls = accepted ? 'dissolve' : 'rival';
+  const sub = accepted
+    ? 'LAST RUN BEGINS'
+    : (fighter.proveMode > 0 ? 'PROVE MODE ACTIVATED' : 'REJECTED');
+  const variant = accepted ? 'sepia' : 'rival';
+  const speechVariant = accepted ? 'soft' : 'rival';
+
+  const subText = accepted
+    ? `ラストラン状態に入りました。次の興行で引退試合を組みましょう。`
+    : (fighter.proveMode > 0 ? '🔥 見返しモード（4週間MQ+2）発動！' : 'ロッカールームに影響が出ました。');
+
+  const html = `
+    ${_mdlBTitleBand(title, titleCls, sub)}
+    ${_mdlBSoloStage(fighter, { speaker: fighter.name, text: line, variant: speechVariant, size: 'large' }, { sepia: accepted })}
+    <div class="mdl-b-atmosphere" style="margin-bottom:14px">${subText}</div>
+    ${_mdlBActions([{ label: '— 閉 じ る —', primary: true, id: 'mdlBRetireAdviseClose' }])}
   `;
-  document.getElementById('retirementPopupOverlay').classList.add('active');
+
+  _mdlBOpen(html, variant);
   Audio.play(accepted ? 'event' : 'error');
+
+  setTimeout(() => {
+    const btn = document.getElementById('mdlBRetireAdviseClose');
+    if (btn) btn.addEventListener('click', () => _mdlBClose());
+  }, 50);
 }
 
 // ── 因縁決着ポップアップ（宣戦布告 / 決着 共用）────────────────
@@ -1381,11 +1753,9 @@ function _renderRivalryPopup() {
     return;
   }
   const o = _rivalryPopupQueue[0];
-  const box = document.getElementById('rivalryPopupBox');
 
   if (o.phase === 'confrontation') {
     // 宣戦布告
-    // rivalry帯別のテキストプール選択（personality×archetype対応）
     const rivalryVal = o.rivalry || 0;
     const leftFighter = ALL_CHARS.find(c => c.id === o.leftId);
     const rightFighter = ALL_CHARS.find(c => c.id === o.rightId);
@@ -1405,55 +1775,34 @@ function _renderRivalryPopup() {
     }
     const leftLine = pickDialogueLine(attackerPool, leftFighter);
     const rightLine = pickDialogueLine(defenderPool, rightFighter);
-    const headerEmoji = rivalryVal >= 70 ? '💥' : '🔥';
-    const headerText = rivalryVal >= 70 ? '宿命の対決！' : '宿敵対決！';
+    const title = rivalryVal >= 70 ? '因 縁 勃 発' : '宿 敵 対 決';
+    const sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
 
-    box.className = `rivalry-popup${o.isFate ? ' fate' : ''}`;
-    box.innerHTML = `
-      <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
-      <div class="rivalry-popup-stage">
-        <div class="rivalry-popup-fighter-l">
-          ${_rivalryUpperHtml(o.leftId, null)}
-          <div class="rivalry-popup-fighter-name">${o.leftName}</div>
+    const html = `
+      ${_mdlBTitleBand(title, 'rival', sub)}
+      <div class="mdl-b-dual-stage">
+        ${_mdlBCol(leftFighter || { name: o.leftName, id: o.leftId }, {
+          side: 'left',
+          speech: { speaker: o.leftName, text: leftLine, variant: 'rival' }
+        })}
+        <div class="mdl-b-vs-col">
+          <div class="mdl-b-silent-mark">— 決 裂 —<span>THE LINE IS DRAWN</span></div>
         </div>
-        <div class="rivalry-popup-vs-col">
-          <div class="rivalry-popup-vs-icon">VS</div>
-        </div>
-        <div class="rivalry-popup-fighter-r">
-          ${_rivalryUpperHtml(o.rightId, 'rivalry-popup-upper-r')}
-          <div class="rivalry-popup-fighter-name">${o.rightName}</div>
-        </div>
+        ${_mdlBCol(rightFighter || { name: o.rightName, id: o.rightId }, {
+          side: 'right',
+          speech: { speaker: o.rightName, text: rightLine, variant: 'rival' }
+        })}
       </div>
-      <div class="rivalry-popup-dialogue">
-        <div class="rivalry-popup-bubble">
-          <div class="rivalry-popup-bubble-speaker">${o.leftName}</div>
-          <div class="rivalry-popup-bubble-text">${leftLine}</div>
-        </div>
-        <div class="rivalry-popup-bubble">
-          <div class="rivalry-popup-bubble-speaker">${o.rightName}</div>
-          <div class="rivalry-popup-bubble-text">${rightLine}</div>
-        </div>
-      </div>
-      <div class="rivalry-popup-btn-row">
-        <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">閉じる</button>
-      </div>
+      ${_mdlBActions([{ label: '— 見 届 け る —', primary: true, id: 'mdlBRivalryClose' }])}
     `;
-    const overlay = document.getElementById('rivalryPopupOverlay');
-    box.style.opacity = '0';
-    box.style.transform = 'scale(0.9)';
-    overlay.classList.add('active');
-    setTimeout(() => {
-      Audio.play(o.isFate ? 'fate_confrontation' : 'rivalry_confrontation');
-      box.style.transition = 'opacity 0.3s, transform 0.3s';
-      box.style.opacity = '1';
-      box.style.transform = 'scale(1)';
-    }, 350);
+
+    _mdlBOpen(html, 'rival');
+    setTimeout(() => Audio.play(o.isFate ? 'fate_confrontation' : 'rivalry_confrontation'), 350);
 
   } else {
     // 決着
     const isGoodRival = o.resolutionType === 'goodRival';
     const isBitter = o.resolutionType === 'bitter';
-    // 好敵手/宿怨は専用セリフプール、それ以外は既存セリフ
     const winLineObj = isGoodRival ? GOODRIVAL_RESOLUTION_LINES.winner
       : isBitter ? BITTER_RESOLUTION_LINES.winner
       : (o.isFate ? RIVALRY_RESOLUTION_LINES.fateWinner : RIVALRY_RESOLUTION_LINES.winner);
@@ -1464,64 +1813,59 @@ function _renderRivalryPopup() {
     const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
     const winLine = pickDialogueLine(winLineObj, winFighter);
     const loseLine = pickDialogueLine(loseLineObj, loseFighter);
-    const headerEmoji = isBitter ? '💀' : isGoodRival ? '🤝' : (o.isFate ? '💥' : '⚡');
-    const headerText = isBitter ? '宿怨決着！' : isGoodRival ? '好敵手誕生！' : (o.isSecondResolution ? '宿命の相手 ── 最終決着！' : (o.isFate ? '宿命の相手決着！' : '宿敵決着！'));
+    const title = isBitter ? '宿 怨 決 着'
+      : isGoodRival ? '好 敵 手 誕 生'
+      : (o.isSecondResolution ? '最 終 決 着' : (o.isFate ? '宿命の相手 決着' : '宿 敵 決 着'));
+    const sub = isBitter ? 'BITTER RIVALRY ・ FINAL'
+      : isGoodRival ? 'GOOD RIVALS ・ MUTUAL RESPECT'
+      : 'RIVALRY RESOLVED';
+    const speechVariant = isBitter ? 'rival' : (isGoodRival || o.isFate ? 'gold' : 'rival');
+    const titleCls = isGoodRival ? 'victory' : 'rival';
+    const overlayVariant = isGoodRival ? 'gold' : 'rival';
 
-    const useFateLines = o.isFate;
-    box.className = `rivalry-popup resolution${useFateLines ? ' fate' : ''}`;
-    const goodRivalMsg = isGoodRival
-      ? `<div class="rivalry-popup-goodrival">🤝 ふたりは「好敵手」になった</div>`
-      : isBitter
-        ? `<div class="rivalry-popup-goodrival">💀 ふたりは「宿怨」になった</div>`
-        : '';
-    box.innerHTML = `
-      <div class="rivalry-popup-header">${headerEmoji} ${headerText}</div>
-      <div class="rivalry-popup-stage">
-        <div class="rivalry-popup-fighter-l">
-          ${_rivalryUpperHtml(o.winnerId, null)}
-          <div class="rivalry-popup-fighter-name">${o.winnerName}</div>
+    const bonusLine = `📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}`;
+    const tagLine = isGoodRival ? '🤝 ふたりは「好敵手」になった'
+      : isBitter ? '💀 ふたりは「宿怨」になった'
+      : '';
+
+    const html = `
+      ${_mdlBTitleBand(title, titleCls, sub)}
+      <div class="mdl-b-dual-stage">
+        ${_mdlBCol(winFighter || { name: o.winnerName, id: o.winnerId }, {
+          side: 'left',
+          speech: { speaker: o.winnerName, text: winLine, variant: speechVariant }
+        })}
+        <div class="mdl-b-vs-col">
+          <div class="mdl-b-silent-mark">— 決 着 —<span>SETTLED</span></div>
         </div>
-        <div class="rivalry-popup-vs-col">
-          <div class="rivalry-popup-vs-icon">VS</div>
-        </div>
-        <div class="rivalry-popup-fighter-r">
-          ${_rivalryUpperHtml(o.loserId, 'rivalry-popup-upper-r')}
-          <div class="rivalry-popup-fighter-name">${o.loserName}</div>
-        </div>
+        ${_mdlBCol(loseFighter || { name: o.loserName, id: o.loserId }, {
+          side: 'right',
+          speech: { speaker: o.loserName, text: loseLine, variant: speechVariant }
+        })}
       </div>
-      <div class="rivalry-popup-dialogue">
-        <div class="rivalry-popup-bubble">
-          <div class="rivalry-popup-bubble-speaker">${o.winnerName}</div>
-          <div class="rivalry-popup-bubble-text">${winLine}</div>
-        </div>
-        <div class="rivalry-popup-bubble">
-          <div class="rivalry-popup-bubble-speaker">${o.loserName}</div>
-          <div class="rivalry-popup-bubble-text">${loseLine}</div>
-        </div>
+      <div class="mdl-b-atmosphere" style="margin-bottom:12px">
+        ${bonusLine}
+        ${tagLine ? `<br><span style="color:var(--gold-light);font-size:14px;font-weight:700">${tagLine}</span>` : ''}
       </div>
-      <div class="rivalry-popup-bonus">
-        📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}
-      </div>
-      ${goodRivalMsg}
-      <div class="rivalry-popup-btn-row">
-        <button class="rivalry-popup-btn" onclick="closeRivalryPopup()">OK</button>
-      </div>
+      ${_mdlBActions([{ label: '— 見 届 け る —', primary: true, id: 'mdlBRivalryClose' }])}
     `;
-    const overlay = document.getElementById('rivalryPopupOverlay');
-    box.style.opacity = '0';
-    box.style.transform = 'scale(0.9)';
-    overlay.classList.add('active');
-    setTimeout(() => {
-      Audio.play((o.isFate || o.resolutionType === 'goodRival' || o.resolutionType === 'bitter') ? 'fate_resolution' : 'rivalry_resolution');
-      box.style.transition = 'opacity 0.3s, transform 0.3s';
-      box.style.opacity = '1';
-      box.style.transform = 'scale(1)';
-    }, 300);
+
+    _mdlBOpen(html, overlayVariant);
+    setTimeout(() => Audio.play((o.isFate || isGoodRival || isBitter) ? 'fate_resolution' : 'rivalry_resolution'), 300);
   }
+
+  // 閉じるボタンのハンドラ
+  setTimeout(() => {
+    const btn = document.getElementById('mdlBRivalryClose');
+    if (btn) btn.addEventListener('click', closeRivalryPopup);
+  }, 50);
 }
 
 function closeRivalryPopup() {
-  document.getElementById('rivalryPopupOverlay').classList.remove('active');
+  _mdlBClose();
+  // 旧オーバーレイのactiveも念のため解除(互換)
+  const legacy = document.getElementById('rivalryPopupOverlay');
+  if (legacy) legacy.classList.remove('active');
   _rivalryPopupQueue.shift();
   if (_rivalryPopupQueue.length > 0) {
     setTimeout(_renderRivalryPopup, 300);
@@ -5637,10 +5981,16 @@ function _renderNextGrowthPopup() {
     return;
   }
   const ev = _growthPopupQueue[0];
+
+  // A-6 分岐: breakthrough は mdl-a に専用描画
+  if (ev.type === 'breakthrough') {
+    _renderBreakthroughAsMdlA(ev);
+    return;
+  }
+
   const overlay = document.getElementById('growthEventOverlay');
   const box = document.getElementById('growthEventBox');
   if (!overlay || !box) {
-    // DOM未準備（コンソールに記録して続行）
     console.warn('[growthEvent] overlay/box not found, skipping');
     _growthPopupQueue.shift();
     _renderNextGrowthPopup();
@@ -5748,9 +6098,76 @@ function _renderNextGrowthPopup() {
   overlay.classList.add('active');
 }
 
+/** A-6: ブレークスルー報告を mdl-a で描画 */
+function _renderBreakthroughAsMdlA(ev) {
+  const fighter = G.roster.find(c => c.id === ev.fighterId)
+    || G.retiredFighters?.find(c => c.id === ev.fighterId);
+
+  const statNames = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ', mn:'メンタル' };
+  const statLabel = statNames[ev.stat] || ev.stat;
+  const gain = parseFloat((+ev.gain).toFixed(1));
+  const line = fighter ? pickDialogueLine(BREAKTHROUGH_LINES, fighter) : 'ブレークスルー！';
+
+  const surgeHtml = `
+    <div style="text-align:center;margin:10px 0 8px">
+      <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:3px;margin-bottom:6px">STAT SURGE ・ 能 力 急 上 昇</div>
+      <div style="display:inline-flex;align-items:baseline;gap:10px;padding:12px 30px;background:linear-gradient(180deg,rgba(122,101,48,0.15),rgba(122,101,48,0.04));border:1.5px solid rgba(122,101,48,0.5);border-radius:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),0 2px 16px rgba(212,168,67,0.2)">
+        <span style="font-size:16px;color:#b5453a;font-weight:700;letter-spacing:1px">${statLabel}</span>
+        <span style="font-family:var(--font-display);font-size:44px;font-weight:700;color:var(--cream-gold-dark);letter-spacing:2px;line-height:1">+${gain}</span>
+      </div>
+    </div>
+  `;
+
+  const hotStreakHtml = ev.hotStreak
+    ? `<div style="text-align:center;font-size:12px;color:#b5453a;margin-top:4px;font-weight:700">🔥 絶好調突入！</div>`
+    : '';
+  const btHintHtml = ev.btHint
+    ? `<div style="font-family:'Shippori Mincho',serif;font-style:italic;font-size:13px;color:var(--cream-text-sub);margin:12px auto 0;max-width:440px;text-align:center;line-height:1.7">${ev.btHint}</div>`
+    : '';
+  const snapHtml = ev.snapshotText
+    ? `<div style="margin-top:8px;font-size:11px;color:var(--cream-text-dim);text-align:center">💭 ${ev.snapshotText}</div>`
+    : '';
+
+  const stageBody = `
+    ${surgeHtml}
+    ${hotStreakHtml}
+    <div class="mdl-a-observation centered" style="margin-top:10px;font-size:14px">
+      ${fighter ? `<span class="marker">${_factionSurname ? _factionSurname(fighter) : fighter.name}</span>` : ''}${line ? `<br>「${line}」` : ''}
+    </div>
+    ${btHintHtml}
+    ${snapHtml}
+  `;
+
+  const subjectHtml = fighter
+    ? _mdlASubjectStage(fighter, stageBody)
+    : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
+
+  const html = `
+    ${_mdlAHeader('🌱 練習場からの報告', `BREAKTHROUGH ・ ${_mdlASeasonLabel(G)}`)}
+    ${_mdlAReporterStrip(G, '社長、嬉しい知らせです')}
+    ${subjectHtml}
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" id="mdlABreakthroughClose">— 素 晴 ら し い —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html, { narrow: true })) {
+    // 失敗時はキュー進行のみ
+    _growthPopupQueue.shift();
+    setTimeout(_renderNextGrowthPopup, 100);
+    return;
+  }
+  Audio.play('award');
+
+  const btn = document.getElementById('mdlABreakthroughClose');
+  if (btn) btn.addEventListener('click', () => closeGrowthEventPopup());
+}
+
 function closeGrowthEventPopup() {
   const overlay = document.getElementById('growthEventOverlay');
   if (overlay) overlay.classList.remove('active');
+  // A-6(mdl-a)を使っていれば閉じる
+  _mdlAClose();
   _growthPopupQueue.shift();
   if (_growthPopupQueue.length > 0) {
     setTimeout(_renderNextGrowthPopup, 250);
@@ -5945,37 +6362,51 @@ function showNewspaperPanel(articles, onDone) {
 // ─────────────────────────────────────────────────────────────────────────────
 function showMilestoneEvent(evt, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showMilestoneEvent(evt, onChoice)); return; }
-  const overlay = document.getElementById('milestoneOverlay');
-  const box = document.getElementById('milestoneBox');
-  if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
 
-  // Phase 1: ナレーション + 3択表示
-  let html = `<div class="milestone-title">${evt.title}</div>`;
-  html += `<div class="milestone-narration">${evt.narration || ''}</div>`;
-  evt.choices.forEach((c, i) => {
-    html += `<button class="milestone-choice" data-idx="${i}">${c.label}</button>`;
-  });
-  box.innerHTML = html;
+  // Phase 1: ナレーション + 3択(B-5型 ゴールドステージ)
+  const title = (evt.title || '').replace(/^[\W\s]+/, '') || evt.title || 'MILESTONE';
+  const sub = 'MILESTONE ACHIEVED';
+  const choicesHtml = evt.choices.map((c, i) =>
+    `<button class="mdl-b-btn${i === 0 ? ' primary' : ''}" data-idx="${i}">${c.label}</button>`
+  ).join('');
 
-  // 選択肢クリック → Phase 2: 結果表示
-  box.querySelectorAll('.milestone-choice').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const idx = parseInt(this.dataset.idx);
-      const choice = evt.choices[idx];
-      Audio.play('event');
-      box.innerHTML = `<div class="milestone-title">${evt.title}</div>
-        <div class="milestone-result">${choice.result}</div>
-        <div class="milestone-effect">${choice.effectLabel}</div>
-        <button class="milestone-choice" style="text-align:center;border-color:var(--gold)" id="milestoneClose">閉じる</button>`;
-      document.getElementById('milestoneClose').addEventListener('click', function() {
-        overlay.classList.remove('active');
-        if (onChoice) onChoice(idx);
-        _drainPopupQueue();
+  const html = `
+    ${_mdlBTitleBand(title, 'milestone', sub)}
+    <div class="mdl-b-atmosphere" style="max-width:640px;white-space:pre-line">${evt.narration || ''}</div>
+    <div class="mdl-b-decision" id="mdlBMilestoneChoices">${choicesHtml}</div>
+  `;
+
+  if (!_mdlBOpen(html, 'gold')) { if (onChoice) onChoice(-1); return; }
+  Audio.play('event');
+
+  setTimeout(() => {
+    document.querySelectorAll('#mdlBMilestoneChoices .mdl-b-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const idx = parseInt(this.dataset.idx);
+        const choice = evt.choices[idx];
+        Audio.play('event');
+        // Phase 2: 結果を同じオーバーレイに差し替え
+        const resultHtml = `
+          ${_mdlBTitleBand(title, 'milestone', sub)}
+          <div class="mdl-b-solo-line" style="max-width:720px;white-space:pre-line">${choice.result}</div>
+          <div style="text-align:center;margin:6px 0 22px">
+            <div style="display:inline-block;padding:10px 30px;border:1px solid var(--gold);color:var(--gold-light);font-family:var(--font-label);font-size:13px;letter-spacing:4px;background:rgba(212,168,67,0.08);border-radius:2px">${choice.effectLabel}</div>
+          </div>
+          ${_mdlBActions([{ label: '— 閉 じ る —', primary: true, id: 'mdlBMilestoneClose' }])}
+        `;
+        const overlay = document.getElementById('mdlBOverlay');
+        if (overlay) overlay.innerHTML = resultHtml;
+        setTimeout(() => {
+          const close = document.getElementById('mdlBMilestoneClose');
+          if (close) close.addEventListener('click', () => {
+            _mdlBClose();
+            if (onChoice) onChoice(idx);
+            _drainPopupQueue();
+          });
+        }, 50);
       });
     });
-  });
-
-  overlay.classList.add('active');
+  }, 50);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -5993,20 +6424,14 @@ function _closeShachoshitsuDecisionModal() {
   if (overlay) overlay.classList.remove('active');
 }
 
-// 個人書類用: 対象選手選択モーダル
+// 個人書類用: 対象選手選択モーダル (A-2型)
 function showDecisionTargetModal(docId, state) {
-  const overlay = document.getElementById('shachoshitsuDecisionOverlay');
-  const modal = document.getElementById('shachoshitsuDecisionModal');
-  if (!overlay || !modal) return;
-
   const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS[docId] : null;
   if (!doc) return;
 
-  // 候補選手の絞り込み(書類別 + cooldown)
   const roster = state.roster || [];
   let candidates;
   if (docId === 'special_treatment') {
-    // 例外: 怪我中(残り2週間以上)の選手のみが対象
     candidates = roster.filter(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
   } else {
     candidates = roster.filter(f => !f.isRental && !f.injury);
@@ -6016,7 +6441,6 @@ function showDecisionTargetModal(docId, state) {
       candidates = candidates.filter(f => f.slump || f.motivationLoss);
     }
   }
-  // cooldown 除外(選手単位)
   const cooldown = doc.cooldown != null ? doc.cooldown : 1;
   const currentWeek = state.week || 0;
   candidates = candidates.filter(f => {
@@ -6030,81 +6454,85 @@ function showDecisionTargetModal(docId, state) {
   }
 
   const actualCost = Engine.shachoshitsu.calcCost(doc, state);
-  let html = '';
-  html += `<div class="shachoshitsu-decision-title"><span class="icon">${doc.icon}</span>${doc.label}</div>`;
-  html += `<div class="shachoshitsu-decision-desc">${doc.detailText}</div>`;
-  html += `<div class="shachoshitsu-decision-meta">`;
-  html += `  <span class="meta-label">コスト</span>`;
-  html += `  <span><span class="meta-cost">${actualCost === 0 ? '無料' : actualCost + '万'}</span><span class="meta-dp">⚡${doc.decisionCost}</span></span>`;
-  html += `</div>`;
+  const costText = actualCost === 0 ? '無料' : `${actualCost}万`;
 
-  html += `<div class="shachoshitsu-decision-section-label">対象選手を選択してください</div>`;
-  html += `<div class="shachoshitsu-decision-fighter-grid">`;
-  candidates.forEach((f, i) => {
-    // 信頼度はマスクデータ(CLAUDE.md 数値哲学 / feedback_player_text_no_internal_tokens).
-    // 絶対値も質的デルタも player-facing には一切出さない。
-    // 書類の activationCondition/発動条件でフィルタ済みなので、候補=全員「対象にふさわしい選手」。
-    // 個別ラベルは slump/motivationLoss のような非マスク情報のみ。
+  const candidateCards = candidates.map((f, i) => {
     const lastName = f.name.split(/\s/).pop();
-    let statusLabel = '';
-    let statusCls = '';
+    let hintText = '';
+    let hintCls = '';
     if (docId === 'encourage' || docId === 'refresh_leave') {
-      statusLabel = f.slump ? 'スランプ' : 'モチベ喪失';
-      statusCls = ' slump';
+      hintText = f.slump ? 'スランプ' : 'モチベ喪失';
+      hintCls = 'negative';
     } else if (docId === 'special_treatment' && f.injury) {
-      statusLabel = `全治${f.injury.weeksLeft || '?'}週`;
-      statusCls = ' slump';
+      hintText = `全治${f.injury.weeksLeft || '?'}週`;
+      hintCls = 'negative';
     }
-    // bonus/trainer/media はラベルなし(信頼度は絶対に出さない)
-    const selCls = i === 0 ? ' selected' : '';
-    html += `<div class="shachoshitsu-decision-fighter-card${selCls}" data-id="${f.id}">`;
-    html += portraitImg(f.id, 56, '');
-    html += `<div class="shachoshitsu-decision-fighter-name">${lastName}</div>`;
-    if (statusLabel) {
-      html += `<div class="shachoshitsu-decision-fighter-status${statusCls}">${statusLabel}</div>`;
-    }
-    html += `</div>`;
-  });
-  html += `</div>`;
+    const faceUrl = (typeof getPortraitUrl === 'function') ? getPortraitUrl(f.id) : '';
+    const bg = faceUrl
+      ? `background-image:url('${faceUrl}');background-size:cover;background-position:center`
+      : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
+    const selCls = i === 0 ? ' is-selected' : '';
+    return `<div class="mdl-a-decision-card${selCls}" data-id="${f.id}" style="text-align:center">
+      <div style="width:72px;height:72px;margin:0 auto 8px;${bg};background-color:#2a2520;border:2px solid var(--cream-gold-dark);border-radius:50%"></div>
+      <div class="mdl-a-decision-label" style="margin-bottom:4px">${lastName}</div>
+      <div style="font-family:var(--font-label);font-size:9px;color:var(--cream-gold);letter-spacing:1.5px;margin-bottom:6px">AGE ${f.age || '—'} ・ OVR ${Engine.util.ov(f)}</div>
+      ${hintText ? `<div class="mdl-a-decision-hint ${hintCls}">${hintText}</div>` : ''}
+    </div>`;
+  }).join('');
 
-  html += `<div class="shachoshitsu-decision-btn-row">`;
-  html += `  <button class="shachoshitsu-decision-btn cancel" id="shachoshitsuDecCancelBtn">キャンセル</button>`;
-  html += `  <button class="shachoshitsu-decision-btn confirm" id="shachoshitsuDecConfirmBtn">実行</button>`;
-  html += `</div>`;
+  const stageBody = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:12px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="display:flex;justify-content:center;gap:18px;align-items:baseline;font-size:13px;color:var(--cream-text-main);margin-bottom:14px">
+      <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">COST</span><strong style="color:var(--cream-gold-dark)">${costText}</strong></span>
+      <span style="color:rgba(122,101,48,0.3)">|</span>
+      <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">DP</span><strong>⚡${doc.decisionCost}</strong></span>
+    </div>
+    <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">CANDIDATES ・ 候 補 者</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px" id="mdlADecisionGrid">
+      ${candidateCards}
+    </div>
+  `;
 
-  modal.innerHTML = html;
+  const html = `
+    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAReporterStrip(state, '対象となる選手を選んでください')}
+    <div class="mdl-a-subject-stage">${stageBody}</div>
+    <div class="mdl-a-prompt" style="padding-top:14px">選択後、決裁ボタンを押してください</div>
+    <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
+      <button class="mdl-a-continue-btn" id="mdlADecisionCancel">— 取 消 —</button>
+      <button class="mdl-a-continue-btn" id="mdlADecisionConfirm" style="background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)">— 決 裁 す る —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html)) return;
 
   let selectedFighterId = candidates[0].id;
-  const grid = modal.querySelector('.shachoshitsu-decision-fighter-grid');
+  const card = document.getElementById('mdlACard');
+  const grid = card.querySelector('#mdlADecisionGrid');
   if (grid) {
     grid.addEventListener('click', e => {
-      const card = e.target.closest('.shachoshitsu-decision-fighter-card');
-      if (!card) return;
-      selectedFighterId = parseInt(card.dataset.id);
-      grid.querySelectorAll('.shachoshitsu-decision-fighter-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
+      const el = e.target.closest('.mdl-a-decision-card');
+      if (!el) return;
+      selectedFighterId = parseInt(el.dataset.id);
+      grid.querySelectorAll('.mdl-a-decision-card').forEach(c => c.classList.remove('is-selected'));
+      el.classList.add('is-selected');
     });
   }
-  document.getElementById('shachoshitsuDecCancelBtn').addEventListener('click', () => {
+  document.getElementById('mdlADecisionCancel').addEventListener('click', () => {
     Audio.play('click');
-    _closeShachoshitsuDecisionModal();
+    _mdlAClose();
   });
-  document.getElementById('shachoshitsuDecConfirmBtn').addEventListener('click', () => {
-    _closeShachoshitsuDecisionModal();
+  document.getElementById('mdlADecisionConfirm').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
     if (typeof App !== 'undefined' && App.executeDecision) {
       App.executeDecision(docId, selectedFighterId);
     }
   });
-
-  overlay.classList.add('active');
 }
 
 // 団体書類用: 実行確認モーダル
 function showDecisionConfirmModal(docId, state) {
-  const overlay = document.getElementById('shachoshitsuDecisionOverlay');
-  const modal = document.getElementById('shachoshitsuDecisionModal');
-  if (!overlay || !modal) return;
-
   const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS[docId] : null;
   if (!doc) return;
 
@@ -6112,42 +6540,57 @@ function showDecisionConfirmModal(docId, state) {
   const actualCost = Engine.shachoshitsu.calcCost(doc, state);
   const remainingFunds = (state.funds || 0) - actualCost;
 
-  let html = '';
-  html += `<div class="shachoshitsu-decision-title"><span class="icon">${doc.icon}</span>${doc.label}</div>`;
-  html += `<div class="shachoshitsu-decision-desc">${doc.detailText}</div>`;
-  html += `<div class="shachoshitsu-decision-team-summary">`;
-  html += `  <div class="row"><span class="label">対象</span><span class="value">団体全員 (${headcount}名)</span></div>`;
-  if (doc.unitCost) {
-    html += `  <div class="row"><span class="label">コスト</span><span class="value"><span style="color:var(--shachoshitsu-vermillion)">${actualCost}万</span> <span style="font-size:11px;color:var(--text-dim)">(${doc.unitCost}万×${Math.max(headcount, doc.minHeadcount || 4)}人)</span> <span class="meta-dp" style="margin-left:6px">⚡${doc.decisionCost}</span></span></div>`;
-  } else {
-    html += `  <div class="row"><span class="label">コスト</span><span class="value"><span style="color:var(--shachoshitsu-vermillion)">${actualCost}万</span> <span class="meta-dp" style="margin-left:6px">⚡${doc.decisionCost}</span></span></div>`;
-  }
-  html += `  <div class="row"><span class="label">残金(決裁後)</span><span class="value" style="color:${remainingFunds < 200 ? '#e74c3c' : 'var(--gold)'}">${Math.round(remainingFunds).toLocaleString()}万</span></div>`;
-  html += `  <div class="row" style="flex-direction:column;align-items:flex-start;gap:4px">`;
-  html += `    <span class="label">効果</span>`;
-  html += `    <span class="effect">${doc.effectSummary}</span>`;
-  html += `  </div>`;
-  html += `</div>`;
+  const costDetailHtml = doc.unitCost
+    ? `<strong style="color:var(--cream-gold-dark)">${actualCost}万</strong> <span style="font-size:11px;color:var(--cream-text-dim)">(${doc.unitCost}万×${Math.max(headcount, doc.minHeadcount || 4)}人)</span>`
+    : `<strong style="color:var(--cream-gold-dark)">${actualCost}万</strong>`;
+  const remainingColor = remainingFunds < 200 ? 'var(--accent-negative)' : 'var(--cream-gold-dark)';
 
-  html += `<div class="shachoshitsu-decision-btn-row">`;
-  html += `  <button class="shachoshitsu-decision-btn cancel" id="shachoshitsuDecCancelBtn">キャンセル</button>`;
-  html += `  <button class="shachoshitsu-decision-btn confirm" id="shachoshitsuDecConfirmBtn">実行</button>`;
-  html += `</div>`;
+  const summaryHtml = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="max-width:460px;margin:0 auto;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:12px 16px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;padding:4px 0">
+        <span style="color:var(--cream-text-sub)">対象</span>
+        <span style="color:var(--cream-text-main);font-weight:600">団体全員 (${headcount}名)</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0">
+        <span style="color:var(--cream-text-sub)">コスト</span>
+        <span>${costDetailHtml}　<span style="color:var(--cream-text-dim);font-size:11px">⚡${doc.decisionCost}</span></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0">
+        <span style="color:var(--cream-text-sub)">残金(決裁後)</span>
+        <span style="color:${remainingColor};font-weight:700">${Math.round(remainingFunds).toLocaleString()}万</span>
+      </div>
+      <div style="padding:8px 0 2px;border-top:1px dashed rgba(100,85,50,0.2);margin-top:6px">
+        <div style="color:var(--cream-text-sub);font-size:11px;margin-bottom:4px">効果</div>
+        <div style="color:var(--cream-text-main);line-height:1.6">${doc.effectSummary || ''}</div>
+      </div>
+    </div>
+  `;
 
-  modal.innerHTML = html;
+  const html = `
+    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `TEAM DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAReporterStrip(state, '団体全体に対して発令します。内容をご確認ください')}
+    <div class="mdl-a-subject-stage">${summaryHtml}</div>
+    <div class="mdl-a-prompt" style="padding-top:14px">この内容で決裁しますか？</div>
+    <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
+      <button class="mdl-a-continue-btn" id="mdlAConfirmCancel">— 取 消 —</button>
+      <button class="mdl-a-continue-btn" id="mdlAConfirmExec" style="background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)">— 決 裁 す る —</button>
+    </div>
+  `;
 
-  document.getElementById('shachoshitsuDecCancelBtn').addEventListener('click', () => {
+  if (!_mdlAOpen(html)) return;
+
+  document.getElementById('mdlAConfirmCancel').addEventListener('click', () => {
     Audio.play('click');
-    _closeShachoshitsuDecisionModal();
+    _mdlAClose();
   });
-  document.getElementById('shachoshitsuDecConfirmBtn').addEventListener('click', () => {
-    _closeShachoshitsuDecisionModal();
+  document.getElementById('mdlAConfirmExec').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
     if (typeof App !== 'undefined' && App.executeDecision) {
       App.executeDecision(docId, null);
     }
   });
-
-  overlay.classList.add('active');
 }
 
 // 決裁実行の結果トースト(Phase 4: シンプルな1行)
@@ -6183,9 +6626,6 @@ function showDecisionResultToast(displayData) {
 // ─────────────────────────────────────────────────────────────────────────────
 function showDecisionResultModal(displayData) {
   if (!displayData) return;
-  const overlay = document.getElementById('shachoshitsuDecisionOverlay');
-  const modal = document.getElementById('shachoshitsuDecisionModal');
-  if (!overlay || !modal) { showDecisionResultToast(displayData); return; }
 
   const {
     fighter, isTeam, fighters = [], repFighter, text, campFlavor,
@@ -6193,118 +6633,105 @@ function showDecisionResultModal(displayData) {
     reactionTone,
   } = displayData;
   const isCamp = docId === 'camp';
-  const isParty = docId === 'party';
 
-  // ── ヒーロー(話者): 個人書類なら対象選手、団体書類なら代表選手 ──
+  // ヒーロー(話者): 個人書類なら対象選手、団体書類なら代表選手
   const hero = fighter || repFighter;
-  let heroHtml = '';
-  if (hero) {
-    const portrait = portraitImg(hero.id, 120, 'decision-result-hero-portrait');
-    const speechBlock = text
-      ? `<div class="decision-result-hero-speech">「${text}」</div>`
-      : '';
-    heroHtml = `
-      <div class="decision-result-hero">
-        ${portrait}
-        <div class="decision-result-hero-name">${hero.name}</div>
-        ${speechBlock}
-      </div>
-    `;
-  }
 
-  // ── Phase 8: 不確実性トーンマーカー(個人書類のみ、team書類は表示なし) ──
-  let toneHtml = '';
+  // トーンマーカー(個人書類のみ)
+  let toneBadge = '';
   if (reactionTone === 'high') {
-    toneHtml = `<div class="decision-result-tone high">🌟 深く刺さった</div>`;
+    toneBadge = `<div class="mdl-a-result-badge success">🌟 深く刺さった</div>`;
   } else if (reactionTone === 'low') {
-    toneHtml = `<div class="decision-result-tone low">💤 あまり響かなかったようだ</div>`;
+    toneBadge = `<div class="mdl-a-result-badge failure">💤 あまり響かなかった</div>`;
   }
 
-  // ── 参加者グリッド(team書類のみ、ヒーロー以外の選手を小サイズで並べる) ──
+  // 参加者グリッド(team書類のみ)
   let rosterHtml = '';
   if (isTeam && fighters.length > 0) {
     const others = fighters.filter(f => !hero || f.id !== hero.id);
     if (others.length > 0) {
-      const cls = isCamp ? 'camp-team' : 'party-team';
-      rosterHtml += `<div class="decision-result-roster ${cls}">`;
-      rosterHtml += `<div class="decision-result-roster-label">参加者 ${fighters.length}名</div>`;
-      rosterHtml += `<div class="decision-result-roster-grid">`;
+      rosterHtml += `<div style="margin:14px auto 4px;max-width:520px">`;
+      rosterHtml += `<div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:8px">参加者 ${fighters.length}名</div>`;
+      rosterHtml += `<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">`;
       others.forEach(f => {
         const lastName = (f.name || '').split(/\s/).pop();
-        rosterHtml += `<div class="decision-result-roster-member">`;
-        rosterHtml += portraitImg(f.id, 52, 'decision-result-roster-portrait');
-        rosterHtml += `<div class="decision-result-roster-name">${lastName}</div>`;
-        rosterHtml += `</div>`;
+        const faceUrl = (typeof getPortraitUrl === 'function') ? getPortraitUrl(f.id) : '';
+        const bg = faceUrl ? `background-image:url('${faceUrl}');background-size:cover;background-position:center` : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
+        rosterHtml += `<div style="text-align:center">
+          <div style="width:44px;height:44px;margin:0 auto 2px;${bg};border:1px solid var(--cream-gold-dark);border-radius:50%"></div>
+          <div style="font-size:10px;color:var(--cream-text-sub)">${lastName}</div>
+        </div>`;
       });
       rosterHtml += `</div></div>`;
     }
   }
 
-  // ── camp フレーバー(CAMP_FLAVOR_TEXTS からランダム1件) ──
-  let flavorHtml = '';
-  if (campFlavor) {
-    flavorHtml = `<div class="decision-result-flavor">${campFlavor}</div>`;
-  }
+  // camp フレーバー
+  const flavorHtml = campFlavor
+    ? `<div style="font-family:'Shippori Mincho',serif;font-size:13px;color:var(--cream-text-sub);font-style:italic;text-align:center;line-height:1.7;margin:14px auto 0;max-width:480px">${campFlavor}</div>`
+    : '';
 
-  // ── 変化サマリ ──
+  // 変化サマリ
   let changesHtml = '';
   if (changes.length > 0) {
-    changesHtml += `<div class="decision-result-changes">`;
+    changesHtml += `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:10px 14px;margin:14px auto 0;max-width:460px;font-size:12px">`;
     changes.forEach(c => {
       if (c.text !== undefined) {
-        changesHtml += `<div class="row">
-          <span class="label">${c.emoji || ''} ${c.label}</span>
-          <span class="value up">${c.text}</span>
+        changesHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--cream-text-main)">
+          <span style="color:var(--cream-text-sub)">${c.emoji || ''} ${c.label}</span>
+          <span style="color:var(--accent-positive);font-weight:700">${c.text}</span>
         </div>`;
       } else if (c.before !== undefined && c.after !== undefined) {
         const diff = c.after - c.before;
-        const cls = diff >= 0 ? 'up' : 'down';
+        const color = diff >= 0 ? 'var(--accent-positive)' : 'var(--accent-negative)';
         const sign = diff >= 0 ? '+' : '';
-        changesHtml += `<div class="row">
-          <span class="label">${c.emoji || ''} ${c.label}</span>
-          <span class="value ${cls}">${c.before} → <strong>${c.after}</strong> <span class="diff">(${sign}${diff})</span></span>
+        changesHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--cream-text-main)">
+          <span style="color:var(--cream-text-sub)">${c.emoji || ''} ${c.label}</span>
+          <span style="color:${color};font-weight:700">${c.before} → ${c.after} (${sign}${diff})</span>
         </div>`;
       }
     });
     changesHtml += `</div>`;
   }
 
-  // ── コスト ──
+  // コスト表示
   let costHtml = '';
   if (cost > 0) {
-    const fundsColor = remainingFunds < 200 ? 'var(--shachoshitsu-vermillion)' : 'var(--text-sub)';
-    costHtml = `<div class="decision-result-cost">
-      費用 <strong style="color:var(--shachoshitsu-vermillion)">-${cost}万</strong>
-      ｜ 残金 <strong style="color:${fundsColor}">${Math.round(remainingFunds).toLocaleString()}万</strong>
+    costHtml = `<div style="text-align:center;font-size:12px;color:var(--cream-text-sub);margin-top:12px">
+      費用 <strong style="color:#a83828">-${cost}万</strong>
+      ｜ 残金 <strong style="color:var(--cream-gold-dark)">${Math.round(remainingFunds).toLocaleString()}万</strong>
     </div>`;
   }
 
-  // 書類カテゴリ属性(背景グラデを分岐する用)
-  const variant = isCamp ? 'camp' : isParty ? 'party' : 'individual';
+  // subject-stage: hero がいれば上半身(+頭上吹き出し)、いなければ説明のみ
+  const stageBody = `
+    ${toneBadge}
+    ${rosterHtml}
+    ${flavorHtml}
+    ${changesHtml}
+    ${costHtml}
+  `;
 
-  modal.innerHTML = `
-    <div class="shachoshitsu-decision-title">
-      <span class="icon">${icon}</span>
-      <span>${label} — 決裁完了</span>
-    </div>
-    <div class="decision-result-body" data-variant="${variant}">
-      ${heroHtml}
-      ${toneHtml}
-      ${rosterHtml}
-      ${flavorHtml}
-      ${changesHtml}
-      ${costHtml}
-    </div>
-    <div class="shachoshitsu-decision-btn-row">
-      <button class="shachoshitsu-decision-btn confirm" id="decisionResultCloseBtn">閉じる ✓</button>
+  const subjectHtml = hero
+    ? _mdlASubjectStage(hero, stageBody, { small: true, speech: text })
+    : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
+
+  const html = `
+    ${_mdlAHeader(`${icon || '📝'} ${label} — 決裁完了`, `RESULT ・ ${_mdlASeasonLabel(typeof G !== 'undefined' ? G : {})}`)}
+    ${_mdlAReporterStrip(typeof G !== 'undefined' ? G : {}, '決裁の結果をお伝えします')}
+    ${subjectHtml}
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" id="mdlADecisionResultClose">— 見 届 け る —</button>
     </div>
   `;
 
-  overlay.classList.add('active');
-  const closeBtn = document.getElementById('decisionResultCloseBtn');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
-  }
+  if (!_mdlAOpen(html)) { showDecisionResultToast(displayData); return; }
+
+  const btn = document.getElementById('mdlADecisionResultClose');
+  if (btn) btn.addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -6316,14 +6743,10 @@ function showDecisionResultModal(displayData) {
 // ─────────────────────────────────────────────────────────────────────────────
 function showChoiceEventModal(event, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showChoiceEventModal(event, state, onChoice)); return; }
-  const overlay = document.getElementById('careOverlay');
-  const box = document.getElementById('careBox');
-  if (!overlay || !box) { if (onChoice) onChoice(-1); return; }
 
   const roster = state ? (state.roster || []) : [];
   const fighter = event.fighter != null ? roster.find(f => f.id === event.fighter) : null;
 
-  // イベント種別ラベル
   const typeLabels = {
     S1: '📋 タイトル挑戦要求', S2: '⚔ 対戦要求', S3: '🛌 休養願い',
     S4: '💢 不満・退団示唆',  S5: '⚡ 特訓志願', S6: '🎓 後輩指導申し出',
@@ -6335,62 +6758,73 @@ function showChoiceEventModal(event, state, onChoice) {
   };
   const title = typeLabels[event.type] || event.type;
   const isUrgent = event.type === 'S4' || event.type === 'E6' || event.type === 'S_grumble' || event.type === 'S_sns';
-  const borderColor = isUrgent ? '#e74c3c' : 'rgba(232,67,147,0.3)';
 
-  let html = `<div class="care-title" style="border-bottom:1px solid ${borderColor};padding-bottom:10px;margin-bottom:12px">${title}</div>`;
+  // Reporter取次セリフ
+  const reporterLine = isUrgent
+    ? '社長、判断をお願いします'
+    : '社長、ひとつ判断をお願いしたい件があります';
 
-  // 選手の顔 + セリフ
+  // subject-stage 内容: 選手がいればセリフ、なければ E5 の説明文
+  let stageBody = '';
   if (fighter) {
-    const face = portraitImg(fighter.id, 72, 'care-reaction-portrait');
     const dialogue = event.dialogue || '';
-    html += `<div class="care-reaction" style="border-color:${borderColor}">
-      ${face}
-      <div class="care-reaction-bubble" style="border-color:${isUrgent ? '#e74c3c' : '#e8439f'}">
-        <strong style="font-size:12px;color:var(--text-dim)">${fighter.name}</strong><br>
-        「${dialogue}」
-      </div>
+    stageBody = `<div class="mdl-a-observation centered" style="padding-top:6px">
+      <span class="marker">${fighter.name || ''}</span><br>
+      <span style="font-style:italic;color:var(--cream-text-main);line-height:1.8;display:inline-block;margin-top:8px">「${dialogue}」</span>
     </div>`;
   } else if (event.type === 'E5') {
-    html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">
+    stageBody = `<div class="mdl-a-observation centered">
       📣 近隣エリアの地域イベント実行委員会から営業試合の依頼が届きました。
     </div>`;
   }
 
-  // 選択肢ボタン
+  const subjectHtml = fighter
+    ? _mdlASubjectStage(fighter, stageBody, { small: true })
+    : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
+
   const choices = event.choices || [{ label: '了解', hint: '', idx: 0 }];
-  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">';
-  choices.forEach(c => {
-    const disabled = c.disabled ? 'disabled style="opacity:0.4;cursor:default"' : '';
-    const hintHtml = c.hint ? `<span style="font-size:11px;color:var(--text-dim);margin-left:8px">${c.hint}</span>` : '';
-    html += `<button class="btn" data-choice="${c.idx}" ${disabled}
-      style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-      <span>${c.label}</span>${hintHtml}
-    </button>`;
-  });
-  html += '</div>';
+  const trayCls = choices.length === 2 ? 'mdl-a-decision-tray two' : 'mdl-a-decision-tray';
+  const trayCards = choices.map(c => {
+    const letter = c.letter || (c.idx != null ? String.fromCharCode(65 + c.idx) : '?');
+    const hintTone = c.tone === 'positive' ? 'positive' : c.tone === 'negative' ? 'negative' : '';
+    const disabledAttr = c.disabled ? 'data-disabled="1" style="opacity:0.4;cursor:default"' : '';
+    return `<div class="mdl-a-decision-card" data-choice="${c.idx}" ${disabledAttr}>
+      <div class="mdl-a-decision-letter">${letter}</div>
+      <div class="mdl-a-decision-label">${c.label || ''}</div>
+      ${c.hint ? `<div class="mdl-a-decision-hint ${hintTone}">${c.hint}</div>` : ''}
+    </div>`;
+  }).join('');
 
-  box.innerHTML = html;
+  const html = `
+    ${_mdlAHeader(title, _mdlASeasonLabel(state), { urgent: isUrgent })}
+    ${_mdlAReporterStrip(state, reporterLine)}
+    ${subjectHtml}
+    <div class="mdl-a-prompt">どう対応しますか？</div>
+    <div class="${trayCls}">${trayCards}</div>
+  `;
 
-  box.querySelectorAll('.btn[data-choice]').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const idx = parseInt(this.dataset.choice);
+  if (!_mdlAOpen(html, { narrow: choices.length <= 2 })) {
+    if (onChoice) onChoice(-1);
+    return;
+  }
+
+  const card = document.getElementById('mdlACard');
+  card.querySelectorAll('.mdl-a-decision-card').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.dataset.disabled === '1') return;
+      const idx = parseInt(el.dataset.choice);
       Audio.play('click');
       if (onChoice) onChoice(idx);
-      // 結果ポップアップが表示されなかった場合のみ閉じる
-      if (!overlay.classList.contains('active')) return;
-      if (!box.querySelector('.choice-result-close-btn')) overlay.classList.remove('active');
+      // 結果モーダル (showChoiceEventResult) がオーバーレイを再利用していれば閉じない
+      if (!card.querySelector('[data-mdl-choice-result]')) {
+        _mdlAClose();
+      }
     });
   });
-
-  overlay.classList.add('active');
 }
 
-/** 選択型イベント結果ポップアップ（careOverlay/careBox 再利用）*/
+/** 選択型イベント結果ポップアップ(mdlAOverlayに上書き、選択肢モーダルと連続表示) */
 function showChoiceEventResult(event, resultTexts, state) {
-  const overlay = document.getElementById('careOverlay');
-  const box = document.getElementById('careBox');
-  if (!overlay || !box) return;
-
   const roster = state ? (state.roster || []) : [];
   const fighter = event.fighter != null ? roster.find(f => f.id === event.fighter) : null;
   const typeLabels = {
@@ -6404,39 +6838,37 @@ function showChoiceEventResult(event, resultTexts, state) {
   };
   const title = typeLabels[event.type] || event.type;
 
-  let html = `<div class="care-result-header" style="border-color:rgba(232,67,147,0.3)">`;
-  html += `<span class="care-result-action-emoji">${(title.match(/^./) || [''])[0]}</span>`;
-  html += `<span class="care-result-action-label">${title.replace(/^.\s*/, '')}</span>`;
-  html += `</div>`;
+  const resultsBlock = (resultTexts && resultTexts.length > 0)
+    ? `<div class="mdl-a-observation centered" style="padding-top:6px" data-mdl-choice-result="1">
+        ${resultTexts.map(t => `<div style="padding:8px 12px;background:rgba(255,255,255,0.4);border:1px solid rgba(100,85,50,0.15);border-radius:6px;margin-bottom:6px;line-height:1.6">${t}</div>`).join('')}
+      </div>`
+    : `<div class="mdl-a-observation centered" data-mdl-choice-result="1">決定が適用されました。</div>`;
 
-  if (fighter) {
-    const upperUrl = getUpperUrl(fighter.id);
-    if (upperUrl) {
-      html += `<div style="text-align:center;margin:8px 0 4px">`;
-      html += `<img src="${upperUrl}" style="max-height:200px;width:auto;object-fit:cover;object-position:top center;border-radius:8px;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.6))" onerror="this.style.display='none'" alt="">`;
-      html += `</div>`;
-    } else {
-      html += portraitImg(fighter.id, 120, 'care-result-portrait');
-    }
-    html += `<div class="care-result-name">${fighter.name}</div>`;
-  }
+  const stageBody = fighter
+    ? resultsBlock
+    : `<div data-mdl-choice-result="1">${resultsBlock}</div>`;
+  const subjectHtml = fighter
+    ? _mdlASubjectStage(fighter, stageBody, { small: true })
+    : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
 
-  if (resultTexts && resultTexts.length > 0) {
-    html += `<div style="margin:10px 0 14px">`;
-    resultTexts.forEach(t => {
-      html += `<div style="font-size:13px;line-height:1.7;color:var(--text);padding:8px 14px;background:rgba(200,190,170,0.05);border:1px solid rgba(200,190,170,0.08);border-radius:8px;margin-bottom:6px;text-align:center">${t}</div>`;
+  const html = `
+    ${_mdlAHeader('📝 ' + title + ' — 結果', _mdlASeasonLabel(state))}
+    ${_mdlAReporterStrip(state, 'ご判断の結果をお伝えします')}
+    ${subjectHtml}
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" id="mdlAChoiceResultClose">— 見 届 け る —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html, { narrow: true })) return;
+
+  const btn = document.getElementById('mdlAChoiceResultClose');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      Audio.play('click');
+      _mdlAClose();
     });
-    html += `</div>`;
   }
-
-  html += `<button class="btn choice-result-close-btn" style="width:100%;padding:10px;font-size:13px;font-weight:600;border:1px solid rgba(232,67,147,0.3);color:#e8439f">閉じる ✓</button>`;
-
-  box.innerHTML = html;
-  overlay.classList.add('active');
-
-  box.querySelector('.choice-result-close-btn').addEventListener('click', () => {
-    overlay.classList.remove('active');
-  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -8662,9 +9094,7 @@ function closeCareModal() {
 function showNotifEventToast(event) {
   if (!event) return;
   if (_isPopupActive()) { _popupQueue.push(() => showNotifEventToast(event)); return; }
-  const overlay = document.getElementById('notifModalOverlay');
-  const box = document.getElementById('notifModalBox');
-  if (!overlay || !box) { showToast(event.text || ''); return; }
+  if (!document.getElementById('mdlDOverlay')) { showToast(event.text || ''); return; }
 
   const isWarning = event.type === 'N5'
     || event.type === 'N_isolation'
@@ -8675,36 +9105,40 @@ function showNotifEventToast(event) {
 
   const f1Id = event.fighter;
   const f2Id = event.fighter2;
+  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
   let portraitsHtml = '';
   if (f1Id != null && f2Id != null) {
-    portraitsHtml = `<div class="notif-modal-portraits">${portraitImg(f1Id, 100, 'notif-modal-face dual')}${portraitImg(f2Id, 100, 'notif-modal-face dual')}</div>`;
+    portraitsHtml = `<div style="display:flex;gap:12px;justify-content:center;margin-bottom:10px">
+      <div class="mdl-d-face" style="background-image:url('${_fUrl(f1Id)}');width:52px;height:52px;margin:0"></div>
+      <div class="mdl-d-face" style="background-image:url('${_fUrl(f2Id)}');width:52px;height:52px;margin:0"></div>
+    </div>`;
   } else if (f1Id != null) {
-    portraitsHtml = `<div class="notif-modal-portraits">${portraitImg(f1Id, 120, 'notif-modal-face')}</div>`;
+    portraitsHtml = `<div class="mdl-d-face" style="background-image:url('${_fUrl(f1Id)}')"></div>`;
   }
 
-  const textHtml = event.text ? `<div class="notif-modal-text">${event.text}</div>` : '';
-  const detailHtml = event.detail ? `<div class="notif-modal-detail">${event.detail}</div>` : '';
-  const dialogueHtml = event.dialogue ? `<div class="notif-modal-dialogue">「${event.dialogue}」</div>` : '';
+  const textHtml    = event.text     ? `<div class="mdl-d-body">${event.text}</div>`         : '';
+  const detailHtml  = event.detail   ? `<div class="mdl-d-detail">${event.detail}</div>`     : '';
+  const dialogueHtml = event.dialogue ? `<div class="mdl-d-body italic">${event.dialogue}</div>` : '';
 
-  box.className = 'notif-modal-box' + (isWarning ? ' notif-warning' : '');
-  box.innerHTML = `
+  const box = document.getElementById('mdlDBox');
+  if (box) box.className = 'mdl-d-box' + (isWarning ? ' urgent' : '');
+  _mdlDOpen(`
     ${portraitsHtml}
     ${textHtml}
     ${detailHtml}
     ${dialogueHtml}
-    <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
-  `;
-  overlay.classList.add('active');
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="closeNotifModal()">OK</button>
+    </div>
+  `);
   Audio.play('event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
 
 function closeNotifModal() {
-  const overlay = document.getElementById('notifModalOverlay');
-  if (overlay) overlay.classList.remove('active');
+  _mdlDClose();
   clearTimeout(window._notifModalTimer);
-  // P4-P6: Glimpseキューの次を表示
   _glimpseQueue.shift();
   if (_glimpseQueue.length > 0) {
     setTimeout(_renderNextGlimpse, 200);
@@ -8730,50 +9164,43 @@ function showPostMatchDialogues(dialogues) {
 
 function _renderNextMatchDialogue() {
   if (_matchDialogueQueue.length === 0) return;
+  if (!document.getElementById('mdlDOverlay')) { _matchDialogueQueue.shift(); return; }
   const d = _matchDialogueQueue[0];
-
-  const overlay = document.getElementById('notifModalOverlay');
-  const box = document.getElementById('notifModalBox');
-  if (!overlay || !box) { _matchDialogueQueue.shift(); return; }
 
   const rb = d.rivalryBonus || {};
   const rivalryColor = rb.color || '#e17055';
+  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
 
-  box.className = 'notif-modal-box notif-dramatic';
-  box.innerHTML = `
-    <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;letter-spacing:1px">${d.matchLabel || ''} ${rb.emoji || '🔥'}${rb.label || '因縁'}</div>
-    <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:16px">
+  const box = document.getElementById('mdlDBox');
+  if (box) box.className = 'mdl-d-box';
+  _mdlDOpen(`
+    <div class="mdl-d-speaker">${d.matchLabel || ''} ${rb.emoji || '🔥'}${rb.label || '因縁'}</div>
+    <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:14px">
       <div style="text-align:center">
-        ${portraitImg(d.winnerId, 130, 'notif-modal-face')}
-        <div style="margin-top:6px;font-size:14px;font-weight:700;color:var(--gold)">${d.winnerName}</div>
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(d.winnerId)}');width:68px;height:68px;margin:0 auto 4px"></div>
+        <div style="font-size:12px;font-weight:700;color:var(--gold)">${d.winnerName}</div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:30px">
-        <span style="font-size:28px;filter:drop-shadow(0 0 8px ${rivalryColor})">⚔️</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:24px">
+        <span style="font-size:24px;filter:drop-shadow(0 0 6px ${rivalryColor})">⚔️</span>
       </div>
       <div style="text-align:center">
-        ${portraitImg(d.loserId, 100, 'notif-modal-face')}
-        <div style="margin-top:6px;font-size:13px;color:var(--text-sub)">${d.loserName}</div>
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(d.loserId)}');width:52px;height:52px;margin:0 auto 4px"></div>
+        <div style="margin-top:5px;font-size:11px;color:var(--lite-text-sub)">${d.loserName}</div>
       </div>
     </div>
-    <div style="margin-bottom:12px;padding:12px 16px;background:rgba(212,168,67,0.08);border-left:3px solid var(--gold);border-radius:4px">
-      <div style="font-size:11px;color:var(--gold);margin-bottom:4px;font-weight:700">WINNER</div>
-      <div style="font-size:15px;color:var(--text-main);line-height:1.6">${d.winnerName}:「${d.winLine}」</div>
+    <div class="mdl-d-detail">WINNER ・ ${d.winnerName}「${d.winLine}」</div>
+    <div class="mdl-d-detail warn">LOSER ・ ${d.loserName}「${d.loseLine}」</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="closeMatchDialogue()">OK</button>
     </div>
-    <div style="margin-bottom:16px;padding:12px 16px;background:rgba(231,76,60,0.06);border-left:3px solid ${rivalryColor};border-radius:4px">
-      <div style="font-size:11px;color:${rivalryColor};margin-bottom:4px;font-weight:700">LOSER</div>
-      <div style="font-size:15px;color:var(--text-sub);line-height:1.6">${d.loserName}:「${d.loseLine}」</div>
-    </div>
-    <button class="notif-modal-btn" onclick="closeMatchDialogue()">OK</button>
-  `;
-  overlay.classList.add('active');
+  `);
   Audio.play('event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeMatchDialogue, 60000);
 }
 
 function closeMatchDialogue() {
-  const overlay = document.getElementById('notifModalOverlay');
-  if (overlay) overlay.classList.remove('active');
+  _mdlDClose();
   clearTimeout(window._notifModalTimer);
   _matchDialogueQueue.shift();
   if (_matchDialogueQueue.length > 0) {
@@ -8821,85 +9248,82 @@ function _renderNextGlimpse() {
 }
 
 function _renderGlimpseA(glimpse) {
-  const overlay = document.getElementById('notifModalOverlay');
-  const box = document.getElementById('notifModalBox');
-  if (!overlay || !box) { _glimpseQueue.shift(); return; }
+  if (!document.getElementById('mdlDOverlay')) { _glimpseQueue.shift(); return; }
 
-  const toneClass = glimpse.tone === 'gold' ? 'notif-gold'
-    : glimpse.tone === 'warning' || glimpse.tone === 'danger' ? 'notif-warning'
-    : glimpse.tone === 'dramatic' ? 'notif-dramatic' : '';
+  const toneBoxCls = glimpse.tone === 'gold' ? ' positive'
+    : glimpse.tone === 'warning' || glimpse.tone === 'danger' ? ' urgent' : '';
 
-  let portraitsHtml = '';
+  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
+  let headerHtml = '';
   if (glimpse.targetId) {
-    // 二人表示（bond/rivalry）— 発信者を大きく強調
     const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
     const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
-    portraitsHtml = `<div class="notif-modal-portraits" style="gap:6px;align-items:flex-end">
-      ${portraitImg(glimpse.speakerId, 140, 'notif-modal-face dual')}
-      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:24px">
-        <span style="font-size:32px;filter:drop-shadow(0 0 8px ${axisColor})">${axisIcon}</span>
-        <span style="font-size:22px;font-weight:900;color:${axisColor};letter-spacing:2px;text-shadow:0 0 12px ${axisColor}">→</span>
+    headerHtml = `
+      <div style="display:flex;gap:10px;align-items:flex-end;justify-content:center;margin-bottom:10px">
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}');width:72px;height:72px;margin:0"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:18px">
+          <span style="font-size:26px;filter:drop-shadow(0 0 6px ${axisColor})">${axisIcon}</span>
+          <span style="font-size:18px;font-weight:900;color:${axisColor}">→</span>
+        </div>
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.targetId)}');width:52px;height:52px;margin:0"></div>
       </div>
-      ${portraitImg(glimpse.targetId, 90, 'notif-modal-face dual')}
-    </div>
-    <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:8px">
-      <span style="font-size:16px;font-weight:700;color:var(--text-main)">${glimpse.speakerName}</span>
-      <span style="font-size:14px;color:${axisColor};font-weight:700">→</span>
-      <span style="font-size:13px;color:var(--text-dim)">${glimpse.targetName}</span>
-    </div>`;
+      <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:700;color:var(--lite-text-main)">${glimpse.speakerName}</span>
+        <span style="font-size:12px;color:${axisColor};font-weight:700">→</span>
+        <span style="font-size:12px;color:var(--lite-text-sub)">${glimpse.targetName}</span>
+      </div>
+      <div class="mdl-d-speaker">${glimpse.label}</div>`;
   } else {
-    // 一人表示（trust）
-    portraitsHtml = `<div class="notif-modal-portraits">
-      ${portraitImg(glimpse.speakerId, 120, 'notif-modal-face')}
-    </div>
-    <div style="font-size:14px;color:var(--text-sub);margin-bottom:8px">${glimpse.speakerName}</div>`;
+    headerHtml = `
+      <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}')"></div>
+      <div class="mdl-d-speaker">${glimpse.speakerName} ・ ${glimpse.label}</div>`;
   }
 
-  box.className = 'notif-modal-box' + (toneClass ? ` ${toneClass}` : '');
-  box.innerHTML = `
-    ${portraitsHtml}
-    <div style="font-size:13px;color:var(--text-dim);margin-bottom:10px">${glimpse.label}</div>
-    <div class="notif-modal-dialogue">「${glimpse.dialogue}」</div>
-    <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
-  `;
-  overlay.classList.add('active');
+  const box = document.getElementById('mdlDBox');
+  if (box) box.className = `mdl-d-box${toneBoxCls}`;
+  _mdlDOpen(`
+    ${headerHtml}
+    <div class="mdl-d-body italic">${glimpse.dialogue}</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="closeNotifModal()">見届ける</button>
+    </div>
+  `);
   Audio.play(glimpse.tone === 'gold' ? 'award' : 'event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
 
 function _renderGlimpseB(glimpse) {
-  const overlay = document.getElementById('notifModalOverlay');
-  const box = document.getElementById('notifModalBox');
-  if (!overlay || !box) { _glimpseQueue.shift(); return; }
+  if (!document.getElementById('mdlDOverlay')) { _glimpseQueue.shift(); return; }
 
+  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
   let portraitsHtml = '';
   if (glimpse.targetId) {
     const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
     const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
-    portraitsHtml = `<div class="notif-modal-portraits" style="gap:4px;align-items:flex-end">
-      ${portraitImg(glimpse.speakerId, 110, 'notif-modal-face dual')}
-      <div style="display:flex;flex-direction:column;align-items:center;gap:1px;padding-bottom:16px">
-        <span style="font-size:24px;filter:drop-shadow(0 0 6px ${axisColor})">${axisIcon}</span>
-        <span style="font-size:18px;font-weight:900;color:${axisColor}">→</span>
-      </div>
-      ${portraitImg(glimpse.targetId, 70, 'notif-modal-face dual')}
-    </div>`;
+    portraitsHtml = `
+      <div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;margin-bottom:8px">
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}');width:60px;height:60px;margin:0"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;padding-bottom:14px">
+          <span style="font-size:20px;filter:drop-shadow(0 0 4px ${axisColor})">${axisIcon}</span>
+          <span style="font-size:15px;font-weight:900;color:${axisColor}">→</span>
+        </div>
+        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.targetId)}');width:44px;height:44px;margin:0"></div>
+      </div>`;
   } else {
-    portraitsHtml = `<div class="notif-modal-portraits">
-      ${portraitImg(glimpse.speakerId, 100, 'notif-modal-face')}
-    </div>`;
+    portraitsHtml = `<div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}')"></div>`;
   }
 
-  box.className = 'notif-modal-box';
-  box.innerHTML = `
+  const box = document.getElementById('mdlDBox');
+  if (box) box.className = 'mdl-d-box';
+  _mdlDOpen(`
     ${portraitsHtml}
-    <div style="font-size:13px;color:var(--text-sub);margin-bottom:4px">${glimpse.speakerName}</div>
-    <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">${glimpse.label}</div>
-    <div class="notif-modal-dialogue">「${glimpse.dialogue}」</div>
-    <button class="notif-modal-btn" onclick="closeNotifModal()">OK</button>
-  `;
-  overlay.classList.add('active');
+    <div class="mdl-d-speaker">${glimpse.speakerName} ・ ${glimpse.label}</div>
+    <div class="mdl-d-body italic">${glimpse.dialogue}</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="closeNotifModal()">見届ける</button>
+    </div>
+  `);
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
