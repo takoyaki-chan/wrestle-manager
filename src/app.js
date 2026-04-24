@@ -7362,7 +7362,8 @@ const App = {
     const archetypeKey = (a === 'normal') ? '_default' : a;
     const lines = personaDict?.[archetypeKey] || personaDict?.['_default'] || dict['normal']['_default'];
     const seed = Engine.rng.derive(G.rngSeed, G.season, G.week, 0xD03E, fighter.id);
-    const idx = Math.floor(Engine.rng.create(seed)() * lines.length);
+    const rng = Engine.rng.create(seed);
+    const idx = Math.floor(Engine.rng.float(rng) * lines.length);
     return lines[idx];
   },
 
