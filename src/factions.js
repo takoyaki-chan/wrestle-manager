@@ -157,17 +157,6 @@ Engine.factions = {
     return !!(f && (f.type === 'rivalrous' || f.inHostility === true));
   },
 
-  // v0.2: 派閥サイズに応じた加入率倍率（人数偏り対策）
-  _getJoinSizeMult(size) {
-    const cfg = FACTION_CONFIG;
-    const thresholds = Object.keys(cfg.joinSizeMult)
-      .map(Number)
-      .sort((a, b) => a - b);
-    for (const t of thresholds) {
-      if (size <= t) return cfg.joinSizeMult[t];
-    }
-    return 0.0;
-  },
 
   // ── 派閥生成 ──────────────────────────────────────────────
   createFaction(state, leaderId, memberIds, options = {}) {
@@ -380,38 +369,36 @@ Engine.factions = {
     const assigned = new Set();
     s.factions.forEach(f => f.memberIds.forEach(id => assigned.add(id)));
 
-    // ── 加入判定 ──
+    // ── 加入判定（v0.3: 1週1人・最高bond候補のみ判定・連続式確率） ──
     const newFactions = s.factions.map(f => ({ ...f, memberIds: [...f.memberIds] }));
 
-    // v0.2: 単独派閥の加入凍結判定（派閥数 === 1 かつ サイズ ≥ soloFactionFreezeSize）
-    const soloFreeze = newFactions.length === 1
-      && newFactions[0].memberIds.length >= cfg.soloFactionFreezeSize;
-
     for (const f of newFactions) {
-      if (soloFreeze) continue;  // v0.2: 単独派閥凍結時はスキップ
-      const candidates = [...rosterIds].filter(id => !assigned.has(id));
-      for (const candId of candidates) {
-        // 単独派閥はループ中も随時サイズ上限チェック
-        if (newFactions.length === 1 && f.memberIds.length >= cfg.soloFactionFreezeSize) break;
-        if (f.memberIds.includes(candId)) continue;
+      // 単独派閥はサイズ上限で凍結
+      if (newFactions.length === 1 && f.memberIds.length >= cfg.soloFactionFreezeSize) continue;
+
+      // 未加入候補の中からbond平均が最も高い1人を選ぶ
+      let bestCandId = null;
+      let bestBond = -Infinity;
+      for (const candId of [...rosterIds]) {
+        if (assigned.has(candId) || f.memberIds.includes(candId)) continue;
         const avg = this._avgBond(s, candId, f.memberIds);
-        if (avg < cfg.joinBondThreshold) continue;
-        let rate;
-        if (avg >= 80) rate = cfg.joinRate[80];
-        else if (avg >= 70) rate = cfg.joinRate[70];
-        else rate = cfg.joinRate[60];
-        if (this._isHostile(f)) {
-          if (f.momentum > 30) rate *= cfg.joinMomentumHighMult;
-          else if (f.momentum < -30) rate *= cfg.joinMomentumLowMult;
+        if (avg >= cfg.joinBondThreshold && avg > bestBond) {
+          bestBond = avg;
+          bestCandId = candId;
         }
-        // v0.2: サイズ倍率適用
-        rate *= this._getJoinSizeMult(f.memberIds.length);
-        if (Engine.rng.float(rng) < rate) {
-          f.memberIds.push(candId);
-          assigned.add(candId);
-          const name = (s.roster || []).find(c => c.id === candId)?.name || `#${candId}`;
-          if (typeof console !== 'undefined') console.log(`[WM Faction] ${name} joined ${f.name}`);
-        }
+      }
+      if (bestCandId === null) continue;
+
+      // 確率: ((bond - 60) / 40) × joinMaxRate × momentum補正
+      const baseRate = ((bestBond - 60) / 40) * cfg.joinMaxRate;
+      const momentumMult = Math.max(0.3, Math.min(2.0, 1 + (f.momentum || 0) * cfg.joinMomentumScale));
+      const rate = Math.min(baseRate * momentumMult, 0.95);
+
+      if (Engine.rng.float(rng) < rate) {
+        f.memberIds.push(bestCandId);
+        assigned.add(bestCandId);
+        const name = (s.roster || []).find(c => c.id === bestCandId)?.name || `#${bestCandId}`;
+        if (typeof console !== 'undefined') console.log(`[WM Faction] ${name} joined ${f.name}`);
       }
     }
 
