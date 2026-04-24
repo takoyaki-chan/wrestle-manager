@@ -1028,6 +1028,170 @@ function _factionAudioClose(eventId) {
 }
 
 
+// ── D層セレモニーイベント BGM制御 ──
+function _ceremAudioOpen(visualVariant) {
+  const src = visualVariant === 'arrival'
+    ? '../bgm/bgm_kaimaku_v1.mp3'
+    : '../bgm/8bit-ending-theme_Loop.ogg';
+  try { Audio.fileBgm.play(src, { loop: true, volume: 0.10 }); } catch(e) {}
+}
+function _ceremAudioClose() {
+  try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
+  setTimeout(() => { try { Audio.bgm.playForState(); } catch(e) {} }, 1600);
+}
+
+// D層セレモニーイベント本体
+// evt: MILESTONE_EVENTSエントリ（dialogueKey/narration/narrationGaps/visualVariant/continueLabel）
+// speakers: [{fighter, roleLabel}, ...] (_resolveSpotlightFighters の戻り値)
+// onContinue: 続けるボタンクリック時のコールバック
+function showCeremonyEvent(evt, speakers, onContinue) {
+  // タイトルサブ動的生成
+  let titleSub = evt.titleSub;
+  if (evt.visualVariant === 'arrival') {
+    titleSub = evt.titleSub + ' ・ WEEK ' + G.week;
+  } else if (evt.visualVariant === 'triumph') {
+    const att = (G.lastShowAttendance || 0).toLocaleString();
+    titleSub = evt.titleSub + ' ・ ' + att + ' ATTENDED';
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'cerem-overlay ' + (evt.visualVariant || '');
+  overlay.style.zIndex = '920';
+  overlay.style.position = 'fixed';
+  overlay.style.inset = '0';
+
+  const narrationGaps = evt.narrationGaps || [];
+
+  // Phase 1 HTML
+  const narLines = (evt.narration || []).map((line, i) => {
+    const gapClass = narrationGaps.includes(i) ? ' gap' : '';
+    return `<span class="cerem-nar-line${gapClass}" data-nar-idx="${i}">${line}</span>`;
+  }).join('');
+
+  // Phase 2: speakers
+  const speakerHtml = speakers.map(({ fighter, roleLabel }) => {
+    const line = App.resolveDomeLine(fighter, evt.dialogueKey);
+    const portraitSrc = `../image/upper/${fighter.id}.webp`;
+    const isTriumph = evt.visualVariant === 'triumph' ? ' triumph-glow' : '';
+    return `
+      <div class="cerem-speaker">
+        <div class="cerem-bubble-wrap">
+          <div class="cerem-bubble">${line}</div>
+        </div>
+        <div class="cerem-portrait${isTriumph}">
+          <img src="${portraitSrc}" alt="${fighter.name}"
+            style="width:100%;height:100%;object-fit:cover;object-position:top"
+            onerror="this.style.display='none'">
+        </div>
+        <div class="cerem-role-label">${roleLabel}</div>
+        <div class="cerem-speaker-name">${fighter.name}</div>
+      </div>`;
+  }).join('');
+
+  overlay.innerHTML = `
+    <!-- Phase 1: Narration -->
+    <div class="cerem-phase active" data-phase="1">
+      <div class="cerem-phase-zone top">
+        <div class="cerem-title-band">
+          <div class="cerem-title-main ${evt.visualVariant || ''}">${evt.titleMain}</div>
+          <div class="cerem-title-divider"></div>
+          <div class="cerem-title-sub">${titleSub}</div>
+        </div>
+      </div>
+      <div class="cerem-phase-zone mid">
+        <div class="cerem-narration">${narLines}</div>
+      </div>
+      <div class="cerem-phase-zone bottom"></div>
+    </div>
+    <!-- Phase 2: Characters -->
+    <div class="cerem-phase" data-phase="2">
+      <div class="cerem-phase-zone top"></div>
+      <div class="cerem-phase-zone mid">
+        <div class="cerem-trio">${speakerHtml}</div>
+      </div>
+      <div class="cerem-phase-zone bottom">
+        <button class="cerem-continue-btn">${evt.continueLabel || '続ける'}</button>
+      </div>
+    </div>
+    <div class="cerem-hint">▼ クリックで進む</div>
+    <button class="cerem-skip" data-cerem-skip>▷ SKIP</button>
+  `;
+
+  document.body.appendChild(overlay);
+  _ceremAudioOpen(evt.visualVariant);
+
+  // SceneController ロジック
+  const phase1El = overlay.querySelector('[data-phase="1"]');
+  const phase2El = overlay.querySelector('[data-phase="2"]');
+  const narEls = Array.from(overlay.querySelectorAll('.cerem-nar-line'));
+  const speakerEls = Array.from(overlay.querySelectorAll('.cerem-speaker'));
+  const continueBtn = overlay.querySelector('.cerem-continue-btn');
+  const hint = overlay.querySelector('.cerem-hint');
+  let phase = 1;
+  let step = 0;
+  let transitioning = false;
+
+  function closeCeremony() {
+    overlay.remove();
+    _ceremAudioClose();
+    onContinue();
+  }
+
+  function skipAll() {
+    if (transitioning) return;
+    narEls.forEach(el => el.classList.add('shown'));
+    phase1El.classList.remove('active');
+    setTimeout(() => {
+      phase = 2; step = speakerEls.length;
+      phase2El.classList.add('active');
+      speakerEls.forEach(el => el.classList.add('shown'));
+      hint.classList.add('hidden');
+      setTimeout(() => continueBtn.classList.add('shown'), 400);
+    }, 500);
+  }
+
+  function toPhase2() {
+    transitioning = true;
+    hint.classList.add('hidden');
+    phase1El.classList.remove('active');
+    setTimeout(() => {
+      phase = 2; step = 0;
+      phase2El.classList.add('active');
+      setTimeout(() => {
+        hint.classList.remove('hidden');
+        transitioning = false;
+      }, 1000);
+    }, 1100);
+  }
+
+  function advance() {
+    if (transitioning) return;
+    if (phase === 1) {
+      if (step < narEls.length) {
+        narEls[step].classList.add('shown');
+        step++;
+      } else {
+        toPhase2();
+      }
+    } else {
+      if (step < speakerEls.length) {
+        speakerEls[step].classList.add('shown');
+        step++;
+        if (step >= speakerEls.length) {
+          hint.classList.add('hidden');
+          setTimeout(() => continueBtn.classList.add('shown'), 800);
+        }
+      }
+    }
+  }
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target.closest('.cerem-continue-btn')) { closeCeremony(); return; }
+    if (e.target.closest('[data-cerem-skip]')) { skipAll(); return; }
+    advance();
+  });
+}
+
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 6b: MISSION SYSTEM (v0.96)                       ║
 // ║  Guided progression — pure functions, no DOM              ║
@@ -4691,6 +4855,7 @@ const App = {
       alert('試合結果の確定に失敗しました。カードに不整合がある可能性があります。');
       return;
     }
+    App._checkAndShowPreShowMilestone(function() {
     let s = { ...G, totalShows: G.totalShows + 1, weekPhase: 'showExec' };
     // forcedRest（S3休養願い）フラグをクリア — この興行後は通常参加可能に戻す
     let roster = s.roster.map(c => c.forcedRest ? { ...c, forcedRest: false } : { ...c });
@@ -5588,6 +5753,7 @@ const App = {
         }
       }, maxWaitMs);
     }
+    }); // _checkAndShowPreShowMilestone callback end
   },
 
   // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
@@ -7096,10 +7262,43 @@ const App = {
         case 'first_rivalry':
           triggered = Object.keys(G.rivalries || {}).length > 0;
           break;
+        case 'venue':
+          if (evt.trigger.timing === 'preShow') break; // preShowフックで処理
+          triggered = (G.showVenue === evt.trigger.venueIdx);
+          break;
+        case 'venue_occupancy': {
+          if (evt.trigger.timing === 'preShow') break;
+          const t = evt.trigger;
+          const cap = VENUES[t.venueIdx]?.cap;
+          const occ = cap ? (G.lastShowAttendance || 0) / cap : 0;
+          triggered = (G.showVenue === t.venueIdx) && (occ >= t.minOccupancy);
+          break;
+        }
       }
       if (triggered) return evt;
     }
     return null;
+  },
+
+  // D層: 興行前マイルストーンチェック（preShow timing のみ対象）
+  _checkAndShowPreShowMilestone(onDone) {
+    const ms = G.milestones || {};
+    for (const evt of MILESTONE_EVENTS) {
+      if (evt.trigger.timing !== 'preShow') continue;
+      if (ms[evt.id]) continue;
+      let triggered = false;
+      switch (evt.trigger.type) {
+        case 'venue':
+          triggered = (G.showVenue === evt.trigger.venueIdx);
+          break;
+      }
+      if (!triggered) continue;
+      G = { ...G, milestones: { ...(G.milestones || {}), [evt.id]: true } };
+      const speakers = App._resolveSpotlightFighters(G);
+      App.showCeremonyEvent(evt, speakers, onDone);
+      return;
+    }
+    onDone();
   },
 
   // v1.5s25b: マイルストーンチェック→UI→適用のフロー
@@ -7133,6 +7332,38 @@ const App = {
       App._applyMilestoneChoice(displayEvt, choiceIdx);
       onDone();
     });
+  },
+
+  // D層: メインイベント2名 + ロスターpop最大のベテラン代表を選出
+  _resolveSpotlightFighters(G) {
+    const mainCard = G.showCard?.[0];
+    if (!mainCard) return [];
+    const mainLeftId = mainCard.left;
+    const mainRightId = mainCard.right;
+    const mainLeft = G.roster.find(f => f.id === mainLeftId);
+    const mainRight = G.roster.find(f => f.id === mainRightId);
+    const veteran = G.roster
+      .filter(f => f.id !== mainLeftId && f.id !== mainRightId
+        && f.status !== 'retired' && !f.isRental)
+      .sort((a, b) => (b.pop || 0) - (a.pop || 0))[0];
+    return [
+      mainLeft  ? { fighter: mainLeft,  roleLabel: 'MAIN EVENT ・ 赤コーナー' } : null,
+      mainRight ? { fighter: mainRight, roleLabel: 'MAIN EVENT ・ 青コーナー' } : null,
+      veteran   ? { fighter: veteran,   roleLabel: 'VETERAN ・ ロッカールーム代表' } : null
+    ].filter(Boolean);
+  },
+
+  // D層: personality×archetypeからドームセリフを決定論的に選出（RNGシード利用）
+  resolveDomeLine(fighter, dialogueKey) {
+    const dict = dialogueKey === 'dome_firstshow' ? DOME_FIRSTSHOW_LINES : DOME_SELLOUT_LINES;
+    const p = fighter.personality || 'normal';
+    const a = fighter.archetype || 'normal';
+    const personaDict = dict[p] || dict['normal'];
+    const archetypeKey = (a === 'normal') ? '_default' : a;
+    const lines = personaDict?.[archetypeKey] || personaDict?.['_default'] || dict['normal']['_default'];
+    const seed = Engine.rng.derive(G.rngSeed, G.season, G.week, 0xD03E, fighter.id);
+    const idx = Math.floor(Engine.rng.create(seed)() * lines.length);
+    return lines[idx];
   },
 
   // v1.5s25b: マイルストーン選択肢の効果適用
