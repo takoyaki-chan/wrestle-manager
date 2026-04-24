@@ -5021,9 +5021,7 @@ const App = {
     // D層 first_dome_sellout: postShow トリガー設定
     if (s.showVenue === 9 && !(s.milestones?.first_dome_sellout)) {
       const _domeCap = VENUES[9]?.cap || 22500;
-      const _occ = preAttendance / _domeCap;
-      console.log('[DomeCeremony] finalizeShow check', { venue: s.showVenue, preAttendance, cap: _domeCap, occ: _occ.toFixed(3), orgPop: s.orgPop, momentum: s.attendanceMomentum });
-      if (_occ >= 0.95) s = { ...s, _pendingDomeSelloutCeremony: true };
+      if (preAttendance / _domeCap >= 0.95) s = { ...s, _pendingDomeSelloutCeremony: true };
     }
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
     if (crowdMQ.total !== 0) {
@@ -5630,7 +5628,6 @@ const App = {
     }
 
     G = { ...G, ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
-    console.log('[DomeCeremony] finalizeShow merged', { pending: G._pendingDomeSelloutCeremony, weekPhase: G.weekPhase, lastShowAttendance: G.lastShowAttendance, venue: G.showVenue });
 
     // v2.0 Phase1-6: メディアスポットライトの興行後処理
     if (G.mediaSpotlight) {
@@ -6129,7 +6126,6 @@ const App = {
 
   // Close show result and advance via tickWeek
   closeShowResult() {
-    console.log('[DomeCeremony] closeShowResult enter', { closing: App._closingShowResult, weekPhase: G.weekPhase, pending: G._pendingDomeSelloutCeremony });
     if (App._closingShowResult) return;
     const resultOverlay = document.getElementById('showResultOverlay');
     if (!resultOverlay) return;
