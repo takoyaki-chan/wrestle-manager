@@ -247,6 +247,29 @@ function _mdlBActions(buttons) {
   ).join('')}</div>`;
 }
 
+// ─────────────────────────────────────────────────────────────
+// 統一モーダル mdl-c-* ヘルパー (Phase 3)
+// 情報パネル型(C-1〜C-3)の共通パーツ
+// ─────────────────────────────────────────────────────────────
+
+/** C型モーダルを開く。opts.wide / opts.compact でカード幅変更 */
+function _mdlCOpen(html, opts) {
+  const overlay = document.getElementById('mdlCOverlay');
+  const card    = document.getElementById('mdlCCard');
+  if (!overlay || !card) return false;
+  card.className = 'mdl-c-card' + (opts && opts.wide ? ' wide' : opts && opts.compact ? ' compact' : '');
+  card.innerHTML = html;
+  void overlay.offsetWidth;
+  overlay.classList.add('active');
+  return true;
+}
+
+/** C型モーダルを閉じる */
+function _mdlCClose() {
+  const overlay = document.getElementById('mdlCOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
 /** A型 subject-stage: 選手の上半身 + 名前 + メタ + 仕切り線
  *  opts.small: 120x160 (default 140x184)
  *  opts.speech: 頭上吹き出しに表示するセリフ(文字列)
@@ -1332,7 +1355,7 @@ function showEventPopup(opts) {
   }
   _eventPopupQueue.push(opts);
   if (_eventPopupQueue.length === 1) {
-    _enqueuePopup(() => _renderEventPopup());
+    _enqueuePopup(() => _renderEventPopupAsC3());
   }
 }
 
@@ -1451,12 +1474,60 @@ function _renderEventPopup() {
   if (o.autoCloseMs) _autoCloseTimer = setTimeout(closeEventPopup, o.autoCloseMs);
 }
 
+/** C-3: choices なし eventPopup を mdlCOverlay で描画 */
+function _renderEventPopupAsC3() {
+  if (_eventPopupQueue.length === 0) return;
+  const o = _eventPopupQueue[0];
+
+  let faceStyle = 'background-color:rgba(212,168,67,0.1)';
+  if (o.type === 'fighter' && o.id) {
+    const url = getPortraitUrl(o.id);
+    if (url) faceStyle += `;background-image:url('${url}')`;
+  } else if (o.type === 'coach' && o.id) {
+    const url = getCoachPortraitUrl(o.id);
+    if (url) faceStyle += `;background-image:url('${url}')`;
+  }
+
+  let actionHtml = '';
+  if (o.action && typeof o.action === 'object' && o.action.label) {
+    const disabled = !!o.action.disabled;
+    const hint = disabled && o.action.disabledHint
+      ? `<div class="event-popup-action-hint">${o.action.disabledHint}</div>` : '';
+    actionHtml = `${hint}<button class="event-popup-action${disabled ? ' is-disabled' : ''}" id="eventPopupActionBtn"${disabled ? ' disabled' : ''}>${o.action.label}</button>`;
+  }
+
+  const html = `
+    <div style="padding:24px 20px 12px;text-align:center">
+      <div style="width:120px;height:120px;margin:0 auto 12px;border-radius:50%;${faceStyle};background-size:cover;background-position:top center;border:3px solid rgba(212,168,67,0.5);box-shadow:0 4px 20px rgba(0,0,0,0.4)"></div>
+      <div style="font-size:18px;font-weight:700;color:var(--info-text-main);margin-bottom:4px">${o.name || ''}</div>
+    </div>
+    <div class="mdl-c-body" style="padding-top:4px">
+      <div class="mdl-c-comment-block">${o.message || ''}</div>
+      ${o.detail ? `<div style="font-size:12px;color:var(--info-text-dim);margin-top:8px;text-align:center">${o.detail}</div>` : ''}
+      ${actionHtml}
+    </div>
+    <div class="mdl-c-footer" style="justify-content:center">
+      <button class="mdl-c-footer-btn" onclick="closeEventPopup()">${o.action ? '閉じる' : 'OK'}</button>
+    </div>
+  `;
+
+  _mdlCOpen(html, { compact: true });
+
+  if (o.action && !o.action.disabled && typeof o.action.onClick === 'function') {
+    const btn = document.getElementById('eventPopupActionBtn');
+    if (btn) btn.addEventListener('click', () => o.action.onClick());
+  }
+
+  Audio.play(o.sound || (o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'award' : 'event'));
+  if (o.autoCloseMs) _autoCloseTimer = setTimeout(closeEventPopup, o.autoCloseMs);
+}
+
 function closeEventPopup() {
   clearTimeout(_autoCloseTimer); _autoCloseTimer = null;
-  document.getElementById('eventPopupOverlay').classList.remove('active');
+  _mdlCClose();
   _eventPopupQueue.shift();
   if (_eventPopupQueue.length > 0) {
-    setTimeout(_renderEventPopup, 200);
+    setTimeout(_renderEventPopupAsC3, 200);
   } else if (_onEventPopupQueueEmpty) {
     const cb = _onEventPopupQueueEmpty;
     _onEventPopupQueueEmpty = null;
