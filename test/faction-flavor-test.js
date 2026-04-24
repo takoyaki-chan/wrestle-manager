@@ -154,4 +154,25 @@ function buildJoinState(flavor) {
   });
 }
 
+{
+  const roster = [makeFighter(1, 95)];
+  for (let i = 2; i <= 12; i++) roster.push(makeFighter(i, 60));
+  const state = makeState(roster, 999);
+  for (let i = 2; i <= 12; i++) {
+    setBond(state, i, 1, 60 + i);
+    setBond(state, 1, i, 60 + i);
+  }
+  const loyal = Engine.factions.checkLoyalFormationConditions(state);
+  assert.strictEqual(loyal.eligible, true);
+  assert.deepStrictEqual(loyal.followerIds, [12, 11, 10]);
+
+  const applied = Engine.factions.applyF01Choice(state, {
+    leaderId: loyal.leaderId,
+    leaderName: loyal.leaderName,
+    followerIds: loyal.followerIds,
+  }, 'C', Engine.rng.create(1));
+  assert.strictEqual(applied.state.factions.length, 1);
+  assert.deepStrictEqual(applied.state.factions[0].memberIds, [1, 12, 11, 10]);
+}
+
 console.log('faction-flavor-test: ok');

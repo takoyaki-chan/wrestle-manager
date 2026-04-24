@@ -1352,6 +1352,7 @@ const FACTION_CONFIG = {
   minRosterSize: 10,
   loyalBondThreshold: 60,      // v0.2: 65→60 実測bond分布(50後半〜60台)に合わせ引き下げ
   loyalMinFollowers: 2,
+  loyalMaxFollowers: 3,
   rivalrousBondThreshold: 55,  // v0.4 deprecated: F02 は既存2派閥間判定に変更（旧「無派閥からの2クラスタ同時発生」用）
   rivalrousRivalryThreshold: 40,  // v0.4: 既存2派閥間の平均 rivalry 閾値として継続使用
   // §2.2 加入判定（v0.3: 1週1人・連続式確率）

@@ -100,11 +100,18 @@ Engine.factions = {
         .filter(c => c.id !== cand.id)
         .filter(c => this._getBond(state, c.id, cand.id) >= cfg.loyalBondThreshold);
       if (followers.length >= cfg.loyalMinFollowers) {
+        const pickedFollowers = followers
+          .sort((a, b) => {
+            const bondDiff = this._getBond(state, b.id, cand.id) - this._getBond(state, a.id, cand.id);
+            if (bondDiff !== 0) return bondDiff;
+            return Engine.util.ov(b) - Engine.util.ov(a);
+          })
+          .slice(0, cfg.loyalMaxFollowers);
         return {
           eligible: true,
           leaderId: cand.id,
           leaderName: cand.name,
-          followerIds: followers.map(c => c.id),
+          followerIds: pickedFollowers.map(c => c.id),
         };
       }
     }
