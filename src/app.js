@@ -4855,6 +4855,7 @@ const App = {
       alert('試合結果の確定に失敗しました。カードに不整合がある可能性があります。');
       return;
     }
+    App._checkAndShowPreShowMilestone(function() {
     let s = { ...G, totalShows: G.totalShows + 1, weekPhase: 'showExec' };
     // forcedRest（S3休養願い）フラグをクリア — この興行後は通常参加可能に戻す
     let roster = s.roster.map(c => c.forcedRest ? { ...c, forcedRest: false } : { ...c });
@@ -5752,6 +5753,7 @@ const App = {
         }
       }, maxWaitMs);
     }
+    }); // _checkAndShowPreShowMilestone callback end
   },
 
   // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
@@ -7338,11 +7340,11 @@ const App = {
     if (!mainCard) return [];
     const mainLeftId = mainCard.left;
     const mainRightId = mainCard.right;
-    const mainLeft = G.fighters.find(f => f.id === mainLeftId);
-    const mainRight = G.fighters.find(f => f.id === mainRightId);
-    const veteran = G.fighters
+    const mainLeft = G.roster.find(f => f.id === mainLeftId);
+    const mainRight = G.roster.find(f => f.id === mainRightId);
+    const veteran = G.roster
       .filter(f => f.id !== mainLeftId && f.id !== mainRightId
-        && f.status !== 'retired' && f.contractOrg === G.orgName)
+        && f.status !== 'retired' && !f.isRental)
       .sort((a, b) => (b.pop || 0) - (a.pop || 0))[0];
     return [
       mainLeft  ? { fighter: mainLeft,  roleLabel: 'MAIN EVENT ・ 赤コーナー' } : null,
