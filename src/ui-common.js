@@ -75,6 +75,8 @@ function _drainPopupQueue() {
 document.addEventListener('click', (event) => {
   const closeBtn = event.target.closest('.pb-close-btn, .sr-close-btn');
   if (!closeBtn) return;
+  // JT進行中は干渉しない（JTボタンはonclickで直接処理する）
+  if (App._jtPreview) return;
   event.preventDefault();
   event.stopPropagation();
   try {

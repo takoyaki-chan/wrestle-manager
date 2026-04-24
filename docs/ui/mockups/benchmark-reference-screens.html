@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Wrestle Manager UI Benchmark Reference Screens</title>
+<style>
+:root {
+  --office-bg: #24221e;
+  --office-panel-dark: #181614;
+  --office-panel-dark-deep: #12110e;
+  --office-panel-cream: #d4ccb8;
+  --office-panel-cream-card: #ede8dc;
+  --office-border-cream: rgba(100,85,50,0.14);
+  --office-text-on-dark-main: #e8e6e0;
+  --office-text-on-dark-sub: #a89f8d;
+  --office-text-on-cream-main: #1e1c16;
+  --office-text-on-cream-sub: #5c5242;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --accent-bond: #7a6530;
+  --accent-merit: #7d3232;
+  --accent-neutral: #5b666b;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-panel: 0 18px 48px rgba(0,0,0,0.28);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--office-bg); color: var(--office-text-on-dark-main); }
+body {
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+  line-height: 1.5;
+}
+
+.page {
+  width: min(1360px, calc(100% - 48px));
+  margin: 24px auto 48px;
+}
+
+.hero {
+  background: linear-gradient(180deg, rgba(20,18,16,0.95), rgba(24,22,20,0.88));
+  border: 1px solid rgba(212,168,67,0.18);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-panel);
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.hero p {
+  margin: 0;
+  max-width: 880px;
+  color: var(--office-text-on-dark-sub);
+  font-size: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.screen {
+  background: rgba(18,17,14,0.92);
+  border: 1px solid rgba(212,168,67,0.12);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-panel);
+}
+
+.screen-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(212,168,67,0.08);
+}
+
+.screen-title {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.screen-title h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(212,168,67,0.1);
+  color: var(--gold-light);
+}
+
+.screen-desc {
+  margin-top: 8px;
+  color: var(--office-text-on-dark-sub);
+  font-size: 13px;
+}
+
+.screen-body {
+  padding: 20px;
+}
+
+.cream-card {
+  background: var(--office-panel-cream-card);
+  color: var(--office-text-on-cream-main);
+  border: 1px solid var(--office-border-cream);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.dark-card {
+  background: var(--office-panel-dark);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.muted {
+  color: var(--office-text-on-dark-sub);
+}
+
+.cream-muted {
+  color: var(--office-text-on-cream-sub);
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.wrestler-card .name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.wrestler-card .meta {
+  font-size: 12px;
+  color: var(--cream-text-sub, var(--office-text-on-cream-sub));
+  margin-bottom: 10px;
+}
+
+.traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.trait {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(122,101,48,0.1);
+  color: #5c4a1e;
+}
+
+.faction-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.flavor {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.flavor.bond { background: rgba(122,101,48,0.14); color: var(--accent-bond); }
+.flavor.merit { background: rgba(125,50,50,0.14); color: var(--accent-merit); }
+.flavor.neutral { background: rgba(91,102,107,0.16); color: var(--accent-neutral); }
+
+.list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.headline {
+  font-size: 24px;
+  line-height: 1.35;
+  margin: 0 0 10px;
+}
+
+.subhead {
+  margin: 0 0 14px;
+  color: var(--office-text-on-dark-sub);
+  font-size: 13px;
+}
+
+.office-columns {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 12px;
+}
+
+.mini-title {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1080px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    width: min(100% - 24px, 1360px);
+    margin-top: 12px;
+  }
+
+  .row,
+  .office-columns {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">Benchmark Kit</div>
+      <h1>基準モック 4画面セット</h1>
+      <p>
+        新規UIや改修UIは、まずこの4画面のどれに寄せるかを決めてから設計する。
+        文言、数値帯、名前の長さは実データ寄りに揃え、情報密度と温度感の基準として使う。
+      </p>
+    </section>
+
+    <section class="grid">
+      <article class="screen">
+        <header class="screen-header">
+          <div class="screen-title">
+            <h2>ロスター / 一覧系</h2>
+            <span class="tag">Office</span>
+          </div>
+          <p class="screen-desc">情報密度の基準。名前、数値、trait を詰め込みすぎずに見せる。</p>
+        </header>
+        <div class="screen-body">
+          <div class="row">
+            <section class="cream-card wrestler-card">
+              <div class="name">阿武隈塔子</div>
+              <div class="meta">Babyface / Grappler / OVR 82</div>
+              <div class="stack">
+                <div class="metric"><span>Power</span><strong>95</strong></div>
+                <div class="metric"><span>Technique</span><strong>71</strong></div>
+                <div class="metric"><span>Mental</span><strong>80</strong></div>
+              </div>
+              <div class="traits" style="margin-top:12px;">
+                <span class="trait">リーダー気質</span>
+                <span class="trait">人望</span>
+                <span class="trait">威圧感</span>
+              </div>
+            </section>
+            <section class="cream-card wrestler-card">
+              <div class="name">深町真琴</div>
+              <div class="meta">Babyface / Aerial / OVR 71</div>
+              <div class="stack">
+                <div class="metric"><span>Speed</span><strong>91</strong></div>
+                <div class="metric"><span>Stamina</span><strong>85</strong></div>
+                <div class="metric"><span>Mental</span><strong>63</strong></div>
+              </div>
+              <div class="traits" style="margin-top:12px;">
+                <span class="trait">努力家</span>
+                <span class="trait">華</span>
+                <span class="trait">鉄人</span>
+              </div>
+            </section>
+            <section class="cream-card wrestler-card">
+              <div class="name">橘玲美</div>
+              <div class="meta">Heel / Submission / OVR 78</div>
+              <div class="stack">
+                <div class="metric"><span>Technique</span><strong>91</strong></div>
+                <div class="metric"><span>Stamina</span><strong>75</strong></div>
+                <div class="metric"><span>Mental</span><strong>74</strong></div>
+              </div>
+              <div class="traits" style="margin-top:12px;">
+                <span class="trait">ヒール適性</span>
+                <span class="trait">威圧感</span>
+                <span class="trait">華</span>
+              </div>
+            </section>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen">
+        <header class="screen-header">
+          <div class="screen-title">
+            <h2>派閥 / 関係性系</h2>
+            <span class="tag">Office</span>
+          </div>
+          <p class="screen-desc">空気感の基準。内部式を出さず、短いラベルと構図で関係性を伝える。</p>
+        </header>
+        <div class="screen-body stack">
+          <section class="cream-card">
+            <div class="faction-top">
+              <div>
+                <strong style="font-size:19px;">富岡加奈子組</strong>
+                <div class="cream-muted" style="font-size:13px; margin-top:4px;">絆でまとまりやすい派閥</div>
+              </div>
+              <span class="flavor bond">結束型</span>
+            </div>
+            <div class="list">
+              <div class="list-item"><span>リーダー</span><strong>富岡加奈子</strong></div>
+              <div class="list-item"><span>主なメンバー</span><span>高階まさみ / 深町真琴 / 岸ゆみえ</span></div>
+              <div class="list-item"><span>人数</span><strong>5人</strong></div>
+            </div>
+          </section>
+
+          <section class="cream-card">
+            <div class="faction-top">
+              <div>
+                <strong style="font-size:19px;">大河内親衛隊</strong>
+                <div class="cream-muted" style="font-size:13px; margin-top:4px;">実力ある選手が集まりやすい派閥</div>
+              </div>
+              <span class="flavor merit">実力主義</span>
+            </div>
+            <div class="list">
+              <div class="list-item"><span>リーダー</span><strong>大河内紗代子</strong></div>
+              <div class="list-item"><span>主なメンバー</span><span>橘玲美 / 出羽鷹子 / 根岸亞里亞</span></div>
+              <div class="list-item"><span>人数</span><strong>4人</strong></div>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="screen">
+        <header class="screen-header">
+          <div class="screen-title">
+            <h2>興行結果 / 振り返り系</h2>
+            <span class="tag">Stage</span>
+          </div>
+          <p class="screen-desc">ドラマ性の基準。情報は多くても、視線の主役はひとつに絞る。</p>
+        </header>
+        <div class="screen-body">
+          <section class="dark-card">
+            <div class="mini-title">Main Event</div>
+            <h3 class="headline">白銀麗子、阿武隈塔子との頂上決戦を制し、満員の後楽園を締める</h3>
+            <p class="subhead">観客評価 92 / 試合評価 89 / 団体の勢いが大きく上昇</p>
+            <div class="office-columns">
+              <div class="stack">
+                <div class="metric"><span>勝者</span><strong>白銀麗子</strong></div>
+                <div class="metric"><span>敗者</span><strong>阿武隈塔子</strong></div>
+                <div class="metric"><span>決着</span><span>22分14秒 ハイキック → 片エビ固め</span></div>
+              </div>
+              <div class="stack">
+                <div class="metric"><span>ベストバウト候補</span><strong>有力</strong></div>
+                <div class="metric"><span>観客反応</span><span class="muted">終盤の切り返しで一気に熱狂</span></div>
+                <div class="metric"><span>次回への火種</span><span class="muted">阿武隈陣営が再戦を要求</span></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="screen">
+        <header class="screen-header">
+          <div class="screen-title">
+            <h2>事務所 / 管理トップ系</h2>
+            <span class="tag">Office</span>
+          </div>
+          <p class="screen-desc">日常導線の基準。最初に見るべき要約と、次のアクション候補を近くに置く。</p>
+        </header>
+        <div class="screen-body">
+          <div class="office-columns">
+            <section class="cream-card">
+              <div class="mini-title">今週の要点</div>
+              <div class="stack">
+                <div class="metric"><span>所属人数</span><strong>16人</strong></div>
+                <div class="metric"><span>注目カード</span><strong>富岡加奈子 vs 橘玲美</strong></div>
+                <div class="metric"><span>派閥動向</span><span>富岡加奈子組が5人に拡大</span></div>
+                <div class="metric"><span>資金繰り</span><span>今月は黒字見込み</span></div>
+              </div>
+            </section>
+            <section class="dark-card">
+              <div class="mini-title">次にやること</div>
+              <div class="stack">
+                <div class="metric"><span>1.</span><span>次回興行のセミとメインを確定する</span></div>
+                <div class="metric"><span>2.</span><span>若手2名の育成方針を見直す</span></div>
+                <div class="metric"><span>3.</span><span>抗争イベントの進行可否を確認する</span></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

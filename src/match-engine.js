@@ -256,6 +256,17 @@ Engine.battle = {
                 finishPhase = ph.name;
                 finMove = mv.n;
                 log.push(`★ ${atk.name}、${mv.n}で${finLabel}勝ち！`);
+                // リプレイ用: 直接決着でもピン/TKOシーケンスUIを表示する
+                if (recordFrames) {
+                  if (fType === 'tko') {
+                    _turnTkoStop = true;
+                  } else if (fType === 'gu') {
+                    _turnPinAttempt = 'success';
+                    _turnKickout = { count: 0, escapeType: 'gu' };
+                  } else { // 'fall'
+                    _turnPinAttempt = 'success';
+                  }
+                }
               }
             }
             else if (!winner && B.checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph)) {
