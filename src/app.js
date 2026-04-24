@@ -4721,10 +4721,10 @@ const App = {
         log: data.log || []
       };
     }
-    // BGM: FileBGMフェードアウト + 残試合ありならbattle復帰、全完了ならmanagement
+    // BGM: FileBGMフェードアウト + 残試合ありならbattle復帰、全完了ならjingleへ(finalizeShowで遅延再生)
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     if (sp.results.every(r => r !== null)) {
-      try { Audio.bgm.play('management'); } catch(e) {}
+      // 全試合完了: management BGMは流さずjingle待機(finalizeShowで2.5秒後に再生)
     } else {
       // まだ試合が残っている → battleBGMを再開（興行中）
       // fadeOut後にBGM._current='battle'が残るため、stop()でリセットしてから再生
@@ -5720,9 +5720,12 @@ const App = {
     App._showPreview = null;
     App._lastInjuries = injuryResults; // v0.96: store for popup after close
     App._lastTitleOutcomes = titleMatchOutcomes; // タイトルマッチ後リアクション用
-    // BGM: Play jingle based on title outcome
+    // BGM: 試合BGMフェードアウト後に一息おいてからjingle再生(2.5秒遅延)
     const hadTitleChange = validMatches.some((m, i) => m.isTitle && results[i] && results[i].winner !== 'draw');
-    Audio.bgm.playJingle(hadTitleChange ? 'championship' : 'victory');
+    setTimeout(() => {
+      try { Audio.fileBgm.stop(); } catch(e) {}
+      Audio.bgm.playJingle(hadTitleChange ? 'championship' : 'victory');
+    }, 2500);
 
     // 新聞データをGに保存（データベースタブで閲覧）
     try {

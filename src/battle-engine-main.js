@@ -368,7 +368,9 @@ function _panelHtml(ch, side){
 
 // ─── 中央パネル ────────────────────────────────────────────────────────────
 function _centerHtml(fr){
-  const move = fr && fr.action ? (fr.action.move || '---') : '---';
+  const move = fr && fr.action
+    ? (fr.action.kind === 'counter' ? (fr.action.counterMove || fr.action.move || '---') : (fr.action.move || '---'))
+    : '---';
   return `<div class="center-panel" id="centerPanel">
     <div class="top-line">
       <span class="turn-label" id="turnLbl">ターン ${fr ? fr.turn : 1}</span>
@@ -471,7 +473,9 @@ function _updatePanel(side){
 function _updateCenter(fr){
   const box = document.getElementById('centerPanel');
   if (!box) return;
-  const move = fr && fr.action ? (fr.action.move || '---') : '---';
+  const move = fr && fr.action
+    ? (fr.action.kind === 'counter' ? (fr.action.counterMove || fr.action.move || '---') : (fr.action.move || '---'))
+    : '---';
   const mv2 = document.getElementById('moveV');
   if (mv2){ mv2.textContent = move; mv2.classList.remove('move-pop'); void mv2.offsetWidth; mv2.classList.add('move-pop'); }
   const tl = document.getElementById('turnLbl');
@@ -661,7 +665,7 @@ function _spawnAttackArrow(action){
     const origDir = action.atkSide === 'left' ? 'rtl' : 'ltr';
     const retDir  = origDir === 'ltr' ? 'rtl' : 'ltr';
     _renderArrow(layer, origDir, action.move || '攻撃', false, false);
-    setTimeout(() => _renderArrow(layer, retDir, 'カウンター！ ' + (action.move || ''), true, false), 1000);
+    setTimeout(() => _renderArrow(layer, retDir, 'カウンター！ ' + (action.counterMove || action.move || ''), true, false), 1000);
   } else {
     const dir = action.atkSide === 'left' ? 'ltr' : 'rtl';
     _renderArrow(layer, dir, action.move || '攻撃', false, isMiss);
@@ -948,6 +952,21 @@ function _buildPinCtrl(fr){
       seq.push({ kind: 'finishClick', label: 'ギブアップ…！？' });
       seq.push({ kind: 'count', text: 'ロープ！ ロープブレイクーーっ！！', cls: 'escape' });
     }
+    return { seq, idx: -1, fr };
+  }
+
+  // submission mid-match attempt (HP>0 で極め技が脱出された)
+  if (fr.pinAttempt === 'kickout2_sub') {
+    const SUB_INTRO = [
+      '関節技を決めた！ このまま極めるか！？',
+      '絞り上げる！ ギブアップするか！？',
+      '逃げられるか！？ 極め技に捕らえた！',
+    ];
+    const atkSide = fr.action ? fr.action.atkSide : 'left';
+    const defChar = atkSide === 'left' ? S.R : S.L;
+    seq.push({ kind: 'introBig', text: pk(SUB_INTRO), dramatic: true });
+    seq.push({ kind: 'finishClick', label: 'ギブアップするか…！？' });
+    seq.push({ kind: 'count', text: defChar ? `${defChar.name}が振りほどいた！！` : '振りほどいた！！', cls: 'escape' });
     return { seq, idx: -1, fr };
   }
 
@@ -1362,7 +1381,9 @@ function _narrateFrame(fr){
 function _updateCenter(fr){
   const box = document.getElementById('centerPanel');
   if (!box) return;
-  const move = fr && fr.action ? (fr.action.move || '---') : '---';
+  const move = fr && fr.action
+    ? (fr.action.kind === 'counter' ? (fr.action.counterMove || fr.action.move || '---') : (fr.action.move || '---'))
+    : '---';
   const mv2 = document.getElementById('moveV');
   if (mv2){ mv2.textContent = move; mv2.classList.remove('move-pop'); void mv2.offsetWidth; mv2.classList.add('move-pop'); }
   const tl = document.getElementById('turnLbl');
@@ -1416,7 +1437,9 @@ function _narrateFrame(fr){
 function _updateCenter(fr){
   const box = document.getElementById('centerPanel');
   if (!box) return;
-  const move = fr && fr.action ? (fr.action.move || '---') : '---';
+  const move = fr && fr.action
+    ? (fr.action.kind === 'counter' ? (fr.action.counterMove || fr.action.move || '---') : (fr.action.move || '---'))
+    : '---';
   const mv2 = document.getElementById('moveV');
   if (mv2){ mv2.textContent = move; mv2.classList.remove('move-pop'); void mv2.offsetWidth; mv2.classList.add('move-pop'); }
   const tl = document.getElementById('turnLbl');

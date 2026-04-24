@@ -193,14 +193,15 @@ Engine.battle = {
           let counterRate = B.calcCounterRate(atk, def, ph);
           if (hasMeishoubu) counterRate = Math.min(counterRate + 5, ENG.counterMax);
           if (Engine.rng.float(rng) * 100 < counterRate) {
+            const cMv = B.selMove(rng, def.style, turn, phases);
             const cDmg = Math.max(eng.dmgFloor, Math.round(mv.d * eng.counterDmgMult));
             atk.hp -= cDmg;
             mom += isLeftAtk ? -eng.counterMomShift : eng.counterMomShift;
             def.consecutiveHits = 0;
             totalCounters++;
-            log.push(`T${turn}: ${atk.name}の${mv.n} → カウンター！ ${atk.name}に${cDmg}ダメージ`);
+            log.push(`T${turn}: ${atk.name}の${mv.n} → カウンター！ ${def.name}の${cMv.n}で${atk.name}に${cDmg}ダメージ`);
             if (recordFrames) {
-              _turnAction = { kind: 'counter', atkSide: isLeftAtk ? 'right' : 'left', move: mv.n, moveD: mv.d, moveCat: mv.c, dmg: cDmg, isCrit: cDmg >= 15, isBig: cDmg >= 10 };
+              _turnAction = { kind: 'counter', atkSide: isLeftAtk ? 'right' : 'left', move: mv.n, counterMove: cMv.n, moveD: mv.d, moveCat: mv.c, dmg: cDmg, isCrit: cDmg >= 15, isBig: cDmg >= 10 };
             }
           } else {
             const dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
@@ -271,8 +272,8 @@ Engine.battle = {
             }
             else if (!winner && B.checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph)) {
               const successRate = B.calcPinAttemptSuccess(atk, def, dmg, ph);
+              const isSubPin = mv.c === 'submission';
               if (Engine.rng.float(rng) * 100 < successRate) {
-                const isSubPin = mv.c === 'submission';
                 winner = atkSide;
                 finType = isSubPin ? 'ギブアップ' : 'ピン';
                 finishPhase = ph.name;
@@ -284,9 +285,11 @@ Engine.battle = {
                 }
               } else {
                 def.gritTurns = eng.gritDuration;
-                log.push(`  → フォール！ だが${def.name}がカウント2で返した！`);
+                log.push(isSubPin
+                  ? `  → 締めに入った！ だが${def.name}が振りほどいた！`
+                  : `  → フォール！ だが${def.name}がカウント2で返した！`);
                 totalKickouts++;
-                if (recordFrames) _turnPinAttempt = 'kickout2';
+                if (recordFrames) _turnPinAttempt = isSubPin ? 'kickout2_sub' : 'kickout2';
               }
             }
             else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < eng.rollupHpThreshold) {

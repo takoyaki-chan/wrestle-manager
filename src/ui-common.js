@@ -1523,13 +1523,15 @@ function _renderEventPopupAsC3() {
   if (_eventPopupQueue.length === 0) return;
   const o = _eventPopupQueue[0];
 
-  let faceStyle = 'background-color:rgba(212,168,67,0.1)';
+  let faceHtml = '';
   if (o.type === 'fighter' && o.id) {
     const url = getPortraitUrl(o.id);
-    if (url) faceStyle += `;background-image:url('${url}')`;
+    const faceStyle = `background-color:rgba(212,168,67,0.1)${url ? `;background-image:url('${url}')` : ''}`;
+    faceHtml = `<div style="width:120px;height:120px;margin:0 auto 12px;border-radius:50%;${faceStyle};background-size:cover;background-position:top center;border:3px solid rgba(212,168,67,0.5);box-shadow:0 4px 20px rgba(0,0,0,0.4)"></div>`;
   } else if (o.type === 'coach' && o.id) {
     const url = getCoachPortraitUrl(o.id);
-    if (url) faceStyle += `;background-image:url('${url}')`;
+    const faceStyle = `background-color:rgba(212,168,67,0.1)${url ? `;background-image:url('${url}')` : ''}`;
+    faceHtml = `<div style="width:120px;height:120px;margin:0 auto 12px;border-radius:50%;${faceStyle};background-size:cover;background-position:top center;border:3px solid rgba(212,168,67,0.5);box-shadow:0 4px 20px rgba(0,0,0,0.4)"></div>`;
   }
 
   let actionHtml = '';
@@ -1542,7 +1544,7 @@ function _renderEventPopupAsC3() {
 
   const html = `
     <div style="padding:24px 20px 12px;text-align:center">
-      <div style="width:120px;height:120px;margin:0 auto 12px;border-radius:50%;${faceStyle};background-size:cover;background-position:top center;border:3px solid rgba(212,168,67,0.5);box-shadow:0 4px 20px rgba(0,0,0,0.4)"></div>
+      ${faceHtml}
       <div style="font-size:18px;font-weight:700;color:var(--info-text-main);margin-bottom:4px">${o.name || ''}</div>
     </div>
     <div class="mdl-c-body" style="padding-top:4px">
@@ -4050,19 +4052,27 @@ function renderShowResult(results, injuryResults) {
     <div class="pb-banner-sub">Year ${G.year || 1}<span class="dot">·</span>Week ${week}<span class="dot">·</span>${monthLabel}</div>
   </div>`;
 
-  // Scoreboard strip — 5 cells
+  // Hero: Attendance (客入り) — most prominent element
   const avgStarsHtml = _pbStars(avgMQ);
   const heatScoreCls = (heat.id === 'hot' || heat.id === 'on_fire') ? 'is-hot' :
                       (heat.id === 'cold' || heat.id === 'ice_cold') ? 'is-cold' : 'is-neutral';
   const heatScoreVal = heat.label.toUpperCase();
   const injuryCount = injuryResults.length;
-  html += `<div class="pb-score-strip">
-    <div class="pb-score-cell is-attend">
-      <div class="pb-score-val">${attendance.toLocaleString()}<span class="small">/ ${cap.toLocaleString()}</span></div>
-      <div class="pb-score-attend-bar"><div class="pb-score-attend-bar-fill ${attendCls}" style="width:${Math.min(occPct,100)}%"></div></div>
-      <div class="pb-score-attend-venue">${escHtml(venue.name)}</div>
-      <div class="pb-score-attend-rating ${attendCls}">${escHtml(occEntry.label)}<span class="pct">${occPct}%</span></div>
+  html += `<div class="pb-attend-hero">
+    <div class="pb-attend-hero-label">客　入　り</div>
+    <div class="pb-attend-hero-rating ${attendCls}">${escHtml(occEntry.label)}</div>
+    <div class="pb-attend-hero-num">
+      <span class="pb-attend-hero-val">${attendance.toLocaleString()}</span>
+      <span class="pb-attend-hero-sep">/</span>
+      <span class="pb-attend-hero-cap">${cap.toLocaleString()}</span>
+      <span class="pb-attend-hero-pct ${attendCls}">${occPct}%</span>
     </div>
+    <div class="pb-attend-hero-bar"><div class="pb-attend-hero-bar-fill ${attendCls}" style="width:${Math.min(occPct,100)}%"></div></div>
+    <div class="pb-attend-hero-venue">会場: ${escHtml(venue.name)}</div>
+  </div>`;
+
+  // Secondary strip — 4 cells (MQ / Heat / Matches / Injuries)
+  html += `<div class="pb-score-strip">
     <div class="pb-score-cell">
       <div class="pb-score-stars">${avgStarsHtml}</div>
       <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
