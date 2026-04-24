@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Rivalry Popup v0.2 — 吹き出し分離版</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0a0a0f;
+  color: #e8e0d0;
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 72px;
+}
+
+h2 {
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 8px;
+  width: 100%;
+  max-width: 700px;
+}
+.section-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.1em;
+  text-align: center;
+  width: 100%;
+  max-width: 700px;
+}
+.section-note {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  max-width: 680px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════
+  CONCEPT E: "Side Panel" — 画像と吹き出しを左右に配置
+═══════════════════════════════════════════════ */
+
+.concept-e {
+  width: 680px;
+  background: #111118;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(200,180,140,0.12);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+}
+
+.ce-header {
+  padding: 18px 28px 14px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ce-title {
+  font-size: 22px;
+  letter-spacing: 0.3em;
+  font-weight: 900;
+  color: #c8a060;
+}
+.ce-sub {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: rgba(200,180,140,0.45);
+  margin-top: 4px;
+}
+
+.ce-stage {
+  display: flex;
+  padding: 20px 20px 16px;
+  gap: 16px;
+}
+
+/* 左選手: 画像-右、吹き出し-左 */
+.ce-col-left {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+/* 右選手: 画像-左、吹き出し-右 (ミラー) */
+.ce-col-right {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  flex-direction: row-reverse;
+}
+
+.ce-img-card {
+  width: 150px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0a10;
+}
+.ce-img-wrap {
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+.ce-upper-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #2a2030 0%, #1a1525 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  color: rgba(255,255,255,0.12);
+}
+.ce-img-card.loser .ce-upper-placeholder {
+  filter: grayscale(45%) brightness(0.55);
+}
+.ce-img-card.loser .ce-img-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(30,10,10,0.5), transparent 60%);
+}
+.ce-nameplate {
+  padding: 8px 10px;
+  background: rgba(0,0,0,0.4);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.ce-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #e8e0d0;
+  text-align: center;
+}
+.ce-img-card.loser .ce-name { color: rgba(180,170,160,0.6); }
+.ce-ovr-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+.ce-ovr {
+  font-size: 11px;
+  color: rgba(200,180,120,0.75);
+  font-weight: 700;
+}
+.ce-img-card.loser .ce-ovr { color: rgba(160,150,120,0.45); }
+.ce-badge-w {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: #c8a060;
+  color: #1a1010;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+.ce-badge-l {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: rgba(100,80,80,0.5);
+  color: rgba(220,200,180,0.45);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+
+/* 吹き出し */
+.ce-bubble {
+  flex: 1;
+  background: #f5f0e8;
+  color: #1a1410;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 80px;
+}
+.ce-col-right .ce-bubble {
+  background: #dde0e8;
+  color: #222838;
+  opacity: 0.9;
+}
+/* 吹き出しの三角: 左選手は右向き、右選手は左向き (画像の方を指す) */
+.ce-col-left .ce-bubble::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 10px solid transparent;
+  border-left-color: #f5f0e8;
+  border-right: 0;
+}
+.ce-col-right .ce-bubble::after {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 10px solid transparent;
+  border-right-color: #dde0e8;
+  border-left: 0;
+}
+.ce-speaker {
+  font-size: 10px;
+  color: rgba(0,0,0,0.4);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* 中央の決着マーク */
+.ce-vs-col {
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.ce-vs-icon {
+  font-size: 24px;
+  filter: drop-shadow(0 0 10px rgba(200,80,80,0.7));
+}
+.ce-vs-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: rgba(200,80,80,0.5);
+  margin-top: 4px;
+}
+
+.ce-result {
+  padding: 14px 28px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ce-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c8a060;
+}
+.ce-bonus {
+  font-size: 12px;
+  color: rgba(200,180,140,0.6);
+}
+
+.ce-footer {
+  padding: 12px 28px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: center;
+}
+.ce-btn {
+  background: transparent;
+  border: 1px solid rgba(200,180,140,0.25);
+  color: rgba(200,180,140,0.7);
+  padding: 10px 40px;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ce-btn:hover { background: rgba(200,180,140,0.08); color: rgba(200,180,140,1); }
+
+
+/* ═══════════════════════════════════════════════
+  CONCEPT F: "Stacked Card" — 画像→名前→吹き出しを縦積み
+═══════════════════════════════════════════════ */
+
+.concept-f {
+  width: 600px;
+  background: #13111e;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(160,140,220,0.15);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.65);
+}
+
+.cf-header {
+  padding: 18px 24px 14px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(160,100,220,0.12) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(160,140,220,0.1);
+}
+.cf-title {
+  font-size: 22px;
+  letter-spacing: 0.3em;
+  font-weight: 900;
+  color: #e0d0ff;
+}
+.cf-sub {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(180,160,255,0.4);
+  margin-top: 4px;
+}
+
+.cf-stage {
+  display: flex;
+  padding: 20px;
+  gap: 14px;
+}
+
+.cf-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 画像カード */
+.cf-img-card {
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background: #0a0a12;
+}
+.cf-upper-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #2a2040 0%, #1a1530 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  color: rgba(255,255,255,0.1);
+}
+.cf-col.loser .cf-upper-placeholder {
+  filter: grayscale(50%) brightness(0.55);
+}
+.cf-col.loser .cf-img-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(20,10,15,0.5), transparent 55%);
+}
+
+/* 名前帯 */
+.cf-nameband {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 2px;
+}
+.cf-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #e8e0ff;
+}
+.cf-col.loser .cf-name { color: rgba(200,190,220,0.55); }
+.cf-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cf-ovr {
+  font-size: 11px;
+  color: rgba(200,180,255,0.7);
+  font-weight: 700;
+}
+.cf-col.loser .cf-ovr { color: rgba(160,150,180,0.45); }
+.cf-badge-w {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: linear-gradient(90deg, #c060e0, #8060c0);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+.cf-badge-l {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: rgba(80,70,90,0.5);
+  color: rgba(200,190,220,0.4);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+
+/* 吹き出し(画像の下、分離) */
+.cf-bubble {
+  background: #f5f0fa;
+  color: #1a1030;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  position: relative;
+  margin-top: 4px;
+  min-height: 72px;
+}
+.cf-bubble::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 24px;
+  border: 8px solid transparent;
+  border-bottom-color: #f5f0fa;
+  border-top: 0;
+}
+.cf-col.loser .cf-bubble {
+  background: #dfe0ec;
+  color: #222034;
+  opacity: 0.88;
+}
+.cf-col.loser .cf-bubble::before {
+  border-bottom-color: #dfe0ec;
+}
+.cf-spk {
+  font-size: 9.5px;
+  color: rgba(0,0,0,0.4);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.cf-result {
+  padding: 12px 24px 14px;
+  border-top: 1px solid rgba(160,140,220,0.1);
+  background: rgba(160,100,220,0.04);
+}
+.cf-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c090ff;
+  margin-bottom: 5px;
+}
+.cf-bonus {
+  font-size: 12px;
+  color: rgba(180,160,220,0.6);
+}
+
+.cf-footer {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(160,140,220,0.1);
+  display: flex;
+  justify-content: center;
+}
+.cf-btn {
+  background: rgba(160,100,220,0.08);
+  border: 1px solid rgba(160,100,220,0.25);
+  color: rgba(200,170,255,0.7);
+  padding: 10px 40px;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+
+/* ═══════════════════════════════════════════════
+  CONCEPT G: "Landscape Dual" — 横長・画像の外側に吹き出し
+═══════════════════════════════════════════════ */
+
+.concept-g {
+  width: 700px;
+  background: #0f0f14;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(220,60,60,0.2);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(180,40,40,0.08);
+}
+
+.cg-header {
+  padding: 16px 24px 12px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(200,40,40,0.15) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(220,60,60,0.12);
+}
+.cg-title {
+  font-size: 21px;
+  letter-spacing: 0.3em;
+  font-weight: 900;
+  color: #e8c0a0;
+}
+.cg-sub {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: rgba(220,140,100,0.45);
+  margin-top: 4px;
+}
+
+.cg-stage {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 上段: 吹き出し2つ */
+.cg-bubble-row {
+  display: flex;
+  gap: 14px;
+}
+.cg-bubble {
+  flex: 1;
+  background: #f5ead8;
+  color: #1a1010;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  position: relative;
+  min-height: 64px;
+}
+.cg-bubble.loser {
+  background: #d8dce8;
+  color: #1a1a28;
+  opacity: 0.9;
+}
+.cg-spk {
+  font-size: 10px;
+  color: rgba(0,0,0,0.4);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+/* 吹き出しの三角 - 下向き(画像を指す) */
+.cg-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 24px;
+  border: 10px solid transparent;
+  border-top-color: #f5ead8;
+  border-bottom: 0;
+}
+.cg-bubble.loser::after {
+  border-top-color: #d8dce8;
+  left: unset;
+  right: 24px;
+}
+
+/* 下段: 画像2つ + 中央VS */
+.cg-img-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+.cg-img-card {
+  flex: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0a10;
+  display: flex;
+  flex-direction: column;
+}
+.cg-img {
+  width: 100%;
+  height: 180px;
+  position: relative;
+}
+.cg-upper-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #2a1820 0%, #1a1018 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  color: rgba(255,255,255,0.1);
+}
+.cg-img-card.loser .cg-upper-placeholder {
+  filter: grayscale(55%) brightness(0.52);
+}
+.cg-img-card.loser .cg-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(30,10,10,0.5), transparent 55%);
+}
+.cg-info {
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cg-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #e8e0d0;
+}
+.cg-img-card.loser .cg-name { color: rgba(200,190,180,0.55); }
+.cg-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cg-ovr {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(220,170,120,0.75);
+}
+.cg-img-card.loser .cg-ovr { color: rgba(170,155,140,0.45); }
+.cg-badge-w {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: #c84040;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+.cg-badge-l {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: rgba(80,60,60,0.55);
+  color: rgba(200,180,160,0.45);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+/* 中央 VS マーク */
+.cg-vs {
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.cg-vs-icon {
+  font-size: 22px;
+  filter: drop-shadow(0 0 10px rgba(220,60,60,0.8));
+}
+
+.cg-result {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(220,60,60,0.12);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(200,40,40,0.04);
+}
+.cg-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e08060;
+  flex-shrink: 0;
+}
+.cg-bonus {
+  font-size: 12px;
+  color: rgba(200,170,140,0.58);
+  flex: 1;
+}
+.cg-footer {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: center;
+}
+.cg-btn {
+  background: rgba(220,60,60,0.07);
+  border: 1px solid rgba(220,60,60,0.2);
+  color: rgba(220,150,120,0.7);
+  padding: 10px 40px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  border-radius: 6px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<h2>Rivalry Popup v0.2 — 吹き出しと画像を分離</h2>
+
+<p class="section-note">
+  v0.1 で吹き出しが画像に重なっていた問題を修正。<br>
+  3案とも吹き出しと画像は明確に分離され、レイアウトでまとめています。
+</p>
+
+<!-- CONCEPT E -->
+<p class="section-label">CONCEPT E — Side Panel（吹き出しを画像の外側に水平配置）</p>
+
+<div class="concept-e">
+  <div class="ce-header">
+    <div class="ce-title">宿 敵 決 着</div>
+    <div class="ce-sub">RIVALRY RESOLVED</div>
+  </div>
+
+  <div class="ce-stage">
+    <!-- 左選手: 吹き出し-左、画像-右 -->
+    <div class="ce-col-left">
+      <div class="ce-bubble">
+        <div class="ce-speaker">大河内紗代子</div>
+        当然の勝利。…でも、これで折れては居ないのでしょうね
+      </div>
+      <div class="ce-img-card">
+        <div class="ce-img-wrap"><div class="ce-upper-placeholder">👤</div></div>
+        <div class="ce-nameplate">
+          <div class="ce-name">大河内紗代子</div>
+          <div class="ce-ovr-row">
+            <span class="ce-ovr">OVR 76</span>
+            <span class="ce-badge-w">WINNER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 中央 VS -->
+    <div class="ce-vs-col">
+      <div class="ce-vs-icon">⚔</div>
+      <div class="ce-vs-label">決着</div>
+    </div>
+
+    <!-- 右選手: 画像-左、吹き出し-右 -->
+    <div class="ce-col-right">
+      <div class="ce-bubble">
+        <div class="ce-speaker">三浦早紀</div>
+        負けた…悔しい。でも、これで終わりなんかじゃない
+      </div>
+      <div class="ce-img-card loser">
+        <div class="ce-img-wrap"><div class="ce-upper-placeholder">👤</div></div>
+        <div class="ce-nameplate">
+          <div class="ce-name">三浦早紀</div>
+          <div class="ce-ovr-row">
+            <span class="ce-ovr">OVR 73</span>
+            <span class="ce-badge-l">LOSER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ce-result">
+    <div class="ce-tag">🤝 ふたりは「好敵手」になった</div>
+    <div class="ce-bonus">📈 両選手の人気 +4　　🏢 団体人気 +0.3</div>
+  </div>
+  <div class="ce-footer">
+    <button class="ce-btn">— 見 届 け る —</button>
+  </div>
+</div>
+
+
+<!-- CONCEPT F -->
+<p class="section-label">CONCEPT F — Stacked Card（画像→名前→吹き出しの縦積み）</p>
+
+<div class="concept-f">
+  <div class="cf-header">
+    <div class="cf-title">宿 怨 決 着</div>
+    <div class="cf-sub">BITTER RIVALRY ・ FINAL</div>
+  </div>
+
+  <div class="cf-stage">
+    <!-- winner -->
+    <div class="cf-col">
+      <div class="cf-img-card"><div class="cf-upper-placeholder">👤</div></div>
+      <div class="cf-nameband">
+        <div class="cf-name">大河内紗代子</div>
+        <div class="cf-meta">
+          <span class="cf-ovr">OVR 76</span>
+          <span class="cf-badge-w">WINNER</span>
+        </div>
+      </div>
+      <div class="cf-bubble">
+        <div class="cf-spk">大河内紗代子</div>
+        これが実力の差だ。もう逃げ場はないよ
+      </div>
+    </div>
+
+    <!-- loser -->
+    <div class="cf-col loser">
+      <div class="cf-img-card"><div class="cf-upper-placeholder">👤</div></div>
+      <div class="cf-nameband">
+        <div class="cf-name">三浦早紀</div>
+        <div class="cf-meta">
+          <span class="cf-ovr">OVR 73</span>
+          <span class="cf-badge-l">LOSER</span>
+        </div>
+      </div>
+      <div class="cf-bubble">
+        <div class="cf-spk">三浦早紀</div>
+        くっ…また負けた。でも次こそは…
+      </div>
+    </div>
+  </div>
+
+  <div class="cf-result">
+    <div class="cf-tag">💀 ふたりは「宿怨」になった</div>
+    <div class="cf-bonus">📈 両選手の人気 +6　　🏢 団体人気 +0.4</div>
+  </div>
+  <div class="cf-footer">
+    <button class="cf-btn">— 見 届 け る —</button>
+  </div>
+</div>
+
+
+<!-- CONCEPT G -->
+<p class="section-label">CONCEPT G — Landscape Dual（上段セリフ・下段画像の2段構成）</p>
+
+<div class="concept-g">
+  <div class="cg-header">
+    <div class="cg-title">最 終 決 着</div>
+    <div class="cg-sub">RIVALRY RESOLVED ・ FINAL</div>
+  </div>
+
+  <div class="cg-stage">
+    <!-- 上段: 吹き出し2つ -->
+    <div class="cg-bubble-row">
+      <div class="cg-bubble">
+        <div class="cg-spk">大河内紗代子</div>
+        当然の勝利。…でも、これで折れては居ないのでしょうね
+      </div>
+      <div style="width:40px;flex-shrink:0"></div>
+      <div class="cg-bubble loser">
+        <div class="cg-spk">三浦早紀</div>
+        負けた…悔しい。でも、これで終わりなんかじゃない
+      </div>
+    </div>
+
+    <!-- 下段: 画像2つ + 中央 VS -->
+    <div class="cg-img-row">
+      <div class="cg-img-card">
+        <div class="cg-img"><div class="cg-upper-placeholder">👤</div></div>
+        <div class="cg-info">
+          <span class="cg-name">大河内紗代子</span>
+          <div class="cg-meta">
+            <span class="cg-ovr">OVR 76</span>
+            <span class="cg-badge-w">WINNER</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cg-vs">
+        <span class="cg-vs-icon">⚔</span>
+      </div>
+
+      <div class="cg-img-card loser">
+        <div class="cg-img"><div class="cg-upper-placeholder">👤</div></div>
+        <div class="cg-info">
+          <span class="cg-name">三浦早紀</span>
+          <div class="cg-meta">
+            <span class="cg-ovr">OVR 73</span>
+            <span class="cg-badge-l">LOSER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cg-result">
+    <span class="cg-tag">🔥 宿命の一戦</span>
+    <span class="cg-bonus">📈 両選手の人気 +5　　🏢 団体人気 +0.5</span>
+  </div>
+  <div class="cg-footer">
+    <button class="cg-btn">— 見 届 け る —</button>
+  </div>
+</div>
+
+<p class="section-note" style="padding-bottom:40px">
+  👤 のプレースホルダーには実際には選手のアッパー画像（upper/*.png）が入ります<br>
+  敗者側は画像を desaturate + 暗くし、下端から暗いグラデーション・LOSER バッジで視覚的に敗北を示します
+</p>
+
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Rivalry Popup v0.4 — 実画像 + 頭上吹き出し</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0a0a0f;
+  color: #e8e0d0;
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+}
+h1 {
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 8px;
+  width: 100%;
+  max-width: 720px;
+  font-weight: 700;
+}
+.note {
+  font-size: 12px;
+  color: rgba(255,255,255,0.38);
+  text-align: center;
+  max-width: 680px;
+  line-height: 1.7;
+}
+.variant-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.08em;
+  text-align: center;
+  max-width: 720px;
+  margin-bottom: -24px;
+}
+.variant-meta {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+/* ═══ Verdict ═══ */
+.verdict {
+  --vd-accent: #b08848;
+  --vd-accent-bright: #d0a060;
+  --vd-glow: rgba(200,160,100,0.12);
+  --vd-border: rgba(200,170,120,0.18);
+  --vd-head-tint: rgba(200,160,100,0.10);
+  --vd-tag: #d8a868;
+  --vd-btn-bg: rgba(200,160,100,0.06);
+  --vd-btn-border: rgba(200,170,120,0.25);
+  --vd-btn-text: rgba(230,200,160,0.75);
+
+  width: 580px;
+  background: #11111a;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--vd-border);
+  box-shadow: 0 22px 64px rgba(0,0,0,0.7), 0 0 28px var(--vd-glow);
+}
+
+.verdict.tone-goodrival {
+  --vd-accent: #c8a060; --vd-accent-bright: #e8c880;
+  --vd-glow: rgba(220,180,100,0.16); --vd-border: rgba(220,190,120,0.22);
+  --vd-head-tint: rgba(220,180,100,0.12); --vd-tag: #f0d08a;
+  --vd-btn-bg: rgba(220,180,100,0.08); --vd-btn-border: rgba(220,190,120,0.3);
+  --vd-btn-text: rgba(240,220,170,0.82);
+}
+.verdict.tone-bitter {
+  --vd-accent: #c85858; --vd-accent-bright: #e88080;
+  --vd-glow: rgba(220,90,90,0.18); --vd-border: rgba(220,100,100,0.25);
+  --vd-head-tint: rgba(220,80,80,0.12); --vd-tag: #ff9898;
+  --vd-btn-bg: rgba(220,90,90,0.07); --vd-btn-border: rgba(220,100,100,0.28);
+  --vd-btn-text: rgba(255,180,170,0.78);
+}
+.verdict.tone-fate {
+  --vd-accent: #a070e0; --vd-accent-bright: #c090ff;
+  --vd-glow: rgba(180,120,240,0.18); --vd-border: rgba(180,130,240,0.25);
+  --vd-head-tint: rgba(180,120,240,0.14); --vd-tag: #d0a0ff;
+  --vd-btn-bg: rgba(180,120,240,0.08); --vd-btn-border: rgba(180,130,240,0.3);
+  --vd-btn-text: rgba(220,190,255,0.82);
+}
+.verdict.tone-confront {
+  --vd-accent: #5890e0; --vd-accent-bright: #80b0ff;
+  --vd-glow: rgba(100,160,255,0.18); --vd-border: rgba(100,160,255,0.25);
+  --vd-head-tint: rgba(100,160,255,0.12); --vd-tag: #a0c8ff;
+  --vd-btn-bg: rgba(100,160,255,0.07); --vd-btn-border: rgba(100,160,255,0.28);
+  --vd-btn-text: rgba(180,210,255,0.82);
+}
+
+.vd-head {
+  padding: 16px 24px 12px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--vd-head-tint) 0%, transparent 100%);
+  border-bottom: 1px solid var(--vd-border);
+}
+.vd-title { font-size: 21px; letter-spacing: 0.28em; font-weight: 900; color: var(--vd-accent-bright); }
+.vd-sub { font-size: 10px; letter-spacing: 0.22em; color: var(--vd-accent); opacity: 0.55; margin-top: 4px; }
+
+/* ═══ ステージ ═══ */
+.vd-stage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 18px 20px 14px;
+  gap: 8px;
+}
+
+/* 中央 VS カラム */
+.vd-vs {
+  flex: 0 0 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding-bottom: 80px; /* 画像中央付近に配置 */
+  z-index: 3;
+}
+.vd-vs-icon {
+  font-size: 28px;
+  color: var(--vd-accent-bright);
+  filter: drop-shadow(0 0 10px var(--vd-glow)) drop-shadow(0 0 20px var(--vd-glow));
+  line-height: 1;
+}
+.vd-vs-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--vd-accent);
+  opacity: 0.7;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.vd-vs-line {
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(to bottom, transparent, var(--vd-accent) 50%, transparent);
+  opacity: 0.4;
+}
+/* 勝者: 大きめ */
+.vd-col-w {
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+/* 敗者: 全体を縮小(画像のカットではなく) */
+.vd-col-l {
+  flex: 0 0 170px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+  opacity: 0.82;
+}
+
+/* 頭上の吹き出し (画像の外側上部・画像と分離) */
+.vd-bubble-w {
+  background: #f6f0e0;
+  color: #1a1208;
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  position: relative;
+  min-height: 64px;
+  margin-bottom: 12px; /* 画像との明確な間隔 */
+}
+.vd-bubble-w::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 32px;
+  border: 9px solid transparent;
+  border-top-color: #f6f0e0;
+  border-bottom: 0;
+}
+.vd-bubble-l {
+  background: #d4d7e0;
+  color: #1a1a28;
+  border-radius: 9px;
+  padding: 8px 11px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  position: relative;
+  min-height: 54px;
+  opacity: 0.92;
+  margin-bottom: 10px;
+}
+.vd-bubble-l::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  right: 28px;
+  border: 8px solid transparent;
+  border-top-color: #d4d7e0;
+  border-bottom: 0;
+}
+.vd-spk {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(0,0,0,0.4);
+  margin-bottom: 3px;
+}
+
+/* 画像カード */
+.vd-img-card {
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0a0a10;
+  border: 1px solid rgba(255,255,255,0.04);
+  position: relative;
+}
+.vd-col-w .vd-img-card {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 16px var(--vd-glow);
+  border-color: var(--vd-border);
+}
+
+/* 画像コンテナ: アッパー画像の自然アスペクト比(256:384 = 2:3)に合わせて切り抜きゼロ */
+.vd-img-frame {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(160deg, #1e1828 0%, #12101a 100%);
+}
+.vd-img-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* アスペクト比一致のため cover でも切れない */
+  object-position: center top;
+  display: block;
+}
+
+/* 敗者のトリートメント */
+.vd-col-l .vd-img-frame img {
+  filter: grayscale(45%) brightness(0.62) contrast(0.95);
+}
+.vd-col-l .vd-img-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 55%;
+  background: linear-gradient(to top, rgba(10,5,10,0.55) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* 名前帯 */
+.vd-nameband {
+  padding: 8px 10px;
+  background: rgba(0,0,0,0.5);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.vd-name-w { font-size: 14px; font-weight: 800; color: #f0e8dc; }
+.vd-name-l { font-size: 12px; font-weight: 600; color: rgba(210,200,190,0.55); }
+.vd-meta { display: flex; align-items: center; gap: 6px; }
+.vd-ovr-w { font-size: 11px; font-weight: 700; color: var(--vd-accent-bright); }
+.vd-ovr-l { font-size: 10px; font-weight: 700; color: rgba(180,170,160,0.45); }
+.vd-badge-w {
+  font-size: 9px; letter-spacing: 0.1em; background: var(--vd-accent);
+  color: #1a1010; padding: 2px 6px; border-radius: 3px; font-weight: 800;
+}
+.vd-badge-l {
+  font-size: 9px; letter-spacing: 0.1em;
+  background: rgba(80,70,70,0.55); color: rgba(200,180,160,0.42);
+  padding: 2px 6px; border-radius: 3px; font-weight: 800;
+}
+
+/* 結果・フッター */
+.vd-result {
+  padding: 12px 24px;
+  border-top: 1px solid var(--vd-border);
+  background: var(--vd-head-tint);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.vd-tag { font-size: 13px; font-weight: 700; color: var(--vd-tag); }
+.vd-bonus { font-size: 12px; color: rgba(220,210,190,0.6); }
+.vd-foot {
+  padding: 12px 24px;
+  border-top: 1px solid var(--vd-border);
+  display: flex;
+  justify-content: center;
+}
+.vd-btn {
+  background: var(--vd-btn-bg);
+  border: 1px solid var(--vd-btn-border);
+  color: var(--vd-btn-text);
+  padding: 10px 40px;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 勃発バリアント: 対等 */
+.verdict.tone-confront .vd-col-w,
+.verdict.tone-confront .vd-col-l { flex: 0 0 220px; opacity: 1; }
+.verdict.tone-confront .vd-col-l .vd-img-frame img { filter: none; }
+.verdict.tone-confront .vd-vs-icon::before { content: '⚡'; }
+.verdict.tone-confront .vd-vs-icon { font-size: 0; }
+.verdict.tone-confront .vd-vs-icon::before { font-size: 28px; }
+.verdict.tone-confront .vd-vs-label::before { content: '勃 発'; }
+.verdict.tone-confront .vd-vs-label { font-size: 0; }
+.verdict.tone-confront .vd-vs-label::before { font-size: 9px; letter-spacing: 0.22em; }
+.verdict.tone-confront .vd-col-l .vd-img-card::after { display: none; }
+.verdict.tone-confront .vd-name-l { font-size: 14px; font-weight: 800; color: #f0e8dc; }
+.verdict.tone-confront .vd-ovr-l { font-size: 11px; color: var(--vd-accent-bright); }
+.verdict.tone-confront .vd-badge-l { background: var(--vd-accent); color: #08101c; }
+.verdict.tone-confront .vd-bubble-l {
+  background: #e8eef8; color: #0a1528; font-size: 12.5px;
+  opacity: 1; padding: 10px 13px; min-height: 64px;
+}
+.verdict.tone-confront .vd-bubble-l::after { border-top-color: #e8eef8; border-width: 9px; }
+</style>
+</head>
+<body>
+
+<h1>Rivalry Popup v0.4 — 実画像 + 頭上の吹き出し</h1>
+
+<p class="note">
+  吹き出しを画像の<strong>上</strong>に配置し、実際のアッパー画像（大河内紗代子 / 三浦早紀）を入れています。<br>
+  画像は <code>object-position: center top</code> で頭頂部が必ず入るよう固定。<br>
+  吹き出し下と画像上の間に 10〜12px の隙間をとり、三角ポインタも隙間内で完結しています。
+</p>
+
+
+<!-- ─── ① 好敵手誕生 ─── -->
+<p class="variant-label">① 好敵手誕生 — Gold Tone</p>
+
+<div class="verdict tone-goodrival">
+  <div class="vd-head">
+    <div class="vd-title">好 敵 手 誕 生</div>
+    <div class="vd-sub">GOOD RIVALS ・ MUTUAL RESPECT</div>
+  </div>
+  <div class="vd-stage">
+    <div class="vd-col-w">
+      <div class="vd-bubble-w">
+        <div class="vd-spk">大河内紗代子</div>
+        いい試合だった。…あなたの強さ、認めるよ
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_okochi_s.webp" alt="大河内紗代子"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-w">大河内紗代子</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-w">OVR 76</span>
+            <span class="vd-badge-w">WINNER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vd-vs">
+      <div class="vd-vs-line"></div>
+      <div class="vd-vs-icon">⚔</div>
+      <div class="vd-vs-label">決 着</div>
+      <div class="vd-vs-line"></div>
+    </div>
+    <div class="vd-col-l">
+      <div class="vd-bubble-l">
+        <div class="vd-spk">三浦早紀</div>
+        次は絶対に勝つ。…また、お願いします
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_miura_s.webp" alt="三浦早紀"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-l">三浦早紀</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-l">OVR 73</span>
+            <span class="vd-badge-l">LOSER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="vd-result">
+    <div class="vd-tag">🤝 ふたりは「好敵手」になった</div>
+    <div class="vd-bonus">📈 両選手の人気 +6　　🏢 団体人気 +0.5</div>
+  </div>
+  <div class="vd-foot"><button class="vd-btn">— 見 届 け る —</button></div>
+</div>
+
+
+<!-- ─── ② 宿怨決着 ─── -->
+<p class="variant-label">② 宿怨決着 — Crimson Tone</p>
+
+<div class="verdict tone-bitter">
+  <div class="vd-head">
+    <div class="vd-title">宿 怨 決 着</div>
+    <div class="vd-sub">BITTER RIVALRY ・ FINAL</div>
+  </div>
+  <div class="vd-stage">
+    <div class="vd-col-w">
+      <div class="vd-bubble-w">
+        <div class="vd-spk">大河内紗代子</div>
+        これでわかったでしょう。…もう二度と、私の前に立たないで
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_okochi_s.webp" alt="大河内紗代子"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-w">大河内紗代子</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-w">OVR 76</span>
+            <span class="vd-badge-w">WINNER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vd-vs">
+      <div class="vd-vs-line"></div>
+      <div class="vd-vs-icon">⚔</div>
+      <div class="vd-vs-label">決 着</div>
+      <div class="vd-vs-line"></div>
+    </div>
+    <div class="vd-col-l">
+      <div class="vd-bubble-l">
+        <div class="vd-spk">三浦早紀</div>
+        …絶対に忘れない。この借りは返す
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_miura_s.webp" alt="三浦早紀"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-l">三浦早紀</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-l">OVR 73</span>
+            <span class="vd-badge-l">LOSER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="vd-result">
+    <div class="vd-tag">💀 ふたりは「宿怨」になった</div>
+    <div class="vd-bonus">📈 両選手の人気 +4　　🏢 団体人気 +0.4</div>
+  </div>
+  <div class="vd-foot"><button class="vd-btn">— 見 届 け る —</button></div>
+</div>
+
+
+<!-- ─── ③ 宿命の相手 決着 ─── -->
+<p class="variant-label">③ 宿命の相手 決着 — Violet Tone</p>
+
+<div class="verdict tone-fate">
+  <div class="vd-head">
+    <div class="vd-title">最 終 決 着</div>
+    <div class="vd-sub">FATED RIVALRY ・ RESOLVED</div>
+  </div>
+  <div class="vd-stage">
+    <div class="vd-col-w">
+      <div class="vd-bubble-w">
+        <div class="vd-spk">大河内紗代子</div>
+        長かったね。…ようやく、終わりだ
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_okochi_s.webp" alt="大河内紗代子"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-w">大河内紗代子</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-w">OVR 76</span>
+            <span class="vd-badge-w">WINNER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vd-vs">
+      <div class="vd-vs-line"></div>
+      <div class="vd-vs-icon">⚔</div>
+      <div class="vd-vs-label">決 着</div>
+      <div class="vd-vs-line"></div>
+    </div>
+    <div class="vd-col-l">
+      <div class="vd-bubble-l">
+        <div class="vd-spk">三浦早紀</div>
+        …負けた。でも、悔いはない
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_miura_s.webp" alt="三浦早紀"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-l">三浦早紀</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-l">OVR 73</span>
+            <span class="vd-badge-l">LOSER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="vd-result">
+    <div class="vd-tag">✨ 宿命の相手との決着がついた</div>
+    <div class="vd-bonus">📈 両選手の人気 +8　　🏢 団体人気 +0.8</div>
+  </div>
+  <div class="vd-foot"><button class="vd-btn">— 見 届 け る —</button></div>
+</div>
+
+
+<!-- ─── ④ 宿敵決着 (通常) ─── -->
+<p class="variant-label">④ 宿敵決着（通常）— Amber Tone</p>
+
+<div class="verdict">
+  <div class="vd-head">
+    <div class="vd-title">宿 敵 決 着</div>
+    <div class="vd-sub">RIVALRY RESOLVED</div>
+  </div>
+  <div class="vd-stage">
+    <div class="vd-col-w">
+      <div class="vd-bubble-w">
+        <div class="vd-spk">大河内紗代子</div>
+        当然の勝利。…でも、これで折れては居ないのでしょうね
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_okochi_s.webp" alt="大河内紗代子"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-w">大河内紗代子</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-w">OVR 76</span>
+            <span class="vd-badge-w">WINNER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vd-vs">
+      <div class="vd-vs-line"></div>
+      <div class="vd-vs-icon">⚔</div>
+      <div class="vd-vs-label">決 着</div>
+      <div class="vd-vs-line"></div>
+    </div>
+    <div class="vd-col-l">
+      <div class="vd-bubble-l">
+        <div class="vd-spk">三浦早紀</div>
+        負けた…悔しい。でも、これで終わりなんかじゃない
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_miura_s.webp" alt="三浦早紀"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-l">三浦早紀</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-l">OVR 73</span>
+            <span class="vd-badge-l">LOSER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="vd-result">
+    <div class="vd-tag">🔥 宿敵の決着</div>
+    <div class="vd-bonus">📈 両選手の人気 +4　　🏢 団体人気 +0.3</div>
+  </div>
+  <div class="vd-foot"><button class="vd-btn">— 見 届 け る —</button></div>
+</div>
+
+
+<!-- ─── ⑤ 因縁勃発 ─── -->
+<p class="variant-label">⑤ 因縁勃発 — Blue Tone（対等な2選手）</p>
+
+<div class="verdict tone-confront">
+  <div class="vd-head">
+    <div class="vd-title">因 縁 勃 発</div>
+    <div class="vd-sub">RIVALRY DECLARED ・ FATED</div>
+  </div>
+  <div class="vd-stage">
+    <div class="vd-col-w">
+      <div class="vd-bubble-w">
+        <div class="vd-spk">大河内紗代子</div>
+        あなたには、まだ負けるつもりはないよ
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_okochi_s.webp" alt="大河内紗代子"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-w">大河内紗代子</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-w">OVR 76</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vd-vs">
+      <div class="vd-vs-line"></div>
+      <div class="vd-vs-icon">⚔</div>
+      <div class="vd-vs-label">決 着</div>
+      <div class="vd-vs-line"></div>
+    </div>
+    <div class="vd-col-l">
+      <div class="vd-bubble-l">
+        <div class="vd-spk">三浦早紀</div>
+        望むところ。いつでもかかってきなよ
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame"><img src="../../../image/upper/upper_miura_s.webp" alt="三浦早紀"></div>
+        <div class="vd-nameband">
+          <div class="vd-name-l">三浦早紀</div>
+          <div class="vd-meta">
+            <span class="vd-ovr-l">OVR 73</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="vd-result">
+    <div class="vd-tag">⚡ ふたりの間に火花が散った — 因縁レベル 1</div>
+  </div>
+  <div class="vd-foot"><button class="vd-btn">— 見 届 け る —</button></div>
+</div>
+
+<p class="note" style="padding-bottom:40px">
+  敗者の画像: <code>filter: grayscale(45%) brightness(0.62)</code> + 下部から暗グラデで敗北感。<br>
+  画像サイズ: 勝者 260px / 敗者 220px（scale 0.92 で最終 202px）。<br>
+  頭頂部は <code>object-position: center top</code> で必ず保持されます。
+</p>
+
+</body>
+</html>

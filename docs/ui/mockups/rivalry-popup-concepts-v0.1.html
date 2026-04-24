@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Rivalry Popup — 3 Concepts</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0a0a0f;
+  color: #e8e0d0;
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 72px;
+}
+
+h2 {
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 8px;
+  width: 100%;
+  max-width: 640px;
+}
+
+/* ─── CONCEPT A: Film Noir Panel ─────────────────────────── */
+
+.concept-a {
+  width: 600px;
+  background: #111118;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(200,180,140,0.12);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+}
+
+.ca-header {
+  padding: 20px 28px 16px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ca-title {
+  font-size: 22px;
+  letter-spacing: 0.3em;
+  font-weight: 900;
+  color: #c8a060;
+}
+.ca-sub {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: rgba(200,180,140,0.45);
+  margin-top: 4px;
+}
+
+.ca-stage {
+  display: flex;
+  height: 340px;
+  position: relative;
+}
+
+/* divider */
+.ca-stage::after {
+  content: '⚔';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  z-index: 10;
+  filter: drop-shadow(0 0 12px rgba(200,80,80,0.8));
+  background: #111118;
+  padding: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,80,80,0.3);
+}
+
+.ca-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px 0;
+  position: relative;
+}
+
+/* speech bubble */
+.ca-bubble {
+  background: #f5f0e8;
+  color: #1a1410;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  text-align: left;
+  position: relative;
+  width: 100%;
+  min-height: 60px;
+  z-index: 2;
+}
+.ca-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 10px solid transparent;
+  border-top-color: #f5f0e8;
+  border-bottom: 0;
+}
+.ca-bubble.loser-bubble {
+  background: #cdd4df;
+  color: #222838;
+  opacity: 0.85;
+}
+.ca-bubble.loser-bubble::after {
+  border-top-color: #cdd4df;
+}
+.ca-speaker {
+  font-size: 10px;
+  color: rgba(0,0,0,0.45);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+/* upper image */
+.ca-upper-wrap {
+  margin-top: 12px;
+  width: 180px;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.ca-upper-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.ca-upper-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #2a2030 0%, #1a1525 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: rgba(255,255,255,0.15);
+}
+
+/* loser treatment */
+.loser-col .ca-upper-placeholder {
+  filter: grayscale(40%) brightness(0.55);
+}
+.loser-col::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(to top, rgba(30,10,10,0.6) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ca-nameplate {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(to top, rgba(10,10,20,0.95) 0%, transparent 100%);
+  z-index: 2;
+}
+.ca-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e8e0d0;
+}
+.ca-ovr-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+.ca-ovr {
+  font-size: 11px;
+  color: rgba(200,180,120,0.8);
+  font-weight: 700;
+}
+.ca-winner-badge {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  background: #c8a060;
+  color: #1a1010;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+.ca-loser-badge {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  background: rgba(100,80,80,0.5);
+  color: rgba(255,255,255,0.45);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+
+.ca-result {
+  padding: 14px 28px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ca-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c8a060;
+  letter-spacing: 0.05em;
+}
+.ca-bonus {
+  font-size: 12px;
+  color: rgba(200,180,140,0.6);
+}
+
+.ca-footer {
+  padding: 14px 28px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: center;
+}
+.ca-btn {
+  background: transparent;
+  border: 1px solid rgba(200,180,140,0.25);
+  color: rgba(200,180,140,0.7);
+  padding: 10px 40px;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ca-btn:hover {
+  background: rgba(200,180,140,0.08);
+  color: rgba(200,180,140,1);
+}
+
+/* ─── CONCEPT B: Verdict Card (asymmetric) ───────────────── */
+
+.concept-b {
+  width: 560px;
+  background: #13111e;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(160,140,220,0.15);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.65);
+}
+
+.cb-header {
+  padding: 18px 24px 14px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(160,100,220,0.12) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(160,140,220,0.1);
+}
+.cb-title {
+  font-size: 20px;
+  letter-spacing: 0.25em;
+  font-weight: 900;
+  color: #e0d0ff;
+}
+.cb-sub {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(180,160,255,0.4);
+  margin-top: 4px;
+}
+
+.cb-stage {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 24px 0 16px;
+  gap: 0;
+  min-height: 300px;
+  position: relative;
+}
+
+/* winner: bigger and front */
+.cb-winner-col {
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+/* loser: smaller, pushed back */
+.cb-loser-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  opacity: 0.7;
+  transform: scale(0.88);
+  transform-origin: bottom center;
+}
+
+.cb-upper-win {
+  width: 200px;
+  height: 240px;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+.cb-upper-placeholder-win {
+  width: 200px;
+  height: 240px;
+  background: linear-gradient(160deg, #2a1f40 0%, #1a1530 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  color: rgba(255,255,255,0.1);
+}
+.cb-upper-placeholder-lose {
+  width: 160px;
+  height: 200px;
+  background: linear-gradient(160deg, #1e1e2a 0%, #131318 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  color: rgba(255,255,255,0.07);
+  filter: grayscale(50%) brightness(0.6);
+}
+
+/* speech bubbles floating above heads */
+.cb-bubble-win {
+  background: #f8f0d0;
+  color: #1a1000;
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 12px;
+  line-height: 1.55;
+  width: 200px;
+  position: relative;
+  margin-bottom: 10px;
+}
+.cb-bubble-win::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 10px solid transparent;
+  border-top-color: #f8f0d0;
+  border-bottom: 0;
+}
+.cb-bubble-lose {
+  background: #d8dae8;
+  color: #1a1a30;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  width: 152px;
+  position: relative;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+.cb-bubble-lose::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 9px solid transparent;
+  border-top-color: #d8dae8;
+  border-bottom: 0;
+}
+.cb-spk {
+  font-size: 9.5px;
+  color: rgba(0,0,0,0.4);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.cb-nameplate-win {
+  text-align: center;
+  padding: 8px 0;
+}
+.cb-name-win {
+  font-size: 14px;
+  font-weight: 800;
+  color: #e8e0ff;
+}
+.cb-ovr-win {
+  font-size: 11px;
+  color: rgba(200,180,255,0.7);
+  margin-top: 2px;
+}
+.cb-winner-crown {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  background: linear-gradient(90deg, #c060e0, #8060c0);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: 800;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.cb-nameplate-lose {
+  text-align: center;
+  padding: 6px 0;
+}
+.cb-name-lose {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(200,200,220,0.55);
+}
+.cb-ovr-lose {
+  font-size: 10px;
+  color: rgba(180,180,200,0.4);
+  margin-top: 2px;
+}
+
+.cb-result {
+  padding: 12px 24px 14px;
+  border-top: 1px solid rgba(160,140,220,0.1);
+  background: rgba(160,100,220,0.04);
+}
+.cb-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c090ff;
+  margin-bottom: 5px;
+}
+.cb-bonus {
+  font-size: 12px;
+  color: rgba(180,160,220,0.55);
+}
+
+.cb-footer {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(160,140,220,0.1);
+  display: flex;
+  justify-content: center;
+}
+.cb-btn {
+  background: rgba(160,100,220,0.08);
+  border: 1px solid rgba(160,100,220,0.25);
+  color: rgba(200,170,255,0.7);
+  padding: 10px 40px;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ─── CONCEPT C: Classic Duel Panel ─────────────────────── */
+
+.concept-c {
+  width: 580px;
+  background: #0f0f14;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(220,60,60,0.2);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(180,40,40,0.08);
+}
+
+.cc-header {
+  padding: 18px 24px 14px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(200,40,40,0.15) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(220,60,60,0.12);
+  position: relative;
+}
+.cc-title {
+  font-size: 21px;
+  letter-spacing: 0.3em;
+  font-weight: 900;
+  color: #e8c0a0;
+}
+.cc-sub {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: rgba(220,140,100,0.45);
+  margin-top: 4px;
+}
+
+.cc-duel {
+  display: flex;
+  gap: 0;
+}
+.cc-half {
+  flex: 1;
+  padding: 20px 18px 16px;
+  position: relative;
+}
+.cc-half.cc-winner-half {
+  border-right: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.015);
+}
+.cc-half.cc-loser-half {
+  background: rgba(0,0,0,0.2);
+}
+
+/* upper image container with gradient fade at bottom */
+.cc-img-container {
+  width: 100%;
+  height: 220px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.cc-upper-placeholder-win {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #2a1820 0%, #1a1018 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  color: rgba(255,255,255,0.1);
+}
+.cc-upper-placeholder-lose {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #181820 0%, #0e0e14 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  color: rgba(255,255,255,0.05);
+  filter: grayscale(60%) brightness(0.5);
+}
+.cc-img-bottom-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to top, rgba(10,10,16,1) 0%, transparent 100%);
+  pointer-events: none;
+}
+/* loser overlay */
+.cc-loser-half .cc-img-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(30,10,10,0.35);
+  pointer-events: none;
+}
+
+/* speech bubble — appears inside the image area, floats at top */
+.cc-bubble {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  background: #f5ead8;
+  color: #1a1010;
+  border-radius: 8px;
+  padding: 8px 11px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  z-index: 5;
+}
+.cc-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 24px;
+  border: 9px solid transparent;
+  border-top-color: #f5ead8;
+  border-bottom: 0;
+}
+.cc-bubble-lose {
+  background: #d8dce8;
+  color: #1a1a28;
+}
+.cc-bubble-lose::after {
+  border-top-color: #d8dce8;
+  left: unset;
+  right: 24px;
+}
+.cc-spk {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: rgba(0,0,0,0.4);
+  margin-bottom: 3px;
+}
+
+.cc-nameplate {
+  text-align: center;
+}
+.cc-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #e8e0d0;
+}
+.cc-loser-half .cc-name {
+  color: rgba(200,190,180,0.5);
+}
+.cc-ovr-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.cc-ovr {
+  font-size: 11px;
+  color: rgba(200,170,120,0.7);
+  font-weight: 700;
+}
+.cc-loser-half .cc-ovr {
+  color: rgba(160,150,140,0.4);
+}
+.cc-badge-win {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: #c84040;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+.cc-badge-lose {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: rgba(80,60,60,0.5);
+  color: rgba(200,180,160,0.4);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+
+.cc-result {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(220,60,60,0.12);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(200,40,40,0.04);
+}
+.cc-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e08060;
+  flex-shrink: 0;
+}
+.cc-bonus {
+  font-size: 12px;
+  color: rgba(200,170,140,0.55);
+  flex: 1;
+}
+
+.cc-footer {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: center;
+}
+.cc-btn {
+  background: rgba(220,60,60,0.07);
+  border: 1px solid rgba(220,60,60,0.2);
+  color: rgba(220,150,120,0.7);
+  padding: 10px 40px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ─── CONCEPT D: 因縁勃発 (confrontation) variant ─── */
+
+.concept-d {
+  width: 560px;
+  background: #0d0d18;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(100,140,255,0.18);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.65), 0 0 30px rgba(60,100,200,0.07);
+}
+
+.cd-header {
+  padding: 18px 24px 14px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(60,100,220,0.12) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(80,120,220,0.1);
+}
+.cd-title {
+  font-size: 21px;
+  letter-spacing: 0.3em;
+  font-weight: 900;
+  color: #a0c0ff;
+}
+.cd-sub {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(120,160,255,0.4);
+  margin-top: 4px;
+}
+
+.cd-stage {
+  display: flex;
+  height: 300px;
+  position: relative;
+}
+.cd-stage::before {
+  content: '⚡';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  z-index: 10;
+  filter: drop-shadow(0 0 12px rgba(100,160,255,0.9)) drop-shadow(0 0 24px rgba(100,160,255,0.5));
+  background: #0d0d18;
+  padding: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(100,160,255,0.25);
+}
+
+.cd-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 14px 0;
+  position: relative;
+}
+
+.cd-bubble {
+  background: #f0eefc;
+  color: #1a1830;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  width: 100%;
+  position: relative;
+  margin-bottom: 10px;
+}
+.cd-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 9px solid transparent;
+  border-top-color: #f0eefc;
+  border-bottom: 0;
+}
+.cd-right .cd-bubble {
+  background: #ffe8e8;
+  color: #300808;
+}
+.cd-right .cd-bubble::after {
+  border-top-color: #ffe8e8;
+}
+
+.cd-upper {
+  width: 160px;
+  height: 200px;
+  object-fit: cover;
+  object-position: top;
+}
+.cd-upper-placeholder-left {
+  width: 160px;
+  height: 200px;
+  background: linear-gradient(160deg, #1e2040 0%, #14182c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  color: rgba(255,255,255,0.1);
+}
+.cd-upper-placeholder-right {
+  width: 160px;
+  height: 200px;
+  background: linear-gradient(160deg, #2e1820 0%, #1c1014 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  color: rgba(255,255,255,0.08);
+}
+
+.cd-name {
+  position: absolute;
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+  padding-bottom: 6px;
+  text-align: center;
+}
+.cd-char-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #b8d0ff;
+}
+.cd-char-ovr {
+  font-size: 10px;
+  color: rgba(140,180,255,0.6);
+  margin-top: 2px;
+}
+
+.cd-result {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(80,120,220,0.1);
+  background: rgba(60,100,220,0.04);
+  text-align: center;
+}
+.cd-tag {
+  font-size: 12px;
+  color: rgba(140,180,255,0.7);
+}
+
+.cd-footer {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(80,120,220,0.08);
+  display: flex;
+  justify-content: center;
+}
+.cd-btn {
+  background: rgba(80,120,220,0.07);
+  border: 1px solid rgba(80,120,220,0.2);
+  color: rgba(140,180,255,0.65);
+  padding: 10px 40px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ─── label ─── */
+.section-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.1em;
+  text-align: center;
+  width: 100%;
+  max-width: 640px;
+}
+.section-note {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+  width: 100%;
+  max-width: 640px;
+  margin-top: -60px;
+}
+</style>
+</head>
+<body>
+
+<h2>Rivalry Popup Concepts v0.1 — 決着 / 勃発</h2>
+
+<!-- ═══════════════════════════════════════════════
+  CONCEPT A: "Film Noir" — gold tone, symmetric
+═══════════════════════════════════════════════ -->
+
+<p class="section-label">CONCEPT A — Film Noir（ゴールドトーン / 対称）</p>
+
+<div class="concept-a">
+  <div class="ca-header">
+    <div class="ca-title">宿 敵 決 着</div>
+    <div class="ca-sub">RIVALRY RESOLVED</div>
+  </div>
+
+  <div class="ca-stage">
+    <!-- winner -->
+    <div class="ca-col">
+      <div class="ca-bubble">
+        <div class="ca-speaker">大河内紗代子</div>
+        当然の勝利。…でも、これで折れては居ないのでしょうね
+      </div>
+      <div class="ca-upper-wrap">
+        <div class="ca-upper-placeholder">👤</div>
+        <div class="ca-nameplate">
+          <div class="ca-name">大河内紗代子</div>
+          <div class="ca-ovr-row">
+            <span class="ca-ovr">OVR 76</span>
+            <span class="ca-winner-badge">WINNER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- loser -->
+    <div class="ca-col loser-col">
+      <div class="ca-bubble loser-bubble">
+        <div class="ca-speaker">三浦早紀</div>
+        負けた…悔しい。でも、これで終わりなんかじゃない
+      </div>
+      <div class="ca-upper-wrap">
+        <div class="ca-upper-placeholder" style="filter:grayscale(40%) brightness(0.55)">👤</div>
+        <div class="ca-nameplate">
+          <div class="ca-name" style="color:rgba(180,170,160,0.6)">三浦早紀</div>
+          <div class="ca-ovr-row">
+            <span class="ca-ovr" style="color:rgba(160,150,120,0.5)">OVR 73</span>
+            <span class="ca-loser-badge">LOSER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ca-result">
+    <div class="ca-tag">🤝 ふたりは「好敵手」になった</div>
+    <div class="ca-bonus">📈 両選手の人気 +4　　🏢 団体人気 +0.3</div>
+  </div>
+  <div class="ca-footer">
+    <button class="ca-btn">— 見 届 け る —</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+  CONCEPT B: "Verdict" — asymmetric, winner dominant
+═══════════════════════════════════════════════ -->
+
+<p class="section-label">CONCEPT B — Verdict（勝者大 / 非対称）</p>
+
+<div class="concept-b">
+  <div class="cb-header">
+    <div class="cb-title">宿 怨 決 着</div>
+    <div class="cb-sub">BITTER RIVALRY ・ FINAL</div>
+  </div>
+
+  <div class="cb-stage">
+    <!-- winner — larger -->
+    <div class="cb-winner-col">
+      <div class="cb-bubble-win">
+        <div class="cb-spk">大河内紗代子</div>
+        これが実力の差だ。もう逃げ場はないよ
+      </div>
+      <div class="cb-upper-placeholder-win">👤</div>
+      <div class="cb-nameplate-win">
+        <div class="cb-name-win">大河内紗代子</div>
+        <div class="cb-ovr-win">OVR 76</div>
+        <div class="cb-winner-crown">WINNER</div>
+      </div>
+    </div>
+
+    <!-- loser — smaller, faded -->
+    <div class="cb-loser-col">
+      <div class="cb-bubble-lose">
+        <div class="cb-spk">三浦早紀</div>
+        くっ…また負けた
+      </div>
+      <div class="cb-upper-placeholder-lose">👤</div>
+      <div class="cb-nameplate-lose">
+        <div class="cb-name-lose">三浦早紀</div>
+        <div class="cb-ovr-lose">OVR 73</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cb-result">
+    <div class="cb-tag">💀 ふたりは「宿怨」になった</div>
+    <div class="cb-bonus">📈 両選手の人気 +6　　🏢 団体人気 +0.4</div>
+  </div>
+  <div class="cb-footer">
+    <button class="cb-btn">— 見 届 け る —</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+  CONCEPT C: "Classic Duel" — red tone, speech bubble inside image
+═══════════════════════════════════════════════ -->
+
+<p class="section-label">CONCEPT C — Classic Duel（赤トーン / 吹き出し画像内）</p>
+
+<div class="concept-c">
+  <div class="cc-header">
+    <div class="cc-title">最 終 決 着</div>
+    <div class="cc-sub">RIVALRY RESOLVED ・ FINAL</div>
+  </div>
+
+  <div class="cc-duel">
+    <!-- winner half -->
+    <div class="cc-half cc-winner-half">
+      <div class="cc-img-container">
+        <div class="cc-upper-placeholder-win">👤</div>
+        <div class="cc-bubble">
+          <div class="cc-spk">大河内紗代子</div>
+          当然の勝利。…でも、これで折れては居ないのでしょうね
+        </div>
+        <div class="cc-img-bottom-fade"></div>
+      </div>
+      <div class="cc-nameplate">
+        <div class="cc-name">大河内紗代子</div>
+        <div class="cc-ovr-row">
+          <span class="cc-ovr">OVR 76</span>
+          <span class="cc-badge-win">WINNER</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- loser half -->
+    <div class="cc-half cc-loser-half">
+      <div class="cc-img-container">
+        <div class="cc-upper-placeholder-lose">👤</div>
+        <div class="cc-bubble cc-bubble-lose">
+          <div class="cc-spk">三浦早紀</div>
+          負けた…悔しい。でも、これで終わりなんかじゃない
+        </div>
+        <div class="cc-img-bottom-fade"></div>
+      </div>
+      <div class="cc-nameplate">
+        <div class="cc-name">三浦早紀</div>
+        <div class="cc-ovr-row">
+          <span class="cc-ovr">OVR 73</span>
+          <span class="cc-badge-lose">LOSER</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cc-result">
+    <span class="cc-tag">🔥 宿命の一戦</span>
+    <span class="cc-bonus">📈 両選手の人気 +5　　🏢 団体人気 +0.5</span>
+  </div>
+  <div class="cc-footer">
+    <button class="cc-btn">— 見 届 け る —</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+  CONCEPT D: 因縁勃発 variant (confrontation)
+  using Concept A layout as base
+═══════════════════════════════════════════════ -->
+
+<p class="section-label">CONCEPT D — 因縁勃発バリアント（Aベース・ブルートーン）</p>
+
+<div class="concept-d">
+  <div class="cd-header">
+    <div class="cd-title">因 縁 勃 発</div>
+    <div class="cd-sub">RIVALRY DECLARED ・ FATED</div>
+  </div>
+
+  <div class="cd-stage">
+    <!-- left / attacker -->
+    <div class="cd-col">
+      <div class="cd-bubble">
+        <span class="ca-speaker" style="font-size:9.5px;color:rgba(0,0,0,0.4);display:block;margin-bottom:3px;font-weight:700">大河内紗代子</span>
+        あなたには、まだ負けるつもりはないよ
+      </div>
+      <div class="cd-upper-placeholder-left">👤</div>
+      <div class="cd-name">
+        <div class="cd-char-name">大河内紗代子</div>
+        <div class="cd-char-ovr">OVR 76</div>
+      </div>
+    </div>
+
+    <!-- right / defender -->
+    <div class="cd-col cd-right">
+      <div class="cd-bubble">
+        <span class="ca-speaker" style="font-size:9.5px;color:rgba(0,0,0,0.4);display:block;margin-bottom:3px;font-weight:700">三浦早紀</span>
+        望むところ。いつでもかかってきなよ
+      </div>
+      <div class="cd-upper-placeholder-right">👤</div>
+      <div class="cd-name">
+        <div class="cd-char-name" style="color:#ffb0a0">三浦早紀</div>
+        <div class="cd-char-ovr" style="color:rgba(255,160,130,0.55)">OVR 73</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cd-result">
+    <div class="cd-tag">⚡ ふたりの間に火花が散った — 因縁レベル 1</div>
+  </div>
+  <div class="cd-footer">
+    <button class="cd-btn">— 見 届 け る —</button>
+  </div>
+</div>
+
+<p class="section-note" style="margin-top:0">
+  👤 のプレースホルダーは実際には選手のアッパー画像(upper/*.png)が入ります
+</p>
+
+</body>
+</html>
