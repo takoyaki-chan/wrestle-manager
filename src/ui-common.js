@@ -6355,10 +6355,6 @@ function showDecisionTargetModal(docId, state) {
 
 // 団体書類用: 実行確認モーダル
 function showDecisionConfirmModal(docId, state) {
-  const overlay = document.getElementById('shachoshitsuDecisionOverlay');
-  const modal = document.getElementById('shachoshitsuDecisionModal');
-  if (!overlay || !modal) return;
-
   const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS[docId] : null;
   if (!doc) return;
 
@@ -6366,42 +6362,57 @@ function showDecisionConfirmModal(docId, state) {
   const actualCost = Engine.shachoshitsu.calcCost(doc, state);
   const remainingFunds = (state.funds || 0) - actualCost;
 
-  let html = '';
-  html += `<div class="shachoshitsu-decision-title"><span class="icon">${doc.icon}</span>${doc.label}</div>`;
-  html += `<div class="shachoshitsu-decision-desc">${doc.detailText}</div>`;
-  html += `<div class="shachoshitsu-decision-team-summary">`;
-  html += `  <div class="row"><span class="label">対象</span><span class="value">団体全員 (${headcount}名)</span></div>`;
-  if (doc.unitCost) {
-    html += `  <div class="row"><span class="label">コスト</span><span class="value"><span style="color:var(--shachoshitsu-vermillion)">${actualCost}万</span> <span style="font-size:11px;color:var(--text-dim)">(${doc.unitCost}万×${Math.max(headcount, doc.minHeadcount || 4)}人)</span> <span class="meta-dp" style="margin-left:6px">⚡${doc.decisionCost}</span></span></div>`;
-  } else {
-    html += `  <div class="row"><span class="label">コスト</span><span class="value"><span style="color:var(--shachoshitsu-vermillion)">${actualCost}万</span> <span class="meta-dp" style="margin-left:6px">⚡${doc.decisionCost}</span></span></div>`;
-  }
-  html += `  <div class="row"><span class="label">残金(決裁後)</span><span class="value" style="color:${remainingFunds < 200 ? '#e74c3c' : 'var(--gold)'}">${Math.round(remainingFunds).toLocaleString()}万</span></div>`;
-  html += `  <div class="row" style="flex-direction:column;align-items:flex-start;gap:4px">`;
-  html += `    <span class="label">効果</span>`;
-  html += `    <span class="effect">${doc.effectSummary}</span>`;
-  html += `  </div>`;
-  html += `</div>`;
+  const costDetailHtml = doc.unitCost
+    ? `<strong style="color:var(--cream-gold-dark)">${actualCost}万</strong> <span style="font-size:11px;color:var(--cream-text-dim)">(${doc.unitCost}万×${Math.max(headcount, doc.minHeadcount || 4)}人)</span>`
+    : `<strong style="color:var(--cream-gold-dark)">${actualCost}万</strong>`;
+  const remainingColor = remainingFunds < 200 ? 'var(--accent-negative)' : 'var(--cream-gold-dark)';
 
-  html += `<div class="shachoshitsu-decision-btn-row">`;
-  html += `  <button class="shachoshitsu-decision-btn cancel" id="shachoshitsuDecCancelBtn">キャンセル</button>`;
-  html += `  <button class="shachoshitsu-decision-btn confirm" id="shachoshitsuDecConfirmBtn">実行</button>`;
-  html += `</div>`;
+  const summaryHtml = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="max-width:460px;margin:0 auto;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:12px 16px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;padding:4px 0">
+        <span style="color:var(--cream-text-sub)">対象</span>
+        <span style="color:var(--cream-text-main);font-weight:600">団体全員 (${headcount}名)</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0">
+        <span style="color:var(--cream-text-sub)">コスト</span>
+        <span>${costDetailHtml}　<span style="color:var(--cream-text-dim);font-size:11px">⚡${doc.decisionCost}</span></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0">
+        <span style="color:var(--cream-text-sub)">残金(決裁後)</span>
+        <span style="color:${remainingColor};font-weight:700">${Math.round(remainingFunds).toLocaleString()}万</span>
+      </div>
+      <div style="padding:8px 0 2px;border-top:1px dashed rgba(100,85,50,0.2);margin-top:6px">
+        <div style="color:var(--cream-text-sub);font-size:11px;margin-bottom:4px">効果</div>
+        <div style="color:var(--cream-text-main);line-height:1.6">${doc.effectSummary || ''}</div>
+      </div>
+    </div>
+  `;
 
-  modal.innerHTML = html;
+  const html = `
+    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `TEAM DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAReporterStrip(state, '団体全体に対して発令します。内容をご確認ください')}
+    <div class="mdl-a-subject-stage">${summaryHtml}</div>
+    <div class="mdl-a-prompt" style="padding-top:14px">この内容で決裁しますか？</div>
+    <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
+      <button class="mdl-a-continue-btn" id="mdlAConfirmCancel">— 取 消 —</button>
+      <button class="mdl-a-continue-btn" id="mdlAConfirmExec" style="background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)">— 決 裁 す る —</button>
+    </div>
+  `;
 
-  document.getElementById('shachoshitsuDecCancelBtn').addEventListener('click', () => {
+  if (!_mdlAOpen(html)) return;
+
+  document.getElementById('mdlAConfirmCancel').addEventListener('click', () => {
     Audio.play('click');
-    _closeShachoshitsuDecisionModal();
+    _mdlAClose();
   });
-  document.getElementById('shachoshitsuDecConfirmBtn').addEventListener('click', () => {
-    _closeShachoshitsuDecisionModal();
+  document.getElementById('mdlAConfirmExec').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
     if (typeof App !== 'undefined' && App.executeDecision) {
       App.executeDecision(docId, null);
     }
   });
-
-  overlay.classList.add('active');
 }
 
 // 決裁実行の結果トースト(Phase 4: シンプルな1行)
