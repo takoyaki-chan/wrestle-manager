@@ -7096,10 +7096,43 @@ const App = {
         case 'first_rivalry':
           triggered = Object.keys(G.rivalries || {}).length > 0;
           break;
+        case 'venue':
+          if (evt.trigger.timing === 'preShow') break; // preShowフックで処理
+          triggered = (G.showVenue === evt.trigger.venueIdx);
+          break;
+        case 'venue_occupancy': {
+          if (evt.trigger.timing === 'preShow') break;
+          const t = evt.trigger;
+          const cap = VENUES[t.venueIdx]?.cap;
+          const occ = cap ? (G.lastShowAttendance || 0) / cap : 0;
+          triggered = (G.showVenue === t.venueIdx) && (occ >= t.minOccupancy);
+          break;
+        }
       }
       if (triggered) return evt;
     }
     return null;
+  },
+
+  // D層: 興行前マイルストーンチェック（preShow timing のみ対象）
+  _checkAndShowPreShowMilestone(onDone) {
+    const ms = G.milestones || {};
+    for (const evt of MILESTONE_EVENTS) {
+      if (evt.trigger.timing !== 'preShow') continue;
+      if (ms[evt.id]) continue;
+      let triggered = false;
+      switch (evt.trigger.type) {
+        case 'venue':
+          triggered = (G.showVenue === evt.trigger.venueIdx);
+          break;
+      }
+      if (!triggered) continue;
+      G = { ...G, milestones: { ...(G.milestones || {}), [evt.id]: true } };
+      const speakers = App._resolveSpotlightFighters(G);
+      App.showCeremonyEvent(evt, speakers, onDone);
+      return;
+    }
+    onDone();
   },
 
   // v1.5s25b: マイルストーンチェック→UI→適用のフロー
