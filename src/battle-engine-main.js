@@ -1372,3 +1372,57 @@ function _updateCenter(fr){
   const narBox = document.getElementById('narBox');
   if (narBox) narBox.innerHTML = _narrationHtml(_narrateFrame(fr));
 }
+
+function _narrationHtml(nar){
+  if (!nar || !nar.text) {
+    return '<div class="nar-empty">\u8a66\u5408\u958b\u59cb \u2014 NEXT TURN\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044</div>';
+  }
+  return `<div class="nar-line nar-main show${nar.dramatic ? ' dramatic' : ''}">${escHtml(nar.text)}</div>`;
+}
+
+function _narrateFrame(fr){
+  if (!fr) return { text: '', dramatic: false };
+  if (fr.winner) {
+    if (S.pinSeqPending) return { text: '\u2026', dramatic: true };
+    return { text: '\u6c7a\u7740\uff01', dramatic: true };
+  }
+
+  const action = fr.action;
+  if (!action) return { text: (fr.logLines || []).join(' '), dramatic: false };
+
+  const atk = action.atkSide === 'left' ? S.L : S.R;
+  const def = action.atkSide === 'left' ? S.R : S.L;
+  if (!atk || !def) return { text: action.move || '', dramatic: false };
+
+  if (action.kind === 'miss') {
+    return {
+      text: `${atk.name}\u306e${action.move || ''} \u2192 \u304b\u308f\u3055\u308c\u305f\uff01`,
+      dramatic: false,
+    };
+  }
+  if (action.kind === 'counter') {
+    return {
+      text: `${atk.name}\u304c\u30ab\u30a6\u30f3\u30bf\u30fc\uff01 ${action.move || ''} \u2192 ${def.name}\u306b${action.dmg}\u30c0\u30e1\u30fc\u30b8`,
+      dramatic: true,
+    };
+  }
+
+  return {
+    text: `${atk.name}\u306e${action.move || ''} \u2192 ${def.name}\u306b${action.dmg}\u30c0\u30e1\u30fc\u30b8`,
+    dramatic: !!action.isCrit,
+  };
+}
+
+function _updateCenter(fr){
+  const box = document.getElementById('centerPanel');
+  if (!box) return;
+  const move = fr && fr.action ? (fr.action.move || '---') : '---';
+  const mv2 = document.getElementById('moveV');
+  if (mv2){ mv2.textContent = move; mv2.classList.remove('move-pop'); void mv2.offsetWidth; mv2.classList.add('move-pop'); }
+  const tl = document.getElementById('turnLbl');
+  if (tl && fr) tl.textContent = `\u30bf\u30fc\u30f3 ${fr.turn}`;
+  const pill = document.getElementById('pill');
+  if (pill && fr) pill.textContent = fr.phase || '';
+  const narBox = document.getElementById('narBox');
+  if (narBox) narBox.innerHTML = _narrationHtml(_narrateFrame(fr));
+}
