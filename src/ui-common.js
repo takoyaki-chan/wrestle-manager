@@ -9128,16 +9128,17 @@ function showNotifEventToast(event) {
     ${detailHtml}
     ${dialogueHtml}
     <div class="mdl-d-actions">
-      <button class="mdl-d-btn primary" onclick="closeNotifModal()">OK</button>
+      <button class="mdl-d-btn primary" onclick="_mdlDClose();clearTimeout(window._notifModalTimer);_drainPopupQueue()">OK</button>
     </div>
   `);
   Audio.play('event');
   clearTimeout(window._notifModalTimer);
-  window._notifModalTimer = setTimeout(closeNotifModal, 60000);
+  window._notifModalTimer = setTimeout(() => { _mdlDClose(); _drainPopupQueue(); }, 60000);
 }
 
 function closeNotifModal() {
-  _mdlDClose();
+  const _nmOverlay = document.getElementById('notifModalOverlay');
+  if (_nmOverlay) _nmOverlay.classList.remove('active');
   clearTimeout(window._notifModalTimer);
   _glimpseQueue.shift();
   if (_glimpseQueue.length > 0) {
@@ -9164,43 +9165,34 @@ function showPostMatchDialogues(dialogues) {
 
 function _renderNextMatchDialogue() {
   if (_matchDialogueQueue.length === 0) return;
-  if (!document.getElementById('mdlDOverlay')) { _matchDialogueQueue.shift(); return; }
+  const overlay = document.getElementById('notifModalOverlay');
+  const box = document.getElementById('notifModalBox');
+  if (!overlay || !box) { _matchDialogueQueue.shift(); return; }
   const d = _matchDialogueQueue[0];
 
   const rb = d.rivalryBonus || {};
   const rivalryColor = rb.color || '#e17055';
-  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
 
-  const box = document.getElementById('mdlDBox');
-  if (box) box.className = 'mdl-d-box';
-  _mdlDOpen(`
-    <div class="mdl-d-speaker">${d.matchLabel || ''} ${rb.emoji || '🔥'}${rb.label || '因縁'}</div>
-    <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:14px">
-      <div style="text-align:center">
-        <div class="mdl-d-face" style="background-image:url('${_fUrl(d.winnerId)}');width:68px;height:68px;margin:0 auto 4px"></div>
-        <div style="font-size:12px;font-weight:700;color:var(--gold)">${d.winnerName}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:24px">
-        <span style="font-size:24px;filter:drop-shadow(0 0 6px ${rivalryColor})">⚔️</span>
-      </div>
-      <div style="text-align:center">
-        <div class="mdl-d-face" style="background-image:url('${_fUrl(d.loserId)}');width:52px;height:52px;margin:0 auto 4px"></div>
-        <div style="margin-top:5px;font-size:11px;color:var(--lite-text-sub)">${d.loserName}</div>
-      </div>
+  box.className = 'notif-modal-box';
+  box.innerHTML = `
+    <div class="notif-modal-text" style="color:${rivalryColor}">${d.matchLabel || ''} ${rb.emoji || '🔥'}${rb.label || '因縁'}</div>
+    <div class="notif-modal-portraits">
+      <div class="notif-modal-face dual">${portraitImg(d.winnerId, 100)}</div>
+      <div class="notif-modal-face dual">${portraitImg(d.loserId, 100)}</div>
     </div>
-    <div class="mdl-d-detail">WINNER ・ ${d.winnerName}「${d.winLine}」</div>
-    <div class="mdl-d-detail warn">LOSER ・ ${d.loserName}「${d.loseLine}」</div>
-    <div class="mdl-d-actions">
-      <button class="mdl-d-btn primary" onclick="closeMatchDialogue()">OK</button>
-    </div>
-  `);
+    <div class="notif-modal-text">${d.winnerName}「${d.winLine}」</div>
+    <div class="notif-modal-detail">${d.loserName}「${d.loseLine}」</div>
+    <button class="notif-modal-btn" onclick="closeMatchDialogue()">OK</button>
+  `;
+  overlay.classList.add('active');
   Audio.play('event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeMatchDialogue, 60000);
 }
 
 function closeMatchDialogue() {
-  _mdlDClose();
+  const _nmOverlay = document.getElementById('notifModalOverlay');
+  if (_nmOverlay) _nmOverlay.classList.remove('active');
   clearTimeout(window._notifModalTimer);
   _matchDialogueQueue.shift();
   if (_matchDialogueQueue.length > 0) {
@@ -9248,82 +9240,80 @@ function _renderNextGlimpse() {
 }
 
 function _renderGlimpseA(glimpse) {
-  if (!document.getElementById('mdlDOverlay')) { _glimpseQueue.shift(); return; }
+  const overlay = document.getElementById('notifModalOverlay');
+  const box = document.getElementById('notifModalBox');
+  if (!overlay || !box) { _glimpseQueue.shift(); return; }
 
-  const toneBoxCls = glimpse.tone === 'gold' ? ' positive'
-    : glimpse.tone === 'warning' || glimpse.tone === 'danger' ? ' urgent' : '';
+  const toneCls = glimpse.tone === 'gold' ? ' notif-gold'
+    : glimpse.tone === 'warning' || glimpse.tone === 'danger' ? ' notif-warning' : '';
+  box.className = `notif-modal-box${toneCls}`;
 
-  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
-  let headerHtml = '';
+  let portraitsHtml = '';
+  let labelHtml = '';
   if (glimpse.targetId) {
     const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
     const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
-    headerHtml = `
-      <div style="display:flex;gap:10px;align-items:flex-end;justify-content:center;margin-bottom:10px">
-        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}');width:72px;height:72px;margin:0"></div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:18px">
-          <span style="font-size:26px;filter:drop-shadow(0 0 6px ${axisColor})">${axisIcon}</span>
-          <span style="font-size:18px;font-weight:900;color:${axisColor}">→</span>
-        </div>
-        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.targetId)}');width:52px;height:52px;margin:0"></div>
-      </div>
-      <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:6px">
-        <span style="font-size:14px;font-weight:700;color:var(--lite-text-main)">${glimpse.speakerName}</span>
-        <span style="font-size:12px;color:${axisColor};font-weight:700">→</span>
-        <span style="font-size:12px;color:var(--lite-text-sub)">${glimpse.targetName}</span>
-      </div>
-      <div class="mdl-d-speaker">${glimpse.label}</div>`;
+    portraitsHtml = `
+      <div class="notif-modal-portraits" style="align-items:flex-end">
+        <div class="notif-modal-face dual">${portraitImg(glimpse.speakerId, 100)}</div>
+        <span style="font-size:24px;padding-bottom:10px;filter:drop-shadow(0 0 5px ${axisColor})">${axisIcon}</span>
+        <div class="notif-modal-face dual">${portraitImg(glimpse.targetId, 100)}</div>
+      </div>`;
+    labelHtml = `<div class="notif-modal-text" style="color:${axisColor}">${glimpse.speakerName} → ${glimpse.targetName}</div>
+      <div class="notif-modal-detail">${glimpse.label}</div>`;
   } else {
-    headerHtml = `
-      <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}')"></div>
-      <div class="mdl-d-speaker">${glimpse.speakerName} ・ ${glimpse.label}</div>`;
+    portraitsHtml = `
+      <div class="notif-modal-portraits">
+        <div class="notif-modal-face">${portraitImg(glimpse.speakerId, 120)}</div>
+      </div>`;
+    labelHtml = `<div class="notif-modal-text">${glimpse.speakerName} ・ ${glimpse.label}</div>`;
   }
 
-  const box = document.getElementById('mdlDBox');
-  if (box) box.className = `mdl-d-box${toneBoxCls}`;
-  _mdlDOpen(`
-    ${headerHtml}
-    <div class="mdl-d-body italic">${glimpse.dialogue}</div>
-    <div class="mdl-d-actions">
-      <button class="mdl-d-btn primary" onclick="closeNotifModal()">見届ける</button>
-    </div>
-  `);
+  box.innerHTML = `
+    ${portraitsHtml}
+    ${labelHtml}
+    <div class="notif-modal-dialogue">${glimpse.dialogue}</div>
+    <button class="notif-modal-btn" onclick="closeNotifModal()">見届ける</button>
+  `;
+  overlay.classList.add('active');
   Audio.play(glimpse.tone === 'gold' ? 'award' : 'event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
 
 function _renderGlimpseB(glimpse) {
-  if (!document.getElementById('mdlDOverlay')) { _glimpseQueue.shift(); return; }
+  const overlay = document.getElementById('notifModalOverlay');
+  const box = document.getElementById('notifModalBox');
+  if (!overlay || !box) { _glimpseQueue.shift(); return; }
 
-  const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
+  box.className = 'notif-modal-box';
   let portraitsHtml = '';
+  let labelHtml = '';
   if (glimpse.targetId) {
     const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
     const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
     portraitsHtml = `
-      <div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;margin-bottom:8px">
-        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}');width:60px;height:60px;margin:0"></div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;padding-bottom:14px">
-          <span style="font-size:20px;filter:drop-shadow(0 0 4px ${axisColor})">${axisIcon}</span>
-          <span style="font-size:15px;font-weight:900;color:${axisColor}">→</span>
-        </div>
-        <div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.targetId)}');width:44px;height:44px;margin:0"></div>
+      <div class="notif-modal-portraits" style="align-items:flex-end">
+        <div class="notif-modal-face dual">${portraitImg(glimpse.speakerId, 100)}</div>
+        <span style="font-size:20px;padding-bottom:8px;filter:drop-shadow(0 0 4px ${axisColor})">${axisIcon}</span>
+        <div class="notif-modal-face dual">${portraitImg(glimpse.targetId, 100)}</div>
       </div>`;
+    labelHtml = `<div class="notif-modal-detail" style="color:${axisColor}">${glimpse.speakerName} → ${glimpse.targetName} ・ ${glimpse.label}</div>`;
   } else {
-    portraitsHtml = `<div class="mdl-d-face" style="background-image:url('${_fUrl(glimpse.speakerId)}')"></div>`;
+    portraitsHtml = `
+      <div class="notif-modal-portraits">
+        <div class="notif-modal-face">${portraitImg(glimpse.speakerId, 120)}</div>
+      </div>`;
+    labelHtml = `<div class="notif-modal-detail">${glimpse.speakerName} ・ ${glimpse.label}</div>`;
   }
 
-  const box = document.getElementById('mdlDBox');
-  if (box) box.className = 'mdl-d-box';
-  _mdlDOpen(`
+  box.innerHTML = `
     ${portraitsHtml}
-    <div class="mdl-d-speaker">${glimpse.speakerName} ・ ${glimpse.label}</div>
-    <div class="mdl-d-body italic">${glimpse.dialogue}</div>
-    <div class="mdl-d-actions">
-      <button class="mdl-d-btn primary" onclick="closeNotifModal()">見届ける</button>
-    </div>
-  `);
+    ${labelHtml}
+    <div class="notif-modal-dialogue">${glimpse.dialogue}</div>
+    <button class="notif-modal-btn" onclick="closeNotifModal()">見届ける</button>
+  `;
+  overlay.classList.add('active');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
 }
