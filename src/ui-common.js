@@ -1752,10 +1752,12 @@ function _renderRivalryPopup() {
     if (_rivalryPopupCallback) { const cb = _rivalryPopupCallback; _rivalryPopupCallback = null; cb(); }
     return;
   }
+  const overlay = document.getElementById('notifModalOverlay');
+  const box = document.getElementById('notifModalBox');
+  if (!overlay || !box) { _rivalryPopupQueue.shift(); return; }
   const o = _rivalryPopupQueue[0];
 
   if (o.phase === 'confrontation') {
-    // 宣戦布告
     const rivalryVal = o.rivalry || 0;
     const leftFighter = ALL_CHARS.find(c => c.id === o.leftId);
     const rightFighter = ALL_CHARS.find(c => c.id === o.rightId);
@@ -1778,29 +1780,24 @@ function _renderRivalryPopup() {
     const title = rivalryVal >= 70 ? '因 縁 勃 発' : '宿 敵 対 決';
     const sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
 
-    const html = `
-      ${_mdlBTitleBand(title, 'rival', sub)}
-      <div class="mdl-b-dual-stage">
-        ${_mdlBCol(leftFighter || { name: o.leftName, id: o.leftId }, {
-          side: 'left',
-          speech: { speaker: o.leftName, text: leftLine, variant: 'rival' }
-        })}
-        <div class="mdl-b-vs-col">
-          <div class="mdl-b-silent-mark">— 決 裂 —<span>THE LINE IS DRAWN</span></div>
-        </div>
-        ${_mdlBCol(rightFighter || { name: o.rightName, id: o.rightId }, {
-          side: 'right',
-          speech: { speaker: o.rightName, text: rightLine, variant: 'rival' }
-        })}
+    box.className = 'notif-modal-box notif-warning';
+    box.innerHTML = `
+      <div class="notif-modal-text" style="letter-spacing:0.2em;font-size:17px">${title}</div>
+      <div class="notif-modal-detail" style="letter-spacing:0.1em;margin-bottom:12px">${sub}</div>
+      <div class="notif-modal-portraits" style="align-items:flex-end">
+        <div class="notif-modal-face dual">${portraitImg(o.leftId, 100)}</div>
+        <span style="font-size:22px;padding-bottom:10px;filter:drop-shadow(0 0 6px #e17055)">⚡</span>
+        <div class="notif-modal-face dual">${portraitImg(o.rightId, 100)}</div>
       </div>
-      ${_mdlBActions([{ label: '— 見 届 け る —', primary: true, id: 'mdlBRivalryClose' }])}
+      <div class="notif-modal-detail" style="margin-bottom:10px">${o.leftName} vs ${o.rightName}</div>
+      <div class="notif-modal-dialogue" style="margin-bottom:8px"><span style="font-size:12px;color:rgba(255,255,255,0.4)">${o.leftName}　</span>${leftLine}</div>
+      <div class="notif-modal-dialogue"><span style="font-size:12px;color:rgba(255,255,255,0.4)">${o.rightName}　</span>${rightLine}</div>
+      <button class="notif-modal-btn" id="mdlBRivalryClose">見届ける</button>
     `;
-
-    _mdlBOpen(html, 'rival');
-    setTimeout(() => Audio.play(o.isFate ? 'fate_confrontation' : 'rivalry_confrontation'), 350);
+    overlay.classList.add('active');
+    setTimeout(() => Audio.play(o.isFate ? 'fate_confrontation' : 'rivalry_confrontation'), 200);
 
   } else {
-    // 決着
     const isGoodRival = o.resolutionType === 'goodRival';
     const isBitter = o.resolutionType === 'bitter';
     const winLineObj = isGoodRival ? GOODRIVAL_RESOLUTION_LINES.winner
@@ -1819,42 +1816,29 @@ function _renderRivalryPopup() {
     const sub = isBitter ? 'BITTER RIVALRY ・ FINAL'
       : isGoodRival ? 'GOOD RIVALS ・ MUTUAL RESPECT'
       : 'RIVALRY RESOLVED';
-    const speechVariant = isBitter ? 'rival' : (isGoodRival || o.isFate ? 'gold' : 'rival');
-    const titleCls = isGoodRival ? 'victory' : 'rival';
-    const overlayVariant = isGoodRival ? 'gold' : 'rival';
-
-    const bonusLine = `📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}`;
+    const bonusLine = `📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}`;
     const tagLine = isGoodRival ? '🤝 ふたりは「好敵手」になった'
-      : isBitter ? '💀 ふたりは「宿怨」になった'
-      : '';
+      : isBitter ? '💀 ふたりは「宿怨」になった' : '';
+    const toneCls = isGoodRival ? ' notif-gold' : (isBitter ? ' notif-warning' : ' notif-dramatic');
 
-    const html = `
-      ${_mdlBTitleBand(title, titleCls, sub)}
-      <div class="mdl-b-dual-stage">
-        ${_mdlBCol(winFighter || { name: o.winnerName, id: o.winnerId }, {
-          side: 'left',
-          speech: { speaker: o.winnerName, text: winLine, variant: speechVariant }
-        })}
-        <div class="mdl-b-vs-col">
-          <div class="mdl-b-silent-mark">— 決 着 —<span>SETTLED</span></div>
-        </div>
-        ${_mdlBCol(loseFighter || { name: o.loserName, id: o.loserId }, {
-          side: 'right',
-          speech: { speaker: o.loserName, text: loseLine, variant: speechVariant }
-        })}
+    box.className = `notif-modal-box${toneCls}`;
+    box.innerHTML = `
+      <div class="notif-modal-text" style="letter-spacing:0.2em;font-size:17px">${title}</div>
+      <div class="notif-modal-detail" style="letter-spacing:0.1em;margin-bottom:12px">${sub}</div>
+      <div class="notif-modal-portraits">
+        <div class="notif-modal-face dual">${portraitImg(o.winnerId, 100)}</div>
+        <div class="notif-modal-face dual">${portraitImg(o.loserId, 100)}</div>
       </div>
-      <div class="mdl-b-atmosphere" style="margin-bottom:12px">
-        ${bonusLine}
-        ${tagLine ? `<br><span style="color:var(--gold-light);font-size:14px;font-weight:700">${tagLine}</span>` : ''}
-      </div>
-      ${_mdlBActions([{ label: '— 見 届 け る —', primary: true, id: 'mdlBRivalryClose' }])}
+      <div class="notif-modal-dialogue" style="margin-bottom:8px"><span style="font-size:12px;color:rgba(255,255,255,0.4)">${o.winnerName}　</span>${winLine}</div>
+      <div class="notif-modal-dialogue"><span style="font-size:12px;color:rgba(255,255,255,0.4)">${o.loserName}　</span>${loseLine}</div>
+      <div class="notif-modal-detail" style="margin-top:12px">${bonusLine}</div>
+      ${tagLine ? `<div class="notif-modal-detail" style="color:var(--gold-light);font-weight:700;margin-top:4px">${tagLine}</div>` : ''}
+      <button class="notif-modal-btn" id="mdlBRivalryClose">見届ける</button>
     `;
-
-    _mdlBOpen(html, overlayVariant);
-    setTimeout(() => Audio.play((o.isFate || isGoodRival || isBitter) ? 'fate_resolution' : 'rivalry_resolution'), 300);
+    overlay.classList.add('active');
+    setTimeout(() => Audio.play((o.isFate || isGoodRival || isBitter) ? 'fate_resolution' : 'rivalry_resolution'), 200);
   }
 
-  // 閉じるボタンのハンドラ
   setTimeout(() => {
     const btn = document.getElementById('mdlBRivalryClose');
     if (btn) btn.addEventListener('click', closeRivalryPopup);
@@ -1862,10 +1846,8 @@ function _renderRivalryPopup() {
 }
 
 function closeRivalryPopup() {
-  _mdlBClose();
-  // 旧オーバーレイのactiveも念のため解除(互換)
-  const legacy = document.getElementById('rivalryPopupOverlay');
-  if (legacy) legacy.classList.remove('active');
+  const overlay = document.getElementById('notifModalOverlay');
+  if (overlay) overlay.classList.remove('active');
   _rivalryPopupQueue.shift();
   if (_rivalryPopupQueue.length > 0) {
     setTimeout(_renderRivalryPopup, 300);
