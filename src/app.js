@@ -7168,6 +7168,38 @@ const App = {
     });
   },
 
+  // D層: メインイベント2名 + ロスターpop最大のベテラン代表を選出
+  _resolveSpotlightFighters(G) {
+    const mainCard = G.showCard?.[0];
+    if (!mainCard) return [];
+    const mainLeftId = mainCard.left;
+    const mainRightId = mainCard.right;
+    const mainLeft = G.fighters.find(f => f.id === mainLeftId);
+    const mainRight = G.fighters.find(f => f.id === mainRightId);
+    const veteran = G.fighters
+      .filter(f => f.id !== mainLeftId && f.id !== mainRightId
+        && f.status !== 'retired' && f.contractOrg === G.orgName)
+      .sort((a, b) => (b.pop || 0) - (a.pop || 0))[0];
+    return [
+      mainLeft  ? { fighter: mainLeft,  roleLabel: 'MAIN EVENT ・ 赤コーナー' } : null,
+      mainRight ? { fighter: mainRight, roleLabel: 'MAIN EVENT ・ 青コーナー' } : null,
+      veteran   ? { fighter: veteran,   roleLabel: 'VETERAN ・ ロッカールーム代表' } : null
+    ].filter(Boolean);
+  },
+
+  // D層: personality×archetypeからドームセリフを決定論的に選出（RNGシード利用）
+  resolveDomeLine(fighter, dialogueKey) {
+    const dict = dialogueKey === 'dome_firstshow' ? DOME_FIRSTSHOW_LINES : DOME_SELLOUT_LINES;
+    const p = fighter.personality || 'normal';
+    const a = fighter.archetype || 'normal';
+    const personaDict = dict[p] || dict['normal'];
+    const archetypeKey = (a === 'normal') ? '_default' : a;
+    const lines = personaDict?.[archetypeKey] || personaDict?.['_default'] || dict['normal']['_default'];
+    const seed = Engine.rng.derive(G.rngSeed, G.season, G.week, 0xD03E, fighter.id);
+    const idx = Math.floor(Engine.rng.create(seed)() * lines.length);
+    return lines[idx];
+  },
+
   // v1.5s25b: マイルストーン選択肢の効果適用
   _applyMilestoneChoice(evt, choiceIdx) {
     const choice = evt.choices[choiceIdx];
