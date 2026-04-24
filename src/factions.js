@@ -391,6 +391,8 @@ Engine.factions = {
       if (soloFreeze) continue;  // v0.2: 単独派閥凍結時はスキップ
       const candidates = [...rosterIds].filter(id => !assigned.has(id));
       for (const candId of candidates) {
+        // 単独派閥はループ中も随時サイズ上限チェック
+        if (newFactions.length === 1 && f.memberIds.length >= cfg.soloFactionFreezeSize) break;
         if (f.memberIds.includes(candId)) continue;
         const avg = this._avgBond(s, candId, f.memberIds);
         if (avg < cfg.joinBondThreshold) continue;
