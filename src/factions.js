@@ -156,6 +156,53 @@ Engine.factions = {
   _isHostile(f) {
     return !!(f && (f.type === 'rivalrous' || f.inHostility === true));
   },
+  _getFactionFlavor(faction) {
+    return faction?.flavor || 'neutral';
+  },
+  _getFlavorJoinMult(faction) {
+    const flavor = this._getFactionFlavor(faction);
+    const joinMult = { bond_first: 1.15, meritocratic: 0.85, neutral: 1.0 };
+    return joinMult[flavor] || joinMult.neutral;
+  },
+  _scoreFactionFlavor(state, leader, members, rng) {
+    const sample = members.length > 0 ? members : [leader];
+    const leaderWeight = 0.65;
+    const memberWeight = 0.25;
+    const noiseWeight = 0.10;
+    const leaderOvr = Engine.util.ov(leader);
+    const avgOvr = sample.reduce((sum, fighter) => sum + Engine.util.ov(fighter), 0) / sample.length;
+    let bondPairCount = 0;
+    let bondPairSum = 0;
+    for (let i = 0; i < sample.length; i++) {
+      for (let j = i + 1; j < sample.length; j++) {
+        const a = sample[i].id;
+        const b = sample[j].id;
+        bondPairSum += this._getBond(state, a, b);
+        bondPairSum += this._getBond(state, b, a);
+        bondPairCount += 2;
+      }
+    }
+    const avgBond = bondPairCount > 0 ? (bondPairSum / bondPairCount) : 60;
+    const followerIds = members.filter(f => f.id !== leader.id).map(f => f.id);
+    const leaderBondScore = followerIds.length > 0 ? Math.max(0, Math.min(1, (this._avgBond(state, leader.id, followerIds) - 60) / 25)) : 0;
+    const groupBondScore = Math.max(0, Math.min(1, (avgBond - 60) / 25));
+    const leaderOvrScore = Math.max(0, Math.min(1, (leaderOvr - 68) / 18));
+    const groupOvrScore = Math.max(0, Math.min(1, (avgOvr - 68) / 18));
+    const noise = () => Engine.rng.float(rng) * noiseWeight;
+    return {
+      bond_first: leaderBondScore * leaderWeight + groupBondScore * memberWeight + noise(),
+      meritocratic: leaderOvrScore * leaderWeight + groupOvrScore * memberWeight + noise(),
+      neutral: noise() + 0.02,
+    };
+  },
+  _decideFactionFlavor(state, leaderId, memberIds, rng) {
+    const roster = state.roster || [];
+    const leader = roster.find(c => c.id === leaderId);
+    if (!leader) return 'neutral';
+    const members = [...new Set(memberIds)].map(id => roster.find(c => c.id === id)).filter(Boolean);
+    const scores = this._scoreFactionFlavor(state, leader, members, rng);
+    return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  },
 
 
   // ── 派閥生成 ──────────────────────────────────────────────
@@ -167,12 +214,22 @@ Engine.factions = {
     const existingIds = new Set((state.factions || []).map(f => f.id));
     let nextId = 1;
     while (existingIds.has(nextId)) nextId++;
+    const flavorRng = Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 1,
+      state.season || 1,
+      state.week || 1,
+      leaderId,
+      nextId,
+      0xFA7E
+    ));
+    const flavor = options.flavor || this._decideFactionFlavor(state, leaderId, memberIds, flavorRng);
 
     const faction = {
       id: nextId,
       name: `${leader.name}組`,
       leaderId,
       memberIds: [...new Set(memberIds)],
+      flavor,
       type,
       status: 'active', // 'active' | 'hiatus' | 'dissolved'
       authoritativeTag: !!options.authoritativeTag,
@@ -370,7 +427,7 @@ Engine.factions = {
     s.factions.forEach(f => f.memberIds.forEach(id => assigned.add(id)));
 
     // ── 加入判定（v0.3: 1週1人・最高bond候補のみ判定・連続式確率） ──
-    const newFactions = s.factions.map(f => ({ ...f, memberIds: [...f.memberIds] }));
+    const newFactions = s.factions.map(f => ({ ...f, flavor: this._getFactionFlavor(f), memberIds: [...f.memberIds] }));
 
     for (const f of newFactions) {
       // 単独派閥はサイズ上限で凍結
@@ -394,7 +451,8 @@ Engine.factions = {
       const momentumMult = Math.max(0.3, Math.min(2.0, 1 + (f.momentum || 0) * cfg.joinMomentumScale));
       const overDecay = Math.max(0, f.memberIds.length - cfg.joinSizeDecayStart);
       const sizeMult = Math.max(0, 1 - overDecay * cfg.joinSizeDecayRate);
-      const rate = Math.min(baseRate * momentumMult * sizeMult, 0.95);
+      const flavorJoinMult = this._getFlavorJoinMult(f);
+      const rate = Math.min(baseRate * momentumMult * sizeMult * flavorJoinMult, 0.95);
 
       if (Engine.rng.float(rng) < rate) {
         f.memberIds.push(bestCandId);

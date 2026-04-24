@@ -2168,6 +2168,9 @@ const Storage = {
         if (!G.factionEventCooldowns || typeof G.factionEventCooldowns !== 'object') G = { ...G, factionEventCooldowns: {} };
         G = { ...G, _migrated_factions_v1: true };
       }
+      if (Array.isArray(G.factions) && G.factions.some(f => !f.flavor)) {
+        G = { ...G, factions: G.factions.map(f => f.flavor ? f : { ...f, flavor: 'neutral' }) };
+      }
 
       // 派閥の重複所属を修復（Phase 3c セッションで発見された既存セーブのデータ破綻対応）
       if (!G._migrated_faction_dedupe_v1) {
