@@ -1747,6 +1747,42 @@ function _rivalryFallbackHtml(id) {
   return `<div class="rivalry-popup-upper-fallback">${_rivalryFaceInnerHtml(id)}</div>`;
 }
 
+function _rivalryCol(id, name, line, isWinner, opts) {
+  opts = opts || {};
+  const fighter = (typeof findFighter === 'function' ? findFighter(id) : null) || ALL_CHARS.find(c => c.id === id);
+  const ovr = (fighter && typeof Engine !== 'undefined' && Engine.util && Engine.util.ov) ? Engine.util.ov(fighter) : '—';
+  const upperUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
+  const colCls = isWinner ? 'vd-col-w' : 'vd-col-l';
+  const bubbleCls = isWinner ? 'vd-bubble-w' : 'vd-bubble-l';
+  const nameCls = isWinner ? 'vd-name-w' : 'vd-name-l';
+  const ovrCls = isWinner ? 'vd-ovr-w' : 'vd-ovr-l';
+  const badgeHtml = opts.hideBadge
+    ? ''
+    : (isWinner
+      ? '<span class="vd-badge-w">WINNER</span>'
+      : '<span class="vd-badge-l">LOSER</span>');
+  const imgHtml = upperUrl
+    ? `<img src="${upperUrl}" alt="">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;color:rgba(255,255,255,0.1)">👤</div>`;
+  return `
+    <div class="${colCls}">
+      <div class="${bubbleCls}">
+        <div class="vd-spk">${name}</div>
+        ${line}
+      </div>
+      <div class="vd-img-card">
+        <div class="vd-img-frame">${imgHtml}</div>
+        <div class="vd-nameband">
+          <div class="${nameCls}">${name}</div>
+          <div class="vd-meta">
+            <span class="${ovrCls}">OVR ${ovr}</span>
+            ${badgeHtml}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
 function _renderRivalryPopup() {
   if (_rivalryPopupQueue.length === 0) {
     if (_rivalryPopupCallback) { const cb = _rivalryPopupCallback; _rivalryPopupCallback = null; cb(); }
@@ -1756,6 +1792,8 @@ function _renderRivalryPopup() {
   const box = document.getElementById('notifModalBox');
   if (!overlay || !box) { _rivalryPopupQueue.shift(); return; }
   const o = _rivalryPopupQueue[0];
+
+  let title, sub, toneCls, leftHtml, rightHtml, vsIcon, vsLabel, resultHtml, audioKey;
 
   if (o.phase === 'confrontation') {
     const rivalryVal = o.rivalry || 0;
@@ -1777,25 +1815,15 @@ function _renderRivalryPopup() {
     }
     const leftLine = pickDialogueLine(attackerPool, leftFighter);
     const rightLine = pickDialogueLine(defenderPool, rightFighter);
-    const title = rivalryVal >= 70 ? '因 縁 勃 発' : '宿 敵 対 決';
-    const sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
-
-    box.className = 'notif-modal-box notif-warning';
-    box.innerHTML = `
-      <div class="notif-modal-text" style="letter-spacing:0.2em;font-size:17px">${title}</div>
-      <div class="notif-modal-detail" style="letter-spacing:0.1em;margin-bottom:12px">${sub}</div>
-      <div class="notif-modal-portraits" style="align-items:flex-end">
-        <div class="notif-modal-face dual">${portraitImg(o.leftId, 100)}</div>
-        <span style="font-size:22px;padding-bottom:10px;filter:drop-shadow(0 0 6px #e17055)">⚡</span>
-        <div class="notif-modal-face dual">${portraitImg(o.rightId, 100)}</div>
-      </div>
-      <div class="notif-modal-detail" style="margin-bottom:10px">${o.leftName} vs ${o.rightName}</div>
-      <div class="notif-modal-dialogue" style="margin-bottom:8px"><span style="font-size:12px;color:rgba(255,255,255,0.4)">${o.leftName}　</span>${leftLine}</div>
-      <div class="notif-modal-dialogue"><span style="font-size:12px;color:rgba(255,255,255,0.4)">${o.rightName}　</span>${rightLine}</div>
-      <button class="notif-modal-btn" id="mdlBRivalryClose">見届ける</button>
-    `;
-    overlay.classList.add('active');
-    setTimeout(() => Audio.play(o.isFate ? 'fate_confrontation' : 'rivalry_confrontation'), 200);
+    title = rivalryVal >= 70 ? '因 縁 勃 発' : '宿 敵 対 決';
+    sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
+    toneCls = 'tone-confront';
+    leftHtml = _rivalryCol(o.leftId, o.leftName, leftLine, true, { hideBadge: true });
+    rightHtml = _rivalryCol(o.rightId, o.rightName, rightLine, false, { hideBadge: true });
+    vsIcon = '⚡';
+    vsLabel = '勃 発';
+    resultHtml = `<div class="vd-tag">⚡ ふたりの間に火花が散った</div>`;
+    audioKey = o.isFate ? 'fate_confrontation' : 'rivalry_confrontation';
 
   } else {
     const isGoodRival = o.resolutionType === 'goodRival';
@@ -1810,34 +1838,49 @@ function _renderRivalryPopup() {
     const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
     const winLine = pickDialogueLine(winLineObj, winFighter);
     const loseLine = pickDialogueLine(loseLineObj, loseFighter);
-    const title = isBitter ? '宿 怨 決 着'
+    title = isBitter ? '宿 怨 決 着'
       : isGoodRival ? '好 敵 手 誕 生'
       : (o.isSecondResolution ? '最 終 決 着' : (o.isFate ? '宿命の相手 決着' : '宿 敵 決 着'));
-    const sub = isBitter ? 'BITTER RIVALRY ・ FINAL'
+    sub = isBitter ? 'BITTER RIVALRY ・ FINAL'
       : isGoodRival ? 'GOOD RIVALS ・ MUTUAL RESPECT'
-      : 'RIVALRY RESOLVED';
+      : (o.isFate ? 'FATED RIVALRY ・ RESOLVED' : 'RIVALRY RESOLVED');
+    toneCls = isGoodRival ? 'tone-goodrival'
+      : isBitter ? 'tone-bitter'
+      : (o.isFate || o.isSecondResolution) ? 'tone-fate' : '';
+    leftHtml = _rivalryCol(o.winnerId, o.winnerName, winLine, true);
+    rightHtml = _rivalryCol(o.loserId, o.loserName, loseLine, false);
+    vsIcon = '⚔';
+    vsLabel = '決 着';
     const bonusLine = `📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}`;
-    const tagLine = isGoodRival ? '🤝 ふたりは「好敵手」になった'
-      : isBitter ? '💀 ふたりは「宿怨」になった' : '';
-    const toneCls = isGoodRival ? ' notif-gold' : (isBitter ? ' notif-warning' : ' notif-dramatic');
-
-    box.className = `notif-modal-box${toneCls}`;
-    box.innerHTML = `
-      <div class="notif-modal-text" style="letter-spacing:0.2em;font-size:17px">${title}</div>
-      <div class="notif-modal-detail" style="letter-spacing:0.1em;margin-bottom:12px">${sub}</div>
-      <div class="notif-modal-portraits">
-        <div class="notif-modal-face dual">${portraitImg(o.winnerId, 100)}</div>
-        <div class="notif-modal-face dual">${portraitImg(o.loserId, 100)}</div>
-      </div>
-      <div class="notif-modal-dialogue" style="margin-bottom:8px"><span style="font-size:12px;color:rgba(255,255,255,0.4)">${o.winnerName}　</span>${winLine}</div>
-      <div class="notif-modal-dialogue"><span style="font-size:12px;color:rgba(255,255,255,0.4)">${o.loserName}　</span>${loseLine}</div>
-      <div class="notif-modal-detail" style="margin-top:12px">${bonusLine}</div>
-      ${tagLine ? `<div class="notif-modal-detail" style="color:var(--gold-light);font-weight:700;margin-top:4px">${tagLine}</div>` : ''}
-      <button class="notif-modal-btn" id="mdlBRivalryClose">見届ける</button>
-    `;
-    overlay.classList.add('active');
-    setTimeout(() => Audio.play((o.isFate || isGoodRival || isBitter) ? 'fate_resolution' : 'rivalry_resolution'), 200);
+    const tagText = isGoodRival ? '🤝 ふたりは「好敵手」になった'
+      : isBitter ? '💀 ふたりは「宿怨」になった'
+      : o.isFate ? '✨ 宿命の相手との決着がついた'
+      : '🔥 宿敵の決着';
+    resultHtml = `<div class="vd-tag">${tagText}</div><div class="vd-bonus">${bonusLine}</div>`;
+    audioKey = (o.isFate || isGoodRival || isBitter) ? 'fate_resolution' : 'rivalry_resolution';
   }
+
+  box.className = `notif-modal-box verdict${toneCls ? ' ' + toneCls : ''}`;
+  box.innerHTML = `
+    <div class="vd-head">
+      <div class="vd-title">${title}</div>
+      <div class="vd-sub">${sub}</div>
+    </div>
+    <div class="vd-stage">
+      ${leftHtml}
+      <div class="vd-vs">
+        <div class="vd-vs-line"></div>
+        <div class="vd-vs-icon">${vsIcon}</div>
+        <div class="vd-vs-label">${vsLabel}</div>
+        <div class="vd-vs-line"></div>
+      </div>
+      ${rightHtml}
+    </div>
+    <div class="vd-result">${resultHtml}</div>
+    <div class="vd-foot"><button class="vd-btn" id="mdlBRivalryClose">— 見 届 け る —</button></div>
+  `;
+  overlay.classList.add('active');
+  setTimeout(() => Audio.play(audioKey), 200);
 
   setTimeout(() => {
     const btn = document.getElementById('mdlBRivalryClose');
