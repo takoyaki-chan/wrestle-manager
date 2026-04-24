@@ -1071,7 +1071,7 @@ function showCeremonyEvent(evt, speakers, onContinue) {
   // Phase 2: speakers
   const speakerHtml = speakers.map(({ fighter, roleLabel }) => {
     const line = App.resolveDomeLine(fighter, evt.dialogueKey);
-    const portraitSrc = `../image/upper/${fighter.id}.webp`;
+    const portraitSrc = getUpperUrl(fighter.id);
     const isTriumph = evt.visualVariant === 'triumph' ? ' triumph-glow' : '';
     return `
       <div class="cerem-speaker">
