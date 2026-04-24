@@ -4,6 +4,11 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+function _fmtStat(v) {
+  if (typeof v !== 'number' || isNaN(v)) return v;
+  return +v.toFixed(2);
+}
+
 function escHtml(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
@@ -6664,7 +6669,7 @@ function showDecisionResultToast(displayData) {
     if (firstChange.text !== undefined) {
       msg += `: ${firstChange.label} ${firstChange.text}`;
     } else if (firstChange.before !== undefined && firstChange.after !== undefined) {
-      msg += `: ${firstChange.label} ${firstChange.before}→${firstChange.after}`;
+      msg += `: ${firstChange.label} ${_fmtStat(firstChange.before)}→${_fmtStat(firstChange.after)}`;
     }
   }
   showToast(msg);
@@ -6741,12 +6746,13 @@ function showDecisionResultModal(displayData) {
           <span style="color:var(--accent-positive);font-weight:700">${c.text}</span>
         </div>`;
       } else if (c.before !== undefined && c.after !== undefined) {
-        const diff = c.after - c.before;
+        const bef = _fmtStat(c.before), aft = _fmtStat(c.after);
+        const diff = _fmtStat(aft - bef);
         const color = diff >= 0 ? 'var(--accent-positive)' : 'var(--accent-negative)';
         const sign = diff >= 0 ? '+' : '';
         changesHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--cream-text-main)">
           <span style="color:var(--cream-text-sub)">${c.emoji || ''} ${c.label}</span>
-          <span style="color:${color};font-weight:700">${c.before} → ${c.after} (${sign}${diff})</span>
+          <span style="color:${color};font-weight:700">${bef} → ${aft} (${sign}${diff})</span>
         </div>`;
       }
     });
@@ -9406,9 +9412,10 @@ function _showCareReaction(fighter, text, changes = [], cost = 0, remainingFunds
       if (c.text !== undefined) {
         changesHtml += `<div class="care-modal-change"><span class="care-modal-change-label">${c.emoji || ''} ${c.label}</span><span class="care-modal-change-value care-modal-change-up">${c.text}</span></div>`;
       } else {
-        const diff = c.after - c.before;
+        const bef = _fmtStat(c.before), aft = _fmtStat(c.after);
+        const diff = aft - bef;
         const cls = diff >= 0 ? 'care-modal-change-up' : 'care-modal-change-down';
-        changesHtml += `<div class="care-modal-change"><span class="care-modal-change-label">${c.emoji || ''} ${c.label}</span><span class="care-modal-change-value ${cls}">${c.before} → ${c.after}</span></div>`;
+        changesHtml += `<div class="care-modal-change"><span class="care-modal-change-label">${c.emoji || ''} ${c.label}</span><span class="care-modal-change-value ${cls}">${bef} → ${aft}</span></div>`;
       }
     });
     changesHtml += '</div>';

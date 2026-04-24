@@ -13850,7 +13850,7 @@ Engine.shachoshitsu = {
         changes.push({ label: '信頼度', emoji: '🤝', text: Engine.trust.describeChange(_after.trust - _before.trust) });
       }
       if (_after.condition !== _before.condition) {
-        changes.push({ label: '状態', emoji: '💪', before: _before.condition, after: _after.condition });
+        changes.push({ label: '状態', emoji: '💪', before: Math.round(_before.condition), after: Math.round(_after.condition) });
       }
       if (docId === 'media') changes.push({ label: '団体露出', emoji: '📺', text: '団体の知名度が少し上がった' });
       if (docId === 'encourage') {
@@ -13878,7 +13878,7 @@ Engine.shachoshitsu = {
         });
         lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 5), 0, 100);
         changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
-        changes.push({ label: 'ロッカールーム', emoji: '🏠', before: _beforeMorale, after: lockerRoomMorale });
+        changes.push({ label: 'ロッカールーム', emoji: '🏠', before: Math.round(_beforeMorale), after: Math.round(lockerRoomMorale) });
         events.push(`🍻 慰労会を開催(チームの雰囲気が良くなった)`);
         reactionFighterId = null;
       } else if (docId === 'camp') {
