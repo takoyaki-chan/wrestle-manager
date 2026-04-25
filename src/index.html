@@ -7144,6 +7144,286 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   border: 1px solid var(--rank-1);
 }
 
+/* ════════════════════════════════════════════════════════════════
+   📰 新聞タブ v3.0 — newspaper-mockup-v8.html 準拠 (np- namespace)
+═══════════════════════════════════════════════════════════════════ */
+#screen-newspaper { padding: 24px 14px 80px; background-image: radial-gradient(circle at 50% 0%, rgba(154,112,32,0.08), transparent 50%); }
+.np-outer-tabs { max-width: 780px; margin: 0 auto 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.np-tab { background: rgba(0,0,0,0.35); color: #c8b878; border: 1px solid rgba(154,112,32,0.4); padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: 4px 4px 0 0; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+.np-tab.active { background: #9a7020; color: #fff; border-color: #9a7020; }
+.np-tab:hover:not(.active) { background: rgba(154,112,32,0.18); color: #f0d48b; }
+
+.np-paper { max-width: 780px; margin: 0 auto; background: linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%); border: 1px solid rgba(120,84,39,0.32); border-radius: 8px; box-shadow: 0 14px 56px rgba(0,0,0,0.55); overflow: hidden; color: #1f1710; font-family: 'Noto Sans JP', sans-serif;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(120,84,39,0.045), transparent 24%),
+    radial-gradient(circle at 88% 82%, rgba(120,84,39,0.04), transparent 28%),
+    linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);
+}
+.np-paper-header { background: linear-gradient(180deg, rgba(0,0,0,0.18), transparent 50%), linear-gradient(90deg,#8b1a1a,#c22020 50%,#8b1a1a); padding: 13px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double rgba(255,255,255,0.18); }
+.np-paper-header .logo { font-size: 22px; font-weight: 900; color: #fff; letter-spacing: 6px; font-family: 'Noto Serif JP', serif; text-shadow: 0 1px 0 rgba(0,0,0,0.3); }
+.np-paper-header .issue { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 1px; text-align: right; line-height: 1.4; }
+.np-paper-header .issue small { display: block; font-size: 10px; opacity: 0.85; }
+
+.np-archive-nav { background: rgba(120,84,39,0.04); padding: 6px 16px; display: flex; justify-content: center; align-items: center; gap: 10px; border-bottom: 1px solid rgba(120,84,39,0.15); }
+.np-archive-nav button { background: rgba(248,238,210,0.7); border: 1px solid rgba(120,84,39,0.3); color: #5b4b34; padding: 4px 12px; font-size: 11px; font-weight: 700; border-radius: 14px; cursor: pointer; font-family: inherit; }
+.np-archive-nav button:hover { background: #f5ecd7; }
+.np-archive-nav button.gold { background: #8b1a1a; color: #fff; border-color: #8b1a1a; }
+.np-archive-nav .label { font-size: 11px; color: #5b4b34; min-width: 110px; text-align: center; font-weight: 700; }
+
+.np-content { padding: 18px 26px 22px; }
+.np-sec { display: inline-block; width: fit-content; justify-self: start; background: #8b1a1a; color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 4px; padding: 3px 12px; margin-bottom: 10px; }
+.np-sec-gold { display: inline-block; width: fit-content; justify-self: start; background: linear-gradient(135deg, #b08530, #9a7020); color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 4px; padding: 3px 12px; margin-bottom: 10px; }
+
+/* ── 1面: 興行 ── */
+.np-news-lead { border-left: 4px solid #8b1a1a; padding: 6px 0 6px 14px; margin: 0 0 16px; font-size: 12px; line-height: 1.8; color: #4a3825; font-family: 'Noto Serif JP', serif; }
+.np-top-story { display: grid; grid-template-columns: 200px 1fr; gap: 18px; padding: 0 0 18px; border-bottom: 3px double rgba(120,84,39,0.35); margin-bottom: 16px; }
+.np-top-photo { position: relative; width: 200px; height: 240px; border-radius: 4px; border: 4px solid #d4b87a; outline: 1px solid rgba(120,84,39,0.4); overflow: hidden; background-size: cover; background-position: center top; background-repeat: no-repeat; background-color: #2a1a10; box-shadow: 0 4px 14px rgba(0,0,0,0.35); }
+.np-top-photo .stamp { position: absolute; top: 8px; right: 8px; background: #8b1a1a; color: #fff; font-size: 8px; font-weight: 900; padding: 2px 6px; letter-spacing: 1px; border-radius: 2px; transform: rotate(3deg); }
+.np-top-photo .caption { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.85)); color: #fff; font-size: 9px; padding: 14px 8px 6px; line-height: 1.4; }
+.np-top-photo .caption strong { font-size: 11px; font-family: 'Noto Serif JP', serif; display: block; margin-bottom: 1px; }
+.np-top-body { display: grid; align-content: start; gap: 8px; }
+.np-top-headline { font-size: 24px; line-height: 1.18; font-weight: 900; font-family: 'Noto Serif JP', serif; letter-spacing: -0.01em; color: #1a0d04; }
+.np-top-sub { font-size: 12px; font-weight: 700; color: #8b1a1a; border-top: 1px solid rgba(120,84,39,0.35); border-bottom: 1px solid rgba(120,84,39,0.35); padding: 4px 0; letter-spacing: 0.5px; }
+.np-top-text { font-size: 13px; line-height: 1.85; color: #2a2014; text-align: justify; }
+.np-top-text p { text-indent: 1em; margin-bottom: 6px; }
+
+.np-show-result { padding: 16px 0; border-bottom: 1px solid rgba(120,84,39,0.25); margin-bottom: 14px; }
+.np-show-headline { font-size: 19px; font-weight: 900; font-family: 'Noto Serif JP', serif; margin-bottom: 12px; color: #1a0d04; line-height: 1.3; }
+.np-versus-grid { display: grid; grid-template-columns: 1fr 90px 1fr; gap: 14px; align-items: center; margin-bottom: 12px; }
+.np-fc { text-align: center; padding: 10px; background: rgba(120,84,39,0.08); border-radius: 8px; border: 1px solid rgba(120,84,39,0.2); }
+.np-fc.win { background: linear-gradient(180deg, rgba(212,184,122,0.45), rgba(154,112,32,0.18)); border-color: rgba(154,112,32,0.6); box-shadow: inset 0 0 0 1px rgba(212,184,122,0.7), 0 0 12px rgba(212,184,122,0.3); }
+.np-fphoto { width: 130px; height: 130px; border-radius: 10px; margin: 0 auto 8px; background-size: cover; background-position: center top; background-repeat: no-repeat; background-color: #2a1a10; border: 3px solid rgba(255,255,255,0.45); box-shadow: 0 3px 10px rgba(0,0,0,0.25); position: relative; cursor: pointer; }
+.np-fc.win .np-fphoto::after { content: 'WIN'; position: absolute; top: -8px; right: -8px; background: #d4a82a; color: #1a0d04; font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 1px; padding: 2px 8px; border-radius: 2px; transform: rotate(8deg); box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+.np-fname { font-size: 15px; font-weight: 900; color: #1f1710; }
+.np-frole { font-size: 10px; color: #6a5e4c; margin-top: 3px; letter-spacing: 1px; }
+.np-vs-block { display: grid; place-items: center; text-align: center; }
+.np-vs-text { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: #8b1a1a; line-height: 1; }
+.np-vs-finish { font-size: 9px; color: #6a5e4c; margin-top: 4px; letter-spacing: 1px; }
+.np-result-line { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; padding: 8px 14px; background: linear-gradient(90deg, #2a1a10, #1f1208 50%, #2a1a10); color: #f0d48b; border-radius: 4px; font-size: 12px; font-weight: 700; margin-bottom: 10px; align-items: center; }
+.np-result-line .duration { text-align: right; color: #c8b878; font-size: 11px; }
+.np-result-line .mq-block { display: flex; align-items: baseline; gap: 4px; justify-content: center; }
+.np-result-line .mq-block label { font-size: 9px; color: #c8b878; letter-spacing: 1px; }
+.np-result-line .mq-block strong { color: #f0d48b; font-size: 22px; font-family: 'Bebas Neue', sans-serif; line-height: 1; }
+.np-show-article { font-size: 13px; line-height: 1.95; color: #2a2014; text-indent: 1em; text-align: justify; padding: 4px 4px 0; }
+.np-rating { margin: 12px 0 8px; padding: 12px 16px; background: radial-gradient(circle at 50% 0%, rgba(212,184,122,0.3), transparent 65%), linear-gradient(180deg, rgba(212,184,122,0.2), rgba(212,184,122,0.06)); border: 1px solid rgba(154,112,32,0.4); border-radius: 8px; text-align: center; }
+.np-rating-stars { font-size: 26px; color: #d4a82a; letter-spacing: 6px; text-shadow: 0 1px 0 rgba(154,112,32,0.5); }
+.np-rating-headline { font-size: 12px; color: #5b4b34; margin-top: 3px; letter-spacing: 1px; font-weight: 700; }
+.np-rating-comment { font-size: 12px; color: #2a2014; margin-top: 8px; line-height: 1.6; font-family: 'Noto Serif JP', serif; }
+
+.np-digest { margin-top: 14px; }
+.np-digest-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
+.np-digest-table th, .np-digest-table td { padding: 7px 6px; border-bottom: 1px solid rgba(120,84,39,0.2); text-align: left; }
+.np-digest-table th { font-size: 10px; color: #6a5e4c; font-weight: 800; letter-spacing: 1.5px; background: rgba(120,84,39,0.06); border-bottom: 2px solid rgba(120,84,39,0.4); }
+.np-digest-table td.num { color: #6a5e4c; font-weight: 700; width: 30px; }
+.np-digest-table td.tag { width: 70px; }
+.np-digest-table .badge-title { background: rgba(154,112,32,0.2); color: #6a4a10; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 2px; border: 1px solid rgba(154,112,32,0.4); letter-spacing: 1px; }
+.np-digest-table .badge-upset { background: rgba(139,26,26,0.18); color: #8b1a1a; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 2px; border: 1px solid rgba(139,26,26,0.4); letter-spacing: 1px; }
+.np-digest-card { display: flex; align-items: center; gap: 6px; }
+.np-digest-thumb { width: 36px; height: 36px; border-radius: 4px; background-size: cover; background-position: center top; background-color: #2a1a10; border: 1px solid rgba(120,84,39,0.4); flex-shrink: 0; cursor: pointer; }
+.np-digest-name { font-size: 11.5px; font-weight: 700; color: #1a0d04; }
+.np-digest-name.lose { color: #5b4b34; font-weight: 600; }
+.np-digest-vs { font-size: 9px; color: #8b1a1a; font-weight: 800; padding: 0 3px; }
+.np-digest-mq { font-weight: 900; font-family: 'Bebas Neue', sans-serif; font-size: 16px; width: 50px; text-align: right; }
+.np-digest-mq.high { color: #1a7a30; }
+.np-digest-mq.mid { color: #6a4a10; }
+.np-digest-mq.low { color: #8b1a1a; }
+.np-digest-comment { font-size: 10.5px; color: #5b4b34; line-height: 1.5; }
+
+.np-sub-stories { margin-top: 16px; padding-top: 14px; border-top: 3px double rgba(120,84,39,0.35); }
+.np-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.np-sub { display: flex; gap: 10px; padding-bottom: 12px; border-bottom: 1px dashed rgba(120,84,39,0.25); }
+.np-sub-photo { width: 56px; height: 56px; border-radius: 6px; flex-shrink: 0; background-size: cover; background-position: center top; background-color: #2a1a10; border: 2px solid rgba(120,84,39,0.4); box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
+.np-sub-headline { font-size: 13px; font-weight: 800; line-height: 1.35; margin-bottom: 4px; color: #1a0d04; font-family: 'Noto Serif JP', serif; }
+.np-sub-text { font-size: 11px; line-height: 1.6; color: #4a3825; }
+
+.np-kuroda { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding: 10px 12px; background: linear-gradient(180deg, rgba(200,190,170,0.45), rgba(200,190,170,0.2)); border-left: 3px solid #5b4b34; border-radius: 0 4px 4px 0; }
+.np-kuroda-face { width: 40px; height: 40px; border-radius: 50%; background-size: cover; background-position: center; border: 2px solid rgba(139,26,26,0.5); flex-shrink: 0; box-shadow: 0 0 8px rgba(139,26,26,0.25); }
+.np-kuroda-face.sm { width: 28px; height: 28px; }
+.np-kuroda-text { font-size: 12px; line-height: 1.7; color: #2a2014; font-family: 'Noto Serif JP', serif; }
+.np-kuroda-byline { font-size: 10px; color: #7a5b32; margin-top: 3px; }
+
+.np-preview { margin-top: 16px; padding: 12px 14px; background: radial-gradient(circle at 100% 0%, rgba(154,112,32,0.1), transparent 60%), rgba(120,84,39,0.07); border-radius: 6px; border: 1px dashed rgba(120,84,39,0.45); }
+.np-preview-text { font-size: 12px; line-height: 1.8; color: #3a2e1c; margin-top: 6px; font-family: 'Noto Serif JP', serif; }
+.np-preview-text strong { color: #8b1a1a; }
+
+/* ── 2面: 団体比較 ── */
+.np-cmp-select { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: rgba(120,84,39,0.08); border-radius: 6px; border: 1px solid rgba(120,84,39,0.18); margin-bottom: 14px; }
+.np-cmp-select label { font-size: 10px; color: #6a5e4c; letter-spacing: 2px; font-weight: 800; }
+.np-cmp-select select { padding: 5px 10px; font-size: 12px; background: #f5ecd7; border: 1px solid rgba(120,84,39,0.4); border-radius: 3px; color: #1f1710; flex: 1; font-family: inherit; font-weight: 700; }
+.np-headline-section { display: grid; grid-template-columns: 44px 1fr 92px; gap: 12px; align-items: center; padding: 12px 14px; background: radial-gradient(circle at 100% 50%, rgba(212,184,122,0.25), transparent 65%), linear-gradient(135deg, rgba(212,184,122,0.18), rgba(212,184,122,0.05)); border: 1px solid rgba(154,112,32,0.35); border-radius: 6px; margin-bottom: 14px; }
+.np-headline-quote { font-size: 14px; font-weight: 700; line-height: 1.5; color: #1f1710; font-family: 'Noto Serif JP', serif; }
+.np-headline-byline { font-size: 10px; color: #7a5b32; margin-top: 3px; }
+.np-headline-grade { text-align: center; padding: 6px 10px; border-left: 2px solid rgba(154,112,32,0.45); border-right: 2px solid rgba(154,112,32,0.45); }
+.np-headline-grade .lbl { font-size: 9px; color: #6a5e4c; letter-spacing: 2px; }
+.np-headline-grade .val { font-family: 'Bebas Neue', sans-serif; font-size: 36px; line-height: 1; color: #8b1a1a; letter-spacing: -1px; }
+.np-headline-grade .desc { font-size: 9px; color: #6a5e4c; margin-top: 1px; }
+
+.np-org-summary { display: grid; grid-template-columns: 1fr 50px 1fr; gap: 8px; align-items: stretch; margin-bottom: 14px; }
+.np-org-card { padding: 10px 12px; border-radius: 8px; background: rgba(120,84,39,0.06); border: 1px solid rgba(120,84,39,0.22); display: grid; gap: 6px; }
+.np-org-card.player { background: linear-gradient(180deg, rgba(154,112,32,0.14), rgba(154,112,32,0.02)); border-color: rgba(154,112,32,0.45); }
+.np-org-card.rival { background: linear-gradient(180deg, rgba(139,26,26,0.13), rgba(139,26,26,0.02)); border-color: rgba(139,26,26,0.4); }
+.np-org-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.np-org-name { font-size: 18px; font-weight: 900; font-family: 'Noto Serif JP', serif; line-height: 1.15; color: #1a0d04; }
+.np-org-sub { font-size: 10px; color: #6a5e4c; margin-top: 2px; }
+.np-org-tier { font-size: 9px; font-weight: 800; letter-spacing: 2px; padding: 3px 8px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; }
+.np-org-card.player .np-org-tier { background: rgba(154,112,32,0.22); color: #6a4a10; border: 1px solid rgba(154,112,32,0.4); }
+.np-org-card.rival .np-org-tier { background: rgba(139,26,26,0.18); color: #8b1a1a; border: 1px solid rgba(139,26,26,0.4); }
+.np-org-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.np-org-tag { font-size: 9px; padding: 2px 6px; background: rgba(120,84,39,0.1); border: 1px solid rgba(120,84,39,0.2); color: #4a3825; border-radius: 2px; }
+.np-org-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: 11px; padding: 6px 0; border-top: 1px solid rgba(120,84,39,0.2); border-bottom: 1px solid rgba(120,84,39,0.2); }
+.np-org-stats .stat-item { display: flex; justify-content: space-between; align-items: baseline; }
+.np-org-stats label { color: #6a5e4c; font-size: 10px; letter-spacing: 1px; }
+.np-org-stats strong { font-family: 'Bebas Neue', sans-serif; color: #1f1710; font-size: 15px; line-height: 1; }
+.np-org-champ { font-size: 10px; color: #6a5e4c; }
+.np-org-champ strong { font-size: 11px; font-weight: 700; color: #1f1710; margin-left: 2px; }
+.np-versus-mark { display: grid; place-items: center; font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #8b1a1a; background: radial-gradient(circle, rgba(154,112,32,0.15), transparent 70%); letter-spacing: 1px; }
+
+.np-ace-confront { position: relative; margin-bottom: 12px; border-radius: 10px; overflow: hidden; background: linear-gradient(180deg, #1a0d04 0%, #2a1a10 100%); padding: 14px 16px 12px; border: 1px solid rgba(154,112,32,0.4); box-shadow: inset 0 0 30px rgba(0,0,0,0.6); }
+.np-ace-confront::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 25% 60%, rgba(80,140,255,0.15), transparent 45%), radial-gradient(circle at 75% 60%, rgba(255,80,120,0.15), transparent 45%); pointer-events: none; }
+.np-ace-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; position: relative; }
+.np-ace-top .role-chip { background: #d4a82a; color: #1a0d04; font-size: 10px; font-weight: 900; letter-spacing: 3px; padding: 3px 10px; border-radius: 2px; }
+.np-ace-top .edge { font-size: 11px; font-weight: 800; letter-spacing: 1px; }
+.np-ace-top .edge.player { color: #d4a82a; }
+.np-ace-top .edge.rival { color: #ff8090; }
+.np-ace-top .edge.even { color: #c8b878; }
+.np-ace-arena { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 8px; align-items: end; position: relative; }
+.np-stand-wrap { height: 280px; border-radius: 6px; overflow: hidden; background-color: #2a1a10; border: 2px solid #d4b87a; box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
+.np-stand-img { width: 100%; height: 100%; background-size: cover; background-position: center top; background-repeat: no-repeat; }
+.np-stand-img.flip { transform: scaleX(-1); }
+.np-ace-vs-center { display: grid; align-content: center; justify-items: center; gap: 6px; position: relative; }
+.np-ace-vs-text { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: #f0d48b; line-height: 1; text-shadow: 0 0 12px rgba(212,184,122,0.6), 0 2px 4px rgba(0,0,0,0.6); }
+.np-ace-vs-metrics { font-size: 10px; color: #c8b878; text-align: center; letter-spacing: 0.5px; line-height: 1.5; }
+.np-ace-name-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; align-items: center; }
+.np-ace-side { background: rgba(0,0,0,0.5); padding: 6px 10px; border-radius: 4px; color: #fff; text-align: center; }
+.np-ace-side .org { font-size: 10px; color: #c8b878; letter-spacing: 1px; }
+.np-ace-side .name { font-size: 16px; font-weight: 900; font-family: 'Noto Serif JP', serif; }
+.np-ace-side .ovr-line { font-size: 10px; color: #d4b87a; margin-top: 2px; }
+.np-ace-side .ovr-line strong { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: #f0d48b; margin-left: 2px; }
+.np-ace-flavor { margin-top: 10px; font-size: 12px; line-height: 1.7; color: #f0d48b; text-align: justify; font-family: 'Noto Serif JP', serif; background: rgba(0,0,0,0.35); padding: 8px 12px; border-radius: 4px; border-left: 2px solid #d4a82a; }
+
+.np-matchup-list { display: grid; gap: 7px; margin-bottom: 14px; }
+.np-matchup-row { display: grid; grid-template-columns: 1fr 110px 1fr; gap: 10px; padding: 9px 12px; background: rgba(120,84,39,0.05); border: 1px solid rgba(120,84,39,0.2); border-radius: 6px; align-items: center; }
+.np-matchup-fighter { display: flex; gap: 10px; align-items: center; }
+.np-matchup-fighter.right { flex-direction: row-reverse; text-align: right; }
+.np-matchup-photo { width: 50px; height: 50px; border-radius: 6px; flex-shrink: 0; background-size: cover; background-position: center top; background-color: #2a1a10; border: 2px solid rgba(80,140,255,0.5); box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
+.np-matchup-photo.right { border-color: rgba(255,80,120,0.5); }
+.np-matchup-name { font-size: 13px; font-weight: 800; line-height: 1.2; color: #1a0d04; }
+.np-matchup-ovr { font-size: 11px; color: #6a5e4c; margin-top: 2px; }
+.np-matchup-ovr strong { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: #1f1710; margin-left: 2px; }
+.np-matchup-vs { text-align: center; }
+.np-matchup-vs .role { display: block; font-weight: 900; color: #8b1a1a; font-size: 11px; letter-spacing: 1px; }
+.np-matchup-vs .verdict { display: inline-block; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; margin-top: 4px; }
+.np-matchup-vs .verdict.player { background: rgba(154,112,32,0.2); color: #6a4a10; }
+.np-matchup-vs .verdict.rival { background: rgba(139,26,26,0.18); color: #8b1a1a; }
+.np-matchup-vs .verdict.even { background: rgba(120,84,39,0.12); color: #5b4b34; }
+
+.np-power-section { padding: 12px 14px; background: rgba(120,84,39,0.05); border-radius: 6px; border: 1px solid rgba(120,84,39,0.18); margin-bottom: 14px; }
+.np-power-section .heading { font-size: 11px; font-weight: 900; color: #5b4b34; letter-spacing: 2px; margin-bottom: 8px; }
+.np-power-row { display: grid; grid-template-columns: 70px 1fr 40px; gap: 10px; align-items: center; margin-bottom: 7px; }
+.np-power-row:last-child { margin-bottom: 0; }
+.np-power-label { font-size: 11px; font-weight: 800; color: #4a3825; text-align: right; letter-spacing: 0.5px; }
+.np-power-bar-wrap { position: relative; height: 16px; background: rgba(120,84,39,0.12); border-radius: 3px; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; }
+.np-power-bar-wrap .center-line { position: absolute; left: 50%; top: -1px; bottom: -1px; width: 1px; background: rgba(120,84,39,0.5); z-index: 2; }
+.np-power-bar-wrap .player-side { justify-self: end; height: 100%; background: #9a7020; }
+.np-power-bar-wrap .rival-side { justify-self: start; height: 100%; background: #8b1a1a; }
+.np-power-diff { font-size: 12px; font-weight: 900; font-family: 'Bebas Neue', sans-serif; text-align: center; letter-spacing: 1px; }
+.np-power-diff.player { color: #6a4a10; }
+.np-power-diff.rival { color: #8b1a1a; }
+
+.np-editorial { margin-bottom: 12px; padding: 12px 14px; background: linear-gradient(180deg, rgba(200,190,170,0.45), rgba(200,190,170,0.2)); border-left: 3px solid #5b4b34; border-radius: 0 4px 4px 0; }
+.np-editorial-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+.np-editorial-text { font-size: 12.5px; line-height: 1.85; color: #2a2014; font-family: 'Noto Serif JP', serif; text-align: justify; }
+.np-editorial-byline { font-size: 10px; color: #7a5b32; margin-top: 5px; text-align: right; }
+
+.np-spotlight-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.np-spotlight { padding: 10px; background: radial-gradient(circle at 0% 100%, rgba(154,112,32,0.12), transparent 55%), rgba(120,84,39,0.05); border: 1px solid rgba(154,112,32,0.3); border-radius: 6px; display: grid; gap: 6px; }
+.np-spotlight-head { display: flex; gap: 8px; align-items: center; }
+.np-spotlight-photo { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; background-size: cover; background-position: center top; background-color: #2a1a10; border: 2px solid rgba(139,26,26,0.5); box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
+.np-spotlight-name { font-size: 12px; font-weight: 800; line-height: 1.2; color: #1a0d04; }
+.np-spotlight-meta { font-size: 10px; color: #6a5e4c; margin-top: 2px; }
+.np-spotlight-meta strong { font-family: 'Bebas Neue', sans-serif; font-size: 12px; color: #1f1710; }
+.np-spotlight-tag { font-size: 9px; font-weight: 800; letter-spacing: 1px; padding: 2px 7px; border-radius: 2px; display: inline-block; }
+.np-spotlight-tag.ace { background: #8b1a1a; color: #fff; }
+.np-spotlight-tag.star { background: #6a4a10; color: #fff; }
+.np-spotlight-tag.threat { background: #1a4a30; color: #fff; }
+
+/* ── 3面: 因縁列伝 ── */
+.np-rivalry-headline { text-align: center; padding: 4px 0 12px; border-bottom: 3px double rgba(120,84,39,0.4); margin-bottom: 14px; }
+.np-rivalry-headline .pre { display: inline-block; font-size: 10px; letter-spacing: 4px; color: #8b1a1a; font-weight: 800; border: 1px solid #8b1a1a; padding: 2px 10px; margin-bottom: 8px; }
+.np-rivalry-headline .title { font-size: 26px; font-weight: 900; font-family: 'Noto Serif JP', serif; color: #1a0d04; line-height: 1.25; letter-spacing: -0.01em; }
+.np-rivalry-headline .sub { font-size: 12px; color: #5b4b34; margin-top: 6px; font-family: 'Noto Serif JP', serif; }
+
+.np-rivalry-main { margin-bottom: 16px; background: linear-gradient(180deg, #1a0d04 0%, #2a1a10 100%); border-radius: 10px; overflow: hidden; border: 1px solid rgba(154,112,32,0.4); box-shadow: inset 0 0 30px rgba(0,0,0,0.6); }
+.np-rivalry-main-photos { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 8px; align-items: end; padding: 14px 16px 0; }
+.np-rivalry-stand { height: 320px; border-radius: 6px; overflow: hidden; background-color: #2a1a10; border: 2px solid #d4b87a; box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
+.np-rivalry-stand .img { width: 100%; height: 100%; background-size: contain; background-position: center bottom; background-repeat: no-repeat; }
+.np-rivalry-stand .img.flip { transform: scaleX(-1); }
+.np-rivalry-vs { display: grid; align-content: center; justify-items: center; gap: 4px; }
+.np-rivalry-vs .vs { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: #f0d48b; line-height: 1; text-shadow: 0 0 12px rgba(212,184,122,0.6); }
+.np-rivalry-vs .h2h { background: #8b1a1a; color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 1px; padding: 3px 10px; border-radius: 2px; }
+.np-rivalry-vs .h2h-lbl { font-size: 9px; color: #c8b878; letter-spacing: 1.5px; }
+.np-rivalry-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 16px 0; }
+.np-rivalry-side { background: rgba(0,0,0,0.5); padding: 10px 12px; border-radius: 4px; color: #fff; text-align: center; }
+.np-rivalry-side .org { font-size: 10px; color: #c8b878; letter-spacing: 1px; }
+.np-rivalry-side .name { font-size: 17px; font-weight: 900; font-family: 'Noto Serif JP', serif; margin-top: 2px; }
+.np-rivalry-side .role { font-size: 10px; color: #d4b87a; margin-top: 2px; }
+.np-rivalry-side .stats { display: flex; justify-content: center; gap: 12px; margin-top: 6px; font-size: 10.5px; color: #c8b878; }
+.np-rivalry-side .stats span { display: inline-flex; align-items: baseline; gap: 3px; }
+.np-rivalry-side .stats strong { font-family: 'Bebas Neue', sans-serif; color: #f0d48b; font-size: 14px; }
+.np-rivalry-narrative { padding: 12px 18px 14px; font-size: 12.5px; line-height: 1.85; color: #f0d48b; font-family: 'Noto Serif JP', serif; text-align: justify; }
+.np-rivalry-narrative p { text-indent: 1em; margin-bottom: 6px; }
+.np-rivalry-narrative strong { color: #d4a82a; }
+
+.np-history { margin-bottom: 14px; padding: 12px 14px; background: rgba(120,84,39,0.05); border: 1px solid rgba(120,84,39,0.2); border-radius: 6px; }
+.np-history-list { display: grid; gap: 8px; }
+.np-history-row { display: grid; grid-template-columns: 70px 1fr auto; gap: 10px; padding: 8px 10px; background: rgba(248,238,210,0.5); border-radius: 4px; border-left: 3px solid rgba(120,84,39,0.4); align-items: start; }
+.np-history-row.win-player { border-left-color: #6a4a10; }
+.np-history-row.win-rival { border-left-color: #8b1a1a; }
+.np-history-row.draw { border-left-color: #5b4b34; }
+.np-history-when { font-size: 10px; font-weight: 700; color: #5b4b34; letter-spacing: 0.5px; line-height: 1.4; }
+.np-history-when .week-num { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: #1a0d04; line-height: 1; }
+.np-history-card { font-size: 12px; font-weight: 800; color: #1a0d04; font-family: 'Noto Serif JP', serif; margin-bottom: 2px; line-height: 1.3; }
+.np-history-detail { font-size: 10.5px; color: #4a3825; line-height: 1.5; }
+.np-history-result { text-align: right; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.np-history-result.win-player { color: #6a4a10; }
+.np-history-result.win-rival { color: #8b1a1a; }
+.np-history-result.draw { color: #5b4b34; }
+.np-history-result .mq { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 14px; margin-top: 2px; }
+
+.np-relations { margin-bottom: 14px; padding: 12px 14px; background: radial-gradient(circle at 30% 30%, rgba(139,26,26,0.08), transparent 55%), rgba(120,84,39,0.04); border: 1px solid rgba(120,84,39,0.25); border-radius: 6px; }
+.np-relations-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.np-relation-card { padding: 9px 10px; background: rgba(248,238,210,0.55); border: 1px solid rgba(120,84,39,0.25); border-radius: 4px; }
+.np-relation-card-head { display: flex; gap: 8px; align-items: center; margin-bottom: 5px; }
+.np-relation-pair { display: flex; align-items: center; gap: 4px; }
+.np-relation-photo { width: 32px; height: 32px; border-radius: 4px; background-size: cover; background-position: center top; background-color: #2a1a10; border: 1px solid rgba(120,84,39,0.4); cursor: pointer; }
+.np-relation-photo.left { border-color: rgba(80,140,255,0.5); }
+.np-relation-photo.right { border-color: rgba(255,80,120,0.5); }
+.np-relation-vs { font-family: 'Bebas Neue', sans-serif; font-size: 12px; color: #8b1a1a; padding: 0 3px; }
+.np-relation-tag { font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 2px; letter-spacing: 1px; margin-left: auto; }
+.np-relation-tag.heat { background: #8b1a1a; color: #fff; }
+.np-relation-tag.respect { background: #1a4a30; color: #fff; }
+.np-relation-tag.cold { background: #2a3a4a; color: #fff; }
+.np-relation-card-names { font-size: 11.5px; font-weight: 700; color: #1a0d04; margin-bottom: 4px; line-height: 1.3; }
+.np-relation-card-text { font-size: 10.5px; line-height: 1.55; color: #4a3825; font-family: 'Noto Serif JP', serif; }
+
+.np-empty { padding: 50px 20px; text-align: center; color: #5b4b34; font-style: italic; line-height: 1.8; }
+
+/* レスポンシブ */
+@media (max-width: 820px) {
+  .np-top-story { grid-template-columns: 1fr; }
+  .np-top-photo { width: 100%; height: 220px; }
+  .np-versus-grid { grid-template-columns: 1fr 70px 1fr; }
+  .np-fphoto { width: 100px; height: 100px; }
+  .np-sub-grid { grid-template-columns: 1fr; }
+  .np-spotlight-grid { grid-template-columns: 1fr; }
+  .np-relations-grid { grid-template-columns: 1fr; }
+  .np-content { padding-left: 18px; padding-right: 18px; }
+  .np-top-headline { font-size: 22px; }
+  .np-org-summary { grid-template-columns: 1fr; }
+  .np-versus-mark { padding: 6px 0; }
+  .np-rivalry-stand { height: 240px; }
+}
+
 </style>
 </head>
 <body>
@@ -7174,6 +7454,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     <button class="nav-btn" onclick="showScreen('shachoshitsu',event)">🏛️ 社長室</button>
     <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
     <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>
+    <button class="nav-btn" onclick="showScreen('newspaper',event)">📰 新聞</button>
     <button class="nav-btn" onclick="showScreen('finance',event)">🏢 経営</button>
     <button class="nav-btn" onclick="showScreen('log',event)">📋 ログ</button>
     <button class="nav-btn" onclick="showScreen('save',event)">💾 セーブ</button>
@@ -7205,6 +7486,11 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     <div class="panel" id="databasePanel">
       <div id="databaseContent"></div>
     </div>
+  </div>
+
+  <!-- SCREEN: Newspaper (独立タブ v3.0) -->
+  <div class="screen" id="screen-newspaper">
+    <div id="newspaperContent"></div>
   </div>
 
   <!-- SCREEN: Roster -->

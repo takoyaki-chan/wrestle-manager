@@ -5255,7 +5255,8 @@ function refreshAll() {
 // ║  DATABASE SCREEN  (v1.0)                                  ║
 // ╚══════════════════════════════════════════════════════════╝
 
-let _dbSubTab = 0; // 0=全選手 1=全コーチ 4=相関図 7=派閥(条件付) 2=団体比較 5=新聞 8=因縁列伝 3=殿堂 6=年代記
+let _dbSubTab = 0; // 0=全選手 1=全コーチ 4=相関図 7=派閥(条件付) 3=殿堂 6=年代記 (2/5/8 は 📰新聞タブへ移管)
+let _newspaperSubPage = 1; // 1=1面 2=2面 3=3面 (新聞独立タブ用)
 let _factionHighlightId = null; // openFactionPanel() から来たハイライト対象（1.5秒後 null 復帰）
 let _dbHofFilter = 'all'; // 殿堂フィルタ: all/player/org_s/org_a/org_b
 let _dbHofSort = 'season_desc'; // 殿堂ソート: season_desc/points_desc/name
@@ -5322,6 +5323,8 @@ function renderDatabase() {
 
   const el = document.getElementById('databaseContent');
   if (!el) return;
+  // Normalize stale _dbSubTab from prior versions where 2/5/8 were valid
+  if (_dbSubTab === 2 || _dbSubTab === 5 || _dbSubTab === 8) _dbSubTab = 0;
   // Toggle relmap-active class on panel
   const panel = el.closest('.panel') || el.parentElement;
   if (panel) panel.classList.toggle('relmap-active', _dbSubTab === 4);
@@ -5332,9 +5335,6 @@ function renderDatabase() {
     { label: '🏋️ 全コーチ', idx: 1 },
     { label: '🔗 相関図', idx: 4 },
     ...(hasFactions ? [{ label: '🎭 派閥', idx: 7 }] : []),
-    { label: '⚔ 団体比較', idx: 2 },
-    { label: '📰 新聞', idx: 5 },
-    { label: '🔥 因縁列伝', idx: 8 },
     { label: '🏅 殿堂', idx: 3 },
     { label: '📖 年代記', idx: 6 },
   ];
@@ -5391,7 +5391,742 @@ function setNewspaperArchiveIdx(idx) {
   renderDatabase();
 }
 
-// ── 📰 新聞サブタブ ──────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// 📰 新聞 独立タブ (v3.0 — モックアップv8 準拠 + タブ独立化)
+// renderNewspaper → setNewspaperSubPage で 1面/2面/3面 切替
+// ══════════════════════════════════════════════════════════════
+function renderNewspaper() {
+  const el = document.getElementById('newspaperContent');
+  if (!el) return;
+  if (![1,2,3].includes(_newspaperSubPage)) _newspaperSubPage = 1;
+
+  let html = `<div class="np-outer-tabs">
+    <button class="np-tab${_newspaperSubPage === 1 ? ' active' : ''}" onclick="setNewspaperSubPage(1)">📰 1面 興行</button>
+    <button class="np-tab${_newspaperSubPage === 2 ? ' active' : ''}" onclick="setNewspaperSubPage(2)">⚔ 2面 団体比較</button>
+    <button class="np-tab${_newspaperSubPage === 3 ? ' active' : ''}" onclick="setNewspaperSubPage(3)">🔥 3面 因縁列伝</button>
+  </div>`;
+
+  if (_newspaperSubPage === 1) html += _npRenderPage1();
+  else if (_newspaperSubPage === 2) html += _npRenderPage2();
+  else if (_newspaperSubPage === 3) html += _npRenderPage3();
+
+  el.innerHTML = html;
+}
+function setNewspaperSubPage(n) {
+  _newspaperSubPage = n;
+  if (n === 1) { _newspaperPage = 0; _newspaperArchiveIdx = -1; }
+  renderNewspaper();
+}
+
+// ── 共通ヘルパー ────────────────────────────────────
+function _npPaperHeader(seasonNum, weekNum) {
+  const today = G.today || `Y${seasonNum} W${weekNum}`;
+  return `<div class="np-paper-header">
+    <div class="logo">週刊グラップル</div>
+    <div class="issue">シーズン${seasonNum} 第${weekNum}週<small>${today}</small></div>
+  </div>`;
+}
+function _npPhotoBg(id) {
+  if (!id) return '';
+  const url = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
+  return url ? `background-image: url('${url}');` : '';
+}
+function _npThumbBg(id) {
+  if (!id) return '';
+  const url = (typeof getPortraitUrl === 'function') ? getPortraitUrl(id) : '';
+  return url ? `background-image: url('${url}');` : '';
+}
+function _npClickName(name, id) {
+  if (id == null) return name || '';
+  return `<a href="javascript:void(0)" onclick="event.stopPropagation();showFighterPopup(${id})" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(120,84,39,0.5);">${name || '?'}</a>`;
+}
+function _npKurodaFaceUrl() {
+  return (typeof getNpcPortraitUrl === 'function') ? getNpcPortraitUrl('reporter') : '';
+}
+function _npFindRuntimeFighter(state, id) {
+  if (id == null) return null;
+  const inRoster = (state.roster || []).find(c => c.id === id);
+  if (inRoster) return inRoster;
+  const aiOrgs = state.aiOrgs || {};
+  for (const k in aiOrgs) {
+    const f = (aiOrgs[k].roster || []).find(c => c.id === id);
+    if (f) return f;
+  }
+  const inFA = (state.freeAgents || []).find(c => c.id === id);
+  if (inFA) return inFA;
+  const inRet = (state.retiredFighters || []).find(c => c.id === id);
+  if (inRet) return inRet;
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 1面: 興行 (v8 mockup §news)
+// ══════════════════════════════════════════════════════════════
+function _npRenderPage1() {
+  const archive = G.newspaperArchive || [];
+  const archiveTotal = archive.length;
+  if (_newspaperArchiveIdx >= archiveTotal) _newspaperArchiveIdx = archiveTotal - 1;
+
+  let wp;
+  if (_newspaperArchiveIdx < 0) wp = G.weeklyNewspaper;
+  else wp = archive[_newspaperArchiveIdx];
+
+  if (!wp) {
+    return `<div class="np-paper">
+      ${_npPaperHeader(G.season || 1, G.week || 1)}
+      <div class="np-content"><div class="np-empty">📰 まだ新聞は届いていない。週を進めると最新号が掲載される。</div></div>
+    </div>`;
+  }
+
+  const seasonNum = wp.season || G.season || 1;
+  const weekNum = wp.week || G.week || 1;
+
+  // バックナンバーナビ
+  const isLatest = _newspaperArchiveIdx < 0;
+  const canOlder = _newspaperArchiveIdx < archiveTotal - 1;
+  const canNewer = !isLatest;
+  let archiveNav = '';
+  if (archiveTotal > 0) {
+    const label = isLatest ? '最新号' : `バックナンバー ${_newspaperArchiveIdx + 1}/${archiveTotal}`;
+    archiveNav = `<div class="np-archive-nav">
+      ${canNewer ? `<button onclick="setNewspaperArchiveIdx(${_newspaperArchiveIdx - 1})">◀ 次の号</button>` : ''}
+      <span class="label">${label}</span>
+      ${canOlder ? `<button onclick="setNewspaperArchiveIdx(${isLatest ? 0 : _newspaperArchiveIdx + 1})">前の号 ▶</button>` : ''}
+      ${!isLatest ? `<button class="gold" onclick="setNewspaperArchiveIdx(-1)">最新号</button>` : ''}
+    </div>`;
+  }
+
+  let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum)}${archiveNav}<div class="np-content">`;
+
+  // 一面記事
+  if (wp.topStory) {
+    const ts = wp.topStory;
+    const photoBg = _npPhotoBg(ts.characterId);
+    const tsName = ts.characterId ? (ALL_CHARS.find(c => c.id === ts.characterId)?.name || '') : '';
+    html += `<article class="np-top-story">
+      <div class="np-top-photo" style="${photoBg}">
+        ${ts.characterId ? `<div class="stamp">EXCLUSIVE</div>` : ''}
+        ${ts.characterId ? `<div class="caption"><strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>` : ''}
+      </div>
+      <div class="np-top-body">
+        <div class="np-sec">一面記事</div>
+        <h2 class="np-top-headline">${ts.headline || '——'}</h2>
+        ${ts.subhead ? `<div class="np-top-sub">${ts.subhead}</div>` : ''}
+        <div class="np-top-text"><p>${ts.body || ''}</p></div>
+      </div>
+    </article>`;
+
+    // 一面が他団体ニュースのとき黒田寸評
+    const isPlayerStory = ts.type === 'playerShowTitle' || ts.type === 'playerShowNormal';
+    if (!isPlayerStory) {
+      const pool = (typeof _getKurodaNewsComment === 'function') ? _getKurodaNewsComment(ts.type) : [];
+      if (pool.length > 0) {
+        const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC0DA));
+        const fn = Engine.rng.pick(rng, pool);
+        let txt = '';
+        try { txt = fn({ headline: ts.headline, orgName: '' }); } catch(e) {}
+        if (txt) {
+          html += `<div class="np-kuroda" style="margin-bottom:14px">
+            <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
+            <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">——黒田幸子</div></div>
+          </div>`;
+        }
+      }
+    }
+  }
+
+  // 自団体興行結果
+  if (wp.playerShowData) {
+    html += _npRenderPlayerShow(wp.playerShowData, seasonNum, weekNum);
+  }
+
+  // 他団体ニュース
+  if (wp.subStories && wp.subStories.length > 0) {
+    html += `<section class="np-sub-stories">
+      <div class="np-sec-gold">他団体ニュース</div>
+      <div class="np-sub-grid">`;
+    wp.subStories.forEach((ss, idx) => {
+      const photoBg = _npPhotoBg(ss.characterId);
+      html += `<div class="np-sub">
+        <div class="np-sub-photo" style="${photoBg}" ${ss.characterId ? `onclick="showFighterPopup(${ss.characterId})"` : ''}></div>
+        <div style="flex:1;min-width:0">
+          <div class="np-sub-headline">${ss.headline || ''}</div>
+          <div class="np-sub-text">${ss.body || ''}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+    // 他団体ニュースまとめの黒田寸評(1個)
+    if (wp.subStories[0]) {
+      const ss = wp.subStories[0];
+      const pool = (typeof _getKurodaNewsComment === 'function') ? _getKurodaNewsComment(ss.type) : [];
+      if (pool.length > 0) {
+        const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC0DC));
+        const fn = Engine.rng.pick(rng, pool);
+        let txt = '';
+        try { txt = fn({ headline: ss.headline, orgName: '' }); } catch(e) {}
+        if (txt) {
+          html += `<div class="np-kuroda">
+            <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
+            <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">——黒田幸子</div></div>
+          </div>`;
+        }
+      }
+    }
+    html += `</section>`;
+  }
+
+  // 次回展望
+  if (wp.preview) {
+    html += `<div class="np-preview">
+      <div class="np-sec">次回展望</div>
+      <div class="np-preview-text">${wp.preview.text || wp.preview}</div>
+    </div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function _npRenderPlayerShow(d, seasonNum, weekNum) {
+  if (!d || !d.left || !d.right) return '';
+  const leftBg = _npPhotoBg(d.left.id);
+  const rightBg = _npPhotoBg(d.right.id);
+  const leftWin = !d.isDraw && d.winner && d.winner.id === d.left.id;
+  const rightWin = !d.isDraw && d.winner && d.winner.id === d.right.id;
+  const leftCls = leftWin ? 'np-fc win' : 'np-fc';
+  const rightCls = rightWin ? 'np-fc win' : 'np-fc';
+
+  let html = `<section class="np-show-result">
+    <div class="np-sec">自団体 興行結果</div>
+    <h3 class="np-show-headline">${d.headline || '定期興行'}</h3>
+    <div class="np-versus-grid">
+      <div class="${leftCls}">
+        <div class="np-fphoto" style="${leftBg}" onclick="showFighterPopup(${d.left.id})"></div>
+        <div class="np-fname">${d.left.name}</div>
+        ${d.left.role ? `<div class="np-frole">${d.left.role}</div>` : ''}
+      </div>
+      <div class="np-vs-block">
+        <div class="np-vs-text">${d.isDraw ? 'DRAW' : 'VS'}</div>
+        ${d.finishLabel ? `<div class="np-vs-finish">${d.finishLabel}</div>` : ''}
+      </div>
+      <div class="${rightCls}">
+        <div class="np-fphoto" style="${rightBg}" onclick="showFighterPopup(${d.right.id})"></div>
+        <div class="np-fname">${d.right.name}</div>
+        ${d.right.role ? `<div class="np-frole">${d.right.role}</div>` : ''}
+      </div>
+    </div>
+    <div class="np-result-line">
+      <div>${d.matchLabel || 'メインイベント'}</div>
+      <div class="mq-block"><label>MQ</label><strong>${d.mq || '?'}</strong></div>
+      <div class="duration">${d.turns ? `${d.turns}T` : ''}</div>
+    </div>
+    ${d.article ? `<div class="np-show-article">${d.article}</div>` : ''}`;
+
+  // 評価ブロック
+  if (d.showRating) {
+    const stars = d.showRating.stars || 0;
+    const starHtml = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+    let comment = '';
+    const pool = (typeof KURODA_SHOW_RATING !== 'undefined') ? KURODA_SHOW_RATING[`stars${stars}`] : null;
+    if (pool && pool.length) {
+      const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC5A1));
+      const fn = Engine.rng.pick(rng, pool);
+      try { comment = fn({ playerName: G.orgName || '我が団体', avgMQ: d.avgMQ || d.mq || 0 }); } catch(e) {}
+    }
+    html += `<div class="np-rating">
+      <div class="np-rating-stars">${starHtml}</div>
+      <div class="np-rating-headline">観客満足度 ${stars}.0 / 5</div>
+      ${comment ? `<div class="np-rating-comment">「${comment}」</div>` : ''}
+    </div>`;
+  }
+
+  // ダイジェストテーブル
+  if (d.allMatches && d.allMatches.length > 0) {
+    html += _npRenderDigest(d, seasonNum, weekNum);
+  }
+
+  html += `</section>`;
+  return html;
+}
+
+function _npRenderDigest(d, seasonNum, weekNum) {
+  const venueIdx = (typeof d.venueIdx === 'number') ? d.venueIdx : (G.showVenue || 0);
+  const expectedMQ = d.showRating?.expected || (typeof _calcExpectedMQ === 'function' ? _calcExpectedMQ(venueIdx, G.orgPop) : 50);
+
+  let rows = '';
+  d.allMatches.forEach((m, idx) => {
+    const leftWon = m.winner === 'left';
+    const rightWon = m.winner === 'right';
+    const winnerId = leftWon ? m.left.id : (rightWon ? m.right.id : null);
+    const loserId = leftWon ? m.right.id : (rightWon ? m.left.id : null);
+    const winnerName = leftWon ? m.left.name : (rightWon ? m.right.name : m.left.name);
+    const loserName = leftWon ? m.right.name : (rightWon ? m.left.name : m.right.name);
+    const wId = m.isDraw ? m.left.id : winnerId;
+    const lId = m.isDraw ? m.right.id : loserId;
+    const wName = m.isDraw ? m.left.name : winnerName;
+    const lName = m.isDraw ? m.right.name : loserName;
+
+    let badge = '';
+    if (m.isTitleMatch) badge = '<span class="badge-title">王座戦</span>';
+    else if (m.isUpset) badge = '<span class="badge-upset">番狂わせ</span>';
+
+    const mqClass = m.mq >= 75 ? 'high' : m.mq >= 55 ? 'mid' : 'low';
+
+    // コメント
+    let comment = '';
+    if (typeof NEWSPAPER_DIGEST_COMMENTS !== 'undefined') {
+      let pool;
+      if (m.isDraw) pool = NEWSPAPER_DIGEST_COMMENTS.draw;
+      else if (m.isUpset) pool = NEWSPAPER_DIGEST_COMMENTS.upset;
+      else if (m.isDominant) pool = NEWSPAPER_DIGEST_COMMENTS.dominant;
+      else if (m.isTitleMatch) pool = NEWSPAPER_DIGEST_COMMENTS.titleMatch;
+      else {
+        const diff = m.mq - expectedMQ;
+        let r;
+        if (diff >= 15) r = 'great';
+        else if (diff >= 5) r = 'good';
+        else if (diff >= -4) r = 'average';
+        else if (diff >= -15) r = 'poor';
+        else r = 'bad';
+        pool = NEWSPAPER_DIGEST_COMMENTS[r];
+      }
+      if (pool && pool.length) {
+        const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, idx, 0xD1C0));
+        const fn = Engine.rng.pick(rng, pool);
+        try { comment = fn({ winnerName: wName, loserName: lName, mq: m.mq, turns: m.turns }); } catch(e) {}
+      }
+    }
+
+    rows += `<tr>
+      <td class="num">${idx + 2}</td>
+      <td class="tag">${badge}</td>
+      <td>
+        <div class="np-digest-card">
+          <div class="np-digest-thumb" style="${_npThumbBg(wId)}" onclick="showFighterPopup(${wId})"></div>
+          <span class="np-digest-name">${wName}</span>
+          <span class="np-digest-vs">${m.isDraw ? 'DRAW' : 'vs'}</span>
+          <span class="np-digest-name lose">${lName}</span>
+          <div class="np-digest-thumb" style="${_npThumbBg(lId)}" onclick="showFighterPopup(${lId})"></div>
+        </div>
+      </td>
+      <td class="np-digest-mq ${mqClass}">${m.mq}</td>
+    </tr>`;
+    if (comment) {
+      rows += `<tr><td></td><td></td><td colspan="2" class="np-digest-comment">「${comment}」</td></tr>`;
+    }
+  });
+
+  return `<div class="np-digest">
+    <div class="np-sec">興行ダイジェスト</div>
+    <table class="np-digest-table">
+      <thead><tr><th>#</th><th></th><th>カード</th><th style="text-align:right">MQ</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 2面: 団体比較 (v8 mockup §compare)
+// ══════════════════════════════════════════════════════════════
+function _npRenderPage2() {
+  const seasonNum = G.season || 1, weekNum = G.week || 1;
+  // ライバル団体選択
+  const orgs = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS : [];
+  if (!_dbCompareTarget && orgs.length > 0) _dbCompareTarget = orgs[0].id;
+
+  let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum)}<div class="np-content">`;
+
+  if (orgs.length === 0 || !_dbCompareTarget) {
+    html += `<div class="np-empty">比較対象の団体が存在しない。</div></div></div>`;
+    return html;
+  }
+
+  // セレクタ
+  html += `<div class="np-cmp-select">
+    <label>📊 比較対象</label>
+    <select onchange="_dbCompareTarget=this.value;renderNewspaper()">`;
+  orgs.forEach(o => {
+    const sel = (o.id === _dbCompareTarget) ? ' selected' : '';
+    const nameDisp = (G.rivalOrgNames && G.rivalOrgNames[o.id]) || o.name || o.id;
+    html += `<option value="${o.id}"${sel}>${nameDisp} (Tier ${o.tier})</option>`;
+  });
+  html += `</select></div>`;
+
+  const d = Engine.database.getOrgCompareAnalysis(G, _dbCompareTarget);
+
+  // ヘッドラインセクション (黒田顔 + 引用 + グレード)
+  html += `<div class="np-headline-section">
+    <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
+    <div>
+      <div class="np-headline-quote">「${d.summaryText || ''}」</div>
+      <div class="np-headline-byline">——黒田幸子</div>
+    </div>
+    <div class="np-headline-grade">
+      <div class="lbl">GRADE</div>
+      <div class="val">${d.grade}</div>
+      <div class="desc">${d.gradeDesc ? d.gradeDesc.slice(0, 14) : ''}</div>
+    </div>
+  </div>`;
+
+  // 団体サマリー (player / VS / rival)
+  const playerChamp = _npFindOrgChampion(G, 'player');
+  const rivalChamp = _npFindOrgChampion(G, _dbCompareTarget);
+  html += `<div class="np-org-summary">
+    <div class="np-org-card player">
+      <div class="np-org-card-head">
+        <div>
+          <div class="np-org-name">${d.playerName}</div>
+          <div class="np-org-sub">${d.playerSubtitle || ''}</div>
+        </div>
+        <div class="np-org-tier">プレイヤー</div>
+      </div>
+      <div class="np-org-tags">${(d.playerTags || []).map(t => `<span class="np-org-tag">${t}</span>`).join('')}</div>
+      <div class="np-org-stats">
+        <div class="stat-item"><label>選手</label><strong>${d.playerRosterCount}</strong></div>
+        <div class="stat-item"><label>団体人気</label><strong>${d.pOrgPop}</strong></div>
+        <div class="stat-item"><label>TOP5実力</label><strong>${d.pTop5Ovr}</strong></div>
+        <div class="stat-item"><label>エース</label><strong>${d.playerScores.ace}</strong></div>
+      </div>
+      <div class="np-org-champ">王者: ${playerChamp ? `<strong>${playerChamp.name}</strong>` : '<strong>不在</strong>'}</div>
+    </div>
+    <div class="np-versus-mark">VS</div>
+    <div class="np-org-card rival">
+      <div class="np-org-card-head">
+        <div>
+          <div class="np-org-name">${d.rivalName}</div>
+          <div class="np-org-sub">${d.rivalSubtitle || ''}</div>
+        </div>
+        <div class="np-org-tier">Tier ${d.rivalTier}</div>
+      </div>
+      <div class="np-org-tags">${(d.rivalTags || []).map(t => `<span class="np-org-tag">${t}</span>`).join('')}</div>
+      <div class="np-org-stats">
+        <div class="stat-item"><label>選手</label><strong>${d.rivalRosterCount}</strong></div>
+        <div class="stat-item"><label>団体人気</label><strong>${d.rOrgPop}</strong></div>
+        <div class="stat-item"><label>TOP5実力</label><strong>${d.rTop5Ovr}</strong></div>
+        <div class="stat-item"><label>エース</label><strong>${d.rivalScores.ace}</strong></div>
+      </div>
+      <div class="np-org-champ">王者: ${rivalChamp ? `<strong>${rivalChamp.name}</strong>` : '<strong>不在</strong>'}</div>
+    </div>
+  </div>`;
+
+  // エース対峙 (上位選手1名同士)
+  const aceP = (d.matchups && d.matchups[0]) ? d.matchups[0].player : null;
+  const aceR = (d.matchups && d.matchups[0]) ? d.matchups[0].rival : null;
+  if (aceP && aceR) {
+    const aceDiff = aceP.ovr - aceR.ovr;
+    const edgeCls = aceDiff > 3 ? 'player' : aceDiff < -3 ? 'rival' : 'even';
+    const edgeText = aceDiff > 3 ? `${d.playerName}優位 +${aceDiff}` : aceDiff < -3 ? `${d.rivalName}優位 ${aceDiff}` : '互角';
+    html += `<div class="np-ace-confront">
+      <div class="np-ace-top">
+        <span class="role-chip">エース対決</span>
+        <span class="edge ${edgeCls}">${edgeText}</span>
+      </div>
+      <div class="np-ace-arena">
+        <div class="np-stand-wrap"><div class="np-stand-img" style="${_npPhotoBg(aceP.id)}"></div></div>
+        <div class="np-ace-vs-center">
+          <div class="np-ace-vs-text">VS</div>
+          <div class="np-ace-vs-metrics">OVR<br>${aceP.ovr} : ${aceR.ovr}</div>
+        </div>
+        <div class="np-stand-wrap"><div class="np-stand-img flip" style="${_npPhotoBg(aceR.id)}"></div></div>
+      </div>
+      <div class="np-ace-name-bar">
+        <div class="np-ace-side">
+          <div class="org">${d.playerName}</div>
+          <div class="name">${_npClickName(aceP.name, aceP.id)}</div>
+          <div class="ovr-line">OVR<strong>${aceP.ovr}</strong> / 人気<strong>${aceP.pop}</strong></div>
+        </div>
+        <div class="np-ace-side">
+          <div class="org">${d.rivalName}</div>
+          <div class="name">${_npClickName(aceR.name, aceR.id)}</div>
+          <div class="ovr-line">OVR<strong>${aceR.ovr}</strong> / 人気<strong>${aceR.pop}</strong></div>
+        </div>
+      </div>
+      <div class="np-ace-flavor">${d.opportunity || ''}</div>
+    </div>`;
+  }
+
+  // 主力対決リスト (matchups[1..])
+  if (d.matchups && d.matchups.length > 1) {
+    html += `<div class="np-sec-gold">主力対決</div>`;
+    html += `<div class="np-matchup-list">`;
+    d.matchups.slice(1).forEach((m, idx) => {
+      const diff = m.player.ovr - m.rival.ovr;
+      const verdictCls = diff > 3 ? 'player' : diff < -3 ? 'rival' : 'even';
+      const verdictText = diff > 3 ? '優勢' : diff < -3 ? '劣勢' : '互角';
+      html += `<div class="np-matchup-row">
+        <div class="np-matchup-fighter">
+          <div class="np-matchup-photo" style="${_npThumbBg(m.player.id)}" onclick="showFighterPopup(${m.player.id})"></div>
+          <div>
+            <div class="np-matchup-name">${m.player.name}</div>
+            <div class="np-matchup-ovr">OVR<strong>${m.player.ovr}</strong></div>
+          </div>
+        </div>
+        <div class="np-matchup-vs">
+          <span class="role">${m.role}</span>
+          <span class="verdict ${verdictCls}">${verdictText}</span>
+        </div>
+        <div class="np-matchup-fighter right">
+          <div class="np-matchup-photo right" style="${_npThumbBg(m.rival.id)}" onclick="showFighterPopup(${m.rival.id})"></div>
+          <div>
+            <div class="np-matchup-name">${m.rival.name}</div>
+            <div class="np-matchup-ovr">OVR<strong>${m.rival.ovr}</strong></div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // 戦力レーダー (4軸 単色バー)
+  const AXES = [
+    { key: 'ace', label: 'エース力' },
+    { key: 'depth', label: '層の厚み' },
+    { key: 'popularity', label: '集客力' },
+    { key: 'starPower', label: 'タイトル力' },
+  ];
+  let powerRows = '';
+  AXES.forEach(ax => {
+    const pVal = Math.max(0, Math.min(100, d.playerScores[ax.key] || 0));
+    const rVal = Math.max(0, Math.min(100, d.rivalScores[ax.key] || 0));
+    const diff = (d.diffs && d.diffs[ax.key] != null) ? d.diffs[ax.key] : (pVal - rVal);
+    const diffSign = diff > 0 ? `+${diff}` : `${diff}`;
+    const diffCls = diff > 0 ? 'player' : diff < 0 ? 'rival' : '';
+    powerRows += `<div class="np-power-row">
+      <div class="np-power-label">${ax.label}</div>
+      <div class="np-power-bar-wrap">
+        <div class="player-side" style="width:${pVal}%"></div>
+        <div class="rival-side" style="width:${rVal}%"></div>
+        <div class="center-line"></div>
+      </div>
+      <div class="np-power-diff ${diffCls}">${diffSign}</div>
+    </div>`;
+  });
+  html += `<div class="np-power-section">
+    <div class="heading">戦力レーダー (4軸)</div>
+    ${powerRows}
+  </div>`;
+
+  // 記者コラム (黒田)
+  if (d.opportunity || d.risk || d.scout) {
+    html += `<div class="np-editorial">
+      <div class="np-editorial-head">
+        <div class="np-kuroda-face sm" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
+        <div style="flex:1">
+          <div class="np-editorial-text">${d.summaryText || ''}<br>勝ち筋: ${d.opportunity || ''}<br>リスク: ${d.risk || ''}<br>補強提案: ${d.scout || ''}</div>
+          <div class="np-editorial-byline">——黒田幸子</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ライバル注目選手3件 (rRoster top3)
+  const rRoster = G.aiOrgs && G.aiOrgs[_dbCompareTarget] && G.aiOrgs[_dbCompareTarget].roster || [];
+  const rTop3 = [...rRoster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, 3);
+  if (rTop3.length > 0) {
+    html += `<div class="np-sec-gold" style="margin-top:14px">ライバル団体 注目選手</div>`;
+    html += `<div class="np-spotlight-grid">`;
+    rTop3.forEach((f, i) => {
+      const tagCls = i === 0 ? 'ace' : i === 1 ? 'star' : 'threat';
+      const tagText = i === 0 ? 'ACE' : i === 1 ? 'STAR' : 'THREAT';
+      html += `<div class="np-spotlight">
+        <div class="np-spotlight-head">
+          <div class="np-spotlight-photo" style="${_npThumbBg(f.id)}" onclick="showFighterPopup(${f.id})"></div>
+          <div style="flex:1">
+            <div class="np-spotlight-name">${f.name}</div>
+            <div class="np-spotlight-meta">OVR<strong>${Engine.util.ov(f)}</strong> / 人気<strong>${Math.round(f.popularity || 0)}</strong></div>
+          </div>
+          <span class="np-spotlight-tag ${tagCls}">${tagText}</span>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function _npFindOrgChampion(state, orgKey) {
+  if (orgKey === 'player') {
+    const titles = state.titles || {};
+    const champId = titles.world?.holderId || titles.heavy?.holderId || titles.junior?.holderId;
+    if (champId == null) return null;
+    const c = (state.roster || []).find(x => x.id === champId);
+    return c ? { name: c.name, id: c.id } : null;
+  }
+  // AI団体
+  const aiTitle = state.aiOrgs && state.aiOrgs[orgKey] && state.aiOrgs[orgKey].titles;
+  if (!aiTitle) return null;
+  const champId = aiTitle.world?.holderId || aiTitle.heavy?.holderId || aiTitle.main?.holderId;
+  if (champId == null) return null;
+  const ar = state.aiOrgs[orgKey].roster || [];
+  const c = ar.find(x => x.id === champId);
+  return c ? { name: c.name, id: c.id } : null;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 3面: 因縁列伝 (v8 mockup §rivalry)
+// ══════════════════════════════════════════════════════════════
+function _npRenderPage3() {
+  const seasonNum = G.season || 1, weekNum = G.week || 1;
+  const { featured, relations } = _pickRivalryFeatured(G);
+
+  let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum)}<div class="np-content">`;
+
+  if (!featured) {
+    html += `<div class="np-empty">記事にする価値のある因縁が、まだ業界には育っていない。<br>記者として、もう少し時間が要ると見ている。</div></div></div>`;
+    return html;
+  }
+
+  // 大見出し
+  const headlineMap = {
+    fated_admiration: { pre: '深層リポート', title: '認め合うがゆえに、退けない', sub: '頂点を分け合う二人の物語' },
+    pure_hatred: { pre: '対立の深淵', title: '楽屋ですれ違っても、目を合わせない', sub: '埋まらぬ亀裂の裏側' },
+    destined_rival: { pre: '宿命対決', title: '幾度も交差する軌道', sub: '運命に導かれた敵対関係' },
+    allied_rivalry: { pre: '友情と闘志', title: '友情と闘志、矛盾しない関係', sub: '同じ志、別の道' },
+    bitter_feud: { pre: '骨肉の争い', title: '水と油、リングでも楽屋でも', sub: '冷めぬ確執の記録' },
+    standard_rivalry: { pre: '互角の宿敵', title: '拮抗する数字、燃える夜', sub: '互いを高め合う関係' },
+    mutual_respect: { pre: '相互尊敬', title: '言葉なき信頼', sub: 'リングの上での敬意' },
+    cold_rivalry: { pre: '冷戦', title: '言葉なき戦い', sub: '静かな確執' },
+    casual_rivalry: { pre: '緩やかな宿敵', title: '日常の中の小競り合い', sub: '日々のリング上で' },
+  };
+  const hd = headlineMap[featured.tag] || headlineMap.standard_rivalry;
+  html += `<div class="np-rivalry-headline">
+    <div class="pre">${hd.pre}</div>
+    <div class="title">${hd.title}</div>
+    <div class="sub">${hd.sub}</div>
+  </div>`;
+
+  // メイン featured
+  const aRT = _npFindRuntimeFighter(G, featured.idA) || featured.charA;
+  const bRT = _npFindRuntimeFighter(G, featured.idB) || featured.charB;
+  const a = aRT, b = bRT;
+  const aName = a.name, bName = b.name;
+  const aOrg = _findFighterOrgName(G, featured.idA);
+  const bOrg = _findFighterOrgName(G, featured.idB);
+  const aOvr = Engine.util.ov(a), bOvr = Engine.util.ov(b);
+  const aAge = a.age != null ? a.age : '?';
+  const bAge = b.age != null ? b.age : '?';
+  const aRole = (a.style || '') + (a.role ? ` / ${a.role}` : '');
+  const bRole = (b.style || '') + (b.role ? ` / ${b.role}` : '');
+  const h2h = featured.h2h;
+  const wA = h2h.winsA || 0, wB = h2h.winsB || 0, dr = h2h.draws || 0;
+  const matches = h2h.matches || 0;
+
+  // narrative pick
+  let narrative = '';
+  if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[featured.tag]) {
+    const pool = KURODA_RELATION_NARRATIVE[featured.tag];
+    if (pool.length > 0) {
+      const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, a.id, b.id, 0xC1A1));
+      const fn = Engine.rng.pick(rng, pool);
+      try { narrative = fn({ aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: h2h.bestMQ || 0 }); } catch(e) {}
+    }
+  }
+
+  html += `<div class="np-rivalry-main">
+    <div class="np-rivalry-main-photos">
+      <div class="np-rivalry-stand"><div class="img" style="${_npPhotoBg(a.id)}"></div></div>
+      <div class="np-rivalry-vs">
+        <div class="vs">VS</div>
+        <div class="h2h">${wA}-${wB}${dr ? `-${dr}` : ''}</div>
+        <div class="h2h-lbl">${matches}戦</div>
+      </div>
+      <div class="np-rivalry-stand"><div class="img flip" style="${_npPhotoBg(b.id)}"></div></div>
+    </div>
+    <div class="np-rivalry-info">
+      <div class="np-rivalry-side">
+        <div class="org">${aOrg}</div>
+        <div class="name">${_npClickName(aName, a.id)}</div>
+        <div class="role">${aRole}</div>
+        <div class="stats">
+          <span>OVR<strong>${aOvr}</strong></span>
+          <span>年齢<strong>${aAge}</strong></span>
+          <span>勝<strong>${wA}</strong></span>
+        </div>
+      </div>
+      <div class="np-rivalry-side">
+        <div class="org">${bOrg}</div>
+        <div class="name">${_npClickName(bName, b.id)}</div>
+        <div class="role">${bRole}</div>
+        <div class="stats">
+          <span>OVR<strong>${bOvr}</strong></span>
+          <span>年齢<strong>${bAge}</strong></span>
+          <span>勝<strong>${wB}</strong></span>
+        </div>
+      </div>
+    </div>
+    ${narrative ? `<div class="np-rivalry-narrative"><p>${narrative}</p></div>` : `<div class="np-rivalry-narrative"><p>${aName}と${bName}。${matches}度のぶつかり合いが、二人の関係を形づくってきた。</p></div>`}
+  </div>`;
+
+  // 過去対戦タイムライン
+  if (h2h.history && h2h.history.length > 0) {
+    html += `<div class="np-history">
+      <div class="np-sec-gold">対戦の軌跡</div>
+      <div class="np-history-list">`;
+    const recent = h2h.history.slice(-10).reverse();
+    recent.forEach(h => {
+      const isPlayerA = _isPlayerSide(G, a.id);
+      const playerWin = h.win === 'A' ? isPlayerA : (h.win === 'B' ? !isPlayerA : null);
+      const cls = playerWin === true ? 'win-player' : playerWin === false ? 'win-rival' : 'draw';
+      const stageBadge = h.st === 'ppv' ? 'PPV' : h.st === 'war' ? '対抗戦' : '興行';
+      const winnerName = h.win === 'A' ? aName : (h.win === 'B' ? bName : '——');
+      const resultText = h.win === 'd' ? 'ドロー' : `${winnerName} 勝`;
+      html += `<div class="np-history-row ${cls}">
+        <div class="np-history-when">S${h.s}<span class="week-num">W${h.w}</span></div>
+        <div>
+          <div class="np-history-card">${aName} vs ${bName}</div>
+          <div class="np-history-detail">${stageBadge}${h.t ? ` / ${h.t}T` : ''}</div>
+        </div>
+        <div class="np-history-result ${cls}">${resultText}<span class="mq">MQ${h.mq || '?'}</span></div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // 他にも続く因縁
+  if (relations && relations.length > 0) {
+    html += `<div class="np-relations">
+      <div class="np-sec-gold">他にも続く因縁(全業界)</div>
+      <div class="np-relations-grid">`;
+    relations.forEach(r => {
+      const tagCls = (r.tag === 'pure_hatred' || r.tag === 'bitter_feud') ? 'heat'
+        : (r.tag === 'fated_admiration' || r.tag === 'allied_rivalry' || r.tag === 'mutual_respect') ? 'respect'
+        : 'cold';
+      const tagText = (r.tag === 'pure_hatred' || r.tag === 'bitter_feud') ? '激'
+        : (r.tag === 'fated_admiration' || r.tag === 'allied_rivalry' || r.tag === 'mutual_respect') ? '熱'
+        : '冷';
+      let summary = '';
+      if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[r.tag]) {
+        const pool = KURODA_RELATION_NARRATIVE[r.tag];
+        if (pool.length > 0) {
+          const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, r.idA, r.idB, 0xC1B2));
+          const fn = Engine.rng.pick(rng, pool);
+          try { summary = fn({ aName: r.charA.name, bName: r.charB.name, aOrg: _findFighterOrgName(G, r.idA), bOrg: _findFighterOrgName(G, r.idB), matches: r.h2h.matches || 0 }); } catch(e) {}
+        }
+      }
+      html += `<div class="np-relation-card">
+        <div class="np-relation-card-head">
+          <div class="np-relation-pair">
+            <div class="np-relation-photo left" style="${_npThumbBg(r.idA)}" onclick="showFighterPopup(${r.idA})"></div>
+            <span class="np-relation-vs">VS</span>
+            <div class="np-relation-photo right" style="${_npThumbBg(r.idB)}" onclick="showFighterPopup(${r.idB})"></div>
+          </div>
+          <span class="np-relation-tag ${tagCls}">${tagText}</span>
+        </div>
+        <div class="np-relation-card-names">${r.charA.name} × ${r.charB.name}</div>
+        <div class="np-relation-card-text">${summary || '言葉以前に、視線で物語を語る関係。'}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+// ── 📰 新聞 1面 描画 (旧 _renderDbNewspaper を流用) ───────────
 function _renderDbNewspaper() {
   const archive = G.newspaperArchive || [];
   const archiveTotal = archive.length;

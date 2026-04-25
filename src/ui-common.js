@@ -6025,6 +6025,7 @@ function showScreen(id, evt) {
   if (id === 'coach') renderCoach();
   if (id === 'scoutEvent') renderScoutEvent();
   if (id === 'database') renderDatabase();
+  if (id === 'newspaper') renderNewspaper();
   if (id === 'shachoshitsu') renderShachoshitsu();
 }
 
