@@ -7163,8 +7163,8 @@ function _renderDbChronicle() {
         <div class="chron-era-stat-val">${es.totalTitleWins || 0}<span class="small">戴冠</span></div>
       </div>
       <div class="chron-era-stat">
-        <div class="chron-era-stat-key">VS S-TIER</div>
-        <div class="chron-era-stat-val">${(es.vsStier && es.vsStier.wins) || 0}<span class="small">勝</span>${(es.vsStier && es.vsStier.losses) || 0}<span class="small">敗</span></div>
+        <div class="chron-era-stat-key">${es.competitiveRecord ? es.competitiveRecord.label : 'VS S-TIER'}</div>
+        <div class="chron-era-stat-val">${es.competitiveRecord ? _chronicleCompetitiveValueHtml(es.competitiveRecord.valueText) : `${(es.vsStier && es.vsStier.wins) || 0}<span class="small">勝</span>${(es.vsStier && es.vsStier.losses) || 0}<span class="small">敗</span>`}</div>
       </div>
       <div class="chron-era-stat">
         <div class="chron-era-stat-key">PEAK POP</div>
@@ -7213,6 +7213,16 @@ function _renderDbChronicle() {
 
   html += `</div>`; // .chron-wrap close
   return html;
+}
+
+/** spec v0.2 §C.1 mode別 valueText の HTML 装飾 */
+function _chronicleCompetitiveValueHtml(text) {
+  if (!text) return '';
+  let m = text.match(/^(\d+)度防衛(.*)$/);
+  if (m) return `${m[1]}<span class="small">度防衛${m[2]}</span>`;
+  m = text.match(/^(\d+)勝(\d+)敗$/);
+  if (m) return `${m[1]}<span class="small">勝</span>${m[2]}<span class="small">敗</span>`;
+  return text;
 }
 
 /** 記者コメント自動生成 (超シンプル版 — Phase 2 で拡充) */
