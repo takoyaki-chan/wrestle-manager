@@ -9270,7 +9270,21 @@ App.initPPVTV = function() {
   // battlePoints + orgWarRecord 反映
   G = { ...G, battlePoints: tvResult.battlePoints, orgWarRecord: tvResult.orgWarRecord || G.orgWarRecord, gameLog: [...G.gameLog, ...tvResult.events] };
 
-  renderPPVTVResult(tvResult.card, tvResult.results, G.ppvName);
+  const prevCb = _onEventPopupQueueEmpty;
+  _onEventPopupQueueEmpty = () => {
+    if (prevCb) {
+      try { prevCb(); } catch (e) { console.error('[WM] PPV TV intro callback error:', e); }
+    }
+    renderPPVTVResult(tvResult.card, tvResult.results, G.ppvName);
+  };
+
+  showEventPopup({
+    type: 'system',
+    emoji: '📺',
+    tone: 'gold',
+    name: G.ppvName || 'PPV GRAND FINAL',
+    message: 'ついに年間総決算のPPV当日です。あと一歩届かず、私たちの名前は今夜のカードにありません。悔しさはありますが、まずは他団体の大一番をテレビで確認しましょう。'
+  });
 };
 
 App.closePPVTV = function() {
