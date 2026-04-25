@@ -2197,22 +2197,30 @@ Engine.h2h = {
     };
   },
   /** 試合結果からh2hを更新し、新しいh2hオブジェクトを返す */
-  update(h2h, leftId, rightId, winner, mq, isTitleMatch, isPPV, season, week) {
+  update(h2h, leftId, rightId, winner, mq, isTitleMatch, isPPV, season, week, stage = 'show') {
     const a = Math.min(leftId, rightId), b = Math.max(leftId, rightId);
     const key = `${a}>${b}`;
     const newH2h = { ...(h2h || {}) };
-    const entry = { ...(newH2h[key] || { matches: 0, winsA: 0, winsB: 0, draws: 0, bestMQ: 0, hadTitleMatch: false, hadPPV: false }) };
+    const entry = { ...(newH2h[key] || { matches: 0, winsA: 0, winsB: 0, draws: 0, bestMQ: 0, hadTitleMatch: false, hadPPV: false, history: [] }) };
     entry.matches += 1;
+    let winSide = 'd';
     if (winner === 'draw') entry.draws += 1;
     else {
       const winnerId = winner === 'left' ? leftId : rightId;
-      if (winnerId === a) entry.winsA += 1;
-      else entry.winsB += 1;
+      if (winnerId === a) { entry.winsA += 1; winSide = 'A'; }
+      else { entry.winsB += 1; winSide = 'B'; }
     }
     entry.bestMQ = Math.max(entry.bestMQ, mq || 0);
     entry.lastMatch = { season, week };
     if (isTitleMatch) entry.hadTitleMatch = true;
     if (isPPV) entry.hadPPV = true;
+    // history 追加 (最大50件)
+    const histEntry = { s: season, w: week, st: stage, win: winSide, mq: mq || 0 };
+    if (isTitleMatch) histEntry.t = 1;
+    if (isPPV) histEntry.p = 1;
+    const newHistory = [...(entry.history || []), histEntry];
+    if (newHistory.length > 50) newHistory.shift();
+    entry.history = newHistory;
     newH2h[key] = entry;
     return newH2h;
   },

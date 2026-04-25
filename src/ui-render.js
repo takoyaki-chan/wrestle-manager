@@ -636,8 +636,11 @@ function renderWeekScreen() {
 
     const nextLabels = ['シーズンレポートへ →', 'ドラフト会議へ →', '移籍ウィンドウへ →', '新シーズン開幕 →'];
     const nextLabel = nextLabels[offW] || `オフシーズン第${offW + 1}週へ →`;
+    const nextLabelOverrides = {
+      1: '次へ →',
+    };
     const btnClass = offW >= 3 ? 'btn-gold' : 'btn-blue';
-    html += `<div class="btn-row" style="margin-top:16px"><button class="btn ${btnClass}" onclick="advanceWeek()">${nextLabel}</button></div>`;
+    html += `<div class="btn-row" style="margin-top:16px"><button class="btn ${btnClass}" onclick="advanceWeek()">${nextLabelOverrides[offW] || nextLabel}</button></div>`;
 
     el.innerHTML = html;
     return;
@@ -5252,7 +5255,7 @@ function refreshAll() {
 // ║  DATABASE SCREEN  (v1.0)                                  ║
 // ╚══════════════════════════════════════════════════════════╝
 
-let _dbSubTab = 0; // 0=全選手 1=全コーチ 2=団体比較 3=殿堂 4=相関図 5=新聞 6=年代記 7=派閥
+let _dbSubTab = 0; // 0=全選手 1=全コーチ 4=相関図 7=派閥(条件付) 2=団体比較 5=新聞 8=因縁列伝 3=殿堂 6=年代記
 let _factionHighlightId = null; // openFactionPanel() から来たハイライト対象（1.5秒後 null 復帰）
 let _dbHofFilter = 'all'; // 殿堂フィルタ: all/player/org_s/org_a/org_b
 let _dbHofSort = 'season_desc'; // 殿堂ソート: season_desc/points_desc/name
@@ -5323,13 +5326,15 @@ function renderDatabase() {
   const panel = el.closest('.panel') || el.parentElement;
   if (panel) panel.classList.toggle('relmap-active', _dbSubTab === 4);
 
+  const hasFactions = !!(G.factions && G.factions.length > 0);
   const subTabs = [
     { label: '👤 全選手', idx: 0 },
     { label: '🏋️ 全コーチ', idx: 1 },
     { label: '🔗 相関図', idx: 4 },
+    ...(hasFactions ? [{ label: '🎭 派閥', idx: 7 }] : []),
     { label: '⚔ 団体比較', idx: 2 },
-    { label: '🎭 派閥', idx: 7 },
     { label: '📰 新聞', idx: 5 },
+    { label: '🔥 因縁列伝', idx: 8 },
     { label: '🏅 殿堂', idx: 3 },
     { label: '📖 年代記', idx: 6 },
   ];
@@ -5349,6 +5354,7 @@ function renderDatabase() {
   else if (_dbSubTab === 5) html += _renderDbNewspaper();
   else if (_dbSubTab === 6) html += _renderDbChronicle();
   else if (_dbSubTab === 7) html += _renderDbFactions();
+  else if (_dbSubTab === 8) html += _renderDbRivalry();
   html += `</div>`;
 
   el.innerHTML = html;
@@ -5717,10 +5723,29 @@ function _renderNewspaperShowRating(d) {
     </div>`;
 }
 
+// ── 会場レベル別 期待MQ計算 (handoff §2-2) ──
+const EXPECTED_MQ_BY_VENUE = [
+  { base: 18, popCoef: 0.30 },  // 0: 公民館
+  { base: 22, popCoef: 0.40 },  // 1: 小ホール
+  { base: 26, popCoef: 0.45 },  // 2: 中ホール
+  { base: 30, popCoef: 0.50 },  // 3: 大ホール
+  { base: 35, popCoef: 0.55 },  // 4: アリーナ
+  { base: 40, popCoef: 0.60 },  // 5: 大アリーナ
+  { base: 45, popCoef: 0.65 },  // 6: 武道館
+  { base: 50, popCoef: 0.70 },  // 7: スタジアム
+  { base: 55, popCoef: 0.75 },  // 8: 大スタジアム
+  { base: 60, popCoef: 0.80 },  // 9: ドーム
+];
+function _calcExpectedMQ(venueIdx, orgPop) {
+  const conf = EXPECTED_MQ_BY_VENUE[venueIdx] || EXPECTED_MQ_BY_VENUE[0];
+  return Math.min(95, Math.round(conf.base + (orgPop || 0) * conf.popCoef));
+}
+
 // ── 全試合ダイジェストセクション（テーブル形式） ──
 function _renderNewspaperDigest(d) {
   if (!d.allMatches || d.allMatches.length === 0) return '';
-  const expectedMQ = d.showRating?.expected || Math.round(25 + (G.orgPop || 0) * 0.6);
+  const venueIdx = (typeof d.venueIdx === 'number') ? d.venueIdx : (G.showVenue || 0);
+  const expectedMQ = d.showRating?.expected || _calcExpectedMQ(venueIdx, G.orgPop);
 
   const rowsHtml = d.allMatches.map((m, idx) => {
     // ダイジェストコメント選択
@@ -8272,6 +8297,305 @@ function _relmapBondColor(val) {
   if (val >= 65) return '#74b9ff';
   if (val >= 45) return 'var(--text-sub)';
   return '#ff7675';
+}
+
+// ══════════════════════════════════════════════════════════
+// _renderDbRivalry — 🔥 因縁列伝(3面) [v8 redesign]
+// ══════════════════════════════════════════════════════════
+
+// bond × rivalry の 9象限分類。淡白なペア(rivalry < 40)は null
+function _classifyRelation(bond, rivalry) {
+  if (rivalry < 40) return null;
+  if (rivalry >= 80) {
+    if (bond >= 70) return 'fated_admiration';
+    if (bond <= 30) return 'pure_hatred';
+    return 'destined_rival';
+  }
+  if (rivalry >= 60) {
+    if (bond >= 70) return 'allied_rivalry';
+    if (bond <= 30) return 'bitter_feud';
+    return 'standard_rivalry';
+  }
+  // rivalry 40-59
+  if (bond >= 70) return 'mutual_respect';
+  if (bond <= 30) return 'cold_rivalry';
+  return 'casual_rivalry';
+}
+
+function _isPlayerSide(state, charId) {
+  return (state.roster || []).some(c => c.id === charId);
+}
+
+function _findFighterOrgName(state, charId) {
+  if (_isPlayerSide(state, charId)) return state.orgName || 'プレイヤー団体';
+  const aiOrgs = state.aiOrgs || {};
+  for (const orgId in aiOrgs) {
+    const org = aiOrgs[orgId];
+    if ((org.roster || []).some(c => c.id === charId)) {
+      return (typeof RIVAL_ORGS !== 'undefined' && RIVAL_ORGS.find(o => o.id === orgId)?.name) || org.name || orgId;
+    }
+  }
+  return '';
+}
+
+function _pickRivalryFeatured(state) {
+  const all = [];
+  Object.entries(state.h2h || {}).forEach(([key, h2h]) => {
+    const [a, b] = key.split('>').map(Number);
+    const charA = ALL_CHARS.find(c => c.id === a);
+    const charB = ALL_CHARS.find(c => c.id === b);
+    if (!charA || !charB) return;
+    const relAB = (state.relationships || {})[`${a}>${b}`] || { bond: 50, rivalry: 0 };
+    const relBA = (state.relationships || {})[`${b}>${a}`] || { bond: 50, rivalry: 0 };
+    const bond = (relAB.bond + relBA.bond) / 2;
+    const rivalry = (relAB.rivalry + relBA.rivalry) / 2;
+    const tag = _classifyRelation(bond, rivalry);
+    if (!tag) return;
+    let score = rivalry * 0.4 + (h2h.matches || 0) * 0.2 + (h2h.bestMQ || 0) * 0.2;
+    score += Math.abs(bond - 50) * 0.3;
+    const isPlayerInvolved = _isPlayerSide(state, a) || _isPlayerSide(state, b);
+    if (isPlayerInvolved) score += 15;
+    const dramaTagBonus = {
+      pure_hatred: 20, fated_admiration: 18, bitter_feud: 12,
+      allied_rivalry: 10, destined_rival: 8,
+    };
+    score += dramaTagBonus[tag] || 0;
+    all.push({ key, h2h, tag, bond, rivalry, charA, charB, idA: a, idB: b, score, isPlayerInvolved });
+  });
+  all.sort((x, y) => y.score - x.score);
+  return { featured: all[0] || null, relations: all.slice(1, 7) };
+}
+
+function _renderDbRivalry() {
+  const { featured, relations } = _pickRivalryFeatured(G);
+  const seasonNum = G.season || 1, weekNum = G.week || 1;
+
+  let html = `<div class="db-cmp-newspaper-header">
+    <h1>週刊グラップル ── 因縁列伝</h1>
+    <span>シーズン${seasonNum} 第${weekNum}週</span>
+  </div>
+  <div class="db-cmp-wrap rivalry-wrap">`;
+
+  if (!featured) {
+    html += `<div class="db-cmp-rivalry-empty">
+      <p>記事にする価値のある因縁が、まだ業界には育っていない。記者として、もう少し時間が要ると見ている。</p>
+    </div></div>`;
+    return html;
+  }
+
+  // 黒田テキスト選択用seed
+  const kurodaSeed = Engine.rng.derive(G.rngSeed || 1, seasonNum, weekNum, 0xBE99, 0);
+  const kurodaRng = Engine.rng.create(kurodaSeed);
+  const pickText = (pool, d) => {
+    if (!pool || !pool.length) return '';
+    const fn = Engine.rng.pick(kurodaRng, pool);
+    try { return fn(d); } catch (e) { return ''; }
+  };
+
+  html += _renderRivalryHeadline();
+  html += _renderRivalryFeatured(featured, pickText);
+  html += _renderRivalryHistory(featured);
+  html += _renderRivalryRelations(relations, pickText);
+  html += `</div>`;
+  return html;
+}
+
+function _renderRivalryHeadline() {
+  const subs = [
+    '本紙が選んだ、今もっとも目を離せない関係たち',
+    '取材ノートから——リング上で、リング外で、動き続ける関係',
+    '勝敗だけでは語れない、関係の深層',
+  ];
+  const sub = subs[Math.floor(Math.random() * subs.length)];
+  return `<div class="rivalry-headline">
+    <div class="pre">因 縁 列 伝</div>
+    <h1 class="title">数字の奥に宿る、選手たちの物語</h1>
+    <div class="sub">${sub}</div>
+  </div>`;
+}
+
+function _buildNarrativeData(featured) {
+  const { h2h, charA, charB, idA, idB } = featured;
+  const history = h2h.history || [];
+  const firstSeason = history.length ? history[0].s : (G.season || 1);
+  const yearsRaw = (G.season || 1) - firstSeason + ((G.week || 1) - (history.length ? history[0].w : 1)) / 52;
+  const years = Math.max(1, Math.round(yearsRaw));
+  return {
+    charA: charA.name, charB: charB.name,
+    matches: h2h.matches || 0,
+    bestMQ: h2h.bestMQ || 0,
+    years,
+    hadTitleMatch: !!h2h.hadTitleMatch,
+    hadPPV: !!h2h.hadPPV,
+  };
+}
+
+function _renderRivalryFeatured(featured, pickText) {
+  const { tag, charA, charB, idA, idB, h2h } = featured;
+  const narrative = (typeof KURODA_RELATION_NARRATIVE !== 'undefined') ? KURODA_RELATION_NARRATIVE[tag] : null;
+  const d = _buildNarrativeData(featured);
+  const headline = (narrative && pickText(narrative.headlines, d)) || '業界が注目する一組';
+  const body = (narrative && pickText(narrative.bodies, d)) || `${charA.name}と${charB.name}——本紙が見守る関係。`;
+
+  // 戦績(A視点)
+  const winsA = h2h.winsA || 0, winsB = h2h.winsB || 0, draws = h2h.draws || 0;
+  const recordText = (winsA || winsB || draws)
+    ? `${winsA}勝${winsB}敗${draws ? draws + '分' : ''}`
+    : '未対戦';
+
+  const standA = (typeof getStandUrl === 'function') ? getStandUrl(idA, Engine.util?.ov?.(charA) || 70) : '';
+  const standB = (typeof getStandUrl === 'function') ? getStandUrl(idB, Engine.util?.ov?.(charB) || 70) : '';
+  const orgA = _findFighterOrgName(G, idA);
+  const orgB = _findFighterOrgName(G, idB);
+  const styleA = (charA.style || '').toUpperCase();
+  const styleB = (charB.style || '').toUpperCase();
+
+  const facts = [];
+  if (h2h.matches) facts.push(`<span class="fact-item">通算 ${recordText}</span>`);
+  if (d.years >= 1 && h2h.matches) facts.push(`<span class="fact-item">${d.years}年の付き合い</span>`);
+  if (h2h.bestMQ) facts.push(`<span class="fact-item">最高評価 MQ${h2h.bestMQ}</span>`);
+  if (h2h.hadTitleMatch) facts.push(`<span class="fact-item">タイトル戦経験あり</span>`);
+  if (h2h.hadPPV) facts.push(`<span class="fact-item">PPV経験あり</span>`);
+
+  return `<section class="rivalry-main" data-internal-tag="${tag}">
+    <div class="rivalry-featured-headline">
+      <div class="pre">本 日 の 一 組</div>
+      <div class="h">${headline}</div>
+    </div>
+    <div class="rivalry-main-photos">
+      <div class="rivalry-main-stand">
+        ${standA ? `<div class="ace-stand-img flip" style="background-image:url('${standA}');background-size:cover;background-position:center top;width:100%;height:100%;"></div>` : ''}
+      </div>
+      <div class="rivalry-main-vs"><div class="vs">VS</div></div>
+      <div class="rivalry-main-stand">
+        ${standB ? `<div class="ace-stand-img" style="background-image:url('${standB}');background-size:cover;background-position:center top;width:100%;height:100%;"></div>` : ''}
+      </div>
+    </div>
+    <div class="rivalry-main-info">
+      <div class="rivalry-main-side">
+        <div class="org">${orgA}</div>
+        <div class="name">${charA.name}</div>
+        <div class="role">${styleA}</div>
+      </div>
+      <div class="rivalry-main-stats" style="display:flex;align-items:center;justify-content:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#f0d48b;line-height:1;">${recordText}</div>
+      </div>
+      <div class="rivalry-main-side right">
+        <div class="org">${orgB}</div>
+        <div class="name">${charB.name}</div>
+        <div class="role">${styleB}</div>
+      </div>
+    </div>
+    <div class="rivalry-featured-body">
+      <p>${body}</p>
+    </div>
+    ${facts.length ? `<div class="rivalry-featured-facts">${facts.join('')}</div>` : ''}
+  </section>`;
+}
+
+function _renderRivalryHistory(featured) {
+  const { h2h, charA, charB, idA, idB } = featured;
+  const history = (h2h.history || []).slice(-10);
+  if (!history.length) {
+    return `<section class="rivalry-history">
+      <div class="sec-label">対戦の軌跡</div>
+      <div style="padding:8px 4px;color:#5b4b34;font-size:11px;">対戦履歴はまだ刻まれていない。本紙としては、最初の一戦が組まれる日を待ちたい。</div>
+    </section>`;
+  }
+
+  const stageBadge = (st) => {
+    if (st === 'war') return `<span style="font-size:9px;background:#8b1a1a;color:#fff;padding:1px 6px;border-radius:2px;letter-spacing:1px;margin-right:4px;">対抗戦</span>`;
+    if (st === 'ppv') return `<span style="font-size:9px;background:#1a4a30;color:#fff;padding:1px 6px;border-radius:2px;letter-spacing:1px;margin-right:4px;">PPV</span>`;
+    return '';
+  };
+  const titleBadge = (t) => t ? `<span style="font-size:9px;background:rgba(154,112,32,0.7);color:#fff;padding:1px 6px;border-radius:2px;letter-spacing:1px;margin-right:4px;">タイトル戦</span>` : '';
+
+  const rows = history.map((rec, idx) => {
+    // win: 'A' (idA winner), 'B' (idB winner), 'd' (draw)
+    let cls, resultText, mqText;
+    if (rec.win === 'd') { cls = 'draw'; resultText = '引き分け'; }
+    else if (rec.win === 'A') {
+      const isPlayerA = _isPlayerSide(G, idA);
+      cls = isPlayerA ? 'win-player' : 'win-rival';
+      resultText = `${charA.name} 勝利`;
+    } else {
+      const isPlayerB = _isPlayerSide(G, idB);
+      cls = isPlayerB ? 'win-player' : 'win-rival';
+      resultText = `${charB.name} 勝利`;
+    }
+    mqText = rec.mq ? `MQ ${rec.mq}` : '';
+    const cardLabel = idx === 0 ? `${charA.name} vs ${charB.name}(初対戦)` : `${charA.name} vs ${charB.name}(${idx + 1}戦目)`;
+    return `<div class="history-row ${cls}">
+      <div class="history-when">
+        <span class="week-num">S${rec.s} W${String(rec.w).padStart(2, '0')}</span>
+        シーズン${rec.s}<br>第${rec.w}週
+      </div>
+      <div>
+        <div class="history-card">${stageBadge(rec.st)}${titleBadge(rec.t)}${cardLabel}</div>
+      </div>
+      <div class="history-result ${cls}">
+        ${resultText}<br><span class="mq">${mqText}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<section class="rivalry-history">
+    <div class="sec-label">対戦の軌跡(直近${history.length}戦)</div>
+    <div class="history-list">${rows}</div>
+  </section>`;
+}
+
+function _renderRivalryRelations(relations, pickText) {
+  if (!relations || !relations.length) {
+    return '';
+  }
+  const cards = relations.map(rel => {
+    const { tag, charA, charB, idA, idB, h2h } = rel;
+    const narrative = (typeof KURODA_RELATION_NARRATIVE !== 'undefined') ? KURODA_RELATION_NARRATIVE[tag] : null;
+    const d = _buildNarrativeData(rel);
+    const headline = (narrative && pickText(narrative.headlines, d)) || '業界の関係';
+    const body = (narrative && pickText(narrative.bodies, d)) || '';
+
+    const faceA = (typeof getPortraitUrl === 'function') ? getPortraitUrl(idA) : '';
+    const faceB = (typeof getPortraitUrl === 'function') ? getPortraitUrl(idB) : '';
+    const orgA = _findFighterOrgName(G, idA);
+    const orgB = _findFighterOrgName(G, idB);
+    const scope = (orgA === orgB) ? `${orgA}内` : `${orgA} × ${orgB}`;
+    const isInterAi = !rel.isPlayerInvolved;
+
+    const winsA = h2h.winsA || 0, winsB = h2h.winsB || 0, draws = h2h.draws || 0;
+    const recordText = (winsA || winsB || draws)
+      ? `通算 ${winsA}勝${winsB}敗${draws ? draws + '分' : ''}`
+      : '対戦履歴なし';
+    const factParts = [recordText];
+    if (h2h.bestMQ) factParts.push(`最高 MQ${h2h.bestMQ}`);
+    if (h2h.lastMatch) factParts.push(`直近 S${h2h.lastMatch.season} W${String(h2h.lastMatch.week).padStart(2, '0')}`);
+
+    const headlineCls = (tag === 'pure_hatred') ? 'heat'
+      : (tag === 'bitter_feud') ? 'bitter'
+      : (tag === 'allied_rivalry') ? 'allied'
+      : (tag === 'fated_admiration') ? 'fated' : '';
+
+    return `<div class="relation-card" data-tag="${tag}">
+      <div class="relation-card-photos">
+        ${faceA ? `<div class="relation-photo left" style="background-image:url('${faceA}');"></div>` : ''}
+        <span class="relation-vs">VS</span>
+        ${faceB ? `<div class="relation-photo right" style="background-image:url('${faceB}');"></div>` : ''}
+        <div class="pair-meta">
+          <span class="scope"${isInterAi ? ' style="background:rgba(139,26,26,0.15);color:#8b1a1a;"' : ''}>${scope}</span>
+        </div>
+      </div>
+      <div class="relation-names">${charA.name} ⇄ ${charB.name}</div>
+      <div class="relation-headline ${headlineCls}">${headline}</div>
+      ${body ? `<div class="relation-body">${body}</div>` : ''}
+      <div class="relation-facts">${factParts.join(' <span class="sep">|</span> ')}</div>
+    </div>`;
+  }).join('');
+
+  return `<section class="rivalry-relations">
+    <div class="sec-label-gold">他にも続く因縁(全業界)</div>
+    <div class="relations-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">${cards}</div>
+  </section>`;
 }
 
 // ══════════════════════════════════════════════════════════

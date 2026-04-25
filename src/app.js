@@ -1470,6 +1470,7 @@ const SAVE_TRIM = {
   financeKeepSeasons: 2, // financeHistory保持シーズン数
   matchupLogMax: 60,     // matchupLog上限（12show窓 + 余裕）
   aiMatchupLogMax: 40,   // AI団体matchupLog上限
+  h2hHistoryMax: 50,     // h2h.history[] ペア毎上限
 };
 
 const Storage = {
@@ -1524,6 +1525,15 @@ const Storage = {
               c.growthLog = c.growthLog.slice(-SAVE_TRIM.growthLogMax);
             }
           });
+        }
+      }
+    }
+    // h2h.history トリミング (ペア毎最新N件)
+    if (state.h2h) {
+      for (const key in state.h2h) {
+        const entry = state.h2h[key];
+        if (entry && entry.history && entry.history.length > SAVE_TRIM.h2hHistoryMax) {
+          entry.history = entry.history.slice(-SAVE_TRIM.h2hHistoryMax);
         }
       }
     }
@@ -3433,7 +3443,16 @@ const App = {
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster, showCard: newShowCard });
     const log = [...G.gameLog, `📤 ${target.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
-    if (Engine.util.canAddToFA(G)) {
+    const claimResult = Engine.rival.claimDepartedStar(
+      Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xD75A, G.season, G.week, charId)),
+      { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log },
+      target,
+      { fromOrgName: G.orgName || 'player', via: 'release_claim' }
+    );
+    if (claimResult.claimed) {
+      log.push(`Transfer: ${target.name} -> ${claimResult.orgName}${claimResult.ejected ? ` / out: ${claimResult.ejected.name}` : ''}`);
+      G = { ...claimResult.state, gameLog: log };
+    } else if (Engine.util.canAddToFA(G)) {
       const releasedFighter = Engine.orgTimeline.transfer(target, 'fa', G.season, G.week);
       G = { ...G, roster: newRoster, showCard: newShowCard, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
     } else {
@@ -4031,7 +4050,16 @@ const App = {
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster, showCard: newShowCard });
     const log = [...G.gameLog, `📤 ${c.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
-    if (Engine.util.canAddToFA(G)) {
+    const claimResult = Engine.rival.claimDepartedStar(
+      Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xD75A, G.season, G.week, charId)),
+      { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log },
+      c,
+      { fromOrgName: G.orgName || 'player', via: 'release_claim' }
+    );
+    if (claimResult.claimed) {
+      log.push(`Transfer: ${c.name} -> ${claimResult.orgName}${claimResult.ejected ? ` / out: ${claimResult.ejected.name}` : ''}`);
+      G = { ...claimResult.state, gameLog: log };
+    } else if (Engine.util.canAddToFA(G)) {
       const releasedFighter = Engine.orgTimeline.transfer(c, 'fa', G.season, G.week);
       G = { ...G, roster: newRoster, showCard: newShowCard, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
     } else {
@@ -5588,11 +5616,11 @@ const App = {
         for (const aId of teamAIds) {
           for (const bId of teamBIds) {
             const tagWinner = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
-            h2h = Engine.h2h.update(h2h, aId, bId, tagWinner, r.mq, false, false, s.season, s.week);
+            h2h = Engine.h2h.update(h2h, aId, bId, tagWinner, r.mq, false, false, s.season, s.week, 'show');
           }
         }
       } else {
-        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week);
+        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show');
       }
     });
     s = { ...s, h2h };
@@ -6171,7 +6199,7 @@ const App = {
     }
 
     return {
-      showName, venueName: venue.name, attendance, avgMQ,
+      showName, venueName: venue.name, venueIdx: G.showVenue, attendance, avgMQ,
       headline: np.headline, subheadline: np.subheadline, article: np.article,
       winner, loser, left: main.left, right: main.right, isDraw, finishLabel,
       turns, mq, hpLeft: hpL, hpRight: hpR, isTitleMatch: !!main.isTitleMatch,
@@ -8758,7 +8786,7 @@ const App = {
     let warH2h = { ...(G.h2h || {}) };
     wp.results.forEach(r => {
       const winner = r.playerWon ? 'left' : 'right';
-      warH2h = Engine.h2h.update(warH2h, r.playerFighter.id, r.aiFighter.id, winner, r.mq, false, false, G.season, G.week);
+      warH2h = Engine.h2h.update(warH2h, r.playerFighter.id, r.aiFighter.id, winner, r.mq, false, false, G.season, G.week, 'war');
     });
     G = { ...G, h2h: warH2h };
 
@@ -9159,7 +9187,7 @@ App.finalizePPV = function() {
   let ppvH2h = { ...(s.h2h || {}) };
   pp.results.forEach((r, idx) => {
     const match = pp.card[idx];
-    ppvH2h = Engine.h2h.update(ppvH2h, match.left.id, match.right.id, r.winner, r.mq, false, true, s.season, s.week);
+    ppvH2h = Engine.h2h.update(ppvH2h, match.left.id, match.right.id, r.winner, r.mq, false, true, s.season, s.week, 'ppv');
   });
   s = { ...s, h2h: ppvH2h };
 

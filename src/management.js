@@ -6495,6 +6495,9 @@ const Engine = {
         });
         newAiOrgs[newsOrgId] = newsData;
 
+        // h2h 記録 (AI vs AI 対抗戦)
+        s = { ...s, h2h: Engine.h2h.update(s.h2h, rep1.id, rep2.id, winner, matchResult.mq, false, false, s.season, s.week, 'war') };
+
         s = { ...s, aiOrgs: newAiOrgs };
         break; // 1週に1試合まで
       }
@@ -8901,10 +8904,10 @@ const Engine = {
         pairs.forEach(([lId, rId]) => {
           const isLTeamA = lId === m.teamA.fighter1 || lId === m.teamA.fighter2;
           const pairWinner = r.winner === 'draw' ? 'draw' : (isLTeamA ? (r.winner === 'teamA' ? 'left' : 'right') : (r.winner === 'teamB' ? 'left' : 'right'));
-          exH2h = Engine.h2h.update(exH2h, lId, rId, pairWinner, r.mq, false, false, s.season, s.week);
+          exH2h = Engine.h2h.update(exH2h, lId, rId, pairWinner, r.mq, false, false, s.season, s.week, 'show');
         });
       } else {
-        exH2h = Engine.h2h.update(exH2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week);
+        exH2h = Engine.h2h.update(exH2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show');
       }
     });
     s = { ...s, h2h: exH2h };

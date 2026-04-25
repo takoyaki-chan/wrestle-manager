@@ -172,6 +172,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | match-flavor-popup-spec-v0.1.md | 試合前フレーバーポップアップ(未実装v0.1) |
 | match-popup-overview-v0.1.md | 試合演出ポップアップ再設計 全体構想(未実装v0.1) |
 | faction-system-spec-v0.1.md | 派閥システム(DRAFT・未実装v0.1) |
+| rivalry-chronicle-spec-v1.0.md | 因縁列伝(3面) — 9象限分類 + H2H.history[] + 黒田叙述紙面 |
 
 ## UI実装ルール(必読)
 
