@@ -1578,7 +1578,7 @@ const Engine = {
         const titlePopGain = Engine.popularity.applyDiminishing(5, c.popularity);
         // v1.3: Record titleWin for new champion
         let updated = { ...c, popularity: Math.min(100, c.popularity + titlePopGain), ...reassessed };
-        return Engine.career.recordTitleWin(updated, 'world', G.season, G.week);
+        return Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(updated, 'world', G.season, G.week), G.season);
       });
       const c = G.roster.find(r => r.id === fighterId);
       const msg = prev
@@ -1601,7 +1601,7 @@ const Engine = {
           updated = { ...updated, ...reassessed };
         }
         // v1.3: Record titleDefense
-        updated = Engine.career.recordTitleDefense(updated, 'world', G.season, G.week, newDefenses);
+        updated = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(updated, 'world', G.season, G.week, newDefenses), G.season);
         return updated;
         return updated;
       });
@@ -1832,11 +1832,23 @@ const Engine = {
   career: {
     /** Create a fresh careerRecord object */
     createRecord() {
-      return { history: [], totalTitleWins: 0, totalDefenses: 0, peakOVR: 0, peakOVRSeason: 0, juniorTournamentWins: 0, juniorTournamentAppearances: 0, ppvMainEventWins: 0 };
+      return { history: [], totalTitleWins: 0, totalDefenses: 0, peakOVR: 0, peakOVRSeason: 0, peakPopularity: 0, peakPopularitySeason: 0, juniorTournamentWins: 0, juniorTournamentAppearances: 0, ppvMainEventWins: 0 };
     },
     /** Ensure fighter has careerRecord (for migration) */
     ensure(fighter) {
-      if (fighter.careerRecord) return fighter;
+      if (fighter.careerRecord) {
+        const cr = fighter.careerRecord;
+        if (cr.peakPopularity != null && cr.peakPopularitySeason != null) return fighter;
+        const fallbackPop = Math.round(fighter.popularity ?? fighter.pop ?? 0);
+        return {
+          ...fighter,
+          careerRecord: {
+            ...cr,
+            peakPopularity: cr.peakPopularity ?? fallbackPop,
+            peakPopularitySeason: cr.peakPopularitySeason ?? cr.peakOVRSeason ?? fighter.careerSeasons ?? 0,
+          }
+        };
+      }
       return { ...fighter, careerRecord: Engine.career.createRecord() };
     },
     /** Return new fighter with event appended to history */
@@ -1868,6 +1880,18 @@ const Engine = {
         return { ...f, careerRecord: { ...f.careerRecord, peakOVR: ovr, peakOVRSeason: season } };
       }
       return f;
+    },
+    /** Update peak popularity if current popularity is higher */
+    updatePeakPopularity(fighter, season) {
+      const f = Engine.career.ensure(fighter);
+      const pop = Math.round(f.popularity ?? f.pop ?? 0);
+      if (pop > (f.careerRecord.peakPopularity || 0)) {
+        return { ...f, careerRecord: { ...f.careerRecord, peakPopularity: pop, peakPopularitySeason: season } };
+      }
+      return f;
+    },
+    updateCareerPeaks(fighter, season) {
+      return Engine.career.updatePeakPopularity(Engine.career.updatePeakOVR(fighter, season), season);
     },
 
     /** §D-2 キャリアサマリー生成（UI表示用）
@@ -2231,6 +2255,13 @@ const Engine = {
       return retireEv?.season || fighter?.retiredSeason || state?.retiredSeasons?.[fighter?.id] || state?.season || fallbackStart || 1;
     },
 
+    _peakPopularityOf(fighter, fallbackSeason) {
+      const cr = fighter?.careerRecord || {};
+      const peakPopularity = Math.round(cr.peakPopularity ?? fighter?.peakPopularity ?? fighter?.popularity ?? fighter?.pop ?? 0);
+      const peakPopularitySeason = cr.peakPopularitySeason || fighter?.peakPopularitySeason || fallbackSeason || 1;
+      return { peakPopularity, peakPopularitySeason };
+    },
+
     /** spec §3.1 fighterArchive への最小限スナップショット登録。
      * 呼び出し側は player ロスター経由の引退であることを保証すること。 */
     archiveFighter(state, fighter) {
@@ -2246,9 +2277,8 @@ const Engine = {
 
       const peakOVR = (cr.peakOVR || 0) || (Engine.util.ov(fighter) || 0);
       const peakOVRSeason = cr.peakOVRSeason || careerSeasonsEnd;
-      // Phase 1 簡略化: 引退時点の pop で peakPopularity を近似
-      const peakPopularity = fighter.pop || 0;
-      const peakPopularitySeason = careerSeasonsEnd;
+      // Prefer the career peak, falling back to current popularity for old saves.
+      const { peakPopularity, peakPopularitySeason } = Engine.chronicle._peakPopularityOf(fighter, careerSeasonsEnd);
 
       // 年代記で意味のある特性のみ保持
       const kept = ['華', 'ファンサービス', '人望', 'ムードメーカー', '熱血', '名勝負製造機', 'ガラスのハート'];
@@ -2269,7 +2299,8 @@ const Engine = {
           history: hist.map(e => ({ ...e })),
           totalTitleWins: cr.totalTitleWins || 0,
           totalDefenses: cr.totalDefenses || 0,
-          peakOVR, peakOVRSeason
+          peakOVR, peakOVRSeason,
+          peakPopularity, peakPopularitySeason
         },
         traits,
         retiredSeason: careerSeasonsEnd
@@ -2358,6 +2389,7 @@ const Engine = {
         // archive と重複する場合は skip (理論上はない)
         if (list.some(a => a.id === f.id)) return;
         const cr = f.careerRecord || {};
+        const { peakPopularity, peakPopularitySeason } = Engine.chronicle._peakPopularityOf(f, state.season || 1);
         const candidate = {
           id: f.id,
           name: f.name,
@@ -2366,8 +2398,8 @@ const Engine = {
           archetype: f.archetype,
           peakOVR: cr.peakOVR || Engine.util.ov(f) || 0,
           peakOVRSeason: cr.peakOVRSeason || state.season || 1,
-          peakPopularity: f.pop || 0,
-          peakPopularitySeason: state.season || 1,
+          peakPopularity,
+          peakPopularitySeason,
           careerSeasonsStart: Engine.chronicle._estimateDebutSeason(f, state),
           careerSeasonsEnd: state.season || 1,
           titleReigns: cr.totalTitleWins || 0,
@@ -2377,7 +2409,9 @@ const Engine = {
             totalTitleWins: cr.totalTitleWins || 0,
             totalDefenses: cr.totalDefenses || 0,
             peakOVR: cr.peakOVR || 0,
-            peakOVRSeason: cr.peakOVRSeason || 0
+            peakOVRSeason: cr.peakOVRSeason || 0,
+            peakPopularity,
+            peakPopularitySeason
           },
           traits: f.traits || [],
           _active: true
@@ -3818,8 +3852,8 @@ const Engine = {
           const rv = Engine.scout.reassess(nc, 'age28plus', ageRng, G.season);
           nc = { ...nc, ...rv };
         }
-        // v1.3: Update peakOVR record
-        nc = Engine.career.updatePeakOVR(nc, G.season);
+        // v1.3: Update career peak records
+        nc = Engine.career.updateCareerPeaks(nc, G.season);
         // 財務タブリデザイン: salaryBonus 20%自然減衰（シーズン末）
         if (nc.salaryBonus && nc.salaryBonus > 0) {
           nc.salaryBonus = Math.round(nc.salaryBonus * 0.8);
@@ -5454,7 +5488,7 @@ const Engine = {
             });
             // 経歴記録: 新王者
             const topIdx = roster.findIndex(f => f.id === top.id);
-            if (topIdx >= 0) roster[topIdx] = Engine.career.recordTitleWin(roster[topIdx], beltId, state.season, state.week);
+            if (topIdx >= 0) roster[topIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(roster[topIdx], beltId, state.season, state.week), state.season);
           }
         } else {
           // 12週クールダウン判定（プレイヤーと同等）
@@ -5489,7 +5523,7 @@ const Engine = {
                 };
                 // 経歴記録: 防衛
                 const champIdx = roster.findIndex(f => f.id === champId);
-                if (champIdx >= 0) roster[champIdx] = Engine.career.recordTitleDefense(roster[champIdx], beltId, state.season, state.week, newDefenses);
+                if (champIdx >= 0) roster[champIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(roster[champIdx], beltId, state.season, state.week, newDefenses), state.season);
               } else {
                 // 王座交代
                 const winnerId = champResult.winner === 'left' ? champResult.left?.id : champResult.right?.id;
@@ -5504,7 +5538,7 @@ const Engine = {
                   });
                   // 経歴記録: 新王者 + 旧王者
                   const winnerIdx = roster.findIndex(f => f.id === winnerId);
-                  if (winnerIdx >= 0) roster[winnerIdx] = Engine.career.recordTitleWin(roster[winnerIdx], beltId, state.season, state.week);
+                  if (winnerIdx >= 0) roster[winnerIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(roster[winnerIdx], beltId, state.season, state.week), state.season);
                   const loserIdx = roster.findIndex(f => f.id === champId);
                   if (loserIdx >= 0) roster[loserIdx] = Engine.career.recordTitleLoss(roster[loserIdx], beltId, state.season, state.week, prevDefenses);
                 }
@@ -5738,7 +5772,7 @@ const Engine = {
         roster = roster.map(f => Engine.growth.applyDecay(rng, f));
 
         // Step 2b: peakOVR更新（decay適用後）
-        roster = roster.map(f => Engine.career.updatePeakOVR(f, state.season));
+        roster = roster.map(f => Engine.career.updateCareerPeaks(f, state.season));
 
         // 負傷中の選手回復（シーズン開始リセット）
         roster.forEach(f => {

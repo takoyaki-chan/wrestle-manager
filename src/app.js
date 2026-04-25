@@ -2460,6 +2460,12 @@ const Storage = {
       // 団体年代記 v0.1 マイグレーション (chronicle-system-spec-v0.1.md)
       if (!G._migrated_chronicle_v1) {
         const chEmpty = Engine.chronicle.createEmpty();
+        const peakPopularityOf = (f, fallbackSeason) => {
+          const cr = f.careerRecord || {};
+          const peakPopularity = Math.round(cr.peakPopularity ?? f.peakPopularity ?? f.popularity ?? f.pop ?? 0);
+          const peakPopularitySeason = cr.peakPopularitySeason || f.peakPopularitySeason || fallbackSeason || 1;
+          return { peakPopularity, peakPopularitySeason };
+        };
         // HoF player エントリを archive 形式に変換
         const hofToArchive = (h) => {
           const cr = h.careerRecord || {};
@@ -2468,6 +2474,7 @@ const Storage = {
           const start = debutEv ? (debutEv.season || 1) : 1;
           const end = h.inductionSeason || G.season || start;
           const pk = cr.peakOVR || h.retireOVR || h.ovr || 0;
+          const { peakPopularity, peakPopularitySeason } = peakPopularityOf(h, end);
           return {
             id: h.id,
             name: h.name,
@@ -2476,8 +2483,8 @@ const Storage = {
             archetype: h.archetype,
             peakOVR: pk,
             peakOVRSeason: cr.peakOVRSeason || end,
-            peakPopularity: h.peakPopularity || h.pop || 0,
-            peakPopularitySeason: end,
+            peakPopularity,
+            peakPopularitySeason,
             careerSeasonsStart: start,
             careerSeasonsEnd: end,
             titleReigns: h.titleReigns || cr.totalTitleWins || 0,
@@ -2487,7 +2494,9 @@ const Storage = {
               totalTitleWins: h.titleReigns || cr.totalTitleWins || 0,
               totalDefenses: h.totalDefenses || cr.totalDefenses || 0,
               peakOVR: pk,
-              peakOVRSeason: cr.peakOVRSeason || end
+              peakOVRSeason: cr.peakOVRSeason || end,
+              peakPopularity,
+              peakPopularitySeason
             },
             traits: (h.traits || []).filter(t =>
               ['華','ファンサービス','人望','ムードメーカー','熱血','名勝負製造機','ガラスのハート'].includes(t)
@@ -2503,6 +2512,7 @@ const Storage = {
           const start = debutEv ? (debutEv.season || 1) : 1;
           const end = G.season || start;
           const pk = cr.peakOVR || (Engine.util.ov && Engine.util.ov(f)) || 0;
+          const { peakPopularity, peakPopularitySeason } = peakPopularityOf(f, end);
           return {
             id: f.id,
             name: f.name,
@@ -2511,8 +2521,8 @@ const Storage = {
             archetype: f.archetype,
             peakOVR: pk,
             peakOVRSeason: cr.peakOVRSeason || end,
-            peakPopularity: f.pop || 0,
-            peakPopularitySeason: end,
+            peakPopularity,
+            peakPopularitySeason,
             careerSeasonsStart: start,
             careerSeasonsEnd: end,
             titleReigns: cr.totalTitleWins || 0,
@@ -2522,7 +2532,9 @@ const Storage = {
               totalTitleWins: cr.totalTitleWins || 0,
               totalDefenses: cr.totalDefenses || 0,
               peakOVR: pk,
-              peakOVRSeason: cr.peakOVRSeason || end
+              peakOVRSeason: cr.peakOVRSeason || end,
+              peakPopularity,
+              peakPopularitySeason
             },
             traits: (f.traits || []).filter(t =>
               ['華','ファンサービス','人望','ムードメーカー','熱血','名勝負製造機','ガラスのハート'].includes(t)

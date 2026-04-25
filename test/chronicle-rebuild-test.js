@@ -32,7 +32,7 @@ function makeRetiredFighter(id = 101) {
     te: 82,
     st: 84,
     mn: 80,
-    pop: 88,
+    popularity: 55,
     careerRecord: {
       history: [
         { type: 'debut', season: 1 },
@@ -43,7 +43,9 @@ function makeRetiredFighter(id = 101) {
       totalTitleWins: 2,
       totalDefenses: 4,
       peakOVR: 88,
-      peakOVRSeason: 4
+      peakOVRSeason: 4,
+      peakPopularity: 88,
+      peakPopularitySeason: 4
     },
     traits: []
   };
@@ -98,6 +100,69 @@ function makeRetiredFighter(id = 101) {
     careerRecord: { history: [] }
   });
   assert.deepStrictEqual(prime, { primeStart: 6, primeEnd: 10 });
+})();
+
+(function careerTracksPeakPopularity() {
+  const fighter = Engine.career.updatePeakPopularity({
+    id: 202,
+    name: 'Peak Pop',
+    popularity: 77,
+    pw: 50,
+    sp: 50,
+    te: 50,
+    st: 50,
+    mn: 50,
+    careerRecord: Engine.career.createRecord()
+  }, 6);
+
+  assert.strictEqual(fighter.careerRecord.peakPopularity, 77);
+  assert.strictEqual(fighter.careerRecord.peakPopularitySeason, 6);
+})();
+
+(function archiveUsesCareerPeakPopularityOverCurrentPopularity() {
+  let state = {
+    rngSeed: 42,
+    season: 12,
+    orgName: 'Test Org',
+    roster: [],
+    chronicle: Engine.chronicle.createEmpty()
+  };
+  state = Engine.chronicle.archiveFighter(state, makeRetiredFighter(303));
+
+  const archived = state.chronicle.fighterArchive.find(f => f.id === 303);
+  assert.strictEqual(archived.peakPopularity, 88);
+  assert.strictEqual(archived.peakPopularitySeason, 4);
+  assert.strictEqual(archived.careerRecord.peakPopularity, 88);
+})();
+
+(function activeCandidatesUseCareerPeakPopularity() {
+  const state = {
+    season: 11,
+    roster: [{
+      id: 404,
+      name: 'Active Peak',
+      style: 'striker',
+      personality: 'normal',
+      popularity: 43,
+      age: 24,
+      pw: 70,
+      sp: 70,
+      te: 70,
+      st: 70,
+      mn: 70,
+      careerRecord: {
+        history: [{ type: 'debut', season: 3 }],
+        peakOVR: 70,
+        peakOVRSeason: 8,
+        peakPopularity: 91,
+        peakPopularitySeason: 9
+      }
+    }],
+    chronicle: Engine.chronicle.createEmpty()
+  };
+  const candidate = Engine.chronicle._collectCandidates(state).find(f => f.id === 404);
+  assert.strictEqual(candidate.peakPopularity, 91);
+  assert.strictEqual(candidate.peakPopularitySeason, 9);
 })();
 
 (function chapterSegmentationUsesFourToSevenSeasonWindows() {
