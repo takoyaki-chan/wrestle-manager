@@ -4,6 +4,19 @@
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+/** ランキング画面 v0.9：OVR数字に階調クラスを返す（数字専用、団体スコアには使わない） */
+function valueClassOvr(ovr) {
+  const T = OVR_TIER_THRESHOLDS;
+  if (ovr >= T.mythic)   return 'v-mythic';
+  if (ovr >= T.eliteMid) return 'v-elite-mid';
+  if (ovr >= T.elite)    return 'v-elite';
+  if (ovr >= T.eliteLow) return 'v-elite-low';
+  if (ovr >= T.high)     return 'v-high';
+  if (ovr >= T.mid)      return 'v-mid';
+  if (ovr >= T.low)      return 'v-low';
+  return 'v-poor';
+}
+
 function _fmtStat(v) {
   if (typeof v !== 'number' || isNaN(v)) return v;
   return +v.toFixed(2);

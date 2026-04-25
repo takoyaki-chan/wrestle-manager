@@ -47,6 +47,7 @@ function _applyShake(cardEl, isCrit){
 }
 
 // カウンター: 攻撃側カードに counter-flash (380ms) + 半音量 counterSE。
+// counterSE は返し矢印が着弾するタイミング (約2000ms後) に合わせて遅延発火。
 function _applyCounterFlash(atkCardEl){
   if (atkCardEl){
     atkCardEl.classList.remove('counter-flash');
@@ -54,23 +55,28 @@ function _applyCounterFlash(atkCardEl){
     atkCardEl.classList.add('counter-flash');
     setTimeout(function(){ atkCardEl.classList.remove('counter-flash'); }, 380);
   }
-  try {
-    if (typeof getSfxGain === 'function' && typeof SE_MIX !== 'undefined') {
-      getSfxGain().gain.value = SE_MIX.counterSE * 0.5;
-    }
-    if (typeof _playSample === 'function') _playSample('counterSE', 0.5);
-  } catch(e){}
+  setTimeout(function(){
+    try {
+      if (typeof getSfxGain === 'function' && typeof SE_MIX !== 'undefined') {
+        getSfxGain().gain.value = SE_MIX.counterSE * 0.5;
+      }
+      if (typeof _playSample === 'function') _playSample('counterSE', 0.5);
+    } catch(e){}
+  }, 2000);
 }
 
-// ヒット SE: 大技は bigmoveImpact を重ね、hitSE を 1.3 倍音量で鳴らす。
+// ヒット SE: 技音(hitSE)のみを鳴らす。
+// - bigmoveImpact (旧: dmg>=20で重ねていたドーン音) は廃止: 技音だけが鳴ることでドカンポン連発を解消。
+// - 飛び技 (aerial) は飛翔→着地の時間差を表現するため hitSE を 1100ms 遅延。
 function _playImpactSE(action){
   var cat    = action.moveCat || (typeof guessCategory === 'function' ? guessCategory(action.move) : 'strike');
   var isBig  = action.dmg >= 20;
   var volMul = isBig ? 1.3 : 1;
-  try {
-    if (isBig && typeof sfx !== 'undefined' && sfx.bigmoveImpact) sfx.bigmoveImpact();
-    if (typeof hitSE === 'function') hitSE(cat, action.dmg, volMul);
-  } catch(e){}
+  var fire = function(){
+    try { if (typeof hitSE === 'function') hitSE(cat, action.dmg, volMul); } catch(e){}
+  };
+  if (cat === 'aerial') setTimeout(fire, 1100);
+  else fire();
 }
 
 // 大技クリティカル時の赤フラッシュ (300ms)。要素が無ければ no-op。
