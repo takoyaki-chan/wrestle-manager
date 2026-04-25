@@ -6316,6 +6316,7 @@ function rebuildChronicle() {
   if (!G || !Engine.chronicle) return;
   G = Engine.chronicle.buildChapters(G, { forceRebuild: true });
   _dbChronicleIdx = null;
+  Storage.autoSave();
   renderDatabase();
 }
 window.rebuildChronicle = rebuildChronicle;

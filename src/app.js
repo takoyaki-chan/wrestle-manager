@@ -2566,6 +2566,18 @@ const Storage = {
       }
 
       // v0.2: coachSlots マイグレーション（既存セーブは雇用済みコーチ数に合わせて枠を初期化）
+      // Chronicle v0.2: rebuild old save caches after chapter confirmation rule changes.
+      if (!G._migrated_chronicle_status_v2 && G.chronicle && Engine.chronicle) {
+        try {
+          G = Engine.chronicle.refreshChapters
+            ? Engine.chronicle.refreshChapters(G)
+            : Engine.chronicle.buildChapters(G, { forceRebuild: true });
+        } catch (e) {
+          console.warn('[chronicle] status v2 rebuild failed', e);
+        }
+        G = { ...G, _migrated_chronicle_status_v2: true };
+      }
+
       if (!G._migrated_coachSlots_v1) {
         const hiredCount = (G.coaches || []).length;
         G = { ...G, coachSlots: Math.max(1, hiredCount), _migrated_coachSlots_v1: true };
