@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ランキング画面リデザイン v0.9.1 — 番号削除・キャラ下端揃え</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --office-bg:                 #14130f;
+  --office-bg-deep:            #0f0d0a;
+  --office-text-on-dark-main:  #f0eee8;
+  --office-text-on-dark-sub:   #a8a59a;
+  --office-text-on-dark-dim:   #6b6960;
+
+  --gold:        #d4a843;
+  --gold-light:  #f0d078;
+  --gold-deep:   #9c7820;
+
+  --signal-up:    #2ecc71;
+  --signal-down:  #e74c3c;
+  --signal-info:  #3498db;
+
+  /* テーマB：順位カラー */
+  --rank-1: #d4a843;  /* Gold */
+  --rank-1-light: #f0d078;
+  --rank-1-deep:  #9c7820;
+  --rank-2: #c0c0c0;  /* Silver */
+  --rank-2-light: #e8e8e8;
+  --rank-2-deep:  #888888;
+  --rank-3: #c47e3a;  /* Bronze */
+  --rank-3-light: #d89858;
+  --rank-3-deep:  #8a4f1f;
+  --rank-4: #6b6960;  /* Steel */
+  --rank-4-light: #b8b6ad;
+  --rank-4-deep:  #5a584f;
+
+  /* 看板バッジ（赤） */
+  --board-red:        #ff4530;
+  --board-red-bg:     rgba(214,48,49,0.18);
+  --board-red-border: #e85040;
+
+  /* OVR 階調（v0.9：80-100+を5段階に細分化、80から黄色味スタート） */
+  --v-mythic:    #ffd700; /* 100+      — 純金（彩度高い・glow強化） */
+  --v-elite-mid: #ffc640; /* 95-99     — 強金 */
+  --v-elite:     #ffd870; /* 90-94     — 中金 */
+  --v-elite-low: #ffe898; /* 85-89     — 淡シャンパン金（新規） */
+  --v-high:      #fff0c0; /* 80-84     — クリーム白（黄色味スタート地点） */
+  --v-mid:       #f0eee8; /* 70-79     — 暖白 */
+  --v-low:       #b8b5a8; /* 60-69     — 淡グレー */
+  --v-poor:      #7a766b; /* ~59       — 暗グレー */
+
+  /* 中性アクセント（テーマB全体の引き締め色） */
+  --th-accent:       #cccccc;
+  --th-accent-light: #ffffff;
+  --th-divider:      rgba(255,255,255,0.12);
+  --th-text-main:    #f0eee8;
+  --th-text-sub:     #a8a59a;
+  --th-text-dim:     #6b6960;
+  --th-border:       rgba(255,255,255,0.06);
+  --th-section-bg:   #14130f;
+  --th-card-bg:      linear-gradient(180deg, #1d1b16, #100f0c);
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 28px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --font-body:  "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-num:   "Bebas Neue", "Noto Sans JP", sans-serif;
+  --font-label: "Oswald", "Noto Sans JP", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: #2a2520;
+  color: var(--office-text-on-dark-main);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+body { padding: 24px 0 80px; }
+
+.shell {
+  width: min(1200px, calc(100vw - 24px));
+  margin: 0 auto;
+}
+
+.intro {
+  background: linear-gradient(180deg, rgba(20,18,16,0.95), rgba(24,22,20,0.88));
+  border: 1px solid rgba(212,168,67,0.18);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  color: var(--office-text-on-dark-main);
+}
+.intro .eyebrow {
+  font-family: var(--font-label);
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.intro h1 { font-size: 22px; margin: 0 0 6px; font-weight: 700; }
+.intro p { margin: 0; color: var(--office-text-on-dark-sub); font-size: 13px; max-width: 880px; }
+
+
+/* ════════════════════════════════════════════════════
+   ポップアップ全体のフレーム
+   ════════════════════════════════════════════════════ */
+.popup {
+  background: var(--office-bg);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.55);
+}
+
+.popup-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(212,168,67,0.18);
+  display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(180deg, rgba(0,0,0,0.4), transparent);
+}
+.popup-header h2 {
+  margin: 0; font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+  color: var(--office-text-on-dark-main);
+}
+.popup-header h2 .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--gold);
+}
+.popup-header .close-btn {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--office-text-on-dark-sub);
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+/* マスト */
+.popup-mast {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.25);
+  border-bottom: 4px double var(--gold);
+}
+.popup-mast-title {
+  font-family: var(--font-num);
+  font-size: 30px;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  color: var(--gold);
+  text-shadow: 0 4px 16px rgba(212,168,67,0.3);
+}
+.popup-mast-meta {
+  text-align: right;
+  font-size: 11px;
+  color: var(--office-text-on-dark-sub);
+}
+.popup-mast-meta .issue {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.popup-mast-meta .date {
+  font-family: var(--font-num);
+  font-size: 16px;
+  color: var(--office-text-on-dark-main);
+  margin-top: 1px;
+  letter-spacing: 0.06em;
+}
+
+
+/* ════════════════════════════════════════════════════
+   勝利条件バー（01ヒーロー削除に伴うサマリー表示）
+   ════════════════════════════════════════════════════ */
+.victory-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 12px 20px;
+  background:
+    radial-gradient(ellipse at center, rgba(212,168,67,0.12) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.victory-bar .vb-side {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 12px;
+}
+.victory-bar .vb-side.vb-target {
+  justify-content: flex-start;
+  color: var(--rank-1);
+}
+.victory-bar .vb-side.vb-player {
+  justify-content: flex-end;
+  color: var(--rank-2);
+}
+.victory-bar .vb-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.victory-bar .vb-org {
+  font-weight: 700;
+  color: var(--office-text-on-dark-main);
+}
+.victory-bar .vb-pt {
+  font-family: var(--font-num);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.victory-bar .vb-pt .unit {
+  font-family: var(--font-label);
+  font-size: 10px;
+  color: var(--office-text-on-dark-sub);
+  letter-spacing: 0.08em;
+  margin-left: 2px;
+}
+.victory-bar .vb-middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 var(--space-md);
+  border-left: 1px solid rgba(255,255,255,0.1);
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+.victory-bar .vb-gap-num {
+  font-family: var(--font-num);
+  font-size: 28px;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(212,168,67,0.3);
+}
+.victory-bar .vb-gap-label {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--office-text-on-dark-sub);
+  margin-top: 2px;
+}
+
+
+/* ════════════════════════════════════════════════════
+   01 ヒーロー（v0.4ベース、テーマB配色）
+   ════════════════════════════════════════════════════ */
+.hero {
+  position: relative;
+  padding: var(--space-xl) var(--space-xl) var(--space-md);
+  display: grid;
+  grid-template-columns: 240px 1fr 240px;
+  gap: var(--space-md);
+  align-items: stretch;
+  background:
+    radial-gradient(ellipse at center bottom, rgba(212,168,67,0.18) 0%, transparent 55%),
+    radial-gradient(circle at 50% 0%, rgba(212,168,67,0.16) 0%, transparent 55%),
+    linear-gradient(180deg, #25221c 0%, #14120f 100%);
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.hero-watermark {
+  position: absolute;
+  font-family: var(--font-num);
+  font-size: 280px;
+  line-height: 0.85;
+  color: rgba(212,168,67,0.08);
+  letter-spacing: -0.04em;
+  bottom: -20px;
+  right: -10px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-side {
+  position: relative;
+  z-index: 3;
+  padding: var(--space-md);
+  background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.3));
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+}
+/* 1位（target）= 金 */
+.hero-side.target {
+  border-left: 3px solid var(--rank-1);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+/* 自団体（player）= 銀（2位の場合） */
+.hero-side.player {
+  border-right: 3px solid var(--rank-2);
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+.hero-side .eyebrow {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.hero-side.target .eyebrow { color: var(--rank-1); }
+.hero-side.player .eyebrow { color: var(--rank-2); }
+.hero-side .name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.hero-side.target .name { color: var(--rank-1); }
+.hero-side.player .name { color: var(--rank-2-light); }
+.hero-side .meta-line {
+  font-size: 11px;
+  color: var(--office-text-on-dark-sub);
+  margin-bottom: 8px;
+}
+.hero-side .pt-line {
+  font-family: var(--font-num);
+  font-size: 28px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-bottom: 6px;
+  color: var(--th-text-main);
+}
+.hero-side .pt-line .unit {
+  font-family: var(--font-label);
+  font-size: 11px;
+  color: var(--office-text-on-dark-sub);
+  margin-left: 3px;
+  letter-spacing: 0.1em;
+}
+.hero-side .stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--office-text-on-dark-sub);
+  margin-top: 3px;
+}
+.hero-side .stat-row .v {
+  font-family: var(--font-num);
+  color: var(--office-text-on-dark-main);
+  font-size: 13px;
+}
+.hero-side .target-strip {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.hero-side.target .target-strip { color: var(--rank-1); }
+.hero-side.player .target-strip { color: var(--rank-2); }
+
+/* 中央：1位看板選手 */
+.hero-center {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.hero-feature-tag {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  color: var(--rank-1);
+  text-transform: uppercase;
+  border-top: 1px solid var(--rank-1);
+  border-bottom: 1px solid var(--rank-1);
+  padding: 3px 14px;
+  margin-bottom: 8px;
+}
+.hero-center .king-org {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  margin-bottom: 1px;
+  background: linear-gradient(180deg, #fff, var(--rank-1));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 4px 24px rgba(212,168,67,0.3);
+}
+.hero-center .king-tier {
+  font-size: 10px;
+  color: var(--office-text-on-dark-sub);
+  margin-bottom: 6px;
+  font-family: var(--font-label);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.hero-center .king-tier strong {
+  color: var(--office-text-on-dark-main);
+  font-family: var(--font-num);
+  font-size: 13px;
+  margin: 0 3px;
+}
+.hero-bottom {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: var(--space-lg);
+  width: 100%;
+  margin-top: 4px;
+}
+.hero-image {
+  position: relative;
+  width: 180px;
+  height: 240px;
+  flex-shrink: 0;
+}
+.hero-image img {
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  height: 100%;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6))
+          drop-shadow(0 0 24px rgba(212,168,67,0.25));
+}
+.hero-image .crown {
+  position: absolute;
+  top: -4px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  filter: drop-shadow(0 4px 8px rgba(212,168,67,0.6));
+  z-index: 3;
+}
+.hero-image .champ-name-plate {
+  position: absolute;
+  bottom: -8px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, var(--rank-1-light), var(--rank-1-deep));
+  color: #1a1814;
+  padding: 3px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  z-index: 4;
+  font-family: var(--font-label);
+  letter-spacing: 0.1em;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0 50%);
+}
+.hero-rating-block {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding-bottom: 16px;
+}
+.hero-rating {
+  font-family: var(--font-num);
+  font-size: 84px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--th-text-main);
+  text-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  /* 評価値（pt）は階調を当てない方針。OVRと違って絶対値の意味が固定でないため */
+}
+.hero-rating .unit {
+  font-size: 20px;
+  color: var(--office-text-on-dark-sub);
+  font-family: var(--font-label);
+  letter-spacing: 0.12em;
+  margin-left: 4px;
+}
+.hero-rating-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  color: var(--office-text-on-dark-sub);
+  text-transform: uppercase;
+  margin-top: -4px;
+  align-self: start;
+}
+
+
+/* ════════════════════════════════════════════════════
+   02 全団体ロースター（v0.4 T字配置、テーマB配色）
+   ════════════════════════════════════════════════════ */
+.section {
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--th-divider);
+}
+.section.bg-deep { background: var(--office-bg-deep); }
+.section.bg-card {
+  background: linear-gradient(180deg, #1a1812, #14120f);
+}
+
+.section-marker {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--th-divider);
+}
+.section-marker .num {
+  font-family: var(--font-num);
+  font-size: 36px;
+  color: var(--gold);
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+.section-marker .text .kicker {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.section-marker .text .title {
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--th-text-main);
+  margin-top: 1px;
+}
+
+/* 4団体グリッド — 1位は少し広く */
+.orgs-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: var(--space-md);
+  align-items: stretch;
+}
+
+/* 1位カード拡大スタイル */
+.orgcell.is-rank-1 {
+  min-height: 420px;
+}
+.orgcell.is-rank-1 .orgcell-head .rank {
+  font-size: 48px;
+}
+.orgcell.is-rank-1 .name-block .nm {
+  font-size: 16px;
+}
+.orgcell.is-rank-1 .orgcell-formation {
+  height: 220px;
+}
+.orgcell.is-rank-1 .orgcell-fcell.pos-1 {
+  width: 150px;
+  height: 195px;
+}
+.orgcell.is-rank-1 .orgcell-fcell.pos-2,
+.orgcell.is-rank-1 .orgcell-fcell.pos-3 {
+  width: 100px;
+  height: 145px;
+}
+.orgcell.is-rank-1 .orgcell-foot .pt-block .v {
+  font-size: 32px;
+}
+
+.orgcell {
+  background: var(--th-card-bg);
+  border: 1px solid var(--th-border);
+  border-top: 3px solid var(--gold);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+.orgcell.is-rank-1 { border-top-color: var(--rank-1); }
+.orgcell.is-rank-2 { border-top-color: var(--rank-2); }
+.orgcell.is-rank-3 { border-top-color: var(--rank-3); }
+.orgcell.is-rank-4 { border-top-color: var(--rank-4); }
+.orgcell.is-player {
+  box-shadow: 0 0 0 2px var(--rank-2);
+}
+
+/* head */
+.orgcell-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-md);
+  position: relative;
+  z-index: 3;
+  background: linear-gradient(180deg, rgba(0,0,0,0.4), transparent);
+}
+.orgcell-head .rank {
+  font-family: var(--font-num);
+  font-size: 38px;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+}
+.orgcell.is-rank-1 .rank { color: var(--rank-1); }
+.orgcell.is-rank-2 .rank { color: var(--rank-2); }
+.orgcell.is-rank-3 .rank { color: var(--rank-3); }
+.orgcell.is-rank-4 .rank { color: var(--rank-4); }
+
+.orgcell-head .name-block { flex: 1; min-width: 0; }
+.orgcell-head .name-block .nm {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.orgcell.is-rank-1 .name-block .nm { color: var(--rank-1-light); }
+.orgcell.is-rank-2 .name-block .nm { color: var(--rank-2-light); }
+.orgcell.is-rank-3 .name-block .nm { color: var(--rank-3-light); }
+.orgcell.is-rank-4 .name-block .nm { color: var(--rank-4-light); }
+
+.orgcell-head .name-block .meta {
+  font-size: 10px;
+  color: var(--office-text-on-dark-sub);
+  margin-top: 2px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.tier-pill {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  color: #110a05;
+}
+.orgcell.is-rank-1 .tier-pill { background: linear-gradient(180deg, var(--rank-1-light), var(--rank-1-deep)); }
+.orgcell.is-rank-2 .tier-pill { background: linear-gradient(180deg, var(--rank-2-light), var(--rank-2-deep)); }
+.orgcell.is-rank-3 .tier-pill { background: linear-gradient(180deg, var(--rank-3-light), var(--rank-3-deep)); }
+.orgcell.is-rank-4 .tier-pill { background: linear-gradient(180deg, var(--rank-4-light), var(--rank-4-deep)); color: #fff; }
+
+/* T字フォーメーション（v0.4そのまま、選手名タグだけ縁取り化） */
+.orgcell-formation {
+  position: relative;
+  height: 180px;
+  margin: 0 var(--space-sm);
+  margin-top: auto; /* フッター直上に押し付けることで全カードのキャラ下端を揃える */
+  flex-shrink: 0;
+}
+.orgcell-formation::after {
+  content: "";
+  position: absolute;
+  left: 10%; right: 10%;
+  bottom: 12px;
+  height: 1px;
+  z-index: 0;
+}
+.orgcell.is-rank-1 .orgcell-formation::after { background: radial-gradient(ellipse, rgba(212,168,67,0.4), transparent); }
+.orgcell.is-rank-2 .orgcell-formation::after { background: radial-gradient(ellipse, rgba(192,192,192,0.4), transparent); }
+.orgcell.is-rank-3 .orgcell-formation::after { background: radial-gradient(ellipse, rgba(196,126,58,0.4), transparent); }
+.orgcell.is-rank-4 .orgcell-formation::after { background: radial-gradient(ellipse, rgba(255,255,255,0.18), transparent); }
+
+.orgcell-fcell {
+  position: absolute;
+  bottom: 12px;
+}
+.orgcell-fcell.pos-1 {
+  left: 50%; transform: translateX(-50%);
+  width: 130px; height: 165px;
+  z-index: 30;
+}
+.orgcell-fcell.pos-1 .img-wrap { width: 100%; height: 100%; display: flex; align-items: end; justify-content: center; }
+.orgcell-fcell.pos-1 img { height: 100%; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.55)); }
+.orgcell-fcell.pos-1.is-champ::before {
+  content: ""; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+  width: 110px; height: 18px;
+  z-index: -1; border-radius: 50%;
+  opacity: 0.5;
+}
+.orgcell.is-rank-1 .orgcell-fcell.pos-1.is-champ::before { background: radial-gradient(ellipse, var(--rank-1), transparent 70%); }
+.orgcell.is-rank-2 .orgcell-fcell.pos-1.is-champ::before { background: radial-gradient(ellipse, var(--rank-2), transparent 70%); }
+.orgcell.is-rank-3 .orgcell-fcell.pos-1.is-champ::before { background: radial-gradient(ellipse, var(--rank-3), transparent 70%); }
+.orgcell.is-rank-4 .orgcell-fcell.pos-1.is-champ::before { background: radial-gradient(ellipse, var(--rank-4), transparent 70%); }
+
+.orgcell-fcell.pos-2 {
+  left: 8px; width: 90px; height: 130px;
+  z-index: 20; bottom: 22px;
+}
+.orgcell-fcell.pos-2 .img-wrap { width: 100%; height: 100%; display: flex; align-items: end; justify-content: center; }
+.orgcell-fcell.pos-2 img { height: 100%; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); opacity: 0.92; }
+
+.orgcell-fcell.pos-3 {
+  right: 8px; width: 90px; height: 130px;
+  z-index: 20; bottom: 22px;
+}
+.orgcell-fcell.pos-3 .img-wrap { width: 100%; height: 100%; display: flex; align-items: end; justify-content: center; }
+.orgcell-fcell.pos-3 img { height: 100%; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); opacity: 0.92; }
+
+.orgcell-fcell .crown-mini {
+  position: absolute; top: -2px; left: 50%; transform: translateX(-50%);
+  font-size: 18px; z-index: 5;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+/* ★ 選手名タグ：縁取り化（v0.5.1ルール適用） */
+.orgcell-fcell .nm-tag {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
+}
+.orgcell-fcell.pos-1 .nm-tag {
+  font-size: 11px;
+  text-shadow:
+    -1.5px -1.5px 0 #000,
+     1.5px -1.5px 0 #000,
+    -1.5px  1.5px 0 #000,
+     1.5px  1.5px 0 #000,
+     0    0   3px rgba(0,0,0,0.9);
+}
+.orgcell-fcell .nm-tag .ovr {
+  font-family: var(--font-num);
+  margin-left: 4px;
+  letter-spacing: 0.04em;
+  /* 色は値クラス（.v-elite/.v-high/.v-mid/.v-low/.v-poor）で個別指定 */
+}
+
+.orgcell-foot {
+  /* margin-top: auto は formation 側に移動 */
+  padding: var(--space-md);
+  border-top: 1px solid var(--th-divider);
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+}
+.orgcell-foot .pt-block .label {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--office-text-on-dark-dim);
+  text-transform: uppercase;
+}
+.orgcell-foot .pt-block .v {
+  font-family: var(--font-num);
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--th-text-main);
+}
+.orgcell-foot .pt-block .v .unit {
+  font-size: 11px;
+  color: var(--office-text-on-dark-sub);
+  font-family: var(--font-label);
+  letter-spacing: 0.08em;
+  margin-left: 2px;
+}
+.orgcell-foot .meta-block {
+  text-align: right;
+  font-size: 10px;
+  color: var(--office-text-on-dark-sub);
+  line-height: 1.5;
+}
+.orgcell-foot .meta-block .ovr-line {
+  font-family: var(--font-num);
+  font-size: 14px;
+  color: var(--office-text-on-dark-main);
+}
+.orgcell-foot .meta-block .battle-pos { color: var(--signal-up); }
+.orgcell-foot .meta-block .battle-neg { color: var(--signal-down); }
+
+
+/* ════════════════════════════════════════════════════
+   03 団体プロファイル（v0.5.1そのまま）
+   ════════════════════════════════════════════════════ */
+.org-card {
+  background: var(--th-card-bg);
+  border: 1px solid var(--th-border);
+  margin-bottom: var(--space-md);
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  position: relative;
+  overflow: hidden;
+  min-height: 360px;
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+}
+.org-card.flip { grid-template-columns: 1fr 320px; }
+.org-card.flip .org-banner { order: 2; }
+.org-card.flip .org-body   { order: 1; }
+.org-card.is-rank-1 { border-color: rgba(212,168,67,0.4); }
+.org-card.is-rank-2 { border-color: rgba(192,192,192,0.4); }
+.org-card.is-rank-3 { border-color: rgba(196,126,58,0.4); }
+.org-card.is-rank-4 { border-color: rgba(255,255,255,0.1); }
+.org-card.is-player { box-shadow: 0 0 0 2px var(--rank-2); }
+
+.org-banner {
+  position: relative;
+  background: linear-gradient(180deg, #25221c, #14120f);
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  overflow: hidden;
+}
+.org-banner::before {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+}
+.org-card.is-rank-1 .org-banner::before { background: radial-gradient(ellipse at center, rgba(212,168,67,0.18), transparent 70%); }
+.org-card.is-rank-2 .org-banner::before { background: radial-gradient(ellipse at center, rgba(192,192,192,0.14), transparent 70%); }
+.org-card.is-rank-3 .org-banner::before { background: radial-gradient(ellipse at center, rgba(196,126,58,0.16), transparent 70%); }
+.org-card.is-rank-4 .org-banner::before { background: radial-gradient(ellipse at center, rgba(255,255,255,0.06), transparent 70%); }
+.org-banner::after {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 4px, rgba(255,255,255,0.02) 4px, rgba(255,255,255,0.02) 5px);
+  pointer-events: none; z-index: 1;
+}
+
+.org-banner .rank-watermark {
+  position: absolute;
+  font-family: var(--font-num);
+  font-size: 320px;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  bottom: -40px;
+  right: -20px;
+  z-index: 2;
+  pointer-events: none;
+}
+.org-card.flip .org-banner .rank-watermark { right: auto; left: -20px; }
+.org-card.is-rank-1 .rank-watermark { color: rgba(212,168,67,0.10); }
+.org-card.is-rank-2 .rank-watermark { color: rgba(192,192,192,0.08); }
+.org-card.is-rank-3 .rank-watermark { color: rgba(196,126,58,0.08); }
+.org-card.is-rank-4 .rank-watermark { color: rgba(255,255,255,0.05); }
+
+.org-banner .vertical-overline {
+  position: absolute;
+  left: 12px; top: 16px;
+  writing-mode: vertical-rl;
+  font-family: var(--font-num);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  opacity: 0.7;
+  z-index: 4;
+}
+.org-card.flip .org-banner .vertical-overline { left: auto; right: 12px; }
+.org-card.is-rank-1 .vertical-overline { color: var(--rank-1); }
+.org-card.is-rank-2 .vertical-overline { color: var(--rank-2); }
+.org-card.is-rank-3 .vertical-overline { color: var(--rank-3); }
+.org-card.is-rank-4 .vertical-overline { color: var(--rank-4); }
+
+.org-banner .ace-stand {
+  position: relative;
+  width: 100%; height: 100%;
+  display: flex; align-items: end; justify-content: center;
+  z-index: 3;
+}
+.org-banner .ace-stand img {
+  width: 100%; height: auto;
+  max-height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  filter: drop-shadow(0 8px 14px rgba(0,0,0,0.5));
+}
+.org-card:not(.flip) .org-banner .ace-stand img { transform: scaleX(-1); }
+
+.org-banner .crown-large {
+  position: absolute;
+  top: 10px; left: 50%; transform: translateX(-50%);
+  font-size: 30px; z-index: 5;
+  filter: drop-shadow(0 2px 6px rgba(212,168,67,0.6));
+}
+.org-banner .ace-name-plate {
+  position: absolute;
+  bottom: 12px; left: 50%; transform: translateX(-50%);
+  color: #110a05;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  z-index: 5;
+  font-family: var(--font-label);
+  letter-spacing: 0.12em;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0 50%);
+}
+.org-card.is-rank-1 .ace-name-plate { background: linear-gradient(180deg, var(--rank-1-light), var(--rank-1-deep)); }
+.org-card.is-rank-2 .ace-name-plate { background: linear-gradient(180deg, var(--rank-2-light), var(--rank-2-deep)); }
+.org-card.is-rank-3 .ace-name-plate { background: linear-gradient(180deg, var(--rank-3-light), var(--rank-3-deep)); }
+.org-card.is-rank-4 .ace-name-plate { background: linear-gradient(180deg, var(--rank-4-light), var(--rank-4-deep)); color: #fff; }
+
+.org-body {
+  padding: var(--space-lg) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  z-index: 2;
+}
+.org-body .header {
+  display: flex; align-items: baseline; gap: var(--space-md); flex-wrap: wrap;
+}
+.org-body .header .rank-tiny {
+  font-family: var(--font-num);
+  font-size: 48px;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+}
+.org-card.is-rank-1 .header .rank-tiny { color: var(--rank-1); }
+.org-card.is-rank-2 .header .rank-tiny { color: var(--rank-2); }
+.org-card.is-rank-3 .header .rank-tiny { color: var(--rank-3); }
+.org-card.is-rank-4 .header .rank-tiny { color: var(--rank-4); }
+
+.org-body .header .feature-tag {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+}
+.org-card.is-rank-1 .feature-tag { color: var(--rank-1); border-top: 1px solid var(--rank-1); border-bottom: 1px solid var(--rank-1); }
+.org-card.is-rank-2 .feature-tag { color: var(--rank-2); border-top: 1px solid var(--rank-2); border-bottom: 1px solid var(--rank-2); }
+.org-card.is-rank-3 .feature-tag { color: var(--rank-3); border-top: 1px solid var(--rank-3); border-bottom: 1px solid var(--rank-3); }
+.org-card.is-rank-4 .feature-tag { color: var(--rank-4); border-top: 1px solid var(--rank-4); border-bottom: 1px solid var(--rank-4); }
+
+.org-body .org-headline {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.05;
+  margin: 0;
+  letter-spacing: -0.01em;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.org-card.is-rank-1 .org-headline { background: linear-gradient(180deg, #fff, var(--rank-1)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.org-card.is-rank-2 .org-headline { background: linear-gradient(180deg, #fff, var(--rank-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.org-card.is-rank-3 .org-headline { background: linear-gradient(180deg, #fff, var(--rank-3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.org-card.is-rank-4 .org-headline { background: linear-gradient(180deg, #fff, var(--rank-4)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.org-body .org-deck {
+  font-size: 12px;
+  color: var(--th-text-sub);
+  font-style: italic;
+  padding-left: var(--space-md);
+  line-height: 1.55;
+  border-left: 3px solid;
+}
+.org-card.is-rank-1 .org-deck { border-left-color: var(--rank-1); }
+.org-card.is-rank-2 .org-deck { border-left-color: var(--rank-2); }
+.org-card.is-rank-3 .org-deck { border-left-color: var(--rank-3); }
+.org-card.is-rank-4 .org-deck { border-left-color: var(--rank-4); }
+
+.org-body .stats-bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-sm);
+  padding: 8px 0;
+  border-top: 1px solid var(--th-divider);
+  border-bottom: 1px solid var(--th-divider);
+}
+.org-body .stats-bar .cell .label {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--th-text-dim);
+  text-transform: uppercase;
+  margin-bottom: 1px;
+}
+.org-body .stats-bar .cell .v {
+  font-family: var(--font-num);
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--th-text-main);
+}
+.org-body .stats-bar .cell .v.gold {
+  font-size: 26px;
+  color: var(--th-text-main);
+}
+.org-body .stats-bar .cell .v.battle-pos { color: var(--signal-up); }
+.org-body .stats-bar .cell .v.battle-neg { color: var(--signal-down); }
+
+.org-body .champ-row {
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--th-divider);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.org-body .champ-row .label {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.org-card.is-rank-1 .champ-row { border-color: var(--rank-1); }
+.org-card.is-rank-1 .champ-row .label { color: var(--rank-1); }
+.org-card.is-rank-1 .champ-row .nm { color: var(--rank-1); font-weight: 700; }
+.org-card.is-rank-2 .champ-row { border-color: var(--rank-2); }
+.org-card.is-rank-2 .champ-row .label { color: var(--rank-2); }
+.org-card.is-rank-2 .champ-row .nm { color: var(--rank-2); font-weight: 700; }
+.org-card.is-rank-3 .champ-row { border-color: var(--rank-3); }
+.org-card.is-rank-3 .champ-row .label { color: var(--rank-3); }
+.org-card.is-rank-3 .champ-row .nm { color: var(--rank-3); font-weight: 700; }
+.org-card.is-rank-4 .champ-row { border-color: var(--rank-4); }
+.org-card.is-rank-4 .champ-row .label { color: var(--rank-4); }
+.org-card.is-rank-4 .champ-row .nm { color: var(--rank-4); font-weight: 700; }
+.org-body .champ-row.empty { color: var(--th-text-dim); font-style: italic; }
+.org-body .champ-row.empty .nm { color: var(--th-text-dim); font-weight: 400; }
+
+/* フォーメーション */
+.formation-section { margin-top: 2px; }
+.formation-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: flex; align-items: center; gap: var(--space-sm);
+}
+.formation-label::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--th-divider), transparent);
+}
+.formation-label .count { color: var(--th-text-sub); }
+.org-card.is-rank-1 .formation-label { color: var(--rank-1); }
+.org-card.is-rank-2 .formation-label { color: var(--rank-2); }
+.org-card.is-rank-3 .formation-label { color: var(--rank-3); }
+.org-card.is-rank-4 .formation-label { color: var(--rank-4); }
+
+.formation {
+  position: relative;
+  width: 100%;
+  height: 220px;
+}
+.formation::after {
+  content: ""; position: absolute;
+  left: 0; right: 30%;
+  bottom: 26px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--th-divider), transparent);
+  z-index: 0;
+}
+
+.fcell {
+  position: absolute;
+  bottom: 26px;
+  width: 130px;
+  text-align: center;
+}
+.fcell .img-wrap {
+  position: relative;
+  width: 130px; height: 170px;
+  display: flex; align-items: end; justify-content: center;
+  transform-origin: bottom center;
+}
+.fcell .img-wrap img {
+  height: 100%;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.55));
+}
+.fcell .info {
+  position: absolute;
+  bottom: -28px;
+  left: 50%; transform: translateX(-50%);
+  width: 110%;
+  text-align: center;
+  white-space: nowrap;
+}
+/* 選手名：白文字+黒縁取り */
+.fcell .info .nm {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1px;
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000,
+     0    0   3px rgba(0,0,0,0.85);
+}
+.fcell.pos-1 .info .nm {
+  font-size: 12px;
+  text-shadow:
+    -1.5px -1.5px 0 #000,
+     1.5px -1.5px 0 #000,
+    -1.5px  1.5px 0 #000,
+     1.5px  1.5px 0 #000,
+     0    0   4px rgba(0,0,0,0.9);
+}
+.fcell .info .ovr {
+  font-family: var(--font-num);
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
+  /* 色は値クラス（.v-elite/.v-high/.v-mid/.v-low/.v-poor）で個別指定 */
+}
+.fcell .info .ovr .label {
+  font-family: var(--font-label);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--th-text-sub);
+  margin-right: 3px;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
+}
+
+.fcell .info .badge {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  padding: 1px 6px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  margin-left: 3px;
+  vertical-align: middle;
+  font-weight: 700;
+  text-shadow: none;
+}
+.fcell .info .badge.champ {
+  background: var(--gold);
+  color: #110a05;
+  border: 1px solid var(--gold-deep);
+}
+/* 看板バッジ：赤文字 */
+.fcell .info .badge.board {
+  background: var(--board-red-bg);
+  border: 1px solid var(--board-red-border);
+  color: var(--board-red);
+  font-weight: 900;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
+}
+
+.fcell.is-champ .img-wrap::before {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 110px; height: 18px;
+  opacity: 0.55;
+  z-index: -1; border-radius: 50%;
+}
+.org-card.is-rank-1 .fcell.is-champ .img-wrap::before { background: radial-gradient(ellipse, var(--rank-1), transparent 70%); }
+.org-card.is-rank-2 .fcell.is-champ .img-wrap::before { background: radial-gradient(ellipse, var(--rank-2), transparent 70%); }
+.org-card.is-rank-3 .fcell.is-champ .img-wrap::before { background: radial-gradient(ellipse, var(--rank-3), transparent 70%); }
+.org-card.is-rank-4 .fcell.is-champ .img-wrap::before { background: radial-gradient(ellipse, var(--rank-4), transparent 70%); }
+
+.fcell.pos-1 { left: 0;   bottom: 26px; z-index: 50; }
+.fcell.pos-1 .img-wrap { transform: scale(1); }
+.fcell.pos-2 { left: 92px; bottom: 18px; z-index: 40; }
+.fcell.pos-2 .img-wrap { transform: scale(0.92); }
+.fcell.pos-2 .img-wrap img { opacity: 0.96; }
+.fcell.pos-3 { left: 178px; bottom: 12px; z-index: 30; }
+.fcell.pos-3 .img-wrap { transform: scale(0.85); }
+.fcell.pos-3 .img-wrap img { opacity: 0.92; }
+.fcell.pos-4 { left: 254px; bottom: 6px; z-index: 20; }
+.fcell.pos-4 .img-wrap { transform: scale(0.78); }
+.fcell.pos-4 .img-wrap img { opacity: 0.88; }
+.fcell.pos-5 { left: 320px; bottom: 0; z-index: 10; }
+.fcell.pos-5 .img-wrap { transform: scale(0.72); }
+.fcell.pos-5 .img-wrap img { opacity: 0.84; }
+
+
+.org-body .footer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: var(--space-sm);
+}
+.org-body .roster-count {
+  font-size: 11px;
+  color: var(--th-text-sub);
+  font-family: var(--font-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.org-body .roster-count strong {
+  font-family: var(--font-num);
+  font-size: 16px;
+  margin: 0 4px;
+}
+.org-card.is-rank-1 .roster-count strong { color: var(--rank-1); }
+.org-card.is-rank-2 .roster-count strong { color: var(--rank-2); }
+.org-card.is-rank-3 .roster-count strong { color: var(--rank-3); }
+.org-card.is-rank-4 .roster-count strong { color: var(--rank-4); }
+
+.roster-toggle {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: transparent;
+  padding: 6px 14px;
+  cursor: pointer;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+.org-card.is-rank-1 .roster-toggle { color: var(--rank-1); border: 1px solid var(--rank-1); }
+.org-card.is-rank-2 .roster-toggle { color: var(--rank-2); border: 1px solid var(--rank-2); }
+.org-card.is-rank-3 .roster-toggle { color: var(--rank-3); border: 1px solid var(--rank-3); }
+.org-card.is-rank-4 .roster-toggle { color: var(--rank-4); border: 1px solid var(--rank-4); }
+
+
+/* ════════════════════════════════════════════════════
+   04 シーズン履歴
+   ════════════════════════════════════════════════════ */
+.history-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.history-wrap::before {
+  content: "04";
+  position: absolute;
+  font-family: var(--font-num);
+  font-size: 200px;
+  line-height: 0.85;
+  color: rgba(212,168,67,0.04);
+  bottom: -20px;
+  right: 8px;
+  letter-spacing: -0.04em;
+  pointer-events: none;
+}
+.history-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  position: relative;
+  z-index: 2;
+}
+.history-wrap th, .history-wrap td {
+  padding: 9px 8px;
+  text-align: right;
+}
+.history-wrap th:first-child, .history-wrap td:first-child { text-align: left; }
+.history-wrap th {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--office-text-on-dark-dim);
+  border-bottom: 2px solid var(--gold);
+}
+.history-wrap td {
+  font-family: var(--font-num);
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  letter-spacing: 0.02em;
+  color: var(--office-text-on-dark-main);
+}
+.history-wrap td:first-child { font-family: var(--font-body); font-size: 12px; }
+.history-wrap tr:last-child td { border-bottom: none; }
+.history-wrap .h-rank-1 { color: var(--rank-1); font-weight: 700; }
+.history-wrap .h-rank-2 { color: var(--rank-2); font-weight: 700; }
+.history-wrap .h-rank-3 { color: var(--rank-3); font-weight: 700; }
+.history-wrap .h-rank-4 { color: var(--rank-4); font-weight: 700; }
+.history-wrap .profit-pos { color: var(--signal-up); }
+.history-wrap .profit-neg { color: var(--signal-down); }
+
+
+/* ════════════════════════════════════════════════════
+   OVR 階調クラス（v0.9：8段階、80スタート5刻み）
+   .v-mythic     : OVR 100+   — 純金 + 強glow（殿堂入り）
+   .v-elite-mid  : OVR 95-99  — 強金
+   .v-elite      : OVR 90-94  — 中金
+   .v-elite-low  : OVR 85-89  — 淡シャンパン金（NEW）
+   .v-high       : OVR 80-84  — クリーム白（黄色味スタート）
+   .v-mid        : OVR 70-79  — 暖白（黄色味なし）
+   .v-low        : OVR 60-69  — 淡グレー
+   .v-poor       : ~59        — 暗グレー
+   ════════════════════════════════════════════════════ */
+.v-mythic {
+  color: var(--v-mythic);
+  /* 強glowで「目立つ」殿堂入り感を演出 */
+  text-shadow:
+    0 0 10px rgba(255,215,0,0.7),
+    0 0 22px rgba(255,215,0,0.4),
+    0 0 36px rgba(255,215,0,0.2);
+}
+.v-elite-mid { color: var(--v-elite-mid); }
+.v-elite     { color: var(--v-elite); }
+.v-elite-low { color: var(--v-elite-low); }
+.v-high      { color: var(--v-high); }
+.v-mid       { color: var(--v-mid); }
+.v-low       { color: var(--v-low); }
+.v-poor      { color: var(--v-poor); }
+
+/* フォーメーション内（透過画像と重なる位置）：mythic は強glow + 黒縁取り両立 */
+.fcell .info .ovr.v-mythic,
+.orgcell-fcell .nm-tag .ovr.v-mythic {
+  text-shadow:
+    0 0 8px rgba(255,215,0,0.8),
+    0 0 18px rgba(255,215,0,0.5),
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
+}
+
+
+@media (max-width: 1080px) {
+  .orgs-grid { grid-template-columns: repeat(2, 1fr); }
+  .org-card, .org-card.flip { grid-template-columns: 1fr; }
+  .org-card.flip .org-banner { order: 0; }
+  .org-card.flip .org-body { order: 0; }
+  .hero { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <section class="intro">
+    <div class="eyebrow">Wrestle Manager / UI Redesign v0.9 — Refined</div>
+    <h1>v0.9：階調5刻み化＋ヒーロー削除＋1位拡大</h1>
+    <p style="margin-bottom:10px">
+      v0.8 から3点を改善：
+      <strong style="color:var(--gold)">①OVR階調を5刻みに細分化</strong>（80-84 / 85-89 / 90-94 / 95-99 / 100+）— 黄色味のスタートを80、5刻みで段階的に金へ深化、
+      <strong style="color:var(--gold)">②v-mythic（100+）を彩度MAXの純金 #ffd700 + 強glow</strong>に変更（旧の暗い深金から目立つ明るい金へ）、
+      <strong style="color:var(--gold)">③01ヒーロー段を削除し、02の1位カードを少し大きくして「1位感」を出す</strong>。勝利条件「あと-134pt」はマスト下の細いバーに圧縮。
+    </p>
+    <h2 style="font-size:13px;margin:18px 0 8px;color:var(--th-text-main);font-family:var(--font-label);letter-spacing:0.12em;text-transform:uppercase">OVR 階調スケール（8段階）</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="border-bottom:1px solid var(--th-divider)">
+          <th style="text-align:left;padding:6px;color:var(--gold);font-family:var(--font-label);letter-spacing:0.1em;font-size:11px;width:120px">クラス</th>
+          <th style="text-align:left;padding:6px;color:var(--gold);font-family:var(--font-label);letter-spacing:0.1em;font-size:11px;width:90px">OVR範囲</th>
+          <th style="text-align:left;padding:6px;color:var(--gold);font-family:var(--font-label);letter-spacing:0.1em;font-size:11px;width:120px">サンプル</th>
+          <th style="text-align:left;padding:6px;color:var(--gold);font-family:var(--font-label);letter-spacing:0.1em;font-size:11px">性格</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+          <td style="padding:6px"><code>v-mythic</code></td>
+          <td style="padding:6px;color:var(--th-text-sub)">100+</td>
+          <td style="padding:6px"><span class="v-mythic" style="font-family:var(--font-num);font-size:18px">105</span></td>
+          <td style="padding:6px;color:var(--th-text-sub)">純金 #ffd700 + 強glow（殿堂入り）</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+          <td style="padding:6px"><code>v-elite-mid</code></td>
+          <td style="padding:6px;color:var(--th-text-sub)">95-99</td>
+          <td style="padding:6px"><span class="v-elite-mid" style="font-family:var(--font-num);font-size:18px">97</span></td>
+          <td style="padding:6px;color:var(--th-text-sub)">強金</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+          <td style="padding:6px"><code>v-elite</code></td>
+          <td style="padding:6px;color:var(--th-text-sub)">90-94</td>
+          <td style="padding:6px"><span class="v-elite" style="font-family:var(--font-num);font-size:18px">92</span></td>
+          <td style="padding:6px;color:var(--th-text-sub)">中金</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+          <td style="padding:6px"><code>v-elite-low</code> <span style="color:var(--gold);font-size:10px">NEW</span></td>
+          <td style="padding:6px;color:var(--th-text-sub)">85-89</td>
+          <td style="padding:6px"><span class="v-elite-low" style="font-family:var(--font-num);font-size:18px">87</span></td>
+          <td style="padding:6px;color:var(--th-text-sub)">淡シャンパン金</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+          <td style="padding:6px"><code>v-high</code></td>
+          <td style="padding:6px;color:var(--th-text-sub)">80-84</td>
+          <td style="padding:6px"><span class="v-high" style="font-family:var(--font-num);font-size:18px">82</span></td>
+          <td style="padding:6px;color:var(--th-text-sub)">クリーム白（黄色味スタート）</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+          <td style="padding:6px"><code>v-mid</code></td>
+          <td style="padding:6px;color:var(--th-text-sub)">70-79</td>
+          <td style="padding:6px"><span class="v-mid" style="font-family:var(--font-num);font-size:18px">75</span></td>
+          <td style="padding:6px;color:var(--th-text-sub)">暖白（黄色味なし）</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+          <td style="padding:6px"><code>v-low</code></td>
+          <td style="padding:6px;color:var(--th-text-sub)">60-69</td>
+          <td style="padding:6px"><span class="v-low" style="font-family:var(--font-num);font-size:18px">65</span></td>
+          <td style="padding:6px;color:var(--th-text-sub)">淡グレー</td>
+        </tr>
+        <tr>
+          <td style="padding:6px"><code>v-poor</code></td>
+          <td style="padding:6px;color:var(--th-text-sub)">~59</td>
+          <td style="padding:6px"><span class="v-poor" style="font-family:var(--font-num);font-size:18px">55</span></td>
+          <td style="padding:6px;color:var(--th-text-sub)">暗グレー</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;font-size:12px;line-height:1.7">
+      <strong style="color:var(--gold)">画面内で見られる階調：</strong>
+      朝倉 100（mythic）／ 高城 95（elite-mid）／ 月村 92（elite）／ 花村 85・猪瀬 86（elite-low）／ 雪野 84・沢田 83・鈴木 82・大谷 81（high）／ 石川 79・天城 78・藤木 77・桐野 76・海老名 71（mid）。
+      6階調 が同時に並ぶ構成。
+    </p>
+  </section>
+
+  <!-- ════════════════ ポップアップ本体 ════════════════ -->
+  <div class="popup">
+
+    <!-- ヘッダ（ナビ風） -->
+    <div class="popup-header">
+      <h2><span class="dot"></span>🏆 団体ランキング</h2>
+      <button class="close-btn">✕ 閉じる</button>
+    </div>
+
+    <!-- マスト -->
+    <div class="popup-mast">
+      <div class="popup-mast-title">INDUSTRY STANDINGS</div>
+      <div class="popup-mast-meta">
+        <div class="issue">第3シーズン / 全4団体</div>
+        <div class="date">Y3 W28</div>
+      </div>
+    </div>
+
+    <!-- 勝利条件バー -->
+    <div class="victory-bar">
+      <div class="vb-side vb-target">
+        <span class="vb-label">▲ 1位</span>
+        <span class="vb-org">皇武館</span>
+        <span class="vb-pt">842<span class="unit">pt</span></span>
+      </div>
+      <div class="vb-middle">
+        <span class="vb-gap-num">−134</span>
+        <span class="vb-gap-label">pt で頂点</span>
+      </div>
+      <div class="vb-side vb-player">
+        <span class="vb-label">▼ 自団体</span>
+        <span class="vb-org">ファイヤーガールズ</span>
+        <span class="vb-pt">708<span class="unit">pt</span></span>
+      </div>
+    </div>
+
+
+    <!-- ── 02 全団体ロースター ── -->
+    <div class="section bg-card">
+      <div class="section-marker">
+        <div class="text">
+          <div class="kicker">Standings</div>
+          <div class="title">全団体ロースター — Top 3 Lineup</div>
+        </div>
+      </div>
+
+      <div class="orgs-grid">
+
+        <!-- 1位 皇武館（金） -->
+        <div class="orgcell is-rank-1">
+          <div class="orgcell-head">
+            <span class="rank">1</span>
+            <div class="name-block">
+              <div class="nm">皇武館</div>
+              <div class="meta">
+                <span class="tier-pill">S級</span>
+                <span>21名</span>
+              </div>
+            </div>
+          </div>
+          <div class="orgcell-formation">
+            <div class="orgcell-fcell pos-2">
+              <div class="img-wrap"><img src="../../../image/upper/upper_abe_m.webp" alt="高城 真琴"></div>
+              <div class="nm-tag">高城<span class="ovr v-elite-mid">95</span></div>
+            </div>
+            <div class="orgcell-fcell pos-3">
+              <div class="img-wrap"><img src="../../../image/upper/upper_akabane_a.webp" alt="月村 咲"></div>
+              <div class="nm-tag">月村<span class="ovr v-elite">92</span></div>
+            </div>
+            <div class="orgcell-fcell pos-1 is-champ">
+              <span class="crown-mini">👑</span>
+              <div class="img-wrap"><img src="../../../image/upper/upper_aida_m.webp" alt="朝倉 美鈴"></div>
+              <div class="nm-tag">朝倉 美鈴<span class="ovr v-mythic">100</span></div>
+            </div>
+          </div>
+          <div class="orgcell-foot">
+            <div class="pt-block">
+              <div class="label">Rating</div>
+              <div class="v">842<span class="unit">pt</span></div>
+            </div>
+            <div class="meta-block">
+              <div class="ovr-line">OVR 81</div>
+              <div class="battle-pos">+12 pt</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2位 ファイヤーガールズ（銀・自団体） -->
+        <div class="orgcell is-rank-2 is-player">
+          <div class="orgcell-head">
+            <span class="rank">2</span>
+            <div class="name-block">
+              <div class="nm">ファイヤーガールズ</div>
+              <div class="meta">
+                <span class="tier-pill">自団体</span>
+                <span>17名</span>
+              </div>
+            </div>
+          </div>
+          <div class="orgcell-formation">
+            <div class="orgcell-fcell pos-2">
+              <div class="img-wrap"><img src="../../../image/upper/upper_hiramatsu_k.webp" alt="鈴木 舞"></div>
+              <div class="nm-tag">鈴木<span class="ovr v-high">82</span></div>
+            </div>
+            <div class="orgcell-fcell pos-3">
+              <div class="img-wrap"><img src="../../../image/upper/upper_fukamachi_m.webp" alt="石川 愛美"></div>
+              <div class="nm-tag">石川<span class="ovr v-mid">79</span></div>
+            </div>
+            <div class="orgcell-fcell pos-1">
+              <div class="img-wrap"><img src="../../../image/upper/upper_yaegashi_m.webp" alt="花村 桜子"></div>
+              <div class="nm-tag">花村 桜子<span class="ovr v-elite-low">85</span></div>
+            </div>
+          </div>
+          <div class="orgcell-foot">
+            <div class="pt-block">
+              <div class="label">Rating</div>
+              <div class="v">708<span class="unit">pt</span></div>
+            </div>
+            <div class="meta-block">
+              <div class="ovr-line">OVR 76</div>
+              <div class="battle-pos">+8 pt</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3位 ノヴァインパクト（銅） -->
+        <div class="orgcell is-rank-3">
+          <div class="orgcell-head">
+            <span class="rank">3</span>
+            <div class="name-block">
+              <div class="nm">ノヴァインパクト</div>
+              <div class="meta">
+                <span class="tier-pill">A級</span>
+                <span>15名</span>
+              </div>
+            </div>
+          </div>
+          <div class="orgcell-formation">
+            <div class="orgcell-fcell pos-2">
+              <div class="img-wrap"><img src="../../../image/upper/upper_matsushita_m.webp" alt="大谷 蓮花"></div>
+              <div class="nm-tag">大谷<span class="ovr v-high">81</span></div>
+            </div>
+            <div class="orgcell-fcell pos-3">
+              <div class="img-wrap"><img src="../../../image/upper/upper_umegaoka_m.webp" alt="天城 真澄"></div>
+              <div class="nm-tag">天城<span class="ovr v-mid">78</span></div>
+            </div>
+            <div class="orgcell-fcell pos-1 is-champ">
+              <span class="crown-mini">👑</span>
+              <div class="img-wrap"><img src="../../../image/upper/upper_isehara_f.webp" alt="猪瀬 凛"></div>
+              <div class="nm-tag">猪瀬 凛<span class="ovr v-elite-low">86</span></div>
+            </div>
+          </div>
+          <div class="orgcell-foot">
+            <div class="pt-block">
+              <div class="label">Rating</div>
+              <div class="v">654<span class="unit">pt</span></div>
+            </div>
+            <div class="meta-block">
+              <div class="ovr-line">OVR 73</div>
+              <div class="battle-neg">−4 pt</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4位 なでしこプロレス（鋼） -->
+        <div class="orgcell is-rank-4">
+          <div class="orgcell-head">
+            <span class="rank">4</span>
+            <div class="name-block">
+              <div class="nm">なでしこプロレス</div>
+              <div class="meta">
+                <span class="tier-pill">B級</span>
+                <span>12名</span>
+              </div>
+            </div>
+          </div>
+          <div class="orgcell-formation">
+            <div class="orgcell-fcell pos-2">
+              <div class="img-wrap"><img src="../../../image/upper/upper_abukuma_t.webp" alt="海老名 海音"></div>
+              <div class="nm-tag">海老名<span class="ovr v-mid">71</span></div>
+            </div>
+            <div class="orgcell-fcell pos-1">
+              <div class="img-wrap"><img src="../../../image/upper/upper_yoshino_m.webp" alt="桐野 葵"></div>
+              <div class="nm-tag">桐野 葵<span class="ovr v-mid">76</span></div>
+            </div>
+          </div>
+          <div class="orgcell-foot">
+            <div class="pt-block">
+              <div class="label">Rating</div>
+              <div class="v">521<span class="unit">pt</span></div>
+            </div>
+            <div class="meta-block">
+              <div class="ovr-line">OVR 68</div>
+              <div class="battle-pos">+8 pt</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 03 団体プロファイル ── -->
+    <div class="section bg-deep">
+      <div class="section-marker">
+        <div class="text">
+          <div class="kicker">Detailed Profiles</div>
+          <div class="title">団体プロファイル</div>
+        </div>
+      </div>
+
+      <!-- 1位 皇武館 -->
+      <div class="org-card is-rank-1">
+        <div class="org-banner">
+          <span class="vertical-overline">GOLD · 1ST PLACE</span>
+          <span class="rank-watermark">1</span>
+          <div class="ace-stand">
+            <span class="crown-large">👑</span>
+            <img src="../../../image/stand/stand_aida_m.webp" alt="朝倉 美鈴">
+            <div class="ace-name-plate">王者 朝倉 美鈴</div>
+          </div>
+        </div>
+        <div class="org-body">
+          <div class="header">
+            <span class="rank-tiny">1</span>
+            <span class="feature-tag">Gold · 1位 · S Tier</span>
+          </div>
+          <h3 class="org-headline">皇武館</h3>
+          <p class="org-deck">業界の頂点に君臨する絶対王者。レジェンド級5名を擁し、平均OVR81、全21名のロスターは依然として隔絶した戦力。</p>
+          <div class="stats-bar">
+            <div class="cell"><div class="label">評価値</div><div class="v gold">842</div></div>
+            <div class="cell"><div class="label">基礎力</div><div class="v">681</div></div>
+            <div class="cell"><div class="label">レガシー</div><div class="v" style="color:var(--th-text-dim)">50</div></div>
+            <div class="cell"><div class="label">対戦pt</div><div class="v battle-pos">+12</div></div>
+            <div class="cell"><div class="label">人気</div><div class="v" style="font-size:14px">On Fire!</div></div>
+          </div>
+          <div class="champ-row">
+            <span class="label">王者</span>
+            <span class="nm">朝倉 美鈴</span>
+            <span style="color:var(--th-text-sub)">5防衛中</span>
+          </div>
+          <div class="formation-section">
+            <div class="formation-label">主力ラインアップ <span class="count">— 5名（OVR順）</span></div>
+            <div class="formation">
+              <div class="fcell pos-1 is-champ">
+                <div class="img-wrap"><img src="../../../image/upper/upper_aida_m.webp" alt=""></div>
+                <div class="info"><div class="nm">朝倉 美鈴<span class="badge champ">王者</span></div><div class="ovr v-mythic"><span class="label">OVR</span>100</div></div>
+              </div>
+              <div class="fcell pos-2">
+                <div class="img-wrap"><img src="../../../image/upper/upper_abe_m.webp" alt=""></div>
+                <div class="info"><div class="nm">高城 真琴<span class="badge board">看板</span></div><div class="ovr v-elite-mid"><span class="label">OVR</span>95</div></div>
+              </div>
+              <div class="fcell pos-3">
+                <div class="img-wrap"><img src="../../../image/upper/upper_akabane_a.webp" alt=""></div>
+                <div class="info"><div class="nm">月村 咲</div><div class="ovr v-elite"><span class="label">OVR</span>92</div></div>
+              </div>
+              <div class="fcell pos-4">
+                <div class="img-wrap"><img src="../../../image/upper/upper_oba_a.webp" alt=""></div>
+                <div class="info"><div class="nm">雪野 玲</div><div class="ovr v-high"><span class="label">OVR</span>84</div></div>
+              </div>
+              <div class="fcell pos-5">
+                <div class="img-wrap"><img src="../../../image/upper/upper_kondo_y.webp" alt=""></div>
+                <div class="info"><div class="nm">沢田 綾乃</div><div class="ovr v-high"><span class="label">OVR</span>83</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="footer-actions">
+            <span class="roster-count">所属選手 <strong>21</strong> 名</span>
+            <button class="roster-toggle">▶ 全選手を見る</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2位 ファイヤーガールズ（フリップ） -->
+      <div class="org-card is-rank-2 is-player flip">
+        <div class="org-banner">
+          <span class="vertical-overline">SILVER · 2ND PLACE</span>
+          <span class="rank-watermark">2</span>
+          <div class="ace-stand">
+            <img src="../../../image/stand/stand_yaegashi_m.webp" alt="花村 桜子">
+            <div class="ace-name-plate">看板 花村 桜子</div>
+          </div>
+        </div>
+        <div class="org-body">
+          <div class="header">
+            <span class="rank-tiny">2</span>
+            <span class="feature-tag">Silver · 2位 · 自団体</span>
+          </div>
+          <h3 class="org-headline">ファイヤーガールズ</h3>
+          <p class="org-deck">業界2位、自団体。看板は花村 桜子（OVR85）。前年3位から1つ順位を上げた、皇武館の独走に待ったをかける唯一の存在。</p>
+          <div class="stats-bar">
+            <div class="cell"><div class="label">評価値</div><div class="v gold">708</div></div>
+            <div class="cell"><div class="label">基礎力</div><div class="v">632</div></div>
+            <div class="cell"><div class="label">レガシー</div><div class="v" style="color:var(--th-text-dim)">28</div></div>
+            <div class="cell"><div class="label">対戦pt</div><div class="v battle-pos">+8</div></div>
+            <div class="cell"><div class="label">人気</div><div class="v" style="font-size:14px">Hot</div></div>
+          </div>
+          <div class="champ-row empty">
+            <span class="label">王者</span>
+            <span class="nm">不在</span>
+          </div>
+          <div class="formation-section">
+            <div class="formation-label">主力ラインアップ <span class="count">— 4名（OVR順）</span></div>
+            <div class="formation">
+              <div class="fcell pos-1">
+                <div class="img-wrap"><img src="../../../image/upper/upper_yaegashi_m.webp" alt=""></div>
+                <div class="info"><div class="nm">花村 桜子<span class="badge board">看板</span></div><div class="ovr v-elite-low"><span class="label">OVR</span>85</div></div>
+              </div>
+              <div class="fcell pos-2">
+                <div class="img-wrap"><img src="../../../image/upper/upper_hiramatsu_k.webp" alt=""></div>
+                <div class="info"><div class="nm">鈴木 舞</div><div class="ovr v-high"><span class="label">OVR</span>82</div></div>
+              </div>
+              <div class="fcell pos-3">
+                <div class="img-wrap"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""></div>
+                <div class="info"><div class="nm">石川 愛美</div><div class="ovr v-mid"><span class="label">OVR</span>79</div></div>
+              </div>
+              <div class="fcell pos-4">
+                <div class="img-wrap"><img src="../../../image/upper/upper_kawanobe_n.webp" alt=""></div>
+                <div class="info"><div class="nm">藤木 楓</div><div class="ovr v-mid"><span class="label">OVR</span>77</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="footer-actions">
+            <span class="roster-count">所属選手 <strong>17</strong> 名</span>
+            <button class="roster-toggle">▶ 全選手を見る</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3位 ノヴァインパクト -->
+      <div class="org-card is-rank-3">
+        <div class="org-banner">
+          <span class="vertical-overline">BRONZE · 3RD PLACE</span>
+          <span class="rank-watermark">3</span>
+          <div class="ace-stand">
+            <span class="crown-large">👑</span>
+            <img src="../../../image/stand/stand_isehara_f.webp" alt="猪瀬 凛">
+            <div class="ace-name-plate">王者 猪瀬 凛</div>
+          </div>
+        </div>
+        <div class="org-body">
+          <div class="header">
+            <span class="rank-tiny">3</span>
+            <span class="feature-tag">Bronze · 3位 · A Tier</span>
+          </div>
+          <h3 class="org-headline">ノヴァインパクト</h3>
+          <p class="org-deck">若手主体の攻撃的な挑戦者。エース猪瀬 凛（王者・OVR86）を中心に勢いはあるものの、対戦ptは－4と上位陣に星を落とす展開も目立つ。</p>
+          <div class="stats-bar">
+            <div class="cell"><div class="label">評価値</div><div class="v gold">654</div></div>
+            <div class="cell"><div class="label">基礎力</div><div class="v">594</div></div>
+            <div class="cell"><div class="label">レガシー</div><div class="v" style="color:var(--th-text-dim)">30</div></div>
+            <div class="cell"><div class="label">対戦pt</div><div class="v battle-neg">−4</div></div>
+            <div class="cell"><div class="label">人気</div><div class="v" style="font-size:14px">Warm</div></div>
+          </div>
+          <div class="champ-row">
+            <span class="label">王者</span>
+            <span class="nm">猪瀬 凛</span>
+            <span style="color:var(--th-text-sub)">2防衛</span>
+          </div>
+          <div class="formation-section">
+            <div class="formation-label">主力ラインアップ <span class="count">— 3名（OVR順）</span></div>
+            <div class="formation">
+              <div class="fcell pos-1 is-champ">
+                <div class="img-wrap"><img src="../../../image/upper/upper_isehara_f.webp" alt=""></div>
+                <div class="info"><div class="nm">猪瀬 凛<span class="badge champ">王者</span></div><div class="ovr v-elite-low"><span class="label">OVR</span>86</div></div>
+              </div>
+              <div class="fcell pos-2">
+                <div class="img-wrap"><img src="../../../image/upper/upper_matsushita_m.webp" alt=""></div>
+                <div class="info"><div class="nm">大谷 蓮花<span class="badge board">看板</span></div><div class="ovr v-high"><span class="label">OVR</span>81</div></div>
+              </div>
+              <div class="fcell pos-3">
+                <div class="img-wrap"><img src="../../../image/upper/upper_umegaoka_m.webp" alt=""></div>
+                <div class="info"><div class="nm">天城 真澄</div><div class="ovr v-mid"><span class="label">OVR</span>78</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="footer-actions">
+            <span class="roster-count">所属選手 <strong>15</strong> 名</span>
+            <button class="roster-toggle">▶ 全選手を見る</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4位 なでしこプロレス（フリップ） -->
+      <div class="org-card is-rank-4 flip">
+        <div class="org-banner">
+          <span class="vertical-overline">STEEL · 4TH PLACE</span>
+          <span class="rank-watermark">4</span>
+          <div class="ace-stand">
+            <img src="../../../image/stand/stand_yoshino_m.webp" alt="桐野 葵">
+            <div class="ace-name-plate">看板 桐野 葵</div>
+          </div>
+        </div>
+        <div class="org-body">
+          <div class="header">
+            <span class="rank-tiny">4</span>
+            <span class="feature-tag">Steel · 4位 · B Tier</span>
+          </div>
+          <h3 class="org-headline">なでしこプロレス</h3>
+          <p class="org-deck">12名の少人数ながら丁寧な選手育成で知られる地方B級団体。看板は桐野 葵（OVR76）。今期は対戦pt +8で着実に上昇カーブを描いている。</p>
+          <div class="stats-bar">
+            <div class="cell"><div class="label">評価値</div><div class="v gold">521</div></div>
+            <div class="cell"><div class="label">基礎力</div><div class="v">498</div></div>
+            <div class="cell"><div class="label">レガシー</div><div class="v" style="color:var(--th-text-dim)">15</div></div>
+            <div class="cell"><div class="label">対戦pt</div><div class="v battle-pos">+8</div></div>
+            <div class="cell"><div class="label">人気</div><div class="v" style="font-size:14px">Neutral</div></div>
+          </div>
+          <div class="champ-row empty">
+            <span class="label">王者</span>
+            <span class="nm">不在</span>
+          </div>
+          <div class="formation-section">
+            <div class="formation-label">主力ラインアップ <span class="count">— 2名（OVR順）</span></div>
+            <div class="formation">
+              <div class="fcell pos-1">
+                <div class="img-wrap"><img src="../../../image/upper/upper_yoshino_m.webp" alt=""></div>
+                <div class="info"><div class="nm">桐野 葵<span class="badge board">看板</span></div><div class="ovr v-mid"><span class="label">OVR</span>76</div></div>
+              </div>
+              <div class="fcell pos-2">
+                <div class="img-wrap"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
+                <div class="info"><div class="nm">海老名 海音</div><div class="ovr v-mid"><span class="label">OVR</span>71</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="footer-actions">
+            <span class="roster-count">所属選手 <strong>12</strong> 名</span>
+            <button class="roster-toggle">▶ 全選手を見る</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 04 シーズン履歴 ── -->
+    <div class="section bg-card history-wrap">
+      <div class="section-marker">
+        <div class="text">
+          <div class="kicker">Yearbook</div>
+          <div class="title">📈 シーズン履歴 — 過去3年の歩み</div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>シーズン</th><th>順位</th><th>興行数</th><th>最高MQ</th><th>収支</th><th>最終資金</th><th>人数</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1年目</td><td class="h-rank-4">4位</td><td>38</td><td style="color:var(--signal-info)">82</td><td class="profit-pos">+1,240万</td><td>3,420万</td><td>14</td></tr>
+          <tr><td>2年目</td><td class="h-rank-3">3位</td><td>42</td><td style="color:var(--signal-info)">88</td><td class="profit-pos">+2,860万</td><td>6,280万</td><td>16</td></tr>
+          <tr><td>3年目（現在）</td><td class="h-rank-2">2位</td><td>21</td><td style="color:var(--signal-info)">91</td><td class="profit-pos">+1,580万</td><td>7,860万</td><td>17</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /.popup -->
+
+
+  <!-- 補足 -->
+  <!-- 補足 -->
+  <section class="intro" style="margin-top: var(--space-2xl)">
+    <div class="eyebrow">v0.9 Changes</div>
+    <h1 style="font-size:14px;margin-bottom:8px">v0.8 → v0.9 の変更</h1>
+    <ul style="margin:0;padding-left:20px;font-size:12px;color:var(--office-text-on-dark-sub);line-height:1.8">
+      <li><strong style="color:var(--gold)">OVR 階調を5刻みに</strong>：80-84 / 85-89 / 90-94 / 95-99 / 100+ の5段階で黄色味グラデ。<code>v-elite-low</code>（85-89）を新規追加して8階調に。80を黄色開始、79以下は完全に白〜グレー。</li>
+      <li><strong style="color:var(--gold)">v-mythic を明るく彩度MAXに</strong>：旧の深金 #c89028（暗くて目立ちにくい）→ 純金 #ffd700 + 強glow。100+の選手が画面で確実に目立つ。</li>
+      <li><strong style="color:var(--gold)">01ヒーロー段を削除</strong>：縦幅を大幅圧縮。代わりにマスト下に細い「勝利条件バー」を追加して「1位 vs 自団体・あと-134pt」のサマリーは保持。</li>
+      <li><strong style="color:var(--gold)">02の1位カードを拡大</strong>：grid-template-columns を 1.3fr/1fr/1fr/1fr に。1位の rank 番号 38→48px、フォーメーション 180→220px、pos-1 130×165→150×195px、評価値 26→32px。「1位感」を視覚的に強化。</li>
+      <li><strong style="color:var(--gold)">サンプル選手データ更新</strong>：花村 桜子 85 と 猪瀬 凛 86 を v-elite-low に変更（新階調の例として）。</li>
+    </ul>
+  </section>
+
+  <section class="intro">
+    <div class="eyebrow">Implementation Hint</div>
+    <h1 style="font-size:14px;margin-bottom:8px">実装時のヘルパー（v0.9 確定版）</h1>
+    <pre style="margin:0;padding:12px;background:rgba(0,0,0,0.4);border-radius:6px;font-size:11px;color:var(--office-text-on-dark-main);overflow-x:auto"><code>// src/ui-common.js などに
+// OVR のみ階調適用（評価値には使わない）
+function valueClassOvr(ovr) {
+  if (ovr &gt;= 100) return 'v-mythic';     // 100+ — 殿堂入り（最大120まで全部同色）
+  if (ovr &gt;= 95)  return 'v-elite-mid';  // 95-99 — 強金
+  if (ovr &gt;= 90)  return 'v-elite';      // 90-94 — 中金
+  if (ovr &gt;= 85)  return 'v-elite-low';  // 85-89 — 淡シャンパン金（NEW）
+  if (ovr &gt;= 80)  return 'v-high';       // 80-84 — クリーム白（黄色味スタート）
+  if (ovr &gt;= 70)  return 'v-mid';        // 70-79 — 暖白
+  if (ovr &gt;= 60)  return 'v-low';        // 60-69 — 淡グレー
+  return 'v-poor';                       // ~59  — 暗グレー
+}</code></pre>
+    <p style="margin:8px 0 0;font-size:12px;color:var(--office-text-on-dark-sub);line-height:1.7">
+      閾値は <code>data.js</code> に
+      <code>OVR_TIER_THRESHOLDS = { mythic: 100, eliteMid: 95, elite: 90, eliteLow: 85, high: 80, mid: 70, low: 60 }</code>
+      として定数化推奨。
+    </p>
+  </section>
+
+  <section class="intro">
+    <div class="eyebrow">Next Step</div>
+    <h1 style="font-size:14px;margin-bottom:8px">これでデザイン確定 → 実装フェーズへ</h1>
+    <p style="margin:0;font-size:12px;color:var(--office-text-on-dark-sub);line-height:1.7">
+      v0.9 でランキング画面のデザイン要素はすべて固まった。次のステップは
+      <code>docs/ui/03-screens/ranking.md</code> として画面仕様書を起こして、Claude Code 向け実装タスクに落とすこと。
+    </p>
+  </section>
+
+
+</div>
+
+</body>
+</html>

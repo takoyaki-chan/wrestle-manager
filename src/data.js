@@ -520,6 +520,16 @@ const PORTRAIT = {
 const PORTRAIT_OVR_VARIANT = {
   80: { threshold: 50, suffix: 'takashima_s2' }  // 高島さや
 };
+// ランキング画面 v0.9：OVR階調クラス用閾値（valueClassOvr で参照）
+const OVR_TIER_THRESHOLDS = {
+  mythic:   100,
+  eliteMid: 95,
+  elite:    90,
+  eliteLow: 85,
+  high:     80,
+  mid:      70,
+  low:      60,
+};
 const NPC_PORTRAIT = { reporter: 'kuroda_s' };
 function getNpcPortraitUrl(key) { return NPC_PORTRAIT[key] ? `../image/npc/face_${NPC_PORTRAIT[key]}.png` : ''; }
 function getNpcUpperUrl(key) { return NPC_PORTRAIT[key] ? `../image/npc/upper_${NPC_PORTRAIT[key]}.webp` : ''; }

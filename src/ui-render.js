@@ -3146,217 +3146,297 @@ function renderLog() {
 // ── Ranking Screen (v0.9) ────────────────────────────────
 function renderRanking() {
   const el = document.getElementById('rankingContent');
+  const mastEl = document.getElementById('rankingMast');
+  const vbarEl = document.getElementById('rankingVictoryBar');
   // Recalculate live rankings
   const rankings = Engine.ranking.updateRankings(G);
   G = { ...G, rankings };
 
   let html = '';
 
-  // Org-identity-based color map (matches RIVAL_ORGS + relmap)
-  const ORG_RANK_COLORS = { player: '#d4a843', org_s: '#d63031', org_a: '#6c5ce7', org_b: '#00b894' };
-  const getRankColor = (rank, orgId) => ORG_RANK_COLORS[orgId] || '#888';
-
-  // Victory condition reminder
-  const topAI = rankings.find(r => r.orgId !== 'player');
+  // ── Phase 1: マスト + 勝利条件バー ─────────────────────────
+  const top1 = rankings.find(r => r.rank === 1);
   const playerEntry = rankings.find(r => r.orgId === 'player');
-  if (topAI && playerEntry) {
-    const gap = Math.round(topAI.rating - playerEntry.rating);
-    if (gap > 0) {
-      html += `<div style="margin-bottom:16px;padding:12px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:6px;font-size:12px">
-        🎯 <strong>勝利条件</strong>: 1位団体 <strong>${topAI.name}</strong>（${Math.round(topAI.rating)}pt）を超えること — あと <strong style="color:var(--gold)">${gap}pt</strong>
-      </div>`;
+  if (mastEl) {
+    mastEl.outerHTML = `<div id="rankingMast" class="popup-mast">
+      <div class="popup-mast-title">INDUSTRY STANDINGS</div>
+      <div class="popup-mast-meta">
+        <div class="issue">第${G.season || 1} シーズン・全4団体</div>
+        <div class="date">${Engine.util.formatDate(G.season || 1, G.week || 1)}</div>
+      </div>
+    </div>`;
+  }
+  if (vbarEl) {
+    let vbarHtml = '';
+    if (top1 && playerEntry) {
+      if (top1.orgId === 'player') {
+        vbarHtml = `<div id="rankingVictoryBar" class="victory-bar is-top">
+          <div class="vb-top">👑 業界1位 ／ あなたの団体が頂点に立っています</div>
+        </div>`;
+      } else {
+        const gap = Math.max(0, Math.round(top1.rating - playerEntry.rating));
+        vbarHtml = `<div id="rankingVictoryBar" class="victory-bar">
+          <div class="vb-side vb-target">
+            <span class="vb-label">▲ 1位</span>
+            <span class="vb-org">${escHtml(top1.name)}</span>
+            <span class="vb-pt">${Math.round(top1.rating)}<span class="unit">pt</span></span>
+          </div>
+          <div class="vb-middle">
+            <div class="vb-gap-num">−${gap}</div>
+            <div class="vb-gap-label">pt で頂点</div>
+          </div>
+          <div class="vb-side vb-player">
+            <span class="vb-label">▼ 自団体</span>
+            <span class="vb-org">${escHtml(playerEntry.name)}</span>
+            <span class="vb-pt">${Math.round(playerEntry.rating)}<span class="unit">pt</span></span>
+          </div>
+        </div>`;
+      }
     } else {
-      html += `<div style="margin-bottom:16px;padding:12px;background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);border-radius:6px;font-size:12px">
-        👑 <strong style="color:#2ecc71">業界1位！</strong> あなたの団体が頂点に立っています
-      </div>`;
+      vbarHtml = `<div id="rankingVictoryBar" class="victory-bar"></div>`;
     }
+    vbarEl.outerHTML = vbarHtml;
   }
 
-  // Ranking table — tooltip texts stored in global to avoid HTML-in-attribute issues
-  window._rankTips = {
-    rating: '基礎値 + レガシー + 対戦ptの合計<br>各団体の評価値セルにカーソルを合わせると内訳表示',
-    base:   'TOP10加重OVR平均 × 1.2 + TOP10加重人気平均 × 0.9<br>上位選手ほど重みが大きい（1位:2.4 → 10位:0.18）',
-    battle: '対抗戦・頂上決戦・統一トーナメントの<br>勝敗で増減する対戦ポイント<br>毎シーズンリセット'
-  };
-  const tt = (key) => `<span class="tt" onmouseenter="showCustomTooltip(this,_rankTips.${key})" onmouseleave="hideCustomTooltip()" onclick="event.stopPropagation();showCustomTooltip(this,_rankTips.${key})">?</span>`;
-  window._rankTips.legacy = '団体の歴史の重み（上限50pt）<br>初期値: S級50 / A級30 / B級15 / プレイヤー0<br>殿堂入り: ★8pt / ★★10pt / ★★★13pt<br>対抗戦: 通算5勝ごとに1pt';
-  html += `<table class="data-table"><tr><th style="width:40px">#</th><th>団体名</th>` +
-    `<th style="text-align:right">評価値${tt('rating')}</th>` +
-    `<th style="text-align:right">基礎力${tt('base')}</th>` +
-    `<th style="text-align:right;font-size:11px;color:var(--text-sub)">レガシー${tt('legacy')}</th>` +
-    `<th style="text-align:right">対戦pt${tt('battle')}</th>` +
-    `<th style="text-align:right">人数</th></tr>`;
-  rankings.forEach(r => {
-    const isPlayer = r.orgId === 'player';
-    const org = RIVAL_ORGS.find(o => o.id === r.orgId);
-    const emoji = isPlayer ? '🏠' : (org ? org.emoji : '');
-    const rc = getRankColor(r.rank, r.orgId);
-    const bgStyle = isPlayer ? `background:${rc}10` : '';
-    const nameStyle = isPlayer ? `color:${rc};font-weight:700` : `color:${rc}`;
-    const tierBadge = org ? `<span style="font-size:11px;padding:2px 6px;border-radius:3px;background:${rc}20;color:${rc};border:1px solid ${rc}40;margin-left:6px">${org.tier}</span>` : '';
-    const bpColor = r.battlePt > 0 ? '#2ecc71' : r.battlePt < 0 ? '#e74c3c' : 'var(--text-dim)';
-    // 評価値ツールチップ内訳
-    const ovrPart = Math.round(r.weightedOVR * 12) / 10;
-    const popPart = Math.round(r.weightedPop * 9) / 10;
-    const tipHtml = `<div style="text-align:left;font-size:12px;line-height:1.7">`
-      + `<div style="font-weight:700;margin-bottom:4px;font-size:13px">評価値の内訳</div>`
-      + `<div>基礎値: <strong>${Math.round(r.baseScore)}</strong>pt</div>`
-      + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">加重OVR平均 ${r.weightedOVR} × 1.2 = ${ovrPart}</div>`
-      + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">加重人気平均 ${r.weightedPop} × 0.9 = ${popPart}</div>`
-      + `<div style="margin-top:4px">レガシー: <strong>${Math.round(r.legacyScore)}</strong>pt</div>`
-      + `<div style="padding-left:10px;color:rgba(232,230,224,0.5)">団体の歴史。殿堂入り＋対抗戦勝利で成長</div>`
-      + `<div>対戦pt: <strong>${r.battlePt >= 0 ? '+' : ''}${Math.round(r.battlePt)}</strong>pt</div>`
-      + `<hr style="border:none;border-top:1px solid rgba(200,190,170,0.15);margin:6px 0">`
-      + `<div style="font-weight:700">合計: ${Math.round(r.rating)}pt</div>`
-      + `</div>`;
-    window['_rankTip_' + r.orgId] = tipHtml;
-    html += `<tr style="${bgStyle}">
-      <td style="font-size:18px;font-weight:900;color:${rc}">${r.rank}</td>
-      <td style="white-space:nowrap">${orgIconHtml(r.orgId, 28)}<span style="${nameStyle}">${r.name}</span>${tierBadge}</td>
-      <td class="num" style="font-size:16px;font-weight:700;cursor:help"
-          onmouseenter="showCustomTooltip(this,_rankTip_${r.orgId})"
-          onmouseleave="hideCustomTooltip()"
-          onclick="event.stopPropagation();showCustomTooltip(this,_rankTip_${r.orgId})">${Math.round(r.rating)}</td>
-      <td class="num">${Math.round(r.baseScore)}</td>
-      <td class="num" style="font-size:12px;color:var(--text-sub)">${Math.round(r.legacyScore)}</td>
-      <td class="num" style="color:${bpColor}">${r.battlePt >= 0 ? '+' : ''}${Math.round(r.battlePt)}</td>
-      <td class="num">${r.rosterSize}</td>
-    </tr>`;
-  });
-  html += '</table>';
-
-  // Org detail cards — unified by ranking order
-  const rankFighterCount = { 1: 5, 2: 4, 3: 3, 4: 2 };
-  html += '<div style="margin-top:20px;display:grid;gap:12px">';
-  rankings.forEach(r => {
-    const isPlayer = r.orgId === 'player';
-    const org = RIVAL_ORGS.find(o => o.id === r.orgId);
-    const topCount = rankFighterCount[r.rank] || 2;
-
-    if (isPlayer) {
-      // Player org card
-      const rc = getRankColor(r.rank, r.orgId);
-      const ownedRoster = (G.roster || []).filter(c => !c.isRental);
-      const avgOvr = ownedRoster.length ? Math.round(ownedRoster.reduce((s,c) => s + ov(c), 0) / ownedRoster.length) : 0;
-      const sorted = [...ownedRoster].filter(c => !c.injury && !c.forcedRest).sort((a,b) => ov(b) - ov(a));
-      // Put champion first if exists
-      let topFighters = sorted.slice(0, topCount);
-      if (G.titles?.world?.championId) {
-        const champIdx = sorted.findIndex(c => c.id === G.titles.world.championId);
-        if (champIdx > 0 && champIdx < sorted.length) {
-          topFighters = [sorted[champIdx], ...sorted.filter(c => c.id !== G.titles.world.championId)].slice(0, topCount);
-        }
+  // ── 02 全団体ロースター（4団体グリッド + T字フォーメーション） ──
+  // 各団体の主力上位3名 + 王者 + 看板を計算するヘルパー
+  const buildOrgTopThree = (roster, championId) => {
+    const sorted = [...roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    let top3 = sorted.slice(0, 3);
+    if (championId) {
+      const champIdx = sorted.findIndex(c => c.id === championId);
+      if (champIdx > 0) {
+        top3 = [sorted[champIdx], ...sorted.filter(c => c.id !== championId)].slice(0, 3);
       }
-      html += `<div style="padding:14px;background:${rc}0a;border:2px solid ${rc}80;border-radius:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:16px;font-weight:700;color:${rc}">${orgIconHtml('player', 40)}${G.orgName || 'プレイヤー団体'} <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${Math.round(r.rating)}pt ｜ ${ownedRoster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:<span style="color:${_orgPopColor(Engine.util.dispOrgPop(G.orgPop)).color}">${Engine.util.dispOrgPop(G.orgPop)}</span></span>
-        </div>
-        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${G.titles?.world?.championId ? G.roster.find(c=>c.id===G.titles.world.championId)?.name || 'なし' : '<span style="color:var(--text-dim)">不在</span>'}</div>
-        <div style="font-size:13px;margin-top:10px">
-          <span style="color:var(--text-dim)">主力:</span>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
-          ${topFighters.map(f => {
-            const isChamp = G.titles?.world?.championId === f.id;
-            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 80)}<span style="font-size:12px">${fLink(f, {source:'roster', bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${ov(f)}${isChamp ? ' 👑王者' : ''}</span></div>`;
-          }).join('')}
-          </div>
-        </div>
-        <details style="margin-top:10px">
-          <summary style="font-size:13px;color:${rc};cursor:pointer">👥 選手を見る（${ownedRoster.length}名）</summary>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
-            ${[...ownedRoster].sort((a,b) => ov(b) - ov(a)).map(f => {
-              const fOvr = ov(f);
-              const isChampF = G.titles?.world?.championId === f.id;
-              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(200,190,170,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'roster')">
-                ${portraitImg(f.id, 44)}
-                <div style="flex:1;min-width:0">
-                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isChampF ? ' 👑' : ''}</div>
-                  <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
-                </div>
-                <div style="font-size:11px;color:var(--text-dim)">詳細 →</div>
-              </div>`;
-            }).join('')}
-          </div>
-        </details>
-      </div>`;
-    } else if (org) {
-      // AI org card — use rank color
-      const rc = getRankColor(r.rank, r.orgId);
-      const aiData = G.aiOrgs && G.aiOrgs[org.id];
-      if (!aiData) return;
-      const roster = Engine.rival.dedupeRoster(aiData.roster || []).filter(f => !f.isRental);
-      const rEntry = rankings.find(re => re.orgId === org.id);
-      const aiTitles = aiData.titles || {};
-      const champId = aiTitles.world?.championId;
-      const champion = champId ? roster.find(f => f.id === champId) : null;
-      const avgOvr = roster.length ? Math.round(roster.reduce((s,f) => s + Engine.util.ov(f), 0) / roster.length) : 0;
-      const sortedRoster = [...roster].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
-      let topFighters = sortedRoster.slice(0, topCount);
-      if (champId) {
-        const champIdx = sortedRoster.findIndex(f => f.id === champId);
-        if (champIdx > 0) {
-          topFighters = [sortedRoster[champIdx], ...sortedRoster.filter(f => f.id !== champId)].slice(0, topCount);
-        }
-      }
-
-      html += `<div style="padding:14px;background:${rc}08;border:1px solid ${rc}30;border-radius:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:16px;font-weight:700;color:${rc}">${orgIconHtml(org.id, 40)}${org.name} <span style="font-size:12px;opacity:0.7">${org.tier}級</span> <span style="font-size:12px;background:${rc}20;color:${rc};padding:2px 8px;border-radius:3px;border:1px solid ${rc}40;margin-left:6px">${r.rank}位</span></span>
-          <span style="font-size:13px;color:var(--text-sub)">${rEntry ? Math.round(rEntry.rating) + 'pt' : ''} ｜ ${roster.length}名 ｜ 平均OVR:${avgOvr} ｜ 団体人気:<span style="color:${_orgPopColor(Engine.util.dispOrgPop(aiData.orgPop)).color}">${Engine.util.dispOrgPop(aiData.orgPop)}</span></span>
-        </div>
-        <div style="font-size:13px;color:var(--text-sub);margin-bottom:6px">${org.desc}</div>
-        <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">王者: ${champion ? `${champion.name}（${aiTitles.world?.defenses || 0}防衛）` : '<span style="color:var(--text-dim)">不在</span>'}</div>
-        <div style="font-size:13px;margin-top:10px">
-          <span style="color:var(--text-dim)">主力:</span>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
-          ${topFighters.map(f => {
-            const isChamp = champId === f.id;
-            return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:120px;text-align:center">${portraitImg(f.id, 80)}<span style="font-size:12px">${fLink(f, {source:'ai:'+org.id, bold:false, size:'12px'})}</span><span style="color:var(--text-dim);font-size:11px">OVR ${Engine.util.ov(f)}${isChamp ? ' 👑王者' : ''}</span></div>`;
-          }).join('')}
-          </div>
-        </div>
-        <details style="margin-top:10px">
-          <summary style="font-size:13px;color:${rc};cursor:pointer">👥 選手を見る（${roster.length}名）</summary>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
-            ${sortedRoster.map((f, idx) => {
-              const fOvr = Engine.util.ov(f);
-              const isTop = idx === 0;
-              const isChampF = champId === f.id;
-              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(200,190,170,0.03);border:1px solid ${rc}20;border-radius:6px;width:calc(50% - 4px);min-width:240px;cursor:pointer" onclick="showFighterPopup(${f.id},'ai:${org.id}')">
-                ${portraitImg(f.id, 44)}
-                <div style="flex:1;min-width:0">
-                  <div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.name}${isTop ? ' <span style="font-size:10px;color:#e74c3c">★看板</span>' : ''}${isChampF ? ' <span style="font-size:10px;color:var(--gold)">👑王者</span>' : ''}</div>
-                  <div style="font-size:11px;color:var(--text-dim)">OVR ${fOvr} ・ ${f.style || '?'}</div>
-                </div>
-                <div style="font-size:11px;color:var(--text-dim)">詳細 →</div>
-              </div>`;
-            }).join('')}
-          </div>
-        </details>
-      </div>`;
     }
-  });
-  html += '</div>';
+    // 看板：王者でない選手の中で OVR 最高位（sorted の先頭から）
+    const boardId = (sorted.find(c => c.id !== championId) || {}).id;
+    return { top3, sorted, boardId };
+  };
+  const _ovrCss = (o) => valueClassOvr(o);
+  const fcellHtml = (f, pos, championId, boardId, popupSource) => {
+    if (!f) return '';
+    const o = Engine.util.ov(f);
+    const isChamp = championId === f.id;
+    const isBoard = !isChamp && boardId === f.id && pos !== 1;
+    const url = getUpperUrl(f.id);
+    const imgTag = url ? `<img src="${url}" alt="" onerror="this.style.display='none'">` : '';
+    const champBadge = isChamp ? `<span class="crown-mini">👑</span>` : '';
+    const boardBadge = isBoard ? `<span class="badge board" style="position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-size:8px">看板</span>` : '';
+    return `<div class="orgcell-fcell pos-${pos}${isChamp ? ' is-champ' : ''}" onclick="showFighterPopup(${f.id},'${popupSource}')" title="${escHtml(f.name)} OVR ${o}">
+      ${champBadge}${boardBadge}
+      <div class="img-wrap">${imgTag}</div>
+      <div class="nm-tag">${escHtml(f.name)}<span class="ovr ${_ovrCss(o)}">${o}</span></div>
+    </div>`;
+  };
 
-  // v0.95: Season History
+  html += '<section class="section bg-card"><div class="section-marker"><div class="text"><div class="kicker">02 — Roster</div><div class="title">全団体ロースター</div></div></div><div class="orgs-grid">';
+
+  rankings.forEach(r => {
+    const isPlayer = r.orgId === 'player';
+    const org = RIVAL_ORGS.find(o => o.id === r.orgId);
+    const orgName = isPlayer ? (G.orgName || 'プレイヤー団体') : (org ? org.name : r.name);
+    const tier = isPlayer ? '自' : (org ? org.tier : '');
+    const rankClass = `is-rank-${r.rank}`;
+    const playerClass = isPlayer ? ' is-player' : '';
+
+    let roster, championId;
+    if (isPlayer) {
+      roster = (G.roster || []).filter(c => !c.isRental && !c.injury && !c.forcedRest);
+      championId = G.titles?.world?.championId || null;
+    } else {
+      const aiData = G.aiOrgs && G.aiOrgs[r.orgId];
+      roster = aiData ? Engine.rival.dedupeRoster(aiData.roster || []).filter(f => !f.isRental) : [];
+      championId = aiData?.titles?.world?.championId || null;
+    }
+    const popupSource = isPlayer ? 'roster' : ('ai:' + r.orgId);
+    const { top3, sorted, boardId } = buildOrgTopThree(roster, championId);
+
+    const avgOvr = sorted.length ? Math.round(sorted.reduce((s, c) => s + Engine.util.ov(c), 0) / sorted.length) : 0;
+    const battleSign = r.battlePt > 0 ? '+' : '';
+    const battleClass = r.battlePt > 0 ? 'battle-pos' : (r.battlePt < 0 ? 'battle-neg' : '');
+
+    html += `<div class="orgcell ${rankClass}${playerClass}">
+      <div class="orgcell-head">
+        <div class="rank">${r.rank}</div>
+        <div class="name-block">
+          <div class="nm">${escHtml(orgName)}</div>
+          <div class="meta"><span class="tier-pill">${tier}</span></div>
+        </div>
+      </div>
+      <div class="orgcell-formation">
+        ${fcellHtml(top3[1], 2, championId, boardId, popupSource)}
+        ${fcellHtml(top3[2], 3, championId, boardId, popupSource)}
+        ${fcellHtml(top3[0], 1, championId, boardId, popupSource)}
+      </div>
+      <div class="orgcell-foot">
+        <div class="pt-block">
+          <div class="label">RATING</div>
+          <div class="v">${Math.round(r.rating)}<span class="unit">pt</span></div>
+        </div>
+        <div class="meta-block">
+          <div class="ovr-line">OVR ${avgOvr}</div>
+          <div class="${battleClass}">対戦pt ${battleSign}${Math.round(r.battlePt)}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div></section>';
+
+  // ── 03 団体プロファイル（5名フォーメーション + stand画像） ──
+  const rankFighterCount = { 1: 5, 2: 4, 3: 3, 4: 2 };
+  const RANK_KICKER = { 1: '頂点', 2: '挑戦者', 3: '中位', 4: '下位' };
+  html += '<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">03 — Profile</div><div class="title">団体プロファイル</div></div></div>';
+
+  rankings.forEach(r => {
+    const isPlayer = r.orgId === 'player';
+    const org = RIVAL_ORGS.find(o => o.id === r.orgId);
+    const orgName = isPlayer ? (G.orgName || 'プレイヤー団体') : (org ? org.name : r.name);
+    const topCount = rankFighterCount[r.rank] || 2;
+    const rankClass = `is-rank-${r.rank}`;
+    const flipClass = (r.rank % 2 === 0) ? ' flip' : '';
+    const playerClass = isPlayer ? ' is-player' : '';
+
+    let roster, championId, defenses, orgPop, deck;
+    if (isPlayer) {
+      roster = (G.roster || []).filter(c => !c.isRental && !c.injury && !c.forcedRest);
+      championId = G.titles?.world?.championId || null;
+      defenses = G.titles?.world?.defenses || 0;
+      orgPop = G.orgPop;
+      deck = '';
+    } else {
+      const aiData = G.aiOrgs && G.aiOrgs[r.orgId];
+      if (!aiData) return;
+      roster = Engine.rival.dedupeRoster(aiData.roster || []).filter(f => !f.isRental);
+      championId = aiData.titles?.world?.championId || null;
+      defenses = aiData.titles?.world?.defenses || 0;
+      orgPop = aiData.orgPop;
+      deck = (org && org.desc) || '';
+    }
+    const popupSource = isPlayer ? 'roster' : ('ai:' + r.orgId);
+    const allRoster = (G.roster ? (isPlayer ? G.roster.filter(c => !c.isRental) : roster) : roster);
+    const rosterAll = isPlayer ? (G.roster || []).filter(c => !c.isRental) : roster;
+
+    // 主力選定（pos-1〜pos-N、王者は pos-1 に、看板は pos-1 でない最高 OVR）
+    const sortedAll = [...rosterAll].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    let top = sortedAll.slice(0, topCount);
+    if (championId) {
+      const champIdx = sortedAll.findIndex(c => c.id === championId);
+      if (champIdx > 0) {
+        top = [sortedAll[champIdx], ...sortedAll.filter(c => c.id !== championId)].slice(0, topCount);
+      }
+    }
+    const boardId = (sortedAll.find(c => c.id !== championId) || {}).id;
+    const champion = championId ? sortedAll.find(c => c.id === championId) : null;
+    const avgOvr = sortedAll.length ? Math.round(sortedAll.reduce((s, c) => s + Engine.util.ov(c), 0) / sortedAll.length) : 0;
+
+    // 統計バー
+    const battleSign = r.battlePt > 0 ? '+' : '';
+    const battleClass = r.battlePt > 0 ? 'battle-pos' : (r.battlePt < 0 ? 'battle-neg' : '');
+    const popDisplay = Engine.util.dispOrgPop(orgPop);
+    const popColor = _orgPopColor(popDisplay).color;
+
+    // バナー画像（王者がいれば王者の stand、いなければ pos-1 の stand）
+    const bannerFighter = champion || top[0] || null;
+    const standUrl = bannerFighter ? getStandUrl(bannerFighter.id, Engine.util.ov(bannerFighter)) : '';
+    const standImg = standUrl ? `<img src="${standUrl}" alt="" onerror="this.style.display='none'">` : '';
+    const champPlate = bannerFighter ? `<div class="ace-name-plate">${escHtml(bannerFighter.name)}</div>` : '';
+    const crownLarge = champion ? '<div class="crown-large">👑</div>' : '';
+    const verticalOverline = `<div class="vertical-overline">RANK ${r.rank}</div>`;
+
+    // フォーメーション fcell
+    const fcellsHtml = top.map((f, idx) => {
+      if (!f) return '';
+      const pos = idx + 1;
+      const o = Engine.util.ov(f);
+      const isChamp = championId === f.id;
+      const isBoard = !isChamp && boardId === f.id;
+      const url = getUpperUrl(f.id);
+      const imgTag = url ? `<img src="${url}" alt="" onerror="this.style.display='none'">` : '';
+      const champBadge = isChamp ? '<span class="badge champ">王者</span>' : '';
+      const boardBadge = isBoard ? '<span class="badge board">看板</span>' : '';
+      return `<div class="fcell pos-${pos}${isChamp ? ' is-champ' : ''}" onclick="showFighterPopup(${f.id},'${popupSource}')" title="${escHtml(f.name)} OVR ${o}">
+        <div class="img-wrap">${imgTag}</div>
+        <div class="info">
+          <div class="nm">${escHtml(f.name)}${champBadge}${boardBadge}</div>
+          <span class="ovr ${valueClassOvr(o)}"><span class="label">OVR</span>${o}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    // 王者行
+    const champRowHtml = champion
+      ? `<div class="champ-row"><span class="label">CHAMPION</span><span class="nm">${escHtml(champion.name)}</span><span style="color:var(--th-text-sub)">${defenses} 防衛</span></div>`
+      : `<div class="champ-row empty"><span class="label">CHAMPION</span><span class="nm">不在</span></div>`;
+
+    // ロースター展開リスト
+    const rosterListId = `rosterList_${r.orgId}`;
+    const rosterListHtml = rosterAll.map(f => {
+      const fOvr = Engine.util.ov(f);
+      const isChampF = championId === f.id;
+      return `<div class="ri" onclick="showFighterPopup(${f.id},'${popupSource}')">
+        ${portraitImg(f.id, 36)}
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600">${escHtml(f.name)}${isChampF ? ' 👑' : ''}</div>
+          <div class="meta">OVR ${fOvr} ・ ${escHtml(f.style || '?')}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    html += `<div class="org-card ${rankClass}${flipClass}${playerClass}">
+      <div class="org-banner">
+        ${verticalOverline}
+        ${crownLarge}
+        <div class="ace-stand">${standImg}</div>
+        ${champPlate}
+      </div>
+      <div class="org-body">
+        <div class="header">
+          <div class="rank-tiny">${r.rank}</div>
+          <div class="feature-tag">${RANK_KICKER[r.rank] || ''}</div>
+        </div>
+        <h3 class="org-headline">${escHtml(orgName)}</h3>
+        ${deck ? `<div class="org-deck">${escHtml(deck)}</div>` : ''}
+        <div class="stats-bar">
+          <div class="cell"><div class="label">RATING</div><div class="v gold">${Math.round(r.rating)}</div></div>
+          <div class="cell"><div class="label">BASE</div><div class="v">${Math.round(r.baseScore)}</div></div>
+          <div class="cell"><div class="label">LEGACY</div><div class="v">${Math.round(r.legacyScore)}</div></div>
+          <div class="cell"><div class="label">BATTLE</div><div class="v ${battleClass}">${battleSign}${Math.round(r.battlePt)}</div></div>
+          <div class="cell"><div class="label">POPULARITY</div><div class="v" style="color:${popColor}">${popDisplay}</div></div>
+        </div>
+        ${champRowHtml}
+        <div class="formation-section">
+          <div class="formation-label"><span>FORMATION</span><span class="count">TOP ${top.length}</span></div>
+          <div class="formation">${fcellsHtml}</div>
+        </div>
+        <div class="footer-actions">
+          <div class="roster-count">ROSTER <strong>${rosterAll.length}</strong>名 ・ AVG OVR <strong>${avgOvr}</strong></div>
+          <button class="roster-toggle" onclick="(function(el){var p=el.parentElement.parentElement.querySelector('.roster-list');if(p){p.style.display=p.style.display==='none'?'flex':'none';el.textContent=p.style.display==='none'?'全選手を見る':'閉じる';}})(this)">全選手を見る</button>
+        </div>
+        <div class="roster-list" id="${rosterListId}" style="display:none">${rosterListHtml}</div>
+      </div>
+    </div>`;
+  });
+  html += '</section>';
+
+  // ── 04 シーズン履歴 ──
   if (G.seasonHistory && G.seasonHistory.length > 0) {
-    html += '<div style="margin-top:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px">';
-    html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📈 シーズン履歴</h4>';
-    html += '<table class="data-table"><tr><th>シーズン</th><th style="text-align:right">順位</th><th style="text-align:right">興行数</th><th style="text-align:right">最高MQ</th><th style="text-align:right">収支</th><th style="text-align:right">最終資金</th><th style="text-align:right">人数</th></tr>';
+    html += '<section class="section bg-card history-wrap"><div class="section-marker"><div class="text"><div class="kicker">04 — History</div><div class="title">シーズン履歴</div></div></div>';
+    html += '<table><thead><tr><th>シーズン</th><th>順位</th><th>興行数</th><th>最高MQ</th><th>収支</th><th>最終資金</th><th>人数</th></tr></thead><tbody>';
     G.seasonHistory.forEach(h => {
       const profit = (h.totalRevenue || 0) - (h.totalExpense || 0);
+      const profitClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
       html += `<tr>
         <td>${h.season}年目</td>
-        <td class="num" style="font-weight:700;color:${h.rank===1?'var(--gold)':h.rank===2?'#e74c3c':h.rank===3?'#9b59b6':'#2ecc71'}">${h.rank}位</td>
-        <td class="num">${h.showCount || 0}</td>
-        <td class="num" style="color:#3498db">${h.bestMQ || 0}</td>
-        <td class="num" style="color:${profit>=0?'#2ecc71':'#e74c3c'}">${profit>=0?'+':''}${Math.round(profit).toLocaleString()}万</td>
-        <td class="num">${Math.round(h.funds||0).toLocaleString()}万</td>
-        <td class="num">${h.rosterSize || '-'}</td>
+        <td class="h-rank-${h.rank}">${h.rank}位</td>
+        <td>${h.showCount || 0}</td>
+        <td>${h.bestMQ || 0}</td>
+        <td class="${profitClass}">${profit >= 0 ? '+' : ''}${Math.round(profit).toLocaleString()}万</td>
+        <td>${Math.round(h.funds || 0).toLocaleString()}万</td>
+        <td>${h.rosterSize || '-'}</td>
       </tr>`;
     });
-    html += '</table></div>';
+    html += '</tbody></table></section>';
   }
 
   el.innerHTML = html;
