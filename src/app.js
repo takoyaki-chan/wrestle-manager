@@ -585,10 +585,27 @@ const Audio = (() => {
       // タイトル戴冠: MP3ファイル版を使用（bgmMuted無視で必ず再生）
       if (name === 'championship') {
         FileBGM.stop();
-        const a = new window.Audio('bgm/fanfare_brass_v1.mp3');
+        const a = new window.Audio('../bgm/fanfare_brass_v1.mp3');
         a.volume = Math.min(1.0, JINGLE_MIX.championship);
-        a.play().catch(() => {});
+        a.addEventListener('error', () => {
+          console.warn('[Audio] championship jingle failed to load, falling back to synth');
+          if (BGM._current === 'jingle_championship' && BGM._playing) {
+            const fn = BGM._jingles[name];
+            if (bgmGain) bgmGain.gain.value = JINGLE_MIX[name] ?? _bgmVol;
+            if (fn) fn();
+          }
+        }, { once: true });
+        a.play().catch(err => {
+          console.warn('[Audio] championship jingle failed to play, falling back to synth', err);
+          if (BGM._current === 'jingle_championship' && BGM._playing) {
+            const fn = BGM._jingles[name];
+            if (bgmGain) bgmGain.gain.value = JINGLE_MIX[name] ?? _bgmVol;
+            if (fn) fn();
+          }
+        });
         FileBGM._audio = a;
+        BGM._playing = true;
+        BGM._current = 'jingle_' + name;
         return;
       }
       const c = ensure();
