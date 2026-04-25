@@ -7288,8 +7288,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .np-ace-top .edge.rival { color: #ff8090; }
 .np-ace-top .edge.even { color: #c8b878; }
 .np-ace-arena { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 8px; align-items: end; position: relative; }
-.np-stand-wrap { height: 280px; border-radius: 6px; overflow: hidden; background-color: #2a1a10; border: 2px solid #d4b87a; box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
-.np-stand-img { width: 100%; height: 100%; background-size: cover; background-position: center top; background-repeat: no-repeat; }
+.np-stand-wrap { height: 240px; border-radius: 6px; overflow: hidden; background-color: #2a1a10; border: 2px solid #d4b87a; box-shadow: 0 4px 14px rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; }
+.np-stand-img { width: 100%; height: 100%; background-size: contain; background-position: center bottom; background-repeat: no-repeat; }
 .np-stand-img.flip { transform: scaleX(-1); }
 .np-ace-vs-center { display: grid; align-content: center; justify-items: center; gap: 6px; position: relative; }
 .np-ace-vs-text { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: #f0d48b; line-height: 1; text-shadow: 0 0 12px rgba(212,184,122,0.6), 0 2px 4px rgba(0,0,0,0.6); }
@@ -7359,6 +7359,28 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .np-spotlight-tag.star { background: #6a4a10; color: #fff; }
 .np-spotlight-tag.threat { background: #1a4a30; color: #fff; }
 
+/* 過去対戦成績 (war-record) */
+.np-war-record { margin-bottom: 12px; padding: 12px 14px; background: rgba(120,84,39,0.05); border: 1px solid rgba(120,84,39,0.2); border-radius: 6px; }
+.np-war-grid { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+.np-war-overall { display: flex; align-items: baseline; gap: 6px; }
+.np-war-overall .lbl { font-size: 10px; color: #6a5e4c; letter-spacing: 2px; }
+.np-war-overall .wl { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #1a0d04; letter-spacing: 1px; line-height: 1; }
+.np-war-breakdown { display: grid; grid-template-columns: repeat(3, auto); gap: 6px 14px; font-size: 11px; justify-content: center; padding-left: 12px; border-left: 1px solid rgba(120,84,39,0.2); }
+.np-war-breakdown .item { display: flex; gap: 4px; align-items: baseline; }
+.np-war-breakdown label { color: #6a5e4c; font-size: 10px; }
+.np-war-breakdown span { font-family: 'Bebas Neue', sans-serif; color: #1f1710; font-size: 13px; line-height: 1; }
+.np-war-streak { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
+.np-war-streak.win { background: #1a7a30; color: #fff; }
+.np-war-streak.lose { background: #8b1a1a; color: #fff; }
+.np-war-streak.even { background: #5b4b34; color: #fff; }
+.np-war-comment { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(120,84,39,0.25); font-size: 11.5px; line-height: 1.6; color: #4a3825; font-family: 'Noto Serif JP', serif; }
+.np-war-comment .np-kuroda-face { width: 28px; height: 28px; }
+
+/* 事実段落 (3面) */
+.np-rivalry-facts { padding: 10px 18px 12px; background: rgba(212,184,122,0.08); border-top: 1px dashed rgba(212,184,122,0.25); display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11px; color: #c8b878; font-family: 'Noto Serif JP', serif; }
+.np-rivalry-facts .fact-item::before { content: '◆'; color: #d4a82a; margin-right: 4px; font-size: 9px; }
+.np-rivalry-facts .fact-item strong { font-family: 'Bebas Neue', sans-serif; color: #f0d48b; font-size: 13px; margin-left: 2px; }
+
 /* ── 3面: 因縁列伝 ── */
 .np-rivalry-headline { text-align: center; padding: 4px 0 12px; border-bottom: 3px double rgba(120,84,39,0.4); margin-bottom: 14px; }
 .np-rivalry-headline .pre { display: inline-block; font-size: 10px; letter-spacing: 4px; color: #8b1a1a; font-weight: 800; border: 1px solid #8b1a1a; padding: 2px 10px; margin-bottom: 8px; }
@@ -7367,7 +7389,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 
 .np-rivalry-main { margin-bottom: 16px; background: linear-gradient(180deg, #1a0d04 0%, #2a1a10 100%); border-radius: 10px; overflow: hidden; border: 1px solid rgba(154,112,32,0.4); box-shadow: inset 0 0 30px rgba(0,0,0,0.6); }
 .np-rivalry-main-photos { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 8px; align-items: end; padding: 14px 16px 0; }
-.np-rivalry-stand { height: 320px; border-radius: 6px; overflow: hidden; background-color: #2a1a10; border: 2px solid #d4b87a; box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
+.np-rivalry-stand { height: 280px; border-radius: 6px; overflow: hidden; background-color: #2a1a10; border: 2px solid #d4b87a; box-shadow: 0 4px 14px rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; }
 .np-rivalry-stand .img { width: 100%; height: 100%; background-size: contain; background-position: center bottom; background-repeat: no-repeat; }
 .np-rivalry-stand .img.flip { transform: scaleX(-1); }
 .np-rivalry-vs { display: grid; align-content: center; justify-items: center; gap: 4px; }

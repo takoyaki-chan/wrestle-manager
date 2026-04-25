@@ -5443,6 +5443,22 @@ function _npClickName(name, id) {
 function _npKurodaFaceUrl() {
   return (typeof getNpcPortraitUrl === 'function') ? getNpcPortraitUrl('reporter') : '';
 }
+// 黒田の署名・肩書ローテーション (用途別)
+const NP_KURODA_BYLINE = {
+  news: '——黒田幸子(週刊グラップル)',     // 一面記事/興行寸評
+  rating: '——黒田幸子(本紙)',              // 興行総合評価
+  editorial: '——黒田幸子(編集部)',          // 編集長コラム/論説
+  rivalry: '——黒田幸子(本紙)',              // 因縁列伝
+  warRecord: '——黒田幸子(週刊グラップル)',  // 対戦成績寸評
+};
+function _npStandUrl(id, ovr) {
+  if (typeof getStandUrl === 'function') return getStandUrl(id, ovr);
+  return '';
+}
+function _npStandBg(id, ovr) {
+  const url = _npStandUrl(id, ovr);
+  return url ? `background-image: url('${url}');` : '';
+}
 function _npOrgEmblem(state, orgId, size = 18) {
   // returns inline img tag for org emblem
   if (!orgId) return '';
@@ -5455,6 +5471,56 @@ function _npOrgEmblem(state, orgId, size = 18) {
   if (!path) return '';
   return `<img src="${path}" width="${size}" height="${size}" style="vertical-align:middle;border-radius:2px" alt="" loading="lazy">`;
 }
+function _npComputeWarRecord(state, rivalOrgId) {
+  // h2h を全件走査し、player vs 指定AI団体 の対戦集計
+  const playerIds = new Set((state.roster || []).map(c => c.id));
+  const aiRoster = (state.aiOrgs && state.aiOrgs[rivalOrgId] && state.aiOrgs[rivalOrgId].roster) || [];
+  const aiIds = new Set(aiRoster.map(c => c.id));
+  let wins = 0, losses = 0, draws = 0;
+  const bySingle = { w: 0, l: 0, d: 0 };
+  const byWar = { w: 0, l: 0, d: 0 };
+  const byPpv = { w: 0, l: 0, d: 0 };
+  // 直近の勝敗記録 (history があれば、なければ winsA/winsB から推定)
+  const recentResults = [];
+  Object.entries(state.h2h || {}).forEach(([key, h]) => {
+    const [a, b] = key.split('>').map(Number);
+    let playerSide = null;
+    if (playerIds.has(a) && aiIds.has(b)) playerSide = 'A';
+    else if (playerIds.has(b) && aiIds.has(a)) playerSide = 'B';
+    if (!playerSide) return;
+    const pWins = playerSide === 'A' ? (h.winsA || 0) : (h.winsB || 0);
+    const oWins = playerSide === 'A' ? (h.winsB || 0) : (h.winsA || 0);
+    const dr = h.draws || 0;
+    wins += pWins; losses += oWins; draws += dr;
+    if (h.history && h.history.length > 0) {
+      h.history.forEach(hh => {
+        const cat = hh.st === 'war' ? byWar : hh.st === 'ppv' ? byPpv : bySingle;
+        if (hh.win === playerSide) { cat.w++; recentResults.push({ s: hh.s, w: hh.w, r: 'w' }); }
+        else if (hh.win === 'd') { cat.d++; recentResults.push({ s: hh.s, w: hh.w, r: 'd' }); }
+        else { cat.l++; recentResults.push({ s: hh.s, w: hh.w, r: 'l' }); }
+      });
+    } else {
+      // history なし: シングル扱い
+      bySingle.w += pWins; bySingle.l += oWins; bySingle.d += dr;
+    }
+  });
+  // 直近を時系列ソート → 連勝・連敗判定
+  recentResults.sort((x, y) => (y.s - x.s) || (y.w - x.w));
+  let streakKind = 'even', streak = 0;
+  if (recentResults.length > 0) {
+    const first = recentResults[0].r;
+    if (first === 'w' || first === 'l') {
+      streakKind = first === 'w' ? 'win' : 'lose';
+      for (const r of recentResults) {
+        if (r.r === first) streak++;
+        else break;
+      }
+    }
+  } else if (wins > losses + 1) { streakKind = 'win'; streak = wins - losses; }
+  else if (losses > wins + 1) { streakKind = 'lose'; streak = losses - wins; }
+  return { wins, losses, draws, total: wins + losses + draws, diff: wins - losses, bySingle, byWar, byPpv, streakKind, streak };
+}
+
 function _npFindFighterOrgKey(state, charId) {
   // returns 'player' | 'org_s' | 'org_a' | 'org_b' | null
   if ((state.roster || []).some(c => c.id === charId)) return 'player';
@@ -5549,7 +5615,7 @@ function _npRenderPage1() {
         if (txt) {
           html += `<div class="np-kuroda" style="margin-bottom:14px">
             <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-            <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">——黒田幸子</div></div>
+            <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
           </div>`;
         }
       }
@@ -5588,7 +5654,7 @@ function _npRenderPage1() {
       if (txt) {
         html += `<div class="np-kuroda">
           <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-          <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">——黒田幸子</div></div>
+          <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
         </div>`;
       }
     }
@@ -5773,7 +5839,7 @@ function _npRenderPage2() {
     <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
     <div>
       <div class="np-headline-quote">「${d.summaryText || ''}」</div>
-      <div class="np-headline-byline">——黒田幸子</div>
+      <div class="np-headline-byline">${NP_KURODA_BYLINE.editorial}</div>
     </div>
     <div class="np-headline-grade">
       <div class="lbl">GRADE</div>
@@ -5823,7 +5889,50 @@ function _npRenderPage2() {
     </div>
   </div>`;
 
-  // エース対峙 (上位選手1名同士)
+  // 過去対戦成績 (war-record) — モックアップ §2-2 準拠
+  const warStats = _npComputeWarRecord(G, _dbCompareTarget);
+  if (warStats.total > 0) {
+    const streakCls = warStats.streakKind === 'win' ? 'win' : warStats.streakKind === 'lose' ? 'lose' : 'even';
+    const streakLabel = warStats.streakKind === 'win' ? `${warStats.streak}連勝中`
+      : warStats.streakKind === 'lose' ? `${warStats.streak}連敗中`
+      : '直近 互角';
+    let warComment = '';
+    if (typeof KURODA_WAR_RECORD !== 'undefined') {
+      const cat = warStats.diff > 1 ? 'winStreak' : warStats.diff < -1 ? 'loseStreak' : 'evenRecord';
+      const pool = KURODA_WAR_RECORD[cat] || KURODA_WAR_RECORD.evenRecord || [];
+      if (pool.length > 0) {
+        const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC2D0));
+        const fn = Engine.rng.pick(rng, pool);
+        try { warComment = fn({ playerName: d.playerName, rivalName: d.rivalName, wins: warStats.wins, losses: warStats.losses }); } catch(e) {}
+      }
+    }
+    if (!warComment) {
+      warComment = warStats.diff > 1 ? `${d.playerName}が対戦成績で先行している。${d.rivalName}としては反撃の機会を作りたいところだ。`
+        : warStats.diff < -1 ? `${d.rivalName}が対戦成績で優位。${d.playerName}としては流れを変える一戦が必要になる。`
+        : `通算${warStats.total}戦で互角。次戦が大きな分岐点になりそうだ。`;
+    }
+    html += `<div class="np-war-record">
+      <div class="np-sec-gold">過去対戦成績</div>
+      <div class="np-war-grid">
+        <div class="np-war-overall">
+          <span class="lbl">通算</span>
+          <span class="wl">${warStats.wins}勝-${warStats.losses}敗${warStats.draws ? `-${warStats.draws}分` : ''}</span>
+        </div>
+        <div class="np-war-breakdown">
+          <div class="item"><label>シングル</label><span>${warStats.bySingle.w}-${warStats.bySingle.l}</span></div>
+          <div class="item"><label>対抗戦</label><span>${warStats.byWar.w}-${warStats.byWar.l}</span></div>
+          <div class="item"><label>PPV</label><span>${warStats.byPpv.w}-${warStats.byPpv.l}</span></div>
+        </div>
+        <div class="np-war-streak ${streakCls}">${streakLabel}</div>
+      </div>
+      <div class="np-war-comment">
+        <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
+        <div>「${warComment}」<div class="np-kuroda-byline">${NP_KURODA_BYLINE.warRecord}</div></div>
+      </div>
+    </div>`;
+  }
+
+  // エース対峙 (上位選手1名同士) — stand画像で対峙
   const aceP = (d.matchups && d.matchups[0]) ? d.matchups[0].player : null;
   const aceR = (d.matchups && d.matchups[0]) ? d.matchups[0].rival : null;
   if (aceP && aceR) {
@@ -5836,12 +5945,12 @@ function _npRenderPage2() {
         <span class="edge ${edgeCls}">${edgeText}</span>
       </div>
       <div class="np-ace-arena">
-        <div class="np-stand-wrap"><div class="np-stand-img" style="${_npPhotoBg(aceP.id)}"></div></div>
+        <div class="np-stand-wrap"><div class="np-stand-img" style="${_npStandBg(aceP.id, aceP.ovr)}"></div></div>
         <div class="np-ace-vs-center">
           <div class="np-ace-vs-text">VS</div>
           <div class="np-ace-vs-metrics">OVR<br>${aceP.ovr} : ${aceR.ovr}</div>
         </div>
-        <div class="np-stand-wrap"><div class="np-stand-img flip" style="${_npPhotoBg(aceR.id)}"></div></div>
+        <div class="np-stand-wrap"><div class="np-stand-img flip" style="${_npStandBg(aceR.id, aceR.ovr)}"></div></div>
       </div>
       <div class="np-ace-name-bar">
         <div class="np-ace-side">
@@ -5949,7 +6058,7 @@ function _npRenderPage2() {
         <div class="np-kuroda-face sm" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
         <div style="flex:1">
           <div class="np-editorial-text">${d.summaryText || ''}<br>勝ち筋: ${d.opportunity || ''}<br>リスク: ${d.risk || ''}<br>補強提案: ${d.scout || ''}</div>
-          <div class="np-editorial-byline">——黒田幸子</div>
+          <div class="np-editorial-byline">${NP_KURODA_BYLINE.editorial}</div>
         </div>
       </div>
     </div>`;
@@ -6068,23 +6177,32 @@ function _npRenderPage3() {
     return html;
   }
 
-  // 大見出し
-  const headlineMap = {
-    fated_admiration: { pre: '深層リポート', title: '認め合うがゆえに、退けない', sub: '頂点を分け合う二人の物語' },
-    pure_hatred: { pre: '対立の深淵', title: '楽屋ですれ違っても、目を合わせない', sub: '埋まらぬ亀裂の裏側' },
-    destined_rival: { pre: '宿命対決', title: '幾度も交差する軌道', sub: '運命に導かれた敵対関係' },
-    allied_rivalry: { pre: '友情と闘志', title: '友情と闘志、矛盾しない関係', sub: '同じ志、別の道' },
-    bitter_feud: { pre: '骨肉の争い', title: '水と油、リングでも楽屋でも', sub: '冷めぬ確執の記録' },
-    standard_rivalry: { pre: '互角の宿敵', title: '拮抗する数字、燃える夜', sub: '互いを高め合う関係' },
-    mutual_respect: { pre: '相互尊敬', title: '言葉なき信頼', sub: 'リングの上での敬意' },
-    cold_rivalry: { pre: '冷戦', title: '言葉なき戦い', sub: '静かな確執' },
-    casual_rivalry: { pre: '緩やかな宿敵', title: '日常の中の小競り合い', sub: '日々のリング上で' },
+  // 大見出し — KURODA_RELATION_NARRATIVE.headlines から動的 pick
+  const tagPreMap = {
+    fated_admiration: '深層リポート', pure_hatred: '対立の深淵', destined_rival: '宿命対決',
+    allied_rivalry: '友情と闘志', bitter_feud: '骨肉の争い', standard_rivalry: '互角の宿敵',
+    mutual_respect: '相互尊敬', cold_rivalry: '冷戦', casual_rivalry: '緩やかな宿敵',
   };
-  const hd = headlineMap[featured.tag] || headlineMap.standard_rivalry;
+  const tagSubMap = {
+    fated_admiration: '頂点を分け合う二人の物語', pure_hatred: '埋まらぬ亀裂の裏側', destined_rival: '運命に導かれた敵対関係',
+    allied_rivalry: '同じ志、別の道', bitter_feud: '冷めぬ確執の記録', standard_rivalry: '互いを高め合う関係',
+    mutual_respect: 'リングの上での敬意', cold_rivalry: '静かな確執', casual_rivalry: '日々のリング上で',
+  };
+  const _hd_h2h = featured.h2h || {};
+  const yearsApprox = _hd_h2h.lastMatch ? Math.max(1, (G.season || 1) - (_hd_h2h.lastMatch.season || 1) + Math.ceil((_hd_h2h.matches || 0) / 4)) : 1;
+  let dynHeadline = '';
+  if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[featured.tag] && KURODA_RELATION_NARRATIVE[featured.tag].headlines) {
+    const pool = KURODA_RELATION_NARRATIVE[featured.tag].headlines;
+    if (pool.length > 0) {
+      const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, featured.idA, featured.idB, 0xC1B1));
+      const fn = Engine.rng.pick(rng, pool);
+      try { dynHeadline = fn({ charA: featured.charA.name, charB: featured.charB.name, matches: _hd_h2h.matches || 0, bestMQ: _hd_h2h.bestMQ || 0, years: yearsApprox }); } catch(e) {}
+    }
+  }
   html += `<div class="np-rivalry-headline">
-    <div class="pre">${hd.pre}</div>
-    <div class="title">${hd.title}</div>
-    <div class="sub">${hd.sub}</div>
+    <div class="pre">${tagPreMap[featured.tag] || '深層リポート'}</div>
+    <div class="title">${dynHeadline || `${featured.charA.name}と${featured.charB.name}——${tagSubMap[featured.tag] || ''}`}</div>
+    <div class="sub">${tagSubMap[featured.tag] || ''}</div>
   </div>`;
 
   // メイン featured
@@ -6114,22 +6232,21 @@ function _npRenderPage3() {
     }
   }
 
-  // narrative を複数本 pick して連結 (情報量増)
+  // narrative を3本 pick して連結 (情報量増、bodies 配列を使用)
   const narrativeParas = [];
-  if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[featured.tag]) {
-    const pool = KURODA_RELATION_NARRATIVE[featured.tag];
+  if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[featured.tag] && KURODA_RELATION_NARRATIVE[featured.tag].bodies) {
+    const pool = KURODA_RELATION_NARRATIVE[featured.tag].bodies;
     if (pool.length > 0) {
-      // 2本 pick (重複排除)
-      const seeds = [0xC1A1, 0xC1A2, 0xC1A3];
+      const seeds = [0xC1A1, 0xC1A2, 0xC1A3, 0xC1A4, 0xC1A5];
       const used = new Set();
       seeds.forEach(seed => {
-        if (narrativeParas.length >= 2) return;
+        if (narrativeParas.length >= 3) return;
         const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, a.id, b.id, seed));
         const fn = Engine.rng.pick(rng, pool);
         if (used.has(fn)) return;
         used.add(fn);
         try {
-          const t = fn({ aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: h2h.bestMQ || 0 });
+          const t = fn({ aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: h2h.bestMQ || 0, years: yearsApprox, charA: aName, charB: bName });
           if (t) narrativeParas.push(t);
         } catch(e) {}
       });
@@ -6140,6 +6257,25 @@ function _npRenderPage3() {
     narrativeParas.push(`通算${wA}勝${wB}敗${dr ? dr + '分' : ''}。最高評価はMQ${h2h.bestMQ || '?'}。本紙はこの関係を、業界を象徴する一組として注視している。`);
   } else if (narrativeParas.length === 1) {
     narrativeParas.push(`通算${wA}勝${wB}敗${dr ? dr + '分' : ''}。最高評価はMQ${h2h.bestMQ || '?'}。数字は嘘をつかない。`);
+  }
+
+  // 事実段落: h2h データを最大限盛り込む
+  const facts = [];
+  facts.push(`<span class="fact-item">通算<strong>${matches}</strong>戦</span>`);
+  facts.push(`<span class="fact-item">${aName}<strong>${wA}</strong>勝 / ${bName}<strong>${wB}</strong>勝${dr ? ` / ${dr}分` : ''}</span>`);
+  facts.push(`<span class="fact-item">最高評価 MQ<strong>${h2h.bestMQ || '?'}</strong></span>`);
+  if (h2h.hadTitleMatch) facts.push(`<span class="fact-item">タイトル戦経験<strong>あり</strong></span>`);
+  if (h2h.hadPPV) facts.push(`<span class="fact-item">PPV対決<strong>あり</strong></span>`);
+  if (h2h.lastMatch) facts.push(`<span class="fact-item">直近対戦 S<strong>${h2h.lastMatch.season}</strong>W<strong>${h2h.lastMatch.week}</strong></span>`);
+  // 関係性数値 (bond / rivalry 平均)
+  facts.push(`<span class="fact-item">親密度<strong>${Math.round(featured.bond)}</strong> / ライバル度<strong>${Math.round(featured.rivalry)}</strong></span>`);
+  // 過去同団体経験
+  if (typeof Engine !== 'undefined' && Engine.orgTimeline && Engine.orgTimeline.wereColleagues) {
+    try {
+      if (Engine.orgTimeline.wereColleagues(G, featured.idA, featured.idB)) {
+        facts.push(`<span class="fact-item">過去同団体<strong>あり</strong></span>`);
+      }
+    } catch(e) {}
   }
 
   // 団体エンブレム
@@ -6182,7 +6318,9 @@ function _npRenderPage3() {
     </div>
     <div class="np-rivalry-narrative">
       ${narrativeParas.map(p => `<p>${p}</p>`).join('')}
+      <div style="text-align:right;font-size:10px;color:#7a5b32;margin-top:6px">${NP_KURODA_BYLINE.rivalry}</div>
     </div>
+    <div class="np-rivalry-facts">${facts.join('')}</div>
   </div>`;
 
   // 過去対戦タイムライン
@@ -6233,12 +6371,13 @@ function _npRenderPage3() {
     relations.forEach(r => {
       const td = TAG_DESC[r.tag] || TAG_DESC.casual_rivalry;
       let summary = '';
-      if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[r.tag]) {
-        const pool = KURODA_RELATION_NARRATIVE[r.tag];
+      if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[r.tag] && KURODA_RELATION_NARRATIVE[r.tag].bodies) {
+        const pool = KURODA_RELATION_NARRATIVE[r.tag].bodies;
         if (pool.length > 0) {
           const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, r.idA, r.idB, 0xC1B2));
           const fn = Engine.rng.pick(rng, pool);
-          try { summary = fn({ aName: r.charA.name, bName: r.charB.name, aOrg: _findFighterOrgName(G, r.idA), bOrg: _findFighterOrgName(G, r.idB), matches: r.h2h.matches || 0 }); } catch(e) {}
+          const yrs = r.h2h.lastMatch ? Math.max(1, (G.season || 1) - (r.h2h.lastMatch.season || 1) + Math.ceil((r.h2h.matches || 0) / 4)) : 1;
+          try { summary = fn({ aName: r.charA.name, bName: r.charB.name, charA: r.charA.name, charB: r.charB.name, aOrg: _findFighterOrgName(G, r.idA), bOrg: _findFighterOrgName(G, r.idB), matches: r.h2h.matches || 0, bestMQ: r.h2h.bestMQ || 0, years: yrs, wA: r.h2h.winsA || 0, wB: r.h2h.winsB || 0 }); } catch(e) {}
         }
       }
       const aOrgKeyR = _npFindFighterOrgKey(G, r.idA);
