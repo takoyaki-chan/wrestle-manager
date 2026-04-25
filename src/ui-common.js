@@ -904,13 +904,13 @@ function closeWarFinalResult(eventWon) {
     setTimeout(() => {
       document.getElementById('showResultOverlay').classList.remove('active');
       _showWarVictoryChain(_warVictoryWinners, 0, function() {
-        Audio.bgm.play('management');
+        App.restoreBgmForState();
       });
     }, 2000);
   } else {
     setTimeout(() => {
       document.getElementById('showResultOverlay').classList.remove('active');
-      Audio.bgm.play('management');
+      App.restoreBgmForState();
     }, eventWon ? 2000 : 500);
   }
 }
@@ -4527,7 +4527,7 @@ function startDraftNegotiation() {
   if (uiQueue.length === 0) {
     // 全候補処理完了 → まとめ記事 → 直接offseason進行
     G = _finalizeDraft(G, draftSummary, rngState, maxPicks);
-    try { Audio.bgm.play('management'); } catch(e) {}
+    App.restoreBgmForState();
     console.log('[WM Draft] BGM → management (draft complete, no UI queue)');
     App.scoutEventFinish();
     return;
@@ -5054,7 +5054,7 @@ function draftNextCandidate() {
     // 全候補終了 → ドラフト完了(EMPRESS安全網+まとめ記事) → B1+まとめ記事表示
     G = { ...G, _draftNegotiation: { ...dn, acquiredThisSession: acquired, draftSummary }, gameLog: log };
     G = _finalizeDraft(G, draftSummary, dn.rngState, dn.maxPicks);
-    try { Audio.bgm.play('management'); } catch(e) {}
+    App.restoreBgmForState();
     console.log('[WM Draft] BGM → management (draft complete)');
     // B1+まとめ記事ページ表示（_draftResultPages がセットされている）
     refreshAll();
@@ -5175,14 +5175,13 @@ function executeEvent() {
   if (eventWon) { evStats.eventsWon = (evStats.eventsWon || 0) + 1; Audio.play('victory'); }
   else { evStats.eventsLost = (evStats.eventsLost || 0) + 1; Audio.play('defeat'); }
   G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+  App.restoreBgmForState();
   Storage.autoSave();
   refreshAll();
 }
 
 function skipEvent() {
   Audio.play('deselect');
-  Audio.fileBgm.stop();
-  Audio.bgm.playForState();
   const ev = G.pendingEvent;
   const events = [];
   if (ev) {
@@ -5192,6 +5191,7 @@ function skipEvent() {
   }
   G = { ...G, pendingEvent: null, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] },
         gameLog: [...G.gameLog, ...events] };
+  App.restoreBgmForState();
   Storage.autoSave();
   refreshAll();
 }

@@ -3038,6 +3038,15 @@ let _selectedDifficulty = 'normal';
 const App = {
   // ═══ Title Screen (v1.0) ═══
 
+  restoreBgmForState(delayMs = 0) {
+    const restore = () => {
+      try { Audio.fileBgm.stop(); } catch(e) {}
+      try { Audio.bgm.playForState(); } catch(e) {}
+    };
+    if (delayMs > 0) setTimeout(restore, delayMs);
+    else restore();
+  },
+
   // Show the title screen overlay
   showTitleScreen() {
     const titleEl = document.getElementById('titleScreen');
@@ -7299,7 +7308,7 @@ const App = {
     showAwardsCeremony(pendingAwards, () => {
       try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
       // 表彰式BGMフェードアウト後に通常BGMを再開
-      setTimeout(() => { try { Audio.bgm.play('management'); } catch(e) {} }, 1600);
+      App.restoreBgmForState(1600);
       // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
       if (pendingAwards.hallOfFame.length > 0) {
         G = Engine.awards.applyHallOfFame(G, pendingAwards.hallOfFame);
@@ -7965,6 +7974,7 @@ const App = {
     overlay.classList.remove('active');
     App._b3Preview = null;
     Audio.play('event');
+    App.restoreBgmForState();
     renderWeekScreen();
   },
 
@@ -8074,6 +8084,7 @@ const App = {
     overlay.classList.remove('active');
     App._b2Preview = null;
     Audio.play('event');
+    App.restoreBgmForState();
     renderWeekScreen();
   },
 
@@ -9719,8 +9730,8 @@ App.finalizeJuniorTournament = function() {
   Audio.play('coin');
 
   const finishUp = () => {
-    Audio.bgm.play('management');
     G = { ...G, weekPhase: 'manage' };
+    App.restoreBgmForState();
     Storage.autoSave();
     showScreen('week');
     refreshAll();
