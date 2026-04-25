@@ -7415,13 +7415,20 @@ const Engine = {
           }, G);
         });
         const settleNonMatchPromo = roster.filter(c => !settleValidMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
-        const settleShowDraw = Engine.attendanceV2.calcShowDraw(settleMatchAppeals, settleNonMatchPromo, G.showVenue);
-        const attendRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xA77E));
-        const settleV2 = Engine.attendanceV2.calcAttendanceV2(G, G.showVenue, settleShowDraw, attendRng);
-        let attendance = settleV2.attendance;
-        // v1.5s25b: attendance_boost バフ（マイルストーン）
-        const attendBoostBuff = (G.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
-        if (attendBoostBuff) attendance = Math.min(VENUES[G.showVenue].cap, Math.round(attendance * attendBoostBuff.multiplier));
+        let attendance;
+        if (G.lastShowAttendance > 0) {
+          // finalizeShow (app.js) または executeShow で確定済みの値を使用
+          // 再計算するとタッグ試合除外・promoStack状態差等で不一致が生じるため
+          attendance = G.lastShowAttendance;
+        } else {
+          // フォールバック: lastShowAttendance 未設定時のみ再計算
+          const settleShowDraw = Engine.attendanceV2.calcShowDraw(settleMatchAppeals, settleNonMatchPromo, G.showVenue);
+          const attendRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xA77E));
+          const settleV2 = Engine.attendanceV2.calcAttendanceV2(G, G.showVenue, settleShowDraw, attendRng);
+          attendance = settleV2.attendance;
+          const attendBoostBuff = (G.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
+          if (attendBoostBuff) attendance = Math.min(VENUES[G.showVenue].cap, Math.round(attendance * attendBoostBuff.multiplier));
+        }
         // 集客v2: ★算出（メディア収入計算用）
         const hasTitleMatch = settleValidMatches.some(m => m.isTitle);
         const settleRatingCtx = {
@@ -8224,6 +8231,7 @@ const Engine = {
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuff) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuff.multiplier));
+    s = { ...s, lastShowAttendance: preAttendance };
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
     if (crowdMQ.crowdLabel) {
