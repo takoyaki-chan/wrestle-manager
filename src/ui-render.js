@@ -7033,7 +7033,7 @@ function _renderDbChronicle() {
               <div class="chron-dual-meta-val" style="font-size:11px">${_chronicleStyleLabel(a.style)}</div>
             </div>
             <div class="chron-dual-meta">
-              <div class="chron-dual-meta-key">SEASONS</div>
+              <div class="chron-dual-meta-key">ERA RUN</div>
               <div class="chron-dual-meta-val">${a.seasons || 1}<span class="small">期</span></div>
             </div>
             <div class="chron-dual-meta">
@@ -7074,7 +7074,7 @@ function _renderDbChronicle() {
             <div class="chron-ace-meta-val" style="font-size:12px">${_chronicleStyleLabel(a.style)}</div>
           </div>
           <div class="chron-ace-meta">
-            <div class="chron-ace-meta-key">SEASONS</div>
+            <div class="chron-ace-meta-key">ERA RUN</div>
             <div class="chron-ace-meta-val">${a.seasons || 1}<span class="small">期</span></div>
           </div>
           <div class="chron-ace-meta">

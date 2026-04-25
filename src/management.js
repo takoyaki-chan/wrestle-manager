@@ -2317,17 +2317,48 @@ const Engine = {
       return ovrN * 0.6 + popN * 0.4;
     },
 
+    _primeWindow(f) {
+      const careerStart = Math.max(1, f.careerSeasonsStart || 1);
+      const careerEnd = Math.max(careerStart, f.careerSeasonsEnd || careerStart);
+      const peak = Engine.util.clamp(f.peakOVRSeason || f.peakPopularitySeason || careerEnd, careerStart, careerEnd);
+      const keyYears = ((f.careerRecord || {}).history || [])
+        .filter(e => ['titleWin', 'titleDefense', 'awardMVP', 'ppvMainEvent', 'war', 'domeMain'].includes(e.type))
+        .map(e => e.season)
+        .filter(s => s >= careerStart && s <= careerEnd);
+      const minKey = keyYears.length ? Math.min(peak, ...keyYears) : peak;
+      const maxKey = keyYears.length ? Math.max(peak, ...keyYears) : peak;
+      let start = Math.max(careerStart, Math.min(minKey - 1, peak - 2));
+      let end = Math.min(careerEnd, Math.max(maxKey + 1, peak + 2));
+      while (end - start + 1 < 4 && (start > careerStart || end < careerEnd)) {
+        if (start > careerStart) start--;
+        if (end - start + 1 >= 4) break;
+        if (end < careerEnd) end++;
+      }
+      if (end - start + 1 > 7) {
+        start = Math.max(careerStart, peak - 3);
+        end = Math.min(careerEnd, start + 6);
+        if (end - start + 1 < 7) start = Math.max(careerStart, end - 6);
+      }
+      return { primeStart: start, primeEnd: end };
+    },
+
+    _overlapSeasons(aStart, aEnd, bStart, bEnd) {
+      const start = Math.max(aStart || 1, bStart || 1);
+      const end = Math.min(aEnd || start, bEnd || start);
+      return Math.max(0, end - start + 1);
+    },
+
     /** 章生成の候補プール (roster + fighterArchive) */
     _collectCandidates(state) {
       const list = [];
       (state.chronicle?.fighterArchive || []).forEach(a => {
-        list.push({ ...a, _active: false });
+        list.push({ ...a, ...Engine.chronicle._primeWindow(a), _active: false });
       });
       (state.roster || []).forEach(f => {
         // archive と重複する場合は skip (理論上はない)
         if (list.some(a => a.id === f.id)) return;
         const cr = f.careerRecord || {};
-        list.push({
+        const candidate = {
           id: f.id,
           name: f.name,
           style: f.style,
@@ -2350,7 +2381,8 @@ const Engine = {
           },
           traits: f.traits || [],
           _active: true
-        });
+        };
+        list.push({ ...candidate, ...Engine.chronicle._primeWindow(candidate) });
       });
       return list;
     },
@@ -2374,7 +2406,7 @@ const Engine = {
       }
       const bounds = [];
       let cursor = firstPeak;
-      const MIN_LEN = 5, MAX_LEN = 9, TARGET = 7;
+      const MIN_LEN = 4, MAX_LEN = 7, TARGET = 5;
       while (cursor <= currentSeason) {
         const start = cursor;
         let end = Math.min(cursor + TARGET - 1, currentSeason);
@@ -2389,6 +2421,12 @@ const Engine = {
           const score = (weighted[e] || 0) + (weighted[e + 1] || 0);
           if (score < bestScore) { bestScore = score; bestEnd = e; }
         }
+        const remaining = currentSeason - bestEnd;
+        if (remaining > 0 && remaining < MIN_LEN) {
+          bestEnd = (currentSeason - start + 1) <= MAX_LEN
+            ? currentSeason
+            : Math.max(minEnd, currentSeason - MIN_LEN);
+        }
         end = bestEnd;
         bounds.push({ seasonStart: start, seasonEnd: end });
         cursor = end + 1;
@@ -2400,8 +2438,8 @@ const Engine = {
     _selectAceAndPeers(chapterBounds, candidates) {
       // 章期間にキャリアが重なる候補
       const inChapter = candidates.filter(c => {
-        const s = c.careerSeasonsStart || 1;
-        const e = c.careerSeasonsEnd || s;
+        const s = c.primeStart || c.careerSeasonsStart || 1;
+        const e = c.primeEnd || c.careerSeasonsEnd || s;
         return !(e < chapterBounds.seasonStart || s > chapterBounds.seasonEnd);
       });
       if (inChapter.length === 0) return null;
@@ -2422,8 +2460,8 @@ const Engine = {
         const diff = scored[0]._hero - scored[1]._hero;
         // キャリア期間の重なりを確認
         const a = scored[0], b = scored[1];
-        const overlapStart = Math.max(a.careerSeasonsStart || 1, b.careerSeasonsStart || 1);
-        const overlapEnd = Math.min(a.careerSeasonsEnd || 1, b.careerSeasonsEnd || 1);
+        const overlapStart = Math.max(a.primeStart || a.careerSeasonsStart || 1, b.primeStart || b.careerSeasonsStart || 1);
+        const overlapEnd = Math.min(a.primeEnd || a.careerSeasonsEnd || 1, b.primeEnd || b.careerSeasonsEnd || 1);
         const overlap = Math.max(0, overlapEnd - overlapStart + 1);
         if (diff <= 0.04 && overlap >= 3) aces.push(b);
       }
@@ -2680,7 +2718,9 @@ const Engine = {
             personality: a.personality, archetype: a.archetype,
             peakOVR: a.peakOVR,
             peakPopularity: a.peakPopularity,
-            seasons: Math.max(1, (a.careerSeasonsEnd || 0) - (a.careerSeasonsStart || 0) + 1),
+            seasons: Math.max(1, Engine.chronicle._overlapSeasons(a.primeStart, a.primeEnd, b.seasonStart, b.seasonEnd)),
+            primeStart: a.primeStart,
+            primeEnd: a.primeEnd,
             titleReigns: a.titleReigns || 0,
             totalDefenses: a.totalDefenses || 0,
             traits: a.traits || []
@@ -2690,6 +2730,9 @@ const Engine = {
             personality: p.personality, archetype: p.archetype,
             peakOVR: p.peakOVR,
             peakPopularity: p.peakPopularity,
+            seasons: Math.max(1, Engine.chronicle._overlapSeasons(p.primeStart, p.primeEnd, b.seasonStart, b.seasonEnd)),
+            primeStart: p.primeStart,
+            primeEnd: p.primeEnd,
             titleReigns: p.titleReigns || 0,
             role: p._isIdol ? 'idol' : 'strength',
             traits: p.traits || []

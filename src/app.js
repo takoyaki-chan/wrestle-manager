@@ -2578,6 +2578,18 @@ const Storage = {
         G = { ...G, _migrated_chronicle_status_v2: true };
       }
 
+      // Chronicle v0.3: rebuild old save caches after prime-era segmentation changes.
+      if (!G._migrated_chronicle_prime_v3 && G.chronicle && Engine.chronicle) {
+        try {
+          G = Engine.chronicle.refreshChapters
+            ? Engine.chronicle.refreshChapters(G)
+            : Engine.chronicle.buildChapters(G, { forceRebuild: true });
+        } catch (e) {
+          console.warn('[chronicle] prime v3 rebuild failed', e);
+        }
+        G = { ...G, _migrated_chronicle_prime_v3: true };
+      }
+
       if (!G._migrated_coachSlots_v1) {
         const hiredCount = (G.coaches || []).length;
         G = { ...G, coachSlots: Math.max(1, hiredCount), _migrated_coachSlots_v1: true };

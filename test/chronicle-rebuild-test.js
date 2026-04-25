@@ -89,4 +89,30 @@ function makeRetiredFighter(id = 101) {
   );
 })();
 
+(function primeWindowFocusesPeakEra() {
+  const prime = Engine.chronicle._primeWindow({
+    careerSeasonsStart: 1,
+    careerSeasonsEnd: 12,
+    peakOVRSeason: 8,
+    peakPopularitySeason: 8,
+    careerRecord: { history: [] }
+  });
+  assert.deepStrictEqual(prime, { primeStart: 6, primeEnd: 10 });
+})();
+
+(function chapterSegmentationUsesFourToSevenSeasonWindows() {
+  const candidates = [
+    { peakOVRSeason: 4, peakOVR: 80, peakPopularity: 70 },
+    { peakOVRSeason: 9, peakOVR: 82, peakPopularity: 75 },
+    { peakOVRSeason: 14, peakOVR: 84, peakPopularity: 80 },
+    { peakOVRSeason: 20, peakOVR: 86, peakPopularity: 85 }
+  ];
+  const chapters = Engine.chronicle._segmentChapters(candidates, { season: 22 });
+  assert.ok(chapters.length > 0, 'segmentation should create chapter bounds');
+  chapters.forEach(ch => {
+    const len = ch.seasonEnd - ch.seasonStart + 1;
+    assert.ok(len >= 4 && len <= 7, `chapter length should be 4-7 seasons, got ${len}`);
+  });
+})();
+
 console.log('chronicle-rebuild-test: ok');
