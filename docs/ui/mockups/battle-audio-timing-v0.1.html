@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>試合SE 試聴モックアップ v0.1</title>
+<style>
+:root {
+  --bg: #0e0e1a;
+  --surface: #1a1a2e;
+  --surface2: #12122a;
+  --cream: #e8e0d0;
+  --cream-dim: #9090a0;
+  --gold: #d4a843;
+  --orange: #ff6b4a;
+  --blue: #4a9eff;
+  --red: #e85d75;
+  --teal: #4ac9b0;
+  --green: #6abf69;
+  --purple: #b46aff;
+  --border: rgba(255,255,255,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'Segoe UI', 'Hiragino Sans', sans-serif;
+  padding: 28px 32px;
+  min-height: 100vh;
+  line-height: 1.4;
+}
+h1 {
+  font-size: 16px;
+  color: var(--gold);
+  text-align: center;
+  letter-spacing: 3px;
+  margin-bottom: 4px;
+}
+.subtitle {
+  text-align: center;
+  color: var(--cream-dim);
+  font-size: 11px;
+  margin-bottom: 32px;
+}
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 22px;
+  margin-bottom: 24px;
+}
+.section-title {
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.section-desc {
+  font-size: 11px;
+  color: var(--cream-dim);
+  margin-bottom: 16px;
+  line-height: 1.7;
+}
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+button {
+  padding: 7px 16px;
+  border: 1px solid;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: inherit;
+  letter-spacing: 0.5px;
+  transition: opacity 0.1s, transform 0.05s;
+}
+button:active { opacity: 0.7; transform: scale(0.97); }
+button.btn-before {
+  background: rgba(232,93,117,0.12);
+  border-color: var(--red);
+  color: var(--red);
+}
+button.btn-after {
+  background: rgba(106,191,105,0.12);
+  border-color: var(--green);
+  color: var(--green);
+}
+button.btn-alt {
+  background: rgba(74,158,255,0.12);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.btn-sep {
+  color: var(--cream-dim);
+  font-size: 11px;
+}
+
+/* ─── Timeline ─────────────────────────────────────── */
+.tl-wrap {
+  margin-top: 4px;
+}
+.tl-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  gap: 8px;
+}
+.tl-label {
+  font-size: 10px;
+  color: var(--cream-dim);
+  width: 80px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.tl-bar {
+  flex: 1;
+  height: 22px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.tl-block {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  padding: 0 4px;
+  min-width: 8px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.tl-block.show { opacity: 1; }
+
+.tl-ticks {
+  display: flex;
+  margin-left: 88px;
+  padding-top: 2px;
+}
+.tl-tick {
+  flex: 1;
+  font-size: 9px;
+  color: var(--cream-dim);
+  text-align: center;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  padding-left: 2px;
+}
+.tl-tick:first-child { border-left: none; }
+
+/* ─── Arrow stage ──────────────────────────────────── */
+.arrow-stage {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: 46px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.arrow-el {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  opacity: 0;
+  white-space: nowrap;
+}
+#arr-orig { left: 8%; color: var(--cream-dim); }
+#arr-rev  { right: 8%; color: var(--gold); font-size: 15px; font-weight: bold; }
+
+/* ─── Legend ───────────────────────────────────────── */
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--cream-dim);
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ─── Notice ───────────────────────────────────────── */
+.notice {
+  font-size: 10px;
+  color: var(--green);
+  margin-top: 6px;
+  padding: 5px 8px;
+  background: rgba(106,191,105,0.08);
+  border-radius: 3px;
+  border: 1px solid rgba(106,191,105,0.2);
+}
+</style>
+</head>
+<body>
+
+<h1>試合SE 試聴モックアップ v0.1</h1>
+<p class="subtitle">Before / After を順番に再生して音とタイミングを確認してください</p>
+
+<!-- ─── ① カウンター ───────────────────────────────── -->
+<div class="section">
+  <div class="section-title">① カウンターSE タイミング</div>
+  <div class="section-desc">
+    Before: 「かわした」瞬間（t=0）にピシャッと鳴る → 攻めた側がやられたように聞こえる<br>
+    After: 返し矢印が飛んで着弾する（t=2000ms）に合わせて鳴る
+  </div>
+  <div class="btn-row">
+    <button class="btn-before" onclick="playCounter(false)">▶ Before（t=0 即時）</button>
+    <button class="btn-after"  onclick="playCounter(true)">▶ After（t=2000ms）</button>
+  </div>
+
+  <div class="arrow-stage">
+    <div class="arrow-el" id="arr-orig">───→  攻撃</div>
+    <div class="arrow-el" id="arr-rev">⬅━━━  カウンター！</div>
+  </div>
+
+  <div class="tl-wrap">
+    <div class="tl-row">
+      <span class="tl-label">矢印アニメ</span>
+      <div class="tl-bar" id="tl-c-arrow"></div>
+    </div>
+    <div class="tl-row">
+      <span class="tl-label">counterSE</span>
+      <div class="tl-bar" id="tl-c-se"></div>
+    </div>
+    <div class="tl-ticks" id="tl-c-ticks"></div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#666"></div>矢印アニメ</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>counterSE</div>
+  </div>
+</div>
+
+<!-- ─── ② ビッグムーブ：溜め→技音 ─────────────────── -->
+<div class="section">
+  <div class="section-title">② ビッグムーブの音響構造（bigmoveImpact 廃止）</div>
+  <div class="section-desc">
+    Before: 溜め音(charge) → 即座に 技音 + ドーン(bigmoveImpact) 同時 → ドーンが技音を全部消す<br>
+    After: 溜め音(charge) → <b>2500ms後</b>に技モーション開始 → 技音だけ鳴る（bigmoveImpact 完全廃止）<br>
+    ＊「ドーン」は技音そのものに任せる。別レイヤーの bigmoveImpact は要らない。
+  </div>
+  <div class="btn-row">
+    <button class="btn-before" onclick="playBigHit('strike', false)">▶ 打撃 Before</button>
+    <button class="btn-after"  onclick="playBigHit('strike', true)">▶ 打撃 After</button>
+    <span class="btn-sep">|</span>
+    <button class="btn-before" onclick="playBigHit('sub', false)">▶ 関節技 Before</button>
+    <button class="btn-after"  onclick="playBigHit('sub', true)">▶ 関節技 After</button>
+    <span class="btn-sep">|</span>
+    <button class="btn-before" onclick="playBigHit('aerial', false)">▶ 飛び技 Before</button>
+    <button class="btn-after"  onclick="playBigHit('aerial', true)">▶ 飛び技 After</button>
+  </div>
+  <div class="tl-wrap">
+    <div class="tl-row">
+      <span class="tl-label">bigmoveCharge</span>
+      <div class="tl-bar" id="tl-b-charge"></div>
+    </div>
+    <div class="tl-row">
+      <span class="tl-label">技音 (hitSE)</span>
+      <div class="tl-bar" id="tl-b-hit"></div>
+    </div>
+    <div class="tl-row">
+      <span class="tl-label">bigmoveImpact</span>
+      <div class="tl-bar" id="tl-b-big"></div>
+    </div>
+    <div class="tl-ticks" id="tl-b-ticks"></div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>bigmoveCharge（溜め）</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>hitSE（技音）</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>bigmoveImpact（Beforeのみ・Afterで廃止）</div>
+  </div>
+</div>
+
+<!-- ─── ③ 飛び技タイミング ──────────────────────────── -->
+<div class="section">
+  <div class="section-title">③ 飛び技タイミングと音量</div>
+  <div class="section-desc">
+    Before: 技発生と同時に着弾音 → 飛んでいないように聞こえる（空振り感）<br>
+    After: 1100ms後に着弾音 → 飛翔→着地の間が生まれてリアル<br>
+    ＊現在の SE_MIX.hitAerial = 0.10（打撃音の1/5）。音量UPも確認できます。
+  </div>
+  <div class="btn-row">
+    <button class="btn-before" onclick="playAerial(false, 0.10)">▶ Before（即時・Mix 0.10）</button>
+    <button class="btn-after"  onclick="playAerial(true,  0.10)">▶ After（1100ms後・Mix 0.10）</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn-alt" onclick="playAerial(true, 0.32)">▶ After + 音量UP（Mix 0.32）</button>
+    <button class="btn-alt" onclick="playAerial(true, 0.45)">▶ After + さらにUP（Mix 0.45）</button>
+  </div>
+  <div class="tl-wrap">
+    <div class="tl-row">
+      <span class="tl-label">hitAerial</span>
+      <div class="tl-bar" id="tl-a-hit"></div>
+    </div>
+    <div class="tl-ticks" id="tl-a-ticks"></div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Before（即時）</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>After（1100ms後）</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>After + 音量UP</div>
+  </div>
+</div>
+
+<script>
+// ─── MP3ファイル直接再生（実ゲームと同じ音源） ───
+// battle-sfx.js の _SE_FILES と同じパスを使う
+// docs/ui/mockups/ から bgm/ への相対パス: ../../../bgm/
+const SE_FILES = {
+  hitStrike:     '../../../bgm/b01_strike_hit_v4.mp3',
+  hitThrow:      '../../../bgm/b02_throw_hit_v1.mp3',
+  hitSub:        '../../../bgm/b03_joint_v4.mp3',
+  hitAerial:     '../../../bgm/b12_bigmove_hit_v3.mp3',
+  hitGround:     '../../../bgm/b03_joint_v5.mp3',
+  hitRollup:     '../../../bgm/b06_rollup_v1.mp3',
+  counterSE:     '../../../bgm/b08_counter_v1.mp3',
+  bigmoveCharge: '../../../bgm/b11_charge_v2.mp3',
+  bigmoveImpact: '../../../bgm/b12_bigmove_hit_v2.mp3',
+};
+
+// SE_MIX 値（battle-sfx.js L.37-42 と同じ）
+const SE_MIX = {
+  hitStrike: 0.50, hitThrow: 0.53, hitSub: 0.20, hitAerial: 0.10,
+  hitGround: 0.13, hitRollup: 0.50, counterSE: 0.15,
+  bigmoveCharge: 0.21, bigmoveImpact: 0.41,
+};
+
+// MP3を再生（rawVol で音量を直接指定 / 未指定なら SE_MIX を使う）
+function playSE(name, rawVol) {
+  const url = SE_FILES[name];
+  if (!url) { console.warn('SE not found:', name); return; }
+  try {
+    const a = new Audio(url);
+    const vol = rawVol != null ? rawVol : (SE_MIX[name] || 0.5);
+    a.volume = Math.min(1, Math.max(0, vol));
+    a.play().catch(err => console.warn('Audio play failed:', name, err));
+  } catch(e) { console.warn('SE error:', name, e); }
+}
+
+// ─── タイムライン ────────────────────────────────────
+function buildTicks(containerId, totalMs, step) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  const count = Math.floor(totalMs / step);
+  for (let i = 0; i <= count; i++) {
+    const tick = document.createElement('div');
+    tick.className = 'tl-tick';
+    tick.textContent = (i * step / 1000).toFixed(1) + 's';
+    el.appendChild(tick);
+  }
+}
+function clearBar(barId) {
+  const el = document.getElementById(barId);
+  if (el) el.innerHTML = '';
+}
+function addBlock(barId, startMs, durationMs, totalMs, color, label) {
+  const bar = document.getElementById(barId);
+  if (!bar) return;
+  const m = document.createElement('div');
+  m.className = 'tl-block';
+  const lPct = (startMs / totalMs) * 100;
+  const wPct = Math.max(0.8, (durationMs / totalMs) * 100);
+  m.style.left = lPct + '%';
+  m.style.width = wPct + '%';
+  m.style.background = color;
+  m.textContent = label;
+  bar.appendChild(m);
+  requestAnimationFrame(() => m.classList.add('show'));
+}
+
+// タイムライン初期化
+buildTicks('tl-c-ticks', 5000, 1000);  // counter: 5s
+buildTicks('tl-b-ticks', 8000, 1000);  // bighit: 8s
+buildTicks('tl-a-ticks', 4000, 1000);  // aerial: 4s
+
+// ─── ① カウンター ───────────────────────────────────
+function runArrowAnim() {
+  const orig = document.getElementById('arr-orig');
+  const rev  = document.getElementById('arr-rev');
+  // reset
+  orig.style.transition = 'none'; orig.style.opacity = '0'; orig.style.left = '4%';
+  rev.style.transition  = 'none'; rev.style.opacity  = '0'; rev.style.right = '4%';
+  // 初期矢印: t=100ms 出現 → 右へスライド
+  setTimeout(() => {
+    orig.style.opacity = '1';
+    orig.style.transition = 'left 700ms ease-out, opacity 0.12s';
+    orig.style.left = '38%';
+  }, 100);
+  // 初期矢印: t=850ms 消去
+  setTimeout(() => {
+    orig.style.transition = 'opacity 0.2s';
+    orig.style.opacity = '0';
+  }, 850);
+  // 返し矢印: t=1000ms 出現 → 左へスライド
+  setTimeout(() => {
+    rev.style.opacity = '1';
+    rev.style.transition = 'right 700ms ease-out, opacity 0.12s';
+    rev.style.right = '38%';
+  }, 1000);
+  // 返し矢印: t=1800ms 消去
+  setTimeout(() => {
+    rev.style.transition = 'opacity 0.3s';
+    rev.style.opacity = '0';
+  }, 1800);
+}
+
+function playCounter(isAfter) {
+  clearBar('tl-c-arrow'); clearBar('tl-c-se');
+  const TOTAL = 5000;
+  // 矢印タイムライン（常に同じ）
+  addBlock('tl-c-arrow', 100,  750, TOTAL, '#555', '→攻撃矢印');
+  addBlock('tl-c-arrow', 1000, 800, TOTAL, '#777', '←返し矢印');
+  runArrowAnim();
+
+  if (!isAfter) {
+    // Before: SE は t=0
+    addBlock('tl-c-se', 0, 350, TOTAL, 'var(--orange)', 'counterSE');
+    playSE('counterSE', SE_MIX.counterSE * 0.5);
+  } else {
+    // After: SE は t=2000ms
+    addBlock('tl-c-se', 2000, 350, TOTAL, 'var(--orange)', 'counterSE');
+    setTimeout(() => playSE('counterSE', SE_MIX.counterSE * 0.7), 2000);
+  }
+}
+
+// ─── ② ビッグムーブ：溜め→技音 ──────────────────────
+// hitSE 名のマッピング
+const HIT_NAME = { strike: 'hitStrike', sub: 'hitSub', aerial: 'hitAerial' };
+const HIT_LABEL = { strike: '打撃', sub: '関節', aerial: '飛び技' };
+
+function playBigHit(cat, isAfter) {
+  clearBar('tl-b-charge'); clearBar('tl-b-hit'); clearBar('tl-b-big');
+  const TOTAL = 8000;
+  const hitName = HIT_NAME[cat];
+  const label = HIT_LABEL[cat];
+
+  // 共通: 溜め音 t=0
+  addBlock('tl-b-charge', 0, 1800, TOTAL, 'var(--purple)', 'bigmoveCharge');
+  playSE('bigmoveCharge', SE_MIX.bigmoveCharge);
+
+  if (!isAfter) {
+    // Before: 溜め直後（=溜め開始と同時）に hitSE + bigmoveImpact 同時発火（現状）
+    addBlock('tl-b-hit', 0, 350, TOTAL, 'var(--blue)', label + 'SE');
+    playSE(hitName, SE_MIX[hitName] * 1.3);
+    addBlock('tl-b-big', 0, 500, TOTAL, 'var(--red)', 'bigmove（同時）');
+    playSE('bigmoveImpact', SE_MIX.bigmoveImpact);
+  } else {
+    // After: 溜めから 2500ms 後に技音だけ（bigmoveImpact なし）
+    addBlock('tl-b-hit', 2500, 350, TOTAL, 'var(--blue)', label + 'SE');
+    setTimeout(() => playSE(hitName, SE_MIX[hitName] * 1.3), 2500);
+  }
+}
+
+// ─── ③ 飛び技 ────────────────────────────────────────
+function playAerial(isAfter, vol) {
+  clearBar('tl-a-hit');
+  const TOTAL = 4000;
+
+  let color, label;
+  if (!isAfter) {
+    color = 'var(--red)'; label = 'hitAerial Mix ' + vol.toFixed(2);
+    addBlock('tl-a-hit', 0, 500, TOTAL, color, label);
+    playSE('hitAerial', vol);
+  } else {
+    if (vol <= 0.12) {
+      color = 'var(--green)'; label = 'hitAerial Mix ' + vol.toFixed(2);
+    } else {
+      color = 'var(--blue)'; label = 'hitAerial Mix ' + vol.toFixed(2);
+    }
+    addBlock('tl-a-hit', 1100, 500, TOTAL, color, label);
+    setTimeout(() => playSE('hitAerial', vol), 1100);
+  }
+}
+</script>
+</body>
+</html>
