@@ -2799,22 +2799,117 @@ const Engine = {
       return unique;
     },
 
+    /** spec v0.2 §A.3 章 mode 判定 (純粋関数) */
+    _classifyChapterMode(chapter, state) {
+      const sh = (state && state.seasonHistory) || [];
+      const ranks = [];
+      for (let s = chapter.seasonStart; s <= chapter.seasonEnd; s++) {
+        const entry = sh.find(h => h && h.season === s);
+        if (entry && typeof entry.rank === 'number') ranks.push(entry.rank);
+      }
+      if (ranks.length === 0) {
+        const cur = ((state && state.rankings) || []).find(r => r && r.orgId === 'player');
+        if (cur && typeof cur.rank === 'number') ranks.push(cur.rank);
+      }
+      if (ranks.length === 0) return 'challenge';
+
+      const first = ranks[0];
+      const last = ranks[ranks.length - 1];
+      if (first >= 3 && last === 1) return 'ascend';
+      if (first === 1 && last >= 3) return 'decline';
+
+      const t1 = ranks.filter(r => r === 1).length;
+      const t2 = ranks.filter(r => r === 2).length;
+      const t3 = ranks.filter(r => r >= 3).length;
+
+      const lastTier = last === 1 ? 't1' : last === 2 ? 't2' : 't3';
+      const counts = { t1, t2, t3 };
+      const max = Math.max(t1, t2, t3);
+      let topTier;
+      if (counts[lastTier] === max) topTier = lastTier;
+      else if (t1 === max) topTier = 't1';
+      else if (t2 === max) topTier = 't2';
+      else topTier = 't3';
+
+      if (topTier === 't1') {
+        const t2Ratio = t2 / ranks.length;
+        return t2Ratio >= 0.25 ? 'defense' : 'summit';
+      }
+      if (topTier === 't2') return 'contention';
+      return 'challenge';
+    },
+
+    /** spec v0.2 §C.1 mode別の表示マトリクス */
+    _buildCompetitiveRecord(chapter, mode, eraStats) {
+      const def = eraStats.totalTitleDefenses || 0;
+      const w = (eraStats.vsStier && eraStats.vsStier.wins) || 0;
+      const l = (eraStats.vsStier && eraStats.vsStier.losses) || 0;
+      switch (mode) {
+        case 'summit':
+          return { mode, label: '君臨', valueText: `${def}度防衛` };
+        case 'defense':
+          return { mode, label: '防衛戦', valueText: `${def}度防衛` };
+        case 'contention':
+          return { mode, label: 'つばぜり合い', valueText: `${w}勝${l}敗` };
+        case 'challenge':
+          return { mode, label: '殴り込み', valueText: `${w}勝${l}敗` };
+        case 'ascend':
+          return { mode, label: '下剋上', valueText: `${w}勝${l}敗` };
+        case 'decline': {
+          const lost = eraStats._titleLossInChapter ? '・王座失陥' : '';
+          return { mode, label: '陥落', valueText: `${def}度防衛${lost}` };
+        }
+        default:
+          return { mode: 'challenge', label: '殴り込み', valueText: `${w}勝${l}敗` };
+      }
+    },
+
     /** era stats (spec §3.2 eraStats) */
     _buildEraStats(chapter, aces, peers) {
       const chars = [...aces, ...peers];
       let totalTitleWins = 0;
       let warWins = 0, warLosses = 0;
+      let titleLossInChapter = false;
+      // titleDefense は count フィールドが累積値なので、選手×ベルト単位で
+      // 「章期間内最後の count − 章開始直前の最後の同ベルト count (なければ0)」を加算
+      let totalTitleDefenses = 0;
       chars.forEach(c => {
-        const hist = ((c.careerRecord || {}).history || [])
-          .filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
+        const allHist = ((c.careerRecord || {}).history || []);
+        const hist = allHist.filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
         totalTitleWins += hist.filter(e => e.type === 'titleWin').length;
+        if (hist.some(e => e.type === 'titleLoss')) titleLossInChapter = true;
         hist.filter(e => e.type === 'war').forEach(e => {
           if (e.won === true) warWins++;
           else if (e.won === false) warLosses++;
         });
+        // ベルト単位で防衛数の差分を集計
+        const beltGroups = new Map();
+        hist.filter(e => e.type === 'titleDefense').forEach(e => {
+          const key = e.beltId || '_default';
+          if (!beltGroups.has(key)) beltGroups.set(key, []);
+          beltGroups.get(key).push(e);
+        });
+        beltGroups.forEach((evs, beltKey) => {
+          // 章期間内 最大count
+          const maxIn = evs.reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+          // 章開始直前 同ベルトの最大count (なければ0)
+          const priorMax = allHist
+            .filter(e => e.type === 'titleDefense'
+              && (e.beltId || '_default') === beltKey
+              && (e.season || 0) < chapter.seasonStart)
+            .reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+          const diff = Math.max(0, maxIn - priorMax);
+          totalTitleDefenses += diff;
+        });
       });
       const peakOrgPop = chars.reduce((mx, c) => Math.max(mx, c.peakPopularity || 0), 0);
-      return { totalTitleWins, vsStier: { wins: warWins, losses: warLosses }, peakOrgPop };
+      return {
+        totalTitleWins,
+        totalTitleDefenses,
+        vsStier: { wins: warWins, losses: warLosses },
+        peakOrgPop,
+        _titleLossInChapter: titleLossInChapter
+      };
     },
 
     /** タイトル生成 */
@@ -2863,6 +2958,9 @@ const Engine = {
         const closing = Engine.chronicle._generateClosing(b, contributionsByAxis, state.orgName);
         const highlights = Engine.chronicle._buildHighlights(b, sel.aces, sel.peers);
         const eraStats = Engine.chronicle._buildEraStats(b, sel.aces, sel.peers);
+        const mode = Engine.chronicle._classifyChapterMode(b, state);
+        eraStats.competitiveRecord = Engine.chronicle._buildCompetitiveRecord(b, mode, eraStats);
+        delete eraStats._titleLossInChapter;
         const hasActiveParticipants = [...sel.aces, ...sel.peers].some(c => c._active);
         chapters.push({
           id: `ch_${b.seasonStart}_${b.seasonEnd}`,
