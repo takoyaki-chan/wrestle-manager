@@ -1136,6 +1136,57 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 @media(max-width:900px){.db-cmp-versus,.db-cmp-main-grid,.db-cmp-analysis,.db-cmp-lower-grid,.db-cmp-match-grid,.db-cmp-org-summary-row{grid-template-columns:1fr}.db-cmp-vs-mark{order:-1;padding:0}.db-cmp-match-faceoff{grid-template-columns:1fr;justify-items:center}.db-cmp-match-side,.db-cmp-match-side.right{width:100%;justify-content:flex-start;text-align:left}.db-cmp-match-center{order:-1}.db-cmp-headline{flex-direction:column;text-align:center}.db-cmp-headline-reporter{flex-direction:column;align-items:center}.db-cmp-headline-grade{margin-top:8px}.db-cmp-editorial{flex-direction:column;align-items:center}.db-cmp-war-breakdown{grid-template-columns:1fr}.ace-arena{height:180px}.ace-char{width:120px;height:180px}}
 @media(max-width:600px){.db-cmp-mini-stats{grid-template-columns:repeat(2,1fr)}.db-cmp-fighter-row{grid-template-columns:1fr;gap:6px}.db-cmp-fighter.right{flex-direction:row;text-align:left}.db-cmp-match-avatar{width:60px;height:60px}.db-cmp-match-avatar.lg{width:96px;height:96px}.db-cmp-match-meta strong{font-size:16px}.db-cmp-match-card .db-cmp-match-meta strong{font-size:14px}.db-cmp-org-summary-grade{min-width:0}.db-cmp-kuroda-face{width:40px;height:40px}.db-cmp-headline-quote{font-size:13px}.db-cmp-spotlight-pick{flex-direction:column;align-items:center;text-align:center}.ace-arena{height:150px}.ace-char{width:100px;height:150px}.ace-vs-text{font-size:24px}.db-cmp-newspaper-header h1{font-size:16px}}
 /* ════════════════════════════════════════════════════════
+   新聞・団体比較 共通基盤 (Phase 2)
+   ════════════════════════════════════════════════════════ */
+/* 共通赤帯ヘッダー */
+.paper-header{background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:8px 8px 0 0}
+.paper-header .logo{font-size:20px;font-weight:900;color:#fff;letter-spacing:2px;font-family:'Oswald',sans-serif}
+.paper-header .issue{font-size:11px;color:rgba(255,255,255,0.85);text-align:right;font-family:'Oswald',sans-serif;letter-spacing:1px}
+.paper-header .issue small{display:block;font-size:9px;color:rgba(255,255,255,0.6);margin-top:2px;letter-spacing:0.5px}
+/* 共通ページナビ */
+.page-nav{display:flex;gap:6px;padding:8px 12px;background:rgba(80,50,20,0.06);border-bottom:1px solid rgba(80,50,20,0.15);flex-wrap:wrap}
+.page-nav-btn{padding:6px 14px;background:rgba(80,50,20,0.08);border:1px solid rgba(80,50,20,0.2);border-radius:4px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#5b4b34;cursor:pointer;transition:all 0.15s}
+.page-nav-btn:hover{background:rgba(139,26,26,0.15);color:#8b1a1a}
+.page-nav-btn.active{background:#8b1a1a;color:#fff;border-color:#8b1a1a}
+/* 共通セクションラベル(因縁列伝のスコープ付き定義と同値、グローバル昇格) */
+.sec-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#5b4b34;text-transform:uppercase;border-left:3px solid #8b1a1a;padding-left:8px;margin-bottom:8px;font-weight:700}
+.sec-label-gold{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;color:#6a4a10;text-transform:uppercase;border-left:3px solid #d4a82a;padding-left:10px;margin-bottom:10px;font-weight:800}
+/* 黒田コメント共通ブロック */
+.kuroda-block{display:flex;gap:10px;padding:10px 12px;background:rgba(248,238,210,0.7);border:1px solid rgba(120,84,39,0.2);border-radius:6px;margin:10px 0}
+.kuroda-block .kuroda-face{width:40px;height:40px;border-radius:50%;background-size:cover;background-position:center top;border:2px solid rgba(139,26,26,0.4);flex-shrink:0;object-fit:cover}
+.kuroda-block .body{font-size:12px;line-height:1.7;color:#3a2e1c;font-family:'Noto Serif JP',serif}
+.kuroda-block .body .sig{display:block;text-align:right;font-size:10px;color:#7a5b32;margin-top:6px;font-style:italic}
+/* 一面記事 額装写真 */
+.newspaper-photo-frame{border:6px double rgba(120,84,39,0.4);box-shadow:0 4px 14px rgba(0,0,0,0.2);background:#2a1a10;overflow:hidden;flex-shrink:0}
+.newspaper-photo-frame img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+/* 他団体ニュース 2カラムグリッド */
+.other-org-news-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.other-org-news-grid .other-org-card{padding:8px 10px;border:1px solid rgba(95,69,35,0.15);border-radius:6px;background:rgba(255,255,255,0.25);display:flex;flex-direction:column;gap:6px}
+.other-org-news-grid .other-org-card-head{display:flex;gap:8px;align-items:flex-start}
+@media(max-width:600px){.other-org-news-grid{grid-template-columns:1fr}}
+/* ダイジェスト評価★列 */
+.ndt-rating{width:64px;text-align:center;font-size:11px;color:#b8892a;letter-spacing:1px;line-height:1.3}
+.ndt-rating .stars{font-size:13px;letter-spacing:1px;display:block}
+/* 左右対称バー型レーダー */
+.org-bar-radar{display:grid;gap:10px;padding:14px 12px;background:rgba(255,255,255,0.3);border-radius:6px;border:1px solid rgba(80,50,20,0.08)}
+.org-bar-radar .bar-row{display:grid;grid-template-columns:1fr 110px 1fr;align-items:center;gap:8px}
+.org-bar-radar .bar-track{position:relative;height:14px;display:flex}
+.org-bar-radar .bar-track.left{justify-content:flex-end}
+.org-bar-radar .bar-track.right{justify-content:flex-start}
+.org-bar-radar .bar-fill{height:14px;border-radius:2px;transition:width 0.3s}
+.org-bar-radar .bar-fill.left{background:linear-gradient(90deg,transparent,#9a7020 60%,#6a4a10);box-shadow:inset 0 0 0 1px rgba(154,112,32,0.4)}
+.org-bar-radar .bar-fill.right{background:linear-gradient(90deg,#8b1a1a,#c22020 40%,transparent);box-shadow:inset 0 0 0 1px rgba(139,26,26,0.4)}
+.org-bar-radar .bar-axis-label{text-align:center;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:#5b4b34;font-weight:700}
+.org-bar-radar .bar-axis-label .axis-diff{display:block;font-size:10px;color:rgba(80,50,20,0.55);margin-top:2px;letter-spacing:0.5px}
+.org-bar-radar .bar-value{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#3a2a1a;padding:0 4px;align-self:center;line-height:1}
+.org-bar-radar .bar-value.left{text-align:right}
+.org-bar-radar .bar-value.right{text-align:left}
+@media(max-width:600px){.org-bar-radar .bar-row{grid-template-columns:1fr 90px 1fr}}
+/* 団体比較 VS 2カラム化用円章 */
+.db-cmp-vs-mark-circle{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,#fff 0%,#f5ecd7 60%,#e8d9b7 100%);border:2px solid #8b1a1a;display:grid;place-items:center;font-family:'Oswald',sans-serif;font-size:26px;font-weight:900;color:#8b1a1a;letter-spacing:2px;box-shadow:0 4px 14px rgba(0,0,0,0.18);z-index:3;pointer-events:none}
+@media(max-width:900px){.db-cmp-vs-mark-circle{position:relative;left:auto;top:auto;transform:none;margin:6px auto;width:48px;height:48px;font-size:20px}}
+
+/* ════════════════════════════════════════════════════════
    因縁列伝(3面) — KURODA_RELATION_NARRATIVE 駆動
    ════════════════════════════════════════════════════════ */
 .rivalry-wrap{max-width:780px;margin:0 auto}
@@ -1164,7 +1215,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .rivalry-featured-facts{padding:8px 18px;background:rgba(0,0,0,0.4);border-top:1px dashed rgba(212,184,122,0.3);display:flex;flex-wrap:wrap;gap:8px 16px;font-size:10.5px;color:#c8b878;font-family:'Noto Serif JP',serif}
 .rivalry-featured-facts .fact-item::before{content:'◆';color:#d4a82a;margin-right:4px;font-size:9px}
 .rivalry-history{margin-bottom:14px;padding:12px 14px;background:rgba(120,84,39,0.05);border:1px solid rgba(120,84,39,0.2);border-radius:6px}
-.rivalry-history .sec-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#5b4b34;text-transform:uppercase;border-left:3px solid #8b1a1a;padding-left:8px;margin-bottom:8px;font-weight:700}
 .rivalry-history .history-list{display:grid;gap:8px}
 .rivalry-history .history-row{display:grid;grid-template-columns:80px 1fr auto;gap:10px;padding:8px 10px;border-left:3px solid rgba(120,84,39,0.4);align-items:start;background:rgba(248,238,210,0.5);border-radius:0 4px 4px 0}
 .rivalry-history .history-row.win-player{border-left-color:#6a4a10}
@@ -1179,7 +1229,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .rivalry-history .history-result.draw{color:#5b4b34}
 .rivalry-history .history-result .mq{display:block;font-family:'Bebas Neue',sans-serif;font-size:14px;margin-top:2px}
 .rivalry-relations{margin-top:14px}
-.rivalry-relations .sec-label-gold{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;color:#6a4a10;text-transform:uppercase;border-left:3px solid #d4a82a;padding-left:10px;margin-bottom:10px;font-weight:800}
 .relation-card{position:relative;padding:11px 12px 10px;background:rgba(248,238,210,0.6);border:1px solid rgba(120,84,39,0.25);border-radius:5px;display:grid;gap:7px;border-left-width:4px}
 .relation-card[data-tag="fated_admiration"]{border-left-color:#d4a82a}
 .relation-card[data-tag="pure_hatred"]{border-left-color:#6a0a0a;background:rgba(139,26,26,0.06)}
@@ -2170,7 +2219,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ndt-badge-tag.upset{background:#8b1a1a;color:#fff}
 .ndt-ff{display:flex;align-items:center;gap:4px}
 .ndt-vs{font-size:10px;color:rgba(80,50,20,0.35);font-weight:700;padding:0 2px;flex-shrink:0}
-.ndt-port{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;overflow:hidden}
+.ndt-port{width:48px;height:48px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;overflow:hidden}
+@media(max-width:600px){.ndt-port{width:36px;height:36px}}
 .ndt-port.w{background:linear-gradient(135deg,#5a4020,#3a2810);color:#d4a843;border:1.5px solid rgba(154,112,32,0.4);box-shadow:0 0 4px rgba(154,112,32,0.15)}
 .ndt-port.l{background:rgba(80,50,20,0.08);color:rgba(80,50,20,0.4);border:1px solid rgba(80,50,20,0.1)}
 .ndt-port img{width:100%;height:100%;object-fit:cover}

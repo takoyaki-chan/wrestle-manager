@@ -5479,11 +5479,17 @@ function _renderDbNewspaper() {
     const charPort = ts.characterId && typeof getPortraitUrl === 'function' ? getPortraitUrl(ts.characterId) : '';
 
     const tsC = _newsStoryClickable(ts);
+    // 額装写真: upper(バスト) → portrait(顔) の順でフォールバック
+    const charUpper = ts.characterId && typeof getUpperUrl === 'function' ? getUpperUrl(ts.characterId) : '';
+    const photoSrc = charUpper || charPort || '';
+    const photoHtml = photoSrc
+      ? `<div class="newspaper-photo-frame" style="width:200px;height:240px;"><img src="${photoSrc}" alt=""></div>`
+      : '';
     html += `<div style="padding:16px 20px 12px;border-bottom:1px solid rgba(95,69,35,0.18);">
       <div class="news-sec-label">一面記事</div>
-      <div style="display:flex;gap:12px;align-items:flex-start;">
-        ${charPort ? `<img src="${charPort}" alt="" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:2px solid rgba(154,112,32,0.4);box-shadow:0 0 8px rgba(154,112,32,0.2);flex-shrink:0;">` : ''}
-        <div style="flex:1;">
+      <div style="display:flex;gap:14px;align-items:flex-start;">
+        ${photoHtml}
+        <div style="flex:1;min-width:0;">
           <div style="font-size:20px;line-height:1.2;font-weight:1000;margin-bottom:6px;">${tsC.headline}</div>
           <div style="font-size:13px;line-height:1.75;color:#3a2e1c;">${tsC.body}</div>
         </div>
@@ -5526,23 +5532,44 @@ function _renderDbNewspaper() {
   // ── 他団体動向（subStories） ──
   if (wp.subStories && wp.subStories.length > 0) {
     html += `<div style="padding:12px 20px;border-top:1px solid rgba(95,69,35,0.15);">
-      <div class="news-sec-label-gold">他団体ニュース</div>`;
-    wp.subStories.forEach(ss => {
+      <div class="news-sec-label-gold">他団体ニュース</div>
+      <div class="other-org-news-grid">`;
+    wp.subStories.forEach((ss, idx) => {
       const ssPort = ss.characterId && typeof getPortraitUrl === 'function' ? getPortraitUrl(ss.characterId) : '';
       const ssName = ss.characterId ? (ALL_CHARS.find(c => c.id === ss.characterId)?.name || '?') : '?';
       const ssC = _newsStoryClickable(ss);
       const ssPortHtml = ssPort
-        ? `<img src="${ssPort}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0;border:2px solid rgba(106,56,144,0.3);box-shadow:0 0 6px rgba(106,56,144,0.15);">`
-        : `<div style="width:32px;height:32px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:900;background:linear-gradient(135deg,#3a2050,#2a1440);color:#b088d0;border:2px solid rgba(106,56,144,0.3);box-shadow:0 0 6px rgba(106,56,144,0.15);flex-shrink:0;">${ssName.charAt(0)}</div>`;
-      html += `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(95,69,35,0.08);">
-        ${ssPortHtml}
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:800;line-height:1.3;">${ssC.headline}</div>
-          <div style="font-size:12px;line-height:1.6;color:#5b4b34;margin-top:2px;">${ssC.body}</div>
+        ? `<img src="${ssPort}" alt="" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;border:2px solid rgba(106,56,144,0.3);box-shadow:0 0 6px rgba(106,56,144,0.15);">`
+        : `<div style="width:36px;height:36px;border-radius:6px;display:grid;place-items:center;font-size:12px;font-weight:900;background:linear-gradient(135deg,#3a2050,#2a1440);color:#b088d0;border:2px solid rgba(106,56,144,0.3);box-shadow:0 0 6px rgba(106,56,144,0.15);flex-shrink:0;">${ssName.charAt(0)}</div>`;
+
+      // 取材モード寸評(KURODA_NEWS_COMMENT)
+      let kurodaQuote = '';
+      const cPool = _getKurodaNewsComment(ss.type);
+      if (cPool && cPool.length > 0 && kurodaFace) {
+        const cRng = Engine.rng.create(Engine.rng.derive(wp.season || 1, wp.week || 1, idx, 0xC0DC));
+        const fn = Engine.rng.pick(cRng, cPool);
+        let txt = '';
+        try { txt = fn({ headline: ss.headline, orgName: '' }); } catch(e) {}
+        if (txt) {
+          kurodaQuote = `<div class="kuroda-block" style="margin:6px 0 0;padding:6px 8px">
+            <img src="${kurodaFace}" class="kuroda-face" alt="" style="width:28px;height:28px">
+            <div class="body" style="font-size:11px;line-height:1.6">「${txt}」<span class="sig" style="margin-top:2px;font-size:9px">——黒田幸子</span></div>
+          </div>`;
+        }
+      }
+
+      html += `<div class="other-org-card">
+        <div class="other-org-card-head">
+          ${ssPortHtml}
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:800;line-height:1.3;">${ssC.headline}</div>
+            <div style="font-size:12px;line-height:1.6;color:#5b4b34;margin-top:2px;">${ssC.body}</div>
+          </div>
         </div>
+        ${kurodaQuote}
       </div>`;
     });
-    html += `</div>`;
+    html += `</div></div>`;
   }
 
   // ── 次回展望 ──
@@ -5797,6 +5824,17 @@ function _renderNewspaperDigest(d) {
     // MQ色クラス
     const mqClass = m.mq >= 75 ? 'high' : m.mq >= 55 ? 'mid' : 'low';
 
+    // ★評価(MQ vs expectedMQ で 1〜5)
+    const mqDiff = m.mq - expectedMQ;
+    let stars;
+    if (m.isDraw) stars = 3;
+    else if (mqDiff >= 15) stars = 5;
+    else if (mqDiff >= 5) stars = 4;
+    else if (mqDiff >= -4) stars = 3;
+    else if (mqDiff >= -15) stars = 2;
+    else stars = 1;
+    const starsHtml = '★'.repeat(stars) + '<span style="color:rgba(120,84,39,0.25)">' + '★'.repeat(5 - stars) + '</span>';
+
     // 対戦行
     let html = `<tr>
       <td class="ndt-num">${idx + 2}</td>
@@ -5821,13 +5859,14 @@ function _renderNewspaperDigest(d) {
     }
     html += `</td>
       <td class="ndt-mq ${mqClass}">MQ${m.mq}</td>
+      <td class="ndt-rating"><span class="stars">${starsHtml}</span></td>
     </tr>`;
 
     // コメント行
     if (commentText) {
       html += `<tr>
         <td colspan="2"></td>
-        <td colspan="2" class="ndt-comment">「${commentText}」</td>
+        <td colspan="3" class="ndt-comment">「${commentText}」</td>
       </tr>`;
     }
 
@@ -7555,14 +7594,10 @@ function _renderDbOrgCompare() {
   }
 
   html += `<div class="db-cmp-org-summary">
-    <div class="db-cmp-org-summary-row">
+    <div class="db-cmp-org-summary-row" style="grid-template-columns:1fr 1fr;gap:14px;position:relative;">
       ${buildOrgSummaryCard(d.playerName, d.playerSubtitle, 'player', '<div class="db-cmp-tier player">プレイヤー</div>', playerTags, d.playerRosterCount, d.pOrgPop, d.playerScores, playerChampionName, getPopTrend('player'))}
-      <div class="db-cmp-org-summary-grade">
-        <div class="db-cmp-vs-divider"></div>
-        <strong style="font-size:36px;font-weight:900;color:#8b1a1a;font-family:'Oswald',sans-serif;letter-spacing:3px">VS</strong>
-        <div class="db-cmp-vs-divider"></div>
-      </div>
       ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">ティア${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, rivalChampionName, getPopTrend(_dbCompareTarget), `style="--rival-dim:${rivalDim}"`)}
+      <div class="db-cmp-vs-mark-circle">VS</div>
     </div>
   </div>`;
 
@@ -7778,74 +7813,33 @@ function _renderDbOrgCompare() {
     </section>`;
   }
 
-  // ═══ ⑤ Power Snapshot ═══
+  // ═══ ⑤ Power Snapshot — 左右対称バー型レーダー(4軸) ═══
   const AXES = [
-    { key: 'ace', label: 'TOP5総合' },
-    { key: 'starPower', label: 'TOP5人気' },
-    { key: 'popularity', label: '団体人気' },
-    { key: 'depth', label: '選手層' },
+    { key: 'ace', label: 'エース力' },
+    { key: 'depth', label: '層の厚み' },
+    { key: 'popularity', label: '集客力' },
+    { key: 'starPower', label: 'タイトル力' },
   ];
-  const R = 110, cx = 160, cy = 150;
-  const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
-  function radarPt(scores, keys) {
-    return keys.map((k, i) => {
-      const v = scores[k] / 100 * R;
-      return `${cx + dirs[i][0] * v},${cy + dirs[i][1] * v}`;
-    }).join(' ');
-  }
-  const axisKeys = ['ace', 'starPower', 'popularity', 'depth'];
-  const pPts = radarPt(d.playerScores, axisKeys);
-  const rPts = radarPt(d.rivalScores, axisKeys);
-
-  let gridSvg = '';
-  [1, 0.75, 0.5, 0.25].forEach((s, i) => {
-    const a = [0, -R * s, R * s, 0, 0, R * s, -R * s, 0].map((v, j) => j % 2 === 0 ? cx + v : cy + v);
-    gridSvg += `<polygon points="${a[0]},${a[1]} ${a[2]},${a[3]} ${a[4]},${a[5]} ${a[6]},${a[7]}" fill="none" stroke="rgba(80,50,20,${0.12 - i * 0.02})"/>`;
-  });
-
-  const svgChart = `<svg viewBox="0 0 320 300" aria-label="団体パワースナップショット">
-    <defs>
-      <linearGradient id="gP" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#9a7020" stop-opacity="0.35"/><stop offset="100%" stop-color="#6a4a10" stop-opacity="0.08"/></linearGradient>
-      <linearGradient id="gR" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${rc}" stop-opacity="0.28"/><stop offset="100%" stop-color="${rc}" stop-opacity="0.05"/></linearGradient>
-    </defs>
-    <g>
-      ${gridSvg}
-      <line x1="${cx}" y1="${cy - R - 8}" x2="${cx}" y2="${cy + R + 8}" stroke="rgba(80,50,20,0.1)"/>
-      <line x1="${cx - R - 8}" y1="${cy}" x2="${cx + R + 8}" y2="${cy}" stroke="rgba(80,50,20,0.1)"/>
-      <polygon points="${pPts}" fill="url(#gP)" stroke="#9a7020" stroke-width="2"/>
-      <polygon points="${rPts}" fill="url(#gR)" stroke="${rc}" stroke-width="2" opacity="0.7"/>
-      ${axisKeys.map((k, i) => {
-        const pv = d.playerScores[k] / 100 * R;
-        const rv = d.rivalScores[k] / 100 * R;
-        return `<circle cx="${cx + dirs[i][0] * pv}" cy="${cy + dirs[i][1] * pv}" r="3.5" fill="#9a7020"/>
-                <circle cx="${cx + dirs[i][0] * rv}" cy="${cy + dirs[i][1] * rv}" r="3" fill="${hexDim(rc, 0.7)}"/>`;
-      }).join('')}
-      <text x="${cx}" y="${cy - R - 14}" fill="#3a2a1a" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">TOP5総合</text>
-      <text x="${cx + R + 14}" y="${cy + 4}" fill="#3a2a1a" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="start">TOP5人気</text>
-      <text x="${cx}" y="${cy + R + 20}" fill="#3a2a1a" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="middle">団体人気</text>
-      <text x="${cx - R - 14}" y="${cy + 4}" fill="#3a2a1a" font-family="'Noto Sans JP',sans-serif" font-size="11" text-anchor="end">選手層</text>
-    </g>
-  </svg>`;
-
-  let axisBars = '';
+  let barRadarRows = '';
   AXES.forEach(ax => {
-    const diff = d.diffs[ax.key];
-    const cls = diff > 0 ? 'good' : diff < 0 ? 'bad' : '';
-    axisBars += `<div class="db-cmp-axis-row">
-      <header><strong>${ax.label}</strong><span class="db-cmp-diff ${cls}">${signValue(diff)}</span></header>
-      <div class="db-cmp-meter">
-        <span class="bar-player" style="width:${d.playerScores[ax.key]}%"></span>
-        <span class="bar-rival" style="width:${d.rivalScores[ax.key]}%;background:${rivalGrad}"></span>
-      </div>
+    const pVal = d.playerScores[ax.key] || 0;
+    const rVal = d.rivalScores[ax.key] || 0;
+    const diff = (d.diffs && d.diffs[ax.key] != null) ? d.diffs[ax.key] : (pVal - rVal);
+    const diffSign = diff > 0 ? `+${diff}` : `${diff}`;
+    barRadarRows += `<div class="bar-row">
+      <div class="bar-track left"><div class="bar-fill left" style="width:${Math.max(0, Math.min(100, pVal))}%"></div></div>
+      <div class="bar-axis-label">${ax.label}<span class="axis-diff">${diffSign}</span></div>
+      <div class="bar-track right"><div class="bar-fill right" style="width:${Math.max(0, Math.min(100, rVal))}%;background:linear-gradient(90deg,${rc},${hexDim(rc, 0.2)} 60%,transparent)"></div></div>
     </div>`;
   });
 
   html += `<section class="db-cmp-panel">
     <h2 class="db-cmp-panel-title">戦力レーダー</h2>
-    <div class="db-cmp-analysis">
-      <div class="db-cmp-chart-box">${svgChart}</div>
-      <div class="db-cmp-axis-table">${axisBars}</div>
+    <div style="display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:#5b4b34;margin-bottom:6px;padding:0 6px;">
+      <span style="color:#6a4a10">◀ ${d.playerName}</span>
+      <span style="color:${rc}">${d.rivalName} ▶</span>
     </div>
+    <div class="org-bar-radar">${barRadarRows}</div>
   </section>`;
 
   // ═══ ⑥ 記者の総評コラム（GM Brief置換）═══
