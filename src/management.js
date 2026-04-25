@@ -2629,8 +2629,8 @@ const Engine = {
     },
 
     /** 章ステータス判定 (spec §4.5) */
-    _chapterStatus(chapter, currentSeason) {
-      if ((currentSeason || 0) - (chapter.seasonEnd || 0) < 3) return 'in_progress';
+    _chapterStatus(chapter, isLatestChapter = false) {
+      if (isLatestChapter && chapter?._hasActiveParticipants) return 'in_progress';
       return 'confirmed';
     },
 
@@ -2649,7 +2649,6 @@ const Engine = {
       }
       const bounds = Engine.chronicle._segmentChapters(candidates, state);
       const chapters = [];
-      const currentSeason = state.season || 1;
       bounds.forEach((b, idx) => {
         // 早期章 (番号 1-2) はサブタイトル特別枠
         const isEarly = idx < 2 && b.seasonStart <= 3;
@@ -2666,13 +2665,14 @@ const Engine = {
         const closing = Engine.chronicle._generateClosing(b, contributionsByAxis, state.orgName);
         const highlights = Engine.chronicle._buildHighlights(b, sel.aces, sel.peers);
         const eraStats = Engine.chronicle._buildEraStats(b, sel.aces, sel.peers);
-        const status = Engine.chronicle._chapterStatus(b, currentSeason);
+        const hasActiveParticipants = [...sel.aces, ...sel.peers].some(c => c._active);
         chapters.push({
           id: `ch_${b.seasonStart}_${b.seasonEnd}`,
           number: 0, // 後で振り直し
-          status,
+          status: 'confirmed',
           seasonStart: b.seasonStart,
           seasonEnd: b.seasonEnd,
+          _hasActiveParticipants: hasActiveParticipants,
           title,
           subtitle,
           aces: sel.aces.map(a => ({
@@ -2704,7 +2704,10 @@ const Engine = {
           })()
         });
       });
-      chapters.forEach((c, i) => { c.number = i + 1; });
+      chapters.forEach((c, i) => {
+        c.number = i + 1;
+        c.status = Engine.chronicle._chapterStatus(c, i === chapters.length - 1);
+      });
       return {
         ...state,
         chronicle: {

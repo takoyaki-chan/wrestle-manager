@@ -71,16 +71,21 @@ function makeRetiredFighter(id = 101) {
   assert.ok(chapters.some(c => c.status === 'confirmed'), 'retired-only era should become confirmed');
 })();
 
-(function chapterStatusConfirmsAfterEraEnds() {
+(function chapterStatusOnlyHidesActiveLatestChapter() {
   assert.strictEqual(
-    Engine.chronicle._chapterStatus({ seasonStart: 14, seasonEnd: 21 }, 26),
+    Engine.chronicle._chapterStatus({ seasonStart: 14, seasonEnd: 21, _hasActiveParticipants: true }, false),
     'confirmed',
-    'chapter should confirm three seasons after its era ends'
+    'previous chapter should confirm even if side participants are still active'
   );
   assert.strictEqual(
-    Engine.chronicle._chapterStatus({ seasonStart: 22, seasonEnd: 26 }, 26),
+    Engine.chronicle._chapterStatus({ seasonStart: 22, seasonEnd: 26, _hasActiveParticipants: true }, true),
     'in_progress',
-    'current era should remain in progress'
+    'active latest chapter should remain in progress'
+  );
+  assert.strictEqual(
+    Engine.chronicle._chapterStatus({ seasonStart: 1, seasonEnd: 5, _hasActiveParticipants: false }, true),
+    'confirmed',
+    'retired-only chapter should confirm even when it is the only chapter'
   );
 })();
 
