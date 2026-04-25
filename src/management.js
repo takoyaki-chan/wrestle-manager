@@ -2608,13 +2608,75 @@ const Engine = {
 
     /** 章ハイライト生成 */
     _buildHighlights(chapter, aces, peers) {
-      const out = [];
+      const grouped = new Map();
+      const singles = [];
       const chars = [...aces, ...peers];
+      const addGrouped = (key, item) => {
+        const cur = grouped.get(key) || {
+          ...item,
+          seasons: [],
+          count: 0,
+          maxCount: 0,
+          maxMq: 0,
+          tier: item.tier || 'normal'
+        };
+        cur.seasons.push(item.season);
+        cur.count += item.count || 1;
+        cur.maxCount = Math.max(cur.maxCount || 0, item.maxCount || 0);
+        cur.maxMq = Math.max(cur.maxMq || 0, item.maxMq || 0);
+        if (item.tier === 'gold') cur.tier = 'gold';
+        else if (item.tier === 'silver' && cur.tier !== 'gold') cur.tier = 'silver';
+        grouped.set(key, cur);
+      };
+      const addSingle = item => singles.push(item);
       chars.forEach(c => {
         const hist = (c.careerRecord || {}).history || [];
         const charName = Engine.chronicle._getSurname(c.name);
         hist.forEach(ev => {
           if ((ev.season || 0) < chapter.seasonStart || (ev.season || 0) > chapter.seasonEnd) return;
+          if (ev.type === 'titleWin') {
+            addGrouped(`${c.id}:titleWin:${ev.orgName || ''}`, {
+              season: ev.season,
+              type: ev.type,
+              charName,
+              orgName: ev.orgName || '団体王座',
+              tier: 'gold'
+            });
+            return;
+          }
+          if (ev.type === 'titleDefense' && (ev.count || 0) >= 3) {
+            addGrouped(`${c.id}:titleDefense:${ev.orgName || ''}`, {
+              season: ev.season,
+              type: ev.type,
+              charName,
+              orgName: ev.orgName || '団体王座',
+              maxCount: ev.count || 0,
+              tier: 'gold'
+            });
+            return;
+          }
+          if (ev.type === 'awardMVP') {
+            addGrouped(`${c.id}:awardMVP`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
+            return;
+          }
+          if (ev.type === 'awardBestMatch') {
+            addGrouped(`${c.id}:awardBestMatch`, {
+              season: ev.season,
+              type: ev.type,
+              charName,
+              maxMq: ev.mq || 0,
+              tier: 'silver'
+            });
+            return;
+          }
+          if (ev.type === 'juniorTournament' && ev.result === 'champion') {
+            addGrouped(`${c.id}:juniorTournament`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
+            return;
+          }
+          if (ev.type === 'ppvMainEvent' && (ev.result === 'champion' || ev.result === 'win' || ev.won === true)) {
+            addGrouped(`${c.id}:ppvMainEvent`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
+            return;
+          }
           let text = null, tier = 'normal';
           switch (ev.type) {
             case 'titleWin':
@@ -2657,10 +2719,74 @@ const Engine = {
               tier = 'gold';
               break;
           }
-          if (text) out.push({ season: ev.season, type: ev.type, text, tier });
+          if (text) addSingle({ season: ev.season, type: ev.type, text, tier });
         });
       });
       // 季節昇順にソート、重複除去
+      const compactYears = seasons => {
+        const uniq = [...new Set(seasons.filter(Boolean))].sort((a, b) => a - b);
+        if (uniq.length === 0) return '';
+        if (uniq.length === 1) return `S${uniq[0]}`;
+        const runs = [];
+        let start = uniq[0], prev = uniq[0];
+        for (let i = 1; i < uniq.length; i++) {
+          const s = uniq[i];
+          if (s === prev + 1) prev = s;
+          else {
+            runs.push(start === prev ? `S${start}` : `S${start}-S${prev}`);
+            start = prev = s;
+          }
+        }
+        runs.push(start === prev ? `S${start}` : `S${start}-S${prev}`);
+        return runs.join(', ');
+      };
+      const maxStreak = seasons => {
+        const uniq = [...new Set(seasons.filter(Boolean))].sort((a, b) => a - b);
+        let best = 0, cur = 0, prev = null;
+        uniq.forEach(s => {
+          cur = prev != null && s === prev + 1 ? cur + 1 : 1;
+          best = Math.max(best, cur);
+          prev = s;
+        });
+        return best;
+      };
+      const summarized = [...grouped.values()].map(g => {
+        const years = compactYears(g.seasons);
+        const streak = maxStreak(g.seasons);
+        let text = null;
+        switch (g.type) {
+          case 'titleWin':
+            text = g.count >= 2
+              ? `<strong>${g.charName}</strong> ${g.orgName} ${g.count}度戴冠（${years}）`
+              : `<strong>${g.charName}</strong> ${g.orgName} 戴冠`;
+            break;
+          case 'titleDefense':
+            text = `<strong>${g.charName}</strong> ${g.orgName} ${g.maxCount}度防衛${g.count >= 2 ? `など（${years}）` : ''}`;
+            break;
+          case 'awardMVP':
+            text = g.count >= 2
+              ? `<strong>${g.charName}</strong> MVP ${g.count}度受賞${streak >= 2 ? `・${streak}年連続` : ''}（${years}）`
+              : `<strong>${g.charName}</strong> MVP受賞`;
+            break;
+          case 'awardBestMatch':
+            text = g.count >= 2
+              ? `<strong>${g.charName}</strong> ベストマッチ賞 ${g.count}度受賞${streak >= 2 ? `・${streak}年連続` : ''}（最高MQ${g.maxMq || '?'}）`
+              : `<strong>${g.charName}</strong> ベストマッチ賞（MQ${g.maxMq || '?'}）`;
+            break;
+          case 'juniorTournament':
+            text = g.count >= 2
+              ? `<strong>${g.charName}</strong> ジュニアトーナメント ${g.count}度優勝${streak >= 2 ? `・${streak}連覇` : ''}（${years}）`
+              : `<strong>${g.charName}</strong> ジュニアトーナメント優勝`;
+            break;
+          case 'ppvMainEvent':
+            text = g.count >= 2
+              ? `<strong>${g.charName}</strong> PPVメインイベント ${g.count}度制覇${streak >= 2 ? `・${streak}連覇` : ''}（${years}）`
+              : `<strong>${g.charName}</strong> PPVメインイベント制覇`;
+            break;
+        }
+        return { season: Math.min(...g.seasons), type: g.type, text, tier: g.tier };
+      }).filter(h => h.text);
+      const out = [...summarized, ...singles];
       out.sort((a, b) => (a.season || 0) - (b.season || 0));
       const seen = new Set();
       const unique = [];
@@ -2670,7 +2796,7 @@ const Engine = {
         seen.add(k);
         unique.push(h);
       });
-      return unique.slice(0, 10);
+      return unique;
     },
 
     /** era stats (spec §3.2 eraStats) */

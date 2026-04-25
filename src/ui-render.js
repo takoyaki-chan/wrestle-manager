@@ -6563,7 +6563,17 @@ function _chronicleStyleBlock() {
   border-right: 1px solid var(--chr-rule);
 }
 .chron-col-right { padding: 18px 22px; }
-.chron-highlights { list-style: none; padding: 0; margin: 0; }
+.chron-highlights {
+  list-style: none;
+  padding: 0 8px 0 0;
+  margin: 0;
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--chr-rule-bold) transparent;
+}
+.chron-highlights::-webkit-scrollbar { width: 6px; }
+.chron-highlights::-webkit-scrollbar-thumb { background: var(--chr-rule-bold); border-radius: 3px; }
 .chron-highlight {
   display: flex; gap: 12px;
   padding: 9px 0;

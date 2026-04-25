@@ -165,6 +165,36 @@ function makeRetiredFighter(id = 101) {
   assert.strictEqual(candidate.peakPopularitySeason, 9);
 })();
 
+(function highlightsSummarizeRepeatedEraEvents() {
+  const chapter = { seasonStart: 1, seasonEnd: 5 };
+  const ace = {
+    id: 505,
+    name: 'Summary Ace',
+    careerRecord: {
+      history: [
+        { type: 'titleWin', season: 1, orgName: 'Test Title' },
+        { type: 'titleWin', season: 3, orgName: 'Test Title' },
+        { type: 'titleDefense', season: 2, orgName: 'Test Title', count: 3 },
+        { type: 'titleDefense', season: 4, orgName: 'Test Title', count: 5 },
+        { type: 'awardBestMatch', season: 2, mq: 88 },
+        { type: 'awardBestMatch', season: 3, mq: 94 },
+        { type: 'juniorTournament', season: 3, result: 'champion' },
+        { type: 'juniorTournament', season: 4, result: 'champion' },
+        { type: 'ppvMainEvent', season: 4, result: 'champion' },
+        { type: 'ppvMainEvent', season: 5, result: 'champion' }
+      ]
+    }
+  };
+  const highlights = Engine.chronicle._buildHighlights(chapter, [ace], []);
+  const text = highlights.map(h => h.text).join('\n');
+
+  assert.ok(text.includes('2度戴冠'), 'title wins should be summarized');
+  assert.ok(text.includes('5度防衛'), 'title defenses should keep the highest defense count');
+  assert.ok(text.includes('ベストマッチ賞 2度受賞・2年連続'), 'best match awards should summarize repeats and streaks');
+  assert.ok(text.includes('ジュニアトーナメント 2度優勝・2連覇'), 'junior tournament streaks should be summarized');
+  assert.ok(text.includes('PPVメインイベント 2度制覇・2連覇'), 'PPV main event streaks should be summarized');
+})();
+
 (function chapterSegmentationUsesFourToSevenSeasonWindows() {
   const candidates = [
     { peakOVRSeason: 4, peakOVR: 80, peakPopularity: 70 },
