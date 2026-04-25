@@ -7225,26 +7225,12 @@ function _chronicleCompetitiveValueHtml(text) {
   return text;
 }
 
-/** 記者コメント自動生成 (超シンプル版 — Phase 2 で拡充) */
+/** 記者コメント (Engine.chronicle.buildAceQuote のシム) */
 function _chronicleAceQuote(ace, chapter) {
-  const peakOVR = ace.peakOVR || 0;
-  const titleReigns = ace.titleReigns || 0;
-  const surname = Engine.chronicle._getSurname(ace.name);
-  const styleLabel = _chronicleStyleLabel(ace.style).toLowerCase();
-  const styleJa = { striker: '打撃', grappler: '組技', submission: '関節技', brawler: '喧嘩', allround: '万能' }[styleLabel] || '独自';
-  if (peakOVR >= 95 && titleReigns >= 3) {
-    return `${surname}は${styleJa}を武器に${titleReigns}度の王座戴冠を達成し、この世代を黄金期に押し上げた。`;
+  if (Engine.chronicle && typeof Engine.chronicle.buildAceQuote === 'function') {
+    return Engine.chronicle.buildAceQuote(ace, chapter, G);
   }
-  if (peakOVR >= 90 && titleReigns >= 1) {
-    return `${surname}は${styleJa}のスペシャリストとして団体を牽引し、王座も獲得した。歴代最強の称号には届かなかったが、世代を代表する存在だった。`;
-  }
-  if (peakOVR >= 85) {
-    return `${surname}は${styleJa}で勝負し続けた。王座戴冠こそなかったが、この世代の団体を代表する選手だった。`;
-  }
-  if ((ace.peakPopularity || 0) >= 80) {
-    return `王座にこそ恵まれなかったが、${surname}の人気が客足を支えた世代だった。`;
-  }
-  return `${surname}は${styleJa}を貫き、長く団体に在籍した。タイトルには届かなかったが、世代の中堅として団体を支えた。`;
+  return `${Engine.chronicle._getSurname(ace.name)}はこの世代の主役だった。`;
 }
 
 // ── 団体比較 ──────────────────────────────────────────────

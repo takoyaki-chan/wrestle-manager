@@ -2233,6 +2233,141 @@ const Engine = {
       return 'allround';
     },
 
+    /** spec v0.2 §D.4 8カテゴリ × 各3〜4本のテンプレート集 */
+    QUOTE_TEMPLATES: {
+      peakDefender: [
+        '{surname}は{defenses}度の防衛で頂点を守り続けた。誰にも玉座を譲らない世代だった。',
+        '王者{surname}に挑んだ者たちは、ことごとく退けられた。{defenses}度防衛は、その時代を象徴している。',
+        '{surname}が王座にいる限り、誰もその座は奪えない。誰もがそう信じて疑わない。そういう時代だった。',
+        '{defenses}度の防衛を重ねた{surname}は、団体の絶対的な軸として君臨した。'
+      ],
+      defender: [
+        '{surname}は王座を{defenses}度防衛し、団体の核として時代を背負った。',
+        '{titleReigns}度の戴冠と{defenses}度の防衛。{surname}が立っていることが、団体の安定そのものだった。',
+        '{surname}は王座を離さなかった。挑戦者たちは皆、跳ね返された。',
+        '{surname}の{defenses}度の防衛は、この章の屋台骨だった。'
+      ],
+      champion: [
+        '{surname}は{titleReigns}度の王座戴冠を達成し、世代を黄金期に押し上げた。',
+        '{surname}の{titleReigns}度の戴冠が、この世代を語る上での出発点になる。',
+        '何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその執念の証だった。',
+        '{titleReigns}度の戴冠を経て、{surname}はこの世代の象徴となった。'
+      ],
+      popStar: [
+        '{surname}の人気が客足を支えた。戦績ではなく動員で、時代を作った世代だった。',
+        '王座にこそ恵まれなかったが、{surname}の華やかさが客席を埋めた。',
+        '試合記録には残らない記憶というものを、{surname}は、その人気でこの世代に刻みつけた。',
+        '{surname}を見るために客が会場に押し寄せた。それがこの世代の正体だった。'
+      ],
+      generationShift: [
+        '{surname}は前世代の主役たちと並走し、世代交代の橋渡しとなった。',
+        '{surname}の章は、過去と未来が混じり合った時間として団体史に残る。',
+        '前章の主役たちが退いていく中、{surname}が次の中心を担った。',
+        '{surname}は古参と新参の間に立ち、団体の世代を繋いだ。'
+      ],
+      struggle: [
+        '{surname}は{styleJa}を貫いたが、上位の壁は厚かった。届かないまま章は閉じる。',
+        '挑んでは敗れ、それでも{surname}は{styleJa}を捨てなかった。届かなかった世代の象徴である。',
+        '{surname}の章は、勝てなかった日々の記録である。だが、それでも諦めず挑戦を続けた日々の記録でもある。',
+        '{surname}は何度も上位に挑み、何度も敗れた。それでも立ち上がり続けた世代だった。'
+      ],
+      craftsman: [
+        '{surname}は{styleJa}を武器に団体を支えた。王座にこそ届かなかったが、世代の支柱だった。',
+        'OVR{peakOVR}に達した{surname}は、無冠ながら誰よりも信頼される選手だった。',
+        '{surname}の{styleJa}は派手さこそないが、団体を底から支え続けた。',
+        '王座とは縁がなかったが、{surname}の{styleJa}はこの章の地力そのものだった。'
+      ],
+      uncrowned: [
+        '{surname}は無冠ながらこの世代の主役だった。タイトルでは測れない存在感がそこにあった。',
+        '王座を獲ることはなかったが、{surname}抜きにこの章は語れない。',
+        '{surname}は最後までベルトを巻かなかった。だが団体史はこの選手を主役として記憶する。',
+        '記録には残らないが、記憶には深く残る。{surname}はそういう世代の主役だった。'
+      ]
+    },
+
+    /** spec v0.2 §D.3 8カテゴリ判定 (上から順、最初に該当したものを採用) */
+    _classifyAceQuoteCategory(ace, chapter, state) {
+      const mode = (chapter && chapter.eraStats && chapter.eraStats.competitiveRecord && chapter.eraStats.competitiveRecord.mode) || 'challenge';
+      const aceHist = ((ace.careerRecord || {}).history || [])
+        .filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
+      // 章期間内防衛数 (差分集計、ベルト単位)
+      const allHist = ((ace.careerRecord || {}).history || []);
+      const beltGroups = new Map();
+      aceHist.filter(e => e.type === 'titleDefense').forEach(e => {
+        const key = e.beltId || '_default';
+        if (!beltGroups.has(key)) beltGroups.set(key, []);
+        beltGroups.get(key).push(e);
+      });
+      let chapterDefenses = 0;
+      beltGroups.forEach((evs, beltKey) => {
+        const maxIn = evs.reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+        const priorMax = allHist
+          .filter(e => e.type === 'titleDefense' && (e.beltId || '_default') === beltKey && (e.season || 0) < chapter.seasonStart)
+          .reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+        chapterDefenses += Math.max(0, maxIn - priorMax);
+      });
+      const chapterWarWins = aceHist.filter(e => e.type === 'war' && e.won === true).length;
+      const chapterWarLosses = aceHist.filter(e => e.type === 'war' && e.won === false).length;
+
+      if (mode === 'summit' && chapterDefenses >= 3) return 'peakDefender';
+      if ((ace.titleReigns || 0) >= 1 && (ace.totalDefenses || 0) >= 3) return 'defender';
+      if ((ace.titleReigns || 0) >= 2) return 'champion';
+      if ((ace.peakPopularity || 0) >= 90) return 'popStar';
+      if ((chapter.number || 0) >= 3) {
+        const chapters = (state && state.chronicle && state.chronicle.chaptersCache && state.chronicle.chaptersCache.chapters) || [];
+        const prev = chapters.find(c => c.number === chapter.number - 1);
+        if (prev) {
+          const prevIds = new Set([...(prev.aces || []), ...(prev.peers || [])].map(p => p.id));
+          const curPeerIds = (chapter.peers || []).map(p => p.id);
+          if (curPeerIds.some(id => prevIds.has(id))) return 'generationShift';
+        }
+      }
+      if (mode === 'challenge' && chapterWarLosses >= 2 && chapterWarWins === 0) return 'struggle';
+      if ((ace.peakOVR || 0) >= 88 && (ace.titleReigns || 0) === 0) return 'craftsman';
+      return 'uncrowned';
+    },
+
+    /** spec v0.2 §D 記者の目本体 (純粋関数、決定論的) */
+    buildAceQuote(ace, chapter, state) {
+      const category = Engine.chronicle._classifyAceQuoteCategory(ace, chapter, state);
+      const templates = Engine.chronicle.QUOTE_TEMPLATES[category] || Engine.chronicle.QUOTE_TEMPLATES.uncrowned;
+      const seedBase = (state && state.rngSeed) || 1;
+      const aceIdNum = typeof ace.id === 'number' ? ace.id : (Number(ace.id) || 0);
+      const seed = Engine.rng.derive(seedBase, chapter.number || chapter.seasonStart || 0, aceIdNum, 0xCB02);
+      const idx = ((seed | 0) % templates.length + templates.length) % templates.length;
+      const tpl = templates[idx];
+
+      const styleAxis = Engine.chronicle._styleAxis(ace.style);
+      const styleJa = Engine.chronicle.AXIS_LABELS[styleAxis] || '独自';
+      const surname = Engine.chronicle._getSurname(ace.name);
+
+      // 章期間内防衛数を再計算 (テンプレ {defenses} 用)
+      const allHist = ((ace.careerRecord || {}).history || []);
+      const aceHist = allHist.filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
+      const beltGroups = new Map();
+      aceHist.filter(e => e.type === 'titleDefense').forEach(e => {
+        const key = e.beltId || '_default';
+        if (!beltGroups.has(key)) beltGroups.set(key, []);
+        beltGroups.get(key).push(e);
+      });
+      let chapterDefenses = 0;
+      beltGroups.forEach((evs, beltKey) => {
+        const maxIn = evs.reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+        const priorMax = allHist
+          .filter(e => e.type === 'titleDefense' && (e.beltId || '_default') === beltKey && (e.season || 0) < chapter.seasonStart)
+          .reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+        chapterDefenses += Math.max(0, maxIn - priorMax);
+      });
+
+      return tpl
+        .replace(/\{surname\}/g, surname)
+        .replace(/\{styleJa\}/g, styleJa)
+        .replace(/\{titleReigns\}/g, String(ace.titleReigns || 0))
+        .replace(/\{defenses\}/g, String(chapterDefenses))
+        .replace(/\{peakOVR\}/g, String(ace.peakOVR || 0))
+        .replace(/\{peakPop\}/g, String(ace.peakPopularity || 0));
+    },
+
     /** 苗字抽出 (日本語名は全角/半角スペース前) */
     _getSurname(name) {
       if (!name) return '名無し';
