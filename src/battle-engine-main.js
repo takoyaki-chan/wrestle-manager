@@ -24,6 +24,7 @@ const S = {
   pinStepTimer: null,
   heldWinLogs: null,  // { turn, held: [lines] } — pin seq 中に保留する「★ 決着！」行
   pendingDamage: false,
+  finishCueSent: false,
   matchInfo: null,
   // シングル固有
   cutinShown: null,   // { opening, mid, end, climax, finish } — 重複カットイン防止
@@ -219,6 +220,7 @@ function startReplay(data){
   S.pinStepTimer = null;
   S.heldWinLogs = null;
   S.pendingCutin = false;
+  S.finishCueSent = false;
   S.bigmoveCount = 0;
   S.halfTrig  = { l: false, r: false };
   S.qtrTrig   = { l: false, r: false };
@@ -543,6 +545,9 @@ function nextFrame(){
   if (fr.winner) {
     // ピン seq が走るフレームは _finishPinSeq が showResult を呼ぶ
     if (S.pinSeqPending) return;
+    _notifyFinishCue();
+    const finishNarEl = document.getElementById('narBox');
+    if (finishNarEl) finishNarEl.innerHTML = '<div class="nar-line dramatic">決着！</div>';
     setTimeout(() => showResult(fr), 1800);
     return;
   }
@@ -1033,16 +1038,23 @@ function _schedulePinAdvance(isLead, stepKey){
   clearTimeout(S.pinStepTimer);
   const LEAD_DELAY  = (stepKey === 'introBig') ? 1800 : (stepKey === 'narration') ? 1500 : 1100;
   const FINAL_AUTO  = 2500;
+  const decisiveAuto = (stepKey === 'three' || stepKey === 'tap' || stepKey === 'tko');
   if (isLead) {
     if (btn){ btn.disabled = true; btn.onclick = () => { clearTimeout(S.pinStepTimer); _advancePinStep(); }; setTimeout(() => { if (S.pinCtrl && btn.onclick) btn.disabled = false; }, 400); }
     S.pinStepTimer = setTimeout(() => _advancePinStep(), LEAD_DELAY);
   } else {
-    if (btn){ btn.disabled = true; btn.onclick = _advancePinStep; setTimeout(() => { if (S.pinCtrl && btn.onclick === _advancePinStep) btn.disabled = false; }, 700); }
-    if (S.autoAdvance) S.pinStepTimer = setTimeout(() => _advancePinStep(), FINAL_AUTO);
+    if (btn){ btn.disabled = true; btn.onclick = _advancePinStep; setTimeout(() => { if (S.pinCtrl && btn.onclick === _advancePinStep) btn.disabled = false; }, decisiveAuto ? 250 : 700); }
+    if (decisiveAuto || S.autoAdvance) S.pinStepTimer = setTimeout(() => _advancePinStep(), decisiveAuto ? 900 : FINAL_AUTO);
   }
 }
 
 function _advancePinStep(){ if (S.pinCtrl) _executePinStep(S.pinCtrl.idx + 1); }
+
+function _notifyFinishCue(){
+  if (S.finishCueSent || window.parent === window) return;
+  S.finishCueSent = true;
+  try { window.parent.postMessage({ type: 'BATTLE_FINISH_CUE' }, '*'); } catch(e) {}
+}
 
 function _finishPinSeq(){
   const fr = S.pinCtrl ? S.pinCtrl.fr : null;
@@ -1069,6 +1081,7 @@ function _finishPinSeq(){
   S.heldWinLogs = null;
 
   if (fr && fr.winner != null) {
+    _notifyFinishCue();
     // narBox を「決着！」に差し替え
     const narEl = document.getElementById('narBox');
     if (narEl) narEl.innerHTML = '<div class="nar-line dramatic">決着！</div>';
@@ -1162,7 +1175,7 @@ function showResult(fr){
   const mq      = result.mq       || 0;
   const turns   = result.turns    || 0;
 
-  try { sfx.victoryFanfare(); } catch(e){}
+  _notifyFinishCue();
 
   const mqCls = mq >= 80 ? 'mq-gold' : mq >= 60 ? 'mq-green' : mq >= 40 ? 'mq-normal' : 'mq-low';
   const finLabel = _localFormatFinish(finType, finMove);
@@ -1215,7 +1228,7 @@ function showResult(fr){
       if (rBox) rBox.classList.add('visible');
       const rImg = document.getElementById('rImg');
       if (rImg) rImg.classList.add('visible');
-      sfx.victoryFanfare && sfx.victoryFanfare();
+      try { if (sfx.victoryFanfare) sfx.victoryFanfare(); } catch(e) {}
     }, 800);
     setTimeout(() => { const rW = document.getElementById('rWinner'); if (rW) rW.classList.add('visible'); const rT = document.getElementById('rType'); if (rT) rT.classList.add('visible'); }, 1500);
     setTimeout(() => { const rB = document.getElementById('rBottom'); if (rB) rB.classList.add('visible'); }, 1800);

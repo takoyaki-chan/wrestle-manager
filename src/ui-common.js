@@ -3751,6 +3751,11 @@ function advanceWeek() { App.advanceCurrentFlow(); }
 
 // ═══ Battle Engine postMessage Listener (v0.86) ═══
 window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'BATTLE_FINISH_CUE') {
+    try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.stop(); } catch(err) {}
+    try { if (typeof Audio !== 'undefined' && Audio.bgm) Audio.bgm.stop(); } catch(err) {}
+    return;
+  }
   if (e.data && e.data.type === 'MATCH_RESULT') {
     App.receiveBattleResult(e.data);
   }

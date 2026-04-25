@@ -22,6 +22,7 @@ const S = {
   pinStepTimer: null,      // ワン/ツー/ロック 等のリード step 自動進行タイマ
   heldWinLogs: null,       // { turn, held: [lines] } — pin seq 完了まで保留する「★ 決着！」ログ
   pendingDamage: false,    // ダメージポップアップ表示中 (クリック待ち)
+  finishCueSent: false,
   matchInfo: null,
   chemA: 0,
   chemB: 0,
@@ -64,6 +65,7 @@ function startReplay(data){
   S.prevSnap = null;
   S.autoAdvance = false;
   clearTimeout(S.autoTimer);
+  S.finishCueSent = false;
 
   const mk = (c) => {
     const st = Math.min(100, Math.max(0, c.st || 60));
@@ -533,6 +535,7 @@ function nextFrame(){
     // クリック駆動ピン seq が走るフレームは _finishPinSeq が showResult を呼ぶ
     const hasPinSeq = fr.events && fr.events.some(e => e.type === 'pinAttempt');
     if (hasPinSeq) return;
+    _notifyFinishCue();
     setTimeout(() => showResult(fr), 1800);
     return;
   }
@@ -1071,6 +1074,7 @@ function _executePinStep(idx){
 function _schedulePinAdvance(isLead, stepKey){
   const btn = document.getElementById('nBtn');
   clearTimeout(S.pinStepTimer);
+  const decisiveAuto = (stepKey === 'three' || stepKey === 'tap' || stepKey === 'tko');
   // introBig は大きな文字で 2.2s 見せるので 1.8s 後に次ステップ。narration は 1.5s。count は 1.1s。
   const LEAD_DELAY = (stepKey === 'introBig') ? 1800 : (stepKey === 'narration') ? 1500 : 1100;
   const FINAL_AUTO_DELAY = 2500;  // シングル AUTO_DELAY 準拠
@@ -1092,10 +1096,10 @@ function _schedulePinAdvance(isLead, stepKey){
       btn.onclick = _advancePinStep;
       setTimeout(() => {
         if (S.pinCtrl && btn.onclick === _advancePinStep) btn.disabled = false;
-      }, 700);
+      }, decisiveAuto ? 250 : 700);
     }
-    if (S.autoAdvance) {
-      S.pinStepTimer = setTimeout(() => _advancePinStep(), FINAL_AUTO_DELAY);
+    if (decisiveAuto || S.autoAdvance) {
+      S.pinStepTimer = setTimeout(() => _advancePinStep(), decisiveAuto ? 900 : FINAL_AUTO_DELAY);
     }
   }
 }
@@ -1103,6 +1107,12 @@ function _schedulePinAdvance(isLead, stepKey){
 function _advancePinStep(){
   if (!S.pinCtrl) return;
   _executePinStep(S.pinCtrl.idx + 1);
+}
+
+function _notifyFinishCue(){
+  if (S.finishCueSent || window.parent === window) return;
+  S.finishCueSent = true;
+  try { window.parent.postMessage({ type: 'BATTLE_FINISH_CUE' }, '*'); } catch(e) {}
 }
 
 function _finishPinSeq(){
@@ -1144,6 +1154,7 @@ function _finishPinSeq(){
 
   if (fr && fr.winner) {
     // 誤クリックで endMatch が発火して結果画面を飛ばさないよう showResult 呼び出しまで button を無効のまま
+    _notifyFinishCue();
     if (btn) btn.disabled = true;
     setTimeout(() => showResult(fr), 800);
     // _bindNextButton は showResult 側が状態復帰を担う
@@ -1328,7 +1339,7 @@ function showResult(fr){
   const finMove = result.finMove || '';
   const finishPhase = result.finishPhase || '';
 
-  try { sfx.victoryFanfare(); } catch(e){}
+  _notifyFinishCue();
 
   const winners = winTeam === 'teamA' ? [f('a1'), f('a2')] :
                   winTeam === 'teamB' ? [f('b1'), f('b2')] : [];
@@ -1345,6 +1356,9 @@ function showResult(fr){
   });
   document.querySelectorAll('.vic-portrait').forEach(p => p.classList.remove('visible'));
   ov.classList.add('show');
+  if (winTeam !== 'draw') {
+    setTimeout(() => { try { sfx.victoryFanfare(); } catch(e) {} }, 800);
+  }
 
   // Portraits (upper images)
   const portraits = document.getElementById('vicPortraits');
