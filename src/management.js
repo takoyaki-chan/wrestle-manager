@@ -2629,12 +2629,8 @@ const Engine = {
     },
 
     /** 章ステータス判定 (spec §4.5) */
-    _chapterStatus(aces, peers, currentSeason) {
-      const chars = [...aces, ...peers];
-      const anyActive = chars.some(c => c._active);
-      if (anyActive) return 'in_progress';
-      const latestEnd = chars.reduce((mx, c) => Math.max(mx, c.careerSeasonsEnd || 0), 0);
-      if ((currentSeason || 0) - latestEnd < 3) return 'in_progress';
+    _chapterStatus(chapter, currentSeason) {
+      if ((currentSeason || 0) - (chapter.seasonEnd || 0) < 3) return 'in_progress';
       return 'confirmed';
     },
 
@@ -2670,7 +2666,7 @@ const Engine = {
         const closing = Engine.chronicle._generateClosing(b, contributionsByAxis, state.orgName);
         const highlights = Engine.chronicle._buildHighlights(b, sel.aces, sel.peers);
         const eraStats = Engine.chronicle._buildEraStats(b, sel.aces, sel.peers);
-        const status = Engine.chronicle._chapterStatus(sel.aces, sel.peers, currentSeason);
+        const status = Engine.chronicle._chapterStatus(b, currentSeason);
         chapters.push({
           id: `ch_${b.seasonStart}_${b.seasonEnd}`,
           number: 0, // 後で振り直し

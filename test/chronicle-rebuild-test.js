@@ -71,4 +71,17 @@ function makeRetiredFighter(id = 101) {
   assert.ok(chapters.some(c => c.status === 'confirmed'), 'retired-only era should become confirmed');
 })();
 
+(function chapterStatusConfirmsAfterEraEnds() {
+  assert.strictEqual(
+    Engine.chronicle._chapterStatus({ seasonStart: 14, seasonEnd: 21 }, 26),
+    'confirmed',
+    'chapter should confirm three seasons after its era ends'
+  );
+  assert.strictEqual(
+    Engine.chronicle._chapterStatus({ seasonStart: 22, seasonEnd: 26 }, 26),
+    'in_progress',
+    'current era should remain in progress'
+  );
+})();
+
 console.log('chronicle-rebuild-test: ok');
