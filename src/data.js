@@ -12623,7 +12623,7 @@ const DECISION_DOCS = {
     category: 'pr',
     categoryLabel: '広報',
     icon: '📺',
-    cost: 120,
+    cost: 150,
     decisionCost: 2,
     activationCondition: null,
     minOrgPop: 20,
@@ -12632,7 +12632,7 @@ const DECISION_DOCS = {
     detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度向上と本人の体調維持を両立させる外向き施策。',
     effectSummary: '選手人気が上がる + 団体人気も上がる + 体調が整う + 信頼も上がる',
     recommendation: '団体人気がある程度育ってから解禁される書類。看板選手の体調管理と兼ねて回すと無駄がない。選手の人気を直接押し上げたい時にも有効。',
-    effect: { target: 'individual', trust: 5.36, condition: 5, orgPopDelta: 0.4, popGain: 4 },
+    effect: { target: 'individual', trust: 5.36, condition: 5, orgPopDelta: 0.4, popGainMin: 6, popGainMax: 8 },
   },
   // hireCoach は机に並ばず、コーチ画面からの実行時に決裁枠だけをチェック/消費する特殊書類。
   // Phase 5 でコーチ画面と統合予定。

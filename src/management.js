@@ -6557,6 +6557,39 @@ const Engine = {
       });
       return { prodigies, promising };
     },
+    getPotentialTotal(fighter) {
+      const cap = fighter?.trainCap || fighter?.pot || fighter?.notionValue || null;
+      if (!cap) return 0;
+      return (cap.pw || 0) + (cap.sp || 0) + (cap.te || 0) + (cap.st || 0) + (cap.mn || 0);
+    },
+    getPotentialRank(fighter) {
+      const tier = fighter?.trainCap ? null : fighter?.assessedTier;
+      if (tier === 'superElite' || tier === 'elite') return tier;
+      const total = Engine.rival.getPotentialTotal(fighter);
+      if (total >= 850) return 'superElite';
+      if (total >= 740) return 'elite';
+      if (total >= 690) return 'promising';
+      if (total >= 550) return 'raw';
+      return 'material';
+    },
+    isDepartedClaimTarget(fighter, options = {}) {
+      const ovrThreshold = options.threshold || 75;
+      const rank = Engine.rival.getPotentialRank(fighter);
+      return Engine.util.ov(fighter) >= ovrThreshold || rank === 'superElite' || rank === 'elite';
+    },
+    getAIReleaseScore(fighter, orgData = {}) {
+      if (!fighter) return -Infinity;
+      const ovr = Engine.util.ov(fighter);
+      const rank = Engine.rival.getPotentialRank(fighter);
+      const age = fighter.age || 20;
+      const championId = orgData?.titles?.world?.championId;
+      const rankProtect = { superElite: 80, elite: 55, promising: 25, raw: 8, material: 0 }[rank] || 0;
+      const youthProtect = age <= 18 ? 28 : age <= 20 ? 20 : age <= 22 ? 10 : 0;
+      const popularityProtect = Math.round((fighter.popularity || 0) * 0.25);
+      const championProtect = fighter.id === championId ? 10000 : 0;
+      const titleProtect = ((fighter.careerRecord?.totalTitleWins || 0) + (fighter.titleReigns || 0)) * 12;
+      return ovr + rankProtect + youthProtect + popularityProtect + titleProtect + championProtect;
+    },
     // draft-negotiation-spec §1.3: aiScout / aiSeasonReinforce 廃止
     // AI団体のスカウト行動はドラフト交渉セリに統合（draft-negotiation.js）
     // EMPRESS安全網は draft-negotiation.js Engine.draftNegotiation.empressReinforce() に移行予定
@@ -6770,6 +6803,92 @@ const Engine = {
       }
 
       return { aiOrgs: newAiOrgs, freeAgents, dormantPool, events };
+    },
+
+    claimDepartedStar(rng, state, fighter, options = {}) {
+      if (!fighter || !Engine.rival.isDepartedClaimTarget(fighter, options) || !state.aiOrgs) {
+        return { state, claimed: false };
+      }
+
+      const newAiOrgs = {};
+      RIVAL_ORGS.forEach(org => {
+        const orgData = state.aiOrgs[org.id];
+        if (!orgData) return;
+        newAiOrgs[org.id] = { ...orgData, roster: [...(orgData.roster || [])] };
+      });
+
+      const candidates = RIVAL_ORGS
+        .filter(org => newAiOrgs[org.id])
+        .map(org => {
+          const cfg = AI_SCOUT_CFG[org.tier] || AI_SCOUT_CFG.B;
+          const roster = newAiOrgs[org.id].roster;
+          const championId = newAiOrgs[org.id].titles?.world?.championId;
+          const ejectable = roster.filter(f => f.id !== championId);
+          const weakestPool = ejectable.length > 0 ? ejectable : roster;
+          const weakest = weakestPool.length > 0
+            ? [...weakestPool].sort((a, b) => Engine.rival.getAIReleaseScore(a, newAiOrgs[org.id]) - Engine.rival.getAIReleaseScore(b, newAiOrgs[org.id]))[0]
+            : null;
+          const weakestScore = weakest ? Engine.rival.getAIReleaseScore(weakest, newAiOrgs[org.id]) : 0;
+          const roomBonus = roster.length < cfg.idealRoster ? 30 : 0;
+          const tierBonus = ({ S: 12, A: 6, B: 0 }[org.tier] || 0);
+          const randomBonus = Engine.rng.float(rng) * 5;
+          return {
+            org,
+            weakest,
+            score: (Engine.rival.getAIReleaseScore(fighter, newAiOrgs[org.id]) - weakestScore) + roomBonus + tierBonus + randomBonus,
+          };
+        })
+        .filter(c => !c.weakest || c.weakest.id !== fighter.id)
+        .sort((a, b) => b.score - a.score);
+
+      const picked = candidates[0];
+      if (!picked) return { state, claimed: false };
+
+      const orgData = newAiOrgs[picked.org.id];
+      let dormantPool = [...(state.dormantPool || [])];
+      let ejected = null;
+      const cfg = AI_SCOUT_CFG[picked.org.tier] || AI_SCOUT_CFG.B;
+      if (orgData.roster.length >= cfg.idealRoster && picked.weakest) {
+        ejected = picked.weakest;
+        orgData.roster = orgData.roster.filter(f => f.id !== picked.weakest.id);
+        dormantPool.push({ id: picked.weakest.id, age: picked.weakest.age || 20 });
+      }
+
+      let transfer = Engine.popularity.applyTransferReset({
+        ...fighter,
+        orgId: picked.org.id,
+        trust: 50,
+        salaryBonus: 0,
+      });
+      transfer.orgJoinWeek = Engine.util.absWeek(state.season || 1, state.week || 1);
+      transfer = Engine.orgTimeline.transfer(transfer, picked.org.id, state.season || 1, state.week || 1);
+      delete transfer.trustCap;
+      delete transfer.s4Count;
+      if (Engine.career && typeof Engine.career.addEvent === 'function') {
+        transfer = Engine.career.addEvent(transfer, {
+          type: 'transfer',
+          season: state.season || 1,
+          week: state.week || 1,
+          fromOrg: options.fromOrgName || 'player',
+          toOrg: picked.org.name,
+          via: options.via || 'departure_claim',
+        });
+      }
+
+      Engine.rival.pushUniqueFighter(orgData.roster, transfer);
+      const nextState = {
+        ...state,
+        aiOrgs: { ...(state.aiOrgs || {}), ...newAiOrgs },
+        dormantPool,
+      };
+      return {
+        state: nextState,
+        claimed: true,
+        orgId: picked.org.id,
+        orgName: picked.org.name,
+        fighter: transfer,
+        ejected,
+      };
     },
   },
   season: {
@@ -8844,6 +8963,12 @@ const Engine = {
       departureResult.departed.forEach(d => {
         events.push(`🚪 ${d.name}が荷物をまとめて団体を去った。誰も止められなかった。`);
         // 退団先振り分け
+        const starClaim = Engine.rival.claimDepartedStar(departureRng, s, d.fighter, { fromOrgName: state.orgName || 'player', via: 'sudden_departure_claim' });
+        if (starClaim.claimed) {
+          s = starClaim.state;
+          events.push(`Transfer: ${d.name} -> ${starClaim.orgName}${starClaim.ejected ? ` / out: ${starClaim.ejected.name}` : ''}`);
+          return;
+        }
         if (d.destination === 'rival') {
           const aiOrgs = Object.entries(s.aiOrgs || {});
           if (aiOrgs.length > 0) {
@@ -14193,6 +14318,7 @@ Engine.shachoshitsu = {
       const _before = {
         trust: f.trust != null ? f.trust : 50,
         condition: f.condition || 70,
+        popularity: f.popularity || 1,
       };
 
       // cooldown チェック(選手単位)
@@ -14279,7 +14405,10 @@ Engine.shachoshitsu = {
         f = { ...f, condition: Math.min(100, (f.condition || 70) + (doc.effect.condition || 5)) };
         orgPopDelta = doc.effect.orgPopDelta || 0.4;
         // v2.5: メディア露出は選手人気にも直接効く（社長が推す意思決定）
-        const mediaPopRaw = doc.effect.popGain || 4;
+        const mediaRng = Engine.rng.create(
+          Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xBE70, fighterId)
+        );
+        const mediaPopRaw = Engine.rng.int(mediaRng, doc.effect.popGainMin || 6, doc.effect.popGainMax || 8);
         const mediaPopGain = Engine.popularity.applyDiminishing(mediaPopRaw, f.popularity);
         f = { ...f, popularity: Math.min(100, f.popularity + mediaPopGain) };
         const popGainDisp = Math.round(mediaPopGain * 10) / 10;
@@ -14317,7 +14446,10 @@ Engine.shachoshitsu = {
       if (_after.condition !== _before.condition) {
         changes.push({ label: '状態', emoji: '💪', before: Math.round(_before.condition), after: Math.round(_after.condition) });
       }
-      if (docId === 'media') changes.push({ label: '団体露出', emoji: '📺', text: '団体の知名度が少し上がった' });
+      if (docId === 'media') {
+        changes.push({ label: '団体露出', emoji: '📺', text: '団体の知名度が少し上がった' });
+        changes.push({ label: '選手人気', emoji: '⭐', before: Math.round(_before.popularity), after: Math.round(f.popularity) });
+      }
       if (docId === 'encourage') {
         // slump/motivLoss 中なら「スランプ回復」、そうでない(trust 低下のみ)なら「気持ちの揺らぎ」
         if (f.slump || f.motivationLoss) {
@@ -17076,6 +17208,18 @@ Engine.contract = {
 
     // 行き先決定
     const info = Engine.contract.determineDeparture(rng, fighter, s);
+    const starClaim = info.type !== 'retire'
+      ? Engine.rival.claimDepartedStar(rng, s, fighter, { fromOrgName: 'player', via: 'departure_claim' })
+      : { claimed: false };
+    if (starClaim.claimed) {
+      s = starClaim.state;
+      info.type = 'rival';
+      info.orgId = starClaim.orgId;
+      info.orgName = starClaim.orgName;
+      info.starClaim = true;
+      if (starClaim.ejected) info.ejectedName = starClaim.ejected.name;
+      return { state: s, info };
+    }
 
     if (info.type === 'retire') {
       const _retF = { ...fighter }; delete _retF.growthLog;
