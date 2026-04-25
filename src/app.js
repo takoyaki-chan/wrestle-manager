@@ -5687,6 +5687,7 @@ const App = {
         updState = Engine.chronicle.archiveFighter(updState, rf);
         updState = Engine.chronicle.applySpiritContribution(updState, rf);
       });
+      updState = Engine.chronicle.refreshChapters(updState);
       // 王者がラストラン引退した場合は王座を空位にする
       const vcLR = Engine.title.validateChampion(updState);
       if (vcLR.msg) { updState = { ...updState, titles: vcLR.titles, gameLog: [...(updState.gameLog || []), vcLR.msg] }; }
@@ -6649,6 +6650,7 @@ const App = {
         // 団体年代記: アーカイブ + 気風寄与
         G = Engine.chronicle.archiveFighter(G, retiredF);
         G = Engine.chronicle.applySpiritContribution(G, retiredF);
+        G = Engine.chronicle.refreshChapters(G);
         // 王者がモチベ喪失引退した場合は王座を空位にする
         const vcMR = Engine.title.validateChampion(G);
         if (vcMR.msg) { G = { ...G, titles: vcMR.titles, gameLog: [...(G.gameLog || []), vcMR.msg] }; }

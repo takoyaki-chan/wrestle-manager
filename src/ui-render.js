@@ -6939,6 +6939,9 @@ function _renderDbChronicle() {
           <span class="chron-empty-meta-val">${topByOvr.map(t => t.name).join(' ・ ')}</span>
         </div>` : ''}
       </div>
+      <div style="display:flex;justify-content:center;padding:8px 22px 16px">
+        <button class="chron-rebuild-btn" onclick="rebuildChronicle()">年代記を再構築</button>
+      </div>
       <div class="chron-empty-flavor">
         — この選手たちの活躍が、物語を作っていきます。
       </div>

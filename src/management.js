@@ -2225,6 +2225,12 @@ const Engine = {
       return Math.max(1, (state.season || 1) - Math.max(0, age - 17));
     },
 
+    _estimateRetiredSeason(fighter, state, fallbackStart) {
+      const hist = (fighter?.careerRecord || {}).history || [];
+      const retireEv = [...hist].reverse().find(e => e.type === 'retire' || e.type === 'injury_retirement');
+      return retireEv?.season || fighter?.retiredSeason || state?.retiredSeasons?.[fighter?.id] || state?.season || fallbackStart || 1;
+    },
+
     /** spec §3.1 fighterArchive への最小限スナップショット登録。
      * 呼び出し側は player ロスター経由の引退であることを保証すること。 */
     archiveFighter(state, fighter) {
@@ -2236,7 +2242,7 @@ const Engine = {
       const hist = cr.history || [];
       const debutEv = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
       const careerSeasonsStart = debutEv ? (debutEv.season || 1) : 1;
-      const careerSeasonsEnd = state.season || careerSeasonsStart;
+      const careerSeasonsEnd = Engine.chronicle._estimateRetiredSeason(fighter, state, careerSeasonsStart);
 
       const peakOVR = (cr.peakOVR || 0) || (Engine.util.ov(fighter) || 0);
       const peakOVRSeason = cr.peakOVRSeason || careerSeasonsEnd;
@@ -2280,7 +2286,7 @@ const Engine = {
       const hist = cr.history || [];
       const debutEv = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
       const start = debutEv ? (debutEv.season || 1) : 1;
-      const end = state.season || start;
+      const end = Engine.chronicle._estimateRetiredSeason(fighter, state, start);
       const delta = Engine.chronicle.calcSpiritContribution({
         careerSeasonsStart: start,
         careerSeasonsEnd: end,
@@ -2295,6 +2301,16 @@ const Engine = {
     },
 
     /** spec §4.2 Step 2 英雄値 */
+    refreshChapters(state) {
+      if (!state) return state;
+      try {
+        return Engine.chronicle.buildChapters(state, { forceRebuild: true });
+      } catch (e) {
+        console.warn('[chronicle] chapter refresh failed', e);
+        return state;
+      }
+    },
+
     _heroScore(f) {
       const ovrN = (f.peakOVR || 0) / 100;
       const popN = (f.peakPopularity || 0) / 100;
@@ -8038,6 +8054,7 @@ const Engine = {
           // 団体年代記: アーカイブ + 気風寄与
           s = Engine.chronicle.archiveFighter(s, retiredF);
           s = Engine.chronicle.applySpiritContribution(s, retiredF);
+          s = Engine.chronicle.refreshChapters(s);
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, lc.id);
           injuryResults.push({ name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
@@ -8064,6 +8081,7 @@ const Engine = {
           // 団体年代記: アーカイブ + 気風寄与
           s = Engine.chronicle.archiveFighter(s, retiredF);
           s = Engine.chronicle.applySpiritContribution(s, retiredF);
+          s = Engine.chronicle.refreshChapters(s);
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, rc.id);
           injuryResults.push({ name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
@@ -10368,6 +10386,7 @@ const Engine = {
             s = Engine.chronicle.archiveFighter(s, rf);
             s = Engine.chronicle.applySpiritContribution(s, rf);
           });
+          s = Engine.chronicle.refreshChapters(s);
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) {
             allRetirees.forEach(retiree => { s = Engine.relationships.freezeRelationships(s, retiree.id); });
@@ -16618,6 +16637,9 @@ Engine.contract = {
     if (info.type === 'retire') {
       const _retF = { ...fighter }; delete _retF.growthLog;
       s = { ...s, retiredFighters: [...(s.retiredFighters || []), _retF], retiredIds: [...(s.retiredIds || []).filter(id => id !== fighter.id), fighter.id], retiredSeasons: { ...(s.retiredSeasons || {}), [fighter.id]: s.season } };
+      s = Engine.chronicle.archiveFighter(s, _retF);
+      s = Engine.chronicle.applySpiritContribution(s, _retF);
+      s = Engine.chronicle.refreshChapters(s);
     } else if (info.type === 'rival') {
       const orgId = info.orgId;
       if (s.aiOrgs && s.aiOrgs[orgId]) {
