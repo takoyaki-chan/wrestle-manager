@@ -12699,10 +12699,39 @@ Engine.mvpRace = {
     }
     const topElems = Engine.mvpRace._topElements(m);
     const elemText = topElems.length > 0 ? topElems.slice(0, 2).join('・') : 'OVRとシーズンの積み重ね';
+    // 「まだ伸びしろがある」は成長余地のある年齢に限定
+    // 早熟: 24未満 / 標準: 26未満 / 晩成・遅咲き: 28未満
+    if (Engine.mvpRace._hasGrowthRoom(entry, state)) {
+      return pick([
+        `${elemText}で${entry.points}pt。${role || '中軸'}としてシーズンを戦い続けている。`,
+        `${elemText}を武器に上位戦線へ。${m.age}歳、まだ伸びしろは残されている。`,
+      ]);
+    }
     return pick([
       `${elemText}で${entry.points}pt。${role || '中軸'}としてシーズンを戦い続けている。`,
-      `${elemText}を武器に上位戦線へ。${m.age}歳、まだ伸びしろは残されている。`,
+      `${elemText}を武器に上位戦線へ。${m.age}歳、円熟期の戦い方が紙面に滲む。`,
     ]);
+  },
+
+  /** その選手にまだ「伸びしろ」表現を使ってよいか（年齢×特性で判定） */
+  _hasGrowthRoom(entry, state) {
+    const m = entry.breakdown.meta;
+    const age = m.age || 0;
+    if (age <= 0) return true;
+    // 特性は entry に直接含まれないので state から引く
+    let traits = [];
+    const fid = entry.fighterId;
+    const orgId = entry.orgId;
+    let f = null;
+    if (orgId === 'player') f = (state.roster || []).find(x => x.id === fid);
+    else if (state.aiOrgs && state.aiOrgs[orgId]) f = state.aiOrgs[orgId].roster.find(x => x.id === fid);
+    if (!f) f = (state.retiredFighters || []).find(x => x.id === fid);
+    traits = (f && f.traits) || [];
+    const isLate = traits.some(t => t === '晩成' || t === '遅咲き');
+    const isEarly = traits.some(t => t === '早熟');
+    if (isEarly) return age < 24;
+    if (isLate) return age < 28;
+    return age < 26;
   },
 
   generateTagline(entry, state) {

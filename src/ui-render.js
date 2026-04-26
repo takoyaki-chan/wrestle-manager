@@ -6445,7 +6445,7 @@ function _npRenderPage4() {
   // 黒田寸評
   if (race.kurodaComment) {
     html += `<div class="np-kuroda">
-      <div class="np-kuroda-face">黒</div>
+      <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
       <div>
         <div class="np-kuroda-text">${_escapeHtml(race.kurodaComment)}</div>
         <div class="np-kuroda-byline">— 編集長 黒田 貫一郎</div>
