@@ -4015,6 +4015,98 @@ const Engine = {
       }
     },
 
+    // 引退確定処理 (シーズン末: 引き留めダイアログ後に呼ぶ)
+    // confirmedFighters: 引き留めされなかった = 確定で引退する fighter オブジェクト配列
+    // 戻り値: { state, events, newsItems }
+    commitRetirements(state, confirmedFighters) {
+      let s = state;
+      const events = [];
+      const newsItems = [];
+      if (!confirmedFighters || confirmedFighters.length === 0) {
+        return { state: s, events, newsItems };
+      }
+
+      // 1. retire イベント追加 + careerRecord 整備
+      const retiredWithRecords = confirmedFighters.map(c => {
+        let f = Engine.career.ensure(c);
+        f = Engine.career.addEvent(f, { type: 'retire', season: s.season, age: f.age });
+        delete f.growthLog;
+        return f;
+      });
+
+      const retireeIds = new Set(retiredWithRecords.map(f => f.id));
+
+      // 2. roster から除外
+      const surviving = (s.roster || []).filter(c => !retireeIds.has(c.id));
+      const _newRetiredIds = [...(s.retiredIds || []), ...retiredWithRecords.map(f => f.id).filter(id => !(s.retiredIds || []).includes(id))];
+      const _newRetiredSeasons = { ...(s.retiredSeasons || {}) };
+      retiredWithRecords.forEach(f => { _newRetiredSeasons[f.id] = s.season; });
+      s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, retiredSeasons: _newRetiredSeasons };
+
+      // 3. O-04 関係値 (bond60+ → 引退者 bond -10〜-5)
+      const retRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3B, s.season));
+      const allCharIds = (s.roster || []).map(c => c.id);
+      for (const retiree of retiredWithRecords) {
+        const highBondIds = allCharIds.filter(cid => {
+          if (cid === retiree.id) return false;
+          const key = Engine.relationships._key(cid, retiree.id);
+          const r = s.relationships?.[key];
+          return r && Engine.relationships.isPositiveBond(r.bond);
+        });
+        if (highBondIds.length > 0) {
+          s = Engine.relationships.applyFromRoster(s, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
+        }
+      }
+
+      // 4. 年代記アーカイブ + 気風寄与
+      retiredWithRecords.forEach(rf => {
+        s = Engine.chronicle.archiveFighter(s, rf);
+        s = Engine.chronicle.applySpiritContribution(s, rf);
+      });
+      s = Engine.chronicle.refreshChapters(s);
+
+      // 5. 関係値凍結
+      if (s.relationships) {
+        retiredWithRecords.forEach(retiree => { s = Engine.relationships.freezeRelationships(s, retiree.id); });
+      }
+
+      // 6. trust 影響 (R3: 仲の良い選手を失った)
+      retiredWithRecords.forEach(retiree => {
+        const impacted = Engine.trust.applyDepartureTrustImpact(s.roster, retiree.id, s.relationships, { name: retiree.name, reason: '引退' });
+        s = { ...s, roster: impacted };
+      });
+
+      // 7. events
+      retiredWithRecords.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
+
+      // 8. validateChampion (王者引退時の王座空位化)
+      const vc = Engine.title.validateChampion(s);
+      if (vc.msg) {
+        s = { ...s, titles: vc.titles };
+        events.push(vc.msg);
+      }
+
+      // 9. pendingAwards.hallOfFame 再計算 (引退者を含めて)
+      if (s.pendingAwards) {
+        s = { ...s, pendingAwards: { ...s.pendingAwards, hallOfFame: Engine.awards.checkHallOfFame(s) } };
+      }
+
+      // 10. 新聞 retirement イベント (App 側で _pushNewsEvent する用)
+      retiredWithRecords.forEach(f => {
+        const ovr = Engine.util.ov(f);
+        if (ovr >= 70 || (f.age || 17) >= 25) {
+          const seasons = f.careerSeasons || 0;
+          newsItems.push({
+            type: 'retirement',
+            characterId: f.id,
+            data: { name: f.name, org: s.orgName || 'あなたの団体', detail: `${seasons}シーズンの現役生活` },
+          });
+        }
+      });
+
+      return { state: s, events, newsItems };
+    },
+
     // §3.4: 引き留めセリフ選択
     selectRetainLine(fighter, G) {
       const hasWonTitle = (fighter.careerRecord?.history || []).some(ev => ev.type === 'titleWin');
@@ -11460,82 +11552,30 @@ const Engine = {
         s = { ...s, roster: lastRunActive };
 
         // Player retirement check (skip rental fighters — they return to their org)
+        // 検出フェーズのみ: roster 削除・タイトル没収・HoF 反映・関係値凍結等は
+        // 引き留めダイアログ後に Engine.retirement.commitRetirements で行う
         const retirees = [];
-        const surviving = [];
         s.roster.forEach(c => {
           if (!c.isRental && Engine.rival.checkRetirement(rng, c)) {
             retirees.push(c);
-          } else {
-            surviving.push(c);
           }
         });
         // ラストラン期限切れ選手をretirees扱いで統合
         const allRetirees = [...retirees, ...lastRunExpiredList];
 
         if (allRetirees.length > 0) {
-          // O-04: 引退 — bond 60以上の相手→引退者 に bond -5〜-10
-          const retRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3B, s.season));
-          const allCharIds = [...(s.roster || []).map(c => c.id)];
-          for (const retiree of allRetirees) {
-            // bond 60以上の相手を探す
-            const highBondIds = allCharIds.filter(cid => {
-              if (cid === retiree.id) return false;
-              const key = Engine.relationships._key(cid, retiree.id);
-              const r = s.relationships?.[key];
-              return r && Engine.relationships.isPositiveBond(r.bond);
-            });
-            if (highBondIds.length > 0) {
-              s = Engine.relationships.applyFromRoster(s, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
-            }
-          }
-          // v1.3: Save retirees with career records for year-end awards
+          // 表示用データのみ生成 (commit はまだ行わない)
           const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFADE));
-          const retiredWithRecords = allRetirees.map(c => {
-            let f = Engine.career.ensure(c);
-            f = Engine.career.addEvent(f, { type: 'retire', season: s.season, age: f.age });
-            delete f.growthLog;
-            return f;
-          });
-          // v1.3-3: Build pending retirement presentation data
-          const pendingRetirements = retiredWithRecords.map(f => {
-            const isLastRunExpired = lastRunExpiredList.some(c => c.id === f.id);
+          const pendingRetirements = allRetirees.map(c => {
+            const f = Engine.career.ensure(c);
+            const isLastRunExpired = lastRunExpiredList.some(x => x.id === f.id);
             const route = isLastRunExpired ? 'lastrun_expired' : 'season_end';
             const { line, category } = Engine.retirement.selectLine(f, isLastRunExpired ? 'season_end' : 'season_end', s, lineRng);
             const summary = Engine.retirement.buildCareerSummary(f);
             const canRetain = !isLastRunExpired && (f.wear || 0) < 80 && (f.retainCount || 0) < 2;
             return { fighter: f, route, line, category, summary, canRetain };
           });
-          const _newRetiredIds = [...(s.retiredIds || []), ...allRetirees.map(c => c.id).filter(id => !(s.retiredIds || []).includes(id))];
-          const _newRetiredSeasons = { ...(s.retiredSeasons || {}) };
-          allRetirees.forEach(c => { _newRetiredSeasons[c.id] = s.season; });
-          s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, retiredSeasons: _newRetiredSeasons, pendingRetirements };
-          // 団体年代記: アーカイブ + 気風寄与 (全 player roster 経由引退)
-          retiredWithRecords.forEach(rf => {
-            s = Engine.chronicle.archiveFighter(s, rf);
-            s = Engine.chronicle.applySpiritContribution(s, rf);
-          });
-          s = Engine.chronicle.refreshChapters(s);
-          // §2.3: 引退者の関係値を凍結
-          if (s.relationships) {
-            allRetirees.forEach(retiree => { s = Engine.relationships.freezeRelationships(s, retiree.id); });
-          }
-          // Phase 3 R3: 仲の良い選手を失ったtrust影響（シーズン末引退）
-          allRetirees.forEach(retiree => {
-            const impacted = Engine.trust.applyDepartureTrustImpact(s.roster, retiree.id, s.relationships, { name: retiree.name, reason: '引退' });
-            s = { ...s, roster: impacted };
-          });
-          allRetirees.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
-          // シーズン末引退で王者がロスターから消えた場合、王座を空位化
-          const vc = Engine.title.validateChampion(s);
-          if (vc.msg) {
-            s = { ...s, titles: vc.titles };
-            events.push(vc.msg);
-          }
-        }
-
-        // 殿堂入り判定: 引退処理完了後に再計算（generate時点ではretiredFightersが空のため）
-        if (s.pendingAwards) {
-          s = { ...s, pendingAwards: { ...s.pendingAwards, hallOfFame: Engine.awards.checkHallOfFame(s) } };
+          s = { ...s, pendingRetirements };
         }
 
         // AI season end processing (steps 1-5)

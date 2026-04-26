@@ -3943,13 +3943,12 @@ const App = {
   },
 
   // 引き留めアクション（引退ポップアップから呼ばれる）
+  // 引退はまだ commit されていない（roster に居る）— 本人を直接更新する
   doRetainFighter(fighterId) {
-    const retiredIdx = (G.retiredFighters || []).findIndex(c => c.id === fighterId);
-    if (retiredIdx < 0) { closeRetirementPopup(); return; }
-    const fighter = G.retiredFighters[retiredIdx];
+    const fighter = (G.roster || []).find(c => c.id === fighterId);
+    if (!fighter) { closeRetirementPopup(); return; }
     // 引き留め上限チェック
     if ((fighter.retainCount || 0) >= 2) { closeRetirementPopup(); return; }
-    G = archiveRetiredRivalryState(G, fighter);
     const retainLine = Engine.retirement.selectRetainLine(fighter, G);
     let updatedFighter = {
       ...fighter,
@@ -3961,18 +3960,7 @@ const App = {
     };
     // Phase E: 引退撤回 history
     updatedFighter = Engine.career.addEvent(updatedFighter, { type: 'retireRetracted', season: G.season, week: G.week, orgName: G.orgName || 'プレイヤー団体' });
-    const newRetired = [...G.retiredFighters];
-    newRetired.splice(retiredIdx, 1);
-    const newRetiredIds = (G.retiredIds || []).filter(id => id !== fighterId);
-    const newRetiredSeasons = { ...(G.retiredSeasons || {}) };
-    delete newRetiredSeasons[fighterId];
-    G = {
-      ...G,
-      roster: [...G.roster, updatedFighter],
-      retiredFighters: newRetired,
-      retiredIds: newRetiredIds,
-      retiredSeasons: newRetiredSeasons,
-    };
+    G = { ...G, roster: G.roster.map(c => c.id === fighterId ? updatedFighter : c) };
     // O-13: 引退撤回 — 本人→団体全体 bond +5〜+8, 同僚全員→本人 bond +2〜+3
     if (G.relationships) {
       const retainRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE46, G.season, fighterId));
@@ -3980,6 +3968,9 @@ const App = {
       G = Engine.relationships.applyToRoster(G, fighterId, rosterIds, { min: 5, max: 8 }, { min: 0, max: 0 }, retainRelRng);
       G = Engine.relationships.applyFromRoster(G, rosterIds, fighterId, { min: 2, max: 3 }, { min: 0, max: 0 }, retainRelRng);
     }
+    // commit フェーズで除外するためのフラグ
+    App._retainedIds = App._retainedIds || new Set();
+    App._retainedIds.add(fighterId);
     Storage.autoSave();
     refreshAll();
     closeRetirementPopup();
@@ -7358,33 +7349,34 @@ const App = {
       const { pendingRetirements: _, ...cleanG } = G;
       G = cleanG;
     }
-    (pendingRetirements || []).forEach(r => {
-      G = archiveRetiredRivalryState(G, r.fighter || null);
-    });
-
-    // v1.4w: AI引退選手の新聞イベント収集（名選手: OVR70以上、年齢30以上）
-    if (pendingRetirements) {
-      pendingRetirements.forEach(r => {
-        const f = r.fighter;
-        if (!f) return;
-        const ovr = Engine.util.ov(f);
-        if (ovr >= 70 || (f.age || 17) >= 25) {
-          const rec = f.careerRecord || {};
-          const seasons = f.careerSeasons || 0;
-          App._pushNewsEvent({ type: 'retirement', characterId: f.id,
-            data: { name: f.name, org: G.orgName || 'あなたの団体',
-              detail: `${seasons}シーズンの現役生活` } });
-        }
-      });
-    }
 
     Storage.autoSave();
     Audio.bgm.playForState(); // BGM: switch on season transitions
 
     // v1.3-3: Show retirement popups (season-end)
+    // 引退は引き留めダイアログで決断後に commit する（ダイアログ前は roster/titles/HoF を変更しない）
     if (pendingRetirements && pendingRetirements.length > 0) {
+      App._retainedIds = new Set();
       refreshAll();
-      showRetirementPopups(pendingRetirements, () => App._safeAwardsChain());
+      showRetirementPopups(pendingRetirements, () => {
+        const retained = App._retainedIds || new Set();
+        const confirmed = pendingRetirements
+          .filter(r => !retained.has(r.fighter.id))
+          .map(r => r.fighter);
+        if (confirmed.length > 0) {
+          const result = Engine.retirement.commitRetirements(G, confirmed);
+          G = result.state;
+          if (result.events && result.events.length > 0) {
+            G = { ...G, gameLog: [...(G.gameLog || []), ...result.events] };
+          }
+          confirmed.forEach(f => { G = archiveRetiredRivalryState(G, f); });
+          (result.newsItems || []).forEach(n => App._pushNewsEvent(n));
+          Storage.autoSave();
+          refreshAll();
+        }
+        App._retainedIds = null;
+        App._safeAwardsChain();
+      });
       return;
     }
 

@@ -588,6 +588,13 @@ function runSimulation(seed, seasons) {
       const _prevPhase = G.weekPhase;
       const advResult = Engine.advanceWeek(G);
       G = { ...advResult.state, gameLog: [] };
+      // auto-sim には引き留めUIがないので、検出された引退候補をその場で全て確定
+      if (G.pendingRetirements && G.pendingRetirements.length > 0) {
+        const confirmed = G.pendingRetirements.map(r => r.fighter);
+        const commitRes = Engine.retirement.commitRetirements(G, confirmed);
+        const { pendingRetirements: _drop, ...rest } = commitRes.state;
+        G = rest;
+      }
       totalWeeks++;
 
       // 頻度トラッキング（advanceWeek後の状態変化を検出）
