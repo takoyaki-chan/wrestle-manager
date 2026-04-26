@@ -7286,13 +7286,11 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .ranking-popup .rp-card.is-rank-3 .rp-metrics div:first-child b { color: var(--rank-3); }
 
 /* ── ランキング指標ツールチップ（評価/基礎力/対戦PT/レガシー…の説明） ── */
-.ranking-popup .rank-metric { position: relative; }
+/* position:fixed + JS で配置するので親の overflow:hidden に影響されない */
 .ranking-popup .rank-metric { cursor: help; }
 .ranking-popup .rank-metric-tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+  position: fixed;
+  top: 0; left: 0;
   width: 260px;
   padding: 12px 14px;
   background: rgba(18, 18, 20, 0.97);
@@ -7304,12 +7302,14 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   pointer-events: none;
   transition: opacity 0.15s ease;
   transition-delay: 0s;
-  z-index: 200;
+  z-index: 9999;
   text-align: left;
   white-space: normal;
+  visibility: hidden;
 }
-.ranking-popup .rank-metric:hover .rank-metric-tooltip {
+.ranking-popup .rank-metric.is-tip-active .rank-metric-tooltip {
   opacity: 1;
+  visibility: visible;
   transition-delay: 0.25s;
 }
 .ranking-popup .rank-metric-tooltip .rmt-label {
@@ -7328,11 +7328,6 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   font-family: 'Noto Sans JP', sans-serif;
   letter-spacing: normal;
 }
-/* グリッド端で画面外にはみ出さない位置補正 */
-.ranking-popup .rp-metrics .rank-metric:nth-child(odd) .rank-metric-tooltip { left: 0; transform: none; }
-.ranking-popup .rp-metrics .rank-metric:nth-child(even) .rank-metric-tooltip { left: auto; right: 0; transform: none; }
-.ranking-popup .orgcell:first-child .rank-metric-tooltip { left: 0; transform: none; }
-.ranking-popup .orgcell:last-child .rank-metric-tooltip { left: auto; right: 0; transform: none; }
 
 /* ──── 04 シーズン履歴 ──── */
 .ranking-popup .history-wrap { position: relative; overflow: hidden; }

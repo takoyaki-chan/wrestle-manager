@@ -12188,3 +12188,36 @@ function _relmapZoomFit() {
   _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
   _relmapReheat();
 }
+
+// ── ランキング画面: 指標ツールチップを fixed 配置でクリッピング回避 ──
+(function initRankMetricTooltips() {
+  if (typeof document === 'undefined') return;
+  function positionTip(metric) {
+    const tip = metric.querySelector(':scope > .rank-metric-tooltip');
+    if (!tip) return;
+    metric.classList.add('is-tip-active');
+    const r = metric.getBoundingClientRect();
+    const tipW = tip.offsetWidth || 260;
+    const tipH = tip.offsetHeight || 0;
+    const margin = 8;
+    let left = r.left + r.width / 2 - tipW / 2;
+    left = Math.max(margin, Math.min(window.innerWidth - tipW - margin, left));
+    let top = r.top - tipH - margin;
+    if (top < margin) top = r.bottom + margin;
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  }
+  document.addEventListener('mouseover', (e) => {
+    const m = e.target.closest && e.target.closest('.rank-metric');
+    if (!m || !m.querySelector(':scope > .rank-metric-tooltip')) return;
+    if (m._tipBound === e.target) return;
+    positionTip(m);
+  }, true);
+  document.addEventListener('mouseout', (e) => {
+    const m = e.target.closest && e.target.closest('.rank-metric');
+    if (!m) return;
+    const related = e.relatedTarget;
+    if (related && m.contains(related)) return;
+    m.classList.remove('is-tip-active');
+  }, true);
+})();
