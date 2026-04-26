@@ -58,9 +58,9 @@ entry.history.push({
 
 **ラベル名は紙面に直接表示しない**（叙述見出しに変換）。
 
-## 4. featured 選定（A+C ハイブリッド）
+## 4. featured 選定（A+C ハイブリッド + 2週ローテーション）
 
-`_pickRivalryFeatured(state)` で全 H2H ペアをスコア化、降順1位を featured、2-7位を relations。
+`_pickRivalryFeatured(state)` で全 H2H ペアをスコア化、上位プールから **2週周期でローテーション** して featured を選び、残りスコア順上位6件を relations とする。
 
 ```
 score = rivalry * 0.4
@@ -73,6 +73,14 @@ score = rivalry * 0.4
 ```
 
 bond/rivalry は **双方向平均** を使う（`relAB.bond + relBA.bond` の平均）。
+
+**ローテーション仕様**:
+- スコア降順ソート後、`score >= topScore * 0.55` を満たすペアを上位プールに採用（最低3件・最大8件）
+- 期間インデックス `period = floor(totalWeek / 2)`（`totalWeek = (season-1)*52 + week`）
+- featured = `pool[period % pool.length]` で2週ごとに切り替わる
+- relations は featured を除いた全候補のスコア上位6件
+- 上位プールが1件しかない場合は実質固定（妥当）。試合で順位が動けば次サイクルから新ペアが入る
+- シードに依存しない決定的ロジック（同セーブ・同週で同じ表示）
 
 ## 5. 紙面構造
 

@@ -9379,7 +9379,17 @@ function _pickRivalryFeatured(state) {
     all.push({ key, h2h, tag, bond, rivalry, charA, charB, idA: a, idB: b, score, isPlayerInvolved });
   });
   all.sort((x, y) => y.score - x.score);
-  return { featured: all[0] || null, relations: all.slice(1, 7) };
+  if (!all.length) return { featured: null, relations: [] };
+
+  // 上位プールから2週周期でローテーション。スコア最上位の0.55倍以上を候補とし、最低3件・最大8件
+  const topScore = all[0].score;
+  let pool = all.filter(e => e.score >= topScore * 0.55).slice(0, 8);
+  if (pool.length < 3) pool = all.slice(0, Math.min(3, all.length));
+  const totalWeek = ((state.season || 1) - 1) * 52 + (state.week || 1);
+  const period = Math.floor(totalWeek / 2);
+  const featured = pool[period % pool.length];
+  const relations = all.filter(e => e.key !== featured.key).slice(0, 6);
+  return { featured, relations };
 }
 
 function _renderDbRivalry() {
