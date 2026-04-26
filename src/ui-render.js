@@ -3306,42 +3306,219 @@ function renderRanking() {
   const rank1Entry = rankings.find(x => x.rank === 1);
   const _countOvrAtLeast = (list, min) => list.filter(f => Engine.util.ov(f) >= min).length;
   const _avgOvrOf = (list) => list.length ? Math.round(list.reduce((s, f) => s + Engine.util.ov(f), 0) / list.length) : 0;
-  const _layerTone = (top3Avg, avgOvr, over80, over70) => {
-    if (over80 >= 3 || top3Avg >= 82) return 'エース級が複数そろい、上位だけで試合を作り切れる豪華な陣容';
-    if (over80 >= 1 || top3Avg >= 76) return '看板を中心に上位陣がまとまり、主力の顔ぶれで勝負できる陣容';
-    if (over70 >= 3 || avgOvr >= 62) return '突出した怪物はいないが、主力候補が広く並ぶ堅実な陣容';
-    return 'まだ発展途上だが、伸びしろのある選手を育てながら順位を追う陣容';
-  };
-  const _positionTone = (rank, gapTop, gapAbove) => {
-    if (rank === 1) return '業界首位に立つ団体で、追われる側としての安定感がある';
-    if (rank === 2) return `首位まで${gapTop}pt差。射程圏にはいるが、もう一段の厚みが欲しい`;
-    return `首位まで${gapTop}pt、直上まで${gapAbove}pt差。順位を上げるには看板の後ろを支える層作りが鍵になる`;
-  };
-  const buildProfileLead = ({ r, sortedAll, featured, champion, defenses, avgOvr, popDisplay, rankAbove }) => {
-    const aceOvr = featured ? Engine.util.ov(featured) : 0;
-    const top3 = sortedAll.slice(0, 3);
-    const top3Avg = _avgOvrOf(top3);
-    const over80 = _countOvrAtLeast(sortedAll, 80);
-    const over70 = _countOvrAtLeast(sortedAll, 70);
+  // ── 動的フレーバーテキスト生成 ──
+  const _strHash = (s) => { let h = 0; for (let i = 0; i < (s||'').length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; } return Math.abs(h); };
+  const _seedBase = ((G.season || 1) * 100 + (G.week || 1)) | 0;
+  const _pickSeed = (arr, seed) => arr.length ? arr[seed % arr.length] : '';
+  const _hasTrait = (f, t) => Array.isArray(f?.traits) && f.traits.includes(t);
+
+  const _collectOrgTags = ({ r, sortedAll, featured, champion, defenses, orgPop, isPlayer, rank1Entry, rankAbove }) => {
+    const tags = new Set();
+    // 順位
+    if (r.rank === 1) tags.add('top');
+    else if (r.rank === 2) tags.add('chasing');
+    else if (r.rank >= 4) tags.add('bottom');
+    else tags.add('midpack');
     const gapTop = Math.max(0, Math.round((rank1Entry?.rating || r.rating) - r.rating));
     const gapAbove = rankAbove ? Math.max(0, Math.round(rankAbove.rating - r.rating)) : 0;
-    const position = _positionTone(r.rank, gapTop, gapAbove);
-    const titleText = champion
-      ? `王者${champion.name}は${defenses}防衛中で、団体の中心線がはっきりしている`
-      : `${featured ? featured.name : '看板選手'}が最高OVR${aceOvr}の看板を背負う一方、王座はまだ空いている`;
-    const layer = _layerTone(top3Avg, avgOvr, over80, over70);
-    return `${position}。${titleText}。${layer}で、トップ3平均OVR${top3Avg}、全体平均OVR${avgOvr}。所属${sortedAll.length}名の中に70台以上が${over70}名、80台以上が${over80}名おり、人気${popDisplay}の土台をどこまで戦力に変えられるかが見どころ。`;
+    if (gapTop > 0 && gapTop <= 5) tags.add('closeToTop');
+    if (gapAbove > 0 && gapAbove <= 3) tags.add('breathingDown');
+    // トレンド (player のみ seasonHistory あり)
+    if (isPlayer && Array.isArray(G.seasonHistory) && G.seasonHistory.length >= 2) {
+      const recent = G.seasonHistory.slice(-3).map(h => h.rank).filter(x => x != null);
+      if (recent.length >= 2) {
+        const prev = recent[recent.length - 1];
+        const older = recent[0];
+        if (prev - r.rank >= 2) tags.add('rising');
+        else if (r.rank - prev >= 2) tags.add('sliding');
+        else if (older === r.rank) tags.add('stable');
+      }
+    }
+    // 勢い
+    if (r.battlePt >= 10) tags.add('hot');
+    else if (r.battlePt <= -10) tags.add('cooling');
+    // 王者
+    if (!champion) tags.add('vacant');
+    else if (defenses >= 5) tags.add('longReign');
+    else if (defenses <= 1) tags.add('freshChamp');
+    else tags.add('reigning');
+    // 人気
+    const popNum = Number(orgPop) || 0;
+    if (popNum >= 75) tags.add('popHigh');
+    else if (popNum < 40) tags.add('popLow');
+    else tags.add('popMid');
+    // 戦力層
+    const top3Avg = _avgOvrOf(sortedAll.slice(0, 3));
+    const over80 = _countOvrAtLeast(sortedAll, 80);
+    const over70 = _countOvrAtLeast(sortedAll, 70);
+    const avgOvr = sortedAll.length ? Math.round(sortedAll.reduce((s, c) => s + Engine.util.ov(c), 0) / sortedAll.length) : 0;
+    if (over80 >= 3 || top3Avg >= 82) tags.add('layerSuper');
+    else if (over80 >= 1 || top3Avg >= 76) tags.add('layerSolid');
+    else if (over70 >= 3 || avgOvr >= 62) tags.add('layerMid');
+    else tags.add('layerRaw');
+    // 規模
+    if (sortedAll.length <= 8) tags.add('compact');
+    else if (sortedAll.length >= 16) tags.add('wide');
+    return { tags, gapTop, gapAbove, top3Avg, over80, over70, avgOvr };
   };
-  const buildDepthNote = ({ visibleTotal, sortedAll, featured, coreLimit }) => {
+
+  const _buildLeadSentences = ({ tags, featured, champion, gapTop, gapAbove, seed }) => {
+    const has = (t) => tags.has(t);
+    const aceName = featured ? featured.name : '看板選手';
+    // 文1: ポジション×トレンド×勢い
+    let s1Pool = [];
+    if (has('top')) {
+      if (has('sliding') || has('cooling')) s1Pool = ['首位の座が揺らぎ始めている', '頂点に立ちながらも背中が見え始めた', '王座防衛戦のような立ち位置に追われている'];
+      else if (has('rising') || has('hot')) s1Pool = ['業界の頂点を独走する勢い', '首位として後続を突き放しにかかる時期', '今がまさに全盛期と呼べる団体'];
+      else s1Pool = ['業界の頂点に座り続けている', '首位の重みを引き受ける立場', '王者団体としての風格を備える'];
+    } else if (has('chasing') || has('closeToTop')) {
+      if (has('rising') || has('hot')) s1Pool = ['首位の喉元に手をかけている', '逆転劇の主役になりかけている団体', '頂点が射程に入ってきた'];
+      else if (has('sliding')) s1Pool = ['二番手の座すら危うくなってきた', '追走しながらも足が止まりかけている'];
+      else s1Pool = ['首位を追い続ける挑戦者の位置', `首位の背中を捉えきれずにいる`, '万年二番手の汚名を返上したい'];
+    } else if (has('midpack')) {
+      if (has('rising') || has('hot')) s1Pool = ['中盤から這い上がってきた団体', '台頭の気配を漂わせ始めた', '中位の枠を破ろうと牙を研ぐ'];
+      else if (has('sliding') || has('cooling')) s1Pool = ['中位で足踏みが続いている', 'かつての勢いがやや陰りつつある', '中盤に沈みかけている'];
+      else s1Pool = ['中位に腰を落ち着けている', '上にも下にも振れる中堅', '安定の中位という評価が定着している'];
+    } else {
+      if (has('rising')) s1Pool = ['最下層から這い上がろうともがいている', '下位ながら反転の兆しを見せる'];
+      else s1Pool = ['業界の最下層に沈んでいる', '再建が急務の窮状', '下位に甘んじている苦しい時期'];
+    }
+    // 文2: 王者×人気
+    let s2Pool = [];
+    if (has('vacant')) {
+      if (has('popHigh')) s2Pool = [`王座は空位のまま、${aceName}の看板で人気を保っている`, `頂点の椅子は空席。それでも${aceName}を中心に客足は途絶えない`];
+      else s2Pool = [`王座は不在で、${aceName}が看板を一人で背負う`, `タイトルを欠いたまま、${aceName}頼みで戦線をつなぐ`, `世界戦線から距離を置き、${aceName}を軸に再起を図る`];
+    } else if (has('longReign')) {
+      const cn = champion.name;
+      if (has('popHigh')) s2Pool = [`${cn}の長期政権が団体を支え、客の目もそこに集まる`, `${cn}が幾度も防衛を重ね、団体の顔そのものになっている`];
+      else s2Pool = [`${cn}の防衛記録だけが、いまの団体の数少ない誇り`, `${cn}が長く王座を握り、新陳代謝の遅さも同時に露わになっている`];
+    } else if (has('freshChamp')) {
+      s2Pool = [`戴冠したばかりの${champion.name}が、まだ手探りで王座を温めている`, `新王者${champion.name}の真価がこれから試される段階`, `${champion.name}が王座を獲ったばかりで、団体全体が新章に入った`];
+    } else {
+      if (has('popHigh')) s2Pool = [`${champion.name}が王座を構え、人気と実力の両輪が噛み合っている`, `${champion.name}を中心線に置き、団体としての形が見えている`];
+      else s2Pool = [`${champion.name}が王座を保持してはいるが、団体全体に火がついた感じはまだ薄い`, `${champion.name}の王座が、いまの団体をかろうじて束ねている`];
+    }
+    // 文3: 戦力層
+    let s3Pool = [];
+    if (has('layerSuper')) s3Pool = ['上位だけで興行を成立させられる分厚さがある', 'エース級が複数並び、対戦カードに困らない', '主力陣の格だけで他団体を上回っている'];
+    else if (has('layerSolid')) s3Pool = ['看板を軸に主力の輪郭がはっきりしている', '上位陣の顔ぶれで勝負できる骨格は整っている', '看板級の周りに準主力が並ぶ手堅い構成'];
+    else if (has('layerMid')) s3Pool = ['突出した怪物はいないが、主力候補が広く並ぶ', '頭抜けた選手はいないものの、層は意外と広い', '横並びの主力で何とか試合数をこなしている'];
+    else s3Pool = ['まだ発展途上で、伸びしろの賭け', '主力という呼び名に届く選手が乏しい', '育成の途上で、来季以降の積み上げを待つ段階'];
+    return [_pickSeed(s1Pool, seed), _pickSeed(s2Pool, seed >> 3), _pickSeed(s3Pool, seed >> 6)].filter(Boolean).join('。') + '。';
+  };
+
+  const _aceFlavorByPersona = (f, seed) => {
+    const arch = f?.archetype || 'normal';
+    const pers = f?.personality || 'normal';
+    const archMap = {
+      composed: ['鷹揚な物腰で団体を束ねる', '常に落ち着いた佇まいが格を生む', '泰然とした空気で対戦相手を呑む'],
+      ojousama: ['気品ある立ち振る舞いで観客を魅了する', 'お嬢様然とした華が興行に色を添える', '上品な所作の奥に勝負師の牙を隠す'],
+      polite: ['礼節を重んじる姿勢で敵すら味方につける', '丁寧で清廉な人柄が団体の品位を作る'],
+      cool: ['クールな佇まいで観客を引き寄せる', '冷ややかな眼差しが対戦相手を凍らせる', '感情を見せない戦い方が逆に怖い'],
+      delinquent: ['不良性感度の塊で観客を煽り続ける', '荒っぽい振る舞いが団体の毒気を担う', 'ルールの外側で観客を熱狂させる'],
+      seductive: ['妖艶な魅せ方で他団体にはない色を添える', '艶のある立ち姿が独自のファン層を呼ぶ'],
+      normal: ['素直な人柄が選手会の核になっている', '飾らない佇まいが逆に絵になる']
+    };
+    const persMap = {
+      bold: ['物怖じしない発言で常に火種を撒く', '気の強さでカードを引っ張る'],
+      quiet: ['多くを語らず試合で全てを示す', '寡黙さの裏に確かな圧がある'],
+      easygoing: ['ゆるい空気で控室の緊張を解く側', '飄々とした雰囲気が独特の間合いを作る'],
+      earnest: ['真面目さがそのまま強さに直結している', '愚直な姿勢でチームを牽引する'],
+      emotional: ['感情の振れ幅で試合をドラマに変える', '熱が乗ったときの爆発力が桁違い'],
+      normal: []
+    };
+    const pool = (archMap[arch] || archMap.normal).concat(persMap[pers] || []);
+    return _pickSeed(pool, seed);
+  };
+
+  const _buildAceCopy = ({ featured, champion, defenses, isChampion, seed }) => {
+    if (!featured) return '看板を担う選手がまだ定まっていない。';
+    const ovr = Engine.util.ov(featured);
+    const peak = featured.peakOVR || ovr;
+    const age = featured.age || 0;
+    const pop = Number(featured.popularity) || 0;
+    // 強シグナル選定
+    let primary = '';
+    if (isChampion && defenses >= 5) {
+      primary = _pickSeed([`王座を${defenses}度防衛し、団体の中心線そのものになっている`, `防衛記録を伸ばし続け、もはや交代が想像しにくい`, `長期政権を敷き、団体の歴史と一体化している`], seed);
+    } else if (isChampion && defenses <= 1) {
+      primary = _pickSeed(['戴冠したばかりで、王者としての色をこれから作っていく', '王座を獲って間もなく、防衛の手応えを探っている段階', '新王者として最初の防衛戦に向き合っている'], seed);
+    } else if (age >= 33 && ovr >= peak - 2) {
+      primary = _pickSeed([`${age}歳になっても全盛期を維持し続けるベテラン`, `年齢を重ねても衰えを見せず、まだ第一線に立つ`, '老練という言葉が似合うが、力の落ち方を感じさせない'], seed);
+    } else if (age <= 22 && ovr >= 75) {
+      primary = _pickSeed([`若くして団体の顔に押し上げられた逸材`, `${age}歳とは思えない試合運びで看板を任されている`, '世代交代を一人で先取りしてしまった存在'], seed);
+    } else if (pop >= ovr + 8) {
+      primary = _pickSeed(['実力以上に客を呼べる人気先行型', '数字より華で勝負できる稀有なタイプ', '人気が先に立つことで興行の柱になっている'], seed);
+    } else if (_hasTrait(featured, '威圧感')) {
+      primary = _pickSeed(['リング上の圧で対戦相手を呑む', '威圧感ひとつで会場の空気を変える'], seed);
+    } else if (_hasTrait(featured, 'ガラスの身体')) {
+      primary = _pickSeed(['才能はあるが身体が悲鳴を上げやすく、起用には常に怖さがつきまとう', '欠場リスクと隣り合わせで看板を張っている'], seed);
+    } else if (_hasTrait(featured, '反骨心')) {
+      primary = _pickSeed(['逆境で燃えるタイプで、追い込まれるほど強い', '反骨を糧に這い上がってきた選手'], seed);
+    } else if (_hasTrait(featured, '努力家')) {
+      primary = _pickSeed(['地道な積み上げで看板まで上ってきたタイプ', '才能より努力で位置を勝ち取った選手'], seed);
+    } else if (isChampion) {
+      primary = _pickSeed([`王座を保持し、団体の軸として機能している`, '中堅クラスの王者として、防衛戦を一つずつ積む段階'], seed);
+    } else {
+      primary = _pickSeed(['団体最高のOVRを誇り、看板を背負う立場', 'タイトルこそないが、団体の顔として認知されている'], seed);
+    }
+    const flavor = _aceFlavorByPersona(featured, seed >> 4);
+    return flavor ? `${primary}。${flavor}。` : `${primary}。`;
+  };
+
+  const _buildDepthNoteV2 = ({ sortedAll, featured }) => {
+    if (!sortedAll.length) return '主力と呼べる顔触れがまだ揃っていない。';
     const aceOvr = featured ? Engine.util.ov(featured) : 0;
     const next = sortedAll.find(f => !featured || f.id !== featured.id);
     const nextOvr = next ? Engine.util.ov(next) : 0;
-    const displayed = [featured, ...sortedAll.filter(f => !featured || f.id !== featured.id).slice(0, Math.max(0, visibleTotal - 1))].filter(Boolean);
-    const rangeLow = displayed.length ? Math.min(...displayed.map(f => Engine.util.ov(f))) : 0;
-    const aceGap = next ? aceOvr - nextOvr : 0;
-    const coreText = coreLimit >= 5 ? '主力候補が多く、控えにも試合を任せやすい' : (coreLimit === 4 ? '上位陣はそろっているが、控えの底上げでさらに安定する' : '少数精鋭寄りで、下位選手の成長が順位に直結する');
-    const gapText = next ? (aceGap >= 10 ? `看板と次点の差は${aceGap}あり、現状は${featured.name}への依存がやや大きい` : `看板の後ろに${next.name}が続き、上位のつながりは悪くない`) : '看板に続く選手がまだ不足している';
-    return `この列は大枠の王者/看板を起点に、実際に比較したい主力層を並べたもの。大枠込み${visibleTotal}名の見える範囲はOVR${aceOvr}から${rangeLow}までで、${gapText}。${coreText}。`;
+    const top3Avg = _avgOvrOf(sortedAll.slice(0, 3));
+    const avgOvr = sortedAll.length ? Math.round(sortedAll.reduce((s, c) => s + Engine.util.ov(c), 0) / sortedAll.length) : 0;
+    const over70 = _countOvrAtLeast(sortedAll, 70);
+    const aceGap = next ? aceOvr - nextOvr : 99;
+    const youthCount = sortedAll.slice(0, 8).filter(f => (f.age || 99) < 25).length;
+    const veteranCount = sortedAll.slice(0, 8).filter(f => (f.age || 0) >= 30).length;
+    const injured = sortedAll.filter(f => f.injury || f.forcedRest).length;
+
+    const tags = new Set();
+    if (top3Avg - avgOvr >= 10) tags.add('topHeavy');
+    if (sortedAll.length >= 5 && (aceOvr - Engine.util.ov(sortedAll[sortedAll.length - 1])) <= 12) tags.add('flat');
+    if (aceGap >= 10) tags.add('aceDependent');
+    if (youthCount >= 3) tags.add('youthRising');
+    if (veteranCount >= 4) tags.add('aging');
+    if (injured >= 2) tags.add('injuryShadow');
+    if (over70 >= 5) tags.add('thickCore');
+    else if (over70 <= 1) tags.add('thinCore');
+
+    const seed = _seedBase + _strHash((featured?.name || '') + 'depth');
+    const has = (t) => tags.has(t);
+    let pool = [];
+    // 主軸タグ優先順
+    if (has('aceDependent') && has('injuryShadow')) {
+      pool = [`${featured.name}への依存が強く、離脱者が出ると一気に苦しくなる構図`, `看板一枚に支えられている状態で、戦線離脱の影が濃い`];
+    } else if (has('aceDependent')) {
+      pool = [`${featured.name}と次点の差が大きく、看板頼みの色が濃い`, '上が突出していて、下との段差が興行設計の悩みどころ', '看板への一極集中で、二番手の育成が急務'];
+    } else if (has('topHeavy') && has('aging')) {
+      pool = ['上位はベテランが固める。世代交代をどう仕掛けるかが課題', '主力がベテラン揃いで安定するが、その先が見えない', '上位陣の経験値で持っているが、次の世代が控えていない'];
+    } else if (has('flat') && has('youthRising')) {
+      pool = ['主力の差が小さく、伸び盛りの若手が突き上げる構図', '横並びの中で若手の台頭が秩序を揺らし始めている', '実力差が薄い分、下剋上が起きやすい層構成'];
+    } else if (has('flat')) {
+      pool = ['上から下まで実力差が小さく、誰がメインを張ってもおかしくない', '突出は無いが横の厚みでカードを回せる', '主力の階層がフラットで、序列を崩しやすい'];
+    } else if (has('youthRising') && has('thickCore')) {
+      pool = ['若手が押し上げ、主力層も厚いという理想形に近づきつつある', '伸び盛りが並び、向こう数シーズンの伸びしろが大きい'];
+    } else if (has('youthRising')) {
+      pool = ['若手の台頭が目立ち、世代交代の波が見え始めている', '伸び盛りが主力に食い込んできて層の景色が変わりつつある'];
+    } else if (has('aging')) {
+      pool = ['ベテラン中心で安定するが、後継者の不在が中長期の影', '熟練の試合運びで持っている層構成。引退リスクと隣り合わせ'];
+    } else if (has('injuryShadow')) {
+      pool = ['離脱者が嵩んで主力編成が苦しい', '怪我人が複数おり、フル戦力が揃わない週が続く'];
+    } else if (has('thickCore')) {
+      pool = ['主力候補が広く並び、控えにも試合を任せやすい厚さ', '中堅層がしっかり機能していて、カード編成の自由度が高い'];
+    } else if (has('thinCore')) {
+      pool = ['主力と呼べる顔触れが乏しく、毎週の編成に苦労する', '層が薄く、看板頼みのカードが続く'];
+    } else {
+      pool = ['可もなく不可もない層構成で、突き抜けるには一押し足りない', '平均的な厚みに留まり、次の一歩を模索する段階'];
+    }
+    return _pickSeed(pool, seed) + '。';
   };
   html += '<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">03 — 団体詳細</div><div class="title">団体プロフィール - 戦力層台帳</div></div></div><div class="rp-profiles">';
 
@@ -3400,14 +3577,14 @@ function renderRanking() {
     const thirdOvr = sortedAll[2] ? Engine.util.ov(sortedAll[2]) : 0;
     const secondName = sortedAll[1]?.name || '';
     const thirdName = sortedAll[2]?.name || '';
-    const aceCopy = championId === featured?.id
-      ? `${defenses}防衛を重ねる中心選手。${secondName ? `${secondName}、${thirdName || '次世代候補'}が後ろに控え` : '後続の整備はこれからで'}、王者を支える形が作れるかが焦点。`
-      : `${featured ? featured.name : '看板'}が団体の顔。${secondName ? `${secondName}、${thirdName || '若手勢'}が続くため` : '後続が薄いため'}、看板頼みで終わらせず層として押し上げたい。`;
+    const _orgSeed = _seedBase + _strHash(r.orgId || orgName);
+    const _tagInfo = _collectOrgTags({ r, sortedAll, featured, champion, defenses, orgPop, isPlayer, rank1Entry, rankAbove });
+    const aceCopy = _buildAceCopy({ featured, champion, defenses, isChampion: championId === featured?.id, seed: _orgSeed });
     const scoreLine = depthFaces.length
       ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + '台多数'
       : `${aceOvr}`;
-    const dynamicLead = buildProfileLead({ r, sortedAll, featured, champion, defenses, avgOvr, popDisplay, rankAbove });
-    const dynamicDepthNote = buildDepthNote({ visibleTotal, sortedAll, featured, coreLimit: coreLimitForRank(r.rank) });
+    const dynamicLead = _buildLeadSentences({ tags: _tagInfo.tags, featured, champion, gapTop: _tagInfo.gapTop, gapAbove: _tagInfo.gapAbove, seed: _orgSeed });
+    const dynamicDepthNote = _buildDepthNoteV2({ sortedAll, featured });
 
     const depthFacesHtml = depthFaces.map(f => {
       if (!f) return '';
