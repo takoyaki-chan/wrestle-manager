@@ -5599,6 +5599,7 @@ function _npRenderPage1() {
       </div>
       <div class="np-top-body">
         <div class="np-sec">一面記事</div>
+        ${ts.situation ? `<div class="np-top-situation">${ts.situation}</div>` : ''}
         <h2 class="np-top-headline">${ts.headline || '——'}</h2>
         ${ts.subhead ? `<div class="np-top-sub">${ts.subhead}</div>` : ''}
         <div class="np-top-text"><p>${ts.body || ''}</p></div>
@@ -5636,9 +5637,13 @@ function _npRenderPage1() {
     html += `<div class="np-sub-grid">`;
     wp.subStories.forEach((ss, idx) => {
       const photoBg = _npPhotoBg(ss.characterId);
+      const sitTag = ss.situation
+        ? `<div class="np-sub-situation">${ss.situation}</div>`
+        : '';
       html += `<div class="np-sub">
         <div class="np-sub-photo" style="${photoBg}" ${ss.characterId ? `onclick="showFighterPopup(${ss.characterId})"` : ''}></div>
         <div style="flex:1;min-width:0">
+          ${sitTag}
           <div class="np-sub-headline">${ss.headline || ''}</div>
           <div class="np-sub-text">${ss.body || ''}</div>
         </div>
