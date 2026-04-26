@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ランキング画面 団体プロフィール再設計 3案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #15130f;
+  --bg-deep: #0f0e0b;
+  --panel: #1e1b15;
+  --panel2: #29251d;
+  --line: rgba(255,255,255,0.1);
+  --line2: rgba(255,255,255,0.18);
+  --text: #f2eee7;
+  --sub: #aaa49a;
+  --dim: #706b61;
+  --gold: #d7aa42;
+  --gold2: #f1d47a;
+  --silver: #c9c9c9;
+  --bronze: #c78242;
+  --steel: #858176;
+  --green: #35d07f;
+  --red: #e75c4c;
+  --blue: #55a7e8;
+  --font-body: "Noto Sans JP", sans-serif;
+  --font-num: "Bebas Neue", "Noto Sans JP", sans-serif;
+  --font-label: "Oswald", "Noto Sans JP", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #29251f; color: var(--text); font-family: var(--font-body); }
+body { padding: 24px 0 72px; }
+.shell { width: min(1260px, calc(100vw - 24px)); margin: 0 auto; }
+.intro {
+  border: 1px solid rgba(215,170,66,0.24);
+  background: linear-gradient(180deg, rgba(28,25,19,0.96), rgba(17,16,13,0.96));
+  padding: 18px 20px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+}
+.eyebrow, .kicker, .label {
+  font-family: var(--font-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.eyebrow { color: var(--gold); font-size: 12px; margin-bottom: 6px; }
+h1 { font-size: 22px; margin: 0 0 8px; }
+p { color: var(--sub); font-size: 13px; line-height: 1.75; margin: 0; }
+.notes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.note { border-top: 1px solid var(--line2); padding-top: 9px; font-size: 12px; color: var(--sub); }
+.note strong { color: var(--text); display: block; margin-bottom: 2px; }
+.mock {
+  background: var(--bg);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.45);
+}
+.mock-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 18px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.46), rgba(0,0,0,0.08));
+  border-bottom: 1px solid rgba(215,170,66,0.22);
+}
+.mock-title { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.mock-title .num { font-family: var(--font-num); font-size: 36px; color: var(--gold); line-height: 1; }
+.mock-title h2 { margin: 0; font-size: 16px; }
+.mock-title p { font-size: 12px; line-height: 1.5; }
+.mock-meta { text-align: right; color: var(--sub); font-size: 11px; white-space: nowrap; }
+.score-strip {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(0,0,0,0.2);
+}
+.score-side { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.score-side:last-child { justify-content: flex-end; }
+.score-side .rank { font-family: var(--font-label); font-size: 10px; color: var(--dim); letter-spacing: 0.12em; text-transform: uppercase; }
+.score-side .name { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.score-side .pt { font-family: var(--font-num); font-size: 24px; color: var(--text); }
+.score-gap { font-family: var(--font-num); color: var(--gold); font-size: 28px; padding: 0 18px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); line-height: 1; }
+.section { padding: 18px; }
+.section-title { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 10px; }
+.section-title h3 { margin: 0; font-size: 15px; }
+.section-title .kicker { color: var(--gold); font-size: 10px; }
+.section-title .hint { color: var(--sub); font-size: 11px; }
+.gold { --rank-color: var(--gold); --rank-soft: rgba(215,170,66,0.16); }
+.silver { --rank-color: var(--silver); --rank-soft: rgba(201,201,201,0.13); }
+.bronze { --rank-color: var(--bronze); --rank-soft: rgba(199,130,66,0.15); }
+.steel { --rank-color: var(--steel); --rank-soft: rgba(133,129,118,0.14); }
+.up { color: var(--green); }
+.down { color: var(--red); }
+.muted { color: var(--dim); }
+.metric { font-family: var(--font-num); letter-spacing: 0.03em; }
+.rank-badge {
+  width: 52px;
+  min-width: 52px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  color: #12100c;
+  background: linear-gradient(180deg, #fff, var(--rank-color));
+  clip-path: polygon(0 0, 100% 0, 100% 72%, 50% 100%, 0 72%);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.28);
+}
+.rank-badge span { font-family: var(--font-num); font-size: 44px; line-height: 1; }
+.tiny-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--line2);
+  color: var(--rank-color);
+  background: rgba(0,0,0,0.24);
+  font-family: var(--font-label);
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* Pattern A */
+.depth-board { display: grid; gap: 10px; }
+.depth-row {
+  display: grid;
+  grid-template-columns: 62px minmax(220px, 0.85fr) minmax(444px, 1fr) 190px 170px;
+  gap: 12px;
+  align-items: stretch;
+  min-height: 154px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--rank-color);
+  background:
+    linear-gradient(90deg, var(--rank-soft), rgba(255,255,255,0.025) 48%, transparent),
+    linear-gradient(180deg, #211e18, #15130f);
+}
+.org-summary { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.org-summary .name { font-size: 20px; font-weight: 900; line-height: 1.12; }
+.org-summary .deck { font-size: 11px; color: var(--sub); line-height: 1.55; }
+.tagline { display: flex; gap: 6px; flex-wrap: wrap; }
+.tagline span {
+  border: 1px solid color-mix(in srgb, var(--rank-color) 58%, transparent);
+  color: var(--rank-color);
+  background: rgba(0,0,0,0.18);
+  padding: 2px 7px;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.depth-stack { display: grid; grid-template-rows: auto 1fr; gap: 8px; }
+.depth-title { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--sub); }
+.depth-title strong { color: var(--text); }
+.face-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 44px);
+  gap: 6px;
+  align-content: start;
+  max-width: 100%;
+}
+.face {
+  position: relative;
+  width: 44px;
+  height: 52px;
+  background: rgba(0,0,0,0.24);
+  border: 1px solid var(--line2);
+  overflow: hidden;
+}
+.face img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+.face .ovr {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0 4px;
+  background: rgba(0,0,0,0.78);
+  color: #fff;
+  font-family: var(--font-num);
+  font-size: 15px;
+  line-height: 1.15;
+}
+.face.champ { border-color: var(--gold2); box-shadow: 0 0 0 1px rgba(241,212,122,0.35); }
+.face.champ::before {
+  content: "C";
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--gold2);
+  color: #120f09;
+  font-family: var(--font-label);
+  font-size: 10px;
+}
+.empty-slot {
+  width: 44px;
+  height: 52px;
+  border: 1px dashed rgba(255,255,255,0.13);
+  background: rgba(255,255,255,0.025);
+}
+.score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; align-content: start; }
+.score-box { border-left: 1px solid var(--line2); padding-left: 8px; min-width: 0; }
+.score-box .label { color: var(--dim); font-size: 9px; }
+.score-box .value { font-family: var(--font-num); font-size: 28px; line-height: 1; }
+.score-box.main .value { color: var(--rank-color); font-size: 34px; }
+.ace-panel {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 9px;
+  align-items: start;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,0.18);
+  padding: 8px;
+}
+.ace-panel img { width: 58px; height: 86px; object-fit: cover; object-position: top center; border: 1px solid color-mix(in srgb, var(--rank-color) 55%, transparent); }
+.ace-panel .role { color: var(--rank-color); font-size: 10px; }
+.ace-panel .ace-name { font-weight: 900; font-size: 12px; line-height: 1.35; }
+.ace-panel .desc { color: var(--sub); font-size: 10px; line-height: 1.45; margin-top: 4px; }
+.resource-bar { margin-top: 8px; display: grid; gap: 5px; }
+.resource { display: grid; grid-template-columns: 54px 1fr 30px; gap: 6px; align-items: center; color: var(--sub); font-size: 10px; }
+.bar { height: 7px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--rank-color), #fff3); }
+
+/* Pattern B */
+.split-view { display: grid; grid-template-columns: 0.92fr 1.08fr; gap: 14px; }
+.rank-table {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.025);
+}
+.rank-table .tr {
+  display: grid;
+  grid-template-columns: 46px 1fr 70px 70px 64px;
+  align-items: center;
+  min-height: 58px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.rank-table .tr:last-child { border-bottom: 0; }
+.rank-table .th { color: var(--dim); min-height: 34px; background: rgba(0,0,0,0.18); }
+.rank-table .td, .rank-table .th > div { padding: 0 9px; }
+.rank-table .place { font-family: var(--font-num); color: var(--rank-color); font-size: 30px; }
+.rank-table .name { font-weight: 900; }
+.rank-table .sub { color: var(--sub); font-size: 11px; }
+.rank-table .value { font-family: var(--font-num); font-size: 23px; }
+.focus-card {
+  border: 1px solid rgba(215,170,66,0.24);
+  background: linear-gradient(180deg, rgba(215,170,66,0.08), rgba(255,255,255,0.025));
+  padding: 12px;
+}
+.focus-head { display: grid; grid-template-columns: 108px 1fr 150px; gap: 12px; align-items: center; margin-bottom: 12px; }
+.focus-head img { width: 108px; height: 132px; object-fit: cover; object-position: top center; border: 1px solid rgba(215,170,66,0.35); background: #0e0c09; }
+.focus-head h4 { margin: 0 0 4px; font-size: 20px; }
+.gap-meter { border-left: 1px solid var(--line2); padding-left: 12px; }
+.gap-meter .big { font-family: var(--font-num); font-size: 38px; color: var(--gold); line-height: 1; }
+.gap-meter .small { color: var(--sub); font-size: 11px; }
+.layer-list { display: grid; gap: 7px; }
+.layer {
+  display: grid;
+  grid-template-columns: 74px 1fr 58px;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--sub);
+}
+.layer strong { color: var(--text); }
+.portrait-strip {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 7px;
+}
+.portrait {
+  min-height: 112px;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,0.22);
+  padding: 6px;
+}
+.portrait img { width: 100%; height: 64px; object-fit: cover; object-position: top center; display: block; margin-bottom: 5px; filter: saturate(0.95); }
+.portrait .nm { font-size: 10px; font-weight: 800; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.portrait .ovr { font-family: var(--font-num); font-size: 21px; color: var(--text); line-height: 1; }
+.portrait.dimmed { opacity: 0.42; }
+
+/* Pattern C */
+.poster-grid { display: grid; grid-template-columns: 1.32fr 1fr; gap: 14px; }
+.podium-board {
+  min-height: 420px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.035), transparent),
+    radial-gradient(ellipse at 30% 0%, rgba(215,170,66,0.12), transparent 52%),
+    var(--bg-deep);
+  padding: 14px;
+}
+.podium-row {
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  min-height: var(--h);
+  margin-bottom: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--rank-color);
+  background: linear-gradient(90deg, var(--rank-soft), rgba(255,255,255,0.02));
+}
+.podium-row .rank-num { font-family: var(--font-num); color: var(--rank-color); font-size: 42px; line-height: 1; text-align: center; }
+.podium-row .name { font-weight: 900; font-size: 17px; }
+.podium-row .subline { color: var(--sub); font-size: 11px; margin-top: 2px; }
+.podium-faces { display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex-wrap: wrap; max-width: var(--w); }
+.podium-faces .face { width: var(--s); height: calc(var(--s) + 8px); }
+.compact-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.stat-card {
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,0.22);
+  padding: 10px;
+}
+.stat-card .label { color: var(--dim); font-size: 9px; }
+.stat-card .value { font-family: var(--font-num); font-size: 34px; color: var(--rank-color); line-height: 1; }
+.legend-card {
+  grid-column: 1 / -1;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,0.22);
+  padding: 10px;
+}
+.legend-card h4 { margin: 0 0 8px; font-size: 13px; }
+.legend-card p { font-size: 11px; line-height: 1.65; }
+
+@media (max-width: 1180px) {
+  .notes, .split-view, .poster-grid { grid-template-columns: 1fr; }
+  .depth-row { grid-template-columns: 62px 1fr; }
+  .depth-stack, .score-grid, .ace-panel { grid-column: 2; }
+  .portrait-strip { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 760px) {
+  body { padding-top: 12px; }
+  .score-strip { grid-template-columns: 1fr; }
+  .score-side:last-child { justify-content: flex-start; }
+  .score-gap { border: 0; padding: 0; }
+  .rank-table .tr { grid-template-columns: 42px 1fr 58px; }
+  .rank-table .optional { display: none; }
+  .focus-head { grid-template-columns: 84px 1fr; }
+  .gap-meter { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line2); padding: 8px 0 0; }
+  .portrait-strip { grid-template-columns: repeat(2, 1fr); }
+  .podium-row { grid-template-columns: 42px 1fr; }
+  .podium-faces { grid-column: 2; justify-content: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <section class="intro">
+    <div class="eyebrow">Ranking Redesign v1.1 Mockups</div>
+    <h1>団体プロフィール再設計 3パターン</h1>
+    <p>比較しやすい横軸は残しつつ、元の画面にあった情報量、団体ごとの物語、選手の顔を戻しました。今回は特に、1位は顔アイコンが多く二列まで埋まる、2位は主力が揃う、3位は王者依存、4位は空きスロットが見える、という形で「上位ほど人材豊富」を画面から読めるようにしています。</p>
+    <div class="notes">
+      <div class="note"><strong>修正点 1</strong>エースを巨大に置かず、顔アイコン、王者印、OVRタグで団体の厚みを表現。</div>
+      <div class="note"><strong>修正点 2</strong>評価pt、基礎戦力、OVR、人気、勢い、人数、王者情報を復活。</div>
+      <div class="note"><strong>修正点 3</strong>ロースターは上半身、プロフィールは顔アイコンと層グラフに分けて絵面の重複を軽減。</div>
+    </div>
+  </section>
+
+  <article class="mock">
+    <div class="mock-head">
+      <div class="mock-title">
+        <div class="num">A</div>
+        <div>
+          <h2>Depth Ledger</h2>
+          <p>元のプロフィール量を保ったまま、団体を縦比較しやすい台帳型に再構成。</p>
+        </div>
+      </div>
+      <div class="mock-meta">Y3 W28<br>4 Promotions</div>
+    </div>
+    <div class="score-strip">
+      <div class="score-side"><span class="rank">1st</span><span class="name">百獣館</span><span class="pt">842</span></div>
+      <div class="score-gap">-134pt</div>
+      <div class="score-side"><span class="rank">Player</span><span class="name">ファイヤーガールズ</span><span class="pt">708</span></div>
+    </div>
+    <section class="section">
+      <div class="section-title">
+        <div><div class="kicker">Profile</div><h3>顔アイコンで戦力層を見せる団体プロフィール</h3></div>
+        <div class="hint">1位ほど顔が多く、4位ほど空きスロットが増える。</div>
+      </div>
+      <div class="depth-board">
+        <div class="depth-row gold">
+          <div class="rank-badge"><span>1</span></div>
+          <div class="org-summary">
+            <div class="tagline"><span>S Tier</span><span>21名</span><span>王者保持</span></div>
+            <div class="name">百獣館</div>
+            <div class="deck">王者を中心に95超えの怪物級が続く絶対王者。トップ層、基礎戦力、人気のすべてが厚く、追う側に明確な壁を作っている。</div>
+          </div>
+          <div class="depth-stack">
+            <div class="depth-title"><strong>主力層 9/9</strong><span>100+ / 95 / 92 / 84 / 83 / 80台多数</span></div>
+            <div class="face-grid" style="--cols:9">
+              <span class="face champ"><img src="../../../image/face_aida_m.png" alt=""><span class="ovr">100</span></span>
+              <span class="face"><img src="../../../image/face_abe_m.png" alt=""><span class="ovr">95</span></span>
+              <span class="face"><img src="../../../image/face_akabane_a.png" alt=""><span class="ovr">92</span></span>
+              <span class="face"><img src="../../../image/face_oba_a.png" alt=""><span class="ovr">84</span></span>
+              <span class="face"><img src="../../../image/face_kondo_y.png" alt=""><span class="ovr">83</span></span>
+              <span class="face"><img src="../../../image/face_hongo_m.png" alt=""><span class="ovr">81</span></span>
+              <span class="face"><img src="../../../image/face_kamiya_s.png" alt=""><span class="ovr">80</span></span>
+              <span class="face"><img src="../../../image/face_iijima_s.png" alt=""><span class="ovr">79</span></span>
+              <span class="face"><img src="../../../image/face_todoroki_a.png" alt=""><span class="ovr">78</span></span>
+            </div>
+          </div>
+          <div class="score-grid">
+            <div class="score-box main"><div class="label">Rating</div><div class="value">842</div></div>
+            <div class="score-box"><div class="label">Base</div><div class="value">681</div></div>
+            <div class="score-box"><div class="label">Avg OVR</div><div class="value">81</div></div>
+            <div class="score-box"><div class="label">Form</div><div class="value up">+12</div></div>
+            <div class="score-box"><div class="label">Legacy</div><div class="value">50</div></div>
+            <div class="score-box"><div class="label">Heat</div><div class="value">Fire</div></div>
+          </div>
+          <div class="ace-panel">
+            <img src="../../../image/stand/stand_aida_m.webp" alt="">
+            <div>
+              <div class="label role"><span class="tiny-icon">C</span> Champion Ace</div>
+              <div class="ace-name">相田 美朱 / OVR100</div>
+              <div class="desc">5防衛中。エースだけでなく2番手、3番手も強く、層の厚さで首位を守る。</div>
+              <div class="resource-bar">
+                <div class="resource"><span>上位層</span><span class="bar"><i style="width:100%"></i></span><span>MAX</span></div>
+                <div class="resource"><span>控え層</span><span class="bar"><i style="width:88%"></i></span><span>厚</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="depth-row silver">
+          <div class="rank-badge"><span>2</span></div>
+          <div class="org-summary">
+            <div class="tagline"><span>Player</span><span>17名</span><span>追走中</span></div>
+            <div class="name">ファイヤーガールズ</div>
+            <div class="deck">首位との差は134pt。トップの破壊力は百獣館に劣るが、主力の人数と勢いは十分で、上位戦次第で差を詰められる。</div>
+          </div>
+          <div class="depth-stack">
+            <div class="depth-title"><strong>主力層 7/9</strong><span>85 / 82 / 79 / 77 / 74台。空き2枠が補強課題。</span></div>
+            <div class="face-grid" style="--cols:9">
+              <span class="face"><img src="../../../image/face_yaegashi_m.png" alt=""><span class="ovr">85</span></span>
+              <span class="face"><img src="../../../image/face_hiramatsu_k.png" alt=""><span class="ovr">82</span></span>
+              <span class="face"><img src="../../../image/face_fukamachi_m.png" alt=""><span class="ovr">79</span></span>
+              <span class="face"><img src="../../../image/face_kawanobe_n.png" alt=""><span class="ovr">77</span></span>
+              <span class="face"><img src="../../../image/face_akanuma_s.png" alt=""><span class="ovr">74</span></span>
+              <span class="face"><img src="../../../image/face_asahina_h.png" alt=""><span class="ovr">73</span></span>
+              <span class="face"><img src="../../../image/face_katagiri_a.png" alt=""><span class="ovr">72</span></span>
+              <span class="empty-slot"></span>
+              <span class="empty-slot"></span>
+            </div>
+          </div>
+          <div class="score-grid">
+            <div class="score-box main"><div class="label">Rating</div><div class="value">708</div></div>
+            <div class="score-box"><div class="label">Base</div><div class="value">632</div></div>
+            <div class="score-box"><div class="label">Avg OVR</div><div class="value">76</div></div>
+            <div class="score-box"><div class="label">Form</div><div class="value up">+8</div></div>
+            <div class="score-box"><div class="label">Legacy</div><div class="value">28</div></div>
+            <div class="score-box"><div class="label">Heat</div><div class="value">Hot</div></div>
+          </div>
+          <div class="ace-panel">
+            <img src="../../../image/stand/stand_yaegashi_m.webp" alt="">
+            <div>
+              <div class="label role"><span class="tiny-icon">B</span> Board Ace</div>
+              <div class="ace-name">八重樫 桜子 / OVR85</div>
+              <div class="desc">突出した怪物はいないが、主力が横に並ぶ。2枠の補強余地が戦略ポイント。</div>
+              <div class="resource-bar">
+                <div class="resource"><span>上位層</span><span class="bar"><i style="width:70%"></i></span><span>良</span></div>
+                <div class="resource"><span>控え層</span><span class="bar"><i style="width:74%"></i></span><span>中</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="depth-row bronze">
+          <div class="rank-badge"><span>3</span></div>
+          <div class="org-summary">
+            <div class="tagline"><span>A Tier</span><span>15名</span><span>王者保持</span></div>
+            <div class="name">ノヴァインパクト</div>
+            <div class="deck">王者の存在感は強いが、2番手以降の厚みでは2位に届かない。若手主体の攻撃力で巻き返す団体。</div>
+          </div>
+          <div class="depth-stack">
+            <div class="depth-title"><strong>主力層 5/9</strong><span>王者依存が強く、厚みはまだ発展途上。</span></div>
+            <div class="face-grid" style="--cols:9">
+              <span class="face champ"><img src="../../../image/face_isehara_f.png" alt=""><span class="ovr">86</span></span>
+              <span class="face"><img src="../../../image/face_matsushita_m.png" alt=""><span class="ovr">81</span></span>
+              <span class="face"><img src="../../../image/face_umegaoka_m.png" alt=""><span class="ovr">78</span></span>
+              <span class="face"><img src="../../../image/face_minamitani_a.png" alt=""><span class="ovr">75</span></span>
+              <span class="face"><img src="../../../image/face_sudo_m.png" alt=""><span class="ovr">72</span></span>
+              <span class="empty-slot"></span>
+              <span class="empty-slot"></span>
+              <span class="empty-slot"></span>
+              <span class="empty-slot"></span>
+            </div>
+          </div>
+          <div class="score-grid">
+            <div class="score-box main"><div class="label">Rating</div><div class="value">654</div></div>
+            <div class="score-box"><div class="label">Base</div><div class="value">594</div></div>
+            <div class="score-box"><div class="label">Avg OVR</div><div class="value">73</div></div>
+            <div class="score-box"><div class="label">Form</div><div class="value down">-4</div></div>
+            <div class="score-box"><div class="label">Legacy</div><div class="value">30</div></div>
+            <div class="score-box"><div class="label">Heat</div><div class="value">Warm</div></div>
+          </div>
+          <div class="ace-panel">
+            <img src="../../../image/stand/stand_isehara_f.webp" alt="">
+            <div>
+              <div class="label role"><span class="tiny-icon">C</span> Champion Ace</div>
+              <div class="ace-name">伊勢原 凛 / OVR86</div>
+              <div class="desc">王者は強い。だが空きスロットが多く、団体プロフィールとしては伸びしろが目立つ。</div>
+              <div class="resource-bar">
+                <div class="resource"><span>上位層</span><span class="bar"><i style="width:58%"></i></span><span>中</span></div>
+                <div class="resource"><span>控え層</span><span class="bar"><i style="width:46%"></i></span><span>薄</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="depth-row steel">
+          <div class="rank-badge"><span>4</span></div>
+          <div class="org-summary">
+            <div class="tagline"><span>B Tier</span><span>12名</span><span>小規模</span></div>
+            <div class="name">なでしこプロレス</div>
+            <div class="deck">人数は少なく、戦力層は薄い。ただし対戦ptは上向きで、堅実な育成路線が見える地方団体。</div>
+          </div>
+          <div class="depth-stack">
+            <div class="depth-title"><strong>主力層 3/9</strong><span>顔が少ないことで、上位との差が一目で出る。</span></div>
+            <div class="face-grid" style="--cols:9">
+              <span class="face"><img src="../../../image/face_yoshino_m.png" alt=""><span class="ovr">76</span></span>
+              <span class="face"><img src="../../../image/face_abukuma_t.png" alt=""><span class="ovr">71</span></span>
+              <span class="face"><img src="../../../image/face_niwa_h.png" alt=""><span class="ovr">69</span></span>
+              <span class="empty-slot"></span>
+              <span class="empty-slot"></span>
+              <span class="empty-slot"></span>
+              <span class="empty-slot"></span>
+              <span class="empty-slot"></span>
+              <span class="empty-slot"></span>
+            </div>
+          </div>
+          <div class="score-grid">
+            <div class="score-box main"><div class="label">Rating</div><div class="value">521</div></div>
+            <div class="score-box"><div class="label">Base</div><div class="value">498</div></div>
+            <div class="score-box"><div class="label">Avg OVR</div><div class="value">68</div></div>
+            <div class="score-box"><div class="label">Form</div><div class="value up">+8</div></div>
+            <div class="score-box"><div class="label">Legacy</div><div class="value">15</div></div>
+            <div class="score-box"><div class="label">Heat</div><div class="value">Calm</div></div>
+          </div>
+          <div class="ace-panel">
+            <img src="../../../image/stand/stand_yoshino_m.webp" alt="">
+            <div>
+              <div class="label role"><span class="tiny-icon">B</span> Board Ace</div>
+              <div class="ace-name">吉野 蓮 / OVR76</div>
+              <div class="desc">トップ選手の看板はあるが、主力枠の空きが多い。育成・補強の必要性が伝わる。</div>
+              <div class="resource-bar">
+                <div class="resource"><span>上位層</span><span class="bar"><i style="width:34%"></i></span><span>薄</span></div>
+                <div class="resource"><span>控え層</span><span class="bar"><i style="width:28%"></i></span><span>少</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </article>
+
+  <article class="mock">
+    <div class="mock-head">
+      <div class="mock-title">
+        <div class="num">B</div>
+        <div>
+          <h2>Table + Talent Drawer</h2>
+          <p>一覧表の比較性を維持しながら、選択中団体の人材層を右側で濃く見せる案。</p>
+        </div>
+      </div>
+      <div class="mock-meta">Dense View<br>Selected: 2nd</div>
+    </div>
+    <section class="section">
+      <div class="section-title">
+        <div><div class="kicker">Compare</div><h3>順位表と人材ドロワー</h3></div>
+        <div class="hint">実装するなら、行クリックで右パネルだけ差し替える想定。</div>
+      </div>
+      <div class="split-view">
+        <div class="rank-table">
+          <div class="tr th"><div>Rank</div><div>Promotion</div><div>Rating</div><div class="optional">Depth</div><div class="optional">Trend</div></div>
+          <div class="tr gold"><div class="td place">1</div><div class="td"><div class="name">百獣館</div><div class="sub">S Tier / 21名 / 主力9枠フル</div></div><div class="td value">842</div><div class="td value optional">9/9</div><div class="td value optional up">+12</div></div>
+          <div class="tr silver"><div class="td place">2</div><div class="td"><div class="name">ファイヤーガールズ</div><div class="sub">Player / 17名 / 補強余地2枠</div></div><div class="td value">708</div><div class="td value optional">7/9</div><div class="td value optional up">+8</div></div>
+          <div class="tr bronze"><div class="td place">3</div><div class="td"><div class="name">ノヴァインパクト</div><div class="sub">A Tier / 15名 / 王者依存</div></div><div class="td value">654</div><div class="td value optional">5/9</div><div class="td value optional down">-4</div></div>
+          <div class="tr steel"><div class="td place">4</div><div class="td"><div class="name">なでしこプロレス</div><div class="sub">B Tier / 12名 / 育成待ち</div></div><div class="td value">521</div><div class="td value optional">3/9</div><div class="td value optional up">+8</div></div>
+        </div>
+        <aside class="focus-card silver">
+          <div class="focus-head">
+            <img src="../../../image/stand/stand_yaegashi_m.webp" alt="">
+            <div>
+              <div class="kicker" style="color:var(--silver);font-size:10px">Selected Profile</div>
+              <h4>ファイヤーガールズ</h4>
+              <p>主力は7枠埋まっており中堅層は厚い。首位との差は、最上位の怪物級と控え層の密度。</p>
+            </div>
+            <div class="gap-meter">
+              <div class="big">-134</div>
+              <div class="small">pt to 1st<br>Depth gap: 2 slots</div>
+            </div>
+          </div>
+          <div class="layer-list">
+            <div class="layer"><strong>トップ</strong><span class="bar"><i style="width:70%"></i></span><span>85</span></div>
+            <div class="layer"><strong>主力</strong><span class="bar"><i style="width:78%"></i></span><span>7人</span></div>
+            <div class="layer"><strong>人気</strong><span class="bar"><i style="width:76%"></i></span><span>Hot</span></div>
+            <div class="layer"><strong>伸びしろ</strong><span class="bar"><i style="width:88%"></i></span><span class="up">High</span></div>
+          </div>
+          <div class="portrait-strip">
+            <div class="portrait"><img src="../../../image/face_yaegashi_m.png" alt=""><div class="nm">八重樫 桜子</div><div class="ovr">85</div></div>
+            <div class="portrait"><img src="../../../image/face_hiramatsu_k.png" alt=""><div class="nm">平松 桂</div><div class="ovr">82</div></div>
+            <div class="portrait"><img src="../../../image/face_fukamachi_m.png" alt=""><div class="nm">深町 美帆</div><div class="ovr">79</div></div>
+            <div class="portrait"><img src="../../../image/face_kawanobe_n.png" alt=""><div class="nm">川延 楓</div><div class="ovr">77</div></div>
+            <div class="portrait"><img src="../../../image/face_akanuma_s.png" alt=""><div class="nm">赤沼 志乃</div><div class="ovr">74</div></div>
+            <div class="portrait dimmed"><img src="../../../image/face_asahina_h.png" alt=""><div class="nm">補強候補枠</div><div class="ovr">?</div></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </article>
+
+  <article class="mock">
+    <div class="mock-head">
+      <div class="mock-title">
+        <div class="num">C</div>
+        <div>
+          <h2>Talent Podium</h2>
+          <p>1、2、3、4の順位差を、行の高さと顔アイコン数の差で直感的に見せる案。</p>
+        </div>
+      </div>
+      <div class="mock-meta">Visual Depth<br>Roster Richness</div>
+    </div>
+    <section class="section">
+      <div class="section-title">
+        <div><div class="kicker">Standings</div><h3>上位ほど人材が豊富に見えるポディウム</h3></div>
+        <div class="hint">プロフィール画面の華やかさを戻しつつ、左右交互配置は廃止。</div>
+      </div>
+      <div class="poster-grid">
+        <div class="podium-board">
+          <div class="podium-row gold" style="--h:126px;--w:470px;--s:46px">
+            <div class="rank-num">1</div>
+            <div><div class="name">百獣館</div><div class="subline">842pt / 21名 / 主力9枠フル / 王者保持</div></div>
+            <div class="podium-faces">
+              <span class="face champ"><img src="../../../image/face_aida_m.png" alt=""><span class="ovr">100</span></span>
+              <span class="face"><img src="../../../image/face_abe_m.png" alt=""><span class="ovr">95</span></span>
+              <span class="face"><img src="../../../image/face_akabane_a.png" alt=""><span class="ovr">92</span></span>
+              <span class="face"><img src="../../../image/face_oba_a.png" alt=""><span class="ovr">84</span></span>
+              <span class="face"><img src="../../../image/face_kondo_y.png" alt=""><span class="ovr">83</span></span>
+              <span class="face"><img src="../../../image/face_hongo_m.png" alt=""><span class="ovr">81</span></span>
+              <span class="face"><img src="../../../image/face_kamiya_s.png" alt=""><span class="ovr">80</span></span>
+              <span class="face"><img src="../../../image/face_iijima_s.png" alt=""><span class="ovr">79</span></span>
+            </div>
+          </div>
+          <div class="podium-row silver" style="--h:104px;--w:390px;--s:42px">
+            <div class="rank-num">2</div>
+            <div><div class="name">ファイヤーガールズ</div><div class="subline">708pt / 17名 / 主力7枠 / 追走中</div></div>
+            <div class="podium-faces">
+              <span class="face"><img src="../../../image/face_yaegashi_m.png" alt=""><span class="ovr">85</span></span>
+              <span class="face"><img src="../../../image/face_hiramatsu_k.png" alt=""><span class="ovr">82</span></span>
+              <span class="face"><img src="../../../image/face_fukamachi_m.png" alt=""><span class="ovr">79</span></span>
+              <span class="face"><img src="../../../image/face_kawanobe_n.png" alt=""><span class="ovr">77</span></span>
+              <span class="face"><img src="../../../image/face_akanuma_s.png" alt=""><span class="ovr">74</span></span>
+              <span class="face"><img src="../../../image/face_asahina_h.png" alt=""><span class="ovr">73</span></span>
+            </div>
+          </div>
+          <div class="podium-row bronze" style="--h:88px;--w:300px;--s:38px">
+            <div class="rank-num">3</div>
+            <div><div class="name">ノヴァインパクト</div><div class="subline">654pt / 15名 / 主力5枠 / 王者依存</div></div>
+            <div class="podium-faces">
+              <span class="face champ"><img src="../../../image/face_isehara_f.png" alt=""><span class="ovr">86</span></span>
+              <span class="face"><img src="../../../image/face_matsushita_m.png" alt=""><span class="ovr">81</span></span>
+              <span class="face"><img src="../../../image/face_umegaoka_m.png" alt=""><span class="ovr">78</span></span>
+              <span class="face"><img src="../../../image/face_minamitani_a.png" alt=""><span class="ovr">75</span></span>
+            </div>
+          </div>
+          <div class="podium-row steel" style="--h:72px;--w:220px;--s:34px">
+            <div class="rank-num">4</div>
+            <div><div class="name">なでしこプロレス</div><div class="subline">521pt / 12名 / 主力3枠 / 育成待ち</div></div>
+            <div class="podium-faces">
+              <span class="face"><img src="../../../image/face_yoshino_m.png" alt=""><span class="ovr">76</span></span>
+              <span class="face"><img src="../../../image/face_abukuma_t.png" alt=""><span class="ovr">71</span></span>
+              <span class="face"><img src="../../../image/face_niwa_h.png" alt=""><span class="ovr">69</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="compact-stats">
+          <div class="stat-card gold"><div class="label">1位 主力密度</div><div class="value">9/9</div><p>顔アイコンが二列目まで埋まり、トップ団体の層の厚さが一目で出る。</p></div>
+          <div class="stat-card silver"><div class="label">2位 補強余地</div><div class="value">7/9</div><p>主力は揃うが、首位と比べると怪物級と控え層に差がある。</p></div>
+          <div class="stat-card bronze"><div class="label">3位 王者依存</div><div class="value">5/9</div><p>王者アイコンは目立つが、その後ろに空間が残る。</p></div>
+          <div class="stat-card steel"><div class="label">4位 小規模</div><div class="value">3/9</div><p>顔の少なさで、育成・補強が必要な状態を自然に伝える。</p></div>
+          <div class="legend-card">
+            <h4>この案の狙い</h4>
+            <p>元の派手さに近い「見て楽しいランキング」に戻しながら、左右交互の立ち絵で比較軸が揺れる問題を避けています。大きい絵ではなく、順位ごとの人数差とOVRタグを主役にするため、団体比較とロースター鑑賞が混ざりにくくなります。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </article>
+</div>
+</body>
+</html>

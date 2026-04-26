@@ -3212,22 +3212,35 @@ function renderRanking() {
         top3 = [sorted[champIdx], ...sorted.filter(c => c.id !== championId)].slice(0, 3);
       }
     }
-    // 看板：王者でない選手の中で OVR 最高位（sorted の先頭から）
-    const boardId = (sorted.find(c => c.id !== championId) || {}).id;
+    // 看板：OVR 最高位。王者兼看板もあり得る。
+    const boardId = (sorted[0] || {}).id;
     return { top3, sorted, boardId };
   };
+  const coreLimitForRank = (rank) => rank === 1 ? 5 : (rank === 2 ? 4 : 3);
+  const coreIdsForRank = (sorted, rank, championId, boardId) => new Set(
+    sorted
+      .filter(f => f.id !== championId && f.id !== boardId)
+      .slice(0, coreLimitForRank(rank))
+      .map(f => f.id)
+  );
+  const roleBadgesHtml = (f, championId, boardId, coreIds) => {
+    if (!f) return '';
+    const badges = [];
+    if (championId === f.id) badges.push('<span class="badge champ">王者</span>');
+    if (boardId === f.id) badges.push('<span class="badge board">看板</span>');
+    if (coreIds && coreIds.has(f.id) && championId !== f.id && boardId !== f.id) badges.push('<span class="badge core">主力</span>');
+    return badges.length ? `<span class="role-badges">${badges.join('')}</span>` : '';
+  };
   const _ovrCss = (o) => valueClassOvr(o);
-  const fcellHtml = (f, pos, championId, boardId, popupSource) => {
+  const fcellHtml = (f, pos, championId, boardId, coreIds, popupSource) => {
     if (!f) return '';
     const o = Engine.util.ov(f);
     const isChamp = championId === f.id;
-    const isBoard = !isChamp && boardId === f.id && pos !== 1;
     const url = getUpperUrl(f.id);
     const imgTag = url ? `<img src="${url}" alt="" onerror="this.style.display='none'">` : '';
-    const champBadge = isChamp ? `<span class="crown-mini">👑</span>` : '';
-    const boardBadge = isBoard ? `<span class="badge board" style="position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-size:8px">看板</span>` : '';
+    const badges = roleBadgesHtml(f, championId, boardId, coreIds);
     return `<div class="orgcell-fcell pos-${pos}${isChamp ? ' is-champ' : ''}" onclick="showFighterPopup(${f.id},'${popupSource}')" title="${escHtml(f.name)} OVR ${o}">
-      ${champBadge}${boardBadge}
+      ${badges}
       <div class="img-wrap">${imgTag}</div>
       <div class="nm-tag">${escHtml(f.name)}<span class="ovr ${_ovrCss(o)}">${o}</span></div>
     </div>`;
@@ -3254,6 +3267,7 @@ function renderRanking() {
     }
     const popupSource = isPlayer ? 'roster' : ('ai:' + r.orgId);
     const { top3, sorted, boardId } = buildOrgTopThree(roster, championId);
+    const coreIds = coreIdsForRank(sorted, r.rank, championId, boardId);
 
     const avgOvr = sorted.length ? Math.round(sorted.reduce((s, c) => s + Engine.util.ov(c), 0) / sorted.length) : 0;
     const battleSign = r.battlePt > 0 ? '+' : '';
@@ -3268,17 +3282,17 @@ function renderRanking() {
         </div>
       </div>
       <div class="orgcell-formation">
-        ${fcellHtml(top3[1], 2, championId, boardId, popupSource)}
-        ${fcellHtml(top3[2], 3, championId, boardId, popupSource)}
-        ${fcellHtml(top3[0], 1, championId, boardId, popupSource)}
+        ${fcellHtml(top3[1], 2, championId, boardId, coreIds, popupSource)}
+        ${fcellHtml(top3[2], 3, championId, boardId, coreIds, popupSource)}
+        ${fcellHtml(top3[0], 1, championId, boardId, coreIds, popupSource)}
       </div>
       <div class="orgcell-foot">
         <div class="pt-block">
-          <div class="label">RATING</div>
+          <div class="label">評価</div>
           <div class="v">${Math.round(r.rating)}<span class="unit">pt</span></div>
         </div>
         <div class="meta-block">
-          <div class="ovr-line">OVR ${avgOvr}</div>
+          <div class="ovr-line">平均OVR ${avgOvr}</div>
           <div class="${battleClass}">対戦pt ${battleSign}${Math.round(r.battlePt)}</div>
         </div>
       </div>
@@ -3286,18 +3300,56 @@ function renderRanking() {
   });
   html += '</div></section>';
 
-  // ── 03 団体プロファイル（5名フォーメーション + stand画像） ──
-  const rankFighterCount = { 1: 5, 2: 4, 3: 3, 4: 2 };
-  const RANK_KICKER = { 1: '頂点', 2: '挑戦者', 3: '中位', 4: '下位' };
-  html += '<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">03 — Profile</div><div class="title">団体プロファイル</div></div></div>';
+  // ── 03 団体プロファイル（戦力層台帳） ──
+  const RANK_TIER = { 1: 'S級', 2: '自団体', 3: 'A級', 4: 'B級' };
+  const DEPTH_TOTAL = { 1: 8, 2: 6, 3: 5, 4: 4 };
+  const rank1Entry = rankings.find(x => x.rank === 1);
+  const _countOvrAtLeast = (list, min) => list.filter(f => Engine.util.ov(f) >= min).length;
+  const _avgOvrOf = (list) => list.length ? Math.round(list.reduce((s, f) => s + Engine.util.ov(f), 0) / list.length) : 0;
+  const _layerTone = (top3Avg, avgOvr, over80, over70) => {
+    if (over80 >= 3 || top3Avg >= 82) return 'エース級が複数そろい、上位だけで試合を作り切れる豪華な陣容';
+    if (over80 >= 1 || top3Avg >= 76) return '看板を中心に上位陣がまとまり、主力の顔ぶれで勝負できる陣容';
+    if (over70 >= 3 || avgOvr >= 62) return '突出した怪物はいないが、主力候補が広く並ぶ堅実な陣容';
+    return 'まだ発展途上だが、伸びしろのある選手を育てながら順位を追う陣容';
+  };
+  const _positionTone = (rank, gapTop, gapAbove) => {
+    if (rank === 1) return '業界首位に立つ団体で、追われる側としての安定感がある';
+    if (rank === 2) return `首位まで${gapTop}pt差。射程圏にはいるが、もう一段の厚みが欲しい`;
+    return `首位まで${gapTop}pt、直上まで${gapAbove}pt差。順位を上げるには看板の後ろを支える層作りが鍵になる`;
+  };
+  const buildProfileLead = ({ r, sortedAll, featured, champion, defenses, avgOvr, popDisplay, rankAbove }) => {
+    const aceOvr = featured ? Engine.util.ov(featured) : 0;
+    const top3 = sortedAll.slice(0, 3);
+    const top3Avg = _avgOvrOf(top3);
+    const over80 = _countOvrAtLeast(sortedAll, 80);
+    const over70 = _countOvrAtLeast(sortedAll, 70);
+    const gapTop = Math.max(0, Math.round((rank1Entry?.rating || r.rating) - r.rating));
+    const gapAbove = rankAbove ? Math.max(0, Math.round(rankAbove.rating - r.rating)) : 0;
+    const position = _positionTone(r.rank, gapTop, gapAbove);
+    const titleText = champion
+      ? `王者${champion.name}は${defenses}防衛中で、団体の中心線がはっきりしている`
+      : `${featured ? featured.name : '看板選手'}が最高OVR${aceOvr}の看板を背負う一方、王座はまだ空いている`;
+    const layer = _layerTone(top3Avg, avgOvr, over80, over70);
+    return `${position}。${titleText}。${layer}で、トップ3平均OVR${top3Avg}、全体平均OVR${avgOvr}。所属${sortedAll.length}名の中に70台以上が${over70}名、80台以上が${over80}名おり、人気${popDisplay}の土台をどこまで戦力に変えられるかが見どころ。`;
+  };
+  const buildDepthNote = ({ visibleTotal, sortedAll, featured, coreLimit }) => {
+    const aceOvr = featured ? Engine.util.ov(featured) : 0;
+    const next = sortedAll.find(f => !featured || f.id !== featured.id);
+    const nextOvr = next ? Engine.util.ov(next) : 0;
+    const displayed = [featured, ...sortedAll.filter(f => !featured || f.id !== featured.id).slice(0, Math.max(0, visibleTotal - 1))].filter(Boolean);
+    const rangeLow = displayed.length ? Math.min(...displayed.map(f => Engine.util.ov(f))) : 0;
+    const aceGap = next ? aceOvr - nextOvr : 0;
+    const coreText = coreLimit >= 5 ? '主力候補が多く、控えにも試合を任せやすい' : (coreLimit === 4 ? '上位陣はそろっているが、控えの底上げでさらに安定する' : '少数精鋭寄りで、下位選手の成長が順位に直結する');
+    const gapText = next ? (aceGap >= 10 ? `看板と次点の差は${aceGap}あり、現状は${featured.name}への依存がやや大きい` : `看板の後ろに${next.name}が続き、上位のつながりは悪くない`) : '看板に続く選手がまだ不足している';
+    return `この列は大枠の王者/看板を起点に、実際に比較したい主力層を並べたもの。大枠込み${visibleTotal}名の見える範囲はOVR${aceOvr}から${rangeLow}までで、${gapText}。${coreText}。`;
+  };
+  html += '<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">03 — 団体詳細</div><div class="title">団体プロフィール - 戦力層台帳</div></div></div><div class="rp-profiles">';
 
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
     const orgName = isPlayer ? (G.orgName || 'プレイヤー団体') : (org ? org.name : r.name);
-    const topCount = rankFighterCount[r.rank] || 2;
     const rankClass = `is-rank-${r.rank}`;
-    const flipClass = (r.rank % 2 === 0) ? ' flip' : '';
     const playerClass = isPlayer ? ' is-player' : '';
 
     let roster, championId, defenses, orgPop, deck;
@@ -3317,110 +3369,92 @@ function renderRanking() {
       deck = (org && org.desc) || '';
     }
     const popupSource = isPlayer ? 'roster' : ('ai:' + r.orgId);
-    const allRoster = (G.roster ? (isPlayer ? G.roster.filter(c => !c.isRental) : roster) : roster);
     const rosterAll = isPlayer ? (G.roster || []).filter(c => !c.isRental) : roster;
 
-    // 主力選定（pos-1〜pos-N、王者は pos-1 に、看板は pos-1 でない最高 OVR）
     const sortedAll = [...rosterAll].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-    let top = sortedAll.slice(0, topCount);
-    if (championId) {
-      const champIdx = sortedAll.findIndex(c => c.id === championId);
-      if (champIdx > 0) {
-        top = [sortedAll[champIdx], ...sortedAll.filter(c => c.id !== championId)].slice(0, topCount);
-      }
-    }
-    const boardId = (sortedAll.find(c => c.id !== championId) || {}).id;
+    const boardId = (sortedAll[0] || {}).id;
     const champion = championId ? sortedAll.find(c => c.id === championId) : null;
+    const featured = champion || sortedAll[0] || null;
+    const coreIds = coreIdsForRank(sortedAll, r.rank, championId, boardId);
+    const visibleTotal = DEPTH_TOTAL[r.rank] || 4;
+    const depthFaces = sortedAll.filter(f => !featured || f.id !== featured.id).slice(0, Math.max(0, visibleTotal - 1));
     const avgOvr = sortedAll.length ? Math.round(sortedAll.reduce((s, c) => s + Engine.util.ov(c), 0) / sortedAll.length) : 0;
+    const rankAbove = rankings.find(x => x.rank === r.rank - 1);
 
-    // 統計バー
     const battleSign = r.battlePt > 0 ? '+' : '';
     const battleClass = r.battlePt > 0 ? 'battle-pos' : (r.battlePt < 0 ? 'battle-neg' : '');
     const popDisplay = Engine.util.dispOrgPop(orgPop);
     const popColor = _orgPopColor(popDisplay).color;
+    const baseDepth = sortedAll.length >= 18 ? '厚' : (sortedAll.length >= 14 ? '中' : '薄');
+    const topDepth = _avgOvrOf(sortedAll.slice(0, 3)) >= 78 ? '厚' : (_avgOvrOf(sortedAll.slice(0, 3)) >= 68 ? '中' : '薄');
+    const tierLabel = isPlayer ? '自団体' : (org ? org.tier : (RANK_TIER[r.rank] || ''));
+    const tierMeta = isPlayer ? `${rosterAll.length}名` : `${rosterAll.length}名`;
+    const aceOvr = featured ? Engine.util.ov(featured) : 0;
+    const aceImgUrl = featured ? getUpperUrl(featured.id) : '';
+    const aceImg = aceImgUrl ? `<img src="${aceImgUrl}" alt="" onerror="this.style.display='none'">` : '';
+    const aceRoles = featured ? [
+      championId === featured.id ? '<span class="rp-ace-role-champ">王者</span>' : '',
+      boardId === featured.id ? '<span class="rp-ace-role-board">看板</span>' : ''
+    ].filter(Boolean).join('<span class="rp-ace-role-sep"> / </span>') : '';
+    const secondOvr = sortedAll[1] ? Engine.util.ov(sortedAll[1]) : 0;
+    const thirdOvr = sortedAll[2] ? Engine.util.ov(sortedAll[2]) : 0;
+    const secondName = sortedAll[1]?.name || '';
+    const thirdName = sortedAll[2]?.name || '';
+    const aceCopy = championId === featured?.id
+      ? `${defenses}防衛を重ねる中心選手。${secondName ? `${secondName}、${thirdName || '次世代候補'}が後ろに控え` : '後続の整備はこれからで'}、王者を支える形が作れるかが焦点。`
+      : `${featured ? featured.name : '看板'}が団体の顔。${secondName ? `${secondName}、${thirdName || '若手勢'}が続くため` : '後続が薄いため'}、看板頼みで終わらせず層として押し上げたい。`;
+    const scoreLine = depthFaces.length
+      ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + '台多数'
+      : `${aceOvr}`;
+    const dynamicLead = buildProfileLead({ r, sortedAll, featured, champion, defenses, avgOvr, popDisplay, rankAbove });
+    const dynamicDepthNote = buildDepthNote({ visibleTotal, sortedAll, featured, coreLimit: coreLimitForRank(r.rank) });
 
-    // バナー画像（王者がいれば王者の stand、いなければ pos-1 の stand）
-    const bannerFighter = champion || top[0] || null;
-    const standUrl = bannerFighter ? getStandUrl(bannerFighter.id, Engine.util.ov(bannerFighter)) : '';
-    const standImg = standUrl ? `<img src="${standUrl}" alt="" onerror="this.style.display='none'">` : '';
-    const champPlate = bannerFighter ? `<div class="ace-name-plate">${escHtml(bannerFighter.name)}</div>` : '';
-    const crownLarge = champion ? '<div class="crown-large">👑</div>' : '';
-    const verticalOverline = `<div class="vertical-overline">RANK ${r.rank}</div>`;
-
-    // フォーメーション fcell
-    const fcellsHtml = top.map((f, idx) => {
+    const depthFacesHtml = depthFaces.map(f => {
       if (!f) return '';
-      const pos = idx + 1;
       const o = Engine.util.ov(f);
-      const isChamp = championId === f.id;
-      const isBoard = !isChamp && boardId === f.id;
+      const badges = roleBadgesHtml(f, championId, boardId, coreIds);
       const url = getUpperUrl(f.id);
       const imgTag = url ? `<img src="${url}" alt="" onerror="this.style.display='none'">` : '';
-      const champBadge = isChamp ? '<span class="badge champ">王者</span>' : '';
-      const boardBadge = isBoard ? '<span class="badge board">看板</span>' : '';
-      return `<div class="fcell pos-${pos}${isChamp ? ' is-champ' : ''}" onclick="showFighterPopup(${f.id},'${popupSource}')" title="${escHtml(f.name)} OVR ${o}">
-        <div class="img-wrap">${imgTag}</div>
-        <div class="info">
-          <div class="nm">${escHtml(f.name)}${champBadge}${boardBadge}</div>
-          <span class="ovr ${valueClassOvr(o)}"><span class="label">OVR</span>${o}</span>
-        </div>
-      </div>`;
+      const roleClass = championId === f.id ? ' is-champ' : (boardId === f.id ? ' is-board' : (coreIds.has(f.id) ? ' is-core' : ''));
+      return `<span class="rp-face${roleClass}" onclick="showFighterPopup(${f.id},'${popupSource}')" title="${escHtml(f.name)} OVR ${o}">
+        ${badges}
+        ${imgTag}
+        <b>${o}</b>
+      </span>`;
     }).join('');
 
-    // 王者行
-    const champRowHtml = champion
-      ? `<div class="champ-row"><span class="label">CHAMPION</span><span class="nm">${escHtml(champion.name)}</span><span style="color:var(--th-text-sub)">${defenses} 防衛</span></div>`
-      : `<div class="champ-row empty"><span class="label">CHAMPION</span><span class="nm">不在</span></div>`;
-
-    // ロースター展開リスト
-    const rosterListId = `rosterList_${r.orgId}`;
-    const rosterListHtml = rosterAll.map(f => {
-      const fOvr = Engine.util.ov(f);
-      const isChampF = championId === f.id;
-      return `<div class="ri" onclick="showFighterPopup(${f.id},'${popupSource}')">
-        ${portraitImg(f.id, 36)}
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600">${escHtml(f.name)}${isChampF ? ' 👑' : ''}</div>
-          <div class="meta">OVR ${fOvr} ・ ${escHtml(f.style || '?')}</div>
-        </div>
-      </div>`;
-    }).join('');
-
-    html += `<div class="org-card ${rankClass}${flipClass}${playerClass}">
-      <div class="org-banner">
-        ${verticalOverline}
-        ${crownLarge}
-        <div class="ace-stand">${standImg}</div>
-        ${champPlate}
+    html += `<div class="rp-card ${rankClass}${playerClass}">
+      <div class="rp-rank"><span>${r.rank}</span></div>
+      <div class="rp-info">
+        <div class="rp-tags"><span>${tierLabel}</span><span>${tierMeta}</span>${champion ? '<span>王者保持</span>' : '<span>追走中</span>'}</div>
+        <h3>${escHtml(orgName)}</h3>
+        <p>${escHtml(dynamicLead)}</p>
       </div>
-      <div class="org-body">
-        <div class="header">
-          <div class="rank-tiny">${r.rank}</div>
-          <div class="feature-tag">${RANK_KICKER[r.rank] || ''}</div>
+      <div class="rp-ace" onclick="${featured ? `showFighterPopup(${featured.id},'${popupSource}')` : ''}">
+        <div class="rp-ace-text">
+          <div class="rp-ace-role">${aceRoles}</div>
+          <strong>${featured ? escHtml(featured.name) : '不在'} / OVR${aceOvr}</strong>
+          <p>${escHtml(aceCopy)}</p>
+          <dl><dt>上位層</dt><dd>${topDepth}</dd><dt>控え層</dt><dd>${baseDepth}</dd></dl>
         </div>
-        <h3 class="org-headline">${escHtml(orgName)}</h3>
-        ${deck ? `<div class="org-deck">${escHtml(deck)}</div>` : ''}
-        <div class="stats-bar">
-          <div class="cell"><div class="label">RATING</div><div class="v gold">${Math.round(r.rating)}</div></div>
-          <div class="cell"><div class="label">BASE</div><div class="v">${Math.round(r.baseScore)}</div></div>
-          <div class="cell"><div class="label">LEGACY</div><div class="v">${Math.round(r.legacyScore)}</div></div>
-          <div class="cell"><div class="label">BATTLE</div><div class="v ${battleClass}">${battleSign}${Math.round(r.battlePt)}</div></div>
-          <div class="cell"><div class="label">POPULARITY</div><div class="v" style="color:${popColor}">${popDisplay}</div></div>
-        </div>
-        ${champRowHtml}
-        <div class="formation-section">
-          <div class="formation-label"><span>FORMATION</span><span class="count">TOP ${top.length}</span></div>
-          <div class="formation">${fcellsHtml}</div>
-        </div>
-        <div class="footer-actions">
-          <div class="roster-count">ROSTER <strong>${rosterAll.length}</strong>名 ・ AVG OVR <strong>${avgOvr}</strong></div>
-          <button class="roster-toggle" onclick="(function(el){var p=el.parentElement.parentElement.querySelector('.roster-list');if(p){p.style.display=p.style.display==='none'?'flex':'none';el.textContent=p.style.display==='none'?'全選手を見る':'閉じる';}})(this)">全選手を見る</button>
-        </div>
-        <div class="roster-list" id="${rosterListId}" style="display:none">${rosterListHtml}</div>
+        <div class="rp-ace-img">${aceImg}</div>
+      </div>
+      <div class="rp-depth">
+        <div class="rp-depth-head"><strong>主力層 ${visibleTotal}名（大枠含む）</strong><span>${scoreLine}</span></div>
+        <div class="rp-faces">${depthFacesHtml}</div>
+        <div class="rp-depth-note">${escHtml(dynamicDepthNote)}</div>
+      </div>
+      <div class="rp-metrics">
+        <div><span>評価</span><b>${Math.round(r.rating)}</b></div>
+        <div><span>基礎</span><b>${Math.round(r.baseScore)}</b></div>
+        <div><span>平均OVR</span><b>${avgOvr}</b></div>
+        <div><span>勢い</span><b class="${battleClass}">${battleSign}${Math.round(r.battlePt)}</b></div>
+        <div><span>実績</span><b>${Math.round(r.legacyScore)}</b></div>
+        <div><span>人気</span><b style="color:${popColor}">${popDisplay}</b></div>
       </div>
     </div>`;
   });
-  html += '</section>';
+  html += '</div></section>';
 
   // ── 04 シーズン履歴 ──
   if (G.seasonHistory && G.seasonHistory.length > 0) {

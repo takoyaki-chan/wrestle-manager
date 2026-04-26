@@ -6625,6 +6625,23 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   position: absolute; top: -2px; left: 50%; transform: translateX(-50%);
   font-size: 18px; z-index: 5;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  display: none;
+}
+.ranking-popup .orgcell-fcell .role-badges {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  white-space: nowrap;
+  z-index: 6;
+}
+.ranking-popup .orgcell-fcell .role-badges .badge {
+  font-size: 8px;
+  padding: 1px 5px;
+  line-height: 1.2;
 }
 .ranking-popup .orgcell-fcell .nm-tag {
   position: absolute;
@@ -7079,6 +7096,196 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   color: var(--th-text-dim);
 }
 
+/* ──── 03 団体プロフィール（戦力層台帳） ──── */
+.ranking-popup .rp-profiles { display: grid; gap: 10px; }
+.ranking-popup .rp-card {
+  min-height: 150px;
+  display: grid;
+  grid-template-columns: 70px minmax(210px, 1.05fr) minmax(190px, 0.9fr) minmax(330px, 1.35fr) minmax(150px, 0.65fr);
+  gap: 10px;
+  align-items: stretch;
+  padding: 14px;
+  background: linear-gradient(90deg, rgba(212,168,67,0.12), transparent 38%), var(--th-card-bg);
+  border: 1px solid var(--th-border);
+  border-left: 4px solid var(--rank-2);
+}
+.ranking-popup .rp-card.is-rank-1 { border-left-color: var(--rank-1); background: linear-gradient(90deg, rgba(212,168,67,0.18), transparent 42%), var(--th-card-bg); }
+.ranking-popup .rp-card.is-rank-2 { border-left-color: var(--rank-2); }
+.ranking-popup .rp-card.is-rank-3 { border-left-color: var(--rank-3); background: linear-gradient(90deg, rgba(196,126,58,0.16), transparent 42%), var(--th-card-bg); }
+.ranking-popup .rp-card.is-rank-4 { border-left-color: var(--rank-4); background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent 42%), var(--th-card-bg); }
+.ranking-popup .rp-rank { display: flex; align-items: flex-start; justify-content: center; }
+.ranking-popup .rp-rank span {
+  width: 54px; height: 74px;
+  display: grid; place-items: center;
+  color: #070707;
+  font-family: var(--font-num);
+  font-size: 36px;
+  line-height: 1;
+  clip-path: polygon(0 0,100% 0,100% 68%,50% 100%,0 68%);
+  background: linear-gradient(180deg, #fff7d7, var(--rank-1));
+}
+.ranking-popup .rp-card.is-rank-2 .rp-rank span { background: linear-gradient(180deg, #fff, var(--rank-2)); }
+.ranking-popup .rp-card.is-rank-3 .rp-rank span { background: linear-gradient(180deg, #fff1df, var(--rank-3)); }
+.ranking-popup .rp-card.is-rank-4 .rp-rank span { background: linear-gradient(180deg, #f6f6f6, var(--rank-4)); }
+.ranking-popup .rp-info { min-width: 0; padding-top: 2px; }
+.ranking-popup .rp-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.ranking-popup .rp-tags span {
+  border: 1px solid rgba(212,168,67,0.45);
+  color: var(--rank-1);
+  background: rgba(212,168,67,0.08);
+  padding: 2px 7px;
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+.ranking-popup .rp-card.is-rank-2 .rp-tags span { border-color: rgba(192,192,192,0.42); color: var(--rank-2); background: rgba(255,255,255,0.05); }
+.ranking-popup .rp-card.is-rank-3 .rp-tags span { border-color: rgba(196,126,58,0.5); color: var(--rank-3); background: rgba(196,126,58,0.08); }
+.ranking-popup .rp-card.is-rank-4 .rp-tags span { border-color: rgba(255,255,255,0.18); color: var(--rank-4); background: rgba(255,255,255,0.04); }
+.ranking-popup .rp-info h3 {
+  margin: 0 0 6px;
+  color: var(--th-text-main);
+  font-size: 23px;
+  line-height: 1.05;
+  font-weight: 900;
+}
+.ranking-popup .rp-info p,
+.ranking-popup .rp-ace p,
+.ranking-popup .rp-depth-note {
+  margin: 0;
+  color: var(--th-text-sub);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.ranking-popup .rp-ace {
+  display: grid;
+  grid-template-columns: 1fr 82px;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.18);
+  cursor: pointer;
+  min-width: 0;
+}
+.ranking-popup .rp-ace-text { min-width: 0; }
+.ranking-popup .rp-ace-role {
+  min-height: 14px;
+  margin-bottom: 2px;
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+}
+.ranking-popup .rp-ace-role-champ { color: var(--rank-1); }
+.ranking-popup .rp-ace-role-board { color: var(--board-red); }
+.ranking-popup .rp-ace-role-sep { color: var(--th-text-dim); padding: 0 3px; }
+.ranking-popup .rp-ace strong {
+  display: block;
+  color: var(--th-text-main);
+  font-size: 13px;
+  line-height: 1.25;
+  margin-bottom: 5px;
+}
+.ranking-popup .rp-ace-img {
+  width: 82px;
+  height: 106px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.035);
+}
+.ranking-popup .rp-ace-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+.ranking-popup .rp-ace dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  margin: 6px 0 0;
+  font-size: 10px;
+}
+.ranking-popup .rp-ace dt { color: var(--th-text-sub); }
+.ranking-popup .rp-ace dd { margin: 0; color: var(--th-text-main); font-weight: 700; text-align: right; }
+.ranking-popup .rp-depth { min-width: 0; padding-top: 2px; }
+.ranking-popup .rp-depth-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.ranking-popup .rp-depth-head strong { color: var(--th-text-main); font-size: 11px; }
+.ranking-popup .rp-depth-head span { color: var(--th-text-sub); font-size: 10px; white-space: nowrap; }
+.ranking-popup .rp-faces { display: flex; gap: 6px; flex-wrap: nowrap; overflow: hidden; }
+.ranking-popup .rp-face {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+}
+.ranking-popup .rp-face.is-core { border-color: rgba(255,255,255,0.5); }
+.ranking-popup .rp-face.is-champ { border-color: var(--rank-1); }
+.ranking-popup .rp-face.is-board { border-color: var(--board-red-border); }
+.ranking-popup .rp-face img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.ranking-popup .rp-face b {
+  position: absolute;
+  right: 1px;
+  bottom: 0;
+  color: #fff;
+  font-family: var(--font-num);
+  font-size: 13px;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
+}
+.ranking-popup .rp-face .role-badges {
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  display: flex;
+  gap: 2px;
+  z-index: 2;
+}
+.ranking-popup .rp-face .badge { font-size: 7px; padding: 1px 3px; line-height: 1.1; letter-spacing: 0.08em; }
+.ranking-popup .rp-depth-note {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.ranking-popup .rp-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+  border-left: 1px solid rgba(255,255,255,0.14);
+  padding-left: 10px;
+  min-width: 0;
+}
+.ranking-popup .rp-metrics div { min-width: 0; }
+.ranking-popup .rp-metrics span {
+  display: block;
+  color: var(--th-text-dim);
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+.ranking-popup .rp-metrics b {
+  color: var(--th-text-main);
+  font-family: var(--font-num);
+  font-size: 24px;
+  line-height: 1.1;
+}
+.ranking-popup .rp-card.is-rank-1 .rp-metrics div:first-child b { color: var(--rank-1); }
+.ranking-popup .rp-card.is-rank-3 .rp-metrics div:first-child b { color: var(--rank-3); }
+
 /* ──── 04 シーズン履歴 ──── */
 .ranking-popup .history-wrap { position: relative; overflow: hidden; }
 .ranking-popup .history-wrap table {
@@ -7142,6 +7349,11 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   color: var(--rank-1);
   background: rgba(212,168,67,0.14);
   border: 1px solid var(--rank-1);
+}
+.ranking-popup .badge.core {
+  color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.36);
+  border: 1px solid rgba(255,255,255,0.48);
 }
 
 /* ════════════════════════════════════════════════════════════════

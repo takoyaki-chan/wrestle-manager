@@ -726,6 +726,34 @@ body { padding: 24px 0 80px; }
     -1px  1px 0 #000,
      1px  1px 0 #000;
 }
+.orgcell-fcell .nm-tag .badge {
+  display: table;
+  margin: 0 auto 2px;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-shadow: none;
+}
+.orgcell-fcell .nm-tag .badge.champ {
+  background: var(--gold);
+  border: 1px solid var(--gold-deep);
+  color: #110a05;
+}
+.orgcell-fcell .nm-tag .badge.board {
+  background: rgba(255,69,48,0.16);
+  border: 1px solid var(--board-red-border);
+  color: var(--board-red);
+  font-weight: 900;
+}
+.orgcell-fcell .nm-tag .badge.core {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.5);
+  color: var(--th-text-main);
+  font-weight: 700;
+}
 .orgcell-fcell.pos-1 .nm-tag {
   font-size: 11px;
   text-shadow:
@@ -1149,7 +1177,7 @@ body { padding: 24px 0 80px; }
 }
 /* 看板バッジ：赤文字 */
 .fcell .info .badge.board {
-  background: var(--board-red-bg);
+  background: rgba(255,69,48,0.16);
   border: 1px solid var(--board-red-border);
   color: var(--board-red);
   font-weight: 900;
@@ -1227,6 +1255,74 @@ body { padding: 24px 0 80px; }
 .org-card.is-rank-2 .roster-toggle { color: var(--rank-2); border: 1px solid var(--rank-2); }
 .org-card.is-rank-3 .roster-toggle { color: var(--rank-3); border: 1px solid var(--rank-3); }
 .org-card.is-rank-4 .roster-toggle { color: var(--rank-4); border: 1px solid var(--rank-4); }
+
+.orgcell-fcell .crown-mini { display: none; }
+
+/* Redesigned promotion profiles: depth ledger */
+.rp-profiles { display: grid; gap: 10px; }
+.rp-card {
+  --rp-color: var(--rank-4);
+  --rp-soft: rgba(255,255,255,0.06);
+  display: grid;
+  grid-template-columns: 62px minmax(220px, 0.84fr) 205px minmax(440px, 1fr) 154px;
+  gap: 12px;
+  align-items: stretch;
+  min-height: 154px;
+  padding: 12px;
+  border: 1px solid var(--th-border);
+  border-left: 4px solid var(--rp-color);
+  background:
+    linear-gradient(90deg, var(--rp-soft), rgba(255,255,255,0.025) 50%, transparent),
+    linear-gradient(180deg, #211e18, #15130f);
+}
+.rp-card.is-rank-1 { --rp-color: var(--rank-1); --rp-soft: rgba(212,168,67,0.16); }
+.rp-card.is-rank-2 { --rp-color: var(--rank-2); --rp-soft: rgba(192,192,192,0.13); }
+.rp-card.is-rank-3 { --rp-color: var(--rank-3); --rp-soft: rgba(196,126,58,0.15); }
+.rp-card.is-rank-4 { --rp-color: var(--rank-4); --rp-soft: rgba(255,255,255,0.08); }
+.rp-card.is-player { box-shadow: inset 0 0 0 1px rgba(192,192,192,0.45); }
+.rp-rank { width: 52px; min-width: 52px; height: 76px; display: grid; place-items: center; color: #120f09; background: linear-gradient(180deg, #fff, var(--rp-color)); clip-path: polygon(0 0, 100% 0, 100% 72%, 50% 100%, 0 72%); box-shadow: 0 8px 18px rgba(0,0,0,0.28); }
+.rp-rank span { font-family: var(--font-num); font-size: 44px; line-height: 1; }
+.rp-summary { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.rp-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.rp-tags span { border: 1px solid color-mix(in srgb, var(--rp-color) 58%, transparent); color: var(--rp-color); background: rgba(0,0,0,0.18); padding: 2px 7px; font-family: var(--font-label); font-size: 10px; letter-spacing: 0.08em; }
+.rp-name { font-size: 22px; font-weight: 900; line-height: 1.08; color: var(--th-text-main); }
+.rp-deck { font-size: 11px; color: var(--th-text-sub); line-height: 1.55; }
+.rp-depth { display: grid; grid-template-rows: auto 1fr; gap: 8px; }
+.rp-depth { grid-column: 4; grid-row: 1; }
+.rp-depth-title { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 10px; color: var(--th-text-sub); line-height: 1.3; }
+.rp-depth-title strong { color: var(--th-text-main); }
+.rp-faces { display: grid; grid-template-columns: repeat(8, 50px); gap: 7px; align-content: start; }
+.rp-face { position: relative; width: 50px; height: 60px; background: rgba(0,0,0,0.24); border: 1px solid var(--th-divider); overflow: hidden; }
+.rp-face img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+.rp-face .ovr { position: absolute; right: 0; bottom: 0; padding: 0 4px; background: rgba(0,0,0,0.78); color: #fff; font-family: var(--font-num); font-size: 16px; line-height: 1.15; }
+.rp-face.is-champ { border-color: var(--gold-light); box-shadow: 0 0 0 1px rgba(240,208,120,0.35); }
+.rp-face .role { position: absolute; left: 0; top: 0; z-index: 2; padding: 1px 5px; background: rgba(10,8,5,0.86); border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; color: var(--rp-color); font-family: var(--font-label); font-size: 9px; letter-spacing: 0.1em; line-height: 1.2; }
+.rp-face.is-champ .role { background: linear-gradient(180deg, var(--gold-light), var(--gold-deep)); color: #120f09; border-color: var(--gold); font-weight: 700; }
+.rp-face.is-board .role { background: rgba(255,69,48,0.16); color: var(--board-red); border-color: var(--board-red-border); font-weight: 900; }
+.rp-face.is-core .role { background: rgba(255,255,255,0.08); color: var(--th-text-main); border-color: rgba(255,255,255,0.55); font-weight: 700; }
+.rp-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; align-content: start; }
+.rp-stats { grid-column: 5; grid-row: 1; }
+.rp-stat { border-left: 1px solid var(--th-divider); padding-left: 8px; min-width: 0; }
+.rp-stat .label { color: var(--th-text-dim); font-family: var(--font-label); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
+.rp-stat .value { font-family: var(--font-num); font-size: 28px; line-height: 1; color: var(--th-text-main); }
+.rp-stat .value.word { font-family: var(--font-body); font-size: 18px; font-weight: 900; line-height: 1.25; letter-spacing: 0; }
+.rp-stat.main .value { color: var(--rp-color); font-size: 34px; }
+.rp-stat .value.up { color: var(--signal-up); }
+.rp-stat .value.down { color: var(--signal-down); }
+.rp-ace { grid-column: 3; grid-row: 1; display: grid; grid-template-columns: 1fr 82px; gap: 9px; align-items: start; border: 1px solid var(--th-divider); background: rgba(0,0,0,0.18); padding: 8px; }
+.rp-ace-text { min-width: 0; }
+.rp-ace img { width: 82px; height: 116px; object-fit: cover; object-position: top center; border: 1px solid color-mix(in srgb, var(--rp-color) 55%, transparent); }
+.rp-ace .role { color: var(--rp-color); font-family: var(--font-label); font-size: 10px; letter-spacing: 0.12em; }
+.rp-ace.is-board .role,
+.rp-ace .role.is-board { color: var(--board-red); }
+.rp-face.is-board { border-color: var(--th-divider); }
+.rp-ace-role-champ { color: var(--gold-light); }
+.rp-ace-role-board { color: var(--board-red); }
+.rp-ace .ace-name { color: var(--th-text-main); font-weight: 900; font-size: 12px; line-height: 1.35; margin-top: 2px; }
+.rp-ace .desc { color: var(--th-text-sub); font-size: 10px; line-height: 1.45; margin-top: 4px; }
+.rp-ace-lines { margin-top: 8px; display: grid; gap: 4px; font-size: 10px; color: var(--th-text-sub); }
+.rp-ace-lines div { display: flex; justify-content: space-between; gap: 8px; }
+.rp-ace-lines strong { color: var(--th-text-main); font-weight: 700; }
 
 
 /* ════════════════════════════════════════════════════
@@ -1331,6 +1427,9 @@ body { padding: 24px 0 80px; }
   .org-card.flip .org-banner { order: 0; }
   .org-card.flip .org-body { order: 0; }
   .hero { grid-template-columns: 1fr; }
+  .rp-card { grid-template-columns: 62px 1fr; }
+  .rp-depth, .rp-stats, .rp-ace { grid-column: 2; grid-row: auto; }
+  .rp-faces { grid-template-columns: repeat(auto-fill, 50px); }
 }
 </style>
 </head>
@@ -1478,25 +1577,24 @@ body { padding: 24px 0 80px; }
           <div class="orgcell-formation">
             <div class="orgcell-fcell pos-2">
               <div class="img-wrap"><img src="../../../image/upper/upper_abe_m.webp" alt="高城 真琴"></div>
-              <div class="nm-tag">高城<span class="ovr v-elite-mid">95</span></div>
+              <div class="nm-tag"><span class="badge board">看板</span>高城<span class="ovr v-elite-mid">95</span></div>
             </div>
             <div class="orgcell-fcell pos-3">
               <div class="img-wrap"><img src="../../../image/upper/upper_akabane_a.webp" alt="月村 咲"></div>
-              <div class="nm-tag">月村<span class="ovr v-elite">92</span></div>
+              <div class="nm-tag"><span class="badge core">主力</span>月村<span class="ovr v-elite">92</span></div>
             </div>
             <div class="orgcell-fcell pos-1 is-champ">
-              <span class="crown-mini">👑</span>
               <div class="img-wrap"><img src="../../../image/upper/upper_aida_m.webp" alt="朝倉 美鈴"></div>
-              <div class="nm-tag">朝倉 美鈴<span class="ovr v-mythic">100</span></div>
+              <div class="nm-tag"><span class="badge champ">王者</span>朝倉 美鈴<span class="ovr v-mythic">100</span></div>
             </div>
           </div>
           <div class="orgcell-foot">
             <div class="pt-block">
-              <div class="label">Rating</div>
+              <div class="label">評価</div>
               <div class="v">842<span class="unit">pt</span></div>
             </div>
             <div class="meta-block">
-              <div class="ovr-line">OVR 81</div>
+              <div class="ovr-line">平均OVR 81</div>
               <div class="battle-pos">+12 pt</div>
             </div>
           </div>
@@ -1517,24 +1615,24 @@ body { padding: 24px 0 80px; }
           <div class="orgcell-formation">
             <div class="orgcell-fcell pos-2">
               <div class="img-wrap"><img src="../../../image/upper/upper_hiramatsu_k.webp" alt="鈴木 舞"></div>
-              <div class="nm-tag">鈴木<span class="ovr v-high">82</span></div>
+              <div class="nm-tag"><span class="badge core">主力</span>鈴木<span class="ovr v-high">82</span></div>
             </div>
             <div class="orgcell-fcell pos-3">
               <div class="img-wrap"><img src="../../../image/upper/upper_fukamachi_m.webp" alt="石川 愛美"></div>
-              <div class="nm-tag">石川<span class="ovr v-mid">79</span></div>
+              <div class="nm-tag"><span class="badge core">主力</span>石川<span class="ovr v-mid">79</span></div>
             </div>
             <div class="orgcell-fcell pos-1">
               <div class="img-wrap"><img src="../../../image/upper/upper_yaegashi_m.webp" alt="花村 桜子"></div>
-              <div class="nm-tag">花村 桜子<span class="ovr v-elite-low">85</span></div>
+              <div class="nm-tag"><span class="badge board">看板</span>花村 桜子<span class="ovr v-elite-low">85</span></div>
             </div>
           </div>
           <div class="orgcell-foot">
             <div class="pt-block">
-              <div class="label">Rating</div>
+              <div class="label">評価</div>
               <div class="v">708<span class="unit">pt</span></div>
             </div>
             <div class="meta-block">
-              <div class="ovr-line">OVR 76</div>
+              <div class="ovr-line">平均OVR 76</div>
               <div class="battle-pos">+8 pt</div>
             </div>
           </div>
@@ -1555,25 +1653,24 @@ body { padding: 24px 0 80px; }
           <div class="orgcell-formation">
             <div class="orgcell-fcell pos-2">
               <div class="img-wrap"><img src="../../../image/upper/upper_matsushita_m.webp" alt="大谷 蓮花"></div>
-              <div class="nm-tag">大谷<span class="ovr v-high">81</span></div>
+              <div class="nm-tag"><span class="badge board">看板</span>大谷<span class="ovr v-high">81</span></div>
             </div>
             <div class="orgcell-fcell pos-3">
               <div class="img-wrap"><img src="../../../image/upper/upper_umegaoka_m.webp" alt="天城 真澄"></div>
-              <div class="nm-tag">天城<span class="ovr v-mid">78</span></div>
+              <div class="nm-tag"><span class="badge core">主力</span>天城<span class="ovr v-mid">78</span></div>
             </div>
             <div class="orgcell-fcell pos-1 is-champ">
-              <span class="crown-mini">👑</span>
               <div class="img-wrap"><img src="../../../image/upper/upper_isehara_f.webp" alt="猪瀬 凛"></div>
-              <div class="nm-tag">猪瀬 凛<span class="ovr v-elite-low">86</span></div>
+              <div class="nm-tag"><span class="badge champ">王者</span>猪瀬 凛<span class="ovr v-elite-low">86</span></div>
             </div>
           </div>
           <div class="orgcell-foot">
             <div class="pt-block">
-              <div class="label">Rating</div>
+              <div class="label">評価</div>
               <div class="v">654<span class="unit">pt</span></div>
             </div>
             <div class="meta-block">
-              <div class="ovr-line">OVR 73</div>
+              <div class="ovr-line">平均OVR 73</div>
               <div class="battle-neg">−4 pt</div>
             </div>
           </div>
@@ -1594,20 +1691,20 @@ body { padding: 24px 0 80px; }
           <div class="orgcell-formation">
             <div class="orgcell-fcell pos-2">
               <div class="img-wrap"><img src="../../../image/upper/upper_abukuma_t.webp" alt="海老名 海音"></div>
-              <div class="nm-tag">海老名<span class="ovr v-mid">71</span></div>
+              <div class="nm-tag"><span class="badge core">主力</span>海老名<span class="ovr v-mid">71</span></div>
             </div>
             <div class="orgcell-fcell pos-1">
               <div class="img-wrap"><img src="../../../image/upper/upper_yoshino_m.webp" alt="桐野 葵"></div>
-              <div class="nm-tag">桐野 葵<span class="ovr v-mid">76</span></div>
+              <div class="nm-tag"><span class="badge board">看板</span>桐野 葵<span class="ovr v-mid">76</span></div>
             </div>
           </div>
           <div class="orgcell-foot">
             <div class="pt-block">
-              <div class="label">Rating</div>
+              <div class="label">評価</div>
               <div class="v">521<span class="unit">pt</span></div>
             </div>
             <div class="meta-block">
-              <div class="ovr-line">OVR 68</div>
+              <div class="ovr-line">平均OVR 68</div>
               <div class="battle-pos">+8 pt</div>
             </div>
           </div>
@@ -1618,6 +1715,160 @@ body { padding: 24px 0 80px; }
 
     <!-- ── 03 団体プロファイル ── -->
     <div class="section bg-deep">
+      <div class="section-marker">
+        <div class="text">
+          <div class="kicker">団体詳細</div>
+          <div class="title">団体プロフィール - 戦力層台帳</div>
+        </div>
+      </div>
+
+      <div class="rp-profiles">
+        <div class="rp-card is-rank-1">
+          <div class="rp-rank"><span>1</span></div>
+          <div class="rp-summary">
+            <div class="rp-tags"><span>S級</span><span>21名</span><span>王者保持</span></div>
+            <div class="rp-name">百獣館</div>
+            <div class="rp-deck">王者を中心に95超えの怪物級が続く絶対王者。トップ層、基礎戦力、人気のすべてが厚く、追う側に明確な壁を作っている。</div>
+          </div>
+          <div class="rp-depth">
+            <div class="rp-depth-title"><strong>主力層 8名（大枠含む）</strong><span>95 / 92 / 84 / 83 / 80台多数</span></div>
+            <div class="rp-faces">
+              <span class="rp-face is-board"><span class="role">看板</span><img src="../../../image/face_abe_m.png" alt=""><span class="ovr">95</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_akabane_a.png" alt=""><span class="ovr">92</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_oba_a.png" alt=""><span class="ovr">84</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_kondo_y.png" alt=""><span class="ovr">83</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_hongo_m.png" alt=""><span class="ovr">81</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_kamiya_s.png" alt=""><span class="ovr">80</span></span>
+              <span class="rp-face"><img src="../../../image/face_iijima_s.png" alt=""><span class="ovr">79</span></span>
+            </div>
+          </div>
+          <div class="rp-stats">
+            <div class="rp-stat main"><div class="label">評価</div><div class="value">842</div></div>
+            <div class="rp-stat"><div class="label">基礎</div><div class="value">681</div></div>
+            <div class="rp-stat"><div class="label">平均OVR</div><div class="value">81</div></div>
+            <div class="rp-stat"><div class="label">勢い</div><div class="value up">+12</div></div>
+            <div class="rp-stat"><div class="label">実績</div><div class="value">50</div></div>
+            <div class="rp-stat"><div class="label">人気</div><div class="value word">絶好調</div></div>
+          </div>
+          <div class="rp-ace">
+            <div class="rp-ace-text">
+              <div class="role"><span class="rp-ace-role-champ">王者</span> / <span class="rp-ace-role-board">看板</span></div>
+              <div class="ace-name">相田 美朱 / OVR100</div>
+              <div class="desc">5防衛中。エースだけでなく2番手、3番手も強く、層の厚さで首位を守る。</div>
+              <div class="rp-ace-lines"><div><span>上位層</span><strong>最大</strong></div><div><span>控え層</span><strong>厚</strong></div></div>
+            </div>
+            <img src="../../../image/stand/stand_aida_m.webp" alt="">
+          </div>
+        </div>
+
+        <div class="rp-card is-rank-2 is-player">
+          <div class="rp-rank"><span>2</span></div>
+          <div class="rp-summary">
+            <div class="rp-tags"><span>自団体</span><span>17名</span><span>追走中</span></div>
+            <div class="rp-name">ファイヤーガールズ</div>
+            <div class="rp-deck">首位との差は134pt。トップの破壊力は百獣館に劣るが、主力の人数と勢いは十分で、上位戦次第で差を詰められる。</div>
+          </div>
+          <div class="rp-depth">
+            <div class="rp-depth-title"><strong>主力層 6名（大枠含む）</strong><span>82 / 79 / 77 / 74 / 73</span></div>
+            <div class="rp-faces">
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_hiramatsu_k.png" alt=""><span class="ovr">82</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_fukamachi_m.png" alt=""><span class="ovr">79</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_kawanobe_n.png" alt=""><span class="ovr">77</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_akanuma_s.png" alt=""><span class="ovr">74</span></span>
+              <span class="rp-face"><img src="../../../image/face_asahina_h.png" alt=""><span class="ovr">73</span></span>
+            </div>
+          </div>
+          <div class="rp-stats">
+            <div class="rp-stat main"><div class="label">評価</div><div class="value">708</div></div>
+            <div class="rp-stat"><div class="label">基礎</div><div class="value">632</div></div>
+            <div class="rp-stat"><div class="label">平均OVR</div><div class="value">76</div></div>
+            <div class="rp-stat"><div class="label">勢い</div><div class="value up">+8</div></div>
+            <div class="rp-stat"><div class="label">実績</div><div class="value">28</div></div>
+            <div class="rp-stat"><div class="label">人気</div><div class="value word">熱い</div></div>
+          </div>
+          <div class="rp-ace is-board">
+            <div class="rp-ace-text">
+              <div class="role">看板</div>
+              <div class="ace-name">八重樫 桜子 / OVR85</div>
+              <div class="desc">突出した怪物はいないが、主力が横に並ぶ。首位との差は最上位の怪物級と控え層の密度。</div>
+              <div class="rp-ace-lines"><div><span>上位層</span><strong>良</strong></div><div><span>控え層</span><strong>中</strong></div></div>
+            </div>
+            <img src="../../../image/stand/stand_yaegashi_m.webp" alt="">
+          </div>
+        </div>
+
+        <div class="rp-card is-rank-3">
+          <div class="rp-rank"><span>3</span></div>
+          <div class="rp-summary">
+            <div class="rp-tags"><span>A級</span><span>15名</span><span>王者保持</span></div>
+            <div class="rp-name">ノヴァインパクト</div>
+            <div class="rp-deck">王者の存在感は強いが、2番手以降の厚みでは2位に届かない。若手主体の攻撃力で巻き返す団体。</div>
+          </div>
+          <div class="rp-depth">
+            <div class="rp-depth-title"><strong>主力層 5名（大枠含む）</strong><span>王者依存が強く、厚みはまだ発展途上。</span></div>
+            <div class="rp-faces">
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_matsushita_m.png" alt=""><span class="ovr">81</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_umegaoka_m.png" alt=""><span class="ovr">78</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_minamitani_a.png" alt=""><span class="ovr">75</span></span>
+              <span class="rp-face"><img src="../../../image/face_sudo_m.png" alt=""><span class="ovr">72</span></span>
+            </div>
+          </div>
+          <div class="rp-stats">
+            <div class="rp-stat main"><div class="label">評価</div><div class="value">654</div></div>
+            <div class="rp-stat"><div class="label">基礎</div><div class="value">594</div></div>
+            <div class="rp-stat"><div class="label">平均OVR</div><div class="value">73</div></div>
+            <div class="rp-stat"><div class="label">勢い</div><div class="value down">-4</div></div>
+            <div class="rp-stat"><div class="label">実績</div><div class="value">30</div></div>
+            <div class="rp-stat"><div class="label">人気</div><div class="value word">上向き</div></div>
+          </div>
+          <div class="rp-ace">
+            <div class="rp-ace-text">
+              <div class="role"><span class="rp-ace-role-champ">王者</span> / <span class="rp-ace-role-board">看板</span></div>
+              <div class="ace-name">伊勢原 凛 / OVR86</div>
+              <div class="desc">王者は強い。ただしプロフィールとしては、王者の後ろにもう一枚ほしい状態。</div>
+              <div class="rp-ace-lines"><div><span>上位層</span><strong>中</strong></div><div><span>控え層</span><strong>薄</strong></div></div>
+            </div>
+            <img src="../../../image/stand/stand_isehara_f.webp" alt="">
+          </div>
+        </div>
+
+        <div class="rp-card is-rank-4">
+          <div class="rp-rank"><span>4</span></div>
+          <div class="rp-summary">
+            <div class="rp-tags"><span>B級</span><span>12名</span><span>小規模</span></div>
+            <div class="rp-name">なでしこプロレス</div>
+            <div class="rp-deck">人数は少なく、戦力層は薄い。ただし対戦ptは上向きで、堅実な育成路線が見える地方団体。</div>
+          </div>
+          <div class="rp-depth">
+            <div class="rp-depth-title"><strong>主力層 4名（大枠含む）</strong><span>顔の少なさで、上位との差が一目で出る。</span></div>
+            <div class="rp-faces">
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_abukuma_t.png" alt=""><span class="ovr">71</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_niwa_h.png" alt=""><span class="ovr">69</span></span>
+              <span class="rp-face is-core"><span class="role">主力</span><img src="../../../image/face_komori_s.png" alt=""><span class="ovr">66</span></span>
+            </div>
+          </div>
+          <div class="rp-stats">
+            <div class="rp-stat main"><div class="label">評価</div><div class="value">521</div></div>
+            <div class="rp-stat"><div class="label">基礎</div><div class="value">498</div></div>
+            <div class="rp-stat"><div class="label">平均OVR</div><div class="value">68</div></div>
+            <div class="rp-stat"><div class="label">勢い</div><div class="value up">+8</div></div>
+            <div class="rp-stat"><div class="label">実績</div><div class="value">15</div></div>
+            <div class="rp-stat"><div class="label">人気</div><div class="value word">平穏</div></div>
+          </div>
+          <div class="rp-ace is-board">
+            <div class="rp-ace-text">
+              <div class="role">看板</div>
+              <div class="ace-name">吉野 蓮 / OVR76</div>
+              <div class="desc">トップ選手の看板はあるが、主力層は少ない。育成・補強の必要性が伝わる。</div>
+              <div class="rp-ace-lines"><div><span>上位層</span><strong>薄</strong></div><div><span>控え層</span><strong>少</strong></div></div>
+            </div>
+            <img src="../../../image/stand/stand_yoshino_m.webp" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section bg-deep" style="display:none">
       <div class="section-marker">
         <div class="text">
           <div class="kicker">Detailed Profiles</div>
@@ -1631,7 +1882,6 @@ body { padding: 24px 0 80px; }
           <span class="vertical-overline">GOLD · 1ST PLACE</span>
           <span class="rank-watermark">1</span>
           <div class="ace-stand">
-            <span class="crown-large">👑</span>
             <img src="../../../image/stand/stand_aida_m.webp" alt="朝倉 美鈴">
             <div class="ace-name-plate">王者 朝倉 美鈴</div>
           </div>
@@ -1749,7 +1999,6 @@ body { padding: 24px 0 80px; }
           <span class="vertical-overline">BRONZE · 3RD PLACE</span>
           <span class="rank-watermark">3</span>
           <div class="ace-stand">
-            <span class="crown-large">👑</span>
             <img src="../../../image/stand/stand_isehara_f.webp" alt="猪瀬 凛">
             <div class="ace-name-plate">王者 猪瀬 凛</div>
           </div>
