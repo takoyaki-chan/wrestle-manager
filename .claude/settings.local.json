@@ -156,7 +156,27 @@
       "Bash(py scripts/apply-ojousama-rewrites.py)",
       "Bash(py -c \"import pandas; print\\('pandas ok'\\)\")",
       "Bash(rm -rf \"C:/Users/nkmrk/.claude/scheduled-tasks/ai-parity-batch/\")",
-      "Read(//c/Users/nkmrk/.claude/scheduled-tasks/**)"
+      "Read(//c/Users/nkmrk/.claude/scheduled-tasks/**)",
+      "Bash(xargs -I {} git show --stat {} -- src/data.js)",
+      "Bash(xargs grep *)",
+      "Bash(wait bffhr81zd *)",
+      "Read(//c/Users/nkmrk/AppData/Local/Temp/claude/C--Users-nkmrk-Downloads-wrestle-manager/8744e927-c57f-42d1-8a20-26f6917bf73f/tasks/**)",
+      "Bash(awk '/^function nextTurn\\\\\\(\\\\\\)/{start=NR} start && /^}/ && NR>start {print NR\": \"$0; exit}' \"C:\\\\Users\\\\nkmrk\\\\Downloads\\\\wrestle-manager\\\\src\\\\battle-engine.html\")",
+      "Bash(node --check \"C:/Users/nkmrk/Downloads/wrestle-manager/src/battle-engine-main.js\")",
+      "Bash(node --check src/battle-engine-main.js)",
+      "Bash(awk 'NR>=1350 && /^};/ {print NR\": \"$0; exit}' src/data.js)",
+      "Bash(node test/auto-sim.js 100 101)",
+      "Bash(node test/auto-sim.js 100 202)",
+      "Bash(awk 'NR==3595,/^function [a-zA-Z_]/{if\\(NR>3595 && /^function /\\){print NR\": \"$0; exit} }' src/ui-common.js)",
+      "Bash(sed -i \"s|'..', 'src'|'..', '..', 'src'|\" test/tmp/run-validation.js)",
+      "Bash(node test/tmp/run-validation.js)",
+      "Bash(awk '/^function showMilestoneEvent|^const showMilestoneEvent|^showMilestoneEvent\\\\s*=/{p=1} p{print NR\": \"$0; if\\(/^}$/ && p\\) exit}' \"/c/Users/nkmrk/Downloads/wrestle-manager/src/app.js\")",
+      "Bash(awk 'NR>=11838 && NR<=14000 && /^};$/' data.js)",
+      "Bash(awk 'NR>=11838 && NR<=14000 && /^};$/{print NR\": \"$0}' data.js)",
+      "Bash(git merge feature/ranking-screen-redesign-v0.9 --no-ff -m 'Merge feature/ranking-screen-redesign-v0.9 into main *)",
+      "Read(//usr/**)",
+      "Bash(ls /c/Python*)",
+      "Read(//c/Users/nkmrk/AppData/Local/Programs/Python//**)"
     ]
   }
 }
