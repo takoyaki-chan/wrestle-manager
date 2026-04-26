@@ -16881,11 +16881,20 @@ Engine.database = {
     const evenAxes = [...AXIS_META].sort((a, b) => Math.abs(diffs[a.key]) - Math.abs(diffs[b.key]));
     const leadAxis = positiveAxes[0] || evenAxes[0];
     const chaseAxis = negativeAxes[0] || evenAxes[0];
-    const frags = sorted.slice(0, 2).map(ax => {
+    const topAxes = sorted.slice(0, 2);
+    const frags = topAxes.map(ax => {
       const d = diffs[ax.key];
       return d >= 10 ? ax.lead : d <= -10 ? ax.trail : ax.even;
     });
-    let summaryText = `${targetName}との比較では、${frags[0]}。一方で${frags[1]}。`;
+    const fragDiffs = topAxes.map(ax => diffs[ax.key]);
+    const secondConnector = fragDiffs[0] >= 10 && fragDiffs[1] <= -10
+      ? '一方で'
+      : fragDiffs[0] <= -10 && fragDiffs[1] >= 10
+        ? 'ただ'
+        : fragDiffs[0] <= -10 && fragDiffs[1] <= -10
+          ? '同時に'
+          : 'また、';
+    let summaryText = `${targetName}との比較では、${frags[0]}。${secondConnector}${frags[1]}。`;
     if (positiveAxes.length === 0 && negativeAxes.length > 0) {
       summaryText = `${targetName}との比較では、明確な優位はまだ少ない。特に${negativeAxes[0].trail}が、${evenAxes[0].label}は構成次第で十分対抗できる。`;
     } else if (negativeAxes.length === 0 && positiveAxes.length > 0) {

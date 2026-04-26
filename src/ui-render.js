@@ -6121,7 +6121,21 @@ function _npRenderPage2() {
       if (pool.length > 0) {
         const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC2D0));
         const fn = Engine.rng.pick(rng, pool);
-        try { warComment = fn({ playerName: d.playerName, rivalName: d.rivalName, wins: warStats.wins, losses: warStats.losses }); } catch(e) {}
+        const streakValue = Number.isFinite(warStats.streak) && warStats.streak > 0
+          ? warStats.streak
+          : Math.abs(warStats.diff);
+        const signedStreak = (warStats.streakKind === 'lose' || (warStats.streakKind === 'even' && warStats.diff < 0))
+          ? -streakValue
+          : streakValue;
+        try {
+          warComment = fn({
+            playerName: d.playerName,
+            rivalName: d.rivalName,
+            wins: warStats.wins,
+            losses: warStats.losses,
+            streak: signedStreak,
+          });
+        } catch(e) {}
       }
     }
     if (!warComment) {

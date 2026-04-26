@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ranking Final Realistic Mockup v1</title>
+  <style>
+    :root {
+      --bg: #16130f;
+      --panel: #0d0c0a;
+      --card: linear-gradient(180deg, #1d1b16, #100f0c);
+      --line: rgba(255,255,255,.12);
+      --soft-line: rgba(255,255,255,.08);
+      --text: #f6f1e8;
+      --sub: #c8bda8;
+      --dim: #827866;
+      --gold: #d4a843;
+      --gold-light: #f1d680;
+      --silver: #c8c8c8;
+      --bronze: #c47e3a;
+      --low: #7d8585;
+      --red: #ff4d3f;
+      --red-bg: rgba(214,48,49,.18);
+      --up: #2ee58a;
+      --down: #ff5b52;
+      --num: "Arial Narrow", "Roboto Condensed", sans-serif;
+      --label: "Arial Narrow", "Noto Sans JP", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 50% 0, rgba(212,168,67,.10), transparent 32%), #201c17;
+      color: var(--text);
+      font-family: "Noto Sans JP", system-ui, sans-serif;
+      padding: 28px;
+    }
+    .ranking-popup {
+      width: min(1280px, 100%);
+      margin: 0 auto;
+      background: var(--bg);
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 32px 90px rgba(0,0,0,.55);
+      overflow: hidden;
+    }
+    .mast {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 22px;
+      border-bottom: 4px double var(--gold);
+      background: rgba(0,0,0,.26);
+    }
+    .mast h1 {
+      margin: 0;
+      font-family: var(--num);
+      color: var(--gold);
+      font-size: 32px;
+      letter-spacing: .12em;
+    }
+    .mast .meta {
+      text-align: right;
+      color: var(--sub);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .victory {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 18px;
+      align-items: center;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,.1));
+    }
+    .victory .side {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      font-size: 13px;
+    }
+    .victory .side:last-child { justify-content: flex-end; }
+    .victory .pt {
+      font-family: var(--num);
+      font-size: 24px;
+      color: var(--gold-light);
+    }
+    .gap {
+      padding: 0 22px;
+      border-left: 1px solid rgba(255,255,255,.12);
+      border-right: 1px solid rgba(255,255,255,.12);
+      text-align: center;
+      color: var(--gold);
+      font-family: var(--num);
+      font-size: 28px;
+      line-height: 1;
+    }
+    .gap small {
+      display: block;
+      margin-top: 3px;
+      color: var(--sub);
+      font-family: var(--label);
+      font-size: 9px;
+      letter-spacing: .18em;
+    }
+    .section {
+      padding: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-title {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+    .section-title .kicker {
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: .2em;
+      font-family: var(--label);
+    }
+    .section-title h2 {
+      margin: 2px 0 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+    .orgs-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr 1fr;
+      gap: 14px;
+    }
+    .orgcell {
+      position: relative;
+      min-height: 300px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--gold);
+      overflow: hidden;
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+    }
+    .orgcell:nth-child(2) { border-top-color: var(--silver); }
+    .orgcell:nth-child(3) { border-top-color: var(--bronze); }
+    .orgcell:nth-child(4) { border-top-color: var(--low); }
+    .orgcell-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px;
+      position: relative;
+      z-index: 3;
+    }
+    .orgcell .rank {
+      font-family: var(--num);
+      font-size: 44px;
+      line-height: .9;
+      color: var(--gold);
+    }
+    .orgcell:nth-child(2) .rank { color: var(--silver); }
+    .orgcell:nth-child(3) .rank { color: var(--bronze); }
+    .orgcell:nth-child(4) .rank { color: var(--low); }
+    .orgcell .name {
+      font-weight: 900;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+    .tier {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, var(--gold-light), var(--gold));
+      color: #17100a;
+      font-size: 10px;
+      font-weight: 900;
+      font-family: var(--label);
+    }
+    .formation {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 72px;
+      height: 170px;
+    }
+    .fcell {
+      position: absolute;
+      bottom: 0;
+      width: 108px;
+      height: 150px;
+      text-align: center;
+    }
+    .orgcell:first-child .fcell { height: 168px; }
+    .fcell.pos-1 { left: 50%; transform: translateX(-50%); z-index: 5; }
+    .fcell.pos-2 { left: 4px; bottom: -4px; z-index: 4; transform: scale(.9); transform-origin: bottom left; }
+    .fcell.pos-3 { right: 4px; bottom: -4px; z-index: 4; transform: scale(.9); transform-origin: bottom right; }
+    .fcell img {
+      height: 100%;
+      max-width: 150px;
+      object-fit: contain;
+      object-position: bottom center;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,.55));
+    }
+    .name-tag {
+      position: absolute;
+      left: 50%;
+      bottom: -6px;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 10px;
+      font-weight: 900;
+      text-shadow: -1px -1px #000, 1px -1px #000, -1px 1px #000, 1px 1px #000;
+    }
+    .role-badges {
+      position: absolute;
+      left: 50%;
+      top: -16px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      z-index: 9;
+    }
+    .badge {
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 2px;
+      font-family: var(--label);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+    .badge.board { color: var(--red); border: 1px solid var(--red); background: var(--red-bg); }
+    .badge.core { color: #fff; border: 1px solid rgba(255,255,255,.55); background: rgba(0,0,0,.40); }
+    .badge.champ { color: var(--gold); border: 1px solid var(--gold); background: rgba(212,168,67,.16); }
+    .orgcell-foot {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid var(--soft-line);
+      padding-top: 10px;
+    }
+    .label {
+      font-family: var(--label);
+      font-size: 9px;
+      letter-spacing: .12em;
+      color: var(--dim);
+    }
+    .big-num {
+      font-family: var(--num);
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .orgcell-foot .right {
+      text-align: right;
+      color: var(--sub);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+    .rp-profiles { display: grid; gap: 10px; }
+    .rp-card {
+      min-height: 166px;
+      display: grid;
+      grid-template-columns: 70px minmax(230px, 1.05fr) minmax(190px, .9fr) minmax(330px, 1.35fr) minmax(150px, .65fr);
+      gap: 10px;
+      align-items: stretch;
+      padding: 14px;
+      background: linear-gradient(90deg, rgba(212,168,67,.14), transparent 40%), var(--card);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--gold);
+    }
+    .rp-card:nth-child(2) { border-left-color: var(--silver); background: var(--card); }
+    .rp-card:nth-child(3) { border-left-color: var(--bronze); background: linear-gradient(90deg, rgba(196,126,58,.16), transparent 40%), var(--card); }
+    .rp-card:nth-child(4) { border-left-color: var(--low); background: linear-gradient(90deg, rgba(255,255,255,.07), transparent 40%), var(--card); }
+    .rp-rank span {
+      width: 54px;
+      height: 74px;
+      display: grid;
+      place-items: center;
+      clip-path: polygon(0 0, 100% 0, 100% 68%, 50% 100%, 0 68%);
+      background: linear-gradient(180deg, #fff7d7, var(--gold));
+      color: #050505;
+      font-family: var(--num);
+      font-size: 36px;
+      font-weight: 900;
+    }
+    .rp-card:nth-child(2) .rp-rank span { background: linear-gradient(180deg, #fff, var(--silver)); }
+    .rp-card:nth-child(3) .rp-rank span { background: linear-gradient(180deg, #fff1df, var(--bronze)); }
+    .rp-card:nth-child(4) .rp-rank span { background: linear-gradient(180deg, #f6f6f6, var(--low)); }
+    .rp-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .rp-tags span {
+      border: 1px solid rgba(212,168,67,.5);
+      color: var(--gold);
+      background: rgba(212,168,67,.08);
+      padding: 2px 7px;
+      font-family: var(--label);
+      font-size: 9px;
+      letter-spacing: .1em;
+    }
+    .rp-info h3 {
+      margin: 0 0 7px;
+      font-size: 24px;
+      line-height: 1.05;
+    }
+    .rp-info p,
+    .rp-ace p,
+    .rp-depth-note {
+      margin: 0;
+      color: var(--sub);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .rp-ace {
+      display: grid;
+      grid-template-columns: 1fr 82px;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      min-width: 0;
+    }
+    .rp-ace-role {
+      min-height: 14px;
+      margin-bottom: 2px;
+      font-family: var(--label);
+      font-size: 9px;
+      letter-spacing: .12em;
+    }
+    .rp-ace-role .board { color: var(--red); }
+    .rp-ace-role .champ { color: var(--gold); }
+    .rp-ace strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+      margin-bottom: 5px;
+    }
+    .rp-ace-img {
+      width: 82px;
+      height: 106px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.035);
+    }
+    .rp-ace-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+    }
+    .rp-ace dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2px 10px;
+      margin: 6px 0 0;
+      font-size: 10px;
+    }
+    .rp-ace dt { color: var(--sub); }
+    .rp-ace dd { margin: 0; text-align: right; font-weight: 900; }
+    .rp-depth { min-width: 0; }
+    .rp-depth-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .rp-depth-head strong { font-size: 12px; }
+    .rp-depth-head span {
+      color: var(--sub);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .rp-faces {
+      display: flex;
+      gap: 6px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    .rp-face {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.05);
+    }
+    .rp-face img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+    }
+    .rp-face b {
+      position: absolute;
+      right: 1px;
+      bottom: 0;
+      font-family: var(--num);
+      font-size: 13px;
+      text-shadow: -1px -1px #000, 1px -1px #000, -1px 1px #000, 1px 1px #000;
+    }
+    .rp-face .role-badges {
+      position: absolute;
+      left: 1px;
+      top: 1px;
+      transform: none;
+      z-index: 2;
+    }
+    .rp-face .badge {
+      font-size: 7px;
+      padding: 1px 3px;
+    }
+    .rp-depth-note {
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid var(--soft-line);
+    }
+    .rp-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 10px;
+      border-left: 1px solid var(--line);
+      padding-left: 10px;
+    }
+    .rp-metrics b {
+      display: block;
+      font-family: var(--num);
+      font-size: 24px;
+      line-height: 1.1;
+    }
+    .gold { color: var(--gold); }
+    .silver { color: var(--silver); }
+    .bronze { color: var(--bronze); }
+    .low { color: var(--low); }
+    @media (max-width: 1100px) {
+      body { padding: 12px; }
+      .orgs-grid { grid-template-columns: 1fr 1fr; }
+      .rp-card { grid-template-columns: 60px 1fr; }
+      .rp-ace, .rp-depth, .rp-metrics { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+  <main class="ranking-popup">
+    <header class="mast">
+      <h1>INDUSTRY STANDINGS</h1>
+      <div class="meta">第1シーズン・全4団体<br><strong>Y1 W1</strong></div>
+    </header>
+
+    <div class="victory">
+      <div class="side"><span>▲ 1位</span><strong>天頂プロレス</strong><span class="pt">193pt</span></div>
+      <div class="gap">-136<small>pt で頂点</small></div>
+      <div class="side"><span>▼ 自団体</span><strong>テスト団体</strong><span class="pt">57pt</span></div>
+    </div>
+
+    <section class="section">
+      <div class="section-title">
+        <div class="kicker">02 — STANDINGS</div>
+        <h2>全団体ロースター — Top 3 Lineup</h2>
+      </div>
+      <div class="orgs-grid">
+        <article class="orgcell">
+          <div class="orgcell-head"><div class="rank">1</div><div><div class="name">天頂プロレス</div><span class="tier">S</span></div></div>
+          <div class="formation">
+            <div class="fcell pos-2"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_shirogane_r.webp"><div class="name-tag">白銀麗子 77</div></div>
+            <div class="fcell pos-1"><span class="role-badges"><span class="badge board">看板</span></span><img src="../../../image/upper/upper_abukuma_t.webp"><div class="name-tag">阿武隈塔子 80</div></div>
+            <div class="fcell pos-3"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_kikuchi_r.webp"><div class="name-tag">菊池璃子 74</div></div>
+          </div>
+          <div class="orgcell-foot"><div><div class="label">評価</div><div class="big-num">193<span style="font-size:11px">pt</span></div></div><div class="right"><strong>平均OVR 68</strong><br>対戦pt 0</div></div>
+        </article>
+        <article class="orgcell">
+          <div class="orgcell-head"><div class="rank">2</div><div><div class="name">インパルス</div><span class="tier">A</span></div></div>
+          <div class="formation">
+            <div class="fcell pos-2"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_yanagishima_m.webp"><div class="name-tag">柳島みずほ 74</div></div>
+            <div class="fcell pos-1"><span class="role-badges"><span class="badge board">看板</span></span><img src="../../../image/upper/upper_umegaoka_m.webp"><div class="name-tag">梅ヶ丘みのり 77</div></div>
+            <div class="fcell pos-3"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_kawanobe_n.webp"><div class="name-tag">川野辺菜穂子 71</div></div>
+          </div>
+          <div class="orgcell-foot"><div><div class="label">評価</div><div class="big-num">156<span style="font-size:11px">pt</span></div></div><div class="right"><strong>平均OVR 58</strong><br>対戦pt 0</div></div>
+        </article>
+        <article class="orgcell">
+          <div class="orgcell-head"><div class="rank">3</div><div><div class="name">あさひ女子プロレス</div><span class="tier">B</span></div></div>
+          <div class="formation">
+            <div class="fcell pos-2"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_matsushita_m.webp"><div class="name-tag">松下真理亜 67</div></div>
+            <div class="fcell pos-1"><span class="role-badges"><span class="badge board">看板</span></span><img src="../../../image/upper/upper_hasegawa_r.webp"><div class="name-tag">長谷川レオナ 75</div></div>
+            <div class="fcell pos-3"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_iwakoji_s.webp"><div class="name-tag">岩小路志摩子 64</div></div>
+          </div>
+          <div class="orgcell-foot"><div><div class="label">評価</div><div class="big-num">128<span style="font-size:11px">pt</span></div></div><div class="right"><strong>平均OVR 58</strong><br>対戦pt 0</div></div>
+        </article>
+        <article class="orgcell">
+          <div class="orgcell-head"><div class="rank">4</div><div><div class="name">テスト団体</div><span class="tier">自</span></div></div>
+          <div class="formation">
+            <div class="fcell pos-2"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_totsuka_y.webp"><div class="name-tag">戸塚ゆかり 42</div></div>
+            <div class="fcell pos-1"><span class="role-badges"><span class="badge board">看板</span></span><img src="../../../image/upper/upper_kimura_r.webp"><div class="name-tag">木村レイカ 48</div></div>
+            <div class="fcell pos-3"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_kinouchi_y.webp"><div class="name-tag">木ノ内幸音 38</div></div>
+          </div>
+          <div class="orgcell-foot"><div><div class="label">評価</div><div class="big-num">57<span style="font-size:11px">pt</span></div></div><div class="right"><strong>平均OVR 39</strong><br>対戦pt 0</div></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <div class="kicker">03 — 団体詳細</div>
+        <h2>団体プロフィール - 戦力層台帳</h2>
+      </div>
+      <div class="rp-profiles">
+        <article class="rp-card">
+          <div class="rp-rank"><span>1</span></div>
+          <div class="rp-info">
+            <div class="rp-tags"><span>S</span><span>16名</span><span>追走中</span></div>
+            <h3>天頂プロレス</h3>
+            <p>業界首位に立つ団体で、追われる側としての安定感がある。阿武隈塔子が最高OVR80の看板を背負う一方、王座はまだ空いている。看板を中心に上位陣がまとまり、主力の顔ぶれで勝負できる陣容で、トップ3平均OVR77、全体平均OVR68。所属16名の中に70台以上が10名、80台以上が1名おり、人気75の土台をどこまで戦力に変えられるかが見どころ。</p>
+          </div>
+          <div class="rp-ace">
+            <div><div class="rp-ace-role"><span class="board">看板</span></div><strong>阿武隈塔子 / OVR80</strong><p>阿武隈塔子が団体の顔。白銀麗子、菊池璃子が続くため、看板頼みで終わらせず層として押し上げたい。</p><dl><dt>上位層</dt><dd>中</dd><dt>控え層</dt><dd>中</dd></dl></div>
+            <div class="rp-ace-img"><img src="../../../image/upper/upper_abukuma_t.webp"></div>
+          </div>
+          <div class="rp-depth">
+            <div class="rp-depth-head"><strong>主力層 8名（大枠含む）</strong><span>80 / 77 / 74 / 73 / 72 / 72 / 72 / 72台多数</span></div>
+            <div class="rp-faces">
+              <span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_shirogane_r.png"><b>77</b></span>
+              <span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_kikuchi_r.png"><b>74</b></span>
+              <span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_sakamoto_r.png"><b>73</b></span>
+              <span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_kannonzaki_s.png"><b>72</b></span>
+              <span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_izawa_h.png"><b>72</b></span>
+              <span class="rp-face"><img src="../../../image/face_iijima_s.png"><b>72</b></span>
+              <span class="rp-face"><img src="../../../image/face_matsuoka_a.png"><b>72</b></span>
+            </div>
+            <p class="rp-depth-note">この列は大枠の王者/看板を起点に、実際に比較したい主力層を並べたもの。大枠込み8名の見える範囲はOVR80から72までで、看板の後ろに白銀麗子が続き、上位のつながりは悪くない。主力候補が多く、控えにも試合を任せやすい。</p>
+          </div>
+          <div class="rp-metrics"><div><span class="label">評価</span><b class="gold">193</b></div><div><span class="label">基礎</span><b>143</b></div><div><span class="label">平均OVR</span><b>68</b></div><div><span class="label">勢い</span><b>0</b></div><div><span class="label">実績</span><b>50</b></div><div><span class="label">人気</span><b class="gold">75</b></div></div>
+        </article>
+
+        <article class="rp-card">
+          <div class="rp-rank"><span>2</span></div>
+          <div class="rp-info">
+            <div class="rp-tags"><span>A</span><span>13名</span><span>追走中</span></div>
+            <h3>インパルス</h3>
+            <p>首位まで37pt差。射程圏にはいるが、もう一段の厚みが欲しい。梅ヶ丘みのりが最高OVR77の看板を背負う一方、王座はまだ空いている。突出した怪物はいないが、主力候補が広く並ぶ堅実な陣容で、トップ3平均OVR74、全体平均OVR58。所属13名の中に70台以上が3名、80台以上が0名おり、人気55の土台をどこまで戦力に変えられるかが見どころ。</p>
+          </div>
+          <div class="rp-ace"><div><div class="rp-ace-role"><span class="board">看板</span></div><strong>梅ヶ丘みのり / OVR77</strong><p>梅ヶ丘みのりが団体の顔。柳島みずほ、川野辺菜穂子が続くため、看板頼みで終わらせず層として押し上げたい。</p><dl><dt>上位層</dt><dd>中</dd><dt>控え層</dt><dd>薄</dd></dl></div><div class="rp-ace-img"><img src="../../../image/upper/upper_umegaoka_m.webp"></div></div>
+          <div class="rp-depth"><div class="rp-depth-head"><strong>主力層 6名（大枠含む）</strong><span>77 / 74 / 71 / 67 / 64 / 63台多数</span></div><div class="rp-faces"><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_yanagishima_m.png"><b>74</b></span><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_kawanobe_n.png"><b>71</b></span><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_akabane_a.png"><b>67</b></span><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_okochi_s.png"><b>64</b></span><span class="rp-face"><img src="../../../image/face_kamoshida_r.png"><b>63</b></span></div><p class="rp-depth-note">この列は大枠の王者/看板を起点に、実際に比較したい主力層を並べたもの。大枠込み6名の見える範囲はOVR77から63までで、看板の後ろに柳島みずほが続き、上位のつながりは悪くない。上位陣はそろっているが、控えの底上げでさらに安定する。</p></div>
+          <div class="rp-metrics"><div><span class="label">評価</span><b>156</b></div><div><span class="label">基礎</span><b>126</b></div><div><span class="label">平均OVR</span><b>58</b></div><div><span class="label">勢い</span><b>0</b></div><div><span class="label">実績</span><b>30</b></div><div><span class="label">人気</span><b class="gold">55</b></div></div>
+        </article>
+
+        <article class="rp-card">
+          <div class="rp-rank"><span>3</span></div>
+          <div class="rp-info">
+            <div class="rp-tags"><span>B</span><span>10名</span><span>追走中</span></div>
+            <h3>あさひ女子プロレス</h3>
+            <p>首位まで65pt、直上まで28pt差。順位を上げるには看板の後ろを支える層作りが鍵になる。長谷川レオナが最高OVR75の看板を背負う一方、王座はまだ空いている。まだ発展途上だが、伸びしろのある選手を育てながら順位を追う陣容で、トップ3平均OVR69、全体平均OVR58。所属10名の中に70台以上が1名、80台以上が0名おり、人気35の土台をどこまで戦力に変えられるかが見どころ。</p>
+          </div>
+          <div class="rp-ace"><div><div class="rp-ace-role"><span class="board">看板</span></div><strong>長谷川レオナ / OVR75</strong><p>長谷川レオナが団体の顔。松下真理亜、岩小路志摩子が続くため、看板頼みで終わらせず層として押し上げたい。</p><dl><dt>上位層</dt><dd>中</dd><dt>控え層</dt><dd>薄</dd></dl></div><div class="rp-ace-img"><img src="../../../image/upper/upper_hasegawa_r.webp"></div></div>
+          <div class="rp-depth"><div class="rp-depth-head"><strong>主力層 5名（大枠含む）</strong><span>75 / 67 / 64 / 63 / 58台多数</span></div><div class="rp-faces"><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_matsushita_m.png"><b>67</b></span><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_iwakoji_s.png"><b>64</b></span><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_miyazawa_h.png"><b>63</b></span><span class="rp-face"><img src="../../../image/face_matsuoka_a.png"><b>58</b></span></div><p class="rp-depth-note">この列は大枠の王者/看板を起点に、実際に比較したい主力層を並べたもの。大枠込み5名の見える範囲はOVR75から58までで、看板の後ろに松下真理亜が続き、上位のつながりは悪くない。少数精鋭寄りで、下位選手の成長が順位に直結する。</p></div>
+          <div class="rp-metrics"><div><span class="label">評価</span><b class="bronze">128</b></div><div><span class="label">基礎</span><b>113</b></div><div><span class="label">平均OVR</span><b>58</b></div><div><span class="label">勢い</span><b>0</b></div><div><span class="label">実績</span><b>15</b></div><div><span class="label">人気</span><b class="bronze">35</b></div></div>
+        </article>
+
+        <article class="rp-card">
+          <div class="rp-rank"><span>4</span></div>
+          <div class="rp-info">
+            <div class="rp-tags"><span>自団体</span><span>5名</span><span>追走中</span></div>
+            <h3>テスト団体</h3>
+            <p>首位まで136pt、直上まで71pt差。順位を上げるには看板の後ろを支える層作りが鍵になる。木村レイカが最高OVR48の看板を背負う一方、王座はまだ空いている。まだ発展途上だが、伸びしろのある選手を育てながら順位を追う陣容で、トップ3平均OVR43、全体平均OVR39。所属5名の中に70台以上が0名、80台以上が0名おり、人気10の土台をどこまで戦力に変えられるかが見どころ。</p>
+          </div>
+          <div class="rp-ace"><div><div class="rp-ace-role"><span class="board">看板</span></div><strong>木村レイカ / OVR48</strong><p>木村レイカが団体の顔。戸塚ゆかり、木ノ内幸音が続くため、看板頼みで終わらせず層として押し上げたい。</p><dl><dt>上位層</dt><dd>薄</dd><dt>控え層</dt><dd>薄</dd></dl></div><div class="rp-ace-img"><img src="../../../image/upper/upper_kimura_r.webp"></div></div>
+          <div class="rp-depth"><div class="rp-depth-head"><strong>主力層 4名（大枠含む）</strong><span>48 / 42 / 38 / 36台多数</span></div><div class="rp-faces"><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_totsuka_y.png"><b>42</b></span><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_kinouchi_y.png"><b>38</b></span><span class="rp-face"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/face_asahina_h.png"><b>36</b></span></div><p class="rp-depth-note">この列は大枠の王者/看板を起点に、実際に比較したい主力層を並べたもの。大枠込み4名の見える範囲はOVR48から36までで、看板の後ろに戸塚ゆかりが続き、上位のつながりは悪くない。少数精鋭寄りで、下位選手の成長が順位に直結する。</p></div>
+          <div class="rp-metrics"><div><span class="label">評価</span><b class="low">57</b></div><div><span class="label">基礎</span><b>57</b></div><div><span class="label">平均OVR</span><b>39</b></div><div><span class="label">勢い</span><b>0</b></div><div><span class="label">実績</span><b>0</b></div><div><span class="label">人気</span><b class="low">10</b></div></div>
+        </article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
