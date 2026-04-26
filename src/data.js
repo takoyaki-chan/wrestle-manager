@@ -11634,6 +11634,36 @@ const NEWS_HEADLINE_TEMPLATES = {
     { headline: 'さようなら{name}。最後のゴングが鳴った',
       body: '長きにわたり{org}を背負った{name}が引退を決断。{detail}。「悔いはない」と穏やかな表情で語った姿が印象的だった。' },
   ],
+  contractBetrayalChampCarry: [
+    { headline: '衝撃の裏切り――{name}がベルトを抱えて{toOrg}へ',
+      body: '{fromOrg}の{name}が契約を蹴って{toOrg}へ電撃移籍。世界王座まで持ち去られる前代未聞の事態に、ロッカールームには重い沈黙が流れた。「ベルトは私と一緒に動く」――その一言が業界に走った。' },
+    { headline: '王座を抱えての離脱――{name}、{toOrg}入り',
+      body: '{fromOrg}が抱える看板タイトルを保持したまま、{name}が{toOrg}への移籍を決断。残された選手たちは「あれが仲間だったとは思いたくない」と肩を落とす。奪還の挑戦状なくして決着はつかない。' },
+  ],
+  contractBetrayalChampLeave: [
+    { headline: '{name}が{toOrg}へ――ベルトは置いて去った',
+      body: '{fromOrg}との契約交渉が決裂し、{name}が{toOrg}へ去った。世界王座は返上、空位に。「私が持つベルトじゃない」と最後の会見で語った姿に、複雑な思いを抱くファンも少なくない。' },
+    { headline: '王座返上――{name}、{toOrg}へ移籍',
+      body: '世界王座を保持していた{name}が{toOrg}への移籍を表明。ベルトはリング中央に置かれたまま空位となった。{fromOrg}は早急に王座決定戦の準備に入る。' },
+  ],
+  contractBetrayalRivalOrg: [
+    { headline: '因縁の相手へ――{name}、{toOrg}に移籍',
+      body: '{fromOrg}を離れた{name}が、よりによって因縁の{toOrg}へ。「これは裏切りだ」とロッカールームから怒号が漏れた。次にリングで顔を合わせる時、その視線がどう変わっているのか――。' },
+    { headline: '禁断の移籍――{name}が{toOrg}入り',
+      body: '幾度も激戦を繰り広げてきた{toOrg}に、{fromOrg}の{name}が加入。残された仲間の表情には怒りと困惑が混じる。次の対抗戦は感情の渦になることが避けられない。' },
+  ],
+  contractBetrayalAce: [
+    { headline: 'エース流出――{name}が{toOrg}へ',
+      body: '{fromOrg}の屋台骨を支えた{name}が{toOrg}への移籍を決断。看板選手の喪失に、団体の前途には暗雲が垂れ込める。「私が抜けてもこの団体は強い」と本人。残された選手たちは奮起できるか。' },
+    { headline: '看板選手の離脱――{name}、{toOrg}入り',
+      body: 'OVR上位常連の{name}が{fromOrg}を離れて{toOrg}へ。チームの戦力構成は大きく変わる。ファンからは「次のエースは誰になる」と早くも期待と不安の声が混ざる。' },
+  ],
+  contractBetrayalGeneric: [
+    { headline: '{name}が{toOrg}へ――契約交渉決裂',
+      body: '{fromOrg}との契約交渉がまとまらず、{name}は{toOrg}への移籍を決断した。「環境を変えたかった」と{name}。残された仲間との関係に微妙な空気が漂う。' },
+    { headline: '移籍決定――{name}が{toOrg}入り',
+      body: '{fromOrg}を出た{name}が{toOrg}と契約。条件面での折り合いがつかなかったとされる。新天地での活躍に注目が集まる。' },
+  ],
   poachSuccess: [
     { headline: '電撃移籍！{name}が{toOrg}に加入。{fromOrg}は大打撃か',
       body: '{fromOrg}の{name}が{toOrg}への移籍を決断。OVR{ovr}の実力者の流出に{fromOrg}関係者は衝撃を隠せない。「新天地で自分を試したい」と{name}。' },

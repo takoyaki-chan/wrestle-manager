@@ -148,6 +148,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | ppv-grand-final-spec-v2.0.md | PPV GRAND FINAL(エントリー/頂上決戦/報酬) |
 | promo-system-spec-v1.0.md | プロモ活動(人気成長/収入/MQスタック) |
 | relationship-system-spec-v2.0.md | Bond/Rivalry(非対称2軸/試合影響/因縁称号) |
+| relationship-system-spec-v2.2.md | 離脱・裏切りイベント(A-1〜A-4 サーチャージ/B-3 元同僚初対戦/奪還挑戦) |
 | rental-system-spec-v2.0.md | レンタル移籍(費用/制約/帰団処理) |
 | rival-org-spec-v1.0.md | AI団体の行動ロジック |
 | scout-system-spec-v1.0.md | スカウト/新人獲得 |

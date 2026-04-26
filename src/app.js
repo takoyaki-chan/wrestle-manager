@@ -3867,6 +3867,7 @@ const App = {
           const resolveRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 2));
           const result = Engine.contract.resolveNegotiation(resolveRng, G, neg, 0);
           G = result.state;
+          App._consumeBetrayalNews(neg);
           results.push(result.result);
           idx++;
           processNext();
@@ -3889,6 +3890,7 @@ const App = {
     const resolveRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 2));
     const result = Engine.contract.resolveNegotiation(resolveRng, G, neg, choiceIdx);
     G = result.state;
+    App._consumeBetrayalNews(neg);
 
     if (result.result.type === 'listen') {
       // 理由を聞く → サブ選択
@@ -3896,6 +3898,7 @@ const App = {
         const subRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 3));
         const subResult = Engine.contract.resolveNegotiation(subRng, G, neg, 1, subChoice);
         G = subResult.state;
+        App._consumeBetrayalNews(neg);
         results.push(subResult.result);
         if (subResult.result.type === 'stay') Audio.play('fanfare');
         else if (subResult.result.type === 'depart') Audio.play('defeat');
@@ -4089,6 +4092,110 @@ const App = {
     refreshAll();
     showEventPopup({ type:'fighter', id:cId, name:cName, tone:'negative',
       message: getTraitQuote('release', c), detail:`${cName}が団体を去りました` });
+  },
+
+  // ── タイトル奪還挑戦状（Phase 4） ─────────────────────────────────────
+  openReclaimDialog() {
+    if (!G.titles?.world?.externalHolder) return;
+    if (!Engine.title.canIssueReclaim(G, 'world')) {
+      Audio.play('error'); alert('現在は挑戦状を発行できません。'); return;
+    }
+    const eligible = G.roster.filter(c => !c.injury && !c.isRental && !c.forcedRest);
+    if (eligible.length === 0) {
+      Audio.play('error'); alert('挑戦可能な選手がいません。'); return;
+    }
+    const eh = G.titles.world.externalHolder;
+    const heldByOrg = G.aiOrgs?.[eh.orgId];
+    const heldByOrgName = heldByOrg?.name || eh.orgId;
+    const exChamp = heldByOrg?.roster?.find(c => c.id === eh.fighterId);
+    const exChampName = exChamp?.name || `元王者#${eh.fighterId}`;
+
+    let dlg = document.getElementById('reclaimDialog');
+    if (dlg) dlg.remove();
+    dlg = document.createElement('div');
+    dlg.id = 'reclaimDialog';
+    dlg.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
+    const opts = eligible
+      .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
+      .map(c => `<option value="${c.id}">${c.name}（OVR ${Engine.util.ov(c)}）</option>`)
+      .join('');
+    dlg.innerHTML = `
+      <div style="background:#1a1a24;border:1px solid #d4607a;border-radius:8px;padding:20px 24px;width:90%;max-width:480px;color:#eee">
+        <div style="font-size:16px;font-weight:700;color:#ffb3c1;margin-bottom:10px">⚔ 奪還挑戦状の発行</div>
+        <div style="font-size:12px;color:#bbb;line-height:1.7;margin-bottom:14px">
+          <strong>${heldByOrgName}</strong> の <strong>${exChampName}</strong> に対して挑戦状を叩きつけます。<br>
+          次の興行のメインで決戦。敗北時は12週間再挑戦できません。
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="font-size:12px;color:#aaa;display:block;margin-bottom:6px">挑戦者を選ぶ</label>
+          <select id="reclaimChallengerSelect" style="width:100%;padding:8px;background:#0f0f18;border:1px solid #444;border-radius:4px;color:#eee;font-size:13px">${opts}</select>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button onclick="App._closeReclaimDialog()" style="padding:8px 16px;background:#333;border:1px solid #555;color:#ccc;border-radius:4px;cursor:pointer">キャンセル</button>
+          <button onclick="App.confirmReclaim()" style="padding:8px 16px;background:linear-gradient(135deg,#d4607a,#a8334d);border:none;color:#fff;border-radius:4px;cursor:pointer;font-weight:600">挑戦状を発行</button>
+        </div>
+      </div>`;
+    document.body.appendChild(dlg);
+  },
+  _closeReclaimDialog() {
+    const dlg = document.getElementById('reclaimDialog');
+    if (dlg) dlg.remove();
+  },
+  confirmReclaim() {
+    const sel = document.getElementById('reclaimChallengerSelect');
+    if (!sel) return;
+    const challengerId = parseInt(sel.value, 10);
+    if (!challengerId || isNaN(challengerId)) return;
+    if (!Engine.title.canIssueReclaim(G, 'world')) { Audio.play('error'); return; }
+    G = Engine.title.recordReclaimAttempt(G, 'world', challengerId);
+    G = { ...G, _pendingReclaim: { titleType: 'world', challengerId } };
+    Audio.play('select');
+    App._closeReclaimDialog();
+    refreshAll();
+    const c = G.roster.find(f => f.id === challengerId);
+    const eh = G.titles.world.externalHolder;
+    const orgName = G.aiOrgs?.[eh.orgId]?.name || eh.orgId;
+    showEventPopup({
+      type: 'fighter', id: challengerId,
+      name: c?.name || '挑戦者', tone: 'positive',
+      message: `📜 ${c?.name} が ${orgName} へ挑戦状を叩きつけた！`,
+      detail: `次の興行のメインで王座奪還の決戦が行われる。`,
+    });
+  },
+  // Phase 6: 契約裏切り → 新聞ヘッドライン振り分け
+  _consumeBetrayalNews(neg) {
+    if (!G._lastBetrayalSummary) return;
+    const sm = G._lastBetrayalSummary;
+    let type;
+    if (sm.isChampion && sm.beltCarried) type = 'contractBetrayalChampCarry';
+    else if (sm.isChampion) type = 'contractBetrayalChampLeave';
+    else if (sm.isRivalOrg) type = 'contractBetrayalRivalOrg';
+    else if (sm.isAce) type = 'contractBetrayalAce';
+    else type = 'contractBetrayalGeneric';
+    const fromOrg = G.orgName || 'プレイヤー団体';
+    const toOrg = G.aiOrgs?.[sm.toOrgId]?.name || sm.toOrgId || '他団体';
+    App._pushNewsEvent({
+      type, characterId: sm.departingId,
+      data: { name: sm.departingName || neg?.fighterName || '選手', fromOrg, toOrg },
+    });
+    const { _lastBetrayalSummary, _lastBetrayalBeltCarried, ...rest } = G;
+    G = rest;
+  },
+
+  cancelReclaim() {
+    if (!G._pendingReclaim) return;
+    if (!confirm('挑戦状を取り下げますか？（今シーズンの挑戦履歴は残ります）')) return;
+    // pending challenge を取り下げ：reclaimChallenges から最新の未解決エントリを除去
+    const newChallenges = (G.reclaimChallenges || []).filter((c, i, arr) => {
+      // 直近の pending を1件だけ削除
+      const lastPendingIdx = arr.map((cc, ii) => cc.result == null && cc.titleType === 'world' ? ii : -1)
+        .filter(ii => ii >= 0).pop();
+      return i !== lastPendingIdx;
+    });
+    const { _pendingReclaim, ...rest } = G;
+    G = { ...rest, reclaimChallenges: newChallenges };
+    Audio.play('select');
+    refreshAll();
   },
 
   // Set training schedule
@@ -4432,6 +4539,52 @@ const App = {
       }
     }
 
+    // ── Phase 4: タイトル奪還挑戦の注入 ──
+    App._reclaimData = null;
+    if (G._pendingReclaim && G.titles?.world?.externalHolder) {
+      const pr = G._pendingReclaim;
+      const eh = G.titles.world.externalHolder;
+      const challenger = G.roster.find(c => c.id === pr.challengerId);
+      const aiOrg = G.aiOrgs?.[eh.orgId];
+      const defender = aiOrg?.roster?.find(c => c.id === eh.fighterId);
+      // 整合性チェック: 挑戦者が脱退/怪我等で参戦不可、または防衛者がAI団体ロスターから消えている → 取り下げ
+      if (!challenger || challenger.injury || challenger.forcedRest || !defender) {
+        const { _pendingReclaim, ...rest } = G;
+        G = rest;
+      } else {
+        // 防衛者を player roster に isReclaim 印で一時注入
+        const defenderForRoster = { ...defender, isReclaim: true, _reclaimOrgId: eh.orgId };
+        // 既存メイン枠 (slot 0) を奪還挑戦試合に置き換え
+        const newCard = [...G.showCard];
+        const reclaimMatch = {
+          left: pr.challengerId, right: defender.id,
+          isTitle: true, isReclaim: true,
+          _reclaimDefenderId: defender.id, _reclaimOrgId: eh.orgId,
+        };
+        if (newCard.length === 0) newCard.push(reclaimMatch);
+        else newCard[0] = reclaimMatch;
+        G = { ...G, showCard: newCard, roster: [...G.roster, defenderForRoster] };
+        // validMatches も再構築（メインを反映）
+        validMatches.length = 0;
+        newCard.forEach(m => {
+          if (m.matchType === 'tag'
+            ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
+            : (m.left > 0 && m.right > 0)) validMatches.push(m);
+        });
+        App._reclaimData = {
+          challengerId: pr.challengerId, defenderId: defender.id,
+          orgId: eh.orgId, orgName: aiOrg?.name || eh.orgId,
+          defenderName: defender.name, challengerName: challenger.name,
+        };
+        showEventPopup({
+          type: 'fighter', id: pr.challengerId,
+          name: challenger.name, tone: 'positive',
+          message: `⚔ 王座奪還の決戦！ ${challenger.name} vs ${defender.name}`,
+          detail: `${aiOrg?.name || eh.orgId} に持ち去られた世界王座を取り戻せ！`,
+        });
+      }
+    }
+
     // v1.2: 乱入マッチ判定
     App._intrusionData = null;
     const intrusionRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 8888));
@@ -4645,7 +4798,7 @@ const App = {
         matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
         totalMatches: sp.validMatches.length,
         isTitle: !!m.isTitle,
-        isSpecialMatch: !!m.isTitle,
+        isSpecialMatch: false,
         matchTier,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, charL.id, charR.id); return rl ? rl.tier : 0; })(),
         leftPersonality: charL.personality || 'normal',
@@ -5014,6 +5167,7 @@ const App = {
     const titleMatchOutcomes = [];
     validMatches.forEach((m, i) => {
       if (!m.isTitle || !results[i]) return;
+      if (m.isReclaim) return; // Phase 4: 奪還挑戦試合は専用ハンドラで処理
       const r = results[i];
       const champId = titles.world.championId;
       const challengerId = champId === m.left ? m.right : m.left;
@@ -5073,6 +5227,38 @@ const App = {
       // Phase0修正: lastIntrusionWeek更新（クールダウン計算用）
       const intAbsWeek = Engine.util.absWeek(s.season, s.week);
       s = { ...s, lastIntrusionWeek: intAbsWeek };
+    }
+
+    // ── Phase 4: 奪還挑戦試合の結果処理 ──
+    if (App._reclaimData) {
+      const rd = App._reclaimData;
+      const reclaimIdx = validMatches.findIndex(m => m.isReclaim);
+      const r = reclaimIdx >= 0 ? results[reclaimIdx] : null;
+      if (r) {
+        const winnerId = r.winner === 'left' ? validMatches[reclaimIdx].left : (r.winner === 'right' ? validMatches[reclaimIdx].right : null);
+        if (winnerId === rd.challengerId) {
+          // 挑戦者勝利 → タイトル奪還
+          const reclaimResult = Engine.title.resolveReclaimWin({ ...s, titles, roster }, 'world', rd.challengerId);
+          titles = reclaimResult.titles;
+          s = { ...s, aiOrgs: reclaimResult.aiOrgs, reclaimChallenges: reclaimResult.reclaimChallenges };
+          // 新王者の人気微増（crownChampion 相当の小さなボーナスのみ。reassess は省略）
+          roster = roster.map(c => c.id === rd.challengerId
+            ? { ...c, popularity: Math.min(100, (c.popularity || 0) + Engine.popularity.applyDiminishing(5, c.popularity || 0)) }
+            : c);
+          events.push(`🏆 王座奪還！ ${rd.challengerName} が ${rd.orgName} から世界王座を取り戻した！`);
+        } else {
+          // 挑戦失敗 → 12週CD
+          const reclaimResult = Engine.title.resolveReclaimLoss(s, 'world');
+          s = { ...s, reclaimChallenges: reclaimResult.reclaimChallenges };
+          events.push(`💔 ${rd.challengerName} の奪還挑戦は失敗。${rd.orgName} が世界王座を防衛した。`);
+        }
+      }
+      // 防衛者を player roster から除去
+      roster = roster.filter(c => !c.isReclaim);
+      // pending クリア
+      const { _pendingReclaim, ...rest } = s;
+      s = rest;
+      App._reclaimData = null;
     }
 
     // 集客v2: matchAppeals→showDraw→attendance算出
@@ -5348,6 +5534,8 @@ const App = {
           isProveModeB: fB ? (fB.proveMode || 0) > 0 : false,
           ovrA: fA ? Engine.util.ov(fA) : 0,
           ovrB: fB ? Engine.util.ov(fB) : 0,
+          // Phase 4: 奪還挑戦は cross-org 試合（残留 vs 元同僚 / B-3 などが効く）
+          isCrossOrg: !!m.isReclaim,
         };
         relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
       });

@@ -1629,6 +1629,144 @@ const Engine = {
       }
       return { titles: G.titles, msg: null };
     },
+
+    // ── Phase 4: タイトル奪還挑戦 ──────────────────────────────────────────
+    //  externalHolder が立っているタイトルを取り戻すための挑戦状フロー
+    //  仕様: relationship-events-betrayal-task.md §6
+    RECLAIM_COOLDOWN_WEEKS: 12,
+
+    /** externalHolder が存在し、かつ 12週CD が空いていれば true */
+    canIssueReclaim(state, titleType) {
+      if (!state.titles || !state.titles[titleType]) return false;
+      const eh = state.titles[titleType].externalHolder;
+      if (!eh) return false;
+      const now = Engine.util.absWeek(state.season, state.week);
+      // 離脱から 12 週
+      const transferAbs = Engine.util.absWeek(eh.transferredSeason || 1, eh.transferredWeek || 1);
+      if (now - transferAbs < this.RECLAIM_COOLDOWN_WEEKS) return false;
+      // 直近の挑戦結果が lose で 12 週未満ならNG
+      const lastLoss = (state.reclaimChallenges || [])
+        .filter(c => c.titleType === titleType && c.result === 'lose')
+        .reduce((latest, c) => {
+          const abs = Engine.util.absWeek(c.resolvedSeason || 1, c.resolvedWeek || 1);
+          return abs > latest ? abs : latest;
+        }, 0);
+      if (lastLoss > 0 && now - lastLoss < this.RECLAIM_COOLDOWN_WEEKS) return false;
+      // 既に発行済み・未解決の挑戦があるか
+      const pending = (state.reclaimChallenges || []).some(c => c.titleType === titleType && c.result == null);
+      if (pending) return false;
+      return true;
+    },
+
+    /** 挑戦状を発行（pending として登録）。戻り値: 新 state */
+    recordReclaimAttempt(state, titleType, challengerId) {
+      const eh = state.titles?.[titleType]?.externalHolder;
+      if (!eh) return state;
+      const newChallenge = {
+        titleType,
+        issuedSeason: state.season, issuedWeek: state.week,
+        challengerFighterId: challengerId,
+        defenderFighterId: eh.fighterId,
+        defenderOrgId: eh.orgId,
+        result: null,
+        resolvedSeason: null, resolvedWeek: null,
+      };
+      return {
+        ...state,
+        reclaimChallenges: [...(state.reclaimChallenges || []), newChallenge],
+      };
+    },
+
+    /** 挑戦勝利 → タイトル奪還。AI 団体側 externalTitles から該当エントリ削除、自団体新王者セット */
+    resolveReclaimWin(state, titleType, newChampionId) {
+      if (!state.titles || !state.titles[titleType]) return state;
+      const eh = state.titles[titleType].externalHolder;
+      if (!eh) return state;
+
+      // AI 団体側 externalTitles から削除
+      let aiOrgs = state.aiOrgs;
+      if (aiOrgs && aiOrgs[eh.orgId]) {
+        const target = aiOrgs[eh.orgId];
+        const newExt = (target.externalTitles || []).filter(e =>
+          !(e.titleType === titleType && e.championId === eh.fighterId)
+        );
+        aiOrgs = { ...aiOrgs, [eh.orgId]: { ...target, externalTitles: newExt } };
+      }
+
+      // 自団体側 タイトル復帰
+      const newTitles = {
+        ...state.titles,
+        [titleType]: {
+          ...state.titles[titleType],
+          championId: newChampionId,
+          defenses: 0,
+          wonWeek: state.week,
+          externalHolder: null,
+        },
+      };
+
+      // 進行中挑戦エントリを resolved に
+      const newChallenges = (state.reclaimChallenges || []).map(c =>
+        (c.titleType === titleType && c.result == null)
+          ? { ...c, result: 'win', resolvedSeason: state.season, resolvedWeek: state.week }
+          : c
+      );
+
+      return { ...state, titles: newTitles, aiOrgs, reclaimChallenges: newChallenges };
+    },
+
+    /** 挑戦敗北 → 12週CD発動。タイトルは AI 団体保持継続 */
+    resolveReclaimLoss(state, titleType) {
+      const newChallenges = (state.reclaimChallenges || []).map(c =>
+        (c.titleType === titleType && c.result == null)
+          ? { ...c, result: 'lose', resolvedSeason: state.season, resolvedWeek: state.week }
+          : c
+      );
+      return { ...state, reclaimChallenges: newChallenges };
+    },
+
+    // Phase 2 (relationship-spec v2.2 A-4): タイトルを AI 団体へ移送
+    //   - プレイヤー側 titles[type] は championId=null + externalHolder に履歴を残す
+    //   - AI 団体側 aiOrgs[toOrgId].externalTitles[] にエントリを追加（AI 同士の防衛は発生しない＝簡略案）
+    //   - 戻り値: 新しい state（titles + aiOrgs を更新）
+    transferTitleToOrg(state, titleType, fighterId, toOrgId) {
+      if (!state.titles || !state.titles[titleType]) return state;
+      if (state.titles[titleType].championId !== fighterId) return state; // 整合性チェック
+      if (!state.aiOrgs || !state.aiOrgs[toOrgId]) return state;
+
+      const newTitles = {
+        ...state.titles,
+        [titleType]: {
+          ...state.titles[titleType],
+          championId: null,
+          defenses: 0,
+          externalHolder: {
+            fighterId, orgId: toOrgId,
+            transferredSeason: state.season, transferredWeek: state.week,
+          },
+        },
+      };
+
+      const targetOrg = state.aiOrgs[toOrgId];
+      const newOrg = {
+        ...targetOrg,
+        externalTitles: [
+          ...(targetOrg.externalTitles || []),
+          {
+            titleType, championId: fighterId,
+            acquiredFromOrg: 'player',
+            acquiredSeason: state.season, acquiredWeek: state.week,
+            lastDefenseWeek: null,
+          },
+        ],
+      };
+
+      return {
+        ...state,
+        titles: newTitles,
+        aiOrgs: { ...state.aiOrgs, [toOrgId]: newOrg },
+      };
+    },
     // v1.0: Check if title can be established (興行3回+ 人気15+ ロスター5人+)
     checkTitleEstablishment(G) {
       if (G.titleEstablished) return false; // already established
@@ -17940,23 +18078,8 @@ Engine.contract = {
   // ── 退団処理 ─────────────────────────────────────────────────────────────
   processDeparture(rng, fighter, state) {
     let s = { ...state };
-    // O-03/O-06: 退団 — roster除外前に関係値更新（残った同僚全員→去った選手）
-    if (s.relationships) {
-      const depRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE41, s.season, fighter.id));
-      const colleagueIds = s.roster.filter(c => c.id !== fighter.id).map(c => c.id);
-      s = Engine.relationships.applyFromRoster(s, colleagueIds, fighter.id, { min: -15, max: -8 }, { min: 5, max: 10 }, depRelRng);
-    }
-    // roster ????
-    s = {
-      ...s,
-      roster: s.roster.filter(c => c.id !== fighter.id),
-      coachAssign: Engine.coach.unassignFromCoach(s, fighter.id),
-    };
-    if (s.titles && s.titles.world && s.titles.world.championId === fighter.id) {
-      s = { ...s, titles: { ...s.titles, world: { ...s.titles.world, championId: null, defenses: 0 } } };
-    }
 
-    // 行き先決定
+    // 行き先決定（先に確定 → 関係値処理を分岐するため）
     const info = Engine.contract.determineDeparture(rng, fighter, s);
     const starClaim = info.type !== 'retire'
       ? Engine.rival.claimDepartedStar(rng, s, fighter, { fromOrgName: 'player', via: 'departure_claim' })
@@ -17968,6 +18091,42 @@ Engine.contract = {
       info.orgName = starClaim.orgName;
       info.starClaim = true;
       if (starClaim.ejected) info.ejectedName = starClaim.ejected.name;
+    }
+
+    // 関係値更新 — roster除外前に。行き先で分岐
+    //   rival: A-1〜A-4 裏切りハンドラ
+    //   freeAgent / retire: 既存 O-03 挙動 (bond -15〜-8, rivalry +5〜+10)
+    if (s.relationships) {
+      if (info.type === 'rival') {
+        const betrayalRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE71, s.season, fighter.id));
+        const result = Engine.relationships.applyContractDepartureBetrayal(s, fighter.id, info.orgId, betrayalRng);
+        s = result.state;
+        // Phase 6 新聞用 transient
+        s._lastBetrayalSummary = result.summary;
+        s._lastBetrayalBeltCarried = result.beltCarried;
+        // Phase 2: ベルト持ち出し → タイトルを AI 団体へ移送
+        // (championId が null になるため、後段の自動空位ブロックは何もしない)
+        if (result.beltCarried && result.summary && result.summary.isChampion) {
+          s = Engine.title.transferTitleToOrg(s, 'world', fighter.id, info.orgId);
+        }
+      } else {
+        const depRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE41, s.season, fighter.id));
+        const colleagueIds = s.roster.filter(c => c.id !== fighter.id).map(c => c.id);
+        s = Engine.relationships.applyFromRoster(s, colleagueIds, fighter.id, { min: -15, max: -8 }, { min: 5, max: 10 }, depRelRng);
+      }
+    }
+
+    s = {
+      ...s,
+      roster: s.roster.filter(c => c.id !== fighter.id),
+      coachAssign: Engine.coach.unassignFromCoach(s, fighter.id),
+    };
+    if (s.titles && s.titles.world && s.titles.world.championId === fighter.id) {
+      s = { ...s, titles: { ...s.titles, world: { ...s.titles.world, championId: null, defenses: 0 } } };
+    }
+
+    // starClaim 時は AI 団体側でロスター追加済みなのでここで終了
+    if (starClaim.claimed) {
       return { state: s, info };
     }
 

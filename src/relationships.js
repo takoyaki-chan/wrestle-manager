@@ -986,6 +986,126 @@ Engine.relationships = {
   },
 
   // ══════════════════════════════════════════════════════════
+  //  契約離脱・裏切りイベント (relationship-spec v2.2 §5.2 / A-1〜A-4)
+  //  契約決裂で AI 団体に移籍する選手 → 残留メンバーが受ける関係値変動
+  //  A-1 ベース必発火 + A-2 エース / A-3 宿敵団体 / A-4 王者 のサーチャージを加算
+  // ══════════════════════════════════════════════════════════
+
+  /** 直近 weeksBack 週以内に対抗戦/PPV/サミット履歴があるか (orgWar.lastResult を参照) */
+  _recentlyClashedWith(state, orgIdA, orgIdB, weeksBack) {
+    if (!state.orgWarRecord || !Engine.orgWar) return false;
+    const rec = Engine.orgWar.get(state, orgIdA, orgIdB);
+    const last = rec && rec.lastResult;
+    if (!last || last.season == null || last.week == null) return false;
+    const lastAbs = Engine.util.absWeek(last.season, last.week);
+    const nowAbs  = Engine.util.absWeek(state.season, state.week);
+    return (nowAbs - lastAbs) <= weeksBack && (nowAbs - lastAbs) >= 0;
+  },
+
+  /**
+   * A-1〜A-4: 契約交渉決裂による AI 団体移籍（裏切り）
+   *   戻り値: { state, beltCarried, summary }
+   *   - state: 関係値・士気・orgPop 反映後の state
+   *   - beltCarried: A-4 発火時に 50% で true（タイトル移動処理は Phase 2）
+   *   - summary: { bondDelta, rivalryDelta, morDelta, orgPopDelta, isAce, isRivalOrg, isChampion }
+   */
+  applyContractDepartureBetrayal(state, departingId, toOrgId, rng) {
+    if (!state.relationships) return { state, beltCarried: false, summary: null };
+    const roster = state.roster || [];
+    const departing = roster.find(c => c.id === departingId);
+
+    // ── A-2 判定: ロスター内 OVR 最高 = エース ──
+    let aceId = null, aceOvr = -1;
+    for (const c of roster) {
+      if (c.isRental) continue;
+      const ov = Engine.util.ov(c);
+      if (ov > aceOvr) { aceOvr = ov; aceId = c.id; }
+    }
+    const isAce = (aceId === departingId);
+
+    // ── A-3 判定: 直近 24 週で対抗戦/PPV 実績がある相手団体か ──
+    const isRivalOrg = this._recentlyClashedWith(state, 'player', toOrgId, 24);
+
+    // ── A-4 判定: 現王者か ──
+    const isChampion = !!(state.titles && state.titles.world && state.titles.world.championId === departingId);
+
+    const roll = (mn, mx) => mn + Math.floor(Engine.rng.float(rng) * (mx - mn + 1));
+
+    // ── A-1 ベース ──
+    let bondDelta    = -roll(12, 20);   // -20〜-12
+    let rivalryDelta =  roll(8, 15);    // +8〜+15
+    let morDelta = 0;
+    let orgPopDelta = 0;
+
+    // ── A-2 エースサーチャージ ──
+    if (isAce) {
+      bondDelta    -= roll(3, 5);
+      rivalryDelta += roll(4, 5);
+      morDelta     -= roll(8, 12);
+    }
+
+    // ── A-3 宿敵団体サーチャージ ──
+    if (isRivalOrg) {
+      bondDelta    -= roll(5, 6);
+      rivalryDelta += roll(7, 10);
+    }
+
+    // ── A-4 チャンピオンサーチャージ ──
+    let beltCarried = false;
+    if (isChampion) {
+      bondDelta    -= 10;
+      rivalryDelta += roll(12, 15);
+      orgPopDelta  -= roll(3, 5);
+      morDelta     -= roll(10, 15);
+
+      // ── ベルト持ち出し 50% (Phase 1 ではフラグのみ。タイトル移動は Phase 2) ──
+      const beltRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, 0xBE73, state.season, departingId));
+      if (Engine.rng.float(beltRng) < 0.5) {
+        beltCarried = true;
+        rivalryDelta += roll(5, 10);  // 持ち出し屈辱サーチャージ
+      }
+    }
+
+    // ── キャップ ──
+    bondDelta    = Math.max(bondDelta, -35);
+    rivalryDelta = Math.min(rivalryDelta, 35);
+
+    // ── 残留選手全員に同 delta 適用（min/max を同値で渡す → 各人に同じ値が当たる） ──
+    const remainingIds = roster
+      .filter(c => c.id !== departingId && !c.injury && !c.isRental)
+      .map(c => c.id);
+    let s = this.applyFromRoster(
+      state, remainingIds, departingId,
+      { min: bondDelta, max: bondDelta },
+      { min: rivalryDelta, max: rivalryDelta },
+      rng
+    );
+
+    // ── ロッカールーム士気 ──
+    if (morDelta !== 0) {
+      const newMorale = Engine.util.clamp((s.lockerRoomMorale || 50) + morDelta, 0, 100);
+      s = { ...s, lockerRoomMorale: newMorale };
+    }
+
+    // ── orgPop（負方向は applyOrgPopChange で素通し） ──
+    if (orgPopDelta < 0 && Engine.orgPop) {
+      const popDelta = Engine.orgPop.applyOrgPopChange(orgPopDelta, s.orgPop || 0, null);
+      s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + popDelta, 0, 100) };
+    }
+
+    return {
+      state: s,
+      beltCarried,
+      summary: {
+        departingId, departingName: departing ? departing.name : '',
+        toOrgId,
+        bondDelta, rivalryDelta, morDelta, orgPopDelta,
+        isAce, isRivalOrg, isChampion, beltCarried,
+      },
+    };
+  },
+
+  // ══════════════════════════════════════════════════════════
   //  Phase 4: ケア・成長・大型イベントの関係値反映ヘルパー
   // ══════════════════════════════════════════════════════════
 
@@ -1658,6 +1778,12 @@ Engine.relationships = {
         apply(winDir, 'boringMatch', context.stage, -2, -1, 0, 0, true);
         apply(loseDir, 'boringMatch', context.stage, -4, -2, 0, 0, true);
       }
+    }
+
+    // ═══ B-3: 元同僚 vs 元同僚 初対戦（離脱後初接触のみ、逓減なし、cross-org乗数対象外） ═══
+    if (Engine.orgTimeline && Engine.orgTimeline.checkFirstMeetSinceDeparture(state, charIdA, charIdB)) {
+      apply('AB', 'firstMeetExColleague', context.stage, -3, -1, 6, 10, false, { skipCrossOrgBondMult: true });
+      apply('BA', 'firstMeetExColleague', context.stage, -3, -1, 6, 10, false, { skipCrossOrgBondMult: true });
     }
 
     // ── 他団体戦キャップ: 1試合あたりのrivalry増加を+35に制限 ──
@@ -2352,6 +2478,65 @@ Engine.orgTimeline = {
     timeline.push({ orgId: newOrgId, fromSeason: season, fromWeek: week });
     return { ...fighter, orgTimeline: this.normalize(timeline) };
   },
+  /** state からID指定で fighter オブジェクトを引く（roster/aiOrgs/freeAgents/retiredFighters 横断） */
+  _findFighter(state, id) {
+    if (!state) return null;
+    const found = (state.roster || []).find(c => c.id === id);
+    if (found) return found;
+    if (state.aiOrgs) {
+      for (const org of Object.values(state.aiOrgs)) {
+        const f = (org.roster || []).find(c => c.id === id);
+        if (f) return f;
+      }
+    }
+    const fa = (state.freeAgents || []).find(c => c.id === id);
+    if (fa) return fa;
+    const ret = (state.retiredFighters || []).find(c => c.id === id);
+    return ret || null;
+  },
+
+  /**
+   * B-3: 2人が「離脱以降の初対戦」かを判定
+   *   1) wereColleagues == true（過去同団体だった）
+   *   2) h2h.history を見て、最も新しい「同団体離脱週」より後の対戦が存在しない（=本試合が初）
+   *   現在同団体ペアは false（離脱が起きていない）
+   */
+  checkFirstMeetSinceDeparture(state, idA, idB) {
+    const fA = this._findFighter(state, idA);
+    const fB = this._findFighter(state, idB);
+    if (!fA || !fB) return false;
+    if (!this.wereColleagues(fA, fB)) return false;
+
+    const tlA = fA.orgTimeline || [];
+    const tlB = fB.orgTimeline || [];
+    let lastSharedEnd = 0;
+    for (const a of tlA) {
+      if (!a || !a.orgId || a.orgId === 'fa') continue;
+      for (const b of tlB) {
+        if (!b || b.orgId !== a.orgId) continue;
+        const aStart = this.absWeek(a.fromSeason, a.fromWeek || 1);
+        const aEnd = a.toSeason ? this.absWeek(a.toSeason, a.toWeek || 1) : 999999;
+        const bStart = this.absWeek(b.fromSeason, b.fromWeek || 1);
+        const bEnd = b.toSeason ? this.absWeek(b.toSeason, b.toWeek || 1) : 999999;
+        if (aStart < bEnd && bStart < aEnd) {
+          const overlapEnd = Math.min(aEnd, bEnd);
+          if (overlapEnd < 999999 && overlapEnd > lastSharedEnd) lastSharedEnd = overlapEnd;
+        }
+      }
+    }
+    if (lastSharedEnd === 0) return false; // 離脱イベントなし
+
+    const h2h = state.h2h || {};
+    const lo = Math.min(idA, idB), hi = Math.max(idA, idB);
+    const entry = h2h[`${lo}>${hi}`];
+    if (!entry || !entry.history || entry.history.length === 0) return true;
+    for (const m of entry.history) {
+      const mAbs = this.absWeek(m.s, m.w);
+      if (mAbs > lastSharedEnd) return false; // 離脱以降にすでに対戦あり
+    }
+    return true;
+  },
+
   /** 2人が同時期に同じ団体にいたかを判定（現在同団体は除外） */
   wereColleagues(fighterA, fighterB) {
     const tlA = fighterA?.orgTimeline || [];

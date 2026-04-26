@@ -513,11 +513,86 @@ function getChallengerPool(title) {
 
 ---
 
+## §X 外部タイトル保持（v1.1 追加 — relationship v2.2 連動）
+
+### 概要
+
+A-4 サーチャージ（チャンピオンが契約決裂で AI 団体に移籍）発火時、**50% でベルト持ち出し**が発生する。持ち出されたベルトは AI 団体に物理的に移送され、プレイヤーは「奪還挑戦状」を発行することでのみ取り戻せる。
+
+### 状態フィールド（追加）
+
+```js
+G.titles.world.externalHolder = {
+  fighterId,           // 持ち出した選手ID（AI団体所属）
+  orgId,               // 移送先AI団体ID
+  transferredSeason,   // 移送発生シーズン
+  transferredWeek,     // 移送発生週
+} | null
+
+G.aiOrgs[orgId].externalTitles = [
+  {
+    titleType,         // 'world' 等
+    championId,        // 持ち出した選手ID
+    acquiredFromOrg,   // 'player'
+    acquiredSeason,
+    acquiredWeek,
+    lastDefenseWeek,   // null（簡略案: AI同士の防衛戦は発生しない）
+  },
+]
+
+G.reclaimChallenges = [
+  {
+    titleType,
+    issuedSeason, issuedWeek,
+    challengerFighterId,
+    defenderFighterId,
+    defenderOrgId,
+    result: null | 'win' | 'lose',
+    resolvedSeason, resolvedWeek,
+  },
+]
+```
+
+### 公開 API（Engine.title）
+
+| 関数 | 用途 |
+|------|------|
+| `transferTitleToOrg(state, titleType, fighterId, toOrgId)` | A-4 持ち出し発火時。championId=null + externalHolder セット + AI 側 externalTitles 追加 |
+| `canIssueReclaim(state, titleType)` | 奪還挑戦状の発行可否（externalHolder 存在 + 12週CD + pending なし） |
+| `recordReclaimAttempt(state, titleType, challengerId)` | reclaimChallenges に pending エントリ追加 |
+| `resolveReclaimWin(state, titleType, newChampId)` | 挑戦勝利 → タイトル復帰 + AI 側 externalTitles 削除 + pending を `result:'win'` に |
+| `resolveReclaimLoss(state, titleType)` | 挑戦敗北 → 12週CD（pending を `result:'lose'` に） |
+
+### 簡略案（実装スコープ）
+
+- AI 同士のタイトル移動は発生しない
+- AI 団体での自動防衛戦も発生しない
+- 取り戻せるのはプレイヤー団体からの奪還挑戦のみ
+- 奪還試合中の AI defender 状態変化は temporary roster 上のみで AI org 側に反映しない（intrusion パターンと同一）
+
+### クールダウン
+
+- 離脱から **12週**: 挑戦不可
+- 直近の `result:'lose'` から **12週**: 再挑戦不可
+- pending が存在する間: 再発行不可
+
+### 既存セーブ互換
+
+すべて lazy-init（未定義時は null / `[]`）。明示マイグレーションフラグは設けない。
+
+### 関連仕様
+
+- relationship-system-spec-v2.2.md §A.5（持ち出し発火モデル）
+- relationship-system-spec-v2.2.md §C（奪還挑戦フロー）
+
+---
+
 ## 変更履歴
 
 | 日付 | 内容 |
 |------|------|
 | 2026-02-19 | v1.0 初版。3階級タイトル、防衛義務12週、挑戦者ランキング、自団体内完結+拡張予約 |
 | 2026-02-19 | v1.0.1 タイトル名いつでも変更可能に明記、初代王者トーナメント4名制対応、新人王→ジュニアチャンピオンに名称変更 |
+| 2026-04-27 | v1.1 §X「外部タイトル保持」追加。A-4 ベルト持ち出し / externalHolder / 奪還挑戦 API |
 
 <!-- 再同期: 2026-04-05, 指示書: docs/specs-resync-instruction.md -->

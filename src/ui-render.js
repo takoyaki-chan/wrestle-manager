@@ -2174,6 +2174,65 @@ function renderShowPrep() {
     </div>`;
   }
 
+  // ── Phase 5: 王座空位（A-4 置いていき or 通常空位）→ 王座決定戦の案内 ──
+  if (G.titles?.world?.championId == null && !G.titles?.world?.externalHolder && G.titleEstablished) {
+    const eligibleIds = Engine.title.getEligibleChallengers(G.roster, null);
+    const topTwo = eligibleIds
+      .map(id => G.roster.find(c => c.id === id))
+      .filter(Boolean)
+      .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
+      .slice(0, 2);
+    if (topTwo.length >= 2) {
+      const [a, b] = topTwo;
+      html += `<div style="background:linear-gradient(135deg,#0d2a3a,#1a3f5a);border:1px solid #6fa8c8;border-radius:8px;padding:12px 16px;margin-bottom:14px">
+        <div style="font-size:14px;font-weight:700;color:#bfe0ff;letter-spacing:1px;margin-bottom:6px">👑 世界王座 空位中</div>
+        <div style="font-size:12px;color:#dfeefc;line-height:1.6">
+          王座決定戦の有力候補: <strong>${a.name}</strong>（OVR ${Engine.util.ov(a)}） × <strong>${b.name}</strong>（OVR ${Engine.util.ov(b)}）<br>
+          メインイベントの 🏆 を有効化すると王座決定戦になります（勝者が新王者）。
+        </div>
+      </div>`;
+    }
+  }
+
+  // ── タイトル奪還挑戦バナー（Phase 4: relationship-events-betrayal-task §6） ──
+  if (G.titles?.world?.externalHolder) {
+    const eh = G.titles.world.externalHolder;
+    const heldByOrg = G.aiOrgs?.[eh.orgId];
+    const heldByOrgName = heldByOrg?.name || eh.orgId;
+    // 元王者の名前を AI 団体ロスターから引く（離脱直後に該当しているはず）
+    const exChamp = heldByOrg?.roster?.find(c => c.id === eh.fighterId);
+    const exChampName = exChamp?.name || `元王者#${eh.fighterId}`;
+    const canIssue = Engine.title.canIssueReclaim(G, 'world');
+    const pending = !!G._pendingReclaim;
+    const nowAbs = Engine.util.absWeek(G.season, G.week);
+    const transferAbs = Engine.util.absWeek(eh.transferredSeason || 1, eh.transferredWeek || 1);
+    const lastLossAbs = (G.reclaimChallenges || [])
+      .filter(c => c.titleType === 'world' && c.result === 'lose')
+      .reduce((max, c) => Math.max(max, Engine.util.absWeek(c.resolvedSeason || 1, c.resolvedWeek || 1)), 0);
+    const cdRemain = Math.max(
+      Math.max(0, Engine.title.RECLAIM_COOLDOWN_WEEKS - (nowAbs - transferAbs)),
+      lastLossAbs > 0 ? Math.max(0, Engine.title.RECLAIM_COOLDOWN_WEEKS - (nowAbs - lastLossAbs)) : 0
+    );
+
+    html += `<div style="background:linear-gradient(135deg,#3a0d12,#5a1f28);border:1px solid #d4607a;border-radius:8px;padding:12px 16px;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700;color:#ffb3c1;letter-spacing:1px;margin-bottom:6px">🏆 持ち出された王座</div>
+      <div style="font-size:12px;color:#f5d4dc;line-height:1.6">
+        ${exChampName} が <strong>${heldByOrgName}</strong> へ世界王座を持ち去った。挑戦状を発行して取り戻せ。
+      </div>`;
+    if (pending) {
+      const ch = G.roster.find(c => c.id === G._pendingReclaim.challengerId);
+      html += `<div style="margin-top:10px;padding:8px 10px;background:rgba(255,195,0,0.15);border-radius:6px;color:#ffd966;font-size:12px">
+        📜 挑戦状発行済み — 次の興行のメインで <strong>${ch?.name || '挑戦者'}</strong> vs ${exChampName}
+        <button class="btn-secondary" style="margin-left:12px;padding:4px 10px;font-size:11px" onclick="App.cancelReclaim()">取り下げる</button>
+      </div>`;
+    } else if (canIssue) {
+      html += `<div style="margin-top:10px"><button class="btn-primary" style="background:linear-gradient(135deg,#d4607a,#a8334d);padding:8px 16px;font-size:13px" onclick="App.openReclaimDialog()">⚔ 奪還挑戦状を発行</button></div>`;
+    } else {
+      html += `<div style="margin-top:10px;color:#aaa;font-size:11px">挑戦可能まで残り <strong>${cdRemain}</strong> 週</div>`;
+    }
+    html += '</div>';
+  }
+
   // L1: 会場選択（全会場選択可能・リスク指標付き）
   html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
   const baseAtt = Engine.economy.calcBaseAttendance(G.orgPop);
