@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-27（経歴年表 Phase C — 対戦相手名の記録）
+> 最終更新: 2026-04-27（経歴年表 Phase D — PPV 出場履歴に対戦相手名と勝敗）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -8,6 +8,8 @@
 ---
 
 ## 現在の状態
+
+**経歴年表 Phase D — PPV 出場履歴に対戦相手名と勝敗（2026-04-27）。** Phase B で `isSummit` のみ年表化していた `ppvMainEvent` を、サミット決勝/準決勝以下の出場戦すべてに拡張。①`finalizePPV` 内で push される ppvMainEvent イベントに `opponentName` フィールドを追加: サミット勝者は敗者名、サミット敗者は勝者名、非サミット参加者は同じ試合の相手選手名。②非サミット試合の `won` フィールドも実際の勝敗(`r.winner`)を反映するよう修正(以前は全員 false)。③`Engine.milestone.get` の ppvMainEvent case を 4分岐に拡張: サミット優勝(「決勝で 美鈴 を破る」)、サミット準優勝(「決勝で 白井 に敗れる」)、非サミット勝利(「PPV GRAND FINAL 出場 / 愛 に勝利」)、非サミット敗退(「玲奈 に敗れる」)。レガシー(opponentName なし)は出場のみ表示。検証: 5パターン注入で全描画確認、auto-sim 100シーズン(seed 7919) ALL CLEAR (violations:0, errors:0)。残: Phase E(退団・再契約経緯)。変更: src/management.js(finalizePPV + milestone.get ppvMainEvent case)+docs/game-system-roadmap.md(本項)。
 
 **経歴年表 Phase C — 対戦相手名の記録（2026-04-27）。** 「誰に勝って王座を獲り、誰に敗れて陥落したか」「対抗戦で誰と当たったか」「JTで誰に敗れて敗退したか」を年表に表示。①`Engine.career.recordTitle{Win,Loss,Defense}` のシグネチャに opts={ orgName, defeatedName/dethronedByName/lastChallengerName } を追加。②`Engine.title.crownChampion` 内部で前王者名/新王者名を自動算出して record に渡す。`Engine.title.recordDefense(G, opts)` は呼び出し側から `challengerName` を受け取る。③タイトル戦呼び出し全7経路を更新: toggleTitle / 興行(management.js + app.js) / AI団体(空位戴冠 + 防衛 + 王座交代の旧王者と新王者)。orgName は `${G.orgName}王座` または `${org.name}王座` を自動生成。④対抗戦 history に `opponentName`(相手選手名)を追加: プレイヤー側 finalizeWar、AI側 finalizeWar、AI vs AI processAIWeek の3経路。⑤ドーム history(domeMain) に `opponentName` 追加(シングル戦のみ、タッグはスキップ) + week フィールドも追加。⑥JT `Engine.juniorTournament.apply` に findEliminator ヘルパー追加、各カテゴリに opponent を付与: champion/runnerUp は finalOpponentName、semiFinal/quarterFinal は eliminatedByName。⑦`Engine.milestone.get` の表示更新: 防衛閾値を `3, 5, 7, 10, 15, 20...` に細分化し挑戦者名併記、タイトル獲得は「美鈴 を破ってチャンピオンに」、陥落は「白井 に敗れ陥落・12度防衛の末に陥落」、対抗戦は「対抗戦 vs TOKYO 勝利（黒澤 戦）」、ドームは「ドーム大会 メインイベント 勝利（vs 黒澤）」、JT 4種は結果別に「決勝で 玲奈 を破る」「決勝で 小百合 に敗れる」「美鈴 に敗れて敗退」「舞 に敗れて敗退」を出し分け。検証: テスト履歴14件注入で全パス相手名表示確認、auto-sim 100シーズン(seed 7919) ALL CLEAR (violations:0, errors:0)。残: Phase D(PPV/JT ラウンド統合)/E(退団・再契約経緯)。変更: src/management.js(record系/title系/JT/milestone)+src/app.js(finalizeShowタイトル/対抗戦/ドーム)+docs/game-system-roadmap.md(本項)。
 

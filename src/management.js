@@ -3589,10 +3589,19 @@ const Engine = {
               text: `🎬 ベストマッチ賞（試合評価 ${ev.mq || '?'}）` });
             break;
           case 'ppvMainEvent': {
-            // Phase B: 決勝(isSummit)のみ年表化。準決勝以下は Phase D でラウンド統合予定
+            // Phase D: サミット(優勝/準優勝)+非サミット(出場で誰に勝った/負けた)を表示
             if (ev.isSummit) {
+              const ppvDetail = ev.opponentName
+                ? (ev.won ? `決勝で ${ev.opponentName} を破る` : `決勝で ${ev.opponentName} に敗れる`)
+                : undefined;
               milestones.push({ season: ev.season, week: ev.week, type: 'ppv_main',
-                text: `PPV GRAND FINAL ${ev.won ? '優勝' : '準優勝'}` });
+                text: `PPV GRAND FINAL ${ev.won ? '優勝' : '準優勝'}`, detail: ppvDetail });
+            } else {
+              const ppvNsDetail = ev.opponentName
+                ? (ev.won ? `${ev.opponentName} に勝利` : `${ev.opponentName} に敗れる`)
+                : undefined;
+              milestones.push({ season: ev.season, week: ev.week, type: 'ppv_main',
+                text: `PPV GRAND FINAL 出場`, detail: ppvNsDetail });
             }
             break;
           }
@@ -10999,10 +11008,11 @@ const Engine = {
             return { ...f, careerRecord: rec };
           });
           // MVPレース v2: history へ ppvMainEvent イベント追加（勝者・敗者・サミット非参加者）
-          const _addPpvEvent = (fighters, fid, won, isSummit) => fighters.map(f => {
+          const _addPpvEvent = (fighters, fid, won, isSummit, opponentName) => fighters.map(f => {
             if (f.id !== fid) return f;
             const cr = f.careerRecord || Engine.career.createRecord();
             const ev = { type: 'ppvMainEvent', season: s.season, week: s.week, won, isSummit };
+            if (opponentName) ev.opponentName = opponentName;
             return { ...f, careerRecord: { ...cr, history: [...(cr.history || []), ev] } };
           });
           const _applyToFighter = (fid, fn) => {
@@ -11021,9 +11031,11 @@ const Engine = {
             }
           };
           // サミット勝者: ppvMainEventWins++ + history(won=true,isSummit=true)
-          _applyToFighter(winnerId2, (rs) => _addPpvEvent(_updatePpvWins(rs, winnerId2), winnerId2, true, true));
+          const summitLoserName = sm.left.id === loserId2 ? sm.left.name : sm.right.name;
+          const summitWinnerName = sm.left.id === winnerId2 ? sm.left.name : sm.right.name;
+          _applyToFighter(winnerId2, (rs) => _addPpvEvent(_updatePpvWins(rs, winnerId2), winnerId2, true, true, summitLoserName));
           // サミット敗者: history(won=false,isSummit=true)
-          _applyToFighter(loserId2, (rs) => _addPpvEvent(rs, loserId2, false, true));
+          _applyToFighter(loserId2, (rs) => _addPpvEvent(rs, loserId2, false, true, summitWinnerName));
           // PPV賞金（国庫支出）
           const PPV_PRIZE = { champion: 2000, runnerUp: 1000, semiFinal: 500 };
           // サミット勝者・敗者
@@ -11053,16 +11065,24 @@ const Engine = {
           if (paidIds.size > 0) {
             events.push(`💰 PPV出場賞金 ¥${PPV_PRIZE.semiFinal}万 × ${paidIds.size}名`);
           }
-          // MVPレース v2: サミット非参加者にも history(won=false, isSummit=false) を記録（全団体）
-          const _participatedNonSummit = new Set();
+          // MVPレース v2: サミット非参加者にも history(won/isSummit:false) を記録（全団体）
+          // Phase D: 非サミット試合の勝敗と相手名も保存
+          const _nonSummitInfo = new Map(); // fid -> { won, opponentName }
           card.forEach((m, idx) => {
             if (m.isSummit) return;
-            [m.left, m.right].forEach(f => {
-              if (!summitParticipants.has(f.id)) _participatedNonSummit.add(f.id);
-            });
+            const r = results[idx];
+            if (!r) return;
+            const leftWon = r.winner === 'left';
+            const rightWon = r.winner === 'right';
+            if (!summitParticipants.has(m.left.id)) {
+              _nonSummitInfo.set(m.left.id, { won: leftWon, opponentName: m.right.name });
+            }
+            if (!summitParticipants.has(m.right.id)) {
+              _nonSummitInfo.set(m.right.id, { won: rightWon, opponentName: m.left.name });
+            }
           });
-          _participatedNonSummit.forEach(fid => {
-            _applyToFighter(fid, (rs) => _addPpvEvent(rs, fid, false, false));
+          _nonSummitInfo.forEach((info, fid) => {
+            _applyToFighter(fid, (rs) => _addPpvEvent(rs, fid, info.won, false, info.opponentName));
           });
         }
       }
