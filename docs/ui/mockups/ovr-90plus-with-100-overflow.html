@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>OVR 90+ 滑らかグラデ：100+対応版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #14130f;
+  --bg-card: #1d1b16;
+  --text-main: #f0eee8;
+  --text-sub: #a8a59a;
+  --text-dim: #6b6960;
+  --gold: #d4a843;
+  --divider: rgba(255,255,255,0.1);
+  --font-num: "Bebas Neue", sans-serif;
+  --font-label: "Oswald", sans-serif;
+  --font-body: "Noto Sans JP", sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px;
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: var(--font-body);
+}
+.shell { width: min(1100px, 100%); margin: 0 auto; }
+
+h1 { font-size: 18px; margin: 0 0 8px; }
+.lead { color: var(--text-sub); font-size: 13px; margin: 0 0 20px; max-width: 880px; line-height: 1.7; }
+
+.intro-block {
+  background: var(--bg-card);
+  border: 1px solid var(--divider);
+  border-left: 3px solid var(--gold);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.intro-block strong { color: var(--gold); }
+.intro-block code { background: rgba(0,0,0,0.4); padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+.compare-table th, .compare-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--divider);
+  text-align: center;
+  vertical-align: middle;
+}
+.compare-table thead th {
+  background: rgba(0,0,0,0.3);
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 14px;
+}
+.compare-table thead th .sub {
+  display: block;
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+  font-weight: 400;
+}
+.compare-table tbody th {
+  background: rgba(0,0,0,0.18);
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--text-sub);
+  text-align: left;
+  width: 100px;
+}
+.compare-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.compare-table .ovr-num {
+  font-family: var(--font-num);
+  font-size: 28px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.note {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  font-family: var(--font-label);
+  letter-spacing: 0.08em;
+  font-weight: 400;
+}
+
+/* 帯の塗り */
+tr.band-high { background: rgba(255,255,255,0.015); }
+tr.band-elite { background: rgba(212,168,67,0.04); }
+tr.band-elite-mid { background: rgba(212,168,67,0.07); }
+tr.band-mythic { background: rgba(212,168,67,0.13); border-top: 2px solid rgba(212,168,67,0.3); }
+
+/* 100+を縦並びで表示するためのレイアウト */
+.mythic-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.mythic-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+}
+.mythic-row .ovr-num { font-size: 22px; }
+
+
+/* ════════════════════════════════════════════════════
+   共通：80-89 v-high
+   ════════════════════════════════════════════════════ */
+.v-high { color: #f0eee8; }
+
+
+/* ════════════════════════════════════════════════════
+   P1：ナチュラル深化
+   ════════════════════════════════════════════════════ */
+.P1-90 { color: #f0e2a8; }
+.P1-95 { color: #e6c570; }
+.P1-myth {
+  color: #c89028;
+  text-shadow: 0 0 8px rgba(200,144,40,0.5), 0 0 16px rgba(200,144,40,0.2);
+}
+
+
+/* ════════════════════════════════════════════════════
+   P2：ハイライト終端
+   ════════════════════════════════════════════════════ */
+.P2-90 { color: #f4e3b8; }
+.P2-95 { color: #e8c878; }
+.P2-myth {
+  color: #fff5d8;
+  text-shadow:
+    0 0 6px rgba(255,245,216,0.7),
+    0 0 14px rgba(255,210,120,0.4),
+    0 0 24px rgba(212,168,67,0.3);
+}
+
+
+/* ════════════════════════════════════════════════════
+   P3：強光トップ
+   ════════════════════════════════════════════════════ */
+.P3-90 { color: #f0e2a8; }
+.P3-95 { color: #e6c570; }
+.P3-myth {
+  color: #e6c570;
+  text-shadow:
+    0 0 8px rgba(230,197,112,0.9),
+    0 0 16px rgba(230,197,112,0.6),
+    0 0 28px rgba(212,168,67,0.4),
+    0 0 40px rgba(212,168,67,0.2);
+}
+
+
+/* 凡例カード */
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+.legend-card {
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.legend-card h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-family: var(--font-label);
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+.legend-card .desc {
+  color: var(--text-sub);
+  font-size: 11px;
+}
+
+pre {
+  margin: 0;
+  padding: 14px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-main);
+  overflow-x: auto;
+  line-height: 1.6;
+}
+pre code { color: inherit; font-family: inherit; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<h1>OVR 90+ 滑らかグラデ — 100+ 対応版</h1>
+<p class="lead">
+OVRは最大120まで到達しうる前提を反映。<strong style="color:var(--gold)">100以上は <code>v-mythic</code> として全部同色</strong>で表示する。
+105・110・120 などの外れ値が登場したとき、すべて同じ「神話級マーカー」として一目で識別できる。
+3案の違いはトップ（v-mythic）の見せ方のみ。
+</p>
+
+<div class="intro-block">
+  <strong>5段階構成：</strong><br>
+  <code>v-high</code> (80-89) → <code>v-elite</code> (90-94) → <code>v-elite-mid</code> (95-99) → <strong style="color:var(--gold)"><code>v-mythic</code> (100+ すべて)</strong>
+  <br><br>
+  100以上の値（100, 105, 110, 115, 120）は全部 <code>v-mythic</code> 同色になる。差をつけない理由は、
+  <strong>外れ値であるほど「希少な目印」として認識されるべき</strong>だから。105と110で色を変えると、希少さの認識がブレる。
+</div>
+
+
+<table class="compare-table">
+  <thead>
+    <tr>
+      <th>OVR</th>
+      <th>P1：ナチュラル深化<span class="sub">トップ＝深い金</span></th>
+      <th>P2：ハイライト終端<span class="sub">トップ＝白金</span></th>
+      <th>P3：強光トップ<span class="sub">トップ＝中金 + 強glow</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="band-high">
+      <th>89<div class="note">v-high</div></th>
+      <td><span class="ovr-num v-high">89</span></td>
+      <td><span class="ovr-num v-high">89</span></td>
+      <td><span class="ovr-num v-high">89</span></td>
+    </tr>
+    <tr class="band-elite">
+      <th>92<div class="note">v-elite</div></th>
+      <td><span class="ovr-num P1-90">92</span></td>
+      <td><span class="ovr-num P2-90">92</span></td>
+      <td><span class="ovr-num P3-90">92</span></td>
+    </tr>
+    <tr class="band-elite-mid">
+      <th>97<div class="note">v-elite-mid</div></th>
+      <td><span class="ovr-num P1-95">97</span></td>
+      <td><span class="ovr-num P2-95">97</span></td>
+      <td><span class="ovr-num P3-95">97</span></td>
+    </tr>
+    <tr class="band-elite-mid">
+      <th>99<div class="note">v-elite-mid</div></th>
+      <td><span class="ovr-num P1-95">99</span></td>
+      <td><span class="ovr-num P2-95">99</span></td>
+      <td><span class="ovr-num P3-95">99</span></td>
+    </tr>
+    <tr class="band-mythic">
+      <th>100+<div class="note">v-mythic（全部同色）</div></th>
+      <td>
+        <div class="mythic-stack">
+          <div class="mythic-row">
+            <span class="ovr-num P1-myth">100</span>
+            <span class="ovr-num P1-myth">105</span>
+            <span class="ovr-num P1-myth">110</span>
+            <span class="ovr-num P1-myth">120</span>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="mythic-stack">
+          <div class="mythic-row">
+            <span class="ovr-num P2-myth">100</span>
+            <span class="ovr-num P2-myth">105</span>
+            <span class="ovr-num P2-myth">110</span>
+            <span class="ovr-num P2-myth">120</span>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="mythic-stack">
+          <div class="mythic-row">
+            <span class="ovr-num P3-myth">100</span>
+            <span class="ovr-num P3-myth">105</span>
+            <span class="ovr-num P3-myth">110</span>
+            <span class="ovr-num P3-myth">120</span>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<div class="legend-grid">
+  <div class="legend-card">
+    <h3>P1：ナチュラル深化</h3>
+    <div class="desc">99の中金から100+で深い金に「沈む」。重厚な王者表現。100超えは100でも120でも同じ深金で輝く。</div>
+  </div>
+  <div class="legend-card">
+    <h3>P2：ハイライト終端</h3>
+    <div class="desc">99の濃い金から100+で白金へ反転。希少な100超えが「白く輝く」のは見つけやすい。神話級の表現に最適。</div>
+  </div>
+  <div class="legend-card">
+    <h3>P3：強光トップ</h3>
+    <div class="desc">色は中金のまま、強いglowで「光って」目立たせる。文字は読みやすく、控えめに別格感を出せる。</div>
+  </div>
+</div>
+
+
+<div class="intro-block" style="margin-top: 24px">
+  <strong>選定の補助観点：</strong>
+  <ul style="margin: 6px 0 0; padding-left: 20px">
+    <li><strong>視認性：</strong>100超えがリストに混じったとき、瞬時に発見できるのは P2（白金）。色相が99と反転するので一番目立つ。</li>
+    <li><strong>読みやすさ：</strong>P1（深金）は一番落ち着いて読める。glow も控えめで、テキストとして安定。</li>
+    <li><strong>派手さ：</strong>P3（強glow）は中間。色は読みやすく、光だけで特別感を演出する。</li>
+  </ul>
+</div>
+
+
+<div class="intro-block">
+<strong>採用時の実装：</strong>
+<pre><code>function valueClassOvr(ovr) {
+  if (ovr &gt;= 100) return 'v-mythic';     // 100+ すべて同色（最大120まで）
+  if (ovr &gt;= 95)  return 'v-elite-mid';  // 95-99
+  if (ovr &gt;= 90)  return 'v-elite';      // 90-94
+  if (ovr &gt;= 80)  return 'v-high';       // 80-89
+  if (ovr &gt;= 70)  return 'v-mid';        // 70-79
+  if (ovr &gt;= 60)  return 'v-low';        // 60-69
+  return 'v-poor';                       // ~59
+}</code></pre>
+<p style="margin: 12px 0 0; font-size: 12px; color: var(--text-sub)">
+  閾値は <code>data.js</code> に <code>OVR_TIER_THRESHOLDS = { mythic: 100, eliteMid: 95, elite: 90, high: 80, mid: 70, low: 60 }</code> として定数化。
+</p>
+</div>
+
+</div>
+</body>
+</html>

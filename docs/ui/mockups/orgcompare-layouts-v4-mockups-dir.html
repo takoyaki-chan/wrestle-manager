@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>団体比較面 レイアウト4パターン v4 (docs/ui/mockups/ 配置版)</title>
+<!--
+  配置: ローカルの wrestle-manager/docs/ui/mockups/ 配下に置いてください。
+  画像は ../../../image/ から相対参照(3階層上→imageフォルダ)。
+
+  画像種別の使い分け:
+    - メインポスター(A) / ファイトカード(C) / 紙面特集の見開き(D) → image/upper/  (上半身)
+    - ヒーロー対峙(B) ※向き合う構図                              → image/stand/  (立ち絵)
+    - マッチアップの小アイコン / サイド小写真 / 表組みアイコン   → image/face_*.png (256×256正方形)
+    - 編集長 黒田                                                → image/npc/face_kuroda_s.png
+
+  使用キャラ(実在 ALL_CHARS から):
+    プレイヤー側 - 阿武隈塔子(abukuma_t) / 深町真琴(fukamachi_m) / 高津小春(takatsu_k)
+    ライバル側   - 橘玲美(tachibana_r) / 生駒エリカ(ikoma_e) / 出羽鷹子(dewa_t)
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;600;700;900&family=Noto+Serif+JP:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #1a1408;
+  font-family: 'Noto Sans JP', sans-serif;
+  color: #1f1710;
+  padding: 28px 16px 80px;
+  min-height: 100vh;
+  background-image: radial-gradient(circle at 50% 0%, rgba(154,112,32,0.08), transparent 50%);
+}
+
+.intro {
+  max-width: 780px;
+  margin: 0 auto 18px;
+  color: #c8b878;
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 14px 18px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 8px;
+  border: 1px solid rgba(154,112,32,0.3);
+}
+.intro h1 { font-size: 16px; margin-bottom: 6px; color: #f0d48b; font-weight: 800; }
+.intro .note { color: #8a8275; font-size: 11px; margin-top: 6px; }
+.intro strong { color: #d4b87a; }
+
+/* タブ */
+.tabs {
+  max-width: 780px;
+  margin: 0 auto 10px;
+  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+}
+.tab {
+  background: rgba(0,0,0,0.35); color: #c8b878;
+  border: 1px solid rgba(154,112,32,0.4);
+  padding: 8px 16px; font-size: 12px; font-weight: 700;
+  border-radius: 4px 4px 0 0; cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.tab.active { background: #9a7020; color: #fff; border-color: #9a7020; }
+
+.pattern-label {
+  max-width: 780px; margin: 0 auto 8px;
+  padding: 8px 14px;
+  background: rgba(154,112,32,0.15);
+  border-left: 3px solid #d4b87a;
+  color: #f0d48b; font-size: 12px; border-radius: 4px;
+}
+.pattern-label strong { font-size: 13px; color: #f0d48b; }
+.pattern-label .desc { color: #c8b878; margin-top: 2px; font-size: 11px; }
+
+/* ── 紙面共通 ── */
+.paper {
+  max-width: 780px; margin: 0 auto;
+  background: linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);
+  border: 1px solid rgba(120,84,39,0.32);
+  border-radius: 8px;
+  box-shadow: 0 14px 56px rgba(0,0,0,0.55);
+  overflow: hidden;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(120,84,39,0.045), transparent 24%),
+    radial-gradient(circle at 88% 82%, rgba(120,84,39,0.04), transparent 28%),
+    linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);
+}
+.paper-header {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.18), transparent 50%),
+    linear-gradient(90deg,#8b1a1a,#c22020 50%,#8b1a1a);
+  padding: 13px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 3px double rgba(255,255,255,0.18);
+}
+.paper-header .logo {
+  font-size: 22px; font-weight: 900; color: #fff;
+  letter-spacing: 6px; font-family: 'Noto Serif JP', serif;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
+.paper-header .issue { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 1px; text-align: right; line-height: 1.4; }
+.paper-header .issue small { display: block; font-size: 10px; opacity: 0.85; }
+.page-nav {
+  background: linear-gradient(180deg, rgba(120,84,39,0.12), rgba(120,84,39,0.05));
+  border-bottom: 1px solid rgba(120,84,39,0.25);
+  padding: 7px 16px; display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;
+}
+.page-nav-btn {
+  background: rgba(248,238,210,0.5);
+  border: 1px solid rgba(120,84,39,0.3);
+  color: #5b4b34; padding: 4px 14px; font-size: 11px; font-weight: 700; border-radius: 14px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.page-nav-btn.active { background: #8b1a1a; color: #fff; border-color: #8b1a1a; }
+
+.sec-label {
+  display: inline-block; background: #8b1a1a; color: #fff;
+  font-size: 10px; font-weight: 900; letter-spacing: 4px;
+  padding: 3px 12px; margin-bottom: 10px;
+}
+.sec-label-gold {
+  display: inline-block;
+  background: linear-gradient(135deg, #b08530, #9a7020);
+  color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 4px;
+  padding: 3px 12px; margin-bottom: 10px;
+}
+
+/* 黒田コメント */
+.kuroda-block {
+  display: flex; gap: 10px; align-items: flex-start;
+  margin-top: 12px; padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(200,190,170,0.45), rgba(200,190,170,0.2));
+  border-left: 3px solid #5b4b34;
+  border-radius: 0 4px 4px 0;
+}
+.kuroda-face {
+  width: 40px; height: 40px; border-radius: 50%;
+  background-image: url('../../../image/npc/face_kuroda_s.png');
+  background-size: cover; background-position: center;
+  border: 2px solid rgba(139,26,26,0.5);
+  flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(139,26,26,0.25);
+}
+.kuroda-text { font-size: 12px; line-height: 1.7; color: #2a2014; }
+.kuroda-byline { font-size: 10px; color: #7a5b32; margin-top: 3px; }
+
+/* セレクト */
+.compare-select {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 12px;
+  background: rgba(120,84,39,0.08);
+  border-radius: 6px; border: 1px solid rgba(120,84,39,0.18);
+  margin-bottom: 12px;
+}
+.compare-select label { font-size: 10px; color: #6a5e4c; letter-spacing: 2px; font-weight: 800; }
+.compare-select select {
+  padding: 5px 10px; font-size: 12px;
+  background: #f5ecd7;
+  border: 1px solid rgba(120,84,39,0.4);
+  border-radius: 3px; color: #1f1710; flex: 1;
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 700;
+}
+
+/* 戦力レーダー(共通) */
+.power-section {
+  padding: 12px 14px;
+  background: rgba(120,84,39,0.05);
+  border-radius: 6px; border: 1px solid rgba(120,84,39,0.18);
+}
+.power-row { display: grid; grid-template-columns: 70px 1fr 40px; gap: 10px; align-items: center; margin-bottom: 7px; }
+.power-row:last-child { margin-bottom: 0; }
+.power-label { font-size: 11px; font-weight: 800; color: #4a3825; text-align: right; letter-spacing: 0.5px; }
+.power-bar-wrap {
+  position: relative; height: 16px;
+  background: rgba(120,84,39,0.12);
+  border-radius: 3px; overflow: hidden;
+  display: grid; grid-template-columns: 1fr 1fr;
+}
+.power-bar-wrap .center-line {
+  position: absolute; left: 50%; top: -1px; bottom: -1px;
+  width: 1px; background: rgba(120,84,39,0.5); z-index: 2;
+}
+.power-bar-wrap .player-side { justify-self: end; height: 100%; background: linear-gradient(270deg, #d4a82a, #9a7020); }
+.power-bar-wrap .rival-side { justify-self: start; height: 100%; background: linear-gradient(90deg, #c22020, #8b1a1a); }
+.power-diff { font-size: 12px; font-weight: 900; font-family: 'Bebas Neue', sans-serif; text-align: center; letter-spacing: 1px; }
+.power-diff.player { color: #6a4a10; }
+.power-diff.rival { color: #8b1a1a; }
+
+.org-tier-badge {
+  font-size: 10px; font-weight: 800; letter-spacing: 2px;
+  padding: 3px 10px; border-radius: 2px; display: inline-block;
+}
+.org-tier-badge.player { background: rgba(154,112,32,0.22); color: #6a4a10; border: 1px solid rgba(154,112,32,0.4); }
+.org-tier-badge.rival { background: rgba(139,26,26,0.18); color: #8b1a1a; border: 1px solid rgba(139,26,26,0.4); }
+
+/* ═══════════════════════════════════════
+   パターンA: メインポスター型
+═══════════════════════════════════════ */
+.compare-page-A { padding: 18px 26px 22px; }
+.poster-hero {
+  position: relative;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1a0d04 0%, #2a1a10 100%);
+  padding: 16px;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+  border: 1px solid rgba(154,112,32,0.4);
+}
+.poster-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 25% 50%, rgba(80,140,255,0.18), transparent 45%),
+    radial-gradient(circle at 75% 50%, rgba(255,80,120,0.18), transparent 45%);
+  pointer-events: none;
+}
+.poster-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 100px 1fr;
+  gap: 12px;
+  align-items: stretch;
+  position: relative;
+}
+.poster-fighter { display: grid; grid-template-rows: 1fr auto; gap: 8px; text-align: center; }
+.poster-fighter-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  border-radius: 6px;
+  border: 3px solid #d4b87a;
+  outline: 1px solid rgba(255,255,255,0.2);
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-color: #2a1a10;
+}
+.poster-fighter-photo.player-frame { box-shadow: 0 6px 18px rgba(80,140,255,0.3), inset 0 0 0 2px rgba(80,140,255,0.15); }
+.poster-fighter-photo.rival-frame { box-shadow: 0 6px 18px rgba(255,80,120,0.3), inset 0 0 0 2px rgba(255,80,120,0.15); }
+.poster-fighter-photo .role-tag {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(0,0,0,0.7); color: #f0d48b;
+  font-size: 9px; font-weight: 800; letter-spacing: 2px;
+  padding: 3px 8px; border-radius: 2px;
+}
+.poster-fighter-photo .ovr-tag {
+  position: absolute; bottom: 8px; right: 8px;
+  background: rgba(212,184,122,0.95); color: #1a0d04;
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+  letter-spacing: 1px; padding: 2px 10px; border-radius: 3px; line-height: 1;
+}
+.poster-fighter-info {
+  background: rgba(0,0,0,0.45);
+  padding: 8px 6px; border-radius: 4px; color: #fff;
+}
+.poster-fighter-info .org-name { font-size: 10px; color: #c8b878; letter-spacing: 1.5px; margin-bottom: 2px; }
+.poster-fighter-info .name {
+  font-size: 17px; font-weight: 900;
+  font-family: 'Noto Serif JP', serif; letter-spacing: 1px;
+}
+.poster-vs { display: grid; align-content: center; justify-items: center; gap: 6px; position: relative; }
+.poster-vs::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle, rgba(212,184,122,0.3), transparent 60%);
+  pointer-events: none;
+}
+.poster-vs .vs {
+  font-family: 'Bebas Neue', sans-serif; font-size: 56px; color: #f0d48b;
+  text-shadow: 0 0 12px rgba(212,184,122,0.6), 0 2px 4px rgba(0,0,0,0.6);
+  line-height: 1; position: relative;
+}
+.poster-vs .verdict {
+  background: #8b1a1a; color: #fff;
+  font-size: 10px; font-weight: 900; letter-spacing: 1px;
+  padding: 3px 10px; border-radius: 2px; position: relative;
+}
+.poster-headline { margin-top: 12px; text-align: center; position: relative; }
+.poster-headline .quote {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 15px; font-weight: 800; color: #f0d48b;
+  line-height: 1.5; text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.poster-headline .by { font-size: 10px; color: #c8b878; margin-top: 4px; }
+
+/* マッチアップ簡易リスト */
+.matchup-mini-list { display: grid; gap: 7px; margin: 14px 0; }
+.matchup-mini-row {
+  display: grid;
+  grid-template-columns: 1fr 110px 1fr;
+  gap: 10px;
+  padding: 8px 10px;
+  background: rgba(120,84,39,0.05);
+  border: 1px solid rgba(120,84,39,0.2);
+  border-radius: 6px;
+  align-items: center;
+}
+.mini-fighter { display: flex; gap: 8px; align-items: center; }
+.mini-fighter.right { flex-direction: row-reverse; text-align: right; }
+.mini-photo {
+  width: 46px; height: 46px; border-radius: 6px; flex-shrink: 0;
+  background-size: cover; background-position: center top; background-repeat: no-repeat;
+  background-color: #2a1a10;
+  border: 2px solid rgba(80,140,255,0.5);
+}
+.mini-photo.right { border-color: rgba(255,80,120,0.5); }
+.mini-name { font-size: 12px; font-weight: 800; line-height: 1.2; }
+.mini-ovr { font-size: 10px; color: #6a5e4c; margin-top: 2px; }
+.mini-ovr strong { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: #1f1710; margin-left: 2px; }
+.mini-vs { text-align: center; font-size: 10px; }
+.mini-vs .role { display: block; font-weight: 900; color: #8b1a1a; font-size: 10px; }
+.mini-vs .verdict {
+  display: inline-block; font-size: 10px; font-weight: 800;
+  padding: 1px 7px; border-radius: 8px; margin-top: 3px;
+}
+.mini-vs .verdict.player { background: rgba(154,112,32,0.2); color: #6a4a10; }
+.mini-vs .verdict.rival { background: rgba(139,26,26,0.18); color: #8b1a1a; }
+.mini-vs .verdict.even { background: rgba(120,84,39,0.12); color: #5b4b34; }
+
+/* ═══════════════════════════════════════
+   パターンB: 縦長ヒーロー対峙型
+═══════════════════════════════════════ */
+.compare-page-B { padding: 18px 26px 22px; }
+.hero-confront {
+  display: grid;
+  grid-template-columns: 1fr 240px 1fr;
+  gap: 12px;
+  margin: 12px 0 14px;
+  align-items: stretch;
+}
+.hero-side {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid rgba(154,112,32,0.4);
+  min-height: 480px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-color: #1a0d04;
+}
+.hero-side .overlay-top {
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.85), transparent);
+  color: #fff; z-index: 2;
+}
+.hero-side .overlay-top .org-tag {
+  font-size: 10px; color: #c8b878; letter-spacing: 2px; margin-bottom: 2px;
+}
+.hero-side .overlay-top .org-name {
+  font-size: 16px; font-weight: 900; font-family: 'Noto Serif JP', serif;
+}
+.hero-side .overlay-bottom {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 16px 12px 10px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.95) 30%, transparent);
+  color: #fff; z-index: 2;
+}
+.hero-side .overlay-bottom .role { font-size: 9px; color: #d4b87a; letter-spacing: 2px; margin-bottom: 2px; }
+.hero-side .overlay-bottom .name {
+  font-size: 22px; font-weight: 900; font-family: 'Noto Serif JP', serif;
+  line-height: 1.1; margin-bottom: 4px;
+}
+.hero-side .overlay-bottom .ovr-line {
+  display: flex; gap: 8px; align-items: center;
+  font-size: 11px; color: #c8b878;
+}
+.hero-side .overlay-bottom .ovr-line strong {
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+  color: #f0d48b; letter-spacing: 1px; line-height: 1;
+}
+
+.hero-center {
+  display: grid; grid-template-rows: auto auto auto; gap: 8px;
+  background: rgba(0,0,0,0.7);
+  padding: 12px 10px; border-radius: 8px;
+  border: 1px solid rgba(154,112,32,0.35);
+}
+.hero-center .vs {
+  font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: #f0d48b;
+  text-align: center; letter-spacing: 2px; line-height: 1;
+  text-shadow: 0 0 10px rgba(212,184,122,0.5);
+}
+.hero-center .grade {
+  text-align: center; padding: 6px 0;
+  border-top: 1px solid rgba(212,184,122,0.3);
+  border-bottom: 1px solid rgba(212,184,122,0.3);
+}
+.hero-center .grade .lbl { font-size: 9px; color: #c8b878; letter-spacing: 2px; }
+.hero-center .grade .val {
+  font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: #fff; line-height: 1;
+}
+.hero-center .verdict {
+  font-size: 10px; color: #d4b87a; text-align: center;
+  letter-spacing: 1px; padding: 4px 0; line-height: 1.4;
+}
+.power-vertical { display: grid; gap: 6px; }
+.power-v-row { display: grid; grid-template-rows: auto auto auto; gap: 2px; text-align: center; }
+.power-v-row .lbl { font-size: 9px; color: #c8b878; letter-spacing: 1.5px; }
+.power-v-row .bar {
+  position: relative; height: 10px;
+  background: rgba(120,84,39,0.25);
+  border-radius: 2px; overflow: hidden;
+  display: grid; grid-template-columns: 1fr 1fr;
+}
+.power-v-row .bar .center-line {
+  position: absolute; left: 50%; top: -1px; bottom: -1px;
+  width: 1px; background: rgba(255,255,255,0.3);
+}
+.power-v-row .bar .player-side { justify-self: end; height: 100%; background: linear-gradient(270deg, #d4a82a, #9a7020); }
+.power-v-row .bar .rival-side { justify-self: start; height: 100%; background: linear-gradient(90deg, #c22020, #8b1a1a); }
+.power-v-row .diff { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 1px; }
+.power-v-row .diff.player { color: #f0d48b; }
+.power-v-row .diff.rival { color: #ff8090; }
+
+/* ═══════════════════════════════════════
+   パターンC: ファイトカード3連型
+═══════════════════════════════════════ */
+.compare-page-C { padding: 18px 26px 22px; }
+.banner-confront {
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  gap: 8px; align-items: center;
+  padding: 10px 12px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(154,112,32,0.15), transparent 70%),
+    rgba(120,84,39,0.06);
+  border: 1px solid rgba(154,112,32,0.3);
+  border-radius: 6px; margin-bottom: 14px;
+}
+.banner-org { display: grid; gap: 3px; }
+.banner-org.right { text-align: right; }
+.banner-org .name {
+  font-size: 18px; font-weight: 900;
+  font-family: 'Noto Serif JP', serif; line-height: 1.2; color: #1a0d04;
+}
+.banner-org .meta { font-size: 11px; color: #6a5e4c; }
+.banner-vs {
+  text-align: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; color: #8b1a1a;
+}
+.banner-vs .grade { font-size: 14px; color: #6a4a10; }
+.fight-card-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; margin-bottom: 14px;
+}
+.fight-card {
+  background: linear-gradient(180deg, #2a1a10 0%, #1a0d04 100%);
+  border: 1px solid rgba(154,112,32,0.4);
+  border-radius: 8px; overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+.fight-card-top {
+  background: linear-gradient(90deg, #8b1a1a, #c22020);
+  color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 3px;
+  padding: 5px 8px; text-align: center;
+  border-bottom: 1px solid rgba(212,184,122,0.4);
+}
+.fight-card-photos { position: relative; display: grid; grid-template-rows: 1fr 1fr; }
+.fight-card-photo {
+  position: relative;
+  aspect-ratio: 5/3;
+  display: grid; place-items: end start;
+  color: #fff; font-weight: 900; font-size: 12px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-color: #1a0d04;
+}
+.fight-card-photo.player { border-bottom: 2px solid #d4b87a; }
+.fight-card-photo::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.85));
+}
+.fight-card-photo .name-tag {
+  position: relative; z-index: 1;
+  padding: 0 6px 4px;
+  font-size: 11px; font-weight: 900;
+  font-family: 'Noto Serif JP', serif;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+.fight-card-photo .ovr-tag {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(212,184,122,0.95);
+  color: #1a0d04;
+  font-family: 'Bebas Neue', sans-serif; font-size: 14px;
+  padding: 1px 7px; border-radius: 2px; line-height: 1;
+  z-index: 2;
+}
+.fight-card-photos .vs-pin {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px; height: 40px; border-radius: 50%;
+  background: radial-gradient(circle, #d4a82a, #8b1a1a);
+  display: grid; place-items: center;
+  color: #fff;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 1px;
+  border: 2px solid #f0d48b;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5); z-index: 2;
+}
+.fight-card-bottom {
+  background: rgba(248,238,210,0.95);
+  padding: 8px 10px; color: #1a0d04;
+}
+.fight-card-bottom .verdict {
+  text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 1px;
+  padding: 3px 0; margin-bottom: 5px;
+  border-bottom: 1px dashed rgba(120,84,39,0.3);
+}
+.fight-card-bottom .verdict.player { color: #6a4a10; }
+.fight-card-bottom .verdict.rival { color: #8b1a1a; }
+.fight-card-bottom .verdict.even { color: #5b4b34; }
+.fight-card-bottom .comment {
+  font-size: 10.5px; line-height: 1.6; color: #4a3825;
+  font-family: 'Noto Serif JP', serif;
+}
+
+/* ═══════════════════════════════════════
+   パターンD: 紙面特集型
+═══════════════════════════════════════ */
+.compare-page-D { padding: 18px 26px 22px; }
+.feature-headline {
+  text-align: center;
+  padding: 4px 0 12px;
+  border-bottom: 3px double rgba(120,84,39,0.4);
+  margin-bottom: 14px;
+}
+.feature-headline .pre {
+  display: inline-block;
+  font-size: 10px; letter-spacing: 4px; color: #8b1a1a;
+  font-weight: 800; border: 1px solid #8b1a1a;
+  padding: 2px 10px; margin-bottom: 8px;
+}
+.feature-headline .title {
+  font-size: 28px; font-weight: 900;
+  font-family: 'Noto Serif JP', serif;
+  color: #1a0d04; line-height: 1.25; letter-spacing: -0.01em;
+}
+.feature-headline .sub {
+  font-size: 12px; color: #5b4b34; margin-top: 6px;
+  font-family: 'Noto Serif JP', serif;
+}
+.feature-spread {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 14px;
+}
+.feature-photo {
+  position: relative;
+  aspect-ratio: 4/5;
+  border-radius: 4px;
+  border: 3px solid #d4b87a;
+  outline: 1px solid rgba(120,84,39,0.4);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-color: #1a0d04;
+}
+.feature-photo .photo-caption {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.92), transparent);
+  color: #fff;
+  padding: 18px 10px 8px; font-size: 10px; line-height: 1.45;
+}
+.feature-photo .photo-caption strong {
+  display: block; font-size: 14px;
+  font-family: 'Noto Serif JP', serif; margin-bottom: 2px;
+}
+.feature-photo .corner-tag {
+  position: absolute; top: 8px; right: 8px;
+  background: #8b1a1a; color: #fff;
+  font-size: 9px; font-weight: 800; letter-spacing: 1px;
+  padding: 2px 7px; border-radius: 2px;
+}
+.feature-photo.right .corner-tag { background: #6a4a10; }
+
+.feature-lead-row {
+  display: grid; grid-template-columns: 80px 1fr;
+  gap: 14px; margin-bottom: 14px; align-items: start;
+}
+.feature-grade-big {
+  text-align: center;
+  padding: 10px 6px;
+  background: linear-gradient(180deg, rgba(212,184,122,0.25), rgba(212,184,122,0.05));
+  border: 1px solid rgba(154,112,32,0.4);
+  border-radius: 4px;
+}
+.feature-grade-big .lbl { font-size: 8px; color: #6a5e4c; letter-spacing: 1.5px; }
+.feature-grade-big .val { font-family: 'Bebas Neue', sans-serif; font-size: 44px; line-height: 1; color: #8b1a1a; }
+.feature-grade-big .desc { font-size: 9px; color: #6a5e4c; margin-top: 2px; }
+.feature-lead-text {
+  font-size: 13px; line-height: 1.85; color: #2a2014;
+  text-align: justify; font-family: 'Noto Serif JP', serif;
+}
+.feature-lead-text .first-letter {
+  float: left; font-size: 36px; line-height: 0.9;
+  font-weight: 900; color: #8b1a1a;
+  margin: 4px 6px 0 0; font-family: 'Noto Serif JP', serif;
+}
+
+.feature-body-grid {
+  display: grid; grid-template-columns: 1fr 240px;
+  gap: 14px; margin-bottom: 14px;
+}
+.feature-body-text { font-size: 12px; line-height: 1.85; color: #2a2014; text-align: justify; }
+.feature-body-text p { text-indent: 1em; margin-bottom: 8px; }
+.feature-body-text strong { color: #8b1a1a; font-weight: 800; }
+.feature-aside { display: grid; gap: 10px; }
+.feature-aside-photo {
+  position: relative; aspect-ratio: 1;
+  border-radius: 4px; border: 2px solid #d4b87a;
+  overflow: hidden;
+  background-size: cover; background-position: center top; background-repeat: no-repeat;
+  background-color: #2a1a10;
+}
+.feature-aside-photo .cap {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent);
+  color: #fff; padding: 14px 8px 4px; font-size: 9px;
+}
+.feature-aside-photo .cap strong { display: block; font-size: 11px; margin-bottom: 1px; }
+
+.feature-matchup-table { margin: 14px 0; }
+.feature-matchup-table table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.feature-matchup-table th, .feature-matchup-table td { padding: 8px 8px; border-bottom: 1px solid rgba(120,84,39,0.2); }
+.feature-matchup-table th {
+  background: #8b1a1a; color: #fff;
+  font-size: 10px; font-weight: 800; letter-spacing: 2px;
+  text-align: center;
+}
+.feature-matchup-table .name-cell { font-weight: 800; vertical-align: middle; }
+.feature-matchup-table .face {
+  width: 32px; height: 32px; border-radius: 4px;
+  display: inline-block; vertical-align: middle; margin-right: 6px;
+  background-size: cover; background-position: center top;
+  border: 1px solid rgba(120,84,39,0.4);
+}
+.feature-matchup-table .ovr { font-family: 'Bebas Neue', sans-serif; font-size: 16px; text-align: center; vertical-align: middle; }
+.feature-matchup-table .vs-cell { text-align: center; font-weight: 800; color: #8b1a1a; font-size: 11px; vertical-align: middle; }
+.feature-matchup-table .role-cell { text-align: center; font-size: 10px; color: #6a5e4c; vertical-align: middle; }
+
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>⚔ 団体比較面 レイアウト4パターン v4 (docs/ui/mockups/ 配置版)</h1>
+  <div>
+    実在キャラの画像を埋め込んだ版。<strong>このHTMLは <code>docs/ui/mockups/</code> 配下に置いてください</strong>(他のモックアップと同じ場所)。<code>../../../image/</code> から相対参照しています。
+  </div>
+  <div class="note">
+    使用キャラ — プレイヤー側: 阿武隈塔子・深町真琴・高津小春 / ライバル側: 橘玲美・生駒エリカ・出羽鷹子。タブで4パターンを切り替え。
+  </div>
+</div>
+
+<!-- タブ -->
+<div class="tabs">
+  <button class="tab active" data-page="A" onclick="switchPage(this, 'A')">A. メインポスター型</button>
+  <button class="tab" data-page="B" onclick="switchPage(this, 'B')">B. ヒーロー対峙型</button>
+  <button class="tab" data-page="C" onclick="switchPage(this, 'C')">C. ファイトカード3連型</button>
+  <button class="tab" data-page="D" onclick="switchPage(this, 'D')">D. 紙面特集型</button>
+</div>
+
+<!-- ════════ パターンA ════════ -->
+<div id="page-A">
+  <div class="pattern-label">
+    <strong>パターンA: メインポスター型</strong>
+    <div class="desc">上部に超大型のエース対決ビジュアル(縦3:4の写真+VS演出)。下にマッチアップと戦力レーダー。試合前のイベントポスター感。</div>
+  </div>
+  <div class="paper">
+    <div class="paper-header">
+      <div class="logo">週刊グラップル</div>
+      <div class="issue">シーズン3 第14週<small>2026年4月25日号</small></div>
+    </div>
+    <div class="page-nav">
+      <button class="page-nav-btn">1面 興行</button>
+      <button class="page-nav-btn active">2面 団体比較</button>
+      <button class="page-nav-btn">3面 因縁列伝</button>
+    </div>
+
+    <div class="compare-page-A">
+      <div class="compare-select">
+        <label>比較対象</label>
+        <select><option>ブラックスター・ロー</option><option>ヴェネチア・ローズ</option></select>
+      </div>
+
+      <div class="poster-hero">
+        <div class="poster-hero-grid">
+          <div class="poster-fighter">
+            <div class="poster-fighter-photo player-frame" style="background-image: url('../../../image/upper/upper_abukuma_t.webp');">
+              <span class="role-tag">ACE</span>
+              <span class="ovr-tag">75</span>
+            </div>
+            <div class="poster-fighter-info">
+              <div class="org-name">紅蓮社中</div>
+              <div class="name">阿武隈 塔子</div>
+            </div>
+          </div>
+          <div class="poster-vs">
+            <div class="vs">VS</div>
+            <div class="verdict">優劣 B+</div>
+          </div>
+          <div class="poster-fighter">
+            <div class="poster-fighter-photo rival-frame" style="background-image: url('../../../image/upper/upper_tachibana_r.webp');">
+              <span class="role-tag">ACE</span>
+              <span class="ovr-tag">73</span>
+            </div>
+            <div class="poster-fighter-info">
+              <div class="org-name">ブラックスター・ロー</div>
+              <div class="name">橘 玲美</div>
+            </div>
+          </div>
+        </div>
+        <div class="poster-headline">
+          <div class="quote">「うちと向こうの差は、今は埋まらない。<br>でも10週後に勝てる団体になってるかは、社長次第だよ」</div>
+          <div class="by">——黒田幸子</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-label">トップ陣 比較</div>
+        <div class="matchup-mini-list">
+          <div class="matchup-mini-row">
+            <div class="mini-fighter">
+              <div class="mini-photo" style="background-image: url('../../../image/face_abukuma_t.png');"></div>
+              <div><div class="mini-name">阿武隈 塔子</div><div class="mini-ovr">OVR <strong>75</strong></div></div>
+            </div>
+            <div class="mini-vs"><span class="role">エース</span><span class="verdict player">こちら +2</span></div>
+            <div class="mini-fighter right">
+              <div class="mini-photo right" style="background-image: url('../../../image/face_tachibana_r.png');"></div>
+              <div><div class="mini-name">橘 玲美</div><div class="mini-ovr">OVR <strong>73</strong></div></div>
+            </div>
+          </div>
+          <div class="matchup-mini-row">
+            <div class="mini-fighter">
+              <div class="mini-photo" style="background-image: url('../../../image/face_fukamachi_m.png');"></div>
+              <div><div class="mini-name">深町 真琴</div><div class="mini-ovr">OVR <strong>68</strong></div></div>
+            </div>
+            <div class="mini-vs"><span class="role">No.2</span><span class="verdict rival">向こう +5</span></div>
+            <div class="mini-fighter right">
+              <div class="mini-photo right" style="background-image: url('../../../image/face_ikoma_e.png');"></div>
+              <div><div class="mini-name">生駒 エリカ</div><div class="mini-ovr">OVR <strong>73</strong></div></div>
+            </div>
+          </div>
+          <div class="matchup-mini-row">
+            <div class="mini-fighter">
+              <div class="mini-photo" style="background-image: url('../../../image/face_takatsu_k.png');"></div>
+              <div><div class="mini-name">高津 小春</div><div class="mini-ovr">OVR <strong>62</strong></div></div>
+            </div>
+            <div class="mini-vs"><span class="role">No.3</span><span class="verdict even">五分</span></div>
+            <div class="mini-fighter right">
+              <div class="mini-photo right" style="background-image: url('../../../image/face_dewa_t.png');"></div>
+              <div><div class="mini-name">出羽 鷹子</div><div class="mini-ovr">OVR <strong>62</strong></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="sec-label-gold">戦力レーダー</div>
+        <div class="power-section">
+          <div class="power-row"><div class="power-label">エース力</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:51%"></div><div class="rival-side" style="width:49%"></div><div class="center-line"></div></div>
+            <div class="power-diff player">+2</div></div>
+          <div class="power-row"><div class="power-label">層の厚み</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:42%"></div><div class="rival-side" style="width:58%"></div><div class="center-line"></div></div>
+            <div class="power-diff rival">-5</div></div>
+          <div class="power-row"><div class="power-label">集客力</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:38%"></div><div class="rival-side" style="width:62%"></div><div class="center-line"></div></div>
+            <div class="power-diff rival">-13</div></div>
+          <div class="power-row"><div class="power-label">タイトル力</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:46%"></div><div class="rival-side" style="width:54%"></div><div class="center-line"></div></div>
+            <div class="power-diff rival">-1</div></div>
+        </div>
+      </div>
+
+      <div class="kuroda-block">
+        <div class="kuroda-face"></div>
+        <div>
+          <div class="kuroda-text">「今のままじゃ向こうに分はある。でもこっちには塔子がいる。10週もすれば、状況は逆転してるかもね。」</div>
+          <div class="kuroda-byline">——黒田幸子(本紙論評)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ パターンB ════════ -->
+<div id="page-B" style="display:none;">
+  <div class="pattern-label">
+    <strong>パターンB: ヒーロー対峙型</strong>
+    <div class="desc">エース2人の縦長(全身)肖像が左右に対峙。中央コラムに戦力レーダーを縦に組み込み。映画ポスター・対戦掲示板の感じ。</div>
+  </div>
+  <div class="paper">
+    <div class="paper-header">
+      <div class="logo">週刊グラップル</div>
+      <div class="issue">シーズン3 第14週<small>2026年4月25日号</small></div>
+    </div>
+    <div class="page-nav">
+      <button class="page-nav-btn">1面 興行</button>
+      <button class="page-nav-btn active">2面 団体比較</button>
+      <button class="page-nav-btn">3面 因縁列伝</button>
+    </div>
+
+    <div class="compare-page-B">
+      <div class="compare-select">
+        <label>比較対象</label>
+        <select><option>ブラックスター・ロー</option></select>
+      </div>
+
+      <div class="hero-confront">
+        <div class="hero-side" style="background-image: url('../../../image/stand/stand_abukuma_t.webp');">
+          <div class="overlay-top">
+            <div class="org-tag">PLAYER</div>
+            <div class="org-name">紅蓮社中</div>
+          </div>
+          <div class="overlay-bottom">
+            <div class="role">ACE</div>
+            <div class="name">阿武隈 塔子</div>
+            <div class="ovr-line">
+              <span>OVR</span><strong>75</strong>
+              <span style="margin-left:auto;color:#d4b87a;">▲ 上昇中</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-center">
+          <div class="vs">VS</div>
+          <div class="grade">
+            <div class="lbl">優劣判定</div>
+            <div class="val">B+</div>
+          </div>
+          <div>
+            <div class="verdict">エース互角<br>層で劣勢</div>
+            <div class="power-vertical" style="margin-top:8px;">
+              <div class="power-v-row">
+                <div class="lbl">エース</div>
+                <div class="bar"><div class="player-side" style="width:51%"></div><div class="rival-side" style="width:49%"></div><div class="center-line"></div></div>
+                <div class="diff player">+2</div>
+              </div>
+              <div class="power-v-row">
+                <div class="lbl">層</div>
+                <div class="bar"><div class="player-side" style="width:42%"></div><div class="rival-side" style="width:58%"></div><div class="center-line"></div></div>
+                <div class="diff rival">-5</div>
+              </div>
+              <div class="power-v-row">
+                <div class="lbl">集客</div>
+                <div class="bar"><div class="player-side" style="width:38%"></div><div class="rival-side" style="width:62%"></div><div class="center-line"></div></div>
+                <div class="diff rival">-13</div>
+              </div>
+              <div class="power-v-row">
+                <div class="lbl">タイトル</div>
+                <div class="bar"><div class="player-side" style="width:46%"></div><div class="rival-side" style="width:54%"></div><div class="center-line"></div></div>
+                <div class="diff rival">-1</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-side" style="background-image: url('../../../image/stand/stand_tachibana_r.webp');">
+          <div class="overlay-top">
+            <div class="org-tag" style="text-align:right;">RIVAL</div>
+            <div class="org-name" style="text-align:right;">ブラックスター・ロー</div>
+          </div>
+          <div class="overlay-bottom">
+            <div class="role" style="text-align:right;">ACE</div>
+            <div class="name" style="text-align:right;">橘 玲美</div>
+            <div class="ovr-line" style="justify-content:flex-end;">
+              <span style="color:#d4b87a;">⏤ 安定</span>
+              <span style="margin-left:auto;">OVR</span><strong>73</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-label">No.2 / No.3 比較</div>
+        <div class="matchup-mini-list">
+          <div class="matchup-mini-row">
+            <div class="mini-fighter">
+              <div class="mini-photo" style="background-image: url('../../../image/face_fukamachi_m.png');"></div>
+              <div><div class="mini-name">深町 真琴</div><div class="mini-ovr">OVR <strong>68</strong></div></div>
+            </div>
+            <div class="mini-vs"><span class="role">No.2</span><span class="verdict rival">向こう +5</span></div>
+            <div class="mini-fighter right">
+              <div class="mini-photo right" style="background-image: url('../../../image/face_ikoma_e.png');"></div>
+              <div><div class="mini-name">生駒 エリカ</div><div class="mini-ovr">OVR <strong>73</strong></div></div>
+            </div>
+          </div>
+          <div class="matchup-mini-row">
+            <div class="mini-fighter">
+              <div class="mini-photo" style="background-image: url('../../../image/face_takatsu_k.png');"></div>
+              <div><div class="mini-name">高津 小春</div><div class="mini-ovr">OVR <strong>62</strong></div></div>
+            </div>
+            <div class="mini-vs"><span class="role">No.3</span><span class="verdict even">五分</span></div>
+            <div class="mini-fighter right">
+              <div class="mini-photo right" style="background-image: url('../../../image/face_dewa_t.png');"></div>
+              <div><div class="mini-name">出羽 鷹子</div><div class="mini-ovr">OVR <strong>62</strong></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kuroda-block">
+        <div class="kuroda-face"></div>
+        <div>
+          <div class="kuroda-text">「エース対決は塔子が勝てるとこまで来てる。問題はその下。中堅以下を厚くできれば、本当に逆転は十分ある。」</div>
+          <div class="kuroda-byline">——黒田幸子(本紙論評)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ パターンC ════════ -->
+<div id="page-C" style="display:none;">
+  <div class="pattern-label">
+    <strong>パターンC: ファイトカード3連型</strong>
+    <div class="desc">エース・No.2・No.3 の3対決を、それぞれ縦長カードで横並びに大判展示。両選手の写真が上下に積まれ中央のVSが結ぶ。試合のラインナップ告知のような構図。</div>
+  </div>
+  <div class="paper">
+    <div class="paper-header">
+      <div class="logo">週刊グラップル</div>
+      <div class="issue">シーズン3 第14週<small>2026年4月25日号</small></div>
+    </div>
+    <div class="page-nav">
+      <button class="page-nav-btn">1面 興行</button>
+      <button class="page-nav-btn active">2面 団体比較</button>
+      <button class="page-nav-btn">3面 因縁列伝</button>
+    </div>
+
+    <div class="compare-page-C">
+      <div class="compare-select">
+        <label>比較対象</label>
+        <select><option>ブラックスター・ロー</option></select>
+      </div>
+
+      <div class="banner-confront">
+        <div class="banner-org">
+          <div class="name">紅蓮社中</div>
+          <div class="meta">所属14名 / 王者2 / OVR 72</div>
+          <span class="org-tier-badge player">プレイヤー</span>
+        </div>
+        <div class="banner-vs">
+          VS
+          <div class="grade">B+</div>
+        </div>
+        <div class="banner-org right">
+          <div class="name">ブラックスター・ロー</div>
+          <div class="meta">所属16名 / 王者3 / OVR 78</div>
+          <span class="org-tier-badge rival">A級団体</span>
+        </div>
+      </div>
+
+      <div class="sec-label">3カード一斉比較</div>
+      <div class="fight-card-grid">
+        <div class="fight-card">
+          <div class="fight-card-top">エース対決</div>
+          <div class="fight-card-photos">
+            <div class="fight-card-photo player" style="background-image: url('../../../image/upper/upper_abukuma_t.webp');">
+              <span class="ovr-tag">75</span>
+              <span class="name-tag">阿武隈 塔子</span>
+            </div>
+            <div class="vs-pin">VS</div>
+            <div class="fight-card-photo rival" style="background-image: url('../../../image/upper/upper_tachibana_r.webp');">
+              <span class="ovr-tag">73</span>
+              <span class="name-tag">橘 玲美</span>
+            </div>
+          </div>
+          <div class="fight-card-bottom">
+            <div class="verdict player">こちら +2</div>
+            <div class="comment">エース比較は互角。ここを五分で返せれば、興行の格がまるで違う。</div>
+          </div>
+        </div>
+
+        <div class="fight-card">
+          <div class="fight-card-top">No.2 対決</div>
+          <div class="fight-card-photos">
+            <div class="fight-card-photo player" style="background-image: url('../../../image/upper/upper_fukamachi_m.webp');">
+              <span class="ovr-tag">68</span>
+              <span class="name-tag">深町 真琴</span>
+            </div>
+            <div class="vs-pin">VS</div>
+            <div class="fight-card-photo rival" style="background-image: url('../../../image/upper/upper_ikoma_e.webp');">
+              <span class="ovr-tag">73</span>
+              <span class="name-tag">生駒 エリカ</span>
+            </div>
+          </div>
+          <div class="fight-card-bottom">
+            <div class="verdict rival">向こう +5</div>
+            <div class="comment">No.2で押されている。戦力の厚みで勝負するとこちらの薄さが目立つ。</div>
+          </div>
+        </div>
+
+        <div class="fight-card">
+          <div class="fight-card-top">No.3 対決</div>
+          <div class="fight-card-photos">
+            <div class="fight-card-photo player" style="background-image: url('../../../image/upper/upper_takatsu_k.webp');">
+              <span class="ovr-tag">62</span>
+              <span class="name-tag">高津 小春</span>
+            </div>
+            <div class="vs-pin">VS</div>
+            <div class="fight-card-photo rival" style="background-image: url('../../../image/upper/upper_dewa_t.webp');">
+              <span class="ovr-tag">62</span>
+              <span class="name-tag">出羽 鷹子</span>
+            </div>
+          </div>
+          <div class="fight-card-bottom">
+            <div class="verdict even">五分</div>
+            <div class="comment">三番手は互角。ここを五分で回せれば、興行全体の見栄えを保てる。</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-label-gold">戦力レーダー</div>
+        <div class="power-section">
+          <div class="power-row"><div class="power-label">エース力</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:51%"></div><div class="rival-side" style="width:49%"></div><div class="center-line"></div></div>
+            <div class="power-diff player">+2</div></div>
+          <div class="power-row"><div class="power-label">層の厚み</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:42%"></div><div class="rival-side" style="width:58%"></div><div class="center-line"></div></div>
+            <div class="power-diff rival">-5</div></div>
+          <div class="power-row"><div class="power-label">集客力</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:38%"></div><div class="rival-side" style="width:62%"></div><div class="center-line"></div></div>
+            <div class="power-diff rival">-13</div></div>
+          <div class="power-row"><div class="power-label">タイトル力</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:46%"></div><div class="rival-side" style="width:54%"></div><div class="center-line"></div></div>
+            <div class="power-diff rival">-1</div></div>
+        </div>
+      </div>
+
+      <div class="kuroda-block">
+        <div class="kuroda-face"></div>
+        <div>
+          <div class="kuroda-text">「3カード横並びで眺めると、層の差が一目瞭然ね。塔子は勝てる。でもその下が、まだ。」</div>
+          <div class="kuroda-byline">——黒田幸子</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ パターンD ════════ -->
+<div id="page-D" style="display:none;">
+  <div class="pattern-label">
+    <strong>パターンD: 紙面特集型</strong>
+    <div class="desc">大見出し + リード + 本文の特集記事構成。エース2枚を見開きで並べ、本文中に小写真と図表を流し込む。読み物として読ませる方向。</div>
+  </div>
+  <div class="paper">
+    <div class="paper-header">
+      <div class="logo">週刊グラップル</div>
+      <div class="issue">シーズン3 第14週<small>2026年4月25日号</small></div>
+    </div>
+    <div class="page-nav">
+      <button class="page-nav-btn">1面 興行</button>
+      <button class="page-nav-btn active">2面 団体比較</button>
+      <button class="page-nav-btn">3面 因縁列伝</button>
+    </div>
+
+    <div class="compare-page-D">
+      <div class="compare-select">
+        <label>比較対象</label>
+        <select><option>ブラックスター・ロー</option></select>
+      </div>
+
+      <div class="feature-headline">
+        <div class="pre">特 集</div>
+        <h1 class="title">紅蓮社中、ブラックスターを<br>射程に捉えるか</h1>
+        <div class="sub">エース対決は互角に。だが層・集客で残る壁——10週後の青写真</div>
+      </div>
+
+      <div class="feature-spread">
+        <div class="feature-photo" style="background-image: url('../../../image/upper/upper_abukuma_t.webp');">
+          <span class="corner-tag">紅蓮社中</span>
+          <div class="photo-caption">
+            <strong>阿武隈 塔子</strong>
+            紅蓮社中エース・OVR 75。今期の覚醒は本物か。
+          </div>
+        </div>
+        <div class="feature-photo right" style="background-image: url('../../../image/upper/upper_tachibana_r.webp');">
+          <span class="corner-tag">A級団体</span>
+          <div class="photo-caption">
+            <strong>橘 玲美</strong>
+            ブラックスター・ローの看板・OVR 73。安定感は健在。
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-lead-row">
+        <div class="feature-grade-big">
+          <div class="lbl">優劣判定</div>
+          <div class="val">B+</div>
+          <div class="desc">惜敗</div>
+        </div>
+        <div class="feature-lead-text">
+          <span class="first-letter">紅</span>蓮社中とブラックスター・ローの比較が、ここに来て興味深い様相を呈している。エース対決は阿武隈塔子が+2と逆転、しかし層の厚みと集客力では依然として大きな差。だが10週後を見据えれば——本紙はあえて言う。逆転は射程内、と。
+        </div>
+      </div>
+
+      <div class="feature-body-grid">
+        <div class="feature-body-text">
+          <p>まず<strong>エース対決</strong>。阿武隈塔子の今期の伸びは、関係者の予想を上回る。OVR 75は、ブラックスター・ローの看板である橘玲美の73を、今期初めて上回った数字だ。集客面でも、塔子の入場時の歓声は他団体エースに引けを取らない。</p>
+          <p>問題は<strong>No.2以下</strong>だ。深町真琴(OVR 68)は生駒エリカ(OVR 73)に5ポイント差で押されている。三番手は五分だが、戦力の厚みで勝負すると、こちらの薄さが余計に目立つ構図。集客力の-13という数字は、団体としての地力の差そのものを示している。</p>
+          <p>とはいえ、10週もあれば状況は変わりうる。塔子の覚醒が本物なら、その背中を追いかける深町・高津の数字も上がるはずだ。<strong>「社長次第」</strong>という黒田の評は、決して見放した言葉ではない。</p>
+        </div>
+        <div class="feature-aside">
+          <div class="feature-aside-photo" style="background-image: url('../../../image/face_fukamachi_m.png');">
+            <div class="cap"><strong>深町 真琴</strong>No.2 / OVR 68</div>
+          </div>
+          <div class="feature-aside-photo" style="background-image: url('../../../image/face_ikoma_e.png');">
+            <div class="cap"><strong>生駒 エリカ</strong>向こうのNo.2 / OVR 73</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-matchup-table">
+        <div class="sec-label">表 / 全マッチアップ</div>
+        <table>
+          <thead>
+            <tr>
+              <th>役</th><th>紅蓮社中</th><th>OVR</th><th>判定</th><th>OVR</th><th>ブラックスター・ロー</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="role-cell">エース</td>
+              <td class="name-cell"><span class="face" style="background-image: url('../../../image/face_abukuma_t.png');"></span>阿武隈 塔子</td>
+              <td class="ovr">75</td>
+              <td class="vs-cell" style="color:#6a4a10;">+2 ▶</td>
+              <td class="ovr">73</td>
+              <td class="name-cell"><span class="face" style="background-image: url('../../../image/face_tachibana_r.png');"></span>橘 玲美</td>
+            </tr>
+            <tr>
+              <td class="role-cell">No.2</td>
+              <td class="name-cell"><span class="face" style="background-image: url('../../../image/face_fukamachi_m.png');"></span>深町 真琴</td>
+              <td class="ovr">68</td>
+              <td class="vs-cell" style="color:#8b1a1a;">◀ -5</td>
+              <td class="ovr">73</td>
+              <td class="name-cell"><span class="face" style="background-image: url('../../../image/face_ikoma_e.png');"></span>生駒 エリカ</td>
+            </tr>
+            <tr>
+              <td class="role-cell">No.3</td>
+              <td class="name-cell"><span class="face" style="background-image: url('../../../image/face_takatsu_k.png');"></span>高津 小春</td>
+              <td class="ovr">62</td>
+              <td class="vs-cell">==</td>
+              <td class="ovr">62</td>
+              <td class="name-cell"><span class="face" style="background-image: url('../../../image/face_dewa_t.png');"></span>出羽 鷹子</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="sec-label-gold">図 / 戦力レーダー</div>
+        <div class="power-section">
+          <div class="power-row"><div class="power-label">エース力</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:51%"></div><div class="rival-side" style="width:49%"></div><div class="center-line"></div></div>
+            <div class="power-diff player">+2</div></div>
+          <div class="power-row"><div class="power-label">層の厚み</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:42%"></div><div class="rival-side" style="width:58%"></div><div class="center-line"></div></div>
+            <div class="power-diff rival">-5</div></div>
+          <div class="power-row"><div class="power-label">集客力</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:38%"></div><div class="rival-side" style="width:62%"></div><div class="center-line"></div></div>
+            <div class="power-diff rival">-13</div></div>
+          <div class="power-row"><div class="power-label">タイトル力</div>
+            <div class="power-bar-wrap"><div class="player-side" style="width:46%"></div><div class="rival-side" style="width:54%"></div><div class="center-line"></div></div>
+            <div class="power-diff rival">-1</div></div>
+        </div>
+      </div>
+
+      <div class="kuroda-block">
+        <div class="kuroda-face"></div>
+        <div>
+          <div class="kuroda-text">「特集にできるくらい、いい比較対象になってきたってこと。10週後の続報、必ず書くから。」</div>
+          <div class="kuroda-byline">——黒田幸子(週刊グラップル編集長)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchPage(btn, target) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.page === target));
+  ['A','B','C','D'].forEach(p => {
+    document.getElementById('page-' + p).style.display = p === target ? 'block' : 'none';
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

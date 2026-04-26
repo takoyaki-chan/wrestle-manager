@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>挑戦状・対抗戦 統一モック v0.3 (ダーク+頭上吹き出し)</title>
+<style>
+/* ============================================================
+   TOKENS — ダーク系A型 (元画像のカラーリング準拠)
+   ============================================================ */
+:root {
+  /* ダーク系パネル */
+  --darka-panel-bg: #1a1814;
+  --darka-panel-deep: #12110e;
+  --darka-panel-card: rgba(28,26,22,0.75);
+  --darka-border: rgba(212,168,67,0.22);
+  --darka-border-soft: rgba(200,190,170,0.1);
+  --darka-text-main: #e8e6e0;
+  --darka-text-sub: rgba(232,230,224,0.6);
+  --darka-text-dim: rgba(232,230,224,0.35);
+
+  /* ゴールド系 */
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --gold-deep: #8a6a1a;
+
+  /* 危険色（挑戦状・対抗戦メイン） */
+  --danger: #c84a3a;
+  --danger-light: #e65a48;
+  --danger-soft: rgba(200,74,58,0.15);
+  --danger-soft2: rgba(200,74,58,0.08);
+  --danger-border: rgba(200,74,58,0.45);
+
+  /* 勝敗色 */
+  --victory: #f0d078;
+  --victory-deep: #d4a843;
+  --defeat: #c84a3a;
+
+  /* 肯定色 */
+  --accent-positive: #6fa28c;
+  --accent-positive-dark: #4a8a70;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; width: 100%; }
+body {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: #0a0a0a;
+  color: var(--darka-text-main);
+  overflow: hidden;
+}
+
+/* ============================================================
+   DEV SWITCHER
+   ============================================================ */
+.dev-switcher {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: rgba(10,8,6,0.94); border-bottom: 1px solid rgba(212,168,67,0.25);
+  padding: 8px 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1.2px;
+}
+.dev-switcher-label {
+  color: var(--gold); font-weight: 700; margin-right: 8px; letter-spacing: 1.5px;
+}
+.dev-btn {
+  background: rgba(200,190,170,0.08); border: 1px solid rgba(200,190,170,0.2);
+  color: var(--darka-text-main); padding: 5px 10px; border-radius: 3px; cursor: pointer;
+  font-family: inherit; font-size: 10px; letter-spacing: 0.8px;
+  transition: all .15s; white-space: nowrap;
+}
+.dev-btn:hover { background: rgba(212,168,67,0.15); border-color: var(--gold); color: var(--gold); }
+.dev-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1a1a; font-weight: 700; }
+.dev-group-label {
+  color: var(--gold); font-weight: 700; font-size: 10px; letter-spacing: 2px;
+  margin-left: 6px; margin-right: 2px;
+}
+.dev-sep { width: 1px; height: 14px; background: rgba(200,190,170,0.15); margin: 0 4px; }
+.scene-label {
+  position: fixed; top: 54px; right: 16px; z-index: 9998;
+  background: rgba(10,8,6,0.85); border: 1px solid rgba(212,168,67,0.3);
+  padding: 6px 12px; border-radius: 3px;
+  font-family: 'Oswald', sans-serif; font-size: 11px; color: var(--gold);
+  letter-spacing: 1.2px; max-width: 540px;
+}
+
+/* ============================================================
+   BACKGROUND
+   ============================================================ */
+.app-bg {
+  position: fixed; inset: 0; background: #24221e;
+  z-index: 0; filter: blur(3px) brightness(0.55);
+}
+.app-bg-content {
+  max-width: 1200px; margin: 0 auto; padding: 80px 24px 24px;
+  opacity: 0.4;
+}
+.app-bg h1 {
+  font-family: 'Bebas Neue', sans-serif; color: var(--gold);
+  letter-spacing: 4px; font-size: 22px; margin-bottom: 12px;
+}
+.app-bg-row {
+  background: rgba(200,190,170,0.04); border: 1px solid rgba(200,190,170,0.06);
+  padding: 12px 16px; border-radius: 6px; margin-bottom: 6px;
+  font-size: 13px; color: rgba(232,230,224,0.6);
+}
+
+/* ============================================================
+   ダーク系 A 型テンプレ
+   ============================================================ */
+.mA-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: radial-gradient(ellipse 90% 70% at 50% 50%,
+    rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.88) 100%);
+  display: none; align-items: center; justify-content: center;
+  padding: 60px 24px 24px;
+  opacity: 0; transition: opacity 500ms ease; overflow-y: auto;
+}
+.mA-overlay.active { display: flex; opacity: 1; }
+
+.mA-card {
+  width: 820px; max-width: calc(100vw - 48px);
+  background: var(--darka-panel-bg);
+  border: 1px solid var(--darka-border);
+  border-radius: 10px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+  overflow: hidden; position: relative;
+  animation: mACardRise 700ms cubic-bezier(0.22,1,0.36,1) both;
+}
+.mA-card.narrow { width: 560px; }
+.mA-card.wide { width: 900px; }
+@keyframes mACardRise {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ヘッダー */
+.mA-header {
+  background: linear-gradient(180deg, rgba(212,168,67,0.1) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(212,168,67,0.25);
+  padding: 18px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.mA-header-title {
+  font-size: 19px; font-weight: 700;
+  color: var(--gold-light); letter-spacing: 1.5px;
+}
+.mA-header-meta {
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  color: var(--gold); letter-spacing: 2px; text-transform: uppercase;
+}
+.mA-header.danger {
+  background: linear-gradient(180deg, rgba(200,74,58,0.2) 0%, transparent 100%);
+  border-bottom: 2px solid var(--danger-border);
+}
+.mA-header.danger .mA-header-title { color: var(--danger-light); }
+.mA-header.danger .mA-header-meta { color: var(--danger); }
+
+/* リポーター帯 */
+.mA-reporter-strip {
+  background: var(--darka-panel-deep);
+  padding: 14px 24px;
+  display: flex; align-items: center; gap: 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.25);
+  animation: mAFadeIn 500ms ease 300ms both;
+}
+.mA-reporter-portrait {
+  width: 56px; height: 56px; border-radius: 50%;
+  border: 1px solid rgba(212,168,67,0.35);
+  background-size: cover; background-position: center;
+  background-color: #222;
+  flex-shrink: 0;
+}
+.mA-reporter-text { flex: 1; color: #d8d2c4; }
+.mA-reporter-name {
+  font-size: 11px; color: var(--gold); letter-spacing: 1px;
+  font-family: 'Oswald', sans-serif; text-transform: uppercase; margin-bottom: 3px;
+}
+.mA-reporter-line {
+  font-size: 13px; color: #c8c0af; font-style: italic; line-height: 1.5;
+}
+.mA-reporter-line::before { content: '「'; color: rgba(200,190,170,0.5); }
+.mA-reporter-line::after { content: '」'; color: rgba(200,190,170,0.5); }
+
+/* 主役ステージ (ダーク背景) */
+.mA-subject-stage {
+  padding: 36px 28px 26px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(212,168,67,0.08) 0%, transparent 70%),
+    var(--darka-panel-bg);
+  text-align: center; position: relative;
+  animation: mAFadeIn 500ms ease 600ms both;
+}
+.mA-subject-stage.danger {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(200,74,58,0.15) 0%, transparent 70%),
+    var(--darka-panel-bg);
+}
+
+/* ポートレートラッパー (頭上吹き出しを載せるため position:relative) */
+.mA-portrait-wrap {
+  position: relative; display: inline-block;
+  margin: 0 auto 8px;
+}
+
+/* 標準ポートレート (ワンサイズ上げて 150×200) */
+.mA-subject-portrait {
+  width: 150px; height: 200px;
+  border: 2px solid var(--gold-deep); border-radius: 4px;
+  background-size: cover; background-position: top center;
+  background-color: #0a0806;
+}
+/* 特大ポートレート (War申し入れ・挑戦状オファー用 200×267) */
+.mA-subject-portrait.big {
+  width: 200px; height: 267px;
+}
+.mA-subject-portrait.danger {
+  border-color: var(--danger);
+  box-shadow: 0 0 32px rgba(200,74,58,0.4);
+}
+
+/* 頭上吹き出し (B型から流用、白系背景+暗文字) */
+.mA-speech {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(250,246,236,0.97);
+  border: 1.5px solid rgba(122,101,48,0.5);
+  border-radius: 10px;
+  padding: 12px 18px;
+  min-width: 240px; max-width: 400px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px; font-weight: 500;
+  color: #2a2518; line-height: 1.65; letter-spacing: 0.5px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  text-align: center; z-index: 10;
+  opacity: 0;
+  animation: mASpeechIn 700ms cubic-bezier(0.22,1,0.36,1) 5000ms both;
+}
+/* クリックでスピーチを即時表示（下の文字を読み終わった時用） */
+.mA-speech.show-now {
+  animation: mASpeechIn 500ms cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* 吹き出しが出るまでの待機インジケータ「…」 */
+.mA-speech-pending {
+  position: absolute;
+  bottom: calc(100% + 40px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 26px; color: rgba(212,168,67,0.5);
+  letter-spacing: 4px;
+  animation: pendingDots 1400ms ease-in-out infinite,
+             mAFadeIn 400ms ease 600ms both;
+  pointer-events: none;
+  z-index: 5;
+}
+.mA-speech-pending.hide { display: none; }
+@keyframes pendingDots {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.85; }
+}
+
+/* クリックで進めるヒント（カード下部） */
+.mA-tap-hint {
+  text-align: center;
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--darka-text-dim);
+  letter-spacing: 2.5px; text-transform: uppercase;
+  padding: 6px 0 0;
+  animation: pendingDots 1800ms ease-in-out infinite,
+             mAFadeIn 400ms ease 1000ms both;
+  background: var(--darka-panel-bg);
+}
+.mA-tap-hint.hide { display: none; }
+.mA-speech::after {
+  content: ''; position: absolute;
+  top: 100%; left: 50%; transform: translateX(-50%);
+  border: 10px solid transparent;
+  border-top-color: rgba(122,101,48,0.5);
+}
+.mA-speech::before {
+  content: ''; position: absolute;
+  top: calc(100% - 2px); left: 50%; transform: translateX(-50%);
+  border: 9px solid transparent;
+  border-top-color: rgba(250,246,236,0.97);
+  z-index: 1;
+}
+.mA-speech.danger {
+  border-color: rgba(196,30,58,0.55);
+  background: rgba(252,244,244,0.97);
+}
+.mA-speech.danger::after { border-top-color: rgba(196,30,58,0.55); }
+.mA-speech.danger::before { border-top-color: rgba(252,244,244,0.97); }
+.mA-speech.gold {
+  border-color: rgba(184,140,40,0.6);
+  background: rgba(252,248,232,0.97);
+}
+.mA-speech.gold::after { border-top-color: rgba(184,140,40,0.6); }
+.mA-speech.gold::before { border-top-color: rgba(252,248,232,0.97); }
+.mA-speech-speaker {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px; color: #5c4a1e;
+  letter-spacing: 2.5px; margin-bottom: 6px;
+  text-transform: uppercase; font-weight: 700;
+}
+.mA-speech.danger .mA-speech-speaker { color: #9a2030; }
+.mA-speech.gold .mA-speech-speaker { color: #8a6a1a; }
+.mA-speech-text {
+  font-size: 14px; color: #2a2518; line-height: 1.65; font-weight: 500;
+}
+.mA-speech-text.large { font-size: 15px; font-weight: 600; }
+
+@keyframes mASpeechIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* 主役情報 */
+.mA-subject-name {
+  font-size: 20px; font-weight: 700; color: var(--darka-text-main);
+  letter-spacing: 1px; margin-top: 10px; margin-bottom: 4px;
+}
+.mA-subject-name.danger { color: var(--danger-light); }
+.mA-subject-org {
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  color: var(--gold); letter-spacing: 2.5px; margin-bottom: 14px;
+}
+.mA-subject-org.danger { color: var(--danger); }
+.mA-subject-divider {
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,168,67,0.4), transparent);
+  margin: 10px auto 14px;
+}
+
+/* OVR インライン表示 (控えめな大きめ数字、B3-2 candidate と同程度のサイズ感) */
+.mA-subject-ovr {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif;
+  font-size: 26px; font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: 1.5px; line-height: 1;
+  margin-top: 4px;
+  display: inline-block;
+}
+.mA-subject-ovr .label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px; font-weight: 700;
+  color: var(--gold); letter-spacing: 2px;
+  margin-right: 4px;
+}
+.mA-subject-ovr.danger {
+  color: var(--danger-light);
+}
+.mA-subject-ovr.danger .label {
+  color: var(--danger);
+}
+.mA-observation {
+  font-size: 14px; color: var(--darka-text-main);
+  line-height: 1.85; max-width: 560px; margin: 0 auto;
+  text-align: center;
+}
+.mA-observation .marker {
+  font-weight: 700; color: var(--gold-light);
+}
+.mA-observation .marker.danger { color: var(--danger-light); }
+
+/* プロンプト */
+.mA-prompt {
+  text-align: center; padding: 18px 28px 12px;
+  font-size: 14px; color: var(--darka-text-sub);
+  background: var(--darka-panel-bg);
+  animation: mAFadeIn 400ms ease 1100ms both;
+}
+
+/* 決定トレイ (ダーク版) */
+.mA-decision-tray {
+  padding: 0 24px 28px; display: grid;
+  grid-template-columns: 1fr 1fr 1fr; gap: 14px;
+  background: var(--darka-panel-bg);
+  animation: mAFadeIn 500ms ease 1300ms both;
+}
+.mA-decision-tray.two {
+  grid-template-columns: 1fr 1fr; padding: 0 80px 28px;
+}
+.mA-decision-card {
+  background: var(--darka-panel-card);
+  border: 1px solid rgba(212,168,67,0.25);
+  border-radius: 6px;
+  padding: 16px;
+  text-align: left; cursor: pointer;
+  transition: all 180ms ease;
+  position: relative; overflow: hidden;
+}
+.mA-decision-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--gold); opacity: 0.5;
+  transition: opacity 180ms;
+}
+.mA-decision-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  border-color: var(--gold);
+  background: rgba(40,36,28,0.85);
+}
+.mA-decision-card:hover::before { opacity: 1; }
+.mA-decision-card.danger-accent {
+  border-color: var(--danger-border);
+}
+.mA-decision-card.danger-accent::before { background: var(--danger); opacity: 0.6; }
+.mA-decision-card.danger-accent:hover {
+  border-color: var(--danger); background: rgba(60,24,20,0.85);
+}
+.mA-decision-letter {
+  font-family: 'Oswald', sans-serif; font-size: 12px;
+  color: var(--gold); letter-spacing: 2px;
+  font-weight: 700; margin-bottom: 5px;
+}
+.mA-decision-card.danger-accent .mA-decision-letter { color: var(--danger-light); }
+.mA-decision-label {
+  font-size: 15px; font-weight: 700; color: var(--darka-text-main);
+  line-height: 1.4; margin-bottom: 6px;
+}
+.mA-decision-hint {
+  font-size: 11px; color: var(--darka-text-sub); line-height: 1.5;
+}
+.mA-decision-hint.positive { color: var(--accent-positive); }
+.mA-decision-hint.negative { color: var(--danger-light); }
+
+/* 続行ボタン */
+.mA-continue-btn {
+  display: inline-block; padding: 11px 36px;
+  font-family: 'Oswald', sans-serif; font-size: 12px;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--darka-text-sub);
+  border: 1px solid rgba(212,168,67,0.35);
+  background: rgba(40,36,28,0.6);
+  border-radius: 2px; cursor: pointer;
+  transition: all 200ms;
+}
+.mA-continue-btn:hover {
+  background: var(--gold); color: #1a1611;
+  border-color: var(--gold);
+}
+
+/* ============================================================
+   勝利・敗北 大型演出 (B3-3 / B2-3 用)
+   ============================================================ */
+.mA-result-verdict {
+  text-align: center; margin: 4px 0 14px;
+  animation: mAFadeIn 500ms ease 700ms both;
+}
+.mA-result-verdict-jp {
+  font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
+  font-size: 56px; font-weight: 700;
+  letter-spacing: 20px; padding-left: 20px;
+  line-height: 1; margin-bottom: 2px;
+}
+.mA-result-verdict-jp.victory {
+  color: var(--victory);
+  text-shadow: 0 0 30px rgba(240,208,120,0.5), 0 0 60px rgba(240,208,120,0.25);
+}
+.mA-result-verdict-jp.defeat {
+  color: var(--defeat);
+  text-shadow: 0 0 30px rgba(200,74,58,0.5), 0 0 60px rgba(200,74,58,0.25);
+}
+.mA-result-verdict-en {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif;
+  font-size: 22px; font-weight: 700; letter-spacing: 10px; padding-left: 10px;
+}
+.mA-result-verdict-en.victory { color: rgba(240,208,120,0.65); }
+.mA-result-verdict-en.defeat { color: rgba(200,74,58,0.65); }
+
+/* 結果サマリー (小さめ・補足情報) */
+.mA-result-summary {
+  background: rgba(20,18,14,0.6);
+  border: 1px solid var(--darka-border-soft);
+  border-radius: 4px;
+  padding: 10px 16px;
+  margin: 12px auto 0;
+  max-width: 460px;
+  text-align: left;
+  font-size: 12px;
+}
+.mA-result-row {
+  display: flex; justify-content: space-between;
+  padding: 3px 0;
+  color: var(--darka-text-sub);
+}
+.mA-result-row strong { color: var(--darka-text-main); }
+.mA-result-row .pos { color: var(--accent-positive); font-weight: 700; }
+.mA-result-row .neg { color: var(--defeat); font-weight: 700; }
+.mA-result-row .gold { color: var(--gold); font-weight: 700; }
+
+/* ============================================================
+   2人並列ステージ (B2-1 選手間対立 Step1)
+   ============================================================ */
+.mA-duo-stage {
+  padding: 36px 32px 22px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(200,74,58,0.15) 0%, transparent 70%),
+    var(--darka-panel-bg);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  animation: mAFadeIn 500ms ease 600ms both;
+}
+.mA-duo-col { text-align: center; }
+.mA-duo-col .mA-portrait-wrap { margin-bottom: 8px; }
+.mA-duo-portrait {
+  width: 140px; height: 186px;
+  border: 2px solid var(--danger); border-radius: 4px;
+  background-size: cover; background-position: top center;
+  background-color: #0a0806;
+  box-shadow: 0 0 24px rgba(200,74,58,0.3);
+}
+.mA-duo-name {
+  font-size: 17px; font-weight: 700; color: var(--danger-light);
+  letter-spacing: 1px; margin-top: 8px; margin-bottom: 2px;
+}
+.mA-duo-org {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--danger); letter-spacing: 2px;
+}
+
+/* ============================================================
+   代表選手選択 (B3-2) — アッパー画像4人並べ
+   ============================================================ */
+.mA-candidate-stage {
+  padding: 24px 28px 20px;
+  background: var(--darka-panel-bg);
+  animation: mAFadeIn 500ms ease 600ms both;
+}
+/* 敵情報帯 (アッパー画像+名前+OVR) */
+.mA-opponent-bar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 18px;
+  background: rgba(200,74,58,0.1);
+  border: 1px solid var(--danger-border);
+  border-radius: 8px;
+  margin-bottom: 18px;
+  max-width: 560px; margin-left: auto; margin-right: auto;
+}
+.mA-opponent-upper {
+  width: 72px; height: 96px;
+  background-size: cover; background-position: top center;
+  border: 2px solid var(--danger);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.mA-opponent-text { flex: 1; text-align: left; }
+.mA-opponent-label {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  color: var(--danger); letter-spacing: 2px; margin-bottom: 3px;
+}
+.mA-opponent-name {
+  font-size: 16px; font-weight: 700; color: var(--danger-light);
+}
+.mA-opponent-meta {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--gold); letter-spacing: 1.5px; margin-top: 3px;
+}
+.mA-opponent-ovr {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif;
+  font-size: 32px; font-weight: 700;
+  color: var(--danger-light); line-height: 1;
+  flex-shrink: 0;
+}
+
+.mA-candidate-title {
+  text-align: center; font-size: 12px;
+  color: var(--darka-text-sub);
+  font-family: 'Oswald', sans-serif; letter-spacing: 3px;
+  margin-bottom: 14px;
+}
+.mA-candidate-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+.mA-candidate-card {
+  background: var(--darka-panel-card);
+  border: 1px solid var(--darka-border);
+  border-radius: 6px;
+  padding: 12px 10px 10px;
+  text-align: center; cursor: pointer;
+  transition: all 180ms ease;
+}
+.mA-candidate-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  border-color: var(--gold);
+  background: rgba(40,36,28,0.85);
+}
+.mA-candidate-upper {
+  width: 120px; height: 160px; margin: 0 auto 8px;
+  border: 2px solid var(--gold-deep); border-radius: 4px;
+  background-size: cover; background-position: top center;
+  background-color: #0a0806;
+}
+.mA-candidate-name {
+  font-size: 13px; font-weight: 700;
+  color: var(--darka-text-main); margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.mA-candidate-ovr-label {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  color: var(--gold); letter-spacing: 2px; margin-bottom: 1px;
+}
+.mA-candidate-ovr {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif;
+  font-size: 28px; font-weight: 700;
+  color: var(--gold-light); line-height: 1;
+}
+
+/* ============================================================
+   VS ステージ (B2-2 介入選択) — アッパー画像2人+VS
+   ============================================================ */
+.mA-vs-stage {
+  padding: 32px 28px 22px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(212,168,67,0.08) 0%, transparent 70%),
+    var(--darka-panel-bg);
+  animation: mAFadeIn 500ms ease 600ms both;
+}
+.mA-vs-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 30px;
+}
+.mA-vs-fighter { text-align: center; }
+.mA-vs-upper {
+  width: 130px; height: 174px;
+  border: 2px solid var(--gold-deep); border-radius: 4px;
+  background-size: cover; background-position: top center;
+  background-color: #0a0806;
+  margin-bottom: 8px;
+}
+.mA-vs-name {
+  font-size: 14px; font-weight: 700; color: var(--darka-text-main);
+  margin-bottom: 2px;
+}
+.mA-vs-ovr {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  color: var(--gold); letter-spacing: 1.5px;
+}
+.mA-vs-mark {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif;
+  font-size: 48px; font-weight: 700;
+  color: var(--danger);
+  text-shadow: 0 0 20px rgba(200,74,58,0.5);
+  letter-spacing: 2px;
+  padding-bottom: 40px;
+}
+
+/* 敗者ステージ (B2-3b 恨みがましい一言) */
+.mA-subject-stage.defeat {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(100,80,60,0.15) 0%, transparent 70%),
+    #14120e;
+}
+.mA-subject-portrait.defeat {
+  border-color: rgba(120,100,70,0.5);
+  filter: brightness(0.78) saturate(0.75);
+}
+.mA-defeat-badge {
+  display: inline-block;
+  padding: 4px 14px; margin-bottom: 10px;
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 3px; text-transform: uppercase; font-weight: 700;
+  background: rgba(100,40,32,0.4);
+  color: rgba(240,180,170,0.85);
+  border: 1px solid rgba(200,74,58,0.4);
+  border-radius: 2px;
+}
+.mA-speech.resentment {
+  border-color: rgba(100,85,70,0.55);
+  background: rgba(240,232,220,0.94);
+}
+.mA-speech.resentment::after { border-top-color: rgba(100,85,70,0.55); }
+.mA-speech.resentment::before { border-top-color: rgba(240,232,220,0.94); }
+.mA-speech.resentment .mA-speech-speaker { color: #5c4a3a; }
+
+@keyframes mAFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="dev-switcher">
+  <span class="dev-switcher-label">UNIFIED MOCK v0.3 ・ DARK</span>
+
+  <span class="dev-group-label">対抗戦</span>
+  <button class="dev-btn active" onclick="showScene('war1')">War 申し入れ</button>
+
+  <span class="dev-sep"></span>
+  <span class="dev-group-label">挑戦状</span>
+  <button class="dev-btn" onclick="showScene('b3_1')">B3-1 オファー</button>
+  <button class="dev-btn" onclick="showScene('b3_2')">B3-2 代表選手</button>
+  <button class="dev-btn" onclick="showScene('b3_3a')">B3-3a 勝利</button>
+  <button class="dev-btn" onclick="showScene('b3_3b')">B3-3b 敵の悔しげ</button>
+
+  <span class="dev-sep"></span>
+  <span class="dev-group-label">選手間対立</span>
+  <button class="dev-btn" onclick="showScene('b2_1')">B2-1 対立</button>
+  <button class="dev-btn" onclick="showScene('b2_2')">B2-2 介入</button>
+  <button class="dev-btn" onclick="showScene('b2_3a')">B2-3a 勝者</button>
+  <button class="dev-btn" onclick="showScene('b2_3b')">B2-3b 敗者</button>
+
+  <span class="dev-sep"></span>
+  <button class="dev-btn" onclick="showScene('none')">閉じる</button>
+</div>
+
+<div class="scene-label" id="sceneLabel">War 申し入れ — 敵エースの頭上吹き出しで挑発</div>
+
+<div class="app-bg">
+  <div class="app-bg-content">
+    <h1>WEEK 14 ・ 13年目 秋 ・ 興行週</h1>
+    <div class="app-bg-row">通常画面（背景）</div>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════
+     War 対抗戦 申し入れ
+     ═════════════════════════════════════════════════ -->
+<div class="mA-overlay" id="overlay_war1">
+  <div class="mA-card">
+    <div class="mA-header danger">
+      <div class="mA-header-title">📜 対 抗 戦 ・ 挑 戦 状</div>
+      <div class="mA-header-meta">FROM GRAN EMPRESS ・ 5 MATCHES</div>
+    </div>
+
+    <div class="mA-reporter-strip">
+      <div class="mA-reporter-portrait" style="background-image:linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="mA-reporter-text">
+        <div class="mA-reporter-name">BLACKWELL COACH</div>
+        <div class="mA-reporter-line">社長、グランエンプレスから正式な対抗戦の申し入れが届きました</div>
+      </div>
+    </div>
+
+    <div class="mA-subject-stage danger" style="padding-top:88px">
+      <div class="mA-portrait-wrap">
+        <div class="mA-speech-pending">…</div>
+        <div class="mA-speech danger">
+          <div class="mA-speech-speaker">FUKAMACHI MAKOTO</div>
+          <div class="mA-speech-text large">本気の戦いを見せてもらおう。<br>あんたの団体に、それだけの覚悟があるなら</div>
+        </div>
+        <div class="mA-subject-portrait big danger" style="background-image:url('../../../image/upper/upper_fukamachi_m.webp')"></div>
+      </div>
+      <div class="mA-subject-name danger">深町 真琴</div>
+      <div class="mA-subject-org danger">GRAN EMPRESS ・ ACE</div>
+      <div class="mA-subject-ovr danger"><span class="label">OVR</span>97</div>
+      <div class="mA-subject-divider"></div>
+      <div class="mA-observation">
+        <span class="marker danger">5試合の団体対決</span>。敗北はランクにも影響します。
+      </div>
+    </div>
+
+    <div class="mA-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+
+    <div class="mA-prompt">この挑戦、どう受けますか？</div>
+
+    <div class="mA-decision-tray two">
+      <div class="mA-decision-card danger-accent">
+        <div class="mA-decision-letter">⚔ 受けて立つ</div>
+        <div class="mA-decision-label">対抗戦を受諾する</div>
+        <div class="mA-decision-hint">試合カード編成へ進む</div>
+      </div>
+      <div class="mA-decision-card">
+        <div class="mA-decision-letter">辞退</div>
+        <div class="mA-decision-label">今回は見送る</div>
+        <div class="mA-decision-hint negative">団体評価↓ ／ 関係悪化</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════
+     挑戦状 B3-1 オファー
+     ═════════════════════════════════════════════════ -->
+<div class="mA-overlay" id="overlay_b3_1">
+  <div class="mA-card">
+    <div class="mA-header danger">
+      <div class="mA-header-title">⚔ グランエンプレスからの挑戦状</div>
+      <div class="mA-header-meta">CHALLENGE LETTER ・ WEEK 14</div>
+    </div>
+
+    <div class="mA-reporter-strip">
+      <div class="mA-reporter-portrait" style="background-image:linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="mA-reporter-text">
+        <div class="mA-reporter-name">BLACKWELL COACH</div>
+        <div class="mA-reporter-line">興行会場にグランエンプレスの関係者が来ています</div>
+      </div>
+    </div>
+
+    <div class="mA-subject-stage danger" style="padding-top:88px">
+      <div class="mA-portrait-wrap">
+        <div class="mA-speech-pending">…</div>
+        <div class="mA-speech danger">
+          <div class="mA-speech-speaker">FUKAMACHI MAKOTO</div>
+          <div class="mA-speech-text large">こっちは本気だよ。<br>受けて立つ気はあるの？</div>
+        </div>
+        <div class="mA-subject-portrait big danger" style="background-image:url('../../../image/upper/upper_fukamachi_m.webp')"></div>
+      </div>
+      <div class="mA-subject-name danger">深町 真琴</div>
+      <div class="mA-subject-org danger">GRAN EMPRESS</div>
+      <div class="mA-subject-ovr danger"><span class="label">OVR</span>97</div>
+      <div class="mA-subject-divider"></div>
+      <div class="mA-observation">
+        リングで語り合おう、と<span class="marker danger">挑戦状</span>を突きつけてきた。
+      </div>
+    </div>
+
+    <div class="mA-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+
+    <div class="mA-prompt">この挑戦状、どうしますか？</div>
+
+    <div class="mA-decision-tray two">
+      <div class="mA-decision-card danger-accent">
+        <div class="mA-decision-letter">受けて立つ</div>
+        <div class="mA-decision-label">代表選手を選んで対戦</div>
+        <div class="mA-decision-hint">次の画面で代表を選択</div>
+      </div>
+      <div class="mA-decision-card">
+        <div class="mA-decision-letter">断る</div>
+        <div class="mA-decision-label">今回は辞退する</div>
+        <div class="mA-decision-hint">ペナルティなし</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════
+     挑戦状 B3-2 代表選手選択
+     ═════════════════════════════════════════════════ -->
+<div class="mA-overlay" id="overlay_b3_2">
+  <div class="mA-card wide">
+    <div class="mA-header danger">
+      <div class="mA-header-title">🥊 代表選手を選んでください</div>
+      <div class="mA-header-meta">SELECT YOUR CHAMPION</div>
+    </div>
+
+    <div class="mA-reporter-strip">
+      <div class="mA-reporter-portrait" style="background-image:linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="mA-reporter-text">
+        <div class="mA-reporter-name">BLACKWELL COACH</div>
+        <div class="mA-reporter-line">どの選手を送り出しますか？</div>
+      </div>
+    </div>
+
+    <div class="mA-candidate-stage">
+      <div class="mA-opponent-bar">
+        <div class="mA-opponent-upper" style="background-image:url('../../../image/upper/upper_fukamachi_m.webp')"></div>
+        <div class="mA-opponent-text">
+          <div class="mA-opponent-label">OPPONENT ・ 対戦相手</div>
+          <div class="mA-opponent-name">深町 真琴</div>
+          <div class="mA-opponent-meta">GRAN EMPRESS ・ STRIKER</div>
+        </div>
+        <div class="mA-opponent-ovr">97</div>
+      </div>
+
+      <div class="mA-candidate-title">— CANDIDATES ・ 自団体の代表候補 —</div>
+
+      <div class="mA-candidate-grid">
+        <div class="mA-candidate-card">
+          <div class="mA-candidate-upper" style="background-image:url('../../../image/upper/upper_udagawa_r.webp')"></div>
+          <div class="mA-candidate-name">宇田川 里奈</div>
+          <div class="mA-candidate-ovr-label">OVR</div>
+          <div class="mA-candidate-ovr">89</div>
+        </div>
+        <div class="mA-candidate-card">
+          <div class="mA-candidate-upper" style="background-image:url('../../../image/upper/upper_miura_s.webp')"></div>
+          <div class="mA-candidate-name">三浦 早紀</div>
+          <div class="mA-candidate-ovr-label">OVR</div>
+          <div class="mA-candidate-ovr">85</div>
+        </div>
+        <div class="mA-candidate-card">
+          <div class="mA-candidate-upper" style="background-image:url('../../../image/upper/upper_asami_r.webp')"></div>
+          <div class="mA-candidate-name">浅見 りえ</div>
+          <div class="mA-candidate-ovr-label">OVR</div>
+          <div class="mA-candidate-ovr">66</div>
+        </div>
+        <div class="mA-candidate-card">
+          <div class="mA-candidate-upper" style="background-image:url('../../../image/upper/upper_kondo_y.webp')"></div>
+          <div class="mA-candidate-name">近藤 ゆりか</div>
+          <div class="mA-candidate-ovr-label">OVR</div>
+          <div class="mA-candidate-ovr">58</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mA-prompt" style="padding-bottom:24px">クリックで代表を決定します</div>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════
+     挑戦状 B3-3a 結果・自陣勝利 (勝利/敗北を大きく)
+     ═════════════════════════════════════════════════ -->
+<div class="mA-overlay" id="overlay_b3_3a">
+  <div class="mA-card narrow" style="width:600px">
+    <div class="mA-header">
+      <div class="mA-header-title">🏆 挑 戦 状 ・ 結 果</div>
+      <div class="mA-header-meta">RESULT ・ 1 / 2</div>
+    </div>
+
+    <div class="mA-reporter-strip">
+      <div class="mA-reporter-portrait" style="background-image:linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="mA-reporter-text">
+        <div class="mA-reporter-name">BLACKWELL COACH</div>
+        <div class="mA-reporter-line">試合、終わりました</div>
+      </div>
+    </div>
+
+    <div class="mA-subject-stage" style="padding-top:30px">
+      <!-- 勝利大型演出 -->
+      <div class="mA-result-verdict">
+        <div class="mA-result-verdict-jp victory">勝 利</div>
+        <div class="mA-result-verdict-en victory">VICTORY</div>
+      </div>
+
+      <div class="mA-portrait-wrap" style="margin-top:20px">
+        <div class="mA-speech-pending">…</div>
+        <div class="mA-speech gold">
+          <div class="mA-speech-speaker">UDAGAWA RINA</div>
+          <div class="mA-speech-text">この試合は、譲れなかった</div>
+        </div>
+        <div class="mA-subject-portrait" style="background-image:url('../../../image/upper/upper_udagawa_r.webp');box-shadow:0 0 32px rgba(240,208,120,0.3)"></div>
+      </div>
+      <div class="mA-subject-name">宇田川 里奈</div>
+      <div class="mA-subject-org">AGE 26 ・ OVR 89</div>
+
+      <div class="mA-result-summary">
+        <div class="mA-result-row"><span>対戦相手</span><strong>深町 真琴（グランエンプレス）</strong></div>
+        <div class="mA-result-row"><span>試合時間</span><strong>22:47</strong></div>
+        <div class="mA-result-row"><span>フィニッシュ</span><strong>リナ・ロック</strong></div>
+        <div class="mA-result-row"><span>MQ</span><span class="gold">★4.5</span></div>
+        <div class="mA-result-row"><span>団体人気</span><span class="pos">+3</span></div>
+      </div>
+    </div>
+
+    <div class="mA-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+
+    <div class="mA-prompt" style="padding-bottom:24px">
+      <button class="mA-continue-btn">— 次 へ —</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════
+     挑戦状 B3-3b 敵団体の悔しげコマ
+     ═════════════════════════════════════════════════ -->
+<div class="mA-overlay" id="overlay_b3_3b">
+  <div class="mA-card narrow" style="width:600px">
+    <div class="mA-header danger">
+      <div class="mA-header-title">😠 敵 陣 の 反 応</div>
+      <div class="mA-header-meta">OPPONENT AFTERMATH ・ 2 / 2</div>
+    </div>
+
+    <div class="mA-reporter-strip">
+      <div class="mA-reporter-portrait" style="background-image:linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="mA-reporter-text">
+        <div class="mA-reporter-name">BLACKWELL COACH</div>
+        <div class="mA-reporter-line">グランエンプレス側は怒りを隠せない様子です…</div>
+      </div>
+    </div>
+
+    <div class="mA-subject-stage defeat" style="padding-top:96px">
+      <div class="mA-portrait-wrap">
+        <div class="mA-speech-pending">…</div>
+        <div class="mA-speech resentment">
+          <div class="mA-speech-speaker">FUKAMACHI MAKOTO</div>
+          <div class="mA-speech-text">……この借り、<br>必ず返してやる</div>
+        </div>
+        <div class="mA-subject-portrait defeat" style="background-image:url('../../../image/upper/upper_fukamachi_m.webp')"></div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="mA-defeat-badge">DEFEATED ・ 敗 者</div>
+      </div>
+      <div class="mA-subject-name" style="color:rgba(232,220,200,0.85)">深町 真琴</div>
+      <div class="mA-subject-org" style="color:rgba(200,180,150,0.7)">GRAN EMPRESS ・ OVR 97</div>
+
+      <div class="mA-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
+        グランエンプレスとの<span class="marker danger">因縁</span>は、まだ終わっていない。
+      </div>
+    </div>
+
+    <div class="mA-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+
+    <div class="mA-prompt" style="padding-bottom:24px">
+      <button class="mA-continue-btn">— 見 届 け る —</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════
+     選手間対立 B2-1 対立発生 (2人並列、各頭上に吹き出し)
+     ═════════════════════════════════════════════════ -->
+<div class="mA-overlay" id="overlay_b2_1">
+  <div class="mA-card">
+    <div class="mA-header danger">
+      <div class="mA-header-title">💥 選 手 間 の 深 刻 な 対 立</div>
+      <div class="mA-header-meta">INTERNAL CONFLICT ・ WEEK 14</div>
+    </div>
+
+    <div class="mA-reporter-strip">
+      <div class="mA-reporter-portrait" style="background-image:linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="mA-reporter-text">
+        <div class="mA-reporter-name">BLACKWELL COACH</div>
+        <div class="mA-reporter-line">練習場で大きな衝突があったようです</div>
+      </div>
+    </div>
+
+    <div class="mA-duo-stage" style="padding-top:108px">
+      <div class="mA-duo-col">
+        <div class="mA-portrait-wrap">
+          <div class="mA-speech-pending">…</div>
+          <div class="mA-speech danger">
+            <div class="mA-speech-speaker">UDAGAWA RINA</div>
+            <div class="mA-speech-text">もう我慢の限界。<br>あいつとは組めない</div>
+          </div>
+          <div class="mA-duo-portrait" style="background-image:url('../../../image/upper/upper_udagawa_r.webp')"></div>
+        </div>
+        <div class="mA-duo-name">宇田川 里奈</div>
+        <div class="mA-duo-org">OVR 89</div>
+      </div>
+      <div class="mA-duo-col">
+        <div class="mA-portrait-wrap">
+          <div class="mA-speech-pending">…</div>
+          <div class="mA-speech danger">
+            <div class="mA-speech-speaker">MIURA SAKI</div>
+            <div class="mA-speech-text">私だって、<br>もう我慢できません</div>
+          </div>
+          <div class="mA-duo-portrait" style="background-image:url('../../../image/upper/upper_miura_s.webp')"></div>
+        </div>
+        <div class="mA-duo-name">三浦 早紀</div>
+        <div class="mA-duo-org">OVR 85</div>
+      </div>
+    </div>
+
+    <div class="mA-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+
+    <div class="mA-prompt" style="padding-top:20px">社長として、どう対処しますか？</div>
+
+    <div class="mA-decision-tray">
+      <div class="mA-decision-card">
+        <div class="mA-decision-letter">A</div>
+        <div class="mA-decision-label">話し合いで解決</div>
+        <div class="mA-decision-hint positive">両者の信頼↑ ／ 士気回復</div>
+      </div>
+      <div class="mA-decision-card danger-accent">
+        <div class="mA-decision-letter">B</div>
+        <div class="mA-decision-label">試合で決着させる</div>
+        <div class="mA-decision-hint">勝者↑↑ ／ 敗者↓</div>
+      </div>
+      <div class="mA-decision-card">
+        <div class="mA-decision-letter">C</div>
+        <div class="mA-decision-label">放置する</div>
+        <div class="mA-decision-hint negative">両者の信頼↓↓ ／ 士気低下</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════
+     選手間対立 B2-2 介入選択 (アッパー画像2人+VS)
+     ═════════════════════════════════════════════════ -->
+<div class="mA-overlay" id="overlay_b2_2">
+  <div class="mA-card">
+    <div class="mA-header">
+      <div class="mA-header-title">🤝 ど う 立 ち 会 い ま す か</div>
+      <div class="mA-header-meta">INTERVENTION ・ WEEK 14</div>
+    </div>
+
+    <div class="mA-reporter-strip">
+      <div class="mA-reporter-portrait" style="background-image:linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="mA-reporter-text">
+        <div class="mA-reporter-name">BLACKWELL COACH</div>
+        <div class="mA-reporter-line">試合で決着をつけさせることにしました。社長の立ち位置を決めてください</div>
+      </div>
+    </div>
+
+    <div class="mA-vs-stage">
+      <div class="mA-vs-row">
+        <div class="mA-vs-fighter">
+          <div class="mA-vs-upper" style="background-image:url('../../../image/upper/upper_udagawa_r.webp')"></div>
+          <div class="mA-vs-name">宇田川 里奈</div>
+          <div class="mA-vs-ovr">OVR 89</div>
+        </div>
+        <div class="mA-vs-mark">VS</div>
+        <div class="mA-vs-fighter">
+          <div class="mA-vs-upper" style="background-image:url('../../../image/upper/upper_miura_s.webp')"></div>
+          <div class="mA-vs-name">三浦 早紀</div>
+          <div class="mA-vs-ovr">OVR 85</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mA-prompt">どう介入しますか？</div>
+
+    <div class="mA-decision-tray">
+      <div class="mA-decision-card">
+        <div class="mA-decision-letter">A</div>
+        <div class="mA-decision-label">中立を保つ</div>
+        <div class="mA-decision-hint">両者平等に扱う</div>
+      </div>
+      <div class="mA-decision-card">
+        <div class="mA-decision-letter">B</div>
+        <div class="mA-decision-label">宇田川を後押し</div>
+        <div class="mA-decision-hint">宇田川の信頼↑ ／ 三浦↓</div>
+      </div>
+      <div class="mA-decision-card">
+        <div class="mA-decision-letter">C</div>
+        <div class="mA-decision-label">三浦を後押し</div>
+        <div class="mA-decision-hint">三浦の信頼↑ ／ 宇田川↓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════
+     選手間対立 B2-3a 結果・勝者コマ (勝利/敗北を大きく、頭上に吹き出し)
+     ═════════════════════════════════════════════════ -->
+<div class="mA-overlay" id="overlay_b2_3a">
+  <div class="mA-card narrow" style="width:600px">
+    <div class="mA-header">
+      <div class="mA-header-title">✨ 対 立 の 決 着</div>
+      <div class="mA-header-meta">RESOLVED ・ 1 / 2</div>
+    </div>
+
+    <div class="mA-reporter-strip">
+      <div class="mA-reporter-portrait" style="background-image:linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="mA-reporter-text">
+        <div class="mA-reporter-name">BLACKWELL COACH</div>
+        <div class="mA-reporter-line">決着がつきました</div>
+      </div>
+    </div>
+
+    <div class="mA-subject-stage" style="padding-top:30px">
+      <div class="mA-result-verdict">
+        <div class="mA-result-verdict-jp victory">勝 利</div>
+        <div class="mA-result-verdict-en victory">VICTORY</div>
+      </div>
+
+      <div class="mA-portrait-wrap" style="margin-top:20px">
+        <div class="mA-speech-pending">…</div>
+        <div class="mA-speech gold">
+          <div class="mA-speech-speaker">UDAGAWA RINA</div>
+          <div class="mA-speech-text">これで、はっきりさせた</div>
+        </div>
+        <div class="mA-subject-portrait" style="background-image:url('../../../image/upper/upper_udagawa_r.webp');box-shadow:0 0 32px rgba(240,208,120,0.3)"></div>
+      </div>
+      <div class="mA-subject-name">宇田川 里奈</div>
+      <div class="mA-subject-org">AGE 26 ・ OVR 89</div>
+
+      <div class="mA-result-summary">
+        <div class="mA-result-row"><span>宇田川の信頼</span><span class="pos">+8</span></div>
+        <div class="mA-result-row"><span>三浦の信頼</span><span class="neg">−4</span></div>
+        <div class="mA-result-row"><span>両者の士気</span><strong>一旦リセット</strong></div>
+      </div>
+    </div>
+
+    <div class="mA-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+
+    <div class="mA-prompt" style="padding-bottom:24px">
+      <button class="mA-continue-btn">— 次 へ —</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════
+     選手間対立 B2-3b 結果・敗者コマ (恨みがましい一言)
+     ═════════════════════════════════════════════════ -->
+<div class="mA-overlay" id="overlay_b2_3b">
+  <div class="mA-card narrow" style="width:600px">
+    <div class="mA-header">
+      <div class="mA-header-title">😔 敗 者 の 声</div>
+      <div class="mA-header-meta">AFTERMATH ・ 2 / 2</div>
+    </div>
+
+    <div class="mA-reporter-strip">
+      <div class="mA-reporter-portrait" style="background-image:linear-gradient(135deg,#5a4a3a,#3a2d22)"></div>
+      <div class="mA-reporter-text">
+        <div class="mA-reporter-name">BLACKWELL COACH</div>
+        <div class="mA-reporter-line">ですが、三浦は納得していないようです…</div>
+      </div>
+    </div>
+
+    <div class="mA-subject-stage defeat" style="padding-top:96px">
+      <div class="mA-portrait-wrap">
+        <div class="mA-speech-pending">…</div>
+        <div class="mA-speech resentment">
+          <div class="mA-speech-speaker">MIURA SAKI</div>
+          <div class="mA-speech-text">……覚えてなさいよ。<br>次は絶対に、私が勝つ</div>
+        </div>
+        <div class="mA-subject-portrait defeat" style="background-image:url('../../../image/upper/upper_miura_s.webp')"></div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="mA-defeat-badge">DEFEATED ・ 敗 者</div>
+      </div>
+      <div class="mA-subject-name" style="color:rgba(232,220,200,0.85)">三浦 早紀</div>
+      <div class="mA-subject-org" style="color:rgba(200,180,150,0.7)">AGE 24 ・ OVR 85</div>
+
+      <div class="mA-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
+        胸の内に、<span class="marker danger">新たな火種</span>がくすぶり始めた。
+      </div>
+    </div>
+
+    <div class="mA-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+
+    <div class="mA-prompt" style="padding-bottom:24px">
+      <button class="mA-continue-btn">— 見 届 け る —</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function showScene(id) {
+  document.querySelectorAll('.mA-overlay').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.dev-btn').forEach(b => b.classList.remove('active'));
+
+  if (id === 'none') {
+    document.getElementById('sceneLabel').style.display = 'none';
+    return;
+  }
+  document.getElementById('sceneLabel').style.display = '';
+
+  const target = document.getElementById('overlay_' + id);
+  if (target) {
+    const clone = target.cloneNode(true);
+    target.parentNode.replaceChild(clone, target);
+    clone.classList.add('active');
+
+    // クリックで吹き出し即時表示（下の文字を読み終わった時用）
+    const speeches = clone.querySelectorAll('.mA-speech');
+    const pendings = clone.querySelectorAll('.mA-speech-pending');
+    const tapHint = clone.querySelector('.mA-tap-hint');
+    if (speeches.length > 0) {
+      const showNow = (e) => {
+        // カード外のオーバーレイクリックは無視
+        if (e && e.target === clone) return;
+        speeches.forEach(s => s.classList.add('show-now'));
+        pendings.forEach(p => p.classList.add('hide'));
+        if (tapHint) tapHint.classList.add('hide');
+        // カード内の再クリックでは発火しないようにハンドラ解除
+        clone.removeEventListener('click', showNow);
+      };
+      clone.addEventListener('click', showNow);
+      // 自動で吹き出しが出た後もヒントとpendingは消す
+      setTimeout(() => {
+        pendings.forEach(p => p.classList.add('hide'));
+        if (tapHint) tapHint.classList.add('hide');
+      }, 5000);
+    }
+  }
+
+  const descs = {
+    war1: 'War 申し入れ — 敵エースを大きく(200×267)、頭上吹き出し + 控えめな大きめOVR',
+    b3_1: 'B3-1 オファー — 同じく敵を大きく、頭上吹き出し + 控えめな大きめOVR',
+    b3_2: 'B3-2 代表選手 — アッパー画像4人並べ、OVR大表示',
+    b3_3a: 'B3-3a 自陣勝利 — 「勝利」を最大(56px)、MQは補足',
+    b3_3b: 'B3-3b 敵の悔しげ — 敵団体エースの恨み節、因縁の伏線',
+    b2_1: 'B2-1 対立 — 2人並列、それぞれの頭上に吹き出し',
+    b2_2: 'B2-2 介入 — アッパー画像2人+VS、選択3択',
+    b2_3a: 'B2-3a 勝者コマ — 勝利大表示、勝者頭上に吹き出し',
+    b2_3b: 'B2-3b 敗者コマ — 敗者のくすぶる一言、レイアウト整理済'
+  };
+  document.getElementById('sceneLabel').textContent = descs[id] || id;
+
+  const labels = {
+    war1:'War 申し入れ', b3_1:'B3-1 オファー', b3_2:'B3-2 代表選手',
+    b3_3a:'B3-3a 勝利', b3_3b:'B3-3b 敵の悔しげ',
+    b2_1:'B2-1 対立', b2_2:'B2-2 介入', b2_3a:'B2-3a 勝者', b2_3b:'B2-3b 敗者'
+  };
+  document.querySelectorAll('.dev-btn').forEach(b => {
+    if (b.textContent.trim() === labels[id]) b.classList.add('active');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => showScene('war1'));
+</script>
+</body>
+</html>

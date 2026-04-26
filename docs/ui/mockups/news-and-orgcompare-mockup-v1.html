@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>新聞・団体比較 統一モックアップ v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;600;700;900&family=Noto+Serif+JP:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #1a1408;
+  font-family: 'Noto Sans JP', sans-serif;
+  color: #1f1710;
+  padding: 28px 16px 80px;
+  min-height: 100vh;
+  background-image: radial-gradient(circle at 50% 0%, rgba(154,112,32,0.08), transparent 50%);
+}
+
+/* ── 説明 ── */
+.intro {
+  max-width: 780px;
+  margin: 0 auto 20px;
+  color: #c8b878;
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 14px 18px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 8px;
+  border: 1px solid rgba(154,112,32,0.3);
+}
+.intro h1 { font-size: 16px; margin-bottom: 6px; color: #f0d48b; font-weight: 800; }
+.intro .note { color: #8a8275; font-size: 11px; margin-top: 6px; }
+.intro .note strong { color: #d4b87a; }
+
+/* ── タブ切替 ── */
+.tabs {
+  max-width: 780px;
+  margin: 0 auto 10px;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+.tab {
+  background: rgba(0,0,0,0.35);
+  color: #c8b878;
+  border: 1px solid rgba(154,112,32,0.4);
+  padding: 7px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.tab.active {
+  background: #9a7020;
+  color: #fff;
+  border-color: #9a7020;
+}
+
+/* ═══════════════════════════════════════
+   紙面共通シェル (780px)
+═══════════════════════════════════════ */
+.paper {
+  max-width: 780px;
+  margin: 0 auto;
+  background: linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);
+  border: 1px solid rgba(120,84,39,0.32);
+  border-radius: 8px;
+  box-shadow: 0 14px 56px rgba(0,0,0,0.55);
+  overflow: hidden;
+  /* 古紙風の微テクスチャ */
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(120,84,39,0.045), transparent 24%),
+    radial-gradient(circle at 88% 82%, rgba(120,84,39,0.04), transparent 28%),
+    linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);
+}
+
+/* 共通ヘッダー帯(赤) */
+.paper-header {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.18), transparent 50%),
+    linear-gradient(90deg,#8b1a1a,#c22020 50%,#8b1a1a);
+  padding: 13px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px double rgba(255,255,255,0.18);
+}
+.paper-header .logo {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 6px;
+  font-family: 'Noto Serif JP', serif;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
+.paper-header .issue {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  text-align: right;
+  line-height: 1.4;
+}
+.paper-header .issue small {
+  display: block;
+  font-size: 10px;
+  opacity: 0.85;
+  letter-spacing: 0.5px;
+}
+
+/* ページ送り(2面 / 3面切り替え) */
+.page-nav {
+  background: linear-gradient(180deg, rgba(120,84,39,0.12), rgba(120,84,39,0.05));
+  border-bottom: 1px solid rgba(120,84,39,0.25);
+  padding: 7px 16px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.page-nav-btn {
+  background: rgba(248,238,210,0.5);
+  border: 1px solid rgba(120,84,39,0.3);
+  color: #5b4b34;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.15s;
+}
+.page-nav-btn:hover { background: rgba(212,184,122,0.4); }
+.page-nav-btn.active {
+  background: #8b1a1a;
+  color: #fff;
+  border-color: #8b1a1a;
+}
+
+/* バックナンバーナビ */
+.archive-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  background: rgba(120,84,39,0.05);
+  font-size: 11px;
+  color: #6a5e4c;
+  border-bottom: 1px solid rgba(120,84,39,0.15);
+}
+.archive-nav button {
+  background: transparent;
+  border: 1px solid rgba(120,84,39,0.3);
+  color: #5b4b34;
+  padding: 2px 10px;
+  font-size: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* ── セクションラベル(共通) ── */
+.sec-label {
+  display: inline-block;
+  background: #8b1a1a;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  padding: 3px 12px;
+  margin-bottom: 10px;
+  border-radius: 1px;
+}
+.sec-label-gold {
+  display: inline-block;
+  background: linear-gradient(135deg, #b08530, #9a7020);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  padding: 3px 12px;
+  margin-bottom: 10px;
+  border-radius: 1px;
+}
+
+/* 黒田コメントブロック(共通) */
+.kuroda-block {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(200,190,170,0.45), rgba(200,190,170,0.2));
+  border-left: 3px solid #5b4b34;
+  border-radius: 0 4px 4px 0;
+}
+.kuroda-face {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3a1a1a, #2a0a0a);
+  border: 2px solid rgba(139,26,26,0.5);
+  display: grid;
+  place-items: center;
+  color: #f0d48b;
+  font-size: 13px;
+  font-weight: 900;
+  flex-shrink: 0;
+  font-family: 'Noto Serif JP', serif;
+  box-shadow: 0 0 8px rgba(139,26,26,0.25);
+}
+.kuroda-text {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #2a2014;
+}
+.kuroda-byline {
+  font-size: 10px;
+  color: #7a5b32;
+  margin-top: 3px;
+  letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════
+   通常面(新聞ニュース)
+═══════════════════════════════════════ */
+.news-page { padding: 22px 30px 26px; }
+
+/* リード(紙面の冒頭サマリ) */
+.news-lead {
+  border-left: 4px solid #8b1a1a;
+  padding: 6px 0 6px 14px;
+  margin: 0 0 16px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #4a3825;
+  font-family: 'Noto Serif JP', serif;
+}
+
+/* 一面記事 */
+.top-story {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 18px;
+  padding: 0 0 18px;
+  border-bottom: 3px double rgba(120,84,39,0.35);
+  margin-bottom: 16px;
+}
+.top-story-photo {
+  position: relative;
+  width: 200px;
+  height: 240px;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 55%),
+    linear-gradient(135deg, #4a3a20, #2a1a10);
+  border: 4px solid #d4b87a;
+  outline: 1px solid rgba(120,84,39,0.4);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35), inset 0 0 20px rgba(0,0,0,0.4);
+  display: grid;
+  place-items: center;
+  color: #f0d48b;
+  font-size: 13px;
+  text-align: center;
+  font-family: 'Noto Sans JP', sans-serif;
+  overflow: hidden;
+}
+.top-story-photo .photo-stamp {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #8b1a1a;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 2px 6px;
+  letter-spacing: 1px;
+  border-radius: 2px;
+  transform: rotate(3deg);
+}
+.top-story-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 9px;
+  padding: 14px 8px 6px;
+  text-align: left;
+  font-family: 'Noto Sans JP', sans-serif;
+  line-height: 1.4;
+}
+
+.top-story-body { display: grid; align-content: start; gap: 8px; }
+.top-story-headline {
+  font-size: 26px;
+  line-height: 1.18;
+  font-weight: 900;
+  font-family: 'Noto Serif JP', serif;
+  letter-spacing: -0.01em;
+  color: #1a0d04;
+}
+.top-story-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8b1a1a;
+  border-top: 1px solid rgba(120,84,39,0.35);
+  border-bottom: 1px solid rgba(120,84,39,0.35);
+  padding: 4px 0;
+  letter-spacing: 0.5px;
+}
+.top-story-text {
+  font-size: 13px;
+  line-height: 1.85;
+  color: #2a2014;
+  text-align: justify;
+}
+.top-story-text p { text-indent: 1em; margin-bottom: 6px; }
+
+/* 興行結果セクション */
+.show-result { padding: 16px 0; border-bottom: 1px solid rgba(120,84,39,0.25); margin-bottom: 14px; }
+.show-result-headline {
+  font-size: 19px;
+  font-weight: 900;
+  font-family: 'Noto Serif JP', serif;
+  margin-bottom: 12px;
+  color: #1a0d04;
+  line-height: 1.3;
+}
+
+.show-versus-grid {
+  display: grid;
+  grid-template-columns: 1fr 90px 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.fighter-card {
+  text-align: center;
+  padding: 10px;
+  background: rgba(120,84,39,0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(120,84,39,0.2);
+}
+.fighter-card.win {
+  background: linear-gradient(180deg, rgba(212,184,122,0.45), rgba(154,112,32,0.18));
+  border-color: rgba(154,112,32,0.6);
+  box-shadow: inset 0 0 0 1px rgba(212,184,122,0.7), 0 0 12px rgba(212,184,122,0.3);
+}
+.fighter-photo {
+  width: 130px;
+  height: 130px;
+  border-radius: 10px;
+  margin: 0 auto 8px;
+  background: linear-gradient(135deg, #4f8fff, #1d49aa);
+  border: 3px solid rgba(255,255,255,0.45);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  position: relative;
+}
+.fighter-photo.right { background: linear-gradient(135deg, #ff8396, #9f213f); }
+.fighter-card.win .fighter-photo::after {
+  content: 'WIN';
+  position: absolute;
+  top: -8px; right: -8px;
+  background: #d4a82a;
+  color: #1a0d04;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  transform: rotate(8deg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.fighter-name { font-size: 15px; font-weight: 900; color: #1f1710; }
+.fighter-role { font-size: 10px; color: #6a5e4c; margin-top: 3px; letter-spacing: 1px; }
+
+.versus-block {
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+.versus-vs {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  color: #8b1a1a;
+  line-height: 1;
+}
+.versus-finish {
+  font-size: 9px;
+  color: #6a5e4c;
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
+.show-result-line {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  padding: 8px 14px;
+  background: linear-gradient(90deg, #2a1a10, #1f1208 50%, #2a1a10);
+  color: #f0d48b;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  align-items: center;
+}
+.show-result-line .stage { letter-spacing: 1px; }
+.show-result-line .duration { text-align: right; color: #c8b878; font-size: 11px; }
+.show-result-line .mq-block { display: flex; align-items: baseline; gap: 4px; justify-content: center; }
+.show-result-line .mq-block label { font-size: 9px; color: #c8b878; letter-spacing: 1px; }
+.show-result-line .mq-block strong { color: #f0d48b; font-size: 22px; font-family: 'Bebas Neue', sans-serif; line-height: 1; }
+
+.show-article {
+  font-size: 13px;
+  line-height: 1.95;
+  color: #2a2014;
+  text-indent: 1em;
+  text-align: justify;
+  padding: 4px 4px 0;
+}
+
+/* 評価ブロック */
+.rating-block {
+  margin: 12px 0 8px;
+  padding: 12px 16px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(212,184,122,0.3), transparent 65%),
+    linear-gradient(180deg, rgba(212,184,122,0.2), rgba(212,184,122,0.06));
+  border: 1px solid rgba(154,112,32,0.4);
+  border-radius: 8px;
+  text-align: center;
+}
+.rating-stars {
+  font-size: 26px;
+  color: #d4a82a;
+  letter-spacing: 6px;
+  text-shadow: 0 1px 0 rgba(154,112,32,0.5);
+}
+.rating-headline {
+  font-size: 12px;
+  color: #5b4b34;
+  margin-top: 3px;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+.rating-comment {
+  font-size: 12px;
+  color: #2a2014;
+  margin-top: 8px;
+  line-height: 1.6;
+  font-family: 'Noto Serif JP', serif;
+}
+
+/* ダイジェストテーブル */
+.digest-section { margin-top: 14px; }
+.digest-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-top: 6px;
+}
+.digest-table th, .digest-table td {
+  padding: 7px 6px;
+  border-bottom: 1px solid rgba(120,84,39,0.2);
+  text-align: left;
+}
+.digest-table th {
+  font-size: 10px;
+  color: #6a5e4c;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  background: rgba(120,84,39,0.06);
+  border-bottom: 2px solid rgba(120,84,39,0.4);
+}
+.digest-table td.num { color: #6a5e4c; font-weight: 700; width: 30px; }
+.digest-table td.tag { width: 70px; }
+.digest-table .badge-title {
+  background: rgba(154,112,32,0.2);
+  color: #6a4a10;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid rgba(154,112,32,0.4);
+  letter-spacing: 1px;
+}
+.digest-table .badge-upset {
+  background: rgba(139,26,26,0.18);
+  color: #8b1a1a;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid rgba(139,26,26,0.4);
+  letter-spacing: 1px;
+}
+.digest-mq {
+  font-weight: 900;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  width: 50px;
+  text-align: right;
+}
+.digest-mq.high { color: #1a7a30; }
+.digest-mq.mid { color: #6a4a10; }
+.digest-mq.low { color: #8b1a1a; }
+.digest-comment { font-size: 10.5px; color: #5b4b34; line-height: 1.5; }
+
+/* 他団体ニュース(2カラム) */
+.sub-stories {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 3px double rgba(120,84,39,0.35);
+}
+.sub-stories-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.sub-story {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed rgba(120,84,39,0.25);
+}
+.sub-story-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #3a2050, #2a1440);
+  border: 2px solid rgba(106,56,144,0.4);
+  display: grid;
+  place-items: center;
+  color: #b088d0;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.sub-story-photo.green { background: linear-gradient(135deg, #1a4a30, #0f3020); border-color: rgba(80,160,100,0.4); color: #80c098; }
+.sub-story-photo.amber { background: linear-gradient(135deg, #5a3a10, #3a2010); border-color: rgba(212,168,42,0.4); color: #f0c878; }
+.sub-story-photo.steel { background: linear-gradient(135deg, #2a3a4a, #1a2030); border-color: rgba(120,150,180,0.4); color: #a0b8d0; }
+.sub-story-headline {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin-bottom: 4px;
+  color: #1a0d04;
+  font-family: 'Noto Serif JP', serif;
+}
+.sub-story-text { font-size: 11px; line-height: 1.6; color: #4a3825; }
+
+/* 次回展望 */
+.preview {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(154,112,32,0.1), transparent 60%),
+    rgba(120,84,39,0.07);
+  border-radius: 6px;
+  border: 1px dashed rgba(120,84,39,0.45);
+}
+.preview-text { font-size: 12px; line-height: 1.8; color: #3a2e1c; margin-top: 6px; }
+.preview-text strong { color: #8b1a1a; }
+
+/* ═══════════════════════════════════════
+   団体比較面
+═══════════════════════════════════════ */
+.compare-page { padding: 18px 26px 22px; }
+
+.compare-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(120,84,39,0.08);
+  border-radius: 6px;
+  border: 1px solid rgba(120,84,39,0.18);
+  margin-bottom: 14px;
+}
+.compare-select label {
+  font-size: 10px;
+  color: #6a5e4c;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+.compare-select select {
+  padding: 5px 10px;
+  font-size: 12px;
+  background: #f5ecd7;
+  border: 1px solid rgba(120,84,39,0.4);
+  border-radius: 3px;
+  color: #1f1710;
+  flex: 1;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+}
+
+/* ヘッドライン(黒田の見立て + グレード) */
+.compare-headline {
+  display: grid;
+  grid-template-columns: 44px 1fr 92px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  background:
+    radial-gradient(circle at 100% 50%, rgba(212,184,122,0.25), transparent 65%),
+    linear-gradient(135deg, rgba(212,184,122,0.18), rgba(212,184,122,0.05));
+  border: 1px solid rgba(154,112,32,0.35);
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+.compare-headline-quote {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #1f1710;
+  font-family: 'Noto Serif JP', serif;
+}
+.compare-headline-byline { font-size: 10px; color: #7a5b32; margin-top: 3px; }
+.compare-headline-grade {
+  text-align: center;
+  padding: 6px 10px;
+  border-left: 2px solid rgba(154,112,32,0.45);
+  border-right: 2px solid rgba(154,112,32,0.45);
+}
+.compare-headline-grade .grade {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 38px;
+  line-height: 1;
+  color: #8b1a1a;
+  letter-spacing: -1px;
+}
+.compare-headline-grade .grade-lbl {
+  font-size: 9px;
+  color: #6a5e4c;
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+
+/* 団体カード(コンパクトな2カラム) */
+.org-versus {
+  display: grid;
+  grid-template-columns: 1fr 56px 1fr;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 14px;
+}
+.org-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(120,84,39,0.06);
+  border: 1px solid rgba(120,84,39,0.22);
+}
+.org-card.player {
+  background: linear-gradient(180deg, rgba(154,112,32,0.14), rgba(154,112,32,0.02));
+  border-color: rgba(154,112,32,0.45);
+}
+.org-card.rival {
+  background: linear-gradient(180deg, rgba(139,26,26,0.13), rgba(139,26,26,0.02));
+  border-color: rgba(139,26,26,0.4);
+}
+.org-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.org-card-name {
+  font-size: 18px;
+  font-weight: 900;
+  font-family: 'Noto Serif JP', serif;
+  line-height: 1.2;
+  color: #1a0d04;
+}
+.org-card-sub { font-size: 10px; color: #6a5e4c; margin-top: 2px; }
+.org-card-tier {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 3px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.org-card.player .org-card-tier { background: rgba(154,112,32,0.22); color: #6a4a10; border: 1px solid rgba(154,112,32,0.4); }
+.org-card.rival .org-card-tier { background: rgba(139,26,26,0.18); color: #8b1a1a; border: 1px solid rgba(139,26,26,0.4); }
+.org-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 12px;
+  font-size: 11px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(120,84,39,0.2);
+}
+.org-card-stats .stat-item { display: flex; justify-content: space-between; align-items: baseline; }
+.org-card-stats label { color: #6a5e4c; font-size: 10px; letter-spacing: 1px; }
+.org-card-stats strong {
+  font-family: 'Bebas Neue', sans-serif;
+  color: #1f1710;
+  font-size: 16px;
+  line-height: 1;
+}
+.org-card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.org-card-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: rgba(120,84,39,0.1);
+  border: 1px solid rgba(120,84,39,0.2);
+  color: #4a3825;
+  letter-spacing: 0.5px;
+}
+
+.versus-mark {
+  display: grid;
+  place-items: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: #8b1a1a;
+  background: radial-gradient(circle, rgba(154,112,32,0.15), transparent 70%);
+  letter-spacing: 1px;
+}
+
+/* マッチアップ比較(縦並び3段) */
+.matchup-section { margin-bottom: 14px; }
+.matchup-list { display: grid; gap: 8px; }
+.matchup-row {
+  display: grid;
+  grid-template-columns: 1fr 110px 1fr;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(120,84,39,0.05);
+  border: 1px solid rgba(120,84,39,0.2);
+  border-radius: 6px;
+  align-items: center;
+}
+.matchup-fighter { display: flex; gap: 10px; align-items: center; }
+.matchup-fighter.right { flex-direction: row-reverse; text-align: right; }
+.matchup-photo {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #4f8fff, #1d49aa);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.matchup-photo.right { background: linear-gradient(135deg, #ff8396, #9f213f); }
+.matchup-name { font-size: 13px; font-weight: 800; line-height: 1.2; color: #1a0d04; }
+.matchup-ovr {
+  font-size: 11px;
+  color: #6a5e4c;
+  margin-top: 2px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.matchup-ovr strong {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  color: #1f1710;
+  margin-left: 2px;
+}
+.matchup-vs { text-align: center; }
+.matchup-vs .role {
+  display: block;
+  font-weight: 900;
+  color: #8b1a1a;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.matchup-vs .verdict {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+.matchup-vs .verdict.player { background: rgba(154,112,32,0.2); color: #6a4a10; }
+.matchup-vs .verdict.rival { background: rgba(139,26,26,0.18); color: #8b1a1a; }
+.matchup-vs .verdict.even { background: rgba(120,84,39,0.12); color: #5b4b34; }
+.matchup-comment {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
+  color: #4a3825;
+  line-height: 1.7;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px dashed rgba(120,84,39,0.25);
+  font-family: 'Noto Serif JP', serif;
+}
+
+/* 戦力比較バー */
+.power-section {
+  margin: 14px 0;
+  padding: 12px 14px;
+  background: rgba(120,84,39,0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(120,84,39,0.18);
+}
+.power-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 40px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 7px;
+}
+.power-row:last-child { margin-bottom: 0; }
+.power-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #4a3825;
+  text-align: right;
+  letter-spacing: 0.5px;
+}
+.power-bar-wrap {
+  position: relative;
+  height: 16px;
+  background: rgba(120,84,39,0.12);
+  border-radius: 3px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.power-bar-wrap .center-line {
+  position: absolute;
+  left: 50%;
+  top: -1px;
+  bottom: -1px;
+  width: 1px;
+  background: rgba(120,84,39,0.5);
+  z-index: 2;
+}
+.power-bar-wrap .player-side {
+  justify-self: end;
+  height: 100%;
+  background: linear-gradient(270deg, #d4a82a, #9a7020);
+}
+.power-bar-wrap .rival-side {
+  justify-self: start;
+  height: 100%;
+  background: linear-gradient(90deg, #c22020, #8b1a1a);
+}
+.power-diff {
+  font-size: 12px;
+  font-weight: 900;
+  font-family: 'Bebas Neue', sans-serif;
+  text-align: center;
+  letter-spacing: 1px;
+}
+.power-diff.player { color: #6a4a10; }
+.power-diff.rival { color: #8b1a1a; }
+
+/* スポットライト */
+.spotlight {
+  margin: 14px 0;
+  padding: 12px 14px;
+  background:
+    radial-gradient(circle at 0% 100%, rgba(154,112,32,0.18), transparent 55%),
+    linear-gradient(135deg, rgba(154,112,32,0.1), rgba(212,184,122,0.04));
+  border: 1px solid rgba(154,112,32,0.35);
+  border-radius: 6px;
+}
+.spotlight-grid {
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.spotlight-pick { display: flex; gap: 10px; align-items: center; }
+.spotlight-pick.right { flex-direction: row-reverse; text-align: right; }
+.spotlight-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.spotlight-name { font-size: 14px; font-weight: 900; color: #1a0d04; line-height: 1.2; }
+.spotlight-tag { font-size: 10px; color: #6a5e4c; margin-top: 2px; letter-spacing: 0.5px; }
+.spotlight-vs {
+  text-align: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: #8b1a1a;
+}
+
+/* 結論記事 */
+.compare-conclusion {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-top: 3px double rgba(120,84,39,0.4);
+  border-bottom: 1px solid rgba(120,84,39,0.2);
+}
+.compare-conclusion-title {
+  font-size: 16px;
+  font-weight: 900;
+  font-family: 'Noto Serif JP', serif;
+  color: #1a0d04;
+  margin-bottom: 6px;
+}
+.compare-conclusion-text {
+  font-size: 12px;
+  line-height: 1.85;
+  color: #2a2014;
+  text-indent: 1em;
+  text-align: justify;
+}
+
+/* レスポンシブ */
+@media (max-width: 820px) {
+  .top-story { grid-template-columns: 1fr; }
+  .top-story-photo { width: 100%; height: 220px; }
+  .show-versus-grid { grid-template-columns: 1fr 70px 1fr; }
+  .fighter-photo { width: 100px; height: 100px; }
+  .sub-stories-grid { grid-template-columns: 1fr; }
+  .news-page, .compare-page { padding-left: 18px; padding-right: 18px; }
+  .top-story-headline { font-size: 22px; }
+  .show-result-headline { font-size: 17px; }
+}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>📰 新聞・団体比較 統一モックアップ v1</h1>
+  <div>
+    同じ「週刊グラップル」の紙面の中に、<strong>通常面(ニュース)</strong>と<strong>団体比較面</strong>を併置。
+    両者でヘッダー帯・紙質・装飾を完全に統一し、ページ送りで切り替える構造です。
+  </div>
+  <div class="note">
+    紙面幅 = <strong>780px</strong>(現状新聞 560px → 拡大、団体比較 画面幅いっぱい → 縮小)<br>
+    上のタブで通常面/団体比較面を切り替えて、サイズと世界観の統一感を確認してください。
+  </div>
+</div>
+
+<!-- タブ切替 -->
+<div class="tabs">
+  <button class="tab active" data-page="news" onclick="switchPage(this, 'news')">📰 通常面</button>
+  <button class="tab" data-page="compare" onclick="switchPage(this, 'compare')">⚔ 団体比較面</button>
+</div>
+
+<!-- 紙面 -->
+<div class="paper">
+  <div class="paper-header">
+    <div class="logo">週刊グラップル</div>
+    <div class="issue">
+      シーズン3 第14週
+      <small>2026年4月25日号</small>
+    </div>
+  </div>
+
+  <div class="archive-nav">
+    <button>◀ 次の号</button>
+    <span>最新号</span>
+    <button>前の号 ▶</button>
+  </div>
+
+  <div class="page-nav">
+    <button class="page-nav-btn active" data-page="news" onclick="switchPage(this, 'news')">1面 興行</button>
+    <button class="page-nav-btn" data-page="compare" onclick="switchPage(this, 'compare')">2面 団体比較</button>
+    <button class="page-nav-btn">3面 因縁列伝</button>
+    <button class="page-nav-btn">4面 ランキング</button>
+  </div>
+
+  <!-- ════════ 通常面 ════════ -->
+  <div class="news-page" id="page-news">
+    <div class="news-lead">
+      ……今週の興行は、紅蓮社中の若き挑戦者がメインで王者を追い詰め、観客を沸かせた。
+      他団体ではブラックスター・ローのカリスマがトップ団体に挑戦状を叩きつけ、業界に新たな波紋を広げている。
+    </div>
+
+    <article class="top-story">
+      <div class="top-story-photo">
+        [選手画像]
+        <div class="photo-stamp">EXCLUSIVE</div>
+        <div class="top-story-caption">
+          <strong>星野ひかり</strong> — メイン直前のリングサイド<br>
+          紅蓮社中・第14週興行
+        </div>
+      </div>
+      <div class="top-story-body">
+        <div class="sec-label">一面記事</div>
+        <h2 class="top-story-headline">王座目前で散った<br>若き刺客、敗北の哲学</h2>
+        <div class="top-story-sub">タイトル戦線に新たな火種——師の影を超えるのは、いつになるか</div>
+        <div class="top-story-text">
+          <p>第7試合・25分3秒、フィニッシュは王者の最終奥義。だが終盤の攻防は、明らかに挑戦者ペースだった。MQ87——今期最高評価の試合に、観客は割れんばかりの拍手を送った。</p>
+          <p>試合後、リング下に降りた挑戦者の表情に涙はなく、ただ一点を見つめていた。「次は獲ります」と、短く言った。</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- 興行結果 -->
+    <section class="show-result">
+      <div class="sec-label">自団体 興行結果</div>
+      <h3 class="show-result-headline">紅蓮社中、第14週興行 — メインは王座戦の死闘</h3>
+
+      <div class="show-versus-grid">
+        <div class="fighter-card">
+          <div class="fighter-photo">[挑戦者]</div>
+          <div class="fighter-name">星野 ひかり</div>
+          <div class="fighter-role">挑戦者・No.2</div>
+        </div>
+        <div class="versus-block">
+          <div class="versus-vs">VS</div>
+          <div class="versus-finish">FINISH BY 最終奥義</div>
+        </div>
+        <div class="fighter-card win">
+          <div class="fighter-photo right">[王者]</div>
+          <div class="fighter-name">黒崎 怜</div>
+          <div class="fighter-role">王者・エース</div>
+        </div>
+      </div>
+
+      <div class="show-result-line">
+        <div class="stage">第7試合 メインイベント / 王座戦</div>
+        <div class="mq-block"><label>MQ</label><strong>87</strong></div>
+        <div class="duration">25分3秒</div>
+      </div>
+
+      <div class="show-article">
+        前半は王者の落ち着いた組み立てが光った。中盤、挑戦者の捨て身のジャーマンから流れが一変。場内が一斉に挑戦者の名を叫び、これに応えるように畳み掛けた連撃は——王者をして膝をつかせるに十分だった。最後の最後で振り絞った王者の意地が辛うじて勝利を引き寄せた格好だが、この熱量は次に繋がる。
+      </div>
+
+      <div class="rating-block">
+        <div class="rating-stars">★★★★☆</div>
+        <div class="rating-headline">観客満足度 4.0 / 期待を超える内容</div>
+        <div class="rating-comment">「真面目にいい興行だったね。次はもっとお客さん呼べるはずよ。」</div>
+      </div>
+
+      <div class="digest-section">
+        <div class="sec-label-gold">全試合ダイジェスト</div>
+        <table class="digest-table">
+          <thead>
+            <tr>
+              <th class="num">#</th>
+              <th class="tag">タグ</th>
+              <th>カード</th>
+              <th>結果</th>
+              <th style="text-align:right;">MQ</th>
+              <th>寸評</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num">2</td><td><span class="badge-upset">番狂わせ</span></td>
+              <td>佐々木 vs 神崎</td><td>佐々木 / 12分</td>
+              <td><span class="digest-mq mid">62</span></td>
+              <td class="digest-comment">伏兵の一撃に場内どよめき。</td>
+            </tr>
+            <tr>
+              <td class="num">3</td><td></td>
+              <td>白石 vs 桜井</td><td>白石 / 9分</td>
+              <td><span class="digest-mq low">55</span></td>
+              <td class="digest-comment">短めの決着、もう一押し欲しい。</td>
+            </tr>
+            <tr>
+              <td class="num">4</td><td></td>
+              <td>七海 vs 早瀬</td><td>七海 / 15分</td>
+              <td><span class="digest-mq mid">68</span></td>
+              <td class="digest-comment">攻防の幅が広く、納得の中盤戦。</td>
+            </tr>
+            <tr>
+              <td class="num">5</td><td></td>
+              <td>美月 vs 茜</td><td>美月 / 18分</td>
+              <td><span class="digest-mq mid">72</span></td>
+              <td class="digest-comment">じわじわ温度を上げた好試合。</td>
+            </tr>
+            <tr>
+              <td class="num">6</td><td><span class="badge-title">王座戦</span></td>
+              <td>北条 vs ミナ</td><td>北条 / 22分</td>
+              <td><span class="digest-mq high">81</span></td>
+              <td class="digest-comment">王者の貫禄を改めて知らしめた。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 他団体ニュース -->
+    <section class="sub-stories">
+      <div class="sec-label-gold">他団体ニュース</div>
+      <div class="sub-stories-grid">
+        <div class="sub-story">
+          <div class="sub-story-photo">[B]</div>
+          <div>
+            <div class="sub-story-headline">ブラックスターのカリスマ、王者へ挑戦状</div>
+            <div class="sub-story-text">「次の興行で答えを出してもらう」と公開で名指し。両団体の関係に新たな火種が走る。</div>
+          </div>
+        </div>
+        <div class="sub-story">
+          <div class="sub-story-photo green">[V]</div>
+          <div>
+            <div class="sub-story-headline">ヴェネチア・ローズ、新人がデビュー戦で勝利</div>
+            <div class="sub-story-text">関係者を唸らせた17歳の新人が、デビュー戦で先輩格を撃破。話題を呼んでいる。</div>
+          </div>
+        </div>
+        <div class="sub-story">
+          <div class="sub-story-photo amber">[J]</div>
+          <div>
+            <div class="sub-story-headline">純真リーグ、団体存続の危機</div>
+            <div class="sub-story-text">主力2名の離脱表明により、来期の存続が不透明に。業界に衝撃が走った。</div>
+          </div>
+        </div>
+        <div class="sub-story">
+          <div class="sub-story-photo steel">[N]</div>
+          <div>
+            <div class="sub-story-headline">ネオンナイトの新進エース、覚醒の舞台</div>
+            <div class="sub-story-text">三連勝でランキング急上昇。若き才能の覚醒に、業界が熱視線を送る。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 黒田コメント -->
+    <div class="kuroda-block">
+      <div class="kuroda-face">黒</div>
+      <div>
+        <div class="kuroda-text">
+          「今週の挑戦者の入場、見逃した人は損したと思う。あの目をしてた選手は、本当に獲るタイプ。次の興行を絶対に見逃さないで。」
+        </div>
+        <div class="kuroda-byline">——黒田幸子(週刊グラップル編集長)</div>
+      </div>
+    </div>
+
+    <!-- 次回展望 -->
+    <div class="preview">
+      <div class="sec-label-gold">次回展望</div>
+      <div class="preview-text">
+        来週は<strong>北条 vs 美月</strong>の因縁マッチが組まれている。両者は3週前に流血の決着戦を迎えており、今度こそ白黒つくか——。
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 団体比較面 ════════ -->
+  <div class="compare-page" id="page-compare" style="display:none;">
+
+    <div class="compare-select">
+      <label>比較対象</label>
+      <select>
+        <option>ブラックスター・ロー</option>
+        <option>ヴェネチア・ローズ</option>
+        <option>純真リーグ</option>
+      </select>
+    </div>
+
+    <div class="compare-headline">
+      <div class="kuroda-face">黒</div>
+      <div>
+        <div class="compare-headline-quote">「うちと向こうの差は、今は埋まらない。でも10週後に勝てる団体になってるかは、社長次第だよ。」</div>
+        <div class="compare-headline-byline">——黒田幸子</div>
+      </div>
+      <div class="compare-headline-grade">
+        <div class="grade">B+</div>
+        <div class="grade-lbl">優劣判定</div>
+      </div>
+    </div>
+
+    <!-- 団体カード -->
+    <div class="org-versus">
+      <div class="org-card player">
+        <div class="org-card-head">
+          <div>
+            <div class="org-card-name">紅蓮社中</div>
+            <div class="org-card-sub">所属14名 / 王者2</div>
+          </div>
+          <div class="org-card-tier">プレイヤー</div>
+        </div>
+        <div class="org-card-tags">
+          <span class="org-card-tag">パワー型</span>
+          <span class="org-card-tag">育成重視</span>
+        </div>
+        <div class="org-card-stats">
+          <div class="stat-item"><label>OVR</label><strong>72</strong></div>
+          <div class="stat-item"><label>人気</label><strong>58</strong></div>
+          <div class="stat-item"><label>エース</label><strong>75</strong></div>
+          <div class="stat-item"><label>層</label><strong>68</strong></div>
+        </div>
+      </div>
+      <div class="versus-mark">VS</div>
+      <div class="org-card rival">
+        <div class="org-card-head">
+          <div>
+            <div class="org-card-name">ブラックスター・ロー</div>
+            <div class="org-card-sub">所属16名 / 王者3</div>
+          </div>
+          <div class="org-card-tier">A級団体</div>
+        </div>
+        <div class="org-card-tags">
+          <span class="org-card-tag">テクニック型</span>
+          <span class="org-card-tag">スター主義</span>
+        </div>
+        <div class="org-card-stats">
+          <div class="stat-item"><label>OVR</label><strong>78</strong></div>
+          <div class="stat-item"><label>人気</label><strong>71</strong></div>
+          <div class="stat-item"><label>エース</label><strong>73</strong></div>
+          <div class="stat-item"><label>層</label><strong>76</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- マッチアップ比較 -->
+    <div class="matchup-section">
+      <div class="sec-label">トップ陣 比較</div>
+      <div class="matchup-list">
+        <div class="matchup-row">
+          <div class="matchup-fighter">
+            <div class="matchup-photo">星</div>
+            <div>
+              <div class="matchup-name">星野 ひかり</div>
+              <div class="matchup-ovr">OVR <strong>75</strong></div>
+            </div>
+          </div>
+          <div class="matchup-vs">
+            <span class="role">エース対決</span>
+            <span class="verdict player">こちら +2</span>
+          </div>
+          <div class="matchup-fighter right">
+            <div class="matchup-photo right">竜</div>
+            <div>
+              <div class="matchup-name">竜崎 麗華</div>
+              <div class="matchup-ovr">OVR <strong>73</strong></div>
+            </div>
+          </div>
+          <div class="matchup-comment">エース比較は互角。ここを五分で返せるなら、興行の格がまるで違ってくる。集客面は五分。</div>
+        </div>
+
+        <div class="matchup-row">
+          <div class="matchup-fighter">
+            <div class="matchup-photo">七</div>
+            <div>
+              <div class="matchup-name">七海 美咲</div>
+              <div class="matchup-ovr">OVR <strong>68</strong></div>
+            </div>
+          </div>
+          <div class="matchup-vs">
+            <span class="role">No.2対決</span>
+            <span class="verdict rival">向こう +5</span>
+          </div>
+          <div class="matchup-fighter right">
+            <div class="matchup-photo right">花</div>
+            <div>
+              <div class="matchup-name">華月 涼子</div>
+              <div class="matchup-ovr">OVR <strong>73</strong></div>
+            </div>
+          </div>
+          <div class="matchup-comment">No.2対決で押されている。戦力の厚みで勝負すると、こちらの薄さが余計に目立つ。人気差は無視できない。</div>
+        </div>
+
+        <div class="matchup-row">
+          <div class="matchup-fighter">
+            <div class="matchup-photo">桜</div>
+            <div>
+              <div class="matchup-name">桜井 彩</div>
+              <div class="matchup-ovr">OVR <strong>62</strong></div>
+            </div>
+          </div>
+          <div class="matchup-vs">
+            <span class="role">No.3対決</span>
+            <span class="verdict even">五分</span>
+          </div>
+          <div class="matchup-fighter right">
+            <div class="matchup-photo right">紫</div>
+            <div>
+              <div class="matchup-name">紫苑</div>
+              <div class="matchup-ovr">OVR <strong>62</strong></div>
+            </div>
+          </div>
+          <div class="matchup-comment">三番手は互角。ここを互角で回せれば、興行全体の見栄えを保てる。人気は互角。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 戦力比較 -->
+    <div class="power-section">
+      <div class="sec-label-gold">戦力レーダー</div>
+      <div class="power-row">
+        <div class="power-label">エース力</div>
+        <div class="power-bar-wrap">
+          <div class="player-side" style="width:51%"></div>
+          <div class="rival-side" style="width:49%"></div>
+          <div class="center-line"></div>
+        </div>
+        <div class="power-diff player">+2</div>
+      </div>
+      <div class="power-row">
+        <div class="power-label">層の厚み</div>
+        <div class="power-bar-wrap">
+          <div class="player-side" style="width:42%"></div>
+          <div class="rival-side" style="width:58%"></div>
+          <div class="center-line"></div>
+        </div>
+        <div class="power-diff rival">-5</div>
+      </div>
+      <div class="power-row">
+        <div class="power-label">集客力</div>
+        <div class="power-bar-wrap">
+          <div class="player-side" style="width:38%"></div>
+          <div class="rival-side" style="width:62%"></div>
+          <div class="center-line"></div>
+        </div>
+        <div class="power-diff rival">-13</div>
+      </div>
+      <div class="power-row">
+        <div class="power-label">タイトル力</div>
+        <div class="power-bar-wrap">
+          <div class="player-side" style="width:46%"></div>
+          <div class="rival-side" style="width:54%"></div>
+          <div class="center-line"></div>
+        </div>
+        <div class="power-diff rival">-1</div>
+      </div>
+    </div>
+
+    <!-- スポットライト -->
+    <div class="spotlight">
+      <div class="sec-label-gold">注目の一戦(可能性)</div>
+      <div class="spotlight-grid">
+        <div class="spotlight-pick">
+          <div class="spotlight-photo" style="background:linear-gradient(135deg,#4f8fff,#1d49aa);">星</div>
+          <div>
+            <div class="spotlight-name">星野 ひかり</div>
+            <div class="spotlight-tag">団体の希望</div>
+          </div>
+        </div>
+        <div class="spotlight-vs">VS</div>
+        <div class="spotlight-pick right">
+          <div class="spotlight-photo" style="background:linear-gradient(135deg,#ff8396,#9f213f);">竜</div>
+          <div>
+            <div class="spotlight-name">竜崎 麗華</div>
+            <div class="spotlight-tag">向こうの看板</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 結論記事 -->
+    <div class="compare-conclusion">
+      <div class="sec-label">本紙論評</div>
+      <h3 class="compare-conclusion-title">層の厚みが課題、エースは勝負できる位置に</h3>
+      <div class="compare-conclusion-text">
+        現状、紅蓮社中とブラックスター・ローの差は、エースだけ見れば僅差だ。問題は中堅以下の層と、興行の集客力。とくに集客の差は、団体の地力そのものを示している。だが、星野ひかりがあと10週で化ければ、状況は変わる——本紙はそう見ている。
+      </div>
+    </div>
+
+    <div class="kuroda-block">
+      <div class="kuroda-face">黒</div>
+      <div>
+        <div class="kuroda-text">
+          「今のままじゃ向こうに分はある。でもこっちには星野がいる。10週もすれば、状況は逆転してるかもね。」
+        </div>
+        <div class="kuroda-byline">——黒田幸子(本紙論評)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchPage(btn, target) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.page === target));
+  document.querySelectorAll('.page-nav .page-nav-btn').forEach(t => {
+    if (t.dataset.page) t.classList.toggle('active', t.dataset.page === target);
+    else t.classList.remove('active');
+  });
+  document.getElementById('page-news').style.display = target === 'news' ? 'block' : 'none';
+  document.getElementById('page-compare').style.display = target === 'compare' ? 'block' : 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
