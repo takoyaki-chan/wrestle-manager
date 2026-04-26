@@ -2150,6 +2150,184 @@ const Engine = {
       s = { ...s, freeAgents: (s.freeAgents || []).map(f => applyBackstory(f, 'fa')) };
 
       return s;
+    },
+
+    /**
+     * §C-6 過去対戦成績デッち上げ（AI団体ロスターのみ）
+     * generateAllBackstories + Engine.relationships.initialize 後に呼ぶ。
+     * 同団体・OVR近接・キャリア重なりに基づいて h2h 履歴と wins/losses/draws、
+     * Bond/Rivalry を applyMatchResult 経由で過去対戦の痕跡として刻む。
+     */
+    generateInheritedRecords(state) {
+      let s = state;
+      if (s._migrated_inherited_records_v1) return s;
+
+      const aiFighters = [];
+      Object.keys(s.aiOrgs || {}).forEach(orgId => {
+        const od = s.aiOrgs[orgId];
+        if (!od || !od.roster) return;
+        od.roster.forEach(f => {
+          if ((f.careerSeasons || 0) >= 2) {
+            aiFighters.push({ id: f.id, orgId, careerSeasons: f.careerSeasons || 1, peakOVR: (f.careerRecord || {}).peakOVR || Engine.util.ov(f), hasTitle: ((f.careerRecord || {}).history || []).some(e => e.type === 'titleWin') });
+          }
+        });
+      });
+
+      if (aiFighters.length < 2) {
+        return { ...s, _migrated_inherited_records_v1: true };
+      }
+
+      let h2h = { ...(s.h2h || {}) };
+      const winsDeltas = {};
+      const recentByFighter = {};
+      const incDelta = (id, key) => {
+        if (!winsDeltas[id]) winsDeltas[id] = { wins: 0, losses: 0, draws: 0 };
+        winsDeltas[id][key]++;
+      };
+
+      // ── ペア毎に試合を捏造 ──
+      for (let i = 0; i < aiFighters.length; i++) {
+        for (let j = i + 1; j < aiFighters.length; j++) {
+          const A = aiFighters[i], B = aiFighters[j];
+          const overlapSeasons = Math.min(A.careerSeasons, B.careerSeasons) - 1;
+          if (overlapSeasons <= 0) continue;
+
+          const pairRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, A.id, B.id, 0xBE99));
+
+          const sameOrg = A.orgId === B.orgId;
+          const ovrDiff = Math.abs(A.peakOVR - B.peakOVR);
+          const ovrCloseness = Math.max(0, 1 - ovrDiff / 30);
+
+          let p = 0.05;
+          if (sameOrg) p += 0.55;
+          p += ovrCloseness * 0.30;
+
+          if (Engine.rng.float(pairRng) > p) continue;
+
+          let matchCount;
+          if (sameOrg && ovrCloseness > 0.7) matchCount = 3 + Engine.rng.int(pairRng, 0, 5);
+          else if (sameOrg) matchCount = 1 + Engine.rng.int(pairRng, 0, 2);
+          else matchCount = 1 + Engine.rng.int(pairRng, 0, 1);
+          matchCount = Math.min(matchCount, overlapSeasons * 2);
+
+          const minCareer = Math.min(A.careerSeasons, B.careerSeasons);
+          const fromSeason = Math.max(1, minCareer - overlapSeasons);
+
+          const slots = [];
+          for (let k = 0; k < matchCount; k++) {
+            slots.push({
+              seasonOffset: Engine.rng.int(pairRng, 0, overlapSeasons - 1),
+              week: 2 + Engine.rng.int(pairRng, 0, 43),
+            });
+          }
+          slots.sort((a, b) => (a.seasonOffset - b.seasonOffset) || (a.week - b.week));
+
+          const bothHaveTitles = A.hasTitle && B.hasTitle;
+          const ovrWinA = A.peakOVR / (A.peakOVR + B.peakOVR);
+
+          slots.forEach(slot => {
+            const matchSeason = fromSeason + slot.seasonOffset;
+            const matchWeek = slot.week;
+
+            const r = Engine.rng.float(pairRng);
+            let winner;
+            if (r < 0.05) winner = 'draw';
+            else if (r < 0.05 + 0.95 * ovrWinA) winner = 'left';
+            else winner = 'right';
+
+            const baseMQ = Math.min(A.peakOVR, B.peakOVR);
+            const mq = Engine.util.clamp(
+              baseMQ + Engine.rng.int(pairRng, -15, 10),
+              25, Math.min(95, baseMQ + 15)
+            );
+
+            const isPPV = bothHaveTitles && Engine.rng.float(pairRng) < 0.05;
+            const isTitleMatch = bothHaveTitles && Engine.rng.float(pairRng) < 0.08;
+            const stage = isPPV ? 'ppv' : 'show';
+
+            h2h = Engine.h2h.update(h2h, A.id, B.id, winner, mq, isTitleMatch, isPPV, matchSeason, matchWeek, stage);
+
+            if (winner === 'draw') { incDelta(A.id, 'draws'); incDelta(B.id, 'draws'); }
+            else if (winner === 'left') { incDelta(A.id, 'wins'); incDelta(B.id, 'losses'); }
+            else { incDelta(A.id, 'losses'); incDelta(B.id, 'wins'); }
+
+            const resA = winner === 'draw' ? 'draw' : (winner === 'left' ? 'win' : 'loss');
+            const resB = winner === 'draw' ? 'draw' : (winner === 'right' ? 'win' : 'loss');
+            if (!recentByFighter[A.id]) recentByFighter[A.id] = [];
+            if (!recentByFighter[B.id]) recentByFighter[B.id] = [];
+            recentByFighter[A.id].push({ opponentId: B.id, result: resA, season: matchSeason, week: matchWeek });
+            recentByFighter[B.id].push({ opponentId: A.id, result: resB, season: matchSeason, week: matchWeek });
+          });
+        }
+      }
+
+      s = { ...s, h2h };
+
+      // ── 各試合に applyMatchResult を呼んで Bond/Rivalry に過去の痕跡を刻む ──
+      // h2h.history は時系列順。同団体内なので isCrossOrg=false。
+      const orgIdById = {};
+      aiFighters.forEach(f => { orgIdById[f.id] = f.orgId; });
+
+      Object.keys(h2h).forEach(key => {
+        const [aIdStr, bIdStr] = key.split('>');
+        const aId = parseInt(aIdStr, 10), bId = parseInt(bIdStr, 10);
+        const rec = h2h[key];
+        if (!rec || !rec.history || rec.history.length === 0) return;
+        // 我々が捏造したペアか確認(両者がaiFighter対象であれば確実に捏造分)
+        if (!orgIdById[aId] || !orgIdById[bId]) return;
+
+        const relRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, aId, bId, 0xBE9A));
+        const isCrossOrg = orgIdById[aId] !== orgIdById[bId];
+
+        rec.history.forEach(h => {
+          const winnerStr = h.win === 'A' ? 'win' : (h.win === 'B' ? 'lose' : 'draw');
+          const hpA = winnerStr === 'win' ? { final: 70, max: 100 } : (winnerStr === 'lose' ? { final: 15, max: 100 } : { final: 40, max: 100 });
+          const hpB = winnerStr === 'win' ? { final: 15, max: 100 } : (winnerStr === 'lose' ? { final: 70, max: 100 } : { final: 40, max: 100 });
+          const ctx = {
+            mq: h.mq || 50,
+            winner: winnerStr,
+            hpA, hpB,
+            turns: 8 + Engine.rng.int(relRng, 0, 6),
+            stage: h.p ? 'ppv' : (h.t ? 'title' : 'normal'),
+            isTitleMatch: !!h.t,
+            rivalryResolved: false,
+            injuredId: null,
+            isCareerBestA: false, isCareerBestB: false,
+            losingStreakA: 0, losingStreakB: 0,
+            isProveModeA: false, isProveModeB: false,
+            isCrossOrg,
+          };
+          s = Engine.relationships.applyMatchResult(s, aId, bId, ctx, relRng);
+        });
+      });
+
+      // ── wins/losses/draws / recentMatches を AI ロスターに反映 ──
+      const newAiOrgs = { ...s.aiOrgs };
+      Object.keys(newAiOrgs).forEach(orgId => {
+        const od = newAiOrgs[orgId];
+        if (!od || !od.roster) return;
+        newAiOrgs[orgId] = {
+          ...od,
+          roster: od.roster.map(f => {
+            const d = winsDeltas[f.id];
+            const rec = recentByFighter[f.id];
+            if (!d && !rec) return f;
+            const recent = (rec || [])
+              .sort((a, b) => (a.season - b.season) || (a.week - b.week))
+              .slice(-5);
+            return {
+              ...f,
+              wins: (f.wins || 0) + (d ? d.wins : 0),
+              losses: (f.losses || 0) + (d ? d.losses : 0),
+              draws: (f.draws || 0) + (d ? d.draws : 0),
+              recentMatches: recent.length > 0 ? recent : (f.recentMatches || []),
+            };
+          }),
+        };
+      });
+      s = { ...s, aiOrgs: newAiOrgs, _migrated_inherited_records_v1: true };
+
+      return s;
     }
   },
 

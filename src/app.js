@@ -3274,6 +3274,8 @@ const App = {
     G = Engine.career.generateAllBackstories(G);
     // Phase 1: 人間関係データ基盤 — 全ペアの初期値生成
     G = Engine.relationships.initialize(G);
+    // §C-6 過去対戦成績デッち上げ — AI団体ロスターに h2h/wins/Bond/Rivalry を刻む
+    G = Engine.career.generateInheritedRecords(G);
     // v1.3: Record debut event for drafted fighters（経歴生成後に上書き — プレイヤー団体デビューを正式記録）
     G = { ...G, roster: G.roster.map(c => picks.includes(c.id)
       ? Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'draft' })
