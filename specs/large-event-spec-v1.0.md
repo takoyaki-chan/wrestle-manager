@@ -118,6 +118,33 @@
 - 勝利: 自団体選手→挑戦者 rivalry +8〜+12, orgPop増加
 - 敗北: 相手団体にorgPop流出
 
+### §4.4 AI団体間 B3（NPC vs NPC、2026-04-27 追加）
+
+MVPレースの公平性を保つため、B3挑戦状はAI団体間でも自動発生する。
+
+- **判定**: 週次、`week % 4 === 0`、両AI団体とも `orgPop > 18`、双方の `lastB3Week` から6週経過
+- **発生率**: 5%（ペアあたり）
+- **対戦相手**: ランキング±1〜±2位のAI団体（プレイヤー除外）
+- **挑戦側代表**: 健全な選手のOVRトップ5から1名（ランダム）
+- **受諾側代表**: 健全な選手のOVRトップ3から1名（チャンピオン50%優先、対抗戦と同じ）
+- **受諾判定**:
+  - 挑戦側=格下（受諾側=格上）: 受諾率 **85%**
+  - 同格: 受諾率 **75%**
+  - 挑戦側=格上（受諾側=格下）: 受諾率 **45%**
+- **試合**: `Engine.battle.simulateMatch(c, d, rng, matchTier=2)`（ビッグマッチ扱い）
+- **結果適用**:
+  - 勝者: orgPop +3、選手 popularity +3、trust +5
+  - 敗者: orgPop -1、trust -3
+  - 引き分け: 両orgPop +1、両者 trust +2
+  - rivalry +8〜12（isCrossOrg=true で applyMatchResult）
+  - h2h履歴・MVPレース v2 の `b3Challenge` 履歴を両者に記録
+- **辞退時**:
+  - 受諾側 OVRトップ3に `b3Decline` 履歴（MVP -4pt）+ orgPop -1
+  - 挑戦側に `b3Rejected` 履歴（MVP +4pt）
+- **新聞**: `aiB3Result`（priority 138, MQ90+で +20）/ `aiB3Decline`（priority 105）
+
+実装: `Engine.rival.processAIB3Challenge(rng, state)` (management.js)、`tickWeek` の `processAIWar` 直後で呼ぶ。
+
 ---
 
 ## §5 B4: メディア密着取材 / タレント活動
