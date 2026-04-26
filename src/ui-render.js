@@ -5771,22 +5771,42 @@ function _npComputeWarRecord(state, rivalOrgId) {
     if (playerIds.has(a) && aiIds.has(b)) playerSide = 'A';
     else if (playerIds.has(b) && aiIds.has(a)) playerSide = 'B';
     if (!playerSide) return;
-    const pWins = playerSide === 'A' ? (h.winsA || 0) : (h.winsB || 0);
-    const oWins = playerSide === 'A' ? (h.winsB || 0) : (h.winsA || 0);
     const dr = h.draws || 0;
-    wins += pWins; losses += oWins; draws += dr;
     if (h.history && h.history.length > 0) {
+      // 新スキーマ (oA/oB あり) は試合当時の所属で絞り込み、レガシー (oA/oB なし) は現所属で計上
       h.history.forEach(hh => {
-        const cat = hh.st === 'war' ? byWar : hh.st === 'ppv' ? byPpv : bySingle;
-        if (hh.win === playerSide) { cat.w++; recentResults.push({ s: hh.s, w: hh.w, r: 'w' }); }
-        else if (hh.win === 'd') { cat.d++; recentResults.push({ s: hh.s, w: hh.w, r: 'd' }); }
-        else { cat.l++; recentResults.push({ s: hh.s, w: hh.w, r: 'l' }); }
+        if (hh.oA || hh.oB) {
+          // 当時 player vs rivalOrgId のペアでなければ除外
+          const aIsPlayer = hh.oA === 'player', bIsPlayer = hh.oB === 'player';
+          const aIsRival = hh.oA === rivalOrgId, bIsRival = hh.oB === rivalOrgId;
+          let curSide = null;
+          if (aIsPlayer && bIsRival) curSide = 'A';
+          else if (bIsPlayer && aIsRival) curSide = 'B';
+          if (!curSide) return;
+          if (hh.win === curSide) { wins++; bySingleOrCat(hh, 'w'); recentResults.push({ s: hh.s, w: hh.w, r: 'w' }); }
+          else if (hh.win === 'd') { draws++; bySingleOrCat(hh, 'd'); recentResults.push({ s: hh.s, w: hh.w, r: 'd' }); }
+          else { losses++; bySingleOrCat(hh, 'l'); recentResults.push({ s: hh.s, w: hh.w, r: 'l' }); }
+        } else {
+          // legacy: 当時の所属が不明なので現所属ベースで計上（従来挙動）
+          if (hh.win === playerSide) { wins++; bySingleOrCat(hh, 'w'); recentResults.push({ s: hh.s, w: hh.w, r: 'w' }); }
+          else if (hh.win === 'd') { draws++; bySingleOrCat(hh, 'd'); recentResults.push({ s: hh.s, w: hh.w, r: 'd' }); }
+          else { losses++; bySingleOrCat(hh, 'l'); recentResults.push({ s: hh.s, w: hh.w, r: 'l' }); }
+        }
       });
     } else {
-      // history なし: シングル扱い
+      // history なし: legacy 集計値ベースで現所属扱い
+      const pWins = playerSide === 'A' ? (h.winsA || 0) : (h.winsB || 0);
+      const oWins = playerSide === 'A' ? (h.winsB || 0) : (h.winsA || 0);
+      wins += pWins; losses += oWins; draws += dr;
       bySingle.w += pWins; bySingle.l += oWins; bySingle.d += dr;
     }
   });
+  function bySingleOrCat(hh, kind) {
+    const cat = hh.st === 'war' ? byWar : hh.st === 'ppv' ? byPpv : bySingle;
+    if (kind === 'w') cat.w++;
+    else if (kind === 'd') cat.d++;
+    else cat.l++;
+  }
   // 直近を時系列ソート → 連勝・連敗判定
   recentResults.sort((x, y) => (y.s - x.s) || (y.w - x.w));
   let streakKind = 'even', streak = 0;

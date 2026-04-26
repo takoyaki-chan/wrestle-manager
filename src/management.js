@@ -2408,7 +2408,7 @@ const Engine = {
             const isTitleMatch = bothHaveTitles && Engine.rng.float(pairRng) < 0.08;
             const stage = isPPV ? 'ppv' : 'show';
 
-            h2h = Engine.h2h.update(h2h, A.id, B.id, winner, mq, isTitleMatch, isPPV, matchSeason, matchWeek, stage);
+            h2h = Engine.h2h.update(h2h, A.id, B.id, winner, mq, isTitleMatch, isPPV, matchSeason, matchWeek, stage, A.orgId, B.orgId);
 
             if (winner === 'draw') { incDelta(A.id, 'draws'); incDelta(B.id, 'draws'); }
             else if (winner === 'left') { incDelta(A.id, 'wins'); incDelta(B.id, 'losses'); }
@@ -7067,7 +7067,7 @@ const Engine = {
         newAiOrgs[newsOrgId] = newsData;
 
         // h2h 記録 (AI vs AI 対抗戦)
-        s = { ...s, h2h: Engine.h2h.update(s.h2h, rep1.id, rep2.id, winner, matchResult.mq, false, false, s.season, s.week, 'war') };
+        s = { ...s, h2h: Engine.h2h.update(s.h2h, rep1.id, rep2.id, winner, matchResult.mq, false, false, s.season, s.week, 'war', orgId, opponent.id) };
 
         // MVPレース v2: AI vs AI 対抗戦の war 履歴（won フィールド付き）
         const rep1Won = winner === 'left' ? true : winner === 'right' ? false : null;
@@ -8454,7 +8454,7 @@ const Engine = {
           // h2h記録: AI団体の試合
           let aiH2h = { ...(s.h2h || {}) };
           aiMatchResults.forEach(r => {
-            aiH2h = Engine.h2h.update(aiH2h, r.left.id, r.right.id, r.winner, r.mq, false, false, s.season, s.week);
+            aiH2h = Engine.h2h.update(aiH2h, r.left.id, r.right.id, r.winner, r.mq, false, false, s.season, s.week, 'show', orgId, orgId);
           });
           s = { ...s, h2h: aiH2h };
           // 消費済みフラグをクリア
@@ -9495,10 +9495,10 @@ const Engine = {
         pairs.forEach(([lId, rId]) => {
           const isLTeamA = lId === m.teamA.fighter1 || lId === m.teamA.fighter2;
           const pairWinner = r.winner === 'draw' ? 'draw' : (isLTeamA ? (r.winner === 'teamA' ? 'left' : 'right') : (r.winner === 'teamB' ? 'left' : 'right'));
-          exH2h = Engine.h2h.update(exH2h, lId, rId, pairWinner, r.mq, false, false, s.season, s.week, 'show');
+          exH2h = Engine.h2h.update(exH2h, lId, rId, pairWinner, r.mq, false, false, s.season, s.week, 'show', 'player', 'player');
         });
       } else {
-        exH2h = Engine.h2h.update(exH2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show');
+        exH2h = Engine.h2h.update(exH2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player');
       }
     });
     s = { ...s, h2h: exH2h };

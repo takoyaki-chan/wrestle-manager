@@ -2348,7 +2348,7 @@ Engine.h2h = {
     };
   },
   /** 試合結果からh2hを更新し、新しいh2hオブジェクトを返す */
-  update(h2h, leftId, rightId, winner, mq, isTitleMatch, isPPV, season, week, stage = 'show') {
+  update(h2h, leftId, rightId, winner, mq, isTitleMatch, isPPV, season, week, stage = 'show', leftOrg, rightOrg) {
     const a = Math.min(leftId, rightId), b = Math.max(leftId, rightId);
     const key = `${a}>${b}`;
     const newH2h = { ...(h2h || {}) };
@@ -2369,6 +2369,11 @@ Engine.h2h = {
     const histEntry = { s: season, w: week, st: stage, win: winSide, mq: mq || 0 };
     if (isTitleMatch) histEntry.t = 1;
     if (isPPV) histEntry.p = 1;
+    // 試合当時の所属団体キー（leftId/rightId のうち小さい側を oA、大きい側を oB に対応付け）
+    const orgForA = leftId === a ? leftOrg : rightOrg;
+    const orgForB = leftId === a ? rightOrg : leftOrg;
+    if (orgForA) histEntry.oA = orgForA;
+    if (orgForB) histEntry.oB = orgForB;
     const newHistory = [...(entry.history || []), histEntry];
     if (newHistory.length > 50) newHistory.shift();
     entry.history = newHistory;

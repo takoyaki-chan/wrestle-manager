@@ -5819,11 +5819,11 @@ const App = {
         for (const aId of teamAIds) {
           for (const bId of teamBIds) {
             const tagWinner = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
-            h2h = Engine.h2h.update(h2h, aId, bId, tagWinner, r.mq, false, false, s.season, s.week, 'show');
+            h2h = Engine.h2h.update(h2h, aId, bId, tagWinner, r.mq, false, false, s.season, s.week, 'show', 'player', 'player');
           }
         }
       } else {
-        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show');
+        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player');
       }
     });
     s = { ...s, h2h };
@@ -9020,7 +9020,7 @@ const App = {
     let warH2h = { ...(G.h2h || {}) };
     wp.results.forEach(r => {
       const winner = r.playerWon ? 'left' : 'right';
-      warH2h = Engine.h2h.update(warH2h, r.playerFighter.id, r.aiFighter.id, winner, r.mq, false, false, G.season, G.week, 'war');
+      warH2h = Engine.h2h.update(warH2h, r.playerFighter.id, r.aiFighter.id, winner, r.mq, false, false, G.season, G.week, 'war', 'player', ev.opponentOrgId);
     });
     G = { ...G, h2h: warH2h };
 
@@ -9417,11 +9417,21 @@ App.finalizePPV = function() {
   });
   s = { ...s, roster: ppvRoster };
 
-  // h2h記録: PPV
+  // h2h記録: PPV（合同興行のため各選手の所属を判定）
+  const _findOrgKey = (fid) => {
+    if ((s.roster || []).some(c => c.id === fid)) return 'player';
+    const aiOrgs = s.aiOrgs || {};
+    for (const k in aiOrgs) {
+      if ((aiOrgs[k].roster || []).some(c => c.id === fid)) return k;
+    }
+    return undefined;
+  };
   let ppvH2h = { ...(s.h2h || {}) };
   pp.results.forEach((r, idx) => {
     const match = pp.card[idx];
-    ppvH2h = Engine.h2h.update(ppvH2h, match.left.id, match.right.id, r.winner, r.mq, false, true, s.season, s.week, 'ppv');
+    const lOrg = _findOrgKey(match.left.id);
+    const rOrg = _findOrgKey(match.right.id);
+    ppvH2h = Engine.h2h.update(ppvH2h, match.left.id, match.right.id, r.winner, r.mq, false, true, s.season, s.week, 'ppv', lOrg, rOrg);
   });
   s = { ...s, h2h: ppvH2h };
 
