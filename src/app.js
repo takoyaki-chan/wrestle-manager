@@ -5688,6 +5688,29 @@ const App = {
     });
     s = { ...s, roster, matchupLog: [...(s.matchupLog || []), ...newMatchupEntries], tagExp };
 
+    // MVPレース v2: MQ85超試合の bigMatch 履歴記録（プレイヤー興行）
+    {
+      let bigMatchAdded = false;
+      validMatches.forEach((m, idx) => {
+        const r = results[idx];
+        if (!r || typeof r.mq !== 'number' || r.mq < 85) return;
+        const participants = m.matchType === 'tag'
+          ? [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2]
+          : [m.left, m.right];
+        participants.forEach(charId => {
+          if (charId == null) return;
+          roster = roster.map(c => {
+            if (c.id !== charId || c.isIntrusion) return c;
+            bigMatchAdded = true;
+            return Engine.career.addEvent(c, {
+              type: 'bigMatch', season: s.season, week: s.week, mq: r.mq
+            });
+          });
+        });
+      });
+      if (bigMatchAdded) s = { ...s, roster };
+    }
+
     // orgPop リバランス v1.1 §4: ドーム興行 domeMain キャリア記録
     // メインイベント枠(idx=0) or タイトルマッチに出場した選手を記録
     if (s.showVenue === 9) {
@@ -8148,6 +8171,8 @@ const App = {
     // Phase 4: E-02/E-03 大型イベントの関係値反映
     if (result.relationships) updates.relationships = result.relationships;
     if (result.relationshipCounters) updates.relationshipCounters = result.relationshipCounters;
+    // MVPレース v2: B3 辞退時の AI挑戦者への履歴追加など
+    if (result.aiOrgs) updates.aiOrgs = result.aiOrgs;
     if (result.events && result.events.length > 0) {
       updates.gameLog = [...(G.gameLog || []), ...result.events];
     }

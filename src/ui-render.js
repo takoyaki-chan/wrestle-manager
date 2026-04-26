@@ -5398,17 +5398,19 @@ function setNewspaperArchiveIdx(idx) {
 function renderNewspaper() {
   const el = document.getElementById('newspaperContent');
   if (!el) return;
-  if (![1,2,3].includes(_newspaperSubPage)) _newspaperSubPage = 1;
+  if (![1,2,3,4].includes(_newspaperSubPage)) _newspaperSubPage = 1;
 
   let html = `<div class="np-outer-tabs">
     <button class="np-tab${_newspaperSubPage === 1 ? ' active' : ''}" onclick="setNewspaperSubPage(1)">📰 1面 興行</button>
     <button class="np-tab${_newspaperSubPage === 2 ? ' active' : ''}" onclick="setNewspaperSubPage(2)">⚔ 2面 団体比較</button>
     <button class="np-tab${_newspaperSubPage === 3 ? ' active' : ''}" onclick="setNewspaperSubPage(3)">🔥 3面 因縁列伝</button>
+    <button class="np-tab${_newspaperSubPage === 4 ? ' active' : ''}" onclick="setNewspaperSubPage(4)">📊 4面 年間レース</button>
   </div>`;
 
   if (_newspaperSubPage === 1) html += _npRenderPage1();
   else if (_newspaperSubPage === 2) html += _npRenderPage2();
   else if (_newspaperSubPage === 3) html += _npRenderPage3();
+  else if (_newspaperSubPage === 4) html += _npRenderPage4();
 
   el.innerHTML = html;
 }
@@ -6411,6 +6413,238 @@ function _npRenderPage3() {
 
   html += `</div></div>`;
   return html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 4面: 年間レース (MVPレース v2 / mvp-race-page4-final.html 準拠)
+// ══════════════════════════════════════════════════════════════
+function _npRenderPage4() {
+  const seasonNum = G.season || 1, weekNum = G.week || 1;
+  let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum)}<div class="np-content">`;
+
+  const race = G.mvpRace;
+  if (!race || !race.rankings || race.rankings.length === 0) {
+    html += `<div class="np-sec-gold">📊 4面 ・ 年間レース</div>`;
+    html += `<div class="np-empty" style="padding:24px;text-align:center;color:#5b4b34;font-size:13px">📊 まだMVPレースのデータがない。週を進めると更新される。</div>`;
+    html += `</div></div>`;
+    return html;
+  }
+
+  html += `<div class="np-sec-gold">📊 4面 ・ 年間レース</div>`;
+  html += `<h2 class="np-page-headline">${_escapeHtml(race.pageHeadline || '')}</h2>`;
+  html += `<p class="np-page-lead">${_escapeHtml(race.pageLead || '')}</p>`;
+  html += `<div class="np-page-meta">第${weekNum}週時点 ・ 注目選手 TOP3 ・ 全団体合同</div>`;
+
+  // TOP3カード
+  html += `<div class="np-mvprace-list">`;
+  if (race.rankings[0]) html += _npMvpRaceRank1Card(race.rankings[0]);
+  if (race.rankings[1]) html += _npMvpRaceMinorCard(race.rankings[1], 2);
+  if (race.rankings[2]) html += _npMvpRaceMinorCard(race.rankings[2], 3);
+  html += `</div>`;
+
+  // 黒田寸評
+  if (race.kurodaComment) {
+    html += `<div class="np-kuroda">
+      <div class="np-kuroda-face">黒</div>
+      <div>
+        <div class="np-kuroda-text">${_escapeHtml(race.kurodaComment)}</div>
+        <div class="np-kuroda-byline">— 編集長 黒田 貫一郎</div>
+      </div>
+    </div>`;
+  }
+
+  // 4-10位
+  if (race.rankings.length > 3) {
+    html += `<div class="np-mvprace-divider">— 4 位 ・ 以 下 追 走 —</div>`;
+    for (let i = 3; i < race.rankings.length; i++) {
+      html += _npMvpRaceListRow(race.rankings[i]);
+    }
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+// ── 4面 補助: 矢印チップ ───────────────────────────
+function _npMvpRaceArrowText(arrow, delta) {
+  if (arrow === 'new') return 'NEW';
+  if (arrow === 'same') return '−';
+  if (arrow === 'up') return `▲ ${delta || 1}`;
+  if (arrow === 'down') return `▼ ${Math.abs(delta || 1)}`;
+  return '';
+}
+function _npMvpRaceArrow1ChipText(arrow, prevRank) {
+  if (arrow === 'new') return 'NEW';
+  if (arrow === 'same') return `前週 ${prevRank}位`;
+  if (arrow === 'up') return `前週 ${prevRank}位 から上昇`;
+  if (arrow === 'down') return `前週 ${prevRank}位 から下降`;
+  return '';
+}
+function _npMvpRaceMetaChips(entry) {
+  const m = entry.breakdown.meta;
+  const chips = [];
+  if (m.isCurrentChamp) chips.push(`<span class="np-mvprace-meta-chip champ">👑 現王者</span>`);
+  if (m.role === 'Ace') chips.push(`<span class="np-mvprace-meta-chip">エース</span>`);
+  else if (m.role === 'MidCarder' || m.role === 'Midcarder') chips.push(`<span class="np-mvprace-meta-chip">中堅</span>`);
+  else if (m.role === 'Heel') chips.push(`<span class="np-mvprace-meta-chip">ヒール</span>`);
+  else if (m.role === 'Veteran') chips.push(`<span class="np-mvprace-meta-chip">ベテラン</span>`);
+  else if (m.role === 'Rookie' || m.role === 'Young') chips.push(`<span class="np-mvprace-meta-chip">新人</span>`);
+  if (m.age > 0) chips.push(`<span class="np-mvprace-meta-chip">${m.age}歳</span>`);
+  return chips.join('');
+}
+function _npMvpRaceOrgEmblemBg(orgId) {
+  let path = '';
+  if (orgId === 'player') {
+    path = (typeof Engine !== 'undefined' && Engine.util && Engine.util.getPlayerOrgIconPath) ? Engine.util.getPlayerOrgIconPath(G) : '';
+  } else if (typeof Engine !== 'undefined' && Engine.util && Engine.util.getOrgIconPath) {
+    path = Engine.util.getOrgIconPath(G, orgId);
+  }
+  return path ? `background-image: url('${path}');` : '';
+}
+
+function _npMvpRaceRank1Card(entry) {
+  const isPlayer = entry.orgId === 'player';
+  const photoUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(entry.fighterId) : '';
+  const photoBg = photoUrl ? `background-image: url('${photoUrl}');` : '';
+  const embBg = _npMvpRaceOrgEmblemBg(entry.orgId);
+  const arrowChip = _npMvpRaceArrow1ChipText(entry.arrow, entry.prevRank);
+  const meta = _npMvpRaceMetaChips(entry);
+  const bd = entry.breakdown;
+  const m = bd.meta;
+  const titleDetail = m.titleWins > 0 || m.titleDefenses > 0 || m.isCurrentChamp
+    ? `奪取${m.titleWins}+防衛${m.titleDefenses}${m.isCurrentChamp ? '+保持' : ''}` : '王座なし';
+  const ppvDetail = m.ppvChampion > 0 ? `優勝${m.ppvChampion}回` : (m.ppvRunnerUp > 0 ? `準V${m.ppvRunnerUp}回` : (m.ppvParticipation > 0 ? `出場${m.ppvParticipation}回` : '未開催'));
+  const warDetail = (m.warWins + m.warLosses + m.warDraws) > 0
+    ? `${m.warWins}勝${m.warLosses}敗${m.warDraws}分` : '出場なし';
+  const domeDetail = m.domeAppearances > 0 ? `メイン${m.domeAppearances}回出場` : 'なし';
+  const titleZero = bd.title === 0 ? ' zero' : '';
+  const ppvZero = bd.ppv === 0 ? ' zero' : '';
+  const warZero = bd.war === 0 ? ' zero' : '';
+  const domeZero = bd.dome === 0 ? ' zero' : '';
+
+  return `<div class="np-mvprace-card np-mvprace-card-1${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId})">
+    <div class="np-mvprace-photo">
+      <div class="char-img-lg" style="${photoBg};width:100%;height:100%;background-size:cover;background-position:center top;background-repeat:no-repeat;background-color:#2a1a10"></div>
+      <div class="np-mvprace-rank-overlay"><span class="lbl">RANK</span>1</div>
+      <div class="np-mvprace-emb-overlay" style="${embBg}"></div>
+    </div>
+    <div class="np-mvprace-info">
+      <div class="np-mvprace-name-row">
+        <div class="np-mvprace-name">${_escapeHtml(entry.fighterName)}</div>
+        <span class="np-mvprace-arrow ${entry.arrow}">${_escapeHtml(arrowChip)}</span>
+      </div>
+      <div class="np-mvprace-meta">${meta}</div>
+      <div class="np-mvprace-stats">
+        <div class="np-mvprace-stat-box ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
+        <div class="np-mvprace-stat-box pts"><span class="lbl">POINTS</span><strong>${Math.round(entry.points)}<span class="unit">pt</span></strong></div>
+      </div>
+      ${entry.narrative ? `<div class="np-mvprace-narrative">${_escapeHtml(entry.narrative)}</div>` : ''}
+      <div class="np-mvprace-badges">
+        <div class="np-mvprace-badge${titleZero}">
+          <div class="icon-row">👑<span class="lbl">王者</span></div>
+          <div class="pts">+${bd.title}</div>
+          <div class="detail">${_escapeHtml(titleDetail)}</div>
+        </div>
+        <div class="np-mvprace-badge${domeZero}">
+          <div class="icon-row">🏟<span class="lbl">ドーム</span></div>
+          <div class="pts">+${bd.dome}</div>
+          <div class="detail">${_escapeHtml(domeDetail)}</div>
+        </div>
+        <div class="np-mvprace-badge${warZero}">
+          <div class="icon-row">⚔<span class="lbl">対抗戦</span></div>
+          <div class="pts">+${bd.war}</div>
+          <div class="detail">${_escapeHtml(warDetail)}</div>
+        </div>
+        <div class="np-mvprace-badge${ppvZero}">
+          <div class="icon-row">🏆<span class="lbl">PPV</span></div>
+          <div class="pts">+${bd.ppv}</div>
+          <div class="detail">${_escapeHtml(ppvDetail)}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function _npMvpRaceMinorCard(entry, rank) {
+  const isPlayer = entry.orgId === 'player';
+  const photoUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(entry.fighterId) : '';
+  const photoBg = photoUrl ? `background-image: url('${photoUrl}');` : '';
+  const embBg = _npMvpRaceOrgEmblemBg(entry.orgId);
+  const arrowText = _npMvpRaceArrowText(entry.arrow, entry.arrowDelta);
+  const m = entry.breakdown.meta;
+  const bd = entry.breakdown;
+  const role = (m.role === 'Ace') ? 'エース'
+    : (m.role === 'MidCarder' || m.role === 'Midcarder') ? '中堅'
+    : (m.role === 'Heel') ? 'ヒール'
+    : (m.role === 'Rookie' || m.role === 'Young') ? '新人'
+    : (m.role === 'Veteran') ? 'ベテラン' : '';
+
+  // ピル: 王者 / PPV / 対抗戦 / ドーム / 大試合 (上位4のみ表示)
+  const pillCandidates = [
+    { icon: '👑', label: '王者', val: bd.title },
+    { icon: '🏆', label: 'PPV', val: bd.ppv },
+    { icon: '⚔', label: '対抗戦', val: bd.war },
+    { icon: '🏟', label: 'ドーム', val: bd.dome },
+    { icon: '🥊', label: '大試合', val: bd.mq },
+  ];
+  pillCandidates.sort((a, b) => Math.abs(b.val) - Math.abs(a.val));
+  const pills = pillCandidates.slice(0, 4).map(p => {
+    const zero = p.val === 0 ? ' zero' : '';
+    const sign = p.val >= 0 ? '+' : '';
+    return `<span class="np-mvprace-minor-pill${zero}">${p.icon} ${p.label}<strong>${sign}${p.val}</strong></span>`;
+  }).join('');
+
+  return `<div class="np-mvprace-card np-mvprace-card-minor np-mvprace-rank-${rank}${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId})">
+    <div class="np-mvprace-photo-mini">
+      <div class="char-img-lg" style="${photoBg};width:100%;height:100%;background-size:cover;background-position:center top;background-repeat:no-repeat;background-color:#2a1a10"></div>
+      <div class="np-mvprace-rank-mini">${rank}</div>
+      <div class="np-mvprace-emb-mini" style="${embBg}"></div>
+    </div>
+    <div class="np-mvprace-minor-mid">
+      <div class="np-mvprace-minor-name-row">
+        <div class="np-mvprace-minor-name">${_escapeHtml(entry.fighterName)}</div>
+        ${arrowText ? `<span class="np-mvprace-minor-arrow ${entry.arrow}">${_escapeHtml(arrowText)}</span>` : ''}
+      </div>
+      <div class="np-mvprace-minor-meta">${_escapeHtml(entry.orgName)}${role ? `<span class="div">/</span><span>${role}</span>` : ''}${m.age ? `<span class="div">/</span><span>${m.age}歳</span>` : ''}</div>
+      ${entry.narrative ? `<div class="np-mvprace-minor-narrative">${_escapeHtml(entry.narrative)}</div>` : ''}
+      <div class="np-mvprace-minor-pills">${pills}</div>
+    </div>
+    <div class="np-mvprace-minor-num">
+      <div class="np-mvprace-minor-num-box ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
+      <div class="np-mvprace-minor-num-box pts"><span class="lbl">PT</span><strong>${Math.round(entry.points)}</strong></div>
+    </div>
+  </div>`;
+}
+
+function _npMvpRaceListRow(entry) {
+  const isPlayer = entry.orgId === 'player';
+  const thumbUrl = (typeof getPortraitUrl === 'function') ? getPortraitUrl(entry.fighterId) : '';
+  const thumbBg = thumbUrl ? `background-image: url('${thumbUrl}');` : '';
+  const embBg = _npMvpRaceOrgEmblemBg(entry.orgId);
+  const arrowText = _npMvpRaceArrowText(entry.arrow, entry.arrowDelta);
+  return `<div class="np-mvprace-list-row${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId})">
+    <div class="np-mvprace-list-rank">${entry.rank}</div>
+    <div class="np-mvprace-list-arrow ${entry.arrow}">${_escapeHtml(arrowText)}</div>
+    <div class="np-mvprace-list-thumb" style="${thumbBg}"></div>
+    <div class="np-mvprace-list-emb" style="${embBg}"></div>
+    <div class="np-mvprace-list-name">
+      <div class="name-line">
+        <strong>${_escapeHtml(entry.fighterName)}</strong>
+        <span class="org">${_escapeHtml(entry.orgName)}</span>
+      </div>
+      ${entry.tagline ? `<div class="np-mvprace-list-tagline">${_escapeHtml(entry.tagline)}</div>` : ''}
+    </div>
+    <div class="np-mvprace-list-ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
+    <div class="np-mvprace-list-pts">${Math.round(entry.points)}<span class="lbl">pt</span></div>
+  </div>`;
+}
+
+// ── HTMLエスケープ ───────────────────────────────────
+function _escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // ── 📰 新聞 1面 描画 (旧 _renderDbNewspaper を流用) ───────────

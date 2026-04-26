@@ -5919,6 +5919,13 @@ const Engine = {
               }
             }
 
+            // MVPレース v2: MQ85超試合の bigMatch 履歴
+            if (typeof result.mq === 'number' && result.mq >= 85) {
+              nc = Engine.career.addEvent(nc, {
+                type: 'bigMatch', season: state.season, week: state.week, mq: result.mq
+              });
+            }
+
             roster[fi] = nc;
           });
         }
@@ -6675,6 +6682,22 @@ const Engine = {
 
         // h2h 記録 (AI vs AI 対抗戦)
         s = { ...s, h2h: Engine.h2h.update(s.h2h, rep1.id, rep2.id, winner, matchResult.mq, false, false, s.season, s.week, 'war') };
+
+        // MVPレース v2: AI vs AI 対抗戦の war 履歴（won フィールド付き）
+        const rep1Won = winner === 'left' ? true : winner === 'right' ? false : null;
+        const rep2Won = winner === 'right' ? true : winner === 'left' ? false : null;
+        const _addWarEv = (od, fid, won, opponentOrg) => ({
+          ...od,
+          roster: od.roster.map(f => f.id === fid
+            ? Engine.career.addEvent(f, { type: 'war', season: s.season, week: s.week, opponentOrg, won })
+            : f)
+        });
+        if (newAiOrgs[orgId] && newAiOrgs[orgId].roster) {
+          newAiOrgs[orgId] = _addWarEv(newAiOrgs[orgId], rep1.id, rep1Won, oppOrg.name);
+        }
+        if (newAiOrgs[opponent.id] && newAiOrgs[opponent.id].roster) {
+          newAiOrgs[opponent.id] = _addWarEv(newAiOrgs[opponent.id], rep2.id, rep2Won, org.name);
+        }
 
         s = { ...s, aiOrgs: newAiOrgs };
         break; // 1週に1試合まで
@@ -10734,19 +10757,32 @@ const Engine = {
             rec.ppvMainEventWins = (rec.ppvMainEventWins || 0) + 1;
             return { ...f, careerRecord: rec };
           });
-          const winnerInPlayer = roster.find(f => f.id === winnerId2);
-          if (winnerInPlayer) {
-            roster = _updatePpvWins(roster, winnerId2);
-          } else {
-            const aiOrgs2 = { ...(s.aiOrgs || {}) };
-            Object.keys(aiOrgs2).forEach(orgId => {
-              const od = aiOrgs2[orgId];
-              if (od && od.roster && od.roster.some(f => f.id === winnerId2)) {
-                aiOrgs2[orgId] = { ...od, roster: _updatePpvWins(od.roster, winnerId2) };
-              }
-            });
-            s = { ...s, aiOrgs: aiOrgs2 };
-          }
+          // MVPレース v2: history へ ppvMainEvent イベント追加（勝者・敗者・サミット非参加者）
+          const _addPpvEvent = (fighters, fid, won, isSummit) => fighters.map(f => {
+            if (f.id !== fid) return f;
+            const cr = f.careerRecord || Engine.career.createRecord();
+            const ev = { type: 'ppvMainEvent', season: s.season, week: s.week, won, isSummit };
+            return { ...f, careerRecord: { ...cr, history: [...(cr.history || []), ev] } };
+          });
+          const _applyToFighter = (fid, fn) => {
+            const inPlayer = roster.find(f => f.id === fid);
+            if (inPlayer) {
+              roster = fn(roster);
+            } else {
+              const aiOrgs2 = { ...(s.aiOrgs || {}) };
+              Object.keys(aiOrgs2).forEach(orgId => {
+                const od = aiOrgs2[orgId];
+                if (od && od.roster && od.roster.some(f => f.id === fid)) {
+                  aiOrgs2[orgId] = { ...od, roster: fn(od.roster) };
+                }
+              });
+              s = { ...s, aiOrgs: aiOrgs2 };
+            }
+          };
+          // サミット勝者: ppvMainEventWins++ + history(won=true,isSummit=true)
+          _applyToFighter(winnerId2, (rs) => _addPpvEvent(_updatePpvWins(rs, winnerId2), winnerId2, true, true));
+          // サミット敗者: history(won=false,isSummit=true)
+          _applyToFighter(loserId2, (rs) => _addPpvEvent(rs, loserId2, false, true));
           // PPV賞金（国庫支出）
           const PPV_PRIZE = { champion: 2000, runnerUp: 1000, semiFinal: 500 };
           // サミット勝者・敗者
@@ -10776,6 +10812,17 @@ const Engine = {
           if (paidIds.size > 0) {
             events.push(`💰 PPV出場賞金 ¥${PPV_PRIZE.semiFinal}万 × ${paidIds.size}名`);
           }
+          // MVPレース v2: サミット非参加者にも history(won=false, isSummit=false) を記録（全団体）
+          const _participatedNonSummit = new Set();
+          card.forEach((m, idx) => {
+            if (m.isSummit) return;
+            [m.left, m.right].forEach(f => {
+              if (!summitParticipants.has(f.id)) _participatedNonSummit.add(f.id);
+            });
+          });
+          _participatedNonSummit.forEach(fid => {
+            _applyToFighter(fid, (rs) => _addPpvEvent(rs, fid, false, false));
+          });
         }
       }
 
@@ -11544,10 +11591,13 @@ const Engine = {
             s = { ...s, _pendingSeasonStartNotif: { preDecay, decay, nowPop } };
           }
         }
+        // MVPレース v2: オフシーズン明けの新シーズン開幕時、前年の最終ランキングは保持しつつ新シーズンで再集計
+        s = { ...s, mvpRace: Engine.mvpRace.recalcRanking(s) };
         return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
       }
 
-      s = { ...s, offWeek };
+      // MVPレース v2: オフシーズン中も毎週末再集計（引退選手がランキングに残るため）
+      s = { ...s, offWeek, mvpRace: Engine.mvpRace.recalcRanking({ ...s, offWeek }) };
       return { state: { ...s, weekPhase: 'offseason' }, events };
     }
 
@@ -11741,6 +11791,8 @@ const Engine = {
       }
     }
 
+    // MVPレース v2: 通常週確定の毎週末で再集計（早期リターン分岐では呼ばない）
+    s = { ...s, mvpRace: Engine.mvpRace.recalcRanking(s) };
     return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
   },
 
@@ -12383,6 +12435,354 @@ Engine.ending = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// MVPレース v2: 年度MVPを結果ベースのポイント争いとして可視化
+// 仕様: plans/mvp-race-and-page4-plan-v2.md
+// ─────────────────────────────────────────────────────────────────────────────
+Engine.mvpRace = {
+  // 🔧 ポイント設定（チューニング可能）
+  POINTS: {
+    PPV_CHAMPION: 42,
+    PPV_RUNNER_UP: 15,
+    PPV_PARTICIPATION: 10,
+    TITLE_WIN: 11,
+    TITLE_DEFENSE_PER: 13,
+    TITLE_HOLD_AT_END: 8,
+    DOME_MAIN_APPEARANCE: 4,
+    BIG_MATCH_PER: 5,
+    BIG_MATCH_THRESHOLD: 85,
+    SEASON_BEST_MQ_BASE: 70,
+    WAR_WIN: 16,
+    WAR_LOSS: -12,
+    B3_DECLINE: -4,
+    B3_REJECTED: 4,
+    ORG_RANK_1: 10,
+    ORG_RANK_2: 5,
+  },
+
+  /** orgId が S/A/B どのランキングか取得 */
+  _orgRankPoints(state, orgId) {
+    const rankings = state.rankings || [];
+    const r = rankings.find(x => x.orgId === orgId);
+    if (!r) return 0;
+    if (r.rank === 1) return Engine.mvpRace.POINTS.ORG_RANK_1;
+    if (r.rank === 2) return Engine.mvpRace.POINTS.ORG_RANK_2;
+    return 0;
+  },
+
+  /** 団体内シーズン最高MQ取得 */
+  _orgSeasonBestMQ(state, orgId) {
+    if (orgId === 'player') return (state.seasonStats && state.seasonStats.bestMQ) || 0;
+    const od = state.aiOrgs && state.aiOrgs[orgId];
+    return (od && od.seasonBestMQ) || 0;
+  },
+
+  /** 当該選手のシーズンポイントと内訳を返す */
+  calcSeasonPoints(fighter, orgId, season, state) {
+    const P = Engine.mvpRace.POINTS;
+    const cr = (fighter && fighter.careerRecord) || {};
+    const hist = cr.history || [];
+    const ovr = Engine.util.ov(fighter);
+
+    let ppvChampion = 0, ppvRunnerUp = 0, ppvParticipation = 0;
+    let titleWins = 0, titleDefenses = 0;
+    let domeAppearances = 0;
+    let bigMatches = 0;
+    let warWins = 0, warLosses = 0, warDraws = 0;
+    let b3Decline = 0, b3Rejected = 0;
+
+    hist.forEach(ev => {
+      if (!ev || ev.season !== season) return;
+      if (ev.type === 'ppvMainEvent') {
+        if (ev.isSummit && ev.won === true) ppvChampion++;
+        else if (ev.isSummit && ev.won === false) ppvRunnerUp++;
+        else if (!ev.isSummit) ppvParticipation++;
+      } else if (ev.type === 'titleWin') titleWins++;
+      else if (ev.type === 'titleDefense') titleDefenses++;
+      else if (ev.type === 'domeMain') domeAppearances++;
+      else if (ev.type === 'bigMatch') bigMatches++;
+      else if (ev.type === 'war' || ev.type === 'b3Challenge') {
+        if (ev.won === true) warWins++;
+        else if (ev.won === false) warLosses++;
+        else warDraws++;
+      } else if (ev.type === 'b3Decline') b3Decline++;
+      else if (ev.type === 'b3Rejected') b3Rejected++;
+    });
+
+    // 王座保持判定
+    let isCurrentChamp = false;
+    if (orgId === 'player' && state.titles && state.titles.world && state.titles.world.championId === fighter.id) {
+      isCurrentChamp = true;
+    } else if (orgId !== 'player' && state.aiOrgs && state.aiOrgs[orgId]) {
+      const ait = state.aiOrgs[orgId].titles;
+      if (ait && ait.world && ait.world.championId === fighter.id) isCurrentChamp = true;
+    }
+
+    // シーズン最高MQ補正（団体内）
+    const orgBest = Engine.mvpRace._orgSeasonBestMQ(state, orgId);
+    const personalBest = (fighter.careerBestMQ && fighter._lastBestMQSeason === season) ? fighter.careerBestMQ : 0;
+    // シンプルに: 団体最高MQから70未満を切り捨てた値。エースに偏るが「シーズン最高MQ補正」の趣旨に沿う
+    const bestMQ = orgBest;
+    const seasonBestMQBonus = bestMQ >= P.SEASON_BEST_MQ_BASE ? (bestMQ - P.SEASON_BEST_MQ_BASE) : 0;
+
+    const ppv = ppvChampion * P.PPV_CHAMPION + ppvRunnerUp * P.PPV_RUNNER_UP + ppvParticipation * P.PPV_PARTICIPATION;
+    const title = titleWins * P.TITLE_WIN + titleDefenses * P.TITLE_DEFENSE_PER + (isCurrentChamp ? P.TITLE_HOLD_AT_END : 0);
+    const dome = domeAppearances * P.DOME_MAIN_APPEARANCE;
+    const mq = bigMatches * P.BIG_MATCH_PER + seasonBestMQBonus;
+    const war = warWins * P.WAR_WIN + warLosses * P.WAR_LOSS;
+    const b3 = b3Decline * P.B3_DECLINE + b3Rejected * P.B3_REJECTED;
+    const orgRank = Engine.mvpRace._orgRankPoints(state, orgId);
+
+    const points = ovr + ppv + title + dome + mq + war + b3 + orgRank;
+
+    return {
+      points,
+      breakdown: {
+        ovr, ppv, title, dome, mq, war, b3, orgRank,
+        meta: {
+          titleWins, titleDefenses, isCurrentChamp,
+          ppvChampion, ppvRunnerUp, ppvParticipation,
+          bigMatches, bestMQ,
+          warWins, warLosses, warDraws,
+          domeAppearances,
+          orgRank: state.rankings ? ((state.rankings.find(x => x.orgId === orgId) || {}).rank || 99) : 99,
+          role: fighter.role || '',
+          age: fighter.age || 0,
+          b3Decline, b3Rejected,
+        }
+      }
+    };
+  },
+
+  /** 全団体合同 TOP10 を返す */
+  recalcRanking(state) {
+    const candidates = [];
+    const _push = (f, orgId) => {
+      if (!f || f.id == null) return;
+      if (f.isIntrusion || f.isRental) return;
+      const result = Engine.mvpRace.calcSeasonPoints(f, orgId, state.season, state);
+      candidates.push({
+        fighterId: f.id, fighterName: f.name,
+        portrait: f.portrait,
+        orgId, orgName: Engine.awards ? Engine.awards._orgName(state, orgId) : orgId,
+        ovr: Engine.util.ov(f),
+        points: result.points,
+        breakdown: result.breakdown,
+        role: f.role || '',
+        age: f.age || 0,
+      });
+    };
+
+    (state.roster || []).forEach(f => _push(f, 'player'));
+    if (state.aiOrgs) {
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        const od = state.aiOrgs[orgId];
+        if (od && od.roster) od.roster.forEach(f => _push(f, orgId));
+      });
+    }
+    // 当年シーズン引退選手
+    (state.retiredFighters || []).forEach(f => {
+      if (!f) return;
+      const retiredSeason = (state.retiredSeasons || {})[f.id];
+      if (retiredSeason !== state.season) return;
+      const orgId = f._orgIdAtRetire || 'player';
+      _push(f, orgId);
+    });
+
+    candidates.sort((a, b) => b.points - a.points);
+
+    // 前週順位の引き継ぎ
+    const prevRankMap = {};
+    const prev = state.mvpRace && state.mvpRace.rankings;
+    if (Array.isArray(prev)) {
+      prev.forEach(r => { prevRankMap[r.fighterId] = r.rank; });
+    }
+
+    const top10 = candidates.slice(0, 10).map((c, i) => {
+      const rank = i + 1;
+      const prevRank = prevRankMap[c.fighterId] || null;
+      return {
+        ...c,
+        rank,
+        prevRank,
+        arrow: prevRank == null ? 'new'
+             : prevRank > rank ? 'up'
+             : prevRank < rank ? 'down'
+             : 'same',
+        arrowDelta: prevRank == null ? null : prevRank - rank,
+      };
+    });
+
+    // ナラティブ／タグラインを付与
+    top10.forEach(entry => {
+      if (entry.rank <= 3) {
+        entry.narrative = Engine.mvpRace.generateNarrative(entry, state);
+      } else {
+        entry.tagline = Engine.mvpRace.generateTagline(entry, state);
+      }
+    });
+
+    return {
+      season: state.season,
+      week: state.week,
+      lastUpdated: { season: state.season, week: state.week, offSeason: !!state.offSeason, offWeek: state.offWeek || 0 },
+      rankings: top10,
+      pageHeadline: Engine.mvpRace.generatePageHeadline(top10, state),
+      pageLead: Engine.mvpRace.generatePageLead(top10, state),
+      kurodaComment: Engine.mvpRace.generateKurodaComment(top10, state),
+    };
+  },
+
+  // ── ナラティブ／タグライン／見出し／リード生成 ────────────────────
+  _seasonLabel(week) {
+    if (week <= 13) return '春';
+    if (week <= 26) return '夏';
+    if (week <= 39) return '秋';
+    return '冬';
+  },
+  _roleLabel(role) {
+    if (role === 'Ace') return 'エース';
+    if (role === 'MidCarder' || role === 'Midcarder') return '中堅';
+    if (role === 'Rookie' || role === 'Young') return '新人';
+    if (role === 'Heel') return 'ヒール';
+    if (role === 'Veteran') return 'ベテラン';
+    return role || '';
+  },
+  _topElements(meta) {
+    const elems = [];
+    if (meta.isCurrentChamp || meta.titleDefenses > 0) elems.push(`${meta.titleDefenses}度の防衛`);
+    if (meta.ppvChampion > 0) elems.push('PPV優勝');
+    if (meta.warWins >= 3) elems.push(`対抗戦${meta.warWins}勝`);
+    if (meta.bigMatches >= 2) elems.push(`MQ85超${meta.bigMatches}本`);
+    if (meta.domeAppearances >= 2) elems.push(`ドーム${meta.domeAppearances}戦`);
+    return elems;
+  },
+
+  generateNarrative(entry, state) {
+    const m = entry.breakdown.meta;
+    const seed = (state.rngSeed || 42) ^ (entry.fighterId * 31 + (state.season || 1) * 7919 + (state.week || 1));
+    const rng = Engine.rng.create(seed);
+    const pick = arr => arr[Engine.rng.int(rng, 0, arr.length - 1)];
+    const role = Engine.mvpRace._roleLabel(m.role);
+
+    if (m.isCurrentChamp && m.titleDefenses >= 3) {
+      return pick([
+        `王座を${m.titleDefenses}度防衛し続ける現役最強。${m.age}歳、円熟期のエースが団体の屋台骨を支えている。今期はまだ一度も首位を譲っていない、まさに王道の積み重ねだ。`,
+        `${m.titleDefenses}度の防衛を制した王者。${m.age}歳の貫禄が紙面に残り続けている。`,
+        `ベルトを背負い続けるのは並大抵のことではない。${m.titleDefenses}度の防衛——それは数字以上の重みを持つ。`,
+      ]);
+    }
+    if (m.ppvChampion >= 1) {
+      return pick([
+        `先週のPPV決勝で${Engine.mvpRace.POINTS.PPV_CHAMPION}pt一撃を獲得。${m.age}歳、上位を一気に飲み込む勢いがある。残りの戦いをどう描くか。`,
+        `PPVで頂点に立った勢いをそのまま年間レースに持ち込んだ。観客の記憶に残る一撃が、紙面の数字をひっくり返す。`,
+        `決勝のリングで掴んだ${Engine.mvpRace.POINTS.PPV_CHAMPION}pt。これが今期の物語を書き換える起点になるかもしれない。`,
+      ]);
+    }
+    if (m.warWins >= 4) {
+      return pick([
+        `対抗戦で${m.warWins}連勝の英雄。ベルトを持たずとも、勝ち星で示し続ける異端の${role || 'エース'}。`,
+        `${m.warWins}勝という数字が、何より雄弁にこの選手の今期を語っている。`,
+        `他団体相手に${m.warWins}勝。誰も止められないと言われ始めている。`,
+      ]);
+    }
+    if (m.bigMatches >= 3) {
+      return pick([
+        `MQ85超を${m.bigMatches}本量産する職人型。観客の心を最も動かす一人。${m.domeAppearances > 0 ? `ドーム${m.domeAppearances}戦も含め、` : ''}紙面から名前が消えない。`,
+        `${m.bigMatches}本の大試合を生み出した名勝負製造機。点数より、観客の記憶のほうが先に語っている。`,
+      ]);
+    }
+    if ((entry.breakdown.meta.age || 25) <= 22 && entry.rank <= 3) {
+      return pick([
+        `若くしてTOP${entry.rank}入り。${m.age}歳、台頭の年。${(Engine.mvpRace._topElements(m)[0] || '主要要素') + 'で点を稼いでいる'}。`,
+        `${m.age}歳での上位入り。新時代の予兆を、紙面に刻みつつある。`,
+      ]);
+    }
+    const topElems = Engine.mvpRace._topElements(m);
+    const elemText = topElems.length > 0 ? topElems.slice(0, 2).join('・') : 'OVRとシーズンの積み重ね';
+    return pick([
+      `${elemText}で${entry.points}pt。${role || '中軸'}としてシーズンを戦い続けている。`,
+      `${elemText}を武器に上位戦線へ。${m.age}歳、まだ伸びしろは残されている。`,
+    ]);
+  },
+
+  generateTagline(entry, state) {
+    const m = entry.breakdown.meta;
+    const seed = (state.rngSeed || 42) ^ (entry.fighterId * 17 + (state.season || 1) * 31 + (state.week || 1) * 13);
+    const rng = Engine.rng.create(seed);
+    const pick = arr => arr[Engine.rng.int(rng, 0, arr.length - 1)];
+
+    if (m.isCurrentChamp && m.titleDefenses >= 2) {
+      return pick([
+        `王座防衛${m.titleDefenses}回。団体の屋台骨。`,
+        `${m.titleDefenses}度の防衛で安定感。${m.age}歳の貫禄。`,
+      ]);
+    }
+    if (m.titleWins >= 1) {
+      return pick([
+        `今期王座奪取。${m.age}歳、若き王。`,
+        `王座戴冠で一気に上位入り。`,
+      ]);
+    }
+    if (m.ppvChampion >= 1) return `PPV優勝で+${Engine.mvpRace.POINTS.PPV_CHAMPION}pt獲得。次戦で更なる飛躍を。`;
+    if (m.ppvRunnerUp >= 1) return `PPV準優勝で+${Engine.mvpRace.POINTS.PPV_RUNNER_UP}pt獲得。決勝の悔しさを次に繋げられるか。`;
+    if (m.warWins >= 4) return `対抗戦${m.warWins}連勝の英雄。勢いはまだ落ちない。`;
+    if (m.warWins >= 2) return `対抗戦${m.warWins}勝。チームを引っ張る勝ち星。`;
+    if (m.bigMatches >= 3) return `MQ85超を${m.bigMatches}本量産する職人型。`;
+    if (m.bigMatches >= 1) return `大試合を${m.bigMatches}本作った職人気質。`;
+    if ((m.age || 25) <= 22 && entry.rank <= 8) return `${m.age}歳でTOP${entry.rank}入り。台頭の年。`;
+    if (entry.arrow === 'down' && entry.arrowDelta && entry.arrowDelta <= -2) return `序盤の勢いから失速。${Engine.mvpRace._roleLabel(m.role) || '中堅'}がどこで踏み止まるか。`;
+    if (entry.arrow === 'up' && entry.arrowDelta && entry.arrowDelta >= 3) return `後半戦で急上昇。連勝が続けばさらに上も視野に。`;
+    if (entry.arrow === 'new') return `初のTOP10入り。台頭の予兆。`;
+    return `${Engine.mvpRace._roleLabel(m.role) || '中堅'}として確実な積み重ね。${entry.points}pt。`;
+  },
+
+  generatePageHeadline(rankings, state) {
+    if (!rankings || rankings.length === 0) return '年間レース ── 集計待ち';
+    const r1 = rankings[0];
+    const r2 = rankings[1];
+    const r3 = rankings[2];
+    const season = Engine.mvpRace._seasonLabel(state.week || 1);
+    const gap12 = r2 ? (r1.points - r2.points) : 999;
+    const gap13 = r3 ? (r1.points - r3.points) : 999;
+    if (r2 && r3 && gap13 <= 15) {
+      return `TOP3が大接戦 ―― ${r1.fighterName}・${r2.fighterName}・${r3.fighterName}が拮抗`;
+    }
+    if (gap12 >= 30) {
+      return `${r1.fighterName}、独走の${season} ―― 追走者は遠く`;
+    }
+    return `${r1.fighterName}、独走の${season} ―― だが追走者の足音が近づいている`;
+  },
+
+  generatePageLead(rankings, state) {
+    if (!rankings || rankings.length === 0) return 'まだMVPレースのデータが揃っていない。週を進めると更新される。';
+    const r1 = rankings[0];
+    const r2 = rankings[1];
+    const r3 = rankings[2];
+    const week = state.week || 1;
+    const remaining = Math.max(0, 48 - week);
+    const elem1 = (Engine.mvpRace._topElements(r1.breakdown.meta)[0] || 'OVRとシーズンの積み重ね');
+    const gap12 = r2 ? (r1.points - r2.points) : 0;
+    const elem2 = r2 ? (Engine.mvpRace._topElements(r2.breakdown.meta)[0] || '安定した戦績') : '';
+    const gap23 = (r2 && r3) ? (r2.points - r3.points) : 0;
+    const elem3 = r3 ? (Engine.mvpRace._topElements(r3.breakdown.meta)[0] || '虎視眈々と') : '';
+    const events = (week < 24) ? 'PPV予選、対抗戦、ドーム興行' : (week < 40) ? '対抗戦、ドーム興行、年末の頂上決戦' : '年末の頂上決戦';
+
+    let text = `第${week}週時点、首位を走る${r1.fighterName}は${elem1}で${r1.points}pt。`;
+    if (r2) text += `そのわずか${gap12}pt後ろにつけるのが、${elem2}の${r2.fighterName}。`;
+    if (r3) text += `さらに${gap23}pt差で${elem3}の${r3.fighterName}が虎視眈々と上位を狙う。`;
+    text += `残り${remaining}週、${events} —— このレースの主人公として年末を迎えるのは、果たして誰になるのか。`;
+    return text;
+  },
+
+  generateKurodaComment(rankings, state) {
+    if (!rankings || rankings.length === 0) return '';
+    const r1 = rankings[0];
+    const remaining = Math.max(0, 48 - (state.week || 1));
+    return `この三人がレースを引っ張っている。あと${remaining}週、誰が抜き、誰が抜かれるか。次のPPVが終われば、トップは入れ替わっているかもしれない。`;
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // v1.4: Awards System (年末表彰式) — ppv-awards-spec.md Part2
 // ─────────────────────────────────────────────────────────────────────────────
 Engine.awards = {
@@ -12517,8 +12917,53 @@ Engine.awards = {
     return candidates[0];
   },
 
-  /** ③ MVP: 各団体トップ5名 → 実績ベーススコア（ランダムなし） */
+  /** ③ MVP: 年度MVP = MVPレース最終週の1位（v2: 結果ベース・確定済み） */
   selectMVP(rng, state) {
+    const ov = Engine.util.ov;
+    const race = (state.mvpRace && Array.isArray(state.mvpRace.rankings))
+      ? state.mvpRace
+      : Engine.mvpRace.recalcRanking(state);
+    if (!race.rankings || race.rankings.length === 0) return null;
+    const winner = race.rankings[0];
+
+    let wf = null;
+    if (winner.orgId === 'player') {
+      wf = (state.roster || []).find(f => f.id === winner.fighterId);
+    } else if (state.aiOrgs && state.aiOrgs[winner.orgId]) {
+      wf = state.aiOrgs[winner.orgId].roster.find(f => f.id === winner.fighterId);
+    }
+    if (!wf) {
+      wf = (state.retiredFighters || []).find(f => f.id === winner.fighterId);
+    }
+    if (!wf) return null;
+
+    const wins = wf.wins || 0, losses = wf.losses || 0, draws = wf.draws || 0;
+    const totalMatches = wins + losses + draws;
+    const winRate = totalMatches > 0 ? Math.round(wins / totalMatches * 100) : 0;
+
+    let defenses = 0;
+    if (winner.orgId === 'player' && state.titles && state.titles.world && state.titles.world.championId === wf.id) {
+      defenses = state.titles.world.defenses || 0;
+    } else if (winner.orgId !== 'player' && state.aiOrgs && state.aiOrgs[winner.orgId]) {
+      const aiTitles = state.aiOrgs[winner.orgId].titles;
+      if (aiTitles && aiTitles.world && aiTitles.world.championId === wf.id) defenses = aiTitles.world.defenses || 0;
+    }
+
+    return {
+      id: wf.id, name: wf.name, portrait: wf.portrait,
+      orgName: winner.orgName, ovr: ov(wf), popularity: wf.popularity,
+      age: wf.age, style: wf.style || 'Allround',
+      isPlayerOrg: winner.orgId === 'player',
+      winRate, defenses, wins, losses, draws,
+      isChampion: (winner.breakdown && winner.breakdown.meta && winner.breakdown.meta.isCurrentChamp) || false,
+      mvpScore: Math.round(winner.points * 10) / 10,
+      mvpPoints: winner.points,
+      mvpBreakdown: winner.breakdown,
+    };
+  },
+
+  /** （旧）OVR/人気支配的なスコアリング — 互換のため残置（未使用） */
+  _legacySelectMVP(rng, state) {
     const ov = Engine.util.ov;
     const rankings = state.rankings || [];
     const getRank = orgId => { const r = rankings.find(x => x.orgId === orgId); return r ? (r.rank || 99) : 99; };
@@ -15795,7 +16240,35 @@ Engine.eventSystem = {
             // Phase0修正: 辞退ペナルティ追加 orgPop -1（逓減適用）
             const declineOrgPopDelta = Engine.orgPop.applyOrgPopChange(-1, state.orgPop, null);
             events.push(`🚫 ${event.orgName || '他団体'}からの挑戦状を断った（団体人気${Math.round(declineOrgPopDelta * 10) / 10}）`);
-            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta: declineOrgPopDelta };
+            // MVPレース v2: 自団体OVRトップ3に b3Decline 履歴
+            const ov = Engine.util.ov;
+            const top3Ids = roster.slice().sort((a, b) => ov(b) - ov(a)).slice(0, 3).map(f => f.id);
+            roster = roster.map(f => {
+              if (!top3Ids.includes(f.id)) return f;
+              return Engine.career.addEvent(f, {
+                type: 'b3Decline', season: state.season, week: state.week,
+                orgName: event.orgName || '他団体'
+              });
+            });
+            // MVPレース v2: AI挑戦者に b3Rejected 履歴
+            const challengerOrgId2 = event.orgId;
+            const challengerId2 = event.challenger?.id;
+            let aiOrgsRet = null;
+            if (challengerId2 && challengerOrgId2 && state.aiOrgs?.[challengerOrgId2]?.roster) {
+              const aiOrgsUpdated = { ...state.aiOrgs };
+              aiOrgsUpdated[challengerOrgId2] = {
+                ...aiOrgsUpdated[challengerOrgId2],
+                roster: aiOrgsUpdated[challengerOrgId2].roster.map(f => {
+                  if (f.id !== challengerId2) return f;
+                  return Engine.career.addEvent(f, {
+                    type: 'b3Rejected', season: state.season, week: state.week,
+                    rejectedByOrg: 'player'
+                  });
+                })
+              };
+              aiOrgsRet = aiOrgsUpdated;
+            }
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta: declineOrgPopDelta, ...(aiOrgsRet ? { aiOrgs: aiOrgsRet } : {}) };
           }
         }
         if (step === 1) {
@@ -15824,6 +16297,40 @@ Engine.eventSystem = {
             orgPopDelta = Engine.orgPop.applyOrgPopChange(1, state.orgPop, rng);
             applyTrust(fighterId, 2);
             events.push(`🤼 挑戦状は引き分け。互角の戦いを見せた（人気+${Math.round(orgPopDelta * 10) / 10}）`);
+          }
+          // MVPレース v2: 代表選手に b3Challenge 履歴
+          {
+            const playerWon = result.winner === 'left' ? true
+                            : result.winner === 'right' ? false : null;
+            roster = roster.map(f => {
+              if (f.id !== fighterId) return f;
+              return Engine.career.addEvent(f, {
+                type: 'b3Challenge', season: state.season, week: state.week,
+                won: playerWon, opponentOrgName: orgName
+              });
+            });
+          }
+          // MVPレース v2: AI挑戦者にも b3Challenge 履歴
+          let aiOrgsRet = null;
+          {
+            const aiChallengerId = event.challenger?.id;
+            const aiOrgId = event.orgId;
+            if (aiChallengerId && aiOrgId && state.aiOrgs?.[aiOrgId]?.roster) {
+              const aiWon = result.winner === 'right' ? true
+                          : result.winner === 'left' ? false : null;
+              const aiOrgsUpdated = { ...state.aiOrgs };
+              aiOrgsUpdated[aiOrgId] = {
+                ...aiOrgsUpdated[aiOrgId],
+                roster: aiOrgsUpdated[aiOrgId].roster.map(f => {
+                  if (f.id !== aiChallengerId) return f;
+                  return Engine.career.addEvent(f, {
+                    type: 'b3Challenge', season: state.season, week: state.week,
+                    won: aiWon, opponentOrgName: 'プレイヤー団体'
+                  });
+                })
+              };
+              aiOrgsRet = aiOrgsUpdated;
+            }
           }
           // Phase 4 E-03: 挑戦状の関係値反映
           let relationships = null;
@@ -15872,7 +16379,7 @@ Engine.eventSystem = {
             relationships = relState.relationships;
             relationshipCounters = relState.relationshipCounters;
           }
-          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta, relationships, ...(relationshipCounters ? { relationshipCounters } : {}) };
+          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta, relationships, ...(relationshipCounters ? { relationshipCounters } : {}), ...(aiOrgsRet ? { aiOrgs: aiOrgsRet } : {}) };
         }
         return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
       }
