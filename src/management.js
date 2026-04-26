@@ -6669,13 +6669,16 @@ const Engine = {
         const newsData = { ...newAiOrgs[newsOrgId] };
         if (!newsData._newsAIWarResult) newsData._newsAIWarResult = [];
         const winnerName = winner === 'left' ? rep1.name : winner === 'right' ? rep2.name : null;
+        const winnerId = winner === 'left' ? rep1.id : winner === 'right' ? rep2.id : null;
+        const loserId = winner === 'left' ? rep2.id : winner === 'right' ? rep1.id : null;
         newsData._newsAIWarResult.push({
           challengerOrg: org.name, defenderOrg: oppOrg.name,
           challengerName: rep1.name, defenderName: rep2.name,
           challengerId: rep1.id, defenderId: rep2.id,
           winnerOrg: winnerOrgId ? (RIVAL_ORGS.find(o => o.id === winnerOrgId)?.name || '') : null,
           loserOrg: loserOrgId ? (RIVAL_ORGS.find(o => o.id === loserOrgId)?.name || '') : null,
-          winnerName,
+          winnerOrgId, loserOrgId,
+          winnerName, winnerId, loserId,
           mq: matchResult.mq, isDraw,
         });
         newAiOrgs[newsOrgId] = newsData;
@@ -18587,6 +18590,7 @@ Engine.newspaper = {
             headline: `${ev.orgName}定期興行——${ev.winnerName}が${ev.loserName}を下す`,
             body: `${ev.orgName}の興行で${ev.winnerName}が${ev.loserName}に勝利。MQ ${ev.mq}を記録した。`,
             characterId: ev.winnerId,
+            _loserId: ev.loserId,
           });
         }
 
@@ -18666,6 +18670,8 @@ Engine.newspaper = {
                 priority: finalPriority,
                 headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦は痛み分け`,
                 body: `${ev.challengerName}と${ev.defenderName}の代表対決は引き分けに終わった。MQ${ev.mq}。${mqTone}`,
+                // 引き分けは挑戦側代表の顔写真を使う
+                characterId: ev.challengerId || null,
               });
             } else {
               stories.push({
@@ -18673,6 +18679,10 @@ Engine.newspaper = {
                 priority: finalPriority,
                 headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦——${ev.winnerOrg}の${ev.winnerName}が勝利`,
                 body: `${ev.challengerOrg}と${ev.defenderOrg}の対抗戦で、${ev.winnerOrg}の${ev.winnerName}が勝利を収めた。MQ${ev.mq}。${mqTone}`,
+                characterId: ev.winnerId || null,
+                // 後段の重複抑止用: この週この団体で対抗戦に出場した選手ID
+                _warOrgIds: [ev.winnerOrgId, ev.loserOrgId].filter(Boolean),
+                _warFighterIds: [ev.winnerId, ev.loserId].filter(Boolean),
               });
             }
           });
@@ -18694,12 +18704,33 @@ Engine.newspaper = {
       });
     }
 
+    // 同一週・同一選手で「対抗戦勝利」と「定期興行で敗北」のような矛盾ニュースが
+    // 同居するのを抑止する。対抗戦記事に出ている選手IDを集めておき、
+    // aiShowHighlight でその選手が勝者/敗者にいる場合はその highlight を除外する。
+    const warFighterIds = new Set();
+    stories.forEach(s => {
+      if (s.type === 'aiWarResult' && Array.isArray(s._warFighterIds)) {
+        s._warFighterIds.forEach(id => warFighterIds.add(id));
+      }
+    });
+    const filteredStories = stories.filter(s => {
+      if (s.type !== 'aiShowHighlight') return true;
+      // ev に winnerId / loserId が無い旧形式は素通し
+      const wId = s.characterId;
+      const lId = s._loserId; // 下で付与
+      if (wId != null && warFighterIds.has(wId)) return false;
+      if (lId != null && warFighterIds.has(lId)) return false;
+      return true;
+    });
+    // 内部フィールドを掃除
+    filteredStories.forEach(s => { delete s._warFighterIds; delete s._warOrgIds; delete s._loserId; });
+
     // priority でソート
-    stories.sort((a, b) => b.priority - a.priority);
+    filteredStories.sort((a, b) => b.priority - a.priority);
 
     // 一面 + サブ記事（最大3件）
-    const topStory = stories[0] || null;
-    const subStories = stories.slice(1, 4);
+    const topStory = filteredStories[0] || null;
+    const subStories = filteredStories.slice(1, 4);
 
     // 次回展望
     const preview = Engine.newspaper.buildPreview(state);
