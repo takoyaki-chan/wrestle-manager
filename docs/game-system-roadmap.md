@@ -1,6 +1,6 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-04-27（経歴年表 Phase E — 退団・再契約経緯の記録 / Phase A〜E 全完了）
+> 最終更新: 2026-04-27（今週画面ロスターテーブル リデザイン v1.0）
 > セッション履歴: `docs/archive/session-history.md`
 > 完了済みタスク: `docs/archive/completed-tasks.md`
 > 設計決定ログ: `docs/design-decisions.md`
@@ -8,6 +8,8 @@
 ---
 
 ## 現在の状態
+
+**今週画面ロスターテーブル リデザイン v1.0（2026-04-27）。** 今週画面 (`weekPhase==='manage'`) のロスターテーブル本体を `docs/handoff-week-roster-redesign.md` / `docs/mockup-week-roster.html` に従って刷新。①顔アイコン40px(角丸正方形, クリックで `showFighterPopup` 起動)を名前左に追加。②名前を点線下線のクリッカブルテキスト化(`showFighterPopup(id,'roster')`)。③人気列を新規追加(`Engine.util.dispPop` × `_popColor` の色階調、ソート対応)。④OVRを大型26pxフォント+CSS変数 `--v-mythic`〜`--v-poor` の色階調+ティアラベル(SS/S+/S/A/B/C/D/E、`OVR_TIER_THRESHOLDS` 準拠)に強化。⑤カラム順を【☑/名前/総合/人気/状態/体調/スケジュール/⚡/今週の行動/埋め】の10列構成に変更、名前列210px固定+末尾auto埋めセルで右側に余白を確保。⑥スケジュール`<select>`を列幅130pxに合わせて font-size 13px / padding 6px 10px / width 100% に縮小。⑦テーブルクラスを `.data-table` → 新規 `.week-roster-table` として独立、レンタル区切り行 colspan 8→10。スコープ厳守: ダッシュボード(シーズン進捗/ランキング/月次収支/ニュースティッカー/Heat/コーチ数)、興行準備へボタン、おまかせボタン、一括操作パネル(練習優先/プロモ優先/バランス/休養重視/⚡全ON/⚡全OFF)は一切変更なし。Engine 側変更なし(純粋UI)。新ヘルパー `_wrOvrTier(v)` を `src/ui-render.js` に追加、既存 `_imgOrInitial`/`getPortraitUrl`/`_popColor`/`Engine.util.dispPop` を再利用。auto-sim 不要(UIのみ)。変更: src/index.html(`.week-roster-table` 一式 約30行追加)+src/ui-render.js(`_wrOvrTier` 追加+`_renderWeekRow` レンタル/通常分岐の `<tr>` HTML 差し替え+ヘッダー10列化+colspan 10)+docs/game-system-roadmap.md(本項)。
 
 **経歴年表 Phase E — 退団・再契約経緯の記録 / 経歴年表 Phase A〜E 全完了（2026-04-27）。** 「解雇されたのか、契約満了で去ったのか、突然消えたのか、引き抜きで他団体へ行ったのか、レンタルで来てまた帰ったのか、引退を撤回して戻ってきたのか」が年表に時系列で読める形に。①新 history.type を 6種追加: `release`(解雇)/`contractEnd`(契約満了退団)/`suddenDeparture`(突然退団)/`retireRetracted`(引退撤回)/`rentalIn`(レンタル加入)/`rentalOut`(レンタル帰団)。②発火点: `App.releaseFighter` / `App.doRetainFighter` / `Engine.contract.processDeparture(rng, fighter, state, cause='sudden'|'contractEnd')` / `processAIWeek` 内の trust 経由突然退団 / `Engine.rental.requestRental` / `Engine.rental.processWeeklyRental`。③`processDeparture` を全経路(starClaim/rival/freeAgent/dormant)で `fighterWithHist` を引き渡すよう修正し、history が確実に新所属先まで運ばれるよう統一。④`Engine.milestone.get` switch に 6 case + transfer の via 別「引き抜きで加入/強制引き抜きで加入/交渉成立で加入」日本語化。⑤`_typeStyle` に 6 種のアイコン/カラー追加(🚪解雇/📄契約満了/💨突然退団/↩️引退撤回/🤝レンタル加入/↩レンタル帰団)。⑥`specs/career-history-spec-v1.0.md` 新規作成 — 全 type カタログ + 表示ルール + Phase A〜E 履歴を記載、ファイル索引にも追記(全37ファイルに増)。検証: 10 イベント注入で全パターン日本語表示、auto-sim 100シーズン(seed 7919) ALL CLEAR (violations:0, errors:0, weeks:5300)。Phase A〜E 全完了。変更: src/management.js(processDeparture/レンタル/milestone/typeStyle)+src/app.js(releaseFighter/doRetainFighter)+specs/career-history-spec-v1.0.md(新規)+CLAUDE.md(specs索引)+docs/game-system-roadmap.md(本項)。
 

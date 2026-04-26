@@ -7862,6 +7862,37 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   .np-rivalry-stand { height: 240px; }
 }
 
+/* ════════ 今週画面ロスターテーブル v1.0 ════════ */
+.week-roster-table{width:100%;border-collapse:collapse;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;table-layout:fixed}
+.week-roster-table th{background:var(--bg-main);font-size:11px;font-weight:600;color:var(--text-sub);padding:10px 8px;text-align:left;border-bottom:1px solid var(--border);letter-spacing:.5px}
+.week-roster-table th.num,.week-roster-table th.center{text-align:center}
+.week-roster-table td{padding:10px 8px;border-bottom:1px solid rgba(200,190,170,0.04);vertical-align:middle}
+.week-roster-table tr:last-child td{border-bottom:none}
+.week-roster-table tr:hover td{background:rgba(255,255,255,0.015)}
+
+/* 顔アイコン(40px 角丸正方形) */
+.wr-face{width:40px;height:40px;border-radius:8px;border:1.5px solid rgba(212,168,67,0.25);object-fit:cover;background:#1a1814;flex-shrink:0;cursor:pointer;transition:border-color .15s}
+.wr-face:hover{border-color:var(--gold)}
+.wr-face-init{display:flex;align-items:center;justify-content:center;font-weight:900;border-radius:8px;border:1.5px solid rgba(212,168,67,0.25);flex-shrink:0;cursor:pointer}
+
+/* 名前セル */
+.wr-name-cell{display:flex;align-items:center;gap:10px;min-width:0}
+.wr-name-link{font-weight:600;color:var(--text-main);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:rgba(232,230,224,0.3);text-underline-offset:2px;font-size:14px}
+.wr-name-link:hover{color:var(--gold);text-decoration-color:var(--gold)}
+.wr-crown{color:var(--gold);font-size:12px;margin-left:4px;text-shadow:0 0 4px rgba(212,168,67,0.5)}
+
+/* OVR(大型数字+ティアラベル) */
+.wr-ovr-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
+.wr-ovr-num{font-family:var(--font-display);font-size:26px;line-height:1;letter-spacing:.5px;text-align:center}
+.wr-ovr-tier{font-family:var(--font-label);font-size:9px;letter-spacing:1.5px;color:var(--text-dim)}
+
+/* 人気(数値のみ・色階調) */
+.wr-pop-num{font-family:var(--font-display);font-size:18px;line-height:1;text-align:center;display:block}
+
+/* 体調バー(既存 .cond-bar/.cond-fill を再利用、ラッパのみ追加) */
+.wr-cond-wrap{display:flex;align-items:center;gap:8px;min-width:90px}
+.wr-cond-num{font-family:var(--font-display);font-size:14px;line-height:1;color:var(--text-main);min-width:22px;text-align:right}
+
 </style>
 </head>
 <body>

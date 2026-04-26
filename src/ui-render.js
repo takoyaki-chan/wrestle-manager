@@ -79,6 +79,17 @@ function _getWeekSortValue(c, key) {
     default: return 0;
   }
 }
+// 今週画面ロスター用: OVR ティア決定 (data.js OVR_TIER_THRESHOLDS に準拠)
+function _wrOvrTier(v) {
+  if (v >= OVR_TIER_THRESHOLDS.mythic)   return { cls: 'mythic',    label: 'SS' };
+  if (v >= OVR_TIER_THRESHOLDS.eliteMid) return { cls: 'elite-mid', label: 'S+' };
+  if (v >= OVR_TIER_THRESHOLDS.elite)    return { cls: 'elite',     label: 'S'  };
+  if (v >= OVR_TIER_THRESHOLDS.eliteLow) return { cls: 'elite-low', label: 'A'  };
+  if (v >= OVR_TIER_THRESHOLDS.high)     return { cls: 'high',      label: 'B'  };
+  if (v >= OVR_TIER_THRESHOLDS.mid)      return { cls: 'mid',       label: 'C'  };
+  if (v >= OVR_TIER_THRESHOLDS.low)      return { cls: 'low',       label: 'D'  };
+  return                                        { cls: 'poor',      label: 'E'  };
+}
 function toggleWeekCheckAll(checked) {
   document.querySelectorAll('.week-check:not(:disabled)').forEach(cb => { cb.checked = checked; });
 }
@@ -935,15 +946,39 @@ function renderWeekScreen() {
         const rentalContract = (G.rentals || []).find(r => r.fighterId === c.id);
         const rentalWL = rentalContract ? rentalContract.weeksLeft : '?';
         const rentalAction = c.injury ? '療養' : c.condition < 60 ? '🔄休養' : '練習';
-        html += `<tr${c.injury ? ' style="opacity:0.65"' : ''} style="opacity:0.85">
+        const tier = _wrOvrTier(ov(c));
+        const popVal = Engine.util.dispPop(c.popularity);
+        const popCol = _popColor(popVal).color;
+        const faceUrl = getPortraitUrl(c.id);
+        html += `<tr style="opacity:0.85${c.injury ? ';opacity:0.65' : ''}">
           <td><input type="checkbox" class="week-check" data-id="${c.id}" disabled></td>
-          <td><strong>${c.name}</strong>${wkChampBadge} <span style="font-size:10px;color:#f39c12">🤝残${rentalWL}週</span></td>
-          <td class="num">${ov(c)}</td>
-          <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
+          <td>
+            <div class="wr-name-cell">
+              ${_imgOrInitial(faceUrl, c.id, 40, 'border-radius:8px;')}
+              <span>
+                <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}
+                <span style="font-size:10px;color:#f39c12;margin-left:4px">🤝残${rentalWL}週</span>
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="wr-ovr-wrap">
+              <span class="wr-ovr-num v-${tier.cls}">${ov(c)}</span>
+              <span class="wr-ovr-tier">${tier.label}</span>
+            </div>
+          </td>
+          <td><span class="wr-pop-num" style="color:${popCol}">${popVal}</span></td>
           <td>${statusHtml}</td>
+          <td>
+            <div class="wr-cond-wrap">
+              <div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div>
+              <span class="wr-cond-num">${condPct}</span>
+            </div>
+          </td>
           <td><span style="font-size:12px;color:var(--text-dim)" title="レンタル選手は自律行動します">🤝自律</span></td>
           <td><span style="font-size:12px;color:var(--text-dim)">--</span></td>
           <td><span class="sched-tag practice">${rentalAction}</span></td>
+          <td></td>
         </tr>`;
         return;
       }
@@ -974,22 +1009,45 @@ function renderWeekScreen() {
       }
       const previewLabel = actionLabels[previewAction] || previewAction;
       const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="成長バフ ×${c._trainerBuff.mult} 残${c._trainerBuff.weeksLeft}週">🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
+      const tier = _wrOvrTier(ov(c));
+      const popVal = Engine.util.dispPop(c.popularity);
+      const popCol = _popColor(popVal).color;
+      const faceUrl = getPortraitUrl(c.id);
       html += `<tr${c.injury ? ' style="opacity:0.65"' : ''}>
         <td><input type="checkbox" class="week-check" data-id="${c.id}" ${c.injury ? 'disabled' : ''}></td>
-        <td><strong>${c.name}</strong>${wkChampBadge}${trainerBadge}</td>
-        <td class="num">${ov(c)}</td>
-        <td><div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div> ${condPct}</td>
+        <td>
+          <div class="wr-name-cell">
+            ${_imgOrInitial(faceUrl, c.id, 40, 'border-radius:8px;')}
+            <span>
+              <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}${trainerBadge}
+            </span>
+          </div>
+        </td>
+        <td>
+          <div class="wr-ovr-wrap">
+            <span class="wr-ovr-num v-${tier.cls}">${ov(c)}</span>
+            <span class="wr-ovr-tier">${tier.label}</span>
+          </div>
+        </td>
+        <td><span class="wr-pop-num" style="color:${popCol}">${popVal}</span></td>
         <td>${statusHtml}</td>
         <td>
-          <select onchange="updateSchedulePreview(${c.id},this.value)" style="font-size:15px;padding:8px 12px;border-radius:6px;min-width:120px" ${schedDisabled}>
+          <div class="wr-cond-wrap">
+            <div class="cond-bar"><div class="cond-fill ${condCls}" style="width:${condPct}%"></div></div>
+            <span class="wr-cond-num">${condPct}</span>
+          </div>
+        </td>
+        <td>
+          <select onchange="updateSchedulePreview(${c.id},this.value)" style="font-size:13px;padding:6px 10px;border-radius:6px;width:100%" ${schedDisabled}>
             <option value="balance" ${c.schedule==='balance'?'selected':''} title="非興行週は練習、興行週はプロモを自動選択。迷ったらこれ。体調60未満で自動休養します">バランス</option>
             <option value="practice" ${c.schedule==='practice'?'selected':''} title="毎週練習を行います。ステータス成長に集中したい時に。体調60未満で自動休養します">練習優先</option>
             <option value="promo" ${c.schedule==='promo'?'selected':''} title="毎週プロモ活動を行います。人気を上げたい時に（上限70）。体調60未満で自動休養します">プロモ優先</option>
             <option value="rest" ${c.schedule==='rest'?'selected':''} title="強制的に休養させます。体調管理よりも確実に休ませたい時に">休養重視</option>
           </select>
         </td>
-        <td>${intBtnHtml}</td>
+        <td style="text-align:center">${intBtnHtml}</td>
         <td id="action-${c.id}"><span class="sched-tag ${previewAction}">${previewLabel}</span></td>
+        <td></td>
       </tr>`;
     };
     // 一括操作パネル
@@ -1012,20 +1070,22 @@ function renderWeekScreen() {
       return _weekSortDir === 'asc' ? -cmp : cmp;
     });
 
-    html += `<table class="data-table"><tr>
+    html += `<table class="week-roster-table"><tr>
       <th style="width:30px"><input type="checkbox" id="weekCheckAll" onchange="toggleWeekCheckAll(this.checked)"></th>
-      <th onclick="setWeekSort('name')" style="cursor:pointer">名前${_weekSortIndicator('name')}</th>
-      <th onclick="setWeekSort('ovr')" style="cursor:pointer">総合${_weekSortIndicator('ovr')}</th>
-      <th onclick="setWeekSort('cond')" style="cursor:pointer">体調${_weekSortIndicator('cond')}</th>
-      <th>状態</th>
-      <th onclick="setWeekSort('schedule')" style="cursor:pointer">スケジュール${_weekSortIndicator('schedule')} <span class="info-tip" title="育成方針を選択します。体調60未満になると方針に関わらず自動で休養します。">ℹ️</span></th>
-      <th>⚡</th>
-      <th>今週の行動</th>
+      <th onclick="setWeekSort('name')" style="width:210px;cursor:pointer">名前${_weekSortIndicator('name')}</th>
+      <th onclick="setWeekSort('ovr')" class="num" style="width:80px;cursor:pointer">総合${_weekSortIndicator('ovr')}</th>
+      <th onclick="setWeekSort('pop')" class="num" style="width:60px;cursor:pointer">人気${_weekSortIndicator('pop')}</th>
+      <th style="width:60px">状態</th>
+      <th onclick="setWeekSort('cond')" style="width:120px;cursor:pointer">体調${_weekSortIndicator('cond')}</th>
+      <th onclick="setWeekSort('schedule')" style="width:130px;cursor:pointer">スケジュール${_weekSortIndicator('schedule')} <span class="info-tip" title="育成方針を選択します。体調60未満になると方針に関わらず自動で休養します。">ℹ️</span></th>
+      <th class="center" style="width:46px">⚡</th>
+      <th style="width:92px">今週の行動</th>
+      <th></th>
     </tr>`;
     sortedOwn.forEach(_renderWeekRow);
     if (_rentalRosterWk.length > 0) {
       const _rSlots = RENTAL_CONFIG.getMaxConcurrent(_ownRosterWk.length);
-      html += `<tr><td colspan="8" style="padding:6px 8px;background:rgba(243,156,18,0.07);border-top:1px solid rgba(243,156,18,0.3);border-bottom:1px solid rgba(243,156,18,0.3);color:#f39c12;font-size:12px;font-weight:600">🤝 レンタル枠 (${_rentalRosterWk.length}/${_rSlots})</td></tr>`;
+      html += `<tr><td colspan="10" style="padding:6px 8px;background:rgba(243,156,18,0.07);border-top:1px solid rgba(243,156,18,0.3);border-bottom:1px solid rgba(243,156,18,0.3);color:#f39c12;font-size:12px;font-weight:600">🤝 レンタル枠 (${_rentalRosterWk.length}/${_rSlots})</td></tr>`;
       _rentalRosterWk.forEach(_renderWeekRow);
     }
     html += '</table>';
