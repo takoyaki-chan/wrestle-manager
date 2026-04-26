@@ -3346,13 +3346,18 @@ function renderRanking() {
         ${fcellHtml(top3[0], 1, championId, boardId, coreIds, popupSource)}
       </div>
       <div class="orgcell-foot">
-        <div class="pt-block">
+        <div class="pt-block rank-metric">
           <div class="label">評価</div>
           <div class="v">${Math.round(r.rating)}<span class="unit">pt</span></div>
+          <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT の合計。<br>このポイントで業界順位が決まる。</div></div>
         </div>
         <div class="meta-block">
-          <div class="ovr-line">平均OVR ${avgOvr}</div>
-          <div class="${battleClass}">対戦pt ${battleSign}${Math.round(r.battlePt)}</div>
+          <div class="ovr-line rank-metric">平均OVR ${avgOvr}
+            <div class="rank-metric-tooltip"><div class="rmt-label">平均OVR</div><div class="rmt-text">ロスター全員のOVR単純平均。</div></div>
+          </div>
+          <div class="${battleClass} rank-metric">対戦PT ${battleSign}${Math.round(r.battlePt)}
+            <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>シーズンを跨いで保持される。</div></div>
+          </div>
         </div>
       </div>
     </div>`;
@@ -3681,12 +3686,18 @@ function renderRanking() {
         <div class="rp-depth-note">${escHtml(dynamicDepthNote)}</div>
       </div>
       <div class="rp-metrics">
-        <div><span>評価</span><b>${Math.round(r.rating)}</b></div>
-        <div><span>基礎</span><b>${Math.round(r.baseScore)}</b></div>
-        <div><span>平均OVR</span><b>${avgOvr}</b></div>
-        <div><span>勢い</span><b class="${battleClass}">${battleSign}${Math.round(r.battlePt)}</b></div>
-        <div><span>実績</span><b>${Math.round(r.legacyScore)}</b></div>
-        <div><span>人気</span><b style="color:${popColor}">${popDisplay}</b></div>
+        <div class="rank-metric"><span>評価</span><b>${Math.round(r.rating)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT の合計。<br>このポイントで業界順位が決まる。</div></div></div>
+        <div class="rank-metric"><span>基礎力</span><b>${Math.round(r.baseScore)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">基礎力 — 今そこにある戦力</div><div class="rmt-text">上位10名のOVRと人気を重み付け平均（重み 1.6→0.68 で逓減）し、<br>OVR×1.2 ＋ 人気×0.9 で合算した値。<br>評価ptを構成する素材のひとつ。</div></div></div>
+        <div class="rank-metric"><span>平均OVR</span><b>${avgOvr}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">平均OVR</div><div class="rmt-text">ロスター全員のOVR単純平均。<br>厚みの目安。</div></div></div>
+        <div class="rank-metric"><span>対戦PT</span><b class="${battleClass}">${battleSign}${Math.round(r.battlePt)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>勝つと積み上がり、負けると目減りする。<br>シーズンを跨いで保持される。</div></div></div>
+        <div class="rank-metric"><span>レガシー</span><b>${Math.round(r.legacyScore)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">レガシー — 積み上げた歴史（上限50pt）</div><div class="rmt-text">団体格ベース（自団体0 / S級+50 / A級+30 / B級+15）<br>＋ 殿堂入り盾（★殿堂+8 / ★★ゴールド+10 / ★★★レジェンド+13）<br>＋ 対抗戦通算勝利数 ÷ 5</div></div></div>
+        <div class="rank-metric"><span>人気</span><b style="color:${popColor}">${popDisplay}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">人気 — 団体人気値</div><div class="rmt-text">集客・グッズ収入・メディア収入のベース倍率。<br>興行と日々の活動でじわじわ動く。</div></div></div>
       </div>
     </div>`;
   });
