@@ -6023,8 +6023,8 @@ function _npRenderPage2() {
 
   // 戦力レーダー (4軸 単色バー) — 値を両端に + 業界基準注記
   const AXES = [
-    { key: 'ace', label: 'エース力', basis: 'TOP5平均OVRが90で100点 (上限100)' },
-    { key: 'depth', label: '層の厚み', basis: '6〜15位10人の平均OVRが70で100点 (15人未満は不足枠OVR=0)' },
+    { key: 'ace', label: 'エース力', basis: 'TOP3平均OVRが100で100点 (上限100)' },
+    { key: 'depth', label: '層の厚み', basis: '4〜8位5人の平均OVRが80で100点 (8人未満は不足枠OVR=0)' },
     { key: 'popularity', label: '集客力', basis: '団体人気をそのまま0〜100で点数化' },
     { key: 'starPower', label: 'タイトル力', basis: 'TOP5平均人気が80で100点 (上限100)' },
   ];
@@ -6049,7 +6049,7 @@ function _npRenderPage2() {
   });
   html += `<div class="np-power-section">
     <div class="heading">戦力レーダー (4軸 / 100点満点)</div>
-    <div class="heading-note">エース力=看板5人のOVR (TOP5平均÷90×100) / 層の厚み=控え10人のOVR (6〜15位平均÷70×100、不足枠は0扱い) / 集客力=団体人気そのまま / タイトル力=看板5人の人気 (TOP5平均人気÷80×100)</div>
+    <div class="heading-note">エース力=看板3人のOVR (TOP3平均÷100×100) / 層の厚み=控え5人のOVR (4〜8位平均÷80×100、不足枠は0扱い) / 集客力=団体人気そのまま / タイトル力=看板5人の人気 (TOP5平均人気÷80×100)</div>
     ${powerRows}
   </div>`;
 
@@ -9092,7 +9092,7 @@ function _renderDbOrgCompare() {
   html += `<section class="db-cmp-panel">
     <h2 class="db-cmp-panel-title">戦力レーダー</h2>
     <div style="font-size:10.5px;color:#6a5e4c;line-height:1.55;margin:0 6px 8px;padding:6px 8px;background:rgba(120,84,39,0.08);border-left:2px solid rgba(120,84,39,0.4);border-radius:0 3px 3px 0;">
-      4軸 / 100点満点 ・ <strong>エース力</strong>=TOP5平均OVR÷90×100 ・ <strong>層の厚み</strong>=6〜15位10人の平均OVR÷70×100 (不足枠は0扱い) ・ <strong>集客力</strong>=団体人気そのまま ・ <strong>タイトル力</strong>=TOP5平均人気÷80×100
+      4軸 / 100点満点 ・ <strong>エース力</strong>=TOP3平均OVR÷100×100 ・ <strong>層の厚み</strong>=4〜8位5人の平均OVR÷80×100 (不足枠は0扱い) ・ <strong>集客力</strong>=団体人気そのまま ・ <strong>タイトル力</strong>=TOP5平均人気÷80×100
     </div>
     <div style="display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:#5b4b34;margin-bottom:6px;padding:0 6px;">
       <span style="color:#6a4a10">◀ ${d.playerName}</span>

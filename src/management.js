@@ -16770,15 +16770,15 @@ Engine.database = {
     }
 
     // 戦力レーダー (4軸 / 100点満点) — 定義はすべて明示
-    // ─ エース力: 看板スター5人の実力。100点 = TOP5平均OVR=90。OVR上限100で実質120%まで伸びるが100点で頭打ち
-    const top5OVR = Engine.ranking._topNAvg(roster, f => Engine.util.ov(f), 5);
-    const ace = Math.min(100, Math.round(top5OVR / 90 * 100));
+    // ─ エース力: 看板スター3人の実力。100点 = TOP3平均OVR=100
+    const top3OVR = Engine.ranking._topNAvg(roster, f => Engine.util.ov(f), 3);
+    const ace = Math.min(100, Math.round(top3OVR / 100 * 100));
 
-    // ─ 層の厚み: 6〜15位の控え層10人の平均OVR。100点 = 平均70。15人未満の不足枠は OVR=0 で扱い、人数が足りない団体は満点にならない
+    // ─ 層の厚み: 4〜8位の控え層5人の平均OVR。100点 = 平均80。8人未満の不足枠は OVR=0 で扱い、人数が足りない団体は満点にならない
     const sortedByOVR = roster.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-    const benchSlots = sortedByOVR.slice(5, 15); // 6位〜15位（最大10人）
+    const benchSlots = sortedByOVR.slice(3, 8); // 4位〜8位（最大5人）
     const benchSum = benchSlots.reduce((s, f) => s + Engine.util.ov(f), 0);
-    const depth = Math.min(100, Math.round(benchSum / 10 / 70 * 100));
+    const depth = Math.min(100, Math.round(benchSum / 5 / 80 * 100));
 
     // ─ 集客力: 団体人気そのもの（0〜100）。興行集客に直結する団体ブランド力
     const popularity = Math.min(100, Math.round(Engine.util.dispOrgPop(orgPop)));
