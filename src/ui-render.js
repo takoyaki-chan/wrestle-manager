@@ -5723,14 +5723,18 @@ function _npComputeWarRecord(state, rivalOrgId) {
   if (recentResults.length > 0) {
     const first = recentResults[0].r;
     if (first === 'w' || first === 'l') {
-      streakKind = first === 'w' ? 'win' : 'lose';
+      let count = 0;
       for (const r of recentResults) {
-        if (r.r === first) streak++;
+        if (r.r === first) count++;
         else break;
       }
+      // 2試合以上連続したときのみ「連勝/連敗」と認める
+      if (count >= 2) {
+        streakKind = first === 'w' ? 'win' : 'lose';
+        streak = count;
+      }
     }
-  } else if (wins > losses + 1) { streakKind = 'win'; streak = wins - losses; }
-  else if (losses > wins + 1) { streakKind = 'lose'; streak = losses - wins; }
+  }
   return { wins, losses, draws, total: wins + losses + draws, diff: wins - losses, bySingle, byWar, byPpv, streakKind, streak };
 }
 
@@ -6110,23 +6114,33 @@ function _npRenderPage2() {
   // 過去対戦成績 (war-record) — モックアップ §2-2 準拠
   const warStats = _npComputeWarRecord(G, _dbCompareTarget);
   if (warStats.total > 0) {
-    const streakCls = warStats.streakKind === 'win' ? 'win' : warStats.streakKind === 'lose' ? 'lose' : 'even';
-    const streakLabel = warStats.streakKind === 'win' ? `${warStats.streak}連勝中`
-      : warStats.streakKind === 'lose' ? `${warStats.streak}連敗中`
-      : '直近 互角';
+    const hasStreak = (warStats.streakKind === 'win' || warStats.streakKind === 'lose') && warStats.streak >= 2;
+    const streakCls = hasStreak ? warStats.streakKind : 'even';
+    const streakLabel = hasStreak
+      ? (warStats.streakKind === 'win' ? `${warStats.streak}連勝中` : `${warStats.streak}連敗中`)
+      : '';
     let warComment = '';
     if (typeof KURODA_WAR_RECORD !== 'undefined') {
-      const cat = warStats.diff > 1 ? 'winStreak' : warStats.diff < -1 ? 'loseStreak' : 'evenRecord';
+      // ストリークが立っているときは streak 系プールを優先。
+      // それ以外は通算 wins/losses の偏りで heavy/slight/even を選ぶ。
+      let cat;
+      if (hasStreak) {
+        cat = warStats.streakKind === 'win' ? 'winStreak' : 'loseStreak';
+      } else {
+        const w = warStats.wins, l = warStats.losses, t = warStats.total;
+        if (w === l) cat = 'evenRecord';
+        else if (t > 0 && w / t >= 0.67) cat = 'heavyWinning';
+        else if (w > l) cat = 'slightWinning';
+        else if (t > 0 && l / t >= 0.67) cat = 'heavyLosing';
+        else cat = 'slightLosing';
+      }
       const pool = KURODA_WAR_RECORD[cat] || KURODA_WAR_RECORD.evenRecord || [];
       if (pool.length > 0) {
         const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC2D0));
         const fn = Engine.rng.pick(rng, pool);
-        const streakValue = Number.isFinite(warStats.streak) && warStats.streak > 0
-          ? warStats.streak
-          : Math.abs(warStats.diff);
-        const signedStreak = (warStats.streakKind === 'lose' || (warStats.streakKind === 'even' && warStats.diff < 0))
-          ? -streakValue
-          : streakValue;
+        const signedStreak = hasStreak
+          ? (warStats.streakKind === 'win' ? warStats.streak : -warStats.streak)
+          : 0;
         try {
           warComment = fn({
             playerName: d.playerName,
@@ -6155,7 +6169,7 @@ function _npRenderPage2() {
           <div class="item"><label>対抗戦</label><span>${warStats.byWar.w}-${warStats.byWar.l}</span></div>
           <div class="item"><label>PPV</label><span>${warStats.byPpv.w}-${warStats.byPpv.l}</span></div>
         </div>
-        <div class="np-war-streak ${streakCls}">${streakLabel}</div>
+        ${streakLabel ? `<div class="np-war-streak ${streakCls}">${streakLabel}</div>` : ''}
       </div>
       <div class="np-war-comment">
         <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
@@ -9822,6 +9836,15 @@ function _findFighterOrgName(state, charId) {
 }
 
 function _pickRivalryFeatured(state) {
+  const totalWeek = ((state.season || 1) - 1) * 52 + (state.week || 1);
+  const period = Math.floor(totalWeek / 2);
+
+  // featured 選出用プレイヤーボーナス: ローテーションごとに 0〜15 をランダム抽選
+  const playerBonusRng = Engine.rng.create(
+    Engine.rng.derive(state.rngSeed || 1, state.season || 1, period, 0xFA11, 0)
+  );
+  const playerBonus = Math.floor(Engine.rng.next(playerBonusRng) * 16);
+
   const all = [];
   Object.entries(state.h2h || {}).forEach(([key, h2h]) => {
     const [a, b] = key.split('>').map(Number);
@@ -9834,16 +9857,17 @@ function _pickRivalryFeatured(state) {
     const rivalry = (relAB.rivalry + relBA.rivalry) / 2;
     const tag = _classifyRelation(bond, rivalry);
     if (!tag) return;
-    let score = rivalry * 0.4 + (h2h.matches || 0) * 0.2 + (h2h.bestMQ || 0) * 0.2;
-    score += Math.abs(bond - 50) * 0.3;
+    // rawScore: 業界全体の実力値ベース（relations 並び替え用）
+    const rawScore = rivalry * 0.4 + (h2h.matches || 0) * 0.2 + (h2h.bestMQ || 0) * 0.2
+      + Math.abs(bond - 50) * 0.3;
+    // score: featured 選出用（プレイヤーボーナス＋ドラマタグ込み）
     const isPlayerInvolved = _isPlayerSide(state, a) || _isPlayerSide(state, b);
-    if (isPlayerInvolved) score += 15;
     const dramaTagBonus = {
       pure_hatred: 20, fated_admiration: 18, bitter_feud: 12,
       allied_rivalry: 10, destined_rival: 8,
     };
-    score += dramaTagBonus[tag] || 0;
-    all.push({ key, h2h, tag, bond, rivalry, charA, charB, idA: a, idB: b, score, isPlayerInvolved });
+    const score = rawScore + (isPlayerInvolved ? playerBonus : 0) + (dramaTagBonus[tag] || 0);
+    all.push({ key, h2h, tag, bond, rivalry, charA, charB, idA: a, idB: b, score, rawScore, isPlayerInvolved });
   });
   all.sort((x, y) => y.score - x.score);
   if (!all.length) return { featured: null, relations: [] };
@@ -9852,10 +9876,12 @@ function _pickRivalryFeatured(state) {
   const topScore = all[0].score;
   let pool = all.filter(e => e.score >= topScore * 0.55).slice(0, 8);
   if (pool.length < 3) pool = all.slice(0, Math.min(3, all.length));
-  const totalWeek = ((state.season || 1) - 1) * 52 + (state.week || 1);
-  const period = Math.floor(totalWeek / 2);
   const featured = pool[period % pool.length];
-  const relations = all.filter(e => e.key !== featured.key).slice(0, 6);
+  // relations は rawScore 降順で並べ「全業界」の実力値を正直に反映する
+  const relations = all
+    .filter(e => e.key !== featured.key)
+    .sort((x, y) => y.rawScore - x.rawScore)
+    .slice(0, 6);
   return { featured, relations };
 }
 

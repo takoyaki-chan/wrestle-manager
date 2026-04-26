@@ -8043,8 +8043,10 @@ const Engine = {
         const aiOrgData = newAiOrgs[orgId];
         const aiMatchResults = aiOrgData._lastMatchResults || [];
         if (aiMatchResults.length > 0 && s.relationships) {
+          const aiChampId = aiOrgData.titles?.world?.championId;
           const aiRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE2C, orgId.charCodeAt(4) || 0));
           aiMatchResults.forEach(r => {
+            const isTitleMatch = !!(aiChampId && (r.left.id === aiChampId || r.right.id === aiChampId));
             const context = {
               mq: r.mq,
               winner: r.winner === 'left' ? 'win' : (r.winner === 'right' ? 'lose' : 'draw'),
@@ -8052,7 +8054,7 @@ const Engine = {
               hpB: r.hpRight || { final: 50, max: 100 },
               turns: r.turns || 10,
               stage: 'normal',
-              isTitleMatch: false,
+              isTitleMatch,
               rivalryResolved: false,
               injuredId: null,
               isCareerBestA: false,
