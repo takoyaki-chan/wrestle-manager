@@ -12234,7 +12234,7 @@ Engine.orgWar = {
       ppvMatches: rec.ppvMatches,
       ppvWon: isA ? rec.ppvWonA : rec.ppvWonB,
       ppvLost: isA ? rec.ppvWonB : rec.ppvWonA,
-      streak: isA ? rec.streakA : -rec.streakA,
+      streak: isA ? (rec.streakA || 0) : -(rec.streakA || 0),
       lastResult: rec.lastResult,
     };
   },
@@ -16769,19 +16769,21 @@ Engine.database = {
       orgPop = state.aiOrgs?.[orgId]?.orgPop ?? (org ? (org.tier === 'S' ? 75 : org.tier === 'A' ? 50 : 30) : 30);
     }
 
-    // TOP5実力: TOP5平均OVR / 90 * 100（ランキング基礎力と連動）
+    // 戦力レーダー (4軸 / 100点満点) — 定義はすべて明示
+    // ─ エース力: 看板スター5人の実力。100点 = TOP5平均OVR=90。OVR上限100で実質120%まで伸びるが100点で頭打ち
     const top5OVR = Engine.ranking._topNAvg(roster, f => Engine.util.ov(f), 5);
     const ace = Math.min(100, Math.round(top5OVR / 90 * 100));
 
-    // 層の厚さ: 全員平均OVR / 75 * 100
-    const depth = roster.length > 0
-      ? Math.min(100, Math.round(roster.reduce((s, f) => s + Engine.util.ov(f), 0) / roster.length / 75 * 100))
-      : 0;
+    // ─ 層の厚み: 6〜15位の控え層10人の平均OVR。100点 = 平均70。15人未満の不足枠は OVR=0 で扱い、人数が足りない団体は満点にならない
+    const sortedByOVR = roster.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    const benchSlots = sortedByOVR.slice(5, 15); // 6位〜15位（最大10人）
+    const benchSum = benchSlots.reduce((s, f) => s + Engine.util.ov(f), 0);
+    const depth = Math.min(100, Math.round(benchSum / 10 / 70 * 100));
 
-    // 団体人気: orgPop / 100 * 100（最大100）
+    // ─ 集客力: 団体人気そのもの（0〜100）。興行集客に直結する団体ブランド力
     const popularity = Math.min(100, Math.round(Engine.util.dispOrgPop(orgPop)));
 
-    // TOP5人気: TOP5平均pop / 80 * 100（ランキング基礎力と連動）
+    // ─ タイトル力: 看板選手5人の人気平均。100点 = TOP5平均pop=80。タイトル戦の話題性・看板知名度
     const top5Pop = Engine.ranking._topNAvg(roster, f => f.popularity || 0, 5);
     const starPower = Math.min(100, Math.round(top5Pop / 80 * 100));
 
