@@ -3547,11 +3547,53 @@ const Engine = {
             }
             break;
           }
-          case 'transfer':
+          case 'transfer': {
+            const tfOrg = ev.toOrg || '他団体';
+            let tfDetail;
+            if (ev.via === 'poach') tfDetail = '引き抜きで加入';
+            else if (ev.via === 'poach_forced') tfDetail = '強制引き抜きで加入';
+            else if (ev.via === 'negotiate') tfDetail = '交渉成立で加入';
             milestones.push({ season: ev.season, week: ev.week, type: 'transfer',
-              text: `${ev.toOrg || '他団体'}へ移籍`,
-              detail: ev.via === 'poach' ? '引き抜き' : ev.via === 'poach_forced' ? '強制引き抜き' : ev.via === 'negotiate' ? '交渉移籍' : undefined });
+              text: `${tfOrg}へ移籍`, detail: tfDetail });
             break;
+          }
+          case 'release': {
+            milestones.push({ season: ev.season, week: ev.week, type: 'release',
+              text: `${ev.fromOrg || '所属団体'}を解雇`, detail: 'ロスター調整等により契約解除' });
+            break;
+          }
+          case 'contractEnd': {
+            const ceDest = ev.destinationType === 'rival'
+              ? `${ev.destinationOrg || '他団体'}へ移籍`
+              : 'フリーエージェントへ';
+            milestones.push({ season: ev.season, week: ev.week, type: 'contract_end',
+              text: `${ev.fromOrg || '所属団体'}を契約満了で退団`, detail: ceDest });
+            break;
+          }
+          case 'suddenDeparture': {
+            const sdDest = ev.destinationType === 'rival'
+              ? `${ev.destinationOrg || '他団体'}へ移籍`
+              : 'フリーエージェントへ';
+            milestones.push({ season: ev.season, week: ev.week, type: 'sudden_dep',
+              text: `${ev.fromOrg || '所属団体'}を突然退団`, detail: sdDest });
+            break;
+          }
+          case 'retireRetracted': {
+            milestones.push({ season: ev.season, week: ev.week, type: 'retire_retracted',
+              text: `引退を撤回し ${ev.orgName || '所属団体'} に復帰` });
+            break;
+          }
+          case 'rentalIn': {
+            const seasonsLabel = ev.seasons ? `（${ev.seasons}期）` : '';
+            milestones.push({ season: ev.season, week: ev.week, type: 'rental_in',
+              text: `${ev.fromOrg || '他団体'}から ${ev.toOrg || '所属団体'} へレンタル加入${seasonsLabel}` });
+            break;
+          }
+          case 'rentalOut': {
+            milestones.push({ season: ev.season, week: ev.week, type: 'rental_out',
+              text: `レンタル期間満了で ${ev.toOrg || '元団体'} へ帰団` });
+            break;
+          }
           case 'retire':
             milestones.push({ season: ev.season, week: ev.week || 48, type: 'retire',
               text: `引退（${ev.age || '?'}歳）`,
@@ -3703,6 +3745,12 @@ const Engine = {
         jt_round:      { icon: '🏅', color: '#f39c12' },
         dome_main:     { icon: '🏟️', color: '#e74c3c' },
         b3_event:      { icon: '📣', color: '#16a085' },
+        release:        { icon: '🚪', color: '#7f8c8d' },
+        contract_end:   { icon: '📄', color: '#7f8c8d' },
+        sudden_dep:     { icon: '💨', color: '#c0392b' },
+        retire_retracted: { icon: '↩️', color: '#27ae60' },
+        rental_in:      { icon: '🤝', color: '#16a085' },
+        rental_out:     { icon: '↩', color: '#16a085' },
         season_end:    { icon: '📅', color: '#95a5a6' },
         note:          { icon: '📝', color: '#bdc3c7' },
       };
@@ -9416,8 +9464,16 @@ const Engine = {
       });
       departureResult.departed.forEach(d => {
         events.push(`🚪 ${d.name}が荷物をまとめて団体を去った。誰も止められなかった。`);
+        // Phase E: 突然退団 history を fighter に先付け
+        const destType = d.destination === 'rival' ? 'rival' : 'freeAgent';
+        const fighterWithHist = Engine.career.addEvent(d.fighter, {
+          type: 'suddenDeparture', season: s.season, week: s.week,
+          fromOrg: state.orgName || 'プレイヤー団体',
+          destinationType: destType,
+          destinationOrg: destType === 'rival' ? '他団体' : 'フリーエージェント',
+        });
         // 退団先振り分け
-        const starClaim = Engine.rival.claimDepartedStar(departureRng, s, d.fighter, { fromOrgName: state.orgName || 'player', via: 'sudden_departure_claim' });
+        const starClaim = Engine.rival.claimDepartedStar(departureRng, s, fighterWithHist, { fromOrgName: state.orgName || 'player', via: 'sudden_departure_claim' });
         if (starClaim.claimed) {
           s = starClaim.state;
           events.push(`Transfer: ${d.name} -> ${starClaim.orgName}${starClaim.ejected ? ` / out: ${starClaim.ejected.name}` : ''}`);
@@ -9428,13 +9484,13 @@ const Engine = {
           if (aiOrgs.length > 0) {
             const [orgId, org] = aiOrgs[Math.floor(Engine.rng.float(departureRng) * aiOrgs.length)];
             const absWeekNow = Engine.util.absWeek(s.season, s.week);
-            let transferred = { ...d.fighter, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
+            let transferred = { ...fighterWithHist, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
             transferred = Engine.orgTimeline.transfer(transferred, orgId, s.season, s.week);
             delete transferred.trustCap; delete transferred.s4Count;
             org.roster = [...(org.roster || []), transferred];
           }
         } else {
-          let faFighter = { ...d.fighter, trust: 50, salaryBonus: 0, orgId: undefined };
+          let faFighter = { ...fighterWithHist, trust: 50, salaryBonus: 0, orgId: undefined };
           delete faFighter.trustCap; delete faFighter.s4Count;
           if (Engine.util.canAddToFA(s)) {
             faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
@@ -10083,13 +10139,21 @@ const Engine = {
 
       // Create rental fighter on player roster
       const weeksLeft = seasons * 12; // 1期=12週
-      const rentalFighter = {
+      const rentalOrgName = fromSource === 'rival'
+        ? (state.rivalOrgNames?.[fromOrgId] || orgCfg?.name || '他団体')
+        : 'フリーエージェント';
+      let rentalFighter = {
         ...fighter,
         isRental: true, rentalFromOrg: fromOrgId || null, rentalSource: fromSource,
         rentalWeeksLeft: weeksLeft,
         condition: 80, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
         orgJoinWeek: Engine.util.absWeek(state.season, state.week),
       };
+      // Phase E: レンタル加入 history
+      rentalFighter = Engine.career.addEvent(rentalFighter, {
+        type: 'rentalIn', season: state.season, week: state.week,
+        toOrg: state.orgName || 'プレイヤー団体', fromOrg: rentalOrgName, seasons,
+      });
       const rentalContract = { fighterId: fighter.id, fromSource, fromOrgId: fromOrgId || null, weeksLeft, fee };
       let s = { ...state,
         roster: [...state.roster, rentalFighter],
@@ -10141,26 +10205,33 @@ const Engine = {
           // Return fighter
           const rentalF = roster.find(c => c.id === contract.fighterId);
           roster = roster.filter(c => c.id !== contract.fighterId);
+          // Phase E: レンタル帰団 history を本体側 fighter に push
+          const returnOrgName = contract.fromSource === 'rival' && contract.fromOrgId
+            ? (s.rivalOrgNames?.[contract.fromOrgId] || RIVAL_ORGS.find(o => o.id === contract.fromOrgId)?.name || '他団体')
+            : 'フリーエージェント';
+          const rentalOutEv = { type: 'rentalOut', season: s.season, week: s.week,
+            fromOrg: s.orgName || 'プレイヤー団体', toOrg: returnOrgName };
           if (contract.fromSource === 'rival' && contract.fromOrgId) {
             // Return to AI org with updated popularity/injury
             const fromData = aiOrgs[contract.fromOrgId];
             if (fromData) {
-              aiOrgs = { ...aiOrgs, [contract.fromOrgId]: { ...fromData, roster: fromData.roster.map(f =>
-                f.id === contract.fighterId
-                  ? { ...f, popularity: rentalF ? rentalF.popularity : f.popularity, injury: rentalF ? rentalF.injury : f.injury }
-                  : f
-              )}};
+              aiOrgs = { ...aiOrgs, [contract.fromOrgId]: { ...fromData, roster: fromData.roster.map(f => {
+                if (f.id !== contract.fighterId) return f;
+                const updated = { ...f, popularity: rentalF ? rentalF.popularity : f.popularity, injury: rentalF ? rentalF.injury : f.injury };
+                return Engine.career.addEvent(updated, rentalOutEv);
+              })}};
             }
           } else {
             // Return to free agent pool（FA上限チェック）
             if (rentalF) {
               const { isRental, rentalFromOrg, rentalSource, rentalWeeksLeft, ...cleanF } = rentalF;
+              const cleanFWithHist = Engine.career.addEvent(cleanF, rentalOutEv);
               if (freeAgents.length < ROSTER_CFG.fa) {
-                freeAgents = [...freeAgents, cleanF];
+                freeAgents = [...freeAgents, cleanFWithHist];
               } else {
                 // FA上限超: dormantPoolに退避
                 const pool = [...(s.dormantPool || [])];
-                pool.push({ id: cleanF.id, age: cleanF.age || 19 });
+                pool.push({ id: cleanFWithHist.id, age: cleanFWithHist.age || 19 });
                 s = { ...s, dormantPool: pool };
               }
             }
@@ -18002,7 +18073,7 @@ Engine.contract = {
       if (fi < 0) return { state: s, result: { type: 'error' }, reactionDialogue: '' };
       const f = { ...s.roster[fi] };
       const ctx = neg.context;
-      const depResult = Engine.contract.processDeparture(rng, f, s);
+      const depResult = Engine.contract.processDeparture(rng, f, s, 'sudden');
       s = depResult.state;
       const seasons = f.careerSeasons || 0;
       let moraleDelta = ctx.isFounder ? -8 : (seasons >= 4 ? -5 : -3);
@@ -18177,13 +18248,26 @@ Engine.contract = {
   },
 
   // ── 退団処理 ─────────────────────────────────────────────────────────────
-  processDeparture(rng, fighter, state) {
+  // cause: 'sudden' | 'contractEnd' (Phase E: history.type 振り分け用)
+  processDeparture(rng, fighter, state, cause = 'contractEnd') {
     let s = { ...state };
 
     // 行き先決定（先に確定 → 関係値処理を分岐するため）
     const info = Engine.contract.determineDeparture(rng, fighter, s);
+    // Phase E: 退団 history を fighter に先付けする(retire は別途 retire type で記録される)
+    let fighterWithHist = fighter;
+    if (info.type !== 'retire') {
+      const histType = cause === 'sudden' ? 'suddenDeparture' : 'contractEnd';
+      const destinationType = info.type;
+      const destinationOrg = info.type === 'rival' ? (info.orgName || '他団体') : 'フリーエージェント';
+      fighterWithHist = Engine.career.addEvent(fighter, {
+        type: histType, season: s.season, week: s.week,
+        fromOrg: state.orgName || 'プレイヤー団体',
+        destinationType, destinationOrg,
+      });
+    }
     const starClaim = info.type !== 'retire'
-      ? Engine.rival.claimDepartedStar(rng, s, fighter, { fromOrgName: 'player', via: 'departure_claim' })
+      ? Engine.rival.claimDepartedStar(rng, s, fighterWithHist, { fromOrgName: 'player', via: 'departure_claim' })
       : { claimed: false };
     if (starClaim.claimed) {
       s = starClaim.state;
@@ -18241,7 +18325,7 @@ Engine.contract = {
       const orgId = info.orgId;
       if (s.aiOrgs && s.aiOrgs[orgId]) {
         const orgData = s.aiOrgs[orgId];
-        let transferredFighter = { ...fighter, orgId, trust: 50, salaryBonus: 0 };
+        let transferredFighter = { ...fighterWithHist, orgId, trust: 50, salaryBonus: 0 };
         transferredFighter = Engine.orgTimeline.transfer(transferredFighter, orgId, s.season, s.week);
         const newOrg = { ...orgData, roster: [...orgData.roster, transferredFighter] };
         s = { ...s, aiOrgs: { ...s.aiOrgs, [orgId]: newOrg } };
@@ -18250,11 +18334,11 @@ Engine.contract = {
     } else {
       // freeAgent（FA上限チェック）
       if (Engine.util.canAddToFA(s)) {
-        let faFighter = { ...fighter, trust: 50, salaryBonus: 0, orgId: undefined };
+        let faFighter = { ...fighterWithHist, trust: 50, salaryBonus: 0, orgId: undefined };
         faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
         s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
       } else {
-        s = Engine.util.redirectToDormantPool(s, fighter);
+        s = Engine.util.redirectToDormantPool(s, fighterWithHist);
       }
     }
 

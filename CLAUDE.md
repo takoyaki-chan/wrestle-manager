@@ -133,7 +133,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 - docs/ = 計画・検討・指示書(未来形 or 過去形)
 - アーカイブは「完了した指示書」置き場であり、仕様の真実ではない
 
-### specs/ ファイル索引(全36ファイル)
+### specs/ ファイル索引(全37ファイル)
 
 | ファイル | 内容 |
 |---------|------|
@@ -175,6 +175,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | faction-system-spec-v0.1.md | 派閥システム(DRAFT・未実装v0.1) |
 | rivalry-chronicle-spec-v1.0.md | 因縁列伝(3面) — 9象限分類 + H2H.history[] + 黒田叙述紙面 |
 | newspaper-and-orgcompare-spec-v2.0.md | 新聞画面+団体比較画面の確定UI仕様(共通CSS/4軸バー/ダイジェスト/KURODA接続) |
+| career-history-spec-v1.0.md | 選手経歴年表(Phase A〜E 全実装完了/history type カタログ/PPV・JT 結果分岐/退団 6 type) |
 
 ## UI実装ルール(必読)
 

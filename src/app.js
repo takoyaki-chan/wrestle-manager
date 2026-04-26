@@ -3951,7 +3951,7 @@ const App = {
     if ((fighter.retainCount || 0) >= 2) { closeRetirementPopup(); return; }
     G = archiveRetiredRivalryState(G, fighter);
     const retainLine = Engine.retirement.selectRetainLine(fighter, G);
-    const updatedFighter = {
+    let updatedFighter = {
       ...fighter,
       wear: (fighter.wear || 0) + 10,
       retainCount: (fighter.retainCount || 0) + 1,
@@ -3959,6 +3959,8 @@ const App = {
       lastRun: false,
       lastRunWeek: null,
     };
+    // Phase E: 引退撤回 history
+    updatedFighter = Engine.career.addEvent(updatedFighter, { type: 'retireRetracted', season: G.season, week: G.week, orgName: G.orgName || 'プレイヤー団体' });
     const newRetired = [...G.retiredFighters];
     newRetired.splice(retiredIdx, 1);
     const newRetiredIds = (G.retiredIds || []).filter(id => id !== fighterId);
@@ -4072,21 +4074,23 @@ const App = {
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster, showCard: newShowCard });
     const log = [...G.gameLog, `📤 ${c.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
+    // Phase E: 解雇 history を fighter に push
+    const cWithRelease = Engine.career.addEvent(c, { type: 'release', season: G.season, week: G.week, fromOrg: G.orgName || 'プレイヤー団体' });
     const claimResult = Engine.rival.claimDepartedStar(
       Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xD75A, G.season, G.week, charId)),
       { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log },
-      c,
+      cWithRelease,
       { fromOrgName: G.orgName || 'player', via: 'release_claim' }
     );
     if (claimResult.claimed) {
       log.push(`Transfer: ${c.name} -> ${claimResult.orgName}${claimResult.ejected ? ` / out: ${claimResult.ejected.name}` : ''}`);
       G = { ...claimResult.state, gameLog: log };
     } else if (Engine.util.canAddToFA(G)) {
-      const releasedFighter = Engine.orgTimeline.transfer(c, 'fa', G.season, G.week);
+      const releasedFighter = Engine.orgTimeline.transfer(cWithRelease, 'fa', G.season, G.week);
       G = { ...G, roster: newRoster, showCard: newShowCard, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
     } else {
       G = { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log };
-      G = Engine.util.redirectToDormantPool(G, c);
+      G = Engine.util.redirectToDormantPool(G, cWithRelease);
     }
     closeFighterPopup();
     refreshAll();
