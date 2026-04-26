@@ -1372,7 +1372,7 @@ Engine.relationships = {
     };
 
     // ── ヘルパー: イベント適用（1方向分） ──
-    const apply = (dir, eventType, stage, bondMin, bondMax, rivalryMin, rivalryMax, diminish) => {
+    const apply = (dir, eventType, stage, bondMin, bondMax, rivalryMin, rivalryMax, diminish, opts = {}) => {
       const idFrom = dir === 'AB' ? charIdA : charIdB;
       const idTo = dir === 'AB' ? charIdB : charIdA;
       const rel = dir === 'AB' ? rAB : rBA;
@@ -1385,12 +1385,25 @@ Engine.relationships = {
         counters[cKey] = { count: counter.count + 1, lastWeek: absWeek };
       }
 
-      // 他団体戦: rivalry変動を×2.0ブースト
+      // 他団体戦: rivalry×2.0ブースト、bond負方向×1.5（§4.4.3）
       const rivalryMult = isCrossOrg ? 2.0 : 1.0;
+      const rawBondDelta = roll(bondMin, bondMax) * mult;
+      const bondMult = (isCrossOrg && rawBondDelta < 0 && !opts.skipCrossOrgBondMult) ? 1.5 : 1.0;
 
-      rel.bond = this._applyAxisDelta(rel.bond, roll(bondMin, bondMax) * mult, 'bond');
+      rel.bond = this._applyAxisDelta(rel.bond, rawBondDelta * bondMult, 'bond');
       rel.rivalry = this._applyAxisDelta(rel.rivalry, roll(rivalryMin, rivalryMax) * mult * rivalryMult, 'rivalry');
     };
+
+    // ── §4.4.2 クロスOrg基本Bond税: 両方向に bond -2〜-5 を加算 ──
+    if (isCrossOrg) {
+      const taxRng = Engine.rng.create(Engine.rng.derive(
+        state.rngSeed, state.season || 1, state.week || 1,
+        charIdA, charIdB, 0xBE2D));
+      const taxAB = -(2 + Engine.rng.float(taxRng) * 3); // -2〜-5
+      const taxBA = -(2 + Engine.rng.float(taxRng) * 3);
+      rAB.bond = this._applyAxisDelta(rAB.bond, taxAB, 'bond');
+      rBA.bond = this._applyAxisDelta(rBA.bond, taxBA, 'bond');
+    }
 
     // ═══ M-01: ベースライン（勝敗非対称 v2.0） ═══
     if (isDraw) {
@@ -1440,10 +1453,16 @@ Engine.relationships = {
       }
     }
 
-    // ═══ M-04: 名勝負（MQ80+） ═══
+    // ═══ M-04 / M-CO1: 名勝負（MQ80+） ═══
     if (context.mq >= 80) {
-      apply('AB', 'greatMatch', context.stage, 3, 6, 8, 12, true);
-      apply('BA', 'greatMatch', context.stage, 3, 6, 8, 12, true);
+      if (isCrossOrg) {
+        // M-CO1 好敵手認定: bond +6〜+10（§4.4.3 乗数対象外）、逓減キー独立
+        apply('AB', 'famousMatch:cross-org', context.stage, 6, 10, 8, 12, true, { skipCrossOrgBondMult: true });
+        apply('BA', 'famousMatch:cross-org', context.stage, 6, 10, 8, 12, true, { skipCrossOrgBondMult: true });
+      } else {
+        apply('AB', 'greatMatch', context.stage, 3, 6, 8, 12, true);
+        apply('BA', 'greatMatch', context.stage, 3, 6, 8, 12, true);
+      }
     }
 
     // ═══ M-05: PPV/GRAND FINAL ═══
@@ -1484,13 +1503,19 @@ Engine.relationships = {
       context._destinySettled = true;
     }
 
-    // ═══ M-10: 因縁決着 → rivalryリセット（0〜10）（M-14不成立時のみ）
+    // ═══ M-10 / M-CO2: 因縁決着 → rivalryリセット（0〜10）（M-14不成立時のみ）
     if (context.rivalryResolved && !context._destinySettled) {
       const m10Reset = Engine.rng.float(rng) * 10;
       rAB.rivalry = this._clampAxisValue(m10Reset, 'rivalry');
       rBA.rivalry = this._clampAxisValue(m10Reset, 'rivalry');
-      apply('AB', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
-      apply('BA', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
+      if (isCrossOrg) {
+        // M-CO2 抗争和解: bond +12〜+20（§4.4.3 乗数対象外）
+        apply('AB', 'rivalryResolutionCross', context.stage, 12, 20, 0, 0, false, { skipCrossOrgBondMult: true });
+        apply('BA', 'rivalryResolutionCross', context.stage, 12, 20, 0, 0, false, { skipCrossOrgBondMult: true });
+      } else {
+        apply('AB', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
+        apply('BA', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
+      }
     }
 
     // ═══ M-11: 怪我 ═══

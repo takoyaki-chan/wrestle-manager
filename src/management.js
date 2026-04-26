@@ -1317,6 +1317,16 @@ const Engine = {
         ? (rivalryAB >= rivalryBA ? id1 : id2)
         : null;
       const band = Engine.title.getRivalryBand(minRivalry);
+      const _findOrgId = (id) => {
+        if (G.roster?.find(c => c.id === id)) return G.orgId || 'player';
+        for (const [aoId, ao] of Object.entries(G.aiOrgs || {})) {
+          if (ao.roster?.find(c => c.id === id)) return aoId;
+        }
+        return null;
+      };
+      const _orgA = _findOrgId(id1);
+      const _orgB = _findOrgId(id2);
+      const isCrossOrg = !!(_orgA && _orgB && _orgA !== _orgB);
       return {
         entry,
         rivalryAB,
@@ -1332,6 +1342,7 @@ const Engine = {
         isOneSided,
         aggressor,
         matches: entry?.matches || 0,
+        isCrossOrg,
       };
     },
     getRivalryLevel(G, id1, id2) {
@@ -1422,6 +1433,9 @@ const Engine = {
 
       if (resolutionCount === 0) {
         if (pairState.minRivalry < 60) return null;
+        // v2.1: matches閾値 同団体4+、クロスOrg3+
+        const matchesThreshold = pairState.isCrossOrg ? 3 : 4;
+        if ((pairState.matches || 0) < matchesThreshold) return null;
         return {
           type: 'first',
           label: '因縁決着',
@@ -6503,7 +6517,10 @@ const Engine = {
             if (!state.freeAgents) state.freeAgents = [];
             state.freeAgents.push({ ...f, trust: 50 });
           } else {
-            state = Engine.util.redirectToDormantPool(state, f);
+            const pool = [...(state.dormantPool || [])];
+            pool.push({ id: f.id, age: f.age || 19 });
+            state.dormantPool = pool;
+            destination = 'dormant';
           }
         }
 
@@ -18566,6 +18583,9 @@ Engine.newspaper = {
               } else if (ev.destination === 'fa') {
                 headline = `${ev.orgName}の${ev.fighterName}が退団、フリーエージェントに`;
                 body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が退団しフリーエージェントとなった。`;
+              } else if (ev.destination === 'dormant') {
+                headline = `${ev.orgName}の${ev.fighterName}が退団、市場から姿を消す`;
+                body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が退団したが、フリーエージェント枠満杯のため市場名簿には載らなかった。`;
               } else {
                 headline = `${ev.orgName}の${ev.fighterName}が現役引退を決断`;
                 body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が現役引退。リングに別れを告げた。`;
