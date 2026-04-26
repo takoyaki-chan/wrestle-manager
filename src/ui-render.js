@@ -9902,7 +9902,7 @@ function _pickRivalryFeatured(state) {
   const playerBonusRng = Engine.rng.create(
     Engine.rng.derive(state.rngSeed || 1, state.season || 1, period, 0xFA11, 0)
   );
-  const playerBonus = Math.floor(Engine.rng.next(playerBonusRng) * 16);
+  const playerBonus = Math.floor(Engine.rng.float(playerBonusRng) * 16);
 
   const all = [];
   Object.entries(state.h2h || {}).forEach(([key, h2h]) => {
