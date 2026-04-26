@@ -5945,12 +5945,12 @@ function _npRenderPage2() {
         <span class="edge ${edgeCls}">${edgeText}</span>
       </div>
       <div class="np-ace-arena">
-        <div class="np-stand-wrap"><div class="np-stand-img" style="${_npStandBg(aceP.id, aceP.ovr)}"></div></div>
+        <div class="np-stand-wrap"><div class="np-stand-img flip" style="${_npStandBg(aceP.id, aceP.ovr)}"></div></div>
         <div class="np-ace-vs-center">
           <div class="np-ace-vs-text">VS</div>
           <div class="np-ace-vs-metrics">OVR<br>${aceP.ovr} : ${aceR.ovr}</div>
         </div>
-        <div class="np-stand-wrap"><div class="np-stand-img flip" style="${_npStandBg(aceR.id, aceR.ovr)}"></div></div>
+        <div class="np-stand-wrap"><div class="np-stand-img" style="${_npStandBg(aceR.id, aceR.ovr)}"></div></div>
       </div>
       <div class="np-ace-name-bar">
         <div class="np-ace-side">
