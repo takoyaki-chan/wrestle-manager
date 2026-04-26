@@ -3567,11 +3567,54 @@ const Engine = {
             break;
           case 'awardBestMatch':
             milestones.push({ season: ev.season, week: ev.week, type: 'award_bestmatch',
-              text: `🎬 ベストマッチ賞（MQ ${ev.mq || '?'}）` });
+              text: `🎬 ベストマッチ賞（試合評価 ${ev.mq || '?'}）` });
+            break;
+          case 'ppvMainEvent': {
+            // Phase B: 決勝(isSummit)のみ年表化。準決勝以下は Phase D でラウンド統合予定
+            if (ev.isSummit) {
+              milestones.push({ season: ev.season, week: ev.week, type: 'ppv_main',
+                text: `PPV GRAND FINAL ${ev.won ? '優勝' : '準優勝'}` });
+            }
+            break;
+          }
+          case 'juniorTournament': {
+            const jtMap = { champion: '優勝', runnerUp: '準優勝', semiFinal: '準決勝敗退', quarterFinal: '出場（準々決勝敗退）' };
+            const jtLabel = jtMap[ev.result] || '出場';
+            milestones.push({ season: ev.season, week: ev.week || 24, type: 'jt_round',
+              text: `ジュニアトーナメント ${jtLabel}` });
+            break;
+          }
+          case 'domeMain': {
+            const dmType = ev.matchType === 'title' ? 'タイトルマッチ' : 'メインイベント';
+            const dmRes = ev.result === 'win' ? '勝利' : '出場';
+            milestones.push({ season: ev.season, week: ev.week || 48, type: 'dome_main',
+              text: `ドーム大会 ${dmType} ${dmRes}` });
+            break;
+          }
+          case 'b3Challenge': {
+            const b3Org = ev.opponentOrgName || '他団体';
+            milestones.push({ season: ev.season, week: ev.week, type: 'b3_event',
+              text: `${b3Org}への挑戦状 ${ev.won ? '勝利' : '敗北'}` });
+            break;
+          }
+          case 'b3Decline': {
+            const b3DOrg = ev.orgName || '他団体';
+            milestones.push({ season: ev.season, week: ev.week, type: 'b3_event',
+              text: `${b3DOrg}からの挑戦状を辞退` });
+            break;
+          }
+          case 'b3Rejected': {
+            const b3ROrg = ev.rejectedByOrg === 'player' ? '相手団体' : (ev.rejectedByOrg || '相手団体');
+            milestones.push({ season: ev.season, week: ev.week, type: 'b3_event',
+              text: `挑戦状を${b3ROrg}に拒絶される` });
+            break;
+          }
+          case 'breakthrough':
+            // peakOVR と重複するため年表には出さない(全盛期マイルストーンに集約)
             break;
           default:
-            milestones.push({ season: ev.season || 1, week: ev.week || 0, type: ev.type,
-              text: ev.detail || ev.type });
+            // 未知 type は描画せず読み捨てる(英字漏れ防止)
+            break;
         }
       }
 
@@ -3621,6 +3664,10 @@ const Engine = {
         award_mvp:       { icon: '👑', color: '#f1c40f' },
         award_media:     { icon: '📺', color: '#3498db' },
         award_bestmatch: { icon: '🎬', color: '#e67e22' },
+        ppv_main:      { icon: '🎤', color: '#9b59b6' },
+        jt_round:      { icon: '🏅', color: '#f39c12' },
+        dome_main:     { icon: '🏟️', color: '#e74c3c' },
+        b3_event:      { icon: '📣', color: '#16a085' },
         season_end:    { icon: '📅', color: '#95a5a6' },
         note:          { icon: '📝', color: '#bdc3c7' },
       };

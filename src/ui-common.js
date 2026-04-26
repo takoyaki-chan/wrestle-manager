@@ -3167,7 +3167,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           nonSummary.forEach(m => {
             const typeStyle = Engine.milestone._typeStyle(m.type);
             html += `<div style="padding:5px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;line-height:1.5">
-              <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:40px;text-align:right;font-family:'Courier New',monospace">S${s}W${m.week || 0}</span>
+              <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:54px;text-align:right">${m.week ? `${m.week}週` : '—'}</span>
               <span style="color:${typeStyle.color};flex-shrink:0">${typeStyle.icon}</span>
               <span style="color:var(--text)">${m.text}</span>
             </div>`;
@@ -3195,8 +3195,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         [...hist].reverse().forEach(h => {
           const typeColor = h.type === 'injury_retirement' ? '#e74c3c' : '#e17055';
           const typeIcon  = h.type === 'injury_retirement' ? '🏁' : '🩹';
-          const seasonStr = h.season ? `Season ${h.season}` : '';
-          const weekStr   = h.week   ? `, Week ${h.week}`   : '';
+          const seasonStr = h.season ? `${h.season}年目` : '';
+          const weekStr   = h.week   ? ` ${h.week}週` : '';
           html += `<div style="padding:6px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;border-left:2px solid ${typeColor}33;padding-left:10px;line-height:1.5">
             <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:70px;font-family:'Courier New',monospace">${seasonStr}${weekStr}</span>
             <span style="flex-shrink:0">${typeIcon}</span>
@@ -9021,9 +9021,11 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   if (!draw) {
     winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
     if (won) {
+      // 自団体が勝ち → 挑戦者（敗者）に result_lose を使う
       loseLine = typeof WAR_POST_DIALOGUE !== 'undefined' ? pickDialogueLine(WAR_POST_DIALOGUE.result_lose, challenger) : '';
     } else {
-      loseLine = typeof WAR_POST_DIALOGUE !== 'undefined' ? pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) : '';
+      // 自団体が負け → 自団体選手（敗者）に loserLines を使う
+      loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
     }
   }
   const playerLine = won ? winLine : loseLine;
