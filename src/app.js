@@ -5171,9 +5171,10 @@ const App = {
       const r = results[i];
       const champId = titles.world.championId;
       const challengerId = champId === m.left ? m.right : m.left;
+      const challengerName = challengerId != null ? (roster.find(f => f.id === challengerId)?.name) : undefined;
       const tempState = { ...s, titles, roster };
       if (r.winner === 'draw') {
-        if (champId) { const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg); }
+        if (champId) { const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg); }
         titleMatchOutcomes.push({ outcome: 'defense', champId, challengerId });
       } else {
         const winnerId = r.winner === 'left' ? m.left : m.right;
@@ -5181,7 +5182,7 @@ const App = {
           const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
           titleMatchOutcomes.push({ outcome: 'change', newChampId: winnerId, prevChampId: champId, challengerId });
         } else {
-          const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg);
+          const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg);
           titleMatchOutcomes.push({ outcome: 'defense', champId, challengerId });
         }
       }
@@ -5915,17 +5916,20 @@ const App = {
           const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
           const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
             : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
-          domeEntries = allIds.map(charId => ({ charId, result: winTeamIds.includes(charId) ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') }));
+          domeEntries = allIds.map(charId => ({ charId, result: winTeamIds.includes(charId) ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose'), opponentName: undefined }));
         } else {
+          const leftName  = roster.find(c => c.id === m.left)?.name;
+          const rightName = roster.find(c => c.id === m.right)?.name;
           domeEntries = [
-            { charId: m.left,  result: r.winner === 'left'  ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') },
-            { charId: m.right, result: r.winner === 'right' ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose') },
+            { charId: m.left,  result: r.winner === 'left'  ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose'), opponentName: rightName },
+            { charId: m.right, result: r.winner === 'right' ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose'), opponentName: leftName },
           ];
         }
-        domeEntries.forEach(({ charId, result }) => {
+        domeEntries.forEach(({ charId, result, opponentName }) => {
           roster = roster.map(c => {
             if (c.id !== charId || c.isIntrusion) return c;
-            const ev = { type: 'domeMain', season: s.season, result, matchType };
+            const ev = { type: 'domeMain', season: s.season, week: s.week, result, matchType };
+            if (opponentName) ev.opponentName = opponentName;
             const cr = c.careerRecord || { history: [] };
             return { ...c, careerRecord: { ...cr, history: [...(cr.history || []), ev] } };
           });
@@ -8919,7 +8923,8 @@ const App = {
     G = { ...G, roster: G.roster.map(c => {
       if (!warFighterIds.has(c.id)) return c;
       const matchResult = wp.results.find(r => r.playerFighter.id === c.id);
-      return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: ev.opponentName, won: matchResult ? matchResult.playerWon : false });
+      const oppName = matchResult ? matchResult.aiFighter?.name : undefined;
+      return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: ev.opponentName, opponentName: oppName, won: matchResult ? matchResult.playerWon : false });
     }) };
 
     // AI側の対抗戦出場選手にもcareer event記録
@@ -8929,7 +8934,8 @@ const App = {
       const updatedAiRoster = G.aiOrgs[aiOrgId].roster.map(c => {
         if (!aiWarIds.has(c.id)) return c;
         const matchResult = wp.results.find(r => r.aiFighter.id === c.id);
-        return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: G.orgName || 'プレイヤー団体', won: matchResult ? !matchResult.playerWon : false });
+        const oppName = matchResult ? matchResult.playerFighter?.name : undefined;
+        return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: G.orgName || 'プレイヤー団体', opponentName: oppName, won: matchResult ? !matchResult.playerWon : false });
       });
       G = { ...G, aiOrgs: { ...G.aiOrgs, [aiOrgId]: { ...G.aiOrgs[aiOrgId], roster: updatedAiRoster } } };
     }

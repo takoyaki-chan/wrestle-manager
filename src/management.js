@@ -1582,17 +1582,19 @@ const Engine = {
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, fighterId));
       // v1.3: Capture previous reign info before overwriting
       const prevReign = prev ? { wonWeek: G.titles.world.wonWeek, defenses: G.titles.world.defenses } : null;
+      const newChamp = G.roster.find(r => r.id === fighterId);
+      const titleOrgName = `${G.orgName || '団体'}王座`;
       const newRoster = G.roster.map(c => {
         // v1.3: Record titleLoss for previous champion
         if (prev && c.id === prev.id) {
-          return Engine.career.recordTitleLoss(c, 'world', G.season, G.week, prevReign.defenses);
+          return Engine.career.recordTitleLoss(c, 'world', G.season, G.week, prevReign.defenses, { orgName: titleOrgName, dethronedByName: newChamp?.name });
         }
         if (c.id !== fighterId) return c;
         const reassessed = Engine.scout.reassess(c, 'titleWin', rng, G.season);
         const titlePopGain = Engine.popularity.applyDiminishing(5, c.popularity);
         // v1.3: Record titleWin for new champion
         let updated = { ...c, popularity: Math.min(100, c.popularity + titlePopGain), ...reassessed };
-        return Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(updated, 'world', G.season, G.week), G.season);
+        return Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(updated, 'world', G.season, G.week, { orgName: titleOrgName, defeatedName: prev?.name }), G.season);
       });
       const c = G.roster.find(r => r.id === fighterId);
       const msg = prev
@@ -1600,13 +1602,14 @@ const Engine = {
         : `🏆 ${c?.name} が初代団体王者に戴冠！`;
       return { titles: newTitles, roster: newRoster, msg };
     },
-    // Returns { titles, roster, msg }
-    recordDefense(G) {
+    // Returns { titles, roster, msg }. opts={ challengerName }
+    recordDefense(G, opts = {}) {
       const newDefenses = G.titles.world.defenses + 1;
       const newTitles = { ...G.titles, world: { ...G.titles.world, defenses: newDefenses } };
       const champId = G.titles.world.championId;
       // v0.99: Reassess value on 3rd defense (pricing-balance-spec §4.2)
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, champId, 333));
+      const titleOrgName = `${G.orgName || '団体'}王座`;
       const newRoster = G.roster.map(c => {
         if (c.id !== champId) return c;
         let updated = { ...c, popularity: Math.min(100, c.popularity + Engine.popularity.applyDiminishing(2, c.popularity)) };
@@ -1615,8 +1618,7 @@ const Engine = {
           updated = { ...updated, ...reassessed };
         }
         // v1.3: Record titleDefense
-        updated = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(updated, 'world', G.season, G.week, newDefenses), G.season);
-        return updated;
+        updated = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(updated, 'world', G.season, G.week, newDefenses, { orgName: titleOrgName, lastChallengerName: opts.challengerName }), G.season);
         return updated;
       });
       const c = G.roster.find(r => r.id === champId);
@@ -2008,19 +2010,28 @@ const Engine = {
       const f = Engine.career.ensure(fighter);
       return { ...f, careerRecord: { ...f.careerRecord, history: [...f.careerRecord.history, event] } };
     },
-    /** Record title win: push event + update cache */
-    recordTitleWin(fighter, beltId, season, week) {
-      let f = Engine.career.addEvent(fighter, { type: 'titleWin', season, week, beltId });
+    /** Record title win: push event + update cache. opts={ orgName, defeatedName } */
+    recordTitleWin(fighter, beltId, season, week, opts = {}) {
+      const ev = { type: 'titleWin', season, week, beltId };
+      if (opts.orgName) ev.orgName = opts.orgName;
+      if (opts.defeatedName) ev.defeatedName = opts.defeatedName;
+      let f = Engine.career.addEvent(fighter, ev);
       f = { ...f, careerRecord: { ...f.careerRecord, totalTitleWins: f.careerRecord.totalTitleWins + 1 } };
       return f;
     },
-    /** Record title loss: push event */
-    recordTitleLoss(fighter, beltId, season, week, defenses) {
-      return Engine.career.addEvent(fighter, { type: 'titleLoss', season, week, beltId, defenses });
+    /** Record title loss: push event. opts={ orgName, dethronedByName } */
+    recordTitleLoss(fighter, beltId, season, week, defenses, opts = {}) {
+      const ev = { type: 'titleLoss', season, week, beltId, defenses };
+      if (opts.orgName) ev.orgName = opts.orgName;
+      if (opts.dethronedByName) ev.dethronedByName = opts.dethronedByName;
+      return Engine.career.addEvent(fighter, ev);
     },
-    /** Record title defense: push event + update cache */
-    recordTitleDefense(fighter, beltId, season, week, count) {
-      let f = Engine.career.addEvent(fighter, { type: 'titleDefense', season, week, beltId, count });
+    /** Record title defense: push event + update cache. opts={ orgName, lastChallengerName } */
+    recordTitleDefense(fighter, beltId, season, week, count, opts = {}) {
+      const ev = { type: 'titleDefense', season, week, beltId, count };
+      if (opts.orgName) ev.orgName = opts.orgName;
+      if (opts.lastChallengerName) ev.lastChallengerName = opts.lastChallengerName;
+      let f = Engine.career.addEvent(fighter, ev);
       f = { ...f, careerRecord: { ...f.careerRecord, totalDefenses: f.careerRecord.totalDefenses + 1 } };
       return f;
     },
@@ -3511,23 +3522,28 @@ const Engine = {
             break;
           case 'titleWin': {
             const twName = ev.orgName || '団体王座';
+            const twDetail = ev.defeatedName ? `${ev.defeatedName} を破ってチャンピオンに` : 'チャンピオンに！';
             milestones.push({ season: ev.season, week: ev.week, type: 'title_win',
-              text: `${twName} 獲得`, detail: 'チャンピオンに！' });
+              text: `${twName} 獲得`, detail: twDetail });
             break;
           }
           case 'titleLoss': {
             const tlName = ev.orgName || '団体王座';
+            const tlBy = ev.dethronedByName ? `${ev.dethronedByName} に敗れ陥落` : null;
+            const tlDef = ev.defenses ? `${ev.defenses}度防衛の末に陥落` : null;
+            const tlDetail = [tlBy, tlDef].filter(Boolean).join('・') || undefined;
             milestones.push({ season: ev.season, week: ev.week, type: 'title_loss',
-              text: `${tlName} 陥落`, detail: ev.defenses ? `${ev.defenses}度防衛の末に陥落` : undefined });
+              text: `${tlName} 陥落`, detail: tlDetail });
             break;
           }
           case 'titleDefense': {
             const cnt = ev.count || 1;
             const tdName = ev.orgName || '王座';
-            // Only show significant defenses (3, 5, 10, etc.)
-            if (cnt === 3 || cnt === 5 || cnt >= 10 && cnt % 5 === 0) {
+            // 3, 5, 7, 10, 15, 20, 25... (Phase C: 細分化)
+            if (cnt === 3 || cnt === 5 || cnt === 7 || (cnt >= 10 && cnt % 5 === 0)) {
+              const tdDetail = ev.lastChallengerName ? `${ev.lastChallengerName} の挑戦を退ける` : undefined;
               milestones.push({ season: ev.season, week: ev.week, type: 'title_defense',
-                text: `${tdName}${cnt}度防衛達成` });
+                text: `${tdName}${cnt}度防衛達成`, detail: tdDetail });
             }
             break;
           }
@@ -3545,10 +3561,13 @@ const Engine = {
             milestones.push({ season: ev.season, week: ev.week, type: 'summit',
               text: `頂上決戦 ${ev.won ? '勝利' : '敗北'}` });
             break;
-          case 'war':
+          case 'war': {
+            const warOrg = ev.opponentOrg || '他団体';
+            const warOpp = ev.opponentName ? `（${ev.opponentName} 戦）` : '';
             milestones.push({ season: ev.season, week: ev.week, type: 'war',
-              text: `対抗戦 ${ev.won ? '勝利' : '敗北'}` });
+              text: `対抗戦 vs ${warOrg} ${ev.won ? '勝利' : '敗北'}${warOpp}` });
             break;
+          }
           case 'peakOVR':
             milestones.push({ season: ev.season, week: ev.week || 0, type: 'peak',
               text: `全盛期 OVR ${ev.ovr}` });
@@ -3580,15 +3599,22 @@ const Engine = {
           case 'juniorTournament': {
             const jtMap = { champion: '優勝', runnerUp: '準優勝', semiFinal: '準決勝敗退', quarterFinal: '出場（準々決勝敗退）' };
             const jtLabel = jtMap[ev.result] || '出場';
+            let jtDetail;
+            if ((ev.result === 'champion' || ev.result === 'runnerUp') && ev.finalOpponentName) {
+              jtDetail = ev.result === 'champion' ? `決勝で ${ev.finalOpponentName} を破る` : `決勝で ${ev.finalOpponentName} に敗れる`;
+            } else if ((ev.result === 'semiFinal' || ev.result === 'quarterFinal') && ev.eliminatedByName) {
+              jtDetail = `${ev.eliminatedByName} に敗れて敗退`;
+            }
             milestones.push({ season: ev.season, week: ev.week || 24, type: 'jt_round',
-              text: `ジュニアトーナメント ${jtLabel}` });
+              text: `ジュニアトーナメント ${jtLabel}`, detail: jtDetail });
             break;
           }
           case 'domeMain': {
             const dmType = ev.matchType === 'title' ? 'タイトルマッチ' : 'メインイベント';
-            const dmRes = ev.result === 'win' ? '勝利' : '出場';
+            const dmRes = ev.result === 'win' ? '勝利' : (ev.result === 'lose' ? '敗北' : '出場');
+            const dmOpp = ev.opponentName ? `（vs ${ev.opponentName}）` : '';
             milestones.push({ season: ev.season, week: ev.week || 48, type: 'dome_main',
-              text: `ドーム大会 ${dmType} ${dmRes}` });
+              text: `ドーム大会 ${dmType} ${dmRes}${dmOpp}` });
             break;
           }
           case 'b3Challenge': {
@@ -6229,9 +6255,10 @@ const Engine = {
               wonSeason: state.season,
               wonWeek: state.week,
             });
-            // 経歴記録: 新王者
+            // 経歴記録: 新王者(空位戴冠のため特定の defeated は無し)
+            const aiTitleOrgName = `${org.name || '団体'}王座`;
             const topIdx = roster.findIndex(f => f.id === top.id);
-            if (topIdx >= 0) roster[topIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(roster[topIdx], beltId, state.season, state.week), state.season);
+            if (topIdx >= 0) roster[topIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(roster[topIdx], beltId, state.season, state.week, { orgName: aiTitleOrgName }), state.season);
           }
         } else {
           // 12週クールダウン判定（プレイヤーと同等）
@@ -6265,8 +6292,10 @@ const Engine = {
                   world: { ...nextOrgData.titles.world, defenses: newDefenses },
                 };
                 // 経歴記録: 防衛
+                const aiTitleOrgNameDef = `${org.name || '団体'}王座`;
+                const aiChallengerName = oppId != null ? (roster.find(f => f.id === oppId)?.name) : undefined;
                 const champIdx = roster.findIndex(f => f.id === champId);
-                if (champIdx >= 0) roster[champIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(roster[champIdx], beltId, state.season, state.week, newDefenses), state.season);
+                if (champIdx >= 0) roster[champIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(roster[champIdx], beltId, state.season, state.week, newDefenses, { orgName: aiTitleOrgNameDef, lastChallengerName: aiChallengerName }), state.season);
               } else {
                 // 王座交代
                 const winnerId = champResult.winner === 'left' ? champResult.left?.id : champResult.right?.id;
@@ -6280,10 +6309,13 @@ const Engine = {
                     lastTitleMatchWeek: absWeek,
                   });
                   // 経歴記録: 新王者 + 旧王者
+                  const aiTitleOrgNameChange = `${org.name || '団体'}王座`;
+                  const newChampName = roster.find(f => f.id === winnerId)?.name;
+                  const oldChampName = roster.find(f => f.id === champId)?.name;
                   const winnerIdx = roster.findIndex(f => f.id === winnerId);
-                  if (winnerIdx >= 0) roster[winnerIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(roster[winnerIdx], beltId, state.season, state.week), state.season);
+                  if (winnerIdx >= 0) roster[winnerIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(roster[winnerIdx], beltId, state.season, state.week, { orgName: aiTitleOrgNameChange, defeatedName: oldChampName }), state.season);
                   const loserIdx = roster.findIndex(f => f.id === champId);
-                  if (loserIdx >= 0) roster[loserIdx] = Engine.career.recordTitleLoss(roster[loserIdx], beltId, state.season, state.week, prevDefenses);
+                  if (loserIdx >= 0) roster[loserIdx] = Engine.career.recordTitleLoss(roster[loserIdx], beltId, state.season, state.week, prevDefenses, { orgName: aiTitleOrgNameChange, dethronedByName: newChampName });
                 }
               }
             }
@@ -6891,17 +6923,17 @@ const Engine = {
         // MVPレース v2: AI vs AI 対抗戦の war 履歴（won フィールド付き）
         const rep1Won = winner === 'left' ? true : winner === 'right' ? false : null;
         const rep2Won = winner === 'right' ? true : winner === 'left' ? false : null;
-        const _addWarEv = (od, fid, won, opponentOrg) => ({
+        const _addWarEv = (od, fid, won, opponentOrg, opponentName) => ({
           ...od,
           roster: od.roster.map(f => f.id === fid
-            ? Engine.career.addEvent(f, { type: 'war', season: s.season, week: s.week, opponentOrg, won })
+            ? Engine.career.addEvent(f, { type: 'war', season: s.season, week: s.week, opponentOrg, opponentName, won })
             : f)
         });
         if (newAiOrgs[orgId] && newAiOrgs[orgId].roster) {
-          newAiOrgs[orgId] = _addWarEv(newAiOrgs[orgId], rep1.id, rep1Won, oppOrg.name);
+          newAiOrgs[orgId] = _addWarEv(newAiOrgs[orgId], rep1.id, rep1Won, oppOrg.name, rep2.name);
         }
         if (newAiOrgs[opponent.id] && newAiOrgs[opponent.id].roster) {
-          newAiOrgs[opponent.id] = _addWarEv(newAiOrgs[opponent.id], rep2.id, rep2Won, org.name);
+          newAiOrgs[opponent.id] = _addWarEv(newAiOrgs[opponent.id], rep2.id, rep2Won, org.name, rep1.name);
         }
 
         s = { ...s, aiOrgs: newAiOrgs };
@@ -8722,14 +8754,16 @@ const Engine = {
       const r = rawResults[i];
       const champId = titles.world.championId;
       const tempState = { ...s, titles, roster };
+      const challengerId = champId ? (m.left === champId ? m.right : (m.right === champId ? m.left : null)) : null;
+      const challengerName = challengerId != null ? (roster.find(f => f.id === challengerId)?.name) : undefined;
       if (r.winner === 'draw') {
-        if (champId) { const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg); }
+        if (champId) { const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg); }
       } else {
         const winnerId = r.winner === 'left' ? m.left : m.right;
         if (!champId || winnerId !== champId) {
           const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
         } else {
-          const def = Engine.title.recordDefense(tempState); titles = def.titles; roster = def.roster; events.push(def.msg);
+          const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg);
         }
       }
     });
@@ -18466,6 +18500,18 @@ Engine.juniorTournament = {
     firstRound.matches.forEach(m => {
       allParticipantIds.push(m.left.id, m.right.id);
     });
+    // Phase C: 各敗者に対し「誰に敗れたか」を解決するヘルパー
+    const finalRoundForOpp = rounds[rounds.length - 1];
+    const semiRoundForOpp = rounds.length >= 2 ? rounds[rounds.length - 2] : null;
+    const quarterRoundForOpp = (bracketSize === 8 && rounds.length >= 3) ? rounds[0] : null;
+    const findEliminator = (loserId, round) => {
+      if (!round) return undefined;
+      const m = round.matches.find(mm => mm.loserId === loserId);
+      if (!m) return undefined;
+      const winner = (s.roster || []).find(f => f.id === m.winnerId)
+        || Object.values(s.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === m.winnerId);
+      return winner?.name;
+    };
 
     // careerRecord更新 + 賞金支給のヘルパー
     const updateFighter = (fighters, fighterId, historyEntry, recUpdater) => {
@@ -18489,7 +18535,7 @@ Engine.juniorTournament = {
 
     // 優勝者
     if (champion) {
-      const histEntry = { type: 'juniorTournament', season: s.season, result: 'champion', prize: PRIZE.champion };
+      const histEntry = { type: 'juniorTournament', season: s.season, result: 'champion', prize: PRIZE.champion, finalOpponentName: runnerUp?.name };
       const recUpdate = (rec) => ({
         ...rec,
         juniorTournamentWins: (rec.juniorTournamentWins || 0) + 1,
@@ -18511,7 +18557,7 @@ Engine.juniorTournament = {
 
     // 準優勝
     if (runnerUp) {
-      const histEntry = { type: 'juniorTournament', season: s.season, result: 'runnerUp', prize: PRIZE.runnerUp };
+      const histEntry = { type: 'juniorTournament', season: s.season, result: 'runnerUp', prize: PRIZE.runnerUp, finalOpponentName: champion?.name };
       const recUpdate = (rec) => ({ ...rec, juniorTournamentAppearances: (rec.juniorTournamentAppearances || 0) + 1 });
       if (runnerUp._orgId === 'player') {
         s = { ...s, roster: updateFighter(s.roster, runnerUp.id, histEntry, recUpdate) };
@@ -18529,7 +18575,7 @@ Engine.juniorTournament = {
     // 3-4位（準決勝敗退）
     semiFinalists.forEach(sf => {
       if (!sf) return;
-      const histEntry = { type: 'juniorTournament', season: s.season, result: 'semiFinal', prize: PRIZE.semiFinal };
+      const histEntry = { type: 'juniorTournament', season: s.season, result: 'semiFinal', prize: PRIZE.semiFinal, eliminatedByName: findEliminator(sf.id, semiRoundForOpp) };
       const recUpdate = (rec) => ({ ...rec, juniorTournamentAppearances: (rec.juniorTournamentAppearances || 0) + 1 });
       if (sf._orgId === 'player') {
         s = { ...s, roster: updateFighter(s.roster, sf.id, histEntry, recUpdate) };
@@ -18551,7 +18597,7 @@ Engine.juniorTournament = {
       ].filter(Boolean));
       allParticipantIds.forEach(pid => {
         if (semifinalAndAboveIds.has(pid)) return;
-        const histEntry = { type: 'juniorTournament', season: s.season, result: 'quarterFinal', prize: 0 };
+        const histEntry = { type: 'juniorTournament', season: s.season, result: 'quarterFinal', prize: 0, eliminatedByName: findEliminator(pid, quarterRoundForOpp) };
         const recUpdate = (rec) => ({ ...rec, juniorTournamentAppearances: (rec.juniorTournamentAppearances || 0) + 1 });
         // プレイヤー団体の選手か確認
         const inPlayerRoster = (s.roster || []).some(f => f.id === pid);
