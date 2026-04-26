@@ -176,7 +176,8 @@
       "Bash(git merge feature/ranking-screen-redesign-v0.9 --no-ff -m 'Merge feature/ranking-screen-redesign-v0.9 into main *)",
       "Read(//usr/**)",
       "Bash(ls /c/Python*)",
-      "Read(//c/Users/nkmrk/AppData/Local/Programs/Python//**)"
+      "Read(//c/Users/nkmrk/AppData/Local/Programs/Python//**)",
+      "Bash(git reset *)"
     ]
   }
 }
