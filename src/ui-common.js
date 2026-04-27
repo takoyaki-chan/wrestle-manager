@@ -721,6 +721,9 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
     : [];
 
   const orgCfg = RIVAL_ORGS.find(o => o.id === ev.opponentOrgId) || {color:'#e74c3c', emoji:''};
+
+  // 結果画面クローズ後に表示する敵エースモーダル用の文脈を保持
+  _warPostCtx = { ev, orgCfg, eventWon, playerWins, aiWins };
   const eColor = orgCfg.color;
   const total = results.length;
   const validResults = results.filter(r => r);
@@ -732,6 +735,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   // Find enemy ace for dialogue
   const aiOrg = Engine.rival.getOrgInfo(G.aiOrgs, ev.opponentOrgId);
   const enemyAce = aiOrg ? Engine.event.getAce(aiOrg.roster) : (results[0] ? results[0].aiFighter : null);
+  _warPostCtx.enemyAce = enemyAce;
 
   // 勝敗ラベル + 色
   let verdictLabel, verdictColor;
@@ -824,26 +828,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   }
   html += `</div>`; // .pb-matches
 
-  // 敵エースセリフ
-  if (enemyAce) {
-    const dialogue = getWarPostDialogue(enemyAce, playerOrgName, eventWon, playerWins, aiWins);
-    const upperUrl = getUpperUrl(enemyAce.id);
-    const dialogueHtml = escHtml(dialogue).replace(/\n/g, '<br>');
-
-    html += `<div class="pb-ace-area">
-      <div class="pb-ace-label">${escHtml(ev.opponentName)} — Ace Statement</div>
-      <div class="pb-ace-portrait-wrap">
-        <div class="pb-ace-portrait${eventWon ? ' is-defeated' : ''}">
-          ${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(enemyAce.name)}" onerror="this.style.display='none'">` : ''}
-        </div>
-        <div class="pb-ace-name">${escHtml(enemyAce.name)}</div>
-      </div>
-      <div class="pb-ace-speech">
-        <div class="pb-ace-speaker">${escHtml(ev.opponentName)}エース — ${escHtml(enemyAce.name)}</div>
-        <div class="pb-ace-bubble">「${dialogueHtml}」</div>
-      </div>
-    </div>`;
-  }
+  // 敵エースセリフは結果画面クローズ後の単独モーダルで表示（_showWarEnemyAceStatement）
 
   // Footer
   html += `<div class="pb-footer">
@@ -858,6 +843,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
 }
 
 let _warVictoryWinners = [];
+let _warPostCtx = null;
 
 function _getWarVictoryLine(fighter) {
   const p = fighter.personality || 'normal';
@@ -892,6 +878,47 @@ function _showWarVictoryChain(list, idx, onDone) {
   Audio.play('notify');
 }
 
+function _showWarEnemyAceStatement(onDone) {
+  const ctx = _warPostCtx;
+  if (!ctx || !ctx.enemyAce) { if (onDone) onDone(); return; }
+  const { ev, orgCfg, eventWon, playerWins, aiWins, enemyAce } = ctx;
+  const playerOrgName = G.orgName || 'プレイヤー団体';
+  const dialogue = getWarPostDialogue(enemyAce, playerOrgName, eventWon, playerWins, aiWins);
+  const upperUrl = getUpperUrl(enemyAce.id);
+  const dialogueHtml = escHtml(dialogue).replace(/\n/g, '<br>');
+  const eColor = orgCfg.color || '#e74c3c';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'war-victory-overlay war-ace-overlay';
+  overlay.style.setProperty('--pb-enemy-color', eColor);
+  overlay.innerHTML = `
+    <div class="war-ace-modal pb-container" style="--pb-enemy-color:${eColor}">
+      <div class="pb-ace-area" style="margin-top:0">
+        <div class="pb-ace-label">${escHtml(ev.opponentName)} — Ace Statement</div>
+        <div class="pb-ace-portrait-wrap">
+          <div class="pb-ace-portrait${eventWon ? ' is-defeated' : ''}">
+            ${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(enemyAce.name)}" onerror="this.style.display='none'">` : ''}
+          </div>
+          <div class="pb-ace-name">${escHtml(enemyAce.name)}</div>
+        </div>
+        <div class="pb-ace-speech">
+          <div class="pb-ace-speaker">${escHtml(ev.opponentName)}エース — ${escHtml(enemyAce.name)}</div>
+          <div class="pb-ace-bubble">「${dialogueHtml}」</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:16px">
+        <button class="war-victory-close war-ace-close" type="button">▶</button>
+      </div>
+    </div>
+  `;
+  overlay.querySelector('.war-ace-close').addEventListener('click', () => {
+    overlay.remove();
+    if (onDone) onDone();
+  });
+  document.body.appendChild(overlay);
+  Audio.play('notify');
+}
+
 function closeWarFinalResult(eventWon) {
   if (eventWon) { Audio.bgm.playJingle('victory'); }
   else { Audio.play('defeat'); }
@@ -899,18 +926,22 @@ function closeWarFinalResult(eventWon) {
   // Refresh underlying page BEFORE closing overlay to prevent event screen flash
   refreshAll();
 
-  // 勝利選手のセリフポップアップチェーン
+  const finishWithEnemyAce = () => {
+    _showWarEnemyAceStatement(() => {
+      App.restoreBgmForState();
+    });
+  };
+
+  // 勝利選手のセリフポップアップチェーン → 敵エースの一言モーダル
   if (eventWon && _warVictoryWinners.length > 0) {
     setTimeout(() => {
       document.getElementById('showResultOverlay').classList.remove('active');
-      _showWarVictoryChain(_warVictoryWinners, 0, function() {
-        App.restoreBgmForState();
-      });
+      _showWarVictoryChain(_warVictoryWinners, 0, finishWithEnemyAce);
     }, 2000);
   } else {
     setTimeout(() => {
       document.getElementById('showResultOverlay').classList.remove('active');
-      App.restoreBgmForState();
+      finishWithEnemyAce();
     }, eventWon ? 2000 : 500);
   }
 }
