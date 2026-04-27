@@ -5724,12 +5724,12 @@ function setDbSubTab(idx) {
 }
 function setNewspaperPage(page) {
   _newspaperPage = page;
-  renderDatabase();
+  renderNewspaper();
 }
 function setNewspaperArchiveIdx(idx) {
   _newspaperArchiveIdx = idx;
   _newspaperPage = 0; // ページリセット
-  renderDatabase();
+  renderNewspaper();
 }
 
 // ══════════════════════════════════════════════════════════════
