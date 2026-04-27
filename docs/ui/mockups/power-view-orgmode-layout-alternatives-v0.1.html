@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>勢力図 団体モード 動的配置案 v0.2</title>
+  <style>
+    :root {
+      --bg: #100f0d;
+      --panel: #171512;
+      --stage: #0b0a09;
+      --line: rgba(220, 176, 76, .24);
+      --gold: #d8a943;
+      --text: #f5efe2;
+      --sub: #baad95;
+      --dim: #766c5c;
+      --blue: #5f87df;
+      --orange: #dd7354;
+      --purple: #8668df;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(216,169,67,.16), transparent 28%),
+        radial-gradient(circle at 90% 10%, rgba(95,135,223,.10), transparent 24%),
+        var(--bg);
+      font-family: "Yu Gothic", "Noto Sans JP", sans-serif;
+    }
+    header {
+      padding: 22px 26px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0; font-size: 24px; letter-spacing: .03em; }
+    .lead { margin-top: 8px; color: var(--sub); font-size: 13px; line-height: 1.8; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(520px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    .board {
+      overflow: hidden;
+      border: 1px solid rgba(216,169,67,.22);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent), var(--panel);
+      box-shadow: 0 18px 48px rgba(0,0,0,.36);
+    }
+    .board-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,.16);
+    }
+    .title { display: flex; align-items: baseline; gap: 10px; font-weight: 900; }
+    .letter { color: var(--gold); font-family: Georgia, serif; font-size: 30px; line-height: 1; }
+    .note { max-width: 52%; color: var(--sub); font-size: 11px; line-height: 1.55; text-align: right; }
+    .stage {
+      position: relative;
+      height: 570px;
+      overflow: hidden;
+      touch-action: none;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(216,169,67,.10), transparent 17%),
+        radial-gradient(circle at 50% 60%, rgba(96,84,130,.13), transparent 48%),
+        var(--stage);
+      user-select: none;
+    }
+    .guide {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .guide path, .guide line, .guide circle, .guide polygon {
+      fill: none;
+      stroke: rgba(216,169,67,.18);
+      stroke-width: 1.2;
+    }
+    .guide .soft { stroke: rgba(255,255,255,.10); }
+    .guide text { fill: rgba(245,239,226,.38); font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+    .node {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      cursor: grab;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      filter: drop-shadow(0 8px 15px rgba(0,0,0,.55));
+      will-change: left, top;
+    }
+    .node:active { cursor: grabbing; }
+    .face {
+      position: relative;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: 3px solid var(--purple);
+      background: #222;
+      overflow: visible;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset;
+    }
+    .face img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      border-radius: 50%;
+      pointer-events: none;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+    .champ .face {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 5px rgba(216,169,67,.25), 0 0 34px rgba(216,169,67,.25);
+    }
+    .rank {
+      position: absolute;
+      left: 50%;
+      top: -20px;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,.46);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .crown {
+      position: absolute;
+      left: 50%;
+      top: -32px;
+      transform: translateX(-50%);
+      font-size: 18px;
+    }
+    .ovr, .pop {
+      position: absolute;
+      right: -36px;
+      border-radius: 10px;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(0,0,0,.45);
+    }
+    .ovr {
+      bottom: 20px;
+      min-width: 42px;
+      padding: 3px 8px 4px;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 950;
+      border: 1px solid rgba(255,238,190,.44);
+    }
+    .pop {
+      bottom: -3px;
+      min-width: 52px;
+      padding: 2px 7px;
+      color: #ffd18c;
+      background: rgba(27,18,11,.96);
+      border: 1px solid rgba(255,198,122,.36);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .name {
+      margin-top: 8px;
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+      text-shadow: 0 2px 0 #000, 0 0 8px #000;
+      white-space: nowrap;
+    }
+    .hint {
+      position: absolute;
+      left: 14px;
+      bottom: 12px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 999px;
+      background: rgba(0,0,0,.28);
+      color: var(--sub);
+      font-size: 11px;
+      pointer-events: none;
+    }
+    .caption {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 12px 14px 14px;
+      border-top: 1px solid var(--line);
+      background: #12100e;
+    }
+    .cap {
+      min-height: 78px;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      background: rgba(255,255,255,.025);
+      color: var(--sub);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+    .cap b { display: block; color: var(--text); margin-bottom: 3px; }
+    @media (max-width: 1120px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<header>
+  <h1>勢力図 / 団体モード 動的配置案 v0.2</h1>
+  <div class="lead">
+    条件: OVR/人気バッジは顔を隠しすぎない。ノード同士は重ならない。ドラッグ可能で、離すとフォーメーションへ戻る。<br>
+    以前のピラミッド感を残しつつ、OVR差・人気・王者補正で自然に地位差が出る案を4つ並べています。
+  </div>
+</header>
+
+<main class="grid">
+  <section class="board">
+    <div class="board-head">
+      <div class="title"><span class="letter">A</span><span>Elastic Pyramid</span></div>
+      <div class="note">基本形はピラミッド。Yは地位スコアで連続補正し、物理で押し合う。</div>
+    </div>
+    <div class="stage" id="stageA"></div>
+    <div class="caption">
+      <div class="cap"><b>良い点</b>一番「勢力図」らしい。三角形の強さを残しつつ、71帯は84/81帯より自然に下がる。</div>
+      <div class="cap"><b>弱い点</b>人気の横方向表現は控えめ。</div>
+      <div class="cap"><b>実装候補</b>現行の見た目を活かすなら最有力。</div>
+    </div>
+  </section>
+
+  <section class="board">
+    <div class="board-head">
+      <div class="title"><span class="letter">B</span><span>Spring Crown</span></div>
+      <div class="note">王者/エースを頂点に、支配層・追随層が弧を描いて広がる。</div>
+    </div>
+    <div class="stage" id="stageB"></div>
+    <div class="caption">
+      <div class="cap"><b>良い点</b>トップ中心の団体像が見やすい。動かした時の戻り方も気持ちいい。</div>
+      <div class="cap"><b>弱い点</b>厳密な上下序列はAより少し柔らかい。</div>
+      <div class="cap"><b>実装候補</b>王者中心のストーリー感を重視する場合。</div>
+    </div>
+  </section>
+
+  <section class="board">
+    <div class="board-head">
+      <div class="title"><span class="letter">C</span><span>Gap Terrace</span></div>
+      <div class="note">能力差が大きいところだけ段差を作る。人数固定の段組みではない。</div>
+    </div>
+    <div class="stage" id="stageC"></div>
+    <div class="caption">
+      <div class="cap"><b>良い点</b>トップ層/上位層/中堅層の切れ目が分かりやすい。</div>
+      <div class="cap"><b>弱い点</b>同じ層の中では横並び感が残りやすい。</div>
+      <div class="cap"><b>実装候補</b>段組みの読みやすさを残したい場合。</div>
+    </div>
+  </section>
+
+  <section class="board">
+    <div class="board-head">
+      <div class="title"><span class="letter">D</span><span>Influence Fan</span></div>
+      <div class="note">上ほど地位、左右は人気/話題性。扇形だがピラミッドの頂点感も残す。</div>
+    </div>
+    <div class="stage" id="stageD"></div>
+    <div class="caption">
+      <div class="cap"><b>良い点</b>OVRと人気のズレが見える。人気だけ高い選手も埋もれない。</div>
+      <div class="cap"><b>弱い点</b>情報量が多く、純粋な序列はAより読みにくい。</div>
+      <div class="cap"><b>実装候補</b>「地位=実力+人気」を強く見せたい場合。</div>
+    </div>
+  </section>
+</main>
+
+<script>
+const W = 640, H = 570;
+const roster = [
+  { id: 108, key: 'yuuki_r', name: '堂前ユキ', ovr: 90, pop: 82 },
+  { id: 82, key: 'kondo_y', name: '富岡加奈子', ovr: 84, pop: 76, champ: true },
+  { id: 67, key: 'yanagishima_m', name: '柳島みずほ', ovr: 81, pop: 86 },
+  { id: 48, key: 'kikuchi_r', name: '菊池璃子', ovr: 71, pop: 71 },
+  { id: 86, key: 'serizawa_a', name: '芹沢亜里沙', ovr: 71, pop: 77 },
+  { id: 90, key: 'tamate_s', name: '富士見ヶ丘遥', ovr: 69, pop: 74 },
+  { id: 101, key: 'sawanobori_a', name: '沢登勧', ovr: 69, pop: 71 },
+  { id: 49, key: 'takahashi_ma', name: '高橋まさみ', ovr: 68, pop: 69 },
+  { id: 71, key: 'togane_s', name: '梅澤英子', ovr: 67, pop: 55 },
+  { id: 95, key: 'konishi_y', name: '小西ゆきえ', ovr: 61, pop: 80 },
+  { id: 54, key: 'abe_m', name: '四条あずさ', ovr: 58, pop: 42 },
+  { id: 76, key: 'kuribayashi_a', name: '岸ゆみえ', ovr: 57, pop: 50 },
+];
+const minPop = Math.min(...roster.map(d => d.pop));
+const maxPop = Math.max(...roster.map(d => d.pop));
+const minStatus = Math.min(...roster.map(status));
+const maxStatus = Math.max(...roster.map(status));
+
+function faceUrl(d) { return `../../../image/face_${d.key}.png`; }
+function status(d) { return d.ovr + d.pop * 0.10 + (d.champ ? 7 : 0); }
+function radius(d) { return Math.max(28, Math.min(47, 25 + (d.ovr - 55) * 0.58)); }
+function ovrColor(d) {
+  if (d.ovr >= 85) return '#d8a943';
+  if (d.ovr >= 78) return '#dd7354';
+  if (d.ovr >= 70) return '#8668df';
+  if (d.ovr >= 60) return '#5f87df';
+  return '#68717f';
+}
+function statusNorm(d) { return (status(d) - minStatus) / Math.max(1, maxStatus - minStatus); }
+function popNorm(d) { return (d.pop - minPop) / Math.max(1, maxPop - minPop); }
+function sortedRoster() { return [...roster].sort((a, b) => status(b) - status(a)); }
+
+function guide(stage, type) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.classList.add('guide');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  if (type === 'pyramid') {
+    svg.innerHTML = `
+      <polygon points="320,72 88,506 552,506"/>
+      <line class="soft" x1="174" y1="340" x2="466" y2="340"/>
+      <line class="soft" x1="230" y1="235" x2="410" y2="235"/>
+      <text x="26" y="92">TOP</text><text x="26" y="238">UPPER</text><text x="26" y="344">MID</text><text x="26" y="508">LOWER</text>`;
+  } else if (type === 'crown') {
+    svg.innerHTML = `
+      <path d="M320 88 C244 150 214 248 160 424"/>
+      <path d="M320 88 C396 150 426 248 480 424"/>
+      <circle cx="320" cy="172" r="78"/><circle cx="320" cy="276" r="170"/><circle cx="320" cy="356" r="245"/>
+      <text x="30" y="54">CENTER SPRING</text>`;
+  } else if (type === 'terrace') {
+    svg.innerHTML = `
+      <line class="soft" x1="80" y1="118" x2="560" y2="118"/>
+      <line class="soft" x1="80" y1="236" x2="560" y2="236"/>
+      <line class="soft" x1="80" y1="360" x2="560" y2="360"/>
+      <line class="soft" x1="80" y1="482" x2="560" y2="482"/>
+      <text x="26" y="120">ACE</text><text x="26" y="238">UPPER</text><text x="26" y="362">MID</text><text x="26" y="484">LOWER</text>`;
+  } else {
+    svg.innerHTML = `
+      <path d="M320 80 C210 180 142 330 86 520"/>
+      <path d="M320 80 C430 180 498 330 554 520"/>
+      <path class="soft" d="M140 270 C260 210 380 210 500 270"/>
+      <path class="soft" d="M102 410 C250 340 390 340 538 410"/>
+      <text x="26" y="74">STATUS</text><text x="502" y="535">POPULAR</text>`;
+  }
+  stage.appendChild(svg);
+}
+
+function createNode(stage, d, rank, tx, ty) {
+  const r = radius(d);
+  const el = document.createElement('div');
+  el.className = `node${d.champ ? ' champ' : ''}`;
+  el.dataset.nodeId = String(d.id);
+  el.innerHTML = `
+    <div class="face" style="width:${r*2}px;height:${r*2}px;border-color:${d.champ ? 'var(--gold)' : ovrColor(d)}">
+      <span class="rank">#${rank}</span>
+      ${d.champ ? '<span class="crown">👑</span>' : ''}
+      <img src="${faceUrl(d)}" alt="" draggable="false">
+      <span class="ovr" style="background:${ovrColor(d)};color:${d.ovr>=85 ? '#1a1108' : '#fff'}">${d.ovr}</span>
+      <span class="pop">人気 ${d.pop}</span>
+    </div>
+    <div class="name">${d.name}</div>`;
+  stage.appendChild(el);
+  return { d, rank, el, r, x: tx + (Math.random()-.5)*36, y: ty + (Math.random()-.5)*36, vx: 0, vy: 0, tx, ty, drag: false };
+}
+
+function setPos(n) {
+  n.el.style.left = `${n.x}px`;
+  n.el.style.top = `${n.y}px`;
+}
+function bindDrag(stage, nodes) {
+  let active = null;
+  let activePointer = null;
+  const begin = (el, clientX, clientY, pointerId) => {
+    active = nodes.find(n => n.el === el);
+    if (!active) return;
+    active.drag = true;
+    activePointer = pointerId == null ? null : pointerId;
+    active.el.classList.add('dragging');
+    if (pointerId != null && active.el.setPointerCapture) {
+      try { active.el.setPointerCapture(pointerId); } catch (_) {}
+    }
+    move(clientX, clientY);
+  };
+  const move = (clientX, clientY) => {
+    if (!active) return false;
+    const rect = stage.getBoundingClientRect();
+    active.x = clientX - rect.left;
+    active.y = clientY - rect.top;
+    active.vx = active.vy = 0;
+    setPos(active);
+    return true;
+  };
+  const end = (pointerId) => {
+    if (!active) return;
+    active.drag = false;
+    active.el.classList.remove('dragging');
+    if (pointerId != null && active.el.releasePointerCapture) {
+      try { active.el.releasePointerCapture(pointerId); } catch (_) {}
+    }
+    active = null;
+    activePointer = null;
+  };
+  nodes.forEach(n => {
+    n.el.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      begin(n.el, e.clientX, e.clientY, e.pointerId);
+    });
+    n.el.addEventListener('mousedown', e => {
+      e.preventDefault();
+      begin(n.el, e.clientX, e.clientY, null);
+    });
+    n.el.addEventListener('touchstart', e => {
+      const t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      e.preventDefault();
+      begin(n.el, t.clientX, t.clientY, null);
+    }, { passive: false });
+  });
+  window.addEventListener('pointermove', e => {
+    if (activePointer != null && e.pointerId !== activePointer) return;
+    if (move(e.clientX, e.clientY)) e.preventDefault();
+  }, { passive: false });
+  window.addEventListener('mousemove', e => {
+    if (move(e.clientX, e.clientY)) e.preventDefault();
+  }, { passive: false });
+  window.addEventListener('touchmove', e => {
+    if (!active) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!t) return;
+    if (move(t.clientX, t.clientY)) e.preventDefault();
+  }, { passive: false });
+  window.addEventListener('pointerup', e => end(e.pointerId));
+  window.addEventListener('pointercancel', e => end(e.pointerId));
+  window.addEventListener('mouseup', () => end(null));
+  window.addEventListener('touchend', () => end(null));
+  window.addEventListener('touchcancel', () => end(null));
+}
+function runPhysics(stage, nodes) {
+  bindDrag(stage, nodes);
+  const startedAt = performance.now();
+  function tick() {
+    const time = (performance.now() - startedAt) / 1000;
+    for (const n of nodes) {
+      if (n.drag) continue;
+      const idleX = Math.sin(time * 0.9 + n.rank * 1.7) * 5;
+      const idleY = Math.cos(time * 0.8 + n.rank * 1.3) * 3;
+      n.vx += (n.tx + idleX - n.x) * 0.018;
+      n.vy += (n.ty + idleY - n.y) * 0.018;
+    }
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let dist = Math.hypot(dx, dy) || 1;
+        const min = a.r + b.r + 42;
+        if (dist < min) {
+          const push = (min - dist) / dist * 0.045;
+          if (!a.drag) { a.vx -= dx * push; a.vy -= dy * push; }
+          if (!b.drag) { b.vx += dx * push; b.vy += dy * push; }
+        }
+      }
+    }
+    for (const n of nodes) {
+      if (!n.drag) {
+        n.vx *= 0.72; n.vy *= 0.72;
+        n.x += n.vx; n.y += n.vy;
+        n.x = Math.max(n.r + 48, Math.min(W - n.r - 54, n.x));
+        n.y = Math.max(n.r + 44, Math.min(H - n.r - 48, n.y));
+      }
+      setPos(n);
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
+function initStage(id, guideType) {
+  const stage = document.getElementById(id);
+  guide(stage, guideType);
+  stage.insertAdjacentHTML('beforeend', '<div class="hint">ドラッグ可 / 離すと弾性的に戻る / ノード同士は押し合う</div>');
+  return stage;
+}
+
+function targetsElasticPyramid(list) {
+  const rows = [1, 2, 3, 6];
+  const yRows = [96, 210, 326, 454];
+  const xsBy = {
+    1: [320],
+    2: [238, 402],
+    3: [176, 320, 464],
+    6: [104, 190, 276, 364, 450, 536],
+  };
+  const slots = [];
+  rows.forEach((count, ri) => xsBy[count].forEach(x => slots.push({ x, y: yRows[ri] })));
+  return list.map((d, i) => {
+    const s = slots[i];
+    const yScore = 90 + (1 - statusNorm(d)) * 390;
+    return { x: s.x, y: s.y * 0.60 + yScore * 0.40 };
+  });
+}
+function targetsSpringCrown(list) {
+  return list.map((d, i) => {
+    if (i === 0) return { x: 320, y: 104 };
+    const sn = statusNorm(d);
+    const ring = 115 + (1 - sn) * 210;
+    const span = Math.PI * (0.52 + (1 - sn) * 0.32);
+    const local = i - 1;
+    const count = list.length - 1;
+    const angle = Math.PI / 2 + (local / Math.max(1, count - 1) - .5) * span;
+    return { x: 320 + Math.cos(angle) * ring, y: 126 + Math.sin(angle) * ring * .95 };
+  });
+}
+function targetsGapTerrace(list) {
+  const groups = [];
+  list.forEach(d => {
+    const last = groups[groups.length - 1];
+    if (!last || Math.abs(status(last[last.length - 1]) - status(d)) > 7.2) groups.push([d]);
+    else last.push(d);
+  });
+  const ys = [96, 212, 338, 464];
+  const map = new Map();
+  groups.forEach((g, gi) => {
+    const gap = Math.min(130, 500 / (g.length + 1));
+    g.forEach((d, i) => map.set(d.id, {
+      x: 320 + (i - (g.length - 1) / 2) * gap,
+      y: ys[gi] || 478,
+    }));
+  });
+  return list.map(d => map.get(d.id));
+}
+function targetsInfluenceFan(list) {
+  return list.map((d, i) => {
+    const sn = statusNorm(d);
+    const pn = popNorm(d);
+    const y = 92 + (1 - sn) * 398;
+    const fanWidth = 62 + (1 - sn) * 420;
+    const x = 320 + (pn - .5) * fanWidth + ((i % 3) - 1) * 14;
+    return { x, y };
+  });
+}
+function render(id, guideType, targetFn) {
+  const stage = initStage(id, guideType);
+  const list = sortedRoster();
+  const targets = targetFn(list);
+  const nodes = list.map((d, i) => createNode(stage, d, i + 1, targets[i].x, targets[i].y));
+  runPhysics(stage, nodes);
+}
+
+render('stageA', 'pyramid', targetsElasticPyramid);
+render('stageB', 'crown', targetsSpringCrown);
+render('stageC', 'terrace', targetsGapTerrace);
+render('stageD', 'fan', targetsInfluenceFan);
+</script>
+</body>
+</html>

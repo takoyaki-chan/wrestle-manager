@@ -932,7 +932,12 @@ function renderWeekScreen() {
     const _rentalRosterWk = G.roster.filter(c => c.isRental);
     const _renderWeekRow = c => {
       const condPct = Math.round(c.condition);
-      const condCls = condPct > 66 ? 'high' : condPct > 33 ? 'mid' : 'low';
+      const condCls = condPct >= 100 ? 'cond-100'
+        : condPct >= 90 ? 'cond-90'
+        : condPct >= 80 ? 'cond-80'
+        : condPct >= 70 ? 'cond-70'
+        : condPct >= 50 ? 'cond-50'
+        : 'cond-low';
       const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',auto_rest:'🔄休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
       const statusHtml = c.injury
         ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}週</span>`
@@ -9882,11 +9887,131 @@ function _relmapGetLinkBetween(aId, bId) {
   return _relmapLinksByPair[_relmapPairKey(aId, bId)] || null;
 }
 
+function _relmapTrustVisible(val) {
+  return val <= 40 || val >= 60;
+}
+
+function _relmapRivalryVisible(val) {
+  return val >= 30;
+}
+
+function _relmapHasVisibleTrust(link) {
+  return !!link && (_relmapTrustVisible(link.bondAB) || _relmapTrustVisible(link.bondBA));
+}
+
+function _relmapHasVisibleRivalry(link) {
+  return !!link && (_relmapRivalryVisible(link.rivAB) || _relmapRivalryVisible(link.rivBA) || !!link.rivalTitle);
+}
+
+function _relmapHasVisibleRelation(link) {
+  return _relmapHasVisibleTrust(link) || _relmapHasVisibleRivalry(link);
+}
+
+function _relmapHexToRgb(hex) {
+  const clean = String(hex || '').replace('#', '');
+  const n = parseInt(clean.length === 3 ? clean.split('').map(ch => ch + ch).join('') : clean, 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+function _relmapMixHex(a, b, t) {
+  const ca = _relmapHexToRgb(a), cb = _relmapHexToRgb(b);
+  const k = Math.max(0, Math.min(1, t));
+  const r = Math.round(ca.r + (cb.r - ca.r) * k);
+  const g = Math.round(ca.g + (cb.g - ca.g) * k);
+  const bl = Math.round(ca.b + (cb.b - ca.b) * k);
+  return `rgb(${r},${g},${bl})`;
+}
+
+function _relmapTrustColor(val) {
+  if (val >= 60) return _relmapMixHex('#f2eee6', '#4aa3ff', (val - 60) / 40);
+  if (val <= 40) return _relmapMixHex('#f2eee6', '#a98cff', (40 - val) / 40);
+  return 'rgba(242,238,230,0.18)';
+}
+
+function _relmapRivalryColor(val) {
+  return _relmapMixHex('#d7b45a', '#ff8a2a', (Math.max(30, val) - 30) / 70);
+}
+
+function _relmapRelationshipIntensity(link) {
+  if (!link) return 0;
+  const trust = Math.abs((link.bondAB || 50) - 50) + Math.abs((link.bondBA || 50) - 50);
+  return trust + _relmapRivalryTotal(link) * 0.72;
+}
+
+function _relmapRelationshipStrokeWidth(link, emphasized) {
+  const intensity = _relmapRelationshipIntensity(link);
+  const cap = emphasized ? 9.2 : 7.0;
+  return Math.min(cap, 0.75 + Math.max(0, intensity - 18) / 22);
+}
+
+function _relmapRelationshipColor(link) {
+  const bAB = link?.bondAB ?? 50;
+  const bBA = link?.bondBA ?? 50;
+  const avg = (bAB + bBA) / 2;
+  const rivalry = _relmapRivalryTotal(link);
+  if (rivalry >= 60) {
+    const heat = Math.min(1, Math.max(0, (rivalry - 60) / 140));
+    if (avg >= 58) return _relmapMixHex('#b8d95a', '#4aa3ff', heat);
+    if (avg <= 42) return _relmapMixHex('#f2a14a', '#ff3030', heat);
+    return _relmapMixHex('#d7b45a', '#ff8a2a', heat);
+  }
+  const twist = (bAB - 50) * (bBA - 50) < 0;
+  if (twist) return '#d7b45a';
+  if (avg >= 60) return _relmapMixHex('#d9dde2', '#4aa3ff', (avg - 60) / 40);
+  if (avg <= 40) return _relmapMixHex('#d9dde2', '#a98cff', (40 - avg) / 40);
+  return 'rgba(220,224,230,0.55)';
+}
+
+function _relmapOffsetLineEndpoints(s, t, offset, pad) {
+  const dx = t.x - s.x, dy = t.y - s.y;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  const ux = dx / dist, uy = dy / dist;
+  const px = -uy, py = ux;
+  const sR = Math.max(1, (s.r || 0) + (pad || 4));
+  const tR = Math.max(1, (t.r || 0) + (pad || 4));
+  const sAlong = Math.sqrt(Math.max(0, sR * sR - offset * offset));
+  const tAlong = Math.sqrt(Math.max(0, tR * tR - offset * offset));
+  return {
+    x1: s.x + ux * sAlong + px * offset,
+    y1: s.y + uy * sAlong + py * offset,
+    x2: t.x - ux * tAlong + px * offset,
+    y2: t.y - uy * tAlong + py * offset,
+  };
+}
+
+function _relmapRivalryTotal(link) {
+  return Math.max(0, (link?.rivAB || 0) + (link?.rivBA || 0));
+}
+
+function _relmapRivalryStrokeWidth(link, emphasized) {
+  const total = _relmapRivalryTotal(link);
+  const cap = emphasized ? 8.5 : 6.6;
+  return Math.min(cap, 0.75 + Math.max(0, total - 50) / 24);
+}
+
+function _relmapNodeDisplayName(node) {
+  return _escapeHtml(node?.name || '');
+}
+
+function _relmapRivalryDirectionText(link, s, t, named) {
+  const ab = Math.round(link.rivAB || 0);
+  const ba = Math.round(link.rivBA || 0);
+  const aName = _relmapNodeDisplayName(s);
+  const bName = _relmapNodeDisplayName(t);
+  if (named) {
+    return {
+      ab: `${aName}→${bName} ${ab}`,
+      ba: `${bName}→${aName} ${ba}`,
+    };
+  }
+  return { ab: `${ab}→`, ba: `←${ba}` };
+}
+
 function _relmapLinkPassesFilter(link, filter) {
   if (!link) return false;
-  if (filter === 'rivalry') return link.rivAB >= 25 || link.rivBA >= 25 || !!link.rivalTitle;
-  if (filter === 'bond') return Math.abs(link.bondAB - 50) >= 10 || Math.abs(link.bondBA - 50) >= 10;
-  return true;
+  if (filter === 'rivalry') return _relmapHasVisibleRivalry(link);
+  if (filter === 'bond') return _relmapHasVisibleTrust(link);
+  return _relmapHasVisibleRelation(link);
 }
 
 function _relmapSelectRenderableLinks(candidateLinks, budget, maxPerNode, priorityNodeId) {
@@ -10487,9 +10612,9 @@ function _renderDbRelmap() {
   html += `<div class="relmap-legend">`;
   html += `<div class="rm-legend-title">LEGEND</div>`;
   html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#74b9ff"></div> 親密（高）</div>`;
-  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#ff7675"></div> 不信（低）</div>`;
-  html += `<div class="rm-legend-line"><div class="rm-legend-swatch thick" style="background:#e17055"></div> 競争意識</div>`;
-  html += `<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px;font-size:9px;color:var(--text-dim)">ノードサイズ＝OVR<br>クリック＝中心切替<br>右クリック＝メニュー</div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#a98cff"></div> 不信（低）</div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch thick" style="background:#d7b45a"></div> ライバル心</div>`;
+  html += `<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px;font-size:9px;color:var(--text-dim)">一本線=関係の濃さ<br>敵対ライバル=橙→赤<br>友好ライバル=黄緑→青</div>`;
   html += `</div>`;
 
   // Zoom controls
@@ -10736,15 +10861,16 @@ function _relmapTick(orgCenters) {
       const ft = _relmapFocusTargets[n.id];
       if (ft) { vel[i].vx += (ft.x - n.x) * 0.05 * a; vel[i].vy += (ft.y - n.y) * 0.05 * a; }
     });
-    // Light repulsion
+    // Focus keeps the center readable and lets related nodes orbit with springy spacing.
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i]._hidden) continue;
       for (let j = i + 1; j < nodes.length; j++) {
         if (nodes[j]._hidden) continue;
         const dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        if (dist < 60) {
-          const rf = (60 - dist) * 0.03 * a / dist;
+        const minD = nodes[i].r + nodes[j].r + (nodes[i].id === _relmapCenterId || nodes[j].id === _relmapCenterId ? 118 : 62);
+        if (dist < minD) {
+          const rf = (minD - dist) * 0.04 * a / dist;
           vel[i].vx -= dx * rf; vel[i].vy -= dy * rf;
           vel[j].vx += dx * rf; vel[j].vy += dy * rf;
         }
@@ -10816,49 +10942,61 @@ function _relmapRender(orgCenters) {
     const s = _relmapNodeMap[l.a], t = _relmapNodeMap[l.b];
     if (!s || !t || s._hidden || t._hidden) return;
     // Focus mode: only show links to/from center (reduce clutter) — except when org filter shows all intra-org links
-    if (vm === 'focus' && focused && !_relmapOrgFilter && s.id !== focused && t.id !== focused) return;
+    if (!_relmapLinkPassesFilter(l, filter)) return;
+    if (vm === 'focus' && focused && s.id !== focused && t.id !== focused) return;
     const dimmed = focused && vm === 'network' && focused !== s.id && focused !== t.id;
     const highlighted = focused && (focused === s.id || focused === t.id);
-    if (!highlighted && l.strength < 0.15 && filter === 'all' && vm === 'network') return;
-    if (filter === 'rivalry' && l.rivAB < 25 && l.rivBA < 25 && !l.rivalTitle) return;
-    if (filter === 'bond' && Math.abs(l.bondAB - 50) < 10 && Math.abs(l.bondBA - 50) < 10) return;
-
     const dx = t.x - s.x, dy = t.y - s.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const ux = dx / dist, uy = dy / dist, px = -uy * 4, py = ux * 4;
+    const ux = dx / dist, uy = dy / dist, px = -uy * 7, py = ux * 7;
     const sp = s.r + 4, ep = t.r + 4;
     const baseOp = dimmed ? 0.04 : (highlighted || vm === 'focus' ? 1 : 0.6);
+    const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
+    const relColor = _relmapRelationshipColor(l);
+    const relStroke = _relmapRelationshipStrokeWidth(l, highlighted || vm === 'focus');
+    const relOp = dimmed ? 0.04 : Math.min(0.95, baseOp * (0.42 + _relmapRelationshipIntensity(l) / 140));
+    if ((filter === 'bond' && _relmapHasVisibleTrust(l)) || (filter === 'rivalry' && _relmapHasVisibleRivalry(l)) || (filter === 'all' && _relmapHasVisibleRelation(l))) {
+      lh += `<line class="relationship-line" x1="${(s.x+ux*sp).toFixed(1)}" y1="${(s.y+uy*sp).toFixed(1)}" x2="${(t.x-ux*ep).toFixed(1)}" y2="${(t.y-uy*ep).toFixed(1)}" stroke="${relColor}" stroke-width="${relStroke.toFixed(2)}" opacity="${relOp.toFixed(2)}" stroke-linecap="round"/>`;
+    }
 
     // Bond A→B / B→A (skip when rivalry-only filter)
-    if (filter !== 'rivalry') {
-      const bAB = l.bondAB, cAB = bAB >= 50 ? `rgba(116,185,255,${0.2+(bAB-50)/100})` : `rgba(255,118,117,${0.2+(50-bAB)/100})`;
-      const wAB = Math.min(1.9, 0.85 + Math.abs(bAB - 50) / 40);
-      const mAB = bAB >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
-      lh += `<line x1="${s.x+ux*sp+px}" y1="${s.y+uy*sp+py}" x2="${t.x-ux*ep+px}" y2="${t.y-uy*ep+py}" stroke="${cAB}" stroke-width="${wAB}" ${bAB<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mAB}"/>`;
-      const bBA = l.bondBA, cBA = bBA >= 50 ? `rgba(116,185,255,${0.2+(bBA-50)/100})` : `rgba(255,118,117,${0.2+(50-bBA)/100})`;
-      const wBA = Math.min(1.9, 0.85 + Math.abs(bBA - 50) / 40);
-      const mBA = bBA >= 50 ? 'url(#rm-arrow-warm)' : 'url(#rm-arrow-cold)';
-      lh += `<line x1="${t.x-ux*sp-px}" y1="${t.y-uy*sp-py}" x2="${s.x+ux*ep-px}" y2="${s.y+uy*ep-py}" stroke="${cBA}" stroke-width="${wBA}" ${bBA<40?'stroke-dasharray="4,4"':''} opacity="${baseOp}" stroke-linecap="round" marker-end="${mBA}"/>`;
+    if (false && filter !== 'rivalry') {
+      [
+        { val: l.bondAB, from: s, to: t, off: 1 },
+        { val: l.bondBA, from: t, to: s, off: -1 },
+      ].filter(it => _relmapTrustVisible(it.val)).forEach(it => {
+        const cold = it.val <= 40;
+        const color = _relmapTrustColor(it.val);
+        const w = Math.min(2.8, 1.15 + Math.abs(it.val - 50) / 28);
+        const op = dimmed ? 0.05 : Math.min(0.95, baseOp * (0.42 + Math.abs(it.val - 50) / 72));
+        const ox = px * it.off, oy = py * it.off;
+        const m = cold ? 'url(#rm-arrow-cold)' : 'url(#rm-arrow-warm)';
+        lh += `<line x1="${it.from.x+ux*sp+ox}" y1="${it.from.y+uy*sp+oy}" x2="${it.to.x-ux*ep+ox}" y2="${it.to.y-uy*ep+oy}" stroke="${color}" stroke-width="${w.toFixed(2)}" ${cold?'stroke-dasharray="5,4"':''} opacity="${op.toFixed(2)}" stroke-linecap="round" marker-end="${m}"/>`;
+      });
     }
 
     // Rivalry overlay (skip when bond-only filter)
-    if (filter !== 'bond') {
+    if (false && filter !== 'bond') {
       const mr = Math.max(l.rivAB, l.rivBA);
-      if (mr > 20) {
-        const ro = dimmed ? 0.02 : (highlighted || vm === 'focus' ? 0.6 : 0.25);
-        const rivalryStroke = Math.min(highlighted || vm === 'focus' ? 3.0 : 2.4, 0.9 + mr / 28);
-        lh += `<line class="rivalry-line" x1="${s.x+ux*sp}" y1="${s.y+uy*sp}" x2="${t.x-ux*ep}" y2="${t.y-uy*ep}" stroke="rgba(225,112,85,${ro})" stroke-width="${rivalryStroke}" stroke-dasharray="8,5" ${highlighted||vm==='focus'?'filter="url(#rm-glow-red)"':''}/>`;
-        if (mr >= 50 && !dimmed) {
-          const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
-          lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="${mr>=70?18:13}" opacity="${highlighted||vm==='focus'?1:0.6}">\uD83D\uDD25</text>`;
+      if (_relmapRivalryVisible(mr)) {
+        const rivalryTotal = _relmapRivalryTotal(l);
+        const rivalryAvg = rivalryTotal / 2;
+        const ro = dimmed ? 0.03 : (highlighted || vm === 'focus' ? 0.78 : 0.4);
+        const rivalryStroke = _relmapRivalryStrokeWidth(l, highlighted || vm === 'focus');
+        const rivalryColor = _relmapRivalryColor(rivalryAvg);
+        if (vm === 'focus') {
+          const curve = 26 + Math.min(38, rivalryTotal * 0.18);
+          const qx = mx - px * curve / 7, qy = my - py * curve / 7;
+          lh += `<path class="rivalry-line" d="M${(s.x+ux*sp-px*0.65).toFixed(1)},${(s.y+uy*sp-py*0.65).toFixed(1)} Q${qx.toFixed(1)},${qy.toFixed(1)} ${(t.x-ux*ep-px*0.65).toFixed(1)},${(t.y-uy*ep-py*0.65).toFixed(1)}" fill="none" stroke="${rivalryColor}" stroke-width="${rivalryStroke.toFixed(2)}" stroke-dasharray="7,5" opacity="${ro.toFixed(2)}" stroke-linecap="round" ${highlighted?'filter="url(#rm-glow-red)"':''}/>`;
+        } else {
+          lh += `<line class="rivalry-line" x1="${s.x+ux*sp-px*1.45}" y1="${s.y+uy*sp-py*1.45}" x2="${t.x-ux*ep-px*1.45}" y2="${t.y-uy*ep-py*1.45}" stroke="${rivalryColor}" stroke-width="${rivalryStroke.toFixed(2)}" stroke-dasharray="7,5" opacity="${ro.toFixed(2)}" stroke-linecap="round"/>`;
         }
       }
     }
     // Rivalry title badge
     if (l.rivalTitle && !dimmed) {
-      const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2 - 12;
-      const tw = l.rivalTitle.length * 9 + 24;
-      lh += `<rect x="${mx-tw/2}" y="${my-9}" width="${tw}" height="18" rx="3" fill="${l.titleColor}22" stroke="${l.titleColor}55" stroke-width="1"/>`;
-      lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="9" font-weight="700" fill="${l.titleColor}">${l.titleEmoji} ${l.rivalTitle}</text>`;
+      const labelY = my - 17;
+      const label = `${l.titleEmoji || ''} ${l.rivalTitle}`;
+      lh += `<text x="${mx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="10" font-weight="900" fill="#ffd36a" paint-order="stroke" stroke="rgba(0,0,0,0.82)" stroke-width="2.4" opacity="${highlighted||vm==='focus'?0.98:0.78}">${_escapeHtml(label)}</text>`;
     }
     // One-sided icon
     if (l.isOneSided && !dimmed) {
@@ -10866,19 +11004,31 @@ function _relmapRender(orgCenters) {
       lh += `<text x="${mx}" y="${my}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#fdcb6e" opacity="0.8">\u26A1</text>`;
     }
     // Filter-specific value labels
-    if (!dimmed && (filter === 'bond' || filter === 'rivalry')) {
-      const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
+    if (!dimmed && (filter === 'bond' || filter === 'rivalry' || vm === 'focus' || highlighted)) {
       const ox = -uy * 12, oy = ux * 12; // perpendicular offset
       if (filter === 'bond') {
-        const bABr = Math.round(l.bondAB), bBAr = Math.round(l.bondBA);
-        const cABv = l.bondAB >= 50 ? '#74b9ff' : '#ff7675', cBAv = l.bondBA >= 50 ? '#74b9ff' : '#ff7675';
-        lh += `<text x="${mx+ox}" y="${my+oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="600" fill="${cABv}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.5" opacity="${baseOp}">${bABr}</text>`;
-        lh += `<text x="${mx-ox}" y="${my-oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="600" fill="${cBAv}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.5" opacity="${baseOp}">${bBAr}</text>`;
-      } else {
+        if (_relmapTrustVisible(l.bondAB)) lh += `<text x="${mx+ox}" y="${my+oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="${_relmapTrustColor(l.bondAB)}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">${Math.round(l.bondAB)}</text>`;
+        if (_relmapTrustVisible(l.bondBA)) lh += `<text x="${mx-ox}" y="${my-oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="${_relmapTrustColor(l.bondBA)}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">${Math.round(l.bondBA)}</text>`;
+      } else if (filter === 'rivalry' && !(vm === 'focus' || highlighted)) {
         const maxRiv = Math.max(l.rivAB, l.rivBA);
-        if (maxRiv >= 15) {
-          lh += `<text x="${mx+ox}" y="${my+oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="600" fill="#e17055" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.5" opacity="${baseOp}">${Math.round(l.rivAB)}</text>`;
-          lh += `<text x="${mx-ox}" y="${my-oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="600" fill="#e17055" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.5" opacity="${baseOp}">${Math.round(l.rivBA)}</text>`;
+        if (_relmapRivalryVisible(maxRiv)) {
+          const rc = _relmapRivalryColor(_relmapRivalryTotal(l) / 2);
+          const dir = _relmapRivalryDirectionText(l, s, t, false);
+          if (_relmapRivalryVisible(l.rivAB)) lh += `<text x="${mx+ox}" y="${my+oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="${rc}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">${dir.ab}</text>`;
+          if (_relmapRivalryVisible(l.rivBA)) lh += `<text x="${mx-ox}" y="${my-oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="${rc}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">${dir.ba}</text>`;
+        }
+      } else if (vm === 'focus' || highlighted) {
+        if (_relmapTrustVisible(l.bondAB)) lh += `<text x="${mx+ox}" y="${my+oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="8.5" font-weight="700" fill="${_relmapTrustColor(l.bondAB)}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">信頼 ${Math.round(l.bondAB)}→</text>`;
+        if (_relmapTrustVisible(l.bondBA)) lh += `<text x="${mx-ox}" y="${my-oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="8.5" font-weight="700" fill="${_relmapTrustColor(l.bondBA)}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">←${Math.round(l.bondBA)}</text>`;
+        const maxRiv = Math.max(l.rivAB, l.rivBA);
+        if (_relmapRivalryVisible(maxRiv)) {
+          const dir = _relmapRivalryDirectionText(l, s, t, true);
+          const rc = _relmapRivalryColor(_relmapRivalryTotal(l) / 2);
+          const line1 = _relmapRivalryVisible(l.rivAB) ? dir.ab : '';
+          const line2 = _relmapRivalryVisible(l.rivBA) ? dir.ba : '';
+          const both = line1 && line2;
+          if (line1) lh += `<text x="${mx}" y="${my+20}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="8.2" font-weight="800" fill="${rc}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.6" opacity="${baseOp}">ライバル心 ${line1}${both?' /':''}</text>`;
+          if (line2) lh += `<text x="${mx}" y="${my+(both?32:20)}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="8.2" font-weight="800" fill="${rc}" paint-order="stroke" stroke="rgba(0,0,0,0.9)" stroke-width="2.6" opacity="${baseOp}">${both?'': 'ライバル心 '}${line2}</text>`;
         }
       }
     }
@@ -11133,6 +11283,20 @@ function _relmapGetOrgNameById(orgId) {
 // ══════════════════════════════════════════════════════════
 // Visibility control
 // ══════════════════════════════════════════════════════════
+function _relmapPlaceFocusTargets(centerId, otherIds) {
+  const cx = _relmapW / 2, cy = _relmapH / 2;
+  const ids = otherIds || [];
+  const baseR = Math.min(_relmapW, _relmapH) * (ids.length <= 6 ? 0.34 : 0.38);
+  _relmapFocusTargets = {};
+  if (centerId) _relmapFocusTargets[centerId] = { x: cx, y: cy };
+  ids.forEach((id, i) => {
+    const angle = -Math.PI / 2 + (2 * Math.PI * i / Math.max(1, ids.length));
+    const wobble = ids.length > 7 ? (i % 2 === 0 ? 0.96 : 1.08) : 1;
+    const r = baseR * wobble;
+    _relmapFocusTargets[id] = { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r };
+  });
+}
+
 function _relmapUpdateVisibility() {
   const nodes = _relmapNodes;
   const links = _relmapLinks;
@@ -11150,16 +11314,13 @@ function _relmapUpdateVisibility() {
     );
 
     if (_relmapViewMode === 'focus' && _relmapCenterId && visibleNodeIds.has(_relmapCenterId)) {
-      const visible = nodes.filter(n => !n._hidden);
-      const cx = _relmapW / 2, cy = _relmapH / 2;
-      _relmapFocusTargets = {};
-      _relmapFocusTargets[_relmapCenterId] = { x: cx, y: cy };
-      const others = visible.filter(n => n.id !== _relmapCenterId);
-      const maxR = Math.min(_relmapW, _relmapH) * 0.35;
-      others.forEach((n, i) => {
-        const angle = -Math.PI / 2 + (2 * Math.PI * i / Math.max(1, others.length));
-        _relmapFocusTargets[n.id] = { x: cx + Math.cos(angle) * maxR, y: cy + Math.sin(angle) * maxR };
-      });
+      const fl = _relmapGetLinksFor(_relmapCenterId)
+        .filter(l => visibleNodeIds.has(l.a) && visibleNodeIds.has(l.b) && _relmapLinkPassesFilter(l, _relmapFilter));
+      const shownIds = new Set([_relmapCenterId]);
+      fl.slice(0, _RELMAP_FOCUS_MAX_CONN).forEach(l => shownIds.add(l.a === _relmapCenterId ? l.b : l.a));
+      nodes.forEach(n => { if (visibleNodeIds.has(n.id)) n._hidden = !shownIds.has(n.id); });
+      _relmapPlaceFocusTargets(_relmapCenterId, [...shownIds].filter(id => id !== _relmapCenterId));
+      candidateLinks = fl.filter(l => shownIds.has(l.a) && shownIds.has(l.b));
     }
 
     _relmapVisibleLinks = _relmapSelectRenderableLinks(candidateLinks, _RELMAP_FILTERED_LINK_BUDGET, _RELMAP_NETWORK_LINKS_PER_NODE + 1, _relmapCenterId);
@@ -11188,18 +11349,7 @@ function _relmapUpdateVisibility() {
     shownIds.add(_relmapCenterId);
     nodes.forEach(n => { n._hidden = !shownIds.has(n.id); });
 
-    const cx = _relmapW / 2, cy = _relmapH / 2;
-    _relmapFocusTargets = {};
-    _relmapFocusTargets[_relmapCenterId] = { x: cx, y: cy };
-    const maxR = Math.min(_relmapW, _relmapH) * 0.40;
-    const minR = maxR * 0.18;
-    const topI = shown.length ? shown[0].intensity : 1;
-    shown.forEach((il, i) => {
-      const angle = -Math.PI / 2 + (2 * Math.PI * i / Math.max(1, shown.length));
-      const norm = topI > 0 ? il.intensity / topI : 0;
-      const dist = maxR - (maxR - minR) * norm;
-      _relmapFocusTargets[il.oid] = { x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist };
-    });
+    _relmapPlaceFocusTargets(_relmapCenterId, shown.map(il => il.oid));
 
     _relmapVisibleLinks = shown.map(il => il.l);
     _relmapRebuildVisibleLinkState();
@@ -11226,7 +11376,7 @@ function _relmapUpdateVisibility() {
     nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
   } else if (_relmapFilterRelOnly) {
     const visibleNodeIds = new Set();
-    candidateLinks = links.filter(l => l.strength >= _relmapFilterThreshold / 100);
+    candidateLinks = links.filter(l => _relmapHasVisibleRelation(l) && l.strength >= _relmapFilterThreshold / 100);
     candidateLinks.forEach(l => { visibleNodeIds.add(l.a); visibleNodeIds.add(l.b); });
     nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
   } else {
@@ -11322,7 +11472,7 @@ function _relmapSetupInteraction(svg, container) {
       const nextX = p.x - _relmapDragOffset.x;
       const nextY = p.y - _relmapDragOffset.y;
       if (_relmapViewMode === 'power') {
-        const key = _relmapOrgFilter && _relmapOrgFilter !== 'fa' ? _relmapOrgFilter : '__overview__';
+        const key = _relmapPowerLayoutKey();
         _relmapSetPowerPos(_relmapDragTarget, key, nextX, nextY);
         _relmapRenderPowerView();
       } else {
@@ -11349,7 +11499,20 @@ function _relmapSetupInteraction(svg, container) {
       const cl = _relmapGetLinksFor(id), rv = cl.filter(l => l.rivalTitle);
       const orgName = _relmapGetOrgNameById(n.orgId);
       const emoji = _relmapGetOrgEmoji(n.orgId);
-      tt.innerHTML = `<div style="font-weight:700;margin-bottom:3px">${n.name}</div><div style="color:${n.color};font-size:10px;margin-bottom:3px">${emoji} ${orgName}</div><div style="font-family:Oswald;font-size:13px;color:var(--gold)">OVR ${n.ovr} <span style="font-size:10px;color:var(--text-dim);margin-left:4px">${n.style}</span></div><div style="font-size:9px;color:var(--text-dim);margin-top:3px">関係 ${cl.length}件${rv.length?` / ライバル ${rv.length}件`:''}</div>`;
+      const rivalRows = cl
+        .filter(l => _relmapHasVisibleRivalry(l))
+        .sort((a, b) => _relmapRivalryTotal(b) - _relmapRivalryTotal(a))
+        .slice(0, 3)
+        .map(l => {
+          const otherId = l.a === id ? l.b : l.a;
+          const other = _relmapNodeMap[otherId];
+          const selfToOther = Math.round(l.a === id ? l.rivAB : l.rivBA);
+          const otherToSelf = Math.round(l.a === id ? l.rivBA : l.rivAB);
+          const selfName = _escapeHtml(n.name);
+          const otherName = _escapeHtml(other?.name || '');
+          return `<div style="font-size:9px;color:#ffb08a;line-height:1.35">${selfName}→${otherName} ${selfToOther} / ${otherName}→${selfName} ${otherToSelf}</div>`;
+        }).join('');
+      tt.innerHTML = `<div style="font-weight:700;margin-bottom:3px">${_escapeHtml(n.name)}</div><div style="color:${n.color};font-size:10px;margin-bottom:3px">${emoji} ${_escapeHtml(orgName)}</div><div style="font-family:Oswald;font-size:13px;color:var(--gold)">OVR ${n.ovr} <span style="font-size:10px;color:var(--text-dim);margin-left:4px">${_escapeHtml(n.style)}</span></div><div style="font-size:9px;color:var(--text-dim);margin-top:3px">関係 ${cl.length}件${rv.length?` / ライバル ${rv.length}件`:''}</div>${rivalRows ? `<div style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.12)">${rivalRows}</div>` : ''}`;
       tt.classList.add('show'); tt.style.left = (e.clientX + 16) + 'px'; tt.style.top = (e.clientY - 10) + 'px';
     } else if (tt && !_relmapDragTarget) { tt.classList.remove('show'); }
   });
@@ -11428,6 +11591,11 @@ function _relmapApplyViewport(svg) {
   svg.setAttribute('viewBox', `${_relmapPanX} ${_relmapPanY} ${vw} ${vh}`);
 }
 
+function _relmapPowerLayoutKey() {
+  const base = _relmapOrgFilter && _relmapOrgFilter !== 'fa' ? _relmapOrgFilter : '__overview__';
+  return `${base}:elastic-pyramid-v2`;
+}
+
 function _relmapGetPowerPos(node, key, fallbackX, fallbackY) {
   if (!node) return { x: fallbackX, y: fallbackY };
   if (key === '__overview__') {
@@ -11457,7 +11625,7 @@ function _relmapSetPowerPos(node, key, x, y) {
 function _relmapGetDisplayPos(node) {
   if (!node) return { x: 0, y: 0 };
   if (_relmapViewMode !== 'power') return { x: node.x, y: node.y };
-  const key = _relmapOrgFilter && _relmapOrgFilter !== 'fa' ? _relmapOrgFilter : '__overview__';
+  const key = _relmapPowerLayoutKey();
   return _relmapGetPowerPos(node, key, node.x, node.y);
 }
 
@@ -11504,6 +11672,122 @@ function _relmapPowerPopularityValue(fighter) {
   return Number.isFinite(num) ? num : Math.round((fighter && fighter.popularity) || 0);
 }
 
+function _relmapPowerStatusScore(fighter, championId) {
+  const ovr = Engine.util.ov(fighter);
+  const pop = _relmapPowerPopularityValue(fighter);
+  const champBoost = championId && fighter.id === championId ? 7 : 0;
+  return ovr + pop * 0.10 + champBoost;
+}
+
+function _relmapBuildElasticPyramidSlots(items, opts) {
+  const list = items || [];
+  if (!list.length) return [];
+  const scores = list.map(item => item.score);
+  const maxScore = Math.max(...scores);
+  const minScore = Math.min(...scores);
+  const range = Math.max(1, maxScore - minScore);
+  const rows = [];
+  let rest = list.length;
+  [1, 2, 3].forEach(count => {
+    if (rest <= 0) return;
+    const take = Math.min(count, rest);
+    rows.push(take);
+    rest -= take;
+  });
+  while (rest > 0) {
+    const take = Math.min(6, rest);
+    rows.push(take);
+    rest -= take;
+  }
+  const cx = opts.cx;
+  const top = opts.top;
+  const bottom = opts.bottom;
+  const maxWidth = opts.maxWidth;
+  const h = Math.max(1, bottom - top);
+  const slots = [];
+  rows.forEach((cols, rowIndex) => {
+    const rowNorm = rows.length <= 1 ? 0 : rowIndex / (rows.length - 1);
+    const rowY = top + rowNorm * h;
+    const rowDensity = cols <= 2 ? 0.58 : cols === 3 ? 0.76 : 1;
+    const rowWidth = cols <= 1 ? 0 : maxWidth * Math.min(1, 0.24 + rowNorm * 0.76) * rowDensity;
+    for (let col = 0; col < cols; col++) {
+      const colNorm = cols <= 1 ? 0 : (col / (cols - 1)) * 2 - 1;
+      slots.push({ x: cx + colNorm * rowWidth * 0.5, y: rowY });
+    }
+  });
+  return list.map((item, i) => {
+    const slot = slots[i] || slots[slots.length - 1];
+    const scoreNorm = (item.score - minScore) / range;
+    const scoreY = top + (1 - scoreNorm) * h;
+    const hash = _relmapIdHash(item.id * 97 + i * 17);
+    return {
+      x: slot.x + (hash - 0.5) * (opts.jitterX || 0),
+      y: slot.y * 0.58 + scoreY * 0.42,
+    };
+  });
+}
+
+function _relmapPowerCompactFrame(count, opts) {
+  const topLimit = opts.topLimit;
+  const bottomLimit = opts.bottomLimit;
+  const spanLimit = Math.max(120, bottomLimit - topLimit);
+  const rowCount = count <= 1 ? 1
+    : count <= 3 ? 2
+      : count <= 6 ? 3
+        : count <= 10 ? 4
+          : Math.ceil((count + 2) / 4);
+  const idealGap = count <= 4 ? 112 : count <= 8 ? 102 : count <= 12 ? 92 : 84;
+  const idealSpan = Math.max(120, (rowCount - 1) * idealGap);
+  const span = Math.min(spanLimit, idealSpan);
+  const top = topLimit;
+  const bottom = top + span;
+  const widthScale = count <= 3 ? 0.42 : count <= 6 ? 0.58 : count <= 8 ? 0.66 : count <= 12 ? 0.78 : 0.9;
+  return {
+    top,
+    bottom,
+    maxWidth: opts.maxWidth * widthScale,
+    jitterX: Math.min(opts.jitterX || 0, opts.maxWidth * 0.025),
+  };
+}
+
+function _relmapRelaxPowerNodes(nodes, bounds, passes) {
+  for (let pass = 0; pass < (passes || 8); pass++) {
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const minDist = a.r + b.r + (bounds.pad || 18);
+        if (dist < minDist) {
+          const push = (minDist - dist) / 2;
+          const nx = dx / dist, ny = dy / dist;
+          a.x -= nx * push * 0.86; a.y -= ny * push * 0.38;
+          b.x += nx * push * 0.86; b.y += ny * push * 0.38;
+        }
+      }
+      const nd = nodes[i];
+      const spring = nd.isAce ? 0.05 : nd.isChamp ? 0.045 : nd.isTop3 ? 0.034 : 0.024;
+      nd.x += (nd.homeX - nd.x) * spring;
+      nd.y += (nd.homeY - nd.y) * (spring * 0.74);
+      nd.x = Math.max(bounds.left + nd.r, Math.min(bounds.right - nd.r, nd.x));
+      nd.y = Math.max(bounds.top + nd.r, Math.min(bounds.bottom - nd.r, nd.y));
+    }
+  }
+}
+
+function _relmapPowerMotionStyle() {
+  return `<style>
+    .rm-power-drift { animation: rmPowerDrift 4.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .rm-power-drift:nth-of-type(3n) { animation-duration: 5.6s; }
+    .rm-power-drift:nth-of-type(4n) { animation-delay: -1.4s; }
+    @keyframes rmPowerDrift {
+      0%, 100% { transform: translate(0, 0); }
+      45% { transform: translate(1.8px, -1.2px); }
+      70% { transform: translate(-1.1px, 0.9px); }
+    }
+  </style>`;
+}
+
 // 勢力図 viewMode — 散布型階層SVG
 // ══════════════════════════════════════════════════════════
 function _drawRelmapPowerView(svg) {
@@ -11523,7 +11807,7 @@ function _drawRelmapPowerView(svg) {
 function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   leftOffset = leftOffset || 0;
   const drawW = W - leftOffset;
-  const layoutKey = '__overview__';
+  const layoutKey = _relmapPowerLayoutKey();
 
   // 単体団体ビュー（orgFilter有効時）
   if (_relmapOrgFilter && _relmapOrgFilter !== 'fa') {
@@ -11565,7 +11849,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   const globalOVRRange = Math.max(1, globalOVRMax - globalOVRMin);
 
   // OVR比例ノードサイズ
-  const R_MIN = 10, R_MAX = 30;
+  const R_MIN = 11, R_MAX = 30;
 
   // 団体エリア中心（2×2グリッド、ランキング順: 上段→下段、左→右交互）
   const HEADER_H = 16;
@@ -11586,28 +11870,33 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     const areaPos = areaPositions[ci] || areaPositions[0];
     const areaCX = leftOffset + drawW * areaPos.cx;
     const areaCY = HEADER_H + (H - HEADER_H) * areaPos.cy;
-    const sorted = [...org.roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    const champId = orgChampMap[org.id] || null;
+    const sorted = [...org.roster].sort((a, b) => _relmapPowerStatusScore(b, champId) - _relmapPowerStatusScore(a, champId));
     const n = sorted.length;
+    const frame = _relmapPowerCompactFrame(n, {
+      topLimit: areaCY - areaRadiusY * 0.70,
+      bottomLimit: areaCY + areaRadiusY * 0.78,
+      maxWidth: areaRadiusX * 1.60,
+      jitterX: areaRadiusX * 0.06,
+    });
+    const targets = _relmapBuildElasticPyramidSlots(
+      sorted.map(f => ({ id: f.id, score: _relmapPowerStatusScore(f, champId) })),
+      {
+        cx: areaCX,
+        top: frame.top,
+        bottom: frame.bottom,
+        maxWidth: frame.maxWidth,
+        jitterX: frame.jitterX,
+      }
+    );
 
     sorted.forEach((f, rank) => {
       const ovr = Engine.util.ov(f);
       const ovrNorm = globalOVRRange > 0 ? (ovr - globalOVRMin) / globalOVRRange : 0.5;
       const r = R_MIN + ovrNorm * (R_MAX - R_MIN);
-      const hash = _relmapIdHash(f.id);
-      const hash2 = _relmapIdHash(f.id + 9999);
-      const hash3 = _relmapIdHash(f.id * 17 + org.rank * 101);
-      const rankNorm = n > 1 ? rank / (n - 1) : 0;
-      const angle = (-Math.PI * 0.58)
-        + rankNorm * Math.PI * (1.18 + hash2 * 0.2)
-        + (hash - 0.5) * 0.6;
-      const radial = 0.18 + rankNorm * 0.82;
-      const spread = _relmapPolarOffset(areaRadiusX, areaRadiusY, angle, radial);
-      const xOff = spread.x + (hash2 - 0.5) * areaRadiusX * 0.28;
-      const yBase = (1 - ovrNorm) * areaRadiusY * 1.32 - areaRadiusY * 0.52;
-      const yOff = yBase + spread.y * 0.42 + (hash3 - 0.5) * areaRadiusY * 0.18;
-      const aceLift = rank === 0 ? areaRadiusY * 0.18 : rank < 3 ? areaRadiusY * 0.08 : 0;
-      const homeX = areaCX + xOff;
-      const homeY = areaCY + yOff - aceLift;
+      const target = targets[rank] || { x: areaCX, y: areaCY };
+      const homeX = target.x;
+      const homeY = target.y;
       const mapNode = _relmapNodeMap[f.id];
       const savedPos = _relmapGetPowerPos(mapNode, layoutKey, homeX, homeY);
 
@@ -11615,7 +11904,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
         id: f.id, fighter: f, orgId: org.id, orgColor: org.color,
         orgName: org.name, orgRank: org.rank, inOrgRank: rank,
         x: savedPos.x, y: savedPos.y,
-        r, ovr, isChamp: !!orgChampMap[org.id] && f.id === orgChampMap[org.id],
+        r, ovr, pop: _relmapPowerPopularityValue(f), isChamp: !!champId && f.id === champId,
         isAce: rank === 0, isTop3: rank < 3,
         homeX, homeY,
       });
@@ -11624,32 +11913,23 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   });
 
   // Pass 2: 衝突回避（5パス、水平優先）
-  for (let pass = 0; pass < 6; pass++) {
-    for (let i = 0; i < allNodes.length; i++) {
-      for (let j = i + 1; j < allNodes.length; j++) {
-        const a = allNodes[i], b = allNodes[j];
-        const dx = b.x - a.x, dy = b.y - a.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const minDist = a.r + b.r + 4;
-        if (dist < minDist && dist > 0.01) {
-          const push = (minDist - dist) / 2;
-          const nx = dx / dist, ny = dy / dist;
-          a.x -= nx * push * 0.9; a.y -= ny * push * 0.45;
-          b.x += nx * push * 0.9; b.y += ny * push * 0.45;
-        }
-      }
-    }
-  }
+  _relmapRelaxPowerNodes(allNodes, {
+    left: leftOffset + 10,
+    right: W - 54,
+    top: HEADER_H + 8,
+    bottom: H - 34,
+    pad: 24,
+  }, 9);
 
   // 境界クランプ
   allNodes.forEach(n => {
-    n.x = Math.max(leftOffset + n.r + 2, Math.min(W - n.r - 2, n.x));
-    n.y = Math.max(HEADER_H + n.r + 2, Math.min(H - n.r - 16, n.y));
+    n.x = Math.max(leftOffset + n.r + 6, Math.min(W - n.r - 56, n.x));
+    n.y = Math.max(HEADER_H + n.r + 8, Math.min(H - n.r - 34, n.y));
     _relmapSetPowerPos(_relmapNodeMap[n.id], layoutKey, n.x, n.y);
   });
 
   // Pass 3: SVG文字列を3層で構築（ライン→背景→ノード）
-  let defsSvg = '<defs>';
+  let defsSvg = '<defs>' + _relmapPowerMotionStyle();
   let linesSvg = '', bgSvg = '', nodeSvg = '';
 
   // ── 層2: 団体エリア背景 + ラベル ──
@@ -11684,12 +11964,13 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   // OVR昇順で描画（大きいノードが上に来るよう）
   const drawOrder = [...allNodes].sort((a, b) => a.ovr - b.ovr);
   drawOrder.forEach(node => {
-    const { x, y, r, ovr, orgColor, isChamp, isAce, isTop3, fighter: f, inOrgRank } = node;
+    const { x, y, r, ovr, pop, orgColor, isChamp, isAce, isTop3, fighter: f, inOrgRank } = node;
     const strokeColor = isChamp ? '#d4a843' : orgColor;
     const sw = isChamp ? 2.5 : isAce ? 2.2 : 1.3;
     const pUrl = getPortraitUrl(f.id);
+    const ovrStyle = _relmapPowerOvrBadgeStyle(ovr);
 
-    nodeSvg += `<g class="rm-node-group" data-id="${f.id}" style="cursor:pointer">`;
+    nodeSvg += `<g class="rm-node-group rm-power-drift" data-id="${f.id}" style="cursor:pointer">`;
 
     // エースのオーラ（大きく強調）
     if (isAce) {
@@ -11713,17 +11994,25 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     }
 
     // OVRバッジ
-    const badgeW = Math.max(22, r * 0.9);
-    const badgeH = Math.max(12, r * 0.45);
-    const badgeY = y + r + 6;
-    nodeSvg += `<rect x="${(x - badgeW / 2).toFixed(1)}" y="${(badgeY - badgeH / 2).toFixed(1)}" width="${badgeW.toFixed(1)}" height="${badgeH.toFixed(1)}" rx="3" fill="rgba(10,10,20,0.85)" stroke="rgba(255,255,255,${isTop3 ? '0.65' : '0.4'})" stroke-width="1"/>`;
-    nodeSvg += `<text x="${x.toFixed(1)}" y="${(badgeY + 1).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="${Math.max(8, r * 0.32).toFixed(1)}" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
+    const ovrBadgeW = Math.max(30, Math.min(42, r * 1.08));
+    const ovrBadgeH = Math.max(18, Math.min(24, r * 0.70));
+    const ovrBadgeX = x + r * 0.58;
+    const ovrBadgeY = y + r * 0.18;
+    nodeSvg += `<rect x="${ovrBadgeX.toFixed(1)}" y="${ovrBadgeY.toFixed(1)}" width="${ovrBadgeW.toFixed(1)}" height="${ovrBadgeH.toFixed(1)}" rx="7" fill="${ovrStyle.fill}" stroke="${ovrStyle.stroke}" stroke-width="1.1"/>`;
+    nodeSvg += `<text x="${(ovrBadgeX + ovrBadgeW / 2).toFixed(1)}" y="${(ovrBadgeY + ovrBadgeH / 2 + 0.5).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="${ovrStyle.text}" font-size="${Math.max(12, Math.min(17, r * 0.44)).toFixed(1)}" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
+    const popBadgeW = Math.max(34, Math.min(48, r * 1.16));
+    const popBadgeH = 15;
+    const popBadgeX = ovrBadgeX + 1;
+    const popBadgeY = ovrBadgeY + ovrBadgeH - 1;
+    nodeSvg += `<rect x="${popBadgeX.toFixed(1)}" y="${popBadgeY.toFixed(1)}" width="${popBadgeW.toFixed(1)}" height="${popBadgeH}" rx="6" fill="rgba(32,20,12,0.94)" stroke="rgba(255,196,120,0.38)" stroke-width="1"/>`;
+    nodeSvg += `<text x="${(popBadgeX + popBadgeW / 2).toFixed(1)}" y="${(popBadgeY + 10.2).toFixed(1)}" text-anchor="middle" fill="#ffcf91" font-size="${Math.max(8.5, Math.min(10.2, r * 0.23)).toFixed(1)}" font-weight="600" font-family="sans-serif">人気 ${pop}</text>`;
 
     // 名前ラベル（上位5名 or ロスター少ないとき全員）
     if (inOrgRank < 5 || node.r >= 18) {
       const name = (f.name || '').slice(0, 6);
       const fs = isAce ? 10.5 : isTop3 ? 10 : 9;
-      nodeSvg += `<text x="${x.toFixed(1)}" y="${(badgeY + badgeH / 2 + 11).toFixed(1)}" text-anchor="middle" fill="#e8e8e8" font-size="${fs}" font-family="sans-serif" stroke="rgba(0,0,0,0.88)" stroke-width="3" paint-order="stroke">${name}</text>`;
+      const nameY = y + r + 29;
+      nodeSvg += `<text x="${x.toFixed(1)}" y="${nameY.toFixed(1)}" text-anchor="middle" fill="#e8e8e8" font-size="${fs}" font-family="sans-serif" stroke="rgba(0,0,0,0.88)" stroke-width="3" paint-order="stroke">${name}</text>`;
     }
 
     nodeSvg += `</g>`;
@@ -11748,22 +12037,21 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     ? (G.roster || []).filter(c => !c.isRental)
     : (aiData.roster || []);
   const roster = _relmapDedupPowerRoster(rawRoster);
-  const sorted = [...roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-  const n = sorted.length;
   const drawW = W - leftOffset;
+  const color = _RELMAP_ORG_COLORS[orgId] || '#888';
+  const orgName = _relmapGetOrgNameById(orgId);
+  const orgChampId = isPlayer
+    ? (G.titles?.world?.championId || null)
+    : (aiData.titles?.world?.championId || null);
+  const sorted = [...roster].sort((a, b) => _relmapPowerStatusScore(b, orgChampId) - _relmapPowerStatusScore(a, orgChampId));
+  const n = sorted.length;
 
   if (!n) {
     svg.innerHTML = `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H / 2).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="14" font-family="sans-serif">選手なし</text>`;
     return;
   }
 
-  const color = _RELMAP_ORG_COLORS[orgId] || '#888';
-  const orgName = _relmapGetOrgNameById(orgId);
   // 該当団体の王者ID取得
-  const orgChampId = isPlayer
-    ? (G.titles?.world?.championId || null)
-    : (aiData.titles?.world?.championId || null);
-
   const HEADER_H = 40;
   const PAD_TOP = HEADER_H + 28;
   const PAD_BOTTOM = 32;
@@ -11772,11 +12060,12 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
   const usableW = drawW - PAD_X * 2;
   const centerXArea = leftOffset + drawW * 0.53;
   const topY = PAD_TOP + 30;
+  const layoutKey = _relmapPowerLayoutKey();
   const makeNode = (f, rank, homeX, homeY) => {
     const ovr = Engine.util.ov(f);
     const r = _relmapPowerNodeRadius(ovr);
     const mapNode = _relmapNodeMap[f.id];
-    const savedPos = _relmapGetPowerPos(mapNode, orgId, homeX, homeY);
+    const savedPos = _relmapGetPowerPos(mapNode, layoutKey, homeX, homeY);
     const node = {
       id: f.id, fighter: f, x: savedPos.x, y: savedPos.y, r, ovr,
       pop: _relmapPowerPopularityValue(f),
@@ -11846,43 +12135,78 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     orderedForLayout.push(f);
   });
 
-  const formationSlots = buildFormationSlots(orderedForLayout.length);
+  const statusScore = (f) => {
+    const ovr = Engine.util.ov(f);
+    const pop = _relmapPowerPopularityValue(f);
+    const champBoost = !!orgChampId && f.id === orgChampId ? 7 : 0;
+    return ovr + pop * 0.10 + champBoost;
+  };
+  const buildDynamicSlots = (items) => {
+    const scores = items.map(statusScore);
+    const maxScore = Math.max(...scores), minScore = Math.min(...scores);
+    const range = Math.max(1, maxScore - minScore);
+    const placed = [];
+    const xCandidates = [0, -0.15, 0.15, -0.30, 0.30, -0.45, 0.45, -0.08, 0.08]
+      .map(v => centerXArea + usableW * v);
+    return items.map((f, idx) => {
+      const score = scores[idx];
+      const norm = (score - minScore) / range;
+      const yBase = topY + (1 - norm) * Math.max(70, contentH - 92);
+      const best = xCandidates
+        .map((x, order) => {
+          let penalty = Math.abs(x - centerXArea) * 0.003 + order * 0.02;
+          placed.forEach(p => {
+            const dy = Math.abs(yBase - p.y);
+            if (dy < 92) {
+              const dx = Math.abs(x - p.x);
+              penalty += Math.max(0, 130 - dx) * (92 - dy) * 0.018;
+            }
+          });
+          return { x, penalty };
+        })
+        .sort((a, b) => a.penalty - b.penalty)[0];
+      const slot = { x: best.x, y: yBase };
+      placed.push(slot);
+      return slot;
+    });
+  };
+  const frame = _relmapPowerCompactFrame(orderedForLayout.length, {
+    topLimit: topY,
+    bottomLimit: H - PAD_BOTTOM - 86,
+    maxWidth: usableW * 0.84,
+    jitterX: Math.min(28, usableW * 0.035),
+  });
+  const dynamicSlots = _relmapBuildElasticPyramidSlots(
+    orderedForLayout.map(f => ({ id: f.id, score: _relmapPowerStatusScore(f, orgChampId) })),
+    {
+      cx: centerXArea,
+      top: frame.top,
+      bottom: frame.bottom,
+      maxWidth: frame.maxWidth,
+      jitterX: frame.jitterX,
+    }
+  );
   const nodes = orderedForLayout.map((f, idx) => {
-    const slot = formationSlots[idx] || formationSlots[formationSlots.length - 1];
+    const slot = dynamicSlots[idx] || dynamicSlots[dynamicSlots.length - 1];
     const rank = sorted.findIndex(it => it.id === f.id);
     return makeNode(f, rank, slot.x, slot.y);
   });
 
-  for (let pass = 0; pass < 8; pass++) {
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const a = nodes[i], b = nodes[j];
-        const dx = b.x - a.x, dy = b.y - a.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const minDist = a.r + b.r + 18;
-        if (dist < minDist && dist > 0.01) {
-          const push = (minDist - dist) / 2;
-          const nx = dx / dist, ny = dy / dist;
-          a.x -= nx * push * 0.86; a.y -= ny * push * 0.34;
-          b.x += nx * push * 0.86; b.y += ny * push * 0.34;
-        }
-      }
-      const nd = nodes[i];
-      const spring = nd.isAce ? 0.05 : nd.isChamp ? 0.045 : nd.isTop3 ? 0.034 : 0.024;
-      nd.x += (nd.homeX - nd.x) * spring;
-      nd.y += (nd.homeY - nd.y) * (spring * 0.75);
-      nd.x = Math.max(leftOffset + PAD_X + nd.r, Math.min(leftOffset + drawW - PAD_X - nd.r, nd.x));
-      nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 26, nd.y));
-    }
-  }
+  _relmapRelaxPowerNodes(nodes, {
+    left: leftOffset + PAD_X + 10,
+    right: leftOffset + drawW - PAD_X - 58,
+    top: Math.max(PAD_TOP + 4, frame.top - 28),
+    bottom: Math.min(H - PAD_BOTTOM - 38, frame.bottom + 44),
+    pad: orderedForLayout.length <= 8 ? 30 : 38,
+  }, 10);
 
   nodes.forEach(nd => {
-    nd.x = Math.max(leftOffset + PAD_X + nd.r, Math.min(leftOffset + drawW - PAD_X - nd.r, nd.x));
-    nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 26, nd.y));
-    _relmapSetPowerPos(_relmapNodeMap[nd.id], orgId, nd.x, nd.y);
+    nd.x = Math.max(leftOffset + PAD_X + nd.r + 6, Math.min(leftOffset + drawW - PAD_X - nd.r - 58, nd.x));
+    nd.y = Math.max(PAD_TOP + nd.r + 6, Math.min(Math.min(H - PAD_BOTTOM - nd.r - 38, frame.bottom + 48), nd.y));
+    _relmapSetPowerPos(_relmapNodeMap[nd.id], layoutKey, nd.x, nd.y);
   });
 
-  let defsSvg = '<defs>';
+  let defsSvg = '<defs>' + _relmapPowerMotionStyle();
   let svgHtml = '';
 
   // ヘッダー
@@ -11903,7 +12227,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     const pUrl = getPortraitUrl(f.id);
     const ovrStyle = _relmapPowerOvrBadgeStyle(ovr);
 
-    svgHtml += `<g class="rm-node-group" data-id="${f.id}" style="cursor:pointer">`;
+    svgHtml += `<g class="rm-node-group rm-power-drift" data-id="${f.id}" style="cursor:pointer">`;
 
     // エースのオーラ
     if (isAce) {

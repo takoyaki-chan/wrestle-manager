@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>勢力図 団体モード モック 4案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1a1713;
+  --panel:#15120f;
+  --line:rgba(200,190,170,.14);
+  --line-strong:rgba(212,168,67,.26);
+  --text:#e8e0d0;
+  --text-sub:#b8ae9b;
+  --text-dim:#857b69;
+  --gold:#d4a843;
+  --blue:#74b9ff;
+  --green:#6ed6a2;
+  --ink:#0d0b09;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  background:
+    radial-gradient(circle at top left, rgba(212,168,67,.08), transparent 24%),
+    linear-gradient(180deg, #1d1915, #110f0c 38%);
+  color:var(--text);
+  font-family:"Noto Sans JP",sans-serif;
+}
+body{padding:24px 18px 40px}
+.shell{width:min(1480px,100%);margin:0 auto}
+.intro{
+  background:linear-gradient(180deg, rgba(26,22,18,.96), rgba(15,13,10,.96));
+  border:1px solid var(--line-strong);
+  border-radius:12px;
+  padding:18px 20px;
+  box-shadow:0 18px 50px rgba(0,0,0,.34);
+}
+.eyebrow,.caps{
+  font-family:"Oswald",sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.16em;
+}
+.eyebrow{font-size:12px;color:var(--gold);margin-bottom:8px}
+h1{margin:0 0 10px;font-size:28px;line-height:1.25}
+.intro p{margin:0;color:var(--text-sub);font-size:13px;line-height:1.75}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:11px;
+  color:var(--text-sub);
+  background:rgba(255,255,255,.02);
+}
+.deck{display:grid;gap:22px;margin-top:22px}
+.mock{
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  background:linear-gradient(180deg, rgba(23,19,15,.98), rgba(15,13,10,.98));
+  box-shadow:0 24px 80px rgba(0,0,0,.4);
+}
+.mock-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:16px;
+  padding:14px 18px;
+  border-bottom:1px solid var(--line-strong);
+}
+.mock-title{display:flex;gap:12px;align-items:baseline}
+.mock-no{
+  font-family:"Oswald",sans-serif;
+  color:var(--gold);
+  font-size:34px;
+  line-height:1;
+}
+.mock-head h2{margin:0;font-size:18px}
+.mock-head p{margin:4px 0 0;font-size:12px;color:var(--text-sub)}
+.mock-head .meta{font-size:11px;color:var(--text-sub);text-align:right;max-width:420px}
+.frame{
+  padding:14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,0)),
+    radial-gradient(circle at 70% 10%, rgba(116,185,255,.04), transparent 20%);
+}
+.app-shell{
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:10px;
+  overflow:hidden;
+  background:var(--panel);
+}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  background:rgba(255,255,255,.02);
+}
+.brand{display:flex;align-items:center;gap:10px;font-family:"Oswald",sans-serif;letter-spacing:.08em}
+.brand-dot{width:18px;height:18px;border-radius:50%;background:linear-gradient(180deg,#f0d67f,#b77c31)}
+.status{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-sub)}
+.status strong{color:var(--text)}
+.nav{
+  display:flex;
+  gap:8px;
+  padding:10px 12px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  overflow:auto;
+}
+.nav-btn{
+  white-space:nowrap;
+  padding:8px 12px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:6px;
+  color:var(--text-sub);
+  background:#14110d;
+  font-size:12px;
+}
+.nav-btn.active{
+  border-color:rgba(212,168,67,.4);
+  box-shadow:inset 0 -2px 0 var(--gold);
+  color:var(--text);
+}
+.board{
+  display:grid;
+  grid-template-columns:220px 1fr;
+  min-height:770px;
+}
+.sidebar{
+  padding:12px;
+  border-right:1px solid rgba(255,255,255,.05);
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+}
+.group{margin-bottom:12px}
+.group-title{
+  margin-bottom:8px;
+  color:var(--text-sub);
+  font-size:11px;
+}
+.ctrl{
+  width:100%;
+  border:1px solid var(--line);
+  background:#111018;
+  color:var(--text);
+  border-radius:7px;
+  padding:8px 10px;
+  font-size:12px;
+}
+.org-card{
+  border:1px solid rgba(212,168,67,.22);
+  border-left:3px solid var(--gold);
+  border-radius:8px;
+  padding:10px 10px 10px 12px;
+  background:rgba(212,168,67,.06);
+}
+.org-card .name{font-weight:800}
+.org-card .sub{font-size:11px;color:var(--text-sub);margin-top:4px}
+.org-card .faces{display:flex;gap:4px;margin-top:10px}
+.org-card .faces img{
+  width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.18)
+}
+.side-note{
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px;
+  background:rgba(255,255,255,.02);
+  font-size:11px;
+  color:var(--text-sub);
+  line-height:1.7;
+}
+.view{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(212,168,67,.06), transparent 28%),
+    linear-gradient(180deg, rgba(17,15,12,.92), rgba(14,12,10,.98));
+}
+.view-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px 10px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.view-title{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+}
+.view-title strong{font-size:18px}
+.view-title span{font-size:11px;color:var(--text-sub)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{
+  padding:6px 10px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:999px;
+  font-size:11px;
+  color:var(--text-sub);
+}
+.tab.active{
+  color:#15120f;
+  background:linear-gradient(180deg,#efcc6c,#d4a843);
+  border-color:transparent;
+  font-weight:700;
+}
+.legend{
+  position:absolute;
+  top:14px;
+  right:14px;
+  z-index:4;
+  width:240px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:rgba(12,10,8,.88);
+  padding:10px 11px;
+}
+.legend h3{
+  margin:0 0 6px;
+  font-family:"Oswald",sans-serif;
+  font-size:11px;
+  color:var(--text-sub);
+  letter-spacing:.1em;
+}
+.legend-item{
+  display:flex;
+  gap:7px;
+  align-items:center;
+  font-size:11px;
+  color:var(--text-sub);
+  margin-top:5px;
+}
+.legend-swatch{width:16px;height:4px;border-radius:999px;background:var(--blue)}
+.legend-swatch.gold{background:var(--gold)}
+.legend-dot{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.46);
+  background:rgba(255,255,255,.14)
+}
+.legend-note{
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px solid rgba(255,255,255,.06);
+  font-size:10px;
+  color:var(--text-dim);
+  line-height:1.6;
+}
+.canvas-wrap{padding:8px 8px 0}
+svg{display:block;width:100%;height:710px}
+.notes{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  padding:12px 14px 14px;
+  border-top:1px solid rgba(255,255,255,.05);
+  background:rgba(255,255,255,.02);
+}
+.note{
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px;
+}
+.note strong{display:block;margin-bottom:5px;font-size:12px}
+.note span{font-size:11px;color:var(--text-sub);line-height:1.6}
+@media (max-width:1100px){
+  .board{grid-template-columns:1fr}
+  .sidebar{border-right:0;border-bottom:1px solid rgba(255,255,255,.05)}
+}
+@media (max-width:760px){
+  body{padding-inline:10px}
+  .mock-head,.topbar,.view-top{flex-direction:column;align-items:start}
+  .notes{grid-template-columns:1fr}
+  .legend{position:static;width:auto;margin:0 12px 12px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <section class="intro">
+    <div class="eyebrow">Power View / Org Mode Mockup</div>
+    <h1>序列感が伝わることを最優先にした、団体モードの力関係モック 4案</h1>
+    <p>
+      今回は比較軸をかなり絞っています。<strong>顔は重ならない</strong>、
+      <strong>OVR を主表示・人気を従表示</strong>、
+      そして <strong>誰が上で、どこに層の厚みがあるか</strong> が一目で伝わること。
+      全案とも、OVR55 以下は同サイズで床上げし、団体モードではライバル線を描きません。
+    </p>
+    <div class="chips">
+      <div class="chip">非重なり前提</div>
+      <div class="chip">OVR 主表示 / 人気 従表示</div>
+      <div class="chip">序列の読みやすさ重視</div>
+      <div class="chip">現行UI枠は維持</div>
+      <div class="chip">実画像を使用</div>
+    </div>
+  </section>
+  <div class="deck" id="deck"></div>
+</div>
+<script>
+const roster = [
+  { name: "早川モナ", role: "ace", ovr: 87, pop: 72, tier: 4, portrait: "../../../image/face_hayakawa_m.png", champion: false },
+  { name: "岩小路詩子", role: "core", ovr: 87, pop: 61, tier: 4, portrait: "../../../image/face_iwakoji_s.png", champion: false },
+  { name: "大熊よし子", role: "core", ovr: 86, pop: 55, tier: 4, portrait: "../../../image/face_okubo_m.png", champion: false },
+  { name: "平松かなみ", role: "rising", ovr: 83, pop: 58, tier: 3, portrait: "../../../image/face_hiramatsu_k.png" },
+  { name: "玉手すみれ", role: "rising", ovr: 81, pop: 52, tier: 3, portrait: "../../../image/face_tamate_s.png" },
+  { name: "本郷恵子", role: "veteran", ovr: 79, pop: 48, tier: 4, portrait: "../../../image/face_hongo_m.png", champion: true },
+  { name: "椿玲奈", role: "support", ovr: 70, pop: 39, tier: 2, portrait: "../../../image/face_tachibana_r.png" },
+  { name: "高取麻衣子", role: "support", ovr: 69, pop: 42, tier: 2, portrait: "../../../image/face_takahashi_ma.png" },
+  { name: "芹沢理沙", role: "rising", ovr: 68, pop: 34, tier: 2, portrait: "../../../image/face_serizawa_a.png" },
+  { name: "二階堂舞", role: "support", ovr: 60, pop: 22, tier: 1, portrait: "../../../image/face_iijima_s.png" },
+  { name: "御影ナツ", role: "support", ovr: 55, pop: 18, tier: 1, portrait: "../../../image/face_miyagase_c.png" },
+  { name: "黒瀬ユイ", role: "support", ovr: 48, pop: 12, tier: 1, portrait: "../../../image/face_kuroe_m.png" }
+];
+
+const patterns = [
+  {
+    id: "A",
+    title: "Terrace Pyramid",
+    subtitle: "段々のテラスで上位帯の厚みを見せる案",
+    summary: "強さの層が最も分かりやすい。低OVR王者でも、サイズは控えめのまま王者マーカーで頂点帯に置ける。",
+    notes: [
+      { title: "良い点", text: "序列感がかなり明快。勢力関係を地形のように読める。" },
+      { title: "弱い点", text: "やや演出が強く、抽象図感は少し減る。" },
+      { title: "向いている", text: "力関係を最優先で見せたい場合の本命。" }
+    ],
+    draw: drawTerracePyramid
+  },
+  {
+    id: "B",
+    title: "Crown Stack",
+    subtitle: "王者と主軸から下へ落ちる縦の支配線を作る案",
+    summary: "団体の『柱』が見える。低OVR王者なら中央の王座ラインに置きつつ、周囲の実力者との差も残せる。",
+    notes: [
+      { title: "良い点", text: "エースの支配力と、その下の序列を強く読ませられる。" },
+      { title: "弱い点", text: "横方向の広がりは少なめで、少し厳格な見た目になる。" },
+      { title: "向いている", text: "エース中心の団体像を出したい場合。" }
+    ],
+    draw: drawCrownStack
+  },
+  {
+    id: "C",
+    title: "Influence Fan",
+    subtitle: "上位ほど前面に開き、下位ほど奥に下がる扇形の案",
+    summary: "上位選手が盤面を支配している感じが出やすい。低OVR王者を前面に出しつつ、実力上位は扇の幅で圧を出せる。",
+    notes: [
+      { title: "良い点", text: "図としての広がりを残しながら、上位優勢を伝えられる。" },
+      { title: "弱い点", text: "テラス型より厳密な順位比較は少し弱い。" },
+      { title: "向いている", text: "勢力図らしさと序列感の中間が欲しい場合。" }
+    ],
+    draw: drawInfluenceFan
+  },
+  {
+    id: "D",
+    title: "Rank Lanes",
+    subtitle: "帯ごとの横一列で、誰がどの階級にいるかを読む案",
+    summary: "一番整理されている。王者が低OVRでもベルト保持者として上段に出し、層構造は維持できる。",
+    notes: [
+      { title: "良い点", text: "非重なりで最も安定。OVR と人気も素早く読める。" },
+      { title: "弱い点", text: "管理画面的で、勢力図の抽象度はかなり薄まる。" },
+      { title: "向いている", text: "育成・補強判断にも使いたい場合。" }
+    ],
+    draw: drawRankLanes
+  }
+];
+
+function nodeSize(ovr){
+  if (ovr <= 55) return 31;
+  return 31 + (ovr - 55) * 0.58;
+}
+function ovrTierStyle(ovr){
+  if (ovr >= 85) return { fill: "#d6a23a", stroke: "rgba(255,230,176,.48)", text: "#16110a" };
+  if (ovr >= 78) return { fill: "#d46a4c", stroke: "rgba(255,202,188,.42)", text: "#fff7f2" };
+  if (ovr >= 70) return { fill: "#8c5bd6", stroke: "rgba(225,205,255,.40)", text: "#f8f2ff" };
+  if (ovr >= 60) return { fill: "#5677d8", stroke: "rgba(203,218,255,.38)", text: "#f6f9ff" };
+  return { fill: "#59616d", stroke: "rgba(232,238,247,.28)", text: "#f5f7fa" };
+}
+function popStyle(){
+  return {
+    fill: "rgba(32,20,12,.94)",
+    stroke: "rgba(255,196,120,.36)",
+    text: "#ffcf91"
+  };
+}
+function tierY(tier){
+  return { 4: 150, 3: 300, 2: 450, 1: 590 }[tier] || 600;
+}
+function faceNode(f, x, y, opts = {}){
+  const size = opts.size || nodeSize(f.ovr);
+  const ring = opts.ring || 2.4;
+  const champion = !!f.champion;
+  const halo = opts.halo || (champion ? "rgba(212,168,67,.28)" : "rgba(255,255,255,.08)");
+  const border = opts.border || (champion ? "#d4a843" : "rgba(255,255,255,.42)");
+  const ovrDx = opts.ovrDx == null ? size * 0.48 : opts.ovrDx;
+  const ovrDy = opts.ovrDy == null ? size * 0.32 : opts.ovrDy;
+  const popDx = ovrDx - 2;
+  const popDy = ovrDy + 28;
+  const nameY = opts.nameY == null ? size + 18 : opts.nameY;
+  const ovrStyle = ovrTierStyle(f.ovr);
+  const popBadge = popStyle();
+  return `
+    <g transform="translate(${x},${y})">
+      <circle r="${size + 11}" fill="${halo}"></circle>
+      ${champion ? `<circle r="${size + 7}" fill="none" stroke="rgba(212,168,67,.72)" stroke-width="2.4"></circle>` : ""}
+      <circle r="${size}" fill="#111"></circle>
+      <image href="${f.portrait}" x="${-size}" y="${-size}" width="${size*2}" height="${size*2}" clip-path="circle(${size}px at center)" preserveAspectRatio="xMidYMid slice"></image>
+      <circle r="${size}" fill="none" stroke="${border}" stroke-width="${ring}"></circle>
+      ${champion ? `<text x="0" y="${-size - 10}" text-anchor="middle" font-size="13">👑</text>` : ""}
+      <g transform="translate(${ovrDx},${ovrDy})">
+        <rect x="-6" y="-22" width="46" height="30" rx="9" fill="${ovrStyle.fill}" stroke="${ovrStyle.stroke}"></rect>
+        <text x="17" y="0" text-anchor="middle" fill="${ovrStyle.text}" font-size="19" font-family="Oswald" font-weight="700">${f.ovr}</text>
+      </g>
+      <g transform="translate(${popDx},${popDy})">
+        <rect x="-2" y="0" width="48" height="18" rx="7" fill="${popBadge.fill}" stroke="${popBadge.stroke}"></rect>
+        <text x="22" y="12" text-anchor="middle" fill="${popBadge.text}" font-size="10.5" font-family="Oswald" font-weight="600">人気 ${f.pop}</text>
+      </g>
+      <text x="0" y="${nameY}" text-anchor="middle" fill="#efe7d8" font-size="12" font-weight="700">${f.name}</text>
+    </g>
+  `;
+}
+function guides(){
+  return `
+    <line x1="42" y1="150" x2="930" y2="150" stroke="rgba(255,255,255,.08)" stroke-dasharray="4 8"></line>
+    <line x1="42" y1="300" x2="930" y2="300" stroke="rgba(255,255,255,.08)" stroke-dasharray="4 8"></line>
+    <line x1="42" y1="450" x2="930" y2="450" stroke="rgba(255,255,255,.08)" stroke-dasharray="4 8"></line>
+    <line x1="42" y1="590" x2="930" y2="590" stroke="rgba(255,255,255,.08)" stroke-dasharray="4 8"></line>
+    <text x="10" y="154" font-size="10" fill="rgba(255,255,255,.34)">TOP</text>
+    <text x="4" y="304" font-size="10" fill="rgba(255,255,255,.34)">UPPER</text>
+    <text x="15" y="454" font-size="10" fill="rgba(255,255,255,.34)">MID</text>
+    <text x="2" y="594" font-size="10" fill="rgba(255,255,255,.34)">LOWER</text>
+  `;
+}
+function drawTerracePyramid(){
+  const tiers = {
+    4: [ { x:470, y:145 }, { x:360, y:182 }, { x:580, y:182 }, { x:470, y:218 } ],
+    3: [ { x:260, y:318 }, { x:470, y:286 }, { x:680, y:318 } ],
+    2: [ { x:210, y:466 }, { x:410, y:432 }, { x:610, y:432 } ],
+    1: [ { x:150, y:606 }, { x:360, y:586 }, { x:570, y:586 } ]
+  };
+  const byTier = {4:[],3:[],2:[],1:[]};
+  roster.forEach(f => byTier[f.tier].push(f));
+  Object.values(byTier).forEach(list => list.sort((a,b)=>b.ovr+b.pop*0.2-(a.ovr+a.pop*0.2)));
+  return `
+    <rect x="180" y="108" width="580" height="74" rx="28" fill="rgba(212,168,67,.09)" stroke="rgba(212,168,67,.18)"></rect>
+    <rect x="120" y="255" width="700" height="90" rx="34" fill="rgba(212,168,67,.055)" stroke="rgba(212,168,67,.13)"></rect>
+    <rect x="90" y="402" width="760" height="92" rx="38" fill="rgba(116,185,255,.04)" stroke="rgba(116,185,255,.09)"></rect>
+    <rect x="72" y="545" width="796" height="96" rx="42" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.06)"></rect>
+    ${guides()}
+    <text x="470" y="670" text-anchor="middle" fill="rgba(255,255,255,.24)" font-size="11">段の高さで序列、段の幅で層の厚みを表現</text>
+    ${Object.entries(byTier).map(([tier,list]) =>
+      list.map((f, idx) => faceNode(f, tiers[tier][idx].x, tiers[tier][idx].y, { ring: f.champion ? 3.2 : tier === "4" ? 2.8 : 2.3 })).join("")
+    ).join("")}
+  `;
+}
+function drawCrownStack(){
+  const pos = [
+    { x:470, y:142 }, { x:470, y:250 }, { x:332, y:278 }, { x:608, y:278 },
+    { x:470, y:392 }, { x:310, y:428 }, { x:630, y:428 },
+    { x:210, y:560 }, { x:390, y:560 }, { x:560, y:560 }, { x:730, y:560 }, { x:470, y:640 }
+  ];
+  const ordered = [...roster].sort((a,b)=>b.tier*100+b.ovr+b.pop*0.2-(a.tier*100+a.ovr+a.pop*0.2));
+  return `
+    ${guides()}
+    <path d="M470 120 L470 630" stroke="rgba(212,168,67,.18)" stroke-width="10" stroke-linecap="round"></path>
+    <path d="M470 120 L332 278 L210 560" stroke="rgba(255,255,255,.08)" stroke-width="4" fill="none"></path>
+    <path d="M470 120 L608 278 L730 560" stroke="rgba(255,255,255,.08)" stroke-width="4" fill="none"></path>
+    <path d="M470 120 L470 392 L470 640" stroke="rgba(255,255,255,.1)" stroke-width="4" fill="none"></path>
+    <circle cx="470" cy="142" r="92" fill="rgba(212,168,67,.06)"></circle>
+    <text x="470" y="670" text-anchor="middle" fill="rgba(255,255,255,.24)" font-size="11">中央の柱で支配力、左右の枝で追随層を表現</text>
+    ${ordered.map((f, idx) => faceNode(f, pos[idx].x, pos[idx].y, { ring: f.champion ? 3.4 : idx <= 2 ? 2.7 : 2.3 })).join("")}
+  `;
+}
+function drawInfluenceFan(){
+  const ordered = [...roster].sort((a,b)=>b.tier*100+b.ovr+b.pop*0.2-(a.tier*100+a.ovr+a.pop*0.2));
+  const pos = [
+    { x:470, y:146 }, { x:330, y:238 }, { x:610, y:238 },
+    { x:245, y:350 }, { x:470, y:318 }, { x:695, y:350 },
+    { x:180, y:490 }, { x:340, y:462 }, { x:600, y:462 },
+    { x:760, y:490 }, { x:320, y:612 }, { x:620, y:612 }
+  ];
+  return `
+    ${guides()}
+    <path d="M140 610 Q470 40 800 610" fill="none" stroke="rgba(212,168,67,.12)" stroke-width="20" stroke-linecap="round"></path>
+    <path d="M180 610 Q470 110 760 610" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="12" stroke-linecap="round"></path>
+    <text x="470" y="92" text-anchor="middle" fill="rgba(255,255,255,.22)" font-size="42" font-family="Oswald">INFLUENCE</text>
+    <text x="470" y="670" text-anchor="middle" fill="rgba(255,255,255,.24)" font-size="11">前面に開くほど勢力が強い。扇の外側で存在感が広がる</text>
+    ${ordered.map((f, idx) => faceNode(f, pos[idx].x, pos[idx].y, { ring: f.champion ? 3.2 : idx < 3 ? 2.7 : 2.3 })).join("")}
+  `;
+}
+function drawRankLanes(){
+  const lanes = {
+    4: [220, 390, 550, 720],
+    3: [230, 390, 550, 710],
+    2: [190, 350, 510, 670],
+    1: [150, 310, 470, 630, 790]
+  };
+  const byTier = {4:[],3:[],2:[],1:[]};
+  roster.forEach(f => byTier[f.tier].push(f));
+  Object.values(byTier).forEach(list => list.sort((a,b)=>b.ovr+b.pop*0.2-(a.ovr+a.pop*0.2)));
+  return `
+    ${guides()}
+    <rect x="90" y="96" width="760" height="80" rx="28" fill="rgba(212,168,67,.07)" stroke="rgba(212,168,67,.14)"></rect>
+    <rect x="78" y="246" width="784" height="86" rx="30" fill="rgba(212,168,67,.04)" stroke="rgba(212,168,67,.09)"></rect>
+    <rect x="66" y="396" width="808" height="86" rx="30" fill="rgba(116,185,255,.035)" stroke="rgba(116,185,255,.08)"></rect>
+    <rect x="52" y="536" width="836" height="94" rx="34" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.06)"></rect>
+    <text x="470" y="670" text-anchor="middle" fill="rgba(255,255,255,.24)" font-size="11">同じ階級は同じ帯に並ぶ。層の人数差がすぐ読める</text>
+    ${Object.entries(byTier).map(([tier,list]) =>
+      list.map((f, idx) => faceNode(f, lanes[tier][idx], tierY(Number(tier)), { ring: f.champion ? 3.2 : tier === "4" ? 2.6 : 2.3 })).join("")
+    ).join("")}
+  `;
+}
+function buildMock(pattern){
+  const deck = document.getElementById("deck");
+  const el = document.createElement("section");
+  el.className = "mock";
+  el.innerHTML = `
+    <div class="mock-head">
+      <div class="mock-title">
+        <div class="mock-no">${pattern.id}</div>
+        <div>
+          <h2>${pattern.title}</h2>
+          <p>${pattern.subtitle}</p>
+        </div>
+      </div>
+      <div class="meta">${pattern.summary}</div>
+    </div>
+    <div class="frame">
+      <div class="app-shell">
+        <div class="topbar">
+          <div class="brand"><div class="brand-dot"></div><div>WRESTLE MANAGER</div></div>
+          <div class="status">
+            <div>31年目 4月 第1週</div>
+            <div>資金 <strong>1,077,868万</strong></div>
+            <div>人気 <strong>59</strong></div>
+            <div>HEAT <strong>Neutral</strong></div>
+          </div>
+        </div>
+        <div class="nav">
+          <div class="nav-btn">今週</div>
+          <div class="nav-btn">興行準備</div>
+          <div class="nav-btn">団体</div>
+          <div class="nav-btn">社長室</div>
+          <div class="nav-btn active">データベース</div>
+          <div class="nav-btn">新聞</div>
+          <div class="nav-btn">経営</div>
+          <div class="nav-btn">ログ</div>
+        </div>
+        <div class="board">
+          <aside class="sidebar">
+            <div class="group">
+              <div class="group-title">表示フィルタ</div>
+              <button class="ctrl">プレイヤー団体</button>
+            </div>
+            <div class="group">
+              <div class="group-title">選択団体</div>
+              <div class="org-card">
+                <div class="name">プレイヤー団体</div>
+                <div class="sub">所属12名 / 平均OVR 72</div>
+                <div class="sub">現王者: 本郷恵子 (OVR 79)</div>
+                <div class="faces">
+                  <img src="../../../image/face_hayakawa_m.png" alt="">
+                  <img src="../../../image/face_iwakoji_s.png" alt="">
+                  <img src="../../../image/face_okubo_m.png" alt="">
+                  <img src="../../../image/face_hiramatsu_k.png" alt="">
+                  <img src="../../../image/face_tamate_s.png" alt="">
+                </div>
+              </div>
+            </div>
+            <div class="group">
+              <div class="group-title">今回のルール</div>
+              <div class="side-note">
+                顔は重ねずに全員見せる。<br>
+                OVR は大きく、人気はその下に小さく重ねる。<br>
+                カラー強調は王者だけ。<br>
+                今回は低OVR王者ケースとして、本郷恵子(79)がベルト保持中。
+              </div>
+            </div>
+          </aside>
+          <div class="view">
+            <div class="view-top">
+              <div class="view-title">
+                <strong>RELATIONSHIP MAP</strong>
+                <span>プレイヤー団体 / 団体モード</span>
+              </div>
+              <div class="tabs">
+                <div class="tab">ネットワーク</div>
+                <div class="tab active">勢力図</div>
+                <div class="tab">派閥</div>
+              </div>
+            </div>
+            <div class="legend">
+              <h3>LEGEND</h3>
+              <div class="legend-item"><div class="legend-dot"></div><span>顔は非重なりで全員表示</span></div>
+              <div class="legend-item"><div class="legend-swatch gold"></div><span>金リング/王冠 = 王者のみ</span></div>
+              <div class="legend-item"><div class="legend-swatch gold"></div><span>大きい数字 = OVR（数値帯で色分け）</span></div>
+              <div class="legend-item"><div class="legend-swatch"></div><span>下の小バッジ = 人気</span></div>
+              <div class="legend-note">55 以下は同サイズ。OVR は段階色で強弱を見せ、人気は暖色バッジで視認性を確保。王者だけ金リングと王冠で強調する。</div>
+            </div>
+            <div class="canvas-wrap">
+              <svg viewBox="0 0 940 710" aria-label="${pattern.title}">${pattern.draw()}</svg>
+            </div>
+          </div>
+        </div>
+        <div class="notes">
+          ${pattern.notes.map(note => `<div class="note"><strong>${note.title}</strong><span>${note.text}</span></div>`).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+  deck.appendChild(el);
+}
+patterns.forEach(buildMock);
+</script>
+</body>
+</html>

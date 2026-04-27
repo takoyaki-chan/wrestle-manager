@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>相関図 動的ネットワーク 双方向表現モック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#141311;
+  --panel:#1b1915;
+  --canvas:#0d0c0a;
+  --line:rgba(220,214,198,.14);
+  --line2:rgba(220,214,198,.24);
+  --text:#eee7da;
+  --sub:#bdb4a3;
+  --dim:#837a6a;
+  --gold:#d4a843;
+  --trust:#6ed6a2;
+  --cold:#ff7777;
+  --rival:#e17055;
+  --player:#d4a843;
+  --emp:#c44b5f;
+  --nova:#5aa7ff;
+  --kasuga:#6ed6a2;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding:24px 18px 44px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(90,167,255,.08), transparent 24%),
+    radial-gradient(circle at 88% 9%, rgba(212,168,67,.09), transparent 24%),
+    linear-gradient(180deg,#191714,#0f0e0c 42%);
+  color:var(--text);
+  font-family:"Noto Sans JP",sans-serif;
+}
+.shell{width:min(1480px,100%);margin:0 auto}
+.intro{
+  border:1px solid rgba(212,168,67,.28);
+  background:linear-gradient(180deg,rgba(24,22,19,.96),rgba(14,13,11,.96));
+  border-radius:12px;
+  padding:18px 20px;
+  box-shadow:0 20px 60px rgba(0,0,0,.36);
+}
+.eyebrow,.caps{font-family:"Oswald",sans-serif;text-transform:uppercase;letter-spacing:.14em}
+.eyebrow{font-size:12px;color:var(--gold);margin-bottom:8px}
+h1{font-size:28px;line-height:1.25;margin:0 0 10px}
+.intro p{margin:0;color:var(--sub);font-size:13px;line-height:1.8}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:11px;color:var(--sub);background:rgba(255,255,255,.025)}
+.deck{display:grid;gap:22px;margin-top:22px}
+.mock{
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(24,22,19,.98),rgba(14,13,11,.98));
+  box-shadow:0 24px 80px rgba(0,0,0,.36);
+  overflow:hidden;
+}
+.mock-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:18px;
+  padding:14px 18px;
+  border-bottom:1px solid rgba(212,168,67,.22);
+}
+.mock-title{display:flex;gap:12px;align-items:baseline}
+.mock-no{font-family:"Oswald";color:var(--gold);font-size:34px;line-height:1}
+.mock-title strong{font-size:20px}
+.mock-title span,.mock-head p{color:var(--sub);font-size:12px;margin:0}
+.app{
+  margin:14px;
+  border:1px solid var(--line);
+  background:#11100e;
+  min-height:720px;
+  display:grid;
+  grid-template-rows:52px 1fr 94px;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid var(--line);
+  background:#171511;
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900}
+.brand::before{content:"";width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#f0c868,#b98227)}
+.topmeta{font-size:12px;color:var(--sub)}
+.main{display:grid;grid-template-columns:220px 1fr;min-height:570px}
+.side{border-right:1px solid var(--line);padding:14px;background:rgba(255,255,255,.015)}
+.side-title{font-size:11px;color:var(--sub);margin:0 0 8px}
+.org-card{border:1px solid var(--line);border-left-width:4px;border-radius:8px;padding:10px;margin-bottom:8px;background:rgba(255,255,255,.02)}
+.org-card strong{display:block;font-size:13px}
+.org-card span{display:block;color:var(--sub);font-size:10px;line-height:1.5;margin-top:3px}
+.org-card.player{border-left-color:var(--player)}
+.org-card.emp{border-left-color:var(--emp)}
+.org-card.nova{border-left-color:var(--nova)}
+.org-card.kasuga{border-left-color:var(--kasuga)}
+.view{position:relative;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.035),transparent 42%),var(--canvas)}
+.view-head{position:absolute;left:16px;top:14px;right:16px;display:flex;justify-content:space-between;z-index:5;pointer-events:none}
+.view-title strong{font-size:18px}
+.view-title span{font-size:11px;color:var(--gold);margin-left:8px}
+.tabs{display:flex;gap:6px}
+.tab{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:rgba(0,0,0,.24)}
+.tab.active{color:#1a1305;background:var(--gold);border-color:var(--gold);font-weight:900}
+.canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+.canvas.dragging{cursor:grabbing}
+.legend{
+  position:absolute;
+  right:16px;
+  top:72px;
+  width:220px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:rgba(12,11,9,.78);
+  padding:10px;
+  color:var(--sub);
+  font-size:10px;
+  line-height:1.6;
+}
+.legend h3{margin:0 0 6px;font-family:"Oswald";letter-spacing:.1em;font-size:11px;color:var(--text)}
+.li{display:flex;align-items:center;gap:7px;margin:4px 0}
+.sw{width:24px;height:3px;border-radius:2px;background:var(--trust)}
+.sw.rival{background:var(--rival);height:4px;stroke-dasharray:8 5}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--player)}
+.dot.emp{background:var(--emp)} .dot.nova{background:var(--nova)} .dot.kasuga{background:var(--kasuga)}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 14px;border-top:1px solid var(--line);background:#171511}
+.note{border:1px solid var(--line);border-radius:8px;padding:10px}
+.note strong{display:block;font-size:12px;margin-bottom:5px}
+.note span{display:block;font-size:11px;color:var(--sub);line-height:1.6}
+svg text{font-family:"Noto Sans JP",sans-serif}
+.node-name{font-size:10.5px;font-weight:900;fill:#f3ecdf;paint-order:stroke;stroke:#050403;stroke-width:4px}
+.small-label{font-size:9px;fill:rgba(238,231,218,.72)}
+.org-label{font-size:11px;font-weight:900;paint-order:stroke;stroke:#050403;stroke-width:4px}
+.edge-label{font-family:"Oswald";font-size:9px;font-weight:700;paint-order:stroke;stroke:#050403;stroke-width:3px}
+.feud-label{
+  fill:#7b1616;
+  stroke:none;
+  paint-order:normal;
+  font-family:"Noto Sans JP",sans-serif;
+  font-size:10px;
+  font-weight:900;
+}
+.edge-card-title{font-size:10px;font-weight:900;fill:#f7ead3}
+.edge-card-text{font-family:"Oswald";font-size:10px;font-weight:700}
+.ovr{font-family:"Oswald";font-size:10px;font-weight:700;fill:#fff}
+@media (max-width:900px){
+  .main{grid-template-columns:1fr}
+  .side{display:none}
+  .notes{grid-template-columns:1fr}
+  .mock-head{display:block}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <section class="intro">
+    <div class="eyebrow">Dynamic Bidirectional Network Concepts</div>
+    <h1>相関図 ネットワークの動的・双方向表現 4案</h1>
+    <p>全案ドラッグ可能です。信頼度とライバル心が双方向値であることを前提に、矢印、並走レール、分離レイヤー、エッジカードの4方向で比較できるようにしています。信頼度41〜59とライバル心30未満は、線としては関係なし扱いです。</p>
+    <div class="chips">
+      <div class="chip">動的ネットワークのみ</div>
+      <div class="chip">信頼度は双方向</div>
+      <div class="chip">ライバル心も双方向</div>
+      <div class="chip">団体名と団体色を表示</div>
+    </div>
+  </section>
+  <div class="deck" id="deck"></div>
+</div>
+
+<script>
+const face = name => `../../../image/${name}.png`;
+const orgs = {
+  player:{name:"プレイヤー団体", color:"#d4a843", x:265, y:205},
+  emp:{name:"皇武館", color:"#c44b5f", x:675, y:205},
+  nova:{name:"ノヴァインパクト", color:"#5aa7ff", x:270, y:430},
+  kasuga:{name:"春日野プロレス", color:"#6ed6a2", x:680, y:430}
+};
+const roster = [
+  {id:1,name:"岩小路詩子",ovr:87,org:"player",face:face("face_iwakoji_s")},
+  {id:2,name:"早川モナ",ovr:87,org:"player",face:face("face_hayakawa_m")},
+  {id:3,name:"大熊よし子",ovr:86,org:"player",face:face("face_okubo_m")},
+  {id:4,name:"平松かなみ",ovr:83,org:"player",face:face("face_hiramatsu_k")},
+  {id:5,name:"本郷恵子",ovr:79,org:"emp",face:face("face_hongo_m")},
+  {id:6,name:"玉手すみれ",ovr:81,org:"nova",face:face("face_tamate_s")},
+  {id:7,name:"椿玲奈",ovr:70,org:"kasuga",face:face("face_tachibana_r")},
+  {id:8,name:"芹沢理沙",ovr:68,org:"emp",face:face("face_serizawa_a")},
+  {id:9,name:"二階堂舞",ovr:60,org:"player",face:face("face_iijima_s")},
+  {id:10,name:"高取麻衣子",ovr:69,org:"player",face:face("face_takahashi_ma")},
+  {id:11,name:"御影ナツ",ovr:55,org:"nova",face:face("face_miyagase_c")},
+  {id:12,name:"黒瀬ユイ",ovr:48,org:"kasuga",face:face("face_kuroe_m")}
+];
+const links = [
+  {a:1,b:2,bondAB:82,bondBA:76,rivAB:18,rivBA:14,type:"bond"},
+  {a:1,b:5,bondAB:54,bondBA:41,rivAB:66,rivBA:72,type:"rival",tag:"王座因縁"},
+  {a:1,b:6,bondAB:38,bondBA:46,rivAB:58,rivBA:52,type:"rival",tag:"遺恨"},
+  {a:2,b:3,bondAB:72,bondBA:68,rivAB:42,rivBA:36,type:"bond"},
+  {a:4,b:10,bondAB:61,bondBA:70,rivAB:25,rivBA:22,type:"bond"},
+  {a:5,b:8,bondAB:35,bondBA:28,rivAB:44,rivBA:39,type:"cold"},
+  {a:6,b:11,bondAB:63,bondBA:58,rivAB:16,rivBA:20,type:"bond"},
+  {a:7,b:12,bondAB:52,bondBA:47,rivAB:30,rivBA:33,type:"cold"},
+  {a:3,b:5,bondAB:50,bondBA:48,rivAB:48,rivBA:46,type:"rival"},
+  {a:2,b:6,bondAB:44,bondBA:40,rivAB:55,rivBA:61,type:"rival"}
+];
+const patterns = [
+  {
+    id:"layer", no:"C", title:"Layer Toggle Network", sub:"信頼とライバル心を別レイヤーとして重ねる案",
+    lead:"基準案。信頼は41〜59を無表示、そこから低いほど赤・高いほど青。ライバル心は30以上だけ薄橙から赤へ。",
+    notes:[["良い点","全体の雰囲気がきれいで、信頼とライバル心の色意味も分かりやすい。"],["弱い点","双方向値はラベルやホバーで補助した方が読みやすい。"],["向いている","このネットワーク案の本命。実装時の基本形。"]]
+  },
+  {
+    id:"arrow", no:"A", title:"Twin Arrow Network", sub:"双方向矢印で信頼と競争を読む案",
+    lead:"信頼は上下2本の矢印、ライバル心は中央の破線矢印で表す。動的でも意味が崩れにくい。",
+    notes:[["良い点","双方向であることが最も直感的。"],["弱い点","線が多いと矢印の情報量が増える。"],["向いている","まず誤解なく双方向値を見せたい場合。"]]
+  },
+  {
+    id:"rails", no:"B", title:"Split Rails Network", sub:"信頼レールとライバルレールを分ける案",
+    lead:"一本の関係を上下レールに分離し、上段を信頼、下段をライバル心として読む。",
+    notes:[["良い点","信頼とライバル心が混ざらず、数値比較がしやすい。"],["弱い点","グラフというより配線図に少し近づく。"],["向いている","数値をきちんと読みたいネットワーク画面。"]]
+  },
+  {
+    id:"cards", no:"D", title:"Edge Card Network", sub:"線は簡潔に、双方向値は関係カードで読む案",
+    lead:"動的な線の上に小さなエッジカードを浮かべ、信頼とライバル心の往復値をまとめる。",
+    notes:[["良い点","数値が一番読みやすく、因縁タグも置きやすい。"],["弱い点","カードが増えると画面を占有する。"],["向いている","重要リンクだけを濃く読ませたい場合。"]]
+  }
+];
+
+function shell(pattern){
+  return `<section class="mock">
+    <div class="mock-head">
+      <div class="mock-title"><div class="mock-no">${pattern.no}</div><strong>${pattern.title}</strong><span>${pattern.sub}</span></div>
+      <p>${pattern.lead}</p>
+    </div>
+    <div class="app">
+      <div class="topbar"><div class="brand">WRESTLE MANAGER</div><div class="topmeta">31年目 4月 第1週　資金 1,077,868万　人気 59</div></div>
+      <div class="main">
+        <aside class="side">${sideHtml()}</aside>
+        <div class="view">
+          <div class="view-head"><div class="view-title"><strong>RELATIONSHIP MAP</strong><span>動的ネットワーク / ${pattern.title}</span></div><div class="tabs"><div class="tab active">ネットワーク</div><div class="tab">フォーカス</div><div class="tab">勢力図</div></div></div>
+          ${legendHtml(pattern.id)}
+          <svg class="canvas" id="net-${pattern.id}" viewBox="0 0 940 570"></svg>
+        </div>
+      </div>
+      <div class="notes">${pattern.notes.map(n=>`<div class="note"><strong>${n[0]}</strong><span>${n[1]}</span></div>`).join("")}</div>
+    </div>
+  </section>`;
+}
+function sideHtml(){
+  return `<div class="side-title">団体</div>
+    ${Object.entries(orgs).map(([id,o])=>`<div class="org-card ${id}"><strong>${o.name}</strong><span>${roster.filter(r=>r.org===id).length}名 / 平均OVR ${avgOvr(id)}</span></div>`).join("")}
+    <div class="org-card" style="border-left-color:var(--line2)"><strong>操作</strong><span>全案ドラッグ可能。離すと団体島のホーム位置へ弾性的に戻る。</span></div>`;
+}
+function legendHtml(kind){
+  const kindText = kind === "arrow" ? "矢印方向で双方向" : kind === "rails" ? "上=信頼 / 下=競争" : kind === "layer" ? "信頼層 + 競争層" : "カードで往復値";
+  return `<div class="legend"><h3>LEGEND</h3>
+    <div class="li"><span class="sw"></span>信頼度: 41〜59は無表示 / 低=赤 / 高=青</div>
+    <div class="li"><span class="sw rival"></span>ライバル心: 30未満は無表示 / 強いほど赤</div>
+    <div class="li"><span class="dot"></span>プレイヤー団体</div>
+    <div class="li"><span class="dot emp"></span>皇武館</div>
+    <div class="li"><span class="dot nova"></span>ノヴァインパクト</div>
+    <div class="li"><span class="dot kasuga"></span>春日野プロレス</div>
+    <div style="margin-top:6px;border-top:1px solid var(--line);padding-top:6px">${kindText}。ノードはドラッグ可能。</div>
+  </div>`;
+}
+function avgOvr(org){const xs=roster.filter(r=>r.org===org);return Math.round(xs.reduce((s,r)=>s+r.ovr,0)/xs.length)}
+function orgColor(org){return (orgs[org]||orgs.player).color}
+function mixHex(a,b,t){
+  const ah=parseInt(a.slice(1),16), bh=parseInt(b.slice(1),16);
+  const ar=ah>>16, ag=ah>>8&255, ab=ah&255;
+  const br=bh>>16, bg=bh>>8&255, bb=bh&255;
+  const rr=Math.round(ar+(br-ar)*t), rg=Math.round(ag+(bg-ag)*t), rb=Math.round(ab+(bb-ab)*t);
+  return `#${((1<<24)+(rr<<16)+(rg<<8)+rb).toString(16).slice(1)}`;
+}
+function colorTrust(v){
+  const val=Math.max(0,Math.min(100,Number(v)||0));
+  if(val >= 50) return mixHex("#f2eee6","#69b8ff",(val-50)/50);
+  return mixHex("#ff6f6f","#f2eee6",val/50);
+}
+function colorRival(v){
+  const val=Math.max(0,Math.min(100,Number(v)||0));
+  return mixHex("#f6b08d","#e02222",Math.max(0,(val-30)/70));
+}
+function hasTrust(v){return v <= 40 || v >= 60}
+function hasRival(v){return v >= 30}
+function hasVisibleRelation(l){
+  return hasTrust(l.bondAB) || hasTrust(l.bondBA) || hasRival(l.rivAB) || hasRival(l.rivBA) || !!l.tag;
+}
+function byId(id){return roster.find(r=>r.id===id)}
+function nodeSvg(n){
+  const c = orgColor(n.org);
+  const r = n.r || 27;
+  return `<g data-node="${n.index}">
+    <circle cx="${n.x}" cy="${n.y}" r="${r+7}" fill="${c}" fill-opacity=".08"></circle>
+    <image href="${n.face}" x="${n.x-r}" y="${n.y-r}" width="${r*2}" height="${r*2}" clip-path="circle(${r}px at center)" preserveAspectRatio="xMidYMid slice"></image>
+    <circle cx="${n.x}" cy="${n.y}" r="${r+3}" fill="none" stroke="${c}" stroke-width="2"></circle>
+    <circle cx="${n.x}" cy="${n.y}" r="${r}" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1.4"></circle>
+    <rect x="${n.x-13}" y="${n.y+r+5}" width="26" height="14" rx="4" fill="rgba(0,0,0,.82)" stroke="rgba(255,255,255,.34)"></rect>
+    <text class="ovr" x="${n.x}" y="${n.y+r+15}" text-anchor="middle">${n.ovr}</text>
+    <text class="node-name" x="${n.x}" y="${n.y+r+31}" text-anchor="middle">${n.name}</text>
+  </g>`;
+}
+function orgZones(){
+  return Object.entries(orgs).map(([id,o])=>`
+    <circle cx="${o.x}" cy="${o.y}" r="132" fill="${o.color}" fill-opacity=".045" stroke="${o.color}" stroke-opacity=".16"></circle>
+    <text class="org-label" x="${o.x}" y="${o.y-142}" text-anchor="middle" fill="${o.color}">${o.name}</text>`).join("");
+}
+function linkNodes(nodes,l){return [nodes.find(n=>n.id===l.a),nodes.find(n=>n.id===l.b)]}
+function offsetPoints(a,b,amount){
+  const dx=b.x-a.x, dy=b.y-a.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+  const px=-dy/d*amount, py=dx/d*amount;
+  return {ax:a.x+px, ay:a.y+py, bx:b.x+px, by:b.y+py, cx:(a.x+b.x)/2+px, cy:(a.y+b.y)/2+py, px, py};
+}
+function arrowMarker(id,color){
+  return `<marker id="${id}" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="8" markerHeight="6" orient="auto"><path d="M0,0 L8,3 L0,6" fill="${color}" opacity=".9"/></marker>`;
+}
+function drawEdge(kind,a,b,l,idx){
+  if(!a||!b) return "";
+  if(kind === "arrow") return edgeArrows(a,b,l,idx);
+  if(kind === "rails") return edgeRails(a,b,l,idx);
+  if(kind === "layer") return edgeLayers(a,b,l,idx);
+  return edgeCards(a,b,l,idx);
+}
+function edgeArrows(a,b,l,idx){
+  const p1=offsetPoints(a,b,-8), p2=offsetPoints(a,b,8), p3=offsetPoints(a,b,0);
+  const trustA=colorTrust(l.bondAB), trustB=colorTrust(l.bondBA);
+  const rivalColor=colorRival(Math.max(l.rivAB,l.rivBA));
+  const trustLineA = hasTrust(l.bondAB) ? `<line x1="${p1.ax}" y1="${p1.ay}" x2="${p1.bx}" y2="${p1.by}" stroke="${trustA}" stroke-width="${1.4+Math.abs(l.bondAB-50)/12}" marker-end="url(#arrow-trust-${idx})" stroke-opacity=".78"/>` : "";
+  const trustLineB = hasTrust(l.bondBA) ? `<line x1="${p2.bx}" y1="${p2.by}" x2="${p2.ax}" y2="${p2.ay}" stroke="${trustB}" stroke-width="${1.4+Math.abs(l.bondBA-50)/12}" marker-end="url(#arrow-trust-back-${idx})" stroke-opacity=".56" stroke-dasharray="5 4"/>` : "";
+  const rivalLine = hasRival(Math.max(l.rivAB,l.rivBA)) ? `<line x1="${p3.ax}" y1="${p3.ay}" x2="${p3.bx}" y2="${p3.by}" stroke="${rivalColor}" stroke-width="${1.3+(Math.max(l.rivAB,l.rivBA)-30)/18}" marker-start="url(#arrow-rival-${idx})" marker-end="url(#arrow-rival-${idx})" stroke-opacity=".68" stroke-dasharray="8 6"/>` : "";
+  return `${trustLineA}${trustLineB}${rivalLine}
+    ${edgeMiniLabel(p3.cx,p3.cy,l,true)}`;
+}
+function edgeRails(a,b,l){
+  const trust=offsetPoints(a,b,-12), rival=offsetPoints(a,b,12);
+  const rivalA=colorRival(l.rivAB), rivalB=colorRival(l.rivBA);
+  const trustLineA = hasTrust(l.bondAB) ? `<line x1="${trust.ax}" y1="${trust.ay}" x2="${trust.bx}" y2="${trust.by}" stroke="${colorTrust(l.bondAB)}" stroke-width="${1.4+Math.abs(l.bondAB-50)/12}" stroke-opacity=".78"/>` : "";
+  const trustLineB = hasTrust(l.bondBA) ? `<line x1="${trust.bx}" y1="${trust.by}" x2="${trust.ax}" y2="${trust.ay}" stroke="${colorTrust(l.bondBA)}" stroke-width="${1.4+Math.abs(l.bondBA-50)/12}" stroke-opacity=".48" stroke-dasharray="5 4"/>` : "";
+  const rivalLineA = hasRival(l.rivAB) ? `<line x1="${rival.ax}" y1="${rival.ay}" x2="${rival.bx}" y2="${rival.by}" stroke="${rivalA}" stroke-width="${1.3+(l.rivAB-30)/18}" stroke-opacity=".68" stroke-dasharray="8 6"/>` : "";
+  const rivalLineB = hasRival(l.rivBA) ? `<line x1="${rival.bx}" y1="${rival.by}" x2="${rival.ax}" y2="${rival.ay}" stroke="${rivalB}" stroke-width="${1.3+(l.rivBA-30)/18}" stroke-opacity=".42" stroke-dasharray="2 6"/>` : "";
+  return `${trustLineA}${trustLineB}${rivalLineA}${rivalLineB}
+    ${edgeMiniLabel(trust.cx,trust.cy-5,l,false)}`;
+}
+function edgeLayers(a,b,l){
+  const p=offsetPoints(a,b,0);
+  const rivalColor=colorRival(Math.max(l.rivAB,l.rivBA));
+  const trustValues=[l.bondAB,l.bondBA].filter(hasTrust);
+  const trustBase=trustValues.length ? trustValues.reduce((s,v)=>s+v,0)/trustValues.length : null;
+  const trustLine = trustBase == null ? "" : `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${colorTrust(trustBase)}" stroke-width="${2+Math.max(...trustValues.map(v=>Math.abs(v-50)))/10}" stroke-opacity=".72"/>`;
+  const rivalMax=Math.max(l.rivAB,l.rivBA);
+  const rivalLine = hasRival(rivalMax) ? `<path d="M${a.x},${a.y} Q${p.cx},${p.cy-42} ${b.x},${b.y}" fill="none" stroke="${rivalColor}" stroke-width="${1.3+(rivalMax-30)/17}" stroke-opacity=".70" stroke-dasharray="9 6"/>` : "";
+  return `${trustLine}${rivalLine}
+    ${edgeMiniLabel(p.cx,p.cy-12,l,true)}`;
+}
+function edgeCards(a,b,l){
+  const p=offsetPoints(a,b,0), rival=Math.max(l.rivAB,l.rivBA);
+  const trustValues=[l.bondAB,l.bondBA].filter(hasTrust);
+  const trustBase=trustValues.length ? trustValues.reduce((s,v)=>s+v,0)/trustValues.length : 50;
+  const stroke=hasRival(rival)?colorRival(rival):colorTrust(trustBase);
+  return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${stroke}" stroke-width="${l.type==="rival"?3.2:2.3}" stroke-opacity=".58" ${l.type==="rival"?'stroke-dasharray="8 6"':""}/>
+    <g>
+      <rect x="${p.cx-54}" y="${p.cy-23}" width="108" height="46" rx="8" fill="rgba(26,18,16,.92)" stroke="${stroke}" stroke-opacity=".55"/>
+      <text class="edge-card-title" x="${p.cx}" y="${p.cy-8}" text-anchor="middle">${l.tag || "関係"}</text>
+      <text class="edge-card-text" x="${p.cx}" y="${p.cy+7}" text-anchor="middle" fill="${trustValues.length ? colorTrust(trustBase) : 'rgba(242,238,230,.38)'}">${trustValues.length ? `信 ${l.bondAB}→ ←${l.bondBA}` : '信 なし'}</text>
+      <text class="edge-card-text" x="${p.cx}" y="${p.cy+20}" text-anchor="middle" fill="${hasRival(rival) ? colorRival(rival) : 'rgba(242,238,230,.38)'}">${hasRival(rival) ? `競 ${l.rivAB}→ ←${l.rivBA}` : '競 なし'}</text>
+    </g>`;
+}
+function edgeMiniLabel(x,y,l,showRival){
+  const rivalColor=colorRival(Math.max(l.rivAB,l.rivBA));
+  const trustValues=[l.bondAB,l.bondBA].filter(hasTrust);
+  const trustBase=trustValues.length ? trustValues.reduce((s,v)=>s+v,0)/trustValues.length : null;
+  return `${trustBase == null ? "" : `<text class="edge-label" x="${x}" y="${y}" text-anchor="middle" fill="${colorTrust(trustBase)}">信 ${l.bondAB}→ ←${l.bondBA}</text>`}
+    ${showRival && hasRival(Math.max(l.rivAB,l.rivBA)) ? `<text class="edge-label" x="${x}" y="${y+(trustBase == null ? 0 : 13)}" text-anchor="middle" fill="${rivalColor}">競 ${l.rivAB}→ ←${l.rivBA}</text>` : ""}
+    ${l.tag ? `<g><rect x="${x-30}" y="${y+18}" width="60" height="18" rx="9" fill="rgba(255,214,214,.92)" stroke="${rivalColor}" stroke-opacity=".70"/><text class="edge-label feud-label" x="${x}" y="${y+31}" text-anchor="middle">${l.tag}</text></g>` : ""}`;
+}
+
+document.getElementById("deck").innerHTML = patterns.map(shell).join("");
+patterns.forEach(p=>initDynamicNetwork(p.id));
+
+function initDynamicNetwork(kind){
+  const svg=document.getElementById(`net-${kind}`);
+  if(!svg) return;
+  let markerDefs = "";
+  links.forEach((_,i)=>{
+    const l=links[i];
+    markerDefs += arrowMarker(`arrow-trust-${i}`,colorTrust(l.bondAB)) + arrowMarker(`arrow-trust-back-${i}`,colorTrust(l.bondBA)) + arrowMarker(`arrow-rival-${i}`,colorRival(Math.max(l.rivAB,l.rivBA)));
+  });
+  const nodes=roster.map((r,i)=>{
+    const o=orgs[r.org], angle=i*1.9;
+    return {...r,index:i,r:r.ovr>=85?31:r.ovr>=78?29:r.ovr>=65?27:25,homeX:o.x+Math.cos(angle)*58,homeY:o.y+Math.sin(angle*1.13)*52,x:o.x+Math.cos(angle)*58,y:o.y+Math.sin(angle*1.13)*52,vx:0,vy:0};
+  });
+  let drag=null;
+  const point=ev=>{const rect=svg.getBoundingClientRect();return{x:(ev.clientX-rect.left)/rect.width*940,y:(ev.clientY-rect.top)/rect.height*570}};
+  svg.addEventListener("pointerdown",ev=>{const g=ev.target.closest("[data-node]");if(!g)return;drag=nodes[Number(g.dataset.node)];svg.classList.add("dragging");svg.setPointerCapture(ev.pointerId)});
+  svg.addEventListener("pointermove",ev=>{if(!drag)return;const p=point(ev);drag.x=Math.max(55,Math.min(885,p.x));drag.y=Math.max(75,Math.min(520,p.y));drag.vx=0;drag.vy=0});
+  svg.addEventListener("pointerup",ev=>{drag=null;svg.classList.remove("dragging");try{svg.releasePointerCapture(ev.pointerId)}catch(e){}});
+  function tick(){
+    nodes.forEach((n,i)=>{
+      if(n!==drag){n.vx+=(n.homeX-n.x)*0.015;n.vy+=(n.homeY-n.y)*0.015}
+      for(let j=i+1;j<nodes.length;j++){
+        const m=nodes[j],dx=m.x-n.x,dy=m.y-n.y,d=Math.sqrt(dx*dx+dy*dy)||1,min=n.r+m.r+38;
+        if(d<min){const f=(min-d)*0.019,fx=dx/d*f,fy=dy/d*f;if(n!==drag){n.vx-=fx;n.vy-=fy}if(m!==drag){m.vx+=fx;m.vy+=fy}}
+      }
+    });
+    links.forEach(l=>{
+      const a=nodes.find(n=>n.id===l.a), b=nodes.find(n=>n.id===l.b);
+      if(!a||!b)return;
+      const dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1,target=l.type==="rival"?260:185,force=(d-target)*0.0009;
+      const fx=dx/d*force,fy=dy/d*force;
+      if(a!==drag){a.vx+=fx;a.vy+=fy}
+      if(b!==drag){b.vx-=fx;b.vy-=fy}
+    });
+    nodes.forEach(n=>{if(n===drag)return;n.vx*=0.78;n.vy*=0.78;n.x=Math.max(55,Math.min(885,n.x+n.vx));n.y=Math.max(75,Math.min(520,n.y+n.vy))});
+    render();
+    requestAnimationFrame(tick);
+  }
+  function render(){
+    svg.innerHTML = `<defs>${markerDefs}</defs>${orgZones()}
+      ${links.filter(hasVisibleRelation).map((l,i)=>drawEdge(kind,...linkNodes(nodes,l),l,i)).join("")}
+      ${nodes.map(nodeSvg).join("")}
+      <text class="small-label" x="470" y="540" text-anchor="middle">ノードはドラッグ可能。信頼度とライバル心はいずれも双方向値。</text>`;
+  }
+  render();
+  requestAnimationFrame(tick);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>相関図 フォーカス画面 改善モック 4案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#151412;
+  --panel:#1b1915;
+  --panel2:#12110f;
+  --line:rgba(220,214,198,.14);
+  --line2:rgba(220,214,198,.24);
+  --text:#eee7da;
+  --sub:#bdb4a3;
+  --dim:#817867;
+  --gold:#d4a843;
+  --bond:#69b8ff;
+  --cold:#ff7777;
+  --rival:#e17055;
+  --friend:#6ed6a2;
+  --ink:#090807;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding:24px 18px 44px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(105,184,255,.08), transparent 24%),
+    radial-gradient(circle at 88% 8%, rgba(212,168,67,.08), transparent 24%),
+    linear-gradient(180deg,#1a1815,#0f0e0c 42%);
+  color:var(--text);
+  font-family:"Noto Sans JP",sans-serif;
+}
+.shell{width:min(1480px,100%);margin:0 auto}
+.intro{
+  border:1px solid rgba(212,168,67,.28);
+  background:linear-gradient(180deg,rgba(24,22,19,.96),rgba(14,13,11,.96));
+  border-radius:12px;
+  padding:18px 20px;
+  box-shadow:0 20px 60px rgba(0,0,0,.36);
+}
+.eyebrow,.caps{font-family:"Oswald",sans-serif;text-transform:uppercase;letter-spacing:.14em}
+.eyebrow{font-size:12px;color:var(--gold);margin-bottom:8px}
+h1{font-size:28px;line-height:1.25;margin:0 0 10px}
+.intro p{margin:0;color:var(--sub);font-size:13px;line-height:1.8}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:11px;color:var(--sub);background:rgba(255,255,255,.025)}
+.deck{display:grid;gap:22px;margin-top:22px}
+.mock{
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(24,22,19,.98),rgba(14,13,11,.98));
+  box-shadow:0 24px 80px rgba(0,0,0,.36);
+  overflow:hidden;
+}
+.mock-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:18px;
+  padding:14px 18px;
+  border-bottom:1px solid rgba(212,168,67,.22);
+}
+.mock-title{display:flex;gap:12px;align-items:baseline}
+.mock-no{font-family:"Oswald",sans-serif;color:var(--gold);font-size:34px;line-height:1}
+.mock-title strong{font-size:20px}
+.mock-title span,.mock-head p{color:var(--sub);font-size:12px;margin:0}
+.app{
+  margin:14px;
+  border:1px solid var(--line);
+  background:var(--panel2);
+  min-height:720px;
+  display:grid;
+  grid-template-rows:52px 1fr 94px;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid var(--line);
+  background:#171511;
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900}
+.brand::before{content:"";width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#f0c868,#b98227)}
+.topmeta{font-size:12px;color:var(--sub)}
+.main{display:grid;grid-template-columns:220px 1fr;min-height:570px}
+.side{border-right:1px solid var(--line);padding:14px;background:rgba(255,255,255,.015)}
+.side-title{font-size:11px;color:var(--sub);margin:0 0 8px}
+.side-card{border:1px solid rgba(212,168,67,.25);background:rgba(212,168,67,.06);border-radius:8px;padding:12px;margin-bottom:10px}
+.side-card strong{display:block;font-size:15px;margin-bottom:5px}
+.side-card span{display:block;color:var(--sub);font-size:11px;line-height:1.55}
+.faces{display:flex;gap:5px;margin-top:10px}
+.faces img{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.35)}
+.filter{border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--sub);font-size:11px;line-height:1.7}
+.view{position:relative;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.035),transparent 42%),#0d0c0a}
+.view-head{position:absolute;left:16px;top:14px;right:16px;display:flex;justify-content:space-between;z-index:5;pointer-events:none}
+.view-title strong{font-size:18px}
+.view-title span{font-size:11px;color:var(--gold);margin-left:8px}
+.tabs{display:flex;gap:6px}
+.tab{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:rgba(0,0,0,.24)}
+.tab.active{color:#1a1305;background:var(--gold);border-color:var(--gold);font-weight:900}
+.canvas{position:absolute;inset:0;width:100%;height:100%}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 14px;border-top:1px solid var(--line);background:#171511}
+.note{border:1px solid var(--line);border-radius:8px;padding:10px}
+.note strong{display:block;font-size:12px;margin-bottom:5px}
+.note span{display:block;font-size:11px;color:var(--sub);line-height:1.6}
+.legend{
+  position:absolute;
+  right:16px;
+  top:72px;
+  width:190px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:rgba(12,11,9,.78);
+  padding:10px;
+  color:var(--sub);
+  font-size:10px;
+  line-height:1.6;
+}
+.legend h3{margin:0 0 6px;font-family:"Oswald";letter-spacing:.1em;font-size:11px;color:var(--text)}
+.li{display:flex;align-items:center;gap:7px;margin:4px 0}
+.sw{width:22px;height:3px;border-radius:2px;background:var(--bond)}
+.sw.rival{background:var(--rival);height:4px}
+.sw.cold{background:var(--cold)}
+.sw.friend{background:var(--friend)}
+.sw.org-player{height:10px;background:transparent;border:2px solid #d4a843;border-radius:999px}
+.sw.org-emp{height:10px;background:transparent;border:2px dashed #c44b5f;border-radius:999px}
+.sw.org-nova{height:10px;background:transparent;border:2px dashed #5aa7ff;border-radius:999px}
+.edge-label{
+  font-family:"Oswald",sans-serif;
+  font-size:10px;
+  font-weight:700;
+  paint-order:stroke;
+  stroke:#050403;
+  stroke-width:3px;
+}
+.feud-tag{
+  font-size:10px;
+  font-weight:900;
+  fill:#180d08;
+}
+.spring-canvas{touch-action:none;cursor:grab}
+.spring-canvas.dragging{cursor:grabbing}
+svg text{font-family:"Noto Sans JP",sans-serif}
+.node-name{font-size:11px;font-weight:900;fill:#f3ecdf;paint-order:stroke;stroke:#050403;stroke-width:4px}
+.small-label{font-size:9px;fill:rgba(238,231,218,.7)}
+.ovr{font-family:"Oswald",sans-serif;font-size:11px;font-weight:700;fill:#fff}
+.center-label{font-size:14px;font-weight:900;fill:#fff5df;paint-order:stroke;stroke:#050403;stroke-width:5px}
+.rel-card{
+  position:absolute;
+  width:210px;
+  min-height:72px;
+  border:1px solid var(--line2);
+  border-radius:8px;
+  background:rgba(20,18,15,.86);
+  display:grid;
+  grid-template-columns:46px 1fr;
+  gap:8px;
+  padding:8px;
+  box-shadow:0 10px 28px rgba(0,0,0,.24);
+}
+.rel-card img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.28)}
+.rel-card strong{font-size:12px;display:block;margin-bottom:2px}
+.rel-card span{font-size:10px;color:var(--sub);display:block;line-height:1.45}
+.meter{height:4px;background:rgba(255,255,255,.08);border-radius:999px;margin-top:6px;overflow:hidden}
+.meter div{height:100%;border-radius:999px}
+.rel-card.friend{border-color:rgba(110,214,162,.32)}
+.rel-card.rival{border-color:rgba(225,112,85,.36)}
+.rel-card.cold{border-color:rgba(255,119,119,.34)}
+@media (max-width:900px){
+  .main{grid-template-columns:1fr}
+  .side{display:none}
+  .notes{grid-template-columns:1fr}
+  .mock-head{display:block}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <section class="intro">
+    <div class="eyebrow">Relationship Map Focus Concepts</div>
+    <h1>相関図 フォーカス画面の見せ方 4案</h1>
+    <p>中心選手と関係者が近すぎて顔・線・ラベルが重なる問題を、距離設計、レーン分け、カード化、関係種別の分離で解くための比較モックです。信頼度41〜59とライバル心30未満は、関係なしとしてフォーカス対象から外す前提です。</p>
+    <div class="chips">
+      <div class="chip">中心から最低距離を確保</div>
+      <div class="chip">顔同士を重ねない</div>
+      <div class="chip">親密 / 因縁 / 不信を読み分ける</div>
+      <div class="chip">フォーカス画面だけの改善案</div>
+    </div>
+  </section>
+  <div class="deck" id="deck"></div>
+</div>
+
+<script>
+const face = name => `../../../image/${name}.png`;
+const orgs = {
+  player: { name:"プレイヤー団体", color:"#d4a843", dash:false },
+  emp: { name:"皇武館", color:"#c44b5f", dash:true },
+  nova: { name:"ノヴァインパクト", color:"#5aa7ff", dash:true },
+  kasuga: { name:"春日野プロレス", color:"#6ed6a2", dash:true }
+};
+const center = { name:"岩小路詩子", ovr:87, org:"player", face:face("face_iwakoji_s") };
+const chars = [
+  { name:"早川モナ", ovr:87, org:"player", bondOut:82, bondIn:76, rivalOut:18, rivalIn:14, type:"friend", face:face("face_hayakawa_m"), note:"信頼が厚い主軸" },
+  { name:"本郷恵子", ovr:79, org:"emp", bondOut:54, bondIn:41, rivalOut:66, rivalIn:72, feud:"王座因縁", type:"rival", face:face("face_hongo_m"), note:"王座を巡る因縁" },
+  { name:"大熊よし子", ovr:86, org:"player", bondOut:72, bondIn:68, rivalOut:42, rivalIn:36, type:"friend", face:face("face_okubo_m"), note:"強い味方だが競争もある" },
+  { name:"平松かなみ", ovr:83, org:"player", bondOut:61, bondIn:70, rivalOut:25, rivalIn:22, type:"friend", face:face("face_hiramatsu_k"), note:"準主力の連携役" },
+  { name:"玉手すみれ", ovr:81, org:"nova", bondOut:38, bondIn:46, rivalOut:58, rivalIn:52, feud:"遺恨", type:"rival", face:face("face_tamate_s"), note:"感情線が強い相手" },
+  { name:"椿玲奈", ovr:70, org:"kasuga", bondOut:33, bondIn:28, rivalOut:35, rivalIn:41, type:"cold", face:face("face_tachibana_r"), note:"距離がある関係" },
+  { name:"高取麻衣子", ovr:69, org:"player", bondOut:57, bondIn:63, rivalOut:12, rivalIn:16, type:"friend", face:face("face_takahashi_ma"), note:"薄いが良好" },
+  { name:"芹沢理沙", ovr:68, org:"emp", bondOut:28, bondIn:35, rivalOut:44, rivalIn:39, type:"cold", face:face("face_serizawa_a"), note:"不信寄り" },
+  { name:"二階堂舞", ovr:60, org:"player", bondOut:48, bondIn:51, rivalOut:30, rivalIn:24, type:"neutral", face:face("face_iijima_s"), note:"中立に近い" }
+];
+const patterns = [
+  {
+    no:"A", title:"Spring Ring Focus", sub:"中心から関係者を2重リングに逃がし、弾力つきで動かせる案",
+    lead:"ドラッグすると線が伸び、離すと元の読みやすい距離へ戻る。ネットワークらしい手触りを残す。",
+    notes:[
+      ["良い点","双方向の信頼度/ライバル心を2本の線と数値で分けて読めて、自由に動かす感触もある。"],
+      ["弱い点","常時すべての数値を出すと情報量は多いので、ホバー時だけ濃くする調整が必要。"],
+      ["向いている","現行ネットワークの雰囲気を残しながら、密集だけを直したい場合。"]
+    ],
+    draw: drawRing
+  },
+  {
+    no:"B", title:"Relation Lanes", sub:"親密・因縁・不信を左右レーンへ分ける案",
+    lead:"中心は左寄せ、相手は関係カテゴリ別の列に並べ、線は短く整理する。",
+    notes:[
+      ["良い点","誰が味方で誰が火種かが一番速く読める。操作画面として強い。"],
+      ["弱い点","自由なネットワーク感は薄く、整理された分析画面に寄る。"],
+      ["向いている","フォーカスを調査・比較の画面として使いやすくしたい場合。"]
+    ],
+    draw: drawLanes
+  },
+  {
+    no:"C", title:"Wide Fan Focus", sub:"中心から大きく扇状に開いて、関係の広がりを見せる案",
+    lead:"近い関係ほど上、遠い関係ほど外側へ置き、画面の余白を大きく使う。",
+    notes:[
+      ["良い点","勢いと相関図らしさがあり、現行よりかなり見栄えが出る。"],
+      ["弱い点","人数が増えると下段のラベル調整が必要。"],
+      ["向いている","見た目の楽しさと読める距離感を両立したい場合。"]
+    ],
+    draw: drawFan
+  },
+  {
+    no:"D", title:"Focus Board", sub:"顔グラフと関係カードを分離する案",
+    lead:"中心付近は最小限の線だけ、詳細は右カードで読ませる。",
+    notes:[
+      ["良い点","線が重ならず、数字や説明が最も読みやすい。"],
+      ["弱い点","ネットワークを直接眺める気持ちよさは少し弱まる。"],
+      ["向いている","クリック先の詳細確認や実用性を優先したい場合。"]
+    ],
+    draw: drawBoard
+  }
+];
+
+function appShell(pattern){
+  return `<section class="mock">
+    <div class="mock-head">
+      <div>
+        <div class="mock-title"><div class="mock-no">${pattern.no}</div><strong>${pattern.title}</strong><span>${pattern.sub}</span></div>
+      </div>
+      <p>${pattern.lead}</p>
+    </div>
+    <div class="app">
+      <div class="topbar">
+        <div class="brand">WRESTLE MANAGER</div>
+        <div class="topmeta">31年目 4月 第1週　資金 1,077,868万　人気 59</div>
+      </div>
+      <div class="main">
+        <aside class="side">
+          <div class="side-title">CENTER</div>
+          <div class="side-card">
+            <strong>${center.name}</strong>
+            <span>OVR ${center.ovr} / 所属: ${orgs[center.org].name}<br>フォーカス中の選手</span>
+            <div class="faces">${chars.slice(0,5).map(c=>`<img src="${c.face}">`).join("")}</div>
+          </div>
+          <div class="filter">表示: 関係ありのみ<br>線: 中心と直接関係のみ<br>距離: 最低距離を確保</div>
+        </aside>
+        <div class="view">
+          <div class="view-head">
+            <div class="view-title"><strong>RELATIONSHIP MAP</strong><span>フォーカスモード</span></div>
+            <div class="tabs"><div class="tab">ネットワーク</div><div class="tab active">フォーカス</div><div class="tab">勢力図</div></div>
+          </div>
+          <div class="legend">
+            <h3>LEGEND</h3>
+            <div class="li"><span class="sw friend"></span>信頼度: 41〜59は無表示</div>
+            <div class="li"><span class="sw rival"></span>ライバル心: 30未満は無表示</div>
+            <div class="li"><span class="sw org-player"></span>プレイヤー団体</div>
+            <div class="li"><span class="sw org-emp"></span>皇武館</div>
+            <div class="li"><span class="sw org-nova"></span>ノヴァインパクト</div>
+            <div style="margin-top:6px;border-top:1px solid var(--line);padding-top:6px">双方向値は中心→相手と相手→中心で線を分け、団体名はノード上の所属タグで表示。</div>
+          </div>
+          ${pattern.draw()}
+        </div>
+      </div>
+      <div class="notes">${pattern.notes.map(n=>`<div class="note"><strong>${n[0]}</strong><span>${n[1]}</span></div>`).join("")}</div>
+    </div>
+  </section>`;
+}
+
+function nodeSvg(c,x,y,r=34,cls=""){
+  const label = cls === "center" ? "center-label" : "node-name";
+  const badgeW = cls === "center" ? 32 : 26;
+  const org = orgs[c.org] || orgs.player;
+  const orgStroke = org.color;
+  const orgDash = cls !== "center" && org.dash ? 'stroke-dasharray="5 4"' : "";
+  const orgLabel = cls === "center" ? `${org.name} CENTER` : org.name;
+  const tagW = Math.max(58, Math.min(104, orgLabel.length * 10 + 18));
+  return `<g>
+    <circle cx="${x}" cy="${y}" r="${r+8}" fill="rgba(255,255,255,.05)"></circle>
+    <image href="${c.face}" x="${x-r}" y="${y-r}" width="${r*2}" height="${r*2}" clip-path="circle(${r}px at center)" preserveAspectRatio="xMidYMid slice"></image>
+    <circle cx="${x}" cy="${y}" r="${r+4}" fill="none" stroke="${orgStroke}" stroke-width="${cls==="center"?3:2}" ${orgDash}></circle>
+    <circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1.5"></circle>
+    <rect x="${x-tagW/2}" y="${y-r-22}" width="${tagW}" height="14" rx="7" fill="${cls==="center" ? "rgba(212,168,67,.22)" : "rgba(255,255,255,.08)"}" stroke="${orgStroke}" stroke-width="1" ${orgDash}></rect>
+    <text class="small-label" x="${x}" y="${y-r-12}" text-anchor="middle">${orgLabel}</text>
+    <rect x="${x-badgeW/2}" y="${y+r+5}" width="${badgeW}" height="15" rx="4" fill="rgba(0,0,0,.82)" stroke="rgba(255,255,255,.36)"></rect>
+    <text class="ovr" x="${x}" y="${y+r+16}" text-anchor="middle">${c.ovr}</text>
+    <text class="${label}" x="${x}" y="${y+r+34}" text-anchor="middle">${c.name}</text>
+  </g>`;
+}
+function relationColor(c){
+  if(c.type==="friend") return "#6ed6a2";
+  if(c.type==="rival") return "#e17055";
+  if(c.type==="cold") return "#ff7777";
+  return "rgba(238,231,218,.45)";
+}
+function hasTrust(v){return v <= 40 || v >= 60}
+function hasRival(v){return v >= 30}
+function hasVisibleRelation(c){
+  return hasTrust(c.bondOut) || hasTrust(c.bondIn) || hasRival(c.rivalOut) || hasRival(c.rivalIn) || !!c.feud;
+}
+function bondColor(v){
+  return v >= 50 ? "#6ed6a2" : "#ff7777";
+}
+function relationPair(x1,y1,x2,y2,c,curved=false){
+  const dx = x2 - x1, dy = y2 - y1;
+  const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+  const ux = dx / dist, uy = dy / dist;
+  const px = -uy * 7, py = ux * 7;
+  const bondW = Math.max(1.7, Math.min(4.2, Math.abs(c.bondOut - 50) / 12 + 1.6));
+  const bondInW = Math.max(1.7, Math.min(4.2, Math.abs(c.bondIn - 50) / 12 + 1.6));
+  const riv = Math.max(c.rivalOut, c.rivalIn);
+  const rivalW = Math.max(1.8, Math.min(4.8, riv / 22));
+  const mx = (x1+x2)/2, my = (y1+y2)/2;
+  const bend = curved ? Math.min(y1,y2)-44 : my;
+  const lineA = !hasTrust(c.bondOut) ? "" : curved
+    ? `<path d="M${x1+px},${y1+py} Q${mx+px},${bend+py} ${x2+px},${y2+py}" fill="none" stroke="${bondColor(c.bondOut)}" stroke-width="${bondW}" stroke-opacity=".76"></path>`
+    : `<line x1="${x1+px}" y1="${y1+py}" x2="${x2+px}" y2="${y2+py}" stroke="${bondColor(c.bondOut)}" stroke-width="${bondW}" stroke-opacity=".76"></line>`;
+  const lineB = !hasTrust(c.bondIn) ? "" : curved
+    ? `<path d="M${x2-px},${y2-py} Q${mx-px},${bend-py+18} ${x1-px},${y1-py}" fill="none" stroke="${bondColor(c.bondIn)}" stroke-width="${bondInW}" stroke-opacity=".48" stroke-dasharray="5 4"></path>`
+    : `<line x1="${x2-px}" y1="${y2-py}" x2="${x1-px}" y2="${y1-py}" stroke="${bondColor(c.bondIn)}" stroke-width="${bondInW}" stroke-opacity=".48" stroke-dasharray="5 4"></line>`;
+  const rivalLine = hasRival(riv)
+    ? (curved
+      ? `<path d="M${x1},${y1} Q${mx},${bend+34} ${x2},${y2}" fill="none" stroke="#e17055" stroke-width="${rivalW}" stroke-opacity=".64" stroke-dasharray="9 6"></path>`
+      : `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#e17055" stroke-width="${rivalW}" stroke-opacity=".64" stroke-dasharray="9 6"></line>`)
+    : "";
+  const labelX = mx + (curved ? 0 : px * 1.8);
+  const labelY = curved ? bend + 4 : my - 12;
+  const feudTag = c.feud ? `<g>
+    <rect x="${mx-34}" y="${my+10}" width="68" height="18" rx="9" fill="#e17055" stroke="rgba(255,224,210,.42)"></rect>
+    <text class="feud-tag" x="${mx}" y="${my+23}" text-anchor="middle">${c.feud}</text>
+  </g>` : "";
+  return `${lineA}${lineB}${rivalLine}
+    ${hasTrust(c.bondOut) || hasTrust(c.bondIn) ? `<text class="edge-label" x="${labelX}" y="${labelY}" fill="${bondColor(hasTrust(c.bondOut) ? c.bondOut : c.bondIn)}" text-anchor="middle">信 ${c.bondOut}→ / ←${c.bondIn}</text>` : ""}
+    ${hasRival(riv) ? `<text class="edge-label" x="${labelX}" y="${labelY+(hasTrust(c.bondOut) || hasTrust(c.bondIn) ? 14 : 0)}" fill="#e17055" text-anchor="middle">競 ${c.rivalOut}→ / ←${c.rivalIn}</text>` : ""}
+    ${feudTag}`;
+}
+function relationLine(x1,y1,x2,y2,c,curved=false){
+  const color = relationColor(c);
+  const w = c.type === "rival" ? 4 : c.type === "friend" ? 3 : 2;
+  if(curved){
+    const mx = (x1+x2)/2;
+    const my = Math.min(y1,y2)-54;
+    return `<path d="M${x1},${y1} Q${mx},${my} ${x2},${y2}" fill="none" stroke="${color}" stroke-width="${w}" stroke-opacity=".72" ${c.type==="rival"?'stroke-dasharray="8 5"':''}></path>`;
+  }
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${w}" stroke-opacity=".72" ${c.type==="rival"?'stroke-dasharray="8 5"':''}></line>`;
+}
+function drawRing(){
+  return `<svg class="canvas spring-canvas" id="springFocusSvg" viewBox="0 0 940 570"></svg>`;
+}
+function drawLanes(){
+  const cx=250, cy=300;
+  const left = chars.filter(c=>c.type==="friend");
+  const mid = chars.filter(c=>c.type==="rival");
+  const right = chars.filter(c=>c.type!=="friend" && c.type!=="rival");
+  const groups = [
+    {label:"親密",list:left,x:500,color:"#6ed6a2"},
+    {label:"因縁",list:mid,x:675,color:"#e17055"},
+    {label:"不信/薄い関係",list:right,x:820,color:"#ff7777"}
+  ];
+  let yBase = 130;
+  return `<svg class="canvas" viewBox="0 0 940 570">
+    <rect x="420" y="82" width="450" height="410" rx="14" fill="rgba(255,255,255,.025)" stroke="rgba(255,255,255,.08)"></rect>
+    ${groups.map(g=>`<text x="${g.x}" y="104" text-anchor="middle" fill="${g.color}" font-size="12" font-weight="900">${g.label}</text>`).join("")}
+    ${groups.map(g=>g.list.map((c,i)=>{
+      const y = yBase + i*116;
+      return relationLine(cx+50,cy,g.x-38,y,c,false)+nodeSvg(c,g.x,y,29);
+    }).join("")).join("")}
+    ${nodeSvg(center,cx,cy,52,"center")}
+    <text class="small-label" x="${cx}" y="${cy+104}" text-anchor="middle">中心を固定し、関係者は列で読む</text>
+  </svg>`;
+}
+function drawFan(){
+  const cx=470, cy=450;
+  const angles = [-118,-92,-68,-42,-18,18,42,68,94];
+  const pos = chars.map((c,i)=>{
+    const rad = angles[i] * Math.PI / 180;
+    const dist = c.type==="friend" ? 250 : c.type==="rival" ? 300 : 330;
+    return [cx + Math.cos(rad)*dist, cy + Math.sin(rad)*dist];
+  });
+  return `<svg class="canvas" viewBox="0 0 940 570">
+    <path d="M130 470 Q470 20 810 470" fill="none" stroke="rgba(212,168,67,.12)" stroke-width="18" stroke-linecap="round"></path>
+    <path d="M210 470 Q470 120 730 470" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="10" stroke-linecap="round"></path>
+    ${chars.map((c,i)=>relationLine(cx,cy,pos[i][0],pos[i][1],c,true)).join("")}
+    ${chars.map((c,i)=>nodeSvg(c,pos[i][0],pos[i][1],30)).join("")}
+    ${nodeSvg(center,cx,cy,50,"center")}
+  </svg>`;
+}
+function card(c, x, y){
+  const pct = c.type==="rival" ? Math.max(c.rivalOut, c.rivalIn) : Math.max(c.bondOut, c.bondIn);
+  const col = relationColor(c);
+  return `<div class="rel-card ${c.type}" style="left:${x}px;top:${y}px">
+    <img src="${c.face}">
+    <div><strong>${c.name}</strong><span>${(orgs[c.org] || orgs.player).name} / 信 ${c.bondOut}→ ←${c.bondIn} / 競 ${c.rivalOut}→ ←${c.rivalIn}</span><div class="meter"><div style="width:${pct}%;background:${col}"></div></div></div>
+  </div>`;
+}
+function drawBoard(){
+  const cx=300, cy=292;
+  const cards = [
+    card(chars[0],500,112), card(chars[1],500,198), card(chars[2],500,284), card(chars[3],500,370),
+    card(chars[4],724,112), card(chars[5],724,198), card(chars[6],724,284), card(chars[7],724,370)
+  ].join("");
+  return `<svg class="canvas" viewBox="0 0 940 570">
+    <rect x="460" y="88" width="430" height="378" rx="12" fill="rgba(255,255,255,.025)" stroke="rgba(255,255,255,.08)"></rect>
+    ${chars.slice(0,8).map((c,i)=>{
+      const y = [148,234,320,406,148,234,320,406][i];
+      const x = i < 4 ? 500 : 724;
+      return relationLine(cx+54,cy,x,y,c,false);
+    }).join("")}
+    ${nodeSvg(center,cx,cy,56,"center")}
+    <text class="small-label" x="${cx}" y="${cy+112}" text-anchor="middle">線は方向だけ、詳細はカードで読む</text>
+  </svg>${cards}`;
+}
+
+document.getElementById("deck").innerHTML = patterns.map(appShell).join("");
+initSpringFocus();
+
+function initSpringFocus(){
+  const svg = document.getElementById("springFocusSvg");
+  if(!svg) return;
+  const centerNode = { x:470, y:320, r:48 };
+  const focusChars = chars.filter(hasVisibleRelation);
+  const homes = [
+    [470,120],[660,190],[720,360],[580,505],[360,505],[220,360],[280,190],[470,560],[760,270]
+  ];
+  const nodes = focusChars.map((c,i)=>({
+    ...c,
+    x:homes[i][0],
+    y:homes[i][1],
+    vx:0,
+    vy:0,
+    homeX:homes[i][0],
+    homeY:homes[i][1],
+    r:30
+  }));
+  let drag = null;
+  let running = true;
+
+  const point = (ev) => {
+    const rect = svg.getBoundingClientRect();
+    return {
+      x:(ev.clientX - rect.left) / rect.width * 940,
+      y:(ev.clientY - rect.top) / rect.height * 570
+    };
+  };
+  svg.addEventListener("pointerdown", ev => {
+    const g = ev.target.closest("[data-spring-node]");
+    if(!g) return;
+    drag = nodes[Number(g.dataset.springNode)];
+    drag.vx = 0;
+    drag.vy = 0;
+    svg.classList.add("dragging");
+    svg.setPointerCapture(ev.pointerId);
+  });
+  svg.addEventListener("pointermove", ev => {
+    if(!drag) return;
+    const p = point(ev);
+    drag.x = Math.max(70, Math.min(870, p.x));
+    drag.y = Math.max(86, Math.min(520, p.y));
+    drag.vx = 0;
+    drag.vy = 0;
+  });
+  svg.addEventListener("pointerup", ev => {
+    drag = null;
+    svg.classList.remove("dragging");
+    try { svg.releasePointerCapture(ev.pointerId); } catch(e) {}
+  });
+  svg.addEventListener("pointercancel", () => {
+    drag = null;
+    svg.classList.remove("dragging");
+  });
+
+  function tick(){
+    nodes.forEach((n,i)=>{
+      if(n === drag) return;
+      n.vx += (n.homeX - n.x) * 0.018;
+      n.vy += (n.homeY - n.y) * 0.018;
+      const dx = n.x - centerNode.x;
+      const dy = n.y - centerNode.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const minCenter = 142;
+      if(dist < minCenter){
+        const push = (minCenter - dist) * 0.035;
+        n.vx += dx / dist * push;
+        n.vy += dy / dist * push;
+      }
+      for(let j=i+1;j<nodes.length;j++){
+        const m = nodes[j];
+        const px = m.x - n.x;
+        const py = m.y - n.y;
+        const d = Math.sqrt(px*px + py*py) || 1;
+        const min = n.r + m.r + 46;
+        if(d < min){
+          const force = (min - d) * 0.018;
+          const fx = px / d * force;
+          const fy = py / d * force;
+          if(n !== drag){ n.vx -= fx; n.vy -= fy; }
+          if(m !== drag){ m.vx += fx; m.vy += fy; }
+        }
+      }
+    });
+    nodes.forEach(n=>{
+      if(n === drag) return;
+      n.vx *= 0.78;
+      n.vy *= 0.78;
+      n.x = Math.max(62, Math.min(878, n.x + n.vx));
+      n.y = Math.max(82, Math.min(525, n.y + n.vy));
+    });
+    render();
+    if(running) requestAnimationFrame(tick);
+  }
+
+  function render(){
+    svg.innerHTML = `
+      <circle cx="${centerNode.x}" cy="${centerNode.y}" r="150" fill="none" stroke="rgba(255,255,255,.08)" stroke-dasharray="5 8"></circle>
+      <circle cx="${centerNode.x}" cy="${centerNode.y}" r="235" fill="none" stroke="rgba(255,255,255,.06)" stroke-dasharray="5 10"></circle>
+      <text class="small-label" x="${centerNode.x}" y="70" text-anchor="middle">周辺ノードはドラッグ可能。離すとリング上へ弾性的に戻る。</text>
+      ${nodes.map(n=>relationPair(centerNode.x,centerNode.y,n.x,n.y,n,true)).join("")}
+      ${nodes.map((n,i)=>`<g data-spring-node="${i}">${nodeSvg(n,n.x,n.y,n.r)}</g>`).join("")}
+      ${nodeSvg(center,centerNode.x,centerNode.y,centerNode.r,"center")}
+    `;
+  }
+
+  render();
+  requestAnimationFrame(tick);
+  window.addEventListener("beforeunload",()=>{ running = false; });
+}
+</script>
+</body>
+</html>
