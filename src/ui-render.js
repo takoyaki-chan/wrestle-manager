@@ -2458,6 +2458,7 @@ function renderShowPrep() {
   const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, prediction.estOccRate);
   const v = VENUES[G.showVenue];
   const heat = getHeatLevel();
+  const titleCd = Engine.title.canTitleMatch(G);
 
   // 予測レベル → ムードアイコン + ドット数
   const _spPredMeta = [
@@ -2482,7 +2483,11 @@ function renderShowPrep() {
     <div class="sp-metrics">
       <div class="sp-metric"><div class="sp-metric-val" style="color:${heat.color}">${heat.label}</div><div class="sp-metric-label">Heat</div></div>
       ${estCrowdMQ.total !== 0 ? `<div class="sp-metric"><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}</div><div class="sp-metric-label">予想MQ</div></div>` : ''}
-      ${hasTitlePreview ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">タイトル戦</div></div>` : ''}
+      ${hasTitlePreview
+        ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">タイトル戦</div></div>`
+        : (titleCd.allowed
+          ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">王座戦 解禁中</div></div>`
+          : `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-dim);font-size:18px">⏳${titleCd.weeksLeft}週</div><div class="sp-metric-label">王座戦 解禁まで</div></div>`)}
       <div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-sub)">${v.cap.toLocaleString()}</div><div class="sp-metric-label">会場席数</div></div>
       <div class="sp-metric"><div class="sp-metric-val" style="color:#e17055">-${v.cost}万</div><div class="sp-metric-label">会場費</div></div>
     </div>
@@ -2562,7 +2567,7 @@ function renderShowPrep() {
           <div class="sp-tag-fighter-info">
             ${isChamp ? '<div style="font-size:9px;color:var(--gold)">👑 王者</div>' : ''}
             <div class="sp-tag-fighter-name">${f.name}</div>
-            <div class="sp-tag-fighter-ovr">OVR <span style="font-size:16px">${ov(f)}</span></div>
+            <div class="sp-tag-fighter-ovr">OVR <span style="font-size:20px;color:var(--text-main);font-weight:700">${ov(f)}</span></div>
             <div style="font-size:10px;color:var(--text-dim)">体調 <span style="${_scale6Style(_condColor(cond))}">${cond}</span></div>
             <div style="font-size:10px;color:var(--text-dim)">集客力 <span style="${_scale6Style(_popColor(drawPow))}">${drawPow}</span></div>
           </div>
@@ -10031,6 +10036,12 @@ function _relmapLinkPassesFilter(link, filter) {
   return _relmapHasVisibleRelation(link);
 }
 
+function _relmapLinkPassesDisplayControls(link, filter) {
+  if (!_relmapLinkPassesFilter(link, filter)) return false;
+  if (!_relmapFilterRelOnly) return true;
+  return _relmapRelationshipPassesThreshold(link);
+}
+
 function _relmapSelectRenderableLinks(candidateLinks, budget, maxPerNode, priorityNodeId) {
   const selected = [];
   const degree = {};
@@ -11327,12 +11338,12 @@ function _relmapUpdateVisibility() {
       if (show) visibleNodeIds.add(n.id);
     });
     candidateLinks = links.filter(l =>
-      visibleNodeIds.has(l.a) && visibleNodeIds.has(l.b) && _relmapLinkPassesFilter(l, _relmapFilter)
+      visibleNodeIds.has(l.a) && visibleNodeIds.has(l.b) && _relmapLinkPassesDisplayControls(l, _relmapFilter)
     );
 
     if (_relmapViewMode === 'focus' && _relmapCenterId && visibleNodeIds.has(_relmapCenterId)) {
       const fl = _relmapGetLinksFor(_relmapCenterId)
-        .filter(l => visibleNodeIds.has(l.a) && visibleNodeIds.has(l.b) && _relmapLinkPassesFilter(l, _relmapFilter));
+        .filter(l => visibleNodeIds.has(l.a) && visibleNodeIds.has(l.b) && _relmapLinkPassesDisplayControls(l, _relmapFilter));
       const shownIds = new Set([_relmapCenterId]);
       fl.slice(0, _RELMAP_FOCUS_MAX_CONN).forEach(l => shownIds.add(l.a === _relmapCenterId ? l.b : l.a));
       nodes.forEach(n => { if (visibleNodeIds.has(n.id)) n._hidden = !shownIds.has(n.id); });
@@ -11347,7 +11358,7 @@ function _relmapUpdateVisibility() {
 
   if (_relmapViewMode === 'focus' && _relmapCenterId) {
     const fl = _relmapGetLinksFor(_relmapCenterId)
-      .filter(l => _relmapLinkPassesFilter(l, _relmapFilter));
+      .filter(l => _relmapLinkPassesDisplayControls(l, _relmapFilter));
 
     const intensityLinks = fl.map(l => {
       const oid = l.a === _relmapCenterId ? l.b : l.a;
@@ -11383,12 +11394,12 @@ function _relmapUpdateVisibility() {
 
   if (_relmapFilter === 'rivalry') {
     const visibleNodeIds = new Set();
-    candidateLinks = links.filter(l => _relmapLinkPassesFilter(l, _relmapFilter));
+    candidateLinks = links.filter(l => _relmapLinkPassesDisplayControls(l, _relmapFilter));
     candidateLinks.forEach(l => { visibleNodeIds.add(l.a); visibleNodeIds.add(l.b); });
     nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
   } else if (_relmapFilter === 'bond') {
     const visibleNodeIds = new Set();
-    candidateLinks = links.filter(l => _relmapLinkPassesFilter(l, _relmapFilter));
+    candidateLinks = links.filter(l => _relmapLinkPassesDisplayControls(l, _relmapFilter));
     candidateLinks.forEach(l => { visibleNodeIds.add(l.a); visibleNodeIds.add(l.b); });
     nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
   } else if (_relmapFilterRelOnly) {
@@ -11398,7 +11409,7 @@ function _relmapUpdateVisibility() {
     nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
   } else {
     nodes.forEach(n => { n._hidden = false; });
-    candidateLinks = links.filter(l => _relmapLinkPassesFilter(l, _relmapFilter));
+    candidateLinks = links.filter(l => _relmapLinkPassesDisplayControls(l, _relmapFilter));
   }
 
   candidateLinks = candidateLinks.filter(l => !(_relmapNodeMap[l.a]?._hidden) && !(_relmapNodeMap[l.b]?._hidden));
