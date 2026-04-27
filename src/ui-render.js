@@ -11483,6 +11483,27 @@ function _relmapDedupPowerRoster(roster, takenIds) {
   return unique;
 }
 
+function _relmapPowerNodeRadius(ovr) {
+  if (ovr <= 55) return 23;
+  return Math.min(41, 23 + (ovr - 55) * 0.56);
+}
+
+function _relmapPowerOvrBadgeStyle(ovr) {
+  if (ovr >= 85) return { fill: '#d6a23a', stroke: 'rgba(255,230,176,0.5)', text: '#16110a' };
+  if (ovr >= 78) return { fill: '#d46a4c', stroke: 'rgba(255,202,188,0.42)', text: '#fff7f2' };
+  if (ovr >= 70) return { fill: '#8c5bd6', stroke: 'rgba(225,205,255,0.4)', text: '#f8f2ff' };
+  if (ovr >= 60) return { fill: '#5677d8', stroke: 'rgba(203,218,255,0.38)', text: '#f6f9ff' };
+  return { fill: '#59616d', stroke: 'rgba(232,238,247,0.28)', text: '#f5f7fa' };
+}
+
+function _relmapPowerPopularityValue(fighter) {
+  const raw = (typeof Engine !== 'undefined' && Engine.util && typeof Engine.util.dispPop === 'function')
+    ? Engine.util.dispPop(fighter && fighter.popularity || 0)
+    : Math.round((fighter && fighter.popularity) || 0);
+  const num = Number(raw);
+  return Number.isFinite(num) ? num : Math.round((fighter && fighter.popularity) || 0);
+}
+
 // 勢力図 viewMode — 散布型階層SVG
 // ══════════════════════════════════════════════════════════
 function _drawRelmapPowerView(svg) {
@@ -11631,33 +11652,6 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
   let defsSvg = '<defs>';
   let linesSvg = '', bgSvg = '', nodeSvg = '';
 
-  // ── 層1: 団体間因縁アーク ──
-  if (G.relationships) {
-    const crossPairs = new Set();
-    Object.keys(G.relationships).forEach(key => {
-      const sep = key.indexOf('>');
-      if (sep < 0) return;
-      const aId = key.slice(0, sep), bId = key.slice(sep + 1);
-      const orgA = fighterOrgMap[aId], orgB = fighterOrgMap[bId];
-      if (!orgA || !orgB || orgA === orgB) return;
-      const pairKey = aId < bId ? `${aId}>${bId}` : `${bId}>${aId}`;
-      if (crossPairs.has(pairKey)) return;
-      crossPairs.add(pairKey);
-      const rivAB = (G.relationships[key] || {}).rivalry || 0;
-      const rivBA = (G.relationships[`${bId}>${aId}`] || {}).rivalry || 0;
-      const maxRiv = Math.max(rivAB, rivBA);
-      if (maxRiv < 22) return;
-      const posA = allNodes.find(n => n.id == aId);
-      const posB = allNodes.find(n => n.id == bId);
-      if (!posA || !posB) return;
-      const opacity = Math.min(0.55, 0.1 + maxRiv / 130);
-      const sw = Math.min(2.5, 0.5 + maxRiv / 55);
-      const mx = (posA.x + posB.x) / 2;
-      const my = Math.min(posA.y, posB.y) - Math.abs(posA.x - posB.x) * 0.15 - 20;
-      linesSvg += `<path d="M${posA.x.toFixed(1)},${posA.y.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${posB.x.toFixed(1)},${posB.y.toFixed(1)}" fill="none" stroke="#e67e22" stroke-width="${sw.toFixed(2)}" stroke-opacity="${opacity.toFixed(2)}" stroke-dasharray="5,3"/>`;
-    });
-  }
-
   // ── 層2: 団体エリア背景 + ラベル ──
   // 各団体の勢力指数を算出（人数+平均OVR）→背景円の大きさに反映
   const orgStrengths = orgList.map(org => {
@@ -11735,7 +11729,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     nodeSvg += `</g>`;
   });
 
-  bgSvg += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 3).toFixed(1)}" text-anchor="middle" fill="rgba(200,190,170,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い  ● サイズ=OVR  ── 因縁  / クリックで詳細 / サイドバーで団体表示</text>`;
+  bgSvg += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 3).toFixed(1)}" text-anchor="middle" fill="rgba(200,190,170,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い  ● サイズ=OVR  / クリックで詳細 / サイドバーで団体表示</text>`;
 
   defsSvg += '</defs>';
   svg.innerHTML = defsSvg + linesSvg + bgSvg + nodeSvg;
@@ -11771,74 +11765,120 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     : (aiData.titles?.world?.championId || null);
 
   const HEADER_H = 40;
-  const PAD_TOP = HEADER_H + 20;
-  const PAD_BOTTOM = 28;
-  const PAD_X = 52;
+  const PAD_TOP = HEADER_H + 28;
+  const PAD_BOTTOM = 32;
+  const PAD_X = 44;
   const contentH = H - PAD_TOP - PAD_BOTTOM;
   const usableW = drawW - PAD_X * 2;
-
-  // OVR比例ノードサイズ（ドラマチックに：最強=かなり大きい）
-  const R_MIN = 12, R_MAX = 45;
-  const ovrs = sorted.map(f => Engine.util.ov(f));
-  const ovrMin = Math.min(...ovrs), ovrMax = Math.max(...ovrs);
-  const ovrRange = Math.max(1, ovrMax - ovrMin);
-
-  // 初期位置計算
-  const centerXArea = leftOffset + drawW / 2;
-  const nodes = sorted.map((f, i) => {
+  const centerXArea = leftOffset + drawW * 0.53;
+  const topY = PAD_TOP + 30;
+  const makeNode = (f, rank, homeX, homeY) => {
     const ovr = Engine.util.ov(f);
-    const ovrNorm = (ovr - ovrMin) / ovrRange;
-    const r = R_MIN + ovrNorm * (R_MAX - R_MIN);
-    const y = PAD_TOP + r + (1 - ovrNorm) * (contentH - R_MAX * 2);
-    const hash = _relmapIdHash(f.id);
-    const hash2 = _relmapIdHash(f.id + 313);
-    const rankNorm = n > 1 ? i / (n - 1) : 0;
-    const angle = -Math.PI * 0.72 + rankNorm * Math.PI * 1.44 + (hash - 0.5) * 0.5;
-    const arc = _relmapPolarOffset(usableW * 0.28, contentH * 0.12, angle, 0.35 + rankNorm * 0.75);
-    const homeX = centerXArea + arc.x;
-    const aceLift = i === 0 ? r * 0.6 : i < 3 ? r * 0.24 : 0;
-    const homeY = y - aceLift;
-    const x = homeX + (hash2 - 0.5) * usableW * 0.12;
+    const r = _relmapPowerNodeRadius(ovr);
     const mapNode = _relmapNodeMap[f.id];
-    const savedPos = _relmapGetPowerPos(mapNode, orgId, x, homeY);
-    return {
-      id: f.id, fighter: f, x: savedPos.x, y: savedPos.y, r, ovr, ovrNorm,
+    const savedPos = _relmapGetPowerPos(mapNode, orgId, homeX, homeY);
+    const node = {
+      id: f.id, fighter: f, x: savedPos.x, y: savedPos.y, r, ovr,
+      pop: _relmapPowerPopularityValue(f),
       isChamp: !!orgChampId && f.id === orgChampId,
-      isAce: i === 0, isTop3: i < 3, rank: i,
+      isAce: rank === 0, isTop3: rank < 3, rank,
       homeX, homeY,
     };
+    return node;
+  };
+
+  const formationRowsFor = (count) => {
+    if (count <= 1) return [1];
+    if (count === 2) return [1, 1];
+    if (count === 3) return [1, 2];
+    if (count === 4) return [1, 3];
+    if (count === 5) return [1, 2, 2];
+    if (count === 6) return [1, 2, 3];
+    if (count === 7) return [1, 2, 4];
+    if (count === 8) return [1, 3, 4];
+    if (count === 9) return [1, 3, 5];
+    if (count === 10) return [1, 3, 4, 2];
+    if (count === 11) return [1, 3, 4, 3];
+    if (count === 12) return [1, 3, 4, 4];
+    const rows = [1, 3, 4];
+    let rest = count - 8;
+    while (rest > 0) {
+      const take = Math.min(5, rest);
+      rows.push(take);
+      rest -= take;
+    }
+    return rows;
+  };
+  const buildFormationSlots = (count) => {
+    const rows = formationRowsFor(count);
+    const rowGap = Math.min(132, Math.max(78, contentH / Math.max(1, rows.length - 0.35)));
+    const maxRow = Math.max(...rows);
+    const colGap = Math.min(156, Math.max(76, usableW / Math.max(4.4, maxRow + 1.3)));
+    const slots = [];
+    rows.forEach((cols, rowIndex) => {
+      const y = topY + rowIndex * rowGap;
+      const rowTaper = rowIndex === 0 ? 0 : rowIndex === 1 ? 0.72 : 1;
+      for (let col = 0; col < cols; col++) {
+        const centeredCol = col - (cols - 1) / 2;
+        const arcLift = cols > 2 ? Math.abs(centeredCol) * 9 : 0;
+        const x = centerXArea + centeredCol * colGap * rowTaper;
+        slots.push({ x, y: y + arcLift });
+      }
+    });
+    return slots;
+  };
+
+  const orderedForLayout = [];
+  const placedIds = new Set();
+  const ace = sorted[0];
+  if (ace) {
+    placedIds.add(ace.id);
+    orderedForLayout.push(ace);
+  }
+  const champion = sorted.find(f => !!orgChampId && f.id === orgChampId);
+  if (champion && !placedIds.has(champion.id)) {
+    placedIds.add(champion.id);
+    orderedForLayout.push(champion);
+  }
+  sorted.forEach(f => {
+    if (placedIds.has(f.id)) return;
+    placedIds.add(f.id);
+    orderedForLayout.push(f);
   });
 
-  // 衝突回避（8パス、多めに回して端に溢れないように）
+  const formationSlots = buildFormationSlots(orderedForLayout.length);
+  const nodes = orderedForLayout.map((f, idx) => {
+    const slot = formationSlots[idx] || formationSlots[formationSlots.length - 1];
+    const rank = sorted.findIndex(it => it.id === f.id);
+    return makeNode(f, rank, slot.x, slot.y);
+  });
+
   for (let pass = 0; pass < 8; pass++) {
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const a = nodes[i], b = nodes[j];
         const dx = b.x - a.x, dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const minDist = a.r + b.r + 6;
+        const minDist = a.r + b.r + 18;
         if (dist < minDist && dist > 0.01) {
           const push = (minDist - dist) / 2;
           const nx = dx / dist, ny = dy / dist;
-          // 水平優先で押し出し（縦のOVR序列を保つ）
-          a.x -= nx * push * 0.85; a.y -= ny * push * 0.35;
-          b.x += nx * push * 0.85; b.y += ny * push * 0.35;
+          a.x -= nx * push * 0.86; a.y -= ny * push * 0.34;
+          b.x += nx * push * 0.86; b.y += ny * push * 0.34;
         }
       }
-      // 各パスの各ノードで境界を維持（衝突回避で外に出るのを防ぐ）
       const nd = nodes[i];
-      const spring = nd.isAce ? 0.045 : nd.isTop3 ? 0.032 : 0.022;
+      const spring = nd.isAce ? 0.05 : nd.isChamp ? 0.045 : nd.isTop3 ? 0.034 : 0.024;
       nd.x += (nd.homeX - nd.x) * spring;
-      nd.y += (nd.homeY - nd.y) * (spring * 0.8);
+      nd.y += (nd.homeY - nd.y) * (spring * 0.75);
       nd.x = Math.max(leftOffset + PAD_X + nd.r, Math.min(leftOffset + drawW - PAD_X - nd.r, nd.x));
-      nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 20, nd.y));
+      nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 26, nd.y));
     }
   }
 
-  // 最終境界クランプ（名前+バッジ分の余裕を持たせる）
   nodes.forEach(nd => {
     nd.x = Math.max(leftOffset + PAD_X + nd.r, Math.min(leftOffset + drawW - PAD_X - nd.r, nd.x));
-    nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 20, nd.y));
+    nd.y = Math.max(PAD_TOP + nd.r, Math.min(H - PAD_BOTTOM - nd.r - 26, nd.y));
     _relmapSetPowerPos(_relmapNodeMap[nd.id], orgId, nd.x, nd.y);
   });
 
@@ -11850,16 +11890,18 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
   svgHtml += `<text x="${centerX}" y="26" text-anchor="middle" fill="${color}" font-size="14" font-weight="bold" font-family="sans-serif" stroke="rgba(0,0,0,0.7)" stroke-width="2.5" paint-order="stroke">${orgName}（${n}名）</text>`;
   svgHtml += `<line x1="${(leftOffset + 20).toFixed(1)}" y1="34" x2="${(leftOffset + drawW - 20).toFixed(1)}" y2="34" stroke="${color}" stroke-width="1" stroke-opacity="0.3"/>`;
 
-  // 薄い団体カラー背景グラデ
-  svgHtml += `<circle cx="${(leftOffset + drawW / 2).toFixed(1)}" cy="${(H / 2).toFixed(1)}" r="${(Math.max(drawW, H) * 0.4).toFixed(1)}" fill="${color}" fill-opacity="0.03"/>`;
+  // 薄い団体カラー背景のみ。人数差で欠けた形に見えないよう、固定の支柱線は描かない。
+  svgHtml += `<circle cx="${centerXArea.toFixed(1)}" cy="${(H / 2).toFixed(1)}" r="${(Math.max(drawW, H) * 0.38).toFixed(1)}" fill="${color}" fill-opacity="0.03"/>`;
+  svgHtml += `<circle cx="${centerXArea.toFixed(1)}" cy="${topY.toFixed(1)}" r="${Math.min(96, usableW * 0.12).toFixed(1)}" fill="rgba(212,168,67,0.06)"/>`;
 
   // OVR昇順で描画（大きいノードが上に来る）
   const drawOrder = [...nodes].sort((a, b) => a.ovr - b.ovr);
   drawOrder.forEach(node => {
-    const { x, y, r, ovr, isChamp, isAce, isTop3, fighter: f, rank } = node;
+    const { x, y, r, ovr, pop, isChamp, isAce, isTop3, fighter: f, rank } = node;
     const strokeColor = isChamp ? '#d4a843' : color;
     const sw = isChamp ? 2.8 : isAce ? 2.4 : 1.5;
     const pUrl = getPortraitUrl(f.id);
+    const ovrStyle = _relmapPowerOvrBadgeStyle(ovr);
 
     svgHtml += `<g class="rm-node-group" data-id="${f.id}" style="cursor:pointer">`;
 
@@ -11884,17 +11926,25 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
       svgHtml += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="${color}" font-size="${(r * 0.6).toFixed(1)}" font-family="sans-serif">${ovr}</text>`;
     }
 
-    // OVRバッジ
-    const badgeW = Math.max(24, r * 0.85);
-    const badgeH = Math.max(13, r * 0.42);
-    const badgeY = y + r + 7;
-    svgHtml += `<rect x="${(x - badgeW / 2).toFixed(1)}" y="${(badgeY - badgeH / 2).toFixed(1)}" width="${badgeW.toFixed(1)}" height="${badgeH.toFixed(1)}" rx="3.5" fill="rgba(10,10,20,0.85)" stroke="rgba(255,255,255,${isAce ? '0.7' : '0.45'})" stroke-width="1"/>`;
-    svgHtml += `<text x="${x.toFixed(1)}" y="${(badgeY + 1).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="${Math.max(8.5, r * 0.3).toFixed(1)}" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
+    // OVR + 人気バッジ（顔の中心を避けて右下へ逃がす）
+    const ovrBadgeW = Math.max(36, Math.min(48, r * 0.96));
+    const ovrBadgeH = Math.max(24, Math.min(30, r * 0.62));
+    const ovrBadgeX = x + r * 0.70 - ovrBadgeW * 0.18;
+    const ovrBadgeY = y + r * 0.36 - ovrBadgeH * 0.40;
+    svgHtml += `<rect x="${ovrBadgeX.toFixed(1)}" y="${ovrBadgeY.toFixed(1)}" width="${ovrBadgeW.toFixed(1)}" height="${ovrBadgeH.toFixed(1)}" rx="8" fill="${ovrStyle.fill}" stroke="${ovrStyle.stroke}" stroke-width="1.1"/>`;
+    svgHtml += `<text x="${(ovrBadgeX + ovrBadgeW / 2).toFixed(1)}" y="${(ovrBadgeY + ovrBadgeH / 2 + 0.5).toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="${ovrStyle.text}" font-size="${Math.max(16, Math.min(20, r * 0.48)).toFixed(1)}" font-weight="bold" font-family="sans-serif">${ovr}</text>`;
+    const popBadgeW = Math.max(40, Math.min(54, r * 1.06));
+    const popBadgeH = 18;
+    const popBadgeX = ovrBadgeX + 1;
+    const popBadgeY = ovrBadgeY + ovrBadgeH - 2;
+    svgHtml += `<rect x="${popBadgeX.toFixed(1)}" y="${popBadgeY.toFixed(1)}" width="${popBadgeW.toFixed(1)}" height="${popBadgeH}" rx="7" fill="rgba(32,20,12,0.94)" stroke="rgba(255,196,120,0.36)" stroke-width="1"/>`;
+    svgHtml += `<text x="${(popBadgeX + popBadgeW / 2).toFixed(1)}" y="${(popBadgeY + 11.7).toFixed(1)}" text-anchor="middle" fill="#ffcf91" font-size="${Math.max(9.5, Math.min(10.8, r * 0.24)).toFixed(1)}" font-weight="600" font-family="sans-serif">人気 ${pop}</text>`;
 
     // 名前（全員表示）
     const name = (f.name || '').slice(0, 6);
     const fs = isAce ? 11 : isTop3 ? 10.5 : 9.5;
-    svgHtml += `<text x="${x.toFixed(1)}" y="${(badgeY + badgeH / 2 + 12).toFixed(1)}" text-anchor="middle" fill="#e8e8e8" font-size="${fs}" font-family="sans-serif" stroke="rgba(0,0,0,0.88)" stroke-width="3" paint-order="stroke">${name}</text>`;
+    const nameY = y + r + 30;
+    svgHtml += `<text x="${x.toFixed(1)}" y="${nameY.toFixed(1)}" text-anchor="middle" fill="#e8e8e8" font-size="${fs}" font-family="sans-serif" stroke="rgba(0,0,0,0.88)" stroke-width="3" paint-order="stroke">${name}</text>`;
 
     // 順位ラベル
     svgHtml += `<text x="${x.toFixed(1)}" y="${(y - r - (isChamp ? 18 : 5)).toFixed(1)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="sans-serif">#${rank + 1}</text>`;
@@ -11902,7 +11952,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     svgHtml += `</g>`;
   });
 
-  svgHtml += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="middle" fill="rgba(200,190,170,0.18)" font-size="9.5" font-family="sans-serif">↑ 強い（OVR高）  ● サイズ=OVR  クリックで詳細</text>`;
+  svgHtml += `<text x="${(leftOffset + drawW / 2).toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="middle" fill="rgba(200,190,170,0.18)" font-size="9.5" font-family="sans-serif">王者だけ金リング表示  /  大きい数字=OVR  /  下の小バッジ=人気  /  クリックで詳細</text>`;
 
   defsSvg += '</defs>';
   svg.innerHTML = defsSvg + svgHtml;
