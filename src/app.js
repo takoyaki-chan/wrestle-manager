@@ -6266,7 +6266,7 @@ const App = {
     let cat;
     if (d.isDraw) cat = 'draw';
     else if (d.isSuperMQ && !d.isDominant) cat = 'superMQ';
-    else if (d.isTitleMatch) cat = d.winner ? 'titleWin' : 'titleDefend';
+    else if (d.isTitleMatch) cat = d.isTitleDefense ? 'titleDefend' : 'titleWin';
     else if (d.isUpset) cat = 'upset';
     else if (d.hasRivalry) cat = 'rivalry';
     else if (d.isDominant) cat = 'dominant';
@@ -6274,10 +6274,11 @@ const App = {
     else if (d.isLowMQ) cat = 'normal';
     else cat = 'normal';
 
-    // 防衛戦判定（タイトルマッチで勝った場合、王者かどうか）
+    // タイトルマッチ確定（superMQ/upset は歴史的名勝負/番狂わせ表現を優先）
     if (d.isTitleMatch && !d.isDraw) {
-      // シンプルに titleWin を使用（防衛/奪取の区別はテキストで吸収）
-      if (cat !== 'superMQ' && cat !== 'upset') cat = 'titleWin';
+      if (cat !== 'superMQ' && cat !== 'upset') {
+        cat = d.isTitleDefense ? 'titleDefend' : 'titleWin';
+      }
     }
 
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -6371,10 +6372,22 @@ const App = {
     const otherHighMQ = results.slice(1).filter(r => (r.mq || 0) >= 75);
     const totalMatches = results.length;
 
+    // タイトルマッチの場合、防衛/奪取を判定（_lastTitleOutcomes は本関数呼び出し直前に設定されている）
+    let isTitleDefense = false;
+    if (main.isTitleMatch && !isDraw && winner) {
+      const outcomes = App._lastTitleOutcomes || [];
+      const winnerId = winner.id;
+      const mainOutcome = outcomes.find(o =>
+        (o.outcome === 'defense' && o.champId === winnerId) ||
+        (o.outcome === 'change' && o.newChampId === winnerId)
+      );
+      isTitleDefense = mainOutcome?.outcome === 'defense';
+    }
+
     // ─── テキスト生成 ───
     const np = App._generateNewspaperTexts({
       isDraw, winner, loser, left: main.left, right: main.right,
-      isTitleMatch: !!main.isTitleMatch, finishLabel, turns, mq,
+      isTitleMatch: !!main.isTitleMatch, isTitleDefense, finishLabel, turns, mq,
       loserHpPct, winnerHpPct, isCloseMatch, isDominant, isLongBattle,
       isHighMQ, isSuperMQ, isLowMQ, isPPVShow, isSpecial,
       hasRivalry, isGoodRival, rivalLabel, isHighBond,
