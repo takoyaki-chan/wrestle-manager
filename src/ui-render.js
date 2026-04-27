@@ -5627,7 +5627,7 @@ let _relmapFactionCenters = {}; // { factionId: {x, y, keepR} } — Phase 3c 団
 let _relmapFactionOverlay = false; // Phase 3c 団体フィルタ ON 時の派閥オーバーレイ ON/OFF
 let _relmapSavedCenterId = null; // 派閥オーバーレイ ON 時に CENTER 選手を退避
 let _relmapFilterRelOnly = true;
-let _relmapFilterThreshold = 14;
+let _relmapFilterThreshold = 25;
 let _relmapFilterUserSet = false; // true once player changes filter manually
 let _relmapCompareA = null;
 let _relmapCompareB = null;
@@ -9938,6 +9938,23 @@ function _relmapRelationshipIntensity(link) {
   return trust + _relmapRivalryTotal(link) * 0.72;
 }
 
+function _relmapRelationshipFilterScore(link) {
+  return Math.min(100, Math.round(_relmapRelationshipIntensity(link) / 1.8));
+}
+
+function _relmapRelationshipPassesThreshold(link) {
+  return _relmapRelationshipFilterScore(link) >= _relmapFilterThreshold;
+}
+
+function _relmapFilterThresholdLabel(value) {
+  const v = Number(value) || 0;
+  if (v <= 10) return '細かく';
+  if (v <= 30) return '標準';
+  if (v <= 55) return '強め';
+  if (v <= 80) return '強力';
+  return '最強級';
+}
+
 function _relmapRelationshipStrokeWidth(link, emphasized) {
   const intensity = _relmapRelationshipIntensity(link);
   const cap = emphasized ? 9.2 : 7.0;
@@ -11376,7 +11393,7 @@ function _relmapUpdateVisibility() {
     nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
   } else if (_relmapFilterRelOnly) {
     const visibleNodeIds = new Set();
-    candidateLinks = links.filter(l => _relmapHasVisibleRelation(l) && l.strength >= _relmapFilterThreshold / 100);
+    candidateLinks = links.filter(l => _relmapHasVisibleRelation(l) && _relmapRelationshipPassesThreshold(l));
     candidateLinks.forEach(l => { visibleNodeIds.add(l.a); visibleNodeIds.add(l.b); });
     nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
   } else {
@@ -11410,9 +11427,10 @@ function _relmapRenderSidebar(orgCenters) {
   h += `<div class="rm-sb-btn" onclick="_relmapResetAll()">\uD83D\uDD04 全体を表示</div>`;
   // Display filter panel
   h += `<div class="rm-filter-panel">`;
-  h += `<div class="rm-fp-title">\uD83D\uDCCA 表示フィルタ</div>`;
-  h += `<div class="rm-fp-row"><label><input type="checkbox" id="rmChkRelOnly" ${_relmapFilterRelOnly?'checked':''} onchange="_relmapFilterRelOnly=this.checked;_relmapFilterUserSet=true;_relmapUpdateVisibility();_relmapReheat()"> 関係ありのみ</label></div>`;
-  h += `<div class="rm-fp-row"><span style="font-size:10px">強度</span><input type="range" min="0" max="40" value="${_relmapFilterThreshold}" oninput="_relmapFilterThreshold=parseInt(this.value);_relmapFilterUserSet=true;document.getElementById('rmThreshVal').textContent=this.value;_relmapUpdateVisibility();_relmapReheat()"><span class="rm-fp-val" id="rmThreshVal">${_relmapFilterThreshold}</span></div>`;
+  h += `<div class="rm-fp-title">📊 表示フィルタ</div>`;
+  h += `<div class="rm-fp-row"><label><input type="checkbox" id="rmChkRelOnlyNew" ${_relmapFilterRelOnly?'checked':''} onchange="_relmapFilterRelOnly=this.checked;_relmapFilterUserSet=true;_relmapUpdateVisibility();_relmapReheat()"> 関係ありのみ</label></div>`;
+  h += `<div class="rm-fp-row" style="gap:8px"><span style="font-size:10px;white-space:nowrap">表示強度</span><input type="range" min="0" max="100" step="5" value="${_relmapFilterThreshold}" oninput="_relmapFilterThreshold=parseInt(this.value);_relmapFilterUserSet=true;document.getElementById('rmThreshVal').textContent=this.value;document.getElementById('rmThreshLabel').textContent=_relmapFilterThresholdLabel(this.value);_relmapUpdateVisibility();_relmapReheat()"><span class="rm-fp-val" id="rmThreshVal">${_relmapFilterThreshold}</span></div>`;
+  h += `<div class="rm-fp-row" style="justify-content:space-between;font-size:9px;color:var(--text-dim);margin-top:-4px"><span>細かく</span><span id="rmThreshLabel" style="color:var(--gold);font-weight:700">${_relmapFilterThresholdLabel(_relmapFilterThreshold)}</span><span>強力のみ</span></div>`;
   h += `</div>`;
   // Org cards
   const orgOrder = ['player', 'org_s', 'org_a', 'org_b', 'fa'];

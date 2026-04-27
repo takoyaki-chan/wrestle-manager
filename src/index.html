@@ -418,9 +418,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 /* Roster Condition bars */
 .cond-bar{width:60px;height:6px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
 .cond-fill{height:100%;border-radius:3px;transition:width .3s}
-.cond-fill.high{background:#2ecc71}
-.cond-fill.mid{background:#f39c12}
-.cond-fill.low{background:#e74c3c}
+.cond-fill.cond-100{background:#5b9bd5}
+.cond-fill.cond-90{background:#4fb89a}
+.cond-fill.cond-80{background:#5fb85f}
+.cond-fill.cond-70{background:#a8c93a}
+.cond-fill.cond-50{background:#e0a040}
+.cond-fill.cond-low{background:#c44545}
 
 /* Finance */
 .finance-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(200,190,170,0.04)}
@@ -7891,7 +7894,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 
 /* 体調バー(既存 .cond-bar/.cond-fill を再利用、ラッパのみ追加) */
 .wr-cond-wrap{display:flex;align-items:center;gap:8px;min-width:90px}
-.wr-cond-num{font-family:var(--font-display);font-size:14px;line-height:1;color:var(--text-main);min-width:22px;text-align:right}
+.wr-cond-num{font-family:var(--font-display);font-size:16px;line-height:1;color:var(--text-main);min-width:26px;text-align:right}
 
 </style>
 </head>
@@ -8293,7 +8296,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <button class="title-btn" id="titleContinueBtn" onclick="App.titleContinue()" style="display:none">CONTINUE</button>
       <button class="title-btn" id="titleLoadBtn" onclick="App.titleLoadGame()">LOAD GAME</button>
     </div>
-    <div class="title-ver">VERSION 1.06</div>
+    <div class="title-ver">VERSION 1.07</div>
     <div class="title-credits-link" onclick="App.showCredits()">Credits</div>
     <div class="title-sns">
       <a href="https://x.com/tkykchan" target="_blank" rel="noopener">𝕏</a>
