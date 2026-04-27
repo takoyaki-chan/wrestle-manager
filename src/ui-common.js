@@ -6042,6 +6042,7 @@ function showScreen(id, evt) {
   if (id === 'database') renderDatabase();
   if (id === 'newspaper') renderNewspaper();
   if (id === 'shachoshitsu') renderShachoshitsu();
+  if (id === 'week') renderWeekScreen();
 }
 
 // v0.96: Navigate to a screen and highlight the correct nav button
