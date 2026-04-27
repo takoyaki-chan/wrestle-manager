@@ -10199,6 +10199,92 @@ const FIRST_MEET_LINES = {
   },
 };
 
+// 試合後フレーバーポップアップセリフ（勝者/敗者の余韻）
+// 仕様: specs/match-flavor-popup-spec-v0.1.md §4.6
+// 勝敗は確定したばかり、リング上で発する一言。長台詞は避ける(autoClose 1.8s)
+const POST_MATCH_FLAVOR_LINES = {
+  winner: {
+    normal: {
+      _default: ['…取った', '勝ったわ', 'これで一勝', 'ふぅ…決まったわね'],
+      ojousama: ['勝たせていただきましたわ', 'ふぅ…お見事でしたでしょう？'],
+      polite: ['ありがとうございました', '勝たせていただきました'],
+      delinquent: ['勝ったぜ', 'ま、こんなもんだろ'],
+      cool: ['……', '……決まりだ'],
+      seductive: ['ふふ、いただいたわ', '勝たせてもらったわよ'],
+      composed: ['…取れた', '…ふぅ、勝ったよ'],
+    },
+    bold: {
+      _default: ['当然よ！', 'こんなもんよ！', 'わたしの勝ち！'],
+      delinquent: ['当ったり前だろうが！', 'はっ、こんなもんよ'],
+      ojousama: ['当然の結果ですわ', 'わたくしに敵う者はいませんわ'],
+      cool: ['……当然だ'],
+      polite: ['…勝たせていただきました'],
+    },
+    quiet: {
+      _default: ['…勝った', '……（小さく頷く）'],
+      cool: ['……', '……'],
+      polite: ['…勝たせていただきました…'],
+    },
+    earnest: {
+      _default: ['勝てました…！', '本当に…ありがとうございます！'],
+      polite: ['勝たせていただきました、ありがとうございます'],
+      ojousama: ['勝たせていただきました…！'],
+    },
+    emotional: {
+      _default: ['やった…やった…！', '勝った…勝ったよ…！'],
+    },
+    easygoing: {
+      _default: ['いやー、勝てちゃった', 'ふふっ、ラッキー♪', '勝ったよ〜'],
+      delinquent: ['勝ったぜ〜'],
+      ojousama: ['勝たせていただきましたわ、うふふ'],
+    },
+    shy: {
+      _default: ['…か、勝った…', '……（深々とお辞儀）'],
+      polite: ['…か、勝たせていただきました…'],
+    },
+  },
+  loser: {
+    normal: {
+      _default: ['…悔しい', '…まだまだね', '…次は勝つわ', '…完敗ね'],
+      ojousama: ['…無念ですわ', '…次こそは…'],
+      polite: ['…ありがとうございました', '…申し訳ありません'],
+      delinquent: ['…クソッ', 'チッ…', 'まだ…まだだ'],
+      cool: ['……', '……まだだ'],
+      seductive: ['…あら、負けちゃった', '…次は逃がさないわ'],
+      composed: ['…負けたか', '…まだ足りないね'],
+    },
+    bold: {
+      _default: ['…嘘でしょ？', 'こんなはずじゃ…', '…次は絶対に！'],
+      delinquent: ['…ふざけんな！', 'クソッ…まだだ！'],
+      ojousama: ['…こんなはずでは…', '…次は許しませんわ'],
+      cool: ['……不覚'],
+      polite: ['…申し訳ありません、不甲斐ないです'],
+    },
+    quiet: {
+      _default: ['…負けた', '……（俯く）'],
+      cool: ['……', '……'],
+      polite: ['…申し訳…ありません…'],
+    },
+    earnest: {
+      _default: ['…次は必ず勝ちます', '…悔しい、もっと強くなる'],
+      polite: ['…申し訳ありません、次こそ'],
+      ojousama: ['…次は必ず雪辱しますわ'],
+    },
+    emotional: {
+      _default: ['…悔しい…悔しいよ…', '…なんで…なんで負けたの…'],
+    },
+    easygoing: {
+      _default: ['あちゃー、負けちゃった', '…次がんばろ', 'むぅ…悔しいなあ'],
+      delinquent: ['負けちまった〜'],
+      ojousama: ['…負けてしまいましたわ、てへ'],
+    },
+    shy: {
+      _default: ['…ご、ごめんなさい…', '……（消え入りそう）'],
+      polite: ['…も、申し訳ありません…'],
+    },
+  },
+};
+
 // personality×archetype セリフ配列取得（Engine用: 呼び出し元でRNG選択可能）
 function getDialoguePool(lineObj, fighter) {
   const v = fighter?.voice;
@@ -23577,7 +23663,7 @@ if (typeof module !== 'undefined' && module.exports) {
     CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG, RELEASE_INTERVIEW_LINES,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES, COACH_RETIRE_ADVICE_TEXTS,
-    AWARD_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, MILESTONE_LINES, FIRST_MEET_LINES, getDialoguePool, pickDialogueLine,
+    AWARD_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, MILESTONE_LINES, FIRST_MEET_LINES, POST_MATCH_FLAVOR_LINES, getDialoguePool, pickDialogueLine,
     SLUMP_START_LINES, SLUMP_END_LINES,
     MOTIVATION_LOSS_LINES, MOTIVATION_RECOVERY_LINES,
     AI_BREAKTHROUGH_NEWS, AI_SLUMP_NEWS, AI_MOTIVATION_LOSS_NEWS,

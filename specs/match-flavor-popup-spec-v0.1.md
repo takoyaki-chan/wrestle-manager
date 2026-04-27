@@ -1,7 +1,8 @@
-# 🌬 試合前フレーバーポップアップ設計書 v0.1
+# 🌬 試合前後フレーバーポップアップ設計書 v0.2
 
-> **ステータス**: 🟡 構造確定（実装前・最小スコープ検証用）
+> **ステータス**: 🟢 v0.2 実装済み (per-match 化 + 試合後余韻)
 > **作成日**: 2026-04-14
+> **更新**: 2026-04-28 (v0.2): 試合前ポップアップを per-match へ移動、試合後余韻ポップアップを追加
 > **依存**: personality-archetype-spec-v1.0.md / character-data-spec-v1.7.md
 > **関連**: `match-popup-overview-v0.1.md` (全体構想)
 > **🔧マーク = 調整可能パラメータ**
@@ -32,11 +33,15 @@
 
 ### §1.1 本仕様で実装するもの
 
-- 試合実行直後・結果オーバーレイ表示直前の「試合前ポップアップ」キューイング機構 (app.js)
-- 初顔合わせ試合の検出ロジック
-- 初顔合わせ用セリフプール `FIRST_MEET_LINES` (data.js, personality × archetype 形式)
+**v0.1 → v0.2 で構造変更**: 全試合終了後に一括 enqueue する旧設計から、**per-match (各試合ごと) に試合前 + 試合後** へ流す設計に切り替え。
+
+- 試合プレビュー画面で `nextIdx` がフォーカスされた瞬間に発火する「試合前ポップアップ」per-match フック (`renderMatchPreview` 内、`App._runPreMatchFlavorForMatch(idx)` を呼ぶ)
+- 試合確定直後 (`skipMatch` / `watchMatch` が `sp.results[idx]` を埋めた直後) に発火する「試合後余韻ポップアップ」per-match フック (`App._afterMatchSettle(idx)` → `App._runPostMatchFlavorForMatch`)
+- 初顔合わせ試合の検出ロジック (試合前)。判定は `G.matchupLog` を読むだけ — 試合シミュレート結果に依存しない
+- 勝者/敗者の余韻セリフ (試合後)
+- 初顔合わせ用セリフプール `FIRST_MEET_LINES` + 試合後余韻用 `POST_MATCH_FLAVOR_LINES` (data.js, personality × archetype 形式)
 - 各対象試合につき左右2件のポップアップを `showEventPopup` で enqueue
-- ポップアップキューが空になったら結果オーバーレイを開く接続コード
+- 既存の宣戦布告モーダル (`showRivalryPopups`) と直列に流れる: 宣戦布告モーダル → 初顔合わせフレーバー → 試合 → 余韻フレーバー → (次試合へ)
 
 ### §1.2 段階拡張の対象（本仕様では実装しないが、構造上の余地として残す）
 
@@ -164,62 +169,70 @@ const FIRST_MEET_LINES = {
 
 ## §4 実装フロー
 
-### §4.1 ファイル別の変更
+### §4.1 ファイル別の変更 (v0.2)
 
 | ファイル | 変更内容 |
 |---|---|
-| `src/data.js` | `FIRST_MEET_LINES` 定数の追加 (§3.2) |
-| `src/app.js` | `executeShow` 内、`renderShowResult` 呼び出し直前に試合前ポップアップ収集・enqueue 処理を追加 (§4.2)。`renderShowResult` の呼び出しを「キュー空になったら」へ条件付きで遅延 |
-| (任意) `src/ui-common.js` | 必要なら `collectPreMatchPopups(results)` ヘルパー関数を追加 |
+| `src/data.js` | `FIRST_MEET_LINES` (試合前) + `POST_MATCH_FLAVOR_LINES` (試合後 winner/loser) を export |
+| `src/app.js` | `_collectPreMatchPopupsForMatch(idx)` / `_collectPostMatchPopupsForMatch(idx, result)` / `_runPreMatchFlavorForMatch(idx)` / `_runPostMatchFlavorForMatch(idx, result, then)` / `_afterMatchSettle(idx)` を追加。`skipMatch` / `watchMatch` / iframe 試合結果受信ハンドラの末尾を `_afterMatchSettle(idx)` 経由に統一。`finalizeShow` から旧一括 enqueue ブロックを削除 |
+| `src/ui-common.js` | `renderMatchPreview` の nextIdx フォーカス時フックで、宣戦布告モーダル完了後に `App._runPreMatchFlavorForMatch(nextIdx)` を呼ぶ |
 
 新規ファイルは作らない。`Engine.fanExpect` には触らない。スナップショットシステムには触らない。
 
-### §4.2 app.js への追加コード（擬似コード）
+### §4.2 試合前ポップアップ - per-match 発火フロー (v0.2)
 
 ```javascript
-// app.js 内、現状 renderShowResult(results, injuryResults) を呼んでいる箇所を以下に置換
-
-const preMatchPopups = collectPreMatchPopups(results);
-if (preMatchPopups.length === 0) {
-  renderShowResult(results, injuryResults);
+// ui-common.js renderMatchPreview() 末尾、nextIdx フォーカス時:
+const cMap = sp.confrontationMap;
+const hasConfrontation = cMap && cMap[nextIdx] && !sp._shownConfrontations.has(nextIdx);
+if (hasConfrontation) {
+  sp._shownConfrontations.add(nextIdx);
+  setTimeout(() => showRivalryPopups([cMap[nextIdx]], () => {
+    App._runPreMatchFlavorForMatch(nextIdx);  // 宣戦布告モーダル後に初顔合わせ等
+  }), 400);
 } else {
-  preMatchPopups.forEach(p => showEventPopup(p));
-  _onEventPopupQueueEmpty = () => renderShowResult(results, injuryResults);
+  setTimeout(() => App._runPreMatchFlavorForMatch(nextIdx), 400);
 }
 ```
 
 ```javascript
-function collectPreMatchPopups(results) {
+// app.js: 1試合分のみのポップアップ収集 (試合シミュレート結果に依存しない)
+App._collectPreMatchPopupsForMatch = function(idx) {
+  const sp = App._showPreview;
+  const m = sp.validMatches[idx];
+  if (m.matchType === 'tag') return [];     // タッグは現状非対応
   const popups = [];
-  results.forEach(r => {
-    // 初顔合わせ
-    if (r.freshnessLabel === '初顔合わせ') {
-      const leftFighter  = (G.roster || []).find(c => c.id === r.left.id)
-                        || ALL_CHARS.find(c => c.id === r.left.id);
-      const rightFighter = (G.roster || []).find(c => c.id === r.right.id)
-                        || ALL_CHARS.find(c => c.id === r.right.id);
-      const leftLine  = pickDialogueLine(FIRST_MEET_LINES, leftFighter);
-      const rightLine = pickDialogueLine(FIRST_MEET_LINES, rightFighter);
-      popups.push({
-        type: 'fighter', id: r.left.id, name: r.left.name,
-        message: leftLine,
-        detail: '✨ 初対決',
-        autoCloseMs: 1800,            // 🔧
-        sound: 'event',                // 既存の event SE を流用
-      });
-      popups.push({
-        type: 'fighter', id: r.right.id, name: r.right.name,
-        message: rightLine,
-        detail: '✨ 初対決',
-        autoCloseMs: 1800,            // 🔧
-        sound: 'event',
-      });
-    }
-    // ── 段階拡張ポイント: 他のプラス効果はここに追加 ──
-  });
+  // 初顔合わせ: matchupLog に過去対戦が無いなら検出
+  const log = G.matchupLog || [];
+  const hasPriorMatch = log.some(e =>
+    (e.left === m.left && e.right === m.right) || (e.left === m.right && e.right === m.left)
+  );
+  if (!hasPriorMatch) {
+    // ... 左右両選手分の popup を push (FIRST_MEET_LINES から pickDialogueLine)
+  }
   return popups;
-}
+};
 ```
+
+### §4.6 試合後余韻ポップアップ - per-match (v0.2 新規)
+
+試合確定直後、勝者/敗者それぞれの一言を順に流す。autoClose 1.8s × 2件 = 約4秒。
+
+```javascript
+// app.js:
+App._afterMatchSettle = function(idx) {
+  const sp = App._showPreview;
+  const result = sp.results[idx];
+  const finalize = () => {
+    renderMatchPreview();
+    if (sp.results.every(r => r !== null)) App.finalizeShow();
+  };
+  if (!result || result._stale) { finalize(); return; }
+  App._runPostMatchFlavorForMatch(idx, result, finalize);
+};
+```
+
+`POST_MATCH_FLAVOR_LINES` は `winner` と `loser` の二系統。引き分け・タッグ・スタレ結果はスキップ。
 
 ### §4.3 `_onEventPopupQueueEmpty` の使い方
 

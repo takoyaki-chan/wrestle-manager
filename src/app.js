@@ -4688,16 +4688,27 @@ const App = {
     return filled;
   },
 
+  // 試合確定後の共通フロー: 試合後フレーバーポップアップ → renderMatchPreview → 全完了なら finalizeShow
+  // (specs/match-flavor-popup-spec-v0.1.md §4.6)
+  _afterMatchSettle(idx) {
+    const sp = App._showPreview;
+    if (!sp) return;
+    const result = sp.results[idx];
+    const finalize = () => {
+      renderMatchPreview();
+      if (sp.results.every(r => r !== null)) App.finalizeShow();
+    };
+    // _stale (選手不在フォールバック) や draw のときは余韻スキップ
+    if (!result || result._stale) { finalize(); return; }
+    App._runPostMatchFlavorForMatch(idx, result, finalize);
+  },
+
   // Skip a single match (instant calculation)
   skipMatch(idx) {
     const sp = App._showPreview;
     if (!sp || sp.results[idx]) return;
     const staleFilled = App._fillMissingShowPreviewResults();
-    if (sp.results[idx]) {
-      renderMatchPreview();
-      if (sp.results.every(r => r !== null)) App.finalizeShow();
-      return;
-    }
+    if (sp.results[idx]) { App._afterMatchSettle(idx); return; }
     const m = sp.validMatches[idx];
     // ── タッグマッチ ──
     if (m.matchType === 'tag') {
@@ -4707,8 +4718,7 @@ const App = {
       const f4 = G.roster.find(c => c.id === m.teamB.fighter2);
       if (!f1 || !f2 || !f3 || !f4) {
         sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true, matchType: 'tag' };
-        renderMatchPreview();
-        if (sp.results.every(r => r !== null)) App.finalizeShow();
+        App._afterMatchSettle(idx);
         return;
       }
       const tagRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
@@ -4721,8 +4731,7 @@ const App = {
         tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB }
       );
       try { Audio.play('tick'); } catch(e) {}
-      renderMatchPreview();
-      if (sp.results.every(r => r !== null)) App.finalizeShow();
+      App._afterMatchSettle(idx);
       return;
     }
     // ── シングルマッチ ──
@@ -4730,15 +4739,13 @@ const App = {
     const charR = G.roster.find(c => c.id === m.right);
     if (!charL || !charR) {
       if (!staleFilled) sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true };
-      renderMatchPreview();
-      if (sp.results.every(r => r !== null)) App.finalizeShow();
+      App._afterMatchSettle(idx);
       return;
     }
     const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
     sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
     try { Audio.play('tick'); } catch(e) {}
-    renderMatchPreview();
-    if (sp.results.every(r => r !== null)) App.finalizeShow();
+    App._afterMatchSettle(idx);
   },
 
   // Watch match in battle engine iframe
@@ -4752,18 +4759,13 @@ const App = {
     }
     if (sp.results[idx]) return;
     App._fillMissingShowPreviewResults();
-    if (sp.results[idx]) {
-      renderMatchPreview();
-      if (sp.results.every(r => r !== null)) App.finalizeShow();
-      return;
-    }
+    if (sp.results[idx]) { App._afterMatchSettle(idx); return; }
     const m = sp.validMatches[idx];
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
     if (!charL || !charR) {
       sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true };
-      renderMatchPreview();
-      if (sp.results.every(r => r !== null)) App.finalizeShow();
+      App._afterMatchSettle(idx);
       return;
     }
     // エンジン実行（recordFrames=true）— Replay 方式: シミュレート結果＋フレーム列を iframe へ渡して再生
@@ -4933,15 +4935,17 @@ const App = {
     if (m && m.matchType === 'tag') {
       try { Audio.bgm.stop(); } catch(e) {}
       document.getElementById('battleOverlay').style.display = 'none';
+      const tagIdx = sp.currentWatching;
       sp.currentWatching = -1;
       try { Audio.play('coin'); } catch(e) {}
-      renderMatchPreview();
-      if (sp.results.every(r => r !== null)) {
+      const allDone = sp.results.every(r => r !== null);
+      if (allDone) {
         try { Audio.bgm.play('management'); } catch(e) {}
-        App.finalizeShow();
       } else {
         setTimeout(() => { if (App._showPreview) { try { Audio.bgm.play('battle'); } catch(e) {} } }, 300);
       }
+      // タッグは試合後フレーバーは出さない (`_collectPostMatchPopupsForMatch` 側で tag をスキップ)
+      App._afterMatchSettle(tagIdx);
       return;
     }
     // Guard: single マッチも事前計算済み。iframe から MATCH_RESULT が来ても結果は上書きしない
@@ -4972,10 +4976,10 @@ const App = {
     }
     // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
+    const watchedIdx = sp.currentWatching;
     sp.currentWatching = -1;
     try { Audio.play('coin'); } catch(e) {}
-    renderMatchPreview();
-    if (sp.results.every(r => r !== null)) App.finalizeShow();
+    App._afterMatchSettle(watchedIdx);
   },
 
   // Emergency escape from battle engine (if iframe gets stuck)
@@ -6040,75 +6044,110 @@ const App = {
       console.error('[WM] 新聞データ生成エラー:', e);
     }
 
-    // 試合前フレーバーポップアップ（specs/match-flavor-popup-spec-v0.1.md §4.2）
-    // 結果オーバーレイの表示前に、対象試合の左右両選手のセリフを順次流す。
-    // ポップアップキューが空になったら renderShowResult を呼ぶ。
-    const preMatchPopups = App._collectPreMatchPopups(results);
-    if (preMatchPopups.length === 0) {
-      renderShowResult(results, injuryResults);
-    } else {
-      // showResultOverlay は試合プレビューで active のまま残っており、
-      // _isPopupActive() がこれを検知して event popup queue が空転してしまう。
-      // ここで一旦 active を外してから popup を流し、queue 空になったら
-      // renderShowResult が再度 active を付けて結果画面を描画する。
-      document.getElementById('showResultOverlay').classList.remove('active');
-      // コールバックは popup 投入「前」にセットする — autoClose が短い場合に
-      // 投入直後に closeEventPopup が走り得るため。既存コールバックがあれば
-      // チェーンして握り潰さないようにする。
-      const prevCb = _onEventPopupQueueEmpty;
-      _onEventPopupQueueEmpty = () => {
-        if (prevCb) { try { prevCb(); } catch(e) { console.error('[WM] prev queueEmpty cb error:', e); } }
-        renderShowResult(results, injuryResults);
-      };
-      preMatchPopups.forEach(p => showEventPopup(p));
-      // セーフティネット: 何らかの理由で queue 空コールバックが発火しない場合に備え、
-      // popup 件数 × autoClose + バッファで強制的に結果画面に進む。
-      const maxWaitMs = preMatchPopups.length * 2200 + 1500;
-      setTimeout(() => {
-        if (!document.getElementById('showResultOverlay').classList.contains('active')) {
-          console.warn('[WM] preMatchPopup safety net fired — forcing renderShowResult');
-          try { closeEventPopup(); } catch(e) {}
-          _onEventPopupQueueEmpty = null;
-          renderShowResult(results, injuryResults);
-        }
-      }, maxWaitMs);
-    }
+    // 試合前/試合後フレーバーポップアップは per-match で流れる
+    // (renderMatchPreview の nextIdx フォーカス時 + skipMatch/watchMatch 結果反映直後)
+    // ため、ここでは結果画面を直接描画する。
+    renderShowResult(results, injuryResults);
   },
 
   // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
-  // results の各試合を見て、検出条件を満たすものについて左右両選手分の popup options を返す。
+  // 1試合分のポップアップ配列を返す。renderMatchPreview の nextIdx フォーカス時に呼ばれる。
+  // 試合シミュレーション結果は不要 — 検出は roster / matchupLog / relationships を試合前に参照する。
   // 段階拡張時はこの中に検出条件 + popups.push ブロックを追加する。
-  _collectPreMatchPopups(results) {
+  _collectPreMatchPopupsForMatch(idx) {
     const popups = [];
-    if (!Array.isArray(results)) return popups;
-    results.forEach(r => {
-      if (!r || !r.left || !r.right) return;
-      // 初顔合わせ
-      if (r.freshnessLabel === '初顔合わせ') {
-        const leftFighter  = (G.roster || []).find(c => c.id === r.left.id)
-                          || ALL_CHARS.find(c => c.id === r.left.id);
-        const rightFighter = (G.roster || []).find(c => c.id === r.right.id)
-                          || ALL_CHARS.find(c => c.id === r.right.id);
-        const leftLine  = pickDialogueLine(FIRST_MEET_LINES, leftFighter);
-        const rightLine = pickDialogueLine(FIRST_MEET_LINES, rightFighter);
-        popups.push({
-          type: 'fighter', id: r.left.id, name: r.left.name,
-          message: leftLine,
-          detail: '✨ 初対決',
-          autoCloseMs: 1800,
-          sound: 'event',
-        });
-        popups.push({
-          type: 'fighter', id: r.right.id, name: r.right.name,
-          message: rightLine,
-          detail: '✨ 初対決',
-          autoCloseMs: 1800,
-          sound: 'event',
-        });
-      }
-      // ── 段階拡張ポイント: 他のプラス効果はここに追加 ──
+    const sp = App._showPreview;
+    if (!sp || !sp.validMatches) return popups;
+    const m = sp.validMatches[idx];
+    if (!m || m.matchType === 'tag') return popups; // タッグは現状非対応
+    const leftId = m.left, rightId = m.right;
+    if (!leftId || !rightId) return popups;
+    const leftFighter  = (G.roster || []).find(c => c.id === leftId) || ALL_CHARS.find(c => c.id === leftId);
+    const rightFighter = (G.roster || []).find(c => c.id === rightId) || ALL_CHARS.find(c => c.id === rightId);
+    if (!leftFighter || !rightFighter) return popups;
+
+    // ── 初顔合わせ（matchupLog に過去対戦が無いかで判定）──
+    const log = G.matchupLog || [];
+    const hasPriorMatch = log.some(e =>
+      (e.left === leftId && e.right === rightId) || (e.left === rightId && e.right === leftId)
+    );
+    if (!hasPriorMatch) {
+      const leftLine  = pickDialogueLine(FIRST_MEET_LINES, leftFighter);
+      const rightLine = pickDialogueLine(FIRST_MEET_LINES, rightFighter);
+      popups.push({
+        type: 'fighter', id: leftId, name: leftFighter.name,
+        message: leftLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
+      });
+      popups.push({
+        type: 'fighter', id: rightId, name: rightFighter.name,
+        message: rightLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
+      });
+    }
+    // ── 段階拡張ポイント: 他のプラス効果はここに追加 ──
+    return popups;
+  },
+
+  // 試合後フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.6）
+  // 試合結果から勝者/敗者の余韻一言を返す。skipMatch/watchMatch で結果反映直後に呼ぶ。
+  _collectPostMatchPopupsForMatch(idx, result) {
+    const popups = [];
+    const sp = App._showPreview;
+    if (!sp || !result || result.matchType === 'tag') return popups;
+    if (result.winner === 'draw') return popups; // ドローは余韻スキップ（中立)
+    const m = sp.validMatches[idx];
+    if (!m) return popups;
+    const winnerId = result.winner === 'left' ? m.left : m.right;
+    const loserId  = result.winner === 'left' ? m.right : m.left;
+    const winnerFighter = (G.roster || []).find(c => c.id === winnerId) || ALL_CHARS.find(c => c.id === winnerId);
+    const loserFighter  = (G.roster || []).find(c => c.id === loserId)  || ALL_CHARS.find(c => c.id === loserId);
+    if (!winnerFighter || !loserFighter) return popups;
+    if (typeof POST_MATCH_FLAVOR_LINES === 'undefined') return popups;
+    const winLine  = pickDialogueLine(POST_MATCH_FLAVOR_LINES.winner, winnerFighter);
+    const loseLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.loser,  loserFighter);
+    popups.push({
+      type: 'fighter', id: winnerId, name: winnerFighter.name,
+      message: winLine, detail: '🏆 勝者の余韻', autoCloseMs: 1800, sound: 'event',
+    });
+    popups.push({
+      type: 'fighter', id: loserId, name: loserFighter.name,
+      message: loseLine, detail: '— 敗者の心 —', autoCloseMs: 1800, sound: 'event',
     });
     return popups;
+  },
+
+  // pre-match popup シーケンスを 1試合分流す。renderMatchPreview のフォーカスフックから呼ばれる。
+  // 既存の confrontation modal が表示中なら、それが閉じてからフレーバー popup を流す。
+  _runPreMatchFlavorForMatch(idx) {
+    const sp = App._showPreview;
+    if (!sp) return;
+    if (!sp._shownPreFlavor) sp._shownPreFlavor = new Set();
+    if (sp._shownPreFlavor.has(idx)) return;
+    sp._shownPreFlavor.add(idx);
+    const popups = App._collectPreMatchPopupsForMatch(idx);
+    if (popups.length === 0) return;
+    popups.forEach(p => showEventPopup(p));
+  },
+
+  // post-match popup シーケンスを 1試合分流し、then() を呼ぶ。
+  // skipMatch/watchMatch で sp.results[idx] 反映直後に呼ぶ。
+  _runPostMatchFlavorForMatch(idx, result, then) {
+    const popups = App._collectPostMatchPopupsForMatch(idx, result);
+    if (popups.length === 0) { if (then) then(); return; }
+    const prevCb = _onEventPopupQueueEmpty;
+    _onEventPopupQueueEmpty = () => {
+      if (prevCb) { try { prevCb(); } catch(e) { console.error('[WM] prev queueEmpty cb error:', e); } }
+      if (then) then();
+    };
+    popups.forEach(p => showEventPopup(p));
+    // セーフティネット
+    const maxWaitMs = popups.length * 2200 + 1500;
+    setTimeout(() => {
+      if (_onEventPopupQueueEmpty) {
+        console.warn('[WM] postMatchFlavor safety net fired');
+        _onEventPopupQueueEmpty = null;
+        if (then) then();
+      }
+    }, maxWaitMs);
   },
 
   // ─── 新聞記事テキスト生成 ───────────────────────────────────────────────

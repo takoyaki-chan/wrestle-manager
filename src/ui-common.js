@@ -4029,11 +4029,19 @@ function renderMatchPreview() {
   if (nextIdx >= 0) {
     const nextEl = box.querySelector('[data-match-next="true"]');
     if (nextEl) setTimeout(() => nextEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-    // フォーカス試合に宣戦布告ポップアップが未表示なら自動表示
+    // 試合前モーダル/フレーバー: 宣戦布告 → 初顔合わせ等の順に per-match 表示
+    // (specs/match-flavor-popup-spec-v0.1.md §4.2)
     const cMap = sp.confrontationMap;
-    if (cMap && cMap[nextIdx] && !sp._shownConfrontations.has(nextIdx)) {
+    const hasConfrontation = cMap && cMap[nextIdx] && !sp._shownConfrontations.has(nextIdx);
+    if (hasConfrontation) {
       sp._shownConfrontations.add(nextIdx);
-      setTimeout(() => showRivalryPopups([cMap[nextIdx]], () => {}), 400);
+      setTimeout(() => showRivalryPopups([cMap[nextIdx]], () => {
+        if (typeof App !== 'undefined' && App._runPreMatchFlavorForMatch) App._runPreMatchFlavorForMatch(nextIdx);
+      }), 400);
+    } else {
+      setTimeout(() => {
+        if (typeof App !== 'undefined' && App._runPreMatchFlavorForMatch) App._runPreMatchFlavorForMatch(nextIdx);
+      }, 400);
     }
   }
 }
