@@ -6031,11 +6031,10 @@ const App = {
     App._showPreview = null;
     App._lastInjuries = injuryResults; // v0.96: store for popup after close
     App._lastTitleOutcomes = titleMatchOutcomes; // タイトルマッチ後リアクション用
-    // BGM: 試合BGMフェードアウト後に一息おいてからjingle再生(2.5秒遅延)
-    const hadTitleChange = validMatches.some((m, i) => m.isTitle && results[i] && results[i].winner !== 'draw');
+    // 結果画面表示直後にBGMを試合用→経営用へ切り替え（ファンファーレは廃止）
     setTimeout(() => {
       try { Audio.fileBgm.stop(); } catch(e) {}
-      Audio.bgm.playJingle(hadTitleChange ? 'championship' : 'victory');
+      Audio.bgm.play('management');
     }, 2500);
 
     // 新聞データをGに保存（データベースタブで閲覧）
