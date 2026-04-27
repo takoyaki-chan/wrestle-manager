@@ -883,8 +883,12 @@ const Audio = (() => {
       if ((G.offSeason && G.offWeek >= 2) || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
       if (G.weekPhase === 'showExec') { BGM.play('battle'); return; }
       if (G.weekPhase === 'event') {
-        // War challenge uses its own FileBGM — don't override
-        if (G.pendingEvent && G.pendingEvent.type === 'war' && FileBGM._audio && BGM._current !== 'tension') return;
+        if (G.pendingEvent && G.pendingEvent.type === 'war') {
+          const warSrc = '../bgm/MusMus-BGM-125.mp3';
+          if (FileBGM._audio && FileBGM._audio.src && FileBGM._audio.src.indexOf('MusMus-BGM-125') >= 0) return;
+          FileBGM.play(warSrc, { loop: true, volume: 0.10 });
+          return;
+        }
         BGM.play('tension'); return;
       }
       // draft-negotiation-spec §8.1: ドラフト速報+交渉時はtension
