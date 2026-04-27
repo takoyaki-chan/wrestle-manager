@@ -34,6 +34,7 @@ loadAsGlobal('management.js');
 loadAsGlobal('match-engine.js');
 loadAsGlobal('relationships.js');
 loadAsGlobal('draft-negotiation.js');
+loadAsGlobal('factions.js');
 
 const args = process.argv.slice(2);
 const targetSeasons = parseInt(args[0], 10) || 3;

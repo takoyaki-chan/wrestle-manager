@@ -98,6 +98,7 @@ const runRetain = new Function(
   'fighterId',
   `
   let G = ctx.G;
+  const App = ctx.App;
   const closeRetirementPopup = ctx.closeRetirementPopup;
   const archiveRetiredRivalryState = ctx.archiveRetiredRivalryState;
   const Engine = ctx.Engine;
@@ -116,15 +117,19 @@ const runRetain = new Function(
       rngSeed: 1,
       season: 3,
       week: 48,
-      roster: [{ id: 2, name: 'Active Mate' }],
-      retiredFighters: [{ id: 1, name: 'Retired Ace', wear: 50, retainCount: 0 }],
-      retiredIds: [1, 9],
-      retiredSeasons: { 1: 3, 9: 1 },
+      roster: [
+        { id: 1, name: 'Retained Ace', wear: 50, retainCount: 0, retainInjuryBonus: 0 },
+        { id: 2, name: 'Active Mate' },
+      ],
       relationships: {},
     },
+    App: {},
     closeRetirementPopup() {},
     archiveRetiredRivalryState(state) { return state; },
     Engine: {
+      career: {
+        addEvent(fighter) { return fighter; },
+      },
       retirement: { selectRetainLine() { return 'back'; } },
       relationships: {
         applyToRoster(state) { return state; },
@@ -140,11 +145,13 @@ const runRetain = new Function(
     showEventPopup(payload) { events.push(payload); },
   }, 1);
 
-  assert(next.roster.some(f => f.id === 1), 'expected retained fighter to return to roster');
-  assert(!next.retiredFighters.some(f => f.id === 1), 'expected retained fighter to leave retiredFighters');
-  assert(!next.retiredIds.includes(1), 'expected retained fighter to be removed from retiredIds');
-  assert.strictEqual(next.retiredSeasons[1], undefined, 'expected retained fighter to be removed from retiredSeasons');
-  assert(next.retiredIds.includes(9), 'expected other retired ids to stay intact');
+  const retained = next.roster.find(f => f.id === 1);
+  assert(retained, 'expected retained fighter to stay on roster');
+  assert.strictEqual(retained.wear, 60, 'expected retain action to add wear');
+  assert.strictEqual(retained.retainCount, 1, 'expected retain count to increment');
+  assert.strictEqual(retained.retainInjuryBonus, 0.05, 'expected retain injury bonus to increment');
+  assert.strictEqual(retained.lastRun, false, 'expected lastRun to be cleared');
+  assert.strictEqual(retained.lastRunWeek, null, 'expected lastRunWeek to be cleared');
   assert(events.length === 1, 'expected success popup to be emitted');
 })();
 
