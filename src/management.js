@@ -2071,23 +2071,53 @@ const Engine = {
       const peakSeason = cr.peakOVRSeason || 0;
       const totalTitleWins = cr.totalTitleWins || 0;
       const totalDefenses = cr.totalDefenses || 0;
-      // タイトル歴テキスト
+      // タイトル歴テキスト（団体別ブレークダウン）
       let titleSummary = null;
+      let titleByOrg = []; // [{ orgName, wins, defenses }]
       if (totalTitleWins > 0) {
-        // historyからタイトル名を取得
-        const titleWins = (cr.history || []).filter(e => e.type === 'titleWin');
-        if (titleWins.length > 0) {
-          const beltName = titleWins[0].orgName || '団体王座';
-          titleSummary = totalTitleWins > 1
-            ? `元${beltName}王者（${totalTitleWins}度戴冠・通算${totalDefenses}度防衛）`
-            : `元${beltName}王者（${totalDefenses}度防衛）`;
+        const winsByOrg = new Map();   // orgName -> 戴冠回数
+        const defByBelt = new Map();   // `${orgName}|${beltId}` -> 当該王座の最終防衛数
+        (cr.history || []).forEach(ev => {
+          if (ev.type === 'titleWin') {
+            const k = ev.orgName || '王座';
+            winsByOrg.set(k, (winsByOrg.get(k) || 0) + 1);
+          } else if (ev.type === 'titleDefense') {
+            // count は累計防衛数。同一在位中は最大値で上書き
+            const k = `${ev.orgName || '王座'}|${ev.beltId || 'world'}|${ev.season || 0}`;
+            const prev = defByBelt.get(k) || { orgName: ev.orgName || '王座', count: 0 };
+            if ((ev.count || 0) > prev.count) defByBelt.set(k, { orgName: prev.orgName, count: ev.count || 0 });
+          } else if (ev.type === 'titleLoss') {
+            // titleLoss の defenses はその在位中の最終防衛数
+            const k = `${ev.orgName || '王座'}|${ev.beltId || 'world'}|loss-${ev.season || 0}-${ev.week || 0}`;
+            defByBelt.set(k, { orgName: ev.orgName || '王座', count: ev.defenses || 0 });
+          }
+        });
+        // 団体ごとに防衛数を合算
+        const defByOrg = new Map();
+        defByBelt.forEach(v => {
+          defByOrg.set(v.orgName, (defByOrg.get(v.orgName) || 0) + v.count);
+        });
+        const orgs = [...new Set([...winsByOrg.keys(), ...defByOrg.keys()])];
+        orgs.forEach(o => {
+          titleByOrg.push({
+            orgName: o,
+            wins: winsByOrg.get(o) || 0,
+            defenses: defByOrg.get(o) || 0,
+          });
+        });
+        // 戴冠数 → 防衛数の順でソート
+        titleByOrg.sort((a, b) => (b.wins - a.wins) || (b.defenses - a.defenses));
+        if (titleByOrg.length > 0) {
+          // 単一団体: 旧フォーマット互換 / 複数団体: スラッシュ区切り
+          const fmt = e => `元${e.orgName}王者（${e.wins > 1 ? `${e.wins}度戴冠・通算${e.defenses}度防衛` : `${e.defenses}度防衛`}）`;
+          titleSummary = titleByOrg.map(fmt).join(' / ');
         } else {
           titleSummary = `タイトル${totalTitleWins}回獲得（通算${totalDefenses}度防衛）`;
         }
       }
       const juniorTournamentWins = cr.juniorTournamentWins || 0;
       const ppvMainEventWins = cr.ppvMainEventWins || 0;
-      return { wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary, totalTitleWins, totalDefenses, juniorTournamentWins, ppvMainEventWins };
+      return { wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary, titleByOrg, totalTitleWins, totalDefenses, juniorTournamentWins, ppvMainEventWins };
     },
 
     /** Generate durability: normal distribution N(0,2), clamped to -4..+4 (v1.3-1 §1.1) */
@@ -13544,6 +13574,21 @@ Engine.awards = {
         orgName: jtResult.runnerUp._orgName || '' } : null,
     } : null;
 
+    // NPC団体ごとの内部表彰（プレイヤー視点では暗黙の事実として履歴にだけ残る）
+    const npcAwards = {};
+    if (state.aiOrgs) {
+      Object.keys(state.aiOrgs).forEach(orgId => {
+        const od = state.aiOrgs[orgId];
+        if (!od || !od.roster || od.roster.length === 0) return;
+        npcAwards[orgId] = {
+          orgName: Engine.awards._orgName(state, orgId),
+          rookie:    Engine.awards.selectRookieForOrg(state, orgId),
+          mvp:       Engine.awards.selectMVPForOrg(state, orgId),
+          bestMatch: Engine.awards.selectBestMatchForOrg(rng, state, orgId),
+        };
+      });
+    }
+
     return {
       season: state.season,
       rookieOfYear: Engine.awards.selectRookie(state),
@@ -13554,6 +13599,86 @@ Engine.awards = {
       champions:    Engine.awards.getChampions(state),
       hallOfFame:   Engine.awards.checkHallOfFame(state),
       npcInductees: npcInductees,
+      npcAwards,
+    };
+  },
+
+  /** NPC団体ごとの新人王: その団体の careerSeasons===1 から OVR 最高 */
+  selectRookieForOrg(state, orgId) {
+    const ov = Engine.util.ov;
+    const od = state.aiOrgs && state.aiOrgs[orgId];
+    if (!od || !od.roster) return null;
+    const rookies = od.roster.filter(f => f.careerSeasons === 1);
+    if (rookies.length === 0) return null;
+    rookies.sort((a, b) => ov(b) - ov(a));
+    const best = rookies[0];
+    return {
+      id: best.id, name: best.name, portrait: best.portrait,
+      orgName: Engine.awards._orgName(state, orgId),
+      ovr: ov(best), age: best.age, style: best.style || 'Allround',
+      isPlayerOrg: false,
+    };
+  },
+
+  /** NPC団体ごとのMVP: mvpRace ranking を orgId で絞った1位 */
+  selectMVPForOrg(state, orgId) {
+    const ov = Engine.util.ov;
+    const race = (state.mvpRace && Array.isArray(state.mvpRace.rankings))
+      ? state.mvpRace
+      : Engine.mvpRace.recalcRanking(state);
+    if (!race.rankings || race.rankings.length === 0) return null;
+    const orgRank = race.rankings.filter(r => r.orgId === orgId);
+    if (orgRank.length === 0) return null;
+    const winner = orgRank[0];
+    const od = state.aiOrgs && state.aiOrgs[orgId];
+    const wf = od && od.roster && od.roster.find(f => f.id === winner.fighterId);
+    if (!wf) return null;
+    let defenses = 0;
+    if (od && od.titles && od.titles.world && od.titles.world.championId === wf.id) {
+      defenses = od.titles.world.defenses || 0;
+    }
+    return {
+      id: wf.id, name: wf.name, portrait: wf.portrait,
+      orgName: winner.orgName,
+      ovr: ov(wf), popularity: wf.popularity,
+      age: wf.age, style: wf.style || 'Allround',
+      isPlayerOrg: false,
+      defenses,
+      mvpScore: Math.round(winner.points * 10) / 10,
+      mvpPoints: winner.points,
+    };
+  },
+
+  /** NPC団体ごとのベストマッチ: 当該団体の seasonBestMQ を採用 */
+  selectBestMatchForOrg(rng, state, orgId) {
+    const ov = Engine.util.ov;
+    const od = state.aiOrgs && state.aiOrgs[orgId];
+    if (!od || !od.roster || od.roster.length < 2) return null;
+    const bestMQ = od.seasonBestMQ || 0;
+    const bestMatch = od.seasonBestMQMatch;
+    if (bestMQ > 0 && bestMatch) {
+      return {
+        fighter1: bestMatch.fighter1,
+        fighter2: bestMatch.fighter2,
+        orgName: Engine.awards._orgName(state, orgId),
+        mq: bestMQ,
+        isPlayerOrg: false,
+      };
+    }
+    // フォールバック: トップ2のOVRから推定
+    const sorted = [...od.roster].sort((a, b) => ov(b) - ov(a));
+    const topAvg = (ov(sorted[0]) + ov(sorted[1])) / 2;
+    const cfg = RIVAL_ORGS.find(o => o.id === orgId);
+    const tierBase = { S: 75, A: 65, B: 55 }[(cfg && cfg.tier)] || 55;
+    const mq = Engine.util.clamp(
+      Math.round(topAvg * 0.6 + tierBase * 0.4 + Engine.rng.int(rng, -10, 10)), 30, 98
+    );
+    return {
+      fighter1: { id: sorted[0].id, name: sorted[0].name, ovr: ov(sorted[0]), style: sorted[0].style || 'Allround' },
+      fighter2: { id: sorted[1].id, name: sorted[1].name, ovr: ov(sorted[1]), style: sorted[1].style || 'Allround' },
+      orgName: Engine.awards._orgName(state, orgId),
+      mq,
+      isPlayerOrg: false,
     };
   },
 

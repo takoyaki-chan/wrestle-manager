@@ -67,6 +67,8 @@
 | `juniorTournament` | `result` (champion/runnerUp/semiFinal/quarterFinal), `finalOpponentName?`, `eliminatedByName?` | 結果 4分岐 (下記§3.2) |
 | `domeMain` | `result` (win/lose/draw), `matchType` (title/main), `opponentName?` | 「ドーム大会 メインイベント 勝利（vs 黒澤）」 |
 
+**戦歴サマリー（団体別ブレークダウン）:** `Engine.career.buildSummary` は `titleWin` / `titleDefense` / `titleLoss` の `orgName` で団体別にグルーピングし、`titleByOrg = [{ orgName, wins, defenses }]` を返す。選手詳細の戦歴パネルでは複数団体を渡り歩いた選手は団体ごとに 1 行ずつ「元○○団体王座 N度戴冠・通算M度防衛」を縦並びで表示する。殿堂入り判定 (`Engine.awards.calcHofPoints`) は団体を区別せず合算（`totalTitleWins` + `totalDefenses`）で扱う。
+
 ### 2.3 対抗戦・期待カード
 
 | type | 主要フィールド | 年表テキスト例 |
@@ -85,6 +87,8 @@
 | `awardMVP` | 「👑 MVP 受賞」 |
 | `awardMedia` | 「📺 メディア功労賞 受賞」 |
 | `awardBestMatch` | 「🎬 ベストマッチ賞（試合評価 N）」 |
+
+**受賞対象範囲（v1.1 以降）:** 上記の受賞イベントは**プレイヤー団体・NPC団体ともに**記録される。NPC団体ごとに内部表彰（その団体の年間 MVP / 新人王 / ベストマッチ）を選出し、`careerRecord.history` に push する。プレイヤー団体の表彰式画面には載せず、選手詳細の戦歴・キャリア年表からのみ参照できる暗黙の事実として残る。各イベントには `orgName`（受賞時の所属団体名）を保持し、後年 NPC 出身選手をスカウト/獲得した際に「○○団体時代の MVP」を可視化する。メディア功労賞は団体横断の単独選出のためそのまま。
 
 ### 2.5 成長
 

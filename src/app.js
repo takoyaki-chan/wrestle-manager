@@ -7484,31 +7484,83 @@ const App = {
     const { pendingAwards: _, ...cleanG } = G;
     G = cleanG;
 
-    // 受賞歴をキャリア記録に追加
+    // 受賞歴をキャリア記録に追加（プレイヤー団体・NPC団体ともに）
     {
-      let ar = G.roster;
       const aSeason = pendingAwards.season || G.season;
       const aWeek = 49; // オフシーズン表彰式
-      if (pendingAwards.rookieOfYear && pendingAwards.rookieOfYear.isPlayerOrg) {
-        ar = ar.map(f => f.id === pendingAwards.rookieOfYear.id
-          ? Engine.career.addEvent(f, { type: 'awardRookie', season: aSeason, week: aWeek }) : f);
+
+      // 任意の選手プールに対して id 一致で addEvent するヘルパー
+      const applyToPool = (pool, predicate, ev) =>
+        pool.map(f => predicate(f) ? Engine.career.addEvent(f, ev) : f);
+
+      let ar = G.roster;
+      let aiOrgs = G.aiOrgs ? { ...G.aiOrgs } : null;
+
+      const recordOnAllOrgs = (predicate, ev) => {
+        ar = applyToPool(ar, predicate, ev);
+        if (aiOrgs) {
+          Object.keys(aiOrgs).forEach(oid => {
+            const od = aiOrgs[oid];
+            if (od && od.roster) {
+              aiOrgs[oid] = { ...od, roster: applyToPool(od.roster, predicate, ev) };
+            }
+          });
+        }
+      };
+
+      // ── プレイヤー団体ぶんのグローバル受賞 ──
+      if (pendingAwards.rookieOfYear) {
+        const w = pendingAwards.rookieOfYear;
+        recordOnAllOrgs(f => f.id === w.id,
+          { type: 'awardRookie', season: aSeason, week: aWeek, orgName: w.orgName });
       }
-      if (pendingAwards.mvp && pendingAwards.mvp.isPlayerOrg) {
-        ar = ar.map(f => f.id === pendingAwards.mvp.id
-          ? Engine.career.addEvent(f, { type: 'awardMVP', season: aSeason, week: aWeek }) : f);
+      if (pendingAwards.mvp) {
+        const w = pendingAwards.mvp;
+        recordOnAllOrgs(f => f.id === w.id,
+          { type: 'awardMVP', season: aSeason, week: aWeek, orgName: w.orgName });
       }
       if (pendingAwards.mediaAward) {
-        ar = ar.map(f => f.id === pendingAwards.mediaAward.id
-          ? Engine.career.addEvent(f, { type: 'awardMedia', season: aSeason, week: aWeek }) : f);
+        const w = pendingAwards.mediaAward;
+        recordOnAllOrgs(f => f.id === w.id,
+          { type: 'awardMedia', season: aSeason, week: aWeek, orgName: w.orgName });
       }
-      if (pendingAwards.bestMatch && pendingAwards.bestMatch.isPlayerOrg) {
+      if (pendingAwards.bestMatch) {
+        const bm = pendingAwards.bestMatch;
         const bmIds = new Set();
-        if (pendingAwards.bestMatch.fighter1 && pendingAwards.bestMatch.fighter1.id) bmIds.add(pendingAwards.bestMatch.fighter1.id);
-        if (pendingAwards.bestMatch.fighter2 && pendingAwards.bestMatch.fighter2.id) bmIds.add(pendingAwards.bestMatch.fighter2.id);
-        ar = ar.map(f => bmIds.has(f.id)
-          ? Engine.career.addEvent(f, { type: 'awardBestMatch', season: aSeason, week: aWeek, mq: pendingAwards.bestMatch.mq }) : f);
+        if (bm.fighter1 && bm.fighter1.id) bmIds.add(bm.fighter1.id);
+        if (bm.fighter2 && bm.fighter2.id) bmIds.add(bm.fighter2.id);
+        if (bmIds.size > 0) {
+          recordOnAllOrgs(f => bmIds.has(f.id),
+            { type: 'awardBestMatch', season: aSeason, week: aWeek, mq: bm.mq, orgName: bm.orgName });
+        }
       }
+
+      // ── NPC団体ごとの内部表彰（プレイヤーには表示されないが履歴には残る） ──
+      const npcAwards = pendingAwards.npcAwards || {};
+      Object.keys(npcAwards).forEach(orgId => {
+        const a = npcAwards[orgId];
+        if (!a) return;
+        if (a.rookie && a.rookie.id) {
+          recordOnAllOrgs(f => f.id === a.rookie.id,
+            { type: 'awardRookie', season: aSeason, week: aWeek, orgName: a.orgName });
+        }
+        if (a.mvp && a.mvp.id) {
+          recordOnAllOrgs(f => f.id === a.mvp.id,
+            { type: 'awardMVP', season: aSeason, week: aWeek, orgName: a.orgName });
+        }
+        if (a.bestMatch) {
+          const bmIds = new Set();
+          if (a.bestMatch.fighter1 && a.bestMatch.fighter1.id) bmIds.add(a.bestMatch.fighter1.id);
+          if (a.bestMatch.fighter2 && a.bestMatch.fighter2.id) bmIds.add(a.bestMatch.fighter2.id);
+          if (bmIds.size > 0) {
+            recordOnAllOrgs(f => bmIds.has(f.id),
+              { type: 'awardBestMatch', season: aSeason, week: aWeek, mq: a.bestMatch.mq, orgName: a.orgName });
+          }
+        }
+      });
+
       G = { ...G, roster: ar };
+      if (aiOrgs) G = { ...G, aiOrgs };
     }
 
     // Phase 4 E-05: 表彰式の関係値反映
