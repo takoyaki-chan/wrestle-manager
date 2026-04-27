@@ -4688,27 +4688,31 @@ const App = {
     return filled;
   },
 
-  // 試合確定後の共通フロー: 試合後フレーバーポップアップ → renderMatchPreview → 全完了なら finalizeShow
+  // 試合確定後の共通フロー: (観戦時のみ)試合後フレーバーポップアップ → renderMatchPreview → 全完了なら finalizeShow
   // (specs/match-flavor-popup-spec-v0.1.md §4.6)
-  _afterMatchSettle(idx) {
+  // opts.skipFlavor: true でスキップ(省略の意思表示)。余韻ポップアップを出さず即 finalize する。
+  _afterMatchSettle(idx, opts) {
     const sp = App._showPreview;
     if (!sp) return;
+    const skipFlavor = !!(opts && opts.skipFlavor);
     const result = sp.results[idx];
     const finalize = () => {
       renderMatchPreview();
       if (sp.results.every(r => r !== null)) App.finalizeShow();
     };
-    // _stale (選手不在フォールバック) や draw のときは余韻スキップ
-    if (!result || result._stale) { finalize(); return; }
+    // skipFlavor / _stale (選手不在フォールバック) のときは余韻スキップ
+    if (skipFlavor || !result || result._stale) { finalize(); return; }
     App._runPostMatchFlavorForMatch(idx, result, finalize);
   },
 
-  // Skip a single match (instant calculation)
+  // Skip a single match (instant calculation) — 余韻フレーバーは出さない(省略の意思表示)
   skipMatch(idx) {
     const sp = App._showPreview;
     if (!sp || sp.results[idx]) return;
+    // 一度でもスキップを押したら、その興行の残り全試合で pre/post-match フレーバーを抑制する
+    sp._suppressFlavor = true;
     const staleFilled = App._fillMissingShowPreviewResults();
-    if (sp.results[idx]) { App._afterMatchSettle(idx); return; }
+    if (sp.results[idx]) { App._afterMatchSettle(idx, { skipFlavor: true }); return; }
     const m = sp.validMatches[idx];
     // ── タッグマッチ ──
     if (m.matchType === 'tag') {
@@ -4718,7 +4722,7 @@ const App = {
       const f4 = G.roster.find(c => c.id === m.teamB.fighter2);
       if (!f1 || !f2 || !f3 || !f4) {
         sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true, matchType: 'tag' };
-        App._afterMatchSettle(idx);
+        App._afterMatchSettle(idx, { skipFlavor: true });
         return;
       }
       const tagRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
@@ -4731,7 +4735,7 @@ const App = {
         tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB }
       );
       try { Audio.play('tick'); } catch(e) {}
-      App._afterMatchSettle(idx);
+      App._afterMatchSettle(idx, { skipFlavor: true });
       return;
     }
     // ── シングルマッチ ──
@@ -4739,13 +4743,13 @@ const App = {
     const charR = G.roster.find(c => c.id === m.right);
     if (!charL || !charR) {
       if (!staleFilled) sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true };
-      App._afterMatchSettle(idx);
+      App._afterMatchSettle(idx, { skipFlavor: true });
       return;
     }
     const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
     sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
     try { Audio.play('tick'); } catch(e) {}
-    App._afterMatchSettle(idx);
+    App._afterMatchSettle(idx, { skipFlavor: true });
   },
 
   // Watch match in battle engine iframe
@@ -6120,6 +6124,7 @@ const App = {
   _runPreMatchFlavorForMatch(idx) {
     const sp = App._showPreview;
     if (!sp) return;
+    if (sp._suppressFlavor) return; // 一度スキップしたら以降のフレーバーは抑制
     if (!sp._shownPreFlavor) sp._shownPreFlavor = new Set();
     if (sp._shownPreFlavor.has(idx)) return;
     sp._shownPreFlavor.add(idx);
