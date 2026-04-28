@@ -9204,6 +9204,83 @@ function _buildB3Step3b(event, state, roster) {
 }
 
 // ── B3 VS対峙画面 (showResultOverlay) ─────────────────────────────────────
+function showB3OpponentAftermath(event, matchResult, onDone) {
+  if (!event || !matchResult || matchResult.winner === 'draw') {
+    if (onDone) onDone();
+    return;
+  }
+
+  const challenger = event.challenger || {};
+  if (!challenger.id) {
+    if (onDone) onDone();
+    return;
+  }
+
+  const orgName = event.orgName || 'Opponent';
+  const won = matchResult.winner === 'left';
+  const upperUrl = getUpperUrl(challenger.id);
+  const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a1a14';
+  const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
+
+  let challengerLine;
+  if (won) {
+    challengerLine = (typeof pickDialogueLine === 'function' && typeof BITTER_RESOLUTION_LINES !== 'undefined')
+      ? (pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '窶ｦ窶ｦ縺薙・蛟溘ｊ縲∝ｿ・★霑斐＠縺ｦ繧・ｋ')
+      : '窶ｦ窶ｦ縺薙・蛟溘ｊ縲∝ｿ・★霑斐＠縺ｦ繧・ｋ';
+  } else {
+    challengerLine = (typeof WAR_POST_DIALOGUE !== 'undefined' && typeof pickDialogueLine === 'function')
+      ? (pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '窶ｦ窶ｦ縺ｩ縺・□縲√％繧後′螳溷鴨縺ｮ蟾ｮ縺')
+      : '窶ｦ窶ｦ縺ｩ縺・□縲√％繧後′螳溷鴨縺ｮ蟾ｮ縺';
+  }
+
+  const speechVariant = won ? 'resentment' : 'danger';
+  const headerTitle = won ? '相手の反応' : '相手の勝利宣言';
+  const reporterLine = won
+    ? `${orgName}蛛ｴ縺ｯ諤偵ｊ繧帝國縺帙↑縺・ｧ伜ｭ舌〒縺吮ｦ`
+    : `${orgName}蛛ｴ縺ｯ蜍晏茜繧定ｪ・､ｺ縺励※縺・∪縺兪`;
+  const observationText = won
+    ? `${orgName}縺ｨ縺ｮ<span class="marker danger">蝗邵・/span>縺ｯ縲√∪縺邨ゅｏ縺｣縺ｦ縺・↑縺・Ａ`
+    : `${orgName}縺ｮ<span class="marker danger">謖醍匱</span>縺ｫ縲√←縺・ｿ懊∴繧九°窶披覗`;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'war-victory-overlay war-ace-overlay';
+  overlay.innerHTML = `
+    <div class="war-ace-modal pb-container">
+      <div class="mdl-a-header danger">
+        <div class="mdl-a-header-title">${headerTitle}</div>
+        <div class="mdl-a-header-meta">OPPONENT AFTERMATH</div>
+      </div>
+      ${_mdlAReporterStrip(G, reporterLine)}
+      <div class="mdl-a-subject-stage defeat" style="padding-top:96px">
+        <div class="mdl-a-portrait-wrap">
+          <div class="mdl-a-speech-pending">窶ｦ</div>
+          <div class="mdl-a-speech ${speechVariant} delayed">
+            <div class="mdl-a-speech-speaker">${(challenger.name || '???').toUpperCase()}</div>
+            <div class="mdl-a-speech-text">${challengerLine}</div>
+          </div>
+          <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
+        </div>
+        <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED' : 'VICTOR'}</div></div>
+        <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
+        <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${orgName} 繝ｻ OVR ${cOvr}</div>
+        <div class="mdl-a-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
+          ${observationText}
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:16px">
+        <button class="war-victory-close war-ace-close" type="button">笆ｶ</button>
+      </div>
+    </div>
+  `;
+
+  overlay.querySelector('.war-ace-close').addEventListener('click', () => {
+    overlay.remove();
+    if (onDone) onDone();
+  });
+  document.body.appendChild(overlay);
+  Audio.play('notify');
+}
+
 function _renderB3MatchPreview(event, playerFighter, challenger) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
@@ -9383,7 +9460,7 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
 
   // Footer
   html += `<div class="pb-footer">
-    <button type="button" class="pb-close-btn" onclick="App.closeB3Result()">了解</button>
+    <button type="button" class="pb-close-btn" onclick="App.closeB3Result()">${draw ? '了解' : '次へ'}</button>
   </div>`;
 
   html += `</div>`; // .pb-container

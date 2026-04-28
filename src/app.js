@@ -8491,10 +8491,18 @@ const App = {
   closeB3Result() {
     const overlay = document.getElementById('showResultOverlay');
     overlay.classList.remove('active');
-    App._b3Preview = null;
-    Audio.play('event');
-    App.restoreBgmForState();
-    renderWeekScreen();
+    const b3 = App._b3Preview;
+    const finalizeClose = () => {
+      App._b3Preview = null;
+      Audio.play('event');
+      App.restoreBgmForState();
+      renderWeekScreen();
+    };
+    if (b3 && typeof showB3OpponentAftermath === 'function') {
+      showB3OpponentAftermath(b3.event, b3.matchResult, finalizeClose);
+      return;
+    }
+    finalizeClose();
   },
 
   // B2: 試合を観る
