@@ -519,6 +519,7 @@ Engine.relationships = {
       archetype: c.archetype || 'normal',
       age: c.age || 20,
       style: c.style || 'Allround',
+      affinityAxis: c.affinityAxis,
     }));
     Object.values(state.aiOrgs || {}).forEach(org => {
       (org.roster || []).forEach(c => charInfoMap.set(c.id, {
@@ -561,10 +562,17 @@ Engine.relationships = {
       const inContact = sameOrg || recentMatchPairs.has(key);
 
       if (inContact) {
-        const bondPull = 0.18 + Engine.rng.float(rng) * 0.12 + Math.max(0, Math.abs(bond - 50) - 20) * 0.01;
-        if (bond > 50) {
+        // affinity-spec v1.0 §5.1: bondPull 半減 + 加速項撤廃 + 相性軸による標的シフト
+        const infoForA = charInfoMap.get(idA);
+        const infoForB = charInfoMap.get(idB);
+        const axisA = (infoForA && typeof infoForA.affinityAxis === 'number') ? infoForA.affinityAxis : null;
+        const axisB = (infoForB && typeof infoForB.affinityAxis === 'number') ? infoForB.affinityAxis : null;
+        const dist = Engine.relationships._affinity.distance(axisA, axisB);
+        const target = Engine.relationships._affinity.target(dist);
+        const bondPull = 0.08 + Engine.rng.float(rng) * 0.06; // v2.1 §3.2 比較で半減
+        if (bond > target) {
           bond -= bondPull;
-        } else if (bond < 50) {
+        } else if (bond < target) {
           bond += bondPull;
         }
 
@@ -589,9 +597,10 @@ Engine.relationships = {
       }
 
       // 同団体所属ボーナス（spec §3.2 O-01, Phase 4: bond60天井）
+      // affinity-spec v1.0 §5.2: 増分を半減（+0.2〜+0.5 → +0.1〜+0.25）
       // bond55から効果が減衰し、60で完全停止。60超は試合やイベントでのみ到達可能
       if (sameOrg && bond < 60) {
-        const orgBondGain = 0.2 + Engine.rng.float(rng) * 0.3; // +0.2〜+0.5
+        const orgBondGain = 0.1 + Engine.rng.float(rng) * 0.15; // +0.1〜+0.25 (半減)
         const ceiling = bond < 55 ? 1.0 : Math.max(0, (60 - bond) / 5);
         bond = this._applyAxisDelta(bond, orgBondGain * ceiling, 'bond');
       }
