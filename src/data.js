@@ -1394,6 +1394,16 @@ const FACTION_CONFIG = {
   hostilityHighBondExtraDecay: -0.3,
   hostilityHighBondThreshold: 50,
   hostilityLeaderChangeMultiplier: 0.7,
+  // §4.3 派閥が関係性に与える週次ドリフト
+  sameFactionBondGain: 0.15,
+  factionLeaderBondGainAuthoritative: 0.1,
+  dictatorInFactionRivalryGain: 0.2,
+  factionNeutralBondDecay: -0.03,
+  factionCrossBondDecay: -0.10,
+  factionCrossBondHostilityMidThreshold: 40,
+  factionCrossBondHostilityHighThreshold: 70,
+  factionCrossBondHostilityMidExtra: -0.05,
+  factionCrossBondHostilityHighExtra: -0.10,
   // §5 勢い
   momentumDecayPerWeek: -1.0,
   momentumSeniorBonus: [8, 12],

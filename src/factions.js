@@ -368,21 +368,47 @@ Engine.factions = {
     let s = state;
     if (!s.factions || s.factions.length === 0) return s;
     if (!s.relationships) return s;
-    for (const f of s.factions) {
+    const cfg = FACTION_CONFIG;
+    const activeFactions = (s.factions || []).filter(f => f.status !== 'hiatus');
+    const assigned = new Set();
+    activeFactions.forEach(f => f.memberIds.forEach(id => assigned.add(id)));
+    const neutralIds = (s.roster || [])
+      .filter(c => !c.isRental && !assigned.has(c.id))
+      .map(c => c.id);
+    for (const f of activeFactions) {
       // 効果1: 同派閥メンバー全ペアに bond +0.15
       if (f.memberIds.length >= 2) {
-        s = this._applyBondBetweenMembers(s, f.memberIds, 0.15);
+        s = this._applyBondBetweenMembers(s, f.memberIds, cfg.sameFactionBondGain);
       }
       // 効果4: authoritativeTag ならリーダー → メンバー一方向 bond +0.1
       if (f.authoritativeTag && f.leaderId != null) {
         for (const mid of f.memberIds) {
           if (mid === f.leaderId) continue;
-          s = this._applyBondDirected(s, f.leaderId, mid, 0.1);
+          s = this._applyBondDirected(s, f.leaderId, mid, cfg.factionLeaderBondGainAuthoritative);
         }
       }
       // 効果5: dictatorTag なら同派閥メンバー全ペアに rivalry +0.2
       if (f.dictatorTag && f.memberIds.length >= 2) {
-        s = this._applyRivalryBetweenMembers(s, f.memberIds, 0.2);
+        s = this._applyRivalryBetweenMembers(s, f.memberIds, cfg.dictatorInFactionRivalryGain);
+      }
+      if (neutralIds.length > 0) {
+        s = this._applyBondBetweenGroups(s, f.memberIds, neutralIds, cfg.factionNeutralBondDecay);
+      }
+    }
+    for (let i = 0; i < activeFactions.length; i++) {
+      for (let j = i + 1; j < activeFactions.length; j++) {
+        const fA = activeFactions[i];
+        const fB = activeFactions[j];
+        const hAB = (s.factionHostility || {})[this._hostKey(fA.id, fB.id)] || 0;
+        const hBA = (s.factionHostility || {})[this._hostKey(fB.id, fA.id)] || 0;
+        const avgHostility = (hAB + hBA) / 2;
+        let bondDelta = cfg.factionCrossBondDecay;
+        if (avgHostility >= cfg.factionCrossBondHostilityHighThreshold) {
+          bondDelta += cfg.factionCrossBondHostilityHighExtra;
+        } else if (avgHostility >= cfg.factionCrossBondHostilityMidThreshold) {
+          bondDelta += cfg.factionCrossBondHostilityMidExtra;
+        }
+        s = this._applyBondBetweenGroups(s, fA.memberIds, fB.memberIds, bondDelta);
       }
     }
     // 効果2/3: 抗争中派閥ペア処理
@@ -398,6 +424,20 @@ Engine.factions = {
       // 効果3: 敵対派閥メンバーとの bond 平均 60+ な選手は敵リーダー方向 rivalry +0.5
       s = this._applyTurncoatMagnetism(s, fA, fB);
       s = this._applyTurncoatMagnetism(s, fB, fA);
+    }
+    return s;
+  },
+
+  _applyBondBetweenGroups(state, groupAIds, groupBIds, delta) {
+    if (!Array.isArray(groupAIds) || !Array.isArray(groupBIds)) return state;
+    if (groupAIds.length === 0 || groupBIds.length === 0 || delta === 0) return state;
+    let s = state;
+    for (const a of groupAIds) {
+      for (const b of groupBIds) {
+        if (a === b) continue;
+        s = this._applyBondDirected(s, a, b, delta);
+        s = this._applyBondDirected(s, b, a, delta);
+      }
     }
     return s;
   },
