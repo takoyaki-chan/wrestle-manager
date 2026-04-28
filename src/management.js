@@ -288,6 +288,11 @@ const Engine = {
         }
       }
 
+      // relationship-flags-spec-v1.0 §10: 関係フラグ構造を lazy init
+      if (Engine.relationships?.flags?._ensureInit) {
+        Engine.relationships.flags._ensureInit(state);
+      }
+
       return {
         state,
         changed: changes.length > 0,
@@ -12892,8 +12897,14 @@ const Engine = {
       // Phase 5: スナップショット通知のクールダウン管理
       _snapshotCooldowns: {},
       // Phase 1: 人間関係データ基盤
-      relationships: {},
+      relationships: {
+        flags: { betrayer: [], returner: [], master: [], cohort: [], rivalCohort: [], admire: [], envy: [] },
+        flagLockouts: {},
+        flagCounters: {},
+        history: { betrayalRecord: [] },
+      },
       relationshipCounters: {},
+      _modalQueue: [],
       // h2h: ペア別対戦履歴
       h2h: {},
       // 団体間直接対決記録

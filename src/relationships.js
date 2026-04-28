@@ -131,8 +131,8 @@ Engine.relationships = {
       return Math.min(diff, 360 - diff);
     },
     target(distance) {
-      // 振幅 ±15: 標的範囲 35〜65 (affinity-spec v1.0 §13 優先度1 第2段階)
-      return 50 + 15 * Math.cos(distance * Math.PI / 180);
+      // 振幅 ±40: 標的範囲 10〜90 (極端帯到達のための実験的拡張)
+      return 50 + 40 * Math.cos(distance * Math.PI / 180);
     },
   },
 
@@ -474,6 +474,7 @@ Engine.relationships = {
   //  tickWeek内で呼び出す
   // ══════════════════════════════════════════════════════════
   processWeeklyDecay(state, rng) {
+    Engine.relationships.flags._ensureInit(state);
     const rels = state.relationships;
     if (!rels || Object.keys(rels).length === 0) return state;
 
@@ -570,11 +571,7 @@ Engine.relationships = {
         const axisB = (infoForB && typeof infoForB.affinityAxis === 'number') ? infoForB.affinityAxis : null;
         const dist = Engine.relationships._affinity.distance(axisA, axisB);
         const target = Engine.relationships._affinity.target(dist);
-        // bondPull: 標的への収束力。標的シフト導入 (target = 50 + 15·cos) により
-        // 回帰先が個別化されたので元の強度 (0.18+0.12) を維持。
-        // 接触ペアは速やかに自分の標的へ戻り、match 由来の下方ドリフトに対する
-        // カウンターとして機能する。
-        const bondPull = 0.18 + Engine.rng.float(rng) * 0.12;
+        const bondPull = 0.18 + Engine.rng.float(rng) * 0.12; // 標的への収束 (元強度)
         if (bond > target) {
           bond -= bondPull;
         } else if (bond < target) {
@@ -601,10 +598,8 @@ Engine.relationships = {
         }
       }
 
-      // 同団体ボーナス: affinity-spec v1.0 §13 優先度3 第2段階で撤廃。
-      // 標的シフト (target = 50 + 15·cos) と競合し、bond<60 のペアを 60 へ
-      // 引き上げて極端帯到達を阻害していたため取り除いた。
-      // 「同団体感」は性格摩擦・世代近接ボーナス・接触あり target=60 (距離0°) で代替表現。
+      // 同団体ボーナスは撤廃。target = 50 + 25·cos が個別の標的を提供するので
+      // 一律に bond を 60 へ持ち上げる作用は不要 (むしろ標的シフトを打ち消す)。
 
       // Phase 4 B: 性格不一致の週次摩擦
       // 条件: 同団体 かつ 性格+アーキタイプ相性 <= -3
@@ -1093,6 +1088,7 @@ Engine.relationships = {
    *   - summary: { bondDelta, rivalryDelta, morDelta, orgPopDelta, isAce, isRivalOrg, isChampion }
    */
   applyContractDepartureBetrayal(state, departingId, toOrgId, rng) {
+    Engine.relationships.flags._ensureInit(state);
     if (!state.relationships) return { state, beltCarried: false, summary: null };
     const roster = state.roster || [];
     const departing = roster.find(c => c.id === departingId);
@@ -1537,6 +1533,7 @@ Engine.relationships = {
   //  1試合ごとに複数イベントが重複適用される
   // ══════════════════════════════════════════════════════════
   applyMatchResult(state, charIdA, charIdB, context, rng) {
+    Engine.relationships.flags._ensureInit(state);
     // context: {
     //   mq, winner: 'win'|'lose'|'draw' (from A's perspective),
     //   hpA: {final,max}, hpB: {final,max}, turns,
@@ -2013,6 +2010,90 @@ Engine.relationships = {
 
     return { ...state, relationships: rels, relationshipCounters: counters };
   },
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  //  Flags サブシステム (relationship-flags-spec-v1.0)
+  //  数値層・称号層に続く第3層「事件ベースのフラグ」
+  //  実装は Phase 1〜7 で段階的に追加。Phase 1 = 基盤のみ
+  // ══════════════════════════════════════════════════════════════════════════════
+  flags: {
+
+    // ── 性格×アーキタイプ 許し度ベーススコア (spec §3.3 / §3.4) ──
+    // §3.3 だけでは shy が定義されていないため quiet 同等 -1 とする
+    PERSONALITY_FORGIVENESS_BASE: {
+      earnest: 1, easygoing: 3, emotional: -2, bold: 0,
+      quiet: -1, normal: 0, shy: -1,
+    },
+    // §3.4 archetype 'earnest' は実コードに存在せず 'composed' を +1 にマップ
+    // 'emotional'(archetype) も実コードに無く、personality 側 emotional で吸収
+    ARCHETYPE_FORGIVENESS_BASE: {
+      polite: 2, ojousama: 1, composed: 1, seductive: 0,
+      normal: 0, cool: -2, delinquent: -3,
+    },
+
+    // ── 共通ユーティリティ ──
+    _ensureInit(state) {
+      if (!state.relationships) state.relationships = {};
+      const r = state.relationships;
+      if (!r.flags) r.flags = {
+        betrayer: [], returner: [], master: [], cohort: [],
+        rivalCohort: [], admire: [], envy: [],
+      };
+      if (!r.flagLockouts) r.flagLockouts = {};
+      if (!r.flagCounters) r.flagCounters = {};
+      if (!r.history) r.history = { betrayalRecord: [] };
+      else if (!r.history.betrayalRecord) r.history.betrayalRecord = [];
+      if (!state._modalQueue) state._modalQueue = [];
+      return state;
+    },
+
+    _enqueueModal(state, type, payload) {
+      if (!state._modalQueue) state._modalQueue = [];
+      state._modalQueue.push({ type, payload, season: state.season, week: state.week });
+      return state;
+    },
+
+    // ペアキー: smaller-larger 順 (spec §5.2 default)
+    _pairKey(idA, idB) {
+      const a = Math.min(idA, idB);
+      const b = Math.max(idA, idB);
+      return `${a}>${b}`;
+    },
+
+    // ロックアウト確認
+    isLockedOut(state, kind, idA, idB) {
+      const r = state.relationships;
+      if (!r || !r.flagLockouts) return false;
+      // master は masterId>discipleId、admire/envy は fromId>toId 順
+      return r.flagLockouts[`${kind}:${idA}>${idB}`] === true;
+    },
+
+    // ── キャパシティクエリ ──
+    hasAdmire(state, fromId) {
+      const list = state.relationships?.flags?.admire || [];
+      return list.some(e => e.fromId === fromId);
+    },
+    hasEnvy(state, fromId) {
+      const list = state.relationships?.flags?.envy || [];
+      return list.some(e => e.fromId === fromId);
+    },
+    hasRivalCohort(state, charId) {
+      const list = state.relationships?.flags?.rivalCohort || [];
+      return list.some(e => e.idA === charId || e.idB === charId);
+    },
+
+    // ── 各フラグ判定/付与 (Phase 2-6 で実装) ──
+    applyBetrayer: null,
+    applyReturner: null,
+    applyMaster: null,
+    applyCohort: null,
+    applyRivalCohort: null,
+    applyAdmire: null,
+    applyEnvy: null,
+    checkAdmireDissolution: null,
+    checkEnvyDissolution: null,
+  },
+
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
