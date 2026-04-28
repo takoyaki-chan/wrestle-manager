@@ -1176,6 +1176,17 @@ Engine.relationships = {
       s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + popDelta, 0, 100) };
     }
 
+    // ── F-1 裏切り者フラグ付与 (relationship-flags-spec-v1.0 §2.1) ──
+    // 仕様書: 残留者 = 怪我/レンタル/休場ではないロスター全員
+    // 既存の remainingIds (line 1157) は !injury && !isRental のみ。forcedRest を追加して再フィルタ
+    const betrayerByIds = remainingIds.filter(id => {
+      const c = roster.find(rc => rc.id === id);
+      return c && !c.forcedRest;
+    });
+    if (betrayerByIds.length > 0) {
+      s = Engine.relationships.flags.applyBetrayer(s, departingId, betrayerByIds);
+    }
+
     return {
       state: s,
       beltCarried,
@@ -2164,9 +2175,153 @@ Engine.relationships = {
       return state;
     },
 
-    // ── 各フラグ判定/付与 (Phase 3-6 で実装) ──
-    applyBetrayer: null,
-    applyReturner: null,
+    // ══════════════════════════════════════════════════════════
+    //  F-1 裏切り者 (betrayer) — spec §2.1
+    //  applyContractDepartureBetrayal の最後で呼ぶ
+    //  残留者全員から離脱者へ向けてフラグを貼る (1対多)
+    // ══════════════════════════════════════════════════════════
+    applyBetrayer(state, departerId, byIds) {
+      Engine.relationships.flags._ensureInit(state);
+      const flags = state.relationshipFlags;
+      // 既存エントリがあれば byIds をマージ
+      const existing = flags.betrayer.find(e => e.targetId === departerId);
+      if (existing) {
+        const merged = new Set([...(existing.byIds || []), ...byIds]);
+        existing.byIds = [...merged];
+      } else {
+        flags.betrayer.push({
+          targetId: departerId,
+          byIds: [...byIds],
+          issuedSeason: state.season,
+          issuedWeek: state.week,
+        });
+      }
+      Engine.relationships.flags._enqueueModal(state, 'M-1', {
+        departerId, byIds: [...byIds],
+      });
+      return state;
+    },
+
+    // ══════════════════════════════════════════════════════════
+    //  F-2 出戻り判定ヘルパー — spec §7-2
+    // ══════════════════════════════════════════════════════════
+    _isReturning(fighter) {
+      const tl = fighter?.orgTimeline;
+      if (!Array.isArray(tl) || tl.length === 0) return false;
+      const playerEntries = tl.filter(e => e?.orgId === 'player');
+      if (playerEntries.length === 0) return false;
+      // 直近の player 離脱以降に他組織エントリがあるか
+      let lastPlayerExit = null;
+      for (let i = playerEntries.length - 1; i >= 0; i--) {
+        const e = playerEntries[i];
+        if (e.toSeason != null) {
+          lastPlayerExit = Engine.util.absWeek(e.toSeason, e.toWeek || 1);
+          break;
+        }
+      }
+      if (lastPlayerExit == null) return false; // まだ player 在籍中履歴のみ
+      const otherAfter = tl.some(e =>
+        e.orgId && e.orgId !== 'player' && e.orgId !== 'fa' &&
+        e.fromSeason != null &&
+        Engine.util.absWeek(e.fromSeason, e.fromWeek || 1) >= lastPlayerExit
+      );
+      return otherAfter;
+    },
+
+    // ══════════════════════════════════════════════════════════
+    //  F-2 出戻り (returner) — spec §2.2 + §3 個別反応
+    //  Engine.orgTimeline.transfer 内で targetOrgId === 'player' の時に呼ばれる
+    // ══════════════════════════════════════════════════════════
+    applyReturner(state, fighter) {
+      Engine.relationships.flags._ensureInit(state);
+      if (!Engine.relationships.flags._isReturning(fighter)) return state;
+
+      const flags = state.relationshipFlags;
+      const tl = fighter.orgTimeline || [];
+      const playerEntries = tl.filter(e => e.orgId === 'player' && e.toSeason != null);
+      const lastExit = playerEntries[playerEntries.length - 1];
+      if (!lastExit) return state;
+
+      flags.returner.push({
+        fighterId: fighter.id,
+        leftSeason: lastExit.toSeason,
+        leftWeek: lastExit.toWeek || 1,
+        returnedSeason: state.season,
+        returnedWeek: state.week,
+      });
+
+      // §3 出戻り個別反応フロー
+      state = Engine.relationships.flags._applyReturnerForgivenessFlow(state, fighter);
+      return state;
+    },
+
+    // ══════════════════════════════════════════════════════════
+    //  許し度スコア計算 — spec §3.2
+    // ══════════════════════════════════════════════════════════
+    _calcForgivenessScore(state, remaining, returner) {
+      const FF = Engine.relationships.flags;
+      const pBase = FF.PERSONALITY_FORGIVENESS_BASE[remaining.personality] ?? 0;
+      const aBase = FF.ARCHETYPE_FORGIVENESS_BASE[remaining.archetype] ?? 0;
+      const rels = state.relationships || {};
+      const bond = rels[`${remaining.id}>${returner.id}`]?.bond ?? 50;
+      const rivalry = rels[`${remaining.id}>${returner.id}`]?.rivalry ?? 0;
+      return pBase + aBase + (bond - 50) / 5 - rivalry / 10;
+    },
+
+    // ══════════════════════════════════════════════════════════
+    //  出戻り個別反応フロー — spec §3.1〜§3.8
+    // ══════════════════════════════════════════════════════════
+    _applyReturnerForgivenessFlow(state, returner) {
+      const flags = state.relationshipFlags;
+      const idx = flags.betrayer.findIndex(e => e.targetId === returner.id);
+      if (idx < 0) return state; // 裏切り者扱いされていなかった出戻り
+      const entry = flags.betrayer[idx];
+
+      const reactions = [];
+      const rels = { ...(state.relationships || {}) };
+      for (const byId of entry.byIds) {
+        const remaining = (state.roster || []).find(c => c.id === byId);
+        if (!remaining) continue; // 既に離脱・引退している
+        const score = Engine.relationships.flags._calcForgivenessScore(state, remaining, returner);
+        const forgiven = score >= 0;
+        reactions.push({ byId, forgiven, score: Math.round(score * 10) / 10 });
+        if (!forgiven) {
+          // §3.5 許さない: bond -10 / rivalry +10
+          const key = `${byId}>${returner.id}`;
+          const r = rels[key] || { bond: 50, rivalry: 0 };
+          rels[key] = {
+            ...r,
+            bond: Math.max(0, (r.bond ?? 50) - 10),
+            rivalry: Math.min(100, (r.rivalry ?? 0) + 10),
+          };
+        }
+      }
+
+      // §3.7 履歴転記
+      state.relationshipHistory.betrayalRecord.push({
+        departerId: returner.id,
+        leftSeason: entry.issuedSeason,
+        leftWeek: entry.issuedWeek,
+        returnedSeason: state.season,
+        returnedWeek: state.week,
+        betrayedBy: [...entry.byIds],
+        forgiven: reactions.filter(r => r.forgiven).map(r => r.byId),
+        notForgiven: reactions.filter(r => !r.forgiven).map(r => r.byId),
+      });
+
+      // §3.8 betrayer エントリ削除
+      flags.betrayer.splice(idx, 1);
+
+      // M-12 enqueue
+      Engine.relationships.flags._enqueueModal(state, 'M-12', {
+        returnerId: returner.id,
+        reactions,
+      });
+
+      return { ...state, relationships: rels };
+    },
+
+    // ── 各フラグ判定/付与 (Phase 4-6 で実装) ──
     applyMaster: null,
     applyAdmire: null,
     applyEnvy: null,

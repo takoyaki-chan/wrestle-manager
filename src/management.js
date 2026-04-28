@@ -8974,13 +8974,21 @@ const Engine = {
       s = weeklyRelResult.state;
       weeklyRelResult.events.forEach(e => events.push(e));
     }
-    // relationship-flags-spec-v1.0 §2.4: F-4 同期 — 同週入団者で cohort ペアを生成
+    // relationship-flags-spec-v1.0 §2.2 / §2.4: F-2 出戻り + F-4 同期
+    // 同週入団者を走査し、出戻り検出と cohort ペア生成を行う
     {
       const absWeek = Engine.util.absWeek(s.season, s.week);
       const newJoiners = (s.roster || []).filter(c => c.orgJoinWeek === absWeek);
-      if (newJoiners.length >= 2) {
+      if (newJoiners.length > 0) {
         Engine.relationships.flags._ensureInit(s);
-        s = Engine.relationships.flags.applyCohort(s, newJoiners);
+        // F-2 出戻り判定 (各人ごと)
+        for (const fighter of newJoiners) {
+          s = Engine.relationships.flags.applyReturner(s, fighter);
+        }
+        // F-4 同期 (2人以上)
+        if (newJoiners.length >= 2) {
+          s = Engine.relationships.flags.applyCohort(s, newJoiners);
+        }
       }
     }
     // 派閥システム週次処理（faction-system-spec-v0.1 Phase 3a: F01/F02/F03 イベント化）
