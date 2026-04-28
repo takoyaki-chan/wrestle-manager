@@ -1471,6 +1471,11 @@ const FLAG_MODAL_META = {
   'M-12': { title: '🚪 出戻りの日',     tone: '',         priority: 1 },
   'M-13': { title: '🥋 師弟',           tone: 'gold',     priority: 5 },
   'M-14': { title: '🔥 ライバル同期',   tone: 'gold',     priority: 5 },
+  // bond-rebalance v2.3: 低Bond決定的事件のポップアップ
+  'M-15': { title: '🔥 番狂わせ・逆恨み',     tone: 'negative', priority: 3 },
+  'M-16': { title: '💔 スランプの八つ当たり', tone: 'negative', priority: 4 },
+  'M-17': { title: '🪦 共闘ペアの裏切り',    tone: 'negative', priority: 4 },
+  'M-18': { title: '⛓️ 価値観の決裂',         tone: 'negative', priority: 5 },
 };
 
 function _findFighterById(id) {
@@ -1518,9 +1523,10 @@ function _flagBuildPopupOpts(modal) {
   const speaker = _findFighterById(speakerId);
   const target = _findFighterById(targetId);
   const personality = _flagPickPersonality(speaker);
+  const archetype = (speaker && speaker.archetype) || null;
   const lineSeed = (speakerId || 0) ^ (targetId || 0) ^ (modal.season || 0) * 31 + (modal.week || 0);
   const tmpl = (typeof FLAG_DIALOGUE !== 'undefined')
-    ? FLAG_DIALOGUE._pickLine(modal.type, personality, lineSeed)
+    ? FLAG_DIALOGUE._pickLine(modal.type, personality, lineSeed, archetype)
     : '';
   const message = _flagFormatLine(tmpl, speaker, target);
 

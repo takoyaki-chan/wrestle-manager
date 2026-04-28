@@ -131,7 +131,8 @@ Engine.relationships = {
       return Math.min(diff, 360 - diff);
     },
     target(distance) {
-      return 50 + 10 * Math.cos(distance * Math.PI / 180);
+      // bond-rebalance v2.3: レンジ拡張 (40〜60 → 30〜70)
+      return 50 + 20 * Math.cos(distance * Math.PI / 180);
     },
   },
 
@@ -159,11 +160,12 @@ Engine.relationships = {
 
   _getPositiveGainScale(axis, current) {
     if (axis === 'bond') {
-      if (current >= 90) return 0.08;
-      if (current >= 75) return 0.18;
-      if (current >= 60) return 0.35;
-      if (current >= 40) return 0.6;
-      if (current >= 20) return 0.8;
+      // bond-rebalance v2.3: 高bond帯の上昇逓減を緩和（80+到達を可能に）
+      if (current >= 90) return 0.20;
+      if (current >= 75) return 0.40;
+      if (current >= 60) return 0.60;
+      if (current >= 40) return 0.8;
+      if (current >= 20) return 0.9;
       return 1.0;
     }
     if (current >= 95) return 0.08;
@@ -570,7 +572,8 @@ Engine.relationships = {
         const axisB = (infoForB && typeof infoForB.affinityAxis === 'number') ? infoForB.affinityAxis : null;
         const dist = Engine.relationships._affinity.distance(axisA, axisB);
         const target = Engine.relationships._affinity.target(dist);
-        const bondPull = 0.08 + Engine.rng.float(rng) * 0.06; // affinity-spec v1.0 §5.1 半減
+        // bond-rebalance v2.3: target拡張(30〜70)に伴い引力をさらに弱める (0.08〜0.14 → 0.03〜0.06)
+        const bondPull = 0.03 + Engine.rng.float(rng) * 0.03;
         if (bond > target) {
           bond -= bondPull;
         } else if (bond < target) {
@@ -598,10 +601,10 @@ Engine.relationships = {
       }
 
       // 同団体所属ボーナス（spec §3.2 O-01）
-      // affinity-spec v1.0 §5.2: 増分を半減（+0.2〜+0.5 → +0.1〜+0.25）
-      if (sameOrg && bond < 60) {
-        const orgBondGain = 0.1 + Engine.rng.float(rng) * 0.15;
-        const ceiling = bond < 55 ? 1.0 : Math.max(0, (60 - bond) / 5);
+      // bond-rebalance v2.3: 天井を 60 → 70 に引き上げ（同団体長期で自然に bond70 へ）
+      if (sameOrg && bond < 70) {
+        const orgBondGain = 0.08 + Engine.rng.float(rng) * 0.12;
+        const ceiling = bond < 60 ? 1.0 : Math.max(0, (70 - bond) / 10);
         bond = this._applyAxisDelta(bond, orgBondGain * ceiling, 'bond');
       }
 
@@ -675,7 +678,8 @@ Engine.relationships = {
       };
     }
 
-    // N-03: Babyface×Heel 週次衝突（同団体内, 4%/ペア/週）
+    // N-03: Babyface×Heel 週次衝突（同団体内, 6%/ペア/週）
+    // bond-rebalance v2.3: 4% → 6% (役割対立を可視化)
     const n03Rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 42, absWeek, 0xBE6A));
     const processRoleClash = (orgRoster) => {
       if (!orgRoster || orgRoster.length === 0) return;
@@ -684,7 +688,7 @@ Engine.relationships = {
       if (bfIds.length === 0 || heelIds.length === 0) return;
       for (const bfId of bfIds) {
         for (const heelId of heelIds) {
-          if (Engine.rng.float(n03Rng) >= 0.04) continue;
+          if (Engine.rng.float(n03Rng) >= 0.06) continue;
           const bondDelta = -(3 + Engine.rng.float(n03Rng) * 3); // -3〜-6
           const rivalryDelta = 2 + Engine.rng.float(n03Rng) * 2; // +2〜+4
           const keyAB = this._key(bfId, heelId);
@@ -698,6 +702,53 @@ Engine.relationships = {
     };
     processRoleClash(state.roster || []);
     Object.values(state.aiOrgs || {}).forEach(org => processRoleClash(org.roster || []));
+
+    // ═══ N-07: 価値観の決裂（bond-rebalance v2.3） ═══
+    // 同団体 + 性格相性+アーキタイプ相性 ≤ -3 + bond < 35 のペアが
+    // 双方向 bond -8〜-12 / rivalry +3〜+6 で決定的に冷える。
+    // per-pair 1回限り (r.valueRift フラグ)、per-org シーズン1回限り
+    const n07Rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 42, absWeek, 0xF7A1));
+    const valueRiftByOrg = { ...(state.valueRiftSeasonByOrg || {}) };
+    const n07ModalEnqueues = []; // 後で outState に対して enqueue
+    const tryValueRift = (orgRoster, orgKey) => {
+      if (valueRiftByOrg[orgKey] === state.season) return;
+      if (!orgRoster || orgRoster.length < 2) return;
+      const candidates = [];
+      for (let i = 0; i < orgRoster.length; i++) {
+        for (let j = i + 1; j < orgRoster.length; j++) {
+          const a = orgRoster[i], b = orgRoster[j];
+          if (!a || !b || a.injury || b.injury) continue;
+          const keyAB = `${a.id}>${b.id}`;
+          const keyBA = `${b.id}>${a.id}`;
+          const rAB = newRels[keyAB];
+          const rBA = newRels[keyBA];
+          if (!rAB || !rBA) continue;
+          if (rAB.valueRift || rBA.valueRift) continue;
+          if (rAB.bond >= 35 || rBA.bond >= 35) continue;
+          const pAdj = Engine.relationships._getPersonalityBondAdj(a.personality, b.personality);
+          const aAdj = Engine.relationships._getArchetypeBondAdj(a.archetype, b.archetype);
+          if (pAdj + aAdj > -3) continue;
+          candidates.push({ a, b, keyAB, keyBA });
+        }
+      }
+      if (candidates.length === 0) return;
+      const pick = candidates[Math.floor(Engine.rng.float(n07Rng) * candidates.length)];
+      const bondDelta = -(8 + Engine.rng.float(n07Rng) * 4);
+      const rivalryDelta = 3 + Engine.rng.float(n07Rng) * 3;
+      for (const k of [pick.keyAB, pick.keyBA]) {
+        const r = newRels[k];
+        newRels[k] = {
+          ...r,
+          bond: this._clampAxisValue(r.bond + bondDelta, 'bond'),
+          rivalry: this._clampAxisValue(r.rivalry + rivalryDelta, 'rivalry'),
+          valueRift: true,
+        };
+      }
+      valueRiftByOrg[orgKey] = state.season;
+      n07ModalEnqueues.push({ fromId: pick.a.id, toId: pick.b.id });
+    };
+    tryValueRift(state.roster || [], 'player');
+    Object.entries(state.aiOrgs || {}).forEach(([oid, org]) => tryValueRift(org.roster || [], oid));
 
     // 逓減カウンター減衰
     const counters = { ...(state.relationshipCounters || {}) };
@@ -716,7 +767,14 @@ Engine.relationships = {
     }
     keysToDelete.forEach(k => delete counters[k]);
 
-    let outState = { ...state, relationships: newRels, relationshipCounters: counters };
+    let outState = { ...state, relationships: newRels, relationshipCounters: counters, valueRiftSeasonByOrg: valueRiftByOrg };
+
+    // N-07 のモーダル enqueue
+    for (const m of n07ModalEnqueues) {
+      if (Engine.relationships.flags && Engine.relationships.flags._enqueueModal) {
+        outState = Engine.relationships.flags._enqueueModal(outState, 'M-18', m);
+      }
+    }
 
     // relationship-flags-spec-v1.0 §2.3: F-3 師弟候補処理
     outState = Engine.relationships.flags.processMasterCandidates(outState);
@@ -1261,7 +1319,12 @@ Engine.relationships = {
       for (const jId of jealousIds) {
         s = Engine.relationships.applyToRoster(s, jId, titleIds, { min: -3, max: -1 }, { min: 2, max: 5 }, rng);
       }
-      // N-01: ポジション競合の嫉妬（OVR差5以内 + 同スタイル → 追加ペナルティ）
+      // N-01: ポジション競合の嫉妬（OVR差5以内 + 同スタイル + 16週クールダウン）
+      // bond-rebalance v2.3: タイトル戦不出場者は元々多いので発火を絞る。
+      //   - per-pair 16週クールダウン (state.n01CooldownWeeks に lastFireWeek を保存)
+      //   - 発火条件は据置（OVR差≤5 + 同スタイル）。値域も据置 (-5〜-3)
+      const absWeekN01 = Engine.util.absWeek(state.season, state.week);
+      const n01Cooldown = { ...(s.n01CooldownWeeks || {}) };
       for (const jId of jealousIds) {
         const nonTitleChar = roster.find(c => c.id === jId);
         if (!nonTitleChar) continue;
@@ -1269,10 +1332,19 @@ Engine.relationships = {
           const titleChar = roster.find(c => c.id === tId);
           if (!titleChar) continue;
           if (Math.abs(Engine.util.ov(nonTitleChar) - Engine.util.ov(titleChar)) <= 5 && nonTitleChar.style === titleChar.style) {
+            const ckey = `${jId}>${tId}`;
+            const lastFire = n01Cooldown[ckey];
+            if (typeof lastFire === 'number' && (absWeekN01 - lastFire) < 16) continue;
             s = Engine.relationships.applyToRoster(s, jId, [tId], { min: -5, max: -3 }, { min: 3, max: 5 }, rng);
+            n01Cooldown[ckey] = absWeekN01;
           }
         }
       }
+      // クールダウン記録を state にマージ（古いエントリは48週で破棄してメモリ節約）
+      for (const ck of Object.keys(n01Cooldown)) {
+        if (absWeekN01 - n01Cooldown[ck] > 48) delete n01Cooldown[ck];
+      }
+      s = { ...s, n01CooldownWeeks: n01Cooldown };
     }
 
     // C-05/C-06: 連敗中選手の起用/不起用
@@ -1308,6 +1380,47 @@ Engine.relationships = {
       for (const uId of undercardIds) {
         s = Engine.relationships.applyToRoster(s, uId, mainArr, { min: -2, max: -1 }, { min: 1, max: 3 }, rng);
       }
+    }
+
+    // ═══ N-06: 共闘ペアの裏切り選択（bond-rebalance v2.3） ═══
+    // bond≥60 の同団体ペアで、片方がタイトル戦・片方が前座という編成のとき、
+    // 前座側→タイトル側に bond -12〜-18 / rivalry +5〜+10、25%発火、per-pair 24週クールダウン
+    if (titleMatches.length > 0) {
+      const titleFighterIdsArr = [];
+      titleMatches.forEach(m => { if (m.left > 0) titleFighterIdsArr.push(m.left); if (m.right > 0) titleFighterIdsArr.push(m.right); });
+      const titleSet = new Set(titleFighterIdsArr);
+      // 前座 = 興行に出場 + タイトル戦に出ていない + ロスター内
+      const undercardIdsN06 = [];
+      for (const r of results) {
+        const ids = r.matchType === 'tag' ? Object.keys(r.perFighter).map(Number) : [r.left.id, r.right.id];
+        for (const id of ids) {
+          if (!titleSet.has(id) && rosterIds.includes(id)) undercardIdsN06.push(id);
+        }
+      }
+      const absWeekN06 = Engine.util.absWeek(state.season, state.week);
+      const n06Cooldown = { ...(s.n06CooldownWeeks || {}) };
+      for (const uId of undercardIdsN06) {
+        for (const tId of titleFighterIdsArr) {
+          if (uId === tId) continue;
+          const relKey = `${uId}>${tId}`;
+          const rel = (s.relationships || {})[relKey];
+          if (!rel || rel.bond < 60) continue;
+          const ckey = `${uId}>${tId}`;
+          const lastFire = n06Cooldown[ckey];
+          if (typeof lastFire === 'number' && (absWeekN06 - lastFire) < 24) continue;
+          if (Engine.rng.float(rng) >= 0.25) continue;
+          s = Engine.relationships.applyToRoster(s, uId, [tId], { min: -18, max: -12 }, { min: 5, max: 10 }, rng);
+          n06Cooldown[ckey] = absWeekN06;
+          if (Engine.relationships.flags && Engine.relationships.flags._enqueueModal) {
+            Engine.relationships.flags._enqueueModal(s, 'M-17', { fromId: uId, toId: tId });
+          }
+        }
+      }
+      // メモリ節約: 72週超のエントリは破棄
+      for (const ck of Object.keys(n06Cooldown)) {
+        if (absWeekN06 - n06Cooldown[ck] > 72) delete n06Cooldown[ck];
+      }
+      s = { ...s, n06CooldownWeeks: n06Cooldown };
     }
 
     return s;
@@ -1389,10 +1502,15 @@ Engine.relationships = {
       if (r && r.bond > maxBond) { maxBond = r.bond; targetId = c.id; }
     }
     if (!targetId) return state;
-    // スランプ者→相手: bond -4~-7, rivalry ±0
-    let s = this.applyToRoster(state, fighterId, [targetId], { min: -7, max: -4 }, { min: 0, max: 0 }, rng);
-    // 相手→スランプ者: bond -1~-3, rivalry ±0
+    // bond-rebalance v2.3: スランプ突入は稀なので発火時は鮮烈に (-4〜-7 → -7〜-12)
+    // スランプ者→相手: bond -7~-12, rivalry ±0
+    let s = this.applyToRoster(state, fighterId, [targetId], { min: -12, max: -7 }, { min: 0, max: 0 }, rng);
+    // 相手→スランプ者: bond -1~-3, rivalry ±0 (据置)
     s = this.applyFromRoster(s, [targetId], fighterId, { min: -3, max: -1 }, { min: 0, max: 0 }, rng);
+    // bond-rebalance v2.3: M-16 スランプ八つ当たりポップアップ enqueue
+    if (Engine.relationships.flags && Engine.relationships.flags._enqueueModal) {
+      s = Engine.relationships.flags._enqueueModal(s, 'M-16', { fromId: fighterId, toId: targetId });
+    }
     return s;
   },
 
@@ -1834,6 +1952,7 @@ Engine.relationships = {
     }
 
     // ═══ M-15: 番狂わせ（OVR差10+の格下勝利、M-03と排他） ═══
+    let m15UpsetEvent = null; // { winnerId, loserId } — 関数末尾で modal enqueue
     if (!isDraw && !isSquash) {
       const ovrA = context.ovrA || 0;
       const ovrB = context.ovrB || 0;
@@ -1842,10 +1961,15 @@ Engine.relationships = {
         const underdogIsA = ovrA < ovrB;
         const underdogWon = (underdogIsA && aWon) || (!underdogIsA && bWon);
         if (underdogWon) {
+          m15UpsetEvent = {
+            winnerId: aWon ? charIdA : charIdB,
+            loserId: aWon ? charIdB : charIdA,
+          };
           const winDir = aWon ? 'AB' : 'BA';
           const loseDir = aWon ? 'BA' : 'AB';
+          // bond-rebalance v2.3: 逆恨みのbondダメージ強化 (-4〜-2 → -7〜-4)
           apply(winDir, 'upset', context.stage, 0, 0, 3, 5, true);        // 格下→格上
-          apply(loseDir, 'upset', context.stage, -4, -2, 4, 7, true);     // 格上→格下（逆恨み）
+          apply(loseDir, 'upset', context.stage, -7, -4, 4, 7, true);     // 格上→格下（逆恨み）
         }
       }
     }
@@ -1875,6 +1999,7 @@ Engine.relationships = {
     }
 
     // ═══ M-17: 凡戦ペナルティ（MQ40未満） ═══
+    // bond-rebalance v2.3: 敗者側のbondダメージ微増 (-4〜-2 → -5〜-3)
     if (context.mq < 40) {
       if (isDraw) {
         apply('AB', 'boringMatch', context.stage, -2, -1, 0, 0, true);
@@ -1883,7 +2008,7 @@ Engine.relationships = {
         const winDir = aWon ? 'AB' : 'BA';
         const loseDir = aWon ? 'BA' : 'AB';
         apply(winDir, 'boringMatch', context.stage, -2, -1, 0, 0, true);
-        apply(loseDir, 'boringMatch', context.stage, -4, -2, 0, 0, true);
+        apply(loseDir, 'boringMatch', context.stage, -5, -3, 0, 0, true);
       }
     }
 
@@ -1948,6 +2073,14 @@ Engine.relationships = {
         const triggerKind = context.isTitleMatch ? 'title' : 'ppv';
         newState = Engine.relationships.flags.processEnvyCandidates(newState, triggerB, triggerKind);
       }
+    }
+
+    // ── bond-rebalance v2.3: M-15 番狂わせ逆恨みポップアップ enqueue ──
+    if (m15UpsetEvent && Engine.relationships.flags && Engine.relationships.flags._enqueueModal) {
+      newState = Engine.relationships.flags._enqueueModal(newState, 'M-15', {
+        fromId: m15UpsetEvent.loserId,
+        toId: m15UpsetEvent.winnerId,
+      });
     }
 
     return newState;
