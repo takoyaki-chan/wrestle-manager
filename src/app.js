@@ -3908,6 +3908,11 @@ const App = {
     const seen = new Set();
     const afterRoster = stateAfterNegotiation?.roster || [];
     const afterTitles = stateAfterNegotiation?.titles || {};
+    const resultByFighterId = new Map(
+      (results || [])
+        .filter(result => result && result.type === 'stay')
+        .map(result => [result.fighterId, result])
+    );
 
     for (const result of results || []) {
       if (!result || result.type !== 'stay' || seen.has(result.fighterId)) continue;
@@ -3918,21 +3923,20 @@ const App = {
       if (!before || !after) continue;
 
       const oldSalary = Engine.util.getSalary(before, preTitles);
-      const renewedSnapshot = {
-        ...after,
-        contractOVR: Engine.util.ov(after),
-        contractPop: after.popularity || 0,
-      };
-      const newSalary = Engine.util.getSalary(renewedSnapshot, afterTitles);
-      const salaryDelta = newSalary - oldSalary;
-      if (salaryDelta === 0) continue;
+      const newSalary = Engine.util.getSalary(after, afterTitles);
+      const actualDelta = newSalary - oldSalary;
+      const negotiatedDelta = resultByFighterId.get(result.fighterId)?.salaryDelta || 0;
+      const baselineDelta = actualDelta - negotiatedDelta;
+      if (actualDelta === 0 && negotiatedDelta === 0 && baselineDelta === 0) continue;
 
       changes.push({
         fighterId: result.fighterId,
         fighterName: result.fighterName,
         oldSalary,
         newSalary,
-        salaryDelta,
+        salaryDelta: actualDelta,
+        negotiatedDelta,
+        baselineDelta,
       });
     }
 

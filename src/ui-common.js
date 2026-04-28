@@ -10967,9 +10967,20 @@ function showContractResultModal(results, salaryChanges, onDone) {
     changed.forEach(r => {
       const deltaText = r.salaryDelta > 0 ? `+${r.salaryDelta}` : `${r.salaryDelta}`;
       const deltaColor = r.salaryDelta > 0 ? '#c07000' : '#2c5aa0';
+      const negotiatedText = r.negotiatedDelta > 0 ? `+${r.negotiatedDelta}` : `${r.negotiatedDelta}`;
+      const baselineText = r.baselineDelta > 0 ? `+${r.baselineDelta}` : `${r.baselineDelta}`;
+      const breakdown = [];
+      if (r.negotiatedDelta !== 0) breakdown.push(`交渉 ${negotiatedText}`);
+      if (r.baselineDelta !== 0) breakdown.push(`契約基準 ${baselineText}`);
       deskHtml += `<div class="neg-result-row">
         ${portraitImg(r.fighterId, 32)}
-        <span style="font-size:13px;color:#2a2318">${r.fighterName}</span>
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+          <span style="font-size:13px;color:#2a2318">${r.fighterName}</span>
+          ${breakdown.length > 0
+            ? `<span style="font-size:10px;color:rgba(42,35,24,0.6)">${breakdown.join(' ／ ')}</span>`
+            : ''
+          }
+        </div>
         <span style="font-size:11px;color:rgba(42,35,24,0.65);margin-left:auto;margin-right:8px">${r.oldSalary}→${r.newSalary}万/週</span>
         <span style="font-size:11px;color:${deltaColor}">${deltaText}万/週</span>
       </div>`;
