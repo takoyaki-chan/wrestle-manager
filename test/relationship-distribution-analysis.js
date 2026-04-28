@@ -61,15 +61,32 @@ const flags = args.filter(a => a.startsWith('--'));
 const targetSeasons = parseInt(positional[0], 10) || 100;
 const userSeed = positional[1] ? parseInt(positional[1], 10) : (Date.now() ^ 0xABCD1234);
 const writeJson = flags.includes('--json');
+const saveFlagIdx = args.findIndex(a => a === '--save');
+const savePath = saveFlagIdx >= 0 ? args[saveFlagIdx + 1] : null;
 
 console.log('=== Relationship Distribution Analysis ===');
 console.log(`Seed: ${userSeed}`);
 console.log(`Seasons: ${targetSeasons}`);
 console.log(`JSON output: ${writeJson ? 'yes' : 'no'}`);
+if (savePath) console.log(`Save: ${savePath} (継続シミュレーション)`);
 console.log('--------------------------------------');
 
 // ── 初期化 ──
 function initGame(seed) {
+  if (savePath) {
+    const raw = fs.readFileSync(savePath, 'utf-8');
+    let G = JSON.parse(raw);
+    // affinityAxis マイグレーション (ロード時相当)
+    if (typeof Engine.relationships.migrateAffinityAxisV1 === 'function') {
+      G = Engine.relationships.migrateAffinityAxisV1(G);
+    }
+    // 必須フィールド補完
+    G.debugLog = G.debugLog || [];
+    G.relationshipCounters = G.relationshipCounters || {};
+    G.matchupLog = G.matchupLog || [];
+    console.log(`[load] season=${G.season} week=${G.week} roster=${(G.roster||[]).length} relationships=${Object.keys(G.relationships||{}).length}`);
+    return G;
+  }
   let G = Engine.createInitialState(seed, true);
   G = { ...G, debugLog: G.debugLog || [] };
   return G;
