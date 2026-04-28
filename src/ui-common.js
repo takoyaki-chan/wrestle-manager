@@ -9281,6 +9281,145 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
   Audio.play('notify');
 }
 
+// Re-declare the B3 aftermath renderers with clean strings to override mojibake above.
+function _buildB3Step3b(event, state, roster) {
+  const result = event.matchResult || {};
+  const challenger = event.challenger || {};
+  const orgName = event.orgName || 'Opponent';
+  const won = result.winner === 'left';
+  const upperUrl = challenger.id ? getUpperUrl(challenger.id) : '';
+  const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a1a14';
+  const cOvr = challenger.pw
+    ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5)
+    : '?';
+
+  let challengerLine;
+  if (won) {
+    challengerLine = (typeof pickDialogueLine === 'function' && typeof BITTER_RESOLUTION_LINES !== 'undefined')
+      ? (pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
+      : '……この借り、必ず返してやる';
+  } else {
+    challengerLine = (typeof WAR_POST_DIALOGUE !== 'undefined' && typeof pickDialogueLine === 'function')
+      ? (pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
+      : '……どうだ、これが実力の差だ';
+  }
+
+  const speechVariant = won ? 'resentment' : 'danger';
+  const headerTitle = won ? '相手の反応' : '相手の勝利宣言';
+  const reporterLine = won
+    ? `${orgName}勢は苛立ちを隠せない表情です`
+    : `${orgName}勢は勝利を確信しています`;
+  const observationText = won
+    ? `${orgName}との<span class="marker danger">遺恨</span>は、まだ終わっていない`
+    : `${orgName}の<span class="marker danger">挑発</span>に、どう応えるか——`;
+
+  return `
+    <div class="mdl-a-header danger">
+      <div class="mdl-a-header-title">${headerTitle}</div>
+      <div class="mdl-a-header-meta">OPPONENT AFTERMATH ・ 2 / 2</div>
+    </div>
+    ${_mdlAReporterStrip(state, reporterLine)}
+    <div class="mdl-a-subject-stage defeat" style="padding-top:96px">
+      <div class="mdl-a-portrait-wrap">
+        <div class="mdl-a-speech-pending">…</div>
+        <div class="mdl-a-speech ${speechVariant} delayed">
+          <div class="mdl-a-speech-speaker">${(challenger.name || '???').toUpperCase()}</div>
+          <div class="mdl-a-speech-text">${challengerLine}</div>
+        </div>
+        <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
+      </div>
+      <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED ・ 敗北者' : 'VICTOR ・ 勝者'}</div></div>
+      <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
+      <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${orgName} ・ OVR ${cOvr}</div>
+      <div class="mdl-a-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
+        ${observationText}
+      </div>
+    </div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" data-choice="0">続きを見る</button>
+    </div>`;
+}
+
+function showB3OpponentAftermath(event, matchResult, onDone) {
+  if (!event || !matchResult || matchResult.winner === 'draw') {
+    if (onDone) onDone();
+    return;
+  }
+
+  const challenger = event.challenger || {};
+  if (!challenger.id) {
+    if (onDone) onDone();
+    return;
+  }
+
+  const orgName = event.orgName || 'Opponent';
+  const won = matchResult.winner === 'left';
+  const upperUrl = getUpperUrl(challenger.id);
+  const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a1a14';
+  const cOvr = challenger.pw
+    ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5)
+    : '?';
+
+  let challengerLine;
+  if (won) {
+    challengerLine = (typeof pickDialogueLine === 'function' && typeof BITTER_RESOLUTION_LINES !== 'undefined')
+      ? (pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
+      : '……この借り、必ず返してやる';
+  } else {
+    challengerLine = (typeof WAR_POST_DIALOGUE !== 'undefined' && typeof pickDialogueLine === 'function')
+      ? (pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
+      : '……どうだ、これが実力の差だ';
+  }
+
+  const speechVariant = won ? 'resentment' : 'danger';
+  const headerTitle = won ? '相手の反応' : '相手の勝利宣言';
+  const reporterLine = won
+    ? `${orgName}勢は苛立ちを隠せない表情です`
+    : `${orgName}勢は勝利を確信しています`;
+  const observationText = won
+    ? `${orgName}との<span class="marker danger">遺恨</span>は、まだ終わっていない`
+    : `${orgName}の<span class="marker danger">挑発</span>に、どう応えるか——`;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'war-victory-overlay war-ace-overlay';
+  overlay.innerHTML = `
+    <div class="war-ace-modal pb-container">
+      <div class="mdl-a-header danger">
+        <div class="mdl-a-header-title">${headerTitle}</div>
+        <div class="mdl-a-header-meta">OPPONENT AFTERMATH</div>
+      </div>
+      ${_mdlAReporterStrip(G, reporterLine)}
+      <div class="mdl-a-subject-stage defeat" style="padding-top:96px">
+        <div class="mdl-a-portrait-wrap">
+          <div class="mdl-a-speech-pending">…</div>
+          <div class="mdl-a-speech ${speechVariant} delayed">
+            <div class="mdl-a-speech-speaker">${(challenger.name || '???').toUpperCase()}</div>
+            <div class="mdl-a-speech-text">${challengerLine}</div>
+          </div>
+          <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
+        </div>
+        <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED' : 'VICTOR'}</div></div>
+        <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
+        <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${orgName} ・ OVR ${cOvr}</div>
+        <div class="mdl-a-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
+          ${observationText}
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:16px">
+        <button class="war-victory-close war-ace-close" type="button">閉じる</button>
+      </div>
+    </div>
+  `;
+
+  overlay.querySelector('.war-ace-close').addEventListener('click', () => {
+    overlay.remove();
+    if (onDone) onDone();
+  });
+  document.body.appendChild(overlay);
+  Audio.play('notify');
+}
+
 function _renderB3MatchPreview(event, playerFighter, challenger) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
