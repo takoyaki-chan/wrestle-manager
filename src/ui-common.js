@@ -1858,7 +1858,10 @@ function _renderRetirementPopup() {
     return;
   }
   const r = _retirementPopupQueue[0];
-  const f = r.fighter;
+  const f = {
+    ...(r.fighter || {}),
+    peakOVR: r.fighter?.careerRecord?.peakOVR || r.fighter?.peakOVR,
+  };
   const isInjury = r.route === 'injury_wear' || r.route === 'injury_career_ending';
 
   const careerYears = f.careerSeasons || Math.max(1, (f.age || 17) - (f.debutAge || 17));
@@ -1866,7 +1869,7 @@ function _renderRetirementPopup() {
   const summary = r.summary || [];
   const title = isInjury ? '無 念 の 引 退' : '旅 　 立 ち';
   const sub = isInjury ? `FAREWELL ・ INJURY` : `FAREWELL ・ ${careerYears} YEARS`;
-  const meta = `AGE ${f.age || '—'} ・ CAREER ${careerYears} YEARS`;
+  const meta = `年齢 ${f.age || '—'} ・ 現役期間 ${careerYears}年間`;
 
   // 引退選手のキャリアハイライトをB型ステージ下に挟む
   const careerHtml = summary.length > 0
@@ -1880,12 +1883,12 @@ function _renderRetirementPopup() {
 
   const statsRow = `
     <div class="mdl-b-stats-row">
-      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">TOTAL RECORD</div>
-        <div class="mdl-b-stat-value small" style="font-size:16px">${wins}W ${losses}L${draws > 0 ? ` ${draws}D` : ''}</div></div>
-      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">CAREER</div>
-        <div class="mdl-b-stat-value">${careerYears}<span style="font-size:14px">Y</span></div></div>
-      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">CAREER HIGH</div>
-        <div class="mdl-b-stat-value">OVR ${f.peakOVR || (typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : '—')}</div></div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">戦績</div>
+        <div class="mdl-b-stat-value small" style="font-size:16px">${wins}勝 ${losses}敗${draws > 0 ? ` ${draws}引き分け` : ''}</div></div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">現役期間</div>
+        <div class="mdl-b-stat-value">${careerYears}<span style="font-size:14px">年間</span></div></div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">自己最高OVR</div>
+        <div class="mdl-b-stat-value">${f.peakOVR || (typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : '—')}</div></div>
     </div>`;
 
   const notes = [
