@@ -86,17 +86,25 @@ Engine.factions = {
   },
 
   // ── §2.1 忠誠型発生条件 ─────────────────────────────────────
-  checkLoyalFormationConditions(state) {
+  checkLoyalFormationConditions(state, options = {}) {
     const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
     const roster = (state.roster || []).filter(c => !c.isRental);
     if (roster.length <= cfg.minRosterSize) return { eligible: false };
-    if (state.factions && state.factions.length > 0) return { eligible: false };
+    const maxExistingFactions = options.maxExistingFactions != null ? options.maxExistingFactions : 0;
+    if (factions.length > maxExistingFactions) return { eligible: false };
 
-    const sorted = [...roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    const requireUnassigned = !!options.requireUnassigned;
+    const assigned = new Set();
+    if (requireUnassigned) factions.forEach(f => f.memberIds.forEach(id => assigned.add(id)));
+    const candidatePool = requireUnassigned ? roster.filter(c => !assigned.has(c.id)) : roster;
+    if (candidatePool.length < cfg.loyalMinFollowers + 1) return { eligible: false };
+
+    const sorted = [...candidatePool].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
     const top3 = sorted.slice(0, 3);
 
     for (const cand of top3) {
-      const followers = roster
+      const followers = candidatePool
         .filter(c => c.id !== cand.id)
         .filter(c => this._getBond(state, c.id, cand.id) >= cfg.loyalBondThreshold);
       if (followers.length >= cfg.loyalMinFollowers) {
@@ -112,6 +120,7 @@ Engine.factions = {
           leaderId: cand.id,
           leaderName: cand.name,
           followerIds: pickedFollowers.map(c => c.id),
+          existingFactionCount: factions.length,
         };
       }
     }
@@ -173,6 +182,7 @@ Engine.factions = {
   },
   _scoreFactionFlavor(state, leader, members, rng) {
     const sample = members.length > 0 ? members : [leader];
+    const cfg = FACTION_CONFIG;
     const leaderWeight = 0.65;
     const memberWeight = 0.25;
     const noiseWeight = 0.10;
@@ -198,17 +208,20 @@ Engine.factions = {
     const noise = () => Engine.rng.float(rng) * noiseWeight;
     return {
       bond_first: leaderBondScore * leaderWeight + groupBondScore * memberWeight + noise(),
-      meritocratic: leaderOvrScore * leaderWeight + groupOvrScore * memberWeight + noise(),
+      meritocratic: (leaderOvrScore * leaderWeight + groupOvrScore * memberWeight + noise()) * (cfg.meritocraticFlavorScoreMult || 1),
       neutral: noise() + 0.02,
     };
   },
-  _decideFactionFlavor(state, leaderId, memberIds, rng) {
+  _decideFactionFlavor(state, leaderId, memberIds, rng, options = {}) {
     const roster = state.roster || [];
     const leader = roster.find(c => c.id === leaderId);
     if (!leader) return 'neutral';
     const members = [...new Set(memberIds)].map(id => roster.find(c => c.id === id)).filter(Boolean);
     const scores = this._scoreFactionFlavor(state, leader, members, rng);
-    return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+    const excluded = new Set(options.excludeFlavors || []);
+    const candidates = Object.entries(scores).filter(([flavor]) => !excluded.has(flavor));
+    if (!candidates.length) return 'neutral';
+    return candidates.sort((a, b) => b[1] - a[1])[0][0];
   },
 
 
@@ -229,7 +242,9 @@ Engine.factions = {
       nextId,
       0xFA7E
     ));
-    const flavor = options.flavor || this._decideFactionFlavor(state, leaderId, memberIds, flavorRng);
+    const excludeFlavors = [...(options.excludeFlavors || [])];
+    if ((state.factions || []).length === 0 && !options.allowInitialMeritocratic) excludeFlavors.push('meritocratic');
+    const flavor = options.flavor || this._decideFactionFlavor(state, leaderId, memberIds, flavorRng, { excludeFlavors });
 
     const faction = {
       id: nextId,
@@ -353,21 +368,47 @@ Engine.factions = {
     let s = state;
     if (!s.factions || s.factions.length === 0) return s;
     if (!s.relationships) return s;
-    for (const f of s.factions) {
+    const cfg = FACTION_CONFIG;
+    const activeFactions = (s.factions || []).filter(f => f.status !== 'hiatus');
+    const assigned = new Set();
+    activeFactions.forEach(f => f.memberIds.forEach(id => assigned.add(id)));
+    const neutralIds = (s.roster || [])
+      .filter(c => !c.isRental && !assigned.has(c.id))
+      .map(c => c.id);
+    for (const f of activeFactions) {
       // 効果1: 同派閥メンバー全ペアに bond +0.15
       if (f.memberIds.length >= 2) {
-        s = this._applyBondBetweenMembers(s, f.memberIds, 0.15);
+        s = this._applyBondBetweenMembers(s, f.memberIds, cfg.sameFactionBondGain);
       }
       // 効果4: authoritativeTag ならリーダー → メンバー一方向 bond +0.1
       if (f.authoritativeTag && f.leaderId != null) {
         for (const mid of f.memberIds) {
           if (mid === f.leaderId) continue;
-          s = this._applyBondDirected(s, f.leaderId, mid, 0.1);
+          s = this._applyBondDirected(s, f.leaderId, mid, cfg.factionLeaderBondGainAuthoritative);
         }
       }
       // 効果5: dictatorTag なら同派閥メンバー全ペアに rivalry +0.2
       if (f.dictatorTag && f.memberIds.length >= 2) {
-        s = this._applyRivalryBetweenMembers(s, f.memberIds, 0.2);
+        s = this._applyRivalryBetweenMembers(s, f.memberIds, cfg.dictatorInFactionRivalryGain);
+      }
+      if (neutralIds.length > 0) {
+        s = this._applyBondBetweenGroups(s, f.memberIds, neutralIds, cfg.factionNeutralBondDecay);
+      }
+    }
+    for (let i = 0; i < activeFactions.length; i++) {
+      for (let j = i + 1; j < activeFactions.length; j++) {
+        const fA = activeFactions[i];
+        const fB = activeFactions[j];
+        const hAB = (s.factionHostility || {})[this._hostKey(fA.id, fB.id)] || 0;
+        const hBA = (s.factionHostility || {})[this._hostKey(fB.id, fA.id)] || 0;
+        const avgHostility = (hAB + hBA) / 2;
+        let bondDelta = cfg.factionCrossBondDecay;
+        if (avgHostility >= cfg.factionCrossBondHostilityHighThreshold) {
+          bondDelta += cfg.factionCrossBondHostilityHighExtra;
+        } else if (avgHostility >= cfg.factionCrossBondHostilityMidThreshold) {
+          bondDelta += cfg.factionCrossBondHostilityMidExtra;
+        }
+        s = this._applyBondBetweenGroups(s, fA.memberIds, fB.memberIds, bondDelta);
       }
     }
     // 効果2/3: 抗争中派閥ペア処理
@@ -383,6 +424,20 @@ Engine.factions = {
       // 効果3: 敵対派閥メンバーとの bond 平均 60+ な選手は敵リーダー方向 rivalry +0.5
       s = this._applyTurncoatMagnetism(s, fA, fB);
       s = this._applyTurncoatMagnetism(s, fB, fA);
+    }
+    return s;
+  },
+
+  _applyBondBetweenGroups(state, groupAIds, groupBIds, delta) {
+    if (!Array.isArray(groupAIds) || !Array.isArray(groupBIds)) return state;
+    if (groupAIds.length === 0 || groupBIds.length === 0 || delta === 0) return state;
+    let s = state;
+    for (const a of groupAIds) {
+      for (const b of groupBIds) {
+        if (a === b) continue;
+        s = this._applyBondDirected(s, a, b, delta);
+        s = this._applyBondDirected(s, b, a, delta);
+      }
     }
     return s;
   },
@@ -459,7 +514,8 @@ Engine.factions = {
       const overDecay = Math.max(0, f.memberIds.length - cfg.joinSizeDecayStart);
       const sizeMult = Math.max(0, 1 - overDecay * cfg.joinSizeDecayRate);
       const flavorJoinMult = this._getFlavorJoinMult(f);
-      const rate = Math.min(baseRate * momentumMult * sizeMult * flavorJoinMult, 0.95);
+      const soloFactionMult = newFactions.length === 1 ? (cfg.soloFactionJoinRateMult || 1) : 1;
+      const rate = Math.min(baseRate * momentumMult * sizeMult * flavorJoinMult * soloFactionMult, 0.95);
 
       if (Engine.rng.float(rng) < rate) {
         f.memberIds.push(bestCandId);
@@ -1108,7 +1164,7 @@ Engine.factions = {
     }
 
     // 8) F01（忠誠型結成、確率 60%、拒否クールダウン対応）
-    const loyalCheck = this.checkLoyalFormationConditions(state);
+    const loyalCheck = this.checkLoyalFormationConditions(state, { maxExistingFactions: 0 });
     if (loyalCheck.eligible) {
       const cdUntil = (state.factionEventCooldowns || {}).F01_rejected_until || 0;
       const now = this._absWeek(state);
@@ -1119,6 +1175,25 @@ Engine.factions = {
             leaderId: loyalCheck.leaderId,
             leaderName: loyalCheck.leaderName,
             followerIds: loyalCheck.followerIds,
+          },
+        };
+      }
+    }
+
+    const secondLoyalCheck = this.checkLoyalFormationConditions(state, {
+      maxExistingFactions: cfg.secondFactionMaxExistingFactions || 1,
+      requireUnassigned: true,
+    });
+    if (secondLoyalCheck.eligible && secondLoyalCheck.existingFactionCount === 1) {
+      const cdUntil = (state.factionEventCooldowns || {}).F01_rejected_until || 0;
+      const now = this._absWeek(state);
+      if (now >= cdUntil && Engine.rng.float(rng) < (cfg.secondFactionProbability || cfg.eventProbability.F01)) {
+        return {
+          eventId: 'F01',
+          payload: {
+            leaderId: secondLoyalCheck.leaderId,
+            leaderName: secondLoyalCheck.leaderName,
+            followerIds: secondLoyalCheck.followerIds,
           },
         };
       }

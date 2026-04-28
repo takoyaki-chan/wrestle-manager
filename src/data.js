@@ -1363,15 +1363,19 @@ const FACTION_CONFIG = {
   loyalBondThreshold: 60,      // v0.2: 65→60 実測bond分布(50後半〜60台)に合わせ引き下げ
   loyalMinFollowers: 2,
   loyalMaxFollowers: 3,
+  secondFactionMaxExistingFactions: 1,
+  secondFactionProbability: 0.45,
   rivalrousBondThreshold: 55,  // v0.4 deprecated: F02 は既存2派閥間判定に変更（旧「無派閥からの2クラスタ同時発生」用）
   rivalrousRivalryThreshold: 40,  // v0.4: 既存2派閥間の平均 rivalry 閾値として継続使用
   // §2.2 加入判定（v0.3: 1週1人・連続式確率）
   joinBondThreshold: 60,
-  joinMaxRate: 0.50,         // bond100のとき最大50%/週
+  joinMaxRate: 0.40,         // bond100のとき最大40%/週
   joinMomentumScale: 0.006,  // momentum×0.006が確率への乗数（+100→×1.6、-50→×0.7）
-  soloFactionFreezeSize: 8,  // 単独派閥がこのサイズ以上なら加入凍結
+  soloFactionFreezeSize: 6,  // 単独派閥がこのサイズ以上なら加入凍結
+  soloFactionJoinRateMult: 0.75, // 単独派閥時は加入速度を少し抑える
   joinSizeDecayStart: 5,     // このサイズを超えると加入率が逓減し始める
   joinSizeDecayRate: 0.4,    // サイズが1増えるごとに ×(1 - decayRate) ずつ低下
+  meritocraticFlavorScoreMult: 0.72,
   // §2.3 離脱判定
   leaveBondThreshold: 40,
   leaveRate: 0.10,
@@ -1390,6 +1394,16 @@ const FACTION_CONFIG = {
   hostilityHighBondExtraDecay: -0.3,
   hostilityHighBondThreshold: 50,
   hostilityLeaderChangeMultiplier: 0.7,
+  // §4.3 派閥が関係性に与える週次ドリフト
+  sameFactionBondGain: 0.15,
+  factionLeaderBondGainAuthoritative: 0.1,
+  dictatorInFactionRivalryGain: 0.2,
+  factionNeutralBondDecay: -0.03,
+  factionCrossBondDecay: -0.10,
+  factionCrossBondHostilityMidThreshold: 40,
+  factionCrossBondHostilityHighThreshold: 70,
+  factionCrossBondHostilityMidExtra: -0.05,
+  factionCrossBondHostilityHighExtra: -0.10,
   // §5 勢い
   momentumDecayPerWeek: -1.0,
   momentumSeniorBonus: [8, 12],

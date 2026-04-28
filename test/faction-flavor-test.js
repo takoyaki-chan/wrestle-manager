@@ -127,19 +127,19 @@ function buildJoinState(flavor) {
 {
   const rng = {};
   const bondState = buildJoinState('bond_first');
-  withFloatSequence([0.11], () => {
+  withFloatSequence([0.07], () => {
     const s2 = Engine.factions.processWeeklyMemberChanges(bondState, rng);
     assert.strictEqual(s2.factions[0].memberIds.length, 4);
   });
 
   const neutralState = buildJoinState('neutral');
-  withFloatSequence([0.11], () => {
+  withFloatSequence([0.07], () => {
     const s2 = Engine.factions.processWeeklyMemberChanges(neutralState, rng);
     assert.strictEqual(s2.factions[0].memberIds.length, 4);
   });
 
   const meritState = buildJoinState('meritocratic');
-  withFloatSequence([0.11], () => {
+  withFloatSequence([0.07], () => {
     const s2 = Engine.factions.processWeeklyMemberChanges(meritState, rng);
     assert.strictEqual(s2.factions[0].memberIds.length, 3);
   });
@@ -147,7 +147,7 @@ function buildJoinState(flavor) {
 
 {
   const state = buildJoinState(undefined);
-  withFloatSequence([0.1], () => {
+  withFloatSequence([0.07], () => {
     const s2 = Engine.factions.processWeeklyMemberChanges(state, {});
     assert.strictEqual(s2.factions[0].flavor, 'neutral');
     assert.strictEqual(s2.factions[0].memberIds.length, 4);
@@ -173,6 +173,61 @@ function buildJoinState(flavor) {
   }, 'C', Engine.rng.create(1));
   assert.strictEqual(applied.state.factions.length, 1);
   assert.deepStrictEqual(applied.state.factions[0].memberIds, [1, 12, 11, 10]);
+}
+
+{
+  const roster = [makeFighter(1, 95), makeFighter(2, 92), makeFighter(3, 90), makeFighter(4, 50)];
+  const state = makeState(roster, 555);
+  for (const a of roster) {
+    for (const b of roster) {
+      if (a.id === b.id) continue;
+      setBond(state, a.id, b.id, 60);
+    }
+  }
+  const next = Engine.factions.createFaction(state, 1, [1, 2, 3], { type: 'loyal' });
+  assert.notStrictEqual(next.factions[0].flavor, 'meritocratic');
+}
+
+{
+  const roster = [];
+  for (let i = 1; i <= 11; i++) roster.push(makeFighter(i, i <= 6 ? 70 - i : 55 - i));
+  const state = makeState(roster, 321);
+  state.factions = [{
+    id: 1,
+    name: 'F1組',
+    leaderId: 1,
+    memberIds: [1, 2, 3, 4],
+    flavor: 'bond_first',
+    type: 'loyal',
+    status: 'active',
+    momentum: 0,
+  }];
+  for (const memberId of [2, 3, 4]) {
+    setBond(state, memberId, 1, 75);
+    setBond(state, 1, memberId, 75);
+  }
+  for (const id of [5, 6, 7]) {
+    setBond(state, id, 5, 85);
+    setBond(state, 5, id, 85);
+    setBond(state, id, 6, 80);
+    setBond(state, 6, id, 80);
+    setBond(state, id, 7, 78);
+    setBond(state, 7, id, 78);
+  }
+  const loyal = Engine.factions.checkLoyalFormationConditions(state, {
+    maxExistingFactions: 1,
+    requireUnassigned: true,
+  });
+  assert.strictEqual(loyal.eligible, true);
+  assert.strictEqual(loyal.leaderId, 5);
+  assert.deepStrictEqual(loyal.followerIds, [6, 7]);
+
+  withFloatSequence([0], () => {
+    const ev = Engine.factions.pickWeeklyEvent(state, {});
+    assert.strictEqual(ev.eventId, 'F01');
+    assert.strictEqual(ev.payload.leaderId, 5);
+    assert.deepStrictEqual(ev.payload.followerIds, [6, 7]);
+  });
 }
 
 console.log('faction-flavor-test: ok');
