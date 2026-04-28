@@ -1451,6 +1451,162 @@ function closeCoachTooltip() {
 let _eventPopupQueue = [];
 let _autoCloseTimer = null;
 
+// ══════════════════════════════════════════════════════════
+//  関係性フラグモーダル ドレイン (relationship-flags-spec-v1.0 §4)
+// ══════════════════════════════════════════════════════════
+
+// モーダル種別 → 表示メタ
+const FLAG_MODAL_META = {
+  'M-1':  { title: '🗯️ 裏切り',         tone: 'negative', priority: 2 },
+  'M-2':  { title: '✨ 憧れ',           tone: 'positive', priority: 4 },
+  'M-3':  { title: '🌟 憧れ・達成',     tone: 'gold',     priority: 3 },
+  'M-4':  { title: '🕯️ 憧れ・喪失',    tone: 'negative', priority: 3 },
+  'M-5':  { title: '💧 憧れ・幻滅',     tone: 'negative', priority: 3 },
+  'M-6':  { title: '⚔️ 嫉妬・撃破',    tone: 'positive', priority: 3 },
+  'M-7':  { title: '🌫️ 嫉妬・宙吊り', tone: 'negative', priority: 3 },
+  'M-8':  { title: '🌬️ 嫉妬・風化',   tone: '',         priority: 3 },
+  'M-9':  { title: '🌬️ 嫉妬・風化',   tone: '',         priority: 3 },
+  'M-10': { title: '🌬️ 嫉妬・風化',   tone: '',         priority: 3 },
+  'M-11': { title: '🩸 嫉妬',           tone: 'negative', priority: 4 },
+  'M-12': { title: '🚪 出戻りの日',     tone: '',         priority: 1 },
+  'M-13': { title: '🥋 師弟',           tone: 'gold',     priority: 5 },
+  'M-14': { title: '🔥 ライバル同期',   tone: 'gold',     priority: 5 },
+};
+
+function _findFighterById(id) {
+  if (!id || !window.G) return null;
+  const lists = [G.roster || [], G.freeAgents || [], G.retiredFighters || []];
+  for (const list of lists) {
+    const f = list.find(c => c && c.id === id);
+    if (f) return f;
+  }
+  if (G.aiOrgs) {
+    for (const org of Object.values(G.aiOrgs)) {
+      const f = (org.roster || []).find(c => c && c.id === id);
+      if (f) return f;
+    }
+  }
+  if (typeof ALL_CHARS !== 'undefined') {
+    return ALL_CHARS.find(c => c.id === id) || null;
+  }
+  return null;
+}
+
+function _flagPickPersonality(fighter) {
+  return (fighter && fighter.personality) || 'normal';
+}
+
+function _flagFormatLine(template, fighter, fighter2) {
+  let s = String(template || '');
+  if (fighter) s = s.replace(/\{name\}/g, fighter.name || '');
+  if (fighter2) s = s.replace(/\{name2\}/g, fighter2.name || '');
+  return s;
+}
+
+function _flagBuildPopupOpts(modal) {
+  const meta = FLAG_MODAL_META[modal.type] || { title: 'フラグ', tone: '' };
+  const p = modal.payload || {};
+  // Speaker priority: fromId > byIds[0] > departerId > masterId > idA > returnerId
+  let speakerId = p.fromId ?? p.byIds?.[0] ?? p.departerId ?? p.masterId ?? p.idA ?? p.returnerId;
+  let targetId = p.toId ?? p.targetId ?? p.discipleId ?? p.idB ?? null;
+
+  // M-13: 師→弟子 と 弟子→師 を別々に出す（連続2モーダル）
+  // M-12: 出戻り反応は専用フォーマット
+  if (modal.type === 'M-12') return _flagBuildM12(modal, meta);
+  if (modal.type === 'M-13') return _flagBuildM13(modal, meta);
+
+  const speaker = _findFighterById(speakerId);
+  const target = _findFighterById(targetId);
+  const personality = _flagPickPersonality(speaker);
+  const lineSeed = (speakerId || 0) ^ (targetId || 0) ^ (modal.season || 0) * 31 + (modal.week || 0);
+  const tmpl = (typeof FLAG_DIALOGUE !== 'undefined')
+    ? FLAG_DIALOGUE._pickLine(modal.type, personality, lineSeed)
+    : '';
+  const message = _flagFormatLine(tmpl, speaker, target);
+
+  return {
+    type: 'fighter',
+    id: speakerId || (target?.id),
+    name: (speaker && speaker.name) || (target && target.name) || '',
+    tone: meta.tone || '',
+    message: message || '…',
+    detail: meta.title,
+  };
+}
+
+function _flagBuildM12(modal, meta) {
+  // 出戻り本人 + 反応リスト。1画面で出戻り者+各反応をまとめる簡易版
+  const p = modal.payload || {};
+  const returner = _findFighterById(p.returnerId);
+  const reactions = p.reactions || [];
+  const rPersonality = _flagPickPersonality(returner);
+  const rSeed = (p.returnerId || 0) * 13 + (modal.week || 0);
+  const rLine = (typeof FLAG_DIALOGUE !== 'undefined')
+    ? FLAG_DIALOGUE._pickSubLine('M-12', 'returner', rPersonality, rSeed)
+    : '';
+  const reactionLines = reactions.map(r => {
+    const rem = _findFighterById(r.byId);
+    if (!rem) return null;
+    const sub = r.forgiven ? 'forgiven' : 'notForgiven';
+    const tmpl = (typeof FLAG_DIALOGUE !== 'undefined')
+      ? FLAG_DIALOGUE._pickSubLine('M-12', sub, _flagPickPersonality(rem), rem.id)
+      : '';
+    return `<b style="color:${r.forgiven ? 'var(--cream-gold)' : 'var(--cream-text-muted)'}">${rem.name}</b>: ${_flagFormatLine(tmpl, rem, returner)}`;
+  }).filter(Boolean);
+
+  return {
+    type: 'fighter',
+    id: p.returnerId,
+    name: (returner && returner.name) || '',
+    tone: '',
+    message: _flagFormatLine(rLine, returner) || '…',
+    detail: `${meta.title}<br><div style="margin-top:8px;font-size:12px;text-align:left;line-height:1.6">${reactionLines.join('<br>')}</div>`,
+  };
+}
+
+function _flagBuildM13(modal, meta) {
+  // 師匠目線のみ表示（弟子目線は連続表示すると重いので detail で併記）
+  const p = modal.payload || {};
+  const master = _findFighterById(p.masterId);
+  const disciple = _findFighterById(p.discipleId);
+  const mPersonality = _flagPickPersonality(master);
+  const dPersonality = _flagPickPersonality(disciple);
+  const seed = (p.masterId || 0) * 7 + (p.discipleId || 0);
+  const mLine = (typeof FLAG_DIALOGUE !== 'undefined')
+    ? FLAG_DIALOGUE._pickSubLine('M-13', 'master', mPersonality, seed)
+    : '';
+  const dLine = (typeof FLAG_DIALOGUE !== 'undefined')
+    ? FLAG_DIALOGUE._pickSubLine('M-13', 'disciple', dPersonality, seed + 1)
+    : '';
+  return {
+    type: 'fighter',
+    id: p.masterId,
+    name: (master && master.name) || '',
+    tone: meta.tone,
+    message: _flagFormatLine(mLine, master, disciple) || '…',
+    detail: `${meta.title}<br><div style="margin-top:6px;font-size:12px;font-style:italic">${(disciple && disciple.name) || '弟子'}: ${_flagFormatLine(dLine, disciple, master)}</div>`,
+  };
+}
+
+function _drainFlagModalQueue() {
+  if (!window.G || !Array.isArray(G._modalQueue) || G._modalQueue.length === 0) return;
+  // 仕様書 §4.1 優先順位（数字小さいほど先）
+  const queue = [...G._modalQueue].sort((a, b) => {
+    const pa = (FLAG_MODAL_META[a.type]?.priority) ?? 9;
+    const pb = (FLAG_MODAL_META[b.type]?.priority) ?? 9;
+    return pa - pb;
+  });
+  G._modalQueue = []; // 全て消費
+  for (const modal of queue) {
+    try {
+      const opts = _flagBuildPopupOpts(modal);
+      if (opts) showEventPopup(opts);
+    } catch (e) {
+      console.warn('[flag-modal] render error', modal.type, e);
+    }
+  }
+}
+
 function showEventPopup(opts) {
   // opts: { type: 'fighter'|'coach', id, name, emoji?, message, detail?, tone: 'positive'|'negative'|'gold',
   //         choices?: [{ label, hint?, tone?, onSelect }] — あれば A-5(mdl-a)で描画 }

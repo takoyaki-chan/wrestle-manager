@@ -6880,6 +6880,9 @@ const App = {
       }
     }
 
+    // relationship-flags-spec-v1.0 §4: 試合発火系の関係性フラグモーダル
+    if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
+
     // スナップショット R3モーダル表示（興行後）
     if (G._pendingR3Modal) {
       const r3ModalShow = G._pendingR3Modal;
@@ -7093,6 +7096,8 @@ const App = {
     App._tickMilestoneBuffsWeekly();
     // v1.4w: ティッカー更新
     App._refreshTicker();
+    // relationship-flags-spec-v1.0 §4: 関係性フラグモーダルを順次 popup に流す
+    if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
