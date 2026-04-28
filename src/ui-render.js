@@ -9969,15 +9969,21 @@ function _relmapRelationshipStrokeWidth(link, emphasized) {
 function _relmapRelationshipColor(link) {
   const bAB = link?.bondAB ?? 50;
   const bBA = link?.bondBA ?? 50;
-  const avg = (bAB + bBA) / 2;
-  // Base link hue should express bond tilt only.
-  // Rivalry already affects visibility, stroke width, badges, and pulse effects;
-  // letting rivalry overwrite the hue makes neutral 50-50 bonds look orange.
-  const twist = (bAB - 50) * (bBA - 50) < 0;
-  if (twist) return '#d7b45a';
-  if (avg >= 60) return _relmapMixHex('#d9dde2', '#4aa3ff', (avg - 60) / 40);
-  if (avg <= 40) return _relmapMixHex('#d9dde2', '#a98cff', (40 - avg) / 40);
-  return 'rgba(220,224,230,0.55)';
+  const total = Math.max(0, Math.min(200, bAB + bBA));
+  // Pair link hue is derived from the combined bond total:
+  // <=40 = strong red, 90-110 = white, >=160 = strong blue.
+  // Between those zones, leave white quickly so the direction reads at a glance.
+  if (total <= 40) return '#ff3b30';
+  if (total >= 160) return '#2f8cff';
+  if (total >= 90 && total <= 110) return '#f7fbff';
+  if (total < 90) {
+    if (total >= 75) return _relmapMixHex('#ffe066', '#f7fbff', (total - 75) / 15);
+    if (total >= 60) return _relmapMixHex('#ff9f1c', '#ffe066', (total - 60) / 15);
+    return _relmapMixHex('#ff3b30', '#ff9f1c', (total - 40) / 20);
+  }
+  if (total <= 125) return _relmapMixHex('#f7fbff', '#9be564', (total - 110) / 15);
+  if (total <= 145) return _relmapMixHex('#9be564', '#2ec4b6', (total - 125) / 20);
+  return _relmapMixHex('#2ec4b6', '#2f8cff', (total - 145) / 15);
 }
 
 function _relmapOffsetLineEndpoints(s, t, offset, pad) {
@@ -10635,8 +10641,9 @@ function _renderDbRelmap() {
   // Legend
   html += `<div class="relmap-legend">`;
   html += `<div class="rm-legend-title">LEGEND</div>`;
-  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#74b9ff"></div> 親密（高）</div>`;
-  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#a98cff"></div> 不信（低）</div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#4aa3ff"></div> ボンド合計 高（青）</div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#ecf0f4"></div> ボンド合計 中立（白）</div>`;
+  html += `<div class="rm-legend-line"><div class="rm-legend-swatch" style="background:#e74c3c"></div> ボンド合計 低（赤）</div>`;
   html += `<div class="rm-legend-line"><div class="rm-legend-swatch thick" style="background:#d7b45a"></div> ライバル心</div>`;
   html += `<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px;font-size:9px;color:var(--text-dim)">一本線=関係の濃さ<br>敵対ライバル=橙→赤<br>友好ライバル=黄緑→青</div>`;
   html += `</div>`;
@@ -10973,11 +10980,15 @@ function _relmapRender(orgCenters) {
     const dx = t.x - s.x, dy = t.y - s.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
     const ux = dx / dist, uy = dy / dist, px = -uy * 7, py = ux * 7;
     const sp = s.r + 4, ep = t.r + 4;
-    const baseOp = dimmed ? 0.04 : (highlighted || vm === 'focus' ? 1 : 0.6);
+    const normalBaseOp = filter === 'bond' ? 0.72 : filter === 'rivalry' ? 0.88 : 0.82;
+    const minRelOp = filter === 'bond' ? 0.58 : filter === 'rivalry' ? 0.8 : 0.72;
+    const baseOp = dimmed ? 0.04 : (highlighted || vm === 'focus' ? 1 : normalBaseOp);
     const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2;
     const relColor = _relmapRelationshipColor(l);
     const relStroke = _relmapRelationshipStrokeWidth(l, highlighted || vm === 'focus');
-    const relOp = dimmed ? 0.04 : Math.min(0.95, baseOp * (0.42 + _relmapRelationshipIntensity(l) / 140));
+    const relOp = dimmed
+      ? 0.04
+      : Math.max(minRelOp, Math.min(0.98, baseOp * (0.55 + _relmapRelationshipIntensity(l) / 140)));
     if ((filter === 'bond' && _relmapHasVisibleTrust(l)) || (filter === 'rivalry' && _relmapHasVisibleRivalry(l)) || (filter === 'all' && _relmapHasVisibleRelation(l))) {
       lh += `<line class="relationship-line" x1="${(s.x+ux*sp).toFixed(1)}" y1="${(s.y+uy*sp).toFixed(1)}" x2="${(t.x-ux*ep).toFixed(1)}" y2="${(t.y-uy*ep).toFixed(1)}" stroke="${relColor}" stroke-width="${relStroke.toFixed(2)}" opacity="${relOp.toFixed(2)}" stroke-linecap="round"/>`;
     }
