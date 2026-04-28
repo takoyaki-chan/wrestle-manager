@@ -426,6 +426,7 @@ function getWarChallengeDialogue(fighter, orgName) {
 
 // ── War Challenge Popup (F3: president delivers the challenge) ──
 function showWarChallenge() {
+  const run = () => {
   const ev = G.pendingEvent;
   if (!ev || ev.type !== 'war') return;
   Audio.play('war');
@@ -496,6 +497,8 @@ function showWarChallenge() {
     if (btn.dataset.warChoice === 'accept') acceptWarChallenge();
     else skipEvent();
   });
+  };
+  _enqueuePopup(run);
 }
 
 // ── Accept War: open match preview (like show) ──
@@ -8630,7 +8633,7 @@ if (typeof window !== 'undefined') {
 // careOverlay/careBox を再利用。多段階対応（step パラメータ）
 // ─────────────────────────────────────────────────────────────────────────────
 function showLargeEventModal(event, state, step, onChoice) {
-  if (step === 0 && _isPopupActive()) { _popupQueue.push(() => showLargeEventModal(event, state, step, onChoice)); return; }
+  if (_isPopupActive()) { _popupQueue.push(() => showLargeEventModal(event, state, step, onChoice)); return; }
 
   const roster = state ? (state.roster || []) : [];
 

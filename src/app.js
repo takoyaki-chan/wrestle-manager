@@ -6027,13 +6027,22 @@ const App = {
     }
 
     // ラストラン試合を行った選手を即座に引退処理（4週待ちバグ修正）
-    const lastRunRetirees = [];
-    results.forEach(r => {
-      if (r.isLastRunMatch && r.lastRunFighterId) {
-        const fighter = G.roster.find(c => c.id === r.lastRunFighterId);
-        if (fighter) lastRunRetirees.push(fighter);
-      }
+    const lastRunRetireesById = new Map();
+    results.forEach((r, idx) => {
+      const match = validMatches[idx];
+      if (!match) return;
+      const participantIds = match.matchType === 'tag'
+        ? [match.teamA?.fighter1, match.teamA?.fighter2, match.teamB?.fighter1, match.teamB?.fighter2].filter(id => id > 0)
+        : [match.left, match.right].filter(id => id > 0);
+      const lastRunFighter = participantIds
+        .map(id => G.roster.find(c => c.id === id))
+        .find(f => f?.lastRun) || null;
+      if (!lastRunFighter) return;
+      r.isLastRunMatch = true;
+      r.lastRunFighterId = lastRunFighter.id;
+      lastRunRetireesById.set(lastRunFighter.id, lastRunFighter);
     });
+    const lastRunRetirees = [...lastRunRetireesById.values()];
     if (lastRunRetirees.length > 0) {
       const lrLineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAD3));
       const retiredWithRecords = lastRunRetirees.map(c => {
@@ -6682,10 +6691,40 @@ const App = {
     });
 
     // ラストラン引退（引退試合完了後の即引退）
-    const pendingLastRunRetirements = G._pendingLastRunRetirements || [];
+    let pendingLastRunRetirements = G._pendingLastRunRetirements || [];
     if (G._pendingLastRunRetirements) {
       const { _pendingLastRunRetirements: _, ...cleanG } = G;
       G = cleanG;
+    }
+    const existingLastRunRetiredIds = new Set(
+      pendingLastRunRetirements
+        .map(r => r?.fighter?.id)
+        .filter(id => id != null)
+    );
+    const fallbackLastRunFighters = new Map();
+    (G.lastShowResults || []).forEach(r => {
+      const participantIds = r?.matchType === 'tag'
+        ? Object.keys(r?.perFighter || {}).map(Number)
+        : [r?.left?.id, r?.right?.id].filter(id => id != null);
+      participantIds.forEach(id => {
+        if (existingLastRunRetiredIds.has(id) || fallbackLastRunFighters.has(id)) return;
+        const fighter = (G.roster || []).find(c => c.id === id && c.lastRun);
+        if (fighter) fallbackLastRunFighters.set(id, fighter);
+      });
+    });
+    if (fallbackLastRunFighters.size > 0) {
+      const lrLineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAD3, 0x2));
+      const synthesizedRetirements = [...fallbackLastRunFighters.values()].map(fighter => {
+        let retiredFighter = Engine.career.ensure({ ...fighter, lastRun: false, lastRunWeek: null });
+        retiredFighter = Engine.career.addEvent(retiredFighter, {
+          type: 'retire', reason: 'lastrun', season: G.season, week: G.week, age: retiredFighter.age
+        });
+        delete retiredFighter.growthLog;
+        const { line, category } = Engine.retirement.selectLine(retiredFighter, 'lastrun', G, lrLineRng);
+        const summary = Engine.retirement.buildCareerSummary(retiredFighter);
+        return { fighter: retiredFighter, route: 'lastrun', line, category, summary, canRetain: false };
+      });
+      pendingLastRunRetirements = [...pendingLastRunRetirements, ...synthesizedRetirements];
     }
     if (pendingLastRunRetirements.length > 0) {
       const lastRunRetiredIds = new Set(
