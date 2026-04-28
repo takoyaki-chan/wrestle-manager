@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今週画面ロスター リデザイン Mock A</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ── index.html から継承したデザイントークン ── */
+  --bg-dark: #24221e;
+  --card-bg: #12110e;
+  --panel-bg: #181614;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --gold-deep: #b8912e;
+  --blue: #4a8fd4;
+  --red: #c41e3a;
+  --green: #2ecc71;
+  --orange: #f39c12;
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
+  --bg-card: #12110e;
+  --bg-main: #181614;
+  --border: rgba(200,190,170,0.08);
+  /* OVR階調 */
+  --v-mythic:    #ffd700;
+  --v-elite-mid: #ffc640;
+  --v-elite:     #ffd870;
+  --v-elite-low: #ffe898;
+  --v-high:      #fff0c0;
+  --v-mid:       #f0eee8;
+  --v-low:       #b8b5a8;
+  --v-poor:      #7a766b;
+  /* 人気色階調(_popColor の6段階を再現) */
+  --pop-1: #ff6b6b;
+  --pop-2: #ffa94d;
+  --pop-3: #ffd43b;
+  --pop-4: #a9e34b;
+  --pop-5: #51cf66;
+  --pop-6: #4a9eff;
+  --space-xs:4px; --space-sm:8px; --space-md:12px; --space-lg:16px;
+  --radius-sm:4px; --radius-md:6px; --radius-lg:10px;
+  --font-display:'Bebas Neue',sans-serif;
+  --font-label:'Oswald',sans-serif;
+  --font-body:'Noto Sans JP',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-body);background:var(--bg-dark);color:var(--text-main);min-height:100vh;padding:24px 16px;line-height:1.5}
+.app{max-width:1200px;margin:0 auto}
+
+/* ── ページ見出し ── */
+.page-h{padding:16px 0 12px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.page-h h1{font-size:20px;color:var(--gold);font-weight:700;margin-bottom:4px}
+.page-h .sub{font-size:12px;color:var(--text-sub)}
+.mock-section{margin-bottom:48px}
+.mock-section-h{display:flex;align-items:baseline;gap:12px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed rgba(212,168,67,0.3)}
+.mock-section-h .label{font-family:var(--font-label);font-size:11px;color:var(--gold);letter-spacing:1px;font-weight:600;background:rgba(212,168,67,0.12);padding:3px 10px;border-radius:3px;border:1px solid rgba(212,168,67,0.3)}
+.mock-section-h h2{font-size:16px;color:var(--text-main);font-weight:700}
+.mock-section-h .desc{font-size:11px;color:var(--text-sub);margin-left:auto}
+.mock-meta{font-size:11px;color:var(--text-dim);margin-bottom:12px;padding:6px 10px;background:rgba(255,255,255,0.02);border-radius:3px}
+
+/* ── 共通ヘッダー(Heat、アクション) ── */
+.common-header{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;margin-bottom:12px}
+.heat-row{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--text-sub);margin-bottom:8px}
+.heat-row .heat{color:var(--text-main)}
+.heat-row .heat-pill{background:linear-gradient(135deg,#ff6b35,#f39c12);color:#fff;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700;font-family:var(--font-label);letter-spacing:.5px}
+.instr{font-size:13px;color:var(--text-main);margin-bottom:10px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--font-body);font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--border);background:var(--panel-bg);color:var(--text-main);border-radius:var(--radius-sm);cursor:pointer;transition:all .15s}
+.btn:hover{background:rgba(212,168,67,0.08);border-color:rgba(212,168,67,0.3)}
+.btn-gold{background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:#1a1612;font-weight:700;border-color:var(--gold-deep);font-size:14px;padding:10px 18px}
+.btn-gold:hover{background:linear-gradient(180deg,var(--gold-light),var(--gold))}
+.btn-blue{background:linear-gradient(180deg,#3d6ea0,#2c5378);color:#fff;font-weight:700;border-color:#2c5378;padding:10px 16px}
+
+.bulk-row{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap;font-size:12px;color:var(--text-dim)}
+.bulk-row .divider{border-left:1px solid var(--text-dim);height:14px;margin:0 4px}
+
+/* ═══════════════════════════════════════════ */
+/* ── Mock A: 改良テーブル型 ── */
+/* ═══════════════════════════════════════════ */
+.mock-a-table{width:100%;border-collapse:collapse;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;table-layout:fixed}
+.mock-a-table th{background:var(--bg-main);font-size:11px;font-weight:600;color:var(--text-sub);padding:10px 8px;text-align:left;border-bottom:1px solid var(--border);letter-spacing:.5px}
+.mock-a-table th.num,.mock-a-table th.center{text-align:center}
+.mock-a-table td{padding:10px 8px;border-bottom:1px solid rgba(200,190,170,0.04);vertical-align:middle}
+.mock-a-table tr:last-child td{border-bottom:none}
+.mock-a-table tr:hover td{background:rgba(255,255,255,0.015)}
+
+.face-a{width:40px;height:40px;border-radius:8px;border:1.5px solid rgba(212,168,67,0.25);object-fit:cover;background:#1a1814;flex-shrink:0;cursor:pointer;transition:border-color .15s}
+.face-a:hover{border-color:var(--gold)}
+.face-init{display:flex;align-items:center;justify-content:center;font-weight:900;border-radius:8px;border:1.5px solid rgba(212,168,67,0.25);flex-shrink:0;cursor:pointer}
+
+.name-cell{display:flex;align-items:center;gap:10px;min-width:0}
+.name-link{font-weight:600;color:var(--text-main);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:rgba(232,230,224,0.3);text-underline-offset:2px;font-size:14px}
+.name-link:hover{color:var(--gold);text-decoration-color:var(--gold)}
+.crown{color:var(--gold);font-size:12px;margin-left:4px;text-shadow:0 0 4px rgba(212,168,67,0.5)}
+
+/* OVR表現A: 大型数字+色階調(光彩なし)+ティアバー */
+.ovr-a{font-family:var(--font-display);font-size:26px;line-height:1;letter-spacing:.5px;text-align:center}
+.ovr-a-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
+.ovr-a-tier{font-family:var(--font-label);font-size:9px;letter-spacing:1.5px;color:var(--text-dim)}
+
+/* 人気: 数値のみ(色階調) */
+.pop-a-num{font-family:var(--font-display);font-size:18px;line-height:1}
+
+/* 体調バー(共通) */
+.cond-wrap{display:flex;align-items:center;gap:8px;min-width:90px}
+.cond-bar{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;max-width:60px}
+.cond-fill{height:100%;border-radius:3px}
+.cond-fill.high{background:linear-gradient(90deg,#27ae60,#2ecc71)}
+.cond-fill.mid{background:linear-gradient(90deg,var(--orange),#f5b041)}
+.cond-fill.low{background:linear-gradient(90deg,#c0392b,#e74c3c)}
+.cond-num{font-family:var(--font-display);font-size:14px;line-height:1;color:var(--text-main);min-width:22px;text-align:right}
+
+.status-h{color:var(--green);font-size:12px;font-weight:600}
+.sched-sel{font-size:12px;padding:5px 8px;border-radius:var(--radius-sm);background:var(--panel-bg);color:var(--text-main);border:1px solid var(--border);min-width:106px;font-family:var(--font-body);cursor:pointer}
+.btn-int{padding:3px 8px;font-size:14px;background:rgba(243,156,18,0.12);color:var(--orange);border:1px solid rgba(243,156,18,0.4);border-radius:3px;cursor:pointer;line-height:1}
+.btn-int.active{background:var(--orange);color:#fff}
+.sched-tag{display:inline-block;padding:3px 9px;font-size:11px;font-weight:600;border-radius:3px;font-family:var(--font-label);letter-spacing:.5px}
+.sched-tag.practice{background:rgba(46,204,113,0.15);color:#7dd99e;border:1px solid rgba(46,204,113,0.3)}
+.sched-tag.promo{background:rgba(243,156,18,0.15);color:#f5b041;border:1px solid rgba(243,156,18,0.3)}
+.sched-tag.rest{background:rgba(74,143,212,0.15);color:#7ab3e0;border:1px solid rgba(74,143,212,0.3)}
+.rental-icon{font-size:11px;color:#a06000;background:rgba(160,96,0,0.15);padding:1px 5px;border-radius:3px;margin-left:4px;border:1px solid rgba(160,96,0,0.3)}
+
+
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="page-h">
+  <h1>📋 今週画面 ロスター部分 リデザイン (Mock A 採用版)</h1>
+  <div class="sub">Wrestle Manager / 4年目 5月 第4週 — 興行週 / カラム順を【操作 → 情報】に再構成</div>
+</div>
+
+<!-- ── 共通ヘッダー(Heat、アクション、説明) ── -->
+<div class="common-header">
+  <div class="heat-row">
+    Heat: <span class="heat">🔥</span> <span class="heat-pill">HOT (×1.2)</span>
+    <span style="color:var(--text-dim)">|</span>
+    <span>🏋️ コーチ: <span style="color:var(--text-main)">3名</span></span>
+  </div>
+  <div class="instr">選手の週間スケジュールを確認し、興行準備に進んでください。</div>
+  <div class="btn-row">
+    <button class="btn-gold">🎤 興行準備へ →</button>
+    <button class="btn-blue">🤖 おまかせ</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- Mock A: 改良テーブル型(採用版・カラム順変更) -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="mock-section">
+  <div class="mock-section-h">
+    <span class="label">MOCK A</span>
+    <h2>改良テーブル型</h2>
+    <span class="desc">名前→情報系(総合/人気/状態/体調)→操作系(スケジュール/⚡/今週の行動)</span>
+  </div>
+  <div class="mock-meta">情報密度: 高 / 9名一画面 / 顔40px四角 / OVR色階調(--v-*) / 人気=数値のみ(色階調)</div>
+
+  <div class="bulk-row">
+    <span>選択中の選手に一括適用:</span>
+    <button class="btn">練習優先</button>
+    <button class="btn">プロモ優先</button>
+    <button class="btn">バランス</button>
+    <button class="btn">休養重視</button>
+    <span class="divider"></span>
+    <button class="btn">⚡ 全ON</button>
+    <button class="btn">⚡ 全OFF</button>
+  </div>
+
+  <table class="mock-a-table">
+    <thead>
+      <tr>
+        <th style="width:30px"><input type="checkbox"></th>
+        <th style="width:210px">名前</th>
+        <th class="num" style="width:80px">総合</th>
+        <th class="num" style="width:60px">人気</th>
+        <th style="width:60px">状態</th>
+        <th style="width:120px">体調</th>
+        <th style="width:130px">スケジュール</th>
+        <th class="center" style="width:46px">⚡</th>
+        <th style="width:92px">今週の行動</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="mock-a-rows"></tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 注意事項 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div style="margin-top:32px;padding:14px;background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.2);border-radius:6px;font-size:12px;color:var(--text-sub);line-height:1.7">
+  <div style="color:var(--gold);font-weight:700;margin-bottom:6px">🎯 このモックの仕様</div>
+  <div>・ <strong style="color:var(--text-main)">顔アイコン</strong>: 40px 角丸正方形(border-radius:8px)。クリックで詳細ポップアップ起動</div>
+  <div>・ <strong style="color:var(--text-main)">名前クリック</strong>: 既存の <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px">showFighterPopup(id, 'roster')</code> を呼び出す想定(モックではアラート)</div>
+  <div>・ <strong style="color:var(--text-main)">カラム順</strong>: 名前 → 総合 → 人気 → 状態 → 体調 → スケジュール → ⚡ → 今週の行動</div>
+  <div>・ <strong style="color:var(--text-main)">OVR</strong>: 大型数字+色階調(--v-*)+ティアラベル(A/B/C/D)。80以上が金色寄り、70以下がグレー寄り</div>
+  <div>・ <strong style="color:var(--text-main)">人気</strong>: 数値のみ(バーなし)、6段階の色階調で視認性確保</div>
+  <div>・ <strong style="color:var(--text-main)">体調</strong>: バー+数値、60未満はオレンジ・40未満は赤</div>
+</div>
+
+</div>
+
+<script>
+// ── ロスターデータ(スクショから再現) ──
+const ROSTER = [
+  {id:46,name:'井沢遥',         file:'izawa_h',        ovr:86,cond:87,pop:78,sched:'rest',     action:'rest',     style:'Submission',role:'Babyface',champion:true,trend:'up'},
+  {id:3, name:'澤出みずき',     file:'sawade_m',       ovr:80,cond:72,pop:65,sched:'balance',  action:'promo',    style:'Striker',   role:'Babyface',trend:'up'},
+  {id:78,name:'椿山みさき',     file:'tsubakiyama_m',  ovr:76,cond:96,pop:52,sched:'practice', action:'practice', style:'Aerial',    role:'Babyface',trend:'flat'},
+  {id:41,name:'根岸亞里亞',     file:'negishi_a',      ovr:76,cond:82,pop:48,sched:'rest',     action:'rest',     style:'Grappler',  role:'Heel',    trend:'up'},
+  {id:5, name:'深町真琴',       file:'fukamachi_m',    ovr:74,cond:86,pop:55,sched:'practice', action:'practice', style:'Aerial',    role:'Babyface',trend:'up'},
+  {id:44,name:'福浦理乃',       file:'fukuura_r',      ovr:72,cond:80,pop:42,sched:'balance',  action:'promo',    style:'Allround',  role:'Babyface',trend:'flat'},
+  {id:128,name:'巳沼紗霧',      file:'minuma_s',       ovr:70,cond:74,pop:38,sched:'rest',     action:'rest',     style:'Submission',role:'Heel',    trend:'down'},
+  {id:42,name:'本郷真理子',     file:'hongo_m',        ovr:68,cond:93,pop:35,sched:'practice', action:'practice', style:'Brawler',   role:'Babyface',trend:'flat'},
+  {id:50,name:'相田萌',         file:'aida_m',         ovr:66,cond:58,pop:28,sched:'rest',     action:'rest',     style:'Allround',  role:'Babyface',trend:'down',rental:true},
+];
+
+const STYLE_COLORS = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Aerial:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
+const SCHED_LABELS = {balance:'バランス',practice:'練習優先',promo:'プロモ優先',rest:'休養重視'};
+const ACTION_LABELS = {practice:'練習',promo:'プロモ',rest:'休養',balance:'バランス'};
+
+// OVR階調クラス決定
+function ovrTier(v){
+  if(v>=100)return{cls:'mythic',label:'SS'};
+  if(v>=95) return{cls:'elite-mid',label:'S+'};
+  if(v>=90) return{cls:'elite',label:'S'};
+  if(v>=85) return{cls:'elite-low',label:'A'};
+  if(v>=80) return{cls:'high',label:'B'};
+  if(v>=70) return{cls:'mid',label:'C'};
+  if(v>=60) return{cls:'low',label:'D'};
+  return{cls:'poor',label:'E'};
+}
+function ovrColor(v){return `var(--v-${ovrTier(v).cls})`}
+
+// 人気色階調(_popColorの再現: 70+=赤=ホット、それ以下グラデ)
+function popColor(v){
+  if(v>=70)return'var(--pop-1)';
+  if(v>=55)return'var(--pop-2)';
+  if(v>=40)return'var(--pop-3)';
+  if(v>=28)return'var(--pop-4)';
+  if(v>=15)return'var(--pop-5)';
+  return'var(--pop-6)';
+}
+function condClass(v){if(v>=70)return'high';if(v>=40)return'mid';return'low'}
+
+// 顔アイコン: 画像+onerrorフォールバック(全て四角)
+function faceImg(c, size, cls){
+  const url = `../image/face_${c.file}.png`;
+  const initial = c.name.charAt(0);
+  const col = STYLE_COLORS[c.style] || '#888';
+  const radius = '8px';
+  const fontSize = Math.round(size*0.35);
+  const fb = `<div class="face-init ${cls}" style="width:${size}px;height:${size}px;background:linear-gradient(135deg,${col}33,${col}11);font-size:${fontSize}px;color:${col};border-radius:${radius}" onclick="openFighter(${c.id})">${initial}</div>`;
+  return `<img src="${url}" class="${cls}" style="width:${size}px;height:${size}px" onclick="openFighter(${c.id})" onerror="this.outerHTML=this.dataset.fb" data-fb='${fb.replace(/'/g, "&#39;")}'>`;
+}
+
+function openFighter(id){
+  const c = ROSTER.find(r=>r.id===id);
+  alert(`[showFighterPopup(${id}, 'roster')]\n\n${c.name} の詳細情報を表示\n(実装ではゲーム内のキャラ詳細ポップアップが開きます)`);
+}
+
+function trendIcon(t){
+  if(t==='up')return'<span class="trend-up">▲</span>';
+  if(t==='down')return'<span class="trend-down">▼</span>';
+  return'<span class="trend-flat">■</span>';
+}
+
+function schedSelect(sched, small){
+  const cls = small ? 'sched-sel' : 'sched-sel';
+  return `<select class="${cls}">
+    <option value="balance" ${sched==='balance'?'selected':''}>バランス</option>
+    <option value="practice" ${sched==='practice'?'selected':''}>練習優先</option>
+    <option value="promo" ${sched==='promo'?'selected':''}>プロモ優先</option>
+    <option value="rest" ${sched==='rest'?'selected':''}>休養重視</option>
+  </select>`;
+}
+
+// ────────────────────── Mock A: 改良テーブル型 ──────────────────────
+function renderMockA(){
+  const tbody = document.getElementById('mock-a-rows');
+  tbody.innerHTML = ROSTER.map(c => {
+    const tier = ovrTier(c.ovr);
+    return `<tr style="${c.cond<60?'opacity:0.85':''}">
+      <td><input type="checkbox"></td>
+      <td>
+        <div class="name-cell">
+          ${faceImg(c, 40, 'face-a')}
+          <span>
+            <span class="name-link" onclick="openFighter(${c.id})">${c.name}</span>${c.champion?'<span class="crown">👑</span>':''}
+          </span>
+        </div>
+      </td>
+      <td>
+        <div class="ovr-a-wrap">
+          <span class="ovr-a v-${tier.cls}">${c.ovr}</span>
+          <span class="ovr-a-tier">${tier.label}</span>
+        </div>
+      </td>
+      <td style="text-align:center">
+        <span class="pop-a-num" style="color:${popColor(c.pop)};font-family:var(--font-display);font-size:18px;line-height:1">${c.pop}</span>
+      </td>
+      <td><span class="status-h">健康</span></td>
+      <td>
+        <div class="cond-wrap">
+          <div class="cond-bar"><div class="cond-fill ${condClass(c.cond)}" style="width:${c.cond}%"></div></div>
+          <span class="cond-num">${c.cond}</span>
+        </div>
+      </td>
+      <td>${schedSelect(c.sched)}</td>
+      <td style="text-align:center"><button class="btn-int">⚡</button></td>
+      <td><span class="sched-tag ${c.action}">${ACTION_LABELS[c.action]}</span>${c.rental?'<span class="rental-icon">🤝</span>':''}</td>
+      <td></td>
+    </tr>`;
+  }).join('');
+}
+
+renderMockA();
+</script>
+</body>
+</html>

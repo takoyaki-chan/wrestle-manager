@@ -1,0 +1,305 @@
+{
+  "seed": 99999,
+  "seasons": 25,
+  "totalWeeks": 1233,
+  "gameOverCount": 0,
+  "elapsedSec": 49.6,
+  "bond": {
+    "all": {
+      "bandPcts": [
+        0.017917935853789643,
+        1.4334348683031715,
+        98.51281132413547,
+        0.035835871707579285,
+        0
+      ],
+      "stats": {
+        "n": 5581,
+        "mean": 49.5833184017205,
+        "stdDev": 2.993340184204979,
+        "min": 6.1,
+        "max": 60,
+        "median": 50,
+        "q1": 49.9,
+        "q3": 50.1
+      }
+    },
+    "sameOrg": {
+      "bandPcts": [
+        0,
+        1.4736842105263157,
+        98.52631578947368,
+        0,
+        0
+      ],
+      "stats": {
+        "n": 475,
+        "mean": 49.318736842105295,
+        "stdDev": 3.0568243728643196,
+        "min": 20.3,
+        "max": 58.2,
+        "median": 50,
+        "q1": 49.9,
+        "q3": 50.1
+      }
+    },
+    "crossOrgContact": {
+      "bandPcts": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "stats": null
+    }
+  },
+  "rivalry": {
+    "all": {
+      "bandPcts": [
+        87.04533237771008,
+        4.336140476617094,
+        7.848055903959864,
+        0.7167174341515857,
+        0.05375380756136893
+      ],
+      "stats": {
+        "n": 5581,
+        "mean": 6.526643970614586,
+        "stdDev": 15.793580378045792,
+        "min": 0,
+        "max": 84.6,
+        "median": 0,
+        "q1": 0,
+        "q3": 0
+      }
+    },
+    "sameOrg": {
+      "bandPcts": [
+        81.26315789473684,
+        6.105263157894736,
+        9.05263157894737,
+        3.578947368421052,
+        0
+      ],
+      "stats": {
+        "n": 475,
+        "mean": 10.078736842105263,
+        "stdDev": 18.86828445843531,
+        "min": 0,
+        "max": 77.5,
+        "median": 0,
+        "q1": 0,
+        "q3": 8.5
+      }
+    },
+    "crossOrgContact": {
+      "bandPcts": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "stats": null
+    }
+  },
+  "rivalryTitleDistribution": {
+    "なし": 2604,
+    "因縁": 94,
+    "宿敵": 88,
+    "片側因縁": 60,
+    "宿命": 2
+  },
+  "trajectorySamples": [
+    {
+      "label": "最終 bond 最高（同団体）",
+      "idA": 81,
+      "idB": 51,
+      "points": [
+        {
+          "season": 10,
+          "bond": 58.4,
+          "rivalry": 0
+        },
+        {
+          "season": 25,
+          "bond": 58.4,
+          "rivalry": 0
+        }
+      ]
+    },
+    {
+      "label": "最終 bond 最低（同団体）",
+      "idA": 67,
+      "idB": 18,
+      "points": [
+        {
+          "season": 10,
+          "bond": 45.2,
+          "rivalry": 0
+        },
+        {
+          "season": 25,
+          "bond": 20.3,
+          "rivalry": 58.6
+        }
+      ]
+    },
+    {
+      "label": "同団体長期 - 眼中にない",
+      "idA": 67,
+      "idB": 1,
+      "points": [
+        {
+          "season": 10,
+          "bond": 50.8,
+          "rivalry": 0
+        },
+        {
+          "season": 25,
+          "bond": 50,
+          "rivalry": 0
+        }
+      ]
+    },
+    {
+      "label": "同団体長期 - 少し意識",
+      "idA": 45,
+      "idB": 4,
+      "points": [
+        {
+          "season": 10,
+          "bond": 49.9,
+          "rivalry": 0
+        },
+        {
+          "season": 25,
+          "bond": 50,
+          "rivalry": 0
+        }
+      ]
+    },
+    {
+      "label": "同団体長期 - ライバル視",
+      "idA": 1,
+      "idB": 81,
+      "points": [
+        {
+          "season": 10,
+          "bond": 52.1,
+          "rivalry": 17.5
+        },
+        {
+          "season": 25,
+          "bond": 50,
+          "rivalry": 56
+        }
+      ]
+    },
+    {
+      "label": "同団体長期 - 因縁",
+      "idA": 19,
+      "idB": 75,
+      "points": [
+        {
+          "season": 10,
+          "bond": 50,
+          "rivalry": 0
+        },
+        {
+          "season": 25,
+          "bond": 49.9,
+          "rivalry": 0
+        }
+      ]
+    },
+    {
+      "label": "因縁/宿命到達",
+      "idA": 41,
+      "idB": 60,
+      "points": [
+        {
+          "season": 25,
+          "bond": 49.5,
+          "rivalry": 47
+        }
+      ]
+    },
+    {
+      "label": "ランダムサンプル",
+      "idA": 1,
+      "idB": 108,
+      "points": [
+        {
+          "season": 10,
+          "bond": 58.4,
+          "rivalry": 0
+        },
+        {
+          "season": 25,
+          "bond": 58.4,
+          "rivalry": 0
+        }
+      ]
+    },
+    {
+      "label": "ランダムサンプル",
+      "idA": 1,
+      "idB": 112,
+      "points": [
+        {
+          "season": 10,
+          "bond": 52.9,
+          "rivalry": 0
+        },
+        {
+          "season": 25,
+          "bond": 52.9,
+          "rivalry": 0
+        }
+      ]
+    },
+    {
+      "label": "ランダムサンプル",
+      "idA": 1,
+      "idB": 18,
+      "points": [
+        {
+          "season": 10,
+          "bond": 47.7,
+          "rivalry": 0
+        },
+        {
+          "season": 25,
+          "bond": 47.7,
+          "rivalry": 0
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "contactRate": 8.511019530550081,
+    "bondShiftIndex": 1.3722809532342384,
+    "rivalryHighPct": 0.7704712417129547,
+    "knownRivalPct": 16.932449381831212,
+    "frozenPct": 10.589554629926305,
+    "sameOrgPairs": 475,
+    "crossOrgContactPairs": 0,
+    "totalActivePairs": 5581
+  },
+  "bondBands": [
+    "嫌悪    (0-19)",
+    "苦手   (20-39)",
+    "普通   (40-59)",
+    "好意   (60-79)",
+    "深い絆(80-100)"
+  ],
+  "rivalryBands": [
+    "眼中にない(0-19)",
+    "少し意識 (20-39)",
+    "ライバル視(40-59)",
+    "因縁    (60-79)",
+    "宿命   (80-100)"
+  ]
+}

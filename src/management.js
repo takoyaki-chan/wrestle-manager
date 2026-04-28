@@ -8974,6 +8974,15 @@ const Engine = {
       s = weeklyRelResult.state;
       weeklyRelResult.events.forEach(e => events.push(e));
     }
+    // relationship-flags-spec-v1.0 §2.4: F-4 同期 — 同週入団者で cohort ペアを生成
+    {
+      const absWeek = Engine.util.absWeek(s.season, s.week);
+      const newJoiners = (s.roster || []).filter(c => c.orgJoinWeek === absWeek);
+      if (newJoiners.length >= 2) {
+        Engine.relationships.flags._ensureInit(s);
+        s = Engine.relationships.flags.applyCohort(s, newJoiners);
+      }
+    }
     // 派閥システム週次処理（faction-system-spec-v0.1 Phase 3a: F01/F02/F03 イベント化）
     {
       const facRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA0B));
@@ -12897,13 +12906,13 @@ const Engine = {
       // Phase 5: スナップショット通知のクールダウン管理
       _snapshotCooldowns: {},
       // Phase 1: 人間関係データ基盤
-      relationships: {
-        flags: { betrayer: [], returner: [], master: [], cohort: [], rivalCohort: [], admire: [], envy: [] },
-        flagLockouts: {},
-        flagCounters: {},
-        history: { betrayalRecord: [] },
-      },
+      relationships: {},
       relationshipCounters: {},
+      // relationship-flags-spec-v1.0: pair-key namespace と分離して state 直下に置く
+      relationshipFlags: { betrayer: [], returner: [], master: [], cohort: [], rivalCohort: [], admire: [], envy: [] },
+      relationshipFlagLockouts: {},
+      relationshipFlagCounters: {},
+      relationshipHistory: { betrayalRecord: [] },
       _modalQueue: [],
       // h2h: ペア別対戦履歴
       h2h: {},

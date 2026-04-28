@@ -131,8 +131,7 @@ Engine.relationships = {
       return Math.min(diff, 360 - diff);
     },
     target(distance) {
-      // 振幅 ±40: 標的範囲 10〜90 (極端帯到達のための実験的拡張)
-      return 50 + 40 * Math.cos(distance * Math.PI / 180);
+      return 50 + 10 * Math.cos(distance * Math.PI / 180);
     },
   },
 
@@ -571,7 +570,7 @@ Engine.relationships = {
         const axisB = (infoForB && typeof infoForB.affinityAxis === 'number') ? infoForB.affinityAxis : null;
         const dist = Engine.relationships._affinity.distance(axisA, axisB);
         const target = Engine.relationships._affinity.target(dist);
-        const bondPull = 0.18 + Engine.rng.float(rng) * 0.12; // 標的への収束 (元強度)
+        const bondPull = 0.08 + Engine.rng.float(rng) * 0.06; // affinity-spec v1.0 §5.1 半減
         if (bond > target) {
           bond -= bondPull;
         } else if (bond < target) {
@@ -598,8 +597,13 @@ Engine.relationships = {
         }
       }
 
-      // 同団体ボーナスは撤廃。target = 50 + 25·cos が個別の標的を提供するので
-      // 一律に bond を 60 へ持ち上げる作用は不要 (むしろ標的シフトを打ち消す)。
+      // 同団体所属ボーナス（spec §3.2 O-01）
+      // affinity-spec v1.0 §5.2: 増分を半減（+0.2〜+0.5 → +0.1〜+0.25）
+      if (sameOrg && bond < 60) {
+        const orgBondGain = 0.1 + Engine.rng.float(rng) * 0.15;
+        const ceiling = bond < 55 ? 1.0 : Math.max(0, (60 - bond) / 5);
+        bond = this._applyAxisDelta(bond, orgBondGain * ceiling, 'bond');
+      }
 
       // Phase 4 B: 性格不一致の週次摩擦
       // 条件: 同団体 かつ 性格+アーキタイプ相性 <= -3
@@ -1889,7 +1893,12 @@ Engine.relationships = {
     rels[keyAB] = rAB;
     rels[keyBA] = rBA;
 
-    return { ...state, relationships: rels, relationshipCounters: counters };
+    let newState = { ...state, relationships: rels, relationshipCounters: counters };
+
+    // ── F-5 ライバル同期昇格チェック (relationship-flags-spec-v1.0 §2.5) ──
+    newState = Engine.relationships.flags.applyRivalCohort(newState, charIdA, charIdB);
+
+    return newState;
   },
 
   // ═══════════════════════════════════════════════════════════════
@@ -2032,17 +2041,18 @@ Engine.relationships = {
     },
 
     // ── 共通ユーティリティ ──
+    // 注: flags/flagLockouts/flagCounters は state 直下に置く。
+    // state.relationships は pair-key namespace (例 "1>2") で
+    // processWeeklyDecay 等が rebuild するため、混在すると失われる
     _ensureInit(state) {
-      if (!state.relationships) state.relationships = {};
-      const r = state.relationships;
-      if (!r.flags) r.flags = {
+      if (!state.relationshipFlags) state.relationshipFlags = {
         betrayer: [], returner: [], master: [], cohort: [],
         rivalCohort: [], admire: [], envy: [],
       };
-      if (!r.flagLockouts) r.flagLockouts = {};
-      if (!r.flagCounters) r.flagCounters = {};
-      if (!r.history) r.history = { betrayalRecord: [] };
-      else if (!r.history.betrayalRecord) r.history.betrayalRecord = [];
+      if (!state.relationshipFlagLockouts) state.relationshipFlagLockouts = {};
+      if (!state.relationshipFlagCounters) state.relationshipFlagCounters = {};
+      if (!state.relationshipHistory) state.relationshipHistory = { betrayalRecord: [] };
+      else if (!state.relationshipHistory.betrayalRecord) state.relationshipHistory.betrayalRecord = [];
       if (!state._modalQueue) state._modalQueue = [];
       return state;
     },
@@ -2062,32 +2072,102 @@ Engine.relationships = {
 
     // ロックアウト確認
     isLockedOut(state, kind, idA, idB) {
-      const r = state.relationships;
-      if (!r || !r.flagLockouts) return false;
+      const lo = state.relationshipFlagLockouts;
+      if (!lo) return false;
       // master は masterId>discipleId、admire/envy は fromId>toId 順
-      return r.flagLockouts[`${kind}:${idA}>${idB}`] === true;
+      return lo[`${kind}:${idA}>${idB}`] === true;
     },
 
     // ── キャパシティクエリ ──
     hasAdmire(state, fromId) {
-      const list = state.relationships?.flags?.admire || [];
+      const list = state.relationshipFlags?.admire || [];
       return list.some(e => e.fromId === fromId);
     },
     hasEnvy(state, fromId) {
-      const list = state.relationships?.flags?.envy || [];
+      const list = state.relationshipFlags?.envy || [];
       return list.some(e => e.fromId === fromId);
     },
     hasRivalCohort(state, charId) {
-      const list = state.relationships?.flags?.rivalCohort || [];
+      const list = state.relationshipFlags?.rivalCohort || [];
       return list.some(e => e.idA === charId || e.idB === charId);
     },
 
-    // ── 各フラグ判定/付与 (Phase 2-6 で実装) ──
+    // ══════════════════════════════════════════════════════════
+    //  F-4 同期 (cohort) — spec §2.4
+    //  同週入団ペアに自動付与。専用モーダルなし。
+    //  既存 O-14 同期入団の数値変動はそのまま維持
+    // ══════════════════════════════════════════════════════════
+    applyCohort(state, newFighters) {
+      Engine.relationships.flags._ensureInit(state);
+      if (!Array.isArray(newFighters) || newFighters.length < 2) return state;
+      const flags = state.relationshipFlags;
+      for (let i = 0; i < newFighters.length; i++) {
+        for (let j = i + 1; j < newFighters.length; j++) {
+          const a = newFighters[i].id;
+          const b = newFighters[j].id;
+          if (!Number.isFinite(a) || !Number.isFinite(b) || a === b) continue;
+          const idA = Math.min(a, b);
+          const idB = Math.max(a, b);
+          if (flags.cohort.some(e => e.idA === idA && e.idB === idB)) continue;
+          flags.cohort.push({
+            idA, idB,
+            cohortSeason: state.season,
+            cohortWeek: state.week,
+          });
+        }
+      }
+      return state;
+    },
+
+    // ══════════════════════════════════════════════════════════
+    //  F-5 ライバル同期 (rivalCohort) — spec §2.5
+    //  同期フラグ保有 + 双方 rivalry≥60 + 両者キャパ空き
+    //  applyMatchResult 直後に呼ばれる
+    // ══════════════════════════════════════════════════════════
+    applyRivalCohort(state, idA, idB) {
+      Engine.relationships.flags._ensureInit(state);
+      if (idA === idB) return state;
+      const flags = state.relationshipFlags;
+
+      const pairA = Math.min(idA, idB);
+      const pairB = Math.max(idA, idB);
+
+      // 同期フラグ確認
+      const isCohort = flags.cohort.some(e => e.idA === pairA && e.idB === pairB);
+      if (!isCohort) return state;
+
+      // 既に rivalCohort 確立済みなら何もしない
+      if (flags.rivalCohort.some(e => e.idA === pairA && e.idB === pairB)) return state;
+
+      // rivalry 60+ 双方向チェック
+      const rels = state.relationships;
+      const rivalryAB = rels[`${idA}>${idB}`]?.rivalry ?? 0;
+      const rivalryBA = rels[`${idB}>${idA}`]?.rivalry ?? 0;
+      if (rivalryAB < 60 || rivalryBA < 60) return state;
+
+      // 両者ライバル同期未保有確認 (spec §2.5: 1人につき1組)
+      if (Engine.relationships.flags.hasRivalCohort(state, idA)) return state;
+      if (Engine.relationships.flags.hasRivalCohort(state, idB)) return state;
+
+      flags.rivalCohort.push({
+        idA: pairA,
+        idB: pairB,
+        establishedSeason: state.season,
+        establishedWeek: state.week,
+      });
+
+      Engine.relationships.flags._enqueueModal(state, 'M-14', {
+        idA, idB,
+        season: state.season, week: state.week,
+      });
+
+      return state;
+    },
+
+    // ── 各フラグ判定/付与 (Phase 3-6 で実装) ──
     applyBetrayer: null,
     applyReturner: null,
     applyMaster: null,
-    applyCohort: null,
-    applyRivalCohort: null,
     applyAdmire: null,
     applyEnvy: null,
     checkAdmireDissolution: null,
