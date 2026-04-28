@@ -35,6 +35,7 @@ function makeFighter(id, extra = {}) {
     injury: null,
     isRental: false,
     age: 22,
+    affinityAxis: 0, // affinity-spec v1.0: 同軸ペア → distance 0 → target 60
     ...extra,
   };
 }
@@ -95,7 +96,9 @@ function testWeeklyDecayCoolsHotRivalry() {
   });
 
   const next = Engine.relationships.processWeeklyDecay(state, rng);
-  assert.ok(next.relationships['1>2'].bond < 91.7, 'high bond should drift back from the cap each week');
+  // affinity-spec v1.0 §5.1: bondPull 半減 + 加速項撤廃で減少幅は控えめになった
+  // 同軸ペア (affinityAxis=0) は target=60 へ向かう → 92 から微減
+  assert.ok(next.relationships['1>2'].bond < 91.95, 'high bond should drift back toward target each week');
   assert.ok(next.relationships['1>2'].rivalry < 89.25, 'high rivalry should cool noticeably each week');
 }
 
