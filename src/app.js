@@ -8826,9 +8826,35 @@ const App = {
   //  WAR MATCH PREVIEW SYSTEM (v0.99d)
   // ══════════════════════════════════════════════
   _warPreview: null,
+  _warUiToken: 0,
+  _warBgmTimer: null,
+
+  _beginWarUiTransition() {
+    App._warUiToken += 1;
+    if (App._warBgmTimer) {
+      clearTimeout(App._warBgmTimer);
+      App._warBgmTimer = null;
+    }
+    return App._warUiToken;
+  },
+
+  _isWarUiTokenCurrent(token) {
+    return token == null || App._warUiToken === token;
+  },
+
+  _scheduleWarBgmResume(delayMs = 1600) {
+    const token = App._warUiToken;
+    if (App._warBgmTimer) clearTimeout(App._warBgmTimer);
+    App._warBgmTimer = setTimeout(() => {
+      App._warBgmTimer = null;
+      if (!App._isWarUiTokenCurrent(token) || !App._warPreview) return;
+      try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {}
+    }, delayMs);
+  },
 
   // Start war match preview (called from acceptWarChallenge in ui-common)
   initWarPreview(ev, card) {
+    App._beginWarUiTransition();
     App._warPreview = {
       ev,
       card,                         // [{playerFighter, aiFighter}, ...]
@@ -8979,7 +9005,7 @@ const App = {
     if (wp.results.every(r => r !== null)) {
       App.finalizeWar();
     } else {
-      setTimeout(() => { if (App._warPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {} } }, 1600);
+      App._scheduleWarBgmResume(1600);
     }
   },
 
@@ -8987,6 +9013,7 @@ const App = {
   finalizeWar() {
     const wp = App._warPreview;
     if (!wp) return;
+    App._beginWarUiTransition();
     try { Audio.fileBgm.stop(); } catch(e) {}
     const ev = wp.ev;
     let playerWins = 0, aiWins = 0;

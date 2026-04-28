@@ -920,14 +920,28 @@ function _showWarEnemyAceStatement(onDone) {
 }
 
 function closeWarFinalResult(eventWon) {
+  const closeToken = (typeof App !== 'undefined' && typeof App._beginWarUiTransition === 'function')
+    ? App._beginWarUiTransition()
+    : null;
+  const isCurrent = () => (
+    typeof App === 'undefined' ||
+    typeof App._isWarUiTokenCurrent !== 'function' ||
+    App._isWarUiTokenCurrent(closeToken)
+  );
   if (eventWon) { Audio.bgm.playJingle('victory'); }
   else { Audio.play('defeat'); }
 
-  // Refresh underlying page BEFORE closing overlay to prevent event screen flash
-  refreshAll();
+  const revealManageScreen = () => {
+    if (!isCurrent()) return;
+    const overlay = document.getElementById('showResultOverlay');
+    if (overlay) overlay.classList.remove('active');
+    refreshAll();
+  };
 
   const finishWithEnemyAce = () => {
+    if (!isCurrent()) return;
     _showWarEnemyAceStatement(() => {
+      if (!isCurrent()) return;
       App.restoreBgmForState();
     });
   };
@@ -935,12 +949,14 @@ function closeWarFinalResult(eventWon) {
   // 勝利選手のセリフポップアップチェーン → 敵エースの一言モーダル
   if (eventWon && _warVictoryWinners.length > 0) {
     setTimeout(() => {
-      document.getElementById('showResultOverlay').classList.remove('active');
+      if (!isCurrent()) return;
+      revealManageScreen();
       _showWarVictoryChain(_warVictoryWinners, 0, finishWithEnemyAce);
     }, 2000);
   } else {
     setTimeout(() => {
-      document.getElementById('showResultOverlay').classList.remove('active');
+      if (!isCurrent()) return;
+      revealManageScreen();
       finishWithEnemyAce();
     }, eventWon ? 2000 : 500);
   }
@@ -6025,8 +6041,15 @@ function dismissAllPopups() {
   if (confirmEl) { confirmEl.classList.remove('active'); confirmEl.classList.remove('show'); }
   // 動的R3Modalがあれば除去
   document.querySelectorAll('.r3-modal-overlay').forEach(el => el.remove());
+  document.querySelectorAll('.war-victory-overlay').forEach(el => el.remove());
+  const battleOverlay = document.getElementById('battleOverlay');
+  if (battleOverlay) battleOverlay.style.display = 'none';
   _popupQueue = [];
   _growthPopupQueue = [];
+  if (typeof App !== 'undefined' && typeof App._beginWarUiTransition === 'function') {
+    App._beginWarUiTransition();
+    App._warPreview = null;
+  }
   // 通知トースト
   const _toastEl = document.getElementById('notifEventToast');
   if (_toastEl) { _toastEl.classList.remove('show'); _toastEl.onclick = null; }
