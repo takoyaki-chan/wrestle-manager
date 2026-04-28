@@ -1799,14 +1799,34 @@ function closeEventPopup() {
   if (_eventPopupQueue.length > 0) {
     setTimeout(_renderEventPopupAsC3, 200);
   } else if (_onEventPopupQueueEmpty) {
-    const cb = _onEventPopupQueueEmpty;
-    _onEventPopupQueueEmpty = null;
-    setTimeout(cb, 200);
+    const cb = _consumeEventPopupQueueEmpty();
+    if (cb) setTimeout(cb, 200);
   } else {
     _drainPopupQueue();
   }
 }
 let _onEventPopupQueueEmpty = null;
+
+function _consumeEventPopupQueueEmpty() {
+  const cb = _onEventPopupQueueEmpty;
+  _onEventPopupQueueEmpty = null;
+  return cb;
+}
+
+function _chainEventPopupQueueEmpty(cb) {
+  if (typeof cb !== 'function') return;
+  const prevCb = _consumeEventPopupQueueEmpty();
+  _onEventPopupQueueEmpty = () => {
+    if (prevCb) {
+      try {
+        prevCb();
+      } catch (e) {
+        console.error('[WM] eventPopup queue callback error:', e);
+      }
+    }
+    cb();
+  };
+}
 
 // ── v1.3-3: Retirement Popup ────────────────
 let _retirementPopupQueue = [];
@@ -6587,11 +6607,13 @@ function _renderNextAIAlert() {
   });
   _aiAlertQueue.shift();
   if (_aiAlertQueue.length > 0) {
-    _onEventPopupQueueEmpty = _renderNextAIAlert;
+    _chainEventPopupQueueEmpty(_renderNextAIAlert);
   } else {
-    _onEventPopupQueueEmpty = _aiAlertCallback ? (() => {
-      const cb = _aiAlertCallback; _aiAlertCallback = null; cb();
-    }) : null;
+    _chainEventPopupQueueEmpty(_aiAlertCallback ? (() => {
+      const cb = _aiAlertCallback;
+      _aiAlertCallback = null;
+      cb();
+    }) : null);
   }
 }
 

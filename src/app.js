@@ -6194,11 +6194,9 @@ const App = {
   _runPostMatchFlavorForMatch(idx, result, then) {
     const popups = App._collectPostMatchPopupsForMatch(idx, result);
     if (popups.length === 0) { if (then) then(); return; }
-    const prevCb = _onEventPopupQueueEmpty;
-    _onEventPopupQueueEmpty = () => {
-      if (prevCb) { try { prevCb(); } catch(e) { console.error('[WM] prev queueEmpty cb error:', e); } }
+    _chainEventPopupQueueEmpty(() => {
       if (then) then();
-    };
+    });
     popups.forEach(p => showEventPopup(p));
     // セーフティネット
     const maxWaitMs = popups.length * 2200 + 1500;
@@ -6878,7 +6876,7 @@ const App = {
     }
     if (nextAction) {
       if (hasEventPopups) {
-        _onEventPopupQueueEmpty = nextAction;
+        _chainEventPopupQueueEmpty(nextAction);
       } else {
         setTimeout(nextAction, 200);
       }
@@ -9852,13 +9850,9 @@ App.initPPVTV = function() {
   // battlePoints + orgWarRecord 反映
   G = { ...G, battlePoints: tvResult.battlePoints, orgWarRecord: tvResult.orgWarRecord || G.orgWarRecord, gameLog: [...G.gameLog, ...tvResult.events] };
 
-  const prevCb = _onEventPopupQueueEmpty;
-  _onEventPopupQueueEmpty = () => {
-    if (prevCb) {
-      try { prevCb(); } catch (e) { console.error('[WM] PPV TV intro callback error:', e); }
-    }
+  _chainEventPopupQueueEmpty(() => {
     renderPPVTVResult(tvResult.card, tvResult.results, G.ppvName);
-  };
+  });
 
   showEventPopup({
     type: 'system',
