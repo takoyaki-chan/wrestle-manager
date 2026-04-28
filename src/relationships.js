@@ -724,6 +724,10 @@ Engine.relationships = {
     // §2.6: F-6 憧れ消滅判定（引退・幻滅は週次でも再評価）
     outState = Engine.relationships.flags.checkAdmireDissolution(outState);
 
+    // §2.7: F-7 嫉妬の引退検出 + 風化判定
+    outState = Engine.relationships.flags.checkEnvyDissolution(outState);
+    outState = Engine.relationships.flags.processEnvyAging(outState);
+
     return outState;
   },
 
@@ -1925,6 +1929,27 @@ Engine.relationships = {
     // ── F-6 消滅判定: OVR 追い抜き / bond<30 はここでも更新後にチェック ──
     newState = Engine.relationships.flags.checkAdmireDissolution(newState);
 
+    // ── F-7 嫉妬撃破判定: 勝者が敗者を OVR で上回っていれば envy 解消 (M-6) ──
+    {
+      let victorId = null, loserId = null;
+      if (aWon) { victorId = charIdA; loserId = charIdB; }
+      else if (bWon) { victorId = charIdB; loserId = charIdA; }
+      if (victorId != null) {
+        newState = Engine.relationships.flags.checkEnvyDissolution(newState, victorId, loserId);
+      }
+    }
+
+    // ── F-7 嫉妬抽選: タイトルマッチ or PPV 後、勝者 (B 候補) について発火 ──
+    if (context.isTitleMatch || context.stage === 'ppv') {
+      let triggerB = null;
+      if (aWon) triggerB = charIdA;
+      else if (bWon) triggerB = charIdB;
+      if (triggerB != null) {
+        const triggerKind = context.isTitleMatch ? 'title' : 'ppv';
+        newState = Engine.relationships.flags.processEnvyCandidates(newState, triggerB, triggerKind);
+      }
+    }
+
     return newState;
   },
 
@@ -2572,8 +2597,225 @@ Engine.relationships = {
     },
 
     applyAdmire: null, // 直接付与経路なし
+
+    // ══════════════════════════════════════════════════════════
+    //  F-7 嫉妬 (envy) — spec §2.7 + §7-1
+    //  4段ゲート: 状況6条件AND / キャパ / 契機 / 抽選40%
+    //  抽選 1 回限り、外したら即永久ロックアウト
+    //  風化: 1-2-3年経過時に 20% で消滅
+    // ══════════════════════════════════════════════════════════
+
+    // §7-1 簡易実装: 直近12週で B が「目立つ実績」あるか
+    _hasRecentLimelight(state, B) {
+      const absNow = Engine.util.absWeek(state.season, state.week);
+      const cutoff = absNow - 12;
+      // タイトル現役 OR 過去12週内に championLog 入り
+      const titles = state.titles || {};
+      for (const t of Object.values(titles)) {
+        if (!t) continue;
+        if (t.championId === B.id && (t.wonWeek ?? 0) >= cutoff) return true;
+        if (Array.isArray(t.championLog)) {
+          if (t.championLog.some(h => h && h.id === B.id && (h.absWeek ?? h.wonWeek ?? 0) >= cutoff)) {
+            return true;
+          }
+        }
+      }
+      // h2h history で名勝負 (mq≥80) 出場
+      const h2h = state.h2h || {};
+      for (const key of Object.keys(h2h)) {
+        const [aS, bS] = key.split('>').map(Number);
+        if (aS !== B.id && bS !== B.id) continue;
+        const hist = h2h[key]?.history || [];
+        for (const m of hist) {
+          if (!m || (m.mq ?? 0) < 80) continue;
+          const aw = Engine.util.absWeek(m.s || 1, m.w || 1);
+          if (aw >= cutoff) return true;
+        }
+      }
+      return false;
+    },
+
+    // §7-1 簡易実装: 直近12週で A が「干されている／伸び悩み」
+    _isRecentlySidelined(state, A) {
+      const absNow = Engine.util.absWeek(state.season, state.week);
+      const cutoff = absNow - 12;
+      // 出場数: h2h history で A の試合数を集計
+      const h2h = state.h2h || {};
+      let aMatches = 0;
+      let teamMatches = 0;
+      for (const key of Object.keys(h2h)) {
+        const [aS, bS] = key.split('>').map(Number);
+        const hist = h2h[key]?.history || [];
+        for (const m of hist) {
+          if (!m) continue;
+          const aw = Engine.util.absWeek(m.s || 1, m.w || 1);
+          if (aw < cutoff) continue;
+          teamMatches++;
+          if (aS === A.id || bS === A.id) aMatches++;
+        }
+      }
+      const rosterSize = (state.roster || []).length || 1;
+      const expected = teamMatches > 0 ? (teamMatches * 2) / rosterSize : 0;
+      if (expected > 0 && aMatches < expected * 0.5) return true;
+      // popularity 12週前比 -3 以上
+      if (Array.isArray(A.popHistory)) {
+        const old = A.popHistory.find(p => p && (p.absWeek ?? 0) <= cutoff);
+        const cur = A.popularity ?? A.pop ?? 0;
+        if (old && (old.value ?? 0) - cur >= 3) return true;
+      }
+      return false;
+    },
+
+    _envyGate1Status(state, A, B) {
+      if (A.id === B.id) return false;
+      // 関係: 同団体 OR 過去同団体 OR 同期
+      const sameOrg = (state.roster || []).some(c => c.id === A.id) &&
+                     (state.roster || []).some(c => c.id === B.id);
+      const isCohort = (state.relationshipFlags?.cohort || []).some(e => {
+        const small = Math.min(A.id, B.id);
+        const big = Math.max(A.id, B.id);
+        return e.idA === small && e.idB === big;
+      });
+      // 過去同団体: orgTimeline で player 重複
+      let pastSameOrg = false;
+      if (Array.isArray(A.orgTimeline) && Array.isArray(B.orgTimeline)) {
+        const aPlayer = A.orgTimeline.some(e => e?.orgId === 'player');
+        const bPlayer = B.orgTimeline.some(e => e?.orgId === 'player');
+        if (aPlayer && bPlayer) pastSameOrg = true;
+      }
+      if (!sameOrg && !pastSameOrg && !isCohort) return false;
+
+      // rivalry[A→B] ≥ 30
+      const rivalryAB = state.relationships?.[`${A.id}>${B.id}`]?.rivalry ?? 0;
+      if (rivalryAB < 30) return false;
+
+      // OVR 差: B が A より +5 以上
+      if (Engine.util.ov(B) < Engine.util.ov(A) + 5) return false;
+
+      // 人気差: B が A より +20 以上
+      const popA = A.popularity ?? A.pop ?? 0;
+      const popB = B.popularity ?? B.pop ?? 0;
+      if (popB < popA + 20) return false;
+
+      // B 直近実績
+      if (!Engine.relationships.flags._hasRecentLimelight(state, B)) return false;
+
+      // A 直近不調
+      if (!Engine.relationships.flags._isRecentlySidelined(state, A)) return false;
+
+      return true;
+    },
+
+    // 契機: B のタイトル獲得・防衛 / B の PPV メイン出場
+    // 呼び出し側は B の試合直後に呼ぶ
+    processEnvyCandidates(state, fighterBId, trigger) {
+      Engine.relationships.flags._ensureInit(state);
+      const flags = state.relationshipFlags;
+      const lockouts = state.relationshipFlagLockouts;
+      const B = (state.roster || []).find(c => c.id === fighterBId);
+      if (!B) return state;
+
+      for (const A of (state.roster || [])) {
+        if (A.id === B.id) continue;
+        // ロックアウト
+        if (lockouts[`envy:${A.id}>${B.id}`]) continue;
+        // キャパ空き
+        if (Engine.relationships.flags.hasEnvy(state, A.id)) continue;
+        // ゲート1 状況条件
+        if (!Engine.relationships.flags._envyGate1Status(state, A, B)) continue;
+        // 既存重複防止
+        if (flags.envy.some(e => e.fromId === A.id && e.toId === B.id)) continue;
+
+        // ゲート4: 1回限り抽選 40%
+        const rng = Engine.rng.create(
+          Engine.rng.derive(state.rngSeed || 1, 0xBE81, A.id, B.id)
+        );
+        if (Engine.rng.float(rng) < 0.40) {
+          flags.envy.push({
+            fromId: A.id, toId: B.id,
+            issuedSeason: state.season,
+            issuedWeek: state.week,
+            issuedAbsWeek: Engine.util.absWeek(state.season, state.week),
+          });
+          Engine.relationships.flags._enqueueModal(state, 'M-11', {
+            fromId: A.id, toId: B.id, trigger: trigger || null,
+          });
+        } else {
+          // 即ロックアウト
+          lockouts[`envy:${A.id}>${B.id}`] = true;
+        }
+      }
+      return state;
+    },
+
+    // 風化: 1-2-3年経過時に 20% 確率で消滅
+    processEnvyAging(state) {
+      Engine.relationships.flags._ensureInit(state);
+      const flags = state.relationshipFlags;
+      if (!flags.envy || flags.envy.length === 0) return state;
+      const absNow = Engine.util.absWeek(state.season, state.week);
+      const rng = Engine.rng.create(
+        Engine.rng.derive(state.rngSeed || 1, 0xBE82, state.season, state.week)
+      );
+      const kept = [];
+      for (const entry of flags.envy) {
+        const elapsed = absNow - (entry.issuedAbsWeek ?? 0);
+        if (elapsed === 52 || elapsed === 104 || elapsed === 156) {
+          if (Engine.rng.float(rng) < 0.20) {
+            const modalKey = elapsed === 52 ? 'M-8' : elapsed === 104 ? 'M-9' : 'M-10';
+            Engine.relationships.flags._enqueueModal(state, modalKey, {
+              fromId: entry.fromId, toId: entry.toId,
+            });
+            continue;
+          }
+        }
+        kept.push(entry);
+      }
+      flags.envy = kept;
+      return state;
+    },
+
+    // 消滅判定: B 引退（宙吊り M-7）/ A が B を OVR で上回って勝利（撃破 M-6）
+    // 撃破は applyMatchResult 内、引退は processWeeklyDecay 内で呼ぶ
+    checkEnvyDissolution(state, victorId, loserId) {
+      Engine.relationships.flags._ensureInit(state);
+      const flags = state.relationshipFlags;
+      if (!flags.envy || flags.envy.length === 0) return state;
+
+      // 撃破判定: victorId === entry.fromId, loserId === entry.toId, ovr 上回り
+      if (victorId != null && loserId != null) {
+        const victor = (state.roster || []).find(c => c.id === victorId)
+                    || Object.values(state.aiOrgs || {}).flatMap(o => o.roster || []).find(c => c.id === victorId);
+        const loser = (state.roster || []).find(c => c.id === loserId)
+                    || Object.values(state.aiOrgs || {}).flatMap(o => o.roster || []).find(c => c.id === loserId);
+        if (victor && loser && Engine.util.ov(victor) > Engine.util.ov(loser)) {
+          const idx = flags.envy.findIndex(e => e.fromId === victorId && e.toId === loserId);
+          if (idx >= 0) {
+            Engine.relationships.flags._enqueueModal(state, 'M-6', {
+              fromId: victorId, toId: loserId,
+            });
+            flags.envy.splice(idx, 1);
+          }
+        }
+      }
+
+      // 引退判定: B が引退 (retiredIds)
+      const retiredIds = new Set(state.retiredIds || []);
+      const kept = [];
+      for (const entry of flags.envy) {
+        if (retiredIds.has(entry.toId)) {
+          Engine.relationships.flags._enqueueModal(state, 'M-7', {
+            fromId: entry.fromId, toId: entry.toId,
+          });
+          continue;
+        }
+        kept.push(entry);
+      }
+      flags.envy = kept;
+      return state;
+    },
+
     applyEnvy: null,
-    checkEnvyDissolution: null,
   },
 
 };
