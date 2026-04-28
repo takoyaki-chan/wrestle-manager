@@ -9833,7 +9833,7 @@ function _buildB4Modal(event, state, roster) {
   if (!activityType) {
     switch (subType) {
       case 'youngStar':
-        available = available.filter(f => (f.age || 17) <= 22);
+        available = available.filter(f => (f.age || 17) <= 20);
         break;
       case 'ace': {
         const ovrSorted = available.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));

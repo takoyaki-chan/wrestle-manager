@@ -3877,9 +3877,9 @@ const Engine = {
         const isChamp = state.titles?.world?.championId === fighter.id;
         if (isChamp) {
           category = 'B4_champion_injury';
-        } else if (fighter.age <= 22) {
+        } else if (fighter.age <= 20) {
           category = 'B1_young';
-        } else if (fighter.age <= 26) {
+        } else if (fighter.age <= 25) {
           category = 'B2_prime';
         } else {
           category = 'B3_older';
@@ -5934,7 +5934,7 @@ const Engine = {
           const ovrSorted = r.slice().sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
           const top3Ids = new Set(ovrSorted.slice(0, 3).map(f => f.id));
 
-          const youngPool = r.filter(f => (f.age || 17) <= 22);
+          const youngPool = r.filter(f => (f.age || 17) <= 20);
           const acePool = r.filter(f => f.id === champId || top3Ids.has(f.id));
           const vetPool = r.filter(f => (f.age || 17) >= 26 || (f.careerSeasons || 0) >= 5);
 
@@ -13532,7 +13532,7 @@ Engine.mvpRace = {
         `${m.bigMatches}本の大試合を生み出した名勝負製造機。点数より、観客の記憶のほうが先に語っている。`,
       ]);
     }
-    if ((entry.breakdown.meta.age || 25) <= 22 && entry.rank <= 3) {
+    if ((entry.breakdown.meta.age || 25) <= 20 && entry.rank <= 3) {
       return pick([
         `若くしてTOP${entry.rank}入り。${m.age}歳、台頭の年。${(Engine.mvpRace._topElements(m)[0] || '主要要素') + 'で点を稼いでいる'}。`,
         `${m.age}歳での上位入り。新時代の予兆を、紙面に刻みつつある。`,
@@ -13599,7 +13599,7 @@ Engine.mvpRace = {
     if (m.warWins >= 2) return `対抗戦${m.warWins}勝。チームを引っ張る勝ち星。`;
     if (m.bigMatches >= 3) return `MQ85超を${m.bigMatches}本量産する職人型。`;
     if (m.bigMatches >= 1) return `大試合を${m.bigMatches}本作った職人気質。`;
-    if ((m.age || 25) <= 22 && entry.rank <= 8) return `${m.age}歳でTOP${entry.rank}入り。台頭の年。`;
+    if ((m.age || 25) <= 20 && entry.rank <= 8) return `${m.age}歳でTOP${entry.rank}入り。台頭の年。`;
     if (entry.arrow === 'down' && entry.arrowDelta && entry.arrowDelta <= -2) return `序盤の勢いから失速。${Engine.mvpRace._roleLabel(m.role) || '中堅'}がどこで踏み止まるか。`;
     if (entry.arrow === 'up' && entry.arrowDelta && entry.arrowDelta >= 3) return `後半戦で急上昇。連勝が続けばさらに上も視野に。`;
     if (entry.arrow === 'new') return `初のTOP10入り。台頭の予兆。`;

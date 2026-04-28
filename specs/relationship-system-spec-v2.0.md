@@ -431,3 +431,44 @@ scout / playerPoach / resolvePoach×2 / release / suddenDeparture / contractDepa
 | `_migrated_h2h_orgTimeline_v1` | h2h / orgTimeline 初期化 |
 
 <!-- 再同期: 2026-04-06, 指示書: docs/specs-resync-instruction.md -->
+
+---
+
+## §14 感情コメント（相関ポップアップ💭）
+
+相関図ポップアップで「親密度・競争意識」の下に表示される一言コメントは、Bond × Rivalry の **4×3 マトリクス**で 12 カテゴリに分類し、性格 archetype 7 種ごとに専用セリフを持つ（実装: `src/ui-render.js` の `EMOTION_TEXTS` / `getEmotionCategory`）。
+
+### Bond 帯 (4段)
+- `high`: ≥ 65
+- `mid`: 45-64
+- `low`: 29-44
+- `bottom`: < 29
+
+### Rivalry 帯 (3段)
+- `low`: < 20
+- `mid`: 20-49
+- `high`: ≥ 50
+
+### マトリクス（カテゴリ）
+
+| Bond \\ Rival | low (<20) | mid (20-49) | high (≥50) |
+|---|---|---|---|
+| **high** ≥65 | trust | rival_friend | destined_rival |
+| **mid** 45-64 | acquaintance | intrigued | hostile_competitor |
+| **low** 29-44 | distant | irritation（尺に障る） | dislike（明確な嫌い） |
+| **bottom** <29 | cold_loathing（冷たい嫌悪） | dislike_strong（強い嫌悪） | hatred（憎悪） |
+
+### contempt 上書き
+低/底 Bond帯 × Rival低 のとき、`selfOvr - targetOvr ≥ 15` なら上記 distant / cold_loathing を `contempt`（格上の侮蔑）で上書きする。
+
+### archetype 別書き分け方針
+- `normal`: 直球・素直
+- `ojousama`: 上品な言葉に毒
+- `delinquent`: 直球の口の悪さ
+- `cool`: 短い断定・分析口調
+- `seductive`: 笑顔の毒・優しい語尾で冷酷
+- `polite`: 柔らかい敬語の刃
+- `composed`: 穏やかな完全拒絶
+
+マイナス側（distant / irritation / dislike / cold_loathing / dislike_strong / hatred / contempt）は丁寧表現に押し負けて嫌悪が薄まらないよう、polite/composed/ojousama でも明確な拒絶が伝わる文面にする。
+

@@ -3579,7 +3579,7 @@ function renderRanking() {
       primary = _pickSeed(['戴冠したばかりで、王者としての色をこれから作っていく', '王座を獲って間もなく、防衛の手応えを探っている段階', '新王者として最初の防衛戦に向き合っている'], seed);
     } else if (age >= 33 && ovr >= peak - 2) {
       primary = _pickSeed([`${age}歳になっても全盛期を維持し続けるベテラン`, `年齢を重ねても衰えを見せず、まだ第一線に立つ`, '老練という言葉が似合うが、力の落ち方を感じさせない'], seed);
-    } else if (age <= 22 && ovr >= 75) {
+    } else if (age <= 20 && ovr >= 75) {
       primary = _pickSeed([`若くして団体の顔に押し上げられた逸材`, `${age}歳とは思えない試合運びで看板を任されている`, '世代交代を一人で先取りしてしまった存在'], seed);
     } else if (pop >= ovr + 8) {
       primary = _pickSeed(['実力以上に客を呼べる人気先行型', '数字より華で勝負できる稀有なタイプ', '人気が先に立つことで興行の柱になっている'], seed);
@@ -3609,8 +3609,8 @@ function renderRanking() {
     const avgOvr = sortedAll.length ? Math.round(sortedAll.reduce((s, c) => s + Engine.util.ov(c), 0) / sortedAll.length) : 0;
     const over70 = _countOvrAtLeast(sortedAll, 70);
     const aceGap = next ? aceOvr - nextOvr : 99;
-    const youthCount = sortedAll.slice(0, 8).filter(f => (f.age || 99) < 25).length;
-    const veteranCount = sortedAll.slice(0, 8).filter(f => (f.age || 0) >= 30).length;
+    const youthCount = sortedAll.slice(0, 8).filter(f => (f.age || 99) <= 20).length;
+    const veteranCount = sortedAll.slice(0, 8).filter(f => (f.age || 0) >= 26).length;
     const injured = sortedAll.filter(f => f.injury || f.forcedRest).length;
 
     const tags = new Set();
@@ -9327,13 +9327,13 @@ function _renderDbOrgCompare() {
   function getAgeFlavorKey(age1, age2) {
     const diff = Math.abs(age1 - age2);
     if (diff <= 2) {
-      if (age1 <= 22 && age2 <= 22) return 'youngVsYoung';
-      if (age1 >= 30 && age2 >= 30) return 'veteranVsVeteran';
+      if (age1 <= 20 && age2 <= 20) return 'youngVsYoung';
+      if (age1 >= 26 && age2 >= 26) return 'veteranVsVeteran';
       return 'sameGeneration';
     }
     const younger = Math.min(age1, age2);
     const older = Math.max(age1, age2);
-    if (older >= 28 && younger <= 23) return 'veteranVsYoung';
+    if (older >= 26 && younger <= 20) return 'veteranVsYoung';
     return null;
   }
 
@@ -9697,56 +9697,100 @@ const EMOTION_TEXTS = {
     polite:    'どうしても負けたくないんです。強い気持ちがあります',
     composed:  '負けるわけにはいかないわ。穏やかに、でも譲らない',
   },
-  indifferent: {
-    normal:    '正直、あまり印象がない',
-    ojousama:  'どなたでしたかしら……存じ上げませんわ',
-    delinquent:'誰だっけ。知らね',
-    cool:      '記憶にない',
-    seductive: 'んー……誰だったかしら',
-    polite:    '申し訳ありません、あまり存じ上げなくて……',
-    composed:  'あらぁ、どなただったかしら……ごめんなさいね',
+  // ── マイナス側 (Bond low / bottom) ──
+  // distant: Bond低×Rival低 — 関心の希薄。憎悪ではなく無関心
+  distant: {
+    normal:    '名前は知ってるけど、それ以上は別に',
+    ojousama:  '存じ上げてはおりますけれど、それ以上は……特に',
+    delinquent:'あー、いたな。それで?',
+    cool:      '認識しているだけ。それ以上はない',
+    seductive: 'いたわね、そういえば。……それだけ',
+    polite:    'お見かけはしますけれど、特には……',
+    composed:  'お顔は存じているわ。それだけのことね',
   },
+  // contempt: 上書き判定 (selfOvr-targetOvr >= 15) — 格上の侮蔑
   contempt: {
-    normal:    '……格が違う。同じ土俵とは思えない',
-    ojousama:  'わたくしとでは、住む世界が違いますもの',
-    delinquent:'ハッ、雑魚が視界に入んな',
-    cool:      '実力差は明白。相手にする価値を感じない',
-    seductive: 'あの程度で同じリングに？……可愛いわね',
-    polite:    '……実力の差は、正直感じています',
-    composed:  'あの子と同じ土俵に立つ気には、なれないのよね',
+    normal:    '同じリングに立っていい相手じゃない',
+    ojousama:  'わたくしと並ぶには、まだ早うございますわ',
+    delinquent:'ハッ、雑魚が視界に入んな。場違いだ',
+    cool:      '実力差は数字で出てる。語ることもない',
+    seductive: 'あらあら……まだそのレベルなのね。可愛いこと',
+    polite:    '……失礼ですが、同じ土俵という気にはなれません',
+    composed:  '同じ場に立つ相手だとは、思っていないの。ごめんなさいね',
   },
+  // irritation: Bond低×Rival中 — 表面的な不快・そりが合わない
   irritation: {
-    normal:    '目障り。視界に入るだけで気が散る',
-    ojousama:  'どうにも、気に障りますの',
-    delinquent:'見るとイライラすんだよ。近寄んな',
-    cool:      '……不快。なるべく視界に入れたくない',
-    seductive: 'なんか癇に障るのよね……嫌な感じ',
-    polite:    '近くにいると、どうも気持ちが落ち着かなくて……',
-    composed:  'なんとなく、そりが合わないのよねぇ',
+    normal:    '視界に入るたび、地味にイラっとくる',
+    ojousama:  'どうにも、お顔を拝見するだけで気が立ちますの',
+    delinquent:'チッ……顔見るだけでイライラすんだよ',
+    cool:      '不快。距離を取りたい',
+    seductive: 'なんかね、無性にカチンとくるのよ。理由は知らない',
+    polite:    '……正直、近くにいられると気が休まりません',
+    composed:  'あの子とは、どうしてもそりが合わないの。困ったことに',
   },
+  // dislike: Bond低×Rival高 — 明確な嫌悪・拒絶
+  dislike: {
+    normal:    'はっきり言って、好きじゃない。関わりたくもない',
+    ojousama:  'あの方とは、お話する気にもなれませんの',
+    delinquent:'嫌い。マジで嫌い。それだけ',
+    cool:      '受け付けない。理屈じゃない',
+    seductive: 'ごめんなさいね、あの子は無理。生理的に',
+    polite:    '……申し訳ありませんが、お近づきになりたくはありません',
+    composed:  'あの子のことは、はっきりと苦手ね。隠す気もないわ',
+  },
+  // cold_loathing: Bond底×Rival低 — 冷えた嫌悪・存在無視
+  cold_loathing: {
+    normal:    '視線も合わせない。いないものとして扱ってる',
+    ojousama:  'わたくしの視界には、入れておりませんの',
+    delinquent:'……あいつは、いねえもんとして扱ってる',
+    cool:      '存在を認識から外している。話すこともない',
+    seductive: 'あら、誰のこと？……ふふ、知らない人だわ',
+    polite:    'お話できることは、何もございません。失礼します',
+    composed:  'あの子のことは、わたくしの中では終わっているの',
+  },
+  // dislike_strong: Bond底×Rival中 — 強い嫌悪・蓄積
+  dislike_strong: {
+    normal:    '顔も見たくない。同じ空気を吸いたくない',
+    ojousama:  '同じ空間にいるだけで、息が詰まりますの',
+    delinquent:'マジで無理。視界から消えてくれ',
+    cool:      '生理的に駄目。これは変わらない',
+    seductive: 'ねえ、近寄らないでくれる？……本気で',
+    polite:    '……同じ場にいるだけで、耐えがたいのです',
+    composed:  '同じ部屋にいるのも辛いの。本当に、無理なのよ',
+  },
+  // hatred: Bond底×Rival高 — 憎悪・敵意
   hatred: {
-    normal:    '顔を見ると、腹の底が煮えくり返る',
-    ojousama:  '思い出すだけで……はらわたが煮えくりますわ',
-    delinquent:'ぶっ潰す。絶対にぶっ潰す。それしか考えてねえ',
-    cool:      '……殺意に近い感情がある。自覚はしている',
-    seductive: '許せない。この気持ち、絶対に消えない',
-    polite:    '……どうしても、許すことができません',
-    composed:  'あの子のことは、どうしても許せないの。穏やかでいられないのよ',
+    normal:    '絶対に許さない。叩き潰すまで終わらない',
+    ojousama:  'あの方だけは、決して許しませんわ。何があっても',
+    delinquent:'ぶっ潰す。マジでぶっ潰す。それしかねえ',
+    cool:      '消したい。自覚している。そういう感情だ',
+    seductive: 'この気持ち、一生消えないと思う。許す気もないし',
+    polite:    '……あの方のことは、生涯、許すつもりはございません',
+    composed:  'あの子だけは、どうしても許せないの。穏やかではいられないわ',
   },
 };
 
 function getEmotionCategory(bond, rivalry, selfOvr, targetOvr) {
-  const bLvl = bond >= 65 ? 'high' : bond >= 40 ? 'mid' : 'low';
+  // Bond 4段: high(>=65) / mid(45-64) / low(29-44) / bottom(<29)
+  const bLvl = bond >= 65 ? 'high' : bond >= 45 ? 'mid' : bond >= 29 ? 'low' : 'bottom';
   const rLvl = rivalry >= 50 ? 'high' : rivalry >= 20 ? 'mid' : 'low';
+  // 高/中 Bond帯
   if (bLvl === 'high' && rLvl === 'low') return 'trust';
   if (bLvl === 'high' && rLvl === 'mid') return 'rival_friend';
   if (bLvl === 'high' && rLvl === 'high') return 'destined_rival';
   if (bLvl === 'mid' && rLvl === 'low') return 'acquaintance';
   if (bLvl === 'mid' && rLvl === 'mid') return 'intrigued';
   if (bLvl === 'mid' && rLvl === 'high') return 'hostile_competitor';
-  if (bLvl === 'low' && rLvl === 'low') return (selfOvr - targetOvr >= 10) ? 'contempt' : 'indifferent';
+  // 低/底 Bond帯：contempt 上書き（selfOvr - targetOvr >= 15、Rival低のときのみ）
+  if (rLvl === 'low' && (selfOvr - targetOvr) >= 15) return 'contempt';
+  // 低 Bond帯
+  if (bLvl === 'low' && rLvl === 'low') return 'distant';
   if (bLvl === 'low' && rLvl === 'mid') return 'irritation';
-  return 'hatred'; // low × high
+  if (bLvl === 'low' && rLvl === 'high') return 'dislike';
+  // 底 Bond帯
+  if (bLvl === 'bottom' && rLvl === 'low') return 'cold_loathing';
+  if (bLvl === 'bottom' && rLvl === 'mid') return 'dislike_strong';
+  return 'hatred'; // bottom × high
 }
 
 function getEmotionText(bond, rivalry, selfOvr, targetOvr, archetype) {
