@@ -9977,9 +9977,9 @@ function _relmapRelationshipColor(link) {
   if (total >= 160) return '#2f8cff';
   if (total >= 90 && total <= 110) return '#f7fbff';
   if (total < 90) {
-    if (total >= 75) return _relmapMixHex('#ffe066', '#f7fbff', (total - 75) / 15);
-    if (total >= 60) return _relmapMixHex('#ff9f1c', '#ffe066', (total - 60) / 15);
-    return _relmapMixHex('#ff3b30', '#ff9f1c', (total - 40) / 20);
+    if (total >= 82) return _relmapMixHex('#ffd43b', '#f7fbff', (total - 82) / 8);
+    if (total >= 62) return _relmapMixHex('#ff9f1c', '#ffd43b', (total - 62) / 20);
+    return _relmapMixHex('#ff3b30', '#ff9f1c', (total - 40) / 22);
   }
   if (total <= 125) return _relmapMixHex('#f7fbff', '#9be564', (total - 110) / 15);
   if (total <= 145) return _relmapMixHex('#9be564', '#2ec4b6', (total - 125) / 20);
