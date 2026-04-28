@@ -716,7 +716,12 @@ Engine.relationships = {
     }
     keysToDelete.forEach(k => delete counters[k]);
 
-    return { ...state, relationships: newRels, relationshipCounters: counters };
+    let outState = { ...state, relationships: newRels, relationshipCounters: counters };
+
+    // relationship-flags-spec-v1.0 §2.3: F-3 師弟候補処理
+    outState = Engine.relationships.flags.processMasterCandidates(outState);
+
+    return outState;
   },
 
   processWeeklyStoryEvents(state, rng) {
@@ -2321,8 +2326,93 @@ Engine.relationships = {
       return { ...state, relationships: rels };
     },
 
-    // ── 各フラグ判定/付与 (Phase 4-6 で実装) ──
-    applyMaster: null,
+    // ══════════════════════════════════════════════════════════
+    //  F-3 師弟 (master) — spec §2.3
+    //  条件 12 週連続維持 → 40% 抽選 1 回 → 確定 or 永久ロックアウト
+    //  processWeeklyDecay 末尾で呼ばれる
+    // ══════════════════════════════════════════════════════════
+    _checkMasterConditions(state, masterId, discipleId) {
+      const master = (state.roster || []).find(c => c.id === masterId);
+      const disciple = (state.roster || []).find(c => c.id === discipleId);
+      if (!master || !disciple) return false;
+      // 同団体は roster に両者いる時点で満たす
+      // 師匠在籍 ≥ 156週
+      const absNow = Engine.util.absWeek(state.season, state.week);
+      const masterJoin = master.orgJoinWeek ?? absNow;
+      if (absNow - masterJoin < 156) return false;
+      // bond 双方向
+      const rels = state.relationships || {};
+      if ((rels[`${discipleId}>${masterId}`]?.bond ?? 0) < 70) return false;
+      if ((rels[`${masterId}>${discipleId}`]?.bond ?? 0) < 55) return false;
+      // OVR 差 ≥ 15
+      if (Engine.util.ov(master) < Engine.util.ov(disciple) + 15) return false;
+      // 同スタイル
+      if (!master.style || master.style !== disciple.style) return false;
+      return true;
+    },
+
+    processMasterCandidates(state) {
+      Engine.relationships.flags._ensureInit(state);
+      const flags = state.relationshipFlags;
+      const counters = state.relationshipFlagCounters;
+      const lockouts = state.relationshipFlagLockouts;
+      const roster = state.roster || [];
+      const absNow = Engine.util.absWeek(state.season, state.week);
+
+      // 候補ペア = roster 直積、ovr 差で師弟方向決定
+      // ロスター人数 8〜16 程度なので O(n^2) は許容
+      for (let i = 0; i < roster.length; i++) {
+        for (let j = 0; j < roster.length; j++) {
+          if (i === j) continue;
+          const master = roster[i];
+          const disciple = roster[j];
+          // 既に同方向の master フラグがあればスキップ
+          if (flags.master.some(e => e.masterId === master.id && e.discipleId === disciple.id)) continue;
+          // ロックアウト
+          if (lockouts[`master:${master.id}>${disciple.id}`]) continue;
+          // 条件チェック
+          const ok = Engine.relationships.flags._checkMasterConditions(state, master.id, disciple.id);
+          const ckey = `masterCandidate:${master.id}>${disciple.id}`;
+          if (!ok) {
+            // 条件崩れ: カウンタリセット
+            if (counters[ckey]) delete counters[ckey];
+            continue;
+          }
+          // 維持週カウンタを +1
+          const cur = counters[ckey] || { weeks: 0, lastUpdateAbsWeek: 0 };
+          // 同じ週で二重カウントしない保険
+          if (cur.lastUpdateAbsWeek === absNow) continue;
+          cur.weeks += 1;
+          cur.lastUpdateAbsWeek = absNow;
+          counters[ckey] = cur;
+
+          // 12 週到達 → 40% 抽選
+          if (cur.weeks >= 12) {
+            const rng = Engine.rng.create(
+              Engine.rng.derive(state.rngSeed || 1, 0xBE83, master.id, disciple.id)
+            );
+            if (Engine.rng.float(rng) < 0.40) {
+              flags.master.push({
+                masterId: master.id,
+                discipleId: disciple.id,
+                establishedSeason: state.season,
+                establishedWeek: state.week,
+              });
+              Engine.relationships.flags._enqueueModal(state, 'M-13', {
+                masterId: master.id, discipleId: disciple.id,
+              });
+            } else {
+              // 永久ロックアウト
+              lockouts[`master:${master.id}>${disciple.id}`] = true;
+            }
+            delete counters[ckey];
+          }
+        }
+      }
+      return state;
+    },
+
+    applyMaster: null, // 互換のため残す（直接付与経路は無い）
     applyAdmire: null,
     applyEnvy: null,
     checkAdmireDissolution: null,
