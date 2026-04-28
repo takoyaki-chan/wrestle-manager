@@ -721,6 +721,9 @@ Engine.relationships = {
     // relationship-flags-spec-v1.0 §2.3: F-3 師弟候補処理
     outState = Engine.relationships.flags.processMasterCandidates(outState);
 
+    // §2.6: F-6 憧れ消滅判定（引退・幻滅は週次でも再評価）
+    outState = Engine.relationships.flags.checkAdmireDissolution(outState);
+
     return outState;
   },
 
@@ -1914,6 +1917,14 @@ Engine.relationships = {
     // ── F-5 ライバル同期昇格チェック (relationship-flags-spec-v1.0 §2.5) ──
     newState = Engine.relationships.flags.applyRivalCohort(newState, charIdA, charIdB);
 
+    // ── F-6 憧れ抽選: 名勝負 (M-04 / M-CO1, mq>=80) 直後 ──
+    if (context.mq >= 80) {
+      newState = Engine.relationships.flags.processAdmireCandidates(newState, charIdA, charIdB, context);
+    }
+
+    // ── F-6 消滅判定: OVR 追い抜き / bond<30 はここでも更新後にチェック ──
+    newState = Engine.relationships.flags.checkAdmireDissolution(newState);
+
     return newState;
   },
 
@@ -2413,9 +2424,155 @@ Engine.relationships = {
     },
 
     applyMaster: null, // 互換のため残す（直接付与経路は無い）
-    applyAdmire: null,
+
+    // ══════════════════════════════════════════════════════════
+    //  F-6 憧れ (admire) — spec §2.6
+    //  4段ゲート: 状況 / キャパ / 契機（名勝負） / 抽選30%
+    //  抽選は最大3回。3回目で外したら永久ロックアウト
+    // ══════════════════════════════════════════════════════════
+    _admireGate1Status(state, A, B) {
+      // 同団体（roster に両方いる時点で OK。ここでは双方 player roster 想定）
+      if (A.id === B.id) return false;
+      // bond[A→B] ≥ 60
+      const bondAB = state.relationships?.[`${A.id}>${B.id}`]?.bond ?? 0;
+      if (bondAB < 60) return false;
+      // OVR/タイトル: B が A より OVR +10以上 OR B にタイトル保持経験あり
+      const ovrA = Engine.util.ov(A);
+      const ovrB = Engine.util.ov(B);
+      const ovrPass = ovrB >= ovrA + 10;
+      let titlePass = false;
+      const titles = state.titles || {};
+      for (const t of Object.values(titles)) {
+        if (!t) continue;
+        if (t.championId === B.id) { titlePass = true; break; }
+        // championLog に履歴
+        if (Array.isArray(t.championLog) && t.championLog.some(h => h && h.id === B.id)) {
+          titlePass = true; break;
+        }
+      }
+      if (!ovrPass && !titlePass) return false;
+      // 経験年数: A の在籍年数 < B の在籍年数
+      const absNow = Engine.util.absWeek(state.season, state.week);
+      const aTen = absNow - (A.orgJoinWeek ?? absNow);
+      const bTen = absNow - (B.orgJoinWeek ?? absNow);
+      if (aTen >= bTen) return false;
+      return true;
+    },
+
+    processAdmireCandidates(state, fighterAId, fighterBId, matchContext) {
+      // matchContext.mq >= 80 が呼び出し条件 (M-04 / M-CO1)
+      if (!matchContext || matchContext.mq < 80) return state;
+      Engine.relationships.flags._ensureInit(state);
+      const flags = state.relationshipFlags;
+      const counters = state.relationshipFlagCounters;
+      const lockouts = state.relationshipFlagLockouts;
+
+      // 名勝負参加者を B 候補として両方走査
+      const matchParticipants = [fighterAId, fighterBId];
+      const roster = state.roster || [];
+
+      for (const targetId of matchParticipants) {
+        const B = roster.find(c => c.id === targetId);
+        if (!B) continue; // クロスオーグマッチで AI 側選手は対象外
+        for (const A of roster) {
+          if (A.id === B.id) continue;
+          // ゲート1
+          if (!Engine.relationships.flags._admireGate1Status(state, A, B)) continue;
+          // ゲート2: A はキャパ空き
+          if (Engine.relationships.flags.hasAdmire(state, A.id)) continue;
+          // ロックアウト確認
+          if (lockouts[`admire:${A.id}>${B.id}`]) continue;
+          // 既存重複防止
+          if (flags.admire.some(e => e.fromId === A.id && e.toId === B.id)) continue;
+
+          // ゲート4: 抽選 30%
+          const drawKey = `admireDraws:${A.id}>${B.id}`;
+          const drawCount = counters[drawKey] ?? 0;
+          const rng = Engine.rng.create(
+            Engine.rng.derive(state.rngSeed || 1, 0xBE80, A.id, B.id, drawCount)
+          );
+          if (Engine.rng.float(rng) < 0.30) {
+            flags.admire.push({
+              fromId: A.id, toId: B.id,
+              issuedSeason: state.season,
+              issuedWeek: state.week,
+            });
+            Engine.relationships.flags._enqueueModal(state, 'M-2', {
+              fromId: A.id, toId: B.id,
+            });
+            delete counters[drawKey];
+          } else {
+            counters[drawKey] = drawCount + 1;
+            if (counters[drawKey] >= 3) {
+              lockouts[`admire:${A.id}>${B.id}`] = true;
+              delete counters[drawKey];
+            }
+          }
+        }
+      }
+      return state;
+    },
+
+    // ══════════════════════════════════════════════════════════
+    //  F-6 消滅判定 — spec §2.6
+    //  達成（OVR追い抜き）/ 喪失（B引退）/ 幻滅（bond<30）
+    // ══════════════════════════════════════════════════════════
+    checkAdmireDissolution(state) {
+      Engine.relationships.flags._ensureInit(state);
+      const flags = state.relationshipFlags;
+      if (!flags.admire || flags.admire.length === 0) return state;
+      const findAny = (id) => {
+        const r = (state.roster || []).find(c => c.id === id);
+        if (r) return { fighter: r, retired: false };
+        if (state.aiOrgs) {
+          for (const org of Object.values(state.aiOrgs)) {
+            const f = (org.roster || []).find(c => c.id === id);
+            if (f) return { fighter: f, retired: false };
+          }
+        }
+        const fa = (state.freeAgents || []).find(c => c.id === id);
+        if (fa) return { fighter: fa, retired: false };
+        // retired 判定
+        const retiredIds = state.retiredIds || [];
+        if (retiredIds.includes(id)) return { fighter: null, retired: true };
+        const retF = (state.retiredFighters || []).find(f => f && f.id === id);
+        if (retF) return { fighter: retF, retired: true };
+        return { fighter: null, retired: false };
+      };
+
+      const kept = [];
+      for (const entry of flags.admire) {
+        const { fromId, toId } = entry;
+        const aInfo = findAny(fromId);
+        const bInfo = findAny(toId);
+        if (!aInfo.fighter && !aInfo.retired) { kept.push(entry); continue; }
+        // A 引退: 憧れ自体が消滅（ログのみ、モーダル不要）
+        if (aInfo.retired) continue;
+        // B 引退 → 喪失
+        if (bInfo.retired) {
+          Engine.relationships.flags._enqueueModal(state, 'M-4', { fromId, toId });
+          continue;
+        }
+        if (!bInfo.fighter) { kept.push(entry); continue; }
+        // 達成: A の OVR > B の OVR
+        if (Engine.util.ov(aInfo.fighter) > Engine.util.ov(bInfo.fighter)) {
+          Engine.relationships.flags._enqueueModal(state, 'M-3', { fromId, toId });
+          continue;
+        }
+        // 幻滅: bond[A→B] < 30
+        const bond = state.relationships?.[`${fromId}>${toId}`]?.bond ?? 50;
+        if (bond < 30) {
+          Engine.relationships.flags._enqueueModal(state, 'M-5', { fromId, toId });
+          continue;
+        }
+        kept.push(entry);
+      }
+      flags.admire = kept;
+      return state;
+    },
+
+    applyAdmire: null, // 直接付与経路なし
     applyEnvy: null,
-    checkAdmireDissolution: null,
     checkEnvyDissolution: null,
   },
 
