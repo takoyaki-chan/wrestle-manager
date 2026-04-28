@@ -9970,13 +9970,9 @@ function _relmapRelationshipColor(link) {
   const bAB = link?.bondAB ?? 50;
   const bBA = link?.bondBA ?? 50;
   const avg = (bAB + bBA) / 2;
-  const rivalry = _relmapRivalryTotal(link);
-  if (rivalry >= 60) {
-    const heat = Math.min(1, Math.max(0, (rivalry - 60) / 140));
-    if (avg >= 58) return _relmapMixHex('#b8d95a', '#4aa3ff', heat);
-    if (avg <= 42) return _relmapMixHex('#f2a14a', '#ff3030', heat);
-    return _relmapMixHex('#d7b45a', '#ff8a2a', heat);
-  }
+  // Base link hue should express bond tilt only.
+  // Rivalry already affects visibility, stroke width, badges, and pulse effects;
+  // letting rivalry overwrite the hue makes neutral 50-50 bonds look orange.
   const twist = (bAB - 50) * (bBA - 50) < 0;
   if (twist) return '#d7b45a';
   if (avg >= 60) return _relmapMixHex('#d9dde2', '#4aa3ff', (avg - 60) / 40);
