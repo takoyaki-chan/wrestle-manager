@@ -602,9 +602,9 @@ Engine.relationships = {
 
       // 同団体所属ボーナス（spec §3.2 O-01）
       // bond-rebalance v2.3: 天井を 60 → 70 に引き上げ（同団体長期で自然に bond70 へ）
-      if (sameOrg && bond < 70) {
-        const orgBondGain = 0.08 + Engine.rng.float(rng) * 0.12;
-        const ceiling = bond < 60 ? 1.0 : Math.max(0, (70 - bond) / 10);
+      if (sameOrg && bond < 68) {
+        const orgBondGain = 0.06 + Engine.rng.float(rng) * 0.08;
+        const ceiling = bond < 58 ? 1.0 : Math.max(0, (68 - bond) / 10);
         bond = this._applyAxisDelta(bond, orgBondGain * ceiling, 'bond');
       }
 
@@ -617,7 +617,7 @@ Engine.relationships = {
           const pAdj = Engine.relationships._getPersonalityBondAdj(infoA.personality, infoB.personality);
           const aAdj = Engine.relationships._getArchetypeBondAdj(infoA.archetype, infoB.archetype);
           if (pAdj + aAdj <= -3) {
-            bond -= 0.15;  // 性格不一致摩擦: -0.15/週（48週で-7.2pt）
+            bond -= 0.20;  // 相性の悪い同団体ペアは週次でじわじわ冷える
           }
         }
       }
@@ -627,8 +627,8 @@ Engine.relationships = {
       if (sameOrg) {
         const infoA = charInfoMap.get(idA);
         const infoB = charInfoMap.get(idB);
-        if (infoA && infoB && Math.abs(infoA.age - infoB.age) <= 3) {
-          bond = this._applyAxisDelta(bond, 0.1, 'bond');  // generation proximity: +0.1/week (~+4.8 over 48 weeks)
+        if (infoA && infoB && bond < 60 && Math.abs(infoA.age - infoB.age) <= 3) {
+          bond = this._applyAxisDelta(bond, 0.08, 'bond');  // 同世代補正は中立帯までに限定
         }
       }
 
@@ -652,6 +652,11 @@ Engine.relationships = {
             const infoB = charInfoMap.get(idB);
             if (infoA && infoB && infoA.style === infoB.style && infoA.style !== 'Allround') {
               rivalry = this._applyAxisDelta(rivalry, 1 + Engine.rng.float(rng), 'rivalry'); // same-style position battle
+            }
+            const pAdj = Engine.relationships._getPersonalityBondAdj(infoA?.personality, infoB?.personality);
+            const aAdj = Engine.relationships._getArchetypeBondAdj(infoA?.archetype, infoB?.archetype);
+            if (bond < 45 && (pAdj + aAdj) <= -3) {
+              rivalry = this._applyAxisDelta(rivalry, 0.8 + Engine.rng.float(rng) * 0.8, 'rivalry');
             }
           }
         }
@@ -678,8 +683,8 @@ Engine.relationships = {
       };
     }
 
-    // N-03: Babyface×Heel 週次衝突（同団体内, 6%/ペア/週）
-    // bond-rebalance v2.3: 4% → 6% (役割対立を可視化)
+    // N-03: Babyface×Heel 週次衝突（同団体内, 9%/ペア/週）
+    // 埋もれがちな対立の供給源を少し強化
     const n03Rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 42, absWeek, 0xBE6A));
     const processRoleClash = (orgRoster) => {
       if (!orgRoster || orgRoster.length === 0) return;
@@ -688,9 +693,9 @@ Engine.relationships = {
       if (bfIds.length === 0 || heelIds.length === 0) return;
       for (const bfId of bfIds) {
         for (const heelId of heelIds) {
-          if (Engine.rng.float(n03Rng) >= 0.06) continue;
-          const bondDelta = -(3 + Engine.rng.float(n03Rng) * 3); // -3〜-6
-          const rivalryDelta = 2 + Engine.rng.float(n03Rng) * 2; // +2〜+4
+          if (Engine.rng.float(n03Rng) >= 0.09) continue;
+          const bondDelta = -(4 + Engine.rng.float(n03Rng) * 3); // -4〜-7
+          const rivalryDelta = 3 + Engine.rng.float(n03Rng) * 2; // +3〜+5
           const keyAB = this._key(bfId, heelId);
           const keyBA = this._key(heelId, bfId);
           const rAB = newRels[keyAB] || { bond: 50, rivalry: 0 };
@@ -1704,6 +1709,16 @@ Engine.relationships = {
     const bWon = context.winner === 'lose';
     const isDraw = context.winner === 'draw';
     const isCrossOrg = !!context.isCrossOrg;
+    const getOrgId = (fighterId) => {
+      if ((state.roster || []).some(c => c.id === fighterId)) return 'player';
+      for (const [orgId, org] of Object.entries(state.aiOrgs || {})) {
+        if ((org.roster || []).some(c => c.id === fighterId)) return orgId;
+      }
+      return null;
+    };
+    const orgIdA = getOrgId(charIdA);
+    const orgIdB = getOrgId(charIdB);
+    const sameOrgMatch = !isCrossOrg && orgIdA && orgIdA === orgIdB;
 
     // 他団体戦キャップ用: 初期rivalry記録
     const rivalryStartAB = rAB.rivalry;
@@ -1733,7 +1748,9 @@ Engine.relationships = {
       // 他団体戦: rivalry×2.0ブースト、bond負方向×1.5（§4.4.3）
       const rivalryMult = isCrossOrg ? 2.0 : 1.0;
       const rawBondDelta = roll(bondMin, bondMax) * mult;
-      const bondMult = (isCrossOrg && rawBondDelta < 0 && !opts.skipCrossOrgBondMult) ? 1.5 : 1.0;
+      const crossOrgBondMult = (isCrossOrg && rawBondDelta < 0 && !opts.skipCrossOrgBondMult) ? 1.5 : 1.0;
+      const sameOrgBondMult = (sameOrgMatch && rawBondDelta > 0 && !opts.skipSameOrgBondMult) ? 0.85 : 1.0;
+      const bondMult = crossOrgBondMult * sameOrgBondMult;
 
       rel.bond = this._applyAxisDelta(rel.bond, rawBondDelta * bondMult, 'bond');
       rel.rivalry = this._applyAxisDelta(rel.rivalry, roll(rivalryMin, rivalryMax) * mult * rivalryMult, 'rivalry');
@@ -3948,4 +3965,5 @@ Engine.glimpse = {
     return { glimpses, state: newState };
   },
 };
+
 
