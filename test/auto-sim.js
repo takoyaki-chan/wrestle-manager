@@ -65,6 +65,7 @@ loadAsGlobal('data-faction-dialogue.js');
 loadAsGlobal('management.js');
 loadAsGlobal('match-engine.js');
 loadAsGlobal('relationships.js');
+loadAsGlobal('flag-dialogue.js');
 loadAsGlobal('factions.js');
 loadAsGlobal('draft-negotiation.js');
 
@@ -646,7 +647,29 @@ function runSimulation(seed, seasons) {
     errors.push({ season: G.season, week: G.week, seed: currentSeed, error: `MAX_ITER (${MAX_ITER}) に到達。無限ループの可能性` });
   }
 
-  return { violations, errors, totalWeeks, gameOverCount, stats };
+  // relationship-flags-spec-v1.0 §7-4: フラグ発火頻度集計
+  const flagStats = {
+    F1_betrayer: 0, F2_returner: 0, F3_master: 0,
+    F4_cohort: 0, F5_rivalCohort: 0, F6_admire: 0,
+    F7_envy: 0,
+    F1_modal: 0, F2_modal: 0, F6_modal: 0, F7_modal: 0,
+    F7_aging: 0,
+  };
+  // 最終 G から累積カウント（フラグは原則永続なので最終値が累積に近い）
+  if (G && G.relationshipFlags) {
+    flagStats.F1_betrayer = (G.relationshipFlags.betrayer || []).length;
+    flagStats.F2_returner = (G.relationshipFlags.returner || []).length;
+    flagStats.F3_master = (G.relationshipFlags.master || []).length;
+    flagStats.F4_cohort = (G.relationshipFlags.cohort || []).length;
+    flagStats.F5_rivalCohort = (G.relationshipFlags.rivalCohort || []).length;
+    flagStats.F6_admire = (G.relationshipFlags.admire || []).length;
+    flagStats.F7_envy = (G.relationshipFlags.envy || []).length;
+  }
+  if (G && G.relationshipHistory) {
+    flagStats.F2_returner_history = (G.relationshipHistory.betrayalRecord || []).length;
+  }
+
+  return { violations, errors, totalWeeks, gameOverCount, stats, flagStats, finalSeasons: G ? G.season : 0 };
 }
 
 // ── Step 6: 実行 & レポート出力 ──
@@ -770,6 +793,21 @@ if (result.stats.v2Samples && result.stats.v2Samples.length > 0) {
   console.log(`  全体: ★ avg=${(allStars.reduce((a,b)=>a+b,0)/allStars.length).toFixed(2)} 分布: ${[1,2,3,4,5].map(st => `★${st}=${samples.filter(s=>s.stars===st).length}`).join(' ')}`);
 }
 
+// relationship-flags-spec-v1.0 §7-4: フラグ発火頻度
+if (result.flagStats) {
+  const seasons = Math.max(1, result.finalSeasons || 1);
+  const fs = result.flagStats;
+  console.log('--------------------------------------');
+  console.log('関係性フラグ累積（最終時点）/ シーズン平均');
+  const fmt = (v) => `${v} (${(v / seasons).toFixed(2)}/シーズン)`;
+  console.log(`  F-1 裏切り者     : ${fmt(fs.F1_betrayer)}    [目標: 0.5〜1.5]`);
+  console.log(`  F-2 出戻り       : ${fmt(fs.F2_returner)}    [目標: 0.05〜0.2]`);
+  console.log(`  F-3 師弟         : ${fmt(fs.F3_master)}    [目標: 0.1〜0.3]`);
+  console.log(`  F-4 同期         : ${fs.F4_cohort}                  (頻度目標なし)`);
+  console.log(`  F-5 ライバル同期 : ${fmt(fs.F5_rivalCohort)} [目標: 0.2〜0.5]`);
+  console.log(`  F-6 憧れ         : ${fmt(fs.F6_admire)}    [目標: 0.5〜1.5]`);
+  console.log(`  F-7 嫉妬         : ${fmt(fs.F7_envy)}    [目標: 0.3〜1.0]`);
+}
 console.log('--------------------------------------');
 console.log(`Total violations: ${result.violations.length} (${uniqueViolations.length} unique)`);
 console.log(`Total errors: ${result.errors.length}`);

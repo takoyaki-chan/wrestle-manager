@@ -1,6 +1,6 @@
 # 🏷️ 関係性フラグシステム仕様書 v1.0
 
-> **ステータス**: 🟡 ドラフト（Keisuke 承認済み・実装前）
+> **ステータス**: 🟡 実装完了 / 頻度未達（要次タスク検討）
 > **作成日**: 2026-04-28
 > **依存**: relationship-system-spec-v2.2.md（数値層 + 称号層）/ character-data-spec-v1.7.md / weekly-gameloop-spec-v1_0.md / chronicle-system-spec-v0.2.md
 > **追加実装箇所**: src/relationships.js（フラグ判定・付与・消滅）/ src/management.js（発火フック・モーダルキューイング）/ src/data.js（FLAG_DEFS 追加）/ src/ui-render.js（モーダル14種・履歴表示）
@@ -739,4 +739,6 @@ v2.2 で使用済みの 0xBE71〜0xBE73 と衝突しない範囲で確保。
 | 日付 | バージョン | 内容 |
 |------|:--------:|------|
 | 2026-04-28 | v1.0 ドラフト | 初版（Keisuke との会話で確定）|
+| 2026-04-28 | v1.0 実装完了 | Phase 1-8 完了。`src/relationships.js` の `Engine.relationships.flags` ネームスペース、`src/flag-dialogue.js` の14モーダル×7性格×3パターン、`src/ui-common.js` の `_drainFlagModalQueue` を実装。データ構造は `state.relationshipFlags` / `relationshipFlagLockouts` / `relationshipFlagCounters` / `relationshipHistory` に変更（state.relationships は pair-key 専用 namespace のため分離）。実装メモ: spec §3.4 の archetype `earnest` は `composed` (+1) にマッピング、`emotional`(archetype) は実コードに無いため personality 側で吸収。spec §3.3 に無い `shy` は -1 に割り当て。詳細セリフ仕様書 (§4.2 / §7-3) は別ファイル化せず本実装に内包。|
+| 2026-04-28 | 頻度検証 | auto-sim 100×3 seed (12345/67890/99999) で頻度測定。**全項目で目標値を大幅に下回る**: F-1 0.06/シーズン (目標 0.5-1.5)、F-2 0/シーズン、F-3 0.003/シーズン、F-5 0/シーズン、F-6 0/シーズン、F-7 0/シーズン。原因仮説: bond 帯シフト未達 (実測 1.2-2.5、目標 8-12) により bond≥60/70 の関係が稀。F-4 cohort も 0 だが auto-sim の入団簡易化のため実機での確認が必要。Keisuke の指示でパラメータ調整は本タスクでは行わず、次タスクで bond 上昇イベント追加 OR 相性軸の更なるチューニング OR 閾値再検討を要する。|
 
