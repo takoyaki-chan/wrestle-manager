@@ -681,6 +681,7 @@ Engine.relationships = {
     // N-03: Babyface×Heel 週次衝突（同団体内, 6%/ペア/週）
     // bond-rebalance v2.3: 4% → 6% (役割対立を可視化)
     const n03Rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 42, absWeek, 0xBE6A));
+    const n03ModalEnqueues = [];
     const processRoleClash = (orgRoster) => {
       if (!orgRoster || orgRoster.length === 0) return;
       const bfIds = orgRoster.filter(c => c.role === 'Babyface' && !c.injury).map(c => c.id);
@@ -697,6 +698,13 @@ Engine.relationships = {
           const rBA = newRels[keyBA] || { bond: 50, rivalry: 0 };
           newRels[keyAB] = { ...rAB, bond: this._clampAxisValue(rAB.bond + bondDelta, 'bond'), rivalry: this._clampAxisValue(rAB.rivalry + rivalryDelta, 'rivalry') };
           newRels[keyBA] = { ...rBA, bond: this._clampAxisValue(rBA.bond + bondDelta, 'bond'), rivalry: this._clampAxisValue(rBA.rivalry + rivalryDelta, 'rivalry') };
+          n03ModalEnqueues.push({
+            fromId: bfId,
+            toId: heelId,
+            bondDelta,
+            rivalryDelta,
+            cooldownKey: `modal:M19:${Engine.relationships.flags._pairKey(bfId, heelId)}`,
+          });
         }
       }
     };
@@ -773,6 +781,17 @@ Engine.relationships = {
     for (const m of n07ModalEnqueues) {
       if (Engine.relationships.flags && Engine.relationships.flags._enqueueModal) {
         outState = Engine.relationships.flags._enqueueModal(outState, 'M-18', m);
+      }
+    }
+    for (const m of n03ModalEnqueues) {
+      if (Engine.relationships.flags && Engine.relationships.flags._enqueueModalWithCooldown) {
+        outState = Engine.relationships.flags._enqueueModalWithCooldown(
+          outState,
+          'M-19',
+          { fromId: m.fromId, toId: m.toId, bondDelta: m.bondDelta, rivalryDelta: m.rivalryDelta },
+          m.cooldownKey,
+          26
+        );
       }
     }
 
@@ -2246,6 +2265,19 @@ Engine.relationships = {
       if (!state._modalQueue) state._modalQueue = [];
       state._modalQueue.push({ type, payload, season: state.season, week: state.week });
       return state;
+    },
+
+    _enqueueModalWithCooldown(state, type, payload, cooldownKey, cooldownWeeks) {
+      Engine.relationships.flags._ensureInit(state);
+      if (!cooldownKey) return this._enqueueModal(state, type, payload);
+      const absWeek = Engine.util.absWeek(state.season, state.week);
+      const counters = state.relationshipFlagCounters || {};
+      const entry = counters[cooldownKey];
+      const lastWeek = typeof entry === 'number' ? entry : (entry && entry.lastWeek != null ? entry.lastWeek : -999999);
+      if ((cooldownWeeks || 0) > 0 && (absWeek - lastWeek) < cooldownWeeks) return state;
+      counters[cooldownKey] = { lastWeek: absWeek };
+      state.relationshipFlagCounters = counters;
+      return this._enqueueModal(state, type, payload);
     },
 
     // ペアキー: smaller-larger 順 (spec §5.2 default)

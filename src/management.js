@@ -4095,6 +4095,15 @@ const Engine = {
         });
         if (highBondIds.length > 0) {
           s = Engine.relationships.applyFromRoster(s, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
+          if (Engine.relationships.flags) {
+            s = Engine.relationships.flags._enqueueModal(s, 'M-22', {
+              fromId: highBondIds[0],
+              toId: retiree.id,
+              fighterId: retiree.id,
+              affectedIds: highBondIds.slice(0, 3),
+              mode: 'retire',
+            });
+          }
         }
       }
 
@@ -9651,6 +9660,15 @@ const Engine = {
         });
         if (highBondIds.length > 0) {
           s = Engine.relationships.applyFromRoster(s, highBondIds, retiredF.id, { min: -10, max: -5 }, { min: 0, max: 0 }, injRetRelRng);
+          if (Engine.relationships.flags) {
+            s = Engine.relationships.flags._enqueueModal(s, 'M-22', {
+              fromId: highBondIds[0],
+              toId: retiredF.id,
+              fighterId: retiredF.id,
+              affectedIds: highBondIds.slice(0, 3),
+              mode: 'injury_retire',
+            });
+          }
         }
       }
       // Phase 3 R3: 仲の良い選手を失ったtrust影響
@@ -9931,6 +9949,15 @@ const Engine = {
       const rosterIds = departureResult.roster.map(c => c.id);
       departureResult.departed.forEach(d => {
         s = Engine.relationships.applyFromRoster(s, rosterIds, d.fighter.id, { min: -10, max: -5 }, { min: 0, max: 0 }, sdRelRng);
+        if (s.relationships && rosterIds.length > 0 && Engine.relationships.flags) {
+          s = Engine.relationships.flags._enqueueModal(s, 'M-23', {
+            fromId: rosterIds[0],
+            toId: d.fighter.id,
+            fighterId: d.fighter.id,
+            affectedIds: rosterIds.slice(0, 3),
+            mode: 'sudden_departure',
+          });
+        }
       });
       s = { ...s, roster: departureResult.roster, lockerRoomMorale: departureResult.lockerRoomMorale };
       // 王者が突然退団した場合は王座を空位にする
@@ -10181,6 +10208,16 @@ const Engine = {
         if (s.relationships) {
           const colleagueIds = s.roster.filter(c => c.id !== fighterIdToRelease).map(c => c.id);
           s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -15, max: -8 }, { min: 5, max: 10 }, poachRelRng);
+          if (colleagueIds.length > 0 && Engine.relationships.flags) {
+            s = Engine.relationships.flags._enqueueModal(s, 'M-20', {
+              fromId: colleagueIds[0],
+              toId: fighterIdToRelease,
+              fighterId: fighterIdToRelease,
+              toOrgId: poach.org?.id || null,
+              byIds: colleagueIds.slice(0, 3),
+              mode: 'poach',
+            });
+          }
         }
         // Phase 3 R3: 仲の良い選手を失ったtrust影響
         const impactedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships, { name: poach.fighter.name, reason: '引き抜き' });
@@ -10227,6 +10264,16 @@ const Engine = {
           if (s.relationships) {
             const colleagueIds = s.roster.filter(c => c.id !== fighterIdToRelease).map(c => c.id);
             s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -15, max: -8 }, { min: 5, max: 10 }, poachRelRng);
+            if (colleagueIds.length > 0 && Engine.relationships.flags) {
+              s = Engine.relationships.flags._enqueueModal(s, 'M-21', {
+                fromId: colleagueIds[0],
+                toId: fighterIdToRelease,
+                fighterId: fighterIdToRelease,
+                toOrgId: poach.org?.id || null,
+                byIds: colleagueIds.slice(0, 3),
+                mode: 'defense_failed',
+              });
+            }
           }
           // Phase 3 R3: 仲の良い選手を失ったtrust影響
           const impactedRoster2 = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships, { name: poach.fighter.name, reason: '防衛失敗' });

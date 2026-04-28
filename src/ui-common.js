@@ -1476,6 +1476,11 @@ const FLAG_MODAL_META = {
   'M-16': { title: '💔 スランプの八つ当たり', tone: 'negative', priority: 4 },
   'M-17': { title: '🪦 共闘ペアの裏切り',    tone: 'negative', priority: 4 },
   'M-18': { title: '⛓️ 価値観の決裂',         tone: 'negative', priority: 5 },
+  'M-19': { title: '⚡ BF/Heel 衝突',         tone: 'negative', priority: 3 },
+  'M-20': { title: '💸 引き抜きの遺恨',       tone: 'negative', priority: 3 },
+  'M-21': { title: '😭 引き留め失敗の遺恨',   tone: 'negative', priority: 4 },
+  'M-22': { title: '🥀 引退の置き土産',       tone: 'negative', priority: 2 },
+  'M-23': { title: '🚪 突然離脱の波紋',       tone: 'negative', priority: 3 },
 };
 
 function _findFighterById(id) {
