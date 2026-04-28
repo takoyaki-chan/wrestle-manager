@@ -120,6 +120,21 @@ Engine.relationships = {
     return sigma * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
   },
 
+  // ══════════════════════════════════════════════════════════
+  //  相性軸ヘルパー (relationship-affinity-spec-v1.0 §2.2 / §4.1)
+  //  キャラ固有の 360° 軸 (affinityAxis) のペア距離計算と bond 標的算出
+  // ══════════════════════════════════════════════════════════
+  _affinity: {
+    distance(axisA, axisB) {
+      if (typeof axisA !== 'number' || typeof axisB !== 'number') return 90; // 中立フォールバック
+      const diff = Math.abs(axisA - axisB);
+      return Math.min(diff, 360 - diff);
+    },
+    target(distance) {
+      return 50 + 10 * Math.cos(distance * Math.PI / 180);
+    },
+  },
+
   _getAxisBounds(axis) {
     if (axis === 'bond') return { min: 0, max: 100 };
     return { min: 0, max: 100 };
