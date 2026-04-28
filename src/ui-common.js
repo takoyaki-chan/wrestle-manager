@@ -63,9 +63,11 @@ const _POPUP_OVERLAY_IDS = [
 ];
 let _popupQueue = [];
 
-function _isPopupActive() {
+function _isPopupActive(opts) {
+  const ignoreShowResultOverlay = !!(opts && opts.ignoreShowResultOverlay);
   // 静的オーバーレイ（index.htmlで定義済み）
   const staticActive = _POPUP_OVERLAY_IDS.some(id => {
+    if (ignoreShowResultOverlay && id === 'showResultOverlay') return false;
     const el = document.getElementById(id);
     return el && (el.classList.contains('active') || el.classList.contains('show'));
   });
@@ -74,8 +76,8 @@ function _isPopupActive() {
   return !!document.querySelector('.r3-modal-overlay') || !!document.querySelector('.war-victory-overlay');
 }
 
-function _enqueuePopup(fn) {
-  if (_isPopupActive()) {
+function _enqueuePopup(fn, opts) {
+  if (_isPopupActive(opts)) {
     _popupQueue.push(fn);
   } else {
     fn();
@@ -4311,6 +4313,9 @@ function renderShowResult(results, injuryResults) {
 
   box.innerHTML = html;
   overlay.classList.add('active');
+  if (typeof App !== 'undefined' && typeof App.prepareShowResultInlinePopups === 'function') {
+    App.prepareShowResultInlinePopups();
+  }
 }
 
 // ── Pattern B ヘルパー（試合結果画面共通） ──
@@ -9672,17 +9677,17 @@ function _isGlimpseTier1(glimpse) {
   return false;
 }
 
-function showGlimpseAModal(glimpse) {
+function showGlimpseAModal(glimpse, opts) {
   _glimpseQueue.push({ ...glimpse, _renderer: 'A' });
   if (_glimpseQueue.length === 1) {
-    _enqueuePopup(() => _renderNextGlimpse());
+    _enqueuePopup(() => _renderNextGlimpse(), opts && opts.allowWhileShowResult ? { ignoreShowResultOverlay: true } : undefined);
   }
 }
 
-function showGlimpseBModal(glimpse) {
+function showGlimpseBModal(glimpse, opts) {
   _glimpseQueue.push({ ...glimpse, _renderer: 'B' });
   if (_glimpseQueue.length === 1) {
-    _enqueuePopup(() => _renderNextGlimpse());
+    _enqueuePopup(() => _renderNextGlimpse(), opts && opts.allowWhileShowResult ? { ignoreShowResultOverlay: true } : undefined);
   }
 }
 

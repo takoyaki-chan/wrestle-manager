@@ -6546,6 +6546,79 @@ const App = {
     };
   },
 
+  _glimpseSignature(glimpse) {
+    return [
+      glimpse.layer || '',
+      glimpse.type || '',
+      glimpse.axis || '',
+      glimpse.tone || '',
+      glimpse.speakerId || '',
+      glimpse.targetId || '',
+      glimpse.label || '',
+      glimpse.dialogue || '',
+    ].join('|');
+  },
+
+  _buildShowResultPreviewState(baseState) {
+    let previewState = baseState;
+    const pendingInjuryRetirements = previewState._pendingInjuryRetirements || [];
+    if (previewState._pendingInjuryRetirements) {
+      const { _pendingInjuryRetirements: _, ...cleanPreview } = previewState;
+      previewState = cleanPreview;
+    }
+    pendingInjuryRetirements.forEach(r => {
+      previewState = archiveRetiredRivalryState(previewState, r.fighter || null);
+    });
+
+    const pendingLastRunRetirements = previewState._pendingLastRunRetirements || [];
+    if (previewState._pendingLastRunRetirements) {
+      const { _pendingLastRunRetirements: _, ...cleanPreview } = previewState;
+      previewState = cleanPreview;
+    }
+    pendingLastRunRetirements.forEach(r => {
+      previewState = archiveRetiredRivalryState(previewState, r.fighter || null);
+    });
+
+    return previewState;
+  },
+
+  prepareShowResultInlinePopups() {
+    if (App._showResultInlinePreviewPrepared) return;
+    App._showResultInlinePreviewPrepared = true;
+    App._showResultInlinePreview = null;
+
+    try {
+      const previewBaseState = App._buildShowResultPreviewState(G);
+      const previewTick = Engine.tickWeek(previewBaseState);
+      const previewState = previewTick?.state || null;
+      if (!previewState) return;
+
+      const allGlimpses = [
+        ...(previewState._pendingGlimpseA || []),
+        ...(previewState._pendingGlimpseB || []),
+      ];
+      const tier1 = allGlimpses.filter(g => _isGlimpseTier1(g));
+      if (tier1.length === 0) return;
+
+      App._showResultInlinePreview = {
+        shownSignatures: new Set(),
+      };
+
+      setTimeout(() => {
+        const overlay = document.getElementById('showResultOverlay');
+        if (!overlay || !overlay.classList.contains('active') || !App._showResultInlinePreview) return;
+        tier1.forEach(glimpse => {
+          const sig = App._glimpseSignature(glimpse);
+          App._showResultInlinePreview.shownSignatures.add(sig);
+          showGlimpseAModal(glimpse, { allowWhileShowResult: true });
+        });
+      }, 500);
+    } catch (e) {
+      console.error('[WM] prepareShowResultInlinePopups failed:', e);
+      App._showResultInlinePreview = null;
+    }
+  },
+
 
   // Close show result and advance via tickWeek
   closeShowResult() {
@@ -6557,6 +6630,8 @@ const App = {
       if (resultOverlay.classList.contains('active')) {
         console.warn('[WM] closeShowResult fallback: overlay active while weekPhase=', G.weekPhase);
         resultOverlay.classList.remove('active');
+        App._showResultInlinePreviewPrepared = false;
+        App._showResultInlinePreview = null;
         Audio.play('coin');
         Audio.bgm.playForState();
         showScreen('week');
@@ -6571,6 +6646,8 @@ const App = {
       const domeEvt = MILESTONE_EVENTS.find(e => e.id === 'first_dome_sellout');
       if (domeEvt) {
         resultOverlay.classList.remove('active');
+        App._showResultInlinePreviewPrepared = false;
+        App._showResultInlinePreview = null;
         const speakers = App._resolveSpotlightFighters(G);
         showCeremonyEvent(domeEvt, speakers, () => { App.closeShowResult(); });
         return;
@@ -6578,6 +6655,9 @@ const App = {
     }
     App._closingShowResult = true;
     try {
+      const inlinePreview = App._showResultInlinePreview;
+      App._showResultInlinePreviewPrepared = false;
+      App._showResultInlinePreview = null;
       Audio.play('coin');
       Audio.bgm.play('management');
       resultOverlay.classList.remove('active');
@@ -6824,8 +6904,12 @@ const App = {
       if (G._pendingGlimpseA) { const { _pendingGlimpseA: _, ...c } = G; G = c; }
       if (G._pendingGlimpseB) { const { _pendingGlimpseB: _, ...c } = G; G = c; }
       const allGlimpses = [...(gA || []), ...(gB || [])];
-      const tier1 = allGlimpses.filter(g => _isGlimpseTier1(g));
+      let tier1 = allGlimpses.filter(g => _isGlimpseTier1(g));
       const tier2 = allGlimpses.filter(g => !_isGlimpseTier1(g));
+      const shownSignatures = inlinePreview?.shownSignatures;
+      if (shownSignatures && shownSignatures.size > 0) {
+        tier1 = tier1.filter(g => !shownSignatures.has(App._glimpseSignature(g)));
+      }
       if (tier2.length > 0) {
         G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
         refreshDojoLogFeed();
