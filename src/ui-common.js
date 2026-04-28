@@ -2504,7 +2504,10 @@ function _buildMVPAward(d) {
       f.careerRecord.history.forEach(ev => {
         if (ev.season !== G.season) return;
         if (ev.type === 'titleWin') hist.push({ icon: '👑', text: '王座獲得' });
-        if (ev.type === 'titleDefense') hist.push({ icon: '🛡️', text: `王座防衛（${ev.defenseCount || ''}回目）` });
+        if (ev.type === 'titleDefense') {
+          const defenseCount = ev.count ?? ev.defenseCount ?? '';
+          hist.push({ icon: '🛡️', text: `王座防衛（${defenseCount}回目）` });
+        }
         if (ev.type === 'ppvMainEvent' && ev.won) hist.push({ icon: '🏟️', text: 'PPV優勝' });
         if (ev.type === 'juniorTournament' && ev.result === 'champion') hist.push({ icon: '🏅', text: 'JT優勝' });
       });
