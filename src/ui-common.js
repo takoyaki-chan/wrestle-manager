@@ -10763,18 +10763,18 @@ function showContractSuddenDepartureModal(neg, state, onDone) {
 }
 
 // 画面3: 結果サマリー
-function showContractResultModal(results, onDone) {
+function showContractResultModal(results, salaryChanges, onDone) {
   const el = document.getElementById('shachoshitsuContent');
   if (!el) { if (onDone) onDone(); return; }
 
   const stayed   = results.filter(r => r.type === 'stay');
   const departed = results.filter(r => r.type === 'depart');
-  const raised   = results.filter(r => r.salaryDelta > 0);
+  const changed  = Array.isArray(salaryChanges) ? salaryChanges : [];
 
   let deskHtml = `<div class="neg-card-title">📋 契約更新 完了</div>`;
   deskHtml += `<div class="neg-stat-row">
     残留: <strong style="color:#27ae60">${stayed.length}名</strong>`;
-  if (raised.length > 0) deskHtml += `（昇給: ${raised.length}名）`;
+  if (changed.length > 0) deskHtml += `（給与変動: ${changed.length}名）`;
   deskHtml += `　　退団: <strong style="color:#c0392b">${departed.length}名</strong></div>`;
 
   if (departed.length > 0) {
@@ -10795,13 +10795,16 @@ function showContractResultModal(results, onDone) {
     deskHtml += '</div>';
   }
 
-  if (raised.length > 0) {
+  if (changed.length > 0) {
     deskHtml += '<div class="neg-result-section neg-result-stay">';
-    raised.forEach(r => {
+    changed.forEach(r => {
+      const deltaText = r.salaryDelta > 0 ? `+${r.salaryDelta}` : `${r.salaryDelta}`;
+      const deltaColor = r.salaryDelta > 0 ? '#c07000' : '#2c5aa0';
       deskHtml += `<div class="neg-result-row">
         ${portraitImg(r.fighterId, 32)}
         <span style="font-size:13px;color:#2a2318">${r.fighterName}</span>
-        <span style="font-size:11px;color:#c07000;margin-left:auto">+${r.salaryDelta}万/週</span>
+        <span style="font-size:11px;color:rgba(42,35,24,0.65);margin-left:auto;margin-right:8px">${r.oldSalary}→${r.newSalary}万/週</span>
+        <span style="font-size:11px;color:${deltaColor}">${deltaText}万/週</span>
       </div>`;
     });
     deskHtml += '</div>';

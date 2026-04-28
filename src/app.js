@@ -3853,12 +3853,20 @@ const App = {
 
     const season = G.season || 1;
     const results = [];
+    const preNegotiationRoster = (G.roster || []).map(f => ({ ...f }));
+    const preNegotiationTitles = G.titles || {};
     let idx = 0;
 
     function processNext() {
       if (idx >= negotiations.length) {
         // 全交渉完了 → 結果サマリー
-        showContractResultModal(results, () => {
+        const salaryChanges = App._buildContractRenewalSalaryChanges(
+          results,
+          preNegotiationRoster,
+          preNegotiationTitles,
+          G
+        );
+        showContractResultModal(results, salaryChanges, () => {
           // weekPhase を offseason に戻す（ナビロック解除 + advanceWeek の再ループ防止）
           const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = G;
           G = { ...clean, weekPhase: 'offseason', gameLog: [...(G.gameLog || []), `📋 契約更新完了: 残留${results.filter(r => r.type === 'stay').length}名 退団${results.filter(r => r.type === 'depart').length}名`] };
@@ -3893,6 +3901,42 @@ const App = {
 
     // サマリー画面 → 交渉開始
     showContractSummaryModal(negotiations, autoCount, season, () => processNext());
+  },
+
+  _buildContractRenewalSalaryChanges(results, preRoster, preTitles, stateAfterNegotiation) {
+    const changes = [];
+    const seen = new Set();
+    const afterRoster = stateAfterNegotiation?.roster || [];
+    const afterTitles = stateAfterNegotiation?.titles || {};
+
+    for (const result of results || []) {
+      if (!result || result.type !== 'stay' || seen.has(result.fighterId)) continue;
+      seen.add(result.fighterId);
+
+      const before = preRoster.find(f => f.id === result.fighterId);
+      const after = afterRoster.find(f => f.id === result.fighterId);
+      if (!before || !after) continue;
+
+      const oldSalary = Engine.util.getSalary(before, preTitles);
+      const renewedSnapshot = {
+        ...after,
+        contractOVR: Engine.util.ov(after),
+        contractPop: after.popularity || 0,
+      };
+      const newSalary = Engine.util.getSalary(renewedSnapshot, afterTitles);
+      const salaryDelta = newSalary - oldSalary;
+      if (salaryDelta === 0) continue;
+
+      changes.push({
+        fighterId: result.fighterId,
+        fighterName: result.fighterName,
+        oldSalary,
+        newSalary,
+        salaryDelta,
+      });
+    }
+
+    return changes;
   },
 
   _resolveContractChoice(neg, choiceIdx, results, onDone) {
