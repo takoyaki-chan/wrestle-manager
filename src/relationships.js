@@ -131,7 +131,8 @@ Engine.relationships = {
       return Math.min(diff, 360 - diff);
     },
     target(distance) {
-      return 50 + 10 * Math.cos(distance * Math.PI / 180);
+      // 振幅 ±15: 標的範囲 35〜65 (affinity-spec v1.0 §13 優先度1 第2段階)
+      return 50 + 15 * Math.cos(distance * Math.PI / 180);
     },
   },
 
@@ -569,7 +570,11 @@ Engine.relationships = {
         const axisB = (infoForB && typeof infoForB.affinityAxis === 'number') ? infoForB.affinityAxis : null;
         const dist = Engine.relationships._affinity.distance(axisA, axisB);
         const target = Engine.relationships._affinity.target(dist);
-        const bondPull = 0.08 + Engine.rng.float(rng) * 0.06; // v2.1 §3.2 比較で半減
+        // bondPull: 標的への収束力。標的シフト導入 (target = 50 + 15·cos) により
+        // 回帰先が個別化されたので元の強度 (0.18+0.12) を維持。
+        // 接触ペアは速やかに自分の標的へ戻り、match 由来の下方ドリフトに対する
+        // カウンターとして機能する。
+        const bondPull = 0.18 + Engine.rng.float(rng) * 0.12;
         if (bond > target) {
           bond -= bondPull;
         } else if (bond < target) {
@@ -596,14 +601,10 @@ Engine.relationships = {
         }
       }
 
-      // 同団体所属ボーナス（spec §3.2 O-01, Phase 4: bond60天井）
-      // affinity-spec v1.0 §5.2: 増分を半減（+0.2〜+0.5 → +0.1〜+0.25）
-      // bond55から効果が減衰し、60で完全停止。60超は試合やイベントでのみ到達可能
-      if (sameOrg && bond < 60) {
-        const orgBondGain = 0.1 + Engine.rng.float(rng) * 0.15; // +0.1〜+0.25 (半減)
-        const ceiling = bond < 55 ? 1.0 : Math.max(0, (60 - bond) / 5);
-        bond = this._applyAxisDelta(bond, orgBondGain * ceiling, 'bond');
-      }
+      // 同団体ボーナス: affinity-spec v1.0 §13 優先度3 第2段階で撤廃。
+      // 標的シフト (target = 50 + 15·cos) と競合し、bond<60 のペアを 60 へ
+      // 引き上げて極端帯到達を阻害していたため取り除いた。
+      // 「同団体感」は性格摩擦・世代近接ボーナス・接触あり target=60 (距離0°) で代替表現。
 
       // Phase 4 B: 性格不一致の週次摩擦
       // 条件: 同団体 かつ 性格+アーキタイプ相性 <= -3
