@@ -4976,6 +4976,13 @@ const Engine = {
         initWear = yearsOfWear * (8 + Engine.rng.int(rng, -3, 3));
         initWear = Math.min(79, Math.max(0, initWear));
       }
+      // affinityAxis: 数値ならそのまま、オブジェクト(pairedWith)なら保持（initialize でパスB処理）、
+      // それ以外（'auto'/未定義）はランダム整数を割り当てる
+      // (relationship-affinity-spec-v1.0 §3.1)
+      let affinityAxis;
+      if (typeof template.affinityAxis === 'number') affinityAxis = template.affinityAxis;
+      else if (typeof template.affinityAxis === 'object' && template.affinityAxis !== null && template.affinityAxis.pairedWith) affinityAxis = template.affinityAxis;
+      else affinityAxis = Math.floor(Engine.rng.float(rng) * 360);
       return {
         id: template.id, name: template.name, h: template.h,
         pw: current.pw, sp: current.sp, te: current.te, st: current.st, mn: current.mn,
@@ -4983,6 +4990,7 @@ const Engine = {
         traits: template.traits || [],
         personality: template.personality || 'normal',
         archetype: template.archetype || 'normal',
+        affinityAxis,
         notionValue: notion, trainCap,
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
         orgId, age: effectiveAge,
@@ -12530,9 +12538,16 @@ const Engine = {
     // Calculate assessed value (pricing-balance-spec §1)
     const charWithStats = { ...template, pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn };
     const av = Engine.scout.calcAssessedValue(charWithStats, rng, opts.season || 1);
+    // affinityAxis: 数値ならそのまま、pairedWith オブジェクトなら保持（initialize でパスB処理）、
+    // それ以外（'auto' / 未定義）はランダム整数を割り当てる
+    let affinityAxis;
+    if (typeof template.affinityAxis === 'number') affinityAxis = template.affinityAxis;
+    else if (typeof template.affinityAxis === 'object' && template.affinityAxis !== null && template.affinityAxis.pairedWith) affinityAxis = template.affinityAxis;
+    else affinityAxis = Math.floor(Engine.rng.float(rng) * 360);
     return {
       ...template,
       pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn,
+      affinityAxis,
       notionValue: notion,
       trainCap,
       age: entryAge,

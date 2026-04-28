@@ -2786,6 +2786,11 @@ const Storage = {
         G._migrated_milestoneNotified_v1 = true;
       }
 
+      // affinityAxis 後付け (relationship-affinity-spec-v1.0 §3.2)
+      if (!G._migrated_affinity_v1) {
+        G = Engine.relationships.migrateAffinityAxisV1(G);
+      }
+
       {
         const repair = Engine.saveDoctor.repairOnLoad(G);
         if (repair.changed) {

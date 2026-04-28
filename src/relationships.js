@@ -238,6 +238,43 @@ Engine.relationships = {
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, 0xBE1A));
     const relationships = {};
 
+    // ── 相性軸初期化 (relationship-affinity-spec-v1.0 §3.1, 2パス) ──
+    // パスA: 'auto' / 未指定キャラに 0-359 のランダム軸を割り当て
+    // パスB: { pairedWith, maxOffsetDeg } 指定キャラはパートナー軸 ±maxOffset の範囲で抽選
+    const affRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, 0xBE90));
+    const affRosters = [
+      state.roster || [],
+      ...Object.values(state.aiOrgs || {}).map(o => o.roster || []),
+      state.freeAgents || [],
+    ];
+    // パスA
+    for (const roster of affRosters) {
+      for (const c of roster) {
+        if (typeof c.affinityAxis !== 'object' || c.affinityAxis === null) {
+          c.affinityAxis = Math.floor(Engine.rng.float(affRng) * 360);
+        }
+      }
+    }
+    // パスB
+    const allCharIndex = new Map();
+    for (const roster of affRosters) {
+      for (const c of roster) allCharIndex.set(c.id, c);
+    }
+    for (const roster of affRosters) {
+      for (const c of roster) {
+        if (typeof c.affinityAxis !== 'object' || c.affinityAxis === null || !c.affinityAxis.pairedWith) continue;
+        const partner = allCharIndex.get(c.affinityAxis.pairedWith);
+        if (!partner || typeof partner.affinityAxis !== 'number') {
+          console.warn(`[affinity] partner ${c.affinityAxis.pairedWith} not resolved for ${c.id}, falling back to random`);
+          c.affinityAxis = Math.floor(Engine.rng.float(affRng) * 360);
+          continue;
+        }
+        const maxOffset = c.affinityAxis.maxOffsetDeg || 30;
+        const offset = Math.floor((Engine.rng.float(affRng) * 2 - 1) * maxOffset);
+        c.affinityAxis = ((partner.affinityAxis + offset) % 360 + 360) % 360;
+      }
+    }
+
     // 全キャラを収集（プレイヤーロスター + AI団体 + FA + レンタル）
     const allChars = [];
     (state.roster || []).forEach(c => allChars.push({ id: c.id, orgId: 'player', personality: c.personality || 'normal', archetype: c.archetype || 'normal', ovr: Engine.util.ov(c) }));
@@ -357,6 +394,27 @@ Engine.relationships = {
     });
 
     return { ...state, relationships, relationshipCounters: {} };
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  affinityAxis マイグレーション (relationship-affinity-spec-v1.0 §3.2)
+  //  既存セーブの全キャラ（roster / aiOrgs / freeAgents / retired）に
+  //  ランダム軸を後付けする。設計ペアは新規ゲーム限定なので等価ランダム置換。
+  // ══════════════════════════════════════════════════════════
+  migrateAffinityAxisV1(state) {
+    if (state._migrated_affinity_v1) return state;
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, 0xBE90));
+    const fixOne = (c) => {
+      if (typeof c.affinityAxis !== 'number') {
+        c.affinityAxis = Math.floor(Engine.rng.float(rng) * 360);
+      }
+    };
+    (state.roster || []).forEach(fixOne);
+    Object.values(state.aiOrgs || {}).forEach(org => (org.roster || []).forEach(fixOne));
+    (state.freeAgents || []).forEach(fixOne);
+    (state.retiredFighters || []).forEach(fixOne);
+    (state.dormantPool || []).forEach(fixOne);
+    return { ...state, _migrated_affinity_v1: true };
   },
 
   // ══════════════════════════════════════════════════════════
