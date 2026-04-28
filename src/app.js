@@ -6687,6 +6687,36 @@ const App = {
       const { _pendingLastRunRetirements: _, ...cleanG } = G;
       G = cleanG;
     }
+    if (pendingLastRunRetirements.length > 0) {
+      const lastRunRetiredIds = new Set(
+        pendingLastRunRetirements
+          .map(r => r?.fighter?.id)
+          .filter(id => id != null)
+      );
+      if (lastRunRetiredIds.size > 0) {
+        const retiredById = new Map((G.retiredFighters || []).map(f => [f.id, f]));
+        pendingLastRunRetirements.forEach(r => {
+          if (r?.fighter?.id != null && !retiredById.has(r.fighter.id)) retiredById.set(r.fighter.id, r.fighter);
+        });
+        const retiredIds = new Set(G.retiredIds || []);
+        lastRunRetiredIds.forEach(id => retiredIds.add(id));
+        const retiredSeasons = { ...(G.retiredSeasons || {}) };
+        pendingLastRunRetirements.forEach(r => {
+          if (r?.fighter?.id != null) retiredSeasons[r.fighter.id] = G.season;
+        });
+        G = {
+          ...G,
+          roster: (G.roster || []).filter(c => !lastRunRetiredIds.has(c.id)),
+          retiredFighters: [...retiredById.values()],
+          retiredIds: [...retiredIds],
+          retiredSeasons,
+        };
+        const validated = Engine.title.validateChampion(G);
+        if (validated.msg) {
+          G = { ...G, titles: validated.titles, gameLog: [...(G.gameLog || []), validated.msg] };
+        }
+      }
+    }
     pendingLastRunRetirements.forEach(r => {
       G = archiveRetiredRivalryState(G, r.fighter || null);
     });
@@ -6858,27 +6888,32 @@ const App = {
     App._pendingRivalryResolutions = [];
 
     // チェーンを逆順に組み立て（retirement ← growth ← resolution ← eventPopups）
-    let nextAction = null;
-    if (pendingInjuryRetirements.length > 0) {
-      nextAction = () => showRetirementPopups(pendingInjuryRetirements);
-    }
+    const popupActions = [];
     if (pendingLastRunRetirements.length > 0) {
-      const afterLastRun = nextAction;
-      nextAction = () => showRetirementPopups(pendingLastRunRetirements, afterLastRun || (() => {}));
+      popupActions.push(done => showRetirementPopups(pendingLastRunRetirements, done));
+    }
+    if (pendingInjuryRetirements.length > 0) {
+      popupActions.push(done => showRetirementPopups(pendingInjuryRetirements, done));
     }
     if (pendingGrowthEventsShow.length > 0) {
-      const after = nextAction;
-      nextAction = () => showGrowthEventPopups(pendingGrowthEventsShow, after || (() => {}));
+      popupActions.push(done => showGrowthEventPopups(pendingGrowthEventsShow, done));
     }
     if (pendingResolutions.length > 0) {
-      const after = nextAction;
-      nextAction = () => showRivalryPopups(pendingResolutions, after || (() => {}));
+      popupActions.push(done => showRivalryPopups(pendingResolutions, done));
     }
-    if (nextAction) {
+    if (popupActions.length > 0) {
+      const runPopupActions = () => {
+        let idx = 0;
+        const runNext = () => {
+          const action = popupActions[idx++];
+          if (action) action(runNext);
+        };
+        runNext();
+      };
       if (hasEventPopups) {
-        _chainEventPopupQueueEmpty(nextAction);
+        _chainEventPopupQueueEmpty(runPopupActions);
       } else {
-        setTimeout(nextAction, 200);
+        setTimeout(runPopupActions, 200);
       }
     }
 

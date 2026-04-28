@@ -9358,12 +9358,25 @@ const Engine = {
     const fanExpects = Engine.fanExpect.generate(s);
     const results = rawResults.map((r, matchIdx) => {
       // タッグ試合: crowdMQのみ加算（因縁/タイトル等はPhase 5以降）
+      let externalMQ = 0;
+      const slot = validMatches[matchIdx];
+      const participantIds = r.matchType === 'tag'
+        ? [slot?.teamA?.fighter1, slot?.teamA?.fighter2, slot?.teamB?.fighter1, slot?.teamB?.fighter2].filter(id => id > 0)
+        : [r.left?.id, r.right?.id].filter(id => id > 0);
+      const tagOrSinglesLastRunFighter = participantIds
+        .map(id => s.roster.find(c => c.id === id))
+        .find(f => f?.lastRun) || null;
+      if (tagOrSinglesLastRunFighter) {
+        externalMQ += 2;
+        if (matchIdx === 0) externalMQ += 3;
+        r.isLastRunMatch = true;
+        r.lastRunFighterId = tagOrSinglesLastRunFighter.id;
+      }
       if (r.matchType === 'tag') {
-        r.mq = Math.max(5, r.mq + crowdMQ.total);
-        r.externalMQBonus = crowdMQ.total;
+        r.mq = Math.max(5, r.mq + crowdMQ.total + externalMQ);
+        r.externalMQBonus = crowdMQ.total + externalMQ;
         return r;
       }
-      let externalMQ = 0;
       if (r.rivalryBonus) externalMQ += r.rivalryBonus.mqBonus;
       // ケミストリー（友情）MQ削除済み — r.friendshipBonus は加算しない
       if (r.isTitleMatch) externalMQ += (TITLES.find(t => t.id === 'world')?.mqBonus || 5);
@@ -9389,7 +9402,7 @@ const Engine = {
       // ラストランMQボーナス (§2.2)
       const lrLeft  = s.roster.find(c => c.id === r.left.id);
       const lrRight = s.roster.find(c => c.id === r.right.id);
-      const lastRunFighter = lrLeft?.lastRun ? lrLeft : (lrRight?.lastRun ? lrRight : null);
+      const lastRunFighter = r.isLastRunMatch ? null : (lrLeft?.lastRun ? lrLeft : (lrRight?.lastRun ? lrRight : null));
       if (lastRunFighter) {
         externalMQ += 2;  // ラストラン基本 +2
         if (matchIdx === 0) externalMQ += 3;  // メインイベント +3
