@@ -8078,20 +8078,29 @@ const App = {
       const result = Engine.eventSystem.applyLargeEventEffect(event, 0, choiceIdx, G, rng);
       App._applyLargeEventResult(result);
 
-      // B4タレント活動: 選手選択後にセリフポップアップ表示
+      // B4タレント活動 / メディア密着取材: 選手選択後にセリフポップアップ表示
+      // choiceIdx は選んだ選手ID(>0)。getLargeEventDialogue は event.activityType を見て
+      // B4_{activityType} キーを内部で解決するため、type 上書きは不要。
       if (event.type === 'B4' && choiceIdx > 0) {
         const selectedFighter = G.roster.find(f => f.id === choiceIdx);
         if (selectedFighter) {
           const dlgRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB4D1));
-          // activityType がある場合は B4_{activityType} キーでセリフ取得
-          const dlgEvent = event.activityType ? { ...event, type: `B4_${event.activityType}`, fighter: choiceIdx } : { ...event, fighter: choiceIdx };
-          const dialogue = Engine.eventSystem.getLargeEventDialogue(dlgRng, dlgEvent, G.roster);
-          if (dialogue) {
-            setTimeout(() => showEventPopup({
-              type: 'fighter', id: selectedFighter.id, name: selectedFighter.name,
-              tone: 'neutral', message: dialogue, autoCloseMs: 3000,
-            }), 200);
+          const dlgEvent = { ...event, fighter: choiceIdx };
+          let dialogue = Engine.eventSystem.getLargeEventDialogue(dlgRng, dlgEvent, G.roster);
+          // フォールバック: activityType 別キーで取れなかった場合は素の B4 を試す
+          if (!dialogue && event.activityType) {
+            dialogue = Engine.eventSystem.getLargeEventDialogue(dlgRng, { ...event, fighter: choiceIdx, activityType: undefined }, G.roster);
           }
+          if (!dialogue) dialogue = '…精一杯やります';
+          const activityLabel = (typeof TALENT_ACTIVITY_LABELS !== 'undefined' && event.activityType)
+            ? (TALENT_ACTIVITY_LABELS[event.activityType] || 'タレント活動')
+            : '密着取材';
+          // closeAndChoice 直後の overlay クローズ完了を確実にしてから表示
+          setTimeout(() => showEventPopup({
+            type: 'fighter', id: selectedFighter.id, name: selectedFighter.name,
+            tone: 'gold', message: dialogue,
+            detail: `📺 ${event.outletName || 'メディア'}・${activityLabel}`,
+          }), 250);
         }
       }
 
@@ -8713,7 +8722,27 @@ const App = {
     Storage.autoSave();
     Audio.play('award');
     if (typeof closeEventPopup === 'function') closeEventPopup();
-    showToast(`🏥 ${result.cur}週 → ${result.reduced}週に短縮（-${result.cost}万）`);
+    if (typeof closeCareModal === 'function') closeCareModal();
+    if (document.getElementById('careOverlay')) document.getElementById('careOverlay').classList.remove('active');
+
+    // 選手反応モーダル(社長室の通常書類と同じ豪華モーダルに流す)
+    const fighter = G.roster.find(f => f.id === fighterId);
+    if (fighter && typeof showDecisionResultModal === 'function') {
+      const text = Engine.shachoshitsu.getReactionText('special_treatment', fighter);
+      const doc = Engine.shachoshitsu.getDoc('special_treatment');
+      const displayData = {
+        fighter, text,
+        changes: result.changes || [],
+        cost: result.cost || 0,
+        remainingFunds: result.funds,
+        icon: doc?.icon || '🏥',
+        label: doc?.label || '特別治療指示書',
+        docId: 'special_treatment',
+      };
+      showDecisionResultModal(displayData);
+    } else {
+      showToast(`🏥 ${result.cur}週 → ${result.reduced}週に短縮（-${result.cost}万）`);
+    }
     if (typeof renderWeekScreen === 'function') renderWeekScreen();
   },
 

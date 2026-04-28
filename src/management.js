@@ -4013,7 +4013,12 @@ const Engine = {
 
       if (accepted) {
         const line = Engine.retirement.selectAdviseLine(fighter, G, true, rng);
-        let updated = Engine.career.ensure({ ...fighter, lastRun: true, lastRunWeek: Engine.util.absWeekTotal(G.season, G.week, G.offSeason, G.offWeek) });
+        // オフシーズン中の受諾は、翌シーズン week 1 をラストラン開始週として扱う
+        // (オフ中に4週経過で自動引退するのを防ぎ、必ず1興行分の猶予を与える)
+        const lastRunStartAbsWeek = G.offSeason
+          ? Engine.util.absWeekTotal(G.season + 1, 1, false, 0)
+          : Engine.util.absWeekTotal(G.season, G.week, G.offSeason, G.offWeek);
+        let updated = Engine.career.ensure({ ...fighter, lastRun: true, lastRunWeek: lastRunStartAbsWeek });
         updated = Engine.career.addEvent(updated, { type: 'retain', reason: 'player_retire', season: G.season, week: G.week, age: fighter.age });
         return {
           ...G,
@@ -10165,7 +10170,7 @@ const Engine = {
       if (poach && poach.fighter && poach.fighter.isRental) {
         pending.splice(idx, 1);
         s = { ...s, pendingPoach: pending };
-        return { state: s, events: ['rental poach offer ignored'] };
+        return { state: s, events: ['rental poach offer ignored'], outcome: null };
       }
 
       // O-09用RNG
@@ -10251,7 +10256,16 @@ const Engine = {
 
       pending.splice(idx, 1);
       s = { ...s, pendingPoach: pending };
-      return { state: s, events };
+      // Phase 4 反応モーダル用: outcome / 当該選手スナップショット / 相手団体名
+      const outcome = accepted ? 'accepted' : (events.some(e => e.startsWith('🛡️')) ? 'defended' : 'defense_failed');
+      return {
+        state: s,
+        events,
+        outcome,
+        fighterSnapshot: poach.fighter,
+        orgName: poach.org?.name || '',
+        fee: poach.fee,
+      };
     },
 
     // Player poach from AI org
@@ -11952,7 +11966,7 @@ const Engine = {
             const f = Engine.career.ensure(c);
             const isLastRunExpired = lastRunExpiredList.some(x => x.id === f.id);
             const route = isLastRunExpired ? 'lastrun_expired' : 'season_end';
-            const { line, category } = Engine.retirement.selectLine(f, isLastRunExpired ? 'season_end' : 'season_end', s, lineRng);
+            const { line, category } = Engine.retirement.selectLine(f, route, s, lineRng);
             const summary = Engine.retirement.buildCareerSummary(f);
             const canRetain = !isLastRunExpired && (f.wear || 0) < 80 && (f.retainCount || 0) < 2;
             return { fighter: f, route, line, category, summary, canRetain };

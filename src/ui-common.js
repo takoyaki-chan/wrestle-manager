@@ -5361,6 +5361,32 @@ function resolvePoach(fighterId, accepted) {
   G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
   Storage.autoSave();
   refreshAll();
+
+  // 結果に応じた選手リアクション(イベントポップアップ)
+  if (result.outcome && result.fighterSnapshot && typeof POACH_REACTION_DIALOGUES !== 'undefined') {
+    const dlg = POACH_REACTION_DIALOGUES[result.outcome];
+    if (dlg) {
+      const message = pickDialogueLine(dlg, result.fighterSnapshot);
+      const orgName = result.orgName || '他団体';
+      const tone = result.outcome === 'defended' ? 'positive'
+                : result.outcome === 'accepted' ? 'gold'
+                : 'negative';
+      const titleByOutcome = {
+        accepted: `💸 ${result.fighterSnapshot.name} → ${orgName}へ移籍`,
+        defended: `🛡️ ${result.fighterSnapshot.name} 引き留め成功`,
+        defense_failed: `😭 ${result.fighterSnapshot.name} 引き留め失敗`,
+      };
+      showEventPopup({
+        type: 'fighter',
+        id: result.fighterSnapshot.id,
+        name: result.fighterSnapshot.name,
+        emoji: titleByOutcome[result.outcome] ? '' : '💬',
+        tone,
+        message,
+        detail: titleByOutcome[result.outcome],
+      });
+    }
+  }
 }
 function finishTransferWindow() {
   G = { ...G, weekPhase: 'manage', pendingPoach: [], lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
