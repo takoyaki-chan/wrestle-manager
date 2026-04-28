@@ -4094,7 +4094,7 @@ const Engine = {
           return r && Engine.relationships.isPositiveBond(r.bond);
         });
         if (highBondIds.length > 0) {
-          s = Engine.relationships.applyFromRoster(s, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
+          s = Engine.relationships.applyFromRoster(s, highBondIds, retiree.id, { min: -15, max: -8 }, { min: 0, max: 0 }, retRelRng);
         }
       }
 
@@ -9650,7 +9650,7 @@ const Engine = {
           return r && Engine.relationships.isPositiveBond(r.bond);
         });
         if (highBondIds.length > 0) {
-          s = Engine.relationships.applyFromRoster(s, highBondIds, retiredF.id, { min: -10, max: -5 }, { min: 0, max: 0 }, injRetRelRng);
+          s = Engine.relationships.applyFromRoster(s, highBondIds, retiredF.id, { min: -15, max: -8 }, { min: 0, max: 0 }, injRetRelRng);
         }
       }
       // Phase 3 R3: 仲の良い選手を失ったtrust影響
@@ -9930,7 +9930,7 @@ const Engine = {
       const sdRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3A, s.season, s.week));
       const rosterIds = departureResult.roster.map(c => c.id);
       departureResult.departed.forEach(d => {
-        s = Engine.relationships.applyFromRoster(s, rosterIds, d.fighter.id, { min: -10, max: -5 }, { min: 0, max: 0 }, sdRelRng);
+        s = Engine.relationships.applyFromRoster(s, rosterIds, d.fighter.id, { min: -15, max: -8 }, { min: 0, max: 0 }, sdRelRng);
       });
       s = { ...s, roster: departureResult.roster, lockerRoomMorale: departureResult.lockerRoomMorale };
       // 王者が突然退団した場合は王座を空位にする
@@ -10180,7 +10180,7 @@ const Engine = {
         // O-09: 引き抜き — roster除外前に関係値更新（同僚全員→引き抜かれた選手）
         if (s.relationships) {
           const colleagueIds = s.roster.filter(c => c.id !== fighterIdToRelease).map(c => c.id);
-          s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -15, max: -8 }, { min: 5, max: 10 }, poachRelRng);
+          s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -24, max: -14 }, { min: 8, max: 15 }, poachRelRng);
         }
         // Phase 3 R3: 仲の良い選手を失ったtrust影響
         const impactedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships, { name: poach.fighter.name, reason: '引き抜き' });
@@ -10226,7 +10226,7 @@ const Engine = {
           // O-09: 引き抜き（防衛失敗）— roster除外前に関係値更新
           if (s.relationships) {
             const colleagueIds = s.roster.filter(c => c.id !== fighterIdToRelease).map(c => c.id);
-            s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -15, max: -8 }, { min: 5, max: 10 }, poachRelRng);
+            s = Engine.relationships.applyFromRoster(s, colleagueIds, fighterIdToRelease, { min: -28, max: -16 }, { min: 10, max: 18 }, poachRelRng);
           }
           // Phase 3 R3: 仲の良い選手を失ったtrust影響
           const impactedRoster2 = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships, { name: poach.fighter.name, reason: '防衛失敗' });
@@ -18841,7 +18841,7 @@ Engine.contract = {
       } else {
         const depRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE41, s.season, fighter.id));
         const colleagueIds = s.roster.filter(c => c.id !== fighter.id).map(c => c.id);
-        s = Engine.relationships.applyFromRoster(s, colleagueIds, fighter.id, { min: -15, max: -8 }, { min: 5, max: 10 }, depRelRng);
+        s = Engine.relationships.applyFromRoster(s, colleagueIds, fighter.id, { min: -24, max: -14 }, { min: 8, max: 15 }, depRelRng);
       }
     }
 

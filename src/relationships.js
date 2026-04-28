@@ -683,7 +683,7 @@ Engine.relationships = {
       };
     }
 
-    // N-03: Babyface×Heel 週次衝突（同団体内, 9%/ペア/週）
+    // N-03: Babyface×Heel 週次衝突（同団体内, 12%/ペア/週）
     // 埋もれがちな対立の供給源を少し強化
     const n03Rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 42, absWeek, 0xBE6A));
     const processRoleClash = (orgRoster) => {
@@ -693,9 +693,9 @@ Engine.relationships = {
       if (bfIds.length === 0 || heelIds.length === 0) return;
       for (const bfId of bfIds) {
         for (const heelId of heelIds) {
-          if (Engine.rng.float(n03Rng) >= 0.09) continue;
-          const bondDelta = -(4 + Engine.rng.float(n03Rng) * 3); // -4〜-7
-          const rivalryDelta = 3 + Engine.rng.float(n03Rng) * 2; // +3〜+5
+          if (Engine.rng.float(n03Rng) >= 0.12) continue;
+          const bondDelta = -(6 + Engine.rng.float(n03Rng) * 4); // -6〜-10
+          const rivalryDelta = 4 + Engine.rng.float(n03Rng) * 4; // +4〜+8
           const keyAB = this._key(bfId, heelId);
           const keyBA = this._key(heelId, bfId);
           const rAB = newRels[keyAB] || { bond: 50, rivalry: 0 };
@@ -738,8 +738,8 @@ Engine.relationships = {
       }
       if (candidates.length === 0) return;
       const pick = candidates[Math.floor(Engine.rng.float(n07Rng) * candidates.length)];
-      const bondDelta = -(8 + Engine.rng.float(n07Rng) * 4);
-      const rivalryDelta = 3 + Engine.rng.float(n07Rng) * 3;
+      const bondDelta = -(12 + Engine.rng.float(n07Rng) * 6);
+      const rivalryDelta = 5 + Engine.rng.float(n07Rng) * 4;
       for (const k of [pick.keyAB, pick.keyBA]) {
         const r = newRels[k];
         newRels[k] = {
@@ -1190,29 +1190,29 @@ Engine.relationships = {
     const roll = (mn, mx) => mn + Math.floor(Engine.rng.float(rng) * (mx - mn + 1));
 
     // ── A-1 ベース ──
-    let bondDelta    = -roll(12, 20);   // -20〜-12
-    let rivalryDelta =  roll(8, 15);    // +8〜+15
+    let bondDelta    = -roll(18, 30);   // -30〜-18
+    let rivalryDelta =  roll(12, 23);   // +12〜+23
     let morDelta = 0;
     let orgPopDelta = 0;
 
     // ── A-2 エースサーチャージ ──
     if (isAce) {
-      bondDelta    -= roll(3, 5);
-      rivalryDelta += roll(4, 5);
+      bondDelta    -= roll(5, 8);
+      rivalryDelta += roll(6, 8);
       morDelta     -= roll(8, 12);
     }
 
     // ── A-3 宿敵団体サーチャージ ──
     if (isRivalOrg) {
-      bondDelta    -= roll(5, 6);
-      rivalryDelta += roll(7, 10);
+      bondDelta    -= roll(8, 9);
+      rivalryDelta += roll(11, 15);
     }
 
     // ── A-4 チャンピオンサーチャージ ──
     let beltCarried = false;
     if (isChampion) {
-      bondDelta    -= 10;
-      rivalryDelta += roll(12, 15);
+      bondDelta    -= 15;
+      rivalryDelta += roll(18, 23);
       orgPopDelta  -= roll(3, 5);
       morDelta     -= roll(10, 15);
 
@@ -1220,13 +1220,13 @@ Engine.relationships = {
       const beltRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, 0xBE73, state.season, departingId));
       if (Engine.rng.float(beltRng) < 0.5) {
         beltCarried = true;
-        rivalryDelta += roll(5, 10);  // 持ち出し屈辱サーチャージ
+        rivalryDelta += roll(8, 15);  // 持ち出し屈辱サーチャージ
       }
     }
 
     // ── キャップ ──
-    bondDelta    = Math.max(bondDelta, -35);
-    rivalryDelta = Math.min(rivalryDelta, 35);
+    bondDelta    = Math.max(bondDelta, -45);
+    rivalryDelta = Math.min(rivalryDelta, 45);
 
     // ── 残留選手全員に同 delta 適用（min/max を同値で渡す → 各人に同じ値が当たる） ──
     const remainingIds = roster
