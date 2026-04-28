@@ -86,17 +86,25 @@ Engine.factions = {
   },
 
   // ── §2.1 忠誠型発生条件 ─────────────────────────────────────
-  checkLoyalFormationConditions(state) {
+  checkLoyalFormationConditions(state, options = {}) {
     const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
     const roster = (state.roster || []).filter(c => !c.isRental);
     if (roster.length <= cfg.minRosterSize) return { eligible: false };
-    if (state.factions && state.factions.length > 0) return { eligible: false };
+    const maxExistingFactions = options.maxExistingFactions != null ? options.maxExistingFactions : 0;
+    if (factions.length > maxExistingFactions) return { eligible: false };
 
-    const sorted = [...roster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    const requireUnassigned = !!options.requireUnassigned;
+    const assigned = new Set();
+    if (requireUnassigned) factions.forEach(f => f.memberIds.forEach(id => assigned.add(id)));
+    const candidatePool = requireUnassigned ? roster.filter(c => !assigned.has(c.id)) : roster;
+    if (candidatePool.length < cfg.loyalMinFollowers + 1) return { eligible: false };
+
+    const sorted = [...candidatePool].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
     const top3 = sorted.slice(0, 3);
 
     for (const cand of top3) {
-      const followers = roster
+      const followers = candidatePool
         .filter(c => c.id !== cand.id)
         .filter(c => this._getBond(state, c.id, cand.id) >= cfg.loyalBondThreshold);
       if (followers.length >= cfg.loyalMinFollowers) {
@@ -112,6 +120,7 @@ Engine.factions = {
           leaderId: cand.id,
           leaderName: cand.name,
           followerIds: pickedFollowers.map(c => c.id),
+          existingFactionCount: factions.length,
         };
       }
     }
@@ -173,6 +182,7 @@ Engine.factions = {
   },
   _scoreFactionFlavor(state, leader, members, rng) {
     const sample = members.length > 0 ? members : [leader];
+    const cfg = FACTION_CONFIG;
     const leaderWeight = 0.65;
     const memberWeight = 0.25;
     const noiseWeight = 0.10;
@@ -198,17 +208,20 @@ Engine.factions = {
     const noise = () => Engine.rng.float(rng) * noiseWeight;
     return {
       bond_first: leaderBondScore * leaderWeight + groupBondScore * memberWeight + noise(),
-      meritocratic: leaderOvrScore * leaderWeight + groupOvrScore * memberWeight + noise(),
+      meritocratic: (leaderOvrScore * leaderWeight + groupOvrScore * memberWeight + noise()) * (cfg.meritocraticFlavorScoreMult || 1),
       neutral: noise() + 0.02,
     };
   },
-  _decideFactionFlavor(state, leaderId, memberIds, rng) {
+  _decideFactionFlavor(state, leaderId, memberIds, rng, options = {}) {
     const roster = state.roster || [];
     const leader = roster.find(c => c.id === leaderId);
     if (!leader) return 'neutral';
     const members = [...new Set(memberIds)].map(id => roster.find(c => c.id === id)).filter(Boolean);
     const scores = this._scoreFactionFlavor(state, leader, members, rng);
-    return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+    const excluded = new Set(options.excludeFlavors || []);
+    const candidates = Object.entries(scores).filter(([flavor]) => !excluded.has(flavor));
+    if (!candidates.length) return 'neutral';
+    return candidates.sort((a, b) => b[1] - a[1])[0][0];
   },
 
 
@@ -229,7 +242,9 @@ Engine.factions = {
       nextId,
       0xFA7E
     ));
-    const flavor = options.flavor || this._decideFactionFlavor(state, leaderId, memberIds, flavorRng);
+    const excludeFlavors = [...(options.excludeFlavors || [])];
+    if ((state.factions || []).length === 0 && !options.allowInitialMeritocratic) excludeFlavors.push('meritocratic');
+    const flavor = options.flavor || this._decideFactionFlavor(state, leaderId, memberIds, flavorRng, { excludeFlavors });
 
     const faction = {
       id: nextId,
@@ -459,7 +474,8 @@ Engine.factions = {
       const overDecay = Math.max(0, f.memberIds.length - cfg.joinSizeDecayStart);
       const sizeMult = Math.max(0, 1 - overDecay * cfg.joinSizeDecayRate);
       const flavorJoinMult = this._getFlavorJoinMult(f);
-      const rate = Math.min(baseRate * momentumMult * sizeMult * flavorJoinMult, 0.95);
+      const soloFactionMult = newFactions.length === 1 ? (cfg.soloFactionJoinRateMult || 1) : 1;
+      const rate = Math.min(baseRate * momentumMult * sizeMult * flavorJoinMult * soloFactionMult, 0.95);
 
       if (Engine.rng.float(rng) < rate) {
         f.memberIds.push(bestCandId);
@@ -1108,7 +1124,7 @@ Engine.factions = {
     }
 
     // 8) F01（忠誠型結成、確率 60%、拒否クールダウン対応）
-    const loyalCheck = this.checkLoyalFormationConditions(state);
+    const loyalCheck = this.checkLoyalFormationConditions(state, { maxExistingFactions: 0 });
     if (loyalCheck.eligible) {
       const cdUntil = (state.factionEventCooldowns || {}).F01_rejected_until || 0;
       const now = this._absWeek(state);
@@ -1119,6 +1135,25 @@ Engine.factions = {
             leaderId: loyalCheck.leaderId,
             leaderName: loyalCheck.leaderName,
             followerIds: loyalCheck.followerIds,
+          },
+        };
+      }
+    }
+
+    const secondLoyalCheck = this.checkLoyalFormationConditions(state, {
+      maxExistingFactions: cfg.secondFactionMaxExistingFactions || 1,
+      requireUnassigned: true,
+    });
+    if (secondLoyalCheck.eligible && secondLoyalCheck.existingFactionCount === 1) {
+      const cdUntil = (state.factionEventCooldowns || {}).F01_rejected_until || 0;
+      const now = this._absWeek(state);
+      if (now >= cdUntil && Engine.rng.float(rng) < (cfg.secondFactionProbability || cfg.eventProbability.F01)) {
+        return {
+          eventId: 'F01',
+          payload: {
+            leaderId: secondLoyalCheck.leaderId,
+            leaderName: secondLoyalCheck.leaderName,
+            followerIds: secondLoyalCheck.followerIds,
           },
         };
       }
