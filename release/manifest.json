@@ -1,0 +1,40 @@
+{
+  "version": "1.07",
+  "description": "Wrestle Manager 配布対象ファイル一覧。新規JS/CSS追加時は必ずここも更新すること。manifest に載っていないファイルは配布されないため、追加忘れは即バグになる。",
+  "sourceFiles": [
+    "src/index.html",
+    "src/victory-lines.js",
+    "src/lz-string.min.js",
+    "src/data.js",
+    "src/data-faction-dialogue.js",
+    "src/management.js",
+    "src/match-engine.js",
+    "src/relationships.js",
+    "src/flag-dialogue.js",
+    "src/factions.js",
+    "src/draft-negotiation.js",
+    "src/kuroda-text.js",
+    "src/app.js",
+    "src/ui-common.js",
+    "src/ui-render.js",
+    "src/battle-engine.html",
+    "src/battle-shared.css",
+    "src/battle-sfx.js",
+    "src/battle-anim.js",
+    "src/battle-lines.js",
+    "src/battle-replay-core.js",
+    "src/battle-engine-main.js",
+    "src/tag-battle.html",
+    "src/tag-battle-main.js",
+    "src/tag-battle-lines.js"
+  ],
+  "rootFiles": [
+    "ガイド01-はじめの一歩.html",
+    "ガイド02-さらに先へ.html",
+    "ガイド03-パラメータ解説.html"
+  ],
+  "assetDirectories": [
+    "image",
+    "bgm"
+  ]
+}

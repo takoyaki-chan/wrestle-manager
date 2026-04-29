@@ -7,3 +7,6 @@ audio-mixer.html
 .claude/scheduled_tasks.lock
 .codex-temp/
 test/_*.json
+release/dist/
+release/staging/
+release/verify-tmp/

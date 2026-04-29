@@ -204,3 +204,32 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 ### このルールの目的
 
 過去に「デザインシステムへの参照がなく、新画面追加のたびに色味・余白がドリフトし、古い画面だけ浮いて見える」問題が発生した。この再発を防ぐため、**すべてのUI作業は階層1〜3のドキュメントに必ず立ち返る**こと。
+
+---
+
+## 配布手順
+
+DLsite/BOOTH 向けzip配布は必ず以下のスクリプト経由で行う。**手動梱包・GUIツール梱包は禁止。**
+
+```powershell
+# 1. パッケージ生成
+.\release\package-release.ps1
+
+# 2. 検証
+.\release\verify-package.ps1 -ZipPath .\release\dist\WrestleManager_1.07.zip
+
+# 3. 検証チェックリストすべてOKを確認後、DLsite/BOOTHに差し替え
+```
+
+### 配布対象ファイルの追加・削除
+
+新規JS/CSS/アセットを追加した場合は **`release/manifest.json` を必ず更新**する。  
+manifest に載っていないファイルは配布されないため、追加忘れは即バグになる。
+
+`package-release.ps1` は manifest 未記載ファイルを自動検出して警告するので、  
+「なぜ警告が出ているか」を毎回確認すること。
+
+### バージョン更新時
+
+`release/manifest.json` の `"version"` フィールドを更新する。  
+スクリプトはここからバージョン番号を読む（`-Version` 引数で上書きも可）。

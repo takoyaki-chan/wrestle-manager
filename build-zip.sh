@@ -88,7 +88,9 @@ build_one() {
      src/ui-common.js src/ui-render.js src/victory-lines.js \
      src/battle-engine.html src/lz-string.min.js src/kuroda-text.js \
      src/draft-negotiation.js \
+     src/data-faction-dialogue.js src/flag-dialogue.js src/factions.js \
      src/battle-sfx.js src/battle-shared.css src/battle-anim.js src/battle-lines.js \
+     src/battle-replay-core.js src/battle-engine-main.js \
      src/tag-battle.html src/tag-battle-main.js src/tag-battle-lines.js \
      "${DIST_DIR}/src/"
   # ── IS_TRIAL フラグの書き換え（コピー後のファイルのみ） ──
