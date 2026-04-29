@@ -6184,10 +6184,16 @@ function _npRenderPage1() {
     const ts = wp.topStory;
     const photoBg = _npPhotoBg(ts.characterId);
     const tsName = ts.characterId ? (ALL_CHARS.find(c => c.id === ts.characterId)?.name || '') : '';
+    const tsOrgKey = ts.characterId ? _npFindFighterOrgKey(G, ts.characterId) : null;
+    const tsOrgName = ts.characterId ? _findFighterOrgName(G, ts.characterId) : '';
+    const tsOrgEmblem = tsOrgKey ? _npOrgEmblem(G, tsOrgKey, 18) : '';
+    const tsOrgLineHtml = (tsOrgEmblem || tsOrgName)
+      ? `<div class="np-top-org-line">${tsOrgEmblem}<span>${tsOrgName || ''}</span></div>`
+      : '';
     html += `<article class="np-top-story">
       <div class="np-top-photo" style="${photoBg}">
         ${ts.characterId ? `<div class="stamp">EXCLUSIVE</div>` : ''}
-        ${ts.characterId ? `<div class="caption"><strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>` : ''}
+        ${ts.characterId ? `<div class="caption">${tsOrgLineHtml}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>` : ''}
       </div>
       <div class="np-top-body">
         <div class="np-sec">一面記事</div>
@@ -6237,10 +6243,17 @@ function _npRenderPage1() {
       const sitTag = ss.situation
         ? `<div class="np-sub-situation">${ss.situation}</div>`
         : '';
+      const ssOrgKey = ss.characterId ? _npFindFighterOrgKey(G, ss.characterId) : null;
+      const ssOrgName = ss.characterId ? _findFighterOrgName(G, ss.characterId) : '';
+      const ssOrgEmblem = ssOrgKey ? _npOrgEmblem(G, ssOrgKey, 14) : '';
+      const ssOrgLineHtml = (ssOrgEmblem || ssOrgName)
+        ? `<div class="np-sub-org-line">${ssOrgEmblem}<span>${ssOrgName || ''}</span></div>`
+        : '';
       html += `<div class="np-sub">
         <div class="np-sub-photo" style="${photoBg}" ${ss.characterId ? `onclick="showFighterPopup(${ss.characterId})"` : ''}></div>
         <div style="flex:1;min-width:0">
           ${sitTag}
+          ${ssOrgLineHtml}
           <div class="np-sub-headline">${ss.headline || ''}</div>
           <div class="np-sub-text">${ss.body || ''}</div>
         </div>
@@ -6296,51 +6309,67 @@ function _npSwapMainToSecondCard(d, seasonNum, weekNum) {
     finishLabel: d.finishLabel || '',
   };
 
-  // 繰り上げ試合の簡易記事を生成（NEWSPAPER_DIGEST_COMMENTS のプールから seeded pick）
-  const winnerName = m.isDraw ? null
-    : m.winner === 'left' ? m.left.name
-    : m.winner === 'right' ? m.right.name
+  // 繰り上げ試合の長文記事を生成（メインと同じ App._NEWSPAPER_ARTICLES プールから seeded pick）
+  const winnerObj = m.isDraw ? null
+    : m.winner === 'left' ? m.left
+    : m.winner === 'right' ? m.right
     : null;
-  const loserName = m.isDraw ? null
-    : m.winner === 'left' ? m.right.name
-    : m.winner === 'right' ? m.left.name
+  const loserObj = m.isDraw ? null
+    : m.winner === 'left' ? m.right
+    : m.winner === 'right' ? m.left
     : null;
+  const winnerName = winnerObj ? winnerObj.name : null;
+  const loserName = loserObj ? loserObj.name : null;
   let promotedArticle = '';
-  if (typeof NEWSPAPER_DIGEST_COMMENTS !== 'undefined') {
-    let pool = null;
-    if (m.isDraw) pool = NEWSPAPER_DIGEST_COMMENTS.draw;
-    else if (m.isUpset) pool = NEWSPAPER_DIGEST_COMMENTS.upset;
-    else if (m.isDominant) pool = NEWSPAPER_DIGEST_COMMENTS.dominant;
-    else if (m.isTitleMatch) pool = NEWSPAPER_DIGEST_COMMENTS.titleMatch;
-    else {
-      const venueIdx = (typeof d.venueIdx === 'number') ? d.venueIdx : (G.showVenue || 0);
-      const expectedMQ = (typeof _calcExpectedMQ === 'function') ? _calcExpectedMQ(venueIdx, G.orgPop) : 50;
-      const diff = (m.mq || 0) - expectedMQ;
-      const r = diff >= 15 ? 'great' : diff >= 5 ? 'good' : diff >= -4 ? 'average' : diff >= -15 ? 'poor' : 'bad';
-      pool = NEWSPAPER_DIGEST_COMMENTS[r];
+  const promotedSeed = Engine.rng.derive(seasonNum || 1, weekNum || 1, m.left.id || 0, 0xC6A1);
+  const promotedRng = Engine.rng.create(promotedSeed);
+  // dContext: メイン記事用と同じ形でフィールドを揃える
+  const promotedCtx = {
+    isDraw: !!m.isDraw,
+    winner: winnerObj,
+    loser: loserObj,
+    left: m.left,
+    right: m.right,
+    isTitleMatch: !!m.isTitleMatch,
+    isUpset: !!m.isUpset,
+    isDominant: !!m.isDominant,
+    finishLabel: m.finishLabel || '決着',
+    turns: m.turns || 0,
+    mq: m.mq || 0,
+    venue: { name: d.venueName || (VENUES[d.venueIdx]?.name) || '会場' },
+    attendance: d.attendance || 0,
+    showName: d.showName || '定期興行',
+    rivalLabel: '宿命のカード',
+    ovrGap: Math.abs((m.left.ovr || 0) - (m.right.ovr || 0)),
+  };
+  // カテゴリ選択（メインと重複しないよう titleWin/titleDefend は使わず、汎用記事プールから選ぶ）
+  let promotedCat;
+  if (m.isDraw) promotedCat = 'draw';
+  else if ((m.mq || 0) >= 90) promotedCat = 'superMQ';
+  else if (m.isUpset) promotedCat = 'upset';
+  else if (m.isDominant) promotedCat = 'dominant';
+  else if ((m.mq || 0) >= 75) promotedCat = 'closeMQ';
+  else promotedCat = 'normal';
+  const ART = (typeof App !== 'undefined' && App._NEWSPAPER_ARTICLES) ? App._NEWSPAPER_ARTICLES : null;
+  if (ART) {
+    const pool = ART[promotedCat] || ART.normal || [];
+    if (pool.length > 0) {
+      const fn = Engine.rng.pick(promotedRng, pool);
+      try { promotedArticle = fn(promotedCtx); } catch(e) { promotedArticle = ''; }
     }
-    if (pool && pool.length > 0) {
-      const rng = Engine.rng.create(Engine.rng.derive(seasonNum || 1, weekNum || 1, m.left.id || 0, 0xC6A1));
-      const fn = Engine.rng.pick(rng, pool);
-      try {
-        promotedArticle = fn({
-          winnerName: winnerName || m.left.name,
-          loserName: loserName || m.right.name,
-          leftName: m.left.name,
-          rightName: m.right.name,
-          mq: m.mq || 0,
-          turns: m.turns || 0,
-        });
-      } catch (e) { promotedArticle = ''; }
+    // 低MQ追記
+    if (promotedArticle && (m.mq || 0) < 40 && ART.lowMQ) {
+      try { promotedArticle = Engine.rng.pick(promotedRng, ART.lowMQ)(promotedCtx); } catch(e) {}
     }
   }
   if (!promotedArticle) {
+    // フォールバックも長めに
     if (m.isDraw) {
-      promotedArticle = `${m.left.name}と${m.right.name}が決着つかず引き分け。MQ${m.mq || '?'}、${m.turns || '?'}ターンの攻防は次戦への伏線として残った。`;
+      promotedArticle = `${m.left.name}と${m.right.name}、${m.turns || '?'}ターンの攻防は決着を見なかった。互いに譲らず${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を最後まで沸かせ、リング上には引き分けに納得しきれない両者の表情が残った。MQ${m.mq || '?'}——再戦を望む声は早くも上がっている。`;
     } else if (winnerName) {
-      promotedArticle = `${winnerName}が${loserName}を下した一戦。MQ${m.mq || '?'}、${m.turns || '?'}ターン${m.finishLabel ? `・${m.finishLabel}` : ''}で決着。${m.isTitleMatch ? '王座戦としての' : ''}見応えは確かにあった。`;
+      promotedArticle = `${winnerName}が${loserName}を${m.finishLabel || '決着技'}で仕留めた${m.turns || '?'}ターンの一戦。${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を前にMQ${m.mq || '?'}を記録し、メインに次ぐ好カードとして紙面に残った。${m.isTitleMatch ? '王座戦としての重みも感じさせる勝利だった。' : `${loserName}も意地を見せたが、${winnerName}の地力が最後にものを言った形だ。`}`;
     } else {
-      promotedArticle = `${m.left.name}対${m.right.name}、MQ${m.mq || '?'}の好試合。`;
+      promotedArticle = `${m.left.name}対${m.right.name}は${m.turns || '?'}ターンに及ぶ攻防となり、${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を魅了。MQ${m.mq || '?'}は今興行のセミとして十分な数字で、両者の評価をさらに押し上げる結果となった。`;
     }
   }
 
@@ -6719,10 +6748,13 @@ function _npRenderPage2() {
           : diff < -5 ? `${m.rival.name}が地力で勝る。${m.player.name}は工夫が要る。`
           : `OVRは互角。${m.role}対決として見逃せない一戦になる。`;
       }
+      const pEmblem = _npOrgEmblem(G, 'player', 14);
+      const rEmblem = _npOrgEmblem(G, _dbCompareTarget, 14);
       html += `<div class="np-matchup-row">
         <div class="np-matchup-fighter">
           <div class="np-matchup-photo" style="${_npThumbBg(m.player.id)}" onclick="showFighterPopup(${m.player.id})"></div>
           <div>
+            <div class="np-matchup-org-line">${pEmblem}<span>${d.playerName}</span></div>
             <div class="np-matchup-name">${m.player.name}</div>
             <div class="np-matchup-ovr">OVR<strong>${m.player.ovr}</strong> 人気<strong>${m.player.pop}</strong></div>
           </div>
@@ -6734,6 +6766,7 @@ function _npRenderPage2() {
         <div class="np-matchup-fighter right">
           <div class="np-matchup-photo right" style="${_npThumbBg(m.rival.id)}" onclick="showFighterPopup(${m.rival.id})"></div>
           <div>
+            <div class="np-matchup-org-line right">${rEmblem}<span>${d.rivalName}</span></div>
             <div class="np-matchup-name">${m.rival.name}</div>
             <div class="np-matchup-ovr">OVR<strong>${m.rival.ovr}</strong> 人気<strong>${m.rival.pop}</strong></div>
           </div>

@@ -10363,11 +10363,20 @@ const Engine = {
           const trust = fighter.trust != null ? fighter.trust : 50;
           const trustMul = (cfg.trustPoachMultiplier || []).find(t => trust >= t.min)?.mul || 1.0;
           const effectivePoachChance = cfg.poachChancePerFighter * trustMul * (Traits.has(fighter, '忠誠心') ? 0.25 : 1.0);
-          higherOrgs.forEach(org => {
+          // 同一選手に複数団体のオファーが同時に積まれると、UIで両方「承認」できてしまい
+          // 同選手が複数団体に二重所属する不整合が起きる。1選手につき1件のみ採用する。
+          // 上位ランクから順にロールし、最初に成功した団体だけがオファーを出す。
+          const sortedOrgs = higherOrgs.slice().sort((a, b) => {
+            const ra = rankings.findIndex(r => r.orgId === a.id);
+            const rb = rankings.findIndex(r => r.orgId === b.id);
+            return ra - rb;
+          });
+          for (const org of sortedOrgs) {
             if (Engine.rng.float(rng) < effectivePoachChance) {
               poachAttempts.push({ fighter, org, fee: Engine.transfer.calcFee(fighter, org) });
+              break;
             }
-          });
+          }
         }
       });
 
