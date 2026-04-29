@@ -3884,6 +3884,9 @@ const Engine = {
         } else {
           category = 'B3_older';
         }
+      } else if (route === 'lastrun_expired') {
+        // ラストラン期限切れ：在籍長＆静かな別れに寄せて A4 を流用
+        category = 'A4_veteran';
       } else {
         // シーズン末引退
         if (fighter.role === 'Heel') {
@@ -9622,11 +9625,11 @@ const Engine = {
           s = Engine.chronicle.refreshChapters(s);
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, lc.id);
-          injuryResults.push({ name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
+          injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
           events.push(`🏁 ${lc.name}(${lc.age}歳)が${retiredMsg}により引退`);
         } else {
           roster = roster.map(c => c.id === lc.id ? li.newFighter : c);
-          injuryResults.push({ name: lc.name, injury: li.newFighter.injury });
+          injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury });
         }
       }
       const rc = roster.find(c => c.id === r.right.id);
@@ -9649,11 +9652,11 @@ const Engine = {
           s = Engine.chronicle.refreshChapters(s);
           // §2.3: 引退者の関係値を凍結
           if (s.relationships) s = Engine.relationships.freezeRelationships(s, rc.id);
-          injuryResults.push({ name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
+          injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
           events.push(`🏁 ${rc.name}(${rc.age}歳)が${retiredMsg}により引退`);
         } else {
           roster = roster.map(c => c.id === rc.id ? ri.newFighter : c);
-          injuryResults.push({ name: rc.name, injury: ri.newFighter.injury });
+          injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury });
         }
       }
     });
@@ -9664,7 +9667,7 @@ const Engine = {
     if (injRetirees.length > 0 && s.relationships) {
       const rosterIdsForRetire = roster.map(c => c.id);
       for (const ir of injRetirees) {
-        const retiredF = (s.retiredFighters || []).find(f => f.name === ir.name);
+        const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
         if (!retiredF) continue;
         const highBondIds = rosterIdsForRetire.filter(cid => {
           const key = Engine.relationships._key(cid, retiredF.id);
@@ -9686,7 +9689,7 @@ const Engine = {
       }
       // Phase 3 R3: 仲の良い選手を失ったtrust影響
       for (const ir of injRetirees) {
-        const retiredF = (s.retiredFighters || []).find(f => f.name === ir.name);
+        const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
         if (!retiredF) continue;
         roster = Engine.trust.applyDepartureTrustImpact(roster, retiredF.id, s.relationships, { name: retiredF.name, reason: '怪我引退' });
       }
@@ -10037,8 +10040,11 @@ const Engine = {
       const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFAD2));
       const pendingInjuryRetirements = injuryRetirees.map(ir => {
         const route = ir.retireType === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
-        const retiredF = (s.retiredFighters || []).find(f => f.name === ir.name);
-        if (!retiredF) return null;
+        const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
+        if (!retiredF) {
+          console.warn('[WM] retired fighter lookup failed for injury popup', ir);
+          return null;
+        }
         const { line, category } = Engine.retirement.selectLine(retiredF, route, state, lineRng);
         const summary = Engine.retirement.buildCareerSummary(retiredF);
         const wasChampion = state.titles?.world?.championId === retiredF.id;

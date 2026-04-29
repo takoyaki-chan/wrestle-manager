@@ -6683,10 +6683,38 @@ const App = {
     }
 
     // v1.3-3: Extract pending injury retirements before state changes
-    const pendingInjuryRetirements = G._pendingInjuryRetirements || [];
+    let pendingInjuryRetirements = G._pendingInjuryRetirements || [];
     if (G._pendingInjuryRetirements) {
       const { _pendingInjuryRetirements: _, ...cleanG } = G;
       G = cleanG;
+    }
+    // 怪我引退セリフの取りこぼし救済: lookup 失敗・transient 欠落で _pendingInjuryRetirements に
+    // 載らなかった「今週の怪我引退者」を retiredFighters の最新 retire イベントから復元する
+    {
+      const queuedIds = new Set(
+        pendingInjuryRetirements.map(r => r?.fighter?.id).filter(id => id != null)
+      );
+      const orphaned = (G.retiredFighters || []).filter(f => {
+        if (!f || queuedIds.has(f.id)) return false;
+        const history = f.careerRecord?.history || [];
+        const latestRetire = [...history].reverse().find(h => h.type === 'retire');
+        if (!latestRetire) return false;
+        if (latestRetire.season !== G.season || latestRetire.week !== G.week) return false;
+        return latestRetire.reason === 'wearInjury' || latestRetire.reason === 'careerEnding';
+      });
+      if (orphaned.length > 0) {
+        const fbRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAD2, 0x9));
+        const recovered = orphaned.map(f => {
+          const history = f.careerRecord?.history || [];
+          const latestRetire = [...history].reverse().find(h => h.type === 'retire');
+          const route = latestRetire?.reason === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
+          const { line, category } = Engine.retirement.selectLine(f, route, G, fbRng);
+          const summary = Engine.retirement.buildCareerSummary(f);
+          console.warn('[WM] injury retirement recovered via fallback', { id: f.id, name: f.name, route });
+          return { fighter: f, route, line, category, summary };
+        });
+        pendingInjuryRetirements = [...pendingInjuryRetirements, ...recovered];
+      }
     }
     pendingInjuryRetirements.forEach(r => {
       G = archiveRetiredRivalryState(G, r.fighter || null);
