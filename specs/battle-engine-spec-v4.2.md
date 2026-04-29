@@ -17,6 +17,7 @@
 | v4.1 | 2026-02-19 | **MNTは0-100固定／PWR・SPD・TEC・STAは100超え対応**。戦闘計算に `eff()`（逓減）を導入し、育成側の到達上限（trainCap=概ね130〜140）を明文化 |
 | v4.1b | 2026-02-19 | **tuneB**：判定が多い問題を抑え、フォール狙い・丸め込みを「番狂わせ枠」として最適化（基準分布を採用） |
 | v4.2 | 2026-04-05 | **tuneC**：HP計算式変更(hpBase+hpScale×STA)。ダメージ係数再調整(PWR↑/STA防御↓/SPD全技化)。effSlopeAfterPivot=1.0(逓減無効化)。Big Match Tier 2追加(24ターン/4フェーズ)。MQ v3.0統合(外部MQソース整理/CAP 12/ペーシング「長すぎ」撤廃)。決着重み修正(非submission技のgu=0統一) |
+| v4.3 | 2026-04-29 | **モメンタム実効効果の縮小**：`leftChance` の `mom × 0.3 → 0.05`、`momDmgScale: 0.003 → 0.001`、`pinAttemptMomBonus: 0.15 → 0.03`。ゲージの動き方（ヒット±8/ミス±5/カウンター±18）は据え置き。「序盤の流れだけで試合が決まる」「先攻不利」現象を緩和。詳細は `plans/momentum-effect-reduction-plan.md`。 |
 
 ---
 
@@ -132,11 +133,10 @@ function eff(x){
 ## 3. 行動順決定
 
 ```javascript
-leftChance = 50 + (momentum × 0.3) + (eff(L.spd) - eff(R.spd)) × 0.15
-leftChance = clamp(leftChance, 20, 80)
+leftChance = 50 + (momentum × 0.05)
 ```
 
-SPDが高い方が攻撃機会を多く得るが、モメンタムが最大の影響を持つ。
+モメンタムが攻撃機会に僅かに影響する（v4.3で 0.3→0.05 に縮小）。±50時で攻撃機会±2.5%。SPD項は仕様書に記載あるが現状の実装では未反映。
 
 ---
 
@@ -261,7 +261,7 @@ defense = (eff(def.st) × 0.02)   // STA: v4.2で0.08→0.02に大幅下方修�
         + (def.mn × 0.055)  // MNT: 据え置き（v4.0で0.035→0.055に上方修正済み）
 
 // モメンタム補正
-mMod = 1.0 + (momentum_advantage × 0.003)
+mMod = 1.0 + (momentum_advantage × 0.001)   // v4.3: ±50時で±5%
 
 // 乱数幅
 rF = 0.85 + (random × 0.30)  // 0.85〜1.15
@@ -409,7 +409,7 @@ phase !== 'Opening'                     // 序盤では発生しない
 
 **フォール狙い発動率**:
 ```javascript
-attemptRate = 25 + (momentum_advantage × 0.15)
+attemptRate = 25 + (momentum_advantage × 0.03)   // v4.3: ±50時で±1.5%
 if (phase === 'Climax') attemptRate += 15
 if (phase === 'End') attemptRate += 8
 attemptRate = clamp(attemptRate, 10, 60)
@@ -617,7 +617,7 @@ const ENG = {
   dmgSpdScale: 0.08,    // v4.2: 全技に適用（旧:飛び技のみ0.03）
   defStaScale: 0.02,
   defMntScale: 0.055,
-  momDmgScale: 0.003,
+  momDmgScale: 0.001,
   dmgRandMin: 0.85, dmgRandRange: 0.30,
   dmgFloor: 3,
 
@@ -630,7 +630,7 @@ const ENG = {
   pinAttemptHpThreshold: 0.35,
   pinAttemptMinDmg: 9,
   pinAttemptBaseRate: 36,
-  pinAttemptMomBonus: 0.15,
+  pinAttemptMomBonus: 0.03,
   pinAttemptMntPenalty: 0.20,
   pinAttemptSuccessBase: 23,
   pinAttemptClimax: 22,

@@ -712,11 +712,11 @@ const ENG = {
   counterBase: 4, counterTecScale: 0.055, counterSpdPenalty: 0.07, counterMin: 2, counterMax: 22,
   counterDmgMult: 0.6, counterMomShift: 18,
   dmgPwrScale: 0.20, dmgTecScale: 0.08, dmgSpdScale: 0.08,
-  defStaScale: 0.02, defMntScale: 0.055, momDmgScale: 0.003,
+  defStaScale: 0.02, defMntScale: 0.055, momDmgScale: 0.001,
   dmgRandMin: 0.85, dmgRandRange: 0.30, dmgFloor: 3,
   gritDuration: 2, gritDmgReduction: 0.20, gritCounterBonus: 8,
   pinAttemptHpThreshold: 0.35, pinAttemptMinDmg: 9, pinAttemptBaseRate: 36,
-  pinAttemptMomBonus: 0.15, pinAttemptMntPenalty: 0.20,
+  pinAttemptMomBonus: 0.03, pinAttemptMntPenalty: 0.20,
   pinAttemptSuccessBase: 23, pinAttemptClimax: 22,
   pinLowHpAttemptScale: 200, pinLowHpSuccessScale: 100,
   finishWeights: {

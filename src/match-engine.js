@@ -173,7 +173,7 @@ Engine.battle = {
         _turnPinAttempt = null;
         _turnRollup = null;
         _turnTkoStop = false;
-        const leftChance = 50 + mom * 0.3;
+        const leftChance = 50 + mom * 0.05;
         const isLeftAtk = Engine.rng.float(rng) * 100 < leftChance;
         const atk = isLeftAtk ? L : R;
         const def = isLeftAtk ? R : L;
@@ -727,7 +727,7 @@ Engine.tagMatch = (() => {
       const effB = applyHpDecay(legalB);
 
       // ── 攻防判定 ──
-      const atkRoll = Engine.rng.float(rng) * 100 + mom * 0.3;
+      const atkRoll = Engine.rng.float(rng) * 100 + mom * 0.05;
       const isAAttacking = atkRoll >= 50;
       const atk = isAAttacking ? effA : effB;
       const def = isAAttacking ? effB : effA;
