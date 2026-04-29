@@ -5997,7 +5997,7 @@ function _npRenderPage1() {
   if (wp.playerShowData) {
     const ts = wp.topStory;
     const topIsPlayerShow = ts && (ts.type === 'playerShowTitle' || ts.type === 'playerShowNormal');
-    const psd = topIsPlayerShow ? _npSwapMainToSecondCard(wp.playerShowData) : wp.playerShowData;
+    const psd = topIsPlayerShow ? _npSwapMainToSecondCard(wp.playerShowData, seasonNum, weekNum) : wp.playerShowData;
     if (psd) html += _npRenderPlayerShow(psd, seasonNum, weekNum);
   }
 
@@ -6045,11 +6045,79 @@ function _npRenderPage1() {
   return html;
 }
 
-/** 一面トップ記事と興行メインが同じ試合になるとき、第2試合をメイン枠に繰り上げる */
-function _npSwapMainToSecondCard(d) {
-  if (!d || !d.allMatches || d.allMatches.length === 0) return d; // セミ以下が無ければそのまま
+/**
+ * 一面トップ記事と興行メインが同じ試合になるとき、第2試合をメイン枠に繰り上げ、
+ * 元のメイン試合は ダイジェスト1段目（旧 allMatches[0] の位置）に押し下げる。
+ * 双方の試合を消さず、順序だけ入れ替えるイメージ。
+ * 繰り上げた試合には簡易記事を生成して空欄を埋める。
+ */
+function _npSwapMainToSecondCard(d, seasonNum, weekNum) {
+  if (!d || !d.allMatches || d.allMatches.length === 0) return d;
   const m = d.allMatches[0];
   if (!m || !m.left || !m.right) return d;
+
+  // 元メインを ダイジェスト1段目に押し下げるためのエントリへ変換
+  const origMainAsRow = {
+    left: d.left,
+    right: d.right,
+    winner: (d.winner && d.winner.id) ? (d.winner.id === d.left.id ? 'left' : (d.winner.id === d.right.id ? 'right' : null)) : (typeof d.winner === 'string' ? d.winner : null),
+    isDraw: !!d.isDraw,
+    isTitleMatch: !!d.isTitleMatch,
+    isUpset: !!d.isUpset,
+    isDominant: !!d.isDominant,
+    mq: d.mq,
+    turns: d.turns,
+    finishLabel: d.finishLabel || '',
+  };
+
+  // 繰り上げ試合の簡易記事を生成（NEWSPAPER_DIGEST_COMMENTS のプールから seeded pick）
+  const winnerName = m.isDraw ? null
+    : m.winner === 'left' ? m.left.name
+    : m.winner === 'right' ? m.right.name
+    : null;
+  const loserName = m.isDraw ? null
+    : m.winner === 'left' ? m.right.name
+    : m.winner === 'right' ? m.left.name
+    : null;
+  let promotedArticle = '';
+  if (typeof NEWSPAPER_DIGEST_COMMENTS !== 'undefined') {
+    let pool = null;
+    if (m.isDraw) pool = NEWSPAPER_DIGEST_COMMENTS.draw;
+    else if (m.isUpset) pool = NEWSPAPER_DIGEST_COMMENTS.upset;
+    else if (m.isDominant) pool = NEWSPAPER_DIGEST_COMMENTS.dominant;
+    else if (m.isTitleMatch) pool = NEWSPAPER_DIGEST_COMMENTS.titleMatch;
+    else {
+      const venueIdx = (typeof d.venueIdx === 'number') ? d.venueIdx : (G.showVenue || 0);
+      const expectedMQ = (typeof _calcExpectedMQ === 'function') ? _calcExpectedMQ(venueIdx, G.orgPop) : 50;
+      const diff = (m.mq || 0) - expectedMQ;
+      const r = diff >= 15 ? 'great' : diff >= 5 ? 'good' : diff >= -4 ? 'average' : diff >= -15 ? 'poor' : 'bad';
+      pool = NEWSPAPER_DIGEST_COMMENTS[r];
+    }
+    if (pool && pool.length > 0) {
+      const rng = Engine.rng.create(Engine.rng.derive(seasonNum || 1, weekNum || 1, m.left.id || 0, 0xC6A1));
+      const fn = Engine.rng.pick(rng, pool);
+      try {
+        promotedArticle = fn({
+          winnerName: winnerName || m.left.name,
+          loserName: loserName || m.right.name,
+          leftName: m.left.name,
+          rightName: m.right.name,
+          mq: m.mq || 0,
+          turns: m.turns || 0,
+        });
+      } catch (e) { promotedArticle = ''; }
+    }
+  }
+  if (!promotedArticle) {
+    if (m.isDraw) {
+      promotedArticle = `${m.left.name}と${m.right.name}が決着つかず引き分け。MQ${m.mq || '?'}、${m.turns || '?'}ターンの攻防は次戦への伏線として残った。`;
+    } else if (winnerName) {
+      promotedArticle = `${winnerName}が${loserName}を下した一戦。MQ${m.mq || '?'}、${m.turns || '?'}ターン${m.finishLabel ? `・${m.finishLabel}` : ''}で決着。${m.isTitleMatch ? '王座戦としての' : ''}見応えは確かにあった。`;
+    } else {
+      promotedArticle = `${m.left.name}対${m.right.name}、MQ${m.mq || '?'}の好試合。`;
+    }
+  }
+
   const winner = m.winner;
   const swapped = Object.assign({}, d, {
     left: Object.assign({}, m.left, { isWinner: winner === 'left' }),
@@ -6059,11 +6127,16 @@ function _npSwapMainToSecondCard(d) {
     mq: m.mq,
     turns: m.turns,
     isTitleMatch: !!m.isTitleMatch,
+    isUpset: !!m.isUpset,
+    isDominant: !!m.isDominant,
     finishLabel: m.finishLabel || '',
     matchLabel: m.isTitleMatch ? '王座戦' : 'セミファイナル',
-    headline: `${m.left.name} vs ${m.right.name}（同時開催）`,
-    article: '',           // 記事はメインの分しか作っていないので空に
-    allMatches: d.allMatches.slice(1),
+    headline: m.isTitleMatch
+      ? `王座戦 ${m.left.name} vs ${m.right.name}`
+      : `セミファイナル ${m.left.name} vs ${m.right.name}`,
+    article: promotedArticle,
+    // 元メインを ダイジェスト先頭に押し下げ、残りは元の順を保つ
+    allMatches: [origMainAsRow].concat(d.allMatches.slice(1)),
     // showRating は興行全体の評価なので維持
   });
   return swapped;
