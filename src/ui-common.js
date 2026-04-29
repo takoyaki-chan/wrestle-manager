@@ -9341,6 +9341,7 @@ function _buildB3Step3b(event, state, roster) {
           <div class="mdl-a-speech-text">${challengerLine}</div>
         </div>
         <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
+        <div class="mdl-a-portrait-vignette"></div>
       </div>
       <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED ・ 敗北者' : 'VICTOR ・ 勝者'}</div></div>
       <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
@@ -9412,6 +9413,7 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
             <div class="mdl-a-speech-text">${challengerLine}</div>
           </div>
           <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
+          <div class="mdl-a-portrait-vignette"></div>
         </div>
         <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED' : 'VICTOR'}</div></div>
         <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>

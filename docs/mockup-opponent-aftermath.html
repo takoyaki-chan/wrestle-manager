@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>OPPONENT AFTERMATH — モックアップ</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a12;
+    font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    display: flex;
+    gap: 60px;
+    padding: 40px;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100vh;
+    flex-wrap: wrap;
+  }
+
+  .label {
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    font-family: monospace;
+  }
+
+  /* ─── 共通 overlay / modal ─── */
+  .overlay-sim {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal {
+    border-radius: 12px;
+    overflow: hidden;
+    width: 400px;
+    box-shadow: 0 0 60px rgba(0,0,0,0.8);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ─── ヘッダー ─── */
+  .mdl-header {
+    background: linear-gradient(180deg, #1a0f0a 0%, #12090b 100%);
+    border-bottom: 1px solid rgba(200,74,58,0.3);
+    padding: 12px 20px 10px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .mdl-header-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: rgba(232,200,190,0.95);
+    letter-spacing: 1px;
+  }
+  .mdl-header-meta {
+    font-family: monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: rgba(200,74,58,0.7);
+  }
+
+  /* ─── レポーターストリップ ─── */
+  .reporter-strip {
+    background: #100c0a;
+    border-bottom: 1px solid rgba(100,80,60,0.2);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .coach-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #2a2218;
+    border: 1px solid rgba(150,120,80,0.4);
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .coach-info { flex: 1; }
+  .coach-name {
+    font-size: 10px;
+    color: rgba(180,160,130,0.7);
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .coach-line {
+    font-size: 12px;
+    color: rgba(210,195,170,0.9);
+    line-height: 1.5;
+  }
+
+  /* ─── 旧版: ステージ ─── */
+  .stage-old {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(212,168,67,0.08) 0%, transparent 70%),
+      #f5f0e8;  /* office-panel-cream-card の近似 */
+    padding: 96px 24px 24px;
+    text-align: center;
+    position: relative;
+  }
+
+  /* ─── 新版: ステージ ─── */
+  .stage-new {
+    background:
+      radial-gradient(ellipse 90% 60% at 50% 35%, rgba(200,74,58,0.12) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 40% at 50% 80%, rgba(0,0,0,0.3) 0%, transparent 70%),
+      #14120e;
+    padding: 80px 24px 24px;
+    text-align: center;
+    position: relative;
+  }
+
+  /* ─── 肖像ラッパ ─── */
+  .portrait-wrap {
+    position: relative;
+    display: inline-block;
+    margin: 0 auto 8px;
+  }
+
+  /* ─── 吹き出し ─── */
+  .speech {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(28,20,16,0.95);
+    border: 1px solid rgba(200,74,58,0.35);
+    border-radius: 6px;
+    padding: 8px 14px;
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    min-width: 160px;
+    max-width: 280px;
+    white-space: normal;
+  }
+  .speech::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(200,74,58,0.35);
+  }
+  .speech-speaker {
+    font-family: monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: rgba(200,150,140,0.7);
+    margin-bottom: 4px;
+  }
+  .speech-text {
+    font-size: 13px;
+    color: rgba(230,210,200,0.95);
+    line-height: 1.6;
+  }
+
+  /* ─── 肖像 旧 ─── */
+  .portrait-old {
+    width: 150px; height: 200px;
+    border: 2px solid rgba(120,100,70,0.5);
+    border-radius: 4px;
+    background-color: #0a0806;
+    background-image: url('https://via.placeholder.com/150x200/1a1008/888?text=PORTRAIT');
+    background-size: cover;
+    background-position: top center;
+    display: block;
+    filter: brightness(0.78) saturate(0.75);
+  }
+
+  /* ─── 肖像 新 ─── */
+  .portrait-new {
+    width: 160px; height: 213px;
+    border: 1px solid rgba(200,74,58,0.25);
+    border-radius: 4px;
+    background-color: #1a0d0a;
+    background-image: url('https://via.placeholder.com/160x213/2a1008/888?text=PORTRAIT');
+    background-size: cover;
+    background-position: top center;
+    display: block;
+    /* 旧: brightness(0.78) saturate(0.75) → 大幅に見やすく */
+    filter: brightness(0.92) saturate(0.9);
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.6),
+      inset 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  /* 底部ビネット — 下からグラデでキャラを舞台に溶け込ませる */
+  .portrait-vignette {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(to top, #14120e, transparent);
+    border-radius: 0 0 4px 4px;
+    pointer-events: none;
+  }
+
+  /* ─── DEFEATED バッジ ─── */
+  .defeat-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    margin-top: 14px;
+    margin-bottom: 8px;
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    font-weight: 700;
+  }
+  .defeat-badge.old {
+    background: rgba(100,40,32,0.4);
+    color: rgba(240,180,170,0.85);
+    border: 1px solid rgba(200,74,58,0.4);
+    border-radius: 2px;
+  }
+  .defeat-badge.new {
+    background: rgba(200,74,58,0.15);
+    color: rgba(255,140,130,0.9);
+    border: 1px solid rgba(200,74,58,0.5);
+    border-radius: 2px;
+    box-shadow: 0 0 12px rgba(200,74,58,0.2);
+  }
+
+  /* ─── 名前・団体 ─── */
+  .subject-name.old { font-size: 18px; font-weight: 700; color: rgba(80,60,40,0.85); letter-spacing: 1px; margin-bottom: 2px; }
+  .subject-org.old  { font-family: monospace; font-size: 10px; color: rgba(120,100,60,0.7); letter-spacing: 2px; }
+
+  .subject-name.new { font-size: 18px; font-weight: 700; color: rgba(232,215,200,0.92); letter-spacing: 1px; margin-bottom: 2px; }
+  .subject-org.new  { font-family: monospace; font-size: 10px; color: rgba(180,140,120,0.75); letter-spacing: 2px; }
+
+  /* ─── 観察テキスト ─── */
+  .observation {
+    font-size: 12px;
+    line-height: 1.9;
+    margin-top: 14px;
+    padding: 0 4px;
+  }
+  .observation.old { color: rgba(80,60,40,0.8); }
+  .observation.new { color: rgba(200,185,170,0.82); }
+
+  .marker-danger { font-weight: 700; border-bottom: 1px dotted; padding-bottom: 1px; }
+  .marker-danger.old { color: #8b3a30; border-color: rgba(139,58,48,0.4); }
+  .marker-danger.new { color: rgba(240,120,110,0.9); border-color: rgba(200,74,58,0.4); }
+
+  /* ─── 閉じるボタン ─── */
+  .close-btn {
+    display: block;
+    margin: 14px auto 0;
+    padding: 8px 28px;
+    font-family: monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .close-btn.old {
+    background: rgba(100,80,50,0.15);
+    color: rgba(100,80,50,0.7);
+    border: 1px solid rgba(100,80,50,0.3);
+  }
+  .close-btn.new {
+    background: rgba(80,30,25,0.4);
+    color: rgba(220,180,170,0.8);
+    border: 1px solid rgba(160,60,50,0.4);
+  }
+
+  /* ─── フッタ ─── */
+  .footer-area.old { background: #f5f0e8; padding: 0 20px 20px; }
+  .footer-area.new { background: #14120e; padding: 0 20px 20px; border-top: 1px solid rgba(100,60,50,0.2); }
+
+  /* ─── 変更点リスト ─── */
+  .changes {
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    line-height: 1.9;
+    max-width: 340px;
+    margin-top: 60px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .changes h3 { color: rgba(200,74,58,0.9); font-size: 11px; letter-spacing: 2px; margin-bottom: 10px; }
+  .changes li { margin-bottom: 6px; }
+  .changes .before { color: rgba(255,100,80,0.7); }
+  .changes .after { color: rgba(80,200,120,0.8); }
+</style>
+</head>
+<body>
+
+<!-- ─── 旧版 ─── -->
+<div>
+  <div class="label">BEFORE — 現状</div>
+  <div class="overlay-sim">
+    <div class="modal" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)">
+      <div class="mdl-header">
+        <div class="mdl-header-title">相手の反応</div>
+        <div class="mdl-header-meta">OPPONENT AFTERMATH</div>
+      </div>
+      <div class="reporter-strip">
+        <div class="coach-avatar">👩</div>
+        <div class="coach-info">
+          <div class="coach-name">神崎 鋼子 コーチ</div>
+          <div class="coach-line">「皇武館勢は苛立ちを隠せない表情です」</div>
+        </div>
+      </div>
+      <!-- 問題のクリームステージ -->
+      <div class="stage-old">
+        <div class="portrait-wrap">
+          <div class="speech">
+            <div class="speech-speaker">楠木なぎさ</div>
+            <div class="speech-text">「負けた？ ……まだ終わりじゃない！」</div>
+          </div>
+          <!-- 黒い背景がクリームに浮く -->
+          <div class="portrait-old"></div>
+        </div>
+        <div><span class="defeat-badge old">DEFEATED</span></div>
+        <div class="subject-name old">楠木 なぎさ</div>
+        <div class="subject-org old">皇武館 ・ OVR 94</div>
+        <div class="observation old">
+          皇武館との<span class="marker-danger old">遺恨</span>は、まだ終わっていない
+        </div>
+      </div>
+      <div class="footer-area old">
+        <button class="close-btn old">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 新版 ─── -->
+<div>
+  <div class="label">AFTER — 改善案</div>
+  <div class="overlay-sim">
+    <div class="modal" style="background:#100c0a">
+      <div class="mdl-header">
+        <div class="mdl-header-title">相手の反応</div>
+        <div class="mdl-header-meta">OPPONENT AFTERMATH</div>
+      </div>
+      <div class="reporter-strip">
+        <div class="coach-avatar">👩</div>
+        <div class="coach-info">
+          <div class="coach-name">神崎 鋼子 コーチ</div>
+          <div class="coach-line">「皇武館勢は苛立ちを隠せない表情です」</div>
+        </div>
+      </div>
+      <!-- 修正後: ダークステージ、背景統一 -->
+      <div class="stage-new">
+        <div class="portrait-wrap">
+          <div class="speech">
+            <div class="speech-speaker">楠木なぎさ</div>
+            <div class="speech-text">「負けた？ ……まだ終わりじゃない！」</div>
+          </div>
+          <div class="portrait-new"></div>
+          <!-- 底部ビネットで自然に溶け込み -->
+          <div class="portrait-vignette"></div>
+        </div>
+        <div><span class="defeat-badge new">DEFEATED</span></div>
+        <div class="subject-name new">楠木 なぎさ</div>
+        <div class="subject-org new">皇武館 ・ OVR 94</div>
+        <div class="observation new">
+          皇武館との<span class="marker-danger new">遺恨</span>は、まだ終わっていない
+        </div>
+      </div>
+      <div class="footer-area new">
+        <button class="close-btn new">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 変更点まとめ ─── -->
+<div class="changes">
+  <h3>変更点まとめ</h3>
+  <ul>
+    <li>
+      ステージ背景<br>
+      <span class="before">✗ var(--office-panel-cream-card) クリーム色</span><br>
+      <span class="after">✓ #14120e + 赤ラジアルグラデ(ダーク)</span>
+    </li>
+    <li>
+      モーダル背景<br>
+      <span class="before">✗ navy (#1a1a2e) とクリームが混在</span><br>
+      <span class="after">✓ 全体 #100c0a に統一(暗褐色)</span>
+    </li>
+    <li>
+      肖像フィルター<br>
+      <span class="before">✗ brightness(0.78) saturate(0.75) 暗くくすむ</span><br>
+      <span class="after">✓ brightness(0.92) saturate(0.9) 自然な暗さ</span>
+    </li>
+    <li>
+      肖像ボーダー<br>
+      <span class="before">✗ rgba(120,100,70,0.5) ゴールド系 → 浮く</span><br>
+      <span class="after">✓ rgba(200,74,58,0.25) 赤系 → 因縁感</span>
+    </li>
+    <li>
+      肖像サイズ<br>
+      <span class="before">✗ 150×200px</span><br>
+      <span class="after">✓ 160×213px(やや大きく)</span>
+    </li>
+    <li>
+      底部ビネット<br>
+      <span class="before">✗ なし → 肖像が切り取られた感</span><br>
+      <span class="after">✓ 下60pxにグラデ → 背景に溶ける</span>
+    </li>
+    <li>
+      DEFEATEDバッジ<br>
+      <span class="before">✗ クリーム背景に赤文字 → 埋もれる</span><br>
+      <span class="after">✓ ダーク背景に赤文字+光彩</span>
+    </li>
+    <li>
+      文字色<br>
+      <span class="before">✗ 暗茶色系(クリーム用) → ダークで読みにくい</span><br>
+      <span class="after">✓ 明るいクリーム系 → ダーク背景で映える</span>
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>
