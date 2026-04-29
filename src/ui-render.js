@@ -3419,7 +3419,7 @@ function renderRanking() {
         <div class="pt-block rank-metric">
           <div class="label">評価</div>
           <div class="v">${Math.round(r.rating)}<span class="unit">pt</span></div>
-          <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT の合計。<br>このポイントで業界順位が決まる。</div></div>
+          <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT ＋ 実績 の合計。<br>このポイントで業界順位が決まる。</div></div>
         </div>
         <div class="meta-block">
           <div class="ovr-line rank-metric">平均OVR ${avgOvr}
@@ -3496,7 +3496,35 @@ function renderRanking() {
     return { tags, gapTop, gapAbove, top3Avg, over80, over70, avgOvr };
   };
 
-  const _buildLeadSentences = ({ tags, featured, champion, gapTop, gapAbove, seed }) => {
+  // 団体の周辺コンテキスト (実績アイテム、過去年間王者歴、battlePT動向 など) を語に変換
+  const _orgContextSentences = (r, seed) => {
+    const out = [];
+    // 直近の年間王者歴
+    const sh = G.seasonHistory || [];
+    const recentAnnual = sh.slice(-3).filter(h => h.annualChampion && h.annualChampion.orgId === r.orgId);
+    if (recentAnnual.length >= 2) {
+      out.push(_pickSeed(['ここ数シーズンで複数回の年間王者となり、業界を支配する空気を作っている', '直近の年間王者を立て続けに獲り、トップとしての色がはっきりしてきた'], seed));
+    } else if (recentAnnual.length === 1) {
+      const yr = recentAnnual[0].season;
+      out.push(_pickSeed([`${yr}年目の年間王者の余韻がまだ団体に残っている`, `${yr}年目に頂点を獲った記憶が、今のチームの基準になっている`], seed));
+    }
+    // 実績ポイントの厚み
+    const items = r.achievementItems || [];
+    if (items.length >= 4) {
+      out.push(_pickSeed(['シーズンの勲章を多数抱え、勢いのある団体としての印象が定着している', '直近で獲った実績の蓄積が、評価ptの押し上げ役になっている'], seed >> 2));
+    } else if (items.length === 0 && (r.legacyScore || 0) <= 5) {
+      out.push(_pickSeed(['際立った勲章を持たず、評価の積み上げに苦労している', 'シーズン実績で稼げず、地力勝負を強いられている'], seed >> 2));
+    }
+    // 対戦PT動向
+    if (r.battlePt >= 20) {
+      out.push(_pickSeed(['他団体との直接対決で星を稼いでおり、対戦pt面でも優位に立つ', '対抗戦やサミットでの勝ち越しが続き、業界内の貯金を作っている'], seed >> 4));
+    } else if (r.battlePt <= -15) {
+      out.push(_pickSeed(['他団体相手の星勘定で大きくマイナスを背負っている', '対抗戦での連敗が続き、対戦ptが重しになっている'], seed >> 4));
+    }
+    return out;
+  };
+
+  const _buildLeadSentences = ({ tags, featured, champion, gapTop, gapAbove, seed, r }) => {
     const has = (t) => tags.has(t);
     const aceName = featured ? featured.name : '看板選手';
     // 文1: ポジション×トレンド×勢い
@@ -3538,7 +3566,12 @@ function renderRanking() {
     else if (has('layerSolid')) s3Pool = ['看板を軸に主力の輪郭がはっきりしている', '上位陣の顔ぶれで勝負できる骨格は整っている', '看板級の周りに準主力が並ぶ手堅い構成'];
     else if (has('layerMid')) s3Pool = ['突出した怪物はいないが、主力候補が広く並ぶ', '頭抜けた選手はいないものの、層は意外と広い', '横並びの主力で何とか試合数をこなしている'];
     else s3Pool = ['まだ発展途上で、伸びしろの賭け', '主力という呼び名に届く選手が乏しい', '育成の途上で、来季以降の積み上げを待つ段階'];
-    return [_pickSeed(s1Pool, seed), _pickSeed(s2Pool, seed >> 3), _pickSeed(s3Pool, seed >> 6)].filter(Boolean).join('。') + '。';
+    const baseLead = [_pickSeed(s1Pool, seed), _pickSeed(s2Pool, seed >> 3), _pickSeed(s3Pool, seed >> 6)].filter(Boolean).join('。') + '。';
+    // 周辺コンテキスト (年間王者歴/実績/対戦PT) を最大1-2文足す
+    const ctx = r ? _orgContextSentences(r, seed >> 9) : [];
+    if (ctx.length === 0) return baseLead;
+    const pickedCtx = ctx.slice(0, 2).join('。') + '。';
+    return baseLead + pickedCtx;
   };
 
   const _aceFlavorByPersona = (f, seed) => {
@@ -3565,6 +3598,19 @@ function renderRanking() {
     return _pickSeed(pool, seed);
   };
 
+  // 王座の「奪い合い」検出: 直近3シーズン以内に複数のtitleWin (= 取られて取り返した) があれば true
+  const _isContestedBelt = (champion) => {
+    if (!champion || !champion.careerRecord) return false;
+    const hist = champion.careerRecord.history || [];
+    const curSeason = G.season || 1;
+    const recentWins = hist.filter(e => e.type === 'titleWin' && (curSeason - (e.season || curSeason)) <= 2);
+    return recentWins.length >= 2;
+  };
+  const _titleWinCount = (fighter) => {
+    if (!fighter || !fighter.careerRecord) return 0;
+    return (fighter.careerRecord.history || []).filter(e => e.type === 'titleWin').length;
+  };
+
   const _buildAceCopy = ({ featured, champion, defenses, isChampion, seed }) => {
     if (!featured) return '看板を担う選手がまだ定まっていない。';
     const ovr = Engine.util.ov(featured);
@@ -3574,9 +3620,68 @@ function renderRanking() {
     // 強シグナル選定
     let primary = '';
     if (isChampion && defenses >= 5) {
-      primary = _pickSeed([`王座を${defenses}度防衛し、団体の中心線そのものになっている`, `防衛記録を伸ばし続け、もはや交代が想像しにくい`, `長期政権を敷き、団体の歴史と一体化している`], seed);
-    } else if (isChampion && defenses <= 1) {
-      primary = _pickSeed(['戴冠したばかりで、王者としての色をこれから作っていく', '王座を獲って間もなく、防衛の手応えを探っている段階', '新王者として最初の防衛戦に向き合っている'], seed);
+      primary = _pickSeed([
+        `王座を${defenses}度防衛し、団体の中心線そのものになっている`,
+        `防衛記録を伸ばし続け、もはや交代が想像しにくい`,
+        `長期政権を敷き、団体の歴史と一体化している`,
+        `${defenses}度の防衛は王座そのものに重みを与え続けている`,
+        `揺るぎない王者として、対抗馬を寄せ付けない`,
+      ], seed);
+    } else if (isChampion && defenses === 4) {
+      primary = _pickSeed([
+        `4度の防衛を重ね、盤石と呼べる体制を築き上げた`,
+        `防衛戦のたびに王者像が研ぎ澄まされていく`,
+        `4連続防衛で、団体の顔として完全に定着した`,
+      ], seed);
+    } else if (isChampion && defenses === 3) {
+      primary = _pickSeed([
+        `3度の防衛で、もはや盤石の体制と言っていい`,
+        `防衛を3つ重ね、王者の格が形になってきた`,
+        `挑戦者を退け続け、王座が安定圏に入った`,
+        `3連続防衛は団体に静かな安心感をもたらしている`,
+      ], seed);
+    } else if (isChampion && defenses === 2) {
+      primary = _pickSeed([
+        `2度の防衛で、王者としての軸が定まりつつある`,
+        `防衛を重ねるたびに王者像がはっきりしてきた`,
+        `2連続防衛で、団体の中心が見えてきた`,
+      ], seed);
+    } else if (isChampion && defenses === 1) {
+      primary = _pickSeed([
+        `初防衛を成功させ、王者としての足場を固め始めた`,
+        `1度の防衛をクリアし、戴冠時の不安はひとまず払拭された`,
+        `最初の防衛戦を乗り越え、王者像を作り始めている`,
+        `初防衛の手応えを掴み、ここからが王座固めの本番`,
+      ], seed);
+    } else if (isChampion && defenses === 0) {
+      const contested = _isContestedBelt(champion);
+      const winCount = _titleWinCount(champion);
+      if (contested && winCount >= 3) {
+        primary = _pickSeed([
+          `防衛戦を経ずに王座が動き続けており、団体は抗争の渦中にある`,
+          `奪い合いの最中で戴冠したばかり、白熱した王座争いが続いている`,
+          `${champion.name}と前王者の取り合いになっており、王座がまだ落ち着く気配を見せない`,
+          `王座が短期間で行き来しており、抗争の只中での即位`,
+        ], seed);
+      } else if (contested) {
+        primary = _pickSeed([
+          `直近で王座が動いたばかりで、防衛戦に向けた緊張感が漂う`,
+          `奪取からまだ間がなく、王座を巡る空気はまだ熱い`,
+          `戴冠したばかりだが、奪取と奪還が続く流れの一コマ`,
+        ], seed);
+      } else if (winCount >= 2) {
+        primary = _pickSeed([
+          `再び王座を巡って戻ってきた挑戦者でもある王者`,
+          `王座経験者として、改めて頂点に座り直した格`,
+          `過去の戴冠経験を糧に、再び王座を獲り戻した`,
+        ], seed);
+      } else {
+        primary = _pickSeed([
+          `戴冠したばかりで、王者としての色をこれから作っていく`,
+          `新王者として、最初の防衛戦が試金石になる`,
+          `王座を獲って間もなく、団体全体が新章に入った`,
+        ], seed);
+      }
     } else if (age >= 33 && ovr >= peak - 2) {
       primary = _pickSeed([`${age}歳になっても全盛期を維持し続けるベテラン`, `年齢を重ねても衰えを見せず、まだ第一線に立つ`, '老練という言葉が似合うが、力の落ち方を感じさせない'], seed);
     } else if (age <= 20 && ovr >= 75) {
@@ -3600,18 +3705,97 @@ function renderRanking() {
     return flavor ? `${primary}。${flavor}。` : `${primary}。`;
   };
 
+  // ── 実績ツールチップ: アイテム時系列一覧 (org-ranking-spec-v2.0) ──
+  const _buildAchievementTooltip = (r, currentSeason) => {
+    const items = (r && r.achievementItems) || [];
+    if (items.length === 0) {
+      return 'このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。';
+    }
+    // age (シーズン跨ぎ回数) でグルーピング: 0=当シーズン, 1=1年前, ...
+    const buckets = {};
+    items.forEach(it => {
+      const age = it.age || 0;
+      if (!buckets[age]) buckets[age] = [];
+      buckets[age].push(it);
+    });
+    const decay = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG.decayRate != null) ? ACHIEVEMENT_CONFIG.decayRate : 0.5;
+    const grace = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG.graceAge != null) ? ACHIEVEMENT_CONFIG.graceAge : 1;
+    const ageLabel = (age) => {
+      if (age === 0) return `当シーズン (${currentSeason}年目)`;
+      const seasonNum = currentSeason - age;
+      return `${age}年前 (${seasonNum}年目)`;
+    };
+    const currentPt = (it) => {
+      const age = it.age || 0;
+      const orig = it.originalPt || 0;
+      if (age <= grace) return orig;
+      return orig * Math.pow(decay, age - grace);
+    };
+    const sortedAges = Object.keys(buckets).map(Number).sort((a, b) => a - b);
+    const lines = [];
+    let total = 0;
+    sortedAges.forEach(age => {
+      lines.push(`<b>${ageLabel(age)}</b>`);
+      buckets[age].forEach(it => {
+        const pt = currentPt(it);
+        total += pt;
+        const ptDisp = pt === Math.round(pt) ? String(pt) : pt.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+        const winnerSuffix = it.winnerName ? ` <span style="opacity:0.7">(${escHtml(it.winnerName)})</span>` : '';
+        lines.push(`　${escHtml(it.label)}${winnerSuffix} +${ptDisp}`);
+      });
+    });
+    lines.push(`<b>合計 ${Math.round(total)}pt</b>`);
+    lines.push('<span style="opacity:0.7">※ 翌シーズンまで満額、その後毎年半減。1pt未満で消滅。</span>');
+    return lines.join('<br>');
+  };
+
   const _buildDepthNoteV2 = ({ sortedAll, featured }) => {
     if (!sortedAll.length) return '主力と呼べる顔触れがまだ揃っていない。';
     const aceOvr = featured ? Engine.util.ov(featured) : 0;
     const next = sortedAll.find(f => !featured || f.id !== featured.id);
     const nextOvr = next ? Engine.util.ov(next) : 0;
+    const third = sortedAll.filter(f => f !== featured && f !== next)[0];
+    const thirdOvr = third ? Engine.util.ov(third) : 0;
     const top3Avg = _avgOvrOf(sortedAll.slice(0, 3));
     const avgOvr = sortedAll.length ? Math.round(sortedAll.reduce((s, c) => s + Engine.util.ov(c), 0) / sortedAll.length) : 0;
     const over70 = _countOvrAtLeast(sortedAll, 70);
     const aceGap = next ? aceOvr - nextOvr : 99;
+    const secondGap = third ? nextOvr - thirdOvr : 99;
     const youthCount = sortedAll.slice(0, 8).filter(f => (f.age || 99) <= 20).length;
     const veteranCount = sortedAll.slice(0, 8).filter(f => (f.age || 0) >= 26).length;
     const injured = sortedAll.filter(f => f.injury || f.forcedRest).length;
+    // 上位2-3人の踏み込み描写ヘルパ — role: 'second' | 'third'
+    const _personDesc = (f, role) => {
+      if (!f) return '';
+      const a = f.age || 0;
+      const o = Engine.util.ov(f);
+      const p = Number(f.popularity) || 0;
+      const peak = f.peakOVR || o;
+      const traits = Array.isArray(f.traits) ? f.traits : [];
+      const roleLabel = role === 'second' ? '二番手' : (role === 'third' ? '三番手' : '');
+      const prefix = roleLabel ? `${roleLabel}は` : '';
+      if (traits.includes('威圧感'))      return `${prefix}${f.name}(${o})、押し出しの強さで場を作る`;
+      if (traits.includes('反骨心'))      return `${prefix}${f.name}(${o})、反骨で場を引き締める存在`;
+      if (traits.includes('ガラスの身体')) return `${prefix}${f.name}(${o})、試合数を選ぶ難しさを抱える`;
+      if (a <= 20 && o >= 70)             return `${prefix}${f.name}(${a}歳/${o})、伸び盛りが頼もしい`;
+      if (a >= 30 && o >= peak - 2)       return `${prefix}${f.name}(${a}歳/${o})、衰えを見せないベテラン`;
+      if (a >= 30)                        return `${prefix}${f.name}(${o})、ベテランの間合いで凌ぐタイプ`;
+      if (p >= o + 8)                     return `${prefix}${f.name}(${o})、人気先行で客を呼べる`;
+      // OVR 帯の表現は role で言葉を変えて重複を避ける
+      if (o >= 80) {
+        return role === 'second'
+          ? `${prefix}${f.name}(${o})、エース級の格を持つ`
+          : `${prefix}${f.name}(${o})、上位陣に並ぶ実力者`;
+      }
+      if (o >= 70) {
+        return role === 'second'
+          ? `${prefix}${f.name}(${o})、看板を支える働き手`
+          : `${prefix}${f.name}(${o})、中軸を担える位置`;
+      }
+      return role === 'second'
+        ? `${prefix}${f.name}(${o})、次の主力候補として育成中`
+        : `${prefix}${f.name}(${o})、控えから上を窺う立ち位置`;
+    };
 
     const tags = new Set();
     if (top3Avg - avgOvr >= 10) tags.add('topHeavy');
@@ -3652,9 +3836,24 @@ function renderRanking() {
     } else {
       pool = ['可もなく不可もない層構成で、突き抜けるには一押し足りない', '平均的な厚みに留まり、次の一歩を模索する段階'];
     }
-    return _pickSeed(pool, seed) + '。';
+    const main = _pickSeed(pool, seed);
+    // 上位2-3人の踏み込み: 看板の次2人を取り上げて1〜2文足す
+    const personLines = [];
+    if (next) personLines.push(_personDesc(next, 'second'));
+    if (third) personLines.push(_personDesc(third, 'third'));
+    // 二番手と三番手の差で締めの一言を選ぶ
+    let closing = '';
+    if (secondGap <= 2 && third) {
+      closing = _pickSeed(['二番手と三番手の力差はわずかで、序列がいつ入れ替わってもおかしくない', '次点の二人がほぼ並んでいるのは、カード編成の自由度を生んでいる', '上位の真ん中が拮抗しており、興行ごとに序列が動いている'], seed >> 5);
+    } else if (secondGap >= 8 && third) {
+      closing = _pickSeed(['二番手と三番手の段差が大きく、控え陣の底上げが課題', '上位3人目との差が開いており、看板二枚に頼る色が濃い'], seed >> 5);
+    } else if (aceGap >= 8 && next) {
+      closing = _pickSeed(['看板と二番手の差は埋めきれていないが、その下は実直に積み上がっている', 'エースの突出は変わらないが、追走勢が静かに地力を伸ばしている'], seed >> 5);
+    }
+    const sentences = [main, ...personLines.filter(Boolean), closing].filter(Boolean);
+    return sentences.join('。') + '。';
   };
-  html += '<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">03 — 団体詳細</div><div class="title">団体プロフィール - 戦力層台帳</div></div></div><div class="rp-profiles">';
+  html += '<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">03 — 団体詳細</div><div class="title">団体プロフィール</div></div></div><div class="rp-profiles">';
 
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
@@ -3717,7 +3916,7 @@ function renderRanking() {
     const scoreLine = depthFaces.length
       ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + '台多数'
       : `${aceOvr}`;
-    const dynamicLead = _buildLeadSentences({ tags: _tagInfo.tags, featured, champion, gapTop: _tagInfo.gapTop, gapAbove: _tagInfo.gapAbove, seed: _orgSeed });
+    const dynamicLead = _buildLeadSentences({ tags: _tagInfo.tags, featured, champion, gapTop: _tagInfo.gapTop, gapAbove: _tagInfo.gapAbove, seed: _orgSeed, r });
     const dynamicDepthNote = _buildDepthNoteV2({ sortedAll, featured });
 
     const depthFacesHtml = depthFaces.map(f => {
@@ -3734,8 +3933,12 @@ function renderRanking() {
       </span>`;
     }).join('');
 
+    const _embPath = (r.orgId === 'player')
+      ? ((typeof Engine !== 'undefined' && Engine.util && Engine.util.getPlayerOrgIconPath) ? Engine.util.getPlayerOrgIconPath(G) : '')
+      : ((typeof Engine !== 'undefined' && Engine.util && Engine.util.getOrgIconPath) ? Engine.util.getOrgIconPath(G, r.orgId) : '');
+    const _embHtml = _embPath ? `<img src="${_embPath}" alt="${escHtml(orgName)}" onerror="this.style.display='none'">` : `<span class="rp-rank-fallback">${escHtml((orgName || '').charAt(0))}</span>`;
     html += `<div class="rp-card ${rankClass}${playerClass}">
-      <div class="rp-rank"><span>${r.rank}</span></div>
+      <div class="rp-rank">${_embHtml}</div>
       <div class="rp-info">
         <div class="rp-tags"><span>${tierLabel}</span><span>${tierMeta}</span>${champion ? '<span>王者保持</span>' : '<span>追走中</span>'}</div>
         <h3>${escHtml(orgName)}</h3>
@@ -3757,27 +3960,30 @@ function renderRanking() {
       </div>
       <div class="rp-metrics">
         <div class="rank-metric"><span>評価</span><b>${Math.round(r.rating)}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT の合計。<br>このポイントで業界順位が決まる。</div></div></div>
+          <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT ＋ 実績 の合計。<br>このポイントで業界順位が決まる。</div></div></div>
         <div class="rank-metric"><span>基礎力</span><b>${Math.round(r.baseScore)}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">基礎力 — 今そこにある戦力</div><div class="rmt-text">上位10名のOVRと人気を重み付け平均（重み 1.6→0.68 で逓減）し、<br>OVR×1.2 ＋ 人気×0.9 で合算した値。<br>評価ptを構成する素材のひとつ。</div></div></div>
+          <div class="rank-metric-tooltip"><div class="rmt-label">基礎力 — 今そこにある戦力</div><div class="rmt-text">3軸の合算:<br>・コア戦力 ${Math.round((r.force||0))}　TOP8加重OVR×1.2 ＋ 加重人気×0.6<br>・層の厚み ${Math.round((r.depth||0))}　11位以下のOVR70+/75+を加点（上限30）<br>・看板スター ${Math.round((r.marquee||0))}　TOP3人気の突出加重×0.45<br>引退・レンタル選手は除外。</div></div></div>
         <div class="rank-metric"><span>平均OVR</span><b>${avgOvr}</b>
           <div class="rank-metric-tooltip"><div class="rmt-label">平均OVR</div><div class="rmt-text">ロスター全員のOVR単純平均。<br>厚みの目安。</div></div></div>
         <div class="rank-metric"><span>対戦PT</span><b class="${battleClass}">${battleSign}${Math.round(r.battlePt)}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>勝つと積み上がり、負けると目減りする。<br>シーズンを跨いで保持される。</div></div></div>
+          <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>勝つと積み上がり、負けると目減りする。</div></div></div>
         <div class="rank-metric"><span>レガシー</span><b>${Math.round(r.legacyScore)}</b>
           <div class="rank-metric-tooltip"><div class="rmt-label">レガシー — 積み上げた歴史（上限50pt）</div><div class="rmt-text">団体格ベース（自団体0 / S級+50 / A級+30 / B級+15）<br>＋ 殿堂入り盾（★殿堂+8 / ★★ゴールド+10 / ★★★レジェンド+13）<br>＋ 対抗戦通算勝利数 ÷ 5</div></div></div>
-        <div class="rank-metric"><span>人気</span><b style="color:${popColor}">${popDisplay}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">人気 — 団体人気値</div><div class="rmt-text">集客・グッズ収入・メディア収入のベース倍率。<br>興行と日々の活動でじわじわ動く。</div></div></div>
+        <div class="rank-metric"><span>実績</span><b>${Math.round(r.achievementScore || 0)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">実績 — シーズンで勝ち取った勲章とその余韻</div><div class="rmt-text">${_buildAchievementTooltip(r, G.season)}</div></div></div>
       </div>
     </div>`;
   });
   html += '</div></section>';
 
   // ── 04 シーズン履歴 ──
-  if (G.seasonHistory && G.seasonHistory.length > 0) {
+  // 記録欠落エントリ (showCount/totalRevenue/bestMQ が全て0) は表示から除外
+  const _hasValidRecord = (h) => (h.showCount || 0) > 0 || (h.totalRevenue || 0) > 0 || (h.bestMQ || 0) > 0;
+  const _validHistory = (G.seasonHistory || []).filter(_hasValidRecord);
+  if (_validHistory.length > 0) {
     html += '<section class="section bg-card history-wrap"><div class="section-marker"><div class="text"><div class="kicker">04 — History</div><div class="title">シーズン履歴</div></div></div>';
     html += '<table><thead><tr><th>シーズン</th><th>順位</th><th>興行数</th><th>最高MQ</th><th>収支</th><th>最終資金</th><th>人数</th></tr></thead><tbody>';
-    G.seasonHistory.forEach(h => {
+    [..._validHistory].reverse().forEach(h => {
       const profit = (h.totalRevenue || 0) - (h.totalExpense || 0);
       const profitClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
       html += `<tr>
@@ -10339,6 +10545,54 @@ function _classifyRelation(bond, rivalry) {
   return 'casual_rivalry';
 }
 
+// 因縁列伝 v1.1: context tag 導出（h2h.history と現在 state から）
+//  優先順: reclaiming > betrayed > factionWar > lockerStress > repaired
+//  history の直近10戦に該当フラグがあれば成立。repaired は h2h._repairedAt が直近2シーズン以内。
+function _deriveRelationContext(state, idA, idB, h2h) {
+  if (!h2h) return null;
+  const recent = (h2h.history || []).slice(-10);
+  // 1. reclaiming: 直近 history に rc=1
+  if (recent.some(r => r.rc === 1)) return 'reclaiming';
+  // 2. betrayed: 元同僚（離脱経験）または history bt=1
+  if (recent.some(r => r.bt === 1)) return 'betrayed';
+  if (Engine.orgTimeline && typeof Engine.orgTimeline.checkFirstMeetSinceDeparture === 'function') {
+    try {
+      const fA = (state.roster || []).concat(...Object.values(state.aiOrgs || {}).map(o => o.roster || [])).find(c => c.id === idA);
+      const fB = (state.roster || []).concat(...Object.values(state.aiOrgs || {}).map(o => o.roster || [])).find(c => c.id === idB);
+      // 「元同僚関係」: orgTimeline で過去同団体期間あり、現在は別団体
+      if (fA && fB && Array.isArray(fA.orgTimeline) && Array.isArray(fB.orgTimeline)) {
+        const aOrgs = new Set(fA.orgTimeline.map(e => e.orgId));
+        const bOrgs = new Set(fB.orgTimeline.map(e => e.orgId));
+        const shared = [...aOrgs].some(o => bOrgs.has(o));
+        const aLast = fA.orgTimeline[fA.orgTimeline.length - 1]?.orgId;
+        const bLast = fB.orgTimeline[fB.orgTimeline.length - 1]?.orgId;
+        if (shared && aLast && bLast && aLast !== bLast) return 'betrayed';
+      }
+    } catch (_) {}
+  }
+  // 3. factionWar: history fc=1 または現在の派閥状態
+  if (recent.some(r => r.fc === 1)) return 'factionWar';
+  if (Engine.factions && typeof Engine.factions.getFactionByFighterId === 'function') {
+    try {
+      const fA = Engine.factions.getFactionByFighterId(state, idA);
+      const fB = Engine.factions.getFactionByFighterId(state, idB);
+      if (fA && fB && fA.id !== fB.id && (fA.inHostility || fB.inHostility)) return 'factionWar';
+    } catch (_) {}
+  }
+  // 4. lockerStress: 直近 history lc=1 または現在 _lockerCrisisWeek 直近4週
+  if (recent.some(r => r.lc === 1)) return 'lockerStress';
+  if (state._lockerCrisisWeek != null && Engine.util && typeof Engine.util.absWeek === 'function') {
+    const aw = Engine.util.absWeek(state.season, state.week);
+    if (aw - state._lockerCrisisWeek <= 4) return 'lockerStress';
+  }
+  // 5. repaired: h2h._repairedAt が直近2シーズン以内
+  if (h2h._repairedAt) {
+    const dy = (state.season || 1) - (h2h._repairedAt.season || 1);
+    if (dy <= 2) return 'repaired';
+  }
+  return null;
+}
+
 function _isPlayerSide(state, charId) {
   return (state.roster || []).some(c => c.id === charId);
 }
@@ -10386,8 +10640,12 @@ function _pickRivalryFeatured(state) {
       pure_hatred: 20, fated_admiration: 18, bitter_feud: 12,
       allied_rivalry: 10, destined_rival: 8,
     };
-    const score = rawScore + (isPlayerInvolved ? playerBonus : 0) + (dramaTagBonus[tag] || 0);
-    all.push({ key, h2h, tag, bond, rivalry, charA, charB, idA: a, idB: b, score, rawScore, isPlayerInvolved });
+    // 因縁列伝 v1.1: context tag に応じて featured ボーナス
+    const ctx = _deriveRelationContext(state, a, b, h2h);
+    const contextBoost = { reclaiming: 20, betrayed: 25, factionWar: 15, repaired: 10, lockerStress: 5 };
+    const ctxBonus = ctx ? (contextBoost[ctx] || 0) : 0;
+    const score = rawScore + (isPlayerInvolved ? playerBonus : 0) + (dramaTagBonus[tag] || 0) + ctxBonus;
+    all.push({ key, h2h, tag, ctx, bond, rivalry, charA, charB, idA: a, idB: b, score, rawScore, isPlayerInvolved });
   });
   all.sort((x, y) => y.score - x.score);
   if (!all.length) return { featured: null, relations: [] };
@@ -10470,8 +10728,11 @@ function _buildNarrativeData(featured) {
 }
 
 function _renderRivalryFeatured(featured, pickText) {
-  const { tag, charA, charB, idA, idB, h2h } = featured;
-  const narrative = (typeof KURODA_RELATION_NARRATIVE !== 'undefined') ? KURODA_RELATION_NARRATIVE[tag] : null;
+  const { tag, ctx, charA, charB, idA, idB, h2h } = featured;
+  const tagNarrative = (typeof KURODA_RELATION_NARRATIVE !== 'undefined') ? KURODA_RELATION_NARRATIVE[tag] : null;
+  // 因縁列伝 v1.1: context narrative があれば優先、なければ tag default にフォールバック
+  const ctxNarrative = (ctx && tagNarrative && tagNarrative.contexts && tagNarrative.contexts[ctx]) || null;
+  const narrative = ctxNarrative || tagNarrative;
   const d = _buildNarrativeData(featured);
   const headline = (narrative && pickText(narrative.headlines, d)) || '業界が注目する一組';
   const body = (narrative && pickText(narrative.bodies, d)) || `${charA.name}と${charB.name}——本紙が見守る関係。`;
@@ -10495,6 +10756,17 @@ function _renderRivalryFeatured(featured, pickText) {
   if (h2h.bestMQ) facts.push(`<span class="fact-item">最高評価 MQ${h2h.bestMQ}</span>`);
   if (h2h.hadTitleMatch) facts.push(`<span class="fact-item">タイトル戦経験あり</span>`);
   if (h2h.hadPPV) facts.push(`<span class="fact-item">PPV経験あり</span>`);
+  // 因縁列伝 v1.1: context tag の視覚キュー
+  if (ctx) {
+    const ctxLabel = {
+      betrayed: '⚠ 元同僚',
+      factionWar: '⚔ 派閥抗争中',
+      lockerStress: '❄ ロッカー荒廃中',
+      repaired: '🤝 修復後',
+      reclaiming: '🏆 奪還挑戦戦線',
+    }[ctx];
+    if (ctxLabel) facts.push(`<span class="fact-item" style="background:rgba(139,26,26,0.15);border-color:rgba(139,26,26,0.5);color:#9a4040;font-weight:700;">${ctxLabel}</span>`);
+  }
 
   return `<section class="rivalry-main" data-internal-tag="${tag}">
     <div class="rivalry-featured-headline">
@@ -10548,6 +10820,15 @@ function _renderRivalryHistory(featured) {
     return '';
   };
   const titleBadge = (t) => t ? `<span style="font-size:9px;background:rgba(154,112,32,0.7);color:#fff;padding:1px 6px;border-radius:2px;letter-spacing:1px;margin-right:4px;">タイトル戦</span>` : '';
+  // 因縁列伝 v1.1: イベント文脈バッジ
+  const eventBadges = (rec) => {
+    let out = '';
+    if (rec.bt) out += `<span style="font-size:9px;background:#c92a2a;color:#fff;padding:1px 6px;border-radius:2px;letter-spacing:1px;margin-right:4px;">⚠ 元同僚</span>`;
+    if (rec.fc) out += `<span style="font-size:9px;background:#5b2d8c;color:#fff;padding:1px 6px;border-radius:2px;letter-spacing:1px;margin-right:4px;">派閥戦</span>`;
+    if (rec.lc) out += `<span style="font-size:9px;background:#4a4a52;color:#fff;padding:1px 6px;border-radius:2px;letter-spacing:1px;margin-right:4px;">険悪期</span>`;
+    if (rec.rc) out += `<span style="font-size:9px;background:#a87010;color:#fff;padding:1px 6px;border-radius:2px;letter-spacing:1px;margin-right:4px;">奪還挑戦</span>`;
+    return out;
+  };
 
   const rows = history.map((rec, idx) => {
     // win: 'A' (idA winner), 'B' (idB winner), 'd' (draw)
@@ -10570,7 +10851,7 @@ function _renderRivalryHistory(featured) {
         シーズン${rec.s}<br>第${rec.w}週
       </div>
       <div>
-        <div class="history-card">${stageBadge(rec.st)}${titleBadge(rec.t)}${cardLabel}</div>
+        <div class="history-card">${stageBadge(rec.st)}${titleBadge(rec.t)}${eventBadges(rec)}${cardLabel}</div>
       </div>
       <div class="history-result ${cls}">
         ${resultText}<br><span class="mq">${mqText}</span>
@@ -12903,35 +13184,59 @@ function _relmapZoomFit() {
   _relmapReheat();
 }
 
-// ── ランキング画面: 指標ツールチップを fixed 配置でクリッピング回避 ──
+// ── ランキング画面: 指標ツールチップを document.body に teleport してクリッピング回避 ──
 (function initRankMetricTooltips() {
   if (typeof document === 'undefined') return;
-  function positionTip(metric) {
+  let _activeTip = null;
+  let _activeOrigin = null; // 元の親要素 (mouseout で戻す)
+  function showTip(metric) {
     const tip = metric.querySelector(':scope > .rank-metric-tooltip');
     if (!tip) return;
+    // 既存表示があれば撤収
+    hideTip();
+    // body へ teleport (祖先の transform/overflow に影響されないようにする)
+    _activeOrigin = tip.parentNode;
+    _activeTip = tip;
+    document.body.appendChild(tip);
+    tip.classList.add('is-floating');
     metric.classList.add('is-tip-active');
-    const r = metric.getBoundingClientRect();
-    const tipW = tip.offsetWidth || 260;
-    const tipH = tip.offsetHeight || 0;
-    const margin = 8;
-    let left = r.left + r.width / 2 - tipW / 2;
-    left = Math.max(margin, Math.min(window.innerWidth - tipW - margin, left));
-    let top = r.top - tipH - margin;
-    if (top < margin) top = r.bottom + margin;
-    tip.style.left = left + 'px';
-    tip.style.top = top + 'px';
+    // サイズ確定後に位置決め
+    requestAnimationFrame(() => {
+      if (!_activeTip) return;
+      const r = metric.getBoundingClientRect();
+      const tipW = tip.offsetWidth || 320;
+      const tipH = tip.offsetHeight || 0;
+      const margin = 8;
+      let left = r.left + r.width / 2 - tipW / 2;
+      left = Math.max(margin, Math.min(window.innerWidth - tipW - margin, left));
+      let top = r.top - tipH - margin;
+      if (top < margin) top = Math.min(window.innerHeight - tipH - margin, r.bottom + margin);
+      if (top < margin) top = margin;
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+    });
+  }
+  function hideTip() {
+    if (!_activeTip) return;
+    _activeTip.classList.remove('is-floating');
+    _activeTip.style.left = '';
+    _activeTip.style.top = '';
+    if (_activeOrigin) _activeOrigin.appendChild(_activeTip);
+    document.querySelectorAll('.rank-metric.is-tip-active').forEach(el => el.classList.remove('is-tip-active'));
+    _activeTip = null;
+    _activeOrigin = null;
   }
   document.addEventListener('mouseover', (e) => {
     const m = e.target.closest && e.target.closest('.rank-metric');
     if (!m || !m.querySelector(':scope > .rank-metric-tooltip')) return;
-    if (m._tipBound === e.target) return;
-    positionTip(m);
+    showTip(m);
   }, true);
   document.addEventListener('mouseout', (e) => {
     const m = e.target.closest && e.target.closest('.rank-metric');
     if (!m) return;
     const related = e.relatedTarget;
     if (related && m.contains(related)) return;
-    m.classList.remove('is-tip-active');
+    hideTip();
   }, true);
+  window.addEventListener('scroll', hideTip, true);
 })();

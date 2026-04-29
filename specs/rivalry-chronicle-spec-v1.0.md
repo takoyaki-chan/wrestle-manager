@@ -1,8 +1,19 @@
-# 因縁列伝(3面) 仕様 v1.0
+# 因縁列伝(3面) 仕様 v1.1
 
-> 実装状況: 🟢 v1.0 実装済み（2026-04-25）
+> 実装状況: 🟢 v1.1 実装済み（2026-04-30 — context-aware narrative + history メタデータ + 視覚キュー）
+> v1.0 実装: 2026-04-25
 > 関連 handoff: `docs/archive/handoff-newspaper-rivalry-redesign-v1.md`
 > モックアップ: `docs/ui/mockups/newspaper-mockup-v8.html`
+
+## 変更履歴
+
+### v1.1 (2026-04-30)
+- **h2h.history メタデータ拡張**: 各 history entry に `bt`(B-3 元同僚初対面) / `fc`(派閥抗争中) / `lc`(ロッカー荒廃中) / `rc`(奪還挑戦試合) フラグを追加。`Engine.h2h.update` に第13引数 `meta` を追加。
+- **context tag 導出 (`_deriveRelationContext`)**: 9象限分類に加えて、ペアごとの状況コンテキスト 5 種 (`reclaiming`/`betrayed`/`factionWar`/`lockerStress`/`repaired`) を h2h.history と現在 state から導出。優先順は記載順。
+- **context-aware narrative**: `KURODA_RELATION_NARRATIVE[tag].contexts[ctxTag]` 2階層化。意味的に成立する 23 セルに専用 headline/body プールを追加(各3本ずつ、計 ~100文)。`fated_admiration.repaired` / `pure_hatred.betrayed` / `bitter_feud.factionWar` / `destined_rival.reclaiming` 等。
+- **featured 選出 event boost**: `_pickRivalryFeatured` に `contextBoost = { betrayed:25, reclaiming:20, factionWar:15, repaired:10, lockerStress:5 }` を加算。
+- **視覚キュー**: featured panel に context バッジ(⚠ 元同僚 / ⚔ 派閥抗争中 / ❄ ロッカー荒廃中 / 🤝 修復後 / 🏆 奪還挑戦戦線)。history rows に対戦個別バッジ(bt/fc/lc/rc)。
+- **`_repairedAt` 刻印**: 修復チャネル成功時に `state.h2h[key]._repairedAt = { season, week }` を保存、直近2シーズン以内なら `repaired` context が成立。
 
 ## 1. 概要
 

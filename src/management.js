@@ -4913,28 +4913,72 @@ const Engine = {
       const cap = 50;
       return Math.min(cap, base + hofPt + battlePt);
     },
+    /**
+     * 基礎力 v2.0: 3軸合算 (Force コア戦力 + Depth 層の厚み + Marquee 看板スター)
+     * 引退済 (f.retired === true) は除外。レンタル選手は団体戦力として含める。
+     */
     calcRosterPower(roster) {
       const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
-      const weights = cfg.weightsTop10 || [1.6, 1.45, 1.3, 1.2, 1.1, 1.0, 0.92, 0.84, 0.76, 0.68];
-      const weightedOVR = Engine.ranking._weightedTopAvg(roster, f => Engine.util.ov(f), weights);
-      const weightedPop = Engine.ranking._weightedTopAvg(roster, f => f.popularity || 0, weights);
-      const ovrMult = cfg.ovrMultiplier || 1.2;
-      const popMult = cfg.popMultiplier || 0.9;
-      const baseScore = Math.round(weightedOVR * ovrMult + weightedPop * popMult);
+      const active = (roster || []).filter(f => !f.retired && !f.isRental);
+
+      // ── (A) Force コア戦力: TOP8 加重 OVR + 加重 人気 ──
+      const forceWeights = cfg.forceWeights || [1.6, 1.4, 1.25, 1.1, 1.0, 0.9, 0.8, 0.7];
+      const forceOvrMult = cfg.forceOvrMult != null ? cfg.forceOvrMult : 1.2;
+      const forcePopMult = cfg.forcePopMult != null ? cfg.forcePopMult : 0.6;
+      const weightedOVR = Engine.ranking._weightedTopAvg(active, f => Engine.util.ov(f), forceWeights);
+      const weightedPop = Engine.ranking._weightedTopAvg(active, f => f.popularity || 0, forceWeights);
+      const force = weightedOVR * forceOvrMult + weightedPop * forcePopMult;
+
+      // ── (B) Depth 層の厚み: 11位以下の OVR70+ / OVR75+ を加点 ──
+      const depthOvrTh   = cfg.depthOvrThreshold      != null ? cfg.depthOvrThreshold      : 70;
+      const depthBonusTh = cfg.depthOvrBonusThreshold != null ? cfg.depthOvrBonusThreshold : 75;
+      const depthPer     = cfg.depthPerFighter        != null ? cfg.depthPerFighter        : 3;
+      const depthBonus   = cfg.depthBonusPerFighter   != null ? cfg.depthBonusPerFighter   : 2;
+      const depthCap     = cfg.depthCap               != null ? cfg.depthCap               : 30;
+      const sortedByOvr = active.map(f => Engine.util.ov(f)).sort((a, b) => b - a);
+      const tail = sortedByOvr.slice(10); // 11位以下
+      let depthRaw = 0;
+      tail.forEach(o => {
+        if (o >= depthOvrTh)   depthRaw += depthPer;
+        if (o >= depthBonusTh) depthRaw += depthBonus;
+      });
+      const depth = Math.min(depthCap, depthRaw);
+
+      // ── (C) Marquee 看板スター: TOP3 popularity の突出加重 ──
+      const marqueeWeights = cfg.marqueeWeights || [0.6, 0.25, 0.15];
+      const marqueeMult    = cfg.marqueeMult != null ? cfg.marqueeMult : 0.45;
+      const popsSorted = active.map(f => f.popularity || 0).sort((a, b) => b - a);
+      let marqueeRaw = 0;
+      for (let i = 0; i < marqueeWeights.length; i++) {
+        marqueeRaw += (popsSorted[i] || 0) * marqueeWeights[i];
+      }
+      const marquee = marqueeRaw * marqueeMult;
+
+      const baseScore = Math.round(force + depth + marquee);
       return {
+        baseScore,
+        force: Math.round(force * 10) / 10,
+        depth: Math.round(depth * 10) / 10,
+        marquee: Math.round(marquee * 10) / 10,
         weightedOVR: Math.round(weightedOVR * 10) / 10,
         weightedPop: Math.round(weightedPop * 10) / 10,
-        baseScore,
       };
     },
-    /** rating = 実力スコア + legacy + 対戦ポイント */
+    /** rating = 基礎力 + レガシー + 対戦PT + シーズン実績 */
     calcOrgRating(state, orgId, roster, battlePt) {
       const power = Engine.ranking.calcRosterPower(roster);
       const legacyScore = Engine.ranking.calcLegacyScore(state, orgId);
+      const achievementScore = Engine.achievement
+        ? Engine.achievement.totalPt(state, orgId)
+        : 0;
       return {
-        rating: power.baseScore + legacyScore + (battlePt || 0),
+        rating: power.baseScore + legacyScore + (battlePt || 0) + achievementScore,
         baseScore: power.baseScore,
+        force: power.force,
+        depth: power.depth,
+        marquee: power.marquee,
         legacyScore,
+        achievementScore,
         weightedOVR: power.weightedOVR,
         weightedPop: power.weightedPop,
       };
@@ -4951,7 +4995,12 @@ const Engine = {
         orgId:'player', name: state.orgName || 'プレイヤー団体',
         rating: Math.round(playerBreakdown.rating),
         baseScore: Math.round(playerBreakdown.baseScore),
+        force: playerBreakdown.force,
+        depth: playerBreakdown.depth,
+        marquee: playerBreakdown.marquee,
         legacyScore: Math.round(playerBreakdown.legacyScore),
+        achievementScore: Math.round(playerBreakdown.achievementScore || 0),
+        achievementItems: ((state.achievementItems && state.achievementItems.player) || []).slice(),
         weightedOVR: playerBreakdown.weightedOVR,
         weightedPop: playerBreakdown.weightedPop,
         battlePt: bp.player,
@@ -4965,7 +5014,12 @@ const Engine = {
           orgId: org.id, name: org.name,
           rating: Math.round(breakdown.rating),
           baseScore: Math.round(breakdown.baseScore),
+          force: breakdown.force,
+          depth: breakdown.depth,
+          marquee: breakdown.marquee,
           legacyScore: Math.round(breakdown.legacyScore),
+          achievementScore: Math.round(breakdown.achievementScore || 0),
+          achievementItems: ((state.achievementItems && state.achievementItems[org.id]) || []).slice(),
           weightedOVR: breakdown.weightedOVR,
           weightedPop: breakdown.weightedPop,
           battlePt: bp[org.id],
@@ -4980,6 +5034,79 @@ const Engine = {
       const p = rankings.find(r => r.orgId === 'player');
       return p ? p.rank : rankings.length;
     }
+  },
+
+  // ── Achievement System (シーズン実績) ───────────────────
+  // 個別アイテム単位で保持。各アイテムは age を持ち、シーズン跨ぎで加齢・減衰する。
+  // state.achievementItems = { player: [...], org_s: [...], org_a: [...], org_b: [...] }
+  // item = { id, type, season, originalPt, age, label, winnerName? }
+  achievement: {
+    /** age-based 現在ポイントを計算 (1pt 未満は呼び出し側で除去判定) */
+    currentPt(item) {
+      if (!item) return 0;
+      const cfg = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG) || {};
+      const decay = cfg.decayRate != null ? cfg.decayRate : 0.5;
+      const grace = cfg.graceAge != null ? cfg.graceAge : 1;
+      const age = item.age || 0;
+      const original = item.originalPt || 0;
+      if (age <= grace) return original;
+      return original * Math.pow(decay, age - grace);
+    },
+    /** 団体の実績合計 (整数pt) */
+    totalPt(state, orgId) {
+      const items = (state && state.achievementItems && state.achievementItems[orgId]) || [];
+      let total = 0;
+      items.forEach(it => { total += Engine.achievement.currentPt(it); });
+      return Math.round(total);
+    },
+    /**
+     * アイテム追加 (重複ガード付き)。state を破壊的に更新する純粋ヘルパ。
+     * 同一 id が既に存在する場合は何もしない。
+     */
+    add(state, orgId, item) {
+      if (!state || !orgId || !item || !item.id) return state;
+      if (!state.achievementItems) {
+        state.achievementItems = { player: [], org_s: [], org_a: [], org_b: [] };
+      }
+      if (!state.achievementItems[orgId]) state.achievementItems[orgId] = [];
+      const list = state.achievementItems[orgId];
+      if (list.some(it => it.id === item.id)) return state; // 二重加点防止
+      list.push({
+        id: item.id,
+        type: item.type || 'misc',
+        season: item.season != null ? item.season : (state.season || 1),
+        originalPt: item.originalPt || item.pt || 0,
+        age: 0,
+        label: item.label || '',
+        winnerName: item.winnerName || '',
+      });
+      return state;
+    },
+    /** シーズン開幕処理: 全アイテムの age を +1、現在ポイントが 1pt 未満のものを除去 */
+    tickAge(state) {
+      if (!state || !state.achievementItems) return state;
+      const cfg = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG) || {};
+      const removeBelow = cfg.removeBelow != null ? cfg.removeBelow : 1;
+      Object.keys(state.achievementItems).forEach(orgId => {
+        const list = state.achievementItems[orgId] || [];
+        state.achievementItems[orgId] = list
+          .map(it => ({ ...it, age: (it.age || 0) + 1 }))
+          .filter(it => Engine.achievement.currentPt(it) >= removeBelow);
+      });
+      return state;
+    },
+    /** セーブ互換: achievementItems が無い state を補完 */
+    ensureInit(state) {
+      if (!state) return state;
+      if (!state.achievementItems) {
+        state.achievementItems = { player: [], org_s: [], org_a: [], org_b: [] };
+      } else {
+        ['player', 'org_s', 'org_a', 'org_b'].forEach(orgId => {
+          if (!state.achievementItems[orgId]) state.achievementItems[orgId] = [];
+        });
+      }
+      return state;
+    },
   },
 
   // ── Rival System (IMMUTABLE) ───────────────────────────
@@ -9206,7 +9333,8 @@ const Engine = {
       }
       const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
       const weeklyNewspaper = Engine.newspaper.generate(s, newsRng);
-      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsWarMilestone: null };
+      // 業界ニュースキューも消化（newspaper.generate が読み終わったので clear）
+      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsWarMilestone: null, _industryNewsEvents: [] };
       // AIニュース一時フィールドをクリア
       if (s.aiOrgs) {
         s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
@@ -11665,6 +11793,17 @@ const Engine = {
           } else {
             events.push(`🏆 頂上決戦: ${winnerName}勝利！`);
           }
+          // ── シーズン実績ポイント加算: PPV GRAND FINAL 優勝 ──
+          if (sr.winner !== 'draw' && winnerOrgId && Engine.achievement) {
+            const ACFG = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG) || { pt: {} };
+            Engine.achievement.ensureInit(s);
+            Engine.achievement.add(s, winnerOrgId, {
+              id: `ppv_${s.season}`, type: 'ppv',
+              originalPt: ACFG.pt.ppv || 15,
+              label: 'PPV GRAND FINAL 優勝',
+              winnerName,
+            });
+          }
         }
       }
 
@@ -12037,6 +12176,39 @@ const Engine = {
         const pendingAwards = Engine.awards.generate(awardsRng, s);
         s = { ...s, pendingAwards };
 
+        // ── シーズン実績ポイント加算 (org-ranking-spec-v2.0) ──
+        Engine.achievement.ensureInit(s);
+        const ACFG = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG) || { pt: {} };
+        // 年末MVP
+        if (pendingAwards.mvp && pendingAwards.mvp.orgId) {
+          Engine.achievement.add(s, pendingAwards.mvp.orgId, {
+            id: `mvp_${s.season}`, type: 'mvp',
+            originalPt: ACFG.pt.mvp || 10,
+            label: '年末MVP受賞',
+            winnerName: pendingAwards.mvp.name,
+          });
+        }
+        // ベストマッチ賞
+        if (pendingAwards.bestMatch && pendingAwards.bestMatch.orgId) {
+          Engine.achievement.add(s, pendingAwards.bestMatch.orgId, {
+            id: `bestMatch_${s.season}`, type: 'bestMatch',
+            originalPt: ACFG.pt.bestMatch || 5,
+            label: 'ベストマッチ賞',
+            winnerName: `${pendingAwards.bestMatch.fighter1.name} vs ${pendingAwards.bestMatch.fighter2.name}`,
+          });
+        }
+        // ジュニアトーナメント優勝
+        if (pendingAwards.jtChampion && pendingAwards.jtChampion.orgId) {
+          Engine.achievement.add(s, pendingAwards.jtChampion.orgId, {
+            id: `junior_${s.season}`, type: 'junior',
+            originalPt: ACFG.pt.junior || 8,
+            label: 'ジュニアトーナメント優勝',
+            winnerName: pendingAwards.jtChampion.name,
+          });
+        }
+        // シーズン最大動員興行 (TODO: 全団体のシーズン最大動員を追跡する仕組みが
+        // 未実装のため、本フェーズでは保留。tracker 実装後に有効化する)
+
         // OffWeek 1: Player season end (aging + decay + growth reset) + AI season end
         const { roster, report } = Engine.growth.applySeasonEnd(rng, s);
         s = { ...s, roster };
@@ -12356,10 +12528,14 @@ const Engine = {
           s = { ...s, aiOrgs: Engine.rival.ensureAICoachStaffing(elevRng, s.aiOrgs, s.coaches || [], true) };
           events.push('⚡ 【業界激変】ライバル団体が大型強化策を発表！リーグ全体のレベルが引き上げられた。');
         }
+        const annualChampionEntry = oldRankings.find(r => r.rank === 1);
         const archive = { season: oldSeason, rank: pRankOld, funds: s.funds, rosterSize: s.roster.length,
           orgPop: s.orgPop || 0, ...oldStats,
           rankings: oldRankings.map(r => ({ name: r.name, rating: r.rating, rank: r.rank })),
-          awards: s.lastAwards || null }; // v1.4
+          awards: s.lastAwards || null, // v1.4
+          // 年間王者: 全評価確定後にランキング1位の団体を記録 (加点なし、最高位の称号)
+          annualChampion: annualChampionEntry ? { orgId: annualChampionEntry.orgId, orgName: annualChampionEntry.name } : null,
+        };
         const seasonHistory = [...(s.seasonHistory || []), archive];
 
         // v0.99: Seasonal pricing adjust every 3 seasons (pricing-balance-spec §4.3)
@@ -12429,6 +12605,8 @@ const Engine = {
           s = { ...s, aiOrgs: updatedAiOrgsWithMood };
         }
 
+        // シーズン実績の加齢処理 (1年満額 → ×0.5/年で減衰、1pt未満で除去)
+        s = Engine.achievement.tickAge(Engine.achievement.ensureInit(s));
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
               battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 }, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
@@ -12978,6 +13156,7 @@ const Engine = {
       challengeTrigger: null,
       pendingEvent: null,
       battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 },
+      achievementItems: { player: [], org_s: [], org_a: [], org_b: [] },
       // F2: Negotiation system
       pendingNegotiation: null,
       negotiatedThisSeason: [],
@@ -14217,6 +14396,7 @@ Engine.awards = {
       portrait: jtResult.champion.portrait,
       ovr: Engine.util.ov(jtResult.champion),
       style: jtResult.champion.style || 'Allround',
+      orgId: jtResult.champion._orgId || 'player',
       orgName: jtResult.champion._orgName || Engine.awards._orgName(state, jtResult.champion._orgId || 'player'),
       isPlayerOrg: (jtResult.champion._orgId || 'player') === 'player',
       runnerUp: jtResult.runnerUp ? { id: jtResult.runnerUp.id, name: jtResult.runnerUp.name,
@@ -14376,7 +14556,7 @@ Engine.awards = {
       candidates.push({
         fighter1: { id: f1 ? f1.id : null, name: parts[0] || '???', ovr: f1 ? ov(f1) : 0, style: f1 ? (f1.style || 'Allround') : 'Allround' },
         fighter2: { id: f2 ? f2.id : null, name: parts[1] || '???', ovr: f2 ? ov(f2) : 0, style: f2 ? (f2.style || 'Allround') : 'Allround' },
-        orgName: Engine.awards._orgName(state, 'player'), mq: playerMQ, isPlayerOrg: true
+        orgId: 'player', orgName: Engine.awards._orgName(state, 'player'), mq: playerMQ, isPlayerOrg: true
       });
     }
     if (state.aiOrgs) {
@@ -14390,7 +14570,7 @@ Engine.awards = {
           candidates.push({
             fighter1: bestMatch.fighter1,
             fighter2: bestMatch.fighter2,
-            orgName: Engine.awards._orgName(state, orgId), mq: bestMQ, isPlayerOrg: false
+            orgId, orgName: Engine.awards._orgName(state, orgId), mq: bestMQ, isPlayerOrg: false
           });
         } else {
           // フォールバック: データなしの場合はトップ2のOVRから推定
@@ -14404,7 +14584,7 @@ Engine.awards = {
           candidates.push({
             fighter1: { id: sorted[0].id, name: sorted[0].name, ovr: ov(sorted[0]), style: sorted[0].style || 'Allround' },
             fighter2: { id: sorted[1].id, name: sorted[1].name, ovr: ov(sorted[1]), style: sorted[1].style || 'Allround' },
-            orgName: Engine.awards._orgName(state, orgId), mq, isPlayerOrg: false
+            orgId, orgName: Engine.awards._orgName(state, orgId), mq, isPlayerOrg: false
           });
         }
       });
@@ -14448,7 +14628,7 @@ Engine.awards = {
 
     return {
       id: wf.id, name: wf.name, portrait: wf.portrait,
-      orgName: winner.orgName, ovr: ov(wf), popularity: wf.popularity,
+      orgId: winner.orgId, orgName: winner.orgName, ovr: ov(wf), popularity: wf.popularity,
       age: wf.age, style: wf.style || 'Allround',
       isPlayerOrg: winner.orgId === 'player',
       winRate, defenses, wins, losses, draws,
@@ -16667,10 +16847,33 @@ Engine.shachoshitsu = {
         pairRepairResult = { success: true, delta, idA, idB, nameA: fA.name, nameB: fB.name, relationships: rels };
         events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功（双方向 bond +${delta}）`);
         changes.push({ label: '関係修復', emoji: '🤝', text: `${fA.name}と${fB.name}の bond +${delta}（双方向）` });
+        // 因縁列伝 v1.1: 修復タイムスタンプを h2h に刻む（context narrative のため）
+        const h2hKey = `${Math.min(idA, idB)}>${Math.max(idA, idB)}`;
+        const curH2h = (state.h2h || {})[h2hKey];
+        if (curH2h) {
+          state = { ...state, h2h: { ...state.h2h, [h2hKey]: { ...curH2h, _repairedAt: { season: state.season, week: state.week } } } };
+          pairRepairResult.h2h = state.h2h;
+        }
+        // 業界ニュース: 関係修復成功
+        if (Engine.industryNews) {
+          state = Engine.industryNews.push(state, {
+            type: 'relationshipRepair',
+            characterId: idA,
+            data: { nameA: fA.name, nameB: fB.name, org: state.orgName || 'プレイヤー団体' },
+          });
+        }
       } else {
         pairRepairResult = { success: false, idA, idB, nameA: fA.name, nameB: fB.name };
         events.push(`💧 ${fA.name}と${fB.name}の関係修復斡旋は不発に終わった`);
         changes.push({ label: '関係修復', emoji: '💧', text: `${fA.name}と${fB.name}の溝は埋まらなかった` });
+        // 業界ニュース: 関係修復失敗
+        if (Engine.industryNews) {
+          state = Engine.industryNews.push(state, {
+            type: 'relationshipRepairFail',
+            characterId: idA,
+            data: { nameA: fA.name, nameB: fB.name, org: state.orgName || 'プレイヤー団体' },
+          });
+        }
       }
       reactionKey = success ? 'relationship_repair_success' : 'relationship_repair_fail';
       reactionFighterId = idA;
@@ -16707,8 +16910,11 @@ Engine.shachoshitsu = {
     // bond-rivalry plan P-6: ペア修復が成功した場合は relationships を上書き反映
     if (pairRepairResult && pairRepairResult.success) {
       result.relationships = pairRepairResult.relationships;
+      if (pairRepairResult.h2h) result.h2h = pairRepairResult.h2h;
     }
     if (pairRepairResult) result.pairRepairResult = pairRepairResult;
+    // 業界ニュース: 修復イベントを caller に渡す
+    if (state._industryNewsEvents) result._industryNewsEvents = state._industryNewsEvents;
     // Phase 8: 個人書類のみトーン情報を返す (team書類は選手ごとに finalMult が異なるため無視)
     if (doc.effect && doc.effect.target === 'individual') {
       result.reactionTone = Engine.shachoshitsu.classifyTone(currentFinalMult);
@@ -19927,6 +20133,15 @@ Engine.juniorTournament = {
 //  Engine.newspaper — 新聞v2 毎週生成システム
 //  Pure functions only — no DOM references
 // ══════════════════════════════════════════════════════════
+// ── 業界ニュースキュー push helper（pure / state を返す）──
+// 用途: bond/rivalry/派閥/奪還イベントを Engine.newspaper.generate が拾うキューに積む
+Engine.industryNews = {
+  push(state, ev) {
+    if (!ev || !ev.type) return state;
+    return { ...state, _industryNewsEvents: [...(state._industryNewsEvents || []), ev] };
+  },
+};
+
 Engine.newspaper = {
   PRIORITY: {
     juniorTournamentResult: 260,
@@ -19955,6 +20170,20 @@ Engine.newspaper = {
     transfer:             50,
     leagueElevation:     300,
     general:              30,
+    // ── 業界ニュース拡充: bond/rivalry/派閥/奪還 ──
+    factionEscalation:    125,
+    factionResolution:    122,
+    reclaimSuccess:       120,
+    reclaimChallenge:     108,
+    reclaimFailure:       102,
+    factionFormed:         90,
+    factionSplit:          88,
+    factionDissolution:    85,
+    lockerRoomCrisis:      75,
+    firstMeetSinceDeparture: 72,
+    relationshipRepair:    68,
+    relationshipRepairFail:55,
+    hatredContagion:       50,
   },
 
   /** 毎週の新聞を生成する。tickWeek末尾で呼ばれる */
@@ -20329,6 +20558,33 @@ Engine.newspaper = {
             });
           }
         }
+      });
+    }
+
+    // === 業界ニュース拡充: state._industryNewsEvents キューを取り込む ===
+    // bond/rivalry イベント、派閥動向、奪還挑戦、関係修復などをここで stories に変換
+    const industryEvents = state._industryNewsEvents || [];
+    if (industryEvents.length > 0) {
+      industryEvents.forEach(ev => {
+        const templates = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') ? NEWS_HEADLINE_TEMPLATES[ev.type] : null;
+        if (!templates || templates.length === 0) return;
+        const tpl = templates[Engine.rng.int(rng, 0, templates.length - 1)];
+        const data = ev.data || {};
+        const rep = (s) => {
+          let out = s;
+          Object.keys(data).forEach(k => {
+            out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), data[k] != null ? data[k] : '');
+          });
+          return out;
+        };
+        const priority = P[ev.type] || P.general;
+        stories.push({
+          type: ev.type,
+          priority,
+          headline: rep(tpl.headline),
+          body: rep(tpl.body),
+          characterId: ev.characterId || null,
+        });
       });
     }
 

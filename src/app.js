@@ -1689,6 +1689,16 @@ const Storage = {
       // v0.9d backward compat: rental & events
       if (G.rentals === undefined && G.rental === undefined) G = { ...G, rentals: [], warThisSeason: false, challengeTrigger: null, pendingEvent: null };
       if (G.seasonStats === undefined) G = { ...G, seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 }, seasonHistory: [], fundsHistory: [G.funds] };
+      // 古いセーブで seasonStats のフィールドが欠落している場合に備えて補完（NaN/undefined→0 防止）
+      {
+        const _ssDefaults = { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds||0, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 };
+        const _fixedSS = { ..._ssDefaults, ...(G.seasonStats || {}) };
+        // 数値フィールドが NaN になっているケースを 0 に正規化
+        ['wins','losses','draws','showCount','totalRevenue','totalExpense','bestMQ','peakFunds','peakPop','eventsWon','eventsLost'].forEach(k => {
+          if (typeof _fixedSS[k] !== 'number' || !Number.isFinite(_fixedSS[k])) _fixedSS[k] = _ssDefaults[k];
+        });
+        G = { ...G, seasonStats: _fixedSS };
+      }
 
       // v0.96 backward compat: mission system
       if (G.missionEnabled === undefined) G = { ...G, missionEnabled: true, missionsCompleted: [] };
@@ -4209,6 +4219,16 @@ const App = {
     const c = G.roster.find(f => f.id === challengerId);
     const eh = G.titles.world.externalHolder;
     const orgName = G.aiOrgs?.[eh.orgId]?.name || eh.orgId;
+    // 業界ニュース: 奪還挑戦状
+    App._pushIndustryNews({
+      type: 'reclaimChallenge',
+      characterId: challengerId,
+      data: {
+        challengerName: c?.name || '挑戦者',
+        fromOrg: G.orgName || 'プレイヤー団体',
+        toOrg: orgName,
+      },
+    });
     showEventPopup({
       type: 'fighter', id: challengerId,
       name: c?.name || '挑戦者', tone: 'positive',
@@ -5343,11 +5363,31 @@ const App = {
             ? { ...c, popularity: Math.min(100, (c.popularity || 0) + Engine.popularity.applyDiminishing(5, c.popularity || 0)) }
             : c);
           events.push(`🏆 王座奪還！ ${rd.challengerName} が ${rd.orgName} から世界王座を取り戻した！`);
+          // 業界ニュース: 奪還成功
+          s = Engine.industryNews.push(s, {
+            type: 'reclaimSuccess',
+            characterId: rd.challengerId,
+            data: {
+              challengerName: rd.challengerName,
+              fromOrg: G.orgName || 'プレイヤー団体',
+              toOrg: rd.orgName,
+            },
+          });
         } else {
           // 挑戦失敗 → 12週CD
           const reclaimResult = Engine.title.resolveReclaimLoss(s, 'world');
           s = { ...s, reclaimChallenges: reclaimResult.reclaimChallenges };
           events.push(`💔 ${rd.challengerName} の奪還挑戦は失敗。${rd.orgName} が世界王座を防衛した。`);
+          // 業界ニュース: 奪還失敗
+          s = Engine.industryNews.push(s, {
+            type: 'reclaimFailure',
+            characterId: rd.challengerId,
+            data: {
+              challengerName: rd.challengerName,
+              fromOrg: G.orgName || 'プレイヤー団体',
+              toOrg: rd.orgName,
+            },
+          });
         }
       }
       // 防衛者を player roster から除去
@@ -5924,7 +5964,20 @@ const App = {
           }
         }
       } else {
-        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player');
+        const meta = App._buildMatchMeta(s, m.left, m.right, !!m.isReclaim);
+        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player', meta);
+        // 業界ニュース: B-3 元同僚 離脱後初対面（試合カード=単発のみ）
+        if (meta.betrayal) {
+          const fA = (s.roster || []).find(c => c.id === m.left);
+          const fB = (s.roster || []).find(c => c.id === m.right);
+          if (fA && fB) {
+            s = Engine.industryNews.push(s, {
+              type: 'firstMeetSinceDeparture',
+              characterId: m.left,
+              data: { nameA: fA.name, nameB: fB.name },
+            });
+          }
+        }
       }
     });
     s = { ...s, h2h };
@@ -7088,6 +7141,39 @@ const App = {
   _pushNewsEvent(ev) {
     const queue = [...(G._newsEvents || []), ev];
     G = { ...G, _newsEvents: queue };
+  },
+
+  // 業界ニュースキューに追加（毎週の新聞画面・業界ニュース欄に流れる）
+  _pushIndustryNews(ev) {
+    if (!ev || !ev.type) return;
+    G = { ...G, _industryNewsEvents: [...(G._industryNewsEvents || []), ev] };
+  },
+
+  // h2h.history に積む meta フラグを構築（B-3 / 派閥抗争 / ロッカー荒廃 / 奪還）
+  _buildMatchMeta(state, idA, idB, isReclaim) {
+    const meta = {};
+    // betrayal: B-3 元同僚 離脱後初対面
+    if (Engine.orgTimeline && typeof Engine.orgTimeline.checkFirstMeetSinceDeparture === 'function') {
+      try { if (Engine.orgTimeline.checkFirstMeetSinceDeparture(state, idA, idB)) meta.betrayal = true; } catch (_) {}
+    }
+    // factionWar: 同団体内で別派閥所属、両派閥が hostility 状態
+    if (Engine.factions && typeof Engine.factions.getFactionByFighterId === 'function') {
+      try {
+        const fA = Engine.factions.getFactionByFighterId(state, idA);
+        const fB = Engine.factions.getFactionByFighterId(state, idB);
+        if (fA && fB && fA.id !== fB.id && (fA.inHostility || fB.inHostility)) {
+          meta.factionWar = true;
+        }
+      } catch (_) {}
+    }
+    // lockerStress: _lockerCrisisWeek が直近4週以内
+    if (state._lockerCrisisWeek != null && Engine.util && typeof Engine.util.absWeek === 'function') {
+      const aw = Engine.util.absWeek(state.season, state.week);
+      if (aw - state._lockerCrisisWeek <= 4) meta.lockerStress = true;
+    }
+    // reclaim: 奪還挑戦試合
+    if (isReclaim) meta.reclaim = true;
+    return meta;
   },
 
   // v1.4w: 新聞パネル表示→完了後にcallback
@@ -8271,6 +8357,14 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA13));
         const result = Engine.factions.applyF01Choice(G, payload, choiceId, rng);
         G = { ...result.state };
+        // 業界ニュース: 派閥成立（A=旗揚げ, C=静観で結成）
+        if (choiceId === 'A' || choiceId === 'C') {
+          App._pushIndustryNews({
+            type: 'factionFormed',
+            characterId: payload.leaderId,
+            data: { org: G.orgName || 'プレイヤー団体', leaderName: payload.leaderName || '?' },
+          });
+        }
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -8283,6 +8377,18 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA23));
         const result = Engine.factions.applyF02Choice(G, payload, choiceId, rng);
         G = { ...result.state };
+        // 業界ニュース: 派閥抗争勃発（A=煽る / C=介入しない で抗争表面化）
+        if (choiceId === 'A' || choiceId === 'C') {
+          App._pushIndustryNews({
+            type: 'factionEscalation',
+            characterId: payload.leaderAId || null,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              factionAName: payload.factionAName || '?',
+              factionBName: payload.factionBName || '?',
+            },
+          });
+        }
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -8319,6 +8425,17 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA24));
         const result = Engine.factions.applyF02ResolutionResult(G, payload, rng);
         G = { ...result.state };
+        // 業界ニュース: 派閥抗争決着
+        App._pushIndustryNews({
+          type: 'factionResolution',
+          characterId: payload.winnerId || null,
+          data: {
+            org: G.orgName || 'プレイヤー団体',
+            winFaction: payload.winFactionName || payload.factionAName || '?',
+            loseFaction: payload.loseFactionName || payload.factionBName || '?',
+            loseLeader: payload.loseLeaderName || payload.leaderBName || '?',
+          },
+        });
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -8342,6 +8459,19 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA33));
         const result = Engine.factions.applyF03Result(G, payload, rng);
         G = { ...result.state };
+        // 業界ニュース: 派閥消滅 (branch === 'dissolution' / 後継者なし)
+        if (payload.branch === 'dissolution') {
+          const fac = (G.factions || []).find(f => f.id === payload.factionId);
+          App._pushIndustryNews({
+            type: 'factionDissolution',
+            characterId: null,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              factionName: payload.factionName || (fac && fac.name) || '?',
+              leaderName: payload.oldLeaderName || '?',
+            },
+          });
+        }
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -8377,6 +8507,18 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA15));
         const result = Engine.factions.applyF05Choice(G, payload, choiceId, rng);
         G = { ...result.state };
+        // 業界ニュース: 派閥分裂（A=放任 で natural split が発生する経路想定）
+        if (choiceId === 'A' || choiceId === 'C') {
+          App._pushIndustryNews({
+            type: 'factionSplit',
+            characterId: payload.ringleaderId || null,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              factionName: payload.factionName || '?',
+              ringleaderName: payload.ringleaderName || '?',
+            },
+          });
+        }
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -8946,9 +9088,14 @@ const App = {
       gameLog: [...(G.gameLog || []), ...(result.events || [])],
     };
     if (result.relationships) G = { ...G, relationships: result.relationships };
+    if (result.h2h) G = { ...G, h2h: result.h2h };
     if (result.orgPopDelta) {
       const newOrgPop = Engine.util.clamp((G.orgPop || 0) + Engine.orgPop.applyOrgPopChange(result.orgPopDelta, G.orgPop, null), 0, 100);
       G = { ...G, orgPop: newOrgPop };
+    }
+    // 業界ニュース: relationship_repair などが積んだイベントを反映
+    if (result._industryNewsEvents && result._industryNewsEvents.length > 0) {
+      G = { ...G, _industryNewsEvents: [...(G._industryNewsEvents || []), ...result._industryNewsEvents] };
     }
     Storage.autoSave();
 
@@ -9476,7 +9623,8 @@ const App = {
     let warH2h = { ...(G.h2h || {}) };
     wp.results.forEach(r => {
       const winner = r.playerWon ? 'left' : 'right';
-      warH2h = Engine.h2h.update(warH2h, r.playerFighter.id, r.aiFighter.id, winner, r.mq, false, false, G.season, G.week, 'war', 'player', ev.opponentOrgId);
+      const warMeta = App._buildMatchMeta(G, r.playerFighter.id, r.aiFighter.id, false);
+      warH2h = Engine.h2h.update(warH2h, r.playerFighter.id, r.aiFighter.id, winner, r.mq, false, false, G.season, G.week, 'war', 'player', ev.opponentOrgId, warMeta);
     });
     G = { ...G, h2h: warH2h };
 
@@ -9887,7 +10035,8 @@ App.finalizePPV = function() {
     const match = pp.card[idx];
     const lOrg = _findOrgKey(match.left.id);
     const rOrg = _findOrgKey(match.right.id);
-    ppvH2h = Engine.h2h.update(ppvH2h, match.left.id, match.right.id, r.winner, r.mq, false, true, s.season, s.week, 'ppv', lOrg, rOrg);
+    const ppvMeta = App._buildMatchMeta(s, match.left.id, match.right.id, false);
+    ppvH2h = Engine.h2h.update(ppvH2h, match.left.id, match.right.id, r.winner, r.mq, false, true, s.season, s.week, 'ppv', lOrg, rOrg, ppvMeta);
   });
   s = { ...s, h2h: ppvH2h };
 

@@ -1047,6 +1047,14 @@ Engine.relationships = {
           });
         }
         events.push(`[locker-crisis] ロッカールームに不穏な空気が広がっている（険悪ペア${hostilePairCount}組）`);
+        // 業界ニュース: ロッカー荒廃を新聞に
+        if (Engine.industryNews) {
+          state = Engine.industryNews.push(state, {
+            type: 'lockerRoomCrisis',
+            characterId: null,
+            data: { org: state.orgName || 'プレイヤー団体', count: hostilePairCount },
+          });
+        }
       }
       // TODO: 5組以上 → 派閥スピンオフ（faction-system 未実装のため保留）
     }
@@ -3508,8 +3516,9 @@ Engine.h2h = {
       hadPPV: rec.hadPPV,
     };
   },
-  /** 試合結果からh2hを更新し、新しいh2hオブジェクトを返す */
-  update(h2h, leftId, rightId, winner, mq, isTitleMatch, isPPV, season, week, stage = 'show', leftOrg, rightOrg) {
+  /** 試合結果からh2hを更新し、新しいh2hオブジェクトを返す。
+   * meta: { betrayal, factionWar, lockerStress, reclaim } を history entry にフラグとして残す。 */
+  update(h2h, leftId, rightId, winner, mq, isTitleMatch, isPPV, season, week, stage = 'show', leftOrg, rightOrg, meta = null) {
     const a = Math.min(leftId, rightId), b = Math.max(leftId, rightId);
     const key = `${a}>${b}`;
     const newH2h = { ...(h2h || {}) };
@@ -3535,6 +3544,13 @@ Engine.h2h = {
     const orgForB = leftId === a ? rightOrg : leftOrg;
     if (orgForA) histEntry.oA = orgForA;
     if (orgForB) histEntry.oB = orgForB;
+    // ── Phase 2-A: イベント metadata フラグ ──
+    if (meta) {
+      if (meta.betrayal) histEntry.bt = 1;        // B-3 元同僚 離脱後初対面
+      if (meta.factionWar) histEntry.fc = 1;      // 派閥抗争中
+      if (meta.lockerStress) histEntry.lc = 1;    // ロッカー荒廃中
+      if (meta.reclaim) histEntry.rc = 1;         // 奪還挑戦試合
+    }
     const newHistory = [...(entry.history || []), histEntry];
     if (newHistory.length > 50) newHistory.shift();
     entry.history = newHistory;

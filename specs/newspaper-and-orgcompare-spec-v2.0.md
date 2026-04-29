@@ -1,6 +1,16 @@
 # 新聞タブ独立 v3.0 — 確定UI仕様
 
-最終更新: 2026-04-26
+最終更新: 2026-04-30 (業界ニュース拡充 — bond/rivalry/派閥/奪還イベント feed)
+
+## 業界ニュースキュー (2026-04-30 追加)
+
+1面 `np-sub-stories`(業界ニュース欄) は従来 `Engine.newspaper.generate` が AI団体の `_newsXxx` フラグと自団体の `currentNewspaper` だけを拾っていた。これに加えて `state._industryNewsEvents` キューを毎週新聞生成時に消費するパスを追加。
+
+- **キュー push API**: engine 側 `Engine.industryNews.push(state, ev)`、UI 側 `App._pushIndustryNews(ev)`。
+- **イベント type 一覧** (PRIORITY 値): `factionEscalation:125` / `factionResolution:122` / `reclaimSuccess:120` / `reclaimChallenge:108` / `reclaimFailure:102` / `factionFormed:90` / `factionSplit:88` / `factionDissolution:85` / `lockerRoomCrisis:75` / `firstMeetSinceDeparture:72` / `relationshipRepair:68` / `relationshipRepairFail:55` / `hatredContagion:50`。王座交代(130)と興行(120)の中位帯に配置し、興行記事を押し出さない設計。
+- **テンプレ**: `data.js` の `NEWS_HEADLINE_TEMPLATES` に黒田トーンで各 type 1〜3バリエーション。
+- **クリア**: `tickWeek` 内 `weeklyNewspaper` 生成直後に `_industryNewsEvents: []` で消化(週次)。
+- **フックポイント**: `relationships.js`(P-4 ロッカー荒廃) / `management.js`(P-6 修復チャネル) / `app.js handleFactionEvent`(F01/F02/F02_RESOLUTION/F03/F05) / `app.js`(`confirmReclaim`・奪還結果) / 試合 h2h.update 時(B-3 firstMeetSinceDeparture)。
 
 新聞画面(独立タブ「📰 新聞」、`screen-newspaper`)に統合された 1面/2面/3面 のUI仕様。`docs/ui/mockups/newspaper-mockup-v8.html` 準拠。Phase 2 の DBサブタブ実装(`_dbSubTab=2/5/8`)を破棄し、独立トップタブに移管した v3.0 設計。
 

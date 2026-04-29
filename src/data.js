@@ -4691,10 +4691,39 @@ const BATTLE_POINT_CFG = {
 };
 
 const RANKING_CONFIG = {
-  weightsTop10: [2.4, 1.9, 1.55, 1.25, 1.05, 0.75, 0.55, 0.4, 0.28, 0.18],
-  ovrMultiplier: 1.2,
-  popMultiplier: 0.9,
+  // ── 基礎力 v2.0: 3軸合算 (Force + Depth + Marquee) ──
+  // (A) Force コア戦力: TOP8 加重 OVR + 加重 人気
+  forceWeights: [1.6, 1.4, 1.25, 1.1, 1.0, 0.9, 0.8, 0.7],
+  forceOvrMult: 1.2,
+  forcePopMult: 0.6,
+  // (B) Depth 層の厚み: 11位以下の OVR70+ / OVR75+ を加点
+  depthOvrThreshold: 70,
+  depthOvrBonusThreshold: 75,
+  depthPerFighter: 3,
+  depthBonusPerFighter: 2,
+  depthCap: 30,
+  // (C) Marquee 看板スター: TOP3 popularity の突出加重
+  marqueeWeights: [0.6, 0.25, 0.15],
+  marqueeMult: 0.45,
+  // ── レガシー上限 ──
   legacyCapByTier: { S: 50, A: 50, B: 50, player: 50 },
+};
+
+// ── ACHIEVEMENT_CONFIG: シーズン実績 (新軸) ──
+const ACHIEVEMENT_CONFIG = {
+  // 配点
+  pt: {
+    ppv: 15,            // PPV GRAND FINAL 優勝者所属団体
+    unified: 10,        // 統一トーナメント優勝者所属団体
+    junior: 8,          // ジュニアトーナメント優勝者所属団体
+    mvp: 10,            // 年末MVP受賞者所属団体
+    bestMatch: 5,       // ベストマッチ賞 受賞試合の所属団体 (両団体に各5pt)
+    bestAttend: 3,      // シーズン最大動員興行 開催団体
+  },
+  // 減衰: age <= graceAge までは満額、その後 decayRate^(age-graceAge) で減衰
+  decayRate: 0.5,
+  graceAge: 1,
+  removeBelow: 1,       // 1pt 未満で除去
 };
 // ── 殿堂盾バリアント ──────
 const SHIELD_VARIANTS = { 1: ['a'], 2: ['a'], 3: ['a'] }; // hofLevel → 使用可能バリアント配列
@@ -11894,6 +11923,80 @@ const NEWS_HEADLINE_TEMPLATES = {
       body: '会場に響くのは選手の声ばかり――{org}の興行が大幅な集客割れとなった。「このままでは…」と関係者も頭を抱えている。' },
     { headline: '赤信号！ {org}の興行、空席だらけの衝撃',
       body: '{org}の興行が壊滅的な集客に終わった。団体の看板に傷がつく事態に、社長の手腕が問われる局面だ。' },
+  ],
+
+  // ── 業界ニュース拡充: bond/rivalry イベント ─────────────────
+  lockerRoomCrisis: [
+    { headline: '{org}ロッカールームに不穏——険悪ペア{count}組、内部に亀裂',
+      body: '{org}の控室に重い空気が立ち込めている。bond の崩れた{count}組が同じ空間で身を支度する日々——挨拶もなく、目線も合わない。「あの空気の中で試合に出ろと言われても」と若手が漏らす。社長が動かなければ、これは長引く。' },
+    { headline: '{org}内紛の予兆——険悪な選手同士が同じ控室に',
+      body: '{org}のロッカールームで{count}組の険悪ペアが同居している。リング外での衝突こそ表沙汰になっていないが、関係者は「いつ火を噴いてもおかしくない」と口を揃える。団体としての一枚岩が試されている。' },
+    { headline: '荒れる{org}の控室——険悪{count}組、空気が冷えきっている',
+      body: '同じ団体の選手同士が、視線も交わさず通り過ぎる——{org}の控室で起きているのはそういう光景だ。bond ≤30 の組み合わせが{count}組も同居しているとなれば、興行のテンションにも影響が出かねない。' },
+  ],
+  hatredContagion: [
+    { headline: '{org}に広がる嫌悪の連鎖——{carrier}が{enemy}を距離を取り始めた',
+      body: '親しい{friend}が{enemy}を疎んじているのを目の当たりにした{carrier}が、自分の中の感情を整理しきれずに距離を取り始めている。心の冷えは、確実に伝染する。' },
+    { headline: '心の伝染——{carrier}の中で{enemy}への感情が変わった',
+      body: '{org}の{carrier}は、{friend}が{enemy}を見る目を覚えてしまった。それは知らず知らずに自分の判断にも染み込んでいく。「あの人とは、もう前のようには話せない」——そう本人がぽつりと漏らした。' },
+  ],
+  relationshipRepair: [
+    { headline: '{nameA}と{nameB}の関係修復に成功——{org}が動いた',
+      body: '長く険悪だった{nameA}と{nameB}の間に、社長が間に入って話し合いの場が持たれた。完全な和解とまではいかないが、控室で挨拶が交わされる程度には空気が変わったという。{org}にとっては小さな、しかし意味のある一歩だ。' },
+    { headline: '{org}、{nameA}と{nameB}の溝を埋める——「これで一緒に試合を組める」',
+      body: '社長の仲介で{nameA}と{nameB}が膝を突き合わせて話した。「言いたかったことを、ようやく言えた」と一方が漏らす。bond の数字が動いたかどうかは外からはわからない。だが、控室の空気が変わったことは確かだ。' },
+  ],
+  relationshipRepairFail: [
+    { headline: '{org}の関係修復は不発——{nameA}と{nameB}の溝は埋まらず',
+      body: '社長が{nameA}と{nameB}の間に入ったが、二人の間に流れる溝は思ったより深かった。「あの人とは、まだ無理です」——会談は短く終わった。社長の手が届かない関係もある。' },
+  ],
+  factionFormed: [
+    { headline: '{org}に派閥誕生——{leaderName}を中心に旗揚げ',
+      body: '{org}の{leaderName}を中心とした集団が、団体内で独自の旗を掲げた。「派閥」という言葉が好まれるかどうかは別として、控室の力学は確実に変わる。これからの興行の組み方にも影響が出るだろう。' },
+    { headline: '{leaderName}組が動き出した——{org}内の新たな勢力図',
+      body: '{org}内に{leaderName}を中心とした集まりが形を成した。慕う者たちが集い、「ここで戦いたい」と表明し始めた格好だ。一枚岩だった団体が、初めて色分けされた瞬間でもある。' },
+  ],
+  factionEscalation: [
+    { headline: '{org}内で派閥抗争勃発——「{factionAName}」vs「{factionBName}」',
+      body: '{org}の中で「{factionAName}」と「{factionBName}」の対立が表面化した。控室の空気は割れ、興行のメインカードの組み方一つでも気を使う事態に。「リングで決着をつけるしかない」——両派から漏れる声は冷たく、重い。' },
+    { headline: '{org}、二つの派閥が真正面から対立——抗争の幕が開く',
+      body: '{factionAName}と{factionBName}——{org}の中の二つの派閥が、ついに表立って衝突した。リング外でのやり取りも険悪さを増し、団体としての結束は試されている。これから組まれる試合は、ただの試合では済まなくなる。' },
+  ],
+  factionResolution: [
+    { headline: '{org}派閥抗争に決着——「{winFaction}」が「{loseFaction}」を下す',
+      body: '{org}内で続いていた派閥抗争に、リング上で一つの答えが出た。{winFaction}が{loseFaction}を下し、控室の力学はしばらくこの形で固まる見込みだ。敗れた側の {loseLeader} がこのあとどう動くかが次の焦点になる。' },
+    { headline: '抗争に終止符——{winFaction}の勝利で{org}に静寂が戻る',
+      body: '長く続いた{org}内の対立は、{winFaction}と{loseFaction}の決着戦で一旦の幕引きとなった。完全な和解ではないが、これ以上の消耗を避けるという意味では、双方にとっての落とし所だったのかもしれない。' },
+  ],
+  factionDissolution: [
+    { headline: '{org}の派閥「{factionName}」が消滅——{leaderName}の喪失で求心力失う',
+      body: '{org}内に存在した「{factionName}」が、リーダー{leaderName}の不在を埋めきれず消滅した。残されたメンバーたちは新たな居場所を探すことになる。派閥が消えても、その間に積み重ねた感情はそう簡単には消えない。' },
+  ],
+  factionSplit: [
+    { headline: '{org}派閥分裂——「{factionName}」から{ringleaderName}が離脱',
+      body: '{org}内の「{factionName}」から、{ringleaderName}を中心とした一派が離脱した。控室には新たな勢力線が引かれ、興行の組み方はさらに難しくなる。一つだった旗が、いま二つに割れた瞬間だ。' },
+  ],
+  reclaimChallenge: [
+    { headline: '挑戦状！{challengerName}が{toOrg}に世界王座奪還を要求',
+      body: '{fromOrg}の{challengerName}が、{toOrg}に持ち去られた世界王座への奪還挑戦状を叩きつけた。「あのベルトは私たちのリングで生まれたものだ」——強い言葉が会見場に響いた。次の興行で運命の一戦が組まれる。' },
+    { headline: '{challengerName}、{toOrg}に殴り込み——「ベルトを取り戻す」',
+      body: '世界王座を抱えて{toOrg}へ移った元同僚に対し、{fromOrg}の{challengerName}が奪還を宣言した。「あの裏切りには、リングで答えを出させる」——次の興行のメインで決着がつく。' },
+  ],
+  reclaimSuccess: [
+    { headline: '王座奪還！{challengerName}が{toOrg}から世界ベルトを取り戻した',
+      body: '{fromOrg}の{challengerName}が、{toOrg}に持ち去られていた世界王座を取り戻した。「やっとこのベルトを、本来の場所に戻せた」と新王者。裏切られた団体の意地が、リングの上で結実した瞬間だ。' },
+    { headline: '雪辱——{challengerName}、奪われた王座を取り戻す',
+      body: '{toOrg}に持ち去られていた世界王座が、{fromOrg}の{challengerName}の手元に帰ってきた。会見場には涙ぐむ関係者の姿もあった。失われたものを取り戻す——その重みを、彼女は背負ってリングに上がった。' },
+  ],
+  reclaimFailure: [
+    { headline: '{challengerName}の奪還挑戦は失敗——{toOrg}が世界王座を死守',
+      body: '{fromOrg}の{challengerName}が仕掛けた奪還戦は、{toOrg}側の防衛に終わった。「またあのベルトに辿り着けなかった」——リングを降りる挑戦者の背中に、ファンから声援が飛んだ。物語はまだ終わらない。' },
+  ],
+  firstMeetSinceDeparture: [
+    { headline: '元同僚、リングで再会——{nameA}と{nameB}、離脱後初の対戦',
+      body: '同じ控室で過ごした日々があった{nameA}と{nameB}が、団体を別にしてから初めてリングで向き合った。視線の交わし方一つにも、過ごした時間の重みが滲む。観客はその空気を、確かに受け取っていた。' },
+    { headline: '{nameA} vs {nameB}——別れた者同士、運命の初対決',
+      body: '袂を分かった元同僚同士の最初の一戦は、いつも特別なものになる。{nameA}と{nameB}——かつて同じ旗の下にいた二人が、今夜は別の色で対峙した。試合内容以上に、その表情を覚えておきたい。' },
   ],
 };
 
@@ -23883,7 +23986,7 @@ if (typeof module !== 'undefined' && module.exports) {
     COACH_SLOT_COSTS, COACH_POOL_CFG, COACH_ABILITY_CATALOG, COACH_FLAVOR_DEFS, ALL_COACHES,
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
-    RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, SHIELD_VARIANTS,
+    RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, ACHIEVEMENT_CONFIG, SHIELD_VARIANTS,
     SCOUT_EVENT_CFG, DORMANT_POOL_CFG,
     STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
