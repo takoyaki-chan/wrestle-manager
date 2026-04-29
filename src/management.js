@@ -13543,14 +13543,18 @@ Engine.mvpRace = {
     if (role === 'Rookie' || role === 'Young') return '新人';
     if (role === 'Heel') return 'ヒール';
     if (role === 'Veteran') return 'ベテラン';
+    if (role === 'Babyface') return 'ベビーフェイス';
+    if (role === 'Neutral') return '';
     return role || '';
   },
   _topElements(meta) {
     const elems = [];
-    if (meta.isCurrentChamp || meta.titleDefenses > 0) elems.push(`${meta.titleDefenses}度の防衛`);
+    if (meta.titleDefenses > 0) elems.push(`王座${meta.titleDefenses}度防衛`);
+    else if (meta.isCurrentChamp) elems.push('王座を保持中');
     if (meta.ppvChampion > 0) elems.push('PPV優勝');
+    else if (meta.ppvRunnerUp > 0) elems.push('PPV準優勝');
     if (meta.warWins >= 3) elems.push(`対抗戦${meta.warWins}勝`);
-    if (meta.bigMatches >= 2) elems.push(`MQ85超${meta.bigMatches}本`);
+    if (meta.bigMatches >= 2) elems.push(`名勝負${meta.bigMatches}本`);
     if (meta.domeAppearances >= 2) elems.push(`ドーム${meta.domeAppearances}戦`);
     return elems;
   },
@@ -13561,54 +13565,133 @@ Engine.mvpRace = {
     const rng = Engine.rng.create(seed);
     const pick = arr => arr[Engine.rng.int(rng, 0, arr.length - 1)];
     const role = Engine.mvpRace._roleLabel(m.role);
+    const fighter = Engine.mvpRace._resolveFighter ? Engine.mvpRace._resolveFighter(state, entry) : null;
+    const traits = (fighter && fighter.traits) || [];
+    const traitPhrase = Engine.mvpRace._traitPhrase ? Engine.mvpRace._traitPhrase(traits, m.age) : '';
 
-    if (m.isCurrentChamp && m.titleDefenses >= 3) {
-      return pick([
-        `王座を${m.titleDefenses}度防衛し続ける現役最強。${m.age}歳、円熟期のエースが団体の屋台骨を支えている。今期はまだ一度も首位を譲っていない、まさに王道の積み重ねだ。`,
-        `${m.titleDefenses}度の防衛を制した王者。${m.age}歳の貫禄が紙面に残り続けている。`,
+    // 直近の特筆試合を補足センテンスとして付ける（あれば）
+    const sig = Engine.mvpRace._pickSignatureMatch ? Engine.mvpRace._pickSignatureMatch(state, entry.fighterId) : null;
+    const sigSentence = (sig && sig.mq >= 80)
+      ? (() => {
+          const opName = Engine.mvpRace._resolveName(state, sig.opponentId) || '相手';
+          const tag = sig.isTitle ? 'タイトル戦' : (sig.isPPV ? 'PPV決勝' : (sig.stage === 'war' ? '対抗戦' : '通常興行'));
+          const result = sig.won === 'win' ? '制した' : (sig.won === 'lose' ? '惜敗を喫した' : '譲り合った');
+          return `第${sig.week}週、${opName}との${tag}でMQ${sig.mq}を刻み、${result}記憶も新しい。`;
+        })()
+      : '';
+
+    // 性格や立ち位置を踏まえた色付け
+    const colorTail = traitPhrase
+      ? `${traitPhrase}${role ? `の${role}` : ''}として、紙面に名前が残り続けている。`
+      : (role ? `${m.age}歳の${role}として、シーズンを戦い続けている。` : `${m.age}歳の戦いぶりが、紙面に名前を刻み続けている。`);
+
+    // メイン1文（実績ベース）
+    let main = '';
+    if (m.titleDefenses >= 3 && m.isCurrentChamp) {
+      main = pick([
+        `王座を${m.titleDefenses}度防衛し続ける現役最強。${m.age}歳、円熟期の貫禄が団体の屋台骨を支えている。`,
+        `${m.titleDefenses}度の防衛を制した王者。今期はまだ一度も首位を譲っていない、まさに王道の積み重ねだ。`,
         `ベルトを背負い続けるのは並大抵のことではない。${m.titleDefenses}度の防衛——それは数字以上の重みを持つ。`,
       ]);
-    }
-    if (m.ppvChampion >= 1) {
-      return pick([
-        `先週のPPV決勝で${Engine.mvpRace.POINTS.PPV_CHAMPION}pt一撃を獲得。${m.age}歳、上位を一気に飲み込む勢いがある。残りの戦いをどう描くか。`,
+    } else if (m.titleDefenses >= 1 && m.isCurrentChamp) {
+      main = pick([
+        `王座を${m.titleDefenses}度防衛し、看板の座を譲らない${m.age}歳。`,
+        `戴冠後${m.titleDefenses}度の防衛を成功させ、まずは盤石の滑り出しを見せている。`,
+      ]);
+    } else if (m.isCurrentChamp && m.titleWins >= 1) {
+      main = pick([
+        `今期、王座を奪取して頂点に立った${m.age}歳。最初の防衛戦が次の試金石となる。`,
+        `今シーズン王座戴冠。これからの防衛ロードでこの数字をどこまで伸ばせるか。`,
+      ]);
+    } else if (m.ppvChampion >= 1) {
+      main = pick([
+        `先週のPPV決勝で${Engine.mvpRace.POINTS.PPV_CHAMPION}pt一撃を獲得。${m.age}歳、上位を一気に飲み込む勢いがある。`,
         `PPVで頂点に立った勢いをそのまま年間MVPレースに持ち込んだ。観客の記憶に残る一撃が、紙面の数字をひっくり返す。`,
         `決勝のリングで掴んだ${Engine.mvpRace.POINTS.PPV_CHAMPION}pt。これが今期の物語を書き換える起点になるかもしれない。`,
       ]);
-    }
-    if (m.warWins >= 4) {
-      return pick([
-        `対抗戦で${m.warWins}連勝の英雄。ベルトを持たずとも、勝ち星で示し続ける異端の${role || 'エース'}。`,
+    } else if (m.warWins >= 4) {
+      main = pick([
+        `対抗戦で${m.warWins}連勝の英雄。ベルトを持たずとも、勝ち星で示し続ける異端の存在。`,
         `${m.warWins}勝という数字が、何より雄弁にこの選手の今期を語っている。`,
         `他団体相手に${m.warWins}勝。誰も止められないと言われ始めている。`,
       ]);
-    }
-    if (m.bigMatches >= 3) {
-      return pick([
-        `MQ85超を${m.bigMatches}本量産する職人型。観客の心を最も動かす一人。${m.domeAppearances > 0 ? `ドーム${m.domeAppearances}戦も含め、` : ''}紙面から名前が消えない。`,
+    } else if (m.bigMatches >= 3) {
+      main = pick([
+        `名勝負を${m.bigMatches}本量産する職人型。観客の心を最も動かす一人。${m.domeAppearances > 0 ? `ドーム${m.domeAppearances}戦も含め、` : ''}紙面から名前が消えない。`,
         `${m.bigMatches}本の大試合を生み出した名勝負製造機。点数より、観客の記憶のほうが先に語っている。`,
       ]);
-    }
-    if ((entry.breakdown.meta.age || 25) <= 20 && entry.rank <= 3) {
-      return pick([
-        `若くして上位${entry.rank}に食い込んだ。${m.age}歳、台頭の年。${(Engine.mvpRace._topElements(m)[0] || '主要要素') + 'で点を稼いでいる'}。`,
+    } else if ((m.age || 25) <= 20 && entry.rank <= 3) {
+      const head = (Engine.mvpRace._topElements(m)[0] || 'シーズンの積み重ね');
+      main = pick([
+        `若くして上位${entry.rank}に食い込んだ${m.age}歳、台頭の年。${head}で点を稼いでいる。`,
         `${m.age}歳での上位入り。新時代の予兆を、紙面に刻みつつある。`,
       ]);
+    } else {
+      const topElems = Engine.mvpRace._topElements(m);
+      const elemText = topElems.length > 0 ? topElems.slice(0, 2).join('・') : 'OVRとシーズンの積み重ね';
+      if (Engine.mvpRace._hasGrowthRoom(entry, state)) {
+        main = pick([
+          `${elemText}で${entry.points}pt。${m.age}歳、まだ伸びしろは残されている。`,
+          `${elemText}を武器に上位戦線へ食い込んでいる${m.age}歳。`,
+        ]);
+      } else {
+        main = pick([
+          `${elemText}で${entry.points}pt。${m.age}歳、円熟期の戦い方が紙面に滲む。`,
+          `${elemText}を武器に上位を維持する${m.age}歳。経験の差が点数の重みに変わっている。`,
+        ]);
+      }
     }
-    const topElems = Engine.mvpRace._topElements(m);
-    const elemText = topElems.length > 0 ? topElems.slice(0, 2).join('・') : 'OVRとシーズンの積み重ね';
-    // 「まだ伸びしろがある」は成長余地のある年齢に限定
-    // 早熟: 24未満 / 標準: 26未満 / 晩成・遅咲き: 28未満
-    if (Engine.mvpRace._hasGrowthRoom(entry, state)) {
-      return pick([
-        `${elemText}で${entry.points}pt。${role || '中軸'}としてシーズンを戦い続けている。`,
-        `${elemText}を武器に上位戦線へ。${m.age}歳、まだ伸びしろは残されている。`,
-      ]);
-    }
-    return pick([
-      `${elemText}で${entry.points}pt。${role || '中軸'}としてシーズンを戦い続けている。`,
-      `${elemText}を武器に上位戦線へ。${m.age}歳、円熟期の戦い方が紙面に滲む。`,
-    ]);
+
+    // 連結: メイン + 直近名勝負（あれば） + キャラ色
+    const parts = [main];
+    if (sigSentence) parts.push(sigSentence);
+    parts.push(colorTail);
+    return parts.join('');
+  },
+
+  /** 特性 + 年齢 を自然な日本語句に整える（「○○を抱える○歳」/「○○の○歳」など） */
+  _traitPhrase(traits, age) {
+    if (!Array.isArray(traits) || traits.length === 0) return '';
+    const order = ['早熟', '晩成', '遅咲き', '反骨心', '不屈', '鉄人', '天才肌', '心技体', '影の支配者',
+                   'リーダー気質', 'ムードメーカー', '忠誠心', '人望', '威圧感', '野心', '破天荒',
+                   '努力家', '闘志', '負けず嫌い', '頑丈さ', '華', '番狂わせ体質', '適応力',
+                   '引き出し上手', 'ヒール適性', 'ファンサービス', 'ガラスの心臓', 'ガラスの身体', '燃えやすい'];
+    let pick = null;
+    for (const t of order) if (traits.includes(t)) { pick = t; break; }
+    if (!pick) pick = traits[0];
+    const a = age > 0 ? `${age}歳` : '';
+    const M = {
+      '早熟': `早熟の${a}`,
+      '晩成': `晩成型の${a}`,
+      '遅咲き': `遅咲きの${a}`,
+      '反骨心': `反骨心を燃やす${a}`,
+      '不屈': `不屈の${a}`,
+      '鉄人': `鉄人と称される${a}`,
+      '天才肌': `天才肌の${a}`,
+      '心技体': `心技体の整った${a}`,
+      '影の支配者': `陰の支配者と囁かれる${a}`,
+      'リーダー気質': `リーダー気質の${a}`,
+      'ムードメーカー': `ムードメーカー気質の${a}`,
+      '忠誠心': `忠誠心の篤い${a}`,
+      '人望': `人望厚い${a}`,
+      '威圧感': `威圧感を放つ${a}`,
+      '野心': `野心を秘めた${a}`,
+      '破天荒': `破天荒な${a}`,
+      '努力家': `努力家肌の${a}`,
+      '闘志': `闘志あふれる${a}`,
+      '負けず嫌い': `負けず嫌いな${a}`,
+      '頑丈さ': `頑丈な体躯の${a}`,
+      '華': `華のある${a}`,
+      '番狂わせ体質': `番狂わせを呼ぶ${a}`,
+      '適応力': `適応力に富む${a}`,
+      '引き出し上手': `引き出しの広い${a}`,
+      'ヒール適性': `ヒール適性の高い${a}`,
+      'ファンサービス': `ファンを大切にする${a}`,
+      'ガラスの心臓': `脆さを抱える${a}`,
+      'ガラスの身体': `脆さを抱える${a}`,
+      '燃えやすい': `燃えやすい性格の${a}`,
+    };
+    return M[pick] || (a ? `${pick}の${a}` : pick);
   },
 
   /** その選手にまだ「伸びしろ」表現を使ってよいか（年齢×特性で判定） */
@@ -13687,16 +13770,20 @@ Engine.mvpRace = {
     const r3 = rankings[2];
     const week = state.week || 1;
     const remaining = Math.max(0, 48 - week);
-    const elem1 = (Engine.mvpRace._topElements(r1.breakdown.meta)[0] || 'OVRとシーズンの積み重ね');
+    const elem1 = (Engine.mvpRace._topElements(r1.breakdown.meta)[0] || 'シーズンの積み重ね');
     const gap12 = r2 ? (r1.points - r2.points) : 0;
     const elem2 = r2 ? (Engine.mvpRace._topElements(r2.breakdown.meta)[0] || '安定した戦績') : '';
     const gap23 = (r2 && r3) ? (r2.points - r3.points) : 0;
-    const elem3 = r3 ? (Engine.mvpRace._topElements(r3.breakdown.meta)[0] || '虎視眈々と') : '';
+    const elem3raw = r3 ? Engine.mvpRace._topElements(r3.breakdown.meta)[0] : '';
     const events = (week < 24) ? 'PPV予選、対抗戦、ドーム興行' : (week < 40) ? '対抗戦、ドーム興行、年末の頂上決戦' : '年末の頂上決戦';
 
     let text = `第${week}週時点、首位を走る${r1.fighterName}は${elem1}で${r1.points}pt。`;
     if (r2) text += `そのわずか${gap12}pt後ろにつけるのが、${elem2}の${r2.fighterName}。`;
-    if (r3) text += `さらに${gap23}pt差で${elem3}の${r3.fighterName}が虎視眈々と上位を狙う。`;
+    if (r3) {
+      text += elem3raw
+        ? `さらに${gap23}pt差で、${elem3raw}の${r3.fighterName}が虎視眈々と上位を狙う。`
+        : `さらに${gap23}pt差で、${r3.fighterName}が虎視眈々と上位を狙う。`;
+    }
     text += `残り${remaining}週、${events} —— このレースの主人公として年末を迎えるのは、果たして誰になるのか。`;
     return text;
   },
@@ -13736,13 +13823,6 @@ Engine.mvpRace = {
     return f ? f.name : null;
   },
 
-  /** entry の特性を文中表現にして返す（複数あれば1つだけ採用） */
-  _traitFlavor(traits) {
-    if (!Array.isArray(traits) || traits.length === 0) return '';
-    const order = ['早熟', '晩成', '遅咲き', '反骨心', '不屈', '心技体', '天才肌', 'ガラスの心臓', '燃えやすい', '影の支配者'];
-    for (const t of order) if (traits.includes(t)) return t;
-    return traits[0];
-  },
 
   /** 当シーズンに発生した特筆事績をチップ向けに収集（最大3件） */
   _collectFactChips(fighter, season, m) {
@@ -13816,8 +13896,8 @@ Engine.mvpRace = {
   _composeFlavorLine(state, entry, fighter) {
     const m = entry.breakdown.meta;
     const traits = (fighter && fighter.traits) || [];
-    const traitFlavor = Engine.mvpRace._traitFlavor(traits);
     const role = Engine.mvpRace._roleLabel(m.role);
+    const traitPhrase = Engine.mvpRace._traitPhrase(traits, m.age);
 
     // 1. 直近の名勝負（MQ85+）
     const sig = Engine.mvpRace._pickSignatureMatch(state, entry.fighterId);
@@ -13843,12 +13923,18 @@ Engine.mvpRace = {
           : `先週、自身のMQ最高値を更新。質で語れる戦いが増えてきた。`;
       }
     }
-    // 4. trait + 役職 + 年齢のフォールバック
-    if (traitFlavor && role && m.age > 0) {
-      return `${traitFlavor}を抱える${m.age}歳の${role}、点を着実に積む。`;
+    // 4. 特性句 + 役職 のフォールバック（自然な日本語に整形）
+    if (traitPhrase && role) {
+      return `${traitPhrase}の${role}、点を着実に積み上げている。`;
+    }
+    if (traitPhrase) {
+      return `${traitPhrase}が、紙面の隅で確かな存在感を放つ。`;
     }
     if (role && m.age > 0) {
       return `${m.age}歳の${role}として、シーズンを地道に積み上げている。`;
+    }
+    if (m.age > 0) {
+      return `${m.age}歳、点数の積み重ねでシーズンを戦い抜いている。`;
     }
     return '';
   },

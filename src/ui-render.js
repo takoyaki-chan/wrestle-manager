@@ -7054,22 +7054,20 @@ function _npMvpRaceListRow(entry) {
   const metaLine = [role, m.age ? `${m.age}歳` : ''].filter(Boolean).join(' / ');
 
   return `<div class="np-mvprace-list-row np-mvprace-list-row--rich${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId})">
-    <div class="np-mvprace-list-head">
-      <div class="np-mvprace-list-rank">${entry.rank}</div>
-      <div class="np-mvprace-list-arrow ${entry.arrow}">${_escapeHtml(arrowText)}</div>
-      <div class="np-mvprace-list-thumb" style="${thumbBg}"></div>
-      <div class="np-mvprace-list-emb" style="${embBg}"></div>
-      <div class="np-mvprace-list-name">
-        <div class="name-line">
-          <strong>${_escapeHtml(entry.fighterName)}</strong>
-          <span class="org">${_escapeHtml(entry.orgName)}</span>
-          ${champBadge}
-        </div>
-        ${metaLine ? `<div class="np-mvprace-list-metaline">${_escapeHtml(metaLine)}</div>` : ''}
+    <div class="np-mvprace-list-rank">${entry.rank}</div>
+    <div class="np-mvprace-list-arrow ${entry.arrow}">${_escapeHtml(arrowText)}</div>
+    <div class="np-mvprace-list-thumb" style="${thumbBg}"></div>
+    <div class="np-mvprace-list-emb" style="${embBg}"></div>
+    <div class="np-mvprace-list-name">
+      <div class="name-line">
+        <strong>${_escapeHtml(entry.fighterName)}</strong>
+        <span class="org">${_escapeHtml(entry.orgName)}</span>
+        ${champBadge}
       </div>
-      <div class="np-mvprace-list-ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
-      <div class="np-mvprace-list-pts">${Math.round(entry.points)}<span class="lbl">pt</span></div>
+      ${metaLine ? `<div class="np-mvprace-list-metaline">${_escapeHtml(metaLine)}</div>` : ''}
     </div>
+    <div class="np-mvprace-list-ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
+    <div class="np-mvprace-list-pts">${Math.round(entry.points)}<span class="lbl">pt</span></div>
     ${factChipsHtml}
     ${flavorHtml}
   </div>`;
