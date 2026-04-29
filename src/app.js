@@ -556,10 +556,11 @@ const Audio = (() => {
     // ── Public API ──
     play(trackName) {
       if (_bgmMuted) return; // BGM muted — skip looping tracks
-      if (trackName === BGM._current && BGM._playing) return; // Already playing
       // SUNO MP3がある曲はFileBGMで再生
       const suno = SUNO_BGM[trackName];
       if (suno) {
+        // FileBGM._audio が消えていたら「再生中」と見なさず再生し直す
+        if (trackName === BGM._current && BGM._playing && FileBGM._audio) return;
         BGM.stop();
         FileBGM.play(suno.file, { loop: true, volume: suno.vol });
         // FileBGM.play()内部でBGM.stop()が呼ばれるため、状態セットはその後に行う
@@ -568,6 +569,7 @@ const Audio = (() => {
         return;
       }
       // フォールバック: チップチューン
+      if (trackName === BGM._current && BGM._playing) return;
       if (FileBGM._audio) FileBGM.stop();
       BGM.stop();
       const c = ensure();
