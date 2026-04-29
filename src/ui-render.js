@@ -4376,7 +4376,7 @@ function renderScout() {
           <span class="flink" style="font-size:17px;font-weight:700">${c.name}</span>
           <span style="font-size:14px;color:var(--text-dim)">${c.age}歳</span>
           <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
-          <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${c.role}</span>
+          <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${c.role==='Babyface'?'ベビーフェイス':c.role==='Heel'?'ヒール':'中立'}</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span style="font-size:13px;padding:3px 10px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
@@ -4495,7 +4495,7 @@ function _renderDraftCandidateList(candidates, context) {
 
   const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
   const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
-  const ROLE_JP = { Babyface: 'babyface', Heel: 'heel', Neutral: 'neutral' };
+  const ROLE_JP = { Babyface: 'ベビーフェイス', Heel: 'ヒール', Neutral: '中立' };
   const MARK_DISPLAY = { honmei: { text: '◎', cls: 'mark-bullseye' }, taikou: { text: '○', cls: 'mark-contender' }, osae: { text: '△', cls: 'mark-outside' } };
   const _rOrgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
   const ORG_ABBR = { org_s: _rOrgName('org_s').slice(0,3).toUpperCase(), org_a: _rOrgName('org_a').slice(0,3).toUpperCase(), org_b: _rOrgName('org_b').slice(0,3).toUpperCase() };
@@ -4746,7 +4746,7 @@ function _renderDraftNegotiation() {
 
   const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
   const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
-  const ROLE_JP = { Babyface: 'Babyface', Heel: 'Heel', Neutral: 'Neutral' };
+  const ROLE_JP = { Babyface: 'ベビーフェイス', Heel: 'ヒール', Neutral: '中立' };
   const _orgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
   const ORG_META = {
     org_s: { name: _orgName('org_s'), tier: 'S級', emblCls: 'empress', embl: '../image/org/org-s-0.png' },
@@ -5209,7 +5209,7 @@ function renderScoutEvent() {
           <span class="flink" style="font-size:17px;font-weight:700">${c.name}</span>
           <span style="font-size:14px;color:var(--text-dim)">${c.age}歳</span>
           <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
-          <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${c.role}</span>
+          <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${c.role==='Babyface'?'ベビーフェイス':c.role==='Heel'?'ヒール':'中立'}</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span style="font-size:13px;padding:3px 10px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
@@ -6891,6 +6891,7 @@ function _npMvpRaceMetaChips(entry) {
   if (m.role === 'Ace') chips.push(`<span class="np-mvprace-meta-chip">エース</span>`);
   else if (m.role === 'MidCarder' || m.role === 'Midcarder') chips.push(`<span class="np-mvprace-meta-chip">中堅</span>`);
   else if (m.role === 'Heel') chips.push(`<span class="np-mvprace-meta-chip">ヒール</span>`);
+  else if (m.role === 'Babyface') chips.push(`<span class="np-mvprace-meta-chip">ベビーフェイス</span>`);
   else if (m.role === 'Veteran') chips.push(`<span class="np-mvprace-meta-chip">ベテラン</span>`);
   else if (m.role === 'Rookie' || m.role === 'Young') chips.push(`<span class="np-mvprace-meta-chip">新人</span>`);
   if (m.age > 0) chips.push(`<span class="np-mvprace-meta-chip">${m.age}歳</span>`);
@@ -6983,6 +6984,7 @@ function _npMvpRaceMinorCard(entry, rank) {
   const role = (m.role === 'Ace') ? 'エース'
     : (m.role === 'MidCarder' || m.role === 'Midcarder') ? '中堅'
     : (m.role === 'Heel') ? 'ヒール'
+    : (m.role === 'Babyface') ? 'ベビーフェイス'
     : (m.role === 'Rookie' || m.role === 'Young') ? '新人'
     : (m.role === 'Veteran') ? 'ベテラン' : '';
 
@@ -7041,6 +7043,7 @@ function _npMvpRaceListRow(entry) {
   const role = (m.role === 'Ace') ? 'エース'
     : (m.role === 'MidCarder' || m.role === 'Midcarder') ? '中堅'
     : (m.role === 'Heel') ? 'ヒール'
+    : (m.role === 'Babyface') ? 'ベビーフェイス'
     : (m.role === 'Rookie' || m.role === 'Young') ? '新人'
     : (m.role === 'Veteran') ? 'ベテラン' : '';
   const champBadge = m.isCurrentChamp ? `<span class="np-mvprace-list-champ">👑 現王者</span>` : '';
