@@ -20340,8 +20340,33 @@ Engine.newspaper = {
     stories.sort((a, b) => b.priority - a.priority);
 
     // 一面 + サブ記事（最大3件）
+    // 業界ニュース欄は「試合結果以外の動き」を見せる枠として機能させたいので、
+    // 試合系記事(stage結果系)は最大1件に絞り、残り枠を非試合系で埋める
     const topStory = stories[0] || null;
-    const subStories = stories.slice(1, 4);
+    const MATCH_TYPES = new Set([
+      'ppvSummitResult', 'playerTitleChange', 'warMilestone', 'crossWarResult',
+      'aiWarResult', 'aiB3Result', 'playerShowTitle', 'playerShowNormal',
+      'aiShowHighlight', 'juniorTournamentResult',
+    ]);
+    const subPool = stories.slice(1);
+    const matchPicks = [];
+    const otherPicks = [];
+    for (const s of subPool) {
+      if (MATCH_TYPES.has(s.type)) matchPicks.push(s);
+      else otherPicks.push(s);
+    }
+    const subStories = [];
+    if (matchPicks.length > 0) subStories.push(matchPicks[0]); // 試合系は最大1件
+    for (const s of otherPicks) {
+      if (subStories.length >= 3) break;
+      subStories.push(s);
+    }
+    // 非試合系が足りない場合は試合系で残り枠を埋める
+    if (subStories.length < 3) {
+      for (let i = 1; i < matchPicks.length && subStories.length < 3; i++) {
+        subStories.push(matchPicks[i]);
+      }
+    }
 
     // 次回展望
     const preview = Engine.newspaper.buildPreview(state);

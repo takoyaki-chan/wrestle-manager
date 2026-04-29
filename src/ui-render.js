@@ -5826,14 +5826,13 @@ function _npOrgEmblem(state, orgId, size = 18) {
 }
 function _npComputeWarRecord(state, rivalOrgId) {
   // h2h を全件走査し、player vs 指定AI団体 の対戦集計
+  // 通算は「対抗戦・PPV・挑戦状」の団体間ガチンコ試合のみ。通常興行(show)は除外
   const playerIds = new Set((state.roster || []).map(c => c.id));
   const aiRoster = (state.aiOrgs && state.aiOrgs[rivalOrgId] && state.aiOrgs[rivalOrgId].roster) || [];
   const aiIds = new Set(aiRoster.map(c => c.id));
-  let wins = 0, losses = 0, draws = 0;
-  const bySingle = { w: 0, l: 0, d: 0 };
   const byWar = { w: 0, l: 0, d: 0 };
   const byPpv = { w: 0, l: 0, d: 0 };
-  // 直近の勝敗記録 (history があれば、なければ winsA/winsB から推定)
+  const byB3 = { w: 0, l: 0, d: 0 };
   const recentResults = [];
   Object.entries(state.h2h || {}).forEach(([key, h]) => {
     const [a, b] = key.split('>').map(Number);
@@ -5841,42 +5840,35 @@ function _npComputeWarRecord(state, rivalOrgId) {
     if (playerIds.has(a) && aiIds.has(b)) playerSide = 'A';
     else if (playerIds.has(b) && aiIds.has(a)) playerSide = 'B';
     if (!playerSide) return;
-    const dr = h.draws || 0;
     if (h.history && h.history.length > 0) {
-      // 新スキーマ (oA/oB あり) は試合当時の所属で絞り込み、レガシー (oA/oB なし) は現所属で計上
       h.history.forEach(hh => {
+        // 通常興行は団体比較の対象外
+        if (hh.st !== 'war' && hh.st !== 'ppv' && hh.st !== 'b3' && hh.st !== 'b3Challenge') return;
+        let curSide = null;
         if (hh.oA || hh.oB) {
-          // 当時 player vs rivalOrgId のペアでなければ除外
+          // 試合当時の所属で絞り込み
           const aIsPlayer = hh.oA === 'player', bIsPlayer = hh.oB === 'player';
           const aIsRival = hh.oA === rivalOrgId, bIsRival = hh.oB === rivalOrgId;
-          let curSide = null;
           if (aIsPlayer && bIsRival) curSide = 'A';
           else if (bIsPlayer && aIsRival) curSide = 'B';
           if (!curSide) return;
-          if (hh.win === curSide) { wins++; bySingleOrCat(hh, 'w'); recentResults.push({ s: hh.s, w: hh.w, r: 'w' }); }
-          else if (hh.win === 'd') { draws++; bySingleOrCat(hh, 'd'); recentResults.push({ s: hh.s, w: hh.w, r: 'd' }); }
-          else { losses++; bySingleOrCat(hh, 'l'); recentResults.push({ s: hh.s, w: hh.w, r: 'l' }); }
         } else {
-          // legacy: 当時の所属が不明なので現所属ベースで計上（従来挙動）
-          if (hh.win === playerSide) { wins++; bySingleOrCat(hh, 'w'); recentResults.push({ s: hh.s, w: hh.w, r: 'w' }); }
-          else if (hh.win === 'd') { draws++; bySingleOrCat(hh, 'd'); recentResults.push({ s: hh.s, w: hh.w, r: 'd' }); }
-          else { losses++; bySingleOrCat(hh, 'l'); recentResults.push({ s: hh.s, w: hh.w, r: 'l' }); }
+          // レガシー: 現所属ベース
+          curSide = playerSide;
         }
+        const cat = hh.st === 'war' ? byWar
+          : hh.st === 'ppv' ? byPpv
+          : byB3; // b3 / b3Challenge
+        if (hh.win === curSide) { cat.w++; recentResults.push({ s: hh.s, w: hh.w, r: 'w' }); }
+        else if (hh.win === 'd') { cat.d++; recentResults.push({ s: hh.s, w: hh.w, r: 'd' }); }
+        else { cat.l++; recentResults.push({ s: hh.s, w: hh.w, r: 'l' }); }
       });
-    } else {
-      // history なし: legacy 集計値ベースで現所属扱い
-      const pWins = playerSide === 'A' ? (h.winsA || 0) : (h.winsB || 0);
-      const oWins = playerSide === 'A' ? (h.winsB || 0) : (h.winsA || 0);
-      wins += pWins; losses += oWins; draws += dr;
-      bySingle.w += pWins; bySingle.l += oWins; bySingle.d += dr;
     }
+    // history なしレガシーは war/ppv/b3 区別不能なので集計対象外（通算からも除外）
   });
-  function bySingleOrCat(hh, kind) {
-    const cat = hh.st === 'war' ? byWar : hh.st === 'ppv' ? byPpv : bySingle;
-    if (kind === 'w') cat.w++;
-    else if (kind === 'd') cat.d++;
-    else cat.l++;
-  }
+  const wins = byWar.w + byPpv.w + byB3.w;
+  const losses = byWar.l + byPpv.l + byB3.l;
+  const draws = byWar.d + byPpv.d + byB3.d;
   // 直近を時系列ソート → 連勝・連敗判定
   recentResults.sort((x, y) => (y.s - x.s) || (y.w - x.w));
   let streakKind = 'even', streak = 0;
@@ -5888,14 +5880,13 @@ function _npComputeWarRecord(state, rivalOrgId) {
         if (r.r === first) count++;
         else break;
       }
-      // 2試合以上連続したときのみ「連勝/連敗」と認める
       if (count >= 2) {
         streakKind = first === 'w' ? 'win' : 'lose';
         streak = count;
       }
     }
   }
-  return { wins, losses, draws, total: wins + losses + draws, diff: wins - losses, bySingle, byWar, byPpv, streakKind, streak };
+  return { wins, losses, draws, total: wins + losses + draws, diff: wins - losses, byWar, byPpv, byB3, streakKind, streak };
 }
 
 function _npFindFighterOrgKey(state, charId) {
@@ -6001,13 +5992,18 @@ function _npRenderPage1() {
   }
 
   // 自団体興行結果
+  // 一面トップが自団体興行（同じメイン試合）の場合、興行結果セクションのメインを
+  // 第2試合に差し替えてダイジェストも繰り上げる（同じ試合を二度語らない）
   if (wp.playerShowData) {
-    html += _npRenderPlayerShow(wp.playerShowData, seasonNum, weekNum);
+    const ts = wp.topStory;
+    const topIsPlayerShow = ts && (ts.type === 'playerShowTitle' || ts.type === 'playerShowNormal');
+    const psd = topIsPlayerShow ? _npSwapMainToSecondCard(wp.playerShowData) : wp.playerShowData;
+    if (psd) html += _npRenderPlayerShow(psd, seasonNum, weekNum);
   }
 
-  // 他団体ニュース (常に表示、空時はプレースホルダー)
+  // 業界ニュース (常に表示、空時はプレースホルダー)
   html += `<section class="np-sub-stories">
-    <div class="np-sec-gold">他団体ニュース</div>`;
+    <div class="np-sec-gold">業界ニュース</div>`;
   if (wp.subStories && wp.subStories.length > 0) {
     html += `<div class="np-sub-grid">`;
     wp.subStories.forEach((ss, idx) => {
@@ -6041,12 +6037,36 @@ function _npRenderPage1() {
       }
     }
   } else {
-    html += `<div class="np-empty-substory">今週は他団体動向の特筆事項なし。<br>業界全体が静かに次の展開を待っている。</div>`;
+    html += `<div class="np-empty-substory">今週は業界動向の特筆事項なし。<br>業界全体が静かに次の展開を待っている。</div>`;
   }
   html += `</section>`;
 
   html += `</div></div>`;
   return html;
+}
+
+/** 一面トップ記事と興行メインが同じ試合になるとき、第2試合をメイン枠に繰り上げる */
+function _npSwapMainToSecondCard(d) {
+  if (!d || !d.allMatches || d.allMatches.length === 0) return d; // セミ以下が無ければそのまま
+  const m = d.allMatches[0];
+  if (!m || !m.left || !m.right) return d;
+  const winner = m.winner;
+  const swapped = Object.assign({}, d, {
+    left: Object.assign({}, m.left, { isWinner: winner === 'left' }),
+    right: Object.assign({}, m.right, { isWinner: winner === 'right' }),
+    winner: winner,
+    isDraw: !!m.isDraw,
+    mq: m.mq,
+    turns: m.turns,
+    isTitleMatch: !!m.isTitleMatch,
+    finishLabel: m.finishLabel || '',
+    matchLabel: m.isTitleMatch ? '王座戦' : 'セミファイナル',
+    headline: `${m.left.name} vs ${m.right.name}（同時開催）`,
+    article: '',           // 記事はメインの分しか作っていないので空に
+    allMatches: d.allMatches.slice(1),
+    // showRating は興行全体の評価なので維持
+  });
+  return swapped;
 }
 
 function _npRenderPlayerShow(d, seasonNum, weekNum) {
@@ -6321,13 +6341,13 @@ function _npRenderPage2() {
       <div class="np-sec-gold">過去対戦成績</div>
       <div class="np-war-grid">
         <div class="np-war-overall">
-          <span class="lbl">通算</span>
+          <span class="lbl">通算（団体間ガチンコのみ）</span>
           <span class="wl">${warStats.wins}勝-${warStats.losses}敗${warStats.draws ? `-${warStats.draws}分` : ''}</span>
         </div>
         <div class="np-war-breakdown">
-          <div class="item"><label>シングル</label><span>${warStats.bySingle.w}-${warStats.bySingle.l}</span></div>
-          <div class="item"><label>対抗戦</label><span>${warStats.byWar.w}-${warStats.byWar.l}</span></div>
-          <div class="item"><label>PPV</label><span>${warStats.byPpv.w}-${warStats.byPpv.l}</span></div>
+          <div class="item"><label>対抗戦</label><span>${warStats.byWar.w}-${warStats.byWar.l}${warStats.byWar.d ? `-${warStats.byWar.d}分` : ''}</span></div>
+          <div class="item"><label>PPV</label><span>${warStats.byPpv.w}-${warStats.byPpv.l}${warStats.byPpv.d ? `-${warStats.byPpv.d}分` : ''}</span></div>
+          <div class="item"><label>挑戦状</label><span>${warStats.byB3.w}-${warStats.byB3.l}${warStats.byB3.d ? `-${warStats.byB3.d}分` : ''}</span></div>
         </div>
         ${streakLabel ? `<div class="np-war-streak ${streakCls}">${streakLabel}</div>` : ''}
       </div>
@@ -6483,11 +6503,25 @@ function _npRenderPage2() {
       const fOvr = Engine.util.ov(f);
       const fPop = Math.round(f.popularity || 0);
       const fAge = f.age != null ? f.age : '?';
-      // 寸評: KURODA_SPOTLIGHT
+      // 寸評: KURODA_SPOTLIGHT — 年齢を反映してプール選択
+      // youngThreat は20歳以下限定。21〜26は risingYoung、27〜32は midCareer、33以上は veteran
+      const ageNum = (typeof f.age === 'number') ? f.age : 25;
+      let poolKey;
+      if (i <= 1) {
+        // エース級・主力級
+        if (ageNum >= 33) poolKey = 'veteran';
+        else if (ageNum <= 22) poolKey = 'risingYoung';
+        else poolKey = 'star';
+      } else {
+        // 中堅級
+        if (ageNum <= 20) poolKey = 'youngThreat';
+        else if (ageNum <= 26) poolKey = 'risingYoung';
+        else if (ageNum <= 32) poolKey = 'midCareer';
+        else poolKey = 'veteran';
+      }
       let comment = '';
       if (typeof KURODA_SPOTLIGHT !== 'undefined') {
-        const poolKey = i === 0 ? 'star' : i === 1 ? 'star' : 'youngThreat';
-        const pool = KURODA_SPOTLIGHT[poolKey] || [];
+        const pool = (KURODA_SPOTLIGHT[poolKey]) || (KURODA_SPOTLIGHT.star) || [];
         if (pool.length > 0) {
           const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, f.id, 0xC3A1));
           const fn = Engine.rng.pick(rng, pool);
@@ -6497,7 +6531,7 @@ function _npRenderPage2() {
       if (!comment) {
         comment = i === 0 ? `${d.rivalName}の看板。OVR${fOvr}は当面の脅威。`
           : i === 1 ? `主力として団体を支える。試合の質で平均値を引き上げる。`
-          : `若手の中で突き抜けた一人。次世代の主力候補。`;
+          : `中堅として団体を支える一人。注視すべき存在だ。`;
       }
       html += `<div class="np-spotlight">
         <div class="np-spotlight-head">
