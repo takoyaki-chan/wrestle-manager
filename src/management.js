@@ -13572,7 +13572,7 @@ Engine.mvpRace = {
     if (m.ppvChampion >= 1) {
       return pick([
         `先週のPPV決勝で${Engine.mvpRace.POINTS.PPV_CHAMPION}pt一撃を獲得。${m.age}歳、上位を一気に飲み込む勢いがある。残りの戦いをどう描くか。`,
-        `PPVで頂点に立った勢いをそのまま年間レースに持ち込んだ。観客の記憶に残る一撃が、紙面の数字をひっくり返す。`,
+        `PPVで頂点に立った勢いをそのまま年間MVPレースに持ち込んだ。観客の記憶に残る一撃が、紙面の数字をひっくり返す。`,
         `決勝のリングで掴んだ${Engine.mvpRace.POINTS.PPV_CHAMPION}pt。これが今期の物語を書き換える起点になるかもしれない。`,
       ]);
     }
@@ -13591,7 +13591,7 @@ Engine.mvpRace = {
     }
     if ((entry.breakdown.meta.age || 25) <= 20 && entry.rank <= 3) {
       return pick([
-        `若くしてTOP${entry.rank}入り。${m.age}歳、台頭の年。${(Engine.mvpRace._topElements(m)[0] || '主要要素') + 'で点を稼いでいる'}。`,
+        `若くして上位${entry.rank}に食い込んだ。${m.age}歳、台頭の年。${(Engine.mvpRace._topElements(m)[0] || '主要要素') + 'で点を稼いでいる'}。`,
         `${m.age}歳での上位入り。新時代の予兆を、紙面に刻みつつある。`,
       ]);
     }
@@ -13656,15 +13656,15 @@ Engine.mvpRace = {
     if (m.warWins >= 2) return `対抗戦${m.warWins}勝。チームを引っ張る勝ち星。`;
     if (m.bigMatches >= 3) return `MQ85超を${m.bigMatches}本量産する職人型。`;
     if (m.bigMatches >= 1) return `大試合を${m.bigMatches}本作った職人気質。`;
-    if ((m.age || 25) <= 20 && entry.rank <= 8) return `${m.age}歳でTOP${entry.rank}入り。台頭の年。`;
+    if ((m.age || 25) <= 20 && entry.rank <= 8) return `${m.age}歳で上位${entry.rank}入り。台頭の年。`;
     if (entry.arrow === 'down' && entry.arrowDelta && entry.arrowDelta <= -2) return `序盤の勢いから失速。${Engine.mvpRace._roleLabel(m.role) || '中堅'}がどこで踏み止まるか。`;
     if (entry.arrow === 'up' && entry.arrowDelta && entry.arrowDelta >= 3) return `後半戦で急上昇。連勝が続けばさらに上も視野に。`;
-    if (entry.arrow === 'new') return `初のTOP10入り。台頭の予兆。`;
+    if (entry.arrow === 'new') return `初の十傑入り。台頭の予兆。`;
     return `${Engine.mvpRace._roleLabel(m.role) || '中堅'}として確実な積み重ね。${entry.points}pt。`;
   },
 
   generatePageHeadline(rankings, state) {
-    if (!rankings || rankings.length === 0) return '年間レース ── 集計待ち';
+    if (!rankings || rankings.length === 0) return '年間MVPレース ── 集計待ち';
     const r1 = rankings[0];
     const r2 = rankings[1];
     const r3 = rankings[2];
@@ -13672,7 +13672,7 @@ Engine.mvpRace = {
     const gap12 = r2 ? (r1.points - r2.points) : 999;
     const gap13 = r3 ? (r1.points - r3.points) : 999;
     if (r2 && r3 && gap13 <= 15) {
-      return `TOP3が大接戦 ―― ${r1.fighterName}・${r2.fighterName}・${r3.fighterName}が拮抗`;
+      return `三傑が大接戦 ―― ${r1.fighterName}・${r2.fighterName}・${r3.fighterName}が拮抗`;
     }
     if (gap12 >= 30) {
       return `${r1.fighterName}、独走の${season} ―― 追走者は遠く`;
@@ -13705,7 +13705,175 @@ Engine.mvpRace = {
     if (!rankings || rankings.length === 0) return '';
     const r1 = rankings[0];
     const remaining = Math.max(0, 48 - (state.week || 1));
-    return `この三人がレースを引っ張っている。あと${remaining}週、誰が抜き、誰が抜かれるか。次のPPVが終われば、トップは入れ替わっているかもしれない。`;
+    return `この三人がレースを引っ張っている。あと${remaining}週、誰が抜き、誰が抜かれるか。次のPPVが終われば、首位は入れ替わっているかもしれない。`;
+  },
+
+  // ── リッチ叙述生成 (4位以下 / 2-3位の補強用) ────────────────────────
+  /** 当該ファイターの本体オブジェクトを取得 */
+  _resolveFighter(state, entry) {
+    const fid = entry.fighterId;
+    const orgId = entry.orgId;
+    if (orgId === 'player') {
+      return (state.roster || []).find(x => x && x.id === fid)
+        || (state.retiredFighters || []).find(x => x && x.id === fid)
+        || null;
+    }
+    if (state.aiOrgs && state.aiOrgs[orgId] && state.aiOrgs[orgId].roster) {
+      return state.aiOrgs[orgId].roster.find(x => x && x.id === fid)
+        || (state.retiredFighters || []).find(x => x && x.id === fid)
+        || null;
+    }
+    return (state.retiredFighters || []).find(x => x && x.id === fid) || null;
+  },
+
+  /** 名前解決（player/全AI団体/引退） */
+  _resolveName(state, fid) {
+    const all = [];
+    if (state.roster) all.push(...state.roster);
+    if (state.aiOrgs) Object.values(state.aiOrgs).forEach(o => o && o.roster && all.push(...o.roster));
+    if (state.retiredFighters) all.push(...state.retiredFighters);
+    const f = all.find(x => x && x.id === fid);
+    return f ? f.name : null;
+  },
+
+  /** entry の特性を文中表現にして返す（複数あれば1つだけ採用） */
+  _traitFlavor(traits) {
+    if (!Array.isArray(traits) || traits.length === 0) return '';
+    const order = ['早熟', '晩成', '遅咲き', '反骨心', '不屈', '心技体', '天才肌', 'ガラスの心臓', '燃えやすい', '影の支配者'];
+    for (const t of order) if (traits.includes(t)) return t;
+    return traits[0];
+  },
+
+  /** 当シーズンに発生した特筆事績をチップ向けに収集（最大3件） */
+  _collectFactChips(fighter, season, m) {
+    const chips = [];
+    if (m.titleDefenses > 0) chips.push({ icon: '👑', text: `王座防衛${m.titleDefenses}回` });
+    if (m.titleWins > 0) chips.push({ icon: '👑', text: `王座奪取${m.titleWins}回` });
+    if (m.isCurrentChamp && m.titleDefenses === 0 && m.titleWins === 0) chips.push({ icon: '👑', text: '現王者' });
+    if (m.ppvChampion > 0) chips.push({ icon: '🏆', text: `PPV優勝${m.ppvChampion > 1 ? m.ppvChampion + '回' : ''}`.trim() });
+    else if (m.ppvRunnerUp > 0) chips.push({ icon: '🥈', text: `PPV準優勝${m.ppvRunnerUp > 1 ? m.ppvRunnerUp + '回' : ''}`.trim() });
+    else if (m.ppvParticipation > 0) chips.push({ icon: '🎤', text: `PPV出場${m.ppvParticipation}回` });
+    const warTotal = (m.warWins || 0) + (m.warLosses || 0) + (m.warDraws || 0);
+    if (warTotal > 0) {
+      const seg = [`${m.warWins}勝`, `${m.warLosses}敗`];
+      if (m.warDraws > 0) seg.push(`${m.warDraws}分`);
+      chips.push({ icon: '⚔', text: `対抗戦${seg.join('')}` });
+    }
+    if (m.domeAppearances > 0) chips.push({ icon: '🏟', text: `ドーム${m.domeAppearances}戦` });
+    if (m.bigMatches > 0) chips.push({ icon: '🥊', text: `名勝負${m.bigMatches}本` });
+    return chips.slice(0, 4);
+  },
+
+  /** h2h から、自分が出場した直近の特筆試合（mq最高 or 直近）を1件返す */
+  _pickSignatureMatch(state, fighterId) {
+    const h2h = state.h2h || {};
+    let best = null;
+    for (const key of Object.keys(h2h)) {
+      const [aStr, bStr] = key.split('>');
+      const a = parseInt(aStr, 10), b = parseInt(bStr, 10);
+      if (a !== fighterId && b !== fighterId) continue;
+      const rec = h2h[key];
+      const hist = (rec && rec.history) || [];
+      for (const ev of hist) {
+        if (ev.s !== state.season) continue;
+        const opponentId = (a === fighterId) ? b : a;
+        const won = (ev.win === 'd') ? 'draw'
+          : (a === fighterId && ev.win === 'A') ? 'win'
+          : (b === fighterId && ev.win === 'B') ? 'win'
+          : 'lose';
+        const cand = { opponentId, mq: ev.mq || 0, week: ev.w, stage: ev.st, isTitle: !!ev.t, isPPV: !!ev.p, won };
+        if (!best
+            || cand.mq > best.mq
+            || (cand.mq === best.mq && cand.week > best.week)) {
+          best = cand;
+        }
+      }
+    }
+    return best;
+  },
+
+  /** 直近の宿敵（rivalry高め）を返す。{ opponentId, opponentName, rivalry } */
+  _pickArchRival(state, fighterId) {
+    const rels = state.relationships || {};
+    let bestId = null, bestRiv = 0;
+    for (const key of Object.keys(rels)) {
+      const [fromStr, toStr] = key.split('>');
+      const from = parseInt(fromStr, 10), to = parseInt(toStr, 10);
+      if (from !== fighterId) continue;
+      const r = rels[key];
+      if (!r) continue;
+      if ((r.rivalry || 0) >= 60 && (r.rivalry || 0) > bestRiv) {
+        bestRiv = r.rivalry; bestId = to;
+      }
+    }
+    if (bestId == null) return null;
+    const name = Engine.mvpRace._resolveName(state, bestId);
+    if (!name) return null;
+    return { opponentId: bestId, opponentName: name, rivalry: bestRiv };
+  },
+
+  /** フレーバー1行を優先度付きで生成 */
+  _composeFlavorLine(state, entry, fighter) {
+    const m = entry.breakdown.meta;
+    const traits = (fighter && fighter.traits) || [];
+    const traitFlavor = Engine.mvpRace._traitFlavor(traits);
+    const role = Engine.mvpRace._roleLabel(m.role);
+
+    // 1. 直近の名勝負（MQ85+）
+    const sig = Engine.mvpRace._pickSignatureMatch(state, entry.fighterId);
+    if (sig && sig.mq >= 85) {
+      const opName = Engine.mvpRace._resolveName(state, sig.opponentId) || '相手';
+      const tag = sig.isTitle ? 'タイトル戦' : (sig.isPPV ? 'PPV' : (sig.stage === 'war' ? '対抗戦' : '一戦'));
+      const result = sig.won === 'win' ? '制した' : (sig.won === 'lose' ? '及ばなかった' : '譲り合った');
+      return `${opName}との${tag}でMQ${sig.mq}を刻み、${result}記憶。`;
+    }
+    // 2. 宿敵
+    const rival = Engine.mvpRace._pickArchRival(state, entry.fighterId);
+    if (rival) {
+      return `宿敵 ${rival.opponentName} への意地が、点数の裏側で燃え続けている。`;
+    }
+    // 3. 直近スナップショット（careerBestMQ / breakthrough 系）
+    const snaps = state.snapshots || [];
+    for (let i = snaps.length - 1; i >= 0 && i >= snaps.length - 5; i--) {
+      const sn = snaps[i];
+      if (!sn || sn.fighterId !== entry.fighterId) continue;
+      if (sn.id === 'careerBestMQ' || sn.id === 'breakthrough') {
+        return sn.id === 'breakthrough'
+          ? `先週ブレイクスルー——OVRの壁を一段越えた手応えを残している。`
+          : `先週、自身のMQ最高値を更新。質で語れる戦いが増えてきた。`;
+      }
+    }
+    // 4. trait + 役職 + 年齢のフォールバック
+    if (traitFlavor && role && m.age > 0) {
+      return `${traitFlavor}を抱える${m.age}歳の${role}、点を着実に積む。`;
+    }
+    if (role && m.age > 0) {
+      return `${m.age}歳の${role}として、シーズンを地道に積み上げている。`;
+    }
+    return '';
+  },
+
+  /**
+   * リッチ表現の3要素を返す
+   * @returns { headlineLine, factChips: [{icon,text}], flavorLine }
+   */
+  generateRichBlocks(entry, state) {
+    if (!entry || !entry.breakdown) return { headlineLine: '', factChips: [], flavorLine: '' };
+    const m = entry.breakdown.meta;
+    const fighter = Engine.mvpRace._resolveFighter(state, entry);
+    const factChips = Engine.mvpRace._collectFactChips(fighter, state.season, m);
+
+    // 1位/2位/3位用の追加見出し（直近名勝負のファクト）
+    let headlineLine = '';
+    const sig = Engine.mvpRace._pickSignatureMatch(state, entry.fighterId);
+    if (sig && sig.mq >= 80) {
+      const opName = Engine.mvpRace._resolveName(state, sig.opponentId) || '相手';
+      const tag = sig.isTitle ? 'タイトル戦' : (sig.isPPV ? 'PPV' : (sig.stage === 'war' ? '対抗戦' : '通常興行'));
+      headlineLine = `第${sig.week}週 ${opName} との${tag}でMQ${sig.mq}を記録。`;
+    }
+
+    const flavorLine = Engine.mvpRace._composeFlavorLine(state, entry, fighter);
+    return { headlineLine, factChips, flavorLine };
   },
 };
 

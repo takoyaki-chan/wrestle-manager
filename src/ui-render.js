@@ -5755,7 +5755,7 @@ function renderNewspaper() {
     <button class="np-tab${_newspaperSubPage === 1 ? ' active' : ''}" onclick="setNewspaperSubPage(1)">📰 1面 興行</button>
     <button class="np-tab${_newspaperSubPage === 2 ? ' active' : ''}" onclick="setNewspaperSubPage(2)">⚔ 2面 団体比較</button>
     <button class="np-tab${_newspaperSubPage === 3 ? ' active' : ''}" onclick="setNewspaperSubPage(3)">🔥 3面 因縁列伝</button>
-    <button class="np-tab${_newspaperSubPage === 4 ? ' active' : ''}" onclick="setNewspaperSubPage(4)">📊 4面 年間レース</button>
+    <button class="np-tab${_newspaperSubPage === 4 ? ' active' : ''}" onclick="setNewspaperSubPage(4)">📊 4面 MVPレース</button>
   </div>`;
 
   if (_newspaperSubPage === 1) html += _npRenderPage1();
@@ -6820,7 +6820,7 @@ function _npRenderPage3() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 4面: 年間レース (MVPレース v2 / mvp-race-page4-final.html 準拠)
+// 4面: 年間MVPレース (MVPレース v2 / mvp-race-page4-final.html 準拠)
 // ══════════════════════════════════════════════════════════════
 function _npRenderPage4() {
   const seasonNum = G.season || 1, weekNum = G.week || 1;
@@ -6828,16 +6828,16 @@ function _npRenderPage4() {
 
   const race = G.mvpRace;
   if (!race || !race.rankings || race.rankings.length === 0) {
-    html += `<div class="np-sec-gold">📊 4面 ・ 年間レース</div>`;
+    html += `<div class="np-sec-gold">📊 4面 ・ 年間MVPレース</div>`;
     html += `<div class="np-empty" style="padding:24px;text-align:center;color:#5b4b34;font-size:13px">📊 まだMVPレースのデータがない。週を進めると更新される。</div>`;
     html += `</div></div>`;
     return html;
   }
 
-  html += `<div class="np-sec-gold">📊 4面 ・ 年間レース</div>`;
+  html += `<div class="np-sec-gold">📊 4面 ・ 年間MVPレース</div>`;
   html += `<h2 class="np-page-headline">${_escapeHtml(race.pageHeadline || '')}</h2>`;
   html += `<p class="np-page-lead">${_escapeHtml(race.pageLead || '')}</p>`;
-  html += `<div class="np-page-meta">第${weekNum}週時点 ・ 注目選手 TOP3 ・ 全団体合同</div>`;
+  html += `<div class="np-page-meta">第${weekNum}週時点 ・ 注目選手 上位三傑 ・ 全団体合同</div>`;
 
   // TOP3カード
   html += `<div class="np-mvprace-list">`;
@@ -6859,7 +6859,7 @@ function _npRenderPage4() {
 
   // 4-10位
   if (race.rankings.length > 3) {
-    html += `<div class="np-mvprace-divider">— 4 位 ・ 以 下 追 走 —</div>`;
+    html += `<div class="np-mvprace-divider">— 4 位 以 下 ・ 追 走 集 団 —</div>`;
     for (let i = 3; i < race.rankings.length; i++) {
       html += _npMvpRaceListRow(race.rankings[i]);
     }
@@ -6871,14 +6871,14 @@ function _npRenderPage4() {
 
 // ── 4面 補助: 矢印チップ ───────────────────────────
 function _npMvpRaceArrowText(arrow, delta) {
-  if (arrow === 'new') return 'NEW';
+  if (arrow === 'new') return '初登場';
   if (arrow === 'same') return '−';
   if (arrow === 'up') return `▲ ${delta || 1}`;
   if (arrow === 'down') return `▼ ${Math.abs(delta || 1)}`;
   return '';
 }
 function _npMvpRaceArrow1ChipText(arrow, prevRank) {
-  if (arrow === 'new') return 'NEW';
+  if (arrow === 'new') return '初登場';
   if (arrow === 'same') return `前週 ${prevRank}位`;
   if (arrow === 'up') return `前週 ${prevRank}位 から上昇`;
   if (arrow === 'down') return `前週 ${prevRank}位 から下降`;
@@ -6915,6 +6915,8 @@ function _npMvpRaceRank1Card(entry) {
   const meta = _npMvpRaceMetaChips(entry);
   const bd = entry.breakdown;
   const m = bd.meta;
+  const rich = (typeof Engine !== 'undefined' && Engine.mvpRace && Engine.mvpRace.generateRichBlocks)
+    ? Engine.mvpRace.generateRichBlocks(entry, G) : { headlineLine: '', factChips: [], flavorLine: '' };
   const titleDetail = m.titleWins > 0 || m.titleDefenses > 0 || m.isCurrentChamp
     ? `奪取${m.titleWins}+防衛${m.titleDefenses}${m.isCurrentChamp ? '+保持' : ''}` : '王座なし';
   const ppvDetail = m.ppvChampion > 0 ? `優勝${m.ppvChampion}回` : (m.ppvRunnerUp > 0 ? `準V${m.ppvRunnerUp}回` : (m.ppvParticipation > 0 ? `出場${m.ppvParticipation}回` : '未開催'));
@@ -6929,7 +6931,7 @@ function _npMvpRaceRank1Card(entry) {
   return `<div class="np-mvprace-card np-mvprace-card-1${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId})">
     <div class="np-mvprace-photo">
       <div class="char-img-lg" style="${photoBg};width:100%;height:100%;background-size:cover;background-position:center top;background-repeat:no-repeat;background-color:#2a1a10"></div>
-      <div class="np-mvprace-rank-overlay"><span class="lbl">RANK</span>1</div>
+      <div class="np-mvprace-rank-overlay"><span class="lbl">順位</span>1</div>
       <div class="np-mvprace-emb-overlay" style="${embBg}"></div>
     </div>
     <div class="np-mvprace-info">
@@ -6940,9 +6942,10 @@ function _npMvpRaceRank1Card(entry) {
       <div class="np-mvprace-meta">${meta}</div>
       <div class="np-mvprace-stats">
         <div class="np-mvprace-stat-box ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
-        <div class="np-mvprace-stat-box pts"><span class="lbl">POINTS</span><strong>${Math.round(entry.points)}<span class="unit">pt</span></strong></div>
+        <div class="np-mvprace-stat-box pts"><span class="lbl">ポイント</span><strong>${Math.round(entry.points)}<span class="unit">pt</span></strong></div>
       </div>
       ${entry.narrative ? `<div class="np-mvprace-narrative">${_escapeHtml(entry.narrative)}</div>` : ''}
+      ${rich.headlineLine ? `<div class="np-mvprace-rich-line">${_escapeHtml(rich.headlineLine)}</div>` : ''}
       <div class="np-mvprace-badges">
         <div class="np-mvprace-badge${titleZero}">
           <div class="icon-row">👑<span class="lbl">王者</span></div>
@@ -6997,6 +7000,12 @@ function _npMvpRaceMinorCard(entry, rank) {
     const sign = p.val >= 0 ? '+' : '';
     return `<span class="np-mvprace-minor-pill${zero}">${p.icon} ${p.label}<strong>${sign}${p.val}</strong></span>`;
   }).join('');
+  const rich = (typeof Engine !== 'undefined' && Engine.mvpRace && Engine.mvpRace.generateRichBlocks)
+    ? Engine.mvpRace.generateRichBlocks(entry, G) : { headlineLine: '', factChips: [], flavorLine: '' };
+  const factChipsHtml = rich.factChips && rich.factChips.length > 0
+    ? `<div class="np-mvprace-fact-chips">${rich.factChips.map(c => `<span class="np-mvprace-fact-chip">${c.icon} ${_escapeHtml(c.text)}</span>`).join('')}</div>` : '';
+  const flavorHtml = rich.flavorLine
+    ? `<div class="np-mvprace-flavor">${_escapeHtml(rich.flavorLine)}</div>` : '';
 
   return `<div class="np-mvprace-card np-mvprace-card-minor np-mvprace-rank-${rank}${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId})">
     <div class="np-mvprace-photo-mini">
@@ -7011,11 +7020,13 @@ function _npMvpRaceMinorCard(entry, rank) {
       </div>
       <div class="np-mvprace-minor-meta">${_escapeHtml(entry.orgName)}${role ? `<span class="div">/</span><span>${role}</span>` : ''}${m.age ? `<span class="div">/</span><span>${m.age}歳</span>` : ''}</div>
       ${entry.narrative ? `<div class="np-mvprace-minor-narrative">${_escapeHtml(entry.narrative)}</div>` : ''}
+      ${factChipsHtml}
+      ${flavorHtml}
       <div class="np-mvprace-minor-pills">${pills}</div>
     </div>
     <div class="np-mvprace-minor-num">
       <div class="np-mvprace-minor-num-box ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
-      <div class="np-mvprace-minor-num-box pts"><span class="lbl">PT</span><strong>${Math.round(entry.points)}</strong></div>
+      <div class="np-mvprace-minor-num-box pts"><span class="lbl">ポイント</span><strong>${Math.round(entry.points)}</strong></div>
     </div>
   </div>`;
 }
@@ -7026,20 +7037,41 @@ function _npMvpRaceListRow(entry) {
   const thumbBg = thumbUrl ? `background-image: url('${thumbUrl}');` : '';
   const embBg = _npMvpRaceOrgEmblemBg(entry.orgId);
   const arrowText = _npMvpRaceArrowText(entry.arrow, entry.arrowDelta);
-  return `<div class="np-mvprace-list-row${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId})">
-    <div class="np-mvprace-list-rank">${entry.rank}</div>
-    <div class="np-mvprace-list-arrow ${entry.arrow}">${_escapeHtml(arrowText)}</div>
-    <div class="np-mvprace-list-thumb" style="${thumbBg}"></div>
-    <div class="np-mvprace-list-emb" style="${embBg}"></div>
-    <div class="np-mvprace-list-name">
-      <div class="name-line">
-        <strong>${_escapeHtml(entry.fighterName)}</strong>
-        <span class="org">${_escapeHtml(entry.orgName)}</span>
+  const m = entry.breakdown && entry.breakdown.meta || {};
+  const role = (m.role === 'Ace') ? 'エース'
+    : (m.role === 'MidCarder' || m.role === 'Midcarder') ? '中堅'
+    : (m.role === 'Heel') ? 'ヒール'
+    : (m.role === 'Rookie' || m.role === 'Young') ? '新人'
+    : (m.role === 'Veteran') ? 'ベテラン' : '';
+  const champBadge = m.isCurrentChamp ? `<span class="np-mvprace-list-champ">👑 現王者</span>` : '';
+  const rich = (typeof Engine !== 'undefined' && Engine.mvpRace && Engine.mvpRace.generateRichBlocks)
+    ? Engine.mvpRace.generateRichBlocks(entry, G) : { headlineLine: '', factChips: [], flavorLine: '' };
+  const factChipsHtml = rich.factChips && rich.factChips.length > 0
+    ? `<div class="np-mvprace-list-facts">${rich.factChips.map(c => `<span class="np-mvprace-fact-chip">${c.icon} ${_escapeHtml(c.text)}</span>`).join('')}</div>` : '';
+  const flavorHtml = rich.flavorLine
+    ? `<div class="np-mvprace-list-flavor">${_escapeHtml(rich.flavorLine)}</div>`
+    : (entry.tagline ? `<div class="np-mvprace-list-flavor">${_escapeHtml(entry.tagline)}</div>` : '');
+  const metaLine = [role, m.age ? `${m.age}歳` : ''].filter(Boolean).join(' / ');
+
+  return `<div class="np-mvprace-list-row np-mvprace-list-row--rich${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId})">
+    <div class="np-mvprace-list-head">
+      <div class="np-mvprace-list-rank">${entry.rank}</div>
+      <div class="np-mvprace-list-arrow ${entry.arrow}">${_escapeHtml(arrowText)}</div>
+      <div class="np-mvprace-list-thumb" style="${thumbBg}"></div>
+      <div class="np-mvprace-list-emb" style="${embBg}"></div>
+      <div class="np-mvprace-list-name">
+        <div class="name-line">
+          <strong>${_escapeHtml(entry.fighterName)}</strong>
+          <span class="org">${_escapeHtml(entry.orgName)}</span>
+          ${champBadge}
+        </div>
+        ${metaLine ? `<div class="np-mvprace-list-metaline">${_escapeHtml(metaLine)}</div>` : ''}
       </div>
-      ${entry.tagline ? `<div class="np-mvprace-list-tagline">${_escapeHtml(entry.tagline)}</div>` : ''}
+      <div class="np-mvprace-list-ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
+      <div class="np-mvprace-list-pts">${Math.round(entry.points)}<span class="lbl">pt</span></div>
     </div>
-    <div class="np-mvprace-list-ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
-    <div class="np-mvprace-list-pts">${Math.round(entry.points)}<span class="lbl">pt</span></div>
+    ${factChipsHtml}
+    ${flavorHtml}
   </div>`;
 }
 
