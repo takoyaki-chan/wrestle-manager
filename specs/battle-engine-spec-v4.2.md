@@ -18,6 +18,7 @@
 | v4.1b | 2026-02-19 | **tuneB**：判定が多い問題を抑え、フォール狙い・丸め込みを「番狂わせ枠」として最適化（基準分布を採用） |
 | v4.2 | 2026-04-05 | **tuneC**：HP計算式変更(hpBase+hpScale×STA)。ダメージ係数再調整(PWR↑/STA防御↓/SPD全技化)。effSlopeAfterPivot=1.0(逓減無効化)。Big Match Tier 2追加(24ターン/4フェーズ)。MQ v3.0統合(外部MQソース整理/CAP 12/ペーシング「長すぎ」撤廃)。決着重み修正(非submission技のgu=0統一) |
 | v4.3 | 2026-04-29 | **モメンタム実効効果の縮小**：`leftChance` の `mom × 0.3 → 0.05`、`momDmgScale: 0.003 → 0.001`、`pinAttemptMomBonus: 0.15 → 0.03`。ゲージの動き方（ヒット±8/ミス±5/カウンター±18）は据え置き。「序盤の流れだけで試合が決まる」「先攻不利」現象を緩和。詳細は `plans/momentum-effect-reduction-plan.md`。 |
+| v4.3b | 2026-04-29 | **モメンタム係数追加縮小＋ダメージ乱数幅縮小**：`leftChance` 係数 `0.05 → 0.03`、`momDmgScale: 0.001 → 0.0003`、`pinAttemptMomBonus: 0.03 → 0.015`（各原値の1/10）。`dmgRandMin: 0.85 → 0.90`、`dmgRandRange: 0.30 → 0.20`（平均ダメージ1.00倍維持、乱数幅を±15%→±10%に縮小）。 |
 
 ---
 
@@ -264,7 +265,7 @@ defense = (eff(def.st) × 0.02)   // STA: v4.2で0.08→0.02に大幅下方修�
 mMod = 1.0 + (momentum_advantage × 0.001)   // v4.3: ±50時で±5%
 
 // 乱数幅
-rF = 0.85 + (random × 0.30)  // 0.85〜1.15
+rF = 0.90 + (random × 0.20)  // 0.90〜1.10（平均1.00維持。v4.3b: 0.85+0.30→0.90+0.20に縮小）
 
 // 粘りバフ ★v4.0
 if (def.gritTurns > 0) raw *= 0.80  // 被ダメ20%軽減
@@ -618,7 +619,7 @@ const ENG = {
   defStaScale: 0.02,
   defMntScale: 0.055,
   momDmgScale: 0.001,
-  dmgRandMin: 0.85, dmgRandRange: 0.30,
+  dmgRandMin: 0.90, dmgRandRange: 0.20,
   dmgFloor: 3,
 
   // 粘りバフ（Grit）
