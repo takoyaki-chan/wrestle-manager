@@ -655,6 +655,41 @@ const Engine = {
       }
       return curve[curve.length - 1][1];
     },
+    // bond-rivalry plan P-3: 険悪ペア（rivalry≥60 ∧ avg bond≤30）入りカードの逓減動員ボーナス
+    // 1カード目+5%, 2枚目+3%, 3枚目+2%, 4枚目以降+1%, 上限+12%
+    calcHostileCardBonus(showCard, relationships) {
+      if (!showCard || !showCard.length || !relationships) return 0;
+      const STEPS = [0.05, 0.03, 0.02, 0.01];
+      const _isHostilePair = (idA, idB) => {
+        if (!idA || !idB) return false;
+        const relAB = relationships[`${idA}>${idB}`] || {};
+        const relBA = relationships[`${idB}>${idA}`] || {};
+        const avgBond = ((relAB.bond != null ? relAB.bond : 50) + (relBA.bond != null ? relBA.bond : 50)) / 2;
+        const maxRiv = Math.max(relAB.rivalry || 0, relBA.rivalry || 0);
+        return maxRiv >= 60 && avgBond <= 30;
+      };
+      let count = 0;
+      let bonus = 0;
+      for (const card of showCard) {
+        let isHostile = false;
+        if (card.matchType === 'tag' && card.teamA && card.teamB) {
+          // タッグ: 両チーム間で険悪ペアが1組でもあれば対象
+          const ids = [card.teamA.fighter1, card.teamA.fighter2, card.teamB.fighter1, card.teamB.fighter2];
+          for (let i = 0; i < 2 && !isHostile; i++) {
+            for (let j = 2; j < 4 && !isHostile; j++) {
+              if (_isHostilePair(ids[i], ids[j])) isHostile = true;
+            }
+          }
+        } else if (card.left && card.right) {
+          isHostile = _isHostilePair(card.left, card.right);
+        }
+        if (isHostile) {
+          bonus += STEPS[Math.min(count, STEPS.length - 1)];
+          count++;
+        }
+      }
+      return Math.min(bonus, 0.12);
+    },
     // L1: 集客計算（rng=nullでプレビュー用＝揺らぎなし）
     calcAttendance(G, venueIdx, mainCardPop, hasTitleMatch, hasChampOnCard, rng, fanExpectCount) {
       const v = VENUES[venueIdx];
@@ -669,7 +704,9 @@ const Engine = {
       const charismaBonus = (G.roster && G.roster.some(c => Traits.has(c, '華') && !c.injury)) ? 0.05 : 0.0;
       const rivalryAttendanceBonus = Engine.title.getAttendanceBonusPct(G, G.showCard || []);
       const fanExpectBonus = (fanExpectCount || 0) * 0.08;
-      const totalMult = Math.min(1.0 + (heatMult - 1.0) + titleBonus + champBonus + charismaBonus + rivalryAttendanceBonus + fanExpectBonus, 2.0);
+      // bond-rivalry plan P-3: 険悪ペア（pure_hatred/bitter_feud）入りカードの逓減動員ボーナス
+      const hostileCardBonus = Engine.economy.calcHostileCardBonus(G.showCard || [], G.relationships || {});
+      const totalMult = Math.min(1.0 + (heatMult - 1.0) + titleBonus + champBonus + charismaBonus + rivalryAttendanceBonus + fanExpectBonus + hostileCardBonus, 2.0);
       // Step 4: 週次揺らぎ（会場スケール — 大会場ほどハイリスク）
       const fluctRange = VENUE_FLUCTUATION[venueIdx] || 0.17;
       const fluctuation = rng
@@ -9603,11 +9640,25 @@ const Engine = {
     // Injuries (immutable) — separate RNG per fighter to avoid correlation
     const injuryResults = [];
     const matchInjuredIds = new Array(results.length).fill(null); // Phase 2: 試合別怪我選手ID
+    // bond-rivalry plan P-3: 険悪ペア（rivalry≥60 ∧ avg bond≤30）のシングル戦はアクシデント率2倍
+    const _hostileMatchMult = (leftId, rightId) => {
+      const rels = s.relationships || {};
+      const relAB = rels[`${leftId}>${rightId}`] || {};
+      const relBA = rels[`${rightId}>${leftId}`] || {};
+      const avgBond = ((relAB.bond != null ? relAB.bond : 50) + (relBA.bond != null ? relBA.bond : 50)) / 2;
+      const maxRiv = Math.max(relAB.rivalry || 0, relBA.rivalry || 0);
+      return (maxRiv >= 60 && avgBond <= 30) ? 2.0 : 1.0;
+    };
+    const _mergeFlavorOpts = (base, extraMult) => {
+      if (extraMult === 1.0) return base;
+      return { ...(base || {}), injuryMult: ((base && base.injuryMult) || 1.0) * extraMult };
+    };
     results.forEach((r, idx) => {
       if (r.matchType === 'tag') return; // タッグ試合の怪我はPhase 5で対応
+      const hostileMult = _hostileMatchMult(r.left.id, r.right.id);
       const lc = roster.find(c => c.id === r.left.id);
       const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-      const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), Engine.coach.buildInjuryFlavorOpts(s, r.left.id));
+      const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.left.id), hostileMult));
       if (li) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -9634,7 +9685,7 @@ const Engine = {
       }
       const rc = roster.find(c => c.id === r.right.id);
       const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-      const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), Engine.coach.buildInjuryFlavorOpts(s, r.right.id));
+      const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.right.id), hostileMult));
       if (ri) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -15785,6 +15836,18 @@ Engine.shachoshitsu = {
       return roster.some(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
     }
 
+    // bond-rivalry plan P-6: 慢性的険悪ペア（W-1 累計 4 回以上）が存在
+    // 両者ともに現役・非レンタル・非怪我・非引退であることを要件とする
+    if (cond === 'hostile_pair_chronic') {
+      const w1 = state.w1FireCount || {};
+      const eligibleIds = new Set(roster.filter(f => !f.isRental && !f.injury).map(f => f.id));
+      return Object.keys(w1).some(key => {
+        if ((w1[key] || 0) < 4) return false;
+        const [a, b] = key.split('_').map(s => parseInt(s, 10));
+        return eligibleIds.has(a) && eligibleIds.has(b);
+      });
+    }
+
     // 未知の条件IDは「発動不可」として安全側に倒す
     return false;
   },
@@ -16096,6 +16159,48 @@ Engine.shachoshitsu = {
       _decisionWeekUsed = { ..._decisionWeekUsed, [docId]: state.week };
     }
 
+    // ── ペア書類(target: 'pair') ── bond-rivalry plan P-6: 関係修復斡旋 ──
+    let pairRepairResult = null;
+    if (doc.effect && doc.effect.target === 'pair') {
+      // fighterId は "A_B" 形式（A < B）。ペアキー。
+      if (typeof fighterId !== 'string' || !fighterId.includes('_')) {
+        return { error: 'pair_target_required' };
+      }
+      const [idAStr, idBStr] = fighterId.split('_');
+      const idA = parseInt(idAStr, 10);
+      const idB = parseInt(idBStr, 10);
+      const fA = roster.find(c => c.id === idA);
+      const fB = roster.find(c => c.id === idB);
+      if (!fA || !fB) return { error: 'pair_not_found' };
+      // W-1 累計4回以上か再確認
+      const w1Counts = state.w1FireCount || {};
+      const w1Key = `${Math.min(idA, idB)}_${Math.max(idA, idB)}`;
+      if ((w1Counts[w1Key] || 0) < 4) return { error: 'pair_not_eligible' };
+
+      const repairRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xBE61, idA, idB));
+      const success = Engine.rng.float(repairRng) < (doc.effect.successRate || 0.7);
+      if (success) {
+        const [minD, maxD] = doc.effect.bondDelta || [5, 10];
+        const delta = minD + Engine.rng.int(repairRng, 0, maxD - minD);
+        const rels = { ...(state.relationships || {}) };
+        const keyAB = `${idA}>${idB}`;
+        const keyBA = `${idB}>${idA}`;
+        const curAB = rels[keyAB] || { bond: 50, rivalry: 0 };
+        const curBA = rels[keyBA] || { bond: 50, rivalry: 0 };
+        rels[keyAB] = { ...curAB, bond: Engine.util.clamp((curAB.bond != null ? curAB.bond : 50) + delta, 0, 100) };
+        rels[keyBA] = { ...curBA, bond: Engine.util.clamp((curBA.bond != null ? curBA.bond : 50) + delta, 0, 100) };
+        pairRepairResult = { success: true, delta, idA, idB, nameA: fA.name, nameB: fB.name, relationships: rels };
+        events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功（双方向 bond +${delta}）`);
+        changes.push({ label: '関係修復', emoji: '🤝', text: `${fA.name}と${fB.name}の bond +${delta}（双方向）` });
+      } else {
+        pairRepairResult = { success: false, idA, idB, nameA: fA.name, nameB: fB.name };
+        events.push(`💧 ${fA.name}と${fB.name}の関係修復斡旋は不発に終わった`);
+        changes.push({ label: '関係修復', emoji: '💧', text: `${fA.name}と${fB.name}の溝は埋まらなかった` });
+      }
+      reactionKey = success ? 'relationship_repair_success' : 'relationship_repair_fail';
+      reactionFighterId = idA;
+    }
+
     // ── 人間関係反映(既存 careActions と同じロジックを移植) ──
     let updatedRelationships = null;
     if (state.relationships) {
@@ -16124,6 +16229,11 @@ Engine.shachoshitsu = {
     };
     if (orgPopDelta) result.orgPopDelta = orgPopDelta;
     if (updatedRelationships) result.relationships = updatedRelationships;
+    // bond-rivalry plan P-6: ペア修復が成功した場合は relationships を上書き反映
+    if (pairRepairResult && pairRepairResult.success) {
+      result.relationships = pairRepairResult.relationships;
+    }
+    if (pairRepairResult) result.pairRepairResult = pairRepairResult;
     // Phase 8: 個人書類のみトーン情報を返す (team書類は選手ごとに finalMult が異なるため無視)
     if (doc.effect && doc.effect.target === 'individual') {
       result.reactionTone = Engine.shachoshitsu.classifyTone(currentFinalMult);

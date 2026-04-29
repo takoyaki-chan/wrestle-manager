@@ -1484,6 +1484,8 @@ const FLAG_MODAL_META = {
   'M-21': { title: '😭 引き留め失敗の遺恨',   tone: 'negative', priority: 4 },
   'M-22': { title: '🥀 引退の置き土産',       tone: 'negative', priority: 2 },
   'M-23': { title: '🚪 突然離脱の波紋',       tone: 'negative', priority: 3 },
+  // bond-rivalry plan P-4: ロッカー荒廃（同団体内 bond≤30 ペアが3組以上）
+  'M-24': { title: '🌫️ ロッカールームの崩壊', tone: 'negative', priority: 4 },
 };
 
 function _findFighterById(id) {
@@ -4129,10 +4131,17 @@ function renderMatchPreview() {
         <span class="smc-label" style="font-size:${isMain ? '18px' : '15px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}">${matchLabel}</span>
         ${statusBadge} <span class="smc-tag-badge">TAG MATCH</span>
       </div>`;
+      // bond-rivalry plan P-1: bond ≤ 20 不仲ペアの警告マーカー
+      const _chemHtml = (bond) => {
+        if (bond <= 20) {
+          return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">⚠ 不仲 ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">能力-3 / 連携不可 / 信頼-1</div></div>`;
+        }
+        return `<div class="smc-tag-chem">🤝 ${Math.round(bond)}</div>`;
+      };
       html += `<div class="smc-tag-arena">
-        <div class="smc-tag-team left">${_tagFighter(tA1)}${_tagFighter(tA2)}<div class="smc-tag-chem">🤝 ${Math.round(bondA)}</div></div>
+        <div class="smc-tag-team left">${_tagFighter(tA1)}${_tagFighter(tA2)}${_chemHtml(bondA)}</div>
         <div class="smc-vs"><div class="smc-vs-text">VS</div></div>
-        <div class="smc-tag-team right">${_tagFighter(tB1)}${_tagFighter(tB2)}<div class="smc-tag-chem">🤝 ${Math.round(bondB)}</div></div>
+        <div class="smc-tag-team right">${_tagFighter(tB1)}${_tagFighter(tB2)}${_chemHtml(bondB)}</div>
       </div>`;
       if (isResolved) {
         let wNames = '引き分け';
@@ -6981,6 +6990,121 @@ function showDecisionConfirmModal(docId, state) {
     _mdlAClose();
     if (typeof App !== 'undefined' && App.executeDecision) {
       App.executeDecision(docId, null);
+    }
+  });
+}
+
+// bond-rivalry plan P-6: ペア書類用モーダル(関係修復斡旋)
+// W-1 累計4回以上のペアを一覧表示し、選択させる
+function showDecisionPairModal(docId, state) {
+  const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS[docId] : null;
+  if (!doc) return;
+
+  const w1 = state.w1FireCount || {};
+  const roster = state.roster || [];
+  const _findF = (id) => roster.find(c => c.id === id);
+  const eligiblePairs = Object.keys(w1)
+    .filter(k => (w1[k] || 0) >= 4)
+    .map(k => {
+      const [aStr, bStr] = k.split('_');
+      const a = parseInt(aStr, 10), b = parseInt(bStr, 10);
+      const fA = _findF(a), fB = _findF(b);
+      if (!fA || !fB || fA.isRental || fB.isRental || fA.injury || fB.injury) return null;
+      const rels = state.relationships || {};
+      const bondAB = (rels[`${a}>${b}`] || {}).bond;
+      const bondBA = (rels[`${b}>${a}`] || {}).bond;
+      const avgBond = ((bondAB != null ? bondAB : 50) + (bondBA != null ? bondBA : 50)) / 2;
+      return { key: k, idA: a, idB: b, fA, fB, count: w1[k], avgBond };
+    })
+    .filter(p => p)
+    .sort((x, y) => y.count - x.count);
+
+  if (eligiblePairs.length === 0) {
+    showToast('対象となる険悪ペアがありません');
+    return;
+  }
+
+  const actualCost = Engine.shachoshitsu.calcCost(doc, state);
+  const remainingFunds = (state.funds || 0) - actualCost;
+  const remainingColor = remainingFunds < 200 ? 'var(--accent-negative)' : 'var(--cream-gold-dark)';
+  const successPct = Math.round(((doc.effect && doc.effect.successRate) || 0.7) * 100);
+
+  let selectedPairKey = eligiblePairs[0].key;
+
+  const _renderPairList = () => {
+    return eligiblePairs.map(p => {
+      const sel = p.key === selectedPairKey;
+      const bondColor = p.avgBond <= 20 ? '#ff7675' : (p.avgBond <= 30 ? '#e17055' : 'var(--cream-text-sub)');
+      return `<div class="mdl-a-pair-row" data-pairkey="${p.key}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:6px;cursor:pointer;background:${sel ? 'rgba(232,196,118,0.35)' : 'rgba(255,255,255,0.35)'};border:1px solid ${sel ? 'var(--cream-gold)' : 'rgba(100,85,50,0.15)'};margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-weight:700;color:var(--cream-text-main)">${p.fA.name}</span>
+          <span style="color:var(--cream-text-dim);font-size:12px">×</span>
+          <span style="font-weight:700;color:var(--cream-text-main)">${p.fB.name}</span>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center;font-size:12px">
+          <span style="color:${bondColor}">平均bond ${Math.round(p.avgBond)}</span>
+          <span style="color:var(--cream-text-sub)">対立累計 ${p.count}回</span>
+        </div>
+      </div>`;
+    }).join('');
+  };
+
+  const summaryHtml = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="max-width:560px;margin:0 auto 14px">
+      <div style="font-size:12px;color:var(--cream-text-sub);margin-bottom:8px">対象ペアを選択してください</div>
+      <div id="mdlAPairList" style="max-height:240px;overflow-y:auto">${_renderPairList()}</div>
+    </div>
+    <div style="max-width:460px;margin:0 auto;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:10px 16px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;padding:3px 0">
+        <span style="color:var(--cream-text-sub)">コスト</span>
+        <span><strong style="color:var(--cream-gold-dark)">${actualCost}万</strong>　<span style="color:var(--cream-text-dim);font-size:11px">⚡${doc.decisionCost}</span></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:3px 0">
+        <span style="color:var(--cream-text-sub)">残金(決裁後)</span>
+        <span style="color:${remainingColor};font-weight:700">${Math.round(remainingFunds).toLocaleString()}万</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:3px 0">
+        <span style="color:var(--cream-text-sub)">成功率</span>
+        <span style="color:var(--cream-text-main);font-weight:700">${successPct}%</span>
+      </div>
+    </div>
+  `;
+
+  const html = `
+    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `PAIR DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAReporterStrip(state, '関係修復を試みるペアを選んでください')}
+    <div class="mdl-a-subject-stage">${summaryHtml}</div>
+    <div class="mdl-a-prompt" style="padding-top:14px">このペアに対して斡旋を行いますか？</div>
+    <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
+      <button class="mdl-a-continue-btn" id="mdlAPairCancel">— 取 消 —</button>
+      <button class="mdl-a-continue-btn" id="mdlAPairExec" style="background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)">— 決 裁 す る —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html)) return;
+
+  const _attachPairHandlers = () => {
+    document.querySelectorAll('.mdl-a-pair-row').forEach(row => {
+      row.addEventListener('click', () => {
+        Audio.play('click');
+        selectedPairKey = row.dataset.pairkey;
+        const listEl = document.getElementById('mdlAPairList');
+        if (listEl) listEl.innerHTML = _renderPairList();
+        _attachPairHandlers();
+      });
+    });
+  };
+  _attachPairHandlers();
+  document.getElementById('mdlAPairCancel').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+  });
+  document.getElementById('mdlAPairExec').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+    if (typeof App !== 'undefined' && App.executeDecision) {
+      App.executeDecision(docId, selectedPairKey);
     }
   });
 }

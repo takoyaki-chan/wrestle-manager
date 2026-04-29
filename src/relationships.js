@@ -863,6 +863,9 @@ Engine.relationships = {
     let moralePenaltyRaw = 0;
     const pairEventNames = [];
     const hostilePairNames = []; // M1: 敵対ペア名追跡
+    let hostilePairCount = 0; // bond-rivalry plan P-4: 同団体内 bond ≤ 30 ペア集計
+    // bond-rivalry plan P-6: W-1（憎い敵ゾーン）累計発火カウント
+    if (!state.w1FireCount) state.w1FireCount = {};
 
     // ティッカーテキストヘルパー: テンプレートプールからランダムピック＋名前差し込み
     const _pick = (pool, nameA, nameB) => {
@@ -895,12 +898,20 @@ Engine.relationships = {
           }
         }
 
+        // bond-rivalry plan P-4: 同団体内 bond ≤ 30 ペア集計
+        if (Math.min(relAB.bond, relBA.bond) <= 30) {
+          hostilePairCount++;
+        }
+
         // ── 憎い敵ゾーン（rivalry40+, bond40未満）──
         if (pairState.minRivalry >= 40 && Math.max(relAB.bond, relBA.bond) < 40) {
           moralePenaltyRaw += 0.7;
           hostilePairNames.push([left.name, right.name]); // M1
           markGrowthPressure(left.id, 1.2, 1.15);
           markGrowthPressure(right.id, 1.2, 1.15);
+          // bond-rivalry plan P-6: W-1 累計発火カウント
+          const w1Key = `${Math.min(left.id, right.id)}_${Math.max(left.id, right.id)}`;
+          state.w1FireCount[w1Key] = (state.w1FireCount[w1Key] || 0) + 1;
           if (Engine.rng.float(rng) < 0.05) {
             const clashBonus = 1 + Engine.rng.int(rng, 0, 1);
             const clashDamage = 2 + Engine.rng.int(rng, 0, 1);
@@ -1017,6 +1028,73 @@ Engine.relationships = {
         ? `（${hostilePairNames.slice(0, 2).map(p => `${p[0]}と${p[1]}`).join('、')}）`
         : '';
       events.push(`[hostile-pairs] ロッカールームの空気が重い${pairHint}`);
+    }
+
+    // bond-rivalry plan P-4: ロッカー荒廃モーダル（同団体 bond≤30 ペアが3組以上）
+    // 1シーズン1回（13週クールダウン）
+    if (hostilePairCount >= 3) {
+      const absWeek = Engine.util.absWeek(state.season, state.week);
+      const lastCrisis = state._lockerCrisisWeek || -999999;
+      if (absWeek - lastCrisis >= 13) {
+        state._lockerCrisisWeek = absWeek;
+        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 2, 0, 100);
+        orgPop = Engine.util.clamp(orgPop - 1, 0, 100);
+        if (Engine.relationships.flags && Engine.relationships.flags._enqueueModal) {
+          Engine.relationships.flags._enqueueModal(state, 'M-24', {
+            hostileCount: hostilePairCount,
+            pairs: hostilePairNames.slice(0, 3),
+            season: state.season, week: state.week,
+          });
+        }
+        events.push(`[locker-crisis] ロッカールームに不穏な空気が広がっている（険悪ペア${hostilePairCount}組）`);
+      }
+      // TODO: 5組以上 → 派閥スピンオフ（faction-system 未実装のため保留）
+    }
+
+    // bond-rivalry plan P-4: 嫌悪伝染（emotional 系の選手が親友の嫌悪を引き継ぐ、月1回）
+    {
+      const absWeek = Engine.util.absWeek(state.season, state.week);
+      if (!state._contagionLastWeek) state._contagionLastWeek = {};
+      activeRoster.forEach(carrier => {
+        if (carrier.personality !== 'emotional') return;
+        if (Engine.rng.float(rng) >= 0.25) return; // 月1回程度
+        // carrier の親友（bond ≥ 60）を検索
+        const friendIds = [];
+        Object.keys(relationships).forEach(key => {
+          if (!key.startsWith(`${carrier.id}>`)) return;
+          if ((relationships[key].bond || 0) >= 60) {
+            friendIds.push(parseInt(key.split('>')[1]));
+          }
+        });
+        if (friendIds.length === 0) return;
+        const friendId = friendIds[Engine.rng.int(rng, 0, friendIds.length - 1)];
+        // friend が誰かを bond ≤ 15 で嫌っているか
+        const enemyIds = [];
+        Object.keys(relationships).forEach(key => {
+          if (!key.startsWith(`${friendId}>`)) return;
+          const targetId = parseInt(key.split('>')[1]);
+          if (targetId === carrier.id) return; // 自分には伝染しない
+          if ((relationships[key].bond != null ? relationships[key].bond : 50) <= 15) {
+            enemyIds.push(targetId);
+          }
+        });
+        if (enemyIds.length === 0) return;
+        const enemyId = enemyIds[Engine.rng.int(rng, 0, enemyIds.length - 1)];
+        // クールダウン: 4週/(carrier, enemy)ペア
+        const ckey = `${carrier.id}>${enemyId}`;
+        if ((absWeek - (state._contagionLastWeek[ckey] || -999999)) < 4) return;
+        state._contagionLastWeek[ckey] = absWeek;
+        // carrier→enemy bond -1〜-2
+        const drop = -(1 + Engine.rng.int(rng, 0, 1));
+        const cur = relationships[ckey] || { bond: 50, rivalry: 0 };
+        const next = { ...cur, bond: this._clampAxisValue((cur.bond != null ? cur.bond : 50) + drop, 'bond') };
+        relationships[ckey] = next;
+        const enemyName = (activeRoster.find(f => f.id === enemyId) || {}).name || '';
+        const friendName = (activeRoster.find(f => f.id === friendId) || {}).name || '';
+        if (enemyName && friendName) {
+          events.push(`[contagion] ${carrier.name}は${friendName}が${enemyName}を嫌うのを見て、自分も心が冷えていくのを感じた`);
+        }
+      });
     }
     if (pairEventNames.length > 0) {
       pairEventNames.slice(0, 2).forEach(text => events.push(`[rivalry-clash] ${text}`));
@@ -3873,11 +3951,21 @@ Engine.glimpse = {
       }
 
       // GL-02: 練習中のひとこと（練習中の非負傷選手）
+      // bond-rivalry plan P-7: rivalry≥50 ∧ bond≤30 の相手がいれば hostile フレーズ優先
       if (!f.injury && (f._weekAction === 'practice' || f._weekAction === 'intensive')) {
         if (Engine.rng.float(rng) < 0.08) {
+          const hostileRel = this._findBestRelPair(f.id, state, 'rivalry', 50);
+          const hostileBondVal = hostileRel
+            ? ((state.relationships[`${f.id}>${hostileRel.targetId}`] || {}).bond != null
+                ? state.relationships[`${f.id}>${hostileRel.targetId}`].bond : 50)
+            : 100;
+          const isHostile = !!hostileRel && hostileBondVal <= 30;
+          const gl02Pool = isHostile && GLIMPSE_B_LINES['GL-02-hostile']
+            ? GLIMPSE_B_LINES['GL-02-hostile'] : GLIMPSE_B_LINES['GL-02'];
           candidates.push({ type: 'GL-02', weight: 2, fighterId: f.id,
-            fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-02'], f),
-            tone: 'calm', label: '練習中のひとこと' });
+            fighterName: f.name, dialogue: pickDialogueLine(gl02Pool, f),
+            tone: isHostile ? 'negative' : 'calm',
+            label: isHostile ? '練習中の敵意' : '練習中のひとこと' });
         }
       }
 

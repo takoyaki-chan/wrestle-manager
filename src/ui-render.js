@@ -11093,6 +11093,9 @@ function _relmapRender(orgCenters) {
       const labelY = my - 17;
       const fillColor = l.hostileLabel === '憎悪' ? '#ff7675' : '#e17055';
       lh += `<text x="${mx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="9.5" font-weight="900" fill="${fillColor}" paint-order="stroke" stroke="rgba(0,0,0,0.82)" stroke-width="2.4" opacity="${highlighted||vm==='focus'?0.95:0.7}">${l.hostileLabel}</text>`;
+      // bond-rivalry plan P-7: 険悪可視化 — 人物系の険悪アイコン（数字は出さない）
+      const hostileIcon = l.hostileLabel === '憎悪' ? '😠' : '😤';
+      lh += `<text x="${mx.toFixed(1)}" y="${(my + 5).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="12" opacity="${highlighted||vm==='focus'?0.92:0.6}">${hostileIcon}</text>`;
     }
     // One-sided icon
     if (l.isOneSided && !dimmed) {

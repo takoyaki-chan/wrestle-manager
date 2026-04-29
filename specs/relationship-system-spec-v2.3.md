@@ -1,9 +1,10 @@
 # Relationship System Spec v2.3 — Bond/Rivalry ネガティブイベント拡張
 
 策定日: 2026-04-29
-位置付け: v2.2 の追補。bond/rivalry の値が直接トリガーとなるネガティブイベントの空白地帯を埋める追加施策のうち、**先行実装が完了した項目**を確定仕様として記録する。
+更新日: 2026-04-29 (P-1 / P-3 / P-4 / P-6 / P-7 を追記)
+位置付け: v2.2 の追補。bond/rivalry の値が直接トリガーとなるネガティブイベントの空白地帯を埋める追加施策の確定仕様。
 
-未実装項目(P-1 タッグ Bond ペナルティ / P-3 興行波及 / P-4 派閥的険悪閾値 / P-6 修復チャネル / P-7 険悪可視化)は `docs/bond-rivalry-negative-events-plan-2026-04-29.md` 参照。
+§A は先行実装完了項目(W-4キャップ / P-2 / P-8 / P-9 / 1-C UI)、§D は本セッションで追加実装した項目(P-1 / P-3 / P-4 / P-6 / P-7)。
 
 ## §A 先行実装完了項目
 
@@ -75,15 +76,79 @@
 
 ## §B 検証
 
-- auto-sim 20シーズン × 5シード = 100シーズン: ALL CLEAR(2026-04-29)
-- ブラウザプレビュー: 相関図ラベル表示はユーザー手動確認
+- auto-sim 20シーズン × 5シード = 100シーズン: ALL CLEAR(2026-04-29 §A 確認時)
+- auto-sim 50シーズン: ALL CLEAR(2026-04-29 §D 追記時、違反0)
+- ブラウザプレビュー: 相関図ラベル表示・タッグ警告・社長室書類はユーザー手動確認
 
-## §C 残課題(後続実装)
+## §D 後続実装(P-1 / P-3 / P-4 / P-6 / P-7)
 
-- P-1 タッグ編成 Bond ペナルティ + 警告
-- P-3 興行波及(逓減動員 + アクシデント率)
-- P-4 派閥的険悪閾値(3組ロッカー荒廃 + 5組派閥スピンオフ + 嫌悪伝染)
-- P-6 社長室 修復チャネル決裁メニュー
-- P-7 険悪可視化(相関図人物系アイコン + 練習中セリフプール)
+### §D.1 P-1 タッグ編成 Bond ペナルティ + 警告
 
-詳細は `docs/bond-rivalry-negative-events-instructions-2026-04-29.md`。
+**仕様**:
+- ペアの bond `min(bondAB, bondBA)` ≤ 20 のとき、試合エンジンに渡す前段で fighter を複製し power/speed/technique/spirit を **各 -3**
+- 試合中の連携(cut-in 救援)を完全停止 — `calcCutinRate` で `bond ≤ 20` なら 0 を返す(自然減衰ではなくハードカット)
+- 試合後、対象ペア両者の trust **-1**
+- タッグ編成プレビューに赤色マーカー「⚠ 不仲 ${bond}」+ 警告テキスト「能力-3 / 連携不可 / 信頼-1」
+- MQ ボーナス/ペナルティは入れない(MQ排除方針継続)
+
+**実装場所**:
+- `src/app.js` simulateTagMatch 呼び出し2箇所(自動実行 / 観戦実行)
+- `src/match-engine.js` `calcCutinRate` ガード
+- `src/ui-common.js` タッグマッチプレビュー(`smc-tag-arena`)
+
+### §D.2 P-3 興行波及(逓減動員 + アクシデント率)
+
+**仕様**:
+- **動員ボーナス(逓減%)**: `pure_hatred` または `bitter_feud` ペア(rivalry ≥ 60 ∧ avg bond ≤ 30)を含むカードに対し、1枚目+5%, 2枚目+3%, 3枚目+2%, 4枚目以降+1%、上限合計 +12%
+  - シングルは `card.left/right`、タッグは敵チーム間ペアで判定
+- **アクシデント率2倍**: シングル戦で対象ペアの場合、`Engine.injury.check` の `flavorOpts.injuryMult` を 2.0 倍に上乗せ(派閥未実装のため代替条件)
+
+**実装場所**:
+- `src/management.js` `Engine.economy.calcHostileCardBonus` 新設、`calcAttendance` に加算
+- `src/management.js` 試合解決ループ内、`_hostileMatchMult` で injury check 引数に乗算
+
+### §D.3 P-4 派閥的険悪閾値 + 嫌悪伝染
+
+**仕様**:
+- **ロッカー荒廃モーダル**: 同団体内 `min(bondAB, bondBA) ≤ 30` ペアが 3 組以上で `M-24` 発火、`lockerRoomMorale -2` / `orgPop -1`、シーズン1回(13週クールダウン)
+- **5組派閥スピンオフ**: 派閥システム(faction-system-spec-v0.1)未実装のため `TODO` で保留
+- **嫌悪伝染**: personality === `'emotional'` の選手が、自分の bond ≥ 60 の親友が誰かを bond ≤ 15 で嫌っているのを目撃した場合、その対象への bond -1〜-2(月1回判定、4週クールダウン/(carrier, target)ペア)
+
+**実装場所**:
+- `src/relationships.js` `processWeeklyStoryEvents` 内、ペアループ後ブロックで集計判定 + `_enqueueModal('M-24', ...)` + 伝染パス
+- `src/ui-common.js` MODAL_TITLES に M-24 追加
+
+**注**: 指示書記載の「empathic 系」は、現行 personality 一覧(normal/bold/earnest/easygoing/emotional/quiet/shy)に存在しないため、最も近い `'emotional'` で代替。
+
+### §D.4 P-6 社長室 修復チャネル決裁メニュー
+
+**仕様**:
+- 新書類 `relationship_repair`(関係修復斡旋書) を `DECISION_DOCS` に追加
+- **対象**: W-1(rivalry ≥ 40 ∧ bond < 40)累計発火 4 回以上のペア(両者とも現役・非レンタル・非怪我)
+- **コスト**: 決裁枠 2pt、¥1,000,000、回数無制限
+- **効果**: 成功率 70%。成功時、双方向 bond +5〜+10。失敗時は据え置き(rivalry には触らない)
+- **W-1 カウンタ**: `state.w1FireCount[`${minId}_${maxId}`]` で per-pair に積算。`processWeeklyStoryEvents` の憎い敵ゾーン処理内でインクリメント
+- **新 UI**: `target: 'pair'` 書類用に `showDecisionPairModal` を新設(W-1 ≥ 4 のペア一覧から選択)
+
+**実装場所**:
+- `src/data.js` `DECISION_DOCS.relationship_repair` + `DECISION_DOC_ORDER` 追記
+- `src/management.js` `checkActivation` の `'hostile_pair_chronic'` 分岐 + `execute()` の `target: 'pair'` 分岐 + relationships 上書き反映
+- `src/ui-common.js` `showDecisionPairModal` 関数
+- `src/app.js` `openDecisionDoc` ルーティング(team / pair / individual の3分岐)
+
+### §D.5 P-7 険悪可視化(相関図アイコン + 練習中セリフプール)
+
+**仕様**:
+- **相関図アイコン**: `pure_hatred` ペアに 😠、`bitter_feud` ペアに 😤 を hostileLabel の直下に描画。数字は出さない
+- **練習中セリフプール**: 既存 GL-02 の選出時、自分が rivalry ≥ 50 ∧ bond ≤ 30 の相手を持っている場合、新規プール `GL-02-hostile` を優先選択。tone を `negative`、ラベルを「練習中の敵意」に切替
+- 7 personality(normal含む)分のフレーズを初版 5〜10 本ずつ整備
+
+**実装場所**:
+- `src/ui-render.js` リンク描画ループ内、hostileLabel 描画ブロックに icon を追加
+- `src/data.js` `GLIMPSE_B_LINES['GL-02-hostile']` 追加
+- `src/relationships.js` `Engine.glimpse.checkBLayer` の GL-02 ブロックで hostile 判定 + プール切替
+
+## §E 残課題
+
+- 派閥システム(faction-system-spec-v0.1)実装後、P-4 5組派閥スピンオフを差し戻し
+- M-24 のフラグダイアログ(personality別セリフ拡充)は後続セッション

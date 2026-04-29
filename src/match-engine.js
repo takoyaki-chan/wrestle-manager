@@ -529,6 +529,8 @@ Engine.tagMatch = (() => {
 
   // ── カットイン (§3.2.2) ──
   function calcCutinRate(type, apronFighter, bond, cutinCount) {
+    // bond-rivalry plan P-1: bond ≤ 20 不仲ペアはタッグ連携（cut-in救援）を打たない
+    if ((bond != null ? bond : 50) <= 20) return 0;
     const CC = TAG_MATCH_CONFIG.cutin;
     let base;
     if (type === 'pin') base = CC.basePinRate;

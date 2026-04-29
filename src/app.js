@@ -4789,10 +4789,27 @@ const App = {
       const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
       const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
       const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
+      // bond-rivalry plan P-1: bond ≤ 20 不仲ペアは試合中の能力 -3
+      const lowBondA = bondA <= 20;
+      const lowBondB = bondB <= 20;
+      const _penalize = (c) => ({ ...c, power: c.power - 3, speed: c.speed - 3, technique: c.technique - 3, spirit: c.spirit - 3 });
+      const f1p = lowBondA ? _penalize(f1) : f1;
+      const f2p = lowBondA ? _penalize(f2) : f2;
+      const f3p = lowBondB ? _penalize(f3) : f3;
+      const f4p = lowBondB ? _penalize(f4) : f4;
       sp.results[idx] = Engine.tagMatch.simulateTagMatch(
-        { fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 },
-        tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB }
+        { fighter1: f1p, fighter2: f2p }, { fighter1: f3p, fighter2: f4p },
+        tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB, lowBondA, lowBondB }
       );
+      // P-1: 試合後 trust -1（不仲ペア両者）
+      if (lowBondA || lowBondB) {
+        const lowIds = [];
+        if (lowBondA) lowIds.push(f1.id, f2.id);
+        if (lowBondB) lowIds.push(f3.id, f4.id);
+        G.roster = G.roster.map(c => lowIds.includes(c.id)
+          ? { ...c, trust: Math.max(0, (c.trust != null ? c.trust : 50) - 1) }
+          : c);
+      }
       try { Audio.play('tick'); } catch(e) {}
       App._afterMatchSettle(idx, { skipFlavor: true });
       return;
@@ -4910,10 +4927,27 @@ const App = {
     const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
     const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
     const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
+    // bond-rivalry plan P-1: bond ≤ 20 不仲ペアは試合中の能力 -3
+    const lowBondA = bondA <= 20;
+    const lowBondB = bondB <= 20;
+    const _penalize = (c) => ({ ...c, power: c.power - 3, speed: c.speed - 3, technique: c.technique - 3, spirit: c.spirit - 3 });
+    const f1p = lowBondA ? _penalize(f1) : f1;
+    const f2p = lowBondA ? _penalize(f2) : f2;
+    const f3p = lowBondB ? _penalize(f3) : f3;
+    const f4p = lowBondB ? _penalize(f4) : f4;
     const result = Engine.tagMatch.simulateTagMatch(
-      { fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 },
-      tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB, recordFrames: true }
+      { fighter1: f1p, fighter2: f2p }, { fighter1: f3p, fighter2: f4p },
+      tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB, recordFrames: true, lowBondA, lowBondB }
     );
+    // P-1: 試合後 trust -1（不仲ペア両者）
+    if (lowBondA || lowBondB) {
+      const lowIds = [];
+      if (lowBondA) lowIds.push(f1.id, f2.id);
+      if (lowBondB) lowIds.push(f3.id, f4.id);
+      G.roster = G.roster.map(c => lowIds.includes(c.id)
+        ? { ...c, trust: Math.max(0, (c.trust != null ? c.trust : 50) - 1) }
+        : c);
+    }
     sp.results[idx] = result;
     sp.currentWatching = idx;
     // BGM: 通常 battle
@@ -8874,9 +8908,11 @@ const App = {
       showToast(`資金が不足しています(必要: ${actualCost}万)`);
       return;
     }
-    // 個人書類 / 団体書類 で分岐
+    // 個人書類 / 団体書類 / ペア書類 で分岐
     if (doc.effect && doc.effect.target === 'team') {
       showDecisionConfirmModal(docId, G);
+    } else if (doc.effect && doc.effect.target === 'pair') {
+      showDecisionPairModal(docId, G);
     } else {
       showDecisionTargetModal(docId, G);
     }

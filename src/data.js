@@ -12727,7 +12727,7 @@ const NOTIF_DIALOGUES = {
 // DECISION_DOCS.encourage の定義自体は Engine.shachoshitsu.execute で再利用される。
 const DECISION_DOC_ORDER = [
   'bonus', 'refresh_leave', 'special_treatment', 'party',
-  'trainer', 'camp', 'media',
+  'trainer', 'camp', 'media', 'relationship_repair',
 ];
 
 const DECISION_DOCS = {
@@ -12870,6 +12870,25 @@ const DECISION_DOCS = {
     effectSummary: '選手人気が上がる + 団体人気も上がる + 体調が整う + 信頼も上がる',
     recommendation: '団体人気がある程度育ってから解禁される書類。看板選手の体調管理と兼ねて回すと無駄がない。選手の人気を直接押し上げたい時にも有効。',
     effect: { target: 'individual', trust: 5.36, condition: 5, orgPopDelta: 0.4, popGainMin: 6, popGainMax: 8 },
+  },
+  // bond-rivalry plan P-6: 慢性的険悪ペア（W-1 累計4回以上）の関係修復。
+  // ペア指定型のため target: 'pair'。回数無制限。
+  relationship_repair: {
+    id: 'relationship_repair',
+    label: '関係修復斡旋書',
+    category: 'care',
+    categoryLabel: '選手ケア',
+    icon: '🤝',
+    cost: 100,
+    decisionCost: 2,
+    activationCondition: 'hostile_pair_chronic',
+    minOrgPop: 0,
+    cooldown: 0,
+    body: '長期的な険悪関係にあるペアの間に立ち、関係改善を図る',
+    detailText: '勝負の世界では険悪な関係も時に武器になる。だが限度を超えると組織全体を蝕む。社長が間に立ち、最悪の事態を避ける。成功率は約70%。失敗しても関係はそのまま。',
+    effectSummary: '成功時、双方向 bond +5〜+10。失敗時は据え置き。',
+    recommendation: 'W-1（憎い敵ゾーン）が累計4回以上発火したペアに対して使用できる。慢性化する前に手を打てば、亀裂が修復可能になることもある。',
+    effect: { target: 'pair', bondDelta: [5, 10], successRate: 0.70 },
   },
   // hireCoach は机に並ばず、コーチ画面からの実行時に決裁枠だけをチェック/消費する特殊書類。
   // Phase 5 でコーチ画面と統合予定。
@@ -20406,6 +20425,50 @@ GLIMPSE_B_LINES['GL-02'] = {
     _default: ['一つ一つの練習を大切に。基礎が全ての土台だ', '今日のメニューも全力でこなす。手は抜かない'],
     polite: ['基本を怠らず、しっかり取り組みます'],
     composed: ['…一つずつ、着実に'],
+  },
+};
+
+// bond-rivalry plan P-7: 険悪ペア持ちの選手が練習中に出す敵意フレーズ（rivalry≥50 ∧ bond≤30）
+GLIMPSE_B_LINES['GL-02-hostile'] = {
+  normal: {
+    _default: [
+      'あいつのことを考えると、練習に身が入らない…',
+      '次に当たったとき…絶対に見てろよ',
+      'なんであいつが同じ場所にいるんだ。意味わからん',
+      '…練習中に思い出すな。腹が立って仕方ない',
+      'こっちがどれだけ頑張っても、あいつのことが頭から離れない',
+    ],
+    ojousama: [
+      'あの方と同じ空間にいるだけで、集中が乱れますわ…',
+      '…今日もあの顔が頭をよぎった。本当に、困ります',
+    ],
+    delinquent: [
+      '次は絶対やってやる。絶対に…！',
+      'あいつのことばっか考えてたら、バーベル落としそうになった',
+    ],
+    seductive: [
+      '…あら、また考えてしまった。ま、それが原動力になるなら悪くないけど'],
+    polite: ['私情を持ち込むな、と自分に言い聞かせているが…難しい'],
+    cool: ['……集中を乱す存在がいる。気に入らない'],
+    composed: ['…あの子のせいで、今日の調子は最悪だった'],
+  },
+  bold: {
+    _default: ['次は絶対やってやる。燃えてきた！', 'あいつがいる限り、手を抜けるわけがない'],
+  },
+  quiet: {
+    _default: ['……（道具に八つ当たりしている）', '……（黙々とやっているが、目が怖い）'],
+  },
+  emotional: {
+    _default: ['悔しい…！あいつの顔を見たくない…！', 'なんで…なんであいつのことが頭から消えないの…！'],
+  },
+  earnest: {
+    _default: ['私情を持ち込むな、と自分に言い聞かせているが…難しい', '集中できていない自分が、情けない…'],
+  },
+  easygoing: {
+    _default: ['うーん…なんか気になっちゃうなあ、あの子のこと', 'あいつのこと考えると力入っちゃうわ。まあいっか'],
+  },
+  shy: {
+    _default: ['怖い…でも…負けたくない…', 'あの子がいると思うと、うまく練習できなくて…'],
   },
 };
 
