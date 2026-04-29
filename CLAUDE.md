@@ -149,6 +149,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | promo-system-spec-v1.0.md | プロモ活動(人気成長/収入/MQスタック) |
 | relationship-system-spec-v2.0.md | Bond/Rivalry(非対称2軸/試合影響/因縁称号) |
 | relationship-system-spec-v2.2.md | 離脱・裏切りイベント(A-1〜A-4 サーチャージ/B-3 元同僚初対戦/奪還挑戦) |
+| relationship-system-spec-v2.3.md | bond/rivalry ネガティブ拡張先行実装(W-4 生涯1回キャップ/GL-11 coldness/P-8 Cold Severance/GL-12 ナレーション/相関図極端ラベル) |
 | rental-system-spec-v2.0.md | レンタル移籍(費用/制約/帰団処理) |
 | rival-org-spec-v1.0.md | AI団体の行動ロジック |
 | scout-system-spec-v1.0.md | スカウト/新人獲得 |

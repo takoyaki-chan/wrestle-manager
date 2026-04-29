@@ -712,11 +712,11 @@ const ENG = {
   counterBase: 4, counterTecScale: 0.055, counterSpdPenalty: 0.07, counterMin: 2, counterMax: 22,
   counterDmgMult: 0.6, counterMomShift: 18,
   dmgPwrScale: 0.20, dmgTecScale: 0.08, dmgSpdScale: 0.08,
-  defStaScale: 0.02, defMntScale: 0.055, momDmgScale: 0.001,
+  defStaScale: 0.02, defMntScale: 0.055, momDmgScale: 0.0003,
   dmgRandMin: 0.85, dmgRandRange: 0.30, dmgFloor: 3,
   gritDuration: 2, gritDmgReduction: 0.20, gritCounterBonus: 8,
   pinAttemptHpThreshold: 0.35, pinAttemptMinDmg: 9, pinAttemptBaseRate: 36,
-  pinAttemptMomBonus: 0.03, pinAttemptMntPenalty: 0.20,
+  pinAttemptMomBonus: 0.015, pinAttemptMntPenalty: 0.20,
   pinAttemptSuccessBase: 23, pinAttemptClimax: 22,
   pinLowHpAttemptScale: 200, pinLowHpSuccessScale: 100,
   finishWeights: {
@@ -20180,6 +20180,51 @@ const GLIMPSE_B_LINES = {
         '復帰に向けて、今できることを精一杯やります'
       ]
     }
+  },
+  // bond-rivalry plan 2026-04-29: P-2 中間嫌悪帯（coldness）
+  // 発火: bond ≤ 25 ∧ rivalry < 30（無関心寄りの冷たさ、敵意ではない）
+  'GL-11': {
+    normal: {
+      _default: [
+        'あの子のこと？……特に何も。視界に入れてないだけ',
+        '同じ場にいても、話すことは何もないかな'
+      ],
+      ojousama: [
+        '存じ上げてはおりますけれど、関心はございません',
+      ],
+      delinquent: [
+        'あー、いるな。それで?……別に',
+      ],
+      seductive: [
+        'いたわね、そういえば。……それだけよ',
+      ],
+      polite: [
+        'お見かけはしますが……特にお話することは',
+      ],
+      cool: [
+        '……認識の外。それだけ',
+      ],
+      composed: [
+        'あの子は、わたくしの中にはいないの。それだけのことよ',
+      ]
+    },
+    quiet: {
+      _default: [
+        '……（視線は合わせない）',
+      ]
+    }
+  },
+  // bond-rivalry plan 2026-04-29: P-9 ナレーション型グリンプス
+  // 発火: bond ≤ 15 ペアが同興行出場時、月1回程度
+  // 形式: 第三者視点（記者/解説者）のナレーション、{nameA} {nameB} 置換
+  'GL-12': {
+    _narration: [
+      '{nameA}と{nameB}は、控え室で一度も目を合わせなかったという',
+      'インタビュー後、{nameA}は{nameB}の名前を口にしなかった',
+      'リング上ですれ違った瞬間、空気が凍ったように見えた',
+      '{nameA}と{nameB}が同じ廊下に居合わせたとき、誰もが息を潜めたという',
+      '{nameB}の話題が出ても、{nameA}は表情ひとつ変えなかった'
+    ]
   }
 };
 

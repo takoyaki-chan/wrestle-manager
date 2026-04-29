@@ -950,8 +950,19 @@ Engine.relationships = {
           }
         }
 
+        // ── 完全断絶（Cold Severance）: bond ≤ 10 ∧ rivalry < 30 ──
+        // bond-rivalry plan 2026-04-29 P-8: 無関心の極地、月1回程度 trust −0.5
+        // 方向別判定: left→right と right→left を独立に見る
+        if (relAB.bond <= 10 && relAB.rivalry < 30 && Engine.rng.float(rng) < 0.25) {
+          applyTrustDelta(left.id, -0.5);
+        }
+        if (relBA.bond <= 10 && relBA.rivalry < 30 && Engine.rng.float(rng) < 0.25) {
+          applyTrustDelta(right.id, -0.5);
+        }
+
         // ── クロス非対称 覚醒イベント（A:高riv低bond / B:低riv高bond → Bキレ）──
-        if (relAB.rivalry >= 50 && relAB.bond <= 30 && relBA.rivalry < 20 && relBA.bond >= 60) {
+        // bond-rivalry plan 2026-04-29: キャラ生涯1回キャップ（_awakened フラグ）
+        if (relAB.rivalry >= 50 && relAB.bond <= 30 && relBA.rivalry < 20 && relBA.bond >= 60 && !right._awakened) {
           if (Engine.rng.float(rng) < 0.015) {
             // 覚醒: B→A rivalry大幅上昇, bond低下
             const awakeRiv = 15 + Engine.rng.int(rng, 0, 5);
@@ -960,13 +971,14 @@ Engine.relationships = {
             boostedBA.rivalry = this._clampAxisValue((boostedBA.rivalry || 0) + awakeRiv, 'rivalry');
             boostedBA.bond = this._clampAxisValue((boostedBA.bond || 50) + awakeBondDrop, 'bond');
             relationships[keyBA] = boostedBA;
+            updateFighter(right.id, fighter => ({ ...fighter, _awakened: true }));
             // right=B(覚醒する側)のpersonality×archetypeでセリフ選出
             const awPool1 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, right);
             const awTpl1 = awPool1[Engine.rng.int(rng, 0, awPool1.length - 1)];
             events.push(`[awakening] ${awTpl1.replace(/\{nameA\}/g, left.name).replace(/\{nameB\}/g, right.name)}`);
           }
         }
-        if (relBA.rivalry >= 50 && relBA.bond <= 30 && relAB.rivalry < 20 && relAB.bond >= 60) {
+        if (relBA.rivalry >= 50 && relBA.bond <= 30 && relAB.rivalry < 20 && relAB.bond >= 60 && !left._awakened) {
           if (Engine.rng.float(rng) < 0.015) {
             const awakeRiv = 15 + Engine.rng.int(rng, 0, 5);
             const awakeBondDrop = -(10 + Engine.rng.int(rng, 0, 5));
@@ -974,6 +986,7 @@ Engine.relationships = {
             boostedAB.rivalry = this._clampAxisValue((boostedAB.rivalry || 0) + awakeRiv, 'rivalry');
             boostedAB.bond = this._clampAxisValue((boostedAB.bond || 50) + awakeBondDrop, 'bond');
             relationships[keyAB] = boostedAB;
+            updateFighter(left.id, fighter => ({ ...fighter, _awakened: true }));
             // left=B(覚醒する側)のpersonality×archetypeでセリフ選出
             const awPool2 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, left);
             const awTpl2 = awPool2[Engine.rng.int(rng, 0, awPool2.length - 1)];
@@ -3955,7 +3968,82 @@ Engine.glimpse = {
             tone: 'negative', label: '怪我中の焦り' });
         }
       }
+
+      // bond-rivalry plan 2026-04-29 P-2: 中間嫌悪帯（coldness）
+      // bond ≤ 25 ∧ rivalry < 30 のペアに対して「冷淡」スナップショット
+      // 月1回上限（4週クールダウン kept by 既存 cdKey "B_${f.id}"）
+      if (state.relationships) {
+        const rels = state.relationships;
+        const coldCandidates = [];
+        Object.keys(rels).forEach(key => {
+          if (!key.startsWith(`${f.id}>`)) return;
+          const rel = rels[key];
+          const bond = rel.bond != null ? rel.bond : 50;
+          const rivalry = rel.rivalry || 0;
+          if (bond <= 25 && rivalry < 30) {
+            const targetId = parseInt(key.split('>')[1]);
+            coldCandidates.push({ targetId, bond });
+          }
+        });
+        if (coldCandidates.length > 0 && Engine.rng.float(rng) < 0.06) {
+          coldCandidates.sort((a, b) => a.bond - b.bond);
+          const pick = coldCandidates[0];
+          const target = roster.find(c => c.id === pick.targetId) || allAIChars.find(c => c.id === pick.targetId);
+          if (target) {
+            candidates.push({ type: 'GL-11', weight: 2, fighterId: f.id,
+              fighterName: f.name, fighter2Id: pick.targetId, fighter2Name: target.name,
+              dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-11'], f),
+              tone: 'negative', label: '冷たい距離' });
+          }
+        }
+      }
     });
+
+    // bond-rivalry plan 2026-04-29 P-9: ナレーション型グリンプス
+    // bond ≤ 15 ペアが同興行に出場した週、月1回程度発火
+    // 第三者視点ナレーション（{nameA}/{nameB} 置換）
+    const narrationParticipated = new Set();
+    (state.lastShowResults || []).forEach(r => {
+      if (r.matchType === 'tag') { Object.keys(r.perFighter || {}).forEach(id => narrationParticipated.add(Number(id))); }
+      else if (r.left && r.right) { narrationParticipated.add(r.left.id); narrationParticipated.add(r.right.id); }
+    });
+    if (state.relationships && narrationParticipated.size >= 2) {
+      const narrationPairs = [];
+      const seen = new Set();
+      const participatedIds = Array.from(narrationParticipated);
+      for (let i = 0; i < participatedIds.length; i++) {
+        for (let j = i + 1; j < participatedIds.length; j++) {
+          const idA = participatedIds[i];
+          const idB = participatedIds[j];
+          const pairKey = idA < idB ? `${idA}|${idB}` : `${idB}|${idA}`;
+          if (seen.has(pairKey)) continue;
+          seen.add(pairKey);
+          const relAB = state.relationships[`${idA}>${idB}`];
+          const relBA = state.relationships[`${idB}>${idA}`];
+          if (!relAB || !relBA) continue;
+          const minBond = Math.min(relAB.bond != null ? relAB.bond : 50, relBA.bond != null ? relBA.bond : 50);
+          if (minBond <= 15) {
+            narrationPairs.push({ idA, idB, minBond });
+          }
+        }
+      }
+      if (narrationPairs.length > 0 && Engine.rng.float(rng) < 0.25) {
+        narrationPairs.sort((a, b) => a.minBond - b.minBond);
+        const pick = narrationPairs[0];
+        const fA = roster.find(c => c.id === pick.idA) || allAIChars.find(c => c.id === pick.idA);
+        const fB = roster.find(c => c.id === pick.idB) || allAIChars.find(c => c.id === pick.idB);
+        if (fA && fB) {
+          const pool = (GLIMPSE_B_LINES['GL-12'] && GLIMPSE_B_LINES['GL-12']._narration) || [];
+          if (pool.length > 0) {
+            const tpl = pool[Engine.rng.int(rng, 0, pool.length - 1)];
+            const text = tpl.replace(/\{nameA\}/g, fA.name).replace(/\{nameB\}/g, fB.name);
+            candidates.push({ type: 'GL-12', weight: 1, fighterId: fA.id,
+              fighterName: fA.name, fighter2Id: fB.id, fighter2Name: fB.name,
+              dialogue: text, tone: 'narration', label: '第三者の証言' });
+          }
+        }
+      }
+    }
 
     // ── 抽選: guaranteed は確定、残りから重み付き最大2件 ──
     const guaranteed = candidates.filter(c => c.guaranteed);

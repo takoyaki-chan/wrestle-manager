@@ -9898,6 +9898,16 @@ function _relmapBuildLinks(allChars) {
 
     if (sortScore < 3 && !hasPast) return;
 
+    // bond-rivalry plan 2026-04-29 1-C: 極端ペアの日本語ラベル
+    // pure_hatred (rivalry≥80 ∧ bond≤30): 憎悪 / bitter_feud (rivalry≥60 ∧ bond≤30): 因縁
+    const _avgBond = (bondAB + bondBA) / 2;
+    const _maxRiv = Math.max(rivAB, rivBA);
+    let hostileLabel = null;
+    if (_avgBond <= 30) {
+      if (_maxRiv >= 80) hostileLabel = '憎悪';
+      else if (_maxRiv >= 60) hostileLabel = '因縁';
+    }
+
     links.push({
       a: a.id, b: b.id, source: a.id, target: b.id,
       bondAB, bondBA, rivAB, rivBA,
@@ -9906,6 +9916,7 @@ function _relmapBuildLinks(allChars) {
       rivalTitle: hasTitle && rivalLvl ? rivalLvl.label : null,
       titleColor: hasTitle && rivalLvl ? rivalLvl.color : null,
       titleEmoji: hasTitle && rivalLvl ? rivalLvl.emoji : null,
+      hostileLabel,
     });
   });
 
@@ -11076,6 +11087,12 @@ function _relmapRender(orgCenters) {
       const labelY = my - 17;
       const label = `${l.titleEmoji || ''} ${l.rivalTitle}`;
       lh += `<text x="${mx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="10" font-weight="900" fill="#ffd36a" paint-order="stroke" stroke="rgba(0,0,0,0.82)" stroke-width="2.4" opacity="${highlighted||vm==='focus'?0.98:0.78}">${_escapeHtml(label)}</text>`;
+    }
+    // bond-rivalry plan 2026-04-29 1-C: 極端ペアの hostile ラベル（rivalTitle が無い時のみ）
+    else if (l.hostileLabel && !dimmed) {
+      const labelY = my - 17;
+      const fillColor = l.hostileLabel === '憎悪' ? '#ff7675' : '#e17055';
+      lh += `<text x="${mx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="9.5" font-weight="900" fill="${fillColor}" paint-order="stroke" stroke="rgba(0,0,0,0.82)" stroke-width="2.4" opacity="${highlighted||vm==='focus'?0.95:0.7}">${l.hostileLabel}</text>`;
     }
     // One-sided icon
     if (l.isOneSided && !dimmed) {
