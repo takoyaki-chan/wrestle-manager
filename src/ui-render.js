@@ -5824,6 +5824,26 @@ function _npOrgEmblem(state, orgId, size = 18) {
   if (!path) return '';
   return `<img src="${path}" width="${size}" height="${size}" style="vertical-align:middle;border-radius:2px" alt="" loading="lazy">`;
 }
+/**
+ * h2h ペアの「○年来の関係」用の年数を計算。
+ * history[0].s（初対戦シーズン）から G.season までの差分。最低1年、最大はキャリア年数の現実的上限。
+ * 旧実装は対戦数を年数に換算していたため100試合で25年など破綻していた。
+ */
+function _npH2HYearsApprox(h2h, state) {
+  if (!h2h) return 1;
+  const curSeason = state.season || 1;
+  let firstSeason = curSeason;
+  if (h2h.history && h2h.history.length > 0 && typeof h2h.history[0].s === 'number') {
+    firstSeason = h2h.history[0].s;
+  } else if (h2h.lastMatch && typeof h2h.lastMatch.season === 'number') {
+    // history が無い場合のフォールバック（最後の対戦時季しか分からない）
+    firstSeason = h2h.lastMatch.season;
+  }
+  const diff = Math.max(0, curSeason - firstSeason);
+  // 1〜12 年の範囲にクランプ（現実的な選手キャリア内）
+  return Math.max(1, Math.min(12, diff + 1));
+}
+
 function _npComputeWarRecord(state, rivalOrgId) {
   // h2h を全件走査し、player vs 指定AI団体 の対戦集計
   // 通算は「対抗戦・PPV・挑戦状」の団体間ガチンコ試合のみ。通常興行(show)は除外
@@ -6702,7 +6722,7 @@ function _npRenderPage3() {
     mutual_respect: 'リングの上での敬意', cold_rivalry: '静かな確執', casual_rivalry: '日々のリング上で',
   };
   const _hd_h2h = featured.h2h || {};
-  const yearsApprox = _hd_h2h.lastMatch ? Math.max(1, (G.season || 1) - (_hd_h2h.lastMatch.season || 1) + Math.ceil((_hd_h2h.matches || 0) / 4)) : 1;
+  const yearsApprox = _npH2HYearsApprox(_hd_h2h, G);
   let dynHeadline = '';
   if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[featured.tag] && KURODA_RELATION_NARRATIVE[featured.tag].headlines) {
     const pool = KURODA_RELATION_NARRATIVE[featured.tag].headlines;
@@ -6889,7 +6909,7 @@ function _npRenderPage3() {
         if (pool.length > 0) {
           const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, r.idA, r.idB, 0xC1B2));
           const fn = Engine.rng.pick(rng, pool);
-          const yrs = r.h2h.lastMatch ? Math.max(1, (G.season || 1) - (r.h2h.lastMatch.season || 1) + Math.ceil((r.h2h.matches || 0) / 4)) : 1;
+          const yrs = _npH2HYearsApprox(r.h2h, G);
           try { summary = fn({ aName: r.charA.name, bName: r.charB.name, charA: r.charA.name, charB: r.charB.name, aOrg: _findFighterOrgName(G, r.idA), bOrg: _findFighterOrgName(G, r.idB), matches: r.h2h.matches || 0, bestMQ: r.h2h.bestMQ || 0, years: yrs, wA: r.h2h.winsA || 0, wB: r.h2h.winsB || 0 }); } catch(e) {}
         }
       }
