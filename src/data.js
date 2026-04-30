@@ -697,7 +697,7 @@ Brawler:{strike:30,throw:25,submission:5,aerial:5,ground:20,rollup:5}
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 3: ENGINE CONFIG (v4.1b tuneB)                  ║
 // ╚══════════════════════════════════════════════════════════╝
-const MAX_T = 20;
+const MAX_T = 16;
 const PHASES = [
   {name:'Opening',min:1,max:4,mult:0.9,sCh:20,counterBonus:0},
   {name:'Mid',min:5,max:8,mult:1.05,sCh:40,counterBonus:3},
@@ -705,18 +705,18 @@ const PHASES = [
   {name:'Climax',min:13,max:20,mult:1.4,sCh:70,counterBonus:8}
 ];
 const ENG = {
-  hpBase: 50, hpScale: 0.90,
+  hpBase: 100, hpScale: 1.80,
   effPivot: 100, effSlopeAfterPivot: 1.0,
   hitBase: {1:97,2:97,3:96,4:94,5:92,6:89,7:86,8:84,9:81,10:78,11:76,12:74,13:72,14:70,15:68,16:66},
   tecHitBonus: 0.17, spdDodgeBonus: 0.18, hitMin: 42, hitMax: 98,
-  counterBase: 4, counterTecScale: 0.055, counterSpdPenalty: 0.07, counterMin: 2, counterMax: 22,
+  counterBase: 3, counterTecScale: 0.055, counterSpdPenalty: 0.07, counterMin: 2, counterMax: 18,
   counterDmgMult: 0.6, counterMomShift: 18,
-  dmgPwrScale: 0.20, dmgTecScale: 0.08, dmgSpdScale: 0.08,
-  defStaScale: 0.02, defMntScale: 0.055, momDmgScale: 0.0003,
+  dmgPwrScale: 0.27, dmgTecScale: 0.115, dmgSpdScale: 0.115,
+  defStaScale: 0.025, defMntScale: 0.06, momDmgScale: 0.001,
   dmgRandMin: 0.90, dmgRandRange: 0.20, dmgFloor: 3,
   gritDuration: 2, gritDmgReduction: 0.20, gritCounterBonus: 8,
   pinAttemptHpThreshold: 0.35, pinAttemptMinDmg: 9, pinAttemptBaseRate: 36,
-  pinAttemptMomBonus: 0.015, pinAttemptMntPenalty: 0.20,
+  pinAttemptMomBonus: 0.03, pinAttemptMntPenalty: 0.20,
   pinAttemptSuccessBase: 23, pinAttemptClimax: 22,
   pinLowHpAttemptScale: 200, pinLowHpSuccessScale: 100,
   finishWeights: {
@@ -731,7 +731,7 @@ const ENG = {
   kickoutMnScale: 0.50, kickoutMax: 2, kickoutClimaxMult: 0.7,
   guEscapeMnScale: 0.45, guEscapeMax: 2,
   tkoConsecutiveThreshold: 3, tkoHpThreshold: 0.15, tkoBaseRate: 14,
-  rollupHpThreshold: 0.35, rollupTecBonus: 0.18, rollupBaseSuccess: 16
+  rollupHpThreshold: 0.35, rollupTecBonus: 0.18, rollupBaseSuccess: 10
 };
 
 // ── Tier 2: ビッグマッチ用パラメータ（PPV/タイトル/対抗戦/トーナメント）──
@@ -744,9 +744,9 @@ const BIGMATCH_PHASES = [
 ];
 const BIGMATCH_ENG = {
   ...ENG,
-  hpBase: 85,
-  hpScale: 1.10,
-  rollupBaseSuccess: 11,
+  hpBase: 170,
+  hpScale: 2.20,
+  rollupBaseSuccess: 10,
   rollupHpThreshold: 0.25,
   pinAttemptHpThreshold: 0.25,
   pinAttemptSuccessBase: 14,

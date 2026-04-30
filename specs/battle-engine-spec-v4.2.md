@@ -19,6 +19,8 @@
 | v4.2 | 2026-04-05 | **tuneC**：HP計算式変更(hpBase+hpScale×STA)。ダメージ係数再調整(PWR↑/STA防御↓/SPD全技化)。effSlopeAfterPivot=1.0(逓減無効化)。Big Match Tier 2追加(24ターン/4フェーズ)。MQ v3.0統合(外部MQソース整理/CAP 12/ペーシング「長すぎ」撤廃)。決着重み修正(非submission技のgu=0統一) |
 | v4.3 | 2026-04-29 | **モメンタム実効効果の縮小**：`leftChance` の `mom × 0.3 → 0.05`、`momDmgScale: 0.003 → 0.001`、`pinAttemptMomBonus: 0.15 → 0.03`。ゲージの動き方（ヒット±8/ミス±5/カウンター±18）は据え置き。「序盤の流れだけで試合が決まる」「先攻不利」現象を緩和。詳細は `plans/momentum-effect-reduction-plan.md`。 |
 | v4.3b | 2026-04-29 | **モメンタム係数追加縮小＋ダメージ乱数幅縮小**：`leftChance` 係数 `0.05 → 0.03`、`momDmgScale: 0.001 → 0.0003`、`pinAttemptMomBonus: 0.03 → 0.015`（各原値の1/10）。`dmgRandMin: 0.85 → 0.90`、`dmgRandRange: 0.30 → 0.20`（平均ダメージ1.00倍維持、乱数幅を±15%→±10%に縮小）。 |
+| v5.0 | 2026-04-30 | **試合システム全面再調整**：①モメンタム実効効果縮小（`leftChance` mom係数 0.3→0.05、`atkRoll`(タッグ) も同係数化、`momDmgScale: 0.003→0.001`、`pinAttemptMomBonus: 0.15→0.03`）②HP×2.0延長(シングルのみ、`hpBase: 50→100/hpScale: 0.90→1.80`、ビッグ `85→170/1.10→2.20`)③通常`MAX_T: 20→16`(ビッグ24据置)④能力値ダメージ・防御強化(`dmgPwrScale: 0.20→0.24`、`dmgTec/SpdScale: 0.08→0.10`、`defStaScale: 0.02→0.03`、`defMntScale: 0.055→0.06`)⑤番狂わせ機構抑制(`counterBase: 4→3`、`counterMax: 22→18`、`rollupBaseSuccess: 16→10/11→10`)⑥**M1 OVR比ダメージ補正**: `calcDamage` 後に `ovrMult = (atkOvr/defOvr)^0.50` を乗算。シングル/タッグ/タッグ式合体技すべてに適用⑦**popularity反映**: シングルのみ。`leftChance` に `popAdv × 6 × tierMult`、ダメージに `1 - popAdv × 0.06 × tierMult`、`calcKickoutChance/calcGuEscapeChance` に `popAdv × 0.07 × tierMult` を加算（`popAdv = (def.popularity - atk.popularity) / 100`、`tierMult = tier>=2 ? 2.0 : 1.0`）。タッグはpopularity反映なし。詳細は `plans/match-system-v5-rebalance-plan.md`。 |
+| v5.1 | 2026-04-30 | **能力値バランス調整 — パターンB（試合開始時ボーナス）導入**：①`dmgPwrScale: 0.24→0.27`、`dmgTec/SpdScale: 0.10→0.115` で能力値スケールを微増 ②`defStaScale: 0.03→0.025` で ST の防御寄与を僅かに抑制 ③**MN 終盤粘り** — End フェーズで `dmg *= 1 - max(0,(def.mn-50)/100) × 0.08`、Climax で `× 0.12`（シングル・タッグ両方適用） ④**TE/SP 試合開始時ボーナス** — シングルのみ。試合開始時 `mom += (teGap+spGap) × 10`、先攻3ターン命中率 `±(teGap+spGap) × 15`（`teGap=(L.te-R.te)/100`、`spGap=(L.sp-R.sp)/100`） ⑤**PW 試合開始時ボーナス** — シングルのみ。試合開始時 `mom += pwGap × 8`、先攻3ターン PW優位側が攻撃時 相手カウンター率 `-pwGap × 10`。狙い: SP/TE の毎ターン積算効果が試合長依存で薄れる問題を「最初から一定数」のドラマ的バフで補完、PW を 4能力中の最下位から脱却させる。 |
 
 ---
 
@@ -68,7 +70,7 @@ v3.5の統計分析で以下の課題が判明し、v4.0で対処した。
 
 | リソース | 算出 | 値域 | 役割 |
 |---------|------|------|------|
-| HP | hpBase + STA × hpScale（Tier1: 50+STA×0.90 / Tier2: 85+STA×1.10） | 0〜maxHP | 体力。0以下で決着判定突入 |
+| HP | hpBase + STA × hpScale（Tier1: 100+STA×1.80 / Tier2: 170+STA×2.20、v5.0で×2.0延長） | 0〜maxHP | 体力。0以下で決着判定突入 |
 | モメンタム | 初期値0 | -100〜+100 | 試合の流れ。正=左有利、負=右有利 |
 | 粘りバフ(Grit) | キックアウト/脱出時に付与 | 0〜2ターン | 被ダメ-20%、カウンター率+10% |
 | 連続被弾カウンタ | 攻撃側ごと | 0〜∞ | TKO判定に使用 |
@@ -134,10 +136,14 @@ function eff(x){
 ## 3. 行動順決定
 
 ```javascript
-leftChance = 50 + (momentum × 0.05)
+// v5.0: popAdv (人気優位度) を追加
+leftChance = 50 + (momentum × 0.05) + (popAdv × 6 × tierMult)
+// popAdv = (L.popularity - R.popularity) / 100
+// tierMult = tier >= 2 ? 2.0 : 1.0
 ```
 
-モメンタムが攻撃機会に僅かに影響する（v4.3で 0.3→0.05 に縮小）。±50時で攻撃機会±2.5%。SPD項は仕様書に記載あるが現状の実装では未反映。
+モメンタムが攻撃機会に僅かに影響する（v4.3で 0.3→0.05 に縮小）。±50時で攻撃機会±2.5%。
+v5.0で popularity 優位度が攻撃機会に反映されるようになった（通常×1.0/ビッグ×2.0）。SPD項は仕様書に記載あるが現状の実装では未反映、clamp(20,80) も実装には存在しない。
 
 ---
 
@@ -251,27 +257,36 @@ momentum += 18  // 防御側方向に大きく反転
 ### 7.1 計算式
 
 ```javascript
-// 攻撃値
+// 攻撃値（v5.1: スケール微増）
 base = move.d
-     + (eff(atk.pw) × 0.20)     // PWR: v4.2で0.12→0.20に上方修正
-     + (eff(atk.te) × 0.08)     // TEC: v4.2で0.10→0.08に下方修正
-     + (eff(atk.sp) × 0.08)     // SPD: v4.2で全技に適用（旧:飛び技のみ0.03）
+     + (eff(atk.pw) × 0.27)     // PWR: v5.1で0.24→0.27
+     + (eff(atk.te) × 0.115)    // TEC: v5.1で0.10→0.115
+     + (eff(atk.sp) × 0.115)    // SPD: v5.1で0.10→0.115
 
-// 防御値
-defense = (eff(def.st) × 0.02)   // STA: v4.2で0.08→0.02に大幅下方修正
-        + (def.mn × 0.055)  // MNT: 据え置き（v4.0で0.035→0.055に上方修正済み）
+// 防御値（v5.1: ST抑制）
+defense = (eff(def.st) × 0.025)  // STA: v5.1で0.03→0.025
+        + (def.mn × 0.06)        // MNT: v5.0で0.055→0.06
 
 // モメンタム補正
 mMod = 1.0 + (momentum_advantage × 0.001)   // v4.3: ±50時で±5%
 
 // 乱数幅
-rF = 0.90 + (random × 0.20)  // 0.90〜1.10（平均1.00維持。v4.3b: 0.85+0.30→0.90+0.20に縮小）
+rF = 0.90 + (random × 0.20)
 
 // 粘りバフ ★v4.0
-if (def.gritTurns > 0) raw *= 0.80  // 被ダメ20%軽減
+if (def.gritTurns > 0) raw *= 0.80
 
-// 最終ダメージ
+// 最終ダメージ（calcDamage 内）
 dmg = max(3, round((base - defense) × mMod × rF × phase.mult))
+
+// ── v5.0 ポストプロセス（calcDamage 後、呼び出し元で適用）──
+ovrMult = (atk.OVR / def.OVR) ^ 0.50              // M1 OVR比補正
+// シングルマッチのみ
+popAdv  = (def.popularity - atk.popularity) / 100
+tierMult = tier >= 2 ? 2.0 : 1.0
+popMult = 1 - popAdv × 0.06 × tierMult
+dmg = max(dmgFloor, round(dmg × ovrMult × popMult))
+// タッグマッチでは popMult を掛けず ovrMult のみ適用
 ```
 
 ### 7.2 フェーズ乗数
@@ -589,9 +604,9 @@ v4.xプロトタイプで使用している全定数。バランス調整時は�
 
 ```javascript
 const ENG = {
-  // HP（v4.2: hpBase追加、hpScale大幅変更）
-  hpBase: 50,
-  hpScale: 0.90,
+  // HP（v5.0: ×2.0延長 — シングルマッチを長くする）
+  hpBase: 100,
+  hpScale: 1.80,
 
   // 有効値（eff）（v4.2: 逓減無効化）
   effPivot: 100,
@@ -604,20 +619,20 @@ const ENG = {
   spdDodgeBonus: 0.18,
   hitMin: 42, hitMax: 98,
 
-  // カウンター
-  counterBase: 4,
+  // カウンター（v5.0: 番狂わせ機構抑制で counterBase 4→3, counterMax 22→18）
+  counterBase: 3,
   counterTecScale: 0.055,
   counterSpdPenalty: 0.07,
-  counterMin: 2, counterMax: 22,
+  counterMin: 2, counterMax: 18,
   counterDmgMult: 0.6,
   counterMomShift: 18,
 
-  // ダメージ
-  dmgPwrScale: 0.20,
-  dmgTecScale: 0.08,
-  dmgSpdScale: 0.08,    // v4.2: 全技に適用（旧:飛び技のみ0.03）
-  defStaScale: 0.02,
-  defMntScale: 0.055,
+  // ダメージ（v5.1: スケール微増）
+  dmgPwrScale: 0.27,
+  dmgTecScale: 0.115,
+  dmgSpdScale: 0.115,
+  defStaScale: 0.025,    // v5.1: ST防御寄与を僅かに抑制
+  defMntScale: 0.06,
   momDmgScale: 0.001,
   dmgRandMin: 0.90, dmgRandRange: 0.20,
   dmgFloor: 3,
@@ -661,11 +676,36 @@ const ENG = {
   tkoHpThreshold: 0.15,
   tkoBaseRate: 14,
 
-  // 丸め込み
+  // 丸め込み（v5.0: 番狂わせ抑制で rollupBaseSuccess 16→10）
   rollupHpThreshold: 0.35,
   rollupTecBonus: 0.18,
-  rollupBaseSuccess: 16,
+  rollupBaseSuccess: 10,
 };
+
+// v5.0 — calcDamage 後ポストプロセス（呼び出し元で適用）
+//   ovrMult = (atk.OVR / def.OVR) ^ 0.50              // M1 OVR比補正
+//   popMult = 1 - popAdv × 0.06 × tierMult            // popularity補正(シングルのみ)
+//   dmg = max(dmgFloor, round(dmg × ovrMult × popMult × mnLateMult))
+// MAX_T = 16 (通常) / 24 (ビッグマッチ)
+//
+// v5.0 — calcKickoutChance / calcGuEscapeChance に popAdv/popMult 引数追加
+//   chance += popAdv × 0.07 × popMult
+//   popAdv = (def.popularity - atk.popularity) / 100, popMult = tier>=2 ? 2.0 : 1.0
+//   タッグマッチでは popAdv を渡さないので popularity 反映なし
+//
+// v5.1 — MN 終盤粘り（シングル・タッグ両方）
+//   End フェーズ: mnLateMult = 1 - max(0,(def.mn-50)/100) × 0.08
+//   Climax フェーズ: mnLateMult = 1 - max(0,(def.mn-50)/100) × 0.12
+//   それ以外: mnLateMult = 1.0
+//
+// v5.1 — 試合開始時ボーナス（パターンB、シングルのみ）
+//   teGap = (charL.te - charR.te) / 100, spGap = (charL.sp - charR.sp) / 100
+//   pwGap = (charL.pw - charR.pw) / 100
+//   mom += (teGap + spGap) × 10 + pwGap × 8       // 開始時モメンタム
+//   先攻3ターン:
+//     hitRate += isLeftAtk ? (teGap+spGap)×15 : -(teGap+spGap)×15
+//     counterRate -= isLeftAtk ? pwGap×10 : -pwGap×10
+//   狙い: SP/TE/PW の効果が試合長に依存しないドラマ的バフを最初から付与
 ```
 
 ---
@@ -769,9 +809,9 @@ matchTier = isTitle ? 2 : isPPV ? 2 : isWar ? 2 : 1
 ```javascript
 const BIGMATCH_ENG = {
   ...ENG,
-  hpBase: 85,                    // Tier1: 50 → +70%
-  hpScale: 1.10,                 // Tier1: 0.90 → +22%
-  rollupBaseSuccess: 11,         // Tier1: 16 → 丸め込み決まりにくい
+  hpBase: 170,                   // v5.0: Tier1: 100 → +70%（HP×2.0延長）
+  hpScale: 2.20,                 // v5.0: Tier1: 1.80 → +22%
+  rollupBaseSuccess: 10,         // v5.0: Tier1と同値に揃え
   rollupHpThreshold: 0.25,       // Tier1: 0.35 → より追い込まれないと丸め込めない
   pinAttemptHpThreshold: 0.25,   // Tier1: 0.35 → フォール狙いも同様
   pinAttemptSuccessBase: 14,     // Tier1: 23 → ピンが決まりにくい

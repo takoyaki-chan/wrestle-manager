@@ -49,9 +49,10 @@ Engine.battle = {
     determineFinishType(rng, mv) {
       return Engine.rng.weighted(rng, ENG.finishWeights[mv.c] || ENG.finishWeights.strike);
     },
-    calcKickoutChance(def, ph, _eng) {
+    calcKickoutChance(def, ph, _eng, popAdv, popMult) {
       const e = _eng || ENG;
       let chance = (def.mn / 100) * e.kickoutMnScale;
+      if (popAdv != null) chance += popAdv * 0.07 * (popMult || 1);
       if (ph.name === 'Climax') chance *= e.kickoutClimaxMult;
       // 闘志: HP低下時のキックアウト率UP
       if (Traits.has(def, '闘志') && def.hp / def.mhp < 0.3) chance += 0.08;
@@ -59,9 +60,10 @@ Engine.battle = {
       if (def.kickoutCount >= e.kickoutMax) chance = 0;
       return chance;
     },
-    calcGuEscapeChance(def, ph, _eng) {
+    calcGuEscapeChance(def, ph, _eng, popAdv, popMult) {
       const e = _eng || ENG;
       let chance = (def.mn / 100) * e.guEscapeMnScale;
+      if (popAdv != null) chance += popAdv * 0.07 * (popMult || 1);
       if (ph.name === 'Climax') chance *= 0.8;
       chance = Engine.util.clamp(chance, 0.05, 0.40);
       if (def.kickoutCount >= e.guEscapeMax) chance = 0;
@@ -121,8 +123,19 @@ Engine.battle = {
       // 威圧感: 序盤モメンタム優位（左+/右-）
       if (Traits.has(charL, '威圧感') && !Traits.has(charR, '威圧感')) mom += 3;
       if (Traits.has(charR, '威圧感') && !Traits.has(charL, '威圧感')) mom -= 3;
+      // v5.1 パターンB: TE/SP/PW差で試合開始時ボーナス（試合長に依存しない一発バフ）
+      const _teGap = (charL.te - charR.te) / 100;  // -1〜+1
+      const _spGap = (charL.sp - charR.sp) / 100;
+      const _pwGap = (charL.pw - charR.pw) / 100;
+      mom += (_teGap + _spGap) * 10 + _pwGap * 8;  // PW+30なら mom+2.4 追加
+      // 先攻3ターンの命中/回避バフ（leftが正なら左有利）
+      const _techLead = _teGap * 15;  // TE+30 → +4.5pt
+      const _spdLead  = _spGap * 15;  // SP+30 → 相手命中-4.5pt
+      // 先攻3ターンのカウンター率ペナルティ（PW優位な側が攻撃時、相手のカウンター率DOWN）
+      const _pwLead   = _pwGap * 10;  // PW+30 → 相手カウンター率-3.0pt
       let totalCounters = 0, totalKickouts = 0, leadChanges = 0, lastLeader = null, bigMoves = 0;
       // 名勝負製造機: ドラマ素材（キックアウト・カウンター）の発生率UP
+      // 仕様(v2.1): 双方持ちでも効果は1試合1回分のみ（boolean OR で重複適用なし）
       const hasMeishoubu = Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機');
       // 引き出し上手: 格下戦でのペーシング減点緩和
       const hasHikidashi = Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手');
@@ -173,14 +186,22 @@ Engine.battle = {
         _turnPinAttempt = null;
         _turnRollup = null;
         _turnTkoStop = false;
-        const leftChance = 50 + mom * 0.05;
+        const _popAdvL = ((L.popularity || 50) - (R.popularity || 50)) / 100;
+        const _popMultL = (tier >= 2 ? 2.0 : 1.0);
+        const leftChance = 50 + mom * 0.05 + _popAdvL * 6 * _popMultL;
         const isLeftAtk = Engine.rng.float(rng) * 100 < leftChance;
         const atk = isLeftAtk ? L : R;
         const def = isLeftAtk ? R : L;
         const atkSide = isLeftAtk ? 'left' : 'right';
 
         const mv = B.selMove(rng, atk.style, turn, phases);
-        const hitRate = B.calcHitRate(mv, atk, def);
+        let hitRate = B.calcHitRate(mv, atk, def);
+        // v5.1 パターンB: 先攻3ターンの命中/回避バフ（TE/SP優位な側が攻撃時に命中UP）
+        if (turn <= 3) {
+          const _flatLead = _techLead + _spdLead;
+          hitRate += isLeftAtk ? _flatLead : -_flatLead;
+          hitRate = Engine.util.clamp(hitRate, ENG.hitMin, ENG.hitMax);
+        }
         const roll = Engine.rng.float(rng) * 100;
 
         if (roll > hitRate) {
@@ -192,6 +213,11 @@ Engine.battle = {
         } else {
           let counterRate = B.calcCounterRate(atk, def, ph);
           if (hasMeishoubu) counterRate = Math.min(counterRate + 5, ENG.counterMax);
+          // v5.1 パターンB: 先攻3ターン PW優位な側が攻撃時、相手カウンター率ペナルティ
+          if (turn <= 3) {
+            counterRate -= isLeftAtk ? _pwLead : -_pwLead;
+            counterRate = Engine.util.clamp(counterRate, ENG.counterMin, ENG.counterMax);
+          }
           if (Engine.rng.float(rng) * 100 < counterRate) {
             const cMv = B.selMove(rng, def.style, turn, phases);
             const cDmg = Math.max(eng.dmgFloor, Math.round(mv.d * eng.counterDmgMult));
@@ -204,7 +230,19 @@ Engine.battle = {
               _turnAction = { kind: 'counter', atkSide: isLeftAtk ? 'right' : 'left', move: mv.n, counterMove: cMv.n, moveD: mv.d, moveCat: mv.c, dmg: cDmg, isCrit: cDmg >= 15, isBig: cDmg >= 10 };
             }
           } else {
-            const dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
+            let dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
+            // v5.0 M1: OVR比ダメージ補正
+            const _atkOvr = (atk.pw + atk.sp + atk.te + atk.st + atk.mn) / 5;
+            const _defOvr = (def.pw + def.sp + def.te + def.st + def.mn) / 5;
+            const _ovrMult = Math.pow(_atkOvr / Math.max(1, _defOvr), 0.50);
+            // v5.0 popularity: 防御側人気優位で被ダメ軽減
+            const _popAdvD = ((def.popularity || 50) - (atk.popularity || 50)) / 100;
+            const _popMultD = (tier >= 2 ? 2.0 : 1.0);
+            // v5.1 MN: 終盤の粘り（End +8% / Climax +12% 被ダメ軽減、MN50超過分のみ）
+            let _mnLateMult = 1.0;
+            if (ph.name === 'End') _mnLateMult = 1 - Math.max(0, (def.mn - 50) / 100) * 0.08;
+            else if (ph.name === 'Climax') _mnLateMult = 1 - Math.max(0, (def.mn - 50) / 100) * 0.12;
+            dmg = Math.max(eng.dmgFloor, Math.round(dmg * _ovrMult * (1 - _popAdvD * 0.06 * _popMultD) * _mnLateMult));
             def.hp -= dmg;
             mom += isLeftAtk ? 8 : -8;
             atk.consecutiveHits++;
@@ -227,7 +265,9 @@ Engine.battle = {
               const finLabel = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
               let escaped = false;
               if (fType === 'fall' || fType === 'tko') {
-                let koChance = B.calcKickoutChance(def, ph, eng);
+                const _popAdvKo = ((def.popularity || 50) - (atk.popularity || 50)) / 100;
+                const _popMultKo = (tier >= 2 ? 2.0 : 1.0);
+                let koChance = B.calcKickoutChance(def, ph, eng, _popAdvKo, _popMultKo);
                 if (hasMeishoubu) koChance = Math.min(koChance + 0.15, 0.45);
                 if (Engine.rng.float(rng) < koChance) {
                   escaped = true;
@@ -239,7 +279,9 @@ Engine.battle = {
                   if (recordFrames) _turnKickout = { count: def.kickoutCount, escapeType: fType };
                 }
               } else if (fType === 'gu') {
-                let escChance = B.calcGuEscapeChance(def, ph, eng);
+                const _popAdvGu = ((def.popularity || 50) - (atk.popularity || 50)) / 100;
+                const _popMultGu = (tier >= 2 ? 2.0 : 1.0);
+                let escChance = B.calcGuEscapeChance(def, ph, eng, _popAdvGu, _popMultGu);
                 if (hasMeishoubu) escChance = Math.min(escChance + 0.15, 0.40);
                 if (Engine.rng.float(rng) < escChance) {
                   escaped = true;
@@ -594,6 +636,11 @@ Engine.tagMatch = (() => {
     let winner = null, finType = null, finMove = null, finishPhase = null;
     let winAttribution = { pinnedBy: null, pinnedWho: null };
 
+    // 名勝負製造機(v2.1): 4選手中1人以上持っていれば効果ON。重複適用なし
+    const hasMeishoubu =
+      Traits.has(teamA.fighter1, '名勝負製造機') || Traits.has(teamA.fighter2, '名勝負製造機') ||
+      Traits.has(teamB.fighter1, '名勝負製造機') || Traits.has(teamB.fighter2, '名勝負製造機');
+
     let segments = [];
     let curSegment = { legalA: legalA.id, legalB: legalB.id, turns: 0, touchType: null, events: [] };
     let isolationA = 0, isolationB = 0;
@@ -751,7 +798,8 @@ Engine.tagMatch = (() => {
         if (isAAttacking) { lossStreakA++; lossStreakB = 0; }
         else { lossStreakB++; lossStreakA = 0; }
       } else {
-        const counterRate = B.calcCounterRate(atk, def, ph);
+        let counterRate = B.calcCounterRate(atk, def, ph);
+        if (hasMeishoubu) counterRate = Math.min(counterRate + 5, ENG.counterMax);
         const isCounter = Engine.rng.float(rng) * 100 < counterRate;
 
         if (isCounter) {
@@ -781,7 +829,8 @@ Engine.tagMatch = (() => {
                 finished = true;
                 dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'tko', byId: defFighter.id, onId: atkFighter.id, outcome: 'win', count: 0 });
               } else {
-                const koChance = B.calcKickoutChance(atkFighter, ph, ENG);
+                let koChance = B.calcKickoutChance(atkFighter, ph, ENG);
+                if (hasMeishoubu) koChance = Math.min(koChance + 0.15, 0.45);
                 if (atkFighter.kickoutCount < TC.kickoutMax && Engine.rng.float(rng) < koChance) {
                   atkFighter.hp = Math.round(atkFighter.mhp * 0.05);
                   atkFighter.kickoutCount++;
@@ -815,7 +864,8 @@ Engine.tagMatch = (() => {
                 }
               }
             } else if (fType === 'gu') {
-              const escChance = B.calcGuEscapeChance(atkFighter, ph, ENG);
+              let escChance = B.calcGuEscapeChance(atkFighter, ph, ENG);
+              if (hasMeishoubu) escChance = Math.min(escChance + 0.15, 0.40);
               if (atkFighter.kickoutCount < TC.guEscapeMax && Engine.rng.float(rng) < escChance) {
                 atkFighter.hp = Math.round(atkFighter.mhp * 0.05);
                 atkFighter.kickoutCount++;
@@ -843,6 +893,17 @@ Engine.tagMatch = (() => {
         } else {
           // 通常ヒット
           let dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
+          // v5.0 M1: タッグも OVR比補正（popularity は無し）
+          // v5.1 MN: 終盤の粘り
+          {
+            const _tAtkOvr = (atk.pw + atk.sp + atk.te + atk.st + atk.mn) / 5;
+            const _tDefOvr = (def.pw + def.sp + def.te + def.st + def.mn) / 5;
+            const _tOvrMult = Math.pow(_tAtkOvr / Math.max(1, _tDefOvr), 0.50);
+            let _tMnLateMult = 1.0;
+            if (ph.name === 'End') _tMnLateMult = 1 - Math.max(0, (def.mn - 50) / 100) * 0.08;
+            else if (ph.name === 'Climax') _tMnLateMult = 1 - Math.max(0, (def.mn - 50) / 100) * 0.12;
+            dmg = Math.max(ENG.dmgFloor, Math.round(dmg * _tOvrMult * _tMnLateMult));
+          }
           if (atkFighter.hotTagBuff > 0) dmg = Math.round(dmg * TC.touch.hotTagBuffMult);
           dmg = tagScaleDmg(dmg);
           defFighter.hp -= dmg;
@@ -869,7 +930,8 @@ Engine.tagMatch = (() => {
                 finished = true;
                 dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'tko', byId: atkFighter.id, onId: defFighter.id, outcome: 'win', count: 0 });
               } else {
-                const koChance = B.calcKickoutChance(defFighter, ph, ENG);
+                let koChance = B.calcKickoutChance(defFighter, ph, ENG);
+                if (hasMeishoubu) koChance = Math.min(koChance + 0.15, 0.45);
                 if (defFighter.kickoutCount < TC.kickoutMax && Engine.rng.float(rng) < koChance) {
                   defFighter.hp = Math.round(defFighter.mhp * 0.05);
                   defFighter.kickoutCount++;
@@ -903,7 +965,8 @@ Engine.tagMatch = (() => {
                 }
               }
             } else if (fType === 'gu') {
-              const escChance = B.calcGuEscapeChance(defFighter, ph, ENG);
+              let escChance = B.calcGuEscapeChance(defFighter, ph, ENG);
+              if (hasMeishoubu) escChance = Math.min(escChance + 0.15, 0.40);
               if (defFighter.kickoutCount < TC.guEscapeMax && Engine.rng.float(rng) < escChance) {
                 defFighter.hp = Math.round(defFighter.mhp * 0.05);
                 defFighter.kickoutCount++;
@@ -1021,6 +1084,15 @@ Engine.tagMatch = (() => {
         const effAtk = applyHpDecay(atkFighter);
         const effDef = applyHpDecay(defFighter);
         let tagDmg = B.calcDamage(rng, tagMv, effAtk, effDef, mom, atkSide, ph);
+        {
+          const _tgAtkOvr = (effAtk.pw + effAtk.sp + effAtk.te + effAtk.st + effAtk.mn) / 5;
+          const _tgDefOvr = (effDef.pw + effDef.sp + effDef.te + effDef.st + effDef.mn) / 5;
+          const _tgOvrMult = Math.pow(_tgAtkOvr / Math.max(1, _tgDefOvr), 0.50);
+          let _tgMnLateMult = 1.0;
+          if (ph.name === 'End') _tgMnLateMult = 1 - Math.max(0, (effDef.mn - 50) / 100) * 0.08;
+          else if (ph.name === 'Climax') _tgMnLateMult = 1 - Math.max(0, (effDef.mn - 50) / 100) * 0.12;
+          tagDmg = Math.max(ENG.dmgFloor, Math.round(tagDmg * _tgOvrMult * _tgMnLateMult));
+        }
         tagDmg = Math.round(tagDmg * 1.3);
         tagDmg = tagScaleDmg(tagDmg);
         defFighter.hp -= tagDmg;
