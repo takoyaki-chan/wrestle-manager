@@ -1401,7 +1401,7 @@ function renderWeekScreen() {
   // ── SCOUT EVENT PHASE (A1: 号外紙面型ドラフト開幕画面) ──
   else if (G.weekPhase === 'scoutEvent') {
     const weekLabel = G.offSeason ? `オフシーズン第${G.offWeek}週` : Engine.util.formatDate(G.season, G.week);
-    const eventLabel = G.scoutEventType === 'midseason' ? '補強ドラフト' : 'メインドラフト';
+    const eventLabel = 'メインドラフト';
     document.getElementById('weekTitle').textContent = `${weekLabel} — ⚖ ${eventLabel}`;
 
     const candidates = G.scoutCandidates || [];
@@ -1409,7 +1409,7 @@ function renderWeekScreen() {
     const superElites = candidates.filter(c => c.assessedTier === 'superElite');
     const elites = candidates.filter(c => c.assessedTier === 'elite');
     const maxPicks = G.scoutMaxPicks || 4;
-    const editionNo = 100 + (G.season - 1) * 4 + (G.scoutEventType === 'midseason' ? 2 : 1);
+    const editionNo = 100 + (G.season - 1) * 4 + 1;
 
     const topSE = superElites.length > 0
       ? [...superElites].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0))[0]
@@ -5343,7 +5343,7 @@ function renderScoutEvent() {
   const maxPicks = G.scoutMaxPicks || 3;
   const discount = 0;
   const orgPop = G.orgPop || 0;
-  const eventLabel = G.scoutEventType === 'midseason' ? '補強ドラフト' : 'メインドラフト';
+  const eventLabel = 'メインドラフト';
 
   // 交渉画面 / ドラフト速報 のダーク/クリーム切替
   const screenEl = document.getElementById('screen-scoutEvent');
@@ -6002,6 +6002,15 @@ function _npClickName(name, id) {
 function _npKurodaFaceUrl() {
   return (typeof getNpcPortraitUrl === 'function') ? getNpcPortraitUrl('reporter') : '';
 }
+// 1ターン=1分30秒換算で「X分Y秒」表記を返す
+function _npTurnsToTime(turns) {
+  const t = Number(turns) || 0;
+  if (t < 1) return '';
+  const totalSec = t * 90;
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return sec === 0 ? `${min}分` : `${min}分${sec}秒`;
+}
 // 黒田の署名・肩書ローテーション (用途別)
 const NP_KURODA_BYLINE = {
   news: '——黒田幸子(週刊グラップル)',     // 一面記事/興行寸評
@@ -6374,10 +6383,13 @@ function _npSwapMainToSecondCard(d, seasonNum, weekNum) {
   }
 
   const winner = m.winner;
+  const winnerObjForSwap = m.isDraw ? null : (winner === 'left' ? m.left : (winner === 'right' ? m.right : null));
+  const loserObjForSwap = m.isDraw ? null : (winner === 'left' ? m.right : (winner === 'right' ? m.left : null));
   const swapped = Object.assign({}, d, {
     left: Object.assign({}, m.left, { isWinner: winner === 'left' }),
     right: Object.assign({}, m.right, { isWinner: winner === 'right' }),
-    winner: winner,
+    winner: winnerObjForSwap,
+    loser: loserObjForSwap,
     isDraw: !!m.isDraw,
     mq: m.mq,
     turns: m.turns,
@@ -6412,7 +6424,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
     <div class="np-versus-grid">
       <div class="${leftCls}">
         <div class="np-fphoto" style="${leftBg}" onclick="showFighterPopup(${d.left.id})"></div>
-        <div class="np-fname">${d.left.name}</div>
+        <div class="np-fname">${d.left.name}${leftWin ? '<span class="np-winner-mark">○</span>' : (rightWin ? '<span class="np-loser-mark">×</span>' : '')}</div>
         ${d.left.role ? `<div class="np-frole">${d.left.role}</div>` : ''}
       </div>
       <div class="np-vs-block">
@@ -6421,14 +6433,29 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
       </div>
       <div class="${rightCls}">
         <div class="np-fphoto" style="${rightBg}" onclick="showFighterPopup(${d.right.id})"></div>
-        <div class="np-fname">${d.right.name}</div>
+        <div class="np-fname">${d.right.name}${rightWin ? '<span class="np-winner-mark">○</span>' : (leftWin ? '<span class="np-loser-mark">×</span>' : '')}</div>
         ${d.right.role ? `<div class="np-frole">${d.right.role}</div>` : ''}
       </div>
     </div>
+    ${(() => {
+      const timeStr = _npTurnsToTime(d.turns);
+      const turnsTail = timeStr ? (d.turns ? `<span class="dec-turns">（${d.turns}ターン）</span>` : '') : (d.turns ? `<span class="dec-time">${d.turns}ターン</span>` : '');
+      const timeMain = timeStr ? `<span class="dec-time">決着時間 ${timeStr}</span>` : '';
+      if (d.isDraw) {
+        return `<div class="np-show-decision draw"><span class="dec-text">時間切れ引き分け</span></div>`;
+      }
+      const winName = leftWin ? d.left.name : (rightWin ? d.right.name : null);
+      if (!winName) return '';
+      return `<div class="np-show-decision">
+        <span class="dec-winner"><strong>${winName}</strong> 勝利</span>
+        ${d.finishLabel ? `<span class="dec-finish">決着技：${d.finishLabel}</span>` : ''}
+        ${timeMain}${turnsTail}
+      </div>`;
+    })()}
     <div class="np-result-line">
       <div>${d.matchLabel || 'メインイベント'}</div>
       <div class="mq-block"><label>MQ</label><strong>${d.mq || '?'}</strong></div>
-      <div class="duration">${d.turns ? `${d.turns}T` : ''}</div>
+      <div class="duration">${_npTurnsToTime(d.turns) || (d.turns ? `${d.turns}ターン` : '')}</div>
     </div>
     ${d.article ? `<div class="np-show-article">${d.article}</div>` : ''}`;
 
@@ -6507,17 +6534,30 @@ function _npRenderDigest(d, seasonNum, weekNum) {
       }
     }
 
+    const dTimeStr = _npTurnsToTime(m.turns);
+    const dTimeMain = dTimeStr ? `<span class="np-digest-time">${dTimeStr}</span>` : '';
+    const dTurnsSub = dTimeStr
+      ? (m.turns ? `<span class="np-digest-turns-sub">（${m.turns}ターン）</span>` : '')
+      : (m.turns ? `<span class="np-digest-time">${m.turns}ターン</span>` : '');
+    let finishLine = '';
+    if (m.isDraw) {
+      finishLine = `<span class="np-digest-finish-text">時間切れ引き分け</span>`;
+    } else if (wName) {
+      const finBit = m.finishLabel ? `<strong>${m.finishLabel}</strong>で勝利` : '勝利';
+      finishLine = `<span class="np-digest-finish-text"><strong>${wName}</strong>が${finBit}</span>${dTimeMain}${dTurnsSub}`;
+    }
     rows += `<tr>
       <td class="num">${idx + 2}</td>
       <td class="tag">${badge}</td>
       <td>
         <div class="np-digest-card">
           <div class="np-digest-thumb" style="${_npThumbBg(wId)}" onclick="showFighterPopup(${wId})"></div>
-          <span class="np-digest-name">${wName}</span>
+          <span class="np-digest-name">${wName}${!m.isDraw && wName ? '<span class="np-digest-mark win">○</span>' : ''}</span>
           <span class="np-digest-vs">${m.isDraw ? 'DRAW' : 'vs'}</span>
-          <span class="np-digest-name lose">${lName}</span>
+          <span class="np-digest-name lose">${!m.isDraw && lName ? '<span class="np-digest-mark lose">×</span>' : ''}${lName}</span>
           <div class="np-digest-thumb" style="${_npThumbBg(lId)}" onclick="showFighterPopup(${lId})"></div>
         </div>
+        ${finishLine ? `<div class="np-digest-finish">${finishLine}</div>` : ''}
       </td>
       <td class="np-digest-mq ${mqClass}">${m.mq}</td>
     </tr>`;
@@ -7006,8 +7046,19 @@ function _npRenderPage3() {
 
   // narrative を3本 pick して連結 (情報量増、bodies 配列を使用)
   const narrativeParas = [];
+  const _bestMQVal = h2h.bestMQ || 0;
+  // bestMQ が低いとき (<75) は「最高評価」と褒める文言の本文を除外する
+  const _filterPraiseByMQ = (fnList) => {
+    if (_bestMQVal >= 75) return fnList;
+    return fnList.filter(fn => {
+      try {
+        const src = fn.toString();
+        return !/最高評価|bestMQ/.test(src);
+      } catch(e) { return true; }
+    });
+  };
   if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[featured.tag] && KURODA_RELATION_NARRATIVE[featured.tag].bodies) {
-    const pool = KURODA_RELATION_NARRATIVE[featured.tag].bodies;
+    const pool = _filterPraiseByMQ(KURODA_RELATION_NARRATIVE[featured.tag].bodies);
     if (pool.length > 0) {
       const seeds = [0xC1A1, 0xC1A2, 0xC1A3, 0xC1A4, 0xC1A5];
       const used = new Set();
@@ -7018,7 +7069,7 @@ function _npRenderPage3() {
         if (used.has(fn)) return;
         used.add(fn);
         try {
-          const t = fn({ aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: h2h.bestMQ || 0, years: yearsApprox, charA: aName, charB: bName });
+          const t = fn({ aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: _bestMQVal, years: yearsApprox, charA: aName, charB: bName });
           if (t) narrativeParas.push(t);
         } catch(e) {}
       });
@@ -7026,16 +7077,16 @@ function _npRenderPage3() {
   }
   if (narrativeParas.length === 0) {
     narrativeParas.push(`${aName}と${bName}。${matches}度のぶつかり合いが、二人の関係を形づくってきた。`);
-    narrativeParas.push(`通算${wA}勝${wB}敗${dr ? dr + '分' : ''}。最高評価はMQ${h2h.bestMQ || '?'}。本紙はこの関係を、業界を象徴する一組として注視している。`);
+    narrativeParas.push(`通算${wA}勝${wB}敗${dr ? dr + '分' : ''}。本紙はこの関係を、業界を象徴する一組として注視している。`);
   } else if (narrativeParas.length === 1) {
-    narrativeParas.push(`通算${wA}勝${wB}敗${dr ? dr + '分' : ''}。最高評価はMQ${h2h.bestMQ || '?'}。数字は嘘をつかない。`);
+    narrativeParas.push(`通算${wA}勝${wB}敗${dr ? dr + '分' : ''}。数字は嘘をつかない。`);
   }
 
   // 事実段落: h2h データを最大限盛り込む
   const facts = [];
   facts.push(`<span class="fact-item">通算<strong>${matches}</strong>戦</span>`);
   facts.push(`<span class="fact-item">${aName}<strong>${wA}</strong>勝 / ${bName}<strong>${wB}</strong>勝${dr ? ` / ${dr}分` : ''}</span>`);
-  facts.push(`<span class="fact-item">最高評価 MQ<strong>${h2h.bestMQ || '?'}</strong></span>`);
+  facts.push(`<span class="fact-item">ベスト試合 MQ<strong>${h2h.bestMQ || '?'}</strong></span>`);
   if (h2h.hadTitleMatch) facts.push(`<span class="fact-item">タイトル戦経験<strong>あり</strong></span>`);
   if (h2h.hadPPV) facts.push(`<span class="fact-item">PPV対決<strong>あり</strong></span>`);
   if (h2h.lastMatch) facts.push(`<span class="fact-item">直近対戦 S<strong>${h2h.lastMatch.season}</strong>W<strong>${h2h.lastMatch.week}</strong></span>`);
@@ -7119,7 +7170,20 @@ function _npRenderPage3() {
     });
     html += `</div>`;
   } else {
-    html += `<div class="np-empty-substory">通算${matches}戦の記録はあるが、各試合の詳細データはまだ蓄積中。<br>次の対戦からは結果が時系列で残る。</div>`;
+    // 個別履歴は無いが、サマリが残っている場合に概要を1行に集約して見せる
+    const summaryBits = [];
+    summaryBits.push(`通算<strong>${matches}</strong>戦`);
+    if (wA || wB || dr) summaryBits.push(`${aName} <strong>${wA}</strong>勝 / ${bName} <strong>${wB}</strong>勝${dr ? ` / ${dr}分` : ''}`);
+    if (h2h.bestMQ) summaryBits.push(`ベスト試合 MQ<strong>${h2h.bestMQ}</strong>`);
+    if (h2h.lastMatch && h2h.lastMatch.season) summaryBits.push(`直近 S${h2h.lastMatch.season} W${h2h.lastMatch.week || '?'}`);
+    if (h2h.hadTitleMatch) summaryBits.push(`タイトル戦経験<strong>あり</strong>`);
+    if (h2h.hadPPV) summaryBits.push(`PPV経験<strong>あり</strong>`);
+    if (matches > 0) {
+      html += `<div class="np-history-summary-row">${summaryBits.join(' ・ ')}</div>`;
+      html += `<div class="np-history-note">個別の試合データは記録に残っていない。次戦からは時系列で刻まれる。</div>`;
+    } else {
+      html += `<div class="np-empty-substory">対戦履歴はまだ刻まれていない。本紙としては、最初の一戦が組まれる日を待ちたい。</div>`;
+    }
   }
   html += `</div>`;
 
@@ -7144,7 +7208,12 @@ function _npRenderPage3() {
       const td = TAG_DESC[r.tag] || TAG_DESC.casual_rivalry;
       let summary = '';
       if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[r.tag] && KURODA_RELATION_NARRATIVE[r.tag].bodies) {
-        const pool = KURODA_RELATION_NARRATIVE[r.tag].bodies;
+        const _bm = r.h2h.bestMQ || 0;
+        const pool = (_bm >= 75)
+          ? KURODA_RELATION_NARRATIVE[r.tag].bodies
+          : KURODA_RELATION_NARRATIVE[r.tag].bodies.filter(fn => {
+              try { return !/最高評価|bestMQ/.test(fn.toString()); } catch(e) { return true; }
+            });
         if (pool.length > 0) {
           const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, r.idA, r.idB, 0xC1B2));
           const fn = Engine.rng.pick(rng, pool);
@@ -7201,8 +7270,11 @@ function _npRenderPage4() {
   }
 
   html += `<div class="np-sec-gold">📊 4面 ・ 年間MVPレース</div>`;
-  html += `<h2 class="np-page-headline">${_escapeHtml(race.pageHeadline || '')}</h2>`;
-  html += `<p class="np-page-lead">${_escapeHtml(race.pageLead || '')}</p>`;
+  // 既存セーブでキャッシュ済みの古いテキストには 5.159999...pt のような小数が残っているので
+  // レンダー時に整数化する (例: "5.16pt" / "0.000003pt" → "5pt" / "0pt")
+  const _sanitizePts = (txt) => (txt || '').replace(/(\d+(?:\.\d+)?)pt/g, (_, n) => `${Math.round(parseFloat(n))}pt`);
+  html += `<h2 class="np-page-headline">${_escapeHtml(_sanitizePts(race.pageHeadline))}</h2>`;
+  html += `<p class="np-page-lead">${_escapeHtml(_sanitizePts(race.pageLead))}</p>`;
   html += `<div class="np-page-meta">第${weekNum}週時点 ・ 注目選手 上位三傑 ・ 全団体合同</div>`;
 
   // TOP3カード
@@ -7294,6 +7366,9 @@ function _npMvpRaceRank1Card(entry) {
   const ppvZero = bd.ppv === 0 ? ' zero' : '';
   const warZero = bd.war === 0 ? ' zero' : '';
   const domeZero = bd.dome === 0 ? ' zero' : '';
+  const drawZero = (bd.draw || 0) === 0 ? ' zero' : '';
+  const drawPts = Math.round(bd.draw || 0);
+  const drawDetail = `人気${Math.round(m.popularity || 0)}・集客${Math.round(m.drawPower || 0)}`;
 
   return `<div class="np-mvprace-card np-mvprace-card-1${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId})">
     <div class="np-mvprace-photo">
@@ -7334,6 +7409,11 @@ function _npMvpRaceRank1Card(entry) {
           <div class="pts">+${bd.ppv}</div>
           <div class="detail">${_escapeHtml(ppvDetail)}</div>
         </div>
+        <div class="np-mvprace-badge${drawZero}">
+          <div class="icon-row">⭐<span class="lbl">人気</span></div>
+          <div class="pts">+${drawPts}</div>
+          <div class="detail">${_escapeHtml(drawDetail)}</div>
+        </div>
       </div>
     </div>
   </div>`;
@@ -7361,6 +7441,7 @@ function _npMvpRaceMinorCard(entry, rank) {
     { icon: '⚔', label: '対抗戦', val: bd.war },
     { icon: '🏟', label: 'ドーム', val: bd.dome },
     { icon: '🥊', label: '大試合', val: bd.mq },
+    { icon: '⭐', label: '人気', val: Math.round(bd.draw || 0) },
   ];
   pillCandidates.sort((a, b) => Math.abs(b.val) - Math.abs(a.val));
   const pills = pillCandidates.slice(0, 4).map(p => {
@@ -10718,7 +10799,16 @@ function _renderDbRivalry() {
   const kurodaRng = Engine.rng.create(kurodaSeed);
   const pickText = (pool, d) => {
     if (!pool || !pool.length) return '';
-    const fn = Engine.rng.pick(kurodaRng, pool);
+    let usable = pool;
+    // bestMQ が低い (<75) ときは「最高評価」と褒めるテンプレを除外
+    const bm = (d && typeof d.bestMQ === 'number') ? d.bestMQ : null;
+    if (bm !== null && bm < 75) {
+      const filtered = pool.filter(fn => {
+        try { return !/最高評価|bestMQ/.test(fn.toString()); } catch(e) { return true; }
+      });
+      if (filtered.length > 0) usable = filtered;
+    }
+    const fn = Engine.rng.pick(kurodaRng, usable);
     try { return fn(d); } catch (e) { return ''; }
   };
 
@@ -10786,7 +10876,7 @@ function _renderRivalryFeatured(featured, pickText) {
   const facts = [];
   if (h2h.matches) facts.push(`<span class="fact-item">通算 ${recordText}</span>`);
   if (d.years >= 1 && h2h.matches) facts.push(`<span class="fact-item">${d.years}年の付き合い</span>`);
-  if (h2h.bestMQ) facts.push(`<span class="fact-item">最高評価 MQ${h2h.bestMQ}</span>`);
+  if (h2h.bestMQ) facts.push(`<span class="fact-item">ベスト試合 MQ${h2h.bestMQ}</span>`);
   if (h2h.hadTitleMatch) facts.push(`<span class="fact-item">タイトル戦経験あり</span>`);
   if (h2h.hadPPV) facts.push(`<span class="fact-item">PPV経験あり</span>`);
   // 因縁列伝 v1.1: context tag の視覚キュー

@@ -553,7 +553,7 @@ CPU団体の現在ロスター数と理想数（EMPRESS 16 / NOVA 13 / CRESCENT 
 | `data.js: AI_SCOUT_CFG` | 廃止 |
 | `data.js: SCOUT_EVENT_CFG.offseason.count` | [8,10] → [14,18] |
 | `data.js: SCOUT_EVENT_CFG.offseason.maxPicks` | 3 → 4 |
-| `data.js: SCOUT_EVENT_CFG.midseason.count` | [4,6] → [8,10] |
+| ~~`data.js: SCOUT_EVENT_CFG.midseason.count`~~ | midseason廃止 (2026-05-01) |
 | `management.js: Engine.scout.resolveCompetition` | 削除 → セリエンジンに置換 |
 | `management.js: Engine.rival.aiScout` | 削除 |
 | `management.js: Engine.rival.aiSeasonReinforce` | 本specの安全網に置換 |

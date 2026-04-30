@@ -4731,8 +4731,6 @@ const SHIELD_VARIANTS = { 1: ['a'], 2: ['a'], 3: ['a'] }; // hofLevel → 使用
 // ── Scout Event Config ──────
 const SCOUT_EVENT_CFG = {
   offseason: { count: [6, 8], maxPicks: 3 },
-  midseason: { count: [4, 6],  maxPicks: 2 },
-  midseasonWeek: 29,  // Q3 5th week (non-show week)
 };
 
 const DORMANT_POOL_CFG = {

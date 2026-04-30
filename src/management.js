@@ -5784,8 +5784,8 @@ const Engine = {
       return config.general;
     },
 
-    /** AI試合カード生成: OVR近接ペアリング + matchupLog鮮度考慮 */
-    generateAIMatchCard(roster, matchupLog, showCount) {
+    /** AI試合カード生成: OVR近接ペアリング + matchupLog鮮度考慮 + 因縁スコアリング(v2.1) */
+    generateAIMatchCard(roster, matchupLog, showCount, state) {
       const available = roster
         .filter(f => !f.injury && (f.condition || 70) > 20)
         .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
@@ -5808,6 +5808,15 @@ const Engine = {
           let score = -ovrDiff; // OVR近いほど高スコア
           const pairKey = `${Math.min(available[i].id, available[j].id)}_${Math.max(available[i].id, available[j].id)}`;
           if (recentPairs.has(pairKey)) score -= 20; // 直近カード重複ペナルティ
+          // 因縁/友情ペアを優先（プレイヤー側の手動編成に相当する補正 v2.1）
+          if (state) {
+            const ps = Engine.title.getRivalryPairState(state, available[i].id, available[j].id);
+            const minRiv = Math.min(ps.rivalryAB || 0, ps.rivalryBA || 0);
+            if (minRiv >= 60) score += 15;
+            else if (minRiv >= 40) score += 8;
+            const minBond = Math.min(ps.bondAB || 0, ps.bondBA || 0);
+            if (minBond >= 60 && minRiv >= 30) score += 5;
+          }
           if (score > bestScore) { bestScore = score; bestJ = j; }
         }
         if (bestJ >= 0) {
@@ -6379,7 +6388,7 @@ const Engine = {
 
       if (isShow) {
         const aiShowState = tierState();
-        let matchCard = Engine.rival.generateAIMatchCard(roster, nextOrgData.matchupLog, nextOrgData.showCount);
+        let matchCard = Engine.rival.generateAIMatchCard(roster, nextOrgData.matchupLog, nextOrgData.showCount, state);
 
         // Fix 3: タイトルマッチ時、王者の対戦相手にトップ挑戦者を優先配置
         const aiChampId = nextOrgData.titles?.world?.championId;
@@ -6437,6 +6446,20 @@ const Engine = {
           const matchRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, card.left.id ^ card.right.id));
           let result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng);
           // coachMQBonus は MQ外部ボーナス整理で廃止
+          // AI vs AI 試合にも rivalry/chemistry MQボーナスを適用（プレイヤー試合との不公平是正 v2.1）
+          {
+            const pairState = Engine.title.getRivalryPairState(state, card.left.id, card.right.id);
+            const rivalLvl = Engine.title.getRivalryLevel(state, card.left.id, card.right.id);
+            if (rivalLvl) {
+              result.mq = result.mq + rivalLvl.mqBonus;
+              result.rivalryBonus = rivalLvl;
+            }
+            const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
+            if (chemistryBonus > 0) {
+              result.mq = result.mq + chemistryBonus;
+              result.friendshipBonus = chemistryBonus;
+            }
+          }
           matchResults.push(result);
 
           [leftIdx, rightIdx].forEach((fi, side) => {
@@ -11127,8 +11150,8 @@ const Engine = {
     // ── Scout Event Functions (scout-spec §2-§6) ──────────────
 
     /** Generate a scout report: list of candidates (scout-spec §2) */
-    generateScoutReport(rng, state, eventType) {
-      const cfg = eventType === 'midseason' ? SCOUT_EVENT_CFG.midseason : SCOUT_EVENT_CFG.offseason;
+    generateScoutReport(rng, state, _eventType) {
+      const cfg = SCOUT_EVENT_CFG.offseason;
       const candidates = [];
 
       // occupiedIds: 全プールの占有済みID（重複除外の基準）
@@ -12792,43 +12815,6 @@ const Engine = {
       }
     }
 
-    // C-3: Midseason scout event (week 29 = Q3 5th week)
-    if (s.week === SCOUT_EVENT_CFG.midseasonWeek && !(s.scoutsThisSeason >= 2)) {
-      const scoutRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x5C02));
-      const report = Engine.scout.generateScoutReport(scoutRng, s, 'midseason');
-      const midUsedSet = new Set(report.usedPoolIds);
-      const remainingPool = (s.dormantPool || []).filter(e => !midUsedSet.has(e.id));
-      // Pre-compute interest marks for midseason draft
-      const midInterestRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xDFA4));
-      const midDraftInterests = {};
-      for (const cand of report.candidates) {
-        const candInterests = [];
-        for (const orgId of ['org_s', 'org_a', 'org_b']) {
-          const iRng = Engine.rng.create(Engine.rng.derive(
-            midInterestRng._state || 0, cand.id, orgId.charCodeAt(4), 0xDFA1
-          ));
-          candInterests.push(
-            Engine.draftNegotiation?.assignInterest
-              ? Engine.draftNegotiation.assignInterest(cand, orgId, s, iRng)
-              : { orgId, participating: false }
-          );
-        }
-        midDraftInterests[cand.id] = candInterests;
-      }
-      s = {
-        ...s,
-        dormantPool: remainingPool,
-        scoutCandidates: report.candidates,
-        scoutPicks: [],
-        scoutMaxPicks: SCOUT_EVENT_CFG.midseason.maxPicks,
-        scoutEventType: 'midseason',
-        _draftInterests: midDraftInterests,
-        _draftNegotiationStarted: false,
-      };
-      events.push(`⚖ 補強ドラフト: 候補 ${report.candidates.length}名の情報が届きました`);
-      return { state: { ...s, weekPhase: 'scoutEvent' }, events };
-    }
-
     // PPV GRAND FINAL: Week 43 エントリー受付
     if (s.week === PPV_ENTRY_WEEK) {
       const ppvRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xBBF1));
@@ -13527,15 +13513,17 @@ Engine.ending = {
 Engine.mvpRace = {
   // 🔧 ポイント設定（チューニング可能）
   POINTS: {
-    PPV_CHAMPION: 42,
+    PPV_CHAMPION: 30,
     PPV_RUNNER_UP: 15,
-    PPV_PARTICIPATION: 10,
+    PPV_OTHER_WIN: 10,
+    PPV_OTHER_LOSS: 5,
     TITLE_WIN: 11,
     TITLE_DEFENSE_PER: 13,
     TITLE_HOLD_AT_END: 8,
     DOME_MAIN_APPEARANCE: 4,
-    BIG_MATCH_PER: 5,
-    BIG_MATCH_THRESHOLD: 85,
+    BIG_MATCH_MQ85: 3,
+    BIG_MATCH_MQ90: 4,
+    BIG_MATCH_MQ95: 5,
     SEASON_BEST_MQ_BASE: 70,
     WAR_WIN: 16,
     WAR_LOSS: -12,
@@ -13543,6 +13531,10 @@ Engine.mvpRace = {
     B3_REJECTED: 4,
     ORG_RANK_1: 10,
     ORG_RANK_2: 5,
+    POP_THRESHOLD: 50,
+    POP_MULT: 0.4,
+    DRAW_THRESHOLD: 30,
+    DRAW_MULT: 0.3,
   },
 
   /** orgId が S/A/B どのランキングか取得 */
@@ -13569,10 +13561,11 @@ Engine.mvpRace = {
     const hist = cr.history || [];
     const ovr = Engine.util.ov(fighter);
 
-    let ppvChampion = 0, ppvRunnerUp = 0, ppvParticipation = 0;
+    let ppvChampion = 0, ppvRunnerUp = 0, ppvOtherWin = 0, ppvOtherLoss = 0;
     let titleWins = 0, titleDefenses = 0;
     let domeAppearances = 0;
-    let bigMatches = 0;
+    let bigMatchPoints = 0;
+    let bigMatch85 = 0, bigMatch90 = 0, bigMatch95 = 0;
     let warWins = 0, warLosses = 0, warDraws = 0;
     let b3Decline = 0, b3Rejected = 0;
 
@@ -13581,11 +13574,20 @@ Engine.mvpRace = {
       if (ev.type === 'ppvMainEvent') {
         if (ev.isSummit && ev.won === true) ppvChampion++;
         else if (ev.isSummit && ev.won === false) ppvRunnerUp++;
-        else if (!ev.isSummit) ppvParticipation++;
+        else if (!ev.isSummit) {
+          if (ev.won === true) ppvOtherWin++;
+          else if (ev.won === false) ppvOtherLoss++;
+          else ppvOtherLoss++; // 旧データ(won未定義)は敗北扱いで安全側
+        }
       } else if (ev.type === 'titleWin') titleWins++;
       else if (ev.type === 'titleDefense') titleDefenses++;
       else if (ev.type === 'domeMain') domeAppearances++;
-      else if (ev.type === 'bigMatch') bigMatches++;
+      else if (ev.type === 'bigMatch') {
+        const mq = typeof ev.mq === 'number' ? ev.mq : 0;
+        if (mq >= 95) { bigMatchPoints += P.BIG_MATCH_MQ95; bigMatch95++; }
+        else if (mq >= 90) { bigMatchPoints += P.BIG_MATCH_MQ90; bigMatch90++; }
+        else if (mq >= 85) { bigMatchPoints += P.BIG_MATCH_MQ85; bigMatch85++; }
+      }
       else if (ev.type === 'war' || ev.type === 'b3Challenge') {
         if (ev.won === true) warWins++;
         else if (ev.won === false) warLosses++;
@@ -13603,31 +13605,41 @@ Engine.mvpRace = {
       if (ait && ait.world && ait.world.championId === fighter.id) isCurrentChamp = true;
     }
 
-    // シーズン最高MQ補正（団体内）
-    const orgBest = Engine.mvpRace._orgSeasonBestMQ(state, orgId);
+    // シーズン最高MQ補正: 個人ベース化（v2.1）
+    // careerBestMQ がそのシーズン更新分のときだけ採用。団体最高MQ依存はやめ、エース偏重を緩和
     const personalBest = (fighter.careerBestMQ && fighter._lastBestMQSeason === season) ? fighter.careerBestMQ : 0;
-    // シンプルに: 団体最高MQから70未満を切り捨てた値。エースに偏るが「シーズン最高MQ補正」の趣旨に沿う
-    const bestMQ = orgBest;
+    const bestMQ = personalBest;
     const seasonBestMQBonus = bestMQ >= P.SEASON_BEST_MQ_BASE ? (bestMQ - P.SEASON_BEST_MQ_BASE) : 0;
 
-    const ppv = ppvChampion * P.PPV_CHAMPION + ppvRunnerUp * P.PPV_RUNNER_UP + ppvParticipation * P.PPV_PARTICIPATION;
+    // 人気・集客力ボーナス（v2.1 新規）
+    const popVal = fighter.popularity || 0;
+    const drawVal = fighter.drawPower || 0;
+    const popBonus = Math.max(0, popVal - P.POP_THRESHOLD) * P.POP_MULT;
+    const drawBonus = Math.max(0, drawVal - P.DRAW_THRESHOLD) * P.DRAW_MULT;
+
+    const ppv = ppvChampion * P.PPV_CHAMPION + ppvRunnerUp * P.PPV_RUNNER_UP
+              + ppvOtherWin * P.PPV_OTHER_WIN + ppvOtherLoss * P.PPV_OTHER_LOSS;
     const title = titleWins * P.TITLE_WIN + titleDefenses * P.TITLE_DEFENSE_PER + (isCurrentChamp ? P.TITLE_HOLD_AT_END : 0);
     const dome = domeAppearances * P.DOME_MAIN_APPEARANCE;
-    const mq = bigMatches * P.BIG_MATCH_PER + seasonBestMQBonus;
+    const mq = bigMatchPoints + seasonBestMQBonus;
     const war = warWins * P.WAR_WIN + warLosses * P.WAR_LOSS;
     const b3 = b3Decline * P.B3_DECLINE + b3Rejected * P.B3_REJECTED;
     const orgRank = Engine.mvpRace._orgRankPoints(state, orgId);
+    const draw = popBonus + drawBonus;
 
-    const points = ovr + ppv + title + dome + mq + war + b3 + orgRank;
+    const points = ovr + ppv + title + dome + mq + war + b3 + orgRank + draw;
 
     return {
       points,
       breakdown: {
-        ovr, ppv, title, dome, mq, war, b3, orgRank,
+        ovr, ppv, title, dome, mq, war, b3, orgRank, draw,
         meta: {
           titleWins, titleDefenses, isCurrentChamp,
-          ppvChampion, ppvRunnerUp, ppvParticipation,
-          bigMatches, bestMQ,
+          ppvChampion, ppvRunnerUp, ppvOtherWin, ppvOtherLoss,
+          bigMatch85, bigMatch90, bigMatch95,
+          bigMatches: bigMatch85 + bigMatch90 + bigMatch95,
+          bestMQ,
+          popularity: popVal, drawPower: drawVal, popBonus, drawBonus,
           warWins, warLosses, warDraws,
           domeAppearances,
           orgRank: state.rankings ? ((state.rankings.find(x => x.orgId === orgId) || {}).rank || 99) : 99,
@@ -14119,18 +14131,23 @@ Engine.mvpRace = {
     const week = state.week || 1;
     const remaining = Math.max(0, 48 - week);
     const elem1 = (Engine.mvpRace._topElements(r1.breakdown.meta)[0] || 'シーズンの積み重ね');
-    const gap12 = r2 ? (r1.points - r2.points) : 0;
+    const gap12 = r2 ? Math.max(0, Math.round(r1.points - r2.points)) : 0;
     const elem2 = r2 ? (Engine.mvpRace._topElements(r2.breakdown.meta)[0] || '安定した戦績') : '';
-    const gap23 = (r2 && r3) ? (r2.points - r3.points) : 0;
+    const gap23 = (r2 && r3) ? Math.max(0, Math.round(r2.points - r3.points)) : 0;
     const elem3raw = r3 ? Engine.mvpRace._topElements(r3.breakdown.meta)[0] : '';
     const events = (week < 24) ? 'PPV予選、対抗戦、ドーム興行' : (week < 40) ? '対抗戦、ドーム興行、年末の頂上決戦' : '年末の頂上決戦';
 
-    let text = `第${week}週時点、首位を走る${r1.fighterName}は${elem1}で${r1.points}pt。`;
-    if (r2) text += `そのわずか${gap12}pt後ろにつけるのが、${elem2}の${r2.fighterName}。`;
+    let text = `第${week}週時点、首位を走る${r1.fighterName}は${elem1}で${Math.round(r1.points)}pt。`;
+    if (r2) {
+      text += gap12 <= 0
+        ? `同点で${elem2}の${r2.fighterName}が並ぶ。`
+        : `そのわずか${gap12}pt後ろにつけるのが、${elem2}の${r2.fighterName}。`;
+    }
     if (r3) {
+      const gapPhrase = gap23 <= 0 ? '同点で' : `さらに${gap23}pt差で、`;
       text += elem3raw
-        ? `さらに${gap23}pt差で、${elem3raw}の${r3.fighterName}が虎視眈々と上位を狙う。`
-        : `さらに${gap23}pt差で、${r3.fighterName}が虎視眈々と上位を狙う。`;
+        ? `${gapPhrase}${elem3raw}の${r3.fighterName}が虎視眈々と上位を狙う。`
+        : `${gapPhrase}${r3.fighterName}が虎視眈々と上位を狙う。`;
     }
     text += `残り${remaining}週、${events} —— このレースの主人公として年末を迎えるのは、果たして誰になるのか。`;
     return text;
