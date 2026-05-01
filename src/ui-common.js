@@ -8578,6 +8578,252 @@ if (typeof window !== 'undefined') {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Phase B-2: F09 派閥対抗戦 モーダル4種
+// spec: faction-rivalry-points-spec-v0.1 §3.5
+// data 構造（呼び出し側で構築）:
+//   Opening: { factionA, factionB, lineA, lineB, narration }
+//             factionX = { id, name, leaderId, leaderName, leaderOvr, members: [{id,name,ovr},...] }
+//   MatchPre: { fighterA, fighterB, lineA, lineB, matchIndex, totalMatches }
+//   MatchPost: { winner, loser, winnerLine, loserLine, ptDelta, currentScore } (currentScore: {a,b,aFid,bFid})
+//   Ending: { winnerFaction, loserFaction, winnerLine, loserLine, scoreA, scoreB, swept, narration }
+// ─────────────────────────────────────────────────────────────────────────────
+
+function _f09BgmStart(volume) {
+  try {
+    if (typeof Audio !== 'undefined' && Audio.fileBgm && Audio.fileBgm.play) {
+      Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: true, volume: volume || 0.20 });
+    }
+  } catch (e) {}
+}
+function _f09BgmStop(fadeMs) {
+  try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.fadeOut(fadeMs || 800); } catch (e) {}
+}
+
+// オープニング：両派閥全メンバー並列 + 両リーダー宣戦
+function showFactionF09OpeningModal(data, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF09OpeningModal(data, state, onContinue)); return; }
+  if (!data) { if (onContinue) onContinue(); return; }
+
+  const aPp = _factionUpperUrl(data.factionA.leaderId);
+  const bPp = _factionUpperUrl(data.factionB.leaderId);
+  const memberRow = (members) => (members || []).map(m => {
+    const url = _factionUpperUrl(m.id);
+    return `<div style="width:42px;height:54px;background:#2a2520 url('${url}') center 20%/cover no-repeat;border:1px solid rgba(255,255,255,0.08)" title="${m.name}"></div>`;
+  }).join('');
+
+  const html = `
+    <div class="fevt-overlay-arena" id="fevtF09OpeningOverlay">
+      <div class="fevt-arena-card f08-pre">
+        <div class="fevt-arena-header">
+          <div class="fevt-arena-title">⚔ 派閥対抗戦 ・ 開幕</div>
+          <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ FACTION WAR</div>
+        </div>
+        <div class="fevt-arena-narration">${String(data.narration || '')}</div>
+        <div class="fevt-arena-stage">
+          <div class="fevt-arena-duel">
+            <div class="fevt-arena-col">
+              <div class="fevt-arena-portrait" style="background-image:url('${aPp}');background-size:cover;background-position:center 20%"></div>
+              <div class="fevt-arena-faction">${String(data.factionA.name)}</div>
+              <div class="fevt-arena-name">${String(data.factionA.leaderName)}</div>
+              <div class="fevt-arena-org">LEADER ・ OVR ${data.factionA.leaderOvr}</div>
+              <div style="display:flex;gap:4px;justify-content:center;margin:8px 0;flex-wrap:wrap">${memberRow(data.factionA.members)}</div>
+              <div class="fevt-arena-bubble">
+                <span class="fevt-arena-bubble-name">${String(data.factionA.leaderName)}</span>
+                ${String(data.lineA || '')}
+              </div>
+            </div>
+            <div class="fevt-arena-vs">VS</div>
+            <div class="fevt-arena-col">
+              <div class="fevt-arena-portrait" style="background-image:url('${bPp}');background-size:cover;background-position:center 20%"></div>
+              <div class="fevt-arena-faction">${String(data.factionB.name)}</div>
+              <div class="fevt-arena-name">${String(data.factionB.leaderName)}</div>
+              <div class="fevt-arena-org">LEADER ・ OVR ${data.factionB.leaderOvr}</div>
+              <div style="display:flex;gap:4px;justify-content:center;margin:8px 0;flex-wrap:wrap">${memberRow(data.factionB.members)}</div>
+              <div class="fevt-arena-bubble">
+                <span class="fevt-arena-bubble-name">${String(data.factionB.leaderName)}</span>
+                ${String(data.lineB || '')}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fevt-arena-actions">
+          <button class="fevt-arena-btn" id="fevtF09OpeningBtn">対抗戦を開始 →</button>
+        </div>
+      </div>
+    </div>`;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-arena');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  _f09BgmStart(0.22);
+  try { if (typeof Audio !== 'undefined' && Audio.stinger) setTimeout(() => Audio.stinger('../bgm/f07_gong_v1.mp3', 0.20), 150); } catch (e) {}
+
+  const btn = root.querySelector('#fevtF09OpeningBtn');
+  if (btn) btn.addEventListener('click', () => {
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    _factionCloseCinematicOverlay();
+    if (onContinue) onContinue();
+  });
+}
+
+// 各試合前 簡略 confrontation
+function showFactionF09MatchPreModal(data, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF09MatchPreModal(data, state, onContinue)); return; }
+  if (!data) { if (onContinue) onContinue(); return; }
+  const aPp = _factionUpperUrl(data.fighterA.id);
+  const bPp = _factionUpperUrl(data.fighterB.id);
+  const idx = data.matchIndex || 1, total = data.totalMatches || 5;
+  const html = `
+    <div class="fevt-overlay-arena" id="fevtF09PreOverlay">
+      <div class="fevt-arena-card f08-pre">
+        <div class="fevt-arena-header">
+          <div class="fevt-arena-title">⚔ 第${idx}試合 / ${total}</div>
+          <div class="fevt-arena-meta">FACTION WAR ・ MATCH ${idx}</div>
+        </div>
+        <div class="fevt-arena-stage">
+          <div class="fevt-arena-duel">
+            <div class="fevt-arena-col">
+              <div class="fevt-arena-portrait" style="background-image:url('${aPp}');background-size:cover;background-position:center 20%"></div>
+              <div class="fevt-arena-faction">${String(data.fighterA.factionName || '')}</div>
+              <div class="fevt-arena-name">${String(data.fighterA.name)}</div>
+              <div class="fevt-arena-bubble"><span class="fevt-arena-bubble-name">${String(data.fighterA.name)}</span>${String(data.lineA || '')}</div>
+            </div>
+            <div class="fevt-arena-vs">VS</div>
+            <div class="fevt-arena-col">
+              <div class="fevt-arena-portrait" style="background-image:url('${bPp}');background-size:cover;background-position:center 20%"></div>
+              <div class="fevt-arena-faction">${String(data.fighterB.factionName || '')}</div>
+              <div class="fevt-arena-name">${String(data.fighterB.name)}</div>
+              <div class="fevt-arena-bubble"><span class="fevt-arena-bubble-name">${String(data.fighterB.name)}</span>${String(data.lineB || '')}</div>
+            </div>
+          </div>
+        </div>
+        <div class="fevt-arena-actions">
+          <button class="fevt-arena-btn" id="fevtF09PreBtn">試合へ →</button>
+        </div>
+      </div>
+    </div>`;
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-arena');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  const btn = root.querySelector('#fevtF09PreBtn');
+  if (btn) btn.addEventListener('click', () => {
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    _factionCloseCinematicOverlay();
+    if (onContinue) onContinue();
+  });
+}
+
+// 各試合後 簡略 aftermath（ptDelta + 現在スコア表示）
+function showFactionF09MatchPostModal(data, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF09MatchPostModal(data, state, onContinue)); return; }
+  if (!data) { if (onContinue) onContinue(); return; }
+  const wPp = _factionUpperUrl(data.winner.id);
+  const lPp = _factionUpperUrl(data.loser.id);
+  const score = data.currentScore || {};
+  const html = `
+    <div class="fevt-overlay-arena" id="fevtF09PostOverlay">
+      <div class="fevt-arena-card f08-post">
+        <div class="fevt-arena-header">
+          <div class="fevt-arena-title">⚔ 決着</div>
+          <div class="fevt-arena-meta">${data.ptDelta ? `+${data.ptDelta}PT` : ''}</div>
+        </div>
+        <div class="fevt-arena-stage">
+          <div class="fevt-arena-portrait winner-big" style="background-image:url('${wPp}');background-size:cover;background-position:center 20%;margin:0 auto 10px"></div>
+          <div class="fevt-arena-faction">${String(data.winner.factionName || '')}</div>
+          <div class="fevt-arena-name">${String(data.winner.name)}</div>
+          <div class="fevt-arena-org">WINNER</div>
+          <div class="fevt-arena-bubble winner-big" style="margin-left:auto;margin-right:auto">
+            <span class="fevt-arena-bubble-name">${String(data.winner.name)}</span>${String(data.winnerLine || '')}
+          </div>
+          <div class="fevt-arena-divider"></div>
+          <div class="fevt-arena-name" style="opacity:0.75">${String(data.loser.factionName || '')} ・ ${String(data.loser.name)}</div>
+          <div class="fevt-arena-bubble loser" style="margin-left:auto;margin-right:auto">
+            <span class="fevt-arena-bubble-name">${String(data.loser.name)}</span>${String(data.loserLine || '')}
+          </div>
+        </div>
+        <div style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold-light, #f0d078);letter-spacing:2px;margin:12px 0">
+          ${score.aName || ''} <span style="color:#fff">${score.a || 0}</span> — <span style="color:#fff">${score.b || 0}</span> ${score.bName || ''}
+        </div>
+        <div class="fevt-arena-actions">
+          <button class="fevt-arena-btn" id="fevtF09PostBtn">次の試合へ →</button>
+        </div>
+      </div>
+    </div>`;
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-arena');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  const btn = root.querySelector('#fevtF09PostBtn');
+  if (btn) btn.addEventListener('click', () => {
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    _factionCloseCinematicOverlay();
+    if (onContinue) onContinue();
+  });
+}
+
+// エンディング：勝ち越し派閥スポット + 両リーダー総括
+function showFactionF09EndingModal(data, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF09EndingModal(data, state, onContinue)); return; }
+  if (!data) { if (onContinue) onContinue(); return; }
+  const wPp = _factionUpperUrl(data.winnerFaction.leaderId);
+  const lPp = _factionUpperUrl(data.loserFaction.leaderId);
+  const html = `
+    <div class="fevt-overlay-arena" id="fevtF09EndingOverlay">
+      <div class="fevt-arena-card f08-post">
+        <div class="fevt-arena-header">
+          <div class="fevt-arena-title">⚔ 派閥対抗戦 ・ 結末</div>
+          <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ AFTERMATH</div>
+        </div>
+        <div class="fevt-arena-narration">${String(data.narration || '')}</div>
+        <div class="fevt-arena-stage">
+          <div class="fevt-arena-portrait winner-big" style="background-image:url('${wPp}');background-size:cover;background-position:center 20%;margin:0 auto 10px"></div>
+          <div class="fevt-arena-faction">${String(data.winnerFaction.name)}</div>
+          <div class="fevt-arena-name">${String(data.winnerFaction.leaderName)}</div>
+          <div class="fevt-arena-org">勝ち越し派閥</div>
+          <div class="fevt-arena-bubble winner-big" style="margin-left:auto;margin-right:auto">
+            <span class="fevt-arena-bubble-name">${String(data.winnerFaction.leaderName)}</span>${String(data.winnerLine || '')}
+          </div>
+          <div class="fevt-arena-divider"></div>
+          <div class="fevt-arena-portrait loser" style="background-image:url('${lPp}');background-size:cover;background-position:center 20%;margin:0 auto 8px"></div>
+          <div class="fevt-arena-faction" style="opacity:0.75">${String(data.loserFaction.name)}</div>
+          <div class="fevt-arena-name" style="font-size:15px;opacity:0.85">${String(data.loserFaction.leaderName)}</div>
+          <div class="fevt-arena-bubble loser" style="margin-left:auto;margin-right:auto">
+            <span class="fevt-arena-bubble-name">${String(data.loserFaction.leaderName)}</span>${String(data.loserLine || '')}
+          </div>
+        </div>
+        <div style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold-light, #f0d078);letter-spacing:2px;margin:14px 0">
+          ${String(data.winnerFaction.name)} <span style="color:#fff">${data.scoreA}</span> — <span style="color:#fff">${data.scoreB}</span> ${String(data.loserFaction.name)}
+        </div>
+        ${data.swept ? '<div style="text-align:center;font-family:\'Oswald\',sans-serif;font-size:11px;letter-spacing:3px;color:var(--accent-hostility);margin-bottom:12px">勝ち越しボーナス +15PT</div>' : ''}
+        <div class="fevt-arena-actions">
+          <button class="fevt-arena-btn" id="fevtF09EndingBtn">閉じる</button>
+        </div>
+      </div>
+    </div>`;
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-arena');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  const btn = root.querySelector('#fevtF09EndingBtn');
+  if (btn) btn.addEventListener('click', () => {
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    try { if (typeof Audio !== 'undefined' && Audio.stinger) Audio.stinger('../bgm/f06_fin_chime_v1.mp3', 0.16); } catch (e) {}
+    _f09BgmStop(800);
+    _factionCloseCinematicOverlay();
+    if (onContinue) onContinue();
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.showFactionF09OpeningModal = showFactionF09OpeningModal;
+  window.showFactionF09MatchPreModal = showFactionF09MatchPreModal;
+  window.showFactionF09MatchPostModal = showFactionF09MatchPostModal;
+  window.showFactionF09EndingModal = showFactionF09EndingModal;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // F02 進展4種（ignite / resolution / peace / endless）: 通知型 Stage イベント
 // モック: docs/ui/mockups/faction-events.html L1751-1984
 // spec:  docs/ui/03-screens/faction-events.md F02 進展①〜④

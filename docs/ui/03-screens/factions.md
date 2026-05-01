@@ -2,7 +2,7 @@
 
 **ファイル**：`docs/ui/03-screens/factions.md`
 **最終更新**：2026-05-01
-**実装状況**：未着手（Phase A' Mockup 確定 / Phase B 実装スコープ）
+**実装状況**：v0.9 完全リデザイン実装完了（Phase B-2 / 2026-05-01）— `_renderDbFactions` を v0.9 構造に全面書き換え（FeudDuelGrid / FactionCard 対比ミラー / 2ND・3RD 対比配置 / RANK&FILE タイル / FACTION CHRONICLE 黒田ナレーション / Timeline 展開）。F09 演出モーダル4種（Opening / MatchPre / MatchPost / Ending）も実装済み
 **Mockup**：`docs/ui/mockups/mockup-faction-screen-v0.9.html`
 
 ---

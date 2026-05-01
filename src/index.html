@@ -8068,92 +8068,382 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 /* 人気(数値のみ・色階調) */
 .wr-pop-num{font-family:var(--font-display);font-size:18px;line-height:1;text-align:center;display:block}
 
-/* === Faction Tab v0.9 (Phase B 最低限可視化) ===
-   完全リデザインは別タスク（docs/ui/03-screens/factions.md / mockup-faction-screen-v0.9.html 準拠） */
-.feud-section {
-  margin: 0 0 24px;
-  padding: 16px 14px;
-  background: linear-gradient(180deg, rgba(20,12,10,0.82) 0%, rgba(28,16,14,0.72) 100%);
-  border: 1px solid rgba(196,98,58,0.32);
-  border-top: 3px solid var(--accent-hostility);
-  border-radius: 6px;
-  box-shadow: 0 2px 14px rgba(138,31,31,0.12), inset 0 0 0 1px rgba(196,98,58,0.05);
+/* === Faction Tab v0.9 (Phase B-2 完全リデザイン)
+   docs/ui/03-screens/factions.md / mockup-faction-screen-v0.9.html 準拠 === */
+
+/* レイヤラベル */
+.dfx-section-title {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 4px; font-size: 13px;
+  color: var(--office-text-on-dark-sub, #b8b1a3);
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(100,85,50,0.22);
 }
-.feud-section-title {
-  font-size: 13px; font-weight: 900; letter-spacing: 0.08em;
-  color: var(--accent-hostility);
-  margin-bottom: 12px;
-  display: flex; align-items: center; gap: 6px;
-  text-shadow: 0 0 8px rgba(208,122,62,0.25);
+.dfx-section-title .ja { font-family: 'Noto Sans JP', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 15px; color: var(--office-text-on-dark-main, #e8e6e0); }
+.dfx-section-title .count { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--gold); margin-left: auto; }
+.dfx-layer-label {
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--office-text-on-dark-dim, #7a7466);
+  margin: 24px 0 12px;
+  padding-left: 10px;
+  border-left: 3px solid var(--gold);
 }
-.feud-pair {
-  display: grid; grid-template-columns: 1fr auto 1fr;
-  gap: 14px; align-items: center;
-  padding: 10px 6px;
-}
-.feud-side {
-  display: flex; flex-direction: column; gap: 6px;
-  color: var(--office-text-on-dark-main, #e5dccd);
-}
-.feud-side.feud-side-left { text-align: right; align-items: flex-end; }
-.feud-side.feud-side-right { text-align: left; align-items: flex-start; }
-.feud-faction-name {
-  font-family: 'Bebas Neue', 'Oswald', sans-serif;
-  font-size: 20px; letter-spacing: 0.06em;
-  color: var(--cream-gold); text-shadow: 0 0 6px rgba(122,101,48,0.35);
-}
-.feud-leader-name { font-size: 12px; color: var(--office-text-on-dark-sub, #c0b59f); }
-.feud-pt-bar {
-  width: 100%; height: 14px; background: rgba(0,0,0,0.45);
-  border: 1px solid rgba(196,98,58,0.22); border-radius: 7px; overflow: hidden;
+.dfx-layer-label.feud { border-left-color: var(--accent-hostility); color: var(--accent-hostility); }
+
+/* 派閥ダークカード */
+.dfc {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.4) 100%),
+    var(--office-panel-dark, #181614);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-top: 4px solid var(--faction-accent, var(--accent-faction-1));
+  color: var(--office-text-on-dark-main, #e8e6e0);
+  border-radius: 0;
   position: relative;
+  display: flex; flex-direction: column;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  cursor: pointer;
+  transition: transform 150ms, box-shadow 150ms;
 }
-.feud-pt-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-blood) 0%, var(--accent-hostility) 100%);
+.dfc:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.6); }
+.dfc.in-feud {
+  border-top-color: var(--accent-hostility);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4), inset 0 0 30px rgba(196,98,58,0.05);
+}
+.dfc-flag {
+  position: absolute; top: -1px;
+  background: var(--accent-blood); color: #fff;
+  padding: 3px 10px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px; letter-spacing: 2px;
+  z-index: 1;
+}
+.dfc.left .dfc-flag { left: -1px; }
+.dfc.right .dfc-flag { right: -1px; }
+
+/* Hero ブロック */
+.dfc-hero {
+  display: grid;
+  gap: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(212,168,67,0.04) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  align-items: center;
+}
+.dfc.in-feud .dfc-hero { background: linear-gradient(180deg, rgba(196,98,58,0.10) 0%, transparent 100%); }
+.dfc.left .dfc-hero { grid-template-columns: 1fr auto; text-align: right; }
+.dfc.left .dfc-hero .name-row { justify-content: flex-end; }
+.dfc.left .dfc-hero .leader-stats { justify-content: flex-end; }
+.dfc.left .dfc-hero .tags { justify-content: flex-end; }
+.dfc.right .dfc-hero { grid-template-columns: auto 1fr; }
+.dfc:not(.left):not(.right) .dfc-hero { grid-template-columns: auto 1fr; }
+.dfc-hero .leader-pp {
+  width: 78px; height: 96px;
+  background: #2a2520;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 2px 2px 0 var(--faction-accent, var(--accent-faction-1));
+}
+.dfc-hero .leader-pp img { width: 100%; height: 100%; object-fit: cover; object-position: top; filter: contrast(1.05); }
+.dfc-hero .meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.dfc-hero .name-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.dfc-hero .name {
+  font-weight: 900; font-size: 22px; color: #fff;
+  letter-spacing: 2px; line-height: 1;
+  text-shadow: 0 0 12px var(--faction-accent, var(--accent-faction-1));
+}
+.dfc-hero .count { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--gold); }
+.dfc-hero .leader-name { font-size: 11px; color: var(--office-text-on-dark-sub, #b8b1a3); }
+.dfc-hero .leader-name .role-mark {
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px; letter-spacing: 2px;
+  background: var(--faction-accent, var(--accent-faction-1));
+  color: #1a1611;
+  padding: 1px 6px; margin-right: 4px;
+}
+.dfc.left .dfc-hero .leader-name .role-mark { margin-right: 0; margin-left: 4px; }
+.dfc-hero .leader-stats { display: flex; gap: 12px; align-items: baseline; margin-top: 2px; }
+.dfc-hero .stat-ovr { font-family: 'Bebas Neue', sans-serif; font-size: 30px; color: var(--gold); line-height: 0.9; text-shadow: 0 0 8px rgba(212,168,67,0.3); }
+.dfc-hero .stat-ovr small { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 1.5px; color: var(--office-text-on-dark-dim, #7a7466); margin-left: 2px; }
+.dfc-hero .stat-pop { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--pop-pink); line-height: 0.9; }
+.dfc-hero .stat-pop::before { content: '★ '; font-size: 13px; color: var(--pop-pink-light); }
+.dfc-hero .stat-pop small { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 1.5px; color: var(--office-text-on-dark-dim, #7a7466); margin-left: 2px; }
+.dfc-hero .tags { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
+.dfc-tag {
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px; letter-spacing: 1.5px;
+  padding: 1px 6px;
+  background: rgba(212,168,67,0.10);
+  color: var(--gold-light, #f0d078);
+  text-transform: uppercase;
+  border: 1px solid rgba(212,168,67,0.25);
+}
+.dfc-tag.auth { background: rgba(212,168,67,0.18); border-color: rgba(212,168,67,0.4); }
+
+/* RIVALRY POINTS バー */
+.dfc-pp { padding: 10px 16px; background: rgba(0,0,0,0.45); border-bottom: 1px solid rgba(255,255,255,0.06); }
+.dfc-pp-label { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-hostility); margin-bottom: 5px; }
+.dfc.left .dfc-pp-label { text-align: right; }
+.dfc-pp-row { display: grid; align-items: center; gap: 10px; }
+.dfc.left .dfc-pp-row { grid-template-columns: 1fr auto; }
+.dfc.right .dfc-pp-row { grid-template-columns: auto 1fr; }
+.dfc-pp-bar { height: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); position: relative; overflow: hidden; }
+.dfc-pp-fill {
+  position: absolute; top: 0; bottom: 0;
+  background: linear-gradient(90deg, var(--faction-accent, var(--accent-faction-1)) 0%, var(--faction-accent-light, #d8a87a) 100%);
+  box-shadow: 0 0 12px var(--faction-accent, var(--accent-faction-1));
   transition: width 300ms ease-out;
 }
-.feud-side-left .feud-pt-fill { float: right; background: linear-gradient(270deg, var(--accent-blood) 0%, var(--accent-hostility) 100%); }
-.feud-pt-text {
+.dfc.left .dfc-pp-fill { right: 0; background: linear-gradient(270deg, var(--faction-accent) 0%, var(--faction-accent-light) 100%); }
+.dfc.right .dfc-pp-fill { left: 0; }
+.dfc-pp-pt { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 1px; color: #fff; line-height: 0.85; }
+.dfc-pp-pt small { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 1.5px; color: var(--gold); margin-left: 2px; }
+
+/* Roster (2ND/3RD) */
+.dfc-roster { padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; }
+.dfc-roster-row {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: rgba(0,0,0,0.30);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.dfc.right .dfc-roster-row {
+  grid-template-columns: auto auto 1fr;
+  border-left: 3px solid var(--faction-accent, var(--accent-faction-1));
+}
+.dfc.left .dfc-roster-row {
+  grid-template-columns: 1fr auto auto;
+  border-right: 3px solid var(--faction-accent, var(--accent-faction-1));
+}
+.dfc:not(.left):not(.right) .dfc-roster-row {
+  grid-template-columns: auto auto 1fr;
+  border-left: 3px solid var(--faction-accent, var(--accent-faction-1));
+}
+.dfc-roster-row .pp { width: 44px; height: 54px; background: #2a2520; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.06); }
+.dfc-roster-row .pp img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.dfc-roster-row .stats {
+  display: flex; flex-direction: column;
+  align-items: center;
+  line-height: 0.95;
+  flex-shrink: 0;
+  padding: 0 8px;
+  border-left: 1px dashed rgba(255,255,255,0.10);
+  border-right: 1px dashed rgba(255,255,255,0.10);
+  min-width: 40px;
+}
+.dfc-roster-row .ovr { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--gold); letter-spacing: 1px; }
+.dfc-roster-row .ovr-lbl { font-family: 'Oswald', sans-serif; font-size: 7px; letter-spacing: 1.5px; color: var(--office-text-on-dark-dim, #7a7466); margin-top: -2px; }
+.dfc-roster-row .pop { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: var(--pop-pink); margin-top: 3px; }
+.dfc-roster-row .pop::before { content: '★'; margin-right: 2px; font-size: 9px; color: var(--pop-pink-light); }
+.dfc-roster-row .name-block { min-width: 0; }
+.dfc.left .dfc-roster-row .name-block { text-align: right; }
+.dfc-roster-row .role { font-family: 'Oswald', sans-serif; font-size: 8px; letter-spacing: 2px; color: var(--faction-accent, var(--accent-faction-1)); }
+.dfc-roster-row .nm { font-weight: 700; font-size: 13px; color: #f0e8d8; line-height: 1.1; }
+.dfc-roster-row .sub-info { font-size: 10px; color: var(--office-text-on-dark-dim, #7a7466); margin-top: 2px; line-height: 1.3; }
+
+/* RANK & FILE */
+.dfc-rankfile {
+  padding: 8px 14px;
+  border-top: 1px dashed rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.25);
+}
+.dfc-rankfile-head {
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--faction-accent, var(--accent-faction-1));
+  margin-bottom: 6px;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.dfc.left .dfc-rankfile-head { justify-content: flex-end; flex-direction: row-reverse; }
+.dfc-rankfile-head .count { font-family: 'Bebas Neue', sans-serif; font-size: 12px; color: var(--office-text-on-dark-sub, #b8b1a3); }
+.dfc-rankfile-tiles { display: flex; gap: 6px; flex-wrap: wrap; }
+.dfc.left .dfc-rankfile-tiles { justify-content: flex-end; }
+.rf-tile {
+  width: 50px; height: 64px;
+  position: relative;
+  background: #2a2520;
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.rf-tile img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.rf-tile .rf-ovr {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 70%);
+  color: var(--gold);
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px; color: var(--accent-hostility);
-  letter-spacing: 0.04em;
+  font-size: 16px; text-align: center; line-height: 1;
+  padding: 8px 0 3px; letter-spacing: 0.5px;
+  text-shadow: 0 0 4px rgba(0,0,0,0.8);
+}
+
+/* FACTION CHRONICLE (黒田ナレーション) */
+.dfc-narrative {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background:
+    linear-gradient(180deg, rgba(212,168,67,0.05) 0%, transparent 80%),
+    rgba(0,0,0,0.30);
+  font-size: 11px;
+  color: var(--office-text-on-dark-sub, #b8b1a3);
+  line-height: 1.7;
+}
+.dfc-narrative .nh {
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed rgba(212,168,67,0.25);
+  display: flex; align-items: center; gap: 6px;
+}
+.dfc.left .dfc-narrative .nh { justify-content: flex-end; }
+.dfc.left .dfc-narrative { text-align: right; }
+.dfc-narrative p { margin: 0 0 6px; color: #d8d2c0; }
+.dfc-narrative p:last-child { margin-bottom: 0; }
+.dfc-narrative em {
+  font-style: normal;
+  color: var(--gold-light, #f0d078);
+  font-weight: 700;
+  background: rgba(212,168,67,0.10);
+  padding: 0 3px;
+}
+.dfc-narrative strong { color: #fff; }
+
+/* Stats / Foot */
+.dfc-stats {
+  padding: 8px 14px;
+  border-top: 1px dashed rgba(255,255,255,0.08);
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 12px;
+}
+.dfc.left .dfc-stats { direction: rtl; }
+.dfc.left .dfc-stats > * { direction: ltr; }
+.dfc-stat-row { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.dfc.left .dfc-stat-row { flex-direction: row-reverse; }
+.dfc-stat-row .lbl { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 1.5px; color: var(--gold); flex: 0 0 36px; }
+.dfc.left .dfc-stat-row .lbl { text-align: right; }
+.dfc-stat-row .val { font-weight: 700; color: #f0e8d8; }
+.dfc-stat-row .val.pos { color: var(--accent-bond, #5a8a6a); }
+.dfc-stat-row .val.warn { color: var(--accent-hostility); }
+.dfc-stat-row .mini-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.06); overflow: hidden; position: relative; }
+.dfc-stat-row .mini-bar .mini-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--gold); }
+.dfc-stat-row .mini-bar .mini-fill.pos { background: var(--accent-bond, #5a8a6a); }
+
+.dfc-foot {
+  padding: 8px 14px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.4);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.dfc.left .dfc-foot { text-align: right; }
+.dfc-foot .meters { display: flex; gap: 4px; flex-wrap: wrap; }
+.dfc.left .dfc-foot .meters { justify-content: flex-end; }
+.dfc-meter {
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 2px 8px;
+  background: rgba(255,255,255,0.04);
+  color: var(--office-text-on-dark-sub, #b8b1a3);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.dfc-meter.solid-strong { background: rgba(90,138,106,0.15); color: var(--accent-bond, #5a8a6a); border-color: rgba(90,138,106,0.4); }
+.dfc-meter.solid-wobble { background: rgba(196,98,58,0.15); color: var(--accent-hostility); border-color: rgba(196,98,58,0.4); }
+.dfc-meter.mom-boom { background: rgba(212,168,67,0.18); color: var(--gold-light, #f0d078); border-color: rgba(212,168,67,0.4); }
+
+/* 対決グリッド */
+.feud-duel {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  align-items: stretch;
+  margin-bottom: 24px;
 }
 .feud-axis {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 0 8px;
-  min-width: 90px;
+  width: 96px;
+  background: radial-gradient(ellipse 100% 100% at 50% 50%, rgba(196,98,58,0.22) 0%, transparent 70%), var(--office-panel-dark-deep, #0e0d0a);
+  border: 1px solid var(--accent-hostility-deep);
+  border-top: 4px solid var(--accent-hostility);
+  display: flex; flex-direction: column;
+  align-items: center;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 0 30px rgba(107,26,26,0.25);
 }
-.feud-axis-vs {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 32px; color: var(--accent-blood);
-  text-shadow: 0 0 12px rgba(138,31,31,0.55);
-  letter-spacing: 0.08em; line-height: 1;
+.feud-axis-vs { padding: 18px 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.10); width: 100%; text-align: center; background: rgba(0,0,0,0.45); }
+.feud-axis-vs .vs { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 4px; color: var(--accent-hostility); text-shadow: 0 0 20px var(--accent-blood), 0 0 4px rgba(0,0,0,0.8); line-height: 1; }
+.feud-axis-vs .week { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 2px; color: var(--gold); margin-top: 6px; }
+.feud-axis-vs .near-badge { display: inline-block; margin-top: 5px; font-family: 'Oswald', sans-serif; font-size: 8px; letter-spacing: 1.5px; padding: 1px 5px; background: var(--accent-warn, #b88a2a); color: #1a0a08; }
+.feud-axis-vs .near-badge.fire { background: var(--accent-blood); color: #fff; }
+.feud-axis-goal { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.10); width: 100%; text-align: center; background: rgba(0,0,0,0.30); }
+.feud-axis-goal .lbl { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 2px; color: var(--accent-hostility); }
+.feud-axis-goal .v { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--gold-light, #f0d078); line-height: 0.9; text-shadow: 0 0 12px rgba(212,168,67,0.5); }
+.feud-axis-goal .sub { font-family: 'Oswald', sans-serif; font-size: 8px; letter-spacing: 1.5px; color: var(--office-text-on-dark-dim, #7a7466); margin-top: 2px; }
+.feud-axis-spine {
+  flex: 1; width: 4px; min-height: 24px;
+  background: linear-gradient(180deg, transparent 0%, var(--accent-blood) 15%, var(--accent-hostility) 50%, var(--accent-blood) 85%, transparent 100%);
+  box-shadow: 0 0 14px var(--accent-blood);
+  margin: 12px 0;
 }
-.feud-axis-week {
-  font-size: 10px; color: var(--office-text-on-dark-sub, #c0b59f);
-  letter-spacing: 0.08em; margin-top: 2px;
+.feud-axis-history {
+  width: 100%; padding: 10px 6px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  text-align: center; background: rgba(0,0,0,0.45); cursor: pointer;
+  transition: background 150ms;
 }
-.feud-axis-goal {
-  margin-top: 8px; font-size: 9px; color: var(--office-text-on-dark-dim, #8a8170);
-  letter-spacing: 0.06em;
+.feud-axis-history:hover { background: rgba(212,168,67,0.10); }
+.feud-axis-history .lbl { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
+.feud-axis-history .arrow { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: var(--gold-light, #f0d078); margin-top: 2px; }
+
+/* HISTORY タイムライン展開部 */
+.feud-timeline {
+  margin: -4px 0 24px;
+  padding: 14px 16px;
+  background: var(--office-panel-dark-deep, #0e0d0a);
+  border: 1px solid var(--accent-hostility-deep);
+  border-top: none;
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  color: var(--office-text-on-dark-sub, #b8b1a3);
 }
-.feud-axis-goal-num {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 20px; color: var(--cream-gold); line-height: 1;
+.feud-timeline-marker {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px; letter-spacing: 1.5px;
 }
-.feud-spine {
-  width: 2px; height: 40px; margin: 6px auto;
-  background: linear-gradient(180deg, transparent, var(--accent-blood), transparent);
-  box-shadow: 0 0 6px rgba(138,31,31,0.5);
-}
-.feud-near-badge {
-  display: inline-block;
-  margin-top: 6px;
-  padding: 2px 6px;
-  font-size: 9px; font-weight: 800; letter-spacing: 0.06em;
-  background: var(--accent-warn, #d4a747); color: #1a0a08;
-  border-radius: 3px;
+.feud-timeline-marker.f02 { color: var(--accent-warn, #b88a2a); border-color: rgba(184,138,42,0.4); }
+.feud-timeline-marker.match { color: var(--gold-light, #f0d078); border-color: rgba(212,168,67,0.4); }
+.feud-timeline-marker.f08 { color: var(--accent-hostility); border-color: rgba(196,98,58,0.4); }
+.feud-timeline-marker.f09 { color: #fff; background: var(--accent-blood); border-color: var(--accent-blood); }
+.feud-timeline-marker.now { color: #fff; background: var(--accent-hostility); border-color: var(--accent-hostility); font-weight: 800; }
+.feud-timeline-arrow { color: var(--office-text-on-dark-dim, #7a7466); }
+
+/* 中立派閥グリッド */
+.dfx-grid-neutral { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.dfx-grid-neutral .dfc-hero { padding: 10px 12px; gap: 10px; }
+.dfx-grid-neutral .dfc-hero .leader-pp { width: 60px; height: 72px; }
+.dfx-grid-neutral .dfc-hero .name { font-size: 17px; }
+.dfx-grid-neutral .dfc-hero .stat-ovr { font-size: 24px; }
+.dfx-grid-neutral .dfc-hero .stat-pop { font-size: 16px; }
+.dfx-grid-neutral .dfc-stats { grid-template-columns: 1fr; padding: 6px 12px; }
+
+@media (max-width: 900px) {
+  .dfx-grid-neutral { grid-template-columns: repeat(2, 1fr); }
+  .feud-duel { grid-template-columns: 1fr; }
+  .feud-axis { width: 100%; flex-direction: row; }
+  .feud-axis-vs, .feud-axis-goal, .feud-axis-history { width: auto; flex: 1; padding: 10px; }
+  .feud-axis-spine { display: none; }
 }
 /* 体調バー(既存 .cond-bar/.cond-fill を再利用、ラッパのみ追加) */
 .wr-cond-wrap{display:flex;align-items:center;gap:8px;min-width:90px}

@@ -5708,7 +5708,7 @@ const App = {
       s = rest;
     }
 
-    // ── Phase B: F09 派閥対抗戦 — sweep ボーナス適用 + pending クリア ──
+    // ── Phase B: F09 派閥対抗戦 — sweep ボーナス適用 + Ending モーダル予約 + pending クリア ──
     if (s._pendingF09 && Engine.factions && typeof Engine.factions.applyF09SweepBonus === 'function') {
       const f09 = s._pendingF09;
       const sweepResults = [];
@@ -5733,6 +5733,39 @@ const App = {
           factionAId: f09.factionAId, factionBId: f09.factionBId,
           matchCount: sweepResults.length,
         }]};
+      }
+      // Ending モーダル用ペイロードを予約（drainF09Ending で消費）
+      const winsA = sweepResults.filter(r => r.winnerFactionId === f09.factionAId).length;
+      const winsB = sweepResults.filter(r => r.winnerFactionId === f09.factionBId).length;
+      if (winsA !== winsB) {
+        const winFid = winsA > winsB ? f09.factionAId : f09.factionBId;
+        const losFid = winFid === f09.factionAId ? f09.factionBId : f09.factionAId;
+        const winF = (s.factions || []).find(f => f.id === winFid);
+        const losF = (s.factions || []).find(f => f.id === losFid);
+        if (winF && losF) {
+          const winLeader = (s.roster || []).find(c => c.id === winF.leaderId);
+          const losLeader = (s.roster || []).find(c => c.id === losF.leaderId);
+          const pickLine = (table, fighter) => {
+            if (!table || !fighter) return '';
+            const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
+            const arch = fighter.archetype || 'normal';
+            const byP = table[p] || table.normal || {};
+            const byA = byP[arch] || byP.normal || {};
+            const lines = byA.high || byA.mid || byA.low || [];
+            return lines.length ? lines[Math.floor(Math.random() * lines.length)] : '';
+          };
+          const winTable = (typeof FACTION_F09_ENDING_WIN_LINES !== 'undefined') ? FACTION_F09_ENDING_WIN_LINES : null;
+          const losTable = (typeof FACTION_F09_ENDING_LOSE_LINES !== 'undefined') ? FACTION_F09_ENDING_LOSE_LINES : null;
+          s = { ...s, _pendingF09Ending: {
+            winnerFaction: { name: winF.name, leaderId: winF.leaderId, leaderName: winLeader ? winLeader.name : '' },
+            loserFaction:  { name: losF.name, leaderId: losF.leaderId, leaderName: losLeader ? losLeader.name : '' },
+            winnerLine: pickLine(winTable, winLeader),
+            loserLine: pickLine(losTable, losLeader),
+            scoreA: winsA, scoreB: winsB,
+            swept: Math.abs(winsA - winsB) >= 2,
+            narration: `${winF.name}が${winF.name === winF.name && winsA > winsB ? winsA + '勝' + winsB + '敗' : winsB + '勝' + winsA + '敗'}で${losF.name}を制した――対抗戦は決着した。`,
+          }};
+        }
       }
       const { _pendingF09: _f9, ...restF9 } = s;
       s = restF9;
@@ -6288,6 +6321,18 @@ const App = {
     // (renderMatchPreview の nextIdx フォーカス時 + skipMatch/watchMatch 結果反映直後)
     // ため、ここでは結果画面を直接描画する。
     // Phase 3e: F08-A 試合後モーダルが予約されていれば結果画面前に逐次消化
+    // F09 Ending モーダル（F08 aftermath より先に出す: 対抗戦の総括が先）
+    const drainF09Ending = (then) => {
+      if (!G._pendingF09Ending) { if (then) then(); return; }
+      const data = G._pendingF09Ending;
+      const { _pendingF09Ending: _, ...rest } = G;
+      G = rest;
+      if (typeof showFactionF09EndingModal === 'function') {
+        showFactionF09EndingModal(data, G, () => { if (then) then(); });
+      } else {
+        if (then) then();
+      }
+    };
     const drainF08Aftermath = (then) => {
       const queue = G._pendingF08Aftermath;
       if (!Array.isArray(queue) || queue.length === 0) {
@@ -6306,7 +6351,7 @@ const App = {
         drainF08Aftermath(then);
       }
     };
-    drainF08Aftermath(() => renderShowResult(results, injuryResults));
+    drainF09Ending(() => drainF08Aftermath(() => renderShowResult(results, injuryResults)));
   },
 
   // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
@@ -6401,6 +6446,36 @@ const App = {
       }
     }
 
+    // Phase B-2: F09 試合前モーダル発火（_f09Locked 試合）— 初の F09 試合では Opening も連結
+    if (m && m._f09Locked && typeof Engine !== 'undefined' && Engine.factions) {
+      const matchId = `${G.season}-${G.week}-${idx}`;
+      if (!G._shownF09PreMatchIds) G._shownF09PreMatchIds = [];
+      if (!G._shownF09PreMatchIds.includes(matchId)) {
+        const data = App._buildF09MatchPreData(m, idx);
+        if (data) {
+          G._shownF09PreMatchIds = [...G._shownF09PreMatchIds, matchId];
+          // 興行内最初の _f09Locked 試合 → Opening を先に
+          const isFirstF09 = !G._shownF09Opening;
+          if (isFirstF09) {
+            G._shownF09Opening = true;
+            const opening = App._buildF09OpeningData(m);
+            if (opening && typeof showFactionF09OpeningModal === 'function') {
+              showFactionF09OpeningModal(opening, G, () => {
+                if (typeof showFactionF09MatchPreModal === 'function') {
+                  showFactionF09MatchPreModal(data, G, () => {});
+                }
+              });
+              return;
+            }
+          }
+          if (typeof showFactionF09MatchPreModal === 'function') {
+            showFactionF09MatchPreModal(data, G, () => {});
+            return;
+          }
+        }
+      }
+    }
+
     const popups = App._collectPreMatchPopupsForMatch(idx);
     if (popups.length === 0) return;
     popups.forEach(p => showEventPopup(p));
@@ -6409,21 +6484,117 @@ const App = {
   // post-match popup シーケンスを 1試合分流し、then() を呼ぶ。
   // skipMatch/watchMatch で sp.results[idx] 反映直後に呼ぶ。
   _runPostMatchFlavorForMatch(idx, result, then) {
-    const popups = App._collectPostMatchPopupsForMatch(idx, result);
-    if (popups.length === 0) { if (then) then(); return; }
-    _chainEventPopupQueueEmpty(() => {
-      if (then) then();
+    // Phase B-2: F09 試合後モーダル（_f09Locked 試合）— popup 群より先に出す
+    const sp = App._showPreview;
+    const m = sp && sp.validMatches ? sp.validMatches[idx] : null;
+    const runPostF09 = (cb) => {
+      if (!m || !m._f09Locked || result.winner === 'draw') { cb(); return; }
+      const data = App._buildF09MatchPostData(m, idx, result);
+      if (!data || typeof showFactionF09MatchPostModal !== 'function') { cb(); return; }
+      showFactionF09MatchPostModal(data, G, cb);
+    };
+    runPostF09(() => {
+      const popups = App._collectPostMatchPopupsForMatch(idx, result);
+      if (popups.length === 0) { if (then) then(); return; }
+      _chainEventPopupQueueEmpty(() => { if (then) then(); });
+      popups.forEach(p => showEventPopup(p));
+      const maxWaitMs = popups.length * 2200 + 1500;
+      setTimeout(() => {
+        if (_onEventPopupQueueEmpty) {
+          console.warn('[WM] postMatchFlavor safety net fired');
+          _onEventPopupQueueEmpty = null;
+          if (then) then();
+        }
+      }, maxWaitMs);
     });
-    popups.forEach(p => showEventPopup(p));
-    // セーフティネット
-    const maxWaitMs = popups.length * 2200 + 1500;
-    setTimeout(() => {
-      if (_onEventPopupQueueEmpty) {
-        console.warn('[WM] postMatchFlavor safety net fired');
-        _onEventPopupQueueEmpty = null;
-        if (then) then();
+  },
+
+  // ── Phase B-2: F09 モーダル用データ構築ヘルパ ──
+  _f09PickLine(table, fighter) {
+    if (!table || !fighter) return '';
+    const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
+    const arch = fighter.archetype || 'normal';
+    const byP = table[p] || table.normal || {};
+    const byA = byP[arch] || byP.normal || {};
+    const lines = byA.high || byA.mid || byA.low || [];
+    return lines.length ? lines[Math.floor(Math.random() * lines.length)] : '';
+  },
+  _buildF09OpeningData(m) {
+    if (!G._pendingF09 && !m) return null;
+    // _pendingF09 はすでにクリア済みかもしれないので、試合の所属派閥から逆引き
+    const fA = Engine.factions.getFactionByFighterId(G, m.left);
+    const fB = Engine.factions.getFactionByFighterId(G, m.right);
+    if (!fA || !fB || fA.id === fB.id) return null;
+    const leaderA = (G.roster || []).find(c => c.id === fA.leaderId);
+    const leaderB = (G.roster || []).find(c => c.id === fB.leaderId);
+    if (!leaderA || !leaderB) return null;
+    const memberMini = (faction) => faction.memberIds.slice(0, 5).map(id => {
+      const c = (G.roster || []).find(r => r.id === id);
+      return c ? { id: c.id, name: c.name, ovr: Engine.util.ov(c) } : null;
+    }).filter(Boolean);
+    const linesA = (typeof FACTION_F09_OPENING_LINES_A !== 'undefined') ? FACTION_F09_OPENING_LINES_A : null;
+    const linesB = (typeof FACTION_F09_OPENING_LINES_B !== 'undefined') ? FACTION_F09_OPENING_LINES_B : null;
+    return {
+      factionA: { id: fA.id, name: fA.name, leaderId: leaderA.id, leaderName: leaderA.name, leaderOvr: Engine.util.ov(leaderA), members: memberMini(fA) },
+      factionB: { id: fB.id, name: fB.name, leaderId: leaderB.id, leaderName: leaderB.name, leaderOvr: Engine.util.ov(leaderB), members: memberMini(fB) },
+      lineA: App._f09PickLine(linesA, leaderA),
+      lineB: App._f09PickLine(linesB, leaderB),
+      narration: `${fA.name}と${fB.name}――両派閥の積年の抗争が、ついに対抗戦という形で全面決着の夜を迎える。`,
+    };
+  },
+  _buildF09MatchPreData(m, idx) {
+    const fA = Engine.factions.getFactionByFighterId(G, m.left);
+    const fB = Engine.factions.getFactionByFighterId(G, m.right);
+    if (!fA || !fB) return null;
+    const cA = (G.roster || []).find(c => c.id === m.left);
+    const cB = (G.roster || []).find(c => c.id === m.right);
+    if (!cA || !cB) return null;
+    // 全F09試合数をカウント
+    const sp = App._showPreview;
+    const total = (sp && sp.validMatches) ? sp.validMatches.filter(mm => mm._f09Locked).length : 1;
+    const f09Idx = (sp && sp.validMatches) ? sp.validMatches.slice(0, idx + 1).filter(mm => mm._f09Locked).length : 1;
+    const lines = (typeof FACTION_F09_MATCH_PRE_LINES !== 'undefined') ? FACTION_F09_MATCH_PRE_LINES : null;
+    return {
+      fighterA: { id: cA.id, name: cA.name, factionName: fA.name },
+      fighterB: { id: cB.id, name: cB.name, factionName: fB.name },
+      lineA: App._f09PickLine(lines, cA),
+      lineB: App._f09PickLine(lines, cB),
+      matchIndex: f09Idx, totalMatches: total,
+    };
+  },
+  _buildF09MatchPostData(m, idx, result) {
+    const winnerId = result.winner === 'left' ? m.left : m.right;
+    const loserId  = result.winner === 'left' ? m.right : m.left;
+    const winnerC = (G.roster || []).find(c => c.id === winnerId);
+    const loserC  = (G.roster || []).find(c => c.id === loserId);
+    if (!winnerC || !loserC) return null;
+    const winnerF = Engine.factions.getFactionByFighterId(G, winnerId);
+    const loserF  = Engine.factions.getFactionByFighterId(G, loserId);
+    if (!winnerF || !loserF) return null;
+    const linesW = (typeof FACTION_F09_MATCH_POST_WIN_LINES !== 'undefined') ? FACTION_F09_MATCH_POST_WIN_LINES : null;
+    const linesL = (typeof FACTION_F09_MATCH_POST_LOSE_LINES !== 'undefined') ? FACTION_F09_MATCH_POST_LOSE_LINES : null;
+    // 現在スコア（pendingF09 はクリアされている可能性があるので factionRivalryPoints から取得）
+    let scoreA = 0, scoreB = 0, aName = winnerF.name, bName = loserF.name;
+    if (G.factionRivalryPoints && Engine.factions._pairKey) {
+      const key = Engine.factions._pairKey(winnerF.id, loserF.id);
+      const e = G.factionRivalryPoints[key];
+      if (e) {
+        const aFid = e.factionAId, bFid = e.factionBId;
+        const aFac = (G.factions || []).find(f => f.id === aFid);
+        const bFac = (G.factions || []).find(f => f.id === bFid);
+        scoreA = e.pointsA; scoreB = e.pointsB;
+        aName = aFac ? aFac.name : '';
+        bName = bFac ? bFac.name : '';
       }
-    }, maxWaitMs);
+    }
+    return {
+      winner: { id: winnerC.id, name: winnerC.name, factionName: winnerF.name },
+      loser:  { id: loserC.id,  name: loserC.name,  factionName: loserF.name },
+      winnerLine: App._f09PickLine(linesW, winnerC),
+      loserLine:  App._f09PickLine(linesL, loserC),
+      ptDelta: 0,  // 現状の差分計算は未実装、後段で表示
+      currentScore: { a: scoreA, b: scoreB, aName, bName },
+    };
   },
 
   // ─── 新聞記事テキスト生成 ───────────────────────────────────────────────

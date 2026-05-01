@@ -1032,12 +1032,246 @@ const FACTION_F08_POST_MATCH_LOSER_LINES = {
   },
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// F09 派閥対抗戦 セリフテーブル群（spec: faction-rivalry-points-spec-v0.1 §3.5）
+// hostility帯 (high/mid/low) で分岐する F08 と同じ形式。引きは Engine.factions._getF08LineByBand を流用。
+// ─────────────────────────────────────────────────────────────────────────────
+
+// オープニング宣戦：A 派閥リーダーの宣言
+const FACTION_F09_OPENING_LINES_A = {
+  bold: {
+    normal: {
+      high: [
+        "今夜、あんたの組ごと踏み潰す。覚悟しときな",
+        "選手全員、リングに上げな。一人残らず叩く",
+      ],
+      mid: ["今日が、あんたんとこの分水嶺だ"],
+    },
+    delinquent: {
+      high: ["全員揃ってるな？ じゃあ、今夜が最後だ"],
+    },
+  },
+  earnest: {
+    normal: {
+      high: [
+        "派閥同士の決着、今夜つけさせていただきます",
+        "うちの組のみんなのためにも、今日は引きません",
+      ],
+      mid: ["この夜が、わたしたちの答えになります"],
+    },
+    polite: {
+      high: ["今夜の興行で、すべてを決めさせてください"],
+    },
+  },
+  quiet: {
+    normal: {
+      high: ["……今夜で、終わらせる"],
+    },
+    cool: {
+      high: ["……話すことは、もう何もない"],
+    },
+  },
+  easygoing: {
+    normal: {
+      high: ["まあ、ここまで来ちゃったしね。今夜決めようよ"],
+    },
+  },
+  emotional: {
+    normal: {
+      high: [
+        "わたしたち、今日で全部背負って戦います",
+        "うちの組の名前、今夜傷つけさせない",
+      ],
+    },
+    ojousama: {
+      high: ["わたくしたち、今夜こそ決着をつけますわ"],
+    },
+  },
+  shy: {
+    normal: {
+      high: ["……今夜、組の全員で受けて立ちます"],
+    },
+  },
+};
+
+// オープニング宣戦：B 派閥リーダーの応答
+const FACTION_F09_OPENING_LINES_B = {
+  bold: {
+    normal: {
+      high: ["上等だ。組ごと潰し合おうじゃねえか"],
+    },
+    delinquent: {
+      high: ["来なよ。全員でかかってこい"],
+    },
+  },
+  earnest: {
+    normal: {
+      high: [
+        "わかりました。受けて立たせていただきます",
+        "うちの組も、引きません",
+      ],
+    },
+    polite: { high: ["お受けいたします。今夜、決着を"] },
+  },
+  quiet: {
+    normal: {
+      high: ["……いいよ。来な"],
+    },
+    cool: { high: ["……受ける"] },
+  },
+  easygoing: {
+    normal: {
+      high: ["やれやれ……じゃあ、行こうか"],
+    },
+  },
+  emotional: {
+    normal: {
+      high: ["わたしたちも、今夜は退きません"],
+    },
+    ojousama: { high: ["わたくしも、引きませんわよ"] },
+  },
+  shy: {
+    normal: { high: ["……はい。受けて、立ちます"] },
+  },
+};
+
+// 各試合前 簡略 confrontation（軽量版・F08 PRE_MATCH より短め）
+const FACTION_F09_MATCH_PRE_LINES = {
+  bold: {
+    normal: {
+      high: ["順番が来たね"],
+      mid: ["先に来な"],
+    },
+  },
+  earnest: {
+    normal: {
+      high: ["お願いします"],
+      mid: ["全力で行きます"],
+    },
+  },
+  quiet: {
+    normal: {
+      high: ["……行く"],
+    },
+  },
+  easygoing: {
+    normal: {
+      high: ["やろっか"],
+    },
+  },
+  emotional: {
+    normal: {
+      high: ["背負ってるもの、見せます"],
+    },
+  },
+  shy: {
+    normal: {
+      high: ["……はい"],
+    },
+  },
+};
+
+// 各試合後 勝者の一言（軽量）
+const FACTION_F09_MATCH_POST_WIN_LINES = {
+  bold: {
+    normal: {
+      high: ["1勝。あと何回続くかな"],
+      mid: ["まだ序章だぜ"],
+    },
+    delinquent: { high: ["次。次出てこい"] },
+  },
+  earnest: {
+    normal: {
+      high: ["……ありがとうございました。次の人に繋ぎます"],
+    },
+  },
+  quiet: { normal: { high: ["……次"] } },
+  easygoing: { normal: { high: ["とりあえず1つ、もらった"] } },
+  emotional: { normal: { high: ["みんな、見ててね"] } },
+  shy: { normal: { high: ["……勝てて、よかった"] } },
+};
+
+// 各試合後 敗者の一言（軽量・呻き寄り）
+const FACTION_F09_MATCH_POST_LOSE_LINES = {
+  bold: {
+    normal: {
+      high: ["……ちっ。次の奴で取り返してくれ"],
+    },
+  },
+  earnest: { normal: { high: ["……ごめんなさい、次に繋いでください"] } },
+  quiet: { normal: { high: ["……すまない"] } },
+  easygoing: { normal: { high: ["……うわ、負けた。次よろしく"] } },
+  emotional: { normal: { high: ["……ごめん、ごめんね"] } },
+  shy: { normal: { high: ["……ごめんなさい"] } },
+};
+
+// エンディング 勝ち越し派閥リーダー
+const FACTION_F09_ENDING_WIN_LINES = {
+  bold: {
+    normal: {
+      high: [
+        "勝ち越した。今夜は、うちの組の夜だ",
+        "見たか。これがうちの組の力だ",
+      ],
+    },
+    delinquent: { high: ["完全勝利だ。文句あるか？"] },
+  },
+  earnest: {
+    normal: {
+      high: [
+        "……勝てて、よかった。みんなのおかげです",
+        "うちの組、今日のために積み上げてきたんです",
+      ],
+    },
+  },
+  quiet: { normal: { high: ["……勝った"] } },
+  easygoing: { normal: { high: ["なんとかなったね、よかった"] } },
+  emotional: {
+    normal: {
+      high: ["みんな、ありがとう……ありがとう"],
+    },
+    ojousama: { high: ["わたくしたち、勝ち越しましたわよ"] },
+  },
+  shy: { normal: { high: ["……勝ち越せて、嬉しいです"] } },
+};
+
+// エンディング 負け越し派閥リーダー
+const FACTION_F09_ENDING_LOSE_LINES = {
+  bold: {
+    normal: {
+      high: [
+        "……負けた。受け止める。次は必ず取り返す",
+        "今夜のは、覚えとく。次に返すから",
+      ],
+    },
+  },
+  earnest: {
+    normal: {
+      high: [
+        "……ごめんなさい、みんな。わたしの責任です",
+        "今夜は、わたしたちが弱かった。立て直します",
+      ],
+    },
+  },
+  quiet: { normal: { high: ["……負けた。それだけ"] } },
+  easygoing: { normal: { high: ["はー、やられたなあ。組み立て直しだね"] } },
+  emotional: { normal: { high: ["……うちの組、今夜は弱かった。みんな、ごめん"] } },
+  shy: { normal: { high: ["……ごめんなさい、わたしのせいです"] } },
+};
+
 // window export（ブラウザ参照用、既存テーブルとの整合）
 if (typeof window !== 'undefined') {
   window.FACTION_F08_PRE_MATCH_LINES_A = FACTION_F08_PRE_MATCH_LINES_A;
   window.FACTION_F08_PRE_MATCH_LINES_B = FACTION_F08_PRE_MATCH_LINES_B;
   window.FACTION_F08_POST_MATCH_WINNER_LINES = FACTION_F08_POST_MATCH_WINNER_LINES;
   window.FACTION_F08_POST_MATCH_LOSER_LINES = FACTION_F08_POST_MATCH_LOSER_LINES;
+  window.FACTION_F09_OPENING_LINES_A = FACTION_F09_OPENING_LINES_A;
+  window.FACTION_F09_OPENING_LINES_B = FACTION_F09_OPENING_LINES_B;
+  window.FACTION_F09_MATCH_PRE_LINES = FACTION_F09_MATCH_PRE_LINES;
+  window.FACTION_F09_MATCH_POST_WIN_LINES = FACTION_F09_MATCH_POST_WIN_LINES;
+  window.FACTION_F09_MATCH_POST_LOSE_LINES = FACTION_F09_MATCH_POST_LOSE_LINES;
+  window.FACTION_F09_ENDING_WIN_LINES = FACTION_F09_ENDING_WIN_LINES;
+  window.FACTION_F09_ENDING_LOSE_LINES = FACTION_F09_ENDING_LOSE_LINES;
 }
 
 // Node.js export（auto-sim 用）
@@ -1056,5 +1290,12 @@ if (typeof module !== 'undefined' && module.exports) {
     FACTION_F08_PRE_MATCH_LINES_B,
     FACTION_F08_POST_MATCH_WINNER_LINES,
     FACTION_F08_POST_MATCH_LOSER_LINES,
+    FACTION_F09_OPENING_LINES_A,
+    FACTION_F09_OPENING_LINES_B,
+    FACTION_F09_MATCH_PRE_LINES,
+    FACTION_F09_MATCH_POST_WIN_LINES,
+    FACTION_F09_MATCH_POST_LOSE_LINES,
+    FACTION_F09_ENDING_WIN_LINES,
+    FACTION_F09_ENDING_LOSE_LINES,
   };
 }
