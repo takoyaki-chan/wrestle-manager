@@ -608,6 +608,124 @@ MQ加算は一切しない。
 
 ---
 
+### §9.8.1 F08-A 直接対決 試合前後演出（Phase 3e追加）
+
+F08-A（社長判断 A: 直接対決）が選択された場合、当該リーダー戦の**試合前後にそれぞれ専用モーダル**を発火させる。F08モーダル本体（社長判断）は試合前興行週で完結しており、ここで追加されるのは「興行当日、試合の直前と直後」に挟まる演出。
+
+#### 試合前モーダル `f08-pre-match`
+
+**発動契機**:
+- showCard の試合 slot に `_f08Locked: true` がついており、当該試合がフォーカスされる直前
+- `state._shownF08PreMatchIds` に `matchId` が含まれない（重複防止）
+- 既存の rivalry 50+ 宣戦布告ポップアップ（`showRivalryPopups`）と**排他**: F08優先で出し、rivalry宣戦布告はスキップ
+
+**レイアウト**: `fevt-overlay-arena` + `fevt-arena-card f08-pre`（新規CSSクラス）
+- 既存 `fevt-overlay-office` のオーバーレイ構造を流用
+- 既存 `fevt-subject-duel` の両肖像並列レイアウトを流用
+- **配色のみ差し替え**: クリーム調 office テーマ → ダーク調 arena テーマ（黒〜深紅グラデ #1a0a0a → #2d0d0d）
+- 社長判断 UI なし、ボタンは「試合へ進む →」の単一
+
+**構成**:
+1. ナレーション: 「○○組と△△組――その夜、両派閥のリーダーが直接拳を交える」
+2. 両リーダーの肖像 + 派閥名 + OVR 並列表示
+3. リーダー A の宣戦セリフ（性格×アーキタイプ分岐）
+4. リーダー B の宣戦セリフ（性格×アーキタイプ分岐）
+5. 「試合へ進む →」ボタン
+
+**BGM/SFX**:
+- 開始時: `bgm_tension_v1.mp3` ループ開始（TENSION_BED × 0.20）
+- 冒頭 stinger: `f07_gong_v1.mp3` 1打（GONG_VOL × 0.18）
+
+**セリフテーブル**:
+- `FACTION_F08_PRE_MATCH_LINES_A` / `FACTION_F08_PRE_MATCH_LINES_B`
+- 6性格 × 6アーキタイプ × 最低2-3パターン
+- normal フォールバック規則は既存と同じ（`_factionLine` ヘルパー流用）
+
+**hostility 帯による温度差**（セリフ抽選時の追加分岐）:
+| hostility 平均 | 温度 | セリフ傾向 |
+|--------------|------|----------|
+| 80+ | 憎悪 | 容赦のない宣戦、踏みつける口調 |
+| 60-79 | 挑発 | 明確な敵意、挑発的 |
+| 40-59 | 冷ややかな対峙 | 抑制された敵意 |
+
+セリフテーブルは hostility 帯ごとに `high` / `mid` / `low` のサブキーを持つ。
+
+#### 試合後モーダル `f08-post-match`
+
+**発動契機**:
+- `_f08Locked` がついた試合が `finalizeShow` で結果確定した直後
+- 引き分けは出さない（勝敗確定時のみ）
+- `state._shownF08PostMatchIds` に `matchId` が含まれない（重複防止）
+
+**レイアウト**: `fevt-overlay-arena` + `fevt-arena-card f08-post`
+- 配色: ダーク調 arena テーマ + 暗赤フレーム
+- 勝者を中央大、敗者を小さく暗転気味に配置
+
+**構成**:
+1. ナレーション開幕: 「決着。○○組が△△組を下した――しかし、戦いは終わらない」
+2. 勝者肖像（中央大）+ 勝者セリフ（性格×アーキタイプ、敗者派閥への一撃）
+3. 区切り
+4. 敗者肖像（小・暗転気味）+ 敗者セリフ（HP残量と性格で「強がり/呻き/捨て台詞/沈黙」を選択）
+5. ナレーション結び: 派閥単位の傷を語る
+6. 「閉じる」ボタン
+
+**BGM/SFX**:
+- 試合 BGM がフェードアウト後、冒頭は沈黙
+- ナレーション開始から 30秒経過で低い心拍音を薄く敷く（任意）
+- 結び: `f06_fin_chime_v1.mp3` 重め1打（CHIME_VOL × 0.14）
+
+**セリフテーブル**:
+- `FACTION_F08_POST_MATCH_WINNER_LINES`
+- `FACTION_F08_POST_MATCH_LOSER_LINES`
+- 6性格 × 6アーキタイプ × 最低2-3パターン
+- 敗者セリフは HP残量帯で分岐: `hp_high` (66%+) / `hp_mid` (34-66%) / `hp_low` (33%-) — CLAUDE.md ダメージセリフ発動ルールに準拠
+
+**敗者セリフの出し分け**（HP残量別の傾向）:
+| HP帯 | 傾向 |
+|------|------|
+| hp_high (66%+) | 強がり、捨て台詞、長めの言葉が出る |
+| hp_mid (34-66%) | 呻き混じりの短い言葉、悔しさが滲む |
+| hp_low (33%-) | 沈黙、または擬音のみ（言葉にならない） |
+
+#### 試合結果による派閥関係への追加変動
+
+`_f08Locked` 試合の結果確定時、既存の `applyMatchResult({variationMultiplier: 1.5})` に**加えて**以下を適用:
+
+| 対象 | 変動量 |
+|------|-------|
+| 敗者派閥末端メンバー（リーダー・幹部以外）trust | -2〜-4 |
+| 敗者派閥リーダー → 勝者派閥リーダー rivalry | +8〜+12 |
+| 勝者派閥メンバー → 勝者リーダー bond | +2〜+4 |
+
+**重複制御**:
+- F02③ resolution との同時発火時: resolution 側の効果を優先し、本セクションの追加変動はスキップ
+- 既存 §9.8 F08-A の `applyMatchResult` 1.5倍は維持
+
+#### モーダル排他制御
+
+```
+試合フォーカス時の優先順:
+1. F08-A 試合前モーダル（f08-pre-match）
+2. rivalry 50+ 宣戦布告ポップアップ（既存）
+3. 初顔合わせフレーバー（match-flavor）
+
+試合終了時の優先順:
+1. F08-A 試合後モーダル（f08-post-match）
+2. F02③ resolution モーダル（既存）
+3. その他試合余韻フレーバー
+```
+
+#### CSSクラス追加
+
+`src/index.html` :root に追加:
+```css
+--accent-arena-bg-from: #1a0a0a;
+--accent-arena-bg-to:   #2d0d0d;
+--accent-arena-frame-loser: rgba(180,40,40,0.4);
+```
+
+---
+
 ### §9.10 F05H 活動休止（リーダー長期離脱）
 
 F03（リーダー喪失＝解散）と並ぶが、**旗を降ろすのではなく畳む**イベント。リーダーが長期離脱（怪我）中の派閥は解散ではなく活動休止 `status: 'hiatus'` に退避し、リーダー復帰で自動的に `active` へ戻る。
@@ -821,6 +939,11 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 | Phase 3b F07 横暴リーダーセリフ抽選 | 0xFA71 |
 | Phase 3b F08 両リーダーセリフ抽選（A/B） | 0xFA81 / 0xFA82 |
 | Phase 3b F08 直接対決 applyMatchResult 乱数 | 0xFA88 |
+| Phase 3e F08 試合前 リーダーAセリフ抽選 | 0xFA83 |
+| Phase 3e F08 試合前 リーダーBセリフ抽選 | 0xFA84 |
+| Phase 3e F08 試合後 勝者セリフ抽選 | 0xFA85 |
+| Phase 3e F08 試合後 敗者セリフ抽選 | 0xFA86 |
+| Phase 3e F08 試合後 派閥関係追加変動 | 0xFA87 |
 
 ---
 
@@ -874,6 +997,7 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 - **§6.2 派閥抗争 appeal の数値再調整**: Phase 1 実装後、実プレイで「派閥抗争マッチが地味すぎる/派手すぎる」感覚を Keisuke さんから受けて調整
 - **データベース外分離の判断**: §7.2 では「データベース内の派閥比較サブタブ」としたが、情報量次第で独立トップタブへの分離を Phase 2 実装中に再検討
 - **F08-A のタイトル戦重複ケースの詳細**: タイトル戦リーダー同士でF08発動する頻度を auto-sim で計測、必要なら追加キャップ
+- **F08-A 試合前後モーダルのセリフ密度調整**: Phase 3e 実装後、実機プレイで「セリフが薄い/濃い」感覚を Keisuke から受けて性格×アーキタイプの量産密度を調整
 
 ---
 
@@ -899,11 +1023,58 @@ CLAUDE.md「テンプレセリフ禁止」「性格ごとに一人称・語尾�
 | v0.5 | 2026-04-22 | Phase 3b 実装: F04 寝返り / F05 派閥内亀裂 / F06 和解の兆し / F07 リーダーの横暴 / F08 対立ヒートアップ の演出モーダル + `applyF0XChoice` + 6×6 セリフ + F08-A 直接対決ディレクティブ（`_pendingF08Directive` でカード編成強制組込み + 集客 appeal 加算 + 試合結果 1.5× 反映）+ `faction.f07RebukeCount` による authoritativeTag 解除 + F06 streak 追跡（`G.factionReconciliationStreak`）+ §8.3 優先順 F03>F08>F04>F05>F07>F06>F02>F01 + 各イベント個別クールダウン。auto-sim 2 シード × 100 シーズン ALL CLEAR |
 | v0.6 | 2026-04-22 | Phase 3c 実装: 相関図「🎭 派閥オーバーレイ」を**団体フィルタ連動型トグル**として実装（当初の「第4ビューモード」方式から実機検証を経て方向転換）。`_relmapFactionOverlay`/`_relmapSavedCenterId` 状態追加。団体フィルタ ON + 🎭 ON のときのみ、CENTER 選手を退避してフラット表示に切替 + 派閥円（外接円）+ 派閥名ラベル + 👑リーダー/⭐幹部マーカー（別レイヤー `relmapFactionMarkerLayer`）+ 抗争オレンジ破線（両派閥がフィルタ内の時のみ、1.5〜3.5px、数値なし）+ 非派閥メンバー斥力（keepR ベース）。派閥重複所属のデータ破綻対応として `Engine.factions._dedupeFactionMembers` + `reconcileRoster` 週次修復 + `_migrated_faction_dedupe_v1` マイグレーション追加。auto-sim 30 シーズン ALL CLEAR |
 | v0.7 | 2026-04-22 | Phase 3d 実装（派閥 v1.0 完成）: 派閥構造が bond/rivalry に波及する週次処理 `Engine.factions.processFactionInfluenceOnRelationships(state, rng)` 新設。6 効果を実装: (1) 派閥内結束 bond +0.15/週 全ペア / (2) 抗争越境敵意 rivalry +0.3/週 敵対派閥メンバー全組み合わせ / (3) 寝返り磁力 rivalry +0.5/週 敵メンバーとの bond 平均 60+ な選手 → 敵リーダー方向 / (4) 権威化の下向き圧 bond +0.1/週 `authoritativeTag` リーダー → メンバー一方向 / (5) 独裁化の亀裂 rivalry +0.2/週 `dictatorTag` 派閥メンバー全ペア / (6) 消滅余波 bond -5〜-10（1 派閥 1 回ロール）を `_dissolveFaction` で元メンバー全ペアに適用。通常の `processWeeklyDecay` は素通しで **加算で重ねる**。RNG `0xFA19`（週次）/ `0xFA1A`（消滅余波）追加。ヘルパー `_applyRivalryDirected` / `_applyRivalryBetweenMembers` / `_collectHostilePairs` / `_applyTurncoatMagnetism` 追加。tickWeek 派閥パイプラインに `processWeeklyMemberChanges` の後・`processWeeklyHostilityDecay` の前へ挿入。auto-sim 10 シード × 100 シーズン ALL CLEAR |
+| v0.9 | 2026-05-01 | Phase 3e 実装: F08-A 試合前後モーダル新設（`showFactionF08PreMatchModal` / `showFactionF08AftermathModal`）+ ダークテーマ用 `fevt-overlay-arena` CSS新規 + セリフテーブル4種（hostility帯/HP帯分岐）+ 試合結果による派閥関係追加変動（敗者末端 trust / リーダー間 rivalry / 勝者団結 bond）+ rivalry 50+ 宣戦布告との排他制御 + RNG 0xFA83-0xFA87 追加 |
 | v0.8 | 2026-04-23 | Phase 1b 実装（人数偏り対策）: §2.2 メンバー加入に2つのブレーキを追加。(1) サイズベース加入率減衰 `joinSizeMult: {4:1.0, 6:0.6, 7:0.3, 8:0.0}`（勢い修正の後に乗算）/ (2) 単独派閥の加入凍結 `soloFactionFreezeSize:5`（派閥数 1 かつ サイズ 5 人以上で加入判定スキップ、解除条件は第二派閥誕生/分裂/脱退）。ヘルパー `_getJoinSizeMult(size)` 追加、`processWeeklyMemberChanges` 加入ブロックのみ修正（離脱ロジック・trust 更新・§2.6 80% 解散・F05-B 分裂ロジック・RNG は一切変更なし）。auto-sim 5 シード × 100 シーズン ALL CLEAR（engine-integrity）。**分布実測は auto-sim で不可能**（auto-sim 初期プレイヤーロスター 5 名、`minRosterSize:10` 未満で派閥が形成されない）→ 検証は実機プレイに委任 |
 
 ---
 
 ## §17 実装状況（2026-04-23）
+
+### Phase 3e 完了予定（F08-A 試合前後演出, v0.9, 2026-05-01）
+
+**背景:**
+
+Phase 3b で F08-A 直接対決の数値・カード組込み・集客加算は完備されたが、試合本番の前後にプレイヤーが体感する「血みどろの抗争」の演出は薄かった。本フェーズでは、F08-A 試合の前後に専用モーダルを発火させ、リーダー同士の感情を直接ぶつけ合うことで「派閥対決の凄惨さ」を体感できる状態にする。
+
+**実装:**
+
+- §9.8.1 F08-A 試合前モーダル（`showFactionF08PreMatchModal`）
+- §9.8.1 F08-A 試合後モーダル（`showFactionF08AftermathModal`）
+- セリフテーブル4種（性格×アーキタイプ × 最低2-3パターン × hostility帯/HP帯分岐）
+- 試合結果による派閥関係追加変動（敗者末端 trust / リーダー間 rivalry / 勝者団結 bond）
+- ダークテーマ用 CSSクラス追加（`fevt-overlay-arena` / `fevt-arena-card`）
+- 既存 rivalry 50+ 宣戦布告との排他制御
+
+**RNG シード追加:**
+
+| 用途 | シード |
+|------|-------|
+| Phase 3e F08 試合前 リーダーAセリフ抽選 | 0xFA83 |
+| Phase 3e F08 試合前 リーダーBセリフ抽選 | 0xFA84 |
+| Phase 3e F08 試合後 勝者セリフ抽選 | 0xFA85 |
+| Phase 3e F08 試合後 敗者セリフ抽選 | 0xFA86 |
+| Phase 3e F08 試合後 派閥関係追加変動 | 0xFA87 |
+
+**触らない場所:**
+
+- `Engine.factions.applyMatchResult` 既存ロジック
+- F08モーダル本体（試合前興行週の社長判断 A/B/C）
+- 既存 F02 系列・F04-F07・F02進展4種の演出
+- 既存 `calcFactionFeudAppeal` の集客計算
+
+**やらないこと:**
+
+- 末端メンバー試合での演出（リーダー幹部級限定）
+- 試合中の演出変更（試合 BGM・進行は無変更）
+- 数値の表示（hostility/momentum 変動量はモーダルに出さない）
+- テンプレセリフ（汎用「お前を倒す」「絶対勝つ」系を排除）
+
+**検証:**
+
+- auto-sim 5シード × 100シーズン ALL CLEAR
+- 実機検証: F08モーダル → 試合前モーダル → 試合 → 試合後モーダル の連結確認
+- 既存 rivalry 宣戦布告とのコンフリクトなし
+- F02③ resolution との重複時、resolution 優先動作
 
 ### Phase 1b 完了（人数偏り対策, v0.8, 2026-04-23）
 

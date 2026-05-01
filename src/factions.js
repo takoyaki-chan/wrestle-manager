@@ -2414,6 +2414,166 @@ Engine.factions = {
     return s;
   },
 
+  // ── §9.8.1 Phase 3e セリフ抽選（hostility帯/HP帯分岐版） ──
+  // table 構造: { personality: { archetype: { high/mid/low or hp_high/hp_mid/hp_low: [...] } } }
+  _getF08LineByBand(table, fighter, band, rng) {
+    if (!table || !fighter || !band) return '';
+    const p = fighter.personality || 'normal';
+    const a = fighter.archetype || 'normal';
+    const byPersona = table[p] || table.normal || {};
+    let byArch = byPersona[a];
+    if (!byArch || !byArch[band] || !byArch[band].length) {
+      byArch = byPersona.normal;
+    }
+    if (!byArch) {
+      const np = table.normal || {};
+      byArch = np[a] || np.normal;
+    }
+    if (!byArch) return '';
+    let lines = byArch[band];
+    if (!lines || !lines.length) {
+      // 帯フォールバック: high → mid → low、hp_high → hp_mid → hp_low
+      const fallbackOrder = (band === 'high' || band === 'mid' || band === 'low')
+        ? ['high', 'mid', 'low']
+        : ['hp_high', 'hp_mid', 'hp_low'];
+      for (const b of fallbackOrder) {
+        if (byArch[b] && byArch[b].length) { lines = byArch[b]; break; }
+      }
+    }
+    if (!lines || !lines.length) return '';
+    const idx = rng ? Math.floor(Engine.rng.float(rng) * lines.length) : 0;
+    return lines[idx] || '';
+  },
+
+  // hostility 平均から温度帯を返す
+  _hostilityBand(hostilityAvg) {
+    if (hostilityAvg >= 80) return 'high';
+    if (hostilityAvg >= 60) return 'mid';
+    return 'low';
+  },
+
+  // ── §9.8.1 Phase 3e 試合前モーダル用データ ──
+  // matchSlot: { left, right, _f08Locked } showCard 上のスロット
+  getF08PreMatchData(state, matchSlot) {
+    if (!state || !matchSlot) return null;
+    const roster = state.roster || [];
+    const leaderA = roster.find(c => c.id === matchSlot.left);
+    const leaderB = roster.find(c => c.id === matchSlot.right);
+    if (!leaderA || !leaderB) return null;
+    const facA = this.getFactionByFighterId(state, leaderA.id);
+    const facB = this.getFactionByFighterId(state, leaderB.id);
+    if (!facA || !facB || facA.id === facB.id) return null;
+
+    const host = state.factionHostility || {};
+    const hAB = host[this._hostKey(facA.id, facB.id)] || 0;
+    const hBA = host[this._hostKey(facB.id, facA.id)] || 0;
+    const avg = (hAB + hBA) / 2;
+    const band = this._hostilityBand(avg);
+
+    const tableA = (typeof FACTION_F08_PRE_MATCH_LINES_A !== 'undefined') ? FACTION_F08_PRE_MATCH_LINES_A : null;
+    const tableB = (typeof FACTION_F08_PRE_MATCH_LINES_B !== 'undefined') ? FACTION_F08_PRE_MATCH_LINES_B : null;
+    const seed = state.rngSeed || 1;
+    const rngA = Engine.rng.create(Engine.rng.derive(seed, state.season || 0, state.week || 0, 0xFA83));
+    const rngB = Engine.rng.create(Engine.rng.derive(seed, state.season || 0, state.week || 0, 0xFA84));
+    const lineA = tableA ? this._getF08LineByBand(tableA, leaderA, band, rngA) : '';
+    const lineB = tableB ? this._getF08LineByBand(tableB, leaderB, band, rngB) : '';
+
+    return {
+      factionA: { id: facA.id, name: facA.name, leaderId: leaderA.id, leaderName: leaderA.name, leaderOvr: Engine.util.ov(leaderA) },
+      factionB: { id: facB.id, name: facB.name, leaderId: leaderB.id, leaderName: leaderB.name, leaderOvr: Engine.util.ov(leaderB) },
+      hostilityAvg: Math.round(avg),
+      hostilityBand: band,
+      lineA: lineA,
+      lineB: lineB,
+      narration: `${facA.name}と${facB.name}――その夜、両派閥のリーダーが直接拳を交える。`,
+    };
+  },
+
+  // ── §9.8.1 Phase 3e 試合後モーダル用データ ──
+  // matchResult: { winnerId, loserId, winnerHpPct, loserHpPct }
+  getF08AftermathData(state, matchResult) {
+    if (!state || !matchResult || !matchResult.winnerId || !matchResult.loserId) return null;
+    const roster = state.roster || [];
+    const winner = roster.find(c => c.id === matchResult.winnerId);
+    const loser = roster.find(c => c.id === matchResult.loserId);
+    if (!winner || !loser) return null;
+    const facW = this.getFactionByFighterId(state, winner.id);
+    const facL = this.getFactionByFighterId(state, loser.id);
+    if (!facW || !facL || facW.id === facL.id) return null;
+
+    const loserHp = (typeof matchResult.loserHpPct === 'number') ? matchResult.loserHpPct : 1.0;
+    const hpBand = loserHp >= 0.66 ? 'hp_high' : (loserHp >= 0.34 ? 'hp_mid' : 'hp_low');
+
+    const tableW = (typeof FACTION_F08_POST_MATCH_WINNER_LINES !== 'undefined') ? FACTION_F08_POST_MATCH_WINNER_LINES : null;
+    const tableL = (typeof FACTION_F08_POST_MATCH_LOSER_LINES !== 'undefined') ? FACTION_F08_POST_MATCH_LOSER_LINES : null;
+
+    // 勝者の温度帯は hostility 平均から
+    const host = state.factionHostility || {};
+    const hWL = host[this._hostKey(facW.id, facL.id)] || 0;
+    const hLW = host[this._hostKey(facL.id, facW.id)] || 0;
+    const winnerBand = this._hostilityBand((hWL + hLW) / 2);
+
+    const seed = state.rngSeed || 1;
+    const rngW = Engine.rng.create(Engine.rng.derive(seed, state.season || 0, state.week || 0, 0xFA85));
+    const rngL = Engine.rng.create(Engine.rng.derive(seed, state.season || 0, state.week || 0, 0xFA86));
+    const winnerLine = tableW ? this._getF08LineByBand(tableW, winner, winnerBand, rngW) : '';
+    const loserLine  = tableL ? this._getF08LineByBand(tableL, loser, hpBand, rngL) : '';
+
+    // 派閥状態に応じた結びナレーション
+    const lMomentum = (facL.momentum != null) ? facL.momentum : 0;
+    let narrationClose;
+    if (lMomentum <= -40) {
+      narrationClose = `${facL.name}は深い傷を負い、夜の闇に消えていった。再起できるかは、誰にも分からない。`;
+    } else if (lMomentum <= -10) {
+      narrationClose = `${facL.name}の威信は揺らぎ、メンバーの足並みは乱れ始めている。`;
+    } else {
+      narrationClose = `${facL.name}は今夜の屈辱を抱えたまま、リングを去った。火種は、まだ消えない。`;
+    }
+
+    return {
+      winner: { id: winner.id, name: winner.name, factionName: facW.name, factionId: facW.id },
+      loser:  { id: loser.id,  name: loser.name,  factionName: facL.name, factionId: facL.id, hpBand },
+      winnerLine: winnerLine,
+      loserLine:  loserLine,
+      narrationOpen: `決着。${facW.name}が${facL.name}を下した――しかし、戦いは終わらない。`,
+      narrationClose: narrationClose,
+    };
+  },
+
+  // ── §9.8.1 Phase 3e 試合結果による派閥関係追加変動 ──
+  // 既存 applyMatchResult(×1.5) に加えて発火。F02③ resolution 同時発火時は no-op。
+  applyF08PostMatchExtraEffects(state, matchResult, isF02ResolutionFiring) {
+    if (!state || !matchResult || !matchResult.winnerId || !matchResult.loserId) return state;
+    if (isF02ResolutionFiring) return state; // F02③優先、重複加算しない
+    const facW = this.getFactionByFighterId(state, matchResult.winnerId);
+    const facL = this.getFactionByFighterId(state, matchResult.loserId);
+    if (!facW || !facL || facW.id === facL.id) return state;
+
+    let s = state;
+    const seed = s.rngSeed || 1;
+    const rng = Engine.rng.create(Engine.rng.derive(seed, s.season || 0, s.week || 0, 0xFA87));
+    const floatR = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+
+    // 1) 敗者派閥末端メンバー（リーダー・幹部以外）trust -2〜-4
+    const tailIds = (facL.memberIds || []).filter(id => !this.isLeaderOrExecutive(s, id));
+    if (tailIds.length) {
+      s = this._applyTrustToMembers(s, tailIds, -floatR(2, 4));
+    }
+
+    // 2) 敗者派閥リーダー → 勝者派閥リーダー rivalry +8〜+12
+    if (facL.leaderId && facW.leaderId) {
+      s = this._applyRivalryDirected(s, facL.leaderId, facW.leaderId, floatR(8, 12));
+    }
+
+    // 3) 勝者派閥メンバー → 勝者リーダー bond +2〜+4
+    const wMembers = (facW.memberIds || []).filter(id => id !== facW.leaderId);
+    for (const mid of wMembers) {
+      s = this._applyBondDirected(s, mid, facW.leaderId, floatR(2, 4));
+    }
+
+    return s;
+  },
+
   // ── §9.8 F08 ディレクティブ判定（試合がF08直接対決に該当するか）──
   isF08DirectiveMatch(state, fighterIdA, fighterIdB) {
     const d = state && state._pendingF08Directive;

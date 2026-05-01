@@ -401,6 +401,7 @@ const TRANSIENT_KEYS = [
   '_pendingCoachReport', '_flavorEvents', '_pendingEliteTicket',
   '_juniorTournamentSelection', '_juniorTournamentResult',
   '_pendingFactionEvent', '_pendingF08Directive',
+  '_shownF08PreMatchIds', '_shownF08PostMatchIds', '_pendingF08Aftermath',
 ];
 function clearTransients(G) {
   let s = G;

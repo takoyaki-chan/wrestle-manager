@@ -7765,7 +7765,7 @@ function _factionEnsureOverlayRoot() {
 function _factionCloseCinematicOverlay() {
   const root = document.getElementById('factionEventRoot');
   if (!root) return;
-  const overlay = root.querySelector('.fevt-overlay-stage, .fevt-overlay-office, .fevt-narration-act');
+  const overlay = root.querySelector('.fevt-overlay-stage, .fevt-overlay-office, .fevt-overlay-arena, .fevt-narration-act');
   if (overlay) overlay.classList.remove('active');
   setTimeout(() => { root.innerHTML = ''; }, 600);
 }
@@ -8423,6 +8423,158 @@ function showFactionF08Modal(payload, state, onChoice) {
       if (onChoice) onChoice(choice);
     });
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 3e: F08-A 試合前モーダル（ダーク Arena テーマ）
+// 試合フォーカス直前、_f08Locked スロットに対して発火
+// data: Engine.factions.getF08PreMatchData の戻り値
+// ─────────────────────────────────────────────────────────────────────────────
+function showFactionF08PreMatchModal(data, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF08PreMatchModal(data, state, onContinue)); return; }
+  if (!data) { if (onContinue) onContinue(); return; }
+
+  const aPortraitUrl = _factionUpperUrl(data.factionA.leaderId);
+  const bPortraitUrl = _factionUpperUrl(data.factionB.leaderId);
+
+  const html = `
+    <div class="fevt-overlay-arena" id="fevtF08PreOverlay">
+      <div class="fevt-arena-card f08-pre">
+        <div class="fevt-arena-header">
+          <div class="fevt-arena-title">🔥 直接対決</div>
+          <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ DIRECT CONFRONTATION</div>
+        </div>
+        <div class="fevt-arena-narration">${String(data.narration)}</div>
+        <div class="fevt-arena-stage">
+          <div class="fevt-arena-duel">
+            <div class="fevt-arena-col">
+              <div class="fevt-arena-portrait" style="background-image:url('${aPortraitUrl}');background-size:cover;background-position:center 20%"></div>
+              <div class="fevt-arena-faction">${String(data.factionA.name)}</div>
+              <div class="fevt-arena-name">${String(data.factionA.leaderName)}</div>
+              <div class="fevt-arena-org">LEADER ・ OVR ${data.factionA.leaderOvr}</div>
+              <div class="fevt-arena-bubble">
+                <span class="fevt-arena-bubble-name">${String(data.factionA.leaderName)}</span>
+                ${String(data.lineA || '')}
+              </div>
+            </div>
+            <div class="fevt-arena-vs">VS</div>
+            <div class="fevt-arena-col">
+              <div class="fevt-arena-portrait" style="background-image:url('${bPortraitUrl}');background-size:cover;background-position:center 20%"></div>
+              <div class="fevt-arena-faction">${String(data.factionB.name)}</div>
+              <div class="fevt-arena-name">${String(data.factionB.leaderName)}</div>
+              <div class="fevt-arena-org">LEADER ・ OVR ${data.factionB.leaderOvr}</div>
+              <div class="fevt-arena-bubble">
+                <span class="fevt-arena-bubble-name">${String(data.factionB.leaderName)}</span>
+                ${String(data.lineB || '')}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fevt-arena-actions">
+          <button class="fevt-arena-btn" id="fevtF08PreBtn">試合へ進む →</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-arena');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+
+  // BGM/SFX: tension ループ + 150ms 遅延の gong 1打
+  try {
+    if (typeof Audio !== 'undefined' && Audio.fileBgm && Audio.fileBgm.play) {
+      Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: true, volume: 0.20 });
+    }
+    if (typeof Audio !== 'undefined' && Audio.stinger) {
+      setTimeout(() => { try { Audio.stinger('../bgm/f07_gong_v1.mp3', 0.18); } catch(e) {} }, 150);
+    }
+  } catch(e) {}
+
+  const btn = root.querySelector('#fevtF08PreBtn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.fadeOut(800); } catch(e) {}
+      if (onContinue) onContinue();
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 3e: F08-A 試合後モーダル（ダーク Arena テーマ + 暗赤フレーム）
+// data: Engine.factions.getF08AftermathData の戻り値
+// ─────────────────────────────────────────────────────────────────────────────
+function showFactionF08AftermathModal(data, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF08AftermathModal(data, state, onContinue)); return; }
+  if (!data) { if (onContinue) onContinue(); return; }
+
+  const wPortraitUrl = _factionUpperUrl(data.winner.id);
+  const lPortraitUrl = _factionUpperUrl(data.loser.id);
+
+  const html = `
+    <div class="fevt-overlay-arena" id="fevtF08PostOverlay">
+      <div class="fevt-arena-card f08-post">
+        <div class="fevt-arena-header">
+          <div class="fevt-arena-title">⚔ 決着の夜</div>
+          <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ AFTERMATH</div>
+        </div>
+        <div class="fevt-arena-narration">${String(data.narrationOpen)}</div>
+        <div class="fevt-arena-stage">
+          <div class="fevt-arena-portrait winner-big" style="background-image:url('${wPortraitUrl}');background-size:cover;background-position:center 20%;margin:0 auto 10px"></div>
+          <div class="fevt-arena-faction">${String(data.winner.factionName)}</div>
+          <div class="fevt-arena-name">${String(data.winner.name)}</div>
+          <div class="fevt-arena-org">WINNER</div>
+          <div class="fevt-arena-bubble winner-big" style="margin-left:auto;margin-right:auto">
+            <span class="fevt-arena-bubble-name">${String(data.winner.name)}</span>
+            ${String(data.winnerLine || '')}
+          </div>
+          <div class="fevt-arena-divider"></div>
+          <div class="fevt-arena-portrait loser" style="background-image:url('${lPortraitUrl}');background-size:cover;background-position:center 20%;margin:0 auto 8px"></div>
+          <div class="fevt-arena-faction" style="opacity:0.75">${String(data.loser.factionName)}</div>
+          <div class="fevt-arena-name" style="font-size:15px;opacity:0.85">${String(data.loser.name)}</div>
+          <div class="fevt-arena-org" style="opacity:0.65">LOSER</div>
+          <div class="fevt-arena-bubble loser" style="margin-left:auto;margin-right:auto">
+            <span class="fevt-arena-bubble-name">${String(data.loser.name)}</span>
+            ${String(data.loserLine || '')}
+          </div>
+        </div>
+        <div class="fevt-arena-narration close">${String(data.narrationClose)}</div>
+        <div class="fevt-arena-actions">
+          <button class="fevt-arena-btn" id="fevtF08PostBtn">閉じる</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-arena');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+
+  const btn = root.querySelector('#fevtF08PostBtn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      // 結びチャイム
+      try { if (typeof Audio !== 'undefined' && Audio.stinger) Audio.stinger('../bgm/f06_fin_chime_v1.mp3', 0.14); } catch(e) {}
+      _factionCloseCinematicOverlay();
+      if (onContinue) onContinue();
+    });
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.showFactionF08PreMatchModal = showFactionF08PreMatchModal;
+  window.showFactionF08AftermathModal = showFactionF08AftermathModal;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

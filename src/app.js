@@ -4708,9 +4708,11 @@ const App = {
     try { Audio.bgm.play('battle'); } catch(e) {}
 
     // rivalry50+ ペアの宣戦布告ポップアップを検出（好敵手/宿怨は対象外、タッグはスキップ）
+    // Phase 3e: F08 ロック試合は専用の試合前モーダルが優先するためここでは除外
     const confrontations = [];
     validMatches.forEach((m, i) => {
       if (m.matchType === 'tag') return;
+      if (m._f08Locked) return;
       const rivalLvl = Engine.title.getRivalryLevel(G, m.left, m.right);
       if (rivalLvl && !rivalLvl.isGoodRival && !rivalLvl.isBitterRival && (rivalLvl.rivalry || 0) >= 50) {
         const cl = G.roster.find(c => c.id === m.left);
@@ -5706,6 +5708,55 @@ const App = {
       s = rest;
     }
 
+    // ── Phase 3e: F08-A 試合後 派閥関係追加変動 + アフターマスモーダル予約 ──
+    // _f08Locked がついた試合のうち、勝敗確定したものに対して発火。
+    // F02③ resolution が同時発火する試合は extra 効果スキップ（resolution 優先）。
+    if (Engine.factions && typeof Engine.factions.applyF08PostMatchExtraEffects === 'function') {
+      validMatches.forEach((m, idx) => {
+        if (!m._f08Locked) return;
+        if (m.matchType === 'tag') return;
+        const r = results[idx];
+        if (!r || r.winner === 'draw') return;
+        const winnerId = r.winner === 'left' ? m.left : m.right;
+        const loserId  = r.winner === 'left' ? m.right : m.left;
+
+        // F02③ resolution 同時発火判定（リーダー同士 + 両方向 hostility ≥60）
+        let isF02ResolutionFiring = false;
+        if (typeof Engine.factions.rollResolutionAfterMatch === 'function') {
+          const probe = Engine.factions.rollResolutionAfterMatch(s, { winnerId, loserId, isDraw: false });
+          if (probe && probe.pendingEvent && probe.pendingEvent.eventId === 'F02_RESOLUTION') {
+            isF02ResolutionFiring = true;
+          }
+        }
+
+        // HP残量パーセント
+        const loserSide = (winnerId === m.left) ? 'right' : 'left';
+        const loserHp = (loserSide === 'left' ? r.hpLeft : r.hpRight) || { final: 0, max: 100 };
+        const loserHpPct = (loserHp.max > 0) ? (loserHp.final / loserHp.max) : 0;
+        const winnerHp = (loserSide === 'left' ? r.hpRight : r.hpLeft) || { final: 0, max: 100 };
+        const winnerHpPct = (winnerHp.max > 0) ? (winnerHp.final / winnerHp.max) : 1;
+
+        const matchResult = { winnerId, loserId, winnerHpPct, loserHpPct };
+
+        // 1) 派閥関係追加変動
+        s = Engine.factions.applyF08PostMatchExtraEffects(s, matchResult, isF02ResolutionFiring);
+
+        // 2) アフターマスモーダル予約（F02③ 同時発火時はスキップ — resolution 演出が優先）
+        if (!isF02ResolutionFiring && typeof Engine.factions.getF08AftermathData === 'function') {
+          const matchId = `${s.season}-${s.week}-${idx}`;
+          const shown = s._shownF08PostMatchIds || [];
+          if (!shown.includes(matchId)) {
+            const data = Engine.factions.getF08AftermathData(s, matchResult);
+            if (data) {
+              const queue = Array.isArray(s._pendingF08Aftermath) ? s._pendingF08Aftermath.slice() : [];
+              queue.push({ matchId, data });
+              s = { ...s, _pendingF08Aftermath: queue, _shownF08PostMatchIds: [...shown, matchId] };
+            }
+          }
+        }
+      });
+    }
+
     // ── v4 §2-1: F02③ 決着 判定（リーダー同士の敵対試合で両方向hostility≥60） ──
     if (Engine.factions && typeof Engine.factions.rollResolutionAfterMatch === 'function' && !s._pendingFactionEvent) {
       for (let i = 0; i < validMatches.length; i++) {
@@ -6205,7 +6256,26 @@ const App = {
     // 試合前/試合後フレーバーポップアップは per-match で流れる
     // (renderMatchPreview の nextIdx フォーカス時 + skipMatch/watchMatch 結果反映直後)
     // ため、ここでは結果画面を直接描画する。
-    renderShowResult(results, injuryResults);
+    // Phase 3e: F08-A 試合後モーダルが予約されていれば結果画面前に逐次消化
+    const drainF08Aftermath = (then) => {
+      const queue = G._pendingF08Aftermath;
+      if (!Array.isArray(queue) || queue.length === 0) {
+        if (G._pendingF08Aftermath !== undefined) {
+          const { _pendingF08Aftermath: _, ...rest } = G;
+          G = rest;
+        }
+        if (then) then();
+        return;
+      }
+      const head = queue[0];
+      G = { ...G, _pendingF08Aftermath: queue.slice(1) };
+      if (typeof showFactionF08AftermathModal === 'function') {
+        showFactionF08AftermathModal(head.data, G, () => drainF08Aftermath(then));
+      } else {
+        drainF08Aftermath(then);
+      }
+    };
+    drainF08Aftermath(() => renderShowResult(results, injuryResults));
   },
 
   // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
@@ -6282,6 +6352,24 @@ const App = {
     if (!sp._shownPreFlavor) sp._shownPreFlavor = new Set();
     if (sp._shownPreFlavor.has(idx)) return;
     sp._shownPreFlavor.add(idx);
+
+    // Phase 3e: F08-A 試合前モーダル発火（rivalry/初顔合わせ等より優先、出したら他はスキップ）
+    const m = (sp.validMatches || [])[idx];
+    if (m && m._f08Locked && typeof Engine !== 'undefined' && Engine.factions
+        && typeof Engine.factions.getF08PreMatchData === 'function'
+        && typeof showFactionF08PreMatchModal === 'function') {
+      const matchId = `${G.season}-${G.week}-${idx}`;
+      if (!G._shownF08PreMatchIds) G._shownF08PreMatchIds = [];
+      if (!G._shownF08PreMatchIds.includes(matchId)) {
+        const data = Engine.factions.getF08PreMatchData(G, m);
+        if (data) {
+          G._shownF08PreMatchIds = [...G._shownF08PreMatchIds, matchId];
+          showFactionF08PreMatchModal(data, G, () => {});
+          return; // 他フレーバーはスキップして試合進行
+        }
+      }
+    }
+
     const popups = App._collectPreMatchPopupsForMatch(idx);
     if (popups.length === 0) return;
     popups.forEach(p => showEventPopup(p));

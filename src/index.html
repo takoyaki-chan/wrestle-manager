@@ -107,6 +107,10 @@
   --accent-info: #6d94b8;
   --accent-rival: #c41e3a;
   --accent-milestone: #d4a843;
+  /* Phase 3e: F08 試合前後 ダーク Arena テーマ */
+  --accent-arena-bg-from: #1a0a0a;
+  --accent-arena-bg-to:   #2d0d0d;
+  --accent-arena-frame-loser: rgba(180,40,40,0.4);
   /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
@@ -4257,6 +4261,94 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 }
 .fevt-report-card.f08 .fevt-report-title { color: #7a1414; letter-spacing: 2.5px; }
 
+/* ============================================================
+   Phase 3e: F08-A 試合前後モーダル ダーク Arena テーマ
+   ============================================================ */
+.fevt-overlay-arena {
+  position: fixed; inset: 0; z-index: 9100;
+  background: linear-gradient(135deg, var(--accent-arena-bg-from) 0%, var(--accent-arena-bg-to) 100%);
+  display: none; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 600ms ease;
+}
+.fevt-overlay-arena.active { display: flex; opacity: 1; }
+.fevt-arena-card {
+  width: 760px; max-width: calc(100vw - 48px);
+  background: linear-gradient(180deg, rgba(20,8,8,0.96) 0%, rgba(40,12,12,0.94) 100%);
+  border: 1px solid rgba(180,40,40,0.35);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,80,80,0.08);
+  color: #e8d8d2;
+  overflow: hidden; position: relative;
+  animation: fevtCardRise 700ms cubic-bezier(0.22,1,0.36,1) both;
+}
+.fevt-arena-card.f08-post { border-color: var(--accent-arena-frame-loser); border-width: 2px; }
+.fevt-arena-header {
+  background: linear-gradient(180deg, rgba(180,40,40,0.18) 0%, rgba(180,40,40,0.04) 100%);
+  border-bottom: 1px solid rgba(180,40,40,0.4);
+  padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
+}
+.fevt-arena-title { font-size: 18px; font-weight: 700; color: #e6a4a4; letter-spacing: 2px; }
+.fevt-arena-meta { font-family: 'Oswald',sans-serif; font-size: 11px; color: #c47878; letter-spacing: 2px; text-transform: uppercase; }
+.fevt-arena-narration {
+  padding: 18px 28px 10px;
+  font-size: 14px; color: #d8c8c4;
+  line-height: 1.7; text-align: center; font-style: italic;
+}
+.fevt-arena-narration.close {
+  border-top: 1px solid rgba(180,40,40,0.18);
+  margin-top: 12px; padding-top: 16px;
+  color: #b89c98;
+}
+.fevt-arena-stage {
+  padding: 12px 24px 18px;
+  text-align: center; position: relative;
+}
+.fevt-arena-duel { display: flex; align-items: stretch; justify-content: center; gap: 24px; }
+.fevt-arena-col { flex: 1; max-width: 300px; text-align: center; }
+.fevt-arena-portrait {
+  width: 160px; height: 190px; margin: 0 auto 10px;
+  border: 2px solid rgba(180,40,40,0.4); border-radius: 4px;
+  background: #150505 center/cover no-repeat;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+}
+.fevt-arena-portrait.loser { width: 110px; height: 130px; opacity: 0.62; filter: brightness(0.55) saturate(0.7); border-color: rgba(120,30,30,0.6); }
+.fevt-arena-portrait.winner-big { width: 200px; height: 230px; border-color: rgba(220,80,80,0.55); box-shadow: 0 12px 36px rgba(140,20,20,0.5); }
+.fevt-arena-faction { font-family:'Oswald',sans-serif; font-size: 11px; color: #c47878; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.fevt-arena-name { font-size: 18px; font-weight: 700; color: #f0d8d4; letter-spacing: 1px; margin-bottom: 4px; }
+.fevt-arena-org { font-family:'Oswald',sans-serif; font-size: 10px; color: #a07878; letter-spacing: 2px; }
+.fevt-arena-vs {
+  align-self: center; font-family:'Bebas Neue',sans-serif;
+  font-size: 36px; color: #e64040; letter-spacing: 4px;
+  text-shadow: 0 0 12px rgba(230,64,64,0.55);
+}
+.fevt-arena-bubble {
+  margin: 12px auto 0; padding: 10px 14px;
+  background: rgba(60,12,12,0.6);
+  border-left: 3px solid rgba(220,80,80,0.55);
+  border-radius: 2px;
+  text-align: left;
+  font-size: 13px; color: #ead8d4; line-height: 1.6;
+  max-width: 280px;
+}
+.fevt-arena-bubble.winner-big { max-width: 480px; font-size: 15px; padding: 14px 18px; border-left-color: #e64040; }
+.fevt-arena-bubble.loser { max-width: 280px; opacity: 0.85; color: #c4b0ac; font-style: italic; border-left-color: rgba(120,30,30,0.6); }
+.fevt-arena-bubble-name { display:block; font-family:'Oswald',sans-serif; font-size: 10px; color: #d4807c; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+.fevt-arena-divider { width: 80px; height: 1px; background: rgba(180,40,40,0.35); margin: 18px auto; }
+.fevt-arena-actions {
+  padding: 0 24px 22px; display: flex; justify-content: center;
+  background: transparent;
+}
+.fevt-arena-btn {
+  background: linear-gradient(180deg, rgba(140,20,20,0.7) 0%, rgba(80,10,10,0.7) 100%);
+  border: 1px solid rgba(220,80,80,0.5);
+  color: #f0d8d4;
+  font-family:'Oswald',sans-serif; font-size: 13px; letter-spacing: 2px;
+  padding: 12px 36px; cursor: pointer; border-radius: 3px;
+  transition: all 180ms ease;
+}
+.fevt-arena-btn:hover { background: linear-gradient(180deg, rgba(180,32,32,0.8), rgba(110,14,14,0.8)); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(140,20,20,0.4); }
+.fevt-arena-card.f08-post .fevt-arena-stage { padding-top: 18px; }
+
 /* marker バリアント（hostile/peace） */
 .fevt-observation-note .marker.hostile { color: #8a3a1a; border-bottom-color: rgba(196,98,58,0.5); }
 .fevt-observation-note .marker.peace { color: #2f5c40; border-bottom-color: rgba(90,138,106,0.5); }
@@ -7512,12 +7604,33 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .np-digest-mq.mid { color: #6a4a10; }
 .np-digest-mq.low { color: #8b1a1a; }
 .np-digest-comment { font-size: 10.5px; color: #5b4b34; line-height: 1.5; }
+.np-digest-finish { font-size: 10.5px; color: #3a2c18; margin-top: 4px; padding-left: 52px; line-height: 1.4; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.np-digest-finish strong { color: #6a4a10; }
+.np-digest-finish-text { display: inline; }
+.np-digest-time { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: #6a4a10; letter-spacing: 0.5px; font-weight: 700; }
+.np-digest-turns-sub { font-size: 10px; color: #8a7858; letter-spacing: 0.3px; }
+.np-digest-mark { display: inline-block; font-size: 11px; margin: 0 3px; vertical-align: 1px; }
+.np-digest-mark.win { color: #1a7a30; font-weight: 900; }
+.np-digest-mark.lose { color: #8b1a1a; font-weight: 900; }
+.np-show-decision { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; padding: 10px 14px; margin: 8px 0 10px; background: linear-gradient(90deg, rgba(212,168,42,0.12), rgba(212,168,42,0.04)); border-left: 3px solid #d4a82a; border-radius: 4px; font-size: 13px; color: #2a1a10; }
+.np-show-decision.draw { border-left-color: #6a5e4c; background: rgba(120,84,39,0.06); }
+.np-show-decision .dec-winner strong { color: #6a4a10; font-size: 15px; }
+.np-show-decision .dec-finish { color: #3a2c18; }
+.np-show-decision .dec-finish::before { content: ''; display: inline-block; width: 1px; height: 12px; background: rgba(120,84,39,0.4); margin-right: 12px; vertical-align: -1px; }
+.np-show-decision .dec-time { margin-left: auto; color: #3a2c18; font-size: 13px; font-weight: 600; }
+.np-show-decision .dec-turns { color: #8a7858; font-size: 10.5px; letter-spacing: 0.3px; margin-left: 0; }
+.np-show-decision .dec-time + .dec-turns { margin-left: 0; }
+.np-winner-mark { color: #1a7a30; font-weight: 900; margin-left: 6px; font-size: 14px; }
+.np-loser-mark { color: #8b1a1a; font-weight: 900; margin-left: 6px; font-size: 14px; letter-spacing: 0; }
 
 .np-sub-stories { margin-top: 16px; padding-top: 14px; border-top: 3px double rgba(120,84,39,0.35); }
 .np-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .np-sub { display: flex; gap: 10px; padding-bottom: 12px; border-bottom: 1px dashed rgba(120,84,39,0.25); }
 .np-sub-photo { width: 72px; height: 72px; border-radius: 6px; flex-shrink: 0; background-size: cover; background-position: center top; background-color: #2a1a10; border: 2px solid rgba(120,84,39,0.4); box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
 .np-empty-substory { padding: 18px 14px; text-align: center; color: #7a5b32; font-style: italic; font-size: 11.5px; line-height: 1.6; background: rgba(248,238,210,0.4); border: 1px dashed rgba(120,84,39,0.25); border-radius: 4px; }
+.np-history-summary-row { padding: 10px 12px; background: rgba(248,238,210,0.5); border: 1px solid rgba(120,84,39,0.2); border-radius: 4px; font-size: 12px; color: #3a2c18; line-height: 1.7; }
+.np-history-summary-row strong { color: #6a4a10; font-weight: 800; }
+.np-history-note { margin-top: 6px; padding: 0 4px; font-size: 10.5px; color: #7a5b32; font-style: italic; }
 .np-sub-situation { display: inline-block; font-size: 9.5px; color: #6a4a10; background: rgba(120,84,39,0.10); border: 1px solid rgba(120,84,39,0.28); padding: 1px 6px; border-radius: 2px; letter-spacing: 0.5px; font-weight: 700; margin-bottom: 3px; line-height: 1.3; }
 .np-sub-org-line { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: #5b4b34; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px; padding: 1px 5px; background: rgba(212,168,67,0.10); border: 1px solid rgba(154,112,32,0.30); border-radius: 2px; line-height: 1.3; }
 .np-sub-org-line img { vertical-align: middle; }
@@ -8355,7 +8468,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <button class="title-btn" id="titleContinueBtn" onclick="App.titleContinue()" style="display:none">CONTINUE</button>
       <button class="title-btn" id="titleLoadBtn" onclick="App.titleLoadGame()">LOAD GAME</button>
     </div>
-    <div class="title-ver">VERSION 1.07</div>
+    <div class="title-ver">VERSION 1.08</div>
     <div class="title-credits-link" onclick="App.showCredits()">Credits</div>
     <div class="title-sns">
       <a href="https://x.com/tkykchan" target="_blank" rel="noopener">𝕏</a>
