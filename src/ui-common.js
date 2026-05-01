@@ -7481,6 +7481,46 @@ function _factionSeasonLabel(state) {
   const pad = (n) => String(n).padStart(2, '0');
   return `WEEK ${pad(week)} ・ ${season}Y`;
 }
+// F01 アーキタイプ別の前置き文 + A 選択肢補足（spec faction-archetype-rework-spec-v0.1.md §5.1）
+const _F01_ARCHETYPE_META = {
+  authoritarian: {
+    flavorText: 'リーダーへの一方向の追従が強く、トップダウンの色が濃いようです。',
+    aLabel: '正式なチームとして認める',
+    aHint: '権威型として承認（authoritativeTag）。求心力と引き換えにロッカー士気が下がる。',
+    archLabel: '権威型',
+  },
+  bond_first: {
+    flavorText: '上下というより、横の絆で繋がった集まりのようです。',
+    aLabel: 'チームとして後押しする',
+    aHint: '結束型として承認（bondTag）。メンバー間 bond +5〜+8、ロッカー士気 +1〜+2。',
+    archLabel: '結束型',
+  },
+  meritocratic: {
+    flavorText: 'OVR を強く意識した、自負心の高い者同士の集まりに見えます。',
+    aLabel: '実力主義のチームとして認める',
+    aHint: '実力主義として承認（meritTag）。bond +2〜+3（敬意ベース）、士気 -1〜-2。',
+    archLabel: '実力主義',
+  },
+  heel: {
+    flavorText: '反主流派の色が濃く、観客を挑発する姿勢が共通しているようです。',
+    aLabel: 'ヒール派閥として承認する',
+    aHint: 'ヒール派閥として承認（heelTag）。bond +3〜+4、次回興行集客一時+。',
+    archLabel: 'ヒール派閥',
+  },
+  face: {
+    flavorText: '王道・ベビーフェイスの旗印で、団体の顔を担う気概が見えます。',
+    aLabel: '正統派として承認する',
+    aHint: '正統派として承認（faceTag）。bond +3〜+4、次回興行集客一時+ + メディア露出収益。',
+    archLabel: '正統派',
+  },
+  combat: {
+    flavorText: '攻めの姿勢を共有する集まりで、メインを取りに行く色が濃いようです。',
+    aLabel: '武闘派として承認する',
+    aHint: '武闘派として承認（combatTag）。リーダー momentum +5、派閥外 rivalry が生まれやすくなる。',
+    archLabel: '武闘派',
+  },
+};
+
 function showFactionF01Modal(payload, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF01Modal(payload, state, onChoice)); return; }
 
@@ -7511,6 +7551,9 @@ function showFactionF01Modal(payload, state, onChoice) {
     followerText = '周囲の数名が自然と集まっているようです。';
   }
 
+  // v0.2: アーキタイプ別前置き + A 選択肢ヒント
+  const archMeta = _F01_ARCHETYPE_META[payload.archetype] || _F01_ARCHETYPE_META.bond_first;
+
   const leftFol = fol1 ? `<div class="fevt-follower-portrait" style="background-image:url('${_factionUpperUrl(fol1.id)}')"></div>` : `<div class="fevt-follower-portrait"></div>`;
   const rightFol = fol2 ? `<div class="fevt-follower-portrait right" style="background-image:url('${_factionUpperUrl(fol2.id)}')"></div>` : `<div class="fevt-follower-portrait right"></div>`;
   const centerLeader = leaderUrl
@@ -7536,16 +7579,16 @@ function showFactionF01Modal(payload, state, onChoice) {
           <div class="fevt-subject-divider"></div>
           <div class="fevt-observation-note">
             <span class="marker">${String(leaderSurname)}</span>を中心として、${String(followerText)}<br>
-            練習後の残り方、ロッカーの席順、移動時の並び——細かい兆候はいくつもあります。<br>
-            <span style="color:var(--cream-text-sub);font-size:13px">派閥のようなものが形成された、と言ってよいかもしれません。</span>
+            ${archMeta.flavorText}<br>
+            <span style="color:var(--cream-text-sub);font-size:13px">これは <strong>${archMeta.archLabel}</strong> の集まりになりそうです。</span>
           </div>
         </div>
         <div class="fevt-decision-prompt">この動きについて、社長としてどう扱いますか？</div>
         <div class="fevt-decision-tray">
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
-            <div class="fevt-decision-label">正式なチームとして認める</div>
-            <div class="fevt-decision-hint">求心力と引き換えに、ロッカールーム全体の空気が悪化する</div>
+            <div class="fevt-decision-label">${archMeta.aLabel}</div>
+            <div class="fevt-decision-hint">${archMeta.aHint}</div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>
@@ -7555,7 +7598,7 @@ function showFactionF01Modal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="C">
             <div class="fevt-decision-letter">C</div>
             <div class="fevt-decision-label">静観する</div>
-            <div class="fevt-decision-hint">派閥成立（自然発生）。介入なし</div>
+            <div class="fevt-decision-hint">派閥成立（自然発生）。アーキタイプ専用タグなし</div>
           </div>
         </div>
       </div>
