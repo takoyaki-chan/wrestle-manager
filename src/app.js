@@ -5734,6 +5734,35 @@ const App = {
       s = rest;
     }
 
+    // ── Phase C: F07 DEMAND_MAIN ディレクティブ消化 ──
+    // メインスロットに当該派閥メンバーが入っていれば成功（メンバー trust +1）、
+    // 入っていなければ約束反故（リーダー trust -2）。1 興行で消化、expiresAfterShows 制御は将来用。
+    if (s._pendingF07Directive && s._pendingF07Directive.type === 'DEMAND_MAIN') {
+      const dir = s._pendingF07Directive;
+      const fac = (s.factions || []).find(f => f.id === dir.factionId);
+      if (fac) {
+        const mainMatch = validMatches[0];
+        let containsFactionMember = false;
+        if (mainMatch) {
+          if (mainMatch.matchType === 'tag') {
+            const ids = [mainMatch.teamA?.fighter1, mainMatch.teamA?.fighter2, mainMatch.teamB?.fighter1, mainMatch.teamB?.fighter2].filter(Boolean);
+            containsFactionMember = ids.some(id => fac.memberIds.includes(id));
+          } else {
+            containsFactionMember = (mainMatch.left && fac.memberIds.includes(mainMatch.left)) || (mainMatch.right && fac.memberIds.includes(mainMatch.right));
+          }
+        }
+        if (containsFactionMember && Engine.factions._applyTrustToMembers) {
+          s = Engine.factions._applyTrustToMembers(s, fac.memberIds, 1);
+          if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN fulfilled: ${fac.name} member appeared in main`);
+        } else if (Engine.factions._applyTrustToMembers && fac.leaderId) {
+          s = Engine.factions._applyTrustToMembers(s, [fac.leaderId], -2);
+          if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN unfulfilled: ${fac.name} leader trust -2`);
+        }
+      }
+      const { _pendingF07Directive: _, ...restF07 } = s;
+      s = restF07;
+    }
+
     // ── Phase B: F09 派閥対抗戦 — sweep ボーナス適用 + Ending モーダル予約 + pending クリア ──
     if (s._pendingF09 && Engine.factions && typeof Engine.factions.applyF09SweepBonus === 'function') {
       const f09 = s._pendingF09;

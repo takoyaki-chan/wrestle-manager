@@ -2298,6 +2298,43 @@ function renderShowPrep() {
     html += '</div>';
   }
 
+  // ── F07 DEMAND_MAIN ディレクティブバナー（Phase C）──
+  // 派閥リーダーへの「メイン要求」を A 受諾した場合、推奨フラグが立つ。
+  // メインカードに当該派閥メンバーを含めるとリーダー満足、含めないと小さな trust ペナルティ。
+  if (G._pendingF07Directive && G._pendingF07Directive.type === 'DEMAND_MAIN') {
+    const dir = G._pendingF07Directive;
+    const fac = (G.factions || []).find(f => f.id === dir.factionId);
+    if (fac) {
+      const memberNames = fac.memberIds
+        .map(id => G.roster.find(c => c.id === id))
+        .filter(Boolean)
+        .slice(0, 8)
+        .map(c => c.name)
+        .join(' / ');
+      const mainSlot = G.showCard[0];
+      let mainContainsFaction = false;
+      if (mainSlot) {
+        if (mainSlot.matchType === 'tag') {
+          const ids = [mainSlot.teamA?.fighter1, mainSlot.teamA?.fighter2, mainSlot.teamB?.fighter1, mainSlot.teamB?.fighter2].filter(Boolean);
+          mainContainsFaction = ids.some(id => fac.memberIds.includes(id));
+        } else {
+          mainContainsFaction = (mainSlot.left && fac.memberIds.includes(mainSlot.left)) || (mainSlot.right && fac.memberIds.includes(mainSlot.right));
+        }
+      }
+      const ok = mainContainsFaction;
+      html += `<div style="background:linear-gradient(135deg,${ok ? '#1d2e1a,#2a4422' : '#2e2a1a,#443a22'});border:1px solid ${ok ? '#7bc46c' : '#e0c98a'};border-radius:8px;padding:10px 14px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:${ok ? '#bff5b3' : '#f0d99a'};letter-spacing:1px;margin-bottom:4px">📣 ${fac.name} からのメイン推薦</div>
+        <div style="font-size:12px;color:#dcd6c0;line-height:1.55">
+          メイン枠に <strong>${fac.name}</strong> のメンバーを推す約束をしています。<br>
+          <span style="color:#aaa;font-size:11px">候補: ${memberNames || '—'}</span><br>
+          <span style="color:${ok ? '#9be08a' : '#e0a85a'};font-size:11px;margin-top:2px;display:inline-block">
+            ${ok ? '✓ 現在のメインに該当メンバーが入っています' : '⚠ 現在のメインに該当メンバー無し（興行終了時にリーダー trust 減少の可能性）'}
+          </span>
+        </div>
+      </div>`;
+    }
+  }
+
   // L1: 会場選択（全会場選択可能・リスク指標付き）
   html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
   const baseAtt = Engine.economy.calcBaseAttendance(G.orgPop);
