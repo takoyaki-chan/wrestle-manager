@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>派閥画面リデザイン Mockup v0.2 — 案A/B/C比較</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --office-bg: #24221e;
+    --office-panel-dark: #181614;
+    --office-panel-dark-deep: #12110e;
+    --office-panel-cream: #d4ccb8;
+    --office-panel-cream-card: #ede8dc;
+    --office-panel-cream-info: #e0daca;
+    --office-border-cream: rgba(100,85,50,0.22);
+    --office-border-cream-strong: rgba(100,85,50,0.42);
+    --office-text-on-dark-main: #e8e6e0;
+    --office-text-on-dark-sub: #b8b1a3;
+    --office-text-on-dark-dim: #7a7466;
+    --office-text-on-cream-main: #1e1c16;
+    --office-text-on-cream-sub: #4a4638;
+    --office-text-on-cream-dim: #7a7466;
+    --cream-gold: #7a6530;
+    --cream-gold-dark: #5c4a1e;
+    --gold: #d4a843;
+    --gold-light: #f0d078;
+    --accent-hostility: #c4623a;
+    --accent-hostility-deep: #8b3318;
+    --accent-faction-1: #c38c54;
+    --accent-faction-2: #6d94b8;
+    --accent-faction-3: #8a7aa8;
+    --accent-faction-4: #6fa28c;
+    --accent-bond: #5a8a6a;
+    --accent-warn: #b88a2a;
+    --space-xs: 4px; --space-sm: 8px; --space-md: 12px;
+    --space-lg: 16px; --space-xl: 24px; --space-2xl: 32px;
+    --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; --radius-xl: 12px;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--office-bg);
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--office-text-on-dark-main);
+    font-size: 13px; line-height: 1.6;
+  }
+
+  /* === 案セパレータ === */
+  .variant-banner {
+    background: linear-gradient(180deg, var(--gold) 0%, #b88a2a 100%);
+    color: #1a1611;
+    padding: 14px 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 4px;
+    font-size: 22px;
+    border-bottom: 4px solid var(--cream-gold-dark);
+    border-top: 4px solid var(--cream-gold-dark);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .variant-banner .ja {
+    font-family: 'Noto Sans JP', sans-serif;
+    letter-spacing: 2px; font-size: 14px; font-weight: 700;
+  }
+  .variant-banner .desc {
+    font-family: 'Noto Sans JP', sans-serif;
+    letter-spacing: 0.5px; font-size: 12px; font-weight: 500;
+    color: #3a2e10;
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-lg) 60px;
+  }
+
+  /* === 共通: section title === */
+  .section-title {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 12px;
+    color: var(--office-text-on-dark-sub);
+    display: flex; align-items: center; gap: var(--space-sm);
+    margin: 0 0 var(--space-md);
+  }
+  .section-title .ja {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700; letter-spacing: 1px;
+    font-size: 14px;
+    color: var(--office-text-on-dark-main);
+  }
+  .section-title .count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px; letter-spacing: 1px; color: var(--gold);
+  }
+  .section-title::before {
+    content: ''; flex: 0 0 24px; height: 1px;
+    background: var(--office-border-cream-strong);
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px;
+    background: var(--office-border-cream);
+  }
+  .section-sub {
+    color: var(--office-text-on-dark-dim);
+    font-size: 11px;
+    margin: -8px 0 var(--space-lg) 32px;
+  }
+
+  /* === 共通: 抗争ペアカード（タイムラインは折りたたみ） === */
+  .feud-pair-card {
+    background: var(--office-panel-cream-card);
+    border: 1px solid var(--office-border-cream-strong);
+    border-left: 4px solid var(--accent-hostility);
+    border-radius: var(--radius-lg);
+    color: var(--office-text-on-cream-main);
+    padding: var(--space-lg) var(--space-xl);
+    margin-bottom: var(--space-xl);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+  }
+  .feud-pair-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: var(--space-md);
+    border-bottom: 1px dashed var(--office-border-cream);
+    padding-bottom: var(--space-sm);
+  }
+  .feud-pair-title { display: flex; align-items: baseline; gap: var(--space-md); }
+  .feud-pair-title .icon { font-size: 18px; }
+  .feud-pair-title .vs-line { font-weight: 700; font-size: 16px; color: var(--cream-gold-dark); }
+  .feud-pair-title .vs-line .name { color: var(--office-text-on-cream-main); }
+  .feud-pair-title .vs-line .vs {
+    color: var(--accent-hostility);
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px; margin: 0 6px; font-size: 18px;
+  }
+  .feud-pair-meta { display: flex; gap: var(--space-md); font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--office-text-on-cream-dim); }
+  .feud-pair-meta .badge { background: var(--accent-hostility-deep); color: #fff; padding: 3px 10px; border-radius: 999px; font-weight: 700; letter-spacing: 2px; }
+  .feud-pair-meta .badge.warn { background: var(--accent-warn); }
+
+  .feud-pair-body {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: var(--space-lg);
+    align-items: stretch;
+  }
+
+  .feud-side {
+    background: var(--office-panel-cream-info);
+    border: 1px solid var(--office-border-cream);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    display: flex; flex-direction: column; gap: var(--space-sm);
+    position: relative;
+  }
+  .feud-side::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--faction-accent, var(--accent-faction-1));
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+  }
+  .feud-side .name { font-weight: 700; font-size: 15px; color: var(--office-text-on-cream-main); letter-spacing: 1px; }
+  .feud-side .flavor { font-size: 10px; font-family: 'Oswald', sans-serif; letter-spacing: 2px; text-transform: uppercase; color: var(--cream-gold); }
+  .feud-faces { display: flex; gap: 6px; align-items: flex-end; }
+  .feud-face {
+    background: var(--office-panel-cream);
+    border: 1px solid var(--office-border-cream);
+    border-radius: var(--radius-sm);
+    overflow: hidden; position: relative; text-align: center;
+    flex-shrink: 0;
+  }
+  .feud-face.lg { width: 64px; height: 78px; }
+  .feud-face.md { width: 44px; height: 54px; }
+  .feud-face.sm { width: 32px; height: 40px; }
+  .feud-face .ph {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; background: rgba(122,101,48,0.15);
+    color: var(--cream-gold-dark); font-size: 18px;
+  }
+  .feud-face.md .ph { font-size: 14px; }
+  .feud-face.sm .ph { font-size: 11px; }
+  .feud-face .role-mark {
+    position: absolute; top: 2px; right: 2px;
+    font-size: 10px; background: rgba(255,255,255,0.85);
+    border-radius: 50%; width: 14px; height: 14px;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .feud-face .name-tag {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.65) 100%);
+    color: #fff; font-size: 9px; padding: 6px 2px 2px;
+  }
+  .feud-side .others {
+    font-size: 10px; color: var(--office-text-on-cream-dim);
+    border-top: 1px dashed var(--office-border-cream);
+    padding-top: 6px; margin-top: 2px; line-height: 1.4;
+  }
+  .feud-side .meters { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+  .feud-side .meter {
+    font-size: 10px; font-family: 'Oswald', sans-serif; letter-spacing: 1px;
+    background: rgba(122,101,48,0.10); color: var(--cream-gold-dark);
+    padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--office-border-cream);
+  }
+  .feud-progress {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--office-panel-cream);
+    border: 1px solid var(--office-border-cream);
+    border-radius: var(--radius-md); gap: 10px;
+  }
+  .feud-progress .label-row {
+    text-align: center; font-family: 'Oswald', sans-serif;
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--cream-gold); margin-bottom: 2px;
+  }
+  .feud-bar-row {
+    display: grid; grid-template-columns: 80px 1fr 56px;
+    align-items: center; gap: var(--space-sm); font-size: 12px;
+  }
+  .feud-bar-row .side-label {
+    font-weight: 700; color: var(--office-text-on-cream-main);
+    text-align: right; font-size: 12px;
+  }
+  .feud-bar-row .side-label .dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--side-accent, var(--accent-faction-1));
+    margin-right: 4px; vertical-align: middle;
+  }
+  .feud-bar-track {
+    height: 14px; background: rgba(100,85,50,0.16);
+    border-radius: 7px; overflow: hidden; position: relative;
+    border: 1px solid var(--office-border-cream);
+  }
+  .feud-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg,
+      var(--side-accent, var(--accent-faction-1)) 0%,
+      var(--side-accent-light, var(--accent-faction-1)) 100%);
+    border-radius: 7px; position: relative;
+  }
+  .feud-bar-row .pt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 1px;
+    color: var(--cream-gold-dark);
+  }
+  .feud-bar-row .pt small {
+    font-family: 'Oswald', sans-serif; font-size: 10px;
+    letter-spacing: 1px; margin-left: 2px; color: var(--cream-gold);
+  }
+  .feud-progress-foot {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--office-text-on-cream-sub);
+    border-top: 1px dashed var(--office-border-cream);
+    padding-top: 6px; margin-top: 4px;
+  }
+  .feud-progress-foot strong {
+    color: var(--accent-hostility);
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 1px; font-size: 14px; margin: 0 2px;
+  }
+  .feud-progress-foot .flavor {
+    font-style: italic; color: var(--cream-gold-dark);
+  }
+
+  /* === 折りたたみタイムライン === */
+  .feud-history-toggle {
+    margin-top: var(--space-md);
+    padding: 8px 14px;
+    background: var(--office-panel-cream-info);
+    border: 1px solid var(--office-border-cream);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--cream-gold-dark);
+    user-select: none;
+    transition: background 150ms;
+  }
+  .feud-history-toggle:hover { background: var(--office-panel-cream); }
+  .feud-history-toggle .arrow { transition: transform 200ms; font-family: 'Bebas Neue', sans-serif; }
+  details[open] .feud-history-toggle .arrow { transform: rotate(180deg); }
+  .feud-history-toggle .recent {
+    color: var(--office-text-on-cream-sub);
+    font-family: 'Noto Sans JP', sans-serif; font-size: 11px;
+    text-transform: none; letter-spacing: 0.5px;
+    flex: 1; text-align: center;
+  }
+  .feud-history-toggle .recent strong { color: var(--accent-hostility); margin-right: 4px; }
+
+  .feud-timeline {
+    margin-top: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--office-panel-cream-info);
+    border: 1px solid var(--office-border-cream);
+    border-radius: var(--radius-md);
+  }
+  .feud-tl-track { position: relative; height: 60px; padding: 0 4px; }
+  .feud-tl-line {
+    position: absolute; top: 28px; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+      rgba(100,85,50,0.15) 0%, rgba(196,98,58,0.45) 60%, rgba(139,51,24,0.7) 100%);
+  }
+  .feud-tl-marker {
+    position: absolute; top: 0;
+    transform: translateX(-50%);
+    text-align: center; cursor: pointer; width: 90px;
+  }
+  .feud-tl-marker .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--cream-gold-dark);
+    margin: 21px auto 0;
+    border: 2px solid var(--office-panel-cream-info);
+    box-shadow: 0 0 0 1px var(--cream-gold-dark);
+  }
+  .feud-tl-marker.f02 .dot { background: var(--accent-warn); box-shadow: 0 0 0 1px var(--accent-warn); }
+  .feud-tl-marker.f08 .dot { background: var(--accent-hostility); box-shadow: 0 0 0 1px var(--accent-hostility); }
+  .feud-tl-marker.match .dot { background: var(--cream-gold); box-shadow: 0 0 0 1px var(--cream-gold-dark); width: 10px; height: 10px; margin-top: 23px; }
+  .feud-tl-marker .week {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px; color: var(--cream-gold-dark); margin-bottom: 4px;
+  }
+  .feud-tl-marker .lbl {
+    font-size: 9px; color: var(--office-text-on-cream-sub);
+    margin-top: 4px; line-height: 1.3;
+  }
+  .feud-tl-marker.now .week { color: var(--accent-hostility); font-weight: 700; }
+
+  /* ========================================================
+     共通 派閥カード（小・横並び）
+     ======================================================== */
+  .faction-card-base {
+    background: var(--office-panel-cream-card);
+    border: 1px solid var(--office-border-cream);
+    border-left: 3px solid var(--faction-accent, var(--accent-faction-1));
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    color: var(--office-text-on-cream-main);
+    position: relative;
+    transition: transform 150ms, box-shadow 150ms;
+    cursor: pointer;
+  }
+  .faction-card-base:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
+  .faction-card-base.in-feud { border-left-width: 4px; }
+  .faction-card-base .feud-flag {
+    position: absolute; top: 8px; right: 10px;
+    font-size: 10px; color: var(--accent-hostility);
+    background: rgba(196,98,58,0.10);
+    border: 1px solid rgba(196,98,58,0.35);
+    padding: 1px 8px; border-radius: 999px; letter-spacing: 1px;
+  }
+  .faction-card-base .head {
+    display: flex; align-items: baseline; gap: 6px;
+    flex-wrap: wrap; margin-bottom: 4px;
+  }
+  .faction-card-base .head .name { font-weight: 700; font-size: 15px; letter-spacing: 1px; }
+  .faction-card-base .head .count { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: var(--cream-gold); }
+  .faction-card-base .head .tag {
+    font-size: 9px; font-family: 'Oswald', sans-serif; letter-spacing: 1.5px;
+    background: rgba(122,101,48,0.12); color: var(--cream-gold-dark);
+    border: 1px solid var(--office-border-cream);
+    padding: 1px 6px; border-radius: 3px; text-transform: uppercase;
+  }
+  .faction-card-base .head .tag.auth { background: rgba(212,168,67,0.18); border-color: rgba(212,168,67,0.4); }
+  .faction-card-base .head .tag.dict { background: rgba(196,98,58,0.18); color: var(--accent-hostility-deep); border-color: rgba(196,98,58,0.45); }
+  .faction-card-base .flavor-desc { font-size: 10px; color: var(--office-text-on-cream-dim); margin-bottom: var(--space-sm); }
+  .faction-card-base .faces { display: flex; gap: 6px; margin-bottom: var(--space-sm); }
+  .faction-card-base .meters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .faction-card-base .meter {
+    font-size: 10px; font-family: 'Oswald', sans-serif;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    background: var(--office-panel-cream); color: var(--cream-gold-dark);
+    padding: 2px 8px; border-radius: 3px;
+    border: 1px solid var(--office-border-cream);
+  }
+  .meter.solidarity-strong { background: rgba(90,138,106,0.15) !important; color: #2f5c40 !important; border-color: rgba(90,138,106,0.4) !important; }
+  .meter.solidarity-wobble { background: rgba(196,98,58,0.10) !important; color: var(--accent-hostility-deep) !important; border-color: rgba(196,98,58,0.35) !important; }
+  .meter.momentum-boom { background: rgba(212,168,67,0.18) !important; color: var(--cream-gold-dark) !important; border-color: rgba(212,168,67,0.4) !important; }
+  .meter.momentum-fade { background: rgba(120,100,80,0.18) !important; color: var(--office-text-on-cream-sub) !important; }
+
+  /* ========================================================
+     案A: フラットな縦リスト（抗争中→中立、上から順）
+     ======================================================== */
+  .variant-a .faction-list-flat {
+    display: flex; flex-direction: column; gap: var(--space-sm);
+  }
+  .variant-a .faction-row {
+    background: var(--office-panel-cream-card);
+    border: 1px solid var(--office-border-cream);
+    border-left: 4px solid var(--faction-accent, var(--accent-faction-1));
+    border-radius: var(--radius-md);
+    padding: 10px var(--space-lg);
+    color: var(--office-text-on-cream-main);
+    display: grid;
+    grid-template-columns: 200px 100px 1fr auto;
+    align-items: center;
+    gap: var(--space-md);
+    cursor: pointer;
+    transition: background 150ms;
+  }
+  .variant-a .faction-row:hover { background: var(--office-panel-cream); }
+  .variant-a .faction-row.in-feud {
+    border-left-color: var(--accent-hostility);
+    background: linear-gradient(90deg, rgba(196,98,58,0.05) 0%, var(--office-panel-cream-card) 60%);
+  }
+  .variant-a .fr-name {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .variant-a .fr-name .n { font-weight: 700; font-size: 14px; }
+  .variant-a .fr-name .sub {
+    font-size: 10px; color: var(--office-text-on-cream-dim);
+    font-family: 'Oswald', sans-serif; letter-spacing: 1px;
+  }
+  .variant-a .fr-name .feud-tag {
+    font-size: 9px; color: var(--accent-hostility);
+    margin-left: 4px;
+  }
+  .variant-a .fr-faces { display: flex; gap: 4px; }
+  .variant-a .fr-meters { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+  .variant-a .fr-meters .meter {
+    font-size: 10px; font-family: 'Oswald', sans-serif;
+    letter-spacing: 1px; padding: 2px 8px;
+    border: 1px solid var(--office-border-cream);
+    border-radius: 3px;
+    background: rgba(122,101,48,0.08);
+    color: var(--cream-gold-dark);
+  }
+  .variant-a .fr-arrow {
+    font-family: 'Bebas Neue', sans-serif; color: var(--cream-gold);
+    letter-spacing: 1px;
+  }
+
+  /* ========================================================
+     案B: 2層グリッド（抗争中=大カード2列 / 中立=小カード3列）
+     ======================================================== */
+  .variant-b .layer {
+    margin-bottom: var(--space-xl);
+  }
+  .variant-b .layer-label {
+    font-family: 'Oswald', sans-serif; font-size: 11px;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--office-text-on-dark-sub);
+    margin-bottom: var(--space-sm);
+    padding-left: var(--space-sm);
+    border-left: 3px solid var(--gold);
+  }
+  .variant-b .layer.feud .layer-label { border-left-color: var(--accent-hostility); }
+  .variant-b .grid-feud {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+  .variant-b .grid-neutral {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+  }
+  .variant-b .grid-neutral .faction-card-base {
+    padding: 10px var(--space-md);
+  }
+  .variant-b .grid-neutral .faction-card-base .name { font-size: 13px; }
+  .variant-b .grid-neutral .faction-card-base .feud-face.md { width: 36px; height: 44px; }
+
+  /* ========================================================
+     案C: マスター/ディテール（左リスト、右詳細プレビュー）
+     ======================================================== */
+  .variant-c .md-row {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--space-lg);
+    background: var(--office-panel-dark);
+    border: 1px solid var(--office-border-cream);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .variant-c .md-list {
+    background: var(--office-panel-dark-deep);
+    padding: var(--space-md);
+    border-right: 1px solid var(--office-border-cream);
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 520px; overflow-y: auto;
+  }
+  .variant-c .md-item {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 8px; align-items: center;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: var(--office-panel-dark);
+    color: var(--office-text-on-dark-main);
+    transition: background 150ms;
+  }
+  .variant-c .md-item:hover { background: rgba(212,168,67,0.08); }
+  .variant-c .md-item.active {
+    background: var(--office-panel-cream-card);
+    color: var(--office-text-on-cream-main);
+    border-color: var(--gold);
+  }
+  .variant-c .md-item.in-feud {
+    border-left: 3px solid var(--accent-hostility);
+    padding-left: 7px;
+  }
+  .variant-c .md-item .swatch {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--faction-accent, var(--accent-faction-1));
+  }
+  .variant-c .md-item .label {
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .variant-c .md-item .label .n { font-weight: 700; font-size: 13px; letter-spacing: 1px; }
+  .variant-c .md-item .label .s {
+    font-size: 9px; color: var(--office-text-on-dark-dim);
+    font-family: 'Oswald', sans-serif; letter-spacing: 1.5px;
+  }
+  .variant-c .md-item.active .label .s { color: var(--cream-gold); }
+  .variant-c .md-item .badge {
+    font-size: 9px; font-family: 'Oswald', sans-serif;
+    padding: 1px 6px; border-radius: 999px;
+    background: rgba(196,98,58,0.18);
+    color: var(--accent-hostility);
+    border: 1px solid rgba(196,98,58,0.4);
+    letter-spacing: 1px;
+  }
+  .variant-c .md-detail {
+    background: var(--office-panel-cream-card);
+    color: var(--office-text-on-cream-main);
+    padding: var(--space-lg);
+  }
+  .variant-c .md-detail-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: var(--space-md);
+    border-bottom: 1px dashed var(--office-border-cream);
+    padding-bottom: var(--space-sm);
+  }
+  .variant-c .md-detail-head .name {
+    font-size: 18px; font-weight: 700;
+    color: var(--cream-gold-dark); letter-spacing: 1.5px;
+  }
+  .variant-c .md-detail-head .meta {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px; letter-spacing: 1.5px;
+    color: var(--cream-gold);
+  }
+  .variant-c .md-detail-faces {
+    display: flex; gap: 8px; margin-bottom: var(--space-md);
+  }
+  .variant-c .md-detail-meters {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: var(--space-md);
+  }
+  .variant-c .md-detail-meters .meter {
+    font-size: 11px; font-family: 'Oswald', sans-serif;
+    letter-spacing: 1.5px; padding: 3px 10px;
+    border-radius: 3px; border: 1px solid var(--office-border-cream);
+    background: var(--office-panel-cream); color: var(--cream-gold-dark);
+  }
+  .variant-c .md-detail-text {
+    font-size: 12px; color: var(--office-text-on-cream-sub);
+    line-height: 1.7;
+    background: var(--office-panel-cream-info);
+    border-left: 3px solid var(--cream-gold);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* === 注釈 === */
+  .mock-note {
+    max-width: 1180px;
+    margin: 0 auto var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--office-panel-dark-deep);
+    border: 1px dashed rgba(120,108,80,0.4);
+    border-radius: var(--radius-md);
+    font-size: 11px;
+    color: var(--office-text-on-dark-dim);
+    line-height: 1.8;
+  }
+  .mock-note h4 {
+    margin: 0 0 6px; color: var(--gold);
+    font-family: 'Oswald', sans-serif; letter-spacing: 2px;
+    font-size: 11px;
+  }
+  .mock-note ul { margin: 0; padding-left: 18px; }
+  .mock-note .pros { color: var(--accent-bond); }
+  .mock-note .cons { color: var(--accent-hostility); }
+
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ====================================================
+     共通: 抗争ペアブロック（マクロ替わりにHTMLコピー）
+     v0.2 変更点: タイムラインを <details> で折りたたみ
+     "TIMELINE" → "HISTORY" に改名
+     ==================================================== -->
+
+
+<!-- ===========================================================
+     案A: フラットな縦リスト（抗争中→中立、上から順）
+     =========================================================== -->
+<div class="variant-banner">
+  <span>VARIANT A</span>
+  <span class="ja">案A: フラット縦リスト</span>
+  <span class="desc">抗争中も中立も同じ行フォーマット、上から並べる</span>
+</div>
+
+<div class="container variant-a">
+
+  <!-- ① 抗争ペア -->
+  <h2 class="section-title">
+    <span>RIVALRY IN PROGRESS</span>
+    <span class="ja">🔥 抗争中</span>
+    <span class="count">1</span>
+  </h2>
+  <p class="section-sub">先取100ptで決着、もしくは40週経過で強制和解。同時抗争は1組のみ。</p>
+
+  <div class="feud-pair-card">
+    <div class="feud-pair-head">
+      <div class="feud-pair-title">
+        <span class="icon">🔥</span>
+        <span class="vs-line">
+          <span class="name">紅蓮組</span><span class="vs">VS</span><span class="name">蒼天会</span>
+        </span>
+      </div>
+      <div class="feud-pair-meta">
+        <span>抗争 48週目</span>
+        <span class="badge">激化中</span>
+      </div>
+    </div>
+    <div class="feud-pair-body">
+      <div class="feud-side" style="--faction-accent: var(--accent-faction-1)">
+        <div><div class="name">紅蓮組</div><div class="flavor">RIVALROUS · 結束:強固</div></div>
+        <div class="feud-faces">
+          <div class="feud-face lg"><div class="ph">紅</div><span class="role-mark">👑</span><div class="name-tag">大鳳 蓮花</div></div>
+          <div class="feud-face md"><div class="ph">影</div><span class="role-mark">⭐</span><div class="name-tag">影山 椿</div></div>
+          <div class="feud-face md"><div class="ph">紅</div><span class="role-mark">⭐</span><div class="name-tag">紅井 唯</div></div>
+        </div>
+        <div class="others">他: 高見 / 桐谷 / 一ノ瀬 — 計6名</div>
+        <div class="meters"><span class="meter">勢い:隆盛</span><span class="meter">権威型</span></div>
+      </div>
+      <div class="feud-progress">
+        <div class="label-row">RIVALRY POINTS · 先取 100pt</div>
+        <div class="feud-bar-row" style="--side-accent: var(--accent-faction-1); --side-accent-light: #d8a87a">
+          <span class="side-label"><span class="dot"></span>紅蓮組</span>
+          <div class="feud-bar-track"><div class="feud-bar-fill" style="width: 47%"></div></div>
+          <span class="pt">47<small>pt</small></span>
+        </div>
+        <div class="feud-bar-row" style="--side-accent: var(--accent-faction-2); --side-accent-light: #9bb6cf">
+          <span class="side-label"><span class="dot"></span>蒼天会</span>
+          <div class="feud-bar-track"><div class="feud-bar-fill" style="width: 32%"></div></div>
+          <span class="pt">32<small>pt</small></span>
+        </div>
+        <div class="feud-progress-foot">
+          <span>決着まで <strong>53</strong>pt</span>
+          <span class="flavor">紅蓮組 やや優勢</span>
+          <span>強制和解 残<strong>32</strong>週</span>
+        </div>
+      </div>
+      <div class="feud-side" style="--faction-accent: var(--accent-faction-2)">
+        <div><div class="name">蒼天会</div><div class="flavor">RIVALROUS · 結束:揺らぎ</div></div>
+        <div class="feud-faces">
+          <div class="feud-face lg"><div class="ph">蒼</div><span class="role-mark">👑</span><div class="name-tag">白鷺 凛</div></div>
+          <div class="feud-face md"><div class="ph">霧</div><span class="role-mark">⭐</span><div class="name-tag">霧島 沙耶</div></div>
+          <div class="feud-face md"><div class="ph">藤</div><span class="role-mark">⭐</span><div class="name-tag">藤代 みお</div></div>
+        </div>
+        <div class="others">他: 雪村 / 海原 — 計5名</div>
+        <div class="meters"><span class="meter">勢い:平常</span></div>
+      </div>
+    </div>
+
+    <!-- 折りたたみ HISTORY -->
+    <details>
+      <summary class="feud-history-toggle">
+        <span>HISTORY</span>
+        <span class="recent">直近: <strong>W44</strong> タイトル戦 +12pt(蒼) ／ <strong>W36</strong> 幹部戦 +10pt(蒼)</span>
+        <span class="arrow">▼ 全履歴を見る</span>
+      </summary>
+      <div class="feud-timeline">
+        <div class="feud-tl-track">
+          <div class="feud-tl-line"></div>
+          <div class="feud-tl-marker f02" style="left: 4%"><div class="week">W12</div><div class="dot"></div><div class="lbl">F02 抗争勃発</div></div>
+          <div class="feud-tl-marker match" style="left: 22%"><div class="week">W19</div><div class="dot"></div><div class="lbl">代表戦<br>+8pt(紅)</div></div>
+          <div class="feud-tl-marker f08" style="left: 42%"><div class="week">W28</div><div class="dot"></div><div class="lbl">F08-A<br>+15pt(紅)</div></div>
+          <div class="feud-tl-marker match" style="left: 62%"><div class="week">W36</div><div class="dot"></div><div class="lbl">幹部戦<br>+10pt(蒼)</div></div>
+          <div class="feud-tl-marker match" style="left: 78%"><div class="week">W44</div><div class="dot"></div><div class="lbl">タイトル戦<br>+12pt(蒼)</div></div>
+          <div class="feud-tl-marker now" style="left: 95%"><div class="week">W48</div><div class="dot"></div><div class="lbl">現在</div></div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ② 派閥一覧（フラット縦リスト） -->
+  <h2 class="section-title">
+    <span>ALL FACTIONS</span>
+    <span class="ja">🎭 派閥一覧</span>
+    <span class="count">5</span>
+  </h2>
+  <p class="section-sub">抗争中の派閥が上、平和な派閥が下。クリックで詳細パネル展開。</p>
+
+  <div class="faction-list-flat">
+
+    <!-- 抗争中(紅蓮) -->
+    <div class="faction-row in-feud" style="--faction-accent: var(--accent-faction-1)">
+      <div class="fr-name">
+        <span class="n">紅蓮組 <span class="feud-tag">🔥 抗争中</span></span>
+        <span class="sub">RIVALROUS · 6名 · 蒼天会と泥沼</span>
+      </div>
+      <div class="fr-faces">
+        <div class="feud-face sm"><div class="ph">紅</div><span class="role-mark">👑</span></div>
+        <div class="feud-face sm"><div class="ph">影</div></div>
+        <div class="feud-face sm"><div class="ph">紅</div></div>
+      </div>
+      <div class="fr-meters">
+        <span class="meter solidarity-strong">結束:強固</span>
+        <span class="meter momentum-boom">勢い:隆盛</span>
+        <span class="meter">権威型</span>
+      </div>
+      <span class="fr-arrow">▶</span>
+    </div>
+
+    <!-- 抗争中(蒼天) -->
+    <div class="faction-row in-feud" style="--faction-accent: var(--accent-faction-2)">
+      <div class="fr-name">
+        <span class="n">蒼天会 <span class="feud-tag">🔥 抗争中</span></span>
+        <span class="sub">RIVALROUS · 5名 · 紅蓮組と泥沼</span>
+      </div>
+      <div class="fr-faces">
+        <div class="feud-face sm"><div class="ph">蒼</div><span class="role-mark">👑</span></div>
+        <div class="feud-face sm"><div class="ph">霧</div></div>
+        <div class="feud-face sm"><div class="ph">藤</div></div>
+      </div>
+      <div class="fr-meters">
+        <span class="meter solidarity-wobble">結束:揺らぎ</span>
+        <span class="meter">勢い:平常</span>
+      </div>
+      <span class="fr-arrow">▶</span>
+    </div>
+
+    <!-- 中立 -->
+    <div class="faction-row" style="--faction-accent: var(--accent-faction-3)">
+      <div class="fr-name">
+        <span class="n">星詠み会</span>
+        <span class="sub">LOYAL · 4名 · 結束型</span>
+      </div>
+      <div class="fr-faces">
+        <div class="feud-face sm"><div class="ph">星</div><span class="role-mark">👑</span></div>
+        <div class="feud-face sm"><div class="ph">海</div></div>
+        <div class="feud-face sm"><div class="ph">柚</div></div>
+      </div>
+      <div class="fr-meters">
+        <span class="meter solidarity-strong">結束:強固</span>
+      </div>
+      <span class="fr-arrow">▶</span>
+    </div>
+
+    <div class="faction-row" style="--faction-accent: var(--accent-faction-4)">
+      <div class="fr-name">
+        <span class="n">獅子座連合</span>
+        <span class="sub">LOYAL · 3名 · 実力主義</span>
+      </div>
+      <div class="fr-faces">
+        <div class="feud-face sm"><div class="ph">獅</div><span class="role-mark">👑</span></div>
+        <div class="feud-face sm"><div class="ph">虎</div></div>
+        <div class="feud-face sm"><div class="ph">豹</div></div>
+      </div>
+      <div class="fr-meters">
+        <span class="meter">結束:安定</span>
+      </div>
+      <span class="fr-arrow">▶</span>
+    </div>
+
+    <div class="faction-row" style="--faction-accent: var(--accent-faction-1)">
+      <div class="fr-name">
+        <span class="n">月影社</span>
+        <span class="sub">LOYAL · 3名 · 自然型</span>
+      </div>
+      <div class="fr-faces">
+        <div class="feud-face sm"><div class="ph">月</div><span class="role-mark">👑</span></div>
+        <div class="feud-face sm"><div class="ph">影</div></div>
+        <div class="feud-face sm"><div class="ph">桜</div></div>
+      </div>
+      <div class="fr-meters">
+        <span class="meter solidarity-wobble">結束:揺らぎ</span>
+      </div>
+      <span class="fr-arrow">▶</span>
+    </div>
+
+  </div>
+</div>
+
+<div class="mock-note">
+  <h4>VARIANT A — フラット縦リスト</h4>
+  <ul>
+    <li><span class="pros">[長所]</span> 派閥が3〜10個あっても破綻しない。スクロールで全派閥を上から舐められる。</li>
+    <li><span class="pros">[長所]</span> 「対立関係を上から順に」という指摘に最も素直に応える。激度ソートが自然。</li>
+    <li><span class="cons">[短所]</span> 1派閥あたりの情報量が少なく、ぱっと見の "派閥らしさ" が薄い。</li>
+    <li><span class="cons">[短所]</span> 顔役写真が小さくなる(sm 32×40)。ドラマ性が削がれる懸念。</li>
+  </ul>
+</div>
+
+
+<!-- ===========================================================
+     案B: 2層グリッド（抗争派閥=大2列 / 中立=小3列）
+     =========================================================== -->
+<div class="variant-banner">
+  <span>VARIANT B</span>
+  <span class="ja">案B: 2層グリッド</span>
+  <span class="desc">抗争派閥は大カード2列、中立派閥は小カード3列で重み付け</span>
+</div>
+
+<div class="container variant-b">
+
+  <h2 class="section-title">
+    <span>RIVALRY IN PROGRESS</span>
+    <span class="ja">🔥 抗争中</span>
+    <span class="count">1</span>
+  </h2>
+  <p class="section-sub">先取100ptで決着、もしくは40週経過で強制和解。同時抗争は1組のみ。</p>
+
+  <!-- 抗争ペアカード(再掲・案Aと同一) -->
+  <div class="feud-pair-card">
+    <div class="feud-pair-head">
+      <div class="feud-pair-title"><span class="icon">🔥</span><span class="vs-line"><span class="name">紅蓮組</span><span class="vs">VS</span><span class="name">蒼天会</span></span></div>
+      <div class="feud-pair-meta"><span>抗争 48週目</span><span class="badge">激化中</span></div>
+    </div>
+    <div class="feud-pair-body">
+      <div class="feud-side" style="--faction-accent: var(--accent-faction-1)">
+        <div><div class="name">紅蓮組</div><div class="flavor">RIVALROUS · 結束:強固</div></div>
+        <div class="feud-faces">
+          <div class="feud-face lg"><div class="ph">紅</div><span class="role-mark">👑</span><div class="name-tag">大鳳 蓮花</div></div>
+          <div class="feud-face md"><div class="ph">影</div><span class="role-mark">⭐</span><div class="name-tag">影山 椿</div></div>
+          <div class="feud-face md"><div class="ph">紅</div><span class="role-mark">⭐</span><div class="name-tag">紅井 唯</div></div>
+        </div>
+        <div class="others">他: 高見 / 桐谷 / 一ノ瀬 — 計6名</div>
+        <div class="meters"><span class="meter">勢い:隆盛</span><span class="meter">権威型</span></div>
+      </div>
+      <div class="feud-progress">
+        <div class="label-row">RIVALRY POINTS · 先取 100pt</div>
+        <div class="feud-bar-row" style="--side-accent: var(--accent-faction-1); --side-accent-light: #d8a87a">
+          <span class="side-label"><span class="dot"></span>紅蓮組</span>
+          <div class="feud-bar-track"><div class="feud-bar-fill" style="width: 47%"></div></div>
+          <span class="pt">47<small>pt</small></span>
+        </div>
+        <div class="feud-bar-row" style="--side-accent: var(--accent-faction-2); --side-accent-light: #9bb6cf">
+          <span class="side-label"><span class="dot"></span>蒼天会</span>
+          <div class="feud-bar-track"><div class="feud-bar-fill" style="width: 32%"></div></div>
+          <span class="pt">32<small>pt</small></span>
+        </div>
+        <div class="feud-progress-foot">
+          <span>決着まで <strong>53</strong>pt</span>
+          <span class="flavor">紅蓮組 やや優勢</span>
+          <span>強制和解 残<strong>32</strong>週</span>
+        </div>
+      </div>
+      <div class="feud-side" style="--faction-accent: var(--accent-faction-2)">
+        <div><div class="name">蒼天会</div><div class="flavor">RIVALROUS · 結束:揺らぎ</div></div>
+        <div class="feud-faces">
+          <div class="feud-face lg"><div class="ph">蒼</div><span class="role-mark">👑</span><div class="name-tag">白鷺 凛</div></div>
+          <div class="feud-face md"><div class="ph">霧</div><span class="role-mark">⭐</span><div class="name-tag">霧島 沙耶</div></div>
+          <div class="feud-face md"><div class="ph">藤</div><span class="role-mark">⭐</span><div class="name-tag">藤代 みお</div></div>
+        </div>
+        <div class="others">他: 雪村 / 海原 — 計5名</div>
+        <div class="meters"><span class="meter">勢い:平常</span></div>
+      </div>
+    </div>
+
+    <details>
+      <summary class="feud-history-toggle">
+        <span>HISTORY</span>
+        <span class="recent">直近: <strong>W44</strong> タイトル戦 +12pt(蒼) ／ <strong>W36</strong> 幹部戦 +10pt(蒼)</span>
+        <span class="arrow">▼ 全履歴を見る</span>
+      </summary>
+      <div class="feud-timeline">
+        <div class="feud-tl-track">
+          <div class="feud-tl-line"></div>
+          <div class="feud-tl-marker f02" style="left: 4%"><div class="week">W12</div><div class="dot"></div><div class="lbl">F02 抗争勃発</div></div>
+          <div class="feud-tl-marker match" style="left: 22%"><div class="week">W19</div><div class="dot"></div><div class="lbl">代表戦<br>+8pt(紅)</div></div>
+          <div class="feud-tl-marker f08" style="left: 42%"><div class="week">W28</div><div class="dot"></div><div class="lbl">F08-A<br>+15pt(紅)</div></div>
+          <div class="feud-tl-marker match" style="left: 62%"><div class="week">W36</div><div class="dot"></div><div class="lbl">幹部戦<br>+10pt(蒼)</div></div>
+          <div class="feud-tl-marker match" style="left: 78%"><div class="week">W44</div><div class="dot"></div><div class="lbl">タイトル戦<br>+12pt(蒼)</div></div>
+          <div class="feud-tl-marker now" style="left: 95%"><div class="week">W48</div><div class="dot"></div><div class="lbl">現在</div></div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ② 2層グリッド -->
+  <h2 class="section-title">
+    <span>OTHER FACTIONS</span>
+    <span class="ja">🎭 その他の派閥</span>
+    <span class="count">3</span>
+  </h2>
+
+  <div class="layer">
+    <div class="layer-label">⛺ 平和な派閥</div>
+    <div class="grid-neutral">
+
+      <div class="faction-card-base" style="--faction-accent: var(--accent-faction-3)">
+        <div class="head"><span class="name">星詠み会</span><span class="count">4名</span><span class="tag">結束型</span></div>
+        <div class="flavor-desc">絆でまとまりやすい派閥</div>
+        <div class="faces">
+          <div class="feud-face md"><div class="ph">星</div><span class="role-mark">👑</span></div>
+          <div class="feud-face md"><div class="ph">海</div><span class="role-mark">⭐</span></div>
+          <div class="feud-face md"><div class="ph">柚</div></div>
+        </div>
+        <div class="meters"><span class="meter solidarity-strong">結束:強固</span></div>
+      </div>
+
+      <div class="faction-card-base" style="--faction-accent: var(--accent-faction-4)">
+        <div class="head"><span class="name">獅子座連合</span><span class="count">3名</span><span class="tag">実力主義</span></div>
+        <div class="flavor-desc">実力ある選手が集まりやすい派閥</div>
+        <div class="faces">
+          <div class="feud-face md"><div class="ph">獅</div><span class="role-mark">👑</span></div>
+          <div class="feud-face md"><div class="ph">虎</div><span class="role-mark">⭐</span></div>
+          <div class="feud-face md"><div class="ph">豹</div></div>
+        </div>
+        <div class="meters"><span class="meter">結束:安定</span></div>
+      </div>
+
+      <div class="faction-card-base" style="--faction-accent: var(--accent-faction-1)">
+        <div class="head"><span class="name">月影社</span><span class="count">3名</span><span class="tag">自然型</span></div>
+        <div class="flavor-desc">自然発生的にまとまった派閥</div>
+        <div class="faces">
+          <div class="feud-face md"><div class="ph">月</div><span class="role-mark">👑</span></div>
+          <div class="feud-face md"><div class="ph">影</div><span class="role-mark">⭐</span></div>
+          <div class="feud-face md"><div class="ph">桜</div></div>
+        </div>
+        <div class="meters"><span class="meter solidarity-wobble">結束:揺らぎ</span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="mock-note">
+  <h4>VARIANT B — 2層グリッド</h4>
+  <ul>
+    <li><span class="pros">[長所]</span> 抗争ペアセクションが圧倒的主役、その他派閥は控えめ。"主戦場は1つ" が明示される。</li>
+    <li><span class="pros">[長所]</span> 中立派閥の数が増えても3列グリッドで自然に収まる(4-9個まで快適)。</li>
+    <li><span class="cons">[短所]</span> 抗争中の派閥は ① 抗争ペアカード内にのみ登場 = 派閥単体カードを持たない。「派閥としての所属人数や勢いを見たい」ユースケースで紅蓮/蒼天が欠落。</li>
+    <li><span class="cons">[短所]</span> →対策案: 抗争中派閥にも小カードを追加で並べる(冗長)、または抗争ペアカード内で完結させる(現案)。</li>
+  </ul>
+</div>
+
+
+<!-- ===========================================================
+     案C: マスター/ディテール式
+     =========================================================== -->
+<div class="variant-banner">
+  <span>VARIANT C</span>
+  <span class="ja">案C: マスター/ディテール</span>
+  <span class="desc">左に派閥リスト、右に選択中派閥の詳細プレビュー</span>
+</div>
+
+<div class="container variant-c">
+
+  <!-- ① 抗争ペア -->
+  <h2 class="section-title">
+    <span>RIVALRY IN PROGRESS</span>
+    <span class="ja">🔥 抗争中</span>
+    <span class="count">1</span>
+  </h2>
+  <p class="section-sub">先取100ptで決着、もしくは40週経過で強制和解。同時抗争は1組のみ。</p>
+
+  <div class="feud-pair-card">
+    <div class="feud-pair-head">
+      <div class="feud-pair-title"><span class="icon">🔥</span><span class="vs-line"><span class="name">紅蓮組</span><span class="vs">VS</span><span class="name">蒼天会</span></span></div>
+      <div class="feud-pair-meta"><span>抗争 48週目</span><span class="badge">激化中</span></div>
+    </div>
+    <div class="feud-pair-body">
+      <div class="feud-side" style="--faction-accent: var(--accent-faction-1)">
+        <div><div class="name">紅蓮組</div><div class="flavor">RIVALROUS · 結束:強固</div></div>
+        <div class="feud-faces">
+          <div class="feud-face lg"><div class="ph">紅</div><span class="role-mark">👑</span><div class="name-tag">大鳳 蓮花</div></div>
+          <div class="feud-face md"><div class="ph">影</div><span class="role-mark">⭐</span><div class="name-tag">影山 椿</div></div>
+          <div class="feud-face md"><div class="ph">紅</div><span class="role-mark">⭐</span><div class="name-tag">紅井 唯</div></div>
+        </div>
+        <div class="others">他: 高見 / 桐谷 / 一ノ瀬 — 計6名</div>
+        <div class="meters"><span class="meter">勢い:隆盛</span><span class="meter">権威型</span></div>
+      </div>
+      <div class="feud-progress">
+        <div class="label-row">RIVALRY POINTS · 先取 100pt</div>
+        <div class="feud-bar-row" style="--side-accent: var(--accent-faction-1); --side-accent-light: #d8a87a">
+          <span class="side-label"><span class="dot"></span>紅蓮組</span>
+          <div class="feud-bar-track"><div class="feud-bar-fill" style="width: 47%"></div></div>
+          <span class="pt">47<small>pt</small></span>
+        </div>
+        <div class="feud-bar-row" style="--side-accent: var(--accent-faction-2); --side-accent-light: #9bb6cf">
+          <span class="side-label"><span class="dot"></span>蒼天会</span>
+          <div class="feud-bar-track"><div class="feud-bar-fill" style="width: 32%"></div></div>
+          <span class="pt">32<small>pt</small></span>
+        </div>
+        <div class="feud-progress-foot">
+          <span>決着まで <strong>53</strong>pt</span>
+          <span class="flavor">紅蓮組 やや優勢</span>
+          <span>強制和解 残<strong>32</strong>週</span>
+        </div>
+      </div>
+      <div class="feud-side" style="--faction-accent: var(--accent-faction-2)">
+        <div><div class="name">蒼天会</div><div class="flavor">RIVALROUS · 結束:揺らぎ</div></div>
+        <div class="feud-faces">
+          <div class="feud-face lg"><div class="ph">蒼</div><span class="role-mark">👑</span><div class="name-tag">白鷺 凛</div></div>
+          <div class="feud-face md"><div class="ph">霧</div><span class="role-mark">⭐</span><div class="name-tag">霧島 沙耶</div></div>
+          <div class="feud-face md"><div class="ph">藤</div><span class="role-mark">⭐</span><div class="name-tag">藤代 みお</div></div>
+        </div>
+        <div class="others">他: 雪村 / 海原 — 計5名</div>
+        <div class="meters"><span class="meter">勢い:平常</span></div>
+      </div>
+    </div>
+
+    <details>
+      <summary class="feud-history-toggle">
+        <span>HISTORY</span>
+        <span class="recent">直近: <strong>W44</strong> タイトル戦 +12pt(蒼) ／ <strong>W36</strong> 幹部戦 +10pt(蒼)</span>
+        <span class="arrow">▼ 全履歴を見る</span>
+      </summary>
+      <div class="feud-timeline">
+        <div class="feud-tl-track">
+          <div class="feud-tl-line"></div>
+          <div class="feud-tl-marker f02" style="left: 4%"><div class="week">W12</div><div class="dot"></div><div class="lbl">F02 抗争勃発</div></div>
+          <div class="feud-tl-marker match" style="left: 22%"><div class="week">W19</div><div class="dot"></div><div class="lbl">代表戦<br>+8pt(紅)</div></div>
+          <div class="feud-tl-marker f08" style="left: 42%"><div class="week">W28</div><div class="dot"></div><div class="lbl">F08-A<br>+15pt(紅)</div></div>
+          <div class="feud-tl-marker match" style="left: 62%"><div class="week">W36</div><div class="dot"></div><div class="lbl">幹部戦<br>+10pt(蒼)</div></div>
+          <div class="feud-tl-marker match" style="left: 78%"><div class="week">W44</div><div class="dot"></div><div class="lbl">タイトル戦<br>+12pt(蒼)</div></div>
+          <div class="feud-tl-marker now" style="left: 95%"><div class="week">W48</div><div class="dot"></div><div class="lbl">現在</div></div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ② マスター/ディテール -->
+  <h2 class="section-title">
+    <span>ALL FACTIONS</span>
+    <span class="ja">🎭 派閥一覧</span>
+    <span class="count">5</span>
+  </h2>
+  <p class="section-sub">左リストから派閥を選択 → 右に詳細表示。リスト数が増えてもスクロールで対応。</p>
+
+  <div class="md-row">
+    <div class="md-list">
+      <div class="md-item in-feud" style="--faction-accent: var(--accent-faction-1)">
+        <span class="swatch"></span>
+        <div class="label"><span class="n">紅蓮組</span><span class="s">6名 · 結束:強固</span></div>
+        <span class="badge">🔥</span>
+      </div>
+      <div class="md-item active in-feud" style="--faction-accent: var(--accent-faction-2)">
+        <span class="swatch"></span>
+        <div class="label"><span class="n">蒼天会</span><span class="s">5名 · 結束:揺らぎ</span></div>
+        <span class="badge">🔥</span>
+      </div>
+      <div class="md-item" style="--faction-accent: var(--accent-faction-3)">
+        <span class="swatch"></span>
+        <div class="label"><span class="n">星詠み会</span><span class="s">4名 · 結束:強固</span></div>
+      </div>
+      <div class="md-item" style="--faction-accent: var(--accent-faction-4)">
+        <span class="swatch"></span>
+        <div class="label"><span class="n">獅子座連合</span><span class="s">3名 · 結束:安定</span></div>
+      </div>
+      <div class="md-item" style="--faction-accent: var(--accent-faction-1)">
+        <span class="swatch"></span>
+        <div class="label"><span class="n">月影社</span><span class="s">3名 · 結束:揺らぎ</span></div>
+      </div>
+    </div>
+    <div class="md-detail">
+      <div class="md-detail-head">
+        <span class="name">蒼天会</span>
+        <span class="meta">RIVALROUS · 5名 · 結束型</span>
+      </div>
+      <div class="md-detail-faces">
+        <div class="feud-face lg"><div class="ph">蒼</div><span class="role-mark">👑</span><div class="name-tag">白鷺 凛</div></div>
+        <div class="feud-face md"><div class="ph">霧</div><span class="role-mark">⭐</span><div class="name-tag">霧島 沙耶</div></div>
+        <div class="feud-face md"><div class="ph">藤</div><span class="role-mark">⭐</span><div class="name-tag">藤代 みお</div></div>
+        <div class="feud-face md"><div class="ph">雪</div><div class="name-tag">雪村</div></div>
+        <div class="feud-face md"><div class="ph">海</div><div class="name-tag">海原</div></div>
+      </div>
+      <div class="md-detail-meters">
+        <span class="meter solidarity-wobble">結束:揺らぎ</span>
+        <span class="meter">勢い:平常</span>
+        <span class="meter">紅蓮組と泥沼</span>
+        <span class="meter">結束型</span>
+      </div>
+      <div class="md-detail-text">
+        絆でまとまりやすい派閥。リーダー白鷺 凛のもとに集まったが、紅蓮組との抗争が長引き、
+        霧島 沙耶を中心に揺らぎ始めている。直近のタイトル戦で +12pt の貢献。
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mock-note">
+  <h4>VARIANT C — マスター/ディテール</h4>
+  <ul>
+    <li><span class="pros">[長所]</span> 派閥が10個以上あっても破綻しない。スクロール領域が左サイドに収まる。</li>
+    <li><span class="pros">[長所]</span> 詳細パネルで1派閥を深く見せられる。お気に入り派閥を切替えながら眺める使い方ができる。</li>
+    <li><span class="cons">[短所]</span> 「全派閥を一覧で俯瞰」ができない。クリック必須。</li>
+    <li><span class="cons">[短所]</span> 既存 v0.6 の "派閥を眺める" UI体験から逸脱。学習コストあり。</li>
+    <li><span class="cons">[短所]</span> Office カテゴリの紙メタファーから外れた "管理ツール" 感が強い。</li>
+  </ul>
+</div>
+
+</body>
+</html>

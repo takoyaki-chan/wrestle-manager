@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>派閥画面リデザイン Mockup v0.7 — B1-A Part 4 ベース対決構造</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --office-bg: #24221e;
+    --office-panel-dark: #181614;
+    --office-panel-dark-deep: #0e0d0a;
+    --office-border-cream: rgba(100,85,50,0.22);
+    --office-border-cream-strong: rgba(100,85,50,0.42);
+    --office-text-on-dark-main: #e8e6e0;
+    --office-text-on-dark-sub: #b8b1a3;
+    --office-text-on-dark-dim: #7a7466;
+    --cream-gold: #7a6530;
+    --cream-gold-dark: #5c4a1e;
+    --gold: #d4a843;
+    --gold-light: #f0d078;
+    --pop-pink: #d4538a;
+    --pop-pink-light: #f0a0bf;
+    --accent-hostility: #c4623a;
+    --accent-hostility-deep: #8b3318;
+    --accent-blood: #6b1a1a;
+    --accent-faction-1: #c38c54;
+    --accent-faction-2: #6d94b8;
+    --accent-faction-3: #8a7aa8;
+    --accent-faction-4: #6fa28c;
+    --accent-bond: #5a8a6a;
+    --accent-warn: #b88a2a;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--office-bg);
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--office-text-on-dark-main);
+    font-size: 13px; line-height: 1.5;
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+
+  .section-title {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 4px; font-size: 13px;
+    color: var(--office-text-on-dark-sub);
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--office-border-cream);
+  }
+  .section-title .ja { font-family: 'Noto Sans JP', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 15px; color: var(--office-text-on-dark-main); }
+  .section-title .count { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--gold); margin-left: auto; }
+  .layer-label {
+    font-family: 'Oswald', sans-serif; font-size: 11px;
+    letter-spacing: 4px; text-transform: uppercase;
+    color: var(--office-text-on-dark-dim);
+    margin: 16px 0 12px;
+    padding-left: 10px;
+    border-left: 3px solid var(--gold);
+  }
+  .layer-label.feud { border-left-color: var(--accent-hostility); color: var(--accent-hostility); }
+
+  /* ============================================================
+     B1-A ダーク派閥カード（情報量フル）
+     ============================================================ */
+  .dfc {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.4) 100%),
+      var(--office-panel-dark);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-top: 4px solid var(--faction-accent, var(--accent-faction-1));
+    color: var(--office-text-on-dark-main);
+    border-radius: 0;
+    cursor: pointer;
+    transition: transform 150ms, box-shadow 150ms;
+    position: relative;
+    display: flex; flex-direction: column;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+  .dfc:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.6); }
+  .dfc.in-feud {
+    border-top-color: var(--accent-hostility);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4), inset 0 0 30px rgba(196,98,58,0.05);
+  }
+  .dfc-flag {
+    position: absolute; top: -1px;
+    background: var(--accent-blood); color: #fff;
+    padding: 3px 10px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 2px;
+  }
+
+  /* === Hero ブロック === */
+  .dfc-hero {
+    display: grid;
+    gap: 14px;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, rgba(212,168,67,0.04) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    align-items: center;
+  }
+  .dfc.in-feud .dfc-hero {
+    background: linear-gradient(180deg, rgba(196,98,58,0.10) 0%, transparent 100%);
+  }
+  .dfc-hero .leader-pp {
+    width: 78px; height: 96px;
+    background: #2a2520;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 2px 2px 0 var(--faction-accent, var(--accent-faction-1));
+  }
+  .dfc-hero .leader-pp img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top;
+    filter: contrast(1.05);
+  }
+  .dfc-hero .meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .dfc-hero .name-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .dfc-hero .name {
+    font-weight: 900; font-size: 22px;
+    color: #fff;
+    letter-spacing: 2px;
+    line-height: 1;
+    text-shadow: 0 0 12px var(--faction-accent, var(--accent-faction-1));
+  }
+  .dfc-hero .count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px; color: var(--gold);
+  }
+  .dfc-hero .leader-name {
+    font-size: 11px; color: var(--office-text-on-dark-sub);
+    letter-spacing: 0.5px;
+  }
+  .dfc-hero .leader-name .role-mark {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 2px;
+    background: var(--faction-accent, var(--accent-faction-1));
+    color: #1a1611;
+    padding: 1px 6px;
+    margin-right: 4px;
+  }
+  .dfc-hero .leader-stats {
+    display: flex; gap: 12px; align-items: baseline; margin-top: 2px;
+  }
+  .dfc-hero .stat-ovr {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px; color: var(--gold);
+    line-height: 0.9;
+    text-shadow: 0 0 8px rgba(212,168,67,0.3);
+  }
+  .dfc-hero .stat-ovr small {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 1.5px;
+    color: var(--office-text-on-dark-dim);
+    margin-left: 2px;
+  }
+  .dfc-hero .stat-pop {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; color: var(--pop-pink);
+    line-height: 0.9;
+  }
+  .dfc-hero .stat-pop::before { content: '★ '; font-size: 13px; color: var(--pop-pink-light); }
+  .dfc-hero .stat-pop small {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 1.5px;
+    color: var(--office-text-on-dark-dim);
+    margin-left: 2px;
+  }
+  .dfc-hero .tags { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
+  .dfc-tag {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 1.5px;
+    padding: 1px 6px;
+    background: rgba(212,168,67,0.10);
+    color: var(--gold-light);
+    text-transform: uppercase;
+    border: 1px solid rgba(212,168,67,0.25);
+  }
+  .dfc-tag.auth { background: rgba(212,168,67,0.18); border-color: rgba(212,168,67,0.4); }
+
+  /* === RIVALRY POINTS バー（カード内・中央軸に向かって伸びる） === */
+  .dfc-pp {
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.45);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .dfc-pp-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent-hostility);
+    margin-bottom: 5px;
+  }
+  .dfc-pp-row {
+    display: grid; align-items: center; gap: 10px;
+  }
+  .dfc.left .dfc-pp-row { grid-template-columns: 1fr auto; }
+  .dfc.right .dfc-pp-row { grid-template-columns: auto 1fr; }
+  .dfc.left .dfc-pp-label { text-align: right; }
+  .dfc-pp-bar {
+    height: 18px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    position: relative;
+    overflow: hidden;
+  }
+  .dfc-pp-fill {
+    position: absolute; top: 0; bottom: 0;
+    background: linear-gradient(90deg,
+      var(--faction-accent, var(--accent-faction-1)) 0%,
+      var(--faction-accent-light, #d8a87a) 100%);
+    box-shadow: 0 0 12px var(--faction-accent, var(--accent-faction-1));
+  }
+  .dfc.left .dfc-pp-fill {
+    right: 0;
+    background: linear-gradient(270deg,
+      var(--faction-accent, var(--accent-faction-1)) 0%,
+      var(--faction-accent-light, #d8a87a) 100%);
+  }
+  .dfc.right .dfc-pp-fill { left: 0; }
+  .dfc-pp-pt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px; letter-spacing: 1px;
+    color: #fff;
+    line-height: 0.85;
+    flex-shrink: 0;
+  }
+  .dfc-pp-pt small {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px; letter-spacing: 1.5px;
+    color: var(--gold); margin-left: 2px;
+  }
+
+  /* === Roster ブロック (OVR/POP は portrait の隣に寄せる) === */
+  .dfc-roster {
+    padding: 10px 14px;
+    display: flex; flex-direction: column;
+    gap: 5px;
+  }
+  .dfc-roster-row {
+    display: grid;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 10px;
+    background: rgba(0,0,0,0.30);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .dfc.right .dfc-roster-row {
+    grid-template-columns: auto 1fr;
+    border-left: 3px solid var(--faction-accent, var(--accent-faction-1));
+  }
+  .dfc.left .dfc-roster-row {
+    grid-template-columns: 1fr auto;
+    border-right: 3px solid var(--faction-accent, var(--accent-faction-1));
+  }
+  /* 単体カード(中立)用 */
+  .dfc:not(.left):not(.right) .dfc-roster-row {
+    grid-template-columns: auto 1fr;
+    border-left: 3px solid var(--faction-accent, var(--accent-faction-1));
+  }
+  .dfc-roster-row .pp {
+    width: 40px; height: 50px;
+    background: #2a2520;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .dfc-roster-row .pp img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .dfc-roster-row.sp .pp { width: 32px; height: 40px; }
+
+  /* infoblock: portraitのすぐ隣にOVR/POPを寄せる */
+  .roster-infoblock {
+    display: flex; align-items: center;
+    gap: 12px; min-width: 0;
+  }
+  .dfc.left .roster-infoblock { flex-direction: row-reverse; justify-content: flex-start; }
+  .dfc-roster-row .name-block { min-width: 0; }
+  .dfc.left .dfc-roster-row .name-block { text-align: right; }
+  .dfc-roster-row .role { font-family: 'Oswald', sans-serif; font-size: 8px; letter-spacing: 2px; color: var(--faction-accent, var(--accent-faction-1)); }
+  .dfc-roster-row .nm { font-weight: 700; font-size: 13px; color: #f0e8d8; line-height: 1.1; }
+  .dfc-roster-row.sp .nm { font-size: 11px; color: var(--office-text-on-dark-sub); }
+  .dfc-roster-row .stats {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 0;
+    line-height: 0.95;
+    flex-shrink: 0;
+    padding: 0 8px;
+    border-left: 1px dashed rgba(255,255,255,0.10);
+    border-right: 1px dashed rgba(255,255,255,0.10);
+  }
+  .dfc-roster-row .ovr {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; color: var(--gold);
+    letter-spacing: 1px;
+  }
+  .dfc-roster-row .ovr-lbl {
+    font-family: 'Oswald', sans-serif;
+    font-size: 7px; letter-spacing: 1.5px;
+    color: var(--office-text-on-dark-dim);
+    margin-top: -2px;
+  }
+  .dfc-roster-row .pop {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px; color: var(--pop-pink);
+    margin-top: 3px;
+  }
+  .dfc-roster-row .pop::before { content: '★'; margin-right: 2px; font-size: 9px; color: var(--pop-pink-light); }
+  .dfc-roster-row.sp .ovr { font-size: 16px; color: var(--gold-light); }
+  .dfc-roster-row.sp .pop { font-size: 11px; }
+
+  /* === Stats / Foot === */
+  .dfc-stats {
+    padding: 8px 14px;
+    border-top: 1px dashed rgba(255,255,255,0.08);
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 12px;
+  }
+  .dfc-stat-row { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .dfc-stat-row .lbl { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 1.5px; color: var(--gold); flex: 0 0 36px; }
+  .dfc-stat-row .val { font-weight: 700; color: #f0e8d8; }
+  .dfc-stat-row .val.pos { color: var(--accent-bond); }
+  .dfc-stat-row .val.warn { color: var(--accent-hostility); }
+  .dfc-stat-row .mini-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.06); overflow: hidden; position: relative; }
+  .dfc-stat-row .mini-bar .mini-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--gold); }
+  .dfc-stat-row .mini-bar .mini-fill.pos { background: var(--accent-bond); }
+  .dfc-foot {
+    padding: 8px 14px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.4);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .dfc-foot .meters { display: flex; gap: 4px; flex-wrap: wrap; }
+  .dfc-meter {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.04);
+    color: var(--office-text-on-dark-sub);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .dfc-meter.solid-strong { background: rgba(90,138,106,0.15); color: var(--accent-bond); border-color: rgba(90,138,106,0.4); }
+  .dfc-meter.solid-wobble { background: rgba(196,98,58,0.15); color: var(--accent-hostility); border-color: rgba(196,98,58,0.4); }
+  .dfc-meter.mom-boom { background: rgba(212,168,67,0.18); color: var(--gold-light); border-color: rgba(212,168,67,0.4); }
+  .dfc-foot .recent {
+    font-size: 10px; color: var(--office-text-on-dark-sub);
+    border-top: 1px dashed rgba(255,255,255,0.08);
+    padding-top: 4px; margin-top: 2px;
+  }
+  .dfc-foot .recent .ev {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 1.5px;
+    color: var(--gold);
+    background: rgba(212,168,67,0.10);
+    padding: 1px 5px; margin-right: 4px;
+  }
+  .dfc-foot .recent .ev.f02 { color: var(--accent-warn); background: rgba(184,138,42,0.15); }
+  .dfc-foot .recent .ev.f08 { color: var(--accent-hostility); background: rgba(196,98,58,0.15); }
+
+  /* ============================================================
+     対決グリッド: 左カード | 中央VS軸 | 右カード
+     ============================================================ */
+  .feud-duel {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+  /* 左カードはflagを左、右カードはflagを右に */
+  .dfc.left { box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 0 40px rgba(0,0,0,0.2); }
+  .dfc.right { box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 0 40px rgba(0,0,0,0.2); }
+  .dfc.left .dfc-flag { left: -1px; }
+  .dfc.right .dfc-flag { right: -1px; }
+
+  /* 左カードのHeroは右寄せミラー */
+  .dfc.left .dfc-hero {
+    grid-template-columns: 1fr auto;
+    text-align: right;
+  }
+  .dfc.left .dfc-hero .name-row { justify-content: flex-end; }
+  .dfc.left .dfc-hero .leader-stats { justify-content: flex-end; }
+  .dfc.left .dfc-hero .tags { justify-content: flex-end; }
+  /* 右カードのHero */
+  .dfc.right .dfc-hero {
+    grid-template-columns: auto 1fr;
+  }
+  /* 中立カードのHero */
+  .dfc:not(.left):not(.right) .dfc-hero {
+    grid-template-columns: auto 1fr;
+  }
+
+  /* 中央VS軸 */
+  .feud-axis {
+    width: 96px;
+    background:
+      radial-gradient(ellipse 100% 100% at 50% 50%, rgba(196,98,58,0.22) 0%, transparent 70%),
+      var(--office-panel-dark-deep);
+    border: 1px solid var(--accent-hostility-deep);
+    border-top: 4px solid var(--accent-hostility);
+    display: flex; flex-direction: column;
+    align-items: center;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 0 30px rgba(107,26,26,0.25);
+    position: relative;
+  }
+  .feud-axis-vs {
+    padding: 18px 8px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+    width: 100%;
+    text-align: center;
+    background: rgba(0,0,0,0.45);
+  }
+  .feud-axis-vs .vs {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px; letter-spacing: 4px;
+    color: var(--accent-hostility);
+    text-shadow: 0 0 20px var(--accent-blood), 0 0 4px rgba(0,0,0,0.8);
+    line-height: 1;
+  }
+  .feud-axis-vs .week {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--gold);
+    margin-top: 6px;
+  }
+  .feud-axis-goal {
+    padding: 12px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+    width: 100%;
+    text-align: center;
+    background: rgba(0,0,0,0.30);
+  }
+  .feud-axis-goal .lbl {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--accent-hostility);
+  }
+  .feud-axis-goal .v {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--gold-light);
+    line-height: 0.9;
+    text-shadow: 0 0 12px rgba(212,168,67,0.5);
+  }
+  .feud-axis-goal .sub {
+    font-family: 'Oswald', sans-serif;
+    font-size: 8px; letter-spacing: 1.5px;
+    color: var(--office-text-on-dark-dim);
+    margin-top: 2px;
+  }
+  .feud-axis-spine {
+    flex: 1;
+    width: 4px;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      var(--accent-blood) 15%,
+      var(--accent-hostility) 50%,
+      var(--accent-blood) 85%,
+      transparent 100%);
+    box-shadow: 0 0 14px var(--accent-blood);
+    margin: 12px 0;
+  }
+  .feud-axis-history {
+    width: 100%;
+    padding: 10px 6px;
+    border-top: 1px solid rgba(255,255,255,0.10);
+    text-align: center;
+    background: rgba(0,0,0,0.45);
+    cursor: pointer;
+    transition: background 150ms;
+  }
+  .feud-axis-history:hover { background: rgba(212,168,67,0.10); }
+  .feud-axis-history .lbl {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .feud-axis-history .arrow {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    color: var(--gold-light);
+    margin-top: 2px;
+  }
+
+  /* === 中立派閥グリッド === */
+  .grid-neutral-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid-neutral-3 .dfc-hero { padding: 10px 12px; gap: 10px; }
+  .grid-neutral-3 .dfc-hero .leader-pp { width: 60px; height: 72px; }
+  .grid-neutral-3 .dfc-hero .name { font-size: 17px; }
+  .grid-neutral-3 .dfc-hero .stat-ovr { font-size: 24px; }
+  .grid-neutral-3 .dfc-hero .stat-pop { font-size: 16px; }
+  .grid-neutral-3 .dfc-stats { grid-template-columns: 1fr; padding: 6px 12px; }
+</style>
+</head>
+<body>
+
+<div style="background:linear-gradient(180deg, var(--gold) 0%, #b88a2a 100%); color:#1a1611; padding:14px 24px; font-family:'Bebas Neue',sans-serif; letter-spacing:4px; font-size:22px; border-bottom:4px solid var(--cream-gold-dark); border-top:4px solid var(--cream-gold-dark); display:flex; justify-content:space-between; align-items:baseline">
+  <span>v0.7</span>
+  <span style="font-family:'Noto Sans JP',sans-serif; letter-spacing:2px; font-size:14px; font-weight:700">B1-A Part 4 ベース対決構造</span>
+  <span style="font-family:'Noto Sans JP',sans-serif; letter-spacing:0.5px; font-size:12px; font-weight:500; color:#3a2e10">2カード横並び+中央VS軸／カード内ptバー／OVR・POPはキャラ寄せ</span>
+</div>
+
+<div class="container">
+
+  <h2 class="section-title">
+    <span>FACTION OVERVIEW</span>
+    <span class="ja">🎭 派閥</span>
+    <span class="count">5</span>
+  </h2>
+
+  <!-- ─────── 抗争中ペア（B1-A Part 4 構造） ─────── -->
+  <div class="layer-label feud">⚔ 抗争中 — 紅蓮組 ╳ 蒼天会 (W48)</div>
+
+  <div class="feud-duel">
+
+    <!-- 左カード: 紅蓮組 -->
+    <div class="dfc in-feud left" style="--faction-accent: var(--accent-faction-1); --faction-accent-light: #d8a87a">
+      <div class="dfc-flag">🔥 抗争中</div>
+      <div class="dfc-hero">
+        <div class="meta">
+          <div class="name-row"><span class="count">6名</span><span class="name">紅蓮組</span></div>
+          <div class="leader-name">赤羽 蓮花<span class="role-mark" style="margin-left:4px;margin-right:0">CAP</span></div>
+          <div class="leader-stats">
+            <span class="stat-ovr">88<small>OVR</small></span>
+            <span class="stat-pop">72<small>POP</small></span>
+          </div>
+          <div class="tags">
+            <span class="dfc-tag auth">権威型</span>
+            <span class="dfc-tag">実力主義</span>
+          </div>
+        </div>
+        <div class="leader-pp"><img src="../../../image/upper/upper_akabane_a.webp" alt=""></div>
+      </div>
+
+      <div class="dfc-pp">
+        <div class="dfc-pp-label">RIVALRY POINTS</div>
+        <div class="dfc-pp-row">
+          <div class="dfc-pp-bar"><div class="dfc-pp-fill" style="width: 47%"></div></div>
+          <div class="dfc-pp-pt">47<small>PT</small></div>
+        </div>
+      </div>
+
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-1)">
+          <div class="roster-infoblock">
+            <div class="name-block"><div class="role">2ND · 中堅</div><div class="nm">観音崎 椿</div></div>
+            <div class="stats"><div class="ovr">81</div><div class="ovr-lbl">OVR</div><div class="pop">58</div></div>
+          </div>
+          <div class="pp"><img src="../../../image/upper/upper_kannonzaki_s.webp" alt=""></div>
+        </div>
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-1)">
+          <div class="roster-infoblock">
+            <div class="name-block"><div class="role">3RD · 副将</div><div class="nm">林 唯</div></div>
+            <div class="stats"><div class="ovr">78</div><div class="ovr-lbl">OVR</div><div class="pop">44</div></div>
+          </div>
+          <div class="pp"><img src="../../../image/upper/upper_hayashi_m.webp" alt=""></div>
+        </div>
+        <div class="dfc-roster-row sp" style="--faction-accent: var(--accent-faction-1)">
+          <div class="roster-infoblock">
+            <div class="name-block"><div class="role">RANK & FILE · 3名</div><div class="nm">飯島 / 桐谷 / 一ノ瀬</div></div>
+            <div class="stats"><div class="ovr">71</div><div class="ovr-lbl">AVG</div><div class="pop">28</div></div>
+          </div>
+          <div class="pp"><img src="../../../image/upper/upper_iijima_s.webp" alt=""></div>
+        </div>
+      </div>
+
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">79.5</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第3年 W12</span></div>
+        <div class="dfc-stat-row"><span class="lbl">勝率</span><span class="val pos">62%</span><div class="mini-bar"><div class="mini-fill pos" style="width:62%"></div></div></div>
+        <div class="dfc-stat-row"><span class="lbl">直対戦績</span><span class="val warn">5勝3敗</span></div>
+      </div>
+
+      <div class="dfc-foot">
+        <div class="meters">
+          <span class="dfc-meter solid-strong">結束:強固</span>
+          <span class="dfc-meter mom-boom">勢い:隆盛</span>
+          <span class="dfc-meter">蒼天会と泥沼</span>
+        </div>
+        <div class="recent"><span class="ev f08">F08-A</span>W28 直接対決で勝利、観音崎が白鷺を撃破</div>
+      </div>
+    </div>
+
+    <!-- ═══════ 中央VS軸 ═══════ -->
+    <div class="feud-axis">
+      <div class="feud-axis-vs">
+        <div class="vs">VS</div>
+        <div class="week">WEEK 48</div>
+      </div>
+      <div class="feud-axis-goal">
+        <div class="lbl">GOAL</div>
+        <div class="v">100</div>
+        <div class="sub">先取で決着</div>
+      </div>
+      <div class="feud-axis-spine"></div>
+      <div class="feud-axis-history" title="HISTORY を開く">
+        <div class="lbl">HISTORY</div>
+        <div class="arrow">▼</div>
+      </div>
+    </div>
+
+    <!-- 右カード: 蒼天会 -->
+    <div class="dfc in-feud right" style="--faction-accent: var(--accent-faction-2); --faction-accent-light: #9bb6cf">
+      <div class="dfc-flag">🔥 抗争中</div>
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_asahina_h.webp" alt=""></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">蒼天会</span><span class="count">5名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>朝比奈 凛</div>
+          <div class="leader-stats">
+            <span class="stat-ovr">86<small>OVR</small></span>
+            <span class="stat-pop">68<small>POP</small></span>
+          </div>
+          <div class="tags">
+            <span class="dfc-tag">結束型</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dfc-pp">
+        <div class="dfc-pp-label">RIVALRY POINTS</div>
+        <div class="dfc-pp-row">
+          <div class="dfc-pp-pt">32<small>PT</small></div>
+          <div class="dfc-pp-bar"><div class="dfc-pp-fill" style="width: 32%"></div></div>
+        </div>
+      </div>
+
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-2)">
+          <div class="pp"><img src="../../../image/upper/upper_fujimigaoka_h.webp" alt=""></div>
+          <div class="roster-infoblock">
+            <div class="stats"><div class="ovr">79</div><div class="ovr-lbl">OVR</div><div class="pop">62</div></div>
+            <div class="name-block"><div class="role">2ND · 中堅</div><div class="nm">藤見ヶ岡 沙耶</div></div>
+          </div>
+        </div>
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-2)">
+          <div class="pp"><img src="../../../image/upper/upper_fukuura_r.webp" alt=""></div>
+          <div class="roster-infoblock">
+            <div class="stats"><div class="ovr">76</div><div class="ovr-lbl">OVR</div><div class="pop">39</div></div>
+            <div class="name-block"><div class="role">3RD · 副将</div><div class="nm">福浦 みお</div></div>
+          </div>
+        </div>
+        <div class="dfc-roster-row sp" style="--faction-accent: var(--accent-faction-2)">
+          <div class="pp"><img src="../../../image/upper/upper_hamatake_m.webp" alt=""></div>
+          <div class="roster-infoblock">
+            <div class="stats"><div class="ovr">68</div><div class="ovr-lbl">AVG</div><div class="pop">22</div></div>
+            <div class="name-block"><div class="role">RANK & FILE · 2名</div><div class="nm">浜竹 / 海原</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">76.0</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第2年 W34</span></div>
+        <div class="dfc-stat-row"><span class="lbl">勝率</span><span class="val">48%</span><div class="mini-bar"><div class="mini-fill" style="width:48%"></div></div></div>
+        <div class="dfc-stat-row"><span class="lbl">直対戦績</span><span class="val warn">3勝5敗</span></div>
+      </div>
+
+      <div class="dfc-foot">
+        <div class="meters">
+          <span class="dfc-meter solid-wobble">結束:揺らぎ</span>
+          <span class="dfc-meter">勢い:平常</span>
+          <span class="dfc-meter">紅蓮組と泥沼</span>
+        </div>
+        <div class="recent"><span class="ev">M</span>W44 タイトル戦で藤見ヶ岡が観音崎に勝利、+12pt</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ─────── 平和な派閥 ─────── -->
+  <div class="layer-label">⛺ 平和な派閥 — 3 FACTIONS</div>
+  <div class="grid-neutral-3">
+
+    <div class="dfc" style="--faction-accent: var(--accent-faction-3)">
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_hasegawa_r.webp" alt=""></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">星詠み会</span><span class="count">4名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>長谷川 詠子</div>
+          <div class="leader-stats"><span class="stat-ovr">82<small>OVR</small></span><span class="stat-pop">54<small>POP</small></span></div>
+          <div class="tags"><span class="dfc-tag">結束型</span></div>
+        </div>
+      </div>
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-3)">
+          <div class="pp"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+          <div class="roster-infoblock">
+            <div class="stats"><div class="ovr">75</div><div class="ovr-lbl">OVR</div><div class="pop">42</div></div>
+            <div class="name-block"><div class="role">2ND</div><div class="nm">生駒 響</div></div>
+          </div>
+        </div>
+        <div class="dfc-roster-row sp" style="--faction-accent: var(--accent-faction-3)">
+          <div class="pp"><img src="../../../image/upper/upper_izawa_h.webp" alt=""></div>
+          <div class="roster-infoblock">
+            <div class="name-block"><div class="role">RANK & FILE</div><div class="nm">伊澤 / 岩崎</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">74.5</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第3年 W04</span></div>
+      </div>
+      <div class="dfc-foot">
+        <div class="meters"><span class="dfc-meter solid-strong">結束:強固</span></div>
+        <div class="recent"><span class="ev f02">F01</span>結成 8週目 — 結束高め</div>
+      </div>
+    </div>
+
+    <div class="dfc" style="--faction-accent: var(--accent-faction-4)">
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_iwakoji_s.webp" alt=""></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">獅子座連合</span><span class="count">3名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>岩小路 麗華</div>
+          <div class="leader-stats"><span class="stat-ovr">84<small>OVR</small></span><span class="stat-pop">61<small>POP</small></span></div>
+          <div class="tags"><span class="dfc-tag">実力主義</span></div>
+        </div>
+      </div>
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-4)">
+          <div class="pp"><img src="../../../image/upper/upper_kamoshida_r.webp" alt=""></div>
+          <div class="roster-infoblock">
+            <div class="stats"><div class="ovr">77</div><div class="ovr-lbl">OVR</div><div class="pop">47</div></div>
+            <div class="name-block"><div class="role">2ND</div><div class="nm">鴨志田 真希</div></div>
+          </div>
+        </div>
+        <div class="dfc-roster-row sp" style="--faction-accent: var(--accent-faction-4)">
+          <div class="pp"><img src="../../../image/upper/upper_kanazawa_f.webp" alt=""></div>
+          <div class="roster-infoblock">
+            <div class="name-block"><div class="role">RANK & FILE</div><div class="nm">金澤</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">78.0</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第3年 W22</span></div>
+      </div>
+      <div class="dfc-foot">
+        <div class="meters"><span class="dfc-meter">結束:安定</span></div>
+        <div class="recent"><span class="ev">M</span>W46 鴨志田、シングル王座挑戦表明</div>
+      </div>
+    </div>
+
+    <div class="dfc" style="--faction-accent: var(--accent-faction-1)">
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_iwasaki_m.webp" alt=""></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">月影社</span><span class="count">3名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>岩崎 すばる</div>
+          <div class="leader-stats"><span class="stat-ovr">79<small>OVR</small></span><span class="stat-pop">48<small>POP</small></span></div>
+          <div class="tags"><span class="dfc-tag">自然型</span></div>
+        </div>
+      </div>
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-1)">
+          <div class="pp"><img src="../../../image/upper/upper_iwaya_m.webp" alt=""></div>
+          <div class="roster-infoblock">
+            <div class="stats"><div class="ovr">72</div><div class="ovr-lbl">OVR</div><div class="pop">35</div></div>
+            <div class="name-block"><div class="role">2ND</div><div class="nm">岩谷 桜</div></div>
+          </div>
+        </div>
+        <div class="dfc-roster-row sp" style="--faction-accent: var(--accent-faction-1)">
+          <div class="pp"><img src="../../../image/upper/upper_hiramatsu_k.webp" alt=""></div>
+          <div class="roster-infoblock">
+            <div class="name-block"><div class="role">RANK & FILE</div><div class="nm">平松</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">73.7</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第2年 W41</span></div>
+      </div>
+      <div class="dfc-foot">
+        <div class="meters"><span class="dfc-meter solid-wobble">結束:揺らぎ</span></div>
+        <div class="recent"><span class="ev f02">F05</span>W42 内部に火種、岩谷の不満</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="max-width:1180px;margin:0 auto 24px;padding:12px 16px;background:var(--office-panel-dark-deep);border:1px dashed rgba(120,108,80,0.4);font-size:11px;color:var(--office-text-on-dark-dim);line-height:1.8">
+  <h4 style="margin:0 0 6px;color:var(--gold);font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:11px">v0.7 構造</h4>
+  <ul style="margin:0;padding-left:18px">
+    <li><b>抗争中ペア</b>: B1-A 派閥カード2枚を <b>左右に配置 + 中央VS軸（96px）</b> で連結。Part 4 構造を踏襲しつつ、各カードに RIVALRY POINTS バーを内蔵。</li>
+    <li><b>カード内ptバー</b>: 左カード=右端起点で左へ、右カード=左端起点で右へ伸びる。中央軸に向かってぶつかる。</li>
+    <li><b>OVR/POP をキャラ寄せ</b>: roster行で portraitのすぐ隣（dashed border囲い）に縦並び表示。左右ミラー。</li>
+    <li><b>左カードのHero</b>: 派閥名と肖像を右寄せミラー、中央軸側にリーダー画像が向く。</li>
+    <li><b>中央軸内</b>: VS / GOAL 100 / spine / HISTORY ボタン。 history はクリックで下方展開。</li>
+    <li><b>中立派閥</b>: 通常の3列グリッド、抗争中カードと同じ構造（情報量縮小版）。</li>
+  </ul>
+</div>
+
+</body>
+</html>

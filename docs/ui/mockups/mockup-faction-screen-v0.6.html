@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>派閥画面リデザイン Mockup v0.6 — 中央対比構造／カード内ptバー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --office-bg: #24221e;
+    --office-panel-dark: #181614;
+    --office-panel-dark-deep: #0e0d0a;
+    --office-panel-cream-card: #ede8dc;
+    --office-panel-cream-info: #e0daca;
+    --office-border-cream: rgba(100,85,50,0.22);
+    --office-border-cream-strong: rgba(100,85,50,0.42);
+    --office-text-on-dark-main: #e8e6e0;
+    --office-text-on-dark-sub: #b8b1a3;
+    --office-text-on-dark-dim: #7a7466;
+    --office-text-on-cream-main: #1e1c16;
+    --office-text-on-cream-sub: #4a4638;
+    --cream-gold: #7a6530;
+    --cream-gold-dark: #5c4a1e;
+    --gold: #d4a843;
+    --gold-light: #f0d078;
+    --pop-pink: #d4538a;
+    --pop-pink-light: #f0a0bf;
+    --accent-hostility: #c4623a;
+    --accent-hostility-deep: #8b3318;
+    --accent-blood: #6b1a1a;
+    --accent-faction-1: #c38c54;
+    --accent-faction-2: #6d94b8;
+    --accent-faction-3: #8a7aa8;
+    --accent-faction-4: #6fa28c;
+    --accent-bond: #5a8a6a;
+    --accent-warn: #b88a2a;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--office-bg);
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--office-text-on-dark-main);
+    font-size: 13px; line-height: 1.5;
+  }
+
+  .variant-banner {
+    background: linear-gradient(180deg, var(--gold) 0%, #b88a2a 100%);
+    color: #1a1611;
+    padding: 14px 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 4px;
+    font-size: 22px;
+    border-bottom: 4px solid var(--cream-gold-dark);
+    border-top: 4px solid var(--cream-gold-dark);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .variant-banner .ja { font-family: 'Noto Sans JP', sans-serif; letter-spacing: 2px; font-size: 14px; font-weight: 700; }
+  .variant-banner .desc { font-family: 'Noto Sans JP', sans-serif; letter-spacing: 0.5px; font-size: 12px; font-weight: 500; color: #3a2e10; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+
+  /* ============================================================
+     RIVALRY ARENA — 抗争ペアカード
+     - 左カード ─ 中央VS軸 ─ 右カード の対比構造
+     - RIVALRY POINTS バーは各カード内に内蔵（中央に向かって伸びる）
+     - OVR / 人気は名前のすぐ右（左カードでは左）に寄せる
+     ============================================================ */
+  .arena {
+    background:
+      radial-gradient(ellipse 100% 60% at 50% 0%, rgba(196,98,58,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 100% 60% at 50% 100%, rgba(107,26,26,0.12) 0%, transparent 60%),
+      var(--office-panel-dark-deep);
+    border: 1px solid var(--accent-hostility-deep);
+    border-radius: 2px;
+    color: #e6dfcf;
+    position: relative;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 20px 60px rgba(0,0,0,0.6);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .arena-head {
+    padding: 14px 24px;
+    background: linear-gradient(90deg, rgba(196,98,58,0.0) 0%, rgba(196,98,58,0.18) 50%, rgba(196,98,58,0.0) 100%), var(--office-panel-dark);
+    border-bottom: 1px solid var(--accent-hostility-deep);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .arena-head .label {
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 6px; text-transform: uppercase;
+    font-size: 11px; color: var(--accent-hostility);
+  }
+  .arena-head .title {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 4px; font-size: 22px;
+    color: #f5e6cc;
+    text-shadow: 0 0 12px rgba(196,98,58,0.4);
+  }
+  .arena-head .meta { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+  .arena-head .badge {
+    background: var(--accent-blood); color: #fff;
+    padding: 4px 10px; letter-spacing: 3px; font-weight: 700;
+    border: 1px solid rgba(255,150,120,0.4);
+    margin-left: 10px;
+  }
+
+  /* === 対決グリッド: 左カード | VS軸 | 右カード === */
+  .arena-duel {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+    background: var(--office-panel-dark-deep);
+  }
+
+  /* === 派閥側カード === */
+  .duel-side {
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+  }
+  .duel-side.left {
+    background:
+      linear-gradient(135deg, var(--side-glow, rgba(195,140,84,0.18)) 0%, rgba(0,0,0,0) 70%),
+      linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+  }
+  .duel-side.right {
+    background:
+      linear-gradient(225deg, var(--side-glow, rgba(109,148,184,0.18)) 0%, rgba(0,0,0,0) 70%),
+      linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+  }
+
+  /* === 派閥ヘッダ（名前+メタタグ） === */
+  .duel-side-head {
+    padding: 16px 22px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .duel-side.left .duel-side-head { text-align: right; }
+  .duel-side-head .meta {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--faction-accent, var(--accent-faction-1));
+  }
+  .duel-side-head .ja-name {
+    font-size: 32px; font-weight: 900; letter-spacing: 5px;
+    color: #fff;
+    text-shadow: 0 0 20px var(--faction-accent, var(--accent-faction-1));
+    line-height: 1.1;
+    margin: 4px 0;
+  }
+  .duel-side-head .flavor-meters { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .duel-side.left .duel-side-head .flavor-meters { justify-content: flex-end; }
+  .flavor-tag {
+    font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 1.5px;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--office-text-on-dark-sub);
+  }
+  .flavor-tag.danger { color: var(--accent-hostility); border-color: rgba(196,98,58,0.4); }
+  .flavor-tag.boom { color: var(--gold); border-color: rgba(212,168,67,0.35); }
+
+  /* === RIVALRY POINTS バー（カード内・中央に向かって伸びる） === */
+  .duel-pp-block {
+    padding: 10px 22px 14px;
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .duel-pp-row {
+    display: grid;
+    align-items: center;
+    gap: 10px;
+  }
+  .duel-side.left .duel-pp-row { grid-template-columns: 1fr auto; }
+  .duel-side.right .duel-pp-row { grid-template-columns: auto 1fr; }
+  .duel-pp-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--faction-accent, var(--accent-faction-1));
+    margin-bottom: 4px;
+  }
+  .duel-side.left .duel-pp-label { text-align: right; }
+  .duel-pp-bar {
+    height: 22px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    position: relative;
+    overflow: hidden;
+  }
+  .duel-pp-fill {
+    position: absolute; top: 0; bottom: 0;
+    background: linear-gradient(90deg,
+      var(--faction-accent, var(--accent-faction-1)) 0%,
+      var(--faction-accent-light, #d8a87a) 100%);
+    box-shadow: 0 0 14px var(--faction-accent, var(--accent-faction-1));
+  }
+  /* 左派閥は バーが右端から左に伸びる（中央軸=右側起点） */
+  .duel-side.left .duel-pp-fill { right: 0; }
+  .duel-side.left .duel-pp-fill {
+    background: linear-gradient(270deg,
+      var(--faction-accent, var(--accent-faction-1)) 0%,
+      var(--faction-accent-light, #d8a87a) 100%);
+  }
+  /* 右派閥は バーが左端から右に伸びる */
+  .duel-side.right .duel-pp-fill { left: 0; }
+  .duel-pp-pt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px; letter-spacing: 1px;
+    color: #fff;
+    line-height: 0.85;
+    flex-shrink: 0;
+  }
+  .duel-pp-pt small {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--gold);
+    margin-left: 3px;
+  }
+  .duel-side.left .duel-pp-pt { text-align: left; }
+
+  /* === メンバー縦並び === */
+  .duel-roster {
+    padding: 14px 18px;
+    display: flex; flex-direction: column;
+    gap: 6px;
+  }
+
+  /* roster-tile: portrait + (name+stats) で stats をキャラ近くに寄せる */
+  .roster-tile {
+    display: grid;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    background: rgba(0,0,0,0.40);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .duel-side.right .roster-tile {
+    grid-template-columns: auto 1fr;
+    border-left: 3px solid var(--faction-accent, var(--accent-faction-1));
+  }
+  .duel-side.left .roster-tile {
+    grid-template-columns: 1fr auto;
+    border-right: 3px solid var(--faction-accent, var(--accent-faction-1));
+  }
+  .roster-tile .portrait {
+    flex-shrink: 0;
+    background: var(--faction-accent-deep, #2a1f12);
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+    box-shadow: inset 0 0 16px rgba(0,0,0,0.6);
+  }
+  .roster-tile .portrait img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top;
+    filter: contrast(1.05) saturate(0.95);
+  }
+  .roster-tile.captain .portrait { width: 84px; height: 100px; }
+  .roster-tile.lieutenant .portrait { width: 60px; height: 72px; }
+  .roster-tile.support .portrait { width: 48px; height: 58px; }
+
+  /* infoblock: name + stats を横並びにして portrait のすぐ隣に寄せる */
+  .roster-infoblock {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+  }
+  .duel-side.right .roster-infoblock {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  .duel-side.left .roster-infoblock {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+  }
+  .roster-tile .name-block { min-width: 0; }
+  .duel-side.left .roster-tile .name-block { text-align: right; }
+  .roster-tile .role {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--faction-accent, var(--accent-faction-1));
+    margin-bottom: 3px;
+  }
+  .roster-tile .nm {
+    font-weight: 700; font-size: 16px;
+    color: #f0e8d8;
+    letter-spacing: 1.5px;
+    line-height: 1.1;
+  }
+  .roster-tile.lieutenant .nm { font-size: 14px; }
+  .roster-tile.support .nm { font-size: 12px; color: #c4bba5; }
+
+  /* OVR + POP は portraitとnameの間に挟む位置 */
+  .roster-tile .stats {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    line-height: 0.95;
+    flex-shrink: 0;
+    padding: 0 4px;
+    border-left: 1px dashed rgba(255,255,255,0.10);
+    border-right: 1px dashed rgba(255,255,255,0.10);
+  }
+  .duel-side.left .roster-tile .stats { /* 左側はミラー、左右borderは同じ */ }
+  .roster-tile .stat-ovr {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px; letter-spacing: 1px;
+    color: var(--gold);
+    text-shadow: 0 0 8px rgba(212,168,67,0.35);
+  }
+  .roster-tile .stat-ovr-lbl {
+    font-family: 'Oswald', sans-serif;
+    font-size: 8px; letter-spacing: 2px;
+    color: var(--office-text-on-dark-dim);
+    margin-top: -2px;
+  }
+  .roster-tile .stat-pop {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    color: var(--pop-pink);
+    margin-top: 4px;
+  }
+  .roster-tile .stat-pop::before {
+    content: '★ ';
+    font-size: 11px;
+    color: var(--pop-pink-light);
+  }
+  .roster-tile.lieutenant .stat-ovr { font-size: 26px; }
+  .roster-tile.lieutenant .stat-pop { font-size: 14px; }
+  .roster-tile.support .stat-ovr { font-size: 20px; color: var(--gold-light); }
+  .roster-tile.support .stat-pop { font-size: 12px; }
+
+  /* ============= 中央 VS 軸 ============= */
+  .duel-axis {
+    width: 96px;
+    background:
+      radial-gradient(ellipse 100% 100% at 50% 50%, rgba(196,98,58,0.20) 0%, transparent 70%),
+      var(--office-panel-dark-deep);
+    border-left: 1px solid rgba(255,255,255,0.10);
+    border-right: 1px solid rgba(255,255,255,0.10);
+    display: flex; flex-direction: column;
+    align-items: center;
+    color: #fff;
+    position: relative;
+  }
+  .duel-axis-head {
+    padding: 22px 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    width: 100%;
+    text-align: center;
+    background: rgba(0,0,0,0.4);
+  }
+  .duel-axis-head .vs {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px; letter-spacing: 4px;
+    color: var(--accent-hostility);
+    text-shadow: 0 0 20px var(--accent-blood), 0 0 4px rgba(0,0,0,0.8);
+    line-height: 1;
+  }
+  .duel-axis-head .week {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--gold);
+    margin-top: 6px;
+  }
+  .duel-axis-goal {
+    padding: 14px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    width: 100%;
+    text-align: center;
+    background: rgba(0,0,0,0.25);
+  }
+  .duel-axis-goal .lbl {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--accent-hostility);
+  }
+  .duel-axis-goal .v {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--gold-light);
+    line-height: 0.9;
+    text-shadow: 0 0 12px rgba(212,168,67,0.5);
+  }
+  .duel-axis-goal .sub {
+    font-family: 'Oswald', sans-serif;
+    font-size: 8px; letter-spacing: 1.5px;
+    color: var(--office-text-on-dark-dim);
+    margin-top: 2px;
+  }
+  /* 中央軸の縦ライン（左右カードを貫く血の線） */
+  .duel-axis-spine {
+    flex: 1;
+    width: 4px;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      var(--accent-blood) 15%,
+      var(--accent-hostility) 50%,
+      var(--accent-blood) 85%,
+      transparent 100%);
+    box-shadow: 0 0 14px var(--accent-blood);
+    margin: 8px 0;
+  }
+
+  /* ============= history ============= */
+  .arena-history {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.5);
+  }
+  .arena-history summary {
+    list-style: none; cursor: pointer;
+    padding: 10px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold);
+  }
+  .arena-history summary::-webkit-details-marker { display: none; }
+  .arena-history summary:hover { background: rgba(212,168,67,0.06); }
+  .arena-history summary .recent {
+    color: var(--office-text-on-dark-sub);
+    font-family: 'Noto Sans JP', sans-serif;
+    text-transform: none; letter-spacing: 0.5px;
+    font-size: 11px; flex: 1; text-align: center;
+  }
+  .arena-history summary .recent strong { color: var(--accent-hostility); margin-right: 4px; }
+  .arena-tl-track { position: relative; height: 80px; margin: 0 24px 14px; padding: 0 4px; }
+  .arena-tl-line {
+    position: absolute; top: 38px; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, var(--accent-hostility) 60%, var(--accent-blood) 100%);
+    box-shadow: 0 0 8px rgba(196,98,58,0.5);
+  }
+  .arena-tl-marker { position: absolute; top: 0; transform: translateX(-50%); text-align: center; cursor: pointer; width: 100px; }
+  .arena-tl-marker .dot {
+    width: 14px; height: 14px;
+    background: var(--gold);
+    margin: 31px auto 0;
+    box-shadow: 0 0 0 2px var(--office-panel-dark-deep), 0 0 12px var(--gold);
+    transform: rotate(45deg);
+  }
+  .arena-tl-marker.f02 .dot { background: var(--accent-warn); box-shadow: 0 0 0 2px var(--office-panel-dark-deep), 0 0 12px var(--accent-warn); }
+  .arena-tl-marker.f08 .dot { background: var(--accent-hostility); box-shadow: 0 0 0 2px var(--office-panel-dark-deep), 0 0 14px var(--accent-blood); width: 18px; height: 18px; margin-top: 29px; }
+  .arena-tl-marker.match .dot { background: #c4bba5; width: 10px; height: 10px; margin-top: 33px; }
+  .arena-tl-marker .week { font-family: 'Bebas Neue', sans-serif; font-size: 12px; color: var(--gold-light); margin-bottom: 4px; }
+  .arena-tl-marker .lbl { font-size: 9px; color: var(--office-text-on-dark-sub); margin-top: 6px; line-height: 1.3; letter-spacing: 0.5px; }
+  .arena-tl-marker.now .week { color: var(--accent-hostility); }
+</style>
+</head>
+<body>
+
+<div class="variant-banner">
+  <span>v0.6</span>
+  <span class="ja">抗争ペアカード — 中央対比構造／カード内ptバー</span>
+  <span class="desc">左右カードがVS軸を挟んで対峙／RIVALRY POINTSは各カード内にバー内蔵／OVR・POPはキャラに寄せる</span>
+</div>
+
+<div class="container">
+  <div class="arena">
+    <div class="arena-head">
+      <span class="label">RIVALRY IN PROGRESS</span>
+      <span class="title">紅蓮組 ╳ 蒼天会</span>
+      <span class="meta">抗争 48週目<span class="badge">激化中</span></span>
+    </div>
+
+    <div class="arena-duel">
+
+      <!-- ═══════ 左: 紅蓮組 ═══════ -->
+      <div class="duel-side left" style="--faction-accent: var(--accent-faction-1); --faction-accent-light: #d8a87a; --faction-accent-deep: #3a2a18; --side-glow: rgba(195,140,84,0.18)">
+
+        <div class="duel-side-head">
+          <div class="meta">FACTION ALPHA · 6名</div>
+          <div class="ja-name">紅蓮組</div>
+          <div class="flavor-meters">
+            <span class="flavor-tag">結束:強固</span>
+            <span class="flavor-tag boom">勢い:隆盛</span>
+            <span class="flavor-tag">権威型</span>
+          </div>
+        </div>
+
+        <div class="duel-pp-block">
+          <div class="duel-pp-label">RIVALRY POINTS</div>
+          <div class="duel-pp-row">
+            <div class="duel-pp-bar"><div class="duel-pp-fill" style="width: 47%"></div></div>
+            <div class="duel-pp-pt">47<small>PT</small></div>
+          </div>
+        </div>
+
+        <div class="duel-roster">
+          <div class="roster-tile captain">
+            <div class="roster-infoblock">
+              <div class="name-block">
+                <div class="role">CAPTAIN · 大将</div>
+                <div class="nm">赤羽 蓮花</div>
+              </div>
+              <div class="stats">
+                <div class="stat-ovr">88</div>
+                <div class="stat-ovr-lbl">OVR</div>
+                <div class="stat-pop">72</div>
+              </div>
+            </div>
+            <div class="portrait"><img src="../../../image/upper/upper_akabane_a.webp" alt=""></div>
+          </div>
+          <div class="roster-tile lieutenant">
+            <div class="roster-infoblock">
+              <div class="name-block">
+                <div class="role">2ND · 中堅</div>
+                <div class="nm">観音崎 椿</div>
+              </div>
+              <div class="stats">
+                <div class="stat-ovr">81</div>
+                <div class="stat-ovr-lbl">OVR</div>
+                <div class="stat-pop">58</div>
+              </div>
+            </div>
+            <div class="portrait"><img src="../../../image/upper/upper_kannonzaki_s.webp" alt=""></div>
+          </div>
+          <div class="roster-tile lieutenant">
+            <div class="roster-infoblock">
+              <div class="name-block">
+                <div class="role">3RD · 副将</div>
+                <div class="nm">林 唯</div>
+              </div>
+              <div class="stats">
+                <div class="stat-ovr">78</div>
+                <div class="stat-ovr-lbl">OVR</div>
+                <div class="stat-pop">44</div>
+              </div>
+            </div>
+            <div class="portrait"><img src="../../../image/upper/upper_hayashi_m.webp" alt=""></div>
+          </div>
+          <div class="roster-tile support">
+            <div class="roster-infoblock">
+              <div class="name-block">
+                <div class="role">RANK & FILE · 3名</div>
+                <div class="nm">飯島 / 桐谷 / 一ノ瀬</div>
+              </div>
+              <div class="stats">
+                <div class="stat-ovr">71</div>
+                <div class="stat-ovr-lbl">AVG</div>
+                <div class="stat-pop">28</div>
+              </div>
+            </div>
+            <div class="portrait"><img src="../../../image/upper/upper_iijima_s.webp" alt=""></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ 中央軸 ═══════ -->
+      <div class="duel-axis">
+        <div class="duel-axis-head">
+          <div class="vs">VS</div>
+          <div class="week">WEEK 48</div>
+        </div>
+        <div class="duel-axis-goal">
+          <div class="lbl">GOAL</div>
+          <div class="v">100</div>
+          <div class="sub">先取で決着</div>
+        </div>
+        <div class="duel-axis-spine"></div>
+      </div>
+
+      <!-- ═══════ 右: 蒼天会 ═══════ -->
+      <div class="duel-side right" style="--faction-accent: var(--accent-faction-2); --faction-accent-light: #9bb6cf; --faction-accent-deep: #1a2530; --side-glow: rgba(109,148,184,0.18)">
+
+        <div class="duel-side-head">
+          <div class="meta">FACTION BRAVO · 5名</div>
+          <div class="ja-name">蒼天会</div>
+          <div class="flavor-meters">
+            <span class="flavor-tag danger">結束:揺らぎ</span>
+            <span class="flavor-tag">勢い:平常</span>
+          </div>
+        </div>
+
+        <div class="duel-pp-block">
+          <div class="duel-pp-label">RIVALRY POINTS</div>
+          <div class="duel-pp-row">
+            <div class="duel-pp-pt">32<small>PT</small></div>
+            <div class="duel-pp-bar"><div class="duel-pp-fill" style="width: 32%"></div></div>
+          </div>
+        </div>
+
+        <div class="duel-roster">
+          <div class="roster-tile captain">
+            <div class="portrait"><img src="../../../image/upper/upper_asahina_h.webp" alt=""></div>
+            <div class="roster-infoblock">
+              <div class="stats">
+                <div class="stat-ovr">86</div>
+                <div class="stat-ovr-lbl">OVR</div>
+                <div class="stat-pop">68</div>
+              </div>
+              <div class="name-block">
+                <div class="role">CAPTAIN · 大将</div>
+                <div class="nm">朝比奈 凛</div>
+              </div>
+            </div>
+          </div>
+          <div class="roster-tile lieutenant">
+            <div class="portrait"><img src="../../../image/upper/upper_fujimigaoka_h.webp" alt=""></div>
+            <div class="roster-infoblock">
+              <div class="stats">
+                <div class="stat-ovr">79</div>
+                <div class="stat-ovr-lbl">OVR</div>
+                <div class="stat-pop">62</div>
+              </div>
+              <div class="name-block">
+                <div class="role">2ND · 中堅</div>
+                <div class="nm">藤見ヶ岡 沙耶</div>
+              </div>
+            </div>
+          </div>
+          <div class="roster-tile lieutenant">
+            <div class="portrait"><img src="../../../image/upper/upper_fukuura_r.webp" alt=""></div>
+            <div class="roster-infoblock">
+              <div class="stats">
+                <div class="stat-ovr">76</div>
+                <div class="stat-ovr-lbl">OVR</div>
+                <div class="stat-pop">39</div>
+              </div>
+              <div class="name-block">
+                <div class="role">3RD · 副将</div>
+                <div class="nm">福浦 みお</div>
+              </div>
+            </div>
+          </div>
+          <div class="roster-tile support">
+            <div class="portrait"><img src="../../../image/upper/upper_hamatake_m.webp" alt=""></div>
+            <div class="roster-infoblock">
+              <div class="stats">
+                <div class="stat-ovr">68</div>
+                <div class="stat-ovr-lbl">AVG</div>
+                <div class="stat-pop">22</div>
+              </div>
+              <div class="name-block">
+                <div class="role">RANK & FILE · 2名</div>
+                <div class="nm">浜竹 / 海原</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <details class="arena-history">
+      <summary>
+        <span>HISTORY</span>
+        <span class="recent">直近: <strong>W44</strong> タイトル戦 +12pt(蒼) ／ <strong>W36</strong> 幹部戦 +10pt(蒼)</span>
+        <span>▼ 全履歴</span>
+      </summary>
+      <div class="arena-tl-track">
+        <div class="arena-tl-line"></div>
+        <div class="arena-tl-marker f02" style="left: 4%"><div class="week">W12</div><div class="dot"></div><div class="lbl">F02 抗争勃発</div></div>
+        <div class="arena-tl-marker match" style="left: 22%"><div class="week">W19</div><div class="dot"></div><div class="lbl">代表戦<br>+8pt(紅)</div></div>
+        <div class="arena-tl-marker f08" style="left: 42%"><div class="week">W28</div><div class="dot"></div><div class="lbl">F08-A<br>+15pt(紅)</div></div>
+        <div class="arena-tl-marker match" style="left: 62%"><div class="week">W36</div><div class="dot"></div><div class="lbl">幹部戦<br>+10pt(蒼)</div></div>
+        <div class="arena-tl-marker match" style="left: 78%"><div class="week">W44</div><div class="dot"></div><div class="lbl">タイトル戦<br>+12pt(蒼)</div></div>
+        <div class="arena-tl-marker now" style="left: 95%"><div class="week">W48</div><div class="dot"></div><div class="lbl">現在</div></div>
+      </div>
+    </details>
+  </div>
+</div>
+
+<div style="max-width:1180px;margin:0 auto 24px;padding:12px 16px;background:var(--office-panel-dark-deep);border:1px dashed rgba(120,108,80,0.4);font-size:11px;color:var(--office-text-on-dark-dim);line-height:1.8">
+  <h4 style="margin:0 0 6px;color:var(--gold);font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:11px">v0.6 変更点</h4>
+  <ul style="margin:0;padding-left:18px">
+    <li><b>中央対比構造</b>: 左カード ─ 中央VS軸 ─ 右カード を1グリッドで連結。左右カードはVS軸を挟んで完全に対峙する。</li>
+    <li><b>RIVALRY POINTSバーをカード内へ</b>: 上下段の独立 pp-row を廃止。各カード上部に内蔵し、左派閥のバーは右端起点で左へ、右派閥のバーは左端起点で右へ伸びる。中央軸に向かってぶつかる構図。</li>
+    <li><b>OVR/POP をキャラに寄せる</b>: 行右端から、portraitとnameの間に挟む位置へ移動。dashed border で stats 列を視認しやすくし、左右でミラー配置。</li>
+    <li><b>中央軸</b>: 上から VS / 抗争週 / GOAL 100 / 縦の血の線（spine）。spine が左右カードを縦に貫く演出。</li>
+    <li><b>キャラの中央軸揃え</b>: 左右で大将/中堅/副将/RANK&FILE の高さを揃え、中央線で対峙。</li>
+  </ul>
+</div>
+
+</body>
+</html>
