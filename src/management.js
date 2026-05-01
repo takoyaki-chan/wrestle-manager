@@ -9253,6 +9253,21 @@ const Engine = {
           const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA1B));
           Engine.factions.checkRivalryResolution(s, resRng);
         }
+        // Phase B: F09 派閥対抗戦 発火判定（spec §3） — 興行週のみ・pending F09 なし・pending イベントなし
+        if (!s._pendingFactionEvent && !s._pendingF09 && Engine.util.isShowWeek(s.week)
+            && typeof Engine.factions.checkF09Conditions === 'function') {
+          const f09Cand = Engine.factions.checkF09Conditions(s);
+          if (f09Cand) {
+            const f09Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA1F));
+            // 後半補正
+            const lateMult = (typeof Engine.factions._f09LateGameMult === 'function')
+              ? Engine.factions._f09LateGameMult(s) : 1.0;
+            const baseChance = 0.25; // 条件成立時の素発火率（控えめ）
+            if (Engine.rng.float(f09Rng) < baseChance * lateMult) {
+              s = { ...s, _pendingF09: f09Cand };
+            }
+          }
+        }
       }
     }
 

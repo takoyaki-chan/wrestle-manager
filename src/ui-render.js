@@ -2375,6 +2375,61 @@ function renderShowPrep() {
     if (hadLock) G = { ...G, showCard: [...G.showCard] };
   }
 
+  // ── F09 ロック解除: pending F09 が無いならロック flag を全スロットでクリア ──
+  if (!G._pendingF09) {
+    let hadLock = false;
+    G.showCard.forEach(m => { if (m._f09Locked) { delete m._f09Locked; hadLock = true; } });
+    if (hadLock) G = { ...G, showCard: [...G.showCard] };
+  }
+
+  // ── F09 注入: _pendingF09 が立っていれば派閥対抗戦カードを強制組込み ──
+  if (G._pendingF09 && typeof Engine.factions.buildF09MatchPairs === 'function') {
+    const f09 = G._pendingF09;
+    const pairs = Engine.factions.buildF09MatchPairs(G, f09.factionAId, f09.factionBId);
+    const pairCount = pairs.length;
+    if (pairCount === 0) {
+      const { _pendingF09: _, ...rest } = G; G = rest;
+    } else {
+      const slots = Math.min(pairCount, G.showCard.length);
+      const newCard = [...G.showCard];
+      for (let i = 0; i < slots; i++) {
+        const p = pairs[i];
+        if (newCard[i] && newCard[i].matchType === 'tag') {
+          newCard[i] = { left: 0, right: 0, isTitle: false };
+        }
+        newCard[i] = {
+          ...(newCard[i] || {}),
+          left: p.fighterIdA, right: p.fighterIdB,
+          matchType: undefined,
+          teamA: undefined, teamB: undefined,
+          isTitle: !!(newCard[i] && newCard[i].isTitle),
+          _f09Locked: true,
+        };
+      }
+      // F09 ロックされた選手は他枠から除去
+      const lockedIds = new Set();
+      pairs.forEach(p => { lockedIds.add(p.fighterIdA); lockedIds.add(p.fighterIdB); });
+      for (let i = slots; i < newCard.length; i++) {
+        const m = newCard[i];
+        if (!m) continue;
+        if (m.matchType === 'tag') {
+          const ta1 = lockedIds.has(m.teamA?.fighter1) ? 0 : m.teamA?.fighter1;
+          const ta2 = lockedIds.has(m.teamA?.fighter2) ? 0 : m.teamA?.fighter2;
+          const tb1 = lockedIds.has(m.teamB?.fighter1) ? 0 : m.teamB?.fighter1;
+          const tb2 = lockedIds.has(m.teamB?.fighter2) ? 0 : m.teamB?.fighter2;
+          newCard[i] = { ...m,
+            teamA: { fighter1: ta1 || 0, fighter2: ta2 || 0 },
+            teamB: { fighter1: tb1 || 0, fighter2: tb2 || 0 } };
+        } else {
+          const left = lockedIds.has(m.left) ? 0 : m.left;
+          const right = lockedIds.has(m.right) ? 0 : m.right;
+          newCard[i] = { ...m, left: left || 0, right: right || 0 };
+        }
+      }
+      G = { ...G, showCard: newCard };
+    }
+  }
+
   // ── F08 ディレクティブ注入: _pendingF08Directive が立っていればリーダー同士を強制組込み ──
   if (G._pendingF08Directive && G._pendingF08Directive.leaderAId && G._pendingF08Directive.leaderBId) {
     const d = G._pendingF08Directive;
@@ -11069,6 +11124,63 @@ function _renderDbFactions() {
   const peaceful = factions.filter(f => !isHostile(f));
   const hostile = factions.filter(f => isHostile(f));
 
+  // ── Phase B 抗争ポイント可視化（最低限版・完全リデザインは別タスク） ──
+  let feudHtml = '';
+  const rivalryPoints = G.factionRivalryPoints || {};
+  const hostilityMapForFeud = G.factionHostility || {};
+  const cfg = (typeof FACTION_CONFIG !== 'undefined') ? FACTION_CONFIG : {};
+  const goal = cfg.pointsResolutionThreshold || 100;
+  const f09NearH = cfg.f09NearBadgeHostility || 60;
+  const f09H = cfg.f09HostilityMin || 65;
+  const feudKeys = Object.keys(rivalryPoints);
+  for (const key of feudKeys) {
+    const e = rivalryPoints[key];
+    if (!e) continue;
+    const fA = factions.find(f => f.id === e.factionAId);
+    const fB = factions.find(f => f.id === e.factionBId);
+    if (!fA || !fB) continue;
+    const leaderA = (G.roster || []).find(c => c.id === fA.leaderId);
+    const leaderB = (G.roster || []).find(c => c.id === fB.leaderId);
+    const startAbs = (e.startedSeason - 1) * 52 + e.startedWeek;
+    const nowAbs = (G.season - 1) * 52 + G.week;
+    const weeks = Math.max(1, nowAbs - startAbs + 1);
+    const pctA = Math.min(100, (e.pointsA / goal) * 100);
+    const pctB = Math.min(100, (e.pointsB / goal) * 100);
+    const hAB = hostilityMapForFeud[`${fA.id}>${fB.id}`] || 0;
+    const hBA = hostilityMapForFeud[`${fB.id}>${fA.id}`] || 0;
+    const f09Ready = hAB >= f09H && hBA >= f09H;
+    const f09Near = !f09Ready && hAB >= f09NearH && hBA >= f09NearH;
+    const badgeHtml = f09Ready
+      ? `<div class="feud-near-badge" style="background:var(--accent-blood);color:#fff">F09 発火圏</div>`
+      : (f09Near ? `<div class="feud-near-badge">F09 接近中</div>` : '');
+    feudHtml += `
+      <section class="feud-section">
+        <div class="feud-section-title">⚔ 抗争中 — ${fA.name} ╳ ${fB.name}</div>
+        <div class="feud-pair">
+          <div class="feud-side feud-side-left">
+            <div class="feud-faction-name">${fA.name}</div>
+            <div class="feud-leader-name">${leaderA ? leaderA.name : ''}</div>
+            <div class="feud-pt-bar"><div class="feud-pt-fill" style="width:${pctA}%"></div></div>
+            <div class="feud-pt-text">${e.pointsA} PT</div>
+          </div>
+          <div class="feud-axis">
+            <div class="feud-axis-vs">VS</div>
+            <div class="feud-axis-week">W${weeks}</div>
+            <div class="feud-spine"></div>
+            <div class="feud-axis-goal">GOAL</div>
+            <div class="feud-axis-goal-num">${goal}</div>
+            ${badgeHtml}
+          </div>
+          <div class="feud-side feud-side-right">
+            <div class="feud-faction-name">${fB.name}</div>
+            <div class="feud-leader-name">${leaderB ? leaderB.name : ''}</div>
+            <div class="feud-pt-bar"><div class="feud-pt-fill" style="width:${pctB}%"></div></div>
+            <div class="feud-pt-text">${e.pointsB} PT</div>
+          </div>
+        </div>
+      </section>`;
+  }
+
   const hostilityMap = G.factionHostility || {};
   const factionById = new Map(factions.map(f => [f.id, f]));
 
@@ -11196,6 +11308,9 @@ function _renderDbFactions() {
   }
 
   let html = `<div class="db-factions-root">`;
+
+  // Phase B 抗争ポイント可視化セクション（最低限版）
+  if (feudHtml) html += feudHtml;
 
   if (peaceful.length) {
     html += `<div class="db-faction-section">`;

@@ -56,6 +56,10 @@
   --accent-faction-4: #6fa28c;   /* 鶯緑 */
   --accent-hostility: #d07a3e;   /* 対立度の橙 */
   --accent-faction-feud: #c38c54; /* 派閥抗争バッジ（accent-faction-1 と同系統）*/
+  --pop-pink: #d4538a;            /* 人気値（POP）数値色（Faction Tab v0.9 で導入）*/
+  --pop-pink-light: #f0a0bf;      /* 人気★アイコンの薄色版 */
+  --accent-blood: #8a1f1f;        /* 抗争 spine / 血の線 */
+  --accent-hostility-deep: #6a2818;
   /* Stage（試合・シネマティックイベント共通の純黒トークン） */
   --stage-bg: #060606;
   --stage-bg-deep: #000000;
@@ -8064,6 +8068,93 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 /* 人気(数値のみ・色階調) */
 .wr-pop-num{font-family:var(--font-display);font-size:18px;line-height:1;text-align:center;display:block}
 
+/* === Faction Tab v0.9 (Phase B 最低限可視化) ===
+   完全リデザインは別タスク（docs/ui/03-screens/factions.md / mockup-faction-screen-v0.9.html 準拠） */
+.feud-section {
+  margin: 0 0 24px;
+  padding: 16px 14px;
+  background: linear-gradient(180deg, rgba(20,12,10,0.82) 0%, rgba(28,16,14,0.72) 100%);
+  border: 1px solid rgba(196,98,58,0.32);
+  border-top: 3px solid var(--accent-hostility);
+  border-radius: 6px;
+  box-shadow: 0 2px 14px rgba(138,31,31,0.12), inset 0 0 0 1px rgba(196,98,58,0.05);
+}
+.feud-section-title {
+  font-size: 13px; font-weight: 900; letter-spacing: 0.08em;
+  color: var(--accent-hostility);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+  text-shadow: 0 0 8px rgba(208,122,62,0.25);
+}
+.feud-pair {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  gap: 14px; align-items: center;
+  padding: 10px 6px;
+}
+.feud-side {
+  display: flex; flex-direction: column; gap: 6px;
+  color: var(--office-text-on-dark-main, #e5dccd);
+}
+.feud-side.feud-side-left { text-align: right; align-items: flex-end; }
+.feud-side.feud-side-right { text-align: left; align-items: flex-start; }
+.feud-faction-name {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif;
+  font-size: 20px; letter-spacing: 0.06em;
+  color: var(--cream-gold); text-shadow: 0 0 6px rgba(122,101,48,0.35);
+}
+.feud-leader-name { font-size: 12px; color: var(--office-text-on-dark-sub, #c0b59f); }
+.feud-pt-bar {
+  width: 100%; height: 14px; background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(196,98,58,0.22); border-radius: 7px; overflow: hidden;
+  position: relative;
+}
+.feud-pt-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-blood) 0%, var(--accent-hostility) 100%);
+  transition: width 300ms ease-out;
+}
+.feud-side-left .feud-pt-fill { float: right; background: linear-gradient(270deg, var(--accent-blood) 0%, var(--accent-hostility) 100%); }
+.feud-pt-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; color: var(--accent-hostility);
+  letter-spacing: 0.04em;
+}
+.feud-axis {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 8px;
+  min-width: 90px;
+}
+.feud-axis-vs {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; color: var(--accent-blood);
+  text-shadow: 0 0 12px rgba(138,31,31,0.55);
+  letter-spacing: 0.08em; line-height: 1;
+}
+.feud-axis-week {
+  font-size: 10px; color: var(--office-text-on-dark-sub, #c0b59f);
+  letter-spacing: 0.08em; margin-top: 2px;
+}
+.feud-axis-goal {
+  margin-top: 8px; font-size: 9px; color: var(--office-text-on-dark-dim, #8a8170);
+  letter-spacing: 0.06em;
+}
+.feud-axis-goal-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; color: var(--cream-gold); line-height: 1;
+}
+.feud-spine {
+  width: 2px; height: 40px; margin: 6px auto;
+  background: linear-gradient(180deg, transparent, var(--accent-blood), transparent);
+  box-shadow: 0 0 6px rgba(138,31,31,0.5);
+}
+.feud-near-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 6px;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.06em;
+  background: var(--accent-warn, #d4a747); color: #1a0a08;
+  border-radius: 3px;
+}
 /* 体調バー(既存 .cond-bar/.cond-fill を再利用、ラッパのみ追加) */
 .wr-cond-wrap{display:flex;align-items:center;gap:8px;min-width:90px}
 .wr-cond-num{font-family:var(--font-display);font-size:16px;line-height:1;color:var(--text-main);min-width:26px;text-align:right}

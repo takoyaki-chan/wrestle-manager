@@ -5708,6 +5708,37 @@ const App = {
       s = rest;
     }
 
+    // ── Phase B: F09 派閥対抗戦 — sweep ボーナス適用 + pending クリア ──
+    if (s._pendingF09 && Engine.factions && typeof Engine.factions.applyF09SweepBonus === 'function') {
+      const f09 = s._pendingF09;
+      const sweepResults = [];
+      validMatches.forEach((m, idx) => {
+        if (!m._f09Locked) return;
+        if (m.matchType === 'tag') return;
+        const r = results[idx];
+        if (!r || r.winner === 'draw') return;
+        const winnerId = r.winner === 'left' ? m.left : m.right;
+        const winnerFaction = Engine.factions.getFactionByFighterId(s, winnerId);
+        if (!winnerFaction) return;
+        sweepResults.push({ winnerFactionId: winnerFaction.id });
+      });
+      if (sweepResults.length > 0) {
+        s = Engine.factions.applyF09SweepBonus(s, f09.factionAId, f09.factionBId, sweepResults);
+      }
+      // factionTimeline に F09 完遂エントリ
+      if (Array.isArray(s.factionTimeline)) {
+        s = { ...s, factionTimeline: [...s.factionTimeline, {
+          type: 'F09_RESOLVED',
+          season: s.season, week: s.week,
+          factionAId: f09.factionAId, factionBId: f09.factionBId,
+          matchCount: sweepResults.length,
+        }]};
+      }
+      const { _pendingF09: _f9, ...restF9 } = s;
+      s = restF9;
+      if (typeof console !== 'undefined') console.log('[WM Faction] F09 sweep bonus applied');
+    }
+
     // ── Phase 3e: F08-A 試合後 派閥関係追加変動 + アフターマスモーダル予約 ──
     // _f08Locked がついた試合のうち、勝敗確定したものに対して発火。
     // F02③ resolution が同時発火する試合は extra 効果スキップ（resolution 優先）。
