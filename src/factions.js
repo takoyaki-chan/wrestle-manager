@@ -2631,13 +2631,36 @@ Engine.factions = {
         resultText = `${leaderName}の要求そのものには応じず、${factionName}のメンバー一人一人に目を配った。`;
       }
     } else if (itype === 'DEMAND_MONEY') {
-      // Phase D まで給与改定は実装せず、trust 変動 + スタブ表記のみ
       if (choiceId === 'A') {
+        // Phase D: 実給与改定。各メンバーの現在給与の +10% (cfg.f07DemandMoneyMultiplier-1.0) を
+        // salaryBonus に加算し、合計を impactSummary に表示。次オフの契約交渉で巻き戻し可能なよう
+        // state._factionSalaryDeals に記録。
         const d = ri(3, 5);
         s = this._applyTrustToMembers(s, memberIds(), d);
+        const titles = s.titles || {};
+        const raiseMult = (cfg.f07DemandMoneyMultiplier || 1.10) - 1.0; // 例: 0.10
+        let totalRaise = 0;
+        const dealEntries = [];
+        const newRoster = (s.roster || []).map(c => {
+          if (!faction.memberIds.includes(c.id)) return c;
+          const baseSalary = (Engine.contract && Engine.contract.calcSalary) ? Engine.contract.calcSalary(c, titles) : 0;
+          const addBonus = Math.max(1, Math.round(baseSalary * raiseMult));
+          const newBonus = Math.min(100, (c.salaryBonus || 0) + addBonus);
+          const actuallyAdded = newBonus - (c.salaryBonus || 0);
+          totalRaise += actuallyAdded;
+          dealEntries.push({ fighterId: c.id, addedBonus: actuallyAdded, factionId, season: s.season, week: s.week });
+          return { ...c, salaryBonus: newBonus };
+        });
+        s = { ...s, roster: newRoster };
+        const existingDeals = s._factionSalaryDeals || [];
+        s = { ...s, _factionSalaryDeals: [...existingDeals, ...dealEntries] };
+        // DEMAND_MONEY 個別 CD（48 週）も発動
+        s = { ...s, factions: s.factions.map(f => f.id === factionId
+          ? { ...f, _f07DemandMoneyQuietUntil: this._absWeek(s) + cfg.f07DemandMoneyCooldown }
+          : f) };
         impactSummary.push({ label: `${factionName} メンバー trust`, delta: `+${d}` });
-        impactSummary.push({ label: '給与改定', delta: '次オフ契約交渉で +10% 反映予定' });
-        resultText = `${leaderName}と給与の話を交わし、次のオフに反映することを約束した。`;
+        impactSummary.push({ label: '給与改定 (+10%)', delta: `週合計 +${totalRaise}万` });
+        resultText = `${leaderName}と給与改定を約束した。${factionName}のメンバーへ+10%、来週から実支給に反映される。`;
       } else if (choiceId === 'B') {
         const d = -ri(3, 4);
         s = this._applyTrustToMembers(s, [leaderId], d);
