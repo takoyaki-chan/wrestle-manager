@@ -66,6 +66,21 @@ Notion キャラクターDBを正とし、ゲーム実装用のJSONフォーマ�
 | 新フィールド追加 | 性格(personality) の定義・分類を新設（§2.9） |
 | データ追加 | 全98名の属性・性格データ一覧を追加（§3.8） |
 
+## 1.3.6 v1.8 からの追加（2026-05-01・派閥システム連携）
+
+| 変更 | 内容 |
+|------|------|
+| 動的フィールド追加 | `heelAlignment`（0-100、レイジー初期化）。派閥アーキタイプ FACE⇄HEEL 遷移用 |
+
+`heelAlignment` は静的データには持たせず、Engine 側でレイジー算出する：
+- 初期値：role が `Heel` なら 70、`Babyface` なら 30、`Neutral`/未設定なら 50
+- personality（getPersonalityType の戻り値）で ±3〜5 補正：bold +5 / emotional +3 / earnest -5 / introverted -3
+- traits 補正：ヒール適性 +15 / ファンサービス -10 / 威圧感 +5 / 人望 -5 / 華 -3
+- clamp 0-100
+
+派閥に所属している間は週次 drift（派閥アーキタイプの理想値へ 5%）で動的に変化する。  
+詳細は `specs/faction-archetype-rework-spec-v0.1.md` v0.4 §6。
+
 ## 1.3.5 v1.7からの変更点（v1.8で実施）
 
 | 変更 | 内容 |

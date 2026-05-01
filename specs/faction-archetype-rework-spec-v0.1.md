@@ -1,8 +1,8 @@
-# 派閥アーキタイプ再設計仕様 v0.3
+# 派閥アーキタイプ再設計仕様 v0.4
 
 **ファイル**：`specs/faction-archetype-rework-spec-v0.1.md`
-**最終更新**：2026-05-01（v0.3 §6 アーキタイプ遷移ロジック実装完了反映）
-**実装状況**：Phase A/B + §6 動的遷移（FACE⇄HEEL を除く 3 パターン）実装完了 / FACE⇄HEEL 遷移のみ Phase 後送り（heelAlignment 未導入のため）
+**最終更新**：2026-05-01（v0.4 §6 FACE⇄HEEL 遷移 実装完了）
+**実装状況**：Phase A/B + §6 全 4 遷移パターン実装完了（AUTHORITY→BOND/MERIT、COMBAT→BOND、FACE→HEEL、HEEL→FACE）
 **親仕様**：`specs/faction-system-spec-v0.1.md` §9.1（F01 派閥成立）
 **関連仕様**：
 - `specs/faction-f07-variation-spec-v0.1.md`（F07 共通フレーム）
@@ -14,7 +14,8 @@
 
 - v0.1（2026-05-01）— 5 アーキタイプ案（AUTHORITY/BOND/DEVELOPMENT/COMBAT/LOWKEY）。既決の 4 種（権威型/実力主義/結束型/自然型）と整合せず破棄
 - v0.2（2026-05-01）— 既存モックアップ確認＋ Keisuke レビューに基づき **6 アーキタイプに確定**：権威型／結束型／実力主義／ヒール派閥／正統派／武闘派。「自然型」は無個性のため削除
-- **v0.3（2026-05-01）** — §6 アーキタイプ遷移ロジック実装完了。`createFaction` で archetypeId 設定、F07 rebuke 4 累積（AUTHORITY→BOND/MERIT 後継幹部性格分岐）、F02 完全敗北（COMBAT→BOND）の 3 遷移を実装。FACE⇄HEEL は heelAlignment フィールド未導入のため別 Phase に切り出し
+- v0.3（2026-05-01）— §6 アーキタイプ遷移ロジック実装完了。`createFaction` で archetypeId 設定、F07 rebuke 4 累積（AUTHORITY→BOND/MERIT 後継幹部性格分岐）、F02 完全敗北（COMBAT→BOND）の 3 遷移を実装。FACE⇄HEEL は heelAlignment フィールド未導入のため別 Phase に切り出し
+- **v0.4（2026-05-01）** — §6 FACE⇄HEEL 遷移 実装完了。`heelAlignment` フィールド（0-100、レイジー初期化）追加、派閥メンバーは派閥アーキタイプの理想値（HEEL=75 / FACE=25 / それ以外=50）へ週次 0.05 倍ドリフト。FACE/HEEL 派閥のみ平均 heelAlignment が閾値（FACE→HEEL=65、HEEL→FACE=35）を 24 週連続超で遷移、遷移後 36 週は再判定 CD。`FACTION_TRANSITION_LINES.FACE_TO_HEEL_DRIFT` / `HEEL_TO_FACE_DRIFT` に各 6 性格 = 12 行投入
 
 ---
 
@@ -246,7 +247,11 @@ C: 静かに見守る（自然な集まりとして任せる、タグなし）
 - **【実装済】** F07 rebuke 4 回累積 → AUTHORITY → BOND or MERIT（後継幹部の性格による分岐：fiery/grudging/bold/emotional 多数なら MERIT、それ以外 BOND）
 - **【上記に統合】** F07 C → AUTHORITY → MERIT or BOND（rebuke 4 累積の判定で代替）
 - **【実装済】** F02 抗争で完全敗北 → COMBAT → BOND（闘争心が萎えて結束へ）
-- **【後送り】** メンバーの平均 heelAlignment が長期上昇 → FACE → HEEL（または逆）— heelAlignment フィールド未導入のため、character-data-spec 改訂と合わせて別 Phase で実装
+- **【実装済 v0.4】** メンバーの平均 heelAlignment が長期上昇/下降 → FACE ⇄ HEEL：
+  - `heelAlignment` 0-100、未設定時は role + personality + traits からレイジー算出（Heel=70 / Babyface=30 / Neutral=50 を基点に、bold/emotional/ヒール適性 等で増減）
+  - 派閥メンバーは派閥アーキタイプの理想値（HEEL=75 / FACE=25 / それ以外=50）へ週次 5% ドリフト（slow conformity）
+  - FACE/HEEL 派閥でメンバー平均が閾値超を 24 週連続維持で遷移発火。遷移後 36 週は再判定 CD
+  - `Engine.factions.driftHeelAlignmentWeekly(state)` / `checkAlignmentTransition(state)` を tickWeek 派閥パイプラインの末尾で実行
 
 遷移時はナレーションを出す（`showFactionArchetypeTransitionModal` で包括的に表現）。
 遷移ナレーションは `FACTION_TRANSITION_LINES`（reason × 性格 6 種）で性格ごとに温度を書き分け。

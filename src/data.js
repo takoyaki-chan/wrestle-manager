@@ -1540,6 +1540,18 @@ const FACTION_CONFIG = {
   },
   // Common-4 合宿: ロッカー士気下限
   commonEvent4MoraleMin: 50,
+
+  // ── §6 FACE⇄HEEL アーキタイプ遷移（heelAlignment ベース）──
+  // 0-100 スケール。0=完全FACE、50=neutral、100=完全HEEL
+  // メンバー全員の平均が閾値を 24 週連続で越えた派閥のみ遷移する
+  alignDriftIdealHeel: 75,        // HEEL 派閥のドリフト先
+  alignDriftIdealFace: 25,        // FACE 派閥のドリフト先
+  alignDriftIdealNeutral: 50,     // それ以外（AUTHORITY/BOND/MERIT/COMBAT）
+  alignDriftRate: 0.05,           // 週次 drift 率（理想値との差 × この率）
+  alignFlipThresholdToHeel: 65,   // FACE → HEEL の平均閾値
+  alignFlipThresholdToFace: 35,   // HEEL → FACE の平均閾値
+  alignFlipSustainWeeks: 24,      // 閾値超え連続維持週
+  alignFlipPostCooldown: 36,      // 遷移直後の再判定抑制週
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1654,6 +1666,61 @@ const FACTION_TRANSITION_LINES = {
     flippant: {
       leaderLine: 'こんだけやられたら降参降参。もう仲良くやろうよ〜',
       narration: '抗争完敗を機に、{org}は牙を畳んで結束派閥へと衣替えした。',
+    },
+  },
+  // FACE → HEEL（派閥全体のヒール度が長期に上昇した結果）
+  // §6 後送り分（v0.4 で実装）。getPersonalityType の戻り値（bold/earnest/emotional/carefree/introverted/shy）でキーを揃える
+  FACE_TO_HEEL_DRIFT: {
+    bold: {
+      leaderLine: 'もう「いい子」のフリは限界だ。客の歓声より、悲鳴の方が気持ちいい。',
+      narration: '{leader}の表情から王道の柔らかさが消えた。{org}はファンに背を向け、挑発と反則を糧に変質する。',
+    },
+    earnest: {
+      leaderLine: '……ファンに胸を張れる派閥でいたかった。でも、ここまで来た自分たちを、もう戻せない。',
+      narration: '迷いと諦めの末、{leader}は王道の旗を畳んだ。{org}は反主流の側へ立ち位置を移す。',
+    },
+    emotional: {
+      leaderLine: 'みんなで応援してくれた人に、こんな顔向けできなくなったね……ごめん。でも、もう止まれない。',
+      narration: '{leader}の声に申し訳なさが滲む。{org}は応援への回答を諦め、ヒールへと滑り落ちていく。',
+    },
+    carefree: {
+      leaderLine: 'えへへー、もう真面目にやるのやーめた。客が嫌がる顔の方が見てて楽しいし!',
+      narration: '{leader}は王道の重さに飽きた。{org}は軽々と立ち位置を変え、ヒールサイドへ転がり込む。',
+    },
+    introverted: {
+      leaderLine: '……正直に言うと、王道って、しんどかった。こっちの方が、息がしやすい。',
+      narration: '{leader}は静かに王道の看板を下ろした。{org}は表舞台の華やかさより、裏側の温度を選ぶ。',
+    },
+    shy: {
+      leaderLine: '……あの、私たち、もう、ファンの期待に応える側じゃ、ないみたい……。',
+      narration: '言葉少なに、{leader}は王道路線を畳んだ。{org}はヒール側へと、ぎこちなく踏み出した。',
+    },
+  },
+  // HEEL → FACE（派閥全体のヒール度が長期に下降した結果）
+  HEEL_TO_FACE_DRIFT: {
+    bold: {
+      leaderLine: 'チッ、ガラじゃないが……うちらに歓声が向くなら、それも悪くねぇ。',
+      narration: '{leader}の挑発の刃が鈍った。{org}は反主流の旗を畳み、王道の側へと立ち位置を変える。',
+    },
+    earnest: {
+      leaderLine: 'ヒールでいる意味を、もう自分で説明できない。応援してくれる人の方を見ます。',
+      narration: '誠実さがヒールの仮面を内側から押し返した。{org}は王道路線へと舵を切る。',
+    },
+    emotional: {
+      leaderLine: '……あの子たちが、まっすぐ応援してくれる目を見ちゃってさ。もう、悪役は無理。',
+      narration: '{leader}は声を詰まらせた。{org}は反主流の構えを解き、ファンに正面から向き合う側へ移る。',
+    },
+    carefree: {
+      leaderLine: 'ヒール飽きたー! やっぱ歓声の方が気持ちいいに決まってんじゃーん!',
+      narration: '{leader}はあっさりとヒールの皮を脱いだ。{org}は王道路線へ転がり込む。',
+    },
+    introverted: {
+      leaderLine: '……反則、続けるの、しんどかった。普通に試合する方が、自分らしい。',
+      narration: '{leader}は静かに反主流の看板を下ろした。{org}は王道の側で、ようやく息を整える。',
+    },
+    shy: {
+      leaderLine: '……ヒールの台詞、私には、似合わなくて……。',
+      narration: '{leader}の小さな告白を機に、{org}は反主流から王道へと歩み戻った。',
     },
   },
 };

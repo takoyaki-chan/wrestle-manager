@@ -9248,6 +9248,13 @@ const Engine = {
           s = Engine.factions.processWeeklyMomentumDecay(s);
           s = Engine.factions.checkDissolutionConditions(s);
         }
+        // §6 FACE⇄HEEL 遷移：heelAlignment 週次 drift + 閾値判定（pending イベントの有無に関わらず実行）
+        if (typeof Engine.factions.driftHeelAlignmentWeekly === 'function') {
+          s = Engine.factions.driftHeelAlignmentWeekly(s);
+        }
+        if (!s._pendingFactionEvent && typeof Engine.factions.checkAlignmentTransition === 'function') {
+          s = Engine.factions.checkAlignmentTransition(s);
+        }
         // Phase B: 抗争ポイント決着判定（spec §4） — pending イベントなしのときのみ
         if (!s._pendingFactionEvent && typeof Engine.factions.checkRivalryResolution === 'function') {
           const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA1B));

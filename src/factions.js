@@ -285,6 +285,137 @@ Engine.factions = {
   },
 
 
+  // ── §6 heelAlignment（FACE⇄HEEL 遷移用 0-100 スケール）──
+  // role / personality / traits から初期値をレイジー算出。
+  // 一度書き込まれたら fighter.heelAlignment が真値、未設定なら推論値。
+  _computeDefaultHeelAlignment(fighter) {
+    if (!fighter) return 50;
+    let v = 50;
+    if (fighter.role === 'Heel') v = 70;
+    else if (fighter.role === 'Babyface') v = 30;
+    // personality（getPersonalityType の戻り値で評価）
+    let p = null;
+    try { p = Engine.contract && Engine.contract.getPersonalityType ? Engine.contract.getPersonalityType(fighter) : null; } catch (_) {}
+    if (p === 'bold') v += 5;
+    else if (p === 'emotional') v += 3;
+    else if (p === 'earnest') v -= 5;
+    else if (p === 'introverted') v -= 3;
+    // traits の影響
+    const traits = Array.isArray(fighter.traits) ? fighter.traits : [];
+    if (traits.includes('ヒール適性')) v += 15;
+    if (traits.includes('ファンサービス')) v -= 10;
+    if (traits.includes('威圧感')) v += 5;
+    if (traits.includes('人望')) v -= 5;
+    if (traits.includes('華')) v -= 3;
+    if (v < 0) v = 0;
+    if (v > 100) v = 100;
+    return v;
+  },
+
+  _getHeelAlignment(fighter) {
+    if (!fighter) return 50;
+    if (typeof fighter.heelAlignment === 'number') return fighter.heelAlignment;
+    return this._computeDefaultHeelAlignment(fighter);
+  },
+
+  // 派閥アーキタイプ別「理想 heelAlignment」（drift 先）
+  _archetypeIdealHeelAlignment(archetypeId) {
+    const cfg = FACTION_CONFIG;
+    if (archetypeId === 'HEEL') return cfg.alignDriftIdealHeel;
+    if (archetypeId === 'FACE') return cfg.alignDriftIdealFace;
+    return cfg.alignDriftIdealNeutral;
+  },
+
+  // 週次：派閥メンバーの heelAlignment を派閥アーキタイプの理想値へドリフト（slow conformity）
+  // 非派閥メンバーは触らない（個人属性として保つ）
+  driftHeelAlignmentWeekly(state) {
+    const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
+    if (!factions.length || !Array.isArray(state.roster)) return state;
+    const updates = new Map();
+    for (const f of factions) {
+      const archId = f.archetypeId || this._archetypeFromFlavor(f.flavor);
+      if (!archId) continue;
+      const ideal = this._archetypeIdealHeelAlignment(archId);
+      for (const id of (f.memberIds || [])) {
+        const fighter = state.roster.find(c => c.id === id);
+        if (!fighter) continue;
+        const cur = this._getHeelAlignment(fighter);
+        if (Math.abs(ideal - cur) < 0.5) continue; // すでに飽和近傍
+        const delta = (ideal - cur) * cfg.alignDriftRate;
+        const next = Engine.util.clamp(cur + delta, 0, 100);
+        updates.set(id, next);
+      }
+    }
+    if (!updates.size) return state;
+    const newRoster = state.roster.map(c => {
+      const u = updates.get(c.id);
+      return u != null ? { ...c, heelAlignment: u } : c;
+    });
+    return { ...state, roster: newRoster };
+  },
+
+  // FACE⇄HEEL 遷移判定。閾値を 24 週連続で越えたら _applyArchetypeTransition を発火
+  checkAlignmentTransition(state) {
+    const cfg = FACTION_CONFIG;
+    const factions = state.factions || [];
+    if (!factions.length) return state;
+    const roster = state.roster || [];
+    const now = this._absWeek(state);
+    let s = state;
+
+    for (const orig of factions) {
+      const f = (s.factions || []).find(x => x.id === orig.id);
+      if (!f) continue;
+      const arch = f.archetypeId || this._archetypeFromFlavor(f.flavor);
+      if (arch !== 'FACE' && arch !== 'HEEL') {
+        // 別アーキタイプは sustain カウンタをクリア
+        if (f._alignDriftStartedAbsWeek) {
+          s = { ...s, factions: s.factions.map(x => x.id === f.id ? { ...x, _alignDriftStartedAbsWeek: null } : x) };
+        }
+        continue;
+      }
+      // 直近の遷移後 CD（36 週）
+      const last = f.lastArchetypeTransition;
+      if (last && last.season != null) {
+        const lastAbs = (last.season - 1) * 53 + (last.week || 1);
+        if (now - lastAbs < cfg.alignFlipPostCooldown) continue;
+      }
+      const memberIds = (f.memberIds || []).filter(id => roster.find(c => c.id === id));
+      if (memberIds.length < 2) continue;
+      const sum = memberIds.reduce((acc, id) => {
+        const m = roster.find(c => c.id === id);
+        return acc + this._getHeelAlignment(m);
+      }, 0);
+      const avg = sum / memberIds.length;
+
+      let toArch = null;
+      if (arch === 'FACE' && avg >= cfg.alignFlipThresholdToHeel) toArch = 'HEEL';
+      if (arch === 'HEEL' && avg <= cfg.alignFlipThresholdToFace) toArch = 'FACE';
+
+      if (!toArch) {
+        // 閾値未満：sustain カウンタをクリア
+        if (f._alignDriftStartedAbsWeek) {
+          s = { ...s, factions: s.factions.map(x => x.id === f.id ? { ...x, _alignDriftStartedAbsWeek: null } : x) };
+        }
+        continue;
+      }
+
+      const startedAbs = f._alignDriftStartedAbsWeek;
+      if (!startedAbs) {
+        s = { ...s, factions: s.factions.map(x => x.id === f.id ? { ...x, _alignDriftStartedAbsWeek: now } : x) };
+        continue;
+      }
+      if (now - startedAbs < cfg.alignFlipSustainWeeks) continue;
+
+      // 遷移発火
+      const reasonKey = (toArch === 'HEEL') ? 'FACE_TO_HEEL_DRIFT' : 'HEEL_TO_FACE_DRIFT';
+      s = this._applyArchetypeTransition(s, f.id, toArch, { reasonKey });
+      s = { ...s, factions: s.factions.map(x => x.id === f.id ? { ...x, _alignDriftStartedAbsWeek: null } : x) };
+    }
+    return s;
+  },
+
   // ── §6 アーキタイプ遷移ヘルパー ──────────────────
   // tag 群を toArchetype に揃え、flavor / archetypeId を書き換え、ナレーションキューに push
   _applyArchetypeTransition(state, factionId, toArchetype, ctx = {}) {
