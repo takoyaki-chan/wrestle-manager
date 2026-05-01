@@ -9208,6 +9208,8 @@ const Engine = {
       if (!s.factionEndlessStreak || typeof s.factionEndlessStreak !== 'object') s = { ...s, factionEndlessStreak: {} };
       if (!Array.isArray(s.f02MediationWatches)) s = { ...s, f02MediationWatches: [] };
       // factionPendingIgnite は null 許容なので初期化不要
+      // Phase B: 抗争ポイント
+      if (!s.factionRivalryPoints || typeof s.factionRivalryPoints !== 'object') s = { ...s, factionRivalryPoints: {} };
 
       // 既に pending 派閥イベントが残っている場合は、プレイヤーが解決するまで派閥パイプライン全体をスキップ
       if (s._pendingFactionEvent) {
@@ -9245,6 +9247,11 @@ const Engine = {
           s = Engine.factions.processWeeklyHostilityDecay(s);
           s = Engine.factions.processWeeklyMomentumDecay(s);
           s = Engine.factions.checkDissolutionConditions(s);
+        }
+        // Phase B: 抗争ポイント決着判定（spec §4） — pending イベントなしのときのみ
+        if (!s._pendingFactionEvent && typeof Engine.factions.checkRivalryResolution === 'function') {
+          const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA1B));
+          Engine.factions.checkRivalryResolution(s, resRng);
         }
       }
     }
@@ -9972,6 +9979,32 @@ const Engine = {
         const resRes = Engine.factions.rollResolutionAfterMatch(s, { winnerId, loserId, isDraw });
         s = resRes.state;
         if (resRes.pendingEvent) { s = { ...s, _pendingFactionEvent: resRes.pendingEvent }; break; }
+      }
+    }
+
+    // ── Phase B: 派閥抗争ポイント蓄積（spec: faction-rivalry-points-spec-v0.1 §2） ──
+    // 試合結果ごとにペアの派閥に勝者ポイントを加算。タッグはチーム代表(fighter1)を使用。
+    if (Engine.factions && typeof Engine.factions.accrueRivalryPointsFromMatch === 'function') {
+      for (let i = 0; i < validMatches.length; i++) {
+        const m = validMatches[i]; const r = results[i];
+        if (!m || !r) continue;
+        let fighterIdA, fighterIdB, winner;
+        if (m.matchType === 'tag' && m.teamA && m.teamB) {
+          fighterIdA = m.teamA.fighter1;
+          fighterIdB = m.teamB.fighter1;
+          winner = r.winner === 'teamA' ? 'A' : (r.winner === 'teamB' ? 'B' : 'draw');
+        } else {
+          fighterIdA = m.left; fighterIdB = m.right;
+          winner = r.winner === 'left' ? 'A' : (r.winner === 'right' ? 'B' : 'draw');
+        }
+        if (winner === 'draw') continue;
+        s = Engine.factions.accrueRivalryPointsFromMatch(s, {
+          fighterIdA, fighterIdB, winner,
+          isMain: !!m.isSummit,
+          isTitle: !!m.isTitle,
+          isTag: m.matchType === 'tag',
+          isF09: !!m._f09Locked,
+        });
       }
     }
 

@@ -11112,6 +11112,28 @@ function _renderDbFactions() {
       }
     }
 
+    // Phase B: 抗争ポイント表示（暫定UI、v0.9 構造書き換え前の最小可視化）
+    let rivalryPtsLine = '';
+    if (isHostile(f) && G.factionRivalryPoints) {
+      const myEntries = [];
+      for (const key of Object.keys(G.factionRivalryPoints)) {
+        const e = G.factionRivalryPoints[key];
+        if (!e) continue;
+        if (e.factionAId === f.id || e.factionBId === f.id) {
+          const otherId = e.factionAId === f.id ? e.factionBId : e.factionAId;
+          const other = factionById.get(otherId);
+          if (!other) continue;
+          const myPt = e.factionAId === f.id ? e.pointsA : e.pointsB;
+          const oppPt = e.factionAId === f.id ? e.pointsB : e.pointsA;
+          myEntries.push({ otherName: other.name, myPt, oppPt });
+        }
+      }
+      if (myEntries.length) {
+        const parts = myEntries.map(en => `${en.otherName}戦 <strong>${en.myPt}</strong>-${en.oppPt}pt`);
+        rivalryPtsLine = `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">⚔ 抗争 ${parts.join(' / ')}</div>`;
+      }
+    }
+
     function faceTile(char, size, isLeader, isExec) {
       const upper = (typeof getUpperUrl === 'function' ? getUpperUrl(char.id) : null)
         || (typeof getPortraitUrl === 'function' ? getPortraitUrl(char.id) : null);
@@ -11163,6 +11185,9 @@ function _renderDbFactions() {
     }
     if (hostilityLine) {
       cardHtml += `<div class="db-faction-meter db-faction-meter-hostility"><span class="db-faction-meter-label">対立</span><span class="db-faction-meter-value">${hostilityLine}</span></div>`;
+    }
+    if (rivalryPtsLine) {
+      cardHtml += rivalryPtsLine;
     }
     cardHtml += `</div>`;
 
