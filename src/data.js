@@ -1514,6 +1514,133 @@ const FACTION_CONFIG = {
     FACE:      { DEMAND_MONEY: 10, DEMAND_RECOGNITION: 12, OBSERVE_ABSENCE: 16, OBSERVE_FAN_PRESSURE: 22, INCIDENT_BOUNDARY: 14, INCIDENT_BONDING: 16 },
     COMBAT:    { DEMAND_MAIN: 14, OBSERVE_RIVAL_HEAT: 22, OBSERVE_ABSENCE: 14, OBSERVE_TRAINING_HARD: 18, INCIDENT_BOUNDARY: 16, INCIDENT_BONDING: 6 },
   },
+  // §6 アーキタイプ遷移定義
+  archetypeTransition: {
+    authorityToBondViaRebuke: { from: 'AUTHORITY', to: 'BOND' },
+    authorityToOnLeaderChange: {
+      from: 'AUTHORITY',
+      fieryGrudgingTo: 'MERIT',
+      composedEarnestTo: 'BOND',
+      fallback: 'BOND',
+    },
+    combatToBondOnDefeat: { from: 'COMBAT', to: 'BOND' },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// アーキタイプ遷移ナレーション（§6）
+// 引き方: Engine.factions.getTransitionLine(reasonKey, leaderPersonality)
+//   reasonKey: 'AUTHORITY_TO_BOND_REBUKE' | 'AUTHORITY_TO_MERIT_LEADER' |
+//              'AUTHORITY_TO_BOND_LEADER' | 'COMBAT_TO_BOND_DEFEAT'
+//   leaderPersonality: getPersonalityType の戻り値（fiery/composed/grudging/airy/earnest/flippant）
+// 各エントリは { leaderLine, narration } を返す。
+// テンプレ表現は禁止。性格×遷移種別で温度を書き分けること。
+// ─────────────────────────────────────────────────────────────────────────────
+const FACTION_TRANSITION_LINES = {
+  AUTHORITY_TO_BOND_REBUKE: {
+    fiery: {
+      leaderLine: 'チッ……もういい。命令も指示も、今日でやめだ。',
+      narration: '社長への要求を四度跳ねられ、{leader}は権威の旗を自分から下ろした。組は横並びの結束へ舵を切る。',
+    },
+    composed: {
+      leaderLine: '……肩の力、抜こうか。私が上に立つ意味、もう要らない気がして。',
+      narration: '幾度かの否認を経て、{leader}は静かに権威を手放した。{org}は仲間意識の方へ重心を移す。',
+    },
+    grudging: {
+      leaderLine: 'ふん、わかったよ。私が頭でいる限り通らないなら、もういらない、こんな看板。',
+      narration: '受け入れられない要求を重ねた末、{leader}は権威の看板を投げ捨てた。残ったのは横で支え合う者たちだ。',
+    },
+    airy: {
+      leaderLine: 'えへへ、もう偉そうにするのやめるー。みんなで仲良くしよ?',
+      narration: '{leader}は権威者である自分にあっさり飽きた。組は緩い結束へと姿を変える。',
+    },
+    earnest: {
+      leaderLine: '……私が先頭に立つやり方は、皆にも社長にも届かなかった。横で支える側に回ります。',
+      narration: '{leader}は何度も拒まれた末に、自らの統率方針を改めた。{org}は対等な絆を軸に再編される。',
+    },
+    flippant: {
+      leaderLine: 'はいはい、わかったって。もう仕切んないから、文句言うなよ?',
+      narration: '{leader}は権威者ぶりを放棄した。組の空気は、肩の力が抜けたぶん、互いに寄りかかる方へ向かう。',
+    },
+  },
+  AUTHORITY_TO_MERIT_LEADER: {
+    fiery: {
+      leaderLine: '次はあいつが立つ。なら、私たちは結果で黙らせるしかない。',
+      narration: '新たな幹部の苛烈な気性を受け、{org}は権威の組織から実力で序列を測る組織へ生まれ変わった。',
+    },
+    composed: {
+      leaderLine: '彼女が引っ張るなら、私は数字で支える側に。',
+      narration: '幹部交代を機に、{org}の柱は権威から実績へと静かに置き換えられた。',
+    },
+    grudging: {
+      leaderLine: 'あの子が頭に立つの? なら、私はリングで証明するだけだよ。',
+      narration: '幹部の突き上げを受け、{org}は実力主義へ路線変更した。残った者は数字で位置取りを争う。',
+    },
+    airy: {
+      leaderLine: 'うわ〜あの子怖いから、私はちゃんと勝って黙らせなきゃ〜',
+      narration: '新幹部の鋭さに引きずられ、{org}は実績本位の派閥に塗り替わった。',
+    },
+    earnest: {
+      leaderLine: '彼女のやり方を尊重します。これからは、結果で語る組織でありたい。',
+      narration: '{org}は新たな幹部のもと、序列を実力で測る派閥へと色を変えた。',
+    },
+    flippant: {
+      leaderLine: 'まあ次のボスは結果厨だしね、私もちゃんと数字残そっと。',
+      narration: '幹部交代をきっかけに、{org}は権威から実力主義へ移行した。',
+    },
+  },
+  AUTHORITY_TO_BOND_LEADER: {
+    fiery: {
+      leaderLine: 'あいつが頭か。……ああ、いい。私はもう肩肘張らなくていい。',
+      narration: '新たな幹部の温度に引かれ、{org}は権威の組織から横で支え合う組織へ姿を変えた。',
+    },
+    composed: {
+      leaderLine: 'ふふ、彼女が立つなら、私もただの仲間に戻れる。',
+      narration: '{leader}は柔らかい後継者を得て、自らの権威を解いた。{org}は仲間意識を軸に再編される。',
+    },
+    grudging: {
+      leaderLine: '頭は譲る。でも、置いてくなよ。',
+      narration: '幹部交代を経て、{org}の体温は権威から結束へと寄り添い直した。',
+    },
+    airy: {
+      leaderLine: 'あの子があったかいから、私もぬくぬくしてよ〜',
+      narration: '新幹部の人柄に染まり、{org}は緩やかな結束派閥へと変わった。',
+    },
+    earnest: {
+      leaderLine: '彼女の優しさが、この組には合っていた。私もその下で、皆と並びたい。',
+      narration: '{org}は新たな幹部のもと、横の絆で立つ組織へと姿を変えた。',
+    },
+    flippant: {
+      leaderLine: '上下関係とかもういいや、仲良くやろ。',
+      narration: '幹部交代を境に、{org}は権威から結束派閥へ衣替えした。',
+    },
+  },
+  COMBAT_TO_BOND_DEFEAT: {
+    fiery: {
+      leaderLine: '……負けた。完全に、だ。もう拳じゃない、何かを変えなきゃ続かない。',
+      narration: '抗争での完全敗北を経て、{leader}の闘争心は萎えた。{org}は牙を畳み、内向きの絆へと退く。',
+    },
+    composed: {
+      leaderLine: 'これが答えね。……戦い方を、変える時。',
+      narration: '完敗を受け、{leader}は静かに闘争路線を畳んだ。{org}は仲間内の結束で立て直しを図る。',
+    },
+    grudging: {
+      leaderLine: 'はぁ……ここまでやられたら、もう拳ふり上げる気にもならない。',
+      narration: '抗争に大敗した{org}は、闘争組織から結束派閥へと変質した。',
+    },
+    airy: {
+      leaderLine: 'もうケンカやーめた、みんなでギュッてしてよ?',
+      narration: '完敗の重みが{leader}の闘争心を融かした。{org}は緩い結束へと退却する。',
+    },
+    earnest: {
+      leaderLine: '……負けは、認めます。これからは、ぶつかるより、寄り添うやり方を探したい。',
+      narration: '完全敗北の末、{org}は闘争派閥から結束派閥へ路線を改めた。',
+    },
+    flippant: {
+      leaderLine: 'こんだけやられたら降参降参。もう仲良くやろうよ〜',
+      narration: '抗争完敗を機に、{org}は牙を畳んで結束派閥へと衣替えした。',
+    },
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

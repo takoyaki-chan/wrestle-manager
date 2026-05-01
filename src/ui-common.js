@@ -9393,6 +9393,79 @@ function showFactionCommon3Modal(payload, state, onClose) {
   });
 }
 
+// ── §6 アーキタイプ遷移ナレーション モーダル ──
+// payload: { factionId, factionName, leaderId, reasonKey, fromArchetype, toArchetype }
+function showFactionArchetypeTransitionModal(payload, state, onClose) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionArchetypeTransitionModal(payload, state, onClose)); return; }
+
+  const roster = state ? (state.roster || []) : [];
+  const leader = roster.find(c => c.id === payload.leaderId);
+  const leaderName = leader ? leader.name : '???';
+  const factionName = String(payload.factionName || '派閥');
+  const reasonKey = payload.reasonKey || '';
+  const leaderUrl = leader ? _factionUpperUrl(leader.id) : '';
+
+  const lines = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getTransitionLine)
+    ? Engine.factions.getTransitionLine(reasonKey, leader, { leader: leaderName, org: factionName })
+    : { leaderLine: '', narration: '' };
+
+  const ARCHETYPE_LABEL = {
+    AUTHORITY: '権威型', BOND: '結束型', MERIT: '実力主義', HEEL: 'ヒール派閥', FACE: '正統派', COMBAT: '武闘派',
+  };
+  const fromLabel = ARCHETYPE_LABEL[payload.fromArchetype] || payload.fromArchetype || '';
+  const toLabel = ARCHETYPE_LABEL[payload.toArchetype] || payload.toArchetype || '';
+
+  const leaderPortrait = leaderUrl
+    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}');width:96px;height:120px"></div>`
+    : `<div class="fevt-subject-portrait-wrap" style="width:96px;height:120px"></div>`;
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtTransitionOverlay">
+      <div class="fevt-report-card">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">🔄 ${factionName} 派閥の変質</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
+        </div>
+        ${_factionReporterStrip(state, `${factionName}の色合いが変わったようです——${fromLabel}から${toLabel}へ。`)}
+        <div class="fevt-subject-stage">
+          <div style="display:flex;gap:18px;align-items:flex-end;justify-content:center;margin-bottom:8px">
+            ${leaderPortrait}
+          </div>
+          <div class="fevt-subject-name">${factionName} : ${fromLabel} → ${toLabel}</div>
+          <div class="fevt-subject-divider"></div>
+          <div class="fevt-quote leader">
+            <div class="fevt-quote-speaker">${leaderName}（${factionName}）</div>
+            ${lines.leaderLine || ''}
+          </div>
+          <div class="fevt-narration" style="margin-top:10px;color:var(--text-muted);font-size:0.92em;line-height:1.55">
+            ${lines.narration || ''}
+          </div>
+        </div>
+        <div class="fevt-decision-tray" style="justify-content:center">
+          <div class="fevt-decision-card" data-choice="OK" style="max-width:200px">
+            <div class="fevt-decision-label">見届ける ✓</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onClose) onClose();
+    });
+  });
+}
+
 // グローバル公開
 if (typeof window !== 'undefined') {
   window.showFactionF01Modal = showFactionF01Modal;
@@ -9409,6 +9482,7 @@ if (typeof window !== 'undefined') {
   window.showFactionF07Modal = showFactionF07Modal;
   window.showFactionF08Modal = showFactionF08Modal;
   window.showFactionCommon3Modal = showFactionCommon3Modal;
+  window.showFactionArchetypeTransitionModal = showFactionArchetypeTransitionModal;
   window.showFactionEventResult = showFactionEventResult;
 }
 

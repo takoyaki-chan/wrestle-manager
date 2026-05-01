@@ -285,6 +285,96 @@ Engine.factions = {
   },
 
 
+  // ── §6 アーキタイプ遷移ヘルパー ──────────────────
+  // tag 群を toArchetype に揃え、flavor / archetypeId を書き換え、ナレーションキューに push
+  _applyArchetypeTransition(state, factionId, toArchetype, ctx = {}) {
+    const factions = state.factions || [];
+    const target = factions.find(f => f.id === factionId);
+    if (!target) return state;
+    const fromArchetype = target.archetypeId || this._archetypeFromFlavor(target.flavor);
+    if (fromArchetype === toArchetype) return state;
+    const toFlavor = this._flavorFromArchetype(toArchetype);
+    const newFactions = factions.map(f => {
+      if (f.id !== factionId) return f;
+      return {
+        ...f,
+        flavor: toFlavor,
+        archetypeId: toArchetype,
+        // タグ整理: 新 archetype に対応する 1 つだけ true
+        authoritativeTag: toArchetype === 'AUTHORITY',
+        bondTag: toArchetype === 'BOND',
+        meritTag: toArchetype === 'MERIT',
+        heelTag: toArchetype === 'HEEL',
+        faceTag: toArchetype === 'FACE',
+        combatTag: toArchetype === 'COMBAT',
+        lastArchetypeTransition: {
+          fromArchetype, toArchetype,
+          season: state.season, week: state.week,
+          reason: ctx.reasonKey || 'unknown',
+        },
+      };
+    });
+    const queue = (state._pendingArchetypeTransitions || []).slice();
+    queue.push({
+      factionId,
+      factionName: target.name,
+      leaderId: target.leaderId,
+      reasonKey: ctx.reasonKey || 'unknown',
+      fromArchetype,
+      toArchetype,
+    });
+    if (typeof console !== 'undefined') {
+      console.log(`[WM Faction] Archetype transition: ${target.name} ${fromArchetype} → ${toArchetype} (${ctx.reasonKey})`);
+    }
+    return { ...state, factions: newFactions, _pendingArchetypeTransitions: queue };
+  },
+
+  // F07 rebuke 閾値到達時、後継幹部候補から MERIT/BOND を決定
+  _decideAuthoritySuccessorArchetype(state, faction) {
+    const roster = state.roster || [];
+    const memberIds = (faction.memberIds || []).filter(id => id !== faction.leaderId);
+    if (!memberIds.length) return 'BOND';
+    // OVR の高い順に最大 3 名を「後継幹部候補」として性格を見る
+    const members = memberIds
+      .map(id => roster.find(c => c.id === id))
+      .filter(Boolean)
+      .sort((a, b) => (b.ovr || 0) - (a.ovr || 0))
+      .slice(0, 3);
+    let fieryGrudgingCount = 0;
+    let composedEarnestCount = 0;
+    for (const m of members) {
+      const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(m) : null;
+      if (p === 'fiery' || p === 'grudging' || p === 'bold' || p === 'emotional') fieryGrudgingCount++;
+      else if (p === 'composed' || p === 'earnest' || p === 'introverted') composedEarnestCount++;
+    }
+    if (fieryGrudgingCount > composedEarnestCount) return 'MERIT';
+    return 'BOND';
+  },
+
+  // ── flavor ⇄ archetypeId マッピング（§7.1）──────────
+  _archetypeFromFlavor(flavor) {
+    switch (flavor) {
+      case 'authoritarian': return 'AUTHORITY';
+      case 'bond_first':    return 'BOND';
+      case 'meritocratic':  return 'MERIT';
+      case 'heel':          return 'HEEL';
+      case 'face':          return 'FACE';
+      case 'combat':        return 'COMBAT';
+      default:              return 'BOND';
+    }
+  },
+  _flavorFromArchetype(archetypeId) {
+    switch (archetypeId) {
+      case 'AUTHORITY': return 'authoritarian';
+      case 'BOND':      return 'bond_first';
+      case 'MERIT':     return 'meritocratic';
+      case 'HEEL':      return 'heel';
+      case 'FACE':      return 'face';
+      case 'COMBAT':    return 'combat';
+      default:          return 'bond_first';
+    }
+  },
+
   // ── 派閥生成 ──────────────────────────────────────────────
   createFaction(state, leaderId, memberIds, options = {}) {
     const roster = state.roster || [];
@@ -306,12 +396,14 @@ Engine.factions = {
     if ((state.factions || []).length === 0 && !options.allowInitialMeritocratic) excludeFlavors.push('meritocratic');
     const flavor = options.flavor || this._decideFactionFlavor(state, leaderId, memberIds, flavorRng, { excludeFlavors });
 
+    const archetypeId = options.archetypeId || this._archetypeFromFlavor(flavor);
     const faction = {
       id: nextId,
       name: `${leader.name}組`,
       leaderId,
       memberIds: [...new Set(memberIds)],
       flavor,
+      archetypeId,
       type,
       status: 'active', // 'active' | 'hiatus' | 'dissolved'
       authoritativeTag: !!options.authoritativeTag,
@@ -1111,6 +1203,14 @@ Engine.factions = {
       .map(x => x.id);
     if (bottomMembers.length > 0) {
       s = this._applyTrustToMembers(s, bottomMembers, -floatR(4, 6));
+    }
+
+    // 完全敗北で敗者が COMBAT なら BOND へ遷移（§6）
+    {
+      const archL = facL.archetypeId || this._archetypeFromFlavor(facL.flavor);
+      if (archL === 'COMBAT') {
+        s = this._applyArchetypeTransition(s, facL.id, 'BOND', { reasonKey: 'COMBAT_TO_BOND_DEFEAT' });
+      }
     }
 
     // factionTimeline に RESOLVED エントリ追記
@@ -2129,7 +2229,8 @@ Engine.factions = {
     // 候補派閥抽出
     const candidates = [];
     for (const f of factions) {
-      if (!f.archetypeId) continue;
+      if (!f.archetypeId && !f.flavor) continue;
+      const archId = f.archetypeId || this._archetypeFromFlavor(f.flavor);
       const leader = roster.find(c => c.id === f.leaderId);
       if (!leader) continue;
       const leaderTrust = leader.trust != null ? leader.trust : 50;
@@ -2142,10 +2243,10 @@ Engine.factions = {
       const postRebukeUntil = f._f07PostRebukeQuietUntil || 0;
       if (now < postRebukeUntil) continue;
 
-      const bias = (cfg.f07ArchetypeBias[f.archetypeId] != null) ? cfg.f07ArchetypeBias[f.archetypeId] : 0;
+      const bias = (cfg.f07ArchetypeBias[archId] != null) ? cfg.f07ArchetypeBias[archId] : 0;
       const weeksSince = (lastWeek === -Infinity) ? 200 : (now - lastWeek);
       const tensionScore = Math.max(1, leaderTrust * 0.3 + weeksSince * 0.5 + bias);
-      candidates.push({ faction: f, leader, tensionScore });
+      candidates.push({ faction: f, leader, archetypeId: archId, tensionScore });
     }
 
     if (!candidates.length) return { eligible: false };
@@ -2167,7 +2268,8 @@ Engine.factions = {
     const demandMoneyQuietUntil = faction._f07DemandMoneyQuietUntil || 0;
 
     // incidentType 抽選（マトリクスから連続出現禁止 + サブ CD を除外）
-    const matrix = cfg.f07IncidentMatrix[faction.archetypeId] || {};
+    const archetypeId = chosen.archetypeId;
+    const matrix = cfg.f07IncidentMatrix[archetypeId] || {};
     const entries = Object.entries(matrix).filter(([type, _]) => {
       if (recentTypes.includes(type)) return false;
       if (type.startsWith('DEMAND_') && now < demandQuietUntil) return false;
@@ -2194,7 +2296,7 @@ Engine.factions = {
       factionName: faction.name,
       leaderId: faction.leaderId,
       leaderName: leader.name,
-      archetypeId: faction.archetypeId,
+      archetypeId,
       incidentType,
       incidentPayload,
       modalShape,
@@ -2465,24 +2567,36 @@ Engine.factions = {
     const memberIds = () => faction.memberIds.slice();
     const memberIdsExLeader = () => faction.memberIds.filter(id => id !== leaderId);
 
-    // rebukeCount を進める共通処理（4 累積で AUTHORITY のみ authoritativeTag 剥がし + 24 週 quiet）
+    // rebukeCount を進める共通処理（4 累積で AUTHORITY のみ archetype 遷移 + 24 週 quiet）
     const advanceRebuke = (st) => {
-      let inner = st;
-      inner = {
-        ...inner,
-        factions: inner.factions.map(f => {
-          if (f.id !== factionId) return f;
-          const newCount = (f.f07RebukeCount || 0) + 1;
+      const f = (st.factions || []).find(x => x.id === factionId);
+      if (!f) return st;
+      const newCount = (f.f07RebukeCount || 0) + 1;
+      let inner = {
+        ...st,
+        factions: st.factions.map(x => {
+          if (x.id !== factionId) return x;
           if (newCount >= cfg.f07RebukeMaxCount) {
-            if (typeof console !== 'undefined') console.log(`[WM Faction] F07 rebuke threshold reached: ${factionName} (archetype=${f.archetypeId})`);
-            const next = { ...f, f07RebukeCount: 0 };
-            if (f.archetypeId === 'AUTHORITY') next.authoritativeTag = false;
-            next._f07PostRebukeQuietUntil = this._absWeek(inner) + cfg.f07PostRebukeQuiet;
-            return next;
+            return {
+              ...x,
+              f07RebukeCount: 0,
+              _f07PostRebukeQuietUntil: this._absWeek(st) + cfg.f07PostRebukeQuiet,
+            };
           }
-          return { ...f, f07RebukeCount: newCount };
+          return { ...x, f07RebukeCount: newCount };
         }),
       };
+      // 閾値到達 + AUTHORITY なら遷移（後継幹部の性格で MERIT/BOND 分岐）
+      if (newCount >= cfg.f07RebukeMaxCount) {
+        const curArch = f.archetypeId || this._archetypeFromFlavor(f.flavor);
+        if (curArch === 'AUTHORITY') {
+          const successor = this._decideAuthoritySuccessorArchetype(inner, f);
+          const reasonKey = successor === 'MERIT'
+            ? 'AUTHORITY_TO_MERIT_LEADER'
+            : (newCount === cfg.f07RebukeMaxCount ? 'AUTHORITY_TO_BOND_REBUKE' : 'AUTHORITY_TO_BOND_LEADER');
+          inner = this._applyArchetypeTransition(inner, factionId, successor, { reasonKey });
+        }
+      }
       return inner;
     };
 
@@ -3466,6 +3580,28 @@ Engine.factions = {
     const pTable = table[personality] || table.introverted;
     const sTable = pTable[sideKey] || pTable.attack;
     return sTable[archetype] || sTable.normal || '';
+  },
+
+  // ── §6 アーキタイプ遷移ナレーション引き ──
+  // reasonKey: 'AUTHORITY_TO_BOND_REBUKE' | 'AUTHORITY_TO_MERIT_LEADER' |
+  //            'AUTHORITY_TO_BOND_LEADER' | 'COMBAT_TO_BOND_DEFEAT'
+  getTransitionLine(reasonKey, leader, vars) {
+    const table = (typeof FACTION_TRANSITION_LINES !== 'undefined' ? FACTION_TRANSITION_LINES : null);
+    if (!table || !reasonKey) return { leaderLine: '', narration: '' };
+    const block = table[reasonKey];
+    if (!block) return { leaderLine: '', narration: '' };
+    const personality = leader ? Engine.contract.getPersonalityType(leader) : 'composed';
+    const entry = block[personality] || block.composed || block.earnest;
+    if (!entry) return { leaderLine: '', narration: '' };
+    const subst = (s) => {
+      if (!s || !vars) return s || '';
+      let out = String(s);
+      Object.keys(vars).forEach(k => {
+        out = out.split(`{${k}}`).join(vars[k] != null ? String(vars[k]) : '');
+      });
+      return out;
+    };
+    return { leaderLine: subst(entry.leaderLine), narration: subst(entry.narration) };
   },
 
   // ── Common-3 派閥加入通知 セリフ引き ──

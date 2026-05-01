@@ -7395,6 +7395,9 @@ const App = {
     // Common-3 派閥加入通知（興行後に発生したものも消化）
     App._drainFactionJoinNotices();
 
+    // §6 アーキタイプ遷移ナレーション（F02 完全敗北など興行後に発生する）
+    App._drainArchetypeTransitions();
+
     // スナップショット R3モーダル表示（興行後）
     if (G._pendingR3Modal) {
       const r3ModalShow = G._pendingR3Modal;
@@ -7476,6 +7479,24 @@ const App = {
       const head = queue.shift();
       if (!head) return;
       showFactionCommon3Modal(head, G, next);
+    };
+    next();
+  },
+
+  // §6 アーキタイプ遷移ナレーションキューを順次表示
+  _drainArchetypeTransitions() {
+    if (!G || !G._pendingArchetypeTransitions || !G._pendingArchetypeTransitions.length) return;
+    if (typeof showFactionArchetypeTransitionModal !== 'function') {
+      G = { ...G, _pendingArchetypeTransitions: [] };
+      return;
+    }
+    const queue = [...G._pendingArchetypeTransitions];
+    const { _pendingArchetypeTransitions: _, ...rest } = G;
+    G = rest;
+    const next = () => {
+      const head = queue.shift();
+      if (!head) return;
+      showFactionArchetypeTransitionModal(head, G, next);
     };
     next();
   },
@@ -7663,6 +7684,8 @@ const App = {
     if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
     // Common-3 派閥加入通知を順次表示
     App._drainFactionJoinNotices();
+    // §6 アーキタイプ遷移ナレーション（F07 rebuke 4 累積など週次処理で発生する）
+    App._drainArchetypeTransitions();
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {

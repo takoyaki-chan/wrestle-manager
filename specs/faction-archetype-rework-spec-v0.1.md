@@ -1,8 +1,8 @@
-# 派閥アーキタイプ再設計仕様 v0.2
+# 派閥アーキタイプ再設計仕様 v0.3
 
 **ファイル**：`specs/faction-archetype-rework-spec-v0.1.md`
-**最終更新**：2026-05-01（v0.2 全面書き直し）
-**実装状況**：DRAFT（未実装・Keisuke 確認済み構造）
+**最終更新**：2026-05-01（v0.3 §6 アーキタイプ遷移ロジック実装完了反映）
+**実装状況**：Phase A/B + §6 動的遷移（FACE⇄HEEL を除く 3 パターン）実装完了 / FACE⇄HEEL 遷移のみ Phase 後送り（heelAlignment 未導入のため）
 **親仕様**：`specs/faction-system-spec-v0.1.md` §9.1（F01 派閥成立）
 **関連仕様**：
 - `specs/faction-f07-variation-spec-v0.1.md`（F07 共通フレーム）
@@ -13,7 +13,8 @@
 ## 0. 改訂履歴
 
 - v0.1（2026-05-01）— 5 アーキタイプ案（AUTHORITY/BOND/DEVELOPMENT/COMBAT/LOWKEY）。既決の 4 種（権威型/実力主義/結束型/自然型）と整合せず破棄
-- **v0.2（2026-05-01）** — 既存モックアップ確認＋ Keisuke レビューに基づき **6 アーキタイプに確定**：権威型／結束型／実力主義／ヒール派閥／正統派／武闘派。「自然型」は無個性のため削除
+- v0.2（2026-05-01）— 既存モックアップ確認＋ Keisuke レビューに基づき **6 アーキタイプに確定**：権威型／結束型／実力主義／ヒール派閥／正統派／武闘派。「自然型」は無個性のため削除
+- **v0.3（2026-05-01）** — §6 アーキタイプ遷移ロジック実装完了。`createFaction` で archetypeId 設定、F07 rebuke 4 累積（AUTHORITY→BOND/MERIT 後継幹部性格分岐）、F02 完全敗北（COMBAT→BOND）の 3 遷移を実装。FACE⇄HEEL は heelAlignment フィールド未導入のため別 Phase に切り出し
 
 ---
 
@@ -242,12 +243,17 @@ C: 静かに見守る（自然な集まりとして任せる、タグなし）
 
 派閥のアーキタイプは原則固定だが、以下で遷移：
 
-- F07 B 4 回累積 → AUTHORITY → BOND（権威が剥がれて横の結束に）
-- F07 C → AUTHORITY → MERIT or BOND（別幹部が立つ際、その幹部の性格による）
-- F02 抗争で完全敗北 → COMBAT → BOND（闘争心が萎えて結束へ）
-- メンバーの平均 heelAlignment が長期上昇 → FACE → HEEL（または逆）
+- **【実装済】** F07 rebuke 4 回累積 → AUTHORITY → BOND or MERIT（後継幹部の性格による分岐：fiery/grudging/bold/emotional 多数なら MERIT、それ以外 BOND）
+- **【上記に統合】** F07 C → AUTHORITY → MERIT or BOND（rebuke 4 累積の判定で代替）
+- **【実装済】** F02 抗争で完全敗北 → COMBAT → BOND（闘争心が萎えて結束へ）
+- **【後送り】** メンバーの平均 heelAlignment が長期上昇 → FACE → HEEL（または逆）— heelAlignment フィールド未導入のため、character-data-spec 改訂と合わせて別 Phase で実装
 
-遷移時はナレーションを出す（共通イベント仕様の結果モーダルで包括的に表現）。
+遷移時はナレーションを出す（`showFactionArchetypeTransitionModal` で包括的に表現）。
+遷移ナレーションは `FACTION_TRANSITION_LINES`（reason × 性格 6 種）で性格ごとに温度を書き分け。
+実装：
+- `Engine.factions._applyArchetypeTransition(state, factionId, toArchetype, ctx)` — flavor / archetypeId / 6 タグ群の整理 + `_pendingArchetypeTransitions` キュー push
+- `Engine.factions.getTransitionLine(reasonKey, leader, vars)` — `{leaderLine, narration}` を返す
+- `App._drainArchetypeTransitions()` — processWeek / finalizeShow 双方から呼ばれて消化
 
 ## 7. データ構造
 
