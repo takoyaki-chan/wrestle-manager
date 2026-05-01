@@ -2582,6 +2582,351 @@ Engine.factions = {
         || (d.leaderAId === fighterIdB && d.leaderBId === fighterIdA);
   },
 
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  Phase B: 抗争ポイント制 + F09 派閥対抗戦                   ║
+  // ║  spec: faction-rivalry-points-spec-v0.1 v0.3              ║
+  // ╚══════════════════════════════════════════════════════════╝
+
+  _pairKey(fid1, fid2) {
+    const a = Math.min(fid1, fid2);
+    const b = Math.max(fid1, fid2);
+    return `${a}-${b}`;
+  },
+
+  _ensureRivalryPointsEntry(state, factionAId, factionBId) {
+    if (!state.factionRivalryPoints) state.factionRivalryPoints = {};
+    const key = this._pairKey(factionAId, factionBId);
+    if (!state.factionRivalryPoints[key]) {
+      const a = Math.min(factionAId, factionBId);
+      const b = Math.max(factionAId, factionBId);
+      state.factionRivalryPoints[key] = {
+        factionAId: a,
+        factionBId: b,
+        pointsA: 0,
+        pointsB: 0,
+        startedSeason: state.season,
+        startedWeek: state.week,
+        lastUpdatedSeason: state.season,
+        lastUpdatedWeek: state.week,
+        naturalCalmStreak: 0,
+      };
+    }
+    return state.factionRivalryPoints[key];
+  },
+
+  // §2 試合ベース・ポイント加点
+  // matchCtx: { fighterIdA, fighterIdB, winner: 'A'|'B'|'draw', isMain, isTitle, isTag, isF09 }
+  accrueRivalryPointsFromMatch(state, matchCtx) {
+    if (!state || !matchCtx) return state;
+    if (!state.factions || state.factions.length === 0) return state;
+    if (matchCtx.winner !== 'A' && matchCtx.winner !== 'B') return state;
+    const fA = this.getFactionByFighterId(state, matchCtx.fighterIdA);
+    const fB = this.getFactionByFighterId(state, matchCtx.fighterIdB);
+    if (!fA || !fB || fA.id === fB.id) return state;
+    // リーダー幹部級でなければ加点しない（F09 中も同様、ただし F09 は OVR上位5名で組まれているため自然と該当する）
+    const aRank = this._getFactionMatchRank(state, fA, matchCtx.fighterIdA);
+    const bRank = this._getFactionMatchRank(state, fB, matchCtx.fighterIdB);
+    if (aRank == null || bRank == null) return state;
+    // 「低い方を採用」: rank 値が大きい方（fillerが大）を採用してランク確定
+    const rankIdx = Math.max(aRank.idx, bRank.idx);
+    const cfg = FACTION_CONFIG;
+    const RANK_KEYS = ['top', 'second', 'third', 'filler'];
+    const rankKey = RANK_KEYS[Math.min(rankIdx, RANK_KEYS.length - 1)];
+    const base = cfg.pointsByRank[rankKey] || 0;
+    if (base <= 0) return state;
+
+    // 補正（加算式）
+    let mult = 1.0;
+    if (matchCtx.isMain) mult += cfg.pointsMainEventBonus;
+    if (matchCtx.isTitle) mult += cfg.pointsTitleBonus;
+    if (matchCtx.isTag) mult += cfg.pointsTagBonus;
+    // 下剋上: 勝者 OVR が敗者 OVR より pointsUpsetOvrDiff 以上低い
+    const winnerId = matchCtx.winner === 'A' ? matchCtx.fighterIdA : matchCtx.fighterIdB;
+    const loserId  = matchCtx.winner === 'A' ? matchCtx.fighterIdB : matchCtx.fighterIdA;
+    const winnerC = (state.roster || []).find(c => c.id === winnerId);
+    const loserC  = (state.roster || []).find(c => c.id === loserId);
+    if (winnerC && loserC) {
+      const wOvr = Engine.util.ov(winnerC);
+      const lOvr = Engine.util.ov(loserC);
+      if (lOvr - wOvr >= cfg.pointsUpsetOvrDiff) mult += cfg.pointsUpsetBonus;
+    }
+    if (mult < cfg.pointsMultMin) mult = cfg.pointsMultMin;
+
+    let pt = Math.round(base * mult);
+    if (matchCtx.isF09) pt = Math.round(pt * cfg.f09PointsMult);
+    if (pt <= 0) return state;
+
+    const winnerFaction = matchCtx.winner === 'A' ? fA : fB;
+    const entry = this._ensureRivalryPointsEntry(state, fA.id, fB.id);
+
+    // 週次キャップ（F09 は無視）
+    if (!matchCtx.isF09) {
+      const weeklyKey = `${state.season}-${state.week}-${this._pairKey(fA.id, fB.id)}`;
+      if (!state._rivalryPointsWeekly) state._rivalryPointsWeekly = {};
+      const used = state._rivalryPointsWeekly[weeklyKey] || 0;
+      const remain = Math.max(0, cfg.pointsWeeklyCapPerPair - used);
+      if (remain <= 0) return state;
+      pt = Math.min(pt, remain);
+      state._rivalryPointsWeekly[weeklyKey] = used + pt;
+    }
+
+    if (winnerFaction.id === entry.factionAId) entry.pointsA += pt;
+    else entry.pointsB += pt;
+    entry.lastUpdatedSeason = state.season;
+    entry.lastUpdatedWeek = state.week;
+    return state;
+  },
+
+  // 自派閥内 OVR 順位（リーダー=0, 幹部1位=1, 2位=2, 末端=3）
+  _getFactionMatchRank(state, faction, fighterId) {
+    if (!faction || !faction.memberIds.includes(fighterId)) return null;
+    if (faction.leaderId === fighterId) return { idx: 0 };
+    const ovrMap = new Map();
+    (state.roster || []).forEach(c => ovrMap.set(c.id, Engine.util.ov(c)));
+    const sorted = faction.memberIds
+      .filter(id => id !== faction.leaderId)
+      .sort((a, b) => (ovrMap.get(b) || 0) - (ovrMap.get(a) || 0));
+    const pos = sorted.indexOf(fighterId);
+    if (pos < 0) return null;
+    if (pos === 0) return { idx: 1 };  // 2番手
+    if (pos === 1) return { idx: 2 };  // 3番手
+    return { idx: 3 };                  // filler
+  },
+
+  // §4 決着判定（毎週・finalizeShow直後にも）
+  // 戻り値: 決着が発生した場合 { resolved: true, reason, winnerFactionId, loserFactionId }、無ければ null
+  checkRivalryResolution(state, rng) {
+    if (!state || !state.factionRivalryPoints) return null;
+    const cfg = FACTION_CONFIG;
+    const keys = Object.keys(state.factionRivalryPoints);
+    for (const key of keys) {
+      const e = state.factionRivalryPoints[key];
+      if (!e) continue;
+      const fA = (state.factions || []).find(f => f.id === e.factionAId);
+      const fB = (state.factions || []).find(f => f.id === e.factionBId);
+
+      // §4.1 先取100（最優先）
+      if (e.pointsA >= cfg.pointsResolutionThreshold || e.pointsB >= cfg.pointsResolutionThreshold) {
+        const winId = e.pointsA >= e.pointsB ? e.factionAId : e.factionBId;
+        const losId = winId === e.factionAId ? e.factionBId : e.factionAId;
+        // 勝者敗者派閥が両方存命のときのみフル適用
+        if (fA && fB) {
+          this.applyRivalryVictory(state, winId, losId, 'POINTS', rng);
+        } else {
+          delete state.factionRivalryPoints[key];
+        }
+        return { resolved: true, reason: 'POINTS', winnerFactionId: winId, loserFactionId: losId };
+      }
+
+      // §4.2 派閥消滅
+      if (!fA || !fB) {
+        const survivorId = fA ? fA.id : (fB ? fB.id : null);
+        const goneId = fA ? e.factionBId : e.factionAId;
+        if (survivorId != null) {
+          this.applyHostilityChange(state, survivorId, goneId, cfg.victoryHostilityDecay);
+        }
+        if (Array.isArray(state.factionTimeline) && survivorId != null) {
+          state.factionTimeline = [...state.factionTimeline, {
+            type: 'RIVALRY_CLOSED',
+            season: state.season, week: state.week,
+            survivorFactionId: survivorId, goneFactionId: goneId,
+            reason: 'CONSOLATION',
+          }];
+        }
+        delete state.factionRivalryPoints[key];
+        return { resolved: true, reason: 'CONSOLATION', winnerFactionId: null, loserFactionId: null };
+      }
+
+      // §4.3 40週経過
+      const startAbs = (e.startedSeason - 1) * 52 + e.startedWeek;
+      const nowAbs = (state.season - 1) * 52 + state.week;
+      if (nowAbs - startAbs >= cfg.pointsForceCloseWeeks) {
+        // F06 強制発火フラグを立てる（モーダル処理は management.js 側で拾う）
+        state._pendingForceCloseRivalry = {
+          pairKey: key,
+          factionAId: e.factionAId,
+          factionBId: e.factionBId,
+        };
+        return { resolved: false, reason: 'FORCE_CLOSE_PENDING' };
+      }
+
+      // §4.4 自然沈静化
+      const hostAB = (state.factionHostility || {})[this._hostKey(e.factionAId, e.factionBId)] || 0;
+      const hostBA = (state.factionHostility || {})[this._hostKey(e.factionBId, e.factionAId)] || 0;
+      if (hostAB < cfg.pointsNaturalCalmHostilityMax && hostBA < cfg.pointsNaturalCalmHostilityMax) {
+        e.naturalCalmStreak = (e.naturalCalmStreak || 0) + 1;
+        if (e.naturalCalmStreak >= cfg.pointsNaturalCalmWeeks) {
+          if (Array.isArray(state.factionTimeline)) {
+            state.factionTimeline = [...state.factionTimeline, {
+              type: 'RIVALRY_CLOSED',
+              season: state.season, week: state.week,
+              factionAId: e.factionAId, factionBId: e.factionBId,
+              reason: 'CALM',
+            }];
+          }
+          delete state.factionRivalryPoints[key];
+          return { resolved: true, reason: 'CALM', winnerFactionId: null, loserFactionId: null };
+        }
+      } else {
+        e.naturalCalmStreak = 0;
+      }
+    }
+    return null;
+  },
+
+  // §5 勝者敗者効果適用
+  applyRivalryVictory(state, winnerFactionId, loserFactionId, reason, rng) {
+    const cfg = FACTION_CONFIG;
+    const winF = (state.factions || []).find(f => f.id === winnerFactionId);
+    const losF = (state.factions || []).find(f => f.id === loserFactionId);
+    if (!winF || !losF) return state;
+
+    if (reason === 'POINTS') {
+      // 勝者
+      this.applyMomentumChange(state, winF.id, cfg.victoryWinnerMomentum);
+      this._applyTrustToMembers(state, winF.memberIds, cfg.victoryWinnerTrust);
+      const others = winF.memberIds.filter(id => id !== winF.leaderId);
+      for (const mid of others) this._applyBondDirected(state, mid, winF.leaderId, cfg.victoryBondGainToLeader);
+      state._factionAppealBoost = state._factionAppealBoost || {};
+      state._factionAppealBoost[winF.id] = {
+        startSeason: state.season, startWeek: state.week,
+        weeks: cfg.victoryAppealBoostWeeks,
+      };
+      // 敗者
+      this.applyMomentumChange(state, losF.id, cfg.victoryLoserMomentum);
+      this._applyTrustToMembers(state, [losF.leaderId], cfg.victoryLoserLeaderTrust);
+      const losMembers = losF.memberIds.filter(id => id !== losF.leaderId);
+      this._applyTrustToMembers(state, losMembers, cfg.victoryLoserMemberTrust);
+      if (losF.authoritativeTag) losF.authoritativeTag = false;
+      state._factionDefectionBoost = state._factionDefectionBoost || {};
+      state._factionDefectionBoost[losF.id] = {
+        startSeason: state.season, startWeek: state.week,
+        weeks: cfg.victoryDefectionMultWeeks,
+        mult: cfg.victoryDefectionMult,
+      };
+    }
+    // 共通: 両方向 hostility 減衰
+    this.applyHostilityChange(state, winF.id, losF.id, cfg.victoryHostilityDecay);
+    this.applyHostilityChange(state, losF.id, winF.id, cfg.victoryHostilityDecay);
+    // ペアエントリ削除
+    const key = this._pairKey(winF.id, losF.id);
+    if (state.factionRivalryPoints) delete state.factionRivalryPoints[key];
+    // F08/F09 cooldown リセット
+    this._markCooldown(state, `F08_${winF.id}_${losF.id}`);
+    this._markCooldown(state, `F09_${winF.id}_${losF.id}`);
+    // タイムライン
+    if (Array.isArray(state.factionTimeline)) {
+      state.factionTimeline = [...state.factionTimeline, {
+        type: 'RIVALRY_CLOSED',
+        season: state.season, week: state.week,
+        winnerFactionId: winF.id, loserFactionId: losF.id,
+        reason,
+      }];
+    }
+    return state;
+  },
+
+  // §3 F09 発火条件
+  checkF09Conditions(state) {
+    if (!state || !state.factions || state.factions.length < 2) return null;
+    const cfg = FACTION_CONFIG;
+    // 既に F09 進行中なら返さない
+    if (state._pendingF09) return null;
+    const factions = state.factions;
+    for (let i = 0; i < factions.length; i++) {
+      for (let j = i + 1; j < factions.length; j++) {
+        const fA = factions[i], fB = factions[j];
+        if (fA.type !== 'rivalrous' || fB.type !== 'rivalrous') continue;
+        const hostAB = (state.factionHostility || {})[this._hostKey(fA.id, fB.id)] || 0;
+        const hostBA = (state.factionHostility || {})[this._hostKey(fB.id, fA.id)] || 0;
+        if (hostAB < cfg.f09HostilityMin || hostBA < cfg.f09HostilityMin) continue;
+        if ((fA.momentum || 0) < cfg.f09MomentumMin) continue;
+        if ((fB.momentum || 0) < cfg.f09MomentumMin) continue;
+        // OVR 上位 N 名合計の差
+        const sumA = this._topNOvrSum(state, fA, cfg.f09OvrTopN);
+        const sumB = this._topNOvrSum(state, fB, cfg.f09OvrTopN);
+        const big = Math.max(sumA, sumB);
+        const small = Math.min(sumA, sumB);
+        if (big <= 0) continue;
+        if ((big - small) / big > cfg.f09OvrDiffMaxRatio) continue;
+        // クールダウン
+        const cdKey = `F09_${Math.min(fA.id, fB.id)}_${Math.max(fA.id, fB.id)}`;
+        if (!this._isCooldownReady(state, cdKey, cfg.f09Cooldown)) continue;
+        return { factionAId: fA.id, factionBId: fB.id };
+      }
+    }
+    return null;
+  },
+
+  _topNOvrSum(state, faction, n) {
+    if (!faction || !faction.memberIds || faction.memberIds.length === 0) return 0;
+    const ovrs = faction.memberIds
+      .map(id => {
+        const c = (state.roster || []).find(r => r.id === id);
+        return c ? Engine.util.ov(c) : 0;
+      })
+      .sort((a, b) => b - a);
+    const take = Math.min(n, ovrs.length);
+    let sum = 0;
+    for (let i = 0; i < take; i++) sum += ovrs[i];
+    return sum;
+  },
+
+  // F09 後半補正
+  _f09LateGameMult(state) {
+    const cfg = FACTION_CONFIG;
+    const week = (state.season - 1) * 52 + (state.week || 0);
+    const tiers = Object.keys(cfg.f09LateGameMult).map(Number).sort((a, b) => a - b);
+    let mult = cfg.f09LateGameMult[tiers[tiers.length - 1]];
+    for (const t of tiers) {
+      if (week <= t) { mult = cfg.f09LateGameMult[t]; break; }
+    }
+    return mult;
+  },
+
+  // F09 試合カードを組む（OVR順位マッチ・3〜5試合）
+  buildF09MatchPairs(state, factionAId, factionBId) {
+    const cfg = FACTION_CONFIG;
+    const fA = (state.factions || []).find(f => f.id === factionAId);
+    const fB = (state.factions || []).find(f => f.id === factionBId);
+    if (!fA || !fB) return [];
+    const ovr = (id) => {
+      const c = (state.roster || []).find(r => r.id === id);
+      return c ? Engine.util.ov(c) : 0;
+    };
+    const sortByOvr = (ids) => [...ids].sort((a, b) => ovr(b) - ovr(a));
+    const aSorted = sortByOvr(fA.memberIds);
+    const bSorted = sortByOvr(fB.memberIds);
+    const n = Math.min(aSorted.length, bSorted.length, cfg.f09MaxMatches);
+    if (n < cfg.f09MinMatches) return [];
+    const pairs = [];
+    for (let i = 0; i < n; i++) {
+      pairs.push({ fighterIdA: aSorted[i], fighterIdB: bSorted[i] });
+    }
+    return pairs;
+  },
+
+  // F09 試合結果集計（accrueRivalryPointsFromMatch を isF09:true で叩いた後、勝ち越しボーナス）
+  applyF09SweepBonus(state, factionAId, factionBId, results) {
+    if (!Array.isArray(results) || results.length === 0) return state;
+    const cfg = FACTION_CONFIG;
+    let winsA = 0, winsB = 0;
+    for (const r of results) {
+      if (r.winnerFactionId === factionAId) winsA++;
+      else if (r.winnerFactionId === factionBId) winsB++;
+    }
+    if (winsA === winsB) return state;
+    const winnerFid = winsA > winsB ? factionAId : factionBId;
+    const entry = this._ensureRivalryPointsEntry(state, factionAId, factionBId);
+    if (winnerFid === entry.factionAId) entry.pointsA += cfg.f09SweepBonus;
+    else entry.pointsB += cfg.f09SweepBonus;
+    entry.lastUpdatedSeason = state.season;
+    entry.lastUpdatedWeek = state.week;
+    // F09 cooldown セット
+    this._markCooldown(state, `F09_${Math.min(factionAId, factionBId)}_${Math.max(factionAId, factionBId)}`);
+    return state;
+  },
+
   // ── §9.9 F02 対峙セリフ引き（personality × archetype × side）──
   // FACTION_F02_LINES は data.js 定義。引けなければ normal / introverted にフォールバック。
   getF02ClashLine(fighter, side) {

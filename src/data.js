@@ -1446,6 +1446,51 @@ const FACTION_CONFIG = {
   f08HostilityMinThreshold: 80,  // 片方向
   f08AlternativeCost: 2_000_000, // B選択肢: 別興行200万
   f08MatchResultMultiplier: 1.5, // A選択肢: 試合結果×1.5変動
+
+  // ── Phase B: 抗争ポイント制（spec: faction-rivalry-points-spec-v0.1 v0.3）──
+  // §2.1 素点（マッチランク別）
+  pointsByRank: { top: 10, second: 6, third: 4, filler: 2 },
+  // §2.2 補正（加算式）
+  pointsMainEventBonus: 0.3,
+  pointsTitleBonus: 0.2,
+  pointsUpsetBonus: 0.2,
+  pointsUpsetOvrDiff: 5,        // この値以上 OVR 差で勝てば下剋上
+  pointsTagBonus: -0.5,
+  pointsMultMin: 0.1,
+  // §2.6 1興行・週次キャップ
+  pointsPerShowPairMax: 2,
+  pointsWeeklyCapPerPair: 20,
+  // §4 決着
+  pointsResolutionThreshold: 100,
+  pointsForceCloseWeeks: 40,
+  pointsNaturalCalmWeeks: 4,
+  pointsNaturalCalmHostilityMax: 20,
+  // §3 F09 派閥対抗戦
+  f09HostilityMin: 65,
+  f09OvrTopN: 5,
+  f09OvrDiffMaxRatio: 0.15,
+  f09MomentumMin: -20,
+  f09Cooldown: 52,
+  f09LateGameMult: { 52: 1.1, 104: 1.3, 156: 1.5 },
+  f09PointsMult: 1.8,
+  f09SweepBonus: 15,
+  f09MaxMatches: 5,
+  f09MinMatches: 3,
+  f09NearBadgeHostility: 60,
+  // §5 勝者敗者効果
+  victoryWinnerMomentum: 40,
+  victoryLoserMomentum: -25,
+  victoryWinnerTrust: 5,
+  victoryLoserLeaderTrust: -8,
+  victoryLoserMemberTrust: -3,
+  victoryBondGainToLeader: 5,
+  victoryHostilityDecay: -40,
+  victoryAppealBoostWeeks: 12,
+  victoryDefectionMult: 1.5,
+  victoryDefectionMultWeeks: 12,
+  // §4.3 F06 強制和解（2択）
+  forceCloseDelayWeeks: 20,
+  forceCloseHostilityDecayOnA: -30,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
