@@ -8730,7 +8730,15 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        const leader = (G.roster || []).find(c => c.id === payload.leaderId);
+        showFactionEventResult({
+          eventId: 'F01',
+          category: '派閥成立',
+          resultText: result.resultText,
+          charId: payload.leaderId,
+          charName: leader ? leader.name : payload.leaderName,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F02') {
       _factionAudioOpen(eventId);
@@ -8754,7 +8762,15 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        const leaderA = (G.roster || []).find(c => c.id === payload.leaderAId);
+        showFactionEventResult({
+          eventId: 'F02',
+          category: '派閥抗争',
+          resultText: result.resultText,
+          charId: payload.leaderAId,
+          charName: leaderA ? leaderA.name : payload.leaderAName,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F02_PEACE') {
       // v4 §2-1: F02② 沈静化（通知のみ・選択肢なし）
@@ -8766,7 +8782,12 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        showFactionEventResult({
+          eventId: 'F02_PEACE',
+          category: '抗争沈静化',
+          resultText: result.resultText,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F02_IGNITE') {
       // v4 §2-1: F02① 発火（興行開始時、通知のみ・選択肢なし）
@@ -8778,7 +8799,12 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        showFactionEventResult({
+          eventId: 'F02_IGNITE',
+          category: '抗争発火',
+          resultText: result.resultText,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F02_RESOLUTION') {
       // v4 §2-1: F02③ 決着（試合直後、通知のみ・選択肢なし）
@@ -8801,7 +8827,15 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        const winner = (G.roster || []).find(c => c.id === payload.winnerId);
+        showFactionEventResult({
+          eventId: 'F02_RESOLUTION',
+          category: '抗争決着',
+          resultText: result.resultText,
+          charId: payload.winnerId,
+          charName: winner ? winner.name : payload.winnerName,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F02_ENDLESS') {
       // v4 §2-1: F02④ 無限抗争（通知のみ・選択肢なし）
@@ -8813,7 +8847,12 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        showFactionEventResult({
+          eventId: 'F02_ENDLESS',
+          category: '無限抗争',
+          resultText: result.resultText,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F03') {
       _factionAudioOpen(eventId);
@@ -8837,7 +8876,15 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        const newLeader = payload.newLeaderId ? (G.roster || []).find(c => c.id === payload.newLeaderId) : null;
+        showFactionEventResult({
+          eventId: 'F03',
+          category: 'リーダー喪失',
+          resultText: result.resultText,
+          charId: payload.newLeaderId || null,
+          charName: newLeader ? newLeader.name : (payload.newLeaderName || ''),
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F04') {
       _factionAudioOpen(eventId);
@@ -8849,7 +8896,15 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        const target = (G.roster || []).find(c => c.id === payload.targetId);
+        showFactionEventResult({
+          eventId: 'F04',
+          category: '移籍',
+          resultText: result.resultText,
+          charId: payload.targetId,
+          charName: target ? target.name : payload.targetName,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F05H') {
       // F05H 活動休止（通知のみ・選択肢なし）
@@ -8860,7 +8915,15 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        const leaderH = (G.roster || []).find(c => c.id === payload.leaderId);
+        showFactionEventResult({
+          eventId: 'F05H',
+          category: '活動休止',
+          resultText: result.resultText,
+          charId: payload.leaderId || null,
+          charName: leaderH ? leaderH.name : payload.leaderName,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F05') {
       _factionAudioOpen(eventId);
@@ -8884,7 +8947,15 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        const ringleader = (G.roster || []).find(c => c.id === payload.ringleaderId);
+        showFactionEventResult({
+          eventId: 'F05',
+          category: '派閥分裂',
+          resultText: result.resultText,
+          charId: payload.ringleaderId || null,
+          charName: ringleader ? ringleader.name : payload.ringleaderName,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F06') {
       _factionAudioOpen(eventId);
@@ -8896,7 +8967,15 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        const leader6 = (G.roster || []).find(c => c.id === payload.leaderAId);
+        showFactionEventResult({
+          eventId: 'F06',
+          category: '同盟締結',
+          resultText: result.resultText,
+          charId: payload.leaderAId || null,
+          charName: leader6 ? leader6.name : payload.leaderAName,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F07') {
       _factionAudioOpen(eventId);
@@ -8946,7 +9025,15 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        const leader8 = (G.roster || []).find(c => c.id === payload.leaderAId);
+        showFactionEventResult({
+          eventId: 'F08',
+          category: '直接対決',
+          resultText: result.resultText,
+          charId: payload.leaderAId || null,
+          charName: leader8 ? leader8.name : payload.leaderAName,
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     }
   },
