@@ -556,6 +556,7 @@ Engine.factions = {
 
     // ── 加入判定（v0.3: 1週1人・最高bond候補のみ判定・連続式確率） ──
     const newFactions = s.factions.map(f => ({ ...f, flavor: this._getFactionFlavor(f), memberIds: [...f.memberIds] }));
+    const joinNotices = []; // Common-3: 自動加入通知キュー
 
     for (const f of newFactions) {
       // 単独派閥はサイズ上限で凍結
@@ -588,6 +589,15 @@ Engine.factions = {
         assigned.add(bestCandId);
         const name = (s.roster || []).find(c => c.id === bestCandId)?.name || `#${bestCandId}`;
         if (typeof console !== 'undefined') console.log(`[WM Faction] ${name} joined ${f.name}`);
+        // Common-3: 加入通知キューに積む
+        joinNotices.push({
+          factionId: f.id,
+          factionName: f.name,
+          leaderId: f.leaderId,
+          archetypeId: f.archetypeId || null,
+          newcomerId: bestCandId,
+          newcomerName: name,
+        });
       }
     }
 
@@ -634,7 +644,14 @@ Engine.factions = {
       s = { ...s, roster: newRoster };
     }
 
-    return { ...s, factions: newFactions };
+    let nextState = { ...s, factions: newFactions };
+    if (joinNotices.length) {
+      nextState = {
+        ...nextState,
+        _pendingFactionJoinNotices: [...((s._pendingFactionJoinNotices) || []), ...joinNotices],
+      };
+    }
+    return nextState;
   },
 
   // ── §2.4 §2.6 消滅・解散 ────────────────────────────────
@@ -3449,6 +3466,24 @@ Engine.factions = {
     const pTable = table[personality] || table.introverted;
     const sTable = pTable[sideKey] || pTable.attack;
     return sTable[archetype] || sTable.normal || '';
+  },
+
+  // ── Common-3 派閥加入通知 セリフ引き ──
+  getCommon3Line(category, ctx) {
+    const table = (typeof COMMON3_LINES !== 'undefined' ? COMMON3_LINES : null);
+    if (!table || !category) return '';
+    const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[Math.floor(Math.random() * arr.length)] : '';
+    if (category === 'newcomer') {
+      const fighter = ctx && ctx.fighter;
+      const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'introverted';
+      const arr = table.newcomer[personality] || table.newcomer.introverted;
+      return pickArr(arr);
+    }
+    if (category === 'reaction') {
+      const arr = table.reaction[ctx && ctx.archetypeId] || table.reaction._any;
+      return pickArr(arr);
+    }
+    return '';
   },
 
   // ── F07 v0.4 セリフ引き ──

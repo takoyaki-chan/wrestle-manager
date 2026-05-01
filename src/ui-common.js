@@ -9272,6 +9272,84 @@ function showFactionF02EndlessModal(payload, state, onContinue) {
   _factionF02StageBtnBind(root, onContinue);
 }
 
+// Common-3: 派閥加入通知モーダル（通知のみ・選択肢なし）
+function showFactionCommon3Modal(payload, state, onClose) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionCommon3Modal(payload, state, onClose)); return; }
+
+  const roster = state ? (state.roster || []) : [];
+  const newcomer = roster.find(c => c.id === payload.newcomerId);
+  const leader = roster.find(c => c.id === payload.leaderId);
+  const newcomerName = newcomer ? newcomer.name : (payload.newcomerName || '???');
+  const leaderName = leader ? leader.name : '???';
+  const factionName = String(payload.factionName || '派閥');
+  const archetypeId = payload.archetypeId || null;
+
+  const newcomerUrl = newcomer ? _factionUpperUrl(newcomer.id) : '';
+  const leaderUrl = leader ? _factionUpperUrl(leader.id) : '';
+
+  const newcomerLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getCommon3Line)
+    ? Engine.factions.getCommon3Line('newcomer', { fighter: newcomer })
+    : 'よろしくお願いします。';
+  const reactionLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getCommon3Line)
+    ? Engine.factions.getCommon3Line('reaction', { archetypeId })
+    : 'よろしく。';
+
+  const newcomerPortrait = newcomerUrl
+    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${newcomerUrl}');width:96px;height:120px"></div>`
+    : `<div class="fevt-subject-portrait-wrap" style="width:96px;height:120px"></div>`;
+  const leaderPortrait = leaderUrl
+    ? `<div class="fevt-follower-portrait" style="background-image:url('${leaderUrl}');background-size:cover;background-position:center 20%"></div>`
+    : `<div class="fevt-follower-portrait"></div>`;
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtCommon3Overlay">
+      <div class="fevt-report-card">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">🤝 ${factionName}へ加入</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
+        </div>
+        ${_factionReporterStrip(state, `${newcomerName}が${factionName}に加わったみたいです。`)}
+        <div class="fevt-subject-stage">
+          <div style="display:flex;gap:18px;align-items:flex-end;justify-content:center;margin-bottom:8px">
+            ${newcomerPortrait}
+            ${leaderPortrait}
+          </div>
+          <div class="fevt-subject-name">${newcomerName} → ${factionName}</div>
+          <div class="fevt-subject-divider"></div>
+          <div class="fevt-quote leader">
+            <div class="fevt-quote-speaker">${newcomerName}</div>
+            ${newcomerLine}
+          </div>
+          <div class="fevt-quote leader" style="margin-top:8px">
+            <div class="fevt-quote-speaker">${leaderName}（${factionName}）</div>
+            ${reactionLine}
+          </div>
+        </div>
+        <div class="fevt-decision-tray" style="justify-content:center">
+          <div class="fevt-decision-card" data-choice="OK" style="max-width:200px">
+            <div class="fevt-decision-label">見届ける ✓</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onClose) onClose();
+    });
+  });
+}
+
 // グローバル公開
 if (typeof window !== 'undefined') {
   window.showFactionF01Modal = showFactionF01Modal;
@@ -9287,6 +9365,7 @@ if (typeof window !== 'undefined') {
   window.showFactionF06Modal = showFactionF06Modal;
   window.showFactionF07Modal = showFactionF07Modal;
   window.showFactionF08Modal = showFactionF08Modal;
+  window.showFactionCommon3Modal = showFactionCommon3Modal;
   window.showFactionEventResult = showFactionEventResult;
 }
 

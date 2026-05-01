@@ -7392,6 +7392,9 @@ const App = {
     // relationship-flags-spec-v1.0 §4: 試合発火系の関係性フラグモーダル
     if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
 
+    // Common-3 派閥加入通知（興行後に発生したものも消化）
+    App._drainFactionJoinNotices();
+
     // スナップショット R3モーダル表示（興行後）
     if (G._pendingR3Modal) {
       const r3ModalShow = G._pendingR3Modal;
@@ -7457,6 +7460,24 @@ const App = {
   _pushNewsEvent(ev) {
     const queue = [...(G._newsEvents || []), ev];
     G = { ...G, _newsEvents: queue };
+  },
+
+  // Common-3: 派閥加入通知キューを順次表示
+  _drainFactionJoinNotices() {
+    if (!G || !G._pendingFactionJoinNotices || !G._pendingFactionJoinNotices.length) return;
+    if (typeof showFactionCommon3Modal !== 'function') {
+      G = { ...G, _pendingFactionJoinNotices: [] };
+      return;
+    }
+    const queue = [...G._pendingFactionJoinNotices];
+    const { _pendingFactionJoinNotices: _, ...rest } = G;
+    G = rest;
+    const next = () => {
+      const head = queue.shift();
+      if (!head) return;
+      showFactionCommon3Modal(head, G, next);
+    };
+    next();
   },
 
   // 業界ニュースキューに追加（毎週の新聞画面・業界ニュース欄に流れる）
@@ -7640,6 +7661,8 @@ const App = {
     App._refreshTicker();
     // relationship-flags-spec-v1.0 §4: 関係性フラグモーダルを順次 popup に流す
     if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
+    // Common-3 派閥加入通知を順次表示
+    App._drainFactionJoinNotices();
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
