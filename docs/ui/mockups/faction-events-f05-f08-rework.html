@@ -529,10 +529,9 @@
   </div>
 
   <div class="annotation">
-    F07 v2.1 改訂: spec §9.7 / factions.js 実装に厳密準拠。<br>
-    実際の効果は <strong>trust／ロッカー士気／dictatorTag・authoritativeTag といった「内政メーター」だけ</strong>が動く。
-    「メインカードに優先起用する」「プロモ枠を回す」のような<strong>カード編成上の縛りは現時点では実装されていない</strong>（v2 の旧記述は私の誤推測でした）。<br>
-    <strong>拡張案（運営に直接縛りを入れる）は別セッションで仕様策定・検証予定 → MEMORY.md に登録済み。</strong>
+    F07 v2.2 改訂（2026-05-02）: spec §9.7 / factions.js 実装に厳密準拠。<br>
+    DEMAND_ABSTRACT（権威要求）の効果は <strong>trust／ロッカー士気／dictatorTag・authoritativeTag といった「内政メーター」</strong>。<br>
+    <strong>DEMAND_MAIN（メインカード要求）の A 選択は、6 興行の縛り</strong>が入るよう拡張済み。期間中、各興行のメインに当該派閥メンバーが 1 名以上含まれていればメンバー trust +1、含まれていなければリーダー trust -2 が興行精算時に発火し、興行編成画面に「残り N/6 興行」のバナーが表示される（specs/faction-system-spec-v0.1.md §9.7 参照）。
   </div>
 </div>
 

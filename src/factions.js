@@ -3515,10 +3515,11 @@ Engine.factions = {
         // 派閥メンバー trust +3〜+5、メインカード提案フラグ立て（Phase C で消化）
         const d = ri(3, 5);
         s = this._applyTrustToMembers(s, memberIds(), d);
-        s = { ...s, _pendingF07Directive: { factionId, type: 'DEMAND_MAIN', expiresAfterShows: 1 } };
+        const showsTotal = cfg.f07DemandMainShows || 6;
+        s = { ...s, _pendingF07Directive: { factionId, type: 'DEMAND_MAIN', remainingShows: showsTotal, totalShows: showsTotal } };
         impactSummary.push({ label: `${factionName} メンバー trust`, delta: `+${d}` });
-        impactSummary.push({ label: '次回興行メイン提案', delta: `${factionName} 推奨枠` });
-        resultText = `${leaderName}の声を受け止め、次の興行のメインカードに${factionName}を推す方針を伝えた。`;
+        impactSummary.push({ label: 'メインカード推薦期間', delta: `${showsTotal}興行` });
+        resultText = `${leaderName}の声を受け止め、向こう${showsTotal}興行のメインカードに${factionName}を推す方針を伝えた。`;
       } else if (choiceId === 'B') {
         // 黙認: リーダー trust -3〜-5、非メンバー trust +2
         const d = -ri(3, 5);

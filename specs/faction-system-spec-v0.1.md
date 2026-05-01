@@ -578,6 +578,15 @@ MQ加算は一切しない。
 | B: 釘を刺す | リーダー trust **-8〜-12**、リーダー→社長忠誠感揺らぎ（次契約交渉で態度硬化の伏線）、非メンバー trust **+2〜+3**、authoritativeTag 継続 |
 | C: 別の幹部を立てる | リーダー trust **-5〜-8**、別幹部 trust **+5〜+8**、**派閥内緊張**（F05発火条件確率+）、**authoritativeTag 除去** |
 
+**DEMAND_MAIN incident の A 選択（メインカード縛り 6 興行・2026-05-02 拡張）:**
+- DEMAND_MAIN incident（メインカード要求）で A「次の興行のメインに組み入れる」を選んだ場合、`_pendingF07Directive: { factionId, type:'DEMAND_MAIN', remainingShows:6, totalShows:6 }` が立つ
+- 各興行の精算時に評価:
+  - メイン枠に当該派閥メンバーが 1 名以上含まれる → メンバー全員 trust +1
+  - 含まれない → リーダー trust **-2**（約束反故）
+- 評価のたび `remainingShows` を -1 し、0 で directive 解除
+- 興行画面のバナーに「残り N/6 興行」と現状表示（緑：✓含まれる、橙：⚠含まれない）
+- 設定: `FACTION_CONFIG.f07DemandMainShows = 6`
+
 **独裁タグ解除条件**:
 - F07で B を **4回累積** 🔧 成功
 - F03で継承発動（世代交代でリセット）

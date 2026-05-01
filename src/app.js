@@ -5738,9 +5738,9 @@ const App = {
       s = rest;
     }
 
-    // ── Phase C: F07 DEMAND_MAIN ディレクティブ消化 ──
-    // メインスロットに当該派閥メンバーが入っていれば成功（メンバー trust +1）、
-    // 入っていなければ約束反故（リーダー trust -2）。1 興行で消化、expiresAfterShows 制御は将来用。
+    // ── Phase C: F07 DEMAND_MAIN ディレクティブ消化（6興行縛り）──
+    // 各興行ごとに評価: メインに当該派閥メンバーが入っていれば members trust +1、
+    // 入っていなければ leader trust -2。remainingShows をデクリメント、0 で解除。
     if (s._pendingF07Directive && s._pendingF07Directive.type === 'DEMAND_MAIN') {
       const dir = s._pendingF07Directive;
       const fac = (s.factions || []).find(f => f.id === dir.factionId);
@@ -5757,14 +5757,21 @@ const App = {
         }
         if (containsFactionMember && Engine.factions._applyTrustToMembers) {
           s = Engine.factions._applyTrustToMembers(s, fac.memberIds, 1);
-          if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN fulfilled: ${fac.name} member appeared in main`);
+          if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN fulfilled (this show): ${fac.name} member appeared in main`);
         } else if (Engine.factions._applyTrustToMembers && fac.leaderId) {
           s = Engine.factions._applyTrustToMembers(s, [fac.leaderId], -2);
-          if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN unfulfilled: ${fac.name} leader trust -2`);
+          if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN unfulfilled (this show): ${fac.name} leader trust -2`);
         }
       }
-      const { _pendingF07Directive: _, ...restF07 } = s;
-      s = restF07;
+      // remainingShows をデクリメント、0 で解除
+      const remaining = (dir.remainingShows != null ? dir.remainingShows : 1) - 1;
+      if (remaining > 0) {
+        s = { ...s, _pendingF07Directive: { ...dir, remainingShows: remaining } };
+      } else {
+        const { _pendingF07Directive: _, ...restF07 } = s;
+        s = restF07;
+        if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN directive expired`);
+      }
     }
 
     // ── Phase B: F09 派閥対抗戦 — sweep ボーナス適用 + Ending モーダル予約 + pending クリア ──

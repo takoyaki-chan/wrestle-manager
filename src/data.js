@@ -1502,6 +1502,7 @@ const FACTION_CONFIG = {
   f07DemandMoneyCooldown: 48,      // DEMAND_MONEY 個別 CD
   f07PostRebukeQuiet: 24,          // B 4 回累積 authoritativeTag 剥がし後の quiet 期間
   f07DemandMoneyMultiplier: 1.10,  // DEMAND_MONEY A 給与改定倍率（Phase D 実装）
+  f07DemandMainShows: 6,           // DEMAND_MAIN A: メインカード縛り期間（興行回数 = 約6週）
   f07ArchetypeBias: {
     AUTHORITY: 10, COMBAT: 5, HEEL: 5, BOND: 0, MERIT: 0, FACE: 0,
   },
