@@ -698,11 +698,13 @@ Brawler:{strike:30,throw:25,submission:5,aerial:5,ground:20,rollup:5}
 // ║  SECTION 3: ENGINE CONFIG (v4.1b tuneB)                  ║
 // ╚══════════════════════════════════════════════════════════╝
 const MAX_T = 16;
+// v5.2 ダメージカーブ再調整 (2026-05-01): Opening の dmg 20+ 連発を抑制し
+// 起承転結を回復。mult 0.90/1.05/1.20/1.40 → 0.60/0.85/1.05/1.30
 const PHASES = [
-  {name:'Opening',min:1,max:4,mult:0.9,sCh:20,counterBonus:0},
-  {name:'Mid',min:5,max:8,mult:1.05,sCh:40,counterBonus:3},
-  {name:'End',min:9,max:12,mult:1.2,sCh:55,counterBonus:5},
-  {name:'Climax',min:13,max:20,mult:1.4,sCh:70,counterBonus:8}
+  {name:'Opening',min:1,max:4,mult:0.60,sCh:20,counterBonus:0},
+  {name:'Mid',min:5,max:8,mult:0.85,sCh:40,counterBonus:3},
+  {name:'End',min:9,max:12,mult:1.05,sCh:55,counterBonus:5},
+  {name:'Climax',min:13,max:20,mult:1.30,sCh:70,counterBonus:8}
 ];
 const ENG = {
   hpBase: 100, hpScale: 1.80,
