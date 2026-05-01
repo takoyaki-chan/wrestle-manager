@@ -1493,6 +1493,27 @@ const FACTION_CONFIG = {
   // §4.3 F06 強制和解（2択）
   forceCloseDelayWeeks: 20,
   forceCloseHostilityDecayOnA: -30,
+
+  // ── Phase B: F07 v0.4 共通フレーム化（spec: faction-f07-variation-spec-v0.1 v0.4 §7.1）──
+  f07TeamCooldown: 12,             // チーム全体 F07 CD（週）
+  f07FactionCooldown: 36,          // 派閥個別 F07 CD（週）
+  f07RecentIncidentKeep: 2,        // 直近 N 件の incidentType を連続出現禁止対象に保持
+  f07DemandSubCooldown: 32,        // 要求型サブ CD（DEMAND_* 全般）
+  f07DemandMoneyCooldown: 48,      // DEMAND_MONEY 個別 CD
+  f07PostRebukeQuiet: 24,          // B 4 回累積 authoritativeTag 剥がし後の quiet 期間
+  f07DemandMoneyMultiplier: 1.10,  // DEMAND_MONEY A 給与改定倍率（Phase D 実装）
+  f07ArchetypeBias: {
+    AUTHORITY: 10, COMBAT: 5, HEEL: 5, BOND: 0, MERIT: 0, FACE: 0,
+  },
+  // アーキタイプ × incidentType 抽選マトリクス（合計おおむね 100）
+  f07IncidentMatrix: {
+    AUTHORITY: { DEMAND_MAIN: 10, DEMAND_MONEY: 8, DEMAND_ABSTRACT: 12, OBSERVE_RIVAL_HEAT: 18, OBSERVE_ABSENCE: 14, INCIDENT_BOUNDARY: 16, INCIDENT_BONDING: 12 },
+    BOND:      { DEMAND_MONEY: 12, DEMAND_RECOGNITION: 10, OBSERVE_ABSENCE: 16, INCIDENT_BOUNDARY: 18, INCIDENT_BONDING: 24 },
+    MERIT:     { DEMAND_MAIN: 14, DEMAND_RECOGNITION: 18, OBSERVE_RIVAL_HEAT: 12, OBSERVE_ABSENCE: 14, OBSERVE_INTERNAL_RANK: 22, INCIDENT_BOUNDARY: 12 },
+    HEEL:      { DEMAND_MAIN: 12, OBSERVE_RIVAL_HEAT: 22, OBSERVE_ABSENCE: 16, OBSERVE_FAN_PRESSURE: 12, INCIDENT_BOUNDARY: 18, INCIDENT_BONDING: 10, INCIDENT_HEEL_PROVOKE: 10 },
+    FACE:      { DEMAND_MONEY: 10, DEMAND_RECOGNITION: 12, OBSERVE_ABSENCE: 16, OBSERVE_FAN_PRESSURE: 22, INCIDENT_BOUNDARY: 14, INCIDENT_BONDING: 16 },
+    COMBAT:    { DEMAND_MAIN: 14, OBSERVE_RIVAL_HEAT: 22, OBSERVE_ABSENCE: 14, OBSERVE_TRAINING_HARD: 18, INCIDENT_BOUNDARY: 16, INCIDENT_BONDING: 6 },
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1625,6 +1646,204 @@ const FACTION_F02_LINES = {
       cool:       '……やる',
       delinquent: '…やるしか、ねえ',
       seductive:  '…やるしかないの',
+    },
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// F07 v0.4 派閥動向セリフテーブル
+// 引き方: Engine.factions.getF07Line({ category, incidentType, choice, personality })
+//   personality: bold / introverted / carefree / earnest / emotional / shy
+//                （getPersonalityType の戻り値）
+//   - leaderDemand: 入口モーダル本文のリーダー直接セリフ（要求型のみ）
+//   - coachReport:  入口モーダルのコーチ報告ナレーション（観察型・インシデント型）
+//   - resultLeader: 結果モーダルのリーダー反応セリフ
+//   - resultTarget: 結果モーダルの対象選手反応（観察・インシデント型）
+// 段階投入: DEMAND_MAIN / OBSERVE_RIVAL_HEAT / INCIDENT_BOUNDARY をフル品質、
+//          残り 9 種は性格無視のプレースホルダ。
+// ─────────────────────────────────────────────────────────────────────────────
+const F07_LINES = {
+  leaderDemand: {
+    DEMAND_MAIN: {
+      bold:        ['社長、次の興行のメイン、うちに任せてもらえませんか。実力で示します。'],
+      introverted: ['…社長、次のメイン、うちで挑ませてもらえませんか。'],
+      carefree:    ['社長〜、次のメイン、うちでいきましょうよ。盛り上げますって。'],
+      earnest:     ['社長、お願いがあります。次の興行のメイン、私たちにやらせてください。'],
+      emotional:   ['社長、頼みます。メイン、うちに回してください。今の私たちなら必ず応えます。'],
+      shy:         ['…社長、あの、次のメイン…うちに、お願いできませんか。'],
+    },
+    DEMAND_MONEY: {
+      bold:        ['社長、うちのメンバーの待遇、もう一度見直してもらえませんか。'],
+      introverted: ['…社長、待遇のことで相談があります。うちのメンバーのことです。'],
+      carefree:    ['社長〜、お給料の話なんですけど、ちょっとだけ上げてもらえませんか?'],
+      earnest:     ['社長、図々しいお願いですが、うちのメンバーの待遇を見直していただけませんか。'],
+      emotional:   ['社長、お願いします。うちのメンバー、もっと正当に評価されてもいいはずです。'],
+      shy:         ['…社長、その、待遇の件で…一度、聞いてもらえますか。'],
+    },
+    DEMAND_ABSTRACT: {
+      bold:        ['社長、うちのメンバーのこと、もう少しだけ大事にしてもらえませんか。'],
+      introverted: ['…社長、うちのメンバーを、ちゃんと見てもらえるとありがたいです。'],
+      carefree:    ['社長〜、うちの子たちのこと、忘れないでくださいね。'],
+      earnest:     ['社長、お願いがあります。うちのメンバーのこと、気にかけてもらえないでしょうか。'],
+      emotional:   ['社長、頼みます。うちのメンバー、もっと大切に扱ってください。'],
+      shy:         ['…社長、その、うちのメンバーのこと、お願いします。'],
+    },
+    DEMAND_RECOGNITION: {
+      bold:        ['社長、うちの貢献、ちゃんと評価してもらえてますか。確認させてください。'],
+      introverted: ['…社長、うちの仕事、見てもらえてますか。'],
+      carefree:    ['社長〜、うちらの頑張り、たまには褒めてくれてもいいんですよ?'],
+      earnest:     ['社長、私たちの貢献、もし届いていれば、一言いただけませんか。'],
+      emotional:   ['社長、うちのメンバーのやってきたこと、ちゃんと見てください。'],
+      shy:         ['…社長、その、うちらのこと、見てくれてますか…?'],
+    },
+  },
+  coachReport: {
+    OBSERVE_RIVAL_HEAT: [
+      '{leaderName}が{targetName}に当たりが強いんです。練習場でも、控室でも。',
+      'コーチから報告が。{leaderName}が{targetName}を露骨に避けてる。派閥外の選手にだけ、なんですよ。',
+      '{leaderName}の言葉、{targetName}には冷たい。気のせいじゃないと思います。',
+    ],
+    OBSERVE_ABSENCE: [
+      '{leaderName}の練習出席が落ちています。{factionName}全体に伝染しかけてる。',
+    ],
+    OBSERVE_INTERNAL_RANK: [
+      '{factionName}の中で、序列の話が出ています。OVR の上下が露骨に意識されてる。',
+    ],
+    OBSERVE_FAN_PRESSURE: [
+      '{leaderName}、最近少し疲れて見えます。客席の期待が、重くのしかかってるみたいで。',
+    ],
+    OBSERVE_TRAINING_HARD: [
+      '{leaderName}が{factionName}を追い込みすぎています。怪我のリスクが高い。',
+    ],
+    INCIDENT_BOUNDARY: [
+      'ロッカールーム、{factionName}が固まって陣取ってます。{targetName}が居場所をなくしかけてる。',
+      '{factionName}と派閥外の間に、目に見えない壁ができてます。{targetName}が困ってました。',
+      '{leaderName}たちのテーブル、誰も近づけない雰囲気で。{targetName}が遠巻きにしてました。',
+    ],
+    INCIDENT_BONDING: [
+      '{factionName}だけで打ち上げに行ったみたいです。誘われなかった子、ちょっと寂しそうで。',
+    ],
+    INCIDENT_HEEL_PROVOKE: [
+      '{leaderName}、試合外でも観客を煽ってます。客席はざわついてました。',
+    ],
+  },
+  resultLeader: {
+    DEMAND_MAIN: {
+      A: {
+        bold:        ['ありがとうございます。期待に応えます。'],
+        introverted: ['…ありがとうございます。やります。'],
+        carefree:    ['やった、社長ありがとう! メイン張りますね!'],
+        earnest:     ['本当にありがとうございます。必ず応えます。'],
+        emotional:   ['社長…ありがとうございます。応えてみせます。'],
+        shy:         ['…はい、ありがとうございます。'],
+      },
+      B: {
+        bold:        ['…そうですか。わかりました。'],
+        introverted: ['…はい、わかりました。'],
+        carefree:    ['えぇ〜、まあ、わかりましたけど〜。'],
+        earnest:     ['…はい、承知しました。'],
+        emotional:   ['…そうですか。次の機会に、また。'],
+        shy:         ['…はい…わかりました。'],
+      },
+      C: {
+        bold:        ['…そういうことですか。心遣いはありがたく。'],
+        introverted: ['…そうですね。ありがとうございます。'],
+        carefree:    ['ふぅん、そっちですか〜。まあいいですけど。'],
+        earnest:     ['…ありがとうございます。気にかけてくださって。'],
+        emotional:   ['…そうですね。社長の判断、信じます。'],
+        shy:         ['…はい、ありがとうございます。'],
+      },
+    },
+    DEMAND_MONEY: {
+      A: { _any: ['ありがとうございます。みんなにも伝えます。'] },
+      B: { _any: ['…はい、承知しました。'] },
+      C: { _any: ['…ありがとうございます。'] },
+    },
+    DEMAND_ABSTRACT: {
+      A: { _any: ['ありがとうございます。'] },
+      B: { _any: ['…はい、わかりました。'] },
+      C: { _any: ['…そうですか。'] },
+    },
+    DEMAND_RECOGNITION: {
+      A: { _any: ['ありがとうございます。'] },
+      B: { _any: ['…はい、わかりました。'] },
+      C: { _any: ['…ありがとうございます。'] },
+    },
+    OBSERVE_RIVAL_HEAT: {
+      A: {
+        bold:        ['…わかりました。気をつけます。'],
+        introverted: ['…はい、すみません。'],
+        carefree:    ['あー、はい、注意します〜。'],
+        earnest:     ['…申し訳ありません。改めます。'],
+        emotional:   ['…そうですね、悪かったです。'],
+        shy:         ['…はい…ごめんなさい。'],
+      },
+      B: { _any: ['（黙ったまま、視線をそらした）'] },
+      C: {
+        bold:        ['…ご配慮、ありがとうございます。'],
+        introverted: ['…はい、ありがとうございます。'],
+        carefree:    ['そっち経由ですか〜。了解です。'],
+        earnest:     ['…ありがとうございます。気をつけます。'],
+        emotional:   ['…そうですね。すみません。'],
+        shy:         ['…はい…ありがとう、ございます。'],
+      },
+    },
+    OBSERVE_ABSENCE: {
+      A: { _any: ['…申し訳ありません。明日から出ます。'] },
+      B: { _any: ['…ありがとうございます。'] },
+      C: { _any: ['…はい、わかりました。'] },
+    },
+    OBSERVE_INTERNAL_RANK: {
+      A: { _any: ['…はい、わかりました。'] },
+      B: { _any: ['…ありがとうございます。'] },
+      C: { _any: ['…はい、承知しました。'] },
+    },
+    OBSERVE_FAN_PRESSURE: {
+      A: { _any: ['…ありがとうございます。少し休ませてもらいます。'] },
+      B: { _any: ['…はい、大丈夫です。'] },
+      C: { _any: ['…ありがとうございます。'] },
+    },
+    OBSERVE_TRAINING_HARD: {
+      A: { _any: ['…わかりました。少し抑えます。'] },
+      B: { _any: ['…ありがとうございます。'] },
+      C: { _any: ['…はい、調整します。'] },
+    },
+    INCIDENT_BOUNDARY: {
+      A: {
+        bold:        ['…そうですね、注意します。'],
+        introverted: ['…はい、すみません。'],
+        carefree:    ['あ、そっか〜、気をつけまーす。'],
+        earnest:     ['…申し訳ありません、配慮が足りませんでした。'],
+        emotional:   ['…そうですね、悪かったです。'],
+        shy:         ['…はい…ごめんなさい。'],
+      },
+      B: {
+        bold:        ['…ありがとうございます。'],
+        introverted: ['…はい。'],
+        carefree:    ['ありがとうございま〜す。'],
+        earnest:     ['…ありがとうございます。'],
+        emotional:   ['…ありがとうございます。'],
+        shy:         ['…はい…。'],
+      },
+    },
+    INCIDENT_BONDING: {
+      A: { _any: ['…はい、気をつけます。'] },
+      B: { _any: ['…ありがとうございます。'] },
+    },
+    INCIDENT_HEEL_PROVOKE: {
+      A: { _any: ['…はい、わかりました。'] },
+      B: { _any: ['…ありがとうございます。'] },
+    },
+  },
+  resultTarget: {
+    OBSERVE_RIVAL_HEAT: {
+      A: ['{targetName}は、ほっと息を吐いた。'],
+      B: ['{targetName}は、何も言わずに視線を落とした。'],
+      C: ['{targetName}は、小さく頷いた。'],
+    },
+    INCIDENT_BOUNDARY: {
+      A: ['{targetName}の表情が、わずかに緩んだ。'],
+      B: ['{targetName}は、視線を逸らした。'],
     },
   },
 };

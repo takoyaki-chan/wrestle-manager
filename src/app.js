@@ -8862,7 +8862,33 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        showFactionEventResult(result.resultText, finalizeAudio);
+        // v0.4 新シグネチャ: incidentType × choice × personality でリーダー反応セリフを構成
+        const leader = (G.roster || []).find(c => c.id === payload.leaderId);
+        const target = payload.incidentPayload && payload.incidentPayload.targetId
+          ? (G.roster || []).find(c => c.id === payload.incidentPayload.targetId)
+          : null;
+        const vars = {
+          factionName: payload.factionName || '',
+          leaderName: payload.leaderName || (leader ? leader.name : ''),
+          targetName: target ? target.name : (payload.incidentPayload && payload.incidentPayload.targetName) || '',
+        };
+        const charLine = (Engine.factions.getF07Line)
+          ? Engine.factions.getF07Line('resultLeader', { incidentType: payload.incidentType, choice: choiceId, fighter: leader, vars })
+          : '';
+        const targetLine = (Engine.factions.getF07Line)
+          ? Engine.factions.getF07Line('resultTarget', { incidentType: payload.incidentType, choice: choiceId, vars })
+          : '';
+        const fullResultText = targetLine ? `${result.resultText}\n${targetLine}` : result.resultText;
+        showFactionEventResult({
+          eventId: 'F07',
+          category: '派閥動向',
+          resultText: fullResultText,
+          charId: payload.leaderId,
+          charName: leader ? leader.name : payload.leaderName,
+          charLine,
+          impactSummary: result.impactSummary || [],
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
       });
     } else if (eventId === 'F08') {
       _factionAudioOpen(eventId);

@@ -1,8 +1,8 @@
-# F07 リーダー動向 — アーキタイプマトリクス仕様 v0.4
+# F07 リーダー動向 — アーキタイプマトリクス仕様 v0.5
 
 **ファイル**：`specs/faction-f07-variation-spec-v0.1.md`
-**最終更新**：2026-05-01（v0.4 共通フレーム化＋アーキタイプマトリクス対応）
-**実装状況**：DRAFT（未実装・Keisuke 確認済み構造）
+**最終更新**：2026-05-01（v0.5 Phase B 実装完了）
+**実装状況**：Phase A（共通フレーム化＋抽選）/ Phase B（セリフ段階投入＋UI 分岐＋結果モーダル新シグネチャ）実装完了。Phase C（DEMAND_MAIN 興行連動）/ Phase D（DEMAND_MONEY 給与改定 economy 接続）は未実装
 **親仕様**：
 - `specs/faction-system-spec-v0.1.md` §9.7
 - `specs/faction-archetype-rework-spec-v0.1.md` v0.2
@@ -14,7 +14,8 @@
 - v0.1 — 要求 7 種バリエーション案
 - v0.2 — 要求型を絞り、観察型／インシデント型併設
 - v0.3 — リーダー像をプレイヤー敬意ベースに再定義、メカニズム具体化
-- **v0.4（2026-05-01）** — F07 を **全アーキタイプ共通フレーム** に再定義。AUTHORITY 専用イベントから「派閥動向イベント」へ拡張。チーム全体での発動レート抑制を導入。アーキタイプ × incidentType マトリクスで分岐
+- v0.4（2026-05-01）— F07 を **全アーキタイプ共通フレーム** に再定義。AUTHORITY 専用イベントから「派閥動向イベント」へ拡張。チーム全体での発動レート抑制を導入。アーキタイプ × incidentType マトリクスで分岐
+- **v0.5（2026-05-01）** — Phase A/B 実装完了。FACTION_CONFIG 9 項目追加、checkF07Conditions を v0.4 共通フレームに再構成、applyF07Choice を 12 種 incidentType × choice 分岐へ拡張、F07_LINES セリフテーブル新設（DEMAND_MAIN/OBSERVE_RIVAL_HEAT/INCIDENT_BOUNDARY フル品質、残り 9 種プレースホルダ）、showFactionF07Modal 刷新、showFactionEventResult 新シグネチャ（後方互換維持）。auto-sim 200 シーズン × seed 42 で violations 0/Game overs 0
 
 ---
 

@@ -7913,12 +7913,56 @@ function showFactionHiatusModal(payload, state, onContinue) {
   if (btn) btn.addEventListener('click', finish);
 }
 
-// F01/F02/F03 共通: 結果画面（選択結果を適用後のナレーション表示）
-function showFactionEventResult(resultText, onClose) {
+// F01-F08 共通: 結果画面（選択結果を適用後のナレーション表示）
+// 旧シグネチャ: showFactionEventResult(resultText:string, onClose)
+// 新シグネチャ (v0.4): showFactionEventResult({eventId, category, resultText, charId, charLine, impactSummary, weekLabel}, onClose)
+//   - 第1引数が string の場合は旧表示を継続（後方互換）
+function showFactionEventResult(arg, onClose) {
+  // 後方互換
+  if (typeof arg === 'string' || arg == null) {
+    const body = `
+      <div class="faction-event-title">🎭 結果</div>
+      <div class="faction-event-narration">${arg || '……。'}</div>
+      <button class="btn faction-event-next">閉じる ✓</button>
+    `;
+    _factionModalBox(body);
+    const box = document.getElementById('careBox');
+    if (box) {
+      const btn = box.querySelector('.faction-event-next');
+      if (btn) btn.addEventListener('click', () => {
+        _factionCloseModal();
+        if (onClose) onClose();
+      });
+    }
+    return;
+  }
+  // 新シグネチャ
+  const opts = arg || {};
+  const eventId = String(opts.eventId || '');
+  const titleText = opts.category ? `🎭 ${opts.category}` : '🎭 結果';
+  const meta = opts.weekLabel ? `<div class="faction-event-meta" style="color:#888;font-size:11px;margin-bottom:6px">${opts.weekLabel}</div>` : '';
+  const narration = opts.resultText ? `<div class="faction-event-narration">${opts.resultText}</div>` : '';
+  let charBlock = '';
+  if (opts.charLine) {
+    const speakerName = (opts.charName ? `<div class="faction-event-speaker" style="font-weight:bold;margin-bottom:2px">${opts.charName}</div>` : '');
+    charBlock = `<div class="faction-event-charline" style="margin:8px 0;padding:8px 10px;background:rgba(255,255,255,0.04);border-left:2px solid #c8a05a">${speakerName}${opts.charLine}</div>`;
+  }
+  let impactBlock = '';
+  if (Array.isArray(opts.impactSummary) && opts.impactSummary.length) {
+    const rows = opts.impactSummary.map(item => `
+      <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted rgba(255,255,255,0.1)">
+        <span style="color:#bbb">${item.label || ''}</span>
+        <span style="color:#e0c98a;font-weight:bold">${item.delta != null ? item.delta : ''}</span>
+      </div>`).join('');
+    impactBlock = `<div class="faction-event-impact" style="margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.2);font-size:12px"><div style="color:#888;font-size:11px;margin-bottom:4px">影響</div>${rows}</div>`;
+  }
   const body = `
-    <div class="faction-event-title">🎭 結果</div>
-    <div class="faction-event-narration">${resultText || '……。'}</div>
-    <button class="btn faction-event-next">閉じる ✓</button>
+    <div class="faction-event-title">${titleText}${eventId ? ` <span style="color:#888;font-size:11px">[${eventId}]</span>` : ''}</div>
+    ${meta}
+    ${narration}
+    ${charBlock}
+    ${impactBlock}
+    <button class="btn faction-event-next" style="margin-top:12px">閉じる ✓</button>
   `;
   _factionModalBox(body);
   const box = document.getElementById('careBox');
@@ -8190,10 +8234,93 @@ function showFactionF06Modal(payload, state, onChoice) {
   });
 }
 
-// F07: リーダーの要求（Office 応接室型 / 3択：認める / 釘刺し / 別幹部）
-// モック faction-events-f05-f08-rework.html §F07:
-//   trio 配置（follower + leader + follower）＋リーダーセリフ＋具体的数値ヒント。
-//   「dictator」→「独裁化」と日本語で明示。
+// F07 v0.4: 派閥動向（Office 応接室型 / modalShape choice2 or choice3）
+// trio 配置は維持し、incidentType により本文・選択肢を分岐。
+// 互換: incidentType 未指定の場合は旧 DEMAND_ABSTRACT 3 択挙動を表示。
+const _F07_INCIDENT_META = {
+  DEMAND_MAIN: { titleEmoji: '👑', titleText: 'メインカード相談', shape: 'choice3', source: 'leader',
+    choices: [
+      { id: 'A', label: '相談に乗る',          hint: '次回興行のメイン提案で、{factionName}メンバーを優先候補にする。<br>派閥メンバー信頼 <strong>+3〜+5</strong>。' },
+      { id: 'B', label: '受け流す',            hint: 'リーダーの要求は黙認する。<br>リーダー信頼 <strong>-3〜-5</strong>／派閥外信頼 <strong>+2</strong>。' },
+      { id: 'C', label: '別ルートで応える',    hint: '要求自体には応じず、メンバーへの個別ケアで返す。<br>派閥メンバー信頼 <strong>+2</strong>／rebuke カウント進行。' },
+    ],
+  },
+  DEMAND_MONEY: { titleEmoji: '💰', titleText: '待遇相談', shape: 'choice3', source: 'leader',
+    choices: [
+      { id: 'A', label: '次オフで反映する',    hint: '次オフ契約交渉で +10% 反映予定（Phase D 実装）。<br>派閥メンバー信頼 <strong>+3〜+5</strong>。' },
+      { id: 'B', label: '受け流す',            hint: '待遇相談は黙認する。<br>リーダー信頼 <strong>-3〜-4</strong>。' },
+      { id: 'C', label: '個別ケアで応える',    hint: 'メンバー一人一人に目を配る。<br>派閥メンバー信頼 <strong>+1</strong>／rebuke カウント進行。' },
+    ],
+  },
+  DEMAND_ABSTRACT: { titleEmoji: '👑', titleText: 'リーダーの要求', shape: 'choice3', source: 'leader',
+    choices: [
+      { id: 'A', label: '権威を認める',        hint: 'リーダー信頼 <strong>+5</strong>／非メンバー信頼 <strong>-3〜-6</strong>／ロッカー士気 <strong>-3〜-5</strong>。<br>権威型なら「独裁化」する。' },
+      { id: 'B', label: '釘を刺す',            hint: 'リーダー信頼 <strong>-8〜-12</strong>／非メンバー信頼 <strong>+2〜+3</strong>。<br>4 回累積で権威型資格剥がし。' },
+      { id: 'C', label: '別の幹部を立てる',    hint: 'リーダー信頼 <strong>-5〜-8</strong>／別幹部信頼 <strong>+5〜+8</strong>。<br>権威型資格は剥がれるが、派閥内に新たな対立軸。' },
+    ],
+  },
+  DEMAND_RECOGNITION: { titleEmoji: '🎤', titleText: '評価要求', shape: 'choice3', source: 'leader',
+    choices: [
+      { id: 'A', label: '貢献を認める',        hint: '派閥メンバー信頼 <strong>+3〜+5</strong>／ロッカー士気 <strong>+1〜2</strong>。' },
+      { id: 'B', label: '受け流す',            hint: 'リーダー信頼 <strong>-2〜-4</strong>。' },
+      { id: 'C', label: '個別の声かけで応える', hint: '派閥メンバー信頼 <strong>+1</strong>／rebuke カウント進行。' },
+    ],
+  },
+  OBSERVE_RIVAL_HEAT: { titleEmoji: '⚠️', titleText: '派閥外への当たり', shape: 'choice3', source: 'coach',
+    choices: [
+      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-3</strong>／対象信頼 <strong>+5</strong>。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+2</strong>／対象信頼 <strong>-5</strong>／ロッカー士気 <strong>-3</strong>。' },
+      { id: 'C', label: '別ルートで諭す',      hint: 'リーダー信頼 <strong>-1</strong>／対象信頼 <strong>+3</strong>／rebuke カウント進行。' },
+    ],
+  },
+  OBSERVE_ABSENCE: { titleEmoji: '🌙', titleText: '練習サボり連鎖', shape: 'choice3', source: 'coach',
+    choices: [
+      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-5</strong>／派閥メンバー信頼 <strong>-2</strong>／ロッカー士気 <strong>+3</strong>。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+3</strong>／ロッカー士気 <strong>-4</strong>。' },
+      { id: 'C', label: '別ルートで諭す',      hint: 'コーチ経由で個別ケア／rebuke カウント進行。' },
+    ],
+  },
+  OBSERVE_INTERNAL_RANK: { titleEmoji: '📊', titleText: '内部格付け争い', shape: 'choice3', source: 'coach',
+    choices: [
+      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-2</strong>／中位メンバー信頼 <strong>+3</strong>。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+1</strong>／ロッカー士気 <strong>-2</strong>。' },
+      { id: 'C', label: '別ルートで諭す',      hint: '派閥内 bond 微増／rebuke カウント進行。' },
+    ],
+  },
+  OBSERVE_FAN_PRESSURE: { titleEmoji: '🎭', titleText: 'ファン期待の重圧', shape: 'choice3', source: 'coach',
+    choices: [
+      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-2</strong>／コンディション <strong>+5</strong>。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+2</strong>／コンディション <strong>-3</strong>。' },
+      { id: 'C', label: '別ルートで諭す',      hint: 'コンディション <strong>+3</strong>／rebuke カウント進行。' },
+    ],
+  },
+  OBSERVE_TRAINING_HARD: { titleEmoji: '💪', titleText: '過度な追い込み', shape: 'choice3', source: 'coach',
+    choices: [
+      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-3</strong>／メンバー condition <strong>+3</strong>／勢い <strong>-2</strong>。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+2</strong>／勢い <strong>+3</strong>／怪我リスク上昇。' },
+      { id: 'C', label: '別ルートで諭す',      hint: 'コーチ経由で調整／rebuke カウント進行。' },
+    ],
+  },
+  INCIDENT_BOUNDARY: { titleEmoji: '🧱', titleText: '派閥の壁', shape: 'choice2', source: 'coach',
+    choices: [
+      { id: 'A', label: '注意する',            hint: 'リーダー信頼 <strong>-2</strong>／対象信頼 <strong>+3</strong>／rebuke カウント進行。' },
+      { id: 'B', label: '流す',                hint: '派閥メンバー信頼 <strong>+2</strong>／対象信頼 <strong>-3</strong>。' },
+    ],
+  },
+  INCIDENT_BONDING: { titleEmoji: '🤝', titleText: '派閥内結束', shape: 'choice2', source: 'coach',
+    choices: [
+      { id: 'A', label: 'たしなめる',          hint: '派閥メンバー信頼 <strong>-1</strong>／派閥外信頼 <strong>+2</strong>。' },
+      { id: 'B', label: '見守る',              hint: '派閥メンバー信頼 <strong>+3</strong>／派閥外信頼 <strong>-2</strong>。' },
+    ],
+  },
+  INCIDENT_HEEL_PROVOKE: { titleEmoji: '🔥', titleText: '観客挑発エピソード', shape: 'choice2', source: 'coach',
+    choices: [
+      { id: 'A', label: '注意する',            hint: 'リーダー信頼 <strong>-3</strong>／次回興行集客一時微減／rebuke カウント進行。' },
+      { id: 'B', label: '流す',                hint: '次回興行集客一時+。' },
+    ],
+  },
+};
+
 function showFactionF07Modal(payload, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF07Modal(payload, state, onChoice)); return; }
 
@@ -8205,7 +8332,6 @@ function showFactionF07Modal(payload, state, onChoice) {
   const faction = (state && state.factions || []).find(f => f.id === payload.factionId);
   const memberIds = faction ? (faction.memberIds || []) : [];
   const memberCount = memberIds.length;
-  // フォロワー 2 名: リーダー除き OVR 降順から
   const followers = memberIds
     .filter(id => id !== payload.leaderId)
     .map(id => roster.find(c => c.id === id))
@@ -8214,12 +8340,35 @@ function showFactionF07Modal(payload, state, onChoice) {
   const fol1 = followers[0] || null;
   const fol2 = followers[1] || null;
 
-  const leaderMeta = leader
-    ? `AGE ${leader.age || '—'} ・ OVR ${Engine.util.ov(leader)} ・ FACTION LEADER ・ ${String(payload.factionName || '')}（${memberCount}名）`
-    : `FACTION LEADER ・ ${String(payload.factionName || '')}`;
+  const incidentType = payload.incidentType || 'DEMAND_ABSTRACT';
+  const meta = _F07_INCIDENT_META[incidentType] || _F07_INCIDENT_META.DEMAND_ABSTRACT;
+  const factionName = String(payload.factionName || '');
 
-  const line = _factionLine(FACTION_F07_LEADER_LINES, leader,
-    Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA71));
+  // 対象選手情報（観察・インシデント型）
+  const targetId = payload.incidentPayload && payload.incidentPayload.targetId;
+  const target = targetId ? roster.find(c => c.id === targetId) : null;
+  const targetName = target ? target.name : (payload.incidentPayload && payload.incidentPayload.targetName) || '';
+
+  const vars = { factionName, leaderName, leaderSurname, targetName };
+
+  // セリフ取得
+  let leaderQuote = '';
+  let coachLine = '';
+  if (meta.source === 'leader') {
+    leaderQuote = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getF07Line)
+      ? Engine.factions.getF07Line('leaderDemand', { incidentType, fighter: leader, vars })
+      : '';
+    if (!leaderQuote) leaderQuote = '社長、お願いがあります。';
+  } else {
+    coachLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getF07Line)
+      ? Engine.factions.getF07Line('coachReport', { incidentType, vars })
+      : '';
+    if (!coachLine) coachLine = `${leaderSurname}と${factionName}の動きについて報告があります。`;
+  }
+
+  const leaderMeta = leader
+    ? `AGE ${leader.age || '—'} ・ OVR ${Engine.util.ov(leader)} ・ FACTION LEADER ・ ${factionName}（${memberCount}名）`
+    : `FACTION LEADER ・ ${factionName}`;
 
   const leftFol = fol1
     ? `<div class="fevt-follower-portrait" style="background-image:url('${_factionUpperUrl(fol1.id)}');background-size:cover;background-position:center 20%"></div>`
@@ -8231,14 +8380,35 @@ function showFactionF07Modal(payload, state, onChoice) {
     ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}')"></div>`
     : `<div class="fevt-subject-portrait-wrap"></div>`;
 
+  // observation-note と quote の出し分け
+  const reporterText = meta.source === 'leader'
+    ? `${leaderSurname || 'リーダー'}さんが社長室に向かいました。`
+    : (coachLine || `${factionName}の動向について報告があります。`);
+
+  const observationNote = meta.source === 'leader'
+    ? `<div class="fevt-observation-note"><span class="marker">${String(leaderSurname)}</span>と${factionName}の動きについて、社長室での相談です。</div>`
+    : `<div class="fevt-observation-note">${coachLine}</div>`;
+
+  const leaderQuoteHtml = meta.source === 'leader'
+    ? `<div class="fevt-quote leader"><div class="fevt-quote-speaker">${String(leaderName)}</div>${String(leaderQuote)}</div>`
+    : '';
+
+  const decisionCardsHtml = meta.choices.map(c => `
+    <div class="fevt-decision-card" data-choice="${c.id}">
+      <div class="fevt-decision-letter">${c.id}</div>
+      <div class="fevt-decision-label">${c.label}</div>
+      <div class="fevt-decision-hint">${c.hint.split('{factionName}').join(factionName).split('{targetName}').join(targetName || '対象')}</div>
+    </div>
+  `).join('');
+
   const html = `
     <div class="fevt-overlay-office" id="fevtF07Overlay">
       <div class="fevt-report-card f07">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">👑 リーダーの要求</div>
+          <div class="fevt-report-title">${meta.titleEmoji} ${meta.titleText}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, (leaderSurname || 'リーダー') + 'さんが社長室に向かいました。後ろに数名ついてます。多分、いつもの話です')}
+        ${_factionReporterStrip(state, reporterText)}
         <div class="fevt-subject-stage">
           <div class="fevt-subject-trio">
             ${leftFol}
@@ -8248,45 +8418,12 @@ function showFactionF07Modal(payload, state, onChoice) {
           <div class="fevt-subject-name">${String(leaderName)}</div>
           <div class="fevt-subject-org">${leaderMeta}</div>
           <div class="fevt-subject-divider"></div>
-          <div class="fevt-observation-note">
-            <span class="marker">${String(leaderSurname)}</span>は、自分の派閥の地位を当然のものと見なしている。<br>
-            要求の内容は明示されない——「うちの子らを大事にしろ」という、抽象的な圧。<br>
-            後ろに控える2人の存在が、要求の重さを物語る。
-          </div>
-          <div class="fevt-quote leader">
-            <div class="fevt-quote-speaker">${String(leaderName)}</div>
-            ${String(line || '……うちの連中のこと、もう少し考えてほしい。')}
-          </div>
+          ${observationNote}
+          ${leaderQuoteHtml}
         </div>
-        <div class="fevt-decision-prompt">この要求を、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-prompt">この件、社長としてどう扱いますか？</div>
         <div class="fevt-decision-tray">
-          <div class="fevt-decision-card" data-choice="A">
-            <div class="fevt-decision-letter">A</div>
-            <div class="fevt-decision-label">権威を認める</div>
-            <div class="fevt-decision-hint">
-              リーダーの威圧に折れて、派閥の発言力を黙認する。<br>
-              リーダー信頼 <strong>+5</strong>／非メンバー信頼 <strong>-3〜-6</strong>／ロッカー士気 <strong>-3〜-5</strong>。<br>
-              <strong style="color:#7a1414">この派閥が「独裁化」する</strong>（派閥内の緊張が増し、F07 が再び起きやすくなる）
-            </div>
-          </div>
-          <div class="fevt-decision-card" data-choice="B">
-            <div class="fevt-decision-letter">B</div>
-            <div class="fevt-decision-label">釘を刺す</div>
-            <div class="fevt-decision-hint">
-              「特別扱いはしない、ここは皆の団体だ」と返す。<br>
-              リーダー信頼 <strong>-8〜-12</strong>／非メンバー信頼 <strong>+2〜+3</strong>。<br>
-              4回累積でこの派閥の「権威型」資格そのものを剥がせる
-            </div>
-          </div>
-          <div class="fevt-decision-card" data-choice="C">
-            <div class="fevt-decision-letter">C</div>
-            <div class="fevt-decision-label">別の幹部を立てる</div>
-            <div class="fevt-decision-hint">
-              リーダーを通さず、副リーダー格を表に出す。<br>
-              リーダー信頼 <strong>-5〜-8</strong>／別幹部信頼 <strong>+5〜+8</strong>。<br>
-              「権威型」資格は剥がれるが、派閥内に新たな対立軸が生まれる
-            </div>
-          </div>
+          ${decisionCardsHtml}
         </div>
       </div>
     </div>

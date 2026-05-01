@@ -1190,9 +1190,9 @@ Engine.factions = {
       return { eventId: 'F05', payload: f05 };
     }
 
-    // 5) F07（リーダーの横暴、確率 40%）
-    const f07 = this.checkF07Conditions(state);
-    if (f07.eligible && Engine.rng.float(rng) < cfg.eventProbability.F07) {
+    // 5) F07（派閥動向、v0.4 共通フレーム化: チーム全体 12 週 CD で総量抑制）
+    const f07 = this.checkF07Conditions(state, rng);
+    if (f07.eligible) {
       return { eventId: 'F07', payload: f07 };
     }
 
@@ -2097,29 +2097,163 @@ Engine.factions = {
     return state;
   },
 
-  // ── §9.7 F07 リーダーの横暴 ──
-  // 「authoritativeTag 付・リーダー trust 60+」
-  checkF07Conditions(state) {
+  // ── §9.7 F07 派閥動向（v0.4 共通フレーム化）──
+  // チーム全体 12 週 CD + 派閥個別 36 週 CD + テンションスコア重み付き抽選 + アーキタイプ × incidentType マトリクス
+  checkF07Conditions(state, rng) {
     const cfg = FACTION_CONFIG;
     const factions = state.factions || [];
     const roster = state.roster || [];
+    const now = this._absWeek(state);
+
+    // チーム全体 CD（12 週）
+    const teamUntil = state._f07TeamCooldownUntil || 0;
+    if (now < teamUntil) return { eligible: false };
+
+    // 候補派閥抽出
+    const candidates = [];
     for (const f of factions) {
-      if (!f.authoritativeTag) continue;
+      if (!f.archetypeId) continue;
       const leader = roster.find(c => c.id === f.leaderId);
       if (!leader) continue;
       const leaderTrust = leader.trust != null ? leader.trust : 50;
       if (leaderTrust < cfg.f07TrustMinThreshold) continue;
-      const key = this._f07Key(f.id);
-      if (!this._isCooldownReady(state, key, cfg.eventCooldown.F07)) continue;
+      // 派閥個別 CD（36 週）
+      const recents = f._f07RecentIncidents || [];
+      const lastWeek = recents.length ? recents[recents.length - 1].week : -Infinity;
+      if (now - lastWeek < cfg.f07FactionCooldown) continue;
+      // B 4 回累積後の post-rebuke quiet（24 週）
+      const postRebukeUntil = f._f07PostRebukeQuietUntil || 0;
+      if (now < postRebukeUntil) continue;
+
+      const bias = (cfg.f07ArchetypeBias[f.archetypeId] != null) ? cfg.f07ArchetypeBias[f.archetypeId] : 0;
+      const weeksSince = (lastWeek === -Infinity) ? 200 : (now - lastWeek);
+      const tensionScore = Math.max(1, leaderTrust * 0.3 + weeksSince * 0.5 + bias);
+      candidates.push({ faction: f, leader, tensionScore });
+    }
+
+    if (!candidates.length) return { eligible: false };
+
+    // テンションスコア重み付き抽選
+    const totalScore = candidates.reduce((s, c) => s + c.tensionScore, 0);
+    let pick = Engine.rng.float(rng) * totalScore;
+    let chosen = candidates[0];
+    for (const c of candidates) {
+      pick -= c.tensionScore;
+      if (pick <= 0) { chosen = c; break; }
+    }
+
+    const faction = chosen.faction;
+    const leader = chosen.leader;
+    const recents = faction._f07RecentIncidents || [];
+    const recentTypes = recents.slice(-cfg.f07RecentIncidentKeep).map(r => r.incidentType);
+    const demandQuietUntil = faction._f07DemandQuietUntil || 0;
+    const demandMoneyQuietUntil = faction._f07DemandMoneyQuietUntil || 0;
+
+    // incidentType 抽選（マトリクスから連続出現禁止 + サブ CD を除外）
+    const matrix = cfg.f07IncidentMatrix[faction.archetypeId] || {};
+    const entries = Object.entries(matrix).filter(([type, _]) => {
+      if (recentTypes.includes(type)) return false;
+      if (type.startsWith('DEMAND_') && now < demandQuietUntil) return false;
+      if (type === 'DEMAND_MONEY' && now < demandMoneyQuietUntil) return false;
+      return true;
+    });
+    if (!entries.length) return { eligible: false };
+    const matrixTotal = entries.reduce((s, [_, w]) => s + w, 0);
+    let mp = Engine.rng.float(rng) * matrixTotal;
+    let incidentType = entries[0][0];
+    for (const [type, w] of entries) {
+      mp -= w;
+      if (mp <= 0) { incidentType = type; break; }
+    }
+
+    const modalShape = incidentType.startsWith('INCIDENT_') ? 'choice2' : 'choice3';
+
+    // incidentPayload: 簡易版対象選定
+    const incidentPayload = this._selectF07IncidentPayload(state, faction, incidentType, rng);
+
+    return {
+      eligible: true,
+      factionId: faction.id,
+      factionName: faction.name,
+      leaderId: faction.leaderId,
+      leaderName: leader.name,
+      archetypeId: faction.archetypeId,
+      incidentType,
+      incidentPayload,
+      modalShape,
+    };
+  },
+
+  // ── F07 v0.4 incidentPayload 簡易対象選定 ──
+  _selectF07IncidentPayload(state, faction, incidentType, rng) {
+    const roster = state.roster || [];
+    const memberSet = new Set(faction.memberIds);
+    const nonMembers = roster.filter(c => !memberSet.has(c.id));
+    const rels = state.relationships || {};
+    const leaderId = faction.leaderId;
+
+    const pickRivalryHigh = () => {
+      if (!nonMembers.length) return null;
+      const scored = nonMembers.map(c => {
+        const rec = rels[`${leaderId}>${c.id}`];
+        const r = rec ? (rec.rivalry || 0) : 0;
+        return { c, score: r + Engine.rng.float(rng) * 20 };
+      }).sort((a, b) => b.score - a.score);
+      return scored[0] ? scored[0].c : null;
+    };
+
+    if (incidentType === 'OBSERVE_RIVAL_HEAT' || incidentType === 'INCIDENT_BOUNDARY') {
+      const t = pickRivalryHigh();
+      return t ? { targetId: t.id, targetName: t.name } : {};
+    }
+    if (incidentType === 'OBSERVE_INTERNAL_RANK') {
+      // 派閥内 OVR 上位 2 名（リーダー除く）
+      const members = faction.memberIds
+        .filter(id => id !== leaderId)
+        .map(id => roster.find(c => c.id === id))
+        .filter(Boolean)
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
+        .slice(0, 2);
       return {
-        eligible: true,
-        factionId: f.id,
-        factionName: f.name,
-        leaderId: f.leaderId,
-        leaderName: leader.name,
+        targetIds: members.map(c => c.id),
+        targetNames: members.map(c => c.name),
       };
     }
-    return { eligible: false };
+    if (incidentType === 'OBSERVE_FAN_PRESSURE') {
+      // リーダー本人
+      return { targetId: leaderId };
+    }
+    if (incidentType === 'OBSERVE_TRAINING_HARD') {
+      // 派閥メンバー全員（リーダー除く）
+      const ids = faction.memberIds.filter(id => id !== leaderId);
+      return { targetIds: ids };
+    }
+    return {};
+  },
+
+  // F07 v0.4: 直近 incidentType 履歴 + チーム CD + 派閥 CD を更新
+  _markF07Trigger(state, factionId, incidentType) {
+    const cfg = FACTION_CONFIG;
+    const now = this._absWeek(state);
+    const newTeamCD = now + cfg.f07TeamCooldown;
+    const updatedFactions = (state.factions || []).map(f => {
+      if (f.id !== factionId) return f;
+      const recents = (f._f07RecentIncidents || []).slice();
+      recents.push({ incidentType, week: now });
+      const trimmed = recents.slice(-Math.max(cfg.f07RecentIncidentKeep, 4));
+      const next = { ...f, _f07RecentIncidents: trimmed };
+      if (incidentType.startsWith('DEMAND_')) {
+        next._f07DemandQuietUntil = now + cfg.f07DemandSubCooldown;
+      }
+      if (incidentType === 'DEMAND_MONEY') {
+        next._f07DemandMoneyQuietUntil = now + cfg.f07DemandMoneyCooldown;
+      }
+      return next;
+    });
+    // 旧来のキー単位 CD も互換維持で marker は残す
+    let s = { ...state, factions: updatedFactions, _f07TeamCooldownUntil: newTeamCD };
+    s = this._markCooldown(s, this._f07Key(factionId));
+    return s;
   },
 
   // ── §9.8 F08 対立ヒートアップ ──
@@ -2292,66 +2426,320 @@ Engine.factions = {
     return { state: s, resultText: `社長は手を出さなかった。和解の兆しは、時間に委ねられた。` };
   },
 
-  // ── §9.7 F07 リーダーの横暴 選択適用 ──
-  // A: 認める / B: 釘刺し / C: 別幹部
+  // ── §9.7 F07 派閥動向 選択適用（v0.4 共通フレーム化）──
+  // incidentType × choice で分岐。impactSummary を返り値に含めて結果モーダル新シグネチャに連携
   applyF07Choice(state, payload, choiceId, rng) {
-    const { factionId, factionName, leaderId, leaderName } = payload;
-    let s = state;
-    const cdKey = this._f07Key(factionId);
-    s = this._markCooldown(s, cdKey);
+    const { factionId, factionName, leaderId, leaderName, archetypeId, incidentType, incidentPayload } = payload;
     const cfg = FACTION_CONFIG;
+    const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+
+    let s = state;
+    // チーム CD + 派閥 CD + 直近履歴を更新
+    s = this._markF07Trigger(s, factionId, incidentType || 'LEGACY');
 
     const roster = s.roster || [];
     const faction = (s.factions || []).find(f => f.id === factionId);
-    if (!faction) return { state: s, resultText: '' };
+    if (!faction) return { state: s, resultText: '', impactSummary: [] };
 
-    if (choiceId === 'A') {
-      // 認める: リーダー trust +5、非メンバー trust -3〜-6、士気 -3〜-5、dictatorTag
-      s = this._applyTrustToMembers(s, [leaderId], 5);
-      const nonMembers = roster.filter(c => !faction.memberIds.includes(c.id)).map(c => c.id);
-      const d = -(3 + Math.floor(Engine.rng.float(rng) * 4));
-      s = this._applyTrustToMembers(s, nonMembers, d);
-      s = this._applyLockerRoomMorale(s, -(3 + Math.floor(Engine.rng.float(rng) * 3)));
-      s = { ...s, factions: s.factions.map(f => f.id === factionId ? { ...f, dictatorTag: true } : f) };
-      return { state: s, resultText: `${leaderName}の権威は強まった。${factionName}の外にいる者たちは、一歩引いて見ている。` };
-    }
-    if (choiceId === 'B') {
-      // 釘刺し: リーダー trust -8〜-12、authoritativeTag 維持、非メンバー trust +2〜+3、rebukeCount++
-      const dLeader = -(8 + Math.floor(Engine.rng.float(rng) * 5));
-      s = this._applyTrustToMembers(s, [leaderId], dLeader);
-      const nonMembers = roster.filter(c => !faction.memberIds.includes(c.id)).map(c => c.id);
-      const dn = 2 + Math.floor(Engine.rng.float(rng) * 2);
-      s = this._applyTrustToMembers(s, nonMembers, dn);
-      s = {
-        ...s,
-        factions: s.factions.map(f => {
+    // 互換: incidentType 未設定の場合は旧 3 択挙動（DEMAND_ABSTRACT 相当）にマッピング
+    const itype = incidentType || 'DEMAND_ABSTRACT';
+
+    const nonMemberIds = () => roster.filter(c => !faction.memberIds.includes(c.id)).map(c => c.id);
+    const memberIds = () => faction.memberIds.slice();
+    const memberIdsExLeader = () => faction.memberIds.filter(id => id !== leaderId);
+
+    // rebukeCount を進める共通処理（4 累積で AUTHORITY のみ authoritativeTag 剥がし + 24 週 quiet）
+    const advanceRebuke = (st) => {
+      let inner = st;
+      inner = {
+        ...inner,
+        factions: inner.factions.map(f => {
           if (f.id !== factionId) return f;
           const newCount = (f.f07RebukeCount || 0) + 1;
           if (newCount >= cfg.f07RebukeMaxCount) {
-            if (typeof console !== 'undefined') console.log(`[WM Faction] F07 authoritativeTag removed: ${factionName} (rebuke count reached)`);
-            return { ...f, f07RebukeCount: 0, authoritativeTag: false };
+            if (typeof console !== 'undefined') console.log(`[WM Faction] F07 rebuke threshold reached: ${factionName} (archetype=${f.archetypeId})`);
+            const next = { ...f, f07RebukeCount: 0 };
+            if (f.archetypeId === 'AUTHORITY') next.authoritativeTag = false;
+            next._f07PostRebukeQuietUntil = this._absWeek(inner) + cfg.f07PostRebukeQuiet;
+            return next;
           }
           return { ...f, f07RebukeCount: newCount };
         }),
       };
-      return { state: s, resultText: `${leaderName}に正面から釘を刺した。一瞬の沈黙、それから硬い返事。空気は張り詰めた。` };
-    }
-    // 'C' 別幹部
-    // 幹部 = リーダー除く OVR 上位2名、その中で別の1人
-    const execs = faction.memberIds
-      .filter(id => id !== leaderId)
-      .map(id => roster.find(c => c.id === id))
-      .filter(Boolean)
-      .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
-      .slice(0, 2);
-    const altExec = execs[0];
-    s = this._applyTrustToMembers(s, [leaderId], -(5 + Math.floor(Engine.rng.float(rng) * 4)));
-    if (altExec) s = this._applyTrustToMembers(s, [altExec.id], 5 + Math.floor(Engine.rng.float(rng) * 4));
-    s = {
-      ...s,
-      factions: s.factions.map(f => f.id === factionId ? { ...f, authoritativeTag: false, tensionTag: true, f07RebukeCount: 0 } : f),
+      return inner;
     };
-    return { state: s, resultText: `${leaderName}ではなく別の幹部を重用した。${factionName}の中に、新たな対立軸がくすぶっている。` };
+
+    const impactSummary = [];
+    let resultText = '';
+
+    // ─── 要求型 ───────────────────────────────────────
+    if (itype === 'DEMAND_MAIN') {
+      if (choiceId === 'A') {
+        // 派閥メンバー trust +3〜+5、メインカード提案フラグ立て（Phase C で消化）
+        const d = ri(3, 5);
+        s = this._applyTrustToMembers(s, memberIds(), d);
+        s = { ...s, _pendingF07Directive: { factionId, type: 'DEMAND_MAIN', expiresAfterShows: 1 } };
+        impactSummary.push({ label: `${factionName} メンバー trust`, delta: `+${d}` });
+        impactSummary.push({ label: '次回興行メイン提案', delta: `${factionName} 推奨枠` });
+        resultText = `${leaderName}の声を受け止め、次の興行のメインカードに${factionName}を推す方針を伝えた。`;
+      } else if (choiceId === 'B') {
+        // 黙認: リーダー trust -3〜-5、非メンバー trust +2
+        const d = -ri(3, 5);
+        s = this._applyTrustToMembers(s, [leaderId], d);
+        s = this._applyTrustToMembers(s, nonMemberIds(), 2);
+        impactSummary.push({ label: `${leaderName} trust`, delta: `${d}` });
+        impactSummary.push({ label: '派閥外 trust', delta: '+2' });
+        resultText = `${leaderName}の要求は受け流した。${factionName}の中に、薄い不満が漂う。`;
+      } else {
+        // C 別ルートで応える: 個別ケア
+        s = this._applyTrustToMembers(s, [leaderId], -1);
+        s = this._applyTrustToMembers(s, memberIdsExLeader(), 2);
+        s = advanceRebuke(s);
+        impactSummary.push({ label: `${leaderName} trust`, delta: '-1' });
+        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+2' });
+        resultText = `${leaderName}の要求そのものには応じず、${factionName}のメンバー一人一人に目を配った。`;
+      }
+    } else if (itype === 'DEMAND_MONEY') {
+      // Phase D まで給与改定は実装せず、trust 変動 + スタブ表記のみ
+      if (choiceId === 'A') {
+        const d = ri(3, 5);
+        s = this._applyTrustToMembers(s, memberIds(), d);
+        impactSummary.push({ label: `${factionName} メンバー trust`, delta: `+${d}` });
+        impactSummary.push({ label: '給与改定', delta: '次オフ契約交渉で +10% 反映予定' });
+        resultText = `${leaderName}と給与の話を交わし、次のオフに反映することを約束した。`;
+      } else if (choiceId === 'B') {
+        const d = -ri(3, 4);
+        s = this._applyTrustToMembers(s, [leaderId], d);
+        impactSummary.push({ label: `${leaderName} trust`, delta: `${d}` });
+        resultText = `${leaderName}の待遇相談は受け流した。`;
+      } else {
+        s = this._applyTrustToMembers(s, [leaderId], -1);
+        s = this._applyTrustToMembers(s, memberIdsExLeader(), 1);
+        s = advanceRebuke(s);
+        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+1' });
+        resultText = `給与の話には触れず、${factionName}のメンバーへの個別ケアで応えた。`;
+      }
+    } else if (itype === 'DEMAND_ABSTRACT') {
+      // 旧 v2.1 と同等。AUTHORITY 限定で dictatorTag 付与
+      if (choiceId === 'A') {
+        s = this._applyTrustToMembers(s, [leaderId], 5);
+        const dn = -ri(3, 6);
+        s = this._applyTrustToMembers(s, nonMemberIds(), dn);
+        s = this._applyLockerRoomMorale(s, -ri(3, 5));
+        if (faction.archetypeId === 'AUTHORITY') {
+          s = { ...s, factions: s.factions.map(f => f.id === factionId ? { ...f, dictatorTag: true } : f) };
+          impactSummary.push({ label: `${factionName}`, delta: 'dictatorTag 付与' });
+        }
+        impactSummary.push({ label: `${leaderName} trust`, delta: '+5' });
+        impactSummary.push({ label: '派閥外 trust', delta: `${dn}` });
+        resultText = `${leaderName}の権威を認めた。${factionName}の外にいる者たちは、一歩引いて見ている。`;
+      } else if (choiceId === 'B') {
+        const dl = -ri(8, 12);
+        s = this._applyTrustToMembers(s, [leaderId], dl);
+        s = this._applyTrustToMembers(s, nonMemberIds(), ri(2, 3));
+        s = advanceRebuke(s);
+        impactSummary.push({ label: `${leaderName} trust`, delta: `${dl}` });
+        resultText = `${leaderName}に正面から釘を刺した。一瞬の沈黙、それから硬い返事。`;
+      } else {
+        // C 別幹部
+        const altExec = memberIdsExLeader()
+          .map(id => roster.find(c => c.id === id))
+          .filter(Boolean)
+          .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
+        s = this._applyTrustToMembers(s, [leaderId], -ri(5, 8));
+        if (altExec) s = this._applyTrustToMembers(s, [altExec.id], ri(5, 8));
+        s = {
+          ...s,
+          factions: s.factions.map(f => f.id === factionId ? { ...f, authoritativeTag: false, tensionTag: true, f07RebukeCount: 0 } : f),
+        };
+        impactSummary.push({ label: `${leaderName} trust`, delta: '−' });
+        if (altExec) impactSummary.push({ label: `${altExec.name} trust`, delta: '+' });
+        resultText = `${leaderName}ではなく別の幹部を重用した。${factionName}の中に、新たな対立軸がくすぶっている。`;
+      }
+    } else if (itype === 'DEMAND_RECOGNITION') {
+      if (choiceId === 'A') {
+        const d = ri(3, 5);
+        s = this._applyTrustToMembers(s, memberIds(), d);
+        s = this._applyLockerRoomMorale(s, ri(1, 2));
+        impactSummary.push({ label: `${factionName} メンバー trust`, delta: `+${d}` });
+        impactSummary.push({ label: 'ロッカー士気', delta: '+1〜2' });
+        resultText = `${factionName}の貢献を、興行の場で言葉にして認めた。`;
+      } else if (choiceId === 'B') {
+        s = this._applyTrustToMembers(s, [leaderId], -ri(2, 4));
+        impactSummary.push({ label: `${leaderName} trust`, delta: '−' });
+        resultText = `${leaderName}の評価要求は受け流した。`;
+      } else {
+        s = advanceRebuke(s);
+        s = this._applyTrustToMembers(s, memberIdsExLeader(), 1);
+        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+1' });
+        resultText = `表立った評価ではなく、個別の声かけで応えた。`;
+      }
+    }
+    // ─── 観察型 ───────────────────────────────────────
+    else if (itype === 'OBSERVE_RIVAL_HEAT') {
+      const tName = (incidentPayload && incidentPayload.targetName) || '派閥外の選手';
+      const tId = incidentPayload && incidentPayload.targetId;
+      if (choiceId === 'A') {
+        s = this._applyTrustToMembers(s, [leaderId], -3);
+        if (tId) s = this._applyTrustToMembers(s, [tId], 5);
+        impactSummary.push({ label: `${leaderName} trust`, delta: '-3' });
+        impactSummary.push({ label: `${tName} trust`, delta: '+5' });
+        resultText = `${leaderName}に直接話をつけた。${tName}は救われた表情を見せた。`;
+      } else if (choiceId === 'B') {
+        s = this._applyTrustToMembers(s, [leaderId], 2);
+        if (tId) s = this._applyTrustToMembers(s, [tId], -5);
+        s = this._applyLockerRoomMorale(s, -3);
+        impactSummary.push({ label: `${tName} trust`, delta: '-5' });
+        impactSummary.push({ label: 'ロッカー士気', delta: '-3' });
+        resultText = `黙認した。${tName}は言葉を呑み込んだ。`;
+      } else {
+        s = this._applyTrustToMembers(s, [leaderId], -1);
+        if (tId) s = this._applyTrustToMembers(s, [tId], 3);
+        s = advanceRebuke(s);
+        impactSummary.push({ label: `${tName} trust`, delta: '+3' });
+        resultText = `${leaderName}本人ではなく、${tName}の側に静かに声をかけた。`;
+      }
+    } else if (itype === 'OBSERVE_ABSENCE') {
+      if (choiceId === 'A') {
+        s = this._applyTrustToMembers(s, [leaderId], -5);
+        s = this._applyTrustToMembers(s, memberIdsExLeader(), -2);
+        s = this._applyLockerRoomMorale(s, 3);
+        impactSummary.push({ label: `${leaderName} trust`, delta: '-5' });
+        impactSummary.push({ label: 'ロッカー士気', delta: '+3' });
+        resultText = `${leaderName}に練習出席を求めた。${factionName}内には緊張が走った。`;
+      } else if (choiceId === 'B') {
+        s = this._applyTrustToMembers(s, [leaderId], 3);
+        s = this._applyLockerRoomMorale(s, -4);
+        impactSummary.push({ label: 'ロッカー士気', delta: '-4' });
+        resultText = `黙認した。${factionName}の自由は守られたが、道場の空気は淀んだ。`;
+      } else {
+        s = this._applyTrustToMembers(s, [leaderId], -2);
+        s = this._applyTrustToMembers(s, nonMemberIds().slice(0, 4), 1);
+        s = advanceRebuke(s);
+        impactSummary.push({ label: 'コーチ経由ケア', delta: '実施' });
+        resultText = `コーチを介して${leaderName}の状態を確かめ、派閥外への目配りも忘れなかった。`;
+      }
+    } else if (itype === 'OBSERVE_INTERNAL_RANK') {
+      if (choiceId === 'A') {
+        s = this._applyTrustToMembers(s, [leaderId], -2);
+        const targets = (incidentPayload && incidentPayload.targetIds) || memberIdsExLeader().slice(0, 2);
+        s = this._applyTrustToMembers(s, targets, 3);
+        impactSummary.push({ label: '中位メンバー trust', delta: '+3' });
+        resultText = `${factionName}の格付け争いに介入した。`;
+      } else if (choiceId === 'B') {
+        s = this._applyTrustToMembers(s, [leaderId], 1);
+        s = this._applyLockerRoomMorale(s, -2);
+        impactSummary.push({ label: 'ロッカー士気', delta: '-2' });
+        resultText = `${factionName}内の格付け争いはそのまま続いている。`;
+      } else {
+        s = advanceRebuke(s);
+        impactSummary.push({ label: `${factionName} 結束`, delta: '微増' });
+        resultText = `表立った介入はせず、個別に話を聞いた。`;
+      }
+    } else if (itype === 'OBSERVE_FAN_PRESSURE') {
+      if (choiceId === 'A') {
+        s = this._applyTrustToMembers(s, [leaderId], -2);
+        // condition 回復は character.condition に直接当てる
+        const newRoster = (s.roster || []).map(c => c.id === leaderId
+          ? { ...c, condition: Engine.util.clamp((c.condition || 50) + 5, 0, 100) }
+          : c);
+        s = { ...s, roster: newRoster };
+        impactSummary.push({ label: `${leaderName} condition`, delta: '+5' });
+        resultText = `${leaderName}を一度休ませる判断をした。`;
+      } else if (choiceId === 'B') {
+        s = this._applyTrustToMembers(s, [leaderId], 2);
+        const newRoster = (s.roster || []).map(c => c.id === leaderId
+          ? { ...c, condition: Engine.util.clamp((c.condition || 50) - 3, 0, 100) }
+          : c);
+        s = { ...s, roster: newRoster };
+        impactSummary.push({ label: `${leaderName} condition`, delta: '-3' });
+        resultText = `${leaderName}に任せた。プレッシャーは肩にのしかかったまま。`;
+      } else {
+        const newRoster = (s.roster || []).map(c => c.id === leaderId
+          ? { ...c, condition: Engine.util.clamp((c.condition || 50) + 3, 0, 100) }
+          : c);
+        s = { ...s, roster: newRoster };
+        s = advanceRebuke(s);
+        impactSummary.push({ label: `${leaderName} condition`, delta: '+3' });
+        resultText = `直接の指示ではなく、コーチ経由で${leaderName}を支えた。`;
+      }
+    } else if (itype === 'OBSERVE_TRAINING_HARD') {
+      const targets = (incidentPayload && incidentPayload.targetIds) || memberIdsExLeader();
+      if (choiceId === 'A') {
+        s = this._applyTrustToMembers(s, [leaderId], -3);
+        const newRoster = (s.roster || []).map(c => targets.includes(c.id)
+          ? { ...c, condition: Engine.util.clamp((c.condition || 50) + 3, 0, 100) }
+          : c);
+        s = { ...s, roster: newRoster };
+        s = this.applyMomentumChange(s, factionId, -2);
+        impactSummary.push({ label: `${factionName} condition`, delta: '+3' });
+        impactSummary.push({ label: `${factionName} 勢い`, delta: '-2' });
+        resultText = `${leaderName}の追い込みを止めた。${factionName}は一息ついた。`;
+      } else if (choiceId === 'B') {
+        s = this._applyTrustToMembers(s, [leaderId], 2);
+        s = this.applyMomentumChange(s, factionId, 3);
+        impactSummary.push({ label: `${factionName} 勢い`, delta: '+3' });
+        impactSummary.push({ label: '怪我リスク', delta: '上昇' });
+        resultText = `${leaderName}の追い込み練習を黙認した。`;
+      } else {
+        s = this._applyTrustToMembers(s, [leaderId], -1);
+        s = advanceRebuke(s);
+        impactSummary.push({ label: 'コーチ経由調整', delta: '実施' });
+        resultText = `${leaderName}に直接は触れず、コーチを介して練習量を整えた。`;
+      }
+    }
+    // ─── インシデント型（2 択）─────────────────────────
+    else if (itype === 'INCIDENT_BOUNDARY') {
+      const tName = (incidentPayload && incidentPayload.targetName) || '派閥外の選手';
+      const tId = incidentPayload && incidentPayload.targetId;
+      if (choiceId === 'A') {
+        s = this._applyTrustToMembers(s, [leaderId], -2);
+        if (tId) s = this._applyTrustToMembers(s, [tId], 3);
+        s = advanceRebuke(s);
+        impactSummary.push({ label: `${tName} trust`, delta: '+3' });
+        resultText = `${leaderName}に静かに注意した。${tName}の表情がわずかに緩んだ。`;
+      } else {
+        s = this._applyTrustToMembers(s, [leaderId], 1);
+        s = this._applyTrustToMembers(s, memberIds(), 2);
+        if (tId) s = this._applyTrustToMembers(s, [tId], -3);
+        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+2' });
+        impactSummary.push({ label: `${tName} trust`, delta: '-3' });
+        resultText = `流した。${factionName}の壁はそのまま残っている。`;
+      }
+    } else if (itype === 'INCIDENT_BONDING') {
+      if (choiceId === 'A') {
+        s = this._applyTrustToMembers(s, [leaderId], -1);
+        s = this._applyTrustToMembers(s, memberIds(), -1);
+        s = this._applyTrustToMembers(s, nonMemberIds(), 2);
+        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '-1' });
+        impactSummary.push({ label: '派閥外 trust', delta: '+2' });
+        resultText = `${factionName}内の固まりを軽くたしなめた。`;
+      } else {
+        s = this._applyTrustToMembers(s, [leaderId], 2);
+        s = this._applyTrustToMembers(s, memberIds(), 3);
+        s = this._applyTrustToMembers(s, nonMemberIds(), -2);
+        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+3' });
+        impactSummary.push({ label: '派閥外 trust', delta: '-2' });
+        resultText = `${factionName}の結束を見守った。輪の外には少し距離が残った。`;
+      }
+    } else if (itype === 'INCIDENT_HEEL_PROVOKE') {
+      if (choiceId === 'A') {
+        s = this._applyTrustToMembers(s, [leaderId], -3);
+        s = advanceRebuke(s);
+        impactSummary.push({ label: `${leaderName} trust`, delta: '-3' });
+        impactSummary.push({ label: '次回興行集客', delta: '一時微減' });
+        resultText = `${leaderName}の挑発行為に注意した。`;
+      } else {
+        s = this._applyTrustToMembers(s, [leaderId], 1);
+        impactSummary.push({ label: '次回興行集客', delta: '一時+' });
+        resultText = `${leaderName}の挑発を黙って眺めた。客席はざわつきながらも食いついている。`;
+      }
+    } else {
+      // 未対応 incidentType フォールバック
+      resultText = `${leaderName}との一件は、社長の判断で収まった。`;
+    }
+
+    return { state: s, resultText, impactSummary };
   },
 
   // ── §9.8 F08 対立ヒートアップ 選択適用（v2 改訂）──
@@ -3061,5 +3449,55 @@ Engine.factions = {
     const pTable = table[personality] || table.introverted;
     const sTable = pTable[sideKey] || pTable.attack;
     return sTable[archetype] || sTable.normal || '';
+  },
+
+  // ── F07 v0.4 セリフ引き ──
+  // category: 'leaderDemand' | 'coachReport' | 'resultLeader' | 'resultTarget'
+  // ctx: { incidentType, choice?, fighter?, vars? }
+  // F07_LINES は data.js 定義。引けなければ空文字を返す（呼び出し側でフォールバック）。
+  getF07Line(category, ctx) {
+    const table = (typeof F07_LINES !== 'undefined' ? F07_LINES : null);
+    if (!table || !category) return '';
+    const itype = ctx && ctx.incidentType;
+    if (!itype) return '';
+    const fighter = ctx && ctx.fighter;
+    const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'introverted';
+    const subst = (s) => {
+      if (!s || !ctx || !ctx.vars) return s || '';
+      let out = String(s);
+      Object.keys(ctx.vars).forEach(k => {
+        const v = ctx.vars[k] != null ? String(ctx.vars[k]) : '';
+        out = out.split(`{${k}}`).join(v);
+      });
+      return out;
+    };
+    const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[Math.floor(Math.random() * arr.length)] : '';
+
+    if (category === 'leaderDemand') {
+      const t = table.leaderDemand && table.leaderDemand[itype];
+      if (!t) return '';
+      const arr = t[personality] || t.introverted || t._any;
+      return subst(pickArr(arr));
+    }
+    if (category === 'coachReport') {
+      const arr = table.coachReport && table.coachReport[itype];
+      return subst(pickArr(arr));
+    }
+    if (category === 'resultLeader') {
+      const choice = ctx.choice || 'A';
+      const t = table.resultLeader && table.resultLeader[itype];
+      if (!t) return '';
+      const ct = t[choice];
+      if (!ct) return '';
+      const arr = ct[personality] || ct.introverted || ct._any;
+      return subst(pickArr(arr));
+    }
+    if (category === 'resultTarget') {
+      const choice = ctx.choice || 'A';
+      const t = table.resultTarget && table.resultTarget[itype];
+      if (!t) return '';
+      return subst(pickArr(t[choice]));
+    }
+    return '';
   },
 };
