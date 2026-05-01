@@ -8766,6 +8766,7 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderId,
           charName: leader ? leader.name : payload.leaderName,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -8798,6 +8799,7 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderAId,
           charName: leaderA ? leaderA.name : payload.leaderAName,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -8815,6 +8817,7 @@ const App = {
           eventId: 'F02_PEACE',
           category: '抗争沈静化',
           resultText: result.resultText,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -8832,6 +8835,7 @@ const App = {
           eventId: 'F02_IGNITE',
           category: '抗争発火',
           resultText: result.resultText,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -8863,6 +8867,7 @@ const App = {
           resultText: result.resultText,
           charId: payload.winnerId,
           charName: winner ? winner.name : payload.winnerName,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -8880,6 +8885,7 @@ const App = {
           eventId: 'F02_ENDLESS',
           category: '無限抗争',
           resultText: result.resultText,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -8912,6 +8918,7 @@ const App = {
           resultText: result.resultText,
           charId: payload.newLeaderId || null,
           charName: newLeader ? newLeader.name : (payload.newLeaderName || ''),
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -8932,6 +8939,7 @@ const App = {
           resultText: result.resultText,
           charId: payload.targetId,
           charName: target ? target.name : payload.targetName,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -8951,6 +8959,7 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leaderH ? leaderH.name : payload.leaderName,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -8983,6 +8992,7 @@ const App = {
           resultText: result.resultText,
           charId: payload.ringleaderId || null,
           charName: ringleader ? ringleader.name : payload.ringleaderName,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -9003,6 +9013,7 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leader6 ? leader6.name : payload.leaderAName,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
@@ -9061,6 +9072,7 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leader8 ? leader8.name : payload.leaderAName,
+          impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });

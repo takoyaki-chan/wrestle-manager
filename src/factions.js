@@ -1125,6 +1125,11 @@ Engine.factions = {
     return {
       state: { ...state, factions: newFactions },
       resultText: `派閥「${faction.name}」は旗を畳み、活動を一時休止した。`,
+      impactSummary: [
+        { label: `派閥「${faction.name}」`, delta: '活動休止' },
+        { label: 'リーダー離脱見込み', delta: `${payload.estimatedWeeks || 8}週+` },
+        { label: '抗争状態 / 勢い', delta: 'リセット' },
+      ],
     };
   },
 
@@ -1172,12 +1177,16 @@ Engine.factions = {
     const floatR = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
 
     // 勢い: 勝者 +18〜25 / 敗者 -22〜-25
-    s = this.applyMomentumChange(s, facW.id, floatR(18, 25));
-    s = this.applyMomentumChange(s, facL.id, -floatR(22, 25));
+    const mW = floatR(18, 25);
+    const mL = -floatR(22, 25);
+    s = this.applyMomentumChange(s, facW.id, mW);
+    s = this.applyMomentumChange(s, facL.id, mL);
 
     // リーダー信頼 (勝者 +6〜8, 敗者 -3〜-5)
-    s = this._applyTrustToMembers(s, [winnerId], floatR(6, 8));
-    s = this._applyTrustToMembers(s, [loserId], -floatR(3, 5));
+    const tW = floatR(6, 8);
+    const tL = -floatR(3, 5);
+    s = this._applyTrustToMembers(s, [winnerId], tW);
+    s = this._applyTrustToMembers(s, [loserId], tL);
 
     // 求心力 = members→leader bond（勝者 +5〜8 / 敗者 -6〜-9）
     const wMembers = facW.memberIds.filter(id => id !== facW.leaderId);
@@ -1233,9 +1242,22 @@ Engine.factions = {
       console.log(`[WM Faction] F02 resolved: ${facW.name} (winner) vs ${facL.name} (loser)`);
     }
 
+    const impactSummary = [
+      { label: `${facW.name} 勢い`, delta: `+${mW}` },
+      { label: `${facL.name} 勢い`, delta: `${mL}` },
+      { label: `勝者リーダー trust`, delta: `+${tW}` },
+      { label: `敗者リーダー trust`, delta: `${tL}` },
+      { label: `${facW.name} 求心力 (mem→leader bond)`, delta: `+${wBond}` },
+      { label: `${facL.name} 求心力 (mem→leader bond)`, delta: `${lBond}` },
+      { label: `${facW.name} ⇄ ${facL.name} 対立度`, delta: '-40（両方向）' },
+    ];
+    if (bottomMembers.length > 0) {
+      impactSummary.push({ label: `${facL.name} 下位${bottomMembers.length}名 trust`, delta: '低下（離脱リスク）' });
+    }
     return {
       state: s,
       resultText: `「${facW.name}」が「${facL.name}」を下した。リング上で、ようやく決着がついた。`,
+      impactSummary,
     };
   },
 
@@ -1422,7 +1444,19 @@ Engine.factions = {
         s = this._applyLockerRoomMorale(s, moraleEffect.moraleDelta);
       }
       const archLabel = this._archetypeLabel(arch);
-      return { state: s, resultText: `${leaderName}を中心に派閥「${leaderName}組」が旗揚げされた（${archLabel}）。` };
+      const impactSummary = [
+        { label: `${leaderName} trust`, delta: `+${rawTrust}` },
+        { label: '派閥成立', delta: `${leaderName}組（${archLabel}）` },
+      ];
+      if (moraleEffect.bondDelta !== 0) {
+        const sign = moraleEffect.bondDelta > 0 ? '+' : '';
+        impactSummary.push({ label: 'メンバー間 bond', delta: `${sign}${moraleEffect.bondDelta}` });
+      }
+      if (moraleEffect.moraleDelta !== 0) {
+        const sign = moraleEffect.moraleDelta > 0 ? '+' : '';
+        impactSummary.push({ label: 'ロッカー士気', delta: `${sign}${moraleEffect.moraleDelta}` });
+      }
+      return { state: s, resultText: `${leaderName}を中心に派閥「${leaderName}組」が旗揚げされた（${archLabel}）。`, impactSummary };
     }
     if (choiceId === 'B') {
       // 派閥不成立 + リーダー trust -5〜-8 + フォロワー→リーダー bond -5〜-8 + 士気 +1〜+3 + クールダウン12週
@@ -1441,11 +1475,22 @@ Engine.factions = {
           F01_rejected_until: now + cooldownWeeks,
         },
       };
-      return { state: s, resultText: `${leaderName}に釘を刺した。派閥結成の動きは一旦沈静化した。` };
+      const impactSummary = [
+        { label: `${leaderName} trust`, delta: `${rawTrust}` },
+        { label: `フォロワー → ${leaderName} bond`, delta: `${bondDelta}` },
+        { label: 'ロッカー士気', delta: `+${moraleBonus}` },
+        { label: '派閥結成', delta: `12週 CD` },
+      ];
+      return { state: s, resultText: `${leaderName}に釘を刺した。派閥結成の動きは一旦沈静化した。`, impactSummary };
     }
     // 'C' 静観 — 派閥成立だがアーキタイプ専用タグなし（flavor のみ記録）
     s = this.createFaction(s, leaderId, members, { type: 'loyal', flavor: arch });
-    return { state: s, resultText: `${leaderName}を中心とした集まりを静かに見守ることにした。` };
+    const archLabelC = this._archetypeLabel(arch);
+    const impactSummary = [
+      { label: '派閥成立', delta: `${leaderName}組（${archLabelC}）` },
+      { label: '専用タグ', delta: 'なし（静観）' },
+    ];
+    return { state: s, resultText: `${leaderName}を中心とした集まりを静かに見守ることにした。`, impactSummary };
   },
 
   // v0.2: アーキタイプ → createFaction options のタグ変換
@@ -1537,6 +1582,14 @@ Engine.factions = {
       return {
         state: s,
         resultText: `${leaderAName}と${leaderBName}の争いをリングに持ち込む方針を取った。観客はこの火種を見逃さないだろう。`,
+        impactSummary: [
+          { label: `${factionAName} → ${factionBName} 対立度`, delta: `+${h1}` },
+          { label: `${factionBName} → ${factionAName} 対立度`, delta: `+${h2}` },
+          { label: `${factionAName} 勢い`, delta: `+${mA}` },
+          { label: `${factionBName} 勢い`, delta: `+${mB}` },
+          { label: 'ロッカー士気', delta: `${moralePen}` },
+          { label: '次興行', delta: '抗争メイン予約' },
+        ],
       };
     }
     if (choiceId === 'B') {
@@ -1570,7 +1623,17 @@ Engine.factions = {
         deadlineWeek: now + 12,
       });
       s = { ...s, f02MediationWatches: filtered };
-      return { state: s, resultText: `両者を呼び出し、団体のために筋を通させた。火種は残ったが、空気はひとまず収まった。` };
+      return {
+        state: s,
+        resultText: `両者を呼び出し、団体のために筋を通させた。火種は残ったが、空気はひとまず収まった。`,
+        impactSummary: [
+          { label: `${leaderAName} trust`, delta: `${t1}` },
+          { label: `${leaderBName} trust`, delta: `${t2}` },
+          { label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: `+${h1}/+${h2}` },
+          { label: '両派閥 勢い', delta: '0 リセット' },
+          { label: '仲裁監視', delta: '12週' },
+        ],
+      };
     }
     // 'C' 介入しない: 対立度は平均 rivalry を継承、勢いは 0、trust 変動なし
     const inherit = Math.max(0, Math.min(100, Math.round(avgCrossRivalry || 0)));
@@ -1578,7 +1641,10 @@ Engine.factions = {
       s = this.applyHostilityChange(s, A.id, B.id, inherit);
       s = this.applyHostilityChange(s, B.id, A.id, inherit);
     }
-    return { state: s, resultText: `二つの派閥が睨み合う状況を、社長は静かに見届けた。` };
+    const impactSummaryC = inherit > 0
+      ? [{ label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: `+${inherit}（継承）` }]
+      : [{ label: '介入', delta: 'なし' }];
+    return { state: s, resultText: `二つの派閥が睨み合う状況を、社長は静かに見届けた。`, impactSummary: impactSummaryC };
   },
 
   // ── §9.3 F03 結果適用（branch 事前決定済み）──
@@ -1590,7 +1656,14 @@ Engine.factions = {
 
     if (branch === 'dissolution') {
       s = this._dissolveFaction(s, factionId, 'F03_low_ratio');
-      return { state: s, resultText: `派閥「${faction.name}」は、${oldLeaderName}の喪失とともに求心力を失い、消滅した。` };
+      return {
+        state: s,
+        resultText: `派閥「${faction.name}」は、${oldLeaderName}の喪失とともに求心力を失い、消滅した。`,
+        impactSummary: [
+          { label: `派閥「${faction.name}」`, delta: '消滅' },
+          { label: '対立関係', delta: 'すべて解除' },
+        ],
+      };
     }
 
     // succession / turmoil 共通の更新
@@ -1599,7 +1672,13 @@ Engine.factions = {
     if (!successor) {
       // 念のためフォールバック
       s = this._dissolveFaction(s, factionId, 'F03_no_successor');
-      return { state: s, resultText: `派閥「${faction.name}」は後継を得られず消滅した。` };
+      return {
+        state: s,
+        resultText: `派閥「${faction.name}」は後継を得られず消滅した。`,
+        impactSummary: [
+          { label: `派閥「${faction.name}」`, delta: '後継なく消滅' },
+        ],
+      };
     }
 
     const newFactions = s.factions.map(f => {
@@ -1642,6 +1721,12 @@ Engine.factions = {
       return {
         state: s,
         resultText: `派閥は${successor.name}を新たな中心に据えて継承された。動揺はあるが、歯車は回り続ける。`,
+        impactSummary: [
+          { label: '新リーダー', delta: successor.name },
+          { label: 'メンバー trust', delta: `${d}` },
+          { label: `${successor.name} → ${oldLeaderName} bond`, delta: `+${bondDelta}` },
+          { label: '対立度', delta: '×0.7 減衰' },
+        ],
       };
     }
     // turmoil
@@ -1657,9 +1742,17 @@ Engine.factions = {
     const bump = 15 + Math.floor(Engine.rng.float(rng) * 11);
     const rival = (s.factions || []).find(f => f.id !== factionId && this._isHostile(f));
     if (rival) s = this.applyMomentumChange(s, rival.id, bump);
+    const turmoilImpact = [
+      { label: '新リーダー', delta: `${successor.name}（動揺）` },
+      { label: 'メンバー trust', delta: `${d}` },
+      { label: 'メンバー間 bond', delta: `${bondDelta}` },
+      { label: `${successor.name} → ${oldLeaderName} bond`, delta: `+${idol}` },
+    ];
+    if (rival) turmoilImpact.push({ label: `対立派閥 ${rival.name} 勢い`, delta: `+${bump}` });
     return {
       state: s,
       resultText: `${successor.name}は後を継いだが、派閥内の動揺は深く、一度大きく揺らいだ。`,
+      impactSummary: turmoilImpact,
     };
   },
 
@@ -2011,6 +2104,11 @@ Engine.factions = {
     return {
       state: s,
       resultText: `「${factionAName}」と「${factionBName}」の抗争は、もはや決着の気配すら見せない。終わらない戦いが、団体の空気を重くしていく。`,
+      impactSummary: [
+        { label: '両派閥メンバー mentalCoeff', delta: '-0.02（下限0.85）' },
+        { label: '抗争継続', delta: `${payload.weeksContinued || 52}週` },
+        { label: '長期 streak', delta: 'リセット' },
+      ],
     };
   },
 
@@ -2091,6 +2189,10 @@ Engine.factions = {
     return {
       state: s,
       resultText: `${factionAName}と${factionBName}の火種は、ついにリングで燃え上がる。`,
+      impactSummary: [
+        { label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: '+12（両方向）' },
+        { label: '抗争メイン', delta: '実現' },
+      ],
     };
   },
 
@@ -2196,6 +2298,14 @@ Engine.factions = {
     return {
       state: s,
       resultText: `${factionAName}と${factionBName}の対立は、社長の仲裁によって沈静化した。まだ完全な和解ではないが、互いに矛を収める段階に入った。`,
+      impactSummary: [
+        { label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: '-40（両方向）' },
+        { label: '両派閥 勢い', delta: '0 リセット' },
+        { label: '抗争状態', delta: '解除' },
+        ...(leaderAId != null && leaderBId != null
+          ? [{ label: `${payload.leaderAName || '?'} ⇄ ${payload.leaderBName || '?'} bond`, delta: '+3' }]
+          : []),
+      ],
     };
   },
 
@@ -2438,9 +2548,10 @@ Engine.factions = {
       };
       // 元派閥メンバー trust -3〜-6
       const fromFaction = (s.factions || []).find(f => f.id === fromFactionId);
+      let trustDelta = 0;
       if (fromFaction) {
-        const d = -(3 + Math.floor(Engine.rng.float(rng) * 4));
-        s = this._applyTrustToMembers(s, fromFaction.memberIds, d);
+        trustDelta = -(3 + Math.floor(Engine.rng.float(rng) * 4));
+        s = this._applyTrustToMembers(s, fromFaction.memberIds, trustDelta);
       }
       // 勢い変動
       const fromBump = -(15 + Math.floor(Engine.rng.float(rng) * 11));
@@ -2451,22 +2562,41 @@ Engine.factions = {
       const hostBump = 15 + Math.floor(Engine.rng.float(rng) * 6);
       s = this.applyHostilityChange(s, fromFactionId, toFactionId, hostBump);
       if (typeof console !== 'undefined') console.log(`[WM Faction] F04 defection: ${targetName} ${fromFactionName} → ${toFactionName}`);
-      return { state: s, resultText: `${targetName}は${toFactionName}へ移っていった。${fromFactionName}の空気は凍りついている。` };
+      return {
+        state: s,
+        resultText: `${targetName}は${toFactionName}へ移っていった。${fromFactionName}の空気は凍りついている。`,
+        impactSummary: [
+          { label: '転籍', delta: `${targetName}：${fromFactionName} → ${toFactionName}` },
+          { label: `${fromFactionName} メンバー trust`, delta: `${trustDelta}` },
+          { label: `${fromFactionName} 勢い`, delta: `${fromBump}` },
+          { label: `${toFactionName} 勢い`, delta: `+${toBump}` },
+          { label: `${fromFactionName} → ${toFactionName} 対立度`, delta: `+${hostBump}` },
+        ],
+      };
     }
     if (choiceId === 'B') {
       // 対象 trust +5、一時回避（12週後再判定）
       s = this._applyTrustToMembers(s, [targetId], 5);
-      return { state: s, resultText: `${targetName}との面談で、迷いは一旦収まった。` };
+      return {
+        state: s,
+        resultText: `${targetName}との面談で、迷いは一旦収まった。`,
+        impactSummary: [
+          { label: `${targetName} trust`, delta: '+5' },
+          { label: '寝返り判定', delta: '12週 CD' },
+        ],
+      };
     }
     // 'C' 告げ口
-    s = this._applyTrustToMembers(s, [targetId], -(5 + Math.floor(Engine.rng.float(rng) * 4)));
+    const tgtTrust = -(5 + Math.floor(Engine.rng.float(rng) * 4));
+    s = this._applyTrustToMembers(s, [targetId], tgtTrust);
     // 対象→リーダー rivalry +10〜+15
+    let rivBump = 0;
     if (s.relationships) {
       const key = `${targetId}>${fromLeaderId}`;
       const rec = s.relationships[key];
       if (rec) {
-        const d = 10 + Math.floor(Engine.rng.float(rng) * 6);
-        const newRec = { ...rec, rivalry: Engine.util.clamp(rec.rivalry + d, 0, 100) };
+        rivBump = 10 + Math.floor(Engine.rng.float(rng) * 6);
+        const newRec = { ...rec, rivalry: Engine.util.clamp(rec.rivalry + rivBump, 0, 100) };
         s = { ...s, relationships: { ...s.relationships, [key]: newRec } };
       }
     }
@@ -2475,7 +2605,16 @@ Engine.factions = {
       ...s,
       factions: (s.factions || []).map(f => f.id === fromFactionId ? { ...f, tensionTag: true } : f),
     };
-    return { state: s, resultText: `${targetName}の動きはリーダーの知るところとなった。${fromFactionName}の内側に、新たな火種が燻る。` };
+    const impactSummaryC = [
+      { label: `${targetName} trust`, delta: `${tgtTrust}` },
+    ];
+    if (rivBump > 0) impactSummaryC.push({ label: `${targetName} → リーダー rivalry`, delta: `+${rivBump}` });
+    impactSummaryC.push({ label: `${fromFactionName}`, delta: '内紛フラグ点灯' });
+    return {
+      state: s,
+      resultText: `${targetName}の動きはリーダーの知るところとなった。${fromFactionName}の内側に、新たな火種が燻る。`,
+      impactSummary: impactSummaryC,
+    };
   },
 
   // ── §9.5 F05 派閥内亀裂 選択適用 ──
@@ -2501,9 +2640,22 @@ Engine.factions = {
       const ringleader = roster.find(c => c.id === ringleaderId);
       if (ringleader) s = this.createFaction(s, ringleaderId, dissidentIds, { type: 'loyal' });
       if (typeof console !== 'undefined') console.log(`[WM Faction] F05 split (natural): ${factionName} → ${ringleaderName}組 (${dissidentIds.length} members)`);
-      return { state: s, resultText: `見守るうち、${factionName}は自然に割れた。${ringleaderName}が旗を掲げる。` };
+      return {
+        state: s,
+        resultText: `見守るうち、${factionName}は自然に割れた。${ringleaderName}が旗を掲げる。`,
+        impactSummary: [
+          { label: '分裂', delta: `${factionName} → ${ringleaderName}組` },
+          { label: '離脱メンバー', delta: `${dissidentIds.length}名` },
+        ],
+      };
     }
-    return { state: s, resultText: `${factionName}の亀裂は、とりあえず破裂には至らなかった。` };
+    return {
+      state: s,
+      resultText: `${factionName}の亀裂は、とりあえず破裂には至らなかった。`,
+      impactSummary: [
+        { label: `${factionName}`, delta: '分裂回避（破裂に至らず）' },
+      ],
+    };
   },
 
   // ── §9.6 F06 和解の兆し 選択適用（v2 改訂：2択）──
@@ -2523,8 +2675,9 @@ Engine.factions = {
       // 派閥間 bond +3〜+5
       const A = (s.factions || []).find(f => f.id === factionAId);
       const B = (s.factions || []).find(f => f.id === factionBId);
+      let bd = 0;
       if (A && B && s.relationships) {
-        const bd = 3 + Math.floor(Engine.rng.float(rng) * 3);
+        bd = 3 + Math.floor(Engine.rng.float(rng) * 3);
         let rels = { ...s.relationships };
         for (const a of A.memberIds) for (const b of B.memberIds) {
           const kAB = `${a}>${b}`, kBA = `${b}>${a}`;
@@ -2539,10 +2692,25 @@ Engine.factions = {
       const tB = 3 + Math.floor(Engine.rng.float(rng) * 3);
       if (payloadLeaderA) s = this._applyTrustToMembers(s, [payloadLeaderA], tA);
       if (payloadLeaderB) s = this._applyTrustToMembers(s, [payloadLeaderB], tB);
-      return { state: s, resultText: `強ばっていた視線が、静かにほどけた。${factionAName}と${factionBName}は、距離を取り戻し始めている。` };
+      return {
+        state: s,
+        resultText: `強ばっていた視線が、静かにほどけた。${factionAName}と${factionBName}は、距離を取り戻し始めている。`,
+        impactSummary: [
+          { label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: `${d}（両方向）` },
+          { label: '派閥間 bond', delta: bd > 0 ? `+${bd}` : '—' },
+          { label: `${factionAName} リーダー trust`, delta: payloadLeaderA ? `+${tA}` : '—' },
+          { label: `${factionBName} リーダー trust`, delta: payloadLeaderB ? `+${tB}` : '—' },
+        ],
+      };
     }
     // 'B' 何もしない（介入なし・自然減衰は外部 tick に任せる）
-    return { state: s, resultText: `社長は手を出さなかった。和解の兆しは、時間に委ねられた。` };
+    return {
+      state: s,
+      resultText: `社長は手を出さなかった。和解の兆しは、時間に委ねられた。`,
+      impactSummary: [
+        { label: '介入', delta: 'なし（時間に委ねる）' },
+      ],
+    };
   },
 
   // ── §9.7 F07 派閥動向 選択適用（v0.4 共通フレーム化）──
@@ -2918,14 +3086,27 @@ Engine.factions = {
         },
       };
       if (typeof console !== 'undefined') console.log(`[WM Faction] F08 directive set: ${factionAName} vs ${factionBName}`);
-      return { state: s, resultText: `${factionAName}と${factionBName}、両リーダーの直接対決を次興行のメインに据えると決めた。` };
+      return {
+        state: s,
+        resultText: `${factionAName}と${factionBName}、両リーダーの直接対決を次興行のメインに据えると決めた。`,
+        impactSummary: [
+          { label: '次興行メイン', delta: `${factionAName} リーダー vs ${factionBName} リーダー` },
+          { label: 'F08 CD', delta: '発動' },
+        ],
+      };
     }
     if (choiceId === 'B') {
       // UI 側で disabled のはずだが、安全弁として no-op（CD も立てない）
-      return { state: s, resultText: '' };
+      return { state: s, resultText: '', impactSummary: [] };
     }
     // 'C' 煽らず、組まず — CD を立てずに次週以降も再判定
-    return { state: s, resultText: `社長は、この熱に直接触れなかった。煽りもせず、組みもせず。火はしばらく燻り続ける。` };
+    return {
+      state: s,
+      resultText: `社長は、この熱に直接触れなかった。煽りもせず、組みもせず。火はしばらく燻り続ける。`,
+      impactSummary: [
+        { label: '介入', delta: 'なし（再判定継続）' },
+      ],
+    };
   },
 
 
