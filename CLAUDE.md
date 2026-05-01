@@ -177,6 +177,9 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | rivalry-chronicle-spec-v1.0.md | 因縁列伝(3面) — 9象限分類 + H2H.history[] + 黒田叙述紙面 |
 | newspaper-and-orgcompare-spec-v2.0.md | 新聞画面+団体比較画面の確定UI仕様(共通CSS/4軸バー/ダイジェスト/KURODA接続) |
 | career-history-spec-v1.0.md | 選手経歴年表(Phase A〜E 全実装完了/history type カタログ/PPV・JT 結果分岐/退団 6 type) |
+| faction-f07-variation-spec-v0.1.md | F07 派閥動向 共通フレーム化 v0.4(全アーキタイプ共通+チーム全体12週CD+アーキタイプ×incidentTypeマトリクス、DRAFT) |
+| faction-archetype-rework-spec-v0.1.md | 派閥アーキタイプ6種(権威型/結束型/実力主義/ヒール派閥/正統派/武闘派) v0.2、F01アーキタイプ自動判定 + 属性確率バイアス制 + アーキタイプ遷移(DRAFT) |
+| faction-common-events-spec-v0.1.md | 派閥共通イベント5種(Common-1派閥内試合提案/3加入通知/4合宿/5メディア取材/7合同企画)、既存F01〜F08と被らない日常軸(DRAFT) |
 | org-ranking-spec-v2.0.md | 団体ランキング 評価/基礎力 算出仕様(4軸構造: 基礎力+レガシー+対戦PT+シーズン実績、基礎力は Force/Depth/Marquee の3軸合算、Phase 1-4 全実装完了) |
 | faction-rivalry-points-spec-v0.1.md | 派閥抗争ポイント制 + F09 派閥対抗戦(v0.3 確定 / Phase B 全実装完了 / 試合連動ポイント+先取100決着+F09 ×1.8倍率+勝ち越し+15pt+v0.9 UI+モーダル4種) |
 

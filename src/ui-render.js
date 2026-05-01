@@ -11124,8 +11124,17 @@ function _dfcImg(charId, alt) {
   return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#7a7466;background:rgba(200,190,170,0.06)">${(alt||'?').slice(0,1)}</div>`;
 }
 function _dfcFlavorTag(flavor) {
-  const map = { bond_first: '結束型', meritocratic: '実力主義', neutral: '自然型' };
-  return map[flavor] || '自然型';
+  // v0.2 アーキタイプ拡張: 6 種対応（自然型は廃止し結束型へ吸収）
+  const map = {
+    authoritarian: '権威型',
+    bond_first: '結束型',
+    meritocratic: '実力主義',
+    heel: 'ヒール派閥',
+    face: '正統派',
+    combat: '武闘派',
+    neutral: '結束型',
+  };
+  return map[flavor] || '結束型';
 }
 function _dfcSolidarityKey(label) {
   return label === '強固' ? 'strong' : label === '安定' ? 'stable' : label === '揺らぎ' ? 'wobble' : 'crumble';

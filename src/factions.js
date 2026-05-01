@@ -173,12 +173,22 @@ Engine.factions = {
     return !!(f && (f.type === 'rivalrous' || f.inHostility === true));
   },
   _getFactionFlavor(faction) {
-    return faction?.flavor || 'neutral';
+    return faction?.flavor || 'bond_first';
   },
   _getFlavorJoinMult(faction) {
     const flavor = this._getFactionFlavor(faction);
-    const joinMult = { bond_first: 1.15, meritocratic: 0.85, neutral: 1.0 };
-    return joinMult[flavor] || joinMult.neutral;
+    // v0.2 アーキタイプ拡張: 6 種それぞれに加入率係数を設定
+    // meritocratic は希少さを保ち、heel/face/combat は属性適合度の影響を別途加算する想定（Phase B）
+    const joinMult = {
+      bond_first: 1.15,    // BOND: 横の絆で受け入れやすい
+      meritocratic: 0.85,  // MERIT: 選別主義で加入しにくい
+      authoritarian: 0.95, // AUTHORITY: リーダー認知が必要、やや厳しめ
+      heel: 1.00,          // HEEL: 属性で別途バイアス
+      face: 1.05,          // FACE: 看板派閥として歓迎ムード
+      combat: 1.00,        // COMBAT: 強さテストで別途バイアス
+      neutral: 1.0,        // legacy
+    };
+    return joinMult[flavor] !== undefined ? joinMult[flavor] : 1.0;
   },
   _scoreFactionFlavor(state, leader, members, rng) {
     const sample = members.length > 0 ? members : [leader];
@@ -186,8 +196,22 @@ Engine.factions = {
     const leaderWeight = 0.65;
     const memberWeight = 0.25;
     const noiseWeight = 0.10;
+    const noise = () => Engine.rng.float(rng) * noiseWeight;
+
+    // 共通指標: OVR
     const leaderOvr = Engine.util.ov(leader);
-    const avgOvr = sample.reduce((sum, fighter) => sum + Engine.util.ov(fighter), 0) / sample.length;
+    const ovrs = sample.map(f => Engine.util.ov(f));
+    const avgOvr = ovrs.reduce((s, v) => s + v, 0) / ovrs.length;
+    const leaderOvrScore = Math.max(0, Math.min(1, (leaderOvr - 68) / 18));
+    const groupOvrScore = Math.max(0, Math.min(1, (avgOvr - 68) / 18));
+
+    // OVR 分散（MERIT 判定用: 分散が小さい = 似た強さの集団）
+    const ovrVariance = ovrs.reduce((s, v) => s + (v - avgOvr) ** 2, 0) / ovrs.length;
+    const ovrStdDev = Math.sqrt(ovrVariance);
+    // stddev <= 4 で高スコア、>= 12 でゼロ
+    const ovrTightnessScore = Math.max(0, Math.min(1, (12 - ovrStdDev) / 8));
+
+    // 共通指標: bond
     let bondPairCount = 0;
     let bondPairSum = 0;
     for (let i = 0; i < sample.length; i++) {
@@ -203,25 +227,61 @@ Engine.factions = {
     const followerIds = members.filter(f => f.id !== leader.id).map(f => f.id);
     const leaderBondScore = followerIds.length > 0 ? Math.max(0, Math.min(1, (this._avgBond(state, leader.id, followerIds) - 60) / 25)) : 0;
     const groupBondScore = Math.max(0, Math.min(1, (avgBond - 60) / 25));
-    const leaderOvrScore = Math.max(0, Math.min(1, (leaderOvr - 68) / 18));
-    const groupOvrScore = Math.max(0, Math.min(1, (avgOvr - 68) / 18));
-    const noise = () => Engine.rng.float(rng) * noiseWeight;
+
+    // role 集計（HEEL / FACE バイアス）
+    let heelCount = 0, faceCount = 0;
+    for (const f of sample) {
+      if (f.role === 'Heel') heelCount++;
+      else if (f.role === 'Babyface') faceCount++;
+    }
+    const heelRatio = heelCount / sample.length;
+    const faceRatio = faceCount / sample.length;
+
+    // 性格 archetype 集計（COMBAT バイアス: fiery/flippant/bold が多いと闘争志向）
+    let combatPersonalityCount = 0;
+    for (const f of sample) {
+      const a = f.archetype || '';
+      const p = f.personality || '';
+      if (a === 'fiery' || a === 'flippant' || p === 'bold') combatPersonalityCount++;
+    }
+    const combatPersonalityRatio = combatPersonalityCount / sample.length;
+
+    // AUTHORITY バイアス: リーダー方向 bond が突出 + リーダー OVR が高い（非対称な集中）
+    const bondAsymmetry = Math.max(0, leaderBondScore - groupBondScore * 0.5);
+
     return {
+      // 既存系統（互換維持）
       bond_first: leaderBondScore * leaderWeight + groupBondScore * memberWeight + noise(),
-      meritocratic: (leaderOvrScore * leaderWeight + groupOvrScore * memberWeight + noise()) * (cfg.meritocraticFlavorScoreMult || 1),
-      neutral: noise() + 0.02,
+      meritocratic: (ovrTightnessScore * 0.50 + leaderOvrScore * 0.35 + groupOvrScore * 0.15 + noise()) * (cfg.meritocraticFlavorScoreMult || 1),
+      // 新規 4 アーキタイプ（v0.2）
+      authoritarian: bondAsymmetry * leaderWeight + leaderOvrScore * memberWeight + noise(),
+      // HEEL/FACE は対象 role が 1 名以上いないと意味がないので、ratio==0 のときは強く減点
+      heel: heelRatio * 0.85 + (heelRatio > 0 ? 0.05 : -0.6) + noise(),
+      face: faceRatio * 0.85 + (faceRatio > 0 ? 0.05 : -0.6) + noise(),
+      combat: combatPersonalityRatio * 0.70 + leaderOvrScore * 0.20 + noise(),
     };
   },
   _decideFactionFlavor(state, leaderId, memberIds, rng, options = {}) {
     const roster = state.roster || [];
     const leader = roster.find(c => c.id === leaderId);
-    if (!leader) return 'neutral';
+    if (!leader) return 'bond_first';
     const members = [...new Set(memberIds)].map(id => roster.find(c => c.id === id)).filter(Boolean);
     const scores = this._scoreFactionFlavor(state, leader, members, rng);
     const excluded = new Set(options.excludeFlavors || []);
     const candidates = Object.entries(scores).filter(([flavor]) => !excluded.has(flavor));
-    if (!candidates.length) return 'neutral';
-    return candidates.sort((a, b) => b[1] - a[1])[0][0];
+    if (!candidates.length) return 'bond_first';
+    // v0.2: 拮抗時の優先順位（spec §4.2）— 属性が明確な方を優先
+    // HEEL / FACE > MERIT > COMBAT > AUTHORITY > BOND
+    const priority = ['heel', 'face', 'meritocratic', 'combat', 'authoritarian', 'bond_first'];
+    candidates.sort((a, b) => {
+      const diff = b[1] - a[1];
+      if (Math.abs(diff) < 0.05) {
+        // スコア拮抗時は priority で決定
+        return priority.indexOf(a[0]) - priority.indexOf(b[0]);
+      }
+      return diff;
+    });
+    return candidates[0][0];
   },
 
 
@@ -256,6 +316,12 @@ Engine.factions = {
       status: 'active', // 'active' | 'hiatus' | 'dissolved'
       authoritativeTag: !!options.authoritativeTag,
       dictatorTag: !!options.dictatorTag,
+      // v0.2 アーキタイプタグ（spec §7.1）。flavor と整合
+      bondTag: !!options.bondTag,
+      meritTag: !!options.meritTag,
+      heelTag: !!options.heelTag,
+      faceTag: !!options.faceTag,
+      combatTag: !!options.combatTag,
       momentum: 0,
       createdSeason: state.season,
       createdWeek: state.week,
@@ -1164,17 +1230,26 @@ Engine.factions = {
     }
 
     // 8) F01（忠誠型結成、確率 60%、拒否クールダウン対応）
+    // v0.2: アーキタイプ判定（6種）を payload に含める
+    const archetypeRngFor = (leaderId) => Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 1, state.season || 1, state.week || 1, leaderId, 0xA12E
+    ));
     const loyalCheck = this.checkLoyalFormationConditions(state, { maxExistingFactions: 0 });
     if (loyalCheck.eligible) {
       const cdUntil = (state.factionEventCooldowns || {}).F01_rejected_until || 0;
       const now = this._absWeek(state);
       if (now >= cdUntil && Engine.rng.float(rng) < cfg.eventProbability.F01) {
+        const memberIds = [loyalCheck.leaderId, ...loyalCheck.followerIds];
+        // 初回派閥は meritocratic を抑制（既存挙動）
+        const exclude = (state.factions || []).length === 0 ? ['meritocratic'] : [];
+        const archetype = this._decideFactionFlavor(state, loyalCheck.leaderId, memberIds, archetypeRngFor(loyalCheck.leaderId), { excludeFlavors: exclude });
         return {
           eventId: 'F01',
           payload: {
             leaderId: loyalCheck.leaderId,
             leaderName: loyalCheck.leaderName,
             followerIds: loyalCheck.followerIds,
+            archetype, // v0.2 NEW
           },
         };
       }
@@ -1188,12 +1263,15 @@ Engine.factions = {
       const cdUntil = (state.factionEventCooldowns || {}).F01_rejected_until || 0;
       const now = this._absWeek(state);
       if (now >= cdUntil && Engine.rng.float(rng) < (cfg.secondFactionProbability || cfg.eventProbability.F01)) {
+        const memberIds = [secondLoyalCheck.leaderId, ...secondLoyalCheck.followerIds];
+        const archetype = this._decideFactionFlavor(state, secondLoyalCheck.leaderId, memberIds, archetypeRngFor(secondLoyalCheck.leaderId), {});
         return {
           eventId: 'F01',
           payload: {
             leaderId: secondLoyalCheck.leaderId,
             leaderName: secondLoyalCheck.leaderName,
             followerIds: secondLoyalCheck.followerIds,
+            archetype, // v0.2 NEW
           },
         };
       }
@@ -1205,20 +1283,29 @@ Engine.factions = {
   // ── §9.1 F01 選択肢効果適用 ──
   // choiceId: 'A'=権威化 / 'B'=拒否 / 'C'=静観
   applyF01Choice(state, payload, choiceId, rng) {
-    const { leaderId, leaderName, followerIds } = payload;
+    const { leaderId, leaderName, followerIds, archetype } = payload;
     let s = state;
     const members = [leaderId, ...followerIds];
+    // v0.2: payload.archetype が無ければ後方互換で authoritarian にフォールバック（旧挙動）
+    const arch = archetype || 'authoritarian';
 
     if (choiceId === 'A') {
-      // 派閥成立 + authoritativeTag + リーダー trust +5〜+8 + メンバー間 bond +3〜+5 + 士気 -2〜-4
-      s = this.createFaction(s, leaderId, members, { type: 'loyal', authoritativeTag: true });
-      const rawTrust = 5 + Math.floor(Engine.rng.float(rng) * 4); // 5〜8
+      // v0.2: アーキタイプ別の効果テーブル（spec §5.2）
+      // すべて派閥成立、リーダー trust +5〜+8、flavor=arch、対応タグ付与
+      const tagOpts = this._archetypeToTagOptions(arch);
+      s = this.createFaction(s, leaderId, members, { type: 'loyal', flavor: arch, ...tagOpts });
+      const rawTrust = 5 + Math.floor(Engine.rng.float(rng) * 4); // 5〜8（共通）
       s = this._applyTrustToMembers(s, [leaderId], rawTrust);
-      const bondDelta = 3 + Math.floor(Engine.rng.float(rng) * 3); // 3〜5
-      s = this._applyBondBetweenMembers(s, members, bondDelta);
-      const moralePen = -(2 + Math.floor(Engine.rng.float(rng) * 3)); // -2〜-4
-      s = this._applyLockerRoomMorale(s, moralePen);
-      return { state: s, resultText: `${leaderName}を中心に派閥「${leaderName}組」が旗揚げされた。` };
+      // bond / 士気の効果はアーキタイプで分岐
+      const moraleEffect = this._archetypeF01Effect(arch, rng);
+      if (moraleEffect.bondDelta !== 0) {
+        s = this._applyBondBetweenMembers(s, members, moraleEffect.bondDelta);
+      }
+      if (moraleEffect.moraleDelta !== 0) {
+        s = this._applyLockerRoomMorale(s, moraleEffect.moraleDelta);
+      }
+      const archLabel = this._archetypeLabel(arch);
+      return { state: s, resultText: `${leaderName}を中心に派閥「${leaderName}組」が旗揚げされた（${archLabel}）。` };
     }
     if (choiceId === 'B') {
       // 派閥不成立 + リーダー trust -5〜-8 + フォロワー→リーダー bond -5〜-8 + 士気 +1〜+3 + クールダウン12週
@@ -1239,9 +1326,44 @@ Engine.factions = {
       };
       return { state: s, resultText: `${leaderName}に釘を刺した。派閥結成の動きは一旦沈静化した。` };
     }
-    // 'C' 静観
-    s = this.createFaction(s, leaderId, members, { type: 'loyal' });
+    // 'C' 静観 — 派閥成立だがアーキタイプ専用タグなし（flavor のみ記録）
+    s = this.createFaction(s, leaderId, members, { type: 'loyal', flavor: arch });
     return { state: s, resultText: `${leaderName}を中心とした集まりを静かに見守ることにした。` };
+  },
+
+  // v0.2: アーキタイプ → createFaction options のタグ変換
+  _archetypeToTagOptions(arch) {
+    switch (arch) {
+      case 'authoritarian': return { authoritativeTag: true };
+      case 'bond_first':    return { bondTag: true };
+      case 'meritocratic':  return { meritTag: true };
+      case 'heel':          return { heelTag: true };
+      case 'face':          return { faceTag: true };
+      case 'combat':        return { combatTag: true };
+      default:              return {};
+    }
+  },
+
+  // v0.2: F01 A 選択時の bond/士気増減（spec §5.2）
+  _archetypeF01Effect(arch, rng) {
+    const r = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+    switch (arch) {
+      case 'authoritarian': return { bondDelta: r(3, 5),  moraleDelta: -r(2, 4) };
+      case 'bond_first':    return { bondDelta: r(5, 8),  moraleDelta:  r(1, 2) };
+      case 'meritocratic':  return { bondDelta: r(2, 3),  moraleDelta: -r(1, 2) };
+      case 'heel':          return { bondDelta: r(3, 4),  moraleDelta:  0       };
+      case 'face':          return { bondDelta: r(3, 4),  moraleDelta:  r(1, 2) };
+      case 'combat':        return { bondDelta: r(3, 4),  moraleDelta: -r(1, 2) };
+      default:              return { bondDelta: r(3, 5),  moraleDelta: -r(2, 4) };
+    }
+  },
+
+  _archetypeLabel(arch) {
+    const map = {
+      authoritarian: '権威型', bond_first: '結束型', meritocratic: '実力主義',
+      heel: 'ヒール派閥', face: '正統派', combat: '武闘派', neutral: '自然型',
+    };
+    return map[arch] || '結束型';
   },
 
   // ── §9.2 F02 選択肢効果適用（派閥抗争の勃発、v4 3択版）──

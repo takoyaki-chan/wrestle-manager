@@ -2376,7 +2376,33 @@ const Storage = {
         G = { ...G, _migrated_factions_v1: true };
       }
       if (Array.isArray(G.factions) && G.factions.some(f => !f.flavor)) {
-        G = { ...G, factions: G.factions.map(f => f.flavor ? f : { ...f, flavor: 'neutral' }) };
+        G = { ...G, factions: G.factions.map(f => f.flavor ? f : { ...f, flavor: 'bond_first' }) };
+      }
+      // v0.2 アーキタイプ拡張: 旧 flavor を新 6 種にマイグレーション（一度だけ）
+      if (Array.isArray(G.factions) && !G._migrated_archetype_v2) {
+        G = {
+          ...G,
+          factions: G.factions.map(f => {
+            // 旧 neutral は再判定 → 結束型 (bond_first) フォールバック
+            // 旧 authoritativeTag 持ちの neutral は authoritarian へ
+            let newFlavor = f.flavor || 'bond_first';
+            if (newFlavor === 'neutral') {
+              newFlavor = f.authoritativeTag ? 'authoritarian' : 'bond_first';
+            }
+            // タグの整合性確保
+            return {
+              ...f,
+              flavor: newFlavor,
+              bondTag: f.bondTag || newFlavor === 'bond_first',
+              meritTag: f.meritTag || newFlavor === 'meritocratic',
+              heelTag: f.heelTag || newFlavor === 'heel',
+              faceTag: f.faceTag || newFlavor === 'face',
+              combatTag: f.combatTag || newFlavor === 'combat',
+              authoritativeTag: f.authoritativeTag || newFlavor === 'authoritarian',
+            };
+          }),
+          _migrated_archetype_v2: true,
+        };
       }
 
       // 派閥の重複所属を修復（Phase 3c セッションで発見された既存セーブのデータ破綻対応）
