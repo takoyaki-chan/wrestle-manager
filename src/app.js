@@ -5715,7 +5715,8 @@ const App = {
       s = Engine.relationships.applyShowContextEffects(s, validMatches, results, preShowLosingStreaks, showCtxRng);
     }
 
-    // ── F08 ディレクティブ: 直接対決試合の結果を派閥勢い/対立度に 1.5× で反映 + ディレクティブクリア ──
+    // ── F08 ディレクティブ: 直接対決試合の結果を派閥勢い/対立度に 1.5× で反映
+    //    + 両派閥リーダー間 rivalry に +30〜40 の大幅ブースト + ディレクティブクリア ──
     if (s._pendingF08Directive && Engine.factions && typeof Engine.factions.applyMatchResult === 'function') {
       const d = s._pendingF08Directive;
       const f08Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFA88));
@@ -5730,6 +5731,19 @@ const App = {
           : r.winner === 'right' ? (m.right === d.leaderAId ? 'A' : 'B')
           : 'draw';
         s = Engine.factions.applyMatchResult(s, m.left, m.right, { winner: winnerToken }, f08Rng, { variationMultiplier: (FACTION_CONFIG && FACTION_CONFIG.f08MatchResultMultiplier) || 1.5 });
+        // 両リーダー間 rivalry を +30〜40 の大幅ブースト（通常試合 +5〜10 の 4 倍程度）
+        // → リーダー同士の因縁が強烈に深まり、次の F02/F03 への発展を加速
+        const rivalryBoost = 30 + Math.floor(Engine.rng.float(f08Rng) * 11);
+        const keyAB = `${d.leaderAId}|${d.leaderBId}`;
+        const keyBA = `${d.leaderBId}|${d.leaderAId}`;
+        const rels = { ...(s.relationships || {}) };
+        if (rels[keyAB] && rels[keyBA]) {
+          const clamp = (v) => Math.max(-100, Math.min(100, v));
+          rels[keyAB] = { ...rels[keyAB], rivalry: clamp((rels[keyAB].rivalry || 0) + rivalryBoost) };
+          rels[keyBA] = { ...rels[keyBA], rivalry: clamp((rels[keyBA].rivalry || 0) + rivalryBoost) };
+          s = { ...s, relationships: rels };
+          if (typeof console !== 'undefined') console.log(`[WM Faction] F08 direct bout rivalry boost: leaders ${d.leaderAId}↔${d.leaderBId} rivalry +${rivalryBoost}`);
+        }
         executed = true;
       });
       // 該当試合が実行されたかに関わらず、この興行後はディレクティブを落とす

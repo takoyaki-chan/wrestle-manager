@@ -8568,7 +8568,7 @@ function showFactionF08Modal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">直接対決をメインに組む</div>
-            <div class="fevt-decision-hint">F08直接対決ボーナス MQ +15〜+20、集客 +12%。負けた派閥は崩壊リスク</div>
+            <div class="fevt-decision-hint">集客 +12%、両リーダー間の因縁が一気に深まる（rivalry 大幅増）。負けた派閥は崩壊リスク</div>
           </div>
           <div class="fevt-decision-card label-disabled" data-choice="B">
             <div class="fevt-decision-letter">B</div>
