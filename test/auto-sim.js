@@ -233,6 +233,18 @@ function autoHandleFactionEvent(G, simRng) {
         const r = fn.call(Engine.factions, s, fe.payload, choiceId, rng);
         if (r && r.state) s = r.state;
       }
+    } else if (fe.eventId === 'COMMON_1' || fe.eventId === 'COMMON_5' || fe.eventId === 'COMMON_7') {
+      const choices = ['A', 'B', 'C'];
+      const choiceId = choices[Math.floor(Engine.rng.float(simRng) * 3)];
+      const map = { COMMON_1: 'applyCommon1Choice', COMMON_5: 'applyCommon5Choice', COMMON_7: 'applyCommon7Choice' };
+      const fn = Engine.factions[map[fe.eventId]];
+      if (typeof fn === 'function') {
+        const r = fn.call(Engine.factions, s, fe.payload, choiceId, rng);
+        if (r && r.state) s = r.state;
+      }
+    } else if (fe.eventId === 'COMMON_4') {
+      const r = Engine.factions.applyCommon4Result(s, fe.payload, rng);
+      if (r && r.state) s = r.state;
     }
   } catch (_e) { /* 設計意図としてはここに到達しない */ }
   const { _pendingFactionEvent: _, ...clean } = s;

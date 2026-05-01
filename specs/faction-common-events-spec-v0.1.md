@@ -2,7 +2,7 @@
 
 **ファイル**：`specs/faction-common-events-spec-v0.1.md`
 **最終更新**：2026-05-01
-**実装状況**：DRAFT（未実装・Keisuke 確認済み構造）
+**実装状況**：Phase A〜D 全実装完了（Common-1/3/4/5/7 すべて稼働）。auto-sim 50×42 で違反 0 確認済み
 **親仕様**：
 - `specs/faction-system-spec-v0.1.md`（既存 F01〜F08）
 - `specs/faction-archetype-rework-spec-v0.1.md` v0.2
@@ -385,6 +385,45 @@ state._commonEventTeamCooldownUntil: 234
 ### Phase B — Common-1 + Common-4
 
 派閥内対決と合宿。3択モーダル＋通知モーダルの基本骨格。
+
+**Common-4 実装済み（2026-05-01）**：
+- `FACTION_CONFIG` に `commonEventTeamCooldown` / `commonEventFactionCooldown` / `commonEventIndividualCooldowns.COMMON_4` / `commonEvent4MoraleMin` を追加
+- `data.js` `COMMON4_LINES`：アーキタイプ 6 種 × 各 2 件 + `_any` フォールバック（{ headline, narration, leaderQuote }）
+- `factions.js`：`_isCommonTeamCooldownActive` / `_isCommonFactionCooldownActive` / `_isCommonIndividualCooldownActive` / `_markCommonEventTrigger` / `checkCommon4Conditions` / `applyCommon4Result` / `getCommon4Line`
+- `pickWeeklyEvent` 末尾に Common-4 抽選を追加（F01〜F08 より低優先）
+- `ui-common.js` `showFactionCommon4Modal`：通知のみ・選択肢なし
+- `app.js` `handleFactionEvent` に `COMMON_4` 分岐 + `FACTION_AUDIO_MAP.COMMON_4`（SOFT + close chime）
+
+**Common-1 実装済み（簡易版・2026-05-01）**：
+- 派閥内2名 rivalry≥40 で 3 択モーダル発火
+- A 選択時：spec の「次の興行カードに組む」を簡易化し、即時 OVR ベース勝敗判定で代替（trust/rivalry 効果は spec 通り）。将来 v0.2 で興行カード差し替え機構と連動予定
+- `COMMON1_LINES`：アーキタイプ 6 種 × coachReport/leaderDemand/resultLeader/resultLoser
+
+### Phase C — Common-5（実装済み 2026-05-01）
+
+メディア取材 3 択。アーキタイプ別 A 結果は spec §6.5 表に準拠：
+- AUTHORITY/MERIT：勢い+4、副作用（士気-2 / 若手 trust-2）
+- BOND/FACE：メディア収入（¥8〜18 万）+ 勢い+3〜4
+- HEEL：勢い+7（高リターン）+ 団体知名度 -1（炎上）
+- COMBAT：勢い+3 + 対外 rivalry 上昇
+- B：コーチ同席で無難（収入 ¥5〜10 万 + 勢い+2）
+- C：取材辞退（勢い-2）
+
+`COMMON5_LINES`：coachReport / leaderQuoteA（性格 6 × アーキタイプ 6）/ headlineA / resultLeader
+
+### Phase D — Common-7（実装済み 2026-05-01）
+
+派閥間合同企画 3 択。spec §7.2/§7.5 のフィルタを実装：
+- HEEL × FACE / AUTHORITY × AUTHORITY は不発
+- 双方向 hostility < 30、両リーダー bond ≥40、ペア CD 32 週
+- 効果は spec §7.4 通り（A：両派閥勢い+5〜+8 + 全メンバー間 bond+1〜+3）
+- ペア CD は `state._commonEvent7PairCooldowns[pair_X_Y] = absWeek` で管理
+
+`COMMON7_LINES`：coachReport / planType マトリクス（10 種）/ leaderAQuote / leaderBQuote / resultLeader
+
+### auto-sim 拡張
+
+`test/auto-sim.js` の `autoHandleFactionEvent` に COMMON_1/4/5/7 分岐を追加。これにより Common 系 `_pendingFactionEvent` が滞留せず、後続 faction event の発火を阻害しない。
 
 ### Phase C — Common-5
 

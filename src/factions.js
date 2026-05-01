@@ -1416,6 +1416,17 @@ Engine.factions = {
       }
     }
 
+    // 9) Common Events（チーム CD 6 週で総量抑制、F01〜F08 の後で抽選）
+    // 順序: Common-1（内部対決, 興行週）> Common-5（取材, 興行週）> Common-7（合同, 興行週）> Common-4（合宿, オフ週）
+    const c1 = this.checkCommon1Conditions(state, rng);
+    if (c1.eligible) return { eventId: 'COMMON_1', payload: c1 };
+    const c5 = this.checkCommon5Conditions(state, rng);
+    if (c5.eligible) return { eventId: 'COMMON_5', payload: c5 };
+    const c7 = this.checkCommon7Conditions(state, rng);
+    if (c7.eligible) return { eventId: 'COMMON_7', payload: c7 };
+    const c4 = this.checkCommon4Conditions(state, rng);
+    if (c4.eligible) return { eventId: 'COMMON_4', payload: c4 };
+
     return { eventId: null };
   },
 
@@ -2411,6 +2422,602 @@ Engine.factions = {
       incidentPayload,
       modalShape,
     };
+  },
+
+  // ── Common Events: チーム CD / 個別 CD 判定ヘルパー ──
+  _isCommonTeamCooldownActive(state) {
+    const now = this._absWeek(state);
+    const teamUntil = state._commonEventTeamCooldownUntil || 0;
+    return now < teamUntil;
+  },
+
+  _isCommonFactionCooldownActive(state, factionId) {
+    const cfg = FACTION_CONFIG;
+    const now = this._absWeek(state);
+    const faction = (state.factions || []).find(f => f.id === factionId);
+    if (!faction) return true;
+    const lastAny = faction._commonEventLastWeek || 0;
+    return (now - lastAny) < cfg.commonEventFactionCooldown;
+  },
+
+  _isCommonIndividualCooldownActive(state, factionId, eventKey) {
+    const cfg = FACTION_CONFIG;
+    const cd = cfg.commonEventIndividualCooldowns[eventKey];
+    if (!cd) return false;
+    const now = this._absWeek(state);
+    const faction = (state.factions || []).find(f => f.id === factionId);
+    if (!faction) return true;
+    const lastEv = (faction._commonEventCooldowns || {})[eventKey] || 0;
+    return (now - lastEv) < cd;
+  },
+
+  // Common Events: 発動を記録（チーム CD + 派閥 CD + 個別 CD）
+  _markCommonEventTrigger(state, factionId, eventKey) {
+    const cfg = FACTION_CONFIG;
+    const now = this._absWeek(state);
+    const newTeamCD = now + cfg.commonEventTeamCooldown;
+    const updatedFactions = (state.factions || []).map(f => {
+      if (f.id !== factionId) return f;
+      const cds = { ...(f._commonEventCooldowns || {}) };
+      cds[eventKey] = now;
+      return { ...f, _commonEventCooldowns: cds, _commonEventLastWeek: now };
+    });
+    return { ...state, factions: updatedFactions, _commonEventTeamCooldownUntil: newTeamCD };
+  },
+
+  // ── Common-4 派閥合宿・慰労会 ──
+  // 発動条件: オフウィーク中、ロッカー士気 >= 50、CD 各種クリア
+  // 通知のみ。プレイヤー選択なし。
+  checkCommon4Conditions(state, rng) {
+    const cfg = FACTION_CONFIG;
+    if (!state.offSeason) return { eligible: false };
+    const morale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
+    if (morale < cfg.commonEvent4MoraleMin) return { eligible: false };
+    if (this._isCommonTeamCooldownActive(state)) return { eligible: false };
+
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+    const candidates = [];
+    for (const f of factions) {
+      if (this._isCommonFactionCooldownActive(state, f.id)) continue;
+      if (this._isCommonIndividualCooldownActive(state, f.id, 'COMMON_4')) continue;
+      if (!f.memberIds || f.memberIds.length < 2) continue;
+      const archId = f.archetypeId || this._archetypeFromFlavor(f.flavor);
+      if (!archId) continue;
+      const leader = roster.find(c => c.id === f.leaderId);
+      if (!leader) continue;
+      candidates.push({ faction: f, archetypeId: archId, leader });
+    }
+    if (!candidates.length) return { eligible: false };
+
+    const idx = Math.floor(Engine.rng.float(rng) * candidates.length);
+    const chosen = candidates[idx];
+    return {
+      eligible: true,
+      factionId: chosen.faction.id,
+      factionName: chosen.faction.name,
+      archetypeId: chosen.archetypeId,
+      leaderId: chosen.leader.id,
+      leaderName: chosen.leader.name,
+      memberIds: [...chosen.faction.memberIds],
+      season: state.season,
+    };
+  },
+
+  // Common-4 効果適用: bond +1〜+2 / condition +3〜+5 / アーキタイプ別 morale 微変動
+  applyCommon4Result(state, payload, rng) {
+    const { factionId, factionName, archetypeId, memberIds } = payload;
+    let s = state;
+    const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+
+    const bondDelta = ri(1, 2);
+    const condDelta = ri(3, 5);
+    s = this._applyBondBetweenMembers(s, memberIds, bondDelta);
+    if (Array.isArray(s.roster)) {
+      const memberSet = new Set(memberIds);
+      const newRoster = s.roster.map(c => memberSet.has(c.id)
+        ? { ...c, condition: Engine.util.clamp((c.condition || 50) + condDelta, 0, 100) }
+        : c);
+      s = { ...s, roster: newRoster };
+    }
+
+    let moraleDelta = 0;
+    if (archetypeId === 'BOND' || archetypeId === 'FACE') {
+      moraleDelta = ri(1, 2);
+    } else if (archetypeId === 'HEEL') {
+      moraleDelta = -ri(1, 2);
+    } else {
+      moraleDelta = 0;
+    }
+    if (moraleDelta !== 0) s = this._applyLockerRoomMorale(s, moraleDelta);
+
+    s = this._markCommonEventTrigger(s, factionId, 'COMMON_4');
+
+    const impactSummary = [
+      { label: `${factionName} メンバー間 bond`, delta: `+${bondDelta}` },
+      { label: `${factionName} condition`, delta: `+${condDelta}` },
+    ];
+    if (moraleDelta !== 0) {
+      const sign = moraleDelta > 0 ? '+' : '';
+      impactSummary.push({ label: 'ロッカー士気', delta: `${sign}${moraleDelta}` });
+    }
+    const resultText = `${factionName}は数日まとまって過ごし、絆と体調が整った。`;
+    return { state: s, resultText, impactSummary };
+  },
+
+  // Common-4 セリフ引き
+  getCommon4Line(archetypeId, rng) {
+    const table = (typeof COMMON4_LINES !== 'undefined' ? COMMON4_LINES : null);
+    if (!table) return { headline: '派閥合宿', narration: '', leaderQuote: '' };
+    const arr = table[archetypeId] || table._any;
+    if (!arr || !arr.length) return { headline: '派閥合宿', narration: '', leaderQuote: '' };
+    const idx = rng ? Math.floor(Engine.rng.float(rng) * arr.length) : 0;
+    return arr[idx];
+  },
+
+  // ── Common-1 派閥内試合提案 ──
+  // 発動条件: 派閥内2名 rivalry≥40、興行カード編成週、CD クリア
+  // 簡易実装: 試合カード差し替えではなく即時練習試合判定で勝敗を決定
+  checkCommon1Conditions(state, rng) {
+    const cfg = FACTION_CONFIG;
+    if (state.offSeason) return { eligible: false };
+    if (this._isCommonTeamCooldownActive(state)) return { eligible: false };
+
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+    const rels = state.relationships || {};
+    const candidates = [];
+    for (const f of factions) {
+      if (this._isCommonFactionCooldownActive(state, f.id)) continue;
+      // Common-1 個別 CD は無効（spec デフォルト 16週も導入したいが今は不要）
+      const archId = f.archetypeId || this._archetypeFromFlavor(f.flavor);
+      if (!archId) continue;
+      const memberIds = (f.memberIds || []).filter(id => roster.find(c => c.id === id));
+      if (memberIds.length < 2) continue;
+      let bestPair = null;
+      let bestScore = 39;
+      for (let i = 0; i < memberIds.length; i++) {
+        for (let j = i + 1; j < memberIds.length; j++) {
+          const a = memberIds[i], b = memberIds[j];
+          const ra = rels[`${a}>${b}`]?.rivalry || 0;
+          const rb = rels[`${b}>${a}`]?.rivalry || 0;
+          const score = Math.max(ra, rb);
+          if (score >= 40 && score > bestScore) {
+            bestScore = score;
+            bestPair = { a, b };
+          }
+        }
+      }
+      if (!bestPair) continue;
+      const fA = roster.find(c => c.id === bestPair.a);
+      const fB = roster.find(c => c.id === bestPair.b);
+      if (!fA || !fB) continue;
+      candidates.push({ faction: f, archetypeId: archId, fA, fB, currentRivalry: bestScore });
+    }
+    if (!candidates.length) return { eligible: false };
+    const idx = Math.floor(Engine.rng.float(rng) * candidates.length);
+    const ch = candidates[idx];
+    return {
+      eligible: true,
+      factionId: ch.faction.id,
+      factionName: ch.faction.name,
+      archetypeId: ch.archetypeId,
+      leaderId: ch.faction.leaderId,
+      fighterAId: ch.fA.id,
+      fighterAName: ch.fA.name,
+      fighterBId: ch.fB.id,
+      fighterBName: ch.fB.name,
+      currentRivalry: ch.currentRivalry,
+    };
+  },
+
+  applyCommon1Choice(state, payload, choiceId, rng) {
+    const { factionId, factionName, fighterAId, fighterBId, fighterAName, fighterBName } = payload;
+    let s = state;
+    const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+    const impactSummary = [];
+    let resultText = '';
+    let winnerId = null, loserId = null;
+    let winnerName = '', loserName = '';
+
+    if (choiceId === 'A') {
+      // 簡易勝敗判定: OVR + 軽い乱数
+      const a = (s.roster || []).find(c => c.id === fighterAId);
+      const b = (s.roster || []).find(c => c.id === fighterBId);
+      const ovA = a ? Engine.util.ov(a) : 50;
+      const ovB = b ? Engine.util.ov(b) : 50;
+      const noise = (Engine.rng.float(rng) - 0.5) * 20;
+      const aWins = (ovA + noise) >= ovB;
+      winnerId = aWins ? fighterAId : fighterBId;
+      loserId = aWins ? fighterBId : fighterAId;
+      winnerName = aWins ? fighterAName : fighterBName;
+      loserName = aWins ? fighterBName : fighterAName;
+      const winTrust = ri(3, 5);
+      const loseTrust = -ri(1, 3);
+      s = this._applyTrustToMembers(s, [winnerId], winTrust);
+      s = this._applyTrustToMembers(s, [loserId], loseTrust);
+      // rivalry 解消（双方向 -30〜-50）
+      const relDelta = -ri(30, 50);
+      s = this._applyRivalryDirected(s, fighterAId, fighterBId, relDelta);
+      s = this._applyRivalryDirected(s, fighterBId, fighterAId, relDelta);
+      impactSummary.push({ label: `${winnerName} trust`, delta: `+${winTrust}` });
+      impactSummary.push({ label: `${loserName} trust`, delta: `${loseTrust}` });
+      impactSummary.push({ label: `2名間 rivalry`, delta: `${relDelta}` });
+      resultText = `${winnerName}が${loserName}を下した。${factionName}内の火種は試合で清算された。`;
+    } else if (choiceId === 'B') {
+      // 別カードに置換 — 効果なし、F05 発火確率は将来的に実装
+      resultText = `${factionName}内の対決は別カードに振り替えた。火種はそのまま残った。`;
+      impactSummary.push({ label: `${factionName} 内部対立`, delta: '継続' });
+    } else {
+      // C: 静観
+      resultText = `${factionName}の内紛は自然に任せた。火種は燻ったまま。`;
+      impactSummary.push({ label: `${factionName} 内部対立`, delta: '燻り続ける' });
+    }
+
+    s = this._markCommonEventTrigger(s, factionId, 'COMMON_1');
+    return { state: s, resultText, impactSummary, winnerId, loserId, winnerName, loserName };
+  },
+
+  getCommon1Line(category, ctx) {
+    const table = (typeof COMMON1_LINES !== 'undefined' ? COMMON1_LINES : null);
+    if (!table || !category) return '';
+    const arch = ctx && ctx.archetypeId;
+    const subst = (s) => {
+      if (!s || !ctx || !ctx.vars) return s || '';
+      let out = String(s);
+      Object.keys(ctx.vars).forEach(k => {
+        out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
+      });
+      return out;
+    };
+    const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[0] : '';
+    if (category === 'coachReport') {
+      return subst(pickArr(table.coachReport[arch] || table.coachReport._any));
+    }
+    if (category === 'leaderDemand') {
+      return subst(pickArr(table.leaderDemand[arch] || table.leaderDemand._any));
+    }
+    if (category === 'resultLeader') {
+      const choice = (ctx && ctx.choice) || 'A';
+      const t = table.resultLeader[choice];
+      if (!t) return '';
+      return subst(pickArr(t._any));
+    }
+    if (category === 'resultLoser') {
+      const choice = (ctx && ctx.choice) || 'A';
+      return subst(pickArr(table.resultLoser[choice]));
+    }
+    return '';
+  },
+
+  // ── Common-5 派閥代表メディア取材 ──
+  // 発動条件: 派閥成立 24 週以上、momentum≥30 or メンバー pop≥75 が 1 名以上、CD クリア
+  checkCommon5Conditions(state, rng) {
+    const cfg = FACTION_CONFIG;
+    if (state.offSeason) return { eligible: false };
+    if (this._isCommonTeamCooldownActive(state)) return { eligible: false };
+    const now = this._absWeek(state);
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+    const candidates = [];
+    for (const f of factions) {
+      if (this._isCommonFactionCooldownActive(state, f.id)) continue;
+      // 個別 CD 32 週
+      const lastEv = (f._commonEventCooldowns || {}).COMMON_5 || 0;
+      if (lastEv && (now - lastEv) < 32) continue;
+      // 派閥成立 24 週以上
+      const formedWeek = f.formedAbsWeek || f.formedWeek || 0;
+      if (formedWeek && (now - formedWeek) < 24) continue;
+      const archId = f.archetypeId || this._archetypeFromFlavor(f.flavor);
+      if (!archId) continue;
+      const leader = roster.find(c => c.id === f.leaderId);
+      if (!leader) continue;
+      const momentum = f.momentum || 0;
+      const memberPops = (f.memberIds || []).map(id => {
+        const m = roster.find(c => c.id === id);
+        return m ? (m.pop || 0) : 0;
+      });
+      const hasHotMember = memberPops.some(p => p >= 75);
+      if (momentum < 30 && !hasHotMember) continue;
+      candidates.push({ faction: f, archetypeId: archId, leader });
+    }
+    if (!candidates.length) return { eligible: false };
+    const idx = Math.floor(Engine.rng.float(rng) * candidates.length);
+    const ch = candidates[idx];
+    return {
+      eligible: true,
+      factionId: ch.faction.id,
+      factionName: ch.faction.name,
+      archetypeId: ch.archetypeId,
+      leaderId: ch.leader.id,
+      leaderName: ch.leader.name,
+      memberIds: [...(ch.faction.memberIds || [])],
+    };
+  },
+
+  applyCommon5Choice(state, payload, choiceId, rng) {
+    const { factionId, factionName, archetypeId, leaderId, leaderName, memberIds } = payload;
+    let s = state;
+    const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+    const impactSummary = [];
+    let resultText = '';
+
+    if (choiceId === 'A') {
+      // アーキタイプ別 A 結果（一時効果）
+      switch (archetypeId) {
+        case 'AUTHORITY':
+          s = this.applyMomentumChange(s, factionId, 4);
+          s = this._applyLockerRoomMorale(s, -2);
+          impactSummary.push({ label: `${factionName} 勢い`, delta: '+4' });
+          impactSummary.push({ label: 'ロッカー士気', delta: '-2' });
+          resultText = `記事は${leaderName}の威圧的発言が前面に。注目は集まったが、外との緊張も増した。`;
+          break;
+        case 'BOND': {
+          const inc = ri(8, 12);
+          s = { ...s, funds: (s.funds || 0) + inc * 10000 };
+          s = this.applyMomentumChange(s, factionId, 3);
+          impactSummary.push({ label: 'メディア収入', delta: `¥${inc}万` });
+          impactSummary.push({ label: `${factionName} 勢い`, delta: '+3' });
+          resultText = `${factionName}の家族的な空気が誌面に出た。柔らかな反響と、ささやかな収入。`;
+          break;
+        }
+        case 'MERIT':
+          s = this.applyMomentumChange(s, factionId, 4);
+          // 若手 trust -2
+          if (Array.isArray(s.roster) && Array.isArray(memberIds)) {
+            const youngIds = (s.roster || []).filter(c => memberIds.includes(c.id) && (c.age || 25) <= 22).map(c => c.id);
+            if (youngIds.length) s = this._applyTrustToMembers(s, youngIds, -2);
+          }
+          impactSummary.push({ label: `${factionName} 勢い`, delta: '+4' });
+          impactSummary.push({ label: '若手 trust', delta: '-2' });
+          resultText = `${leaderName}が選別主義を堂々と語った。賛否両論、燃える誌面となった。`;
+          break;
+        case 'HEEL':
+          s = this.applyMomentumChange(s, factionId, 7);
+          // orgPop 微減リスク（一時のみ表現として -1）
+          s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) - 1, 0, 100) };
+          impactSummary.push({ label: `${factionName} 勢い`, delta: '+7' });
+          impactSummary.push({ label: `${state.orgName || '団体'} 知名度`, delta: '-1（炎上）' });
+          resultText = `挑発的発言で記事は炎上。${factionName}の勢いは跳ねたが、団体イメージは少し陰った。`;
+          break;
+        case 'FACE': {
+          const inc = ri(12, 18);
+          s = { ...s, funds: (s.funds || 0) + inc * 10000 };
+          s = this.applyMomentumChange(s, factionId, 4);
+          impactSummary.push({ label: 'メディア収入', delta: `¥${inc}万` });
+          impactSummary.push({ label: `${factionName} 勢い`, delta: '+4' });
+          resultText = `${leaderName}の模範的対応がファン誌面を飾った。好感度と収入の両取り。`;
+          break;
+        }
+        case 'COMBAT': {
+          // F02 発火確率+ は既存システムに無いので、リーダーの対外 rivalry を煽る簡易表現
+          s = this.applyMomentumChange(s, factionId, 3);
+          impactSummary.push({ label: `${factionName} 勢い`, delta: '+3' });
+          impactSummary.push({ label: '対外 rivalry', delta: '上昇' });
+          resultText = `${leaderName}は誌面で次の標的を名指しした。火種は派閥外へと撒かれた。`;
+          break;
+        }
+        default:
+          s = this.applyMomentumChange(s, factionId, 2);
+          impactSummary.push({ label: `${factionName} 勢い`, delta: '+2' });
+          resultText = `取材は無難に終わった。`;
+      }
+    } else if (choiceId === 'B') {
+      const inc = ri(5, 10);
+      s = { ...s, funds: (s.funds || 0) + inc * 10000 };
+      s = this.applyMomentumChange(s, factionId, 2);
+      impactSummary.push({ label: 'メディア収入', delta: `¥${inc}万` });
+      impactSummary.push({ label: `${factionName} 勢い`, delta: '+2' });
+      resultText = `コーチ同席で無難な記事に収まった。色は薄いが、ささやかな実りはあった。`;
+    } else {
+      s = this.applyMomentumChange(s, factionId, -2);
+      impactSummary.push({ label: `${factionName} 勢い`, delta: '-2' });
+      resultText = `取材は断った。${factionName}は表に出ず、しばらく沈む。`;
+    }
+
+    s = this._markCommonEventTrigger(s, factionId, 'COMMON_5');
+    return { state: s, resultText, impactSummary };
+  },
+
+  getCommon5Line(category, ctx) {
+    const table = (typeof COMMON5_LINES !== 'undefined' ? COMMON5_LINES : null);
+    if (!table || !category) return '';
+    const arch = ctx && ctx.archetypeId;
+    const subst = (s) => {
+      if (!s || !ctx || !ctx.vars) return s || '';
+      let out = String(s);
+      Object.keys(ctx.vars).forEach(k => {
+        out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
+      });
+      return out;
+    };
+    const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[0] : '';
+    if (category === 'coachReport') {
+      return subst(pickArr(table.coachReport[arch] || table.coachReport._any));
+    }
+    if (category === 'leaderQuoteA') {
+      const fighter = ctx && ctx.fighter;
+      const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'composed';
+      const t = table.leaderQuoteA[arch];
+      if (!t) return '';
+      return subst(pickArr(t[personality] || t.composed));
+    }
+    if (category === 'headlineA') {
+      return subst(pickArr(table.headlineA[arch] || []));
+    }
+    if (category === 'resultLeader') {
+      const choice = (ctx && ctx.choice) || 'A';
+      const t = table.resultLeader[choice];
+      if (!t) return '';
+      return subst(pickArr(t._any));
+    }
+    return '';
+  },
+
+  // ── Common-7 派閥間合同企画 ──
+  // 敵対していない派閥ペア、両リーダー bond≥40、ペア CD 32 週
+  // アーキタイプ組合わせフィルタ: HEEL×FACE 不発、AUTHORITY×AUTHORITY 不発
+  checkCommon7Conditions(state, rng) {
+    const cfg = FACTION_CONFIG;
+    if (state.offSeason) return { eligible: false };
+    if (this._isCommonTeamCooldownActive(state)) return { eligible: false };
+    const factions = state.factions || [];
+    if (factions.length < 2) return { eligible: false };
+    const roster = state.roster || [];
+    const rels = state.relationships || {};
+    const now = this._absWeek(state);
+    const candidates = [];
+    for (let i = 0; i < factions.length; i++) {
+      for (let j = i + 1; j < factions.length; j++) {
+        const fA = factions[i], fB = factions[j];
+        const archA = fA.archetypeId || this._archetypeFromFlavor(fA.flavor);
+        const archB = fB.archetypeId || this._archetypeFromFlavor(fB.flavor);
+        if (!archA || !archB) continue;
+        // フィルタ
+        if (archA === 'AUTHORITY' && archB === 'AUTHORITY') continue;
+        if ((archA === 'HEEL' && archB === 'FACE') || (archA === 'FACE' && archB === 'HEEL')) continue;
+        // 敵対判定（双方向 hostility < 30）
+        const hostAB = (fA.hostilityTo || {})[fB.id] || 0;
+        const hostBA = (fB.hostilityTo || {})[fA.id] || 0;
+        if (hostAB >= 30 || hostBA >= 30) continue;
+        // ペア CD 32 週
+        const pairKey = `pair_${Math.min(fA.id, fB.id)}_${Math.max(fA.id, fB.id)}`;
+        const lastPair = (state._commonEvent7PairCooldowns || {})[pairKey] || 0;
+        if (lastPair && (now - lastPair) < 32) continue;
+        // 個別派閥 CD（共通）
+        if (this._isCommonFactionCooldownActive(state, fA.id)) continue;
+        if (this._isCommonFactionCooldownActive(state, fB.id)) continue;
+        // 両リーダー bond ≥40
+        const leaderA = roster.find(c => c.id === fA.leaderId);
+        const leaderB = roster.find(c => c.id === fB.leaderId);
+        if (!leaderA || !leaderB) continue;
+        const bondAB = rels[`${fA.leaderId}>${fB.leaderId}`]?.bond || 0;
+        const bondBA = rels[`${fB.leaderId}>${fA.leaderId}`]?.bond || 0;
+        if (Math.min(bondAB, bondBA) < 40) continue;
+        candidates.push({ fA, fB, archA, archB, leaderA, leaderB, pairKey });
+      }
+    }
+    if (!candidates.length) return { eligible: false };
+    const idx = Math.floor(Engine.rng.float(rng) * candidates.length);
+    const ch = candidates[idx];
+    const planType = this._common7PlanType(ch.archA, ch.archB);
+    return {
+      eligible: true,
+      factionAId: ch.fA.id,
+      factionBId: ch.fB.id,
+      factionAName: ch.fA.name,
+      factionBName: ch.fB.name,
+      archetypeAId: ch.archA,
+      archetypeBId: ch.archB,
+      leaderAId: ch.leaderA.id,
+      leaderAName: ch.leaderA.name,
+      leaderBId: ch.leaderB.id,
+      leaderBName: ch.leaderB.name,
+      pairKey: ch.pairKey,
+      planType,
+    };
+  },
+
+  _common7PlanType(archA, archB) {
+    const table = (typeof COMMON7_LINES !== 'undefined' ? COMMON7_LINES.planType : null) || {};
+    const k1 = `${archA}_${archB}`;
+    const k2 = `${archB}_${archA}`;
+    return table[k1] || table[k2] || table._any || '合同企画';
+  },
+
+  applyCommon7Choice(state, payload, choiceId, rng) {
+    const { factionAId, factionBId, factionAName, factionBName, pairKey, planType } = payload;
+    let s = state;
+    const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+    const impactSummary = [];
+    let resultText = '';
+    let outcome = '';
+
+    if (choiceId === 'A') {
+      const momA = ri(5, 8);
+      const momB = ri(5, 8);
+      s = this.applyMomentumChange(s, factionAId, momA);
+      s = this.applyMomentumChange(s, factionBId, momB);
+      // 両派閥のメンバー間 bond +1〜+3
+      const fA = (s.factions || []).find(f => f.id === factionAId);
+      const fB = (s.factions || []).find(f => f.id === factionBId);
+      const bondDelta = ri(1, 3);
+      if (fA && fB) {
+        const allIds = [...(fA.memberIds || []), ...(fB.memberIds || [])];
+        s = this._applyBondBetweenMembers(s, allIds, bondDelta);
+      }
+      impactSummary.push({ label: `${factionAName} 勢い`, delta: `+${momA}` });
+      impactSummary.push({ label: `${factionBName} 勢い`, delta: `+${momB}` });
+      impactSummary.push({ label: '両派閥 メンバー間 bond', delta: `+${bondDelta}` });
+      resultText = `${planType}が組まれた。${factionAName}と${factionBName}は手を組んで観客を沸かせた。`;
+    } else if (choiceId === 'B') {
+      resultText = `${factionAName}と${factionBName}は適度な距離を保った。関係は穏やかなまま。`;
+      impactSummary.push({ label: '両派閥 関係', delta: '維持' });
+    } else {
+      // C: 観察 50/50
+      const success = Engine.rng.float(rng) < 0.5;
+      if (success) {
+        s = this.applyMomentumChange(s, factionAId, 3);
+        s = this.applyMomentumChange(s, factionBId, 3);
+        impactSummary.push({ label: `${factionAName} 勢い`, delta: '+3' });
+        impactSummary.push({ label: `${factionBName} 勢い`, delta: '+3' });
+        outcome = '両派閥の自発的な交流が実った';
+        resultText = `現場任せにした結果、${outcome}。`;
+      } else {
+        outcome = '何も起きずに流れた';
+        resultText = `静観した結果、${outcome}。`;
+        impactSummary.push({ label: '両派閥 関係', delta: '変化なし' });
+      }
+    }
+
+    // ペア CD + 両派閥 CD + チーム CD を更新
+    const now = this._absWeek(s);
+    const pairCDs = { ...(s._commonEvent7PairCooldowns || {}) };
+    pairCDs[pairKey] = now;
+    s = { ...s, _commonEvent7PairCooldowns: pairCDs };
+    s = this._markCommonEventTrigger(s, factionAId, 'COMMON_7');
+    // factionB の派閥 CD も更新（チーム CD は重複だが冪等）
+    const cfg = FACTION_CONFIG;
+    const fctsB = (s.factions || []).map(f => {
+      if (f.id !== factionBId) return f;
+      const cds = { ...(f._commonEventCooldowns || {}) };
+      cds.COMMON_7 = now;
+      return { ...f, _commonEventCooldowns: cds, _commonEventLastWeek: now };
+    });
+    s = { ...s, factions: fctsB };
+
+    return { state: s, resultText, impactSummary, outcome };
+  },
+
+  getCommon7Line(category, ctx) {
+    const table = (typeof COMMON7_LINES !== 'undefined' ? COMMON7_LINES : null);
+    if (!table || !category) return '';
+    const arch = ctx && ctx.archetypeId;
+    const subst = (s) => {
+      if (!s || !ctx || !ctx.vars) return s || '';
+      let out = String(s);
+      Object.keys(ctx.vars).forEach(k => {
+        out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
+      });
+      return out;
+    };
+    const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[0] : '';
+    if (category === 'coachReport') {
+      return subst(pickArr(table.coachReport._any));
+    }
+    if (category === 'leaderAQuote') {
+      return subst(pickArr(table.leaderAQuote[arch] || table.leaderAQuote._any));
+    }
+    if (category === 'leaderBQuote') {
+      return subst(pickArr(table.leaderBQuote[arch] || table.leaderBQuote._any));
+    }
+    if (category === 'resultLeader') {
+      const choice = (ctx && ctx.choice) || 'A';
+      const t = table.resultLeader[choice];
+      if (!t) return '';
+      return subst(pickArr(t._any));
+    }
+    return '';
   },
 
   // ── F07 v0.4 incidentPayload 簡易対象選定 ──

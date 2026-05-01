@@ -9466,6 +9466,311 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
   });
 }
 
+// Common-4: 派閥合宿・慰労会 通知モーダル（プレイヤー選択なし）
+function showFactionCommon4Modal(payload, state, onClose) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionCommon4Modal(payload, state, onClose)); return; }
+
+  const roster = state ? (state.roster || []) : [];
+  const leader = roster.find(c => c.id === payload.leaderId);
+  const leaderName = leader ? leader.name : (payload.leaderName || '???');
+  const factionName = String(payload.factionName || '派閥');
+  const archetypeId = payload.archetypeId || null;
+  const leaderUrl = leader ? _factionUpperUrl(leader.id) : '';
+
+  const lineRng = (typeof Engine !== 'undefined' && Engine.rng && Engine.rng.create)
+    ? Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season || 1, state.week || 1, payload.factionId, 0xC04))
+    : null;
+  const line = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getCommon4Line)
+    ? Engine.factions.getCommon4Line(archetypeId, lineRng)
+    : { headline: '派閥合宿', narration: '揃って数日を過ごした。', leaderQuote: '' };
+
+  const leaderPortrait = leaderUrl
+    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}');width:96px;height:120px"></div>`
+    : `<div class="fevt-subject-portrait-wrap" style="width:96px;height:120px"></div>`;
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtCommon4Overlay">
+      <div class="fevt-report-card">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">🏕 ${factionName} ${line.headline}</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
+        </div>
+        ${_factionReporterStrip(state, `${factionName}が${line.headline}を組んだみたいです。`)}
+        <div class="fevt-subject-stage">
+          <div style="display:flex;gap:18px;align-items:flex-end;justify-content:center;margin-bottom:8px">
+            ${leaderPortrait}
+          </div>
+          <div class="fevt-subject-name">${factionName} — ${line.headline}</div>
+          <div class="fevt-subject-divider"></div>
+          <div style="color:#5d4a30;line-height:1.7;margin:8px 4px 0;font-size:14px">${line.narration}</div>
+          <div class="fevt-quote leader" style="margin-top:12px">
+            <div class="fevt-quote-speaker">${leaderName}（${factionName}）</div>
+            ${line.leaderQuote}
+          </div>
+        </div>
+        <div class="fevt-decision-tray" style="justify-content:center">
+          <div class="fevt-decision-card" data-choice="OK" style="max-width:200px">
+            <div class="fevt-decision-label">見届ける ✓</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onClose) onClose();
+    });
+  });
+}
+
+// Common-1: 派閥内試合提案 3 択モーダル
+function showFactionCommon1Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionCommon1Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const fA = roster.find(c => c.id === payload.fighterAId);
+  const fB = roster.find(c => c.id === payload.fighterBId);
+  const leader = roster.find(c => c.id === payload.leaderId);
+  const factionName = String(payload.factionName || '派閥');
+  const archetypeId = payload.archetypeId || null;
+  const aName = fA ? fA.name : (payload.fighterAName || '???');
+  const bName = fB ? fB.name : (payload.fighterBName || '???');
+  const leaderName = leader ? leader.name : '???';
+  const leftPortrait = fA ? `<div class="fevt-pair-portrait" style="background-image:url('${_factionUpperUrl(fA.id)}');background-size:cover;background-position:center 20%"></div>` : `<div class="fevt-pair-portrait"></div>`;
+  const rightPortrait = fB ? `<div class="fevt-pair-portrait" style="background-image:url('${_factionUpperUrl(fB.id)}');background-size:cover;background-position:center 20%"></div>` : `<div class="fevt-pair-portrait"></div>`;
+
+  const vars = { factionName, aName, bName };
+  const coachLine = (Engine.factions.getCommon1Line)
+    ? Engine.factions.getCommon1Line('coachReport', { archetypeId, vars })
+    : `${factionName}内の${aName}と${bName}に火種があります。`;
+  const leaderLine = (Engine.factions.getCommon1Line)
+    ? Engine.factions.getCommon1Line('leaderDemand', { archetypeId, vars })
+    : 'リングで決めたい。';
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtCommon1Overlay">
+      <div class="fevt-report-card">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">⚔ 派閥内対決の打診</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
+        </div>
+        ${_factionReporterStrip(state, coachLine)}
+        <div class="fevt-subject-stage">
+          <div class="fevt-subject-pair">
+            ${leftPortrait}
+            <div class="fevt-pair-bridge">vs</div>
+            ${rightPortrait}
+          </div>
+          <div class="fevt-subject-name">${aName} ・ ${bName}</div>
+          <div class="fevt-subject-org">${factionName} ・ rivalry ${payload.currentRivalry || 0} / 100</div>
+          <div class="fevt-subject-divider"></div>
+          <div class="fevt-quote leader">
+            <div class="fevt-quote-speaker">${leaderName}（${factionName}）</div>
+            ${leaderLine}
+          </div>
+        </div>
+        <div class="fevt-decision-prompt">この火種、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-tray three">
+          <div class="fevt-decision-card" data-choice="A">
+            <div class="fevt-decision-letter">A</div>
+            <div class="fevt-decision-label">派閥内対決を組む</div>
+            <div class="fevt-decision-hint">2名で試合。勝者 trust <strong>+3〜+5</strong>／敗者 trust <strong>-1〜-3</strong>／rivalry <strong>-30〜-50</strong></div>
+          </div>
+          <div class="fevt-decision-card" data-choice="B">
+            <div class="fevt-decision-letter">B</div>
+            <div class="fevt-decision-label">別カードに置換</div>
+            <div class="fevt-decision-hint">対決は組まない。火種は残ったまま継続</div>
+          </div>
+          <div class="fevt-decision-card" data-choice="C">
+            <div class="fevt-decision-letter">C</div>
+            <div class="fevt-decision-label">静観する</div>
+            <div class="fevt-decision-hint">何もしない。彼女らの自然な決着に任せる</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const choice = this.dataset.choice;
+      if (!choice) return;
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onChoice) onChoice(choice);
+    });
+  });
+}
+
+// Common-5: 派閥代表メディア取材 3 択モーダル
+function showFactionCommon5Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionCommon5Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const leader = roster.find(c => c.id === payload.leaderId);
+  const leaderName = leader ? leader.name : (payload.leaderName || '???');
+  const factionName = String(payload.factionName || '派閥');
+  const archetypeId = payload.archetypeId || null;
+  const leaderUrl = leader ? _factionUpperUrl(leader.id) : '';
+  const portrait = leaderUrl
+    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}');width:96px;height:120px"></div>`
+    : `<div class="fevt-subject-portrait-wrap" style="width:96px;height:120px"></div>`;
+
+  const vars = { factionName, leaderName };
+  const coachLine = (Engine.factions.getCommon5Line)
+    ? Engine.factions.getCommon5Line('coachReport', { archetypeId, vars })
+    : `${factionName}に取材依頼が来ています。`;
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtCommon5Overlay">
+      <div class="fevt-report-card">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">📰 派閥代表メディア取材</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
+        </div>
+        ${_factionReporterStrip(state, coachLine)}
+        <div class="fevt-subject-stage">
+          <div style="display:flex;justify-content:center;margin-bottom:8px">${portrait}</div>
+          <div class="fevt-subject-name">${leaderName}（${factionName}）</div>
+          <div class="fevt-subject-divider"></div>
+          <div style="color:#5d4a30;line-height:1.7;margin:8px 4px;font-size:14px">取材オファーが届いた。誰がどう答えるかで、誌面の色が変わる。</div>
+        </div>
+        <div class="fevt-decision-prompt">取材、誰に委ねますか？</div>
+        <div class="fevt-decision-tray three">
+          <div class="fevt-decision-card" data-choice="A">
+            <div class="fevt-decision-letter">A</div>
+            <div class="fevt-decision-label">${leaderName}に任せる</div>
+            <div class="fevt-decision-hint">派閥色が強く出る。アーキタイプに応じてハイリスクハイリターン</div>
+          </div>
+          <div class="fevt-decision-card" data-choice="B">
+            <div class="fevt-decision-letter">B</div>
+            <div class="fevt-decision-label">コーチ同席で対応</div>
+            <div class="fevt-decision-hint">無難な記事に。勢い <strong>+2</strong>／メディア収入 <strong>¥5〜10万</strong></div>
+          </div>
+          <div class="fevt-decision-card" data-choice="C">
+            <div class="fevt-decision-letter">C</div>
+            <div class="fevt-decision-label">取材を断る</div>
+            <div class="fevt-decision-hint">露出なし。勢い <strong>-2</strong>／メディア関係微低下</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const choice = this.dataset.choice;
+      if (!choice) return;
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onChoice) onChoice(choice);
+    });
+  });
+}
+
+// Common-7: 派閥間合同企画 3 択モーダル
+function showFactionCommon7Modal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionCommon7Modal(payload, state, onChoice)); return; }
+  const roster = state ? (state.roster || []) : [];
+  const lA = roster.find(c => c.id === payload.leaderAId);
+  const lB = roster.find(c => c.id === payload.leaderBId);
+  const lAName = lA ? lA.name : (payload.leaderAName || '???');
+  const lBName = lB ? lB.name : (payload.leaderBName || '???');
+  const factionAName = String(payload.factionAName || '派閥A');
+  const factionBName = String(payload.factionBName || '派閥B');
+  const planType = String(payload.planType || '合同企画');
+  const archA = payload.archetypeAId || null;
+  const archB = payload.archetypeBId || null;
+  const leftPortrait = lA ? `<div class="fevt-pair-portrait" style="background-image:url('${_factionUpperUrl(lA.id)}');background-size:cover;background-position:center 20%"></div>` : `<div class="fevt-pair-portrait"></div>`;
+  const rightPortrait = lB ? `<div class="fevt-pair-portrait" style="background-image:url('${_factionUpperUrl(lB.id)}');background-size:cover;background-position:center 20%"></div>` : `<div class="fevt-pair-portrait"></div>`;
+
+  const vars = { factionAName, factionBName, planType };
+  const coachLine = (Engine.factions.getCommon7Line)
+    ? Engine.factions.getCommon7Line('coachReport', { vars })
+    : `${factionAName}と${factionBName}、合同企画の打診が出ています。`;
+  const aQuote = (Engine.factions.getCommon7Line)
+    ? Engine.factions.getCommon7Line('leaderAQuote', { archetypeId: archA, vars })
+    : '「組んでみるか」';
+  const bQuote = (Engine.factions.getCommon7Line)
+    ? Engine.factions.getCommon7Line('leaderBQuote', { archetypeId: archB, vars })
+    : '「乗った」';
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtCommon7Overlay">
+      <div class="fevt-report-card">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">🤝 派閥間合同企画</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
+        </div>
+        ${_factionReporterStrip(state, coachLine)}
+        <div class="fevt-subject-stage">
+          <div class="fevt-subject-pair">
+            ${leftPortrait}
+            <div class="fevt-pair-bridge">＋</div>
+            ${rightPortrait}
+          </div>
+          <div class="fevt-subject-name">${factionAName} × ${factionBName}</div>
+          <div class="fevt-subject-org">${planType}</div>
+          <div class="fevt-subject-divider"></div>
+          <div class="fevt-quote leader">
+            <div class="fevt-quote-speaker">${lAName}（${factionAName}）</div>
+            ${aQuote}
+          </div>
+          <div class="fevt-quote leader" style="margin-top:8px">
+            <div class="fevt-quote-speaker">${lBName}（${factionBName}）</div>
+            ${bQuote}
+          </div>
+        </div>
+        <div class="fevt-decision-prompt">この合同企画、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-tray three">
+          <div class="fevt-decision-card" data-choice="A">
+            <div class="fevt-decision-letter">A</div>
+            <div class="fevt-decision-label">合同企画を承認</div>
+            <div class="fevt-decision-hint">${planType}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 bond <strong>+1〜+3</strong></div>
+          </div>
+          <div class="fevt-decision-card" data-choice="B">
+            <div class="fevt-decision-letter">B</div>
+            <div class="fevt-decision-label">距離を保つ</div>
+            <div class="fevt-decision-hint">関係を維持。効果なし</div>
+          </div>
+          <div class="fevt-decision-card" data-choice="C">
+            <div class="fevt-decision-letter">C</div>
+            <div class="fevt-decision-label">観察する</div>
+            <div class="fevt-decision-hint">現場任せ。50% で両派閥 勢い <strong>+3</strong>／50% で何も起きない</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const choice = this.dataset.choice;
+      if (!choice) return;
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onChoice) onChoice(choice);
+    });
+  });
+}
+
 // グローバル公開
 if (typeof window !== 'undefined') {
   window.showFactionF01Modal = showFactionF01Modal;
@@ -9482,6 +9787,10 @@ if (typeof window !== 'undefined') {
   window.showFactionF07Modal = showFactionF07Modal;
   window.showFactionF08Modal = showFactionF08Modal;
   window.showFactionCommon3Modal = showFactionCommon3Modal;
+  window.showFactionCommon4Modal = showFactionCommon4Modal;
+  window.showFactionCommon1Modal = showFactionCommon1Modal;
+  window.showFactionCommon5Modal = showFactionCommon5Modal;
+  window.showFactionCommon7Modal = showFactionCommon7Modal;
   window.showFactionArchetypeTransitionModal = showFactionArchetypeTransitionModal;
   window.showFactionEventResult = showFactionEventResult;
 }

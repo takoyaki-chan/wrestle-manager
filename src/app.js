@@ -1025,6 +1025,10 @@ const FACTION_AUDIO_MAP = {
   F06:            { src: FACTION_AUDIO.SOFT,    volume: 0.16,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.10 } },
   F07:            { src: FACTION_AUDIO.TENSION, volume: 0.15 },
   F08:            { src: FACTION_AUDIO.TENSION, volume: 0.17, openStinger:  { src: FACTION_AUDIO.GONG,  volume: 0.15 } },
+  COMMON_1:       { src: FACTION_AUDIO.TENSION, volume: 0.14 },
+  COMMON_4:       { src: FACTION_AUDIO.SOFT,    volume: 0.12,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.09 } },
+  COMMON_5:       { src: FACTION_AUDIO.SOFT,    volume: 0.13 },
+  COMMON_7:       { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
 };
 
 // 派閥イベントモーダル開幕時: BGM 切替 + openStinger
@@ -9072,6 +9076,90 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leader8 ? leader8.name : payload.leaderAName,
+          impactSummary: result.impactSummary || [],
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
+      });
+    } else if (eventId === 'COMMON_1') {
+      _factionAudioOpen(eventId);
+      showFactionCommon1Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAC1));
+        const result = Engine.factions.applyCommon1Choice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        const leader = (G.roster || []).find(c => c.id === payload.leaderId);
+        showFactionEventResult({
+          eventId: 'COMMON_1',
+          category: '派閥内対決',
+          resultText: result.resultText,
+          charId: payload.leaderId || null,
+          charName: leader ? leader.name : '',
+          impactSummary: result.impactSummary || [],
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
+      });
+    } else if (eventId === 'COMMON_5') {
+      _factionAudioOpen(eventId);
+      showFactionCommon5Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAC5));
+        const result = Engine.factions.applyCommon5Choice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        const leader = (G.roster || []).find(c => c.id === payload.leaderId);
+        showFactionEventResult({
+          eventId: 'COMMON_5',
+          category: 'メディア取材',
+          resultText: result.resultText,
+          charId: payload.leaderId || null,
+          charName: leader ? leader.name : payload.leaderName,
+          impactSummary: result.impactSummary || [],
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
+      });
+    } else if (eventId === 'COMMON_7') {
+      _factionAudioOpen(eventId);
+      showFactionCommon7Modal(payload, G, (choiceId) => {
+        if (!choiceId) return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAC7));
+        const result = Engine.factions.applyCommon7Choice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        const leaderA = (G.roster || []).find(c => c.id === payload.leaderAId);
+        showFactionEventResult({
+          eventId: 'COMMON_7',
+          category: '派閥合同企画',
+          resultText: result.resultText,
+          charId: payload.leaderAId || null,
+          charName: leaderA ? leaderA.name : payload.leaderAName,
+          impactSummary: result.impactSummary || [],
+          weekLabel: `S${G.season} W${G.week}`,
+        }, finalizeAudio);
+      });
+    } else if (eventId === 'COMMON_4') {
+      // 派閥合宿・慰労会（通知のみ・選択肢なし）
+      _factionAudioOpen(eventId);
+      showFactionCommon4Modal(payload, G, () => {
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAC4));
+        const result = Engine.factions.applyCommon4Result(G, payload, rng);
+        G = { ...result.state };
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        const leader = (G.roster || []).find(c => c.id === payload.leaderId);
+        showFactionEventResult({
+          eventId: 'COMMON_4',
+          category: '派閥合宿',
+          resultText: result.resultText,
+          charId: payload.leaderId || null,
+          charName: leader ? leader.name : payload.leaderName,
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
