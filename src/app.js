@@ -10640,17 +10640,75 @@ App.finalizePPV = function() {
     if (summitIdx >= 0) {
       const sr = pp.results[summitIdx];
       const sm = pp.card[summitIdx];
-      const playerF = sm.left._ppvOrgId === 'player' ? sm.left : sm.right._ppvOrgId === 'player' ? sm.right : sm.left;
-      const aiF = playerF === sm.left ? sm.right : sm.left;
-      const playerWon = (sr.winner === 'left' && playerF === sm.left) || (sr.winner === 'right' && playerF === sm.right);
+      const sp = pp.summitPair;
+      // 自団体所属を厳密判定。player不在のTVモードでは playerInvolved=false
+      const leftIsPlayer = sm.left._ppvOrgId === 'player';
+      const rightIsPlayer = sm.right._ppvOrgId === 'player';
+      const playerInvolved = leftIsPlayer || rightIsPlayer;
+      const playerF = leftIsPlayer ? sm.left : (rightIsPlayer ? sm.right : sm.left);
+      const aiF = (playerF === sm.left) ? sm.right : sm.left;
+      const playerWon = playerInvolved && (
+        (sr.winner === 'left' && playerF === sm.left) ||
+        (sr.winner === 'right' && playerF === sm.right)
+      );
+      const winnerF = sr.winner === 'left' ? sm.left : (sr.winner === 'right' ? sm.right : null);
+      const loserF = winnerF ? (winnerF === sm.left ? sm.right : sm.left) : null;
+
+      // 団体名（プレイヤー側 / 相手側）
+      const orgNameOf = (orgId) => orgId === 'player' ? (G.orgName || 'プレイヤー団体') : (G.aiOrgs?.[orgId]?.name || '相手団体');
+      const playerOrgName = playerInvolved ? (G.orgName || 'プレイヤー団体')
+        : orgNameOf(sp.org1Id);
+      const aiOrgId = playerInvolved
+        ? (sp.org1Id === 'player' ? sp.org2Id : sp.org1Id)
+        : sp.org2Id;
+      const aiOrgName = orgNameOf(aiOrgId);
+
+      // ランキング
+      const rankings = G.rankings || [];
+      const playerOrgIdLookup = playerInvolved ? 'player' : sp.org1Id;
+      const playerRank = (rankings.find(r => r.orgId === playerOrgIdLookup) || {}).rank || null;
+      const aiRank = (rankings.find(r => r.orgId === aiOrgId) || {}).rank || null;
+
+      // h2h（更新前なのでprior）
+      const priorH2h = playerF && aiF ? Engine.h2h.getRecordFor(G, playerF.id, aiF.id) : null;
+
+      // HP残量
+      const winnerSide = sr.winner;
+      const winnerHpFinal = winnerSide === 'left' ? (sr.hpLeft?.final ?? 0) : (sr.hpRight?.final ?? 0);
+      const winnerHpMax = winnerSide === 'left' ? (sr.hpLeft?.max ?? 100) : (sr.hpRight?.max ?? 100);
+      const loserHpFinal = winnerSide === 'left' ? (sr.hpRight?.final ?? 0) : (sr.hpLeft?.final ?? 0);
+      const loserHpMax = winnerSide === 'left' ? (sr.hpRight?.max ?? 100) : (sr.hpLeft?.max ?? 100);
+
+      // 勝者セリフ（自団体勝利時のみ、PPV_SUMMIT_VICTORY_LINESから1本）
+      let winnerLine = null;
+      if (playerWon && winnerF && typeof PPV_SUMMIT_VICTORY_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
+        try { winnerLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winnerF); } catch (e) {}
+      }
+
       s._newsSummitResult = {
-        opponentName: pp.summitPair.org1Id === 'player' ? (G.aiOrgs[pp.summitPair.org2Id]?.name || '相手団体') : (G.aiOrgs[pp.summitPair.org1Id]?.name || '相手団体'),
+        playerInvolved,
         playerName: playerF.name,
         playerId: playerF.id,
+        playerOrgName,
         aiName: aiF.name,
         aiId: aiF.id,
+        aiOrgName,
+        opponentName: aiOrgName, // 後方互換
         won: playerWon,
+        winnerName: winnerF ? winnerF.name : null,
+        winnerId: winnerF ? winnerF.id : null,
+        loserName: loserF ? loserF.name : null,
+        loserId: loserF ? loserF.id : null,
         mq: sr.mq,
+        finType: sr.finType,
+        finMove: sr.finMove,
+        finishPhase: sr.finishPhase,
+        turns: sr.turns,
+        winnerHpFinal, winnerHpMax,
+        loserHpFinal, loserHpMax,
+        playerRank, aiRank,
+        priorH2h: priorH2h ? { wins: priorH2h.wins, losses: priorH2h.losses, draws: priorH2h.draws, matches: priorH2h.matches } : null,
+        winnerLine,
       };
     }
   }

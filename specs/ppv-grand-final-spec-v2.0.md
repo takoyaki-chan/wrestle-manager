@@ -199,4 +199,61 @@ GENESIS / STARDOM FINAL / GRAND CLASH / BURNING SPIRIT / QUEEN'S SUMMIT / DREAM 
 | Week 44–47 | 通常運営（エントリーロック済み） |
 | Week 48 | PPV開催 → 怪我代替 → 全試合シミュレーション → 結果表示 → 報酬配布 → オフシーズンへ |
 
+---
+
+## §13 新聞記事生成（頂上決戦）
+
+PPV終了後、翌週の週刊グラップル一面記事を `_newsSummitResult` から生成する。
+**実装箇所**: app.js `finalizePPV()` でペイロード保存、management.js `storyMaker` で見出し・本文生成。
+
+### §13.1 ペイロード（`_newsSummitResult`）
+
+app.js が h2h 更新前のタイミングで以下を保存する:
+
+| フィールド | 説明 |
+|-----------|------|
+| `playerInvolved` | 自団体が頂上決戦に参加したか（false=TVモード） |
+| `playerName / playerId / playerOrgName` | 自団体側選手・団体名 |
+| `aiName / aiId / aiOrgName` | 相手側選手・団体名 |
+| `winnerName / winnerId / loserName / loserId` | 勝敗を団体問わず明示 |
+| `won` | 自団体勝利フラグ（playerInvolved=falseなら常にfalse） |
+| `mq / finType / finMove / finishPhase / turns` | 試合結果（match-engine.js から） |
+| `winnerHpFinal / winnerHpMax / loserHpFinal / loserHpMax` | 接戦判定用 |
+| `playerRank / aiRank` | 試合時点のランキング順位 |
+| `priorH2h` | h2h更新前の過去対戦記録 `{wins, losses, draws, matches}` |
+| `winnerLine` | 自団体勝利時のみ、`PPV_SUMMIT_VICTORY_LINES` から1本 |
+
+### §13.2 見出しテンプレート
+
+優先順位で評価し、最初にマッチした条件を採用:
+
+| 条件 | 見出し |
+|------|------|
+| 過去3戦以上+MQ80+ | `🏆 因縁の頂上決戦 — {winner}、{N}度目の対戦で{loser}を下す` |
+| 接戦(HP残<18%)+MQ80+ | `🏆 {playerName} vs {aiName} 死闘の末 — {winner}が栄冠` |
+| MQ80+ | `🏆 {playerName} vs {aiName} — 歴史に刻まれる頂上決戦、{winner}に軍配` |
+| 圧勝(HP残≥55%) | `🏆 {winner}、{loser}を完封 — {winnerOrg}が頂点に立つ` |
+| 接戦(HP残<18%) | `🏆 {playerName} vs {aiName} — 接戦を制し{winner}が勝利` |
+| 自団体敗北 | `🏆 頂上決戦 — {ai}、{player}を下し頂点へ` |
+| その他 | `🏆 頂上決戦 {playerName} vs {aiName} — {winner}が制す` |
+
+「vs 相手団体」のような団体名のみの見出しは廃止。必ず両選手名を記載する。
+
+### §13.3 本文構成
+
+5要素を順に組み立てる（条件次第で省略あり）:
+
+1. **舞台設定**: `第{S}年度・第{W}週 PPV GRAND FINAL メインイベント。` + ランキング順位付き対戦カード
+2. **試合内容**: ターン数 + 接戦/圧勝の文体スイッチ + フェーズ（序盤/中盤/終盤/長期戦） + `Engine.formatFinish()` の決め技フォーマット + HP残量演出
+3. **試合の格付け**: MQ80+「歴史に残る一戦」/ MQ70+「見応えある決戦」/ MQ50+「MQ{N}を記録」/ それ以下「期待された熱戦には届かなかったが…」
+4. **因縁・対戦履歴**: 過去3戦以上で「因縁の決着戦」、1〜2戦で「再戦での決着」（priorH2h.matches で分岐）
+5. **勝者セリフ**: 自団体勝利時のみ、`PPV_SUMMIT_VICTORY_LINES` のキャラ別セリフを引用
+
+### §13.4 設計原則の対応
+
+- **数値は嘘をつかない**: 接戦/圧勝/格付けは全て試合エンジンの実数値（HP残量・MQ・ターン数）から判定
+- **キャラのドラマ**: 勝者セリフはキャラの personality×archetype 別に定義された固有セリフを引用（テンプレ「やったー！」を使わない）
+- **シーズンのクライマックスにふさわしい記事**: ランキング・因縁履歴・決め技・接戦度を盛り込み、メインイベントの重みを表現
+
 <!-- 再同期: 2026-04-06, 指示書: docs/specs-resync-instruction.md -->
+<!-- §13 新聞記事生成 追加: 2026-05-02 -->
