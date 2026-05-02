@@ -2543,6 +2543,69 @@ const Storage = {
         G = { ...G, _migrated_chronicle_status_v2: true };
       }
 
+      // 序章 (chronicle-prologue) マイグレーション v1
+      // 既存セーブから旗揚げ世代を遡及再構成。
+      // 旗揚げメンバー = careerRecord.history に season:1, orgId:'player', type ∈ {debut/draft/scout} がある選手。
+      // ハイライトは現在の到達状態をベースに発火 (発生週は startWeek=1 を仮置き)。
+      if (!G._migrated_prologue_v1 && Engine.prologue) {
+        try {
+          if (!G.prologue || G.prologue.status === 'empty') {
+            // 旗揚げ候補を探索: roster + retiredFighters + chronicle.fighterArchive
+            const isFounder = (f) => {
+              const hist = (f.careerRecord && f.careerRecord.history) || [];
+              return hist.some(e => (e.season === 1)
+                && (e.type === 'debut' || e.type === 'draft' || e.type === 'scout')
+                && (!e.orgId || e.orgId === 'player'));
+            };
+            const collected = [];
+            const seen = new Set();
+            const consider = (f) => {
+              if (!f || seen.has(f.id)) return;
+              if (isFounder(f)) { collected.push(f.id); seen.add(f.id); }
+            };
+            (G.roster || []).forEach(consider);
+            (G.retiredFighters || []).forEach(consider);
+            ((G.chronicle && G.chronicle.fighterArchive) || []).forEach(consider);
+
+            if (collected.length === 0) {
+              // 該当なし: status='empty' のままにしてマイグレ完了
+              G = { ...G, prologue: Engine.prologue.createEmpty(), _migrated_prologue_v1: true };
+            } else {
+              // 序章を立ち上げる: founderIds + 既存ハイライトを推定発火
+              G = {
+                ...G,
+                prologue: {
+                  founderIds: collected,
+                  startSeason: 1,
+                  startWeek: 1,
+                  endSeason: null,
+                  endWeek: null,
+                  status: 'in_progress',
+                  highlights: [],
+                  closing: null,
+                }
+              };
+              // org_founded を S1 W1 で刻む
+              G = Engine.prologue.addHighlight(G, {
+                id: 'org_founded',
+                season: 1, week: 1, tier: 'gold',
+                text: `${G.orgName || '団体'}旗揚げ。最初の${collected.length}人が揃い、最初の物語が始まった。`,
+              });
+              // 現状の到達状況からハイライトを補完
+              App.checkPrologueHighlights();
+              // 全 founder が既に retired なら confirm() に入る
+              G = Engine.prologue.checkAndConfirm(G);
+              G = { ...G, _migrated_prologue_v1: true };
+            }
+          } else {
+            G = { ...G, _migrated_prologue_v1: true };
+          }
+        } catch (e) {
+          console.warn('[prologue] v1 migration failed', e);
+          G = { ...G, _migrated_prologue_v1: true };
+        }
+      }
+
       // Chronicle v0.3: rebuild old save caches after prime-era segmentation changes.
       if (!G._migrated_chronicle_prime_v3 && G.chronicle && Engine.chronicle) {
         try {
