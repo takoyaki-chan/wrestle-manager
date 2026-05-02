@@ -4050,13 +4050,16 @@ const App = {
     const c = G.roster[idx];
     const cName = c.name;
     const cId = c.id;
-    // O-07: 解雇 — roster除外前に関係値更新
+    // O-07: 解雇 — roster除外前に関係値更新（firing-grudge-spec-v0.1）
+    let _firingGrudge = null;
     if (G.relationships) {
       const releaseRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE45, G.season, charId));
       const colleagueIds = G.roster.filter(f => f.id !== charId).map(f => f.id);
-      // 解雇された側→団体全体: bond -10〜-15
-      G = Engine.relationships.applyToRoster(G, charId, colleagueIds, { min: -15, max: -10 }, { min: 0, max: 0 }, releaseRelRng);
-      // 残留者→解雇された側: 性格別 bond
+      // 解雇者 → 残留組: ティア別（親友/元ライバル/一般）+ 解雇者の性格バイアス
+      const firingResult = Engine.relationships.applyFiringGrudge(G, c, releaseRelRng);
+      G = firingResult.state;
+      _firingGrudge = firingResult.grudge;
+      // 残留者 → 解雇者: 性格別 bond（同情・複雑な感情、過度に動かさない）
       for (const cid of colleagueIds) {
         const colleague = G.roster.find(f => f.id === cid);
         const p = colleague?.personality || 'normal';
@@ -4074,7 +4077,9 @@ const App = {
     const log = [...G.gameLog, `📤 ${c.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
     // Phase E: 解雇 history を fighter に push
-    const cWithRelease = Engine.career.addEvent(c, { type: 'release', season: G.season, week: G.week, fromOrg: G.orgName || 'プレイヤー団体' });
+    let cWithRelease = Engine.career.addEvent(c, { type: 'release', season: G.season, week: G.week, fromOrg: G.orgName || 'プレイヤー団体' });
+    // firing-grudge-spec-v0.1: 解雇キャラに遺恨フラグを付与（所属移動後も保持）
+    if (_firingGrudge) cWithRelease = { ...cWithRelease, grudge: _firingGrudge };
     const claimResult = Engine.rival.claimDepartedStar(
       Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xD75A, G.season, G.week, charId)),
       { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log },
@@ -4827,8 +4832,8 @@ const App = {
     const iframe = document.getElementById('battleIframe');
     const msg = {
       type: 'START_MATCH',
-      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), profile: CHAR_PROFILES[charL.id] || '', vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['…！'] },
-      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['…！'] },
+      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), profile: CHAR_PROFILES[charL.id] || '', vl: App._buildVlVsPlayerForExEmployee(charL, G.season, G.week), vsExHit: App._buildVsExHitLines(charL, G.season, G.week) },
+      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: App._buildVlVsPlayerForExEmployee(charR, G.season, G.week), vsExHit: App._buildVsExHitLines(charR, G.season, G.week) },
       result,
       matchInfo: {
         header: m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : (idx === 0 ? 'メインイベント' : `第${sp.validMatches.length - idx}試合`),
@@ -7546,10 +7551,175 @@ const App = {
     next();
   },
 
+  // firing-grudge-spec-v0.1 Phase 5: 解雇キャラ vs 元雇用団体（player）専用セリフを iframe に配信。
+  // fighter.grudge.vsOrgId === 'player' & intensity ≥ 60 & 解雇から 24 週以内 で発動。
+  _vsExEmployeeFires(fighter, season, week) {
+    if (!fighter || !fighter.grudge) return false;
+    const g = fighter.grudge;
+    if (g.vsOrgId !== 'player') return false;
+    if (!g.intensity || g.intensity < 60) return false;
+    const nowAbs = (season - 1) * 20 + (week || 1);
+    const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
+    if (nowAbs - firedAbs > 24 || nowAbs - firedAbs < 0) return false;
+    if (typeof VS_EX_EMPLOYER_LINES === 'undefined') return false;
+    return true;
+  },
+
+  // 通常の VICTORY_LINES の前段に VS_EX_EMPLOYER_LINES[personality].win を prepend して引きやすくする。
+  _buildVlVsPlayerForExEmployee(fighter, season, week) {
+    const baseVl = (fighter && (fighter.voiceLines || fighter.vl))
+      || (typeof VICTORY_LINES !== 'undefined' && fighter && VICTORY_LINES[fighter.id])
+      || ['…！'];
+    if (!App._vsExEmployeeFires(fighter, season, week)) return baseVl;
+    const pers = fighter.personality || 'normal';
+    const winArr = (VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {}).win || [];
+    if (winArr.length === 0) return baseVl;
+    return [...winArr, ...baseVl];
+  },
+
+  // 被弾セリフ（hit）配列を返す。条件不成立なら null を返す。iframe 側 tryDamageLine が拾う。
+  _buildVsExHitLines(fighter, season, week) {
+    if (!App._vsExEmployeeFires(fighter, season, week)) return null;
+    const pers = fighter.personality || 'normal';
+    const hitArr = (VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {}).hit || [];
+    return hitArr.length > 0 ? hitArr : null;
+  },
+
   // 業界ニュースキューに追加（毎週の新聞画面・業界ニュース欄に流れる）
   _pushIndustryNews(ev) {
     if (!ev || !ev.type) return;
     G = { ...G, _industryNewsEvents: [...(G._industryNewsEvents || []), ev] };
+  },
+
+  // challenge-request-spec-v0.1 Phase 3: 試合結果を h2h / career / 業界ニュースに反映
+  // forward: teamA = player roster / teamB = AI org roster
+  // inverse: teamA = AI org (grudge保持) roster / teamB = player roster
+  _applyChallengeRequestResult(state, card, result) {
+    let s = { ...state };
+    const isInverse = !!card.isInverse;
+    const requesterOrgId = card.requesterOrgId || (isInverse ? card.requesterOrgId : 'player');
+    const opponentOrgId = card.opponentOrgId || (isInverse ? 'player' : card.otherOrgId);
+
+    // h2h 更新（3 ペア）
+    let h2h = { ...(s.h2h || {}) };
+    for (let i = 0; i < 3; i++) {
+      const m = result.matches[i];
+      h2h = Engine.h2h.update(
+        h2h,
+        m.fighterA.id, m.fighterB.id,
+        m.winner, m.mq,
+        false, false,
+        s.season, s.week,
+        'show',
+        requesterOrgId, opponentOrgId,
+        null
+      );
+    }
+    s = { ...s, h2h };
+
+    const teamWinSide = result.teamWin; // 'A' | 'B' | 'draw'
+    const teamResultForA = teamWinSide === 'A' ? 'win' : (teamWinSide === 'B' ? 'lose' : 'draw');
+    const teamResultForB = teamWinSide === 'B' ? 'win' : (teamWinSide === 'A' ? 'lose' : 'draw');
+
+    // helper: ロスターから teamA / teamB のキャラを更新
+    const _updateRoster = (rosterArr, teamSide /* 'A' | 'B' */) => rosterArr.map(f => {
+      const team = teamSide === 'A' ? card.teamA : card.teamB;
+      const oppTeam = teamSide === 'A' ? card.teamB : card.teamA;
+      const oppOrg = teamSide === 'A' ? opponentOrgId : requesterOrgId;
+      const tr = teamSide === 'A' ? teamResultForA : teamResultForB;
+      const score = teamSide === 'A' ? `${result.winsA}-${result.winsB}` : `${result.winsB}-${result.winsA}`;
+      for (let i = 0; i < 3; i++) {
+        if (team[i].id === f.id) {
+          const m = result.matches[i];
+          const won = teamSide === 'A' ? m.winner === 'left' : m.winner === 'right';
+          return Engine.career.addEvent(f, {
+            type: 'challenge_request_match',
+            season: s.season, week: s.week,
+            opponentName: oppTeam[i].name,
+            opponentOrg: oppOrg,
+            won,
+            matchType: 'team3v3',
+            teamResult: tr,
+            teamScore: score,
+            isRequester: f.id === card.requesterId,
+            isInverse,
+          });
+        }
+      }
+      return f;
+    });
+
+    // 打診者陣ロスター更新
+    if (isInverse) {
+      // 打診者陣 = AI org
+      const aiOrgs = { ...(s.aiOrgs || {}) };
+      if (aiOrgs[requesterOrgId] && Array.isArray(aiOrgs[requesterOrgId].roster)) {
+        aiOrgs[requesterOrgId] = { ...aiOrgs[requesterOrgId], roster: _updateRoster(aiOrgs[requesterOrgId].roster, 'A') };
+        s = { ...s, aiOrgs };
+      }
+      // 相手陣 = player roster
+      s = { ...s, roster: _updateRoster(s.roster || [], 'B') };
+    } else {
+      // 打診者陣 = player roster
+      s = { ...s, roster: _updateRoster(s.roster || [], 'A') };
+      // 相手陣 = AI org
+      const aiOrgs = { ...(s.aiOrgs || {}) };
+      if (aiOrgs[opponentOrgId] && Array.isArray(aiOrgs[opponentOrgId].roster)) {
+        aiOrgs[opponentOrgId] = { ...aiOrgs[opponentOrgId], roster: _updateRoster(aiOrgs[opponentOrgId].roster, 'B') };
+        s = { ...s, aiOrgs };
+      }
+    }
+
+    // 業界ニュース（プレイヤー視点で勝/敗/分を判定。score は常に「ourOrg-opponentOrg」表記に揃える）
+    const ourOrgLabel = s.orgName || 'プレイヤー団体';
+    let newsType, scoreStr;
+    if (isInverse) {
+      // inverse: 打診者=AI、相手=player。player の勝敗は teamWin === 'B'
+      newsType = teamWinSide === 'B' ? 'challengeRequestInverseDefend'
+        : teamWinSide === 'A' ? 'challengeRequestInverseFall'
+        : 'challengeRequestInverseDraw';
+      scoreStr = `${result.winsB}-${result.winsA}`;
+    } else {
+      newsType = teamWinSide === 'A' ? 'challengeRequestWin'
+        : teamWinSide === 'B' ? 'challengeRequestLose'
+        : 'challengeRequestDraw';
+      scoreStr = `${result.winsA}-${result.winsB}`;
+    }
+    s = Engine.industryNews.push(s, {
+      type: newsType,
+      characterId: card.requesterId,
+      data: {
+        requesterName: card.teamA[0].name,
+        opponentName: card.teamB[0].name,
+        opponentOrg: isInverse ? card.requesterOrgName : card.otherOrgName,
+        ourOrg: ourOrgLabel,
+        score: scoreStr,
+      },
+    });
+
+    // firing-grudge-spec-v0.1 Phase 4: 相手陣に「grudge.vsOrgId='player' / intensity≥60 / 解雇から24週以内」
+    // のキャラが居れば firedReturn ニュースを追加発信
+    const nowAbs = Engine.util && Engine.util.absWeek ? Engine.util.absWeek(s.season, s.week) : ((s.season - 1) * 20 + s.week);
+    for (const oppFighter of card.teamB) {
+      const g = oppFighter && oppFighter.grudge;
+      if (!g || g.vsOrgId !== 'player') continue;
+      if (!g.intensity || g.intensity < 60) continue;
+      const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
+      const weeksSinceFired = nowAbs - firedAbs;
+      if (weeksSinceFired > 24 || weeksSinceFired < 0) continue;
+      s = Engine.industryNews.push(s, {
+        type: 'firedReturn',
+        characterId: oppFighter.id,
+        data: {
+          name: oppFighter.name,
+          ourOrg: s.orgName || 'プレイヤー団体',
+          toOrg: card.otherOrgName,
+          weeksSinceFired: String(weeksSinceFired),
+        },
+      });
+    }
+
+    return s;
   },
 
   // h2h.history に積む meta フラグを構築（B-3 / 派閥抗争 / ロッカー荒廃 / 奪還）
@@ -8007,6 +8177,14 @@ const App = {
       G = cleanFe;
       const factionDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 650;
       setTimeout(() => App.handleFactionEvent(pendingFactionEvent), factionDelay);
+    }
+
+    // challenge-request-spec-v0.1 Phase 2: 挑戦試合直訴モーダル表示
+    // 大型イベント・派閥イベントと衝突した場合は持ち越し（pendingThisWeek を残す）
+    const crPending = (G.challengeRequest && G.challengeRequest.pendingThisWeek) || null;
+    if (crPending && !pendingLargeEvent && !pendingFactionEvent) {
+      const crDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 700;
+      setTimeout(() => App.handleChallengeRequest(crPending), crDelay);
     }
 
     // スナップショット R3モーダル表示
@@ -8757,6 +8935,107 @@ const App = {
     });
   },
 
+  // challenge-request-spec-v0.1 Phase 2: 挑戦試合打診UIフロー
+  // YES → CD/クォータ更新 + （Phase 3 で団体戦カード挿入）
+  // NO  → CD延長 + 打診者 condition 一時悪化 + ティッカーセリフ
+  handleChallengeRequest(payload) {
+    if (!payload) return;
+    if (typeof showChallengeRequestModal !== 'function') {
+      // フォールバック: モーダル未読込時はクリアだけ
+      G = Engine.challengeRequest.rejectPending(G);
+      return;
+    }
+    const isInverse = !!payload._inverse;
+    // 打診者の lookup helper（forward = player roster / inverse = AI org roster）
+    const _findRequester = () => {
+      if (isInverse) {
+        const reqOrg = G.aiOrgs && G.aiOrgs[payload.requesterOrgId];
+        return reqOrg && reqOrg.roster ? (reqOrg.roster.find(c => c.id === payload.selfId) || {}) : {};
+      }
+      return G.roster.find(c => c.id === payload.selfId) || {};
+    };
+    showChallengeRequestModal(payload, G, (choice) => {
+      if (choice === 'YES') {
+        const reqName = _findRequester().name || '';
+        // 試合カード生成（味方/相手陣が足りなければ却下扱い）
+        const card = Engine.challengeRequest.buildMatchCard(G);
+        if (!card) {
+          G = Engine.challengeRequest.rejectPending(G);
+          Storage.autoSave();
+          Audio.play('error');
+          renderWeekScreen && renderWeekScreen();
+          showToast(`${reqName} の直訴を受けたが、メンバー編成が整わず実現できなかった。`);
+          return;
+        }
+        // クォータ・CD更新
+        G = Engine.challengeRequest.acceptPending(G);
+        // 試合実行
+        const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, payload.selfId, payload.otherId, 0xCA110));
+        const result = Engine.challengeRequest.resolveMatchCard(card, matchRng);
+        // h2h / career / news 反映
+        G = App._applyChallengeRequestResult(G, card, result);
+        Storage.autoSave();
+        Audio.play('event');
+        // 結果モーダル表示
+        if (typeof showChallengeRequestResultModal === 'function') {
+          showChallengeRequestResultModal(card, result, G, () => {
+            renderWeekScreen && renderWeekScreen();
+          });
+        } else {
+          renderWeekScreen && renderWeekScreen();
+          const scoreLabel = `${result.winsA}-${result.winsB}`;
+          const tw = result.teamWin === 'A' ? '勝利' : (result.teamWin === 'B' ? '敗北' : '引き分け');
+          showToast(`挑戦試合 ${scoreLabel}（${tw}）— ${reqName} の直訴試合が決着。`);
+        }
+      } else if (choice === 'NO') {
+        G = Engine.challengeRequest.rejectPending(G);
+        // 打診者の condition 一時悪化（次戦のパフォーマンスとセリフに反映）
+        // forward: player roster の打診者 / inverse: AI org の打診者（AI 側の condition を悪化）
+        if (isInverse) {
+          const aiOrgs = { ...(G.aiOrgs || {}) };
+          const reqOrg = aiOrgs[payload.requesterOrgId];
+          if (reqOrg && Array.isArray(reqOrg.roster)) {
+            const newAiRoster = reqOrg.roster.map(f =>
+              f.id === payload.selfId
+                ? { ...f, condition: Math.max(0, (f.condition != null ? f.condition : 70) - 8) }
+                : f
+            );
+            aiOrgs[payload.requesterOrgId] = { ...reqOrg, roster: newAiRoster };
+            G = { ...G, aiOrgs };
+          }
+        } else {
+          const idx = (G.roster || []).findIndex(f => f.id === payload.selfId);
+          if (idx >= 0) {
+            const f = G.roster[idx];
+            const newCondition = Math.max(0, (f.condition != null ? f.condition : 70) - 8);
+            const newRoster = [...G.roster];
+            newRoster[idx] = { ...f, condition: newCondition };
+            G = { ...G, roster: newRoster };
+          }
+        }
+        Storage.autoSave();
+        Audio.play('click');
+        renderWeekScreen && renderWeekScreen();
+        const requester = _findRequester();
+        const reqName = requester.name || '';
+        // 性格別ティッカーセリフ（CHALLENGE_REQUEST_NO_LINES から1行抽選）
+        let noLine = `${reqName} の直訴を見送った。`;
+        if (typeof CHALLENGE_REQUEST_NO_LINES !== 'undefined') {
+          const pers = requester.personality || 'normal';
+          const arr = CHALLENGE_REQUEST_NO_LINES[pers] || CHALLENGE_REQUEST_NO_LINES.normal;
+          if (arr && arr.length > 0) {
+            const lineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, payload.selfId, 0xC4A2));
+            const line = arr[Engine.rng.int(lineRng, 0, arr.length - 1)];
+            noLine = `${reqName}: 「${line}」`;
+          }
+        }
+        showToast(noLine);
+      } else {
+        // null / unknown → 何もしない（pendingThisWeek 残置で次週に持ち越し）
+      }
+    });
+  },
+
   // Phase 3a: 派閥イベントUIフロー制御（F01/F02/F03）
   handleFactionEvent(event) {
     const { eventId, payload } = event;
@@ -9297,7 +9576,8 @@ const App = {
       right: {
         ...af, condition: 80,
         portraitUrl: getPortraitUrl(af.id), profile: CHAR_PROFILES[af.id] || '',
-        vl: af.voiceLines || af.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[af.id]) || ['…！']
+        vl: App._buildVlVsPlayerForExEmployee(af, G.season, G.week),
+        vsExHit: App._buildVsExHitLines(af, G.season, G.week)
       },
       matchInfo: {
         header: '⚔ 挑戦状',
@@ -10166,7 +10446,7 @@ const App = {
       playerWon: warPlayerWon,
       finType: warResult.finType || '', finMove: warResult.finMove || '',
       turns: warResult.turns || 0,
-      victoryLine: _getWarVictoryLine(warWinnerFighter),
+      victoryLine: _getWarVictoryLine(warWinnerFighter, G),
       winnerName: warWinnerFighter.name, winnerId: warWinnerFighter.id
     };
 
@@ -10190,7 +10470,8 @@ const App = {
       right: {
         ...af, condition: 80,
         portraitUrl: getPortraitUrl(af.id), profile: CHAR_PROFILES[af.id] || '',
-        vl: af.voiceLines || af.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[af.id]) || ['…！']
+        vl: App._buildVlVsPlayerForExEmployee(af, G.season, G.week),
+        vsExHit: App._buildVsExHitLines(af, G.season, G.week)
       },
       matchInfo: {
         header: `⚔ 対抗戦 第${idx + 1}試合`,
@@ -10237,7 +10518,7 @@ const App = {
       playerWon,
       finType: result.finType || '', finMove: result.finMove || '',
       turns: result.turns || 0,
-      victoryLine: _getWarVictoryLine(winnerFighter),
+      victoryLine: _getWarVictoryLine(winnerFighter, G),
       winnerName: winnerFighter.name, winnerId: winnerFighter.id
     };
     Audio.play('tick');
@@ -10261,7 +10542,7 @@ const App = {
         playerWon,
         finType: result.finType || '', finMove: result.finMove || '',
         turns: result.turns || 0,
-        victoryLine: _getWarVictoryLine(winnerFighter),
+        victoryLine: _getWarVictoryLine(winnerFighter, G),
         winnerName: winnerFighter.name, winnerId: winnerFighter.id
       };
     });
@@ -10582,12 +10863,14 @@ App.ppvWatchMatch = function(idx) {
     left: {
       ...match.left, condition: 80,
       portraitUrl: getPortraitUrl(match.left.id), profile: CHAR_PROFILES[match.left.id] || '',
-      vl: match.left.voiceLines || match.left.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.left.id]) || ['…！']
+      vl: App._buildVlVsPlayerForExEmployee(match.left, G.season, G.week),
+      vsExHit: App._buildVsExHitLines(match.left, G.season, G.week)
     },
     right: {
       ...match.right, condition: 80,
       portraitUrl: getPortraitUrl(match.right.id), profile: CHAR_PROFILES[match.right.id] || '',
-      vl: match.right.voiceLines || match.right.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.right.id]) || ['…！']
+      vl: App._buildVlVsPlayerForExEmployee(match.right, G.season, G.week),
+      vsExHit: App._buildVsExHitLines(match.right, G.season, G.week)
     },
     matchInfo: {
       header: match.isSummit ? '🏆 頂上決戦' : `PPV 第${matchNum}試合`,

@@ -1092,7 +1092,92 @@ function getSigningLine(fighter, context) {
   return pickDialogueLine(lineObj, fighter);
 }
 
+// firing-grudge-spec-v0.1 Phase 5: 元雇用団体との対戦専用セリフ（解雇キャラ視点）
+// fighter.grudge.vsOrgId='player' & 解雇から24週以内 & 試合相手が player team の場合に使用。
+// 性格(7) × {win, hit} × 2パターン = 28 種。spec の最低 14 を上回る量で多様性確保。
+const VS_EX_EMPLOYER_LINES = {
+  bold: {
+    win: [
+      'あの団体で潰されかけた俺が、ここまで来たぜ。見たかよ。',
+      '切られた側でも、リングじゃ俺が上だ。覚えとけ。'
+    ],
+    hit: [
+      'ここで負けたら、何のために出てきたんだ……！',
+      'まだ……まだだ。倒されてる場合じゃねえ……！'
+    ]
+  },
+  quiet: {
+    win: [
+      '……これが、私の答えです。',
+      '……解雇は、終わりじゃなかった。'
+    ],
+    hit: [
+      '……まだ……立てる……。',
+      '……ここで終われない。'
+    ]
+  },
+  easygoing: {
+    win: [
+      'あの団体じゃ要らないって言われたんだけどさー、勝っちゃった♪',
+      '解雇された側もこれくらいやれるんだよ？ 知っといてね〜。'
+    ],
+    hit: [
+      'うわっ、やばい……でもここで沈むのは違うって、私……。',
+      'もうちょい踏ん張らせて……元の団体に見せたい景色があるの。'
+    ]
+  },
+  earnest: {
+    win: [
+      '解雇いただいたあと、私なりに歩んできた結果です。',
+      '受け入れてくださった団体に、恥はかかせません。これが私の答えです。'
+    ],
+    hit: [
+      '……ここで負けるわけには。新しい団体に申し訳が立たない……。',
+      'まだ立てます。立ち上がるのが、私の役目です。'
+    ]
+  },
+  emotional: {
+    win: [
+      'あの日、リングを降ろされた私が……今、ここで勝った……っ！',
+      '見ててくれた……？ 切られても、私、ちゃんとプロレスしてるよ……！'
+    ],
+    hit: [
+      'やだ……ここで終わったら、また同じ景色になっちゃう……っ！',
+      '立つ……立たなきゃ……あの日の私のために……！'
+    ]
+  },
+  normal: {
+    win: [
+      '解雇から、ここまで来た。証明できたと思う。',
+      'あの団体で出来なかったことを、ここで完成させる。'
+    ],
+    hit: [
+      'まだ立てる。ここで終わるわけにはいかない。',
+      '……来た意味を、自分で潰すわけにはいかない。'
+    ]
+  },
+  shy: {
+    win: [
+      '……勝っちゃった……。あの、信じられない……。',
+      '……ちゃんと、戦えてました、よね……？'
+    ],
+    hit: [
+      '……まだ、立てます……だ、大丈夫……。',
+      '……お願い、もう一回だけ……立たせて……。'
+    ]
+  }
+};
+
+function getVsExEmployerLine(fighter, mode) {
+  if (!fighter || !fighter.grudge || fighter.grudge.vsOrgId !== 'player') return null;
+  const pers = fighter.personality || 'normal';
+  const obj = VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal;
+  const arr = obj && obj[mode];
+  if (!arr || arr.length === 0) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 // Node.js モジュールエクスポート（ブラウザではスキップ）
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { VICTORY_LINES, SCOUT_SIGNING_LINES, getVictoryLine, getSigningLine };
+  module.exports = { VICTORY_LINES, SCOUT_SIGNING_LINES, VS_EX_EMPLOYER_LINES, getVictoryLine, getSigningLine, getVsExEmployerLine };
 }

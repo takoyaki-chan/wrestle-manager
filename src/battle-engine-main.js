@@ -736,11 +736,17 @@ function tryDamageLine(action, fr){
   const hpRatio = def.hp / def.mhp;
   // battle-lines.js 提供の pickDamageLine
   if (typeof pickDamageLine !== 'function') return;
-  const line = pickDamageLine(def, action.dmg, hpRatio);
+  let line = pickDamageLine(def, action.dmg, hpRatio);
   if (!line) return;
   const last = S.lastCritTurn[defSide] || 0;
   if (fr.turn - last < 3) return;
   S.lastCritTurn[defSide] = fr.turn;
+  // firing-grudge-spec-v0.1 Phase 5: 解雇キャラが元雇用団体に被弾したとき、
+  // vsExHit から 50% で差し替える（HP 33% 以下の "言葉にならない" 帯では発動させない＝既存ルール尊重）。
+  if (def.vsExHit && Array.isArray(def.vsExHit) && def.vsExHit.length > 0 && hpRatio > 0.33 && Math.random() < 0.5) {
+    const text = def.vsExHit[Math.floor(Math.random() * def.vsExHit.length)];
+    line = { type: 'serif', text };
+  }
   const domSide = defSide === 'left' ? 'L' : 'R';
   const cssCls  = line.type === 'serif' ? 'damage-serif' : 'damage-voice';
   showCutin(def, domSide, line.text, cssCls);
@@ -894,10 +900,15 @@ function _buildPinCtrl(fr){
     const def = fr.action.atkSide === 'left' ? S.R : S.L;
     if (def && typeof pickDamageLine === 'function') {
       const hpRatio = def.hp / def.mhp;
-      const line = pickDamageLine(def, fr.action.dmg, hpRatio);
+      let line = pickDamageLine(def, fr.action.dmg, hpRatio);
       const last = S.lastCritTurn[defSide] || 0;
       if (line && fr.turn - last >= 3) {
         S.lastCritTurn[defSide] = fr.turn;
+        // firing-grudge-spec-v0.1 Phase 5: vsExHit 50% bias（HP 33% 超のみ）
+        if (def.vsExHit && Array.isArray(def.vsExHit) && def.vsExHit.length > 0 && hpRatio > 0.33 && Math.random() < 0.5) {
+          const text = def.vsExHit[Math.floor(Math.random() * def.vsExHit.length)];
+          line = { type: 'serif', text };
+        }
         const domSide = defSide === 'left' ? 'L' : 'R';
         const cssCls  = line.type === 'serif' ? 'damage-serif' : 'damage-voice';
         seq.push({ kind: 'damage', fighter: def, side: domSide, text: line.text, cssCls });

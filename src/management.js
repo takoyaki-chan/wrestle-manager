@@ -9384,6 +9384,11 @@ const Engine = {
       s = weeklyRelResult.state;
       weeklyRelResult.events.forEach(e => events.push(e));
     }
+    // challenge-request-spec-v0.1 Phase 1: 挑戦試合打診 候補抽選（4週サイクル）
+    if (s.relationships && Engine.challengeRequest) {
+      const crRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xC4A1));
+      s = Engine.challengeRequest.processWeekly(s, crRng);
+    }
     // relationship-flags-spec-v1.0 §2.2 / §2.4: F-2 出戻り + F-4 同期
     // 同週入団者を走査し、出戻り検出と cohort ペア生成を行う
     {
@@ -12900,6 +12905,10 @@ const Engine = {
 
         // シーズン実績の加齢処理 (1年満額 → ×0.5/年で減衰、1pt未満で除去)
         s = Engine.achievement.tickAge(Engine.achievement.ensureInit(s));
+        // firing-grudge-spec-v0.1: 解雇遺恨フラグの逓減（decayUntilSeason 超過から ×0.85、≤5 で削除）
+        s = Engine.relationships.decayGrudges(s);
+        // challenge-request-spec-v0.1 Phase 1: シーズンクォータをリセット
+        if (Engine.challengeRequest) s = Engine.challengeRequest.resetSeasonalQuota(s);
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
               battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 }, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],

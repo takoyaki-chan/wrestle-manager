@@ -7661,6 +7661,168 @@ const RELEASE_INTERVIEW_LINES = {
   ],
 };
 
+// challenge-request-spec-v0.1: 選手発信 挑戦試合打診 — 打診者セリフ
+// 性格(7) × タイプ(2: hostile / respectful) × 3パターン = 42 種
+const CHALLENGE_REQUEST_LINES = {
+  bold: {
+    hostile: [
+      'あの女、放っておけない。リング上で決着つけさせてください。',
+      '社長、あいつとやらせてくれ。借りを返さなきゃいけない。',
+      '次の興行であいつを呼んでくれ。けじめだけはつけなきゃ収まらない。'
+    ],
+    respectful: [
+      'あの人と本気でやりたい。社長、舞台を組んでくれませんか。',
+      'ずっと向こうのリングを見てた。次は同じマットで会わせてくれ。',
+      '今のうちに当たりたい相手がいるんだ。組めますか？'
+    ]
+  },
+  quiet: {
+    hostile: [
+      '……あの相手と、決着を。',
+      '……お願いします。あの試合、組ませてください。',
+      '……このまま、終われない。'
+    ],
+    respectful: [
+      '……あの人と、闘わせてください。',
+      '……次の機会に、あの選手と。お願いします。',
+      '……あの人とやれるなら、私、行けます。'
+    ]
+  },
+  easygoing: {
+    hostile: [
+      'あの子のこと、ずっと引っかかってたんだよね。一回ハッキリさせたいの。',
+      '社長〜、あいつとやれる興行ない？ あのままじゃモヤモヤ取れないの。',
+      'ねえ、あの試合だけは組ませてほしいな。今ならスッキリやれそう。'
+    ],
+    respectful: [
+      '気になる人がいるんだー。次の興行で組めない？',
+      'あのリングのあの子、面白そうじゃん？ 一緒にやりたい。',
+      '次のオフ前に、あの人と当たれたら最高なんだけどな〜。'
+    ]
+  },
+  earnest: {
+    hostile: [
+      '社長、お時間ありがとうございます。あの選手との試合、組んでいただきたく。',
+      'けじめをつけたいんです。あの試合、私にやらせてください。',
+      'ご無理を承知でお願いします。次の興行、あの相手と当ててください。'
+    ],
+    respectful: [
+      '失礼を承知で申し上げます。あの選手と、どうしても拳を交えたく存じます。',
+      'お願いがあります。あの方と一度、本気の試合をさせてください。',
+      '今しかないと思っています。あの相手との試合、組んでいただけませんか。'
+    ]
+  },
+  emotional: {
+    hostile: [
+      'もう我慢できない……あいつのこと、リングでケリつけたい！',
+      'お願いします、あの人とやらせてください！ このままじゃ私、潰れちゃう……！',
+      '何度も夢に出てくるんです……あの試合、組んでください、お願い……！'
+    ],
+    respectful: [
+      '社長……っ、あの人ともう一度闘いたいんです……！',
+      'ずっと胸が苦しくて……あの選手と、ちゃんと向き合わせてください。',
+      'あの人と組んでもらえたら、私、絶対全部出し切るから……！'
+    ]
+  },
+  normal: {
+    hostile: [
+      'あの相手とけじめをつけたい。次の興行で組ませてもらえませんか。',
+      '社長、お願いがあります。あの選手との試合、私にやらせてください。',
+      'ずっと引きずってる相手がいるんです。一度しっかり当ててほしい。'
+    ],
+    respectful: [
+      'あの選手と本気でやってみたい。次のチャンスにねじ込めませんか。',
+      '気になる相手がいるんです。次の興行で組めるなら、お願いします。',
+      'いつかと言わず、今やりたい相手がいます。社長、舞台をください。'
+    ]
+  },
+  shy: {
+    hostile: [
+      'あ、あの……あの選手と、試合……組んでもらえません、か……。',
+      '……私からお願いするのは、初めてなんですけど……あの人と、やりたいです。',
+      '……すみません、ご迷惑だったら、いいんですけど……あの相手と、闘いたくて。'
+    ],
+    respectful: [
+      '……あの、図々しいんですけど……あの選手と、試合したいんです。',
+      '……お時間、すみません。あの人と、リングで……お願いできませんか。',
+      '……変なお願いかもしれないけど、あの選手と、一度だけでも……。'
+    ]
+  }
+};
+
+// challenge-request-spec-v0.1 Phase 5: 相手選手リアクションセリフ（試合前/結果モーダル）
+// 性格(7) × 3 パターン = 21 種以上。受けて立つ側の覚悟を性格で出し分け。
+const CHALLENGE_REQUEST_OPPONENT_REACTIONS = {
+  bold: [
+    'いいだろう。来るなら来い、全部受けてやる。',
+    '名指しされたんだ、断る理由がない。リングで返事する。',
+    '直訴ねぇ……上等じゃねえか。一発で黙らせてやる。'
+  ],
+  quiet: [
+    '……受けます。',
+    '……望むところです。',
+    '……来てください。リングで答えます。'
+  ],
+  easygoing: [
+    'えー、私なの？ ま、いっか。やるよ〜。',
+    '指名されちゃったか〜。逃げる理由もないし、当たろうか。',
+    'そんなにやりたいんだ？ じゃ、思いっきり付き合うね。'
+  ],
+  earnest: [
+    'ご指名、ありがたく頂戴します。失礼のない試合をします。',
+    '直訴で組まれた試合とのこと。お受けいたします。最善を尽くします。',
+    'こちらこそお願いします。ベストを尽くしてお迎えします。'
+  ],
+  emotional: [
+    'え、私を……？ ……っ、わかった。受けるから……！',
+    'そんなに思ってくれてたの……？ じゃあ私も、全部出すから……！',
+    'ずっと、待ってた言葉かもしれない……受けます、絶対に。'
+  ],
+  normal: [
+    '受けて立ちます。リングで決着をつけましょう。',
+    '名指しされた以上、逃げません。同じ気持ちで向き合います。',
+    'いいでしょう。あなたの直訴、受けます。'
+  ],
+  shy: [
+    '……あの、私で、いいんですか……？ ……分かりました、頑張ります。',
+    '……まさか、私を選んでくれるなんて……。応えなきゃ、ですね。',
+    '……怖いけど、逃げないです。受けます。'
+  ]
+};
+
+// challenge-request-spec-v0.1 Phase 4: NO 選択時の打診者ティッカーセリフ
+// 性格(7) × 2 パターン = 14 種。落胆 / 不満 / 諦めの色合いを性格で出し分け。
+const CHALLENGE_REQUEST_NO_LINES = {
+  bold: [
+    '……そうか。社長がそう言うなら、引っ込めとくよ。',
+    '今じゃないって言うなら、しょうがない。借りは消えないけどな。'
+  ],
+  quiet: [
+    '……分かりました。',
+    '……そうですか。'
+  ],
+  easygoing: [
+    'えー、ダメなのー？ 仕方ないかぁ……。',
+    'まあ、社長の判断なら従うけどさ……モヤモヤは残るよ？'
+  ],
+  earnest: [
+    '……承知しました。失礼いたしました。',
+    'ご判断、受け止めます。お時間いただいたこと、感謝いたします。'
+  ],
+  emotional: [
+    'え……っ、なんで……。私、ちゃんと言えてなかったのかな……。',
+    'そんな……ダメなんですか……？ もう、いつまで待てばいいの……。'
+  ],
+  normal: [
+    '……わかりました。タイミングじゃないってことですね。',
+    '社長の判断なら従います。でも、忘れたわけじゃないので。'
+  ],
+  shy: [
+    '……あ、その……すみません、変なこと言って……。',
+    '……ですよね、いきなり言われても困りますよね。すみません……。'
+  ]
+};
+
 // v1.3-3: 引退セリフテンプレート（引退ルート×キャリア×性格で分岐）
 const RETIREMENT_LINES = {
   A1_champion: {
@@ -12833,6 +12995,62 @@ function getJuniorTournamentLine(timing, personality, archetype, rng) {
 
 // §6.2 新聞パネル用テンプレート（イベント種別ごとに headline + body ペア、各3+パターン）
 const NEWS_HEADLINE_TEMPLATES = {
+  challengeRequestWin: [
+    { headline: '{requesterName}の直訴が実った！{ourOrg}が{opponentOrg}を {score} で下す',
+      body: '{requesterName}が直訴して実現した{opponentOrg}との3対3団体戦。{ourOrg}は{opponentName}陣を {score} で下し、リング上で握手を交わすことなく解散した。' },
+    { headline: '果たし状成就――{requesterName}主導の挑戦試合、{ourOrg}が制す',
+      body: '「あの相手と試合させてください」の一言から始まった越境カード。蓋を開けてみれば{ourOrg}が {score} で押し切り、{requesterName}は「これで一区切りつく」と短く語った。' },
+    { headline: '{ourOrg} {score} {opponentOrg}――{requesterName}の意地が呼んだ越境戦',
+      body: '{requesterName}が{opponentName}に挑むかたちで実現した3対3。{ourOrg}が {score} で星を取り、終わったあと{requesterName}は控室で長く息を吐いていたという。' },
+  ],
+  challengeRequestLose: [
+    { headline: '直訴及ばず――{requesterName}の挑戦試合、{ourOrg} {score} {opponentOrg}',
+      body: '{requesterName}が直接願い出て組まれた{opponentOrg}との3対3団体戦は、{score}で{ourOrg}が敗れた。「自分から呼んだ試合で取れなかった」――{requesterName}は控室を最後まで動かなかった。' },
+    { headline: '{opponentName}陣に屈す。{requesterName}の果たし状は{score}で散る',
+      body: '{requesterName}の発信で実現したカードだったが、{opponentOrg}の地力が一枚上だった。{score}という数字以上に、リング外の表情に重さが残った試合だった。' },
+    { headline: '直訴の代償――{ourOrg}、{opponentOrg}に {score} で敗北',
+      body: '{requesterName}が頭を下げて呼んだ越境戦で、{ourOrg}は {score} で星を落とした。「呼んだ責任は自分にある」と{requesterName}。次にこの相手と当たる時、何かが変わっているか。' },
+  ],
+  challengeRequestInverseDefend: [
+    { headline: '{opponentOrg}の{requesterName}を退ける――{ourOrg} {score} で迎撃成功',
+      body: '{opponentOrg}の{requesterName}が{ourOrg}に直訴して実現した3対3団体戦。{ourOrg}は古巣に挑んできた{requesterName}陣を {score} で退け、リング上の決着を貫いた。' },
+    { headline: '果たし状、跳ね返す。{ourOrg}が{requesterName}陣を {score} で下す',
+      body: '{requesterName}が向こうの団体から仕掛けてきた挑戦試合。{ourOrg}は3対3で {score} の星を取り、相手にリングを譲らなかった。' },
+    { headline: '{requesterName}の越境挑戦、{ourOrg}に阻まれる――{score}',
+      body: '{opponentOrg}の{requesterName}が{ourOrg}を名指しして組まれた団体戦は {score} で{ourOrg}が勝利。「呼ばれた以上、応える」――{ourOrg}陣営の意地が勝った形だ。' },
+  ],
+  challengeRequestInverseFall: [
+    { headline: '{opponentOrg}の{requesterName}陣に屈す――{ourOrg} {score}',
+      body: '{requesterName}の越境直訴で組まれた3対3団体戦は {score} で{ourOrg}の敗北。古巣に持ち帰る形となった{requesterName}は、控室で長く目を閉じていたという。' },
+    { headline: '直訴した側に星――{ourOrg}、{requesterName}陣に {score} で敗北',
+      body: '{opponentOrg}から仕掛けられた挑戦試合で{ourOrg}は {score} の星を落とした。受けて立った{ourOrg}陣営は、リングを去る背中に何かを語らせなかった。' },
+    { headline: '{requesterName}、古巣に星を返す。{ourOrg} {score} {opponentOrg}',
+      body: '{requesterName}の挑戦を受けた{ourOrg}は {score} で敗れた。「呼んできた側に取られた」――この結果が向こうのリングでどう扱われるか、注視せざるを得ない。' },
+  ],
+  challengeRequestInverseDraw: [
+    { headline: '直訴の3対3、{score} で痛み分け。{requesterName}と{ourOrg}は再び沈黙',
+      body: '{opponentOrg}の{requesterName}が{ourOrg}に挑んで組まれた団体戦は {score} のドロー。決着がつかないまま、両陣営はリングを降りた。' },
+    { headline: '{ourOrg} {score} {opponentOrg}――{requesterName}の越境挑戦は決着持ち越し',
+      body: '3対3団体戦は {score} で痛み分け。仕掛けた{requesterName}も、迎え撃った{ourOrg}も、リング上で言葉を交わすことなく分かれた。' },
+  ],
+  firedReturn: [
+    { headline: 'あの解雇から{weeksSinceFired}週――{name}、古巣に挑む',
+      body: '{ourOrg}を解雇された{name}が、{toOrg}の選手として古巣に対峙した。リング上での目つきには、あの日とは違う何かが宿っていた。' },
+    { headline: '{name}、{toOrg}での再起――{weeksSinceFired}週ぶりに{ourOrg}と相見えた',
+      body: '解雇から{weeksSinceFired}週、{toOrg}に拾われた{name}が初めて{ourOrg}とリングで交差した。「捨てられた側の意地、見せたい」――関係者は短く語った。' },
+    { headline: '解雇{weeksSinceFired}週目の挑戦――{name}、{ourOrg}に何を持ち込むか',
+      body: '{name}が{toOrg}の選手として{ourOrg}に挑む日が来た。試合前、控室で長く動かなかったという。リング上で何が解放されるのか、注視せざるを得ない一戦となった。' },
+    { headline: '{name}、古巣への一矢――解雇{weeksSinceFired}週で迎えた邂逅',
+      body: '{ourOrg}に切られた{name}が、{toOrg}の旗を背負って戻ってきた。あの日リングを降りた後の{weeksSinceFired}週が、この一戦に集約される。' },
+    { headline: '別団体・別カラー――{name}が{ourOrg}と再会した夜',
+      body: '解雇から{weeksSinceFired}週、{toOrg}でのキャリアを歩み始めた{name}と{ourOrg}が再びリングで交わった。決着の形は人によって違うが、この夜の意味だけは誰もが理解していた。' },
+  ],
+  challengeRequestDraw: [
+    { headline: '直訴の3対3、{score} で痛み分け。{requesterName}と{opponentName}は再び沈黙',
+      body: '{requesterName}が直訴して実現した{opponentOrg}との団体戦は {score} のドロー。決着がつかないまま、両陣営はリングを降りた。' },
+    { headline: '{ourOrg} {score} {opponentOrg}――{requesterName}の挑戦は決着持ち越し',
+      body: '3対3団体戦は {score} で痛み分け。直訴した{requesterName}も、受けて立った{opponentName}も、リング上で言葉を交わすことなく分かれた。' },
+  ],
   titleChange: [
     { headline: '激震！{org}の王座が動いた！{name}が新王者に',
       body: '{org}のタイトルマッチで大波乱。{prevChamp}を破った{name}が新チャンピオンの座に就いた。新王者の時代は長く続くのか、それとも――' },
@@ -25017,7 +25235,7 @@ if (typeof module !== 'undefined' && module.exports) {
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
-    CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG, RELEASE_INTERVIEW_LINES,
+    CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG, RELEASE_INTERVIEW_LINES, CHALLENGE_REQUEST_LINES,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES, COACH_RETIRE_ADVICE_TEXTS,
     AWARD_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, MILESTONE_LINES, FIRST_MEET_LINES, POST_MATCH_FLAVOR_LINES, getDialoguePool, pickDialogueLine,

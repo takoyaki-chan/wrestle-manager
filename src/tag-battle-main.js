@@ -894,10 +894,15 @@ function _buildPinCtrl(pinEv, fr){
     const def = defKey ? f(defKey) : null;
     if (def) {
       const hpRatio = def.hp / def.mhp;
-      const line = pickDamageLine(def, fr.action.dmg, hpRatio);
+      let line = pickDamageLine(def, fr.action.dmg, hpRatio);
       const lastCrit = S.lastCritTurn[defKey] || 0;
       if (line && fr.turn - lastCrit >= 3) {
         S.lastCritTurn[defKey] = fr.turn;
+        // firing-grudge-spec-v0.1 Phase 5: vsExHit 50% bias（HP 33% 超のみ）
+        if (def.vsExHit && Array.isArray(def.vsExHit) && def.vsExHit.length > 0 && hpRatio > 0.33 && Math.random() < 0.5) {
+          const text = def.vsExHit[Math.floor(Math.random() * def.vsExHit.length)];
+          line = { type: 'serif', text };
+        }
         const side = (defKey === 'a1' || defKey === 'a2') ? 'left' : 'right';
         const cssCls = line.type === 'serif' ? 'damage-serif' : 'damage-voice';
         seq.push({ kind: 'damage', fighter: def, side, text: line.text, cssCls });
@@ -1266,11 +1271,16 @@ function tryDamageLine(action, fr){
   const def = f(defKey);
   if (!def) return;
   const hpRatio = def.hp / def.mhp;
-  const line = pickDamageLine(def, action.dmg, hpRatio);
+  let line = pickDamageLine(def, action.dmg, hpRatio);
   if (!line) return;
   const last = S.lastCritTurn[defKey] || 0;
   if (fr.turn - last < 3) return;
   S.lastCritTurn[defKey] = fr.turn;
+  // firing-grudge-spec-v0.1 Phase 5: vsExHit 50% bias（HP 33% 超のみ）
+  if (def.vsExHit && Array.isArray(def.vsExHit) && def.vsExHit.length > 0 && hpRatio > 0.33 && Math.random() < 0.5) {
+    const text = def.vsExHit[Math.floor(Math.random() * def.vsExHit.length)];
+    line = { type: 'serif', text };
+  }
   const side = (defKey === 'a1' || defKey === 'a2') ? 'left' : 'right';
   const cssCls = line.type === 'serif' ? 'damage-serif' : 'damage-voice';
   showCutin(def, side, line.text, cssCls);

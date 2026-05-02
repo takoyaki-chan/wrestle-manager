@@ -1393,6 +1393,160 @@ Engine.relationships = {
   },
 
   // ══════════════════════════════════════════════════════════
+  //  解雇遺恨システム (firing-grudge-spec-v0.1)
+  //  - 解雇者 → 残留組 への片方向ネガティブ更新（性格バイアス + 関係性ティア別）
+  //  - 団体への遺恨は fighter.grudge フラグで個別保持
+  //  - decay は季節境界で逓減
+  // ══════════════════════════════════════════════════════════
+
+  /** 解雇された選手の状況から intensity (0〜100) を算出 */
+  computeFiringGrudgeIntensity(firedFighter, state) {
+    if (!firedFighter) return 0;
+    const pop = Math.max(0, Math.min(100, firedFighter.popularity || 0));
+    const age = firedFighter.age || 25;
+    const isChamp = !!(state && state.titles && state.titles.world && state.titles.world.championId === firedFighter.id);
+    // 在籍年数: orgJoinWeek があれば現在週との差から計算（1シーズン=20週前提の概算）
+    let yearsInOrg = 0;
+    if (firedFighter.orgJoinWeek != null && state) {
+      const nowAbs = (state.season - 1) * 20 + (state.week || 1);
+      yearsInOrg = Math.max(0, Math.floor((nowAbs - firedFighter.orgJoinWeek) / 20));
+    }
+    // タイトル経験: career history から titleWin / belt 関連を概算カウント
+    let titleHistoryCount = 0;
+    if (Array.isArray(firedFighter.history)) {
+      for (const ev of firedFighter.history) {
+        if (!ev || typeof ev.type !== 'string') continue;
+        if (ev.type === 'titleWin' || ev.type === 'titleDefense' || ev.type === 'beltCarry') {
+          titleHistoryCount++;
+        }
+      }
+    }
+    let intensity = 40
+      + (pop / 100) * 25
+      + titleHistoryCount * 5
+      + (age < 23 ? 10 : 0)
+      + (yearsInOrg >= 3 ? 10 : 0)
+      + (isChamp ? 15 : 0);
+    return Math.max(0, Math.min(100, Math.round(intensity)));
+  },
+
+  /** 解雇者の性格による Δ バイアス補正 (bondMul, rivalryMul) */
+  _firingPersonalityBias(personality) {
+    switch (personality) {
+      case 'hot':         return { bondMul: 1.0, rivalryMul: 1.25 };
+      case 'composed':    return { bondMul: 0.75, rivalryMul: 0.75 };
+      case 'proud':       return { bondMul: 1.15, rivalryMul: 1.0 };
+      case 'quiet':       return { bondMul: 1.15, rivalryMul: 1.0 };
+      case 'emotional':   return { bondMul: 1.3, rivalryMul: 0.85 };
+      case 'seductive':   return { bondMul: 1.0, rivalryMul: 1.0 };
+      case 'competitive': return { bondMul: 1.0, rivalryMul: 1.2 };
+      // 既存性格名（bold/earnest/easygoing/normal）のフォールバック
+      case 'bold':        return { bondMul: 1.0, rivalryMul: 1.2 };
+      case 'earnest':     return { bondMul: 1.15, rivalryMul: 1.0 };
+      case 'easygoing':   return { bondMul: 0.85, rivalryMul: 0.85 };
+      default:            return { bondMul: 1.0, rivalryMul: 1.0 };
+    }
+  },
+
+  /**
+   * 解雇イベントの関係性更新と grudge 付与。
+   * @param state {GameState}
+   * @param firedFighter {Fighter} roster から除外する直前のオブジェクト（career addEvent 後で OK）
+   * @param rng
+   * @returns { state, grudge, summary }  state は更新後、grudge は firedFighter に付与すべきオブジェクト
+   */
+  applyFiringGrudge(state, firedFighter, rng) {
+    if (!firedFighter) return { state, grudge: null, summary: null };
+    const firedId = firedFighter.id;
+    const intensity = this.computeFiringGrudgeIntensity(firedFighter, state);
+    const grudge = {
+      vsOrgId: 'player',
+      reason: 'fired',
+      issuedSeason: state.season,
+      issuedWeek: state.week,
+      intensity,
+      decayUntilSeason: state.season + 3
+    };
+
+    if (!state.relationships) {
+      return { state, grudge, summary: { firedId, intensity, perTarget: [] } };
+    }
+
+    const bias = this._firingPersonalityBias(firedFighter.personality);
+    const roster = state.roster || [];
+    const colleagues = roster.filter(c => c.id !== firedId && !c.isRental);
+    const rels = { ...state.relationships };
+    const perTarget = [];
+
+    for (const col of colleagues) {
+      const key = this._key(firedId, col.id);
+      const r = { ...(rels[key] || { bond: 50, rivalry: 0 }) };
+      const curBond = r.bond, curRivalry = r.rivalry;
+
+      // ── ティア判定 ──
+      // 親友 (元 bond ≥ 70) > 元ライバル (元 rivalry ≥ 40) > 一般
+      let bondMin, bondMax, rivalryMin, rivalryMax, tier;
+      if (curBond >= 70) {
+        bondMin = -35; bondMax = -25; rivalryMin = 8;  rivalryMax = 12; tier = 'closeBetrayed';
+      } else if (curRivalry >= 40) {
+        bondMin = -10; bondMax = -5;  rivalryMin = 20; rivalryMax = 28; tier = 'oldRival';
+      } else {
+        bondMin = -18; bondMax = -10; rivalryMin = 12; rivalryMax = 18; tier = 'general';
+      }
+
+      const rollUniform = (mn, mx) => mn + Engine.rng.float(rng) * (mx - mn);
+      let bondDelta    = rollUniform(bondMin, bondMax) * bias.bondMul;
+      let rivalryDelta = rollUniform(rivalryMin, rivalryMax) * bias.rivalryMul;
+
+      // サーチャージ規約に準拠
+      bondDelta    = Math.max(bondDelta, -45);
+      rivalryDelta = Math.min(rivalryDelta, 45);
+
+      r.bond    = this._applyAxisDelta(r.bond, bondDelta, 'bond');
+      r.rivalry = this._applyAxisDelta(r.rivalry, rivalryDelta, 'rivalry');
+      rels[key] = r;
+      perTarget.push({ targetId: col.id, tier, bondDelta, rivalryDelta });
+    }
+
+    return {
+      state: { ...state, relationships: rels },
+      grudge,
+      summary: { firedId, intensity, perTarget }
+    };
+  },
+
+  /** シーズン境界で grudge.intensity を逓減。decayUntilSeason 超過から ×0.85、≤5 で削除 */
+  decayGrudges(state) {
+    const decayList = (arr) => {
+      if (!Array.isArray(arr)) return arr;
+      return arr.map(f => {
+        if (!f || !f.grudge) return f;
+        const g = f.grudge;
+        if (state.season < (g.decayUntilSeason || 0)) return f;
+        const next = Math.round(g.intensity * 0.85);
+        if (next <= 5) {
+          const { grudge, ...rest } = f;
+          return rest;
+        }
+        return { ...f, grudge: { ...g, intensity: next } };
+      });
+    };
+    let s = { ...state };
+    s.roster = decayList(s.roster);
+    s.freeAgents = decayList(s.freeAgents);
+    if (s.aiOrgs) {
+      const newAi = {};
+      for (const [orgId, org] of Object.entries(s.aiOrgs)) {
+        newAi[orgId] = { ...org, roster: decayList(org.roster) };
+      }
+      s.aiOrgs = newAi;
+    }
+    if (Array.isArray(s.dormantPool)) s.dormantPool = decayList(s.dormantPool);
+    if (Array.isArray(s.retiredFighters)) s.retiredFighters = decayList(s.retiredFighters);
+    return s;
+  },
+
+  // ══════════════════════════════════════════════════════════
   //  Phase 4: ケア・成長・大型イベントの関係値反映ヘルパー
   // ══════════════════════════════════════════════════════════
 
@@ -3098,6 +3252,392 @@ Engine.relationships = {
 
     applyEnvy: null,
   },
+
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  Engine.challengeRequest — 選手発信 挑戦試合打診イベント
+//  challenge-request-spec-v0.1.md
+//  Phase 1: heat 計算 / 候補抽選 / GameState 構造 / CDガード
+// ══════════════════════════════════════════════════════════════════════════════
+Engine.challengeRequest = {
+
+  /** GameState の challengeRequest フィールドを保証 */
+  ensureInit(state) {
+    if (!state.challengeRequest) {
+      return {
+        ...state,
+        challengeRequest: {
+          pendingThisWeek: null,
+          acceptedThisSeason: 0,
+          perOrgThisSeason: {},
+          cdByFighter: {},
+          cdByPair: {}
+        }
+      };
+    }
+    return state;
+  },
+
+  /** heat = rivalry + max(0, 50-bond)*0.8 + max(0, bond-75)*0.6 + (rivalry≥70 ? +10 : 0) */
+  computeHeat(rivalry, bond) {
+    const r = rivalry || 0;
+    const b = bond != null ? bond : 50;
+    return r
+      + Math.max(0, 50 - b) * 0.8
+      + Math.max(0, b - 75) * 0.6
+      + (r >= 70 ? 10 : 0);
+  },
+
+  /** ペアキー（"selfId>otherId"、関係性 _key と独立。CD 用） */
+  _pairKey(selfId, otherId) { return `${selfId}>${otherId}`; },
+
+  /** 発火条件チェック（前提条件 §1.2） */
+  _passesPrereq(state, self, other, otherOrgId) {
+    if (!self || !other) return false;
+    if (self.injury || self.forcedRest || self.suspended) return false;
+    if (self.isRental) return false;
+    if (other.injury || other.forcedRest) return false;
+    // 相手団体 disbanded チェック
+    const otherOrg = state.aiOrgs && state.aiOrgs[otherOrgId];
+    if (!otherOrg || otherOrg.disbanded) return false;
+    // 直近8週以内の対戦実績なし（h2h.lastMatch を参照）
+    const rec = Engine.h2h && Engine.h2h.getRecord ? Engine.h2h.getRecord(state, self.id, other.id) : null;
+    if (rec && rec.lastMatch && rec.lastMatch.season != null && rec.lastMatch.week != null) {
+      const lastAbs = (rec.lastMatch.season - 1) * 20 + rec.lastMatch.week;
+      const nowAbs = (state.season - 1) * 20 + (state.week || 1);
+      if ((nowAbs - lastAbs) < 8) return false;
+    }
+    return true;
+  },
+
+  /** CD ガードチェック */
+  _passesCD(state, self, other) {
+    const cr = state.challengeRequest;
+    if (!cr) return true;
+    const nowAbs = (state.season - 1) * 20 + (state.week || 1);
+    const fCD = cr.cdByFighter[self.id];
+    if (fCD != null && (nowAbs - fCD) < 24) return false;
+    const pCD = cr.cdByPair[this._pairKey(self.id, other.id)];
+    if (pCD != null) {
+      // NO 選択時は 52、それ以外は 36 で延長されている前提（cdByPair に格納された値の意味は週数差）
+      if ((nowAbs - pCD.lastWeek) < pCD.coolWeeks) return false;
+    }
+    return true;
+  },
+
+  /** クォータチェック */
+  _passesQuota(state, otherOrgId) {
+    const cr = state.challengeRequest;
+    if (!cr) return true;
+    if (cr.acceptedThisSeason >= 2) return false;
+    if ((cr.perOrgThisSeason[otherOrgId] || 0) >= 1) return false;
+    return true;
+  },
+
+  /** 4週サイクル抽選トリガー判定（シーズン第3週以降、4週ごと） */
+  _isSamplingWeek(state) {
+    const w = state.week || 0;
+    return w >= 3 && (w - 3) % 4 === 0;
+  },
+
+  /**
+   * 週次主処理。pendingThisWeek を立てる（UI 側でモーダル表示）。
+   * 既に pendingThisWeek がある（前週の打診が未解決）場合は何もしない。
+   */
+  processWeekly(state, rng) {
+    let s = this.ensureInit(state);
+    if (s.challengeRequest.pendingThisWeek) return s;
+    if (!this._isSamplingWeek(s)) return s;
+    if ((s.orgPop || 0) < 15) return s;
+    if (!s.relationships) return s;
+
+    // 候補収集: 自団体選手 → 各他団体選手
+    const candidates = [];
+    const playerRoster = (s.roster || []).filter(f => !f.isRental);
+    const aiOrgs = s.aiOrgs || {};
+
+    for (const self of playerRoster) {
+      for (const [orgId, org] of Object.entries(aiOrgs)) {
+        if (!org || org.disbanded || !Array.isArray(org.roster)) continue;
+        if (!this._passesQuota(s, orgId)) continue;
+        for (const other of org.roster) {
+          if (!other || other.id == null) continue;
+          const key = Engine.relationships._key(self.id, other.id);
+          const rel = s.relationships[key];
+          if (!rel) continue;
+          let heat = this.computeHeat(rel.rivalry, rel.bond);
+          // firing-grudge-spec-v0.1 Phase 3: 出戻りケース（player team に在籍する grudge 保持者）の heat バイアス
+          if (self.grudge && self.grudge.intensity > 0 && self.grudge.vsOrgId === orgId) {
+            heat += self.grudge.intensity * 0.3;
+          }
+          if (heat < 90) continue;
+          if (!this._passesPrereq(s, self, other, orgId)) continue;
+          if (!this._passesCD(s, self, other)) continue;
+          candidates.push({
+            selfId: self.id, otherId: other.id, otherOrgId: orgId,
+            heat, rivalry: rel.rivalry, bond: rel.bond
+          });
+        }
+      }
+    }
+
+    // firing-grudge-spec-v0.1 Phase 3b: 逆方向（AI org の grudge 保持者 → player team）
+    // grudge.vsOrgId === 'player' & intensity > 0 のキャラのみが打診者になり得る。
+    for (const [orgId, org] of Object.entries(aiOrgs)) {
+      if (!org || org.disbanded || !Array.isArray(org.roster)) continue;
+      // クォータは「打診者の所属org（=ここでは AI org）」基準で 1/シーズン
+      if (!this._passesQuota(s, orgId)) continue;
+      for (const fired of org.roster) {
+        if (!fired || fired.id == null) continue;
+        const g = fired.grudge;
+        if (!g || g.vsOrgId !== 'player' || !g.intensity || g.intensity <= 0) continue;
+        for (const target of playerRoster) {
+          const key = Engine.relationships._key(fired.id, target.id);
+          const rel = s.relationships[key];
+          if (!rel) continue;
+          let heat = this.computeHeat(rel.rivalry, rel.bond) + g.intensity * 0.3;
+          if (heat < 90) continue;
+          // 前提条件: 打診者(fired)が injury/forcedRest/suspended ではない、target も同様、player団体 not disbanded(常true)
+          if (fired.injury || fired.forcedRest || fired.suspended) continue;
+          if (target.injury || target.forcedRest) continue;
+          // 直近8週以内の対戦実績なし
+          const rec = Engine.h2h && Engine.h2h.getRecord ? Engine.h2h.getRecord(s, fired.id, target.id) : null;
+          if (rec && rec.lastMatch && rec.lastMatch.season != null && rec.lastMatch.week != null) {
+            const lastAbs = (rec.lastMatch.season - 1) * 20 + rec.lastMatch.week;
+            const nowAbs = (s.season - 1) * 20 + (s.week || 1);
+            if ((nowAbs - lastAbs) < 8) continue;
+          }
+          // CD（pair / fighter）は同方向で参照（fired→target）
+          if (!this._passesCD(s, fired, target)) continue;
+          candidates.push({
+            _inverse: true,
+            selfId: fired.id, otherId: target.id, otherOrgId: 'player',
+            requesterOrgId: orgId,
+            heat, rivalry: rel.rivalry, bond: rel.bond
+          });
+        }
+      }
+    }
+
+    if (candidates.length === 0) return s;
+
+    // heat 最上位の 1 組のみを採用
+    candidates.sort((a, b) => b.heat - a.heat);
+    const picked = candidates[0];
+
+    const pending = {
+      selfId: picked.selfId,
+      otherId: picked.otherId,
+      otherOrgId: picked.otherOrgId,
+      heat: picked.heat,
+      rivalry: picked.rivalry,
+      bond: picked.bond,
+      issuedSeason: s.season,
+      issuedWeek: s.week
+    };
+    if (picked._inverse) {
+      pending._inverse = true;
+      pending.requesterOrgId = picked.requesterOrgId;
+    }
+    return {
+      ...s,
+      challengeRequest: {
+        ...s.challengeRequest,
+        pendingThisWeek: pending
+      }
+    };
+  },
+
+  /** YES 確定: クォータ・CD を更新し、pendingThisWeek をクリア */
+  acceptPending(state) {
+    let s = this.ensureInit(state);
+    const p = s.challengeRequest.pendingThisWeek;
+    if (!p) return s;
+    const nowAbs = (s.season - 1) * 20 + (s.week || 1);
+    const cr = { ...s.challengeRequest };
+    cr.acceptedThisSeason = (cr.acceptedThisSeason || 0) + 1;
+    // クォータキー: forward は相手AI org、inverse は requester AI org（どちらも「player ↔ AI org」のペア対戦カウントとして対称）
+    const quotaOrgKey = p._inverse ? p.requesterOrgId : p.otherOrgId;
+    cr.perOrgThisSeason = { ...cr.perOrgThisSeason, [quotaOrgKey]: (cr.perOrgThisSeason[quotaOrgKey] || 0) + 1 };
+    cr.cdByFighter = { ...cr.cdByFighter, [p.selfId]: nowAbs };
+    cr.cdByPair = { ...cr.cdByPair, [this._pairKey(p.selfId, p.otherId)]: { lastWeek: nowAbs, coolWeeks: 36 } };
+    cr.pendingThisWeek = null;
+    return { ...s, challengeRequest: cr };
+  },
+
+  /** NO 確定: CD を 52 週で記録し、pendingThisWeek をクリア */
+  rejectPending(state) {
+    let s = this.ensureInit(state);
+    const p = s.challengeRequest.pendingThisWeek;
+    if (!p) return s;
+    const nowAbs = (s.season - 1) * 20 + (s.week || 1);
+    const cr = { ...s.challengeRequest };
+    cr.cdByFighter = { ...cr.cdByFighter, [p.selfId]: nowAbs };
+    cr.cdByPair = { ...cr.cdByPair, [this._pairKey(p.selfId, p.otherId)]: { lastWeek: nowAbs, coolWeeks: 52 } };
+    cr.pendingThisWeek = null;
+    return { ...s, challengeRequest: cr };
+  },
+
+  /** 打診者セリフ抽出（性格 × タイプ → CHALLENGE_REQUEST_LINES から選択） */
+  pickRequesterLine(requester, bond, rng) {
+    if (typeof CHALLENGE_REQUEST_LINES === 'undefined' || !requester) return null;
+    const personality = requester.personality || 'normal';
+    const type = (bond != null && bond < 50) ? 'hostile' : 'respectful';
+    const byPers = CHALLENGE_REQUEST_LINES[personality] || CHALLENGE_REQUEST_LINES.normal;
+    if (!byPers) return null;
+    const arr = byPers[type] || byPers.respectful || byPers.hostile;
+    if (!arr || arr.length === 0) return null;
+    const idx = rng ? Engine.rng.int(rng, 0, arr.length - 1) : 0;
+    return arr[idx];
+  },
+
+  /** 社長視点の関係性フレーバー1行（数値を出さない） */
+  pickFlavorLine(rivalry, bond, requesterName, otherName) {
+    const pure = bond < 50 && rivalry >= 60;       // 純粋憎悪
+    const respect = bond >= 75;                     // 好敵手
+    const r = requesterName || '○○', o = otherName || '△△';
+    if (pure) {
+      const opts = [
+        `${r}の中で、何かが煮詰まっている`,
+        `${r}は${o}の名前を出すたびに目つきが変わる`,
+        `${r}の溜めたものは、リングでしか出せない`
+      ];
+      return opts[Math.floor(Math.random() * opts.length)];
+    }
+    if (respect) {
+      const opts = [
+        `${r}は${o}との次の一戦を待ち続けている`,
+        `${r}の中で${o}は、特別な位置にいる`,
+        `${r}が${o}の試合映像を何度も見返しているらしい`
+      ];
+      return opts[Math.floor(Math.random() * opts.length)];
+    }
+    const opts = [
+      `${r}は${o}に強い思いを抱いている`,
+      `${r}の中で、${o}との決着が宿題になっている`,
+      `${r}は${o}を意識しすぎている節がある`
+    ];
+    return opts[Math.floor(Math.random() * opts.length)];
+  },
+
+  /** シーズン境界でクォータをリセット */
+  resetSeasonalQuota(state) {
+    if (!state.challengeRequest) return state;
+    return {
+      ...state,
+      challengeRequest: {
+        ...state.challengeRequest,
+        acceptedThisSeason: 0,
+        perOrgThisSeason: {}
+      }
+    };
+  },
+
+  // ── Phase 3: 試合カード生成・解決 ──
+
+  /** 打診者+味方2 vs 相手+相手陣2 の3シングル連戦カードを生成。
+   *  forward: 打診者=player roster / 相手=AI org roster
+   *  inverse: 打診者=AI org roster (grudge保持者) / 相手=player roster
+   *  teamA は常に「打診者陣」、teamB は常に「相手陣」。
+   *  isInverse / requesterOrgId / opponentOrgId をカードに保持し、result 適用側で書き戻し方向を決定する。
+   *  足りなければ null を返す。 */
+  buildMatchCard(state) {
+    const cr = state.challengeRequest;
+    if (!cr || !cr.pendingThisWeek) return null;
+    const p = cr.pendingThisWeek;
+    const isInverse = !!p._inverse;
+
+    const _healthy = f => f && !f.injury && !f.forcedRest && !f.suspended && !f.isRental;
+    const _bond = (a, b) => {
+      const k = `${Math.min(a, b)}>${Math.max(a, b)}`;
+      return ((state.relationships || {})[k] || {}).bond || 50;
+    };
+    const _ov = f => Engine.util && Engine.util.ov ? Engine.util.ov(f)
+      : Math.round(((f.pw || 0) + (f.sp || 0) + (f.te || 0) + (f.st || 0) + (f.mn || 0)) / 5);
+
+    let requester, opponent, requesterOrgRoster, opponentOrgRoster, requesterOrgId, opponentOrgId, requesterOrgName, opponentOrgName;
+    if (isInverse) {
+      const reqOrg = (state.aiOrgs || {})[p.requesterOrgId];
+      if (!reqOrg || !Array.isArray(reqOrg.roster)) return null;
+      requester = reqOrg.roster.find(f => f.id === p.selfId);
+      opponent = (state.roster || []).find(f => f.id === p.otherId);
+      if (!requester || !opponent) return null;
+      requesterOrgRoster = reqOrg.roster;
+      opponentOrgRoster = state.roster || [];
+      requesterOrgId = p.requesterOrgId;
+      opponentOrgId = 'player';
+      requesterOrgName = reqOrg.name || (state.rivalOrgNames && state.rivalOrgNames[p.requesterOrgId]) || p.requesterOrgId;
+      opponentOrgName = state.orgName || 'プレイヤー団体';
+    } else {
+      requester = (state.roster || []).find(f => f.id === p.selfId);
+      const otherOrg = (state.aiOrgs || {})[p.otherOrgId];
+      if (!requester || !otherOrg || !Array.isArray(otherOrg.roster)) return null;
+      opponent = otherOrg.roster.find(f => f.id === p.otherId);
+      if (!opponent) return null;
+      requesterOrgRoster = state.roster || [];
+      opponentOrgRoster = otherOrg.roster;
+      requesterOrgId = 'player';
+      opponentOrgId = p.otherOrgId;
+      requesterOrgName = state.orgName || 'プレイヤー団体';
+      opponentOrgName = otherOrg.name || (state.rivalOrgNames && state.rivalOrgNames[p.otherOrgId]) || p.otherOrgId;
+    }
+
+    // 打診者陣 味方2名
+    const reqMates = requesterOrgRoster
+      .filter(f => f.id !== requester.id && _healthy(f) && (isInverse ? true : !f.isRental))
+      .sort((a, b) => {
+        const d = _bond(b.id, requester.id) - _bond(a.id, requester.id);
+        return d !== 0 ? d : _ov(b) - _ov(a);
+      });
+    if (reqMates.length < 2) return null;
+
+    // 相手陣 2名
+    const oppMates = opponentOrgRoster
+      .filter(f => f.id !== opponent.id && _healthy(f) && (isInverse ? !f.isRental : true))
+      .sort((a, b) => _ov(b) - _ov(a));
+    if (oppMates.length < 2) return null;
+
+    return {
+      isInverse,
+      requesterId: requester.id,
+      opponentId: opponent.id,
+      requesterOrgId,
+      opponentOrgId,
+      requesterOrgName,
+      opponentOrgName,
+      // 後方互換: forward 既存呼出が参照する otherOrgId / otherOrgName
+      otherOrgId: opponentOrgId,
+      otherOrgName: opponentOrgName,
+      teamA: [requester, reqMates[0], reqMates[1]],
+      teamB: [opponent, oppMates[0], oppMates[1]],
+    };
+  },
+
+  /** 3シングル連戦をシミュレート。state は変更しない。
+   *  returns { matches: [{fighterA, fighterB, winner, mq, finMove}], winsA, winsB, teamWin: 'A'|'B'|'draw' } */
+  resolveMatchCard(card, rng) {
+    const matches = [];
+    for (let i = 0; i < 3; i++) {
+      const fA = card.teamA[i];
+      const fB = card.teamB[i];
+      const res = Engine.battle.simulateMatch(fA, fB, rng, 1);
+      matches.push({
+        fighterA: fA,
+        fighterB: fB,
+        winner: res.winner,
+        mq: res.mq,
+        finType: res.finType,
+        finMove: res.finMove,
+      });
+    }
+    const winsA = matches.filter(m => m.winner === 'left').length;
+    const winsB = matches.filter(m => m.winner === 'right').length;
+    let teamWin = 'draw';
+    if (winsA > winsB) teamWin = 'A';
+    else if (winsB > winsA) teamWin = 'B';
+    return { matches, winsA, winsB, teamWin };
+  }
 
 };
 

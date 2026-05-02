@@ -851,7 +851,18 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
 let _warVictoryWinners = [];
 let _warPostCtx = null;
 
-function _getWarVictoryLine(fighter) {
+function _getWarVictoryLine(fighter, state) {
+  // firing-grudge-spec-v0.1 Phase 5: 解雇キャラが player 団体相手に勝った war 試合では vsExEmployer を優先抽選（50%）
+  if (state && fighter && fighter.grudge && fighter.grudge.vsOrgId === 'player'
+      && fighter.grudge.intensity >= 60
+      && typeof getVsExEmployerLine === 'function') {
+    const nowAbs = (state.season - 1) * 20 + (state.week || 1);
+    const firedAbs = ((fighter.grudge.issuedSeason || 1) - 1) * 20 + (fighter.grudge.issuedWeek || 1);
+    if (nowAbs - firedAbs <= 24 && nowAbs - firedAbs >= 0 && Math.random() < 0.5) {
+      const line = getVsExEmployerLine(fighter, 'win');
+      if (line) return line;
+    }
+  }
   const p = fighter.personality || 'normal';
   const a = fighter.archetype || '_default';
   const table = WAR_VICTORY_LINES[p] || WAR_VICTORY_LINES.normal;
@@ -9905,6 +9916,309 @@ if (typeof window !== 'undefined') {
   window.showFactionCommon7Modal = showFactionCommon7Modal;
   window.showFactionArchetypeTransitionModal = showFactionArchetypeTransitionModal;
   window.showFactionEventResult = showFactionEventResult;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// challenge-request-spec-v0.1 Phase 2: 選手発信 挑戦試合打診モーダル
+// 自団体選手 → 他団体選手 への直訴。YES / NO の2択。
+// 派閥 Common-1 の比較レイアウト(fc1m-*)を流用しつつ、cross-org 用に再設計。
+// ─────────────────────────────────────────────────────────────────────────────
+function showChallengeRequestModal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showChallengeRequestModal(payload, state, onChoice)); return; }
+  if (!payload) { if (onChoice) onChoice(null); return; }
+
+  const roster = state ? (state.roster || []) : [];
+  const aiOrgs = state ? (state.aiOrgs || {}) : {};
+  const isInverse = !!payload._inverse;
+
+  // 打診者・相手の lookup（forward / inverse で参照先を切替）
+  let requester, opponent, requesterOrgName, opponentOrgName, requesterSideLabel, opponentSideLabel;
+  if (isInverse) {
+    const reqOrg = aiOrgs[payload.requesterOrgId];
+    if (!reqOrg || !Array.isArray(reqOrg.roster)) { if (onChoice) onChoice(null); return; }
+    requester = reqOrg.roster.find(c => c.id === payload.selfId);
+    opponent = roster.find(c => c.id === payload.otherId);
+    if (!requester || !opponent) { if (onChoice) onChoice(null); return; }
+    requesterOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.requesterOrgId])
+      || reqOrg.name || payload.requesterOrgId || '他団体';
+    opponentOrgName = state.orgName || 'プレイヤー団体';
+    requesterSideLabel = `${requesterOrgName} · 打診者（古巣に挑む）`;
+    opponentSideLabel = `${opponentOrgName} · 名指しされた側`;
+  } else {
+    const otherOrg = aiOrgs[payload.otherOrgId];
+    requester = roster.find(c => c.id === payload.selfId);
+    opponent = otherOrg && otherOrg.roster ? otherOrg.roster.find(c => c.id === payload.otherId) : null;
+    if (!requester || !opponent) { if (onChoice) onChoice(null); return; }
+    requesterOrgName = state.orgName || 'プレイヤー団体';
+    opponentOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.otherOrgId])
+      || (otherOrg && otherOrg.name) || payload.otherOrgId || '他団体';
+    requesterSideLabel = `${requesterOrgName} · 直訴者`;
+    opponentSideLabel = opponentOrgName;
+  }
+
+  const orgName = state.orgName || 'プレイヤー団体';
+  const otherOrgName = isInverse ? requesterOrgName : opponentOrgName;
+  const rivalry = payload.rivalry != null ? payload.rivalry : 0;
+  const bond    = payload.bond != null ? payload.bond : 50;
+
+  // セリフ抽選（決定論的 rng）
+  const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xC4A1, payload.selfId, payload.otherId));
+  const requesterLine = Engine.challengeRequest.pickRequesterLine(requester, bond, lineRng) || 'あの相手と試合させてください。';
+  const flavorLine = Engine.challengeRequest.pickFlavorLine(rivalry, bond, requester.name, opponent.name);
+
+  // 取次コーチセリフ
+  const coachLine = isInverse
+    ? `社長、${requesterOrgName}の${requester.name}選手から直訴です。古巣の${opponent.name}選手とリングで決着をつけたい、と。`
+    : `社長、${requester.name}選手から直訴です。${otherOrgName}の${opponent.name}選手と試合をさせてほしい、と。`;
+
+  const ovr = (f) => f ? Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5) : '—';
+  const ovrA = ovr(requester), ovrB = ovr(opponent);
+  const stat = (f, k) => f && typeof f[k] === 'number' ? f[k] : 0;
+  const statRow = (label, key) => {
+    const va = stat(requester, key), vb = stat(opponent, key);
+    return { label, aHi: va > vb ? ' fc1m-higher' : '', va, bHi: vb > va ? ' fc1m-higher' : '', vb };
+  };
+  const stats = [statRow('PW','pw'), statRow('SP','sp'), statRow('TE','te'), statRow('ST','st'), statRow('MN','mn')];
+  const renderStats = (side) => stats.map(r => {
+    const hi = side === 'a' ? r.aHi : r.bHi;
+    const v  = side === 'a' ? r.va  : r.vb;
+    return `<div class="fc1m-stat"><div class="fc1m-stat-label">${r.label}</div><div class="fc1m-stat-val${hi}">${v}</div></div>`;
+  }).join('');
+
+  // H2H 戦績（短く）
+  let h2hLabel = '初対戦';
+  if (Engine.h2h && Engine.h2h.getRecordFor) {
+    const rec = Engine.h2h.getRecordFor(state, requester.id, opponent.id);
+    if (rec && rec.matches > 0) {
+      h2hLabel = `${rec.wins}勝${rec.losses}敗${rec.draws ? `${rec.draws}分` : ''}`;
+    }
+  }
+
+  const aPortraitStyle = `background-image:url('${_factionUpperUrl(requester.id)}');background-size:cover;background-position:center 20%;${isInverse ? '' : 'cursor:pointer'}`;
+  const bPortraitStyle = `background-image:url('${_factionUpperUrl(opponent.id)}');background-size:cover;background-position:center 20%;${isInverse ? 'cursor:pointer' : ''}`;
+  // クリック対象: forward は requester(自陣)、inverse は opponent(自陣) のみ
+  const aClickHandler = isInverse ? '' : `onclick="event.stopPropagation();showFighterPopup(${requester.id},'roster')"`;
+  const bClickHandler = isInverse ? `onclick="event.stopPropagation();showFighterPopup(${opponent.id},'roster')"` : '';
+
+  const bubbleHtml = `
+    <div class="fc1m-bubble-wrap">
+      <div class="fc1m-bubble-speaker">${requester.name}</div>
+      <div class="fc1m-bubble">${requesterLine}</div>
+    </div>`;
+
+  const html = `
+    <div class="fevt-overlay-office" id="challengeRequestOverlay">
+      <div class="fevt-report-card">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">📜 挑戦試合の直訴</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
+        </div>
+        ${_factionReporterStrip(state, coachLine)}
+        <div class="fc1m-compare">
+          <div class="fc1m-side">
+            ${bubbleHtml}
+            <div class="fc1m-portrait" ${aClickHandler} ${aClickHandler ? 'title="クリックで選手詳細"' : ''} style="${aPortraitStyle}"></div>
+            <div class="fc1m-name" ${aClickHandler} ${aClickHandler ? 'title="クリックで選手詳細" style="cursor:pointer"' : ''}>${requester.name}</div>
+            <div class="fc1m-faction">${requesterSideLabel}</div>
+            <div class="fc1m-ovr-badge">OVR ${ovrA}</div>
+            <div class="fc1m-stats">${renderStats('a')}</div>
+          </div>
+          <div class="fc1m-vs">VS</div>
+          <div class="fc1m-side">
+            <div class="fc1m-bubble-spacer"></div>
+            <div class="fc1m-portrait" ${bClickHandler} ${bClickHandler ? 'title="クリックで選手詳細"' : ''} style="${bPortraitStyle}"></div>
+            <div class="fc1m-name" ${bClickHandler} ${bClickHandler ? 'title="クリックで選手詳細" style="cursor:pointer"' : ''}>${opponent.name}</div>
+            <div class="fc1m-faction">${opponentSideLabel}</div>
+            <div class="fc1m-ovr-badge">OVR ${ovrB}</div>
+            <div class="fc1m-stats">${renderStats('b')}</div>
+          </div>
+        </div>
+        <div class="fc1m-rivalry">直近対戦 <strong>${h2hLabel}</strong> — ${flavorLine}</div>
+        <div class="fevt-decision-prompt">${isInverse ? 'この越境試合、社長として受けますか？' : 'この直訴、社長としてどう答えますか？'}</div>
+        <div class="fevt-decision-tray two">
+          <div class="fevt-decision-card" data-choice="YES">
+            <div class="fevt-decision-letter">A</div>
+            <div class="fevt-decision-label">${isInverse ? '受けて立つ' : 'この舞台、組もう'}</div>
+            <div class="fevt-decision-hint">${isInverse ? `${requesterOrgName}の挑戦を受け、3 vs 3 団体戦を即実施` : '次回興行に挑戦試合（3 vs 3 団体戦）として挿入'}</div>
+          </div>
+          <div class="fevt-decision-card" data-choice="NO">
+            <div class="fevt-decision-letter">B</div>
+            <div class="fevt-decision-label">${isInverse ? 'お引き取り願う' : '今は時期じゃない'}</div>
+            <div class="fevt-decision-hint">${isInverse ? `${requester.name}の挑戦は保留。同じ相手からの再打診は当分先になる` : `${requester.name}の意気込みは保留。同じ相手への再打診は当分先になる`}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const choice = this.dataset.choice;
+      if (!choice) return;
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onChoice) onChoice(choice);
+    });
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.showChallengeRequestModal = showChallengeRequestModal;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// challenge-request-spec-v0.1 Phase 3: 挑戦試合 結果モーダル
+// 3シングル連戦の結果を「果たし状成就/不発/痛み分け」のクリームOfficeトーンで提示。
+// ─────────────────────────────────────────────────────────────────────────────
+function showChallengeRequestResultModal(card, result, state, onClose) {
+  if (_isPopupActive()) {
+    _popupQueue.push(() => showChallengeRequestResultModal(card, result, state, onClose));
+    return;
+  }
+  if (!card || !result) { if (onClose) onClose(); return; }
+
+  const teamWin = result.teamWin; // 'A' | 'B' | 'draw' （teamA = 打診者陣 / teamB = 相手陣）
+  const isInverse = !!card.isInverse;
+  // プレイヤー視点の勝敗: forward は teamA(player) / inverse は teamB(player)
+  const playerWon = isInverse ? teamWin === 'B' : teamWin === 'A';
+  const playerLost = isInverse ? teamWin === 'A' : teamWin === 'B';
+  const titleText = playerWon ? (isInverse ? '挑戦、退ける。' : '果たし状、成就。')
+    : playerLost ? (isInverse ? '挑戦、許す。' : '果たし状、敗れる。')
+    : '挑戦、痛み分け。';
+  const tone = playerWon ? 'positive' : (playerLost ? 'negative' : 'neutral');
+
+  const reqName = card.teamA[0].name;
+  const oppName = card.teamB[0].name;
+  const ourOrg = state.orgName || 'プレイヤー団体';
+  const otherOrgName = isInverse ? (card.requesterOrgName || card.otherOrgName) : card.otherOrgName;
+  // プレイヤー陣スコア表示順を player-vs-AI で揃える
+  const playerScore = isInverse ? result.winsB : result.winsA;
+  const aiScore = isInverse ? result.winsA : result.winsB;
+
+  const coachLine = isInverse
+    ? (playerWon
+        ? `社長、挑戦試合 ${playerScore}-${aiScore}。${otherOrgName}の${reqName}選手の越境挑戦、退けました。`
+        : playerLost
+        ? `社長、挑戦試合 ${playerScore}-${aiScore}。${reqName}選手陣に古巣として星を取られる結果になりました。`
+        : `社長、挑戦試合 ${playerScore}-${aiScore}の痛み分け。${reqName}選手と${oppName}選手の決着は持ち越しです。`)
+    : (playerWon
+        ? `社長、挑戦試合 ${playerScore}-${aiScore}。${reqName}選手が呼んだ舞台、しっかり制しました。`
+        : playerLost
+        ? `社長、挑戦試合 ${playerScore}-${aiScore}。${reqName}選手の直訴…結果が伴いませんでした。`
+        : `社長、挑戦試合 ${playerScore}-${aiScore}の痛み分け。${reqName}選手と${oppName}選手の決着は持ち越しです。`);
+
+  // 相手選手リアクションセリフ（性格別、CHALLENGE_REQUEST_OPPONENT_REACTIONS から1行抽選）
+  let oppReactionLine = '';
+  if (typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined') {
+    const oppPers = (card.teamB[0] && card.teamB[0].personality) || 'normal';
+    const arr = CHALLENGE_REQUEST_OPPONENT_REACTIONS[oppPers] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal;
+    if (arr && arr.length > 0) {
+      const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xC4A3, card.opponentId));
+      oppReactionLine = arr[Engine.rng.int(lineRng, 0, arr.length - 1)];
+    }
+  }
+  const oppReactionHtml = oppReactionLine
+    ? `<div class="crrm-opp-reaction">
+        <div class="crrm-opp-reaction-speaker">${oppName}（受けて立つ側）</div>
+        <div class="crrm-opp-reaction-text">「${oppReactionLine}」</div>
+      </div>`
+    : '';
+
+  const matchRows = result.matches.map((m, i) => {
+    const winSide = m.winner === 'left' ? 'A' : (m.winner === 'right' ? 'B' : 'draw');
+    const winLabelA = winSide === 'A' ? '<span class="crrm-win">●</span>' : (winSide === 'B' ? '<span class="crrm-loss">○</span>' : '<span class="crrm-draw">△</span>');
+    const winLabelB = winSide === 'B' ? '<span class="crrm-win">●</span>' : (winSide === 'A' ? '<span class="crrm-loss">○</span>' : '<span class="crrm-draw">△</span>');
+    const numLabel = ['第1試合', '第2試合', '第3試合'][i] || `第${i+1}試合`;
+    const finLabel = m.finMove ? `<span class="crrm-fin">${m.finMove}</span>` : '';
+    // inverse: 行表示も player を左に揃える（fighterB が player 側）
+    const leftFighter = isInverse ? m.fighterB : m.fighterA;
+    const rightFighter = isInverse ? m.fighterA : m.fighterB;
+    const leftLabel = isInverse ? winLabelB : winLabelA;
+    const rightLabel = isInverse ? winLabelA : winLabelB;
+    return `
+      <div class="crrm-row">
+        <div class="crrm-row-num">${numLabel}</div>
+        <div class="crrm-row-side crrm-row-a">${leftLabel} <span class="crrm-name">${leftFighter.name}</span></div>
+        <div class="crrm-row-vs">vs</div>
+        <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${rightFighter.name}</span> ${rightLabel}</div>
+        <div class="crrm-row-mq">MQ ${Math.round(m.mq || 0)}</div>
+        <div class="crrm-row-fin">${finLabel}</div>
+      </div>`;
+  }).join('');
+
+  const html = `
+    <style>
+      .crrm-card { padding: 22px 26px 18px; }
+      .crrm-score-banner { display:flex; align-items:center; justify-content:center; gap:18px; margin:8px 0 14px; }
+      .crrm-score-org { font-size:14px; font-weight:600; color:var(--ink-soft, #5a4a3a); flex:1; text-align:center; }
+      .crrm-score-num { font-size:42px; font-weight:800; color:var(--ink, #2a1a08); letter-spacing:2px; }
+      .crrm-score-num.win { color:var(--accent-positive, #2d6a2d); }
+      .crrm-score-num.lose { color:var(--accent-negative, #8b3a3a); }
+      .crrm-tone-pos { color:var(--accent-positive, #2d6a2d); }
+      .crrm-tone-neg { color:var(--accent-negative, #8b3a3a); }
+      .crrm-tone-neu { color:var(--ink-soft, #5a4a3a); }
+      .crrm-rows { display:flex; flex-direction:column; gap:8px; margin:10px 0 14px; }
+      .crrm-row { display:grid; grid-template-columns: 70px 1fr 30px 1fr 70px 1fr; align-items:center; gap:8px; padding:8px 10px; background:rgba(255,247,230,0.6); border:1px solid rgba(180,140,90,0.25); border-radius:6px; font-size:13px; }
+      .crrm-row-num { font-weight:600; color:var(--ink-soft, #5a4a3a); font-size:12px; }
+      .crrm-row-side { display:flex; align-items:center; gap:6px; }
+      .crrm-row-a { justify-content:flex-start; }
+      .crrm-row-b { justify-content:flex-end; }
+      .crrm-row-vs { text-align:center; color:var(--ink-soft, #5a4a3a); font-size:11px; }
+      .crrm-row-mq { font-size:11px; color:var(--ink-soft, #5a4a3a); text-align:center; }
+      .crrm-row-fin { font-size:11px; color:var(--ink-soft, #5a4a3a); }
+      .crrm-name { font-weight:600; color:var(--ink, #2a1a08); }
+      .crrm-win { color:var(--accent-positive, #2d6a2d); font-weight:700; }
+      .crrm-loss { color:rgba(120,90,60,0.5); }
+      .crrm-draw { color:var(--ink-soft, #5a4a3a); }
+      .crrm-fin { color:var(--accent-warm, #a06030); }
+      .crrm-close-tray { display:flex; justify-content:center; margin-top:12px; }
+      .crrm-close-btn { padding:10px 28px; background:var(--accent, #8b5a2b); color:#fff8e8; border:none; border-radius:4px; font-weight:600; cursor:pointer; font-size:13px; }
+      .crrm-close-btn:hover { background:var(--accent-strong, #6b4520); }
+      .crrm-opp-reaction { margin: 6px 0 12px; padding: 10px 14px; background: rgba(255,247,230,0.45); border-left: 3px solid var(--accent-warm, #a06030); border-radius: 4px; }
+      .crrm-opp-reaction-speaker { font-size: 11px; color: var(--ink-soft, #5a4a3a); margin-bottom: 4px; }
+      .crrm-opp-reaction-text { font-size: 13px; color: var(--ink, #2a1a08); font-style: italic; }
+    </style>
+    <div class="fevt-overlay-office" id="challengeRequestResultOverlay">
+      <div class="fevt-report-card crrm-card">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title crrm-tone-${tone === 'positive' ? 'pos' : tone === 'negative' ? 'neg' : 'neu'}">📜 ${titleText}</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)} · 挑戦試合（${ourOrg} vs ${otherOrgName}）</div>
+        </div>
+        ${_factionReporterStrip(state, coachLine)}
+        ${oppReactionHtml}
+        <div class="crrm-score-banner">
+          <div class="crrm-score-org">${ourOrg}<br><small>${isInverse ? `迎撃: ${oppName}陣` : `${reqName}陣`}</small></div>
+          <div class="crrm-score-num ${playerWon ? 'win' : (playerLost ? 'lose' : '')}">${playerScore} - ${aiScore}</div>
+          <div class="crrm-score-org">${otherOrgName}<br><small>${isInverse ? `打診: ${reqName}陣` : `${oppName}陣`}</small></div>
+        </div>
+        <div class="crrm-rows">${matchRows}</div>
+        <div class="crrm-close-tray">
+          <button class="crrm-close-btn" id="crrmCloseBtn">閉じる</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  const closeBtn = root.querySelector('#crrmCloseBtn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onClose) onClose();
+    });
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.showChallengeRequestResultModal = showChallengeRequestResultModal;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
