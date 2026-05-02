@@ -2543,6 +2543,15 @@ const Storage = {
         G = { ...G, _migrated_chronicle_status_v2: true };
       }
 
+      // 序章 — 撤回した遡及マイグレーション (commit 17360df) の残留データ清掃
+      // _migrated_prologue_v1 が立っているセーブは B案で作られた擬似序章が入っているため、
+      // createEmpty() で初期化し直して既存挙動に戻す。
+      // 通常の completeDraft 経路で作られた序章はこのフラグを立てないので無傷。
+      if (G._migrated_prologue_v1 && Engine.prologue) {
+        G = { ...G, prologue: Engine.prologue.createEmpty() };
+        delete G._migrated_prologue_v1;
+      }
+
       // Chronicle v0.3: rebuild old save caches after prime-era segmentation changes.
       if (!G._migrated_chronicle_prime_v3 && G.chronicle && Engine.chronicle) {
         try {

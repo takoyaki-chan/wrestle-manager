@@ -9500,7 +9500,12 @@ function _renderDbChronicle() {
   // 確定済み章のみ表示。in_progress は世代の中心が決まるまで伏せる
   const chapters = ((ch && ch.chaptersCache && ch.chaptersCache.chapters) || [])
     .filter(c => c.status === 'confirmed');
-  const prologue = (G && G.prologue && G.prologue.status !== 'empty') ? G.prologue : null;
+  // 序章は status が 'in_progress' / 'confirmed' で、かつ founderIds が実在する場合のみ表示
+  // (status='empty' / 過去マイグレ残留の founderIds=[] は無視して既存挙動を保つ)
+  const prologue = (G && G.prologue
+    && (G.prologue.status === 'in_progress' || G.prologue.status === 'confirmed')
+    && Array.isArray(G.prologue.founderIds)
+    && G.prologue.founderIds.length > 0) ? G.prologue : null;
 
   // 序章 (idx=0) を選択中ならプロローグブロックを描画して終了
   if (prologue && _dbChronicleIdx === 0) {
