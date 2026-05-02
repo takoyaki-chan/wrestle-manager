@@ -9552,8 +9552,40 @@ function showFactionCommon1Modal(payload, state, onChoice) {
     ? Engine.factions.getCommon1Line('coachReport', { archetypeId, vars })
     : `${factionName}内の${aName}と${bName}に火種があります。`;
   const leaderLine = (Engine.factions.getCommon1Line)
-    ? Engine.factions.getCommon1Line('leaderDemand', { archetypeId, vars })
+    ? Engine.factions.getCommon1Line('leaderDemand', { archetypeId, vars, fighter: leader || fA })
     : 'リングで決めたい。';
+
+  const ovr = (f) => f ? Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5) : '—';
+  const ovrA = ovr(fA), ovrB = ovr(fB);
+  const stat = (f, k) => f && typeof f[k] === 'number' ? f[k] : 0;
+  const statRow = (label, key) => {
+    const va = stat(fA, key), vb = stat(fB, key);
+    const aHi = va > vb ? ' fc1m-higher' : '';
+    const bHi = vb > va ? ' fc1m-higher' : '';
+    return { label, aHi, va, bHi, vb };
+  };
+  const stats = [
+    statRow('PW','pw'), statRow('SP','sp'), statRow('TE','te'), statRow('ST','st'), statRow('MN','mn')
+  ];
+  const renderStats = (side) => stats.map(r => {
+    const hi = side === 'a' ? r.aHi : r.bHi;
+    const v = side === 'a' ? r.va : r.vb;
+    return `<div class="fc1m-stat"><div class="fc1m-stat-label">${r.label}</div><div class="fc1m-stat-val${hi}">${v}</div></div>`;
+  }).join('');
+
+  const isLeaderA = leader && fA && leader.id === fA.id;
+  const isLeaderB = leader && fB && leader.id === fB.id;
+  const leaderSide = isLeaderA ? 'a' : (isLeaderB ? 'b' : 'a');
+  const bubbleHtml = `
+    <div class="fc1m-bubble-wrap">
+      <div class="fc1m-bubble-speaker">${leaderName}</div>
+      <div class="fc1m-bubble">${leaderLine}</div>
+    </div>`;
+  const aClickAttr = fA ? `onclick="event.stopPropagation();showFighterPopup(${fA.id},'roster')" style="cursor:pointer"` : '';
+  const bClickAttr = fB ? `onclick="event.stopPropagation();showFighterPopup(${fB.id},'roster')" style="cursor:pointer"` : '';
+  const factionTagA = isLeaderA ? `${factionName} · リーダー` : factionName;
+  const factionTagB = isLeaderB ? `${factionName} · リーダー` : factionName;
+  const rivalryNum = (payload.currentRivalry != null) ? payload.currentRivalry : 0;
 
   const html = `
     <div class="fevt-overlay-office" id="fevtCommon1Overlay">
@@ -9563,26 +9595,32 @@ function showFactionCommon1Modal(payload, state, onChoice) {
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, coachLine)}
-        <div class="fevt-subject-stage">
-          <div class="fevt-subject-pair">
-            ${leftPortrait}
-            <div class="fevt-pair-bridge">vs</div>
-            ${rightPortrait}
+        <div class="fc1m-compare">
+          <div class="fc1m-side">
+            ${leaderSide === 'a' ? bubbleHtml : '<div class="fc1m-bubble-spacer"></div>'}
+            <div class="fc1m-portrait" ${aClickAttr} title="クリックで選手詳細"${fA ? ` style="background-image:url('${_factionUpperUrl(fA.id)}');background-size:cover;background-position:center 20%;cursor:pointer"` : ''}></div>
+            <div class="fc1m-name" ${aClickAttr} title="クリックで選手詳細">${aName}</div>
+            <div class="fc1m-faction">${factionTagA}</div>
+            <div class="fc1m-ovr-badge">OVR ${ovrA}</div>
+            <div class="fc1m-stats">${renderStats('a')}</div>
           </div>
-          <div class="fevt-subject-name">${aName} ・ ${bName}</div>
-          <div class="fevt-subject-org">${factionName} ・ rivalry ${payload.currentRivalry || 0} / 100</div>
-          <div class="fevt-subject-divider"></div>
-          <div class="fevt-quote leader">
-            <div class="fevt-quote-speaker">${leaderName}（${factionName}）</div>
-            ${leaderLine}
+          <div class="fc1m-vs">VS</div>
+          <div class="fc1m-side">
+            ${leaderSide === 'b' ? bubbleHtml : '<div class="fc1m-bubble-spacer"></div>'}
+            <div class="fc1m-portrait" ${bClickAttr} title="クリックで選手詳細"${fB ? ` style="background-image:url('${_factionUpperUrl(fB.id)}');background-size:cover;background-position:center 20%;cursor:pointer"` : ''}></div>
+            <div class="fc1m-name" ${bClickAttr} title="クリックで選手詳細">${bName}</div>
+            <div class="fc1m-faction">${factionTagB}</div>
+            <div class="fc1m-ovr-badge">OVR ${ovrB}</div>
+            <div class="fc1m-stats">${renderStats('b')}</div>
           </div>
         </div>
+        <div class="fc1m-rivalry">2名間の因縁 <strong>${rivalryNum}</strong> / 100 — 火種は熟している</div>
         <div class="fevt-decision-prompt">この火種、社長としてどう扱いますか？</div>
         <div class="fevt-decision-tray three">
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">派閥内対決を組む</div>
-            <div class="fevt-decision-hint">2名で試合。勝者 trust <strong>+3〜+5</strong>／敗者 trust <strong>-1〜-3</strong>／rivalry <strong>-30〜-50</strong></div>
+            <div class="fevt-decision-hint">ビッグマッチとして実際に試合。勝者 trust <strong>+3〜+5</strong>／敗者 <strong>-1〜-3</strong>／因縁 <strong>-30〜-50</strong></div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>
@@ -10675,6 +10713,75 @@ function _renderB3MatchPreview(event, playerFighter, challenger) {
   html += `<div class="mc-act">
     <button class="mc-bw" style="border:2px solid ${eColor};background:linear-gradient(135deg,${_rgba(eColor,0.15)},${_rgba(eColor,0.03)})" onclick="App.b3WatchMatch()">🎬 試合を観る</button>
     <button class="mc-bs" onclick="App.b3SkipMatch()">≫ スキップ</button>
+  </div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+// ── Common-1 派閥内対決 試合プレビュー画面 ──────────────────────────────────
+function _renderCommon1MatchPreview(payload, fA, fB) {
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  const factionName = payload.factionName || '派閥';
+  const aColor = '#d4a843';
+  const bColor = '#c97a4a';
+  const aLight = _lightenColor(aColor);
+  const bLight = _lightenColor(bColor);
+  const ovrL = Engine.util.ov(fA), ovrR = Engine.util.ov(fB);
+  const standL = getStandUrl(fA.id, ovrL), standR = getStandUrl(fB.id, ovrR);
+
+  let html = `<div style="text-align:center;padding:8px 0 4px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:6px;color:#aaa">Faction Internal Match</div>
+    <div style="font-size:20px;font-weight:700;letter-spacing:4px;color:#e8e0d0">⚔️ 派閥内対決</div>
+    <div style="font-size:12px;color:var(--text-sub);margin-top:4px">${factionName} ・ ビッグマッチ規格で行う</div>
+  </div>`;
+
+  html += `<div class="mc-va">
+    <div class="mc-fc left">
+      <div class="mc-fi">
+        <div class="mc-fn">${fA.name}</div>
+        <div class="mc-fo" style="color:${aLight}">${factionName}</div>
+        <div class="mc-fol">OVR</div>
+        <div class="mc-fov" style="background:linear-gradient(180deg,${aLight},${aColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrL}</div>
+      </div>
+      <div class="mc-fp">${standL ? `<img src="${standL}" alt="" onerror="this.style.display='none'">` : ''}</div>
+    </div>
+    <div class="mc-vsf">
+      <div class="mc-vst" style="background:linear-gradient(180deg,#fff,#aaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(200,190,170,0.15))">VS</div>
+    </div>
+    <div class="mc-fc right">
+      <div class="mc-fp">${standR ? `<img src="${standR}" alt="" onerror="this.style.display='none'">` : ''}</div>
+      <div class="mc-fi">
+        <div class="mc-fn">${fB.name}</div>
+        <div class="mc-fo" style="color:${bLight}">${factionName}</div>
+        <div class="mc-fol">OVR</div>
+        <div class="mc-fov" style="background:linear-gradient(180deg,${bLight},${bColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrR}</div>
+      </div>
+    </div>
+  </div>`;
+
+  html += `<div class="mc-stats">`;
+  html += _warStatRow('PW', fA.pw||0, fB.pw||0, 'pw', aLight, bLight);
+  html += _warStatRow('SP', fA.sp||0, fB.sp||0, 'sp', aLight, bLight);
+  html += _warStatRow('TE', fA.te||0, fB.te||0, 'te', aLight, bLight);
+  html += _warStatRow('ST', fA.st||0, fB.st||0, 'st', aLight, bLight);
+  html += _warStatRow('MN', fA.mn||0, fB.mn||0, 'mn', aLight, bLight);
+
+  const pTraits = (fA.traits || []).slice(0, 3);
+  const cTraits = (fB.traits || []).slice(0, 3);
+  if (pTraits.length || cTraits.length) {
+    html += `<div class="mc-traits" style="padding-left:0;padding-right:0;margin-top:4px">
+      <div class="mc-ts left">${pTraits.map(t => `<span class="mc-tt">${typeof t === 'string' ? t : t.name || t}</span>`).join('')}</div>
+      <div class="mc-tdiv"></div>
+      <div class="mc-ts right">${cTraits.map(t => `<span class="mc-tt">${typeof t === 'string' ? t : t.name || t}</span>`).join('')}</div>
+    </div>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="mc-act">
+    <button class="mc-bw" style="border:2px solid ${aColor};background:linear-gradient(135deg,${_rgba(aColor,0.15)},${_rgba(aColor,0.03)})" onclick="App.common1WatchMatch()">🎬 試合を観る</button>
+    <button class="mc-bs" onclick="App.common1SkipMatch()">≫ スキップ</button>
   </div>`;
 
   box.innerHTML = html;

@@ -2743,49 +2743,47 @@ Engine.factions = {
   },
 
   applyCommon1Choice(state, payload, choiceId, rng) {
-    const { factionId, factionName, fighterAId, fighterBId, fighterAName, fighterBName } = payload;
+    const { factionId, factionName } = payload;
     let s = state;
-    const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
     const impactSummary = [];
     let resultText = '';
-    let winnerId = null, loserId = null;
-    let winnerName = '', loserName = '';
 
     if (choiceId === 'A') {
-      // 簡易勝敗判定: OVR + 軽い乱数
-      const a = (s.roster || []).find(c => c.id === fighterAId);
-      const b = (s.roster || []).find(c => c.id === fighterBId);
-      const ovA = a ? Engine.util.ov(a) : 50;
-      const ovB = b ? Engine.util.ov(b) : 50;
-      const noise = (Engine.rng.float(rng) - 0.5) * 20;
-      const aWins = (ovA + noise) >= ovB;
-      winnerId = aWins ? fighterAId : fighterBId;
-      loserId = aWins ? fighterBId : fighterAId;
-      winnerName = aWins ? fighterAName : fighterBName;
-      loserName = aWins ? fighterBName : fighterAName;
-      const winTrust = ri(3, 5);
-      const loseTrust = -ri(1, 3);
-      s = this._applyTrustToMembers(s, [winnerId], winTrust);
-      s = this._applyTrustToMembers(s, [loserId], loseTrust);
-      // rivalry 解消（双方向 -30〜-50）
-      const relDelta = -ri(30, 50);
-      s = this._applyRivalryDirected(s, fighterAId, fighterBId, relDelta);
-      s = this._applyRivalryDirected(s, fighterBId, fighterAId, relDelta);
-      impactSummary.push({ label: `${winnerName} trust`, delta: `+${winTrust}` });
-      impactSummary.push({ label: `${loserName} trust`, delta: `${loseTrust}` });
-      impactSummary.push({ label: `2名間 rivalry`, delta: `${relDelta}` });
-      resultText = `${winnerName}が${loserName}を下した。${factionName}内の火種は試合で清算された。`;
+      // 試合は app.js 側でビッグマッチとして実行。ここではマーキングのみ
+      s = this._markCommonEventTrigger(s, factionId, 'COMMON_1');
+      return { state: s, pendingMatch: true, resultText: '', impactSummary: [] };
     } else if (choiceId === 'B') {
-      // 別カードに置換 — 効果なし、F05 発火確率は将来的に実装
       resultText = `${factionName}内の対決は別カードに振り替えた。火種はそのまま残った。`;
       impactSummary.push({ label: `${factionName} 内部対立`, delta: '継続' });
     } else {
-      // C: 静観
       resultText = `${factionName}の内紛は自然に任せた。火種は燻ったまま。`;
       impactSummary.push({ label: `${factionName} 内部対立`, delta: '燻り続ける' });
     }
 
     s = this._markCommonEventTrigger(s, factionId, 'COMMON_1');
+    return { state: s, resultText, impactSummary, winnerId: null, loserId: null, winnerName: '', loserName: '' };
+  },
+
+  // Common-1 試合結果を state へ反映（trust / rivalry）
+  applyCommon1MatchResult(state, payload, winnerId, loserId, rng) {
+    const { factionName, fighterAId, fighterBId, fighterAName, fighterBName } = payload;
+    let s = state;
+    const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+    const winnerName = winnerId === fighterAId ? fighterAName : fighterBName;
+    const loserName = loserId === fighterAId ? fighterAName : fighterBName;
+    const winTrust = ri(3, 5);
+    const loseTrust = -ri(1, 3);
+    s = this._applyTrustToMembers(s, [winnerId], winTrust);
+    s = this._applyTrustToMembers(s, [loserId], loseTrust);
+    const relDelta = -ri(30, 50);
+    s = this._applyRivalryDirected(s, fighterAId, fighterBId, relDelta);
+    s = this._applyRivalryDirected(s, fighterBId, fighterAId, relDelta);
+    const impactSummary = [
+      { label: `${winnerName} trust`, delta: `+${winTrust}` },
+      { label: `${loserName} trust`, delta: `${loseTrust}` },
+      { label: `2名間 rivalry`, delta: `${relDelta}` },
+    ];
+    const resultText = `${winnerName}が${loserName}を下した。${factionName}内の火種は試合で清算された。`;
     return { state: s, resultText, impactSummary, winnerId, loserId, winnerName, loserName };
   },
 
@@ -2806,7 +2804,13 @@ Engine.factions = {
       return subst(pickArr(table.coachReport[arch] || table.coachReport._any));
     }
     if (category === 'leaderDemand') {
-      return subst(pickArr(table.leaderDemand[arch] || table.leaderDemand._any));
+      const fighter = ctx && ctx.fighter;
+      const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'composed';
+      const t = table.leaderDemand[arch] || table.leaderDemand._any;
+      if (!t) return '';
+      // 旧形式（配列）後方互換 + 新形式（personality マップ）
+      if (Array.isArray(t)) return subst(pickArr(t));
+      return subst(pickArr(t[personality] || t.composed || t._any || []));
     }
     if (category === 'resultLeader') {
       const choice = (ctx && ctx.choice) || 'A';

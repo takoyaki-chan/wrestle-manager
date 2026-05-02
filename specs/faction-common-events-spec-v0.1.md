@@ -1,8 +1,8 @@
 # 派閥共通イベント仕様 v0.1
 
 **ファイル**：`specs/faction-common-events-spec-v0.1.md`
-**最終更新**：2026-05-01
-**実装状況**：Phase A〜D 全実装完了（Common-1/3/4/5/7 すべて稼働）。auto-sim 50×42 で違反 0 確認済み
+**最終更新**：2026-05-02
+**実装状況**：Phase A〜D 全実装完了（Common-1/3/4/5/7 すべて稼働）。Common-1 リデザイン v0.2（2026-05-02）：打診モーダルを比較レイアウト化（OVR 表示 / 名前リンク / 頭上吹き出し）+ A 選択時はビッグマッチ規格（matchTier=2）の実試合へ遷移。auto-sim 30×42 で違反 0 確認済み
 **親仕様**：
 - `specs/faction-system-spec-v0.1.md`（既存 F01〜F08）
 - `specs/faction-archetype-rework-spec-v0.1.md` v0.2
@@ -70,8 +70,15 @@ F05（派閥内亀裂）が「分裂への流れ」だとすれば、Common-1 �
 
 ### 3.3 プレイヤー提示
 
+**打診モーダル（v0.2 リデザイン）**：
+- 2 名を左右に並べた比較レイアウト（ポートレート / OVR / PW・SP・TE・ST・MN ステータス・高い側ハイライト）
+- 名前・ポートレートをクリックで選手詳細ポップアップ（`showFighterPopup(id, 'roster')`）
+- リーダー側ポートレート頭上に **白吹き出し**（UI 共通ルール準拠：`#f0f0f0` 背景 + 黒文字 + 中央寄せ + 三角尻尾）でリーダーセリフ
+- リーダーセリフは **アーキタイプ × 性格** の 6×6 マトリクスから生成（personality: fiery/composed/grudging/airy/earnest/flippant）
+- 「2 名間の因縁 X / 100」表記（内部変数名 rivalry を出さない）
+
 3 択：
-- **A：派閥内対決を組む** — 次の興行カードに当該2名の試合を組む
+- **A：派閥内対決を組む** — ビッグマッチ規格（matchTier=2）で実試合へ遷移
 - **B：別カードに置換** — 別の対戦カードに振り替える
 - **C：静観** — 自然に任せる
 
@@ -79,11 +86,28 @@ F05（派閥内亀裂）が「分裂への流れ」だとすれば、Common-1 �
 
 | 選択 | 効果 |
 |---|---|
-| A | 当該2名の試合を組む。試合後、勝者 trust +3〜+5、敗者 trust -1〜-3、両者間 rivalry 解消（-30〜-50） |
+| A | **試合プレビュー（観戦/スキップ）→ battle-engine.html でビッグマッチ実試合 → 結果反映**。勝者 trust +3〜+5、敗者 trust -1〜-3、両者間 rivalry 解消（-30〜-50）。`Engine.relationships.applyMatchResult` も同団体ペアとして経由 |
 | B | 当該2名 trust ±0、rivalry が継続。F05 発火確率 +5% |
 | C | 自然展開。rivalry はそのまま、F05 発火確率 +10% |
 
-### 3.5 アーキタイプ別トーン（コーチ報告／本人セリフ）
+### 3.4.1 試合の規格（v0.2）
+
+- `Engine.battle.simulateMatch(fA, fB, rng, 2, { recordFrames: true })` — matchTier=2（ビッグマッチ）
+- HP base 85（通常 50）、HP scale 1.10、Climax フェーズで BGM 切替、`BIG MATCH` バッジ表示
+- iframe header: `⚔ {factionName} 派閥内対決`、`isSpecialMatch: true, matchTier: 2`
+- seed: `Engine.rng.derive(rngSeed, season, week, 0xC0F1)`（観戦/スキップで結果一致）
+- 関係性反映 seed: `0xC0FE`、trust/rivalry 反映 seed: `0xC0FA`
+
+### 3.4.2 実装分割（v0.2）
+
+- `Engine.factions.applyCommon1Choice` は choice='A' の場合 `pendingMatch: true` を返すのみ（trust/rivalry は反映しない）
+- `Engine.factions.applyCommon1MatchResult(state, payload, winnerId, loserId, rng)` — 試合結果から trust/rivalry を反映する独立関数
+- `App._common1Preview` / `App.common1WatchMatch` / `App.common1SkipMatch` / `App._receiveCommon1BattleResult` / `App._finalizeCommon1Match` — B3 挑戦状フローと同等の構造
+- iframe メッセージルーティングに Common-1 用分岐を追加
+
+### 3.5 アーキタイプ × 性格マトリクス（リーダーセリフ）
+
+`COMMON1_LINES.leaderDemand[archetype][personality]` で 36 パターン（6 アーキタイプ × 6 性格）。`Engine.contract.getPersonalityType(leader)` で性格を判定し、リーダー本人の口調・語尾・一人称が反映される。
 
 | アーキタイプ | トーン |
 |---|---|

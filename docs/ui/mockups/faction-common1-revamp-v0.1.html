@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>派閥内対決 リデザイン v0.1 モックアップ</title>
+<style>
+:root{
+  --gold:#d4a843;
+  --cream-bg:#f3ead4;
+  --cream-border:#d8c89a;
+  --cream-text:#3b2f15;
+  --cream-sub:#5d4a30;
+  --cream-dim:#8a7549;
+  --link:#7a5320;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#0a0a14;color:#e8e0d0;font-family:'Hiragino Sans','Yu Gothic',sans-serif;padding:40px 20px}
+h2{color:var(--gold);font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:14px;margin:30px 0 12px}
+
+/* ===== Cream Panel base (Office category) ===== */
+.fevt-card{background:var(--cream-bg);border:1px solid var(--cream-border);border-radius:6px;padding:18px 22px;width:760px;margin:0 auto 30px;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+.fevt-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--cream-border);padding-bottom:10px;margin-bottom:14px}
+.fevt-title{font-size:15px;font-weight:700;color:var(--cream-text)}
+.fevt-meta{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1.5px;color:var(--cream-dim)}
+
+/* coach strip */
+.fevt-coach{display:flex;gap:10px;align-items:center;background:#1a1208;border-radius:4px;padding:10px 12px;margin-bottom:14px}
+.fevt-coach-avatar{width:36px;height:36px;border-radius:50%;background:#3a2a18;flex-shrink:0}
+.fevt-coach-name{font-size:11px;color:#bfa97a;margin-bottom:2px}
+.fevt-coach-line{font-size:13px;color:#e8d8b0;font-style:italic}
+
+/* ===== NEW: 比較ステージ ===== */
+.fc1-compare{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:start;padding:8px 4px 14px}
+.fc1-side{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;padding-top:90px}
+
+/* 頭上吹き出し(UI共通ルール準拠: 白#f0f0f0 + 黒文字 + 中央寄せ + 三角尻尾) */
+.fc1-bubble-wrap{position:absolute;top:0;left:50%;transform:translateX(-50%);width:240px;display:flex;flex-direction:column;align-items:center}
+.fc1-bubble-speaker{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:2px;text-shadow:0 1px 0 rgba(0,0,0,.15)}
+.fc1-bubble{position:relative;background:#f0f0f0;color:#1a1208;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.55;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.15);min-height:46px;display:flex;align-items:center;justify-content:center}
+.fc1-bubble::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #f0f0f0}
+
+.fc1-portrait{width:120px;height:144px;border-radius:4px;background:#c8b888 center/cover;background-image:linear-gradient(135deg,#a8957a,#7a6850);cursor:pointer;transition:transform .15s,box-shadow .15s;border:2px solid transparent}
+.fc1-portrait:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.25);border-color:var(--gold)}
+.fc1-name{font-size:16px;font-weight:700;color:var(--cream-text);cursor:pointer;text-decoration:underline;text-decoration-color:rgba(122,83,32,.3);text-underline-offset:3px;transition:color .15s}
+.fc1-name:hover{color:var(--link);text-decoration-color:var(--link)}
+.fc1-faction{font-size:11px;color:var(--cream-dim);margin-top:-2px}
+.fc1-ovr-badge{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;padding:3px 12px;border-radius:3px;background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.4);color:#7a5320;margin-top:2px}
+.fc1-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px;width:100%;max-width:200px}
+.fc1-stat{text-align:center;font-size:10px}
+.fc1-stat-label{color:var(--cream-dim);font-family:'Oswald',sans-serif;letter-spacing:1px;font-size:9px}
+.fc1-stat-val{font-family:'Oswald',sans-serif;font-weight:600;color:var(--cream-text);font-size:13px}
+.fc1-stat-val.higher{color:#9c6b1a}
+
+.fc1-vs{display:flex;flex-direction:column;align-items:center;justify-content:center;height:144px;font-family:'Oswald',sans-serif;font-size:32px;font-weight:700;color:var(--cream-dim);letter-spacing:2px}
+
+.fc1-rivalry{text-align:center;font-size:12px;color:var(--cream-sub);padding:8px 0;border-top:1px dashed var(--cream-border);margin-top:4px}
+.fc1-rivalry strong{color:#9c6b1a;font-family:'Oswald',sans-serif;font-size:14px}
+
+.fc1-quote{background:rgba(212,168,67,0.1);border-left:3px solid var(--gold);padding:10px 12px;margin:14px 0;font-size:13px;color:var(--cream-sub)}
+.fc1-quote-speaker{font-size:11px;color:var(--cream-dim);margin-bottom:3px}
+
+.fc1-prompt{text-align:center;font-size:13px;color:var(--cream-sub);margin:8px 0 10px}
+.fc1-tray{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fc1-choice{background:#fff;border:1px solid var(--cream-border);border-radius:4px;padding:14px 12px;cursor:pointer;transition:all .15s}
+.fc1-choice:hover{border-color:var(--gold);background:#fffaf0}
+.fc1-letter{font-family:'Oswald',sans-serif;font-size:18px;color:var(--gold);font-weight:700}
+.fc1-label{font-size:13px;font-weight:700;color:var(--cream-text);margin:4px 0}
+.fc1-hint{font-size:11px;color:var(--cream-dim);line-height:1.5}
+
+/* ===== 試合フロー: 試合プレビュー（B3 流用想定） ===== */
+.preview-card{background:#0f0a06;border:1px solid #2a1f10;border-radius:6px;padding:24px;width:760px;margin:0 auto 30px;color:#d8c89a}
+.preview-title{text-align:center;font-family:'Oswald',sans-serif;letter-spacing:3px;color:var(--gold);font-size:13px;margin-bottom:8px}
+.preview-card-name{text-align:center;font-size:18px;font-weight:700;margin-bottom:18px}
+.preview-vs{display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;gap:12px;margin-bottom:18px}
+.preview-fighter{text-align:center}
+.preview-portrait-lg{width:160px;height:200px;background:linear-gradient(135deg,#3a2a18,#1a0f04);border-radius:4px;margin:0 auto 8px;border:1px solid #4a3520}
+.preview-name-lg{font-size:16px;font-weight:700;color:#f0d890}
+.preview-ovr-lg{font-family:'Oswald',sans-serif;color:var(--gold);letter-spacing:2px;margin-top:4px}
+.preview-vs-mark{text-align:center;font-family:'Oswald',sans-serif;font-size:36px;color:#5a4520}
+.preview-actions{display:flex;gap:12px;justify-content:center}
+.preview-btn{padding:10px 28px;font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:13px;border-radius:3px;cursor:pointer;border:1px solid var(--gold);background:rgba(212,168,67,0.15);color:var(--gold)}
+.preview-btn.skip{background:transparent;color:#8a7549;border-color:#3a2a18}
+
+.note{width:760px;margin:0 auto;font-size:12px;color:#8a8070;line-height:1.7;padding:0 4px 30px}
+.note b{color:#bfa97a}
+</style>
+</head>
+<body>
+
+<h2>① 打診モーダル(リデザイン)— 名前クリック+OVR+ステータス比較</h2>
+<div class="fevt-card">
+  <div class="fevt-header">
+    <div class="fevt-title">⚔ 派閥内対決の打診</div>
+    <div class="fevt-meta">WEEK 03 · 10Y</div>
+  </div>
+  <div class="fevt-coach">
+    <div class="fevt-coach-avatar"></div>
+    <div>
+      <div class="fevt-coach-name">中村 紗弓 コーチ</div>
+      <div class="fevt-coach-line">「大久保桃子組内の序列確認の話が出ています。大久保桃子対長谷川レオナ、組んでみる価値はあります。」</div>
+    </div>
+  </div>
+
+  <div class="fc1-compare">
+    <div class="fc1-side">
+      <div class="fc1-bubble-wrap">
+        <div class="fc1-bubble-speaker">大久保桃子</div>
+        <div class="fc1-bubble">序列の話、リングで片付ける。組んでくれ。</div>
+      </div>
+      <div class="fc1-portrait" title="クリックで選手詳細"></div>
+      <div class="fc1-name" title="クリックで選手詳細">大久保桃子</div>
+      <div class="fc1-faction">大久保桃子組 · リーダー</div>
+      <div class="fc1-ovr-badge">OVR 78</div>
+      <div class="fc1-stats">
+        <div class="fc1-stat"><div class="fc1-stat-label">PW</div><div class="fc1-stat-val higher">82</div></div>
+        <div class="fc1-stat"><div class="fc1-stat-label">SP</div><div class="fc1-stat-val">74</div></div>
+        <div class="fc1-stat"><div class="fc1-stat-label">TE</div><div class="fc1-stat-val higher">80</div></div>
+        <div class="fc1-stat"><div class="fc1-stat-label">ST</div><div class="fc1-stat-val higher">79</div></div>
+        <div class="fc1-stat"><div class="fc1-stat-label">MN</div><div class="fc1-stat-val">75</div></div>
+      </div>
+    </div>
+    <div class="fc1-vs">VS</div>
+    <div class="fc1-side">
+      <div class="fc1-portrait" title="クリックで選手詳細"></div>
+      <div class="fc1-name" title="クリックで選手詳細">長谷川レオナ</div>
+      <div class="fc1-faction">大久保桃子組</div>
+      <div class="fc1-ovr-badge">OVR 75</div>
+      <div class="fc1-stats">
+        <div class="fc1-stat"><div class="fc1-stat-label">PW</div><div class="fc1-stat-val">76</div></div>
+        <div class="fc1-stat"><div class="fc1-stat-label">SP</div><div class="fc1-stat-val higher">78</div></div>
+        <div class="fc1-stat"><div class="fc1-stat-label">TE</div><div class="fc1-stat-val">72</div></div>
+        <div class="fc1-stat"><div class="fc1-stat-label">ST</div><div class="fc1-stat-val">74</div></div>
+        <div class="fc1-stat"><div class="fc1-stat-label">MN</div><div class="fc1-stat-val higher">77</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="fc1-rivalry">2名間の因縁 <strong>72.4</strong> / 100 — 火種は熟している</div>
+
+  <div class="fc1-prompt">この火種、社長としてどう扱いますか?</div>
+  <div class="fc1-tray">
+    <div class="fc1-choice"><div class="fc1-letter">A</div><div class="fc1-label">派閥内対決を組む</div><div class="fc1-hint">来週の興行に組み込み、<b>実際の試合として観戦</b>。勝者 trust +3〜+5/敗者 -1〜-3/因縁 -30〜-50</div></div>
+    <div class="fc1-choice"><div class="fc1-letter">B</div><div class="fc1-label">別カードに置換</div><div class="fc1-hint">対決は組まない。火種は残ったまま継続</div></div>
+    <div class="fc1-choice"><div class="fc1-letter">C</div><div class="fc1-label">静観する</div><div class="fc1-hint">何もしない。彼女らの自然な決着に任せる</div></div>
+  </div>
+</div>
+
+<h2>② A 選択時 — 試合プレビュー(B3 同等の観戦/スキップ二択)</h2>
+<div class="preview-card">
+  <div class="preview-title">⚔ 派閥内対決</div>
+  <div class="preview-card-name">大久保桃子 vs 長谷川レオナ</div>
+  <div class="preview-vs">
+    <div class="preview-fighter">
+      <div class="preview-portrait-lg"></div>
+      <div class="preview-name-lg">大久保桃子</div>
+      <div class="preview-ovr-lg">OVR 78</div>
+    </div>
+    <div class="preview-vs-mark">VS</div>
+    <div class="preview-fighter">
+      <div class="preview-portrait-lg"></div>
+      <div class="preview-name-lg">長谷川レオナ</div>
+      <div class="preview-ovr-lg">OVR 75</div>
+    </div>
+  </div>
+  <div class="preview-actions">
+    <button class="preview-btn">▶ 試合を観る</button>
+    <button class="preview-btn skip">⏩ スキップ</button>
+  </div>
+</div>
+
+<h2>③ 試合終了後 — 既存の結果通知(現状維持・trust/rivalry 反映)</h2>
+
+<div class="note">
+<b>方針メモ</b><br>
+・打診モーダル(①)は <code>showFactionCommon1Modal</code> の subject 部だけを差し替え。選択肢ロジックは変更しない<br>
+・A 選択時のフローを「即時計算+結果通知」から「シングル試合プレビュー → battle-engine.html 観戦 → 試合結果から trust/rivalry 反映 → 結果通知」に置換<br>
+・B3(挑戦状)の <code>_renderB3MatchPreview</code> / <code>b3WatchMatch</code> / <code>b3SkipMatch</code> をテンプレに、<code>App._common1Match</code> 名前空間で実装<br>
+・試合の勝者は <code>Engine.battle.simulateMatch</code> の実結果で決定。OVR+ノイズの簡易判定は廃止<br>
+・観戦/スキップどちらでも同じ seed(<code>derive(rngSeed, season, week, 0xC0F1)</code>)で結果一致を保証
+</div>
+
+</body>
+</html>

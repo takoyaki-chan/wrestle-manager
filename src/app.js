@@ -4978,6 +4978,12 @@ const App = {
       App._receiveB3BattleResult(data);
       return;
     }
+    // Common-1 派閥内対決 context
+    const c1 = App._common1Preview;
+    if (c1 && c1.watching) {
+      App._receiveCommon1BattleResult(data);
+      return;
+    }
     // B2 context
     const b2 = App._b2Preview;
     if (b2 && b2.watching) {
@@ -9092,6 +9098,20 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
+        if (result.pendingMatch && choiceId === 'A') {
+          // ビッグマッチとして実試合へ遷移
+          const fA = (G.roster || []).find(c => c.id === payload.fighterAId);
+          const fB = (G.roster || []).find(c => c.id === payload.fighterBId);
+          if (!fA || !fB) { finalizeAudio && finalizeAudio(); return; }
+          App._common1Preview = {
+            payload, fighterA: fA, fighterB: fB,
+            watching: false, matchResult: null, finalizeAudio
+          };
+          if (typeof _renderCommon1MatchPreview === 'function') {
+            _renderCommon1MatchPreview(payload, fA, fB);
+          }
+          return;
+        }
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'COMMON_1',
@@ -9371,6 +9391,137 @@ const App = {
 
     // 結果画面表示
     setTimeout(() => _renderB3MatchResult(event, matchResult, playerFighter, challenger), 300);
+  },
+
+  // ── Common-1 派閥内対決: ビッグマッチ実試合フロー ──
+  common1WatchMatch() {
+    const c1 = App._common1Preview;
+    if (!c1) return;
+    c1.watching = true;
+    const overlay = document.getElementById('battleOverlay');
+    overlay.style.display = 'block';
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    clearTimeout(App._escBtnTimer);
+    App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
+
+    const fA = c1.fighterA, fB = c1.fighterB;
+    const c1Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0F1));
+    const c1Result = Engine.battle.simulateMatch({ ...fA, condition: 80 }, { ...fB, condition: 80 }, c1Rng, 2, { recordFrames: true });
+    c1._preResult = c1Result;
+    const iframe = document.getElementById('battleIframe');
+    const factionName = c1.payload.factionName || '派閥';
+    const msg = {
+      type: 'START_MATCH',
+      left: {
+        ...fA, condition: 80,
+        portraitUrl: getPortraitUrl(fA.id), profile: CHAR_PROFILES[fA.id] || '',
+        vl: fA.voiceLines || fA.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fA.id]) || ['…！']
+      },
+      right: {
+        ...fB, condition: 80,
+        portraitUrl: getPortraitUrl(fB.id), profile: CHAR_PROFILES[fB.id] || '',
+        vl: fB.voiceLines || fB.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fB.id]) || ['…！']
+      },
+      matchInfo: {
+        header: `⚔ ${factionName} 派閥内対決`,
+        subHeader: `${fA.name} vs ${fB.name}`,
+        matchNum: 1, totalMatches: 1,
+        isTitle: false, isSpecialMatch: true, matchTier: 2,
+        rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, fA.id, fB.id); return rl ? rl.tier : 0; })(),
+        leftPersonality: fA.personality || 'normal', leftArchetype: fA.archetype || 'normal',
+        rightPersonality: fB.personality || 'normal', rightArchetype: fB.archetype || 'normal',
+        sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
+      },
+      result: c1Result,
+    };
+    try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
+    let sent = false;
+    const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
+    iframe.onload = () => setTimeout(sendOnce, 200);
+    iframe.src = 'battle-engine.html?t=' + Date.now();
+    setTimeout(sendOnce, 800);
+  },
+
+  common1SkipMatch() {
+    const c1 = App._common1Preview;
+    if (!c1) return;
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0F1));
+    const matchResult = Engine.battle.simulateMatch(c1.fighterA, c1.fighterB, rng, 2);
+    c1.matchResult = matchResult;
+    App._finalizeCommon1Match(matchResult);
+  },
+
+  _receiveCommon1BattleResult(data) {
+    const c1 = App._common1Preview;
+    if (!c1) return;
+    c1.watching = false;
+    const matchResult = c1._preResult || {
+      winner: data.winner,
+      finType: data.finType || '', finMove: data.finMove || '',
+      turns: data.turns || 0, mq: data.mq || 50,
+      hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
+      hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
+      log: data.log || []
+    };
+    c1.matchResult = matchResult;
+    try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
+    document.getElementById('battleOverlay').style.display = 'none';
+    Audio.play('coin');
+    App._finalizeCommon1Match(matchResult);
+  },
+
+  _finalizeCommon1Match(matchResult) {
+    const c1 = App._common1Preview;
+    if (!c1) return;
+    const { payload, fighterA, fighterB, finalizeAudio } = c1;
+    // プレビュー(showResultOverlay)を閉じる — 結果は派閥イベント結果モーダル側で表示
+    const showOv = document.getElementById('showResultOverlay');
+    if (showOv) showOv.classList.remove('active');
+    const winnerId = matchResult.winner === 'left' ? fighterA.id : fighterB.id;
+    const loserId  = matchResult.winner === 'left' ? fighterB.id : fighterA.id;
+
+    // 因縁・関係性の正規パイプライン（同団体ペア）
+    if (G.relationships) {
+      const c1RelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0FE));
+      const c1Context = {
+        mq: matchResult.mq,
+        winner: matchResult.winner === 'left' ? 'win' : (matchResult.winner === 'right' ? 'lose' : 'draw'),
+        hpA: matchResult.hpLeft, hpB: matchResult.hpRight,
+        turns: matchResult.turns,
+        stage: 'normal', isTitleMatch: false, rivalryResolved: false, injuredId: null,
+        isCareerBestA: matchResult.mq > (fighterA.careerBestMQ || 0),
+        isCareerBestB: matchResult.mq > (fighterB.careerBestMQ || 0),
+        losingStreakA: fighterA.losingStreak || 0, losingStreakB: fighterB.losingStreak || 0,
+        ovrA: Engine.util.ov(fighterA), ovrB: Engine.util.ov(fighterB),
+        isCrossOrg: false,
+      };
+      G = Engine.relationships.applyMatchResult(G, fighterA.id, fighterB.id, c1Context, c1RelRng);
+    }
+
+    // Common1 専用 trust/rivalry 反映
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0FA));
+    const result = Engine.factions.applyCommon1MatchResult(G, payload, winnerId, loserId, rng);
+    G = { ...result.state };
+    Storage.autoSave();
+    renderWeekScreen();
+
+    const leader = (G.roster || []).find(c => c.id === payload.leaderId);
+    setTimeout(() => {
+      showFactionEventResult({
+        eventId: 'COMMON_1',
+        category: '派閥内対決',
+        resultText: result.resultText,
+        charId: payload.leaderId || null,
+        charName: leader ? leader.name : '',
+        impactSummary: result.impactSummary || [],
+        weekLabel: `S${G.season} W${G.week}`,
+      }, () => {
+        App._common1Preview = null;
+        App.restoreBgmForState && App.restoreBgmForState();
+        if (finalizeAudio) finalizeAudio();
+      });
+    }, 300);
   },
 
   // B3: 結果画面を閉じる
