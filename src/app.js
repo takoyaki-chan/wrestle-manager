@@ -5470,6 +5470,23 @@ const App = {
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuffPre = (s.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuffPre) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuffPre.multiplier));
+    // mq_boost バフに付随する集客倍率（カードイベント effect 拡張で MQ+ と同時に集客効果を持つようになった）
+    const mqBoostWithAttendance = (s.milestoneBuffs || []).find(b => b.type === 'mq_boost' && b.attendanceMultiplier);
+    if (mqBoostWithAttendance) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * mqBoostWithAttendance.attendanceMultiplier));
+    // next_match_mq バフは特定ペア対象。該当ペアが showCard のいずれかに組まれていれば、その興行の集客倍率を適用
+    const nextMatchMqWithAttendance = (s.milestoneBuffs || []).find(b => b.type === 'next_match_mq' && b.attendanceMultiplier && b.pair);
+    if (nextMatchMqWithAttendance) {
+      const [p1, p2] = nextMatchMqWithAttendance.pair;
+      const pairInCard = (s.showCard || []).some(slot => {
+        if (!slot) return false;
+        if (slot.matchType === 'tag') {
+          const ids = [slot.teamA?.fighter1, slot.teamA?.fighter2, slot.teamB?.fighter1, slot.teamB?.fighter2].filter(Boolean);
+          return ids.includes(p1) && ids.includes(p2);
+        }
+        return (slot.left === p1 && slot.right === p2) || (slot.left === p2 && slot.right === p1);
+      });
+      if (pairInCard) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * nextMatchMqWithAttendance.attendanceMultiplier));
+    }
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     // 興行結果画面で動員数を表示するためにstateに保存
     s = { ...s, lastShowAttendance: preAttendance };

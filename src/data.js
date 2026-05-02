@@ -6015,7 +6015,7 @@ const EVENT_CONFIG = {
   warPopReward: 5,                      // 勝利時団体人気
   warPopPenalty: -3,                    // 敗北時
   // D-3: 挑戦状
-  challengeMQBonus: 10,                 // MQ+10
+  challengeMQBonus: 5,                  // MQ+5（v1.0e: 10→5 に縮小）
   // D-4: 頂上決戦
   summitMinRank: 2,                     // ランキング2位以上で発生
   summitPopReward: 10,
@@ -13036,9 +13036,9 @@ const MILESTONE_EVENTS = [
       },
       {
         label: '🎯 試合の質をもっと高める',
-        effect: { type: 'mq_boost', amount: 2, weeks: 4 },
+        effect: { type: 'mq_boost', amount: 3, weeks: 4, attendanceMultiplier: 1.15 },
         result: '練習メニューを見直し、試合構成にもこだわり始めた。',
-        effectLabel: '全試合MQ+2（4週間）'
+        effectLabel: '全試合MQ+3、集客×1.15（4週間）'
       },
       {
         label: '🔍 新戦力の獲得を急ぐ',
@@ -13062,9 +13062,9 @@ const MILESTONE_EVENTS = [
       },
       {
         label: '⚔️ 熱いうちに大一番を組む',
-        effect: { type: 'next_match_mq', amount: 5 },
+        effect: { type: 'next_match_mq', amount: 3, attendanceMultiplier: 1.20 },
         result: '次の対戦が、特別な一戦になる予感がする。',
-        effectLabel: '次の対戦MQ+5'
+        effectLabel: '次の対戦MQ+3、その興行の集客×1.20'
       },
       {
         label: '🌐 他の組み合わせも試したい',
