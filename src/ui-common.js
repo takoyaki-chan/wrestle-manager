@@ -10039,7 +10039,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="YES">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">${isInverse ? '受けて立つ' : 'この舞台、組もう'}</div>
-            <div class="fevt-decision-hint">${isInverse ? `${requesterOrgName}の挑戦を受け、3 vs 3 団体戦を即実施` : '次回興行に挑戦試合（3 vs 3 団体戦）として挿入'}</div>
+            <div class="fevt-decision-hint">${isInverse ? `${requesterOrgName}の挑戦を受け、3 vs 3 団体戦を即実施` : '今すぐ 3 vs 3 団体戦として実施し、その場で決着をつける'}</div>
           </div>
           <div class="fevt-decision-card" data-choice="NO">
             <div class="fevt-decision-letter">B</div>
@@ -10080,6 +10080,13 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
     return;
   }
   if (!card || !result) { if (onClose) onClose(); return; }
+  // 直前の _factionCloseCinematicOverlay が 600ms 後に innerHTML を消すため、
+  // 描画はそのタイマー消化後に行う。
+  if (!card.__deferredRender) {
+    card.__deferredRender = true;
+    setTimeout(() => showChallengeRequestResultModal(card, result, state, onClose), 650);
+    return;
+  }
 
   const teamWin = result.teamWin; // 'A' | 'B' | 'draw' （teamA = 打診者陣 / teamB = 相手陣）
   const isInverse = !!card.isInverse;

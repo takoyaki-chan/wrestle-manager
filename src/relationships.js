@@ -3479,17 +3479,38 @@ Engine.challengeRequest = {
     return { ...s, challengeRequest: cr };
   },
 
-  /** 打診者セリフ抽出（性格 × タイプ → CHALLENGE_REQUEST_LINES から選択） */
+  /** 打診者セリフ抽出（属性(style) × 性格 × タイプ で分岐）
+   *  60% で style-flavored を採用、40% で性格-base にフォールバック。未定義セルも base へ。 */
   pickRequesterLine(requester, bond, rng) {
-    if (typeof CHALLENGE_REQUEST_LINES === 'undefined' || !requester) return null;
+    if (!requester) return null;
     const personality = requester.personality || 'normal';
+    const style = requester.style || null;
     const type = (bond != null && bond < 50) ? 'hostile' : 'respectful';
-    const byPers = CHALLENGE_REQUEST_LINES[personality] || CHALLENGE_REQUEST_LINES.normal;
-    if (!byPers) return null;
-    const arr = byPers[type] || byPers.respectful || byPers.hostile;
-    if (!arr || arr.length === 0) return null;
-    const idx = rng ? Engine.rng.int(rng, 0, arr.length - 1) : 0;
-    return arr[idx];
+
+    const _pickFromBase = () => {
+      if (typeof CHALLENGE_REQUEST_LINES === 'undefined') return null;
+      const byPers = CHALLENGE_REQUEST_LINES[personality] || CHALLENGE_REQUEST_LINES.normal;
+      if (!byPers) return null;
+      const arr = byPers[type] || byPers.respectful || byPers.hostile;
+      if (!arr || arr.length === 0) return null;
+      const idx = rng ? Engine.rng.int(rng, 0, arr.length - 1) : 0;
+      return arr[idx];
+    };
+
+    // style-flavored を優先抽選（60%）
+    if (style && typeof CHALLENGE_REQUEST_LINES_STYLE !== 'undefined') {
+      const useStyle = rng ? Engine.rng.int(rng, 0, 99) < 60 : true;
+      if (useStyle) {
+        const byStyle = CHALLENGE_REQUEST_LINES_STYLE[style];
+        const byPers = byStyle && (byStyle[personality] || byStyle.normal);
+        const arr = byPers && (byPers[type] || byPers.respectful || byPers.hostile);
+        if (arr && arr.length > 0) {
+          const idx = rng ? Engine.rng.int(rng, 0, arr.length - 1) : 0;
+          return arr[idx];
+        }
+      }
+    }
+    return _pickFromBase();
   },
 
   /** 社長視点の関係性フレーバー1行（数値を出さない） */
