@@ -3696,14 +3696,17 @@ function renderRanking() {
   // 王座の「奪い合い」検出: 直近3シーズン以内に複数のtitleWin (= 取られて取り返した) があれば true
   const _isContestedBelt = (champion) => {
     if (!champion || !champion.careerRecord) return false;
-    const hist = champion.careerRecord.history || [];
+    // 転生前の架空タイトルは無視
+    const _js = Engine.career.joinSeason(champion);
+    const hist = Engine.career.filterPostJoin(champion.careerRecord.history || [], _js);
     const curSeason = G.season || 1;
     const recentWins = hist.filter(e => e.type === 'titleWin' && (curSeason - (e.season || curSeason)) <= 2);
     return recentWins.length >= 2;
   };
   const _titleWinCount = (fighter) => {
     if (!fighter || !fighter.careerRecord) return 0;
-    return (fighter.careerRecord.history || []).filter(e => e.type === 'titleWin').length;
+    const _js = Engine.career.joinSeason(fighter);
+    return Engine.career.filterPostJoin(fighter.careerRecord.history || [], _js).filter(e => e.type === 'titleWin').length;
   };
 
   const _buildAceCopy = ({ featured, champion, defenses, isChampion, seed }) => {
@@ -8615,7 +8618,9 @@ function showHofDetail(idx) {
   if (_warW === 0 && _warL === 0) {
     const _rf = (G.retiredFighters || []).find(f => f.id === h.id);
     if (_rf) {
-      const _wh = ((_rf.careerRecord || {}).history || []).filter(e => e.type === 'war');
+      // 転生前の架空対抗戦は別人扱いで除外
+      const _rfJs = Engine.career.joinSeason(_rf);
+      const _wh = Engine.career.filterPostJoin(((_rf.careerRecord || {}).history || []), _rfJs).filter(e => e.type === 'war');
       _warW = _wh.filter(e => e.won).length;
       _warL = _wh.length - _warW;
     }

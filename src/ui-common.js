@@ -3381,8 +3381,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             }).join('');
           })()}
           ${summary.juniorTournamentWins > 0 || summary.ppvMainEventWins > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px">${summary.juniorTournamentWins > 0 ? `<span style="color:#e67e22">🏅 JT優勝 <strong>${summary.juniorTournamentWins}</strong>回</span>` : ''}${summary.ppvMainEventWins > 0 ? `<span style="color:#9b59b6">🏅 PPV優勝 <strong>${summary.ppvMainEventWins}</strong>回</span>` : ''}</div>` : ''}
-          ${(() => { const warEvts = ((c.careerRecord || {}).history || []).filter(e => e.type === 'war'); const wW = warEvts.filter(e => e.won).length; const wL = warEvts.length - wW; return warEvts.length > 0 ? `<div style="margin-top:4px;font-size:12px"><span style="color:#2c3e50">🏴 対抗戦 <strong style="color:#2ecc71">${wW}勝</strong> <strong style="color:#e74c3c">${wL}敗</strong></span></div>` : ''; })()}
-          ${(() => { const hist = (c.careerRecord || {}).history || []; const mvp = hist.filter(e => e.type === 'awardMVP').length; const rookie = hist.some(e => e.type === 'awardRookie'); const bm = hist.filter(e => e.type === 'awardBestMatch').length; const media = hist.filter(e => e.type === 'awardMedia').length; const parts = []; if (mvp) parts.push(`<span style="color:#f1c40f">👑 MVP <strong>${mvp}</strong>回</span>`); if (rookie) parts.push(`<span style="color:#f1c40f">🌟 新人王</span>`); if (bm) parts.push(`<span style="color:#e67e22">🎬 ベストマッチ <strong>${bm}</strong>回</span>`); if (media) parts.push(`<span style="color:#3498db">📺 メディア功労賞 <strong>${media}</strong>回</span>`); return parts.length > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px;flex-wrap:wrap">${parts.join('')}</div>` : ''; })()}
+          ${(() => { const _hAll = ((c.careerRecord || {}).history || []); const _js = Engine.career.joinSeason(c); const warEvts = Engine.career.filterPostJoin(_hAll, _js).filter(e => e.type === 'war'); const wW = warEvts.filter(e => e.won).length; const wL = warEvts.length - wW; return warEvts.length > 0 ? `<div style="margin-top:4px;font-size:12px"><span style="color:#2c3e50">🏴 対抗戦 <strong style="color:#2ecc71">${wW}勝</strong> <strong style="color:#e74c3c">${wL}敗</strong></span></div>` : ''; })()}
+          ${(() => { const _hAll = (c.careerRecord || {}).history || []; const _js = Engine.career.joinSeason(c); const hist = Engine.career.filterPostJoin(_hAll, _js); const mvp = hist.filter(e => e.type === 'awardMVP').length; const rookie = hist.some(e => e.type === 'awardRookie'); const bm = hist.filter(e => e.type === 'awardBestMatch').length; const media = hist.filter(e => e.type === 'awardMedia').length; const parts = []; if (mvp) parts.push(`<span style="color:#f1c40f">👑 MVP <strong>${mvp}</strong>回</span>`); if (rookie) parts.push(`<span style="color:#f1c40f">🌟 新人王</span>`); if (bm) parts.push(`<span style="color:#e67e22">🎬 ベストマッチ <strong>${bm}</strong>回</span>`); if (media) parts.push(`<span style="color:#3498db">📺 メディア功労賞 <strong>${media}</strong>回</span>`); return parts.length > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px;flex-wrap:wrap">${parts.join('')}</div>` : ''; })()}
         </div>`;
       }
 
@@ -3396,6 +3396,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           bySeason[s].push(m);
         });
         const seasons = Object.keys(bySeason).map(Number).sort((a, b) => b - a);
+        // 入団以降のキャリア相対年数（入団=1）で表示。現在の絶対 season を相対に変換
+        const _joinS = Engine.career.joinSeason(c);
+        const _currentRel = Engine.career.relSeason(G.season || 1, _joinS);
 
         html += `<div style="margin-bottom:14px">
           <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
@@ -3408,11 +3411,11 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           // Find season summary if exists
           const summary = seasonMs.find(m => m.type === 'season_end');
           const nonSummary = seasonMs.filter(m => m.type !== 'season_end');
-          const isCurrentSeason = s === G.season;
+          const isCurrentSeason = s === _currentRel;
 
           html += `<details ${isCurrentSeason ? 'open' : ''} style="margin-bottom:10px">
             <summary style="font-size:13px;cursor:pointer;padding:8px 12px;background:rgba(200,190,170,0.04);border:1px solid var(--border);border-radius:6px;user-select:none;display:flex;align-items:center;gap:8px">
-              <span style="font-weight:900;color:var(--text);font-size:14px">[${s}年目]</span>
+              <span style="font-weight:900;color:var(--text);font-size:14px">[キャリア${s}年目]</span>
               ${summary ? `<span style="font-size:12px;color:var(--text-sub)">${summary.detail}</span>` :
                 isCurrentSeason ? `<span style="font-size:12px;color:var(--blue)">シーズン進行中</span>` : ''}
             </summary>
@@ -3439,7 +3442,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       }
 
       // v1.3-2: §4.4/§7.1 経歴（怪我記録）セクション（NPC記録統一: 全選手に表示）
-      const hist = c.careerHistory || [];
+      // 入団以降のみ表示（転生前 NPC事前史の怪我は別人扱いで非表示）
+      const _histJoinS = Engine.career.joinSeason(c);
+      const hist = Engine.career.filterPostJoin(c.careerHistory || [], _histJoinS);
       if (hist.length > 0) {
         html += `<div style="margin-bottom:14px">
           <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
@@ -3449,7 +3454,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         [...hist].reverse().forEach(h => {
           const typeColor = h.type === 'injury_retirement' ? '#e74c3c' : '#e17055';
           const typeIcon  = h.type === 'injury_retirement' ? '🏁' : '🩹';
-          const seasonStr = h.season ? `${h.season}年目` : '';
+          const _relS = Engine.career.relSeason(h.season, _histJoinS);
+          const seasonStr = h.season ? `キャリア${_relS}年目` : '';
           const weekStr   = h.week   ? ` ${h.week}週` : '';
           html += `<div style="padding:6px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;border-left:2px solid ${typeColor}33;padding-left:10px;line-height:1.5">
             <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:70px;font-family:'Courier New',monospace">${seasonStr}${weekStr}</span>

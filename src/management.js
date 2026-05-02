@@ -2099,6 +2099,40 @@ const Engine = {
       return Engine.career.updatePeakPopularity(Engine.career.updatePeakOVR(fighter, season), season);
     },
 
+    /**
+     * §D-x 入団シーズン（キャリア起点）を返す。
+     * NPC生成時の事前史（転生前）は debut マイルストーンより前の season で push されているため、
+     * これを基準に「現役キャリア」と「前世」を分離する。
+     * - 全加入経路で type:'debut' が push されている（src/management.js:2213, src/app.js のスカウト/ドラフト/FA等）
+     * - 見つからない場合は最古の type:'transfer' (toOrg=player) または type:'rentalIn'（player団体行き）を fallback
+     * - それも無ければ null（フィルタ無効化）
+     */
+    joinSeason(fighter) {
+      const hist = (fighter && fighter.careerRecord && fighter.careerRecord.history) || [];
+      // debut が最優先。ただし NPC生成時の season:1 debut は「転生前のデビュー」を意味するので
+      // 後の transfer(toOrg=player) があればそれを優先する
+      const playerJoinTransfer = hist.find(e => e.type === 'transfer' && e.toOrg === 'player');
+      if (playerJoinTransfer && playerJoinTransfer.season != null) return playerJoinTransfer.season;
+      const rentalInPlayer = hist.find(e => e.type === 'rentalIn' && (e.toOrg === 'player' || e.toOrg === undefined));
+      if (rentalInPlayer && rentalInPlayer.season != null) return rentalInPlayer.season;
+      const debut = hist.find(e => e.type === 'debut');
+      if (debut && debut.season != null) return debut.season;
+      return null;
+    },
+
+    /** history 配列を入団以降のみにフィルタ。joinSeason が null なら全件返す */
+    filterPostJoin(history, joinSeason) {
+      if (!Array.isArray(history)) return [];
+      if (joinSeason == null) return history;
+      return history.filter(e => (e.season != null ? e.season : 0) >= joinSeason);
+    },
+
+    /** 絶対 season → キャリア相対年（入団=1）。joinSeason null なら絶対値そのまま */
+    relSeason(absSeason, joinSeason) {
+      if (joinSeason == null || absSeason == null) return absSeason || 1;
+      return Math.max(1, absSeason - joinSeason + 1);
+    },
+
     /** §D-2 キャリアサマリー生成（UI表示用）
      * @returns {{ wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary }} */
     buildSummary(fighter) {
@@ -2111,15 +2145,31 @@ const Engine = {
       const bestMQ = fighter.careerBestMQ || 0;
       const peakOVR = cr.peakOVR || Engine.util.ov(fighter);
       const peakSeason = cr.peakOVRSeason || 0;
-      const totalTitleWins = cr.totalTitleWins || 0;
-      const totalDefenses = cr.totalDefenses || 0;
+      // 転生前（NPC事前史）を除外: 入団以降の history のみで再集計
+      const joinS = Engine.career.joinSeason(fighter);
+      const histPost = Engine.career.filterPostJoin(cr.history || [], joinS);
+      const totalTitleWins = histPost.filter(e => e.type === 'titleWin').length;
+      // titleLoss の defenses が「在位中の最終防衛数」なので、titleLoss が無く titleDefense しか無い在位は count の最大値で集計
+      const _defByReign = new Map();
+      histPost.forEach(ev => {
+        if (ev.type === 'titleLoss') {
+          const k = `loss:${ev.beltId || 'world'}|${ev.season || 0}|${ev.week || 0}`;
+          _defByReign.set(k, ev.defenses || 0);
+        } else if (ev.type === 'titleDefense') {
+          const k = `def:${ev.beltId || 'world'}|${ev.season || 0}`;
+          const prev = _defByReign.get(k) || 0;
+          if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
+        }
+      });
+      let totalDefenses = 0;
+      _defByReign.forEach(v => { totalDefenses += v; });
       // タイトル歴テキスト（団体別ブレークダウン）
       let titleSummary = null;
       let titleByOrg = []; // [{ orgName, wins, defenses }]
       if (totalTitleWins > 0) {
         const winsByOrg = new Map();   // orgName -> 戴冠回数
         const defByBelt = new Map();   // `${orgName}|${beltId}` -> 当該王座の最終防衛数
-        (cr.history || []).forEach(ev => {
+        histPost.forEach(ev => {
           if (ev.type === 'titleWin') {
             const k = ev.orgName || '王座';
             winsByOrg.set(k, (winsByOrg.get(k) || 0) + 1);
@@ -2157,8 +2207,9 @@ const Engine = {
           titleSummary = `タイトル${totalTitleWins}回獲得（通算${totalDefenses}度防衛）`;
         }
       }
-      const juniorTournamentWins = cr.juniorTournamentWins || 0;
-      const ppvMainEventWins = cr.ppvMainEventWins || 0;
+      // JT/PPV 優勝回数も post-join で再カウント（juniorTournament: result==='champion', ppvMainEvent: isSummit && won）
+      const juniorTournamentWins = histPost.filter(e => e.type === 'juniorTournament' && e.result === 'champion').length;
+      const ppvMainEventWins = histPost.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length;
       return { wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary, titleByOrg, totalTitleWins, totalDefenses, juniorTournamentWins, ppvMainEventWins };
     },
 
@@ -2701,10 +2752,13 @@ const Engine = {
     /** spec v0.2 §D.3 8カテゴリ判定 (上から順、最初に該当したものを採用) */
     _classifyAceQuoteCategory(ace, chapter, state) {
       const mode = (chapter && chapter.eraStats && chapter.eraStats.competitiveRecord && chapter.eraStats.competitiveRecord.mode) || 'challenge';
-      const aceHist = ((ace.careerRecord || {}).history || [])
+      // 転生前（NPC事前史）を別人扱いで除外。joinSeason 未満は読み捨てる
+      const _aceJoinS = Engine.career.joinSeason(ace);
+      const _aceHistAll = Engine.career.filterPostJoin(((ace.careerRecord || {}).history || []), _aceJoinS);
+      const aceHist = _aceHistAll
         .filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
       // 章期間内防衛数 (差分集計、ベルト単位)
-      const allHist = ((ace.careerRecord || {}).history || []);
+      const allHist = _aceHistAll;
       const beltGroups = new Map();
       aceHist.filter(e => e.type === 'titleDefense').forEach(e => {
         const key = e.beltId || '_default';
@@ -2755,7 +2809,9 @@ const Engine = {
       const surname = Engine.chronicle._getSurname(ace.name);
 
       // 章期間内防衛数を再計算 (テンプレ {defenses} 用)
-      const allHist = ((ace.careerRecord || {}).history || []);
+      // 転生前は別人扱いで除外
+      const _aceJoinS2 = Engine.career.joinSeason(ace);
+      const allHist = Engine.career.filterPostJoin(((ace.careerRecord || {}).history || []), _aceJoinS2);
       const aceHist = allHist.filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
       const beltGroups = new Map();
       aceHist.filter(e => e.type === 'titleDefense').forEach(e => {
@@ -2818,15 +2874,32 @@ const Engine = {
       // 既に同idが存在する場合はスキップ(重複登録防止)
       if ((ch.fighterArchive || []).some(a => a.id === fighter.id)) return state;
       const cr = fighter.careerRecord || {};
-      const hist = cr.history || [];
+      const histAll = cr.history || [];
+      // 転生前（NPC事前史）は別人扱いで除外。年代記には post-join のみ残す
+      const _joinS = Engine.career.joinSeason(fighter);
+      const hist = Engine.career.filterPostJoin(histAll, _joinS);
       const debutEv = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
-      const careerSeasonsStart = debutEv ? (debutEv.season || 1) : 1;
+      const careerSeasonsStart = debutEv ? (debutEv.season || 1) : (_joinS || 1);
       const careerSeasonsEnd = Engine.chronicle._estimateRetiredSeason(fighter, state, careerSeasonsStart);
 
       const peakOVR = (cr.peakOVR || 0) || (Engine.util.ov(fighter) || 0);
       const peakOVRSeason = cr.peakOVRSeason || careerSeasonsEnd;
       // Prefer the career peak, falling back to current popularity for old saves.
       const { peakPopularity, peakPopularitySeason } = Engine.chronicle._peakPopularityOf(fighter, careerSeasonsEnd);
+
+      // post-join での再カウント
+      const _titleReigns = hist.filter(e => e.type === 'titleWin').length;
+      const _defByReign = new Map();
+      hist.forEach(ev => {
+        if (ev.type === 'titleLoss') {
+          _defByReign.set(`L:${ev.beltId||'w'}|${ev.season||0}|${ev.week||0}`, ev.defenses || 0);
+        } else if (ev.type === 'titleDefense') {
+          const k = `D:${ev.beltId||'w'}|${ev.season||0}`;
+          const prev = _defByReign.get(k) || 0;
+          if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
+        }
+      });
+      let _totalDef = 0; _defByReign.forEach(v => { _totalDef += v; });
 
       // 年代記で意味のある特性のみ保持
       const kept = ['華', 'ファンサービス', '人望', 'ムードメーカー', '熱血', '名勝負製造機', 'ガラスのハート'];
@@ -2841,12 +2914,12 @@ const Engine = {
         peakOVR, peakOVRSeason,
         peakPopularity, peakPopularitySeason,
         careerSeasonsStart, careerSeasonsEnd,
-        titleReigns: cr.totalTitleWins || 0,
-        totalDefenses: cr.totalDefenses || 0,
+        titleReigns: _titleReigns,
+        totalDefenses: _totalDef,
         careerRecord: {
           history: hist.map(e => ({ ...e })),
-          totalTitleWins: cr.totalTitleWins || 0,
-          totalDefenses: cr.totalDefenses || 0,
+          totalTitleWins: _titleReigns,
+          totalDefenses: _totalDef,
           peakOVR, peakOVRSeason,
           peakPopularity, peakPopularitySeason
         },
@@ -2938,6 +3011,20 @@ const Engine = {
         if (list.some(a => a.id === f.id)) return;
         const cr = f.careerRecord || {};
         const { peakPopularity, peakPopularitySeason } = Engine.chronicle._peakPopularityOf(f, state.season || 1);
+        // 転生前（NPC事前史）を除外して年代記候補を構築
+        const _joinS = Engine.career.joinSeason(f);
+        const _histPost = Engine.career.filterPostJoin(cr.history || [], _joinS);
+        const _titleReigns = _histPost.filter(e => e.type === 'titleWin').length;
+        const _defByReign = new Map();
+        _histPost.forEach(ev => {
+          if (ev.type === 'titleLoss') _defByReign.set(`L:${ev.beltId||'w'}|${ev.season||0}|${ev.week||0}`, ev.defenses || 0);
+          else if (ev.type === 'titleDefense') {
+            const k = `D:${ev.beltId||'w'}|${ev.season||0}`;
+            const prev = _defByReign.get(k) || 0;
+            if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
+          }
+        });
+        let _totalDef = 0; _defByReign.forEach(v => { _totalDef += v; });
         const candidate = {
           id: f.id,
           name: f.name,
@@ -2950,12 +3037,12 @@ const Engine = {
           peakPopularitySeason,
           careerSeasonsStart: Engine.chronicle._estimateDebutSeason(f, state),
           careerSeasonsEnd: state.season || 1,
-          titleReigns: cr.totalTitleWins || 0,
-          totalDefenses: cr.totalDefenses || 0,
+          titleReigns: _titleReigns,
+          totalDefenses: _totalDef,
           careerRecord: {
-            history: (cr.history || []).map(e => ({ ...e })),
-            totalTitleWins: cr.totalTitleWins || 0,
-            totalDefenses: cr.totalDefenses || 0,
+            history: _histPost.map(e => ({ ...e })),
+            totalTitleWins: _titleReigns,
+            totalDefenses: _totalDef,
             peakOVR: cr.peakOVR || 0,
             peakOVRSeason: cr.peakOVRSeason || 0,
             peakPopularity,
@@ -3581,21 +3668,31 @@ const Engine = {
         || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(c => c.id === fighterId);
       if (!fighter) return [];
 
+      // 転生前（NPC事前史）を除外し、入団以降のみを表示する。
+      // 各 milestone の season は「キャリア相対年（入団=1）」に変換する。
+      const joinS = Engine.career.joinSeason(fighter);
+      const rel = (s) => Engine.career.relSeason(s, joinS);
+
       const milestones = [];
-      const history = fighter.careerRecord?.history || [];
-      const careerHist = fighter.careerHistory || [];
+      const historyAll = fighter.careerRecord?.history || [];
+      const careerHistAll = fighter.careerHistory || [];
+      const history = Engine.career.filterPostJoin(historyAll, joinS);
+      const careerHist = Engine.career.filterPostJoin(careerHistAll, joinS);
 
       // Convert careerRecord.history events to milestones
       for (const ev of history) {
         switch (ev.type) {
-          case 'debut':
-            milestones.push({ season: ev.season || 1, week: ev.week || 1, type: 'debut',
-              text: `${ev.via === 'draft' ? 'ドラフト' : ev.via === 'fa' ? 'FA' : ev.via === 'scout' ? 'スカウト' : ''}入団` });
+          case 'debut': {
+            const viaJp = ev.via === 'draft' ? 'ドラフト' : ev.via === 'fa' ? 'FA' : ev.via === 'scout' ? 'スカウト' : ev.via === 'freeagent' ? 'FA' : '';
+            const orgPrefix = ev.orgName ? `${ev.orgName} に` : '';
+            milestones.push({ season: rel(ev.season || 1), week: ev.week || 1, type: 'debut',
+              text: `${orgPrefix}${viaJp}入団` });
             break;
+          }
           case 'titleWin': {
             const twName = ev.orgName || '団体王座';
             const twDetail = ev.defeatedName ? `${ev.defeatedName} を破ってチャンピオンに` : 'チャンピオンに！';
-            milestones.push({ season: ev.season, week: ev.week, type: 'title_win',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'title_win',
               text: `${twName} 獲得`, detail: twDetail });
             break;
           }
@@ -3604,7 +3701,7 @@ const Engine = {
             const tlBy = ev.dethronedByName ? `${ev.dethronedByName} に敗れ陥落` : null;
             const tlDef = ev.defenses ? `${ev.defenses}度防衛の末に陥落` : null;
             const tlDetail = [tlBy, tlDef].filter(Boolean).join('・') || undefined;
-            milestones.push({ season: ev.season, week: ev.week, type: 'title_loss',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'title_loss',
               text: `${tlName} 陥落`, detail: tlDetail });
             break;
           }
@@ -3614,23 +3711,26 @@ const Engine = {
             // 3, 5, 7, 10, 15, 20, 25... (Phase C: 細分化)
             if (cnt === 3 || cnt === 5 || cnt === 7 || (cnt >= 10 && cnt % 5 === 0)) {
               const tdDetail = ev.lastChallengerName ? `${ev.lastChallengerName} の挑戦を退ける` : undefined;
-              milestones.push({ season: ev.season, week: ev.week, type: 'title_defense',
+              milestones.push({ season: rel(ev.season), week: ev.week, type: 'title_defense',
                 text: `${tdName}${cnt}度防衛達成`, detail: tdDetail });
             }
             break;
           }
           case 'transfer': {
-            const tfOrg = ev.toOrg || '他団体';
+            // 'player' は内部リテラルなのでプレイヤー団体名に解決
+            const _resolveOrg = (o) => (o === 'player' ? (G.orgName || 'プレイヤー団体') : (o || '他団体'));
+            const tfFrom = _resolveOrg(ev.fromOrg);
+            const tfTo = _resolveOrg(ev.toOrg);
             let tfDetail;
             if (ev.via === 'poach') tfDetail = '引き抜きで加入';
             else if (ev.via === 'poach_forced') tfDetail = '強制引き抜きで加入';
             else if (ev.via === 'negotiate') tfDetail = '交渉成立で加入';
-            milestones.push({ season: ev.season, week: ev.week, type: 'transfer',
-              text: `${tfOrg}へ移籍`, detail: tfDetail });
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'transfer',
+              text: `${tfFrom} から ${tfTo} へ移籍`, detail: tfDetail });
             break;
           }
           case 'release': {
-            milestones.push({ season: ev.season, week: ev.week, type: 'release',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'release',
               text: `${ev.fromOrg || '所属団体'}を解雇`, detail: 'ロスター調整等により契約解除' });
             break;
           }
@@ -3638,7 +3738,7 @@ const Engine = {
             const ceDest = ev.destinationType === 'rival'
               ? `${ev.destinationOrg || '他団体'}へ移籍`
               : 'フリーエージェントへ';
-            milestones.push({ season: ev.season, week: ev.week, type: 'contract_end',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'contract_end',
               text: `${ev.fromOrg || '所属団体'}を契約満了で退団`, detail: ceDest });
             break;
           }
@@ -3646,60 +3746,60 @@ const Engine = {
             const sdDest = ev.destinationType === 'rival'
               ? `${ev.destinationOrg || '他団体'}へ移籍`
               : 'フリーエージェントへ';
-            milestones.push({ season: ev.season, week: ev.week, type: 'sudden_dep',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'sudden_dep',
               text: `${ev.fromOrg || '所属団体'}を突然退団`, detail: sdDest });
             break;
           }
           case 'retireRetracted': {
-            milestones.push({ season: ev.season, week: ev.week, type: 'retire_retracted',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'retire_retracted',
               text: `引退を撤回し ${ev.orgName || '所属団体'} に復帰` });
             break;
           }
           case 'rentalIn': {
             const seasonsLabel = ev.seasons ? `（${ev.seasons}期）` : '';
-            milestones.push({ season: ev.season, week: ev.week, type: 'rental_in',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'rental_in',
               text: `${ev.fromOrg || '他団体'}から ${ev.toOrg || '所属団体'} へレンタル加入${seasonsLabel}` });
             break;
           }
           case 'rentalOut': {
-            milestones.push({ season: ev.season, week: ev.week, type: 'rental_out',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'rental_out',
               text: `レンタル期間満了で ${ev.toOrg || '元団体'} へ帰団` });
             break;
           }
           case 'retire':
-            milestones.push({ season: ev.season, week: ev.week || 48, type: 'retire',
+            milestones.push({ season: rel(ev.season), week: ev.week || 48, type: 'retire',
               text: `引退（${ev.age || '?'}歳）`,
               detail: ev.reason === 'injury_wear' ? '度重なる怪我により' : ev.reason === 'injury_career_ending' ? '重傷により現役続行不可' : ev.reason === 'age' ? '年齢による引退' : undefined });
             break;
           case 'summit':
-            milestones.push({ season: ev.season, week: ev.week, type: 'summit',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'summit',
               text: `頂上決戦 ${ev.won ? '勝利' : '敗北'}` });
             break;
           case 'war': {
             const warOrg = ev.opponentOrg || '他団体';
             const warOpp = ev.opponentName ? `（${ev.opponentName} 戦）` : '';
-            milestones.push({ season: ev.season, week: ev.week, type: 'war',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'war',
               text: `対抗戦 vs ${warOrg} ${ev.won ? '勝利' : '敗北'}${warOpp}` });
             break;
           }
           case 'peakOVR':
-            milestones.push({ season: ev.season, week: ev.week || 0, type: 'peak',
+            milestones.push({ season: rel(ev.season), week: ev.week || 0, type: 'peak',
               text: `全盛期 OVR ${ev.ovr}` });
             break;
           case 'awardRookie':
-            milestones.push({ season: ev.season, week: ev.week, type: 'award_rookie',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'award_rookie',
               text: '🌟 新人王 受賞' });
             break;
           case 'awardMVP':
-            milestones.push({ season: ev.season, week: ev.week, type: 'award_mvp',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'award_mvp',
               text: '👑 MVP 受賞' });
             break;
           case 'awardMedia':
-            milestones.push({ season: ev.season, week: ev.week, type: 'award_media',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'award_media',
               text: '📺 メディア功労賞 受賞' });
             break;
           case 'awardBestMatch':
-            milestones.push({ season: ev.season, week: ev.week, type: 'award_bestmatch',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'award_bestmatch',
               text: `🎬 ベストマッチ賞（試合評価 ${ev.mq || '?'}）` });
             break;
           case 'ppvMainEvent': {
@@ -3708,13 +3808,13 @@ const Engine = {
               const ppvDetail = ev.opponentName
                 ? (ev.won ? `決勝で ${ev.opponentName} を破る` : `決勝で ${ev.opponentName} に敗れる`)
                 : undefined;
-              milestones.push({ season: ev.season, week: ev.week, type: 'ppv_main',
+              milestones.push({ season: rel(ev.season), week: ev.week, type: 'ppv_main',
                 text: `PPV GRAND FINAL ${ev.won ? '優勝' : '準優勝'}`, detail: ppvDetail });
             } else {
               const ppvNsDetail = ev.opponentName
                 ? (ev.won ? `${ev.opponentName} に勝利` : `${ev.opponentName} に敗れる`)
                 : undefined;
-              milestones.push({ season: ev.season, week: ev.week, type: 'ppv_main',
+              milestones.push({ season: rel(ev.season), week: ev.week, type: 'ppv_main',
                 text: `PPV GRAND FINAL 出場`, detail: ppvNsDetail });
             }
             break;
@@ -3728,7 +3828,7 @@ const Engine = {
             } else if ((ev.result === 'semiFinal' || ev.result === 'quarterFinal') && ev.eliminatedByName) {
               jtDetail = `${ev.eliminatedByName} に敗れて敗退`;
             }
-            milestones.push({ season: ev.season, week: ev.week || 24, type: 'jt_round',
+            milestones.push({ season: rel(ev.season), week: ev.week || 24, type: 'jt_round',
               text: `ジュニアトーナメント ${jtLabel}`, detail: jtDetail });
             break;
           }
@@ -3736,25 +3836,25 @@ const Engine = {
             const dmType = ev.matchType === 'title' ? 'タイトルマッチ' : 'メインイベント';
             const dmRes = ev.result === 'win' ? '勝利' : (ev.result === 'lose' ? '敗北' : '出場');
             const dmOpp = ev.opponentName ? `（vs ${ev.opponentName}）` : '';
-            milestones.push({ season: ev.season, week: ev.week || 48, type: 'dome_main',
+            milestones.push({ season: rel(ev.season), week: ev.week || 48, type: 'dome_main',
               text: `ドーム大会 ${dmType} ${dmRes}${dmOpp}` });
             break;
           }
           case 'b3Challenge': {
             const b3Org = ev.opponentOrgName || '他団体';
-            milestones.push({ season: ev.season, week: ev.week, type: 'b3_event',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'b3_event',
               text: `${b3Org}への挑戦状 ${ev.won ? '勝利' : '敗北'}` });
             break;
           }
           case 'b3Decline': {
             const b3DOrg = ev.orgName || '他団体';
-            milestones.push({ season: ev.season, week: ev.week, type: 'b3_event',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'b3_event',
               text: `${b3DOrg}からの挑戦状を辞退` });
             break;
           }
           case 'b3Rejected': {
             const b3ROrg = ev.rejectedByOrg === 'player' ? '相手団体' : (ev.rejectedByOrg || '相手団体');
-            milestones.push({ season: ev.season, week: ev.week, type: 'b3_event',
+            milestones.push({ season: rel(ev.season), week: ev.week, type: 'b3_event',
               text: `挑戦状を${b3ROrg}に拒絶される` });
             break;
           }
@@ -3770,24 +3870,22 @@ const Engine = {
       // Convert careerHistory events (injuries etc.)
       for (const ev of careerHist) {
         milestones.push({
-          season: ev.season || 1, week: ev.week || 0,
+          season: rel(ev.season || 1), week: ev.week || 0,
           type: ev.type === 'injury_retirement' ? 'injury' : (ev.type || 'note'),
           text: ev.detail || ev.type,
           detail: ev.type === 'injury_retirement' ? '怪我による引退' : undefined
         });
       }
 
-      // Add season_end summary for completed seasons
+      // Add season_end summary for completed seasons (キャリア相対年で 1〜現在まで埋める)
       const currentSeason = G.season || 1;
-      const record = fighter.careerRecord || {};
-      // If fighter has been here multiple seasons, add season summaries
-      const startSeason = milestones.reduce((min, m) => Math.min(min, m.season || currentSeason), currentSeason);
-      for (let s = startSeason; s < currentSeason; s++) {
+      const currentRel = rel(currentSeason);
+      for (let s = 1; s < currentRel; s++) {
         const seasonEvents = milestones.filter(m => m.season === s);
         if (seasonEvents.length === 0) {
           // Add a placeholder for seasons with no notable events
           milestones.push({ season: s, week: 48, type: 'season_end',
-            text: `${s}年目終了`, detail: '特記事項なし' });
+            text: `キャリア${s}年目 終了`, detail: '特記事項なし' });
         }
       }
 
@@ -3837,7 +3935,10 @@ const Engine = {
      * Returns array of { icon, text } objects for display.
      */
     buildCareerSummary(fighter) {
-      const history = (fighter.careerRecord?.history || []);
+      // 転生前（NPC事前史）は別人扱いで除外
+      const histAll = (fighter.careerRecord?.history || []);
+      const joinS = Engine.career.joinSeason(fighter);
+      const history = Engine.career.filterPostJoin(histAll, joinS);
       if (history.length === 0) return [];
 
       // Categorize events
@@ -3996,7 +4097,7 @@ const Engine = {
 
       const isChamp = G.titles?.world?.championId === fighter.id;
       if (isChamp) rate -= 30;
-      const hasWonTitle = (fighter.careerRecord?.history || []).some(ev => ev.type === 'titleWin');
+      const hasWonTitle = Engine.career.filterPostJoin((fighter.careerRecord?.history || []), Engine.career.joinSeason(fighter)).some(ev => ev.type === 'titleWin');
       if (!hasWonTitle) rate += 10;
 
       const trust = fighter.trust ?? 50;
@@ -4016,7 +4117,7 @@ const Engine = {
     selectAdviseLine(fighter, G, accepted, rng) {
       const wear = fighter.wear || 0;
       const isChamp = G.titles?.world?.championId === fighter.id;
-      const hasWonTitle = (fighter.careerRecord?.history || []).some(ev => ev.type === 'titleWin');
+      const hasWonTitle = Engine.career.filterPostJoin((fighter.careerRecord?.history || []), Engine.career.joinSeason(fighter)).some(ev => ev.type === 'titleWin');
       const winRate = Engine.retirement.calcRecentWinRate(fighter);
       const isHeel = fighter.role === 'Heel';
 
@@ -4198,7 +4299,7 @@ const Engine = {
 
     // §3.4: 引き留めセリフ選択
     selectRetainLine(fighter, G) {
-      const hasWonTitle = (fighter.careerRecord?.history || []).some(ev => ev.type === 'titleWin');
+      const hasWonTitle = Engine.career.filterPostJoin((fighter.careerRecord?.history || []), Engine.career.joinSeason(fighter)).some(ev => ev.type === 'titleWin');
       const isHeel = fighter.role === 'Heel';
       const trust = fighter.trust ?? 50;
       let cat;
@@ -14914,13 +15015,38 @@ Engine.awards = {
     return champions;
   },
 
-  /** ⑤ 殿堂入り判定: retiredFighters から条件合致者（ポイント制） */
+  /** ⑤ 殿堂入り判定: retiredFighters から条件合致者（ポイント制）
+   * 転生前（NPC事前史）は別人扱いで除外する。joinSeason 以降のイベントのみ集計。
+   */
   calcHofPoints(rec) {
-    const hist = rec.history || [];
-    // 実績ポイント
-    const titlePt = (rec.totalTitleWins || 0) + (rec.totalDefenses || 0);
-    const juniorPt = (rec.juniorTournamentWins || 0) * 4;
-    const ppvPt = (rec.ppvMainEventWins || 0) * 5;
+    const histAll = (rec && rec.history) || [];
+    // joinSeason: rec から推定（Engine.career.joinSeason と同じロジック）
+    const playerJoin = histAll.find(e => e.type === 'transfer' && e.toOrg === 'player');
+    const rentalJoin = histAll.find(e => e.type === 'rentalIn' && (e.toOrg === 'player' || e.toOrg === undefined));
+    const debutEv = histAll.find(e => e.type === 'debut');
+    const joinS = (playerJoin && playerJoin.season != null) ? playerJoin.season
+                : (rentalJoin && rentalJoin.season != null) ? rentalJoin.season
+                : (debutEv && debutEv.season != null) ? debutEv.season
+                : null;
+    const hist = joinS == null ? histAll : histAll.filter(e => (e.season != null ? e.season : 0) >= joinS);
+    // 実績ポイント（post-join で再カウント）
+    const titleWins = hist.filter(e => e.type === 'titleWin').length;
+    const _defByReign = new Map();
+    hist.forEach(ev => {
+      if (ev.type === 'titleLoss') {
+        const k = `loss:${ev.beltId || 'world'}|${ev.season || 0}|${ev.week || 0}`;
+        _defByReign.set(k, ev.defenses || 0);
+      } else if (ev.type === 'titleDefense') {
+        const k = `def:${ev.beltId || 'world'}|${ev.season || 0}`;
+        const prev = _defByReign.get(k) || 0;
+        if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
+      }
+    });
+    let titleDef = 0;
+    _defByReign.forEach(v => { titleDef += v; });
+    const titlePt = titleWins + titleDef;
+    const juniorPt = hist.filter(e => e.type === 'juniorTournament' && e.result === 'champion').length * 4;
+    const ppvPt = hist.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length * 5;
     const warWins = hist.filter(e => e.type === 'war' && e.won).length;
     const warPt = warWins * 1.5;
     // 表彰歴ポイント
@@ -14940,9 +15066,19 @@ Engine.awards = {
     return 0;
   },
 
-  /** v2.0 HOF拡張: careerRecord.history → 固有名詞テキストの実績リスト */
+  /** v2.0 HOF拡張: careerRecord.history → 固有名詞テキストの実績リスト
+   * 転生前（NPC事前史）は別人扱いで除外。joinSeason 以降のみ。
+   */
   buildCareerHighlights(rec, orgName) {
-    const history = (rec && rec.history) || [];
+    const histAll = (rec && rec.history) || [];
+    const playerJoin = histAll.find(e => e.type === 'transfer' && e.toOrg === 'player');
+    const rentalJoin = histAll.find(e => e.type === 'rentalIn' && (e.toOrg === 'player' || e.toOrg === undefined));
+    const debutEv = histAll.find(e => e.type === 'debut');
+    const joinS = (playerJoin && playerJoin.season != null) ? playerJoin.season
+                : (rentalJoin && rentalJoin.season != null) ? rentalJoin.season
+                : (debutEv && debutEv.season != null) ? debutEv.season
+                : null;
+    const history = joinS == null ? histAll : histAll.filter(e => (e.season != null ? e.season : 0) >= joinS);
     const highlights = [];
     let reignCount = 0;
     history.forEach(ev => {
@@ -15182,10 +15318,14 @@ Engine.awards = {
       .replace('{name}', (fighter && fighter.name) || '');
   },
 
-  /** C-0: 異名の自動生成 — 実績タグ×重み付きランダム選出 (v2.0) */
+  /** C-0: 異名の自動生成 — 実績タグ×重み付きランダム選出 (v2.0)
+   * 転生前（NPC事前史）を別人扱いで除外する
+   */
   generateEpithet(rec, fighter, rng) {
-    const history = (rec && rec.history) || [];
+    const histAll = (rec && rec.history) || [];
     const f = fighter || {};
+    const joinS = Engine.career.joinSeason(f);
+    const history = Engine.career.filterPostJoin(histAll, joinS);
     const ctx = Engine.awards._buildEpithetContext(rec, history, f);
     const TAGS = Engine.awards._EPITHET_TAGS;
     const TEMPLATES = Engine.awards._EPITHET_TEMPLATES;
@@ -15427,12 +15567,34 @@ Engine.awards = {
     return fill(`${intro}${core}${closing}`);
   },
 
-  /** v2.0 HOF拡張: 共通HOFエントリ構築（プレイヤー/NPC両対応） */
+  /** v2.0 HOF拡張: 共通HOFエントリ構築（プレイヤー/NPC両対応）
+   * 転生前（NPC事前史）は別人扱いで集計から除外。
+   */
   _buildHofEntry(fighter, orgId, orgName, state) {
     const rec = fighter.careerRecord || {};
-    const hist = rec.history || [];
-    const debut = hist.find(e => e.type === 'debut');
+    const histAll = rec.history || [];
+    const joinS = Engine.career.joinSeason(fighter);
+    const hist = Engine.career.filterPostJoin(histAll, joinS);
+    // debut/retire は post-join で取得（player団体所属期間の起点・終点）
+    const debut = hist.find(e => e.type === 'debut') || hist.find(e => e.type === 'transfer' && e.toOrg === 'player');
     const retire = hist.find(e => e.type === 'retire');
+    // post-join で再カウント
+    const titleReigns = hist.filter(e => e.type === 'titleWin').length;
+    const _defByReign = new Map();
+    hist.forEach(ev => {
+      if (ev.type === 'titleLoss') {
+        const k = `loss:${ev.beltId || 'world'}|${ev.season || 0}|${ev.week || 0}`;
+        _defByReign.set(k, ev.defenses || 0);
+      } else if (ev.type === 'titleDefense') {
+        const k = `def:${ev.beltId || 'world'}|${ev.season || 0}`;
+        const prev = _defByReign.get(k) || 0;
+        if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
+      }
+    });
+    let totalDefensesPost = 0;
+    _defByReign.forEach(v => { totalDefensesPost += v; });
+    const juniorWinsPost = hist.filter(e => e.type === 'juniorTournament' && e.result === 'champion').length;
+    const ppvWinsPost = hist.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length;
     const hofPoints = Engine.awards.calcHofPoints(rec);
     const hofLevel = Engine.awards.getHofLevel(hofPoints);
     const entry = {
@@ -15440,12 +15602,12 @@ Engine.awards = {
       orgId: orgId,
       orgName: orgName,
       style: fighter.style || 'Allround',
-      activeSeasonsStart: debut ? debut.season : 1,
+      activeSeasonsStart: debut ? debut.season : (joinS || 1),
       activeSeasonsEnd: retire ? retire.season : state.season,
-      activeYears: `S${debut ? debut.season : 1}〜S${retire ? retire.season : state.season}`,
-      titleReigns: rec.totalTitleWins || 0, totalDefenses: rec.totalDefenses || 0,
-      juniorTournamentWins: rec.juniorTournamentWins || 0,
-      ppvMainEventWins: rec.ppvMainEventWins || 0,
+      activeYears: `S${debut ? debut.season : (joinS || 1)}〜S${retire ? retire.season : state.season}`,
+      titleReigns: titleReigns, totalDefenses: totalDefensesPost,
+      juniorTournamentWins: juniorWinsPost,
+      ppvMainEventWins: ppvWinsPost,
       peakOVR: rec.peakOVR || 0, peakOVRSeason: rec.peakOVRSeason || 0,
       hofPoints, hofLevel,
       shieldVariant: Engine.awards.assignShieldVariant(hofLevel, fighter.id),

@@ -1,12 +1,51 @@
 # 選手経歴年表 仕様書 v1.0
 
-最終更新: 2026-04-27 (Phase A〜E 全実装完了)
+最終更新: 2026-05-02 (転生前データ別人扱い対応)
 
 ## 概要
 
 選手ポップアップ「戦績・経歴」タブで描画される **キャリア年表** の仕様。`fighter.careerRecord.history[]` に蓄積されたイベントを `Engine.milestone.get(G, fighterId)` でマイルストーン形式に変換し、シーズン別折りたたみ + 行ごとに「アイコン + テキスト + 詳細(任意)」で表示する。
 
 ゲームの魂(CLAUDE.md 三本柱「キャラクターの人生を覗き見る」)を支える中核 UI。
+
+## 0. 入団以降のみ表示・集計（転生前は別人扱い） — 2026-05-02 追加
+
+NPC は団体生成時にフィクションのキャリア事前史（プロデビュー・タイトル戴冠・怪我など `season:1〜N`）が打たれている。プレイヤー団体に入団した瞬間からが「現役の人物」であり、それ以前は「別人の人生」として扱う。
+
+### 0.1 joinSeason の定義
+`Engine.career.joinSeason(fighter)` が「キャリア起点」を返す。優先順位:
+1. `history` 中の最古の `transfer` (toOrg=='player')
+2. `history` 中の最古の `rentalIn` (toOrg=='player' or undefined)
+3. `history` 中の最初の `debut` イベントの `season`
+4. いずれも無ければ `null`（フィルタ無効化、全期間表示）
+
+### 0.2 適用範囲
+以下すべてが post-join（`season >= joinSeason` のみ）で集計・表示される:
+- 戦績・経歴タブの「キャリア年表」（`Engine.milestone.get`）
+- 戦績・経歴タブの「怪我・重大事項」セクション
+- 戦績ヘッダ（勝敗・タイトル歴・JT/PPV優勝・対抗戦・MVP/新人王/ベストマッチ/メディア功労賞）
+- 殿堂入りポイント（`Engine.awards.calcHofPoints`）と HOF エントリ構築（`_buildHofEntry`、`buildCareerHighlights`、`generateEpithet`）
+- クロニクル候補プール（`Engine.chronicle._collectCandidates`）と章生成（`_classifyAceQuoteCategory`、`buildAceQuote`、`fighterArchive` 登録）
+- 引退時のキャリアサマリー（`Engine.retirement.buildCareerSummary`）
+- 「タイトルを獲ったことがある選手か」判定（引退勧告レート、スカウトカテゴリ等）
+- 新聞記事の「王座奪い合い」検出・タイトル戴冠回数
+
+### 0.3 表記ルール
+- キャリア年表のシーズン見出しは **キャリア相対年数** で表示する（入団＝キャリア1年目）
+- `[キャリア${s}年目]`（例: 入団直後の選手は `[キャリア1年目]`）
+- 怪我・重大事項セクションも同様に `キャリア${s}年目`
+- season_end プレースホルダーも `キャリア${s}年目 終了`
+- debut マイルストーンは入団先の団体名を本文に含める: `${orgName} に${via日本語}入団`
+- transfer マイルストーンは前所属と新所属を両方含める: `${fromOrg} から ${toOrg} へ移籍`（`'player'` は `G.orgName` に解決）
+
+### 0.4 データ保持
+転生前データは **削除しない**。`careerRecord.history` には全期間の生データが残る（後方互換）。表示・集計時に joinSeason フィルタをかぶせるだけ。
+ただし `fighterArchive` 登録時のみ、保存サイズ最適化と「年代記には別人を載せない」原則のため、post-join のみをコピーする。
+
+### 0.5 ヘルパ API
+- `Engine.career.joinSeason(fighter): number | null`
+- `Engine.career.filterPostJoin(history, joinSeason): HistoryEvent[]`
+- `Engine.career.relSeason(absSeason, joinSeason): number` — 絶対 season → キャリア相対年（最小1）
 
 ---
 
