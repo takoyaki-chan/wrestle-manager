@@ -7257,6 +7257,29 @@ function showDecisionResultModal(displayData) {
 // v2.0: 選択型イベント モーダル (event-system-spec-v2.md §3-4)
 // 選手顔アイコン＋セリフ＋2〜3択のモーダルダイアログ
 // ─────────────────────────────────────────────────────────────────────────────
+// コーチ取次セリフ — イベント種別ごとに何が問われているのかを伝える
+function _choiceEventReporterLine(event, fighter, isUrgent) {
+  const nm = fighter ? (fighter.name || '選手') : '';
+  switch (event.type) {
+    case 'S1': return `${nm}選手から、タイトル挑戦を希望する申し出が来ています`;
+    case 'S2': return `${nm}選手が、因縁の相手との対戦を希望しています`;
+    case 'S3': return `${nm}選手から休養願いが出ています。コンディションの問題かもしれません`;
+    case 'S4': return `${nm}選手から待遇への強い不満が…退団も口にしています。早急なご判断を`;
+    case 'S5': return `${nm}選手が特訓を志願しています。ご判断を`;
+    case 'S6': return `${nm}選手が、後輩の指導役を申し出ています`;
+    case 'E1': return `${nm}選手にメディアから出演オファーが届いています。出すか、断るか、別の選手を推薦するか——ご判断を`;
+    case 'E2': return `スポンサーから提案が届いています。受けるかどうかご判断ください`;
+    case 'E3': return `他団体から合同練習の誘いが来ています`;
+    case 'E4': return `スカウトからの情報が入りました。動くかどうかご判断を`;
+    case 'E5': return `近隣の地域イベント実行委員会から、営業試合の依頼が届いています`;
+    case 'E6': return `${nm}選手に他団体から引き抜きオファーが入りました。早急なご判断を`;
+    case 'S_boycott': return `${nm}選手が練習をボイコットしています。対応をお願いします`;
+    case 'S_grumble': return `${nm}選手の不満がロッカーで広がっています`;
+    case 'S_sns': return `${nm}選手のSNS投稿が話題に…早めの対応をご検討ください`;
+    default: return isUrgent ? '社長、判断をお願いします' : '社長、ひとつ判断をお願いしたい件があります';
+  }
+}
+
 function showChoiceEventModal(event, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showChoiceEventModal(event, state, onChoice)); return; }
 
@@ -7275,10 +7298,8 @@ function showChoiceEventModal(event, state, onChoice) {
   const title = typeLabels[event.type] || event.type;
   const isUrgent = event.type === 'S4' || event.type === 'E6' || event.type === 'S_grumble' || event.type === 'S_sns';
 
-  // Reporter取次セリフ
-  const reporterLine = isUrgent
-    ? '社長、判断をお願いします'
-    : '社長、ひとつ判断をお願いしたい件があります';
+  // Reporter取次セリフ — イベント種別ごとに具体化
+  const reporterLine = _choiceEventReporterLine(event, fighter, isUrgent);
 
   // subject-stage 内容: 選手がいればセリフ、なければ E5 の説明文
   let stageBody = '';
@@ -7339,10 +7360,16 @@ function showChoiceEventModal(event, state, onChoice) {
   });
 }
 
-/** 選択型イベント結果ポップアップ(mdlAOverlayに上書き、選択肢モーダルと連続表示) */
-function showChoiceEventResult(event, resultTexts, state) {
+/** 選択型イベント結果ポップアップ(mdlAOverlayに上書き、選択肢モーダルと連続表示)
+ *  opts.reaction = { fighterId, line } — 選手のリアクション吹き出し（任意） */
+function showChoiceEventResult(event, resultTexts, state, opts) {
   const roster = state ? (state.roster || []) : [];
-  const fighter = event.fighter != null ? roster.find(f => f.id === event.fighter) : null;
+  const reaction = opts && opts.reaction ? opts.reaction : null;
+  // リアクション選手がいればそちらを stage に置く（E1 別選手推薦の場合は推薦された側）
+  const reactionFighter = reaction && reaction.fighterId != null
+    ? roster.find(f => f.id === reaction.fighterId) : null;
+  const fighter = reactionFighter
+    || (event.fighter != null ? roster.find(f => f.id === event.fighter) : null);
   const typeLabels = {
     S1: '📋 タイトル挑戦要求', S2: '⚔ 対戦要求', S3: '🛌 休養願い',
     S4: '💢 不満・退団示唆',  S5: '⚡ 特訓志願', S6: '🎓 後輩指導申し出',
@@ -7360,9 +7387,18 @@ function showChoiceEventResult(event, resultTexts, state) {
       </div>`
     : `<div class="mdl-a-observation centered" data-mdl-choice-result="1">決定が適用されました。</div>`;
 
+  // リアクション吹き出し（あれば結果ブロックの上に表示）
+  const reactionBlock = (reaction && reaction.line && reactionFighter)
+    ? `<div class="mdl-a-observation centered" style="padding-top:6px">
+        <span class="marker">${reactionFighter.name || ''}</span><br>
+        <span style="font-style:italic;color:var(--cream-text-main);line-height:1.8;display:inline-block;margin-top:8px">「${reaction.line}」</span>
+      </div>`
+    : '';
+
+  const stageInner = reactionBlock + resultsBlock;
   const stageBody = fighter
-    ? resultsBlock
-    : `<div data-mdl-choice-result="1">${resultsBlock}</div>`;
+    ? stageInner
+    : `<div data-mdl-choice-result="1">${stageInner}</div>`;
   const subjectHtml = fighter
     ? _mdlASubjectStage(fighter, stageBody, { small: true })
     : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
@@ -10717,6 +10753,178 @@ function _renderB3MatchPreview(event, playerFighter, challenger) {
 
   box.innerHTML = html;
   overlay.classList.add('active');
+}
+
+// ── Common-1 派閥内対決 試合後結果モーダル ──────────────────────────────────
+// payload: COMMON_1 イベント payload
+// matchResult: Engine.battle.simulateMatch の戻り値
+// fA, fB: 試合に出場した 2 選手 (左/右)
+// applyResult: Engine.factions.applyCommon1MatchResult の戻り値（resultText, impactSummary, winnerId, loserId, winnerName, loserName）
+function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, onClose) {
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  if (!overlay || !box) { if (onClose) onClose(); return; }
+
+  const factionName = payload.factionName || '派閥';
+  const archetypeId = payload.archetypeId || null;
+  const won = matchResult.winner === 'left';
+  const isDraw = matchResult.winner === 'draw';
+  const winChar = isDraw ? null : (won ? fA : fB);
+  const loseChar = isDraw ? null : (won ? fB : fA);
+  const isLeaderA = payload.leaderId === fA.id;
+  const factionTagA = isLeaderA ? `${factionName} · リーダー` : factionName;
+  const factionTagB = !isLeaderA && payload.leaderId === fB.id ? `${factionName} · リーダー` : factionName;
+
+  // セリフ: 既存 COMMON1_LINES.resultLeader / resultLoser を引く
+  const winnerVars = { factionName, aName: fA.name, bName: fB.name };
+  let winnerLine = '';
+  let loserLine = '';
+  if (!isDraw && winChar && loseChar) {
+    if (Engine.factions.getCommon1Line) {
+      winnerLine = Engine.factions.getCommon1Line('resultLeader', { archetypeId, choice: 'A', vars: winnerVars, fighter: winChar }) || '';
+      loserLine  = Engine.factions.getCommon1Line('resultLoser',  { archetypeId, choice: 'A', vars: winnerVars, fighter: loseChar }) || '';
+    }
+  }
+
+  const ovrA = Engine.util.ov(fA), ovrB = Engine.util.ov(fB);
+  const finText = (typeof Engine.formatFinish === 'function')
+    ? Engine.formatFinish(matchResult.finType, matchResult.finMove)
+    : `${matchResult.finMove || ''} → ${matchResult.finType || ''}`;
+  const finMoveOnly = matchResult.finMove || '';
+  const finTypeOnly = matchResult.finType || '';
+  const stars = (typeof _pbStars === 'function') ? _pbStars(matchResult.mq || 0) : '';
+  const phaseLabel = (matchResult.finishPhase || '').toString().toUpperCase();
+
+  const portraitStyle = (f) => {
+    const url = (typeof _factionUpperUrl === 'function') ? _factionUpperUrl(f.id) : '';
+    return url ? ` style="background-image:url('${url}');background-size:cover;background-position:center 20%"` : '';
+  };
+
+  // 影響行を方向で色分け
+  const impactRows = (applyResult.impactSummary || []).map(item => {
+    const label = String(item.label || '').replace(/\btrust\b/g, '信頼度').replace(/\brivalry\b/g, '因縁');
+    let cls = '';
+    const deltaStr = item.delta != null ? String(item.delta) : '';
+    if (deltaStr.startsWith('+')) cls = 'pos';
+    else if (deltaStr.startsWith('-')) cls = label.includes('因縁') ? 'resolved' : 'neg';
+    const display = label.includes('因縁') && deltaStr.startsWith('-') ? `${deltaStr}(解消)` : deltaStr;
+    return `<div class="c1r-impact-row"><span>${escHtml(label)}</span><span class="${cls}">${escHtml(display)}</span></div>`;
+  }).join('');
+
+  const escHtmlSafe = (s) => (typeof escHtml === 'function') ? escHtml(s) : String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+  // バナー右側
+  const weekLabel = `S${G.season} · W${G.week}`;
+
+  // スコアボード WINNER セル
+  const winnerCellHtml = isDraw
+    ? `<div class="c1r-score-val">⚖ DRAW</div>`
+    : `<div class="c1r-score-val win">🏆 ${escHtmlSafe(winChar.name)}</div>`;
+
+  // FINISH セル
+  const finishCellHtml = finMoveOnly
+    ? `<div class="c1r-score-val fin"><span class="move">${escHtmlSafe(finMoveOnly)}</span><br>→ ${escHtmlSafe(finTypeOnly)}</div>`
+    : `<div class="c1r-score-val fin">${escHtmlSafe(finTypeOnly || '—')}</div>`;
+
+  // バブル(セリフ)
+  const bubbleA = (!isDraw && fA === winChar && winnerLine)
+    ? `<div class="c1r-bubble-wrap"><div class="c1r-bubble-spk">${escHtmlSafe(fA.name)}</div><div class="c1r-bubble">${escHtmlSafe(winnerLine)}</div></div>`
+    : (!isDraw && fA === loseChar && loserLine)
+      ? `<div class="c1r-bubble-wrap"><div class="c1r-bubble-spk">${escHtmlSafe(fA.name)}</div><div class="c1r-bubble">${escHtmlSafe(loserLine)}</div></div>`
+      : '';
+  const bubbleB = (!isDraw && fB === winChar && winnerLine)
+    ? `<div class="c1r-bubble-wrap"><div class="c1r-bubble-spk">${escHtmlSafe(fB.name)}</div><div class="c1r-bubble">${escHtmlSafe(winnerLine)}</div></div>`
+    : (!isDraw && fB === loseChar && loserLine)
+      ? `<div class="c1r-bubble-wrap"><div class="c1r-bubble-spk">${escHtmlSafe(fB.name)}</div><div class="c1r-bubble">${escHtmlSafe(loserLine)}</div></div>`
+      : '';
+
+  const sideClass = (f) => isDraw ? '' : (f === winChar ? 'winner' : 'loser');
+  const verdictHtml = (f) => {
+    if (isDraw) return '';
+    return f === winChar
+      ? `<div class="c1r-verdict win">WIN</div>`
+      : `<div class="c1r-verdict lose">LOSE</div>`;
+  };
+
+  const hpA = matchResult.hpLeft  || { final: 0, max: 100 };
+  const hpB = matchResult.hpRight || { final: 0, max: 100 };
+  const pctA = Math.max(0, Math.min(100, Math.round((hpA.final / Math.max(1, hpA.max)) * 100)));
+  const pctB = Math.max(0, Math.min(100, Math.round((hpB.final / Math.max(1, hpB.max)) * 100)));
+  const hpFillCls = (f) => isDraw ? '' : (f === loseChar ? ' lose' : '');
+
+  const html = `
+    <div class="c1r-card">
+      <div class="c1r-banner">
+        <div class="c1r-title">⚔ 派閥内対決 — 結果</div>
+        <div class="c1r-meta">${escHtmlSafe(weekLabel)} · ${escHtmlSafe(factionName)}</div>
+      </div>
+      <div class="c1r-score">
+        <div class="c1r-score-cell">
+          ${winnerCellHtml}
+          <div class="c1r-score-lbl">WINNER</div>
+        </div>
+        <div class="c1r-score-cell">
+          <div class="c1r-stars">${stars}</div>
+          <div class="c1r-score-val" style="font-size:16px;margin-top:2px">${matchResult.mq || 0}</div>
+          <div class="c1r-score-lbl">MQ</div>
+        </div>
+        <div class="c1r-score-cell">
+          ${finishCellHtml}
+          <div class="c1r-score-lbl">FINISH</div>
+        </div>
+        <div class="c1r-score-cell">
+          <div class="c1r-score-val">${matchResult.turns || 0}</div>
+          <div class="c1r-score-lbl">TURNS${phaseLabel ? ` · ${escHtmlSafe(phaseLabel)}` : ''}</div>
+        </div>
+      </div>
+      <div class="c1r-stage">
+        <div class="c1r-side ${sideClass(fA)}">
+          ${bubbleA}
+          <div class="c1r-portrait" onclick="event.stopPropagation();showFighterPopup(${fA.id},'roster')" title="クリックで選手詳細"${portraitStyle(fA)}></div>
+          <div class="c1r-name" onclick="event.stopPropagation();showFighterPopup(${fA.id},'roster')" title="クリックで選手詳細">${escHtmlSafe(fA.name)}</div>
+          <div class="c1r-faction">${escHtmlSafe(factionTagA)} · OVR ${ovrA}</div>
+          ${verdictHtml(fA)}
+        </div>
+        <div class="c1r-vs-col">
+          <div class="c1r-vs-mark">VS</div>
+        </div>
+        <div class="c1r-side ${sideClass(fB)}">
+          ${bubbleB}
+          <div class="c1r-portrait" onclick="event.stopPropagation();showFighterPopup(${fB.id},'roster')" title="クリックで選手詳細"${portraitStyle(fB)}></div>
+          <div class="c1r-name" onclick="event.stopPropagation();showFighterPopup(${fB.id},'roster')" title="クリックで選手詳細">${escHtmlSafe(fB.name)}</div>
+          <div class="c1r-faction">${escHtmlSafe(factionTagB)} · OVR ${ovrB}</div>
+          ${verdictHtml(fB)}
+        </div>
+      </div>
+      <div class="c1r-hp">
+        <div class="c1r-hp-row">
+          <div>
+            <div class="c1r-hp-label"><span>HP REMAINING</span><span class="v">${hpA.final} / ${hpA.max}</span></div>
+            <div class="c1r-hp-bar"><div class="c1r-hp-fill${hpFillCls(fA)}" style="width:${pctA}%"></div></div>
+          </div>
+          <div>
+            <div class="c1r-hp-label"><span>HP REMAINING</span><span class="v">${hpB.final} / ${hpB.max}</span></div>
+            <div class="c1r-hp-bar"><div class="c1r-hp-fill${hpFillCls(fB)}" style="width:${pctB}%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="c1r-narr">${escHtmlSafe(applyResult.resultText || '')}</div>
+      ${impactRows ? `<div class="c1r-impact"><div class="c1r-impact-h">影響</div>${impactRows}</div>` : ''}
+      <div class="c1r-actions">
+        <button class="c1r-btn" id="c1rCloseBtn">閉じる ✓</button>
+      </div>
+    </div>
+  `;
+  box.innerHTML = html;
+  overlay.classList.add('active');
+  const btn = document.getElementById('c1rCloseBtn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      overlay.classList.remove('active');
+      if (onClose) onClose();
+    });
+  }
 }
 
 // ── Common-1 派閥内対決 試合プレビュー画面 ──────────────────────────────────

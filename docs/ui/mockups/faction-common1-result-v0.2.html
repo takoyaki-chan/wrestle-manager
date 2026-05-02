@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>派閥内対決 試合後モーダル v0.2(仕様再確認版)</title>
+<style>
+:root{
+  --gold:#d4a843;
+  --pos:#7ac98a;
+  --neg:#c98a7a;
+  --warn:#d4b643;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#0a0a14;color:#e8e0d0;font-family:'Hiragino Sans','Yu Gothic',sans-serif;padding:30px 20px}
+h2{color:var(--gold);font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:14px;margin:30px 0 12px}
+.note{width:760px;margin:8px auto 24px;font-size:12px;color:#8a8070;line-height:1.7}
+.note b{color:#bfa97a}
+.note ul{padding-left:20px;margin:6px 0}
+.note code{background:#1a1208;padding:1px 5px;border-radius:2px;color:#bfa97a;font-size:11px}
+
+/* ===== カード本体 ===== */
+.r-card{background:#0f0a06;border:1px solid #2a1f10;border-radius:6px;padding:0;width:760px;margin:0 auto;color:#d8c89a;overflow:hidden}
+
+/* バナー */
+.r-banner{background:linear-gradient(180deg,#3a2a18,#1a0f04);padding:14px 22px;border-bottom:1px solid #2a1f10;display:flex;justify-content:space-between;align-items:center}
+.r-cat{font-family:'Bebas Neue','Oswald',sans-serif;font-size:11px;letter-spacing:6px;color:#aaa}
+.r-title{font-size:18px;font-weight:700;color:#e8e0d0;letter-spacing:3px;margin-top:2px}
+.r-meta{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#8a7549;text-align:right;line-height:1.6}
+
+/* スコアボード(既存 pb-score-strip パターンに合わせる) */
+.r-score{display:grid;grid-template-columns:1fr 1fr 1.4fr 1fr;gap:1px;background:#2a1f10;border-bottom:1px solid #2a1f10}
+.r-score-cell{background:#0f0a06;text-align:center;padding:14px 8px}
+.r-score-val{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;color:#e8e0d0;letter-spacing:1px}
+.r-score-val.win{color:var(--gold);font-size:20px}
+.r-score-val.fin{font-size:13px;color:#bfa97a;letter-spacing:0}
+.r-score-val.fin .move{color:var(--gold);font-weight:700}
+.r-score-lbl{font-family:'Oswald',sans-serif;font-size:9px;color:#8a7549;letter-spacing:2px;margin-top:4px}
+.r-stars{color:var(--gold);font-size:13px;letter-spacing:1px}
+
+/* 対峙ステージ — 頭上吹き出し付き */
+.r-stage{display:grid;grid-template-columns:1fr 70px 1fr;gap:0;padding:24px 22px 14px;align-items:start}
+.r-side{position:relative;text-align:center;padding-top:90px}
+
+/* 頭上吹き出し(打診モーダルと同じルール) */
+.r-bubble-wrap{position:absolute;top:0;left:50%;transform:translateX(-50%);width:240px;display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.r-bubble-spk{font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:2px}
+.r-side.winner .r-bubble-spk{color:var(--gold)}
+.r-side.loser .r-bubble-spk{color:#8a6a52}
+.r-bubble{position:relative;background:#f0f0f0;color:#1a1208;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.55;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.25);min-height:46px;display:flex;align-items:center;justify-content:center;max-width:240px}
+.r-bubble::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #f0f0f0}
+
+.r-portrait{width:140px;height:170px;background:linear-gradient(135deg,#3a2a18,#1a0f04) center/cover no-repeat;border-radius:4px;border:2px solid #4a3520;margin:0 auto 8px;cursor:pointer;transition:border-color .15s,transform .15s}
+.r-side.winner .r-portrait{border-color:var(--gold);box-shadow:0 0 24px rgba(212,168,67,0.35)}
+.r-side.loser .r-portrait{filter:saturate(0.55) opacity(0.78)}
+.r-portrait:hover{transform:translateY(-2px)}
+
+.r-name{font-size:16px;font-weight:700;color:#f0d890;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(212,168,67,0.3);text-underline-offset:3px}
+.r-name:hover{color:var(--gold)}
+.r-side.loser .r-name{color:#bfa080}
+.r-faction{font-size:11px;color:#8a7549;margin-top:2px}
+
+.r-verdict{display:inline-block;font-family:'Bebas Neue','Oswald',sans-serif;letter-spacing:4px;font-size:13px;padding:3px 14px;border-radius:3px;margin-top:8px}
+.r-verdict.win{background:rgba(212,168,67,0.18);color:var(--gold);border:1px solid rgba(212,168,67,0.5)}
+.r-verdict.lose{background:rgba(120,80,60,0.15);color:#8a6a52;border:1px solid rgba(120,80,60,0.4)}
+
+.r-vs-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:130px}
+.r-vs-mark{font-family:'Bebas Neue','Oswald',sans-serif;font-size:30px;color:#5a4520;letter-spacing:2px}
+
+/* HP バー(既存 _pbHpMini と同パターン) */
+.r-hp{padding:0 22px 14px}
+.r-hp-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;font-family:'Oswald',sans-serif;font-size:11px;color:#8a7549;letter-spacing:1px}
+.r-hp-label{display:flex;justify-content:space-between;margin-bottom:3px}
+.r-hp-label .v{color:#bfa97a;font-weight:700}
+.r-hp-bar{height:6px;background:#2a1f10;border-radius:3px;overflow:hidden;border:1px solid #1a1208}
+.r-hp-fill{height:100%;background:linear-gradient(90deg,var(--gold),#a07832)}
+.r-hp-fill.lose{background:linear-gradient(90deg,#7a5340,#3a2418)}
+
+/* 黒田ナレーション */
+.r-narr{margin:0 22px 14px;padding:12px 14px;background:rgba(212,168,67,0.06);border-left:3px solid var(--gold);font-size:13px;line-height:1.7;color:#d8c89a}
+
+/* 影響(影響値の方向で色分け) */
+.r-impact{margin:0 22px 14px;padding:12px 14px;background:rgba(0,0,0,0.25);border-radius:4px}
+.r-impact-h{color:#8a7549;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;margin-bottom:6px}
+.r-impact-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dotted rgba(255,255,255,0.08);font-size:12px}
+.r-impact-row span:first-child{color:#bfa97a}
+.r-impact-row span:last-child{font-family:'Oswald',sans-serif;font-weight:700}
+.r-impact-row span.pos{color:var(--pos)}
+.r-impact-row span.neg{color:var(--neg)}
+.r-impact-row span.resolved{color:var(--gold)}
+
+.r-actions{display:flex;justify-content:center;padding:0 22px 22px}
+.r-btn{padding:10px 28px;font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:13px;border-radius:3px;cursor:pointer;border:1px solid var(--gold);background:rgba(212,168,67,0.15);color:var(--gold)}
+</style>
+</head>
+<body>
+
+<h2>① 試合後モーダル v0.2 — 既存試合結果フォーマット準拠</h2>
+
+<div class="r-card">
+  <div class="r-banner">
+    <div>
+      <div class="r-cat">FACTION INTERNAL MATCH</div>
+      <div class="r-title">⚔ 派閥内対決 — 結果</div>
+    </div>
+    <div class="r-meta">S10 · W3<br>大久保桃子組</div>
+  </div>
+
+  <!-- 既存 pb-score-strip と同じ 4 セル構造 -->
+  <div class="r-score">
+    <div class="r-score-cell">
+      <div class="r-score-val win">🏆 大久保桃子</div>
+      <div class="r-score-lbl">WINNER</div>
+    </div>
+    <div class="r-score-cell">
+      <div class="r-stars">★★★★☆</div>
+      <div class="r-score-val" style="font-size:16px;margin-top:2px">73</div>
+      <div class="r-score-lbl">MQ</div>
+    </div>
+    <div class="r-score-cell">
+      <div class="r-score-val fin"><span class="move">河津落とし</span><br>→ 3カウント</div>
+      <div class="r-score-lbl">FINISH</div>
+    </div>
+    <div class="r-score-cell">
+      <div class="r-score-val">12</div>
+      <div class="r-score-lbl">TURNS · CLIMAX</div>
+    </div>
+  </div>
+
+  <!-- 対峙ステージ + 頭上吹き出し -->
+  <div class="r-stage">
+    <div class="r-side winner">
+      <div class="r-bubble-wrap">
+        <div class="r-bubble-spk">大久保桃子</div>
+        <div class="r-bubble">これで揉め事は終わりだ。次は外を見ろ。</div>
+      </div>
+      <div class="r-portrait" title="クリックで選手詳細"></div>
+      <div class="r-name" title="クリックで選手詳細">大久保桃子</div>
+      <div class="r-faction">大久保桃子組 · リーダー</div>
+      <div class="r-verdict win">WIN</div>
+    </div>
+    <div class="r-vs-col">
+      <div class="r-vs-mark">VS</div>
+    </div>
+    <div class="r-side loser">
+      <div class="r-bubble-wrap">
+        <div class="r-bubble-spk">長谷川レオナ</div>
+        <div class="r-bubble">負けた以上、ここで黙って引き下がるしかない……。</div>
+      </div>
+      <div class="r-portrait" title="クリックで選手詳細"></div>
+      <div class="r-name" title="クリックで選手詳細">長谷川レオナ</div>
+      <div class="r-faction">大久保桃子組</div>
+      <div class="r-verdict lose">LOSE</div>
+    </div>
+  </div>
+
+  <!-- 残 HP バー(既存 _pbHpMini と同) -->
+  <div class="r-hp">
+    <div class="r-hp-row">
+      <div>
+        <div class="r-hp-label"><span>HP REMAINING</span><span class="v">38 / 100</span></div>
+        <div class="r-hp-bar"><div class="r-hp-fill" style="width:38%"></div></div>
+      </div>
+      <div>
+        <div class="r-hp-label"><span>HP REMAINING</span><span class="v">0 / 100</span></div>
+        <div class="r-hp-bar"><div class="r-hp-fill lose" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 黒田ナレーション(短く一文) -->
+  <div class="r-narr">
+    序列は、リングが答えを出した。大久保桃子組内に燻っていた火種は、桃子の河津落としで決着した。
+  </div>
+
+  <!-- 影響 -->
+  <div class="r-impact">
+    <div class="r-impact-h">影響</div>
+    <div class="r-impact-row"><span>大久保桃子 信頼度</span><span class="pos">+3</span></div>
+    <div class="r-impact-row"><span>長谷川レオナ 信頼度</span><span class="neg">-1</span></div>
+    <div class="r-impact-row"><span>2 名間の因縁</span><span class="resolved">-41(解消)</span></div>
+  </div>
+
+  <div class="r-actions">
+    <button class="r-btn">閉じる ✓</button>
+  </div>
+</div>
+
+<div class="note">
+<b>このゲームの試合データ仕様(matchResult の中身) を確認した上で、表示するのは以下のみ:</b>
+<ul>
+  <li><code>winner</code> → 勝者名 + WIN/LOSE バッジ</li>
+  <li><code>mq</code> → スコア + ★ 表示(既存 _pbStars と同パターン)</li>
+  <li><code>finType</code> + <code>finMove</code> → <code>Engine.formatFinish</code> で「{技名} → 3 カウント / ギブアップ / レフェリーストップ」</li>
+  <li><code>turns</code> + <code>finishPhase</code> → 「12 TURNS · CLIMAX」のように決着フェーズも添える(Climax 決着なら名勝負感が出る)</li>
+  <li><code>hpLeft.final</code> / <code>hpRight.final</code> → 残 HP バー(既存 _pbHpMini と同)</li>
+</ul>
+<b>削除した架空の数値:</b>
+<ul>
+  <li><s>大ダメージ数</s> — matchResult に集計値として無い(<code>bigMoves</code> はローカル変数でクローズ後に消える)</li>
+  <li><s>カウンター数</s> — 同上(<code>totalCounters</code> もローカル)</li>
+</ul>
+これらは MQ の <code>dramaPenalty</code> 計算に内部で使われているだけで、UI 表示用の field にはなっていない。出すなら matchResult の戻り値に追加する必要があるが、別件のスコープなのでこの v0.2 では出さない。
+
+<b>セリフ配置の修正:</b>
+<ul>
+  <li>左右並列の独立カードではなく、勝者/敗者それぞれの<b>頭上に吹き出し</b>(打診モーダルと同じ <code>#f0f0f0</code> + 三角尻尾下向きルール)</li>
+  <li>勝者吹き出しの話者名はゴールド、敗者は沈ませた色(#8a6a52)</li>
+  <li>セリフは既存 <code>COMMON1_LINES.resultLeader / resultLoser</code> を性格別に拡張(現状 _any のみ → personality 6 種化が次の課題)</li>
+</ul>
+
+<b>その他確定要素:</b>
+<ul>
+  <li>敗者ポートレート: <code>filter:saturate(0.55) opacity(0.78)</code> で沈ませる(クロニクル退団カードと同手法)</li>
+  <li>名前・ポートレートクリックで <code>showFighterPopup(id, 'roster')</code></li>
+  <li>影響行は色分け: 信頼度 + → 緑、 - → 赤、因縁解消 → ゴールドで「-41(解消)」と意味補足</li>
+  <li>「2 名間の因縁」など内部変数名(rivalry / trust)は表に出さず日本語化</li>
+</ul>
+
+<b>実装メモ:</b>
+<ul>
+  <li>新規関数 <code>_renderCommon1MatchResult(payload, matchResult, fA, fB, impactSummary)</code> を <code>ui-common.js</code> に追加</li>
+  <li><code>App._finalizeCommon1Match</code> で <code>showFactionEventResult</code> 呼び出しを差し替え</li>
+  <li>使用 utility: <code>Engine.formatFinish</code> / <code>_pbStars</code> / <code>showFighterPopup</code> / <code>pickDialogueLine</code></li>
+  <li>セリフは <code>Engine.factions.getCommon1Line('resultLeader', {choice:'A', leader, vars})</code> と <code>('resultLoser', ...)</code> で引く(既存 API そのまま)</li>
+</ul>
+</div>
+
+</body>
+</html>

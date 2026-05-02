@@ -17741,6 +17741,8 @@ Engine.eventSystem = {
     const events = [];
     // 放出された選手を追跡（呼び出し元でFA/dormantに振り分け）
     const departedFighters = [];
+    // E1 別選手推薦時、推薦された選手のID（結果モーダルでリアクション吹き出し用）
+    let recommendedAltId = null;
 
     const applyTrust = (fighterId, delta) => {
       roster = roster.map(f => {
@@ -17860,6 +17862,7 @@ Engine.eventSystem = {
               ? { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) }
               : f);
             events.push(`📺 ${alt.name}を代わりに推薦（人気+2）`);
+            recommendedAltId = alt.id;
           }
         } else {
           events.push(`📺 メディア出演オファーを断った`);
@@ -17983,7 +17986,31 @@ Engine.eventSystem = {
       default: break;
     }
 
-    return { roster, funds, lockerRoomMorale, events, departedFighters };
+    return { roster, funds, lockerRoomMorale, events, departedFighters, recommendedAltId };
+  },
+
+  // ── 選択型イベント 結果セリフ取得（純粋関数 / 結果モーダル吹き出し用） ──────
+  // 戻り値: { fighterId, line } または null（吹き出し非表示）
+  getChoiceResultDialogue(rng, event, choiceIdx, roster, recommendedAltId) {
+    if (typeof CHOICE_EVENT_RESULT_DIALOGUES === 'undefined') return null;
+    const table = CHOICE_EVENT_RESULT_DIALOGUES[event.type];
+    if (!table) return null;
+    if (event.type === 'E1') {
+      if (choiceIdx === 0 && event.fighter != null) {
+        const f = roster.find(r => r.id === event.fighter);
+        if (!f || !table.accept) return null;
+        const pool = getDialoguePool(table.accept, f);
+        return { fighterId: f.id, line: pool[Engine.rng.int(rng, 0, pool.length - 1)] };
+      }
+      if (choiceIdx === 2 && recommendedAltId != null) {
+        const f = roster.find(r => r.id === recommendedAltId);
+        if (!f || !table.recommend) return null;
+        const pool = getDialoguePool(table.recommend, f);
+        return { fighterId: f.id, line: pool[Engine.rng.int(rng, 0, pool.length - 1)] };
+      }
+      return null;
+    }
+    return null;
   },
 
   // ── テキスト選択ヘルパー ────────────────────────────────────────────────

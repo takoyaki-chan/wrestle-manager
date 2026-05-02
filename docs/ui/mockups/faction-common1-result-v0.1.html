@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>派閥内対決 試合後モーダル v0.1</title>
+<style>
+:root{
+  --gold:#d4a843;
+  --cream-bg:#f3ead4;
+  --cream-border:#d8c89a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#0a0a14;color:#e8e0d0;font-family:'Hiragino Sans','Yu Gothic',sans-serif;padding:30px 20px}
+h2{color:var(--gold);font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:14px;margin:30px 0 12px}
+.note{width:760px;margin:8px auto 24px;font-size:12px;color:#8a8070;line-height:1.7}
+.note b{color:#bfa97a}
+
+/* ===== 現状(showFactionEventResult 汎用) ===== */
+.cur-card{background:#1a1208;border:1px solid #2a1f10;border-radius:6px;padding:18px 22px;width:480px;margin:0 auto;color:#d8c89a}
+.cur-title{font-size:15px;font-weight:700;color:#e8e0d0;margin-bottom:4px}
+.cur-meta{color:#888;font-size:11px;margin-bottom:6px}
+.cur-narr{font-size:13px;color:#d8c89a;line-height:1.7;margin:8px 0}
+.cur-impact{margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.2);font-size:12px}
+.cur-impact-h{color:#888;font-size:11px;margin-bottom:4px}
+.cur-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted rgba(255,255,255,0.1)}
+.cur-row span:first-child{color:#bbb}
+.cur-row span:last-child{color:#e0c98a;font-weight:bold}
+.cur-btn{margin-top:12px;padding:8px 18px;background:#2a1f10;border:1px solid #3a2a18;color:#bfa97a;border-radius:3px;cursor:pointer}
+
+/* ===== 提案(試合後フォーマット) ===== */
+.new-card{background:#0f0a06;border:1px solid #2a1f10;border-radius:6px;padding:0;width:760px;margin:0 auto;color:#d8c89a;overflow:hidden}
+.new-banner{background:linear-gradient(180deg,#3a2a18,#1a0f04);padding:14px 22px;border-bottom:1px solid #2a1f10;display:flex;justify-content:space-between;align-items:center}
+.new-cat{font-family:'Bebas Neue','Oswald',sans-serif;font-size:11px;letter-spacing:6px;color:#aaa}
+.new-title{font-size:18px;font-weight:700;color:#e8e0d0;letter-spacing:3px;margin-top:2px}
+.new-meta{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#8a7549;text-align:right}
+
+.new-stage{display:grid;grid-template-columns:1fr 90px 1fr;gap:0;padding:24px 22px 18px;align-items:center}
+.new-side{text-align:center;position:relative}
+.new-side.winner{}
+.new-side.loser{filter:saturate(0.55) opacity(0.75)}
+.new-portrait{width:140px;height:170px;background:linear-gradient(135deg,#3a2a18,#1a0f04) center/cover no-repeat;border-radius:4px;border:2px solid #4a3520;margin:0 auto 8px;cursor:pointer}
+.new-side.winner .new-portrait{border-color:var(--gold);box-shadow:0 0 24px rgba(212,168,67,0.35)}
+.new-name{font-size:16px;font-weight:700;color:#f0d890;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(212,168,67,0.3);text-underline-offset:3px}
+.new-name:hover{color:var(--gold)}
+.new-faction{font-size:11px;color:#8a7549;margin-top:2px}
+.new-ovr{font-family:'Oswald',sans-serif;color:var(--gold);letter-spacing:2px;font-size:13px;margin-top:4px}
+
+.new-result-badge{display:inline-block;font-family:'Bebas Neue','Oswald',sans-serif;letter-spacing:4px;font-size:14px;padding:3px 14px;border-radius:3px;margin-top:8px}
+.new-result-badge.win{background:rgba(212,168,67,0.18);color:var(--gold);border:1px solid rgba(212,168,67,0.5)}
+.new-result-badge.lose{background:rgba(120,80,60,0.15);color:#8a6a52;border:1px solid rgba(120,80,60,0.4)}
+
+.new-vs-col{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.new-vs-mark{font-family:'Bebas Neue','Oswald',sans-serif;font-size:34px;color:#5a4520;letter-spacing:2px;margin-bottom:10px}
+.new-finish{text-align:center;font-size:11px;color:#bfa97a;letter-spacing:1px;line-height:1.5}
+.new-finish .move{color:var(--gold);font-weight:700;font-size:12px}
+.new-finish .turns{color:#8a7549;font-size:10px;margin-top:2px}
+
+.new-stats{display:grid;grid-template-columns:1fr 90px 1fr;gap:0;padding:0 22px 14px;font-family:'Oswald',sans-serif}
+.new-stats-row{display:contents}
+.new-stat-cell{text-align:center;padding:6px 0;font-size:13px;color:#bfa97a}
+.new-stat-cell.center{font-size:10px;color:#8a7549;letter-spacing:2px;display:flex;align-items:center;justify-content:center}
+.new-stat-cell.hi{color:var(--gold);font-weight:700}
+
+.new-narration{margin:0 22px 14px;padding:12px 14px;background:rgba(212,168,67,0.06);border-left:3px solid var(--gold);font-size:13px;line-height:1.7;color:#d8c89a}
+
+/* セリフ吹き出し(勝者/敗者) */
+.new-quotes{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 22px 14px}
+.new-quote{background:#f0f0f0;color:#1a1208;padding:10px 13px;border-radius:8px;font-size:12px;line-height:1.55;position:relative;text-align:center}
+.new-quote::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:7px solid #f0f0f0}
+.new-quote-spk{font-size:10px;color:#9c6b1a;font-weight:700;letter-spacing:1px;margin-bottom:3px}
+
+.new-impact{margin:0 22px 14px;padding:12px 14px;background:rgba(0,0,0,0.25);border-radius:4px}
+.new-impact-h{color:#8a7549;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;margin-bottom:6px}
+.new-impact-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted rgba(255,255,255,0.08);font-size:12px}
+.new-impact-row span:first-child{color:#bfa97a}
+.new-impact-row span:last-child{color:#e0c98a;font-family:'Oswald',sans-serif;font-weight:700}
+.new-impact-row span.pos{color:#7ac98a}
+.new-impact-row span.neg{color:#c98a7a}
+
+.new-actions{display:flex;justify-content:center;gap:12px;padding:0 22px 22px}
+.new-btn{padding:10px 28px;font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:13px;border-radius:3px;cursor:pointer;border:1px solid var(--gold);background:rgba(212,168,67,0.15);color:var(--gold)}
+</style>
+</head>
+<body>
+
+<h2>① 現状 — showFactionEventResult 汎用フォーマット(B/C 用と共通)</h2>
+<div class="cur-card">
+  <div class="cur-title">🎭 派閥内対決 <span style="color:#888;font-size:11px">[COMMON_1]</span></div>
+  <div class="cur-meta">S10 W3</div>
+  <div class="cur-narr">大久保桃子が長谷川レオナを下した。大久保桃子組内の火種は試合で清算された。</div>
+  <div class="cur-impact">
+    <div class="cur-impact-h">影響</div>
+    <div class="cur-row"><span>大久保桃子 trust</span><span>+3</span></div>
+    <div class="cur-row"><span>長谷川レオナ trust</span><span>-1</span></div>
+    <div class="cur-row"><span>2名間 rivalry</span><span>-41</span></div>
+  </div>
+  <button class="cur-btn">閉じる ✓</button>
+</div>
+<div class="note">
+<b>現状の問題点</b><br>
+・ビッグマッチ規格で実試合させたのに、結果モーダルが他の派閥イベント(B/C 静観・置換)と同じ汎用テンプレ。試合の余韻がゼロ<br>
+・勝者/敗者の顔・OVR・決め技・MQ・試合時間が一切出ない<br>
+・「2名間 rivalry」など内部変数名がそのまま<br>
+・選手詳細への動線なし<br>
+・rivalry の数字(-41)はゴールド色だが「+ なら緑 / - なら赤」の方向性が出ていない
+</div>
+
+<h2>② 提案 — 派閥内対決 専用 試合後モーダル</h2>
+<div class="new-card">
+  <div class="new-banner">
+    <div>
+      <div class="new-cat">FACTION INTERNAL MATCH</div>
+      <div class="new-title">⚔️ 派閥内対決 決着</div>
+    </div>
+    <div class="new-meta">S10 · W3<br>大久保桃子組</div>
+  </div>
+
+  <div class="new-stage">
+    <div class="new-side winner">
+      <div class="new-portrait" title="クリックで選手詳細"></div>
+      <div class="new-name" title="クリックで選手詳細">大久保桃子</div>
+      <div class="new-faction">大久保桃子組 · リーダー</div>
+      <div class="new-ovr">OVR 78</div>
+      <div class="new-result-badge win">WIN</div>
+    </div>
+    <div class="new-vs-col">
+      <div class="new-vs-mark">VS</div>
+      <div class="new-finish">
+        <div class="move">河津落とし</div>
+        <div>(ピンフォール)</div>
+        <div class="turns">12 ターン · MQ 73</div>
+      </div>
+    </div>
+    <div class="new-side loser">
+      <div class="new-portrait" title="クリックで選手詳細"></div>
+      <div class="new-name" title="クリックで選手詳細">長谷川レオナ</div>
+      <div class="new-faction">大久保桃子組</div>
+      <div class="new-ovr">OVR 75</div>
+      <div class="new-result-badge lose">LOSE</div>
+    </div>
+  </div>
+
+  <div class="new-stats">
+    <div class="new-stat-cell hi">38</div><div class="new-stat-cell center">残 HP</div><div class="new-stat-cell">12</div>
+    <div class="new-stat-cell hi">7</div><div class="new-stat-cell center">大ダメージ</div><div class="new-stat-cell">5</div>
+    <div class="new-stat-cell">2</div><div class="new-stat-cell center">カウンター</div><div class="new-stat-cell hi">3</div>
+  </div>
+
+  <div class="new-narration">
+    序列は、リングが答えを出した。大久保桃子組内に燻っていた火種は、桃子の河津落としで決着した。
+  </div>
+
+  <div class="new-quotes">
+    <div class="new-quote">
+      <div class="new-quote-spk">大久保桃子(勝者)</div>
+      これで揉め事は終わりだ。次は外を見ろ。
+    </div>
+    <div class="new-quote">
+      <div class="new-quote-spk">長谷川レオナ(敗者)</div>
+      負けた以上、ここで黙って引き下がるしかない……。
+    </div>
+  </div>
+
+  <div class="new-impact">
+    <div class="new-impact-h">影響</div>
+    <div class="new-impact-row"><span>大久保桃子 信頼度</span><span class="pos">+3</span></div>
+    <div class="new-impact-row"><span>長谷川レオナ 信頼度</span><span class="neg">-1</span></div>
+    <div class="new-impact-row"><span>2 名間の因縁</span><span class="pos">-41(解消)</span></div>
+  </div>
+
+  <div class="new-actions">
+    <button class="new-btn">閉じる ✓</button>
+  </div>
+</div>
+
+<div class="note" style="margin-top:20px">
+<b>提案の構成要素</b><br>
+1. <b>バナー</b>: カテゴリ「FACTION INTERNAL MATCH」+ タイトル「派閥内対決 決着」+ 派閥名/週<br>
+2. <b>対峙ステージ</b>: ポートレート 140×170 / 名前(クリック可) / OVR / WIN/LOSE バッジ。敗者は saturate(0.55) で沈ませる<br>
+3. <b>中央の決着情報</b>: 決め技名(ゴールド) / フィニッシュタイプ / ターン数 · MQ<br>
+4. <b>試合スタッツ</b>: 残 HP / 大ダメージ数 / カウンター数(3 行 × 3 列)。高い側にゴールドハイライト<br>
+5. <b>黒田ナレーション</b>: 試合の流れを 1 文で物語る(ゴールド帯付き)<br>
+6. <b>勝者/敗者セリフ</b>: 既存 `COMMON1_LINES.resultLeader / resultLoser` を勝者/敗者の頭上吹き出し風に。性格別ローテ<br>
+7. <b>影響</b>: 「信頼度」など日本語化 + ± で色分け(緑/赤)、因縁は「-41(解消)」のように意味を補足<br>
+<br>
+<b>実装メモ</b><br>
+・新規関数 `_renderCommon1MatchResult(payload, matchResult, winner, loser)` を `ui-common.js` に追加<br>
+・`_finalizeCommon1Match` で `showFactionEventResult` 呼び出しを `_renderCommon1MatchResult` に差し替え<br>
+・matchResult から finMove / finType / turns / mq / hpLeft.final / log を流用<br>
+・大ダメージ数・カウンター数は log を集計(既存 B3 結果画面で似た計算を行っているので参考になる)<br>
+・勝者/敗者セリフは新規 `getCommon1ResultLine(role, leader, vars)` を性格別に拡張(現状 `_any` のみ)<br>
+・選手詳細は `showFighterPopup(id, 'roster')` で打診モーダルと同じ動線
+</div>
+
+</body>
+</html>

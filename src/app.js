@@ -8690,7 +8690,16 @@ const App = {
     renderWeekScreen();
     // 結果をモーダルで表示（toastではなく）
     if (displayEvents.length > 0) {
-      showChoiceEventResult(event, displayEvents, G);
+      // 結果リアクション（吹き出し）取得 — E1 などで成功/推薦された選手のセリフを表示
+      let resultReaction = null;
+      try {
+        if (Engine.eventSystem && typeof Engine.eventSystem.getChoiceResultDialogue === 'function') {
+          const reactRng = Engine.rng.create(Engine.rng.derive((G.rngSeed || 1), (G.season || 0), (G.week || 0), 0xC401, choiceIdx));
+          resultReaction = Engine.eventSystem.getChoiceResultDialogue(
+            reactRng, event, choiceIdx, G.roster || [], result.recommendedAltId);
+        }
+      } catch (_) { /* 失敗時は吹き出しなしで続行 */ }
+      showChoiceEventResult(event, displayEvents, G, { reaction: resultReaction });
     }
   },
 
@@ -9475,9 +9484,6 @@ const App = {
     const c1 = App._common1Preview;
     if (!c1) return;
     const { payload, fighterA, fighterB, finalizeAudio } = c1;
-    // プレビュー(showResultOverlay)を閉じる — 結果は派閥イベント結果モーダル側で表示
-    const showOv = document.getElementById('showResultOverlay');
-    if (showOv) showOv.classList.remove('active');
     const winnerId = matchResult.winner === 'left' ? fighterA.id : fighterB.id;
     const loserId  = matchResult.winner === 'left' ? fighterB.id : fighterA.id;
 
@@ -9506,17 +9512,8 @@ const App = {
     Storage.autoSave();
     renderWeekScreen();
 
-    const leader = (G.roster || []).find(c => c.id === payload.leaderId);
     setTimeout(() => {
-      showFactionEventResult({
-        eventId: 'COMMON_1',
-        category: '派閥内対決',
-        resultText: result.resultText,
-        charId: payload.leaderId || null,
-        charName: leader ? leader.name : '',
-        impactSummary: result.impactSummary || [],
-        weekLabel: `S${G.season} W${G.week}`,
-      }, () => {
+      _renderCommon1MatchResult(payload, matchResult, fighterA, fighterB, result, () => {
         App._common1Preview = null;
         App.restoreBgmForState && App.restoreBgmForState();
         if (finalizeAudio) finalizeAudio();

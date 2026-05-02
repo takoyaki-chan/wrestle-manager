@@ -22378,26 +22378,31 @@ if (!CHOICE_EVENT_DIALOGUES['S6']) CHOICE_EVENT_DIALOGUES['S6'] = {};
 if (!CHOICE_EVENT_DIALOGUES['S6'].easygoing) CHOICE_EVENT_DIALOGUES['S6'].easygoing = {};
 if (!CHOICE_EVENT_DIALOGUES['S6'].easygoing.ojousama) CHOICE_EVENT_DIALOGUES['S6'].easygoing.ojousama = [];
 CHOICE_EVENT_DIALOGUES['S6'].easygoing.ojousama.push('あの方とタッグを組ませてくださいまし!きっと素敵なコンビになりますわ!');
-if (!CHOICE_EVENT_DIALOGUES['E1']) CHOICE_EVENT_DIALOGUES['E1'] = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].normal) CHOICE_EVENT_DIALOGUES['E1'].normal = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].normal.polite) CHOICE_EVENT_DIALOGUES['E1'].normal.polite = [];
-CHOICE_EVENT_DIALOGUES['E1'].normal.polite.push('やりました……!夢みたいです、本当にありがとうございます');
-if (!CHOICE_EVENT_DIALOGUES['E1']) CHOICE_EVENT_DIALOGUES['E1'] = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].bold) CHOICE_EVENT_DIALOGUES['E1'].bold = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].bold.polite) CHOICE_EVENT_DIALOGUES['E1'].bold.polite = [];
-CHOICE_EVENT_DIALOGUES['E1'].bold.polite.push('やった、やりましたよ!わたしにできないことなんてない!');
-if (!CHOICE_EVENT_DIALOGUES['E1']) CHOICE_EVENT_DIALOGUES['E1'] = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].quiet) CHOICE_EVENT_DIALOGUES['E1'].quiet = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].quiet.seductive) CHOICE_EVENT_DIALOGUES['E1'].quiet.seductive = [];
-CHOICE_EVENT_DIALOGUES['E1'].quiet.seductive.push('……やれた。……嬉しい');
-if (!CHOICE_EVENT_DIALOGUES['E1']) CHOICE_EVENT_DIALOGUES['E1'] = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].easygoing) CHOICE_EVENT_DIALOGUES['E1'].easygoing = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].easygoing.polite) CHOICE_EVENT_DIALOGUES['E1'].easygoing.polite = [];
-CHOICE_EVENT_DIALOGUES['E1'].easygoing.polite.push('やったー!信じられない、夢みたい……!');
-if (!CHOICE_EVENT_DIALOGUES['E1']) CHOICE_EVENT_DIALOGUES['E1'] = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].easygoing) CHOICE_EVENT_DIALOGUES['E1'].easygoing = {};
-if (!CHOICE_EVENT_DIALOGUES['E1'].easygoing.ojousama) CHOICE_EVENT_DIALOGUES['E1'].easygoing.ojousama = [];
-CHOICE_EVENT_DIALOGUES['E1'].easygoing.ojousama.push('まあ、成功いたしましたの!わたくし、嬉しくて仕方ありませんわ!');
+// ── 選択型イベント 結果セリフ（成功時の喜びリアクションなど） ────────────────
+// 構造: CHOICE_EVENT_RESULT_DIALOGUES[type][outcome][archetype][personality]
+// outcome: 'accept'(出す/受ける成功), 'recommend'(別の選手推薦時、推薦された選手のリアクション)
+const CHOICE_EVENT_RESULT_DIALOGUES = {
+  E1: {
+    accept: {
+      normal:    { _default: ['出演のお話、ありがたくお受けします'], polite: ['やりました……!夢みたいです、本当にありがとうございます'] },
+      bold:      { _default: ['任せてよ、ばっちり爪痕残してくる!'], polite: ['やった、やりましたよ!わたしにできないことなんてない!'] },
+      quiet:     { _default: ['……出る。頑張る'], seductive: ['……やれた。……嬉しい'] },
+      shy:       { _default: ['は、はい…!せ、精一杯やります…!'] },
+      easygoing: { _default: ['やったー!カメラの前で何しよっかな!'], polite: ['やったー!信じられない、夢みたい……!'], ojousama: ['まあ、成功いたしましたの!わたくし、嬉しくて仕方ありませんわ!'] },
+      earnest:   { _default: ['お任せください…精一杯務めます'] },
+      emotional: { _default: ['ほんとに……!? 嬉しい……っ……頑張ります……!'] },
+    },
+    recommend: {
+      normal:    { _default: ['えっ、わたしですか？ ……はい、頑張ります!'] },
+      bold:      { _default: ['お、わたしに来た!? いいよ、任せて!'] },
+      quiet:     { _default: ['……わたしで、いいんですか。……やります'] },
+      shy:       { _default: ['えっ、わ、わたしが…!? が、頑張ります……!'] },
+      easygoing: { _default: ['えー!? わたしでいいの? やったー!'] },
+      earnest:   { _default: ['ご指名、ありがとうございます。精一杯やります'] },
+      emotional: { _default: ['えっ、わたしに……!? う、嬉しい……!'] },
+    },
+  },
+};
 if (!CHOICE_EVENT_DIALOGUES['E4']) CHOICE_EVENT_DIALOGUES['E4'] = {};
 if (!CHOICE_EVENT_DIALOGUES['E4'].normal) CHOICE_EVENT_DIALOGUES['E4'].normal = {};
 if (!CHOICE_EVENT_DIALOGUES['E4'].normal.polite) CHOICE_EVENT_DIALOGUES['E4'].normal.polite = [];
