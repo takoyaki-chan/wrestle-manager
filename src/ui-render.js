@@ -862,51 +862,6 @@ function renderWeekScreen() {
       html += '</div></div>'; // .survival-body, .survival-panel
     }
 
-    // ── v0.96: MISSION PANEL ──
-    if (G.missionEnabled) {
-      const visMissions = Mission.getVisible(G);
-      const prog = Mission.progress(G);
-      // Group by phase
-      const byPhase = {};
-      visMissions.forEach(m => { if (!byPhase[m.phase]) byPhase[m.phase] = []; byPhase[m.phase].push(m); });
-      // Sort: incomplete first within each phase
-      Object.values(byPhase).forEach(arr => arr.sort((a,b) => (a.done?1:0) - (b.done?1:0)));
-
-      html += '<div class="mission-panel">';
-      html += `<div class="mission-panel-header">
-        <span class="mission-panel-title"><span class="mission-icon">🧭</span> ミッション <span style="font-size:12px;font-weight:400;color:var(--text-dim);font-family:'Noto Sans JP',sans-serif">${prog.done}/${prog.total}</span></span>
-        <span class="mission-panel-toggle" onclick="App.toggleMission(false)">✕ 非表示にする</span>
-      </div>`;
-      // Progress bar
-      html += `<div class="mission-progress">
-        <div class="mission-progress-bar"><div class="mission-progress-fill" style="width:${prog.pct}%"></div></div>
-        <span class="mission-progress-label">${prog.pct}%</span>
-      </div>`;
-      html += '<div class="mission-list">';
-      for (const [phase, missions] of Object.entries(byPhase)) {
-        html += `<div class="mission-category">${PHASE_LABELS[phase] || ''}</div>`;
-        for (const m of missions) {
-          const isNew = m.done && !m.wasCompleted;
-          const pendingClear = isNew || (G.missionNewClears || []).includes(m.id);
-          const itemCls = pendingClear ? 'mission-item new-clear' : 'mission-item';
-          const clickHandler = pendingClear ? `onclick="dismissMissionClear('${m.id}',this)"` : '';
-          html += `<div class="${itemCls}" ${clickHandler}>
-            <div class="mission-check ${m.done ? 'done' : 'pending'}">${m.done ? '✓' : ''}</div>
-            <div class="mission-body">
-              <div class="mission-name ${m.done ? 'done' : ''}">${m.icon} ${m.name}</div>
-              ${!m.done ? `<div class="mission-desc">${m.desc}</div>` : ''}
-            </div>
-            ${!m.done && m.screen ? `<span class="mission-goto" onclick="event.stopPropagation();gotoScreen('${m.screen}')">→ 開く</span>` : ''}
-            ${pendingClear ? '<span class="mission-clear-hint">tap!</span>' : ''}
-          </div>`;
-        }
-      }
-      html += '</div></div>';
-    } else {
-      // Show small re-enable button
-      html += `<div style="margin-bottom:10px;text-align:right"><span class="mission-enable-btn" onclick="App.toggleMission(true)">🧭 ミッション表示</span></div>`;
-    }
-
     const heat = getHeatLevel();
     const injuredCount = G.roster.filter(c => c.injury).length;
     html += `<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--text-sub)">

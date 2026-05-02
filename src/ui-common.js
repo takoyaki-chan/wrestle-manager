@@ -3945,18 +3945,6 @@ function mqStars(mq) {
 
 // (applyMQPopularity / applyShowPopularity moved to Engine — no longer needed here)
 
-// v1.0: Mission clear celebration — tap to dismiss
-function dismissMissionClear(missionId, el) {
-  Audio.play('award');
-  el.classList.remove('new-clear');
-  el.classList.add('clearing');
-  // Remove from pending clears
-  const pending = (G.missionNewClears || []).filter(id => id !== missionId);
-  G = { ...G, missionNewClears: pending };
-  // After animation, refresh
-  setTimeout(() => { refreshAll(); }, 550);
-}
-
 // Show prep entry point (routes through App for state changes)
 function startShowPrep() {
   if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
