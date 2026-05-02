@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>団体年代記 — 序章モックアップ v0.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   既存 src/index.html / ui-render.js から忠実に踏襲
+   ============================================ */
+:root {
+  --bg-dark: #24221e;
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', 'Meiryo', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  padding: 24px 16px;
+}
+
+/* モックアップ用のヘッダ（実装には残らない） */
+.mock-banner {
+  max-width: 940px; margin: 0 auto 18px;
+  padding: 14px 20px;
+  background: rgba(154,112,32,0.08);
+  border: 1px dashed rgba(184,137,42,0.4);
+  border-radius: 6px;
+  font-size: 12px; color: rgba(232,230,224,0.6);
+  line-height: 1.7;
+}
+.mock-banner strong { color: #c9a84c; font-weight: 700; }
+.mock-variant-label {
+  max-width: 940px; margin: 32px auto 8px;
+  padding: 8px 16px;
+  background: rgba(194,32,32,0.12);
+  border-left: 3px solid #c22020;
+  color: #f0d0d0;
+  font-size: 13px; letter-spacing: 1px;
+  font-weight: 700;
+}
+
+/* ============================================
+   CHRONICLE STYLES (from src/ui-render.js _chronicleStyleBlock)
+   既存実装を一字一句変えずに踏襲。
+   ============================================ */
+.chron-wrap {
+  --chr-paper-top: #f8eed2;
+  --chr-paper-bot: #f0e0ba;
+  --chr-ink: #1f1710;
+  --chr-ink-sub: #3a2e1c;
+  --chr-ink-mid: #5b4b34;
+  --chr-ink-dim: #7a5b32;
+  --chr-rule: rgba(95,69,35,0.18);
+  --chr-rule-bold: rgba(95,69,35,0.35);
+  --chr-border: rgba(120,84,39,0.32);
+  --chr-red: #8b1a1a;
+  --chr-red-bright: #c22020;
+  --chr-gold: #9a7020;
+  --chr-gold-light: #b8892a;
+  --chr-silver: #6f6657;
+  --chr-idol: #b03366;
+  --chr-idol-bg: rgba(176,51,102,0.08);
+  display: block;
+  margin: 12px auto 40px;
+  max-width: 940px;
+  background: linear-gradient(180deg, var(--chr-paper-top) 0%, var(--chr-paper-bot) 100%);
+  color: var(--chr-ink);
+  border: 1px solid var(--chr-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+  font-family: 'Noto Sans JP', 'Meiryo', sans-serif;
+}
+.chron-subhead {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 22px;
+  background: rgba(95,69,35,0.04);
+  border-bottom: 1px solid var(--chr-rule);
+}
+.chron-subhead-label {
+  font-size: 10px; letter-spacing: 3px; color: var(--chr-ink-dim);
+  text-transform: uppercase; font-weight: 700;
+}
+.chron-subhead-org { font-size: 12px; color: var(--chr-ink-sub); font-weight: 700; }
+.chron-rebuild-btn {
+  background: transparent; border: 1px solid var(--chr-rule-bold);
+  color: var(--chr-ink-dim); font-size: 10px; padding: 3px 10px;
+  letter-spacing: 1px; cursor: pointer; font-weight: 700;
+}
+.chron-rebuild-btn:hover { background: rgba(95,69,35,0.08); }
+.chron-timeline { padding: 14px 22px 24px; border-bottom: 1px solid var(--chr-rule); }
+.chron-timeline-rail { position: relative; height: 38px; margin: 0 12px; }
+.chron-timeline-line {
+  position: absolute; top: 18px; left: 0; right: 0; height: 2px;
+  background: var(--chr-rule-bold);
+}
+.chron-timeline-tick {
+  position: absolute; top: 12px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--chr-paper-top);
+  border: 2px solid var(--chr-ink-dim);
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+.chron-timeline-tick.current {
+  width: 18px; height: 18px; top: 10px;
+  border-color: var(--chr-red);
+  background: var(--chr-red-bright);
+  box-shadow: 0 0 0 4px rgba(194,32,32,0.18);
+}
+.chron-timeline-tick.in-progress { border-style: dashed; }
+.chron-timeline-label {
+  position: absolute; top: 30px;
+  font-size: 9px; color: var(--chr-ink-dim);
+  transform: translateX(-50%); white-space: nowrap;
+  letter-spacing: 0.5px; font-weight: 700;
+  cursor: pointer;
+}
+.chron-timeline-label.current { color: var(--chr-red); font-weight: 900; }
+.chron-header {
+  text-align: center;
+  padding: 22px 22px 18px;
+  border-bottom: 3px double var(--chr-rule-bold);
+}
+.chron-eyebrow {
+  display: inline-block;
+  font-size: 11px; letter-spacing: 4px;
+  color: #fff; background: var(--chr-ink);
+  padding: 4px 14px; font-weight: 700;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.chron-eyebrow.in-progress {
+  background: var(--chr-gold);
+}
+.chron-num {
+  font-size: 14px; letter-spacing: 3px;
+  color: var(--chr-ink-dim); margin-bottom: 6px;
+}
+.chron-title {
+  font-size: 28px; font-weight: 900;
+  color: var(--chr-ink); line-height: 1.25;
+  letter-spacing: 1px; margin-bottom: 8px;
+}
+.chron-sub {
+  font-size: 13px; color: var(--chr-ink-sub);
+  line-height: 1.7; max-width: 640px; margin: 0 auto;
+  font-weight: 500;
+}
+.chron-period {
+  display: inline-block; margin-top: 10px;
+  font-size: 11px; letter-spacing: 2px;
+  color: var(--chr-ink-dim); padding: 3px 10px;
+  border: 1px solid var(--chr-rule-bold); font-weight: 700;
+}
+.chron-sec-label {
+  font-size: 11px; letter-spacing: 0.15em;
+  color: var(--chr-red); font-weight: 900;
+  margin-bottom: 12px; padding-left: 8px;
+  border-left: 3px solid var(--chr-red);
+}
+.chron-section {
+  padding: 18px 22px;
+  border-top: 1px solid var(--chr-rule);
+}
+.chron-section:first-of-type { border-top: none; }
+.chron-ace-row {
+  display: grid; grid-template-columns: 160px 1fr; gap: 20px;
+  align-items: start;
+}
+.chron-ace-row.dual { grid-template-columns: 160px 160px 1fr; }
+.chron-ace-portrait {
+  width: 160px; height: 200px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #a8916a 100%);
+  border: 3px solid var(--chr-gold);
+  box-shadow: 0 0 12px rgba(154,112,32,0.25),
+              inset 0 0 30px rgba(95,69,35,0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--chr-ink);
+  position: relative;
+  overflow: hidden;
+}
+.chron-ace-portrait-letter { font-size: 88px; font-weight: 900; }
+.chron-ace-portrait::before {
+  content: ''; position: absolute; inset: 4px;
+  border: 1px solid rgba(154,112,32,0.5);
+  pointer-events: none;
+}
+/* 序章拡張：暫定エースのポートレートを薄く */
+.chron-ace-portrait.tentative {
+  border-color: var(--chr-gold-light);
+  box-shadow: 0 0 8px rgba(154,112,32,0.12),
+              inset 0 0 30px rgba(95,69,35,0.15);
+  filter: saturate(0.75);
+}
+.chron-ace-tagline {
+  display: inline-block;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--chr-gold); text-transform: uppercase;
+  font-weight: 700; margin-bottom: 4px;
+}
+.chron-ace-tagline.tentative {
+  color: var(--chr-gold-light);
+  border: 1px dashed var(--chr-gold-light);
+  padding: 1px 8px;
+}
+.chron-ace-name {
+  font-size: 26px; font-weight: 900;
+  color: var(--chr-ink); letter-spacing: 1px;
+  margin-bottom: 10px; line-height: 1.1;
+}
+.chron-ace-meta-row {
+  display: flex; gap: 16px; padding: 8px 0;
+  border-top: 1px dashed var(--chr-rule);
+  border-bottom: 1px dashed var(--chr-rule);
+  margin-bottom: 12px; flex-wrap: wrap;
+}
+.chron-ace-meta { flex: 1; text-align: center; min-width: 60px; }
+.chron-ace-meta-key {
+  font-size: 8px; color: var(--chr-ink-dim);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 2px;
+}
+.chron-ace-meta-val {
+  font-size: 20px; color: var(--chr-ink);
+  letter-spacing: 0.5px; line-height: 1; font-weight: 700;
+}
+.chron-ace-meta-val .small { font-size: 11px; color: var(--chr-ink-dim); }
+.chron-ace-quote {
+  font-size: 12px; line-height: 1.7;
+  color: var(--chr-ink-sub);
+  padding: 10px 14px;
+  background: rgba(200,190,170,0.22);
+  border-left: 3px solid var(--chr-gold);
+  border-radius: 4px;
+  font-weight: 500;
+}
+.chron-ace-quote::before {
+  content: '記者の目'; font-size: 9px; letter-spacing: 1px;
+  color: var(--chr-gold); font-weight: 700;
+  text-transform: uppercase; display: block; margin-bottom: 4px;
+}
+.chron-ace-quote.tentative { border-left-color: var(--chr-gold-light); }
+.chron-ace-quote.tentative::before {
+  content: '記者の見立て';
+  color: var(--chr-gold-light);
+}
+
+/* 序章バリエーションB専用：旗揚げメンバー全員グリッド */
+.chron-prologue-roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+.chron-prologue-card {
+  text-align: center;
+  padding: 12px 8px;
+  background: rgba(95,69,35,0.04);
+  border: 1px solid var(--chr-rule);
+  border-radius: 4px;
+}
+.chron-prologue-portrait {
+  width: 72px; height: 90px; margin: 0 auto 8px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
+  border: 2px solid var(--chr-gold-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px; font-weight: 900; color: var(--chr-ink);
+}
+.chron-prologue-card.idol .chron-prologue-portrait {
+  background: linear-gradient(135deg, #e8c4d4 0%, #c89aae 100%);
+  border-color: var(--chr-idol);
+}
+.chron-prologue-card.idol .chron-prologue-name { color: var(--chr-idol); }
+.chron-prologue-card.champion .chron-prologue-portrait {
+  border-color: var(--chr-gold);
+  box-shadow: 0 0 6px rgba(154,112,32,0.3);
+}
+.chron-prologue-name {
+  font-size: 13px; font-weight: 900; color: var(--chr-ink); line-height: 1.2;
+}
+.chron-prologue-style {
+  font-size: 10px; color: var(--chr-ink-dim); margin-top: 3px; font-weight: 700;
+}
+.chron-prologue-badge {
+  display: inline-block;
+  font-size: 8px; letter-spacing: 1px;
+  padding: 1px 5px; margin-top: 4px;
+  background: var(--chr-gold); color: #fff;
+  font-weight: 700;
+}
+.chron-prologue-card.idol .chron-prologue-badge {
+  background: var(--chr-idol);
+}
+
+.chron-two-col {
+  display: grid; grid-template-columns: 1.4fr 1fr; gap: 0;
+}
+.chron-col-left {
+  padding: 18px 22px;
+  border-right: 1px solid var(--chr-rule);
+}
+.chron-col-right { padding: 18px 22px; }
+.chron-highlights {
+  list-style: none;
+  padding: 0 8px 0 0;
+  margin: 0;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.chron-highlight {
+  display: flex; gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px dotted var(--chr-rule);
+  align-items: baseline;
+}
+.chron-highlight:last-child { border-bottom: none; }
+.chron-highlight-season {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--chr-ink-dim);
+  letter-spacing: 0.5px;
+  width: 42px;
+  font-weight: 700;
+}
+.chron-highlight-text {
+  flex: 1; font-size: 12px;
+  line-height: 1.6;
+  color: var(--chr-ink-sub);
+  font-weight: 500;
+}
+.chron-highlight-text strong {
+  color: var(--chr-ink); font-weight: 900;
+}
+.chron-highlight-gold .chron-highlight-season { color: var(--chr-gold); }
+.chron-highlight-silver .chron-highlight-season { color: var(--chr-silver); }
+.chron-highlight-red .chron-highlight-season { color: var(--chr-red); }
+
+.chron-gen-list { list-style: none; padding: 0; margin: 0; }
+.chron-gen-member {
+  display: flex; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dotted var(--chr-rule);
+  align-items: center;
+}
+.chron-gen-member:last-child { border-bottom: none; }
+.chron-gen-portrait {
+  width: 42px; height: 42px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
+  border: 2px solid rgba(154,112,32,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 900;
+  color: var(--chr-ink);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.chron-gen-info { flex: 1; min-width: 0; }
+.chron-gen-name {
+  font-size: 13px; font-weight: 900;
+  color: var(--chr-ink); line-height: 1.2;
+}
+.chron-gen-meta {
+  font-size: 10px; color: var(--chr-ink-dim);
+  font-weight: 500; margin-top: 2px;
+}
+.chron-gen-ovr {
+  font-size: 17px; color: var(--chr-ink-mid);
+  letter-spacing: 0.5px; flex-shrink: 0; font-weight: 700;
+}
+.chron-gen-member.idol {
+  background: var(--chr-idol-bg);
+  border-left: 2px solid var(--chr-idol);
+  padding-left: 8px; margin-left: -10px; margin-right: -2px;
+  border-radius: 0 4px 4px 0;
+}
+.chron-gen-member.idol .chron-gen-portrait {
+  background: linear-gradient(135deg, #e8c4d4 0%, #c89aae 100%);
+  border-color: var(--chr-idol);
+}
+.chron-gen-member.idol .chron-gen-name,
+.chron-gen-member.idol .chron-gen-ovr { color: var(--chr-idol); }
+.chron-gen-idol-tag {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  color: var(--chr-idol);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.chron-era-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-top: 4px;
+}
+.chron-era-stat {
+  padding: 8px 10px;
+  background: rgba(95,69,35,0.05);
+  border-left: 2px solid var(--chr-rule-bold);
+}
+.chron-era-stat-key {
+  font-size: 8px; color: var(--chr-ink-dim);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 2px;
+}
+.chron-era-stat-val {
+  font-size: 18px; color: var(--chr-ink);
+  line-height: 1; font-weight: 700;
+}
+.chron-era-stat-val .small { font-size: 10px; color: var(--chr-ink-dim); margin-left: 2px; }
+.chron-closing {
+  padding: 16px 22px 18px;
+  border-top: 3px double var(--chr-rule-bold);
+  background: rgba(95,69,35,0.04);
+  text-align: center;
+}
+.chron-closing-eyebrow {
+  font-size: 9px; letter-spacing: 2.5px;
+  color: var(--chr-ink-dim); text-transform: uppercase;
+  font-weight: 700; margin-bottom: 6px;
+}
+.chron-closing-line {
+  font-size: 14px; color: var(--chr-ink-sub);
+  line-height: 1.7; font-weight: 500;
+  font-style: italic; letter-spacing: 0.5px;
+}
+.chron-closing-line strong {
+  color: var(--chr-ink); font-weight: 900;
+  font-style: normal; padding: 0 2px;
+}
+
+.chron-header.in-progress {
+  background: repeating-linear-gradient(135deg,
+    transparent 0 14px,
+    rgba(154,112,32,0.04) 14px 15px);
+}
+.chron-writing-mark {
+  display: inline-block;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--chr-gold-light); font-weight: 900;
+  padding: 1px 7px; margin-left: 8px;
+  border: 1px dashed var(--chr-gold);
+  vertical-align: middle;
+  animation: chron-writing-blink 2.4s ease-in-out infinite;
+}
+@keyframes chron-writing-blink {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.chron-writing-note {
+  display: inline-block;
+  margin-top: 10px; padding: 6px 14px;
+  font-size: 11px; color: var(--chr-gold);
+  background: rgba(154,112,32,0.08);
+  border: 1px dashed var(--chr-gold);
+  letter-spacing: 0.3px; font-weight: 500;
+  line-height: 1.5; max-width: 560px;
+}
+.chron-closing.in-progress {
+  background: repeating-linear-gradient(135deg,
+    rgba(95,69,35,0.04) 0 14px,
+    rgba(154,112,32,0.06) 14px 15px);
+}
+.chron-closing-note {
+  font-size: 10px; color: var(--chr-ink-dim);
+  margin-top: 8px; letter-spacing: 0.3px;
+  font-style: normal; line-height: 1.5;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="mock-banner">
+  <strong>団体年代記 — 序章モックアップ v0.1</strong><br>
+  既存のデータベース「📖 年代記」サブタブのデザインを忠実に踏襲。<br>
+  シナリオ：シーズン2 第18週／引退者ゼロ／旗揚げメンバー全員現役／初代王座決定済み／経営安定化達成済み。<br>
+  以下に <strong>3つのバリエーション</strong> を並べて比較しています。
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     バリエーションA：暫定エース（単独）— 既存単独エースレイアウトの流用
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="mock-variant-label">VARIANT A ／ 暫定エース（単独）— 既存単独エースレイアウトを流用、ラベルを「暫定」に変える案</div>
+
+<div class="chron-wrap">
+  <!-- Subhead -->
+  <div class="chron-subhead">
+    <div class="chron-subhead-label">◆ 団体年代記 ◆</div>
+    <div class="chron-subhead-org">光輪プロレス</div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="chron-timeline">
+    <div class="chron-timeline-rail">
+      <div class="chron-timeline-line"></div>
+      <div class="chron-timeline-tick current in-progress" style="left:50%"></div>
+      <div class="chron-timeline-label current" style="left:50%">CH.1</div>
+    </div>
+  </div>
+
+  <!-- Chapter Header -->
+  <div class="chron-header in-progress">
+    <div class="chron-eyebrow in-progress">◆ 進行中の章 ◆</div>
+    <div class="chron-num">CHAPTER I <span class="chron-writing-mark">— WRITING —</span></div>
+    <h2 class="chron-title">旗揚げ — 最初の5人と、最初の会場</h2>
+    <div class="chron-period">SEASON 1 — SEASON 2 / 現在</div>
+    <div class="chron-writing-note">この章はまだ書きかけです。選手たちが引退して数年が経つと、章が確定します。</div>
+  </div>
+
+  <!-- Tentative Ace Section -->
+  <div class="chron-section">
+    <div class="chron-sec-label">この時代の中心となるか</div>
+    <div class="chron-ace-row">
+      <div class="chron-ace-portrait tentative">
+        <span class="chron-ace-portrait-letter">高</span>
+      </div>
+      <div>
+        <div class="chron-ace-tagline tentative">STILL UNFOLDING</div>
+        <div class="chron-ace-name">高階まさみ</div>
+        <div class="chron-ace-meta-row">
+          <div class="chron-ace-meta">
+            <div class="chron-ace-meta-key">CURRENT OVR</div>
+            <div class="chron-ace-meta-val">67</div>
+          </div>
+          <div class="chron-ace-meta">
+            <div class="chron-ace-meta-key">STYLE</div>
+            <div class="chron-ace-meta-val" style="font-size:12px">関節技</div>
+          </div>
+          <div class="chron-ace-meta">
+            <div class="chron-ace-meta-key">ACTIVE</div>
+            <div class="chron-ace-meta-val">2<span class="small">期</span></div>
+          </div>
+          <div class="chron-ace-meta">
+            <div class="chron-ace-meta-key">TITLES</div>
+            <div class="chron-ace-meta-val">1<span class="small">戴冠</span></div>
+          </div>
+        </div>
+        <div class="chron-ace-quote tentative">
+          初代王者を獲った高階の関節技が、まずこの章の軸になりつつある。
+          ただし旗揚げ世代の物語はまだ終わっていない。誰がこの時代の主役として記憶されるかは、これから決まる。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two-col body -->
+  <div class="chron-two-col">
+    <div class="chron-col-left">
+      <div class="chron-sec-label">この時代の主な出来事</div>
+      <ul class="chron-highlights">
+        <li class="chron-highlight chron-highlight-gold">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text"><strong>旗揚げ戦</strong>。立川市民体育館で初興行を開催、観衆842名。第3試合の高階vs橘でMQ43を記録。</div>
+        </li>
+        <li class="chron-highlight chron-highlight-red">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text"><strong>初代王座決定戦</strong>。<strong>高階まさみ</strong>が橘玲美をアームバーで下し初代チャンピオンに(MQ58)。</div>
+        </li>
+        <li class="chron-highlight">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text">団体人気25到達。スポンサー筋に動きが出始める。</div>
+        </li>
+        <li class="chron-highlight">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text">シーズン1位での締めには届かず、年間ランク3位でフィニッシュ。</div>
+        </li>
+        <li class="chron-highlight chron-highlight-silver">
+          <div class="chron-highlight-season">S2</div>
+          <div class="chron-highlight-text">高階vs橘、二度目の頂上対決。<strong>MQ52</strong>を記録、観衆は1,400を超える。</div>
+        </li>
+        <li class="chron-highlight">
+          <div class="chron-highlight-season">S2</div>
+          <div class="chron-highlight-text"><strong>経営安定化達成</strong>。月次黒字が定着し、団体存続の目処が立つ。</div>
+        </li>
+      </ul>
+    </div>
+    <div class="chron-col-right">
+      <div class="chron-sec-label">この時代の同期</div>
+      <ul class="chron-gen-list">
+        <li class="chron-gen-member">
+          <div class="chron-gen-portrait">橘</div>
+          <div class="chron-gen-info">
+            <div class="chron-gen-name">橘玲美</div>
+            <div class="chron-gen-meta">関節技 ・ ヒール</div>
+          </div>
+          <div class="chron-gen-ovr">65</div>
+        </li>
+        <li class="chron-gen-member">
+          <div class="chron-gen-portrait">城</div>
+          <div class="chron-gen-info">
+            <div class="chron-gen-name">城戸ゆりか</div>
+            <div class="chron-gen-meta">喧嘩 ・ ベビーフェイス</div>
+          </div>
+          <div class="chron-gen-ovr">62</div>
+        </li>
+        <li class="chron-gen-member idol">
+          <div class="chron-gen-portrait">中</div>
+          <div class="chron-gen-info">
+            <div class="chron-gen-idol-tag">★ IDOL OF THE ERA</div>
+            <div class="chron-gen-name">中野ひかり</div>
+            <div class="chron-gen-meta">空中戦 ・ 華・偶像性</div>
+          </div>
+          <div class="chron-gen-ovr">58</div>
+        </li>
+        <li class="chron-gen-member">
+          <div class="chron-gen-portrait">朝</div>
+          <div class="chron-gen-info">
+            <div class="chron-gen-name">朝霧結</div>
+            <div class="chron-gen-meta">万能 ・ ニュートラル</div>
+          </div>
+          <div class="chron-gen-ovr">60</div>
+        </li>
+      </ul>
+
+      <div class="chron-sec-label" style="margin-top:18px">この時代の通算</div>
+      <div class="chron-era-stats">
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">TITLES</div>
+          <div class="chron-era-stat-val">1<span class="small">戴冠</span></div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">PEAK MQ</div>
+          <div class="chron-era-stat-val">52</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">PEAK POP</div>
+          <div class="chron-era-stat-val">27</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">STATUS</div>
+          <div class="chron-era-stat-val" style="font-size:11px">進行中</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closing -->
+  <div class="chron-closing in-progress">
+    <div class="chron-closing-eyebrow">— 書きかけの章末 —</div>
+    <div class="chron-closing-line">この世代の物語は、まだ始まったばかりだ。</div>
+    <div class="chron-closing-note">この時代の気風はまだ動いています。この章の選手たちが引退したとき、最終的な傾向が確定します。</div>
+  </div>
+</div>
+
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     バリエーションB：エースを置かず「旗揚げ世代」グリッド
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="mock-variant-label">VARIANT B ／ エースを置かず「旗揚げ世代」グリッド — 主役未定を貫き、5人を等価で並べる案</div>
+
+<div class="chron-wrap">
+  <!-- Subhead -->
+  <div class="chron-subhead">
+    <div class="chron-subhead-label">◆ 団体年代記 ◆</div>
+    <div class="chron-subhead-org">光輪プロレス</div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="chron-timeline">
+    <div class="chron-timeline-rail">
+      <div class="chron-timeline-line"></div>
+      <div class="chron-timeline-tick current in-progress" style="left:50%"></div>
+      <div class="chron-timeline-label current" style="left:50%">CH.1</div>
+    </div>
+  </div>
+
+  <!-- Chapter Header -->
+  <div class="chron-header in-progress">
+    <div class="chron-eyebrow in-progress">◆ 進行中の章 ◆</div>
+    <div class="chron-num">CHAPTER I <span class="chron-writing-mark">— WRITING —</span></div>
+    <h2 class="chron-title">旗揚げ — 最初の5人と、最初の会場</h2>
+    <div class="chron-period">SEASON 1 — SEASON 2 / 現在</div>
+    <div class="chron-writing-note">この章はまだ書きかけです。選手たちが引退して数年が経つと、章が確定します。</div>
+  </div>
+
+  <!-- Founding Roster Grid -->
+  <div class="chron-section">
+    <div class="chron-sec-label">旗揚げ世代</div>
+    <div class="chron-prologue-roster">
+      <div class="chron-prologue-card champion">
+        <div class="chron-prologue-portrait">高</div>
+        <div class="chron-prologue-name">高階まさみ</div>
+        <div class="chron-prologue-style">関節技 / ベビー</div>
+        <div class="chron-prologue-badge">初代王者</div>
+      </div>
+      <div class="chron-prologue-card">
+        <div class="chron-prologue-portrait">橘</div>
+        <div class="chron-prologue-name">橘玲美</div>
+        <div class="chron-prologue-style">関節技 / ヒール</div>
+      </div>
+      <div class="chron-prologue-card">
+        <div class="chron-prologue-portrait">城</div>
+        <div class="chron-prologue-name">城戸ゆりか</div>
+        <div class="chron-prologue-style">喧嘩 / ベビー</div>
+      </div>
+      <div class="chron-prologue-card idol">
+        <div class="chron-prologue-portrait">中</div>
+        <div class="chron-prologue-name">中野ひかり</div>
+        <div class="chron-prologue-style">空中戦 / ベビー</div>
+        <div class="chron-prologue-badge">看板</div>
+      </div>
+      <div class="chron-prologue-card">
+        <div class="chron-prologue-portrait">朝</div>
+        <div class="chron-prologue-name">朝霧結</div>
+        <div class="chron-prologue-style">万能 / ニュートラル</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-size:12px;color:var(--chr-ink-sub);line-height:1.7;padding:10px 14px;background:rgba(200,190,170,0.22);border-left:3px solid var(--chr-gold-light);border-radius:4px;font-weight:500">
+      <span style="display:block;font-size:9px;letter-spacing:1px;color:var(--chr-gold-light);font-weight:700;text-transform:uppercase;margin-bottom:4px">記者の見立て</span>
+      この章の主役が誰になるかは、まだ確定していない。初代王座を獲った高階か、ヒールを背負う橘か、客足を呼ぶ中野か——あるいは、まだ誰も知らない別の誰かかもしれない。
+    </div>
+  </div>
+
+  <!-- Two-col body -->
+  <div class="chron-two-col">
+    <div class="chron-col-left">
+      <div class="chron-sec-label">この時代の主な出来事</div>
+      <ul class="chron-highlights">
+        <li class="chron-highlight chron-highlight-gold">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text"><strong>旗揚げ戦</strong>。立川市民体育館で初興行を開催、観衆842名。第3試合の高階vs橘でMQ43を記録。</div>
+        </li>
+        <li class="chron-highlight chron-highlight-red">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text"><strong>初代王座決定戦</strong>。<strong>高階まさみ</strong>が橘玲美をアームバーで下し初代チャンピオンに(MQ58)。</div>
+        </li>
+        <li class="chron-highlight">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text">団体人気25到達。スポンサー筋に動きが出始める。</div>
+        </li>
+        <li class="chron-highlight">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text">シーズン1位での締めには届かず、年間ランク3位でフィニッシュ。</div>
+        </li>
+        <li class="chron-highlight chron-highlight-silver">
+          <div class="chron-highlight-season">S2</div>
+          <div class="chron-highlight-text">高階vs橘、二度目の頂上対決。<strong>MQ52</strong>を記録、観衆は1,400を超える。</div>
+        </li>
+        <li class="chron-highlight">
+          <div class="chron-highlight-season">S2</div>
+          <div class="chron-highlight-text"><strong>経営安定化達成</strong>。月次黒字が定着し、団体存続の目処が立つ。</div>
+        </li>
+      </ul>
+    </div>
+    <div class="chron-col-right">
+      <div class="chron-sec-label">この時代の通算</div>
+      <div class="chron-era-stats">
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">TITLES</div>
+          <div class="chron-era-stat-val">1<span class="small">戴冠</span></div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">PEAK MQ</div>
+          <div class="chron-era-stat-val">52</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">PEAK POP</div>
+          <div class="chron-era-stat-val">27</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">STATUS</div>
+          <div class="chron-era-stat-val" style="font-size:11px">進行中</div>
+        </div>
+      </div>
+
+      <div class="chron-sec-label" style="margin-top:18px">気風の傾向（暫定）</div>
+      <div style="font-size:11px;color:var(--chr-ink-sub);line-height:1.7;padding:8px 10px;background:rgba(95,69,35,0.05);border-left:2px solid var(--chr-rule-bold)">
+        現役選手の構成から、関節技と空中戦の傾向が強い。<br>
+        ※ 引退者が出るまで、気風は確定しません。
+      </div>
+    </div>
+  </div>
+
+  <!-- Closing -->
+  <div class="chron-closing in-progress">
+    <div class="chron-closing-eyebrow">— 書きかけの章末 —</div>
+    <div class="chron-closing-line">この世代の物語は、まだ始まったばかりだ。</div>
+    <div class="chron-closing-note">この時代の気風はまだ動いています。この章の選手たちが引退したとき、最終的な傾向が確定します。</div>
+  </div>
+</div>
+
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     バリエーションC：暫定二枚看板（高階＆橘） — 既存dual aceレイアウトの流用
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="mock-variant-label">VARIANT C ／ 暫定二枚看板 — 既存「dual ace」レイアウトを流用、王者と挑戦者を仮の看板として並べる案</div>
+
+<div class="chron-wrap">
+  <!-- Subhead -->
+  <div class="chron-subhead">
+    <div class="chron-subhead-label">◆ 団体年代記 ◆</div>
+    <div class="chron-subhead-org">光輪プロレス</div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="chron-timeline">
+    <div class="chron-timeline-rail">
+      <div class="chron-timeline-line"></div>
+      <div class="chron-timeline-tick current in-progress" style="left:50%"></div>
+      <div class="chron-timeline-label current" style="left:50%">CH.1</div>
+    </div>
+  </div>
+
+  <!-- Chapter Header -->
+  <div class="chron-header in-progress">
+    <div class="chron-eyebrow in-progress">◆ 進行中の章 ◆</div>
+    <div class="chron-num">CHAPTER I <span class="chron-writing-mark">— WRITING —</span></div>
+    <h2 class="chron-title">旗揚げ — 最初の5人と、最初の会場</h2>
+    <div class="chron-period">SEASON 1 — SEASON 2 / 現在</div>
+    <div class="chron-writing-note">この章はまだ書きかけです。選手たちが引退して数年が経つと、章が確定します。</div>
+  </div>
+
+  <!-- Tentative Dual Section -->
+  <div class="chron-section">
+    <div class="chron-sec-label">この章を支える二人</div>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start">
+      <!-- Left card -->
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:14px">
+        <div class="chron-ace-portrait tentative" style="width:120px;height:150px">
+          <span class="chron-ace-portrait-letter" style="font-size:64px">高</span>
+        </div>
+        <div>
+          <div class="chron-ace-tagline tentative">CHAMPION</div>
+          <div class="chron-ace-name" style="font-size:20px">高階まさみ</div>
+          <div style="display:flex;gap:10px;padding:6px 0;border-top:1px dashed var(--chr-rule);border-bottom:1px dashed var(--chr-rule);margin-bottom:8px;flex-wrap:wrap">
+            <div style="flex:1;min-width:50px;text-align:center">
+              <div style="font-size:8px;color:var(--chr-ink-dim);font-weight:700;letter-spacing:0.8px">CURRENT OVR</div>
+              <div style="font-size:18px;font-weight:700;line-height:1">67</div>
+            </div>
+            <div style="flex:1;min-width:50px;text-align:center">
+              <div style="font-size:8px;color:var(--chr-ink-dim);font-weight:700;letter-spacing:0.8px">STYLE</div>
+              <div style="font-size:11px;font-weight:700;line-height:1.3">関節技</div>
+            </div>
+            <div style="flex:1;min-width:50px;text-align:center">
+              <div style="font-size:8px;color:var(--chr-ink-dim);font-weight:700;letter-spacing:0.8px">TITLES</div>
+              <div style="font-size:18px;font-weight:700;line-height:1">1</div>
+            </div>
+          </div>
+          <div class="chron-ace-quote tentative" style="font-size:11px">
+            初代王者を獲った関節技の使い手。この章の物語は、まずこの選手から始まる。
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:var(--chr-gold-light);padding:50px 0">
+        ＆
+      </div>
+
+      <!-- Right card -->
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:14px">
+        <div class="chron-ace-portrait tentative" style="width:120px;height:150px">
+          <span class="chron-ace-portrait-letter" style="font-size:64px">橘</span>
+        </div>
+        <div>
+          <div class="chron-ace-tagline tentative">CHALLENGER</div>
+          <div class="chron-ace-name" style="font-size:20px">橘玲美</div>
+          <div style="display:flex;gap:10px;padding:6px 0;border-top:1px dashed var(--chr-rule);border-bottom:1px dashed var(--chr-rule);margin-bottom:8px;flex-wrap:wrap">
+            <div style="flex:1;min-width:50px;text-align:center">
+              <div style="font-size:8px;color:var(--chr-ink-dim);font-weight:700;letter-spacing:0.8px">CURRENT OVR</div>
+              <div style="font-size:18px;font-weight:700;line-height:1">65</div>
+            </div>
+            <div style="flex:1;min-width:50px;text-align:center">
+              <div style="font-size:8px;color:var(--chr-ink-dim);font-weight:700;letter-spacing:0.8px">STYLE</div>
+              <div style="font-size:11px;font-weight:700;line-height:1.3">関節技</div>
+            </div>
+            <div style="flex:1;min-width:50px;text-align:center">
+              <div style="font-size:8px;color:var(--chr-ink-dim);font-weight:700;letter-spacing:0.8px">TITLES</div>
+              <div style="font-size:18px;font-weight:700;line-height:1">0</div>
+            </div>
+          </div>
+          <div class="chron-ace-quote tentative" style="font-size:11px">
+            王座決定戦で敗れたが、二度目の頂上対決でMQ52を記録。挑む側の物語を背負っている。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two-col body (same as A) -->
+  <div class="chron-two-col">
+    <div class="chron-col-left">
+      <div class="chron-sec-label">この時代の主な出来事</div>
+      <ul class="chron-highlights">
+        <li class="chron-highlight chron-highlight-gold">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text"><strong>旗揚げ戦</strong>。立川市民体育館で初興行、観衆842名。MQ43。</div>
+        </li>
+        <li class="chron-highlight chron-highlight-red">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text"><strong>初代王座決定戦</strong>。高階が橘をアームバーで下す(MQ58)。</div>
+        </li>
+        <li class="chron-highlight">
+          <div class="chron-highlight-season">S1</div>
+          <div class="chron-highlight-text">団体人気25到達。スポンサー筋に動き。</div>
+        </li>
+        <li class="chron-highlight chron-highlight-silver">
+          <div class="chron-highlight-season">S2</div>
+          <div class="chron-highlight-text">高階vs橘、二度目の頂上対決。<strong>MQ52</strong>。</div>
+        </li>
+        <li class="chron-highlight">
+          <div class="chron-highlight-season">S2</div>
+          <div class="chron-highlight-text"><strong>経営安定化達成</strong>。月次黒字が定着。</div>
+        </li>
+      </ul>
+    </div>
+    <div class="chron-col-right">
+      <div class="chron-sec-label">この時代の同期</div>
+      <ul class="chron-gen-list">
+        <li class="chron-gen-member">
+          <div class="chron-gen-portrait">城</div>
+          <div class="chron-gen-info">
+            <div class="chron-gen-name">城戸ゆりか</div>
+            <div class="chron-gen-meta">喧嘩 ・ ベビーフェイス</div>
+          </div>
+          <div class="chron-gen-ovr">62</div>
+        </li>
+        <li class="chron-gen-member idol">
+          <div class="chron-gen-portrait">中</div>
+          <div class="chron-gen-info">
+            <div class="chron-gen-idol-tag">★ IDOL OF THE ERA</div>
+            <div class="chron-gen-name">中野ひかり</div>
+            <div class="chron-gen-meta">空中戦 ・ 華・偶像性</div>
+          </div>
+          <div class="chron-gen-ovr">58</div>
+        </li>
+        <li class="chron-gen-member">
+          <div class="chron-gen-portrait">朝</div>
+          <div class="chron-gen-info">
+            <div class="chron-gen-name">朝霧結</div>
+            <div class="chron-gen-meta">万能 ・ ニュートラル</div>
+          </div>
+          <div class="chron-gen-ovr">60</div>
+        </li>
+      </ul>
+
+      <div class="chron-sec-label" style="margin-top:18px">この時代の通算</div>
+      <div class="chron-era-stats">
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">TITLES</div>
+          <div class="chron-era-stat-val">1<span class="small">戴冠</span></div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">PEAK MQ</div>
+          <div class="chron-era-stat-val">52</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">PEAK POP</div>
+          <div class="chron-era-stat-val">27</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">STATUS</div>
+          <div class="chron-era-stat-val" style="font-size:11px">進行中</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closing -->
+  <div class="chron-closing in-progress">
+    <div class="chron-closing-eyebrow">— 書きかけの章末 —</div>
+    <div class="chron-closing-line">この世代の物語は、まだ始まったばかりだ。</div>
+    <div class="chron-closing-note">この時代の気風はまだ動いています。この章の選手たちが引退したとき、最終的な傾向が確定します。</div>
+  </div>
+</div>
+
+
+<div class="mock-banner" style="margin-top:48px">
+  <strong>3案の比較</strong><br><br>
+
+  <strong>VARIANT A（暫定エース・単独）</strong>：実装コスト最小。既存単独エースレイアウトの「ラベル変更＋彩度を落とす」だけで成立。中心人物を1人に絞ることで読みやすいが、「主役を勝手に決める」感が出るリスク。<br><br>
+
+  <strong>VARIANT B（旗揚げ世代グリッド）</strong>：CLAUDE.md整合度が最も高い。「主役未定」を貫いて5人を等価で並べる。気風の暫定傾向も控えめに表示。新しいグリッドUIの実装コストはあるが、序章としての美しさはこれが一番。<br><br>
+
+  <strong>VARIANT C（暫定二枚看板）</strong>：王者vs挑戦者という分かりやすい対立軸を活用。物語性が前に出る。ただし対戦相手が頻繁に変わる序盤では仮固定の不自然さが出やすい。<br><br>
+
+  <strong>推奨</strong>：哲学整合性で <strong>B</strong>。実装の軽さで <strong>A</strong>。
+</div>
+
+</body>
+</html>

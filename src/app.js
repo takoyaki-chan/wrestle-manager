@@ -3229,6 +3229,8 @@ const App = {
     G = { ...G, roster: G.roster.map(c => picks.includes(c.id)
       ? Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'draft' })
       : c) };
+    // 序章 (Phase 2): 旗揚げ5人を確定し org_founded ハイライトを刻む
+    G = Engine.prologue.create(G);
     delete G._draftPicks;
     delete G._draftFocus;
     sessionRng = Engine.rng.create(G.rngSeed);
@@ -7355,6 +7357,7 @@ const App = {
     }
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
+    App.checkPrologueHighlights();
     // v1.5s25b: 興行後バフ消費 + 週次バフ消費
     App._tickMilestoneBuffsShow();
     App._applyWeeklyBuffEffects();
@@ -7635,6 +7638,7 @@ const App = {
     }
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
+    App.checkPrologueHighlights();
     sessionRng = Engine.rng.create(G.rngSeed);
     App._refreshTicker();
     Storage.autoSave();
@@ -7701,6 +7705,7 @@ const App = {
     }
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
+    App.checkPrologueHighlights();
     // v1.5s25b: 週次バフ消費（weekly_funds適用含む）
     App._applyWeeklyBuffEffects();
     App._tickMilestoneBuffsWeekly();
@@ -8136,6 +8141,7 @@ const App = {
     // v0.97: Update survival gauge
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
+    App.checkPrologueHighlights();
     sessionRng = Engine.rng.create(G.rngSeed);
 
     // v1.4w: 交渉成功時の新聞イベント
@@ -9844,6 +9850,57 @@ const App = {
     if (Object.keys(nextUpdates).length === 0) return;
     G = { ...G, ...nextUpdates };
     if (popups.length > 0) App._notifyRosterCapUnlock(popups);
+  },
+
+  // 序章ハイライト発火チェック (Phase 3)
+  // 状態ベース: 既に発火済みのIDは Engine.prologue.addHighlight 内で重複ガードされる。
+  // status === 'in_progress' のときのみ刻まれる(addHighlight 側ガード)。
+  checkPrologueHighlights() {
+    if (!G.prologue || G.prologue.status !== 'in_progress') return;
+    const totalShows = G.totalShows || 0;
+    const orgPop = G.orgPop || 0;
+    const bestMQ = G.seasonStats?.bestMQ || 0;
+    const histBest = (G.seasonHistory || []).reduce((m, s) => Math.max(m, s.bestMQ || 0), 0);
+    const peakMQ = Math.max(bestMQ, histBest);
+    const champId = G.titles?.world?.championId;
+    const titleEstablished = !!G.titleEstablished;
+
+    const triggers = [];
+    if (totalShows >= 1) triggers.push({ id:'first_show', tier:'gold',
+      text:`旗揚げ戦。最初の興行が開かれ、団体は始動した。` });
+    if (titleEstablished) triggers.push({ id:'first_title_setup', tier:'normal',
+      text:`団体王座の設立が認定された。` });
+    if (champId) {
+      const ch = G.roster.find(c => c.id === champId);
+      const chName = ch?.name || '初代王者';
+      triggers.push({ id:'first_title_winner', tier:'red',
+        text:`${chName}が初代王者に。最初の頂が決まった。` });
+    }
+    if (peakMQ >= 50) triggers.push({ id:'first_mq50', tier:'silver', text:`MQ50到達。観客の目つきが変わり始めた。` });
+    if (peakMQ >= 70) triggers.push({ id:'first_mq70', tier:'silver', text:`MQ70到達。名勝負と呼ぶに値する試合が出た。` });
+    if (peakMQ >= 80) triggers.push({ id:'first_mq80', tier:'gold', text:`MQ80到達。この章の選手が業界の壁を叩いた瞬間。` });
+    if (orgPop >= 25) triggers.push({ id:'pop_25', tier:'normal', text:`団体人気25到達。スポンサー筋に動きが出始めた。` });
+    if (orgPop >= 50) triggers.push({ id:'pop_50', tier:'silver', text:`団体人気50到達。大会場での興行が現実的に。` });
+    if (G.survivalCleared) triggers.push({ id:'survival_clear', tier:'red',
+      text:`経営安定化達成。月次黒字が定着し、団体存続の目処が立った。` });
+
+    // founder の引退検出 (id ベース冪等)
+    (G.prologue.founderIds || []).forEach(fid => {
+      if (Engine.prologue.founderState(G, fid) !== 'retired') return;
+      const archive = (G.chronicle?.fighterArchive || []).find(a => a.id === fid);
+      const retired = (G.retiredFighters || []).find(f => f.id === fid);
+      const name = archive?.name || retired?.name || '';
+      triggers.push({
+        id: `founder_first_retire_${fid}`,
+        tier: 'red',
+        text: `旗揚げメンバー ${name} が引退。`,
+      });
+    });
+
+    triggers.forEach(t => { G = Engine.prologue.addHighlight(G, t); });
+
+    // 全 founder 引退で序章確定 (idempotent)
+    G = Engine.prologue.checkAndConfirm(G);
   },
 
   // v1.0: Title establishment check

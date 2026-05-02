@@ -3657,6 +3657,108 @@ const Engine = {
     }
   },
 
+  // ── 序章 (chronicle-prologue) — 旗揚げ世代の物語を残す独立レイヤー ──
+  // 既存 Engine.chronicle には触らない。G.prologue 単独で完結。
+  prologue: {
+    /** 空の序章データ (新規ゲーム前 + マイグレ用) */
+    createEmpty() {
+      return {
+        founderIds: [],
+        startSeason: 0,
+        startWeek: 0,
+        endSeason: null,
+        endWeek: null,
+        status: 'empty',          // 'empty' | 'in_progress' | 'confirmed'
+        highlights: [],
+        closing: null,
+      };
+    },
+
+    /** completeDraft 完了時に呼び出し — 旗揚げ5人を確定 */
+    create(state) {
+      const founderIds = (state.roster || []).map(c => c.id);
+      const prologue = {
+        founderIds,
+        startSeason: state.season || 1,
+        startWeek: state.week || 1,
+        endSeason: null,
+        endWeek: null,
+        status: 'in_progress',
+        highlights: [],
+        closing: null,
+      };
+      let next = { ...state, prologue };
+      next = Engine.prologue.addHighlight(next, {
+        id: 'org_founded',
+        tier: 'gold',
+        text: `${state.orgName || '団体'}旗揚げ。最初の5人が揃い、最初の物語が始まった。`,
+      });
+      return next;
+    },
+
+    /** ハイライトを追記 (重複IDはスキップ / status=in_progress のときのみ) */
+    addHighlight(state, entry) {
+      const p = state.prologue;
+      if (!p || p.status !== 'in_progress') return state;
+      if (!entry || !entry.id) return state;
+      if ((p.highlights || []).some(h => h.id === entry.id)) return state;
+      const hl = {
+        id: entry.id,
+        season: entry.season != null ? entry.season : (state.season || 0),
+        week: entry.week != null ? entry.week : (state.week || 0),
+        tier: entry.tier || 'normal',
+        text: entry.text || '',
+      };
+      return { ...state, prologue: { ...p, highlights: [...(p.highlights || []), hl] } };
+    },
+
+    /** founder の状態判定 — グリッド表示用 */
+    founderState(state, fighterId) {
+      const inRoster = (state.roster || []).some(c => c.id === fighterId);
+      if (inRoster) return 'active';
+      const retired = (state.retiredFighters || []).some(f => f.id === fighterId)
+        || (state.chronicle?.fighterArchive || []).some(a => a.id === fighterId);
+      if (retired) return 'retired';
+      return 'departed'; // 移籍/解雇/契約満了
+    },
+
+    /** 全 founder が引退済みなら confirm を実行 */
+    checkAndConfirm(state) {
+      const p = state.prologue;
+      if (!p || p.status !== 'in_progress') return state;
+      if (!p.founderIds || p.founderIds.length === 0) return state;
+      const allRetired = p.founderIds.every(id => Engine.prologue.founderState(state, id) === 'retired');
+      if (!allRetired) return state;
+      return Engine.prologue.confirm(state);
+    },
+
+    /** 序章を確定 — endSeason/endWeek 確定 + 終結ハイライト + closing 生成 */
+    confirm(state) {
+      const p = state.prologue;
+      if (!p || p.status !== 'in_progress') return state;
+      let next = {
+        ...state,
+        prologue: {
+          ...p,
+          endSeason: state.season || p.startSeason,
+          endWeek: state.week || p.startWeek,
+          status: 'confirmed',
+          closing: '最後の旗揚げメンバーが去り、団体は次の世代へと託された。',
+        }
+      };
+      next = Engine.prologue.addHighlight({
+        ...next,
+        prologue: { ...next.prologue, status: 'in_progress' } // addHighlight ガードを通す
+      }, {
+        id: 'prologue_end',
+        tier: 'red',
+        text: '最後の旗揚げメンバーが引退。序章は閉じられた。',
+      });
+      // status を confirmed に戻す
+      return { ...next, prologue: { ...next.prologue, status: 'confirmed' } };
+    },
+  },
+
   // ── v1.7: Milestone System (キャリア年表 — careerRecord.history + careerHistory → 表示用変換) ──
   milestone: {
     /**
@@ -13253,7 +13355,7 @@ const Engine = {
     const rivalOrgNames = aiResult.rivalOrgNames;
 
     // Initial rankings
-    const initState = {
+    let initState = {
       version: '0.9',
       rngSeed: seed,
       season: 1,
@@ -13321,6 +13423,8 @@ const Engine = {
       allHallOfFame: { player: [], org_s: [], org_a: [], org_b: [] },
       // 団体年代記 v0.1 (chronicle-system-spec-v0.1.md)
       chronicle: Engine.chronicle.createEmpty(),
+      // 序章 (chronicle-prologue) — completeDraft で create() される
+      prologue: Engine.prologue.createEmpty(),
       retiredIds: [...(rosterResult.initRetiredIds || [])],       // temporary cooldown — retired character IDs (recycled after 5 seasons)
       retiredSeasons: { ...(rosterResult.initRetiredSeasons || {}) },   // {charId: season} — tracks when each character retired for recycle timing
       lastAwards: null,     // v1.4: last year-end awards result
@@ -13410,6 +13514,11 @@ const Engine = {
       initState.freeAgents = initState.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) }));
     }
     initState.rankings = Engine.ranking.updateRankings(initState);
+    // skipDraft 経路 (legacy/load/auto-sim) でも序章を初期化
+    // 通常ドラフト経路は app.js completeDraft 内で再度 create() される
+    if (skipDraft && initState.roster && initState.roster.length > 0) {
+      initState = Engine.prologue.create(initState);
+    }
     return initState;
   }
 };

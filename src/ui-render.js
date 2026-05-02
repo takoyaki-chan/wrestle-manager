@@ -9240,7 +9240,259 @@ function _chronicleStyleBlock() {
   writing-mode: vertical-rl;
   text-orientation: upright;
 }
+
+/* ── 序章 (Prologue) VARIANT B 専用 ── */
+.chron-prologue-roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+.chron-prologue-card {
+  text-align: center;
+  padding: 12px 8px;
+  background: rgba(95,69,35,0.04);
+  border: 1px solid var(--chr-rule);
+  border-radius: 4px;
+}
+.chron-prologue-card.retired,
+.chron-prologue-card.departed {
+  filter: saturate(0.4);
+  opacity: 0.7;
+}
+.chron-prologue-portrait {
+  width: 72px; height: 90px; margin: 0 auto 8px;
+  background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
+  border: 2px solid var(--chr-gold-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px; font-weight: 900; color: var(--chr-ink);
+  overflow: hidden;
+}
+.chron-prologue-card.idol .chron-prologue-portrait {
+  background: linear-gradient(135deg, #e8c4d4 0%, #c89aae 100%);
+  border-color: var(--chr-idol);
+}
+.chron-prologue-card.idol .chron-prologue-name { color: var(--chr-idol); }
+.chron-prologue-card.champion .chron-prologue-portrait {
+  border-color: var(--chr-gold);
+  box-shadow: 0 0 6px rgba(154,112,32,0.3);
+}
+.chron-prologue-name {
+  font-size: 13px; font-weight: 900; color: var(--chr-ink); line-height: 1.2;
+}
+.chron-prologue-style {
+  font-size: 10px; color: var(--chr-ink-dim); margin-top: 3px; font-weight: 700;
+}
+.chron-prologue-badge {
+  display: inline-block;
+  font-size: 9px; letter-spacing: 1px;
+  padding: 2px 6px; margin-top: 4px;
+  background: var(--chr-gold); color: #fff;
+  font-weight: 700; border-radius: 2px;
+}
+.chron-prologue-card.idol .chron-prologue-badge {
+  background: var(--chr-idol);
+}
+.chron-prologue-badge.muted {
+  background: var(--chr-silver);
+  color: rgba(255,255,255,0.85);
+}
+.chron-prologue-quote {
+  margin-top: 16px;
+  font-size: 12px; color: var(--chr-ink-sub); line-height: 1.7;
+  padding: 10px 14px;
+  background: rgba(200,190,170,0.22);
+  border-left: 3px solid var(--chr-gold-light);
+  border-radius: 4px;
+  font-weight: 500;
+}
+.chron-prologue-quote-eyebrow {
+  display: block;
+  font-size: 9px; letter-spacing: 1px;
+  color: var(--chr-gold-light); font-weight: 700;
+  text-transform: uppercase; margin-bottom: 4px;
+}
 </style>`;
+}
+
+// 序章ブロック (VARIANT B) — chronicle-prologue-mockup-v0.1.html 準拠
+function _renderPrologueBlock(prologue, chapters) {
+  const orgName = G.orgName || 'あなたの団体';
+  const founderIds = prologue.founderIds || [];
+  // founder の最新スナップショット (roster / archive / retiredFighters のいずれかから取得)
+  const founders = founderIds.map(id => {
+    const inRoster = (G.roster || []).find(c => c.id === id);
+    const inArchive = (G.chronicle?.fighterArchive || []).find(a => a.id === id);
+    const inRetired = (G.retiredFighters || []).find(f => f.id === id);
+    const raw = (typeof ALL_CHARS !== 'undefined') ? ALL_CHARS.find(c => c.id === id) : null;
+    const src = inRoster || inArchive || inRetired || raw || { id, name: '?' };
+    return {
+      id,
+      name: src.name || '?',
+      surname: src.surname || (src.name ? src.name.charAt(0) : '?'),
+      style: src.style || 'Allround',
+      role: src.role || 'Babyface',
+      peakPopularity: src.peakPopularity || src.popularity || 0,
+      titleWins: (src.careerRecord?.totalTitleWins) || 0,
+      state: Engine.prologue.founderState(G, id),
+    };
+  });
+  // 看板候補: peakPopularity 最大かつ 60+ かつ active のメンバー
+  const idolThreshold = 60;
+  const idolCandidate = founders.filter(f => f.peakPopularity >= idolThreshold)
+    .sort((a, b) => b.peakPopularity - a.peakPopularity)[0];
+
+  const STYLE_JP = { Striker:'打撃', Grappler:'組技', Submission:'関節技', Brawler:'喧嘩', Aerial:'空中戦', Allround:'万能' };
+  const ROLE_JP = { Babyface:'ベビー', Heel:'ヒール', Tweener:'ニュートラル' };
+
+  const isInProgress = prologue.status === 'in_progress';
+  const totalTicks = chapters.length + 1; // 序 + 確定章
+  let html = `<div class="chron-wrap">`;
+
+  // Subhead
+  html += `<div class="chron-subhead">
+    <div class="chron-subhead-label">◆ 団体年代記 ◆</div>
+    <div class="chron-subhead-org">${orgName}</div>
+  </div>`;
+
+  // Timeline (序のみ current)
+  html += `<div class="chron-timeline"><div class="chron-timeline-rail">
+    <div class="chron-timeline-line"></div>`;
+  {
+    const pct = totalTicks === 1 ? 50 : 6;
+    const cls = `chron-timeline-tick current${isInProgress ? ' in-progress' : ''}`;
+    html += `<div class="${cls}" style="left:${pct}%" onclick="setDbChronicleIdx(0)" title="序章"></div>`;
+    html += `<div class="chron-timeline-label current" style="left:${pct}%" onclick="setDbChronicleIdx(0)">序</div>`;
+  }
+  chapters.forEach((c, i) => {
+    const localIdx = i + 1;
+    const pct = totalTicks === 1 ? 50 : 6 + (88 * localIdx / (totalTicks - 1));
+    html += `<div class="chron-timeline-tick" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})" title="${c.title}"></div>`;
+    html += `<div class="chron-timeline-label" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})">CH.${c.number}</div>`;
+  });
+  html += `</div></div>`;
+
+  // Header
+  html += `<div class="chron-header${isInProgress ? ' in-progress' : ''}">
+    <div class="chron-eyebrow${isInProgress ? ' in-progress' : ''}">${isInProgress ? '◆ 序章 / 進行中 ◆' : '◆ 序章 ◆'}</div>
+    <div class="chron-num">PROLOGUE${isInProgress ? ' <span class="chron-writing-mark">— WRITING —</span>' : ''}</div>
+    <h2 class="chron-title">旗揚げ — 最初の5人と、最初の会場</h2>
+    <div class="chron-period">SEASON ${prologue.startSeason} — ${isInProgress ? '現在' : `SEASON ${prologue.endSeason}`}</div>
+    ${isInProgress ? `<div class="chron-writing-note">この章はまだ書きかけです。旗揚げメンバー全員が引退すると、序章が確定します。</div>` : ''}
+  </div>`;
+
+  // Founder roster grid
+  html += `<div class="chron-section">
+    <div class="chron-sec-label">旗揚げ世代</div>
+    <div class="chron-prologue-roster">`;
+  founders.forEach(f => {
+    const portraitUrl = (typeof getPortraitUrl === 'function') ? getPortraitUrl(f.id) : '';
+    const isChamp = f.titleWins >= 1;
+    const isIdol = idolCandidate && f.id === idolCandidate.id;
+    const cardCls = `chron-prologue-card${isChamp ? ' champion' : ''}${isIdol ? ' idol' : ''}${f.state === 'retired' ? ' retired' : ''}${f.state === 'departed' ? ' departed' : ''}`;
+    const styleLabel = STYLE_JP[f.style] || f.style;
+    const roleLabel = ROLE_JP[f.role] || f.role;
+    let badge = '';
+    if (isChamp) badge = `<div class="chron-prologue-badge">初代王者</div>`;
+    else if (isIdol) badge = `<div class="chron-prologue-badge">看板</div>`;
+    if (f.state === 'retired') badge = `<div class="chron-prologue-badge muted">引退</div>`;
+    else if (f.state === 'departed') badge = `<div class="chron-prologue-badge muted">退団</div>`;
+    const portraitInner = portraitUrl
+      ? `<img src="${portraitUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover">`
+      : `<span>${f.surname}</span>`;
+    html += `<div class="${cardCls}">
+      <div class="chron-prologue-portrait">${portraitInner}</div>
+      <div class="chron-prologue-name">${f.name}</div>
+      <div class="chron-prologue-style">${styleLabel} / ${roleLabel}</div>
+      ${badge}
+    </div>`;
+  });
+  html += `</div>`; // .chron-prologue-roster
+  // 記者の見立て
+  if (isInProgress) {
+    html += `<div class="chron-prologue-quote">
+      <span class="chron-prologue-quote-eyebrow">記者の見立て</span>
+      この章の主役が誰になるかは、まだ確定していない。
+      旗揚げの5人がそれぞれの形でこの団体を背負っている。
+    </div>`;
+  }
+  html += `</div>`; // .chron-section
+
+  // Two-col body: highlights + era stats
+  const highlights = (prologue.highlights || []).slice().sort((a, b) =>
+    (a.season - b.season) || (a.week - b.week)
+  );
+  const peakPop = founders.reduce((m, f) => Math.max(m, f.peakPopularity || 0), 0);
+  const titleCount = founders.reduce((s, f) => s + (f.titleWins || 0), 0);
+  const peakMQ = Math.max(G.seasonStats?.bestMQ || 0,
+    (G.seasonHistory || []).reduce((m, s) => Math.max(m, s.bestMQ || 0), 0));
+
+  html += `<div class="chron-two-col">
+    <div class="chron-col-left">
+      <div class="chron-sec-label">この時代の主な出来事</div>
+      <ul class="chron-highlights">`;
+  if (highlights.length === 0) {
+    html += `<li class="chron-highlight"><div class="chron-highlight-text" style="color:var(--chr-ink-dim);font-style:italic">まだ出来事は刻まれていない。</div></li>`;
+  } else {
+    highlights.forEach(h => {
+      const tierCls = _chronicleHighlightClass(h.tier);
+      html += `<li class="chron-highlight${tierCls}">
+        <div class="chron-highlight-season">S${h.season}</div>
+        <div class="chron-highlight-text">${h.text}</div>
+      </li>`;
+    });
+  }
+  html += `</ul>
+    </div>
+    <div class="chron-col-right">
+      <div class="chron-sec-label">この時代の通算</div>
+      <div class="chron-era-stats">
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">TITLES</div>
+          <div class="chron-era-stat-val">${titleCount}<span class="small">戴冠</span></div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">PEAK MQ</div>
+          <div class="chron-era-stat-val">${Math.round(peakMQ)}</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">PEAK POP</div>
+          <div class="chron-era-stat-val">${Math.round(peakPop)}</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">STATUS</div>
+          <div class="chron-era-stat-val" style="font-size:11px">${isInProgress ? '進行中' : '確定'}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // Closing
+  const closingText = prologue.closing || (isInProgress ? 'この世代の物語は、まだ始まったばかりだ。' : '');
+  html += `<div class="chron-closing${isInProgress ? ' in-progress' : ''}">
+    <div class="chron-closing-eyebrow">— ${isInProgress ? '書きかけの章末' : '章末'} —</div>
+    <div class="chron-closing-line">${closingText}</div>
+    ${isInProgress ? `<div class="chron-closing-note">旗揚げメンバー全員が引退したとき、序章は閉じられます。</div>` : ''}
+  </div>`;
+
+  // Nav: 序章は次章のみ (chapters があれば)
+  if (chapters.length > 0) {
+    const nextCh = chapters[0];
+    html += `<div class="chron-nav">
+      <button class="chron-nav-btn disabled">◀ 前章なし</button>
+      <div class="chron-nav-center">PROLOGUE</div>
+      <button class="chron-nav-btn" onclick="setDbChronicleIdx(1)">次章 / ${nextCh.title} ▶</button>
+    </div>`;
+  } else {
+    html += `<div class="chron-nav">
+      <button class="chron-nav-btn disabled">◀ 前章なし</button>
+      <div class="chron-nav-center">PROLOGUE</div>
+      <button class="chron-nav-btn disabled">次章なし ▶</button>
+    </div>`;
+  }
+
+  html += `</div>`; // .chron-wrap close
+  return html;
 }
 
 function _renderDbChronicle() {
@@ -9248,6 +9500,12 @@ function _renderDbChronicle() {
   // 確定済み章のみ表示。in_progress は世代の中心が決まるまで伏せる
   const chapters = ((ch && ch.chaptersCache && ch.chaptersCache.chapters) || [])
     .filter(c => c.status === 'confirmed');
+  const prologue = (G && G.prologue && G.prologue.status !== 'empty') ? G.prologue : null;
+
+  // 序章 (idx=0) を選択中ならプロローグブロックを描画して終了
+  if (prologue && _dbChronicleIdx === 0) {
+    return _chronicleStyleBlock() + _renderPrologueBlock(prologue, chapters);
+  }
 
   let html = _chronicleStyleBlock();
   html += `<div class="chron-wrap">`;
@@ -9258,7 +9516,11 @@ function _renderDbChronicle() {
     <div class="chron-subhead-org">${G.orgName || 'あなたの団体'}</div>
   </div>`;
 
-  // 空状態
+  // 空状態 (確定章ゼロ): 序章があれば自動で序章へ遷移、なければ既存の空状態
+  if (chapters.length === 0 && prologue) {
+    _dbChronicleIdx = 0;
+    return _chronicleStyleBlock() + _renderPrologueBlock(prologue, chapters);
+  }
   if (chapters.length === 0) {
     const rosterSize = (G.roster || []).length;
     const topByOvr = (G.roster || [])
@@ -9306,12 +9568,21 @@ function _renderDbChronicle() {
   }
   const current = chapters[_dbChronicleIdx - 1];
 
-  // Timeline
+  // Timeline (序章があれば先頭に "序" tic)
   html += `<div class="chron-timeline"><div class="chron-timeline-rail">
     <div class="chron-timeline-line"></div>`;
-  const tickCount = chapters.length;
+  const totalTicks = chapters.length + (prologue ? 1 : 0);
+  if (prologue) {
+    const pct = totalTicks === 1 ? 50 : 6;
+    const inProg = prologue.status === 'in_progress';
+    const cls = `chron-timeline-tick${inProg ? ' in-progress' : ''}`;
+    html += `<div class="${cls}" style="left:${pct}%" onclick="setDbChronicleIdx(0)" title="序章"></div>`;
+    html += `<div class="chron-timeline-label" style="left:${pct}%" onclick="setDbChronicleIdx(0)">序</div>`;
+  }
   chapters.forEach((c, i) => {
-    const pct = tickCount === 1 ? 50 : 6 + (88 * i / (tickCount - 1));
+    const offset = prologue ? 1 : 0;
+    const localIdx = i + offset;
+    const pct = totalTicks === 1 ? 50 : 6 + (88 * localIdx / (totalTicks - 1));
     const isCurrent = (i + 1) === _dbChronicleIdx;
     const cls = `chron-timeline-tick${isCurrent ? ' current' : ''}${c.status === 'in_progress' ? ' in-progress' : ''}`;
     html += `<div class="${cls}" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})" title="${c.title}"></div>`;
@@ -9531,13 +9802,17 @@ function _renderDbChronicle() {
   }
 
   // Nav
-  const hasPrev = _dbChronicleIdx > 1;
+  const hasPrevChapter = _dbChronicleIdx > 1;
+  const hasPrologueBack = _dbChronicleIdx === 1 && !!prologue;
+  const hasPrev = hasPrevChapter || hasPrologueBack;
   const hasNext = _dbChronicleIdx < chapters.length;
-  const prevChapter = hasPrev ? chapters[_dbChronicleIdx - 2] : null;
+  const prevChapter = hasPrevChapter ? chapters[_dbChronicleIdx - 2] : null;
   const nextChapter = hasNext ? chapters[_dbChronicleIdx] : null;
+  const prevTarget = hasPrevChapter ? _dbChronicleIdx - 1 : 0;
+  const prevLabel = hasPrologueBack ? '序章' : (prevChapter ? prevChapter.title : '前章なし');
   html += `<div class="chron-nav">
-    <button class="chron-nav-btn${hasPrev ? '' : ' disabled'}" ${hasPrev ? `onclick="setDbChronicleIdx(${_dbChronicleIdx - 1})"` : ''}>
-      ◀ ${hasPrev ? `前章 / ${prevChapter.title}` : '前章なし'}
+    <button class="chron-nav-btn${hasPrev ? '' : ' disabled'}" ${hasPrev ? `onclick="setDbChronicleIdx(${prevTarget})"` : ''}>
+      ◀ ${hasPrev ? `前章 / ${prevLabel}` : '前章なし'}
     </button>
     <div class="chron-nav-center">CHAPTER ${romanNum} OF ${chapters.length}</div>
     <button class="chron-nav-btn${hasNext ? '' : ' disabled'}" ${hasNext ? `onclick="setDbChronicleIdx(${_dbChronicleIdx + 1})"` : ''}>
