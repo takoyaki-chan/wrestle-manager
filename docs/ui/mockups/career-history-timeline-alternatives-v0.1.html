@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>キャリア年表モックアップ案 v0.1</title>
+<style>
+:root {
+  --bg: #0a0907;
+  --panel: #171410;
+  --panel-soft: #211c16;
+  --card: #1b1712;
+  --line: rgba(212, 168, 67, 0.2);
+  --line-strong: rgba(212, 168, 67, 0.45);
+  --text: #eee6da;
+  --text-sub: #b8ab98;
+  --text-dim: #7d7264;
+  --gold: #d4a843;
+  --gold-soft: #f1cf73;
+  --blue: #57a7ff;
+  --green: #42d392;
+  --red: #ff7272;
+  --orange: #ffb15b;
+  --purple: #c08dff;
+  --shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top, rgba(212, 168, 67, 0.08), transparent 30%),
+    linear-gradient(180deg, #0d0b08 0%, #070605 100%);
+  color: var(--text);
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+}
+
+.page {
+  width: min(1380px, calc(100vw - 40px));
+  margin: 0 auto;
+  padding: 32px 0 56px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 2fr;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.hero-card,
+.summary-card,
+.mock-card {
+  background: linear-gradient(180deg, rgba(255, 245, 220, 0.03), rgba(255, 245, 220, 0.015));
+  border: 1px solid rgba(212, 168, 67, 0.12);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.hero-card {
+  padding: 22px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  color: var(--text-sub);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  background: rgba(212, 168, 67, 0.06);
+  color: var(--gold-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.summary-card {
+  padding: 18px 20px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.summary-item {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.summary-label {
+  color: var(--text-dim);
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.summary-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gold-soft);
+}
+
+.variants {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.mock-card {
+  overflow: hidden;
+}
+
+.mock-head {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid rgba(212, 168, 67, 0.1);
+  background: linear-gradient(180deg, rgba(212, 168, 67, 0.08), rgba(212, 168, 67, 0.01));
+}
+
+.mock-kicker {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+
+.mock-title {
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0 0 6px;
+}
+
+.mock-desc {
+  color: var(--text-sub);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.mock-body {
+  padding: 14px;
+  background: var(--panel);
+  min-height: 760px;
+}
+
+.year-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.year-card {
+  border: 1px solid rgba(212, 168, 67, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px 11px;
+}
+
+.year-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+  margin-bottom: 7px;
+  border-bottom: 1px solid rgba(212, 168, 67, 0.09);
+}
+
+.year-label {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.year-meta {
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+.dense-list,
+.ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dense-row,
+.ledger-row {
+  display: grid;
+  grid-template-columns: 40px 14px minmax(0, 1fr);
+  gap: 6px;
+  align-items: start;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.week {
+  color: var(--text-dim);
+  font-size: 10px;
+  text-align: right;
+  padding-top: 2px;
+}
+
+.icon {
+  padding-top: 1px;
+}
+
+.detail {
+  color: var(--text-dim);
+}
+
+.blue { color: var(--blue); }
+.green { color: var(--green); }
+.red { color: var(--red); }
+.orange { color: var(--orange); }
+.purple { color: var(--purple); }
+.gold { color: var(--gold-soft); }
+
+.rail {
+  position: relative;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rail::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(212, 168, 67, 0.7), rgba(212, 168, 67, 0.08));
+}
+
+.rail-year {
+  position: relative;
+  padding: 8px 10px 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(212, 168, 67, 0.08);
+}
+
+.rail-year::before {
+  content: "";
+  position: absolute;
+  left: -18px;
+  top: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px rgba(212, 168, 67, 0.12);
+}
+
+.rail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.rail-title {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.rail-count {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.rail-item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.rail-text {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.ledger {
+  border: 1px solid rgba(212, 168, 67, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.ledger-year {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  border-top: 1px solid rgba(212, 168, 67, 0.08);
+}
+
+.ledger-year:first-child {
+  border-top: 0;
+}
+
+.ledger-side {
+  padding: 12px 10px;
+  background: rgba(212, 168, 67, 0.06);
+  border-right: 1px solid rgba(212, 168, 67, 0.08);
+}
+
+.ledger-main {
+  padding: 10px 10px 10px 12px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.ledger-side .year-label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ledger-side .year-meta {
+  display: block;
+  line-height: 1.4;
+}
+
+.note {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(212, 168, 67, 0.2);
+  background: rgba(212, 168, 67, 0.04);
+  color: var(--text-sub);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+@media (max-width: 1180px) {
+  .variants {
+    grid-template-columns: 1fr;
+  }
+
+  .mock-body {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 840px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <article class="hero-card">
+        <h1 class="title">戦績経歴タブ 年表案</h1>
+        <p class="subtitle">
+          古い年を下に置く前提は維持しながら、「上から下へ素直に読む」ことを優先した比較モックです。
+          全案とも開閉はなくし、文字を少し小さくして情報密度を上げています。
+        </p>
+        <div class="chips">
+          <span class="chip">古い年ほど下</span>
+          <span class="chip">年内も新しい週が上</span>
+          <span class="chip">常時展開</span>
+          <span class="chip">詳細はインライン寄せ</span>
+        </div>
+      </article>
+      <article class="summary-card">
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="summary-label">戦績</div>
+            <div class="summary-value">34勝 11敗</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">ベストMQ</div>
+            <div class="summary-value">81</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">王座歴</div>
+            <div class="summary-value">2度戴冠</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">対抗戦</div>
+            <div class="summary-value">1勝 0敗</div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="variants">
+      <article class="mock-card">
+        <header class="mock-head">
+          <div class="mock-kicker">OPTION A</div>
+          <h2 class="mock-title">密集カード型</h2>
+          <p class="mock-desc">今の見え方に最も近い案。年ごとに箱を分けつつ、詳細を本文へ畳み込んで縦幅を圧縮。</p>
+        </header>
+        <div class="mock-body">
+          <div class="year-stack">
+            <section class="year-card">
+              <div class="year-head">
+                <span class="year-label">[キャリア9年目]</span>
+                <span class="year-meta">3件 / シーズン進行中</span>
+              </div>
+              <div class="dense-list">
+                <div class="dense-row">
+                  <span class="week">48週</span>
+                  <span class="icon purple">🎤</span>
+                  <span>PPV GRAND FINAL 出場 <span class="detail">/ 筆々力あかねに敗れる</span></span>
+                </div>
+                <div class="dense-row">
+                  <span class="week">44週</span>
+                  <span class="icon gold">🏆</span>
+                  <span>ブレイクスルー王座獲得 <span class="detail">/ チャンピオンに</span></span>
+                </div>
+                <div class="dense-row">
+                  <span class="week">12週</span>
+                  <span class="icon green">⚑</span>
+                  <span>対抗戦 vs たこやき軍 勝利 <span class="detail">/ 巴沼紗季 戦</span></span>
+                </div>
+              </div>
+            </section>
+
+            <section class="year-card">
+              <div class="year-head">
+                <span class="year-label">[キャリア8年目]</span>
+                <span class="year-meta">2件</span>
+              </div>
+              <div class="dense-list">
+                <div class="dense-row">
+                  <span class="week">44週</span>
+                  <span class="icon orange">✍</span>
+                  <span>凪翔プロレスからの挑戦状を辞退</span>
+                </div>
+                <div class="dense-row">
+                  <span class="week">36週</span>
+                  <span class="icon orange">✍</span>
+                  <span>なでしこプロレスへの挑戦状 勝利</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="year-card">
+              <div class="year-head">
+                <span class="year-label">[キャリア7年目]</span>
+                <span class="year-meta">1件</span>
+              </div>
+              <div class="dense-list">
+                <div class="dense-row">
+                  <span class="week">24週</span>
+                  <span class="icon orange">✍</span>
+                  <span>挑戦状をなでしこプロレスに拒絶される</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="year-card">
+              <div class="year-head">
+                <span class="year-label">[キャリア6年目]</span>
+                <span class="year-meta">3件</span>
+              </div>
+              <div class="dense-list">
+                <div class="dense-row">
+                  <span class="week">34週</span>
+                  <span class="icon gold">🏆</span>
+                  <span>ブレイクスルー王座獲得</span>
+                </div>
+                <div class="dense-row">
+                  <span class="week">12週</span>
+                  <span class="icon blue">📄</span>
+                  <span>たこやき軍からブレイクスルーへ移籍 <span class="detail">/ 引き抜きで加入</span></span>
+                </div>
+                <div class="dense-row">
+                  <span class="week">7週</span>
+                  <span class="icon red">🩹</span>
+                  <span>スランプ突入 <span class="detail">/ moderate recovery</span></span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="note">見出しとイベントの距離が近く、現行からの移行コストが低い案です。箱が多いぶん、長大キャリアでは少し段の繰り返し感が出ます。</div>
+        </div>
+      </article>
+
+      <article class="mock-card">
+        <header class="mock-head">
+          <div class="mock-kicker">OPTION B</div>
+          <h2 class="mock-title">連続レール型</h2>
+          <p class="mock-desc">一番「上から下へ読む」ことに強い案。年見出しは残しつつ、全体を一本の時系列として連続表示。</p>
+        </header>
+        <div class="mock-body">
+          <div class="rail">
+            <section class="rail-year">
+              <div class="rail-head">
+                <span class="rail-title">キャリア9年目</span>
+                <span class="rail-count">12週 → 48週</span>
+              </div>
+              <div class="rail-item">
+                <span class="week">48週</span>
+                <span class="rail-text"><span class="purple">🎤</span> PPV GRAND FINAL 出場 <span class="detail">/ 筆々力あかねに敗れる</span></span>
+              </div>
+              <div class="rail-item">
+                <span class="week">44週</span>
+                <span class="rail-text"><span class="gold">🏆</span> ブレイクスルー王座獲得 <span class="detail">/ チャンピオンに</span></span>
+              </div>
+              <div class="rail-item">
+                <span class="week">12週</span>
+                <span class="rail-text"><span class="green">⚑</span> 対抗戦 vs たこやき軍 勝利 <span class="detail">/ 巴沼紗季 戦</span></span>
+              </div>
+            </section>
+
+            <section class="rail-year">
+              <div class="rail-head">
+                <span class="rail-title">キャリア8年目</span>
+                <span class="rail-count">36週 → 44週</span>
+              </div>
+              <div class="rail-item">
+                <span class="week">44週</span>
+                <span class="rail-text"><span class="orange">✍</span> 凪翔プロレスからの挑戦状を辞退</span>
+              </div>
+              <div class="rail-item">
+                <span class="week">36週</span>
+                <span class="rail-text"><span class="orange">✍</span> なでしこプロレスへの挑戦状 勝利</span>
+              </div>
+            </section>
+
+            <section class="rail-year">
+              <div class="rail-head">
+                <span class="rail-title">キャリア7年目</span>
+                <span class="rail-count">24週</span>
+              </div>
+              <div class="rail-item">
+                <span class="week">24週</span>
+                <span class="rail-text"><span class="orange">✍</span> 挑戦状をなでしこプロレスに拒絶される</span>
+              </div>
+            </section>
+
+            <section class="rail-year">
+              <div class="rail-head">
+                <span class="rail-title">キャリア6年目</span>
+                <span class="rail-count">7週 → 34週</span>
+              </div>
+              <div class="rail-item">
+                <span class="week">34週</span>
+                <span class="rail-text"><span class="gold">🏆</span> ブレイクスルー王座獲得</span>
+              </div>
+              <div class="rail-item">
+                <span class="week">12週</span>
+                <span class="rail-text"><span class="blue">📄</span> たこやき軍からブレイクスルーへ移籍 <span class="detail">/ 引き抜きで加入</span></span>
+              </div>
+              <div class="rail-item">
+                <span class="week">7週</span>
+                <span class="rail-text"><span class="red">🩹</span> スランプ突入 <span class="detail">/ moderate recovery</span></span>
+              </div>
+            </section>
+          </div>
+
+          <div class="note">読み筋が最も自然で、年をまたいでも視線が迷いにくい案です。今の「年ごとブロック感」は少し薄くなります。</div>
+        </div>
+      </article>
+
+      <article class="mock-card">
+        <header class="mock-head">
+          <div class="mock-kicker">OPTION C</div>
+          <h2 class="mock-title">年別台帳型</h2>
+          <p class="mock-desc">年ラベルを左に固定して、右側にイベントを詰める一覧重視の案。最も情報量を入れやすい構成です。</p>
+        </header>
+        <div class="mock-body">
+          <div class="ledger">
+            <section class="ledger-year">
+              <div class="ledger-side">
+                <span class="year-label">9年目</span>
+                <span class="year-meta">進行中</span>
+              </div>
+              <div class="ledger-main">
+                <div class="ledger-list">
+                  <div class="ledger-row">
+                    <span class="week">48週</span>
+                    <span class="icon purple">🎤</span>
+                    <span>PPV GRAND FINAL 出場 <span class="detail">/ 筆々力あかねに敗れる</span></span>
+                  </div>
+                  <div class="ledger-row">
+                    <span class="week">44週</span>
+                    <span class="icon gold">🏆</span>
+                    <span>ブレイクスルー王座獲得 <span class="detail">/ チャンピオンに</span></span>
+                  </div>
+                  <div class="ledger-row">
+                    <span class="week">12週</span>
+                    <span class="icon green">⚑</span>
+                    <span>対抗戦 vs たこやき軍 勝利 <span class="detail">/ 巴沼紗季 戦</span></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="ledger-year">
+              <div class="ledger-side">
+                <span class="year-label">8年目</span>
+                <span class="year-meta">挑戦2件</span>
+              </div>
+              <div class="ledger-main">
+                <div class="ledger-list">
+                  <div class="ledger-row">
+                    <span class="week">44週</span>
+                    <span class="icon orange">✍</span>
+                    <span>凪翔プロレスからの挑戦状を辞退</span>
+                  </div>
+                  <div class="ledger-row">
+                    <span class="week">36週</span>
+                    <span class="icon orange">✍</span>
+                    <span>なでしこプロレスへの挑戦状 勝利</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="ledger-year">
+              <div class="ledger-side">
+                <span class="year-label">7年目</span>
+                <span class="year-meta">1件</span>
+              </div>
+              <div class="ledger-main">
+                <div class="ledger-list">
+                  <div class="ledger-row">
+                    <span class="week">24週</span>
+                    <span class="icon orange">✍</span>
+                    <span>挑戦状をなでしこプロレスに拒絶される</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="ledger-year">
+              <div class="ledger-side">
+                <span class="year-label">6年目</span>
+                <span class="year-meta">移籍あり</span>
+              </div>
+              <div class="ledger-main">
+                <div class="ledger-list">
+                  <div class="ledger-row">
+                    <span class="week">34週</span>
+                    <span class="icon gold">🏆</span>
+                    <span>ブレイクスルー王座獲得</span>
+                  </div>
+                  <div class="ledger-row">
+                    <span class="week">12週</span>
+                    <span class="icon blue">📄</span>
+                    <span>たこやき軍からブレイクスルーへ移籍 <span class="detail">/ 引き抜きで加入</span></span>
+                  </div>
+                  <div class="ledger-row">
+                    <span class="week">7週</span>
+                    <span class="icon red">🩹</span>
+                    <span>スランプ突入 <span class="detail">/ moderate recovery</span></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="note">最も詰め込める案で、年を軸に見返すときも強いです。見出しの存在感が強いので、少し事務的な印象になります。</div>
+        </div>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

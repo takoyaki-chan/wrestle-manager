@@ -3388,7 +3388,6 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
       // ── Milestone Timeline / Career History（NPC記録統一: 全選手に表示）──
       if (milestones.length > 0) {
-        // Group by season
         const bySeason = {};
         milestones.forEach(m => {
           const s = m.season || 1;
@@ -3396,47 +3395,52 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           bySeason[s].push(m);
         });
         const seasons = Object.keys(bySeason).map(Number).sort((a, b) => b - a);
-        // 入団以降のキャリア相対年数（入団=1）で表示。現在の絶対 season を相対に変換
         const _joinS = Engine.career.joinSeason(c);
         const _currentRel = Engine.career.relSeason(G.season || 1, _joinS);
 
         html += `<div style="margin-bottom:14px">
-          <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:8px;display:flex;align-items:center;gap:6px">
             <span style="background:#3498db;color:#fff;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">年表</span>
             キャリア年表
-          </h5>`;
+          </h5>
+          <div style="border:1px solid rgba(200,190,170,0.12);border-radius:8px;overflow:hidden;background:rgba(200,190,170,0.02)">`;
 
         seasons.forEach(s => {
           const seasonMs = bySeason[s];
-          // Find season summary if exists
           const summary = seasonMs.find(m => m.type === 'season_end');
-          const nonSummary = seasonMs.filter(m => m.type !== 'season_end');
+          const nonSummary = seasonMs
+            .filter(m => m.type !== 'season_end')
+            .sort((a, b) => (b.week - a.week) || String(b.text || '').localeCompare(String(a.text || '')));
           const isCurrentSeason = s === _currentRel;
+          const seasonMeta = summary
+            ? summary.detail
+            : (isCurrentSeason ? 'シーズン進行中' : '');
 
-          html += `<details ${isCurrentSeason ? 'open' : ''} style="margin-bottom:10px">
-            <summary style="font-size:13px;cursor:pointer;padding:8px 12px;background:rgba(200,190,170,0.04);border:1px solid var(--border);border-radius:6px;user-select:none;display:flex;align-items:center;gap:8px">
-              <span style="font-weight:900;color:var(--text);font-size:14px">[キャリア${s}年目]</span>
-              ${summary ? `<span style="font-size:12px;color:var(--text-sub)">${summary.detail}</span>` :
-                isCurrentSeason ? `<span style="font-size:12px;color:var(--blue)">シーズン進行中</span>` : ''}
-            </summary>
-            <div style="padding:6px 0 2px 8px;border-left:2px solid rgba(200,190,170,0.08);margin-left:6px;margin-top:6px">`;
+          html += `<section style="display:grid;grid-template-columns:84px minmax(0,1fr);border-top:${s === seasons[0] ? '0' : '1px solid rgba(200,190,170,0.08)'}">
+            <div style="padding:10px 9px;background:rgba(212,168,67,0.06);border-right:1px solid rgba(200,190,170,0.08)">
+              <div style="font-size:13px;font-weight:900;color:var(--text);line-height:1.15">\u30ad\u30e3\u30ea\u30a2${s}\u5e74\u76ee</div>
+              ${seasonMeta ? `<div style="margin-top:4px;font-size:10px;line-height:1.35;color:${isCurrentSeason ? 'var(--blue)' : 'var(--text-dim)'}">${seasonMeta}</div>` : ''}
+            </div>
+            <div style="padding:9px 10px;background:rgba(255,255,255,0.015)">`;
 
-          nonSummary.forEach(m => {
-            const typeStyle = Engine.milestone._typeStyle(m.type);
-            html += `<div style="padding:5px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;line-height:1.5">
-              <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:54px;text-align:right">${m.week ? `${m.week}週` : '—'}</span>
-              <span style="color:${typeStyle.color};flex-shrink:0">${typeStyle.icon}</span>
-              <span style="color:var(--text)">${m.text}</span>
-            </div>`;
-            if (m.detail) {
-              html += `<div style="padding:0 10px 4px 70px;font-size:11px;color:var(--text-dim);line-height:1.4">${m.detail}</div>`;
-            }
-          });
+          if (nonSummary.length === 0) {
+            html += `<div style="font-size:11px;color:var(--text-dim);line-height:1.35">\u7279\u8a18\u4e8b\u9805\u306a\u3057</div>`;
+          } else {
+            nonSummary.forEach(m => {
+              const typeStyle = Engine.milestone._typeStyle(m.type);
+              const detailInline = m.detail ? `<span style="color:var(--text-dim)"> / ${m.detail}</span>` : '';
+              html += `<div style="display:grid;grid-template-columns:42px 14px minmax(0,1fr);align-items:start;column-gap:6px;padding:2px 0;font-size:12px;line-height:1.35">
+                <span style="color:var(--text-dim);font-size:10px;text-align:right;padding-top:2px">${m.week ? `${m.week}\u9031` : '---'}</span>
+                <span style="color:${typeStyle.color};padding-top:1px">${typeStyle.icon}</span>
+                <span style="color:var(--text)">${m.text}${detailInline}</span>
+              </div>`;
+            });
+          }
 
-          html += `</div></details>`;
+          html += `</div></section>`;
         });
 
-        html += `</div>`;
+        html += `</div></div>`;
       } else {
         html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(200,190,170,0.02);border-radius:6px">まだキャリア記録がありません</div>`;
       }
