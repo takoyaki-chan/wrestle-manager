@@ -7013,10 +7013,9 @@ const App = {
         const overlay = document.getElementById('showResultOverlay');
         if (!overlay || !overlay.classList.contains('active') || !App._showResultInlinePreview) return;
         tier1.forEach(glimpse => {
-          const sig = App._glimpseSignature(glimpse);
-          App._showResultInlinePreview.shownSignatures.add(sig);
-          showGlimpseAModal(glimpse, { allowWhileShowResult: true });
+          App._showResultInlinePreview.shownSignatures.add(App._glimpseSignature(glimpse));
         });
+        showGlimpseCascade(tier1, { allowWhileShowResult: true });
       }, 500);
     } catch (e) {
       console.error('[WM] prepareShowResultInlinePopups failed:', e);
@@ -7473,7 +7472,7 @@ const App = {
         refreshDojoLogFeed();
       }
       if (tier1.length > 0) {
-        setTimeout(() => { tier1.forEach(g => showGlimpseAModal(g)); }, 900);
+        setTimeout(() => { showGlimpseCascade(tier1); }, 900);
       }
     }
 
@@ -8045,7 +8044,7 @@ const App = {
       }
       if (tier1.length > 0) {
         const glimpseDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 800;
-        setTimeout(() => { tier1.forEach(g => showGlimpseAModal(g)); }, glimpseDelay);
+        setTimeout(() => { showGlimpseCascade(tier1); }, glimpseDelay);
       }
     }
 
@@ -10832,7 +10831,7 @@ App.closePPVResult = function() {
       refreshDojoLogFeed();
     }
     if (tier1.length > 0) {
-      setTimeout(() => { tier1.forEach(g => showGlimpseAModal(g)); }, 500);
+      setTimeout(() => { showGlimpseCascade(tier1); }, 500);
     }
   }
 
@@ -10898,7 +10897,7 @@ App.closePPVTV = function() {
       refreshDojoLogFeed();
     }
     if (tier1.length > 0) {
-      setTimeout(() => { tier1.forEach(g => showGlimpseAModal(g)); }, 500);
+      setTimeout(() => { showGlimpseCascade(tier1); }, 500);
     }
   }
 

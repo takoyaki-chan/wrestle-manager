@@ -59,7 +59,8 @@ const _POPUP_OVERLAY_IDS = [
   'milestoneOverlay', 'awardsOverlay', 'careModalOverlay', 'notifModalOverlay',
   'careOverlay', 'fighterPopupOverlay', 'coachTooltipOverlay', 'showResultOverlay',
   // 統一モーダル(Phase 0以降)
-  'mdlAOverlay', 'mdlBOverlay', 'mdlCOverlay', 'mdlDOverlay'
+  'mdlAOverlay', 'mdlBOverlay', 'mdlCOverlay', 'mdlDOverlay',
+  'glimpseCascadeOverlay'
 ];
 let _popupQueue = [];
 
@@ -11379,6 +11380,144 @@ function _renderGlimpseB(glimpse) {
   overlay.classList.add('active');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Glimpse Cascade: 興行後に複数の Tier1 Glimpse を1枚のオーバーレイに集約し、
+// 「ポンポンポン」と順次降ってくる演出にまとめる(2件以上のとき)。
+// 1件のみのときは showGlimpseAModal にフォールバックする。
+// ─────────────────────────────────────────────────────────────────────────────
+const GLIMPSE_CASCADE_MIN = 2;
+const GLIMPSE_CASCADE_DELAY_MS = 260;
+
+let _glimpseCascadeAudioCtx = null;
+function _gcAudioCtx() {
+  try {
+    if (!_glimpseCascadeAudioCtx) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      _glimpseCascadeAudioCtx = new Ctx();
+    }
+    if (_glimpseCascadeAudioCtx.state === 'suspended') {
+      _glimpseCascadeAudioCtx.resume().catch(() => {});
+    }
+    return _glimpseCascadeAudioCtx;
+  } catch (e) { return null; }
+}
+function _gcSePop(pitchSemi) {
+  const ctx = _gcAudioCtx();
+  if (!ctx) return;
+  try {
+    const t0 = ctx.currentTime;
+    const baseFreq = 740 * Math.pow(2, (pitchSemi || 0) / 12);
+    [{ mult: 1, type: 'sine', gain: 0.28 }, { mult: 1.5, type: 'triangle', gain: 0.09 }].forEach(({ mult, type, gain }) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(baseFreq * mult, t0);
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(gain, t0 + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.32);
+      o.connect(g).connect(ctx.destination);
+      o.start(t0);
+      o.stop(t0 + 0.35);
+    });
+  } catch (e) {}
+}
+
+function _glimpseToneClass(g) {
+  if (g.tone === 'gold') return 'tone-good';
+  if (g.axis === 'rivalry' || g.tone === 'danger' || g.tone === 'warning') return 'tone-rival';
+  if (g.tone === 'negative') return 'tone-broken';
+  return 'tone-bond';
+}
+function _glimpseEmoIcon(g) {
+  if (g.tone === 'gold') return '★';
+  if (g.axis === 'rivalry') return '⚡';
+  if (g.tone === 'negative') return '💔';
+  return '♥';
+}
+
+function _renderGlimpseCardHtml(g) {
+  const toneCls = _glimpseToneClass(g);
+  const emo = _glimpseEmoIcon(g);
+  const dialogue = g.dialogue ? `「${escHtml(g.dialogue)}」` : escHtml(g.label || '');
+  const speakerName = escHtml(g.speakerName || '');
+  const targetName = escHtml(g.targetName || '');
+  const label = escHtml(g.label || '');
+
+  if (g.targetId) {
+    return `<div class="gc-card ${toneCls}">
+      <div class="gc-bubble">${dialogue}</div>
+      <div class="gc-pair">
+        <div class="gc-avatar gc-from">${portraitImg(g.speakerId, 96)}</div>
+        <div class="gc-avatar gc-to">${portraitImg(g.targetId, 96)}<div class="gc-emo">${emo}</div></div>
+      </div>
+      <div class="gc-rel">
+        <span class="gc-from-name">${speakerName}</span> → <span class="gc-to-name">${targetName}</span>
+        <span class="gc-tag">${label}</span>
+      </div>
+    </div>`;
+  }
+  // 単独 Glimpse(target なし): アバター1枚を中央に
+  return `<div class="gc-card ${toneCls}">
+    <div class="gc-bubble solo">${dialogue}</div>
+    <div class="gc-pair" style="justify-content:center;padding-right:0">
+      <div class="gc-avatar">${portraitImg(g.speakerId, 96)}</div>
+    </div>
+    <div class="gc-rel"><span class="gc-from-name">${speakerName}</span><span class="gc-tag">${label}</span></div>
+  </div>`;
+}
+
+function showGlimpseCascade(glimpses, opts) {
+  if (!glimpses || glimpses.length === 0) return;
+  // 1件のみは既存の単発ポップアップにフォールバック(連打感のない演出は冗長)
+  if (glimpses.length < GLIMPSE_CASCADE_MIN) {
+    showGlimpseAModal(glimpses[0], opts);
+    return;
+  }
+  _enqueuePopup(
+    () => _renderGlimpseCascade(glimpses),
+    opts && opts.allowWhileShowResult ? { ignoreShowResultOverlay: true } : undefined
+  );
+}
+
+function _renderGlimpseCascade(glimpses) {
+  const overlay = document.getElementById('glimpseCascadeOverlay');
+  const box = document.getElementById('glimpseCascadeBox');
+  if (!overlay || !box) return;
+
+  const cardsHtml = glimpses.map(_renderGlimpseCardHtml).join('');
+  box.innerHTML = `
+    <button class="glimpse-cascade-skip" onclick="closeGlimpseCascade()">スキップ ›</button>
+    <div class="glimpse-cascade-title">SHOW AFTERMATH</div>
+    <div class="glimpse-cascade-heading">興行のあとで…</div>
+    <div class="glimpse-cascade-cards" id="glimpseCascadeCards">${cardsHtml}</div>
+    <button class="glimpse-cascade-done" id="glimpseCascadeDone" onclick="closeGlimpseCascade()">見届ける</button>
+  `;
+  overlay.classList.add('active');
+
+  const cards = box.querySelectorAll('.gc-card');
+  const doneBtn = box.querySelector('#glimpseCascadeDone');
+  cards.forEach((c, i) => {
+    setTimeout(() => {
+      c.classList.add('in');
+      _gcSePop(i * 2);
+    }, i * GLIMPSE_CASCADE_DELAY_MS);
+  });
+  setTimeout(() => {
+    if (doneBtn) doneBtn.classList.add('show');
+  }, cards.length * GLIMPSE_CASCADE_DELAY_MS + 300);
+
+  clearTimeout(window._glimpseCascadeTimer);
+  window._glimpseCascadeTimer = setTimeout(closeGlimpseCascade, 90000);
+}
+
+function closeGlimpseCascade() {
+  const overlay = document.getElementById('glimpseCascadeOverlay');
+  if (overlay) overlay.classList.remove('active');
+  clearTimeout(window._glimpseCascadeTimer);
+  _drainPopupQueue();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
