@@ -7991,63 +7991,98 @@ function showFactionHiatusModal(payload, state, onContinue) {
   if (btn) btn.addEventListener('click', finish);
 }
 
-// F01-F08 共通: 結果画面（選択結果を適用後のナレーション表示）
+// F01-F09 共通: 結果モーダル（クリーム Office 化, v0.5 / 2026-05-03）
 // 旧シグネチャ: showFactionEventResult(resultText:string, onClose)
-// 新シグネチャ (v0.4): showFactionEventResult({eventId, category, resultText, charId, charLine, impactSummary, weekLabel}, onClose)
-//   - 第1引数が string の場合は旧表示を継続（後方互換）
+// 新シグネチャ: showFactionEventResult({eventId, category, resultText, charId, charName,
+//   charLine, factionName, factionTone, impactSummary, weekLabel, state}, onClose)
+//   - charId があれば主役選手のヒーロー画像+メタを表示
+//   - charId が無く factionName があれば派閥章プレースホルダを表示
+//   - charLine があれば白吹き出しカード（顔つき）を追加表示
+//   - impactSummary は受け取るが画面表示しない（数値はナレーション側で吸収する方針）
 function showFactionEventResult(arg, onClose) {
-  // 後方互換
+  // 後方互換: 文字列単独 → ナレーションのみのシンプル表示
   if (typeof arg === 'string' || arg == null) {
-    const body = `
-      <div class="faction-event-title">🎭 結果</div>
-      <div class="faction-event-narration">${arg || '……。'}</div>
-      <button class="btn faction-event-next">閉じる ✓</button>
-    `;
-    _factionModalBox(body);
-    const box = document.getElementById('careBox');
-    if (box) {
-      const btn = box.querySelector('.faction-event-next');
-      if (btn) btn.addEventListener('click', () => {
-        _factionCloseModal();
-        if (onClose) onClose();
-      });
-    }
+    arg = { resultText: arg || '……。' };
+  }
+  const opts = arg || {};
+  const state = opts.state || (typeof G !== 'undefined' ? G : {});
+  const roster = state.roster || [];
+  const eventId = String(opts.eventId || '');
+  const heroFighter = opts.charId != null ? roster.find(c => c.id === opts.charId) : null;
+  const speakerFighter = (opts.charLine && opts.charId != null)
+    ? (heroFighter || roster.find(c => c.id === opts.charId)) : null;
+
+  const titleHtml = `🎭 ${opts.category || '結果'}`;
+  const metaParts = [];
+  if (eventId) metaParts.push(eventId);
+  metaParts.push(_mdlASeasonLabel(state));
+  const metaHtml = metaParts.join(' ・ ');
+
+  // ナレーション本文（改行を <br> に変換）
+  const narrationHtml = opts.resultText
+    ? `<div class="mdl-a-observation centered" style="text-align:left;padding-top:6px">${String(opts.resultText).replace(/\n/g, '<br>')}</div>`
+    : '';
+
+  // キャラ吹き出しカード（顔つき）
+  let charlineHtml = '';
+  if (opts.charLine) {
+    const portraitUrl = speakerFighter ? _factionUpperUrl(speakerFighter.id) : '';
+    const portraitBg = portraitUrl
+      ? `background-image:url('${portraitUrl}');background-size:cover;background-position:top center`
+      : 'background:linear-gradient(135deg,#c8a075,#7a5530)';
+    const speakerName = opts.charName || (speakerFighter ? speakerFighter.name : '');
+    charlineHtml = `
+      <div class="fevt-result-charline">
+        <div class="fevt-result-charline-portrait" style="${portraitBg}"></div>
+        <div class="fevt-result-charline-text">
+          ${speakerName ? `<div class="fevt-result-charline-name">${speakerName}</div>` : ''}
+          <div class="fevt-result-charline-line">${opts.charLine}</div>
+        </div>
+      </div>`;
+  }
+
+  const stageBody = `${narrationHtml}${charlineHtml}`;
+
+  // ヒーロー描画: charId があれば選手, なければ派閥章プレースホルダ
+  let subjectHtml = '';
+  if (heroFighter) {
+    subjectHtml = _mdlASubjectStage(heroFighter, stageBody, { small: true });
+  } else if (opts.factionName) {
+    const tone = opts.factionTone || 'neutral';
+    const toneBg = tone === 'hostile'
+      ? 'linear-gradient(135deg,#c8504a,#5a1818)'
+      : tone === 'allied'
+      ? 'linear-gradient(135deg,#7a85a8,#2a3550)'
+      : 'linear-gradient(135deg,#8a7550,#3a2d18)';
+    subjectHtml = `<div class="mdl-a-subject-stage">
+      <div class="mdl-a-subject-portrait-wrap" style="width:120px;height:160px;background:${toneBg};display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.85);font-family:var(--font-label);font-size:11px;letter-spacing:2px;text-align:center;padding:8px;box-sizing:border-box">FACTION</div>
+      <div class="mdl-a-subject-name">${opts.factionName}</div>
+      <div class="mdl-a-subject-org">FACTION</div>
+      <div class="mdl-a-subject-divider"></div>
+      ${stageBody}
+    </div>`;
+  } else {
+    subjectHtml = `<div class="mdl-a-subject-stage">${stageBody}</div>`;
+  }
+
+  const html = `
+    ${_mdlAHeader(titleHtml, metaHtml)}
+    ${_mdlAReporterStrip(state, '派閥について、ひとつご報告があります')}
+    ${subjectHtml}
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" id="fevtResultClose">— 見 届 け る —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html, { narrow: true })) {
+    if (onClose) onClose();
     return;
   }
-  // 新シグネチャ
-  const opts = arg || {};
-  const eventId = String(opts.eventId || '');
-  const titleText = opts.category ? `🎭 ${opts.category}` : '🎭 結果';
-  const meta = opts.weekLabel ? `<div class="faction-event-meta" style="color:#888;font-size:11px;margin-bottom:6px">${opts.weekLabel}</div>` : '';
-  const narration = opts.resultText ? `<div class="faction-event-narration">${opts.resultText}</div>` : '';
-  let charBlock = '';
-  if (opts.charLine) {
-    const speakerName = (opts.charName ? `<div class="faction-event-speaker" style="font-weight:bold;margin-bottom:2px">${opts.charName}</div>` : '');
-    charBlock = `<div class="faction-event-charline" style="margin:8px 0;padding:8px 10px;background:rgba(255,255,255,0.04);border-left:2px solid #c8a05a">${speakerName}${opts.charLine}</div>`;
-  }
-  let impactBlock = '';
-  if (Array.isArray(opts.impactSummary) && opts.impactSummary.length) {
-    const rows = opts.impactSummary.map(item => `
-      <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted rgba(255,255,255,0.1)">
-        <span style="color:#bbb">${item.label || ''}</span>
-        <span style="color:#e0c98a;font-weight:bold">${item.delta != null ? item.delta : ''}</span>
-      </div>`).join('');
-    impactBlock = `<div class="faction-event-impact" style="margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.2);font-size:12px"><div style="color:#888;font-size:11px;margin-bottom:4px">影響</div>${rows}</div>`;
-  }
-  const body = `
-    <div class="faction-event-title">${titleText}${eventId ? ` <span style="color:#888;font-size:11px">[${eventId}]</span>` : ''}</div>
-    ${meta}
-    ${narration}
-    ${charBlock}
-    ${impactBlock}
-    <button class="btn faction-event-next" style="margin-top:12px">閉じる ✓</button>
-  `;
-  _factionModalBox(body);
-  const box = document.getElementById('careBox');
-  if (box) {
-    const btn = box.querySelector('.faction-event-next');
-    if (btn) btn.addEventListener('click', () => {
-      _factionCloseModal();
+  const btn = document.getElementById('fevtResultClose');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      Audio.play('click');
+      _mdlAClose();
       if (onClose) onClose();
     });
   }

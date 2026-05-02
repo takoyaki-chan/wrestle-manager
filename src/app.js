@@ -8838,8 +8838,11 @@ const App = {
           eventId: 'F02_PEACE',
           category: '抗争沈静化',
           resultText: result.resultText,
+          factionName: payload.factionAName || payload.factionBName || '派閥',
+          factionTone: 'allied',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     } else if (eventId === 'F02_IGNITE') {
@@ -8856,8 +8859,11 @@ const App = {
           eventId: 'F02_IGNITE',
           category: '抗争発火',
           resultText: result.resultText,
+          factionName: payload.factionAName || payload.factionBName || '派閥',
+          factionTone: 'hostile',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     } else if (eventId === 'F02_RESOLUTION') {
@@ -8906,8 +8912,11 @@ const App = {
           eventId: 'F02_ENDLESS',
           category: '無限抗争',
           resultText: result.resultText,
+          factionName: payload.factionAName || payload.factionBName || '派閥',
+          factionTone: 'hostile',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     } else if (eventId === 'F03') {
@@ -8939,8 +8948,11 @@ const App = {
           resultText: result.resultText,
           charId: payload.newLeaderId || null,
           charName: newLeader ? newLeader.name : (payload.newLeaderName || ''),
+          factionName: payload.factionName || '',
+          factionTone: 'neutral',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     } else if (eventId === 'F04') {
@@ -9034,8 +9046,11 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leader6 ? leader6.name : payload.leaderAName,
+          factionName: payload.factionAName || payload.factionBName || '',
+          factionTone: 'allied',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     } else if (eventId === 'F07') {
@@ -9093,8 +9108,11 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leader8 ? leader8.name : payload.leaderAName,
+          factionName: payload.factionAName || payload.factionBName || '',
+          factionTone: 'hostile',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     } else if (eventId === 'COMMON_1') {
@@ -9128,8 +9146,11 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leader ? leader.name : '',
+          factionName: payload.factionName || '',
+          factionTone: 'neutral',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     } else if (eventId === 'COMMON_5') {
@@ -9149,8 +9170,11 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leader ? leader.name : payload.leaderName,
+          factionName: payload.factionName || '',
+          factionTone: 'neutral',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     } else if (eventId === 'COMMON_7') {
@@ -9170,8 +9194,11 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leaderA ? leaderA.name : payload.leaderAName,
+          factionName: payload.factionAName || payload.factionBName || '',
+          factionTone: 'allied',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     } else if (eventId === 'COMMON_4') {
@@ -9191,8 +9218,11 @@ const App = {
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leader ? leader.name : payload.leaderName,
+          factionName: payload.factionName || '',
+          factionTone: 'neutral',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
+          state: G,
         }, finalizeAudio);
       });
     }

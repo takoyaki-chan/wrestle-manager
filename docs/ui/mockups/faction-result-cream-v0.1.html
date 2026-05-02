@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>派閥イベント結果モーダル — クリーム化案 v0.1</title>
+<style>
+  /* === Office cream tokens (抜粋・揃えて再現) === */
+  :root {
+    --office-bg: #24221e;
+    --office-panel-cream: #f3ead4;
+    --office-panel-cream-card: #ede2c2;
+    --office-border-cream: #d6c8a3;
+    --cream-gold: #b69345;
+    --cream-gold-dark: #7a6530;
+    --cream-text-main: #2e2a1f;
+    --cream-text-sub: #5a5240;
+    --cream-text-dim: #8a8270;
+    --gold: #d4a843;
+    --radius-lg: 10px;
+    --font-label: 'Cinzel', 'Trajan', serif;
+    --font-body: 'Noto Serif JP', 'Yu Mincho', serif;
+    --accent-positive: #2d6a50;
+    --accent-negative: #8a3226;
+  }
+  body {
+    margin: 0; padding: 32px;
+    background: linear-gradient(180deg, #1a1814 0%, #24221e 100%);
+    color: #d8d2c4; font-family: var(--font-body);
+    min-height: 100vh;
+  }
+  h1 { font-size: 18px; letter-spacing: 4px; color: var(--gold); font-family: var(--font-label); margin: 0 0 8px; }
+  .subtitle { font-size: 12px; color: #8a8270; margin-bottom: 32px; letter-spacing: 1px; }
+  .compare {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1400px; margin: 0 auto;
+  }
+  .col h2 { font-size: 13px; letter-spacing: 3px; color: #c8a05a; font-family: var(--font-label); margin: 0 0 12px; text-transform: uppercase; }
+  .col p.note { font-size: 11px; color: #6e6856; line-height: 1.6; margin: 0 0 16px; }
+
+  /* === BEFORE: 黒い小型モーダル (.faction-event-modal の再現) === */
+  .black-stage {
+    background: rgba(0,0,0,0.55);
+    padding: 40px 24px;
+    border-radius: 6px;
+    display: flex; align-items: flex-start; justify-content: center;
+    min-height: 460px;
+  }
+  .care-box {
+    background: #1c1c1c;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 18px 20px;
+    width: 480px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+    color: #d8d2c4;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .faction-event-title { color: #d8d2c4; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .faction-event-title .id { color: #888; font-size: 11px; }
+  .faction-event-meta { color: #888; font-size: 11px; margin-bottom: 8px; }
+  .faction-event-narration { color: #c8c0af; line-height: 1.7; margin-bottom: 12px; }
+  .faction-event-charline {
+    margin: 8px 0; padding: 10px 12px;
+    background: rgba(255,255,255,0.04);
+    border-left: 2px solid #c8a05a;
+  }
+  .faction-event-speaker { font-weight: bold; margin-bottom: 4px; color: #e0c98a; }
+  .faction-event-impact {
+    margin-top: 12px; padding: 10px 12px;
+    background: rgba(0,0,0,0.25); font-size: 12px; border-radius: 4px;
+  }
+  .faction-event-impact .label { color: #888; font-size: 11px; margin-bottom: 4px; }
+  .faction-event-impact .row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dotted rgba(255,255,255,0.1); }
+  .faction-event-impact .row .key { color: #bbb; }
+  .faction-event-impact .row .val { color: #e0c98a; font-weight: bold; }
+  .btn-close-black {
+    margin-top: 14px; padding: 8px 18px;
+    background: #2a2a2a; color: #c8c0af;
+    border: 1px solid #444; border-radius: 4px; cursor: pointer;
+    font-size: 12px;
+  }
+
+  /* === AFTER: クリーム Office モーダル化 (.mdl-a-* 体系を踏襲) === */
+  .cream-stage {
+    background: radial-gradient(ellipse 90% 70% at 50% 50%,
+      rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.75) 100%);
+    padding: 40px 24px; border-radius: 6px;
+    display: flex; align-items: flex-start; justify-content: center;
+    min-height: 460px;
+  }
+  .mdl-a-card {
+    width: 520px;
+    background: var(--office-panel-cream);
+    border: 1px solid var(--office-border-cream);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.3);
+    overflow: hidden;
+  }
+  .mdl-a-header {
+    background: linear-gradient(180deg, rgba(122,101,48,0.12) 0%, rgba(122,101,48,0.04) 100%);
+    border-bottom: 1px solid rgba(122,101,48,0.2);
+    padding: 14px 22px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .mdl-a-header-title {
+    font-size: 16px; font-weight: 700;
+    color: var(--cream-gold-dark); letter-spacing: 1.2px;
+  }
+  .mdl-a-header-meta {
+    font-family: var(--font-label); font-size: 11px;
+    color: var(--cream-gold); letter-spacing: 2px; text-transform: uppercase;
+  }
+  .mdl-a-reporter-strip {
+    background: #2a2620;
+    padding: 12px 18px; display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+  }
+  .mdl-a-reporter-portrait {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid rgba(212,168,67,0.3);
+    background: linear-gradient(135deg,#3a342a,#1f1c16);
+    flex-shrink: 0;
+  }
+  .mdl-a-reporter-name {
+    font-size: 11px; color: var(--gold); letter-spacing: 1px;
+    font-family: var(--font-label); text-transform: uppercase; margin-bottom: 2px;
+  }
+  .mdl-a-reporter-line {
+    font-size: 13px; color: #c8c0af; font-style: italic; line-height: 1.5;
+  }
+  .mdl-a-reporter-line::before { content: '「'; color: rgba(200,190,170,0.5); }
+  .mdl-a-reporter-line::after  { content: '」'; color: rgba(200,190,170,0.5); }
+
+  .mdl-a-subject-stage {
+    padding: 22px 24px 18px;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(212,168,67,0.08) 0%, transparent 70%),
+      var(--office-panel-cream-card);
+    text-align: center;
+  }
+  .mdl-a-narration {
+    font-size: 13.5px; color: var(--cream-text-main);
+    line-height: 1.85; max-width: 460px; margin: 0 auto 16px;
+    text-align: left;
+  }
+  .mdl-a-narration .marker {
+    font-weight: 700; color: var(--cream-gold-dark);
+    border-bottom: 1px dotted rgba(122,101,48,0.5);
+  }
+
+  /* ヒーローポートレート(舞台中央のキャラ像) */
+  .hero-portrait-wrap {
+    width: 110px; height: 146px; margin: 0 auto 10px;
+    border: 2px solid var(--cream-gold-dark); border-radius: 4px;
+    background: linear-gradient(135deg,#c8a075 0%,#7a5530 100%);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  }
+  .hero-name {
+    font-size: 17px; font-weight: 700; color: var(--cream-text-main);
+    letter-spacing: 1px; margin-bottom: 2px;
+  }
+  .hero-meta {
+    font-family: var(--font-label); font-size: 10px;
+    color: var(--cream-gold); letter-spacing: 2px; margin-bottom: 12px;
+  }
+  .hero-divider {
+    width: 60px; height: 1px; background: rgba(122,101,48,0.3);
+    margin: 6px auto 14px;
+  }
+
+  /* キャラ吹き出し: クリーム上の白カード+左ゴールド帯+小ポートレート */
+  .charline-card {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: #fffaee;
+    border: 1px solid rgba(122,101,48,0.25);
+    border-left: 3px solid var(--cream-gold);
+    border-radius: 6px;
+    padding: 12px 14px; margin: 0 auto 14px; max-width: 460px; text-align: left;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .charline-portrait {
+    width: 44px; height: 56px; border-radius: 3px;
+    background: linear-gradient(135deg,#c8a075,#7a5530);
+    border: 1px solid rgba(122,101,48,0.4);
+    flex-shrink: 0;
+  }
+  .charline-text { flex: 1; }
+  .charline-name {
+    font-size: 12px; font-weight: 700; color: var(--cream-gold-dark);
+    letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  .charline-line {
+    font-size: 14px; color: var(--cream-text-main);
+    font-style: italic; line-height: 1.6;
+  }
+  .charline-line::before { content: '「'; color: var(--cream-gold); }
+  .charline-line::after  { content: '」'; color: var(--cream-gold); }
+
+  /* 影響(trust ±N) はクリーム上の薄ベージュ枠で */
+  .impact-block {
+    margin: 0 auto; max-width: 460px;
+    background: rgba(122,101,48,0.06);
+    border: 1px solid rgba(122,101,48,0.18);
+    border-radius: 4px;
+    padding: 10px 14px;
+  }
+  .impact-label {
+    font-family: var(--font-label); font-size: 10px;
+    color: var(--cream-gold); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .impact-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 0; font-size: 13px;
+  }
+  .impact-row + .impact-row { border-top: 1px dotted rgba(122,101,48,0.25); }
+  .impact-key { color: var(--cream-text-sub); }
+  .impact-val { font-weight: 700; }
+  .impact-val.pos { color: var(--accent-positive); }
+  .impact-val.neg { color: var(--accent-negative); }
+
+  .mdl-a-prompt {
+    text-align: center; padding: 16px 24px 22px;
+    background: var(--office-panel-cream);
+  }
+  .mdl-a-continue-btn {
+    display: inline-block; padding: 10px 28px;
+    font-family: var(--font-label); font-size: 12px;
+    letter-spacing: 4px; text-transform: uppercase;
+    color: var(--cream-text-sub); border: 1px solid rgba(100,85,50,0.35);
+    background: rgba(255,255,255,0.3); border-radius: 2px; cursor: pointer;
+  }
+
+  /* ──── バリエーション: impact 複数行/負値 ──── */
+  .more-cases { margin-top: 56px; max-width: 1400px; margin-left: auto; margin-right: auto; }
+  .more-cases h2 { font-size: 13px; letter-spacing: 3px; color: #c8a05a; font-family: var(--font-label); margin: 0 0 16px; text-transform: uppercase; }
+  .case-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .case-grid .cream-stage { min-height: 0; padding: 24px; }
+  .case-label { font-size: 11px; color: #8a8270; letter-spacing: 1px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<h1>派閥イベント結果モーダル — クリーム化案 v0.1</h1>
+<div class="subtitle">showFactionEventResult (F01〜F09 共通) を Office cream モーダル化する案。同じ素材(F07 大久保桃子→巳沼紗霧)で BEFORE/AFTER を比較。</div>
+
+<div class="compare">
+  <!-- BEFORE -->
+  <div class="col">
+    <h2>BEFORE — 現状(黒モーダル)</h2>
+    <p class="note">.faction-event-modal / .care-box ベース。情報密度は低めだが、暗背景でドラマ性が出にくくキャラ顔も載らないので「データだけ通知」感が強い。</p>
+    <div class="black-stage">
+      <div class="care-box">
+        <div class="faction-event-title">🎭 派閥動向 <span class="id">[F07]</span></div>
+        <div class="faction-event-meta">S10 W13</div>
+        <div class="faction-event-narration">大久保桃子本人ではなく、巳沼紗霧の側に静かに声をかけた。 巳沼紗霧は、小さく頷いた。</div>
+        <div class="faction-event-charline">
+          <div class="faction-event-speaker">大久保桃子</div>
+          …ご配慮、ありがとうございます。
+        </div>
+        <div class="faction-event-impact">
+          <div class="label">影響</div>
+          <div class="row"><span class="key">巳沼紗霧 trust</span><span class="val">+3</span></div>
+        </div>
+        <button class="btn-close-black">閉じる ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AFTER -->
+  <div class="col">
+    <h2>AFTER — クリーム Office モーダル化</h2>
+    <p class="note">既存の .mdl-a-* 体系(Office cream)を流用。コーチ取次ストリップ + クリームステージ + 白吹き出しカード(顔つき) + 影響ブロック。社長判断モーダルと完全に統一。</p>
+    <div class="cream-stage">
+      <div class="mdl-a-card">
+        <div class="mdl-a-header">
+          <div class="mdl-a-header-title">🎭 派閥動向</div>
+          <div class="mdl-a-header-meta">F07 ・ S10 W13</div>
+        </div>
+        <div class="mdl-a-reporter-strip">
+          <div class="mdl-a-reporter-portrait"></div>
+          <div>
+            <div class="mdl-a-reporter-name">中村 紗弓 コーチ</div>
+            <div class="mdl-a-reporter-line">派閥内で、ひとつ動きがありました</div>
+          </div>
+        </div>
+        <div class="mdl-a-subject-stage">
+          <div class="hero-portrait-wrap"></div>
+          <div class="hero-name">大久保 桃子</div>
+          <div class="hero-meta">AGE 23 ・ OVR 108 ・ ALLROUND</div>
+          <div class="hero-divider"></div>
+          <div class="mdl-a-narration">
+            <span class="marker">大久保桃子</span>本人ではなく、<span class="marker">巳沼紗霧</span>の側に静かに声をかけた。<span class="marker">巳沼紗霧</span>は、小さく頷いた——その目には、わずかな信頼の色が宿っていた。
+          </div>
+          <div class="charline-card">
+            <div class="charline-portrait"></div>
+            <div class="charline-text">
+              <div class="charline-name">大久保 桃子</div>
+              <div class="charline-line">…ご配慮、ありがとうございます</div>
+            </div>
+          </div>
+        </div>
+        <div class="mdl-a-prompt">
+          <button class="mdl-a-continue-btn">— 見 届 け る —</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──── 拡張ケース: 影響複数 / 負値 / 吹き出し2人 / セリフなし ──── -->
+<div class="more-cases">
+  <h2>AFTER バリエーション(派閥イベントで起きうる他パターン)</h2>
+  <div class="case-grid">
+
+    <!-- バリ1: 影響3行混在 -->
+    <div>
+      <div class="case-label">CASE 1 — 影響が複数(派閥対抗戦結果など)</div>
+      <div class="cream-stage">
+        <div class="mdl-a-card" style="width:100%">
+          <div class="mdl-a-header">
+            <div class="mdl-a-header-title">🎭 派閥対抗戦</div>
+            <div class="mdl-a-header-meta">F09 ・ S10 W14</div>
+          </div>
+          <div class="mdl-a-reporter-strip">
+            <div class="mdl-a-reporter-portrait"></div>
+            <div>
+              <div class="mdl-a-reporter-name">中村 紗弓 コーチ</div>
+              <div class="mdl-a-reporter-line">対抗戦の結果が出ました</div>
+            </div>
+          </div>
+          <div class="mdl-a-subject-stage">
+            <div class="hero-portrait-wrap" style="background:linear-gradient(135deg,#c8504a,#5a1818)"></div>
+            <div class="hero-name">紅蓮派</div>
+            <div class="hero-meta">FACTION ・ 6 MEMBERS</div>
+            <div class="hero-divider"></div>
+            <div class="mdl-a-narration">
+              <span class="marker">紅蓮派</span>が<span class="marker">蒼月派</span>に勝ち越し、先取100ptで決着。控室では肩を組む者たちと、うつむいたまま動けない者たちが、はっきりと分かれていた。客席のざわめきは、しばらく止まなかった。
+            </div>
+          </div>
+          <div class="mdl-a-prompt">
+            <button class="mdl-a-continue-btn">— 見 届 け る —</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- バリ2: 吹き出し2人 -->
+    <div>
+      <div class="case-label">CASE 2 — 吹き出し2人(対立イベント)</div>
+      <div class="cream-stage">
+        <div class="mdl-a-card" style="width:100%">
+          <div class="mdl-a-header">
+            <div class="mdl-a-header-title">🎭 派閥動向</div>
+            <div class="mdl-a-header-meta">F03 ・ S10 W15</div>
+          </div>
+          <div class="mdl-a-reporter-strip">
+            <div class="mdl-a-reporter-portrait"></div>
+            <div>
+              <div class="mdl-a-reporter-name">中村 紗弓 コーチ</div>
+              <div class="mdl-a-reporter-line">ロッカーで言い合いがありました</div>
+            </div>
+          </div>
+          <div class="mdl-a-subject-stage">
+            <div style="display:flex;justify-content:center;gap:18px;align-items:flex-end;margin-bottom:6px">
+              <div>
+                <div class="hero-portrait-wrap" style="width:90px;height:120px;margin-bottom:6px"></div>
+                <div style="font-size:13px;font-weight:700;color:var(--cream-text-main);text-align:center">大久保 桃子</div>
+              </div>
+              <div style="font-size:24px;color:var(--cream-gold-dark);padding-bottom:38px">⚡</div>
+              <div>
+                <div class="hero-portrait-wrap" style="width:90px;height:120px;margin-bottom:6px;background:linear-gradient(135deg,#7a85a8,#2a3550)"></div>
+                <div style="font-size:13px;font-weight:700;color:var(--cream-text-main);text-align:center">巳沼 紗霧</div>
+              </div>
+            </div>
+            <div class="hero-divider"></div>
+            <div class="mdl-a-narration">
+              練習後、<span class="marker">大久保桃子</span>と<span class="marker">巳沼紗霧</span>の声が廊下にまで漏れていた。互いに引かない。ロッカーの空気は、その日のうちに重く沈んだ。
+            </div>
+            <div class="charline-card">
+              <div class="charline-portrait"></div>
+              <div class="charline-text">
+                <div class="charline-name">大久保 桃子</div>
+                <div class="charline-line">わたしのやり方に、口出ししないでください</div>
+              </div>
+            </div>
+            <div class="charline-card">
+              <div class="charline-portrait" style="background:linear-gradient(135deg,#7a85a8,#2a3550)"></div>
+              <div class="charline-text">
+                <div class="charline-name">巳沼 紗霧</div>
+                <div class="charline-line">…それを言うのは、お前じゃない</div>
+              </div>
+            </div>
+          </div>
+          <div class="mdl-a-prompt">
+            <button class="mdl-a-continue-btn">— 見 届 け る —</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- バリ3: セリフなし(報告のみ) -->
+    <div>
+      <div class="case-label">CASE 3 — セリフなし・報告のみ(F04 寝返り型)</div>
+      <div class="cream-stage">
+        <div class="mdl-a-card" style="width:100%">
+          <div class="mdl-a-header">
+            <div class="mdl-a-header-title">🎭 派閥動向</div>
+            <div class="mdl-a-header-meta">F04 ・ S10 W16</div>
+          </div>
+          <div class="mdl-a-reporter-strip">
+            <div class="mdl-a-reporter-portrait"></div>
+            <div>
+              <div class="mdl-a-reporter-name">中村 紗弓 コーチ</div>
+              <div class="mdl-a-reporter-line">事実として、お伝えしておきます</div>
+            </div>
+          </div>
+          <div class="mdl-a-subject-stage">
+            <div class="hero-portrait-wrap" style="background:linear-gradient(135deg,#7a85a8,#2a3550)"></div>
+            <div class="hero-name">巳沼 紗霧</div>
+            <div class="hero-meta">AGE 26 ・ OVR 102 ・ STRIKER</div>
+            <div class="hero-divider"></div>
+            <div class="mdl-a-narration">
+              <span class="marker">巳沼紗霧</span>は、<span class="marker">紅蓮派</span>と既に話をつけているようです。練習後の合流、移動、食事——動きはもう表に出始めています。報告として、お耳に入れておきます。
+            </div>
+          </div>
+          <div class="mdl-a-prompt">
+            <button class="mdl-a-continue-btn">— 見 届 け る —</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
