@@ -6592,7 +6592,7 @@ const Engine = {
         return nc;
       });
 
-      if (isShow) {
+      if (isShow && state.week !== PPV_SHOW_WEEK) {
         const aiShowState = tierState();
         let matchCard = Engine.rival.generateAIMatchCard(roster, nextOrgData.matchupLog, nextOrgData.showCount, state);
 
@@ -7412,6 +7412,8 @@ const Engine = {
 
       // 4週に1回の判定
       if (s.week % 4 !== 0) return s;
+      // PPV GRAND FINAL週はAI団体内部活動を停止（PPVに集約）
+      if (s.week === PPV_SHOW_WEEK) return s;
 
       // 各AI団体について対抗戦判定
       const orgIds = Object.keys(s.aiOrgs);
@@ -7612,6 +7614,8 @@ const Engine = {
 
       // 4週に1回の判定（対抗戦と同じテンポ、別系統RNG）
       if (s.week % 4 !== 0) return s;
+      // PPV GRAND FINAL週はAI団体内部活動を停止（PPVに集約）
+      if (s.week === PPV_SHOW_WEEK) return s;
 
       const orgIds = Object.keys(s.aiOrgs);
       const currentAbsWeek = Engine.util.absWeek(s.season, s.week);
@@ -9597,7 +9601,7 @@ const Engine = {
       const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
       const weeklyNewspaper = Engine.newspaper.generate(s, newsRng);
       // 業界ニュースキューも消化（newspaper.generate が読み終わったので clear）
-      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsWarMilestone: null, _industryNewsEvents: [] };
+      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsPpvUndercards: null, _newsWarMilestone: null, _industryNewsEvents: [] };
       // AIニュース一時フィールドをクリア
       if (s.aiOrgs) {
         s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
@@ -20645,6 +20649,8 @@ Engine.newspaper = {
     aiB3Result:          138,
     aiB3Decline:         105,
     aiChampionChange:    130,
+    ppvUndercardTitle:   135,
+    ppvUndercard:        115,
     playerShowTitle:     120,
     npcHallOfFame:       170,
     aiTeamConflict:      110,
@@ -20766,6 +20772,35 @@ Engine.newspaper = {
     if (state._newsSummitResult) {
       const sr = state._newsSummitResult;
       stories.push(_buildPpvSummitStory(sr, state.season, state.week, P));
+    }
+
+    // === PPVアンダーカード結果（業界ニュース欄向け、上位MQ最大3件）===
+    if (state._newsPpvUndercards && state._newsPpvUndercards.length > 0) {
+      const stamp = `第${state.season}年度・第${state.week}週 PPV GRAND FINAL`;
+      state._newsPpvUndercards.forEach(uc => {
+        const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && uc.finMove)
+          ? Engine.formatFinish(uc.finType, uc.finMove, false)
+          : (uc.finMove || uc.finType || '激闘決着');
+        const tone = uc.mq >= 80 ? '名勝負' : uc.mq >= 65 ? '好勝負' : uc.mq >= 50 ? '熱戦' : (uc.mq <= 30 ? '一方的な展開' : '見応えある一戦');
+        let headline;
+        if (uc.isTitleMatch) {
+          headline = `🏆 PPV — ${uc.winnerOrgName}${uc.winnerName}、${uc.loserOrgName}${uc.loserName}を下しタイトル戦制す`;
+        } else if (uc.mq >= 75) {
+          headline = `PPV ${tone} — ${uc.winnerOrgName}${uc.winnerName}が${uc.loserOrgName}${uc.loserName}を撃破（MQ ${uc.mq}）`;
+        } else {
+          headline = `${uc.winnerOrgName}の${uc.winnerName}、PPVで${uc.loserOrgName}${uc.loserName}を下す`;
+        }
+        const turnsPart = uc.turns ? `${uc.turns}ターンに及ぶ${tone}の末、` : `${tone}の末、`;
+        const body = `${stamp}。${turnsPart}${uc.winnerName}（${uc.winnerOrgName}）が${finishStr}で${uc.loserName}（${uc.loserOrgName}）から3カウントを奪取。MQ${uc.mq}の${tone}となった。`;
+        stories.push({
+          type: uc.isTitleMatch ? 'ppvUndercardTitle' : 'ppvUndercard',
+          priority: (uc.isTitleMatch ? P.ppvUndercardTitle : P.ppvUndercard) + Math.min(20, Math.floor(uc.mq / 5)),
+          headline,
+          body,
+          characterId: uc.winnerId,
+          situation: stamp,
+        });
+      });
     }
 
     // === AI団体のイベント（processAIWeek で蓄積されたもの）===

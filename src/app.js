@@ -11176,6 +11176,37 @@ App.finalizePPV = function() {
     }
   }
 
+  // 新聞用: PPVアンダーカード結果を蓄積（業界ニュース欄用、サミット以外の上位MQ3件）
+  {
+    const orgNameOfU = (orgId) => orgId === 'player' ? (G.orgName || 'プレイヤー団体') : (G.aiOrgs?.[orgId]?.name || '相手団体');
+    const undercards = [];
+    pp.results.forEach((r, idx) => {
+      const match = pp.card[idx];
+      if (match.isSummit) return;
+      const winnerSide = r.winner;
+      if (winnerSide !== 'left' && winnerSide !== 'right') return; // 引き分けは除外
+      const winnerF = winnerSide === 'left' ? match.left : match.right;
+      const loserF = winnerSide === 'left' ? match.right : match.left;
+      undercards.push({
+        winnerName: winnerF.name,
+        winnerId: winnerF.id,
+        winnerOrgName: orgNameOfU(winnerF._ppvOrgId),
+        winnerOrgId: winnerF._ppvOrgId,
+        loserName: loserF.name,
+        loserId: loserF.id,
+        loserOrgName: orgNameOfU(loserF._ppvOrgId),
+        loserOrgId: loserF._ppvOrgId,
+        mq: r.mq || 0,
+        finType: r.finType || '',
+        finMove: r.finMove || '',
+        turns: r.turns || 0,
+        isTitleMatch: !!match.isTitleMatch,
+      });
+    });
+    undercards.sort((a, b) => b.mq - a.mq);
+    s._newsPpvUndercards = undercards.slice(0, 3);
+  }
+
   // recentMatches記録（PPV）
   let ppvRoster = [...(s.roster || G.roster)];
   pp.results.forEach((r, idx) => {
