@@ -4162,7 +4162,7 @@ const App = {
     refreshAll();
     const c = G.roster.find(f => f.id === challengerId);
     const eh = G.titles.world.externalHolder;
-    const orgName = G.aiOrgs?.[eh.orgId]?.name || eh.orgId;
+    const orgName = Engine.contract._getOrgName(eh.orgId, G);
     // 業界ニュース: 奪還挑戦状
     App._pushIndustryNews({
       type: 'reclaimChallenge',
@@ -4191,7 +4191,7 @@ const App = {
     else if (sm.isAce) type = 'contractBetrayalAce';
     else type = 'contractBetrayalGeneric';
     const fromOrg = G.orgName || 'プレイヤー団体';
-    const toOrg = G.aiOrgs?.[sm.toOrgId]?.name || sm.toOrgId || '他団体';
+    const toOrg = Engine.contract._getOrgName(sm.toOrgId, G);
     App._pushNewsEvent({
       type, characterId: sm.departingId,
       data: { name: sm.departingName || neg?.fighterName || '選手', fromOrg, toOrg },
@@ -11118,7 +11118,7 @@ App.finalizePPV = function() {
       const loserF = winnerF ? (winnerF === sm.left ? sm.right : sm.left) : null;
 
       // 団体名（プレイヤー側 / 相手側）
-      const orgNameOf = (orgId) => orgId === 'player' ? (G.orgName || 'プレイヤー団体') : (G.aiOrgs?.[orgId]?.name || '相手団体');
+      const orgNameOf = (orgId) => orgId === 'player' ? (G.orgName || 'プレイヤー団体') : Engine.contract._getOrgName(orgId, G);
       const playerOrgName = playerInvolved ? (G.orgName || 'プレイヤー団体')
         : orgNameOf(sp.org1Id);
       const aiOrgId = playerInvolved
