@@ -9652,8 +9652,12 @@ function showFactionCommon1Modal(payload, state, onChoice) {
       <div class="fc1m-bubble-speaker">${leaderName}</div>
       <div class="fc1m-bubble">${leaderLine}</div>
     </div>`;
-  const aClickAttr = fA ? `onclick="event.stopPropagation();showFighterPopup(${fA.id},'roster')" style="cursor:pointer"` : '';
-  const bClickAttr = fB ? `onclick="event.stopPropagation();showFighterPopup(${fB.id},'roster')" style="cursor:pointer"` : '';
+  const aClickHandler = fA ? `onclick="event.stopPropagation();showFighterPopup(${fA.id},'roster')"` : '';
+  const bClickHandler = fB ? `onclick="event.stopPropagation();showFighterPopup(${fB.id},'roster')"` : '';
+  const aPortraitStyle = fA ? `background-image:url('${_factionUpperUrl(fA.id)}');background-size:cover;background-position:center 20%;cursor:pointer` : '';
+  const bPortraitStyle = fB ? `background-image:url('${_factionUpperUrl(fB.id)}');background-size:cover;background-position:center 20%;cursor:pointer` : '';
+  const aNameStyle = fA ? 'cursor:pointer' : '';
+  const bNameStyle = fB ? 'cursor:pointer' : '';
   const factionTagA = isLeaderA ? `${factionName} · リーダー` : factionName;
   const factionTagB = isLeaderB ? `${factionName} · リーダー` : factionName;
   const rivalryNum = (payload.currentRivalry != null) ? payload.currentRivalry : 0;
@@ -9669,8 +9673,8 @@ function showFactionCommon1Modal(payload, state, onChoice) {
         <div class="fc1m-compare">
           <div class="fc1m-side">
             ${leaderSide === 'a' ? bubbleHtml : '<div class="fc1m-bubble-spacer"></div>'}
-            <div class="fc1m-portrait" ${aClickAttr} title="クリックで選手詳細"${fA ? ` style="background-image:url('${_factionUpperUrl(fA.id)}');background-size:cover;background-position:center 20%;cursor:pointer"` : ''}></div>
-            <div class="fc1m-name" ${aClickAttr} title="クリックで選手詳細">${aName}</div>
+            <div class="fc1m-portrait" ${aClickHandler} title="クリックで選手詳細" style="${aPortraitStyle}"></div>
+            <div class="fc1m-name" ${aClickHandler} title="クリックで選手詳細" style="${aNameStyle}">${aName}</div>
             <div class="fc1m-faction">${factionTagA}</div>
             <div class="fc1m-ovr-badge">OVR ${ovrA}</div>
             <div class="fc1m-stats">${renderStats('a')}</div>
@@ -9678,8 +9682,8 @@ function showFactionCommon1Modal(payload, state, onChoice) {
           <div class="fc1m-vs">VS</div>
           <div class="fc1m-side">
             ${leaderSide === 'b' ? bubbleHtml : '<div class="fc1m-bubble-spacer"></div>'}
-            <div class="fc1m-portrait" ${bClickAttr} title="クリックで選手詳細"${fB ? ` style="background-image:url('${_factionUpperUrl(fB.id)}');background-size:cover;background-position:center 20%;cursor:pointer"` : ''}></div>
-            <div class="fc1m-name" ${bClickAttr} title="クリックで選手詳細">${bName}</div>
+            <div class="fc1m-portrait" ${bClickHandler} title="クリックで選手詳細" style="${bPortraitStyle}"></div>
+            <div class="fc1m-name" ${bClickHandler} title="クリックで選手詳細" style="${bNameStyle}">${bName}</div>
             <div class="fc1m-faction">${factionTagB}</div>
             <div class="fc1m-ovr-badge">OVR ${ovrB}</div>
             <div class="fc1m-stats">${renderStats('b')}</div>

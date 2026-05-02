@@ -2787,6 +2787,23 @@ Engine.factions = {
     return { state: s, resultText, impactSummary, winnerId, loserId, winnerName, loserName };
   },
 
+  // getPersonalityType (bold/earnest/emotional/carefree/introverted/shy) を
+  // セリフテーブルのキー (fiery/composed/grudging/airy/earnest/flippant) に橋渡しする
+  _personalityLineKey(fighter) {
+    if (!fighter) return 'composed';
+    const p = (Engine.contract && Engine.contract.getPersonalityType)
+      ? Engine.contract.getPersonalityType(fighter) : 'composed';
+    const map = {
+      bold: 'fiery',
+      earnest: 'earnest',
+      emotional: 'grudging',
+      carefree: 'airy',
+      introverted: 'composed',
+      shy: 'flippant', // 含みを残した軽口=口ごもり混じりの言い回しに割り当て
+    };
+    return map[p] || 'composed';
+  },
+
   getCommon1Line(category, ctx) {
     const table = (typeof COMMON1_LINES !== 'undefined' ? COMMON1_LINES : null);
     if (!table || !category) return '';
@@ -2805,7 +2822,7 @@ Engine.factions = {
     }
     if (category === 'leaderDemand') {
       const fighter = ctx && ctx.fighter;
-      const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'composed';
+      const personality = this._personalityLineKey(fighter);
       const t = table.leaderDemand[arch] || table.leaderDemand._any;
       if (!t) return '';
       // 旧形式（配列）後方互換 + 新形式（personality マップ）
@@ -2972,7 +2989,7 @@ Engine.factions = {
     }
     if (category === 'leaderQuoteA') {
       const fighter = ctx && ctx.fighter;
-      const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'composed';
+      const personality = this._personalityLineKey(fighter);
       const t = table.leaderQuoteA[arch];
       if (!t) return '';
       return subst(pickArr(t[personality] || t.composed));
