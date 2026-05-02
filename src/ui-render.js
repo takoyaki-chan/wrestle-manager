@@ -1938,25 +1938,25 @@ function renderRoster() {
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
             <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')">${c.name}</span>${champBadge ? '<span style="color:#7a6530;font-size:12px">👑⭐</span>' : ''}
+            <span style="font-size:11px;color:#7a6530;font-weight:600">${c.age}歳</span>
             <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
             <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
             ${coachInlineHtml}
             ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
             ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}${lowTrustBadge}
           </div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">
             <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
             <span title="${STAT_TIPS.pw}">PW<b style="color:#1e1c16">${Math.round(c.pw)}</b>${statG('pw')}</span>
             <span title="${STAT_TIPS.sp}">SP<b style="color:#1e1c16">${Math.round(c.sp)}</b>${statG('sp')}</span>
             <span title="${STAT_TIPS.te}">TE<b style="color:#1e1c16">${Math.round(c.te)}</b>${statG('te')}</span>
             <span title="${STAT_TIPS.st}">ST<b style="color:#1e1c16">${Math.round(c.st)}</b>${statG('st')}</span>
             <span title="${STAT_TIPS.mn}">MN<b style="color:#1e1c16">${Math.round(c.mn)}</b>${statG('mn')}</span>
+            <span style="color:#bcb39f;margin:0 2px">｜</span>
+            <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:${_popColor(Engine.util.dispPop(c.popularity)).color}">${Engine.util.dispPop(c.popularity)}</b></span>
+            <span style="display:inline-flex;align-items:center;gap:3px">体調<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></span>
+            <span style="color:#7a7466">💰${getSalary(c)}万</span>
           </div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
-          <div>人気 <b style="color:${_popColor(Engine.util.dispPop(c.popularity)).color}">${Engine.util.dispPop(c.popularity)}</b></div>
-          <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><span style="font-size:10px">${condPct}</span></div>
-          <div style="margin-top:2px;color:#7a7466">${getSalary(c)}万</div>
         </div>
       </div>
       ${_renderRosterDetailPanel(c, hired)}
@@ -1982,22 +1982,22 @@ function renderRoster() {
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
               <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')">${c.name}</span><span style="color:#a06000;font-size:12px"> 🤝</span>
+              <span style="font-size:11px;color:#7a6530;font-weight:600">${c.age}歳</span>
               <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
               ${injuryBadge}
             </div>
-            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">
               <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
               <span title="${STAT_TIPS.pw}">PW<b style="color:#1e1c16">${Math.round(c.pw)}</b></span>
               <span title="${STAT_TIPS.sp}">SP<b style="color:#1e1c16">${Math.round(c.sp)}</b></span>
               <span title="${STAT_TIPS.te}">TE<b style="color:#1e1c16">${Math.round(c.te)}</b></span>
               <span title="${STAT_TIPS.st}">ST<b style="color:#1e1c16">${Math.round(c.st)}</b></span>
               <span title="${STAT_TIPS.mn}">MN<b style="color:#1e1c16">${Math.round(c.mn)}</b></span>
+              <span style="color:#bcb39f;margin:0 2px">｜</span>
+              <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:${_popColor(Engine.util.dispPop(c.popularity)).color}">${Engine.util.dispPop(c.popularity)}</b></span>
+              <span style="display:inline-flex;align-items:center;gap:3px">体調<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></span>
+              <span style="color:#a06000">${srcLabel}・残${contract ? contract.weeksLeft : '?'}週</span>
             </div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
-            <div>人気 <b style="color:${_popColor(Engine.util.dispPop(c.popularity)).color}">${Engine.util.dispPop(c.popularity)}</b></div>
-            <div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><span style="font-size:10px">${condPct}</span></div>
-            <div style="margin-top:2px;color:#a06000;font-size:11px">${srcLabel} ｜ 残${contract ? contract.weeksLeft : '?'}週</div>
           </div>
         </div>
       </div>`;

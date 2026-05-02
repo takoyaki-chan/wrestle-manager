@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>団体画面 ロスター一覧モック compact v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#24211d;
+  --panel:#181613;
+  --card:#ede7da;
+  --ink:#241d14;
+  --ink-sub:#6e6251;
+  --ink-soft:#8c7e69;
+  --gold:#c79a35;
+  --gold-soft:#f0d58b;
+  --line:rgba(78,61,33,0.16);
+  --line-strong:rgba(78,61,33,0.28);
+  --pop-dark:#3b2c17;
+  --pop-gold:#ffd668;
+  --salary:#7b5a28;
+  --cond:#56613a;
+  --shadow:0 16px 36px rgba(0,0,0,0.18);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top, rgba(199,154,53,0.10), transparent 32%),
+    linear-gradient(180deg, #2c2822 0%, var(--bg) 55%);
+  color:#f2efe8;
+  font-family:"Noto Sans JP",sans-serif;
+  padding:28px 16px 44px;
+}
+.wrap{max-width:1380px;margin:0 auto}
+.page-title{margin-bottom:18px}
+.page-title h1{margin:0 0 6px;font-size:26px;font-weight:900}
+.page-title p{margin:0;color:rgba(242,239,232,0.74);font-size:13px;line-height:1.7}
+.compare{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0,1fr));
+  gap:18px;
+}
+.panel{
+  background:rgba(24,22,19,0.78);
+  border:1px solid rgba(199,154,53,0.16);
+  border-radius:18px;
+  padding:16px;
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(8px);
+}
+.panel-head{margin-bottom:12px}
+.kicker{
+  font-family:"Oswald",sans-serif;
+  font-size:11px;
+  letter-spacing:.22em;
+  color:var(--gold-soft);
+}
+.panel h2{margin:4px 0 4px;font-size:20px}
+.panel .sub{font-size:11px;color:rgba(242,239,232,0.62);line-height:1.6}
+.list{display:flex;flex-direction:column;gap:8px}
+.card{
+  background:var(--card);
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:8px 10px;
+}
+.row{
+  display:grid;
+  grid-template-columns:50px minmax(0,1fr) 100px;
+  gap:10px;
+  align-items:center;
+  min-height:58px;
+}
+.portrait{
+  width:50px;
+  height:50px;
+  border-radius:10px;
+  object-fit:cover;
+  border:1px solid rgba(122,101,48,0.22);
+  background:#d7cfbf;
+}
+.main{min-width:0}
+.name-line{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+  margin-bottom:4px;
+  flex-wrap:wrap;
+}
+.name{
+  font-weight:800;
+  font-size:14px;
+  color:#4f3d1f;
+  text-decoration:underline dotted;
+  text-underline-offset:2px;
+}
+.age{
+  font-size:10px;
+  font-weight:800;
+  color:var(--ink-soft);
+}
+.age-pill{
+  font-size:10px;
+  font-weight:800;
+  color:#776750;
+  padding:1px 6px;
+  border-radius:999px;
+  background:rgba(78,61,33,0.07);
+  border:1px solid rgba(78,61,33,0.10);
+}
+.tag{
+  font-family:"Oswald",sans-serif;
+  font-size:9px;
+  letter-spacing:.08em;
+  padding:1px 5px;
+  border-radius:999px;
+  border:1px solid transparent;
+}
+.style{background:rgba(199,154,53,0.12);color:#805f20;border-color:rgba(199,154,53,0.24)}
+.role{background:rgba(51,85,109,0.12);color:#33556d;border-color:rgba(51,85,109,0.2)}
+.meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  font-size:11px;
+  color:var(--ink-sub);
+  line-height:1.35;
+}
+.ovr{
+  font-family:"Bebas Neue",sans-serif;
+  font-size:24px;
+  line-height:1;
+  color:#5f481d;
+}
+.stat b{color:var(--ink);margin-left:2px}
+.side{
+  text-align:right;
+  font-size:10px;
+  color:var(--ink-sub);
+  line-height:1.2;
+}
+.side .label{
+  display:block;
+  color:#8f816d;
+  margin-bottom:2px;
+  font-family:"Oswald",sans-serif;
+  letter-spacing:.08em;
+  font-size:9px;
+}
+.pill-pop{
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:4px;
+  min-width:58px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:var(--pop-dark);
+  color:var(--pop-gold);
+  font-weight:900;
+}
+.stack{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+}
+.salary{color:var(--salary);font-weight:800}
+.cond-row{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:var(--cond);
+}
+.cond-bar{
+  width:32px;
+  height:4px;
+  border-radius:999px;
+  background:rgba(86,97,58,0.16);
+  overflow:hidden;
+}
+.cond-fill{
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#819f3b,#bfd06c);
+}
+
+.v1 .side{display:flex;flex-direction:column;justify-content:center}
+.v1 .pill-pop{margin-left:auto}
+
+.v2 .meta{gap:7px}
+.v2 .age{color:#8a7557}
+.v2 .side{
+  display:grid;
+  grid-template-columns:1fr;
+  justify-items:end;
+  gap:3px;
+}
+.v2 .salary-inline{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  color:var(--salary);
+  font-weight:800;
+}
+
+.v3 .row{grid-template-columns:50px minmax(0,1fr) 112px}
+.v3 .side{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+.v3 .pop-box{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:2px;
+}
+.v3 .money-box{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:2px;
+}
+.v3 .salary{font-size:16px;font-family:"Bebas Neue",sans-serif;line-height:1}
+
+.annotation{
+  margin-top:12px;
+  padding:12px 13px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.04);
+  border:1px dashed rgba(199,154,53,0.22);
+  font-size:12px;
+  line-height:1.7;
+  color:rgba(242,239,232,0.82);
+}
+.annotation strong{color:#fff3ce}
+@media (max-width:1280px){
+  .compare{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:720px){
+  .compare{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="page-title">
+    <h1>団体画面 種族選手一覧モック compact v2</h1>
+    <p>縦に伸ばさず、今の細い一覧の密度を守る前提で組み直した比較です。現状寄り 1 枚と、条件を満たす提案 3 パターンを並べています。</p>
+  </div>
+
+  <div class="compare">
+    <section class="panel">
+      <div class="panel-head">
+        <div class="kicker">CURRENT-LIKE</div>
+        <h2>現状寄り</h2>
+        <div class="sub">高さは良いが、年齢が見えず、人気と給料が右に散る</div>
+      </div>
+      <div class="list">
+        <article class="card">
+          <div class="row">
+            <img class="portrait" src="../image/face_iwakoji_s.png" alt="岩小路志摩子">
+            <div class="main">
+              <div class="name-line">
+                <span class="name">岩小路志摩子</span>
+                <span class="tag style">Striker</span>
+                <span class="tag role">Babyface</span>
+              </div>
+              <div class="meta">
+                <span class="ovr">86</span>
+                <span class="stat">PW<b>79</b></span>
+                <span class="stat">SP<b>99</b></span>
+                <span class="stat">TE<b>102</b></span>
+                <span class="stat">ST<b>84</b></span>
+                <span class="stat">MN<b>71</b></span>
+              </div>
+            </div>
+            <div class="side">
+              <div>人気 <strong style="color:#f0c947">68</strong></div>
+              <div>体調 72</div>
+              <div>18万 / 週</div>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="row">
+            <img class="portrait" src="../image/face_hongo_m.png" alt="本郷真理子">
+            <div class="main">
+              <div class="name-line">
+                <span class="name">本郷真理子</span>
+                <span class="tag style">Brawler</span>
+                <span class="tag role">Heel</span>
+              </div>
+              <div class="meta">
+                <span class="ovr">82</span>
+                <span class="stat">PW<b>92</b></span>
+                <span class="stat">SP<b>73</b></span>
+                <span class="stat">TE<b>66</b></span>
+                <span class="stat">ST<b>88</b></span>
+                <span class="stat">MN<b>74</b></span>
+              </div>
+            </div>
+            <div class="side">
+              <div>人気 <strong style="color:#f0c947">54</strong></div>
+              <div>体調 86</div>
+              <div>15万 / 週</div>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="row">
+            <img class="portrait" src="../image/face_kusunoki_n.png" alt="楠木なぎさ">
+            <div class="main">
+              <div class="name-line">
+                <span class="name">楠木なぎさ</span>
+                <span class="tag style">Aerial</span>
+                <span class="tag role">Babyface</span>
+              </div>
+              <div class="meta">
+                <span class="ovr">79</span>
+                <span class="stat">PW<b>68</b></span>
+                <span class="stat">SP<b>95</b></span>
+                <span class="stat">TE<b>74</b></span>
+                <span class="stat">ST<b>70</b></span>
+                <span class="stat">MN<b>77</b></span>
+              </div>
+            </div>
+            <div class="side">
+              <div>人気 <strong style="color:#f0c947">43</strong></div>
+              <div>体調 91</div>
+              <div>12万 / 週</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel v1">
+      <div class="panel-head">
+        <div class="kicker">PATTERN A</div>
+        <h2>名前横に年齢</h2>
+        <div class="sub">最小変更。今の骨格のまま、右側の人気だけ濃色化</div>
+      </div>
+      <div class="list">
+        <article class="card"><div class="row">
+          <img class="portrait" src="../image/face_iwakoji_s.png" alt="">
+          <div class="main">
+            <div class="name-line"><span class="name">岩小路志摩子</span><span class="age">23歳</span><span class="tag style">Striker</span><span class="tag role">Babyface</span></div>
+            <div class="meta"><span class="ovr">86</span><span class="stat">PW<b>79</b></span><span class="stat">SP<b>99</b></span><span class="stat">TE<b>102</b></span><span class="stat">ST<b>84</b></span><span class="stat">MN<b>71</b></span></div>
+          </div>
+          <div class="side"><span class="pill-pop">人気 68</span><div>体調 72</div><div class="salary">18万 / 週</div></div>
+        </div></article>
+        <article class="card"><div class="row">
+          <img class="portrait" src="../image/face_hongo_m.png" alt="">
+          <div class="main">
+            <div class="name-line"><span class="name">本郷真理子</span><span class="age">27歳</span><span class="tag style">Brawler</span><span class="tag role">Heel</span></div>
+            <div class="meta"><span class="ovr">82</span><span class="stat">PW<b>92</b></span><span class="stat">SP<b>73</b></span><span class="stat">TE<b>66</b></span><span class="stat">ST<b>88</b></span><span class="stat">MN<b>74</b></span></div>
+          </div>
+          <div class="side"><span class="pill-pop">人気 54</span><div>体調 86</div><div class="salary">15万 / 週</div></div>
+        </div></article>
+        <article class="card"><div class="row">
+          <img class="portrait" src="../image/face_kusunoki_n.png" alt="">
+          <div class="main">
+            <div class="name-line"><span class="name">楠木なぎさ</span><span class="age">20歳</span><span class="tag style">Aerial</span><span class="tag role">Babyface</span></div>
+            <div class="meta"><span class="ovr">79</span><span class="stat">PW<b>68</b></span><span class="stat">SP<b>95</b></span><span class="stat">TE<b>74</b></span><span class="stat">ST<b>70</b></span><span class="stat">MN<b>77</b></span></div>
+          </div>
+          <div class="side"><span class="pill-pop">人気 43</span><div>体調 91</div><div class="salary">12万 / 週</div></div>
+        </div></article>
+      </div>
+      <div class="annotation"><strong>向いている場合</strong><br>いちばん安全です。見た目の変化を抑えつつ、年齢だけ確実に前面へ出せます。</div>
+    </section>
+
+    <section class="panel v2">
+      <div class="panel-head">
+        <div class="kicker">PATTERN B</div>
+        <h2>給料を中寄せ</h2>
+        <div class="sub">人気と給料を右クラスタ内でまとめ、右端に飛ぶ印象を弱める</div>
+      </div>
+      <div class="list">
+        <article class="card"><div class="row">
+          <img class="portrait" src="../image/face_iwakoji_s.png" alt="">
+          <div class="main">
+            <div class="name-line"><span class="name">岩小路志摩子</span><span class="age-pill">23歳</span><span class="tag style">Striker</span><span class="tag role">Babyface</span></div>
+            <div class="meta"><span class="ovr">86</span><span class="stat">PW<b>79</b></span><span class="stat">SP<b>99</b></span><span class="stat">TE<b>102</b></span><span class="stat">ST<b>84</b></span><span class="stat">MN<b>71</b></span></div>
+          </div>
+          <div class="side"><span class="pill-pop">68</span><span class="salary-inline">給料 <strong>18万</strong></span><span class="cond-row"><span class="cond-bar"><span class="cond-fill" style="width:72%"></span></span>72</span></div>
+        </div></article>
+        <article class="card"><div class="row">
+          <img class="portrait" src="../image/face_hongo_m.png" alt="">
+          <div class="main">
+            <div class="name-line"><span class="name">本郷真理子</span><span class="age-pill">27歳</span><span class="tag style">Brawler</span><span class="tag role">Heel</span></div>
+            <div class="meta"><span class="ovr">82</span><span class="stat">PW<b>92</b></span><span class="stat">SP<b>73</b></span><span class="stat">TE<b>66</b></span><span class="stat">ST<b>88</b></span><span class="stat">MN<b>74</b></span></div>
+          </div>
+          <div class="side"><span class="pill-pop">54</span><span class="salary-inline">給料 <strong>15万</strong></span><span class="cond-row"><span class="cond-bar"><span class="cond-fill" style="width:86%"></span></span>86</span></div>
+        </div></article>
+        <article class="card"><div class="row">
+          <img class="portrait" src="../image/face_kusunoki_n.png" alt="">
+          <div class="main">
+            <div class="name-line"><span class="name">楠木なぎさ</span><span class="age-pill">20歳</span><span class="tag style">Aerial</span><span class="tag role">Babyface</span></div>
+            <div class="meta"><span class="ovr">79</span><span class="stat">PW<b>68</b></span><span class="stat">SP<b>95</b></span><span class="stat">TE<b>74</b></span><span class="stat">ST<b>70</b></span><span class="stat">MN<b>77</b></span></div>
+          </div>
+          <div class="side"><span class="pill-pop">43</span><span class="salary-inline">給料 <strong>12万</strong></span><span class="cond-row"><span class="cond-bar"><span class="cond-fill" style="width:91%"></span></span>91</span></div>
+        </div></article>
+      </div>
+      <div class="annotation"><strong>向いている場合</strong><br>人気の見やすさと、給料の「右端すぎる」印象の両方を一番バランスよく直せます。</div>
+    </section>
+
+    <section class="panel v3">
+      <div class="panel-head">
+        <div class="kicker">PATTERN C</div>
+        <h2>人気を主、給料を従</h2>
+        <div class="sub">人気を強く見せつつ、給料はその真下に置いて視線移動を短くする</div>
+      </div>
+      <div class="list">
+        <article class="card"><div class="row">
+          <img class="portrait" src="../image/face_iwakoji_s.png" alt="">
+          <div class="main">
+            <div class="name-line"><span class="name">岩小路志摩子</span><span class="age">23歳</span><span class="tag style">Striker</span><span class="tag role">Babyface</span></div>
+            <div class="meta"><span class="ovr">86</span><span class="stat">PW<b>79</b></span><span class="stat">SP<b>99</b></span><span class="stat">TE<b>102</b></span><span class="stat">ST<b>84</b></span><span class="stat">MN<b>71</b></span></div>
+          </div>
+          <div class="side"><div class="pop-box"><span class="label">POPULARITY</span><span class="pill-pop">68</span></div><div class="money-box"><span class="label">SALARY</span><span class="salary">18万</span></div></div>
+        </div></article>
+        <article class="card"><div class="row">
+          <img class="portrait" src="../image/face_hongo_m.png" alt="">
+          <div class="main">
+            <div class="name-line"><span class="name">本郷真理子</span><span class="age">27歳</span><span class="tag style">Brawler</span><span class="tag role">Heel</span></div>
+            <div class="meta"><span class="ovr">82</span><span class="stat">PW<b>92</b></span><span class="stat">SP<b>73</b></span><span class="stat">TE<b>66</b></span><span class="stat">ST<b>88</b></span><span class="stat">MN<b>74</b></span></div>
+          </div>
+          <div class="side"><div class="pop-box"><span class="label">POPULARITY</span><span class="pill-pop">54</span></div><div class="money-box"><span class="label">SALARY</span><span class="salary">15万</span></div></div>
+        </div></article>
+        <article class="card"><div class="row">
+          <img class="portrait" src="../image/face_kusunoki_n.png" alt="">
+          <div class="main">
+            <div class="name-line"><span class="name">楠木なぎさ</span><span class="age">20歳</span><span class="tag style">Aerial</span><span class="tag role">Babyface</span></div>
+            <div class="meta"><span class="ovr">79</span><span class="stat">PW<b>68</b></span><span class="stat">SP<b>95</b></span><span class="stat">TE<b>74</b></span><span class="stat">ST<b>70</b></span><span class="stat">MN<b>77</b></span></div>
+          </div>
+          <div class="side"><div class="pop-box"><span class="label">POPULARITY</span><span class="pill-pop">43</span></div><div class="money-box"><span class="label">SALARY</span><span class="salary">12万</span></div></div>
+        </div></article>
+      </div>
+      <div class="annotation"><strong>向いている場合</strong><br>右カラムの情報の格をはっきり分けたいときに向いています。体調は別の既存表示に任せる前提です。</div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

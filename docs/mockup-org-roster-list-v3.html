@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>団体画面 ロスター一覧モック v3 — 年齢追加+寄せ案</title>
+<style>
+  body{margin:0;background:#24211d;color:#f2efe8;font-family:"Noto Sans JP",sans-serif;padding:24px 16px 60px}
+  .wrap{max-width:1100px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 4px}
+  .lead{color:#bcb39f;font-size:13px;margin:0 0 24px;line-height:1.7}
+  h2{font-size:15px;margin:28px 0 8px;color:#f0d58b;border-bottom:1px solid rgba(199,154,53,0.3);padding-bottom:4px}
+  .note{font-size:12px;color:#a39888;margin:0 0 12px;line-height:1.6}
+  .pad{background:#3a352d;border-radius:10px;padding:14px}
+  .panel-title{font-size:12px;color:#7a7466;margin-bottom:6px}
+
+  /* 共通: rd-card 風スタイル */
+  .rd-card{background:#ede7da;border:1px solid rgba(180,150,80,0.25);border-radius:8px;color:#1e1c16;margin-bottom:6px}
+  .rd-inner{display:flex;align-items:center;gap:10px;padding:8px 10px}
+  .portrait{width:52px;height:52px;border-radius:6px;background:linear-gradient(135deg,#cdbf9c,#b69b66);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#5c4a1e;font-weight:700}
+  .col-main{flex:1;min-width:0}
+  .name-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;font-size:12px}
+  .rd-name{font-size:14px;font-weight:700;color:#1e1c16}
+  .age{color:#7a6530;font-size:12px;font-weight:600}
+  .badge{font-size:10px;padding:1px 5px;border-radius:3px;background:#d8d0bb;color:#4a4638;border:1px solid rgba(0,0,0,0.08)}
+  .badge.bf{background:rgba(46,134,193,0.15);color:#2874a6;border-color:rgba(46,134,193,0.35)}
+  .badge.heel{background:rgba(192,57,43,0.15);color:#c0392b;border-color:rgba(192,57,43,0.35)}
+  .badge.style{background:rgba(155,89,182,0.12);color:#7d3c98;border-color:rgba(155,89,182,0.3)}
+  .stat-row{display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:nowrap}
+  .ovr{font-size:17px;font-weight:900;color:#5c4a1e}
+  .stat-row b{color:#1e1c16}
+  .cond-bar{width:48px;height:6px;background:rgba(0,0,0,0.12);border-radius:3px;overflow:hidden;display:inline-block}
+  .cond-fill{height:100%;background:#2ecc71}
+  .pop-val{color:#c07a10;font-weight:700}
+  .salary{color:#7a7466}
+
+  /* === 案A: 統計列の隣に詰める === */
+  .a .col-side{flex-shrink:0;font-size:11px;color:#4a4638;display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:120px;border-left:1px dashed rgba(0,0,0,0.12);padding-left:10px}
+  .a .col-tail{flex-shrink:0;width:0}
+
+  /* === 案B: 全部1行に並べる(統計の右にそのまま続ける) === */
+  .b .stat-row{flex-wrap:nowrap}
+  .b .sep{color:#bcb39f;margin:0 2px}
+  .b .pop-block,.b .cond-block,.b .sal-block{display:inline-flex;align-items:center;gap:3px;font-size:11px}
+
+  /* === 案C: 年齢を名前横、人気/体調/給料を3カラム固定幅で右寄せ === */
+  .c .col-side{flex-shrink:0;display:grid;grid-template-columns:60px 70px 60px;gap:8px;align-items:center;font-size:11px;color:#4a4638}
+  .c .col-side > div{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+  .c .col-side .lbl{font-size:9px;color:#8c7e69;letter-spacing:0.5px}
+  .c .col-side .val{font-size:13px;font-weight:700;color:#1e1c16}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>団体画面 ロスター一覧 — v3 モック</h1>
+  <p class="lead">課題:① 年齢が一覧で分からない(展開しないと見えない) ② 人気/体調/給料が右端に飛んでいて他の情報と離れている。<br>
+  対策3案。いずれも縦の整列は維持。</p>
+
+  <!-- ============== 案A ============== -->
+  <h2>案A: 既存レイアウトの「右ブロック」を統計の直後に詰める(最小変更)</h2>
+  <p class="note">右側ブロックの配置は変えず、左に寄せて空白を抑える。年齢は名前の隣に小さく ( 28 ) 形式で。1人ずつのカード幅自体が縮む。</p>
+  <div class="pad a">
+    <div class="rd-card"><div class="rd-inner">
+      <div class="portrait">太久保</div>
+      <div class="col-main">
+        <div class="name-row"><span class="rd-name">太久保桃子</span><span class="age">28歳</span><span class="badge style">Allround</span><span class="badge bf">Babyface</span><span class="badge">鶴見 (3/3)</span></div>
+        <div class="stat-row"><span class="ovr">108</span><span>PW<b>117</b></span><span>SP<b>113</b></span><span>TE<b>122</b></span><span>ST<b>113</b></span><span>MN<b>73</b></span></div>
+      </div>
+      <div class="col-side">
+        <div>人気 <b class="pop-val">77</b></div>
+        <div style="display:flex;align-items:center;gap:4px">体調 <span class="cond-bar"><span class="cond-fill" style="width:100%"></span></span><span>100</span></div>
+        <div class="salary">242万</div>
+      </div>
+    </div></div>
+    <div class="rd-card"><div class="rd-inner">
+      <div class="portrait">巳沼</div>
+      <div class="col-main">
+        <div class="name-row"><span class="rd-name">巳沼紗霧</span><span class="age">26歳</span><span class="badge style">Submission</span><span class="badge heel">Heel</span><span class="badge">御堂✦ (2/3)</span></div>
+        <div class="stat-row"><span class="ovr">98</span><span>PW<b>103</b></span><span>SP<b>99</b></span><span>TE<b>110</b></span><span>ST<b>107</b></span><span>MN<b>72</b></span></div>
+      </div>
+      <div class="col-side">
+        <div>人気 <b class="pop-val">91</b></div>
+        <div style="display:flex;align-items:center;gap:4px">体調 <span class="cond-bar"><span class="cond-fill" style="width:99%"></span></span><span>99</span></div>
+        <div class="salary">204万</div>
+      </div>
+    </div></div>
+    <div class="rd-card"><div class="rd-inner">
+      <div class="portrait">深町</div>
+      <div class="col-main">
+        <div class="name-row"><span class="rd-name">深町真琴</span><span class="age">22歳</span><span class="badge style">Aerial</span><span class="badge bf">Babyface</span><span class="badge">御堂 (2/3)</span></div>
+        <div class="stat-row"><span class="ovr">98</span><span>PW<b>84</b></span><span>SP<b>112</b></span><span>TE<b>109</b></span><span>ST<b>117</b></span><span>MN<b>67</b></span></div>
+      </div>
+      <div class="col-side">
+        <div>人気 <b class="pop-val">83</b></div>
+        <div style="display:flex;align-items:center;gap:4px">体調 <span class="cond-bar"><span class="cond-fill" style="width:89%"></span></span><span>89</span></div>
+        <div class="salary">174万</div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ============== 案B ============== -->
+  <h2>案B: 統計と同じ1行に「人気・体調・給料」を直接連結する</h2>
+  <p class="note">右ブロックを廃止して、PW/SP/TE/ST/MN の横にそのまま 人気/体調/給料 を続ける。情報密度は最も高いが、横幅が狭いと折り返す可能性あり。年齢は名前横。</p>
+  <div class="pad b">
+    <div class="rd-card"><div class="rd-inner">
+      <div class="portrait">太久保</div>
+      <div class="col-main">
+        <div class="name-row"><span class="rd-name">太久保桃子</span><span class="age">28歳</span><span class="badge style">Allround</span><span class="badge bf">Babyface</span><span class="badge">鶴見 (3/3)</span></div>
+        <div class="stat-row">
+          <span class="ovr">108</span>
+          <span>PW<b>117</b></span><span>SP<b>113</b></span><span>TE<b>122</b></span><span>ST<b>113</b></span><span>MN<b>73</b></span>
+          <span class="sep">｜</span>
+          <span class="pop-block">⭐<b class="pop-val">77</b></span>
+          <span class="cond-block">体調<span class="cond-bar"><span class="cond-fill" style="width:100%"></span></span><b>100</b></span>
+          <span class="sal-block salary">💰242万</span>
+        </div>
+      </div>
+    </div></div>
+    <div class="rd-card"><div class="rd-inner">
+      <div class="portrait">巳沼</div>
+      <div class="col-main">
+        <div class="name-row"><span class="rd-name">巳沼紗霧</span><span class="age">26歳</span><span class="badge style">Submission</span><span class="badge heel">Heel</span><span class="badge">御堂✦ (2/3)</span></div>
+        <div class="stat-row">
+          <span class="ovr">98</span>
+          <span>PW<b>103</b></span><span>SP<b>99</b></span><span>TE<b>110</b></span><span>ST<b>107</b></span><span>MN<b>72</b></span>
+          <span class="sep">｜</span>
+          <span class="pop-block">⭐<b class="pop-val">91</b></span>
+          <span class="cond-block">体調<span class="cond-bar"><span class="cond-fill" style="width:99%"></span></span><b>99</b></span>
+          <span class="sal-block salary">💰204万</span>
+        </div>
+      </div>
+    </div></div>
+    <div class="rd-card"><div class="rd-inner">
+      <div class="portrait">深町</div>
+      <div class="col-main">
+        <div class="name-row"><span class="rd-name">深町真琴</span><span class="age">22歳</span><span class="badge style">Aerial</span><span class="badge bf">Babyface</span><span class="badge">御堂 (2/3)</span></div>
+        <div class="stat-row">
+          <span class="ovr">98</span>
+          <span>PW<b>84</b></span><span>SP<b>112</b></span><span>TE<b>109</b></span><span>ST<b>117</b></span><span>MN<b>67</b></span>
+          <span class="sep">｜</span>
+          <span class="pop-block">⭐<b class="pop-val">83</b></span>
+          <span class="cond-block">体調<span class="cond-bar"><span class="cond-fill" style="width:89%"></span></span><b>89</b></span>
+          <span class="sal-block salary">💰174万</span>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ============== 案C ============== -->
+  <h2>案C: 右側を3カラムグリッドで固定幅化(縦整列がもっとも綺麗)</h2>
+  <p class="note">人気・体調・給料を「ラベル+値」のミニカード3つに分け、固定幅グリッドで全行ピッタリ揃える。年齢は名前横。視認性◎・縦整列◎。</p>
+  <div class="pad c">
+    <div class="rd-card"><div class="rd-inner">
+      <div class="portrait">太久保</div>
+      <div class="col-main">
+        <div class="name-row"><span class="rd-name">太久保桃子</span><span class="age">28歳</span><span class="badge style">Allround</span><span class="badge bf">Babyface</span><span class="badge">鶴見 (3/3)</span></div>
+        <div class="stat-row"><span class="ovr">108</span><span>PW<b>117</b></span><span>SP<b>113</b></span><span>TE<b>122</b></span><span>ST<b>113</b></span><span>MN<b>73</b></span></div>
+      </div>
+      <div class="col-side">
+        <div><span class="lbl">人気</span><span class="val pop-val">77</span></div>
+        <div><span class="lbl">体調</span><span class="val">100</span><span class="cond-bar" style="width:60px"><span class="cond-fill" style="width:100%"></span></span></div>
+        <div><span class="lbl">給料</span><span class="val salary">242万</span></div>
+      </div>
+    </div></div>
+    <div class="rd-card"><div class="rd-inner">
+      <div class="portrait">巳沼</div>
+      <div class="col-main">
+        <div class="name-row"><span class="rd-name">巳沼紗霧</span><span class="age">26歳</span><span class="badge style">Submission</span><span class="badge heel">Heel</span><span class="badge">御堂✦ (2/3)</span></div>
+        <div class="stat-row"><span class="ovr">98</span><span>PW<b>103</b></span><span>SP<b>99</b></span><span>TE<b>110</b></span><span>ST<b>107</b></span><span>MN<b>72</b></span></div>
+      </div>
+      <div class="col-side">
+        <div><span class="lbl">人気</span><span class="val pop-val">91</span></div>
+        <div><span class="lbl">体調</span><span class="val">99</span><span class="cond-bar" style="width:60px"><span class="cond-fill" style="width:99%"></span></span></div>
+        <div><span class="lbl">給料</span><span class="val salary">204万</span></div>
+      </div>
+    </div></div>
+    <div class="rd-card"><div class="rd-inner">
+      <div class="portrait">深町</div>
+      <div class="col-main">
+        <div class="name-row"><span class="rd-name">深町真琴</span><span class="age">22歳</span><span class="badge style">Aerial</span><span class="badge bf">Babyface</span><span class="badge">御堂 (2/3)</span></div>
+        <div class="stat-row"><span class="ovr">98</span><span>PW<b>84</b></span><span>SP<b>112</b></span><span>TE<b>109</b></span><span>ST<b>117</b></span><span>MN<b>67</b></span></div>
+      </div>
+      <div class="col-side">
+        <div><span class="lbl">人気</span><span class="val pop-val">83</span></div>
+        <div><span class="lbl">体調</span><span class="val">89</span><span class="cond-bar" style="width:60px"><span class="cond-fill" style="width:89%"></span></span></div>
+        <div><span class="lbl">給料</span><span class="val salary">174万</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <h2 style="margin-top:36px">推し:案A</h2>
+  <p class="note">変更影響が一番小さく、現状の見た目を崩さずに「右に寄りすぎ」を解消できる。年齢は「28歳」を名前横にだけ追加。<br>
+  もしもっとはっきり「3項目を並べたい」場合は案C、密度重視で1行に詰めたいなら案B。</p>
+</div>
+</body>
+</html>
