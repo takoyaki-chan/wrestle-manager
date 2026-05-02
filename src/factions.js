@@ -4565,7 +4565,7 @@ Engine.factions = {
     for (let i = 0; i < factions.length; i++) {
       for (let j = i + 1; j < factions.length; j++) {
         const fA = factions[i], fB = factions[j];
-        if (fA.type !== 'rivalrous' || fB.type !== 'rivalrous') continue;
+        if (!this._isHostile(fA) || !this._isHostile(fB)) continue;
         const hostAB = (state.factionHostility || {})[this._hostKey(fA.id, fB.id)] || 0;
         const hostBA = (state.factionHostility || {})[this._hostKey(fB.id, fA.id)] || 0;
         if (hostAB < cfg.f09HostilityMin || hostBA < cfg.f09HostilityMin) continue;
