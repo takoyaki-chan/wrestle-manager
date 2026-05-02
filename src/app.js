@@ -6349,6 +6349,10 @@ const App = {
       lastRunRetireesById.set(lastRunFighter.id, lastRunFighter);
     });
     const lastRunRetirees = [...lastRunRetireesById.values()];
+    try {
+      console.warn('[WM][lastrun-diag] processShowResult:lastRunRetirees',
+        { count: lastRunRetirees.length, names: lastRunRetirees.map(c => c?.name), resultsLen: results.length, validMatchesLen: validMatches.length });
+    } catch (_e) {}
     if (lastRunRetirees.length > 0) {
       const lrLineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAD3));
       const retiredWithRecords = lastRunRetirees.map(c => {
@@ -7205,6 +7209,13 @@ const App = {
       const { _pendingLastRunRetirements: _, ...cleanG } = G;
       G = cleanG;
     }
+    try {
+      console.warn('[WM][lastrun-diag] closeShowResult:entry',
+        { pendingLastRunCount: pendingLastRunRetirements.length,
+          names: pendingLastRunRetirements.map(r => r?.fighter?.name),
+          hasPendingR3: !!G._pendingR3Modal,
+          r3Reason: G._pendingR3Modal?.reason });
+    } catch (_e) {}
     const existingLastRunRetiredIds = new Set(
       pendingLastRunRetirements
         .map(r => r?.fighter?.id)
@@ -7234,6 +7245,32 @@ const App = {
         return { fighter: retiredFighter, route: 'lastrun', line, category, summary, canRetain: false };
       });
       pendingLastRunRetirements = [...pendingLastRunRetirements, ...synthesizedRetirements];
+    }
+    // ラストラン引退セリフの取りこぼし救済(第3層): processShowResult / fallback の両方で
+    // 拾えなかった場合に、retiredFighters の最新 retire イベント (reason='lastrun', 同週)
+    // から復元する。これで本人ポップアップがゼロになる事故を防ぐ。
+    {
+      const queuedIds = new Set(
+        pendingLastRunRetirements.map(r => r?.fighter?.id).filter(id => id != null)
+      );
+      const orphanedLR = (G.retiredFighters || []).filter(f => {
+        if (!f || queuedIds.has(f.id)) return false;
+        const history = f.careerRecord?.history || [];
+        const latestRetire = [...history].reverse().find(h => h.type === 'retire');
+        if (!latestRetire) return false;
+        if (latestRetire.season !== G.season || latestRetire.week !== G.week) return false;
+        return latestRetire.reason === 'lastrun';
+      });
+      if (orphanedLR.length > 0) {
+        const lrFbRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAD3, 0xF));
+        const recovered = orphanedLR.map(f => {
+          const { line, category } = Engine.retirement.selectLine(f, 'lastrun', G, lrFbRng);
+          const summary = Engine.retirement.buildCareerSummary(f);
+          console.warn('[WM] lastrun retirement recovered via 3rd-tier fallback', { id: f.id, name: f.name });
+          return { fighter: f, route: 'lastrun', line, category, summary, canRetain: false };
+        });
+        pendingLastRunRetirements = [...pendingLastRunRetirements, ...recovered];
+      }
     }
     if (pendingLastRunRetirements.length > 0) {
       const lastRunRetiredIds = new Set(
@@ -7449,6 +7486,38 @@ const App = {
     if (pendingResolutions.length > 0) {
       popupActions.push(done => showRivalryPopups(pendingResolutions, done));
     }
+    // R3反応モーダル（bond 75+ 仲間の別れリアクション）は本人引退ポップアップの後に出す。
+    // 旧実装は独立 setTimeout(800) で発火していたため、本人ポップアップが遅延すると
+    // R3 が先に開いて本人ポップアップが出ない/見落とされる事故が発生していた。
+    let pendingR3Spec = null;
+    if (G._pendingR3Modal) {
+      pendingR3Spec = G._pendingR3Modal;
+      const { _pendingR3Modal: _, ...cleanR3Show } = G;
+      G = cleanR3Show;
+      const r3Fighter = G.roster.find(f => f.id === pendingR3Spec.fighterId);
+      const r3Args = {
+        fighterName: r3Fighter ? r3Fighter.name : '???',
+        fighterFace: r3Fighter ? getPortraitUrl(r3Fighter.id) : null,
+        departedName: pendingR3Spec.departedName || '???',
+        reason: pendingR3Spec.reason || 'departed',
+        line: pendingR3Spec.text,
+      };
+      popupActions.push(done => {
+        showR3Modal(r3Args);
+        // showR3Modal は単発モーダルで done コールバックを持たないため、即座に次へ繋ぐ
+        if (done) done();
+      });
+    }
+    try {
+      console.warn('[WM][lastrun-diag] closeShowResult:popupActions',
+        { actionCount: popupActions.length,
+          pendingLastRun: pendingLastRunRetirements.length,
+          pendingInjury: pendingInjuryRetirements.length,
+          pendingGrowth: pendingGrowthEventsShow.length,
+          pendingResolutions: pendingResolutions.length,
+          hasR3: !!pendingR3Spec,
+          hasEventPopups });
+    } catch (_e) {}
     if (popupActions.length > 0) {
       const runPopupActions = () => {
         let idx = 0;
@@ -7474,22 +7543,8 @@ const App = {
     // §6 アーキタイプ遷移ナレーション（F02 完全敗北など興行後に発生する）
     App._drainArchetypeTransitions();
 
-    // スナップショット R3モーダル表示（興行後）
-    if (G._pendingR3Modal) {
-      const r3ModalShow = G._pendingR3Modal;
-      const { _pendingR3Modal: _, ...cleanR3Show } = G;
-      G = cleanR3Show;
-      const r3Fighter = G.roster.find(f => f.id === r3ModalShow.fighterId);
-      setTimeout(() => {
-        showR3Modal({
-          fighterName: r3Fighter ? r3Fighter.name : '???',
-          fighterFace: r3Fighter ? getPortraitUrl(r3Fighter.id) : null,
-          departedName: r3ModalShow.departedName || '???',
-          reason: r3ModalShow.reason || 'departed',
-          line: r3ModalShow.text,
-        });
-      }, 800);
-    }
+    // スナップショット R3モーダルは popupActions チェーン内（本人引退ポップアップの後）に
+    // 組み込み済みのため、ここでは別経路の setTimeout 発火はしない。
 
     // P4-P6: Glimpse（心の垣間見え）表示（興行後）
     if (G._pendingGlimpseA || G._pendingGlimpseB) {
