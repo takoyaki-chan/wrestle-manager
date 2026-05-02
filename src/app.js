@@ -2713,6 +2713,24 @@ const Storage = {
         G = Engine.relationships.migrateAffinityAxisV1(G);
       }
 
+      // 旧フォーマットの頂上決戦バックナンバー記事を新リッチ版で再生成
+      // （fcfd9f4 「PPV頂上決戦の新聞記事をリッチ化」以前の保存データに残る "相手団体" プレースホルダ等を解消）
+      if (!G._migrated_summit_news_v1) {
+        const rebuildIssue = (wp) => {
+          if (!wp || !wp.topStory) return wp;
+          const ts = wp.topStory;
+          if (ts.type !== 'ppvSummitResult' || !ts.summitData) return wp;
+          const P = (Engine.newspaper && Engine.newspaper.PRIORITY) || null;
+          const fixed = _buildPpvSummitStory(ts.summitData, wp.season || 1, wp.week || 1, P);
+          return { ...wp, topStory: fixed };
+        };
+        const archive = Array.isArray(G.newspaperArchive)
+          ? G.newspaperArchive.map(rebuildIssue)
+          : G.newspaperArchive;
+        const weeklyNewspaper = rebuildIssue(G.weeklyNewspaper);
+        G = { ...G, newspaperArchive: archive, weeklyNewspaper, _migrated_summit_news_v1: true };
+      }
+
       {
         const repair = Engine.saveDoctor.repairOnLoad(G);
         if (repair.changed) {

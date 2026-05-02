@@ -20384,6 +20384,108 @@ Engine.industryNews = {
   },
 };
 
+// PPV頂上決戦の story (headline/body) を生成。
+// 新規生成（buildWeeklyNewspaper 内）と旧アーカイブのマイグレーションの両方から呼ぶ。
+function _buildPpvSummitStory(sr, season, week, P) {
+  const stamp = `第${season}年度・第${week}週 PPV GRAND FINAL メインイベント`;
+
+  const winnerName = sr.winnerName || (sr.won ? sr.playerName : sr.aiName);
+  const loserName = sr.loserName || (sr.won ? sr.aiName : sr.playerName);
+  const winnerOrgName = sr.playerInvolved
+    ? (sr.won ? sr.playerOrgName : sr.aiOrgName)
+    : sr.playerOrgName;
+
+  const winnerHpPct = sr.winnerHpMax ? (sr.winnerHpFinal / sr.winnerHpMax) : 0.5;
+  const isOverwhelm = winnerHpPct >= 0.55;
+  const isCloseFight = winnerHpPct < 0.18;
+  const isMasterpiece = sr.mq >= 80;
+  const isGreat = sr.mq >= 70;
+
+  const ph = sr.priorH2h;
+  const hasHistory = ph && ph.matches > 0;
+  const isRematch = hasHistory && ph.matches >= 1;
+  const isLongRivalry = hasHistory && ph.matches >= 3;
+
+  let headline;
+  if (isLongRivalry && isMasterpiece) {
+    headline = `🏆 因縁の頂上決戦 — ${winnerName}、${ph.matches + 1}度目の対戦で${loserName}を下す`;
+  } else if (isCloseFight && isMasterpiece) {
+    headline = `🏆 ${sr.playerName} vs ${sr.aiName} 死闘の末 — ${winnerName}が栄冠`;
+  } else if (isMasterpiece) {
+    headline = `🏆 ${sr.playerName} vs ${sr.aiName} — 歴史に刻まれる頂上決戦、${winnerName}に軍配`;
+  } else if (isOverwhelm) {
+    headline = `🏆 ${winnerName}、${loserName}を完封 — ${winnerOrgName}が頂点に立つ`;
+  } else if (isCloseFight) {
+    headline = `🏆 ${sr.playerName} vs ${sr.aiName} — 接戦を制し${winnerName}が勝利`;
+  } else if (sr.playerInvolved && !sr.won) {
+    headline = `🏆 頂上決戦 — ${sr.aiName}、${sr.playerName}を下し頂点へ`;
+  } else {
+    headline = `🏆 頂上決戦 ${sr.playerName} vs ${sr.aiName} — ${winnerName}が制す`;
+  }
+
+  const bodyParts = [];
+
+  let stagePart = `${stamp}。`;
+  if (sr.playerRank && sr.aiRank) {
+    const r1 = Math.min(sr.playerRank, sr.aiRank);
+    const r2 = Math.max(sr.playerRank, sr.aiRank);
+    stagePart += `ランキング${r1}位の${sr.playerInvolved && sr.playerRank === r1 ? sr.playerName : sr.aiName}（${sr.playerInvolved && sr.playerRank === r1 ? sr.playerOrgName : sr.aiOrgName}）と${r2}位の${sr.playerInvolved && sr.playerRank === r1 ? sr.aiName : sr.playerName}（${sr.playerInvolved && sr.playerRank === r1 ? sr.aiOrgName : sr.playerOrgName}）が、シーズンの頂点を懸けて激突した。`;
+  } else {
+    stagePart += `${sr.playerName}（${sr.playerOrgName}）と${sr.aiName}（${sr.aiOrgName}）が、シーズンの頂点を懸けて激突した。`;
+  }
+  bodyParts.push(stagePart);
+
+  const phaseLabel = ({
+    'Opening': '序盤',
+    'Heat': '中盤',
+    'Climax': '終盤',
+    'Late': '長期戦の末',
+  })[sr.finishPhase] || '';
+  const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && sr.finMove)
+    ? Engine.formatFinish(sr.finType, sr.finMove, false)
+    : (sr.finMove ? `${sr.finMove}` : (sr.finType || '激闘決着'));
+  let matchPart = '';
+  if (sr.turns) matchPart += `${sr.turns}ターンに及ぶ`;
+  if (isCloseFight) matchPart += '死闘の末、';
+  else if (isOverwhelm) matchPart += '一方的な展開で、';
+  else matchPart += '攻防の末、';
+  if (phaseLabel) matchPart += `${phaseLabel}に`;
+  matchPart += `${winnerName}が${finishStr}で${loserName}を下した。`;
+  if (isCloseFight && sr.winnerHpFinal < 15) {
+    matchPart += `HP残り僅か${Math.round(sr.winnerHpFinal)}での辛勝だった。`;
+  } else if (isOverwhelm) {
+    matchPart += `${winnerName}はHPを${Math.round(sr.winnerHpFinal)}残しての圧勝。`;
+  }
+  bodyParts.push(matchPart);
+
+  let qualityPart = '';
+  if (isMasterpiece) qualityPart = `MQ${sr.mq}——歴史に残る一戦として記録される。`;
+  else if (isGreat) qualityPart = `MQ${sr.mq}、見応えある決戦となった。`;
+  else if (sr.mq >= 50) qualityPart = `MQ${sr.mq}を記録。`;
+  else qualityPart = `MQ${sr.mq}。期待された熱戦には届かなかったが、頂点を懸けた一戦であることに変わりはない。`;
+  bodyParts.push(qualityPart);
+
+  if (isLongRivalry) {
+    bodyParts.push(`両者は通算${ph.matches}戦${ph.wins}勝${ph.losses}敗、互いに譲らぬ因縁の決着戦でもあった。`);
+  } else if (isRematch) {
+    bodyParts.push(`過去対戦${ph.matches}回（${ph.wins}勝${ph.losses}敗）、再戦での決着となる。`);
+  }
+
+  if (sr.winnerLine) {
+    bodyParts.push(`「${sr.winnerLine}」——${winnerName}は静かにその栄誉を噛み締めた。`);
+  }
+
+  return {
+    type: 'ppvSummitResult',
+    priority: P ? P.ppvSummitResult : 200,
+    headline,
+    body: bodyParts.join(''),
+    characterId: sr.winnerId || (sr.won ? sr.playerId : sr.aiId),
+    summitData: sr,
+    situation: stamp,
+  };
+}
+
 Engine.newspaper = {
   PRIORITY: {
     juniorTournamentResult: 260,
@@ -20518,116 +20620,7 @@ Engine.newspaper = {
     // === 頂上決戦結果 ===
     if (state._newsSummitResult) {
       const sr = state._newsSummitResult;
-      const stamp = `第${state.season}年度・第${state.week}週 PPV GRAND FINAL メインイベント`;
-
-      // 勝者・敗者情報
-      const winnerName = sr.winnerName || (sr.won ? sr.playerName : sr.aiName);
-      const loserName = sr.loserName || (sr.won ? sr.aiName : sr.playerName);
-      const winnerOrgName = sr.playerInvolved
-        ? (sr.won ? sr.playerOrgName : sr.aiOrgName)
-        : sr.playerOrgName; // playerInvolved=false なら playerOrgName=ace1側
-      const loserOrgName = sr.playerInvolved
-        ? (sr.won ? sr.aiOrgName : sr.playerOrgName)
-        : sr.aiOrgName;
-
-      // 試合の質・接戦度
-      const winnerHpPct = sr.winnerHpMax ? (sr.winnerHpFinal / sr.winnerHpMax) : 0.5;
-      const isOverwhelm = winnerHpPct >= 0.55; // 圧勝
-      const isCloseFight = winnerHpPct < 0.18;  // 死闘
-      const isMasterpiece = sr.mq >= 80;
-      const isGreat = sr.mq >= 70;
-
-      // 過去対戦
-      const ph = sr.priorH2h;
-      const hasHistory = ph && ph.matches > 0;
-      const isRematch = hasHistory && ph.matches >= 1;
-      const isLongRivalry = hasHistory && ph.matches >= 3;
-
-      // ── 見出し生成 ──
-      let headline;
-      if (isLongRivalry && isMasterpiece) {
-        headline = `🏆 因縁の頂上決戦 — ${winnerName}、${ph.matches + 1}度目の対戦で${loserName}を下す`;
-      } else if (isCloseFight && isMasterpiece) {
-        headline = `🏆 ${sr.playerName} vs ${sr.aiName} 死闘の末 — ${winnerName}が栄冠`;
-      } else if (isMasterpiece) {
-        headline = `🏆 ${sr.playerName} vs ${sr.aiName} — 歴史に刻まれる頂上決戦、${winnerName}に軍配`;
-      } else if (isOverwhelm) {
-        headline = `🏆 ${winnerName}、${loserName}を完封 — ${winnerOrgName}が頂点に立つ`;
-      } else if (isCloseFight) {
-        headline = `🏆 ${sr.playerName} vs ${sr.aiName} — 接戦を制し${winnerName}が勝利`;
-      } else if (sr.playerInvolved && !sr.won) {
-        headline = `🏆 頂上決戦 — ${sr.aiName}、${sr.playerName}を下し頂点へ`;
-      } else {
-        headline = `🏆 頂上決戦 ${sr.playerName} vs ${sr.aiName} — ${winnerName}が制す`;
-      }
-
-      // ── 本文生成 ──
-      const bodyParts = [];
-
-      // 1. 舞台設定
-      let stagePart = `${stamp}。`;
-      if (sr.playerRank && sr.aiRank) {
-        const r1 = Math.min(sr.playerRank, sr.aiRank);
-        const r2 = Math.max(sr.playerRank, sr.aiRank);
-        stagePart += `ランキング${r1}位の${sr.playerInvolved && sr.playerRank === r1 ? sr.playerName : sr.aiName}（${sr.playerInvolved && sr.playerRank === r1 ? sr.playerOrgName : sr.aiOrgName}）と${r2}位の${sr.playerInvolved && sr.playerRank === r1 ? sr.aiName : sr.playerName}（${sr.playerInvolved && sr.playerRank === r1 ? sr.aiOrgName : sr.playerOrgName}）が、シーズンの頂点を懸けて激突した。`;
-      } else {
-        stagePart += `${sr.playerName}（${sr.playerOrgName}）と${sr.aiName}（${sr.aiOrgName}）が、シーズンの頂点を懸けて激突した。`;
-      }
-      bodyParts.push(stagePart);
-
-      // 2. 試合内容
-      const phaseLabel = ({
-        'Opening': '序盤',
-        'Heat': '中盤',
-        'Climax': '終盤',
-        'Late': '長期戦の末',
-      })[sr.finishPhase] || '';
-      const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && sr.finMove)
-        ? Engine.formatFinish(sr.finType, sr.finMove, false)
-        : (sr.finMove ? `${sr.finMove}` : (sr.finType || '激闘決着'));
-      let matchPart = '';
-      if (sr.turns) matchPart += `${sr.turns}ターンに及ぶ`;
-      if (isCloseFight) matchPart += '死闘の末、';
-      else if (isOverwhelm) matchPart += '一方的な展開で、';
-      else matchPart += '攻防の末、';
-      if (phaseLabel) matchPart += `${phaseLabel}に`;
-      matchPart += `${winnerName}が${finishStr}で${loserName}を下した。`;
-      if (isCloseFight && sr.winnerHpFinal < 15) {
-        matchPart += `HP残り僅か${Math.round(sr.winnerHpFinal)}での辛勝だった。`;
-      } else if (isOverwhelm) {
-        matchPart += `${winnerName}はHPを${Math.round(sr.winnerHpFinal)}残しての圧勝。`;
-      }
-      bodyParts.push(matchPart);
-
-      // 3. 試合の格付け
-      let qualityPart = '';
-      if (isMasterpiece) qualityPart = `MQ${sr.mq}——歴史に残る一戦として記録される。`;
-      else if (isGreat) qualityPart = `MQ${sr.mq}、見応えある決戦となった。`;
-      else if (sr.mq >= 50) qualityPart = `MQ${sr.mq}を記録。`;
-      else qualityPart = `MQ${sr.mq}。期待された熱戦には届かなかったが、頂点を懸けた一戦であることに変わりはない。`;
-      bodyParts.push(qualityPart);
-
-      // 4. 因縁・対戦履歴
-      if (isLongRivalry) {
-        bodyParts.push(`両者は通算${ph.matches}戦${ph.wins}勝${ph.losses}敗、互いに譲らぬ因縁の決着戦でもあった。`);
-      } else if (isRematch) {
-        bodyParts.push(`過去対戦${ph.matches}回（${ph.wins}勝${ph.losses}敗）、再戦での決着となる。`);
-      }
-
-      // 5. 勝者セリフ（自団体勝利時のみ）
-      if (sr.winnerLine) {
-        bodyParts.push(`「${sr.winnerLine}」——${winnerName}は静かにその栄誉を噛み締めた。`);
-      }
-
-      stories.push({
-        type: 'ppvSummitResult',
-        priority: P.ppvSummitResult,
-        headline,
-        body: bodyParts.join(''),
-        characterId: sr.winnerId || (sr.won ? sr.playerId : sr.aiId),
-        summitData: sr,
-        situation: stamp,
-      });
+      stories.push(_buildPpvSummitStory(sr, state.season, state.week, P));
     }
 
     // === AI団体のイベント（processAIWeek で蓄積されたもの）===
