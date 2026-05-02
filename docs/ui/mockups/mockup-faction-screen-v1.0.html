@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>派閥詳細カード調整 v1.0 — CAP拡大 + 2ND/3RDアイコン化</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --office-bg: #24221e;
+    --office-panel-dark: #181614;
+    --office-panel-dark-deep: #0e0d0a;
+    --office-border-cream: rgba(100,85,50,0.22);
+    --office-text-on-dark-main: #e8e6e0;
+    --office-text-on-dark-sub: #b8b1a3;
+    --office-text-on-dark-dim: #7a7466;
+    --gold: #d4a843;
+    --gold-light: #f0d078;
+    --pop-pink: #d4538a;
+    --pop-pink-light: #f0a0bf;
+    --accent-faction-1: #c38c54;
+    --accent-faction-2: #6d94b8;
+    --accent-faction-3: #8a7aa8;
+    --accent-faction-4: #6fa28c;
+    --accent-bond: #5a8a6a;
+    --accent-hostility: #c4623a;
+    --accent-warn: #b88a2a;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--office-bg);
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--office-text-on-dark-main);
+    font-size: 13px; line-height: 1.5;
+  }
+  .container { max-width: 1280px; margin: 0 auto; padding: 24px 16px 64px; }
+
+  .pattern-head {
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold);
+    margin: 36px 0 4px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--office-border-cream);
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .pattern-head .ja {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700; letter-spacing: 1px; font-size: 13px;
+    color: var(--office-text-on-dark-main);
+  }
+  .pattern-head .note {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 400; letter-spacing: 0; font-size: 11px;
+    color: var(--office-text-on-dark-sub);
+    margin-left: auto;
+  }
+
+  /* ------ 共通: ダーク派閥カード ------ */
+  .dfc {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.4) 100%),
+      var(--office-panel-dark);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-top: 4px solid var(--faction-accent, var(--accent-faction-1));
+    color: var(--office-text-on-dark-main);
+    display: flex; flex-direction: column;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+  .dfc-hero {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, rgba(212,168,67,0.04) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    align-items: center;
+  }
+  .dfc-hero .meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .dfc-hero .name-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .dfc-hero .name {
+    font-weight: 900; font-size: 19px; color: #fff;
+    letter-spacing: 2px; line-height: 1;
+    text-shadow: 0 0 12px var(--faction-accent, var(--accent-faction-1));
+  }
+  .dfc-hero .count { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: var(--gold); }
+  .dfc-hero .leader-name { font-size: 11px; color: var(--office-text-on-dark-sub); }
+  .dfc-hero .leader-name .role-mark {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 2px;
+    background: var(--faction-accent, var(--accent-faction-1));
+    color: #1a1611;
+    padding: 1px 6px; margin-right: 4px;
+  }
+  .dfc-hero .leader-stats { display: flex; gap: 12px; align-items: baseline; margin-top: 2px; }
+  .dfc-hero .stat-ovr { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--gold); line-height: 0.9; text-shadow: 0 0 8px rgba(212,168,67,0.3); }
+  .dfc-hero .stat-ovr small { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 1.5px; color: var(--office-text-on-dark-dim); margin-left: 2px; }
+  .dfc-hero .stat-pop { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--pop-pink); line-height: 0.9; }
+  .dfc-hero .stat-pop::before { content: '★ '; font-size: 13px; color: var(--pop-pink-light); }
+  .dfc-hero .stat-pop small { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 1.5px; color: var(--office-text-on-dark-dim); margin-left: 2px; }
+  .dfc-hero .tags { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
+  .dfc-tag {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 1.5px;
+    padding: 1px 6px;
+    background: rgba(212,168,67,0.10);
+    color: var(--gold-light);
+    border: 1px solid rgba(212,168,67,0.25);
+  }
+  .dfc-tag.auth { background: rgba(212,168,67,0.18); border-color: rgba(212,168,67,0.4); }
+
+  /* leader-pp 既定 (旧サイズ) */
+  .dfc-hero .leader-pp {
+    width: 60px; height: 72px;
+    background: #2a2520;
+    overflow: hidden; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 2px 2px 0 var(--faction-accent, var(--accent-faction-1));
+  }
+  .dfc-hero .leader-pp img { width: 100%; height: 100%; object-fit: cover; object-position: top; filter: contrast(1.05); }
+
+  /* roster row 既定 */
+  .dfc-roster { padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; }
+  .dfc-roster-row {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    background: rgba(0,0,0,0.30);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-left: 3px solid var(--faction-accent, var(--accent-faction-1));
+  }
+  .dfc-roster-row .pp { width: 44px; height: 54px; background: #2a2520; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.06); }
+  .dfc-roster-row .pp img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .dfc-roster-row .stats {
+    display: flex; flex-direction: column;
+    align-items: center; line-height: 0.95;
+    flex-shrink: 0; padding: 0 8px;
+    border-left: 1px dashed rgba(255,255,255,0.10);
+    border-right: 1px dashed rgba(255,255,255,0.10);
+    min-width: 40px;
+  }
+  .dfc-roster-row .ovr { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--gold); letter-spacing: 1px; }
+  .dfc-roster-row .ovr-lbl { font-family: 'Oswald', sans-serif; font-size: 7px; letter-spacing: 1.5px; color: var(--office-text-on-dark-dim); margin-top: -2px; }
+  .dfc-roster-row .pop { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: var(--pop-pink); margin-top: 3px; }
+  .dfc-roster-row .pop::before { content: '★'; margin-right: 2px; font-size: 9px; color: var(--pop-pink-light); }
+  .dfc-roster-row .name-block { min-width: 0; }
+  .dfc-roster-row .role { font-family: 'Oswald', sans-serif; font-size: 8px; letter-spacing: 2px; color: var(--faction-accent, var(--accent-faction-1)); }
+  .dfc-roster-row .nm { font-weight: 700; font-size: 13px; color: #f0e8d8; line-height: 1.1; }
+  .dfc-roster-row .sub-info { font-size: 10px; color: var(--office-text-on-dark-dim); margin-top: 2px; line-height: 1.3; }
+
+  .dfc-rankfile {
+    padding: 8px 14px;
+    border-top: 1px dashed rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.25);
+  }
+  .dfc-rankfile-head {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--faction-accent, var(--accent-faction-1));
+    margin-bottom: 6px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .dfc-rankfile-head .count { font-family: 'Bebas Neue', sans-serif; font-size: 12px; color: var(--office-text-on-dark-sub); }
+  .dfc-rankfile-tiles { display: flex; gap: 6px; flex-wrap: wrap; }
+  .rf-tile {
+    width: 50px; height: 64px;
+    position: relative;
+    background: #2a2520;
+    border: 1px solid rgba(255,255,255,0.06);
+    overflow: hidden; flex-shrink: 0;
+  }
+  .rf-tile img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .rf-tile .rf-ovr {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 70%);
+    color: var(--gold);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px; text-align: center; line-height: 1;
+    padding: 8px 0 3px;
+  }
+  .dfc-stats {
+    padding: 8px 14px;
+    border-top: 1px dashed rgba(255,255,255,0.08);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px;
+  }
+  .dfc-stat-row { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .dfc-stat-row .lbl { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 1.5px; color: var(--gold); flex: 0 0 36px; }
+  .dfc-stat-row .val { font-weight: 700; color: #f0e8d8; }
+  .dfc-foot {
+    padding: 8px 14px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.4);
+    display: flex; gap: 4px; flex-wrap: wrap;
+  }
+  .dfc-meter {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 1.5px;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.04);
+    color: var(--office-text-on-dark-sub);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .dfc-meter.solid-strong { background: rgba(90,138,106,0.15); color: var(--accent-bond); border-color: rgba(90,138,106,0.4); }
+
+  /* ------ 3列グリッド ------ */
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+  /* =====================================================
+     PATTERN A: CAP +2段階 (60→96), 2ND以降 face丸アイコン 48px
+     ===================================================== */
+  .pat-a .dfc-hero { grid-template-columns: 96px 1fr; gap: 16px; padding: 16px; }
+  .pat-a .dfc-hero .leader-pp { width: 96px; height: 120px; }
+  .pat-a .dfc-hero .name { font-size: 21px; }
+
+  .pat-a .dfc-roster-row {
+    grid-template-columns: 48px auto 1fr;
+    padding: 8px 10px;
+  }
+  .pat-a .dfc-roster-row .pp {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--faction-accent, var(--accent-faction-1));
+  }
+  .pat-a .dfc-roster-row .pp img {
+    object-fit: cover; object-position: center top;
+  }
+
+  /* =====================================================
+     PATTERN B: CAP +2段階 (60→96), 2ND以降 face角アイコン 56px (OVRバッジ重ね)
+     ===================================================== */
+  .pat-b .dfc-hero { grid-template-columns: 96px 1fr; gap: 16px; padding: 16px; }
+  .pat-b .dfc-hero .leader-pp { width: 96px; height: 120px; }
+  .pat-b .dfc-hero .name { font-size: 21px; }
+
+  .pat-b .dfc-roster-row {
+    grid-template-columns: 56px auto 1fr;
+    padding: 8px 10px;
+  }
+  .pat-b .dfc-roster-row .pp {
+    width: 56px; height: 56px;
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 2px 2px 0 var(--faction-accent, var(--accent-faction-1));
+    position: relative;
+  }
+  .pat-b .dfc-roster-row .pp img { object-position: center top; }
+
+  /* =====================================================
+     PATTERN C: CAP +3段階 (60→112), 2ND以降 face角アイコン 52px + 名前左揃え
+     ===================================================== */
+  .pat-c .dfc-hero { grid-template-columns: 112px 1fr; gap: 18px; padding: 18px 16px; }
+  .pat-c .dfc-hero .leader-pp { width: 112px; height: 140px; }
+  .pat-c .dfc-hero .name { font-size: 23px; }
+  .pat-c .dfc-hero .stat-ovr { font-size: 32px; }
+  .pat-c .dfc-hero .stat-pop { font-size: 22px; }
+
+  .pat-c .dfc-roster-row {
+    grid-template-columns: 52px 1fr auto;
+    padding: 8px 10px;
+  }
+  .pat-c .dfc-roster-row .pp {
+    width: 52px; height: 52px;
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+  .pat-c .dfc-roster-row .pp img { object-position: center top; }
+  .pat-c .dfc-roster-row .stats {
+    flex-direction: row; gap: 8px; align-items: baseline;
+    border: none; padding: 0 0 0 8px;
+    border-left: 1px dashed rgba(255,255,255,0.10);
+  }
+  .pat-c .dfc-roster-row .stats .ovr-lbl { display: none; }
+  .pat-c .dfc-roster-row .stats .pop { margin-top: 0; font-size: 14px; }
+
+  /* ------ banner ------ */
+  .topbanner {
+    background:linear-gradient(180deg, var(--gold) 0%, #b88a2a 100%);
+    color:#1a1611; padding:14px 24px;
+    font-family:'Bebas Neue',sans-serif; letter-spacing:4px; font-size:22px;
+    border-bottom:4px solid #5c4a1e; display:flex; justify-content:space-between; align-items:baseline;
+  }
+  .topbanner .sub { font-family:'Noto Sans JP',sans-serif; letter-spacing:1px; font-size:13px; font-weight:700; }
+  .topbanner .note { font-family:'Noto Sans JP',sans-serif; letter-spacing:0.3px; font-size:11px; font-weight:500; color:#3a2e10; }
+</style>
+</head>
+<body>
+
+<div class="topbanner">
+  <span>v1.0</span>
+  <span class="sub">派閥カード調整: CAP拡大 + 2ND/3RDフェイスアイコン化 + POP整数化</span>
+  <span class="note">3パターン比較</span>
+</div>
+
+<div class="container">
+
+  <!-- ============ PATTERN A ============ -->
+  <h2 class="pattern-head">
+    <span>PATTERN A</span>
+    <span class="ja">CAP=96px (旧60→2段階) / 2ND以降=丸アイコン 48px</span>
+    <span class="note">— 一番控えめな差替え。フェイスアイコンを丸抜きにして「上位＝ボディ／下位＝顔」と階層化</span>
+  </h2>
+  <div class="grid-3 pat-a">
+
+    <!-- 澤出みずき組 -->
+    <div class="dfc" style="--faction-accent: var(--accent-faction-1)">
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_sawade_m.webp" alt="" onerror="this.src='../../../image/face_sawade_m.png'"></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">澤出みずき組</span><span class="count">4名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>澤出みずき</div>
+          <div class="leader-stats"><span class="stat-ovr">95<small>OVR</small></span><span class="stat-pop">77<small>POP</small></span></div>
+          <div class="tags"><span class="dfc-tag">実力主義</span></div>
+        </div>
+      </div>
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-1)">
+          <div class="pp"><img src="../../../image/face_minonuma_s.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="stats"><div class="ovr">98</div><div class="ovr-lbl">OVR</div><div class="pop">91</div></div>
+          <div class="name-block"><div class="role">2ND · 中堅</div><div class="nm">巳沼紗霧</div><div class="sub-info">Submission</div></div>
+        </div>
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-1)">
+          <div class="pp"><img src="../../../image/face_fukamachi_m.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="stats"><div class="ovr">98</div><div class="ovr-lbl">OVR</div><div class="pop">83</div></div>
+          <div class="name-block"><div class="role">3RD · 副将</div><div class="nm">深町真琴</div><div class="sub-info">Aerial</div></div>
+        </div>
+      </div>
+      <div class="dfc-rankfile">
+        <div class="dfc-rankfile-head"><span>RANK & FILE</span><span class="count">1名</span></div>
+        <div class="dfc-rankfile-tiles">
+          <div class="rf-tile"><img src="../../../image/upper/upper_iijima_s.webp" alt=""><div class="rf-ovr">83</div></div>
+        </div>
+      </div>
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">93.5</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第5年 W05</span></div>
+      </div>
+      <div class="dfc-foot"><span class="dfc-meter solid-strong">結束:強固</span><span class="dfc-meter">勢い:平常</span></div>
+    </div>
+
+    <!-- 大久保桃子組 -->
+    <div class="dfc" style="--faction-accent: var(--accent-faction-2)">
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_okubo_m.webp" alt="" onerror="this.src='../../../image/face_okubo_m.png'"></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">大久保桃子組</span><span class="count">6名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>大久保桃子</div>
+          <div class="leader-stats"><span class="stat-ovr">108<small>OVR</small></span><span class="stat-pop">77<small>POP</small></span></div>
+          <div class="tags"><span class="dfc-tag auth">独裁化</span><span class="dfc-tag">実力主義</span></div>
+        </div>
+      </div>
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-2)">
+          <div class="pp"><img src="../../../image/face_morgan_r.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="stats"><div class="ovr">98</div><div class="ovr-lbl">OVR</div><div class="pop">79</div></div>
+          <div class="name-block"><div class="role">2ND · 中堅</div><div class="nm">リナ・モーガン</div><div class="sub-info">Allround</div></div>
+        </div>
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-2)">
+          <div class="pp"><img src="../../../image/face_okochi_s.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="stats"><div class="ovr">94</div><div class="ovr-lbl">OVR</div><div class="pop">68</div></div>
+          <div class="name-block"><div class="role">3RD · 副将</div><div class="nm">大河内紗代子</div><div class="sub-info">Grappler</div></div>
+        </div>
+      </div>
+      <div class="dfc-rankfile">
+        <div class="dfc-rankfile-head"><span>RANK & FILE</span><span class="count">3名</span></div>
+        <div class="dfc-rankfile-tiles">
+          <div class="rf-tile"><img src="../../../image/upper/upper_iijima_s.webp" alt=""><div class="rf-ovr">83</div></div>
+          <div class="rf-tile"><img src="../../../image/upper/upper_hayashi_m.webp" alt=""><div class="rf-ovr">80</div></div>
+          <div class="rf-tile"><img src="../../../image/upper/upper_kannonzaki_s.webp" alt=""><div class="rf-ovr">79</div></div>
+        </div>
+      </div>
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">90.3</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第8年 W23</span></div>
+      </div>
+      <div class="dfc-foot"><span class="dfc-meter">結束:安定</span><span class="dfc-meter">勢い:平常</span></div>
+    </div>
+    <div></div>
+  </div>
+
+  <!-- ============ PATTERN B ============ -->
+  <h2 class="pattern-head">
+    <span>PATTERN B</span>
+    <span class="ja">CAP=96px / 2ND以降=角アイコン 56px (派閥カラーで影付け)</span>
+    <span class="note">— Aより大きめ・角形。CAPのアッパー画像と角形を揃え、影で派閥色を統一</span>
+  </h2>
+  <div class="grid-3 pat-b">
+    <div class="dfc" style="--faction-accent: var(--accent-faction-1)">
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_sawade_m.webp" alt="" onerror="this.src='../../../image/face_sawade_m.png'"></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">澤出みずき組</span><span class="count">4名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>澤出みずき</div>
+          <div class="leader-stats"><span class="stat-ovr">95<small>OVR</small></span><span class="stat-pop">77<small>POP</small></span></div>
+          <div class="tags"><span class="dfc-tag">実力主義</span></div>
+        </div>
+      </div>
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-1)">
+          <div class="pp"><img src="../../../image/face_minonuma_s.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="stats"><div class="ovr">98</div><div class="ovr-lbl">OVR</div><div class="pop">91</div></div>
+          <div class="name-block"><div class="role">2ND · 中堅</div><div class="nm">巳沼紗霧</div><div class="sub-info">Submission</div></div>
+        </div>
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-1)">
+          <div class="pp"><img src="../../../image/face_fukamachi_m.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="stats"><div class="ovr">98</div><div class="ovr-lbl">OVR</div><div class="pop">83</div></div>
+          <div class="name-block"><div class="role">3RD · 副将</div><div class="nm">深町真琴</div><div class="sub-info">Aerial</div></div>
+        </div>
+      </div>
+      <div class="dfc-rankfile">
+        <div class="dfc-rankfile-head"><span>RANK & FILE</span><span class="count">1名</span></div>
+        <div class="dfc-rankfile-tiles">
+          <div class="rf-tile"><img src="../../../image/upper/upper_iijima_s.webp" alt=""><div class="rf-ovr">83</div></div>
+        </div>
+      </div>
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">93.5</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第5年 W05</span></div>
+      </div>
+      <div class="dfc-foot"><span class="dfc-meter solid-strong">結束:強固</span><span class="dfc-meter">勢い:平常</span></div>
+    </div>
+
+    <div class="dfc" style="--faction-accent: var(--accent-faction-2)">
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_okubo_m.webp" alt="" onerror="this.src='../../../image/face_okubo_m.png'"></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">大久保桃子組</span><span class="count">6名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>大久保桃子</div>
+          <div class="leader-stats"><span class="stat-ovr">108<small>OVR</small></span><span class="stat-pop">77<small>POP</small></span></div>
+          <div class="tags"><span class="dfc-tag auth">独裁化</span><span class="dfc-tag">実力主義</span></div>
+        </div>
+      </div>
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-2)">
+          <div class="pp"><img src="../../../image/face_morgan_r.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="stats"><div class="ovr">98</div><div class="ovr-lbl">OVR</div><div class="pop">79</div></div>
+          <div class="name-block"><div class="role">2ND · 中堅</div><div class="nm">リナ・モーガン</div><div class="sub-info">Allround</div></div>
+        </div>
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-2)">
+          <div class="pp"><img src="../../../image/face_okochi_s.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="stats"><div class="ovr">94</div><div class="ovr-lbl">OVR</div><div class="pop">68</div></div>
+          <div class="name-block"><div class="role">3RD · 副将</div><div class="nm">大河内紗代子</div><div class="sub-info">Grappler</div></div>
+        </div>
+      </div>
+      <div class="dfc-rankfile">
+        <div class="dfc-rankfile-head"><span>RANK & FILE</span><span class="count">3名</span></div>
+        <div class="dfc-rankfile-tiles">
+          <div class="rf-tile"><img src="../../../image/upper/upper_iijima_s.webp" alt=""><div class="rf-ovr">83</div></div>
+          <div class="rf-tile"><img src="../../../image/upper/upper_hayashi_m.webp" alt=""><div class="rf-ovr">80</div></div>
+          <div class="rf-tile"><img src="../../../image/upper/upper_kannonzaki_s.webp" alt=""><div class="rf-ovr">79</div></div>
+        </div>
+      </div>
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">90.3</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第8年 W23</span></div>
+      </div>
+      <div class="dfc-foot"><span class="dfc-meter">結束:安定</span><span class="dfc-meter">勢い:平常</span></div>
+    </div>
+    <div></div>
+  </div>
+
+  <!-- ============ PATTERN C ============ -->
+  <h2 class="pattern-head">
+    <span>PATTERN C</span>
+    <span class="ja">CAP=112px (3段階) / 2ND以降=角アイコン 52px / 行高コンパクト</span>
+    <span class="note">— CAPの存在感を最大化。OVR/POPを横並びに圧縮し、行内に余白を作って整列</span>
+  </h2>
+  <div class="grid-3 pat-c">
+    <div class="dfc" style="--faction-accent: var(--accent-faction-1)">
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_sawade_m.webp" alt="" onerror="this.src='../../../image/face_sawade_m.png'"></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">澤出みずき組</span><span class="count">4名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>澤出みずき</div>
+          <div class="leader-stats"><span class="stat-ovr">95<small>OVR</small></span><span class="stat-pop">77<small>POP</small></span></div>
+          <div class="tags"><span class="dfc-tag">実力主義</span></div>
+        </div>
+      </div>
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-1)">
+          <div class="pp"><img src="../../../image/face_minonuma_s.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="name-block"><div class="role">2ND · 中堅</div><div class="nm">巳沼紗霧</div><div class="sub-info">Submission</div></div>
+          <div class="stats"><div class="ovr">98</div><div class="pop">91</div></div>
+        </div>
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-1)">
+          <div class="pp"><img src="../../../image/face_fukamachi_m.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="name-block"><div class="role">3RD · 副将</div><div class="nm">深町真琴</div><div class="sub-info">Aerial</div></div>
+          <div class="stats"><div class="ovr">98</div><div class="pop">83</div></div>
+        </div>
+      </div>
+      <div class="dfc-rankfile">
+        <div class="dfc-rankfile-head"><span>RANK & FILE</span><span class="count">1名</span></div>
+        <div class="dfc-rankfile-tiles">
+          <div class="rf-tile"><img src="../../../image/upper/upper_iijima_s.webp" alt=""><div class="rf-ovr">83</div></div>
+        </div>
+      </div>
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">93.5</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第5年 W05</span></div>
+      </div>
+      <div class="dfc-foot"><span class="dfc-meter solid-strong">結束:強固</span><span class="dfc-meter">勢い:平常</span></div>
+    </div>
+
+    <div class="dfc" style="--faction-accent: var(--accent-faction-2)">
+      <div class="dfc-hero">
+        <div class="leader-pp"><img src="../../../image/upper/upper_okubo_m.webp" alt="" onerror="this.src='../../../image/face_okubo_m.png'"></div>
+        <div class="meta">
+          <div class="name-row"><span class="name">大久保桃子組</span><span class="count">6名</span></div>
+          <div class="leader-name"><span class="role-mark">CAP</span>大久保桃子</div>
+          <div class="leader-stats"><span class="stat-ovr">108<small>OVR</small></span><span class="stat-pop">77<small>POP</small></span></div>
+          <div class="tags"><span class="dfc-tag auth">独裁化</span><span class="dfc-tag">実力主義</span></div>
+        </div>
+      </div>
+      <div class="dfc-roster">
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-2)">
+          <div class="pp"><img src="../../../image/face_morgan_r.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="name-block"><div class="role">2ND · 中堅</div><div class="nm">リナ・モーガン</div><div class="sub-info">Allround</div></div>
+          <div class="stats"><div class="ovr">98</div><div class="pop">79</div></div>
+        </div>
+        <div class="dfc-roster-row" style="--faction-accent: var(--accent-faction-2)">
+          <div class="pp"><img src="../../../image/face_okochi_s.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="name-block"><div class="role">3RD · 副将</div><div class="nm">大河内紗代子</div><div class="sub-info">Grappler</div></div>
+          <div class="stats"><div class="ovr">94</div><div class="pop">68</div></div>
+        </div>
+      </div>
+      <div class="dfc-rankfile">
+        <div class="dfc-rankfile-head"><span>RANK & FILE</span><span class="count">3名</span></div>
+        <div class="dfc-rankfile-tiles">
+          <div class="rf-tile"><img src="../../../image/upper/upper_iijima_s.webp" alt=""><div class="rf-ovr">83</div></div>
+          <div class="rf-tile"><img src="../../../image/upper/upper_hayashi_m.webp" alt=""><div class="rf-ovr">80</div></div>
+          <div class="rf-tile"><img src="../../../image/upper/upper_kannonzaki_s.webp" alt=""><div class="rf-ovr">79</div></div>
+        </div>
+      </div>
+      <div class="dfc-stats">
+        <div class="dfc-stat-row"><span class="lbl">平均OVR</span><span class="val">90.3</span></div>
+        <div class="dfc-stat-row"><span class="lbl">設立</span><span class="val">第8年 W23</span></div>
+      </div>
+      <div class="dfc-foot"><span class="dfc-meter">結束:安定</span><span class="dfc-meter">勢い:平常</span></div>
+    </div>
+    <div></div>
+  </div>
+
+</div>
+
+<div style="max-width:1280px;margin:0 auto 24px;padding:14px 18px;background:var(--office-panel-dark-deep);border:1px dashed rgba(120,108,80,0.4);font-size:11px;color:var(--office-text-on-dark-dim);line-height:1.8">
+  <h4 style="margin:0 0 8px;color:var(--gold);font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:11px">3パターンの差分</h4>
+  <ul style="margin:0;padding-left:18px">
+    <li><b>共通変更</b>: ① CAPはアッパー画像のまま2段階以上拡大 ② 2ND/3RDの選手画像はアッパー → <b>face_*.png アイコン</b> に差替え（潰れ解消） ③ POP値は <b>整数化</b>（76.66→77 など）</li>
+    <li><b>A</b>: 控えめ。アイコンを<b>丸抜き 48px</b>＋派閥色2pxボーダー。RANK&FILE と同寸感で密度低め。</li>
+    <li><b>B</b>: 標準推し。<b>角形 56px</b>＋派閥色オフセット影。CAP/2ND/RANK&FILE が全部「角形+派閥色」で視覚統一。</li>
+    <li><b>C</b>: CAP最大化。CAPを <b>112px</b> に拡大、2ND以降のOVR/POPを行末に圧縮し、名前の可読性↑。情報量は同じだが視線誘導が CAP→名前→数値の順。</li>
+  </ul>
+</div>
+
+</body>
+</html>

@@ -8094,14 +8094,14 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .dfc.right .dfc-hero { grid-template-columns: auto 1fr; }
 .dfc:not(.left):not(.right) .dfc-hero { grid-template-columns: auto 1fr; }
 .dfc-hero .leader-pp {
-  width: 78px; height: 96px;
+  width: 128px; height: 160px;
   background: #2a2520;
   overflow: hidden;
   flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 2px 2px 0 var(--faction-accent, var(--accent-faction-1));
+  border: 1px solid var(--faction-accent, var(--accent-faction-1));
+  border-radius: 6px;
 }
-.dfc-hero .leader-pp img { width: 100%; height: 100%; object-fit: cover; object-position: top; filter: contrast(1.05); }
+.dfc-hero .leader-pp img { width: 100%; height: 100%; object-fit: cover; object-position: top; filter: contrast(1.05); border-radius: 6px; }
 .dfc-hero .meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .dfc-hero .name-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .dfc-hero .name {
@@ -8167,32 +8167,32 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   border: 1px solid rgba(255,255,255,0.04);
 }
 .dfc.right .dfc-roster-row {
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: auto 1fr auto;
   border-left: 3px solid var(--faction-accent, var(--accent-faction-1));
 }
 .dfc.left .dfc-roster-row {
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   border-right: 3px solid var(--faction-accent, var(--accent-faction-1));
 }
 .dfc:not(.left):not(.right) .dfc-roster-row {
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: auto 1fr auto;
   border-left: 3px solid var(--faction-accent, var(--accent-faction-1));
 }
-.dfc-roster-row .pp { width: 44px; height: 54px; background: #2a2520; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.06); }
+.dfc-roster-row .pp { width: 52px; height: 52px; background: #2a2520; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.10); }
 .dfc-roster-row .pp img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
 .dfc-roster-row .stats {
-  display: flex; flex-direction: column;
-  align-items: center;
+  display: flex; flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
   line-height: 0.95;
   flex-shrink: 0;
-  padding: 0 8px;
+  padding: 0 4px 0 10px;
   border-left: 1px dashed rgba(255,255,255,0.10);
-  border-right: 1px dashed rgba(255,255,255,0.10);
-  min-width: 40px;
+  min-width: 0;
 }
 .dfc-roster-row .ovr { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--gold); letter-spacing: 1px; }
 .dfc-roster-row .ovr-lbl { font-family: 'Oswald', sans-serif; font-size: 7px; letter-spacing: 1.5px; color: var(--office-text-on-dark-dim, #7a7466); margin-top: -2px; }
-.dfc-roster-row .pop { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: var(--pop-pink); margin-top: 3px; }
+.dfc-roster-row .pop { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: var(--pop-pink); }
 .dfc-roster-row .pop::before { content: '★'; margin-right: 2px; font-size: 9px; color: var(--pop-pink-light); }
 .dfc-roster-row .name-block { min-width: 0; }
 .dfc.left .dfc-roster-row .name-block { text-align: right; }
@@ -8218,23 +8218,25 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .dfc-rankfile-tiles { display: flex; gap: 6px; flex-wrap: wrap; }
 .dfc.left .dfc-rankfile-tiles { justify-content: flex-end; }
 .rf-tile {
-  width: 50px; height: 64px;
+  width: 52px; height: 52px;
   position: relative;
   background: #2a2520;
-  border: 1px solid rgba(255,255,255,0.06);
-  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.10);
   cursor: pointer;
   flex-shrink: 0;
+  margin-bottom: 6px;
 }
+.rf-tile img { display: block; }
 .rf-tile img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
 .rf-tile .rf-ovr {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 70%);
+  position: absolute; bottom: -6px; right: -4px;
+  background: #1a1611;
   color: var(--gold);
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 16px; text-align: center; line-height: 1;
-  padding: 8px 0 3px; letter-spacing: 0.5px;
-  text-shadow: 0 0 4px rgba(0,0,0,0.8);
+  font-size: 12px; line-height: 1;
+  padding: 2px 5px 1px; letter-spacing: 0.5px;
+  border: 1px solid rgba(212,168,67,0.55);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
 }
 
 /* FACTION CHRONICLE (黒田ナレーション) */
@@ -8383,11 +8385,11 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 
 /* 中立派閥グリッド */
 .dfx-grid-neutral { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.dfx-grid-neutral .dfc-hero { padding: 10px 12px; gap: 10px; }
-.dfx-grid-neutral .dfc-hero .leader-pp { width: 60px; height: 72px; }
-.dfx-grid-neutral .dfc-hero .name { font-size: 17px; }
-.dfx-grid-neutral .dfc-hero .stat-ovr { font-size: 24px; }
-.dfx-grid-neutral .dfc-hero .stat-pop { font-size: 16px; }
+.dfx-grid-neutral .dfc-hero { padding: 14px 14px; gap: 14px; }
+.dfx-grid-neutral .dfc-hero .leader-pp { width: 112px; height: 140px; }
+.dfx-grid-neutral .dfc-hero .name { font-size: 19px; }
+.dfx-grid-neutral .dfc-hero .stat-ovr { font-size: 28px; }
+.dfx-grid-neutral .dfc-hero .stat-pop { font-size: 20px; }
 .dfx-grid-neutral .dfc-stats { grid-template-columns: 1fr; padding: 6px 12px; }
 
 @media (max-width: 900px) {

@@ -1953,10 +1953,12 @@ function renderRoster() {
             <span title="${STAT_TIPS.st}">ST<b style="color:#1e1c16">${Math.round(c.st)}</b>${statG('st')}</span>
             <span title="${STAT_TIPS.mn}">MN<b style="color:#1e1c16">${Math.round(c.mn)}</b>${statG('mn')}</span>
             <span style="color:#bcb39f;margin:0 2px">｜</span>
-            <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:${_popColor(Engine.util.dispPop(c.popularity)).color}">${Engine.util.dispPop(c.popularity)}</b></span>
-            <span style="display:inline-flex;align-items:center;gap:3px">体調<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></span>
-            <span style="color:#7a7466">💰${getSalary(c)}万</span>
+            <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></span>
           </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
+          <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end">体調<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></div>
+          <div style="margin-top:2px;color:#7a7466">💰${getSalary(c)}万</div>
         </div>
       </div>
       ${_renderRosterDetailPanel(c, hired)}
@@ -1994,10 +1996,12 @@ function renderRoster() {
               <span title="${STAT_TIPS.st}">ST<b style="color:#1e1c16">${Math.round(c.st)}</b></span>
               <span title="${STAT_TIPS.mn}">MN<b style="color:#1e1c16">${Math.round(c.mn)}</b></span>
               <span style="color:#bcb39f;margin:0 2px">｜</span>
-              <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:${_popColor(Engine.util.dispPop(c.popularity)).color}">${Engine.util.dispPop(c.popularity)}</b></span>
-              <span style="display:inline-flex;align-items:center;gap:3px">体調<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></span>
-              <span style="color:#a06000">${srcLabel}・残${contract ? contract.weeksLeft : '?'}週</span>
+              <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></span>
             </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
+            <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end">体調<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></div>
+            <div style="margin-top:2px;color:#a06000">${srcLabel}・残${contract ? contract.weeksLeft : '?'}週</div>
           </div>
         </div>
       </div>`;
@@ -11403,6 +11407,11 @@ function _dfcImg(charId, alt) {
   if (upper) return `<img src="${upper}" alt="${alt || ''}" onerror="this.style.display='none'">`;
   return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#7a7466;background:rgba(200,190,170,0.06)">${(alt||'?').slice(0,1)}</div>`;
 }
+function _dfcImgFace(charId, alt) {
+  const face = (typeof getPortraitUrl === 'function' ? getPortraitUrl(charId) : null);
+  if (face) return `<img src="${face}" alt="${alt || ''}" onerror="this.style.display='none'">`;
+  return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#7a7466;background:rgba(200,190,170,0.06)">${(alt||'?').slice(0,1)}</div>`;
+}
 function _dfcFlavorTag(flavor) {
   // v0.2 アーキタイプ拡張: 6 種対応（自然型は廃止し結束型へ吸収）
   const map = {
@@ -11524,7 +11533,7 @@ function _dfcRenderCard(faction, state, opts = {}) {
 
   // Hero
   const leaderOvr = Engine.util.ov(leader);
-  const leaderPop = leader.popularity || 0;
+  const leaderPop = Math.round(leader.popularity || 0);
   const tagsHtml = (() => {
     const t = [];
     if (faction.authoritativeTag) t.push(`<span class="dfc-tag auth">権威型</span>`);
@@ -11571,14 +11580,14 @@ function _dfcRenderCard(faction, state, opts = {}) {
     seconds.forEach((c, idx) => {
       const role = idx === 0 ? '2ND · 中堅' : '3RD · 副将';
       const ovr = Engine.util.ov(c);
-      const pop = c.popularity || 0;
+      const pop = Math.round(c.popularity || 0);
       const archMap = { striker: 'ストライカー', technician: 'テクニシャン', flyer: 'フライヤー', powerhouse: 'パワーファイター', allrounder: 'オールラウンダー' };
       const sub = archMap[c.style] || (c.style || '—');
-      const ppCell = `<div class="pp" onclick="event.stopPropagation();showFighterPopup(${c.id},'')">${_dfcImg(c.id, c.name)}</div>`;
-      const statsCell = `<div class="stats"><div class="ovr">${ovr}</div><div class="ovr-lbl">OVR</div><div class="pop">${pop}</div></div>`;
+      const ppCell = `<div class="pp" onclick="event.stopPropagation();showFighterPopup(${c.id},'')">${_dfcImgFace(c.id, c.name)}</div>`;
+      const statsCell = `<div class="stats"><div class="ovr">${ovr}</div><div class="pop">${pop}</div></div>`;
       const nameCell = `<div class="name-block"><div class="role">${role}</div><div class="nm">${c.name}</div><div class="sub-info">${sub}</div></div>`;
       html += `<div class="dfc-roster-row">`;
-      html += isLeftSide ? `${nameCell}${statsCell}${ppCell}` : `${ppCell}${statsCell}${nameCell}`;
+      html += isLeftSide ? `${statsCell}${nameCell}${ppCell}` : `${ppCell}${nameCell}${statsCell}`;
       html += `</div>`;
     });
     html += `</div>`;
@@ -11594,7 +11603,7 @@ function _dfcRenderCard(faction, state, opts = {}) {
     html += `<div class="dfc-rankfile-tiles">`;
     tiles.forEach(c => {
       const ovr = Engine.util.ov(c);
-      html += `<div class="rf-tile" title="${c.name}" onclick="event.stopPropagation();showFighterPopup(${c.id},'')">${_dfcImg(c.id, c.name)}<div class="rf-ovr">${ovr}</div></div>`;
+      html += `<div class="rf-tile" title="${c.name}" onclick="event.stopPropagation();showFighterPopup(${c.id},'')">${_dfcImgFace(c.id, c.name)}<div class="rf-ovr">${ovr}</div></div>`;
     });
     if (overflow > 0) {
       html += `<div class="rf-tile" title="他${overflow}名" style="display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:#9a9080">+${overflow}</div>`;
