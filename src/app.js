@@ -1,25 +1,25 @@
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 0: AUDIO SYSTEM (SFX + BGM)                     笊・
-// 笊・ Web Audio API synthesized sounds 窶・no external files     笊・
-// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 0: AUDIO SYSTEM (SFX + BGM)                     ║
+// ║  Web Audio API synthesized sounds — no external files     ║
+// ╚══════════════════════════════════════════════════════════╝
 
 const Audio = (() => {
   let ctx = null;
   let masterGain = null;
-  let bgmMasterGain = null; // BGM繧ｫ繝・ざ繝ｪ蜈ｨ菴薙・繝槭せ繧ｿ繝ｼ
-  let sfxMasterGain = null; // SE繧ｫ繝・ざ繝ｪ蜈ｨ菴薙・繝槭せ繧ｿ繝ｼ
+  let bgmMasterGain = null; // BGMカテゴリ全体のマスター
+  let sfxMasterGain = null; // SEカテゴリ全体のマスター
   let sfxGain = null;
   let bgmGain = null;
   let bgmNodes = null;  // active BGM oscillator nodes
   let _muted = false;
   let _sfxVol = 0.5;
-  let _bgmVol = 0.04; // 竕・demo preview 15%
+  let _bgmVol = 0.04; // ≈ demo preview 15%
   let _bgmMuted = false; // BGM-only mute (jingles/SFX still play)
-  let _bgmMasterVol = 0.7;  // BGM繝槭せ繧ｿ繝ｼ・医ョ繝輔か繝ｫ繝・0%・・
-  let _sfxMasterVol = 1.0;  // SE繝槭せ繧ｿ繝ｼ・医ョ繝輔か繝ｫ繝・00%・・
-  // 笏笏 Per-track volume targets (bgmGain.gain.value) 笏笏
+  let _bgmMasterVol = 0.7;  // BGMマスター（デフォルト70%）
+  let _sfxMasterVol = 1.0;  // SEマスター（デフォルト100%）
+  // ── Per-track volume targets (bgmGain.gain.value) ──
   const CHIPTUNE_BGM_MIX = { kaimaku:0.19, management:0.35, battle:0.32, season_end:0.46, tension:0.42 };
-  // 笏笏 SUNO BGM file mapping (replaces chiptune for 5 main tracks) 笏笏
+  // ── SUNO BGM file mapping (replaces chiptune for 5 main tracks) ──
   const SUNO_BGM = {
     kaimaku:    { file: '../bgm/bgm_kaimaku_v1.mp3',     vol: 0.17 },
     management: { file: '../bgm/bgm_management_v1.mp3',  vol: 0.12 },
@@ -74,7 +74,7 @@ const Audio = (() => {
     try { localStorage.setItem('wm_audio', JSON.stringify({sfxVol:_sfxVol, bgmVol:_bgmVol, muted:_muted, bgmMuted:_bgmMuted, bgmMasterVol:_bgmMasterVol, sfxMasterVol:_sfxMasterVol})); } catch(e) {}
   }
 
-  // 笏笏 Utility: create a quick envelope oscillator 笏笏
+  // ── Utility: create a quick envelope oscillator ──
   function osc(freq, type, startTime, duration, gain, dest) {
     const c = ensure();
     const o = c.createOscillator();
@@ -90,7 +90,7 @@ const Audio = (() => {
     return o;
   }
 
-  // 笏笏 Utility: white noise burst 笏笏
+  // ── Utility: white noise burst ──
   function noise(startTime, duration, gain, dest) {
     const c = ensure();
     const bufSize = c.sampleRate * duration;
@@ -114,7 +114,7 @@ const Audio = (() => {
     src.stop(startTime + duration + 0.05);
   }
 
-  // 笏笏 Utility: frequency sweep oscillator 笏笏
+  // ── Utility: frequency sweep oscillator ──
   function oscSweep(f0, f1, type, startTime, duration, gain, dest) {
     const c = ensure();
     const o = c.createOscillator();
@@ -130,7 +130,7 @@ const Audio = (() => {
     o.stop(startTime + duration + 0.05);
   }
 
-  // 笏笏 Utility: filtered noise variants 笏笏
+  // ── Utility: filtered noise variants ──
   function noiseHP(startTime, duration, gain, hpFreq) {
     const c = ensure();
     const buf = c.createBuffer(1, c.sampleRate * duration, c.sampleRate);
@@ -173,7 +173,7 @@ const Audio = (() => {
     s.start(startTime); s.stop(startTime + duration + 0.05);
   }
 
-  // 笏笏 Utility: bell partial with slow decay (for metallic gong) 笏笏
+  // ── Utility: bell partial with slow decay (for metallic gong) ──
   function bellPartial(freq, startTime, duration, gain) {
     const c = ensure();
     const o = c.createOscillator();
@@ -188,11 +188,11 @@ const Audio = (() => {
     o.stop(startTime + duration * 1.2);
   }
 
-  // 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-  // 笊・ SOUND DEFINITIONS                               笊・
-  // 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+  // ╔══════════════════════════════════════════════════╗
+  // ║  SOUND DEFINITIONS                               ║
+  // ╚══════════════════════════════════════════════════╝
   const SFX = {
-    // 笏笏 UI (NEW) 笏笏
+    // ── UI (NEW) ──
     click() {
       const t = ensure().currentTime;
       noiseHP(t, 0.02, 0.08, 4000);
@@ -256,7 +256,7 @@ const Audio = (() => {
       osc(2400, 'sine', t, 0.02, 0.08);
       osc(1800, 'sine', t + 0.015, 0.025, 0.05);
     },
-    // notify繧医ｊ荳谿ｵ驥阪＞縲後・繧ｩ繝ｳ縲坂・E5竊竪5 荳頑・2髻ｳ
+    // notifyより一段重い「ポォン」— E5→G5 上昇2音
     event() {
       const t = ensure().currentTime;
       osc(659, 'sine', t, 0.09, 0.18);
@@ -265,7 +265,7 @@ const Audio = (() => {
       osc(784, 'triangle', t + 0.14, 0.05, 0.10);
       noiseHP(t + 0.14, 0.02, 0.06, 5000);
     },
-    // 繧ｽ繝輔ヨ縺ｪ繧ｷ繝ｳ繝舌Ν繝悶Λ繧ｷ・矩ｫ伜沺sine貂幄｡ｰ 窶・繧｢繝ｯ繝ｼ繝牙ｼ上せ繝ｩ繧､繝牙・譖ｿ
+    // ソフトなシンバルブラシ＋高域sine減衰 — アワード式スライド切替
     reveal() {
       const t = ensure().currentTime;
       noiseHP(t, 0.04, 0.05, 5000);
@@ -281,7 +281,7 @@ const Audio = (() => {
       osc(760, 'sine', t + 0.05, 0.08, 0.04);
     },
 
-    // 笏笏 Events (OLD: fanfare / NEW: rest) 笏笏
+    // ── Events (OLD: fanfare / NEW: rest) ──
     fanfare() {
       const t = ensure().currentTime;
       osc(523, 'sine', t, 0.15, 0.2);
@@ -316,7 +316,7 @@ const Audio = (() => {
       bellPartial(base * 6.7,  t, 1.0, 0.025);
       noiseHP(t, 0.025, 0.07, 5000);
     },
-    // Bell x3: match-end gong (繧ｫ繝ｳ繧ｫ繝ｳ繧ｫ繝ｳ)
+    // Bell x3: match-end gong (カンカンカン)
     bellx3() {
       [0, 380, 760].forEach(d => setTimeout(() => { try { SFX.bell(); } catch(e) {} }, d));
     },
@@ -370,7 +370,7 @@ const Audio = (() => {
       o.connect(f); f.connect(g); g.connect(sfxGain); o.start(t); o.stop(t + 0.4);
       noiseHP(t + 0.05, 0.15, 0.04, 3000);
     },
-    // C5-E5-G5 繝吶Ν繝上・繝｢繝九け繧ｹ・九せ繝代・繧ｯ繝ｫ 窶・蜿苓ｳ樒匱陦ｨ・・anfare莉｣譖ｿ・・
+    // C5-E5-G5 ベルハーモニクス＋スパークル — 受賞発表（fanfare代替）
     award() {
       const t = ensure().currentTime;
       bellPartial(523, t,        0.4, 0.15);
@@ -378,7 +378,7 @@ const Audio = (() => {
       bellPartial(784, t + 0.26, 0.6, 0.09);
       noiseHP(t + 0.26, 0.08, 0.04, 7000);
     },
-    // 遏ｭ縺・ラ繝ｩ繝繝ｭ繝ｼ繝ｫ 竊・繧ｷ繝ｳ繝舌Ν荳謇・窶・繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ逋ｺ陦ｨ遲・
+    // 短いドラムロール → シンバル一打 — ランキング発表等
     tension_hit() {
       const t = ensure().currentTime;
       noiseLP(t,        0.12, 0.15, 200);
@@ -388,7 +388,7 @@ const Audio = (() => {
       osc(60, 'sine',   t + 0.18, 0.4, 0.08);
     },
 
-    // 笏笏 Money (NEW) 笏笏
+    // ── Money (NEW) ──
     coin() {
       const t = ensure().currentTime;
       osc(1200, 'sine', t, 0.08, 0.1);
@@ -412,94 +412,94 @@ const Audio = (() => {
       osc(1000, 'sine', t + 0.17, 0.1, 0.08);
     },
 
-    // 笏笏 Rivalry SFX (NEW) 笏笏
-    // 螳｣謌ｦ蟶・相: 繝峨Λ繝繝ｭ繝ｼ繝ｫ竊偵ざ繝ｳ繧ｰ竊偵ヶ繝ｩ繧ｹ荳頑・竊呈ｭ灘｣ｰ
+    // ── Rivalry SFX (NEW) ──
+    // 宣戦布告: ドラムロール→ゴング→ブラス上昇→歓声
     rivalry_confrontation() {
       const t = ensure().currentTime;
-      // 1. 繝峨Λ繝繝ｭ繝ｼ繝ｫ騾｣謇難ｼ・逋ｺ縲√け繝ｬ繝・す繧ｧ繝ｳ繝会ｼ・
+      // 1. ドラムロール連打（5発、クレッシェンド）
       for (let i = 0; i < 5; i++) {
         const g = 0.04 + i * 0.025;
         noiseLP(t + i * 0.08, 0.06, g, 300);
         osc(80 + i * 5, 'sine', t + i * 0.08, 0.05, g * 0.5);
       }
-      // 2. 繧ｴ繝ｳ繧ｰ荳謇・
+      // 2. ゴング一打
       osc(90, 'sine', t + 0.4, 1.2, 0.12);
       osc(800, 'sine', t + 0.4, 0.3, 0.06);
       osc(1600, 'sine', t + 0.4, 0.15, 0.03);
       noiseHP(t + 0.4, 0.08, 0.06, 5000);
-      // 3. 繝悶Λ繧ｹ荳頑・・区ｭ灘｣ｰ
+      // 3. ブラス上昇＋歓声
       oscSweep(200, 500, 'sawtooth', t + 0.7, 0.4, 0.05);
       noiseHP(t + 0.8, 0.6, 0.04, 2000);
     },
-    // 螳ｿ蜻ｽ縺ｮ逶ｸ謇・螳｣謌ｦ蟶・相: 繧医ｊ螟ｪ縺城聞縺・
+    // 宿命の相手 宣戦布告: より太く長い
     fate_confrontation() {
       const t = ensure().currentTime;
       const vol = 1.2;
-      // 1. 繝峨Λ繝繝ｭ繝ｼ繝ｫ騾｣謇難ｼ・逋ｺ縲√け繝ｬ繝・す繧ｧ繝ｳ繝峨・浹驥・.2蛟搾ｼ・
+      // 1. ドラムロール連打（5発、クレッシェンド、音量1.2倍）
       for (let i = 0; i < 5; i++) {
         const g = (0.04 + i * 0.025) * vol;
         noiseLP(t + i * 0.08, 0.06, g, 300);
         osc(80 + i * 5, 'sine', t + i * 0.08, 0.05, g * 0.5);
       }
-      // 2. 繧ｴ繝ｳ繧ｰ荳謇・
+      // 2. ゴング一打
       osc(90, 'sine', t + 0.4, 1.2, 0.12 * vol);
       osc(800, 'sine', t + 0.4, 0.3, 0.06 * vol);
       osc(1600, 'sine', t + 0.4, 0.15, 0.03 * vol);
       noiseHP(t + 0.4, 0.08, 0.06 * vol, 5000);
-      // 3. 繝悶Λ繧ｹ荳頑・・区ｭ灘｣ｰ・亥ｻｶ髟ｷ・・
+      // 3. ブラス上昇＋歓声（延長）
       oscSweep(200, 500, 'sawtooth', t + 0.7, 0.4, 0.05 * vol);
       noiseHP(t + 0.8, 0.9, 0.04 * vol, 2000);
-      // 4. 螟ｪ縺・ｽ朱浹・玖ｿｽ蜉繝悶Λ繧ｹ
+      // 4. 太い低音＋追加ブラス
       osc(60, 'sine', t + 0.5, 1.5, 0.08);
       oscSweep(300, 600, 'sawtooth', t + 0.8, 0.5, 0.04);
     },
-    // 螳ｿ謨ｵ豎ｺ逹: 繧､繝ｳ繝代け繝茨ｼ九ヵ繧｡繝ｳ繝輔ぃ繝ｼ繝ｬ・区ｭ灘｣ｰ
+    // 宿敵決着: インパクト＋ファンファーレ＋歓声
     rivalry_resolution() {
       const t = ensure().currentTime;
-      // 繧､繝ｳ繝代け繝・
+      // インパクト
       osc(60, 'sine', t, 0.3, 0.1);
       noise(t, 0.06, 0.1);
-      // 繝輔ぃ繝ｳ繝輔ぃ繝ｼ繝ｬ・・髻ｳ・・
+      // ファンファーレ（4音）
       bellPartial(523, t + 0.1,  0.5, 0.12);
       bellPartial(659, t + 0.22, 0.6, 0.10);
       bellPartial(784, t + 0.36, 0.7, 0.08);
       bellPartial(1047, t + 0.5, 0.8, 0.06);
-      // 豁灘｣ｰ
+      // 歓声
       noiseHP(t + 0.3, 0.8, 0.05, 2000);
       noiseHP(t + 0.5, 0.5, 0.03, 5000);
     },
-    // 螳ｿ蜻ｽ縺ｮ逶ｸ謇・譛邨よｱｺ逹: 螢ｮ螟ｧ迚・
+    // 宿命の相手 最終決着: 壮大版
     fate_resolution() {
       const t = ensure().currentTime;
-      // 豺ｱ縺・う繝ｳ繝代け繝・
+      // 深いインパクト
       osc(50, 'sine', t, 0.5, 0.12);
       osc(100, 'sine', t, 0.3, 0.08);
       noise(t, 0.08, 0.12);
-      // 螢ｮ螟ｧ繝輔ぃ繝ｳ繝輔ぃ繝ｼ繝ｬ・・髻ｳ・・
+      // 壮大ファンファーレ（5音）
       bellPartial(523, t + 0.1,  0.7, 0.14);
       bellPartial(659, t + 0.25, 0.8, 0.12);
       bellPartial(784, t + 0.4,  0.9, 0.10);
       bellPartial(1047, t + 0.55, 1.0, 0.08);
       bellPartial(1319, t + 0.7, 0.8, 0.06);
-      // 螟ｧ豁灘｣ｰ
+      // 大歓声
       noiseHP(t + 0.3, 1.2, 0.06, 2000);
       noiseHP(t + 0.6, 0.8, 0.04, 5000);
-      // 菴朱浹縺ｮ驥阪∩
+      // 低音の重み
       osc(65, 'sine', t + 0.5, 1.0, 0.06);
       oscSweep(200, 400, 'sawtooth', t + 0.8, 0.5, 0.03);
     },
   };
 
-  // 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-  // 笊・ BGM SYSTEM 窶・SFC-style chiptune (v1.0)         笊・
-  // 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+  // ╔══════════════════════════════════════════════════╗
+  // ║  BGM SYSTEM — SFC-style chiptune (v1.0)         ║
+  // ╚══════════════════════════════════════════════════╝
   const NT = { // Note frequencies
     C3:130.81,D3:146.83,Eb3:155.56,E3:164.81,F3:174.61,G3:196.00,A3:220.00,Bb3:233.08,B3:246.94,
     C4:261.63,D4:293.66,Eb4:311.13,E4:329.63,F4:349.23,G4:392.00,Ab4:415.30,A4:440.00,Bb4:466.16,B4:493.88,
     C5:523.25,D5:587.33,Eb5:622.25,E5:659.25,F5:698.46,G5:783.99,A5:880.00,Bb5:932.33,B5:987.77,C6:1046.50,D6:1174.66
   };
 
-  // 笏笏 Helpers: note + drum synthesis 笏笏
+  // ── Helpers: note + drum synthesis ──
   function bgmNote(freq, type, t0, dur, gain) {
     const c = ensure();
     const o = c.createOscillator();
@@ -553,22 +553,22 @@ const Audio = (() => {
     _interval: null,
     _current: null, // track name: 'kaimaku','management','battle','season_end'
 
-    // 笏笏 Public API 笏笏
+    // ── Public API ──
     play(trackName) {
-      if (_bgmMuted) return; // BGM muted 窶・skip looping tracks
-      // SUNO MP3縺後≠繧区峇縺ｯFileBGM縺ｧ蜀咲函
+      if (_bgmMuted) return; // BGM muted — skip looping tracks
+      // SUNO MP3がある曲はFileBGMで再生
       const suno = SUNO_BGM[trackName];
       if (suno) {
-        // FileBGM._audio 縺梧ｶ医∴縺ｦ縺・◆繧峨悟・逕滉ｸｭ縲阪→隕九↑縺輔★蜀咲函縺礼峩縺・
+        // FileBGM._audio が消えていたら「再生中」と見なさず再生し直す
         if (trackName === BGM._current && BGM._playing && FileBGM._audio) return;
         BGM.stop();
         FileBGM.play(suno.file, { loop: true, volume: suno.vol });
-        // FileBGM.play()蜀・Κ縺ｧBGM.stop()縺悟他縺ｰ繧後ｋ縺溘ａ縲∫憾諷九そ繝・ヨ縺ｯ縺昴・蠕後↓陦後≧
+        // FileBGM.play()内部でBGM.stop()が呼ばれるため、状態セットはその後に行う
         BGM._playing = true;
         BGM._current = trackName;
         return;
       }
-      // 繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ: 繝√ャ繝励メ繝･繝ｼ繝ｳ
+      // フォールバック: チップチューン
       if (trackName === BGM._current && BGM._playing) return;
       if (FileBGM._audio) FileBGM.stop();
       BGM.stop();
@@ -584,7 +584,7 @@ const Audio = (() => {
 
     playJingle(name) {
       BGM.stop(); // Stop looping BGM, then play jingle (always plays regardless of bgmMuted)
-      // 繧ｿ繧､繝医Ν謌ｴ蜀: MP3繝輔ぃ繧､繝ｫ迚医ｒ菴ｿ逕ｨ・・gmMuted辟｡隕悶〒蠢・★蜀咲函・・
+      // タイトル戴冠: MP3ファイル版を使用（bgmMuted無視で必ず再生）
       if (name === 'championship') {
         FileBGM.stop();
         const a = new window.Audio('../bgm/fanfare_brass_v1.mp3');
@@ -632,16 +632,16 @@ const Audio = (() => {
       if (wasSuno && FileBGM._audio) FileBGM.stop();
     },
 
-    // 笏笏 Track implementations 笏笏
+    // ── Track implementations ──
     _tracks: {
-      // 笊絶武笊・BGM 1: 髢句ｹ・(BPM 115, D minor) 窶・髱吶°縺ｪ邱願ｿｫ諢・笊絶武笊・
+      // ═══ BGM 1: 開幕 (BPM 115, D minor) — 静かな緊迫感 ═══
       kaimaku() {
         const bpm = 115, beat = 60 / bpm, bar = beat * 4;
         const mg = 0.06, bg = 0.04, dg = 0.025;
         function scheduleLoop() {
           if (BGM._current !== 'kaimaku') return;
           const t0 = ensure().currentTime + 0.005;
-          // Riff (square) 窶・tense, syncopated
+          // Riff (square) — tense, syncopated
           const riff = [
             [NT.D4,.5],[0,.25],[NT.F4,.25],[NT.A4,.5],[NT.G4,.5],[NT.F4,.5],[0,.5],
             [NT.E4,.5],[NT.D4,.25],[NT.E4,.25],[NT.F4,1],[0,1],
@@ -680,7 +680,7 @@ const Audio = (() => {
         BGM._interval = setInterval(() => { if (BGM._current === 'kaimaku') scheduleLoop(); }, bar * 8 * 1000 - 200);
       },
 
-      // 笊絶武笊・BGM 2: 蝗｣菴馴°蝟ｶ (BPM 100, F major) 笊絶武笊・
+      // ═══ BGM 2: 団体運営 (BPM 100, F major) ═══
       management() {
         const bpm = 100, beat = 60 / bpm, bar = beat * 4;
         const mg = 0.055, ag = 0.03, bg = 0.04;
@@ -714,14 +714,14 @@ const Audio = (() => {
         BGM._interval = setInterval(() => { if (BGM._current === 'management') scheduleLoop(); }, bar * 8 * 1000 - 200);
       },
 
-      // 笊絶武笊・BGM 3: 豼髣・(BPM 138, A minor) 笊絶武笊・
+      // ═══ BGM 3: 激闘 (BPM 138, A minor) ═══
       battle() {
         const bpm = 138, beat = 60 / bpm, bar = beat * 4;
         const mg = 0.06, hg = 0.03, bg = 0.045, dg = 0.035;
         function scheduleLoop() {
           if (BGM._current !== 'battle') return;
           const t0 = ensure().currentTime + 0.005;
-          // Melody (sawtooth 窶・brass)
+          // Melody (sawtooth — brass)
           const mel = [
             [NT.A4,.5],[NT.C5,.5],[NT.D5,.5],[NT.E5,.5],[NT.E5,1],[NT.D5,1],
             [NT.C5,.5],[NT.D5,.5],[NT.C5,.5],[NT.A4,.5],[NT.A4,1.5],[0,.5],
@@ -762,7 +762,7 @@ const Audio = (() => {
         BGM._interval = setInterval(() => { if (BGM._current === 'battle') scheduleLoop(); }, bar * 8 * 1000 - 200);
       },
 
-      // 笊絶武笊・BGM 5: 遽逶ｮ (BPM 80, Em 竊・G) 笊絶武笊・
+      // ═══ BGM 5: 節目 (BPM 80, Em → G) ═══
       season_end() {
         const bpm = 80, beat = 60 / bpm, bar = beat * 4;
         const mg = 0.055, ag = 0.025, bg = 0.035;
@@ -796,7 +796,7 @@ const Audio = (() => {
         BGM._interval = setInterval(() => { if (BGM._current === 'season_end') scheduleLoop(); }, bar * 8 * 1000 - 200);
       },
 
-      // 笊絶武笊・BGM 6: 邱雁ｼｵ (BPM 72, Dm 窶・荳咲ｩ上↑蟇ｾ謚玲姶繝√Ε繝ｬ繝ｳ繧ｸ) 笊絶武笊・
+      // ═══ BGM 6: 緊張 (BPM 72, Dm — 不穏な対抗戦チャレンジ) ═══
       tension() {
         const bpm = 72, beat = 60 / bpm, bar = beat * 4;
         const mg = 0.045, bg = 0.035, dg = 0.02;
@@ -806,7 +806,7 @@ const Audio = (() => {
           // Low drone: sustained dissonant bass
           bgmNote(NT.D3/2,'triangle',t0,bar*8*0.95,bg*1.2);
           bgmNote(NT.Eb3/2,'triangle',t0+0.05,bar*8*0.95,bg*0.4); // dissonance
-          // Melody (square 窶・sparse, threatening)
+          // Melody (square — sparse, threatening)
           const mel = [
             [0,4],[NT.D4,1],[NT.F4,.5],[NT.E4,.5],[0,2],
             [NT.A4,1.5],[NT.G4,.5],[NT.F4,1],[NT.E4,1],
@@ -835,7 +835,7 @@ const Audio = (() => {
       }
     },
 
-    // 笏笏 Jingle implementations 笏笏
+    // ── Jingle implementations ──
     _jingles: {
       victory() {
         const t0 = ensure().currentTime + 0.005;
@@ -878,7 +878,7 @@ const Audio = (() => {
       }
     },
 
-    // 笏笏 Smart BGM selector based on game state 笏笏
+    // ── Smart BGM selector based on game state ──
     playForState() {
       if (!G) return;
       if (G.weekPhase === 'draft' || G.weekPhase === 'opening') { BGM.play('kaimaku'); return; }
@@ -893,20 +893,20 @@ const Audio = (() => {
         }
         BGM.play('tension'); return;
       }
-      // draft-negotiation-spec ﾂｧ8.1: 繝峨Λ繝輔ヨ騾溷ｱ+莠､貂画凾縺ｯtension
+      // draft-negotiation-spec §8.1: ドラフト速報+交渉時はtension
       if (G.weekPhase === 'scoutEvent' && (G._draftInterests || G._draftNegotiation)) { BGM.play('tension'); return; }
       BGM.play('management'); // management + showPrep + draft newspaper all use this
     }
   };
 
-  // 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-  // 笊・ FileBGM: HTMLAudioElement 繝吶・繧ｹ縺ｮ繝輔ぃ繧､繝ｫBGM   笊・
-  // 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+  // ╔══════════════════════════════════════════════════╗
+  // ║  FileBGM: HTMLAudioElement ベースのファイルBGM   ║
+  // ╚══════════════════════════════════════════════════╝
   const FileBGM = {
     _audio: null,
     _fadeTimer: null,
     _mix: 1,
-    _vol: null, // 譏守､ｺ逧ёolume菫晄戟・・pdateVolume縺ｧ菴ｿ逕ｨ・・
+    _vol: null, // 明示的volume保持（updateVolumeで使用）
     _resolveVolume(volume = null, mix = 1) {
       if (volume !== null) return Math.min(1.0, _bgmMasterVol * volume);
       return Math.min(1.0, _bgmMasterVol * _bgmVol * 8 * mix);
@@ -954,9 +954,9 @@ const Audio = (() => {
     }
   };
 
-  // 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-  // 笊・ PUBLIC API                                      笊・
-  // 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+  // ╔══════════════════════════════════════════════════╗
+  // ║  PUBLIC API                                      ║
+  // ╚══════════════════════════════════════════════════╝
   return {
     play(name) { if (!_muted && SFX[name]) { try { ensure(); if (SE_MIX[name] !== undefined) sfxGain.gain.value = SE_MIX[name]; SFX[name](); } catch(e) {} } },
     bgm: BGM,
@@ -973,7 +973,7 @@ const Audio = (() => {
     setBgmVol(v) { _bgmVol = v; if (bgmGain) bgmGain.gain.value = v; FileBGM.updateVolume(); savePrefs(); },
     get sfxVol() { return _sfxVol; },
     get bgmVol() { return _bgmVol; },
-    // BGM/SE 繝槭せ繧ｿ繝ｼ髻ｳ驥・
+    // BGM/SE マスター音量
     setBgmMasterVol(v) { _bgmMasterVol = v; if (bgmMasterGain) bgmMasterGain.gain.value = v; FileBGM.updateVolume(); savePrefs(); },
     setSfxMasterVol(v) { _sfxMasterVol = v; if (sfxMasterGain) sfxMasterGain.gain.value = v; savePrefs(); },
     get bgmMasterVol() { return _bgmMasterVol; },
@@ -985,8 +985,8 @@ const Audio = (() => {
       if (_bgmMuted) { BGM.stop(); FileBGM.stop(); } else BGM.playForState();
       savePrefs();
     },
-    // 笏笏 豢ｾ髢･繧､繝吶Φ繝域ｼ泌・逕ｨ: 繝ｯ繝ｳ繧ｷ繝ｧ繝・ヨ stinger・・GM 縺ｫ隗ｦ繧後↑縺・ｼ・笏笏
-    // SE 繝槭せ繧ｿ繝ｼ繝懊Μ繝･繝ｼ繝驕ｩ逕ｨ縲∝・菴・mute 譎ゅ・辟｡髻ｳ
+    // ── 派閥イベント演出用: ワンショット stinger（BGM に触れない） ──
+    // SE マスターボリューム適用、全体 mute 時は無音
     stinger(src, volume = 0.15) {
       try {
         if (_muted) return;
@@ -998,18 +998,18 @@ const Audio = (() => {
   };
 })();
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ FACTION EVENT AUDIO MAP (v6 ﾂｧ2-1)                       笊・
-// 笊・ handoff-v6 縺ｮ BGM/stinger 逋ｻ骭ｲ陦ｨ繧偵ョ繝ｼ繧ｿ蛹・             笊・
-// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  FACTION EVENT AUDIO MAP (v6 §2-1)                       ║
+// ║  handoff-v6 の BGM/stinger 登録表をデータ化              ║
+// ╚══════════════════════════════════════════════════════════╝
 const FACTION_AUDIO = {
   SOFT:    '../bgm/Soft Bids, Sharp Minds.mp3',
   TENSION: '../bgm/bgm_tension_v1.mp3',
   GONG:    '../bgm/f07_gong_v1.mp3',
   CHIME:   '../bgm/f06_fin_chime_v1.mp3',
 };
-// 蜷・う繝吶Φ繝医・ { src, volume, openStinger?, closeStinger? }
-// closeStinger 縺ｯ邨先棡繝｢繝ｼ繝繝ｫ縺ｮ縲碁哩縺倥ｋ縲阪け繝ｪ繝・け譎ゅ↓ fadeOut 逶ｴ蜑阪〒蜀咲函
+// 各イベントの { src, volume, openStinger?, closeStinger? }
+// closeStinger は結果モーダルの「閉じる」クリック時に fadeOut 直前で再生
 const FACTION_AUDIO_MAP = {
   F01:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
   F02:            { src: FACTION_AUDIO.TENSION, volume: 0.17 },
@@ -1020,7 +1020,7 @@ const FACTION_AUDIO_MAP = {
   F03:            { src: FACTION_AUDIO.SOFT,    volume: 0.10,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.09 } },
   F04:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
   F05H:           { src: FACTION_AUDIO.SOFT,    volume: 0.10,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.09 } },
-  // ﾂｧ2-3 v7 遒ｺ螳夲ｼ・action-events.md ﾂｧ髻ｳ髻ｿ險ｭ險・陦ｨ諡｡蠑ｵ縺ｫ貅匁侠・・
+  // §2-3 v7 確定（faction-events.md §音響設計 表拡張に準拠）
   F05:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
   F06:            { src: FACTION_AUDIO.SOFT,    volume: 0.16,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.10 } },
   F07:            { src: FACTION_AUDIO.TENSION, volume: 0.15 },
@@ -1031,20 +1031,20 @@ const FACTION_AUDIO_MAP = {
   COMMON_7:       { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
 };
 
-// 豢ｾ髢･繧､繝吶Φ繝医Δ繝ｼ繝繝ｫ髢句ｹ墓凾: BGM 蛻・崛 + openStinger
-// 譌｢蟄・BGM (management/tension chiptune 遲・ 縺ｯ FileBGM.play 縺悟・驛ｨ縺ｧ豁｢繧√ｋ
+// 派閥イベントモーダル開幕時: BGM 切替 + openStinger
+// 既存 BGM (management/tension chiptune 等) は FileBGM.play が内部で止める
 function _factionAudioOpen(eventId) {
   const cfg = FACTION_AUDIO_MAP[eventId];
   if (!cfg) return;
   try { Audio.fileBgm.play(cfg.src, { loop: true, volume: cfg.volume }); } catch(e) {}
   if (cfg.openStinger) {
-    // BGM 縺檎ｫ九■荳翫′繧区ｰ鈴・繧定ｦ九○縺ｦ縺九ｉ1逋ｺ魑ｴ繧峨☆・・adeOut 縺ｨ驥阪↑繧峨↑縺・ｈ縺・↓ 150ms 驕・ｻｶ・・
+    // BGM が立ち上がる気配を見せてから1発鳴らす（fadeOut と重ならないように 150ms 遅延）
     setTimeout(() => { try { Audio.stinger(cfg.openStinger.src, cfg.openStinger.volume); } catch(e) {} }, 150);
   }
 }
 
-// 豢ｾ髢･繧､繝吶Φ繝育ｵ先棡繝｢繝ｼ繝繝ｫ縲碁哩縺倥ｋ縲阪け繝ｪ繝・け譎・
-// closeStinger 竊・BGM fadeOut 竊・playForState 縺ｧ騾壼ｸｸ BGM 繧貞ｾｩ蟶ｰ
+// 派閥イベント結果モーダル「閉じる」クリック時:
+// closeStinger → BGM fadeOut → playForState で通常 BGM を復帰
 function _factionAudioClose(eventId) {
   const cfg = FACTION_AUDIO_MAP[eventId];
   if (cfg && cfg.closeStinger) {
@@ -1055,7 +1055,7 @@ function _factionAudioClose(eventId) {
 }
 
 
-// 笏笏 D螻､繧ｻ繝ｬ繝｢繝九・繧､繝吶Φ繝・BGM蛻ｶ蠕｡ 笏笏
+// ── D層セレモニーイベント BGM制御 ──
 function _ceremAudioOpen(visualVariant) {
   const src = visualVariant === 'arrival'
     ? '../bgm/bgm_kaimaku_v1.mp3'
@@ -1067,18 +1067,18 @@ function _ceremAudioClose() {
   setTimeout(() => { try { Audio.bgm.playForState(); } catch(e) {} }, 1600);
 }
 
-// D螻､繧ｻ繝ｬ繝｢繝九・繧､繝吶Φ繝域悽菴・
-// evt: MILESTONE_EVENTS繧ｨ繝ｳ繝医Μ・・ialogueKey/narration/narrationGaps/visualVariant/continueLabel・・
-// speakers: [{fighter, roleLabel}, ...] (_resolveSpotlightFighters 縺ｮ謌ｻ繧雁､)
-// onContinue: 邯壹￠繧九・繧ｿ繝ｳ繧ｯ繝ｪ繝・け譎ゅ・繧ｳ繝ｼ繝ｫ繝舌ャ繧ｯ
+// D層セレモニーイベント本体
+// evt: MILESTONE_EVENTSエントリ（dialogueKey/narration/narrationGaps/visualVariant/continueLabel）
+// speakers: [{fighter, roleLabel}, ...] (_resolveSpotlightFighters の戻り値)
+// onContinue: 続けるボタンクリック時のコールバック
 function showCeremonyEvent(evt, speakers, onContinue) {
-  // 繧ｿ繧､繝医Ν繧ｵ繝門虚逧・函謌・
+  // タイトルサブ動的生成
   let titleSub = evt.titleSub;
   if (evt.visualVariant === 'arrival') {
-    titleSub = evt.titleSub + ' 繝ｻ WEEK ' + G.week;
+    titleSub = evt.titleSub + ' ・ WEEK ' + G.week;
   } else if (evt.visualVariant === 'triumph') {
     const att = (G.lastShowAttendance || 0).toLocaleString();
-    titleSub = evt.titleSub + ' 繝ｻ ' + att + ' ATTENDED';
+    titleSub = evt.titleSub + ' ・ ' + att + ' ATTENDED';
   }
 
   const overlay = document.createElement('div');
@@ -1137,17 +1137,17 @@ function showCeremonyEvent(evt, speakers, onContinue) {
         <div class="cerem-trio">${speakerHtml}</div>
       </div>
       <div class="cerem-phase-zone bottom">
-        <button class="cerem-continue-btn">${evt.continueLabel || '邯壹￠繧・}</button>
+        <button class="cerem-continue-btn">${evt.continueLabel || '続ける'}</button>
       </div>
     </div>
-    <div class="cerem-hint">笆ｼ 繧ｯ繝ｪ繝・け縺ｧ騾ｲ繧</div>
-    <button class="cerem-skip" data-cerem-skip>笆ｷ SKIP</button>
+    <div class="cerem-hint">▼ クリックで進む</div>
+    <button class="cerem-skip" data-cerem-skip>▷ SKIP</button>
   `;
 
   document.body.appendChild(overlay);
   _ceremAudioOpen(evt.visualVariant);
 
-  // SceneController 繝ｭ繧ｸ繝・け
+  // SceneController ロジック
   const phase1El = overlay.querySelector('[data-phase="1"]');
   const phase2El = overlay.querySelector('[data-phase="2"]');
   const narEls = Array.from(overlay.querySelectorAll('.cerem-nar-line'));
@@ -1227,32 +1227,32 @@ function hasPlayerHistoricRank1(state) {
   return (state.seasonHistory || []).some(season => (season?.rank || 99) === 1);
 }
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 6c: SURVIVAL GAUGE (v0.97)                        笊・
-// 笊・ Startup deficit tracker 窶・pure functions, no DOM          笊・
-// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 6c: SURVIVAL GAUGE (v0.97)                        ║
+// ║  Startup deficit tracker — pure functions, no DOM          ║
+// ╚══════════════════════════════════════════════════════════╝
 
 const SURVIVAL_MILESTONES = [
-  { id:'first_show_rev',  icon:'闊・, label:'蛻晁・陦悟庶蜈･', desc:'闊郁｡後〒繝√こ繝・ヨ繝ｻ繧ｰ繝・ぜ蜿主・繧貞ｾ励◆',
+  { id:'first_show_rev',  icon:'興', label:'初興行収入', desc:'興行でチケット・グッズ収入を得た',
     check: G => (G.seasonStats?.totalRevenue || 0) > 0 || G.seasonHistory?.some(s => s.totalRevenue > 0) },
-  { id:'sponsor_unlock',  icon:'驥・, label:'繧ｹ繝昴Φ繧ｵ繝ｼ迯ｲ蠕・, desc:'莠ｺ豌・0蛻ｰ驕斐〒繧ｹ繝昴Φ繧ｵ繝ｼ蜿主・縺檎匱逕・,
+  { id:'sponsor_unlock',  icon:'金', label:'スポンサー獲得', desc:'人気20到達でスポンサー収入が発生',
     check: G => G.orgPop >= 20 },
-  { id:'first_profit_wk', icon:'笆ｲ', label:'蛻昴・譛域ｬ｡鮟貞ｭ・, desc:'逶ｴ霑・騾ｱ縺ｮ蜷郁ｨ亥庶謾ｯ縺後・繝ｩ繧ｹ縺ｫ縺ｪ縺｣縺・,
+  { id:'first_profit_wk', icon:'▲', label:'初の月次黒字', desc:'直近4週の合計収支がプラスになった',
     check: G => {
       const buf = G.recentWeeklyNet || [0,0,0,0];
       return buf.reduce((a,b) => a+b, 0) >= 0 && (G.weeklyFinance != null);
     }},
-  { id:'profit_streak3',  icon:'笳・, label:'2繝ｶ譛磯｣邯壽怦谺｡鮟貞ｭ・, desc:'螳牙ｮ夂ｵ悟霧縺瑚ｦ九∴縺ｦ縺阪◆',
+  { id:'profit_streak3',  icon:'◆', label:'2ヶ月連続月次黒字', desc:'安定経営が見えてきた',
     check: G => (G.rollingNet4Count || 0) >= 2 },
-  { id:'graduation',      icon:'譚ｯ', label:'邨悟霧螳牙ｮ壼喧', desc:'譛域ｬ｡鮟貞ｭ怜ｮ夂捩・玖ｳ・≡遒ｺ菫晢ｼ√し繝舌う繝舌Ν繧ｯ繝ｪ繧｢',
+  { id:'graduation',      icon:'杯', label:'経営安定化', desc:'月次黒字定着＋資金確保！サバイバルクリア',
     check: G => G.survivalCleared === true },
 ];
 
 const SURVIVAL_PHASES = [
-  { id:'red',    label:'襍､蟄怜慍迯・,   color:'#e74c3c', emoji:'笳・, cssClass:'phase-red' },
-  { id:'orange', label:'襍､蟄礼ｸｮ蟆・,   color:'#e67e22', emoji:'笳・, cssClass:'phase-orange' },
-  { id:'yellow', label:'謳咲寢蛻・ｲ千せ', color:'#f1c40f', emoji:'笳・, cssClass:'phase-yellow' },
-  { id:'green',  label:'鮟貞ｭ苓ｻ｢謠・,   color:'#2ecc71', emoji:'笳・, cssClass:'phase-green' },
+  { id:'red',    label:'赤字地獄',   color:'#e74c3c', emoji:'●', cssClass:'phase-red' },
+  { id:'orange', label:'赤字縮小',   color:'#e67e22', emoji:'●', cssClass:'phase-orange' },
+  { id:'yellow', label:'損益分岐点', color:'#f1c40f', emoji:'●', cssClass:'phase-yellow' },
+  { id:'green',  label:'黒字転換',   color:'#2ecc71', emoji:'●', cssClass:'phase-green' },
 ];
 
 const Survival = {
@@ -1273,10 +1273,10 @@ const Survival = {
     let avgShowIncomePerWeek = 0;
     if (G.lastShowResults && G.lastShowResults.length > 0 && G.weeklyFinance) {
       const showIncome = G.weeklyFinance.details
-        .filter(d => d.type === 'income' && (d.label.includes('繝√こ繝・ヨ') || d.label.includes('繧ｰ繝・ぜ')))
+        .filter(d => d.type === 'income' && (d.label.includes('チケット') || d.label.includes('グッズ')))
         .reduce((s, d) => s + d.val, 0);
       const showCost = G.weeklyFinance.details
-        .filter(d => d.type === 'expense' && d.label.includes('莨壼ｴ'))
+        .filter(d => d.type === 'expense' && d.label.includes('会場'))
         .reduce((s, d) => s + Math.abs(d.val), 0);
       avgShowIncomePerWeek = Math.round((showIncome - showCost) / 4); // amortized over 4 weeks
     }
@@ -1318,7 +1318,7 @@ const Survival = {
     }));
   },
 
-  // Update survival state 窶・called each week. Returns updated state + events.
+  // Update survival state — called each week. Returns updated state + events.
   updateSurvival(G) {
     if (G.survivalCleared) return { state: G, events: [], graduated: false };
 
@@ -1343,7 +1343,7 @@ const Survival = {
       if (buf.length > 4) buf.shift();
       s = { ...s, recentWeeklyNet: buf };
 
-      // Every 4 weeks, check if rolling sum >= 0 竊・count as "譛域ｬ｡鮟貞ｭ・
+      // Every 4 weeks, check if rolling sum >= 0 → count as "月次黒字"
       if (s.week >= 4 && s.week % 4 === 0) {
         const rollingSum = buf.reduce((a,b) => a+b, 0);
         if (rollingSum >= 0) {
@@ -1356,63 +1356,63 @@ const Survival = {
     const graduated = (s.rollingNet4Count || 0) >= 2 && s.funds >= 3000;
     if (graduated && !s.survivalCleared) {
       s = { ...s, survivalCleared: true, survivalClearWeek: s.week, survivalClearSeason: s.season };
-      events.push('至 邨悟霧螳牙ｮ壼喧驕疲・・・繧ｵ繝舌う繝舌Ν繝√Ε繝ｬ繝ｳ繧ｸ繧ｯ繝ｪ繧｢・・);
+      events.push('🎊 経営安定化達成！ サバイバルチャレンジクリア！');
     }
 
     return { state: s, events, graduated };
   }
 };
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 7: STORAGE (v0.85)                               笊・
-// 笊・ Save/Load with v0.8 backward compatibility               笊・
-// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 7: STORAGE (v0.85)                               ║
+// ║  Save/Load with v0.8 backward compatibility               ║
+// ╚══════════════════════════════════════════════════════════╝
 
 const SAVE_KEY = 'wrestle_manager_save_';
 const SAVE_SLOTS = 3;
 const AUTOSAVE_KEY = 'wrestle_manager_autosave';
 const SAVE_COMPRESS_MARKER = 'WM_LZ|';
 
-// 笏笏笏 繧ｻ繝ｼ繝悶ョ繝ｼ繧ｿ 繝医Μ繝溘Φ繧ｰ螳壽焚 笏笏笏
+// ─── セーブデータ トリミング定数 ───
 const SAVE_TRIM = {
-  gameLogMax: 200,       // gameLog荳企剞
-  growthLogMax: 100,     // 繧ｭ繝｣繝ｩ豈使rowthLog荳企剞
-  financeKeepSeasons: 2, // financeHistory菫晄戟繧ｷ繝ｼ繧ｺ繝ｳ謨ｰ
-  matchupLogMax: 60,     // matchupLog荳企剞・・2show遯・+ 菴呵｣包ｼ・
-  aiMatchupLogMax: 40,   // AI蝗｣菴杜atchupLog荳企剞
-  h2hHistoryMax: 50,     // h2h.history[] 繝壹い豈惹ｸ企剞
+  gameLogMax: 200,       // gameLog上限
+  growthLogMax: 100,     // キャラ毎growthLog上限
+  financeKeepSeasons: 2, // financeHistory保持シーズン数
+  matchupLogMax: 60,     // matchupLog上限（12show窓 + 余裕）
+  aiMatchupLogMax: 40,   // AI団体matchupLog上限
+  h2hHistoryMax: 50,     // h2h.history[] ペア毎上限
 };
 
 const Storage = {
-  // 笏笏笏 繧ｻ繝ｼ繝悶ョ繝ｼ繧ｿ蝨ｧ邵ｮ: 繝医Μ繝溘Φ繧ｰ + LZ-UTF16 笏笏笏
+  // ─── セーブデータ圧縮: トリミング + LZ-UTF16 ───
   serialize(G) {
     const state = JSON.parse(JSON.stringify(G));
     state.roster.forEach(c => {
       delete c._weekAction; c.intensive = false;
-      // growthLog 繝医Μ繝溘Φ繧ｰ
+      // growthLog トリミング
       if (c.growthLog && c.growthLog.length > SAVE_TRIM.growthLogMax) {
         c.growthLog = c.growthLog.slice(-SAVE_TRIM.growthLogMax);
       }
     });
-    // P4-P6: transient Glimpse 繝輔ぅ繝ｼ繝ｫ繝蛾勁螟・
+    // P4-P6: transient Glimpse フィールド除外
     delete state._pendingGlimpseA;
     delete state._pendingGlimpseB;
     delete state._pendingHotStreakEnds;
     delete state._pendingMilestone;
-    // gameLog 繝医Μ繝溘Φ繧ｰ
+    // gameLog トリミング
     if (state.gameLog && state.gameLog.length > SAVE_TRIM.gameLogMax) {
       state.gameLog = state.gameLog.slice(-SAVE_TRIM.gameLogMax);
     }
-    // debugLog 縺ｯ菫晏ｭ倅ｸ崎ｦ・
+    // debugLog は保存不要
     state.debugLog = [];
-    // financeHistory: 逶ｴ霑鮮 繧ｷ繝ｼ繧ｺ繝ｳ縺ｮ縺ｿ
+    // financeHistory: 直近N シーズンのみ
     if (state.financeHistory && state.financeHistory.length > 0) {
       const minSeason = state.season - SAVE_TRIM.financeKeepSeasons + 1;
       state.financeHistory = state.financeHistory.filter(h => h.season >= minSeason);
     }
-    // matchupLog 繝医Μ繝溘Φ繧ｰ・磯ｮｮ蠎ｦ險育ｮ励・逶ｴ霑・2show縺ｮ縺ｿ菴ｿ逕ｨ縲”asEverFought縺ｯ繝壹いSet縺ｧ莉｣譖ｿ・・
+    // matchupLog トリミング（鮮度計算は直近12showのみ使用、hasEverFoughtはペアSetで代替）
     if (state.matchupLog && state.matchupLog.length > SAVE_TRIM.matchupLogMax) {
-      // hasEverFought逕ｨ縺ｮ繝壹い繧ｻ繝・ヨ繧呈ｧ狗ｯ会ｼ亥・螻･豁ｴ縺九ｉ・・
+      // hasEverFought用のペアセットを構築（全履歴から）
       const everFoughtSet = new Set();
       state.matchupLog.forEach(e => {
         const a = Math.min(e.leftId, e.rightId), b = Math.max(e.leftId, e.rightId);
@@ -1421,14 +1421,14 @@ const Storage = {
       state._everFoughtPairs = [...everFoughtSet];
       state.matchupLog = state.matchupLog.slice(-SAVE_TRIM.matchupLogMax);
     }
-    // AI蝗｣菴・matchupLog 繝医Μ繝溘Φ繧ｰ
+    // AI団体 matchupLog トリミング
     if (state.aiOrgs) {
       for (const orgId in state.aiOrgs) {
         const org = state.aiOrgs[orgId];
         if (org.matchupLog && org.matchupLog.length > SAVE_TRIM.aiMatchupLogMax) {
           org.matchupLog = org.matchupLog.slice(-SAVE_TRIM.aiMatchupLogMax);
         }
-        // AI驕ｸ謇九・growthLog 繝医Μ繝溘Φ繧ｰ
+        // AI選手のgrowthLog トリミング
         if (org.roster) {
           org.roster.forEach(c => {
             if (c.growthLog && c.growthLog.length > SAVE_TRIM.growthLogMax) {
@@ -1438,7 +1438,7 @@ const Storage = {
         }
       }
     }
-    // h2h.history 繝医Μ繝溘Φ繧ｰ (繝壹い豈取怙譁ｰN莉ｶ)
+    // h2h.history トリミング (ペア毎最新N件)
     if (state.h2h) {
       for (const key in state.h2h) {
         const entry = state.h2h[key];
@@ -1447,7 +1447,7 @@ const Storage = {
         }
       }
     }
-    // freeAgents縺ｮgrowthLog 繝医Μ繝溘Φ繧ｰ
+    // freeAgentsのgrowthLog トリミング
     if (state.freeAgents) {
       state.freeAgents.forEach(c => {
         if (c.growthLog && c.growthLog.length > SAVE_TRIM.growthLogMax) {
@@ -1457,14 +1457,14 @@ const Storage = {
     }
     state._saveVersion = '1.05';
     state._saveDate = new Date().toISOString();
-    // LZ蝨ｧ邵ｮ + 繝槭・繧ｫ繝ｼ
+    // LZ圧縮 + マーカー
     const json = JSON.stringify(state);
     return SAVE_COMPRESS_MARKER + LZString.compressToUTF16(json);
   },
 
-  // 笏笏笏 蝨ｧ邵ｮ/髱槫悸邵ｮ繧ｻ繝ｼ繝悶・閾ｪ蜍募愛螳壹・繝ｫ繝代・ 笏笏笏
+  // ─── 圧縮/非圧縮セーブの自動判定ヘルパー ───
   _parseRaw(raw) {
-    // 譁ｰ繝槭・繧ｫ繝ｼ(WM_LZ|) or 譌ｧ繝槭・繧ｫ繝ｼ(WM_LZ\x00) 荳｡蟇ｾ蠢・
+    // 新マーカー(WM_LZ|) or 旧マーカー(WM_LZ\x00) 両対応
     if (raw.startsWith(SAVE_COMPRESS_MARKER) || raw.startsWith('WM_LZ\x00')) {
       const markerLen = raw.startsWith(SAVE_COMPRESS_MARKER) ? SAVE_COMPRESS_MARKER.length : 6;
       const json = LZString.decompressFromUTF16(raw.slice(markerLen));
@@ -1487,7 +1487,7 @@ const Storage = {
       if (!G.availableCoaches) G = { ...G, availableCoaches: ALL_COACHES.map(c => c.id).filter(id => !G.coaches.includes(id)) };
       if (!G.seasonGrowth) G = { ...G, seasonGrowth: {} };
 
-      // v3.0: 譌ｧ繧ｻ繝ｼ繝悶・蜈ｨID蛻玲嫌 availableCoaches 竊・繧ｷ繝ｼ繧ｺ繝ｳ繝励・繝ｫ縺ｫ螟画鋤
+      // v3.0: 旧セーブの全ID列挙 availableCoaches → シーズンプールに変換
       if (G.availableCoaches && G.availableCoaches.length > COACH_POOL_CFG.candidatesMax + 5) {
         const poolRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, 0xC0AC));
         G = { ...G, availableCoaches: Engine.coach.generateSeasonalPool(poolRng, G) };
@@ -1510,7 +1510,7 @@ const Storage = {
         const aiResult = Engine.rival.initAIOrgs(rng);
         G = { ...G, aiOrgs: aiResult.aiOrgs, rivalOrgNames: aiResult.rivalOrgNames };
       }
-      // 繝・・繧ｿ謨ｴ蜷域ｧ: AI蝗｣菴馴∈謇九′freeAgents縺ｫ豺ｷ蜈･縺励※縺・ｋ蝣ｴ蜷医・豁｣縺励＞蝗｣菴薙Ο繧ｹ繧ｿ繝ｼ縺ｸ遘ｻ蜍・
+      // データ整合性: AI団体選手がfreeAgentsに混入している場合は正しい団体ロスターへ移動
       if (G.aiOrgs && G.freeAgents) {
         const aiOrgIds = new Set(RIVAL_ORGS.map(o => o.id));
         const misplaced = G.freeAgents.filter(f => f.orgId && aiOrgIds.has(f.orgId));
@@ -1528,7 +1528,7 @@ const Storage = {
       if (G.aiOrgs) {
         G = { ...G, aiOrgs: Engine.rival.sanitizeAIOrgs(G.aiOrgs) };
       }
-      // 繝・・繧ｿ謨ｴ蜷域ｧ: 繝励Ξ繧､繝､繝ｼ繝ｭ繧ｹ繧ｿ繝ｼ驕ｸ謇九′freeAgents縺ｫ驥崎､・＠縺ｦ縺・ｋ蝣ｴ蜷医・髯､蜴ｻ
+      // データ整合性: プレイヤーロスター選手がfreeAgentsに重複している場合は除去
       if (G.roster && G.freeAgents) {
         const rosterIds = new Set(G.roster.map(c => c.id));
         const dupFA = G.freeAgents.filter(f => rosterIds.has(f.id));
@@ -1543,10 +1543,10 @@ const Storage = {
       if (G.aceDesignation !== undefined) { const { aceDesignation: _ace, ...rest } = G; G = rest; }
       if (!G.transferLog) G = { ...G, transferLog: [] };
       if (G.transfersThisSeason === undefined) G = { ...G, transfersThisSeason: 0 };
-      // v1.0e: poolIds 竊・dormantPool migration
+      // v1.0e: poolIds → dormantPool migration
       if (G.poolIds && !G.dormantPool) G = { ...G, dormantPool: G.poolIds };
       if (!G.dormantPool) G = { ...G, dormantPool: Engine.rival.getDormantIds() };
-      // FIFO: dormantPool 繧ｨ繝ｳ繝医Μ繧・{id, age} 蠖｢蠑上↓邨ｱ荳・医Ξ繧ｬ繧ｷ繝ｼ譁・ｭ怜・ID蟇ｾ蠢懶ｼ・
+      // FIFO: dormantPool エントリを {id, age} 形式に統一（レガシー文字列ID対応）
       if (G.dormantPool && G.dormantPool.some(e => {
         if (typeof e === 'string' || typeof e === 'number') return true;
         if (!e || e.id === undefined || e.id === null) return false;
@@ -1567,7 +1567,7 @@ const Storage = {
           }).filter(Boolean)
         };
       }
-      if (!G.orgName) G = { ...G, orgName: '繝励Ξ繧､繝､繝ｼ蝗｣菴・ };
+      if (!G.orgName) G = { ...G, orgName: 'プレイヤー団体' };
 
       // v0.9b backward compat: offseason system
       if (G.offSeason === undefined) G = { ...G, offSeason: false, offWeek: 0 };
@@ -1576,11 +1576,11 @@ const Storage = {
       // v0.9d backward compat: rental & events
       if (G.rentals === undefined && G.rental === undefined) G = { ...G, rentals: [], warThisSeason: false, challengeTrigger: null, pendingEvent: null };
       if (G.seasonStats === undefined) G = { ...G, seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 }, seasonHistory: [], fundsHistory: [G.funds] };
-      // 蜿､縺・そ繝ｼ繝悶〒 seasonStats 縺ｮ繝輔ぅ繝ｼ繝ｫ繝峨′谺關ｽ縺励※縺・ｋ蝣ｴ蜷医↓蛯吶∴縺ｦ陬懷ｮ鯉ｼ・aN/undefined竊・ 髦ｲ豁｢・・
+      // 古いセーブで seasonStats のフィールドが欠落している場合に備えて補完（NaN/undefined→0 防止）
       {
         const _ssDefaults = { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds||0, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 };
         const _fixedSS = { ..._ssDefaults, ...(G.seasonStats || {}) };
-        // 謨ｰ蛟､繝輔ぅ繝ｼ繝ｫ繝峨′ NaN 縺ｫ縺ｪ縺｣縺ｦ縺・ｋ繧ｱ繝ｼ繧ｹ繧・0 縺ｫ豁｣隕丞喧
+        // 数値フィールドが NaN になっているケースを 0 に正規化
         ['wins','losses','draws','showCount','totalRevenue','totalExpense','bestMQ','peakFunds','peakPop','eventsWon','eventsLost'].forEach(k => {
           if (typeof _fixedSS[k] !== 'number' || !Number.isFinite(_fixedSS[k])) _fixedSS[k] = _ssDefaults[k];
         });
@@ -1601,10 +1601,10 @@ const Storage = {
         G = { ...G, titleEstablished: !!(G.titles?.world?.championId) || (G.totalShows >= 3 && G.orgPop >= 15 && G.roster.length >= 5) };
       }
 
-      // 螳牙・蠑・ 邇玖・′繝ｭ繧ｹ繧ｿ繝ｼ縺ｫ蟄伜惠縺励↑縺・ｴ蜷医・遨ｺ菴阪↓縺吶ｋ・磯蝗｣繝代せ貍上ｌ菫ｮ蠕ｩ・・
+      // 安全弁: 王者がロスターに存在しない場合は空位にする（退団パス漏れ修復）
       if (G.titles?.world?.championId && !G.roster.find(c => c.id === G.titles.world.championId)) {
         G = { ...G, titles: { ...G.titles, world: { ...G.titles.world, championId: null, defenses: 0 } } };
-        console.log('[Migration] 邇玖・′繝ｭ繧ｹ繧ｿ繝ｼ縺ｫ荳榊惠縺ｮ縺溘ａ邇句ｺｧ繧堤ｩｺ菴阪↓菫ｮ蠕ｩ縺励∪縺励◆');
+        console.log('[Migration] 王者がロスターに不在のため王座を空位に修復しました');
       }
 
       G = { ...G, version: '1.05' };
@@ -1653,7 +1653,7 @@ const Storage = {
 
       // v1.0 migration: fix freeAgents that were created with useNotion:true bug
       // Detect: all 4 physical stats exactly match notionValue (statistically impossible from generateStartValues)
-      // 窶ｻ繝輔Λ繧ｰ蛻ｶ蠕｡: 謌宣聞縺ｧnotionValue縺ｫ蛻ｰ驕斐＠縺檳A縺ｮ繧ｹ繝・ｒ隱､縺｣縺ｦ繝ｪ繧ｻ繝・ヨ縺励↑縺・ｈ縺・ｸ蠎ｦ縺阪ｊ
+      // ※フラグ制御: 成長でnotionValueに到達したFAのステを誤ってリセットしないよう一度きり
       if (!G._migrated_v1_0_fa_notion) {
         G = { ...G, freeAgents: G.freeAgents.map(c => {
           if (!c.notionValue) return c;
@@ -1669,10 +1669,10 @@ const Storage = {
       }
 
       // v1.2 migration: fix freeAgents stuck at age 16-17 (should be 17-23)
-      // 窶ｻ繝輔Λ繧ｰ蛻ｶ蠕｡: 譌ｧ繧ｻ繝ｼ繝悶∈縺ｮ荳蠎ｦ縺阪ｊ縺ｮ菫ｮ豁｣縲よｯ弱Ο繝ｼ繝牙ｮ溯｡後・蟷ｴ鮨｢螟牙虚繝舌げ縺ｮ蜴溷屏縺ｫ縺ｪ繧・
+      // ※フラグ制御: 旧セーブへの一度きりの修正。毎ロード実行は年齢変動バグの原因になる
       if (!G._migrated_v1_2_fa_age) {
         G = { ...G, freeAgents: G.freeAgents.map(c => {
-          if (c.age > 17) return c; // only fix age 竕､17 FAs (legacy: was 16)
+          if (c.age > 17) return c; // only fix age ≤17 FAs (legacy: was 16)
           const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 1616));
           const newAge = 17 + Engine.rng.int(ageRng, 0, 6);
           const nv = c.notionValue || {pw:c.pw,sp:c.sp,te:c.te,st:c.st,mn:c.mn};
@@ -1682,7 +1682,7 @@ const Storage = {
         G = { ...G, _migrated_v1_2_fa_age: true };
       }
 
-      // v0.99 migration: assign assessedValue to all characters (pricing-balance-spec ﾂｧ1)
+      // v0.99 migration: assign assessedValue to all characters (pricing-balance-spec §1)
       const migrateAssessed = (fighters) => fighters.map(f => {
         if (f.assessedValue) return f;
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, f.id, 999));
@@ -1736,10 +1736,10 @@ const Storage = {
           });
           G = { ...G, aiOrgs: migAi2 };
         }
-        // Migrate venue index if needed (old 6 venues 竊・new 7 venues)
+        // Migrate venue index if needed (old 6 venues → new 7 venues)
         if (G.showVenue !== undefined) {
-          // Old: 0=蜈ｬ豌鷹､ｨ,1=蟆・2=荳ｭ,3=繧｢繝ｪ繝ｼ繝・4=螟ｧ,5=繝峨・繝
-          // New: 0=蜈ｬ豌鷹､ｨ,1=蟆・2=蟶よｰ台ｼ夐､ｨ,3=荳ｭ,4=繧｢繝ｪ繝ｼ繝・5=螟ｧ,6=繝峨・繝
+          // Old: 0=公民館,1=小,2=中,3=アリーナ,4=大,5=ドーム
+          // New: 0=公民館,1=小,2=市民会館,3=中,4=アリーナ,5=大,6=ドーム
           const venueMap = {0:0, 1:1, 2:3, 3:4, 4:5, 5:6};
           G = { ...G, showVenue: venueMap[G.showVenue] ?? 0 };
         }
@@ -1771,7 +1771,7 @@ const Storage = {
           const mRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 1331));
           const dur = c.durability !== undefined ? c.durability : Engine.career.generateDurability(mRng);
           const decayStart = 23 + dur;
-          // 譌｢蟄倥・繝・Λ繝ｳ縺ｸ縺ｮ驟肴・: 逅・ｫ門､縺ｮ70%縺ｧwear繧貞ｾ御ｻ倥￠
+          // 既存ベテランへの配慮: 理論値の70%でwearを後付け
           const wearYears = Math.max(0, (c.age || 17) - decayStart);
           const estimatedWear = c.wear !== undefined ? c.wear : Math.round(wearYears * 8 * 0.7);
           return { ...c, durability: dur, wear: estimatedWear };
@@ -1836,7 +1836,7 @@ const Storage = {
         G = { ...G, _migrated_v1_3_3: true };
       }
 
-      // v1.4 migration: AI fighters 縺ｫ careerSeasons 莉倅ｸ・+ lastAwards/hallOfFame
+      // v1.4 migration: AI fighters に careerSeasons 付与 + lastAwards/hallOfFame
       if (!G._migrated_v1_4) {
         if (G.aiOrgs) {
           const migAi = {};
@@ -1857,7 +1857,7 @@ const Storage = {
         G = { ...G, _migrated_v1_4: true };
       }
 
-      // v1.8: 謌宣聞繧､繝吶Φ繝医す繧ｹ繝・Β 繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // v1.8: 成長イベントシステム マイグレーション
       if (!G._migrated_growth_events) {
         const addGrowthFields = fighters => fighters.map(c => {
           const updates = {};
@@ -1879,23 +1879,23 @@ const Storage = {
         G = { ...G, _migrated_growth_events: true };
       }
 
-      // v1.5: 髮｣譏灘ｺｦ繝ｪ繝舌Λ繝ｳ繧ｹ 窶・譌｢蟄倥そ繝ｼ繝悶・orgPop繧偵Μ繧ｹ繧ｱ繝ｼ繝ｫ・暗・.7・・
-      // 窶ｻ orgPop < 20 縺ｯ騾捺ｸ帙き繝ｼ繝悶′ﾃ・.0蟶ｯ縺ｮ縺溘ａ陬懈ｭ｣荳崎ｦ・ｼ亥ｺ冗乢繧ｻ繝ｼ繝悶↓縺ｯ驕ｩ逕ｨ縺励↑縺・ｼ・
+      // v1.5: 難易度リバランス — 既存セーブのorgPopをリスケール（×0.7）
+      // ※ orgPop < 20 は逓減カーブが×1.0帯のため補正不要（序盤セーブには適用しない）
       if (!G._migrated_v1_5_rebalance) {
         const oldOrgPop = G.orgPop || 0;
         if (oldOrgPop >= 20) {
           const newOrgPop = Math.round(oldOrgPop * 0.7);
           G = { ...G, orgPop: newOrgPop };
-          G = { ...G, gameLog: [...(G.gameLog || []), `討 繝舌Λ繝ｳ繧ｹ隱ｿ謨ｴ(v1.5): 蝗｣菴謎ｺｺ豌励ｒ${oldOrgPop}竊・{newOrgPop}縺ｫ蜀崎ｪｿ謨ｴ縺励∪縺励◆・暗・.7 繝ｪ繧ｹ繧ｱ繝ｼ繝ｫ・荏] };
+          G = { ...G, gameLog: [...(G.gameLog || []), `📢 バランス調整(v1.5): 団体人気を${oldOrgPop}→${newOrgPop}に再調整しました（×0.7 リスケール）`] };
         }
         G = { ...G, _migrated_v1_5_rebalance: true };
       }
 
-      // v1.5s25b: 繝槭う繝ｫ繧ｹ繝医・繝ｳ繧､繝吶Φ繝医す繧ｹ繝・Β 繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // v1.5s25b: マイルストーンイベントシステム マイグレーション
       if (!G._migrated_milestone) {
         if (!G.milestones) G = { ...G, milestones: {} };
         if (!G.milestoneBuffs) G = { ...G, milestoneBuffs: [] };
-        // 譌｢蟄倥そ繝ｼ繝悶〒譚｡莉ｶ繧呈ｺ縺溘＠縺ｦ縺・ｋ繝槭う繝ｫ繧ｹ繝医・繝ｳ縺ｯ逋ｺ蜍墓ｸ医∩縺ｨ縺吶ｋ
+        // 既存セーブで条件を満たしているマイルストーンは発動済みとする
         const ms = { ...G.milestones };
         if ((G.totalShows || 0) > 0) ms.first_show = true;
         if (Engine.util.dispOrgPop(G.orgPop) >= 20) ms.orgpop_20 = true;
@@ -1903,9 +1903,9 @@ const Storage = {
         G = { ...G, milestones: ms, _migrated_milestone: true };
       }
 
-      // v2.0: trust 繝代Λ繝｡繝ｼ繧ｿ + lockerRoomMorale 繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // v2.0: trust パラメータ + lockerRoomMorale マイグレーション
       if (!G._migrated_trust) {
-        // 蜈ｨ驕ｸ謇九↓ trust: 50 繧剃ｻ倅ｸ趣ｼ亥・譛溷､・・
+        // 全選手に trust: 50 を付与（初期値）
         const migratedRoster = (G.roster || []).map(f =>
           f.trust != null ? f : { ...f, trust: 50 }
         );
@@ -1915,11 +1915,11 @@ const Storage = {
           lockerRoomMorale: G.lockerRoomMorale != null ? G.lockerRoomMorale : 60,
           _migrated_trust: true,
         };
-        G = { ...G, gameLog: [...(G.gameLog || []), '討 繧ｷ繧ｹ繝・Β譖ｴ譁ｰ(v2.0): 菫｡鬆ｼ蠎ｦ繝代Λ繝｡繝ｼ繧ｿ繧定ｿｽ蜉縺励∪縺励◆'] };
+        G = { ...G, gameLog: [...(G.gameLog || []), '📢 システム更新(v2.0): 信頼度パラメータを追加しました'] };
       }
 
       if (!G._migrated_npc_traits) {
-        // AI蝗｣菴薙・蜈ｨ驕ｸ謇九↓ traits 繧剃ｻ倅ｸ趣ｼ・LL_CHARS 縺ｮ繝槭せ繧ｿ縺九ｉ蠑輔￥・・
+        // AI団体の全選手に traits を付与（ALL_CHARS のマスタから引く）
         const aiOrgs = { ...(G.aiOrgs || {}) };
         for (const orgId of Object.keys(aiOrgs)) {
           aiOrgs[orgId] = {
@@ -1934,19 +1934,19 @@ const Storage = {
         G = { ...G, aiOrgs, _migrated_npc_traits: true };
       }
 
-      // v2.1: endingCleared / endingClearedSeason 繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // v2.1: endingCleared / endingClearedSeason マイグレーション
       if (!G._migrated_ending) {
         const endingCleared = G.endingCleared || hasPlayerHistoricRank1(G);
         const endingClearedSeason = G.endingClearedSeason || ((G.seasonHistory || []).find(s => (s?.rank || 99) === 1)?.season) || null;
         G = { ...G, endingCleared, endingClearedSeason, _migrated_ending: true };
       }
-      // v2.0 Phase1-6: 螟ｧ蝙九う繝吶Φ繝・繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // v2.0 Phase1-6: 大型イベント マイグレーション
       if (!G._migrated_large_events) {
         G = { ...G, lastLargeEventWeek: G.lastLargeEventWeek || 0, mediaSpotlight: G.mediaSpotlight || null, _migrated_large_events: true };
       }
-      // L1: 莨壼ｴ繧ｷ繧ｹ繝・Β蜀崎ｨｭ險医・繧､繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // L1: 会場システム再設計マイグレーション
       if (!G._migrated_venue_redesign) {
-        // 譌ｧ7谿ｵ竊呈眠10谿ｵ: 0=蜈ｬ豌鷹､ｨ竊・, 1=蟆上・繝ｼ繝ｫ竊・, 2=蟶よｰ台ｼ夐､ｨ竊・, 3=荳ｭ繝帙・繝ｫ竊・, 4=繧｢繝ｪ繝ｼ繝岩・7, 5=螟ｧ莨壼ｴ竊・, 6=繝峨・繝竊・
+        // 旧7段→新10段: 0=公民館→0, 1=小ホール→1, 2=市民会館→3, 3=中ホール→4, 4=アリーナ→7, 5=大会場→8, 6=ドーム→9
         const venueMap = {0:0, 1:1, 2:3, 3:4, 4:7, 5:8, 6:9};
         G = { ...G,
           showVenue: venueMap[G.showVenue] ?? 0,
@@ -1955,7 +1955,7 @@ const Storage = {
         };
       }
 
-      // Rental system migration: G.rental (single object) 竊・G.rentals (array)
+      // Rental system migration: G.rental (single object) → G.rentals (array)
       if (!G._migrated_rental_v2) {
         const rentals = Array.isArray(G.rentals) ? [...G.rentals] : [];
         let roster = [...(G.roster || [])];
@@ -1980,16 +1980,16 @@ const Storage = {
         G = { ...G, rentals, roster, rental: undefined, _migrated_rental_v2: true };
       }
 
-      // Rental v3: seasonsLeft 竊・weeksLeft (1譛・12騾ｱ縺ｮ騾ｱ谺｡貂帷ｮ励↓遘ｻ陦・
+      // Rental v3: seasonsLeft → weeksLeft (1期=12週の週次減算に移行)
       if (!G._migrated_rental_v3) {
         const rentals = (G.rentals || []).map(r => {
-          if (r.weeksLeft != null) return r; // 譌｢縺ｫ遘ｻ陦梧ｸ医∩
-          // 譌ｧ seasonsLeft 繧・weeksLeft 縺ｫ螟画鋤: seasonsLeft * 12
+          if (r.weeksLeft != null) return r; // 既に移行済み
+          // 旧 seasonsLeft を weeksLeft に変換: seasonsLeft * 12
           const wl = (r.seasonsLeft || 1) * 12;
           const { seasonsLeft, ...rest } = r;
           return { ...rest, weeksLeft: wl };
         });
-        // roster荳翫・ rentalSeasonsLeft 竊・rentalWeeksLeft
+        // roster上の rentalSeasonsLeft → rentalWeeksLeft
         const roster = (G.roster || []).map(c => {
           if (!c.isRental) return c;
           const ct = rentals.find(r => r.fighterId === c.id);
@@ -2006,24 +2006,24 @@ const Storage = {
         G = { ...G, roster };
       }
 
-      // ranking-roster-redesign v1.0 Phase 1: battlePoints + summitBonus蟒・ｭ｢
+      // ranking-roster-redesign v1.0 Phase 1: battlePoints + summitBonus廃止
       if (!G._migrated_ranking_v2) {
         const bp = { player: 0, org_s: 0, org_a: 0, org_b: 0 };
-        // summitBonus縺梧ｮ九▲縺ｦ縺・ｌ縺ｰplayer battlePoints縺ｫ遘ｻ陦・
+        // summitBonusが残っていればplayer battlePointsに移行
         if (G.summitBonus) bp.player = G.summitBonus;
         G = { ...G, battlePoints: bp, _migrated_ranking_v2: true };
         delete G.summitBonus;
-        // 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ繧貞・險育ｮ・
+        // ランキングを再計算
         G = { ...G, rankings: Engine.ranking.updateRankings(G) };
       }
 
-      // 蝗邵√Μ繝・じ繧､繝ｳv2: resolutionCount + matchupLog
+      // 因縁リデザインv2: resolutionCount + matchupLog
       if (!G._migrated_rivalry_v2) {
         const migratedRivalries = {};
         Object.entries(G.rivalries || {}).forEach(([key, rv]) => {
           migratedRivalries[key] = { ...rv, resolutionCount: rv.resolutionCount || 0 };
         });
-        // matchupLog陬懷ｮ・ rivalries縺九ｉ蟇ｾ謌ｦ螻･豁ｴ繧貞ｾｩ蜈・＠縲∝・鬘泌粋繧上○隱､蛻､螳壹ｒ髦ｲ縺・
+        // matchupLog補完: rivalriesから対戦履歴を復元し、初顔合わせ誤判定を防ぐ
         let migratedLog = G.matchupLog || [];
         if (migratedLog.length === 0) {
           const currentShow = G.totalShows || 0;
@@ -2042,7 +2042,7 @@ const Storage = {
         G = { ...G, rivalries: migratedRivalries, matchupLog: migratedLog, _migrated_rivalry_v2: true };
       }
 
-      // matchupLog陬懷ｮ計2: 譌｢縺ｫrivalry_v2繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ貂医∩縺縺檎ｩｺlog縺ｮ繧ｻ繝ｼ繝悶ョ繝ｼ繧ｿ蟇ｾ蠢・
+      // matchupLog補完v2: 既にrivalry_v2マイグレーション済みだが空logのセーブデータ対応
       if (!G._migrated_matchuplog_v2) {
         if ((G.matchupLog || []).length === 0 && Object.keys(G.rivalries || {}).length > 0) {
           const currentShow = G.totalShows || 0;
@@ -2065,7 +2065,7 @@ const Storage = {
         G = { ...G, _migrated_matchuplog_v2: true };
       }
 
-      // PPV GRAND FINAL 繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // PPV GRAND FINAL マイグレーション
       if (!G._migrated_ppv_v2) {
         G = { ...G,
           ppvUnlocked: (G.orgPop || 0) >= PPV_UNLOCK_POP,
@@ -2107,7 +2107,7 @@ const Storage = {
         if (G.rosterCapRank1Notified === undefined) G = { ...G, rosterCapRank1Notified: App.hasPermanentRosterCap16Unlock(G) };
       }
 
-      // scout-pricing v2: assessedValue蜀崎ｨ育ｮ暦ｼ・IERS baseMin/Max蠑輔″荳翫￡蟇ｾ蠢懶ｼ・
+      // scout-pricing v2: assessedValue再計算（TIERS baseMin/Max引き上げ対応）
       if (!G._migrated_scout_pricing_v2) {
         const rng = Engine.rng.create(0xFACE + (G.season || 1));
         const reassess = (fighters) => fighters.map(f => {
@@ -2123,13 +2123,13 @@ const Storage = {
         G = { ...G, aiOrgs, _migrated_scout_pricing_v2: true };
       }
 
-      // 螂醍ｴ・ｺ､貂・ salaryBonus繝輔ぅ繝ｼ繝ｫ繝芽ｿｽ蜉
+      // 契約交渉: salaryBonusフィールド追加
       if (!G._migrated_contract_v1) {
         G.roster.forEach(f => { if (f.salaryBonus === undefined) f.salaryBonus = 0; });
         G = { ...G, _migrated_contract_v1: true };
       }
 
-      // NPC險倬鹸邨ｱ荳: AI驕ｸ謇九↓careerBestMQ + orgData縺ｫmatchupLog/seasonBreakthroughs/showCount
+      // NPC記録統一: AI選手にcareerBestMQ + orgDataにmatchupLog/seasonBreakthroughs/showCount
       if (!G._migrated_npc_record_v1) {
         const aiOrgs = { ...G.aiOrgs };
         Object.keys(aiOrgs).forEach(orgId => {
@@ -2149,7 +2149,7 @@ const Storage = {
         G = { ...G, aiOrgs, _migrated_npc_record_v1: true };
       }
 
-      // Phase 1: 莠ｺ髢馴未菫ゅョ繝ｼ繧ｿ蝓ｺ逶､ 窶・譌｢蟄倥そ繝ｼ繝悶ョ繝ｼ繧ｿ縺ｨ縺ｮ莠呈鋤諤ｧ
+      // Phase 1: 人間関係データ基盤 — 既存セーブデータとの互換性
       if (!G._migrated_relationships_v1) {
         if (!G.relationships || Object.keys(G.relationships).length === 0) {
           G = Engine.relationships.initialize(G);
@@ -2160,7 +2160,7 @@ const Storage = {
         G = { ...G, _migrated_relationships_v1: true };
       }
 
-      // Phase 5: 繝ｩ繧､繝舌Ν遘ｰ蜿ｷtier繝輔ぅ繝ｼ繝ｫ繝峨・繧､繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // Phase 5: ライバル称号tierフィールドマイグレーション
       if (!G._migrated_rivalry_tier_v1) {
         const rivalries = { ...G.rivalries };
         for (const key of Object.keys(rivalries)) {
@@ -2191,11 +2191,11 @@ const Storage = {
         });
         G = { ...G, _migrated_retired_rivalry_cleanup_v1: true };
       }
-      // 遉ｾ髟ｷ螳､ Phase 2: 豎ｺ陬∵棧繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // 社長室 Phase 2: 決裁枠マイグレーション
       if (G.decisionPoints === undefined) {
         G = { ...G, decisionPoints: 6, decisionPointsMax: 6, _migrated_decisionPoints_v1: true };
       }
-      // 遉ｾ髟ｷ螳､ Phase 4: _decisionWeekUsed / _decisionDoneThisWeek 蛻晄悄蛹・
+      // 社長室 Phase 4: _decisionWeekUsed / _decisionDoneThisWeek 初期化
       if (G._decisionWeekUsed === undefined) {
         G = { ...G, _decisionWeekUsed: {} };
       }
@@ -2205,7 +2205,7 @@ const Storage = {
       if (G.roster && G.roster.some(f => f._decisionWeekUsed === undefined)) {
         G = { ...G, roster: G.roster.map(f => f._decisionWeekUsed === undefined ? { ...f, _decisionWeekUsed: {} } : f) };
       }
-      // 遉ｾ髟ｷ螳､ Phase 5: _careWeekUsed 竊・_decisionWeekUsed 縺ｫ邨ｱ蜷・
+      // 社長室 Phase 5: _careWeekUsed → _decisionWeekUsed に統合
       if (G.roster && G.roster.some(f => f._careWeekUsed)) {
         G = { ...G, roster: G.roster.map(f => {
           if (!f._careWeekUsed) return f;
@@ -2214,7 +2214,7 @@ const Storage = {
           return { ...rest, _decisionWeekUsed: merged };
         }) };
       }
-      // 遉ｾ髟ｷ螳､ Phase 5: 譌ｧ繧ｱ繧｢繧ｹ繝医ャ繧ｯ / _teamCareWeekUsed / _costumeDebut 繧貞炎髯､
+      // 社長室 Phase 5: 旧ケアストック / _teamCareWeekUsed / _costumeDebut を削除
       if (G.careStock !== undefined || G.careStockMax !== undefined
           || G.careStockLastRecovery !== undefined || G._teamCareWeekUsed !== undefined) {
         const { careStock: _a, careStockMax: _b, careStockLastRecovery: _c, _teamCareWeekUsed: _d, ...rest } = G;
@@ -2227,14 +2227,14 @@ const Storage = {
           return rest;
         }) };
       }
-      // 遉ｾ髟ｷ螳､ Phase 7: pendingTrustDeltas 蛻晄悄蛹・(trainer/camp 縺ｮ驕・ｻｶ逋ｺ迴ｾ繝医Λ繝・け)
+      // 社長室 Phase 7: pendingTrustDeltas 初期化 (trainer/camp の遅延発現トラック)
       if (G.roster && G.roster.some(f => f.pendingTrustDeltas === undefined)) {
         G = { ...G, roster: G.roster.map(f =>
           f.pendingTrustDeltas === undefined ? { ...f, pendingTrustDeltas: [] } : f
         ) };
       }
 
-      // retiredIds豌ｸ邯壼喧繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ: hallOfFame+迴ｾretiredFighters縺ｮID繧貞庶髮・
+      // retiredIds永続化マイグレーション: hallOfFame+現retiredFightersのIDを収集
       if (!G._migrated_retiredIds_v1) {
         const ids = new Set(G.retiredIds || []);
         (G.hallOfFame || []).forEach(f => { if (f.id) ids.add(f.id); });
@@ -2242,10 +2242,10 @@ const Storage = {
         G = { ...G, retiredIds: [...ids], _migrated_retiredIds_v1: true };
       }
 
-      // retiredSeasons繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ: 譌｢蟄腕etiredIds縺ｫ蠑暮繧ｷ繝ｼ繧ｺ繝ｳ繧貞牡繧雁ｽ薙※・亥叉繝ｪ繧ｵ繧､繧ｯ繝ｫ蟇ｾ雎｡縺ｫ・・
+      // retiredSeasonsマイグレーション: 既存retiredIdsに引退シーズンを割り当て（即リサイクル対象に）
       if (!G._migrated_retiredSeasons_v1) {
         const rs = { ...(G.retiredSeasons || {}) };
-        // 迴ｾ蝨ｨ縺ｩ縺ｮ繝励・繝ｫ縺ｫ繧ゅ＞縺ｪ縺вetiredIds縺ｫ蟇ｾ縺励※縲・繧ｷ繝ｼ繧ｺ繝ｳ莉･荳雁燕縺ｮ繧ｷ繝ｼ繧ｺ繝ｳ繧貞牡繧雁ｽ薙※
+        // 現在どのプールにもいないretiredIdsに対して、5シーズン以上前のシーズンを割り当て
         const pastSeason = Math.max(1, (G.season || 1) - 10);
         (G.retiredIds || []).forEach(id => {
           if (!rs[id]) rs[id] = pastSeason;
@@ -2262,18 +2262,18 @@ const Storage = {
       if (Array.isArray(G.factions) && G.factions.some(f => !f.flavor)) {
         G = { ...G, factions: G.factions.map(f => f.flavor ? f : { ...f, flavor: 'bond_first' }) };
       }
-      // v0.2 繧｢繝ｼ繧ｭ繧ｿ繧､繝玲僑蠑ｵ: 譌ｧ flavor 繧呈眠 6 遞ｮ縺ｫ繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ・井ｸ蠎ｦ縺縺托ｼ・
+      // v0.2 アーキタイプ拡張: 旧 flavor を新 6 種にマイグレーション（一度だけ）
       if (Array.isArray(G.factions) && !G._migrated_archetype_v2) {
         G = {
           ...G,
           factions: G.factions.map(f => {
-            // 譌ｧ neutral 縺ｯ蜀榊愛螳・竊・邨先據蝙・(bond_first) 繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ
-            // 譌ｧ authoritativeTag 謖√■縺ｮ neutral 縺ｯ authoritarian 縺ｸ
+            // 旧 neutral は再判定 → 結束型 (bond_first) フォールバック
+            // 旧 authoritativeTag 持ちの neutral は authoritarian へ
             let newFlavor = f.flavor || 'bond_first';
             if (newFlavor === 'neutral') {
               newFlavor = f.authoritativeTag ? 'authoritarian' : 'bond_first';
             }
-            // 繧ｿ繧ｰ縺ｮ謨ｴ蜷域ｧ遒ｺ菫・
+            // タグの整合性確保
             return {
               ...f,
               flavor: newFlavor,
@@ -2289,7 +2289,7 @@ const Storage = {
         };
       }
 
-      // 豢ｾ髢･縺ｮ驥崎､・園螻槭ｒ菫ｮ蠕ｩ・・hase 3c 繧ｻ繝・す繝ｧ繝ｳ縺ｧ逋ｺ隕九＆繧後◆譌｢蟄倥そ繝ｼ繝悶・繝・・繧ｿ遐ｴ邯ｻ蟇ｾ蠢懶ｼ・
+      // 派閥の重複所属を修復（Phase 3c セッションで発見された既存セーブのデータ破綻対応）
       if (!G._migrated_faction_dedupe_v1) {
         if (Engine.factions && typeof Engine.factions._dedupeFactionMembers === 'function') {
           G = Engine.factions._dedupeFactionMembers(G);
@@ -2299,7 +2299,7 @@ const Storage = {
 
       if (!G._migrated_h2h_orgTimeline_v1) {
         if (!G.h2h) G = { ...G, h2h: {} };
-        // 蜈ｨ繝輔ぃ繧､繧ｿ繝ｼ縺ｫorgTimeline蛻晄悄繧ｨ繝ｳ繝医Μ繧堤函謌・
+        // 全ファイターにorgTimeline初期エントリを生成
         const addTimeline = fighters => fighters.map(f => {
           if (f.orgTimeline) return f;
           return { ...f, orgTimeline: [{ orgId: f._orgId || f.orgId || 'fa', fromSeason: 1, fromWeek: 1 }] };
@@ -2343,7 +2343,7 @@ const Storage = {
         G = { ...G, roster: G.roster.map(c => c.growthLog ? c : { ...c, growthLog: [] }), _migrated_growthLog: true };
       }
       if (!G._migrated_junior_hof_v1) {
-        // careerRecord 縺ｫ juniorTournamentWins/juniorTournamentAppearances/ppvMainEventWins 繧定｣懷ｮ・
+        // careerRecord に juniorTournamentWins/juniorTournamentAppearances/ppvMainEventWins を補完
         const _addHofFields = (fighters) => (fighters || []).map(f => {
           if (!f.careerRecord) return f;
           const rec = { ...f.careerRecord };
@@ -2359,7 +2359,7 @@ const Storage = {
           retiredFighters: _addHofFields(G.retiredFighters),
           _migrated_junior_hof_v1: true,
         };
-        // AI蝗｣菴薙・roster縺ｫ繧る←逕ｨ
+        // AI団体のrosterにも適用
         if (G.aiOrgs) {
           const migAi = {};
           Object.keys(G.aiOrgs).forEach(orgId => {
@@ -2370,14 +2370,14 @@ const Storage = {
         }
       }
 
-      // v2.0 HOF諡｡蠑ｵ: allHallOfFame 繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // v2.0 HOF拡張: allHallOfFame マイグレーション
       if (!G._migrated_allHallOfFame_v1) {
         const existingHof = G.hallOfFame || [];
         const playerHof = existingHof.map(h => ({
           ...h,
           orgId: 'player',
-          orgName: h.orgName || G.orgName || '縺ゅ↑縺溘・蝗｣菴・,
-          careerHighlights: h.careerHighlights || Engine.awards.buildCareerHighlights(h, h.orgName || G.orgName || '縺ゅ↑縺溘・蝗｣菴・),
+          orgName: h.orgName || G.orgName || 'あなたの団体',
+          careerHighlights: h.careerHighlights || Engine.awards.buildCareerHighlights(h, h.orgName || G.orgName || 'あなたの団体'),
           retireOVR: h.retireOVR || h.ovr || 0,
           retireAge: h.retireAge || 0,
         }));
@@ -2389,7 +2389,7 @@ const Storage = {
         };
       }
 
-      // v2.0 HOF諡｡蠑ｵv2: hofPoints/hofLevel 蜀崎ｨ育ｮ励・繧､繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // v2.0 HOF拡張v2: hofPoints/hofLevel 再計算マイグレーション
       if (!G._migrated_allHallOfFame_v2) {
         const _recalcHof = entry => {
           const pts = (entry.titleReigns || 0) + (entry.totalDefenses || 0)
@@ -2405,12 +2405,12 @@ const Storage = {
         G = { ...G, allHallOfFame: fixedHof, hallOfFame: fixedHof.player, _migrated_allHallOfFame_v2: true };
       }
 
-      // 菫ｮ豁｣D: battleWinsTotal 蛻晄悄蛹悶・繧､繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // 修正D: battleWinsTotal 初期化マイグレーション
       if (!G.battleWinsTotal) {
         G = { ...G, battleWinsTotal: { player: 0, org_s: 0, org_a: 0, org_b: 0 } };
       }
 
-      // 蝗｣菴灘ｹｴ莉｣險・v0.1 繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ (chronicle-system-spec-v0.1.md)
+      // 団体年代記 v0.1 マイグレーション (chronicle-system-spec-v0.1.md)
       if (!G._migrated_chronicle_v1) {
         const chEmpty = Engine.chronicle.createEmpty();
         const peakPopularityOf = (f, fallbackSeason) => {
@@ -2419,7 +2419,7 @@ const Storage = {
           const peakPopularitySeason = cr.peakPopularitySeason || f.peakPopularitySeason || fallbackSeason || 1;
           return { peakPopularity, peakPopularitySeason };
         };
-        // HoF player 繧ｨ繝ｳ繝医Μ繧・archive 蠖｢蠑上↓螟画鋤
+        // HoF player エントリを archive 形式に変換
         const hofToArchive = (h) => {
           const cr = h.careerRecord || {};
           const hist = cr.history || [];
@@ -2452,12 +2452,12 @@ const Storage = {
               peakPopularitySeason
             },
             traits: (h.traits || []).filter(t =>
-              ['闖ｯ','繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','莠ｺ譛・,'繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ','辭ｱ陦','蜷榊享雋陬ｽ騾讖・,'繧ｬ繝ｩ繧ｹ縺ｮ繝上・繝・].includes(t)
+              ['華','ファンサービス','人望','ムードメーカー','熱血','名勝負製造機','ガラスのハート'].includes(t)
             ),
             retiredSeason: end
           };
         };
-        // retiredFighter (player諠ｳ螳・ 繧・archive 蠖｢蠑上↓螟画鋤 (archiveFighter 繝ｭ繧ｸ繝・け逶ｸ蠖・
+        // retiredFighter (player想定) を archive 形式に変換 (archiveFighter ロジック相当)
         const retiredToArchive = (f) => {
           const cr = f.careerRecord || {};
           const hist = cr.history || [];
@@ -2490,7 +2490,7 @@ const Storage = {
               peakPopularitySeason
             },
             traits: (f.traits || []).filter(t =>
-              ['闖ｯ','繝輔ぃ繝ｳ繧ｵ繝ｼ繝薙せ','莠ｺ譛・,'繝繝ｼ繝峨Γ繝ｼ繧ｫ繝ｼ','辭ｱ陦','蜷榊享雋陬ｽ騾讖・,'繧ｬ繝ｩ繧ｹ縺ｮ繝上・繝・].includes(t)
+              ['華','ファンサービス','人望','ムードメーカー','熱血','名勝負製造機','ガラスのハート'].includes(t)
             ),
             retiredSeason: end
           };
@@ -2499,7 +2499,7 @@ const Storage = {
           ...((G.allHallOfFame && G.allHallOfFame.player) || []).map(hofToArchive),
           ...((G.retiredFighters) || []).map(retiredToArchive)
         ];
-        // 驥崎､・賜髯､ (id 繝吶・繧ｹ)
+        // 重複排除 (id ベース)
         const seenIds = new Set();
         const uniqueArchive = [];
         archivePlayer.forEach(a => {
@@ -2507,7 +2507,7 @@ const Storage = {
           seenIds.add(a.id);
           uniqueArchive.push(a);
         });
-        // spirit 縺ｮ驕｡蜿顔ｩ咲ｮ・
+        // spirit の遡及積算
         const spirit = { striker: 0, grappler: 0, submission: 0, brawler: 0, allround: 0 };
         uniqueArchive.forEach(a => {
           const axis = Engine.chronicle._styleAxis(a.style);
@@ -2522,15 +2522,15 @@ const Storage = {
           },
           _migrated_chronicle_v1: true
         };
-        // 蛻晏屓遶逕滓・
+        // 初回章生成
         try {
           G = Engine.chronicle.buildChapters(G, { forceRebuild: true });
         } catch (e) {
-          console.warn('[chronicle] 蛻晏屓遶逕滓・縺ｫ螟ｱ謨・', e);
+          console.warn('[chronicle] 初回章生成に失敗:', e);
         }
       }
 
-      // v0.2: coachSlots 繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ・域里蟄倥そ繝ｼ繝悶・髮・畑貂医∩繧ｳ繝ｼ繝∵焚縺ｫ蜷医ｏ縺帙※譫繧貞・譛溷喧・・
+      // v0.2: coachSlots マイグレーション（既存セーブは雇用済みコーチ数に合わせて枠を初期化）
       // Chronicle v0.2: rebuild old save caches after chapter confirmation rule changes.
       if (!G._migrated_chronicle_status_v2 && G.chronicle && Engine.chronicle) {
         try {
@@ -2560,18 +2560,18 @@ const Storage = {
         G = { ...G, coachSlots: Math.max(1, hiredCount), _migrated_coachSlots_v1: true };
       }
 
-      // Speed 竊・Aerial 繧ｹ繧ｿ繧､繝ｫ蜷阪・繧､繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
-      // 邨ｶ蟇ｾ騾ｱ險育ｮ励ｒ52騾ｱ蝓ｺ貅問・48騾ｱ蝓ｺ貅悶↓邨ｱ荳
-      // 譌ｧ蛟､縺ｮ豁｣遒ｺ縺ｪ騾・ｮ励・荳榊庄閭ｽ縺ｪ縺溘ａ縲，D邉ｻ繝輔ぅ繝ｼ繝ｫ繝峨ｒ繝ｪ繧ｻ繝・ヨ縺励※螳牙・縺ｫ遘ｻ陦・
+      // Speed → Aerial スタイル名マイグレーション
+      // 絶対週計算を52週基準→48週基準に統一
+      // 旧値の正確な逆算は不可能なため、CD系フィールドをリセットして安全に移行
       if (!G._migrated_absweek48_v1) {
-        // GameState逶ｴ荳九・CD繝輔ぅ繝ｼ繝ｫ繝・ 繝ｪ繧ｻ繝・ヨ(CD縺梧掠縺丞・繧後ｋ譁ｹ蜷・辟｡螳ｳ)
+        // GameState直下のCDフィールド: リセット(CDが早く切れる方向=無害)
         const patchState = {};
         if (G.lastIntrusionWeek) patchState.lastIntrusionWeek = 0;
         if (G.lastLargeEventWeek) patchState.lastLargeEventWeek = 0;
-        // _snapshotCooldowns: 蜈ｨ繝ｪ繧ｻ繝・ヨ(6騾ｱCD縺ｪ縺ｮ縺ｧ蜊ｳ蝗槫ｾｩ)
+        // _snapshotCooldowns: 全リセット(6週CDなので即回復)
         patchState._snapshotCooldowns = {};
-        // lastTitleShowWeek: 譌ｧ蠑・season*48)縺ｮ繝舌げ蛟､竊・繝ｪ繧ｻ繝・ヨ
-        // careStockLastRecovery: 蜈・°繧・8蝓ｺ貅悶□縺悟ｿｵ縺ｮ縺溘ａ繝ｪ繧ｻ繝・ヨ
+        // lastTitleShowWeek: 旧式(season*48)のバグ値→0リセット
+        // careStockLastRecovery: 元から48基準だが念のためリセット
         const fixFighter = c => {
           const patch = {};
           if (c.lastTitleShowWeek) patch.lastTitleShowWeek = 0;
@@ -2596,7 +2596,7 @@ const Storage = {
         };
       }
 
-      // _everFoughtPairs 蠕ｩ蜈・ 繝医Μ繝溘Φ繧ｰ縺ｧ螟ｱ繧上ｌ縺溷・鬘泌粋繧上○蛻､螳夂畑繝壹い繧知atchupLog縺ｫ陬懷ｮ・
+      // _everFoughtPairs 復元: トリミングで失われた初顔合わせ判定用ペアをmatchupLogに補完
       if (G._everFoughtPairs && G._everFoughtPairs.length > 0) {
         const existing = new Set((G.matchupLog || []).map(e => {
           const a = Math.min(e.leftId, e.rightId), b = Math.max(e.leftId, e.rightId);
@@ -2606,7 +2606,7 @@ const Storage = {
           .filter(p => !existing.has(p))
           .map(p => {
             const [a, b] = p.split('>').map(Number);
-            return { leftId: a, rightId: b, showCount: 0 }; // showCount=0: 魄ｮ蠎ｦ遯灘､・
+            return { leftId: a, rightId: b, showCount: 0 }; // showCount=0: 鮮度窓外
           });
         if (restored.length > 0) {
           G = { ...G, matchupLog: [...restored, ...(G.matchupLog || [])] };
@@ -2614,7 +2614,7 @@ const Storage = {
         delete G._everFoughtPairs;
       }
 
-      // stat髱樊紛謨ｰ菫ｮ豁｣: 邱ｴ鄙呈・髟ｷ縺ｮ豬ｮ蜍募ｰ乗焚轤ｹ闢・ｩ阪ｒ荳諡ｬ菫ｮ豁｣
+      // stat非整数修正: 練習成長の浮動小数点蓄積を一括修正
       if (!G._migrated_stat_round_v1) {
         const STATS = ['pw', 'sp', 'te', 'st', 'mn'];
         const roundStats = c => {
@@ -2632,34 +2632,34 @@ const Storage = {
         };
       }
 
-      // 蝗｣菴薙い繧､繧ｳ繝ｳ: playerOrgIcon 譛ｪ螳夂ｾｩ譎ゅ・繝・ヵ繧ｩ繝ｫ繝・
+      // 団体アイコン: playerOrgIcon 未定義時はデフォルト0
       if (G.playerOrgIcon == null) {
         G = { ...G, playerOrgIcon: 0 };
       }
 
-      // 讌ｭ逡悟ｺ穂ｸ翫￡: 譌｢縺ｫ繧ｯ繝ｪ繧｢貂医∩縺ｮ譌ｧ繧ｻ繝ｼ繝悶↓繝輔Λ繧ｰ陬懈ｭ｣ + 譁ｰ繧ｻ繝ｬ繝｢繝九・蜀咲匱轣ｫ
+      // 業界底上げ: 既にクリア済みの旧セーブにフラグ補正 + 新セレモニー再発火
       if (G.endingCleared && !G._migrated_leagueElevation_v2) {
-        // leagueElevated貂医∩縺ｧ繧よ眠繧ｻ繝ｬ繝｢繝九・譛ｪ陦ｨ遉ｺ縺ｪ繧牙・逋ｺ轣ｫ縺輔○繧・
+        // leagueElevated済みでも新セレモニー未表示なら再発火させる
         G = { ...G, leagueElevated: true, _pendingLeagueElevation: true, endingShown: true, _migrated_leagueElevation_v2: true };
       }
 
-      // dormantPool譫ｯ貂・舞貂・ 髟ｷ譛溘・繝ｬ繧､縺ｧ繝励・繝ｫ縺檎ｩｺ縺ｫ縺ｪ縺｣縺溘そ繝ｼ繝悶ｒ蝗槫ｾｩ
+      // dormantPool枯渇救済: 長期プレイでプールが空になったセーブを回復
       // Legacy dormantPool refill migration retired; bounded recovery is handled elsewhere.
       if (!G._migrated_dormantPool_refill_v1) {
         G = { ...G, _migrated_dormantPool_refill_v1: true };
       }
-      // FA蜊ｳ譎り｣懷・: 繝ｭ繝ｼ繝臥峩蠕後↓FA縺悟ｰ代↑縺・→繧ｹ繧ｫ繧ｦ繝育判髱｢縺後⊇縺ｼ遨ｺ縺ｮ縺ｾ縺ｾ譛螟ｧ3騾ｱ蠕・■縺ｫ縺ｪ繧九◆繧√・
-      // pool縺九ｉFA縺ｸ蜊ｳ蠎ｧ縺ｫ霑ｽ蜉縺吶ｋ・域ｯ弱Ο繝ｼ繝画凾繝√ぉ繝・け縲√ヵ繝ｩ繧ｰ縺ｪ縺暦ｼ・
+      // FA即時補充: ロード直後にFAが少ないとスカウト画面がほぼ空のまま最大3週待ちになるため、
+      // poolからFAへ即座に追加する（毎ロード時チェック、フラグなし）
       {
         const curFA = G.freeAgents || [];
-        const FA_MIN = 3; // 縺薙・莠ｺ謨ｰ譛ｪ貅縺ｪ繧芽｣懷・
+        const FA_MIN = 3; // この人数未満なら補充
         if (curFA.length < FA_MIN) {
           const faPool = G.dormantPool || [];
           const faOccupied = new Set(curFA.map(c => c.id));
           (G.roster || []).forEach(c => faOccupied.add(c.id));
           Object.values(G.aiOrgs || {}).forEach(org => (org.roster || []).forEach(c => faOccupied.add(c.id)));
           const eligible = faPool.filter(e => (e.age || 17) < 21 && !faOccupied.has(e.id));
-          const needed = FA_MIN - curFA.length; // 荳崎ｶｳ蛻・□縺題｣懷・
+          const needed = FA_MIN - curFA.length; // 不足分だけ補充
           if (eligible.length > 0 && needed > 0) {
             const faRng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season || 1, G.week || 1, 0xFA01));
             const pick = eligible.slice(0, Math.min(needed, eligible.length));
@@ -2674,13 +2674,13 @@ const Storage = {
                 freeAgents: [...curFA, ...newFA],
                 dormantPool: faPool.filter(e => !pickIds.has(e.id))
               };
-              console.log(`[WM Load] FA蜊ｳ譎り｣懷・: ${newFA.map(f => f.name).join('縲・)}`);
+              console.log(`[WM Load] FA即時補充: ${newFA.map(f => f.name).join('、')}`);
             }
           }
         }
       }
 
-      // 謌宣聞繝槭う繝ｫ繧ｹ繝医・繝ｳ騾夂衍 繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // 成長マイルストーン通知 マイグレーション
       if (!G._migrated_milestoneNotified_v1) {
         if (G._lastMilestoneAbsWeek === undefined) {
           G._lastMilestoneAbsWeek = (G.season - 1) * 48 + G.week;
@@ -2708,7 +2708,7 @@ const Storage = {
         G._migrated_milestoneNotified_v1 = true;
       }
 
-      // affinityAxis 蠕御ｻ倥￠ (relationship-affinity-spec-v1.0 ﾂｧ3.2)
+      // affinityAxis 後付け (relationship-affinity-spec-v1.0 §3.2)
       if (!G._migrated_affinity_v1) {
         G = Engine.relationships.migrateAffinityAxisV1(G);
       }
@@ -2717,7 +2717,7 @@ const Storage = {
         const repair = Engine.saveDoctor.repairOnLoad(G);
         if (repair.changed) {
           G = repair.state;
-          const note = `繧ｻ繝ｼ繝悶ョ繝ｼ繧ｿ閾ｪ蜍穂ｿｮ蠕ｩ: ${repair.changes.join(', ')}`;
+          const note = `セーブデータ自動修復: ${repair.changes.join(', ')}`;
           G = { ...G, gameLog: [...(G.gameLog || []), note] };
           console.log(`[WM Load Repair] ${note}`);
         }
@@ -2734,32 +2734,32 @@ const Storage = {
   save(slot) {
     try {
       localStorage.setItem(SAVE_KEY + slot, Storage.serialize(G));
-      G = { ...G, gameLog: [...G.gameLog, `沈 繧ｹ繝ｭ繝・ヨ${slot}縺ｫ繧ｻ繝ｼ繝悶＠縺ｾ縺励◆`] };
+      G = { ...G, gameLog: [...G.gameLog, `💾 スロット${slot}にセーブしました`] };
       refreshAll();
       return true;
-    } catch(e) { alert('繧ｻ繝ｼ繝悶↓螟ｱ謨励＠縺ｾ縺励◆: ' + e.message); return false; }
+    } catch(e) { alert('セーブに失敗しました: ' + e.message); return false; }
   },
 
   load(slot) {
     const data = localStorage.getItem(SAVE_KEY + slot);
-    if (!data) { alert('繧ｻ繝ｼ繝悶ョ繝ｼ繧ｿ縺後≠繧翫∪縺帙ｓ'); return false; }
+    if (!data) { alert('セーブデータがありません'); return false; }
     if (Storage.deserialize(data)) {
-      G = { ...G, gameLog: [...G.gameLog, `唐 繧ｹ繝ｭ繝・ヨ${slot}縺九ｉ繝ｭ繝ｼ繝峨＠縺ｾ縺励◆`] };
+      G = { ...G, gameLog: [...G.gameLog, `📂 スロット${slot}からロードしました`] };
       if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
       refreshAll();
-      // PPV繝輔ぉ繝ｼ繧ｺ縺ｮ蠕ｩ蟶ｰ: 繧ｪ繝ｼ繝舌・繝ｬ繧､繧貞・蛻晄悄蛹・
+      // PPVフェーズの復帰: オーバーレイを再初期化
       if (G.weekPhase === 'ppvShow') App.initPPVShow();
       else if (G.weekPhase === 'ppvTV') App.initPPVTV();
       return true;
     }
-    alert('繧ｻ繝ｼ繝悶ョ繝ｼ繧ｿ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆縲ゅさ繝ｳ繧ｽ繝ｼ繝ｫ繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞縲・);
+    alert('セーブデータの読み込みに失敗しました。コンソールを確認してください。');
     return false;
   },
 
   autoSave() {
-    if (window.IS_TRIAL) return; // 菴馴ｨ鍋沿: 繧ｪ繝ｼ繝医そ繝ｼ繝也┌蜉ｹ・域焔蜍・繧ｹ繝ｭ繝・ヨ縺ｮ縺ｿ・・
-    if (G.weekPhase === 'gameover') return; // 繧ｲ繝ｼ繝繧ｪ繝ｼ繝舌・譎ゅ・荳頑嶌縺阪＠縺ｪ縺・
-    try { localStorage.setItem(AUTOSAVE_KEY, Storage.serialize(G)); } catch(e) { console.warn('[WM] 繧ｪ繝ｼ繝医そ繝ｼ繝門､ｱ謨・', e.message); }
+    if (window.IS_TRIAL) return; // 体験版: オートセーブ無効（手動1スロットのみ）
+    if (G.weekPhase === 'gameover') return; // ゲームオーバー時は上書きしない
+    try { localStorage.setItem(AUTOSAVE_KEY, Storage.serialize(G)); } catch(e) { console.warn('[WM] オートセーブ失敗:', e.message); }
   },
 
   loadAutoSave() {
@@ -2767,7 +2767,7 @@ const Storage = {
     if (data && Storage.deserialize(data)) {
       if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
       refreshAll();
-      // PPV繝輔ぉ繝ｼ繧ｺ縺ｮ蠕ｩ蟶ｰ: 繧ｪ繝ｼ繝舌・繝ｬ繧､繧貞・蛻晄悄蛹・
+      // PPVフェーズの復帰: オーバーレイを再初期化
       if (G.weekPhase === 'ppvShow') App.initPPVShow();
       else if (G.weekPhase === 'ppvTV') App.initPPVTV();
       return true;
@@ -2800,7 +2800,7 @@ const Storage = {
   exportToFile(slotOrAuto) {
     const key = slotOrAuto === 'auto' ? AUTOSAVE_KEY : SAVE_KEY + slotOrAuto;
     const raw = localStorage.getItem(key);
-    if (!raw) { alert('繧ｻ繝ｼ繝悶ョ繝ｼ繧ｿ縺後≠繧翫∪縺帙ｓ'); return; }
+    if (!raw) { alert('セーブデータがありません'); return; }
 
     const parsed = Storage._parseRaw(raw);
     const datePart = new Date().toISOString().slice(0, 10);
@@ -2835,16 +2835,16 @@ const Storage = {
         try {
           const parsed = JSON.parse(raw);
           if (!parsed.season || !parsed.roster || !parsed.rngSeed) {
-            alert('譛牙柑縺ｪ繧ｻ繝ｼ繝悶ョ繝ｼ繧ｿ縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ');
+            alert('有効なセーブデータではありません');
             return;
           }
         } catch {
-          alert('繝輔ぃ繧､繝ｫ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆');
+          alert('ファイルの読み込みに失敗しました');
           return;
         }
 
         if (Storage.deserialize(raw)) {
-          G = { ...G, gameLog: [...G.gameLog, '唐 繝輔ぃ繧､繝ｫ縺九ｉ繝・・繧ｿ繧定ｪｭ縺ｿ霎ｼ縺ｿ縺ｾ縺励◆'] };
+          G = { ...G, gameLog: [...G.gameLog, '📂 ファイルからデータを読み込みました'] };
           if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
           refreshAll();
           if (G.weekPhase === 'ppvShow') App.initPPVShow();
@@ -2853,7 +2853,7 @@ const Storage = {
           Audio.bgm.playForState();
           Audio.play('save');
         } else {
-          alert('繝・・繧ｿ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆縲ゅヵ繧｡繧､繝ｫ縺檎ｴ謳阪＠縺ｦ縺・ｋ蜿ｯ閭ｽ諤ｧ縺後≠繧翫∪縺吶・);
+          alert('データの読み込みに失敗しました。ファイルが破損している可能性があります。');
         }
       };
       reader.readAsText(file);
@@ -2869,7 +2869,7 @@ function loadGame(slot) {
   const r = Storage.load(slot);
   if (r && App._refreshTicker) App._refreshTicker();
   Audio.bgm.playForState();
-  // 讌ｭ逡悟ｺ穂ｸ翫￡繧ｻ繝ｬ繝｢繝九・: 繝ｭ繝ｼ繝臥峩蠕後↓譛ｪ陦ｨ遉ｺ縺ｪ繧牙叉陦ｨ遉ｺ
+  // 業界底上げセレモニー: ロード直後に未表示なら即表示
   if (r && G._pendingLeagueElevation) {
     refreshAll();
     setTimeout(() => {
@@ -2882,18 +2882,18 @@ function loadGame(slot) {
 }
 function deleteSave(slot) { Audio.play('click'); Storage.deleteSave(slot); refreshAll(); }
 
-// 笊披武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶風
-// 笊・ SECTION 8: APP BRIDGE (v0.85)                            笊・
-// 笊・ UI 竊・Engine bridge layer                                 笊・
-// 笊壺武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶幅
+// ╔══════════════════════════════════════════════════════════╗
+// ║  SECTION 8: APP BRIDGE (v0.85)                            ║
+// ║  UI ↔ Engine bridge layer                                 ║
+// ╚══════════════════════════════════════════════════════════╝
 
-// Global game state 窶・the single source of truth
+// Global game state — the single source of truth
 let G = Engine.createInitialState();
 
 // Running RNG state for the current session
 let sessionRng = Engine.rng.create(G.rngSeed);
 
-// 笏笏 Legacy utility aliases (for UI code backward compat) 笏笏
+// ── Legacy utility aliases (for UI code backward compat) ──
 function ov(c) { return Engine.util.ov(c); }
 function getSalary(c) { return Engine.util.getSalary(c, G.titles); }
 function isShowWeek(w) { return Engine.util.isShowWeek(w); }
@@ -2989,12 +2989,12 @@ function archiveRetiredRivalryState(state, fighter) {
 
   return { ...state, relationships, rivalries, relationshipHistory: history };
 }
-// 笏笏 App Commands (G mutation ONLY via G = newState) 笏笏
+// ── App Commands (G mutation ONLY via G = newState) ──
 let _pendingOrgName = '';
 let _pendingOrgIcon = 0;
 let _selectedDifficulty = 'normal';
 const App = {
-  // 笊絶武笊・Title Screen (v1.0) 笊絶武笊・
+  // ═══ Title Screen (v1.0) ═══
 
   restoreBgmForState(delayMs = 0) {
     const restore = () => {
@@ -3021,12 +3021,12 @@ const App = {
       .map(id => { const url = getPortraitUrl(id); return url ? `<img src="${url}" alt="">` : ''; })
       .join('');
 
-    // Show CONTINUE button if autosave exists (菴馴ｨ鍋沿縺ｧ縺ｯ繧ｪ繝ｼ繝医そ繝ｼ繝也┌蜉ｹ)
+    // Show CONTINUE button if autosave exists (体験版ではオートセーブ無効)
     const autoInfo = window.IS_TRIAL ? null : Storage.getAutoSaveInfo();
     const contBtn = document.getElementById('titleContinueBtn');
     if (autoInfo) {
       contBtn.style.display = '';
-      contBtn.textContent = `CONTINUE 窶・${Engine.util.formatDate(autoInfo.season, autoInfo.week)}`;
+      contBtn.textContent = `CONTINUE — ${Engine.util.formatDate(autoInfo.season, autoInfo.week)}`;
     } else {
       contBtn.style.display = 'none';
     }
@@ -3071,7 +3071,7 @@ const App = {
     if (!Storage.loadAutoSave()) {
       Audio.play('error');
       App.showTitleScreen();
-      alert('繧ｪ繝ｼ繝医そ繝ｼ繝悶・隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆縲・);
+      alert('オートセーブの読み込みに失敗しました。');
       return;
     }
     sessionRng = Engine.rng.create(G.rngSeed);
@@ -3080,7 +3080,7 @@ const App = {
     refreshAll();
   },
 
-  // "LOAD GAME" button from title 窶・open save/load screen
+  // "LOAD GAME" button from title — open save/load screen
   titleLoadGame() {
     Audio.play('select');
     document.getElementById('titleScreen').style.display = 'none';
@@ -3107,10 +3107,10 @@ const App = {
     }
   },
 
-  // Confirm org setup 竊・proceed to difficulty selection
+  // Confirm org setup → proceed to difficulty selection
   confirmOrgSetup() {
     const input = document.getElementById('orgSetupNameInput');
-    _pendingOrgName = (input && input.value.trim()) || '繝励Ξ繧､繝､繝ｼ蝗｣菴・;
+    _pendingOrgName = (input && input.value.trim()) || 'プレイヤー団体';
     Audio.play('select');
     document.getElementById('orgSetupScreen').style.display = 'none';
     document.getElementById('difficultyScreen').style.display = 'flex';
@@ -3126,8 +3126,8 @@ const App = {
     const radHard = document.getElementById('diffRadioHard');
     if (optNormal) optNormal.classList.toggle('selected', mode === 'normal');
     if (optHard) optHard.classList.toggle('selected', mode === 'hard');
-    if (radNormal) radNormal.textContent = mode === 'normal' ? '笳・ : '笳・;
-    if (radHard) radHard.textContent = mode === 'hard' ? '笳・ : '笳・;
+    if (radNormal) radNormal.textContent = mode === 'normal' ? '◉' : '○';
+    if (radHard) radHard.textContent = mode === 'hard' ? '◉' : '○';
   },
 
   // Confirm difficulty and start game
@@ -3176,7 +3176,7 @@ const App = {
       const nextPicks = [...picks, charId];
       if (!Engine.draft.canAffordSelection(G, nextPicks, G.rngSeed)) {
         Audio.play('error');
-        alert('雉・≡荳崎ｶｳ縺ｧ縺吶ゅｈ繧雁ｮ峨＞蛟呵｣懊ｒ驕ｸ繧薙〒縺上□縺輔＞縲・);
+        alert('資金不足です。より安い候補を選んでください。');
         return;
       }
       newPicks = nextPicks;
@@ -3195,29 +3195,29 @@ const App = {
     if (!Engine.draft.isValidPicks(picks)) return;
     if (!Engine.draft.canAffordSelection(G, picks, G.rngSeed)) {
       Audio.play('error');
-      alert('雉・≡荳崎ｶｳ縺ｧ縺吶ゅｈ繧雁ｮ峨＞蛟呵｣懊ｒ驕ｸ繧薙〒縺上□縺輔＞縲・);
+      alert('資金不足です。より安い候補を選んでください。');
       return;
     }
     Audio.play('award');
     const rng = Engine.rng.create(G.rngSeed);
     G = Engine.draft.completeDraft(G, picks, rng);
-    // NPC險倬鹸邨ｱ荳 Part C: 蜈ｨ驕ｸ謇九・邨梧ｭｴ閾ｪ蜍慕函謌撰ｼ医ラ繝ｩ繝輔ヨ螳御ｺ・ｾ後・繧ｲ繝ｼ繝譛ｬ邱ｨ髢句ｧ句燕・・
+    // NPC記録統一 Part C: 全選手の経歴自動生成（ドラフト完了後・ゲーム本編開始前）
     G = Engine.career.generateAllBackstories(G);
-    // Phase 1: 莠ｺ髢馴未菫ゅョ繝ｼ繧ｿ蝓ｺ逶､ 窶・蜈ｨ繝壹い縺ｮ蛻晄悄蛟､逕滓・
+    // Phase 1: 人間関係データ基盤 — 全ペアの初期値生成
     G = Engine.relationships.initialize(G);
-    // ﾂｧC-6 驕主悉蟇ｾ謌ｦ謌千ｸｾ繝・ャ縺｡荳翫￡ 窶・AI蝗｣菴薙Ο繧ｹ繧ｿ繝ｼ縺ｫ h2h/wins/Bond/Rivalry 繧貞綾繧
+    // §C-6 過去対戦成績デッち上げ — AI団体ロスターに h2h/wins/Bond/Rivalry を刻む
     G = Engine.career.generateInheritedRecords(G);
-    // v1.3: Record debut event for drafted fighters・育ｵ梧ｭｴ逕滓・蠕後↓荳頑嶌縺・窶・繝励Ξ繧､繝､繝ｼ蝗｣菴薙ョ繝薙Η繝ｼ繧呈ｭ｣蠑剰ｨ倬鹸・・
+    // v1.3: Record debut event for drafted fighters（経歴生成後に上書き — プレイヤー団体デビューを正式記録）
     G = { ...G, roster: G.roster.map(c => picks.includes(c.id)
-      ? Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・, via: 'draft' })
+      ? Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'draft' })
       : c) };
     delete G._draftPicks;
     delete G._draftFocus;
     sessionRng = Engine.rng.create(G.rngSeed);
 
-    // 笏笏 螳御ｺ・ｼ泌・: 5蜷肴ｨｪ荳ｦ縺ｳ髮・粋蜀咏悄 笏笏
-    const orgName = G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・;
-    // 荳ｦ縺ｳ鬆・ 蝗ｺ螳壹Γ繝ｳ繝舌・蟾ｦ 竊・驕ｸ謚・蜷・竊・蝗ｺ螳壹Γ繝ｳ繝舌・蜿ｳ
+    // ── 完了演出: 5名横並び集合写真 ──
+    const orgName = G.orgName || 'プレイヤー団体';
+    // 並び順: 固定メンバー左 → 選択3名 → 固定メンバー右
     const fixedIds = DRAFT_CONFIG.fixed;
     const teamOrder = [fixedIds[0], ...picks, fixedIds[1]];
     const teamMembers = teamOrder.map(id => {
@@ -3240,19 +3240,19 @@ const App = {
       </div>
       <div class="comp-text">
         <span class="org-name">${orgName}</span>
-        <span class="start">蟋句虚</span>
+        <span class="start">始動</span>
       </div>
     `;
     document.body.appendChild(overlay);
 
-    // 繝輔ぉ繝ｼ繝峨う繝ｳ
+    // フェードイン
     requestAnimationFrame(() => { requestAnimationFrame(() => { overlay.classList.add('show'); }); });
 
-    // 繧ｯ繝ｪ繝ｼ繝繝・・繝槭ｒ繧ｯ繝ｪ繝ｼ繝ｳ繧｢繝・・
+    // クリームテーマをクリーンアップ
     const appEl = document.querySelector('.app');
     if (appEl) appEl.classList.remove('draft-cream');
 
-    // 繧ｯ繝ｪ繝・け縺ｧ譛ｬ邱ｨ縺ｸ
+    // クリックで本編へ
     overlay.addEventListener('click', () => {
       overlay.style.transition = 'opacity 1s ease';
       overlay.style.opacity = '0';
@@ -3275,17 +3275,17 @@ const App = {
     const idx = G.freeAgents.findIndex(c => c.id === charId);
     if (idx < 0) return;
     const fighter = G.freeAgents[idx];
-    // 譛邨る㍾隍・メ繧ｧ繝・け・域怙蠕後・遐ｦ・会ｼ壼酔荳defId縺後Ο繧ｹ繧ｿ繝ｼ縺ｫ譌｢縺ｫ蟄伜惠縺励↑縺・°遒ｺ隱・
+    // 最終重複チェック（最後の砦）：同一defIdがロスターに既に存在しないか確認
     if (G.roster.some(c => c.id === charId)) {
-      Audio.play('error'); alert('縺薙・驕ｸ謇九・縺吶〒縺ｫ閾ｪ蝗｣菴薙↓謇螻槭＠縺ｦ縺・∪縺・); return;
+      Audio.play('error'); alert('この選手はすでに自団体に所属しています'); return;
     }
-    // Gate: check orgPop requirement (pricing-balance-spec ﾂｧ2) 窶・FA context with eliteTicket support
+    // Gate: check orgPop requirement (pricing-balance-spec §2) — FA context with eliteTicket support
     if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter, 'fa', G)) {
-      Audio.play('error'); alert('蝗｣菴薙・遏･蜷榊ｺｦ縺瑚ｶｳ繧翫∪縺帙ｓ・・); return;
+      Audio.play('error'); alert('団体の知名度が足りません！'); return;
     }
     const usedEliteTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, fighter, G);
     const finalCost = Engine.scout.getSigningCost(fighter, G.orgPop || 0);
-    if (G.funds < finalCost) { Audio.play('error'); alert('雉・≡縺瑚ｶｳ繧翫∪縺帙ｓ・・); return; }
+    if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
     if (G.roster.filter(f => !f.isRental).length >= (G.rosterCap || 8)) {
       App._queueRosterOverflowSigning({
         source: 'fa',
@@ -3315,27 +3315,27 @@ const App = {
       preInjuryPop: fighter.preInjuryPop ?? null
     };
     let c = normalized; // FA signing: no popularity reset (transfer reset is for org-to-org moves only)
-    c = Engine.chronicle.applySpiritToFighter(c, G.chronicle); // Phase 4: 豌鈴｢ｨ trainCap 陬懈ｭ｣
-    // Phase 3: orgJoinWeek險ｭ螳・
+    c = Engine.chronicle.applySpiritToFighter(c, G.chronicle); // Phase 4: 気風 trainCap 補正
+    // Phase 3: orgJoinWeek設定
     c.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
     // v1.3: Record debut event
-    c = Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・, via: 'freeagent' });
+    c = Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
     const newFA = G.freeAgents.filter((_, i) => i !== idx);
     const newRoster = [...G.roster, c];
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
     const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
-    const log = [...G.gameLog, `統 ${c.name}縺ｨ螂醍ｴ・ｼ亥･醍ｴ・≡: ${finalCost}荳・[${tierCfg.label}]${scoutDisc > 0 ? ` / 繧ｹ繧ｫ繧ｦ繝育ｶｲ蜑ｲ蠑・{scoutDisc}%` : ''}・荏];
+    const log = [...G.gameLog, `📝 ${c.name}と契約（契約金: ${finalCost}万 [${tierCfg.label}]${scoutDisc > 0 ? ` / スカウト網割引${scoutDisc}%` : ''}）`];
     if (titleMsg) log.push(titleMsg);
-    // v1.9: 騾ｸ譚千音蛻･莠､貂画棧縺ｮ豸郁ｲｻ
+    // v1.9: 逸材特別交渉枠の消費
     const eliteTicketUpdate = usedEliteTicket ? { eliteTicket: false, eliteTicketUsed: true } : {};
-    if (usedEliteTicket) log.push('辞 騾ｸ譚千音蛻･莠､貂画棧繧剃ｽｿ逕ｨ縺励∪縺励◆');
+    if (usedEliteTicket) log.push('🎫 逸材特別交渉枠を使用しました');
     G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, ...eliteTicketUpdate };
     Audio.play('stamp');
     const faSigningLine = getSigningLine(fighter, 'fa_signing');
     showEventPopup({ type:'fighter', id: fighter.id, name: fighter.name,
       tone:'positive', message: faSigningLine,
-      detail:`統 螂醍ｴ・≡: ${finalCost}荳・[${tierCfg.label}]` });
+      detail:`📝 契約金: ${finalCost}万 [${tierCfg.label}]` });
     refreshAll();
   },
 
@@ -3391,7 +3391,7 @@ const App = {
     const newShowCard = App._removeFighterFromShowCard(G.showCard, charId);
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster, showCard: newShowCard });
-    const log = [...G.gameLog, `豆 ${target.name}繧定ｧ｣髮㌔];
+    const log = [...G.gameLog, `📤 ${target.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
     const claimResult = Engine.rival.claimDepartedStar(
       Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xD75A, G.season, G.week, charId)),
@@ -3451,21 +3451,21 @@ const App = {
     }
     if (G.funds < pending.cost) {
       Audio.play('error');
-      alert('雉・≡縺瑚ｶｳ繧翫∪縺帙ｓ・・);
+      alert('資金が足りません！');
       return;
     }
     if (pending.source === 'fa' && !G.freeAgents.some(c => c.id === pending.fighterId)) {
       G = { ...G, pendingRosterOverflowSigning: null };
       refreshAll();
       Audio.play('error');
-      alert('蟇ｾ雎｡驕ｸ謇九′蟶ょｴ縺ｫ隕九▽縺九ｊ縺ｾ縺帙ｓ縺ｧ縺励◆縲・);
+      alert('対象選手が市場に見つかりませんでした。');
       return;
     }
     if (pending.source === 'scout' && !(G.scoutCandidates || []).some(c => c.id === pending.fighterId) && !pending.fighter) {
       G = { ...G, pendingRosterOverflowSigning: null };
       refreshAll();
       Audio.play('error');
-      alert('蟇ｾ雎｡驕ｸ謇九′繧ｹ繧ｫ繧ｦ繝亥呵｣懊↓隕九▽縺九ｊ縺ｾ縺帙ｓ縺ｧ縺励◆縲・);
+      alert('対象選手がスカウト候補に見つかりませんでした。');
       return;
     }
     if (pending.source === 'negotiation') {
@@ -3475,34 +3475,34 @@ const App = {
         G = { ...G, pendingRosterOverflowSigning: null, negotiationResult: null };
         refreshAll();
         Audio.play('error');
-        alert('莠､貂牙ｯｾ雎｡縺ｮ驕ｸ謇九′隕九▽縺九ｊ縺ｾ縺帙ｓ縺ｧ縺励◆縲・);
+        alert('交渉対象の選手が見つかりませんでした。');
         return;
       }
     }
     const released = App._releaseFighterForOverflow(releaseId);
     if (!released) return;
     let signedFighter = pending.fighter;
-    let detail = `隗｣髮・ ${released.name}`;
-    let message = '螂醍ｴ・′謌千ｫ九＠縺ｾ縺励◆';
+    let detail = `解雇: ${released.name}`;
+    let message = '契約が成立しました';
     if (pending.source === 'fa') {
       const idx = G.freeAgents.findIndex(c => c.id === pending.fighterId);
       const fighter = G.freeAgents[idx];
       const usedEliteTicket = !!pending.meta?.usedEliteTicket;
       let normalized = App._normalizeFighterForRoster({ ...fighter, orgId: 'player' });
-      normalized = Engine.chronicle.applySpiritToFighter(normalized, G.chronicle); // Phase 4: 豌鈴｢ｨ trainCap 陬懈ｭ｣
+      normalized = Engine.chronicle.applySpiritToFighter(normalized, G.chronicle); // Phase 4: 気風 trainCap 補正
       normalized.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
-      normalized = Engine.career.addEvent(normalized, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・, via: 'freeagent' });
+      normalized = Engine.career.addEvent(normalized, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
       const tierCfg = Engine.scout.getTierConfig(normalized.assessedTier || 'material');
       const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
       const newFA = G.freeAgents.filter((_, i) => i !== idx);
       const newRoster = [...G.roster, normalized];
       const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
-      const log = [...G.gameLog, `統 ${normalized.name}縺ｨ螂醍ｴ・ｼ亥･醍ｴ・≡: ${pending.cost}荳・ｼ閏${tierCfg.label}]${scoutDisc > 0 ? ` / 繧ｹ繧ｫ繧ｦ繝亥牡蠑・${scoutDisc}%` : ''}`];
+      const log = [...G.gameLog, `📝 ${normalized.name}と契約（契約金: ${pending.cost}万）[${tierCfg.label}]${scoutDisc > 0 ? ` / スカウト割引 ${scoutDisc}%` : ''}`];
       if (titleMsg) log.push(titleMsg);
-      if (usedEliteTicket) log.push('辞 騾ｸ譚千音蛻･莠､貂画棧繧剃ｽｿ逕ｨ縺励∪縺励◆');
+      if (usedEliteTicket) log.push('🎫 逸材特別交渉枠を使用しました');
       G = { ...G, funds: G.funds - pending.cost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, eliteTicket: usedEliteTicket ? false : G.eliteTicket, eliteTicketUsed: usedEliteTicket ? true : G.eliteTicketUsed };
       signedFighter = normalized;
-      detail = `隗｣髮・ ${released.name} / 螂醍ｴ・≡: ${pending.cost}荳㌔;
+      detail = `解雇: ${released.name} / 契約金: ${pending.cost}万`;
       message = getSigningLine(fighter, 'fa_signing');
     } else if (pending.source === 'scout') {
       const cand = (G.scoutCandidates || []).find(c => c.id === pending.fighterId) || pending.fighter;
@@ -3511,24 +3511,24 @@ const App = {
       delete signed._notion; delete signed._estimate; delete signed._isSeed;
       delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
       let normalizedSigned = App._normalizeFighterForRoster(signed);
-      normalizedSigned = Engine.chronicle.applySpiritToFighter(normalizedSigned, G.chronicle); // Phase 4: 豌鈴｢ｨ trainCap 陬懈ｭ｣
+      normalizedSigned = Engine.chronicle.applySpiritToFighter(normalizedSigned, G.chronicle); // Phase 4: 気風 trainCap 補正
       normalizedSigned.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
-      normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・, via: 'scout' });
+      normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
       const candidates = (G.scoutCandidates || []).filter(c => c.id !== pending.fighterId);
       const picks = [...(G.scoutPicks || [])];
       if (!picks.includes(pending.fighterId)) picks.push(pending.fighterId);
       const newRoster = [...G.roster, normalizedSigned];
       const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
-      const log = [...G.gameLog, `統 繧ｹ繧ｫ繧ｦ繝育佐蠕・${normalizedSigned.name} [${tierCfg.label}] 螂醍ｴ・≡${pending.cost}荳㌔];
+      const log = [...G.gameLog, `📝 スカウト獲得 ${normalizedSigned.name} [${tierCfg.label}] 契約金${pending.cost}万`];
       if (titleMsg) log.push(titleMsg);
       G = { ...G, roster: newRoster, scoutCandidates: candidates, scoutPicks: picks, funds: G.funds - pending.cost, titles, gameLog: log };
       signedFighter = normalizedSigned;
-      detail = `隗｣髮・ ${released.name} / 螂醍ｴ・≡: ${pending.cost}荳㌔;
+      detail = `解雇: ${released.name} / 契約金: ${pending.cost}万`;
       message = getSigningLine(cand, pending.meta?.choice === 'direct' ? 'direct' : 'competition_won');
     } else if (pending.source === 'negotiation') {
       const fromOrgId = pending.meta?.fromOrgId;
-      const fromOrgName = pending.meta?.fromOrgName || '莉門屮菴・;
+      const fromOrgName = pending.meta?.fromOrgName || '他団体';
       const orgData = G.aiOrgs[fromOrgId];
       const fighter = orgData.roster.find(f => f.id === pending.fighterId);
       let resetFighter = Engine.popularity.applyTransferReset({ ...fighter, orgId: 'player', trust: 50, salaryBonus: 0 });
@@ -3536,12 +3536,12 @@ const App = {
       resetFighter = Engine.orgTimeline.transfer(resetFighter, 'player', G.season, G.week);
       resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: G.season, week: G.week, fromOrg: fromOrgName, toOrg: 'player', via: 'negotiate' });
       const newAiOrgs = { ...G.aiOrgs, [fromOrgId]: { ...orgData, roster: orgData.roster.filter(f => f.id !== pending.fighterId) } };
-      G = { ...G, aiOrgs: newAiOrgs, roster: [...G.roster, resetFighter], funds: G.funds - pending.cost, transferLog: [...(G.transferLog || []), { season: G.season, week: G.week, type: 'negotiate', fighter: fighter.name, from: fromOrgName, cost: pending.cost }], gameLog: [...G.gameLog, `脂 ${fighter.name}縺ｮ蠑輔″謚懊″莠､貂画・蜉滂ｼ・ｼ・${pending.cost}荳・ｼ荏], negotiationResult: null };
+      G = { ...G, aiOrgs: newAiOrgs, roster: [...G.roster, resetFighter], funds: G.funds - pending.cost, transferLog: [...(G.transferLog || []), { season: G.season, week: G.week, type: 'negotiate', fighter: fighter.name, from: fromOrgName, cost: pending.cost }], gameLog: [...G.gameLog, `🎉 ${fighter.name}の引き抜き交渉成功！（-${pending.cost}万）`], negotiationResult: null };
       App._pushNewsEvent({ type: 'poachSuccess', characterId: resetFighter.id,
         data: { name: resetFighter.name, toOrg: G.orgName || '\u3042\u306a\u305f\u306e\u56e3\u4f53', fromOrg: fromOrgName, ovr: Engine.util.ov(resetFighter), cost: pending.cost } });
       signedFighter = resetFighter;
-      detail = `隗｣髮・ ${released.name} / 遘ｻ邀埼≡: ${pending.cost}荳㌔;
-      message = `${resetFighter.name}縺ｨ縺ｮ螂醍ｴ・′謌千ｫ九＠縺歔;
+      detail = `解雇: ${released.name} / 移籍金: ${pending.cost}万`;
+      message = `${resetFighter.name}との契約が成立した`;
     }
     G = { ...G, pendingRosterOverflowSigning: null };
     Storage.autoSave();
@@ -3550,7 +3550,7 @@ const App = {
     showEventPopup({ type: 'fighter', id: signedFighter.id, name: signedFighter.name, tone: 'positive', message, detail });
   },
 
-  // 笏笏 Scout Event Methods (scout-spec ﾂｧ2-ﾂｧ5) 笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── Scout Event Methods (scout-spec §2-§5) ──────────────
 
   /** Pick a candidate: show competition dialog or sign directly */
   scoutEventPick(candidateId) {
@@ -3559,13 +3559,13 @@ const App = {
     if (!cand) return;
     const picks = G.scoutPicks || [];
     if (picks.length >= (G.scoutMaxPicks || 3)) {
-      Audio.play('error'); alert(`莉雁屓縺ｮ迯ｲ蠕嶺ｸ企剞・・{G.scoutMaxPicks}蜷搾ｼ峨↓驕斐＠縺ｦ縺・∪縺兪); return;
+      Audio.play('error'); alert(`今回の獲得上限（${G.scoutMaxPicks}名）に達しています`); return;
     }
     if (!Engine.scout.canNegotiate(G.orgPop || 0, cand)) {
-      Audio.play('error'); alert('蝗｣菴薙・遏･蜷榊ｺｦ縺瑚ｶｳ繧翫∪縺帙ｓ・・); return;
+      Audio.play('error'); alert('団体の知名度が足りません！'); return;
     }
     const baseCost = Engine.scout.getSigningCost(cand, G.orgPop || 0);
-    if (G.funds < baseCost) { Audio.play('error'); alert('雉・≡縺瑚ｶｳ繧翫∪縺帙ｓ・・); return; }
+    if (G.funds < baseCost) { Audio.play('error'); alert('資金が足りません！'); return; }
 
     if (cand._hasCompetition) {
       // Show competition resolution modal
@@ -3619,7 +3619,7 @@ const App = {
     });
 
     if (result.result === 'success') {
-      if (newFunds < result.cost) { Audio.play('error'); alert('雉・≡縺瑚ｶｳ繧翫∪縺帙ｓ・・); return; }
+      if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
       if (newRoster.filter(f => !f.isRental).length >= (G.rosterCap || 8)) {
         App._queueRosterOverflowSigning({
           source: 'scout',
@@ -3637,25 +3637,25 @@ const App = {
       delete signed._hasCompetition; delete signed._compMultiplier; delete signed._bidWinRate;
       // v1.3: Record debut event
       let normalizedSigned = normalizeFighterForRoster(signed);
-      normalizedSigned = Engine.chronicle.applySpiritToFighter(normalizedSigned, G.chronicle); // Phase 4: 豌鈴｢ｨ trainCap 陬懈ｭ｣
-      // Phase 3: orgJoinWeek險ｭ螳・
+      normalizedSigned = Engine.chronicle.applySpiritToFighter(normalizedSigned, G.chronicle); // Phase 4: 気風 trainCap 補正
+      // Phase 3: orgJoinWeek設定
       normalizedSigned.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
-      // orgTimeline: 繧ｹ繧ｫ繧ｦ繝育佐蠕励〒謇螻槫､画峩
+      // orgTimeline: スカウト獲得で所属変更
       normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
-      normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・, via: 'scout' });
+      normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
       newRoster.push(normalizedSigned);
       newFunds -= result.cost;
       picks.push(candidateId);
       candidates = candidates.filter(c => c.id !== candidateId);
-      log.push(`剥 繧ｹ繧ｫ繧ｦ繝育佐蠕・ ${cand.name} [${tierCfg.label}] 螂醍ｴ・≡${result.cost}荳㌔);
+      log.push(`🔍 スカウト獲得: ${cand.name} [${tierCfg.label}] 契約金${result.cost}万`);
       const signingContext = (choice === 'direct') ? 'direct'
         : (choice === 'pay' || choice === 'gamble') ? 'competition_won'
         : 'direct';
       const signingLine = getSigningLine(cand, signingContext);
-      // 繝昴ャ繝励い繝・・縺ｯ showScreen 蠕後↓陦ｨ遉ｺ・・howScreen 縺・dismissAllPopups 繧貞他縺ｶ縺溘ａ・・
+      // ポップアップは showScreen 後に表示（showScreen が dismissAllPopups を呼ぶため）
       var _scoutSigningPopup = { type:'fighter', id: cand.id, name: cand.name,
         tone:'positive', message: signingLine,
-        detail:`統 螂醍ｴ・≡: ${result.cost}荳・[${tierCfg.label}]` };
+        detail:`📝 契約金: ${result.cost}万 [${tierCfg.label}]` };
       var _scoutSigningFanfare = (signingContext === 'competition_won');
     } else if (result.result === 'lost') {
       Audio.play('error');
@@ -3671,25 +3671,25 @@ const App = {
           aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: nextRoster } };
         }
         const orgInfo = RIVAL_ORGS.find(o => o.id === lostResult.orgId);
-        log.push(`剥 遶ｶ繧願ｲ縺・ ${cand.name}縺ｯ${orgInfo ? orgInfo.name : '莉門屮菴・}縺ｸ`);
+        log.push(`🔍 競り負け: ${cand.name}は${orgInfo ? orgInfo.name : '他団体'}へ`);
       } else {
-        // 譛邨る㍾隍・メ繧ｧ繝・け・壼酔荳defId縺熊A繝ｻ繝ｭ繧ｹ繧ｿ繝ｼ縺ｫ譌｢縺ｫ蟄伜惠縺励↑縺・ｴ蜷医・縺ｿ霑ｽ蜉
+        // 最終重複チェック：同一defIdがFA・ロスターに既に存在しない場合のみ追加
         const alreadyExists = freeAgents.some(f => f.id === cleanFighter.id)
           || newRoster.some(f => f.id === cleanFighter.id);
         if (!alreadyExists) {
           freeAgents.push(normalizeFighterForRoster(cleanFighter));
-          log.push(`剥 遶ｶ繧願ｲ縺・ ${cand.name}縺ｯ繝輔Μ繝ｼ繧ｨ繝ｼ繧ｸ繧ｧ繝ｳ繝医∈`);
+          log.push(`🔍 競り負け: ${cand.name}はフリーエージェントへ`);
         } else {
-          log.push(`剥 遶ｶ繧願ｲ縺・ ${cand.name}縺ｯ繝輔Μ繝ｼ繧ｨ繝ｼ繧ｸ繧ｧ繝ｳ繝医∈・磯㍾隍・・縺溘ａ逋ｻ骭ｲ逵∫払・荏);
+          log.push(`🔍 競り負け: ${cand.name}はフリーエージェントへ（重複のため登録省略）`);
         }
       }
       candidates = candidates.filter(c => c.id !== candidateId);
-      // 繝昴ャ繝励い繝・・縺ｯ showScreen 蠕後↓陦ｨ遉ｺ・・howScreen 縺・dismissAllPopups 繧貞他縺ｶ縺溘ａ・・
+      // ポップアップは showScreen 後に表示（showScreen が dismissAllPopups を呼ぶため）
       var _scoutSigningPopup = { type:'scout', tone:'negative',
-        message:`${cand.name}縺ｮ迯ｲ蠕励↓螟ｱ謨冷ｦ`, detail:'莉門屮菴薙→縺ｮ遶ｶ蜷医↓謨励ｌ縺ｾ縺励◆' };
+        message:`${cand.name}の獲得に失敗…`, detail:'他団体との競合に敗れました' };
     } else if (result.result === 'skipped') {
-      // v1.7: 隕矩√ｊ譎ゅ・繝ｪ繧ｹ繝医°繧牙炎髯､縺励↑縺・ｼ亥・讀懆ｨ主庄閭ｽ縺ｫ縺吶ｋ・・
-      log.push(`剥 繧ｹ繧ｫ繧ｦ繝郁ｦ矩√ｊ: ${cand.name}`);
+      // v1.7: 見送り時はリストから削除しない（再検討可能にする）
+      log.push(`🔍 スカウト見送り: ${cand.name}`);
     }
 
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
@@ -3698,7 +3698,7 @@ const App = {
       ...G, funds: newFunds, roster: newRoster, freeAgents, aiOrgs, titles,
       scoutCandidates: candidates, scoutPicks: picks, scoutPendingPick: null, gameLog: log,
     };
-    // O-02: FA/繧ｹ繧ｫ繧ｦ繝医〒蜈･蝗｣ 窶・譌｢蟄倥Γ繝ｳ繝舌・蜈ｨ蜩｡竊呈眠蜈･驕ｸ謇・bond -3縲・3 + 蜀肴磁隗ｦ繝√ぉ繝・け
+    // O-02: FA/スカウトで入団 — 既存メンバー全員→新入選手 bond -3〜+3 + 再接触チェック
     if (result.result === 'success' && G.relationships) {
       const previousRelationshipState = { relationships: G.relationships };
       const scoutRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE44, G.season, candidateId));
@@ -3711,7 +3711,7 @@ const App = {
     }
     refreshAll();
     showScreen('scoutEvent');
-    // showScreen 縺・dismissAllPopups 繧貞他縺ｶ蠕後↓繝昴ャ繝励い繝・・陦ｨ遉ｺ
+    // showScreen が dismissAllPopups を呼ぶ後にポップアップ表示
     if (typeof _scoutSigningPopup !== 'undefined' && _scoutSigningPopup) {
       showEventPopup(_scoutSigningPopup);
       if (_scoutSigningFanfare) Audio.play('fanfare');
@@ -3722,19 +3722,19 @@ const App = {
   scoutEventFinish() {
     Audio.play('click');
     const picksCount = (G.scoutPicks || []).length;
-    const log = [...G.gameLog, `剥 繧ｹ繧ｫ繧ｦ繝域ｴｻ蜍募ｮ御ｺ・ ${picksCount}蜷咲佐蠕輿];
+    const log = [...G.gameLog, `🔍 スカウト活動完了: ${picksCount}名獲得`];
     // Clean up any remaining candidates
     let freeAgents = [...G.freeAgents];
     let dormantPool = [...(G.dormantPool || [])];
-    // 蜊譛画ｸ医∩ID繧ｻ繝・ヨ・域怙邨る㍾隍・メ繧ｧ繝・け逕ｨ・・
+    // 占有済みIDセット（最終重複チェック用）
     const occupiedIds = Engine.util.collectOccupiedCharacterDefIds(G);
-    // scoutCandidates 縺ｯ莉翫°繧・dormantPool 縺ｫ霑泌唆縺吶ｋ蟇ｾ雎｡縺ｪ縺ｮ縺ｧ縲√％縺薙〒縺ｯ蜊譛画桶縺・°繧牙､悶☆
+    // scoutCandidates は今から dormantPool に返却する対象なので、ここでは占有扱いから外す
     (G.scoutCandidates || []).forEach(c => occupiedIds.delete(c.id));
     (G.scoutCandidates || []).forEach(c => {
       const clean = { ...c };
       delete clean._notion; delete clean._estimate; delete clean._isSeed;
       delete clean._hasCompetition; delete clean._compMultiplier; delete clean._bidWinRate;
-      // 隕矩√ｊ蛟呵｣懊・100% dormantPool霑泌唆・・A閹ｨ蠑ｵ髦ｲ豁｢・・
+      // 見送り候補は100% dormantPool返却（FA膨張防止）
       if (!occupiedIds.has(clean.id)) {
         if (!dormantPool.some(e => e.id === clean.id)) {
           dormantPool.push({ id: clean.id, age: clean.age || 17 });
@@ -3758,19 +3758,19 @@ const App = {
     }
   },
 
-  // 笏笏 螂醍ｴ・峩譁ｰ莠､貂峨ヵ繝ｭ繝ｼ 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── 契約更新交渉フロー ───────────────────────────────────────────────────
   handleContractNegotiations() {
     const negotiations = G.pendingContractNegotiations || [];
     const autoCount = G._contractAutoRenewed || 0;
     if (negotiations.length === 0) {
-      // 莠､貂我ｸ崎ｦ・窶・transient繧ｯ繝ｪ繧｢縺励※谺｡縺ｸ
+      // 交渉不要 — transientクリアして次へ
       const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = G;
       G = clean;
       App.advanceWeek();
       return;
     }
 
-    // 遉ｾ髟ｷ螳､縺ｫ驕ｷ遘ｻ・井ｺ､貂峨Δ繝ｼ繝会ｼ・
+    // 社長室に遷移（交渉モード）
     showScreen('shachoshitsu');
 
     const season = G.season || 1;
@@ -3781,7 +3781,7 @@ const App = {
 
     function processNext() {
       if (idx >= negotiations.length) {
-        // 蜈ｨ莠､貂牙ｮ御ｺ・竊・邨先棡繧ｵ繝槭Μ繝ｼ
+        // 全交渉完了 → 結果サマリー
         const salaryChanges = App._buildContractRenewalSalaryChanges(
           results,
           preNegotiationRoster,
@@ -3789,10 +3789,10 @@ const App = {
           G
         );
         showContractResultModal(results, salaryChanges, () => {
-          // weekPhase 繧・offseason 縺ｫ謌ｻ縺呻ｼ医リ繝薙Ο繝・け隗｣髯､ + advanceWeek 縺ｮ蜀阪Ν繝ｼ繝鈴亟豁｢・・
+          // weekPhase を offseason に戻す（ナビロック解除 + advanceWeek の再ループ防止）
           const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = G;
-          G = { ...clean, weekPhase: 'offseason', gameLog: [...(G.gameLog || []), `搭 螂醍ｴ・峩譁ｰ螳御ｺ・ 谿狗蕗${results.filter(r => r.type === 'stay').length}蜷・騾蝗｣${results.filter(r => r.type === 'depart').length}蜷港] };
-          // 莉企ｱ逕ｻ髱｢縺ｫ謌ｻ縺｣縺ｦ縺九ｉ谺｡騾ｱ縺ｸ騾ｲ繧√ｋ・育､ｾ髟ｷ螳､縺ｮ莠､貂峨き繝ｼ繝峨↓逡吶∪繧峨↑縺・ｈ縺・↓・・
+          G = { ...clean, weekPhase: 'offseason', gameLog: [...(G.gameLog || []), `📋 契約更新完了: 残留${results.filter(r => r.type === 'stay').length}名 退団${results.filter(r => r.type === 'depart').length}名`] };
+          // 今週画面に戻ってから次週へ進める（社長室の交渉カードに留まらないように）
           showScreen('week');
           App.advanceWeek();
         });
@@ -3800,7 +3800,7 @@ const App = {
       }
 
       const neg = negotiations[idx];
-      // v2.0 ﾂｧ6.3: 遯∫匱騾蝗｣ 窶・驕ｸ謚櫁い縺ｪ縺励∝叉騾蝗｣
+      // v2.0 §6.3: 突発退団 — 選択肢なし、即退団
       if (neg.attitude === 'sudden_departure') {
         showContractSuddenDepartureModal(neg, G, () => {
           const resolveRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 2));
@@ -3821,7 +3821,7 @@ const App = {
       });
     }
 
-    // 繧ｵ繝槭Μ繝ｼ逕ｻ髱｢ 竊・莠､貂蛾幕蟋・
+    // サマリー画面 → 交渉開始
     showContractSummaryModal(negotiations, autoCount, season, () => processNext());
   },
 
@@ -3872,7 +3872,7 @@ const App = {
     App._consumeBetrayalNews(neg);
 
     if (result.result.type === 'listen') {
-      // 逅・罰繧定◇縺・竊・繧ｵ繝夜∈謚・
+      // 理由を聞く → サブ選択
       showContractListenModal(neg, result.reactionDialogue, G, (subChoice) => {
         const subRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 3));
         const subResult = Engine.contract.resolveNegotiation(subRng, G, neg, 1, subChoice);
@@ -3888,11 +3888,11 @@ const App = {
 
     results.push(result.result);
 
-    // 邨先棡縺ｫ蠢懊§縺欖E
+    // 結果に応じたSE
     if (result.result.type === 'stay') Audio.play('fanfare');
     else if (result.result.type === 'depart') Audio.play('defeat');
 
-    // 遘ｻ邀榊ｿ鈴｡倥↓逋ｺ螻輔＠縺溷ｴ蜷・竊・遘ｻ邀榊ｿ鈴｡倥→縺励※蜀堺ｺ､貂・
+    // 移籍志願に発展した場合 → 移籍志願として再交渉
     if (result.result.escalated) {
       Audio.play('tension_hit');
       const escNeg = { ...neg, attitude: 'transfer' };
@@ -3907,7 +3907,7 @@ const App = {
     showContractReactionModal(neg, result.reactionDialogue, onDone);
   },
 
-  // 蠑暮蜍ｧ蜻翫い繧ｯ繧ｷ繝ｧ繝ｳ
+  // 引退勧告アクション
   doRetireAdvise(fighterId) {
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xAD71, fighterId));
     const result = Engine.retirement.advise(rng, G, fighterId);
@@ -3917,16 +3917,16 @@ const App = {
     G = cleanG;
     Storage.autoSave();
     refreshAll();
-    // 邨先棡繝昴ャ繝励い繝・・陦ｨ遉ｺ
+    // 結果ポップアップ表示
     showRetireAdviseResultPopup(accepted, fighter, line);
   },
 
-  // 蠑輔″逡吶ａ繧｢繧ｯ繧ｷ繝ｧ繝ｳ・亥ｼ暮繝昴ャ繝励い繝・・縺九ｉ蜻ｼ縺ｰ繧後ｋ・・
-  // 蠑暮縺ｯ縺ｾ縺 commit 縺輔ｌ縺ｦ縺・↑縺・ｼ・oster 縺ｫ螻・ｋ・俄・譛ｬ莠ｺ繧堤峩謗･譖ｴ譁ｰ縺吶ｋ
+  // 引き留めアクション（引退ポップアップから呼ばれる）
+  // 引退はまだ commit されていない（roster に居る）— 本人を直接更新する
   doRetainFighter(fighterId) {
     const fighter = (G.roster || []).find(c => c.id === fighterId);
     if (!fighter) { closeRetirementPopup(); return; }
-    // 蠑輔″逡吶ａ荳企剞繝√ぉ繝・け
+    // 引き留め上限チェック
     if ((fighter.retainCount || 0) >= 2) { closeRetirementPopup(); return; }
     const retainLine = Engine.retirement.selectRetainLine(fighter, G);
     let updatedFighter = {
@@ -3937,68 +3937,68 @@ const App = {
       lastRun: false,
       lastRunWeek: null,
     };
-    // Phase E: 蠑暮謦､蝗・history
-    updatedFighter = Engine.career.addEvent(updatedFighter, { type: 'retireRetracted', season: G.season, week: G.week, orgName: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・ });
+    // Phase E: 引退撤回 history
+    updatedFighter = Engine.career.addEvent(updatedFighter, { type: 'retireRetracted', season: G.season, week: G.week, orgName: G.orgName || 'プレイヤー団体' });
     G = { ...G, roster: G.roster.map(c => c.id === fighterId ? updatedFighter : c) };
-    // O-13: 蠑暮謦､蝗・窶・譛ｬ莠ｺ竊貞屮菴灘・菴・bond +5縲・8, 蜷悟・蜈ｨ蜩｡竊呈悽莠ｺ bond +2縲・3
+    // O-13: 引退撤回 — 本人→団体全体 bond +5〜+8, 同僚全員→本人 bond +2〜+3
     if (G.relationships) {
       const retainRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE46, G.season, fighterId));
       const rosterIds = G.roster.filter(c => c.id !== fighterId).map(c => c.id);
       G = Engine.relationships.applyToRoster(G, fighterId, rosterIds, { min: 5, max: 8 }, { min: 0, max: 0 }, retainRelRng);
       G = Engine.relationships.applyFromRoster(G, rosterIds, fighterId, { min: 2, max: 3 }, { min: 0, max: 0 }, retainRelRng);
     }
-    // commit 繝輔ぉ繝ｼ繧ｺ縺ｧ髯､螟悶☆繧九◆繧√・繝輔Λ繧ｰ
+    // commit フェーズで除外するためのフラグ
     App._retainedIds = App._retainedIds || new Set();
     App._retainedIds.add(fighterId);
     Storage.autoSave();
     refreshAll();
     closeRetirementPopup();
-    // 蠑輔″逡吶ａ謌仙粥繧ｻ繝ｪ繝戊｡ｨ遉ｺ
+    // 引き留め成功セリフ表示
     showEventPopup({
       type: 'fighter', id: fighter.id, name: fighter.name, tone: 'positive',
-      message: retainLine, detail: `${fighter.name}縺ｮ蠑輔″逡吶ａ縺ｫ謌仙粥縺励∪縺励◆・亥ｼ輔″逡吶ａ ${updatedFighter.retainCount}/2蝗樒岼・荏,
+      message: retainLine, detail: `${fighter.name}の引き留めに成功しました（引き留め ${updatedFighter.retainCount}/2回目）`,
     });
   },
 
-  // 遉ｾ髟ｷ螳､邨ｱ蜷・Phase B: 隗｣髮・擇隲・ｒ髢句ｧ具ｼ磯∈謇九・繝・・繧｢繝・・縺ｮ隗｣髮・・繧ｿ繝ｳ 竊・遉ｾ髟ｷ螳､縺ｸ・・
+  // 社長室統合 Phase B: 解雇面談を開始（選手ポップアップの解雇ボタン → 社長室へ）
   startReleaseInterview(charId) {
     const fighter = G.roster.find(c => c.id === charId);
     if (!fighter) return;
 
-    // 繧ｫ繝ｼ繝臥匳骭ｲ荳ｭ繝√ぉ繝・け・・eleaseFighter 縺ｨ蜷後§譚｡莉ｶ・・
+    // カード登録中チェック（releaseFighter と同じ条件）
     const inCard = G.showCard.some(m => m.left === charId || m.right === charId);
     if (inCard) return;
 
-    // 諤ｧ譬ｼ蛻･繧ｻ繝ｪ繝暮∈謚橸ｼ域ｱｺ螳夊ｫ也噪RNG・・
+    // 性格別セリフ選択（決定論的RNG）
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xF1E2, charId));
     const personality = fighter.personality || 'normal';
     const lines = RELEASE_INTERVIEW_LINES[personality] || RELEASE_INTERVIEW_LINES.normal;
     const dialogue = lines[Engine.rng.int(rng, 0, lines.length - 1)];
 
-    // 髱｢隲・ｸｭ繝輔Λ繧ｰ繧偵そ繝・ヨ 竊・遉ｾ髟ｷ螳､逕ｻ髱｢縺ｫ驕ｷ遘ｻ
+    // 面談中フラグをセット → 社長室画面に遷移
     G = { ...G, _releaseInterviewTarget: charId };
     showScreen('shachoshitsu');
     renderShachoshitsuReleaseInterview(fighter, dialogue);
     Audio.play('event');
   },
 
-  // 隗｣髮・擇隲・ 螳溯｡檎｢ｺ螳・
+  // 解雇面談: 実行確定
   confirmRelease(charId) {
     G = { ...G, _releaseInterviewTarget: null };
     App.releaseFighter(charId);
-    // releaseFighter蜀・〒refreshAll+showEventPopup縺悟他縺ｰ繧後ｋ
-    // 遉ｾ髟ｷ螳､騾壼ｸｸ繝｢繝ｼ繝峨∈謌ｻ繧・
+    // releaseFighter内でrefreshAll+showEventPopupが呼ばれる
+    // 社長室通常モードへ戻る
     renderShachoshitsu();
   },
 
-  // 隗｣髮・擇隲・ 繧ｭ繝｣繝ｳ繧ｻ繝ｫ
+  // 解雇面談: キャンセル
   cancelReleaseInterview() {
     G = { ...G, _releaseInterviewTarget: null };
     renderShachoshitsu();
     Audio.play('click');
   },
 
-  // 遉ｾ髟ｷ螳､邨ｱ蜷・Phase C: 蜀・Κ繧ｿ繝門・譖ｿ
+  // 社長室統合 Phase C: 内部タブ切替
   switchShachoshitsuTab(tabId) {
     G._shachoshitsuTab = tabId;
     G._shachoshitsuScoutPage = 0;
@@ -4006,7 +4006,7 @@ const App = {
     Audio.play('click');
   },
 
-  // 遉ｾ髟ｷ螳､邨ｱ蜷・Phase C: 繧ｹ繧ｫ繧ｦ繝医・繝ｼ繧ｸ騾√ｊ
+  // 社長室統合 Phase C: スカウトページ送り
   shachoshitsuScoutPage(page) {
     G._shachoshitsuScoutPage = Math.max(0, page);
     renderShachoshitsu();
@@ -4021,13 +4021,13 @@ const App = {
     const c = G.roster[idx];
     const cName = c.name;
     const cId = c.id;
-    // O-07: 隗｣髮・窶・roster髯､螟門燕縺ｫ髢｢菫ょ､譖ｴ譁ｰ
+    // O-07: 解雇 — roster除外前に関係値更新
     if (G.relationships) {
       const releaseRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE45, G.season, charId));
       const colleagueIds = G.roster.filter(f => f.id !== charId).map(f => f.id);
-      // 隗｣髮・＆繧後◆蛛ｴ竊貞屮菴灘・菴・ bond -10縲・15
+      // 解雇された側→団体全体: bond -10〜-15
       G = Engine.relationships.applyToRoster(G, charId, colleagueIds, { min: -15, max: -10 }, { min: 0, max: 0 }, releaseRelRng);
-      // 谿狗蕗閠・・隗｣髮・＆繧後◆蛛ｴ: 諤ｧ譬ｼ蛻･ bond
+      // 残留者→解雇された側: 性格別 bond
       for (const cid of colleagueIds) {
         const colleague = G.roster.find(f => f.id === cid);
         const p = colleague?.personality || 'normal';
@@ -4042,10 +4042,10 @@ const App = {
     const newShowCard = App._removeFighterFromShowCard(G.showCard, charId);
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster, showCard: newShowCard });
-    const log = [...G.gameLog, `豆 ${c.name}繧定ｧ｣髮㌔];
+    const log = [...G.gameLog, `📤 ${c.name}を解雇`];
     if (titleMsg) log.push(titleMsg);
-    // Phase E: 隗｣髮・history 繧・fighter 縺ｫ push
-    const cWithRelease = Engine.career.addEvent(c, { type: 'release', season: G.season, week: G.week, fromOrg: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・ });
+    // Phase E: 解雇 history を fighter に push
+    const cWithRelease = Engine.career.addEvent(c, { type: 'release', season: G.season, week: G.week, fromOrg: G.orgName || 'プレイヤー団体' });
     const claimResult = Engine.rival.claimDepartedStar(
       Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xD75A, G.season, G.week, charId)),
       { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log },
@@ -4065,24 +4065,24 @@ const App = {
     closeFighterPopup();
     refreshAll();
     showEventPopup({ type:'fighter', id:cId, name:cName, tone:'negative',
-      message: getTraitQuote('release', c), detail:`${cName}縺悟屮菴薙ｒ蜴ｻ繧翫∪縺励◆` });
+      message: getTraitQuote('release', c), detail:`${cName}が団体を去りました` });
   },
 
-  // 笏笏 繧ｿ繧､繝医Ν螂ｪ驍・倦謌ｦ迥ｶ・・hase 4・・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ── タイトル奪還挑戦状（Phase 4） ─────────────────────────────────────
   openReclaimDialog() {
     if (!G.titles?.world?.externalHolder) return;
     if (!Engine.title.canIssueReclaim(G, 'world')) {
-      Audio.play('error'); alert('迴ｾ蝨ｨ縺ｯ謖第姶迥ｶ繧堤匱陦後〒縺阪∪縺帙ｓ縲・); return;
+      Audio.play('error'); alert('現在は挑戦状を発行できません。'); return;
     }
     const eligible = G.roster.filter(c => !c.injury && !c.isRental && !c.forcedRest);
     if (eligible.length === 0) {
-      Audio.play('error'); alert('謖第姶蜿ｯ閭ｽ縺ｪ驕ｸ謇九′縺・∪縺帙ｓ縲・); return;
+      Audio.play('error'); alert('挑戦可能な選手がいません。'); return;
     }
     const eh = G.titles.world.externalHolder;
     const heldByOrg = G.aiOrgs?.[eh.orgId];
     const heldByOrgName = heldByOrg?.name || eh.orgId;
     const exChamp = heldByOrg?.roster?.find(c => c.id === eh.fighterId);
-    const exChampName = exChamp?.name || `蜈・視閠・${eh.fighterId}`;
+    const exChampName = exChamp?.name || `元王者#${eh.fighterId}`;
 
     let dlg = document.getElementById('reclaimDialog');
     if (dlg) dlg.remove();
@@ -4091,22 +4091,22 @@ const App = {
     dlg.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
     const opts = eligible
       .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
-      .map(c => `<option value="${c.id}">${c.name}・・VR ${Engine.util.ov(c)}・・/option>`)
+      .map(c => `<option value="${c.id}">${c.name}（OVR ${Engine.util.ov(c)}）</option>`)
       .join('');
     dlg.innerHTML = `
       <div style="background:#1a1a24;border:1px solid #d4607a;border-radius:8px;padding:20px 24px;width:90%;max-width:480px;color:#eee">
-        <div style="font-size:16px;font-weight:700;color:#ffb3c1;margin-bottom:10px">笞・螂ｪ驍・倦謌ｦ迥ｶ縺ｮ逋ｺ陦・/div>
+        <div style="font-size:16px;font-weight:700;color:#ffb3c1;margin-bottom:10px">⚔ 奪還挑戦状の発行</div>
         <div style="font-size:12px;color:#bbb;line-height:1.7;margin-bottom:14px">
-          <strong>${heldByOrgName}</strong> 縺ｮ <strong>${exChampName}</strong> 縺ｫ蟇ｾ縺励※謖第姶迥ｶ繧貞娼縺阪▽縺代∪縺吶・br>
-          谺｡縺ｮ闊郁｡後・繝｡繧､繝ｳ縺ｧ豎ｺ謌ｦ縲よ風蛹玲凾縺ｯ12騾ｱ髢灘・謖第姶縺ｧ縺阪∪縺帙ｓ縲・
+          <strong>${heldByOrgName}</strong> の <strong>${exChampName}</strong> に対して挑戦状を叩きつけます。<br>
+          次の興行のメインで決戦。敗北時は12週間再挑戦できません。
         </div>
         <div style="margin-bottom:14px">
-          <label style="font-size:12px;color:#aaa;display:block;margin-bottom:6px">謖第姶閠・ｒ驕ｸ縺ｶ</label>
+          <label style="font-size:12px;color:#aaa;display:block;margin-bottom:6px">挑戦者を選ぶ</label>
           <select id="reclaimChallengerSelect" style="width:100%;padding:8px;background:#0f0f18;border:1px solid #444;border-radius:4px;color:#eee;font-size:13px">${opts}</select>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button onclick="App._closeReclaimDialog()" style="padding:8px 16px;background:#333;border:1px solid #555;color:#ccc;border-radius:4px;cursor:pointer">繧ｭ繝｣繝ｳ繧ｻ繝ｫ</button>
-          <button onclick="App.confirmReclaim()" style="padding:8px 16px;background:linear-gradient(135deg,#d4607a,#a8334d);border:none;color:#fff;border-radius:4px;cursor:pointer;font-weight:600">謖第姶迥ｶ繧堤匱陦・/button>
+          <button onclick="App._closeReclaimDialog()" style="padding:8px 16px;background:#333;border:1px solid #555;color:#ccc;border-radius:4px;cursor:pointer">キャンセル</button>
+          <button onclick="App.confirmReclaim()" style="padding:8px 16px;background:linear-gradient(135deg,#d4607a,#a8334d);border:none;color:#fff;border-radius:4px;cursor:pointer;font-weight:600">挑戦状を発行</button>
         </div>
       </div>`;
     document.body.appendChild(dlg);
@@ -4129,24 +4129,24 @@ const App = {
     const c = G.roster.find(f => f.id === challengerId);
     const eh = G.titles.world.externalHolder;
     const orgName = G.aiOrgs?.[eh.orgId]?.name || eh.orgId;
-    // 讌ｭ逡後ル繝･繝ｼ繧ｹ: 螂ｪ驍・倦謌ｦ迥ｶ
+    // 業界ニュース: 奪還挑戦状
     App._pushIndustryNews({
       type: 'reclaimChallenge',
       characterId: challengerId,
       data: {
-        challengerName: c?.name || '謖第姶閠・,
-        fromOrg: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・,
+        challengerName: c?.name || '挑戦者',
+        fromOrg: G.orgName || 'プレイヤー団体',
         toOrg: orgName,
       },
     });
     showEventPopup({
       type: 'fighter', id: challengerId,
-      name: c?.name || '謖第姶閠・, tone: 'positive',
-      message: `糖 ${c?.name} 縺・${orgName} 縺ｸ謖第姶迥ｶ繧貞娼縺阪▽縺代◆・～,
-      detail: `谺｡縺ｮ闊郁｡後・繝｡繧､繝ｳ縺ｧ邇句ｺｧ螂ｪ驍・・豎ｺ謌ｦ縺瑚｡後ｏ繧後ｋ縲Ａ,
+      name: c?.name || '挑戦者', tone: 'positive',
+      message: `📜 ${c?.name} が ${orgName} へ挑戦状を叩きつけた！`,
+      detail: `次の興行のメインで王座奪還の決戦が行われる。`,
     });
   },
-  // Phase 6: 螂醍ｴ・｣丞・繧・竊・譁ｰ閨槭・繝・ラ繝ｩ繧､繝ｳ謖ｯ繧雁・縺・
+  // Phase 6: 契約裏切り → 新聞ヘッドライン振り分け
   _consumeBetrayalNews(neg) {
     if (!G._lastBetrayalSummary) return;
     const sm = G._lastBetrayalSummary;
@@ -4156,11 +4156,11 @@ const App = {
     else if (sm.isRivalOrg) type = 'contractBetrayalRivalOrg';
     else if (sm.isAce) type = 'contractBetrayalAce';
     else type = 'contractBetrayalGeneric';
-    const fromOrg = G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・;
-    const toOrg = G.aiOrgs?.[sm.toOrgId]?.name || sm.toOrgId || '莉門屮菴・;
+    const fromOrg = G.orgName || 'プレイヤー団体';
+    const toOrg = G.aiOrgs?.[sm.toOrgId]?.name || sm.toOrgId || '他団体';
     App._pushNewsEvent({
       type, characterId: sm.departingId,
-      data: { name: sm.departingName || neg?.fighterName || '驕ｸ謇・, fromOrg, toOrg },
+      data: { name: sm.departingName || neg?.fighterName || '選手', fromOrg, toOrg },
     });
     const { _lastBetrayalSummary, _lastBetrayalBeltCarried, ...rest } = G;
     G = rest;
@@ -4168,10 +4168,10 @@ const App = {
 
   cancelReclaim() {
     if (!G._pendingReclaim) return;
-    if (!confirm('謖第姶迥ｶ繧貞叙繧贋ｸ九￡縺ｾ縺吶°・滂ｼ井ｻ翫す繝ｼ繧ｺ繝ｳ縺ｮ謖第姶螻･豁ｴ縺ｯ谿九ｊ縺ｾ縺呻ｼ・)) return;
-    // pending challenge 繧貞叙繧贋ｸ九￡・嗷eclaimChallenges 縺九ｉ譛譁ｰ縺ｮ譛ｪ隗｣豎ｺ繧ｨ繝ｳ繝医Μ繧帝勁蜴ｻ
+    if (!confirm('挑戦状を取り下げますか？（今シーズンの挑戦履歴は残ります）')) return;
+    // pending challenge を取り下げ：reclaimChallenges から最新の未解決エントリを除去
     const newChallenges = (G.reclaimChallenges || []).filter((c, i, arr) => {
-      // 逶ｴ霑代・ pending 繧・莉ｶ縺縺大炎髯､
+      // 直近の pending を1件だけ削除
       const lastPendingIdx = arr.map((cc, ii) => cc.result == null && cc.titleType === 'world' ? ii : -1)
         .filter(ii => ii >= 0).pop();
       return i !== lastPendingIdx;
@@ -4208,17 +4208,17 @@ const App = {
     const coach = ALL_COACHES.find(c => c.id === coachId);
     if (!coach) return;
     const maxCoaches = Engine.coach.getMaxCoaches(G);
-    if (G.coaches.length >= maxCoaches) { Audio.play('error'); alert(`繧ｳ繝ｼ繝√・迴ｾ蝨ｨ譛螟ｧ${maxCoaches}蜷阪∪縺ｧ・域棧諡｡蠑ｵ縺ｧ蠅怜刈・荏); return; }
-    // A邏夐寐逕ｨ譚｡莉ｶ: 4譫逶ｮ髢区叛貂医∩
-    if (coach.grade === 'A' && (G.coachSlots || 1) < 4) { Audio.play('error'); alert('A邏壹さ繝ｼ繝√・髮・畑縺ｫ縺ｯ4譫逶ｮ縺ｮ髢区叛縺悟ｿ・ｦ√〒縺・); return; }
+    if (G.coaches.length >= maxCoaches) { Audio.play('error'); alert(`コーチは現在最大${maxCoaches}名まで（枠拡張で増加）`); return; }
+    // A級雇用条件: 4枠目開放済み
+    if (coach.grade === 'A' && (G.coachSlots || 1) < 4) { Audio.play('error'); alert('A級コーチの雇用には4枠目の開放が必要です'); return; }
     const fee = coach.hireFee || COACH_HIRE_FEE;
-    if (G.funds < fee) { Audio.play('error'); alert('雉・≡縺瑚ｶｳ繧翫∪縺帙ｓ・・); return; }
-    // 遉ｾ髟ｷ螳､ Phase 5: 繧ｳ繝ｼ繝・寐逕ｨ縺ｯ縲後さ繝ｼ繝・寐逕ｨ豎ｺ陬∵嶌縲・豎ｺ陬∵棧2)繧呈ｶ郁ｲｻ縺吶ｋ
+    if (G.funds < fee) { Audio.play('error'); alert('資金が足りません！'); return; }
+    // 社長室 Phase 5: コーチ雇用は「コーチ雇用決裁書」(決裁枠2)を消費する
     const hireDoc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS.hireCoach : null;
     const dpCost = (hireDoc && hireDoc.decisionCost) || 2;
     if ((G.decisionPoints || 0) < dpCost) {
       Audio.play('error');
-      alert(`繧ｳ繝ｼ繝・寐逕ｨ縺ｫ縺ｯ豎ｺ陬∵棧 笞｡${dpCost} 縺悟ｿ・ｦ√〒縺呻ｼ育樟蝨ｨ: 笞｡${G.decisionPoints || 0}・荏);
+      alert(`コーチ雇用には決裁枠 ⚡${dpCost} が必要です（現在: ⚡${G.decisionPoints || 0}）`);
       return;
     }
     G = {
@@ -4228,35 +4228,35 @@ const App = {
       coaches: [...G.coaches, coachId],
       availableCoaches: G.availableCoaches.filter(id => id !== coachId),
       coachAssign: { ...G.coachAssign, [coachId]: [] },
-      gameLog: [...G.gameLog, `雌 ${coach.name}繧偵さ繝ｼ繝√→縺励※髮・畑・磯寐逕ｨ雋ｻ: ${fee}荳・∵ｱｺ陬∵棧 -${dpCost}・荏]
+      gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${fee}万、決裁枠 -${dpCost}）`]
     };
     refreshAll();
     showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
-      message: pickQuote('coachHire'), detail:`雌 ${coach.name}縺後さ繝ｼ繝√→縺励※蜉蜈･・・ｼ磯寐逕ｨ雋ｻ: ${fee}荳・∵ｱｺ陬∵棧 -${dpCost}・荏 });
+      message: pickQuote('coachHire'), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万、決裁枠 -${dpCost}）` });
   },
 
   // Expand coach slot
   expandCoachSlot() {
     const result = Engine.coach.expandSlot(G);
-    if (result.error === 'max_slots') { Audio.play('error'); alert('縺吶〒縺ｫ蜈ｨ譫繧帝幕謾ｾ縺励※縺・∪縺・); return; }
-    if (result.error === 'funds_insufficient') { Audio.play('error'); alert(`雉・≡縺瑚ｶｳ繧翫∪縺帙ｓ・亥ｿ・ｦ・ ${result.cost}荳・ｼ荏); return; }
+    if (result.error === 'max_slots') { Audio.play('error'); alert('すでに全枠を開放しています'); return; }
+    if (result.error === 'funds_insufficient') { Audio.play('error'); alert(`資金が足りません（必要: ${result.cost}万）`); return; }
     G = {
       ...G,
       coachSlots: result.coachSlots,
       funds: result.funds,
-      gameLog: [...G.gameLog, `雌 繧ｳ繝ｼ繝∵棧繧・{result.coachSlots}譫縺ｫ諡｡蠑ｵ・域兜雉・ ${result.cost}荳・ｼ荏]
+      gameLog: [...G.gameLog, `🎓 コーチ枠を${result.coachSlots}枠に拡張（投資: ${result.cost}万）`]
     };
     Audio.play('coin');
     refreshAll();
     const slotNum = result.coachSlots;
     const msgs = {
-      2: '驕灘ｴ縺ｫ譁ｰ縺励＞繝医Ξ繝ｼ繝九Φ繧ｰ繧ｹ繝壹・繧ｹ繧貞｢苓ｨｭ縺励◆縲・,
-      3: '蟆ら畑縺ｮ繧ｳ繝ｼ繝√Ν繝ｼ繝繧定ｨｭ鄂ｮ縲り､・焚縺ｮ繧ｳ繝ｼ繝√′蜷梧凾縺ｫ謖・ｰ弱〒縺阪ｋ迺ｰ蠅・′謨ｴ縺｣縺溘・,
-      4: '譛鬮倡ｴ壹・繝医Ξ繝ｼ繝九Φ繧ｰ譁ｽ險ｭ繧貞ｮ悟ｙ縲ゆｼ晁ｪｬ邏壹・繧ｳ繝ｼ繝√ｒ諡幄§縺吶ｋ貅門ｙ縺梧紛縺｣縺溘・
+      2: '道場に新しいトレーニングスペースを増設した。',
+      3: '専用のコーチルームを設置。複数のコーチが同時に指導できる環境が整った。',
+      4: '最高級のトレーニング施設を完備。伝説級のコーチを招聘する準備が整った。'
     };
     showEventPopup({ type:'system', tone:'positive',
-      message: msgs[slotNum] || '繧ｳ繝ｼ繝∵棧繧呈僑蠑ｵ縺励∪縺励◆縲・,
-      detail: `雌 繧ｳ繝ｼ繝∵棧縺・{slotNum}譫縺ｫ諡｡蠑ｵ縺輔ｌ縺ｾ縺励◆・・ｼ域兜雉・ ${result.cost}荳・ｼ・{slotNum >= 4 ? '\n箝・A邏壹さ繝ｼ繝√・髮・畑縺瑚ｧ｣遖√＆繧後∪縺励◆・・ : ''}` });
+      message: msgs[slotNum] || 'コーチ枠を拡張しました。',
+      detail: `🎓 コーチ枠が${slotNum}枠に拡張されました！（投資: ${result.cost}万）${slotNum >= 4 ? '\n⭐ A級コーチの雇用が解禁されました！' : ''}` });
   },
 
   // Fire coach
@@ -4268,18 +4268,18 @@ const App = {
       ...G,
       coaches: G.coaches.filter(id => id !== coachId),
       coachAssign: newAssign,
-      gameLog: [...G.gameLog, `笶・${coach?.name}繧定ｧ｣髮㌔]
+      gameLog: [...G.gameLog, `❌ ${coach?.name}を解雇`]
     };
     refreshAll();
     if (coach) showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'negative',
-      message: pickQuote('coachFire'), detail:`${coach.name}縺後メ繝ｼ繝繧貞悉繧翫∪縺励◆` });
+      message: pickQuote('coachFire'), detail:`${coach.name}がチームを去りました` });
   },
 
   // Assign character to coach
   assignToCoach(coachId, charId) {
     const unassigned = Engine.coach.unassignFromCoach(G, charId);
     const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, coachId, charId);
-    if (!success) { Audio.play('error'); alert('縺薙・繧ｳ繝ｼ繝√・繧｢繧ｵ繧､繝ｳ譫縺梧ｺ蜩｡縺ｧ縺・); return; }
+    if (!success) { Audio.play('error'); alert('このコーチのアサイン枠が満員です'); return; }
     Audio.play('click');
     G = { ...G, coachAssign };
     refreshAll();
@@ -4294,17 +4294,17 @@ const App = {
   // Show preparation
   startShowPrep() {
     if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
-    // PPV騾ｱ縺ｯ騾壼ｸｸ闊郁｡御ｸ榊庄
+    // PPV週は通常興行不可
     if (G.ppvPhase === 'locked' || G.ppvPhase === 'show') {
       Audio.play('error');
-      showToast('莉企ｱ縺ｯPPV GRAND FINAL縺碁幕蛯ｬ縺輔ｌ縺ｾ縺吶る壼ｸｸ闊郁｡後・陦後∴縺ｾ縺帙ｓ縲・);
+      showToast('今週はPPV GRAND FINALが開催されます。通常興行は行えません。');
       return;
     }
     Audio.play('crowd');
     G = {
       ...G,
       weekPhase: 'showPrep',
-      showCard: [],  // renderShowPrep 縺ｮ pad/trim 縺ｧ莨壼ｴ縺ｫ蠢懊§縺滓棧謨ｰ縺ｫ閾ｪ蜍戊ｪｿ謨ｴ
+      showCard: [],  // renderShowPrep の pad/trim で会場に応じた枠数に自動調整
       showVenue: 0
     };
     refreshAll();
@@ -4312,7 +4312,7 @@ const App = {
 
   // Set show venue
   setShowVenue(venueIdx) {
-    // orgPop 繝ｪ繝舌Λ繝ｳ繧ｹ v1.1 ﾂｧ5: 繝峨・繝蟷ｴ1蝗槫宛髯・
+    // orgPop リバランス v1.1 §5: ドーム年1回制限
     if (venueIdx === 9 && (G.domeShowsThisSeason || 0) >= 1) return;
     G = { ...G, showVenue: venueIdx };
     renderShowPrep();
@@ -4344,8 +4344,8 @@ const App = {
     if (newCard[slotIndex].isTitle && (!newCard[slotIndex].left || !newCard[slotIndex].right)) {
       newCard[slotIndex].isTitle = false;
     }
-    // 繧ｿ繧､繝医Ν繧ｹ繝ｭ繝・ヨ縺ｫ繝√Ε繝ｳ繝斐が繝ｳ縺後＞縺ｪ縺上↑縺｣縺溷ｴ蜷医・isTitle繧偵け繝ｪ繧｢
-    // ・医せ繝ｯ繝・・遲峨〒繝√Ε繝ｳ繝斐が繝ｳ縺檎ｧｻ蜍輔＠縺溷ｾ後↓繧ｴ繝ｼ繧ｹ繝・sTitle縺梧ｮ九ｋ繝舌げ繧帝亟縺撰ｼ・
+    // タイトルスロットにチャンピオンがいなくなった場合はisTitleをクリア
+    // （スワップ等でチャンピオンが移動した後にゴーストisTitleが残るバグを防ぐ）
     const champIdForTitleCheck = G.titles?.world?.championId;
     if (champIdForTitleCheck) {
       for (let i = 0; i < newCard.length; i++) {
@@ -4367,36 +4367,36 @@ const App = {
     renderShowPrep();
   },
 
-  // 笏笏 Tag match slot management 笏笏
+  // ── Tag match slot management ──
   addTagSlot() {
     const card = [...G.showCard];
-    // 遨ｺ繧ｷ繝ｳ繧ｰ繝ｫ譫繧呈忰蟆ｾ縺九ｉ2縺､謗｢縺・
+    // 空シングル枠を末尾から2つ探す
     let emptyCount = 0;
     for (let i = card.length - 1; i >= 0; i--) {
       if (!card[i].matchType && card[i].left === 0 && card[i].right === 0) emptyCount++;
     }
-    if (emptyCount < 2) { Audio.play('error'); showToast('遨ｺ縺肴棧縺瑚ｶｳ繧翫∪縺帙ｓ・医ち繝・げ縺ｫ縺ｯ2譫蠢・ｦ・ｼ・); return; }
-    // 譛ｫ蟆ｾ縺九ｉ遨ｺ繧ｷ繝ｳ繧ｰ繝ｫ2縺､繧帝勁蜴ｻ
+    if (emptyCount < 2) { Audio.play('error'); showToast('空き枠が足りません（タッグには2枠必要）'); return; }
+    // 末尾から空シングル2つを除去
     let removed = 0;
     for (let i = card.length - 1; i >= 0 && removed < 2; i--) {
       if (!card[i].matchType && card[i].left === 0 && card[i].right === 0) { card.splice(i, 1); removed++; }
     }
-    // 繧ｿ繝・げ繧ｨ繝ｳ繝医Μ繝ｼ繧呈忰蟆ｾ縺ｫ謖ｿ蜈･
+    // タッグエントリーを末尾に挿入
     card.push({ matchType: 'tag', teamA: { fighter1: 0, fighter2: 0 }, teamB: { fighter1: 0, fighter2: 0 } });
     G = { ...G, showCard: card };
     renderShowPrep();
   },
 
-  // 繧ｷ繝ｳ繧ｰ繝ｫ2譫繧貞粋菴薙＠縺ｦ繧ｿ繝・げ1譫縺ｫ・磯∈謇句ｼ輔″邯吶℃・・
+  // シングル2枠を合体してタッグ1枠に（選手引き継ぎ）
   mergeToTagSlot(idx) {
     const card = [...G.showCard];
     if (idx < 0 || idx + 1 >= card.length) return;
-    if (idx === 0) { Audio.play('error'); showToast('繝｡繧､繝ｳ繧､繝吶Φ繝医・繧ｷ繝ｳ繧ｰ繝ｫ繝槭ャ繝√・縺ｿ縺ｧ縺・); return; }
+    if (idx === 0) { Audio.play('error'); showToast('メインイベントはシングルマッチのみです'); return; }
     if (card[idx].matchType === 'tag' || card[idx + 1].matchType === 'tag') {
-      Audio.play('error'); showToast('繧ｿ繝・げ譫蜷悟｣ｫ縺ｯ蜷井ｽ薙〒縺阪∪縺帙ｓ'); return;
+      Audio.play('error'); showToast('タッグ枠同士は合体できません'); return;
     }
     const s1 = card[idx], s2 = card[idx + 1];
-    // 蟾ｦ繧ｳ繝ｼ繝翫・蜷悟｣ｫ竊偵メ繝ｼ繝A縲∝承繧ｳ繝ｼ繝翫・蜷悟｣ｫ竊偵メ繝ｼ繝B
+    // 左コーナー同士→チームA、右コーナー同士→チームB
     const tagSlot = {
       matchType: 'tag',
       teamA: { fighter1: s1.left || 0, fighter2: s2.left || 0 },
@@ -4411,7 +4411,7 @@ const App = {
     const card = [...G.showCard];
     if (!card[idx] || card[idx].matchType !== 'tag') return;
     const tag = card[idx];
-    // 繧ｿ繝・げ竊偵す繝ｳ繧ｰ繝ｫ2譫縺ｫ蛻・牡・磯∈謇九ｒ菫晄戟・・
+    // タッグ→シングル2枠に分割（選手を保持）
     const s1 = { left: tag.teamA.fighter1 || 0, right: tag.teamB.fighter1 || 0, isTitle: false };
     const s2 = { left: tag.teamA.fighter2 || 0, right: tag.teamB.fighter2 || 0, isTitle: false };
     card.splice(idx, 1, s1, s2);
@@ -4459,7 +4459,7 @@ const App = {
   // Toggle title match
   toggleTitleMatch(slotIndex) {
     const newVal = !G.showCard[slotIndex].isTitle;
-    // ON縺ｫ縺吶ｋ縺ｨ縺阪・蠢・★莉悶せ繝ｭ繝・ヨ縺ｮisTitle繧偵け繝ｪ繧｢・医メ繝｣繝ｳ繝斐が繝ｳ蝨ｨ邀・遨ｺ菴阪←縺｡繧峨ｂ・・
+    // ONにするときは必ず他スロットのisTitleをクリア（チャンピオン在籍/空位どちらも）
     G = { ...G, showCard: G.showCard.map((slot, i) => {
       if (i === slotIndex) return { ...slot, isTitle: newVal };
       if (newVal) return { ...slot, isTitle: false };
@@ -4468,10 +4468,10 @@ const App = {
     renderShowPrep();
   },
 
-  // 笊絶武笊・BATTLE ENGINE INTEGRATION (v0.86) 笊絶武笊・
+  // ═══ BATTLE ENGINE INTEGRATION (v0.86) ═══
   // Show match preview instead of instant execution
   executeShow() {
-    // v2.0: weekPhase guard 窶・settled/weekSummary遲峨・髱櫁・陦後ヵ繧ｧ繝ｼ繧ｺ縺ｧ縺ｯ螳溯｡御ｸ榊庄
+    // v2.0: weekPhase guard — settled/weekSummary等の非興行フェーズでは実行不可
     if (G.offSeason || !['manage', 'showPrep'].includes(G.weekPhase)) { Audio.play('error'); return; }
     // Guard: sanitize stale card refs (released/retired/transferred wrestlers)
     const rosterIdSet = new Set(G.roster.map(c => c.id));
@@ -4504,26 +4504,26 @@ const App = {
       Audio.play('error');
       if (hadStaleRef) refreshAll();
       alert(hadStaleRef
-        ? '繧ｫ繝ｼ繝峨↓蝨ｨ邀阪＠縺ｦ縺・↑縺・∈謇九′蜷ｫ縺ｾ繧後※縺・◆縺溘ａ閾ｪ蜍輔〒隗｣髯､縺励∪縺励◆縲ゅき繝ｼ繝峨ｒ遒ｺ隱阪＠縺ｦ縺上□縺輔＞縲・
-        : '蟆代↑縺上→繧・隧ｦ蜷医ｒ邨・ｓ縺ｧ縺上□縺輔＞');
+        ? 'カードに在籍していない選手が含まれていたため自動で解除しました。カードを確認してください。'
+        : '少なくとも1試合を組んでください');
       return;
     }
 
-    // v1.2: 繧ｿ繧､繝医Ν繝槭ャ繝√け繝ｼ繝ｫ繝繧ｦ繝ｳ繧ｬ繝ｼ繝会ｼ・I繝舌う繝代せ髦ｲ豁｢・・
+    // v1.2: タイトルマッチクールダウンガード（UIバイパス防止）
     const hasTitleSlot = validMatches.some(m => m.isTitle);
     if (hasTitleSlot) {
       const cd = Engine.title.canTitleMatch(G);
       if (!cd.allowed) {
         Audio.play('error');
-        // 繧ｯ繝ｼ繝ｫ繝繧ｦ繝ｳ荳ｭ縺ｮ繧ｿ繧､繝医Ν繝輔Λ繧ｰ繧定・蜍輔〒螟悶☆
+        // クールダウン中のタイトルフラグを自動で外す
         G = { ...G, showCard: G.showCard.map(m => ({ ...m, isTitle: false })) };
         refreshAll();
-        alert(`繧ｿ繧､繝医Ν繝槭ャ繝√・12騾ｱ縺ｫ1蝗槭・縺ｿ髢句ぎ縺ｧ縺阪∪縺呻ｼ医≠縺ｨ${cd.weeksLeft}騾ｱ・荏);
+        alert(`タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）`);
         return;
       }
     }
 
-    // 笏笏 Phase 4: 繧ｿ繧､繝医Ν螂ｪ驍・倦謌ｦ縺ｮ豕ｨ蜈･ 笏笏
+    // ── Phase 4: タイトル奪還挑戦の注入 ──
     App._reclaimData = null;
     if (G._pendingReclaim && G.titles?.world?.externalHolder) {
       const pr = G._pendingReclaim;
@@ -4531,14 +4531,14 @@ const App = {
       const challenger = G.roster.find(c => c.id === pr.challengerId);
       const aiOrg = G.aiOrgs?.[eh.orgId];
       const defender = aiOrg?.roster?.find(c => c.id === eh.fighterId);
-      // 謨ｴ蜷域ｧ繝√ぉ繝・け: 謖第姶閠・′閼ｱ騾/諤ｪ謌醍ｭ峨〒蜿よ姶荳榊庄縲√∪縺溘・髦ｲ陦幄・′AI蝗｣菴薙Ο繧ｹ繧ｿ繝ｼ縺九ｉ豸医∴縺ｦ縺・ｋ 竊・蜿悶ｊ荳九￡
+      // 整合性チェック: 挑戦者が脱退/怪我等で参戦不可、または防衛者がAI団体ロスターから消えている → 取り下げ
       if (!challenger || challenger.injury || challenger.forcedRest || !defender) {
         const { _pendingReclaim, ...rest } = G;
         G = rest;
       } else {
-        // 髦ｲ陦幄・ｒ player roster 縺ｫ isReclaim 蜊ｰ縺ｧ荳譎よｳｨ蜈･
+        // 防衛者を player roster に isReclaim 印で一時注入
         const defenderForRoster = { ...defender, isReclaim: true, _reclaimOrgId: eh.orgId };
-        // 譌｢蟄倥Γ繧､繝ｳ譫 (slot 0) 繧貞･ｪ驍・倦謌ｦ隧ｦ蜷医↓鄂ｮ縺肴鋤縺・
+        // 既存メイン枠 (slot 0) を奪還挑戦試合に置き換え
         const newCard = [...G.showCard];
         const reclaimMatch = {
           left: pr.challengerId, right: defender.id,
@@ -4548,7 +4548,7 @@ const App = {
         if (newCard.length === 0) newCard.push(reclaimMatch);
         else newCard[0] = reclaimMatch;
         G = { ...G, showCard: newCard, roster: [...G.roster, defenderForRoster] };
-        // validMatches 繧ょ・讒狗ｯ会ｼ医Γ繧､繝ｳ繧貞渚譏・・
+        // validMatches も再構築（メインを反映）
         validMatches.length = 0;
         newCard.forEach(m => {
           if (m.matchType === 'tag'
@@ -4563,32 +4563,32 @@ const App = {
         showEventPopup({
           type: 'fighter', id: pr.challengerId,
           name: challenger.name, tone: 'positive',
-          message: `笞・邇句ｺｧ螂ｪ驍・・豎ｺ謌ｦ・・${challenger.name} vs ${defender.name}`,
-          detail: `${aiOrg?.name || eh.orgId} 縺ｫ謖√■蜴ｻ繧峨ｌ縺滉ｸ也阜邇句ｺｧ繧貞叙繧頑綾縺幢ｼ～,
+          message: `⚔ 王座奪還の決戦！ ${challenger.name} vs ${defender.name}`,
+          detail: `${aiOrg?.name || eh.orgId} に持ち去られた世界王座を取り戻せ！`,
         });
       }
     }
 
-    // v1.2: 荵ｱ蜈･繝槭ャ繝∝愛螳・
+    // v1.2: 乱入マッチ判定
     App._intrusionData = null;
     const intrusionRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 8888));
     const intrusion = Engine.intrusion.check(G, intrusionRng);
     if (intrusion) {
-      // 繧ｿ繧､繝医Ν繝槭ャ繝√・謖第姶閠・ｒ蟾ｮ縺玲崛縺・
+      // タイトルマッチの挑戦者を差し替え
       const titleIdx = G.showCard.findIndex(m => m.isTitle && m.left > 0 && m.right > 0);
       if (titleIdx >= 0) {
         const tm = G.showCard[titleIdx];
         const challengerSide = tm.left === intrusion.champId ? 'right' : 'left';
         const originalChallengerId = tm[challengerSide];
-        // showCard譖ｴ譁ｰ
+        // showCard更新
         const newCard = G.showCard.map((m, i) => {
           if (i !== titleIdx) return m;
           return { ...m, [challengerSide]: intrusion.intruder.id };
         });
-        // 荵ｱ蜈･驕ｸ謇九ｒ荳譎ら噪縺ｫroster縺ｫ霑ｽ蜉
+        // 乱入選手を一時的にrosterに追加
         const intruderForRoster = { ...intrusion.intruder, isIntrusion: true };
         G = { ...G, showCard: newCard, roster: [...G.roster, intruderForRoster] };
-        // validMatches繧よ峩譁ｰ
+        // validMatchesも更新
         validMatches.forEach((m, i) => {
           if (m.isTitle) {
             m[challengerSide] = intrusion.intruder.id;
@@ -4602,14 +4602,14 @@ const App = {
           originalChallengerId,
           challengerSide
         };
-        // 荵ｱ蜈･貍泌・繝昴ャ繝励い繝・・
+        // 乱入演出ポップアップ
         showEventPopup({
           type: 'fighter',
           id: intrusion.intruder.id,
           name: intrusion.intruder.name,
           tone: 'negative',
-          message: `笞｡ ${intrusion.fromOrgName}縺ｮ${intrusion.intruder.name}縺御ｹｱ蜈･・～,
-          detail: `繧ｿ繧､繝医Ν繝槭ャ繝√・謖第姶閠・′蟾ｮ縺玲崛繧上▲縺滂ｼ―nOVR ${Engine.util.ov(intrusion.intruder)} 縺ｮ蠑ｷ謨ｵ縺檎視蠎ｧ繧堤漁縺・ｼ～
+          message: `⚡ ${intrusion.fromOrgName}の${intrusion.intruder.name}が乱入！`,
+          detail: `タイトルマッチの挑戦者が差し替わった！\nOVR ${Engine.util.ov(intrusion.intruder)} の強敵が王座を狙う！`
         });
       }
     }
@@ -4617,8 +4617,8 @@ const App = {
     try { Audio.play('bell'); } catch(e) {}
     try { Audio.bgm.play('battle'); } catch(e) {}
 
-    // rivalry50+ 繝壹い縺ｮ螳｣謌ｦ蟶・相繝昴ャ繝励い繝・・繧呈､懷・・亥･ｽ謨ｵ謇・螳ｿ諤ｨ縺ｯ蟇ｾ雎｡螟悶√ち繝・げ縺ｯ繧ｹ繧ｭ繝・・・・
-    // Phase 3e: F08 繝ｭ繝・け隧ｦ蜷医・蟆ら畑縺ｮ隧ｦ蜷亥燕繝｢繝ｼ繝繝ｫ縺悟━蜈医☆繧九◆繧√％縺薙〒縺ｯ髯､螟・
+    // rivalry50+ ペアの宣戦布告ポップアップを検出（好敵手/宿怨は対象外、タッグはスキップ）
+    // Phase 3e: F08 ロック試合は専用の試合前モーダルが優先するためここでは除外
     const confrontations = [];
     validMatches.forEach((m, i) => {
       if (m.matchType === 'tag') return;
@@ -4650,7 +4650,7 @@ const App = {
       _shownConfrontations: new Set(),
     };
 
-    // 螳｣謌ｦ蟶・相繝昴ャ繝励い繝・・縺ｯ蜷・ｩｦ蜷医′繝輔か繝ｼ繧ｫ繧ｹ縺輔ｌ縺溽椪髢薙↓陦ｨ遉ｺ・・enderMatchPreview蜀・〒蛻ｶ蠕｡・・
+    // 宣戦布告ポップアップは各試合がフォーカスされた瞬間に表示（renderMatchPreview内で制御）
     App._checkAndShowPreShowMilestone(function() {
       renderMatchPreview();
     });
@@ -4679,9 +4679,9 @@ const App = {
     return filled;
   },
 
-  // 隧ｦ蜷育｢ｺ螳壼ｾ後・蜈ｱ騾壹ヵ繝ｭ繝ｼ: (隕ｳ謌ｦ譎ゅ・縺ｿ)隧ｦ蜷亥ｾ後ヵ繝ｬ繝ｼ繝舌・繝昴ャ繝励い繝・・ 竊・renderMatchPreview 竊・蜈ｨ螳御ｺ・↑繧・finalizeShow
-  // (specs/match-flavor-popup-spec-v0.1.md ﾂｧ4.6)
-  // opts.skipFlavor: true 縺ｧ繧ｹ繧ｭ繝・・(逵∫払縺ｮ諢乗晁｡ｨ遉ｺ)縲ゆｽ咎渊繝昴ャ繝励い繝・・繧貞・縺輔★蜊ｳ finalize 縺吶ｋ縲・
+  // 試合確定後の共通フロー: (観戦時のみ)試合後フレーバーポップアップ → renderMatchPreview → 全完了なら finalizeShow
+  // (specs/match-flavor-popup-spec-v0.1.md §4.6)
+  // opts.skipFlavor: true でスキップ(省略の意思表示)。余韻ポップアップを出さず即 finalize する。
   _afterMatchSettle(idx, opts) {
     const sp = App._showPreview;
     if (!sp) return;
@@ -4691,21 +4691,21 @@ const App = {
       renderMatchPreview();
       if (sp.results.every(r => r !== null)) App.finalizeShow();
     };
-    // skipFlavor / _stale (驕ｸ謇倶ｸ榊惠繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ) 縺ｮ縺ｨ縺阪・菴咎渊繧ｹ繧ｭ繝・・
+    // skipFlavor / _stale (選手不在フォールバック) のときは余韻スキップ
     if (skipFlavor || !result || result._stale) { finalize(); return; }
     App._runPostMatchFlavorForMatch(idx, result, finalize);
   },
 
-  // Skip a single match (instant calculation) 窶・菴咎渊繝輔Ξ繝ｼ繝舌・縺ｯ蜃ｺ縺輔↑縺・逵∫払縺ｮ諢乗晁｡ｨ遉ｺ)
+  // Skip a single match (instant calculation) — 余韻フレーバーは出さない(省略の意思表示)
   skipMatch(idx) {
     const sp = App._showPreview;
     if (!sp || sp.results[idx]) return;
-    // 荳蠎ｦ縺ｧ繧ゅせ繧ｭ繝・・繧呈款縺励◆繧峨√◎縺ｮ闊郁｡後・谿九ｊ蜈ｨ隧ｦ蜷医〒 pre/post-match 繝輔Ξ繝ｼ繝舌・繧呈椛蛻ｶ縺吶ｋ
+    // 一度でもスキップを押したら、その興行の残り全試合で pre/post-match フレーバーを抑制する
     sp._suppressFlavor = true;
     const staleFilled = App._fillMissingShowPreviewResults();
     if (sp.results[idx]) { App._afterMatchSettle(idx, { skipFlavor: true }); return; }
     const m = sp.validMatches[idx];
-    // 笏笏 繧ｿ繝・げ繝槭ャ繝・笏笏
+    // ── タッグマッチ ──
     if (m.matchType === 'tag') {
       const f1 = G.roster.find(c => c.id === m.teamA.fighter1);
       const f2 = G.roster.find(c => c.id === m.teamA.fighter2);
@@ -4721,7 +4721,7 @@ const App = {
       const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
       const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
       const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
-      // bond-rivalry plan P-1: bond 竕､ 20 荳堺ｻｲ繝壹い縺ｯ隧ｦ蜷井ｸｭ縺ｮ閭ｽ蜉・-3
+      // bond-rivalry plan P-1: bond ≤ 20 不仲ペアは試合中の能力 -3
       const lowBondA = bondA <= 20;
       const lowBondB = bondB <= 20;
       const _penalize = (c) => ({ ...c, power: c.power - 3, speed: c.speed - 3, technique: c.technique - 3, spirit: c.spirit - 3 });
@@ -4733,7 +4733,7 @@ const App = {
         { fighter1: f1p, fighter2: f2p }, { fighter1: f3p, fighter2: f4p },
         tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB, lowBondA, lowBondB }
       );
-      // P-1: 隧ｦ蜷亥ｾ・trust -1・井ｸ堺ｻｲ繝壹い荳｡閠・ｼ・
+      // P-1: 試合後 trust -1（不仲ペア両者）
       if (lowBondA || lowBondB) {
         const lowIds = [];
         if (lowBondA) lowIds.push(f1.id, f2.id);
@@ -4746,7 +4746,7 @@ const App = {
       App._afterMatchSettle(idx, { skipFlavor: true });
       return;
     }
-    // 笏笏 繧ｷ繝ｳ繧ｰ繝ｫ繝槭ャ繝・笏笏
+    // ── シングルマッチ ──
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
     if (!charL || !charR) {
@@ -4764,7 +4764,7 @@ const App = {
   watchMatch(idx) {
     const sp = App._showPreview;
     if (!sp) return;
-    // 笏笏 繧ｿ繝・げ繝槭ャ繝・ tag-battle.html 縺ｫ蛻・ｲ・笏笏
+    // ── タッグマッチ: tag-battle.html に分岐 ──
     if (sp.validMatches[idx]?.matchType === 'tag') {
       App._watchTagMatch(idx);
       return;
@@ -4780,7 +4780,7 @@ const App = {
       App._afterMatchSettle(idx);
       return;
     }
-    // 繧ｨ繝ｳ繧ｸ繝ｳ螳溯｡鯉ｼ・ecordFrames=true・俄・Replay 譁ｹ蠑・ 繧ｷ繝溘Η繝ｬ繝ｼ繝育ｵ先棡・九ヵ繝ｬ繝ｼ繝蛻励ｒ iframe 縺ｸ貂｡縺励※蜀咲函
+    // エンジン実行（recordFrames=true）— Replay 方式: シミュレート結果＋フレーム列を iframe へ渡して再生
     const matchTier = m.isTitle ? 2 : 1;
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
     const result = Engine.battle.simulateMatch(charL, charR, rng, matchTier, { recordFrames: true });
@@ -4794,15 +4794,15 @@ const App = {
     if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
     clearTimeout(App._escBtnTimer);
     App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
-    // Send match data to iframe (avoid contentDocument 窶・causes SecurityError on file://)
+    // Send match data to iframe (avoid contentDocument — causes SecurityError on file://)
     const iframe = document.getElementById('battleIframe');
     const msg = {
       type: 'START_MATCH',
-      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), profile: CHAR_PROFILES[charL.id] || '', vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['窶ｦ・・] },
-      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['窶ｦ・・] },
+      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), profile: CHAR_PROFILES[charL.id] || '', vl: charL.voiceLines || charL.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charL.id]) || ['…！'] },
+      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: charR.voiceLines || charR.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[charR.id]) || ['…！'] },
       result,
       matchInfo: {
-        header: m.isTitle ? (G.titles.world.championId ? '醇 TITLE MATCH' : '醇 蛻昜ｻ｣邇玖・ｱｺ螳壽姶') : (idx === 0 ? '繝｡繧､繝ｳ繧､繝吶Φ繝・ : `隨ｬ${sp.validMatches.length - idx}隧ｦ蜷・),
+        header: m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : (idx === 0 ? 'メインイベント' : `第${sp.validMatches.length - idx}試合`),
         subHeader: `${charL.name} vs ${charR.name}`,
         matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
         totalMatches: sp.validMatches.length,
@@ -4818,7 +4818,7 @@ const App = {
         bgmMasterVol: Audio.bgmMasterVol,
       }
     };
-    // BGM蛻・崛: 繧ｿ繧､繝医Ν謌ｦ縺ｯFileBGM縲・壼ｸｸ隧ｦ蜷医・繝√ャ繝励メ繝･繝ｼ繝ｳbattle
+    // BGM切替: タイトル戦はFileBGM、通常試合はチップチューンbattle
     if (m.isTitle) {
       try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
     } else {
@@ -4831,14 +4831,14 @@ const App = {
       iframe.contentWindow.postMessage(msg, '*');
     };
     // Reload iframe with cache-busting param to guarantee fresh load
-    // NOTE: singles 縺ｯ蠢・★ battle-engine.html 繧剃ｽｿ縺・ｼ育峩蜑阪・繧ｿ繝・げ隧ｦ蜷医〒 tag-battle.html 縺ｫ螟峨ｏ縺｣縺ｦ縺・※繧よ綾縺呻ｼ・
+    // NOTE: singles は必ず battle-engine.html を使う（直前のタッグ試合で tag-battle.html に変わっていても戻す）
     iframe.onload = () => setTimeout(sendOnce, 200);
     iframe.src = 'battle-engine.html?t=' + Date.now();
     // Fallback: retry if onload was missed
     setTimeout(sendOnce, 800);
   },
 
-  // 繧ｿ繝・げ繝槭ャ繝√ｒ tag-battle.html 縺ｧ隕ｳ謌ｦ
+  // タッグマッチを tag-battle.html で観戦
   _watchTagMatch(idx) {
     const sp = App._showPreview;
     if (!sp || sp.results[idx]) return;
@@ -4853,13 +4853,13 @@ const App = {
       if (sp.results.every(r => r !== null)) App.finalizeShow();
       return;
     }
-    // 繧ｨ繝ｳ繧ｸ繝ｳ螳溯｡鯉ｼ・ecordFrames=true・・
+    // エンジン実行（recordFrames=true）
     const tagRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
     const bondA = G.relationships ? ((G.relationships[`${Math.min(f1.id,f2.id)}>${Math.max(f1.id,f2.id)}`] || {}).bond || 50) : 50;
     const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
     const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
     const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
-    // bond-rivalry plan P-1: bond 竕､ 20 荳堺ｻｲ繝壹い縺ｯ隧ｦ蜷井ｸｭ縺ｮ閭ｽ蜉・-3
+    // bond-rivalry plan P-1: bond ≤ 20 不仲ペアは試合中の能力 -3
     const lowBondA = bondA <= 20;
     const lowBondB = bondB <= 20;
     const _penalize = (c) => ({ ...c, power: c.power - 3, speed: c.speed - 3, technique: c.technique - 3, spirit: c.spirit - 3 });
@@ -4871,7 +4871,7 @@ const App = {
       { fighter1: f1p, fighter2: f2p }, { fighter1: f3p, fighter2: f4p },
       tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB, recordFrames: true, lowBondA, lowBondB }
     );
-    // P-1: 隧ｦ蜷亥ｾ・trust -1・井ｸ堺ｻｲ繝壹い荳｡閠・ｼ・
+    // P-1: 試合後 trust -1（不仲ペア両者）
     if (lowBondA || lowBondB) {
       const lowIds = [];
       if (lowBondA) lowIds.push(f1.id, f2.id);
@@ -4882,9 +4882,9 @@ const App = {
     }
     sp.results[idx] = result;
     sp.currentWatching = idx;
-    // BGM: 騾壼ｸｸ battle
+    // BGM: 通常 battle
     try { Audio.bgm.play('battle'); } catch(e) {}
-    // iframe 陦ｨ遉ｺ
+    // iframe 表示
     const overlay = document.getElementById('battleOverlay');
     overlay.style.display = 'block';
     const escBtn = document.getElementById('battleEscapeBtn');
@@ -4903,7 +4903,7 @@ const App = {
       teamB: { fighter1: mkProfile(f3), fighter2: mkProfile(f4) },
       result,
       matchInfo: {
-        header: idx === 0 ? '繝｡繧､繝ｳ繧､繝吶Φ繝・繧ｿ繝・げ)' : `隨ｬ${sp.validMatches.length - idx}隧ｦ蜷・繧ｿ繝・げ)`,
+        header: idx === 0 ? 'メインイベント(タッグ)' : `第${sp.validMatches.length - idx}試合(タッグ)`,
         matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
         totalMatches: sp.validMatches.length,
         sfxMasterVol: Audio.sfxMasterVol,
@@ -4960,7 +4960,7 @@ const App = {
     if (!sp || sp.currentWatching < 0) return;
     const idx = sp.currentWatching;
     const m = sp.validMatches[idx];
-    // 笏笏 Replay譁ｹ蠑・ 繧ｷ繝ｳ繧ｰ繝ｫ/繧ｿ繝・げ縺ｨ繧ゅ↓ sp.results[idx] 縺ｫ莠句燕險育ｮ礼ｵ先棡縺梧里縺ｫ蜈･縺｣縺ｦ縺・ｋ縲Ｊframe 縺九ｉ縺ｯ髢峨§繧九□縺・笏笏
+    // ── Replay方式: シングル/タッグともに sp.results[idx] に事前計算結果が既に入っている。iframe からは閉じるだけ ──
     if (m && m.matchType === 'tag') {
       try { Audio.bgm.stop(); } catch(e) {}
       document.getElementById('battleOverlay').style.display = 'none';
@@ -4973,13 +4973,13 @@ const App = {
       } else {
         setTimeout(() => { if (App._showPreview) { try { Audio.bgm.play('battle'); } catch(e) {} } }, 300);
       }
-      // 繧ｿ繝・げ縺ｯ隧ｦ蜷亥ｾ後ヵ繝ｬ繝ｼ繝舌・縺ｯ蜃ｺ縺輔↑縺・(`_collectPostMatchPopupsForMatch` 蛛ｴ縺ｧ tag 繧偵せ繧ｭ繝・・)
+      // タッグは試合後フレーバーは出さない (`_collectPostMatchPopupsForMatch` 側で tag をスキップ)
       App._afterMatchSettle(tagIdx);
       return;
     }
-    // Guard: single 繝槭ャ繝√ｂ莠句燕險育ｮ玲ｸ医∩縲Ｊframe 縺九ｉ MATCH_RESULT 縺梧擂縺ｦ繧らｵ先棡縺ｯ荳頑嶌縺阪＠縺ｪ縺・
+    // Guard: single マッチも事前計算済み。iframe から MATCH_RESULT が来ても結果は上書きしない
     if (!sp.results[idx]) {
-      // 諠ｳ螳壼､・ watchMatch 繧帝壹ｉ縺夂峩謗･ MATCH_RESULT 縺梧擂縺溷ｴ蜷医・繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ
+      // 想定外: watchMatch を通らず直接 MATCH_RESULT が来た場合のフォールバック
       const charL = G.roster.find(c => c.id === m.left);
       const charR = G.roster.find(c => c.id === m.right);
       sp.results[idx] = {
@@ -4994,13 +4994,13 @@ const App = {
         log: data.log || []
       };
     }
-    // BGM: FileBGM繝輔ぉ繝ｼ繝峨い繧ｦ繝・+ 谿玖ｩｦ蜷医≠繧翫↑繧叡attle蠕ｩ蟶ｰ縲∝・螳御ｺ・↑繧泳ingle縺ｸ(finalizeShow縺ｧ驕・ｻｶ蜀咲函)
+    // BGM: FileBGMフェードアウト + 残試合ありならbattle復帰、全完了ならjingleへ(finalizeShowで遅延再生)
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     if (sp.results.every(r => r !== null)) {
-      // 蜈ｨ隧ｦ蜷亥ｮ御ｺ・ management BGM縺ｯ豬√＆縺嗚ingle蠕・ｩ・finalizeShow縺ｧ2.5遘貞ｾ後↓蜀咲函)
+      // 全試合完了: management BGMは流さずjingle待機(finalizeShowで2.5秒後に再生)
     } else {
-      // 縺ｾ縺隧ｦ蜷医′谿九▲縺ｦ縺・ｋ 竊・battleBGM繧貞・髢具ｼ郁・陦御ｸｭ・・
-      // fadeOut蠕後↓BGM._current='battle'縺梧ｮ九ｋ縺溘ａ縲《top()縺ｧ繝ｪ繧ｻ繝・ヨ縺励※縺九ｉ蜀咲函
+      // まだ試合が残っている → battleBGMを再開（興行中）
+      // fadeOut後にBGM._current='battle'が残るため、stop()でリセットしてから再生
       setTimeout(() => { if (App._showPreview) { try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch(e) {} } }, 1600);
     }
     // Hide iframe
@@ -5016,7 +5016,7 @@ const App = {
     clearTimeout(App._escBtnTimer);
     const escBtn = document.getElementById('battleEscapeBtn');
     if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
-    // BGM蛛懈ｭ｢ + 蠕ｩ蟶ｰ
+    // BGM停止 + 復帰
     try { Audio.fileBgm.stop(); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
     // Auto-skip the stuck match
@@ -5027,7 +5027,7 @@ const App = {
       const idx = ppvPrev.currentWatching;
       ppvPrev.currentWatching = -1;
       if (!ppvPrev.results[idx]) App.ppvSkipMatch(idx);
-      // PPV BGM蠕ｩ蟶ｰ
+      // PPV BGM復帰
       if (!ppvPrev.results.every(r => r !== null)) {
         setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 300);
       }
@@ -5036,7 +5036,7 @@ const App = {
       sp.currentWatching = -1;
       if (!sp.results[idx]) App.skipMatch(idx);
       else { renderMatchPreview(); if (sp.results.every(r => r !== null)) App.finalizeShow(); }
-      // 闊郁｡沓GM蠕ｩ蟶ｰ・郁・陦御ｸｭ縺ｯbattle・俄・stop()縺ｧBGM迥ｶ諷九Μ繧ｻ繝・ヨ蠕後↓蜀咲函
+      // 興行BGM復帰（興行中はbattle）— stop()でBGM状態リセット後に再生
       if (!sp.results.every(r => r !== null)) {
         setTimeout(() => { if (App._showPreview) { try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch(e) {} } }, 300);
       }
@@ -5044,7 +5044,7 @@ const App = {
       const idx = wp.currentWatching;
       wp.currentWatching = -1;
       if (!wp.results[idx]) App._skipWarMatch(idx);
-      // 蟇ｾ謚玲姶BGM蠕ｩ蟶ｰ
+      // 対抗戦BGM復帰
       if (!wp.results.every(r => r !== null)) {
         setTimeout(() => { if (App._warPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {} } }, 300);
       }
@@ -5115,7 +5115,7 @@ const App = {
       renderMatchPreview();
       if (false) {
         Audio.play('error');
-        alert('繧ｫ繝ｼ繝牙・縺ｫ蝨ｨ邀阪＠縺ｦ縺・↑縺・∈謇九・隧ｦ蜷医′縺ゅｊ縲∝・隧ｦ蜷医せ繧ｭ繝・・繧貞ｮ御ｺ・〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・);
+        alert('カード内に在籍していない選手の試合があり、全試合スキップを完了できませんでした。');
       }
       return;
     }
@@ -5135,19 +5135,19 @@ const App = {
       console.error('finalizeShow: unresolved results', { validMatches, results });
       Audio.play('error');
       renderMatchPreview();
-      alert('隧ｦ蜷育ｵ先棡縺ｮ遒ｺ螳壹↓螟ｱ謨励＠縺ｾ縺励◆縲ゅき繝ｼ繝峨↓荳肴紛蜷医′縺ゅｋ蜿ｯ閭ｽ諤ｧ縺後≠繧翫∪縺吶・);
+      alert('試合結果の確定に失敗しました。カードに不整合がある可能性があります。');
       return;
     }
     let s = { ...G, totalShows: G.totalShows + 1, weekPhase: 'showExec' };
-    // forcedRest・・3莨鷹､企｡倥＞・峨ヵ繝ｩ繧ｰ繧偵け繝ｪ繧｢ 窶・縺薙・闊郁｡悟ｾ後・騾壼ｸｸ蜿ょ刈蜿ｯ閭ｽ縺ｫ謌ｻ縺・
+    // forcedRest（S3休養願い）フラグをクリア — この興行後は通常参加可能に戻す
     let roster = s.roster.map(c => c.forcedRest ? { ...c, forcedRest: false } : { ...c });
     let rivalries = { ...s.rivalries };
     let titles = { ...s.titles, world: { ...s.titles.world } };
     const events = [];
-    // Phase 4: 闊郁｡悟燕縺ｮ騾｣謨玲焚繧定ｨ倬鹸・・-05/C-06蛻､螳夂畑・・
+    // Phase 4: 興行前の連敗数を記録（C-05/C-06判定用）
     const preShowLosingStreaks = new Map(roster.map(c => [c.id, c.losingStreak || 0]));
 
-    // 笏笏 v4 ﾂｧ2-1: F02竭 ignite 蛻､螳夲ｼ医Μ繝ｼ繝繝ｼ蜷悟｣ｫ縺ｮ繧ｫ繝ｼ繝峨′邨・∪繧後※縺・ｌ縺ｰ逋ｺ轣ｫ・・笏笏
+    // ── v4 §2-1: F02① ignite 判定（リーダー同士のカードが組まれていれば発火） ──
     if (Engine.factions && typeof Engine.factions.checkF02IgniteTrigger === 'function' && !s._pendingFactionEvent) {
       const ig = Engine.factions.checkF02IgniteTrigger(s, validMatches);
       if (ig.eligible) {
@@ -5155,19 +5155,19 @@ const App = {
       }
     }
 
-    // Rivalry & coach bonuses (繧ｿ繝・げ縺ｯ繧ｹ繧ｭ繝・・)
+    // Rivalry & coach bonuses (タッグはスキップ)
     const confrontationPairs = sp.confrontationPairs || [];
-    const deferredRivalryIdxs = []; // 蝗邵∵ｱｺ逹蛟呵｣懊・繧｢縺ｮ recordRivalry 繧・MQ遒ｺ螳壼ｾ後∪縺ｧ菫晉蕗
+    const deferredRivalryIdxs = []; // 因縁決着候補ペアの recordRivalry を MQ確定後まで保留
     results.forEach((result, i) => {
       const m = validMatches[i];
-      if (m.matchType === 'tag') return; // 繧ｿ繝・げ隧ｦ蜷医・蝗邵√・繧ｱ繝溘せ繝医Μ繝ｼ繝懊・繝翫せ蟇ｾ雎｡螟・
+      if (m.matchType === 'tag') return; // タッグ試合は因縁・ケミストリーボーナス対象外
       const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
       if (rivalLvl) { result.mq = Math.min(100, result.mq + rivalLvl.mqBonus); result.rivalryBonus = rivalLvl; }
       const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
       if (chemistryBonus > 0) { result.mq = Math.min(100, result.mq + chemistryBonus); result.friendshipBonus = chemistryBonus; }
       if (m.isTitle) { result.mq = Math.min(100, result.mq + (TITLES.find(t => t.id === 'world')?.mqBonus || 15)); result.isTitleMatch = true; }
-      // 蝗邵∵ｱｺ逹蛟呵｣懶ｼ・inRivalry>=60 or resolutionCount>=1・峨・ recordRivalry 繧樽Q遒ｺ螳壼ｾ後∪縺ｧ菫晉蕗
+      // 因縁決着候補（minRivalry>=60 or resolutionCount>=1）は recordRivalry をMQ確定後まで保留
       const isResolutionCandidate = pairState && !pairState.resolvedType && pairState.minRivalry >= 60;
       const hasPartialResolution = pairState && !pairState.resolvedType && (rivalries[Engine.title.getRivalryKey(m.left, m.right)]?.resolutionCount || 0) >= 1 && pairState.minRivalry >= 80;
       if (isResolutionCandidate || hasPartialResolution) {
@@ -5177,10 +5177,10 @@ const App = {
         rivalries = rivalResult.rivalries;
         if (rivalResult.msg) events.push(rivalResult.msg);
       }
-      // coachMQBonus 窶・MQ螟夜Κ繝懊・繝翫せ謨ｴ逅・〒蟒・ｭ｢
+      // coachMQBonus — MQ外部ボーナス整理で廃止
     });
 
-    // Fan expectation MQ bonus 窶・MQ螟夜Κ繝懊・繝翫せ謨ｴ逅・〒蟒・ｭ｢縲ゅヵ繝ｩ繧ｰ縺ｮ縺ｿ谿九☆・医ち繝・げ縺ｯ繧ｹ繧ｭ繝・・・・
+    // Fan expectation MQ bonus — MQ外部ボーナス整理で廃止。フラグのみ残す（タッグはスキップ）
     const fanExpects = Engine.fanExpect.generate(s);
     validMatches.forEach((m, i) => {
       const result = results[i]; if (!result || m.matchType === 'tag') return;
@@ -5195,7 +5195,7 @@ const App = {
     const titleMatchOutcomes = [];
     validMatches.forEach((m, i) => {
       if (!m.isTitle || !results[i]) return;
-      if (m.isReclaim) return; // Phase 4: 螂ｪ驍・倦謌ｦ隧ｦ蜷医・蟆ら畑繝上Φ繝峨Λ縺ｧ蜃ｦ逅・
+      if (m.isReclaim) return; // Phase 4: 奪還挑戦試合は専用ハンドラで処理
       const r = results[i];
       const champId = titles.world.championId;
       const challengerId = champId === m.left ? m.right : m.left;
@@ -5216,18 +5216,18 @@ const App = {
       }
     });
 
-    // v1.2: 荵ｱ蜈･繝槭ャ繝∫ｵ先棡蜃ｦ逅・
+    // v1.2: 乱入マッチ結果処理
     if (App._intrusionData) {
       const id = App._intrusionData;
-      // 荵ｱ蜈･驕ｸ謇九′繧ｿ繧､繝医Ν繧貞･ｪ蜿悶＠縺溘°蛻､螳・
+      // 乱入選手がタイトルを奪取したか判定
       const intruderId = id.intruder.id;
       const intruderWon = titles.world.championId === intruderId;
       if (intruderWon) {
-        // 邇句ｺｧ遨ｺ菴・+ 繝偵・繝医ム繧ｦ繝ｳ
-        // v1.x菫ｮ豁｣: 謖ｯ繧悟ｹ・・險ｭ險・窶・譌ｧ -7縲・20 縺ｯ蛟､蝓歇-10,+10]縺ｫ蟇ｾ縺鈴℃螟ｧ縺九▽
-        //   譌ｧ繧ｳ繝ｼ繝・`Math.max(0, (s.heatScore || 50) + penalty)` 縺ｫ莠碁㍾繝舌げ
-        //   (heat=0 縺・50 縺ｫ蛹悶￠繧・/ 荳矩剞0縺ｧ雋蛛ｴ蟶ｯ繧堤ｴ螢・ 縺後≠繧翫梧怙鬮俶ｽｮ竊偵ル繝･繝ｼ繝医Λ繝ｫ縲堺ｸ謦・′逋ｺ逕溘＠縺ｦ縺・◆縲・
-        //   蝓ｺ譛ｬ -3縲・6縲∫樟蝨ｨHot/On Fire(hs竕･6)蟶ｯ縺ｧ縺ｯ霑ｽ蜉 -1縲・2縲０n Fire竊偵ぐ繝ｪWarm 縺ｾ縺ｧ縺ｧ豁｢繧√ｋ縲・
+        // 王座空位 + ヒートダウン
+        // v1.x修正: 振れ幅再設計 — 旧 -7〜-20 は値域[-10,+10]に対し過大かつ
+        //   旧コード `Math.max(0, (s.heatScore || 50) + penalty)` に二重バグ
+        //   (heat=0 が 50 に化ける / 下限0で負側帯を破壊) があり「最高潮→ニュートラル」一撃が発生していた。
+        //   基本 -3〜-6、現在Hot/On Fire(hs≥6)帯では追加 -1〜-2。On Fire→ギリWarm までで止める。
         const intRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 8889));
         const basePenalty = -(3 + Engine.rng.int(intRng, 0, 3));
         const hotExtra = (s.heatScore || 0) >= 6 ? -(1 + Engine.rng.int(intRng, 0, 1)) : 0;
@@ -5237,16 +5237,16 @@ const App = {
         const bpIntrusion = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
         bpIntrusion.player = (bpIntrusion.player || 0) - BATTLE_POINT_CFG.intrusion;
         s = { ...s, battlePoints: bpIntrusion };
-        events.push(`亞 ${id.fromOrgName}縺ｮ${id.intruder.name}縺ｫ邇句ｺｧ繧貞･ｪ繧上ｌ縺滂ｼ・邇句ｺｧ縺ｯ遨ｺ菴阪↓窶ｦ 繝偵・繝・{penalty}縲∝ｯｾ謌ｦpt-${BATTLE_POINT_CFG.intrusion}`);
+        events.push(`😱 ${id.fromOrgName}の${id.intruder.name}に王座を奪われた！ 王座は空位に… ヒート${penalty}、対戦pt-${BATTLE_POINT_CFG.intrusion}`);
       } else {
-        // 繝√Ε繝ｳ繝斐が繝ｳ蜍晏茜 竊・蝗｣菴謎ｺｺ豌・2
+        // チャンピオン勝利 → 団体人気+2
         s = { ...s, orgPop: Math.min(100, (s.orgPop || 0) + 2) };
         const bpIntrusion = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
         bpIntrusion.player = (bpIntrusion.player || 0) + BATTLE_POINT_CFG.intrusion;
         s = { ...s, battlePoints: bpIntrusion };
-        events.push(`荘 ${id.champName}縺御ｹｱ蜈･閠・{id.intruder.name}繧帝縺代◆・・蝗｣菴謎ｺｺ豌・2縲∝ｯｾ謌ｦpt+${BATTLE_POINT_CFG.intrusion}`);
+        events.push(`👑 ${id.champName}が乱入者${id.intruder.name}を退けた！ 団体人気+2、対戦pt+${BATTLE_POINT_CFG.intrusion}`);
       }
-      // ﾂｧ4.2: 荵ｱ蜈･ rivalry +12縲・18・医メ繝｣繝ｳ繝斐が繝ｳ竊比ｹｱ蜈･閠・ｼ・
+      // §4.2: 乱入 rivalry +12〜+18（チャンピオン↔乱入者）
       if (s.relationships) {
         const intRivalRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE6F));
         const intruderId = id.intruder.id;
@@ -5256,14 +5256,14 @@ const App = {
           s = Engine.relationships.applyToRoster({ ...s, roster }, champId, [intruderId], { min: 0, max: 0 }, { min: 12, max: 18 }, intRivalRng);
         }
       }
-      // 荵ｱ蜈･驕ｸ謇九ｒroster縺九ｉ髯､蜴ｻ
+      // 乱入選手をrosterから除去
       roster = roster.filter(c => !c.isIntrusion);
-      // Phase0菫ｮ豁｣: lastIntrusionWeek譖ｴ譁ｰ・医け繝ｼ繝ｫ繝繧ｦ繝ｳ險育ｮ礼畑・・
+      // Phase0修正: lastIntrusionWeek更新（クールダウン計算用）
       const intAbsWeek = Engine.util.absWeek(s.season, s.week);
       s = { ...s, lastIntrusionWeek: intAbsWeek };
     }
 
-    // 笏笏 Phase 4: 螂ｪ驍・倦謌ｦ隧ｦ蜷医・邨先棡蜃ｦ逅・笏笏
+    // ── Phase 4: 奪還挑戦試合の結果処理 ──
     if (App._reclaimData) {
       const rd = App._reclaimData;
       const reclaimIdx = validMatches.findIndex(m => m.isReclaim);
@@ -5271,55 +5271,55 @@ const App = {
       if (r) {
         const winnerId = r.winner === 'left' ? validMatches[reclaimIdx].left : (r.winner === 'right' ? validMatches[reclaimIdx].right : null);
         if (winnerId === rd.challengerId) {
-          // 謖第姶閠・享蛻ｩ 竊・繧ｿ繧､繝医Ν螂ｪ驍・
+          // 挑戦者勝利 → タイトル奪還
           const reclaimResult = Engine.title.resolveReclaimWin({ ...s, titles, roster }, 'world', rd.challengerId);
           titles = reclaimResult.titles;
           s = { ...s, aiOrgs: reclaimResult.aiOrgs, reclaimChallenges: reclaimResult.reclaimChallenges };
-          // 譁ｰ邇玖・・莠ｺ豌怜ｾｮ蠅暦ｼ・rownChampion 逶ｸ蠖薙・蟆上＆縺ｪ繝懊・繝翫せ縺ｮ縺ｿ縲Ｓeassess 縺ｯ逵∫払・・
+          // 新王者の人気微増（crownChampion 相当の小さなボーナスのみ。reassess は省略）
           roster = roster.map(c => c.id === rd.challengerId
             ? { ...c, popularity: Math.min(100, (c.popularity || 0) + Engine.popularity.applyDiminishing(5, c.popularity || 0)) }
             : c);
-          events.push(`醇 邇句ｺｧ螂ｪ驍・ｼ・${rd.challengerName} 縺・${rd.orgName} 縺九ｉ荳也阜邇句ｺｧ繧貞叙繧頑綾縺励◆・～);
-          // 讌ｭ逡後ル繝･繝ｼ繧ｹ: 螂ｪ驍・・蜉・
+          events.push(`🏆 王座奪還！ ${rd.challengerName} が ${rd.orgName} から世界王座を取り戻した！`);
+          // 業界ニュース: 奪還成功
           s = Engine.industryNews.push(s, {
             type: 'reclaimSuccess',
             characterId: rd.challengerId,
             data: {
               challengerName: rd.challengerName,
-              fromOrg: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・,
+              fromOrg: G.orgName || 'プレイヤー団体',
               toOrg: rd.orgName,
             },
           });
         } else {
-          // 謖第姶螟ｱ謨・竊・12騾ｱCD
+          // 挑戦失敗 → 12週CD
           const reclaimResult = Engine.title.resolveReclaimLoss(s, 'world');
           s = { ...s, reclaimChallenges: reclaimResult.reclaimChallenges };
-          events.push(`樗 ${rd.challengerName} 縺ｮ螂ｪ驍・倦謌ｦ縺ｯ螟ｱ謨励・{rd.orgName} 縺御ｸ也阜邇句ｺｧ繧帝亟陦帙＠縺溘Ａ);
-          // 讌ｭ逡後ル繝･繝ｼ繧ｹ: 螂ｪ驍・､ｱ謨・
+          events.push(`💔 ${rd.challengerName} の奪還挑戦は失敗。${rd.orgName} が世界王座を防衛した。`);
+          // 業界ニュース: 奪還失敗
           s = Engine.industryNews.push(s, {
             type: 'reclaimFailure',
             characterId: rd.challengerId,
             data: {
               challengerName: rd.challengerName,
-              fromOrg: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・,
+              fromOrg: G.orgName || 'プレイヤー団体',
               toOrg: rd.orgName,
             },
           });
         }
       }
-      // 髦ｲ陦幄・ｒ player roster 縺九ｉ髯､蜴ｻ
+      // 防衛者を player roster から除去
       roster = roster.filter(c => !c.isReclaim);
-      // pending 繧ｯ繝ｪ繧｢
+      // pending クリア
       const { _pendingReclaim, ...rest } = s;
       s = rest;
       App._reclaimData = null;
     }
 
-    // 髮・ｮ｢v2: matchAppeals竊痴howDraw竊誕ttendance邂怜・
+    // 集客v2: matchAppeals→showDraw→attendance算出
     const appFanExpects = Engine.fanExpect.generate(s);
     const appMatchAppeals = validMatches.map(m => {
       if (m.matchType === 'tag') {
-        // 繧ｿ繝・げ: 4莠ｺ縺ｮ蟷ｳ蝮・寔螳｢蜉帙〒邁｡譏楢ｨ育ｮ・
+        // タッグ: 4人の平均集客力で簡易計算
         const ids = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
         const fighters = ids.map(id => roster.find(c => c.id === id)).filter(Boolean);
         if (fighters.length < 4) return 0;
@@ -5352,13 +5352,13 @@ const App = {
     const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
     const appV2Result = Engine.attendanceV2.calcAttendanceV2(s, s.showVenue, appShowDraw, attendRng);
     let preAttendance = appV2Result.attendance;
-    // v1.5s25b: attendance_boost 繝舌ヵ・医・繧､繝ｫ繧ｹ繝医・繝ｳ・・
+    // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuffPre = (s.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuffPre) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuffPre.multiplier));
-    // mq_boost 繝舌ヵ縺ｫ莉倬囂縺吶ｋ髮・ｮ｢蛟咲紫・医き繝ｼ繝峨う繝吶Φ繝・effect 諡｡蠑ｵ縺ｧ MQ+ 縺ｨ蜷梧凾縺ｫ髮・ｮ｢蜉ｹ譫懊ｒ謖√▽繧医≧縺ｫ縺ｪ縺｣縺滂ｼ・
+    // mq_boost バフに付随する集客倍率（カードイベント effect 拡張で MQ+ と同時に集客効果を持つようになった）
     const mqBoostWithAttendance = (s.milestoneBuffs || []).find(b => b.type === 'mq_boost' && b.attendanceMultiplier);
     if (mqBoostWithAttendance) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * mqBoostWithAttendance.attendanceMultiplier));
-    // next_match_mq 繝舌ヵ縺ｯ迚ｹ螳壹・繧｢蟇ｾ雎｡縲りｩｲ蠖薙・繧｢縺・showCard 縺ｮ縺・★繧後°縺ｫ邨・∪繧後※縺・ｌ縺ｰ縲√◎縺ｮ闊郁｡後・髮・ｮ｢蛟咲紫繧帝←逕ｨ
+    // next_match_mq バフは特定ペア対象。該当ペアが showCard のいずれかに組まれていれば、その興行の集客倍率を適用
     const nextMatchMqWithAttendance = (s.milestoneBuffs || []).find(b => b.type === 'next_match_mq' && b.attendanceMultiplier && b.pair);
     if (nextMatchMqWithAttendance) {
       const [p1, p2] = nextMatchMqWithAttendance.pair;
@@ -5373,9 +5373,9 @@ const App = {
       if (pairInCard) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * nextMatchMqWithAttendance.attendanceMultiplier));
     }
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
-    // 闊郁｡檎ｵ先棡逕ｻ髱｢縺ｧ蜍募藤謨ｰ繧定｡ｨ遉ｺ縺吶ｋ縺溘ａ縺ｫstate縺ｫ菫晏ｭ・
+    // 興行結果画面で動員数を表示するためにstateに保存
     s = { ...s, lastShowAttendance: preAttendance };
-    // D螻､ first_dome_sellout: postShow 繝医Μ繧ｬ繝ｼ險ｭ螳・
+    // D層 first_dome_sellout: postShow トリガー設定
     if (s.showVenue === 9 && !(s.milestones?.first_dome_sellout)) {
       const _domeCap = VENUES[9]?.cap || 22500;
       if (preAttendance / _domeCap >= 0.95) s = { ...s, _pendingDomeSelloutCeremony: true };
@@ -5384,11 +5384,11 @@ const App = {
     if (crowdMQ.total !== 0) {
       results.forEach(r => { r.mq = Engine.util.clamp(r.mq + crowdMQ.total, 5, 100); });
       if (crowdMQ.crowdLabel) {
-        events.push(`勝・・${crowdMQ.crowdLabel}・・Q蜈ｨ隧ｦ蜷・${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}・荏);
+        events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
       }
     }
 
-    // 繧ｫ繝ｼ繝蛾ｮｮ蠎ｦMQ陬懈ｭ｣・・atchupLog險倬鹸縺ｮ蜑阪↓險育ｮ・窶・莉雁屓縺ｮ隧ｦ蜷医・螻･豁ｴ縺ｫ蜷ｫ繧√↑縺・√ち繝・げ縺ｯ繧ｹ繧ｭ繝・・・・
+    // カード鮮度MQ補正（matchupLog記録の前に計算 — 今回の試合は履歴に含めない、タッグはスキップ）
     results.forEach((r, i) => {
       const m = validMatches[i];
       if (m.matchType === 'tag') return;
@@ -5403,7 +5403,7 @@ const App = {
       }
     });
 
-    // 蝗邵∵ｱｺ逹蛻､螳夲ｼ・Q遒ｺ螳壼ｾ後∽ｿ晉蕗繝壹い縺ｮ縺ｿ・・
+    // 因縁決着判定（MQ確定後、保留ペアのみ）
     const rivalryResolutions = [];
     deferredRivalryIdxs.forEach(idx => {
       const r = results[idx];
@@ -5468,11 +5468,11 @@ const App = {
         r.rivalryResolved = true;
         if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
         s._rivalryResolvedThisWeek.push({ fighterId: m.left, fighter2Id: m.right });
-        const emoji = resolution.emoji || '笞｡';
-        const label = resolution.label || (isFinalResolution ? '譛邨よｱｺ逹' : '蝗邵∵ｱｺ逹');
-        events.push(`${emoji} ${winnerName} vs ${loserName} 窶・${label}・・荳｡閠・ｺｺ豌・${resolution.popBonus} 蝗｣菴謎ｺｺ豌・${Math.round(rivalOrgPopDelta * 10) / 10}`);
+        const emoji = resolution.emoji || '⚡';
+        const label = resolution.label || (isFinalResolution ? '最終決着' : '因縁決着');
+        events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${Math.round(rivalOrgPopDelta * 10) / 10}`);
       } else {
-        // 豎ｺ逹荳肴・遶・ 騾壼ｸｸ騾壹ｊ recordRivalry
+        // 決着不成立: 通常通り recordRivalry
         const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, r.mq);
         rivalries = rivalResult.rivalries;
         if (rivalResult.msg) events.push(rivalResult.msg);
@@ -5480,13 +5480,13 @@ const App = {
     });
     App._pendingRivalryResolutions = rivalryResolutions;
 
-    // MQ popularity (繧ｿ繝・げ: 4莠ｺ縺ｫ蛻・・)
+    // MQ popularity (タッグ: 4人に分配)
     const mainEventIdx = 0; // index 0 = main event in showCard order
     results.forEach((r, idx) => {
       const m = validMatches[idx];
       const isMainEvent = idx === mainEventIdx;
       if (r.matchType === 'tag') {
-        // 繧ｿ繝・げ: perFighter縺ｮ蜈ｨ驕ｸ謇九↓MQ莠ｺ豌励ｒ驕ｩ逕ｨ・・ngine.executeShow L7709繝代ち繝ｼ繝ｳ・・
+        // タッグ: perFighterの全選手にMQ人気を適用（Engine.executeShow L7709パターン）
         const allIds = Object.keys(r.perFighter).map(Number);
         const winIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
           : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
@@ -5504,7 +5504,7 @@ const App = {
         roster = mqPop.roster;
       }
     });
-    // 髮・ｮ｢v2: 笘・ｮ怜・
+    // 集客v2: ★算出
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
     const appRatingCtx = {
       hasTitleMatch: validMatches.some(m => m.isTitle),
@@ -5531,50 +5531,50 @@ const App = {
         popDelta: Math.round((popResult.popDelta + bookedRivalryOrgPopBonus) * 10) / 10,
         orgPop: Engine.util.clamp((popResult.orgPop || 0) + bookedRivalryOrgPopBonus, 0, 100),
       };
-      events.push(`櫨 豕ｨ逶ｮ繧ｫ繝ｼ繝牙柑譫・ 蝗邵√き繝ｼ繝臥ｷｨ謌舌〒蝗｣菴謎ｺｺ豌・{bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
+      events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
     }
-    events.push(`投 笘・{appStars} (MQ avg ${avgMQ}) 竊・蝗｣菴謎ｺｺ豌・{popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (迴ｾ蝨ｨ: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
+    events.push(`📊 ★${appStars} (MQ avg ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
-    // Heat 窶・笘・・繝ｼ繧ｹ
+    // Heat — ★ベース
     const oldHeat = Engine.heat.getLevel(s);
     const newHeatScore = Engine.heat.calcUpdate(s, appStars);
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
-    if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat螟牙虚: ${oldHeat.label} 竊・${newHeat.label}・磯寔螳｢蛟咲紫 ﾃ・{newHeat.mult}・荏);
+    if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
 
-    // Injuries 窶・separate RNG per fighter to avoid correlation (繧ｿ繝・げ縺ｯ繧ｹ繧ｭ繝・・ 窶・Phase 5蟇ｾ蠢・
+    // Injuries — separate RNG per fighter to avoid correlation (タッグはスキップ — Phase 5対応)
     const injuryResults = [];
-    const matchInjuredIds = new Array(results.length).fill(null); // Phase 2: 隧ｦ蜷亥挨諤ｪ謌鷹∈謇紀D
+    const matchInjuredIds = new Array(results.length).fill(null); // Phase 2: 試合別怪我選手ID
     results.forEach((r, idx) => {
-      if (r.matchType === 'tag') return; // 繧ｿ繝・げ隧ｦ蜷医・諤ｪ謌代・Phase 5縺ｧ蟇ｾ蠢・
+      if (r.matchType === 'tag') return; // タッグ試合の怪我はPhase 5で対応
       const lc = roster.find(c => c.id === r.left.id);
-      if (lc && !lc.isIntrusion) { // 荵ｱ蜈･驕ｸ謇九・諤ｪ謌大愛螳壹せ繧ｭ繝・・
+      if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
         const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), Engine.coach.buildInjuryFlavorOpts(s, r.left.id));
         if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
       }
       const rc = roster.find(c => c.id === r.right.id);
-      if (rc && !rc.isIntrusion) { // 荵ｱ蜈･驕ｸ謇九・諤ｪ謌大愛螳壹せ繧ｭ繝・・
+      if (rc && !rc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
         const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), Engine.coach.buildInjuryFlavorOpts(s, r.right.id));
         if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
       }
     });
 
-    // Phase 2: 隧ｦ蜷育ｵ先棡縺ｮ髢｢菫ょ､蜿肴丐・・pec ﾂｧ3.1・・
-    // losingStreak縺ｯMQ popularity譖ｴ譁ｰ貂医∩縲（njuredId縺ｯ諤ｪ謌大・逅・ｸ医∩縲…areerBestMQ縺ｯ譛ｪ譖ｴ譁ｰ・亥ｾ後〒譖ｴ譁ｰ・・
+    // Phase 2: 試合結果の関係値反映（spec §3.1）
+    // losingStreakはMQ popularity更新済み、injuredIdは怪我処理済み、careerBestMQは未更新（後で更新）
     if (s.relationships) {
       const relRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE2A));
       let relState = { ...s, roster, relationshipCounters: s.relationshipCounters };
       results.forEach((r, idx) => {
         const m = validMatches[idx];
-        // 繧ｿ繝・げ繝槭ャ繝・ applyTagMatchResult 縺ｧ4閠・俣縺ｮ髢｢菫ょ､繧呈峩譁ｰ
+        // タッグマッチ: applyTagMatchResult で4者間の関係値を更新
         if (r.matchType === 'tag') {
           const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
           const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
           relState = Engine.relationships.applyTagMatchResult(relState, teamAIds, teamBIds, r, relRng);
           return;
         }
-        // 繧ｷ繝ｳ繧ｰ繝ｫ繝槭ャ繝・
+        // シングルマッチ
         const charIdA = r.left.id;
         const charIdB = r.right.id;
         const fA = roster.find(c => c.id === charIdA);
@@ -5605,20 +5605,20 @@ const App = {
           isProveModeB: fB ? (fB.proveMode || 0) > 0 : false,
           ovrA: fA ? Engine.util.ov(fA) : 0,
           ovrB: fB ? Engine.util.ov(fB) : 0,
-          // Phase 4: 螂ｪ驍・倦謌ｦ縺ｯ cross-org 隧ｦ蜷茨ｼ域ｮ狗蕗 vs 蜈・酔蜒・/ B-3 縺ｪ縺ｩ縺悟柑縺擾ｼ・
+          // Phase 4: 奪還挑戦は cross-org 試合（残留 vs 元同僚 / B-3 などが効く）
           isCrossOrg: !!m.isReclaim,
         };
         relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
       });
       roster = relState.roster || roster;
       s = { ...s, relationships: relState.relationships, relationshipCounters: relState.relationshipCounters };
-      // Phase 4: 闊郁｡後さ繝ｳ繝・く繧ｹ繝医・髢｢菫ょ､蜿肴丐・・-04/C-05/C-06/C-10・・
+      // Phase 4: 興行コンテキストの関係値反映（C-04/C-05/C-06/C-10）
       const showCtxRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE5C));
       s = Engine.relationships.applyShowContextEffects(s, validMatches, results, preShowLosingStreaks, showCtxRng);
     }
 
-    // 笏笏 F08 繝・ぅ繝ｬ繧ｯ繝・ぅ繝・ 逶ｴ謗･蟇ｾ豎ｺ隧ｦ蜷医・邨先棡繧呈ｴｾ髢･蜍｢縺・蟇ｾ遶句ｺｦ縺ｫ 1.5ﾃ・縺ｧ蜿肴丐
-    //    + 荳｡豢ｾ髢･繝ｪ繝ｼ繝繝ｼ髢・rivalry 縺ｫ +30縲・0 縺ｮ螟ｧ蟷・ヶ繝ｼ繧ｹ繝・+ 繝・ぅ繝ｬ繧ｯ繝・ぅ繝悶け繝ｪ繧｢ 笏笏
+    // ── F08 ディレクティブ: 直接対決試合の結果を派閥勢い/対立度に 1.5× で反映
+    //    + 両派閥リーダー間 rivalry に +30〜40 の大幅ブースト + ディレクティブクリア ──
     if (s._pendingF08Directive && Engine.factions && typeof Engine.factions.applyMatchResult === 'function') {
       const d = s._pendingF08Directive;
       const f08Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFA88));
@@ -5633,8 +5633,8 @@ const App = {
           : r.winner === 'right' ? (m.right === d.leaderAId ? 'A' : 'B')
           : 'draw';
         s = Engine.factions.applyMatchResult(s, m.left, m.right, { winner: winnerToken }, f08Rng, { variationMultiplier: (FACTION_CONFIG && FACTION_CONFIG.f08MatchResultMultiplier) || 1.5 });
-        // 荳｡繝ｪ繝ｼ繝繝ｼ髢・rivalry 繧・+30縲・0 縺ｮ螟ｧ蟷・ヶ繝ｼ繧ｹ繝茨ｼ磯壼ｸｸ隧ｦ蜷・+5縲・0 縺ｮ 4 蛟咲ｨ句ｺｦ・・
-        // 竊・繝ｪ繝ｼ繝繝ｼ蜷悟｣ｫ縺ｮ蝗邵√′蠑ｷ辜医↓豺ｱ縺ｾ繧翫∵ｬ｡縺ｮ F02/F03 縺ｸ縺ｮ逋ｺ螻輔ｒ蜉騾・
+        // 両リーダー間 rivalry を +30〜40 の大幅ブースト（通常試合 +5〜10 の 4 倍程度）
+        // → リーダー同士の因縁が強烈に深まり、次の F02/F03 への発展を加速
         const rivalryBoost = 30 + Math.floor(Engine.rng.float(f08Rng) * 11);
         const keyAB = `${d.leaderAId}|${d.leaderBId}`;
         const keyBA = `${d.leaderBId}|${d.leaderAId}`;
@@ -5644,19 +5644,19 @@ const App = {
           rels[keyAB] = { ...rels[keyAB], rivalry: clamp((rels[keyAB].rivalry || 0) + rivalryBoost) };
           rels[keyBA] = { ...rels[keyBA], rivalry: clamp((rels[keyBA].rivalry || 0) + rivalryBoost) };
           s = { ...s, relationships: rels };
-          if (typeof console !== 'undefined') console.log(`[WM Faction] F08 direct bout rivalry boost: leaders ${d.leaderAId}竊・{d.leaderBId} rivalry +${rivalryBoost}`);
+          if (typeof console !== 'undefined') console.log(`[WM Faction] F08 direct bout rivalry boost: leaders ${d.leaderAId}↔${d.leaderBId} rivalry +${rivalryBoost}`);
         }
         executed = true;
       });
-      // 隧ｲ蠖楢ｩｦ蜷医′螳溯｡後＆繧後◆縺九↓髢｢繧上ｉ縺壹√％縺ｮ闊郁｡悟ｾ後・繝・ぅ繝ｬ繧ｯ繝・ぅ繝悶ｒ關ｽ縺ｨ縺・
+      // 該当試合が実行されたかに関わらず、この興行後はディレクティブを落とす
       if (executed && typeof console !== 'undefined') console.log('[WM Faction] F08 directive resolved by direct match');
       const { _pendingF08Directive: _, ...rest } = s;
       s = rest;
     }
 
-    // 笏笏 Phase C: F07 DEMAND_MAIN 繝・ぅ繝ｬ繧ｯ繝・ぅ繝匁ｶ亥喧・・闊郁｡檎ｸ帙ｊ・俄楳笏
-    // 蜷・・陦後＃縺ｨ縺ｫ隧穂ｾ｡: 繝｡繧､繝ｳ縺ｫ蠖楢ｩｲ豢ｾ髢･繝｡繝ｳ繝舌・縺悟・縺｣縺ｦ縺・ｌ縺ｰ members trust +1縲・
-    // 蜈･縺｣縺ｦ縺・↑縺代ｌ縺ｰ leader trust -2縲ＳemainingShows 繧偵ョ繧ｯ繝ｪ繝｡繝ｳ繝医・ 縺ｧ隗｣髯､縲・
+    // ── Phase C: F07 DEMAND_MAIN ディレクティブ消化（6興行縛り）──
+    // 各興行ごとに評価: メインに当該派閥メンバーが入っていれば members trust +1、
+    // 入っていなければ leader trust -2。remainingShows をデクリメント、0 で解除。
     if (s._pendingF07Directive && s._pendingF07Directive.type === 'DEMAND_MAIN') {
       const dir = s._pendingF07Directive;
       const fac = (s.factions || []).find(f => f.id === dir.factionId);
@@ -5679,7 +5679,7 @@ const App = {
           if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN unfulfilled (this show): ${fac.name} leader trust -2`);
         }
       }
-      // remainingShows 繧偵ョ繧ｯ繝ｪ繝｡繝ｳ繝医・ 縺ｧ隗｣髯､
+      // remainingShows をデクリメント、0 で解除
       const remaining = (dir.remainingShows != null ? dir.remainingShows : 1) - 1;
       if (remaining > 0) {
         s = { ...s, _pendingF07Directive: { ...dir, remainingShows: remaining } };
@@ -5690,7 +5690,7 @@ const App = {
       }
     }
 
-    // 笏笏 Phase B: F09 豢ｾ髢･蟇ｾ謚玲姶 窶・sweep 繝懊・繝翫せ驕ｩ逕ｨ + Ending 繝｢繝ｼ繝繝ｫ莠育ｴ・+ pending 繧ｯ繝ｪ繧｢ 笏笏
+    // ── Phase B: F09 派閥対抗戦 — sweep ボーナス適用 + Ending モーダル予約 + pending クリア ──
     if (s._pendingF09 && Engine.factions && typeof Engine.factions.applyF09SweepBonus === 'function') {
       const f09 = s._pendingF09;
       const sweepResults = [];
@@ -5707,7 +5707,7 @@ const App = {
       if (sweepResults.length > 0) {
         s = Engine.factions.applyF09SweepBonus(s, f09.factionAId, f09.factionBId, sweepResults);
       }
-      // factionTimeline 縺ｫ F09 螳碁≠繧ｨ繝ｳ繝医Μ
+      // factionTimeline に F09 完遂エントリ
       if (Array.isArray(s.factionTimeline)) {
         s = { ...s, factionTimeline: [...s.factionTimeline, {
           type: 'F09_RESOLVED',
@@ -5716,7 +5716,7 @@ const App = {
           matchCount: sweepResults.length,
         }]};
       }
-      // Ending 繝｢繝ｼ繝繝ｫ逕ｨ繝壹う繝ｭ繝ｼ繝峨ｒ莠育ｴ・ｼ・rainF09Ending 縺ｧ豸郁ｲｻ・・
+      // Ending モーダル用ペイロードを予約（drainF09Ending で消費）
       const winsA = sweepResults.filter(r => r.winnerFactionId === f09.factionAId).length;
       const winsB = sweepResults.filter(r => r.winnerFactionId === f09.factionBId).length;
       if (winsA !== winsB) {
@@ -5745,7 +5745,7 @@ const App = {
             loserLine: pickLine(losTable, losLeader),
             scoreA: winsA, scoreB: winsB,
             swept: Math.abs(winsA - winsB) >= 2,
-            narration: `${winF.name}縺・{winF.name === winF.name && winsA > winsB ? winsA + '蜍・ + winsB + '謨・ : winsB + '蜍・ + winsA + '謨・}縺ｧ${losF.name}繧貞宛縺励◆窶補募ｯｾ謚玲姶縺ｯ豎ｺ逹縺励◆縲Ａ,
+            narration: `${winF.name}が${winF.name === winF.name && winsA > winsB ? winsA + '勝' + winsB + '敗' : winsB + '勝' + winsA + '敗'}で${losF.name}を制した――対抗戦は決着した。`,
           }};
         }
       }
@@ -5754,9 +5754,9 @@ const App = {
       if (typeof console !== 'undefined') console.log('[WM Faction] F09 sweep bonus applied');
     }
 
-    // 笏笏 Phase 3e: F08-A 隧ｦ蜷亥ｾ・豢ｾ髢･髢｢菫りｿｽ蜉螟牙虚 + 繧｢繝輔ち繝ｼ繝槭せ繝｢繝ｼ繝繝ｫ莠育ｴ・笏笏
-    // _f08Locked 縺後▽縺・◆隧ｦ蜷医・縺・■縲∝享謨礼｢ｺ螳壹＠縺溘ｂ縺ｮ縺ｫ蟇ｾ縺励※逋ｺ轣ｫ縲・
-    // F02竭｢ resolution 縺悟酔譎ら匱轣ｫ縺吶ｋ隧ｦ蜷医・ extra 蜉ｹ譫懊せ繧ｭ繝・・・・esolution 蜆ｪ蜈茨ｼ峨・
+    // ── Phase 3e: F08-A 試合後 派閥関係追加変動 + アフターマスモーダル予約 ──
+    // _f08Locked がついた試合のうち、勝敗確定したものに対して発火。
+    // F02③ resolution が同時発火する試合は extra 効果スキップ（resolution 優先）。
     if (Engine.factions && typeof Engine.factions.applyF08PostMatchExtraEffects === 'function') {
       validMatches.forEach((m, idx) => {
         if (!m._f08Locked) return;
@@ -5766,7 +5766,7 @@ const App = {
         const winnerId = r.winner === 'left' ? m.left : m.right;
         const loserId  = r.winner === 'left' ? m.right : m.left;
 
-        // F02竭｢ resolution 蜷梧凾逋ｺ轣ｫ蛻､螳夲ｼ医Μ繝ｼ繝繝ｼ蜷悟｣ｫ + 荳｡譁ｹ蜷・hostility 竕･60・・
+        // F02③ resolution 同時発火判定（リーダー同士 + 両方向 hostility ≥60）
         let isF02ResolutionFiring = false;
         if (typeof Engine.factions.rollResolutionAfterMatch === 'function') {
           const probe = Engine.factions.rollResolutionAfterMatch(s, { winnerId, loserId, isDraw: false });
@@ -5775,7 +5775,7 @@ const App = {
           }
         }
 
-        // HP谿矩㍼繝代・繧ｻ繝ｳ繝・
+        // HP残量パーセント
         const loserSide = (winnerId === m.left) ? 'right' : 'left';
         const loserHp = (loserSide === 'left' ? r.hpLeft : r.hpRight) || { final: 0, max: 100 };
         const loserHpPct = (loserHp.max > 0) ? (loserHp.final / loserHp.max) : 0;
@@ -5784,10 +5784,10 @@ const App = {
 
         const matchResult = { winnerId, loserId, winnerHpPct, loserHpPct };
 
-        // 1) 豢ｾ髢･髢｢菫りｿｽ蜉螟牙虚
+        // 1) 派閥関係追加変動
         s = Engine.factions.applyF08PostMatchExtraEffects(s, matchResult, isF02ResolutionFiring);
 
-        // 2) 繧｢繝輔ち繝ｼ繝槭せ繝｢繝ｼ繝繝ｫ莠育ｴ・ｼ・02竭｢ 蜷梧凾逋ｺ轣ｫ譎ゅ・繧ｹ繧ｭ繝・・ 窶・resolution 貍泌・縺悟━蜈茨ｼ・
+        // 2) アフターマスモーダル予約（F02③ 同時発火時はスキップ — resolution 演出が優先）
         if (!isF02ResolutionFiring && typeof Engine.factions.getF08AftermathData === 'function') {
           const matchId = `${s.season}-${s.week}-${idx}`;
           const shown = s._shownF08PostMatchIds || [];
@@ -5803,7 +5803,7 @@ const App = {
       });
     }
 
-    // 笏笏 v4 ﾂｧ2-1: F02竭｢ 豎ｺ逹 蛻､螳夲ｼ医Μ繝ｼ繝繝ｼ蜷悟｣ｫ縺ｮ謨ｵ蟇ｾ隧ｦ蜷医〒荳｡譁ｹ蜷蘇ostility竕･60・・笏笏
+    // ── v4 §2-1: F02③ 決着 判定（リーダー同士の敵対試合で両方向hostility≥60） ──
     if (Engine.factions && typeof Engine.factions.rollResolutionAfterMatch === 'function' && !s._pendingFactionEvent) {
       for (let i = 0; i < validMatches.length; i++) {
         const m = validMatches[i]; const r = results[i];
@@ -5817,17 +5817,17 @@ const App = {
       }
     }
 
-    // v1.2: 繧ｿ繧､繝医Ν繝槭ャ繝∝ｮ滓命譎ゅ↓邨ｶ蟇ｾ騾ｱ謨ｰ繧定ｨ倬鹸
+    // v1.2: タイトルマッチ実施時に絶対週数を記録
     const executedTitleMatch = validMatches.some(m => m.isTitle);
     const lastTitleMatchWeek = executedTitleMatch
       ? Engine.title.getAbsWeek(s)
       : (s.lastTitleMatchWeek ?? null);
 
-    // v1.3-2: ﾂｧ2 隧ｦ蜷域・髟ｷ 窶・諤ｪ謌大・逅・ｾ後√Ο繧ｹ繧ｿ繝ｼ縺ｫ谿九▲縺ｦ縺・ｋ蜃ｺ蝣ｴ驕ｸ謇九↓謌宣聞繧剃ｸ弱∴繧・(mirrors Engine.executeShow)
+    // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える (mirrors Engine.executeShow)
     const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
     results.forEach((r, rIdx) => {
       const m = validMatches[rIdx];
-      // 繧ｿ繝・げ繝槭ャ繝・ 4莠ｺ縺ｫ謌宣聞驟榊・・・ngine.executeShow L8087-8117繝代ち繝ｼ繝ｳ・・
+      // タッグマッチ: 4人に成長配分（Engine.executeShow L8087-8117パターン）
       let growthEntries;
       if (r.matchType === 'tag') {
         const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
@@ -5852,7 +5852,7 @@ const App = {
         const fighter = roster.find(c => c.id === charId);
         if (!fighter || fighter.isIntrusion) return;
         let oppOvr;
-        if (preOppOvr !== null) { oppOvr = preOppOvr; } // 繧ｿ繝・げ: 莠句燕險育ｮ玲ｸ医∩
+        if (preOppOvr !== null) { oppOvr = preOppOvr; } // タッグ: 事前計算済み
         else {
           const oppId = charId === r.left.id ? r.right.id : r.left.id;
           const oppInRoster = roster.find(c => c.id === oppId);
@@ -5861,7 +5861,7 @@ const App = {
         }
         const selfOvr = Engine.util.ov(fighter);
 
-        // growth-rebalance v2: 隧ｦ蜷域・髟ｷ繧帝←豁｣蛹・
+        // growth-rebalance v2: 試合成長を適正化
         const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
         const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
         const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
@@ -5871,7 +5871,7 @@ const App = {
 
         if (fighter.growthPenalty) {
           const rawMult = fighter.growthPenalty.multiplier;
-          matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '驕ｩ蠢懷鴨')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
+          matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
         }
 
         const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
@@ -5932,12 +5932,12 @@ const App = {
       }
     });
 
-    // v1.8: ﾂｧ2 繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ蛻､螳・& careerBestMQ 譖ｴ譁ｰ・郁ｩｦ蜷亥ｾ鯉ｼ・
+    // v1.8: §2 ブレークスルー判定 & careerBestMQ 更新（試合後）
     const pendingGrowthEvents = [];
     const btRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB818));
     results.forEach((r, rIdx) => {
       const m = validMatches[rIdx];
-      // 繧ｿ繝・げ繝槭ャ繝・ 4莠ｺ縺ｫ繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ繝ｻ繧ｹ繝ｩ繝ｳ繝怜愛螳・
+      // タッグマッチ: 4人にブレークスルー・スランプ判定
       let btEntries;
       if (r.matchType === 'tag') {
         const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
@@ -5967,7 +5967,7 @@ const App = {
         }
         const isTitle = !!r.isTitleMatch;
 
-        // 繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ蛻､螳夲ｼ・areerBestMQ譖ｴ譁ｰ蜑阪↓螳滓命 窶・mq > prevBest 蛻､螳壹・縺溘ａ・・
+        // ブレークスルー判定（careerBestMQ更新前に実施 — mq > prevBest 判定のため）
         const btContext = { isTitle, won, isPPV: isPPV(s.week), isRivalryResolution: !!r.rivalryResolved, isWarMatch: false };
         const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
           btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week, Engine.coach.getFlavorBreakthroughMult(s, fighter.id)
@@ -5986,14 +5986,14 @@ const App = {
             stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak,
             btHint: btHintLine
           });
-          // Phase 4 G-01: 繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ 竊・OVR霑第磁繧ｭ繝｣繝ｩ縺九ｉrivalry荳頑・
+          // Phase 4 G-01: ブレークスルー → OVR近接キャラからrivalry上昇
           if (s.relationships) {
             const btRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE57, charId));
             s = Engine.relationships.applyBreakthroughEffect(s, charId, btRelRng);
           }
         }
 
-        // careerBestMQ 譖ｴ譁ｰ・医ヶ繝ｬ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ蛻､螳壼ｾ後↓螳滓命・・
+        // careerBestMQ 更新（ブレークスルー判定後に実施）
         const btUpdatedFighter = roster.find(c => c.id === charId);
         if (r.mq > (btUpdatedFighter.careerBestMQ || 0)) {
           roster = roster.map(c => c.id === charId
@@ -6002,7 +6002,7 @@ const App = {
             : c);
         }
 
-        // ﾂｧ4.2 謨怜圏繧ｹ繝ｩ繝ｳ繝怜愛螳・
+        // §4.2 敗北スランプ判定
         if (!won) {
           const slumpRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5C6, charId));
           const slumpFighter = roster.find(c => c.id === charId);
@@ -6010,30 +6010,30 @@ const App = {
             const newF = Engine.growthEvents.applySlump(slumpFighter, 'defeat', s.season, s.week);
             roster = roster.map(c => c.id === charId ? newF : c);
             pendingGrowthEvents.push({ type: 'slump_start', fighterId: charId, trigger: 'defeat' });
-            // Phase 4 G-03: 繧ｹ繝ｩ繝ｳ繝・竊・bond60+蠢・・縲〉ivalry30+菴惹ｸ・
+            // Phase 4 G-03: スランプ → bond60+心配、rivalry30+低下
             if (s.relationships) {
               const symRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE58, charId));
               s = Engine.relationships.applySympathyEffect(s, charId, { min: 1, max: 2 }, symRng);
-              // N-05: 繧ｹ繝ｩ繝ｳ繝怜・縺､蠖薙◆繧・
+              // N-05: スランプ八つ当たり
               const lashRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE6C, charId));
               s = Engine.relationships.applySlumpLashout({ ...s, roster }, charId, lashRng);
             }
           }
         }
 
-        // ﾂｧ4.4/ﾂｧ5.4 隧ｦ蜷亥ｾ・momentum 譖ｴ譁ｰ・医せ繝ｩ繝ｳ繝・繝｢繝√・蝟ｪ螟ｱ荳ｭ・・
+        // §4.4/§5.4 試合後 momentum 更新（スランプ/モチベ喪失中）
         const momRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5C7, charId));
         const momFighter = roster.find(c => c.id === charId);
         let updatedF = Engine.growthEvents.updateSlumpMomentumAfterMatch(momFighter, r.mq, won, momRng);
         updatedF = Engine.growthEvents.updateMotivationLossMomentumAfterMatch(updatedF, r.mq, won, momRng);
 
-        // ﾂｧ5.2 繝｢繝√・蝟ｪ螟ｱ 謨怜圏繝医Μ繧ｬ繝ｼ
+        // §5.2 モチベ喪失 敗北トリガー
         if (!won && updatedF.slump) {
           const mlRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5C8, charId));
           if (Engine.growthEvents.checkMotivationLoss(mlRng, updatedF, 'defeat')) {
             updatedF = Engine.growthEvents.applyMotivationLoss(updatedF, s.season, s.week);
             pendingGrowthEvents.push({ type: 'motivation_loss_start', fighterId: charId });
-            // Phase 4 G-06: 繝｢繝√・蝟ｪ螟ｱ 竊・bond60+蠢・・縲〉ivalry30+菴惹ｸ・
+            // Phase 4 G-06: モチベ喪失 → bond60+心配、rivalry30+低下
             if (s.relationships) {
               const symRng2 = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE59, charId));
               s = Engine.relationships.applySympathyEffect(s, charId, { min: 1, max: 1 }, symRng2);
@@ -6046,12 +6046,12 @@ const App = {
       });
     });
 
-    // h2h險倬鹸: 繝壹い蛻･蟇ｾ謌ｦ螻･豁ｴ・医ち繝・げ: 蟇ｾ隗・繝壹い + 蜻ｳ譁ｹ繝壹い險倬鹸・・
+    // h2h記録: ペア別対戦履歴（タッグ: 対角4ペア + 味方ペア記録）
     let h2h = { ...(s.h2h || {}) };
     results.forEach((r, idx) => {
       const m = validMatches[idx];
       if (m.matchType === 'tag') {
-        // 繧ｿ繝・げ: 蟇ｾ隗・繝壹い・・1vsB1, A1vsB2, A2vsB1, A2vsB2・峨ｒ險倬鹸
+        // タッグ: 対角4ペア（A1vsB1, A1vsB2, A2vsB1, A2vsB2）を記録
         const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
         const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
         for (const aId of teamAIds) {
@@ -6063,7 +6063,7 @@ const App = {
       } else {
         const meta = App._buildMatchMeta(s, m.left, m.right, !!m.isReclaim);
         h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player', meta);
-        // 讌ｭ逡後ル繝･繝ｼ繧ｹ: B-3 蜈・酔蜒・髮｢閼ｱ蠕悟・蟇ｾ髱｢・郁ｩｦ蜷医き繝ｼ繝・蜊倡匱縺ｮ縺ｿ・・
+        // 業界ニュース: B-3 元同僚 離脱後初対面（試合カード=単発のみ）
         if (meta.betrayal) {
           const fA = (s.roster || []).find(c => c.id === m.left);
           const fB = (s.roster || []).find(c => c.id === m.right);
@@ -6079,11 +6079,11 @@ const App = {
     });
     s = { ...s, h2h };
 
-    // recentMatches險倬鹸・育峩霑・謌ｦFIFO・・
+    // recentMatches記録（直近5戦FIFO）
     results.forEach((r, idx) => {
       const m = validMatches[idx];
       if (m.matchType === 'tag') {
-        // 繧ｿ繝・げ: 蟇ｾ隗偵・繧｢縺ｧ險倬鹸
+        // タッグ: 対角ペアで記録
         const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
         const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
         for (const aId of teamAIds) {
@@ -6097,11 +6097,11 @@ const App = {
       }
     });
 
-    // matchupLog 險倬鹸・磯ｮｮ蠎ｦ險育ｮ励・蠕後∵怙邨よ峩譁ｰ縺ｮ蜑搾ｼ・
+    // matchupLog 記録（鮮度計算の後、最終更新の前）
     const newMatchupEntries = [];
     validMatches.forEach(m => {
       if (m.matchType === 'tag') {
-        // 繧ｿ繝・げ: 蟇ｾ隗・繝壹い縺ｮmatchupLog繧定ｨ倬鹸
+        // タッグ: 対角4ペアのmatchupLogを記録
         const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
         const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
         for (const aId of teamAIds) {
@@ -6114,7 +6114,7 @@ const App = {
       }
     });
 
-    // tagExp險倬鹸: 繧ｿ繝・げ隧ｦ蜷医・繝√・繝繝｡繧､繝医・繧｢縺ｮ邨碁ｨ灘､繧定塘遨・
+    // tagExp記録: タッグ試合のチームメイトペアの経験値を蓄積
     let tagExp = { ...(s.tagExp || {}) };
     validMatches.forEach((m, idx) => {
       if (m.matchType !== 'tag') return;
@@ -6123,7 +6123,7 @@ const App = {
     });
     s = { ...s, roster, matchupLog: [...(s.matchupLog || []), ...newMatchupEntries], tagExp };
 
-    // MVP繝ｬ繝ｼ繧ｹ v2: MQ85雜・ｩｦ蜷医・ bigMatch 螻･豁ｴ險倬鹸・医・繝ｬ繧､繝､繝ｼ闊郁｡鯉ｼ・
+    // MVPレース v2: MQ85超試合の bigMatch 履歴記録（プレイヤー興行）
     {
       let bigMatchAdded = false;
       validMatches.forEach((m, idx) => {
@@ -6146,12 +6146,12 @@ const App = {
       if (bigMatchAdded) s = { ...s, roster };
     }
 
-    // orgPop 繝ｪ繝舌Λ繝ｳ繧ｹ v1.1 ﾂｧ4: 繝峨・繝闊郁｡・domeMain 繧ｭ繝｣繝ｪ繧｢險倬鹸
-    // 繝｡繧､繝ｳ繧､繝吶Φ繝域棧(idx=0) or 繧ｿ繧､繝医Ν繝槭ャ繝√↓蜃ｺ蝣ｴ縺励◆驕ｸ謇九ｒ險倬鹸
+    // orgPop リバランス v1.1 §4: ドーム興行 domeMain キャリア記録
+    // メインイベント枠(idx=0) or タイトルマッチに出場した選手を記録
     if (s.showVenue === 9) {
-      roster = roster.map(c => c); // 繧ｳ繝斐・繧堤ｶｭ謖・
+      roster = roster.map(c => c); // コピーを維持
       validMatches.forEach((m, idx) => {
-        const isMain = idx === 0; // 繝｡繧､繝ｳ繧､繝吶Φ繝域棧
+        const isMain = idx === 0; // メインイベント枠
         const isTitle = !!m.isTitle;
         if (!isMain && !isTitle) return;
         const r = results[idx];
@@ -6181,7 +6181,7 @@ const App = {
           });
         });
       });
-      // orgPop 繝ｪ繝舌Λ繝ｳ繧ｹ v1.1 ﾂｧ5: 繝峨・繝闊郁｡後き繧ｦ繝ｳ繝域峩譁ｰ
+      // orgPop リバランス v1.1 §5: ドーム興行カウント更新
       s = { ...s, roster, domeShowsThisSeason: (s.domeShowsThisSeason || 0) + 1 };
     }
     if (pendingGrowthEvents.length > 0) {
@@ -6190,9 +6190,9 @@ const App = {
 
     G = { ...G, ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
 
-    // v2.0 Phase1-6: 繝｡繝・ぅ繧｢繧ｹ繝昴ャ繝医Λ繧､繝医・闊郁｡悟ｾ悟・逅・
+    // v2.0 Phase1-6: メディアスポットライトの興行後処理
     if (G.mediaSpotlight) {
-      const _spotlightName = G.mediaSpotlight.fighterName || '驕ｸ謇・;
+      const _spotlightName = G.mediaSpotlight.fighterName || '選手';
       const spotRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB4B4));
       const spotResult = Engine.eventSystem.processMediaSpotlight(G, results, validMatches, spotRng);
       if (spotResult) {
@@ -6201,18 +6201,18 @@ const App = {
         if (spotResult.orgPopDelta) {
           G = { ...G, orgPop: G.orgPop + spotResult.orgPopDelta };
         }
-        // Phase 4 E-04: 繝｡繝・ぅ繧｢繧ｹ繝昴ャ繝医Λ繧､繝育ｵゆｺ・凾縺ｮ髢｢菫ょ､蜿肴丐
+        // Phase 4 E-04: メディアスポットライト終了時の関係値反映
         if (spotResult.relationships) {
           G = { ...G, relationships: spotResult.relationships };
         }
-        // P6: 繝｡繝・ぅ繧｢繧ｹ繝昴ャ繝医Λ繧､繝育ｵゆｺ・ヨ繝ｼ繧ｹ繝・
+        // P6: メディアスポットライト終了トースト
         if (spotResult.mediaSpotlight === null) {
-          setTimeout(() => showToast(`銅 ${_spotlightName}縺ｮ繝｡繝・ぅ繧｢蟇・捩蜿匁攝縺檎ｵゆｺ・＠縺歔, 5000), 500);
+          setTimeout(() => showToast(`📺 ${_spotlightName}のメディア密着取材が終了した`, 5000), 500);
         }
       }
     }
 
-    // 繝ｩ繧ｹ繝医Λ繝ｳ隧ｦ蜷医ｒ陦後▲縺滄∈謇九ｒ蜊ｳ蠎ｧ縺ｫ蠑暮蜃ｦ逅・ｼ・騾ｱ蠕・■繝舌げ菫ｮ豁｣・・
+    // ラストラン試合を行った選手を即座に引退処理（4週待ちバグ修正）
     const lastRunRetireesById = new Map();
     results.forEach((r, idx) => {
       const match = validMatches[idx];
@@ -6243,27 +6243,27 @@ const App = {
       });
       const lastRunRetiredIds = new Set(lastRunRetirees.map(c => c.id));
       const survivingRoster = G.roster.filter(c => !lastRunRetiredIds.has(c.id));
-      // 髢｢菫ょ､蜃咲ｵ・+ trust蠖ｱ髻ｿ + retiredIds豌ｸ邯夊ｨ倬鹸
+      // 関係値凍結 + trust影響 + retiredIds永続記録
       const newRetiredIds = [...(G.retiredIds || []), ...lastRunRetirees.map(c => c.id).filter(id => !(G.retiredIds || []).includes(id))];
       const _lrRetiredSeasons = { ...(G.retiredSeasons || {}) };
       lastRunRetirees.forEach(c => { _lrRetiredSeasons[c.id] = G.season; });
       let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds, retiredSeasons: _lrRetiredSeasons };
-      // 蝗｣菴灘ｹｴ莉｣險・ 繧｢繝ｼ繧ｫ繧､繝也匳骭ｲ + 豌鈴｢ｨ蟇・ｸ守ｩ咲ｮ・(player 繝ｭ繧ｹ繧ｿ繝ｼ邨檎罰縺ｪ縺ｮ縺ｧ蜈ｨ莉ｶ蟇ｾ雎｡)
+      // 団体年代記: アーカイブ登録 + 気風寄与積算 (player ロスター経由なので全件対象)
       retiredWithRecords.forEach(rf => {
         updState = Engine.chronicle.archiveFighter(updState, rf);
         updState = Engine.chronicle.applySpiritContribution(updState, rf);
       });
       updState = Engine.chronicle.refreshChapters(updState);
-      // 邇玖・′繝ｩ繧ｹ繝医Λ繝ｳ蠑暮縺励◆蝣ｴ蜷医・邇句ｺｧ繧堤ｩｺ菴阪↓縺吶ｋ
+      // 王者がラストラン引退した場合は王座を空位にする
       const vcLR = Engine.title.validateChampion(updState);
       if (vcLR.msg) { updState = { ...updState, titles: vcLR.titles, gameLog: [...(updState.gameLog || []), vcLR.msg] }; }
       if (updState.relationships) {
         lastRunRetirees.forEach(retiree => {
           updState = Engine.relationships.freezeRelationships(updState, retiree.id);
-          updState = { ...updState, roster: Engine.trust.applyDepartureTrustImpact(updState.roster, retiree.id, updState.relationships, { name: retiree.name, reason: '蠑暮隧ｦ蜷・ }) };
+          updState = { ...updState, roster: Engine.trust.applyDepartureTrustImpact(updState.roster, retiree.id, updState.relationships, { name: retiree.name, reason: '引退試合' }) };
         });
       }
-      // O-04: bond 60+縺ｮ逶ｸ謇銀・蠑暮閠・↓ bond -5縲・10
+      // O-04: bond 60+の相手→引退者に bond -5〜-10
       const retRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE3B, G.season, G.week));
       for (const retiree of lastRunRetirees) {
         const highBondIds = updState.roster.map(c => c.id).filter(cid => {
@@ -6275,7 +6275,7 @@ const App = {
           updState = Engine.relationships.applyFromRoster(updState, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
         }
       }
-      // 蠑暮貍泌・繝・・繧ｿ繧剃ｿ晄戟・・endingRetirements蠖｢蠑擾ｼ・
+      // 引退演出データを保持（pendingRetirements形式）
       const pendingLastRunRetirements = retiredWithRecords.map(f => {
         const { line, category } = Engine.retirement.selectLine(f, 'lastrun', updState, lrLineRng);
         const summary = Engine.retirement.buildCareerSummary(f);
@@ -6286,28 +6286,28 @@ const App = {
 
     App._showPreview = null;
     App._lastInjuries = injuryResults; // v0.96: store for popup after close
-    App._lastTitleOutcomes = titleMatchOutcomes; // 繧ｿ繧､繝医Ν繝槭ャ繝∝ｾ後Μ繧｢繧ｯ繧ｷ繝ｧ繝ｳ逕ｨ
-    // 邨先棡逕ｻ髱｢陦ｨ遉ｺ逶ｴ蠕後↓BGM繧定ｩｦ蜷育畑竊堤ｵ悟霧逕ｨ縺ｸ蛻・ｊ譖ｿ縺茨ｼ医ヵ繧｡繝ｳ繝輔ぃ繝ｼ繝ｬ縺ｯ蟒・ｭ｢・・
+    App._lastTitleOutcomes = titleMatchOutcomes; // タイトルマッチ後リアクション用
+    // 結果画面表示直後にBGMを試合用→経営用へ切り替え（ファンファーレは廃止）
     setTimeout(() => {
       try { Audio.fileBgm.stop(); } catch(e) {}
       Audio.bgm.play('management');
     }, 2500);
 
-    // 譁ｰ閨槭ョ繝ｼ繧ｿ繧竪縺ｫ菫晏ｭ假ｼ医ョ繝ｼ繧ｿ繝吶・繧ｹ繧ｿ繝悶〒髢ｲ隕ｧ・・
+    // 新聞データをGに保存（データベースタブで閲覧）
     try {
       const paperData = App._buildShowResultNewspaperData();
       if (paperData) {
         G = { ...G, currentNewspaper: { ...paperData, generatedWeek: G.week, generatedSeason: G.season } };
       }
     } catch (e) {
-      console.error('[WM] 譁ｰ閨槭ョ繝ｼ繧ｿ逕滓・繧ｨ繝ｩ繝ｼ:', e);
+      console.error('[WM] 新聞データ生成エラー:', e);
     }
 
-    // 隧ｦ蜷亥燕/隧ｦ蜷亥ｾ後ヵ繝ｬ繝ｼ繝舌・繝昴ャ繝励い繝・・縺ｯ per-match 縺ｧ豬√ｌ繧・
-    // (renderMatchPreview 縺ｮ nextIdx 繝輔か繝ｼ繧ｫ繧ｹ譎・+ skipMatch/watchMatch 邨先棡蜿肴丐逶ｴ蠕・
-    // 縺溘ａ縲√％縺薙〒縺ｯ邨先棡逕ｻ髱｢繧堤峩謗･謠冗判縺吶ｋ縲・
-    // Phase 3e: F08-A 隧ｦ蜷亥ｾ後Δ繝ｼ繝繝ｫ縺御ｺ育ｴ・＆繧後※縺・ｌ縺ｰ邨先棡逕ｻ髱｢蜑阪↓騾先ｬ｡豸亥喧
-    // F09 Ending 繝｢繝ｼ繝繝ｫ・・08 aftermath 繧医ｊ蜈医↓蜃ｺ縺・ 蟇ｾ謚玲姶縺ｮ邱乗峡縺悟・・・
+    // 試合前/試合後フレーバーポップアップは per-match で流れる
+    // (renderMatchPreview の nextIdx フォーカス時 + skipMatch/watchMatch 結果反映直後)
+    // ため、ここでは結果画面を直接描画する。
+    // Phase 3e: F08-A 試合後モーダルが予約されていれば結果画面前に逐次消化
+    // F09 Ending モーダル（F08 aftermath より先に出す: 対抗戦の総括が先）
     const drainF09Ending = (then) => {
       if (!G._pendingF09Ending) { if (then) then(); return; }
       const data = G._pendingF09Ending;
@@ -6340,23 +6340,23 @@ const App = {
     drainF09Ending(() => drainF08Aftermath(() => renderShowResult(results, injuryResults)));
   },
 
-  // 隧ｦ蜷亥燕繝輔Ξ繝ｼ繝舌・繝昴ャ繝励い繝・・縺ｮ蜿朱寔・・pecs/match-flavor-popup-spec-v0.1.md ﾂｧ4.2・・
-  // 1隧ｦ蜷亥・縺ｮ繝昴ャ繝励い繝・・驟榊・繧定ｿ斐☆縲ＳenderMatchPreview 縺ｮ nextIdx 繝輔か繝ｼ繧ｫ繧ｹ譎ゅ↓蜻ｼ縺ｰ繧後ｋ縲・
-  // 隧ｦ蜷医す繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ邨先棡縺ｯ荳崎ｦ・窶・讀懷・縺ｯ roster / matchupLog / relationships 繧定ｩｦ蜷亥燕縺ｫ蜿ら・縺吶ｋ縲・
-  // 谿ｵ髫取僑蠑ｵ譎ゅ・縺薙・荳ｭ縺ｫ讀懷・譚｡莉ｶ + popups.push 繝悶Ο繝・け繧定ｿｽ蜉縺吶ｋ縲・
+  // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
+  // 1試合分のポップアップ配列を返す。renderMatchPreview の nextIdx フォーカス時に呼ばれる。
+  // 試合シミュレーション結果は不要 — 検出は roster / matchupLog / relationships を試合前に参照する。
+  // 段階拡張時はこの中に検出条件 + popups.push ブロックを追加する。
   _collectPreMatchPopupsForMatch(idx) {
     const popups = [];
     const sp = App._showPreview;
     if (!sp || !sp.validMatches) return popups;
     const m = sp.validMatches[idx];
-    if (!m || m.matchType === 'tag') return popups; // 繧ｿ繝・げ縺ｯ迴ｾ迥ｶ髱槫ｯｾ蠢・
+    if (!m || m.matchType === 'tag') return popups; // タッグは現状非対応
     const leftId = m.left, rightId = m.right;
     if (!leftId || !rightId) return popups;
     const leftFighter  = (G.roster || []).find(c => c.id === leftId) || ALL_CHARS.find(c => c.id === leftId);
     const rightFighter = (G.roster || []).find(c => c.id === rightId) || ALL_CHARS.find(c => c.id === rightId);
     if (!leftFighter || !rightFighter) return popups;
 
-    // 笏笏 蛻晞｡泌粋繧上○・・atchupLog 縺ｫ驕主悉蟇ｾ謌ｦ縺檎┌縺・°縺ｧ蛻､螳夲ｼ俄楳笏
+    // ── 初顔合わせ（matchupLog に過去対戦が無いかで判定）──
     const log = G.matchupLog || [];
     const hasPriorMatch = log.some(e =>
       (e.left === leftId && e.right === rightId) || (e.left === rightId && e.right === leftId)
@@ -6366,24 +6366,24 @@ const App = {
       const rightLine = pickDialogueLine(FIRST_MEET_LINES, rightFighter);
       popups.push({
         type: 'fighter', id: leftId, name: leftFighter.name,
-        message: leftLine, detail: '笨ｨ 蛻晏ｯｾ豎ｺ', autoCloseMs: 1800, sound: 'event',
+        message: leftLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
       });
       popups.push({
         type: 'fighter', id: rightId, name: rightFighter.name,
-        message: rightLine, detail: '笨ｨ 蛻晏ｯｾ豎ｺ', autoCloseMs: 1800, sound: 'event',
+        message: rightLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
       });
     }
-    // 笏笏 谿ｵ髫取僑蠑ｵ繝昴う繝ｳ繝・ 莉悶・繝励Λ繧ｹ蜉ｹ譫懊・縺薙％縺ｫ霑ｽ蜉 笏笏
+    // ── 段階拡張ポイント: 他のプラス効果はここに追加 ──
     return popups;
   },
 
-  // 隧ｦ蜷亥ｾ後ヵ繝ｬ繝ｼ繝舌・繝昴ャ繝励い繝・・縺ｮ蜿朱寔・・pecs/match-flavor-popup-spec-v0.1.md ﾂｧ4.6・・
-  // 隧ｦ蜷育ｵ先棡縺九ｉ蜍晁・謨苓・・菴咎渊荳險繧定ｿ斐☆縲ＴkipMatch/watchMatch 縺ｧ邨先棡蜿肴丐逶ｴ蠕後↓蜻ｼ縺ｶ縲・
+  // 試合後フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.6）
+  // 試合結果から勝者/敗者の余韻一言を返す。skipMatch/watchMatch で結果反映直後に呼ぶ。
   _collectPostMatchPopupsForMatch(idx, result) {
     const popups = [];
     const sp = App._showPreview;
     if (!sp || !result || result.matchType === 'tag') return popups;
-    if (result.winner === 'draw') return popups; // 繝峨Ο繝ｼ縺ｯ菴咎渊繧ｹ繧ｭ繝・・・井ｸｭ遶・
+    if (result.winner === 'draw') return popups; // ドローは余韻スキップ（中立)
     const m = sp.validMatches[idx];
     if (!m) return popups;
     const winnerId = result.winner === 'left' ? m.left : m.right;
@@ -6396,26 +6396,26 @@ const App = {
     const loseLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.loser,  loserFighter);
     popups.push({
       type: 'fighter', id: winnerId, name: winnerFighter.name,
-      message: winLine, detail: '醇 蜍晁・・菴咎渊', autoCloseMs: 1800, sound: 'event',
+      message: winLine, detail: '🏆 勝者の余韻', autoCloseMs: 1800, sound: 'event',
     });
     popups.push({
       type: 'fighter', id: loserId, name: loserFighter.name,
-      message: loseLine, detail: '窶・謨苓・・蠢・窶・, autoCloseMs: 1800, sound: 'event',
+      message: loseLine, detail: '— 敗者の心 —', autoCloseMs: 1800, sound: 'event',
     });
     return popups;
   },
 
-  // pre-match popup 繧ｷ繝ｼ繧ｱ繝ｳ繧ｹ繧・1隧ｦ蜷亥・豬√☆縲ＳenderMatchPreview 縺ｮ繝輔か繝ｼ繧ｫ繧ｹ繝輔ャ繧ｯ縺九ｉ蜻ｼ縺ｰ繧後ｋ縲・
-  // 譌｢蟄倥・ confrontation modal 縺瑚｡ｨ遉ｺ荳ｭ縺ｪ繧峨√◎繧後′髢峨§縺ｦ縺九ｉ繝輔Ξ繝ｼ繝舌・ popup 繧呈ｵ√☆縲・
+  // pre-match popup シーケンスを 1試合分流す。renderMatchPreview のフォーカスフックから呼ばれる。
+  // 既存の confrontation modal が表示中なら、それが閉じてからフレーバー popup を流す。
   _runPreMatchFlavorForMatch(idx) {
     const sp = App._showPreview;
     if (!sp) return;
-    if (sp._suppressFlavor) return; // 荳蠎ｦ繧ｹ繧ｭ繝・・縺励◆繧我ｻ･髯阪・繝輔Ξ繝ｼ繝舌・縺ｯ謚大宛
+    if (sp._suppressFlavor) return; // 一度スキップしたら以降のフレーバーは抑制
     if (!sp._shownPreFlavor) sp._shownPreFlavor = new Set();
     if (sp._shownPreFlavor.has(idx)) return;
     sp._shownPreFlavor.add(idx);
 
-    // Phase 3e: F08-A 隧ｦ蜷亥燕繝｢繝ｼ繝繝ｫ逋ｺ轣ｫ・・ivalry/蛻晞｡泌粋繧上○遲峨ｈ繧雁━蜈医∝・縺励◆繧我ｻ悶・繧ｹ繧ｭ繝・・・・
+    // Phase 3e: F08-A 試合前モーダル発火（rivalry/初顔合わせ等より優先、出したら他はスキップ）
     const m = (sp.validMatches || [])[idx];
     if (m && m._f08Locked && typeof Engine !== 'undefined' && Engine.factions
         && typeof Engine.factions.getF08PreMatchData === 'function'
@@ -6427,12 +6427,12 @@ const App = {
         if (data) {
           G._shownF08PreMatchIds = [...G._shownF08PreMatchIds, matchId];
           showFactionF08PreMatchModal(data, G, () => {});
-          return; // 莉悶ヵ繝ｬ繝ｼ繝舌・縺ｯ繧ｹ繧ｭ繝・・縺励※隧ｦ蜷磯ｲ陦・
+          return; // 他フレーバーはスキップして試合進行
         }
       }
     }
 
-    // Phase B-2: F09 隧ｦ蜷亥燕繝｢繝ｼ繝繝ｫ逋ｺ轣ｫ・・f09Locked 隧ｦ蜷茨ｼ俄・蛻昴・ F09 隧ｦ蜷医〒縺ｯ Opening 繧る｣邨・
+    // Phase B-2: F09 試合前モーダル発火（_f09Locked 試合）— 初の F09 試合では Opening も連結
     if (m && m._f09Locked && typeof Engine !== 'undefined' && Engine.factions) {
       const matchId = `${G.season}-${G.week}-${idx}`;
       if (!G._shownF09PreMatchIds) G._shownF09PreMatchIds = [];
@@ -6440,7 +6440,7 @@ const App = {
         const data = App._buildF09MatchPreData(m, idx);
         if (data) {
           G._shownF09PreMatchIds = [...G._shownF09PreMatchIds, matchId];
-          // 闊郁｡悟・譛蛻昴・ _f09Locked 隧ｦ蜷・竊・Opening 繧貞・縺ｫ
+          // 興行内最初の _f09Locked 試合 → Opening を先に
           const isFirstF09 = !G._shownF09Opening;
           if (isFirstF09) {
             G._shownF09Opening = true;
@@ -6467,10 +6467,10 @@ const App = {
     popups.forEach(p => showEventPopup(p));
   },
 
-  // post-match popup 繧ｷ繝ｼ繧ｱ繝ｳ繧ｹ繧・1隧ｦ蜷亥・豬√＠縲》hen() 繧貞他縺ｶ縲・
-  // skipMatch/watchMatch 縺ｧ sp.results[idx] 蜿肴丐逶ｴ蠕後↓蜻ｼ縺ｶ縲・
+  // post-match popup シーケンスを 1試合分流し、then() を呼ぶ。
+  // skipMatch/watchMatch で sp.results[idx] 反映直後に呼ぶ。
   _runPostMatchFlavorForMatch(idx, result, then) {
-    // Phase B-2: F09 隧ｦ蜷亥ｾ後Δ繝ｼ繝繝ｫ・・f09Locked 隧ｦ蜷茨ｼ俄・popup 鄒､繧医ｊ蜈医↓蜃ｺ縺・
+    // Phase B-2: F09 試合後モーダル（_f09Locked 試合）— popup 群より先に出す
     const sp = App._showPreview;
     const m = sp && sp.validMatches ? sp.validMatches[idx] : null;
     const runPostF09 = (cb) => {
@@ -6495,7 +6495,7 @@ const App = {
     });
   },
 
-  // 笏笏 Phase B-2: F09 繝｢繝ｼ繝繝ｫ逕ｨ繝・・繧ｿ讒狗ｯ峨・繝ｫ繝・笏笏
+  // ── Phase B-2: F09 モーダル用データ構築ヘルパ ──
   _f09PickLine(table, fighter) {
     if (!table || !fighter) return '';
     const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
@@ -6507,7 +6507,7 @@ const App = {
   },
   _buildF09OpeningData(m) {
     if (!G._pendingF09 && !m) return null;
-    // _pendingF09 縺ｯ縺吶〒縺ｫ繧ｯ繝ｪ繧｢貂医∩縺九ｂ縺励ｌ縺ｪ縺・・縺ｧ縲∬ｩｦ蜷医・謇螻樊ｴｾ髢･縺九ｉ騾・ｼ輔″
+    // _pendingF09 はすでにクリア済みかもしれないので、試合の所属派閥から逆引き
     const fA = Engine.factions.getFactionByFighterId(G, m.left);
     const fB = Engine.factions.getFactionByFighterId(G, m.right);
     if (!fA || !fB || fA.id === fB.id) return null;
@@ -6525,7 +6525,7 @@ const App = {
       factionB: { id: fB.id, name: fB.name, leaderId: leaderB.id, leaderName: leaderB.name, leaderOvr: Engine.util.ov(leaderB), members: memberMini(fB) },
       lineA: App._f09PickLine(linesA, leaderA),
       lineB: App._f09PickLine(linesB, leaderB),
-      narration: `${fA.name}縺ｨ${fB.name}窶補穂ｸ｡豢ｾ髢･縺ｮ遨榊ｹｴ縺ｮ謚嶺ｺ峨′縲√▽縺・↓蟇ｾ謚玲姶縺ｨ縺・≧蠖｢縺ｧ蜈ｨ髱｢豎ｺ逹縺ｮ螟懊ｒ霑弱∴繧九Ａ,
+      narration: `${fA.name}と${fB.name}――両派閥の積年の抗争が、ついに対抗戦という形で全面決着の夜を迎える。`,
     };
   },
   _buildF09MatchPreData(m, idx) {
@@ -6535,7 +6535,7 @@ const App = {
     const cA = (G.roster || []).find(c => c.id === m.left);
     const cB = (G.roster || []).find(c => c.id === m.right);
     if (!cA || !cB) return null;
-    // 蜈ｨF09隧ｦ蜷域焚繧偵き繧ｦ繝ｳ繝・
+    // 全F09試合数をカウント
     const sp = App._showPreview;
     const total = (sp && sp.validMatches) ? sp.validMatches.filter(mm => mm._f09Locked).length : 1;
     const f09Idx = (sp && sp.validMatches) ? sp.validMatches.slice(0, idx + 1).filter(mm => mm._f09Locked).length : 1;
@@ -6559,7 +6559,7 @@ const App = {
     if (!winnerF || !loserF) return null;
     const linesW = (typeof FACTION_F09_MATCH_POST_WIN_LINES !== 'undefined') ? FACTION_F09_MATCH_POST_WIN_LINES : null;
     const linesL = (typeof FACTION_F09_MATCH_POST_LOSE_LINES !== 'undefined') ? FACTION_F09_MATCH_POST_LOSE_LINES : null;
-    // 迴ｾ蝨ｨ繧ｹ繧ｳ繧｢・・endingF09 縺ｯ繧ｯ繝ｪ繧｢縺輔ｌ縺ｦ縺・ｋ蜿ｯ閭ｽ諤ｧ縺後≠繧九・縺ｧ factionRivalryPoints 縺九ｉ蜿門ｾ暦ｼ・
+    // 現在スコア（pendingF09 はクリアされている可能性があるので factionRivalryPoints から取得）
     let scoreA = 0, scoreB = 0, aName = winnerF.name, bName = loserF.name;
     if (G.factionRivalryPoints && Engine.factions._pairKey) {
       const key = Engine.factions._pairKey(winnerF.id, loserF.id);
@@ -6578,120 +6578,120 @@ const App = {
       loser:  { id: loserC.id,  name: loserC.name,  factionName: loserF.name },
       winnerLine: App._f09PickLine(linesW, winnerC),
       loserLine:  App._f09PickLine(linesL, loserC),
-      ptDelta: 0,  // 迴ｾ迥ｶ縺ｮ蟾ｮ蛻・ｨ育ｮ励・譛ｪ螳溯｣・∝ｾ梧ｮｵ縺ｧ陦ｨ遉ｺ
+      ptDelta: 0,  // 現状の差分計算は未実装、後段で表示
       currentScore: { a: scoreA, b: scoreB, aName, bName },
     };
   },
 
-  // 笏笏笏 譁ｰ閨櫁ｨ倅ｺ九ユ繧ｭ繧ｹ繝育函謌・笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏
+  // ─── 新聞記事テキスト生成 ───────────────────────────────────────────────
   _NEWSPAPER_HEADLINES: {
-    // 繧ｿ繧､繝医Ν謌ｦ蜍晏茜
+    // タイトル戦勝利
     titleWin: [
-      d => `${d.winner.name}縲・{d.finishLabel}縺ｧ謌ｴ蜀・～,
-      d => `邇句ｺｧ螂ｪ蜿厄ｼ・${d.winner.name}縺・{d.loser.name}繧剃ｸ九☆`,
-      d => `譁ｰ邇玖・{d.winner.name}隱慕函窶披・{d.venue.name}縺梧昭繧後◆`,
+      d => `${d.winner.name}、${d.finishLabel}で戴冠！`,
+      d => `王座奪取！ ${d.winner.name}が${d.loser.name}を下す`,
+      d => `新王者${d.winner.name}誕生——${d.venue.name}が揺れた`,
     ],
     titleDefend: [
-      d => `邇玖・{d.winner.name}縲・{d.loser.name}縺ｮ謖第姶繧帝縺代ｋ`,
-      d => `${d.winner.name}髦ｲ陦帶・蜉滂ｼ・邇句ｺｧ縺ｮ螽∝宍繧堤､ｺ縺兪,
+      d => `王者${d.winner.name}、${d.loser.name}の挑戦を退ける`,
+      d => `${d.winner.name}防衛成功！ 王座の威厳を示す`,
     ],
-    // 蝗邵∬ｩｦ蜷・
+    // 因縁試合
     rivalry: [
-      d => `螳ｿ蜻ｽ縺ｮ蟇ｾ豎ｺ窶披・{d.winner.name}縺・{d.rivalLabel}繧貞宛縺兪,
-      d => `${d.left.name}vs${d.right.name}縲∝屏邵√↓豎ｺ逹縺義,
-      d => `${d.rivalLabel}縺ｮ陦梧婿窶披・{d.winner.name}縺ｫ霆埼・`,
+      d => `宿命の対決——${d.winner.name}が${d.rivalLabel}を制す`,
+      d => `${d.left.name}vs${d.right.name}、因縁に決着か`,
+      d => `${d.rivalLabel}の行方——${d.winner.name}に軍配`,
     ],
-    // 蝨ｧ蜍・
+    // 圧勝
     dominant: [
-      d => `${d.winner.name}縲∝悸蟾ｻ縺ｮ${d.turns}繧ｿ繝ｼ繝ｳ豎ｺ逹・～,
-      d => `髮ｻ謦・ｱｺ逹・・${d.winner.name}縺・{d.loser.name}繧剃ｸ雹ｴ`,
-      d => `${d.loser.name}縺ｪ縺吶☆縺ｹ縺ｪ縺冷披・{d.winner.name}縺ｮ螳悟享`,
+      d => `${d.winner.name}、圧巻の${d.turns}ターン決着！`,
+      d => `電撃決着！ ${d.winner.name}が${d.loser.name}を一蹴`,
+      d => `${d.loser.name}なすすべなし——${d.winner.name}の完勝`,
     ],
-    // 蜒・ｷｮ縺ｮ螂ｽ蜍晁ｲ
+    // 僅差の好勝負
     closeMQ: [
-      d => `豁ｻ髣・{d.turns}繧ｿ繝ｼ繝ｳ窶披・{d.winner.name}縺瑚ｾ帙￥繧ょ享蛻ｩ`,
-      d => `${d.winner.name}縺ｨ${d.loser.name}縲∝錐蜍晁ｲ縺ｮ譫懊※縺ｫ`,
-      d => `豼髣倥・譛ｫ縺ｫ${d.winner.name}・・MQ ${d.mq}縺ｮ辭ｱ謌ｦ`,
+      d => `死闘${d.turns}ターン——${d.winner.name}が辛くも勝利`,
+      d => `${d.winner.name}と${d.loser.name}、名勝負の果てに`,
+      d => `激闘の末に${d.winner.name}！ MQ ${d.mq}の熱戦`,
     ],
-    // 逡ｪ迢ゅｏ縺・
+    // 番狂わせ
     upset: [
-      d => `螟ｧ逡ｪ迢ゅｏ縺幢ｼ・${d.winner.name}縺梧ｼ荳・{d.loser.name}繧呈茶遐ｴ`,
-      d => `繧ｸ繝｣繧､繧｢繝ｳ繝医く繝ｪ繝ｳ繧ｰ窶披・{d.winner.name}縺ｮ陦晄茶蜍晏茜`,
-      d => `隱ｰ縺御ｺ域Φ縺励◆・・${d.winner.name}縺・{d.loser.name}繧呈ｲ医ａ繧義,
+      d => `大番狂わせ！ ${d.winner.name}が格上${d.loser.name}を撃破`,
+      d => `ジャイアントキリング——${d.winner.name}の衝撃勝利`,
+      d => `誰が予想した？ ${d.winner.name}が${d.loser.name}を沈める`,
     ],
-    // 鬮弄Q
+    // 高MQ
     superMQ: [
-      d => `豁ｴ蜿ｲ逧・錐蜍晁ｲ・・MQ ${d.mq}繧定ｨ倬鹸`,
-      d => `隱槭ｊ邯吶′繧後ｋ荳謌ｦ窶披・{d.winner.name}vs${d.loser.name}`,
+      d => `歴史的名勝負！ MQ ${d.mq}を記録`,
+      d => `語り継がれる一戦——${d.winner.name}vs${d.loser.name}`,
     ],
-    // 繝峨Ο繝ｼ
+    // ドロー
     draw: [
-      d => `${d.left.name}縺ｨ${d.right.name}縲∵ｱｺ逹縺､縺九★`,
-      d => `隴ｲ繧峨〓莠御ｺｺ窶披斐Γ繧､繝ｳ縺ｯ繝峨Ο繝ｼ縺ｫ邨ゅｏ繧義,
-      d => `逞帙∩蛻・￠縲・{d.left.name}繧・{d.right.name}繧ゆｸ豁ｩ繧る縺九★`,
+      d => `${d.left.name}と${d.right.name}、決着つかず`,
+      d => `譲らぬ二人——メインはドローに終わる`,
+      d => `痛み分け。${d.left.name}も${d.right.name}も一歩も退かず`,
     ],
-    // 騾壼ｸｸ
+    // 通常
     normal: [
-      d => `${d.winner.name}縺後Γ繧､繝ｳ繧､繝吶Φ繝医ｒ蛻ｶ縺兪,
-      d => `${d.winner.name}縲・{d.finishLabel}縺ｧ蜍晏茜`,
-      d => `${d.venue.name}縺ｮ繝｡繧､繝ｳ縲・{d.winner.name}縺ｫ霆埼・`,
+      d => `${d.winner.name}がメインイベントを制す`,
+      d => `${d.winner.name}、${d.finishLabel}で勝利`,
+      d => `${d.venue.name}のメイン、${d.winner.name}に軍配`,
     ],
   },
 
   _NEWSPAPER_ARTICLES: {
-    // 繧ｿ繧､繝医Ν謌ｦ
+    // タイトル戦
     titleWin: [
-      d => `${d.venue.name}縺ｫ隧ｰ繧√°縺代◆${d.attendance.toLocaleString()}莠ｺ縺ｮ隕ｳ陦・′隕句ｱ翫￠縺溘・縺ｯ縲∵眠縺溘↑邇玖・・隱慕函縺縺｣縺溘・{d.winner.name}縺ｯ蠎冗乢縺九ｉ遨肴･ｵ逧・↓謾ｻ繧∬ｾｼ縺ｿ縲・{d.finishLabel}縺ｧ${d.loser.name}縺九ｉ3繧ｫ繧ｦ繝ｳ繝医ｒ螂ｪ蜿悶りｩｦ蜷亥ｾ後√・繝ｫ繝医ｒ謇九↓縺励◆${d.winner.name}縺ｮ陦ｨ諠・↓縺ｯ縲・聞縺・％縺ｮ繧翫ｒ豁ｩ繧薙〒縺阪◆閠・□縺代′隕九○繧句・雜ｳ諢溘′豬ｮ縺九ｓ縺ｧ縺・◆縲Ａ,
-      d => `${d.loser.name}縺ｮ迚吝沁縺後▽縺・↓蟠ｩ繧後◆縲・{d.turns}繧ｿ繝ｼ繝ｳ縺ｫ蜿翫・謾ｻ髦ｲ縺ｮ譛ｫ縲・{d.winner.name}縺・{d.finishLabel}縺ｧ邇句ｺｧ繧貞･ｪ蜿悶・{d.venue.name}縺ｮ繝ｪ繝ｳ繧ｰ縺ｫ遶九▽譁ｰ邇玖・↓縲・{d.attendance.toLocaleString()}莠ｺ縺ｮ繝輔ぃ繝ｳ縺梧・縺励∩縺ｪ縺・牛謇九ｒ騾√▲縺溘Ａ,
+      d => `${d.venue.name}に詰めかけた${d.attendance.toLocaleString()}人の観衆が見届けたのは、新たな王者の誕生だった。${d.winner.name}は序盤から積極的に攻め込み、${d.finishLabel}で${d.loser.name}から3カウントを奪取。試合後、ベルトを手にした${d.winner.name}の表情には、長い道のりを歩んできた者だけが見せる充足感が浮かんでいた。`,
+      d => `${d.loser.name}の牙城がついに崩れた。${d.turns}ターンに及ぶ攻防の末、${d.winner.name}が${d.finishLabel}で王座を奪取。${d.venue.name}のリングに立つ新王者に、${d.attendance.toLocaleString()}人のファンが惜しみない拍手を送った。`,
     ],
     titleDefend: [
-      d => `${d.loser.name}縺ｮ謖第姶繧貞女縺代◆邇玖・{d.winner.name}縺ｯ縲・{d.turns}繧ｿ繝ｼ繝ｳ縺ｮ謾ｻ髦ｲ繧堤ｵ後※${d.finishLabel}縺ｧ髦ｲ陦帙↓謌仙粥縲・{d.attendance.toLocaleString()}莠ｺ縺ｮ蜑阪〒邇句ｺｧ縺ｮ驥阪∩繧定ｨｼ譏弱＠縺溘よ風繧後◆${d.loser.name}繧ゅΜ繝ｳ繧ｰ荳翫〒蛛･髣倥ｒ遘ｰ縺医ｉ繧後∵ｬ｡縺ｪ繧区倦謌ｦ縺ｸ縺ｮ譛溷ｾ・′閹ｨ繧峨・縲Ａ,
+      d => `${d.loser.name}の挑戦を受けた王者${d.winner.name}は、${d.turns}ターンの攻防を経て${d.finishLabel}で防衛に成功。${d.attendance.toLocaleString()}人の前で王座の重みを証明した。敗れた${d.loser.name}もリング上で健闘を称えられ、次なる挑戦への期待が膨らむ。`,
     ],
-    // 蝗邵∬ｩｦ蜷・
+    // 因縁試合
     rivalry: [
-      d => `繧ゅ・繧・ｪｬ譏惹ｸ崎ｦ√・繧ｫ繝ｼ繝峨・{d.left.name}縺ｨ${d.right.name}縺ｫ繧医ｋ${d.rivalLabel}縺ｯ莉雁屓繧よ悄蠕・ｒ陬丞・繧峨↑縺九▲縺溘・{d.turns}繧ｿ繝ｼ繝ｳ縲∽ｺ偵＞縺ｮ謇九・蜀・ｒ遏･繧雁ｰｽ縺上＠縺滉ｺ御ｺｺ縺ｮ謾ｻ髦ｲ縺ｯMQ ${d.mq}繧定ｨ倬鹸縲よ怙蠕後・${d.winner.name}縺ｮ${d.finishLabel}縺梧ｱｺ逹繧貞他繧薙□縲ゅ％縺ｮ蝗邵√↓邨ゅｏ繧翫・縺ゅｋ縺ｮ縺銀披斐◎縺ｮ遲斐∴縺ｯ縲√∪縺隱ｰ縺ｫ繧ょ・縺九ｉ縺ｪ縺・Ａ,
-      d => `${d.rivalLabel}縺ｨ縺励※遏･繧峨ｌ繧倶ｺ御ｺｺ縺悟・縺ｳ繝ｪ繝ｳ繧ｰ縺ｧ豼遯√・{d.venue.name}縺ｮ遨ｺ豌励・隧ｦ蜷亥燕縺九ｉ蠑ｵ繧願ｩｰ繧√※縺・◆縲・{d.winner.name}縺・{d.finishLabel}縺ｧ蜍晏茜繧貞庶繧√◆縺後∵風繧後◆${d.loser.name}縺ｮ髣伜ｿ励・謚倥ｌ縺ｦ縺・↑縺・よｬ｡縺ｮ蟇ｾ謌ｦ縺後√☆縺ｧ縺ｫ蠕・■驕縺励＞縲Ａ,
+      d => `もはや説明不要のカード。${d.left.name}と${d.right.name}による${d.rivalLabel}は今回も期待を裏切らなかった。${d.turns}ターン、互いの手の内を知り尽くした二人の攻防はMQ ${d.mq}を記録。最後は${d.winner.name}の${d.finishLabel}が決着を呼んだ。この因縁に終わりはあるのか——その答えは、まだ誰にも分からない。`,
+      d => `${d.rivalLabel}として知られる二人が再びリングで激突。${d.venue.name}の空気は試合前から張り詰めていた。${d.winner.name}が${d.finishLabel}で勝利を収めたが、敗れた${d.loser.name}の闘志は折れていない。次の対戦が、すでに待ち遠しい。`,
     ],
-    // 螂ｽ謨ｵ謇・
+    // 好敵手
     goodRival: [
-      d => `莠偵＞繧帝ｫ倥ａ蜷医≧莠御ｺｺ縺ｮ謌ｦ縺・・縲∽ｻ雁屓繧ゅヵ繧｡繝ｳ縺ｮ蠢・ｒ謗ｴ繧薙□縲・{d.left.name}縺ｨ${d.right.name}縺ｯ${d.turns}繧ｿ繝ｼ繝ｳ縺ｫ繧上◆繧雁･ｽ蜍晁ｲ繧貞ｱ暮幕縲・{d.winner.name}縺・{d.finishLabel}縺ｧ蜍晏茜繧呈焔縺ｫ縺励◆縺後∬ｩｦ蜷亥ｾ後↓莠､繧上＠縺溯ｦ也ｷ壹↓縺ｯ謨ｵ諢上〒縺ｯ縺ｪ縺乗噴諢上′螳ｿ縺｣縺ｦ縺・◆縲・Q ${d.mq}縲Ａ,
+      d => `互いを高め合う二人の戦いは、今回もファンの心を掴んだ。${d.left.name}と${d.right.name}は${d.turns}ターンにわたり好勝負を展開。${d.winner.name}が${d.finishLabel}で勝利を手にしたが、試合後に交わした視線には敵意ではなく敬意が宿っていた。MQ ${d.mq}。`,
     ],
-    // 蝨ｧ蜍・
+    // 圧勝
     dominant: [
-      d => `繧上★縺・{d.turns}繧ｿ繝ｼ繝ｳ縲・{d.winner.name}縺ｯ${d.loser.name}縺ｫ蜿肴茶縺ｮ菴吝慍縺吶ｉ荳弱∴縺ｪ縺九▲縺溘・{d.finishLabel}縺梧ｱｺ縺ｾ縺｣縺溽椪髢薙・{d.venue.name}縺ｯ髱吶∪繧願ｿ斐▲縺溘ょｮ溷鴨蟾ｮ繧定ｦ九○縺､縺代◆${d.winner.name}縺ｮ蠑ｷ縺輔・譛ｬ迚ｩ縺縲Ａ,
-      d => `${d.loser.name}縺ｫ縺ｨ縺｣縺ｦ縺ｯ蜴ｳ縺励＞螟懊→縺ｪ縺｣縺溘・{d.winner.name}縺ｮ迪帶判縺ｫ髦ｲ謌ｦ荳譁ｹ縲・{d.turns}繧ｿ繝ｼ繝ｳ縺ｧ縺ｮ豎ｺ逹縺ｫ${d.attendance.toLocaleString()}莠ｺ縺ｮ隕ｳ螳｢繧りｨ闡峨ｒ螟ｱ縺｣縺溘Ａ,
+      d => `わずか${d.turns}ターン。${d.winner.name}は${d.loser.name}に反撃の余地すら与えなかった。${d.finishLabel}が決まった瞬間、${d.venue.name}は静まり返った。実力差を見せつけた${d.winner.name}の強さは本物だ。`,
+      d => `${d.loser.name}にとっては厳しい夜となった。${d.winner.name}の猛攻に防戦一方、${d.turns}ターンでの決着に${d.attendance.toLocaleString()}人の観客も言葉を失った。`,
     ],
-    // 蜒・ｷｮ縺ｮ螂ｽ蜍晁ｲ
+    // 僅差の好勝負
     closeMQ: [
-      d => `${d.turns}繧ｿ繝ｼ繝ｳ縺ｮ豁ｻ髣倪披泌享謨励ｒ蛻・￠縺溘・縺ｯ縲√⊇繧薙・繧上★縺九↑蟾ｮ縺縺｣縺溘・{d.winner.name}縺ｨ${d.loser.name}縺ｯMQ ${d.mq}縺ｮ蜷榊享雋繧呈ｼ斐§縲・{d.venue.name}縺ｮ${d.attendance.toLocaleString()}莠ｺ繧堤ｷ冗ｫ九■縺ｫ縺輔○縺溘・{d.finishLabel}縺ｧ霎帙￥繧ょ享蛻ｩ縺励◆${d.winner.name}縺縺後∵風繧後◆${d.loser.name}縺ｮ隧穂ｾ｡繧ゅ∪縺滉ｸ翫′縺｣縺溘・縺壹□縲Ａ,
-      d => `譛蠕後・譛蠕後∪縺ｧ蜍晁ｲ縺ｮ陦梧婿縺ｯ蛻・°繧峨↑縺九▲縺溘・{d.loser.name}繧りｦ九○蝣ｴ繧剃ｽ懊ｊ邯壹￠縺溘′縲・{d.winner.name}縺ｮ${d.finishLabel}縺梧ｱｺ逹繧貞相縺偵◆縲よｶ郁玲姶繧貞宛縺励◆${d.winner.name}縺ｮ繧ｿ繝輔ロ繧ｹ縺悟・縺｣縺・{d.turns}繧ｿ繝ｼ繝ｳ縲・Q ${d.mq}縺ｯ莉翫す繝ｼ繧ｺ繝ｳ螻域欠縺ｮ謨ｰ蟄励□縲Ａ,
+      d => `${d.turns}ターンの死闘——勝敗を分けたのは、ほんのわずかな差だった。${d.winner.name}と${d.loser.name}はMQ ${d.mq}の名勝負を演じ、${d.venue.name}の${d.attendance.toLocaleString()}人を総立ちにさせた。${d.finishLabel}で辛くも勝利した${d.winner.name}だが、敗れた${d.loser.name}の評価もまた上がったはずだ。`,
+      d => `最後の最後まで勝負の行方は分からなかった。${d.loser.name}も見せ場を作り続けたが、${d.winner.name}の${d.finishLabel}が決着を告げた。消耗戦を制した${d.winner.name}のタフネスが光った${d.turns}ターン。MQ ${d.mq}は今シーズン屈指の数字だ。`,
     ],
-    // 逡ｪ迢ゅｏ縺・
+    // 番狂わせ
     upset: [
-      d => `謌ｦ蜑阪・莠域Φ繧定ｦ・☆邨先棡縺ｨ縺ｪ縺｣縺溘０VR譬ｼ蟾ｮ${d.ovrGap}繝昴う繝ｳ繝医・螢√ｒ縲・{d.winner.name}縺ｯ豌苓ｿｫ縺ｧ謇薙■遐ｴ縺｣縺溘・{d.finishLabel}縺梧ｱｺ縺ｾ縺｣縺溽椪髢薙・{d.venue.name}縺ｯ鬩壹″縺ｨ闊亥･ｮ縺ｫ蛹・∪繧後◆縲よｼ荳・{d.loser.name}縺九ｉ縺ｮ驥第弌縺ｯ縲・{d.winner.name}縺ｫ縺ｨ縺｣縺ｦ螟ｧ縺阪↑閾ｪ菫｡縺ｫ縺ｪ繧九□繧阪≧縲Ａ,
+      d => `戦前の予想を覆す結果となった。OVR格差${d.ovrGap}ポイントの壁を、${d.winner.name}は気迫で打ち破った。${d.finishLabel}が決まった瞬間、${d.venue.name}は驚きと興奮に包まれた。格上${d.loser.name}からの金星は、${d.winner.name}にとって大きな自信になるだろう。`,
     ],
-    // 雜・ｫ弄Q
+    // 超高MQ
     superMQ: [
-      d => `MQ ${d.mq}窶披比ｻ翫す繝ｼ繧ｺ繝ｳ縺ｮ繝吶せ繝医ヰ繧ｦ繝亥呵｣懊′逕溘∪繧後◆縲・{d.left.name}縺ｨ${d.right.name}縺ｯ${d.turns}繧ｿ繝ｼ繝ｳ縺ｫ繧上◆縺｣縺ｦ謚陦薙→髣伜ｿ励ｒ縺ｶ縺､縺大粋縺・・{d.venue.name}縺ｮ${d.attendance.toLocaleString()}莠ｺ繧堤・迢ゅ・貂ｦ縺ｫ蟾ｻ縺崎ｾｼ繧薙□縲・{d.winner.name}縺・{d.finishLabel}縺ｧ蜍晏茜繧貞庶繧√◆縺後∝享謨励ｒ雜・∴縺滉ｾ｡蛟､縺後％縺ｮ隧ｦ蜷医↓縺ｯ縺ゅ▲縺溘Ａ,
+      d => `MQ ${d.mq}——今シーズンのベストバウト候補が生まれた。${d.left.name}と${d.right.name}は${d.turns}ターンにわたって技術と闘志をぶつけ合い、${d.venue.name}の${d.attendance.toLocaleString()}人を熱狂の渦に巻き込んだ。${d.winner.name}が${d.finishLabel}で勝利を収めたが、勝敗を超えた価値がこの試合にはあった。`,
     ],
-    // 繝峨Ο繝ｼ
+    // ドロー
     draw: [
-      d => `${d.left.name}縺ｨ${d.right.name}縲・{d.turns}繧ｿ繝ｼ繝ｳ縺ｮ謾ｻ髦ｲ縺ｯ豎ｺ逹繧定ｦ九↑縺九▲縺溘ゆｺ偵＞縺ｫ繝輔か繝ｼ繝ｫ繧定ｿ斐＠蜷医＞縲∵･ｵ繧√ｒ蛻・ｊ蜷医＞縲∵怙蠕後∪縺ｧ閹昴ｒ謚倥ｉ縺ｪ縺九▲縺滉ｺ御ｺｺ縲・{d.venue.name}縺ｮ${d.attendance.toLocaleString()}莠ｺ縺ｯ縲∝ｼ輔″蛻・￠縺ｨ縺・≧邨先棡縺ｫ繧ゅ°縺九ｏ繧峨★諠懊＠縺ｿ縺ｪ縺・牛謇九ｒ騾√▲縺溘ょ・謌ｦ繧呈悍繧螢ｰ縺後√☆縺ｧ縺ｫ縺ゅ■縺薙■縺九ｉ閨槭％縺医※縺・ｋ縲Ａ,
-      d => `豎ｺ逹縺､縺九★縲・{d.left.name}繧・{d.right.name}繧ょｷｱ縺ｮ蜈ｨ縺ｦ繧貞・縺怜ｰｽ縺上＠縺溽ｵ先棡縺後％縺ｮ繝峨Ο繝ｼ縺縲・Q ${d.mq}縺檎､ｺ縺咎壹ｊ縲∬ｩｦ蜷亥・螳ｹ縺ｫ荳肴ｺ繧呈戟縺､閠・・縺・↑縺・□繧阪≧縲よｬ｡縺ｯ縺ｩ縺｡繧峨′蜈医↓豎ｺ逹繧偵▽縺代ｋ縺ｮ縺銀披・{d.attendance.toLocaleString()}莠ｺ縺ｮ繝輔ぃ繝ｳ縺梧ｬ｡縺ｮ驍る・ｒ蠕・▲縺ｦ縺・ｋ縲Ａ,
+      d => `${d.left.name}と${d.right.name}、${d.turns}ターンの攻防は決着を見なかった。互いにフォールを返し合い、極めを切り合い、最後まで膝を折らなかった二人。${d.venue.name}の${d.attendance.toLocaleString()}人は、引き分けという結果にもかかわらず惜しみない拍手を送った。再戦を望む声が、すでにあちこちから聞こえている。`,
+      d => `決着つかず。${d.left.name}も${d.right.name}も己の全てを出し尽くした結果がこのドローだ。MQ ${d.mq}が示す通り、試合内容に不満を持つ者はいないだろう。次はどちらが先に決着をつけるのか——${d.attendance.toLocaleString()}人のファンが次の邂逅を待っている。`,
     ],
-    // 騾壼ｸｸ
+    // 通常
     normal: [
-      d => `${d.venue.name}縺ｧ陦後ｏ繧後◆${d.showName}縺ｮ繝｡繧､繝ｳ繧､繝吶Φ繝医・縲・{d.winner.name}縺・{d.finishLabel}縺ｧ${d.loser.name}繧剃ｸ九＠縺ｦ蟷輔ｒ髢峨§縺溘・{d.turns}繧ｿ繝ｼ繝ｳ縺ｮ隧ｦ蜷医・${d.attendance.toLocaleString()}莠ｺ縺ｮ隕ｳ螳｢繧呈ｲｸ縺九○縲｀Q ${d.mq}繧定ｨ倬鹸縺励◆縲Ａ,
-      d => `${d.winner.name}縺後Γ繧､繝ｳ縺ｮ螟ｧ闊槫床縺ｧ蝣ゅ・◆繧句享蛻ｩ繧帝｣ｾ縺｣縺溘・{d.loser.name}繧りｦ∵園縺ｧ隕九○蝣ｴ繧剃ｽ懊▲縺溘′縲∵怙邨ら噪縺ｫ縺ｯ${d.winner.name}縺ｮ${d.finishLabel}縺ｫ豐医ｓ縺縲・{d.attendance.toLocaleString()}莠ｺ縺ｮ隕ｳ螳｢縺瑚ｦ句ｮ医▲縺・{d.turns}繧ｿ繝ｼ繝ｳ縺ｮ荳謌ｦ縲Ａ,
+      d => `${d.venue.name}で行われた${d.showName}のメインイベントは、${d.winner.name}が${d.finishLabel}で${d.loser.name}を下して幕を閉じた。${d.turns}ターンの試合は${d.attendance.toLocaleString()}人の観客を沸かせ、MQ ${d.mq}を記録した。`,
+      d => `${d.winner.name}がメインの大舞台で堂々たる勝利を飾った。${d.loser.name}も要所で見せ場を作ったが、最終的には${d.winner.name}の${d.finishLabel}に沈んだ。${d.attendance.toLocaleString()}人の観客が見守った${d.turns}ターンの一戦。`,
     ],
-    // 菴皿Q
+    // 低MQ
     lowMQ: [
-      d => `豁｣逶ｴ縺ｫ險縺医・縲√Γ繧､繝ｳ繧､繝吶Φ繝医・迚ｩ雜ｳ繧翫↑縺輔′谿九▲縺溘・{d.winner.name}縺・{d.finishLabel}縺ｧ${d.loser.name}繧剃ｸ九＠縺溘ｂ縺ｮ縺ｮ縲｀Q ${d.mq}縺ｨ縺・≧謨ｰ蟄励′隧ｦ蜷亥・螳ｹ繧堤黄隱槭▲縺ｦ縺・ｋ縲・{d.attendance.toLocaleString()}莠ｺ縺ｮ繝輔ぃ繝ｳ縺ｯ縲∵ｬ｡蝗槭・闊郁｡後↓縺薙◎譛溷ｾ・ｒ蟇・○繧九□繧阪≧縲Ａ,
+      d => `正直に言えば、メインイベントは物足りなさが残った。${d.winner.name}が${d.finishLabel}で${d.loser.name}を下したものの、MQ ${d.mq}という数字が試合内容を物語っている。${d.attendance.toLocaleString()}人のファンは、次回の興行にこそ期待を寄せるだろう。`,
     ],
   },
 
   _generateNewspaperTexts(d) {
-    // 繧ｫ繝・ざ繝ｪ蜆ｪ蜈亥ｺｦ縺ｧ驕ｸ謚・
+    // カテゴリ優先度で選択
     let cat;
     if (d.isDraw) cat = 'draw';
     else if (d.isSuperMQ && !d.isDominant) cat = 'superMQ';
@@ -6703,7 +6703,7 @@ const App = {
     else if (d.isLowMQ) cat = 'normal';
     else cat = 'normal';
 
-    // 繧ｿ繧､繝医Ν繝槭ャ繝∫｢ｺ螳夲ｼ・uperMQ/upset 縺ｯ豁ｴ蜿ｲ逧・錐蜍晁ｲ/逡ｪ迢ゅｏ縺幄｡ｨ迴ｾ繧貞━蜈茨ｼ・
+    // タイトルマッチ確定（superMQ/upset は歴史的名勝負/番狂わせ表現を優先）
     if (d.isTitleMatch && !d.isDraw) {
       if (cat !== 'superMQ' && cat !== 'upset') {
         cat = d.isTitleDefense ? 'titleDefend' : 'titleWin';
@@ -6716,23 +6716,23 @@ const App = {
 
     const headline = pick(HL[cat] || HL.normal)(d);
 
-    // 繧ｵ繝悶・繝・ラ繝ｩ繧､繝ｳ・壼ｸｸ縺ｫ繧ｫ繝ｼ繝峨→謨ｰ蛟､諠・ｱ
+    // サブヘッドライン：常にカードと数値情報
     let subheadline;
     if (d.isDraw) {
-      subheadline = `${d.showName}繝ｻ${d.venue.name}縲りｦｳ螳｢${d.attendance.toLocaleString()}莠ｺ縲・{d.turns}繧ｿ繝ｼ繝ｳ縺ｮ謾ｻ髦ｲ縺ｯ豎ｺ逹繧定ｦ九★縲ょ・${d.totalMatches}隧ｦ蜷医・蟷ｳ蝮⑭Q ${d.avgMQ}`;
+      subheadline = `${d.showName}・${d.venue.name}。観客${d.attendance.toLocaleString()}人、${d.turns}ターンの攻防は決着を見ず。全${d.totalMatches}試合の平均MQ ${d.avgMQ}`;
     } else if (d.otherHighMQ.length > 0) {
-      subheadline = `${d.venue.name}螟ｧ莨壹∬ｦｳ螳｢${d.attendance.toLocaleString()}莠ｺ縲ょ・${d.totalMatches}隧ｦ蜷亥ｹｳ蝮⑭Q ${d.avgMQ}窶披泌･ｽ繧ｫ繝ｼ繝臥ｶ壼・縺ｮ${d.showName}`;
+      subheadline = `${d.venue.name}大会、観客${d.attendance.toLocaleString()}人。全${d.totalMatches}試合平均MQ ${d.avgMQ}——好カード続出の${d.showName}`;
     } else {
-      subheadline = `${d.showName}繝ｻ${d.venue.name}縲りｦｳ螳｢${d.attendance.toLocaleString()}莠ｺ縲ゅΓ繧､繝ｳMQ ${d.mq}縲∝・${d.totalMatches}隧ｦ蜷亥ｹｳ蝮⑭Q ${d.avgMQ}`;
+      subheadline = `${d.showName}・${d.venue.name}。観客${d.attendance.toLocaleString()}人。メインMQ ${d.mq}、全${d.totalMatches}試合平均MQ ${d.avgMQ}`;
     }
 
-    // 險倅ｺ区悽譁・
+    // 記事本文
     let articleCat = cat;
     if (d.isGoodRival && !d.isDraw && cat !== 'superMQ') articleCat = 'goodRival';
     const articlePool = AR[articleCat] || AR.normal;
     let article = pick(articlePool)(d);
 
-    // 菴皿Q霑ｽ險・
+    // 低MQ追記
     if (d.isLowMQ && cat !== 'draw') {
       article = pick(AR.lowMQ)(d);
     }
@@ -6750,14 +6750,14 @@ const App = {
     const loser = isDraw ? null : (main.winner === 'left' ? main.right : main.left);
     const avgMQ = Math.round(results.reduce((sum, r) => sum + (r.mq || 0), 0) / results.length);
     const attendance = G.lastShowAttendance || 0;
-    const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? '迚ｹ蛻･闊郁｡・ : `隨ｬ${G.totalShows}蝗・螳壽悄闊郁｡形);
+    const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? '特別興行' : `第${G.totalShows}回 定期興行`);
     const finishLabel = Engine.formatFinish(main.finType, main.finMove);
     const turns = main.turns || 0;
     const mq = main.mq || avgMQ;
     const hpL = main.hpLeft || { final: 0, max: 100 };
     const hpR = main.hpRight || { final: 0, max: 100 };
 
-    // 隧ｦ蜷育憾豕√ヵ繝ｩ繧ｰ
+    // 試合状況フラグ
     const loserHpPct = isDraw ? 50 : (main.winner === 'left'
       ? Math.round((hpR.final / Math.max(1, hpR.max)) * 100)
       : Math.round((hpL.final / Math.max(1, hpL.max)) * 100));
@@ -6773,7 +6773,7 @@ const App = {
     const isPPVShow = isPPV(G.week);
     const isSpecial = isSpecialShow(G.week);
 
-    // 蝗邵√・髢｢菫ゅョ繝ｼ繧ｿ
+    // 因縁・関係データ
     const rivalLvl = getRivalryLevel(main.left.id, main.right.id);
     const hasRivalry = !!rivalLvl && !rivalLvl.isGoodRival;
     const isGoodRival = !!rivalLvl && rivalLvl.isGoodRival;
@@ -6788,7 +6788,7 @@ const App = {
     }
     const isHighBond = bondAvg >= 70;
 
-    // OVR蟾ｮ
+    // OVR差
     const ovrL = Engine.util.ov(main.left);
     const ovrR = Engine.util.ov(main.right);
     const ovrGap = Math.abs(ovrL - ovrR);
@@ -6797,11 +6797,11 @@ const App = {
       (winner.id === main.right.id && ovrR < ovrL - 8)
     );
 
-    // 莉悶・隧ｦ蜷医・繝上う繝ｩ繧､繝・
+    // 他の試合のハイライト
     const otherHighMQ = results.slice(1).filter(r => (r.mq || 0) >= 75);
     const totalMatches = results.length;
 
-    // 繧ｿ繧､繝医Ν繝槭ャ繝√・蝣ｴ蜷医・亟陦・螂ｪ蜿悶ｒ蛻､螳夲ｼ・lastTitleOutcomes 縺ｯ譛ｬ髢｢謨ｰ蜻ｼ縺ｳ蜃ｺ縺礼峩蜑阪↓險ｭ螳壹＆繧後※縺・ｋ・・
+    // タイトルマッチの場合、防衛/奪取を判定（_lastTitleOutcomes は本関数呼び出し直前に設定されている）
     let isTitleDefense = false;
     if (main.isTitleMatch && !isDraw && winner) {
       const outcomes = App._lastTitleOutcomes || [];
@@ -6813,7 +6813,7 @@ const App = {
       isTitleDefense = mainOutcome?.outcome === 'defense';
     }
 
-    // 笏笏笏 繝・く繧ｹ繝育函謌・笏笏笏
+    // ─── テキスト生成 ───
     const np = App._generateNewspaperTexts({
       isDraw, winner, loser, left: main.left, right: main.right,
       isTitleMatch: !!main.isTitleMatch, isTitleDefense, finishLabel, turns, mq,
@@ -6824,7 +6824,7 @@ const App = {
       otherHighMQ, totalMatches, orgName: G.orgName
     });
 
-    // 笏笏 allMatches: 繝｡繧､繝ｳ莉･螟悶・蜈ｨ隧ｦ蜷医ム繧､繧ｸ繧ｧ繧ｹ繝・笏笏
+    // ── allMatches: メイン以外の全試合ダイジェスト ──
     const allMatches = results.slice(1).map(r => {
       if (!r || !r.left || !r.right) return null;
       const isMatchDraw = r.winner === 'draw';
@@ -6851,7 +6851,7 @@ const App = {
       };
     }).filter(Boolean);
 
-    // 髮・ｮ｢v2: 笘・ｩ穂ｾ｡繧致2 calcShowRating 縺ｧ邂怜・
+    // 集客v2: ★評価をv2 calcShowRating で算出
     const npValidMatches = (G.showCard || []).filter(m => m.left > 0 && m.right > 0);
     const npFanExpects = Engine.fanExpect.generate(G);
     const npRatingCtx = {
@@ -6869,9 +6869,9 @@ const App = {
     const npRating = Engine.attendanceV2.calcShowRating(results, attendance, VENUES[G.showVenue].cap, G.showVenue, npRatingCtx);
     const showRating = { stars: npRating.stars, totalScore: npRating.totalScore, mqScore: npRating.mqScore, occScore: npRating.occScore, bonusScore: npRating.bonusScore, actual: avgMQ };
 
-    // 笏笏 preview: 谺｡蝗槫ｱ墓悍繝・・繧ｿ 笏笏
+    // ── preview: 次回展望データ ──
     const preview = { fanExpect: [], rivalry: null, title: null };
-    // 繝輔ぃ繝ｳ譛溷ｾ・き繝ｼ繝会ｼ亥虚逧・函謌撰ｼ・
+    // ファン期待カード（動的生成）
     const pvFanExpects = Engine.fanExpect.generate(G);
     if (pvFanExpects && pvFanExpects.length > 0) {
       pvFanExpects.slice(0, 2).forEach(fe => {
@@ -6882,7 +6882,7 @@ const App = {
         }
       });
     }
-    // 蝗邵√・繧｢・・ier縺梧怙螟ｧ縺ｮ繧ゅ・・・
+    // 因縁ペア（tierが最大のもの）
     if (G.rivalries) {
       let maxTier = 0, hotPair = null;
       Object.entries(G.rivalries).forEach(([key, riv]) => {
@@ -6900,7 +6900,7 @@ const App = {
         preview.rivalry = { leftName: hotPair.leftName, rightName: hotPair.rightName };
       }
     }
-    // 繧ｿ繧､繝医Ν謌ｦ螻墓悍
+    // タイトル戦展望
     const champId = G.titles?.world?.championId;
     if (champId) {
       const champ = G.roster.find(f => f.id === champId);
@@ -7015,7 +7015,7 @@ const App = {
       }
       return;
     }
-    // D螻､ postShow: 雜・ｺ蜩｡繝峨・繝繧ｻ繝ｬ繝｢繝九・・・ickWeek 蜑阪↓逋ｺ轣ｫ・・
+    // D層 postShow: 超満員ドームセレモニー（tickWeek 前に発火）
     if (G._pendingDomeSelloutCeremony) {
       const { _pendingDomeSelloutCeremony: _, ...cleanG } = G;
       G = { ...cleanG, milestones: { ...(cleanG.milestones || {}), first_dome_sellout: true } };
@@ -7038,7 +7038,7 @@ const App = {
       Audio.bgm.play('management');
       resultOverlay.classList.remove('active');
 
-    // 隧ｦ蜷亥ｾ後さ繝｡繝ｳ繝医・繝・・繧｢繝・・・亥屏邵√・繝・メ・・
+    // 試合後コメントポップアップ（因縁マッチ）
     const matchDialogues = [..._pendingMatchDialogues];
     _pendingMatchDialogues = [];
     if (matchDialogues.length > 0) {
@@ -7051,8 +7051,8 @@ const App = {
       const { _pendingInjuryRetirements: _, ...cleanG } = G;
       G = cleanG;
     }
-    // 諤ｪ謌大ｼ暮繧ｻ繝ｪ繝輔・蜿悶ｊ縺薙⊂縺玲舞貂・ lookup 螟ｱ謨励・transient 谺關ｽ縺ｧ _pendingInjuryRetirements 縺ｫ
-    // 霈峨ｉ縺ｪ縺九▲縺溘御ｻ企ｱ縺ｮ諤ｪ謌大ｼ暮閠・阪ｒ retiredFighters 縺ｮ譛譁ｰ retire 繧､繝吶Φ繝医°繧牙ｾｩ蜈・☆繧・
+    // 怪我引退セリフの取りこぼし救済: lookup 失敗・transient 欠落で _pendingInjuryRetirements に
+    // 載らなかった「今週の怪我引退者」を retiredFighters の最新 retire イベントから復元する
     {
       const queuedIds = new Set(
         pendingInjuryRetirements.map(r => r?.fighter?.id).filter(id => id != null)
@@ -7083,7 +7083,7 @@ const App = {
       G = archiveRetiredRivalryState(G, r.fighter || null);
     });
 
-    // 繝ｩ繧ｹ繝医Λ繝ｳ蠑暮・亥ｼ暮隧ｦ蜷亥ｮ御ｺ・ｾ後・蜊ｳ蠑暮・・
+    // ラストラン引退（引退試合完了後の即引退）
     let pendingLastRunRetirements = G._pendingLastRunRetirements || [];
     if (G._pendingLastRunRetirements) {
       const { _pendingLastRunRetirements: _, ...cleanG } = G;
@@ -7126,9 +7126,9 @@ const App = {
       });
       pendingLastRunRetirements = [...pendingLastRunRetirements, ...synthesizedRetirements];
     }
-    // 繝ｩ繧ｹ繝医Λ繝ｳ蠑暮繧ｻ繝ｪ繝輔・蜿悶ｊ縺薙⊂縺玲舞貂・隨ｬ3螻､): processShowResult / fallback 縺ｮ荳｡譁ｹ縺ｧ
-    // 諡ｾ縺医↑縺九▲縺溷ｴ蜷医↓縲〉etiredFighters 縺ｮ譛譁ｰ retire 繧､繝吶Φ繝・(reason='lastrun', 蜷碁ｱ)
-    // 縺九ｉ蠕ｩ蜈・☆繧九ゅ％繧後〒譛ｬ莠ｺ繝昴ャ繝励い繝・・縺後ぞ繝ｭ縺ｫ縺ｪ繧倶ｺ区腐繧帝亟縺舌・
+    // ラストラン引退セリフの取りこぼし救済(第3層): processShowResult / fallback の両方で
+    // 拾えなかった場合に、retiredFighters の最新 retire イベント (reason='lastrun', 同週)
+    // から復元する。これで本人ポップアップがゼロになる事故を防ぐ。
     {
       const queuedIds = new Set(
         pendingLastRunRetirements.map(r => r?.fighter?.id).filter(id => id != null)
@@ -7186,7 +7186,7 @@ const App = {
       G = archiveRetiredRivalryState(G, r.fighter || null);
     });
 
-    // R3: 繝輔ぃ繝ｳ譛溷ｾ・き繝ｼ繝芽ｩｦ蜷亥ｾ後Μ繧｢繧ｯ繧ｷ繝ｧ繝ｳ
+    // R3: ファン期待カード試合後リアクション
     const fanExpectResults = (G.lastShowResults || []).filter(r => r.fanExpectMatch);
     let hasEventPopups = false;
     fanExpectResults.forEach((r, i) => {
@@ -7203,7 +7203,7 @@ const App = {
         type: 'fighter', id: winnerId, name: winnerName,
         tone: isGood ? 'gold' : 'neutral',
         message: winnerLine,
-        detail: `謄 ${crowdText}`,
+        detail: `📣 ${crowdText}`,
         autoCloseMs: 2500,
       }), i * 100);
     });
@@ -7220,74 +7220,74 @@ const App = {
         showEventPopup({
           type: 'fighter', id: ch.id, name: ch.name, tone: 'negative',
           message: getTraitQuote('injury', ch),
-          detail: `唱 ${ir.injury.type} 窶・蜈ｨ豐ｻ${ir.injury.weeksLeft}騾ｱ髢伝,
+          detail: `🏥 ${ir.injury.type} — 全治${ir.injury.weeksLeft}週間`,
         });
       }, i * 100);
     });
     App._lastInjuries = [];
-    // v1.2: 荵ｱ蜈･繝槭ャ繝∫ｵ先棡繝昴ャ繝励い繝・・
+    // v1.2: 乱入マッチ結果ポップアップ
     if (App._intrusionData) {
       const id = App._intrusionData;
       const intruderId = id.intruder.id;
-      // 荵ｱ蜈･驕ｸ謇九′邇玖・↓縺ｪ縺｣縺ｦ縺・◆繧会ｼ茨ｼ晉ｩｺ菴榊喧蜑阪・championId縺縺｣縺滂ｼ峨∫視蠎ｧ螂ｪ蜿・
-      const wasIntruderCrowned = !G.titles?.world?.championId; // 遨ｺ菴搾ｼ昜ｹｱ蜈･驕ｸ謇九↓螂ｪ繧上ｌ縺・
+      // 乱入選手が王者になっていたら（＝空位化前のchampionIdだった）、王座奪取
+      const wasIntruderCrowned = !G.titles?.world?.championId; // 空位＝乱入選手に奪われた
       const popupDelay = injuries.length * 100 + 50;
       hasEventPopups = true;
       if (wasIntruderCrowned) {
         setTimeout(() => showEventPopup({ type:'fighter', id:intruderId, name:id.intruder.name, tone:'negative',
-          message: `${id.fromOrgName}縺ｮ${id.intruder.name}縺ｫ邇句ｺｧ繧貞･ｪ繧上ｌ縺溪ｦ`,
-          detail: `邇句ｺｧ縺ｯ遨ｺ菴阪↓縲よｬ｡縺ｮ繧ｿ繧､繝医Ν繝槭ャ繝√〒譁ｰ邇玖・ｒ豎ｺ螳壹＠縺ｦ縺上□縺輔＞縲Ａ }), popupDelay);
+          message: `${id.fromOrgName}の${id.intruder.name}に王座を奪われた…`,
+          detail: `王座は空位に。次のタイトルマッチで新王者を決定してください。` }), popupDelay);
       } else {
         setTimeout(() => showEventPopup({ type:'fighter', id:G.titles.world.championId, name:id.champName, tone:'gold',
-          message: `荵ｱ蜈･閠・ｒ騾縺代◆・～,
-          detail: `荘 ${id.champName}縺・{id.fromOrgName}縺ｮ${id.intruder.name}繧呈茶遐ｴ・・蝗｣菴謎ｺｺ豌・2` }), popupDelay);
+          message: `乱入者を退けた！`,
+          detail: `👑 ${id.champName}が${id.fromOrgName}の${id.intruder.name}を撃破！ 団体人気+2` }), popupDelay);
       }
       App._intrusionData = null;
     }
-    // 繧ｿ繧､繝医Ν繝槭ャ繝∝ｾ後Μ繧｢繧ｯ繧ｷ繝ｧ繝ｳ・亥享謨怜撫繧上★・・
+    // タイトルマッチ後リアクション（勝敗問わず）
     const titleOutcomes = App._lastTitleOutcomes || [];
     App._lastTitleOutcomes = [];
     let titlePopupDelay = injuries.length * 100 + 50;
     titleOutcomes.forEach(to => {
       if (to.outcome === 'change') {
-        // 譁ｰ邇玖・Μ繧｢繧ｯ繧ｷ繝ｧ繝ｳ
+        // 新王者リアクション
         const newChamp = G.roster.find(c => c.id === to.newChampId);
         if (newChamp) {
           hasEventPopups = true;
           const d = titlePopupDelay; titlePopupDelay += 100;
           setTimeout(() => showEventPopup({ type:'fighter', id:newChamp.id, name:newChamp.name, tone:'gold',
-            message: getTraitQuote('titleWin', newChamp), detail:`荘 ${newChamp.name}縺梧眠蝗｣菴鍋視閠・↓・～ }), d);
+            message: getTraitQuote('titleWin', newChamp), detail:`👑 ${newChamp.name}が新団体王者に！` }), d);
         }
-        // 蜑咲視閠・Μ繧｢繧ｯ繧ｷ繝ｧ繝ｳ
+        // 前王者リアクション
         if (to.prevChampId) {
           const prevChamp = G.roster.find(c => c.id === to.prevChampId);
           if (prevChamp) {
             hasEventPopups = true;
             const d = titlePopupDelay; titlePopupDelay += 100;
             setTimeout(() => showEventPopup({ type:'fighter', id:prevChamp.id, name:prevChamp.name, tone:'negative',
-              message: getTraitQuote('titleLoss', prevChamp), detail:`邇句ｺｧ髯･關ｽ窶ｦ` }), d);
+              message: getTraitQuote('titleLoss', prevChamp), detail:`王座陥落…` }), d);
           }
         }
       } else if (to.outcome === 'defense') {
-        // 繝√Ε繝ｳ繝斐が繝ｳ髦ｲ陦帙Μ繧｢繧ｯ繧ｷ繝ｧ繝ｳ
+        // チャンピオン防衛リアクション
         const champ = G.roster.find(c => c.id === to.champId);
         if (champ) {
           hasEventPopups = true;
           const d = titlePopupDelay; titlePopupDelay += 100;
           setTimeout(() => showEventPopup({ type:'fighter', id:champ.id, name:champ.name, tone:'gold',
-            message: getTraitQuote('titleDefense', champ), detail:`孱・・繧ｿ繧､繝医Ν髦ｲ陦帶・蜉滂ｼ～ }), d);
+            message: getTraitQuote('titleDefense', champ), detail:`🛡️ タイトル防衛成功！` }), d);
         }
-        // 謖第姶閠・Μ繧｢繧ｯ繧ｷ繝ｧ繝ｳ
+        // 挑戦者リアクション
         const challenger = G.roster.find(c => c.id === to.challengerId);
         if (challenger) {
           hasEventPopups = true;
           const d = titlePopupDelay; titlePopupDelay += 100;
           setTimeout(() => showEventPopup({ type:'fighter', id:challenger.id, name:challenger.name, tone:'negative',
-            message: getTraitQuote('titleChallengeLoss', challenger), detail:`繧ｿ繧､繝医Ν謖第姶螟ｱ謨冷ｦ` }), d);
+            message: getTraitQuote('titleChallengeLoss', challenger), detail:`タイトル挑戦失敗…` }), d);
         }
       }
     });
-    // v1.4w: 闊郁｡檎ｵ先棡縺九ｉ譁ｰ閨槭う繝吶Φ繝医ｒ蜿朱寔・・ickWeek蜑搾ｼ・
+    // v1.4w: 興行結果から新聞イベントを収集（tickWeek前）
     const _preDefenses = G.titles?.world?.defenses || 0;
     const _preChampId = G.titles?.world?.championId;
 
@@ -7303,10 +7303,10 @@ const App = {
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
 
-    // 闊郁｡檎ｵゆｺ・ｾ後↓showCard繧偵Μ繧ｻ繝・ヨ・・enderShowPrep 縺ｮ pad/trim 縺ｧ莨壼ｴ縺ｫ蠢懊§縺滓棧謨ｰ縺ｫ閾ｪ蜍戊ｪｿ謨ｴ・・
+    // 興行終了後にshowCardをリセット（renderShowPrep の pad/trim で会場に応じた枠数に自動調整）
     G = { ...G, showCard: [] };
 
-    // v1.4w: 髦ｲ陦帙・繧､繝ｫ繧ｹ繝医・繝ｳ讀懷・
+    // v1.4w: 防衛マイルストーン検出
     const _postDefenses = G.titles?.world?.defenses || 0;
     if (_postDefenses > _preDefenses) {
       const milestone = Engine.news.checkDefenseMilestone(_postDefenses);
@@ -7314,11 +7314,11 @@ const App = {
         const champ = G.roster.find(c => c.id === G.titles?.world?.championId);
         if (champ) {
           App._pushNewsEvent({ type: 'defenseRecord', characterId: champ.id,
-            data: { name: champ.name, org: G.orgName || '縺ゅ↑縺溘・蝗｣菴・, count: _postDefenses } });
+            data: { name: champ.name, org: G.orgName || 'あなたの団体', count: _postDefenses } });
         }
       }
     }
-    // v1.4w: 繝・ぅ繝・き繝ｼ譖ｴ譁ｰ
+    // v1.4w: ティッカー更新
     App._refreshTicker();
 
     // v1.2-9: Flavor event popups after show settlement
@@ -7326,7 +7326,7 @@ const App = {
     if (showFlavorEvents.length > 0) {
       showFlavorEvents.forEach((ev, i) => {
         hasEventPopups = true;
-        const detail = ev.type === 'magazine' ? `莠ｺ豌・+${ev.popGain}` : `繝偵・繝・+${ev.heatGain}`;
+        const detail = ev.type === 'magazine' ? `人気 +${ev.popGain}` : `ヒート +${ev.heatGain}`;
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone: 'positive', message: ev.headline, detail
@@ -7335,15 +7335,14 @@ const App = {
       const { _flavorEvents, ...cleanG } = G;
       G = cleanG;
     }
-    
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
-    // v1.5s25b: 闊郁｡悟ｾ後ヰ繝墓ｶ郁ｲｻ + 騾ｱ谺｡繝舌ヵ豸郁ｲｻ
+    // v1.5s25b: 興行後バフ消費 + 週次バフ消費
     App._tickMilestoneBuffsShow();
     App._applyWeeklyBuffEffects();
     App._tickMilestoneBuffsWeekly();
 
-    // 繝昴ャ繝励い繝・・騾｣骼・ eventPopups 竊・蝗邵∵ｱｺ逹 竊・繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ/繧ｹ繝ｩ繝ｳ繝・竊・蠑暮
+    // ポップアップ連鎖: eventPopups → 因縁決着 → ブレークスルー/スランプ → 引退
     const pendingGrowthEventsShow = G._pendingGrowthEvents || [];
     if (G._pendingGrowthEvents) {
       const { _pendingGrowthEvents: _, ...cleanG } = G;
@@ -7352,7 +7351,7 @@ const App = {
     const pendingResolutions = App._pendingRivalryResolutions || [];
     App._pendingRivalryResolutions = [];
 
-    // 繝√ぉ繝ｼ繝ｳ繧帝・・↓邨・∩遶九※・・etirement 竊・growth 竊・resolution 竊・eventPopups・・
+    // チェーンを逆順に組み立て（retirement ← growth ← resolution ← eventPopups）
     const popupActions = [];
     if (pendingLastRunRetirements.length > 0) {
       popupActions.push(done => showRetirementPopups(pendingLastRunRetirements, done));
@@ -7366,9 +7365,9 @@ const App = {
     if (pendingResolutions.length > 0) {
       popupActions.push(done => showRivalryPopups(pendingResolutions, done));
     }
-    // R3蜿榊ｿ懊Δ繝ｼ繝繝ｫ・・ond 75+ 莉ｲ髢薙・蛻･繧後Μ繧｢繧ｯ繧ｷ繝ｧ繝ｳ・峨・譛ｬ莠ｺ蠑暮繝昴ャ繝励い繝・・縺ｮ蠕後↓蜃ｺ縺吶・
-    // 譌ｧ螳溯｣・・迢ｬ遶・setTimeout(800) 縺ｧ逋ｺ轣ｫ縺励※縺・◆縺溘ａ縲∵悽莠ｺ繝昴ャ繝励い繝・・縺碁≦蟒ｶ縺吶ｋ縺ｨ
-    // R3 縺悟・縺ｫ髢九＞縺ｦ譛ｬ莠ｺ繝昴ャ繝励い繝・・縺悟・縺ｪ縺・隕玖誠縺ｨ縺輔ｌ繧倶ｺ区腐縺檎匱逕溘＠縺ｦ縺・◆縲・
+    // R3反応モーダル（bond 75+ 仲間の別れリアクション）は本人引退ポップアップの後に出す。
+    // 旧実装は独立 setTimeout(800) で発火していたため、本人ポップアップが遅延すると
+    // R3 が先に開いて本人ポップアップが出ない/見落とされる事故が発生していた。
     let pendingR3Spec = null;
     if (G._pendingR3Modal) {
       pendingR3Spec = G._pendingR3Modal;
@@ -7384,7 +7383,7 @@ const App = {
       };
       popupActions.push(done => {
         showR3Modal(r3Args);
-        // showR3Modal 縺ｯ蜊倡匱繝｢繝ｼ繝繝ｫ縺ｧ done 繧ｳ繝ｼ繝ｫ繝舌ャ繧ｯ繧呈戟縺溘↑縺・◆繧√∝叉蠎ｧ縺ｫ谺｡縺ｸ郢九＄
+        // showR3Modal は単発モーダルで done コールバックを持たないため、即座に次へ繋ぐ
         if (done) done();
       });
     }
@@ -7414,19 +7413,19 @@ const App = {
       }
     }
 
-    // relationship-flags-spec-v1.0 ﾂｧ4: 隧ｦ蜷育匱轣ｫ邉ｻ縺ｮ髢｢菫よｧ繝輔Λ繧ｰ繝｢繝ｼ繝繝ｫ
+    // relationship-flags-spec-v1.0 §4: 試合発火系の関係性フラグモーダル
     if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
 
-    // Common-3 豢ｾ髢･蜉蜈･騾夂衍・郁・陦悟ｾ後↓逋ｺ逕溘＠縺溘ｂ縺ｮ繧よｶ亥喧・・
+    // Common-3 派閥加入通知（興行後に発生したものも消化）
     App._drainFactionJoinNotices();
 
-    // ﾂｧ6 繧｢繝ｼ繧ｭ繧ｿ繧､繝鈴・遘ｻ繝翫Ξ繝ｼ繧ｷ繝ｧ繝ｳ・・02 螳悟・謨怜圏縺ｪ縺ｩ闊郁｡悟ｾ後↓逋ｺ逕溘☆繧具ｼ・
+    // §6 アーキタイプ遷移ナレーション（F02 完全敗北など興行後に発生する）
     App._drainArchetypeTransitions();
 
-    // 繧ｹ繝翫ャ繝励す繝ｧ繝・ヨ R3繝｢繝ｼ繝繝ｫ縺ｯ popupActions 繝√ぉ繝ｼ繝ｳ蜀・ｼ域悽莠ｺ蠑暮繝昴ャ繝励い繝・・縺ｮ蠕鯉ｼ峨↓
-    // 邨・∩霎ｼ縺ｿ貂医∩縺ｮ縺溘ａ縲√％縺薙〒縺ｯ蛻･邨瑚ｷｯ縺ｮ setTimeout 逋ｺ轣ｫ縺ｯ縺励↑縺・・
+    // スナップショット R3モーダルは popupActions チェーン内（本人引退ポップアップの後）に
+    // 組み込み済みのため、ここでは別経路の setTimeout 発火はしない。
 
-    // P4-P6: Glimpse・亥ｿ・・蝙｣髢楢ｦ九∴・芽｡ｨ遉ｺ・郁・陦悟ｾ鯉ｼ・
+    // P4-P6: Glimpse（心の垣間見え）表示（興行後）
     if (G._pendingGlimpseA || G._pendingGlimpseB) {
       const gA = G._pendingGlimpseA || null;
       const gB = G._pendingGlimpseB || null;
@@ -7463,20 +7462,20 @@ const App = {
     }
   },
 
-  // v1.4w: 繝・ぅ繝・き繝ｼ繝九Η繝ｼ繧ｹ蜀咲函謌撰ｼ・anage逕ｻ髱｢陦ｨ遉ｺ逕ｨ・・
+  // v1.4w: ティッカーニュース再生成（manage画面表示用）
   _refreshTicker() {
     if (!G || G.offSeason) return;
     const tickerRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBEEF));
     G = { ...G, _tickerItems: Engine.news.generateTicker(tickerRng, G) };
   },
 
-  // v1.4w: 譁ｰ閨槭ヱ繝阪Ν繧､繝吶Φ繝医く繝･繝ｼ縺ｫ霑ｽ蜉
+  // v1.4w: 新聞パネルイベントキューに追加
   _pushNewsEvent(ev) {
     const queue = [...(G._newsEvents || []), ev];
     G = { ...G, _newsEvents: queue };
   },
 
-  // Common-3: 豢ｾ髢･蜉蜈･騾夂衍繧ｭ繝･繝ｼ繧帝・ｬ｡陦ｨ遉ｺ
+  // Common-3: 派閥加入通知キューを順次表示
   _drainFactionJoinNotices() {
     if (!G || !G._pendingFactionJoinNotices || !G._pendingFactionJoinNotices.length) return;
     if (typeof showFactionCommon3Modal !== 'function') {
@@ -7494,7 +7493,7 @@ const App = {
     next();
   },
 
-  // ﾂｧ6 繧｢繝ｼ繧ｭ繧ｿ繧､繝鈴・遘ｻ繝翫Ξ繝ｼ繧ｷ繝ｧ繝ｳ繧ｭ繝･繝ｼ繧帝・ｬ｡陦ｨ遉ｺ
+  // §6 アーキタイプ遷移ナレーションキューを順次表示
   _drainArchetypeTransitions() {
     if (!G || !G._pendingArchetypeTransitions || !G._pendingArchetypeTransitions.length) return;
     if (typeof showFactionArchetypeTransitionModal !== 'function') {
@@ -7512,20 +7511,20 @@ const App = {
     next();
   },
 
-  // 讌ｭ逡後ル繝･繝ｼ繧ｹ繧ｭ繝･繝ｼ縺ｫ霑ｽ蜉・域ｯ朱ｱ縺ｮ譁ｰ閨樒判髱｢繝ｻ讌ｭ逡後ル繝･繝ｼ繧ｹ谺・↓豬√ｌ繧具ｼ・
+  // 業界ニュースキューに追加（毎週の新聞画面・業界ニュース欄に流れる）
   _pushIndustryNews(ev) {
     if (!ev || !ev.type) return;
     G = { ...G, _industryNewsEvents: [...(G._industryNewsEvents || []), ev] };
   },
 
-  // h2h.history 縺ｫ遨阪・ meta 繝輔Λ繧ｰ繧呈ｧ狗ｯ会ｼ・-3 / 豢ｾ髢･謚嶺ｺ・/ 繝ｭ繝・き繝ｼ闕貞ｻ・/ 螂ｪ驍・ｼ・
+  // h2h.history に積む meta フラグを構築（B-3 / 派閥抗争 / ロッカー荒廃 / 奪還）
   _buildMatchMeta(state, idA, idB, isReclaim) {
     const meta = {};
-    // betrayal: B-3 蜈・酔蜒・髮｢閼ｱ蠕悟・蟇ｾ髱｢
+    // betrayal: B-3 元同僚 離脱後初対面
     if (Engine.orgTimeline && typeof Engine.orgTimeline.checkFirstMeetSinceDeparture === 'function') {
       try { if (Engine.orgTimeline.checkFirstMeetSinceDeparture(state, idA, idB)) meta.betrayal = true; } catch (_) {}
     }
-    // factionWar: 蜷悟屮菴灘・縺ｧ蛻･豢ｾ髢･謇螻槭∽ｸ｡豢ｾ髢･縺・hostility 迥ｶ諷・
+    // factionWar: 同団体内で別派閥所属、両派閥が hostility 状態
     if (Engine.factions && typeof Engine.factions.getFactionByFighterId === 'function') {
       try {
         const fA = Engine.factions.getFactionByFighterId(state, idA);
@@ -7535,21 +7534,21 @@ const App = {
         }
       } catch (_) {}
     }
-    // lockerStress: _lockerCrisisWeek 縺檎峩霑・騾ｱ莉･蜀・
+    // lockerStress: _lockerCrisisWeek が直近4週以内
     if (state._lockerCrisisWeek != null && Engine.util && typeof Engine.util.absWeek === 'function') {
       const aw = Engine.util.absWeek(state.season, state.week);
       if (aw - state._lockerCrisisWeek <= 4) meta.lockerStress = true;
     }
-    // reclaim: 螂ｪ驍・倦謌ｦ隧ｦ蜷・
+    // reclaim: 奪還挑戦試合
     if (isReclaim) meta.reclaim = true;
     return meta;
   },
 
-  // v1.4w: 譁ｰ閨槭ヱ繝阪Ν陦ｨ遉ｺ竊貞ｮ御ｺ・ｾ後↓callback
+  // v1.4w: 新聞パネル表示→完了後にcallback
   _showNewsPanelIfNeeded(callback) {
     const events = G._newsEvents || [];
     if (events.length === 0) { callback(); return; }
-    // 繧ｭ繝･繝ｼ豸亥喧
+    // キュー消化
     const { _newsEvents: _, ...cleanG } = G;
     G = cleanG;
     const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE57));
@@ -7558,9 +7557,9 @@ const App = {
     showNewspaperPanel(articles, callback);
   },
 
-  // v2.0-C3: Always stop 窶・no auto-advance. Accumulate financeHistory and set weekSummary or settled phase.
+  // v2.0-C3: Always stop — no auto-advance. Accumulate financeHistory and set weekSummary or settled phase.
   _tryAutoAdvance() {
-    // 雋｡蜍吶ち繝悶Μ繝・じ繧､繝ｳ: financeHistory 縺ｫ騾ｱ谺｡豎ｺ邂励ｒ豌ｸ邯夊塘遨・
+    // 財務タブリデザイン: financeHistory に週次決算を永続蓄積
     const newHistory = [...(G.financeHistory || [])];
     newHistory.push({
       season: G.season,
@@ -7587,10 +7586,10 @@ const App = {
   // v2.0-C3: Manual advance from weekly summary
   advanceFromWeekSummary() {
     Audio.play('tick');
-    dismissAllPopups(); // 谿句ｭ倥・繝・・繧｢繝・・繧貞ｼｷ蛻ｶ繧ｯ繝ｪ繧｢
+    dismissAllPopups(); // 残存ポップアップを強制クリア
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
-    // 笏笏 菴馴ｨ鍋沿繧ｷ繝ｼ繧ｺ繝ｳ繧ｲ繝ｼ繝・笏笏
+    // ── 体験版シーズンゲート ──
     if (G._trialEnd) {
       const { _trialEnd: _, ...cleanG } = G;
       G = cleanG;
@@ -7599,13 +7598,13 @@ const App = {
       refreshAll();
       return;
     }
-    // 螂醍ｴ・峩譁ｰ莠､貂峨ヵ繧ｧ繝ｼ繧ｺ
+    // 契約更新交渉フェーズ
     if (G.weekPhase === 'contractNegotiation') {
       Storage.autoSave();
       App.handleContractNegotiations();
       return;
     }
-    // PPV繝輔ぉ繝ｼ繧ｺ
+    // PPVフェーズ
     if (G.weekPhase === 'ppvShow') {
       Storage.autoSave();
       App.initPPVShow();
@@ -7626,44 +7625,44 @@ const App = {
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
     if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week))) {
-      const msg = isPPV(G.week) ? '醇 莉企ｱ縺ｯPPV GRAND FINAL・∝ｹｴ髢捺怙螟ｧ縺ｮ闊槫床縺ｧ縺呻ｼ・ : '箝・莉企ｱ縺ｯ譛域忰迚ｹ蛻･闊郁｡鯉ｼ∬ｩｦ蜷域棧+1縺ｧ邨・ａ繧具ｼ・;
+      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
       setTimeout(() => showToast(msg, 7000), 300);
     }
-    // orgPop 繝ｪ繝舌Λ繝ｳ繧ｹ v1.1 ﾂｧ7: 繧ｷ繝ｼ繧ｺ繝ｳ髢句ｧ区凾縺ｮorgPop螟牙虚騾夂衍
+    // orgPop リバランス v1.1 §7: シーズン開始時のorgPop変動通知
     if (G._pendingSeasonStartNotif) {
       const notif = G._pendingSeasonStartNotif;
       const { _pendingSeasonStartNotif: _, ...cleanG } = G;
       G = cleanG;
       if (notif.decay > 0) {
         const nowPop = Math.round(notif.nowPop * 10) / 10;
-        setTimeout(() => showToast(`謄 繧ｪ繝輔す繝ｼ繧ｺ繝ｳ縺ｧ蝗｣菴謎ｺｺ豌励′ -${notif.decay} 貂幄｡ｰ縺励∪縺励◆・育樟蝨ｨ: ${nowPop}・荏, 6000), 800);
+        setTimeout(() => showToast(`📣 オフシーズンで団体人気が -${notif.decay} 減衰しました（現在: ${nowPop}）`, 6000), 800);
       }
     }
   },
 
   // Process a week (manage + settle) via tickWeek
-  // A-3: 縺翫∪縺九○閧ｲ謌・窶・譁ｹ驥昴ｒ邯ｭ謖√＠縺､縺､蠑ｷ蛹飽N/OFF縺ｨ菴楢ｪｿ60譛ｪ貅縺ｮ莨鷹､翫ｒ閾ｪ蜍戊ｨｭ螳・
+  // A-3: おまかせ育成 — 方針を維持しつつ強化ON/OFFと体調60未満の休養を自動設定
   autoManage() {
     if (G.weekPhase !== 'manage') return;
     Audio.play('select');
     const roster = G.roster.map(c => {
       if (c.injury || c.isRental || c.forcedRest) return c;
-      const policy = c.schedule || 'balance'; // 迴ｾ蝨ｨ縺ｮ譁ｹ驥昴ｒ菫晄戟
+      const policy = c.schedule || 'balance'; // 現在の方針を保持
       if (c.condition >= 80) return { ...c, schedule: policy, intensive: policy !== 'rest' };
       if (c.condition >= 75) return { ...c, schedule: policy, intensive: false };
       if (c.condition >= 60) return { ...c, schedule: policy, intensive: false };
-      // < 60: 譁ｹ驥昴↓髢｢繧上ｉ縺壻ｼ鷹､・
+      // < 60: 方針に関わらず休養
       return { ...c, schedule: 'rest', intensive: false };
     });
     G = { ...G, roster };
-    showToast('､・縺翫∪縺九○螳御ｺ・窶・蜀・ｮｹ繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞');
+    showToast('🤖 おまかせ完了 — 内容を確認してください');
     refreshAll();
   },
 
   processWeek() {
     Audio.play('tick');
-    dismissAllPopups(); // 蜑埼ｱ縺ｮ谿句ｭ倥・繝・・繧｢繝・・繧貞ｼｷ蛻ｶ繧ｯ繝ｪ繧｢
-    // 莉企ｱ縺ｮ繝ｭ繧ｰ繝輔ぅ繝ｼ繝峨ｒ繝ｪ繧ｻ繝・ヨ・亥燕騾ｱ蛻・け繝ｪ繧｢・・
+    dismissAllPopups(); // 前週の残存ポップアップを強制クリア
+    // 今週のログフィードをリセット（前週分クリア）
     G = { ...G, weekLogFeed: [] };
     const oldRoster = G.roster.map(c => ({ id: c.id, injured: !!c.injury }));
     const result = Engine.tickWeek(G);
@@ -7676,41 +7675,40 @@ const App = {
     if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
-    // v2.1: 繧ｲ繝ｼ繝繧ｪ繝ｼ繝舌・蛻､螳夲ｼ・utoSave 縺帙★蟆ら畑逕ｻ髱｢縺ｸ・・
+    // v2.1: ゲームオーバー判定（autoSave せず専用画面へ）
     if (G.weekPhase === 'gameover') {
       const summary = Engine.ending.buildGameOverSummary(G);
       showGameOverScreen(summary);
       return;
     }
-    
     App.checkSurvivalUpdate();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
-    // v1.5s25b: 騾ｱ谺｡繝舌ヵ豸郁ｲｻ・・eekly_funds驕ｩ逕ｨ蜷ｫ繧・・
+    // v1.5s25b: 週次バフ消費（weekly_funds適用含む）
     App._applyWeeklyBuffEffects();
     App._tickMilestoneBuffsWeekly();
-    // v1.4w: 繝・ぅ繝・き繝ｼ譖ｴ譁ｰ
+    // v1.4w: ティッカー更新
     App._refreshTicker();
-    // relationship-flags-spec-v1.0 ﾂｧ4: 髢｢菫よｧ繝輔Λ繧ｰ繝｢繝ｼ繝繝ｫ繧帝・ｬ｡ popup 縺ｫ豬√☆
+    // relationship-flags-spec-v1.0 §4: 関係性フラグモーダルを順次 popup に流す
     if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
-    // Common-3 豢ｾ髢･蜉蜈･騾夂衍繧帝・ｬ｡陦ｨ遉ｺ
+    // Common-3 派閥加入通知を順次表示
     App._drainFactionJoinNotices();
-    // ﾂｧ6 繧｢繝ｼ繧ｭ繧ｿ繧､繝鈴・遘ｻ繝翫Ξ繝ｼ繧ｷ繝ｧ繝ｳ・・07 rebuke 4 邏ｯ遨阪↑縺ｩ騾ｱ谺｡蜃ｦ逅・〒逋ｺ逕溘☆繧具ｼ・
+    // §6 アーキタイプ遷移ナレーション（F07 rebuke 4 累積など週次処理で発生する）
     App._drainArchetypeTransitions();
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
       setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'negative',
-        message: getTraitQuote('injury', c), detail:`唱 ${c.injury.type} 窶・蜈ｨ豐ｻ${c.injury.weeksLeft}騾ｱ髢伝 }), i * 100);
+        message: getTraitQuote('injury', c), detail:`🏥 ${c.injury.type} — 全治${c.injury.weeksLeft}週間` }), i * 100);
     });
-    // v1.2-9: Flavor event popups (髮題ｪ悟叙譚舌・TV蜃ｺ貍・
+    // v1.2-9: Flavor event popups (雑誌取材・TV出演)
     const flavorEvents = G._flavorEvents || [];
     if (flavorEvents.length > 0) {
       const baseDelay = newInjuries.length * 100 + 50;
       flavorEvents.forEach((ev, i) => {
         const tone = ev.type === 'magazine' ? 'positive' : 'positive';
         const detail = ev.type === 'magazine'
-          ? `莠ｺ豌・+${ev.popGain}`
-          : `繝偵・繝・+${ev.heatGain}`;
+          ? `人気 +${ev.popGain}`
+          : `ヒート +${ev.heatGain}`;
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone, message: ev.headline, detail
@@ -7720,13 +7718,13 @@ const App = {
       const { _flavorEvents, ...cleanState } = G;
       G = cleanState;
     }
-    // v1.8: 騾ｱ谺｡謌宣聞繧､繝吶Φ繝茨ｼ医せ繝ｩ繝ｳ繝礼匱逕・蝗槫ｾｩ繝ｻ繝｢繝√・蝟ｪ螟ｱ・峨・繝・・繧｢繝・・
+    // v1.8: 週次成長イベント（スランプ発生/回復・モチベ喪失）ポップアップ
     const weekGrowthEvents = G._pendingGrowthEvents || [];
     if (G._pendingGrowthEvents) {
       const { _pendingGrowthEvents: _, ...cleanGe } = G;
       G = cleanGe;
     }
-    // 閾ｪ荳ｻ蠑暮蜃ｦ逅・ｼ医Δ繝√・蝟ｪ螟ｱ24騾ｱ雜・∴・・
+    // 自主引退処理（モチベ喪失24週超え）
     const motivRetirements = G._pendingMotivationRetirements || [];
     if (G._pendingMotivationRetirements) {
       const { _pendingMotivationRetirements: _, ...cleanMr } = G;
@@ -7745,15 +7743,15 @@ const App = {
           roster: G.roster.filter(c => c.id !== f.id),
           retiredFighters: [...(G.retiredFighters || []), retiredF]
         };
-        // 蝗｣菴灘ｹｴ莉｣險・ 繧｢繝ｼ繧ｫ繧､繝・+ 豌鈴｢ｨ蟇・ｸ・
+        // 団体年代記: アーカイブ + 気風寄与
         G = Engine.chronicle.archiveFighter(G, retiredF);
         G = Engine.chronicle.applySpiritContribution(G, retiredF);
         G = Engine.chronicle.refreshChapters(G);
-        // 邇玖・′繝｢繝√・蝟ｪ螟ｱ蠑暮縺励◆蝣ｴ蜷医・邇句ｺｧ繧堤ｩｺ菴阪↓縺吶ｋ
+        // 王者がモチベ喪失引退した場合は王座を空位にする
         const vcMR = Engine.title.validateChampion(G);
         if (vcMR.msg) { G = { ...G, titles: vcMR.titles, gameLog: [...(G.gameLog || []), vcMR.msg] }; }
         G = archiveRetiredRivalryState(G, retiredF);
-        // ﾂｧ2.3: 蠑暮閠・・髢｢菫ょ､繧貞㍾邨・
+        // §2.3: 引退者の関係値を凍結
         if (G.relationships) G = Engine.relationships.freezeRelationships(G, f.id);
         const delay = (newInjuries.length + flavorEvents.length) * 100 + 200;
         setTimeout(() => showRetirementPopups([{ fighter: retiredF, route: 'motivation', line, summary }]), delay);
@@ -7764,9 +7762,9 @@ const App = {
       setTimeout(() => showGrowthEventPopups(weekGrowthEvents), baseDelay);
     }
 
-    // 遉ｾ髟ｷ螳､ Phase 7: trainer/camp 縺ｮ菫｡鬆ｼ蠎ｦ驕・ｻｶ逋ｺ迴ｾ繝溘ル騾夂衍 (1莉ｶ/騾ｱ)
-    // camp 縺ｯ蜈ｨ蜩｡蛻・・ reveal 縺悟酔騾ｱ縺ｫ逋ｺ逕溘☆繧九◆繧√｝erWeekDelta 髯埼・〒1莉ｶ縺縺代ヴ繝・け
-    // (繧ｹ繝昴ャ繝医Λ繧､繝医・蟾｡繧句次蜑・
+    // 社長室 Phase 7: trainer/camp の信頼度遅延発現ミニ通知 (1件/週)
+    // camp は全員分の reveal が同週に発生するため、perWeekDelta 降順で1件だけピック
+    // (スポットライトは巡る原則)
     const weekTrustReveals = G._pendingTrustReveals || [];
     if (G._pendingTrustReveals) {
       const { _pendingTrustReveals: _, ...cleanTr } = G;
@@ -7775,16 +7773,16 @@ const App = {
     if (weekTrustReveals.length > 0) {
       const pick = [...weekTrustReveals].sort((a, b) => b.perWeekDelta - a.perWeekDelta)[0];
       const SOURCE_TEXTS = {
-        trainer: '蟆ょｱ槭ヨ繝ｬ繝ｼ繝翫・縺ｨ縺ｮ邱ｴ鄙偵〒',
-        camp: '蜷亥ｮｿ縺ｮ謇句ｿ懊∴縺ｧ',
+        trainer: '専属トレーナーとの練習で',
+        camp: '合宿の手応えで',
       };
       const prefix = SOURCE_TEXTS[pick.source] || '';
-      const msg = `､・${prefix}${pick.fighterName}縺ｮ豌玲戟縺｡縺悟燕蜷代″縺ｫ縺ｪ縺｣縺ｦ縺阪◆`;
+      const msg = `🤝 ${prefix}${pick.fighterName}の気持ちが前向きになってきた`;
       const baseDelayTr = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 600;
       setTimeout(() => showToast(msg, 5000), baseDelayTr);
     }
 
-    // 笘・謌宣聞繝槭う繝ｫ繧ｹ繝医・繝ｳ騾夂衍
+    // ★ 成長マイルストーン通知
     const pendingMilestone = G._pendingMilestone || null;
     if (G._pendingMilestone) {
       const { _pendingMilestone: _, ...cleanMs } = G;
@@ -7794,12 +7792,12 @@ const App = {
       const msF = G.roster.find(c => c.id === pendingMilestone.fighterId);
       if (msF) {
         const msLine = pickDialogueLine(MILESTONE_LINES[pendingMilestone.linePool], msF);
-        const STAT_JA = { pw: '繝代Ρ繝ｼ', sp: '繧ｹ繝斐・繝・, te: '繝・け繝九ャ繧ｯ', st: '繧ｹ繧ｿ繝溘リ', mn: '繝｡繝ｳ繧ｿ繝ｫ' };
+        const STAT_JA = { pw: 'パワー', sp: 'スピード', te: 'テクニック', st: 'スタミナ', mn: 'メンタル' };
         let msLabel;
-        if (pendingMilestone.type === 'ovr') msLabel = `邱丞粋蜉・{pendingMilestone.value}蛻ｰ驕覗;
-        else if (pendingMilestone.type === 'pop') msLabel = `莠ｺ豌・{pendingMilestone.value}蛻ｰ驕覗;
-        else msLabel = `${STAT_JA[pendingMilestone.stat] || pendingMilestone.stat}縺碁剞逡後↓蛻ｰ驕覗;
-        // growthLog縺ｫ繝槭う繝ｫ繧ｹ繝医・繝ｳ險倬鹸
+        if (pendingMilestone.type === 'ovr') msLabel = `総合力${pendingMilestone.value}到達`;
+        else if (pendingMilestone.type === 'pop') msLabel = `人気${pendingMilestone.value}到達`;
+        else msLabel = `${STAT_JA[pendingMilestone.stat] || pendingMilestone.stat}が限界に到達`;
+        // growthLogにマイルストーン記録
         const msRoster = G.roster.map(c => {
           if (c.id !== msF.id) return c;
           return { ...c, growthLog: [...(c.growthLog || []), {
@@ -7820,7 +7818,7 @@ const App = {
       }
     }
 
-    // ﾂｧ13.4: 遯∫┯縺ｮ騾蝗｣陦ｨ遉ｺ
+    // §13.4: 突然の退団表示
     const pendingSuddenDepartures = G._pendingSuddenDepartures || null;
     if (G._pendingSuddenDepartures) {
       const { _pendingSuddenDepartures: _, ...cleanSd } = G;
@@ -7833,13 +7831,13 @@ const App = {
           type: 'N_sudden_departure',
           fighter: d.id,
           name: d.name,
-          text: `坎 ${d.name}縺瑚差迚ｩ繧偵∪縺ｨ繧√※蝗｣菴薙ｒ蜴ｻ縺｣縺溘りｪｰ繧よｭ｢繧√ｉ繧後↑縺九▲縺溘Ａ,
-          detail: d.destination === 'rival' ? `${d.name}縺ｯ莉門屮菴薙∈遘ｻ邀阪＠縺溘Ａ : `${d.name}縺ｯ繝輔Μ繝ｼ縺ｨ縺ｪ縺｣縺溘Ａ,
+          text: `🚪 ${d.name}が荷物をまとめて団体を去った。誰も止められなかった。`,
+          detail: d.destination === 'rival' ? `${d.name}は他団体へ移籍した。` : `${d.name}はフリーとなった。`,
         }), sdDelay + i * 200);
       });
     }
 
-    // P1: 繧ｹ繧ｭ繝｣繝ｳ繝繝ｫ騾夂衍繝昴ャ繝励い繝・・
+    // P1: スキャンダル通知ポップアップ
     const pendingScandalEvents = G._pendingScandalEvents || null;
     if (G._pendingScandalEvents) {
       const { _pendingScandalEvents: _, ...cleanSc } = G;
@@ -7851,13 +7849,13 @@ const App = {
         setTimeout(() => showNotifEventToast({
           type: 'N_scandal',
           fighter: sc.fighterId,
-          text: `堂 ${sc.fighterName}縺ｮ繧ｹ繧ｭ繝｣繝ｳ繝繝ｫ縺碁ｱ蛻願ｪ後↓謗ｲ霈峨＆繧後◆・～,
-          detail: `繝輔ぃ繝ｳ縺ｮ髢薙↓蜍墓昭縺悟ｺ・′縺｣縺ｦ縺・ｋ・井ｺｺ豌・{sc.popDelta}・荏,
+          text: `📰 ${sc.fighterName}のスキャンダルが週刊誌に掲載された！`,
+          detail: `ファンの間に動揺が広がっている（人気${sc.popDelta}）`,
         }), scandalDelay + i * 300);
       });
     }
 
-    // P5: 諤ｪ謌鷹屬閼ｱ荳ｭ縺ｮ莠ｺ豌嶺ｽ惹ｸ九ヨ繝ｼ繧ｹ繝・
+    // P5: 怪我離脱中の人気低下トースト
     const pendingInjuryPopDecay = G._pendingInjuryPopDecay || null;
     if (G._pendingInjuryPopDecay) {
       const { _pendingInjuryPopDecay: _, ...cleanIpd } = G;
@@ -7866,19 +7864,19 @@ const App = {
     if (pendingInjuryPopDecay && pendingInjuryPopDecay.length > 0) {
       const ipdDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 100;
       pendingInjuryPopDecay.forEach((ipd, i) => {
-        setTimeout(() => showToast(`悼 ${ipd.fighterName}縺ｮ莠ｺ豌励′縺倥ｏ縺倥ｏ荳九′縺｣縺ｦ縺・ｋ窶ｦ・磯屬閼ｱ荳ｭ・荏, 5000), ipdDelay + i * 200);
+        setTimeout(() => showToast(`📉 ${ipd.fighterName}の人気がじわじわ下がっている…（離脱中）`, 5000), ipdDelay + i * 200);
       });
     }
 
-    // O2: 繧ｬ繝ｩ繧ｬ繝ｩ闊郁｡・竊・譁ｰ閨櫁ｨ倅ｺ・
+    // O2: ガラガラ興行 → 新聞記事
     if (G._pendingEmptyVenue) {
       const { _pendingEmptyVenue: _, ...cleanEv } = G;
       G = cleanEv;
       App._pushNewsEvent({ type: 'emptyVenue',
-        data: { org: G.orgName || '縺ゅ↑縺溘・蝗｣菴・, season: G.season, week: G.week } });
+        data: { org: G.orgName || 'あなたの団体', season: G.season, week: G.week } });
     }
 
-    // v2.0: 騾ｱ谺｡騾夂衍繧､繝吶Φ繝郁｡ｨ遉ｺ・・1縲廸5 繝医・繧ｹ繝磯夂衍・・
+    // v2.0: 週次通知イベント表示（N1〜N5 トースト通知）
     const pendingNotifEvent = G._pendingNotifEvent || null;
     if (G._pendingNotifEvent) {
       const { _pendingNotifEvent: _, ...cleanNe } = G;
@@ -7889,7 +7887,7 @@ const App = {
       setTimeout(() => showNotifEventToast(pendingNotifEvent), notifDelay);
     }
 
-    // v2.0 Phase1-7: 騾・｢・メ繝ｼ繝繧ｹ繝斐Μ繝・ヨ繝舌ヵ陦ｨ遉ｺ
+    // v2.0 Phase1-7: 逆境チームスピリットバフ表示
     const pendingTeamSpirit = G._pendingTeamSpirit || null;
     if (G._pendingTeamSpirit) {
       const { _pendingTeamSpirit: _, ...cleanTs } = G;
@@ -7900,7 +7898,7 @@ const App = {
       setTimeout(() => showNotifEventToast(pendingTeamSpirit), spiritDelay);
     }
 
-    // ﾂｧB-2: 遘ｻ邀阪え繧｣繝ｳ繝峨え蜑埼ｱ縺ｮ莠亥・騾夂衍
+    // §B-2: 移籍ウィンドウ前週の予兆通知
     const pendingPreWindow = G._pendingPreWindowWarning || null;
     if (G._pendingPreWindowWarning) {
       const { _pendingPreWindowWarning: _, ...cleanPw } = G;
@@ -7914,13 +7912,13 @@ const App = {
           fighter: w.fighterId,
           text: w.text,
           detail: w.tone === 'serious'
-            ? '笞・・譚･騾ｱ縺ｯ遘ｻ邀阪え繧｣繝ｳ繝峨え縺ｧ縺吶ゆｿ｡鬆ｼ繧ｱ繧｢縺ｮ譛蠕後・繝√Ε繝ｳ繧ｹ縺九ｂ縺励ｌ縺ｾ縺帙ｓ縲・
-            : '早・・譚･騾ｱ縺ｯ遘ｻ邀阪え繧｣繝ｳ繝峨え縺ｧ縺吶ょ虚蜷代ｒ豕ｨ隕悶＠縺ｾ縺励ｇ縺・・,
+            ? '⚠️ 来週は移籍ウィンドウです。信頼ケアの最後のチャンスかもしれません。'
+            : '👁️ 来週は移籍ウィンドウです。動向を注視しましょう。',
         }), pwDelay + i * 300);
       });
     }
 
-    // ﾂｧ2 隕ｳ蟇溽愍: 繧ｳ繝ｼ繝∝ｱ蜻奇ｼ郁ご謌千判髱｢縺ｫ繧､繝ｳ繝ｩ繧､繝ｳ陦ｨ遉ｺ逕ｨ縺ｫ菫晄戟・・
+    // §2 観察眼: コーチ報告（育成画面にインライン表示用に保持）
     if (G.currentCoachReport) {
       const { currentCoachReport: _, ...cleanPrev } = G;
       G = cleanPrev;
@@ -7934,14 +7932,14 @@ const App = {
       G = { ...G, currentCoachReport: pendingCoachReport };
     }
 
-    // v2.0: 騾ｱ谺｡驕ｸ謚槫梛繧､繝吶Φ繝郁｡ｨ遉ｺ・・/E蝙・繝｢繝ｼ繝繝ｫ・・
+    // v2.0: 週次選択型イベント表示（S/E型 モーダル）
     const pendingChoiceEvent = G._pendingChoiceEvent || null;
     if (G._pendingChoiceEvent) {
       const { _pendingChoiceEvent: _, ...cleanCe } = G;
       G = cleanCe;
     }
     if (pendingChoiceEvent) {
-      // 莉悶・繝昴ャ繝励い繝・・縺碁哩縺倥◆蠕後↓陦ｨ遉ｺ縺吶ｋ縺溘ａ蟆代＠驕・ｻｶ
+      // 他のポップアップが閉じた後に表示するため少し遅延
       const choiceDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 400;
       setTimeout(() => {
         showChoiceEventModal(pendingChoiceEvent, G, (choiceIdx) => {
@@ -7950,7 +7948,7 @@ const App = {
       }, choiceDelay);
     }
 
-    // v2.0 Phase1-6: 螟ｧ蝙九う繝吶Φ繝郁｡ｨ遉ｺ・・1縲廝4 繝｢繝ｼ繝繝ｫ・・
+    // v2.0 Phase1-6: 大型イベント表示（B1〜B4 モーダル）
     const pendingLargeEvent = G._pendingLargeEvent || null;
     if (G._pendingLargeEvent) {
       const { _pendingLargeEvent: _, ...cleanLe } = G;
@@ -7961,11 +7959,11 @@ const App = {
       setTimeout(() => App.handleLargeEvent(pendingLargeEvent), largeDelay);
     }
 
-    // Phase 3a: 豢ｾ髢･繧､繝吶Φ繝郁｡ｨ遉ｺ・・01/F02/F03 繝｢繝ｼ繝繝ｫ・・
-    // 螟ｧ蝙九う繝吶Φ繝茨ｼ・1縲廝4・峨→蜷碁ｱ縺ｫ陦晉ｪ√＠縺溷ｴ蜷医・縲∵ｴｾ髢･繝｢繝ｼ繝繝ｫ繧堤ｿ碁ｱ莉･髯阪↓謖√■雜翫☆縲・
-    // _pendingFactionEvent 繧・G 縺ｫ谿九＠縺ｦ縺翫￠縺ｰ縲∵ｬ｡騾ｱ縺ｮ tickWeek 豢ｾ髢･繝代う繝励Λ繧､繝ｳ縺・
-    // pending 讀懃衍縺ｧ譁ｰ隕乗歓驕ｸ繧偵せ繧ｭ繝・・縺暦ｼ・rc/management.js:7456・峨∵ｬ｡騾ｱ縺ｮ陦ｨ遉ｺ繝ｫ繝ｼ繝励〒
-    // 閾ｪ辟ｶ縺ｫ繝｢繝ｼ繝繝ｫ蛹悶＆繧後ｋ縲る㍾隍・ヨ繝ｪ繧ｬ繝ｼ縺ｯ逋ｺ逕溘＠縺ｪ縺・・
+    // Phase 3a: 派閥イベント表示（F01/F02/F03 モーダル）
+    // 大型イベント（B1〜B4）と同週に衝突した場合は、派閥モーダルを翌週以降に持ち越す。
+    // _pendingFactionEvent を G に残しておけば、次週の tickWeek 派閥パイプラインが
+    // pending 検知で新規抽選をスキップし（src/management.js:7456）、次週の表示ループで
+    // 自然にモーダル化される。重複トリガーは発生しない。
     const pendingFactionEvent = G._pendingFactionEvent || null;
     if (pendingFactionEvent && !pendingLargeEvent) {
       const { _pendingFactionEvent: _, ...cleanFe } = G;
@@ -7974,7 +7972,7 @@ const App = {
       setTimeout(() => App.handleFactionEvent(pendingFactionEvent), factionDelay);
     }
 
-    // 繧ｹ繝翫ャ繝励す繝ｧ繝・ヨ R3繝｢繝ｼ繝繝ｫ陦ｨ遉ｺ
+    // スナップショット R3モーダル表示
     const pendingR3Modal = G._pendingR3Modal || null;
     if (G._pendingR3Modal) {
       const { _pendingR3Modal: _, ...cleanR3 } = G;
@@ -7994,7 +7992,7 @@ const App = {
       }, r3Delay);
     }
 
-    // P4-P6: Glimpse・亥ｿ・・蝙｣髢楢ｦ九∴・芽｡ｨ遉ｺ
+    // P4-P6: Glimpse（心の垣間見え）表示
     const pendingGlimpseA = G._pendingGlimpseA || null;
     if (G._pendingGlimpseA) {
       const { _pendingGlimpseA: _, ...cleanGa } = G;
@@ -8019,7 +8017,7 @@ const App = {
       }
     }
 
-    // v1.9: 騾ｸ譚千音蛻･莠､貂画棧繧｢繝ｳ繝ｭ繝・け騾夂衍
+    // v1.9: 逸材特別交渉枠アンロック通知
     const pendingEliteTicket = G._pendingEliteTicket || false;
     if (G._pendingEliteTicket) {
       const { _pendingEliteTicket: _, ...cleanEt } = G;
@@ -8031,13 +8029,13 @@ const App = {
         Audio.play('fanfare');
         setTimeout(() => Audio.play('stamp'), 400);
         showEventPopup({
-          type: 'system', emoji: '遵', tone: 'gold',
-          message: '至 騾ｸ譚千音蛻･莠､貂画棧繧堤佐蠕暦ｼ・至',
-          detail: '蝗｣菴薙・蜷榊｣ｰ縺梧･ｭ逡後↓霓溘＞縺滂ｼ―n'
-                + '騾ｸ譚舌け繝ｩ繧ｹ縺ｮ驕ｸ謇九◆縺｡縺後√≠縺ｪ縺溘・蝗｣菴薙↓豕ｨ逶ｮ縺励※縺・∪縺吶・n\n'
-                + '虫 FA蟶ょｴ縺ｧ騾ｸ譚舌Λ繝ｳ繧ｯ縺ｮ驕ｸ謇・蜷阪→迚ｹ蛻･縺ｫ莠､貂牙庄閭ｽ\n'
-                + '竢ｳ 縺・▽縺ｧ繧ゆｽｿ逕ｨ蜿ｯ閭ｽ・域ｸｩ蟄楼K・噂n'
-                + '笞・・1蝗樣剞繧・/ 雜・ｸ譚舌↓縺ｯ菴ｿ逕ｨ荳榊庄'
+          type: 'system', emoji: '🏅', tone: 'gold',
+          message: '🎊 逸材特別交渉枠を獲得！ 🎊',
+          detail: '団体の名声が業界に轟いた！\n'
+                + '逸材クラスの選手たちが、あなたの団体に注目しています。\n\n'
+                + '💎 FA市場で逸材ランクの選手1名と特別に交渉可能\n'
+                + '⏳ いつでも使用可能（温存OK）\n'
+                + '⚠️ 1回限り / 超逸材には使用不可'
         });
       }, etDelay);
     }
@@ -8054,7 +8052,7 @@ const App = {
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
     if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week))) {
-      const msg = isPPV(G.week) ? '醇 莉企ｱ縺ｯPPV GRAND FINAL・∝ｹｴ髢捺怙螟ｧ縺ｮ闊槫床縺ｧ縺呻ｼ・ : '箝・莉企ｱ縺ｯ譛域忰迚ｹ蛻･闊郁｡鯉ｼ∬ｩｦ蜷域棧+1縺ｧ邨・ａ繧具ｼ・;
+      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
       setTimeout(() => showToast(msg, 7000), 300);
     }
   },
@@ -8082,10 +8080,10 @@ const App = {
 
   advanceWeek() {
     Audio.play('tick');
-    dismissAllPopups(); // 谿句ｭ倥・繝・・繧｢繝・・繧貞ｼｷ蛻ｶ繧ｯ繝ｪ繧｢
+    dismissAllPopups(); // 残存ポップアップを強制クリア
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
-    // 笏笏 菴馴ｨ鍋沿繧ｷ繝ｼ繧ｺ繝ｳ繧ｲ繝ｼ繝・笏笏
+    // ── 体験版シーズンゲート ──
     if (G._trialEnd) {
       const { _trialEnd: _, ...cleanG } = G;
       G = cleanG;
@@ -8094,13 +8092,13 @@ const App = {
       refreshAll();
       return;
     }
-    // 螂醍ｴ・峩譁ｰ莠､貂峨ヵ繧ｧ繝ｼ繧ｺ
+    // 契約更新交渉フェーズ
     if (G.weekPhase === 'contractNegotiation') {
       Storage.autoSave();
       App.handleContractNegotiations();
       return;
     }
-    // PPV Week 48: PPV繝輔ぉ繝ｼ繧ｺ縺ｫ蜈･縺｣縺溷ｴ蜷医・蟆ら畑繝輔Ο繝ｼ縺ｸ
+    // PPV Week 48: PPVフェーズに入った場合は専用フローへ
     if (G.weekPhase === 'ppvShow') {
       Storage.autoSave();
       App.initPPVShow();
@@ -8111,7 +8109,7 @@ const App = {
       App.initPPVTV();
       return;
     }
-    // 繧ｸ繝･繝九い繝医・繝翫Γ繝ｳ繝・Week 25
+    // ジュニアトーナメント Week 25
     if (G.weekPhase === 'juniorTournament') {
       Storage.autoSave();
       App.initJuniorTournament();
@@ -8122,16 +8120,16 @@ const App = {
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     sessionRng = Engine.rng.create(G.rngSeed);
 
-    // v1.4w: 莠､貂画・蜉滓凾縺ｮ譁ｰ閨槭う繝吶Φ繝・
+    // v1.4w: 交渉成功時の新聞イベント
     if (G.negotiationResult && G.negotiationResult.success && G.negotiationResult.fighter && !(G.pendingRosterOverflowSigning && G.pendingRosterOverflowSigning.source === 'negotiation')) {
       const nf = G.negotiationResult.fighter;
       const fromOrg = (G.transferLog || []).slice(-1)[0];
       App._pushNewsEvent({ type: 'poachSuccess', characterId: nf.id,
-        data: { name: nf.name, toOrg: G.orgName || '縺ゅ↑縺溘・蝗｣菴・,
-          fromOrg: fromOrg ? fromOrg.from : '莉門屮菴・,
+        data: { name: nf.name, toOrg: G.orgName || 'あなたの団体',
+          fromOrg: fromOrg ? fromOrg.from : '他団体',
           ovr: Engine.util.ov(nf) } });
     }
-    // v1.4w: 繝・ぅ繝・き繝ｼ譖ｴ譁ｰ
+    // v1.4w: ティッカー更新
     App._refreshTicker();
 
     // v1.3-3: Extract pending retirements before save (transient field)
@@ -8145,7 +8143,7 @@ const App = {
     Audio.bgm.playForState(); // BGM: switch on season transitions
 
     // v1.3-3: Show retirement popups (season-end)
-    // 蠑暮縺ｯ蠑輔″逡吶ａ繝繧､繧｢繝ｭ繧ｰ縺ｧ豎ｺ譁ｭ蠕後↓ commit 縺吶ｋ・医ム繧､繧｢繝ｭ繧ｰ蜑阪・ roster/titles/HoF 繧貞､画峩縺励↑縺・ｼ・
+    // 引退は引き留めダイアログで決断後に commit する（ダイアログ前は roster/titles/HoF を変更しない）
     if (pendingRetirements && pendingRetirements.length > 0) {
       App._retainedIds = new Set();
       refreshAll();
@@ -8171,26 +8169,26 @@ const App = {
       return;
     }
 
-    // v1.8: AI謌宣聞繧､繝吶Φ繝郁у螽・螂ｽ讖溘い繝ｩ繝ｼ繝茨ｼ郁｡ｨ蠖ｰ蠑上・蜑阪↓陦ｨ遉ｺ・・
+    // v1.8: AI成長イベント脅威/好機アラート（表彰式の前に表示）
     const aiAlerts = G._pendingAIGrowthAlerts || [];
     if (G._pendingAIGrowthAlerts) {
       const { _pendingAIGrowthAlerts: _, ...cleanAI } = G;
       G = cleanAI;
     }
 
-    // v1.4w: AI謌宣聞繧､繝吶Φ繝医・譁ｰ閨槭う繝吶Φ繝亥庶髮・
+    // v1.4w: AI成長イベントの新聞イベント収集
     aiAlerts.forEach(alert => {
       if (alert.type === 'breakthrough') {
-        const orgName = alert.org ? alert.org.name : '莉門屮菴・;
+        const orgName = alert.org ? alert.org.name : '他団体';
         App._pushNewsEvent({ type: 'breakthrough', characterId: alert.fighter?.id,
           data: { name: alert.fighter?.name || '???', org: orgName,
             detail: `${(alert.stat || '').toUpperCase()} +${parseFloat((+(alert.gain||0)).toFixed(1))}` } });
       } else if (alert.type === 'slump') {
-        const orgName = alert.org ? alert.org.name : '莉門屮菴・;
+        const orgName = alert.org ? alert.org.name : '他団体';
         App._pushNewsEvent({ type: 'slump', characterId: alert.fighter?.id,
           data: { name: alert.fighter?.name || '???', org: orgName } });
       } else if (alert.type === 'motivation_loss') {
-        const orgName = alert.org ? alert.org.name : '莉門屮菴・;
+        const orgName = alert.org ? alert.org.name : '他団体';
         App._pushNewsEvent({ type: 'motivationLoss', characterId: alert.fighter?.id,
           data: { name: alert.fighter?.name || '???', org: orgName } });
       }
@@ -8199,12 +8197,12 @@ const App = {
     if (aiAlerts.length > 0) {
       showAIGrowthAlerts(aiAlerts, () => App._safeAwardsChain());
     } else {
-      // v1.4: 蠑暮閠・↑縺励〒繧よ眠閨槭ヱ繝阪Ν竊偵お繝ｳ繝・ぅ繝ｳ繧ｰ繝√ぉ繝・け竊定｡ｨ蠖ｰ蠑上メ繧ｧ繝・け
+      // v1.4: 引退者なしでも新聞パネル→エンディングチェック→表彰式チェック
       App._safeAwardsChain();
     }
   },
 
-  // 陦ｨ蠖ｰ蠑上メ繧ｧ繝ｼ繝ｳ螳牙・螳溯｡・ 荳ｭ髢薙せ繝・ャ繝励・繧ｨ繝ｩ繝ｼ縺ｧ陦ｨ蠖ｰ蠑上′豸亥､ｱ縺励↑縺・ｈ縺・亟蠕｡
+  // 表彰式チェーン安全実行: 中間ステップのエラーで表彰式が消失しないよう防御
   _recoverPendingAwards() {
     if (G.pendingAwards) return true;
     if (!G.offSeason || G.offWeek !== 1) return false;
@@ -8212,7 +8210,7 @@ const App = {
     try {
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xA11D));
       const pendingAwards = Engine.awards.generate(rng, G);
-      G = { ...G, pendingAwards, gameLog: [...(G.gameLog || []), '屏 蟷ｴ譛ｫ陦ｨ蠖ｰ繝・・繧ｿ繧貞ｾｩ譌ｧ縺励∪縺励◆'] };
+      G = { ...G, pendingAwards, gameLog: [...(G.gameLog || []), '🛠 年末表彰データを復旧しました'] };
       Storage.autoSave();
       return true;
     } catch (e) {
@@ -8237,7 +8235,7 @@ const App = {
     catch (e) { console.error('[WM] _showNewsPanelIfNeeded error:', e); endingCallback(); }
   },
 
-  // v1.9: 譁ｰ繧ｷ繝ｼ繧ｺ繝ｳ髢句ｹ輔ヵ繧｡繝ｳ繝輔ぃ繝ｼ繝ｬ縺ｮ繝医Μ繧ｬ繝ｼ蛻､螳・
+  // v1.9: 新シーズン開幕ファンファーレのトリガー判定
   _maybeShowSeasonFanfare(callback) {
     if (G.week === 1 && !G.offSeason && G.season > 1 && typeof showSeasonFanfare === 'function') {
       showSeasonFanfare(G.season, callback);
@@ -8246,9 +8244,9 @@ const App = {
     }
   },
 
-  // v2.1: 繧ｨ繝ｳ繝・ぅ繝ｳ繧ｰ貍泌・繝√ぉ繝・け・亥・繧ｯ繝ｪ繧｢譎ゅ・縺ｿ縲・蝗樣剞繧奇ｼ・
+  // v2.1: エンディング演出チェック（初クリア時のみ、1回限り）
   _checkAndShowEnding(onDone) {
-    // 讌ｭ逡悟ｺ穂ｸ翫￡貍泌・繧偵メ繧ｧ繝ｼ繝ｳ縺吶ｋ蜀・Κ髢｢謨ｰ
+    // 業界底上げ演出をチェーンする内部関数
     const checkElevation = () => {
       if (G._pendingLeagueElevation) {
         const { _pendingLeagueElevation: _, ...cleanG } = G;
@@ -8267,20 +8265,20 @@ const App = {
     }
   },
 
-  // v1.4: 蟷ｴ譛ｫ陦ｨ蠖ｰ蠑上メ繧ｧ繝・け・・｡ｨ遉ｺ
+  // v1.4: 年末表彰式チェック＆表示
   _checkAndShowAwards() {
     const pendingAwards = G.pendingAwards;
     if (!pendingAwards) { App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => refreshAll())); return; }
-    // pendingAwards 縺ｯ transient field 窶・菫晏ｭ伜燕縺ｫ繧ｯ繝ｪ繝ｼ繝ｳ
+    // pendingAwards は transient field — 保存前にクリーン
     const { pendingAwards: _, ...cleanG } = G;
     G = cleanG;
 
-    // 蜿苓ｳ樊ｭｴ繧偵く繝｣繝ｪ繧｢險倬鹸縺ｫ霑ｽ蜉・医・繝ｬ繧､繝､繝ｼ蝗｣菴薙・NPC蝗｣菴薙→繧ゅ↓・・
+    // 受賞歴をキャリア記録に追加（プレイヤー団体・NPC団体ともに）
     {
       const aSeason = pendingAwards.season || G.season;
-      const aWeek = 49; // 繧ｪ繝輔す繝ｼ繧ｺ繝ｳ陦ｨ蠖ｰ蠑・
+      const aWeek = 49; // オフシーズン表彰式
 
-      // 莉ｻ諢上・驕ｸ謇九・繝ｼ繝ｫ縺ｫ蟇ｾ縺励※ id 荳閾ｴ縺ｧ addEvent 縺吶ｋ繝倥Ν繝代・
+      // 任意の選手プールに対して id 一致で addEvent するヘルパー
       const applyToPool = (pool, predicate, ev) =>
         pool.map(f => predicate(f) ? Engine.career.addEvent(f, ev) : f);
 
@@ -8299,7 +8297,7 @@ const App = {
         }
       };
 
-      // 笏笏 繝励Ξ繧､繝､繝ｼ蝗｣菴薙・繧薙・繧ｰ繝ｭ繝ｼ繝舌Ν蜿苓ｳ・笏笏
+      // ── プレイヤー団体ぶんのグローバル受賞 ──
       if (pendingAwards.rookieOfYear) {
         const w = pendingAwards.rookieOfYear;
         recordOnAllOrgs(f => f.id === w.id,
@@ -8326,7 +8324,7 @@ const App = {
         }
       }
 
-      // 笏笏 NPC蝗｣菴薙＃縺ｨ縺ｮ蜀・Κ陦ｨ蠖ｰ・医・繝ｬ繧､繝､繝ｼ縺ｫ縺ｯ陦ｨ遉ｺ縺輔ｌ縺ｪ縺・′螻･豁ｴ縺ｫ縺ｯ谿九ｋ・・笏笏
+      // ── NPC団体ごとの内部表彰（プレイヤーには表示されないが履歴には残る） ──
       const npcAwards = pendingAwards.npcAwards || {};
       Object.keys(npcAwards).forEach(orgId => {
         const a = npcAwards[orgId];
@@ -8354,12 +8352,12 @@ const App = {
       if (aiOrgs) G = { ...G, aiOrgs };
     }
 
-    // Phase 4 E-05: 陦ｨ蠖ｰ蠑上・髢｢菫ょ､蜿肴丐
+    // Phase 4 E-05: 表彰式の関係値反映
     if (G.relationships) {
       const awardRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBE5B));
       let relState = { ...G };
       const rosterIds = (G.roster || []).filter(f => !f.isRental).map(f => f.id);
-      // 蜷・ｳ槭・蜿苓ｳ櫁・ｼ医・繝ｬ繧､繝､繝ｼ蝗｣菴捺園螻槭・縺ｿ・峨↓蟇ｾ縺励※髢｢菫ょ､繧帝←逕ｨ
+      // 各賞の受賞者（プレイヤー団体所属のみ）に対して関係値を適用
       const awardWinners = [];
       if (pendingAwards.rookieOfYear && pendingAwards.rookieOfYear.isPlayerOrg) {
         awardWinners.push(pendingAwards.rookieOfYear.id);
@@ -8371,13 +8369,13 @@ const App = {
         if (!winnerId || !rosterIds.includes(winnerId)) continue;
         const otherIds = rosterIds.filter(id => id !== winnerId);
         if (otherIds.length === 0) continue;
-        // winner竊池oster: bond +2~+3
+        // winner→roster: bond +2~+3
         relState = Engine.relationships.applyToRoster(relState, winnerId, otherIds,
           { min: 2, max: 3 }, { min: 0, max: 0 }, awardRelRng);
-        // roster竊蜘inner: bond +1~+2
+        // roster→winner: bond +1~+2
         relState = Engine.relationships.applyFromRoster(relState, otherIds, winnerId,
           { min: 1, max: 2 }, { min: 0, max: 0 }, awardRelRng);
-        // OVR霑第磁閠・diff竕､5)竊蜘inner: rivalry +2~+4
+        // OVR近接者(diff≤5)→winner: rivalry +2~+4
         const winnerFighter = (G.roster || []).find(f => f.id === winnerId);
         if (winnerFighter) {
           const winnerOvr = Engine.util.ov(winnerFighter);
@@ -8394,23 +8392,23 @@ const App = {
     }
     Storage.autoSave();
     refreshAll();
-    // 蠑輔″豁｢繧∵・蜉溘〒roster縺ｫ謌ｻ縺｣縺滄∈謇九ｒ谿ｿ蝣ょ・繧雁呵｣懊°繧蛾勁螟・
+    // 引き止め成功でrosterに戻った選手を殿堂入り候補から除外
     const rosterIds = new Set(G.roster.map(c => c.id));
     pendingAwards.hallOfFame = (pendingAwards.hallOfFame || []).filter(h => !rosterIds.has(h.id));
-    // v1.4w: 谿ｿ蝣ょ・繧翫・譁ｰ閨槭う繝吶Φ繝亥庶髮・
+    // v1.4w: 殿堂入りの新聞イベント収集
     if (pendingAwards.hallOfFame.length > 0) {
       pendingAwards.hallOfFame.forEach(h => {
         App._pushNewsEvent({ type: 'hallOfFame', characterId: h.id,
           data: { name: h.name, titles: h.titleReigns || 0, defenses: h.totalDefenses || 0 } });
       });
     }
-    // 陦ｨ蠖ｰ蠑上・繝・・繧｢繝・・髢句ｧ・
+    // 表彰式ポップアップ開始
     try { Audio.fileBgm.play('../bgm/8bit-ending-theme_Loop.ogg', { loop: true, volume: 0.07 }); } catch(e) {}
     showAwardsCeremony(pendingAwards, () => {
       try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
-      // 陦ｨ蠖ｰ蠑州GM繝輔ぉ繝ｼ繝峨い繧ｦ繝亥ｾ後↓騾壼ｸｸBGM繧貞・髢・
+      // 表彰式BGMフェードアウト後に通常BGMを再開
       App.restoreBgmForState(1600);
-      // 陦ｨ蠖ｰ蠑丞ｮ御ｺ・ｾ・ 谿ｿ蝣ょ・繧雁・逅・+ retiredFighters 貂・祉
+      // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
       if (pendingAwards.hallOfFame.length > 0) {
         G = Engine.awards.applyHallOfFame(G, pendingAwards.hallOfFame);
       } else {
@@ -8422,7 +8420,7 @@ const App = {
     });
   },
 
-  // v1.5s25b: 繝槭う繝ｫ繧ｹ繝医・繝ｳ讀懷・
+  // v1.5s25b: マイルストーン検出
   _checkMilestones() {
     const ms = G.milestones || {};
     for (const evt of MILESTONE_EVENTS) {
@@ -8439,7 +8437,7 @@ const App = {
           triggered = Object.keys(G.rivalries || {}).length > 0;
           break;
         case 'venue':
-          if (evt.trigger.timing === 'preShow') break; // preShow繝輔ャ繧ｯ縺ｧ蜃ｦ逅・
+          if (evt.trigger.timing === 'preShow') break; // preShowフックで処理
           triggered = (G.showVenue === evt.trigger.venueIdx);
           break;
         case 'venue_occupancy': {
@@ -8456,7 +8454,7 @@ const App = {
     return null;
   },
 
-  // D螻､: 闊郁｡悟燕繝槭う繝ｫ繧ｹ繝医・繝ｳ繝√ぉ繝・け・・reShow timing 縺ｮ縺ｿ蟇ｾ雎｡・・
+  // D層: 興行前マイルストーンチェック（preShow timing のみ対象）
   _checkAndShowPreShowMilestone(onDone) {
     const ms = G.milestones || {};
     for (const evt of MILESTONE_EVENTS) {
@@ -8477,18 +8475,18 @@ const App = {
     onDone();
   },
 
-  // v1.5s25b: 繝槭う繝ｫ繧ｹ繝医・繝ｳ繝√ぉ繝・け竊旦I竊帝←逕ｨ縺ｮ繝輔Ο繝ｼ
+  // v1.5s25b: マイルストーンチェック→UI→適用のフロー
   _checkAndShowMilestone(onDone) {
     const evt = App._checkMilestones();
     if (!evt) { onDone(); return; }
-    // D螻､繧､繝吶Φ繝茨ｼ・hoices 縺ｪ縺暦ｼ峨・繧ｻ繝ｬ繝｢繝九・貍泌・
+    // D層イベント（choices なし）はセレモニー演出
     if (!evt.choices || evt.choices.length === 0) {
       G = { ...G, milestones: { ...(G.milestones || {}), [evt.id]: true } };
       const speakers = App._resolveSpotlightFighters(G);
       showCeremonyEvent(evt, speakers, onDone);
       return;
     }
-    // first_rivalry 縺ｯ繝翫Ξ繝ｼ繧ｷ繝ｧ繝ｳ蜍慕噪逕滓・
+    // first_rivalry はナレーション動的生成
     let displayEvt = evt;
     if (evt.id === 'first_rivalry' && !evt.narration) {
       const rivalryKeys = Object.keys(G.rivalries || {});
@@ -8500,7 +8498,7 @@ const App = {
         const n1 = c1?.name || '???';
         const n2 = c2?.name || '???';
         displayEvt = { ...evt,
-          narration: `${n1}縺ｨ${n2}窶披能n繝ｪ繝ｳ繧ｰ荳翫〒菴募ｺｦ繧ら↓闃ｱ繧呈淵繧峨＠縺溘・縺溘ｊ縺ｮ髢薙↓縲―n迚ｹ蛻･縺ｪ遨ｺ豌励′貍ゅ＞蟋九ａ縺ｦ縺・ｋ縲・n縺薙・蝗邵√√←縺・ｴｻ縺九＠縺ｦ縺・￥縺銀披覗,
+          narration: `${n1}と${n2}——\nリング上で何度も火花を散らしたふたりの間に、\n特別な空気が漂い始めている。\nこの因縁、どう活かしていくか——`,
           choices: evt.choices.map((ch, i) => {
             if (i === 1 && ch.effect.type === 'next_match_mq') {
               return { ...ch, effect: { ...ch.effect, pair: [id1, id2] } };
@@ -8517,7 +8515,7 @@ const App = {
     });
   },
 
-  // D螻､: 繝｡繧､繝ｳ繧､繝吶Φ繝・蜷・+ 繝ｭ繧ｹ繧ｿ繝ｼpop譛螟ｧ縺ｮ繝吶ユ繝ｩ繝ｳ莉｣陦ｨ繧帝∈蜃ｺ
+  // D層: メインイベント2名 + ロスターpop最大のベテラン代表を選出
   _resolveSpotlightFighters(G) {
     const mainCard = G.showCard?.[0];
     if (!mainCard) return [];
@@ -8530,13 +8528,13 @@ const App = {
         && f.status !== 'retired' && !f.isRental)
       .sort((a, b) => (b.pop || 0) - (a.pop || 0))[0];
     return [
-      mainLeft  ? { fighter: mainLeft,  roleLabel: 'MAIN EVENT 繝ｻ 襍､繧ｳ繝ｼ繝翫・' } : null,
-      mainRight ? { fighter: mainRight, roleLabel: 'MAIN EVENT 繝ｻ 髱偵さ繝ｼ繝翫・' } : null,
-      veteran   ? { fighter: veteran,   roleLabel: 'VETERAN 繝ｻ 繝ｭ繝・き繝ｼ繝ｫ繝ｼ繝莉｣陦ｨ' } : null
+      mainLeft  ? { fighter: mainLeft,  roleLabel: 'MAIN EVENT ・ 赤コーナー' } : null,
+      mainRight ? { fighter: mainRight, roleLabel: 'MAIN EVENT ・ 青コーナー' } : null,
+      veteran   ? { fighter: veteran,   roleLabel: 'VETERAN ・ ロッカールーム代表' } : null
     ].filter(Boolean);
   },
 
-  // D螻､: personalityﾃ預rchetype縺九ｉ繝峨・繝繧ｻ繝ｪ繝輔ｒ豎ｺ螳夊ｫ也噪縺ｫ驕ｸ蜃ｺ・・NG繧ｷ繝ｼ繝牙茜逕ｨ・・
+  // D層: personality×archetypeからドームセリフを決定論的に選出（RNGシード利用）
   resolveDomeLine(fighter, dialogueKey) {
     const dict = dialogueKey === 'dome_firstshow' ? DOME_FIRSTSHOW_LINES : DOME_SELLOUT_LINES;
     const p = fighter.personality || 'normal';
@@ -8550,18 +8548,18 @@ const App = {
     return lines[idx];
   },
 
-  // v1.5s25b: 繝槭う繝ｫ繧ｹ繝医・繝ｳ驕ｸ謚櫁い縺ｮ蜉ｹ譫憺←逕ｨ
+  // v1.5s25b: マイルストーン選択肢の効果適用
   _applyMilestoneChoice(evt, choiceIdx) {
     const choice = evt.choices[choiceIdx];
     const eff = choice.effect;
     const buff = { ...eff, source: evt.id };
 
-    // 騾ｱ繧ｫ繧ｦ繝ｳ繝育ｳｻ
+    // 週カウント系
     if (eff.weeks) buff.remainingWeeks = eff.weeks;
-    // 闊郁｡後き繧ｦ繝ｳ繝育ｳｻ
+    // 興行カウント系
     if (eff.shows) buff.remainingShows = eff.shows;
 
-    // 蜊ｳ譎ょ柑譫・ rivalry_boost 窶・蝗邵√き繧ｦ繝ｳ繝医ｒ蜊ｳ譎・1
+    // 即時効果: rivalry_boost — 因縁カウントを即時+1
     if (eff.type === 'rivalry_boost') {
       const rivalryKeys = Object.keys(G.rivalries || {});
       if (rivalryKeys.length > 0) {
@@ -8580,7 +8578,7 @@ const App = {
     Storage.autoSave();
   },
 
-  // v1.5s25b: milestoneBuffs 縺ｮ騾ｱ繧ｫ繧ｦ繝ｳ繝医ム繧ｦ繝ｳ・域ｯ朱ｱprocessWeek蠕後↓蜻ｼ縺ｶ・・
+  // v1.5s25b: milestoneBuffs の週カウントダウン（毎週processWeek後に呼ぶ）
   _tickMilestoneBuffsWeekly() {
     if (!G.milestoneBuffs || G.milestoneBuffs.length === 0) return;
     const newBuffs = G.milestoneBuffs
@@ -8589,7 +8587,7 @@ const App = {
     G = { ...G, milestoneBuffs: newBuffs };
   },
 
-  // v1.5s25b: milestoneBuffs 縺ｮ闊郁｡後き繧ｦ繝ｳ繝医ム繧ｦ繝ｳ・郁・陦悟ｾ後↓蜻ｼ縺ｶ・・
+  // v1.5s25b: milestoneBuffs の興行カウントダウン（興行後に呼ぶ）
   _tickMilestoneBuffsShow() {
     if (!G.milestoneBuffs || G.milestoneBuffs.length === 0) return;
     const newBuffs = G.milestoneBuffs
@@ -8598,7 +8596,7 @@ const App = {
     G = { ...G, milestoneBuffs: newBuffs };
   },
 
-  // v1.5s25b: weekly_funds 繝舌ヵ縺ｮ雉・≡驕ｩ逕ｨ・域ｯ朱ｱprocessWeek/closeShowResult蠕後↓蜻ｼ縺ｶ・・
+  // v1.5s25b: weekly_funds バフの資金適用（毎週processWeek/closeShowResult後に呼ぶ）
   _applyWeeklyBuffEffects() {
     if (!G.milestoneBuffs || G.milestoneBuffs.length === 0) return;
     const weeklyFundsBuff = G.milestoneBuffs.find(b => b.type === 'weekly_funds');
@@ -8608,10 +8606,10 @@ const App = {
     }
   },
 
-  // v2.0: 驕ｸ謚槫梛繧､繝吶Φ繝医・驕ｸ謚樒ｵ先棡繧帝←逕ｨ
+  // v2.0: 選択型イベントの選択結果を適用
   applyChoiceEvent(event, choiceIdx) {
     const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, G);
-    // ﾂｧ13.3: __orgPop: 繧､繝吶Φ繝医°繧頴rgPop螟牙虚繧呈歓蜃ｺ縺励※驕ｩ逕ｨ
+    // §13.3: __orgPop: イベントからorgPop変動を抽出して適用
     let orgPopDelta = 0;
     const displayEvents = [];
     (result.events || []).forEach(e => {
@@ -8621,9 +8619,9 @@ const App = {
         displayEvents.push(e);
       }
     });
-    // orgPop螟牙虚縺後≠繧後・繝ｭ繧ｰ縺ｫ險倬鹸・・_orgPop:縺ｯdisplayEvents縺九ｉ髯､螟悶＆繧後ｋ縺溘ａ縲√Ο繧ｰ縺ｫ繧よｮ九ｉ縺ｪ縺九▲縺滂ｼ・
+    // orgPop変動があればログに記録（__orgPop:はdisplayEventsから除外されるため、ログにも残らなかった）
     if (orgPopDelta !== 0) {
-      displayEvents.push(`悼 蝗｣菴謎ｺｺ豌・{orgPopDelta >= 0 ? '+' : ''}${Math.round(orgPopDelta * 100) / 100}`);
+      displayEvents.push(`📉 団体人気${orgPopDelta >= 0 ? '+' : ''}${Math.round(orgPopDelta * 100) / 100}`);
     }
     G = { ...G,
       roster: result.roster,
@@ -8632,12 +8630,12 @@ const App = {
       orgPop: Engine.util.clamp((G.orgPop || 0) + orgPopDelta, 0, 100),
       gameLog: [...(G.gameLog || []), ...displayEvents]
     };
-    // 謾ｾ蜃ｺ縺輔ｌ縺滄∈謇九ｒFA/dormant縺ｫ謖ｯ繧雁・縺・
+    // 放出された選手をFA/dormantに振り分け
     if (result.departedFighters && result.departedFighters.length > 0) {
       for (const departed of result.departedFighters) {
-        // orgTimeline險倬鹸
+        // orgTimeline記録
         const tracked = Engine.orgTimeline.transfer(departed, 'fa', G.season, G.week);
-        // 騾蝗｣bond/rivalry蠖ｱ髻ｿ
+        // 退団bond/rivalry影響
         Engine.relationships.applyDepartureTrustImpact(G, departed.id, 'release', {});
         if (Engine.util.canAddToFA(G)) {
           G = { ...G, freeAgents: [...(G.freeAgents || []), tracked] };
@@ -8645,56 +8643,56 @@ const App = {
           G = Engine.util.redirectToDormantPool(G, tracked);
         }
       }
-      // 邇玖・′謾ｾ蜃ｺ/騾蝗｣縺励◆蝣ｴ蜷医・邇句ｺｧ繧堤ｩｺ菴阪↓縺吶ｋ
+      // 王者が放出/退団した場合は王座を空位にする
       const vcCE = Engine.title.validateChampion(G);
       if (vcCE.msg) { G = { ...G, titles: vcCE.titles, gameLog: [...(G.gameLog || []), vcCE.msg] }; }
     }
     Storage.autoSave();
     Audio.play('event');
     renderWeekScreen();
-    // 邨先棡繧偵Δ繝ｼ繝繝ｫ縺ｧ陦ｨ遉ｺ・・oast縺ｧ縺ｯ縺ｪ縺擾ｼ・
+    // 結果をモーダルで表示（toastではなく）
     if (displayEvents.length > 0) {
       showChoiceEventResult(event, displayEvents, G);
     }
   },
 
-  // v2.0 Phase1-6: 螟ｧ蝙九う繝吶Φ繝・I繝輔Ο繝ｼ蛻ｶ蠕｡
+  // v2.0 Phase1-6: 大型イベントUIフロー制御
   handleLargeEvent(event) {
-    // Step 0: 蛻晄悄陦ｨ遉ｺ
+    // Step 0: 初期表示
     showLargeEventModal(event, G, 0, (choiceIdx) => {
       if (choiceIdx < 0) return;
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B2));
       const result = Engine.eventSystem.applyLargeEventEffect(event, 0, choiceIdx, G, rng);
       App._applyLargeEventResult(result);
 
-      // B4繧ｿ繝ｬ繝ｳ繝域ｴｻ蜍・/ 繝｡繝・ぅ繧｢蟇・捩蜿匁攝: 驕ｸ謇矩∈謚槫ｾ後↓繧ｻ繝ｪ繝輔・繝・・繧｢繝・・陦ｨ遉ｺ
-      // choiceIdx 縺ｯ驕ｸ繧薙□驕ｸ謇紀D(>0)縲ＨetLargeEventDialogue 縺ｯ event.activityType 繧定ｦ九※
-      // B4_{activityType} 繧ｭ繝ｼ繧貞・驛ｨ縺ｧ隗｣豎ｺ縺吶ｋ縺溘ａ縲》ype 荳頑嶌縺阪・荳崎ｦ√・
+      // B4タレント活動 / メディア密着取材: 選手選択後にセリフポップアップ表示
+      // choiceIdx は選んだ選手ID(>0)。getLargeEventDialogue は event.activityType を見て
+      // B4_{activityType} キーを内部で解決するため、type 上書きは不要。
       if (event.type === 'B4' && choiceIdx > 0) {
         const selectedFighter = G.roster.find(f => f.id === choiceIdx);
         if (selectedFighter) {
           const dlgRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB4D1));
           const dlgEvent = { ...event, fighter: choiceIdx };
           let dialogue = Engine.eventSystem.getLargeEventDialogue(dlgRng, dlgEvent, G.roster);
-          // 繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ: activityType 蛻･繧ｭ繝ｼ縺ｧ蜿悶ｌ縺ｪ縺九▲縺溷ｴ蜷医・邏縺ｮ B4 繧定ｩｦ縺・
+          // フォールバック: activityType 別キーで取れなかった場合は素の B4 を試す
           if (!dialogue && event.activityType) {
             dialogue = Engine.eventSystem.getLargeEventDialogue(dlgRng, { ...event, fighter: choiceIdx, activityType: undefined }, G.roster);
           }
-          if (!dialogue) dialogue = '窶ｦ邊ｾ荳譚ｯ繧・ｊ縺ｾ縺・;
+          if (!dialogue) dialogue = '…精一杯やります';
           const activityLabel = (typeof TALENT_ACTIVITY_LABELS !== 'undefined' && event.activityType)
-            ? (TALENT_ACTIVITY_LABELS[event.activityType] || '繧ｿ繝ｬ繝ｳ繝域ｴｻ蜍・)
-            : '蟇・捩蜿匁攝';
-          // closeAndChoice 逶ｴ蠕後・ overlay 繧ｯ繝ｭ繝ｼ繧ｺ螳御ｺ・ｒ遒ｺ螳溘↓縺励※縺九ｉ陦ｨ遉ｺ
+            ? (TALENT_ACTIVITY_LABELS[event.activityType] || 'タレント活動')
+            : '密着取材';
+          // closeAndChoice 直後の overlay クローズ完了を確実にしてから表示
           setTimeout(() => showEventPopup({
             type: 'fighter', id: selectedFighter.id, name: selectedFighter.name,
             tone: 'gold', message: dialogue,
-            detail: `銅 ${event.outletName || '繝｡繝・ぅ繧｢'}繝ｻ${activityLabel}`,
+            detail: `📺 ${event.outletName || 'メディア'}・${activityLabel}`,
           }), 250);
         }
       }
 
       if (result.nextStep === 1) {
-        // B2: 莉句・驕ｸ謚・/ B3: 莉｣陦ｨ驕ｸ謇矩∈謚・
+        // B2: 介入選択 / B3: 代表選手選択
         setTimeout(() => {
           showLargeEventModal(event, G, 1, (choiceIdx2) => {
             if (choiceIdx2 < 0) return;
@@ -8703,7 +8701,7 @@ const App = {
             App._applyLargeEventResult(result2);
 
             if (result2.nextStep === 2) {
-              // B2: 隧ｦ蜷医す繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ / B3: 隧ｦ蜷医す繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+              // B2: 試合シミュレーション / B3: 試合シミュレーション
               setTimeout(() => App._executeLargeEventMatch(event, result2), 300);
             }
           });
@@ -8712,10 +8710,10 @@ const App = {
     });
   },
 
-  // Phase 3a: 豢ｾ髢･繧､繝吶Φ繝・I繝輔Ο繝ｼ蛻ｶ蠕｡・・01/F02/F03・・
+  // Phase 3a: 派閥イベントUIフロー制御（F01/F02/F03）
   handleFactionEvent(event) {
     const { eventId, payload } = event;
-    // 邨先棡繝｢繝ｼ繝繝ｫ縲碁哩縺倥ｋ縲肴凾縺ｫ stinger + BGM fadeOut + 騾壼ｸｸ BGM 蠕ｩ蟶ｰ
+    // 結果モーダル「閉じる」時に stinger + BGM fadeOut + 通常 BGM 復帰
     const finalizeAudio = () => _factionAudioClose(eventId);
     if (eventId === 'F01') {
       _factionAudioOpen(eventId);
@@ -8724,12 +8722,12 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA13));
         const result = Engine.factions.applyF01Choice(G, payload, choiceId, rng);
         G = { ...result.state };
-        // 讌ｭ逡後ル繝･繝ｼ繧ｹ: 豢ｾ髢･謌千ｫ具ｼ・=譌玲恕縺・ C=髱呵ｦｳ縺ｧ邨先・・・
+        // 業界ニュース: 派閥成立（A=旗揚げ, C=静観で結成）
         if (choiceId === 'A' || choiceId === 'C') {
           App._pushIndustryNews({
             type: 'factionFormed',
             characterId: payload.leaderId,
-            data: { org: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・, leaderName: payload.leaderName || '?' },
+            data: { org: G.orgName || 'プレイヤー団体', leaderName: payload.leaderName || '?' },
           });
         }
         Storage.autoSave();
@@ -8738,7 +8736,7 @@ const App = {
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'F01',
-          category: '豢ｾ髢･謌千ｫ・,
+          category: '派閥成立',
           resultText: result.resultText,
           charId: payload.leaderId,
           charName: leader ? leader.name : payload.leaderName,
@@ -8753,13 +8751,13 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA23));
         const result = Engine.factions.applyF02Choice(G, payload, choiceId, rng);
         G = { ...result.state };
-        // 讌ｭ逡後ル繝･繝ｼ繧ｹ: 豢ｾ髢･謚嶺ｺ牙泣逋ｺ・・=辣ｽ繧・/ C=莉句・縺励↑縺・縺ｧ謚嶺ｺ芽｡ｨ髱｢蛹厄ｼ・
+        // 業界ニュース: 派閥抗争勃発（A=煽る / C=介入しない で抗争表面化）
         if (choiceId === 'A' || choiceId === 'C') {
           App._pushIndustryNews({
             type: 'factionEscalation',
             characterId: payload.leaderAId || null,
             data: {
-              org: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・,
+              org: G.orgName || 'プレイヤー団体',
               factionAName: payload.factionAName || '?',
               factionBName: payload.factionBName || '?',
             },
@@ -8771,7 +8769,7 @@ const App = {
         const leaderA = (G.roster || []).find(c => c.id === payload.leaderAId);
         showFactionEventResult({
           eventId: 'F02',
-          category: '豢ｾ髢･謚嶺ｺ・,
+          category: '派閥抗争',
           resultText: result.resultText,
           charId: payload.leaderAId,
           charName: leaderA ? leaderA.name : payload.leaderAName,
@@ -8780,7 +8778,7 @@ const App = {
         }, finalizeAudio);
       });
     } else if (eventId === 'F02_PEACE') {
-      // v4 ﾂｧ2-1: F02竭｡ 豐磯撕蛹厄ｼ磯夂衍縺ｮ縺ｿ繝ｻ驕ｸ謚櫁い縺ｪ縺暦ｼ・
+      // v4 §2-1: F02② 沈静化（通知のみ・選択肢なし）
       _factionAudioOpen(eventId);
       showFactionF02PeaceModal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA27));
@@ -8791,14 +8789,14 @@ const App = {
         renderWeekScreen();
         showFactionEventResult({
           eventId: 'F02_PEACE',
-          category: '謚嶺ｺ画ｲ磯撕蛹・,
+          category: '抗争沈静化',
           resultText: result.resultText,
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
     } else if (eventId === 'F02_IGNITE') {
-      // v4 ﾂｧ2-1: F02竭 逋ｺ轣ｫ・郁・陦碁幕蟋区凾縲・夂衍縺ｮ縺ｿ繝ｻ驕ｸ謚櫁い縺ｪ縺暦ｼ・
+      // v4 §2-1: F02① 発火（興行開始時、通知のみ・選択肢なし）
       _factionAudioOpen(eventId);
       showFactionF02IgniteModal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA26));
@@ -8809,25 +8807,25 @@ const App = {
         renderWeekScreen();
         showFactionEventResult({
           eventId: 'F02_IGNITE',
-          category: '謚嶺ｺ臥匱轣ｫ',
+          category: '抗争発火',
           resultText: result.resultText,
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);
       });
     } else if (eventId === 'F02_RESOLUTION') {
-      // v4 ﾂｧ2-1: F02竭｢ 豎ｺ逹・郁ｩｦ蜷育峩蠕後・夂衍縺ｮ縺ｿ繝ｻ驕ｸ謚櫁い縺ｪ縺暦ｼ・
+      // v4 §2-1: F02③ 決着（試合直後、通知のみ・選択肢なし）
       _factionAudioOpen(eventId);
       showFactionF02ResolutionModal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA24));
         const result = Engine.factions.applyF02ResolutionResult(G, payload, rng);
         G = { ...result.state };
-        // 讌ｭ逡後ル繝･繝ｼ繧ｹ: 豢ｾ髢･謚嶺ｺ画ｱｺ逹
+        // 業界ニュース: 派閥抗争決着
         App._pushIndustryNews({
           type: 'factionResolution',
           characterId: payload.winnerId || null,
           data: {
-            org: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・,
+            org: G.orgName || 'プレイヤー団体',
             winFaction: payload.winFactionName || payload.factionAName || '?',
             loseFaction: payload.loseFactionName || payload.factionBName || '?',
             loseLeader: payload.loseLeaderName || payload.leaderBName || '?',
@@ -8839,7 +8837,7 @@ const App = {
         const winner = (G.roster || []).find(c => c.id === payload.winnerId);
         showFactionEventResult({
           eventId: 'F02_RESOLUTION',
-          category: '謚嶺ｺ画ｱｺ逹',
+          category: '抗争決着',
           resultText: result.resultText,
           charId: payload.winnerId,
           charName: winner ? winner.name : payload.winnerName,
@@ -8848,7 +8846,7 @@ const App = {
         }, finalizeAudio);
       });
     } else if (eventId === 'F02_ENDLESS') {
-      // v4 ﾂｧ2-1: F02竭｣ 辟｡髯先蒲莠会ｼ磯夂衍縺ｮ縺ｿ繝ｻ驕ｸ謚櫁い縺ｪ縺暦ｼ・
+      // v4 §2-1: F02④ 無限抗争（通知のみ・選択肢なし）
       _factionAudioOpen(eventId);
       showFactionF02EndlessModal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA25));
@@ -8859,7 +8857,7 @@ const App = {
         renderWeekScreen();
         showFactionEventResult({
           eventId: 'F02_ENDLESS',
-          category: '辟｡髯先蒲莠・,
+          category: '無限抗争',
           resultText: result.resultText,
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
@@ -8871,14 +8869,14 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA33));
         const result = Engine.factions.applyF03Result(G, payload, rng);
         G = { ...result.state };
-        // 讌ｭ逡後ル繝･繝ｼ繧ｹ: 豢ｾ髢･豸域ｻ・(branch === 'dissolution' / 蠕檎ｶ呵・↑縺・
+        // 業界ニュース: 派閥消滅 (branch === 'dissolution' / 後継者なし)
         if (payload.branch === 'dissolution') {
           const fac = (G.factions || []).find(f => f.id === payload.factionId);
           App._pushIndustryNews({
             type: 'factionDissolution',
             characterId: null,
             data: {
-              org: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・,
+              org: G.orgName || 'プレイヤー団体',
               factionName: payload.factionName || (fac && fac.name) || '?',
               leaderName: payload.oldLeaderName || '?',
             },
@@ -8890,7 +8888,7 @@ const App = {
         const newLeader = payload.newLeaderId ? (G.roster || []).find(c => c.id === payload.newLeaderId) : null;
         showFactionEventResult({
           eventId: 'F03',
-          category: '繝ｪ繝ｼ繝繝ｼ蝟ｪ螟ｱ',
+          category: 'リーダー喪失',
           resultText: result.resultText,
           charId: payload.newLeaderId || null,
           charName: newLeader ? newLeader.name : (payload.newLeaderName || ''),
@@ -8911,7 +8909,7 @@ const App = {
         const target = (G.roster || []).find(c => c.id === payload.targetId);
         showFactionEventResult({
           eventId: 'F04',
-          category: '遘ｻ邀・,
+          category: '移籍',
           resultText: result.resultText,
           charId: payload.targetId,
           charName: target ? target.name : payload.targetName,
@@ -8920,7 +8918,7 @@ const App = {
         }, finalizeAudio);
       });
     } else if (eventId === 'F05H') {
-      // F05H 豢ｻ蜍穂ｼ第ｭ｢・磯夂衍縺ｮ縺ｿ繝ｻ驕ｸ謚櫁い縺ｪ縺暦ｼ・
+      // F05H 活動休止（通知のみ・選択肢なし）
       _factionAudioOpen(eventId);
       showFactionHiatusModal(payload, G, () => {
         const result = Engine.factions.applyF05HResult(G, payload);
@@ -8931,7 +8929,7 @@ const App = {
         const leaderH = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'F05H',
-          category: '豢ｻ蜍穂ｼ第ｭ｢',
+          category: '活動休止',
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leaderH ? leaderH.name : payload.leaderName,
@@ -8946,13 +8944,13 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA15));
         const result = Engine.factions.applyF05Choice(G, payload, choiceId, rng);
         G = { ...result.state };
-        // 讌ｭ逡後ル繝･繝ｼ繧ｹ: 豢ｾ髢･蛻・｣ゑｼ・=謾ｾ莉ｻ 縺ｧ natural split 縺檎匱逕溘☆繧狗ｵ瑚ｷｯ諠ｳ螳夲ｼ・
+        // 業界ニュース: 派閥分裂（A=放任 で natural split が発生する経路想定）
         if (choiceId === 'A' || choiceId === 'C') {
           App._pushIndustryNews({
             type: 'factionSplit',
             characterId: payload.ringleaderId || null,
             data: {
-              org: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・,
+              org: G.orgName || 'プレイヤー団体',
               factionName: payload.factionName || '?',
               ringleaderName: payload.ringleaderName || '?',
             },
@@ -8964,7 +8962,7 @@ const App = {
         const ringleader = (G.roster || []).find(c => c.id === payload.ringleaderId);
         showFactionEventResult({
           eventId: 'F05',
-          category: '豢ｾ髢･蛻・｣・,
+          category: '派閥分裂',
           resultText: result.resultText,
           charId: payload.ringleaderId || null,
           charName: ringleader ? ringleader.name : payload.ringleaderName,
@@ -8985,7 +8983,7 @@ const App = {
         const leader6 = (G.roster || []).find(c => c.id === payload.leaderAId);
         showFactionEventResult({
           eventId: 'F06',
-          category: '蜷檎屐邱邨・,
+          category: '同盟締結',
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leader6 ? leader6.name : payload.leaderAName,
@@ -9003,7 +9001,7 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        // v0.4 譁ｰ繧ｷ繧ｰ繝阪メ繝｣: incidentType ﾃ・choice ﾃ・personality 縺ｧ繝ｪ繝ｼ繝繝ｼ蜿榊ｿ懊そ繝ｪ繝輔ｒ讒区・
+        // v0.4 新シグネチャ: incidentType × choice × personality でリーダー反応セリフを構成
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         const target = payload.incidentPayload && payload.incidentPayload.targetId
           ? (G.roster || []).find(c => c.id === payload.incidentPayload.targetId)
@@ -9022,7 +9020,7 @@ const App = {
         const fullResultText = targetLine ? `${result.resultText}\n${targetLine}` : result.resultText;
         showFactionEventResult({
           eventId: 'F07',
-          category: '豢ｾ髢･蜍募髄',
+          category: '派閥動向',
           resultText: fullResultText,
           charId: payload.leaderId,
           charName: leader ? leader.name : payload.leaderName,
@@ -9044,7 +9042,7 @@ const App = {
         const leader8 = (G.roster || []).find(c => c.id === payload.leaderAId);
         showFactionEventResult({
           eventId: 'F08',
-          category: '逶ｴ謗･蟇ｾ豎ｺ',
+          category: '直接対決',
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leader8 ? leader8.name : payload.leaderAName,
@@ -9065,7 +9063,7 @@ const App = {
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'COMMON_1',
-          category: '豢ｾ髢･蜀・ｯｾ豎ｺ',
+          category: '派閥内対決',
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leader ? leader.name : '',
@@ -9086,7 +9084,7 @@ const App = {
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'COMMON_5',
-          category: '繝｡繝・ぅ繧｢蜿匁攝',
+          category: 'メディア取材',
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leader ? leader.name : payload.leaderName,
@@ -9107,7 +9105,7 @@ const App = {
         const leaderA = (G.roster || []).find(c => c.id === payload.leaderAId);
         showFactionEventResult({
           eventId: 'COMMON_7',
-          category: '豢ｾ髢･蜷亥酔莨∫判',
+          category: '派閥合同企画',
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leaderA ? leaderA.name : payload.leaderAName,
@@ -9116,7 +9114,7 @@ const App = {
         }, finalizeAudio);
       });
     } else if (eventId === 'COMMON_4') {
-      // 豢ｾ髢･蜷亥ｮｿ繝ｻ諷ｰ蜉ｴ莨夲ｼ磯夂衍縺ｮ縺ｿ繝ｻ驕ｸ謚櫁い縺ｪ縺暦ｼ・
+      // 派閥合宿・慰労会（通知のみ・選択肢なし）
       _factionAudioOpen(eventId);
       showFactionCommon4Modal(payload, G, () => {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAC4));
@@ -9128,7 +9126,7 @@ const App = {
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'COMMON_4',
-          category: '豢ｾ髢･蜷亥ｮｿ',
+          category: '派閥合宿',
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leader ? leader.name : payload.leaderName,
@@ -9139,7 +9137,7 @@ const App = {
     }
   },
 
-  // 螟ｧ蝙九う繝吶Φ繝・ VS蟇ｾ蟲咏判髱｢陦ｨ遉ｺ・郁ｩｦ蜷医・縺ｾ縺螳溯｡後＠縺ｪ縺・ｼ・
+  // 大型イベント: VS対峙画面表示（試合はまだ実行しない）
   _executeLargeEventMatch(event, prevResult) {
     if (event.type === 'B2') {
       const intervention = prevResult.interventionChoice; // 0=f1, 1=f2, 2=neutral
@@ -9147,7 +9145,7 @@ const App = {
       let f2 = G.roster.find(f => f.id === event.fighter2);
       if (!f1 || !f2) return;
 
-      // 莉句・繝舌ヵ縺ｮ驕ｩ逕ｨ・井ｸ譎ら噪繧ｳ繝斐・・・
+      // 介入バフの適用（一時的コピー）
       const f1Buffed = { ...f1 };
       const f2Buffed = { ...f2 };
       if (intervention === 0) {
@@ -9178,7 +9176,7 @@ const App = {
     }
   },
 
-  // B3: 隧ｦ蜷医ｒ隕ｳ繧・
+  // B3: 試合を観る
   b3WatchMatch() {
     const b3 = App._b3Preview;
     if (!b3) return;
@@ -9193,7 +9191,7 @@ const App = {
 
     const pf = b3.playerFighter;
     const af = b3.challenger;
-    // Replay: 邨先棡莠句燕險育ｮ・(skip 縺ｨ蜷・seed: 0xB1B4)
+    // Replay: 結果事前計算 (skip と同 seed: 0xB1B4)
     const b3Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4));
     const b3Result = Engine.battle.simulateMatch({ ...pf, condition: 80 }, { ...af, condition: 80 }, b3Rng, 2, { recordFrames: true });
     b3._preResult = b3Result;
@@ -9203,15 +9201,15 @@ const App = {
       left: {
         ...pf, condition: 80,
         portraitUrl: getPortraitUrl(pf.id), profile: CHAR_PROFILES[pf.id] || '',
-        vl: pf.voiceLines || pf.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[pf.id]) || ['窶ｦ・・]
+        vl: pf.voiceLines || pf.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[pf.id]) || ['…！']
       },
       right: {
         ...af, condition: 80,
         portraitUrl: getPortraitUrl(af.id), profile: CHAR_PROFILES[af.id] || '',
-        vl: af.voiceLines || af.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[af.id]) || ['窶ｦ・・]
+        vl: af.voiceLines || af.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[af.id]) || ['…！']
       },
       matchInfo: {
-        header: '笞・謖第姶迥ｶ',
+        header: '⚔ 挑戦状',
         subHeader: `${pf.name} vs ${af.name}`,
         matchNum: 1, totalMatches: 1,
         isTitle: false, isSpecialMatch: true, matchTier: 2,
@@ -9226,12 +9224,12 @@ const App = {
     let sent = false;
     const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
     iframe.onload = () => setTimeout(sendOnce, 200);
-    // singles邉ｻ縺ｯ蠢・★ battle-engine.html・医ち繝・げ隕ｳ謌ｦ縺ｧ tag-battle.html 縺ｫ蛻・崛繧上▲縺ｦ縺・※繧よ綾縺呻ｼ・
+    // singles系は必ず battle-engine.html（タッグ観戦で tag-battle.html に切替わっていても戻す）
     iframe.src = 'battle-engine.html?t=' + Date.now();
     setTimeout(sendOnce, 800);
   },
 
-  // B3: 繧ｹ繧ｭ繝・・
+  // B3: スキップ
   b3SkipMatch() {
     const b3 = App._b3Preview;
     if (!b3) return;
@@ -9241,12 +9239,12 @@ const App = {
     App._finalizeB3Match(matchResult);
   },
 
-  // B3: iframe邨先棡蜿嶺ｿ｡
+  // B3: iframe結果受信
   _receiveB3BattleResult(data) {
     const b3 = App._b3Preview;
     if (!b3) return;
     b3.watching = false;
-    // Replay: 莠句燕險育ｮ礼ｵ先棡繧呈ｭ｣縺ｨ縺吶ｋ
+    // Replay: 事前計算結果を正とする
     const matchResult = b3._preResult || {
       winner: data.winner,
       finType: data.finType || '', finMove: data.finMove || '',
@@ -9256,27 +9254,27 @@ const App = {
       log: data.log || []
     };
     b3.matchResult = matchResult;
-    // BGM繝輔ぉ繝ｼ繝峨い繧ｦ繝・
+    // BGMフェードアウト
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
     Audio.play('coin');
     App._finalizeB3Match(matchResult);
   },
 
-  // B3: 邨先棡驕ｩ逕ｨ + 邨先棡逕ｻ髱｢陦ｨ遉ｺ
+  // B3: 結果適用 + 結果画面表示
   _finalizeB3Match(matchResult) {
     const b3 = App._b3Preview;
     if (!b3) return;
     const { event, playerFighter, challenger } = b3;
     const fighterId = playerFighter.id;
 
-    // 邨先棡繧弾vent縺ｫ豺ｻ莉倥＠縺ｦ Step 2 繧帝←逕ｨ
+    // 結果をeventに添付して Step 2 を適用
     const enrichedEvent = { ...event, matchResult, selectedFighterId: fighterId };
     const rng3 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B6));
     const result3 = Engine.eventSystem.applyLargeEventEffect(enrichedEvent, 2, 0, G, rng3);
     App._applyLargeEventResult(result3);
 
-    // B3: 莉門屮菴捺姶 applyMatchResult・・sCrossOrg=true 縺ｧrivalry繝悶・繧ｹ繝茨ｼ・
+    // B3: 他団体戦 applyMatchResult（isCrossOrg=true でrivalryブースト）
     if (G.relationships) {
       const b3RelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE5C));
       const b3Context = {
@@ -9294,7 +9292,7 @@ const App = {
       G = Engine.relationships.applyMatchResult(G, fighterId, challenger.id, b3Context, b3RelRng);
     }
 
-    // 繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ蛻､螳夲ｼ域倦謌ｦ迥ｶ縺ｯ isWarMatch=true・・
+    // ブレークスルー判定（挑戦状は isWarMatch=true）
     const btRngB3 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB3B8));
     const won = matchResult.winner === 'left';
     const oppOvr = Engine.util.ov(challenger);
@@ -9325,25 +9323,25 @@ const App = {
       }
     }
 
-    // 驥鷹姦繝舌Λ繝ｳ繧ｹ謾ｹ蝟・ 謖第姶迥ｶ繝｡繝・ぅ繧｢蜿主・
+    // 金銭バランス改善: 挑戦状メディア収入
     const b3VenueIdx = G.showVenue || 0;
     const b3VenueMult = VENUE_MEDIA_MULT[b3VenueIdx] || 1.0;
     const b3MediaRev = Math.round(matchResult.mq * MEDIA_CONFIG.eventPerMQ * b3VenueMult * 1.0);
     if (b3MediaRev > 0) {
       const b3MediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
-      b3MediaIncomes.push({ amount: b3MediaRev, label: `謖第姶迥ｶ vs ${event.orgName}` });
+      b3MediaIncomes.push({ amount: b3MediaRev, label: `挑戦状 vs ${event.orgName}` });
       G = { ...G, _pendingMediaIncomes: b3MediaIncomes };
     }
 
-    // 譁ｰ閨槭ヱ繝阪Ν繧､繝吶Φ繝・
+    // 新聞パネルイベント
     const newsType = matchResult.winner === 'left' ? 'interPromoWin' : (matchResult.winner === 'right' ? 'interPromoLoss' : 'interPromoDraw');
     App._pushNewsEvent({ type: newsType, data: { orgName: event.orgName, fighterName: playerFighter.name, challengerName: challenger.name } });
 
-    // 邨先棡逕ｻ髱｢陦ｨ遉ｺ
+    // 結果画面表示
     setTimeout(() => _renderB3MatchResult(event, matchResult, playerFighter, challenger), 300);
   },
 
-  // B3: 邨先棡逕ｻ髱｢繧帝哩縺倥ｋ
+  // B3: 結果画面を閉じる
   closeB3Result() {
     const overlay = document.getElementById('showResultOverlay');
     overlay.classList.remove('active');
@@ -9361,7 +9359,7 @@ const App = {
     finalizeClose();
   },
 
-  // B2: 隧ｦ蜷医ｒ隕ｳ繧・
+  // B2: 試合を観る
   b2WatchMatch() {
     const b2 = App._b2Preview;
     if (!b2) return;
@@ -9375,7 +9373,7 @@ const App = {
     App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
 
     const f1 = b2.f1, f2 = b2.f2;
-    // Replay: 邨先棡莠句燕險育ｮ・(skip 縺ｨ蜷・seed: 0xB1B4)
+    // Replay: 結果事前計算 (skip と同 seed: 0xB1B4)
     const b2Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4));
     const b2Result = Engine.battle.simulateMatch({ ...f1, condition: 80 }, { ...f2, condition: 80 }, b2Rng, 2, { recordFrames: true });
     b2._preResult = b2Result;
@@ -9385,15 +9383,15 @@ const App = {
       left: {
         ...f1, condition: 80,
         portraitUrl: getPortraitUrl(f1.id), profile: CHAR_PROFILES[f1.id] || '',
-        vl: f1.voiceLines || f1.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[f1.id]) || ['窶ｦ・・]
+        vl: f1.voiceLines || f1.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[f1.id]) || ['…！']
       },
       right: {
         ...f2, condition: 80,
         portraitUrl: getPortraitUrl(f2.id), profile: CHAR_PROFILES[f2.id] || '',
-        vl: f2.voiceLines || f2.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[f2.id]) || ['窶ｦ・・]
+        vl: f2.voiceLines || f2.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[f2.id]) || ['…！']
       },
       matchInfo: {
-        header: '徴 豎ｺ逹縺ｮ隧ｦ蜷・,
+        header: '💥 決着の試合',
         subHeader: `${f1.name} vs ${f2.name}`,
         matchNum: 1, totalMatches: 1,
         isTitle: false, isSpecialMatch: true, matchTier: 2,
@@ -9408,12 +9406,12 @@ const App = {
     let sent = false;
     const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
     iframe.onload = () => setTimeout(sendOnce, 200);
-    // singles邉ｻ縺ｯ蠢・★ battle-engine.html・医ち繝・げ隕ｳ謌ｦ縺ｧ tag-battle.html 縺ｫ蛻・崛繧上▲縺ｦ縺・※繧よ綾縺呻ｼ・
+    // singles系は必ず battle-engine.html（タッグ観戦で tag-battle.html に切替わっていても戻す）
     iframe.src = 'battle-engine.html?t=' + Date.now();
     setTimeout(sendOnce, 800);
   },
 
-  // B2: 繧ｹ繧ｭ繝・・
+  // B2: スキップ
   b2SkipMatch() {
     const b2 = App._b2Preview;
     if (!b2) return;
@@ -9423,12 +9421,12 @@ const App = {
     App._finalizeB2Match(matchResult);
   },
 
-  // B2: iframe邨先棡蜿嶺ｿ｡
+  // B2: iframe結果受信
   _receiveB2BattleResult(data) {
     const b2 = App._b2Preview;
     if (!b2) return;
     b2.watching = false;
-    // Replay: 莠句燕險育ｮ礼ｵ先棡繧呈ｭ｣縺ｨ縺吶ｋ
+    // Replay: 事前計算結果を正とする
     const matchResult = b2._preResult || {
       winner: data.winner,
       finType: data.finType || '', finMove: data.finMove || '',
@@ -9444,24 +9442,24 @@ const App = {
     App._finalizeB2Match(matchResult);
   },
 
-  // B2: 邨先棡驕ｩ逕ｨ + 邨先棡逕ｻ髱｢陦ｨ遉ｺ
+  // B2: 結果適用 + 結果画面表示
   _finalizeB2Match(matchResult) {
     const b2 = App._b2Preview;
     if (!b2) return;
     const { event, interventionChoice } = b2;
     const winner = matchResult.winner === 'left' ? 'fighter1' : (matchResult.winner === 'right' ? 'fighter2' : 'draw');
 
-    // 邨先棡繧弾vent縺ｫ豺ｻ莉倥＠縺ｦ Step 2 繧帝←逕ｨ
+    // 結果をeventに添付して Step 2 を適用
     const enrichedEvent = { ...event, matchResult: { ...matchResult, winner }, interventionChoice };
     const rng3 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B5));
     const result3 = Engine.eventSystem.applyLargeEventEffect(enrichedEvent, 2, 0, G, rng3);
     App._applyLargeEventResult(result3);
 
-    // 邨先棡逕ｻ髱｢陦ｨ遉ｺ
+    // 結果画面表示
     setTimeout(() => _renderB2MatchResult(event, matchResult, b2.f1, b2.f2, interventionChoice), 300);
   },
 
-  // B2: 邨先棡逕ｻ髱｢繧帝哩縺倥ｋ
+  // B2: 結果画面を閉じる
   closeB2Result() {
     const overlay = document.getElementById('showResultOverlay');
     overlay.classList.remove('active');
@@ -9471,7 +9469,7 @@ const App = {
     renderWeekScreen();
   },
 
-  // 螟ｧ蝙九う繝吶Φ繝育ｵ先棡繧痴tate縺ｫ蜿肴丐縺吶ｋ繝倥Ν繝代・
+  // 大型イベント結果をstateに反映するヘルパー
   _applyLargeEventResult(result) {
     const updates = {};
     if (result.roster) updates.roster = result.roster;
@@ -9481,10 +9479,10 @@ const App = {
     if (result.lastLargeEventWeek !== undefined) updates.lastLargeEventWeek = result.lastLargeEventWeek;
     if (result.orgPopDelta) updates.orgPop = G.orgPop + result.orgPopDelta;
     if (result.battlePoints) updates.battlePoints = result.battlePoints;
-    // Phase 4: E-02/E-03 螟ｧ蝙九う繝吶Φ繝医・髢｢菫ょ､蜿肴丐
+    // Phase 4: E-02/E-03 大型イベントの関係値反映
     if (result.relationships) updates.relationships = result.relationships;
     if (result.relationshipCounters) updates.relationshipCounters = result.relationshipCounters;
-    // MVP繝ｬ繝ｼ繧ｹ v2: B3 霎樣譎ゅ・ AI謖第姶閠・∈縺ｮ螻･豁ｴ霑ｽ蜉縺ｪ縺ｩ
+    // MVPレース v2: B3 辞退時の AI挑戦者への履歴追加など
     if (result.aiOrgs) updates.aiOrgs = result.aiOrgs;
     if (result.events && result.events.length > 0) {
       updates.gameLog = [...(G.gameLog || []), ...result.events];
@@ -9496,41 +9494,41 @@ const App = {
     }
   },
 
-  // 遉ｾ髟ｷ螳､ Phase 5: 驕ｸ謇九・繝・・繧｢繝・・縺九ｉ縲悟｣ｰ繧偵°縺代ｋ縲・encourage)
-  // 豎ｺ陬∵棧繧りｳ・≡繧よｶ郁ｲｻ縺励↑縺・ら､ｾ髟ｷ閾ｪ繧峨′雜ｳ繧帝°縺ｶ閾ｪ逋ｺ逧・｡悟虚縲・
-  // 逋ｺ蜍墓擅莉ｶ: slump/motivationLoss 荳ｭ OR 菫｡鬆ｼ縺梧昭繧峨℃蟋九ａ縺・trust<50)
-  // UI 蛛ｴ縺ｧ 2谿ｵ髫弱・貂ｩ蠎ｦ諢・is-urgent: slump/motivLoss/trust<40, is-gentle: trust<50)
+  // 社長室 Phase 5: 選手ポップアップから「声をかける」(encourage)
+  // 決裁枠も資金も消費しない。社長自らが足を運ぶ自発的行動。
+  // 発動条件: slump/motivationLoss 中 OR 信頼が揺らぎ始めた(trust<50)
+  // UI 側で 2段階の温度感(is-urgent: slump/motivLoss/trust<40, is-gentle: trust<50)
   encourageFighter(fighterId) {
     const target = G.roster.find(f => f.id === fighterId);
-    if (!target) { showToast('驕ｸ謇九′隕九▽縺九ｊ縺ｾ縺帙ｓ'); return; }
-    if (target.isRental || target.injury) { showToast('莉翫・螢ｰ繧偵°縺代ｉ繧後↑縺・); return; }
+    if (!target) { showToast('選手が見つかりません'); return; }
+    if (target.isRental || target.injury) { showToast('今は声をかけられない'); return; }
     const targetTrust = target.trust != null ? target.trust : 50;
     if (!target.slump && !target.motivationLoss && targetTrust >= 50) {
-      showToast('縺薙・驕ｸ謇九↓縺ｯ莉翫∝｣ｰ繧偵°縺代ｋ逅・罰縺後↑縺・);
+      showToast('この選手には今、声をかける理由がない');
       return;
     }
-    // cooldown 繝√ぉ繝・け(驕ｸ謇句腰菴阪・騾ｱ)
+    // cooldown チェック(選手単位、1週)
     const lastUsed = (target._decisionWeekUsed || {}).encourage || -99;
-    if ((G.week - lastUsed) < 1) { showToast('莉企ｱ縺ｯ繧ゅ≧螢ｰ繧偵°縺代◆'); return; }
+    if ((G.week - lastUsed) < 1) { showToast('今週はもう声をかけた'); return; }
 
-    // Engine.shachoshitsu.execute 繧貞・蛻ｩ逕ｨ(豎ｺ陬∵棧0縺ｮ譖ｸ鬘槭↑縺ｮ縺ｧ dp 豸郁ｲｻ縺ｪ縺・
+    // Engine.shachoshitsu.execute を再利用(決裁枠0の書類なので dp 消費なし)
     const result = Engine.shachoshitsu.execute('encourage', fighterId, G);
     if (!result || result.error) {
       const msg = {
-        doc_not_found: '縺薙・陦悟虚縺ｯ迴ｾ蝨ｨ蛻ｩ逕ｨ縺ｧ縺阪∪縺帙ｓ',
-        fighter_not_found: '驕ｸ謇九′隕九▽縺九ｊ縺ｾ縺帙ｓ',
-        not_needed: '縺薙・驕ｸ謇九↓縺ｯ莉翫∝｣ｰ繧偵°縺代ｋ逅・罰縺後↑縺・,
-        not_slump: '縺薙・驕ｸ謇九↓縺ｯ莉翫∝｣ｰ繧偵°縺代ｋ逅・罰縺後↑縺・,  // 譌ｧ繧ｨ繝ｩ繝ｼID縺ｮ莠呈鋤
-        cooldown: '莉企ｱ縺ｯ繧ゅ≧螢ｰ繧偵°縺代◆',
-        condition_not_met: '螢ｰ繧偵°縺代ｋ迥ｶ豕√〒縺ｯ縺ｪ縺・,
-        funds_insufficient: '雉・≡縺御ｸ崎ｶｳ縺励※縺・∪縺・,
-      }[result?.error] || '螟ｱ謨励＠縺ｾ縺励◆';
+        doc_not_found: 'この行動は現在利用できません',
+        fighter_not_found: '選手が見つかりません',
+        not_needed: 'この選手には今、声をかける理由がない',
+        not_slump: 'この選手には今、声をかける理由がない',  // 旧エラーIDの互換
+        cooldown: '今週はもう声をかけた',
+        condition_not_met: '声をかける状況ではない',
+        funds_insufficient: '資金が不足しています',
+      }[result?.error] || '失敗しました';
       showToast(msg);
       return;
     }
 
-    // state 譖ｴ譁ｰ(encourage 縺ｯ decisionPoints 繧呈ｶ郁ｲｻ縺励↑縺・′縲‘xecute 蛛ｴ縺ｧ
-    // newDp 繧定ｿ斐☆縺ｮ縺ｧ荳蠢懷渚譏縲ょｮ溯ｳｪ 0 蠑輔°繧後※縺・ｋ)
+    // state 更新(encourage は decisionPoints を消費しないが、execute 側で
+    // newDp を返すので一応反映。実質 0 引かれている)
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
@@ -9541,10 +9539,10 @@ const App = {
     if (result.relationships) G = { ...G, relationships: result.relationships };
     Storage.autoSave();
 
-    // 驕ｸ謇九・繝・・繧｢繝・・繧帝哩縺倥※縺九ｉ邨先棡繝｢繝ｼ繝繝ｫ繧貞・縺・繝峨Λ繝樊ｼ泌・)
+    // 選手ポップアップを閉じてから結果モーダルを出す(ドラマ演出)
     if (typeof closeFighterPopup === 'function') closeFighterPopup();
 
-    // displayData 繧堤ｵ・∩遶九※縺ｦ譌｢蟄倥・雎ｪ闖ｯ繝｢繝ｼ繝繝ｫ縺ｫ豬√☆
+    // displayData を組み立てて既存の豪華モーダルに流す
     const doc = Engine.shachoshitsu.getDoc('encourage');
     const reactionKey = result.reactionKey || 'encourage';
     const fighter = G.roster.find(f => f.id === fighterId);
@@ -9554,10 +9552,10 @@ const App = {
       changes: result.changes || [],
       cost: result.cost || 0,
       remainingFunds: result.funds,
-      icon: doc?.icon || '町',
-      label: doc?.label || '螢ｰ縺九￠',
+      icon: doc?.icon || '💬',
+      label: doc?.label || '声かけ',
       docId: 'encourage',
-      // Phase 8: 荳咲｢ｺ螳滓ｧ繝医・繝ｳ繝槭・繧ｫ繝ｼ (encourage 繧ょ倶ｺｺ譖ｸ鬘・
+      // Phase 8: 不確実性トーンマーカー (encourage も個人書類)
       reactionTone: result.reactionTone || null,
     };
     Audio.play('notify');
@@ -9567,15 +9565,15 @@ const App = {
     if (typeof refreshAll === 'function') refreshAll();
   },
 
-  // 遉ｾ髟ｷ螳､ Phase 5: 迚ｹ蛻･豐ｻ逋・諤ｪ謌代・繝・・繧｢繝・・縺ｮ莠梧ｬ｡繧｢繧ｯ繧ｷ繝ｧ繝ｳ)
-  // 豎ｺ陬∵棧縺ｯ豸郁ｲｻ縺帙★縲∬ｳ・≡200荳・・縺ｿ豸郁ｲｻ縲ょ屓蠕ｩ譛滄俣繧・縲・騾ｱ遏ｭ邵ｮ縲・
+  // 社長室 Phase 5: 特別治療(怪我ポップアップの二次アクション)
+  // 決裁枠は消費せず、資金200万のみ消費。回復期間を1〜4週短縮。
   executeSpecialTreatment(fighterId) {
     const result = Engine.shachoshitsu.executeSpecialTreatment(fighterId, G);
-    if (!result) { showToast('迚ｹ蛻･豐ｻ逋ゅ↓螟ｱ謨励＠縺ｾ縺励◆'); return; }
-    if (result.error === 'funds_insufficient') { showToast('雉・≡縺御ｸ崎ｶｳ縺励※縺・∪縺・); return; }
-    if (result.error === 'fighter_not_found') { showToast('驕ｸ謇九′隕九▽縺九ｊ縺ｾ縺帙ｓ'); return; }
-    if (result.error === 'not_injured') { showToast('諤ｪ謌代ｒ縺励※縺・↑縺・∈謇九↓縺ｯ菴ｿ逕ｨ縺ｧ縺阪∪縺帙ｓ'); return; }
-    // state 譖ｴ譁ｰ
+    if (!result) { showToast('特別治療に失敗しました'); return; }
+    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return; }
+    if (result.error === 'fighter_not_found') { showToast('選手が見つかりません'); return; }
+    if (result.error === 'not_injured') { showToast('怪我をしていない選手には使用できません'); return; }
+    // state 更新
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
@@ -9587,7 +9585,7 @@ const App = {
     if (typeof closeCareModal === 'function') closeCareModal();
     if (document.getElementById('careOverlay')) document.getElementById('careOverlay').classList.remove('active');
 
-    // 驕ｸ謇句渚蠢懊Δ繝ｼ繝繝ｫ(遉ｾ髟ｷ螳､縺ｮ騾壼ｸｸ譖ｸ鬘槭→蜷後§雎ｪ闖ｯ繝｢繝ｼ繝繝ｫ縺ｫ豬√☆)
+    // 選手反応モーダル(社長室の通常書類と同じ豪華モーダルに流す)
     const fighter = G.roster.find(f => f.id === fighterId);
     if (fighter && typeof showDecisionResultModal === 'function') {
       const text = Engine.shachoshitsu.getReactionText('special_treatment', fighter);
@@ -9597,36 +9595,36 @@ const App = {
         changes: result.changes || [],
         cost: result.cost || 0,
         remainingFunds: result.funds,
-        icon: doc?.icon || '唱',
-        label: doc?.label || '迚ｹ蛻･豐ｻ逋よ欠遉ｺ譖ｸ',
+        icon: doc?.icon || '🏥',
+        label: doc?.label || '特別治療指示書',
         docId: 'special_treatment',
       };
       showDecisionResultModal(displayData);
     } else {
-      showToast(`唱 ${result.cur}騾ｱ 竊・${result.reduced}騾ｱ縺ｫ遏ｭ邵ｮ・・${result.cost}荳・ｼ荏);
+      showToast(`🏥 ${result.cur}週 → ${result.reduced}週に短縮（-${result.cost}万）`);
     }
     if (typeof renderWeekScreen === 'function') renderWeekScreen();
   },
 
-  // 遉ｾ髟ｷ螳､ Phase 4: 譖ｸ鬘槭け繝ｪ繝・け繝上Φ繝峨Λ(繝｢繝ｼ繝繝ｫ蛻・ｲ・
+  // 社長室 Phase 4: 書類クリックハンドラ(モーダル分岐)
   onShachoshitsuDocClick(docId) {
     Audio.play('click');
-    // 豎ｺ陬∵ｸ医∩縺ｪ繧臥┌隕・
+    // 決裁済みなら無視
     if ((G._decisionDoneThisWeek || []).includes(docId)) return;
     const doc = Engine.shachoshitsu.getDoc(docId);
     if (!doc) return;
-    // 莠句燕繝√ぉ繝・け(UX: 繝｢繝ｼ繝繝ｫ繧帝幕縺丞燕縺ｫ縺ｯ縺倥￥)
+    // 事前チェック(UX: モーダルを開く前にはじく)
     const dpCost = doc.decisionCost || 0;
     if ((G.decisionPoints || 0) < dpCost) {
-      showToast(`豎ｺ陬∵棧縺御ｸ崎ｶｳ縺励※縺・∪縺・蠢・ｦ・ 笞｡${dpCost})`);
+      showToast(`決裁枠が不足しています(必要: ⚡${dpCost})`);
       return;
     }
     const actualCost = Engine.shachoshitsu.calcCost(doc, G);
     if ((G.funds || 0) < actualCost) {
-      showToast(`雉・≡縺御ｸ崎ｶｳ縺励※縺・∪縺・蠢・ｦ・ ${actualCost}荳・`);
+      showToast(`資金が不足しています(必要: ${actualCost}万)`);
       return;
     }
-    // 蛟倶ｺｺ譖ｸ鬘・/ 蝗｣菴捺嶌鬘・/ 繝壹い譖ｸ鬘・縺ｧ蛻・ｲ・
+    // 個人書類 / 団体書類 / ペア書類 で分岐
     if (doc.effect && doc.effect.target === 'team') {
       showDecisionConfirmModal(docId, G);
     } else if (doc.effect && doc.effect.target === 'pair') {
@@ -9636,24 +9634,24 @@ const App = {
     }
   },
 
-  // 遉ｾ髟ｷ螳､ Phase 4: 豎ｺ陬∝ｮ溯｡後お繝ｳ繝医Μ繝昴う繝ｳ繝・
-  // fighterId: 蛟倶ｺｺ譖ｸ鬘槭・縺ｨ縺榊ｯｾ雎｡驕ｸ謇紀D縲》eam譖ｸ鬘槭・縺ｨ縺・null
-  // 霑斐ｊ蛟､: { ok: true, displayData } | { ok: false, error? }
+  // 社長室 Phase 4: 決裁実行エントリポイント
+  // fighterId: 個人書類のとき対象選手ID、team書類のとき null
+  // 返り値: { ok: true, displayData } | { ok: false, error? }
   executeDecision(docId, fighterId) {
     const result = Engine.shachoshitsu.execute(docId, fighterId, G);
-    if (!result) { showToast('譖ｸ鬘槭′隕九▽縺九ｊ縺ｾ縺帙ｓ'); return { ok: false }; }
-    if (result.error === 'doc_not_found') { showToast('譖ｸ鬘槭′隕九▽縺九ｊ縺ｾ縺帙ｓ'); return { ok: false }; }
-    if (result.error === 'decision_points_insufficient') { showToast('豎ｺ陬∵棧縺御ｸ崎ｶｳ縺励※縺・∪縺・); return { ok: false }; }
-    if (result.error === 'funds_insufficient') { showToast('雉・≡縺御ｸ崎ｶｳ縺励※縺・∪縺・); return { ok: false }; }
-    if (result.error === 'fighter_not_found') { showToast('驕ｸ謇九′隕九▽縺九ｊ縺ｾ縺帙ｓ'); return { ok: false }; }
-    if (result.error === 'not_slump') { showToast('繧ｹ繝ｩ繝ｳ繝嶺ｸｭ縺ｮ驕ｸ謇九〒縺ｯ縺ゅｊ縺ｾ縺帙ｓ'); return { ok: false }; }
-    if (result.error === 'not_injured') { showToast('諤ｪ謌代ｒ縺励※縺・↑縺・∈謇九↓縺ｯ菴ｿ逕ｨ縺ｧ縺阪∪縺帙ｓ'); return { ok: false }; }
-    if (result.error === 'cooldown') { showToast('莉企ｱ縺ｯ縺吶〒縺ｫ豎ｺ陬∵ｸ医∩縺ｧ縺・); return { ok: false }; }
-    if (result.error === 'orgpop_locked') { showToast(`蝗｣菴薙・遏･蜷榊ｺｦ縺瑚ｶｳ繧翫∪縺帙ｓ(${result.required} 蠢・ｦ・`); return { ok: false }; }
-    if (result.error === 'condition_not_met') { showToast('縺薙・譖ｸ鬘槭・逋ｺ蜍墓擅莉ｶ繧呈ｺ縺溘＠縺ｦ縺・∪縺帙ｓ'); return { ok: false }; }
-    if (result.error === 'unsupported_doc') { showToast(`譛ｪ蟇ｾ蠢懊・譖ｸ鬘槭〒縺・ ${result.docId}`); return { ok: false }; }
+    if (!result) { showToast('書類が見つかりません'); return { ok: false }; }
+    if (result.error === 'doc_not_found') { showToast('書類が見つかりません'); return { ok: false }; }
+    if (result.error === 'decision_points_insufficient') { showToast('決裁枠が不足しています'); return { ok: false }; }
+    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return { ok: false }; }
+    if (result.error === 'fighter_not_found') { showToast('選手が見つかりません'); return { ok: false }; }
+    if (result.error === 'not_slump') { showToast('スランプ中の選手ではありません'); return { ok: false }; }
+    if (result.error === 'not_injured') { showToast('怪我をしていない選手には使用できません'); return { ok: false }; }
+    if (result.error === 'cooldown') { showToast('今週はすでに決裁済みです'); return { ok: false }; }
+    if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません(${result.required} 必要)`); return { ok: false }; }
+    if (result.error === 'condition_not_met') { showToast('この書類の発動条件を満たしていません'); return { ok: false }; }
+    if (result.error === 'unsupported_doc') { showToast(`未対応の書類です: ${result.docId}`); return { ok: false }; }
 
-    // state 譖ｴ譁ｰ
+    // state 更新
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
@@ -9669,13 +9667,13 @@ const App = {
       const newOrgPop = Engine.util.clamp((G.orgPop || 0) + Engine.orgPop.applyOrgPopChange(result.orgPopDelta, G.orgPop, null), 0, 100);
       G = { ...G, orgPop: newOrgPop };
     }
-    // 讌ｭ逡後ル繝･繝ｼ繧ｹ: relationship_repair 縺ｪ縺ｩ縺檎ｩ阪ｓ縺繧､繝吶Φ繝医ｒ蜿肴丐
+    // 業界ニュース: relationship_repair などが積んだイベントを反映
     if (result._industryNewsEvents && result._industryNewsEvents.length > 0) {
       G = { ...G, _industryNewsEvents: [...(G._industryNewsEvents || []), ...result._industryNewsEvents] };
     }
     Storage.autoSave();
 
-    // displayData 讒狗ｯ・邨先棡陦ｨ遉ｺ逕ｨ)
+    // displayData 構築(結果表示用)
     const doc = Engine.shachoshitsu.getDoc(docId);
     const reactionKey = result.reactionKey || docId;
     let displayData = null;
@@ -9687,18 +9685,18 @@ const App = {
           fighter, text, changes: result.changes || [],
           cost: result.cost || 0, remainingFunds: result.funds,
           icon: doc?.icon || '', label: doc?.label || '', docId,
-          // Phase 8: 荳咲｢ｺ螳滓ｧ繝医・繝ｳ繝槭・繧ｫ繝ｼ (蛟倶ｺｺ譖ｸ鬘槭・縺ｿ)
+          // Phase 8: 不確実性トーンマーカー (個人書類のみ)
           reactionTone: result.reactionTone || null,
         };
       }
     } else {
-      // 蝗｣菴捺嶌鬘・party/camp): 蜿ょ刈閠・・蜩｡ + 莉｣陦ｨ繧ｻ繝ｪ繝・+ camp 繝輔Ξ繝ｼ繝舌・
+      // 団体書類(party/camp): 参加者全員 + 代表セリフ + camp フレーバー
       const participants = (G.roster || []).filter(f => !f.isRental && !f.injury);
       const repFighter = participants.length > 0
         ? participants[Math.floor(Math.random() * participants.length)]
         : null;
       const text = repFighter ? Engine.shachoshitsu.getReactionText(reactionKey, repFighter) : '';
-      // camp: CAMP_FLAVOR_TEXTS 縺九ｉ繝ｩ繝ｳ繝繝縺ｫ1莉ｶ縲∝盾蜉閠・蜷阪ｒ蟾ｮ縺苓ｾｼ縺ｿ
+      // camp: CAMP_FLAVOR_TEXTS からランダムに1件、参加者2名を差し込み
       let campFlavor = null;
       if (docId === 'camp' && typeof CAMP_FLAVOR_TEXTS !== 'undefined' && participants.length >= 2) {
         const tmpl = CAMP_FLAVOR_TEXTS[Math.floor(Math.random() * CAMP_FLAVOR_TEXTS.length)];
@@ -9716,9 +9714,9 @@ const App = {
       };
     }
 
-    // 繧ｵ繧ｦ繝ｳ繝・繧ｳ繧ｹ繝亥挨縲∵里蟄俶ｵ∫畑)
-    // Phase 9: 譛ｱ蜊ｰ髻ｳ繧貞・縺ｫ魑ｴ繧峨☆(0.6遘偵・譛ｱ蜊ｰ繧｢繝九Γ縺ｨ蜷梧凾髢句ｧ・
-    // 蜷域・髻ｳ縺ｮ遏ｭ縺・ヰ繝ｼ繧ｹ繝医↑縺ｮ縺ｧ縲∝ｾ檎ｶ壹・繧ｳ繧ｹ繝亥挨繧ｵ繧ｦ繝ｳ繝峨→縺ｶ縺､縺九ｉ縺ｪ縺・
+    // サウンド(コスト別、既存流用)
+    // Phase 9: 朱印音を先に鳴らす(0.6秒の朱印アニメと同時開始)
+    // 合成音の短いバーストなので、後続のコスト別サウンドとぶつからない
     Audio.play('stamp');
     const soundCost = result.cost || 0;
     if (docId === 'camp') Audio.play('fanfare');
@@ -9726,8 +9724,8 @@ const App = {
     else if (soundCost >= 80) Audio.play('event');
     else Audio.play('notify');
 
-    // 貍泌・繝輔ャ繧ｯ: 譖ｸ鬘曠OM縺ｫ譛ｱ蜊ｰ繧｢繝九Γ(is-approving)繧剃ｻ倅ｸ・竊・0.6遘貞ｾ後↓蜀阪Ξ繝ｳ繝(is-approved 縺ｫ蛻・崛)
-    // HUD縺ｮ譛蛻昴・縲檎ｫ九▲縺ｦ縺・ｋ縲紘anko縺ｫ falling 繧ｯ繝ｩ繧ｹ繧剃ｻ倅ｸ・
+    // 演出フック: 書類DOMに朱印アニメ(is-approving)を付与 → 0.6秒後に再レンダ(is-approved に切替)
+    // HUDの最初の「立っている」hankoに falling クラスを付与
     try {
       const docEl = document.querySelector(`.shachoshitsu-doc[data-doc-id="${docId}"]`);
       if (docEl) docEl.classList.add('is-approving');
@@ -9735,15 +9733,15 @@ const App = {
       if (firstStandingHanko) firstStandingHanko.classList.add('falling');
     } catch (e) {}
 
-    // 邨先棡陦ｨ遉ｺ: 蛟倶ｺｺ/team 蝠上ｏ縺壼ｸｸ縺ｫ雎ｪ闖ｯ繝｢繝ｼ繝繝ｫ(隧ｱ閠・・鬘・繧ｻ繝ｪ繝・螟牙喧+繧ｳ繧ｹ繝・
-    // spec: 豎ｺ陬・迚ｹ蛻･縺ｪ陦檎ぜ縲√く繝｣繝ｩ縺ｮ蜿榊ｿ懊ｒ隕励″隕九ｋ菴馴ｨ薙ｒ荳雋ｫ縺輔○繧・
+    // 結果表示: 個人/team 問わず常に豪華モーダル(話者の顔+セリフ+変化+コスト)
+    // spec: 決裁=特別な行為、キャラの反応を覗き見る体験を一貫させる
     if (typeof showDecisionResultModal === 'function') {
       showDecisionResultModal(displayData);
     } else if (typeof showDecisionResultToast === 'function') {
       showDecisionResultToast(displayData);
     }
 
-    // 0.6遘貞ｾ後↓蜀阪Ξ繝ｳ繝繝ｪ繝ｳ繧ｰ縺励※豎ｺ陬∵ｸ医∩迥ｶ諷・is-approved)繧貞渚譏
+    // 0.6秒後に再レンダリングして決裁済み状態(is-approved)を反映
     setTimeout(() => {
       if (typeof renderShachoshitsu === 'function') renderShachoshitsu();
     }, 600);
@@ -9816,7 +9814,7 @@ const App = {
     }
     if (orgPop >= 70 && !G.rosterCapPop70Notified) {
       nextUpdates.rosterCapPop70Notified = true;
-      popups.push({ cap: 14, message: '蝗｣菴謎ｺｺ豌励′70繧堤ｪ∫ｴ・・繝｡繧ｸ繝｣繝ｼ蝗｣菴薙・隕乗ｨ｡縺ｫ縺ｵ縺輔ｏ縺励＞螂醍ｴ・棧縺檎｢ｺ菫昴＆繧後∪縺励◆縲・ });
+      popups.push({ cap: 14, message: '団体人気が70を突破！ メジャー団体の規模にふさわしい契約枠が確保されました。' });
     }
     if (rank1Unlocked && !G.rosterCapRank1Notified) {
       nextUpdates.rosterCapRank1Notified = true;
@@ -9844,9 +9842,9 @@ const App = {
     }
   },
 
-  // 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
+  // ══════════════════════════════════════════════
   //  WAR MATCH PREVIEW SYSTEM (v0.99d)
-  // 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
+  // ══════════════════════════════════════════════
   _warPreview: null,
   _warUiToken: 0,
   _warBgmTimer: null,
@@ -9896,7 +9894,7 @@ const App = {
     const pf = m.playerFighter;
     const af = m.aiFighter;
 
-    // Replay: 邨先棡莠句燕險育ｮ・(skip 縺ｨ荳閾ｴ縺輔○繧九◆繧∝酔縺・seed 繧剃ｽｿ縺・
+    // Replay: 結果事前計算 (skip と一致させるため同じ seed を使う)
     const warRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 600 + G.week + idx));
     const warResult = Engine.event.resolveEventMatch(warRng, pf, af, 0, { recordFrames: true });
     const warPlayerWon = warResult.winner === 'left';
@@ -9926,15 +9924,15 @@ const App = {
       left: {
         ...pf, condition: 80,
         portraitUrl: getPortraitUrl(pf.id), profile: CHAR_PROFILES[pf.id] || '',
-        vl: pf.voiceLines || pf.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[pf.id]) || ['窶ｦ・・]
+        vl: pf.voiceLines || pf.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[pf.id]) || ['…！']
       },
       right: {
         ...af, condition: 80,
         portraitUrl: getPortraitUrl(af.id), profile: CHAR_PROFILES[af.id] || '',
-        vl: af.voiceLines || af.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[af.id]) || ['窶ｦ・・]
+        vl: af.voiceLines || af.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[af.id]) || ['…！']
       },
       matchInfo: {
-        header: `笞・蟇ｾ謚玲姶 隨ｬ${idx + 1}隧ｦ蜷・,
+        header: `⚔ 対抗戦 第${idx + 1}試合`,
         subHeader: `${pf.name} vs ${af.name}`,
         matchNum: idx + 1,
         totalMatches: wp.card.length,
@@ -9950,7 +9948,7 @@ const App = {
       },
       result: warResult,
     };
-    // 繝薙ャ繧ｰ繝槭ャ繝。GM・亥ｯｾ謚玲姶・・
+    // ビッグマッチBGM（対抗戦）
     try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
     let sent = false;
     const sendOnce = () => {
@@ -9958,7 +9956,7 @@ const App = {
       iframe.contentWindow.postMessage(msg, '*');
     };
     iframe.onload = () => setTimeout(sendOnce, 200);
-    // singles邉ｻ縺ｯ蠢・★ battle-engine.html・医ち繝・げ隕ｳ謌ｦ縺ｧ tag-battle.html 縺ｫ蛻・崛繧上▲縺ｦ縺・※繧よ綾縺呻ｼ・
+    // singles系は必ず battle-engine.html（タッグ観戦で tag-battle.html に切替わっていても戻す）
     iframe.src = 'battle-engine.html?t=' + Date.now();
     setTimeout(sendOnce, 800);
   },
@@ -10018,7 +10016,7 @@ const App = {
     const wp = App._warPreview;
     if (!wp || wp.currentWatching < 0) return;
     const idx = wp.currentWatching;
-    // Replay 遘ｻ陦・ watchMatch 縺ｧ邨先棡縺ｯ譌｢縺ｫ譬ｼ邏肴ｸ医∩ (謨ｴ蜷域ｧ遒ｺ菫昴・縺溘ａ)縲Ｐverlay 繧帝哩縺倥※谺｡縺ｸ驕ｷ遘ｻ縲・
+    // Replay 移行: watchMatch で結果は既に格納済み (整合性確保のため)。overlay を閉じて次へ遷移。
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
     wp.currentWatching = -1;
@@ -10044,14 +10042,14 @@ const App = {
     // Apply outcome to state
     const events = [];
     wp.results.forEach((r, i) => {
-      const icon = r.playerWon ? '鳩' : '閥';
-      events.push(`  ${icon} 隨ｬ${i+1}隧ｦ蜷・ ${r.playerFighter.name} vs ${r.aiFighter.name} 竊・${r.playerWon ? r.playerFighter.name : r.aiFighter.name}蜍晏茜 (MQ${r.mq})`);
+      const icon = r.playerWon ? '🔵' : '🔴';
+      events.push(`  ${icon} 第${i+1}試合: ${r.playerFighter.name} vs ${r.aiFighter.name} → ${r.playerWon ? r.playerFighter.name : r.aiFighter.name}勝利 (MQ${r.mq})`);
     });
     const outcome = Engine.event.applyWarOutcome(G, playerWins, aiWins, ev.opponentOrgId);
     const eventWon = playerWins > aiWins;
     G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
 
-    // 譁ｰ閨樒畑: 蟇ｾ謚玲姶邨先棡繧剃ｿ晏ｭ假ｼ域ｬ｡騾ｱ縺ｮ譁ｰ閨樒函謌舌〒菴ｿ逕ｨ・・
+    // 新聞用: 対抗戦結果を保存（次週の新聞生成で使用）
     G._newsWarResult = {
       opponentName: ev.opponentName,
       opponentOrgId: ev.opponentOrgId,
@@ -10069,7 +10067,7 @@ const App = {
       })),
     };
 
-    // Phase 2: 蟇ｾ謚玲姶蜍晏茜驕ｸ謇九・trust bonus
+    // Phase 2: 対抗戦勝利選手のtrust bonus
     const winnerPlayerIds = wp.results.filter(r => r.playerWon).map(r => r.playerFighter.id);
     if (winnerPlayerIds.length > 0) {
       G = { ...G, roster: G.roster.map(c =>
@@ -10089,7 +10087,7 @@ const App = {
       return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: ev.opponentName, opponentName: oppName, won: matchResult ? matchResult.playerWon : false });
     }) };
 
-    // AI蛛ｴ縺ｮ蟇ｾ謚玲姶蜃ｺ蝣ｴ驕ｸ謇九↓繧Ｄareer event險倬鹸
+    // AI側の対抗戦出場選手にもcareer event記録
     const aiOrgId = ev.opponentOrgId;
     if (G.aiOrgs && G.aiOrgs[aiOrgId]) {
       const aiWarIds = new Set(wp.card.map(m => m.aiFighter.id));
@@ -10097,7 +10095,7 @@ const App = {
         if (!aiWarIds.has(c.id)) return c;
         const matchResult = wp.results.find(r => r.aiFighter.id === c.id);
         const oppName = matchResult ? matchResult.playerFighter?.name : undefined;
-        return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・, opponentName: oppName, won: matchResult ? !matchResult.playerWon : false });
+        return Engine.career.addEvent(c, { type: 'war', season: G.season, week: G.week, opponentOrg: G.orgName || 'プレイヤー団体', opponentName: oppName, won: matchResult ? !matchResult.playerWon : false });
       });
       G = { ...G, aiOrgs: { ...G.aiOrgs, [aiOrgId]: { ...G.aiOrgs[aiOrgId], roster: updatedAiRoster } } };
     }
@@ -10108,33 +10106,33 @@ const App = {
       // F2: Track war victories for negotiation bonus
       const wv = [...(G.warVictories || [])];
       if (!wv.includes(ev.opponentOrgId)) wv.push(ev.opponentOrgId);
-      // 菫ｮ豁｣D: 蟇ｾ謚玲姶騾夂ｮ怜享蛻ｩ繧定ｨ倬鹸・医Ξ繧ｬ繧ｷ繝ｼpt險育ｮ礼畑・・
+      // 修正D: 対抗戦通算勝利を記録（レガシーpt計算用）
       const bwt = { ...(G.battleWinsTotal || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
       bwt.player = (bwt.player || 0) + 1;
       G = { ...G, warVictories: wv, battleWinsTotal: bwt };
-      // 蟇ｾ謚玲姶繝槭う繝ｫ繧ｹ繝医・繝ｳ: 5蜍昴＃縺ｨ縺ｫ譁ｰ閨櫁ｨ倅ｺ・螢ｫ豌励ヶ繝ｼ繧ｹ繝・
+      // 対抗戦マイルストーン: 5勝ごとに新聞記事+士気ブースト
       if (bwt.player % 5 === 0) {
-        const mBoost = 3 + Math.min(2, Math.floor(bwt.player / 10)); // +3縲・5
+        const mBoost = 3 + Math.min(2, Math.floor(bwt.player / 10)); // +3〜+5
         G = { ...G,
-          _newsWarMilestone: { orgId: 'player', orgName: G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・, wins: bwt.player },
+          _newsWarMilestone: { orgId: 'player', orgName: G.orgName || 'プレイヤー団体', wins: bwt.player },
           lockerRoomMorale: Math.min(100, (G.lockerRoomMorale || 60) + mBoost),
         };
       }
     }
     else {
       evStats.eventsLost = (evStats.eventsLost || 0) + 1;
-      // 菫ｮ豁｣D: AI蜍晏茜蛛ｴ繧りｨ倬鹸
+      // 修正D: AI勝利側も記録
       const bwt = { ...(G.battleWinsTotal || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
       bwt[ev.opponentOrgId] = (bwt[ev.opponentOrgId] || 0) + 1;
       G = { ...G, battleWinsTotal: bwt };
-      // AI蛛ｴ縺ｮ蟇ｾ謚玲姶繝槭う繝ｫ繧ｹ繝医・繝ｳ: 5蜍昴＃縺ｨ縺ｫ譁ｰ閨櫁ｨ倅ｺ・
+      // AI側の対抗戦マイルストーン: 5勝ごとに新聞記事
       if (bwt[ev.opponentOrgId] % 5 === 0) {
         G = { ...G,
           _newsWarMilestone: { orgId: ev.opponentOrgId, orgName: ev.opponentName, wins: bwt[ev.opponentOrgId] },
         };
       }
     }
-    // 驥鷹姦繝舌Λ繝ｳ繧ｹ謾ｹ蝟・ 蟇ｾ謚玲姶繝｡繝・ぅ繧｢蜿主・
+    // 金銭バランス改善: 対抗戦メディア収入
     const warMediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
     let warMediaTotal = 0;
     wp.results.forEach(r => {
@@ -10142,18 +10140,18 @@ const App = {
       const venueMult = VENUE_MEDIA_MULT[venueIdx] || 1.0;
       warMediaTotal += Math.round(r.mq * MEDIA_CONFIG.eventPerMQ * venueMult * 1.5);
     });
-    // JT蜃ｺ貍疲侭: 蜃ｺ蝣ｴ驕ｸ謇九・莠ｺ豌療怜・蝣ｴ隧ｦ蜷域焚
+    // JT出演料: 出場選手の人気×出場試合数
     let jtMediaTotal = 0;
     wp.results.forEach(r => {
       if (r.playerFighter) {
         const rev = Math.round((r.playerFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
         jtMediaTotal += rev;
-        // 繝｡繝・ぅ繧｢蜉溷感雉・ 蛟倶ｺｺ蛻･繝｡繝・ぅ繧｢蜿主・邏ｯ險医↓蜉邂・
+        // メディア功労賞: 個人別メディア収入累計に加算
         G = { ...G, roster: G.roster.map(c =>
           c.id === r.playerFighter.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
         )};
       }
-      // AI蝗｣菴馴∈謇九・繝｡繝・ぅ繧｢蜿主・蛟倶ｺｺ繝医Λ繝・く繝ｳ繧ｰ・亥ｯｾ謚玲姶蜃ｺ蝣ｴ・・
+      // AI団体選手のメディア収入個人トラッキング（対抗戦出場）
       if (r.aiFighter && ev.opponentOrgId && G.aiOrgs && G.aiOrgs[ev.opponentOrgId]) {
         const aiRev = Math.round((r.aiFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
         if (aiRev > 0) {
@@ -10167,14 +10165,14 @@ const App = {
       }
     });
     if (warMediaTotal + jtMediaTotal > 0) {
-      if (warMediaTotal > 0) warMediaIncomes.push({ amount: warMediaTotal, label: `蟇ｾ謚玲姶 vs ${ev.opponentName}` });
-      if (jtMediaTotal > 0) warMediaIncomes.push({ amount: jtMediaTotal, label: '蟇ｾ謚玲姶蜃ｺ貍疲侭' });
+      if (warMediaTotal > 0) warMediaIncomes.push({ amount: warMediaTotal, label: `対抗戦 vs ${ev.opponentName}` });
+      if (jtMediaTotal > 0) warMediaIncomes.push({ amount: jtMediaTotal, label: '対抗戦出演料' });
       G = { ...G, _pendingMediaIncomes: warMediaIncomes };
     }
 
     G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
 
-    // recentMatches險倬鹸・亥ｯｾ謚玲姶・・
+    // recentMatches記録（対抗戦）
     let warRoster = [...G.roster];
     wp.results.forEach(r => {
       const winner = r.playerWon ? 'left' : 'right';
@@ -10182,7 +10180,7 @@ const App = {
     });
     G = { ...G, roster: warRoster };
 
-    // h2h險倬鹸: 蟇ｾ謚玲姶
+    // h2h記録: 対抗戦
     let warH2h = { ...(G.h2h || {}) };
     wp.results.forEach(r => {
       const winner = r.playerWon ? 'left' : 'right';
@@ -10191,11 +10189,11 @@ const App = {
     });
     G = { ...G, h2h: warH2h };
 
-    // Phase 4 E-01: 蟇ｾ謚玲姶縺ｮ髢｢菫ょ､蜿肴丐 + applyMatchResult・・sCrossOrg=true・・
+    // Phase 4 E-01: 対抗戦の関係値反映 + applyMatchResult（isCrossOrg=true）
     if (G.relationships) {
       const warRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE5A));
       let relState = { ...G };
-      // 蟇ｾ謌ｦ縺励◆驕ｸ謇矩俣: applyMatchResult 縺ｧ蜈ｨ繧､繝吶Φ繝亥愛螳夲ｼ井ｻ門屮菴捺姶繝悶・繧ｹ繝井ｻ倥″・・
+      // 対戦した選手間: applyMatchResult で全イベント判定（他団体戦ブースト付き）
       wp.results.forEach(r => {
         const playerId = r.playerFighter.id;
         const aiId = r.aiFighter.id;
@@ -10218,7 +10216,7 @@ const App = {
         };
         relState = Engine.relationships.applyMatchResult(relState, playerId, aiId, warContext, warRelRng);
       });
-      // 繝√・繝繝｡繧､繝磯俣: bond +2~+4
+      // チームメイト間: bond +2~+4
       const participantIds = [...warFighterIds];
       if (participantIds.length >= 2) {
         relState = Engine.relationships.applyAllPairs(relState, participantIds,
@@ -10227,7 +10225,7 @@ const App = {
       G = { ...G, relationships: relState.relationships };
     }
 
-    // 笏笏 v4 ﾂｧ2-1: F02竭｢ 豎ｺ逹 蛻､螳夲ｼ亥ｯｾ謚玲姶・・笏笏
+    // ── v4 §2-1: F02③ 決着 判定（対抗戦） ──
     if (Engine.factions && typeof Engine.factions.rollResolutionAfterMatch === 'function' && !G._pendingFactionEvent) {
       for (let i = 0; i < wp.results.length; i++) {
         const r = wp.results[i];
@@ -10242,15 +10240,15 @@ const App = {
 
     Storage.autoSave();
 
-    // Swap content directly (no close竊池eopen gap that would flash event screen)
+    // Swap content directly (no close→reopen gap that would flash event screen)
     renderWarFinalResult(ev, wp.results, playerWins, aiWins, eventWon);
     App._warPreview = null;
   }
 };
 
-// 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
+// ══════════════════════════════════════════════
 //  PPV GRAND FINAL: Show Day System (Step 4)
-// 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
+// ══════════════════════════════════════════════
 App._ppvPreview = null;
 
 App.initPPVShow = function() {
@@ -10264,29 +10262,29 @@ App.initPPVShow = function() {
   };
   try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
 
-  // 繧ｫ繝ｼ繝峨′遨ｺ縺ｮ蝣ｴ蜷医・蜊ｳ蠎ｧ縺ｫfinalize・医せ繧ｿ繝・け髦ｲ豁｢・・
+  // カードが空の場合は即座にfinalize（スタック防止）
   if (ppvDay.card.length === 0) {
-    console.warn('[WM Debug] PPV card is empty 窶・entries:', JSON.stringify(G.ppvEntries ? Object.fromEntries(Object.entries(G.ppvEntries).map(([k,v]) => [k, (v||[]).length])) : 'null'));
+    console.warn('[WM Debug] PPV card is empty — entries:', JSON.stringify(G.ppvEntries ? Object.fromEntries(Object.entries(G.ppvEntries).map(([k,v]) => [k, (v||[]).length])) : 'null'));
     showEventPopup({
       type: 'system', tone: 'negative',
-      message: '繧ｫ繝ｼ繝臥ｷｨ謌蝉ｸ肴・遶・,
-      detail: '蜃ｺ蝣ｴ蜿ｯ閭ｽ縺ｪ驕ｸ謇九′荳崎ｶｳ縺励※縺翫ｊ縲∝ｯｾ謌ｦ繧ｫ繝ｼ繝峨ｒ邨・ａ縺ｾ縺帙ｓ縺ｧ縺励◆',
+      message: 'カード編成不成立',
+      detail: '出場可能な選手が不足しており、対戦カードを組めませんでした',
     });
     setTimeout(() => App.finalizePPV(), 1500);
     return;
   }
 
-  // 莉｣譖ｿ騾夂衍繝昴ャ繝励い繝・・
+  // 代替通知ポップアップ
   if (ppvDay.substitutions.length > 0) {
     let popupChain = Promise.resolve();
     ppvDay.substitutions.forEach(sub => {
-      const orgName = sub.orgId === 'player' ? (G.orgName || '閾ｪ蝗｣菴・) : (RIVAL_ORGS.find(o => o.id === sub.orgId)?.name || sub.orgId);
+      const orgName = sub.orgId === 'player' ? (G.orgName || '自団体') : (RIVAL_ORGS.find(o => o.id === sub.orgId)?.name || sub.orgId);
       popupChain = popupChain.then(() => new Promise(resolve => {
         showEventPopup({
           type: 'fighter', id: sub.originalId, name: sub.original,
           tone: 'negative',
-          message: `${sub.original}縺悟・蝣ｴ荳崎・・～,
-          detail: `${orgName}縺ｮ${sub.substitute}縺檎ｷ頑･蜃ｺ蝣ｴ`,
+          message: `${sub.original}が出場不能！`,
+          detail: `${orgName}の${sub.substitute}が緊急出場`,
         });
         setTimeout(resolve, 1500);
       }));
@@ -10303,7 +10301,7 @@ App.ppvWatchMatch = function(idx) {
   pp.currentWatching = idx;
   const match = pp.card[idx];
 
-  // Replay: 邨先棡莠句燕險育ｮ・(skip 縺ｨ蜷・seed)
+  // Replay: 結果事前計算 (skip と同 seed)
   const ppvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF3, idx, match.left.id));
   const ppvResult = Engine.ppv.simulatePPVMatch(match.left, match.right, ppvRng, { recordFrames: true });
   pp.results[idx] = ppvResult;
@@ -10323,15 +10321,15 @@ App.ppvWatchMatch = function(idx) {
     left: {
       ...match.left, condition: 80,
       portraitUrl: getPortraitUrl(match.left.id), profile: CHAR_PROFILES[match.left.id] || '',
-      vl: match.left.voiceLines || match.left.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.left.id]) || ['窶ｦ・・]
+      vl: match.left.voiceLines || match.left.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.left.id]) || ['…！']
     },
     right: {
       ...match.right, condition: 80,
       portraitUrl: getPortraitUrl(match.right.id), profile: CHAR_PROFILES[match.right.id] || '',
-      vl: match.right.voiceLines || match.right.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.right.id]) || ['窶ｦ・・]
+      vl: match.right.voiceLines || match.right.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[match.right.id]) || ['…！']
     },
     matchInfo: {
-      header: match.isSummit ? '醇 鬆ゆｸ頑ｱｺ謌ｦ' : `PPV 隨ｬ${matchNum}隧ｦ蜷・,
+      header: match.isSummit ? '🏆 頂上決戦' : `PPV 第${matchNum}試合`,
       subHeader: `${match.left.name} vs ${match.right.name}`,
       matchNum,
       totalMatches: total,
@@ -10347,7 +10345,7 @@ App.ppvWatchMatch = function(idx) {
     },
     result: ppvResult,
   };
-  // 繝薙ャ繧ｰ繝槭ャ繝。GM・・PV・・
+  // ビッグマッチBGM（PPV）
   try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
   let sent = false;
   const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
@@ -10386,7 +10384,7 @@ App._receivePPVBattleResult = function(data) {
   const pp = App._ppvPreview;
   if (!pp || pp.currentWatching < 0) return;
   const idx = pp.currentWatching;
-  // Replay 遘ｻ陦・ 莠句燕險育ｮ玲ｸ医∩縺ｪ繧臥ｵ先棡繧堤ｶｭ謖√＠ overlay 繧帝哩縺倥※谺｡縺ｸ
+  // Replay 移行: 事前計算済みなら結果を維持し overlay を閉じて次へ
   if (pp.results[idx]) {
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
@@ -10416,7 +10414,7 @@ App._receivePPVBattleResult = function(data) {
   if (pp.results.every(r => r !== null)) {
     App.finalizePPV();
   } else {
-    // 縺ｾ縺隧ｦ蜷医′谿九▲縺ｦ縺・ｋ 竊・PPV BGM繧貞・髢・
+    // まだ試合が残っている → PPV BGMを再開
     setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 1600);
   }
 };
@@ -10426,14 +10424,14 @@ App.finalizePPV = function() {
   if (!pp) return;
   if (pp.results.some(r => r === null)) return;
 
-  // 邨先棡蜿肴丐
+  // 結果反映
   const result = Engine.ppv.applyPPVResults(G, pp.card, pp.results, pp.summitPair);
   let s = result.state;
-  // forcedRest・・3莨鷹､企｡倥＞・峨ヵ繝ｩ繧ｰ繧偵け繝ｪ繧｢
+  // forcedRest（S3休養願い）フラグをクリア
   let roster = s.roster.map(c => c.forcedRest ? { ...c, forcedRest: false } : { ...c });
   const events = result.events;
 
-  // Step 5-6: 繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ蛻､螳・+ careerBestMQ + 繧ｹ繝ｩ繝ｳ繝・+ 繝｢繝√・蝟ｪ螟ｱ
+  // Step 5-6: ブレークスルー判定 + careerBestMQ + スランプ + モチベ喪失
   const pendingGrowthEvents = [];
   const btRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBBF7));
   pp.results.forEach((r, idx) => {
@@ -10443,11 +10441,11 @@ App.finalizePPV = function() {
       { fId: match.right.id, oppF: match.left, won: r.winner === 'right' },
     ].forEach(({ fId, oppF, won }) => {
       const fighter = roster.find(c => c.id === fId);
-      if (!fighter) return; // 繝励Ξ繧､繝､繝ｼ謇螻槭〒縺ｪ縺・
+      if (!fighter) return; // プレイヤー所属でない
       const oppOvr = Engine.util.ov(oppF);
       const isRivalryResolution = !!r.rivalryResolved;
 
-      // 繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ蛻､螳・
+      // ブレークスルー判定
       const btContext = { isTitle: false, won, isPPV: true, isRivalryResolution, isWarMatch: false };
       const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
         btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week, Engine.coach.getFlavorBreakthroughMult(s, fighter.id)
@@ -10461,20 +10459,20 @@ App.finalizePPV = function() {
           stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak,
           btHint: btHintLinePPV
         });
-        // Phase 4 G-01: 繝悶Ξ繝ｼ繧ｯ繧ｹ繝ｫ繝ｼ 竊・髢｢菫ょ､蜿肴丐
+        // Phase 4 G-01: ブレークスルー → 関係値反映
         if (s.relationships) {
           const btRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE57, fId));
           s = Engine.relationships.applyBreakthroughEffect(s, fId, btRelRng);
         }
       }
 
-      // careerBestMQ 譖ｴ譁ｰ
+      // careerBestMQ 更新
       const updatedFighter = roster.find(c => c.id === fId);
       if (r.mq > (updatedFighter.careerBestMQ || 0)) {
         roster = roster.map(c => c.id === fId ? { ...c, careerBestMQ: r.mq } : c);
       }
 
-      // 謨怜圏繧ｹ繝ｩ繝ｳ繝怜愛螳・
+      // 敗北スランプ判定
       if (!won) {
         const slumpRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBBF8, fId));
         const slumpFighter = roster.find(c => c.id === fId);
@@ -10482,18 +10480,18 @@ App.finalizePPV = function() {
           const newF = Engine.growthEvents.applySlump(slumpFighter, 'defeat', s.season, s.week);
           roster = roster.map(c => c.id === fId ? newF : c);
           pendingGrowthEvents.push({ type: 'slump_start', fighterId: fId, trigger: 'defeat' });
-          // Phase 4 G-03: 繧ｹ繝ｩ繝ｳ繝・竊・髢｢菫ょ､蜿肴丐
+          // Phase 4 G-03: スランプ → 関係値反映
           if (s.relationships) {
             const symRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE58, fId));
             s = Engine.relationships.applySympathyEffect(s, fId, { min: 1, max: 2 }, symRng);
-            // N-05: 繧ｹ繝ｩ繝ｳ繝怜・縺､蠖薙◆繧・
+            // N-05: スランプ八つ当たり
             const lashRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE6E, fId));
             s = Engine.relationships.applySlumpLashout({ ...s, roster }, fId, lashRng);
           }
         }
       }
 
-      // momentum譖ｴ譁ｰ + 繝｢繝√・蝟ｪ螟ｱ繝√ぉ繝・け
+      // momentum更新 + モチベ喪失チェック
       const momRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBBF9, fId));
       const momFighter = roster.find(c => c.id === fId);
       let updF = Engine.growthEvents.updateSlumpMomentumAfterMatch(momFighter, r.mq, won, momRng);
@@ -10503,7 +10501,7 @@ App.finalizePPV = function() {
         if (Engine.growthEvents.checkMotivationLoss(mlRng, updF, 'defeat')) {
           updF = Engine.growthEvents.applyMotivationLoss(updF, s.season, s.week);
           pendingGrowthEvents.push({ type: 'motivation_loss_start', fighterId: fId });
-          // Phase 4 G-06: 繝｢繝√・蝟ｪ螟ｱ 竊・髢｢菫ょ､蜿肴丐
+          // Phase 4 G-06: モチベ喪失 → 関係値反映
           if (s.relationships) {
             const symRng2 = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE59, fId));
             s = Engine.relationships.applySympathyEffect(s, fId, { min: 1, max: 1 }, symRng2);
@@ -10518,12 +10516,12 @@ App.finalizePPV = function() {
 
   s = { ...s, roster };
 
-  // 驥鷹姦繝舌Λ繝ｳ繧ｹ謾ｹ蝟・ PPV繝｡繝・ぅ繧｢蜿主・・亥・貍疲侭・・
+  // 金銭バランス改善: PPVメディア収入（出演料）
   const ppvMediaIncomes = s._pendingMediaIncomes ? [...s._pendingMediaIncomes] : [];
   let ppvMediaTotal = 0;
   pp.results.forEach((r, idx) => {
     const match = pp.card[idx];
-    // 繧ｫ繝ｼ繝我ｽ咲ｽｮ蛻､螳・ summit縺ｪ繧盈ain縲∵怙蠕後°繧・逡ｪ逶ｮ縺ｪ繧鋭emi縲√◎繧御ｻ･螟悶・隧ｦ蜷域焚縺ｧ蛻､螳・
+    // カード位置判定: summitならmain、最後から2番目ならsemi、それ以外は試合数で判定
     let position = 'mid';
     if (match.isSummit) position = 'main';
     else if (idx === pp.results.length - 2) position = 'semi';
@@ -10535,12 +10533,12 @@ App.finalizePPV = function() {
       if (rev <= 0) return;
       if (f._ppvOrgId === 'player') {
         ppvMediaTotal += rev;
-        // 繝｡繝・ぅ繧｢蜉溷感雉・ 蛟倶ｺｺ蛻･繝｡繝・ぅ繧｢蜿主・邏ｯ險医↓蜉邂・
+        // メディア功労賞: 個人別メディア収入累計に加算
         s = { ...s, roster: s.roster.map(c =>
           c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
         )};
       } else if (f._ppvOrgId && s.aiOrgs && s.aiOrgs[f._ppvOrgId]) {
-        // AI蝗｣菴馴∈謇九・繝｡繝・ぅ繧｢蜿主・蛟倶ｺｺ繝医Λ繝・く繝ｳ繧ｰ
+        // AI団体選手のメディア収入個人トラッキング
         const aiOrg = s.aiOrgs[f._ppvOrgId];
         s = { ...s, aiOrgs: { ...s.aiOrgs, [f._ppvOrgId]: {
           ...aiOrg, roster: aiOrg.roster.map(c =>
@@ -10551,18 +10549,18 @@ App.finalizePPV = function() {
     });
   });
   if (ppvMediaTotal > 0) {
-    ppvMediaIncomes.push({ amount: ppvMediaTotal, label: 'PPV蜃ｺ貍疲侭' });
+    ppvMediaIncomes.push({ amount: ppvMediaTotal, label: 'PPV出演料' });
     s = { ...s, _pendingMediaIncomes: ppvMediaIncomes };
   }
 
-  // 譁ｰ閨樒畑: 鬆ゆｸ頑ｱｺ謌ｦ邨先棡繧剃ｿ晏ｭ假ｼ域ｬ｡騾ｱ縺ｮ譁ｰ閨樒函謌舌〒菴ｿ逕ｨ・・
+  // 新聞用: 頂上決戦結果を保存（次週の新聞生成で使用）
   if (pp.summitPair) {
     const summitIdx = pp.card.findIndex(m => m.isSummit);
     if (summitIdx >= 0) {
       const sr = pp.results[summitIdx];
       const sm = pp.card[summitIdx];
       const sp = pp.summitPair;
-      // 閾ｪ蝗｣菴捺園螻槭ｒ蜴ｳ蟇・愛螳壹Ｑlayer荳榊惠縺ｮTV繝｢繝ｼ繝峨〒縺ｯ playerInvolved=false
+      // 自団体所属を厳密判定。player不在のTVモードでは playerInvolved=false
       const leftIsPlayer = sm.left._ppvOrgId === 'player';
       const rightIsPlayer = sm.right._ppvOrgId === 'player';
       const playerInvolved = leftIsPlayer || rightIsPlayer;
@@ -10575,32 +10573,32 @@ App.finalizePPV = function() {
       const winnerF = sr.winner === 'left' ? sm.left : (sr.winner === 'right' ? sm.right : null);
       const loserF = winnerF ? (winnerF === sm.left ? sm.right : sm.left) : null;
 
-      // 蝗｣菴灘錐・医・繝ｬ繧､繝､繝ｼ蛛ｴ / 逶ｸ謇句・・・
-      const orgNameOf = (orgId) => orgId === 'player' ? (G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・) : (G.aiOrgs?.[orgId]?.name || '逶ｸ謇句屮菴・);
-      const playerOrgName = playerInvolved ? (G.orgName || '繝励Ξ繧､繝､繝ｼ蝗｣菴・)
+      // 団体名（プレイヤー側 / 相手側）
+      const orgNameOf = (orgId) => orgId === 'player' ? (G.orgName || 'プレイヤー団体') : (G.aiOrgs?.[orgId]?.name || '相手団体');
+      const playerOrgName = playerInvolved ? (G.orgName || 'プレイヤー団体')
         : orgNameOf(sp.org1Id);
       const aiOrgId = playerInvolved
         ? (sp.org1Id === 'player' ? sp.org2Id : sp.org1Id)
         : sp.org2Id;
       const aiOrgName = orgNameOf(aiOrgId);
 
-      // 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ
+      // ランキング
       const rankings = G.rankings || [];
       const playerOrgIdLookup = playerInvolved ? 'player' : sp.org1Id;
       const playerRank = (rankings.find(r => r.orgId === playerOrgIdLookup) || {}).rank || null;
       const aiRank = (rankings.find(r => r.orgId === aiOrgId) || {}).rank || null;
 
-      // h2h・域峩譁ｰ蜑阪↑縺ｮ縺ｧprior・・
+      // h2h（更新前なのでprior）
       const priorH2h = playerF && aiF ? Engine.h2h.getRecordFor(G, playerF.id, aiF.id) : null;
 
-      // HP谿矩㍼
+      // HP残量
       const winnerSide = sr.winner;
       const winnerHpFinal = winnerSide === 'left' ? (sr.hpLeft?.final ?? 0) : (sr.hpRight?.final ?? 0);
       const winnerHpMax = winnerSide === 'left' ? (sr.hpLeft?.max ?? 100) : (sr.hpRight?.max ?? 100);
       const loserHpFinal = winnerSide === 'left' ? (sr.hpRight?.final ?? 0) : (sr.hpLeft?.final ?? 0);
       const loserHpMax = winnerSide === 'left' ? (sr.hpRight?.max ?? 100) : (sr.hpLeft?.max ?? 100);
 
-      // 蜍晁・そ繝ｪ繝包ｼ郁・蝗｣菴灘享蛻ｩ譎ゅ・縺ｿ縲￣PV_SUMMIT_VICTORY_LINES縺九ｉ1譛ｬ・・
+      // 勝者セリフ（自団体勝利時のみ、PPV_SUMMIT_VICTORY_LINESから1本）
       let winnerLine = null;
       if (playerWon && winnerF && typeof PPV_SUMMIT_VICTORY_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
         try { winnerLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winnerF); } catch (e) {}
@@ -10614,7 +10612,7 @@ App.finalizePPV = function() {
         aiName: aiF.name,
         aiId: aiF.id,
         aiOrgName,
-        opponentName: aiOrgName, // 蠕梧婿莠呈鋤
+        opponentName: aiOrgName, // 後方互換
         won: playerWon,
         winnerName: winnerF ? winnerF.name : null,
         winnerId: winnerF ? winnerF.id : null,
@@ -10634,7 +10632,7 @@ App.finalizePPV = function() {
     }
   }
 
-  // recentMatches險倬鹸・・PV・・
+  // recentMatches記録（PPV）
   let ppvRoster = [...(s.roster || G.roster)];
   pp.results.forEach((r, idx) => {
     const match = pp.card[idx];
@@ -10642,7 +10640,7 @@ App.finalizePPV = function() {
   });
   s = { ...s, roster: ppvRoster };
 
-  // h2h險倬鹸: PPV・亥粋蜷瑚・陦後・縺溘ａ蜷・∈謇九・謇螻槭ｒ蛻､螳夲ｼ・
+  // h2h記録: PPV（合同興行のため各選手の所属を判定）
   const _findOrgKey = (fid) => {
     if ((s.roster || []).some(c => c.id === fid)) return 'player';
     const aiOrgs = s.aiOrgs || {};
@@ -10661,7 +10659,7 @@ App.finalizePPV = function() {
   });
   s = { ...s, h2h: ppvH2h };
 
-  // 繧ｷ繝ｼ繧ｺ繝ｳstats譖ｴ譁ｰ
+  // シーズンstats更新
   const stats = { ...(G.seasonStats || {}) };
   stats.showCount = (stats.showCount || 0) + 1;
   pp.results.forEach(r => {
@@ -10670,7 +10668,7 @@ App.finalizePPV = function() {
 
   G = { ...G, ...s, seasonStats: stats, weekPhase: 'showExec', gameLog: [...G.gameLog, ...events] };
 
-  // 繝昴ャ繝励い繝・・逕ｨ繝・・繧ｿ繧剃ｿ晏ｭ・
+  // ポップアップ用データを保存
   if (pendingGrowthEvents.length > 0) {
     G = { ...G, _pendingGrowthEvents: pendingGrowthEvents };
   }
@@ -10694,7 +10692,7 @@ App.closePPVResult = function() {
   Audio.play('coin');
   Audio.bgm.play('management');
 
-  // Step 5-6: 繝昴ャ繝励い繝・・逕ｨ繝・・繧ｿ蜿門ｾ・+ G縺九ｉ繧ｯ繝ｪ繧｢
+  // Step 5-6: ポップアップ用データ取得 + Gからクリア
   const pendingGrowthEventsShow = G._pendingGrowthEvents || [];
   if (G._pendingGrowthEvents) {
     const { _pendingGrowthEvents: _, ...cleanG } = G;
@@ -10703,7 +10701,7 @@ App.closePPVResult = function() {
   const pendingResolutions = App._pendingRivalryResolutions || [];
   App._pendingRivalryResolutions = [];
 
-  // tickWeek竊痴ettlement竊蜘eek48螳御ｺ・
+  // tickWeek→settlement→week48完了
   const result = Engine.tickWeek(G);
   const stats = { ...G.seasonStats };
   if (result.state.weeklyFinance) {
@@ -10715,15 +10713,14 @@ App.closePPVResult = function() {
   G = { ...G, showCard: [] };
 
   App._refreshTicker();
-  
   App.checkSurvivalUpdate();
-  // Step 5-6: 繝舌ヵ豸郁ｲｻ
+  // Step 5-6: バフ消費
   App._tickMilestoneBuffsShow();
   App._applyWeeklyBuffEffects();
   App._tickMilestoneBuffsWeekly();
   Storage.autoSave();
 
-  // Step 5-6: 繝昴ャ繝励い繝・・繝√ぉ繝ｼ繝ｳ・磯・・↓邨・∩遶九※: growth 竊・resolution・・
+  // Step 5-6: ポップアップチェーン（逆順に組み立て: growth ← resolution）
   let nextAction = null;
   if (pendingGrowthEventsShow.length > 0) {
     const after = nextAction;
@@ -10737,7 +10734,7 @@ App.closePPVResult = function() {
     setTimeout(nextAction, 200);
   }
 
-  // P4-P6: PPV蠕後・Glimpse陦ｨ遉ｺ
+  // P4-P6: PPV後のGlimpse表示
   if (G._pendingGlimpseA || G._pendingGlimpseB) {
     const gA = G._pendingGlimpseA || null;
     const gB = G._pendingGlimpseB || null;
@@ -10755,7 +10752,7 @@ App.closePPVResult = function() {
     }
   }
 
-  // PPV蜿ょ刈貂医∩竊探V荳ｭ邯吶ヵ繧ｧ繝ｼ繧ｺ繧偵せ繧ｭ繝・・縺礼峩謗･繧ｪ繝輔す繝ｼ繧ｺ繝ｳ縺ｸ
+  // PPV参加済み→TV中継フェーズをスキップし直接オフシーズンへ
   G = { ...G, ppvPhase: null };
   Storage.autoSave();
   App.advanceWeek();
@@ -10765,7 +10762,7 @@ App.initPPVTV = function() {
   const tvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF5));
   const tvResult = Engine.ppv.simulateTVResults(G, tvRng);
 
-  // battlePoints + orgWarRecord 蜿肴丐
+  // battlePoints + orgWarRecord 反映
   G = { ...G, battlePoints: tvResult.battlePoints, orgWarRecord: tvResult.orgWarRecord || G.orgWarRecord, gameLog: [...G.gameLog, ...tvResult.events] };
 
   _chainEventPopupQueueEmpty(() => {
@@ -10774,10 +10771,10 @@ App.initPPVTV = function() {
 
   showEventPopup({
     type: 'system',
-    emoji: '銅',
+    emoji: '📺',
     tone: 'gold',
     name: G.ppvName || 'PPV GRAND FINAL',
-    message: '縺､縺・↓蟷ｴ髢鍋ｷ乗ｱｺ邂励・PPV蠖捺律縺ｧ縺吶ゅ≠縺ｨ荳豁ｩ螻翫°縺壹∫ｧ√◆縺｡縺ｮ蜷榊燕縺ｯ莉雁､懊・繧ｫ繝ｼ繝峨↓縺ゅｊ縺ｾ縺帙ｓ縲よｔ縺励＆縺ｯ縺ゅｊ縺ｾ縺吶′縲√∪縺壹・莉門屮菴薙・螟ｧ荳逡ｪ繧偵ユ繝ｬ繝薙〒遒ｺ隱阪＠縺ｾ縺励ｇ縺・・
+    message: 'ついに年間総決算のPPV当日です。あと一歩届かず、私たちの名前は今夜のカードにありません。悔しさはありますが、まずは他団体の大一番をテレビで確認しましょう。'
   });
 };
 
@@ -10786,7 +10783,7 @@ App.closePPVTV = function() {
   overlay.classList.remove('active');
   Audio.play('coin');
 
-  // tickWeek: PPV TV隕ｳ謌ｦ荳ｭ縺ｧ繧るｱ谺｡蜃ｦ逅・ｼ郁ｨ鍋ｷｴ繝ｻ邨ｦ荳弱・髢｢菫ょ､・峨・螳溯｡後☆繧・
+  // tickWeek: PPV TV観戦中でも週次処理（訓練・給与・関係値）は実行する
   const result = Engine.tickWeek(G);
   const stats = { ...G.seasonStats };
   if (result.state.weeklyFinance) {
@@ -10799,12 +10796,11 @@ App.closePPVTV = function() {
   G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
 
   App._refreshTicker();
-  
   App.checkSurvivalUpdate();
   App._applyWeeklyBuffEffects();
   App._tickMilestoneBuffsWeekly();
 
-  // P4-P6: PPV TV蠕後・Glimpse陦ｨ遉ｺ
+  // P4-P6: PPV TV後のGlimpse表示
   if (G._pendingGlimpseA || G._pendingGlimpseB) {
     const gA = G._pendingGlimpseA || null;
     const gB = G._pendingGlimpseB || null;
@@ -10822,21 +10818,21 @@ App.closePPVTV = function() {
     }
   }
 
-  // ppvPhase繧ｯ繝ｪ繧｢竊誕dvanceWeek竊偵が繝輔す繝ｼ繧ｺ繝ｳ縺ｸ
+  // ppvPhaseクリア→advanceWeek→オフシーズンへ
   G = { ...G, ppvPhase: null };
   Storage.autoSave();
   App.advanceWeek();
 };
 
-// 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
-//  U-20 繧ｸ繝･繝九い繝医・繝翫Γ繝ｳ繝・UI 繝輔Ο繝ｼ
-// 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武
-App._jtPreview = null; // 繝医・繝翫Γ繝ｳ繝磯ｲ陦後ョ繝ｼ繧ｿ
+// ══════════════════════════════════════════════════════════
+//  U-20 ジュニアトーナメント UI フロー
+// ══════════════════════════════════════════════════════════
+App._jtPreview = null; // トーナメント進行データ
 
 App.initJuniorTournament = function() {
   const sel = G._juniorTournamentSelection;
   if (!sel || sel.cancelled) {
-    // 荳埼幕蛯ｬ 竊・騾壼ｸｸ騾ｱ縺ｫ謌ｻ縺・
+    // 不開催 → 通常週に戻す
     G = { ...G, weekPhase: 'manage' };
     delete G._juniorTournamentSelection;
     showScreen('week');
@@ -10845,7 +10841,7 @@ App.initJuniorTournament = function() {
   const jtRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBB10));
   const jtResult = Engine.juniorTournament.run(G, sel.participants, jtRng);
 
-  // 閾ｪ蝗｣菴薙・蜃ｺ蝣ｴ驕ｸ謇九ｒ謚ｽ蜃ｺ・医Ξ繝ｳ繧ｿ繝ｫ驕ｸ謇九・蜈・園螻槫屮菴捺棧縺ｧ蜃ｺ蝣ｴ縺吶ｋ縺溘ａ髯､螟厄ｼ・
+  // 自団体の出場選手を抽出（レンタル選手は元所属団体枠で出場するため除外）
   const playerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
   const myParticipants = jtResult.rounds[0].matches
     .flatMap(m => [m.left, m.right])
@@ -10894,7 +10890,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
   const match = round.matches[matchIdx];
   const isFinal = roundIdx === jt.result.rounds.length - 1;
 
-  // battle-engine iframe 縺ｫ隧ｦ蜷医ョ繝ｼ繧ｿ繧帝√ｋ・・attleOverlay + battleIframe 繧剃ｽｿ逕ｨ・・
+  // battle-engine iframe に試合データを送る（battleOverlay + battleIframe を使用）
   const overlay = document.getElementById('battleOverlay');
   overlay.style.display = 'block';
   const escBtn = document.getElementById('battleEscapeBtn');
@@ -10912,8 +10908,8 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
     || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === match.right.id)
     || match.right;
 
-  const roundLabel = round.name === 'final' ? '豎ｺ蜍・ : round.name === 'semiFinal' ? '貅匁ｱｺ蜍・ : '貅悶・ｱｺ蜍・;
-  // Replay: 莠句燕繧ｷ繝溘Η貂医∩縺ｮ match 縺九ｉ frames+winner 遲峨ｒ result 縺ｨ縺励※邨・∩遶九※繧・
+  const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
+  // Replay: 事前シミュ済みの match から frames+winner 等を result として組み立てる
   const jtResult = {
     winner: match.winner, mq: match.mq, turns: match.turns,
     finType: match.finType || '', finMove: match.finMove || '',
@@ -10925,15 +10921,15 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
     left: {
       ...leftF, condition: 80,
       portraitUrl: getPortraitUrl(leftF.id), profile: CHAR_PROFILES[leftF.id] || '',
-      vl: leftF.voiceLines || leftF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[leftF.id]) || ['窶ｦ・・]
+      vl: leftF.voiceLines || leftF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[leftF.id]) || ['…！']
     },
     right: {
       ...rightF, condition: 80,
       portraitUrl: getPortraitUrl(rightF.id), profile: CHAR_PROFILES[rightF.id] || '',
-      vl: rightF.voiceLines || rightF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[rightF.id]) || ['窶ｦ・・]
+      vl: rightF.voiceLines || rightF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[rightF.id]) || ['…！']
     },
     matchInfo: {
-      header: `醇 繧ｸ繝･繝九い繝医・繝翫Γ繝ｳ繝・${roundLabel}`,
+      header: `🏆 ジュニアトーナメント ${roundLabel}`,
       subHeader: `${match.left.name} vs ${match.right.name}`,
       matchNum: matchIdx + 1,
       totalMatches: round.matches.length,
@@ -10947,7 +10943,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
     },
     result: jtResult,
   };
-  // 繝薙ャ繧ｰ繝槭ャ繝。GM・域ｱｺ蜍昴・縺ｿ・・
+  // ビッグマッチBGM（決勝のみ）
   if (isFinal) {
     try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
   }
@@ -10962,14 +10958,14 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
 };
 
 App.jtSkipMatch = function(roundIdx, matchIdx) {
-  // 隧ｦ蜷育ｵ先棡逕ｻ髱｢繧定｡ｨ遉ｺ
+  // 試合結果画面を表示
   App._jtPreview.phase = 'matchResult';
   Audio.play('coin');
   renderJuniorTournamentMatchResult(roundIdx, matchIdx);
 };
 
 App.jtSkipAll = function() {
-  // 蜈ｨ隧ｦ蜷医せ繧ｭ繝・・ 竊・譛邨らｵ先棡縺ｸ
+  // 全試合スキップ → 最終結果へ
   App._jtPreview.phase = 'finalResult';
   try { Audio.fileBgm.fadeOut(800); } catch(e) {}
   setTimeout(() => {
@@ -10997,12 +10993,12 @@ App._receiveJTBattleResult = function(data) {
   clearTimeout(App._escBtnTimer);
   const escBtn = document.getElementById('battleEscapeBtn');
   if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
-  // BGM繝輔ぉ繝ｼ繝峨い繧ｦ繝茨ｼ域ｱｺ蜍晄凾・・
+  // BGMフェードアウト（決勝時）
   try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
-  // iframe繧帝哩縺倥ｋ
+  // iframeを閉じる
   document.getElementById('battleOverlay').style.display = 'none';
 
-  // iframe邨先棡縺ｧmatch data繧剃ｸ頑嶌縺搾ｼ・frame迢ｬ閾ｪ繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ縺ｮ邨先棡繧呈ｭ｣縺ｨ縺吶ｋ・・
+  // iframe結果でmatch dataを上書き（iframe独自シミュレーションの結果を正とする）
   const iframeWinner = data.winner || 'left';
   match.winner = iframeWinner;
   match.winnerId = data.winnerId != null ? data.winnerId : (iframeWinner === 'right' ? match.right.id : match.left.id);
@@ -11011,21 +11007,21 @@ App._receiveJTBattleResult = function(data) {
   match.turns = data.turns || match.turns;
   match.finType = data.finType || match.finType;
   match.finMove = data.finMove || match.finMove;
-  // iframe縺ｯ {current,max}縲√お繝ｳ繧ｸ繝ｳ縺ｯ {final,max} 蠖｢蠑・
+  // iframeは {current,max}、エンジンは {final,max} 形式
   if (data.hpLeft) match.hpLeft = { final: data.hpLeft.current != null ? data.hpLeft.current : data.hpLeft.final, max: data.hpLeft.max };
   if (data.hpRight) match.hpRight = { final: data.hpRight.current != null ? data.hpRight.current : data.hpRight.final, max: data.hpRight.max };
   if (data.log) match.log = data.log;
 
-  // 蠕檎ｶ壹Λ繧ｦ繝ｳ繝峨・蜀崎ｨ育ｮ暦ｼ亥享閠・′螟峨ｏ縺｣縺溷ｴ蜷医∵ｬ｡繝ｩ繧ｦ繝ｳ繝我ｻ･髯阪・蟇ｾ謌ｦ繧ｫ繝ｼ繝峨・邨先棡繧よ峩譁ｰ・・
+  // 後続ラウンドの再計算（勝者が変わった場合、次ラウンド以降の対戦カード・結果も更新）
   App._jtRecomputeSubsequentRounds(jt, ri);
 
-  // 隕ｳ謌ｦ蠕・竊・隧ｦ蜷育ｵ先棡逕ｻ髱｢繧定｡ｨ遉ｺ
+  // 観戦後 → 試合結果画面を表示
   jt.phase = 'matchResult';
   Audio.play('coin');
   renderJuniorTournamentMatchResult(ri, mi);
 };
 
-// JT蠕檎ｶ壹Λ繧ｦ繝ｳ繝牙・險育ｮ・ 隕ｳ謌ｦ縺励◆隧ｦ蜷医・邨先棡縺悟､峨ｏ縺｣縺溷ｴ蜷医↓縲∽ｻ･髯阪・繝ｩ繧ｦ繝ｳ繝峨ｒ蜀阪す繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+// JT後続ラウンド再計算: 観戦した試合の結果が変わった場合に、以降のラウンドを再シミュレーション
 App._jtWinnerAdvanceState = function(match) {
   if (!match || !match.left || !match.right) return null;
   const winnerIsRight = match.winnerId === match.right.id || match.winner === 'right';
@@ -11075,7 +11071,7 @@ App._jtSimulateMatch = function(jt, left, right, roundIdx, pairIdx) {
 App._jtRecomputeSubsequentRounds = function(jt, fromRoundIdx) {
   const rounds = jt.result.rounds;
   if (fromRoundIdx + 1 >= rounds.length) {
-    // 譛邨ゅΛ繧ｦ繝ｳ繝峨□縺｣縺溷ｴ蜷医…hampion/runnerUp縺縺第峩譁ｰ
+    // 最終ラウンドだった場合、champion/runnerUpだけ更新
     App._jtUpdateFinalResults(jt);
     return;
   }
@@ -11092,7 +11088,7 @@ App._jtRecomputeSubsequentRounds = function(jt, fromRoundIdx) {
       const left = winners[i];
       const right = winners[i + 1];
 
-      // 繝輔Ν驕ｸ謇九ョ繝ｼ繧ｿ繧貞叙蠕励＠縺ｦ繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ
+      // フル選手データを取得してシミュレーション
       newMatches.push(App._jtSimulateMatch(jt, left, right, ri, i));
     }
     rounds[ri] = { ...rounds[ri], matches: newMatches };
@@ -11124,13 +11120,13 @@ App._jtLookupFighter = function(id) {
 };
 
 App.jtAdvanceAfterMatch = function(roundIdx, matchIdx) {
-  // 譌ｧ莠呈鋤: 逶ｴ謗･繝悶Λ繧ｱ繝・ヨ縺ｫ謌ｻ繧句ｴ蜷茨ｼ亥・驛ｨ逕ｨ・・
+  // 旧互換: 直接ブラケットに戻る場合（内部用）
   App._jtAdvanceInternal(roundIdx, matchIdx);
 };
 
 App.jtAdvanceAfterResult = function(roundIdx, matchIdx) {
-  // 隧ｦ蜷育ｵ先棡逕ｻ髱｢縺九ｉ谺｡縺ｸ騾ｲ繧
-  // 繝医・繝翫Γ繝ｳ繝・GM繧貞・髢具ｼ域ｱｺ蜍晁ｦｳ謌ｦ蠕後・繝輔ぉ繝ｼ繝峨い繧ｦ繝医°繧峨・蠕ｩ蟶ｰ・・
+  // 試合結果画面から次へ進む
+  // トーナメントBGMを再開（決勝観戦後のフェードアウトからの復帰）
   if (!Audio.fileBgm._audio) {
     try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
   }
@@ -11152,7 +11148,7 @@ App._jtAdvanceInternal = function(roundIdx, matchIdx) {
     renderJuniorTournamentBracket();
   } else {
     jt.phase = 'finalResult';
-    // 豎ｺ蜍晏ｾ・ BGM繧呈ｭ｢繧√※繝√Ε繝ｳ繝斐が繝ｳ繧ｸ繝ｳ繧ｰ繝ｫ繧帝ｳｴ繧峨☆
+    // 決勝後: BGMを止めてチャンピオンジングルを鳴らす
     try { Audio.fileBgm.fadeOut(800); } catch(e) {}
     setTimeout(() => {
       try { Audio.fileBgm.stop(); } catch(e) {}
@@ -11166,11 +11162,11 @@ App.finalizeJuniorTournament = function() {
   const jt = App._jtPreview;
   if (!jt) return;
 
-  // Engine.juniorTournament.apply 縺ｧ state 蜿肴丐
+  // Engine.juniorTournament.apply で state 反映
   const applied = Engine.juniorTournament.apply(G, jt.result);
   G = { ...applied.state, gameLog: [...G.gameLog, ...applied.events] };
 
-  // 驥鷹姦繝舌Λ繝ｳ繧ｹ謾ｹ蝟・ JT繝｡繝・ぅ繧｢蜿主・・亥・貍疲侭・・
+  // 金銭バランス改善: JTメディア収入（出演料）
   const jtMediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
   const jtPlayerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
   let jtMediaTotal = 0;
@@ -11182,12 +11178,12 @@ App.finalizeJuniorTournament = function() {
         if (rev <= 0) return;
         if (jtPlayerIds.has(f.id)) {
           jtMediaTotal += rev;
-          // 繝｡繝・ぅ繧｢蜉溷感雉・ 蛟倶ｺｺ蛻･繝｡繝・ぅ繧｢蜿主・邏ｯ險医↓蜉邂・
+          // メディア功労賞: 個人別メディア収入累計に加算
           G = { ...G, roster: G.roster.map(c =>
             c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
           )};
         } else {
-          // AI蝗｣菴馴∈謇九・繝｡繝・ぅ繧｢蜿主・蛟倶ｺｺ繝医Λ繝・く繝ｳ繧ｰ
+          // AI団体選手のメディア収入個人トラッキング
           const fOrgId = f._jtOrgId || Object.keys(G.aiOrgs || {}).find(oid => G.aiOrgs[oid]?.roster?.some(r => r.id === f.id));
           if (fOrgId && G.aiOrgs && G.aiOrgs[fOrgId]) {
             const aiOrg = G.aiOrgs[fOrgId];
@@ -11202,35 +11198,35 @@ App.finalizeJuniorTournament = function() {
     });
   });
   if (jtMediaTotal > 0) {
-    jtMediaIncomes.push({ amount: jtMediaTotal, label: 'JT蜃ｺ貍疲侭' });
+    jtMediaIncomes.push({ amount: jtMediaTotal, label: 'JT出演料' });
     G = { ...G, _pendingMediaIncomes: jtMediaIncomes };
   }
 
-  // 譁ｰ閨槭ｒ蜀咲函謌撰ｼ・T邨先棡繧貞渚譏縺輔○繧具ｼ・
+  // 新聞を再生成（JT結果を反映させる）
   const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xEE57));
   G = { ...G, weeklyNewspaper: Engine.newspaper.generate(G, newsRng) };
 
-  // 閾ｪ蝗｣菴灘・蝣ｴ驕ｸ謇九・諢滓Φ繝√ぉ繝ｼ繝ｳ繧呈ｧ狗ｯ会ｼ医Ξ繝ｳ繧ｿ繝ｫ驕ｸ謇九・蜈・園螻槫屮菴捺棧縺ｧ蜃ｺ蝣ｴ・・
+  // 自団体出場選手の感想チェーンを構築（レンタル選手は元所属団体枠で出場）
   const playerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
   const { champion, runnerUp, semiFinalists, rounds } = jt.result;
   const allParticipants = rounds[0].matches.flatMap(m => [m.left, m.right]);
   const myParticipants = allParticipants.filter(p => playerIds.has(p.id));
 
-  // 邨先棡縺ｫ蠢懊§縺溘ち繧､繝溘Φ繧ｰ繧貞愛螳・
+  // 結果に応じたタイミングを判定
   const impressions = myParticipants.map(p => {
     let timing = 'postLose';
     if (champion && champion.id === p.id) timing = 'champion';
     else if (runnerUp && runnerUp.id === p.id) timing = 'postWin';
     else if (semiFinalists && semiFinalists.some(sf => sf && sf.id === p.id)) timing = 'postWin';
-    // 貅悶・ｱｺ蜍晄風騾縺ｯ postLose
+    // 準々決勝敗退は postLose
     return { ...p, _jtTiming: timing };
   });
 
-  // transient繧ｯ繝ｪ繧｢・・juniorTournamentResult縺ｯtickWeek縺ｧ譁ｰ閨槭′隱ｭ繧縺ｮ縺ｧ谿九☆・・
+  // transientクリア（_juniorTournamentResultはtickWeekで新聞が読むので残す）
   delete G._juniorTournamentSelection;
   App._jtPreview = null;
 
-  // V6 summon 縺ｧ螟画峩縺励◆ box 繧ｹ繧ｿ繧､繝ｫ繧偵Μ繧ｻ繝・ヨ
+  // V6 summon で変更した box スタイルをリセット
   const box = document.getElementById('showResultBox');
   if (box) { box.style.maxWidth = ''; box.style.padding = ''; box.style.background = ''; box.style.border = ''; }
 
@@ -11245,9 +11241,9 @@ App.finalizeJuniorTournament = function() {
     refreshAll();
   };
 
-  // 諢滓Φ繝√ぉ繝ｼ繝ｳ陦ｨ遉ｺ・郁・蝗｣菴馴∈謇九′縺・ｋ蝣ｴ蜷茨ｼ・
+  // 感想チェーン表示（自団体選手がいる場合）
   if (impressions.length > 0) {
-    // 邨先棡繧ｪ繝ｼ繝舌・繝ｬ繧､繧帝哩縺倥ｋ
+    // 結果オーバーレイを閉じる
     document.getElementById('showResultOverlay').classList.remove('active');
     setTimeout(() => {
       _showJTImpressionChain(impressions, 0, finishUp);
@@ -11257,9 +11253,9 @@ App.finalizeJuniorTournament = function() {
   }
 };
 
-// v2.1: 繧ｯ繝ｬ繧ｸ繝・ヨ逕ｻ髱｢
+// v2.1: クレジット画面
 App.showCredits = function() {
-  // 讌ｽ譖ｲ繧ｯ繝ｬ繧ｸ繝・ヨ繧貞虚逧・↓繝ｬ繝ｳ繝繝ｪ繝ｳ繧ｰ
+  // 楽曲クレジットを動的にレンダリング
   const el = document.getElementById('creditsMusicList');
   if (el && typeof CREDITS !== 'undefined' && CREDITS.music) {
     el.innerHTML = CREDITS.music.map(m => `
@@ -11279,13 +11275,13 @@ App.previewEnding = function() {
   App.closeCredits();
   const data = (typeof G !== 'undefined' && G.season)
     ? Engine.ending.buildClearData(G)
-    : { season: 1, orgName: '蝗｣菴・, playerRating: 1000, peakOrgPop: 0, totalShows: 0, bestMQ: 0, hallOfFameCount: 0, top3Fighters: [], coaches: [] };
+    : { season: 1, orgName: '団体', playerRating: 1000, peakOrgPop: 0, totalShows: 0, bestMQ: 0, hallOfFameCount: 0, top3Fighters: [], coaches: [] };
   setTimeout(() => showEndingCeremony(data, () => {}), 300);
 };
 
-// 笏笏 DEBUG: 讌ｭ逡悟ｺ穂ｸ翫￡繝・せ繝育畑・医ユ繧ｹ繝亥ｾ悟炎髯､莠亥ｮ夲ｼ・笏笏
+// ── DEBUG: 業界底上げテスト用（テスト後削除予定） ──
 window.debugWinLeague = function() {
-  // 繧ｨ繝ｳ繝・ぅ繝ｳ繧ｰ縺ｯ endingShown:true 縺ｧ繧ｹ繧ｭ繝・・縺励∵･ｭ逡梧ｿ髴・そ繝ｬ繝｢繝九・縺縺醍匱轣ｫ縺輔○繧・
+  // エンディングは endingShown:true でスキップし、業界激震セレモニーだけ発火させる
   G = { ...G,
     offSeason: true,
     offWeek: 4,
@@ -11297,13 +11293,13 @@ window.debugWinLeague = function() {
     endingClearedSeason: null,
   };
   refreshAll();
-  console.log('[debugWinLeague] 迥ｶ諷九そ繝・ヨ螳御ｺ・');
+  console.log('[debugWinLeague] 状態セット完了:');
   console.log('  offSeason:', G.offSeason, '/ offWeek:', G.offWeek, '/ weekPhase:', G.weekPhase);
   console.log('  endingCleared:', G.endingCleared, '/ leagueElevated:', G.leagueElevated);
-  console.log('  endingShown: true (繧ｨ繝ｳ繝・ぅ繝ｳ繧ｰ繧ｹ繧ｭ繝・・竊呈･ｭ逡梧ｿ髴・・縺ｿ逋ｺ轣ｫ)');
-  console.log('竊・縲碁ｱ繧帝ｲ繧√ｋ縲阪ｒ謚ｼ縺吶→繧ｷ繝ｼ繧ｺ繝ｳ邨ゆｺ・・1菴榊愛螳壺・讌ｭ逡悟ｺ穂ｸ翫￡繧ｻ繝ｬ繝｢繝九・縺檎匱轣ｫ縺励∪縺・);
+  console.log('  endingShown: true (エンディングスキップ→業界激震のみ発火)');
+  console.log('→ 「週を進める」を押すとシーズン終了→1位判定→業界底上げセレモニーが発火します');
 };
-// 讌ｭ逡梧ｿ髴・そ繝ｬ繝｢繝九・繧堤峩謗･繝・せ繝茨ｼ磯ｱ繧帝ｲ繧√★縺ｫ蜊ｳ陦ｨ遉ｺ・・
+// 業界激震セレモニーを直接テスト（週を進めずに即表示）
 window.debugElevationDirect = function() {
   showLeagueElevationCeremony(G, () => { console.log('[debugElevationDirect] onDone called'); refreshAll(); });
 };
