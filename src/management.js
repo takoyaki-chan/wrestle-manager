@@ -13329,10 +13329,6 @@ const Engine = {
                      bestMQ: 0, bestMQMatch: '', peakFunds: 5000, peakPop: 0, eventsWon: 0, eventsLost: 0 },
       seasonHistory: [], // array of past season summaries
       fundsHistory: [5000], // weekly fund snapshots for sparkline
-      // v0.96: Mission system
-      missionEnabled: true,
-      missionsCompleted: [],
-      missionNewClears: [], // v1.0: pending celebration items
       // v0.97: Survival gauge
       survivalCleared: false,
       survivalProfitStreak: 0,
