@@ -86,7 +86,7 @@ F05（派閥内亀裂）が「分裂への流れ」だとすれば、Common-1 �
 
 | 選択 | 効果 |
 |---|---|
-| A | **試合プレビュー（観戦/スキップ）→ battle-engine.html でビッグマッチ実試合 → 結果反映**。勝者 trust +3〜+5、敗者 trust -1〜-3、両者間 rivalry 解消（-30〜-50）。`Engine.relationships.applyMatchResult` も同団体ペアとして経由 |
+| A | **試合プレビュー（観戦/スキップ）→ battle-engine.html でビッグマッチ実試合 → 結果反映**。下記 §3.4.3 の波及効果を適用。`Engine.relationships.applyMatchResult` も同団体ペアとして経由 |
 | B | 当該2名 trust ±0、rivalry が継続。F05 発火確率 +5% |
 | C | 自然展開。rivalry はそのまま、F05 発火確率 +10% |
 
@@ -97,6 +97,48 @@ F05（派閥内亀裂）が「分裂への流れ」だとすれば、Common-1 �
 - iframe header: `⚔ {factionName} 派閥内対決`、`isSpecialMatch: true, matchTier: 2`
 - seed: `Engine.rng.derive(rngSeed, season, week, 0xC0F1)`（観戦/スキップで結果一致）
 - 関係性反映 seed: `0xC0FE`、trust/rivalry 反映 seed: `0xC0FA`
+
+### 3.4.3 試合結果の波及効果（v0.3 — リーダー敗北＝下克上を区別）
+
+`applyCommon1MatchResult(state, payload, winnerId, loserId, rng)` は、敗者がリーダーかどうかでドラマの大きさを切り替える。
+
+**A. 共通効果（誰が勝っても）**
+- 勝者 trust +3〜+5
+- 敗者 trust -1〜-3
+- 2 名間 rivalry -30〜-50（両方向）
+- 勝者 popularity +1〜+3
+
+**B. リーダー敗北 = 下克上（loserId === leaderId）**
+
+| 効果 | レンジ | 備考 |
+|---|---|---|
+| リーダー trust（追加） | -3〜-6 | 共通の -1〜-3 に加算 |
+| リーダー popularity | -2〜-4 | 求心力の可視低下 |
+| 派閥 momentum | -8〜-15 | hostility 状態を問わず直接 momentum を動かす |
+| 派閥メンバー全員 → リーダー rivalry | +5〜+10 | 「あの人もう絶対じゃない」の伝染 |
+| 勝者 popularity（追加） | +2〜+4 | 共通の +1〜+3 に加算（一気にスター化） |
+| 勝者 → リーダー rivalry | +10〜+20 | 次の標的化 |
+
+**アーキタイプ別倍率**（B の各レンジに掛ける）：
+
+| archetype | mult | ねらい |
+|---|---|---|
+| AUTHORITY | ×2.0 | 権威構造への致命傷 |
+| MERIT | ×0.5 | 想定内（実力で順番が決まる思想） |
+| HEEL | ×0.7 | 弱肉強食。下克上は肯定的に受け止められる |
+| COMBAT | ×0.7 | 闘争肯定。新たな牙が立っただけ |
+| BOND | ×1.0 | 中庸 |
+| FACE | ×1.0 | 中庸 |
+
+**C. リーダー順当勝ち（winnerId === leaderId）**
+- 派閥 momentum +2〜+5（威信維持）
+
+**D. 非リーダー同士**
+- A 共通効果のみ
+
+**E. 下克上フラグ**
+- 派閥レコードに `_lastUpset = { winnerId, leaderId, absWeek }` を記録
+- v0.4 以降のリーダー交代イベント等のフックに使用
 
 ### 3.4.2 実装分割（v0.2）
 

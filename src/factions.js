@@ -2766,11 +2766,26 @@ Engine.factions = {
 
   // Common-1 試合結果を state へ反映（trust / rivalry）
   applyCommon1MatchResult(state, payload, winnerId, loserId, rng) {
-    const { factionName, fighterAId, fighterBId, fighterAName, fighterBName } = payload;
+    const { factionName, fighterAId, fighterBId, fighterAName, fighterBName, leaderId, factionId, archetypeId } = payload;
     let s = state;
     const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
     const winnerName = winnerId === fighterAId ? fighterAName : fighterBName;
-    const loserName = loserId === fighterAId ? fighterAName : fighterBName;
+    const loserName  = loserId  === fighterAId ? fighterAName : fighterBName;
+
+    const isUpset = !!leaderId && loserId === leaderId;     // 下克上
+    const isLeaderWin = !!leaderId && winnerId === leaderId; // 順当
+
+    // アーキタイプ別倍率（下克上が「どれだけ刺さるか」）
+    const upsetMult = ({
+      AUTHORITY: 2.0, // 致命傷
+      MERIT:     0.5, // 想定内
+      HEEL:      0.7, // 弱肉強食、肯定的
+      COMBAT:    0.7, // 闘争肯定
+      BOND:      1.0,
+      FACE:      1.0,
+    })[archetypeId] || 1.0;
+
+    // ── A. 共通効果 ───────────────────────────────────
     const winTrust = ri(3, 5);
     const loseTrust = -ri(1, 3);
     s = this._applyTrustToMembers(s, [winnerId], winTrust);
@@ -2778,13 +2793,122 @@ Engine.factions = {
     const relDelta = -ri(30, 50);
     s = this._applyRivalryDirected(s, fighterAId, fighterBId, relDelta);
     s = this._applyRivalryDirected(s, fighterBId, fighterAId, relDelta);
+    const winPop = ri(1, 3);
+    s = this._adjustFighterPop(s, winnerId, winPop);
+
     const impactSummary = [
       { label: `${winnerName} trust`, delta: `+${winTrust}` },
       { label: `${loserName} trust`, delta: `${loseTrust}` },
       { label: `2名間 rivalry`, delta: `${relDelta}` },
+      { label: `${winnerName} 人気`, delta: `+${winPop}` },
     ];
-    const resultText = `${winnerName}が${loserName}を下した。${factionName}内の火種は試合で清算された。`;
-    return { state: s, resultText, impactSummary, winnerId, loserId, winnerName, loserName };
+
+    const facId = factionId || this._findFactionIdByLeader(s, leaderId);
+    let resultText;
+    let upsetTag = null;
+
+    if (isUpset) {
+      // ── B. 下克上：派閥の権威構造を揺らす ─────────────
+      const leaderTrustExtra   = -Math.max(1, Math.round(ri(3, 6) * upsetMult));
+      const leaderPopHit       = -Math.max(1, Math.round(ri(2, 4) * upsetMult));
+      const momentumHit        = -Math.max(1, Math.round(ri(8, 15) * upsetMult));
+      const memberRivalryHit   =  Math.max(1, Math.round(ri(5, 10) * upsetMult));
+      const winnerExtraPop     =  ri(2, 4);
+      const winnerToLeaderRiv  =  Math.max(1, Math.round(ri(10, 20) * upsetMult));
+
+      // リーダー追撃
+      s = this._applyTrustToMembers(s, [leaderId], leaderTrustExtra);
+      s = this._adjustFighterPop(s, leaderId, leaderPopHit);
+
+      // 派閥 momentum 低下
+      s = this._adjustFactionMomentum(s, facId, momentumHit);
+
+      // 派閥メンバー全員 → リーダー rivalry 上昇（求心力低下の伝染）
+      const fac = (s.factions || []).find(f => f.id === facId);
+      if (fac) {
+        const others = (fac.memberIds || []).filter(id => id !== leaderId && id !== winnerId);
+        for (const mid of others) {
+          s = this._applyRivalryDirected(s, mid, leaderId, memberRivalryHit);
+        }
+      }
+
+      // 勝者の追加効果
+      s = this._adjustFighterPop(s, winnerId, winnerExtraPop);
+      s = this._applyRivalryDirected(s, winnerId, leaderId, winnerToLeaderRiv);
+
+      impactSummary.push(
+        { label: `${loserName}（リーダー）trust`, delta: `${leaderTrustExtra}` },
+        { label: `${loserName} 人気`, delta: `${leaderPopHit}` },
+        { label: `派閥 勢い`, delta: `${momentumHit}` },
+        { label: `メンバー → リーダー 因縁`, delta: `+${memberRivalryHit}` },
+        { label: `${winnerName} 追加人気`, delta: `+${winnerExtraPop}` },
+        { label: `${winnerName} → ${loserName} 因縁`, delta: `+${winnerToLeaderRiv}` },
+      );
+
+      // リーダー交代の伏線フラグ（v0.2 で交代イベントに連結予定）
+      s = this._flagFactionUpset(s, facId, winnerId, leaderId);
+
+      const archFlavor = ({
+        AUTHORITY: '権威の柱が音を立てて崩れた',
+        MERIT:     '実力が序列を書き換えた',
+        HEEL:      '弱肉強食の掟通り、新たな牙が立った',
+        COMBAT:    '強い者が前に出た。それだけのことだ',
+        BOND:      '仲間の絆に小さな亀裂が走った',
+        FACE:      '切磋琢磨の果てに、序列が動いた',
+      })[archetypeId] || `${factionName}の序列が揺らいだ`;
+      resultText = `下克上 ―― ${winnerName}が${factionName}リーダー${loserName}を下した。${archFlavor}。`;
+      upsetTag = 'leader_lost';
+    } else if (isLeaderWin) {
+      // ── リーダー順当勝ち ─────────────────────────────
+      const momentumGain = ri(2, 5);
+      s = this._adjustFactionMomentum(s, facId, momentumGain);
+      impactSummary.push({ label: `派閥 勢い`, delta: `+${momentumGain}` });
+      resultText = `${winnerName}が${loserName}を下し、リーダーの威信は保たれた。${factionName}内の火種は試合で清算された。`;
+    } else {
+      // ── 非リーダー同士 ───────────────────────────────
+      resultText = `${winnerName}が${loserName}を下した。${factionName}内の火種は試合で清算された。`;
+    }
+
+    return { state: s, resultText, impactSummary, winnerId, loserId, winnerName, loserName, isUpset, upsetTag };
+  },
+
+  _adjustFighterPop(state, fighterId, delta) {
+    if (!fighterId || !delta) return state;
+    const newRoster = (state.roster || []).map(c => {
+      if (c.id !== fighterId) return c;
+      const cur = c.popularity != null ? c.popularity : 0;
+      return { ...c, popularity: Engine.util.clamp(cur + delta, 0, 100) };
+    });
+    return { ...state, roster: newRoster };
+  },
+
+  // applyMomentumChange は §5.3 で「抗争中派閥のみ」に絞られているため、
+  // 派閥内イベントでは hostility 状態を問わず momentum を直接動かす必要がある
+  _adjustFactionMomentum(state, factionId, delta) {
+    if (!factionId || !delta) return state;
+    const factions = (state.factions || []).map(f => {
+      if (f.id !== factionId) return f;
+      const cur = f.momentum != null ? f.momentum : 0;
+      return { ...f, momentum: Engine.util.clamp(cur + delta, -100, 100) };
+    });
+    return { ...state, factions };
+  },
+
+  _findFactionIdByLeader(state, leaderId) {
+    if (!leaderId) return null;
+    const f = (state.factions || []).find(x => x.leaderId === leaderId);
+    return f ? f.id : null;
+  },
+
+  // 下克上の発生を派閥側に記録（後段でリーダー交代イベント等のフックに使う）
+  _flagFactionUpset(state, factionId, winnerId, leaderId) {
+    if (!factionId) return state;
+    const week = (state.season || 1) * 52 + (state.week || 1);
+    const factions = (state.factions || []).map(f => {
+      if (f.id !== factionId) return f;
+      return { ...f, _lastUpset: { winnerId, leaderId, absWeek: week } };
+    });
+    return { ...state, factions };
   },
 
   // getPersonalityType (bold/earnest/emotional/carefree/introverted/shy) を
