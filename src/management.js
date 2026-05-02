@@ -1922,11 +1922,14 @@ const Engine = {
     /** 乱入マッチ結果の追加効果を適用 */
     applyResult(state, intruderWon, rng) {
       if (intruderWon) {
-        // Phase0修正: ヒートペナルティ振れ幅拡大 -7〜-20（旧: -15〜-20）
-        const penalty = -(7 + Engine.rng.int(rng, 0, 13));
+        // v1.x修正: 振れ幅再設計 — 旧 -7〜-20 は値域[-10,+10]に対し過大。
+        //   基本 -3〜-6、現在Hot/On Fire(hs≥6)帯では追加 -1〜-2。
+        const basePenalty = -(3 + Engine.rng.int(rng, 0, 3));
+        const hotExtra = (state.heatScore || 0) >= 6 ? -(1 + Engine.rng.int(rng, 0, 1)) : 0;
+        const penalty = basePenalty + hotExtra;
         return {
           ...state,
-          heatScore: Math.max(-10, (state.heatScore ?? 0) + penalty),
+          heatScore: Engine.util.clamp(Math.round(((state.heatScore ?? 0) + penalty) * 10) / 10, -10, 10),
           titles: { ...state.titles, world: { ...state.titles.world, championId: null, defenses: 0 } }
         };
       } else {
@@ -9027,7 +9030,7 @@ const Engine = {
     }
     // v1.0b: Apply occupancy heat delta
     if (settle.occHeatDelta !== 0) {
-      s = { ...s, heatScore: s.heatScore + settle.occHeatDelta };
+      s = { ...s, heatScore: Engine.util.clamp(Math.round((s.heatScore + settle.occHeatDelta) * 10) / 10, -10, 10) };
     }
     // L1: 勢い補正更新（満員/ガラガラ連鎖効果）
     if (settle.momentumDelta !== 0 && Engine.util.isShowWeek(s.week)) {

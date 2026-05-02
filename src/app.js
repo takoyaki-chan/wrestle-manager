@@ -5344,11 +5344,16 @@ const App = {
       const intruderWon = titles.world.championId === intruderId;
       if (intruderWon) {
         // 王座空位 + ヒートダウン
-        // Phase0修正: ヒートペナルティ振れ幅拡大 -7〜-20（旧: -15〜-20）
+        // v1.x修正: 振れ幅再設計 — 旧 -7〜-20 は値域[-10,+10]に対し過大かつ
+        //   旧コード `Math.max(0, (s.heatScore || 50) + penalty)` に二重バグ
+        //   (heat=0 が 50 に化ける / 下限0で負側帯を破壊) があり「最高潮→ニュートラル」一撃が発生していた。
+        //   基本 -3〜-6、現在Hot/On Fire(hs≥6)帯では追加 -1〜-2。On Fire→ギリWarm までで止める。
         const intRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 8889));
-        const penalty = -(7 + Engine.rng.int(intRng, 0, 13));
+        const basePenalty = -(3 + Engine.rng.int(intRng, 0, 3));
+        const hotExtra = (s.heatScore || 0) >= 6 ? -(1 + Engine.rng.int(intRng, 0, 1)) : 0;
+        const penalty = basePenalty + hotExtra;
         titles = { ...titles, world: { ...titles.world, championId: null, defenses: 0 } };
-        s = { ...s, heatScore: Math.max(0, (s.heatScore || 50) + penalty) };
+        s = { ...s, heatScore: Engine.util.clamp(Math.round(((s.heatScore ?? 0) + penalty) * 10) / 10, -10, 10) };
         const bpIntrusion = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
         bpIntrusion.player = (bpIntrusion.player || 0) - BATTLE_POINT_CFG.intrusion;
         s = { ...s, battlePoints: bpIntrusion };
