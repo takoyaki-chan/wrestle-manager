@@ -12776,15 +12776,18 @@ function showEndingCeremony(data, onDone) {
   }
 
   // スライド4: スタッフの声（コーチがいる場合のみ）
-  const coaches = (data.coaches || []).slice(0, 3);
+  const ALL_C_ENDING = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES : [];
+  const coaches = (data.coaches || [])
+    .map(c => (typeof c === 'string') ? c : (c && c.id))
+    .filter(id => ALL_C_ENDING.some(x => x.id === id))
+    .slice(0, 3);
   if (coaches.length > 0) {
     const cLines = _pickLines(coachLinesPool, coaches.length);
-    const cHtml = coaches.map((c, i) => {
-      const ALL_C = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES : [];
-      const master = ALL_C.find(x => x.id === c.id) || c;
+    const cHtml = coaches.map((id, i) => {
+      const master = ALL_C_ENDING.find(x => x.id === id);
       return `<div style="flex:1;text-align:center;min-width:0;max-width:180px">
-        <div style="display:flex;justify-content:center;margin-bottom:8px">${_endingPortrait(c.id, 100, true)}</div>
-        <div style="font-size:12px;font-weight:700;color:var(--text)">${master.name || c.name || '—'}</div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px">${_endingPortrait(id, 100, true)}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text)">${master.name || '—'}</div>
         <div class="speech-bubble" style="margin-top:10px">
           <div class="speech-text" style="font-size:11px">「${cLines[i] || 'お疲れ様でした'}」</div>
         </div>
@@ -13050,15 +13053,18 @@ function showGameOverCeremony(data, onDone) {
   }
 
   // スライド4: スタッフの声（コーチがいる場合のみ）
-  const coaches = (data.coaches || []).slice(0, 3);
+  const ALL_C_GO = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES : [];
+  const coaches = (data.coaches || [])
+    .map(c => (typeof c === 'string') ? c : (c && c.id))
+    .filter(id => ALL_C_GO.some(x => x.id === id))
+    .slice(0, 3);
   const coachLines = data.coachLines || [];
   if (coaches.length > 0) {
-    const cHtml = coaches.map((c, i) => {
-      const ALL_C = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES : [];
-      const master = ALL_C.find(x => x.id === c.id) || c;
+    const cHtml = coaches.map((id, i) => {
+      const master = ALL_C_GO.find(x => x.id === id);
       return `<div style="flex:1;text-align:center;min-width:0;max-width:180px">
-        <div style="display:flex;justify-content:center;margin-bottom:8px">${_gameoverPortrait(c.id, 100, true)}</div>
-        <div style="font-size:12px;font-weight:700;color:#d8c8c8">${master.name || c.name || '—'}</div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px">${_gameoverPortrait(id, 100, true)}</div>
+        <div style="font-size:12px;font-weight:700;color:#d8c8c8">${master.name || '—'}</div>
         <div class="speech-bubble" style="margin-top:10px;background:rgba(40,16,16,0.6);border-color:#5a2020;color:#c8b8b8">
           <div class="speech-text" style="font-size:11px;color:#c8b8b8">「${coachLines[i] || '……'}」</div>
         </div>

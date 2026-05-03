@@ -14075,7 +14075,9 @@ Engine.ending = {
       bestMQ:          Math.max(...allBestMQ, 0),
       hallOfFameCount: ((state.allHallOfFame || {}).player || state.hallOfFame || []).length,
       top3Fighters:    sortedRoster.slice(0, 3),
-      coaches:         state.coaches || [],
+      coaches:         (state.coaches || [])
+        .map(c => (typeof c === 'string') ? c : (c && c.id))
+        .filter(id => (typeof ALL_COACHES !== 'undefined') && ALL_COACHES.some(x => x.id === id)),
     };
   },
 
@@ -14112,7 +14114,10 @@ Engine.ending = {
     const top3Fighters = sortedRoster.slice(0, 3);
     const top3Lines = Engine.ending._pickGameOverLinesForTop3(top3Fighters);
 
-    const coaches = (state.coaches || []).slice(0, 3);
+    const coaches = (state.coaches || [])
+      .map(c => (typeof c === 'string') ? c : (c && c.id))
+      .filter(id => (typeof ALL_COACHES !== 'undefined') && ALL_COACHES.some(x => x.id === id))
+      .slice(0, 3);
     const coachLines = Engine.ending._pickCoachGameOverLines(coaches.length);
 
     const reason = state.gameOverReason || 'timeout';
