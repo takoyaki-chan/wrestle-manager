@@ -2282,6 +2282,24 @@ const Storage = {
         }
         G = { ...G, _migrated_factions_internal_points_v1: true };
       }
+      // v2: 既存派閥への OVR 順位ベース初期割り振り（リーダー 0pt / 1位 8pt / 2位 5pt / 3位 2pt / 4位以下 0pt）
+      // 既存セーブはリーダー就任 52 週猶予を超過していることが多く、Phase 2 のポイント加算が走ると
+      // 数興行で差が開いて即発火してしまうため、初期序列を OVR で先に置く（spec §2.4 が本来求めた処理）
+      if (!G._migrated_factions_internal_points_v2
+          && Array.isArray(G.factions) && G.factions.length > 0
+          && Engine.factions && typeof Engine.factions._allocateInternalPointsByOvrRank === 'function') {
+        for (const f of G.factions) {
+          if (!f || f.status !== 'active') continue;
+          // BOND archetype はポイント蓄積を行わないので割り振りスキップ
+          if (f.archetypeId === 'BOND' || f.flavor === 'bond_first') continue;
+          if (f.leaderId == null) continue;
+          G = Engine.factions._allocateInternalPointsByOvrRank(G, f.id, [f.leaderId]);
+        }
+        G = { ...G, _migrated_factions_internal_points_v2: true };
+        if (typeof console !== 'undefined') {
+          console.log('[WM Internal Rank] Migration v2: backfilled OVR-based initial points to existing factions');
+        }
+      }
       if (Array.isArray(G.factions) && G.factions.some(f => !f.flavor)) {
         G = { ...G, factions: G.factions.map(f => f.flavor ? f : { ...f, flavor: 'bond_first' }) };
       }
