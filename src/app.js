@@ -7341,6 +7341,7 @@ const App = {
     if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    App.preloadNewspaperImages(G.weeklyNewspaper);
 
     // 興行終了後にshowCardをリセット（renderShowPrep の pad/trim で会場に応じた枠数に自動調整）
     G = { ...G, showCard: [] };
@@ -7882,6 +7883,7 @@ const App = {
     if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    App.preloadNewspaperImages(G.weeklyNewspaper);
     // v2.1: ゲームオーバー判定（autoSave せず専用画面へ）
     if (G.weekPhase === 'gameover') {
       const summary = Engine.ending.buildGameOverSummary(G);
@@ -11287,6 +11289,7 @@ App.closePPVResult = function() {
   const fh = [...(G.fundsHistory || []), result.state.funds];
   G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
   G = { ...G, showCard: [] };
+  App.preloadNewspaperImages(G.weeklyNewspaper);
 
   App._refreshTicker();
   App.checkSurvivalUpdate();
@@ -11370,6 +11373,7 @@ App.closePPVTV = function() {
   if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
   const fh = [...(G.fundsHistory || []), result.state.funds];
   G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+  App.preloadNewspaperImages(G.weeklyNewspaper);
 
   App._refreshTicker();
   App.checkSurvivalUpdate();
@@ -11404,6 +11408,34 @@ App.closePPVTV = function() {
 //  U-20 ジュニアトーナメント UI フロー
 // ══════════════════════════════════════════════════════════
 App._jtPreview = null; // トーナメント進行データ
+
+// 新聞 1面 / 業界ニュース / 興行ダイジェスト で参照される肖像画像を
+// あらかじめブラウザキャッシュに乗せる。Cloudflare Pages の CDN コールドスタートや
+// 初回 paint タイミングで `background-image: url(...)` が一瞬 404 する事象の予防。
+// idempotent: 同じ id をもう一度プリロードしても新規リクエストは飛ばない（ブラウザキャッシュ任せ）。
+App._lastPreloadedNewspaperKey = null;
+App.preloadNewspaperImages = function(wp) {
+  if (!wp || typeof getUpperUrl !== 'function') return;
+  const key = `${wp.season || 0}-${wp.week || 0}`;
+  if (App._lastPreloadedNewspaperKey === key) return;
+  App._lastPreloadedNewspaperKey = key;
+  const ids = new Set();
+  const add = (id) => { if (id != null && typeof PORTRAIT !== 'undefined' && PORTRAIT[id]) ids.add(id); };
+  if (wp.topStory) add(wp.topStory.characterId);
+  (wp.subStories || []).forEach(s => add(s.characterId));
+  const psd = wp.playerShowData;
+  if (psd) {
+    add(psd.left?.id); add(psd.right?.id);
+    add(psd.winner?.id);
+    (psd.allMatches || []).forEach(m => { add(m.left?.id); add(m.right?.id); });
+  }
+  ids.forEach(id => {
+    const url = getUpperUrl(id);
+    if (!url) return;
+    const img = new Image();
+    img.src = url; // fire-and-forget; success or 404 どちらでも握り潰す
+  });
+};
 
 App.initJuniorTournament = function() {
   const sel = G._juniorTournamentSelection;
@@ -11781,6 +11813,7 @@ App.finalizeJuniorTournament = function() {
   // 新聞を再生成（JT結果を反映させる）
   const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xEE57));
   G = { ...G, weeklyNewspaper: Engine.newspaper.generate(G, newsRng) };
+  App.preloadNewspaperImages(G.weeklyNewspaper);
 
   // 自団体出場選手の感想チェーンを構築（レンタル選手は元所属団体枠で出場）
   const playerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
