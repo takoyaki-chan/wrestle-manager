@@ -1494,6 +1494,32 @@ const FACTION_CONFIG = {
   forceCloseDelayWeeks: 20,
   forceCloseHostilityDecayOnA: -30,
 
+  // ── 派閥内ポイント制 / F-INTERNAL-CHALLENGE（spec: faction-internal-rank-spec-v0.2）──
+  // §3.1 Common-1 結果ポイント
+  internalPointsCommon1NonLeaderWinner: 6,
+  internalPointsCommon1NonLeaderLoser: -3,
+  internalPointsCommon1LeaderHoldsLoss: -3,
+  internalPointsCommon1UpsetWinner: 12,
+  internalPointsCommon1UpsetLoserPenalty: -8,
+  // §3.2/3.3 派閥外試合
+  internalPointsExternalTitleWin: 3,
+  internalPointsExternalMainWin: 2,
+  internalPointsF09Multiplier: 1.5,
+  // §4.1 挑戦権発火条件
+  internalChallengeMinFactionSize: 4,
+  internalChallengeGraceWeeksAfterEnthronement: 52,
+  internalChallengeThresholdGap: 10,
+  internalChallengeThresholdGapFace: 15,
+  internalChallengeCooldownWeeks: 24,
+  // §4.4 OVR 順位ベース割り振り（[1位, 2位, 3位, 4位以下]）
+  internalPointsAllocationByOvrRank: [8, 5, 2, 0],
+  // §4.4 結果効果
+  internalChallengeWinnerTrustGain: { min: 5, max: 8 },
+  internalChallengeWinnerPopGain: { min: 3, max: 5 },
+  internalChallengeLoserTrustHit: { min: -8, max: -5 },
+  internalChallengeMomentumOnUpset: { min: 5, max: 10 },
+  internalChallengeMomentumOnHold: { min: 10, max: 15 },
+
   // ── Phase B: F07 v0.4 共通フレーム化（spec: faction-f07-variation-spec-v0.1 v0.4 §7.1）──
   f07TeamCooldown: 12,             // チーム全体 F07 CD（週）
   f07FactionCooldown: 36,          // 派閥個別 F07 CD（週）

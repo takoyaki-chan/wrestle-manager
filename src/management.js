@@ -9693,6 +9693,10 @@ const Engine = {
       // factionPendingIgnite は null 許容なので初期化不要
       // Phase B: 抗争ポイント
       if (!s.factionRivalryPoints || typeof s.factionRivalryPoints !== 'object') s = { ...s, factionRivalryPoints: {} };
+      // 派閥内ポイント制（spec: faction-internal-rank-spec-v0.2 §2）
+      if (typeof Engine.factions._ensureInternalPointsInit === 'function') {
+        s = Engine.factions._ensureInternalPointsInit(s);
+      }
 
       // 既に pending 派閥イベントが残っている場合は、プレイヤーが解決するまで派閥パイプライン全体をスキップ
       if (s._pendingFactionEvent) {
@@ -9756,6 +9760,16 @@ const Engine = {
             if (Engine.rng.float(f09Rng) < baseChance * lateMult) {
               s = { ...s, _pendingF09: f09Cand };
             }
+          }
+        }
+        // 派閥内挑戦戦 発火判定（spec: faction-internal-rank-spec-v0.2 §4） — F09 後・興行週・pending なし
+        if (!s._pendingFactionEvent && !s._pendingF09 && !s._pendingInternalChallenge
+            && Engine.util.isShowWeek(s.week)
+            && typeof Engine.factions.checkInternalChallengeConditions === 'function') {
+          const icRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA20));
+          const cand = Engine.factions.checkInternalChallengeConditions(s, icRng);
+          if (cand) {
+            s = Engine.factions.registerInternalChallenge(s, cand);
           }
         }
       }
@@ -10503,13 +10517,18 @@ const Engine = {
           winner = r.winner === 'left' ? 'A' : (r.winner === 'right' ? 'B' : 'draw');
         }
         if (winner === 'draw') continue;
-        s = Engine.factions.accrueRivalryPointsFromMatch(s, {
+        const matchCtx = {
           fighterIdA, fighterIdB, winner,
           isMain: !!m.isSummit,
           isTitle: !!m.isTitle,
           isTag: m.matchType === 'tag',
           isF09: !!m._f09Locked,
-        });
+        };
+        s = Engine.factions.accrueRivalryPointsFromMatch(s, matchCtx);
+        // 派閥内ポイント加算（spec: faction-internal-rank-spec-v0.2 §3.2/§3.3）
+        if (typeof Engine.factions.accrueInternalPointsFromExternalMatch === 'function') {
+          s = Engine.factions.accrueInternalPointsFromExternalMatch(s, matchCtx);
+        }
       }
     }
 

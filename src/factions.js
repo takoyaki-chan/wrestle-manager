@@ -457,7 +457,17 @@ Engine.factions = {
     if (typeof console !== 'undefined') {
       console.log(`[WM Faction] Archetype transition: ${target.name} ${fromArchetype} → ${toArchetype} (${ctx.reasonKey})`);
     }
-    return { ...state, factions: newFactions, _pendingArchetypeTransitions: queue };
+    let next = { ...state, factions: newFactions, _pendingArchetypeTransitions: queue };
+    // 派閥内ポイント整合（spec §6.6）
+    if (toArchetype === 'BOND' && next.factionInternalPoints && next.factionInternalPoints[factionId]) {
+      const ip = { ...next.factionInternalPoints };
+      delete ip[factionId];
+      next = { ...next, factionInternalPoints: ip };
+    } else if (fromArchetype === 'BOND' && toArchetype !== 'BOND') {
+      const updated = newFactions.find(f => f.id === factionId);
+      if (updated) next = this._allocateInternalPointsByOvrRank(next, factionId, [updated.leaderId]);
+    }
+    return next;
   },
 
   // F07 rebuke 閾値到達時、後継幹部候補から MERIT/BOND を決定
@@ -960,6 +970,11 @@ Engine.factions = {
 
     if (ratio < cfg.successionOvrRatioPartial) {
       // 解散
+      if (s.factionInternalPoints && s.factionInternalPoints[factionId]) {
+        const ip = { ...s.factionInternalPoints };
+        delete ip[factionId];
+        s = { ...s, factionInternalPoints: ip };
+      }
       return this._dissolveFaction(s, factionId, 'leader_lost_low_ratio');
     }
 
@@ -967,6 +982,7 @@ Engine.factions = {
       && Engine.rng.float(rng) < cfg.successionShockProbability;
 
     // 派閥情報を更新
+    const absWeekLL = (s.season || 1) * 52 + (s.week || 1);
     const newFactions = s.factions.map(f => {
       if (f.id !== factionId) return f;
       const newMemberIds = f.memberIds.filter(id => id !== faction.leaderId);
@@ -977,9 +993,13 @@ Engine.factions = {
         memberIds: newMemberIds,
         lastLeaderChangeSeason: s.season,
         lastLeaderChangeWeek: s.week,
+        internalChallengeCooldownUntilWeek: absWeekLL + (cfg.internalChallengeCooldownWeeks || 24),
       };
     });
     s = { ...s, factions: newFactions };
+
+    // 派閥内ポイント再構成（新リーダーは0pt、他は OVR 順位ベース）
+    s = this._allocateInternalPointsByOvrRank(s, factionId, [successor.id]);
 
     // 対立度を ×0.7
     const newHost = {};
@@ -1021,6 +1041,17 @@ Engine.factions = {
     if (!dead) return s;
     if (typeof console !== 'undefined') {
       console.log(`[WM Faction] ${dead.name} dissolved (${reason})`);
+    }
+    // 派閥内ポイントエントリ削除（spec §6.2 dissolution）
+    if (s.factionInternalPoints && s.factionInternalPoints[factionId]) {
+      const ip = { ...s.factionInternalPoints };
+      delete ip[factionId];
+      s = { ...s, factionInternalPoints: ip };
+    }
+    // _pendingInternalChallenge が当該派閥なら解除
+    if (s._pendingInternalChallenge && s._pendingInternalChallenge.factionId === factionId) {
+      const { _pendingInternalChallenge: _, ...rest } = s;
+      s = rest;
     }
     // 元メンバー trust -5〜-8 (簡易固定 -6)
     s = this._applyTrustToMembers(s, dead.memberIds, -6);
@@ -1797,6 +1828,12 @@ Engine.factions = {
     if (!faction) return { state: s, resultText: '' };
 
     if (branch === 'dissolution') {
+      // 派閥内ポイントエントリ削除（spec §6.2）
+      if (s.factionInternalPoints && s.factionInternalPoints[factionId]) {
+        const ip = { ...s.factionInternalPoints };
+        delete ip[factionId];
+        s = { ...s, factionInternalPoints: ip };
+      }
       s = this._dissolveFaction(s, factionId, 'F03_low_ratio');
       return {
         state: s,
@@ -1813,6 +1850,11 @@ Engine.factions = {
     const successor = roster.find(c => c.id === successorId);
     if (!successor) {
       // 念のためフォールバック
+      if (s.factionInternalPoints && s.factionInternalPoints[factionId]) {
+        const ip = { ...s.factionInternalPoints };
+        delete ip[factionId];
+        s = { ...s, factionInternalPoints: ip };
+      }
       s = this._dissolveFaction(s, factionId, 'F03_no_successor');
       return {
         state: s,
@@ -1823,6 +1865,8 @@ Engine.factions = {
       };
     }
 
+    const cfgF03 = FACTION_CONFIG;
+    const absWeekF03 = (s.season || 1) * 52 + (s.week || 1);
     const newFactions = s.factions.map(f => {
       if (f.id !== factionId) return f;
       const newMemberIds = f.memberIds.filter(id => id !== faction.leaderId);
@@ -1833,9 +1877,13 @@ Engine.factions = {
         memberIds: newMemberIds,
         lastLeaderChangeSeason: s.season,
         lastLeaderChangeWeek: s.week,
+        internalChallengeCooldownUntilWeek: absWeekF03 + (cfgF03.internalChallengeCooldownWeeks || 24),
       };
     });
     s = { ...s, factions: newFactions };
+
+    // 派閥内ポイント再構成: 新リーダーは0pt、その他は OVR 順位ベース割り振り（spec §6.2）
+    s = this._allocateInternalPointsByOvrRank(s, factionId, [successor.id]);
 
     // 対立度 ×0.7
     const cfg = FACTION_CONFIG;
@@ -2869,7 +2917,68 @@ Engine.factions = {
       resultText = `${winnerName}が${loserName}を下した。${factionName}内の火種は試合で清算された。`;
     }
 
+    // 派閥内ポイント加算（spec: faction-internal-rank-spec-v0.2 §3.1）
+    if (facId) {
+      s = this.accrueInternalPointsFromCommon1(s, {
+        factionId: facId, archetypeId, leaderId,
+        winnerId, loserId, isUpset, isLeaderWin,
+      });
+    }
+
     return { state: s, resultText, impactSummary, winnerId, loserId, winnerName, loserName, isUpset, upsetTag };
+  },
+
+  // 派閥内ポイント加算: Common-1 結果（spec §3.1）
+  // payload: { factionId, archetypeId, leaderId, winnerId, loserId, isUpset, isLeaderWin }
+  accrueInternalPointsFromCommon1(state, payload) {
+    if (!state || !payload || payload.factionId == null) return state;
+    const f = (state.factions || []).find(x => x.id === payload.factionId);
+    if (!f) return state;
+    // BOND archetype はスキップ（互換: legacy flavor 'bond_first' もスキップ）
+    if (f.archetypeId === 'BOND' || f.flavor === 'bond_first') return state;
+
+    let s = this._ensureInternalPointsInit(state);
+    const cfg = FACTION_CONFIG;
+    const { winnerId, loserId, isUpset, isLeaderWin } = payload;
+
+    if (isUpset) {
+      // 下克上: 勝者 +12 / リーダー（敗者）-8
+      s = this._addInternalPoints(s, f.id, winnerId, cfg.internalPointsCommon1UpsetWinner);
+      s = this._addInternalPoints(s, f.id, loserId,  cfg.internalPointsCommon1UpsetLoserPenalty);
+    } else if (isLeaderWin) {
+      // リーダー順当勝ち: リーダー ±0 / 非リーダー敗者 -3
+      s = this._addInternalPoints(s, f.id, loserId, cfg.internalPointsCommon1LeaderHoldsLoss);
+    } else {
+      // 非リーダー同士: 勝者 +6 / 敗者 -3
+      s = this._addInternalPoints(s, f.id, winnerId, cfg.internalPointsCommon1NonLeaderWinner);
+      s = this._addInternalPoints(s, f.id, loserId,  cfg.internalPointsCommon1NonLeaderLoser);
+    }
+    return s;
+  },
+
+  // 派閥内ポイント加算: 派閥外試合の節目勝利（spec §3.2/§3.3）
+  // matchCtx: { fighterIdA, fighterIdB, winner: 'A'|'B'|'draw', isMain, isTitle, isTag, isF09, isCommon1 }
+  accrueInternalPointsFromExternalMatch(state, matchCtx) {
+    if (!state || !matchCtx) return state;
+    if (matchCtx.isCommon1) return state; // §3.1 で別ルートで処理済み（二重加算防止）
+    if (matchCtx.winner !== 'A' && matchCtx.winner !== 'B') return state;
+    const winnerId = (matchCtx.winner === 'A') ? matchCtx.fighterIdA : matchCtx.fighterIdB;
+    if (winnerId == null) return state;
+    const f = this.getFactionByFighterId(state, winnerId);
+    if (!f) return state;
+    if (f.archetypeId === 'BOND' || f.flavor === 'bond_first') return state;
+    if (f.leaderId === winnerId) return state; // §3.2 リーダーには加算しない
+
+    const cfg = FACTION_CONFIG;
+    let pt = 0;
+    if (matchCtx.isTitle)      pt = cfg.internalPointsExternalTitleWin;
+    else if (matchCtx.isMain)  pt = cfg.internalPointsExternalMainWin;
+    if (pt <= 0) return state;
+    if (matchCtx.isF09) pt = Math.round(pt * (cfg.internalPointsF09Multiplier || 1));
+
+    let s = this._ensureInternalPointsInit(state);
+    s = this._addInternalPoints(s, f.id, winnerId, pt);
+    return s;
   },
 
   _adjustFighterPop(state, fighterId, delta) {
@@ -3429,6 +3538,17 @@ Engine.factions = {
           return f;
         }),
       };
+      // 派閥内ポイント: 元派閥から該当選手のエントリを削除（spec §6.4）
+      if (s.factionInternalPoints && s.factionInternalPoints[fromFactionId]) {
+        const ipFrom = { ...s.factionInternalPoints[fromFactionId] };
+        delete ipFrom[targetId];
+        s = { ...s, factionInternalPoints: { ...s.factionInternalPoints, [fromFactionId]: ipFrom } };
+      }
+      // 寝返り対象が現挑戦者なら挑戦戦をクリア
+      if (s._pendingInternalChallenge && s._pendingInternalChallenge.challengerId === targetId) {
+        const { _pendingInternalChallenge: _, ...rest } = s;
+        s = rest;
+      }
       // 元派閥メンバー trust -3〜-6
       const fromFaction = (s.factions || []).find(f => f.id === fromFactionId);
       let trustDelta = 0;
@@ -3514,6 +3634,12 @@ Engine.factions = {
     const roster = s.roster || [];
     if (Engine.rng.float(rng) < 0.70) {
       // 自然分裂
+      // 旧派閥から離脱メンバーの internalPoints エントリを削除
+      if (s.factionInternalPoints && s.factionInternalPoints[factionId]) {
+        const ipOld = { ...s.factionInternalPoints[factionId] };
+        for (const id of dissidentIds) delete ipOld[id];
+        s = { ...s, factionInternalPoints: { ...s.factionInternalPoints, [factionId]: ipOld } };
+      }
       s = {
         ...s,
         factions: (s.factions || []).map(f => f.id === factionId
@@ -3523,6 +3649,11 @@ Engine.factions = {
       const ringleader = roster.find(c => c.id === ringleaderId);
       if (ringleader) s = this.createFaction(s, ringleaderId, dissidentIds, { type: 'loyal' });
       if (typeof console !== 'undefined') console.log(`[WM Faction] F05 split (natural): ${factionName} → ${ringleaderName}組 (${dissidentIds.length} members)`);
+      // 旧派閥は OVR 順位ベース再構成（リーダーは0pt）/ 新派閥も初期割り振り
+      const oldFac = (s.factions || []).find(f => f.id === factionId);
+      if (oldFac) s = this._allocateInternalPointsByOvrRank(s, factionId, [oldFac.leaderId]);
+      const newFac = (s.factions || []).find(f => f.leaderId === ringleaderId && f.id !== factionId);
+      if (newFac) s = this._allocateInternalPointsByOvrRank(s, newFac.id, [newFac.leaderId]);
       return {
         state: s,
         resultText: `見守るうち、${factionName}は自然に割れた。${ringleaderName}が旗を掲げる。`,
@@ -4218,6 +4349,85 @@ Engine.factions = {
     };
   },
 
+  // ── 派閥内序列戦 試合前モーダル用データ ──
+  // matchSlot: showCard 上の _internalChallengeLocked スロット
+  getInternalChallengePreData(state, matchSlot) {
+    if (!state || !matchSlot || !state._pendingInternalChallenge) return null;
+    const pending = state._pendingInternalChallenge;
+    const roster = state.roster || [];
+    const challenger = roster.find(c => c.id === pending.challengerId);
+    const leader     = roster.find(c => c.id === pending.leaderId);
+    if (!challenger || !leader) return null;
+    const f = (state.factions || []).find(x => x.id === pending.factionId);
+    if (!f) return null;
+    const seed = state.rngSeed || 1;
+    const rngC = Engine.rng.create(Engine.rng.derive(seed, state.season || 0, state.week || 0, 0xFA22));
+    const rngL = Engine.rng.create(Engine.rng.derive(seed, state.season || 0, state.week || 0, 0xFA23));
+    const tableC = (typeof INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES !== 'undefined') ? INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES : null;
+    const tableL = (typeof INTERNAL_CHALLENGE_PRE_LEADER_LINES !== 'undefined') ? INTERNAL_CHALLENGE_PRE_LEADER_LINES : null;
+    const lineC = tableC ? this._getF08LineByBand(tableC, challenger, 'high', rngC) : '';
+    const lineL = tableL ? this._getF08LineByBand(tableL, leader, 'high', rngL) : '';
+    return {
+      faction: { id: f.id, name: f.name, archetypeId: f.archetypeId },
+      challenger: { id: challenger.id, name: challenger.name, ovr: Engine.util.ov(challenger) },
+      leader:     { id: leader.id,     name: leader.name,     ovr: Engine.util.ov(leader) },
+      lineChallenger: lineC,
+      lineLeader: lineL,
+      narration: `${f.name}――派閥内の力学が今夜、リング上で決着する。`,
+    };
+  },
+
+  // ── 派閥内序列戦 試合後モーダル用データ ──
+  // postModal: state._pendingInternalChallengePostModal
+  getInternalChallengePostData(state, postModal) {
+    if (!state || !postModal) return null;
+    const roster = state.roster || [];
+    const oldLeader = roster.find(c => c.id === postModal.oldLeaderId);
+    const newLeader = roster.find(c => c.id === postModal.newLeaderId);
+    if (!oldLeader || !newLeader) return null;
+    const f = (state.factions || []).find(x => x.id === postModal.factionId);
+    if (!f) return null;
+    const leaderWon = !!postModal.leaderWon;
+    const winner = leaderWon ? oldLeader : newLeader;
+    const loser  = leaderWon ? newLeader : oldLeader;
+    const loserHp = (typeof postModal.loserHpPct === 'number') ? postModal.loserHpPct : 1.0;
+    const hpBand = loserHp >= 0.66 ? 'hp_high' : (loserHp >= 0.34 ? 'hp_mid' : 'hp_low');
+    const seed = state.rngSeed || 1;
+    const rngW = Engine.rng.create(Engine.rng.derive(seed, state.season || 0, state.week || 0, 0xFA24));
+    const rngL = Engine.rng.create(Engine.rng.derive(seed, state.season || 0, state.week || 0, 0xFA25));
+    const tableW = (typeof INTERNAL_CHALLENGE_POST_WINNER_LINES !== 'undefined') ? INTERNAL_CHALLENGE_POST_WINNER_LINES : null;
+    const tableL = (typeof INTERNAL_CHALLENGE_POST_LOSER_LINES !== 'undefined') ? INTERNAL_CHALLENGE_POST_LOSER_LINES : null;
+    const winnerLine = tableW ? this._getF08LineByBand(tableW, winner, 'high', rngW) : '';
+    const loserLine  = tableL ? this._getF08LineByBand(tableL, loser, hpBand, rngL) : '';
+    let narrationOpen, narrationClose;
+    if (leaderWon) {
+      narrationOpen  = `${f.name}のリーダーは座を守った。`;
+      narrationClose = '権威の確認――今夜の挑戦は、力で押し戻された。';
+    } else {
+      const oldName = `${oldLeader.name}組`;
+      const newName = `${newLeader.name}組`;
+      narrationOpen  = `決着。新たなリーダーが立った。`;
+      narrationClose = `${oldName} ―― ${newName}。看板が、今夜書き換わった。`;
+    }
+    return {
+      faction: { id: f.id, name: f.name, archetypeId: f.archetypeId },
+      leaderWon,
+      winner: { id: winner.id, name: winner.name },
+      loser:  { id: loser.id,  name: loser.name, hpBand },
+      winnerLine,
+      loserLine,
+      narrationOpen,
+      narrationClose,
+      // archetype 遷移ナレーション（AUTHORITY 敗北時）
+      archetypeTransition: (!leaderWon && f.lastArchetypeTransition
+        && f.lastArchetypeTransition.season === state.season
+        && f.lastArchetypeTransition.week === state.week
+        && f.lastArchetypeTransition.fromArchetype === 'AUTHORITY')
+        ? { from: 'AUTHORITY', to: f.lastArchetypeTransition.toArchetype }
+        : null,
+    };
+  },
+
   // ── §9.8.1 Phase 3e 試合後モーダル用データ ──
   // matchResult: { winnerId, loserId, winnerHpPct, loserHpPct }
   getF08AftermathData(state, matchResult) {
@@ -4320,6 +4530,218 @@ Engine.factions = {
     const a = Math.min(fid1, fid2);
     const b = Math.max(fid1, fid2);
     return `${a}-${b}`;
+  },
+
+  // ── 派閥内ポイント制 基盤（spec: faction-internal-rank-spec-v0.2 §2）──
+  // factionInternalPoints[factionId][fighterId] = number（下限0）
+  _ensureInternalPointsInit(state) {
+    if (!state.factionInternalPoints || typeof state.factionInternalPoints !== 'object') {
+      state.factionInternalPoints = {};
+    }
+    if (Array.isArray(state.factions)) {
+      for (const f of state.factions) {
+        if (f && f.internalChallengeCooldownUntilWeek == null) {
+          f.internalChallengeCooldownUntilWeek = 0;
+        }
+      }
+    }
+    return state;
+  },
+
+  _getInternalPoints(state, factionId, fighterId) {
+    const facMap = state && state.factionInternalPoints && state.factionInternalPoints[factionId];
+    if (!facMap) return 0;
+    const v = facMap[fighterId];
+    return (typeof v === 'number' && !isNaN(v)) ? v : 0;
+  },
+
+  _setInternalPoints(state, factionId, fighterId, pt) {
+    if (!state.factionInternalPoints) state.factionInternalPoints = {};
+    if (!state.factionInternalPoints[factionId]) state.factionInternalPoints[factionId] = {};
+    state.factionInternalPoints[factionId][fighterId] = Math.max(0, Math.round(pt));
+    return state;
+  },
+
+  _addInternalPoints(state, factionId, fighterId, delta) {
+    const cur = this._getInternalPoints(state, factionId, fighterId);
+    return this._setInternalPoints(state, factionId, fighterId, cur + delta);
+  },
+
+  // 派閥内ポイント OVR 順位ベース割り振り（spec §4.4）
+  // excludeFighterIds に渡された ID は 0pt のままにする
+  _allocateInternalPointsByOvrRank(state, factionId, excludeFighterIds = []) {
+    const cfg = FACTION_CONFIG;
+    const allocation = cfg.internalPointsAllocationByOvrRank || [8, 5, 2, 0];
+    const f = (state.factions || []).find(x => x.id === factionId);
+    if (!f) return state;
+    let s = this._ensureInternalPointsInit(state);
+    s.factionInternalPoints[factionId] = {};
+    for (const id of excludeFighterIds) {
+      s.factionInternalPoints[factionId][id] = 0;
+    }
+    const exSet = new Set(excludeFighterIds);
+    const candidates = (f.memberIds || [])
+      .filter(id => !exSet.has(id))
+      .map(id => {
+        const c = (state.roster || []).find(c => c.id === id);
+        return c ? { id, ovr: Engine.util.ov(c) } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.ovr - a.ovr);
+    for (let i = 0; i < candidates.length; i++) {
+      const pt = (i < allocation.length) ? allocation[i] : allocation[allocation.length - 1];
+      s.factionInternalPoints[factionId][candidates[i].id] = pt;
+    }
+    return s;
+  },
+
+  // 派閥内挑戦戦の試合結果反映（spec §4.4）
+  // matchResult: { winnerId, loserId, winnerHpPct, loserHpPct }
+  applyInternalChallengeResult(state, matchResult, rng) {
+    if (!state || !state._pendingInternalChallenge || !matchResult) return state;
+    const pending = state._pendingInternalChallenge;
+    const { factionId, challengerId, leaderId } = pending;
+    const f = (state.factions || []).find(x => x.id === factionId);
+    if (!f) {
+      const { _pendingInternalChallenge: _, ...rest } = state;
+      return rest;
+    }
+    const cfg = FACTION_CONFIG;
+    const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
+    const absWeek = (state.season || 1) * 52 + (state.week || 1);
+    const challengerWon = matchResult.winnerId === challengerId;
+    let s = state;
+
+    if (challengerWon) {
+      // === 禅譲 ===
+      const successor = (s.roster || []).find(c => c.id === challengerId);
+      const newName = successor ? `${successor.name}組` : f.name;
+      s = {
+        ...s,
+        factions: s.factions.map(x => x.id !== factionId ? x : {
+          ...x,
+          leaderId: challengerId,
+          name: newName,
+          lastLeaderChangeSeason: s.season,
+          lastLeaderChangeWeek: s.week,
+          internalChallengeCooldownUntilWeek: absWeek + cfg.internalChallengeCooldownWeeks,
+        }),
+      };
+      // OVR 順位ベース割り振り（新旧リーダーは0pt）
+      s = this._allocateInternalPointsByOvrRank(s, factionId, [challengerId, leaderId]);
+      // effect: 旧リーダー trust / 新リーダー trust / 派閥 momentum / メンバー bond
+      const oldLeaderTrust = -ri(5, 8);
+      const newLeaderTrust = ri(5, 8);
+      const newLeaderPop = ri(3, 5);
+      const momentumGain = ri(cfg.internalChallengeMomentumOnUpset.min, cfg.internalChallengeMomentumOnUpset.max);
+      const oldToNewRiv = ri(15, 20);
+      s = this._applyTrustToMembers(s, [leaderId], oldLeaderTrust);
+      s = this._applyTrustToMembers(s, [challengerId], newLeaderTrust);
+      s = this._adjustFighterPop(s, challengerId, newLeaderPop);
+      s = this._adjustFactionMomentum(s, factionId, momentumGain);
+      s = this._applyRivalryDirected(s, leaderId, challengerId, oldToNewRiv);
+      // 派閥メンバー → 新リーダー bond +2〜+3
+      const fNow = (s.factions || []).find(x => x.id === factionId);
+      if (fNow) {
+        const others = (fNow.memberIds || []).filter(id => id !== challengerId && id !== leaderId);
+        for (const mid of others) {
+          if (typeof this._applyBondDirected === 'function') {
+            s = this._applyBondDirected(s, mid, challengerId, ri(2, 3));
+          }
+        }
+      }
+      // archetype 遷移（AUTHORITY のみ）
+      if (f.archetypeId === 'AUTHORITY') {
+        const successorFaction = (s.factions || []).find(x => x.id === factionId);
+        const toArch = this._decideAuthoritySuccessorArchetype(s, successorFaction);
+        s = this._applyArchetypeTransition(s, factionId, toArch, {
+          reasonKey: 'AUTHORITY_DEFEATED_INTERNAL',
+        });
+      }
+      if (Array.isArray(s.factionTimeline)) {
+        s = {
+          ...s,
+          factionTimeline: [
+            ...s.factionTimeline,
+            {
+              type: 'INTERNAL_CHALLENGE_RESOLVED',
+              season: s.season, week: s.week,
+              factionId, leaderId, challengerId, challengerWon: true,
+            },
+          ],
+        };
+      }
+      s = {
+        ...s,
+        _pendingInternalChallengePostModal: {
+          factionId, oldLeaderId: leaderId, newLeaderId: challengerId,
+          leaderWon: false,
+          loserHpPct: matchResult.loserHpPct, winnerHpPct: matchResult.winnerHpPct,
+        },
+      };
+      if (typeof console !== 'undefined') {
+        console.log(`[WM Internal Rank] Leader change: faction=${factionId} ${leaderId}→${challengerId}`);
+      }
+    } else {
+      // === 防衛（権威の確認）===
+      s = {
+        ...s,
+        factions: s.factions.map(x => x.id !== factionId ? x : {
+          ...x,
+          internalChallengeCooldownUntilWeek: absWeek + cfg.internalChallengeCooldownWeeks,
+        }),
+      };
+      s = this._allocateInternalPointsByOvrRank(s, factionId, [leaderId, challengerId]);
+      const leaderTrust = ri(3, 5);
+      const leaderPop = ri(2, 3);
+      const momentumGain = ri(cfg.internalChallengeMomentumOnHold.min, cfg.internalChallengeMomentumOnHold.max);
+      const challengerTrust = -ri(3, 5);
+      const challengerToLeaderRiv = -ri(10, 15);
+      s = this._applyTrustToMembers(s, [leaderId], leaderTrust);
+      s = this._adjustFighterPop(s, leaderId, leaderPop);
+      s = this._adjustFactionMomentum(s, factionId, momentumGain);
+      s = this._applyTrustToMembers(s, [challengerId], challengerTrust);
+      s = this._applyRivalryDirected(s, challengerId, leaderId, challengerToLeaderRiv);
+      // AUTHORITY 派閥は派閥メンバー全員 → リーダー bond +2〜+3
+      if (f.archetypeId === 'AUTHORITY') {
+        const fNow = (s.factions || []).find(x => x.id === factionId);
+        if (fNow) {
+          const others = (fNow.memberIds || []).filter(id => id !== leaderId);
+          for (const mid of others) {
+            if (typeof this._applyBondDirected === 'function') {
+              s = this._applyBondDirected(s, mid, leaderId, ri(2, 3));
+            }
+          }
+        }
+      }
+      if (Array.isArray(s.factionTimeline)) {
+        s = {
+          ...s,
+          factionTimeline: [
+            ...s.factionTimeline,
+            {
+              type: 'INTERNAL_CHALLENGE_RESOLVED',
+              season: s.season, week: s.week,
+              factionId, leaderId, challengerId, challengerWon: false,
+            },
+          ],
+        };
+      }
+      s = {
+        ...s,
+        _pendingInternalChallengePostModal: {
+          factionId, oldLeaderId: leaderId, newLeaderId: leaderId,
+          leaderWon: true,
+          loserHpPct: matchResult.loserHpPct, winnerHpPct: matchResult.winnerHpPct,
+        },
+      };
+      if (typeof console !== 'undefined') {
+        console.log(`[WM Internal Rank] Leader hold: faction=${factionId} leader=${leaderId} defeated challenger=${challengerId}`);
+      }
+    }
+
+    const { _pendingInternalChallenge: _, ...rest } = s;
+    return rest;
   },
 
   _ensureRivalryPointsEntry(state, factionAId, factionBId) {
@@ -4585,6 +5007,108 @@ Engine.factions = {
       }
     }
     return null;
+  },
+
+  // ── 派閥内挑戦戦 発火条件（spec: faction-internal-rank-spec-v0.2 §4.1）──
+  // 戻り値: { factionId, factionName, leaderId, challengerId } | null
+  checkInternalChallengeConditions(state, _rng) {
+    if (!state || !Array.isArray(state.factions)) return null;
+    if (state._pendingInternalChallenge) return null;
+    if (state._pendingF09) return null;
+    // 進行中 F09 ペアエントリチェック（rivalryPoints に f09Active が立っているか）
+    const rp = state.factionRivalryPoints || {};
+    for (const k in rp) {
+      if (rp[k] && rp[k].f09Active) return null;
+    }
+    const cfg = FACTION_CONFIG;
+    const absWeek = (state.season || 1) * 52 + (state.week || 1);
+    const ovrOf = (id) => {
+      const c = (state.roster || []).find(r => r.id === id);
+      return c ? Engine.util.ov(c) : 0;
+    };
+
+    for (const f of state.factions) {
+      if (!f || f.status !== 'active') continue;
+      if (f.archetypeId === 'BOND' || f.flavor === 'bond_first') continue;
+      if (!Array.isArray(f.memberIds) || f.memberIds.length < cfg.internalChallengeMinFactionSize) continue;
+
+      // 個別 CD
+      const cdUntil = (f.internalChallengeCooldownUntilWeek != null) ? f.internalChallengeCooldownUntilWeek : 0;
+      if (absWeek < cdUntil) continue;
+
+      // リーダー就任からの猶予（lastLeaderChangeSeason/Week を流用、createdSeason/Week にフォールバック）
+      const enthronedSeason = f.lastLeaderChangeSeason != null ? f.lastLeaderChangeSeason
+        : (f.createdSeason != null ? f.createdSeason : 1);
+      const enthronedWeek = f.lastLeaderChangeWeek != null ? f.lastLeaderChangeWeek
+        : (f.createdWeek != null ? f.createdWeek : 1);
+      const enthronedAbs = enthronedSeason * 52 + enthronedWeek;
+      if (absWeek - enthronedAbs < cfg.internalChallengeGraceWeeksAfterEnthronement) continue;
+
+      // リーダー在籍チェック
+      const leaderId = f.leaderId;
+      if (leaderId == null) continue;
+      const leader = (state.roster || []).find(c => c.id === leaderId);
+      if (!leader) continue;
+
+      // 挑戦者候補
+      const leaderPt = this._getInternalPoints(state, f.id, leaderId);
+      const threshold = (f.archetypeId === 'FACE')
+        ? cfg.internalChallengeThresholdGapFace
+        : cfg.internalChallengeThresholdGap;
+
+      const challengers = f.memberIds
+        .filter(id => id !== leaderId)
+        .filter(id => (state.roster || []).some(c => c.id === id))
+        .map(id => ({ id, pt: this._getInternalPoints(state, f.id, id) }))
+        .filter(x => x.pt > leaderPt && (x.pt - leaderPt) >= threshold)
+        .sort((a, b) => {
+          if (b.pt !== a.pt) return b.pt - a.pt;
+          return ovrOf(b.id) - ovrOf(a.id);
+        });
+
+      if (challengers.length === 0) continue;
+
+      return {
+        factionId: f.id,
+        factionName: f.name,
+        leaderId,
+        challengerId: challengers[0].id,
+      };
+    }
+    return null;
+  },
+
+  registerInternalChallenge(state, payload) {
+    if (!state || !payload) return state;
+    let s = {
+      ...state,
+      _pendingInternalChallenge: {
+        factionId: payload.factionId,
+        challengerId: payload.challengerId,
+        leaderId: payload.leaderId,
+        registeredSeason: state.season,
+        registeredWeek: state.week,
+      },
+    };
+    if (Array.isArray(s.factionTimeline)) {
+      s = {
+        ...s,
+        factionTimeline: [
+          ...s.factionTimeline,
+          {
+            type: 'INTERNAL_CHALLENGE_REGISTERED',
+            season: s.season, week: s.week,
+            factionId: payload.factionId,
+            leaderId: payload.leaderId,
+            challengerId: payload.challengerId,
+          },
+        ],
+      };
+    }
+    if (typeof console !== 'undefined') {
+      console.log(`[WM Internal Rank] Challenge registered: faction=${payload.factionId} challenger=${payload.challengerId} leader=${payload.leaderId}`);
+    }
+    return s;
   },
 
   _topNOvrSum(state, faction, n) {

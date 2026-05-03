@@ -8835,6 +8835,166 @@ if (typeof window !== 'undefined') {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 派閥内序列戦 試合前モーダル（紫〜深青グラデ、F08 流用ベース）
+// data: Engine.factions.getInternalChallengePreData の戻り値
+// ─────────────────────────────────────────────────────────────────────────────
+function showInternalChallengePreModal(data, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showInternalChallengePreModal(data, state, onContinue)); return; }
+  if (!data) { if (onContinue) onContinue(); return; }
+
+  const cPortraitUrl = _factionUpperUrl(data.challenger.id);
+  const lPortraitUrl = _factionUpperUrl(data.leader.id);
+
+  const html = `
+    <div class="fevt-overlay-arena" id="fevtICPreOverlay">
+      <div class="fevt-arena-card internal-challenge-pre">
+        <div class="fevt-arena-header">
+          <div class="fevt-arena-title">⚔ 派閥内序列戦</div>
+          <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ INTERNAL CHALLENGE</div>
+        </div>
+        <div class="fevt-arena-narration">${String(data.narration)}</div>
+        <div class="fevt-arena-stage">
+          <div class="fevt-arena-duel">
+            <div class="fevt-arena-col">
+              <div class="fevt-arena-portrait" style="background-image:url('${cPortraitUrl}');background-size:cover;background-position:center 20%"></div>
+              <div class="fevt-arena-faction">${String(data.faction.name)}</div>
+              <div class="fevt-arena-name">${String(data.challenger.name)}</div>
+              <div class="fevt-arena-org">CHALLENGER ・ OVR ${data.challenger.ovr}</div>
+              <div class="fevt-arena-bubble">
+                <span class="fevt-arena-bubble-name">${String(data.challenger.name)}</span>
+                ${String(data.lineChallenger || '')}
+              </div>
+            </div>
+            <div class="fevt-arena-vs">VS</div>
+            <div class="fevt-arena-col">
+              <div class="fevt-arena-portrait" style="background-image:url('${lPortraitUrl}');background-size:cover;background-position:center 20%"></div>
+              <div class="fevt-arena-faction">${String(data.faction.name)}</div>
+              <div class="fevt-arena-name">${String(data.leader.name)}</div>
+              <div class="fevt-arena-org">LEADER ・ OVR ${data.leader.ovr}</div>
+              <div class="fevt-arena-bubble">
+                <span class="fevt-arena-bubble-name">${String(data.leader.name)}</span>
+                ${String(data.lineLeader || '')}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fevt-arena-actions">
+          <button class="fevt-arena-btn" id="fevtICPreBtn">試合へ進む →</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-arena');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+
+  try {
+    if (typeof Audio !== 'undefined' && Audio.fileBgm && Audio.fileBgm.play) {
+      Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: true, volume: 0.18 });
+    }
+    if (typeof Audio !== 'undefined' && Audio.stinger) {
+      setTimeout(() => { try { Audio.stinger('../bgm/f07_gong_v1.mp3', 0.18); } catch(e) {} }, 150);
+    }
+  } catch(e) {}
+
+  const btn = root.querySelector('#fevtICPreBtn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.fadeOut(800); } catch(e) {}
+      if (onContinue) onContinue();
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 派閥内序列戦 試合後モーダル
+// data: Engine.factions.getInternalChallengePostData の戻り値
+// ─────────────────────────────────────────────────────────────────────────────
+function showInternalChallengePostModal(data, state, onContinue) {
+  if (_isPopupActive()) { _popupQueue.push(() => showInternalChallengePostModal(data, state, onContinue)); return; }
+  if (!data) { if (onContinue) onContinue(); return; }
+
+  const wPortraitUrl = _factionUpperUrl(data.winner.id);
+  const lPortraitUrl = _factionUpperUrl(data.loser.id);
+  const transitionLabel = ({
+    MERIT: '実力主義',
+    BOND:  '結束型',
+    HEEL:  'ヒール派閥',
+    FACE:  '正統派',
+    COMBAT: '武闘派',
+    AUTHORITY: '権威型',
+  });
+  const transitionHtml = data.archetypeTransition
+    ? `<div class="fevt-arena-narration close" style="margin-top:8px;color:#e6c8ff">― ${data.faction.name}は《${transitionLabel[data.archetypeTransition.from] || data.archetypeTransition.from}》から《${transitionLabel[data.archetypeTransition.to] || data.archetypeTransition.to}》へ気風を変えた ―</div>`
+    : '';
+
+  const html = `
+    <div class="fevt-overlay-arena" id="fevtICPostOverlay">
+      <div class="fevt-arena-card internal-challenge-post">
+        <div class="fevt-arena-header">
+          <div class="fevt-arena-title">⚔ 序列戦・決着</div>
+          <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ ${data.leaderWon ? 'HOLD' : 'SUCCESSION'}</div>
+        </div>
+        <div class="fevt-arena-narration">${String(data.narrationOpen)}</div>
+        <div class="fevt-arena-stage">
+          <div class="fevt-arena-portrait winner-big" style="background-image:url('${wPortraitUrl}');background-size:cover;background-position:center 20%;margin:0 auto 10px"></div>
+          <div class="fevt-arena-faction">${String(data.faction.name)}</div>
+          <div class="fevt-arena-name">${String(data.winner.name)}</div>
+          <div class="fevt-arena-org">${data.leaderWon ? 'LEADER (DEFENDED)' : 'NEW LEADER'}</div>
+          <div class="fevt-arena-bubble winner-big" style="margin-left:auto;margin-right:auto">
+            <span class="fevt-arena-bubble-name">${String(data.winner.name)}</span>
+            ${String(data.winnerLine || '')}
+          </div>
+          <div class="fevt-arena-divider"></div>
+          <div class="fevt-arena-portrait loser" style="background-image:url('${lPortraitUrl}');background-size:cover;background-position:center 20%;margin:0 auto 8px"></div>
+          <div class="fevt-arena-name" style="font-size:15px;opacity:0.85">${String(data.loser.name)}</div>
+          <div class="fevt-arena-org" style="opacity:0.65">${data.leaderWon ? 'CHALLENGER' : 'FORMER LEADER'}</div>
+          <div class="fevt-arena-bubble loser" style="margin-left:auto;margin-right:auto">
+            <span class="fevt-arena-bubble-name">${String(data.loser.name)}</span>
+            ${String(data.loserLine || '')}
+          </div>
+        </div>
+        <div class="fevt-arena-narration close">${String(data.narrationClose)}</div>
+        ${transitionHtml}
+        <div class="fevt-arena-actions">
+          <button class="fevt-arena-btn" id="fevtICPostBtn">閉じる</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-arena');
+  if (overlay) {
+    void overlay.offsetWidth;
+    setTimeout(() => overlay.classList.add('active'), 20);
+  }
+
+  const btn = root.querySelector('#fevtICPostBtn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      try { if (typeof Audio !== 'undefined' && Audio.stinger) Audio.stinger('../bgm/f06_fin_chime_v1.mp3', 0.14); } catch(e) {}
+      _factionCloseCinematicOverlay();
+      if (onContinue) onContinue();
+    });
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.showInternalChallengePreModal = showInternalChallengePreModal;
+  window.showInternalChallengePostModal = showInternalChallengePostModal;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Phase B-2: F09 派閥対抗戦 モーダル4種
 // spec: faction-rivalry-points-spec-v0.1 §3.5
 // data 構造（呼び出し側で構築）:

@@ -2064,6 +2064,16 @@ function _spOpenPicker(slotIdx, side) {
     if (typeof showToast === 'function') showToast('🔥 F08 直接対決のため、この試合の選手は変更できません', 3000);
     return;
   }
+  // 派閥内序列戦 ロック
+  if (slot && slot._internalChallengeLocked) {
+    if (typeof showToast === 'function') showToast('⚔ 派閥内序列戦は固定です', 3000);
+    return;
+  }
+  // F09 ロック
+  if (slot && slot._f09Locked) {
+    if (typeof showToast === 'function') showToast('⚔ F09 派閥対抗戦のため、この試合の選手は変更できません', 3000);
+    return;
+  }
   if (_spActivePicker && _spActivePicker.slotIdx === slotIdx && _spActivePicker.side === side) {
     _spActivePicker = null;
   } else {
@@ -2393,6 +2403,70 @@ function renderShowPrep() {
     let hadLock = false;
     G.showCard.forEach(m => { if (m._f09Locked) { delete m._f09Locked; hadLock = true; } });
     if (hadLock) G = { ...G, showCard: [...G.showCard] };
+  }
+
+  // ── 派閥内序列戦 ロック解除: pending が無いならロック flag を全スロットでクリア ──
+  if (!G._pendingInternalChallenge) {
+    let hadLock = false;
+    G.showCard.forEach(m => { if (m._internalChallengeLocked) { delete m._internalChallengeLocked; hadLock = true; } });
+    if (hadLock) G = { ...G, showCard: [...G.showCard] };
+  }
+
+  // ── 派閥内序列戦 注入: _pendingInternalChallenge が立っていれば挑戦者 vs リーダーを slot 0 に強制注入 ──
+  if (G._pendingInternalChallenge) {
+    const ic = G._pendingInternalChallenge;
+    const ch = G.roster.find(c => c.id === ic.challengerId && !c.injury && !c.forcedRest);
+    const ld = G.roster.find(c => c.id === ic.leaderId && !c.injury && !c.forcedRest);
+    if (!ch || !ld) {
+      // 怪我等で成立不能 → pending を解除
+      const { _pendingInternalChallenge: _, ...rest } = G;
+      G = rest;
+    } else {
+      // 既存 slot に両者がペアで入っているか
+      let alreadyPlaced = false;
+      for (const m of G.showCard) {
+        if (m.matchType === 'tag') continue;
+        if ((m.left === ic.challengerId && m.right === ic.leaderId) || (m.left === ic.leaderId && m.right === ic.challengerId)) {
+          alreadyPlaced = true;
+          m._internalChallengeLocked = true;
+          break;
+        }
+      }
+      if (!alreadyPlaced) {
+        // 他の試合に既出 → その試合から除去
+        const newCard = G.showCard.map(m => {
+          if (m.matchType === 'tag') {
+            let nm = { ...m };
+            const ta = { ...(m.teamA || {}) };
+            const tb = { ...(m.teamB || {}) };
+            if (ta.fighter1 === ic.challengerId || ta.fighter1 === ic.leaderId) ta.fighter1 = 0;
+            if (ta.fighter2 === ic.challengerId || ta.fighter2 === ic.leaderId) ta.fighter2 = 0;
+            if (tb.fighter1 === ic.challengerId || tb.fighter1 === ic.leaderId) tb.fighter1 = 0;
+            if (tb.fighter2 === ic.challengerId || tb.fighter2 === ic.leaderId) tb.fighter2 = 0;
+            nm.teamA = ta; nm.teamB = tb;
+            return nm;
+          }
+          let nm = { ...m };
+          if (m.left === ic.challengerId || m.left === ic.leaderId) nm.left = 0;
+          if (m.right === ic.challengerId || m.right === ic.leaderId) nm.right = 0;
+          return nm;
+        });
+        if (newCard.length === 0) newCard.push({ left: 0, right: 0, isTitle: false });
+        // slot 0（メイン）に強制注入。元 slot 0 が tag の場合は単発に置換
+        if (newCard[0] && newCard[0].matchType === 'tag') {
+          newCard[0] = { left: ic.challengerId, right: ic.leaderId, isTitle: false, _internalChallengeLocked: true };
+        } else {
+          newCard[0] = {
+            ...(newCard[0] || {}),
+            left: ic.challengerId, right: ic.leaderId,
+            matchType: undefined, teamA: undefined, teamB: undefined,
+            isTitle: !!(newCard[0] && newCard[0].isTitle),
+            _internalChallengeLocked: true,
+          };
+        }
+        G = { ...G, showCard: newCard };
+      }
+    }
   }
 
   // ── F09 注入: _pendingF09 が立っていれば派閥対抗戦カードを強制組込み ──
@@ -2783,6 +2857,9 @@ function renderShowPrep() {
     }
     if (slot._f08Locked) {
       tagParts.push(`<span class="sp-match-tag sp-tag-faction" title="F08 対立ヒートアップ：この試合は固定枠です" style="background:rgba(255,90,40,0.22);border-color:rgba(255,90,40,0.55);color:#ffd2b0">🔥 F08 直接対決（固定）</span>`);
+    }
+    if (slot._internalChallengeLocked) {
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" title="派閥内序列戦：挑戦者がリーダーの座を狙う、固定枠です" style="background:rgba(120,60,180,0.28);border-color:rgba(170,120,220,0.55);color:#e6c8ff">⚔ 派閥内序列戦（固定）</span>`);
     }
     if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
@@ -11745,6 +11822,51 @@ function _dfcRenderCard(faction, state, opts = {}) {
     html += `<span class="dfc-meter">${opts.feudOpponent.name}と${Engine.factions.getHostilityLabel(avg)}</span>`;
   }
   html += `</div></div>`;
+
+  // 派閥内序列（spec: faction-internal-rank-spec-v0.2 §5.4）
+  // BOND archetype はポイント蓄積を行わないため非表示
+  if (faction.archetypeId !== 'BOND' && faction.flavor !== 'bond_first') {
+    const ipMap = (state.factionInternalPoints || {})[faction.id] || {};
+    const leaderPt = ipMap[faction.leaderId] || 0;
+    const challengers = (faction.memberIds || [])
+      .filter(id => id !== faction.leaderId)
+      .map(id => {
+        const c = roster.find(r => r.id === id);
+        return c ? { id, name: c.name, pt: ipMap[id] || 0 } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.pt - a.pt);
+    const top = challengers[0];
+    const cfg = (typeof FACTION_CONFIG !== 'undefined') ? FACTION_CONFIG : {};
+    const threshold = (faction.archetypeId === 'FACE')
+      ? (cfg.internalChallengeThresholdGapFace || 15)
+      : (cfg.internalChallengeThresholdGap || 10);
+    const challengerActive = top && top.pt > leaderPt && (top.pt - leaderPt) >= threshold;
+    // リーダー就任からの経過週（lastLeaderChangeSeason/Week 流用）
+    const enthronedSeason = faction.lastLeaderChangeSeason != null ? faction.lastLeaderChangeSeason
+      : (faction.createdSeason != null ? faction.createdSeason : 1);
+    const enthronedWeek = faction.lastLeaderChangeWeek != null ? faction.lastLeaderChangeWeek
+      : (faction.createdWeek != null ? faction.createdWeek : 1);
+    const enthronedAbs = enthronedSeason * 52 + enthronedWeek;
+    const nowAbs = (state.season || 1) * 52 + (state.week || 1);
+    const enthronedWeeks = Math.max(0, nowAbs - enthronedAbs);
+    const enthronedLabel = (enthronedWeeks < 52) ? `就任${enthronedWeeks + 1}週目` : '';
+    const arrow = challengerActive ? '⚔' : '·';
+    html += `<div class="dfc-internal-rank">`;
+    html += `<div class="dfc-ir-row">`;
+    html += `<span class="dfc-ir-label">序列</span>`;
+    html += `<span class="dfc-ir-leader">👑 ${leader.name} <small>${leaderPt}pt</small></span>`;
+    if (top) {
+      const challengerCls = challengerActive ? ' active' : '';
+      html += `<span class="dfc-ir-arrow${challengerCls}">${arrow}</span>`;
+      html += `<span class="dfc-ir-challenger${challengerCls}">${top.name} <small>${top.pt}pt</small></span>`;
+    }
+    if (enthronedLabel) {
+      html += `<span class="dfc-ir-tenure">${enthronedLabel}</span>`;
+    }
+    html += `</div>`;
+    html += `</div>`;
+  }
 
   html += `</div>`;
   return html;

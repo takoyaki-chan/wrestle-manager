@@ -2265,6 +2265,23 @@ const Storage = {
         if (!G.factionEventCooldowns || typeof G.factionEventCooldowns !== 'object') G = { ...G, factionEventCooldowns: {} };
         G = { ...G, _migrated_factions_v1: true };
       }
+      // 派閥内ポイント制 v1 マイグレーション（spec: faction-internal-rank-spec-v0.2 §2.4）
+      if (!G._migrated_factions_internal_points_v1) {
+        if (!G.factionInternalPoints || typeof G.factionInternalPoints !== 'object') {
+          G = { ...G, factionInternalPoints: {} };
+        }
+        if (Array.isArray(G.factions)) {
+          G = {
+            ...G,
+            factions: G.factions.map(f =>
+              (f && f.internalChallengeCooldownUntilWeek != null)
+                ? f
+                : { ...f, internalChallengeCooldownUntilWeek: 0 }
+            ),
+          };
+        }
+        G = { ...G, _migrated_factions_internal_points_v1: true };
+      }
       if (Array.isArray(G.factions) && G.factions.some(f => !f.flavor)) {
         G = { ...G, factions: G.factions.map(f => f.flavor ? f : { ...f, flavor: 'bond_first' }) };
       }
@@ -5800,6 +5817,26 @@ const App = {
       if (typeof console !== 'undefined') console.log('[WM Faction] F09 sweep bonus applied');
     }
 
+    // ── 派閥内序列戦 試合結果反映（spec: faction-internal-rank-spec-v0.2 §4.4）──
+    if (Engine.factions && typeof Engine.factions.applyInternalChallengeResult === 'function') {
+      validMatches.forEach((m, idx) => {
+        if (!m._internalChallengeLocked) return;
+        if (m.matchType === 'tag') return;
+        const r = results[idx];
+        if (!r || r.winner === 'draw') return;
+        const winnerId = r.winner === 'left' ? m.left : m.right;
+        const loserId  = r.winner === 'left' ? m.right : m.left;
+        const winnerHp = (r.winner === 'left' ? r.hpLeft : r.hpRight) || { final: 0, max: 100 };
+        const loserHp  = (r.winner === 'left' ? r.hpRight : r.hpLeft) || { final: 0, max: 100 };
+        const winnerHpPct = (winnerHp.max > 0) ? (winnerHp.final / winnerHp.max) : 1;
+        const loserHpPct  = (loserHp.max > 0) ? (loserHp.final / loserHp.max) : 0;
+        const icRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA21));
+        s = Engine.factions.applyInternalChallengeResult(s, {
+          winnerId, loserId, winnerHpPct, loserHpPct,
+        }, icRng);
+      });
+    }
+
     // ── Phase 3e: F08-A 試合後 派閥関係追加変動 + アフターマスモーダル予約 ──
     // _f08Locked がついた試合のうち、勝敗確定したものに対して発火。
     // F02③ resolution が同時発火する試合は extra 効果スキップ（resolution 優先）。
@@ -6461,8 +6498,24 @@ const App = {
     if (sp._shownPreFlavor.has(idx)) return;
     sp._shownPreFlavor.add(idx);
 
-    // Phase 3e: F08-A 試合前モーダル発火（rivalry/初顔合わせ等より優先、出したら他はスキップ）
     const m = (sp.validMatches || [])[idx];
+    // 派閥内序列戦 試合前モーダル（_internalChallengeLocked 試合）— F08/F09 と並列で最優先
+    if (m && m._internalChallengeLocked && typeof Engine !== 'undefined' && Engine.factions
+        && typeof Engine.factions.getInternalChallengePreData === 'function'
+        && typeof showInternalChallengePreModal === 'function') {
+      const matchId = `${G.season}-${G.week}-${idx}`;
+      if (!G._shownInternalChallengePreIds) G._shownInternalChallengePreIds = [];
+      if (!G._shownInternalChallengePreIds.includes(matchId)) {
+        const data = Engine.factions.getInternalChallengePreData(G, m);
+        if (data) {
+          G._shownInternalChallengePreIds = [...G._shownInternalChallengePreIds, matchId];
+          showInternalChallengePreModal(data, G, () => {});
+          return;
+        }
+      }
+    }
+
+    // Phase 3e: F08-A 試合前モーダル発火（rivalry/初顔合わせ等より優先、出したら他はスキップ）
     if (m && m._f08Locked && typeof Engine !== 'undefined' && Engine.factions
         && typeof Engine.factions.getF08PreMatchData === 'function'
         && typeof showFactionF08PreMatchModal === 'function') {
@@ -6525,7 +6578,21 @@ const App = {
       if (!data || typeof showFactionF09MatchPostModal !== 'function') { cb(); return; }
       showFactionF09MatchPostModal(data, G, cb);
     };
-    runPostF09(() => {
+    // 派閥内序列戦 試合後モーダル（_internalChallengeLocked 試合・該当 pending あり）
+    const runPostInternalChallenge = (cb) => {
+      if (!m || !m._internalChallengeLocked) { cb(); return; }
+      const pending = G._pendingInternalChallengePostModal;
+      if (!pending || typeof Engine === 'undefined' || !Engine.factions
+          || typeof Engine.factions.getInternalChallengePostData !== 'function'
+          || typeof showInternalChallengePostModal !== 'function') { cb(); return; }
+      const data = Engine.factions.getInternalChallengePostData(G, pending);
+      // 1試合 1回限り。pending を消費
+      const { _pendingInternalChallengePostModal: _, ...rest } = G;
+      G = rest;
+      if (!data) { cb(); return; }
+      showInternalChallengePostModal(data, G, cb);
+    };
+    runPostInternalChallenge(() => runPostF09(() => {
       const popups = App._collectPostMatchPopupsForMatch(idx, result);
       if (popups.length === 0) { if (then) then(); return; }
       _chainEventPopupQueueEmpty(() => { if (then) then(); });
@@ -6538,7 +6605,7 @@ const App = {
           if (then) then();
         }
       }, maxWaitMs);
-    });
+    }));
   },
 
   // ── Phase B-2: F09 モーダル用データ構築ヘルパ ──

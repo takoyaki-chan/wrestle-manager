@@ -1259,6 +1259,218 @@ const FACTION_F09_ENDING_LOSE_LINES = {
   shy: { normal: { high: ["……ごめんなさい、わたしのせいです"] } },
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 派閥内序列戦（spec: faction-internal-rank-spec-v0.2 §5.3）
+// 構造: personality.archetype.band 形式（_getF08LineByBand 流用）
+// band は 'high' のみ使用（同派閥内対立なので hostility 帯は単一）。loser のみ HP帯。
+// ─────────────────────────────────────────────────────────────────────────────
+const INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES = {
+  bold: {
+    normal: { high: [
+      "今夜、あんたの座は降ろさせてもらう",
+      "ずっと、あんたの背中ばっか見てきた。今日で終わりにする",
+      "リーダー――その肩書、重そうだな。譲ってもらうぜ",
+    ] },
+    delinquent: { high: [
+      "黙って退け、なんて言わねえ。リングで証明してやる",
+      "あたしが上に立つ。それだけだ",
+    ] },
+    cool: { high: [
+      "順番が回ってきただけだ。受けてもらう",
+    ] },
+  },
+  earnest: {
+    normal: { high: [
+      "……失礼を承知で言います。私が、上に立ちます",
+      "あなたを尊敬しています。だからこそ、今日、超える",
+      "後ろの子たちに、もう待ってと言えない",
+    ] },
+    polite: { high: [
+      "御免なさい。今日だけは、譲れません",
+    ] },
+  },
+  quiet: {
+    normal: { high: [
+      "……時間だ",
+      "……席を、もらいに来た",
+    ] },
+  },
+  emotional: {
+    normal: { high: [
+      "怖いよ。でも、行かなきゃ",
+      "ごめん、ごめんね……それでも、譲れないんだ",
+    ] },
+  },
+  easygoing: {
+    normal: { high: [
+      "やー、こういう日も来るよね。じゃ、行こうか",
+    ] },
+  },
+  shy: {
+    normal: { high: [
+      "……わたし、勝ちます",
+    ] },
+  },
+  normal: {
+    normal: { high: [
+      "今日、あなたの座を奪いに来た",
+      "ずっとこの日を待っていた",
+    ] },
+  },
+};
+
+const INTERNAL_CHALLENGE_PRE_LEADER_LINES = {
+  bold: {
+    normal: { high: [
+      "上等。叩き潰してやる",
+      "若いの、その意気だけは買ってやる。リングは別だがな",
+    ] },
+    cool: { high: [
+      "受けてやる。それだけのことだ",
+    ] },
+  },
+  earnest: {
+    normal: { high: [
+      "……来なさい。それが、あなたの覚悟なら",
+      "わかった。今日は、本気で迎え撃つ",
+    ] },
+    polite: { high: [
+      "光栄です。全力で、お相手します",
+    ] },
+  },
+  quiet: {
+    normal: { high: [
+      "……いいだろう",
+    ] },
+  },
+  emotional: {
+    normal: { high: [
+      "そんな顔で来られたら――退けないじゃない",
+    ] },
+  },
+  easygoing: {
+    normal: { high: [
+      "おう、来るかい。じゃあ行こう",
+    ] },
+  },
+  shy: {
+    normal: { high: [
+      "……負けません。今日は",
+    ] },
+  },
+  normal: {
+    normal: { high: [
+      "受けて立つ。リングで会おう",
+    ] },
+  },
+};
+
+const INTERNAL_CHALLENGE_POST_WINNER_LINES = {
+  bold: {
+    normal: { high: [
+      "これで、あたしが先頭に立つ。文句あるか",
+      "後ろのみんな、ついて来な。ここからだ",
+    ] },
+  },
+  earnest: {
+    normal: { high: [
+      "……ありがとうございました。この座、必ず守ります",
+      "重い……でも、引き受けます",
+    ] },
+  },
+  quiet: {
+    normal: { high: [
+      "……勝った。それだけ",
+    ] },
+  },
+  emotional: {
+    normal: { high: [
+      "勝った……勝っちゃった……",
+    ] },
+  },
+  easygoing: {
+    normal: { high: [
+      "あー、勝っちゃったか。じゃ、頑張りますわ",
+    ] },
+  },
+  shy: {
+    normal: { high: [
+      "……ほんとうに、勝てるなんて",
+    ] },
+  },
+  normal: {
+    normal: { high: [
+      "勝った。これからはわたしが先頭に立つ",
+    ] },
+  },
+};
+
+const INTERNAL_CHALLENGE_POST_LOSER_LINES = {
+  bold: {
+    normal: {
+      hp_high: [
+        "……次はねえぞ。覚えとけ",
+        "ふん、今日は譲ってやる。それだけだ",
+      ],
+      hp_mid: [
+        "……認めるしかねえな、今日は",
+      ],
+      hp_low: [
+        "……強かった",
+      ],
+    },
+  },
+  earnest: {
+    normal: {
+      hp_high: [
+        "……あなたの方が、上でした。素直に認めます",
+        "あとは、お任せします。立派に、組を率いてください",
+      ],
+      hp_mid: [
+        "……負けました。次は、支える側に回ります",
+      ],
+      hp_low: [
+        "……託します",
+      ],
+    },
+  },
+  quiet: {
+    normal: {
+      hp_high: ["……負けた"],
+      hp_mid: ["……うむ"],
+      hp_low: ["……"],
+    },
+  },
+  emotional: {
+    normal: {
+      hp_high: ["……ごめんね、みんな。守れなかった"],
+      hp_mid: ["……うちの背中、もう、頼りにならないかな"],
+      hp_low: ["……ごめん"],
+    },
+  },
+  easygoing: {
+    normal: {
+      hp_high: ["はー、抜かれちゃったか。次の子、頑張れよ"],
+      hp_mid: ["やられたなあ、参った参った"],
+      hp_low: ["……参った"],
+    },
+  },
+  shy: {
+    normal: {
+      hp_high: ["……ごめんなさい、わたしのせいで"],
+      hp_mid: ["……すみません"],
+      hp_low: ["……"],
+    },
+  },
+  normal: {
+    normal: {
+      hp_high: ["負けた。あとは任せる"],
+      hp_mid: ["やられた。次は支える側に回る"],
+      hp_low: ["……託す"],
+    },
+  },
+};
+
 // window export（ブラウザ参照用、既存テーブルとの整合）
 if (typeof window !== 'undefined') {
   window.FACTION_F08_PRE_MATCH_LINES_A = FACTION_F08_PRE_MATCH_LINES_A;
@@ -1272,6 +1484,10 @@ if (typeof window !== 'undefined') {
   window.FACTION_F09_MATCH_POST_LOSE_LINES = FACTION_F09_MATCH_POST_LOSE_LINES;
   window.FACTION_F09_ENDING_WIN_LINES = FACTION_F09_ENDING_WIN_LINES;
   window.FACTION_F09_ENDING_LOSE_LINES = FACTION_F09_ENDING_LOSE_LINES;
+  window.INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES = INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES;
+  window.INTERNAL_CHALLENGE_PRE_LEADER_LINES = INTERNAL_CHALLENGE_PRE_LEADER_LINES;
+  window.INTERNAL_CHALLENGE_POST_WINNER_LINES = INTERNAL_CHALLENGE_POST_WINNER_LINES;
+  window.INTERNAL_CHALLENGE_POST_LOSER_LINES = INTERNAL_CHALLENGE_POST_LOSER_LINES;
 }
 
 // Node.js export（auto-sim 用）
@@ -1297,5 +1513,9 @@ if (typeof module !== 'undefined' && module.exports) {
     FACTION_F09_MATCH_POST_LOSE_LINES,
     FACTION_F09_ENDING_WIN_LINES,
     FACTION_F09_ENDING_LOSE_LINES,
+    INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES,
+    INTERNAL_CHALLENGE_PRE_LEADER_LINES,
+    INTERNAL_CHALLENGE_POST_WINNER_LINES,
+    INTERNAL_CHALLENGE_POST_LOSER_LINES,
   };
 }

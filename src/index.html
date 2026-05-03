@@ -4403,6 +4403,73 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .fevt-arena-btn:hover { background: linear-gradient(180deg, rgba(180,32,32,0.8), rgba(110,14,14,0.8)); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(140,20,20,0.4); }
 .fevt-arena-card.f08-post .fevt-arena-stage { padding-top: 18px; }
 
+/* 派閥内序列戦モーダル — 紫〜深青グラデ（外抗争のダーク赤との差別化） */
+.fevt-arena-card.internal-challenge-pre,
+.fevt-arena-card.internal-challenge-post {
+  background: linear-gradient(180deg, rgba(26,10,45,0.96) 0%, rgba(45,13,77,0.94) 100%);
+  border-color: rgba(120,60,180,0.4);
+  color: #e6d8ea;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.9), inset 0 1px 0 rgba(170,120,220,0.10);
+}
+.fevt-arena-card.internal-challenge-post { border-width: 2px; border-color: rgba(170,120,220,0.55); }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-header,
+.fevt-arena-card.internal-challenge-post .fevt-arena-header {
+  background: linear-gradient(180deg, rgba(120,60,180,0.20) 0%, rgba(120,60,180,0.04) 100%);
+  border-bottom-color: rgba(170,120,220,0.45);
+}
+.fevt-arena-card.internal-challenge-pre .fevt-arena-title,
+.fevt-arena-card.internal-challenge-post .fevt-arena-title { color: #d8b8ec; }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-meta,
+.fevt-arena-card.internal-challenge-post .fevt-arena-meta { color: #a888c0; }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-narration,
+.fevt-arena-card.internal-challenge-post .fevt-arena-narration { color: #d4c8e0; }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-narration.close,
+.fevt-arena-card.internal-challenge-post .fevt-arena-narration.close {
+  border-top-color: rgba(170,120,220,0.18);
+  color: #a896b8;
+}
+.fevt-arena-card.internal-challenge-pre .fevt-arena-portrait,
+.fevt-arena-card.internal-challenge-post .fevt-arena-portrait {
+  border-color: rgba(170,120,220,0.45);
+  background-color: #150522;
+}
+.fevt-arena-card.internal-challenge-post .fevt-arena-portrait.winner-big {
+  border-color: rgba(200,150,240,0.6);
+  box-shadow: 0 12px 36px rgba(120,60,180,0.55);
+}
+.fevt-arena-card.internal-challenge-pre .fevt-arena-faction,
+.fevt-arena-card.internal-challenge-post .fevt-arena-faction { color: #b896c8; }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-name,
+.fevt-arena-card.internal-challenge-post .fevt-arena-name { color: #ecd8f0; }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-org,
+.fevt-arena-card.internal-challenge-post .fevt-arena-org { color: #9888a8; }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-vs {
+  color: #c060e0;
+  text-shadow: 0 0 12px rgba(180,80,220,0.55);
+}
+.fevt-arena-card.internal-challenge-pre .fevt-arena-bubble,
+.fevt-arena-card.internal-challenge-post .fevt-arena-bubble {
+  background: rgba(40,12,60,0.6);
+  border-left-color: rgba(200,150,240,0.55);
+  color: #e6d8ea;
+}
+.fevt-arena-card.internal-challenge-post .fevt-arena-bubble.winner-big { border-left-color: #c060e0; }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-bubble-name,
+.fevt-arena-card.internal-challenge-post .fevt-arena-bubble-name { color: #c898d8; }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-divider,
+.fevt-arena-card.internal-challenge-post .fevt-arena-divider { background: rgba(170,120,220,0.35); }
+.fevt-arena-card.internal-challenge-pre .fevt-arena-btn,
+.fevt-arena-card.internal-challenge-post .fevt-arena-btn {
+  background: linear-gradient(180deg, rgba(90,32,140,0.7) 0%, rgba(50,16,90,0.7) 100%);
+  border-color: rgba(180,120,220,0.55);
+  color: #ecd8f0;
+}
+.fevt-arena-card.internal-challenge-pre .fevt-arena-btn:hover,
+.fevt-arena-card.internal-challenge-post .fevt-arena-btn:hover {
+  background: linear-gradient(180deg, rgba(120,50,180,0.8), rgba(70,20,110,0.8));
+  box-shadow: 0 6px 18px rgba(120,60,180,0.4);
+}
+
 /* marker バリアント（hostile/peace） */
 .fevt-observation-note .marker.hostile { color: #8a3a1a; border-bottom-color: rgba(196,98,58,0.5); }
 .fevt-observation-note .marker.peace { color: #2f5c40; border-bottom-color: rgba(90,138,106,0.5); }
@@ -8522,6 +8589,38 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .dfc-meter.solid-strong { background: rgba(90,138,106,0.15); color: var(--accent-bond, #5a8a6a); border-color: rgba(90,138,106,0.4); }
 .dfc-meter.solid-wobble { background: rgba(196,98,58,0.15); color: var(--accent-hostility); border-color: rgba(196,98,58,0.4); }
 .dfc-meter.mom-boom { background: rgba(212,168,67,0.18); color: var(--gold-light, #f0d078); border-color: rgba(212,168,67,0.4); }
+
+/* 派閥内序列（spec: faction-internal-rank-spec-v0.2 §5.4）*/
+.dfc-internal-rank {
+  padding: 6px 14px 8px;
+  border-top: 1px solid rgba(170,120,220,0.18);
+  background: rgba(40,12,60,0.18);
+}
+.dfc-ir-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--office-text-on-dark-sub, #b8b1a3);
+  flex-wrap: wrap;
+}
+.dfc.left .dfc-ir-row { justify-content: flex-end; }
+.dfc-ir-label {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: #b896c8;
+}
+.dfc-ir-leader { color: var(--office-text-on-dark-main, #e8e6e0); }
+.dfc-ir-leader small { font-size: 9px; opacity: 0.7; margin-left: 3px; }
+.dfc-ir-arrow { color: rgba(170,120,220,0.55); font-size: 12px; }
+.dfc-ir-arrow.active { color: #c060e0; text-shadow: 0 0 6px rgba(180,80,220,0.45); font-size: 14px; }
+.dfc-ir-challenger { color: #c8b0d8; }
+.dfc-ir-challenger.active { color: #ecd8f0; font-weight: 600; }
+.dfc-ir-challenger small { font-size: 9px; opacity: 0.7; margin-left: 3px; }
+.dfc-ir-tenure {
+  margin-left: auto;
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: rgba(184,150,200,0.7);
+}
+.dfc.left .dfc-ir-tenure { margin-left: 0; margin-right: auto; }
 
 /* 対決グリッド */
 .feud-duel {
