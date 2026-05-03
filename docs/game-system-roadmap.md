@@ -1,6 +1,10 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-05-03（派閥内ポイント制 v0.3 — リーダー初期値導入 + 猶予 52→38 週）
+> 最終更新: 2026-05-03（派閥名「苗字＋派」化 + 孤児派閥フィルタ）
+
+## 直近の調整（2026-05-03 派閥名表記変更）
+
+**派閥名 `${leader.name}組` → `${leader.surname}派` に変更 + 相関図 v2 に孤児派閥フィルタ追加。** ユーザー指摘「派閥名がフルネーム+組で重い、リーダー離団直後に派閥リストには出ないのに相関図には残る」を解消。①**苗字データ追加** (`src/data.js`): `ALL_CHARS` 全127エントリに `surname` フィールドを追記（漢字・かな・カナ混在のため自動分割不可、手動マッピング1件1件、外人勢=シュタインフェルト/モーガン、リングネーム=毒島）。②**苗字解決ヘルパ汎用化** (`src/management.js`): 既存 `Engine.chronicle._getSurname()` を `(name)→(arg)` シグネチャに変更し、object 渡しなら `arg.surname` 優先、文字列 fallback で従来の whitespace 分割を残す。これで年代記ナラティブの `{surname}` テンプレも初めて実機能化。③**派閥名生成テンプレ置換** (`src/factions.js`): createFaction 初期作成 / handleLeaderLoss 後継 / F03 succession / F05 自然分裂 / F08 内部挑戦戦勝者更新 / 4634挑戦由来継承 の計12箇所で `${...name}組` → `${... .surname || ... .name}派`、F01 applyChoice では payload.leaderName しか手元にないため state.roster 経由で leader を引き直し `leaderSurname` ローカルに束ねる。④**旧セーブマイグレーション** (`src/factions.js:reconcileRoster`): 冒頭に「`/組$/` で終わる faction.name を現リーダーから `${surname}派` に再導出」する1回限り処理を追加（既存リーダーが居る派閥のみ書き換え、孤児派閥は触らず孤児フィルタ側に委譲）。⑤**孤児派閥フィルタ** (`src/ui-render.js:_relmapGetFilteredFactions`): 「player+全rivalOrgs+freeAgents の和集合に leaderId が居ない派閥は隠す」を追加し、_dfcRenderCard が leader-in-roster 判定で派閥リストから外していた派閥が相関図 v2 に取り残される非対称を解消。⑥**仕様書更新** (`specs/faction-system-spec-v0.1.md`): 「○○組」表記を「○○派（リーダー苗字ベース）」に修正（命名規則・派閥所属タグ表記・サンプル文言の計6箇所）。⑦**検証**: auto-sim 100シーズン × seed42 で violations 0 / errors 0 / weeks 5300 / Game overs 0 ALL CLEAR ✓。⑧**実機確認推奨**: (1) 既存セーブをロードして派閥名が `○○派` に書き換わっているか、(2) 新規ゲームの派閥成立イベントで「○○を中心に派閥「○○派」が旗揚げされた」になっているか、(3) F09 試合のニュース・モーダルで派閥名が新形式か、(4) リーダー引退直後（オフシーズン後継イベント前）に DB 派閥タブと相関図 v2 の両方で当該派閥が**揃って消えている**か。⑨**残タスク**: 苗字の誤判定があれば data.js の surname を直接書き換え（自動判定不可だったケース: id:18 出羽鷹子→出羽 / id:38 芝彩音→芝 / id:43 金沢文→金沢 / id:46 井沢遥→井沢 / id:84 南谷杏→南谷 / id:120 蔵前静→蔵前 / id:117 クラッシャー毒島→毒島 / id:87 レオナ・O・シュタインフェルト→シュタインフェルト / id:116 リナ・モーガン→モーガン）。変更: src/data.js(127件 surname 追記) + src/factions.js(12箇所 派閥名置換 + applyF01Choice の leaderSurname 導出 + reconcileRoster マイグレーション 約 15 行) + src/management.js(_getSurname シグネチャ拡張) + src/ui-render.js(_relmapGetFilteredFactions 孤児フィルタ 約 9 行) + specs/faction-system-spec-v0.1.md(命名規則 6 箇所) + docs/game-system-roadmap.md(本項)。
 
 ## 直近の調整（2026-05-03）
 

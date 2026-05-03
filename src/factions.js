@@ -540,7 +540,7 @@ Engine.factions = {
     const archetypeId = options.archetypeId || this._archetypeFromFlavor(flavor);
     const faction = {
       id: nextId,
-      name: `${leader.name}組`,
+      name: `${leader.surname || leader.name}派`,
       leaderId,
       memberIds: [...new Set(memberIds)],
       flavor,
@@ -564,7 +564,7 @@ Engine.factions = {
     };
 
     if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] ${type === 'loyal' ? 'Loyal' : 'Rivalrous'} faction formed: ${leader.name}組 (members: ${faction.memberIds.length})`);
+      console.log(`[WM Faction] ${type === 'loyal' ? 'Loyal' : 'Rivalrous'} faction formed: ${leader.surname || leader.name}派 (members: ${faction.memberIds.length})`);
     }
 
     let next = { ...state, factions: [...(state.factions || []), faction] };
@@ -995,7 +995,7 @@ Engine.factions = {
       const newMemberIds = f.memberIds.filter(id => id !== faction.leaderId);
       return {
         ...f,
-        name: `${successor.name}組`,
+        name: `${successor.surname || successor.name}派`,
         leaderId: successor.id,
         memberIds: newMemberIds,
         lastLeaderChangeSeason: s.season,
@@ -1029,7 +1029,7 @@ Engine.factions = {
     s = this._applyTrustToMembers(s, memberIds, trustDelta);
 
     if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] Leader succession: ${faction.name} → ${successor.name}組 (ratio=${ratio.toFixed(2)}, ${isShock ? 'shock' : 'normal'})`);
+      console.log(`[WM Faction] Leader succession: ${faction.name} → ${successor.surname || successor.name}派 (ratio=${ratio.toFixed(2)}, ${isShock ? 'shock' : 'normal'})`);
     }
 
     // 動揺時: 対立派閥の勢い +15〜+25
@@ -1101,6 +1101,19 @@ Engine.factions = {
     if (!s.factions || s.factions.length === 0) return s;
 
     const rosterIds = new Set((s.roster || []).map(c => c.id));
+
+    // 0) 命名規則マイグレーション: 旧形式「○○組」→「○○派（苗字）」を現リーダーから再導出。
+    //    旧セーブを継承したときに 1 回だけ走る想定（once name is in 派 form, skipped）。
+    const renamed = (s.factions || []).map(f => {
+      if (!f || !f.name || !/組$/.test(f.name)) return f;
+      const leader = (s.roster || []).find(c => c.id === f.leaderId);
+      if (!leader) return f; // リーダー不在派閥はそのまま（孤児フィルタ側で吸収）
+      const surname = leader.surname || leader.name;
+      return { ...f, name: `${surname}派` };
+    });
+    if (renamed.some((f, i) => f !== s.factions[i])) {
+      s = { ...s, factions: renamed };
+    }
 
     // 1) リーダー喪失を先に処理
     while (true) {
@@ -1605,6 +1618,8 @@ Engine.factions = {
     const { leaderId, leaderName, followerIds, archetype } = payload;
     let s = state;
     const members = [leaderId, ...followerIds];
+    const _f01Leader = (state.roster || []).find(c => c.id === leaderId);
+    const leaderSurname = (_f01Leader && _f01Leader.surname) || leaderName;
     // v0.2: payload.archetype が無ければ後方互換で authoritarian にフォールバック（旧挙動）
     const arch = archetype || 'authoritarian';
 
@@ -1626,7 +1641,7 @@ Engine.factions = {
       const archLabel = this._archetypeLabel(arch);
       const impactSummary = [
         { label: `${leaderName} trust`, delta: `+${rawTrust}` },
-        { label: '派閥成立', delta: `${leaderName}組（${archLabel}）` },
+        { label: '派閥成立', delta: `${leaderSurname}派（${archLabel}）` },
       ];
       if (moraleEffect.bondDelta !== 0) {
         const sign = moraleEffect.bondDelta > 0 ? '+' : '';
@@ -1636,7 +1651,7 @@ Engine.factions = {
         const sign = moraleEffect.moraleDelta > 0 ? '+' : '';
         impactSummary.push({ label: 'ロッカー士気', delta: `${sign}${moraleEffect.moraleDelta}` });
       }
-      return { state: s, resultText: `${leaderName}を中心に派閥「${leaderName}組」が旗揚げされた（${archLabel}）。`, impactSummary };
+      return { state: s, resultText: `${leaderName}を中心に派閥「${leaderSurname}派」が旗揚げされた（${archLabel}）。`, impactSummary };
     }
     if (choiceId === 'B') {
       // 派閥不成立 + リーダー trust -5〜-8 + フォロワー→リーダー bond -5〜-8 + 士気 +1〜+3 + クールダウン12週
@@ -1667,7 +1682,7 @@ Engine.factions = {
     s = this.createFaction(s, leaderId, members, { type: 'loyal', flavor: arch });
     const archLabelC = this._archetypeLabel(arch);
     const impactSummary = [
-      { label: '派閥成立', delta: `${leaderName}組（${archLabelC}）` },
+      { label: '派閥成立', delta: `${leaderSurname}派（${archLabelC}）` },
       { label: '専用タグ', delta: 'なし（静観）' },
     ];
     return { state: s, resultText: `${leaderName}を中心とした集まりを静かに見守ることにした。`, impactSummary };
@@ -1879,7 +1894,7 @@ Engine.factions = {
       const newMemberIds = f.memberIds.filter(id => id !== faction.leaderId);
       return {
         ...f,
-        name: `${successor.name}組`,
+        name: `${successor.surname || successor.name}派`,
         leaderId: successor.id,
         memberIds: newMemberIds,
         lastLeaderChangeSeason: s.season,
@@ -3655,7 +3670,7 @@ Engine.factions = {
       };
       const ringleader = roster.find(c => c.id === ringleaderId);
       if (ringleader) s = this.createFaction(s, ringleaderId, dissidentIds, { type: 'loyal' });
-      if (typeof console !== 'undefined') console.log(`[WM Faction] F05 split (natural): ${factionName} → ${ringleaderName}組 (${dissidentIds.length} members)`);
+      if (typeof console !== 'undefined') console.log(`[WM Faction] F05 split (natural): ${factionName} → ${ringleader?.surname || ringleaderName}派 (${dissidentIds.length} members)`);
       // 旧派閥は OVR 順位ベース再構成（リーダーは0pt）/ 新派閥も初期割り振り
       const oldFac = (s.factions || []).find(f => f.id === factionId);
       if (oldFac) s = this._allocateInternalPointsByOvrRank(s, factionId, [oldFac.leaderId]);
@@ -3665,7 +3680,7 @@ Engine.factions = {
         state: s,
         resultText: `見守るうち、${factionName}は自然に割れた。${ringleaderName}が旗を掲げる。`,
         impactSummary: [
-          { label: '分裂', delta: `${factionName} → ${ringleaderName}組` },
+          { label: '分裂', delta: `${factionName} → ${ringleader?.surname || ringleaderName}派` },
           { label: '離脱メンバー', delta: `${dissidentIds.length}名` },
         ],
       };
@@ -4411,8 +4426,8 @@ Engine.factions = {
       narrationOpen  = `${f.name}のリーダーは座を守った。`;
       narrationClose = '権威の確認――今夜の挑戦は、力で押し戻された。';
     } else {
-      const oldName = `${oldLeader.name}組`;
-      const newName = `${newLeader.name}組`;
+      const oldName = `${oldLeader.surname || oldLeader.name}派`;
+      const newName = `${newLeader.surname || newLeader.name}派`;
       narrationOpen  = `決着。新たなリーダーが立った。`;
       narrationClose = `${oldName} ―― ${newName}。看板が、今夜書き換わった。`;
     }
@@ -4631,7 +4646,7 @@ Engine.factions = {
     if (challengerWon) {
       // === 禅譲 ===
       const successor = (s.roster || []).find(c => c.id === challengerId);
-      const newName = successor ? `${successor.name}組` : f.name;
+      const newName = successor ? `${successor.surname || successor.name}派` : f.name;
       s = {
         ...s,
         factions: s.factions.map(x => x.id !== factionId ? x : {

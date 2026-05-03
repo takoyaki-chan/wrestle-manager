@@ -2841,10 +2841,14 @@ const Engine = {
     },
 
     /** 苗字抽出 (日本語名は全角/半角スペース前) */
-    _getSurname(name) {
-      if (!name) return '名無し';
-      const parts = String(name).split(/[\s\u3000]+/);
-      return parts[0] || name;
+    _getSurname(arg) {
+      if (!arg) return '名無し';
+      if (typeof arg === 'object') {
+        if (arg.surname) return arg.surname;
+        return Engine.chronicle._getSurname(arg.name);
+      }
+      const parts = String(arg).split(/[\s\u3000]+/);
+      return parts[0] || String(arg);
     },
 
     /** デビュー年推定 (現役選手用) */

@@ -12639,7 +12639,15 @@ function _relmapGetFilteredFactions() {
     const org = (G.rivalOrgs || {})[_relmapOrgFilter];
     if (org) addRoster(org.roster);
   }
-  return factions.filter(f => f.memberIds.some(id => orgIds.has(id)));
+  // 孤児派閥フィルタ: リーダーが現存ロスター（player+全rivalOrgs+FA）に存在しない派閥は隠す。
+  // 派閥リスト UI（_dfcRenderCard）は同条件で非表示にしているため、相関図と整合させる。
+  const liveIds = new Set();
+  (G.roster || []).forEach(c => { if (c && c.id != null) liveIds.add(c.id); });
+  (G.freeAgents || []).forEach(c => { if (c && c.id != null) liveIds.add(c.id); });
+  Object.values(G.rivalOrgs || {}).forEach(org => {
+    (org && org.roster || []).forEach(c => { if (c && c.id != null) liveIds.add(c.id); });
+  });
+  return factions.filter(f => liveIds.has(f.leaderId) && f.memberIds.some(id => orgIds.has(id)));
 }
 
 // Phase 3c: 派閥レイヤー描画（団体フィルタ ON 時のみ、フィルタ団体内の派閥を対象）
