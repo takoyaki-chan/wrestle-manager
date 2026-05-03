@@ -4735,7 +4735,15 @@ Engine.factions = {
     if (category === 'leaderDemand') {
       const t = table.leaderDemand && table.leaderDemand[itype];
       if (!t) return '';
-      const arr = t[personality] || t.introverted || t._any;
+      const archetype = (fighter && fighter.archetype) || 'normal';
+      // 新形式: t[archetype][personality] / 旧形式: t[personality]
+      const branch = t[archetype];
+      let arr;
+      if (branch && typeof branch === 'object' && !Array.isArray(branch)) {
+        arr = branch[personality] || branch.introverted;
+      } else {
+        arr = t[personality] || t.introverted || t._any;
+      }
       return subst(pickArr(arr));
     }
     if (category === 'coachReport') {
@@ -4748,7 +4756,15 @@ Engine.factions = {
       if (!t) return '';
       const ct = t[choice];
       if (!ct) return '';
-      const arr = ct[personality] || ct.introverted || ct._any;
+      const archetype = (fighter && fighter.archetype) || 'normal';
+      // 新形式: ct[archetype][personality] / 旧形式: ct[personality]
+      const branch = ct[archetype];
+      let arr;
+      if (branch && typeof branch === 'object' && !Array.isArray(branch)) {
+        arr = branch[personality] || branch.introverted;
+      } else {
+        arr = ct[personality] || ct.introverted || ct._any;
+      }
       return subst(pickArr(arr));
     }
     if (category === 'resultTarget') {

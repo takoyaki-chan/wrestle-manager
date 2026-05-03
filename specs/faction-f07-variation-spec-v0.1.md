@@ -293,6 +293,10 @@ state._pendingF07Directive: { factionId, type: 'DEMAND_MAIN', expiresAfterShows:
 
 結果モーダルは `docs/ui/03-screens/faction-event-result.md` に従う。
 
+### セリフ表示ルール（重要）
+
+リーダー直訴セリフ（`leaderDemand`）は、**リーダー肖像の頭上に白い吹き出し**（`.fevt-leader-bubble`）で表示する。下段クリーム色パネル（`.fevt-quote.leader`）に speaker 名 + 本文を流す旧形式は使わない。レッスルマネージャー全体の「キャラのセリフは肖像頭上の吹き出しで出す」基本ルールに準拠（Common-1 派閥内対決の `.fc1m-bubble`、Glimpse Cascade の `.gc-bubble` と同系統）。`.fevt-observation-note` は社長視点ナレーション枠なのでセリフ用途に流用しない。
+
 ### 8.1 DEMAND_MONEY の結果モーダル特例
 
 ImpactSummary に金額表示を必須化：

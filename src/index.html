@@ -4447,6 +4447,13 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   color: #5a8a6a; font-size: 22px;
 }
 
+/* F07 リーダー直訴: 肖像頭上の吹き出し */
+.fevt-subject-portrait-wrap{position:relative}
+.fevt-leader-bubble-wrap{position:absolute;bottom:calc(100% + 14px);left:50%;transform:translateX(-50%);width:280px;display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:2}
+.fevt-leader-bubble-speaker{font-size:10px;color:#9c6b1a;font-weight:700;letter-spacing:1px;margin-bottom:3px}
+.fevt-leader-bubble{position:relative;background:#f0f0f0;color:#1a1208;padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.55;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.18);max-width:280px}
+.fevt-leader-bubble::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #f0f0f0}
+
 /* Common-1 派閥内対決打診: 比較レイアウト + 頭上吹き出し */
 .fc1m-compare{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:start;padding:8px 4px 10px;max-width:660px;margin:0 auto}
 .fc1m-side{display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;padding-top:90px}

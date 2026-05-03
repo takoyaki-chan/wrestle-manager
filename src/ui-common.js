@@ -8498,11 +8498,14 @@ function showFactionF07Modal(payload, state, onChoice) {
   const rightFol = fol2
     ? `<div class="fevt-follower-portrait right" style="background-image:url('${_factionUpperUrl(fol2.id)}');background-size:cover;background-position:center 20%"></div>`
     : `<div class="fevt-follower-portrait right"></div>`;
+  const leaderBubbleHtml = meta.source === 'leader'
+    ? `<div class="fevt-leader-bubble-wrap"><div class="fevt-leader-bubble-speaker">${String(leaderName)}</div><div class="fevt-leader-bubble">${String(leaderQuote)}</div></div>`
+    : '';
   const centerLeader = leaderUrl
-    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}')"></div>`
-    : `<div class="fevt-subject-portrait-wrap"></div>`;
+    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}')">${leaderBubbleHtml}</div>`
+    : `<div class="fevt-subject-portrait-wrap">${leaderBubbleHtml}</div>`;
 
-  // observation-note と quote の出し分け
+  // observation-note(社長視点ナレーション。キャラのセリフは肖像頭上の吹き出しへ)
   const reporterText = meta.source === 'leader'
     ? `${leaderSurname || 'リーダー'}さんが社長室に向かいました。`
     : (coachLine || `${factionName}の動向について報告があります。`);
@@ -8510,10 +8513,6 @@ function showFactionF07Modal(payload, state, onChoice) {
   const observationNote = meta.source === 'leader'
     ? `<div class="fevt-observation-note"><span class="marker">${String(leaderSurname)}</span>と${factionName}の動きについて、社長室での相談です。</div>`
     : `<div class="fevt-observation-note">${coachLine}</div>`;
-
-  const leaderQuoteHtml = meta.source === 'leader'
-    ? `<div class="fevt-quote leader"><div class="fevt-quote-speaker">${String(leaderName)}</div>${String(leaderQuote)}</div>`
-    : '';
 
   const decisionCardsHtml = meta.choices.map(c => `
     <div class="fevt-decision-card" data-choice="${c.id}">
@@ -8541,7 +8540,6 @@ function showFactionF07Modal(payload, state, onChoice) {
           <div class="fevt-subject-org">${leaderMeta}</div>
           <div class="fevt-subject-divider"></div>
           ${observationNote}
-          ${leaderQuoteHtml}
         </div>
         <div class="fevt-decision-prompt">この件、社長としてどう扱いますか？</div>
         <div class="fevt-decision-tray">
