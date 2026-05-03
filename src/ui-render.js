@@ -11683,7 +11683,7 @@ function _dfcRenderCard(faction, state, opts = {}) {
   if (seconds.length) {
     html += `<div class="dfc-roster">`;
     seconds.forEach((c, idx) => {
-      const role = idx === 0 ? '2ND · 中堅' : '3RD · 副将';
+      const role = idx === 0 ? '2ND · 副将' : '3RD · 中堅';
       const ovr = Engine.util.ov(c);
       const pop = Math.round(c.popularity || 0);
       const archMap = { striker: 'ストライカー', technician: 'テクニシャン', flyer: 'フライヤー', powerhouse: 'パワーファイター', allrounder: 'オールラウンダー' };
