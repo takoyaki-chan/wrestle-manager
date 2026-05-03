@@ -839,7 +839,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   // Footer
   html += `<div class="pb-footer">
     <div class="pb-footer-heat">Heat<span class="val ${heatFooterCls}">${heat.emoji} ${escHtml(heat.label.toUpperCase())}</span></div>
-    <button type="button" class="pb-close-btn" onclick="closeWarFinalResult(${eventWon})">閉じる</button>
+    <button type="button" class="pb-close-btn" onclick="event.stopPropagation();closeWarFinalResult(${eventWon})">閉じる</button>
   </div>`;
 
   html += `</div>`; // .pb-container
