@@ -1093,7 +1093,7 @@ function getSigningLine(fighter, context) {
 }
 
 // firing-grudge-spec-v0.1 Phase 5: 元雇用団体との対戦専用セリフ（解雇キャラ視点）
-// fighter.grudge.vsOrgId='player' & 解雇から24週以内 & 試合相手が player team の場合に使用。
+// fighter.grudge.vsOrgId が試合相手 org と一致 & 解雇から24週以内 で使用。
 // 性格(7) × {win, hit} × 2パターン = 28 種。spec の最低 14 を上回る量で多様性確保。
 const VS_EX_EMPLOYER_LINES = {
   bold: {
@@ -1168,8 +1168,9 @@ const VS_EX_EMPLOYER_LINES = {
   }
 };
 
-function getVsExEmployerLine(fighter, mode) {
-  if (!fighter || !fighter.grudge || fighter.grudge.vsOrgId !== 'player') return null;
+function getVsExEmployerLine(fighter, mode, opponentOrgId) {
+  if (!fighter || !fighter.grudge || !fighter.grudge.vsOrgId) return null;
+  if (opponentOrgId != null && fighter.grudge.vsOrgId !== opponentOrgId) return null;
   const pers = fighter.personality || 'normal';
   const obj = VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal;
   const arr = obj && obj[mode];

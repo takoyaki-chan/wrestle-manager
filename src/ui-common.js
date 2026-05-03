@@ -850,15 +850,22 @@ let _warVictoryWinners = [];
 let _warPostCtx = null;
 
 function _getWarVictoryLine(fighter, state) {
-  // firing-grudge-spec-v0.1 Phase 5: 解雇キャラが player 団体相手に勝った war 試合では vsExEmployer を優先抽選（50%）
-  if (state && fighter && fighter.grudge && fighter.grudge.vsOrgId === 'player'
+  // firing-grudge-spec-v0.1 Phase 5: 解雇キャラが元雇用団体相手に勝った war 試合では vsExEmployer を優先抽選（50%）
+  // war は基本「player team vs AI org(_warPostCtx.ev.opponentOrgId)」。fighter の grudge.vsOrgId が
+  // 対戦相手 org と一致するケースを汎用的に検出。
+  const opponentOrgId = (_warPostCtx && _warPostCtx.ev && _warPostCtx.ev.opponentOrgId) || null;
+  if (fighter && fighter.grudge && fighter.grudge.vsOrgId
+      && opponentOrgId && fighter.grudge.vsOrgId === opponentOrgId
       && fighter.grudge.intensity >= 60
       && typeof getVsExEmployerLine === 'function') {
-    const nowAbs = (state.season - 1) * 20 + (state.week || 1);
-    const firedAbs = ((fighter.grudge.issuedSeason || 1) - 1) * 20 + (fighter.grudge.issuedWeek || 1);
-    if (nowAbs - firedAbs <= 24 && nowAbs - firedAbs >= 0 && Math.random() < 0.5) {
-      const line = getVsExEmployerLine(fighter, 'win');
-      if (line) return line;
+    const ctxState = state || (typeof G !== 'undefined' ? G : null);
+    if (ctxState) {
+      const nowAbs = (ctxState.season - 1) * 20 + (ctxState.week || 1);
+      const firedAbs = ((fighter.grudge.issuedSeason || 1) - 1) * 20 + (fighter.grudge.issuedWeek || 1);
+      if (nowAbs - firedAbs <= 24 && nowAbs - firedAbs >= 0 && Math.random() < 0.5) {
+        const line = getVsExEmployerLine(fighter, 'win', opponentOrgId);
+        if (line) return line;
+      }
     }
   }
   const p = fighter.personality || 'normal';

@@ -8385,8 +8385,17 @@ const Engine = {
 
         // ロスター上限到達時は最弱を戦力外
         if (roster.length >= cfg.idealRoster && worstFighter) {
+          // firing-grudge-spec-v0.1: AI 団体側の戦力外通告にも遺恨フラグを付与
+          let firedFighter = worstFighter;
+          if (state.relationships) {
+            const grudgeRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, 0xBE46, state.season, org.id.charCodeAt(0) || 0, worstFighter.id));
+            const tempState = { ...state, aiOrgs: newAiOrgs };
+            const fr = Engine.relationships.applyFiringGrudge(tempState, worstFighter, grudgeRng, { vsOrgId: org.id });
+            if (fr.state && fr.state.relationships) state.relationships = fr.state.relationships;
+            if (fr.grudge) firedFighter = { ...worstFighter, grudge: fr.grudge };
+          }
           newAiOrgs[org.id].roster = roster.filter(f => f.id !== worstFighter.id);
-          dormantPool.push({ id: worstFighter.id, age: worstFighter.age || 20 });
+          dormantPool.push({ id: firedFighter.id, age: firedFighter.age || 20, grudge: firedFighter.grudge || null });
           events.push(`📋 ${org.name}が${worstFighter.name}を戦力外に`);
         }
 
@@ -8444,10 +8453,19 @@ const Engine = {
       let dormantPool = [...(state.dormantPool || [])];
       let ejected = null;
       const cfg = AI_SCOUT_CFG[picked.org.tier] || AI_SCOUT_CFG.B;
+      let nextRels = state.relationships;
       if (orgData.roster.length >= cfg.idealRoster && picked.weakest) {
         ejected = picked.weakest;
+        // firing-grudge-spec-v0.1: AI 団体の eject にも遺恨フラグを付与
+        if (state.relationships) {
+          const grudgeRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, 0xBE47, state.season, picked.org.id.charCodeAt(0) || 0, picked.weakest.id));
+          const tempState = { ...state, relationships: nextRels, aiOrgs: { ...(state.aiOrgs || {}), ...newAiOrgs } };
+          const fr = Engine.relationships.applyFiringGrudge(tempState, picked.weakest, grudgeRng, { vsOrgId: picked.org.id });
+          if (fr.state && fr.state.relationships) nextRels = fr.state.relationships;
+          if (fr.grudge) ejected = { ...picked.weakest, grudge: fr.grudge };
+        }
         orgData.roster = orgData.roster.filter(f => f.id !== picked.weakest.id);
-        dormantPool.push({ id: picked.weakest.id, age: picked.weakest.age || 20 });
+        dormantPool.push({ id: ejected.id, age: ejected.age || 20, grudge: ejected.grudge || null });
       }
 
       let transfer = Engine.popularity.applyTransferReset({
@@ -8476,6 +8494,7 @@ const Engine = {
         ...state,
         aiOrgs: { ...(state.aiOrgs || {}), ...newAiOrgs },
         dormantPool,
+        ...(nextRels !== state.relationships ? { relationships: nextRels } : {}),
       };
       return {
         state: nextState,

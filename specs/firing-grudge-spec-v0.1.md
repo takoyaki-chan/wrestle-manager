@@ -1,8 +1,9 @@
 # 解雇キャラクター 遺恨システム 仕様 v0.1
 
 **ファイル**：`specs/firing-grudge-spec-v0.1.md`
-**最終更新**：2026-05-03
-**実装状況**：全Phase完了（Phase 1: grudge 構造 / intensity 算出 / decay / Phase 2: 解雇者→残留組ティア別更新+性格バイアス / Phase 3a: forward heat バイアス / Phase 3b: 逆方向 AI→player 打診インフラ完備 — processWeekly 双方向スキャン / buildMatchCard / showChallengeRequestModal / _applyChallengeRequestResult / showChallengeRequestResultModal すべて _inverse 対応 + 専用ニューステンプレ challengeRequestInverseDefend/Fall/Draw / Phase 4: firedReturn 新聞テンプレ + 挑戦試合内トリガー / Phase 5: vsExEmployer victory-lines 28パターン + getVsExEmployerLine helper + iframe 試合（標準興行/B3/War/PPV）への vl 先頭 prepend + war 試合 _getWarVictoryLine の 50% bias、2026-05-03）
+**最終更新**：2026-05-04
+**実装状況**：全Phase完了 + AI団体汎用化（2026-05-04）— grudge.vsOrgId は player / AI org id を受け付ける汎用フラグに昇格。AI団体側の解雇パス2箇所（aiMidseasonFAAcquire 戦力外通告 / claimDepartedStar eject）でも applyFiringGrudge を呼び grudge を付与。getVsExEmployerLine / _vsExEmployeeFires / _buildVlVsPlayerForExEmployee / _buildVsExHitLines / _getWarVictoryLine / _emitFiredReturn は opponentOrgId を受け取り「対戦相手 org が grudge.vsOrgId と一致」する場合に発動。firedReturn ニュースの ourOrg は grudge.vsOrgId 側の組織名を解決して使用。challenge-request inverse（逆方向打診）の AI→AI 経路はスコープ外（player↔AI のみ）。auto-sim 100×1: ALL CLEAR / violations 0。
+旧履歴：Phase 1: grudge 構造 / intensity 算出 / decay / Phase 2: 解雇者→残留組ティア別更新+性格バイアス / Phase 3a: forward heat バイアス / Phase 3b: 逆方向 AI→player 打診インフラ / Phase 4: firedReturn 新聞テンプレ + 挑戦試合内トリガー / Phase 5: vsExEmployer victory-lines 28パターン + iframe 配信
 **親仕様**：
 - `specs/relationship-system-spec-v2.0.md`（Bond / Rivalry 非対称2軸）
 - `specs/relationship-system-spec-v2.2.md`（A-1〜A-4 / B-3 元同僚初対戦 / 契約離脱裏切りハンドラ）

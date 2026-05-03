@@ -1455,12 +1455,13 @@ Engine.relationships = {
    * @param rng
    * @returns { state, grudge, summary }  state は更新後、grudge は firedFighter に付与すべきオブジェクト
    */
-  applyFiringGrudge(state, firedFighter, rng) {
+  applyFiringGrudge(state, firedFighter, rng, opts) {
     if (!firedFighter) return { state, grudge: null, summary: null };
     const firedId = firedFighter.id;
+    const vsOrgId = (opts && opts.vsOrgId) || firedFighter.orgId || 'player';
     const intensity = this.computeFiringGrudgeIntensity(firedFighter, state);
     const grudge = {
-      vsOrgId: 'player',
+      vsOrgId,
       reason: 'fired',
       issuedSeason: state.season,
       issuedWeek: state.week,
@@ -1473,7 +1474,9 @@ Engine.relationships = {
     }
 
     const bias = this._firingPersonalityBias(firedFighter.personality);
-    const roster = state.roster || [];
+    const roster = vsOrgId === 'player'
+      ? (state.roster || [])
+      : ((state.aiOrgs && state.aiOrgs[vsOrgId] && state.aiOrgs[vsOrgId].roster) || []);
     const colleagues = roster.filter(c => c.id !== firedId && !c.isRental);
     const rels = { ...state.relationships };
     const perTarget = [];

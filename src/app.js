@@ -4886,8 +4886,8 @@ const App = {
     const iframe = document.getElementById('battleIframe');
     const msg = {
       type: 'START_MATCH',
-      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), profile: CHAR_PROFILES[charL.id] || '', vl: App._buildVlVsPlayerForExEmployee(charL, G.season, G.week), vsExHit: App._buildVsExHitLines(charL, G.season, G.week) },
-      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: App._buildVlVsPlayerForExEmployee(charR, G.season, G.week), vsExHit: App._buildVsExHitLines(charR, G.season, G.week) },
+      left: { ...charL, portraitUrl: getPortraitUrl(charL.id), profile: CHAR_PROFILES[charL.id] || '', vl: App._buildVlVsPlayerForExEmployee(charL, G.season, G.week, charR.orgId), vsExHit: App._buildVsExHitLines(charL, G.season, G.week, charR.orgId) },
+      right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: App._buildVlVsPlayerForExEmployee(charR, G.season, G.week, charL.orgId), vsExHit: App._buildVsExHitLines(charR, G.season, G.week, charL.orgId) },
       result,
       matchInfo: {
         header: m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : (idx === 0 ? 'メインイベント' : `第${sp.validMatches.length - idx}試合`),
@@ -7663,12 +7663,14 @@ const App = {
     next();
   },
 
-  // firing-grudge-spec-v0.1 Phase 5: 解雇キャラ vs 元雇用団体（player）専用セリフを iframe に配信。
-  // fighter.grudge.vsOrgId === 'player' & intensity ≥ 60 & 解雇から 24 週以内 で発動。
-  _vsExEmployeeFires(fighter, season, week) {
+  // firing-grudge-spec-v0.1 Phase 5: 解雇キャラ vs 元雇用団体専用セリフを iframe に配信。
+  // grudge.vsOrgId が opponentOrgId と一致 & intensity ≥ 60 & 解雇から 24 週以内 で発動。
+  // opponentOrgId 省略時は player 戦としてフォールバック。
+  _vsExEmployeeFires(fighter, season, week, opponentOrgId) {
     if (!fighter || !fighter.grudge) return false;
     const g = fighter.grudge;
-    if (g.vsOrgId !== 'player') return false;
+    const oppOrg = opponentOrgId != null ? opponentOrgId : 'player';
+    if (g.vsOrgId !== oppOrg) return false;
     if (!g.intensity || g.intensity < 60) return false;
     const nowAbs = (season - 1) * 20 + (week || 1);
     const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
@@ -7678,11 +7680,11 @@ const App = {
   },
 
   // 通常の VICTORY_LINES の前段に VS_EX_EMPLOYER_LINES[personality].win を prepend して引きやすくする。
-  _buildVlVsPlayerForExEmployee(fighter, season, week) {
+  _buildVlVsPlayerForExEmployee(fighter, season, week, opponentOrgId) {
     const baseVl = (fighter && (fighter.voiceLines || fighter.vl))
       || (typeof VICTORY_LINES !== 'undefined' && fighter && VICTORY_LINES[fighter.id])
       || ['…！'];
-    if (!App._vsExEmployeeFires(fighter, season, week)) return baseVl;
+    if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return baseVl;
     const pers = fighter.personality || 'normal';
     const winArr = (VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {}).win || [];
     if (winArr.length === 0) return baseVl;
@@ -7690,8 +7692,8 @@ const App = {
   },
 
   // 被弾セリフ（hit）配列を返す。条件不成立なら null を返す。iframe 側 tryDamageLine が拾う。
-  _buildVsExHitLines(fighter, season, week) {
-    if (!App._vsExEmployeeFires(fighter, season, week)) return null;
+  _buildVsExHitLines(fighter, season, week, opponentOrgId) {
+    if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return null;
     const pers = fighter.personality || 'normal';
     const hitArr = (VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {}).hit || [];
     return hitArr.length > 0 ? hitArr : null;
@@ -7809,26 +7811,42 @@ const App = {
       },
     });
 
-    // firing-grudge-spec-v0.1 Phase 4: 相手陣に「grudge.vsOrgId='player' / intensity≥60 / 解雇から24週以内」
-    // のキャラが居れば firedReturn ニュースを追加発信
+    // firing-grudge-spec-v0.1 Phase 4: 各陣に grudge.vsOrgId が相手陣 org と一致するキャラが居れば
+    // firedReturn ニュースを追加発信（intensity≥60 / 解雇から24週以内）
     const nowAbs = Engine.util && Engine.util.absWeek ? Engine.util.absWeek(s.season, s.week) : ((s.season - 1) * 20 + s.week);
-    for (const oppFighter of card.teamB) {
-      const g = oppFighter && oppFighter.grudge;
-      if (!g || g.vsOrgId !== 'player') continue;
-      if (!g.intensity || g.intensity < 60) continue;
-      const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
-      const weeksSinceFired = nowAbs - firedAbs;
-      if (weeksSinceFired > 24 || weeksSinceFired < 0) continue;
-      s = Engine.industryNews.push(s, {
-        type: 'firedReturn',
-        characterId: oppFighter.id,
-        data: {
-          name: oppFighter.name,
-          ourOrg: s.orgName || 'プレイヤー団体',
-          toOrg: card.otherOrgName,
-          weeksSinceFired: String(weeksSinceFired),
-        },
-      });
+    const _orgNameOf = (orgId) => {
+      if (orgId === 'player') return s.orgName || 'プレイヤー団体';
+      const cfg = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS.find(o => o.id === orgId) : null;
+      return (cfg && cfg.name) || '元所属団体';
+    };
+    const _emitFiredReturn = (lineupArr, sideOrgId, foeOrgId) => {
+      if (!Array.isArray(lineupArr)) return;
+      for (const fighter of lineupArr) {
+        const g = fighter && fighter.grudge;
+        if (!g || !g.vsOrgId) continue;
+        if (g.vsOrgId !== foeOrgId) continue;
+        if (!g.intensity || g.intensity < 60) continue;
+        const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
+        const weeksSinceFired = nowAbs - firedAbs;
+        if (weeksSinceFired > 24 || weeksSinceFired < 0) continue;
+        s = Engine.industryNews.push(s, {
+          type: 'firedReturn',
+          characterId: fighter.id,
+          data: {
+            name: fighter.name,
+            ourOrg: _orgNameOf(g.vsOrgId),  // 解雇した側＝grudge対象
+            toOrg: _orgNameOf(sideOrgId),    // 現所属
+            weeksSinceFired: String(weeksSinceFired),
+          },
+        });
+      }
+    };
+    if (isInverse) {
+      _emitFiredReturn(card.teamA, requesterOrgId, opponentOrgId);
+      _emitFiredReturn(card.teamB, opponentOrgId, requesterOrgId);
+    } else {
+      _emitFiredReturn(card.teamA, requesterOrgId, opponentOrgId);
+      _emitFiredReturn(card.teamB, opponentOrgId, requesterOrgId);
     }
 
     return s;
@@ -9692,8 +9710,8 @@ const App = {
       right: {
         ...af, condition: 80,
         portraitUrl: getPortraitUrl(af.id), profile: CHAR_PROFILES[af.id] || '',
-        vl: App._buildVlVsPlayerForExEmployee(af, G.season, G.week),
-        vsExHit: App._buildVsExHitLines(af, G.season, G.week)
+        vl: App._buildVlVsPlayerForExEmployee(af, G.season, G.week, pf.orgId),
+        vsExHit: App._buildVsExHitLines(af, G.season, G.week, pf.orgId)
       },
       matchInfo: {
         header: '⚔ 挑戦状',
@@ -10623,8 +10641,8 @@ const App = {
       right: {
         ...af, condition: 80,
         portraitUrl: getPortraitUrl(af.id), profile: CHAR_PROFILES[af.id] || '',
-        vl: App._buildVlVsPlayerForExEmployee(af, G.season, G.week),
-        vsExHit: App._buildVsExHitLines(af, G.season, G.week)
+        vl: App._buildVlVsPlayerForExEmployee(af, G.season, G.week, pf.orgId),
+        vsExHit: App._buildVsExHitLines(af, G.season, G.week, pf.orgId)
       },
       matchInfo: {
         header: `⚔ 対抗戦 第${idx + 1}試合`,
@@ -11016,14 +11034,14 @@ App.ppvWatchMatch = function(idx) {
     left: {
       ...match.left, condition: 80,
       portraitUrl: getPortraitUrl(match.left.id), profile: CHAR_PROFILES[match.left.id] || '',
-      vl: App._buildVlVsPlayerForExEmployee(match.left, G.season, G.week),
-      vsExHit: App._buildVsExHitLines(match.left, G.season, G.week)
+      vl: App._buildVlVsPlayerForExEmployee(match.left, G.season, G.week, match.right.orgId),
+      vsExHit: App._buildVsExHitLines(match.left, G.season, G.week, match.right.orgId)
     },
     right: {
       ...match.right, condition: 80,
       portraitUrl: getPortraitUrl(match.right.id), profile: CHAR_PROFILES[match.right.id] || '',
-      vl: App._buildVlVsPlayerForExEmployee(match.right, G.season, G.week),
-      vsExHit: App._buildVsExHitLines(match.right, G.season, G.week)
+      vl: App._buildVlVsPlayerForExEmployee(match.right, G.season, G.week, match.left.orgId),
+      vsExHit: App._buildVsExHitLines(match.right, G.season, G.week, match.left.orgId)
     },
     matchInfo: {
       header: match.isSummit ? '🏆 頂上決戦' : `PPV 第${matchNum}試合`,
