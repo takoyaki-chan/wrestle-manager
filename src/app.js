@@ -7960,7 +7960,7 @@ const App = {
   },
 
   // Process a week (manage + settle) via tickWeek
-  // A-3: おまかせ育成 — 方針を維持しつつ強化ON/OFFと体調60未満の休養を自動設定
+  // A-3: おまかせ育成 — 方針を維持しつつ体調80未満を休養に切り替え。強化ON/OFFは触らない
   autoManage() {
     if (G.weekPhase !== 'manage') return;
     Audio.play('select');
@@ -7970,9 +7970,9 @@ const App = {
       if (c.condition < 80) {
         return { ...c, schedule: 'rest', intensive: false };
       }
-      // condition >= 80: rest 方針なら balance に切り替え、それ以外は維持
+      // condition >= 80: rest 方針なら balance に切り替え、それ以外は維持。intensive は現状維持
       const nextPolicy = policy === 'rest' ? 'balance' : policy;
-      return { ...c, schedule: nextPolicy, intensive: nextPolicy !== 'rest' };
+      return { ...c, schedule: nextPolicy };
     });
     G = { ...G, roster };
     showToast('🤖 おまかせ完了 — 内容を確認してください');
