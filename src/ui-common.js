@@ -12777,6 +12777,245 @@ function showGameOverScreen(summary) {
   try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.play('../bgm/iwa_gameover001.mp3', { volume: 0.13 }); } catch(e) {}
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 解散セレモニー(5スライド) — bankruptcy-redesign-spec-v1.1.md §3
+// showEndingCeremony と対称構造。トーンだけダーク反転。
+// ─────────────────────────────────────────────────────────────────────────────
+function showGameOverCeremony(data, onDone) {
+  const fmt = n => (typeof n === 'number') ? n.toLocaleString() : (n ?? '—');
+
+  function _gameoverPortrait(id, size, isCoach) {
+    const h = Math.round(size * 1.5);
+    let url = '';
+    if (isCoach) {
+      url = typeof getCoachUpperUrl === 'function' ? getCoachUpperUrl(id) : '';
+      if (!url) url = typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(id) : '';
+    } else {
+      url = typeof getUpperUrl === 'function' ? getUpperUrl(id) : '';
+    }
+    if (url) {
+      return `<div class="portrait-main" style="width:${size}px;height:${h}px;filter:grayscale(0.3) brightness(0.85)">
+        <div class="portrait-glow" style="background:radial-gradient(circle,rgba(170,30,30,0.18) 0%,transparent 70%)"></div>
+        <img src="${url}" alt="">
+      </div>`;
+    }
+    return `<div class="portrait-main" style="width:${size}px;height:${h}px;font-size:${Math.round(size * 0.5)}px;background:#1a1010">👤</div>`;
+  }
+
+  const reason = data.gameOverReason || 'timeout';
+  const reasonHeadline = reason === 'collapse' ? '【崩壊】'
+                       : reason === 'season_end' ? '【シーズン終了】'
+                       : '【活動停止】';
+
+  const slideInfo = [];
+
+  // スライド1: 解散告知 + 黒田コラム
+  slideInfo.push({
+    label: '解散の告知',
+    html: `<div class="award-card" style="text-align:center;background:linear-gradient(180deg,#1a0808 0%,#100404 100%);border:1px solid #4a1a1a;color:#cdb8b8">
+      <div class="award-badge" style="justify-content:center;color:#aa6666"><span class="badge-jp" style="color:#cca0a0">シーズン ${data.season}</span></div>
+      <div style="font-size:42px;margin:8px 0;filter:grayscale(0.5)">💀</div>
+      <div style="font-family:'Noto Serif JP',serif;font-size:24px;font-weight:900;letter-spacing:8px;color:#d8a8a8;
+        text-shadow:0 0 24px rgba(170,30,30,0.3);margin-bottom:10px">解 散</div>
+      <div style="font-size:13px;color:#a89898;line-height:1.9;margin:8px 0 16px">
+        ${reasonHeadline}<br>「${data.orgName}」は活動停止を発表した。
+      </div>
+      <div style="border-top:1px solid #3a1818;margin:12px 0;padding-top:14px">
+        <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#cc8888;text-transform:uppercase;margin-bottom:8px">黒田 沙智子 編集記事</div>
+        <p style="margin:0;font-size:12px;line-height:1.95;color:#c8b8b8;white-space:pre-wrap;text-align:left;max-width:520px;margin:0 auto">${data.kurodaColumn || ''}</p>
+      </div>
+    </div>`
+  });
+
+  // スライド2: 数字が示す現実
+  slideInfo.push({
+    label: '団体の足跡',
+    html: `<div class="award-card" style="background:linear-gradient(180deg,#1a0808 0%,#100404 100%);border:1px solid #4a1a1a;color:#cdb8b8">
+      <div class="award-badge" style="color:#aa6666"><span class="badge-icon">📜</span><span class="badge-jp" style="color:#cca0a0">${data.orgName}の足跡</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">活動期間</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.season} シーズン</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">最高ランク</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.bestRank} 位</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">最高資金</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${fmt(data.peakFunds)} 万</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">最高団体人気</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${fmt(Math.round(data.peakOrgPop || 0))}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">興行回数</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.totalShows} 回</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">ベストマッチ</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.bestMQMatch || '—'} (MQ ${data.bestMQ})</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0">
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">殿堂入り</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.hallOfFameCount} 名</span>
+        </div>
+      </div>
+    </div>`
+  });
+
+  // スライド3: 選手たちの解散セリフ
+  const fighters = data.top3Fighters || [];
+  const fighterLines = data.top3Lines || [];
+  if (fighters.length > 0) {
+    const fHtml = fighters.map((f, i) => {
+      const ovrRaw = typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : NaN;
+      const ovr = isNaN(ovrRaw) ? (f.ovr || '—') : ovrRaw;
+      const line = fighterLines[i] || '……';
+      return `<div style="flex:1;text-align:center;min-width:0;max-width:160px">
+        <div style="display:flex;justify-content:center;margin-bottom:8px">${_gameoverPortrait(f.id, 100)}</div>
+        <div style="font-family:'Noto Serif JP',serif;font-size:13px;font-weight:700;color:#d8c8c8">${f.name}</div>
+        <div style="font-size:10px;color:#887878;margin-top:2px">OVR ${ovr}</div>
+        <div class="speech-bubble" style="margin-top:10px;background:rgba(40,16,16,0.6);border-color:#5a2020;color:#c8b8b8">
+          <div class="speech-text" style="font-size:11px;color:#c8b8b8">「${line}」</div>
+        </div>
+      </div>`;
+    }).join('');
+    slideInfo.push({
+      label: '選手たちの声',
+      html: `<div class="award-card" style="text-align:center;background:linear-gradient(180deg,#1a0808 0%,#100404 100%);border:1px solid #4a1a1a">
+        <div class="award-badge" style="justify-content:center;color:#aa6666"><span class="badge-icon">🎤</span><span class="badge-jp" style="color:#cca0a0">選手たちの声</span></div>
+        <div style="display:flex;justify-content:center;gap:16px;margin:16px 0 8px">${fHtml}</div>
+      </div>`
+    });
+  }
+
+  // スライド4: スタッフの声（コーチがいる場合のみ）
+  const coaches = (data.coaches || []).slice(0, 3);
+  const coachLines = data.coachLines || [];
+  if (coaches.length > 0) {
+    const cHtml = coaches.map((c, i) => {
+      const ALL_C = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES : [];
+      const master = ALL_C.find(x => x.id === c.id) || c;
+      return `<div style="flex:1;text-align:center;min-width:0;max-width:180px">
+        <div style="display:flex;justify-content:center;margin-bottom:8px">${_gameoverPortrait(c.id, 100, true)}</div>
+        <div style="font-size:12px;font-weight:700;color:#d8c8c8">${master.name || c.name || '—'}</div>
+        <div class="speech-bubble" style="margin-top:10px;background:rgba(40,16,16,0.6);border-color:#5a2020;color:#c8b8b8">
+          <div class="speech-text" style="font-size:11px;color:#c8b8b8">「${coachLines[i] || '……'}」</div>
+        </div>
+      </div>`;
+    }).join('');
+    slideInfo.push({
+      label: 'スタッフの声',
+      html: `<div class="award-card" style="text-align:center;background:linear-gradient(180deg,#1a0808 0%,#100404 100%);border:1px solid #4a1a1a">
+        <div class="award-badge" style="justify-content:center;color:#aa6666"><span class="badge-icon">🎓</span><span class="badge-jp" style="color:#cca0a0">スタッフの声</span></div>
+        <div style="display:flex;justify-content:center;gap:20px;margin:16px 0 8px">${cHtml}</div>
+      </div>`
+    });
+  }
+
+  // スライド5: 締めくくり
+  slideInfo.push({
+    label: 'THE END',
+    html: `<div class="award-card" style="text-align:center;background:linear-gradient(180deg,#0a0303 0%,#000000 100%);border:1px solid #3a1414;color:#bba8a8">
+      <div style="font-size:44px;margin:8px 0 16px;filter:grayscale(0.6)">🥀</div>
+      <div style="font-family:'Noto Serif JP',serif;font-size:24px;font-weight:900;letter-spacing:6px;color:#c8b0b0;
+        text-shadow:0 0 20px rgba(170,30,30,0.25);margin-bottom:18px">THE END</div>
+      <div style="font-size:14px;color:#a89898;line-height:2.0">
+        「${data.orgName}」の物語は、ここで終わる。<br><br>
+        だが選手たちの戦いは続く——<br>どこか別の団体の下で。
+      </div>
+    </div>`
+  });
+
+  // ── DOM構築（showEndingCeremony と同パターン） ──
+  const overlay = document.getElementById('awardsOverlay');
+  const slideWrap = document.getElementById('aw-slide-wrap');
+  const headerLabel = document.getElementById('aw-header-award-name');
+  const dotsEl = document.getElementById('aw-slide-dots');
+  const btnNext = document.getElementById('aw-btn-next');
+  const fanfareEl = document.getElementById('aw-fanfare-overlay');
+  const coachFg = document.getElementById('hof-coach-fg');
+  if (!overlay || !slideWrap || !btnNext) {
+    // フォールバック: 旧 showGameOverScreen 経路
+    if (typeof showGameOverScreen === 'function') showGameOverScreen(data);
+    if (onDone) onDone();
+    return;
+  }
+
+  slideWrap.innerHTML = '';
+  slideInfo.forEach((si, i) => {
+    const div = document.createElement('div');
+    div.className = 'aw-slide' + (i === 0 ? ' active' : '');
+    div.id = 'aw-gameover-slide-' + i;
+    div.innerHTML = si.html;
+    slideWrap.appendChild(div);
+  });
+
+  if (dotsEl) dotsEl.innerHTML = '';
+  if (coachFg) { coachFg.innerHTML = ''; coachFg.classList.remove('revealed'); }
+
+  if (fanfareEl) {
+    fanfareEl.innerHTML = `
+      <div class="fanfare-line-1" style="color:#c8a0a0">シーズン ${data.season}</div>
+      <div class="fanfare-line-2" style="color:#d8a0a0;text-shadow:0 0 20px rgba(170,30,30,0.4)">解散</div>
+      <div class="fanfare-divider"></div>
+      <div class="fanfare-sub" style="color:#aa6666">💀 活動停止</div>`;
+    fanfareEl.style.animation = 'none';
+    requestAnimationFrame(() => { fanfareEl.style.animation = ''; });
+  }
+
+  let current = 0;
+  const TOTAL = slideInfo.length;
+  let bgmStarted = false;
+
+  function goToSlide(idx) {
+    const slides = slideWrap.querySelectorAll('.aw-slide');
+    slides[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    slides[current].style.animation = 'none';
+    requestAnimationFrame(() => { slides[current].style.animation = ''; });
+    headerLabel.textContent = 'シーズン ' + data.season + ' — ' + slideInfo[current].label;
+    btnNext.textContent = current === TOTAL - 1 ? 'タイトルへ ▶' : '次へ　→';
+    setTimeout(() => { try { _awPlaySE && _awPlaySE('normal'); } catch(e) {} }, 50);
+  }
+
+  function nextSlide() {
+    if (!bgmStarted) {
+      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) { Audio.fileBgm.play('../bgm/iwa_gameover001.mp3', { loop: true, volume: 0.13 }); } } catch(e) {}
+      bgmStarted = true;
+    }
+    if (current >= TOTAL - 1) {
+      overlay.classList.remove('active');
+      try { _awClearParticles && _awClearParticles(); } catch(e) {}
+      window._awardsNext = null;
+      btnNext.onclick = null;
+      const doClose = () => {
+        if (onDone) onDone();
+        else if (typeof App !== 'undefined' && typeof App.showTitleScreen === 'function') App.showTitleScreen();
+      };
+      try {
+        if (typeof Audio !== 'undefined' && Audio.fileBgm) {
+          Audio.fileBgm.fadeOut(2000).then(doClose);
+          return;
+        }
+      } catch(e) {}
+      doClose();
+      return;
+    }
+    goToSlide(current + 1);
+  }
+
+  window._awardsNext = nextSlide;
+  btnNext.onclick = nextSlide;
+
+  headerLabel.textContent = 'シーズン ' + data.season + ' — ' + slideInfo[0].label;
+  btnNext.textContent = '次へ　→';
+  overlay.classList.add('active');
+}
+
 // ╔══════════════════════════════════════════════════════════╗
 // ║  RADAR CHART  (Canvas 2D — no external libs)             ║
 // ╚══════════════════════════════════════════════════════════╝

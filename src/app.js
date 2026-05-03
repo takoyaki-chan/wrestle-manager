@@ -1295,18 +1295,19 @@ const Survival = {
     return SURVIVAL_PHASES[0]; // red: deep deficit
   },
 
-  // Estimate weeks until funds reach -1000 (bankruptcy)
+  // Estimate weeks until funds reach -1500 (即死ライン / collapse)
+  // 危機突入は funds<0、即死は funds<=-1500（bankruptcy-redesign v1.1）
   weeksUntilBankrupt(G) {
     const { weeklyNet } = Survival.estimateWeeklyNet(G);
     if (weeklyNet >= 0) return Infinity;
-    const runway = G.funds + 1000; // bankrupt at -1000
+    const runway = G.funds + 1500; // 0 at collapse line
     return Math.max(0, Math.ceil(runway / Math.abs(weeklyNet)));
   },
 
-  // Calculate fuel gauge percentage (5000 start to -1000 bankrupt = 6000 range)
+  // Calculate fuel gauge percentage (5000 start to -1500 collapse = 6500 range)
   fuelPct(G) {
-    const runway = G.funds + 1000; // 0 at bankruptcy, 6000 at full
-    return Math.max(0, Math.min(100, Math.round((runway / 6000) * 100)));
+    const runway = G.funds + 1500; // 0 at collapse, 6500 at full
+    return Math.max(0, Math.min(100, Math.round((runway / 6500) * 100)));
   },
 
   // Evaluate milestones
@@ -1571,6 +1572,11 @@ const Storage = {
 
       // v0.9b backward compat: offseason system
       if (G.offSeason === undefined) G = { ...G, offSeason: false, offWeek: 0 };
+      // bankruptcy-redesign v1.1: 危機フェーズ
+      if (G.crisisActive === undefined) {
+        G = { ...G, crisisActive: false, crisisEnteredWeek: null, crisisWeeksRemaining: 0, crisisHistoryCount: 0 };
+      }
+      if (G.gameOverReason === undefined) G = { ...G, gameOverReason: null };
       // v0.9c backward compat: transfer
       if (G.pendingPoach === undefined) G = { ...G, pendingPoach: [] };
       // v0.9d backward compat: rental & events
@@ -7376,6 +7382,7 @@ const App = {
       G = cleanG;
     }
     App.checkSurvivalUpdate();
+    App.checkCrisisEnteredPopup();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     App.checkPrologueHighlights();
     // v1.5s25b: 興行後バフ消費 + 週次バフ消費
@@ -7822,6 +7829,7 @@ const App = {
       return;
     }
     App.checkSurvivalUpdate();
+    App.checkCrisisEnteredPopup();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     App.checkPrologueHighlights();
     sessionRng = Engine.rng.create(G.rngSeed);
@@ -7884,10 +7892,10 @@ const App = {
     const fh = [...(G.fundsHistory || []), result.state.funds];
     G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
     App.preloadNewspaperImages(G.weeklyNewspaper);
-    // v2.1: ゲームオーバー判定（autoSave せず専用画面へ）
+    // bankruptcy-redesign v1.1: ゲームオーバー判定（autoSave せず解散セレモニーへ）
     if (G.weekPhase === 'gameover') {
-      const summary = Engine.ending.buildGameOverSummary(G);
-      showGameOverScreen(summary);
+      const data = Engine.ending.buildGameOverData(G);
+      showGameOverCeremony(data, () => { try { App.showTitleScreen(); } catch(e) {} });
       return;
     }
     App.checkSurvivalUpdate();
@@ -8335,6 +8343,7 @@ const App = {
     }
     // v0.97: Update survival gauge
     App.checkSurvivalUpdate();
+    App.checkCrisisEnteredPopup();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     App.checkPrologueHighlights();
     sessionRng = Engine.rng.create(G.rngSeed);
@@ -10240,6 +10249,43 @@ const App = {
     }, 600);
 
     return { ok: true, displayData };
+  },
+
+  // bankruptcy-redesign v1.1: 危機突入時の選手不安発言ポップアップ
+  // tickWeek/advanceWeek が _crisisJustEntered を立てた場合のみ発火
+  checkCrisisEnteredPopup() {
+    if (!G || !G._crisisJustEntered) return;
+    // フラグを消費
+    const { _crisisJustEntered: _consumed, ...rest } = G;
+    G = rest;
+    const roster = (G.roster || []).filter(f => f && !f.isRental);
+    if (roster.length === 0) return;
+    // トラスト最上位（同値時は人気最上位）
+    const sorted = [...roster].sort((a, b) => {
+      const ta = a.trust ?? 50, tb = b.trust ?? 50;
+      if (tb !== ta) return tb - ta;
+      const pa = a.popularity ?? a.pop ?? 0, pb = b.popularity ?? b.pop ?? 0;
+      return pb - pa;
+    });
+    const speaker = sorted[0];
+    if (!speaker) return;
+    const archetype = speaker.archetype || 'normal';
+    const pool = (typeof CRISIS_DIALOGUE !== 'undefined'
+      && CRISIS_DIALOGUE.enter
+      && (CRISIS_DIALOGUE.enter[archetype] || CRISIS_DIALOGUE.enter.normal)) || [];
+    if (pool.length === 0) return;
+    const seed = (G.season || 1) * 1000 + (G.week || 1);
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, seed, 0xC715));
+    const line = Engine.rng.pick(rng, pool);
+    setTimeout(() => showEventPopup({
+      type: 'fighter',
+      id: speaker.id,
+      name: speaker.name,
+      tone: 'negative',
+      title: '🚨 資金危機',
+      message: line,
+      detail: `残り猶予${Math.max(0, G.crisisWeeksRemaining || 0)}週 — 立て直すか、解散か`,
+    }), 250);
   },
 
   // v0.97: Survival gauge

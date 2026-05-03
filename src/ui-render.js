@@ -146,6 +146,20 @@ function refreshTopBar() {
   // Hide top bar during opening
   const topBar = document.querySelector('.top-bar');
   if (topBar) topBar.style.display = (['draft','opening'].includes(G.weekPhase)) ? 'none' : '';
+  // Crisis warning bar (bankruptcy-redesign v1.1)
+  const crisisBar = document.getElementById('crisisBar');
+  if (crisisBar) {
+    const showCrisis = !!G.crisisActive
+      && !['draft','opening','gameover'].includes(G.weekPhase)
+      && !G.offSeason;
+    if (showCrisis) {
+      crisisBar.classList.add('active');
+      const wkLabel = document.getElementById('crisisWeeksLabel');
+      if (wkLabel) wkLabel.textContent = `残り${Math.max(0, G.crisisWeeksRemaining || 0)}週`;
+    } else {
+      crisisBar.classList.remove('active');
+    }
+  }
   // Cream theme for draft
   const appEl = document.querySelector('.app');
   if (appEl) { G.weekPhase === 'draft' ? appEl.classList.add('draft-cream') : appEl.classList.remove('draft-cream'); }
@@ -6244,6 +6258,28 @@ function _npRenderPage1() {
   }
 
   let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum)}${archiveNav}<div class="np-content">`;
+
+  // bankruptcy-redesign v1.1: 危機コラム（最新号のみ・editorial 優先掲載）
+  if (isLatest && typeof KURODA_CRISIS !== 'undefined') {
+    const tag = G._crisisColumnTag;
+    if (tag === 'enter' || tag === 'ongoing' || tag === 'recovered') {
+      const pool = KURODA_CRISIS[tag] || [];
+      if (pool.length > 0) {
+        const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC715));
+        const pick = Engine.rng.pick(rng, pool);
+        const orgName = G.orgName || 'プレイヤー団体';
+        const weeksRem = Math.max(0, G.crisisWeeksRemaining || 0);
+        const headline = (pick.headline || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
+        const body = (pick.body || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
+        html += `<section class="np-kuroda-crisis" style="background:linear-gradient(180deg,#1a0808 0%,#2a0f0f 100%);border-left:4px solid #aa2020;border-radius:4px;padding:14px 18px;margin-bottom:16px;color:#f4d8d8;box-shadow:0 0 12px rgba(170,30,30,0.25) inset">
+          <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#ff8888;margin-bottom:6px;text-transform:uppercase">編集記事 — 黒田幸子</div>
+          <h3 style="margin:0 0 8px 0;font-size:18px;color:#ffd6d6;font-weight:700">${headline}</h3>
+          <p style="margin:0;font-size:13px;line-height:1.8;white-space:pre-wrap">${body}</p>
+          <div style="text-align:right;margin-top:10px;font-size:11px;color:#cc8888">${NP_KURODA_BYLINE.editorial}</div>
+        </section>`;
+      }
+    }
+  }
 
   // 一面記事
   if (wp.topStory) {

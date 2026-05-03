@@ -195,6 +195,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .info-val.negative{color:var(--red)}
 .info-val.gold{color:var(--gold-light)}
 
+/* Crisis Warning Bar (bankruptcy-redesign v1.1) */
+.crisis-bar{display:none;align-items:center;justify-content:center;gap:12px;
+  padding:8px 16px;margin-bottom:12px;border-radius:6px;
+  background:linear-gradient(90deg,#3a0f0f 0%,#5a1818 50%,#3a0f0f 100%);
+  border:1px solid #8a2020;color:#ffd6d6;font-family:'Oswald',sans-serif;
+  font-size:13px;letter-spacing:1.5px;text-transform:uppercase;
+  box-shadow:0 0 16px rgba(170,30,30,0.35) inset;animation:crisis-pulse 2.4s ease-in-out infinite}
+.crisis-bar.active{display:flex}
+.crisis-bar .crisis-icon{font-size:16px}
+.crisis-bar .crisis-title{font-weight:700;color:#ffaaaa}
+.crisis-bar .crisis-weeks{font-weight:700;color:#ffffff;background:rgba(0,0,0,0.3);
+  padding:2px 8px;border-radius:3px;letter-spacing:0.5px}
+@keyframes crisis-pulse{
+  0%,100%{box-shadow:0 0 16px rgba(170,30,30,0.35) inset}
+  50%{box-shadow:0 0 24px rgba(220,60,60,0.55) inset}
+}
+
 /* Navigation */
 .nav-bar{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
 .nav-btn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;
@@ -8609,6 +8626,14 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <div class="info-item"><span class="info-label">順位</span><span class="info-val" id="dispRank" style="color:var(--gold)">4位</span></div>
       <div class="info-item"><span class="info-label">王座</span><span class="info-val" id="dispChamp" style="color:var(--gold)">🏆 空位</span></div>
     </div>
+  </div>
+
+  <!-- Crisis Warning Bar (bankruptcy-redesign v1.1) -->
+  <div id="crisisBar" class="crisis-bar">
+    <span class="crisis-icon">⚠️</span>
+    <span class="crisis-title">資金危機</span>
+    <span class="crisis-weeks" id="crisisWeeksLabel">残り4週</span>
+    <span style="font-size:11px;opacity:0.85;letter-spacing:0.5px">立て直すか、解散か</span>
   </div>
 
   <!-- Navigation -->

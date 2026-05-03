@@ -9510,10 +9510,50 @@ const Engine = {
     }
     const events = [...manage.events, settle.summary];
     if (ppvUnlockEvent) events.push(ppvUnlockEvent);
-    // v2.1: 破産判定
-    if (s.funds <= 0) {
-      s = { ...s, weekPhase: 'gameover' };
-      events.push('💀 資金が尽きた…団体は解散を余儀なくされた。');
+    // bankruptcy-redesign v1.1: 資金危機フェーズ判定（オフシーズン中はスキップ）
+    // 毎週 _crisisColumnTag / _crisisJustEntered をリセットしてから設定
+    s = { ...s, _crisisColumnTag: null, _crisisJustEntered: false };
+    if (!s.offSeason) {
+      if (!s.crisisActive && s.funds < 0) {
+        // 危機フェーズ突入
+        s = {
+          ...s,
+          crisisActive: true,
+          crisisEnteredWeek: { season: s.season, week: s.week },
+          crisisWeeksRemaining: 4,
+          _crisisColumnTag: 'enter',
+          _crisisJustEntered: true,
+        };
+        events.push('🚨 資金が底をついた。残り猶予4週——立て直すか、解散か。');
+      } else if (s.crisisActive) {
+        // 即死判定（猶予関係なく即破産）
+        if (s.funds <= -1500) {
+          s = { ...s, weekPhase: 'gameover', gameOverReason: 'collapse' };
+          events.push('💀 資金は完全に枯渇した。立て直しは不可能となった。');
+        } else if (s.funds >= 0) {
+          // 猶予内に復帰
+          s = {
+            ...s,
+            crisisActive: false,
+            crisisEnteredWeek: null,
+            crisisWeeksRemaining: 0,
+            crisisHistoryCount: (s.crisisHistoryCount || 0) + 1,
+            _crisisColumnTag: 'recovered',
+          };
+          events.push('✅ 資金が黒字に戻った。危機を脱した。');
+        } else {
+          // 猶予継続
+          const remaining = s.crisisWeeksRemaining - 1;
+          s = { ...s, crisisWeeksRemaining: remaining };
+          if (remaining <= 0) {
+            s = { ...s, weekPhase: 'gameover', gameOverReason: 'timeout' };
+            events.push('💀 4週の猶予が切れた。「' + s.orgName + '」は活動停止を発表した。');
+          } else {
+            s = { ...s, _crisisColumnTag: 'ongoing' };
+            events.push(`🚨 資金危機継続中。残り${remaining}週。`);
+          }
+        }
+      }
     }
     // D-1: Rental — 費用は前払い済み。週次処理は不要（シーズン末に processSeasonEnd で返却）
     // E3: FA monthly rotation — every 4 weeks, swap 2 out / 2 in
@@ -13222,6 +13262,30 @@ const Engine = {
           s = { ...s, negotiationResult: { success: forceNeg.success, fighter: forceNeg.fighter } };
         }
       }
+      // bankruptcy-redesign v1.1: シーズン末破産判定
+      if (s.crisisActive) {
+        if (s.funds >= 0) {
+          // 滑り込み脱出
+          s = {
+            ...s,
+            crisisActive: false,
+            crisisEnteredWeek: null,
+            crisisWeeksRemaining: 0,
+            crisisHistoryCount: (s.crisisHistoryCount || 0) + 1,
+          };
+          events.push('✅ シーズン最終週で資金が黒字に戻った。危機を脱した。');
+        } else {
+          // シーズン終了とともに破産確定
+          s = { ...s, weekPhase: 'gameover', gameOverReason: 'season_end' };
+          events.push(`💀 シーズン終了。「${s.orgName}」は次のシーズンを迎えることなく解散した。`);
+          return { state: s, events };
+        }
+      } else if (s.funds < 0) {
+        // 危機フェーズに入る暇もなくシーズン末でマイナスのケース
+        s = { ...s, weekPhase: 'gameover', gameOverReason: 'season_end' };
+        events.push(`💀 シーズン終了時点で資金が枯渇していた。`);
+        return { state: s, events };
+      }
       // Enter offseason
       s = { ...s, offSeason: true, offWeek: 0 };
       events.push('📅 レギュラーシーズン終了 → オフシーズン突入');
@@ -13705,6 +13769,12 @@ const Engine = {
       endingCleared: false,
       endingClearedSeason: null,
       leagueElevated: false,
+      // bankruptcy-redesign v1.1: 資金危機フェーズ
+      crisisActive: false,
+      crisisEnteredWeek: null,
+      crisisWeeksRemaining: 0,
+      crisisHistoryCount: 0,
+      gameOverReason: null,
       // PPV GRAND FINAL
       ppvUnlocked: false,
       ppvEntries: null,    // { player: [fighter,...], org_s: [...], ... }
@@ -14008,7 +14078,69 @@ Engine.ending = {
       bestMQMatch,
       hallOfFameCount: ((state.allHallOfFame || {}).player || state.hallOfFame || []).length,
     };
-  }
+  },
+
+  /** bankruptcy-redesign v1.1: 解散セレモニー(5スライド)用データ（純粋関数） */
+  buildGameOverData(state) {
+    const summary = Engine.ending.buildGameOverSummary(state);
+    const sortedRoster = [...(state.roster || [])]
+      .filter(f => f && !f.isRental)
+      .sort((a, b) => (b.popularity || b.pop || 0) - (a.popularity || a.pop || 0));
+    const top3Fighters = sortedRoster.slice(0, 3);
+    const top3Lines = Engine.ending._pickGameOverLinesForTop3(top3Fighters);
+
+    const coaches = (state.coaches || []).slice(0, 3);
+    const coachLines = Engine.ending._pickCoachGameOverLines(coaches.length);
+
+    const reason = state.gameOverReason || 'timeout';
+    const kurodaPool = (typeof KURODA_GAMEOVER !== 'undefined' && KURODA_GAMEOVER[reason])
+      || (typeof KURODA_GAMEOVER !== 'undefined' && KURODA_GAMEOVER.timeout)
+      || [];
+    const kurodaPick = kurodaPool.length > 0
+      ? kurodaPool[Math.floor(Math.random() * kurodaPool.length)]
+      : { body: '' };
+    const orgName = state.orgName || '団体';
+    const kurodaColumn = (kurodaPick.body || '')
+      .replace(/\{orgName\}/g, orgName);
+
+    return {
+      ...summary,
+      gameOverReason: reason,
+      top3Fighters,
+      top3Lines,
+      coaches,
+      coachLines,
+      kurodaColumn,
+    };
+  },
+
+  /** 3名分を archetype × trust から重複なく選出 */
+  _pickGameOverLinesForTop3(fighters) {
+    const used = new Set();
+    return (fighters || []).map(f => {
+      const archetype = f.archetype || 'normal';
+      const trust = f.trust ?? 50;
+      const trustLevel = trust >= 70 ? 'high' : trust < 30 ? 'low' : 'mid';
+      const fighterPools = (typeof GAMEOVER_LINES !== 'undefined' && GAMEOVER_LINES.fighter) || null;
+      if (!fighterPools) return '……';
+      const pool = (fighterPools[archetype] && fighterPools[archetype][trustLevel])
+                || fighterPools.normal[trustLevel]
+                || fighterPools.normal.mid;
+      const candidates = pool.filter(line => !used.has(line));
+      const final = candidates.length > 0 ? candidates : pool;
+      const chosen = final[Math.floor(Math.random() * final.length)];
+      used.add(chosen);
+      return chosen;
+    });
+  },
+
+  /** コーチ用セリフを n 名分、重複なく選出 */
+  _pickCoachGameOverLines(n) {
+    const pool = (typeof GAMEOVER_LINES !== 'undefined' && GAMEOVER_LINES.coach) || [];
+    if (n <= 0 || pool.length === 0) return [];
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, Math.min(n, pool.length));
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
