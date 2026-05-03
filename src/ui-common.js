@@ -649,10 +649,10 @@ function renderWarMatchPreview() {
       const rightLine = (!playerWon && result.victoryLine) ? result.victoryLine : '';
       const hasDialogue = !!result.victoryLine;
 
-      const leftBlock = _pbFighterBlock('left', pf, leftCls, playerOrgName, leftLine)
-        .replace('pb-fighter is-left', 'pb-fighter is-left is-player-side');
-      const rightBlock = _pbFighterBlock('right', af, rightCls, ev.opponentName, rightLine)
-        .replace('pb-fighter is-right', 'pb-fighter is-right is-enemy-side');
+      // 通常の pb-fighter 枠のみ使用（is-player-side / is-enemy-side のサイドアクセントは
+      // 勝者/敗者の標準フレームと二重表示になっていたため撤去）
+      const leftBlock = _pbFighterBlock('left', pf, leftCls, playerOrgName, leftLine);
+      const rightBlock = _pbFighterBlock('right', af, rightCls, ev.opponentName, rightLine);
       const winnerLabel = `🏆 ${escHtml(playerWon ? pf.name : af.name)} WIN`;
 
       html += `<div class="pb-mrow is-resolved${hasDialogue ? ' has-dialogue' : ''}">`;
@@ -671,10 +671,9 @@ function renderWarMatchPreview() {
       const lineR = pickDialogueLine(PPV_OPPONENT_LINES, af);
       const hasDialogue = !!(lineL || lineR);
 
-      const leftBlock = _pbFighterBlock('left', pf, '', playerOrgName, lineL || '')
-        .replace('pb-fighter is-left', 'pb-fighter is-left is-player-side');
-      const rightBlock = _pbFighterBlock('right', af, '', ev.opponentName, lineR || '')
-        .replace('pb-fighter is-right', 'pb-fighter is-right is-enemy-side');
+      // 通常の pb-fighter 枠のみ使用（サイドアクセント撤去）
+      const leftBlock = _pbFighterBlock('left', pf, '', playerOrgName, lineL || '');
+      const rightBlock = _pbFighterBlock('right', af, '', ev.opponentName, lineR || '');
 
       html += `<div class="pb-mrow is-upcoming${hasDialogue ? ' has-dialogue' : ''}">`;
       html += leftBlock;
@@ -809,11 +808,10 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
     const leftCls = playerWon ? 'is-winner' : 'is-loser';
     const rightCls = playerWon ? 'is-loser' : 'is-winner';
     // 左: プレイヤー / 右: 敵
-    // side accent classes
-    const leftBlock = _pbFighterBlock('left', pf, `${leftCls}`, playerOrgName, r.victoryLine && playerWon ? r.victoryLine : '')
-      .replace('pb-fighter is-left', 'pb-fighter is-left is-player-side');
-    const rightBlock = _pbFighterBlock('right', af, `${rightCls}`, ev.opponentName, r.victoryLine && !playerWon ? r.victoryLine : '')
-      .replace('pb-fighter is-right', 'pb-fighter is-right is-enemy-side');
+    // 通常の pb-fighter 枠のみ使用（is-player-side / is-enemy-side のサイドアクセントは
+    // 勝者/敗者の標準フレームと二重表示になっていたため撤去）
+    const leftBlock = _pbFighterBlock('left', pf, `${leftCls}`, playerOrgName, r.victoryLine && playerWon ? r.victoryLine : '');
+    const rightBlock = _pbFighterBlock('right', af, `${rightCls}`, ev.opponentName, r.victoryLine && !playerWon ? r.victoryLine : '');
 
     const winnerLabel = `🏆 ${escHtml(playerWon ? pf.name : af.name)} WIN`;
     const hasDialogue = !!r.victoryLine;
