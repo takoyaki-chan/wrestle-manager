@@ -13232,7 +13232,11 @@ function _relmapPowerCompactFrame(count, opts) {
           : Math.ceil((count + 2) / 4);
   const idealGap = count <= 4 ? 112 : count <= 8 ? 102 : count <= 12 ? 92 : 84;
   const idealSpan = Math.max(120, (rowCount - 1) * idealGap);
-  const span = Math.min(spanLimit, idealSpan);
+  // fillVertical: 利用可能な縦スペース全体を使う（単体団体ビュー用）
+  // 通常モードは idealSpan で抑える（4団体並列時のクラスタ間距離確保のため）
+  const span = opts.fillVertical
+    ? Math.max(idealSpan, spanLimit)
+    : Math.min(spanLimit, idealSpan);
   const top = topLimit;
   const bottom = top + span;
   const widthScale = count <= 3 ? 0.42 : count <= 6 ? 0.58 : count <= 8 ? 0.66 : count <= 12 ? 0.78 : 0.9;
@@ -13669,6 +13673,7 @@ function _buildOrgHorizontalView(svg, W, H, leftOffset) {
     bottomLimit: H - PAD_BOTTOM - 86,
     maxWidth: usableW * 0.84,
     jitterX: Math.min(28, usableW * 0.035),
+    fillVertical: true,
   });
   const dynamicSlots = _relmapBuildElasticPyramidSlots(
     orderedForLayout.map(f => ({ id: f.id, score: _relmapPowerStatusScore(f, orgChampId) })),
