@@ -4760,6 +4760,46 @@ Engine.factions = {
     return rest;
   },
 
+  // 派閥内挑戦戦の引き分け解決
+  // pending を解除し、即週の再発火を防ぐため faction 単位 cooldown を付与する
+  resolveInternalChallengeDraw(state) {
+    if (!state || !state._pendingInternalChallenge) return state;
+    const pending = state._pendingInternalChallenge;
+    const { factionId, challengerId, leaderId } = pending;
+    const f = (state.factions || []).find(x => x.id === factionId);
+    if (!f) {
+      const { _pendingInternalChallenge: _, ...rest } = state;
+      return rest;
+    }
+    const cfg = FACTION_CONFIG;
+    const absWeek = (state.season || 1) * 52 + (state.week || 1);
+    let s = {
+      ...state,
+      factions: (state.factions || []).map(x => x.id !== factionId ? x : {
+        ...x,
+        internalChallengeCooldownUntilWeek: absWeek + cfg.internalChallengeCooldownWeeks,
+      }),
+    };
+    if (Array.isArray(s.factionTimeline)) {
+      s = {
+        ...s,
+        factionTimeline: [
+          ...s.factionTimeline,
+          {
+            type: 'INTERNAL_CHALLENGE_DRAWN',
+            season: s.season, week: s.week,
+            factionId, leaderId, challengerId,
+          },
+        ],
+      };
+    }
+    if (typeof console !== 'undefined') {
+      console.log(`[WM Internal Rank] Draw resolved: faction=${factionId} leader=${leaderId} challenger=${challengerId}`);
+    }
+    const { _pendingInternalChallenge: _, ...rest } = s;
+    return rest;
+  },
+
   _ensureRivalryPointsEntry(state, factionAId, factionBId) {
     if (!state.factionRivalryPoints) state.factionRivalryPoints = {};
     const key = this._pairKey(factionAId, factionBId);
@@ -5038,8 +5078,11 @@ Engine.factions = {
     }
     const cfg = FACTION_CONFIG;
     const absWeek = (state.season || 1) * 52 + (state.week || 1);
+    const roster = state.roster || [];
+    const rosterById = new Map(roster.map(c => [c.id, c]));
+    const isAvailable = (fighter) => !!fighter && !fighter.injury && !fighter.forcedRest;
     const ovrOf = (id) => {
-      const c = (state.roster || []).find(r => r.id === id);
+      const c = rosterById.get(id);
       return c ? Engine.util.ov(c) : 0;
     };
 
@@ -5063,8 +5106,8 @@ Engine.factions = {
       // リーダー在籍チェック
       const leaderId = f.leaderId;
       if (leaderId == null) continue;
-      const leader = (state.roster || []).find(c => c.id === leaderId);
-      if (!leader) continue;
+      const leader = rosterById.get(leaderId);
+      if (!isAvailable(leader)) continue;
 
       // 挑戦者候補
       const leaderPt = this._getInternalPoints(state, f.id, leaderId);
@@ -5074,8 +5117,9 @@ Engine.factions = {
 
       const challengers = f.memberIds
         .filter(id => id !== leaderId)
-        .filter(id => (state.roster || []).some(c => c.id === id))
-        .map(id => ({ id, pt: this._getInternalPoints(state, f.id, id) }))
+        .map(id => ({ fighter: rosterById.get(id), id }))
+        .filter(x => isAvailable(x.fighter))
+        .map(x => ({ id: x.id, pt: this._getInternalPoints(state, f.id, x.id) }))
         .filter(x => x.pt > leaderPt && (x.pt - leaderPt) >= threshold)
         .sort((a, b) => {
           if (b.pt !== a.pt) return b.pt - a.pt;

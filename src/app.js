@@ -5854,7 +5854,13 @@ const App = {
         if (!m._internalChallengeLocked) return;
         if (m.matchType === 'tag') return;
         const r = results[idx];
-        if (!r || r.winner === 'draw') return;
+        if (!r) return;
+        if (r.winner === 'draw') {
+          if (typeof Engine.factions.resolveInternalChallengeDraw === 'function') {
+            s = Engine.factions.resolveInternalChallengeDraw(s);
+          }
+          return;
+        }
         const winnerId = r.winner === 'left' ? m.left : m.right;
         const loserId  = r.winner === 'left' ? m.right : m.left;
         const winnerHp = (r.winner === 'left' ? r.hpLeft : r.hpRight) || { final: 0, max: 100 };

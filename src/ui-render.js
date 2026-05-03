@@ -2460,7 +2460,8 @@ function renderShowPrep() {
             ...(newCard[0] || {}),
             left: ic.challengerId, right: ic.leaderId,
             matchType: undefined, teamA: undefined, teamB: undefined,
-            isTitle: !!(newCard[0] && newCard[0].isTitle),
+            // 序列戦は専用固定枠。既存メインのタイトル属性は引き継がない
+            isTitle: false,
             _internalChallengeLocked: true,
           };
         }
