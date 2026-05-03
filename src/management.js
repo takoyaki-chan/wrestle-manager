@@ -2703,22 +2703,22 @@ const Engine = {
     /** spec v0.2 §D.4 8カテゴリ × 各3〜4本のテンプレート集 */
     QUOTE_TEMPLATES: {
       peakDefender: [
-        '{surname}は{defenses}度の防衛で頂点を守り続けた。誰にも玉座を譲らない世代だった。',
-        '王者{surname}に挑んだ者たちは、ことごとく退けられた。{defenses}度防衛は、その時代を象徴している。',
-        '{surname}が王座にいる限り、誰もその座は奪えない。誰もがそう信じて疑わない。そういう時代だった。',
+        '{surname}は章を通じて{defenses}度の防衛を積み上げ、団体の中心軸であり続けた。',
+        '挑戦者を{defenses}度退けた{surname}は、この章の屋台骨だった。',
+        '{defenses}度防衛——{surname}が王座にいる時間が、この世代の輪郭を形作った。',
         '{defenses}度の防衛を重ねた{surname}は、団体の絶対的な軸として君臨した。'
       ],
       defender: [
         '{surname}は王座を{defenses}度防衛し、団体の核として時代を背負った。',
         '{titleReigns}度の戴冠と{defenses}度の防衛。{surname}が立っていることが、団体の安定そのものだった。',
-        '{surname}は王座を離さなかった。挑戦者たちは皆、跳ね返された。',
+        '{surname}は王座を離さなかった。挑戦者たちはなかなか手が届かなかった。',
         '{surname}の{defenses}度の防衛は、この章の屋台骨だった。'
       ],
       champion: [
-        '{surname}は{titleReigns}度の王座戴冠を達成し、世代を黄金期に押し上げた。',
-        '{surname}の{titleReigns}度の戴冠が、この世代を語る上での出発点になる。',
-        '何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその執念の証だった。',
-        '{titleReigns}度の戴冠を経て、{surname}はこの世代の象徴となった。'
+        '{surname}は{titleReigns}度の戴冠を経て、この章の主役を担った。',
+        '{titleReigns}度の戴冠を重ねた{surname}は、この世代の中心人物の一人だった。',
+        '何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその粘りの証だった。',
+        '{titleReigns}度の戴冠を通じて、{surname}はこの章の流れを作った。'
       ],
       popStar: [
         '{surname}の人気が客足を支えた。戦績ではなく動員で、時代を作った世代だった。',
@@ -2781,7 +2781,7 @@ const Engine = {
 
       if (mode === 'summit' && chapterDefenses >= 3) return 'peakDefender';
       if ((ace.titleReigns || 0) >= 1 && (ace.totalDefenses || 0) >= 3) return 'defender';
-      if ((ace.titleReigns || 0) >= 2) return 'champion';
+      if ((ace.titleReigns || 0) >= 3) return 'champion';
       if ((ace.peakPopularity || 0) >= 90) return 'popStar';
       if ((chapter.number || 0) >= 3) {
         const chapters = (state && state.chronicle && state.chronicle.chaptersCache && state.chronicle.chaptersCache.chapters) || [];
@@ -3256,20 +3256,36 @@ const Engine = {
           count: 0,
           maxCount: 0,
           maxMq: 0,
+          wins: 0,
+          losses: 0,
+          opponents: new Set(),
           tier: item.tier || 'normal'
         };
         cur.seasons.push(item.season);
         cur.count += item.count || 1;
         cur.maxCount = Math.max(cur.maxCount || 0, item.maxCount || 0);
         cur.maxMq = Math.max(cur.maxMq || 0, item.maxMq || 0);
+        if (item.won === true) cur.wins = (cur.wins || 0) + 1;
+        else if (item.won === false) cur.losses = (cur.losses || 0) + 1;
+        if (item.opponentOrg) cur.opponents.add(item.opponentOrg);
         if (item.tier === 'gold') cur.tier = 'gold';
         else if (item.tier === 'silver' && cur.tier !== 'gold') cur.tier = 'silver';
+        else if (item.tier === 'red' && cur.tier !== 'gold' && cur.tier !== 'silver') cur.tier = 'red';
         grouped.set(key, cur);
       };
       const addSingle = item => singles.push(item);
       chars.forEach(c => {
         const hist = (c.careerRecord || {}).history || [];
         const charName = Engine.chronicle._getSurname(c.name);
+        // 章開始前の同 beltId 在位最大防衛数（差し引き用）
+        const priorMaxByBelt = new Map();
+        hist.forEach(ev => {
+          if ((ev.season || 0) >= chapter.seasonStart) return;
+          if (ev.type !== 'titleDefense') return;
+          const k = ev.beltId || '_default';
+          const prev = priorMaxByBelt.get(k) || 0;
+          if ((ev.count || 0) > prev) priorMaxByBelt.set(k, ev.count || 0);
+        });
         hist.forEach(ev => {
           if ((ev.season || 0) < chapter.seasonStart || (ev.season || 0) > chapter.seasonEnd) return;
           if (ev.type === 'titleWin') {
@@ -3282,15 +3298,32 @@ const Engine = {
             });
             return;
           }
-          if (ev.type === 'titleDefense' && (ev.count || 0) >= 3) {
-            addGrouped(`${c.id}:titleDefense:${ev.orgName || ''}`, {
-              season: ev.season,
-              type: ev.type,
-              charName,
-              orgName: ev.orgName || '団体王座',
-              maxCount: ev.count || 0,
-              tier: 'gold'
-            });
+          if (ev.type === 'titleDefense') {
+            // 章境界差し引き: 同 beltId の章開始前最大 count を引いた増分が 3 以上で採用
+            const beltKey = ev.beltId || '_default';
+            const prior = priorMaxByBelt.get(beltKey) || 0;
+            const inc = Math.max(0, (ev.count || 0) - prior);
+            if (inc >= 3) {
+              addGrouped(`${c.id}:titleDefense:${ev.orgName || ''}:${beltKey}`, {
+                season: ev.season,
+                type: ev.type,
+                charName,
+                orgName: ev.orgName || '団体王座',
+                maxCount: inc,
+                tier: 'gold'
+              });
+            }
+            return;
+          }
+          if (ev.type === 'titleLoss') {
+            // 在位中の総防衛数から章開始前分を差し引き、3以上を陥落として記録
+            const beltKey = ev.beltId || '_default';
+            const prior = priorMaxByBelt.get(beltKey) || 0;
+            const inc = Math.max(0, (ev.defenses || 0) - prior);
+            const text = inc >= 3
+              ? `<strong>${charName}</strong> ${ev.orgName || '団体王座'} ${inc}度防衛の末に陥落${ev.dethronedByName ? `（${ev.dethronedByName}に敗北）` : ''}`
+              : `<strong>${charName}</strong> ${ev.orgName || '団体王座'} 王座陥落${ev.dethronedByName ? `（${ev.dethronedByName}に敗北）` : ''}`;
+            addSingle({ season: ev.season, type: ev.type, text, tier: 'red' });
             return;
           }
           if (ev.type === 'awardMVP') {
@@ -3307,51 +3340,62 @@ const Engine = {
             });
             return;
           }
+          if (ev.type === 'awardRookie') {
+            addGrouped(`${c.id}:awardRookie`, { season: ev.season, type: ev.type, charName, tier: 'silver' });
+            return;
+          }
+          if (ev.type === 'awardMedia') {
+            addGrouped(`${c.id}:awardMedia`, { season: ev.season, type: ev.type, charName, tier: 'silver' });
+            return;
+          }
           if (ev.type === 'juniorTournament' && ev.result === 'champion') {
             addGrouped(`${c.id}:juniorTournament`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
+            return;
+          }
+          if (ev.type === 'juniorTournament' && ev.result === 'runnerUp') {
+            const text = `<strong>${charName}</strong> ジュニアトーナメント準優勝${ev.finalOpponentName ? `（決勝で${ev.finalOpponentName}に敗北）` : ''}`;
+            addSingle({ season: ev.season, type: ev.type, text, tier: 'silver' });
             return;
           }
           if (ev.type === 'ppvMainEvent' && (ev.result === 'champion' || ev.result === 'win' || ev.won === true)) {
             addGrouped(`${c.id}:ppvMainEvent`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
             return;
           }
+          if (ev.type === 'war') {
+            addGrouped(`${c.id}:war`, {
+              season: ev.season,
+              type: ev.type,
+              charName,
+              won: ev.won,
+              opponentOrg: ev.opponentOrg,
+              tier: ev.won === true ? 'silver' : ev.won === false ? 'red' : 'normal'
+            });
+            return;
+          }
+          if (ev.type === 'summit') {
+            addGrouped(`${c.id}:summit`, {
+              season: ev.season,
+              type: ev.type,
+              charName,
+              won: ev.won,
+              opponentOrg: ev.opponentOrg,
+              tier: ev.won === true ? 'gold' : 'red'
+            });
+            return;
+          }
+          if (ev.type === 'challenge_request_match') {
+            addGrouped(`${c.id}:challengeReq`, {
+              season: ev.season,
+              type: ev.type,
+              charName,
+              won: ev.won,
+              opponentOrg: ev.opponentOrg,
+              tier: ev.won === true ? 'silver' : 'normal'
+            });
+            return;
+          }
           let text = null, tier = 'normal';
           switch (ev.type) {
-            case 'titleWin':
-              text = `<strong>${charName}</strong> ${ev.orgName || '団体王座'} 戴冠`;
-              tier = 'gold';
-              break;
-            case 'titleDefense':
-              if ((ev.count || 0) >= 3) {
-                text = `<strong>${charName}</strong> ${ev.orgName || '団体王座'} ${ev.count}度防衛`;
-                tier = 'gold';
-              }
-              break;
-            case 'awardRookie':
-              text = `<strong>${charName}</strong> 新人王`;
-              break;
-            case 'awardMVP':
-              text = `<strong>${charName}</strong> MVP受賞`;
-              tier = 'gold';
-              break;
-            case 'awardBestMatch':
-              text = `<strong>${charName}</strong> ベストマッチ賞 (MQ${ev.mq || '?'})`;
-              tier = 'silver';
-              break;
-            case 'ppvMainEvent':
-              if (ev.result === 'champion' || ev.result === 'win') {
-                text = `<strong>${charName}</strong> PPV GRAND FINAL 優勝`;
-                tier = 'gold';
-              }
-              break;
-            case 'war':
-              if (ev.won === true) {
-                text = `<strong>${charName}</strong> 対抗戦勝利`;
-              } else if (ev.won === false) {
-                text = `対抗戦 <strong>${charName}</strong> 敗退`;
-                tier = 'red';
-              }
-              break;
             case 'domeMain':
               text = `<strong>${charName}</strong> ドーム ${ev.matchType === 'title' ? 'タイトル戦' : 'メイン'}${ev.result === 'win' ? ' 勝利' : ''}`;
               tier = 'gold';
@@ -3392,6 +3436,8 @@ const Engine = {
         const years = compactYears(g.seasons);
         const streak = maxStreak(g.seasons);
         let text = null;
+        const oppList = g.opponents ? [...g.opponents].filter(Boolean) : [];
+        const oppFrag = oppList.length > 0 ? `（vs ${oppList.slice(0, 2).join('・')}${oppList.length > 2 ? ' 他' : ''}）` : '';
         switch (g.type) {
           case 'titleWin':
             text = g.count >= 2
@@ -3411,6 +3457,16 @@ const Engine = {
               ? `<strong>${g.charName}</strong> ベストマッチ賞 ${g.count}度受賞${streak >= 2 ? `・${streak}年連続` : ''}（最高MQ${g.maxMq || '?'}）`
               : `<strong>${g.charName}</strong> ベストマッチ賞（MQ${g.maxMq || '?'}）`;
             break;
+          case 'awardRookie':
+            text = g.count >= 2
+              ? `<strong>${g.charName}</strong> 新人賞 ${g.count}度受賞（${years}）`
+              : `<strong>${g.charName}</strong> 新人賞`;
+            break;
+          case 'awardMedia':
+            text = g.count >= 2
+              ? `<strong>${g.charName}</strong> メディア賞 ${g.count}度受賞（${years}）`
+              : `<strong>${g.charName}</strong> メディア賞`;
+            break;
           case 'juniorTournament':
             text = g.count >= 2
               ? `<strong>${g.charName}</strong> ジュニアトーナメント ${g.count}度優勝${streak >= 2 ? `・${streak}連覇` : ''}（${years}）`
@@ -3421,6 +3477,38 @@ const Engine = {
               ? `<strong>${g.charName}</strong> PPVメインイベント ${g.count}度制覇${streak >= 2 ? `・${streak}連覇` : ''}（${years}）`
               : `<strong>${g.charName}</strong> PPVメインイベント制覇`;
             break;
+          case 'war': {
+            const w = g.wins || 0, l = g.losses || 0;
+            if (w + l <= 1) {
+              text = w >= 1
+                ? `<strong>${g.charName}</strong> 対抗戦勝利${oppFrag}`
+                : `対抗戦 <strong>${g.charName}</strong> 敗退${oppFrag}`;
+            } else {
+              text = `<strong>${g.charName}</strong> 対抗戦${w + l}戦${w}勝${l}敗${oppFrag}`;
+            }
+            break;
+          }
+          case 'summit': {
+            const w = g.wins || 0, l = g.losses || 0;
+            if (w + l <= 1) {
+              text = w >= 1
+                ? `<strong>${g.charName}</strong> サミット制覇${oppFrag}`
+                : `<strong>${g.charName}</strong> サミット敗退${oppFrag}`;
+            } else {
+              text = `<strong>${g.charName}</strong> サミット${w + l}戦${w}勝${l}敗${oppFrag}`;
+            }
+            break;
+          }
+          case 'challenge_request_match': {
+            const w = g.wins || 0, l = g.losses || 0;
+            const orgFrag = oppList.length > 0 ? `${oppList[0]}に` : '他団体に';
+            if (w + l <= 1) {
+              text = `<strong>${g.charName}</strong> ${orgFrag}挑戦試合${w >= 1 ? '勝利' : '敗北'}`;
+            } else {
+              text = `<strong>${g.charName}</strong> ${orgFrag}挑戦試合${w + l}戦${w}勝${l}敗`;
+            }
+            break;
+          }
         }
         return { season: Math.min(...g.seasons), type: g.type, text, tier: g.tier };
       }).filter(h => h.text);
@@ -3500,6 +3588,140 @@ const Engine = {
         default:
           return { mode: 'challenge', label: '殴り込み', valueText: `${w}勝${l}敗` };
       }
+    },
+
+    /** 章期間中の外部団体との対戦集計
+     * 出力: [{ orgName, total, wins, losses, draws, mainOpponents:[name,...] }, ...] */
+    _buildExternalRivals(chapter, aces, peers) {
+      const chars = [...aces, ...peers];
+      const map = new Map(); // orgName -> { wins, losses, draws, oppCount: Map }
+      chars.forEach(c => {
+        const hist = ((c.careerRecord || {}).history || []);
+        hist.forEach(ev => {
+          if ((ev.season || 0) < chapter.seasonStart || (ev.season || 0) > chapter.seasonEnd) return;
+          if (ev.type !== 'war' && ev.type !== 'summit' && ev.type !== 'challenge_request_match') return;
+          const org = ev.opponentOrg;
+          if (!org) return;
+          const cur = map.get(org) || { wins: 0, losses: 0, draws: 0, oppCount: new Map() };
+          if (ev.won === true) cur.wins++;
+          else if (ev.won === false) cur.losses++;
+          else cur.draws++;
+          if (ev.opponentName) {
+            cur.oppCount.set(ev.opponentName, (cur.oppCount.get(ev.opponentName) || 0) + 1);
+          }
+          map.set(org, cur);
+        });
+      });
+      const arr = [];
+      map.forEach((v, orgName) => {
+        const total = v.wins + v.losses + v.draws;
+        if (total === 0) return;
+        const mainOpponents = [...v.oppCount.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 2)
+          .map(([n]) => n);
+        arr.push({ orgName, total, wins: v.wins, losses: v.losses, draws: v.draws, mainOpponents });
+      });
+      arr.sort((a, b) => b.total - a.total);
+      return arr.slice(0, 4);
+    },
+
+    /** エースの叙述文(2〜3文、テンプレ穴埋めではなく事実列挙)
+     * 出力: 文字列(HTML、<strong>許可) */
+    _buildAceNarrative(ace, chapter, aces, peers, state) {
+      const surname = Engine.chronicle._getSurname(ace.name);
+      const allHist = ((ace.careerRecord || {}).history || []);
+      const joinS = Engine.career.joinSeason(ace);
+      const histPost = Engine.career.filterPostJoin(allHist, joinS);
+      const hist = histPost.filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
+
+      const sentences = [];
+
+      // 1文目: デビュー / ピーク
+      const debutEv = histPost.find(e => e.type === 'debut');
+      const peakOVR = ace.peakOVR || 0;
+      const peakSeason = ace.peakOVRSeason || ace.primeEnd || chapter.seasonStart;
+      const seg1 = [];
+      if (debutEv && debutEv.season) seg1.push(`S${debutEv.season}デビュー`);
+      if (peakOVR >= 80) seg1.push(`S${peakSeason}にOVR${peakOVR}でピーク到達`);
+      if (seg1.length > 0) sentences.push(`${surname}は${seg1.join('、')}。`);
+
+      // 2文目: 章内タイトル戴冠 / 防衛(差し引き) / 受賞
+      const titleWins = hist.filter(e => e.type === 'titleWin');
+      const titleLossEv = hist.find(e => e.type === 'titleLoss');
+      // ベルト単位で章開始前最大 count を引いた章内防衛増分
+      let chapterDefenses = 0;
+      const beltGroups = new Map();
+      hist.filter(e => e.type === 'titleDefense').forEach(e => {
+        const k = e.beltId || '_default';
+        if (!beltGroups.has(k)) beltGroups.set(k, []);
+        beltGroups.get(k).push(e);
+      });
+      beltGroups.forEach((evs, beltKey) => {
+        const maxIn = evs.reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+        const priorMax = histPost
+          .filter(e => e.type === 'titleDefense' && (e.beltId || '_default') === beltKey && (e.season || 0) < chapter.seasonStart)
+          .reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+        chapterDefenses += Math.max(0, maxIn - priorMax);
+      });
+      const mvpCount = hist.filter(e => e.type === 'awardMVP').length;
+      const bmCount = hist.filter(e => e.type === 'awardBestMatch').length;
+      const seg2 = [];
+      if (titleWins.length > 0) {
+        const beltName = titleWins[0].orgName || '王座';
+        seg2.push(titleWins.length >= 2 ? `${beltName}を${titleWins.length}度戴冠` : `${beltName}を戴冠`);
+      }
+      if (chapterDefenses >= 3) seg2.push(`${chapterDefenses}度の防衛`);
+      if (mvpCount >= 1) seg2.push(mvpCount >= 2 ? `MVPを${mvpCount}度受賞` : 'MVPを受賞');
+      if (bmCount >= 2) seg2.push(`ベストマッチ賞${bmCount}度`);
+      if (seg2.length > 0) sentences.push(`この章では${seg2.join('、')}。`);
+
+      // 3文目: 対外 / 対同期
+      const seg3 = [];
+      let extW = 0, extL = 0;
+      const extOpp = new Map();
+      hist.forEach(e => {
+        if (e.type !== 'war' && e.type !== 'summit' && e.type !== 'challenge_request_match') return;
+        if (e.won === true) extW++;
+        else if (e.won === false) extL++;
+        if (e.opponentOrg) extOpp.set(e.opponentOrg, (extOpp.get(e.opponentOrg) || 0) + 1);
+      });
+      if (extW + extL >= 1) {
+        const topOpp = [...extOpp.entries()].sort((a, b) => b[1] - a[1])[0];
+        const oppFrag = topOpp ? `${topOpp[0]}を中心とした` : '他団体との';
+        seg3.push(`${oppFrag}対外戦で${extW}勝${extL}敗`);
+      }
+      if (titleLossEv) {
+        const beltName = titleLossEv.orgName || '王座';
+        seg3.push(titleLossEv.dethronedByName
+          ? `${beltName}は${titleLossEv.dethronedByName}に明け渡した`
+          : `章の終盤に${beltName}を陥落`);
+      }
+      if (seg3.length > 0) sentences.push(`${seg3.join('、')}。`);
+
+      return sentences.length > 0 ? sentences.join('') : null;
+    },
+
+    /** 同期(peer)の事実ベース1行叙述 */
+    _buildPeerNarrative(peer, chapter, aces, peers, state) {
+      const allHist = ((peer.careerRecord || {}).history || []);
+      const joinS = Engine.career.joinSeason(peer);
+      const histPost = Engine.career.filterPostJoin(allHist, joinS);
+      const hist = histPost.filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
+      const debutEv = histPost.find(e => e.type === 'debut');
+      const titleWins = hist.filter(e => e.type === 'titleWin').length;
+      const mvp = hist.filter(e => e.type === 'awardMVP').length;
+      const bm = hist.filter(e => e.type === 'awardBestMatch').length;
+      const jt = hist.find(e => e.type === 'juniorTournament' && e.result === 'champion');
+      const parts = [];
+      if (debutEv && debutEv.season) parts.push(`S${debutEv.season}デビュー`);
+      if ((peer.peakOVR || 0) >= 80) parts.push(`ピークOVR${peer.peakOVR}`);
+      if (titleWins >= 1) parts.push(titleWins >= 2 ? `${titleWins}度戴冠` : '戴冠経験あり');
+      if (mvp >= 1) parts.push('MVP');
+      if (bm >= 2) parts.push(`ベストマッチ賞${bm}度`);
+      if (jt) parts.push('ジュニアトーナメント優勝');
+      if ((peer.peakPopularity || 0) >= 90) parts.push(`人気${peer.peakPopularity}`);
+      return parts.length > 0 ? parts.join(' / ') : null;
     },
 
     /** era stats (spec §3.2 eraStats) */
@@ -3599,6 +3821,9 @@ const Engine = {
         const mode = Engine.chronicle._classifyChapterMode(b, state);
         eraStats.competitiveRecord = Engine.chronicle._buildCompetitiveRecord(b, mode, eraStats);
         delete eraStats._titleLossInChapter;
+        const externalRivals = Engine.chronicle._buildExternalRivals(b, sel.aces, sel.peers);
+        const aceNarratives = sel.aces.map(a => Engine.chronicle._buildAceNarrative(a, b, sel.aces, sel.peers, state));
+        const peerNarratives = sel.peers.map(p => Engine.chronicle._buildPeerNarrative(p, b, sel.aces, sel.peers, state));
         const hasActiveParticipants = [...sel.aces, ...sel.peers].some(c => c._active);
         chapters.push({
           id: `ch_${b.seasonStart}_${b.seasonEnd}`,
@@ -3609,7 +3834,7 @@ const Engine = {
           _hasActiveParticipants: hasActiveParticipants,
           title,
           subtitle,
-          aces: sel.aces.map(a => ({
+          aces: sel.aces.map((a, i) => ({
             id: a.id, name: a.name, style: a.style,
             personality: a.personality, archetype: a.archetype,
             peakOVR: a.peakOVR,
@@ -3619,9 +3844,10 @@ const Engine = {
             primeEnd: a.primeEnd,
             titleReigns: a.titleReigns || 0,
             totalDefenses: a.totalDefenses || 0,
-            traits: a.traits || []
+            traits: a.traits || [],
+            narrative: aceNarratives[i] || null
           })),
-          peers: sel.peers.map(p => ({
+          peers: sel.peers.map((p, i) => ({
             id: p.id, name: p.name, style: p.style,
             personality: p.personality, archetype: p.archetype,
             peakOVR: p.peakOVR,
@@ -3631,10 +3857,12 @@ const Engine = {
             primeEnd: p.primeEnd,
             titleReigns: p.titleReigns || 0,
             role: p._isIdol ? 'idol' : 'strength',
-            traits: p.traits || []
+            traits: p.traits || [],
+            narrative: peerNarratives[i] || null
           })),
           highlights,
           eraStats,
+          externalRivals,
           closing,
           _topAxis: (() => {
             let k = null, v = 0;

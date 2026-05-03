@@ -8899,6 +8899,48 @@ function _chronicleStyleBlock() {
   color: var(--chr-gold); font-weight: 700;
   text-transform: uppercase; display: block; margin-bottom: 4px;
 }
+.chron-ace-narrative {
+  margin-top: 8px;
+  padding: 8px 12px;
+  font-size: 11.5px; line-height: 1.7;
+  color: var(--chr-ink-sub);
+  background: rgba(220,210,190,0.18);
+  border-left: 2px solid var(--chr-rule-bold);
+  border-radius: 3px;
+}
+.chron-ace-narrative::before {
+  content: '事実'; font-size: 9px; letter-spacing: 1px;
+  color: var(--chr-ink-dim); font-weight: 700;
+  text-transform: uppercase; display: block; margin-bottom: 3px;
+}
+.chron-gen-narrative {
+  font-size: 10px; color: var(--chr-ink-sub);
+  font-weight: 500; margin-top: 3px;
+  line-height: 1.5;
+}
+.chron-rivals {
+  list-style: none; padding: 0; margin: 0;
+}
+.chron-rival {
+  display: flex; flex-wrap: wrap; gap: 6px 12px;
+  padding: 8px 0;
+  border-bottom: 1px dotted var(--chr-rule);
+  align-items: baseline;
+}
+.chron-rival:last-child { border-bottom: none; }
+.chron-rival-org {
+  font-size: 12px; font-weight: 900;
+  color: var(--chr-ink);
+  flex-shrink: 0;
+}
+.chron-rival-record {
+  font-size: 11px; color: var(--chr-ink-mid);
+  font-weight: 700; letter-spacing: 0.3px;
+}
+.chron-rival-opp {
+  font-size: 10px; color: var(--chr-ink-dim);
+  flex-basis: 100%;
+}
 .chron-two-col {
   display: grid; grid-template-columns: 1.4fr 1fr; gap: 0;
 }
@@ -9672,6 +9714,7 @@ function _renderDbChronicle() {
             </div>
           </div>
           <div class="chron-dual-quote">${_chronicleAceQuote(a, current)}</div>
+          ${a.narrative ? `<div class="chron-ace-narrative">${a.narrative}</div>` : ''}
         </div>
       </div>`;
     };
@@ -9713,6 +9756,7 @@ function _renderDbChronicle() {
           </div>
         </div>
         <div class="chron-ace-quote">${_chronicleAceQuote(a, current)}</div>
+        ${a.narrative ? `<div class="chron-ace-narrative">${a.narrative}</div>` : ''}
       </div>
     </div>`;
   }
@@ -9767,8 +9811,32 @@ function _renderDbChronicle() {
           ${isIdol ? `<div class="chron-gen-idol-tag">★ IDOL OF THE ERA</div>` : ''}
           <div class="chron-gen-name">${pNameHtml}</div>
           <div class="chron-gen-meta">${metaParts.join(' ・ ')}</div>
+          ${p.narrative ? `<div class="chron-gen-narrative">${p.narrative}</div>` : ''}
         </div>
         <div class="chron-gen-ovr">${p.peakOVR || 0}</div>
+      </li>`;
+    });
+    html += `</ul>`;
+  }
+
+  // 外部ライバル
+  const xr = current.externalRivals || [];
+  if (xr.length > 0) {
+    html += `<div class="chron-sec-label" style="margin-top:18px">この時代の外敵</div>
+      <ul class="chron-rivals">`;
+    xr.forEach(r => {
+      const recordParts = [];
+      if (r.wins > 0) recordParts.push(`${r.wins}勝`);
+      if (r.losses > 0) recordParts.push(`${r.losses}敗`);
+      if (r.draws > 0) recordParts.push(`${r.draws}分`);
+      const record = recordParts.join('') || `${r.total}戦`;
+      const oppFrag = (r.mainOpponents && r.mainOpponents.length > 0)
+        ? `<span class="chron-rival-opp">主な相手: ${r.mainOpponents.join('・')}</span>`
+        : '';
+      html += `<li class="chron-rival">
+        <div class="chron-rival-org">${r.orgName}</div>
+        <div class="chron-rival-record">${r.total}戦 ${record}</div>
+        ${oppFrag}
       </li>`;
     });
     html += `</ul>`;
