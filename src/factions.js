@@ -560,13 +560,20 @@ Engine.factions = {
       createdWeek: state.week,
       lastLeaderChangeSeason: state.season,
       lastLeaderChangeWeek: state.week,
+      internalChallengeCooldownUntilWeek: 0,
     };
 
     if (typeof console !== 'undefined') {
       console.log(`[WM Faction] ${type === 'loyal' ? 'Loyal' : 'Rivalrous'} faction formed: ${leader.name}組 (members: ${faction.memberIds.length})`);
     }
 
-    return { ...state, factions: [...(state.factions || []), faction] };
+    let next = { ...state, factions: [...(state.factions || []), faction] };
+    // 派閥内ポイント初期割り振り（spec: faction-internal-rank-spec-v0.3 — リーダー初期値 + 非リーダー OVR 順位）
+    // BOND archetype（legacy bond_first 含む）はポイント蓄積を行わないためスキップ
+    if (faction.archetypeId !== 'BOND' && faction.flavor !== 'bond_first') {
+      next = this._allocateInternalPointsByOvrRank(next, faction.id, []);
+    }
+    return next;
   },
 
   // ── §4.2 対立度変動 ──────────────────────────────────────
@@ -4567,11 +4574,15 @@ Engine.factions = {
     return this._setInternalPoints(state, factionId, fighterId, cur + delta);
   },
 
-  // 派閥内ポイント OVR 順位ベース割り振り（spec §4.4）
-  // excludeFighterIds に渡された ID は 0pt のままにする
+  // 派閥内ポイント OVR 順位ベース割り振り（spec §4.4 — v0.3 改訂: リーダーは初期値で最強）
+  // excludeFighterIds に渡された ID は 0pt のままにする（典型: 敗北した旧リーダー / 敗北した挑戦者）
+  // 現リーダー（faction.leaderId）には internalChallengeLeaderInitialPoints を上書きセット
+  // （excludeFighterIds に現リーダーが含まれていても、最後にリーダー初期値で上書き）
   _allocateInternalPointsByOvrRank(state, factionId, excludeFighterIds = []) {
     const cfg = FACTION_CONFIG;
-    const allocation = cfg.internalPointsAllocationByOvrRank || [8, 5, 2, 0];
+    const allocation = cfg.internalPointsAllocationByOvrRank || [4, 2, 1, 0];
+    const leaderInitial = (typeof cfg.internalChallengeLeaderInitialPoints === 'number')
+      ? cfg.internalChallengeLeaderInitialPoints : 0;
     const f = (state.factions || []).find(x => x.id === factionId);
     if (!f) return state;
     let s = this._ensureInternalPointsInit(state);
@@ -4580,8 +4591,9 @@ Engine.factions = {
       s.factionInternalPoints[factionId][id] = 0;
     }
     const exSet = new Set(excludeFighterIds);
+    // 非リーダー候補を OVR 順位で割り振り（現リーダーも候補から除外: リーダーは別経路で初期値）
     const candidates = (f.memberIds || [])
-      .filter(id => !exSet.has(id))
+      .filter(id => !exSet.has(id) && id !== f.leaderId)
       .map(id => {
         const c = (state.roster || []).find(c => c.id === id);
         return c ? { id, ovr: Engine.util.ov(c) } : null;
@@ -4591,6 +4603,10 @@ Engine.factions = {
     for (let i = 0; i < candidates.length; i++) {
       const pt = (i < allocation.length) ? allocation[i] : allocation[allocation.length - 1];
       s.factionInternalPoints[factionId][candidates[i].id] = pt;
+    }
+    // 現リーダーに初期値（exclude されていても上書き — 「就任直後はリーダーが派閥最強」）
+    if (f.leaderId != null && leaderInitial > 0) {
+      s.factionInternalPoints[factionId][f.leaderId] = leaderInitial;
     }
     return s;
   },

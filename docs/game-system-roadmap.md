@@ -1,6 +1,14 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-05-03（派閥内ポイント制 + F-INTERNAL-CHALLENGE Phase 1〜7 全実装）
+> 最終更新: 2026-05-03（派閥内ポイント制 v0.3 — リーダー初期値導入 + 猶予 52→38 週）
+
+## 直近の調整（2026-05-03）
+
+**派閥内ポイント制 数値調整（spec v0.2 → v0.3 相当）。** 初期実装ではリーダー 0pt スタート + 非リーダー [8,5,2,0] OVR 順位だったが、これだと「リーダーが最初から抜かされている」見た目で派閥序列の物語性が崩れる。設計思想を「リーダーは就任時点で派閥最強の地位を持つ。50〜100 週かけて非リーダーが追いつき・追い抜く」に転換。①**FACTION_CONFIG 数値変更**: `internalChallengeGraceWeeksAfterEnthronement` 52→38 / `internalPointsAllocationByOvrRank` [8,5,2,0]→[4,2,1,0] / `internalChallengeLeaderInitialPoints: 12` 新設。②**`_allocateInternalPointsByOvrRank` ヘルパ改修**: 候補計算から現リーダーを常時除外（excludeFighterIds に含まれていなくても）、最後に `f.leaderId` に初期値 12pt を上書き。これで全呼び出し箇所（マイグレーション/createFaction/F03 succession/F05 分裂/applyInternalChallengeResult/_applyArchetypeTransition）が一律に「リーダーは初期値、非リーダーは OVR 順位、除外メンバーは 0pt」になる。③**`createFaction` 修正**: 派閥オブジェクト push 直後にヘルパを呼び、新規派閥誕生時から「リーダー 12pt + 非リーダー OVR 順位」状態に。`internalChallengeCooldownUntilWeek: 0` も初期化に集約。④**マイグレーション v3 追加** (`src/app.js`): `_migrated_factions_internal_points_v3` で既存セーブに新ルールをバックフィル。v2（[8,5,2,0] + リーダー 0pt）から v3（[4,2,1,0] + リーダー 12pt）にスイッチ。⑤**バランス想定**: リーダー 12pt vs 非リーダー 1位 4pt = 8pt 差。挑戦圏内（差 ≥10pt）に入るには非リーダーが +18pt 必要 = 22pt 到達。Common-1 +6pt × 3回 + 派閥外 +2pt × 数回で 50〜80 週で到達想定。猶予 38 週ガード後、最速 38 週・理想 50 週・遅くて 100 週で発火するカーブ。⑥**仕様書 v0.3 化は次セッション以降**: 本コミットは数値調整のみ。実プレイでカーブを観測してから仕様書を確定する。変更: src/data.js(3 項目) + src/factions.js(_allocateInternalPointsByOvrRank ロジック改修 + createFaction 初期割り振り 約 25 行) + src/app.js(マイグレーション v3 約 17 行) + docs/game-system-roadmap.md(本項)。
+
+## 現在の状態
+
+**派閥内ポイント制 + F-INTERNAL-CHALLENGE Phase 1〜7 全実装完了（2026-05-03）。**
 
 ## 現在の状態
 

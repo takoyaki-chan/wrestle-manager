@@ -1507,12 +1507,14 @@ const FACTION_CONFIG = {
   internalPointsF09Multiplier: 1.5,
   // §4.1 挑戦権発火条件
   internalChallengeMinFactionSize: 4,
-  internalChallengeGraceWeeksAfterEnthronement: 52,
+  internalChallengeGraceWeeksAfterEnthronement: 38,
   internalChallengeThresholdGap: 10,
   internalChallengeThresholdGapFace: 15,
   internalChallengeCooldownWeeks: 24,
-  // §4.4 OVR 順位ベース割り振り（[1位, 2位, 3位, 4位以下]）
-  internalPointsAllocationByOvrRank: [8, 5, 2, 0],
+  // §4.4 リーダー初期ポイント（就任時点でリーダーが派閥最強の序列を持つ）
+  internalChallengeLeaderInitialPoints: 12,
+  // §4.4 非リーダー OVR 順位ベース割り振り（[1位, 2位, 3位, 4位以下]）
+  internalPointsAllocationByOvrRank: [4, 2, 1, 0],
   // §4.4 結果効果
   internalChallengeWinnerTrustGain: { min: 5, max: 8 },
   internalChallengeWinnerPopGain: { min: 3, max: 5 },
