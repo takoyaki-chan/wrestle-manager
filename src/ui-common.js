@@ -1871,6 +1871,9 @@ function showRetirementPopups(retirements, onAllDone) {
 }
 
 function _renderRetirementPopup() {
+  try {
+    console.warn('[WM][retire-popup-render]', { queueLen: _retirementPopupQueue.length });
+  } catch (_e) {}
   if (_retirementPopupQueue.length === 0) {
     if (_retirementPopupCallback) { _retirementPopupCallback(); _retirementPopupCallback = null; }
     return;

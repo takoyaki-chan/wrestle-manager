@@ -7202,6 +7202,12 @@ const App = {
       const { _pendingInjuryRetirements: _, ...cleanG } = G;
       G = cleanG;
     }
+    try {
+      console.warn('[WM][injury-retire-diag] entry',
+        { count: pendingInjuryRetirements.length,
+          names: pendingInjuryRetirements.map(r => r?.fighter?.name),
+          season: G.season, week: G.week });
+    } catch (_e) {}
     // 怪我引退セリフの取りこぼし救済: lookup 失敗・transient 欠落で _pendingInjuryRetirements に
     // 載らなかった「今週の怪我引退者」を retiredFighters の最新 retire イベントから復元する
     {
@@ -8067,13 +8073,56 @@ const App = {
       G = cleanGe;
     }
     // 自主引退処理（モチベ喪失24週超え）
-    const motivRetirements = G._pendingMotivationRetirements || [];
+    let motivRetirements = G._pendingMotivationRetirements || [];
     if (G._pendingMotivationRetirements) {
       const { _pendingMotivationRetirements: _, ...cleanMr } = G;
       G = cleanMr;
     }
+    try {
+      console.warn('[WM][motiv-retire-diag] entry',
+        { count: motivRetirements.length,
+          ids: motivRetirements.map(r => r?.fighterId),
+          season: G.season, week: G.week });
+    } catch (_e) {}
+    // モチベ喪失引退セリフの取りこぼし救済: lookup 失敗・transient 欠落で
+    // _pendingMotivationRetirements に載らなかった「今週のモチベ喪失引退者」を
+    // retiredFighters の最新 retire イベントから復元する。本人は既に roster から
+    // 抜けて retiredFighters に入っているので、_recoveredFighter で直接渡す。
+    {
+      const queuedIds = new Set(
+        motivRetirements.map(r => r?.fighterId).filter(id => id != null)
+      );
+      const orphanedMR = (G.retiredFighters || []).filter(f => {
+        if (!f || queuedIds.has(f.id)) return false;
+        const history = f.careerRecord?.history || [];
+        const latestRetire = [...history].reverse().find(h => h.type === 'retire');
+        if (!latestRetire) return false;
+        if (latestRetire.season !== G.season) return false;
+        // motivation 引退の history は week が省略されているケースがあるので、
+        // week 一致は緩めに扱う（同シーズン+reason一致で同定）
+        return latestRetire.reason === 'motivation';
+      });
+      if (orphanedMR.length > 0) {
+        orphanedMR.forEach(f => {
+          console.warn('[WM] motivation retirement recovered via fallback', { id: f.id, name: f.name });
+          motivRetirements = [...motivRetirements, { fighterId: f.id, _recoveredFighter: f }];
+        });
+      }
+    }
     if (motivRetirements.length > 0) {
       motivRetirements.forEach(r => {
+        if (r._recoveredFighter) {
+          // フォールバック復元ルート: 既に retiredFighters に入っているので
+          // セリフ生成と showRetirementPopups だけ走らせる
+          const recF = r._recoveredFighter;
+          const lineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xAA18, recF.id));
+          const { line } = Engine.retirement.selectLine(recF, 'motivation', G, lineRng);
+          const summary = Engine.retirement.buildCareerSummary(recF);
+          const delay = (newInjuries.length + flavorEvents.length) * 100 + 200;
+          console.warn('[WM][motiv-retire-diag] firing recovered showRetirementPopups', { id: recF.id, name: recF.name });
+          setTimeout(() => showRetirementPopups([{ fighter: recF, route: 'motivation', line, summary }]), delay);
+          return;
+        }
         const f = G.roster.find(c => c.id === r.fighterId);
         if (!f) return;
         const lineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xAA18, f.id));
@@ -8096,6 +8145,7 @@ const App = {
         // §2.3: 引退者の関係値を凍結
         if (G.relationships) G = Engine.relationships.freezeRelationships(G, f.id);
         const delay = (newInjuries.length + flavorEvents.length) * 100 + 200;
+        console.warn('[WM][motiv-retire-diag] firing showRetirementPopups', { id: retiredF.id, name: retiredF.name });
         setTimeout(() => showRetirementPopups([{ fighter: retiredF, route: 'motivation', line, summary }]), delay);
       });
     }

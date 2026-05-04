@@ -1,6 +1,10 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-05-04（年代記 章重複リデザイン Phase A）
+> 最終更新: 2026-05-05（シーズン中引退ポップアップ 診断補強）
+
+## 直近の調整（2026-05-05 シーズン中引退ポップアップ 診断補強）
+
+ユーザー報告「シーズン中の引退ポップアップが出なくなっているかもしれない」(再現セーブなし)を受け、3 経路あるシーズン中引退ポップアップの取りこぼし防止を強化。①**モチベ喪失引退に第2層フォールバック追加** (src/app.js): 怪我引退/ラストラン引退には既に retiredFighters の最新 retire イベントから復元する fallback があるが、モチベ喪失引退ルート (`_pendingMotivationRetirements`) には fallback が無く、transient フィールドが何らかの事情で消えると本人ポップアップがゼロになる構造だった。同シーズン+`reason='motivation'` の retire イベントを走査して `_recoveredFighter` 経由でセリフ生成・showRetirementPopups だけ走らせる救済を追加。②**3 経路の診断ログを揃える**: 既存のラストラン (`[WM][lastrun-diag]`) と同形で、怪我引退エントリ (`[WM][injury-retire-diag]`) とモチベ喪失引退エントリ + 発火直前 (`[WM][motiv-retire-diag]`) にも console.warn を追加。次回再発時にエンジン側で積まれていないのか・受け取り側で消えたのか・popup が enqueue されたのに UI が描画しないのかを切り分けられるようにする。③**`_renderRetirementPopup` 診断** (src/ui-common.js): 描画関数の冒頭で `queueLen` を console.warn し、空キューで即 done に流れるケースを把握。④**触らない領域**: popupActions チェーン構造、_enqueuePopup/_drainPopupQueue、エンジン側の pending フィールド生成ロジック、ラストラン引退の既存 3 段 fallback (74bf69d で修正済み) は無変更。⑤**検証**: ログ追加 + 異常時のみ発火する fallback で通常プレイの挙動は不変、auto-sim はスキップ (UI/演出のみで試合数値・判定に影響しないため)。変更: src/app.js(モチベ喪失引退フォールバック + 3 種診断ログ 約 50 行) + src/ui-common.js(_renderRetirementPopup 診断ログ 3 行) + docs/game-system-roadmap.md(本項)。
 
 ## 直近の調整（2026-05-04 年代記 駆け出し章アンカー + era-OVR 補間）
 
