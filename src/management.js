@@ -3111,6 +3111,76 @@ const Engine = {
       };
     },
 
+    /** Phase D: 二枚看板章の記者の目を 1 つに統合。
+     *  両エースの quote が個別に並ぶと slot (topRival / eraTag / next 章) が同じで
+     *  内容がほぼ同じに読めてしまうため、二人の名前を入れた単一 quote を返す。 */
+    QUOTE_TEMPLATES_DUAL: {
+      sectionA: [
+        '{surname1}と{surname2}は二枚看板としてこの章の主役を担った。{topRivalClause}{warClause}',
+        '{surname1}と{surname2}が並走したこの章は、二人の名前なしには語れない。{topVenueClause}',
+        '王座とリングの中心を{surname1}と{surname2}が分け合い、団体は二つの頂を持つ時代に入った。'
+      ],
+      sectionB: [
+        '二人が引っ張った時代、{org}全体の試合運びには{spiritAxis}の色が濃く染み込んでいった。',
+        '{eraTag}と呼ばれるこの章で、{surname1}と{surname2}はそれぞれ別の頂点を立てた。',
+        'OVR と人気の双方で団体を支えた二人の在位は、{eraTag}そのものだった。'
+      ],
+      sectionC: [
+        '二人が走り抜けた後、次章の主役{nextChapterTopSurname}が立ち上がる足場ができていた。',
+        '{surname1}と{surname2}が並走した時代の余熱は、{risingPeerSurname}ら次世代に継がれた。',
+        '二つの頂が並んだこの章が閉じるとき、団体には{successorStyle}を継ぐ若手の影が伸び始めていた。'
+      ]
+    },
+
+    buildDualAceQuote(aces, chapter, state) {
+      if (!aces || aces.length < 2) {
+        return Engine.chronicle.buildAceQuote(aces[0], chapter, state);
+      }
+      const [a1, a2] = aces;
+      // 主役の context を a1 ベースで取り、{surname2} を追加
+      const ctx = Engine.chronicle._buildQuoteContext(a1, chapter, state);
+      ctx.surname1 = ctx.surname;
+      ctx.surname2 = Engine.chronicle._getSurname(a2);
+      const seedBase = (state && state.rngSeed) || 1;
+      const aceIdNum = (typeof a1.id === 'number' ? a1.id : (Number(a1.id) || 0))
+        + (typeof a2.id === 'number' ? a2.id : (Number(a2.id) || 0));
+      const fillSlots = (tpl) => tpl
+        .replace(/\{surname1\}/g, ctx.surname1)
+        .replace(/\{surname2\}/g, ctx.surname2)
+        .replace(/\{surname\}/g, ctx.surname1)
+        .replace(/\{styleJa\}/g, ctx.styleJa)
+        .replace(/\{org\}/g, ctx.org)
+        .replace(/\{titleReigns\}/g, String(ctx.titleReigns))
+        .replace(/\{defenses\}/g, String(ctx.defenses))
+        .replace(/\{peakOVR\}/g, String(ctx.peakOVR))
+        .replace(/\{peakPop\}/g, String(ctx.peakPop))
+        .replace(/\{topRivalSurname\}/g, ctx.topRivalSurname || '')
+        .replace(/\{topRivalClause\}/g, ctx.topRivalClause)
+        .replace(/\{topVenue\}/g, ctx.topVenue || '')
+        .replace(/\{topVenueClause\}/g, ctx.topVenueClause)
+        .replace(/\{warOpponentOrg\}/g, ctx.warOpponentOrg || '')
+        .replace(/\{warRecord\}/g, ctx.warRecord)
+        .replace(/\{warClause\}/g, ctx.warClause)
+        .replace(/\{risingPeerSurname\}/g, ctx.risingPeerSurname || '')
+        .replace(/\{risingClause\}/g, ctx.risingClause)
+        .replace(/\{nextChapterTopSurname\}/g, ctx.nextChapterTopSurname || '')
+        .replace(/\{successorStyle\}/g, ctx.successorStyle)
+        .replace(/\{eraTag\}/g, ctx.eraTag)
+        .replace(/\{spiritAxis\}/g, ctx.spiritAxis);
+      const v2 = Engine.chronicle.QUOTE_TEMPLATES_DUAL;
+      const pickIdx = (arr, salt) => {
+        const seed = Engine.rng.derive(seedBase, chapter.number || chapter.seasonStart || 0, aceIdNum, salt);
+        return ((seed | 0) % arr.length + arr.length) % arr.length;
+      };
+      const A = fillSlots(v2.sectionA[pickIdx(v2.sectionA, 0xCB40)]);
+      const bSeed = Engine.rng.derive(seedBase, chapter.number || 0, aceIdNum, 0xCB50);
+      const bShown = (Math.abs(bSeed | 0) % 100) < 80;
+      const B = bShown ? fillSlots(v2.sectionB[pickIdx(v2.sectionB, 0xCB51)]) : '';
+      const isLatest = chapter.status === 'in_progress';
+      const C = isLatest ? '' : fillSlots(v2.sectionC[pickIdx(v2.sectionC, 0xCB60)]);
+      return [A, B, C].filter(Boolean).join('');
+    },
+
     /** Phase C: V2 段別テンプレ + V1 後方互換ありの記者の目本体 */
     buildAceQuote(ace, chapter, state) {
       const category = Engine.chronicle._classifyAceQuoteCategory(ace, chapter, state);

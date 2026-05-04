@@ -9171,6 +9171,16 @@ function _chronicleStyleBlock() {
 .chron-gen-ovr {
   font-size: 17px; color: var(--chr-ink-mid);
   letter-spacing: 0.5px; flex-shrink: 0; font-weight: 700;
+  display: flex; flex-direction: column; align-items: flex-end; line-height: 1.05;
+}
+.chron-gen-ovr .chron-gen-stat-key {
+  font-size: 8px; letter-spacing: 1.2px;
+  color: var(--chr-ink-dim); font-weight: 700;
+  margin-top: 2px;
+}
+.chron-gen-ovr .chron-gen-pop {
+  font-size: 14px; color: var(--chr-ink-dim);
+  font-weight: 700; margin-top: 1px;
 }
 .chron-gen-member.idol {
   background: var(--chr-idol-bg);
@@ -9425,6 +9435,11 @@ function _chronicleStyleBlock() {
   line-height: 1; font-weight: 700;
 }
 .chron-dual-meta-val .small { font-size: 10px; color: var(--chr-ink-dim); }
+.chron-dual-shared-quote {
+  margin: 0 22px 14px;
+  font-size: 12px;
+  line-height: 1.7;
+}
 .chron-dual-quote {
   font-size: 11px; line-height: 1.65;
   color: var(--chr-ink-sub);
@@ -9926,7 +9941,6 @@ function _renderDbChronicle() {
               <div class="chron-dual-meta-val">${a.titleReigns || 0}<span class="small">戴冠</span></div>
             </div>
           </div>
-          <div class="chron-dual-quote">${_chronicleAceQuote(a, current)}</div>
           ${a.narrative ? `<div class="chron-ace-narrative">${a.narrative}</div>` : ''}
         </div>
       </div>`;
@@ -9936,6 +9950,8 @@ function _renderDbChronicle() {
       <div class="chron-dual-divider"><div class="chron-dual-vs">＆</div></div>
       ${buildDualCard(aces[1])}
     </div>`;
+    // 統合「記者の目」: 二枚看板の quote が個別だと内容が酷似するため 1 つにまとめる
+    html += `<div class="chron-ace-quote chron-dual-shared-quote">${Engine.chronicle.buildDualAceQuote(aces, current, G)}</div>`;
   } else {
     // ── 単独エースレイアウト（従来ベース） ──────────────────
     const a = aces[0];
@@ -9997,6 +10013,51 @@ function _renderDbChronicle() {
     });
     html += `</ul>`;
   }
+
+  // 左列に「外敵」と「通算」を移動して左右のボリュームを揃える (Phase D 微調整)
+  const xrLeft = current.externalRivals || [];
+  if (xrLeft.length > 0) {
+    html += `<div class="chron-sec-label" style="margin-top:18px">この時代の外敵</div>
+      <ul class="chron-rivals">`;
+    xrLeft.forEach(r => {
+      const recordParts = [];
+      if (r.wins > 0) recordParts.push(`${r.wins}勝`);
+      if (r.losses > 0) recordParts.push(`${r.losses}敗`);
+      if (r.draws > 0) recordParts.push(`${r.draws}分`);
+      const record = recordParts.join('') || `${r.total}戦`;
+      const oppFrag = (r.mainOpponents && r.mainOpponents.length > 0)
+        ? `<span class="chron-rival-opp">主な相手: ${r.mainOpponents.join('・')}</span>`
+        : '';
+      html += `<li class="chron-rival">
+        <div class="chron-rival-org">${r.orgName}</div>
+        <div class="chron-rival-record">${r.total}戦 ${record}</div>
+        ${oppFrag}
+      </li>`;
+    });
+    html += `</ul>`;
+  }
+  {
+    const es = current.eraStats || {};
+    html += `<div class="chron-sec-label" style="margin-top:18px">この時代の通算</div>
+      <div class="chron-era-stats">
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">TITLES</div>
+          <div class="chron-era-stat-val">${es.totalTitleWins || 0}<span class="small">戴冠</span></div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">${es.competitiveRecord ? es.competitiveRecord.label : 'VS S-TIER'}</div>
+          <div class="chron-era-stat-val">${es.competitiveRecord ? _chronicleCompetitiveValueHtml(es.competitiveRecord.valueText) : `${(es.vsStier && es.vsStier.wins) || 0}<span class="small">勝</span>${(es.vsStier && es.vsStier.losses) || 0}<span class="small">敗</span>`}</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">PEAK POP</div>
+          <div class="chron-era-stat-val">${es.peakOrgPop || 0}</div>
+        </div>
+        <div class="chron-era-stat">
+          <div class="chron-era-stat-key">STATUS</div>
+          <div class="chron-era-stat-val" style="font-size:11px">${current.status === 'confirmed' ? '確定' : '進行中'}</div>
+        </div>
+      </div>`;
+  }
   html += `</div><div class="chron-col-right">
     <div class="chron-sec-label">この時代の同期</div>`;
   if (peers.length === 0) {
@@ -10040,57 +10101,19 @@ function _renderDbChronicle() {
           <div class="chron-gen-meta">${metaParts.join(' ・ ')}</div>
           ${p.narrative ? `<div class="chron-gen-narrative">${p.narrative}</div>` : ''}
         </div>
-        <div class="chron-gen-ovr">${p.peakOVR || 0}</div>
+        <div class="chron-gen-ovr">
+          <span class="chron-gen-ovr-val">${p.peakOVR || 0}</span>
+          <span class="chron-gen-stat-key">OVR</span>
+          <span class="chron-gen-pop">${p.peakPopularity || 0}</span>
+          <span class="chron-gen-stat-key">人気</span>
+        </div>
       </li>`;
     });
     html += `</ul>`;
   }
 
-  // 外部ライバル
-  const xr = current.externalRivals || [];
-  if (xr.length > 0) {
-    html += `<div class="chron-sec-label" style="margin-top:18px">この時代の外敵</div>
-      <ul class="chron-rivals">`;
-    xr.forEach(r => {
-      const recordParts = [];
-      if (r.wins > 0) recordParts.push(`${r.wins}勝`);
-      if (r.losses > 0) recordParts.push(`${r.losses}敗`);
-      if (r.draws > 0) recordParts.push(`${r.draws}分`);
-      const record = recordParts.join('') || `${r.total}戦`;
-      const oppFrag = (r.mainOpponents && r.mainOpponents.length > 0)
-        ? `<span class="chron-rival-opp">主な相手: ${r.mainOpponents.join('・')}</span>`
-        : '';
-      html += `<li class="chron-rival">
-        <div class="chron-rival-org">${r.orgName}</div>
-        <div class="chron-rival-record">${r.total}戦 ${record}</div>
-        ${oppFrag}
-      </li>`;
-    });
-    html += `</ul>`;
-  }
-
-  // Era stats
-  const es = current.eraStats || {};
-  html += `<div class="chron-sec-label" style="margin-top:18px">この時代の通算</div>
-    <div class="chron-era-stats">
-      <div class="chron-era-stat">
-        <div class="chron-era-stat-key">TITLES</div>
-        <div class="chron-era-stat-val">${es.totalTitleWins || 0}<span class="small">戴冠</span></div>
-      </div>
-      <div class="chron-era-stat">
-        <div class="chron-era-stat-key">${es.competitiveRecord ? es.competitiveRecord.label : 'VS S-TIER'}</div>
-        <div class="chron-era-stat-val">${es.competitiveRecord ? _chronicleCompetitiveValueHtml(es.competitiveRecord.valueText) : `${(es.vsStier && es.vsStier.wins) || 0}<span class="small">勝</span>${(es.vsStier && es.vsStier.losses) || 0}<span class="small">敗</span>`}</div>
-      </div>
-      <div class="chron-era-stat">
-        <div class="chron-era-stat-key">PEAK POP</div>
-        <div class="chron-era-stat-val">${es.peakOrgPop || 0}</div>
-      </div>
-      <div class="chron-era-stat">
-        <div class="chron-era-stat-key">STATUS</div>
-        <div class="chron-era-stat-val" style="font-size:11px">${current.status === 'confirmed' ? '確定' : '進行中'}</div>
-      </div>
-    </div>
-  </div></div>`;
+  // 外敵 / 通算 は左列へ移動済み (Phase D 微調整)
+  html += `</div></div>`;
 
   // Closing
   if (current.closing) {
