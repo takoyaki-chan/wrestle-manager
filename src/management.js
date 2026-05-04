@@ -2789,15 +2789,20 @@ const Engine = {
       let total = 0;
       byBelt.forEach((evs) => {
         evs.sort((a, b) => (a.season || 0) - (b.season || 0) || (a.week || 0) - (b.week || 0));
-        let reignDefMax = 0;
-        let reignDefCount = 0;
+        let reignMaxIn = 0;            // 章内 titleDefense の max(count)
+        let reignMaxBeforeChapter = 0; // 章開始前 titleDefense の max(count) 同レイン分
+        let reignDefCountIn = 0;       // 章内 titleDefense 件数 (count 未設定救済)
         let reignCountedInChapter = false;
         const flushReign = () => {
           if (reignCountedInChapter) {
-            total += reignDefMax > 0 ? reignDefMax : reignDefCount;
+            const delta = reignMaxIn > 0
+              ? (reignMaxIn - reignMaxBeforeChapter)
+              : reignDefCountIn;
+            total += Math.max(0, delta);
           }
-          reignDefMax = 0;
-          reignDefCount = 0;
+          reignMaxIn = 0;
+          reignMaxBeforeChapter = 0;
+          reignDefCountIn = 0;
           reignCountedInChapter = false;
         };
         evs.forEach(e => {
@@ -2806,14 +2811,12 @@ const Engine = {
           } else if (e.type === 'titleDefense') {
             if (inRange(e)) {
               reignCountedInChapter = true;
-              reignDefMax = Math.max(reignDefMax, e.count || 0);
-              reignDefCount += 1;
+              reignMaxIn = Math.max(reignMaxIn, e.count || 0);
+              reignDefCountIn += 1;
+            } else if ((e.season || 0) < sStart) {
+              reignMaxBeforeChapter = Math.max(reignMaxBeforeChapter, e.count || 0);
             }
           } else if (e.type === 'titleLoss') {
-            // titleLoss.defenses が在位中の最終防衛数なら採用 (count フィールド未設定のセーブ救済)
-            if (reignCountedInChapter && (e.defenses || 0) > reignDefMax) {
-              reignDefMax = e.defenses || 0;
-            }
             flushReign();
           }
         });
@@ -3112,10 +3115,19 @@ const Engine = {
           weighted[s] += Engine.chronicle._heroScore(c);
         }
       });
-      // 最初に候補のピークが出現するシーズン
+      // 序章 (G.prologue) があるなら S1〜startSeason付近を序章が吸収するので
+      // 章は最初の英雄値出現 season から開始する。
+      // 序章が無い旧セーブ (マイグレーション前) は cursor=1 から章を切り、
+      // 自然に複数章に分かれるようにする (重複や選手再登場は許容)。
+      const _hasPrologue = !!(state && state.prologue
+        && (state.prologue.status === 'in_progress' || state.prologue.status === 'confirmed')
+        && Array.isArray(state.prologue.founderIds)
+        && state.prologue.founderIds.length > 0);
       let firstPeak = 1;
-      for (let i = 1; i <= currentSeason; i++) {
-        if (weighted[i] > 0) { firstPeak = i; break; }
+      if (_hasPrologue) {
+        for (let i = 1; i <= currentSeason; i++) {
+          if (weighted[i] > 0) { firstPeak = i; break; }
+        }
       }
       const bounds = [];
       let cursor = firstPeak;
