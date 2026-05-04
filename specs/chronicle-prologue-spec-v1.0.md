@@ -158,5 +158,16 @@ hardcoded 16進カラーは使わず `var(--chr-*)` トークン経由。
 
 - `plans/chronicle-prologue-plan-v1.0.md` — 実装計画書
 - `docs/ui/mockups/chronicle-prologue-mockup-v0.1.html` — UIモックアップ (VARIANT B 採用)
-- `specs/chronicle-system-spec-v0.1.md` / `-v0.2.md` — 既存年代記
+- `specs/chronicle-system-spec-v0.1.md` / `-v0.2.md` / `-v0.3.md` — 既存年代記
+
+## 11. v0.3 連携メモ (2026-05-04 追記)
+
+`specs/chronicle-system-spec-v0.3.md` で章重複が許容されたため、**序章と CH.1 / 駆け出し章のシーズン窓は重なってよい**。
+
+- 序章 = S1-S2 固定の旗揚げ専用レイヤー (本仕様、不変)
+- 駆け出し章 (`_fledgling=true`) = 章重複 v0.3 で導入された S1-S2 固定の synthetic 章。`_segmentChapters` が常に先頭に挿入する
+- 両者は別レイヤーで併存する。序章は旗揚げメンバー視点、駆け出し章はその時点ロスター視点 (序章後に加入した選手も含む)
+- 序章メンバーの一部が駆け出し章にも「ベテラン」「中堅」として登場することは許容 (v0.3 の重複登場ルールと一致)
+
+序章の独立性 (本仕様 §6 「既存 `_segmentChapters` への変更禁止」) は v0.3 でも維持される。v0.3 は `Engine.chronicle._segmentChapters` を全面書き換えしているが、序章は `G.prologue` 単独レイヤーなので影響を受けない。
 - `CLAUDE.md` — プロジェクト哲学
