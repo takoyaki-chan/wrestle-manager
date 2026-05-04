@@ -9935,9 +9935,7 @@ function _renderDbChronicle() {
       const isVeteran = p.role === 'veteran';
       const styleLabel = _chronicleStyleLabel(p.style);
       const metaParts = [styleLabel];
-      // peakOVR / peakPopularity を併記 (idol/rising/strength/veteran 共通)
-      metaParts.push(`OVR${p.peakOVR || 0}`);
-      metaParts.push(`人気${p.peakPopularity || 0}`);
+      // peer 行は narrative を主役に。OVR/人気 の数値繰り返しは ace 側のタイルに集約。
       if (isIdol && p.traits && p.traits.length > 0) metaParts.push(p.traits.slice(0, 2).join('・'));
       else if (p.titleReigns > 0) metaParts.push(`${p.titleReigns}度戴冠`);
       // HoFバッジ (hofSet は上のエースセクションで定義済み)

@@ -4014,25 +4014,95 @@ const Engine = {
     },
 
     /** 同期(peer)の事実ベース1行叙述 */
+    /** Phase B: peer narrative を「活躍 + 人間関係」を語る prose 形式に拡張。
+     *  ・stage (rising/prime/veteran/idol) に応じた語り口を変える
+     *  ・章窓内の戴冠/防衛/MVP/対外戦などの活躍を 1 文目に
+     *  ・章窓内の h2h.history で最も多く当たった相手を「印象に残った相手」として 2 文目に
+     *  ・該当が無ければ stage 別の最小フォールバック */
     _buildPeerNarrative(peer, chapter, aces, peers, state) {
+      const surname = Engine.chronicle._getSurname(peer);
+      const role = peer._role || (peer._isIdol ? 'idol' : 'strength');
+      const stage = peer._stage || 'prime';
       const allHist = ((peer.careerRecord || {}).history || []);
       const joinS = Engine.career.joinSeason(peer);
       const histPost = Engine.career.filterPostJoin(allHist, joinS);
       const hist = histPost.filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
-      const debutEv = histPost.find(e => e.type === 'debut');
       const titleWins = hist.filter(e => e.type === 'titleWin').length;
+      const defenses = Engine.chronicle._countChapterDefensesForAce(peer, chapter, state);
       const mvp = hist.filter(e => e.type === 'awardMVP').length;
       const bm = hist.filter(e => e.type === 'awardBestMatch').length;
-      const jt = hist.find(e => e.type === 'juniorTournament' && e.result === 'champion');
-      const parts = [];
-      if (debutEv && debutEv.season) parts.push(`S${debutEv.season}デビュー`);
-      if ((peer.peakOVR || 0) >= 80) parts.push(`ピークOVR${peer.peakOVR}`);
-      if (titleWins >= 1) parts.push(titleWins >= 2 ? `${titleWins}度戴冠` : '戴冠経験あり');
-      if (mvp >= 1) parts.push('MVP');
-      if (bm >= 2) parts.push(`ベストマッチ賞${bm}度`);
-      if (jt) parts.push('ジュニアトーナメント優勝');
-      if ((peer.peakPopularity || 0) >= 90) parts.push(`人気${peer.peakPopularity}`);
-      return parts.length > 0 ? parts.join(' / ') : null;
+      const jt = hist.some(e => e.type === 'juniorTournament' && e.result === 'champion');
+      const ppvMain = hist.filter(e => e.type === 'ppvMainEvent').length;
+      const warWins = hist.filter(e => e.type === 'war' && e.won === true).length;
+      const warLosses = hist.filter(e => e.type === 'war' && e.won === false).length;
+
+      // 活躍要約
+      const ach = [];
+      if (titleWins >= 1) ach.push(titleWins >= 2 ? `王座を${titleWins}度奪取し` : '王座を奪い');
+      if (defenses >= 1) ach.push(`${defenses}度の防衛を重ね`);
+      if (ppvMain >= 1) ach.push(ppvMain >= 2 ? `PPV のメインを${ppvMain}度張り` : 'PPV のメインを張り');
+      if (mvp >= 1) ach.push('MVP に輝き');
+      if (bm >= 1) ach.push(bm >= 2 ? `ベストマッチ賞を${bm}度受け` : 'ベストマッチ賞を獲り');
+      if (jt) ach.push('ジュニアトーナメントを制し');
+      if (warWins >= 1) ach.push(`対外戦で${warWins}勝を上げ`);
+      else if (warLosses >= 2) ach.push(`他団体の壁を前に${warLosses}敗を喫し`);
+      const achText = ach.join('、');
+
+      // 印象に残った相手 (章窓内の h2h.history 件数で抽出)
+      let topRivalSurname = '';
+      let topCount = 0;
+      const h2hAll = (state && state.h2h) || {};
+      Object.keys(h2hAll).forEach(key => {
+        const parts = key.split('>');
+        if (parts.length !== 2) return;
+        const idA = parseInt(parts[0], 10);
+        const idB = parseInt(parts[1], 10);
+        if (idA !== peer.id && idB !== peer.id) return;
+        const entry = h2hAll[key];
+        const inWin = ((entry && entry.history) || []).filter(h => {
+          const s = (h.s != null ? h.s : (h.season || 0));
+          return s >= chapter.seasonStart && s <= chapter.seasonEnd;
+        }).length;
+        if (inWin > topCount) {
+          topCount = inWin;
+          const otherId = idA === peer.id ? idB : idA;
+          const r = (state.roster || []).find(c => c.id === otherId)
+            || ((state.chronicle && state.chronicle.fighterArchive) || []).find(a => a.id === otherId)
+            || (typeof ALL_CHARS !== 'undefined' && ALL_CHARS.find(c => c.id === otherId));
+          if (r) topRivalSurname = Engine.chronicle._getSurname(r);
+        }
+      });
+
+      // stage 別の語り口
+      let prefix;
+      if (role === 'idol') {
+        prefix = `${surname}は人気で会場を支え`;
+      } else if (stage === 'rising') {
+        prefix = `${surname}は若手として頭角を現し`;
+      } else if (stage === 'veteran') {
+        prefix = `キャリア晩期の${surname}は`;
+      } else {
+        prefix = `${surname}はこの章で`;
+      }
+
+      const sentences = [];
+      if (achText) {
+        sentences.push(`${prefix}、${achText}この章を支えた。`);
+      } else if (stage === 'rising') {
+        sentences.push(`${surname}は若手としてこの章に名を連ね、次の時代への足がかりを作った。`);
+      } else if (stage === 'veteran') {
+        sentences.push(`キャリア晩期の${surname}は若手の前で背中を見せ続けた。`);
+      } else if (role === 'idol') {
+        sentences.push(`${surname}は華のあるキャラクターで会場を埋め、戦績では測れない存在感を残した。`);
+      } else {
+        sentences.push(`${surname}はこの章のリングに立ち続け、団体の地力となった。`);
+      }
+      if (topRivalSurname && topCount >= 2) {
+        sentences.push(`${topRivalSurname}との度重なる対戦が、この時代の${surname}の輪郭を形作った。`);
+      } else if (topRivalSurname && topCount === 1) {
+        sentences.push(`${topRivalSurname}との一戦が、この章の${surname}を語る上で外せない。`);
+      }
+      return sentences.join('');
     },
 
     /** era stats (spec §3.2 eraStats) */
