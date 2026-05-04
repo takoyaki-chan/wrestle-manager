@@ -5433,12 +5433,16 @@ Engine.factions = {
     const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[Math.floor(Math.random() * arr.length)] : '';
     if (category === 'newcomer') {
       const fighter = ctx && ctx.fighter;
-      const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'introverted';
-      const arr = table.newcomer[personality] || table.newcomer.introverted;
+      const arch = (fighter && fighter.archetype) || 'normal';
+      const arr = table.newcomer[arch] || table.newcomer.normal;
       return pickArr(arr);
     }
     if (category === 'reaction') {
-      const arr = table.reaction[ctx && ctx.archetypeId] || table.reaction._any;
+      const factionArch = ctx && ctx.archetypeId;
+      const newcomer = ctx && (ctx.newcomerFighter || ctx.fighter);
+      const newcomerArch = (newcomer && newcomer.archetype) || 'normal';
+      const node = (factionArch && table.reaction[factionArch]) || null;
+      const arr = (node && (node[newcomerArch] || node.normal)) || table.reaction._any;
       return pickArr(arr);
     }
     return '';

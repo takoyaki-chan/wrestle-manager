@@ -9189,11 +9189,11 @@ const App = {
         renderWeekScreen && renderWeekScreen();
         const requester = _findRequester();
         const reqName = requester.name || '';
-        // 性格別ティッカーセリフ（CHALLENGE_REQUEST_NO_LINES から1行抽選）
+        // archetype 別ティッカーセリフ（CHALLENGE_REQUEST_NO_LINES から1行抽選）
         let noLine = `${reqName} の直訴を見送った。`;
         if (typeof CHALLENGE_REQUEST_NO_LINES !== 'undefined') {
-          const pers = requester.personality || 'normal';
-          const arr = CHALLENGE_REQUEST_NO_LINES[pers] || CHALLENGE_REQUEST_NO_LINES.normal;
+          const arch = requester.archetype || 'normal';
+          const arr = CHALLENGE_REQUEST_NO_LINES[arch] || CHALLENGE_REQUEST_NO_LINES.normal;
           if (arr && arr.length > 0) {
             const lineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, payload.selfId, 0xC4A2));
             const line = arr[Engine.rng.int(lineRng, 0, arr.length - 1)];

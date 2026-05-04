@@ -9578,15 +9578,15 @@ function showFactionCommon3Modal(payload, state, onClose) {
     ? Engine.factions.getCommon3Line('newcomer', { fighter: newcomer })
     : 'よろしくお願いします。';
   const reactionLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getCommon3Line)
-    ? Engine.factions.getCommon3Line('reaction', { archetypeId })
+    ? Engine.factions.getCommon3Line('reaction', { archetypeId, newcomerFighter: newcomer })
     : 'よろしく。';
 
-  const newcomerPortrait = newcomerUrl
-    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${newcomerUrl}');width:96px;height:120px"></div>`
-    : `<div class="fevt-subject-portrait-wrap" style="width:96px;height:120px"></div>`;
-  const leaderPortrait = leaderUrl
-    ? `<div class="fevt-follower-portrait" style="background-image:url('${leaderUrl}');background-size:cover;background-position:center 20%"></div>`
-    : `<div class="fevt-follower-portrait"></div>`;
+  const newcomerStyle = newcomerUrl
+    ? `background-image:url('${newcomerUrl}');background-size:cover;background-position:center 20%`
+    : '';
+  const leaderStyle = leaderUrl
+    ? `background-image:url('${leaderUrl}');background-size:cover;background-position:center 20%`
+    : '';
 
   const html = `
     <div class="fevt-overlay-office" id="fevtCommon3Overlay">
@@ -9597,19 +9597,26 @@ function showFactionCommon3Modal(payload, state, onClose) {
         </div>
         ${_factionReporterStrip(state, `${newcomerName}が${factionName}に加わったみたいです。`)}
         <div class="fevt-subject-stage">
-          <div style="display:flex;gap:18px;align-items:flex-end;justify-content:center;margin-bottom:8px">
-            ${newcomerPortrait}
-            ${leaderPortrait}
-          </div>
-          <div class="fevt-subject-name">${newcomerName} → ${factionName}</div>
-          <div class="fevt-subject-divider"></div>
-          <div class="fevt-quote leader">
-            <div class="fevt-quote-speaker">${newcomerName}</div>
-            ${newcomerLine}
-          </div>
-          <div class="fevt-quote leader" style="margin-top:8px">
-            <div class="fevt-quote-speaker">${leaderName}（${factionName}）</div>
-            ${reactionLine}
+          <div class="fc1m-compare">
+            <div class="fc1m-side">
+              <div class="fc1m-bubble-wrap">
+                <div class="fc1m-bubble-speaker">${newcomerName}</div>
+                <div class="fc1m-bubble">${newcomerLine}</div>
+              </div>
+              <div class="fc1m-portrait" style="${newcomerStyle}"></div>
+              <div class="fc1m-name">${newcomerName}</div>
+              <div class="fc1m-faction">新加入</div>
+            </div>
+            <div class="fc1m-vs">→</div>
+            <div class="fc1m-side">
+              <div class="fc1m-bubble-wrap">
+                <div class="fc1m-bubble-speaker">${leaderName}</div>
+                <div class="fc1m-bubble">${reactionLine}</div>
+              </div>
+              <div class="fc1m-portrait" style="${leaderStyle}"></div>
+              <div class="fc1m-name">${leaderName}</div>
+              <div class="fc1m-faction">${factionName} · リーダー</div>
+            </div>
           </div>
         </div>
         <div class="fevt-decision-tray" style="justify-content:center">
@@ -10281,11 +10288,11 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
         ? `社長、挑戦試合 ${playerScore}-${aiScore}。${reqName}選手の直訴…結果が伴いませんでした。`
         : `社長、挑戦試合 ${playerScore}-${aiScore}の痛み分け。${reqName}選手と${oppName}選手の決着は持ち越しです。`);
 
-  // 相手選手リアクションセリフ（性格別、CHALLENGE_REQUEST_OPPONENT_REACTIONS から1行抽選）
+  // 相手選手リアクションセリフ（archetype 別、CHALLENGE_REQUEST_OPPONENT_REACTIONS から1行抽選）
   let oppReactionLine = '';
   if (typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined') {
-    const oppPers = (card.teamB[0] && card.teamB[0].personality) || 'normal';
-    const arr = CHALLENGE_REQUEST_OPPONENT_REACTIONS[oppPers] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal;
+    const oppArch = (card.teamB[0] && card.teamB[0].archetype) || 'normal';
+    const arr = CHALLENGE_REQUEST_OPPONENT_REACTIONS[oppArch] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal;
     if (arr && arr.length > 0) {
       const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xC4A3, card.opponentId));
       oppReactionLine = arr[Engine.rng.int(lineRng, 0, arr.length - 1)];

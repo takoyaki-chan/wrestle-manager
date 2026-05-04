@@ -3487,15 +3487,15 @@ Engine.challengeRequest = {
    *  60% で style-flavored を採用、40% で性格-base にフォールバック。未定義セルも base へ。 */
   pickRequesterLine(requester, bond, rng) {
     if (!requester) return null;
-    const personality = requester.personality || 'normal';
+    const archetype = requester.archetype || 'normal';
     const style = requester.style || null;
     const type = (bond != null && bond < 50) ? 'hostile' : 'respectful';
 
     const _pickFromBase = () => {
       if (typeof CHALLENGE_REQUEST_LINES === 'undefined') return null;
-      const byPers = CHALLENGE_REQUEST_LINES[personality] || CHALLENGE_REQUEST_LINES.normal;
-      if (!byPers) return null;
-      const arr = byPers[type] || byPers.respectful || byPers.hostile;
+      const byArch = CHALLENGE_REQUEST_LINES[archetype] || CHALLENGE_REQUEST_LINES.normal;
+      if (!byArch) return null;
+      const arr = byArch[type] || byArch.respectful || byArch.hostile;
       if (!arr || arr.length === 0) return null;
       const idx = rng ? Engine.rng.int(rng, 0, arr.length - 1) : 0;
       return arr[idx];
@@ -3506,8 +3506,8 @@ Engine.challengeRequest = {
       const useStyle = rng ? Engine.rng.int(rng, 0, 99) < 60 : true;
       if (useStyle) {
         const byStyle = CHALLENGE_REQUEST_LINES_STYLE[style];
-        const byPers = byStyle && (byStyle[personality] || byStyle.normal);
-        const arr = byPers && (byPers[type] || byPers.respectful || byPers.hostile);
+        const byArch = byStyle && (byStyle[archetype] || byStyle.normal);
+        const arr = byArch && (byArch[type] || byArch.respectful || byArch.hostile);
         if (arr && arr.length > 0) {
           const idx = rng ? Engine.rng.int(rng, 0, arr.length - 1) : 0;
           return arr[idx];
