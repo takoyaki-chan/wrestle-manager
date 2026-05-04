@@ -668,6 +668,29 @@ fighterChapterScores.forEach((arr, fid) => {
 - chapter id は `ch_focus${focusSeason}_${seasonStart}_${seasonEnd}` に変更。近接 focus でも衝突しない
 - cache 互換: `focusSeason` フィールドが無いキャッシュは強制リビルド (forceRebuild 不要)
 
+### Phase A 実装後修正 (2026-05-04)
+
+#### 局所最大検出パラメータ調整
+
+- 検出半径を仕様 (`halfWidth=3` 内で局所最大) のまま実装すると、隣接ピーク同士が互いを抑え合い、ピークが密集する時代でも章が 1 個しか立たない問題が判明
+- 仕様 L65 の例「focus=4, 5, 6 がそれぞれ章になる」が成立するには、検出半径と章窓半幅は別パラメータでなければならない
+- 採用: `LOCAL_RADIUS=1` (隣接 1 シーズンのみ比較) + `NEAR_TIE=0.05` (差 0.05 までは局所最大として両方残す) + `HALF=3` (章窓半幅は仕様どおり)
+
+#### 駆け出し章アンカー (synthetic fledgling chapter)
+
+- 局所最大検出だけだと、後年の高密度ピーク (例: 全盛期セーブで s20=weighted 2.5) に s2-3 の駆け出しピークが抑えられて消える
+- ユーザー要望「最初期は変化が大きく、駆け出し時代を 2-3 シーズンでまとめた章が欲しい」に対応
+- `currentSeason >= 2` で seasons 1-3 を覆う章が他に無ければ、`focusSeason=2 / halfWidth=1 / window=[1, min(3, currentSeason)] / _fledgling=true` の合成章を先頭に挿入
+- 駆け出し章の ace は通常 `aceAsRising` で立つ (この時期は prime に到達した選手が居ないため)
+
+#### era-OVR 線形補間
+
+- ユーザー疑問「その時代の OVR で評価できないか」への回答: 各シーズンの実 OVR は記録されていない
+- 近似: `_estimatedOVRAt(fighter, focusSeason)` でデビューシーズン (rookie OVR ≈ peakOVR-22 / 下限 60) → peakOVRSeason (= peakOVR) を直線補間
+- `_baseScore(f, chapter)` は chapter コンテキストがある場合 era-OVR を、無い場合 (`_heroDensity` の境界決定用途) は lifetime peakOVR を使う
+- これにより rising 候補が「未来のピーク」で評価されなくなり、CH.1 駆け出し章の ace が「その時代相応の OVR」で点数化される (peakOVR=95 が S7 到達予定の選手も S2 時点では推定 OVR ≈ 78)
+- 衰退モデル (peakOVRSeason 以降の OVR 漸減) は未実装。focusSeason ≥ peakSeason ではそのまま peakOVR を返す (Phase B で必要なら拡張)
+
 ### Phase A スコープ外
 
 - peer 枠の stage 別再設計 (実力副官 / 若手ホープ / 看板スター / ベテラン) → Phase B

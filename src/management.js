@@ -3035,14 +3035,35 @@ const Engine = {
       champAtChapterEnd: 0.10
     },
 
-    /** 素地スコア 0〜1。peakOVR は 110 で割って上振れ余地込みで正規化。 */
-    _baseScore(f) {
-      const ovrN = Math.min(1, Math.max(0, (f.peakOVR || 0) / 110));
+    /** その時代の OVR を線形補間で近似する。
+     *  各シーズンの実 OVR は記録されていないので、
+     *  デビューシーズン (≈ rookie OVR) → peakOVRSeason (= peakOVR) の直線で推定。
+     *  rookie OVR は peakOVR - 22 を下限 60 で打ち切り (おおよそデビュー時の実測幅)。
+     *  焦点が peakOVRSeason 以降ならそのまま peakOVR を返す (衰退モデルは別途)。 */
+    _estimatedOVRAt(fighter, focusSeason) {
+      const peakOVR = fighter.peakOVR || 0;
+      const peakSeason = fighter.peakOVRSeason || focusSeason || 1;
+      const debut = fighter.careerSeasonsStart || 1;
+      if (focusSeason == null) return peakOVR;
+      if (focusSeason >= peakSeason) return peakOVR;
+      if (focusSeason <= debut) return Math.max(60, peakOVR - 22);
+      const rookie = Math.max(60, peakOVR - 22);
+      const span = Math.max(1, peakSeason - debut);
+      const t = (focusSeason - debut) / span;
+      return rookie + (peakOVR - rookie) * t;
+    },
+
+    /** 素地スコア 0〜1。chapter が渡されたら focusSeason 時点の era-OVR を使う。
+     *  渡されなければ peakOVR (lifetime peak) を使う (境界決定 / fallback 用)。 */
+    _baseScore(f, chapter) {
+      const focus = chapter ? (chapter.focusSeason || chapter.seasonStart) : null;
+      const ovr = focus != null ? Engine.chronicle._estimatedOVRAt(f, focus) : (f.peakOVR || 0);
+      const ovrN = Math.min(1, Math.max(0, ovr / 110));
       const popN = Math.min(1, Math.max(0, (f.peakPopularity || 0) / 100));
       return Math.max(0, Math.min(1, ovrN * 0.6 + popN * 0.4));
     },
 
-    /** 章境界決定用の密度。章コンテキストがないので素地のみ。 */
+    /** 章境界決定用の密度。章コンテキストがないので lifetime peak で密度を作る。 */
     _heroDensity(f) {
       return Engine.chronicle._baseScore(f);
     },
@@ -3135,9 +3156,11 @@ const Engine = {
       return Math.max(0, Math.min(1, raw / 1.5));
     },
 
-    /** spec A-1: 素地 50% + 章内実績 50%。0〜1 範囲。 */
+    /** spec A-1: 素地 50% + 章内実績 50%。0〜1 範囲。
+     *  baseScore は章 focusSeason 時点の era-OVR を使うので、
+     *  rising 候補が「未来のピーク」で評価されない (= その時代の手触り)。 */
     _aceScore(fighter, chapter, state) {
-      return Engine.chronicle._baseScore(fighter) * 0.5
+      return Engine.chronicle._baseScore(fighter, chapter) * 0.5
         + Engine.chronicle._achievementScore(fighter, chapter, state) * 0.5;
     },
 
@@ -3239,11 +3262,19 @@ const Engine = {
     },
 
     /** spec A-4: 局所最大の focusSeason を中心に halfWidth=3 の窓を作る。
-     *  章は重複してよく、上限なし (spec L450)。序章との重複も許容。 */
+     *  章は重複してよく、上限なし (spec L450)。序章との重複も許容。
+     *
+     *  重要: 局所最大検出の半径 (LOCAL_RADIUS) と章窓の半幅 (HALF) は別パラメータ。
+     *  仕様 L65 の例「focus=4, 5, 6 がそれぞれ章になり大幅にオーバーラップ」が
+     *  成立するには検出半径が 1 以下である必要がある (=半径 3 だと隣接ピーク同士で
+     *  互いを抑え合い、ピークが密集する時代でも章が 1 個だけになってしまう)。
+     *  検出は near-tie (差 < 0.05) を許容して隣接ピークの両方を残す。 */
     _segmentChapters(candidates, state) {
       if (candidates.length === 0) return [];
       const currentSeason = Math.max(1, state.season || 1);
       const HALF = 3;
+      const LOCAL_RADIUS = 1;
+      const NEAR_TIE = 0.05;
       const weighted = new Array(currentSeason + HALF + 2).fill(0);
       candidates.forEach(c => {
         const s = c.peakOVRSeason || c.careerSeasonsEnd || 0;
@@ -3255,21 +3286,44 @@ const Engine = {
       for (let s = 1; s <= currentSeason; s++) {
         if ((weighted[s] || 0) <= 0) continue;
         let isLocalMax = true;
-        for (let d = 1; d <= HALF; d++) {
+        for (let d = 1; d <= LOCAL_RADIUS; d++) {
           const left = s - d >= 1 ? (weighted[s - d] || 0) : 0;
           const right = s + d <= currentSeason ? (weighted[s + d] || 0) : 0;
-          if (left > weighted[s] || right > weighted[s]) { isLocalMax = false; break; }
+          // near-tie 許容: わずかな差なら隣接ピークも局所最大として残す
+          if (left > weighted[s] + NEAR_TIE || right > weighted[s] + NEAR_TIE) {
+            isLocalMax = false; break;
+          }
         }
         if (isLocalMax) focuses.push(s);
       }
       // weighted が全シーズン 0 (peakOVRSeason が記録されていないセーブ等) の救済
       if (focuses.length === 0) focuses.push(currentSeason);
-      return focuses.map(f => ({
+      focuses.sort((a, b) => a - b);
+      const result = focuses.map(f => ({
         focusSeason: f,
         halfWidth: HALF,
         seasonStart: Math.max(1, f - HALF),
         seasonEnd: Math.min(currentSeason, f + HALF)
       }));
+      // 駆け出し時代アンカー: currentSeason ≥ 3 で seasons 1-3 を覆う章が無いなら、
+      // S1-3 (currentSeason に応じて短縮) を専用「駆け出し章」として先頭に挿入する。
+      // 後年の高密度ピークに抑えられても旗揚げ世代の物語が残るように。
+      // 短い halfWidth=1 を使い、後続章とは焦点シーズンで明確に区別する。
+      if (currentSeason >= 2) {
+        const earlyEnd = Math.min(3, currentSeason);
+        const hasEarly = result.some(b => b.seasonStart <= 1 && b.seasonEnd >= Math.min(2, currentSeason));
+        if (!hasEarly) {
+          const fledglingFocus = Math.min(2, currentSeason);
+          result.unshift({
+            focusSeason: fledglingFocus,
+            halfWidth: 1,
+            seasonStart: 1,
+            seasonEnd: earlyEnd,
+            _fledgling: true
+          });
+        }
+      }
+      return result;
     },
 
     /** spec A-5: stage-aware エース選定 + aceAsRising 昇格。
