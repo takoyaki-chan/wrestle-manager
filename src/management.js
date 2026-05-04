@@ -2713,7 +2713,125 @@ const Engine = {
       return 'allround';
     },
 
-    /** spec v0.2 §D.4 8カテゴリ × 各3〜4本のテンプレート集 */
+    /** Phase C (spec §5-bis): 3 段構成のテンプレート集
+     *  §A 章での手触り (固有戦績) / §B 時代における意味 / §C 次世代への接続
+     *  V1 は後方互換のため残存。新しい buildAceQuote は V2 を優先で使う。 */
+    QUOTE_TEMPLATES_V2: {
+      peakDefender: {
+        sectionA: [
+          '{surname}はこの章を通じて王座を{defenses}度防衛した。{topRivalClause}{topVenueClause}',
+          '{titleReigns}度の戴冠、{defenses}度の防衛——{surname}は挑戦者を退け続けた。{warClause}'
+        ],
+        sectionB: [
+          '{surname}が{styleJa}で団体を引っ張った時期、{org}全体の試合運びには{spiritAxis}の色が濃く染み込んでいった。',
+          'OVR{peakOVR}・人気{peakPop}に達したこの選手の在位は、{eraTag}と呼ぶに相応しい時代を作った。'
+        ],
+        sectionC: [
+          '{surname}が見せた{styleJa}は、{risingClause}次章の主役{nextChapterTopSurname}が立ち上がる足場は、確かにこの世代に築かれていた。',
+          '{surname}の章が閉じるとき、団体には{successorStyle}を継ぐ若手の影が既に伸び始めていた。'
+        ]
+      },
+      defender: {
+        sectionA: [
+          '{surname}は王座を{defenses}度防衛し、{titleReigns}度の戴冠と合わせて団体の核を担った。{topRivalClause}',
+          '{surname}が立っていることが、団体の安定そのものだった。挑戦者たちはなかなか手が届かなかった。{warClause}'
+        ],
+        sectionB: [
+          '{surname}の{styleJa}は、この章の{org}を{spiritAxis}に染め上げた。',
+          '{eraTag}と呼ばれるこの時代、戴冠者の名前を聞かれれば誰もが{surname}の名を挙げた。'
+        ],
+        sectionC: [
+          '{risingClause}{surname}の積み上げた防衛は、後進にとっての到達目標になった。',
+          '{nextChapterTopSurname}が立つ前提として、{surname}が築いた地盤があった。'
+        ]
+      },
+      champion: {
+        sectionA: [
+          '{surname}は{titleReigns}度の戴冠を重ね、この章の主役を担った。{topRivalClause}',
+          '何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその粘りの証だった。{warClause}'
+        ],
+        sectionB: [
+          '{surname}を中心に、{org}は{spiritAxis}の色を強めた章だった。',
+          'OVR{peakOVR}の{surname}が立った時代、それは{eraTag}に他ならなかった。'
+        ],
+        sectionC: [
+          '{surname}が背中で見せた挑み続ける姿勢は、{risingPeerSurname}たち次世代の選手に受け継がれた。',
+          '{nextChapterTopSurname}の足場は、この章の{surname}の戴冠の積み重ねの上に立った。'
+        ]
+      },
+      popStar: {
+        sectionA: [
+          '{surname}の人気が客足を支えた。戦績ではなく動員で、時代を作った世代だった。{topVenueClause}',
+          '王座にこそ恵まれなかったが、{surname}の華やかさが客席を埋めた。'
+        ],
+        sectionB: [
+          '人気{peakPop}を記録したこの選手は、{org}にとってチケットそのものだった。',
+          '試合記録には残らない記憶というものを、{surname}は、その人気でこの世代に刻みつけた。'
+        ],
+        sectionC: [
+          '{surname}が築いた華やぎの記憶は、{risingPeerSurname}たち次世代の客寄せにも引き継がれた。',
+          '{surname}が会場を埋めた時代の余熱は、次の章の{nextChapterTopSurname}の入場にも残っていた。'
+        ]
+      },
+      generationShift: {
+        sectionA: [
+          '{surname}は前世代の主役たちと並走し、世代交代の橋渡しとなった。{topRivalClause}',
+          '前章の主役たちが退いていく中、{surname}が次の中心を担った。'
+        ],
+        sectionB: [
+          '{surname}の章は、過去と未来が混じり合った時間として{org}史に残る。{eraTag}と呼ぶには複雑な時代だった。',
+          '{spiritAxis}の地力を保ったまま、団体は次世代へと足場を移し始めていた。'
+        ],
+        sectionC: [
+          '{risingClause}{surname}が橋渡した先に、次章の{nextChapterTopSurname}が立った。',
+          '{surname}が古参と新参の間に立った時間は、団体の世代の連続性そのものだった。'
+        ]
+      },
+      struggle: {
+        sectionA: [
+          '{surname}は{styleJa}を貫いたが、上位の壁は厚かった。届かないまま章は閉じる。{warClause}',
+          '挑んでは敗れ、それでも{surname}は{styleJa}を捨てなかった。'
+        ],
+        sectionB: [
+          '{surname}の章は、勝てなかった日々の記録である。だが、それでも諦めず挑戦を続けた日々の記録でもある。',
+          '届かなかった世代の象徴として、{surname}は{org}の地力に深い陰影を残した。'
+        ],
+        sectionC: [
+          '{surname}が届かなかった頂は、{risingPeerSurname}ら次世代の目標として残された。',
+          '{nextChapterTopSurname}が登る山は、{surname}が手を伸ばし続けた山だった。'
+        ]
+      },
+      craftsman: {
+        sectionA: [
+          '{surname}は{styleJa}を武器に団体を支えた。王座にこそ届かなかったが、世代の支柱だった。{topRivalClause}',
+          'OVR{peakOVR}に達した{surname}は、無冠ながら誰よりも信頼される選手だった。'
+        ],
+        sectionB: [
+          '{surname}の{styleJa}は派手さこそないが、{org}を底から支え続けた。',
+          '王座とは縁がなかったが、{surname}の{styleJa}はこの章の地力そのものだった。'
+        ],
+        sectionC: [
+          '{surname}が継いだ{styleJa}の系譜は、{risingPeerSurname}ら次世代にも残った。',
+          '{nextChapterTopSurname}が前に出るとき、その背後には{surname}の積み上げた{styleJa}があった。'
+        ]
+      },
+      uncrowned: {
+        sectionA: [
+          '{surname}は無冠ながらこの世代の主役だった。タイトルでは測れない存在感がそこにあった。{topRivalClause}',
+          '王座を獲ることはなかったが、{surname}抜きにこの章は語れない。'
+        ],
+        sectionB: [
+          '{surname}は最後までベルトを巻かなかった。だが{org}史はこの選手を主役として記憶する。',
+          '記録には残らないが、記憶には深く残る。{surname}はそういう世代の主役だった。'
+        ],
+        sectionC: [
+          '{risingClause}{surname}の存在感は、無冠であることの強さとして次世代に伝わった。',
+          '{nextChapterTopSurname}が王座を獲るとき、{surname}が残した「無冠の重み」が背後に静かに横たわっていた。'
+        ]
+      }
+    },
+
+    /** spec v0.2 §D.4 8カテゴリ × 各3〜4本のテンプレート集 (V1 / 後方互換) */
     QUOTE_TEMPLATES: {
       peakDefender: [
         '{surname}は章を通じて{defenses}度の防衛を積み上げ、団体の中心軸であり続けた。',
@@ -2869,28 +2987,180 @@ const Engine = {
     },
 
     /** spec v0.2 §D 記者の目本体 (純粋関数、決定論的) */
-    buildAceQuote(ace, chapter, state) {
-      const category = Engine.chronicle._classifyAceQuoteCategory(ace, chapter, state);
-      const templates = Engine.chronicle.QUOTE_TEMPLATES[category] || Engine.chronicle.QUOTE_TEMPLATES.uncrowned;
-      const seedBase = (state && state.rngSeed) || 1;
-      const aceIdNum = typeof ace.id === 'number' ? ace.id : (Number(ace.id) || 0);
-      const seed = Engine.rng.derive(seedBase, chapter.number || chapter.seasonStart || 0, aceIdNum, 0xCB02);
-      const idx = ((seed | 0) % templates.length + templates.length) % templates.length;
-      const tpl = templates[idx];
-
+    /** Phase C: 章コンテキストから記者の目用スロットを集計 */
+    _buildQuoteContext(ace, chapter, state) {
+      const surname = Engine.chronicle._getSurname(ace.name);
       const styleAxis = Engine.chronicle._styleAxis(ace.style);
       const styleJa = Engine.chronicle.AXIS_LABELS[styleAxis] || '独自';
-      const surname = Engine.chronicle._getSurname(ace.name);
-
+      const org = (state && state.orgName) || '団体';
       const chapterDefenses = Engine.chronicle._countChapterDefensesForAce(ace, chapter, state);
 
-      return tpl
-        .replace(/\{surname\}/g, surname)
-        .replace(/\{styleJa\}/g, styleJa)
-        .replace(/\{titleReigns\}/g, String(ace.titleReigns || 0))
-        .replace(/\{defenses\}/g, String(chapterDefenses))
-        .replace(/\{peakOVR\}/g, String(ace.peakOVR || 0))
-        .replace(/\{peakPop\}/g, String(ace.peakPopularity || 0));
+      // 章窓内の history を抽出
+      const full = Engine.chronicle._resolveFullFighter(ace, state) || ace;
+      const allHist = ((full.careerRecord || {}).history || []);
+      const joinS = Engine.career.joinSeason(full);
+      const histPost = Engine.career.filterPostJoin(allHist, joinS);
+      const winHist = histPost.filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
+
+      // topRival: 章窓内 h2h.history で最も多く対戦した相手
+      let topRivalSurname = '';
+      let topRivalCount = 0;
+      const h2hAll = (state && state.h2h) || {};
+      Object.keys(h2hAll).forEach(key => {
+        const parts = key.split('>');
+        if (parts.length !== 2) return;
+        const idA = parseInt(parts[0], 10);
+        const idB = parseInt(parts[1], 10);
+        if (idA !== ace.id && idB !== ace.id) return;
+        const entry = h2hAll[key];
+        const inWin = ((entry && entry.history) || []).filter(h => {
+          const s = (h.s != null ? h.s : (h.season || 0));
+          return s >= chapter.seasonStart && s <= chapter.seasonEnd;
+        }).length;
+        if (inWin > topRivalCount) {
+          topRivalCount = inWin;
+          const otherId = idA === ace.id ? idB : idA;
+          const r = (state.roster || []).find(c => c.id === otherId)
+            || ((state.chronicle && state.chronicle.fighterArchive) || []).find(a => a.id === otherId)
+            || (typeof ALL_CHARS !== 'undefined' && ALL_CHARS.find(c => c.id === otherId));
+          if (r) topRivalSurname = Engine.chronicle._getSurname(r);
+        }
+      });
+      const topRivalClause = topRivalCount >= 2 && topRivalSurname
+        ? `${topRivalSurname}との激闘は世代の語り草となった。`
+        : (topRivalCount === 1 && topRivalSurname ? `${topRivalSurname}との一戦が章の見せ場になった。` : '');
+
+      // topVenue: 章窓内に最も多く立ったベニュー (簡易: 試合履歴に venue があれば最頻、無ければ空文字列)
+      let topVenue = '';
+      const venueCount = new Map();
+      winHist.forEach(e => {
+        if (e.venue && typeof e.venue === 'string') venueCount.set(e.venue, (venueCount.get(e.venue) || 0) + 1);
+      });
+      if (venueCount.size > 0) {
+        let best = null, max = 0;
+        venueCount.forEach((v, k) => { if (v > max) { max = v; best = k; } });
+        topVenue = best || '';
+      }
+      const topVenueClause = topVenue ? `舞台となったのは${topVenue}だった。` : '';
+
+      // war: 章窓内対外戦の主要対戦団体と勝敗
+      let warOpponentOrg = '';
+      let warWins = 0, warLosses = 0;
+      const warOrgCount = new Map();
+      winHist.forEach(e => {
+        if (e.type !== 'war' && e.type !== 'summit' && e.type !== 'challenge_request_match') return;
+        if (e.won === true) warWins++; else if (e.won === false) warLosses++;
+        if (e.opponentOrg) warOrgCount.set(e.opponentOrg, (warOrgCount.get(e.opponentOrg) || 0) + 1);
+      });
+      if (warOrgCount.size > 0) {
+        let best = null, max = 0;
+        warOrgCount.forEach((v, k) => { if (v > max) { max = v; best = k; } });
+        warOpponentOrg = best || '';
+      }
+      const warRecord = (warWins + warLosses > 0) ? `${warWins}勝${warLosses}敗` : '';
+      const warClause = (warOpponentOrg && warRecord)
+        ? `${warOpponentOrg}との対外戦${warRecord}も、この章の彼女の重みを物語る。`
+        : (warRecord ? `対外戦${warRecord}という記録もこの章に残った。` : '');
+
+      // risingPeer: 同章の rising peer のうち最も talent score が高い者
+      let risingPeerSurname = '';
+      const peers = (chapter.peers || []).filter(p => p.role === 'rising' || p.stage === 'rising');
+      if (peers.length > 0) {
+        const top = peers.slice().sort((a, b) => (b.peakOVR || 0) - (a.peakOVR || 0))[0];
+        if (top) risingPeerSurname = Engine.chronicle._getSurname(top);
+      }
+      const risingClause = risingPeerSurname
+        ? `${risingPeerSurname}ら次世代の選手たちの基準になった。`
+        : '';
+
+      // nextChapter: chapter cache から次章を引く (in_progress 章では §C を出さないので参照のみ)
+      let nextChapterTopSurname = '';
+      let successorStyle = '';
+      const allChapters = (state && state.chronicle && state.chronicle.chaptersCache && state.chronicle.chaptersCache.chapters) || [];
+      const next = allChapters.find(c => c.number === (chapter.number || 0) + 1);
+      if (next && next.aces && next.aces[0]) {
+        nextChapterTopSurname = Engine.chronicle._getSurname(next.aces[0]);
+        const nAxis = next._topAxis;
+        successorStyle = (Engine.chronicle.AXIS_LABELS && Engine.chronicle.AXIS_LABELS[nAxis]) || '次の流派';
+      }
+      // フォールバック (next が無い / topAxis 未設定)
+      if (!successorStyle) successorStyle = styleJa;
+      if (!nextChapterTopSurname) nextChapterTopSurname = '次世代の主役';
+
+      // eraTag: chapter._topAxis + 戴冠数で導出 (簡易)
+      const ax = chapter._topAxis;
+      const axJa = (Engine.chronicle.AXIS_LABELS && Engine.chronicle.AXIS_LABELS[ax]) || styleJa;
+      let eraTag = `${axJa}の時代`;
+      if ((ace.titleReigns || 0) >= 3 && chapterDefenses >= 4) eraTag = '黄金期';
+      else if ((ace.titleReigns || 0) === 0 && chapterDefenses === 0) eraTag = '端境期';
+
+      const spiritAxis = axJa;
+
+      return {
+        surname, styleJa, org,
+        topRivalSurname, topRivalClause,
+        topVenue, topVenueClause,
+        warOpponentOrg, warRecord, warClause,
+        risingPeerSurname, risingClause,
+        nextChapterTopSurname, successorStyle,
+        eraTag, spiritAxis,
+        defenses: chapterDefenses,
+        titleReigns: ace.titleReigns || 0,
+        peakOVR: ace.peakOVR || 0,
+        peakPop: ace.peakPopularity || 0
+      };
+    },
+
+    /** Phase C: V2 段別テンプレ + V1 後方互換ありの記者の目本体 */
+    buildAceQuote(ace, chapter, state) {
+      const category = Engine.chronicle._classifyAceQuoteCategory(ace, chapter, state);
+      const seedBase = (state && state.rngSeed) || 1;
+      const aceIdNum = typeof ace.id === 'number' ? ace.id : (Number(ace.id) || 0);
+      const ctx = Engine.chronicle._buildQuoteContext(ace, chapter, state);
+
+      const fillSlots = (tpl) => tpl
+        .replace(/\{surname\}/g, ctx.surname)
+        .replace(/\{styleJa\}/g, ctx.styleJa)
+        .replace(/\{org\}/g, ctx.org)
+        .replace(/\{titleReigns\}/g, String(ctx.titleReigns))
+        .replace(/\{defenses\}/g, String(ctx.defenses))
+        .replace(/\{peakOVR\}/g, String(ctx.peakOVR))
+        .replace(/\{peakPop\}/g, String(ctx.peakPop))
+        .replace(/\{topRivalSurname\}/g, ctx.topRivalSurname || '')
+        .replace(/\{topRivalClause\}/g, ctx.topRivalClause)
+        .replace(/\{topVenue\}/g, ctx.topVenue || '')
+        .replace(/\{topVenueClause\}/g, ctx.topVenueClause)
+        .replace(/\{warOpponentOrg\}/g, ctx.warOpponentOrg || '')
+        .replace(/\{warRecord\}/g, ctx.warRecord)
+        .replace(/\{warClause\}/g, ctx.warClause)
+        .replace(/\{risingPeerSurname\}/g, ctx.risingPeerSurname || '')
+        .replace(/\{risingClause\}/g, ctx.risingClause)
+        .replace(/\{nextChapterTopSurname\}/g, ctx.nextChapterTopSurname || '')
+        .replace(/\{successorStyle\}/g, ctx.successorStyle)
+        .replace(/\{eraTag\}/g, ctx.eraTag)
+        .replace(/\{spiritAxis\}/g, ctx.spiritAxis);
+
+      // V2 が存在するカテゴリは段別組み立て、無ければ V1 にフォールバック
+      const v2 = Engine.chronicle.QUOTE_TEMPLATES_V2 && Engine.chronicle.QUOTE_TEMPLATES_V2[category];
+      if (!v2) {
+        const v1 = Engine.chronicle.QUOTE_TEMPLATES[category] || Engine.chronicle.QUOTE_TEMPLATES.uncrowned;
+        const seed = Engine.rng.derive(seedBase, chapter.number || chapter.seasonStart || 0, aceIdNum, 0xCB02);
+        const idx = ((seed | 0) % v1.length + v1.length) % v1.length;
+        return fillSlots(v1[idx]);
+      }
+      const pickIdx = (arr, salt) => {
+        const seed = Engine.rng.derive(seedBase, chapter.number || chapter.seasonStart || 0, aceIdNum, salt);
+        return ((seed | 0) % arr.length + arr.length) % arr.length;
+      };
+      const A = v2.sectionA && v2.sectionA.length > 0 ? fillSlots(v2.sectionA[pickIdx(v2.sectionA, 0xCB10)]) : '';
+      // §B は 80% 確率で挿入 (連続章で同 axis が続くと冗長になる)
+      const bSeed = Engine.rng.derive(seedBase, chapter.number || 0, aceIdNum, 0xCB20);
+      const bShown = (Math.abs(bSeed | 0) % 100) < 80 && v2.sectionB && v2.sectionB.length > 0;
+      const B = bShown ? fillSlots(v2.sectionB[pickIdx(v2.sectionB, 0xCB21)]) : '';
+      // §C は in_progress 章 (= 最新章) では出さない (次章エースを語り切れないため)
+      const isLatest = chapter.status === 'in_progress';
+      const C = (!isLatest && v2.sectionC && v2.sectionC.length > 0) ? fillSlots(v2.sectionC[pickIdx(v2.sectionC, 0xCB30)]) : '';
+      return [A, B, C].filter(Boolean).join('');
     },
 
     /** 苗字抽出 (日本語名は全角/半角スペース前) */
