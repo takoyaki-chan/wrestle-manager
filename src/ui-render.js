@@ -9156,6 +9156,21 @@ function _chronicleStyleBlock() {
   font-weight: 700;
   margin-bottom: 2px;
 }
+/* Phase B: stage 別 4 枠の役割タグ。idol タグと並ぶ小型ラベル。 */
+.chron-gen-role-tag {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 2px;
+  opacity: 0.78;
+}
+.chron-gen-role-tag.chron-gen-role-strength { color: var(--chr-rule-bold, #5f4523); }
+.chron-gen-role-tag.chron-gen-role-rising { color: #4a8a3c; }
+.chron-gen-role-tag.chron-gen-role-veteran { color: #6b5a3e; }
+.chron-gen-member.rising .chron-gen-portrait { border-color: #4a8a3c; }
+.chron-gen-member.veteran .chron-gen-portrait { border-color: #6b5a3e; opacity: 0.92; }
 .chron-era-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -9908,6 +9923,8 @@ function _renderDbChronicle() {
         ? `<img src="${pUrl}" onerror="this.style.display='none'" alt="">`
         : letter;
       const isIdol = p.role === 'idol';
+      const isRising = p.role === 'rising';
+      const isVeteran = p.role === 'veteran';
       const styleLabel = _chronicleStyleLabel(p.style);
       const metaParts = [styleLabel];
       if (isIdol && p.traits && p.traits.length > 0) metaParts.push(p.traits.slice(0, 2).join('・'));
@@ -9919,10 +9936,17 @@ function _renderDbChronicle() {
       const pNameHtml = hofSet.has(p.id)
         ? `<span class="chron-hof-link" onclick="openHofDetailById(${p.id})">${p.name}</span>${pHofBadge}`
         : p.name;
-      html += `<li class="chron-gen-member${isIdol ? ' idol' : ''}">
+      // Phase B: 4 枠ごとの役割タグ
+      let roleTag = '';
+      if (isIdol) roleTag = `<div class="chron-gen-idol-tag">★ IDOL OF THE ERA</div>`;
+      else if (isRising) roleTag = `<div class="chron-gen-role-tag chron-gen-role-rising">▲ 若手ホープ</div>`;
+      else if (isVeteran) roleTag = `<div class="chron-gen-role-tag chron-gen-role-veteran">◇ ベテラン</div>`;
+      else roleTag = `<div class="chron-gen-role-tag chron-gen-role-strength">◆ 実力副官</div>`;
+      const memberClass = `chron-gen-member${isIdol ? ' idol' : ''}${isRising ? ' rising' : ''}${isVeteran ? ' veteran' : ''}`;
+      html += `<li class="${memberClass}">
         <div class="chron-gen-portrait">${imgHtml}</div>
         <div class="chron-gen-info">
-          ${isIdol ? `<div class="chron-gen-idol-tag">★ IDOL OF THE ERA</div>` : ''}
+          ${roleTag}
           <div class="chron-gen-name">${pNameHtml}</div>
           <div class="chron-gen-meta">${metaParts.join(' ・ ')}</div>
           ${p.narrative ? `<div class="chron-gen-narrative">${p.narrative}</div>` : ''}

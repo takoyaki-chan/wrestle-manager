@@ -3415,22 +3415,67 @@ const Engine = {
         }
       }
 
-      // peer は Phase A: 現行ロジック流用 (英雄値順 上位3 + idol 1)。stage タグだけ付与。
+      // Phase B: peer 枠を stage 別 4 枠に組み直す (実力副官 / 若手ホープ / 看板スター / ベテラン)
       const aceIds = new Set(aces.map(a => a.id));
-      const rest = scored
-        .filter(c => !aceIds.has(c.id))
-        .sort((a, b) => Engine.chronicle._heroScore(b) - Engine.chronicle._heroScore(a));
-      const strengthPeers = rest.slice(0, 3);
-      const strengthIds = new Set(strengthPeers.map(p => p.id));
-      const popCandidate = rest
-        .filter(c => !strengthIds.has(c.id) && (c.peakPopularity || 0) >= 80)
+      const rest = scored.filter(c => !aceIds.has(c.id));
+      const focusSeason = chapterBounds.focusSeason || chapterBounds.seasonStart || 1;
+      const peers = [];
+      const usedIds = new Set();
+
+      // 実力副官 (strength, prime): 最大 2 名。era-OVR/pop ベースで強い順
+      const strength = rest
+        .filter(c => c._stage === 'prime')
+        .sort((a, b) => Engine.chronicle._baseScore(b, chapterBounds) - Engine.chronicle._baseScore(a, chapterBounds))
+        .slice(0, 2);
+      strength.forEach(c => { peers.push({ ...c, _role: 'strength' }); usedIds.add(c.id); });
+
+      // 若手ホープ (rising): 最大 2 名。
+      // 才能スコア = peakOVR*0.5 + currentOVR(focusSeason)*0.3 + peakPop*0.2
+      // 駆け出し章 (_fledgling) では rising が大半なので拡張枠扱いで多めに 3 名
+      const risingMax = chapterBounds._fledgling ? 3 : 2;
+      const rising = rest
+        .filter(c => !usedIds.has(c.id) && c._stage === 'rising')
+        .map(c => ({
+          c,
+          talent: (c.peakOVR || 0) * 0.5
+            + Engine.chronicle._estimatedOVRAt(c, focusSeason) * 0.3
+            + (c.peakPopularity || 0) * 0.2
+        }))
+        .sort((a, b) => b.talent - a.talent)
+        .slice(0, risingMax)
+        .map(x => x.c);
+      rising.forEach(c => { peers.push({ ...c, _role: 'rising' }); usedIds.add(c.id); });
+
+      // 看板スター (idol): 0〜1 名。peakPopularity ≥ 80 の最高人気、stage 不問
+      const idol = rest
+        .filter(c => !usedIds.has(c.id) && (c.peakPopularity || 0) >= 80)
         .sort((a, b) => (b.peakPopularity || 0) - (a.peakPopularity || 0))[0];
-      let peers;
-      if (popCandidate) {
-        peers = [...strengthPeers, { ...popCandidate, _isIdol: true }];
-      } else {
-        peers = rest.slice(0, 4);
+      if (idol) { peers.push({ ...idol, _role: 'idol', _isIdol: true }); usedIds.add(idol.id); }
+
+      // ベテラン (veteran): 0〜1 名。戴冠数 + 章窓内活動量で選出
+      const veteran = rest
+        .filter(c => !usedIds.has(c.id) && c._stage === 'veteran')
+        .map(c => ({
+          c,
+          score: (c.titleReigns || 0) * 0.4 + Engine.chronicle._achievementRaw(c, chapterBounds, state)
+        }))
+        .sort((a, b) => b.score - a.score)[0];
+      if (veteran) { peers.push({ ...veteran.c, _role: 'veteran' }); usedIds.add(veteran.c.id); }
+
+      // 合計 3〜5 名目安。3 名未満なら strength/rising から余りを足して埋める
+      if (peers.length < 3) {
+        const fill = rest
+          .filter(c => !usedIds.has(c.id))
+          .sort((a, b) => Engine.chronicle._baseScore(b, chapterBounds) - Engine.chronicle._baseScore(a, chapterBounds))
+          .slice(0, 3 - peers.length);
+        fill.forEach(c => {
+          // フォールバックの role は stage に合わせる
+          const role = c._stage === 'rising' ? 'rising' : c._stage === 'veteran' ? 'veteran' : 'strength';
+          peers.push({ ...c, _role: role });
+          usedIds.add(c.id);
+        });
       }
+
       return { aces, peers };
     },
 
@@ -4129,7 +4174,8 @@ const Engine = {
             primeStart: p.primeStart,
             primeEnd: p.primeEnd,
             titleReigns: p.titleReigns || 0,
-            role: p._isIdol ? 'idol' : 'strength',
+            // Phase B: stage 別 4 枠 ('strength' | 'rising' | 'idol' | 'veteran')
+            role: p._role || (p._isIdol ? 'idol' : 'strength'),
             stage: p._stage || 'prime',
             aceScore: p._ace || 0,
             traits: p.traits || [],
