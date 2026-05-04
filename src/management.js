@@ -2752,6 +2752,36 @@ const Engine = {
       ]
     },
 
+    /** 単一エースの章期間内防衛数を集計。
+     *  ベルト単位で (章内 maxCount) - (章開始前 maxCount) を合算。
+     *  count が未設定/0 のセーブでも壊れないよう、差分が 0 で章内に防衛イベントが
+     *  1件以上あればイベント本数を返すフォールバック付き。
+     *  history は filterPostJoin を通さず生で参照する (複数レイン跨ぎで priorMax を
+     *  正しく機能させるため)。 */
+    _countChapterDefensesForAce(ace, chapter) {
+      const hist = ((ace && ace.careerRecord) || {}).history || [];
+      const sStart = chapter.seasonStart || 0;
+      const sEnd = chapter.seasonEnd || 0;
+      const inChapter = hist.filter(e => e.type === 'titleDefense' && (e.season || 0) >= sStart && (e.season || 0) <= sEnd);
+      if (inChapter.length === 0) return 0;
+      const beltGroups = new Map();
+      inChapter.forEach(e => {
+        const key = e.beltId || '_default';
+        if (!beltGroups.has(key)) beltGroups.set(key, []);
+        beltGroups.get(key).push(e);
+      });
+      let total = 0;
+      beltGroups.forEach((evs, beltKey) => {
+        const maxIn = evs.reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+        const priorMax = hist
+          .filter(e => e.type === 'titleDefense' && (e.beltId || '_default') === beltKey && (e.season || 0) < sStart)
+          .reduce((mx, e) => Math.max(mx, e.count || 0), 0);
+        total += Math.max(0, maxIn - priorMax);
+      });
+      if (total === 0) return inChapter.length;
+      return total;
+    },
+
     /** spec v0.2 §D.3 8カテゴリ判定 (上から順、最初に該当したものを採用) */
     _classifyAceQuoteCategory(ace, chapter, state) {
       const mode = (chapter && chapter.eraStats && chapter.eraStats.competitiveRecord && chapter.eraStats.competitiveRecord.mode) || 'challenge';
@@ -2760,22 +2790,7 @@ const Engine = {
       const _aceHistAll = Engine.career.filterPostJoin(((ace.careerRecord || {}).history || []), _aceJoinS);
       const aceHist = _aceHistAll
         .filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
-      // 章期間内防衛数 (差分集計、ベルト単位)
-      const allHist = _aceHistAll;
-      const beltGroups = new Map();
-      aceHist.filter(e => e.type === 'titleDefense').forEach(e => {
-        const key = e.beltId || '_default';
-        if (!beltGroups.has(key)) beltGroups.set(key, []);
-        beltGroups.get(key).push(e);
-      });
-      let chapterDefenses = 0;
-      beltGroups.forEach((evs, beltKey) => {
-        const maxIn = evs.reduce((mx, e) => Math.max(mx, e.count || 0), 0);
-        const priorMax = allHist
-          .filter(e => e.type === 'titleDefense' && (e.beltId || '_default') === beltKey && (e.season || 0) < chapter.seasonStart)
-          .reduce((mx, e) => Math.max(mx, e.count || 0), 0);
-        chapterDefenses += Math.max(0, maxIn - priorMax);
-      });
+      const chapterDefenses = Engine.chronicle._countChapterDefensesForAce(ace, chapter);
       const chapterWarWins = aceHist.filter(e => e.type === 'war' && e.won === true).length;
       const chapterWarLosses = aceHist.filter(e => e.type === 'war' && e.won === false).length;
 
@@ -2811,25 +2826,7 @@ const Engine = {
       const styleJa = Engine.chronicle.AXIS_LABELS[styleAxis] || '独自';
       const surname = Engine.chronicle._getSurname(ace.name);
 
-      // 章期間内防衛数を再計算 (テンプレ {defenses} 用)
-      // 転生前は別人扱いで除外
-      const _aceJoinS2 = Engine.career.joinSeason(ace);
-      const allHist = Engine.career.filterPostJoin(((ace.careerRecord || {}).history || []), _aceJoinS2);
-      const aceHist = allHist.filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
-      const beltGroups = new Map();
-      aceHist.filter(e => e.type === 'titleDefense').forEach(e => {
-        const key = e.beltId || '_default';
-        if (!beltGroups.has(key)) beltGroups.set(key, []);
-        beltGroups.get(key).push(e);
-      });
-      let chapterDefenses = 0;
-      beltGroups.forEach((evs, beltKey) => {
-        const maxIn = evs.reduce((mx, e) => Math.max(mx, e.count || 0), 0);
-        const priorMax = allHist
-          .filter(e => e.type === 'titleDefense' && (e.beltId || '_default') === beltKey && (e.season || 0) < chapter.seasonStart)
-          .reduce((mx, e) => Math.max(mx, e.count || 0), 0);
-        chapterDefenses += Math.max(0, maxIn - priorMax);
-      });
+      const chapterDefenses = Engine.chronicle._countChapterDefensesForAce(ace, chapter);
 
       return tpl
         .replace(/\{surname\}/g, surname)
@@ -3075,10 +3072,18 @@ const Engine = {
           weighted[s] += Engine.chronicle._heroScore(c);
         }
       });
-      // 最初に候補のピークが出現するシーズン
+      // 序章 (G.prologue) がある新規セーブは S1〜startSeason付近を序章が吸収するので、
+      // 章は最初の英雄値出現 season から開始する。
+      // 序章が無い旧セーブ (マイグレーション前) は S1 から地続きで章を切る。
+      const hasPrologue = !!(state && state.prologue
+        && (state.prologue.status === 'in_progress' || state.prologue.status === 'confirmed')
+        && Array.isArray(state.prologue.founderIds)
+        && state.prologue.founderIds.length > 0);
       let firstPeak = 1;
-      for (let i = 1; i <= currentSeason; i++) {
-        if (weighted[i] > 0) { firstPeak = i; break; }
+      if (hasPrologue) {
+        for (let i = 1; i <= currentSeason; i++) {
+          if (weighted[i] > 0) { firstPeak = i; break; }
+        }
       }
       const bounds = [];
       let cursor = firstPeak;
@@ -3796,8 +3801,16 @@ const Engine = {
       const ch = state.chronicle || Engine.chronicle.createEmpty();
       const forceRebuild = options.forceRebuild === true;
       const cache = ch.chaptersCache || { lastBuiltSeason: 0, chapters: [] };
+      // 序章なしセーブで CH.1 が S1 始まりになっていない古いキャッシュは作り直す
+      const _hasPrologue = !!(state && state.prologue
+        && (state.prologue.status === 'in_progress' || state.prologue.status === 'confirmed')
+        && Array.isArray(state.prologue.founderIds)
+        && state.prologue.founderIds.length > 0);
+      const _staleNoPrologue = !_hasPrologue
+        && cache.chapters && cache.chapters.length > 0
+        && (cache.chapters[0].seasonStart || 0) > 1;
       // キャッシュ判定: 同シーズンかつキャッシュ済みならスキップ
-      if (!forceRebuild && cache.lastBuiltSeason === (state.season || 0) && cache.chapters && cache.chapters.length > 0) {
+      if (!forceRebuild && !_staleNoPrologue && cache.lastBuiltSeason === (state.season || 0) && cache.chapters && cache.chapters.length > 0) {
         return state;
       }
       const candidates = Engine.chronicle._collectCandidates(state);
