@@ -9938,7 +9938,7 @@ function _renderDbChronicle() {
         : p.name;
       // Phase B: 4 枠ごとの役割タグ
       let roleTag = '';
-      if (isIdol) roleTag = `<div class="chron-gen-idol-tag">★ IDOL OF THE ERA</div>`;
+      if (isIdol) roleTag = `<div class="chron-gen-idol-tag">★ アイドル選手</div>`;
       else if (isRising) roleTag = `<div class="chron-gen-role-tag chron-gen-role-rising">▲ 若手ホープ</div>`;
       else if (isVeteran) roleTag = `<div class="chron-gen-role-tag chron-gen-role-veteran">◇ ベテラン</div>`;
       else roleTag = `<div class="chron-gen-role-tag chron-gen-role-strength">◆ 実力副官</div>`;
