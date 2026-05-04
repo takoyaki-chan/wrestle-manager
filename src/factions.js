@@ -3449,6 +3449,12 @@ Engine.factions = {
       const t = pickRivalryHigh();
       return t ? { targetId: t.id, targetName: t.name } : {};
     }
+    if (incidentType === 'INCIDENT_BONDING') {
+      if (!nonMembers.length) return {};
+      const idx = Math.floor(Engine.rng.float(rng) * nonMembers.length);
+      const t = nonMembers[idx] || nonMembers[0];
+      return t ? { targetId: t.id, targetName: t.name } : {};
+    }
     if (incidentType === 'OBSERVE_INTERNAL_RANK') {
       // 派閥内 OVR 上位 2 名（リーダー除く）
       const members = faction.memberIds
