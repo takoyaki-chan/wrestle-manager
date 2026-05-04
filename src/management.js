@@ -3010,10 +3010,145 @@ const Engine = {
       }
     },
 
+    /** v0.85b 旧英雄値: 章コンテキストを持たない素地値。後方互換のため残す。
+     *  境界決定 (_segmentChapters) では _heroDensity、ace 選定では _aceScore を使う。 */
     _heroScore(f) {
       const ovrN = (f.peakOVR || 0) / 100;
       const popN = (f.peakPopularity || 0) / 100;
       return ovrN * 0.6 + popN * 0.4;
+    },
+
+    // ───────── chapter-overlap v0.1: stage-aware ace scoring ─────────
+    /** spec A-2: 章窓内実績の重み (Phase B の auto-sim で再調整予定) */
+    ACE_ACH_WEIGHTS: {
+      titleWin: 0.05,
+      titleDefense: 0.06,
+      ppvMainEvent: 0.15,
+      domeMain: 0.12,
+      warWin: 0.07,
+      warLoss: 0.02,
+      challengeRequestDefend: 0.06,
+      challengeRequestSend: 0.05,
+      awardMVP: 0.12,
+      awardBestMatch: 0.04,
+      juniorTournamentChampion: 0.08,
+      champAtChapterEnd: 0.10
+    },
+
+    /** 素地スコア 0〜1。peakOVR は 110 で割って上振れ余地込みで正規化。 */
+    _baseScore(f) {
+      const ovrN = Math.min(1, Math.max(0, (f.peakOVR || 0) / 110));
+      const popN = Math.min(1, Math.max(0, (f.peakPopularity || 0) / 100));
+      return Math.max(0, Math.min(1, ovrN * 0.6 + popN * 0.4));
+    },
+
+    /** 章境界決定用の密度。章コンテキストがないので素地のみ。 */
+    _heroDensity(f) {
+      return Engine.chronicle._baseScore(f);
+    },
+
+    /** 章窓内実績の生スコア (重み合算)。_aceScore からのみ呼ぶ。 */
+    _achievementRaw(fighter, chapter, state) {
+      const W = Engine.chronicle.ACE_ACH_WEIGHTS;
+      const full = Engine.chronicle._resolveFullFighter(fighter, state) || fighter;
+      const _joinS = Engine.career.joinSeason(full);
+      const histAll = Engine.career.filterPostJoin(((full.careerRecord || {}).history || []), _joinS);
+      const sStart = chapter.seasonStart || 0;
+      const sEnd = chapter.seasonEnd || 0;
+      const inRange = e => (e.season || 0) >= sStart && (e.season || 0) <= sEnd;
+
+      let raw = 0;
+      let titleWins = 0;
+      let ppvMain = 0;
+      let domeMain = 0;
+      let warWin = 0, warLoss = 0;
+      let chDefend = 0, chSend = 0;
+      let mvp = 0, bestMatch = 0;
+      let jtChamp = 0;
+
+      histAll.forEach(e => {
+        if (!inRange(e)) return;
+        switch (e.type) {
+          case 'titleWin': titleWins++; break;
+          case 'ppvMainEvent': ppvMain++; break;
+          case 'domeMain': domeMain++; break;
+          case 'war':
+            if (e.won === true) warWin++;
+            else if (e.won === false) warLoss++;
+            break;
+          case 'challenge_request_match':
+            // isRequester=true → 自団体発信、false → 受け側 (撃退判定は won=true)
+            if (e.isRequester === true) chSend++;
+            else if (e.won === true) chDefend++;
+            else chSend++; // 受け側で敗北は加点無しでもよいが、暫定 send 重み
+            break;
+          case 'awardMVP': mvp++; break;
+          case 'awardBestMatch': bestMatch++; break;
+          case 'juniorTournament':
+            if (e.result === 'champion') jtChamp++;
+            break;
+        }
+      });
+
+      // 防衛は専用ヘルパーでレイン単位 max 合算 (既存ロジックと整合)
+      const defenses = Engine.chronicle._countChapterDefensesForAce(full, chapter, state);
+
+      raw += titleWins * W.titleWin;
+      raw += defenses * W.titleDefense;
+      raw += ppvMain * W.ppvMainEvent;
+      raw += domeMain * W.domeMain;
+      raw += warWin * W.warWin;
+      raw += warLoss * W.warLoss;
+      raw += chDefend * W.challengeRequestDefend;
+      raw += chSend * W.challengeRequestSend;
+      raw += mvp * W.awardMVP;
+      raw += bestMatch * W.awardBestMatch;
+      raw += jtChamp * W.juniorTournamentChampion;
+
+      // 章末王者ボーナス: seasonEnd 時点で在位中のベルトが 1 つでもあれば加算
+      const byBelt = new Map();
+      histAll.forEach(e => {
+        if (e.type !== 'titleWin' && e.type !== 'titleLoss') return;
+        const key = e.beltId || '_default';
+        if (!byBelt.has(key)) byBelt.set(key, []);
+        byBelt.get(key).push(e);
+      });
+      let stillChamp = false;
+      byBelt.forEach(evs => {
+        evs.sort((a, b) => (a.season || 0) - (b.season || 0) || (a.week || 0) - (b.week || 0));
+        let lastWin = null, lastLoss = null;
+        evs.forEach(e => {
+          const k = (e.season || 0) * 100 + (e.week || 0);
+          if (e.season > sEnd) return;
+          if (e.type === 'titleWin' && (lastWin == null || k > lastWin)) lastWin = k;
+          if (e.type === 'titleLoss' && (lastLoss == null || k > lastLoss)) lastLoss = k;
+        });
+        if (lastWin != null && (lastLoss == null || lastWin > lastLoss)) stillChamp = true;
+      });
+      if (stillChamp) raw += W.champAtChapterEnd;
+
+      return raw;
+    },
+
+    _achievementScore(fighter, chapter, state) {
+      const raw = Engine.chronicle._achievementRaw(fighter, chapter, state);
+      return Math.max(0, Math.min(1, raw / 1.5));
+    },
+
+    /** spec A-1: 素地 50% + 章内実績 50%。0〜1 範囲。 */
+    _aceScore(fighter, chapter, state) {
+      return Engine.chronicle._baseScore(fighter) * 0.5
+        + Engine.chronicle._achievementScore(fighter, chapter, state) * 0.5;
+    },
+
+    /** spec A-3: focus と prime 窓の位置関係から rising/prime/veteran を判定 */
+    _classifyCareerStage(fighter, chapter) {
+      const focus = chapter.focusSeason || chapter.seasonStart || 1;
+      const ps = fighter.primeStart || fighter.careerSeasonsStart || 1;
+      const pe = fighter.primeEnd || fighter.careerSeasonsEnd || ps;
+      if (focus < ps) return 'rising';
+      if (focus > pe) return 'veteran';
+      return 'prime';
     },
 
     _primeWindow(f) {
@@ -3103,108 +3238,87 @@ const Engine = {
       return list;
     },
 
-    /** spec §4.2 Step 4 章境界の決定 (単純版) */
+    /** spec A-4: 局所最大の focusSeason を中心に halfWidth=3 の窓を作る。
+     *  章は重複してよく、上限なし (spec L450)。序章との重複も許容。 */
     _segmentChapters(candidates, state) {
       if (candidates.length === 0) return [];
       const currentSeason = Math.max(1, state.season || 1);
-      // ピーク密度（英雄値加重）
-      const weighted = new Array(currentSeason + 2).fill(0);
+      const HALF = 3;
+      const weighted = new Array(currentSeason + HALF + 2).fill(0);
       candidates.forEach(c => {
         const s = c.peakOVRSeason || c.careerSeasonsEnd || 0;
         if (s >= 1 && s <= currentSeason) {
-          weighted[s] += Engine.chronicle._heroScore(c);
+          weighted[s] += Engine.chronicle._heroDensity(c);
         }
       });
-      // 序章 (G.prologue) があるなら S1〜startSeason付近を序章が吸収するので
-      // 章は最初の英雄値出現 season から開始する。
-      // 序章が無い旧セーブ (マイグレーション前) は cursor=1 から章を切り、
-      // 自然に複数章に分かれるようにする (重複や選手再登場は許容)。
-      const _hasPrologue = !!(state && state.prologue
-        && (state.prologue.status === 'in_progress' || state.prologue.status === 'confirmed')
-        && Array.isArray(state.prologue.founderIds)
-        && state.prologue.founderIds.length > 0);
-      let firstPeak = 1;
-      if (_hasPrologue) {
-        for (let i = 1; i <= currentSeason; i++) {
-          if (weighted[i] > 0) { firstPeak = i; break; }
+      const focuses = [];
+      for (let s = 1; s <= currentSeason; s++) {
+        if ((weighted[s] || 0) <= 0) continue;
+        let isLocalMax = true;
+        for (let d = 1; d <= HALF; d++) {
+          const left = s - d >= 1 ? (weighted[s - d] || 0) : 0;
+          const right = s + d <= currentSeason ? (weighted[s + d] || 0) : 0;
+          if (left > weighted[s] || right > weighted[s]) { isLocalMax = false; break; }
         }
+        if (isLocalMax) focuses.push(s);
       }
-      const bounds = [];
-      let cursor = firstPeak;
-      const MIN_LEN = 4, MAX_LEN = 7, TARGET = 5;
-      while (cursor <= currentSeason) {
-        const start = cursor;
-        let end = Math.min(cursor + TARGET - 1, currentSeason);
-        // 章末付近で「次のシーズンのピーク密度が低い」場所を探して境界を引く
-        // end を MIN_LEN..MAX_LEN の範囲で最小密度点に調整
-        const minEnd = Math.min(start + MIN_LEN - 1, currentSeason);
-        const maxEnd = Math.min(start + MAX_LEN - 1, currentSeason);
-        let bestEnd = end;
-        let bestScore = Infinity;
-        for (let e = minEnd; e <= maxEnd; e++) {
-          // e と e+1 の境界の密度和 (低いほど良い)
-          const score = (weighted[e] || 0) + (weighted[e + 1] || 0);
-          if (score < bestScore) { bestScore = score; bestEnd = e; }
-        }
-        const remaining = currentSeason - bestEnd;
-        if (remaining > 0 && remaining < MIN_LEN) {
-          bestEnd = (currentSeason - start + 1) <= MAX_LEN
-            ? currentSeason
-            : Math.max(minEnd, currentSeason - MIN_LEN);
-        }
-        end = bestEnd;
-        bounds.push({ seasonStart: start, seasonEnd: end });
-        cursor = end + 1;
-      }
-      // 序章 (G.prologue) が無い旧セーブでは S1〜firstPeak-1 が章にも序章にも入らない
-      // 空白期間になるため、CH.1 の seasonStart を S1 まで前倒しで吸収する。
-      // 終端は密度ベースで決まった bestEnd のままなので、井沢遥のような選手のキャリアを
-      // 既存の章境界で分断しない。
-      const hasPrologue = !!(state && state.prologue
-        && (state.prologue.status === 'in_progress' || state.prologue.status === 'confirmed')
-        && Array.isArray(state.prologue.founderIds)
-        && state.prologue.founderIds.length > 0);
-      if (!hasPrologue && bounds.length > 0 && bounds[0].seasonStart > 1) {
-        bounds[0].seasonStart = 1;
-      }
-      return bounds;
+      // weighted が全シーズン 0 (peakOVRSeason が記録されていないセーブ等) の救済
+      if (focuses.length === 0) focuses.push(currentSeason);
+      return focuses.map(f => ({
+        focusSeason: f,
+        halfWidth: HALF,
+        seasonStart: Math.max(1, f - HALF),
+        seasonEnd: Math.min(currentSeason, f + HALF)
+      }));
     },
 
-    /** spec §4.3 エース・同期選定 */
-    _selectAceAndPeers(chapterBounds, candidates) {
-      // 章期間にキャリアが重なる候補
+    /** spec A-5: stage-aware エース選定 + aceAsRising 昇格。
+     *  peer 選定は Phase A スコープ外 (現行ロジック流用 + stage タグ付け)。 */
+    _selectAceAndPeers(chapterBounds, candidates, state) {
       const inChapter = candidates.filter(c => {
         const s = c.primeStart || c.careerSeasonsStart || 1;
         const e = c.primeEnd || c.careerSeasonsEnd || s;
         return !(e < chapterBounds.seasonStart || s > chapterBounds.seasonEnd);
       });
       if (inChapter.length === 0) return null;
-      // peak が章期間内の候補を優先
-      const peakIn = inChapter.filter(c => {
-        const ps = c.peakOVRSeason || 0;
-        return ps >= chapterBounds.seasonStart && ps <= chapterBounds.seasonEnd;
-      });
-      const pool = peakIn.length > 0 ? peakIn : inChapter;
-      const scored = pool.map(c => ({ ...c, _hero: Engine.chronicle._heroScore(c) }));
-      scored.sort((a, b) => b._hero - a._hero);
-      if (scored.length === 0) return null;
 
-      // エース選定
-      const aces = [scored[0]];
-      // 2枚看板判定
-      if (scored.length >= 2) {
-        const diff = scored[0]._hero - scored[1]._hero;
-        // キャリア期間の重なりを確認
-        const a = scored[0], b = scored[1];
-        const overlapStart = Math.max(a.primeStart || a.careerSeasonsStart || 1, b.primeStart || b.careerSeasonsStart || 1);
-        const overlapEnd = Math.min(a.primeEnd || a.careerSeasonsEnd || 1, b.primeEnd || b.careerSeasonsEnd || 1);
-        const overlap = Math.max(0, overlapEnd - overlapStart + 1);
-        if (diff <= 0.04 && overlap >= 3) aces.push(b);
+      const scored = inChapter.map(c => ({
+        ...c,
+        _stage: Engine.chronicle._classifyCareerStage(c, chapterBounds),
+        _ace: Engine.chronicle._aceScore(c, chapterBounds, state)
+      }));
+
+      const primes = scored.filter(c => c._stage === 'prime').sort((a, b) => b._ace - a._ace);
+      let aces;
+      if (primes.length > 0) {
+        aces = [primes[0]];
+        if (primes.length >= 2) {
+          const diff = primes[0]._ace - primes[1]._ace;
+          const a = primes[0], b = primes[1];
+          const overlap = Engine.chronicle._overlapSeasons(
+            a.primeStart || a.careerSeasonsStart || 1,
+            a.primeEnd || a.careerSeasonsEnd || 1,
+            b.primeStart || b.careerSeasonsStart || 1,
+            b.primeEnd || b.careerSeasonsEnd || 1
+          );
+          // spec L167: 差 ≤ 0.20 かつ prime 重複 ≥ 3 で二枚看板
+          if (diff <= 0.20 && overlap >= 3) aces.push(b);
+        }
+      } else {
+        // prime 候補が皆無 → rising から ace 昇格
+        const risings = scored.filter(c => c._stage === 'rising').sort((a, b) => b._ace - a._ace);
+        if (risings.length > 0) {
+          aces = [{ ...risings[0], _stage: 'aceAsRising' }];
+        } else {
+          return null;
+        }
       }
 
-      // 同期 (実力派 3 + 人気派 1)
+      // peer は Phase A: 現行ロジック流用 (英雄値順 上位3 + idol 1)。stage タグだけ付与。
       const aceIds = new Set(aces.map(a => a.id));
-      const rest = scored.filter(c => !aceIds.has(c.id));
+      const rest = scored
+        .filter(c => !aceIds.has(c.id))
+        .sort((a, b) => Engine.chronicle._heroScore(b) - Engine.chronicle._heroScore(a));
       const strengthPeers = rest.slice(0, 3);
       const strengthIds = new Set(strengthPeers.map(p => p.id));
       const popCandidate = rest
@@ -3843,16 +3957,11 @@ const Engine = {
       const ch = state.chronicle || Engine.chronicle.createEmpty();
       const forceRebuild = options.forceRebuild === true;
       const cache = ch.chaptersCache || { lastBuiltSeason: 0, chapters: [] };
-      // 序章なしセーブで CH.1 が S1 始まりになっていない古いキャッシュは作り直す
-      const _hasPrologue = !!(state && state.prologue
-        && (state.prologue.status === 'in_progress' || state.prologue.status === 'confirmed')
-        && Array.isArray(state.prologue.founderIds)
-        && state.prologue.founderIds.length > 0);
-      const _staleNoPrologue = !_hasPrologue
-        && cache.chapters && cache.chapters.length > 0
-        && (cache.chapters[0].seasonStart || 0) > 1;
-      // キャッシュ判定: 同シーズンかつキャッシュ済みならスキップ
-      if (!forceRebuild && !_staleNoPrologue && cache.lastBuiltSeason === (state.season || 0) && cache.chapters && cache.chapters.length > 0) {
+      // chapter-overlap v0.1: focusSeason フィールドが無いキャッシュは旧形式 → 強制リビルド
+      const _isV2 = (cache.chapters || []).length === 0
+        || (cache.chapters || []).every(c => c.focusSeason !== undefined);
+      // キャッシュ判定: 同シーズン かつ V2 形式 かつキャッシュ済みならスキップ
+      if (!forceRebuild && _isV2 && cache.lastBuiltSeason === (state.season || 0) && cache.chapters && cache.chapters.length > 0) {
         return state;
       }
       const candidates = Engine.chronicle._collectCandidates(state);
@@ -3865,7 +3974,7 @@ const Engine = {
         // 早期章 (番号 1-2) はサブタイトル特別枠
         const isEarly = idx < 2 && b.seasonStart <= 3;
         const boundForSelect = { ...b, _isEarly: isEarly };
-        const sel = Engine.chronicle._selectAceAndPeers(b, candidates);
+        const sel = Engine.chronicle._selectAceAndPeers(b, candidates, state);
         if (!sel || sel.aces.length === 0) return; // 空白期はスキップ
         const contributionsByAxis = { striker: 0, grappler: 0, submission: 0, brawler: 0, allround: 0 };
         [...sel.aces, ...sel.peers].forEach(c => {
@@ -3885,11 +3994,13 @@ const Engine = {
         const peerNarratives = sel.peers.map(p => Engine.chronicle._buildPeerNarrative(p, b, sel.aces, sel.peers, state));
         const hasActiveParticipants = [...sel.aces, ...sel.peers].some(c => c._active);
         chapters.push({
-          id: `ch_${b.seasonStart}_${b.seasonEnd}`,
+          id: `ch_focus${b.focusSeason}_${b.seasonStart}_${b.seasonEnd}`,
           number: 0, // 後で振り直し
           status: 'confirmed',
           seasonStart: b.seasonStart,
           seasonEnd: b.seasonEnd,
+          focusSeason: b.focusSeason,
+          halfWidth: b.halfWidth,
           _hasActiveParticipants: hasActiveParticipants,
           title,
           subtitle,
@@ -3904,6 +4015,8 @@ const Engine = {
             titleReigns: a.titleReigns || 0,
             totalDefenses: a.totalDefenses || 0,
             traits: a.traits || [],
+            stage: a._stage || 'prime',
+            aceScore: a._ace || 0,
             narrative: aceNarratives[i] || null
           })),
           peers: sel.peers.map((p, i) => ({
@@ -3916,6 +4029,8 @@ const Engine = {
             primeEnd: p.primeEnd,
             titleReigns: p.titleReigns || 0,
             role: p._isIdol ? 'idol' : 'strength',
+            stage: p._stage || 'prime',
+            aceScore: p._ace || 0,
             traits: p.traits || [],
             narrative: peerNarratives[i] || null
           })),
@@ -3930,6 +4045,34 @@ const Engine = {
           })()
         });
       });
+      // spec A-8: 同一選手の登場章を aceScore 上位 3 章までに切り詰める。
+      // ace 枠は安全側で触らず、4 章目以降の peer 枠から該当選手を除去する。
+      const fighterChapterScores = new Map();
+      chapters.forEach(c => {
+        (c.aces || []).forEach(a => {
+          if (a.id == null) return;
+          const arr = fighterChapterScores.get(a.id) || [];
+          arr.push({ chapterId: c.id, score: a.aceScore || 0, slot: 'ace' });
+          fighterChapterScores.set(a.id, arr);
+        });
+        (c.peers || []).forEach(p => {
+          if (p.id == null) return;
+          const arr = fighterChapterScores.get(p.id) || [];
+          arr.push({ chapterId: c.id, score: p.aceScore || 0, slot: 'peer' });
+          fighterChapterScores.set(p.id, arr);
+        });
+      });
+      fighterChapterScores.forEach((arr, fid) => {
+        if (arr.length <= 3) return;
+        arr.sort((a, b) => b.score - a.score);
+        const drop = new Set(arr.slice(3).filter(x => x.slot === 'peer').map(x => x.chapterId));
+        if (drop.size === 0) return;
+        chapters.forEach(c => {
+          if (!drop.has(c.id)) return;
+          c.peers = (c.peers || []).filter(p => p.id !== fid);
+        });
+      });
+
       chapters.forEach((c, i) => {
         c.number = i + 1;
         c.status = Engine.chronicle._chapterStatus(c, i === chapters.length - 1);
