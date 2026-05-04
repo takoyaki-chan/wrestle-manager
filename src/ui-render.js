@@ -9021,22 +9021,38 @@ function _chronicleStyleBlock() {
   margin-bottom: 10px; line-height: 1.1;
 }
 .chron-ace-meta-row {
-  display: flex; gap: 16px; padding: 8px 0;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 8px; padding: 10px 0;
   border-top: 1px dashed var(--chr-rule);
   border-bottom: 1px dashed var(--chr-rule);
-  margin-bottom: 12px; flex-wrap: wrap;
+  margin-bottom: 12px;
+  align-items: end;
 }
-.chron-ace-meta { flex: 1; text-align: center; min-width: 60px; }
+.chron-ace-meta {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  min-height: 44px;
+}
 .chron-ace-meta-key {
-  font-size: 8px; color: var(--chr-ink-dim);
-  letter-spacing: 0.8px; text-transform: uppercase;
-  font-weight: 700; margin-bottom: 2px;
+  font-size: 9px; color: var(--chr-ink-dim);
+  letter-spacing: 1px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 4px;
+  line-height: 1;
 }
 .chron-ace-meta-val {
-  font-size: 20px; color: var(--chr-ink);
+  font-size: 22px; color: var(--chr-ink);
   letter-spacing: 0.5px; line-height: 1; font-weight: 700;
+  display: flex; align-items: baseline;
+  justify-content: center; gap: 1px;
 }
-.chron-ace-meta-val .small { font-size: 11px; color: var(--chr-ink-dim); }
+.chron-ace-meta-val .small {
+  font-size: 11px; color: var(--chr-ink-dim);
+  margin-left: 2px; font-weight: 600;
+}
+.chron-ace-meta-val.is-text {
+  font-size: 13px; line-height: 1.15;
+}
 .chron-ace-quote {
   font-size: 12px; line-height: 1.7;
   color: var(--chr-ink-sub);
@@ -9229,17 +9245,25 @@ function _chronicleStyleBlock() {
   padding: 8px 10px;
   background: rgba(95,69,35,0.05);
   border-left: 2px solid var(--chr-rule-bold);
+  display: flex; flex-direction: column;
+  justify-content: flex-end;
+  min-height: 50px;
 }
 .chron-era-stat-key {
-  font-size: 8px; color: var(--chr-ink-dim);
-  letter-spacing: 0.8px; text-transform: uppercase;
-  font-weight: 700; margin-bottom: 2px;
+  font-size: 9px; color: var(--chr-ink-dim);
+  letter-spacing: 1px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 4px;
+  line-height: 1;
 }
 .chron-era-stat-val {
   font-size: 18px; color: var(--chr-ink);
   line-height: 1; font-weight: 700;
+  display: flex; align-items: baseline; gap: 1px;
 }
-.chron-era-stat-val .small { font-size: 10px; color: var(--chr-ink-dim); margin-left: 2px; }
+.chron-era-stat-val .small {
+  font-size: 10px; color: var(--chr-ink-dim);
+  margin-left: 2px; font-weight: 600;
+}
 .chron-closing {
   padding: 16px 22px 18px;
   border-top: 3px double var(--chr-rule-bold);
@@ -9374,7 +9398,7 @@ function _chronicleStyleBlock() {
   display: grid;
   grid-template-columns: 1fr 28px 1fr;
   gap: 0;
-  align-items: start;
+  align-items: stretch;
   padding: 0 4px;
 }
 .chron-dual-card {
@@ -9382,6 +9406,18 @@ function _chronicleStyleBlock() {
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  height: 100%;
+}
+/* dual-info を flex column にして meta-row が同じ位置で揃うようにする */
+.chron-dual-card .chron-dual-info {
+  display: flex; flex-direction: column;
+  flex: 1;
+}
+.chron-dual-card .chron-dual-info > .chron-dual-meta-row {
+  margin-top: auto;
+}
+.chron-dual-card .chron-dual-info > .chron-ace-narrative {
+  margin-top: 6px;
 }
 .chron-dual-portrait {
   width: 130px; height: 168px;
@@ -9417,24 +9453,37 @@ function _chronicleStyleBlock() {
   line-height: 1.2; margin-bottom: 8px;
 }
 .chron-dual-meta-row {
-  display: grid; grid-template-columns: 1fr 1fr;
+  display: grid; grid-template-columns: repeat(5, 1fr);
   gap: 4px;
-  padding: 6px 0;
+  padding: 8px 0;
   border-top: 1px dashed var(--chr-rule);
   border-bottom: 1px dashed var(--chr-rule);
   margin-bottom: 8px;
+  align-items: end;
 }
-.chron-dual-meta { text-align: center; }
+.chron-dual-meta {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  min-height: 38px;
+}
 .chron-dual-meta-key {
-  font-size: 7px; color: var(--chr-ink-dim);
-  letter-spacing: 0.6px; text-transform: uppercase;
-  font-weight: 700; margin-bottom: 1px;
+  font-size: 8px; color: var(--chr-ink-dim);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 3px;
+  line-height: 1;
 }
 .chron-dual-meta-val {
-  font-size: 15px; color: var(--chr-ink);
+  font-size: 17px; color: var(--chr-ink);
   line-height: 1; font-weight: 700;
+  display: flex; align-items: baseline;
+  justify-content: center; gap: 1px;
 }
-.chron-dual-meta-val .small { font-size: 10px; color: var(--chr-ink-dim); }
+.chron-dual-meta-val .small {
+  font-size: 9px; color: var(--chr-ink-dim);
+  margin-left: 1px; font-weight: 600;
+}
+.chron-dual-meta-val.is-text { font-size: 11px; line-height: 1.1; }
 .chron-dual-shared-quote {
   margin: 0 22px 14px;
   font-size: 12px;
@@ -9930,7 +9979,7 @@ function _renderDbChronicle() {
             </div>
             <div class="chron-dual-meta">
               <div class="chron-dual-meta-key">STYLE</div>
-              <div class="chron-dual-meta-val" style="font-size:11px">${_chronicleStyleLabel(a.style)}</div>
+              <div class="chron-dual-meta-val is-text">${_chronicleStyleLabel(a.style)}</div>
             </div>
             <div class="chron-dual-meta">
               <div class="chron-dual-meta-key">ERA RUN</div>
@@ -9977,7 +10026,7 @@ function _renderDbChronicle() {
           </div>
           <div class="chron-ace-meta">
             <div class="chron-ace-meta-key">STYLE</div>
-            <div class="chron-ace-meta-val" style="font-size:12px">${_chronicleStyleLabel(a.style)}</div>
+            <div class="chron-ace-meta-val is-text">${_chronicleStyleLabel(a.style)}</div>
           </div>
           <div class="chron-ace-meta">
             <div class="chron-ace-meta-key">ERA RUN</div>
