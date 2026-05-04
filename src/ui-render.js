@@ -9830,6 +9830,10 @@ function _renderDbChronicle() {
               <div class="chron-dual-meta-val">${a.peakOVR || 0}</div>
             </div>
             <div class="chron-dual-meta">
+              <div class="chron-dual-meta-key">PEAK POP</div>
+              <div class="chron-dual-meta-val">${a.peakPopularity || 0}</div>
+            </div>
+            <div class="chron-dual-meta">
               <div class="chron-dual-meta-key">STYLE</div>
               <div class="chron-dual-meta-val" style="font-size:11px">${_chronicleStyleLabel(a.style)}</div>
             </div>
