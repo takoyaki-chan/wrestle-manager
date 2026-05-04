@@ -2216,12 +2216,12 @@ const Engine = {
       return { wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary, titleByOrg, totalTitleWins, totalDefenses, juniorTournamentWins, ppvMainEventWins };
     },
 
-    /** Generate durability: normal distribution N(0,2), clamped to -4..+4 (v1.3-1 §1.1) */
+    /** Generate durability: normal distribution N(0,2), clamped to -3..+3 (v1.3-1 §1.1, v1.3-3 範囲縮小) */
     generateDurability(rng) {
       // Sum of 12 uniform(0,1) − 6 ≈ N(0,1); multiply by 2 → N(0,2)
       let s = 0;
       for (let i = 0; i < 12; i++) s += Engine.rng.float(rng);
-      return Math.max(-4, Math.min(4, Math.round((s - 6) * 2)));
+      return Math.max(-3, Math.min(3, Math.round((s - 6) * 2)));
     },
 
     // ── NPC記録統一 Part C: 経歴自動生成 ──────────────────────────────────
@@ -5213,6 +5213,23 @@ const Engine = {
       return Math.min(Math.ceil(finalGain), trainCap - current);
     },
 
+    // 実効 durability — durability 値に trait バイアスを合算したもの。
+    // 衰退タイミング (decayStartAge) と wear 蓄積速度 (wearBonus) の両方に使う。
+    // 早熟は durability を相殺してでも早く散らせ、晩成/鉄人は逆に長持ちさせる。
+    // bias: 早熟 -1 / 晩成 +2 / 鉄人 +2 / 遅咲き +1 / 不屈 +1
+    // 仕様: durability ∈ [-3,+3] (N(0,2) クランプ) + trait bias、最終は [-3,+3] にクランプ
+    getEffectiveDurability(fighter) {
+      const base = fighter && fighter.durability != null ? fighter.durability : 0;
+      const traits = (fighter && fighter.traits) || [];
+      let bias = 0;
+      if (traits.indexOf('早熟') !== -1) bias -= 1;
+      if (traits.indexOf('晩成') !== -1) bias += 2;
+      if (traits.indexOf('鉄人') !== -1) bias += 2;
+      if (traits.indexOf('遅咲き') !== -1) bias += 1;
+      if (traits.indexOf('不屈') !== -1) bias += 1;
+      return Math.max(-3, Math.min(3, base + bias));
+    },
+
     // Apply wear-based stat decay (v1.3-1 §3) + §1.5 ベテラン調整トレイト
     applyDecay(rng, fighter, decayReduction = 0) {
       const wear = fighter.wear || 0;
@@ -5243,7 +5260,9 @@ const Engine = {
                    seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) },
                    promoStack: 0 }; // プロモ改修 v1.0: シーズン末リセット
         // v1.3-1: wear蓄積 — decayより先に計算し、今シーズンのdecayに反映させる (§2.1)
-        const decayStartAge = 23 + (nc.durability || 0);
+        // 早熟/晩成/鉄人 等の trait は durability に合算した実効値で扱う
+        const effDura = Engine.growth.getEffectiveDurability(nc);
+        const decayStartAge = 23 + effDura;
         if (nc.age >= decayStartAge) {
           const baseWear = 10 + Engine.rng.int(rng, -3, 3); // 7〜13
           let wearBonus = 0;
@@ -5255,8 +5274,8 @@ const Engine = {
           // intensive多用（12週以上）
           if ((nc.intensiveWeeks || 0) >= 12) wearBonus += 2;
           // TODO: rest週 24週以上 → -3 (要: restWeeks フィールド追加)
-          // durability補正（耐久値が高いほどwear増加が遅い）
-          wearBonus -= (nc.durability || 0);
+          // durability補正（耐久値が高いほどwear増加が遅い） — trait 合算済み
+          wearBonus -= effDura;
           let finalWear = Math.max(1, baseWear + wearBonus);
           // v0.2: 延命術 — wear蓄積 ×0.50
           finalWear = Math.max(1, Math.round(finalWear * Engine.coach.getWearMult(G, nc.id)));
@@ -5592,8 +5611,10 @@ const Engine = {
       const av = Engine.scout.calcAssessedValue(charForAssess, rng, 1);
       const durability = Engine.career.generateDurability(rng);
       // 初期Wear付与: decayStartAge超の選手にはwear蓄積済みとして生成
+      // trait 合算済み実効 durability で開始年齢を判定
       const effectiveAge = age || (17 + Engine.rng.int(rng, 0, 11));
-      const aiInitDecayStart = 23 + (durability || 0);
+      const initEffDura = Engine.growth.getEffectiveDurability({ durability, traits: template.traits || [] });
+      const aiInitDecayStart = 24 + initEffDura;
       let initWear = 0;
       if (effectiveAge >= aiInitDecayStart) {
         const yearsOfWear = effectiveAge - aiInitDecayStart;
@@ -7411,13 +7432,15 @@ const Engine = {
         const retiredNames = [];
 
         // Step 1: 加齢 + wear蓄積 (v1.3-1 §7 — AI team: baseWear + durability補正 only)
+        // trait 合算済み実効 durability を使用
         roster.forEach(f => {
           f.age = (f.age || 17) + 1;
           f.careerSeasons = (f.careerSeasons || 0) + 1; // v1.4: 新人王判定用
-          const aiDecayStart = 23 + (f.durability || 0);
+          const aiEffDura = Engine.growth.getEffectiveDurability(f);
+          const aiDecayStart = 23 + aiEffDura;
           if (f.age >= aiDecayStart) {
             const aiBaseWear = 10 + Engine.rng.int(rng, -3, 3);
-            f.wear = (f.wear || 0) + Math.max(1, aiBaseWear - (f.durability || 0));
+            f.wear = (f.wear || 0) + Math.max(1, aiBaseWear - aiEffDura);
           }
         });
 
