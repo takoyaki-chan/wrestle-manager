@@ -8519,7 +8519,7 @@ function showFactionF07Modal(payload, state, onChoice) {
 
   const observationNote = meta.source === 'leader'
     ? `<div class="fevt-observation-note"><span class="marker">${String(leaderSurname)}</span>と${factionName}の動きについて、社長室での相談です。</div>`
-    : `<div class="fevt-observation-note">${coachLine}</div>`;
+    : `<div class="fevt-observation-note"><span class="marker">${String(leaderSurname)}</span>と${factionName}の様子について、社長の判断を仰ぎたいとのことです。</div>`;
 
   const decisionCardsHtml = meta.choices.map(c => `
     <div class="fevt-decision-card" data-choice="${c.id}">
