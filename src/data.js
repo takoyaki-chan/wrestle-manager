@@ -3047,7 +3047,7 @@ const COMMON5_LINES = {
       flippant: ['「ファンに恥かかせない、それだけ意識してる」'],
     },
     COMBAT: {
-      fiery:    ['「次は{rivalLine}を潰す。誰だろうと関係ねぇ」'],
+      fiery:    ['「次に当たる相手は潰す。誰だろうと関係ねぇ」'],
       composed: ['「強い相手と当たるためなら、どこにでも乗り込みます」'],
       grudging: ['「殴り合えば、答えは出る。それだけだ」'],
       airy:     ['「強い子と当たれるなら、どこ行ってもいいよー!」'],
@@ -3060,7 +3060,7 @@ const COMMON5_LINES = {
     AUTHORITY: ['「{leaderName}、敵対派閥に宣戦布告」'],
     BOND:      ['「{factionName}、家族のような結束 ―― 専属密着レポ」'],
     MERIT:     ['「{factionName} ―― 実力主義の旗を掲げて」'],
-    HEEL:      ['「{factionName}が{org}の秩序を破壊する」'],
+    HEEL:      ['「{factionName}が業界の秩序を破壊する」'],
     FACE:      ['「{factionName}、王道を貫く ―― ファンへの誓い」'],
     COMBAT:    ['「{leaderName}、次の標的を名指し」'],
   },
@@ -3116,7 +3116,7 @@ const COMMON7_LINES = {
   resultLeader: {
     A: { _any: ['{planType}が組まれた。両派閥の勢いが上がっている。'] },
     B: { _any: ['企画は流した。関係は今のままで充分、ということで。'] },
-    C: { _any: ['返事は保留した。流れに任せた結果、{outcome}となった。'] },
+    C: { _any: ['返事は保留した。流れに任せたまま、話は静かに立ち消えた。'] },
   },
 };
 
