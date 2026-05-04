@@ -2767,33 +2767,58 @@ const Engine = {
     },
 
     /** 単一エースの章期間内防衛数を集計。
-     *  ベルト単位で (章内 maxCount) - (章開始前 maxCount) を合算。
-     *  count が未設定/0 のセーブでも壊れないよう、差分が 0 で章内に防衛イベントが
-     *  1件以上あればイベント本数を返すフォールバック付き。
-     *  history は filterPostJoin を通さず生で参照する (複数レイン跨ぎで priorMax を
-     *  正しく機能させるため)。 */
+     *  count はレインごとに 1 から振り直されるので「ベルト単位 max - priorMax」では
+     *  複数レインの防衛がまとめて捨てられる。レイン単位 (titleWin〜titleLoss/章末)
+     *  で max(count) を取って合算する。_collectCandidates と同じ思想。
+     *  count が無いイベント形式のセーブのため、レインごとに max が 0 のときは
+     *  そのレイン内の titleDefense 件数で代替する。 */
     _countChapterDefensesForAce(ace, chapter, state) {
       const full = Engine.chronicle._resolveFullFighter(ace, state) || ace;
       const hist = ((full && full.careerRecord) || {}).history || [];
       const sStart = chapter.seasonStart || 0;
       const sEnd = chapter.seasonEnd || 0;
-      const inChapter = hist.filter(e => e.type === 'titleDefense' && (e.season || 0) >= sStart && (e.season || 0) <= sEnd);
-      if (inChapter.length === 0) return 0;
-      const beltGroups = new Map();
-      inChapter.forEach(e => {
+      // ベルト単位にイベント時系列を作り、レインごとに切る
+      const byBelt = new Map();
+      hist.forEach(e => {
+        if (e.type !== 'titleWin' && e.type !== 'titleDefense' && e.type !== 'titleLoss') return;
         const key = e.beltId || '_default';
-        if (!beltGroups.has(key)) beltGroups.set(key, []);
-        beltGroups.get(key).push(e);
+        if (!byBelt.has(key)) byBelt.set(key, []);
+        byBelt.get(key).push(e);
       });
+      const inRange = e => (e.season || 0) >= sStart && (e.season || 0) <= sEnd;
       let total = 0;
-      beltGroups.forEach((evs, beltKey) => {
-        const maxIn = evs.reduce((mx, e) => Math.max(mx, e.count || 0), 0);
-        const priorMax = hist
-          .filter(e => e.type === 'titleDefense' && (e.beltId || '_default') === beltKey && (e.season || 0) < sStart)
-          .reduce((mx, e) => Math.max(mx, e.count || 0), 0);
-        total += Math.max(0, maxIn - priorMax);
+      byBelt.forEach((evs) => {
+        evs.sort((a, b) => (a.season || 0) - (b.season || 0) || (a.week || 0) - (b.week || 0));
+        let reignDefMax = 0;
+        let reignDefCount = 0;
+        let reignCountedInChapter = false;
+        const flushReign = () => {
+          if (reignCountedInChapter) {
+            total += reignDefMax > 0 ? reignDefMax : reignDefCount;
+          }
+          reignDefMax = 0;
+          reignDefCount = 0;
+          reignCountedInChapter = false;
+        };
+        evs.forEach(e => {
+          if (e.type === 'titleWin') {
+            flushReign();
+          } else if (e.type === 'titleDefense') {
+            if (inRange(e)) {
+              reignCountedInChapter = true;
+              reignDefMax = Math.max(reignDefMax, e.count || 0);
+              reignDefCount += 1;
+            }
+          } else if (e.type === 'titleLoss') {
+            // titleLoss.defenses が在位中の最終防衛数なら採用 (count フィールド未設定のセーブ救済)
+            if (reignCountedInChapter && (e.defenses || 0) > reignDefMax) {
+              reignDefMax = e.defenses || 0;
+            }
+            flushReign();
+          }
+        });
+        flushReign(); // 章末で在位中だったレインの取りこぼし回収
       });
-      if (total === 0) return inChapter.length;
       return total;
     },
 
