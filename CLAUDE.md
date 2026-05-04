@@ -186,6 +186,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | glimpse-cascade-spec-v1.0.md | Glimpse Cascade(2件以上の興行後 Tier1 Glimpse を1枚集約・Variant A 縦リスト・白吹き出し+from矢印+to感情バッジ+ベル系SE順次再生・1件は単発フォールバック / 実装済 2026-05-02) |
 | challenge-request-spec-v0.1.md | 選手発信 挑戦試合打診イベント(自団体→他団体・heat≥90で発火・3vs3団体戦・年1〜2回・DRAFT) |
 | firing-grudge-spec-v0.1.md | 解雇キャラの遺恨システム(grudge.intensity・解雇者→残留組の片方向更新・challenge-request連動・DRAFT) |
+| faction-bond-rivalry-spec-v1.0.md | 派閥イベント bond/rivalry 連動(F03/F04/F05/F07 の選択結果で当事者間の 絆/因縁 を動かす、_applyAxisBetweenGroups ヘルパー追加、実装完了 2026-05-04) |
 
 ## UI実装ルール(必読)
 

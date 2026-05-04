@@ -3592,6 +3592,24 @@ Engine.factions = {
       // 対立度（元派閥→敵対派閥）+15〜+20
       const hostBump = 15 + Math.floor(Engine.rng.float(rng) * 6);
       s = this.applyHostilityChange(s, fromFactionId, toFactionId, hostBump);
+      // faction-bond-rivalry-spec v0.1: 寝返り A の関係性影響
+      // 対象→旧リーダー rivalry +5〜+8
+      if (fromLeaderId) {
+        const dRiv = 5 + Math.floor(Engine.rng.float(rng) * 4);
+        s = this._applyRivalryDirected(s, targetId, fromLeaderId, dRiv);
+      }
+      // 旧派閥メンバー(リーダー除く)→対象 bond -3〜-5
+      if (fromFaction) {
+        const remainIds = fromFaction.memberIds.filter(id => id !== targetId && id !== fromLeaderId);
+        const dBond = -(3 + Math.floor(Engine.rng.float(rng) * 3));
+        for (const mid of remainIds) s = this._applyBondDirected(s, mid, targetId, dBond);
+      }
+      // 対象→敵対派閥リーダー bond +2〜+4
+      const toFaction = (s.factions || []).find(f => f.id === toFactionId);
+      if (toFaction && toFaction.leaderId) {
+        const dBond2 = 2 + Math.floor(Engine.rng.float(rng) * 3);
+        s = this._applyBondDirected(s, targetId, toFaction.leaderId, dBond2);
+      }
       if (typeof console !== 'undefined') console.log(`[WM Faction] F04 defection: ${targetName} ${fromFactionName} → ${toFactionName}`);
       return {
         state: s,
@@ -3602,17 +3620,25 @@ Engine.factions = {
           { label: `${fromFactionName} 勢い`, delta: `${fromBump}` },
           { label: `${toFactionName} 勢い`, delta: `+${toBump}` },
           { label: `${fromFactionName} → ${toFactionName} 対立度`, delta: `+${hostBump}` },
+          { label: `${targetName} → 旧リーダー 因縁`, delta: '+' },
+          { label: '残留メンバー → 対象 絆', delta: '−' },
         ],
       };
     }
     if (choiceId === 'B') {
       // 対象 trust +5、一時回避（12週後再判定）
       s = this._applyTrustToMembers(s, [targetId], 5);
+      // faction-bond-rivalry-spec v0.1: 慰留 → 対象→旧リーダー bond +1〜+3
+      if (fromLeaderId) {
+        const dBond = 1 + Math.floor(Engine.rng.float(rng) * 3);
+        s = this._applyBondDirected(s, targetId, fromLeaderId, dBond);
+      }
       return {
         state: s,
         resultText: `${targetName}との面談で、迷いは一旦収まった。`,
         impactSummary: [
           { label: `${targetName} trust`, delta: '+5' },
+          { label: `${targetName} → 旧リーダー 絆`, delta: '微増' },
           { label: '寝返り判定', delta: '12週 CD' },
         ],
       };
@@ -3630,6 +3656,11 @@ Engine.factions = {
         const newRec = { ...rec, rivalry: Engine.util.clamp(rec.rivalry + rivBump, 0, 100) };
         s = { ...s, relationships: { ...s.relationships, [key]: newRec } };
       }
+    }
+    // faction-bond-rivalry-spec v0.1: 旧リーダー→対象 rivalry +3〜+5(裏切り未遂への失望)
+    if (fromLeaderId) {
+      const dRiv = 3 + Math.floor(Engine.rng.float(rng) * 3);
+      s = this._applyRivalryDirected(s, fromLeaderId, targetId, dRiv);
     }
     // 派閥内に火種（tensionTag を立てる: F05 検出確率を上げる指標）
     s = {
@@ -3662,6 +3693,10 @@ Engine.factions = {
     const roster = s.roster || [];
     if (Engine.rng.float(rng) < 0.70) {
       // 自然分裂
+      // 分裂前のリーダー ID と残留メンバー ID を確保(関係性更新用)
+      const oldFacBefore = (s.factions || []).find(f => f.id === factionId);
+      const oldLeaderId = oldFacBefore ? oldFacBefore.leaderId : null;
+      const stayIds = oldFacBefore ? oldFacBefore.memberIds.filter(id => !dissidentIds.includes(id)) : [];
       // 旧派閥から離脱メンバーの internalPoints エントリを削除
       if (s.factionInternalPoints && s.factionInternalPoints[factionId]) {
         const ipOld = { ...s.factionInternalPoints[factionId] };
@@ -3682,12 +3717,21 @@ Engine.factions = {
       if (oldFac) s = this._allocateInternalPointsByOvrRank(s, factionId, [oldFac.leaderId]);
       const newFac = (s.factions || []).find(f => f.leaderId === ringleaderId && f.id !== factionId);
       if (newFac) s = this._allocateInternalPointsByOvrRank(s, newFac.id, [newFac.leaderId]);
+      // faction-bond-rivalry-spec v0.1: 離脱⇄残留 bond -2〜-4 / 首謀者→旧リーダー rivalry +3〜+5
+      const dBondGrp = -(2 + Math.floor(Engine.rng.float(rng) * 3));
+      s = this._applyAxisBetweenGroups(s, dissidentIds, stayIds, 'bond', dBondGrp, 4);
+      if (oldLeaderId && ringleaderId) {
+        const dRiv = 3 + Math.floor(Engine.rng.float(rng) * 3);
+        s = this._applyRivalryDirected(s, ringleaderId, oldLeaderId, dRiv);
+      }
       return {
         state: s,
         resultText: `見守るうち、${factionName}は自然に割れた。${ringleaderName}が旗を掲げる。`,
         impactSummary: [
           { label: '分裂', delta: `${factionName} → ${ringleader?.surname || ringleaderName}派` },
           { label: '離脱メンバー', delta: `${dissidentIds.length}名` },
+          { label: '離脱 ⇄ 残留 絆', delta: `${dBondGrp}` },
+          { label: `${ringleaderName} → 旧リーダー 因縁`, delta: '+' },
         ],
       };
     }
@@ -3895,8 +3939,10 @@ Engine.factions = {
           s = { ...s, factions: s.factions.map(f => f.id === factionId ? { ...f, dictatorTag: true } : f) };
           impactSummary.push({ label: `${factionName}`, delta: 'dictatorTag 付与' });
         }
+        s = this._applyAxisBetweenGroups(s, nonMemberIds(), [leaderId], 'rivalry', ri(3, 5), 4);
         impactSummary.push({ label: `${leaderName} trust`, delta: '+5' });
         impactSummary.push({ label: '派閥外 trust', delta: `${dn}` });
+        impactSummary.push({ label: `派閥外 → ${leaderName} 因縁`, delta: '+微増' });
         resultText = `${leaderName}の権威を認めた。${factionName}の外にいる者たちは、一歩引いて見ている。`;
       } else if (choiceId === 'B') {
         const dl = -ri(8, 12);
@@ -3917,8 +3963,13 @@ Engine.factions = {
           ...s,
           factions: s.factions.map(f => f.id === factionId ? { ...f, authoritativeTag: false, tensionTag: true, f07RebukeCount: 0 } : f),
         };
+        if (altExec) {
+          s = this._applyRivalryDirected(s, leaderId, altExec.id, ri(5, 8));
+          s = this._applyRivalryDirected(s, altExec.id, leaderId, ri(2, 4));
+        }
         impactSummary.push({ label: `${leaderName} trust`, delta: '−' });
         if (altExec) impactSummary.push({ label: `${altExec.name} trust`, delta: '+' });
+        if (altExec) impactSummary.push({ label: `${leaderName} ⇄ ${altExec.name} 因縁`, delta: '+' });
         resultText = `${leaderName}ではなく別の幹部を重用した。${factionName}の中に、新たな対立軸がくすぶっている。`;
       }
     } else if (itype === 'DEMAND_RECOGNITION') {
@@ -3947,6 +3998,12 @@ Engine.factions = {
       if (choiceId === 'A') {
         s = this._applyTrustToMembers(s, [leaderId], -3);
         if (tId) s = this._applyTrustToMembers(s, [tId], 5);
+        if (tId) {
+          const dRiv = -ri(3, 5);
+          s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
+          s = this._applyRivalryDirected(s, leaderId, tId, ri(2, 3));
+          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `${dRiv}` });
+        }
         impactSummary.push({ label: `${leaderName} trust`, delta: '-3' });
         impactSummary.push({ label: `${tName} trust`, delta: '+5' });
         resultText = `${leaderName}に直接話をつけた。${tName}は救われた表情を見せた。`;
@@ -3954,6 +4011,12 @@ Engine.factions = {
         s = this._applyTrustToMembers(s, [leaderId], 2);
         if (tId) s = this._applyTrustToMembers(s, [tId], -5);
         s = this._applyLockerRoomMorale(s, -3);
+        if (tId) {
+          const dRiv = ri(4, 6);
+          s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
+          s = this._applyRivalryDirected(s, leaderId, tId, ri(2, 4));
+          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `+${dRiv}` });
+        }
         impactSummary.push({ label: `${tName} trust`, delta: '-5' });
         impactSummary.push({ label: 'ロッカー士気', delta: '-3' });
         resultText = `黙認した。${tName}は言葉を呑み込んだ。`;
@@ -3961,6 +4024,11 @@ Engine.factions = {
         s = this._applyTrustToMembers(s, [leaderId], -1);
         if (tId) s = this._applyTrustToMembers(s, [tId], 3);
         s = advanceRebuke(s);
+        if (tId) {
+          const dRiv = -ri(2, 3);
+          s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
+          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `${dRiv}` });
+        }
         impactSummary.push({ label: `${tName} trust`, delta: '+3' });
         resultText = `${leaderName}本人ではなく、${tName}の側に静かに声をかけた。`;
       }
@@ -3985,19 +4053,25 @@ Engine.factions = {
         resultText = `コーチを介して${leaderName}の状態を確かめ、派閥外への目配りも忘れなかった。`;
       }
     } else if (itype === 'OBSERVE_INTERNAL_RANK') {
+      const rankTargets = (incidentPayload && incidentPayload.targetIds) || memberIdsExLeader().slice(0, 2);
       if (choiceId === 'A') {
         s = this._applyTrustToMembers(s, [leaderId], -2);
-        const targets = (incidentPayload && incidentPayload.targetIds) || memberIdsExLeader().slice(0, 2);
-        s = this._applyTrustToMembers(s, targets, 3);
+        s = this._applyTrustToMembers(s, rankTargets, 3);
+        for (const tid of rankTargets) s = this._applyBondDirected(s, tid, leaderId, ri(1, 2));
         impactSummary.push({ label: '中位メンバー trust', delta: '+3' });
+        impactSummary.push({ label: '中位 → リーダー 絆', delta: '微増' });
         resultText = `${factionName}の格付け争いに介入した。`;
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], 1);
         s = this._applyLockerRoomMorale(s, -2);
+        for (const tid of rankTargets) s = this._applyRivalryDirected(s, tid, leaderId, ri(2, 4));
+        if (rankTargets.length >= 2) s = this._applyRivalryBetweenMembers(s, rankTargets, ri(2, 3));
         impactSummary.push({ label: 'ロッカー士気', delta: '-2' });
+        impactSummary.push({ label: '中位 → リーダー 因縁', delta: '微増' });
         resultText = `${factionName}内の格付け争いはそのまま続いている。`;
       } else {
         s = advanceRebuke(s);
+        for (const tid of rankTargets) s = this._applyBondDirected(s, tid, leaderId, ri(1, 2));
         impactSummary.push({ label: `${factionName} 結束`, delta: '微増' });
         resultText = `表立った介入はせず、個別に話を聞いた。`;
       }
@@ -4037,18 +4111,23 @@ Engine.factions = {
           : c);
         s = { ...s, roster: newRoster };
         s = this.applyMomentumChange(s, factionId, -2);
+        for (const tid of targets) s = this._applyBondDirected(s, tid, leaderId, ri(1, 2));
         impactSummary.push({ label: `${factionName} condition`, delta: '+3' });
         impactSummary.push({ label: `${factionName} 勢い`, delta: '-2' });
+        impactSummary.push({ label: 'メンバー → リーダー 絆', delta: '微増' });
         resultText = `${leaderName}の追い込みを止めた。${factionName}は一息ついた。`;
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], 2);
         s = this.applyMomentumChange(s, factionId, 3);
+        for (const tid of targets) s = this._applyRivalryDirected(s, tid, leaderId, ri(2, 3));
         impactSummary.push({ label: `${factionName} 勢い`, delta: '+3' });
         impactSummary.push({ label: '怪我リスク', delta: '上昇' });
+        impactSummary.push({ label: 'メンバー → リーダー 因縁', delta: '微増' });
         resultText = `${leaderName}の追い込み練習を黙認した。`;
       } else {
         s = this._applyTrustToMembers(s, [leaderId], -1);
         s = advanceRebuke(s);
+        for (const tid of targets) s = this._applyBondDirected(s, tid, leaderId, 1);
         impactSummary.push({ label: 'コーチ経由調整', delta: '実施' });
         resultText = `${leaderName}に直接は触れず、コーチを介して練習量を整えた。`;
       }
@@ -4061,14 +4140,28 @@ Engine.factions = {
         s = this._applyTrustToMembers(s, [leaderId], -2);
         if (tId) s = this._applyTrustToMembers(s, [tId], 3);
         s = advanceRebuke(s);
+        if (tId) {
+          const dRiv = -ri(2, 4);
+          s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
+          s = this._applyRivalryDirected(s, leaderId, tId, ri(1, 3));
+          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `${dRiv}` });
+        }
         impactSummary.push({ label: `${tName} trust`, delta: '+3' });
-        resultText = `${leaderName}に静かに注意した。${tName}の表情がわずかに緩んだ。`;
+        resultText = `${leaderName}に静かに注意した。`;
       } else {
         s = this._applyTrustToMembers(s, [leaderId], 1);
         s = this._applyTrustToMembers(s, memberIds(), 2);
         if (tId) s = this._applyTrustToMembers(s, [tId], -3);
+        if (tId) {
+          const dRiv = ri(3, 5);
+          s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
+          for (const mid of memberIds()) s = this._applyRivalryDirected(s, tId, mid, ri(1, 3));
+          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `+${dRiv}` });
+        }
+        s = this._applyBondBetweenMembers(s, memberIds(), ri(1, 2));
         impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+2' });
         impactSummary.push({ label: `${tName} trust`, delta: '-3' });
+        impactSummary.push({ label: `${factionName} メンバー間 絆`, delta: '微増' });
         resultText = `流した。${factionName}の壁はそのまま残っている。`;
       }
     } else if (itype === 'INCIDENT_BONDING') {
@@ -4076,15 +4169,21 @@ Engine.factions = {
         s = this._applyTrustToMembers(s, [leaderId], -1);
         s = this._applyTrustToMembers(s, memberIds(), -1);
         s = this._applyTrustToMembers(s, nonMemberIds(), 2);
+        s = this._applyBondBetweenMembers(s, memberIds(), -ri(1, 2));
+        s = this._applyAxisBetweenGroups(s, memberIds(), nonMemberIds(), 'bond', 1, 4);
         impactSummary.push({ label: `${factionName} メンバー trust`, delta: '-1' });
         impactSummary.push({ label: '派閥外 trust', delta: '+2' });
+        impactSummary.push({ label: `${factionName} 内 / 外 絆`, delta: '内-/外+' });
         resultText = `${factionName}内の固まりを軽くたしなめた。`;
       } else {
         s = this._applyTrustToMembers(s, [leaderId], 2);
         s = this._applyTrustToMembers(s, memberIds(), 3);
         s = this._applyTrustToMembers(s, nonMemberIds(), -2);
+        s = this._applyBondBetweenMembers(s, memberIds(), ri(2, 3));
+        s = this._applyAxisBetweenGroups(s, memberIds(), nonMemberIds(), 'bond', -ri(1, 2), 4);
         impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+3' });
         impactSummary.push({ label: '派閥外 trust', delta: '-2' });
+        impactSummary.push({ label: `${factionName} メンバー間 絆`, delta: '+微増' });
         resultText = `${factionName}の結束を見守った。輪の外には少し距離が残った。`;
       }
     } else if (itype === 'INCIDENT_HEEL_PROVOKE') {
@@ -4197,6 +4296,36 @@ Engine.factions = {
         const rec = newRels[key];
         if (!rec) continue;
         newRels[key] = { ...rec, rivalry: Engine.util.clamp((rec.rivalry || 0) + delta, 0, 100) };
+      }
+    }
+    return { ...state, relationships: newRels };
+  },
+
+  // faction-bond-rivalry-spec v0.1: 2 グループ間の axis(bond|rivalry) を両方向で動かす。
+  // ノイズ抑制のため各グループ最大 sampleSize 名(roster 順)に制限する。
+  _applyAxisBetweenGroups(state, groupAIds, groupBIds, axis, delta, sampleSize = 4) {
+    if (!state.relationships) return state;
+    if (!Array.isArray(groupAIds) || !Array.isArray(groupBIds)) return state;
+    if (axis !== 'bond' && axis !== 'rivalry') return state;
+    const a = groupAIds.slice(0, sampleSize);
+    const b = groupBIds.slice(0, sampleSize);
+    if (!a.length || !b.length) return state;
+    let newRels = { ...state.relationships };
+    for (const fromId of a) {
+      for (const toId of b) {
+        if (fromId === toId) continue;
+        const k1 = `${fromId}>${toId}`;
+        const k2 = `${toId}>${fromId}`;
+        const r1 = newRels[k1];
+        if (r1) {
+          const cur = (axis === 'bond') ? r1.bond : (r1.rivalry || 0);
+          newRels[k1] = { ...r1, [axis]: Engine.util.clamp(cur + delta, 0, 100) };
+        }
+        const r2 = newRels[k2];
+        if (r2) {
+          const cur = (axis === 'bond') ? r2.bond : (r2.rivalry || 0);
+          newRels[k2] = { ...r2, [axis]: Engine.util.clamp(cur + delta, 0, 100) };
+        }
       }
     }
     return { ...state, relationships: newRels };
