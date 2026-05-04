@@ -3858,7 +3858,7 @@ function renderRanking() {
   const _buildAchievementTooltip = (r, currentSeason) => {
     const items = (r && r.achievementItems) || [];
     if (items.length === 0) {
-      return 'このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。';
+      return 'このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/新人賞/メディア厚労賞などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。';
     }
     // age (シーズン跨ぎ回数) でグルーピング: 0=当シーズン, 1=1年前, ...
     const buckets = {};

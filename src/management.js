@@ -13768,6 +13768,24 @@ const Engine = {
             winnerName: pendingAwards.jtChampion.name,
           });
         }
+        // 新人賞
+        if (pendingAwards.rookieOfYear && pendingAwards.rookieOfYear.orgId) {
+          Engine.achievement.add(s, pendingAwards.rookieOfYear.orgId, {
+            id: `rookie_${s.season}`, type: 'rookie',
+            originalPt: ACFG.pt.rookie || 5,
+            label: '新人賞',
+            winnerName: pendingAwards.rookieOfYear.name,
+          });
+        }
+        // メディア厚労賞
+        if (pendingAwards.mediaAward && pendingAwards.mediaAward.orgId) {
+          Engine.achievement.add(s, pendingAwards.mediaAward.orgId, {
+            id: `media_${s.season}`, type: 'mediaAward',
+            originalPt: ACFG.pt.mediaAward || 4,
+            label: 'メディア厚労賞',
+            winnerName: pendingAwards.mediaAward.name,
+          });
+        }
         // シーズン最大動員興行 (TODO: 全団体のシーズン最大動員を追跡する仕組みが
         // 未実装のため、本フェーズでは保留。tracker 実装後に有効化する)
 
@@ -16194,6 +16212,7 @@ Engine.awards = {
     const best = candidates[0];
     return {
       id: best.fighter.id, name: best.fighter.name, portrait: best.fighter.portrait,
+      orgId: best.orgId,
       orgName: best.orgName, ovr: ov(best.fighter), age: best.fighter.age,
       style: best.fighter.style || 'Allround',
       isPlayerOrg: best.orgId === 'player'
@@ -16445,6 +16464,7 @@ Engine.awards = {
       talentCountSeason: winner.talentCountSeason || 0,
       promoCountSeason: winner.promoCountSeason || 0,
       totalRev,
+      orgId: winnerOrgId,
       orgName: Engine.awards._orgName(state, winnerOrgId),
       isPlayerOrg: winnerOrgId === 'player',
     };

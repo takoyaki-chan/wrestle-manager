@@ -1,6 +1,10 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-05-05（シーズン中引退ポップアップ 診断補強）
+> 最終更新: 2026-05-05（ランキング実績軸 新人賞・メディア厚労賞 配線）
+
+## 直近の調整（2026-05-05 ランキング実績軸 新人賞・メディア厚労賞 配線）
+
+ユーザ指摘「ランキング画面の実績ポイントが PPV/年末MVP/ベストマッチ/JT 優勝しか加点されておらず、新人賞・メディア厚労賞も乗るべき」を受けて、表彰式で既に選定されているのに加点未配線だった 2 賞を `Engine.achievement.add` 経由で実績軸に乗せた。①**配点追加** (`src/data.js:ACHIEVEMENT_CONFIG.pt`): `rookie: 5`(新人賞・bestMatch と同格)、`mediaAward: 4`(メディア厚労賞・露出貢献勲章)。既存 PPV15/MVP10/JT8/bestMatch5 との序列を保つ位置取り。②**`selectRookie`/`selectMediaAward` 返り値に `orgId` 追加** (`src/management.js:16175+ / 16406+`): 既存実装は `orgName`/`isPlayerOrg` のみ返却していたため `Engine.achievement.add` から所属団体が引けなかった。各 1 行追加で解決。③**加点配線** (`src/management.js` offWeek1 表彰式パイプライン JT 加点直後): `pendingAwards.rookieOfYear` / `pendingAwards.mediaAward` の `orgId` 存在チェックで `Engine.achievement.add` を呼出。id は `rookie_${season}` / `media_${season}` で重複ガードと整合。④**ツールチップ空状態** (`src/ui-render.js:3861`): 「PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝」の例示に「新人賞/メディア厚労賞」を追記。実装本体はラベル分岐ではなく `it.label` 直接表示なので追加分岐は不要。⑤**スコープ外(ユーザ確認済)**: 団体対抗戦/挑戦状 3vs3 → 既に `battlePoints` 軸で評価済みのため実績軸への二重加点なし、敢闘賞・技能賞 → メディア厚労賞 1 本に集約、統一トーナメント・最大動員 → 本体未実装で据え置き。⑥**仕様書更新** (`specs/org-ranking-spec-v2.0.md`): 配点表に新 2 行追加 + 6 章 ACHIEVEMENT_CONFIG ブロック追従。⑦**検証**: auto-sim 100 シーズン × seed 12345 で violations 0 / errors 0 / weeks 5300 ALL CLEAR ✓。⑧**実機確認推奨**: シーズン末まで進めてランキング画面の実績ツールチップに **新人賞 +5** / **メディア厚労賞 +4** が出ること、既存 PPV/MVP/JT/bestMatch も併存すること、翌シーズン開幕で age=1 のまま満額維持・age=2 で半減することを確認。変更: src/data.js(ACHIEVEMENT_CONFIG.pt 2 キー追加) + src/management.js(selectRookie/selectMediaAward に orgId 追加 + 表彰式 add 呼出 2 ブロック 約 18 行) + src/ui-render.js(空状態文言 1 行) + specs/org-ranking-spec-v2.0.md(配点表 2 行追加 + ACHIEVEMENT_CONFIG ブロック更新) + docs/game-system-roadmap.md(本項)。
 
 ## 直近の調整（2026-05-05 シーズン中引退ポップアップ 診断補強）
 

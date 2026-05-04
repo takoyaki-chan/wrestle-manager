@@ -6447,7 +6447,9 @@ const ACHIEVEMENT_CONFIG = {
     unified: 10,        // 統一トーナメント優勝者所属団体
     junior: 8,          // ジュニアトーナメント優勝者所属団体
     mvp: 10,            // 年末MVP受賞者所属団体
+    rookie: 5,          // 新人賞 受賞者所属団体
     bestMatch: 5,       // ベストマッチ賞 受賞試合の所属団体 (両団体に各5pt)
+    mediaAward: 4,      // メディア厚労賞 受賞者所属団体
     bestAttend: 3,      // シーズン最大動員興行 開催団体
   },
   // 減衰: age <= graceAge までは満額、その後 decayRate^(age-graceAge) で減衰

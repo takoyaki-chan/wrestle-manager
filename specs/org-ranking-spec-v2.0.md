@@ -62,7 +62,9 @@ state.achievementItems = {
 | 統一トーナメント優勝者所属団体 | 10pt | `unified_${season}` | (※統一トーナメント未実装、配点定義のみ) |
 | ジュニアトーナメント優勝者所属団体 | 8pt | `junior_${season}` | offWeek1 awards.generate 直後 |
 | 年末MVP受賞者所属団体 | 10pt | `mvp_${season}` | 同上 |
+| 新人賞受賞者所属団体 | 5pt | `rookie_${season}` | 同上 |
 | ベストマッチ賞受賞試合の所属団体 | 5pt | `bestMatch_${season}` | 同上 |
+| メディア厚労賞受賞者所属団体 | 4pt | `media_${season}` | 同上 |
 | シーズン最大動員興行開催団体 | 3pt | `bestAttend_${season}` | (※tracker 未実装、保留中) |
 
 **重複ガード**: 同一 `id` のアイテムが既に存在する場合は追加せずスキップ (二重加点防止)。
@@ -169,7 +171,7 @@ const RANKING_CONFIG = {
 };
 
 const ACHIEVEMENT_CONFIG = {
-  pt: { ppv: 15, unified: 10, junior: 8, mvp: 10, bestMatch: 5, bestAttend: 3 },
+  pt: { ppv: 15, unified: 10, junior: 8, mvp: 10, rookie: 5, bestMatch: 5, mediaAward: 4, bestAttend: 3 },
   decayRate: 0.5,
   graceAge: 1,
   removeBelow: 1,
