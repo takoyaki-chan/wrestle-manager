@@ -15165,12 +15165,12 @@ Engine.awards = {
     };
   },
 
-  /** NPC団体ごとの新人王: その団体の careerSeasons===1 から OVR 最高 */
+  /** NPC団体ごとの新人王: その団体の今季デビュー組(careerSeasons===0、表彰生成時点でインクリメント前)から OVR 最高 */
   selectRookieForOrg(state, orgId) {
     const ov = Engine.util.ov;
     const od = state.aiOrgs && state.aiOrgs[orgId];
     if (!od || !od.roster) return null;
-    const rookies = od.roster.filter(f => f.careerSeasons === 1);
+    const rookies = od.roster.filter(f => f.careerSeasons === 0);
     if (rookies.length === 0) return null;
     rookies.sort((a, b) => ov(b) - ov(a));
     const best = rookies[0];
@@ -15244,12 +15244,12 @@ Engine.awards = {
     };
   },
 
-  /** ① 新人王: 全団体の careerSeasons===1 から OVR 最高 */
+  /** ① 新人王: 全団体の今季デビュー組(careerSeasons===0、表彰生成時点でインクリメント前)から OVR 最高 */
   selectRookie(state) {
     const ov = Engine.util.ov;
     const candidates = [];
     state.roster.forEach(f => {
-      if (f.careerSeasons === 1)
+      if (f.careerSeasons === 0)
         candidates.push({ fighter: f, orgId: 'player', orgName: Engine.awards._orgName(state, 'player') });
     });
     if (state.aiOrgs) {
@@ -15257,7 +15257,7 @@ Engine.awards = {
         const orgData = state.aiOrgs[orgId];
         if (!orgData || !orgData.roster) return;
         orgData.roster.forEach(f => {
-          if (f.careerSeasons === 1)
+          if (f.careerSeasons === 0)
             candidates.push({ fighter: f, orgId, orgName: Engine.awards._orgName(state, orgId) });
         });
       });
