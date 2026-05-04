@@ -1524,8 +1524,8 @@ function _findFighterById(id) {
   return null;
 }
 
-function _flagPickPersonality(fighter) {
-  return (fighter && fighter.personality) || 'normal';
+function _flagPickArchetype(fighter) {
+  return (fighter && fighter.archetype) || 'normal';
 }
 
 function _flagFormatLine(template, fighter, fighter2) {
@@ -1549,11 +1549,10 @@ function _flagBuildPopupOpts(modal) {
 
   const speaker = _findFighterById(speakerId);
   const target = _findFighterById(targetId);
-  const personality = _flagPickPersonality(speaker);
-  const archetype = (speaker && speaker.archetype) || null;
+  const archetype = _flagPickArchetype(speaker);
   const lineSeed = (speakerId || 0) ^ (targetId || 0) ^ (modal.season || 0) * 31 + (modal.week || 0);
   const tmpl = (typeof FLAG_DIALOGUE !== 'undefined')
-    ? FLAG_DIALOGUE._pickLine(modal.type, personality, lineSeed, archetype)
+    ? FLAG_DIALOGUE._pickLine(modal.type, archetype, lineSeed)
     : '';
   const message = _flagFormatLine(tmpl, speaker, target);
 
@@ -1572,17 +1571,17 @@ function _flagBuildM12(modal, meta) {
   const p = modal.payload || {};
   const returner = _findFighterById(p.returnerId);
   const reactions = p.reactions || [];
-  const rPersonality = _flagPickPersonality(returner);
+  const rArchetype = _flagPickArchetype(returner);
   const rSeed = (p.returnerId || 0) * 13 + (modal.week || 0);
   const rLine = (typeof FLAG_DIALOGUE !== 'undefined')
-    ? FLAG_DIALOGUE._pickSubLine('M-12', 'returner', rPersonality, rSeed)
+    ? FLAG_DIALOGUE._pickSubLine('M-12', 'returner', rArchetype, rSeed)
     : '';
   const reactionLines = reactions.map(r => {
     const rem = _findFighterById(r.byId);
     if (!rem) return null;
     const sub = r.forgiven ? 'forgiven' : 'notForgiven';
     const tmpl = (typeof FLAG_DIALOGUE !== 'undefined')
-      ? FLAG_DIALOGUE._pickSubLine('M-12', sub, _flagPickPersonality(rem), rem.id)
+      ? FLAG_DIALOGUE._pickSubLine('M-12', sub, _flagPickArchetype(rem), rem.id)
       : '';
     return `<b style="color:${r.forgiven ? 'var(--cream-gold)' : 'var(--cream-text-muted)'}">${rem.name}</b>: ${_flagFormatLine(tmpl, rem, returner)}`;
   }).filter(Boolean);
@@ -1602,14 +1601,14 @@ function _flagBuildM13(modal, meta) {
   const p = modal.payload || {};
   const master = _findFighterById(p.masterId);
   const disciple = _findFighterById(p.discipleId);
-  const mPersonality = _flagPickPersonality(master);
-  const dPersonality = _flagPickPersonality(disciple);
+  const mArchetype = _flagPickArchetype(master);
+  const dArchetype = _flagPickArchetype(disciple);
   const seed = (p.masterId || 0) * 7 + (p.discipleId || 0);
   const mLine = (typeof FLAG_DIALOGUE !== 'undefined')
-    ? FLAG_DIALOGUE._pickSubLine('M-13', 'master', mPersonality, seed)
+    ? FLAG_DIALOGUE._pickSubLine('M-13', 'master', mArchetype, seed)
     : '';
   const dLine = (typeof FLAG_DIALOGUE !== 'undefined')
-    ? FLAG_DIALOGUE._pickSubLine('M-13', 'disciple', dPersonality, seed + 1)
+    ? FLAG_DIALOGUE._pickSubLine('M-13', 'disciple', dArchetype, seed + 1)
     : '';
   return {
     type: 'fighter',
