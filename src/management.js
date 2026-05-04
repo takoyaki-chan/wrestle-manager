@@ -14621,16 +14621,16 @@ Engine.mvpRace = {
       const elemText = topElems.length > 0 ? topElems.slice(0, 2).join('・') : 'シーズンの積み重ね';
       if (Engine.mvpRace._hasGrowthRoom(entry, state)) {
         main = pick([
-          `${elemText}で${entry.points}pt。${m.age}歳、まだ伸びしろは残されている。`,
+          `${elemText}で${Math.round(entry.points)}pt。${m.age}歳、まだ伸びしろは残されている。`,
           `${elemText}を武器に上位戦線へ食い込んでいる${m.age}歳。`,
-          `${elemText}を積み上げて${entry.points}pt。${m.age}歳の上昇余地はまだ尽きていない。`,
+          `${elemText}を積み上げて${Math.round(entry.points)}pt。${m.age}歳の上昇余地はまだ尽きていない。`,
           `${m.age}歳、${elemText}を支えに上位を窺っている。先のシーズンが楽しみな立ち位置だ。`,
         ]);
       } else {
         main = pick([
-          `${elemText}で${entry.points}pt。${m.age}歳、円熟期の戦い方が業界に滲む。`,
+          `${elemText}で${Math.round(entry.points)}pt。${m.age}歳、円熟期の戦い方が業界に滲む。`,
           `${elemText}を武器に上位を維持する${m.age}歳。経験の差が点数の重みに変わっている。`,
-          `${elemText}で${entry.points}pt。${m.age}歳、ベテランの計算が点数の裏側で効いている。`,
+          `${elemText}で${Math.round(entry.points)}pt。${m.age}歳、ベテランの計算が点数の裏側で効いている。`,
           `${m.age}歳。${elemText}を支えに、業界の上位戦線で安定した光を放っている。`,
         ]);
       }
@@ -14792,7 +14792,7 @@ Engine.mvpRace = {
       `初登場で十傑入り——${m.age}歳の名前を覚えておきたい。`,
     ]);
     return pick([
-      `${role}として確実な積み重ね。${entry.points}pt。`,
+      `${role}として確実な積み重ね。${Math.round(entry.points)}pt。`,
       `${m.age}歳、${role}の安定感で点数を伸ばす。`,
       `${role}の働きでシーズンを支えている${m.age}歳。`,
     ]);
