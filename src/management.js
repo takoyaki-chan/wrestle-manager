@@ -4359,10 +4359,17 @@ const Engine = {
      *  ・章窓内の戴冠/防衛/MVP/対外戦などの活躍を 1 文目に
      *  ・章窓内の h2h.history で最も多く当たった相手を「印象に残った相手」として 2 文目に
      *  ・該当が無ければ stage 別の最小フォールバック */
+    /** Phase B+: peer narrative データベース駆動バリエーション。
+     *  各選手の trait / personality / archetype / style / OVR帯 / pop帯 / debut /
+     *  titleReigns / topRival / bond/rivalry を素材に、stage 別 opening + 戦績パーツ +
+     *  キャラ性パーツ + 関係性パーツの 4 ブロックを seed 抽選で組み合わせる。
+     *  同一選手は常に同じ narrative (id seed) / 別選手は異なる narrative。 */
     _buildPeerNarrative(peer, chapter, aces, peers, state) {
       const surname = Engine.chronicle._getSurname(peer);
       const role = peer._role || (peer._isIdol ? 'idol' : 'strength');
       const stage = peer._stage || 'prime';
+      const styleAxis = Engine.chronicle._styleAxis(peer.style);
+      const styleJa = Engine.chronicle.AXIS_LABELS[styleAxis] || '独自';
       const allHist = ((peer.careerRecord || {}).history || []);
       const joinS = Engine.career.joinSeason(peer);
       const histPost = Engine.career.filterPostJoin(allHist, joinS);
@@ -4375,74 +4382,230 @@ const Engine = {
       const ppvMain = hist.filter(e => e.type === 'ppvMainEvent').length;
       const warWins = hist.filter(e => e.type === 'war' && e.won === true).length;
       const warLosses = hist.filter(e => e.type === 'war' && e.won === false).length;
+      const titleLossInWin = hist.some(e => e.type === 'titleLoss');
+      const debutEv = histPost.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
+      const debutSeason = (debutEv && debutEv.season) || peer.careerSeasonsStart || 1;
+      const debutInChapter = debutSeason >= chapter.seasonStart && debutSeason <= chapter.seasonEnd;
+      const peakOVR = peer.peakOVR || 0;
+      const peakPop = peer.peakPopularity || 0;
+      const personality = peer.personality || 'normal';
+      const archetype = peer.archetype || 'normal';
+      const traits = Array.isArray(peer.traits) ? peer.traits : [];
 
-      // 活躍要約
-      const ach = [];
-      if (titleWins >= 1) ach.push(titleWins >= 2 ? `王座を${titleWins}度奪取し` : '王座を奪い');
-      if (defenses >= 1) ach.push(`${defenses}度の防衛を重ね`);
-      if (ppvMain >= 1) ach.push(ppvMain >= 2 ? `PPV のメインを${ppvMain}度張り` : 'PPV のメインを張り');
-      if (mvp >= 1) ach.push('MVP に輝き');
-      if (bm >= 1) ach.push(bm >= 2 ? `ベストマッチ賞を${bm}度受け` : 'ベストマッチ賞を獲り');
-      if (jt) ach.push('ジュニアトーナメントを制し');
-      if (warWins >= 1) ach.push(`対外戦で${warWins}勝を上げ`);
-      else if (warLosses >= 2) ach.push(`他団体の壁を前に${warLosses}敗を喫し`);
-      const achText = ach.join('、');
-
-      // 印象に残った相手 (章窓内の h2h.history 件数で抽出)
-      let topRivalSurname = '';
-      let topCount = 0;
+      // ── 関係性: top rival + top bond peer (state.h2h を走査)
+      let topRivalSurname = '', topRivalCount = 0;
+      let topBondSurname = '', topBondVal = 0;
+      let topRivVal = 0, topRivSurnameByVal = '';
       const h2hAll = (state && state.h2h) || {};
+      const otherInfoCache = new Map();
+      const resolveOther = (id) => {
+        if (otherInfoCache.has(id)) return otherInfoCache.get(id);
+        const r = (state.roster || []).find(c => c.id === id)
+          || ((state.chronicle && state.chronicle.fighterArchive) || []).find(a => a.id === id)
+          || (typeof ALL_CHARS !== 'undefined' && ALL_CHARS.find(c => c.id === id));
+        otherInfoCache.set(id, r);
+        return r;
+      };
       Object.keys(h2hAll).forEach(key => {
         const parts = key.split('>');
         if (parts.length !== 2) return;
         const idA = parseInt(parts[0], 10);
         const idB = parseInt(parts[1], 10);
         if (idA !== peer.id && idB !== peer.id) return;
+        const otherId = idA === peer.id ? idB : idA;
         const entry = h2hAll[key];
-        const inWin = ((entry && entry.history) || []).filter(h => {
+        if (!entry) return;
+        const inWin = ((entry.history) || []).filter(h => {
           const s = (h.s != null ? h.s : (h.season || 0));
           return s >= chapter.seasonStart && s <= chapter.seasonEnd;
         }).length;
-        if (inWin > topCount) {
-          topCount = inWin;
-          const otherId = idA === peer.id ? idB : idA;
-          const r = (state.roster || []).find(c => c.id === otherId)
-            || ((state.chronicle && state.chronicle.fighterArchive) || []).find(a => a.id === otherId)
-            || (typeof ALL_CHARS !== 'undefined' && ALL_CHARS.find(c => c.id === otherId));
+        if (inWin > topRivalCount) {
+          topRivalCount = inWin;
+          const r = resolveOther(otherId);
           if (r) topRivalSurname = Engine.chronicle._getSurname(r);
+        }
+        if ((entry.bond || 0) > topBondVal) {
+          topBondVal = entry.bond || 0;
+          const r = resolveOther(otherId);
+          if (r) topBondSurname = Engine.chronicle._getSurname(r);
+        }
+        if ((entry.rivalry || 0) > topRivVal) {
+          topRivVal = entry.rivalry || 0;
+          const r = resolveOther(otherId);
+          if (r) topRivSurnameByVal = Engine.chronicle._getSurname(r);
         }
       });
 
-      // stage 別の語り口
-      let prefix;
-      if (role === 'idol') {
-        prefix = `${surname}は人気で会場を支え`;
-      } else if (stage === 'rising') {
-        prefix = `${surname}は若手として頭角を現し`;
-      } else if (stage === 'veteran') {
-        prefix = `キャリア晩期の${surname}は`;
-      } else {
-        prefix = `${surname}はこの章で`;
+      // ── seed 抽選 (peer.id ベース、同一選手は不変・別選手は変動)
+      const idNum = typeof peer.id === 'number' ? peer.id : (Number(peer.id) || 0);
+      const seedBase = (state && state.rngSeed) || 1;
+      const pickSalt = (salt, len) => {
+        const s = Engine.rng.derive(seedBase, chapter.number || chapter.seasonStart || 0, idNum, salt);
+        return ((s | 0) % len + len) % len;
+      };
+
+      // 戦績タイプ判定 (中身の濃さ別に分岐)
+      const hasBigAch = titleWins >= 1 || defenses >= 2 || mvp >= 1 || bm >= 1 || jt || ppvMain >= 1;
+      const hasMidAch = defenses === 1 || warWins >= 1 || warLosses >= 2;
+      const ovrTier = peakOVR >= 95 ? 'top' : peakOVR >= 88 ? 'high' : peakOVR >= 80 ? 'mid' : 'low';
+      const popTier = peakPop >= 90 ? 'star' : peakPop >= 75 ? 'high' : peakPop >= 55 ? 'mid' : 'low';
+
+      // ── A. opening (stage / role 別、ID 抽選で 1 つ選択)
+      const OPENINGS = {
+        rising_debut_in_chapter: [
+          `${surname}が${debutSeason}シーズンにデビューしたのは、ちょうどこの章の最中だった。`,
+          `${surname}のキャリアはこの章の中で始まった。S${debutSeason}でリングに上がり、ここから先の時代を背負っていく。`,
+          `${surname}という名前が初めて${state && state.orgName ? state.orgName : '団体'}のリングに刻まれたのは、この章の${debutSeason}シーズンだった。`
+        ],
+        rising: [
+          `${surname}はこの章で頭角を現し始めた若手だった。`,
+          `若手の${surname}は、この時代を足場に階段を駆け上がっていった。`,
+          `${surname}は${debutSeason}シーズンのデビューから、この章で名前を覚えられる位置まで来た。`,
+          `${surname}にとってこの章は、リングの隅から中心へと歩み出した時代だった。`,
+          `若さで挑み続けた${surname}は、この章でリングの空気を変え始めた。`
+        ],
+        veteran: [
+          `キャリア晩期の${surname}は、背中で語る選手だった。`,
+          `長くリングに立った${surname}は、この章で若手にバトンを渡し始めていた。`,
+          `${surname}にとってこの章は、自身の戦いを締めくくる時間だった。`,
+          `年齢を重ねた${surname}は、勝敗を超えた何かを試合に残そうとしていた。`,
+          `${surname}は${debutSeason}シーズン以来のキャリアを、この章でゆっくりと畳み始めていた。`
+        ],
+        idol: [
+          `${surname}は華のあるキャラクターで客席を惹きつけた。`,
+          `ファンに愛された${surname}は、戦績では測れない存在感をリングに残した。`,
+          `${surname}が登場するだけで会場の空気が変わる——そんなアイドル性をこの章は持っていた。`,
+          `${surname}は人気${peakPop}を記録し、客足を背負ったスターだった。`,
+          `${surname}の存在は団体のチケットそのものだった。`
+        ],
+        prime_top: [
+          `${surname}はこの章のリングを牽引した実力者だった。`,
+          `ピーク OVR ${peakOVR} に達した${surname}は、章の主軸として試合を組み立てた。`,
+          `${surname}は${styleJa}を武器に、この章の上位戦線を走り続けた。`,
+          `主力の${surname}は、章を通して安定した戦績で団体を支えた。`
+        ],
+        prime_high: [
+          `${surname}は${styleJa}を貫き、この章の主力グループに名を連ねた。`,
+          `${surname}はこの章で${styleJa}の使い手として一定の存在感を持ち続けた。`,
+          `${surname}は中堅から上位への階段を、この章で着実に上っていった。`,
+          `${surname}は安定した働きでこの章のリングを支えた。`
+        ],
+        prime_mid: [
+          `${surname}は${styleJa}で中盤戦線を担った。`,
+          `${surname}はこの章で派手さこそないが、地道に試合数をこなした。`,
+          `${surname}は職人気質の${styleJa}でリングに居続けた。`,
+          `${surname}は試合のリズムを崩さずに章を走り抜けた選手だった。`
+        ]
+      };
+      let openingPool;
+      if (stage === 'rising' && debutInChapter) openingPool = OPENINGS.rising_debut_in_chapter;
+      else if (stage === 'rising') openingPool = OPENINGS.rising;
+      else if (stage === 'veteran') openingPool = OPENINGS.veteran;
+      else if (role === 'idol') openingPool = OPENINGS.idol;
+      else if (ovrTier === 'top') openingPool = OPENINGS.prime_top;
+      else if (ovrTier === 'high') openingPool = OPENINGS.prime_high;
+      else openingPool = OPENINGS.prime_mid;
+      const openingLine = openingPool[pickSalt(0xCE01, openingPool.length)];
+
+      // ── B. 戦績フレーズ (cap 2)
+      const achPool = [];
+      if (titleWins >= 2) achPool.push(`${titleWins}度の戴冠`);
+      else if (titleWins === 1) achPool.push('王座奪取');
+      if (defenses >= 3) achPool.push(`${defenses}度の防衛`);
+      else if (defenses >= 1) achPool.push(`${defenses}度の防衛`);
+      if (mvp >= 1) achPool.push('MVP 受賞');
+      if (bm >= 2) achPool.push(`ベストマッチ賞 ${bm} 度`);
+      else if (bm === 1) achPool.push('ベストマッチ賞');
+      if (jt) achPool.push('ジュニアトーナメント制覇');
+      if (ppvMain >= 1) achPool.push(`PPV メイン ${ppvMain >= 2 ? `${ppvMain}度` : '出場'}`);
+      if (warWins >= 1) achPool.push(`対外戦${warWins}勝`);
+      else if (warLosses >= 2) achPool.push(`対外戦${warLosses}敗`);
+      if (titleLossInWin) achPool.push('王座陥落');
+      let achLine = '';
+      if (achPool.length > 0) {
+        const items = achPool.slice(0, 3);
+        const verbPool = [
+          `この章では${items.join('・')}という記録を残した。`,
+          `章を通じて${items.join('・')}を経験した。`,
+          `章窓の戦績は${items.join('・')}。`
+        ];
+        achLine = verbPool[pickSalt(0xCE02, verbPool.length)];
       }
 
-      const sentences = [];
-      if (achText) {
-        sentences.push(`${prefix}、${achText}この章を支えた。`);
-      } else if (stage === 'rising') {
-        sentences.push(`${surname}は若手としてこの章に名を連ね、次の時代への足がかりを作った。`);
-      } else if (stage === 'veteran') {
-        sentences.push(`キャリア晩期の${surname}は若手の前で背中を見せ続けた。`);
-      } else if (role === 'idol') {
-        sentences.push(`${surname}は華のあるキャラクターで会場を埋め、戦績では測れない存在感を残した。`);
-      } else {
-        sentences.push(`${surname}はこの章のリングに立ち続け、団体の地力となった。`);
+      // ── C. キャラ性 (trait / personality / archetype / popularity / style)
+      const charPool = [];
+      if (traits.includes('華') || traits.includes('ファンサービス')) {
+        charPool.push(`「華」を備えた${surname}は、リング映えのする選手としてファンに記憶されている。`);
       }
-      if (topRivalSurname && topCount >= 2) {
-        sentences.push(`${topRivalSurname}との度重なる対戦が、この時代の${surname}の輪郭を形作った。`);
-      } else if (topRivalSurname && topCount === 1) {
-        sentences.push(`${topRivalSurname}との一戦が、この章の${surname}を語る上で外せない。`);
+      if (traits.includes('人望')) {
+        charPool.push(`${surname}は人望の厚さでロッカーに馴染み、若手から慕われた。`);
       }
-      return sentences.join('');
+      if (traits.includes('ムードメーカー')) {
+        charPool.push(`${surname}はムードメーカーとして場の空気を整える側にいた。`);
+      }
+      if (traits.includes('熱血')) {
+        charPool.push(`熱血気質の${surname}はリングで気持ちを前面に出すタイプだった。`);
+      }
+      if (traits.includes('名勝負製造機')) {
+        charPool.push(`${surname}は「名勝負製造機」と呼ばれ、相手を引き上げる試合を作ることで知られた。`);
+      }
+      if (traits.includes('ガラスのハート')) {
+        charPool.push(`${surname}は繊細なメンタルを抱えながら、それでもリングに立ち続けた。`);
+      }
+      if (popTier === 'star') {
+        charPool.push(`${surname}の人気は会場の動員を左右するほどだった。`);
+      } else if (popTier === 'high' && !traits.includes('華')) {
+        charPool.push(`${surname}は派手さこそないが、固定ファンを持つ選手だった。`);
+      }
+      if (personality === 'aggressive' || personality === '強気') {
+        charPool.push(`${surname}は強気のスタイルで相手に向かっていく試合運びを好んだ。`);
+      } else if (personality === 'composed' || personality === '鷹揚') {
+        charPool.push(`鷹揚な性分の${surname}は、リング外でも内でも余裕を崩さなかった。`);
+      } else if (personality === 'shy' || personality === '控えめ') {
+        charPool.push(`控えめな${surname}は、口数の少なさを試合で埋めるタイプだった。`);
+      } else if (personality === 'cheerful' || personality === '陽気') {
+        charPool.push(`陽気な${surname}は、ファンにとっても親しみやすい存在だった。`);
+      } else if (personality === 'cool' || personality === 'クール') {
+        charPool.push(`クールな${surname}は、感情を抑えた立ち振る舞いで一線を引いていた。`);
+      } else if (personality === 'serious' || personality === '真面目') {
+        charPool.push(`真面目な${surname}は、練習量で答える職人だった。`);
+      }
+      const styleVerbPool = {
+        striker: [`打撃を軸にした${surname}は、リングを真っ向から攻める選手だった。`],
+        grappler: [`組み技を主体にした${surname}は、地に足のついた攻めを得意とした。`],
+        submission: [`関節技を武器にした${surname}は、終盤で勝負を決めにいく選手だった。`],
+        brawler: [`喧嘩スタイルの${surname}は、試合の流れを荒らすことで結果を引き寄せた。`],
+        allround: [`万能型の${surname}は、相手に合わせた試合運びを身上とした。`]
+      };
+      if (styleVerbPool[styleAxis]) charPool.push(...styleVerbPool[styleAxis]);
+      let charLine = '';
+      if (charPool.length > 0) charLine = charPool[pickSalt(0xCE03, charPool.length)];
+
+      // ── D. 関係性
+      let relLine = '';
+      const relPool = [];
+      if (topRivalSurname && topRivalCount >= 3) {
+        relPool.push(`${topRivalSurname}との度重なる対戦が、この時代の${surname}の輪郭を形作った。`);
+      } else if (topRivalSurname && topRivalCount === 2) {
+        relPool.push(`${topRivalSurname}との二度の対戦は、この章の${surname}を語る上で外せない。`);
+      } else if (topRivalSurname && topRivalCount === 1) {
+        relPool.push(`${topRivalSurname}との一戦が、この章の${surname}に色を残した。`);
+      }
+      if (topBondSurname && topBondVal >= 60 && topBondSurname !== topRivalSurname) {
+        relPool.push(`${topBondSurname}との絆が、ロッカーでの${surname}を支えた。`);
+      }
+      if (topRivSurnameByVal && topRivVal >= 60 && topRivSurnameByVal !== topRivalSurname) {
+        relPool.push(`${topRivSurnameByVal}との因縁は、章の外まで尾を引いた。`);
+      }
+      if (relPool.length > 0) relLine = relPool[pickSalt(0xCE04, relPool.length)];
+
+      // ── 組み立て (空文字は除外)
+      const out = [openingLine, achLine, charLine, relLine].filter(Boolean).join('');
+      // 完全に空ならフォールバック
+      if (!out) {
+        return `${surname}はこの章のリングに立ち続け、団体の地力となった。`;
+      }
+      return out;
     },
 
     /** era stats (spec §3.2 eraStats) */
