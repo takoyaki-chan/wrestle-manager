@@ -8869,8 +8869,26 @@ function _chronicleStyleBlock() {
   letter-spacing: 1px; cursor: pointer; font-weight: 700;
 }
 .chron-rebuild-btn:hover { background: rgba(95,69,35,0.08); }
-.chron-timeline { padding: 14px 22px 24px; border-bottom: 1px solid var(--chr-rule); }
-.chron-timeline-rail { position: relative; height: 38px; margin: 0 12px; }
+.chron-timeline { padding: 14px 22px 28px; border-bottom: 1px solid var(--chr-rule); }
+.chron-timeline-rail { position: relative; height: 50px; margin: 0 12px; }
+/* Phase D: 章窓を背景バンドで可視化。重複は半透明の重ね描きで濃く見える */
+.chron-timeline-band {
+  position: absolute;
+  top: 6px; height: 14px;
+  background: rgba(154,112,32,0.16);
+  border-radius: 7px;
+  pointer-events: none;
+  border: 1px solid rgba(154,112,32,0.28);
+}
+.chron-timeline-band.current {
+  background: rgba(180,40,40,0.22);
+  border-color: rgba(180,40,40,0.5);
+  z-index: 1;
+}
+.chron-timeline-band.fledgling {
+  background: rgba(60,120,60,0.18);
+  border-color: rgba(60,120,60,0.40);
+}
 .chron-timeline-line {
   position: absolute; top: 18px; left: 0; right: 0; height: 2px;
   background: var(--chr-rule-bold);
@@ -8933,6 +8951,26 @@ function _chronicleStyleBlock() {
   color: var(--chr-ink-dim); padding: 3px 10px;
   border: 1px solid var(--chr-rule-bold); font-weight: 700;
 }
+.chron-focus-tag {
+  display: inline-block; margin-left: 8px;
+  font-size: 10px; letter-spacing: 1.5px;
+  color: var(--chr-gold);
+  font-weight: 700;
+}
+.chron-overlap-row {
+  margin-top: 8px;
+  font-size: 10px; letter-spacing: 0.5px;
+  color: var(--chr-ink-dim);
+  font-weight: 600;
+}
+.chron-overlap-prev, .chron-overlap-next {
+  display: inline-block;
+  padding: 2px 6px;
+  background: rgba(154,112,32,0.10);
+  border: 1px dashed rgba(154,112,32,0.40);
+  border-radius: 3px;
+}
+.chron-overlap-sep { margin: 0 6px; opacity: 0.5; }
 .chron-sec-label {
   font-size: 11px; letter-spacing: 0.15em;
   color: var(--chr-red); font-weight: 900;
@@ -9750,20 +9788,40 @@ function _renderDbChronicle() {
   const current = chapters[_dbChronicleIdx - 1];
 
   // Timeline (序章があれば先頭に "序" tic)
-  html += `<div class="chron-timeline"><div class="chron-timeline-rail">
-    <div class="chron-timeline-line"></div>`;
-  const totalTicks = chapters.length + (prologue ? 1 : 0);
+  // Phase D: 章窓の重複を背景バンドで可視化。各章を seasonStart→seasonEnd の
+  // 透過バンドとして描画し、重なりは視覚的に色濃く現れる。
+  // tick は focusSeason 上に置き、章番号ラベルもそこに配置する。
+  const minSeason = 1;
+  const maxSeason = Math.max(
+    ...chapters.map(c => c.seasonEnd || 0),
+    (G && G.season) || 1,
+    prologue ? (prologue.endSeason || prologue.startSeason || 1) : 1
+  );
+  const seasonToPct = (s) => {
+    if (maxSeason <= minSeason) return 50;
+    return 6 + 88 * (s - minSeason) / (maxSeason - minSeason);
+  };
+  html += `<div class="chron-timeline"><div class="chron-timeline-rail">`;
+  // 章窓バンド (tick より下層)
+  chapters.forEach((c, i) => {
+    const left = seasonToPct(c.seasonStart || 1);
+    const right = seasonToPct(c.seasonEnd || c.seasonStart || 1);
+    const width = Math.max(2, right - left);
+    const isCurrent = (i + 1) === _dbChronicleIdx;
+    const bandCls = `chron-timeline-band${isCurrent ? ' current' : ''}${c._fledgling ? ' fledgling' : ''}`;
+    html += `<div class="${bandCls}" style="left:${left}%;width:${width}%" title="CH.${c.number} S${c.seasonStart}-${c.seasonEnd}"></div>`;
+  });
+  html += `<div class="chron-timeline-line"></div>`;
   if (prologue) {
-    const pct = totalTicks === 1 ? 50 : 6;
+    const pct = seasonToPct(prologue.startSeason || 1);
     const inProg = prologue.status === 'in_progress';
     const cls = `chron-timeline-tick${inProg ? ' in-progress' : ''}`;
     html += `<div class="${cls}" style="left:${pct}%" onclick="setDbChronicleIdx(0)" title="序章"></div>`;
     html += `<div class="chron-timeline-label" style="left:${pct}%" onclick="setDbChronicleIdx(0)">序</div>`;
   }
   chapters.forEach((c, i) => {
-    const offset = prologue ? 1 : 0;
-    const localIdx = i + offset;
-    const pct = totalTicks === 1 ? 50 : 6 + (88 * localIdx / (totalTicks - 1));
+    // tick は focusSeason に置く (重複窓の中心点)
+    const pct = seasonToPct(c.focusSeason || c.seasonStart || 1);
     const isCurrent = (i + 1) === _dbChronicleIdx;
     const cls = `chron-timeline-tick${isCurrent ? ' current' : ''}${c.status === 'in_progress' ? ' in-progress' : ''}`;
     html += `<div class="${cls}" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})" title="${c.title}"></div>`;
@@ -9775,11 +9833,33 @@ function _renderDbChronicle() {
   const isInProgress = current.status === 'in_progress';
   const romanNum = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
                     'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'][current.number] || current.number.toString();
+  // Phase D: 前後章との重複インジケータ
+  const overlapWith = (other) => {
+    if (!other) return null;
+    const start = Math.max(current.seasonStart, other.seasonStart || 0);
+    const end = Math.min(current.seasonEnd, other.seasonEnd || 0);
+    if (start > end) return null;
+    return { start, end, ch: other };
+  };
+  const prevOverlap = overlapWith(chapters[_dbChronicleIdx - 2]);
+  const nextOverlap = overlapWith(chapters[_dbChronicleIdx]);
+  const focusLine = current.focusSeason
+    ? `<span class="chron-focus-tag">焦点: SEASON ${current.focusSeason}</span>`
+    : '';
+  let overlapHtml = '';
+  if (prevOverlap || nextOverlap) {
+    const parts = [];
+    if (prevOverlap) parts.push(`<span class="chron-overlap-prev">← 第${prevOverlap.ch.number}章と SEASON ${prevOverlap.start}–${prevOverlap.end} で重なる</span>`);
+    if (nextOverlap) parts.push(`<span class="chron-overlap-next">第${nextOverlap.ch.number}章と SEASON ${nextOverlap.start}–${nextOverlap.end} で重なる →</span>`);
+    overlapHtml = `<div class="chron-overlap-row">${parts.join('<span class="chron-overlap-sep">・</span>')}</div>`;
+  }
+
   html += `<div class="chron-header${isInProgress ? ' in-progress' : ''}">
     <div class="chron-eyebrow${isInProgress ? ' in-progress' : ''}">${isInProgress ? '◆ 進行中の章 ◆' : `◆ 第${current.number}章 ◆`}</div>
     <div class="chron-num">CHAPTER ${romanNum}${isInProgress ? ' <span class="chron-writing-mark">— WRITING —</span>' : ''}</div>
     <h2 class="chron-title">${current.title} — ${current.subtitle}</h2>
-    <div class="chron-period">SEASON ${current.seasonStart} — SEASON ${current.seasonEnd}${isInProgress ? ' / 現在' : ''}</div>
+    <div class="chron-period">SEASON ${current.seasonStart} — SEASON ${current.seasonEnd}${isInProgress ? ' / 現在' : ''} ${focusLine}</div>
+    ${overlapHtml}
     ${isInProgress ? `<div class="chron-writing-note">この章はまだ書きかけです。選手たちが引退して数年が経つと、章が確定します。</div>` : ''}
   </div>`;
 
