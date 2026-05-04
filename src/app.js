@@ -1030,6 +1030,7 @@ const FACTION_AUDIO_MAP = {
   COMMON_5:       { src: FACTION_AUDIO.SOFT,    volume: 0.13 },
   COMMON_7:       { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
   CHALLENGE_REQUEST: { src: FACTION_AUDIO.TENSION, volume: 0.16, openStinger: { src: FACTION_AUDIO.GONG, volume: 0.14 } },
+  B3_CHALLENGE:   { src: FACTION_AUDIO.TENSION, volume: 0.16, openStinger: { src: FACTION_AUDIO.GONG, volume: 0.14 } },
 };
 
 // 派閥イベントモーダル開幕時: BGM 切替 + openStinger
@@ -9018,9 +9019,29 @@ const App = {
 
   // v2.0 Phase1-6: 大型イベントUIフロー制御
   handleLargeEvent(event) {
+    const largeEventAudioId = event && event.type === 'B3' ? 'B3_CHALLENGE' : null;
+    let largeEventAudioActive = false;
+    const openLargeEventAudio = () => {
+      if (!largeEventAudioId || largeEventAudioActive) return;
+      largeEventAudioActive = true;
+      _factionAudioOpen(largeEventAudioId);
+    };
+    const closeLargeEventAudio = () => {
+      if (!largeEventAudioId || !largeEventAudioActive) return;
+      largeEventAudioActive = false;
+      _factionAudioClose(largeEventAudioId);
+    };
+    if (largeEventAudioId) {
+      App._largeEventAudioFinalize = closeLargeEventAudio;
+      openLargeEventAudio();
+    }
     // Step 0: 初期表示
     showLargeEventModal(event, G, 0, (choiceIdx) => {
-      if (choiceIdx < 0) return;
+      if (choiceIdx < 0) {
+        closeLargeEventAudio();
+        if (App._largeEventAudioFinalize === closeLargeEventAudio) App._largeEventAudioFinalize = null;
+        return;
+      }
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B2));
       const result = Engine.eventSystem.applyLargeEventEffect(event, 0, choiceIdx, G, rng);
       App._applyLargeEventResult(result);
@@ -9055,7 +9076,11 @@ const App = {
         // B2: 介入選択 / B3: 代表選手選択
         setTimeout(() => {
           showLargeEventModal(event, G, 1, (choiceIdx2) => {
-            if (choiceIdx2 < 0) return;
+            if (choiceIdx2 < 0) {
+              closeLargeEventAudio();
+              if (App._largeEventAudioFinalize === closeLargeEventAudio) App._largeEventAudioFinalize = null;
+              return;
+            }
             const rng2 = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B3));
             const result2 = Engine.eventSystem.applyLargeEventEffect(event, 1, choiceIdx2, G, rng2);
             App._applyLargeEventResult(result2);
@@ -9063,9 +9088,15 @@ const App = {
             if (result2.nextStep === 2) {
               // B2: 試合シミュレーション / B3: 試合シミュレーション
               setTimeout(() => App._executeLargeEventMatch(event, result2), 300);
+            } else {
+              closeLargeEventAudio();
+              if (App._largeEventAudioFinalize === closeLargeEventAudio) App._largeEventAudioFinalize = null;
             }
           });
         }, 300);
+      } else {
+        closeLargeEventAudio();
+        if (App._largeEventAudioFinalize === closeLargeEventAudio) App._largeEventAudioFinalize = null;
       }
     });
   },
@@ -9677,13 +9708,23 @@ const App = {
     } else if (event.type === 'B3') {
       const fighterId = prevResult.selectedFighterId;
       const playerFighter = G.roster.find(f => f.id === fighterId);
-      if (!playerFighter) return;
+      const finalizeAudio = App._largeEventAudioFinalize;
+      if (!playerFighter) {
+        if (finalizeAudio) finalizeAudio();
+        if (App._largeEventAudioFinalize === finalizeAudio) App._largeEventAudioFinalize = null;
+        return;
+      }
       const challenger = event.challenger;
-      if (!challenger) return;
+      if (!challenger) {
+        if (finalizeAudio) finalizeAudio();
+        if (App._largeEventAudioFinalize === finalizeAudio) App._largeEventAudioFinalize = null;
+        return;
+      }
 
       App._b3Preview = {
-        event, playerFighter, challenger, watching: false, matchResult: null, prevResult
+        event, playerFighter, challenger, watching: false, matchResult: null, prevResult, finalizeAudio
       };
+      App._largeEventAudioFinalize = null;
       _renderB3MatchPreview(event, playerFighter, challenger);
     }
   },
@@ -9979,9 +10020,11 @@ const App = {
     overlay.classList.remove('active');
     const b3 = App._b3Preview;
     const finalizeClose = () => {
+      const finalizeAudio = b3 && b3.finalizeAudio;
       App._b3Preview = null;
       Audio.play('event');
-      App.restoreBgmForState();
+      if (finalizeAudio) finalizeAudio();
+      else App.restoreBgmForState();
       renderWeekScreen();
     };
     if (b3 && typeof showB3OpponentAftermath === 'function') {
