@@ -4054,10 +4054,10 @@ const App = {
     const inCard = G.showCard.some(m => m.left === charId || m.right === charId);
     if (inCard) return;
 
-    // 性格別セリフ選択（決定論的RNG）
+    // 口調アーキタイプ別セリフ選択（決定論的RNG）
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xF1E2, charId));
-    const personality = fighter.personality || 'normal';
-    const lines = RELEASE_INTERVIEW_LINES[personality] || RELEASE_INTERVIEW_LINES.normal;
+    const archetype = fighter.archetype || 'normal';
+    const lines = RELEASE_INTERVIEW_LINES[archetype] || RELEASE_INTERVIEW_LINES.normal;
     const dialogue = lines[Engine.rng.int(rng, 0, lines.length - 1)];
 
     // 面談中フラグをセット → 社長室画面に遷移

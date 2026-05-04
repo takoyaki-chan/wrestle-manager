@@ -5406,14 +5406,17 @@ Engine.factions = {
 
   // ── §6 アーキタイプ遷移ナレーション引き ──
   // reasonKey: 'AUTHORITY_TO_BOND_REBUKE' | 'AUTHORITY_TO_MERIT_LEADER' |
-  //            'AUTHORITY_TO_BOND_LEADER' | 'COMBAT_TO_BOND_DEFEAT'
+  //            'AUTHORITY_TO_BOND_LEADER' | 'COMBAT_TO_BOND_DEFEAT' |
+  //            'FACE_TO_HEEL_DRIFT' | 'HEEL_TO_FACE_DRIFT'
+  // 軸: リーダーの口調アーキタイプ（archetype）。personality では分けない
+  // （同じ archetype のキャラの口調が崩壊するため）。
   getTransitionLine(reasonKey, leader, vars) {
     const table = (typeof FACTION_TRANSITION_LINES !== 'undefined' ? FACTION_TRANSITION_LINES : null);
     if (!table || !reasonKey) return { leaderLine: '', narration: '' };
     const block = table[reasonKey];
     if (!block) return { leaderLine: '', narration: '' };
-    const personality = leader ? Engine.contract.getPersonalityType(leader) : 'composed';
-    const entry = block[personality] || block.composed || block.earnest;
+    const archetype = (leader && leader.archetype) || 'normal';
+    const entry = block[archetype] || block.normal;
     if (!entry) return { leaderLine: '', narration: '' };
     const subst = (s) => {
       if (!s || !vars) return s || '';

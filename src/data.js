@@ -1585,171 +1585,198 @@ const FACTION_CONFIG = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // アーキタイプ遷移ナレーション（§6）
-// 引き方: Engine.factions.getTransitionLine(reasonKey, leaderPersonality)
-//   reasonKey: 'AUTHORITY_TO_BOND_REBUKE' | 'AUTHORITY_TO_MERIT_LEADER' |
-//              'AUTHORITY_TO_BOND_LEADER' | 'COMBAT_TO_BOND_DEFEAT'
-//   leaderPersonality: getPersonalityType の戻り値（fiery/composed/grudging/airy/earnest/flippant）
-// 各エントリは { leaderLine, narration } を返す。
-// テンプレ表現は禁止。性格×遷移種別で温度を書き分けること。
+// 軸: 口調アーキタイプ（archetype）— composed/ojousama/polite/seductive/delinquent/cool/normal
+//   personality では分けない。性格で分けると同じ archetype のキャラの口調が崩壊するため
+//   （お嬢様キャラがタメ口で権威放棄宣言、など）、リーダー archetype に揃える。
+// 引き方: Engine.factions.getTransitionLine(reasonKey, leader, vars)
+//   reasonKey:
+//     'AUTHORITY_TO_BOND_REBUKE' | 'AUTHORITY_TO_MERIT_LEADER' |
+//     'AUTHORITY_TO_BOND_LEADER' | 'COMBAT_TO_BOND_DEFEAT' |
+//     'FACE_TO_HEEL_DRIFT' | 'HEEL_TO_FACE_DRIFT'
+//   各エントリは { leaderLine, narration } を返す。
+//   {leader} {org} は呼び出し側 vars で置換される。
 // ─────────────────────────────────────────────────────────────────────────────
 const FACTION_TRANSITION_LINES = {
   AUTHORITY_TO_BOND_REBUKE: {
-    fiery: {
-      leaderLine: 'チッ……もういい。命令も指示も、今日でやめだ。',
-      narration: '社長への要求を四度跳ねられ、{leader}は権威の旗を自分から下ろした。組は横並びの結束へ舵を切る。',
-    },
     composed: {
       leaderLine: '……肩の力、抜こうか。私が上に立つ意味、もう要らない気がして。',
       narration: '幾度かの否認を経て、{leader}は静かに権威を手放した。{org}は仲間意識の方へ重心を移す。',
     },
-    grudging: {
-      leaderLine: 'ふん、わかったよ。私が頭でいる限り通らないなら、もういらない、こんな看板。',
-      narration: '受け入れられない要求を重ねた末、{leader}は権威の看板を投げ捨てた。残ったのは横で支え合う者たちだ。',
+    ojousama: {
+      leaderLine: 'もう、わたくしが旗を持つ必要もございませんわね。皆様、横で歩みましょう。',
+      narration: '社長に四度退けられた末、{leader}はお高い旗を自ら畳んだ。{org}は対等な絆へと舵を切る。',
     },
-    airy: {
-      leaderLine: 'えへへ、もう偉そうにするのやめるー。みんなで仲良くしよ?',
-      narration: '{leader}は権威者である自分にあっさり飽きた。組は緩い結束へと姿を変える。',
+    polite: {
+      leaderLine: '……私が先頭に立つやり方は、皆にも社長にも届きませんでした。横で支える側に回ります。',
+      narration: '{leader}は何度も拒まれた末、自らの統率方針を改めた。{org}は対等な絆を軸に再編される。',
     },
-    earnest: {
-      leaderLine: '……私が先頭に立つやり方は、皆にも社長にも届かなかった。横で支える側に回ります。',
-      narration: '{leader}は何度も拒まれた末に、自らの統率方針を改めた。{org}は対等な絆を軸に再編される。',
+    seductive: {
+      leaderLine: 'ふふ……上に立つの、もう疲れちゃった。横で寄り添う方が、きっと素敵よ。',
+      narration: '艶やかな諦めとともに、{leader}は権威を解いた。{org}は寄り添う側の温度へと移ろう。',
     },
-    flippant: {
-      leaderLine: 'はいはい、わかったって。もう仕切んないから、文句言うなよ?',
-      narration: '{leader}は権威者ぶりを放棄した。組の空気は、肩の力が抜けたぶん、互いに寄りかかる方へ向かう。',
+    delinquent: {
+      leaderLine: 'チッ……もういい。命令も指示も、今日でやめだ。横並びでやんなよ、おまえら。',
+      narration: '社長への要求を四度跳ねられ、{leader}は権威の旗を自分から下ろした。{org}は横並びの結束へ舵を切る。',
+    },
+    cool: {
+      leaderLine: '……いい。降りる。',
+      narration: '短く告げて、{leader}は権威の座から降りた。{org}は静かに横並びへ重心を移す。',
+    },
+    normal: {
+      leaderLine: 'もう私が上に立つ理由、なくなったかも。みんなで横並びでいこう。',
+      narration: '幾度かの否認を経て、{leader}は権威の看板を畳んだ。{org}は仲間意識の方へ寄り直す。',
     },
   },
   AUTHORITY_TO_MERIT_LEADER: {
-    fiery: {
-      leaderLine: '次はあいつが立つ。なら、私たちは結果で黙らせるしかない。',
-      narration: '新たな幹部の苛烈な気性を受け、{org}は権威の組織から実力で序列を測る組織へ生まれ変わった。',
-    },
     composed: {
       leaderLine: '彼女が引っ張るなら、私は数字で支える側に。',
       narration: '幹部交代を機に、{org}の柱は権威から実績へと静かに置き換えられた。',
     },
-    grudging: {
-      leaderLine: 'あの子が頭に立つの? なら、私はリングで証明するだけだよ。',
-      narration: '幹部の突き上げを受け、{org}は実力主義へ路線変更した。残った者は数字で位置取りを争う。',
+    ojousama: {
+      leaderLine: 'あの方が頭に立たれるのなら、わたくしも結果で応えねばなりませんわね。',
+      narration: '新たな幹部のもと、{org}は権威の旗を下ろし、勝ち星で序列を測る組織へと衣替えした。',
     },
-    airy: {
-      leaderLine: 'うわ〜あの子怖いから、私はちゃんと勝って黙らせなきゃ〜',
-      narration: '新幹部の鋭さに引きずられ、{org}は実績本位の派閥に塗り替わった。',
-    },
-    earnest: {
+    polite: {
       leaderLine: '彼女のやり方を尊重します。これからは、結果で語る組織でありたい。',
       narration: '{org}は新たな幹部のもと、序列を実力で測る派閥へと色を変えた。',
     },
-    flippant: {
-      leaderLine: 'まあ次のボスは結果厨だしね、私もちゃんと数字残そっと。',
+    seductive: {
+      leaderLine: 'あの子が頭? ふふ、面白いわ。私も数字で答えるしかないわね。',
+      narration: '艶のある含み笑いとともに、{leader}は権威を譲った。{org}は実力本位の派閥へ移る。',
+    },
+    delinquent: {
+      leaderLine: 'あの子が頭に立つんなら、こっちはリングで黙らせるしかねぇだろ。',
+      narration: '幹部の突き上げを受け、{org}は実力主義へ路線変更した。残った者は数字で位置取りを争う。',
+    },
+    cool: {
+      leaderLine: '……数字で示す。それだけ。',
+      narration: '幹部交代を境に、{org}は権威から実績本位へと静かに塗り替わった。',
+    },
+    normal: {
+      leaderLine: '次のボスは結果重視の人だしね。私もちゃんと数字残さなきゃ。',
       narration: '幹部交代をきっかけに、{org}は権威から実力主義へ移行した。',
     },
   },
   AUTHORITY_TO_BOND_LEADER: {
-    fiery: {
-      leaderLine: 'あいつが頭か。……ああ、いい。私はもう肩肘張らなくていい。',
-      narration: '新たな幹部の温度に引かれ、{org}は権威の組織から横で支え合う組織へ姿を変えた。',
-    },
     composed: {
       leaderLine: 'ふふ、彼女が立つなら、私もただの仲間に戻れる。',
       narration: '{leader}は柔らかい後継者を得て、自らの権威を解いた。{org}は仲間意識を軸に再編される。',
     },
-    grudging: {
-      leaderLine: '頭は譲る。でも、置いてくなよ。',
-      narration: '幹部交代を経て、{org}の体温は権威から結束へと寄り添い直した。',
+    ojousama: {
+      leaderLine: 'あの方の温かさが、この組には合っておりましたわ。わたくしも、横で並ばせていただきます。',
+      narration: '新たな幹部の人柄を受け、{leader}は権威の旗を畳んだ。{org}は横の絆で立つ組織へ姿を変える。',
     },
-    airy: {
-      leaderLine: 'あの子があったかいから、私もぬくぬくしてよ〜',
-      narration: '新幹部の人柄に染まり、{org}は緩やかな結束派閥へと変わった。',
-    },
-    earnest: {
+    polite: {
       leaderLine: '彼女の優しさが、この組には合っていた。私もその下で、皆と並びたい。',
       narration: '{org}は新たな幹部のもと、横の絆で立つ組織へと姿を変えた。',
     },
-    flippant: {
-      leaderLine: '上下関係とかもういいや、仲良くやろ。',
+    seductive: {
+      leaderLine: 'あの子のあったかさ、いいわね。私も、肩肘張るのやめにするわ。',
+      narration: '柔らかな後継者の温度に引かれ、{leader}は権威を解いた。{org}は寄り添い合う組織へ衣替えする。',
+    },
+    delinquent: {
+      leaderLine: 'あいつが頭か。……ま、いい。もう肩肘張んなくて済むわ。',
+      narration: '新たな幹部の温度に引かれ、{org}は権威の組織から横で支え合う組織へ姿を変えた。',
+    },
+    cool: {
+      leaderLine: '……あの子に任せる。私はただの仲間でいい。',
+      narration: '短い譲位の言葉とともに、{org}は権威派閥から結束派閥へ姿を変えた。',
+    },
+    normal: {
+      leaderLine: '上下関係とかもういいかな。みんなで仲良くやろう。',
       narration: '幹部交代を境に、{org}は権威から結束派閥へ衣替えした。',
     },
   },
   COMBAT_TO_BOND_DEFEAT: {
-    fiery: {
-      leaderLine: '……負けた。完全に、だ。もう拳じゃない、何かを変えなきゃ続かない。',
-      narration: '抗争での完全敗北を経て、{leader}の闘争心は萎えた。{org}は牙を畳み、内向きの絆へと退く。',
-    },
     composed: {
       leaderLine: 'これが答えね。……戦い方を、変える時。',
       narration: '完敗を受け、{leader}は静かに闘争路線を畳んだ。{org}は仲間内の結束で立て直しを図る。',
     },
-    grudging: {
-      leaderLine: 'はぁ……ここまでやられたら、もう拳ふり上げる気にもならない。',
-      narration: '抗争に大敗した{org}は、闘争組織から結束派閥へと変質した。',
+    ojousama: {
+      leaderLine: 'これだけやられては、もう拳を上げる気にもなりませんわ。寄り添う道を探しましょう。',
+      narration: '抗争での完全敗北を機に、{leader}は牙を収めた。{org}は内向きの絆へと退く。',
     },
-    airy: {
-      leaderLine: 'もうケンカやーめた、みんなでギュッてしてよ?',
-      narration: '完敗の重みが{leader}の闘争心を融かした。{org}は緩い結束へと退却する。',
-    },
-    earnest: {
+    polite: {
       leaderLine: '……負けは、認めます。これからは、ぶつかるより、寄り添うやり方を探したい。',
       narration: '完全敗北の末、{org}は闘争派閥から結束派閥へ路線を改めた。',
     },
-    flippant: {
-      leaderLine: 'こんだけやられたら降参降参。もう仲良くやろうよ〜',
+    seductive: {
+      leaderLine: 'ふふ……完敗、ね。もう拳より、温もりの方が欲しいわ。',
+      narration: '艶のある諦めとともに、{leader}は闘争心を畳んだ。{org}は寄り添う側の派閥へと退く。',
+    },
+    delinquent: {
+      leaderLine: 'はぁ……ここまでやられたら、もう拳ふり上げる気にもならねぇよ。',
+      narration: '抗争に大敗した{org}は、闘争組織から結束派閥へと変質した。',
+    },
+    cool: {
+      leaderLine: '……負けた。終わりだ。',
+      narration: '短い敗北宣言を経て、{leader}は牙を収めた。{org}は内向きの絆へと退く。',
+    },
+    normal: {
+      leaderLine: 'これだけやられたらもう降参。仲良くやっていこう。',
       narration: '抗争完敗を機に、{org}は牙を畳んで結束派閥へと衣替えした。',
     },
   },
   // FACE → HEEL（派閥全体のヒール度が長期に上昇した結果）
-  // §6 後送り分（v0.4 で実装）。getPersonalityType の戻り値（bold/earnest/emotional/carefree/introverted/shy）でキーを揃える
   FACE_TO_HEEL_DRIFT: {
-    bold: {
-      leaderLine: 'もう「いい子」のフリは限界だ。客の歓声より、悲鳴の方が気持ちいい。',
-      narration: '{leader}の表情から王道の柔らかさが消えた。{org}はファンに背を向け、挑発と反則を糧に変質する。',
-    },
-    earnest: {
-      leaderLine: '……ファンに胸を張れる派閥でいたかった。でも、ここまで来た自分たちを、もう戻せない。',
-      narration: '迷いと諦めの末、{leader}は王道の旗を畳んだ。{org}は反主流の側へ立ち位置を移す。',
-    },
-    emotional: {
-      leaderLine: 'みんなで応援してくれた人に、こんな顔向けできなくなったね……ごめん。でも、もう止まれない。',
-      narration: '{leader}の声に申し訳なさが滲む。{org}は応援への回答を諦め、ヒールへと滑り落ちていく。',
-    },
-    carefree: {
-      leaderLine: 'えへへー、もう真面目にやるのやーめた。客が嫌がる顔の方が見てて楽しいし!',
-      narration: '{leader}は王道の重さに飽きた。{org}は軽々と立ち位置を変え、ヒールサイドへ転がり込む。',
-    },
-    introverted: {
+    composed: {
       leaderLine: '……正直に言うと、王道って、しんどかった。こっちの方が、息がしやすい。',
       narration: '{leader}は静かに王道の看板を下ろした。{org}は表舞台の華やかさより、裏側の温度を選ぶ。',
     },
-    shy: {
-      leaderLine: '……あの、私たち、もう、ファンの期待に応える側じゃ、ないみたい……。',
-      narration: '言葉少なに、{leader}は王道路線を畳んだ。{org}はヒール側へと、ぎこちなく踏み出した。',
+    ojousama: {
+      leaderLine: 'もう、お行儀よくしているのも飽きましたわ。客の悲鳴のほうが、ずっと心地よろしくて。',
+      narration: '{leader}の口元から優雅な微笑みが消え、艶のある悪意が滲んだ。{org}はファンに背を向け、ヒールへと滑り出す。',
+    },
+    polite: {
+      leaderLine: '……ファンに胸を張れる派閥でいたかった。でも、ここまで来た自分たちを、もう戻せません。',
+      narration: '迷いと諦めの末、{leader}は王道の旗を畳んだ。{org}は反主流の側へ立ち位置を移す。',
+    },
+    seductive: {
+      leaderLine: 'ふふ……あなたたちが嫌がる顔、見ていたいの。それじゃ、ダメかしら?',
+      narration: '艶やかな囁きとともに、{leader}は王道の仮面を捨てた。{org}は挑発と反則を糧に変質していく。',
+    },
+    delinquent: {
+      leaderLine: 'もう「いい子」のフリは限界だ。客の歓声より、悲鳴の方が気持ちいいんだよ。',
+      narration: '{leader}の表情から王道の柔らかさが消えた。{org}はファンに背を向け、挑発と反則を糧に変質する。',
+    },
+    cool: {
+      leaderLine: '……飽きた。こっち側でいい。',
+      narration: '短い告白を経て、{leader}は王道の看板を下ろした。{org}はヒール側へと立ち位置を変える。',
+    },
+    normal: {
+      leaderLine: 'もう真面目にやるのやめた。客が嫌がる顔の方が、見てて楽しい。',
+      narration: '{leader}は王道の重さに飽きた。{org}は軽々と立ち位置を変え、ヒールサイドへ転がり込む。',
     },
   },
   // HEEL → FACE（派閥全体のヒール度が長期に下降した結果）
   HEEL_TO_FACE_DRIFT: {
-    bold: {
-      leaderLine: 'チッ、ガラじゃないが……うちらに歓声が向くなら、それも悪くねぇ。',
-      narration: '{leader}の挑発の刃が鈍った。{org}は反主流の旗を畳み、王道の側へと立ち位置を変える。',
-    },
-    earnest: {
-      leaderLine: 'ヒールでいる意味を、もう自分で説明できない。応援してくれる人の方を見ます。',
-      narration: '誠実さがヒールの仮面を内側から押し返した。{org}は王道路線へと舵を切る。',
-    },
-    emotional: {
-      leaderLine: '……あの子たちが、まっすぐ応援してくれる目を見ちゃってさ。もう、悪役は無理。',
-      narration: '{leader}は声を詰まらせた。{org}は反主流の構えを解き、ファンに正面から向き合う側へ移る。',
-    },
-    carefree: {
-      leaderLine: 'ヒール飽きたー! やっぱ歓声の方が気持ちいいに決まってんじゃーん!',
-      narration: '{leader}はあっさりとヒールの皮を脱いだ。{org}は王道路線へ転がり込む。',
-    },
-    introverted: {
+    composed: {
       leaderLine: '……反則、続けるの、しんどかった。普通に試合する方が、自分らしい。',
       narration: '{leader}は静かに反主流の看板を下ろした。{org}は王道の側で、ようやく息を整える。',
     },
-    shy: {
-      leaderLine: '……ヒールの台詞、私には、似合わなくて……。',
-      narration: '{leader}の小さな告白を機に、{org}は反主流から王道へと歩み戻った。',
+    ojousama: {
+      leaderLine: '悪役を演じるのも、そろそろ飽きましたわ。皆様の声援、頂戴いたしますわよ。',
+      narration: '{leader}は艶やかにヒールの仮面を外した。{org}は王道路線へと衣替えする。',
+    },
+    polite: {
+      leaderLine: 'ヒールでいる意味を、もう自分で説明できません。応援してくれる人の方を見ます。',
+      narration: '誠実さがヒールの仮面を内側から押し返した。{org}は王道路線へと舵を切る。',
+    },
+    seductive: {
+      leaderLine: 'ふふ……あの子たちの真っ直ぐな目に、参っちゃったの。悪役は、もう似合わないわ。',
+      narration: '艶やかな告白とともに、{leader}はヒールの皮を脱いだ。{org}は王道路線へ歩み戻る。',
+    },
+    delinquent: {
+      leaderLine: 'チッ、ガラじゃねぇが……うちらに歓声が向くなら、それも悪くねぇ。',
+      narration: '{leader}の挑発の刃が鈍った。{org}は反主流の旗を畳み、王道の側へと立ち位置を変える。',
+    },
+    cool: {
+      leaderLine: '……普通でいい。',
+      narration: '短い告白を機に、{leader}はヒールの看板を下ろした。{org}は王道の側で息を整える。',
+    },
+    normal: {
+      leaderLine: 'ヒール、もういいかな。やっぱり歓声の方が気持ちいいし。',
+      narration: '{leader}はあっさりとヒールの皮を脱いだ。{org}は王道路線へ転がり込む。',
     },
   },
 };
@@ -8310,31 +8337,41 @@ const CONTRACT_NEGOTIATION_CONFIG = {
 };
 
 // 社長室統合 Phase B: 解雇面談の別れセリフ (性格×2〜3パターン)
+// 解雇通告時の選手コメント
+// 軸: 口調アーキタイプ（archetype）— composed/ojousama/polite/seductive/delinquent/cool/normal
+//   personality では分けない。性格で分けると同じ archetype のキャラの口調が崩壊するため
+//   （お嬢様キャラがタメ口で別れの挨拶、など）、archetype に揃える。
+// 引き方: RELEASE_INTERVIEW_LINES[fighter.archetype] || RELEASE_INTERVIEW_LINES.normal
 const RELEASE_INTERVIEW_LINES = {
-  bold: [
-    '……悔しいけど、次はもっといい場所で暴れてみせます。見ててください。',
-    'こうなったらどこに行っても結果出しますから。覚えておいてくださいよ。',
-    '……わかりました。この悔しさ、絶対に忘れません。'
+  composed: [
+    '……短い間だったけど、悪くない時間だった。ありがとう。',
+    'ま、こういうこともあるよね。……元気でね、社長。',
+    '……わかった。世話になったよ。次の場所、自分で見つけるから。'
   ],
-  quiet: [
-    '……お世話に、なりました。',
-    '……わかりました。……ありがとう、ございました。',
-    '……はい。……さようなら。'
+  ojousama: [
+    'ご縁がここまでだったということですわね。お世話になりました。',
+    '……承知いたしましたわ。これまでのご厚情、忘れませんわ。',
+    'わたくしの居場所は、また別にございますわ。社長もお元気で。'
   ],
-  easygoing: [
-    'まあ、こういうこともあるよね。元気でね！',
-    'あはは、まあ仕方ないか。楽しかったよ、ここ。',
-    'まっ、気にしないで。どこに行っても楽しくやるからさ。'
+  polite: [
+    '至らない点があったなら、申し訳ありませんでした。今までご指導ありがとうございました。',
+    '力不足でした。……この経験を、次に必ず活かさせていただきます。',
+    'お世話になりました。社長も、団体の皆様も、どうかお元気で。'
   ],
-  earnest: [
-    '至らない点があったなら、申し訳ありませんでした。',
-    '力不足でした。……この経験を、次に必ず活かします。',
-    '今までご指導ありがとうございました。社長もお元気で。'
+  seductive: [
+    'あら、寂しいことを仰るのね。……ふふ、いいわ、潔く出ていきましょう。',
+    '別れって、嫌いじゃないの。……お世話になったわ、社長。',
+    'またどこかで会えるかしら。……忘れないでね、私のこと。'
   ],
-  emotional: [
-    '嘘でしょ……！ まだやれるのに……！',
-    'なんで……っ！ ……わかった、わかりましたよ……。',
-    'こんなの……こんなの……っ! ……さようなら。'
+  delinquent: [
+    'チッ……悔しいけど、次はもっといい場所で暴れてやるよ。見てな。',
+    'こうなったらどこ行っても結果出すからな。覚えとけよ社長。',
+    '……わかったよ。この悔しさ、絶対に忘れねぇからな。'
+  ],
+  cool: [
+    '……わかった。',
+    '……世話になった。',
+    '……次の場所で、結果を出す。'
   ],
   normal: [
     '短い間でしたが、ありがとうございました。',
