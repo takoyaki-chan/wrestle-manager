@@ -3698,24 +3698,11 @@ const Engine = {
       if (peakOVR >= 80) seg1.push(`S${peakSeason}にOVR${peakOVR}でピーク到達`);
       if (seg1.length > 0) sentences.push(`${surname}は${seg1.join('、')}。`);
 
-      // 2文目: 章内タイトル戴冠 / 防衛(差し引き) / 受賞
+      // 2文目: 章内タイトル戴冠 / 防衛 / 受賞
       const titleWins = hist.filter(e => e.type === 'titleWin');
       const titleLossEv = hist.find(e => e.type === 'titleLoss');
-      // ベルト単位で章開始前最大 count を引いた章内防衛増分
-      let chapterDefenses = 0;
-      const beltGroups = new Map();
-      hist.filter(e => e.type === 'titleDefense').forEach(e => {
-        const k = e.beltId || '_default';
-        if (!beltGroups.has(k)) beltGroups.set(k, []);
-        beltGroups.get(k).push(e);
-      });
-      beltGroups.forEach((evs, beltKey) => {
-        const maxIn = evs.reduce((mx, e) => Math.max(mx, e.count || 0), 0);
-        const priorMax = histPost
-          .filter(e => e.type === 'titleDefense' && (e.beltId || '_default') === beltKey && (e.season || 0) < chapter.seasonStart)
-          .reduce((mx, e) => Math.max(mx, e.count || 0), 0);
-        chapterDefenses += Math.max(0, maxIn - priorMax);
-      });
+      // 防衛数は記者の目と同じヘルパーで集計し、両者の数字を一致させる
+      const chapterDefenses = Engine.chronicle._countChapterDefensesForAce(ace, chapter, state);
       const mvpCount = hist.filter(e => e.type === 'awardMVP').length;
       const bmCount = hist.filter(e => e.type === 'awardBestMatch').length;
       const seg2 = [];
