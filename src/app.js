@@ -9744,20 +9744,20 @@ const App = {
 
     const pf = b3.playerFighter;
     const af = b3.challenger;
-    // Replay: 結果事前計算 (skip と同 seed: 0xB1B4)
-    const b3Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4));
-    const b3Result = Engine.battle.simulateMatch({ ...pf, condition: 80 }, { ...af, condition: 80 }, b3Rng, 2, { recordFrames: true });
+    // Replay: 結果事前計算 (skip と同 seed: 0xB1B4 + 代表選手ID)
+    const b3Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4, pf.id));
+    const b3Result = Engine.battle.simulateMatch(pf, af, b3Rng, 2, { recordFrames: true });
     b3._preResult = b3Result;
     const iframe = document.getElementById('battleIframe');
     const msg = {
       type: 'START_MATCH',
       left: {
-        ...pf, condition: 80,
+        ...pf,
         portraitUrl: getPortraitUrl(pf.id), profile: CHAR_PROFILES[pf.id] || '',
         vl: pf.voiceLines || pf.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[pf.id]) || ['…！']
       },
       right: {
-        ...af, condition: 80,
+        ...af,
         portraitUrl: getPortraitUrl(af.id), profile: CHAR_PROFILES[af.id] || '',
         vl: App._buildVlVsPlayerForExEmployee(af, G.season, G.week, pf.orgId),
         vsExHit: App._buildVsExHitLines(af, G.season, G.week, pf.orgId)
@@ -9787,7 +9787,7 @@ const App = {
   b3SkipMatch() {
     const b3 = App._b3Preview;
     if (!b3) return;
-    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4));
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4, b3.playerFighter.id));
     const matchResult = Engine.battle.simulateMatch(b3.playerFighter, b3.challenger, rng, 2);
     b3.matchResult = matchResult;
     App._finalizeB3Match(matchResult);

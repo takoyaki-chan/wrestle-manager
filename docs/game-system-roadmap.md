@@ -1,6 +1,10 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-05-03（派閥名「苗字＋派」化 + 孤児派閥フィルタ）
+> 最終更新: 2026-05-04（B3 挑戦状の選択感修正 + 死コード除去）
+
+## 直近の調整（2026-05-04 B3 挑戦状）
+
+**B3 挑戦状の RNG シードに代表選手 ID を混合 + 試合結果に影響しない `condition: 80` 上書きを除去 + 勝率実測。** ユーザー報告「OVR91 の挑戦者に対し OVR100 級の選手を出しても勝てない、シミュレーション外で勝敗が事前確定するロジックが入っていないか調査してほしい」を起点に B3 試合パスを全面監査。①**結論: 事前確定ロジックは存在しない**（[src/app.js:9749](src/app.js:9749) は通常通り `Engine.battle.simulateMatch` を呼ぶだけ、勝敗を上書きする分岐は無い、`selectedFighterId` は [src/management.js:18837](src/management.js:18837) → [src/app.js:9710](src/app.js:9710) を経由して `pf` に正しく反映される）。②**勝率実測** (`test/b3-winrate-probe.js` 新設): matchTier=2 で OVR99 vs OVR91 を 500 試合 → **69.0% 勝率**、OVR95 vs OVR91 で 56.8%、OVR91 vs OVR91 で 46.8%。**構造的バイアスは無く OVR 差通り**。「絶対に勝てない」は本来統計的に起こり得ない（OVR99 で 5 連敗の確率は 0.31^5 ≈ 0.3%）。③**真因: シード固定 + 同じ stats 近傍で展開がコピーされる**。旧コードは `(G.rngSeed, G.season, G.week, 0xB1B4)` の 4 引数派生で、同じ週内では RNG 列が完全固定。代表選手を変えても stats が近接（pw99/sp99/te99/st99/mn99 と pw98/sp98/te98/st98/mn98 等）だと、damage/hit/counter の roll がほぼ同じ閾値を踏み、展開と結末が酷似してしまう。実測: 同一シードで OVR99 を 50 人分（id だけ変えて stats 同一）試すと **50/50 で左勝ち**（決定論的）。④**`condition: 80` 上書きは死コード**: `match-engine.js` と `battle-engine.html` を `condition` で grep してもヒット 0 件、試合エンジンは condition を計算に使っていない。app.js:9749 の `{ ...pf, condition: 80 }` は過去の名残で結果に影響しないが、コードリーディング時に「コンディションが効いている錯覚」を与えるため除去。⑤**シード派生に代表選手 ID を混合** (`src/app.js:9748, 9790`): `Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4)` を `derive(..., 0xB1B4, pf.id)` に変更（`b3WatchMatch` と `b3SkipMatch` の両方）。`Engine.rng.derive(baseSeed, ...keys)` は可変長対応 ([management.js:57](src/management.js:57))。同じ選手で再観戦しても結果不変（=ズル防止）は維持しつつ、別の代表を選んだとき乱数列も変わるので「選択の重み」が結果に出る。実測: 修正後 OVR99 vs OVR91 を 50 試合（fighter.id を変えながら）→ 左勝ち 33/50 (66%)、期待値 69% と整合。⑥**触らないもの**: `Engine.battle.simulateMatch` のロジック、挑戦者 OVR 上限ガード（specs/challenge-request-spec-v0.1.md は触らず）、prevResult.selectedFighterId のフロー。⑦**実機確認推奨**: 修正後セーブで挑戦状を受け、代表 A/B/C で結果が変わることを目視。⑧**残課題（任意）**: 挑戦者 OVR と自団体トップ OVR の差を制限する spec 改訂は別議論。変更: src/app.js(b3WatchMatch + b3SkipMatch シード派生に pf.id 混合 + `{ ...pf, condition: 80 }` × 4 箇所除去 約 6 行) + test/b3-winrate-probe.js(新設・勝率検証スクリプト 約 70 行) + docs/game-system-roadmap.md(本項)。
 
 ## 直近の調整（2026-05-03 派閥名表記変更）
 
