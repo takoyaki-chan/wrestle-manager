@@ -3305,23 +3305,20 @@ const Engine = {
         seasonStart: Math.max(1, f - HALF),
         seasonEnd: Math.min(currentSeason, f + HALF)
       }));
-      // 駆け出し時代アンカー: currentSeason ≥ 3 で seasons 1-3 を覆う章が無いなら、
-      // S1-3 (currentSeason に応じて短縮) を専用「駆け出し章」として先頭に挿入する。
-      // 後年の高密度ピークに抑えられても旗揚げ世代の物語が残るように。
-      // 短い halfWidth=1 を使い、後続章とは焦点シーズンで明確に区別する。
+      // 駆け出し時代アンカー: currentSeason ≥ 2 のとき、seasons 1〜min(3,cs) を
+      // 専用「駆け出し章」として常に先頭に挿入する。
+      // 重要: 他の章が seasonStart=1 で立っていても抑制しない。後続 focus の章窓は
+      // [1, focus+3] のように広く取られて駆け出し感が薄れるため、敢えて短い
+      // halfWidth=1 の専用章を別個に立てて並走させる (仕様: 章は重複してよい)。
       if (currentSeason >= 2) {
-        const earlyEnd = Math.min(3, currentSeason);
-        const hasEarly = result.some(b => b.seasonStart <= 1 && b.seasonEnd >= Math.min(2, currentSeason));
-        if (!hasEarly) {
-          const fledglingFocus = Math.min(2, currentSeason);
-          result.unshift({
-            focusSeason: fledglingFocus,
-            halfWidth: 1,
-            seasonStart: 1,
-            seasonEnd: earlyEnd,
-            _fledgling: true
-          });
-        }
+        // ユーザー要望: 駆け出し章は S1-S2 だけで作り、駆け出し感を強く出す
+        result.unshift({
+          focusSeason: 2,
+          halfWidth: 1,
+          seasonStart: 1,
+          seasonEnd: 2,
+          _fledgling: true
+        });
       }
       return result;
     },
