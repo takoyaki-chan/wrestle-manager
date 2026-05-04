@@ -9872,6 +9872,10 @@ function _renderDbChronicle() {
             <div class="chron-ace-meta-val">${a.peakOVR || 0}</div>
           </div>
           <div class="chron-ace-meta">
+            <div class="chron-ace-meta-key">PEAK POP</div>
+            <div class="chron-ace-meta-val">${a.peakPopularity || 0}</div>
+          </div>
+          <div class="chron-ace-meta">
             <div class="chron-ace-meta-key">STYLE</div>
             <div class="chron-ace-meta-val" style="font-size:12px">${_chronicleStyleLabel(a.style)}</div>
           </div>
@@ -9927,6 +9931,9 @@ function _renderDbChronicle() {
       const isVeteran = p.role === 'veteran';
       const styleLabel = _chronicleStyleLabel(p.style);
       const metaParts = [styleLabel];
+      // peakOVR / peakPopularity を併記 (idol/rising/strength/veteran 共通)
+      metaParts.push(`OVR${p.peakOVR || 0}`);
+      metaParts.push(`人気${p.peakPopularity || 0}`);
       if (isIdol && p.traits && p.traits.length > 0) metaParts.push(p.traits.slice(0, 2).join('・'));
       else if (p.titleReigns > 0) metaParts.push(`${p.titleReigns}度戴冠`);
       // HoFバッジ (hofSet は上のエースセクションで定義済み)
