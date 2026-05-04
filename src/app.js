@@ -1029,6 +1029,7 @@ const FACTION_AUDIO_MAP = {
   COMMON_4:       { src: FACTION_AUDIO.SOFT,    volume: 0.12,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.09 } },
   COMMON_5:       { src: FACTION_AUDIO.SOFT,    volume: 0.13 },
   COMMON_7:       { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
+  CHALLENGE_REQUEST: { src: FACTION_AUDIO.TENSION, volume: 0.16, openStinger: { src: FACTION_AUDIO.GONG, volume: 0.14 } },
 };
 
 // 派閥イベントモーダル開幕時: BGM 切替 + openStinger
@@ -9088,6 +9089,8 @@ const App = {
       }
       return G.roster.find(c => c.id === payload.selfId) || {};
     };
+    _factionAudioOpen('CHALLENGE_REQUEST');
+    const finalizeCRAudio = () => _factionAudioClose('CHALLENGE_REQUEST');
     showChallengeRequestModal(payload, G, (choice) => {
       if (choice === 'YES') {
         const reqName = _findRequester().name || '';
@@ -9099,6 +9102,7 @@ const App = {
           Audio.play('error');
           renderWeekScreen && renderWeekScreen();
           showToast(`${reqName} の直訴を受けたが、メンバー編成が整わず実現できなかった。`);
+          finalizeCRAudio();
           return;
         }
         // クォータ・CD更新
@@ -9114,12 +9118,14 @@ const App = {
         if (typeof showChallengeRequestResultModal === 'function') {
           showChallengeRequestResultModal(card, result, G, () => {
             renderWeekScreen && renderWeekScreen();
+            finalizeCRAudio();
           });
         } else {
           renderWeekScreen && renderWeekScreen();
           const scoreLabel = `${result.winsA}-${result.winsB}`;
           const tw = result.teamWin === 'A' ? '勝利' : (result.teamWin === 'B' ? '敗北' : '引き分け');
           showToast(`挑戦試合 ${scoreLabel}（${tw}）— ${reqName} の直訴試合が決着。`);
+          finalizeCRAudio();
         }
       } else if (choice === 'NO') {
         G = Engine.challengeRequest.rejectPending(G);
@@ -9164,8 +9170,10 @@ const App = {
           }
         }
         showToast(noLine);
+        finalizeCRAudio();
       } else {
         // null / unknown → 何もしない（pendingThisWeek 残置で次週に持ち越し）
+        finalizeCRAudio();
       }
     });
   },
