@@ -3327,9 +3327,19 @@ const Engine = {
     },
 
     /** spec A-5: stage-aware エース選定 + aceAsRising 昇格。
-     *  peer 選定は Phase A スコープ外 (現行ロジック流用 + stage タグ付け)。 */
+     *  peer 選定は Phase A スコープ外 (現行ロジック流用 + stage タグ付け)。
+     *  駆け出し章 (_fledgling=true) では debut (careerSeasonsStart) ベースで候補を拾う —
+     *  rookie 群はまだ primeWindow が後年に張り出していて [1,3] に prime が
+     *  掛からないため、prime ベースだと候補が空になってしまう。 */
     _selectAceAndPeers(chapterBounds, candidates, state) {
+      const isFledgling = !!chapterBounds._fledgling;
       const inChapter = candidates.filter(c => {
+        if (isFledgling) {
+          // デビュー (or career start) が章窓に掛かっていれば候補。prime 不問。
+          const debut = c.careerSeasonsStart || 1;
+          const careerEnd = c.careerSeasonsEnd || debut;
+          return debut <= chapterBounds.seasonEnd && careerEnd >= chapterBounds.seasonStart;
+        }
         const s = c.primeStart || c.careerSeasonsStart || 1;
         const e = c.primeEnd || c.careerSeasonsEnd || s;
         return !(e < chapterBounds.seasonStart || s > chapterBounds.seasonEnd);
