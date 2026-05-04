@@ -2102,6 +2102,19 @@ const Engine = {
       return Engine.career.updatePeakPopularity(Engine.career.updatePeakOVR(fighter, season), season);
     },
 
+    /** 年次スナップショット: シーズン終了時 (オフシーズン入り) に各選手の OVR と人気を記録。
+     *  既に同 season の snapshot があれば上書きせずスキップ (idempotent)。
+     *  年代記が「その時代の OVR」で評価できるよう、後年の peakOVR で過去章を歪めない参照源を作る。 */
+    recordSeasonSnapshot(fighter, season) {
+      const f = Engine.career.ensure(fighter);
+      const cr = f.careerRecord || {};
+      const snaps = cr.seasonalSnapshots || [];
+      if (snaps.some(sn => sn.season === season)) return f;
+      const ovr = Engine.util.ov(f);
+      const popularity = Math.round(f.popularity ?? f.pop ?? 0);
+      return { ...f, careerRecord: { ...cr, seasonalSnapshots: [...snaps, { season, ovr, popularity }] } };
+    },
+
     /**
      * §D-x 入団シーズン（キャリア起点）を返す。
      * NPC生成時の事前史（転生前）は debut マイルストーンより前の season で push されているため、
@@ -2968,7 +2981,9 @@ const Engine = {
           totalTitleWins: _titleReigns,
           totalDefenses: _totalDef,
           peakOVR, peakOVRSeason,
-          peakPopularity, peakPopularitySeason
+          peakPopularity, peakPopularitySeason,
+          // 年次スナップショット (era-OVR/pop 用) を引退後も保持
+          seasonalSnapshots: ((cr.seasonalSnapshots) || []).map(sn => ({ ...sn }))
         },
         traits,
         retiredSeason: careerSeasonsEnd
@@ -3035,16 +3050,26 @@ const Engine = {
       champAtChapterEnd: 0.10
     },
 
-    /** その時代の OVR を線形補間で近似する。
-     *  各シーズンの実 OVR は記録されていないので、
-     *  デビューシーズン (≈ rookie OVR) → peakOVRSeason (= peakOVR) の直線で推定。
-     *  rookie OVR は peakOVR - 22 を下限 60 で打ち切り (おおよそデビュー時の実測幅)。
+    /** その時代の OVR を取得。優先順位:
+     *  1. careerRecord.seasonalSnapshots に focusSeason の記録があればそれ
+     *  2. なければデビューシーズン → peakOVRSeason の線形補間で近似 (旧セーブ互換)
+     *  rookie OVR は peakOVR - 22 を下限 60 で打ち切り。
      *  焦点が peakOVRSeason 以降ならそのまま peakOVR を返す (衰退モデルは別途)。 */
     _estimatedOVRAt(fighter, focusSeason) {
       const peakOVR = fighter.peakOVR || 0;
       const peakSeason = fighter.peakOVRSeason || focusSeason || 1;
       const debut = fighter.careerSeasonsStart || 1;
       if (focusSeason == null) return peakOVR;
+      // 1. 実スナップショットがあれば最優先で使う (オフシーズン入り時に記録)
+      const snaps = ((fighter.careerRecord || {}).seasonalSnapshots) || [];
+      if (snaps.length > 0) {
+        const exact = snaps.find(sn => sn.season === focusSeason);
+        if (exact && typeof exact.ovr === 'number') return exact.ovr;
+        // 同シーズン無し → 直近の前シーズン (= その時点で観測されていた値) を使う
+        const before = snaps.filter(sn => sn.season < focusSeason).sort((a, b) => b.season - a.season)[0];
+        if (before && typeof before.ovr === 'number') return before.ovr;
+      }
+      // 2. フォールバック: 線形補間
       if (focusSeason >= peakSeason) return peakOVR;
       if (focusSeason <= debut) return Math.max(60, peakOVR - 22);
       const rookie = Math.max(60, peakOVR - 22);
@@ -3053,13 +3078,27 @@ const Engine = {
       return rookie + (peakOVR - rookie) * t;
     },
 
-    /** 素地スコア 0〜1。chapter が渡されたら focusSeason 時点の era-OVR を使う。
-     *  渡されなければ peakOVR (lifetime peak) を使う (境界決定 / fallback 用)。 */
+    /** 同様にその時代の人気を取得 (snapshots 優先 / fallback で peakPopularity) */
+    _estimatedPopularityAt(fighter, focusSeason) {
+      if (focusSeason == null) return fighter.peakPopularity || 0;
+      const snaps = ((fighter.careerRecord || {}).seasonalSnapshots) || [];
+      if (snaps.length > 0) {
+        const exact = snaps.find(sn => sn.season === focusSeason);
+        if (exact && typeof exact.popularity === 'number') return exact.popularity;
+        const before = snaps.filter(sn => sn.season < focusSeason).sort((a, b) => b.season - a.season)[0];
+        if (before && typeof before.popularity === 'number') return before.popularity;
+      }
+      return fighter.peakPopularity || 0;
+    },
+
+    /** 素地スコア 0〜1。chapter が渡されたら focusSeason 時点の era-OVR + era-pop を使う。
+     *  渡されなければ lifetime peak を使う (境界決定 / fallback 用)。 */
     _baseScore(f, chapter) {
       const focus = chapter ? (chapter.focusSeason || chapter.seasonStart) : null;
       const ovr = focus != null ? Engine.chronicle._estimatedOVRAt(f, focus) : (f.peakOVR || 0);
+      const pop = focus != null ? Engine.chronicle._estimatedPopularityAt(f, focus) : (f.peakPopularity || 0);
       const ovrN = Math.min(1, Math.max(0, ovr / 110));
-      const popN = Math.min(1, Math.max(0, (f.peakPopularity || 0) / 100));
+      const popN = Math.min(1, Math.max(0, pop / 100));
       return Math.max(0, Math.min(1, ovrN * 0.6 + popN * 0.4));
     },
 
@@ -3251,7 +3290,8 @@ const Engine = {
             peakOVR: cr.peakOVR || 0,
             peakOVRSeason: cr.peakOVRSeason || 0,
             peakPopularity,
-            peakPopularitySeason
+            peakPopularitySeason,
+            seasonalSnapshots: ((cr.seasonalSnapshots) || []).map(sn => ({ ...sn }))
           },
           traits: f.traits || [],
           _active: true
@@ -13065,6 +13105,15 @@ const Engine = {
       const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 900 + offWeek));
 
       if (offWeek === 1) {
+        // 年代記用: 各選手のシーズン終了時 OVR と人気をスナップショット記録。
+        // 章生成時に era-OVR / era-pop を「その時代の実値」で参照可能にする。
+        // 旧セーブには snapshots フィールドが無いが、_estimatedOVRAt は線形補間に
+        // フォールバックするので非破壊互換。rivalOrgs 側は対象外 (chronicle は player のみ)。
+        s = {
+          ...s,
+          roster: (s.roster || []).map(f => Engine.career.recordSeasonSnapshot(f, s.season))
+        };
+
         // v1.4: 年末表彰式データ生成（applySeasonEnd でカウンタがリセットされる前に生成）
         const awardsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xA5D0));
         const pendingAwards = Engine.awards.generate(awardsRng, s);
