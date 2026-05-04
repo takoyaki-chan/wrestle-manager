@@ -2752,14 +2752,29 @@ const Engine = {
       ]
     },
 
+    /** chapter.aces[i] は summary に剥がされていて careerRecord を持たないので、
+     *  full fighter を state.roster / chronicle.fighterArchive から ID で引き直す。 */
+    _resolveFullFighter(ace, state) {
+      if (!ace || !state) return null;
+      if (ace.careerRecord && Array.isArray(ace.careerRecord.history)) return ace;
+      const id = ace.id;
+      if (id == null) return null;
+      const fromRoster = (state.roster || []).find(f => f.id === id);
+      if (fromRoster) return fromRoster;
+      const fromArchive = ((state.chronicle && state.chronicle.fighterArchive) || []).find(a => a.id === id);
+      if (fromArchive) return fromArchive;
+      return null;
+    },
+
     /** 単一エースの章期間内防衛数を集計。
      *  ベルト単位で (章内 maxCount) - (章開始前 maxCount) を合算。
      *  count が未設定/0 のセーブでも壊れないよう、差分が 0 で章内に防衛イベントが
      *  1件以上あればイベント本数を返すフォールバック付き。
      *  history は filterPostJoin を通さず生で参照する (複数レイン跨ぎで priorMax を
      *  正しく機能させるため)。 */
-    _countChapterDefensesForAce(ace, chapter) {
-      const hist = ((ace && ace.careerRecord) || {}).history || [];
+    _countChapterDefensesForAce(ace, chapter, state) {
+      const full = Engine.chronicle._resolveFullFighter(ace, state) || ace;
+      const hist = ((full && full.careerRecord) || {}).history || [];
       const sStart = chapter.seasonStart || 0;
       const sEnd = chapter.seasonEnd || 0;
       const inChapter = hist.filter(e => e.type === 'titleDefense' && (e.season || 0) >= sStart && (e.season || 0) <= sEnd);
@@ -2790,7 +2805,7 @@ const Engine = {
       const _aceHistAll = Engine.career.filterPostJoin(((ace.careerRecord || {}).history || []), _aceJoinS);
       const aceHist = _aceHistAll
         .filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
-      const chapterDefenses = Engine.chronicle._countChapterDefensesForAce(ace, chapter);
+      const chapterDefenses = Engine.chronicle._countChapterDefensesForAce(ace, chapter, state);
       const chapterWarWins = aceHist.filter(e => e.type === 'war' && e.won === true).length;
       const chapterWarLosses = aceHist.filter(e => e.type === 'war' && e.won === false).length;
 
@@ -2826,7 +2841,7 @@ const Engine = {
       const styleJa = Engine.chronicle.AXIS_LABELS[styleAxis] || '独自';
       const surname = Engine.chronicle._getSurname(ace.name);
 
-      const chapterDefenses = Engine.chronicle._countChapterDefensesForAce(ace, chapter);
+      const chapterDefenses = Engine.chronicle._countChapterDefensesForAce(ace, chapter, state);
 
       return tpl
         .replace(/\{surname\}/g, surname)
@@ -3072,18 +3087,10 @@ const Engine = {
           weighted[s] += Engine.chronicle._heroScore(c);
         }
       });
-      // 序章 (G.prologue) がある新規セーブは S1〜startSeason付近を序章が吸収するので、
-      // 章は最初の英雄値出現 season から開始する。
-      // 序章が無い旧セーブ (マイグレーション前) は S1 から地続きで章を切る。
-      const hasPrologue = !!(state && state.prologue
-        && (state.prologue.status === 'in_progress' || state.prologue.status === 'confirmed')
-        && Array.isArray(state.prologue.founderIds)
-        && state.prologue.founderIds.length > 0);
+      // 最初に候補のピークが出現するシーズン
       let firstPeak = 1;
-      if (hasPrologue) {
-        for (let i = 1; i <= currentSeason; i++) {
-          if (weighted[i] > 0) { firstPeak = i; break; }
-        }
+      for (let i = 1; i <= currentSeason; i++) {
+        if (weighted[i] > 0) { firstPeak = i; break; }
       }
       const bounds = [];
       let cursor = firstPeak;
@@ -3111,6 +3118,17 @@ const Engine = {
         end = bestEnd;
         bounds.push({ seasonStart: start, seasonEnd: end });
         cursor = end + 1;
+      }
+      // 序章 (G.prologue) が無い旧セーブでは S1〜firstPeak-1 が章にも序章にも入らない
+      // 空白期間になるため、CH.1 の seasonStart を S1 まで前倒しで吸収する。
+      // 終端は密度ベースで決まった bestEnd のままなので、井沢遥のような選手のキャリアを
+      // 既存の章境界で分断しない。
+      const hasPrologue = !!(state && state.prologue
+        && (state.prologue.status === 'in_progress' || state.prologue.status === 'confirmed')
+        && Array.isArray(state.prologue.founderIds)
+        && state.prologue.founderIds.length > 0);
+      if (!hasPrologue && bounds.length > 0 && bounds[0].seasonStart > 1) {
+        bounds[0].seasonStart = 1;
       }
       return bounds;
     },
