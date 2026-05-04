@@ -1,24 +1,7 @@
 const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
+const { loadGame } = require('./helpers/load-game');
 
-global.window = { IS_TRIAL: false };
-
-const srcDir = path.join(__dirname, '..', 'src');
-
-function loadAsGlobal(filename) {
-  let code = fs.readFileSync(path.join(srcDir, filename), 'utf8');
-  code = code.replace(/\/\/ Node\.js[\s\S]*$/, '');
-  code = code.replace(/^(const|let) /gm, 'var ');
-  new vm.Script(code, { filename }).runInThisContext();
-}
-
-loadAsGlobal('victory-lines.js');
-loadAsGlobal('data.js');
-loadAsGlobal('management.js');
-loadAsGlobal('match-engine.js');
-loadAsGlobal('relationships.js');
+loadGame();
 
 function makeFighter(id, extra = {}) {
   return {

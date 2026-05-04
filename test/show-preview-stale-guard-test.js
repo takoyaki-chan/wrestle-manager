@@ -9,13 +9,16 @@ function extractMethodBody(signature, nextMarker) {
   const start = appSource.indexOf(startToken);
   if (start < 0) throw new Error(`${signature} block not found`);
   const bodyStart = start + startToken.length;
-  const end = appSource.indexOf(`\n\n  ${nextMarker}`, bodyStart);
-  if (end < 0) throw new Error(`${signature} block end not found`);
-  const body = appSource.slice(bodyStart, end);
-  return body.replace(/\n  \},\s*$/, '');
+  let depth = 1;
+  for (let i = bodyStart; i < appSource.length; i++) {
+    if (appSource[i] === '{') depth++;
+    else if (appSource[i] === '}') depth--;
+    if (depth === 0) return appSource.slice(bodyStart, i);
+  }
+  throw new Error(`${signature} block end not found`);
 }
 
-const fillMissingBody = extractMethodBody('_fillMissingShowPreviewResults()', '// Skip a single match');
+const fillMissingBody = extractMethodBody('_fillMissingShowPreviewResults()', '_afterMatchSettle(idx, opts)');
 const skipMatchBody = extractMethodBody('skipMatch(idx)', '// Watch match in battle engine iframe');
 const watchMatchBody = extractMethodBody('watchMatch(idx)', '// タッグマッチを tag-battle.html で観戦');
 
@@ -57,6 +60,10 @@ const runWatchMatch = new Function('App', 'G', 'renderMatchPreview', 'idx', `${w
     _fillMissingShowPreviewResults() {
       return runFillMissing(App, G);
     },
+    _afterMatchSettle() {
+      renderCalls += 1;
+      if (App._showPreview.results.every(r => r !== null)) App.finalizeShow();
+    },
     finalizeShow() {
       finalizeCalls += 1;
     },
@@ -91,6 +98,10 @@ const runWatchMatch = new Function('App', 'G', 'renderMatchPreview', 'idx', `${w
     },
     _fillMissingShowPreviewResults() {
       return runFillMissing(App, G);
+    },
+    _afterMatchSettle() {
+      renderCalls += 1;
+      if (App._showPreview.results.every(r => r !== null)) App.finalizeShow();
     },
     finalizeShow() {
       finalizeCalls += 1;

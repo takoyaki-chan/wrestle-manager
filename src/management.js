@@ -1322,7 +1322,7 @@ const Engine = {
       return id1 < id2 ? `${id1}-${id2}` : `${id2}-${id1}`;
     },
     getRivalry(G, id1, id2) {
-      return G.rivalries[Engine.title.getRivalryKey(id1, id2)] || null;
+      return (G.rivalries || {})[Engine.title.getRivalryKey(id1, id2)] || null;
     },
     getRivalryBand(rivalry) {
       if (rivalry == null || rivalry < 30) return null;
@@ -9717,7 +9717,7 @@ const Engine = {
       // Phase B: 抗争ポイント
       if (!s.factionRivalryPoints || typeof s.factionRivalryPoints !== 'object') s = { ...s, factionRivalryPoints: {} };
       // 派閥内ポイント制（spec: faction-internal-rank-spec-v0.2 §2）
-      if (typeof Engine.factions._ensureInternalPointsInit === 'function') {
+      if (Engine.factions && typeof Engine.factions._ensureInternalPointsInit === 'function') {
         s = Engine.factions._ensureInternalPointsInit(s);
       }
 
@@ -9726,18 +9726,18 @@ const Engine = {
         // 何もしない（前週から持ち越しのモーダルが解決されるまで待つ）
       } else {
         // F05H 復帰: hiatus 派閥のリーダー怪我回復をサイレントに active へ戻す
-        s = Engine.factions.applyHiatusRecovery(s);
+        if (Engine.factions) s = Engine.factions.applyHiatusRecovery(s);
         // F06 streak 更新（ピック前に今週分を反映）
-        s = Engine.factions.updateF06Streaks(s);
+        if (Engine.factions) s = Engine.factions.updateF06Streaks(s);
         // v4 §2-1: F02④ endless streak 更新（ピック前に今週分を反映）
-        s = Engine.factions.updateF02EndlessStreaks(s);
+        if (Engine.factions) s = Engine.factions.updateF02EndlessStreaks(s);
         // v4 §2-1: F02① pending ignite の期限切れクリーンアップ
-        s = Engine.factions.expireF02PendingIgnite(s);
+        if (Engine.factions) s = Engine.factions.expireF02PendingIgnite(s);
         // v4 §2-1: F02② 仲裁 watch の期限切れ掃除
-        s = Engine.factions.sweepF02PeaceWatches(s);
+        if (Engine.factions) s = Engine.factions.sweepF02PeaceWatches(s);
         // 1) F03/F01/F02/F04-F08 いずれかの条件が成立していれば pending を立てて処理を保留
-        const picked = Engine.factions.pickWeeklyEvent(s, evtRng);
-        if (picked.eventId) {
+        const picked = Engine.factions ? Engine.factions.pickWeeklyEvent(s, evtRng) : {};
+        if (Engine.factions && picked.eventId) {
           s = { ...s, _pendingFactionEvent: picked };
           // F03 pending の場合: リーダー喪失状態のまま、今週の reconcileRoster/メンバー変動/消滅判定はスキップ
           //                      （applyF03Result で解消される。次週 pending 存在でパイプライン全体スキップ）
@@ -9749,7 +9749,7 @@ const Engine = {
             s = Engine.factions.processWeeklyMomentumDecay(s);
             s = Engine.factions.checkDissolutionConditions(s);
           }
-        } else {
+        } else if (Engine.factions) {
           // イベント発動なし: 通常パイプライン
           s = Engine.factions.reconcileRoster(s, facRng);
           s = Engine.factions.processWeeklyMemberChanges(s, facRng);
@@ -9759,25 +9759,25 @@ const Engine = {
           s = Engine.factions.checkDissolutionConditions(s);
         }
         // §6 FACE⇄HEEL 遷移：heelAlignment 週次 drift + 閾値判定（pending イベントの有無に関わらず実行）
-        if (typeof Engine.factions.driftHeelAlignmentWeekly === 'function') {
+        if (Engine.factions && typeof Engine.factions.driftHeelAlignmentWeekly === 'function') {
           s = Engine.factions.driftHeelAlignmentWeekly(s);
         }
-        if (!s._pendingFactionEvent && typeof Engine.factions.checkAlignmentTransition === 'function') {
+        if (Engine.factions && !s._pendingFactionEvent && typeof Engine.factions.checkAlignmentTransition === 'function') {
           s = Engine.factions.checkAlignmentTransition(s);
         }
         // Phase B: 抗争ポイント決着判定（spec §4） — pending イベントなしのときのみ
-        if (!s._pendingFactionEvent && typeof Engine.factions.checkRivalryResolution === 'function') {
+        if (Engine.factions && !s._pendingFactionEvent && typeof Engine.factions.checkRivalryResolution === 'function') {
           const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA1B));
           Engine.factions.checkRivalryResolution(s, resRng);
         }
         // Phase B: F09 派閥対抗戦 発火判定（spec §3） — 興行週のみ・pending F09 なし・pending イベントなし
-        if (!s._pendingFactionEvent && !s._pendingF09 && Engine.util.isShowWeek(s.week)
+        if (Engine.factions && !s._pendingFactionEvent && !s._pendingF09 && Engine.util.isShowWeek(s.week)
             && typeof Engine.factions.checkF09Conditions === 'function') {
           const f09Cand = Engine.factions.checkF09Conditions(s);
           if (f09Cand) {
             const f09Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA1F));
             // 後半補正
-            const lateMult = (typeof Engine.factions._f09LateGameMult === 'function')
+            const lateMult = (Engine.factions && typeof Engine.factions._f09LateGameMult === 'function')
               ? Engine.factions._f09LateGameMult(s) : 1.0;
             const baseChance = 0.25; // 条件成立時の素発火率（控えめ）
             if (Engine.rng.float(f09Rng) < baseChance * lateMult) {
@@ -9786,7 +9786,7 @@ const Engine = {
           }
         }
         // 派閥内挑戦戦 発火判定（spec: faction-internal-rank-spec-v0.2 §4） — F09 後・興行週・pending なし
-        if (!s._pendingFactionEvent && !s._pendingF09 && !s._pendingInternalChallenge
+        if (Engine.factions && !s._pendingFactionEvent && !s._pendingF09 && !s._pendingInternalChallenge
             && Engine.util.isShowWeek(s.week)
             && typeof Engine.factions.checkInternalChallengeConditions === 'function') {
           const icRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA20));

@@ -161,7 +161,8 @@ Engine.relationships = {
   _getPositiveGainScale(axis, current) {
     if (axis === 'bond') {
       // bond-rebalance v2.3: 高bond帯の上昇逓減を緩和（80+到達を可能に）
-      if (current >= 90) return 0.20;
+      if (current >= 90) return 0.08;
+      if (current >= 85) return 0.16;
       if (current >= 75) return 0.40;
       if (current >= 60) return 0.60;
       if (current >= 40) return 0.8;
@@ -573,7 +574,7 @@ Engine.relationships = {
         const dist = Engine.relationships._affinity.distance(axisA, axisB);
         const target = Engine.relationships._affinity.target(dist);
         // bond-rebalance v2.3: target拡張(30〜70)に伴い引力をさらに弱める (0.08〜0.14 → 0.03〜0.06)
-        const bondPull = 0.03 + Engine.rng.float(rng) * 0.03;
+        const bondPull = 0.12 + Engine.rng.float(rng) * 0.08;
         if (bond > target) {
           bond -= bondPull;
         } else if (bond < target) {

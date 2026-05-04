@@ -2,7 +2,15 @@
   "scripts": {
     "bug:audit": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1",
     "bug:audit:full": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1 -Mode Full",
-    "save:doctor": "node tools/save-doctor.js"
+    "save:doctor": "node tools/save-doctor.js",
+    "test:balance:relationships": "node test/relationship-balance-test.js",
+    "test:balance:match": "node test/_match-system-v5-validation.js",
+    "test:smoke:economy": "node test/economy-check.js 2 1",
+    "test:smoke:growth": "node test/growth-v2-verification.js 2 1",
+    "test:smoke:roster": "node test/roster-depth-analysis.js 2 42",
+    "test:long:economy": "node test/economy-check.js 10 3",
+    "test:long:growth": "node test/growth-v2-verification.js 10 3",
+    "test:long:roster": "node test/roster-depth-analysis.js 10 42"
   },
   "dependencies": {
     "lz-string": "^1.5.0",

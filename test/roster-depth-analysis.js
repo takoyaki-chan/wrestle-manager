@@ -1,27 +1,9 @@
 #!/usr/bin/env node
 'use strict';
 
-const path = require('path');
-const fs = require('fs');
-const vm = require('vm');
+const { loadGame } = require('./helpers/load-game');
 
-global.window = { IS_TRIAL: false };
-
-const srcDir = path.join(__dirname, '..', 'src');
-
-function loadAsGlobal(filename) {
-  let code = fs.readFileSync(path.join(srcDir, filename), 'utf-8');
-  code = code.replace(/\/\/ Node\.js[\s\S]*$/, '');
-  code = code.replace(/^(const|let) /gm, 'var ');
-  new vm.Script(code, { filename }).runInThisContext();
-}
-
-loadAsGlobal('victory-lines.js');
-loadAsGlobal('data.js');
-loadAsGlobal('management.js');
-loadAsGlobal('match-engine.js');
-loadAsGlobal('relationships.js');
-loadAsGlobal('draft-negotiation.js');
+loadGame({ full: true });
 
 if (typeof Engine === 'undefined' || typeof ALL_CHARS === 'undefined') {
   throw new Error('Engine or ALL_CHARS failed to load');

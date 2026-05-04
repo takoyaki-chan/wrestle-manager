@@ -149,7 +149,7 @@ function buildJoinState(flavor) {
   const state = buildJoinState(undefined);
   withFloatSequence([0.07], () => {
     const s2 = Engine.factions.processWeeklyMemberChanges(state, {});
-    assert.strictEqual(s2.factions[0].flavor, 'neutral');
+    assert.strictEqual(s2.factions[0].flavor, 'bond_first');
     assert.strictEqual(s2.factions[0].memberIds.length, 4);
   });
 }
@@ -221,6 +221,7 @@ function buildJoinState(flavor) {
   assert.strictEqual(loyal.eligible, true);
   assert.strictEqual(loyal.leaderId, 5);
   assert.deepStrictEqual(loyal.followerIds, [6, 7]);
+  state._f07TeamCooldownUntil = 999;
 
   withFloatSequence([0], () => {
     const ev = Engine.factions.pickWeeklyEvent(state, {});

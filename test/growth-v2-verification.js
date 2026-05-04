@@ -9,13 +9,7 @@
 
 'use strict';
 
-const path = require('path');
-const fs = require('fs');
-const vm = require('vm');
-
-global.window = { IS_TRIAL: false };
-
-const srcDir = path.join(__dirname, '..', 'src');
+const { loadGame } = require('./helpers/load-game');
 
 function loadAsGlobal(filename) {
   let code = fs.readFileSync(path.join(srcDir, filename), 'utf-8');
@@ -25,11 +19,7 @@ function loadAsGlobal(filename) {
   script.runInThisContext();
 }
 
-loadAsGlobal('victory-lines.js');
-loadAsGlobal('data.js');
-loadAsGlobal('management.js');
-loadAsGlobal('match-engine.js');
-loadAsGlobal('relationships.js');
+loadGame({ full: true });
 
 if (typeof Engine === 'undefined' || typeof ALL_CHARS === 'undefined') {
   console.error('ERROR: Engine/ALL_CHARS が読み込めませんでした');
