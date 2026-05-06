@@ -6307,10 +6307,14 @@ const App = {
       s = { ...s, roster, domeShowsThisSeason: (s.domeShowsThisSeason || 0) + 1 };
     }
     if (pendingGrowthEvents.length > 0) {
-      G = { ...G, _pendingGrowthEvents: pendingGrowthEvents };
+      s = { ...s, _pendingGrowthEvents: pendingGrowthEvents };
     }
 
-    G = { ...G, ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
+    // s 起点でマージ。{...G, ...s} だと s 側で destructure 削除した
+    // _pendingF07Directive / _pendingInternalChallenge / _pendingF08Directive / _pendingF09 / _pendingReclaim
+    // などのキーが G の旧値として残り、F07 メイン推薦や派閥内序列戦が永久消化扱いにならない。
+    // s は finalizeShow 冒頭で {...G} から派生しているため、s を base にして問題ない。
+    G = { ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
 
     // v2.0 Phase1-6: メディアスポットライトの興行後処理
     if (G.mediaSpotlight) {
