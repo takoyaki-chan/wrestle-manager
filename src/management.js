@@ -1848,6 +1848,50 @@ const Engine = {
     // v1.2: 現在のベルト表示名を返す
     // worldTitleUnlocked = true（1位達成後）かつ beltDisplayName が設定されていれば改名後の名称を返す。
     // 改名イベント自体は v1.2 後半で実装予定。
+    sanitizeShowCardTitles(state, showCard) {
+      if (!Array.isArray(showCard) || showCard.length === 0) return Array.isArray(showCard) ? showCard : [];
+      const roster = state?.roster || [];
+      const titleEstablished = !!state?.titleEstablished;
+      const cd = Engine.title.canTitleMatch(state || {});
+      const champId = state?.titles?.world?.championId || null;
+      let titleAssigned = false;
+
+      return showCard.map(slot => {
+        if (!slot) return slot;
+        if (slot.matchType === 'tag') return slot.isTitle ? { ...slot, isTitle: false } : slot;
+        if (!slot.isTitle) return slot;
+
+        const left = slot.left || 0;
+        const right = slot.right || 0;
+        let allowed = titleEstablished
+          && cd.allowed
+          && left > 0
+          && right > 0
+          && left !== right;
+
+        if (allowed) {
+          const leftF = roster.find(c => c.id === left);
+          const rightF = roster.find(c => c.id === right);
+          if ((leftF && leftF.isRental) || (rightF && rightF.isRental)) allowed = false;
+        }
+
+        if (allowed && champId) {
+          if (left !== champId && right !== champId) {
+            allowed = false;
+          } else {
+            const challengerId = left === champId ? right : left;
+            const eligibleIds = Engine.title.getEligibleChallengers(roster, champId);
+            if (!eligibleIds.includes(challengerId)) allowed = false;
+          }
+        }
+
+        if (allowed && titleAssigned) allowed = false;
+        if (!allowed) return { ...slot, isTitle: false };
+        titleAssigned = true;
+        return slot;
+      });
+    },
+
     getBeltName(state) {
       if (state.worldTitleUnlocked && state.beltDisplayName) {
         return state.beltDisplayName;

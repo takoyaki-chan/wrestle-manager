@@ -4444,7 +4444,8 @@ const App = {
         }
       }
     }
-    G = { ...G, showCard: newCard };
+    const sanitizedCard = Engine.title.sanitizeShowCardTitles({ ...G, showCard: newCard }, newCard);
+    G = { ...G, showCard: sanitizedCard };
     renderShowPrep();
   },
 
@@ -4550,11 +4551,12 @@ const App = {
   toggleTitleMatch(slotIndex) {
     const newVal = !G.showCard[slotIndex].isTitle;
     // ONにするときは必ず他スロットのisTitleをクリア（チャンピオン在籍/空位どちらも）
-    G = { ...G, showCard: G.showCard.map((slot, i) => {
+    const nextCard = G.showCard.map((slot, i) => {
       if (i === slotIndex) return { ...slot, isTitle: newVal };
       if (newVal) return { ...slot, isTitle: false };
       return slot;
-    }) };
+    });
+    G = { ...G, showCard: Engine.title.sanitizeShowCardTitles({ ...G, showCard: nextCard }, nextCard) };
     renderShowPrep();
   },
 
@@ -4583,9 +4585,11 @@ const App = {
       return { ...m, left: leftOk ? m.left : 0, right: rightOk ? m.right : 0,
         isTitle: !!m.isTitle && leftOk && rightOk };
     });
-    if (hadStaleRef) G = { ...G, showCard: sanitized };
+    const titleSanitized = Engine.title.sanitizeShowCardTitles({ ...G, showCard: sanitized }, sanitized);
+    const titleSanitizedChanged = JSON.stringify(titleSanitized) !== JSON.stringify(G.showCard);
+    if (hadStaleRef || titleSanitizedChanged) G = { ...G, showCard: titleSanitized };
 
-    const validMatches = (hadStaleRef ? sanitized : G.showCard).filter(m =>
+    const validMatches = ((hadStaleRef || titleSanitizedChanged) ? titleSanitized : G.showCard).filter(m =>
       m.matchType === 'tag'
         ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
         : (m.left > 0 && m.right > 0)
