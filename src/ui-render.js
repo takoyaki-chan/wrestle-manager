@@ -1435,6 +1435,20 @@ function renderWeekScreen() {
     </div>`;
   }
 
+  // 進行不具合復旧: 想定外の weekPhase（showExec/showPrep 等）でも今週タブを空にしない。
+  // 「進行不具合発生 — 次の週へ進む」ボタンで復旧パスを提供する。
+  if (!html) {
+    console.warn('[WM] renderWeekScreen: unhandled weekPhase=', G.weekPhase, '— showing recovery UI');
+    html += `<div style="text-align:center;padding:24px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:16px">
+      <div style="font-size:15px;color:var(--text-main);margin-bottom:8px;font-weight:700">⚠️ 進行不具合が発生しました</div>
+      <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px">想定外の状態(${G.weekPhase || '不明'})で停止しました。下のボタンで復旧できます。</div>
+      <button class="btn btn-gold" style="font-size:14px;padding:10px 24px"
+        onclick="if(typeof G!=='undefined'){G={...G,weekPhase:'manage',lastShowResults:G.lastShowResults||[],weeklyFinance:G.weeklyFinance||{income:0,expense:0,details:[]}};try{Storage.autoSave()}catch(e){}refreshAll();}">
+        🔧 状態を復元して今週へ
+      </button>
+    </div>`;
+  }
+
   el.innerHTML = html;
 }
 

@@ -1,6 +1,10 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-05-05（ランキング実績軸 新人賞・メディア厚労賞 配線）
+> 最終更新: 2026-05-09（引退試合後の進行不具合 復旧パス追加）
+
+## 直近の調整（2026-05-09 引退試合後の進行不具合 復旧パス追加）
+
+製品版 1.09 でユーザー報告「選手の引退試合後に『今週』タブが空、『興行準備』タブも『興行週ではありません』で操作不能、翌週へ進めない」を受けて、`closeShowResult` 内の retirement 処理が例外を投げた際に `weekPhase='showExec'` のまま catch に落ちることでタブ表示が無くなる経路に対して二段の復旧策を追加。①**`closeShowResult` catch 内の自己復旧** (`src/app.js`): catch 突入時に `G.weekPhase==='showExec'` のままなら `Engine.tickWeek(G)` を再試行し、settle まで進めて 'settled'/'weekSummary' へ遷移させる。tickWeek 自体が再試行で失敗する場合は最終フォールバックとして `weekPhase='manage' + lastShowResults=[] + weeklyFinance` をリセットしてユーザーが翌週へ進める状態へ落とす。いずれもトーストで「興行後の処理で問題が発生しました。状態を復元しました。」を表示。②**`renderWeekScreen` 防御フォールバック** (`src/ui-render.js`): `html` が空のまま末尾まで来た場合（=想定外の `weekPhase`）に「⚠️ 進行不具合が発生しました — 🔧 状態を復元して今週へ」リカバリ UI を表示。クリックで `weekPhase='manage'` に戻して `Storage.autoSave` + `refreshAll`。③**触らない領域**: 引退処理本体・popupActions チェーン・tickWeek の正常パスは無変更。例外が出ない限り従来挙動と完全一致。④**検証**: auto-sim 不要（例外復旧パス + 防御 UI のみで試合数値・判定に影響なし）。実機確認推奨: 通常興行→翌週遷移で何も変わらないこと、引退試合を含む興行後にもタブが空にならないこと。変更: src/app.js(closeShowResult catch 拡張 約 20 行) + src/ui-render.js(renderWeekScreen 末尾フォールバック 約 12 行) + docs/game-system-roadmap.md(本項)。
 
 ## 直近の調整（2026-05-05 ランキング実績軸 新人賞・メディア厚労賞 配線）
 

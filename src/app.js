@@ -7623,6 +7623,26 @@ const App = {
     refreshAll();
     } catch(e) {
       console.error('closeShowResult error:', e);
+      // 進行不具合復旧: weekPhase が 'showExec' のまま残ると 今週/興行準備 タブが
+      // 空になり、ユーザーが翌週へ進めなくなる（引退試合後に発生報告あり）。
+      // tickWeek を再試行し、ダメなら最低限 manage 相当へ落として復旧させる。
+      try {
+        if (G && G.weekPhase === 'showExec') {
+          try {
+            const _recovery = Engine.tickWeek(G);
+            G = { ..._recovery.state, gameLog: [...(G.gameLog || []), ...(_recovery.events || [])] };
+          } catch (_tickErr) {
+            console.error('closeShowResult recovery tickWeek failed:', _tickErr);
+            // 最終フォールバック: 興行結果を破棄して manage に戻す
+            G = { ...G, weekPhase: 'manage', lastShowResults: [],
+                  weeklyFinance: { income: 0, expense: 0, details: [] } };
+          }
+          try { Storage.autoSave(); } catch (_e) {}
+          try { showToast('⚠️ 興行後の処理で問題が発生しました。状態を復元しました。', 6000); } catch (_e) {}
+        }
+      } catch (_recovErr) {
+        console.error('closeShowResult recovery itself failed:', _recovErr);
+      }
       try { showScreen('week'); } catch(e2) {}
       try { refreshAll(); } catch(e2) {}
     } finally {
