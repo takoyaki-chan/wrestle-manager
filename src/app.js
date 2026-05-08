@@ -3091,6 +3091,30 @@ const App = {
     else restore();
   },
 
+  repairProgressionState(reason = 'runtime') {
+    if (!G || !Engine?.saveDoctor?.repairProgressionState) return false;
+    const showResultOverlay = (() => {
+      try { return document.getElementById('showResultOverlay'); } catch (_e) { return null; }
+    })();
+    const showResultActive = !!(showResultOverlay && showResultOverlay.classList.contains('active'));
+    if (G.weekPhase === 'showExec' && (showResultActive || App._showPreview || App._closingShowResult)) {
+      return false;
+    }
+    const repair = Engine.saveDoctor.repairProgressionState(G);
+    if (!repair.changed) return false;
+    G = repair.state;
+    try {
+      console.warn('[WM] progression state repaired', { reason, changes: repair.changes, phase: G.weekPhase, week: G.week });
+    } catch (_e) {}
+    try {
+      G = {
+        ...G,
+        gameLog: [...(G.gameLog || []), `セーブデータ自動修復: ${repair.changes.join(', ')}`],
+      };
+    } catch (_e) {}
+    return true;
+  },
+
   // Show the title screen overlay
   showTitleScreen() {
     const titleEl = document.getElementById('titleScreen');
@@ -4386,6 +4410,10 @@ const App = {
 
   // Show preparation
   startShowPrep() {
+    if (App.repairProgressionState('startShowPrep')) {
+      try { Storage.autoSave(); } catch (_e) {}
+      refreshAll();
+    }
     if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
     // PPV週は通常興行不可
     if (G.ppvPhase === 'locked' || G.ppvPhase === 'show') {
@@ -4566,6 +4594,10 @@ const App = {
   // ═══ BATTLE ENGINE INTEGRATION (v0.86) ═══
   // Show match preview instead of instant execution
   executeShow() {
+    if (App.repairProgressionState('executeShow')) {
+      try { Storage.autoSave(); } catch (_e) {}
+      refreshAll();
+    }
     // v2.0: weekPhase guard — settled/weekSummary等の非興行フェーズでは実行不可
     if (G.offSeason || !['manage', 'showPrep'].includes(G.weekPhase)) { Audio.play('error'); return; }
     // Guard: sanitize stale card refs (released/retired/transferred wrestlers)
@@ -4574,13 +4606,15 @@ const App = {
     const _idOk = id => id > 0 && rosterIdSet.has(id);
     const sanitized = G.showCard.map(m => {
       if (m.matchType === 'tag') {
-        const a1 = _idOk(m.teamA.fighter1), a2 = _idOk(m.teamA.fighter2);
-        const b1 = _idOk(m.teamB.fighter1), b2 = _idOk(m.teamB.fighter2);
-        if ((!a1 && m.teamA.fighter1 > 0) || (!a2 && m.teamA.fighter2 > 0) ||
-            (!b1 && m.teamB.fighter1 > 0) || (!b2 && m.teamB.fighter2 > 0)) hadStaleRef = true;
+        const teamA = m.teamA || {};
+        const teamB = m.teamB || {};
+        const a1 = _idOk(teamA.fighter1), a2 = _idOk(teamA.fighter2);
+        const b1 = _idOk(teamB.fighter1), b2 = _idOk(teamB.fighter2);
+        if ((!a1 && teamA.fighter1 > 0) || (!a2 && teamA.fighter2 > 0) ||
+            (!b1 && teamB.fighter1 > 0) || (!b2 && teamB.fighter2 > 0)) hadStaleRef = true;
         return { ...m,
-          teamA: { fighter1: a1 ? m.teamA.fighter1 : 0, fighter2: a2 ? m.teamA.fighter2 : 0 },
-          teamB: { fighter1: b1 ? m.teamB.fighter1 : 0, fighter2: b2 ? m.teamB.fighter2 : 0 },
+          teamA: { fighter1: a1 ? teamA.fighter1 : 0, fighter2: a2 ? teamA.fighter2 : 0 },
+          teamB: { fighter1: b1 ? teamB.fighter1 : 0, fighter2: b2 ? teamB.fighter2 : 0 },
         };
       }
       const leftOk = _idOk(m.left), rightOk = _idOk(m.right);
@@ -7985,6 +8019,9 @@ const App = {
   advanceFromWeekSummary() {
     Audio.play('tick');
     dismissAllPopups(); // 残存ポップアップを強制クリア
+    if (App.repairProgressionState('advanceFromWeekSummary')) {
+      try { Storage.autoSave(); } catch (_e) {}
+    }
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
     // ── 体験版シーズンゲート ──
@@ -8514,6 +8551,9 @@ const App = {
 
   // Advance to next week via Engine
   advanceCurrentFlow() {
+    if (App.repairProgressionState('advanceCurrentFlow')) {
+      try { Storage.autoSave(); } catch (_e) {}
+    }
     if (G.weekPhase === 'manage') {
       App.processWeek();
       return;
@@ -8535,6 +8575,9 @@ const App = {
 
   advanceWeek() {
     Audio.play('tick');
+    if (App.repairProgressionState('advanceWeek')) {
+      try { Storage.autoSave(); } catch (_e) {}
+    }
     dismissAllPopups(); // 残存ポップアップを強制クリア
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };

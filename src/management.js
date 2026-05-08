@@ -149,6 +149,105 @@ const Engine = {
       }).filter(Boolean);
     },
 
+    repairProgressionState(rawState) {
+      let state = rawState || {};
+      const changes = [];
+      const validPhases = new Set([
+        'opening', 'draft', 'manage', 'settled', 'showPrep', 'showExec', 'offseason',
+        'scoutEvent', 'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event',
+        'weekSummary', 'transfer', 'contractNegotiation', 'juniorTournament',
+        'negotiation', 'warChallenge'
+      ]);
+      const isShowWeekNow = Engine.util?.isShowWeek ? Engine.util.isShowWeek(state.week || 1) : ((state.week || 1) % 2 === 0);
+      let nextPhase = state.weekPhase || (state.offSeason ? 'offseason' : 'manage');
+
+      if (!validPhases.has(nextPhase)) {
+        changes.push(`weekPhase_invalid:${nextPhase}`);
+        nextPhase = state.offSeason ? 'offseason' : 'manage';
+      }
+
+      // showPrep/showExec are UI-only transient phases. If they survive a reload,
+      // tab switch, or popup interruption, the player can otherwise lose the
+      // visible "next week" path.
+      if (nextPhase === 'showExec') {
+        changes.push('weekPhase_showExec_recovered');
+        nextPhase = state.offSeason ? 'offseason' : 'manage';
+      } else if (nextPhase === 'showPrep' && (state.offSeason || !isShowWeekNow)) {
+        changes.push('weekPhase_showPrep_non_show_week');
+        nextPhase = state.offSeason ? 'offseason' : 'manage';
+      }
+
+      if (state.offSeason && !['offseason', 'contractNegotiation', 'scoutEvent', 'gameover', 'draft', 'opening'].includes(nextPhase)) {
+        changes.push(`offseason_phase_recovered:${nextPhase}`);
+        nextPhase = 'offseason';
+      }
+
+      let showCard = Array.isArray(state.showCard) ? state.showCard : [];
+      const rosterIds = new Set((state.roster || []).map(c => c && c.id).filter(id => id != null));
+      let cardChanged = false;
+      const okId = id => Number(id) > 0 && rosterIds.has(Number(id));
+      showCard = showCard.map(match => {
+        if (!match || typeof match !== 'object') {
+          cardChanged = true;
+          return { left: 0, right: 0, isTitle: false };
+        }
+        if (match.matchType === 'tag') {
+          const teamA = match.teamA || {};
+          const teamB = match.teamB || {};
+          const clean = {
+            ...match,
+            teamA: {
+              fighter1: okId(teamA.fighter1) ? teamA.fighter1 : 0,
+              fighter2: okId(teamA.fighter2) ? teamA.fighter2 : 0,
+            },
+            teamB: {
+              fighter1: okId(teamB.fighter1) ? teamB.fighter1 : 0,
+              fighter2: okId(teamB.fighter2) ? teamB.fighter2 : 0,
+            },
+          };
+          if (clean.teamA.fighter1 !== teamA.fighter1 || clean.teamA.fighter2 !== teamA.fighter2
+              || clean.teamB.fighter1 !== teamB.fighter1 || clean.teamB.fighter2 !== teamB.fighter2) cardChanged = true;
+          return clean;
+        }
+        const left = okId(match.left) ? match.left : 0;
+        const right = okId(match.right) ? match.right : 0;
+        const isTitle = left > 0 && right > 0 ? !!match.isTitle : false;
+        if (left !== match.left || right !== match.right || isTitle !== !!match.isTitle) cardChanged = true;
+        return { ...match, left, right, isTitle };
+      });
+      if (cardChanged) changes.push('showCard_stale_refs_removed');
+
+      let pendingReclaim = state._pendingReclaim || null;
+      if (pendingReclaim && !okId(pendingReclaim.challengerId)) {
+        pendingReclaim = null;
+        changes.push('pendingReclaim_stale_ref_removed');
+      }
+
+      let coachAssign = state.coachAssign || {};
+      let coachAssignChanged = false;
+      if (coachAssign && typeof coachAssign === 'object') {
+        coachAssign = Object.fromEntries(Object.entries(coachAssign).map(([coachId, ids]) => {
+          const before = Array.isArray(ids) ? ids : [];
+          const after = before.filter(id => okId(id));
+          if (after.length !== before.length) coachAssignChanged = true;
+          return [coachId, after];
+        }));
+        if (coachAssignChanged) changes.push('coachAssign_stale_refs_removed');
+      }
+
+      state = {
+        ...state,
+        weekPhase: nextPhase,
+        showCard,
+        coachAssign,
+        _pendingReclaim: pendingReclaim,
+        lastShowResults: Array.isArray(state.lastShowResults) ? state.lastShowResults : [],
+        weeklyFinance: state.weeklyFinance || { income: 0, expense: 0, details: [] },
+      };
+
+      return { state, changed: changes.length > 0, changes };
+    },
+
     repairOnLoad(rawState) {
       let state = {
         ...rawState,
@@ -291,6 +390,12 @@ const Engine = {
       // relationship-flags-spec-v1.0 §10: 関係フラグ構造を lazy init
       if (Engine.relationships?.flags?._ensureInit) {
         Engine.relationships.flags._ensureInit(state);
+      }
+
+      const progressionRepair = Engine.saveDoctor.repairProgressionState(state);
+      if (progressionRepair.changed) {
+        state = progressionRepair.state;
+        changes.push(...progressionRepair.changes);
       }
 
       return {
@@ -10931,7 +11036,10 @@ const Engine = {
   //  Output: { state, results, injuryResults, events } or { error }
   // ══════════════════════════════════════════════════════════
   executeShow(state) {
-    const validMatches = state.showCard.filter(m =>
+    const repaired = Engine.saveDoctor?.repairProgressionState
+      ? Engine.saveDoctor.repairProgressionState(state).state
+      : state;
+    const validMatches = (repaired.showCard || []).filter(m =>
       m.matchType === 'tag'
         ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
         : (m.left > 0 && m.right > 0)
@@ -10941,14 +11049,14 @@ const Engine = {
     // v1.2: タイトルマッチクールダウンガード（UIバイパス防止）
     const hasTitleSlot = validMatches.some(m => m.isTitle);
     if (hasTitleSlot) {
-      const cd = Engine.title.canTitleMatch(state);
+      const cd = Engine.title.canTitleMatch(repaired);
       if (!cd.allowed) {
         return { error: `タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）` };
       }
       // Rental restriction: レンタル選手はタイトルマッチ出場不可
       const rentalInTitle = validMatches.filter(m => m.isTitle).some(m => {
-        const l = state.roster.find(c => c.id === m.left);
-        const r = state.roster.find(c => c.id === m.right);
+        const l = repaired.roster.find(c => c.id === m.left);
+        const r = repaired.roster.find(c => c.id === m.right);
         return (l && l.isRental) || (r && r.isRental);
       });
       if (rentalInTitle) {
@@ -10956,7 +11064,7 @@ const Engine = {
       }
     }
 
-    let s = { ...state, totalShows: state.totalShows + 1, weekPhase: 'showExec' };
+    let s = { ...repaired, totalShows: repaired.totalShows + 1, weekPhase: 'showExec' };
     // forcedRest（S3休養願い）フラグをクリア — この興行後は通常参加可能に戻す
     let roster = s.roster.map(c => c.forcedRest ? { ...c, forcedRest: false } : { ...c });
     // Phase 4 C-05/C-06: 事前の連敗ストリーク記録（show処理中に更新されるため）

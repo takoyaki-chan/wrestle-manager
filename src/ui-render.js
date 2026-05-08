@@ -352,6 +352,9 @@ function _finishOpening() {
 }
 
 function renderWeekScreen() {
+  if (typeof App !== 'undefined' && App.repairProgressionState && App.repairProgressionState('renderWeekScreen')) {
+    try { Storage.autoSave(); } catch (_e) {}
+  }
   const el = document.getElementById('weekContent');
   let html = '';
 
@@ -2198,6 +2201,9 @@ function showMatchAppealTooltip(event, slotIdx) {
 }
 
 function renderShowPrep() {
+  if (typeof App !== 'undefined' && App.repairProgressionState && App.repairProgressionState('renderShowPrep')) {
+    try { Storage.autoSave(); } catch (_e) {}
+  }
   const el = document.getElementById('showPrepContent');
   // v2.0: 興行準備は manage/showPrep フェーズのみ（settled等の非興行フェーズでは表示しない）
   if (!isShowWeek(G.week) || !['manage', 'showPrep'].includes(G.weekPhase)) {
