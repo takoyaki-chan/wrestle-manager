@@ -2828,7 +2828,8 @@ const Storage = {
     if (!data) { alert('セーブデータがありません'); return false; }
     if (Storage.deserialize(data)) {
       G = { ...G, gameLog: [...G.gameLog, `📂 スロット${slot}からロードしました`] };
-      if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
+      // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
+      if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
       refreshAll();
       // PPVフェーズの復帰: オーバーレイを再初期化
       if (G.weekPhase === 'ppvShow') App.initPPVShow();
@@ -2848,7 +2849,8 @@ const Storage = {
   loadAutoSave() {
     const data = localStorage.getItem(AUTOSAVE_KEY);
     if (data && Storage.deserialize(data)) {
-      if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
+      // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
+      if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
       refreshAll();
       // PPVフェーズの復帰: オーバーレイを再初期化
       if (G.weekPhase === 'ppvShow') App.initPPVShow();
@@ -2928,7 +2930,8 @@ const Storage = {
 
         if (Storage.deserialize(raw)) {
           G = { ...G, gameLog: [...G.gameLog, '📂 ファイルからデータを読み込みました'] };
-          if (G.weekPhase === 'showPrep') G = { ...G, weekPhase: 'manage' };
+          // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
+      if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
           refreshAll();
           if (G.weekPhase === 'ppvShow') App.initPPVShow();
           else if (G.weekPhase === 'ppvTV') App.initPPVTV();
@@ -5225,6 +5228,30 @@ const App = {
 
   // Post-processing: apply titles, popularity, injuries (mirrors Engine.executeShow logic)
   finalizeShow() {
+    try {
+      App._finalizeShowImpl();
+    } catch (e) {
+      console.error('[WM] finalizeShow exception:', e);
+      // 進行不具合復旧: 例外で weekPhase='showExec' のまま残ると今週タブが
+      // 空になり翌週へ進めなくなるため、manage に戻して退避する。
+      try {
+        if (G && G.weekPhase === 'showExec') {
+          G = { ...G, weekPhase: 'manage', lastShowResults: G.lastShowResults || [],
+                weeklyFinance: G.weeklyFinance || { income: 0, expense: 0, details: [] } };
+          App._showPreview = null;
+          try { document.getElementById('showResultOverlay')?.classList.remove('active'); } catch (_e) {}
+          try { Audio.bgm.playForState(); } catch (_e) {}
+          try { showToast('⚠️ 興行処理中に問題が発生しました。状態を復元しました。', 6000); } catch (_e) {}
+          try { Storage.autoSave(); } catch (_e) {}
+          try { showScreen('week'); refreshAll(); } catch (_e) {}
+        }
+      } catch (_recovErr) {
+        console.error('[WM] finalizeShow recovery failed:', _recovErr);
+      }
+    }
+  },
+
+  _finalizeShowImpl() {
     const sp = App._showPreview;
     if (!sp) return;
     const results = sp.results;
