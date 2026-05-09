@@ -16382,11 +16382,27 @@ Engine.awards = {
       const parts = matchStr.split(' vs ');
       const findF = name => (state.roster || []).find(f => f.name === name) ||
                             (state.retiredFighters || []).find(f => f.name === name);
-      const f1 = findF(parts[0]);
-      const f2 = findF(parts[1]);
+      // タッグマッチは "A&B vs C&D" 形式。各チームの先頭(キャプテン)を代表として顔写真/セリフに使う
+      const sideA = (parts[0] || '').trim();
+      const sideB = (parts[1] || '').trim();
+      const isTag = sideA.includes('&') || sideB.includes('&');
+      let f1, f2, name1, name2;
+      if (isTag) {
+        const aNames = sideA.split('&').map(s => s.trim()).filter(Boolean);
+        const bNames = sideB.split('&').map(s => s.trim()).filter(Boolean);
+        f1 = findF(aNames[0]);
+        f2 = findF(bNames[0]);
+        name1 = aNames.join(' & ');
+        name2 = bNames.join(' & ');
+      } else {
+        f1 = findF(sideA);
+        f2 = findF(sideB);
+        name1 = sideA;
+        name2 = sideB;
+      }
       candidates.push({
-        fighter1: { id: f1 ? f1.id : null, name: parts[0] || '???', ovr: f1 ? ov(f1) : 0, style: f1 ? (f1.style || 'Allround') : 'Allround' },
-        fighter2: { id: f2 ? f2.id : null, name: parts[1] || '???', ovr: f2 ? ov(f2) : 0, style: f2 ? (f2.style || 'Allround') : 'Allround' },
+        fighter1: { id: f1 ? f1.id : null, name: name1 || '???', ovr: f1 ? ov(f1) : 0, style: f1 ? (f1.style || 'Allround') : 'Allround' },
+        fighter2: { id: f2 ? f2.id : null, name: name2 || '???', ovr: f2 ? ov(f2) : 0, style: f2 ? (f2.style || 'Allround') : 'Allround' },
         orgId: 'player', orgName: Engine.awards._orgName(state, 'player'), mq: playerMQ, isPlayerOrg: true
       });
     }

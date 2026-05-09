@@ -6109,7 +6109,7 @@ const App = {
         const tA2 = roster.find(c => c.id === m.teamA.fighter2);
         const tB1 = roster.find(c => c.id === m.teamB.fighter1);
         const tB2 = roster.find(c => c.id === m.teamB.fighter2);
-        if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${tA1?.name||'?'}&${tA2?.name||'?'} vs ${tB1?.name||'?'}&${tB2?.name||'?'}`; }
+        if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${tA1?.name||'?'} & ${tA2?.name||'?'} vs ${tB1?.name||'?'} & ${tB2?.name||'?'}`; }
         if (r.winner === 'teamA' || r.winner === 'teamB') stats.wins++;
         if (r.winner === 'draw') stats.draws++;
       } else {
@@ -6963,8 +6963,32 @@ const App = {
   _buildShowResultNewspaperData() {
     const results = G.lastShowResults || [];
     if (!results.length) return null;
-    const main = results[0];
-    if (!main || !main.left || !main.right) return null;
+    const rawMain = results[0];
+    if (!rawMain) return null;
+
+    // タッグメインの場合: チーム代表名でleft/right/winner/loserを合成
+    const isTagMain = rawMain.matchType === 'tag';
+    let main;
+    if (isTagMain) {
+      const tA = rawMain.teamA || {};
+      const tB = rawMain.teamB || {};
+      const teamALabel = `${tA.f1Name || '?'} & ${tA.f2Name || '?'}`;
+      const teamBLabel = `${tB.f1Name || '?'} & ${tB.f2Name || '?'}`;
+      const synthLeft = { id: tA.f1Id || 0, name: teamALabel, ovr: 0 };
+      const synthRight = { id: tB.f1Id || 0, name: teamBLabel, ovr: 0 };
+      main = {
+        ...rawMain,
+        left: synthLeft,
+        right: synthRight,
+        winner: rawMain.winner === 'teamA' ? 'left'
+              : rawMain.winner === 'teamB' ? 'right'
+              : 'draw',
+        isTitleMatch: false, // タッグはタイトル戦ではない
+      };
+    } else {
+      if (!rawMain.left || !rawMain.right) return null;
+      main = rawMain;
+    }
     const venue = VENUES[G.showVenue] || { name: 'Arena' };
     const isDraw = main.winner === 'draw';
     const winner = isDraw ? null : (main.winner === 'left' ? main.left : main.right);
@@ -6994,13 +7018,13 @@ const App = {
     const isPPVShow = isPPV(G.week);
     const isSpecial = isSpecialShow(G.week);
 
-    // 因縁・関係データ
-    const rivalLvl = getRivalryLevel(main.left.id, main.right.id);
+    // 因縁・関係データ（タッグはチーム単位のため個人因縁は適用しない）
+    const rivalLvl = isTagMain ? null : getRivalryLevel(main.left.id, main.right.id);
     const hasRivalry = !!rivalLvl && !rivalLvl.isGoodRival;
     const isGoodRival = !!rivalLvl && rivalLvl.isGoodRival;
     const rivalLabel = rivalLvl ? rivalLvl.label : null;
     let bondAvg = 50;
-    if (G.relationships) {
+    if (!isTagMain && G.relationships) {
       const kAB = `${main.left.id}>${main.right.id}`;
       const kBA = `${main.right.id}>${main.left.id}`;
       const bA = G.relationships[kAB]?.bond || 50;
@@ -7009,11 +7033,11 @@ const App = {
     }
     const isHighBond = bondAvg >= 70;
 
-    // OVR差
-    const ovrL = Engine.util.ov(main.left);
-    const ovrR = Engine.util.ov(main.right);
+    // OVR差（タッグは合成代表のOVRが0のためupset判定をスキップ）
+    const ovrL = isTagMain ? 0 : Engine.util.ov(main.left);
+    const ovrR = isTagMain ? 0 : Engine.util.ov(main.right);
     const ovrGap = Math.abs(ovrL - ovrR);
-    const isUpset = !isDraw && winner && (
+    const isUpset = !isTagMain && !isDraw && winner && (
       (winner.id === main.left.id && ovrL < ovrR - 8) ||
       (winner.id === main.right.id && ovrR < ovrL - 8)
     );
@@ -7047,7 +7071,34 @@ const App = {
 
     // ── allMatches: メイン以外の全試合ダイジェスト ──
     const allMatches = results.slice(1).map(r => {
-      if (!r || !r.left || !r.right) return null;
+      if (!r) return null;
+      // タッグ試合: チーム代表名で合成
+      if (r.matchType === 'tag') {
+        const tA = r.teamA || {};
+        const tB = r.teamB || {};
+        const aLabel = `${tA.f1Name || '?'} & ${tA.f2Name || '?'}`;
+        const bLabel = `${tB.f1Name || '?'} & ${tB.f2Name || '?'}`;
+        const isMatchDraw = r.winner === 'draw';
+        const winSide = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
+        const winnerName = isMatchDraw ? null : (winSide === 'left' ? aLabel : bLabel);
+        const loserName  = isMatchDraw ? null : (winSide === 'left' ? bLabel : aLabel);
+        return {
+          left: { id: tA.f1Id || 0, name: aLabel, ovr: 0 },
+          right: { id: tB.f1Id || 0, name: bLabel, ovr: 0 },
+          winner: winSide,
+          winnerName,
+          loserName,
+          mq: r.mq || 0,
+          turns: r.turns || 0,
+          finishLabel: Engine.formatFinish(r.finType, r.finMove),
+          isDraw: isMatchDraw,
+          isUpset: false,
+          isDominant: !isMatchDraw && (r.turns || 99) <= 6,
+          isTitleMatch: false,
+          isTag: true,
+        };
+      }
+      if (!r.left || !r.right) return null;
       const isMatchDraw = r.winner === 'draw';
       const matchWinner = isMatchDraw ? null : (r.winner === 'left' ? r.left : r.right);
       const matchLoser = isMatchDraw ? null : (r.winner === 'left' ? r.right : r.left);

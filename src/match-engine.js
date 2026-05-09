@@ -1283,6 +1283,8 @@ Engine.tagMatch = (() => {
       mq: mq.final, mqDetail: mq,
       chemA, chemB, dramaSummary, postMatchFlags, winAttribution,
       matchType: 'tag',
+      teamA: { f1Id: fA1.id, f1Name: fA1.name, f2Id: fA2.id, f2Name: fA2.name },
+      teamB: { f1Id: fB1.id, f1Name: fB1.name, f2Id: fB2.id, f2Name: fB2.name },
       frames: recordFrames ? frames : undefined,
       perFighter: {
         [fA1.id]: { hpFinal: Math.round(fA1.hp), turnsLegal: fA1.turnsLegal, turnsApron: fA1.turnsApron, damageDealt: fA1.damageDealt, damageTaken: fA1.damageTaken },
