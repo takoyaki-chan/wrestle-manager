@@ -654,6 +654,7 @@ Engine.tagMatch = (() => {
     const frames = recordFrames ? [] : null;
     let _turnLogStart = 0;
     let _turnAction = null;
+    let _turnOutcome = null;
     // F1: タッチ発生時は「攻撃フレーム (Frame A, turnSub=0)」と
     //     「タッチフレーム (Frame B, turnSub=0.5)」を同一ターン内で別フレームに分離する。
     //     観戦側で攻撃→タッチの時系列を明確に見せるため。
@@ -730,6 +731,7 @@ Engine.tagMatch = (() => {
       const ph = getPhase(totalTurn);
       _turnLogStart = log.length;
       _turnAction = null;
+      _turnOutcome = null;
       _frameTurnSub = 0;
 
       // HP 0 即決着チェック（前ターンから HP が枯渇した場合のセーフティネット。
@@ -789,6 +791,7 @@ Engine.tagMatch = (() => {
       const hit = Engine.rng.float(rng) * 100 < hitRate;
 
       if (!hit) {
+        _turnOutcome = 'miss';
         mom += isAAttacking ? -5 : 5;
         mom = clamp(mom, -50, 50);
         log.push(`T${totalTurn} [${ph.name}] ${atkFighter.name}の${mv.n}→MISS`);
@@ -803,6 +806,7 @@ Engine.tagMatch = (() => {
         const isCounter = Engine.rng.float(rng) * 100 < counterRate;
 
         if (isCounter) {
+          _turnOutcome = 'counter';
           totalCounters++;
           const cMv = B.selMove(rng, def.style, totalTurn, TC.phases);
           let cDmg = B.calcDamage(rng, cMv, def, atk, mom, atkSide === 'left' ? 'right' : 'left', ph);
@@ -891,6 +895,7 @@ Engine.tagMatch = (() => {
             }
           }
         } else {
+          _turnOutcome = 'hit';
           // 通常ヒット
           let dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
           // v5.0 M1: タッグも OVR比補正（popularity は無し）
@@ -1076,7 +1081,7 @@ Engine.tagMatch = (() => {
       if (curSign !== 0 && curSign !== lastMomSign) { leadChanges++; lastMomSign = curSign; }
 
       // ── ダブルチーム (セグメント計画) ──
-      if (!winner && curSegment.turns === _dtTargetTurn) {
+      if (!winner && curSegment.turns === _dtTargetTurn && _turnOutcome && _turnOutcome !== 'miss') {
         const atkApron = isAAttacking ? apronA : apronB;
         // T1: 乱数選択で同試合内の連続を避ける
         const tagMv = getTagMove(atkFighter.style, atkApron.style, rng, _lastTagMoveName);
@@ -1132,7 +1137,7 @@ Engine.tagMatch = (() => {
       // ── 同士討ち (セグメント計画) ──
       // 同士討ちは「連携のほころび」ドラマ。HP は少しだけ削るが、控えの体力が尽きる事はない。
       // 主要な効果はモメンタム反転(連携ミスで流れを失う)。
-      if (!winner && curSegment.turns === _ffTargetTurn) {
+      if (!winner && curSegment.turns === _ffTargetTurn && _turnOutcome && _turnOutcome !== 'miss') {
         const defApron = isAAttacking ? apronB : apronA;
         const ffDmg = Engine.rng.int(rng, 2, 4);
         // 最低でも mhp の 50% は残す（控えが戦闘不能にならないように）
@@ -1155,6 +1160,7 @@ Engine.tagMatch = (() => {
         if (!recordFrames || _frameTurnSub !== 0) return;
         pushFrame(ph.name);
         _turnAction = null;
+        _turnOutcome = null;
         _turnLogStart = log.length;
         _frameTurnSub = 0.5;
       };

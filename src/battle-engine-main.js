@@ -961,7 +961,6 @@ function _buildPinCtrl(fr){
     if (defChar) seq.push({ kind: 'introBig', text: `${defChar.name}、${moveName}をがっちりロック！`, dramatic: true });
     const isWin = fr.winner != null;
     if (isWin) {
-      if (defChar) seq.push({ kind: 'introBig', text: `${defChar.name}の表情が歪む…！ 極まっている！`, dramatic: true });
       seq.push({ kind: 'finishClick', label: 'ギブアップ…！？' });
       if (defChar) seq.push({ kind: 'count', text: `${defChar.name}がタップ！！`, cls: 'tap' });
     } else {

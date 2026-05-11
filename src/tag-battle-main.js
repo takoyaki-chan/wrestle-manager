@@ -942,7 +942,6 @@ function _buildPinCtrl(pinEv, fr){
     if (defChar) {
       seq.push({ kind: 'introBig', text: `${defChar.name}、${moveName}をがっちりロック！`, dramatic: true });
       if (outcome === 'win') {
-        seq.push({ kind: 'introBig', text: `${defChar.name}の表情が歪む…！ 極まっている！`, dramatic: true });
         seq.push({ kind: 'finishClick', label: FINISH_LABELS.gu });
         seq.push({ kind: 'count', text: `${defChar.name}がタップ！！`, cls: 'tap' });
       } else if (outcome === 'escape') {
