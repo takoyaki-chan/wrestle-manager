@@ -4025,6 +4025,7 @@ window.addEventListener('message', function(e) {
   if (e.data && e.data.type === 'BATTLE_FINISH_CUE') {
     try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.stop(); } catch(err) {}
     try { if (typeof Audio !== 'undefined' && Audio.bgm) Audio.bgm.stop(); } catch(err) {}
+    try { if (typeof Audio !== 'undefined' && Audio.play) Audio.play('bellx3'); } catch(err) {}
     return;
   }
   if (e.data && e.data.type === 'MATCH_RESULT') {

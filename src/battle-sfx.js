@@ -4,7 +4,13 @@
 // グローバル依存: clamp(v,lo,hi), matchData (victoryFanfare で matchInfo.isSpecialMatch を参照)
 
 let ac=null;
-function ctx(){if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();return ac}
+function ctx(){
+  if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();
+  if(ac&&ac.state==='suspended'){
+    try{ac.resume().catch(()=>{});}catch(e){}
+  }
+  return ac
+}
 let _sfxMasterGain=null,_bgmMasterGain=null,_sfxGain=null;
 function _ensureMasterGains(){
   if(!_sfxMasterGain){const c=ctx();

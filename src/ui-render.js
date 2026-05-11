@@ -6608,14 +6608,26 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
   const rightWin = !d.isDraw && d.winner && d.winner.id === d.right.id;
   const leftCls = leftWin ? 'np-fc win' : 'np-fc';
   const rightCls = rightWin ? 'np-fc win' : 'np-fc';
+  const tagMembers = team => (team?.members || [])
+    .filter(f => f && f.name)
+    .map(f => f.id ? `<span onclick="showFighterPopup(${f.id})">${f.name}</span>` : `<span>${f.name}</span>`)
+    .join('<em> / </em>');
+  const tagPhotos = (team, isWinner) => {
+    const members = (team?.members || []).filter(f => f && f.id).slice(0, 2);
+    if (members.length === 0) return '';
+    return `<div class="np-fphoto np-tag-photo${isWinner ? ' win' : ''}">` + members.map(f =>
+      `<div class="np-tag-photo-member" style="${_npPhotoBg(f.id)}" onclick="showFighterPopup(${f.id})" title="${f.name}"></div>`
+    ).join('') + `</div>`;
+  };
 
   let html = `<section class="np-show-result">
     <div class="np-sec">自団体 興行結果</div>
     <h3 class="np-show-headline">${d.headline || '定期興行'}</h3>
     <div class="np-versus-grid">
       <div class="${leftCls}">
-        <div class="np-fphoto" style="${leftBg}" onclick="showFighterPopup(${d.left.id})"></div>
+        ${d.isTag && d.teamA ? tagPhotos(d.teamA, leftWin) : `<div class="np-fphoto" style="${leftBg}" onclick="showFighterPopup(${d.left.id})"></div>`}
         <div class="np-fname">${d.left.name}${leftWin ? '<span class="np-winner-mark">○</span>' : (rightWin ? '<span class="np-loser-mark">×</span>' : '')}</div>
+        ${d.isTag && d.teamA ? `<div class="np-frole">${tagMembers(d.teamA)}</div>` : ''}
         ${d.left.role ? `<div class="np-frole">${d.left.role}</div>` : ''}
       </div>
       <div class="np-vs-block">
@@ -6623,8 +6635,9 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
         ${d.finishLabel ? `<div class="np-vs-finish">${d.finishLabel}</div>` : ''}
       </div>
       <div class="${rightCls}">
-        <div class="np-fphoto" style="${rightBg}" onclick="showFighterPopup(${d.right.id})"></div>
+        ${d.isTag && d.teamB ? tagPhotos(d.teamB, rightWin) : `<div class="np-fphoto" style="${rightBg}" onclick="showFighterPopup(${d.right.id})"></div>`}
         <div class="np-fname">${d.right.name}${rightWin ? '<span class="np-winner-mark">○</span>' : (leftWin ? '<span class="np-loser-mark">×</span>' : '')}</div>
+        ${d.isTag && d.teamB ? `<div class="np-frole">${tagMembers(d.teamB)}</div>` : ''}
         ${d.right.role ? `<div class="np-frole">${d.right.role}</div>` : ''}
       </div>
     </div>
@@ -6648,7 +6661,8 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
       <div class="mq-block"><label>MQ</label><strong>${d.mq || '?'}</strong></div>
       <div class="duration">${_npTurnsToTime(d.turns) || (d.turns ? `${d.turns}ターン` : '')}</div>
     </div>
-    ${d.article ? `<div class="np-show-article">${d.article}</div>` : ''}`;
+    ${d.article ? `<div class="np-show-article">${d.article}</div>` : ''}
+    ${_renderNewspaperInjuries(d)}`;
 
   // 評価ブロック
   if (d.showRating) {
@@ -6675,6 +6689,16 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
 
   html += `</section>`;
   return html;
+}
+
+function _renderNewspaperInjuries(d) {
+  const injuries = (d && Array.isArray(d.injuries)) ? d.injuries.filter(ir => ir && ir.name) : [];
+  if (!injuries.length) return '';
+  const rows = injuries.map(ir => {
+    const weeks = ir.weeksLeft != null ? ` / ${ir.weeksLeft}週離脱` : '';
+    return `<div class="news-injury-row" style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid rgba(137,41,41,0.16);"><strong>${ir.name}</strong><span>${ir.type || '負傷'}${weeks}</span></div>`;
+  }).join('');
+  return `<div class="news-injury-report" style="margin-top:10px;padding:8px 10px;border:1px solid rgba(137,41,41,0.22);background:rgba(137,41,41,0.06);border-radius:8px;color:#4a241d;"><div class="news-sec-label">負傷者情報</div>${rows}</div>`;
 }
 
 function _npRenderDigest(d, seasonNum, weekNum) {
@@ -6737,17 +6761,32 @@ function _npRenderDigest(d, seasonNum, weekNum) {
       const finBit = m.finishLabel ? `<strong>${m.finishLabel}</strong>で勝利` : '勝利';
       finishLine = `<span class="np-digest-finish-text"><strong>${wName}</strong>が${finBit}</span>${dTimeMain}${dTurnsSub}`;
     }
+    const rowNo = m.matchNumber || (idx + 2);
+    const rowLabel = m.matchLabel || (rowNo ? `第${rowNo}試合` : '');
+    const digestTagThumbs = (team, isWinner) => {
+      const members = (team?.members || []).filter(f => f && f.id).slice(0, 2);
+      if (!members.length) return '';
+      return `<div class="np-digest-thumb-stack${isWinner ? ' win' : ''}">` + members.map(f =>
+        `<div class="np-digest-thumb sm" style="${_npThumbBg(f.id)}" onclick="showFighterPopup(${f.id})" title="${f.name}"></div>`
+      ).join('') + `</div>`;
+    };
     rows += `<tr>
-      <td class="num">${idx + 2}</td>
+      <td class="num" title="${rowLabel}">${rowNo}</td>
       <td class="tag">${badge}</td>
       <td>
-        <div class="np-digest-card">
+        ${m.isTag ? `<div class="np-digest-card">
+          ${digestTagThumbs(m.teamA, leftWon)}
+          <span class="np-digest-name${leftWon ? ' win' : ''}">${m.left.name}${leftWon ? '<span class="np-digest-mark win">○</span>' : ''}</span>
+          <span class="np-digest-vs">${m.isDraw ? 'DRAW' : 'vs'}</span>
+          <span class="np-digest-name${rightWon ? ' win' : ' lose'}">${!m.isDraw && rightWon ? '<span class="np-digest-mark win">○</span>' : (!m.isDraw ? '<span class="np-digest-mark lose">×</span>' : '')}${m.right.name}</span>
+          ${digestTagThumbs(m.teamB, rightWon)}
+        </div>` : `<div class="np-digest-card">
           <div class="np-digest-thumb" style="${_npThumbBg(wId)}" onclick="showFighterPopup(${wId})"></div>
           <span class="np-digest-name">${wName}${!m.isDraw && wName ? '<span class="np-digest-mark win">○</span>' : ''}</span>
           <span class="np-digest-vs">${m.isDraw ? 'DRAW' : 'vs'}</span>
           <span class="np-digest-name lose">${!m.isDraw && lName ? '<span class="np-digest-mark lose">×</span>' : ''}${lName}</span>
           <div class="np-digest-thumb" style="${_npThumbBg(lId)}" onclick="showFighterPopup(${lId})"></div>
-        </div>
+        </div>`}
         ${finishLine ? `<div class="np-digest-finish">${finishLine}</div>` : ''}
       </td>
       <td class="np-digest-mq ${mqClass}">${m.mq}</td>
@@ -7932,22 +7971,39 @@ function _renderNewspaperPlayerShow(d) {
   const leftLink = _newsClickableName(d.left.name, d.left.id);
   const rightLink = _newsClickableName(d.right.name, d.right.id);
   const winnerLink = d.winner ? _newsClickableName(d.winner.name, d.winner.id) : '';
+  const tagMembers = team => (team?.members || [])
+    .filter(f => f && f.name)
+    .map(f => f.id ? _newsClickableName(f.name, f.id) : f.name)
+    .join(' / ');
+  const tagPortraits = (team, isWinner, side) => {
+    const members = (team?.members || []).filter(f => f && f.id).slice(0, 2);
+    if (members.length === 0) return '';
+    return `<div style="display:flex;gap:4px;justify-content:center;align-items:center;">` + members.map(f => {
+      const url = getPortraitUrl(f.id);
+      const bg = side === 'right' ? 'background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#4f8fff,#1d49aa);';
+      return url
+        ? `<img src="${url}" alt="" title="${f.name}" onclick="showFighterPopup(${f.id})" style="width:46px;height:46px;border-radius:8px;object-fit:cover;border:2px solid rgba(82,53,23,0.25);cursor:pointer;${isWinner ? 'outline:2px solid rgba(240,212,139,0.75);' : ''}${bg}">`
+        : `<div title="${f.name}" onclick="showFighterPopup(${f.id})" style="width:46px;height:46px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:900;color:#fff;cursor:pointer;${isWinner ? 'outline:2px solid rgba(240,212,139,0.75);' : ''}${bg}">${f.name.charAt(0)}</div>`;
+    }).join('') + `</div>`;
+  };
 
   let html = `<div style="padding:14px 20px 12px;border-top:1px solid rgba(95,69,35,0.15);">
     <div class="news-sec-label">興行結果</div>
     <div style="font-size:16px;font-weight:1000;margin-bottom:8px;">${d.headline || '定期興行'}</div>
     <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:8px;">
       <div style="display:grid;justify-items:center;gap:4px;">
-        ${portrait(pLeft, d.left, leftWin ? 'outline:3px solid rgba(240,212,139,0.75);background:linear-gradient(180deg,#4f8fff,#1d49aa);' : 'background:linear-gradient(180deg,#4f8fff,#1d49aa);')}
+        ${d.isTag && d.teamA ? tagPortraits(d.teamA, leftWin, 'left') : portrait(pLeft, d.left, leftWin ? 'outline:3px solid rgba(240,212,139,0.75);background:linear-gradient(180deg,#4f8fff,#1d49aa);' : 'background:linear-gradient(180deg,#4f8fff,#1d49aa);')}
         <div style="font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.4);">${leftLink}</div>
+        ${d.isTag && d.teamA ? `<div style="font-size:10px;line-height:1.35;color:#5b4b34;text-align:center;">${tagMembers(d.teamA)}</div>` : ''}
       </div>
       <div style="text-align:center;">
         <div style="font-size:24px;font-weight:1000;color:#9b1212;">${d.isDraw ? 'DRAW' : 'VS'}</div>
         <div style="font-size:9px;font-weight:900;color:#b9892a;letter-spacing:0.1em;margin-top:2px;">${d.isDraw ? 'TIME LIMIT' : 'WINNER'}</div>
       </div>
       <div style="display:grid;justify-items:center;gap:4px;">
-        ${portrait(pRight, d.right, rightWin ? 'outline:3px solid rgba(240,212,139,0.75);background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#ff8396,#9f213f);')}
+        ${d.isTag && d.teamB ? tagPortraits(d.teamB, rightWin, 'right') : portrait(pRight, d.right, rightWin ? 'outline:3px solid rgba(240,212,139,0.75);background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#ff8396,#9f213f);')}
         <div style="font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.4);">${rightLink}</div>
+        ${d.isTag && d.teamB ? `<div style="font-size:10px;line-height:1.35;color:#5b4b34;text-align:center;">${tagMembers(d.teamB)}</div>` : ''}
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 8px;border:1px solid rgba(125,95,50,0.20);border-radius:8px;background:rgba(200,190,170,0.18);font-size:12px;">
@@ -7968,6 +8024,7 @@ function _renderNewspaperPlayerShow(d) {
       </div>
     </div>
     ${articleHtml}
+    ${_renderNewspaperInjuries(d)}
     ${_renderNewspaperShowRating(d)}
     ${_renderNewspaperDigest(d)}
   </div>`;
@@ -8148,6 +8205,11 @@ function _renderNewspaperDigest(d) {
       const name = (ALL_CHARS.find(c => c.id === id)?.name || '?');
       return `<div class="${cls}">${name.charAt(0)}</div>`;
     };
+    const ndtTagPorts = (team, isWinner) => {
+      const members = (team?.members || []).filter(f => f && f.id).slice(0, 2);
+      if (members.length === 0) return '';
+      return `<div class="ndt-port-stack">` + members.map(f => ndtPort(f.id, isWinner)).join('') + `</div>`;
+    };
 
     // バッジ
     const badge = m.isTitleMatch ? '<span class="ndt-badge-tag title">王座戦</span>'
@@ -8168,11 +8230,23 @@ function _renderNewspaperDigest(d) {
     const starsHtml = '★'.repeat(stars) + '<span style="color:rgba(120,84,39,0.25)">' + '★'.repeat(5 - stars) + '</span>';
 
     // 対戦行
+    const rowNo = m.matchNumber || (idx + 2);
+    const rowLabel = m.matchLabel || (rowNo ? `第${rowNo}試合` : '');
     let html = `<tr>
-      <td class="ndt-num">${idx + 2}</td>
+      <td class="ndt-num" title="${rowLabel}">${rowNo}</td>
       <td class="ndt-badge">${badge}</td>
       <td class="ndt-card">`;
-    if (m.isDraw) {
+    if (m.isTag) {
+      const winLeft = m.winner === 'left';
+      const winRight = m.winner === 'right';
+      html += `<div class="ndt-ff">
+        ${ndtTagPorts(m.teamA, winLeft)}
+        <span class="ndt-name${winLeft ? ' w' : ''}">${m.left.name}</span>
+        <span class="ndt-vs">${m.isDraw ? 'DRAW' : 'vs'}</span>
+        <span class="ndt-name${winRight ? ' w' : ''}">${m.right.name}</span>
+        ${ndtTagPorts(m.teamB, winRight)}
+      </div>`;
+    } else if (m.isDraw) {
       html += `<div class="ndt-ff">
         ${ndtPort(m.left.id, false)}
         <span class="ndt-name">${m.left.name}</span>

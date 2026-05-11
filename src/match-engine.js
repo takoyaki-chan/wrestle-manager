@@ -276,6 +276,7 @@ Engine.battle = {
                   totalKickouts++;
                   def.gritTurns = eng.gritDuration;
                   log.push(`  → ${def.name}がキックアウト！ Grit発動！`);
+                  log.push(`  → ${def.name} HP:${Math.max(0, def.hp)}/${def.mhp}`);
                   if (recordFrames) _turnKickout = { count: def.kickoutCount, escapeType: fType };
                 }
               } else if (fType === 'gu') {
@@ -289,6 +290,7 @@ Engine.battle = {
                   def.kickoutCount++;
                   def.gritTurns = eng.gritDuration;
                   log.push(`  → ${def.name}がロープエスケープ！ Grit発動！`);
+                  log.push(`  → ${def.name} HP:${Math.max(0, def.hp)}/${def.mhp}`);
                   totalKickouts++;
                   if (recordFrames) _turnKickout = { count: def.kickoutCount, escapeType: 'gu' };
                 }
@@ -444,8 +446,8 @@ Engine.battle = {
         left: charL, right: charR,
         winner, finType, finMove,
         turns: matchTurns,
-        hpLeft: { final: Math.max(0, L.hp), max: L.mhp },
-        hpRight: { final: Math.max(0, R.hp), max: R.mhp },
+        hpLeft: { final: Math.max(0, L.hp), current: Math.max(0, L.hp), max: L.mhp },
+        hpRight: { final: Math.max(0, R.hp), current: Math.max(0, R.hp), max: R.mhp },
         mq, log,
         finishPhase, matchTier: tier, btHintTurn: null,
         mqDetail: { ceiling, dramaPenalty, pacingPenalty, finishPenalty },

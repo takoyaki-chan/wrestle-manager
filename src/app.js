@@ -4818,6 +4818,7 @@ const App = {
     if (!sp) return;
     const skipFlavor = !!(opts && opts.skipFlavor);
     const result = sp.results[idx];
+    App._settleInternalChallengeMatch(idx, result);
     const finalize = () => {
       renderMatchPreview();
       if (sp.results.every(r => r !== null)) App.finalizeShow();
@@ -4825,6 +4826,31 @@ const App = {
     // skipFlavor / _stale (選手不在フォールバック) のときは余韻スキップ
     if (skipFlavor || !result || result._stale) { finalize(); return; }
     App._runPostMatchFlavorForMatch(idx, result, finalize);
+  },
+
+  // 派閥内序列戦は試合終了直後に pending を消化し、試合後モーダルと次カード強制を同期する。
+  _settleInternalChallengeMatch(idx, result) {
+    const sp = App._showPreview;
+    const m = sp && sp.validMatches ? sp.validMatches[idx] : null;
+    if (!m || !m._internalChallengeLocked || m.matchType === 'tag') return;
+    if (!result || !G || !G._pendingInternalChallenge || !Engine.factions) return;
+    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season || 1, G.week || 1, 0xFA21));
+    if (result.winner === 'draw') {
+      if (typeof Engine.factions.resolveInternalChallengeDraw === 'function') {
+        G = Engine.factions.resolveInternalChallengeDraw(G);
+      }
+      return;
+    }
+    if (typeof Engine.factions.applyInternalChallengeResult !== 'function') return;
+    const winnerId = result.winner === 'left' ? m.left : m.right;
+    const loserId  = result.winner === 'left' ? m.right : m.left;
+    const winnerHp = (result.winner === 'left' ? result.hpLeft : result.hpRight) || { final: 0, max: 100 };
+    const loserHp  = (result.winner === 'left' ? result.hpRight : result.hpLeft) || { final: 0, max: 100 };
+    const winnerHpPct = (winnerHp.max > 0) ? (winnerHp.final / winnerHp.max) : 1;
+    const loserHpPct  = (loserHp.max > 0) ? (loserHp.final / loserHp.max) : 0;
+    G = Engine.factions.applyInternalChallengeResult(G, {
+      winnerId, loserId, winnerHpPct, loserHpPct,
+    }, rng);
   },
 
   // Skip a single match (instant calculation) — 余韻フレーバーは出さない(省略の意思表示)
@@ -4915,6 +4941,7 @@ const App = {
     const matchTier = m.isTitle ? 2 : 1;
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
     const result = Engine.battle.simulateMatch(charL, charR, rng, matchTier, { recordFrames: true });
+    const h2hForLeft = (Engine.h2h && Engine.h2h.getRecordFor) ? Engine.h2h.getRecordFor(G, charL.id, charR.id) : null;
     sp.results[idx] = result;
     sp.currentWatching = idx;
     // Show iframe
@@ -4940,6 +4967,13 @@ const App = {
         isTitle: !!m.isTitle,
         isSpecialMatch: false,
         matchTier,
+        h2hRecord: h2hForLeft ? {
+          leftWins: h2hForLeft.wins || 0,
+          rightWins: h2hForLeft.losses || 0,
+          draws: h2hForLeft.draws || 0,
+          matches: h2hForLeft.matches || 0,
+          bestMQ: h2hForLeft.bestMQ || 0,
+        } : null,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, charL.id, charR.id); return rl ? rl.tier : 0; })(),
         leftPersonality: charL.personality || 'normal',
         leftArchetype: charL.archetype || 'normal',
@@ -5126,8 +5160,8 @@ const App = {
         finMove: data.finMove || '',
         turns: data.turns || 0,
         mq: data.mq || 50,
-        hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
-        hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
+        hpLeft: { final: data.hpLeft ? (data.hpLeft.current != null ? data.hpLeft.current : data.hpLeft.final) : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
+        hpRight: { final: data.hpRight ? (data.hpRight.current != null ? data.hpRight.current : data.hpRight.final) : 0, max: data.hpRight ? data.hpRight.max : 100 },
         log: data.log || []
       };
     }
@@ -5711,13 +5745,13 @@ const App = {
       if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
         const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), Engine.coach.buildInjuryFlavorOpts(s, r.left.id));
-        if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ name: lc.name, injury: li.newFighter.injury }); }
+        if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury, retireType: li.retireType || null }); }
       }
       const rc = roster.find(c => c.id === r.right.id);
       if (rc && !rc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
         const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), Engine.coach.buildInjuryFlavorOpts(s, r.right.id));
-        if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ name: rc.name, injury: ri.newFighter.injury }); }
+        if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType || null }); }
       }
     });
 
@@ -6965,24 +6999,61 @@ const App = {
     if (!results.length) return null;
     const rawMain = results[0];
     if (!rawMain) return null;
+    const totalMatches = results.length;
+
+    const buildTagNewsMatch = (r, originalIndex) => {
+      const tA = r.teamA || {};
+      const tB = r.teamB || {};
+      const aMembers = [
+        { id: tA.f1Id || 0, name: tA.f1Name || '?' },
+        { id: tA.f2Id || 0, name: tA.f2Name || '?' },
+      ];
+      const bMembers = [
+        { id: tB.f1Id || 0, name: tB.f1Name || '?' },
+        { id: tB.f2Id || 0, name: tB.f2Name || '?' },
+      ];
+      const aLabel = aMembers.map(f => f.name).join(' & ');
+      const bLabel = bMembers.map(f => f.name).join(' & ');
+      const isMatchDraw = r.winner === 'draw';
+      const winSide = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
+      const winnerName = isMatchDraw ? null : (winSide === 'left' ? aLabel : bLabel);
+      const loserName  = isMatchDraw ? null : (winSide === 'left' ? bLabel : aLabel);
+      return {
+        left: { id: tA.f1Id || 0, name: aLabel, ovr: 0, members: aMembers },
+        right: { id: tB.f1Id || 0, name: bLabel, ovr: 0, members: bMembers },
+        teamA: { label: aLabel, members: aMembers },
+        teamB: { label: bLabel, members: bMembers },
+        winner: winSide,
+        winnerName,
+        loserName,
+        mq: r.mq || 0,
+        turns: r.turns || 0,
+        finishLabel: Engine.formatFinish(r.finType, r.finMove),
+        isDraw: isMatchDraw,
+        isUpset: false,
+        isDominant: !isMatchDraw && (r.turns || 99) <= 6,
+        isTitleMatch: false,
+        isTag: true,
+        matchNumber: originalIndex === 0 ? totalMatches : Math.max(1, totalMatches - originalIndex),
+        matchLabel: originalIndex === 0 ? 'メインイベント' : `第${Math.max(1, totalMatches - originalIndex)}試合`,
+      };
+    };
 
     // タッグメインの場合: チーム代表名でleft/right/winner/loserを合成
     const isTagMain = rawMain.matchType === 'tag';
     let main;
     if (isTagMain) {
-      const tA = rawMain.teamA || {};
-      const tB = rawMain.teamB || {};
-      const teamALabel = `${tA.f1Name || '?'} & ${tA.f2Name || '?'}`;
-      const teamBLabel = `${tB.f1Name || '?'} & ${tB.f2Name || '?'}`;
-      const synthLeft = { id: tA.f1Id || 0, name: teamALabel, ovr: 0 };
-      const synthRight = { id: tB.f1Id || 0, name: teamBLabel, ovr: 0 };
+      const tagMain = buildTagNewsMatch(rawMain, 0);
       main = {
         ...rawMain,
-        left: synthLeft,
-        right: synthRight,
-        winner: rawMain.winner === 'teamA' ? 'left'
-              : rawMain.winner === 'teamB' ? 'right'
-              : 'draw',
+        left: tagMain.left,
+        right: tagMain.right,
+        teamA: tagMain.teamA,
+        teamB: tagMain.teamB,
+        winner: tagMain.winner,
+        isTag: true,
+        matchNumber: tagMain.matchNumber,
+        matchLabel: tagMain.matchLabel,
         isTitleMatch: false, // タッグはタイトル戦ではない
       };
     } else {
@@ -7044,8 +7115,6 @@ const App = {
 
     // 他の試合のハイライト
     const otherHighMQ = results.slice(1).filter(r => (r.mq || 0) >= 75);
-    const totalMatches = results.length;
-
     // タイトルマッチの場合、防衛/奪取を判定（_lastTitleOutcomes は本関数呼び出し直前に設定されている）
     let isTitleDefense = false;
     if (main.isTitleMatch && !isDraw && winner) {
@@ -7070,33 +7139,12 @@ const App = {
     });
 
     // ── allMatches: メイン以外の全試合ダイジェスト ──
-    const allMatches = results.slice(1).map(r => {
+    const allMatches = results.slice(1).map((r, relIdx) => {
       if (!r) return null;
+      const originalIndex = relIdx + 1;
       // タッグ試合: チーム代表名で合成
       if (r.matchType === 'tag') {
-        const tA = r.teamA || {};
-        const tB = r.teamB || {};
-        const aLabel = `${tA.f1Name || '?'} & ${tA.f2Name || '?'}`;
-        const bLabel = `${tB.f1Name || '?'} & ${tB.f2Name || '?'}`;
-        const isMatchDraw = r.winner === 'draw';
-        const winSide = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
-        const winnerName = isMatchDraw ? null : (winSide === 'left' ? aLabel : bLabel);
-        const loserName  = isMatchDraw ? null : (winSide === 'left' ? bLabel : aLabel);
-        return {
-          left: { id: tA.f1Id || 0, name: aLabel, ovr: 0 },
-          right: { id: tB.f1Id || 0, name: bLabel, ovr: 0 },
-          winner: winSide,
-          winnerName,
-          loserName,
-          mq: r.mq || 0,
-          turns: r.turns || 0,
-          finishLabel: Engine.formatFinish(r.finType, r.finMove),
-          isDraw: isMatchDraw,
-          isUpset: false,
-          isDominant: !isMatchDraw && (r.turns || 99) <= 6,
-          isTitleMatch: false,
-          isTag: true,
-        };
+        return buildTagNewsMatch(r, originalIndex);
       }
       if (!r.left || !r.right) return null;
       const isMatchDraw = r.winner === 'draw';
@@ -7120,6 +7168,9 @@ const App = {
         ),
         isDominant: !isMatchDraw && (r.turns || 99) <= 6,
         isTitleMatch: !!r.isTitleMatch,
+        isTag: false,
+        matchNumber: Math.max(1, totalMatches - originalIndex),
+        matchLabel: `第${Math.max(1, totalMatches - originalIndex)}試合`,
       };
     }).filter(Boolean);
 
@@ -7189,6 +7240,13 @@ const App = {
       headline: np.headline, subheadline: np.subheadline, article: np.article,
       winner, loser, left: main.left, right: main.right, isDraw, finishLabel,
       turns, mq, hpLeft: hpL, hpRight: hpR, isTitleMatch: !!main.isTitleMatch,
+      isTag: !!main.isTag, teamA: main.teamA || null, teamB: main.teamB || null,
+      matchNumber: main.matchNumber || totalMatches, matchLabel: main.matchLabel || 'メインイベント',
+      injuries: (App._lastInjuries || []).filter(ir => ir && ir.injury && !ir.retireType).map(ir => ({
+        name: ir.name,
+        type: ir.injury.type,
+        weeksLeft: ir.injury.weeksLeft,
+      })),
       allMatches, showRating, preview,
       generatedWeek: G.week, generatedSeason: G.season,
     };
@@ -7490,7 +7548,7 @@ const App = {
     injuries.forEach((ir, i) => {
       // v1.3-3: Skip retirement injuries (they get their own popup)
       if (ir.retireType) return;
-      const ch = G.roster.find(c => c.name === ir.name);
+      const ch = G.roster.find(c => (ir.id != null && c.id === ir.id) || c.name === ir.name);
       if (!ch || !ir.injury) return;
       hasEventPopups = true;
       setTimeout(() => {
@@ -7528,7 +7586,7 @@ const App = {
     titleOutcomes.forEach(to => {
       if (to.outcome === 'change') {
         // 新王者リアクション
-        const newChamp = G.roster.find(c => c.id === to.newChampId);
+        const newChamp = G.roster.find(c => c.id === to.newChampId) || ALL_CHARS.find(c => c.id === to.newChampId);
         if (newChamp) {
           hasEventPopups = true;
           const d = titlePopupDelay; titlePopupDelay += 100;
@@ -7537,7 +7595,7 @@ const App = {
         }
         // 前王者リアクション
         if (to.prevChampId) {
-          const prevChamp = G.roster.find(c => c.id === to.prevChampId);
+          const prevChamp = G.roster.find(c => c.id === to.prevChampId) || ALL_CHARS.find(c => c.id === to.prevChampId);
           if (prevChamp) {
             hasEventPopups = true;
             const d = titlePopupDelay; titlePopupDelay += 100;
@@ -7547,7 +7605,7 @@ const App = {
         }
       } else if (to.outcome === 'defense') {
         // チャンピオン防衛リアクション
-        const champ = G.roster.find(c => c.id === to.champId);
+        const champ = G.roster.find(c => c.id === to.champId) || ALL_CHARS.find(c => c.id === to.champId);
         if (champ) {
           hasEventPopups = true;
           const d = titlePopupDelay; titlePopupDelay += 100;
@@ -7555,7 +7613,7 @@ const App = {
             message: getTraitQuote('titleDefense', champ), detail:`🛡️ タイトル防衛成功！` }), d);
         }
         // 挑戦者リアクション
-        const challenger = G.roster.find(c => c.id === to.challengerId);
+        const challenger = G.roster.find(c => c.id === to.challengerId) || ALL_CHARS.find(c => c.id === to.challengerId);
         if (challenger) {
           hasEventPopups = true;
           const d = titlePopupDelay; titlePopupDelay += 100;
@@ -10002,8 +10060,8 @@ const App = {
       winner: data.winner,
       finType: data.finType || '', finMove: data.finMove || '',
       turns: data.turns || 0, mq: data.mq || 50,
-      hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
-      hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
+      hpLeft: { final: data.hpLeft ? (data.hpLeft.current != null ? data.hpLeft.current : data.hpLeft.final) : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
+      hpRight: { final: data.hpRight ? (data.hpRight.current != null ? data.hpRight.current : data.hpRight.final) : 0, max: data.hpRight ? data.hpRight.max : 100 },
       log: data.log || []
     };
     b3.matchResult = matchResult;
@@ -10161,8 +10219,8 @@ const App = {
       winner: data.winner,
       finType: data.finType || '', finMove: data.finMove || '',
       turns: data.turns || 0, mq: data.mq || 50,
-      hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
-      hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
+      hpLeft: { final: data.hpLeft ? (data.hpLeft.current != null ? data.hpLeft.current : data.hpLeft.final) : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
+      hpRight: { final: data.hpRight ? (data.hpRight.current != null ? data.hpRight.current : data.hpRight.final) : 0, max: data.hpRight ? data.hpRight.max : 100 },
       log: data.log || []
     };
     c1.matchResult = matchResult;
@@ -10305,8 +10363,8 @@ const App = {
       winner: data.winner,
       finType: data.finType || '', finMove: data.finMove || '',
       turns: data.turns || 0, mq: data.mq || 50,
-      hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
-      hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
+      hpLeft: { final: data.hpLeft ? (data.hpLeft.current != null ? data.hpLeft.current : data.hpLeft.final) : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
+      hpRight: { final: data.hpRight ? (data.hpRight.current != null ? data.hpRight.current : data.hpRight.final) : 0, max: data.hpRight ? data.hpRight.max : 100 },
       log: data.log || []
     };
     b2.matchResult = matchResult;
@@ -11367,8 +11425,8 @@ App._receivePPVBattleResult = function(data) {
     finType: data.finType || '', finMove: data.finMove || '',
     turns: data.turns || 0,
     mq: data.mq || 50,
-    hpLeft: { final: data.hpLeft ? data.hpLeft.current : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
-    hpRight: { final: data.hpRight ? data.hpRight.current : 0, max: data.hpRight ? data.hpRight.max : 100 },
+    hpLeft: { final: data.hpLeft ? (data.hpLeft.current != null ? data.hpLeft.current : data.hpLeft.final) : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
+    hpRight: { final: data.hpRight ? (data.hpRight.current != null ? data.hpRight.current : data.hpRight.final) : 0, max: data.hpRight ? data.hpRight.max : 100 },
     log: data.log || []
   };
   try { Audio.fileBgm.fadeOut(1500); } catch(e) {}

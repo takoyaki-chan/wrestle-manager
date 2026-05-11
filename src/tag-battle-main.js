@@ -940,7 +940,8 @@ function _buildPinCtrl(pinEv, fr){
   } else if (attemptType === 'gu') {
     // ギブアップ: ロック → (win のみ) 極まり → finishClick → タップ/エスケープ
     if (defChar) {
-      seq.push({ kind: 'introBig', text: `${defChar.name}、${moveName}をがっちりロック！`, dramatic: true });
+      const lockText = atkChar ? `${atkChar.name}が${defChar.name}に${moveName}をがっちりロック！` : `${defChar.name}に${moveName}が極まった！`;
+      seq.push({ kind: 'introBig', text: lockText, dramatic: true });
       if (outcome === 'win') {
         seq.push({ kind: 'finishClick', label: FINISH_LABELS.gu });
         seq.push({ kind: 'count', text: `${defChar.name}がタップ！！`, cls: 'tap' });
@@ -1458,7 +1459,7 @@ function showResult(fr){
   // T2: 締めセリフをタイプ表示の直後に入れる
   setTimeout(() => { const vl = document.getElementById('vicLines'); if (vl) vl.classList.add('visible'); }, 2200);
   setTimeout(() => document.getElementById('vicBottom').classList.add('visible'), 2700);
-  setTimeout(() => document.getElementById('vicClose').classList.add('visible'), 3200);
+  setTimeout(() => document.getElementById('vicClose').classList.add('visible'), 1200);
 }
 
 function endMatch(){

@@ -258,6 +258,7 @@ function renderMatchFrame(){
 
   container.innerHTML = `
     ${_hudHtml(fr)}
+    ${_bigMatchStripHtml()}
     <div class="main-row" id="mainRow">
       ${_panelHtml(S.L, 'L')}
       <div class="col-center" id="colCenter">
@@ -320,6 +321,24 @@ function _hudHtml(fr){
       <span class="wm-hp-pct ${hpCls(hpR.ratio)}" id="hudHpPctR">${hpR.pct}%</span>
       <span class="wm-hp-name right" id="hudHpNameR">${escHtml(S.R ? S.R.name : '')}</span>
     </div>
+  </div>`;
+}
+
+function _bigMatchStripHtml(){
+  const mi = S.matchInfo || {};
+  const rec = mi.h2hRecord || null;
+  if (!S._isBigMatch && !(rec && rec.matches > 0) && !(mi.rivalryTier > 0)) return '';
+  const recordText = rec && rec.matches > 0
+    ? `${rec.matches} MATCHES  ${S.L ? escHtml(S.L.name) : 'LEFT'} ${rec.leftWins || 0}-${rec.rightWins || 0} ${S.R ? escHtml(S.R.name) : 'RIGHT'}${rec.draws ? `  D${rec.draws}` : ''}${rec.bestMQ ? `  BEST MQ ${rec.bestMQ}` : ''}`
+    : 'FIRST MEETING';
+  const title = S._isBigMatch ? 'BIG MATCH' : 'RIVALRY MATCH';
+  return `<div class="bigmatch-strip">
+    <div class="bigmatch-strip-bg">
+      <img src="${_getUpperUrl(S.L)}" alt="" onerror="this.style.display='none'">
+      <img src="${_getUpperUrl(S.R)}" alt="" onerror="this.style.display='none'">
+    </div>
+    <div class="bigmatch-strip-title">${title}</div>
+    <div class="bigmatch-strip-record">${recordText}</div>
   </div>`;
 }
 
@@ -956,9 +975,10 @@ function _buildPinCtrl(fr){
   // ギブアップ
   if (fr.kickout && fr.kickout.escapeType === 'gu') {
     const atkSide = fr.action ? fr.action.atkSide : 'left';
+    const atkChar = atkSide === 'left' ? S.L : S.R;
     const defChar = atkSide === 'left' ? S.R : S.L;
     const moveName = fr.action ? (fr.action.move || '') : '';
-    if (defChar) seq.push({ kind: 'introBig', text: `${defChar.name}、${moveName}をがっちりロック！`, dramatic: true });
+    if (atkChar && defChar) seq.push({ kind: 'introBig', text: `${atkChar.name}が${defChar.name}に${moveName}をがっちりロック！`, dramatic: true });
     const isWin = fr.winner != null;
     if (isWin) {
       seq.push({ kind: 'finishClick', label: 'ギブアップ…！？' });
@@ -1257,7 +1277,7 @@ function showResult(fr){
   setTimeout(() => {
     const eBtn = document.getElementById('eBtn');
     if (eBtn) { eBtn.classList.add('visible'); eBtn.addEventListener('click', endMatch); }
-  }, 3500);
+  }, 1200);
 }
 
 function _localFormatFinish(finType, finMove){
