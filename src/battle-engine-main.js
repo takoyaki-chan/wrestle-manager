@@ -241,7 +241,8 @@ function startReplay(data){
   };
   const mk = (c, realMhp) => {
     const mhp = realMhp > 0 ? realMhp : fallbackMhp(c);
-    return { ...c, hp: mhp, mhp, gritTurns: 0, kickoutCount: 0 };
+    const startHp = c && c._hpOverride != null ? clamp(c._hpOverride, 1, mhp) : mhp;
+    return { ...c, hp: startHp, mhp, gritTurns: 0, kickoutCount: 0 };
   };
   S.L = mk(data.left,  resMhpL);
   S.R = mk(data.right, resMhpR);
@@ -1231,6 +1232,7 @@ function showResult(fr){
     </div>`;
   } else {
     const vLine = winner && winner.vl && winner.vl.length ? pk(winner.vl) : '';
+    // The victory quote is the winner speaking, so the identity card below must match that speaker.
     victoryOv.innerHTML = `<div class="victory-box" id="rBox">
       <img id="rImg" class="winner-portrait" src="${_getUpperUrl(winner)}" alt="${escHtml(winner.name)}" onerror="this.style.display='none'">
       <div class="winner-label">W I N N E R</div>
@@ -1239,10 +1241,10 @@ function showResult(fr){
       <div class="vic-speech" id="rQuote"><div class="vic-speech-text" id="rSpeech"></div></div>
       <div class="vic-bottom" id="rBottom">
         <div class="vic-loser">
-          <img class="vic-loser-face" src="${_getFaceUrl(loser)}" alt="${escHtml(loser.name)}" onerror="this.style.display='none'">
+          <img class="vic-loser-face" src="${_getFaceUrl(winner)}" alt="${escHtml(winner.name)}" onerror="this.style.display='none'">
           <div>
-            <div class="vic-loser-name">${escHtml(loser.name)}</div>
-            <div class="vic-loser-tag">LOSER</div>
+            <div class="vic-loser-name">${escHtml(winner.name)}</div>
+            <div class="vic-loser-tag">WINNER</div>
           </div>
         </div>
         <div class="vic-stats">

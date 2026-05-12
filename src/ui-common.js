@@ -4622,20 +4622,23 @@ function _pbResultColumn({ winnerLabel, winnerIsDraw, finishText, turns, mq }) {
   </div>`;
 }
 
-function _pbHpMini(hpL, hpR) {
+function _pbHpMini(hpL, hpR, opts = {}) {
   const lPct = hpL.max > 0 ? Math.round(hpL.final / hpL.max * 100) : 0;
   const rPct = hpR.max > 0 ? Math.round(hpR.final / hpR.max * 100) : 0;
   const lFillCls = lPct > 30 ? 'is-healthy' : lPct > 10 ? 'is-warning' : 'is-danger';
   const rFillCls = rPct > 30 ? 'is-healthy' : rPct > 10 ? 'is-warning' : 'is-danger';
-  return `<div class="pb-hp-mini">
-    <div class="pb-hp-mini-half is-left">
-      <span class="pb-hp-mini-val">${hpL.final} / ${hpL.max}</span>
-      <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill ${lFillCls}" style="width:${lPct}%"></div></div>
+  const lData = opts.left || {};
+  const rData = opts.right || {};
+  const dataAttrs = (d) => Object.keys(d).map(k => ` data-${k}="${escHtml(d[k])}"`).join('');
+  return `<div class="pb-hp-mini${opts.className ? ' ' + opts.className : ''}">
+    <div class="pb-hp-mini-half is-left ${lFillCls}">
+      <span class="pb-hp-mini-val"${dataAttrs(lData)}>${hpL.final} / ${hpL.max}</span>
+      <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill ${lFillCls}" style="width:${lPct}%"${dataAttrs(lData)}></div></div>
     </div>
-    <div class="pb-hp-mini-label">HP</div>
-    <div class="pb-hp-mini-half is-right">
-      <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill ${rFillCls}" style="width:${rPct}%"></div></div>
-      <span class="pb-hp-mini-val">${hpR.final} / ${hpR.max}</span>
+    <div class="pb-hp-mini-label">${opts.label || 'HP'}</div>
+    <div class="pb-hp-mini-half is-right ${rFillCls}">
+      <div class="pb-hp-mini-track"><div class="pb-hp-mini-fill ${rFillCls}" style="width:${rPct}%"${dataAttrs(rData)}></div></div>
+      <span class="pb-hp-mini-val"${dataAttrs(rData)}>${hpR.final} / ${hpR.max}</span>
     </div>
   </div>`;
 }
@@ -11326,7 +11329,6 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
   const finMoveOnly = matchResult.finMove || '';
   const finTypeOnly = matchResult.finType || '';
   const stars = (typeof _pbStars === 'function') ? _pbStars(matchResult.mq || 0) : '';
-  const phaseLabel = (matchResult.finishPhase || '').toString().toUpperCase();
 
   const portraitStyle = (f) => {
     const url = (typeof _factionUpperUrl === 'function') ? _factionUpperUrl(f.id) : '';
@@ -11407,7 +11409,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
         </div>
         <div class="c1r-score-cell">
           <div class="c1r-score-val">${matchResult.turns || 0}</div>
-          <div class="c1r-score-lbl">TURNS${phaseLabel ? ` · ${escHtmlSafe(phaseLabel)}` : ''}</div>
+          <div class="c1r-score-lbl">TURNS</div>
         </div>
       </div>
       <div class="c1r-stage">
@@ -13688,7 +13690,7 @@ function _jtHeader() {
 
 /** 選手セルHTML (ブラケット用) */
 function _jtFighterCell(p, isWin, isLose, isTbd) {
-  if (isTbd) return `<div class="jt-bf tbd"><div class="jt-av"><span class="ini">?</span></div><div class="jt-fn">— TBD —</div></div>`;
+  if (isTbd) return `<div class="jt-bf tbd"><div class="jt-av"><span class="ini">?</span></div><div class="jt-fn">— 未定 —</div></div>`;
   const cls = isWin ? 'jt-bf w' : isLose ? 'jt-bf l' : 'jt-bf';
   const faceUrl = getPortraitUrl(p.id);
   const imgH = faceUrl
@@ -13931,6 +13933,46 @@ function _jtBkMatch(round, ri, mi, cRd, cMi, isDone, isCur, nrStarted) {
 }
 
 /** フォーカスカード（stand画像向かい合わせ + セリフ + ボタン） */
+function _jtHpTone(pct) {
+  return pct >= 70 ? 'is-healthy' : pct >= 40 ? 'is-warning' : 'is-danger';
+}
+
+function _jtCarryPct(f) {
+  const raw = f && f.jtCarryHpPct != null ? f.jtCarryHpPct : 100;
+  return Math.max(1, Math.min(100, Math.round(raw)));
+}
+
+function _jtStartHp(f, hp) {
+  const pct = _jtCarryPct(f);
+  const max = hp && hp.max ? hp.max : 100;
+  return { final: Math.max(1, Math.round(max * pct / 100)), max, pct };
+}
+
+function _jtPreHpBlock(side, f, hp) {
+  const start = _jtStartHp(f, hp);
+  const tone = _jtHpTone(start.pct);
+  return `<div class="jt-pre-hp ${side} ${tone}">
+    <div class="jt-pre-hp-top"><span>HP</span><strong>${start.final} / ${start.max}</strong><em>${start.pct}%</em></div>
+    <div class="jt-pre-hp-track"><div class="jt-pre-hp-fill ${tone}" style="width:${start.pct}%"></div></div>
+  </div>`;
+}
+
+function _jtRecoveredHpTarget(match, side, isFinal) {
+  const hp = side === 'left' ? match.hpLeft : match.hpRight;
+  if (!hp || !hp.max) return {};
+  const isWinner = side === 'left' ? match.winnerId === match.left.id : match.winnerId === match.right.id;
+  if (!isWinner || isFinal || typeof App === 'undefined' || typeof App._jtWinnerAdvanceState !== 'function') return {};
+  const advanced = App._jtWinnerAdvanceState(match);
+  const targetPct = advanced && advanced.jtCarryHpPct != null ? Math.max(1, Math.min(100, Math.round(advanced.jtCarryHpPct))) : null;
+  if (targetPct == null) return {};
+  const targetFinal = Math.max(1, Math.round(hp.max * targetPct / 100));
+  return {
+    'jt-recover-final': targetFinal,
+    'jt-recover-max': hp.max,
+    'jt-recover-pct': targetPct,
+  };
+}
+
 function _jtFocusCard(match, roundName, ri, mi) {
   const f1 = match.left, f2 = match.right;
   const isFinal = roundName === 'final';
@@ -13963,6 +14005,11 @@ function _jtFocusCard(match, roundName, ri, mi) {
   h += `<div class="st left"><img src="${standL}" alt="${f1.name}" onerror="this.style.opacity=0"></div>`;
   h += `<div class="vs-mark">VS</div>`;
   h += `<div class="st right"><img src="${standR}" alt="${f2.name}" onerror="this.style.opacity=0"></div>`;
+  h += `</div>`;
+  h += `<div class="jt-pre-hp-row">`;
+  h += _jtPreHpBlock('left', f1, match.hpLeft);
+  h += `<div class="jt-pre-hp-mid">開始HP</div>`;
+  h += _jtPreHpBlock('right', f2, match.hpRight);
   h += `</div>`;
   // buttons
   h += `<div class="jt-bt">`;
@@ -14060,7 +14107,14 @@ function renderJuniorTournamentMatchResult(ri, mi) {
     mq: match.mq
   });
   html += _pbFighterBlock('right', rightF, rightCls, metaRight, rightLine);
-  if (match.hpLeft && match.hpRight) html += _pbHpMini(match.hpLeft, match.hpRight);
+  if (match.hpLeft && match.hpRight) {
+    html += _pbHpMini(match.hpLeft, match.hpRight, {
+      className: 'is-jt-recovery',
+      label: isFinal ? 'HP' : '回復後HP',
+      left: _jtRecoveredHpTarget(match, 'left', isFinal),
+      right: _jtRecoveredHpTarget(match, 'right', isFinal),
+    });
+  }
   html += `</div>`;
   html += `</div>`; // .pb-matches
 
@@ -14074,6 +14128,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
 
   box.innerHTML = html;
   overlay.classList.add('active');
+  if (!isFinal) setTimeout(_jtAnimateHpRecoveryBars, 350);
 }
 
 // HP バーカウンターアニメーション
@@ -14087,6 +14142,42 @@ function _jtAnimateCounter(from, to, dur, el, colorFn) {
     if (p < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+}
+
+function _jtAnimateHpRecoveryBars() {
+  const fills = Array.from(document.querySelectorAll('.pb-hp-mini.is-jt-recovery .pb-hp-mini-fill[data-jt-recover-pct]'));
+  fills.forEach(fill => {
+    const targetPct = Number(fill.dataset.jtRecoverPct);
+    if (!Number.isFinite(targetPct)) return;
+    const val = fill.closest('.pb-hp-mini-half')?.querySelector('.pb-hp-mini-val[data-jt-recover-final]');
+    const targetFinal = val ? Number(val.dataset.jtRecoverFinal) : null;
+    const targetMax = val ? Number(val.dataset.jtRecoverMax) : null;
+    const fromPct = parseFloat(fill.style.width) || 0;
+    const fromText = val ? String(val.textContent || '').match(/(\d+)/) : null;
+    const fromFinal = fromText ? Number(fromText[1]) : 0;
+    const start = performance.now();
+    const dur = 1100;
+    function tick(now) {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const pct = Math.round(fromPct + (targetPct - fromPct) * eased);
+      fill.style.width = `${pct}%`;
+      fill.classList.remove('is-healthy', 'is-warning', 'is-danger');
+      const tone = _jtHpTone(pct);
+      fill.classList.add(tone);
+      const half = fill.closest('.pb-hp-mini-half');
+      if (half) {
+        half.classList.remove('is-healthy', 'is-warning', 'is-danger');
+        half.classList.add(tone);
+      }
+      if (val && Number.isFinite(targetFinal) && Number.isFinite(targetMax)) {
+        const cur = Math.round(fromFinal + (targetFinal - fromFinal) * eased);
+        val.textContent = `${cur} / ${targetMax}`;
+      }
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
 }
 
 // ===== CHAMPION (Pattern B pb-container) =====
@@ -14106,20 +14197,18 @@ function renderJuniorTournamentResult() {
   const upperUrl = getUpperUrl(champion.id);
   const PRIZE = Engine.juniorTournament.PRIZE;
 
-  // チャンピオンの通算MQ + 決勝MQ + path
+  // チャンピオンの通算MQ + 決勝MQ
   let totalMQ = 0;
   let finalMQ = 0;
-  const pathParts = [];
+  let championMatchCount = 0;
   rounds.forEach((round, ri) => {
-    const abbr = round.name === 'final' ? 'F' : round.name === 'semiFinal' ? 'SF' : 'QF';
     const champMatch = round.matches.find(m => m.left.id === champion.id || m.right.id === champion.id);
     if (champMatch) {
       totalMQ += champMatch.mq;
       if (ri === rounds.length - 1) finalMQ = champMatch.mq;
-      pathParts.push(abbr);
+      championMatchCount++;
     }
   });
-  const pathText = pathParts.join(' → ');
   const champOvr = champion.ovr != null ? champion.ovr : Engine.util.ov(_jtFighterShim(champion));
 
   // 優勝スピーチ
@@ -14133,14 +14222,10 @@ function renderJuniorTournamentResult() {
     <div class="pb-banner-sub">${escHtml(champion.name)}<span class="dot">·</span>${escHtml(champion._orgName || '')}</div>
   </div>`;
 
-  // Scoreboard: Path / Total MQ / Final MQ / Prize / OVR
-  html += `<div class="pb-score-strip" style="grid-template-columns:1.2fr 1fr 1fr 1fr 1fr">
+  // Scoreboard: Total MQ / Final MQ / Prize / OVR
+  html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr 1fr">
     <div class="pb-score-cell">
-      <div class="pb-score-val" style="font-size:18px;color:var(--gold-light);font-family:var(--font-label);letter-spacing:2px">${escHtml(pathText)}</div>
-      <div class="pb-score-lbl">Path</div>
-    </div>
-    <div class="pb-score-cell">
-      <div class="pb-score-stars">${_pbStars(Math.round(totalMQ / Math.max(1, pathParts.length)))}</div>
+      <div class="pb-score-stars">${_pbStars(Math.round(totalMQ / Math.max(1, championMatchCount)))}</div>
       <div class="pb-score-val" style="margin-top:3px">${totalMQ}</div>
       <div class="pb-score-lbl">Total MQ</div>
     </div>

@@ -890,7 +890,9 @@ function renderWeekScreen() {
 
     // v1.0: Primary action buttons — top-left, large, prominent
     html += '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">';
-    if (isShow) {
+    if (typeof App !== 'undefined' && App.canEnterJuniorTournamentThisWeek && App.canEnterJuniorTournamentThisWeek()) {
+      html += '<button class="btn btn-gold" onclick="App.enterJuniorTournamentFromWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">JTへ進む</button>';
+    } else if (isShow) {
       html += '<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 興行準備へ →</button>';
     } else {
       html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';

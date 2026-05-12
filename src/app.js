@@ -895,6 +895,12 @@ const Audio = (() => {
       }
       // draft-negotiation-spec §8.1: ドラフト速報+交渉時はtension
       if (G.weekPhase === 'scoutEvent' && (G._draftInterests || G._draftNegotiation)) { BGM.play('tension'); return; }
+      if (G.weekPhase === 'juniorTournament') {
+        const jtSrc = '../bgm/MusMus-BGM-052.mp3';
+        if (FileBGM._audio && FileBGM._audio.src && FileBGM._audio.src.indexOf('MusMus-BGM-052') >= 0) return;
+        FileBGM.play(jtSrc, { loop: true, volume: 0.12 });
+        return;
+      }
       BGM.play('management'); // management + showPrep + draft newspaper all use this
     }
   };
@@ -2832,8 +2838,7 @@ const Storage = {
       if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
       refreshAll();
       // PPVフェーズの復帰: オーバーレイを再初期化
-      if (G.weekPhase === 'ppvShow') App.initPPVShow();
-      else if (G.weekPhase === 'ppvTV') App.initPPVTV();
+      App.resumeLoadedSpecialPhase();
       return true;
     }
     alert('セーブデータの読み込みに失敗しました。コンソールを確認してください。');
@@ -2853,8 +2858,7 @@ const Storage = {
       if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
       refreshAll();
       // PPVフェーズの復帰: オーバーレイを再初期化
-      if (G.weekPhase === 'ppvShow') App.initPPVShow();
-      else if (G.weekPhase === 'ppvTV') App.initPPVTV();
+      App.resumeLoadedSpecialPhase();
       return true;
     }
     return false;
@@ -2933,8 +2937,7 @@ const Storage = {
           // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
       if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
           refreshAll();
-          if (G.weekPhase === 'ppvShow') App.initPPVShow();
-          else if (G.weekPhase === 'ppvTV') App.initPPVTV();
+          App.resumeLoadedSpecialPhase();
           if (App._refreshTicker) App._refreshTicker();
           Audio.bgm.playForState();
           Audio.play('save');
@@ -3080,6 +3083,56 @@ let _pendingOrgName = '';
 let _pendingOrgIcon = 0;
 let _selectedDifficulty = 'normal';
 const App = {
+  resumeLoadedSpecialPhase() {
+    if (G.weekPhase === 'ppvShow') {
+      App.initPPVShow();
+      return true;
+    }
+    if (G.weekPhase === 'ppvTV') {
+      App.initPPVTV();
+      return true;
+    }
+    if (G.weekPhase === 'juniorTournament') {
+      App.initJuniorTournament();
+      return true;
+    }
+    if (App.canEnterJuniorTournamentThisWeek()) {
+      App.enterJuniorTournamentFromWeek();
+      return true;
+    }
+    return false;
+  },
+
+  canEnterJuniorTournamentThisWeek() {
+    return !!(
+      G
+      && !G.offSeason
+      && G.weekPhase === 'manage'
+      && G.week === Engine.juniorTournament.WEEK
+      && !G._juniorTournamentResult
+    );
+  },
+
+  enterJuniorTournamentFromWeek() {
+    if (!App.canEnterJuniorTournamentThisWeek()) {
+      Audio.play('error');
+      return false;
+    }
+    const selection = G._juniorTournamentSelection || Engine.juniorTournament.select(G);
+    if (!selection || selection.cancelled) {
+      G = { ...G, weekPhase: 'manage' };
+      delete G._juniorTournamentSelection;
+      try { Storage.autoSave(); } catch (_e) {}
+      if (typeof showToast === 'function') showToast('ジュニアトーナメントは出場条件を満たす選手が足りないため開催されませんでした。');
+      if (typeof renderWeekScreen === 'function') renderWeekScreen();
+      return false;
+    }
+    G = { ...G, _juniorTournamentSelection: selection, weekPhase: 'juniorTournament' };
+    try { Storage.autoSave(); } catch (_e) {}
+    App.initJuniorTournament();
+    return true;
+  },
+
   // ═══ Title Screen (v1.0) ═══
 
   restoreBgmForState(delayMs = 0) {
@@ -12003,12 +12056,12 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
   const msg = {
     type: 'START_MATCH',
     left: {
-      ...leftF, condition: 80,
+      ...Engine.juniorTournament._withTournamentHp({ ...leftF, jtCarryHpPct: match.left.jtCarryHpPct != null ? match.left.jtCarryHpPct : 100 }, isFinal ? 2 : 1),
       portraitUrl: getPortraitUrl(leftF.id), profile: CHAR_PROFILES[leftF.id] || '',
       vl: leftF.voiceLines || leftF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[leftF.id]) || ['…！']
     },
     right: {
-      ...rightF, condition: 80,
+      ...Engine.juniorTournament._withTournamentHp({ ...rightF, jtCarryHpPct: match.right.jtCarryHpPct != null ? match.right.jtCarryHpPct : 100 }, isFinal ? 2 : 1),
       portraitUrl: getPortraitUrl(rightF.id), profile: CHAR_PROFILES[rightF.id] || '',
       vl: rightF.voiceLines || rightF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[rightF.id]) || ['…！']
     },
@@ -12082,23 +12135,22 @@ App._receiveJTBattleResult = function(data) {
   // iframeを閉じる
   document.getElementById('battleOverlay').style.display = 'none';
 
-  // iframe結果でmatch dataを上書き（iframe独自シミュレーションの結果を正とする）
+  // iframe result is only a replay completion signal; the precomputed engine result stays canonical.
   const iframeWinner = data.winner || 'left';
-  match.winner = iframeWinner;
-  match.winnerId = data.winnerId != null ? data.winnerId : (iframeWinner === 'right' ? match.right.id : match.left.id);
-  match.loserId = match.winnerId === match.left.id ? match.right.id : match.left.id;
-  match.mq = data.mq || match.mq;
-  match.turns = data.turns || match.turns;
-  match.finType = data.finType || match.finType;
-  match.finMove = data.finMove || match.finMove;
-  // iframeは {current,max}、エンジンは {final,max} 形式
-  if (data.hpLeft) match.hpLeft = { final: data.hpLeft.current != null ? data.hpLeft.current : data.hpLeft.final, max: data.hpLeft.max };
-  if (data.hpRight) match.hpRight = { final: data.hpRight.current != null ? data.hpRight.current : data.hpRight.final, max: data.hpRight.max };
-  if (data.log) match.log = data.log;
-
-  // 後続ラウンドの再計算（勝者が変わった場合、次ラウンド以降の対戦カード・結果も更新）
-  App._jtRecomputeSubsequentRounds(jt, ri);
-
+  // Watch mode is replay-only: never let iframe return values rewrite the simulated result.
+  const incomingWinnerId = data.winnerId != null
+    ? data.winnerId
+    : (iframeWinner === 'right' ? match.right.id : match.left.id);
+  if (incomingWinnerId !== match.winnerId || (data.mq != null && data.mq !== match.mq)) {
+    try {
+      console.warn('[JT] replay result mismatch ignored', {
+        round: ri,
+        match: mi,
+        expected: { winnerId: match.winnerId, mq: match.mq },
+        incoming: { winnerId: incomingWinnerId, mq: data.mq },
+      });
+    } catch(e) {}
+  }
   // 観戦後 → 試合結果画面を表示
   jt.phase = 'matchResult';
   Audio.play('coin');
@@ -12116,7 +12168,7 @@ App._jtWinnerAdvanceState = function(match) {
   const postCond = Math.max(20, Math.round((hpFinal / hpMax) * 80));
   return {
     ...winner,
-    condition: Math.min(100, postCond + Engine.juniorTournament.CONDITION_RECOVERY),
+    jtCarryHpPct: Math.min(100, postCond + Engine.juniorTournament.CONDITION_RECOVERY),
   };
 };
 
@@ -12126,9 +12178,17 @@ App._jtSimulateMatch = function(jt, left, right, roundIdx, pairIdx) {
   const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBB00 + roundIdx * 10 + pairIdx));
   const isFinal = roundIdx === jt.result.rounds.length - 1;
   const matchTier = isFinal ? 2 : 1;
+  const leftForMatch = Engine.juniorTournament._withTournamentHp(
+    { ...leftF, jtCarryHpPct: left.jtCarryHpPct != null ? left.jtCarryHpPct : 100 },
+    matchTier
+  );
+  const rightForMatch = Engine.juniorTournament._withTournamentHp(
+    { ...rightF, jtCarryHpPct: right.jtCarryHpPct != null ? right.jtCarryHpPct : 100 },
+    matchTier
+  );
   const result = Engine.battle.simulateMatch(
-    { ...leftF, condition: left.condition != null ? left.condition : 80 },
-    { ...rightF, condition: right.condition != null ? right.condition : 80 },
+    leftForMatch,
+    rightForMatch,
     matchRng,
     matchTier,
     { recordFrames: true }
@@ -12182,7 +12242,9 @@ App._jtRecomputeSubsequentRounds = function(jt, fromRoundIdx) {
 
 App._jtUpdateFinalResults = function(jt) {
   const rounds = jt.result.rounds;
-  const allParticipants = rounds[0].matches.flatMap(m => [m.left, m.right]);
+  const allParticipants = (jt.selection && Array.isArray(jt.selection.participants) && jt.selection.participants.length)
+    ? jt.selection.participants
+    : rounds[0].matches.flatMap(m => [m.left, m.right]);
   const finalMatch = rounds[rounds.length - 1].matches[0];
   if (!finalMatch) return;
   jt.result.champion = allParticipants.find(p => p.id === finalMatch.winnerId)

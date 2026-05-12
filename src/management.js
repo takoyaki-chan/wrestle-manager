@@ -21804,43 +21804,40 @@ Engine.juniorTournament = {
    * @returns {Array} シード配置済みの参加者配列 */
   _seedBracket(sorted, state) {
     const n = sorted.length;
-    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0x5EED));
 
     if (n === 8) {
-      // 標準シード方式:
-      // スロット: [1位, ?, ?, 4位, 3位, ?, ?, 2位]
-      // 1位vs2位は決勝まで当たらない、3位vs4位も決勝まで当たらない
-      const bracket = new Array(8).fill(null);
-      bracket[0] = sorted[0]; // 1シード: 上半山の端
-      bracket[7] = sorted[1]; // 2シード: 下半山の端
-      bracket[4] = sorted[2]; // 3シード: 下半山の上端（2シードと別の準決勝ブロック）
-      bracket[3] = sorted[3]; // 4シード: 上半山の下端（1シードと別の準決勝ブロック）
-      // 残り4名をランダムに空きスロットに配置
-      const remaining = sorted.slice(4);
-      const emptySlots = [1, 2, 5, 6];
-      for (let i = emptySlots.length - 1; i > 0; i--) {
-        const j = Engine.rng.int(rng, 0, i);
-        [emptySlots[i], emptySlots[j]] = [emptySlots[j], emptySlots[i]];
-      }
-      remaining.forEach((p, i) => { bracket[emptySlots[i]] = p; });
-      return bracket;
+      // 標準シード方式: 1v8 / 4v5 / 3v6 / 7v2
+      // ランダムな山偏りで中位シードが過剰に有利になるのを避ける。
+      return [sorted[0], sorted[7], sorted[3], sorted[4], sorted[2], sorted[5], sorted[6], sorted[1]];
     }
 
     if (n === 4) {
-      // 4人制: 1位 vs 非シード、2位 vs 非シード（反対の半山）
-      const bracket = new Array(4).fill(null);
-      bracket[0] = sorted[0]; // 1シード
-      bracket[3] = sorted[1]; // 2シード（反対の半山の端）
-      const remaining = [sorted[2], sorted[3]];
-      if (Engine.rng.float(rng) < 0.5) {
-        bracket[1] = remaining[0]; bracket[2] = remaining[1];
-      } else {
-        bracket[1] = remaining[1]; bracket[2] = remaining[0];
-      }
-      return bracket;
+      // 標準シード方式: 1v4 / 3v2
+      return [sorted[0], sorted[3], sorted[2], sorted[1]];
     }
 
     return sorted; // フォールバック
+  },
+
+  /** トーナメント用: JT専用の持ち越し体力を開始HPへ変換してバトルエンジンへ渡す */
+  _withTournamentHp(fighter, matchTier) {
+    if (!fighter) return fighter;
+    const eng = (matchTier || 1) >= 2 ? BIGMATCH_ENG : ENG;
+    const fullHp = Math.round(eng.hpBase + Engine.util.eff(fighter.st) * eng.hpScale);
+    const carryHpPct = Engine.util.clamp(
+      fighter.jtCarryHpPct != null ? fighter.jtCarryHpPct : 100,
+      1,
+      100
+    );
+    return {
+      ...fighter,
+      jtCarryHpPct: carryHpPct,
+      _hpOverride: Math.max(1, Math.round(fullHp * carryHpPct / 100)),
+    };
+  },
+
+  _withConditionHp(fighter, matchTier) {
+    return Engine.juniorTournament._withTournamentHp(fighter, matchTier);
   },
 
   /** トーナメント全試合を実行する（純粋関数）
@@ -21848,7 +21845,7 @@ Engine.juniorTournament = {
   run(state, participants, rng) {
     const n = participants.length; // 4 or 8
     const rounds = [];
-    let currentBracket = participants.map(p => ({ ...p, condition: 80 })); // 初期コンディション80固定
+    let currentBracket = participants.map(p => ({ ...p, jtCarryHpPct: 100 })); // 初期持ち越し体力100%
 
     const roundCount = n === 8 ? 3 : 2;
     const roundNames = n === 8
@@ -21866,13 +21863,8 @@ Engine.juniorTournament = {
         const right = currentBracket[i + 1];
         const matchRng = Engine.rng.create(Engine.rng.derive(
           state.rngSeed, state.season, 0xBB00 + r * 10 + i));
-        // condition→HP初期値に反映（condition/100 をフルHPに掛ける）
-        const eff = Engine.util.eff;
-        const eng = isFinal ? BIGMATCH_ENG : ENG;
-        const fullHpL = Math.round(eng.hpBase + eff(left.st) * eng.hpScale);
-        const fullHpR = Math.round(eng.hpBase + eff(right.st) * eng.hpScale);
-        const pf = { ...left, _hpOverride: Math.round(fullHpL * left.condition / 100) };
-        const af = { ...right, _hpOverride: Math.round(fullHpR * right.condition / 100) };
+        const pf = Engine.juniorTournament._withTournamentHp(left, matchTier);
+        const af = Engine.juniorTournament._withTournamentHp(right, matchTier);
         const result = Engine.battle.simulateMatch(pf, af, matchRng, matchTier, { recordFrames: true });
         // 引き分け時は左側を勝者扱い（トーナメントなので必ず決着）
         const winnerId = result.winner === 'right' ? right.id : left.id;
@@ -21880,18 +21872,20 @@ Engine.juniorTournament = {
         const winner = winnerId === left.id ? left : right;
         const loser = winnerId === left.id ? right : left;
         // 試合後コンディション推定（HP残量ベース）
-        const winnerHp = result.winner === 'left' ? result.hpLeft : result.hpRight;
-        const loserHp = result.winner === 'left' ? result.hpRight : result.hpLeft;
+        const winnerHp = winnerId === left.id ? result.hpLeft : result.hpRight;
+        const loserHp = winnerId === left.id ? result.hpRight : result.hpLeft;
         const winnerPostCond = Math.max(20, Math.round((winnerHp?.final ?? 50) / (winnerHp?.max || 100) * 80));
         const loserPostCond = Math.max(10, Math.round((loserHp?.final ?? 30) / (loserHp?.max || 100) * 70));
 
         matches.push({
           left: { id: left.id, name: left.name, _orgId: left._orgId, _orgName: left._orgName,
                   ovr: Engine.util.ov(left), style: left.style, portrait: left.portrait,
-                  personality: left.personality, archetype: left.archetype },
+                  personality: left.personality, archetype: left.archetype,
+                  jtCarryHpPct: left.jtCarryHpPct },
           right: { id: right.id, name: right.name, _orgId: right._orgId, _orgName: right._orgName,
                    ovr: Engine.util.ov(right), style: right.style, portrait: right.portrait,
-                   personality: right.personality, archetype: right.archetype },
+                   personality: right.personality, archetype: right.archetype,
+                   jtCarryHpPct: right.jtCarryHpPct },
           winnerId, loserId,
           mq: result.mq, turns: result.turns,
           finType: result.finType || '', finMove: result.finMove || '',
@@ -21903,8 +21897,8 @@ Engine.juniorTournament = {
 
         // 勝者はコンディション持ち越し + 回復
         currentBracket[i] = winnerId === left.id
-          ? { ...left, condition: Math.min(100, winnerPostCond + Engine.juniorTournament.CONDITION_RECOVERY) }
-          : { ...right, condition: Math.min(100, winnerPostCond + Engine.juniorTournament.CONDITION_RECOVERY) };
+          ? { ...left, jtCarryHpPct: Math.min(100, winnerPostCond + Engine.juniorTournament.CONDITION_RECOVERY) }
+          : { ...right, jtCarryHpPct: Math.min(100, winnerPostCond + Engine.juniorTournament.CONDITION_RECOVERY) };
         // 敗者の位置にnullを入れ、後で除去
         currentBracket[i + 1] = null;
       }
