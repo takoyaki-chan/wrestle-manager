@@ -1,6 +1,10 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-05-09（引退試合後の進行不具合 復旧パス追加）
+> 最終更新: 2026-05-13（バトル演出 4 バグ修正 — MISS ダメージ防御 / フェーズ12 ハング解消 / finishClick ラベル汎用化 / ログ ネタバレ保留拡張）
+
+## 直近の調整（2026-05-13 バトル演出 4 バグ修正）
+
+プレイヤー報告の試合中4バグを一括修正。①**MISS でダメージが入る誤認**: engine 側 `pushFrame` (シングル/タッグ共) に「MISS フレームで HP が前フレームから減っていたら `[WM Debug]` 警告」を追加。viewer 側 `_renderActionImpact` 冒頭に `action.kind === 'miss'` の早期 return ガードを追加（`src/battle-engine-main.js`, `src/tag-battle-main.js`）。多層防御で上流が壊れても damage pop/shake が出ない。auto-sim 50 シーズンで違反 0 を確認。②**ターン12 フェーズ導入カットインで進行不能**: `dismissCutin` を「DOM 異常時もフラグだけは必ず落とす」設計に変更。`S._phaseIntroSafetyTimer` (8秒) で自動 dismiss するセーフティを追加。フェーズ導入時は `nBtn`（次へボタン）にも一時的に `dismissCutin` をバインドし、解除後 `_bindNextButton()` で通常導線へ戻す（`src/battle-engine-main.js`）。③**「…」finishClick ラベルが結末をネタバレ**: 「スリーカウント…！？／カウント…！？／ギブアップ…！？／レフェリー…！？」を全て「**…！？**」に統一（singles/tag 両方）。クリック前にピン/サブ/TKO のいずれか分からない。④**ニアフォール／カットイン／キックアウト等のログがピンシーケンスより先に表示される**: 既存 `S.heldWinLogs`（★決着行のみ保留）を `_SPOILER_LINE_RE` 正規表現で拡張。「カウント2で返した／振りほどいた／キックアウト／ロープエスケープ／カットイン／見殺し／丸め込み／タップ／なんとか阻止／返した」をピン seq フレームで一律 hold し、`_finishPinSeq` で seq 完了後にまとめて DOM 追記。singles/tag 両方適用。⑤**検証**: auto-sim 50 シーズン Result: ALL CLEAR ✓ / Total violations: 0。UI 検証はユーザーに委任（preview_eval は app.js クロージャに届かないため）。確認してほしい項目: (a) シングル試合で MISS 時にダメージ数字が出ないこと、(b) ターン12-13 フェーズ境界でカットインが出ても次へボタンで進めること（8秒経つと自動解除も）、(c) finishClick ボタンに結末示唆文が出ないこと、(d) カウント2/ロープエスケープ/TKO ログがピンシーケンス完了後にまとめて出ること、(e) タッグ試合のカットイン/見殺し/丸め込みのログ遅延。変更: `src/match-engine.js`（pushFrame ガード 約 18 行）+ `src/battle-engine-main.js`（spoiler regex + dismissCutin 改修 + phaseIntro セーフティ + 5箇所のラベル変更 + renderActionImpact ガード 約 30 行）+ `src/tag-battle-main.js`（spoiler regex + FINISH_LABELS 統一 + renderActionImpact ガード 約 15 行）+ 本項。
 
 ## 直近の調整（2026-05-09 引退試合後の進行不具合 復旧パス追加）
 

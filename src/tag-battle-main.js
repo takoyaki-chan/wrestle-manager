@@ -460,15 +460,22 @@ function _updateCenter(fr){
   if (mn) { mn.classList.remove('pop'); void mn.offsetWidth; mn.classList.add('pop'); }
 }
 
+// 結末を示唆するログ行（pin/rollup/tkoStop シーケンス完了まで保留）
+const _SPOILER_LINE_RE = /(★|カウント2で返した|振りほどいた|キックアウト|ロープエスケープ|カットイン|見殺し|丸め込み|タップ|なんとか阻止|返した)/;
+function _isSpoilerLine(line){
+  const t = String(line).trim();
+  return _SPOILER_LINE_RE.test(t);
+}
+
 function _appendLogForFrame(fr){
   if (!fr) return;
   const evClass = _detectEventClass(fr);
   const turnMarker = `<div class="log-new-marker">— Turn ${fr.turn} —</div>`;
   let rawLines = fr.logLines || [];
-  // ピン seq 予定フレーム: 「★ 決着！」行を保留し、seq 完了時に _finishPinSeq から追記
+  // ピン seq 予定フレーム: ★決着行＋結末示唆行（カットイン/見殺し/カウント2返し/丸め込み等）を保留
   if (S.pinSeqPending) {
-    const held = rawLines.filter(l => l.trim().startsWith('★'));
-    rawLines = rawLines.filter(l => !l.trim().startsWith('★'));
+    const held = rawLines.filter(l => _isSpoilerLine(l));
+    rawLines = rawLines.filter(l => !_isSpoilerLine(l));
     S.heldWinLogs = { turn: fr.turn, held };
   }
   const lines = rawLines.map(l => _logLineHtml(l, fr)).join('');
@@ -721,6 +728,8 @@ function _renderArrow(layer, dir, labelText, isCounter, isMiss){
 }
 
 function _renderActionImpact(action){
+  // 多層防御: MISS フレームでは衝撃演出を絶対に出さない
+  if (!action || action.kind === 'miss') return;
   const defKey = keyById(action.defenderId);
   const atkKey = keyById(action.attackerId);
   const defSide = (defKey === 'a1' || defKey === 'a2') ? 'a' : 'b';
@@ -916,7 +925,8 @@ function _buildPinCtrl(pinEv, fr){
   const defChar = defKey2 ? f(defKey2) : null;
   const moveName = (fr.action && fr.action.move) || '';
   // シングル battle-engine.html の showFinishClickBtn ラベルに完全準拠
-  const FINISH_LABELS = { 'fall': 'スリーカウント…！？', 'pin': 'スリーカウント…！？', 'gu': 'ギブアップ…！？', 'rollup': 'カウント…！？', 'tko': 'レフェリー…！？' };
+  // 結末ネタバレ防止: 全 attemptType で結末を示唆しない汎用文に統一
+  const FINISH_LABELS = { 'fall': '…！？', 'pin': '…！？', 'gu': '…！？', 'rollup': '…！？', 'tko': '…！？' };
   // D4: カウント前導入ナレーション (attemptType 別の短文。moveNarration に出してサスペンスを作る)
   const INTRO_NARRATIONS = {
     fall: ['フォールに入った！ ここで決まるのか！？', '押さえ込んだーっ！ スリーカウントなるか！？', 'カバー！ これで決着か！？'],

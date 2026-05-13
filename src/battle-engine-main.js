@@ -506,14 +506,21 @@ function _updateCenter(fr){
   if (pill && fr) pill.textContent = fr.phase || '';
 }
 
+// 結末を示唆するログ行を判定。pin/rollup/tkoStop シーケンスフレームでのみ hold する。
+const _SPOILER_LINE_RE = /(★|カウント2で返した|振りほどいた|キックアウト|ロープエスケープ|カットイン|見殺し|丸め込み|タップ|レフェリーストップ|大金星)/;
+function _isSpoilerLine(line){
+  const t = String(line).trim();
+  return _SPOILER_LINE_RE.test(t);
+}
+
 function _appendLogForFrame(fr){
   if (!fr) return;
   const turnMarker = `<div class="log-new-marker">— Turn ${fr.turn} —</div>`;
   let rawLines = fr.logLines || [];
-  // pin seq 予定フレームは「★ 決着！」行を保留
+  // pin seq 予定フレーム: ★決着行＋結末示唆行（カウント2返し/キックアウト/カットイン/丸め込み等）を保留
   if (S.pinSeqPending) {
-    const held = rawLines.filter(l => l.trim().startsWith('★'));
-    rawLines = rawLines.filter(l => !l.trim().startsWith('★'));
+    const held = rawLines.filter(l => _isSpoilerLine(l));
+    rawLines = rawLines.filter(l => !_isSpoilerLine(l));
     S.heldWinLogs = { turn: fr.turn, held };
   }
   const lines = rawLines.map(l => _logLineHtml(l, fr)).join('');
@@ -713,6 +720,8 @@ function _renderArrow(layer, dir, labelText, isCounter, isMiss){
 }
 
 function _renderActionImpact(action){
+  // 多層防御: 上流が壊れていても MISS フレームで衝撃演出が走らないようガード
+  if (!action || action.kind === 'miss') return;
   const defSide = action.atkSide === 'left' ? 'R' : 'L';
   const atkSide = action.atkSide === 'left' ? 'L' : 'R';
   const isBig   = action.dmg >= 20;
@@ -795,14 +804,18 @@ function showCutin(fighter, side, text, cssCls){
 }
 
 function dismissCutin(){
+  // 進行不能防止: DOM 異常時もフラグだけは必ず落とす（オーバーレイが消失しても次フレームへ進めるように）
   const ov = document.getElementById('cutinOv');
-  if (!ov) return;
-  BattleAnim.dismissCutin(ov);
+  const wasPhaseIntro = !!S._pendingPhaseIntro;
   S.pendingCutin = false;
+  S._pendingPhaseIntro = false;
+  if (S._phaseIntroSafetyTimer) { clearTimeout(S._phaseIntroSafetyTimer); S._phaseIntroSafetyTimer = null; }
+  if (ov) BattleAnim.dismissCutin(ov);
 
   // フェーズ導入 pending があれば nextFrame を再開
-  if (S._pendingPhaseIntro) {
-    S._pendingPhaseIntro = false;
+  if (wasPhaseIntro) {
+    // 仮差し替えした nBtn.onclick を通常導線へ戻す
+    _bindNextButton();
     setTimeout(() => nextFrame(), 400);
     return;
   }
@@ -836,8 +849,17 @@ function _tryPhaseIntroCutin(phaseName){
   const text = pk(lines);
   S._pendingPhaseIntro = true;
   showCutin(charData, domSide, text, 'default');
+  // 冗長化: 次へボタンからも dismiss できるよう一時的にハンドラを差し替える
   const nBtn = document.getElementById('nBtn');
-  if (nBtn) { nBtn.disabled = true; }
+  if (nBtn) {
+    nBtn.disabled = false;
+    nBtn.onclick = () => { dismissCutin(); };
+  }
+  // セーフティ: 8秒経っても dismiss されなければ自動解除（onclick失火/オーバーレイ消失への保険）
+  if (S._phaseIntroSafetyTimer) clearTimeout(S._phaseIntroSafetyTimer);
+  S._phaseIntroSafetyTimer = setTimeout(() => {
+    if (S._pendingPhaseIntro) dismissCutin();
+  }, 8000);
   return true;
 }
 
@@ -945,7 +967,7 @@ function _buildPinCtrl(fr){
   // TKO
   if (fr.tkoStop) {
     seq.push({ kind: 'introBig', text: pk(INTRO.tko), dramatic: true });
-    seq.push({ kind: 'finishClick', label: 'レフェリー…！？' });
+    seq.push({ kind: 'finishClick', label: '…！？' });
     seq.push({ kind: 'count', text: 'TKO！！', cls: 'tko' });
     return { seq, idx: -1, fr };
   }
@@ -963,7 +985,7 @@ function _buildPinCtrl(fr){
     }
     seq.push({ kind: 'count', text: 'ワン！', cls: '', rollupStatus: statusText });
     seq.push({ kind: 'count', text: 'ツー！', cls: 'two', rollupStatus: statusText });
-    seq.push({ kind: 'finishClick', label: 'カウント…！？' });
+    seq.push({ kind: 'finishClick', label: '…！？' });
     if (fr.rollup === 'success') {
       seq.push({ kind: 'count', text: '3ーーーっ！！', cls: 'three', rollupStatus: statusText });
     } else {
@@ -982,10 +1004,10 @@ function _buildPinCtrl(fr){
     if (atkChar && defChar) seq.push({ kind: 'introBig', text: `${atkChar.name}が${defChar.name}に${moveName}をがっちりロック！`, dramatic: true });
     const isWin = fr.winner != null;
     if (isWin) {
-      seq.push({ kind: 'finishClick', label: 'ギブアップ…！？' });
+      seq.push({ kind: 'finishClick', label: '…！？' });
       if (defChar) seq.push({ kind: 'count', text: `${defChar.name}がタップ！！`, cls: 'tap' });
     } else {
-      seq.push({ kind: 'finishClick', label: 'ギブアップ…！？' });
+      seq.push({ kind: 'finishClick', label: '…！？' });
       seq.push({ kind: 'count', text: 'ロープ！ ロープブレイクーーっ！！', cls: 'escape' });
     }
     return { seq, idx: -1, fr };
@@ -1001,7 +1023,7 @@ function _buildPinCtrl(fr){
     const atkSide = fr.action ? fr.action.atkSide : 'left';
     const defChar = atkSide === 'left' ? S.R : S.L;
     seq.push({ kind: 'introBig', text: pk(SUB_INTRO), dramatic: true });
-    seq.push({ kind: 'finishClick', label: 'ギブアップするか…！？' });
+    seq.push({ kind: 'finishClick', label: '…！？' });
     seq.push({ kind: 'count', text: defChar ? `${defChar.name}が振りほどいた！！` : '振りほどいた！！', cls: 'escape' });
     return { seq, idx: -1, fr };
   }
@@ -1014,7 +1036,7 @@ function _buildPinCtrl(fr){
   const count = (fr.kickout && fr.kickout.count) ? fr.kickout.count : 2;
   if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
   if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: 'two' });
-  seq.push({ kind: 'finishClick', label: 'スリーカウント…！？' });
+  seq.push({ kind: 'finishClick', label: '…！？' });
   if (fr.winner != null) {
     seq.push({ kind: 'count', text: '3ーーーーっ！！！', cls: 'three' });
   } else {

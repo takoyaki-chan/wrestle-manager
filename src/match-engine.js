@@ -151,11 +151,20 @@ Engine.battle = {
       let _turnTkoStop = false;
       function pushFrame(phName) {
         if (!recordFrames) return;
+        const _newHpL = Math.max(0, L.hp);
+        const _newHpR = Math.max(0, R.hp);
+        // MISS フレームで HP が前フレームから減っていたら異常（Bug #1 ガード）
+        if (_turnAction && _turnAction.kind === 'miss' && frames.length > 0) {
+          const _prev = frames[frames.length - 1];
+          if (_newHpL < _prev.hpL || _newHpR < _prev.hpR) {
+            try { console.warn(`[WM Debug] MISS frame HP decrease detected: turn=${turn} dL=${_prev.hpL - _newHpL} dR=${_prev.hpR - _newHpR}`); } catch(e){}
+          }
+        }
         frames.push({
           turn,
           phase: phName,
-          hpL: Math.max(0, L.hp),
-          hpR: Math.max(0, R.hp),
+          hpL: _newHpL,
+          hpR: _newHpR,
           mhpL: L.mhp,
           mhpR: R.mhp,
           mom,
@@ -667,6 +676,16 @@ Engine.tagMatch = (() => {
       const turnEvents = dramaSummary
         .filter(d => d.turn === totalTurn && !d._framed)
         .map(d => { d._framed = true; return { type: d.type, by: d.by, victim: d.victim, tagged: d.tagged, saved: d.saved, team: d.team, move: d.move, moveCat: d.moveCat, attemptType: d.attemptType, byId: d.byId, onId: d.onId, outcome: d.outcome, count: d.count }; });
+      // MISS フレームで HP が前フレームから減っていたら異常（Bug #1 ガード）
+      if (_turnAction && _turnAction.kind === 'miss' && frames.length > 0) {
+        const _prev = frames[frames.length - 1];
+        const _curHp = { [fA1.id]: Math.round(fA1.hp), [fA2.id]: Math.round(fA2.hp), [fB1.id]: Math.round(fB1.hp), [fB2.id]: Math.round(fB2.hp) };
+        for (const _id of Object.keys(_curHp)) {
+          if (_prev.hp && _curHp[_id] < _prev.hp[_id]) {
+            try { console.warn(`[WM Debug Tag] MISS frame HP decrease: turn=${totalTurn} id=${_id} d=${_prev.hp[_id] - _curHp[_id]}`); } catch(e){}
+          }
+        }
+      }
       frames.push({
         turn: totalTurn,
         turnSub: _frameTurnSub,
