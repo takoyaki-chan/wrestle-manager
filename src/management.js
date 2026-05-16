@@ -3395,9 +3395,17 @@ const Engine = {
 
     /** デビュー年推定 (現役選手用) */
     _estimateDebutSeason(fighter, state) {
-      const hist = (fighter.careerRecord || {}).history || [];
+      const histAll = (fighter.careerRecord || {}).history || [];
+      // 年代記は post-join のみを対象にしているので debut 推定も pre-join (NPC前史) を除外する。
+      // これを怠ると他団体でデビューして後から player に加入した選手が
+      // "加入前の駆け出し章" に候補として混入してしまう (chronicle bug A 修正)。
+      const joinS = (Engine.career && Engine.career.joinSeason) ? Engine.career.joinSeason(fighter) : 0;
+      const hist = (Engine.career && Engine.career.filterPostJoin)
+        ? Engine.career.filterPostJoin(histAll, joinS)
+        : histAll;
       const ev = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
       if (ev && ev.season) return ev.season;
+      if (joinS) return joinS;
       const age = fighter.age || 17;
       return Math.max(1, (state.season || 1) - Math.max(0, age - 17));
     },
@@ -3758,6 +3766,18 @@ const Engine = {
           }
         });
         let _totalDef = 0; _defByReign.forEach(v => { _totalDef += v; });
+        // chronicle bug C 修正: peakOVRSeason 未記録の active 候補を「現在 season」固定にしない。
+        // 現在に固定すると _segmentChapters の weighted がすべて currentSeason に積まれ、
+        // 過去時代の章 focus が拾えなくなる(強者が過去章に出てこない)。
+        // 年齢から peakAge(~22) を逆算して推定 season を作る。
+        let _peakSeason = cr.peakOVRSeason;
+        if (!_peakSeason) {
+          const _age = f.age || 22;
+          const _careerSeasons = Math.max(1, _age - 17);
+          const _peakAgeApprox = 22;
+          _peakSeason = (state.season || 1) - Math.max(0, _age - _peakAgeApprox);
+          _peakSeason = Math.max(1, Math.min(state.season || 1, _peakSeason));
+        }
         const candidate = {
           id: f.id,
           name: f.name,
@@ -3765,7 +3785,7 @@ const Engine = {
           personality: f.personality,
           archetype: f.archetype,
           peakOVR: cr.peakOVR || Engine.util.ov(f) || 0,
-          peakOVRSeason: cr.peakOVRSeason || state.season || 1,
+          peakOVRSeason: _peakSeason,
           peakPopularity,
           peakPopularitySeason,
           careerSeasonsStart: Engine.chronicle._estimateDebutSeason(f, state),
@@ -3777,7 +3797,7 @@ const Engine = {
             totalTitleWins: _titleReigns,
             totalDefenses: _totalDef,
             peakOVR: cr.peakOVR || 0,
-            peakOVRSeason: cr.peakOVRSeason || 0,
+            peakOVRSeason: _peakSeason,
             peakPopularity,
             peakPopularitySeason,
             seasonalSnapshots: ((cr.seasonalSnapshots) || []).map(sn => ({ ...sn }))
@@ -21647,8 +21667,14 @@ Engine.contract = {
       s = { ...s, titles: { ...s.titles, world: { ...s.titles.world, championId: null, defenses: 0 } } };
     }
 
-    // starClaim 時は AI 団体側でロスター追加済みなのでここで終了
+    // starClaim 時は AI 団体側でロスター追加済み。
+    // 年代記には player 在籍時の実績を保持する必要があるので archive してから return する
+    // (これを怠ると引き抜かれた強豪チャンピオンが年代記から完全消失する: chronicle bug A)。
     if (starClaim.claimed) {
+      const _claimedSnap = { ...fighterWithHist }; delete _claimedSnap.growthLog;
+      s = Engine.chronicle.archiveFighter(s, _claimedSnap);
+      s = Engine.chronicle.applySpiritContribution(s, _claimedSnap);
+      s = Engine.chronicle.refreshChapters(s);
       return { state: s, info };
     }
 
@@ -21668,6 +21694,11 @@ Engine.contract = {
         s = { ...s, aiOrgs: { ...s.aiOrgs, [orgId]: newOrg } };
       }
       info.orgName = Engine.contract._getOrgName(orgId, s);
+      // 年代記: player 在籍中の実績を残す (引き抜かれた強豪が章から消える chronicle bug A 修正)
+      const _depSnap = { ...fighterWithHist }; delete _depSnap.growthLog;
+      s = Engine.chronicle.archiveFighter(s, _depSnap);
+      s = Engine.chronicle.applySpiritContribution(s, _depSnap);
+      s = Engine.chronicle.refreshChapters(s);
     } else {
       // freeAgent（FA上限チェック）
       if (Engine.util.canAddToFA(s)) {
@@ -21677,6 +21708,11 @@ Engine.contract = {
       } else {
         s = Engine.util.redirectToDormantPool(s, fighterWithHist);
       }
+      // 年代記: FA / 休眠送りも player 在籍時の実績を残す
+      const _depSnap = { ...fighterWithHist }; delete _depSnap.growthLog;
+      s = Engine.chronicle.archiveFighter(s, _depSnap);
+      s = Engine.chronicle.applySpiritContribution(s, _depSnap);
+      s = Engine.chronicle.refreshChapters(s);
     }
 
     return { state: s, info };
