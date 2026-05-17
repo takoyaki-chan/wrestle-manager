@@ -1,4 +1,4 @@
-# WRESTLE MANAGER — 配布パッケージ検証スクリプト
+﻿# WRESTLE MANAGER — 配布パッケージ検証スクリプト
 # 使い方:
 #   .\release\verify-package.ps1 -ZipPath .\release\dist\WrestleManager_1.07.zip
 #

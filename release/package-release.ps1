@@ -1,4 +1,4 @@
-# WRESTLE MANAGER — 配布パッケージ作成スクリプト
+﻿# WRESTLE MANAGER — 配布パッケージ作成スクリプト
 # 使い方:
 #   .\release\package-release.ps1
 #   .\release\package-release.ps1 -Version 1.08
