@@ -8728,6 +8728,12 @@ const App = {
       App.handleContractNegotiations();
       return;
     }
+    if (G.weekPhase === 'scoutEvent') {
+      Audio.play('click');
+      showScreen('scoutEvent');
+      refreshAll();
+      return;
+    }
     if (G.offSeason || G.weekPhase === 'offseason' || G.weekPhase === 'settled') {
       App.advanceWeek();
       return;
@@ -8736,6 +8742,12 @@ const App = {
   },
 
   advanceWeek() {
+    if (G.weekPhase === 'scoutEvent') {
+      Audio.play('click');
+      showScreen('scoutEvent');
+      refreshAll();
+      return;
+    }
     Audio.play('tick');
     if (App.repairProgressionState('advanceWeek')) {
       try { Storage.autoSave(); } catch (_e) {}
