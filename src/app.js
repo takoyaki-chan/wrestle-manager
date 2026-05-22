@@ -1956,7 +1956,7 @@ const Storage = {
       }
       // v2.0 Phase1-6: 大型イベント マイグレーション
       if (!G._migrated_large_events) {
-        G = { ...G, lastLargeEventWeek: G.lastLargeEventWeek || 0, mediaSpotlight: G.mediaSpotlight || null, _migrated_large_events: true };
+        G = { ...G, lastLargeEventWeek: G.lastLargeEventWeek || 0, lastB3ChallengeWeek: G.lastB3ChallengeWeek || 0, mediaSpotlight: G.mediaSpotlight || null, _migrated_large_events: true };
       }
       // L1: 会場システム再設計マイグレーション
       if (!G._migrated_venue_redesign) {
@@ -10068,7 +10068,7 @@ const App = {
     const af = b3.challenger;
     // Replay: 結果事前計算 (skip と同 seed: 0xB1B4 + 代表選手ID)
     const b3Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4, pf.id));
-    const b3Result = Engine.battle.simulateMatch(pf, af, b3Rng, 2, { recordFrames: true });
+    const b3Result = Engine.battle.simulateMatch(pf, af, b3Rng, 2, { recordFrames: true, popularityInfluence: 0.35 });
     b3._preResult = b3Result;
     const iframe = document.getElementById('battleIframe');
     const msg = {
@@ -10110,7 +10110,7 @@ const App = {
     const b3 = App._b3Preview;
     if (!b3) return;
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4, b3.playerFighter.id));
-    const matchResult = Engine.battle.simulateMatch(b3.playerFighter, b3.challenger, rng, 2);
+    const matchResult = Engine.battle.simulateMatch(b3.playerFighter, b3.challenger, rng, 2, { popularityInfluence: 0.35 });
     b3.matchResult = matchResult;
     App._finalizeB3Match(matchResult);
   },
@@ -10474,6 +10474,7 @@ const App = {
     if (result.lockerRoomMorale !== undefined) updates.lockerRoomMorale = result.lockerRoomMorale;
     if (result.mediaSpotlight !== undefined) updates.mediaSpotlight = result.mediaSpotlight;
     if (result.lastLargeEventWeek !== undefined) updates.lastLargeEventWeek = result.lastLargeEventWeek;
+    if (result.lastB3ChallengeWeek !== undefined) updates.lastB3ChallengeWeek = result.lastB3ChallengeWeek;
     if (result.orgPopDelta) updates.orgPop = G.orgPop + result.orgPopDelta;
     if (result.battlePoints) updates.battlePoints = result.battlePoints;
     // Phase 4: E-02/E-03 大型イベントの関係値反映

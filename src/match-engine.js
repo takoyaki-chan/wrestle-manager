@@ -106,6 +106,7 @@ Engine.battle = {
       const maxT    = tier >= 2 ? BIGMATCH_MAX_T    : MAX_T;
       const phases  = tier >= 2 ? BIGMATCH_PHASES   : PHASES;
       const eng     = tier >= 2 ? BIGMATCH_ENG      : ENG;
+      const popularityInfluence = opts && opts.popularityInfluence != null ? opts.popularityInfluence : 1.0;
 
       const eff = Engine.util.eff;
       const fullHpL = Math.round(eng.hpBase + eff(charL.st) * eng.hpScale);
@@ -195,7 +196,7 @@ Engine.battle = {
         _turnPinAttempt = null;
         _turnRollup = null;
         _turnTkoStop = false;
-        const _popAdvL = ((L.popularity || 50) - (R.popularity || 50)) / 100;
+        const _popAdvL = ((L.popularity || 50) - (R.popularity || 50)) / 100 * popularityInfluence;
         const _popMultL = (tier >= 2 ? 2.0 : 1.0);
         const leftChance = 50 + mom * 0.05 + _popAdvL * 6 * _popMultL;
         const isLeftAtk = Engine.rng.float(rng) * 100 < leftChance;
@@ -245,7 +246,7 @@ Engine.battle = {
             const _defOvr = (def.pw + def.sp + def.te + def.st + def.mn) / 5;
             const _ovrMult = Math.pow(_atkOvr / Math.max(1, _defOvr), 0.50);
             // v5.0 popularity: 防御側人気優位で被ダメ軽減
-            const _popAdvD = ((def.popularity || 50) - (atk.popularity || 50)) / 100;
+            const _popAdvD = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
             const _popMultD = (tier >= 2 ? 2.0 : 1.0);
             // v5.1 MN: 終盤の粘り（End +8% / Climax +12% 被ダメ軽減、MN50超過分のみ）
             let _mnLateMult = 1.0;
@@ -274,7 +275,7 @@ Engine.battle = {
               const finLabel = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
               let escaped = false;
               if (fType === 'fall' || fType === 'tko') {
-                const _popAdvKo = ((def.popularity || 50) - (atk.popularity || 50)) / 100;
+                const _popAdvKo = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
                 const _popMultKo = (tier >= 2 ? 2.0 : 1.0);
                 let koChance = B.calcKickoutChance(def, ph, eng, _popAdvKo, _popMultKo);
                 if (hasMeishoubu) koChance = Math.min(koChance + 0.15, 0.45);
@@ -289,7 +290,7 @@ Engine.battle = {
                   if (recordFrames) _turnKickout = { count: def.kickoutCount, escapeType: fType };
                 }
               } else if (fType === 'gu') {
-                const _popAdvGu = ((def.popularity || 50) - (atk.popularity || 50)) / 100;
+                const _popAdvGu = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
                 const _popMultGu = (tier >= 2 ? 2.0 : 1.0);
                 let escChance = B.calcGuEscapeChance(def, ph, eng, _popAdvGu, _popMultGu);
                 if (hasMeishoubu) escChance = Math.min(escChance + 0.15, 0.40);

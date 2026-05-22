@@ -14946,6 +14946,7 @@ const Engine = {
       _decisionDoneThisWeek: [],
       // v2.0 Phase1-6: 大型イベント
       lastLargeEventWeek: 0,
+      lastB3ChallengeWeek: 0,
       mediaSpotlight: null,
       // v2.1: エンディング / ゲームオーバー
       endingCleared: false,
@@ -19648,8 +19649,9 @@ Engine.eventSystem = {
     const b2Pool = roster.filter(f => (f.trust != null ? f.trust : 50) < 40);
     if (b2Pool.length >= 2) candidates.push({ type: 'B2', w: 2, pool: b2Pool });
 
-    // B3: 他団体からの挑戦状 — orgPop > 20
-    if ((state.orgPop || 0) > 20) candidates.push({ type: 'B3', w: 2 });
+    // B3: 他団体からの挑戦状 — orgPop > 20 + 専用クールダウン
+    const lastB3Challenge = state.lastB3ChallengeWeek || 0;
+    if ((state.orgPop || 0) > 20 && absWeek - lastB3Challenge >= 16) candidates.push({ type: 'B3', w: 2 });
 
     // B4: メディア密着取材 — orgPop > 25、取材中でない
     if ((state.orgPop || 0) > 25 && !state.mediaSpotlight) candidates.push({ type: 'B4', w: 2 });
@@ -19953,7 +19955,7 @@ Engine.eventSystem = {
         if (step === 0) {
           if (choiceIdx === 0) {
             // 受けて立つ → 代表選手選択へ
-            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, nextStep: 1 };
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, lastB3ChallengeWeek: absWeek, events, nextStep: 1 };
           } else {
             // Phase0修正: 辞退ペナルティ追加 orgPop -1（逓減適用）
             const declineOrgPopDelta = Engine.orgPop.applyOrgPopChange(-1, state.orgPop, null);
@@ -19986,12 +19988,12 @@ Engine.eventSystem = {
               };
               aiOrgsRet = aiOrgsUpdated;
             }
-            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta: declineOrgPopDelta, ...(aiOrgsRet ? { aiOrgs: aiOrgsRet } : {}) };
+            return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, lastB3ChallengeWeek: absWeek, events, orgPopDelta: declineOrgPopDelta, ...(aiOrgsRet ? { aiOrgs: aiOrgsRet } : {}) };
           }
         }
         if (step === 1) {
           // choiceIdx = 選ばれた選手のID
-          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events,
+          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, lastB3ChallengeWeek: absWeek, events,
                    nextStep: 2, selectedFighterId: choiceIdx };
         }
         if (step === 2) {
@@ -20097,7 +20099,7 @@ Engine.eventSystem = {
             relationships = relState.relationships;
             relationshipCounters = relState.relationshipCounters;
           }
-          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events, orgPopDelta, relationships, ...(relationshipCounters ? { relationshipCounters } : {}), ...(aiOrgsRet ? { aiOrgs: aiOrgsRet } : {}) };
+          return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, lastB3ChallengeWeek: absWeek, events, orgPopDelta, relationships, ...(relationshipCounters ? { relationshipCounters } : {}), ...(aiOrgsRet ? { aiOrgs: aiOrgsRet } : {}) };
         }
         return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, events };
       }
