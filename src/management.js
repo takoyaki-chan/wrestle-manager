@@ -2292,6 +2292,43 @@ const Engine = {
       return history.filter(e => (e.season != null ? e.season : 0) >= joinSeason);
     },
 
+    collectTitleReigns(history) {
+      if (!Array.isArray(history)) return [];
+      const events = [...history].sort((a, b) => (a.season || 0) - (b.season || 0) || (a.week || 0) - (b.week || 0));
+      const activeByBelt = new Map();
+      const reigns = [];
+      const makeReign = ev => ({
+        beltId: ev.beltId || 'world',
+        orgName: ev.orgName || '王座',
+        defenses: 0,
+      });
+      events.forEach(ev => {
+        if (!ev || (ev.type !== 'titleWin' && ev.type !== 'titleDefense' && ev.type !== 'titleLoss')) return;
+        const beltId = ev.beltId || 'world';
+        if (ev.type === 'titleWin') {
+          const current = activeByBelt.get(beltId);
+          if (current) reigns.push(current);
+          activeByBelt.set(beltId, makeReign(ev));
+          return;
+        }
+        let current = activeByBelt.get(beltId);
+        if (!current) {
+          current = makeReign(ev);
+          activeByBelt.set(beltId, current);
+        }
+        current.orgName = current.orgName || ev.orgName || '王座';
+        if (ev.type === 'titleDefense') {
+          current.defenses = Math.max(current.defenses || 0, ev.count || 0);
+          return;
+        }
+        current.defenses = Math.max(current.defenses || 0, ev.defenses || 0);
+        reigns.push(current);
+        activeByBelt.delete(beltId);
+      });
+      activeByBelt.forEach(reign => reigns.push(reign));
+      return reigns;
+    },
+
     /** 絶対 season → キャリア相対年（入団=1）。joinSeason null なら絶対値そのまま */
     relSeason(absSeason, joinSeason) {
       if (joinSeason == null || absSeason == null) return absSeason || 1;
@@ -2314,45 +2351,24 @@ const Engine = {
       const joinS = Engine.career.joinSeason(fighter);
       const histPost = Engine.career.filterPostJoin(cr.history || [], joinS);
       const totalTitleWins = histPost.filter(e => e.type === 'titleWin').length;
-      // titleLoss の defenses が「在位中の最終防衛数」なので、titleLoss が無く titleDefense しか無い在位は count の最大値で集計
-      const _defByReign = new Map();
-      histPost.forEach(ev => {
-        if (ev.type === 'titleLoss') {
-          const k = `loss:${ev.beltId || 'world'}|${ev.season || 0}|${ev.week || 0}`;
-          _defByReign.set(k, ev.defenses || 0);
-        } else if (ev.type === 'titleDefense') {
-          const k = `def:${ev.beltId || 'world'}|${ev.season || 0}`;
-          const prev = _defByReign.get(k) || 0;
-          if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
-        }
-      });
-      let totalDefenses = 0;
-      _defByReign.forEach(v => { totalDefenses += v; });
+      const titleReigns = Engine.career.collectTitleReigns(histPost);
+      const totalDefenses = titleReigns.reduce((sum, reign) => sum + (reign.defenses || 0), 0);
       // タイトル歴テキスト（団体別ブレークダウン）
       let titleSummary = null;
       let titleByOrg = []; // [{ orgName, wins, defenses }]
       if (totalTitleWins > 0) {
         const winsByOrg = new Map();   // orgName -> 戴冠回数
-        const defByBelt = new Map();   // `${orgName}|${beltId}` -> 当該王座の最終防衛数
         histPost.forEach(ev => {
           if (ev.type === 'titleWin') {
             const k = ev.orgName || '王座';
             winsByOrg.set(k, (winsByOrg.get(k) || 0) + 1);
-          } else if (ev.type === 'titleDefense') {
-            // count は累計防衛数。同一在位中は最大値で上書き
-            const k = `${ev.orgName || '王座'}|${ev.beltId || 'world'}|${ev.season || 0}`;
-            const prev = defByBelt.get(k) || { orgName: ev.orgName || '王座', count: 0 };
-            if ((ev.count || 0) > prev.count) defByBelt.set(k, { orgName: prev.orgName, count: ev.count || 0 });
-          } else if (ev.type === 'titleLoss') {
-            // titleLoss の defenses はその在位中の最終防衛数
-            const k = `${ev.orgName || '王座'}|${ev.beltId || 'world'}|loss-${ev.season || 0}-${ev.week || 0}`;
-            defByBelt.set(k, { orgName: ev.orgName || '王座', count: ev.defenses || 0 });
           }
         });
         // 団体ごとに防衛数を合算
         const defByOrg = new Map();
-        defByBelt.forEach(v => {
-          defByOrg.set(v.orgName, (defByOrg.get(v.orgName) || 0) + v.count);
+        titleReigns.forEach(reign => {
+          const orgName = reign.orgName || '王座';
+          defByOrg.set(orgName, (defByOrg.get(orgName) || 0) + (reign.defenses || 0));
         });
         const orgs = [...new Set([...winsByOrg.keys(), ...defByOrg.keys()])];
         orgs.forEach(o => {
@@ -3446,17 +3462,7 @@ const Engine = {
 
       // post-join での再カウント
       const _titleReigns = hist.filter(e => e.type === 'titleWin').length;
-      const _defByReign = new Map();
-      hist.forEach(ev => {
-        if (ev.type === 'titleLoss') {
-          _defByReign.set(`L:${ev.beltId||'w'}|${ev.season||0}|${ev.week||0}`, ev.defenses || 0);
-        } else if (ev.type === 'titleDefense') {
-          const k = `D:${ev.beltId||'w'}|${ev.season||0}`;
-          const prev = _defByReign.get(k) || 0;
-          if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
-        }
-      });
-      let _totalDef = 0; _defByReign.forEach(v => { _totalDef += v; });
+      const _totalDef = Engine.career.collectTitleReigns(hist).reduce((sum, reign) => sum + (reign.defenses || 0), 0);
 
       // 年代記で意味のある特性のみ保持
       const kept = ['華', 'ファンサービス', '人望', 'ムードメーカー', '熱血', '名勝負製造機', 'ガラスのハート'];
@@ -3756,16 +3762,7 @@ const Engine = {
         const _joinS = Engine.career.joinSeason(f);
         const _histPost = Engine.career.filterPostJoin(cr.history || [], _joinS);
         const _titleReigns = _histPost.filter(e => e.type === 'titleWin').length;
-        const _defByReign = new Map();
-        _histPost.forEach(ev => {
-          if (ev.type === 'titleLoss') _defByReign.set(`L:${ev.beltId||'w'}|${ev.season||0}|${ev.week||0}`, ev.defenses || 0);
-          else if (ev.type === 'titleDefense') {
-            const k = `D:${ev.beltId||'w'}|${ev.season||0}`;
-            const prev = _defByReign.get(k) || 0;
-            if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
-          }
-        });
-        let _totalDef = 0; _defByReign.forEach(v => { _totalDef += v; });
+        const _totalDef = Engine.career.collectTitleReigns(_histPost).reduce((sum, reign) => sum + (reign.defenses || 0), 0);
         // chronicle bug C 修正: peakOVRSeason 未記録の active 候補を「現在 season」固定にしない。
         // 現在に固定すると _segmentChapters の weighted がすべて currentSeason に積まれ、
         // 過去時代の章 focus が拾えなくなる(強者が過去章に出てこない)。
@@ -16718,19 +16715,7 @@ Engine.awards = {
     const hist = joinS == null ? histAll : histAll.filter(e => (e.season != null ? e.season : 0) >= joinS);
     // 実績ポイント（post-join で再カウント）
     const titleWins = hist.filter(e => e.type === 'titleWin').length;
-    const _defByReign = new Map();
-    hist.forEach(ev => {
-      if (ev.type === 'titleLoss') {
-        const k = `loss:${ev.beltId || 'world'}|${ev.season || 0}|${ev.week || 0}`;
-        _defByReign.set(k, ev.defenses || 0);
-      } else if (ev.type === 'titleDefense') {
-        const k = `def:${ev.beltId || 'world'}|${ev.season || 0}`;
-        const prev = _defByReign.get(k) || 0;
-        if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
-      }
-    });
-    let titleDef = 0;
-    _defByReign.forEach(v => { titleDef += v; });
+    const titleDef = Engine.career.collectTitleReigns(hist).reduce((sum, reign) => sum + (reign.defenses || 0), 0);
     const titlePt = titleWins + titleDef;
     const juniorPt = hist.filter(e => e.type === 'juniorTournament' && e.result === 'champion').length * 4;
     const ppvPt = hist.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length * 5;
@@ -17267,19 +17252,7 @@ Engine.awards = {
     const retire = hist.find(e => e.type === 'retire');
     // post-join で再カウント
     const titleReigns = hist.filter(e => e.type === 'titleWin').length;
-    const _defByReign = new Map();
-    hist.forEach(ev => {
-      if (ev.type === 'titleLoss') {
-        const k = `loss:${ev.beltId || 'world'}|${ev.season || 0}|${ev.week || 0}`;
-        _defByReign.set(k, ev.defenses || 0);
-      } else if (ev.type === 'titleDefense') {
-        const k = `def:${ev.beltId || 'world'}|${ev.season || 0}`;
-        const prev = _defByReign.get(k) || 0;
-        if ((ev.count || 0) > prev) _defByReign.set(k, ev.count || 0);
-      }
-    });
-    let totalDefensesPost = 0;
-    _defByReign.forEach(v => { totalDefensesPost += v; });
+    const totalDefensesPost = Engine.career.collectTitleReigns(hist).reduce((sum, reign) => sum + (reign.defenses || 0), 0);
     const juniorWinsPost = hist.filter(e => e.type === 'juniorTournament' && e.result === 'champion').length;
     const ppvWinsPost = hist.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length;
     const hofPoints = Engine.awards.calcHofPoints(rec);
