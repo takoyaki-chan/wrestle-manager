@@ -3097,8 +3097,7 @@ const App = {
       return true;
     }
     if (App.canEnterJuniorTournamentThisWeek()) {
-      App.enterJuniorTournamentFromWeek();
-      return true;
+      return App.enterJuniorTournamentFromWeek();
     }
     return false;
   },
@@ -3120,17 +3119,36 @@ const App = {
     }
     const selection = G._juniorTournamentSelection || Engine.juniorTournament.select(G);
     if (!selection || selection.cancelled) {
-      G = { ...G, weekPhase: 'manage' };
-      delete G._juniorTournamentSelection;
-      try { Storage.autoSave(); } catch (_e) {}
+      App.cancelJuniorTournamentForInsufficientParticipants();
       if (typeof showToast === 'function') showToast('ジュニアトーナメントは出場条件を満たす選手が足りないため開催されませんでした。');
-      if (typeof renderWeekScreen === 'function') renderWeekScreen();
       return false;
     }
     G = { ...G, _juniorTournamentSelection: selection, weekPhase: 'juniorTournament' };
     try { Storage.autoSave(); } catch (_e) {}
     App.initJuniorTournament();
     return true;
+  },
+
+  cancelJuniorTournamentForInsufficientParticipants() {
+    if (!G) return;
+    const next = {
+      ...G,
+      weekPhase: 'manage',
+      _juniorTournamentResult: {
+        cancelled: true,
+        reason: 'insufficientParticipants',
+        season: G.season,
+        week: G.week,
+      },
+    };
+    delete next._juniorTournamentSelection;
+    G = next;
+    App._jtPreview = null;
+    try { Audio.fileBgm.stop(); } catch (_e) {}
+    try { Storage.autoSave(); } catch (_e) {}
+    if (typeof showScreen === 'function') showScreen('week');
+    if (typeof renderWeekScreen === 'function') renderWeekScreen();
+    if (typeof refreshAll === 'function') refreshAll();
   },
 
   // ═══ Title Screen (v1.0) ═══
@@ -11981,15 +11999,25 @@ App.preloadNewspaperImages = function(wp) {
 
 App.initJuniorTournament = function() {
   const sel = G._juniorTournamentSelection;
-  if (!sel || sel.cancelled) {
+  if (!sel || sel.cancelled || !Array.isArray(sel.participants) || sel.participants.length < 4) {
     // 不開催 → 通常週に戻す
-    G = { ...G, weekPhase: 'manage' };
-    delete G._juniorTournamentSelection;
-    showScreen('week');
+    if (App.cancelJuniorTournamentForInsufficientParticipants) {
+      App.cancelJuniorTournamentForInsufficientParticipants();
+    } else {
+      G = { ...G, weekPhase: 'manage' };
+      delete G._juniorTournamentSelection;
+      showScreen('week');
+    }
     return;
   }
   const jtRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBB10));
   const jtResult = Engine.juniorTournament.run(G, sel.participants, jtRng);
+  if (!jtResult || !Array.isArray(jtResult.rounds) || !jtResult.rounds[0] || !Array.isArray(jtResult.rounds[0].matches)) {
+    if (App.cancelJuniorTournamentForInsufficientParticipants) {
+      App.cancelJuniorTournamentForInsufficientParticipants();
+    }
+    return;
+  }
 
   // 自団体の出場選手を抽出（レンタル選手は元所属団体枠で出場するため除外）
   const playerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));

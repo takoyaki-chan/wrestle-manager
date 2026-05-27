@@ -338,6 +338,22 @@ const runEscapeBattle = new Function('App', 'Audio', 'document', 'clearTimeout',
   assert.deepStrictEqual(calls, ['enterJT']);
 })();
 
+(function testLoadResumeDoesNotClaimHandledWhenJuniorTournamentCancels() {
+  const calls = [];
+  const App = {
+    initPPVShow() { calls.push('ppvShow'); },
+    initPPVTV() { calls.push('ppvTV'); },
+    initJuniorTournament() { calls.push('juniorTournament'); },
+    canEnterJuniorTournamentThisWeek() { return true; },
+    enterJuniorTournamentFromWeek() { calls.push('enterJT'); return false; },
+  };
+
+  const resumed = runResumeLoadedSpecialPhase(App, { weekPhase: 'manage', week: 25 });
+
+  assert.strictEqual(resumed, false);
+  assert.deepStrictEqual(calls, ['enterJT']);
+})();
+
 (function testEscapeBattleFallsBackToJtSkip() {
   let skipArgs = null;
   const App = {

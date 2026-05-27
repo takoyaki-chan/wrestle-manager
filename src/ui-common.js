@@ -73,6 +73,10 @@ function _isPopupActive(opts) {
     return el && (el.classList.contains('active') || el.classList.contains('show'));
   });
   if (staticActive) return true;
+  const factionRoot = document.getElementById('factionEventRoot');
+  if (factionRoot && factionRoot.querySelector('.fevt-overlay-stage.active, .fevt-overlay-office.active, .fevt-overlay-arena.active, .fevt-narration-act.active')) {
+    return true;
+  }
   // 動的オーバーレイ（R3Modalなど、DOMに直接追加されるもの）
   return !!document.querySelector('.r3-modal-overlay') || !!document.querySelector('.war-victory-overlay');
 }
@@ -141,6 +145,7 @@ function _mdlAAttachSpeechHandlers(overlay, card) {
 function _mdlAClose() {
   const overlay = document.getElementById('mdlAOverlay');
   if (overlay) overlay.classList.remove('active');
+  _drainPopupQueue();
 }
 
 /** A型ヘッダーHTML */
@@ -7867,12 +7872,16 @@ function _factionCloseCinematicOverlay() {
   if (!root) return;
   const overlay = root.querySelector('.fevt-overlay-stage, .fevt-overlay-office, .fevt-overlay-arena, .fevt-narration-act');
   if (overlay) overlay.classList.remove('active');
-  setTimeout(() => { root.innerHTML = ''; }, 600);
+  setTimeout(() => {
+    root.innerHTML = '';
+    _drainPopupQueue();
+  }, 600);
 }
 
 function showFactionF03Modal(payload, state, onContinue) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF03Modal(payload, state, onContinue)); return; }
 
+  payload = payload || {};
   const roster = state ? (state.roster || []) : [];
   const survivor = payload.successorId ? roster.find(c => c.id === payload.successorId) : null;
   const oldLeader = payload.oldLeaderId ? roster.find(c => c.id === payload.oldLeaderId) : null;
@@ -7909,7 +7918,7 @@ function showFactionF03Modal(payload, state, onContinue) {
     </div>` : '';
 
   const html = `
-    <div class="fevt-overlay-stage sepia" id="fevtF03Overlay">
+    <div class="fevt-overlay-stage sepia f03-dissolution" id="fevtF03Overlay">
       <div class="fevt-title-band">
         <div class="fevt-title-main dissolve">解 　 散</div>
         <div class="fevt-title-divider"></div>

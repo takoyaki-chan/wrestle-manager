@@ -21854,6 +21854,9 @@ Engine.juniorTournament = {
   /** トーナメント全試合を実行する（純粋関数）
    * @returns {{ rounds: Array<{matches}>, champion, runnerUp, semiFinalists, allResults }} */
   run(state, participants, rng) {
+    if (!Array.isArray(participants) || participants.length < 4 || participants.length % 2 !== 0) {
+      return { cancelled: true, reason: 'insufficientParticipants', rounds: [], champion: null, runnerUp: null, semiFinalists: [], bracketSize: 0 };
+    }
     const n = participants.length; // 4 or 8
     const rounds = [];
     let currentBracket = participants.map(p => ({ ...p, jtCarryHpPct: 100 })); // 初期持ち越し体力100%
@@ -21937,6 +21940,20 @@ Engine.juniorTournament = {
   apply(state, tournamentResult) {
     let s = { ...state };
     const events = [];
+    if (!tournamentResult || tournamentResult.cancelled || !Array.isArray(tournamentResult.rounds) || tournamentResult.rounds.length === 0) {
+      const clean = {
+        ...s,
+        weekPhase: 'manage',
+        _juniorTournamentResult: {
+          cancelled: true,
+          reason: (tournamentResult && tournamentResult.reason) || 'insufficientParticipants',
+          season: s.season,
+          week: s.week,
+        },
+      };
+      delete clean._juniorTournamentSelection;
+      return { state: clean, events };
+    }
     const { champion, runnerUp, semiFinalists, rounds, bracketSize } = tournamentResult;
     const PRIZE = Engine.juniorTournament.PRIZE;
 

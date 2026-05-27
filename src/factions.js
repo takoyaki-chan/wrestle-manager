@@ -1844,6 +1844,7 @@ Engine.factions = {
 
   // ── §9.3 F03 結果適用（branch 事前決定済み）──
   applyF03Result(state, payload, rng) {
+    if (!payload) return { state, resultText: '', impactSummary: [] };
     const { factionId, branch, successorId, oldLeaderName } = payload;
     let s = state;
     const faction = (s.factions || []).find(f => f.id === factionId);
