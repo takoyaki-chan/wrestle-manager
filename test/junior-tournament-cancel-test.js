@@ -39,4 +39,18 @@ assert.strictEqual(applied.state.weekPhase, 'manage', 'cancelled tournament shou
 assert.strictEqual(applied.state._juniorTournamentSelection, undefined, 'cancelled tournament should clear selection');
 assert.strictEqual(applied.state._juniorTournamentResult.cancelled, true, 'cancelled tournament should be marked processed');
 
+const weekAdvanceState = {
+  ...state,
+  week: Engine.juniorTournament.WEEK - 1,
+  weekPhase: 'weekSummary',
+  _juniorTournamentResult: null,
+  _juniorTournamentSelection: null,
+};
+const advanced = Engine.advanceWeek(weekAdvanceState);
+assert.strictEqual(advanced.state.week, Engine.juniorTournament.WEEK, 'advance should move into tournament week');
+assert.strictEqual(advanced.state.weekPhase, 'manage', 'insufficient participants should not enter tournament phase');
+assert.strictEqual(advanced.state._juniorTournamentSelection, undefined, 'advance cancellation should clear selection');
+assert.strictEqual(advanced.state._juniorTournamentResult.cancelled, true, 'advance cancellation should mark tournament processed');
+assert.strictEqual(advanced.state._juniorTournamentResult.reason, 'insufficientParticipants');
+
 console.log('junior-tournament-cancel-test: ok');

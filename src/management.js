@@ -14556,6 +14556,11 @@ const Engine = {
         events.push(`🏟️ 第${s.season}回ジュニアトーナメント開催！ U-20選手${selection.bracketSize}名が集結`);
         return { state: { ...s, weekPhase: 'juniorTournament' }, events };
       } else {
+        s = Engine.juniorTournament.apply(s, {
+          cancelled: true,
+          reason: 'insufficientParticipants',
+          rounds: [],
+        }).state;
         events.push('📋 ジュニアトーナメント: U-20選手不足のため今年は不開催');
       }
     }
