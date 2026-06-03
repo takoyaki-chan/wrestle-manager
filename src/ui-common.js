@@ -7873,7 +7873,7 @@ function _factionCloseCinematicOverlay() {
   const overlay = root.querySelector('.fevt-overlay-stage, .fevt-overlay-office, .fevt-overlay-arena, .fevt-narration-act');
   if (overlay) overlay.classList.remove('active');
   setTimeout(() => {
-    root.innerHTML = '';
+    if (!overlay || root.contains(overlay)) root.innerHTML = '';
     _drainPopupQueue();
   }, 600);
 }

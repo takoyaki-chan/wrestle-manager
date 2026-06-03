@@ -2481,10 +2481,18 @@ const Storage = {
           const peakPopularitySeason = cr.peakPopularitySeason || f.peakPopularitySeason || fallbackSeason || 1;
           return { peakPopularity, peakPopularitySeason };
         };
+        const titleStatsOf = (hist, fallbackWins, fallbackDefenses) => {
+          const hasTitleHistory = (hist || []).some(e => e && (e.type === 'titleWin' || e.type === 'titleDefense' || e.type === 'titleLoss'));
+          if (hasTitleHistory && Engine.career && Engine.career.countTitleStats) {
+            return Engine.career.countTitleStats(hist);
+          }
+          return { titleReigns: fallbackWins || 0, totalDefenses: fallbackDefenses || 0 };
+        };
         // HoF player エントリを archive 形式に変換
         const hofToArchive = (h) => {
           const cr = h.careerRecord || {};
           const hist = cr.history || [];
+          const titleStats = titleStatsOf(hist, h.titleReigns || cr.totalTitleWins || 0, h.totalDefenses || cr.totalDefenses || 0);
           const debutEv = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
           const start = debutEv ? (debutEv.season || 1) : 1;
           const end = h.inductionSeason || G.season || start;
@@ -2502,12 +2510,12 @@ const Storage = {
             peakPopularitySeason,
             careerSeasonsStart: start,
             careerSeasonsEnd: end,
-            titleReigns: h.titleReigns || cr.totalTitleWins || 0,
-            totalDefenses: h.totalDefenses || cr.totalDefenses || 0,
+            titleReigns: titleStats.titleReigns,
+            totalDefenses: titleStats.totalDefenses,
             careerRecord: {
               history: hist.map(e => ({ ...e })),
-              totalTitleWins: h.titleReigns || cr.totalTitleWins || 0,
-              totalDefenses: h.totalDefenses || cr.totalDefenses || 0,
+              totalTitleWins: titleStats.titleReigns,
+              totalDefenses: titleStats.totalDefenses,
               peakOVR: pk,
               peakOVRSeason: cr.peakOVRSeason || end,
               peakPopularity,
@@ -2523,6 +2531,7 @@ const Storage = {
         const retiredToArchive = (f) => {
           const cr = f.careerRecord || {};
           const hist = cr.history || [];
+          const titleStats = titleStatsOf(hist, cr.totalTitleWins || 0, cr.totalDefenses || 0);
           const debutEv = hist.find(e => e.type === 'debut' || e.type === 'draft' || e.type === 'scout');
           const start = debutEv ? (debutEv.season || 1) : 1;
           const end = G.season || start;
@@ -2540,12 +2549,12 @@ const Storage = {
             peakPopularitySeason,
             careerSeasonsStart: start,
             careerSeasonsEnd: end,
-            titleReigns: cr.totalTitleWins || 0,
-            totalDefenses: cr.totalDefenses || 0,
+            titleReigns: titleStats.titleReigns,
+            totalDefenses: titleStats.totalDefenses,
             careerRecord: {
               history: hist.map(e => ({ ...e })),
-              totalTitleWins: cr.totalTitleWins || 0,
-              totalDefenses: cr.totalDefenses || 0,
+              totalTitleWins: titleStats.titleReigns,
+              totalDefenses: titleStats.totalDefenses,
               peakOVR: pk,
               peakOVRSeason: cr.peakOVRSeason || end,
               peakPopularity,

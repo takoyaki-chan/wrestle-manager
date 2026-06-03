@@ -72,7 +72,40 @@ function makeFighter() {
   const entry = Engine.awards._buildHofEntry(fighter, 'player', 'Test Org', { season: 5 });
   assert.strictEqual(entry.titleReigns, 1);
   assert.strictEqual(entry.totalDefenses, 2);
+  assert.strictEqual(entry.careerRecord.totalTitleWins, 1);
+  assert.strictEqual(entry.careerRecord.totalDefenses, 2);
   assert.strictEqual(Engine.awards.calcHofPoints(fighter.careerRecord), 3);
+})();
+
+(function hallOfFameIgnoresStaleDefenseCache() {
+  const fighter = makeFighter();
+  fighter.careerRecord.totalTitleWins = 4;
+  fighter.careerRecord.totalDefenses = 12;
+
+  const entry = Engine.awards._buildHofEntry(fighter, 'player', 'Test Org', { season: 5, rngSeed: 1 });
+  assert.strictEqual(entry.titleReigns, 1);
+  assert.strictEqual(entry.totalDefenses, 2);
+  assert.strictEqual(entry.careerRecord.totalTitleWins, 1);
+  assert.strictEqual(entry.careerRecord.totalDefenses, 2);
+
+  const staleEntry = {
+    ...entry,
+    totalDefenses: 12,
+    careerRecord: { ...fighter.careerRecord },
+    hofPoints: 99,
+    hofLevel: 3,
+  };
+  const applied = Engine.awards.applyHallOfFame({
+    season: 5,
+    retiredFighters: [fighter],
+    retiredIds: [],
+    retiredSeasons: {},
+    allHallOfFame: { player: [], org_s: [], org_a: [], org_b: [] },
+  }, [staleEntry]);
+  assert.strictEqual(applied.hallOfFame[0].titleReigns, 1);
+  assert.strictEqual(applied.hallOfFame[0].totalDefenses, 2);
+  assert.strictEqual(applied.hallOfFame[0].careerRecord.totalDefenses, 2);
+  assert.strictEqual(applied.hallOfFame[0].hofPoints, 3);
 })();
 
 console.log('title-defense-count-test: ok');

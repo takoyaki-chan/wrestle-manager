@@ -2329,6 +2329,14 @@ const Engine = {
       return reigns;
     },
 
+    countTitleStats(history) {
+      const hist = Array.isArray(history) ? history : [];
+      const titleReigns = hist.filter(e => e && e.type === 'titleWin').length;
+      const totalDefenses = Engine.career.collectTitleReigns(hist)
+        .reduce((sum, reign) => sum + (reign.defenses || 0), 0);
+      return { titleReigns, totalDefenses };
+    },
+
     /** 絶対 season → キャリア相対年（入団=1）。joinSeason null なら絶対値そのまま */
     relSeason(absSeason, joinSeason) {
       if (joinSeason == null || absSeason == null) return absSeason || 1;
@@ -2350,9 +2358,10 @@ const Engine = {
       // 転生前（NPC事前史）を除外: 入団以降の history のみで再集計
       const joinS = Engine.career.joinSeason(fighter);
       const histPost = Engine.career.filterPostJoin(cr.history || [], joinS);
-      const totalTitleWins = histPost.filter(e => e.type === 'titleWin').length;
+      const titleStats = Engine.career.countTitleStats(histPost);
+      const totalTitleWins = titleStats.titleReigns;
       const titleReigns = Engine.career.collectTitleReigns(histPost);
-      const totalDefenses = titleReigns.reduce((sum, reign) => sum + (reign.defenses || 0), 0);
+      const totalDefenses = titleStats.totalDefenses;
       // タイトル歴テキスト（団体別ブレークダウン）
       let titleSummary = null;
       let titleByOrg = []; // [{ orgName, wins, defenses }]
@@ -3461,8 +3470,9 @@ const Engine = {
       const { peakPopularity, peakPopularitySeason } = Engine.chronicle._peakPopularityOf(fighter, careerSeasonsEnd);
 
       // post-join での再カウント
-      const _titleReigns = hist.filter(e => e.type === 'titleWin').length;
-      const _totalDef = Engine.career.collectTitleReigns(hist).reduce((sum, reign) => sum + (reign.defenses || 0), 0);
+      const _titleStats = Engine.career.countTitleStats(hist);
+      const _titleReigns = _titleStats.titleReigns;
+      const _totalDef = _titleStats.totalDefenses;
 
       // 年代記で意味のある特性のみ保持
       const kept = ['華', 'ファンサービス', '人望', 'ムードメーカー', '熱血', '名勝負製造機', 'ガラスのハート'];
@@ -3761,8 +3771,9 @@ const Engine = {
         // 転生前（NPC事前史）を除外して年代記候補を構築
         const _joinS = Engine.career.joinSeason(f);
         const _histPost = Engine.career.filterPostJoin(cr.history || [], _joinS);
-        const _titleReigns = _histPost.filter(e => e.type === 'titleWin').length;
-        const _totalDef = Engine.career.collectTitleReigns(_histPost).reduce((sum, reign) => sum + (reign.defenses || 0), 0);
+        const _titleStats = Engine.career.countTitleStats(_histPost);
+        const _titleReigns = _titleStats.titleReigns;
+        const _totalDef = _titleStats.totalDefenses;
         // chronicle bug C 修正: peakOVRSeason 未記録の active 候補を「現在 season」固定にしない。
         // 現在に固定すると _segmentChapters の weighted がすべて currentSeason に積まれ、
         // 過去時代の章 focus が拾えなくなる(強者が過去章に出てこない)。
@@ -16719,8 +16730,9 @@ Engine.awards = {
                 : null;
     const hist = joinS == null ? histAll : histAll.filter(e => (e.season != null ? e.season : 0) >= joinS);
     // 実績ポイント（post-join で再カウント）
-    const titleWins = hist.filter(e => e.type === 'titleWin').length;
-    const titleDef = Engine.career.collectTitleReigns(hist).reduce((sum, reign) => sum + (reign.defenses || 0), 0);
+    const titleStats = Engine.career.countTitleStats(hist);
+    const titleWins = titleStats.titleReigns;
+    const titleDef = titleStats.totalDefenses;
     const titlePt = titleWins + titleDef;
     const juniorPt = hist.filter(e => e.type === 'juniorTournament' && e.result === 'champion').length * 4;
     const ppvPt = hist.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length * 5;
@@ -17256,11 +17268,20 @@ Engine.awards = {
     const debut = hist.find(e => e.type === 'debut') || hist.find(e => e.type === 'transfer' && e.toOrg === 'player');
     const retire = hist.find(e => e.type === 'retire');
     // post-join で再カウント
-    const titleReigns = hist.filter(e => e.type === 'titleWin').length;
-    const totalDefensesPost = Engine.career.collectTitleReigns(hist).reduce((sum, reign) => sum + (reign.defenses || 0), 0);
+    const titleStats = Engine.career.countTitleStats(hist);
+    const titleReigns = titleStats.titleReigns;
+    const totalDefensesPost = titleStats.totalDefenses;
     const juniorWinsPost = hist.filter(e => e.type === 'juniorTournament' && e.result === 'champion').length;
     const ppvWinsPost = hist.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length;
-    const hofPoints = Engine.awards.calcHofPoints(rec);
+    const recPost = {
+      ...rec,
+      history: hist.map(e => ({ ...e })),
+      totalTitleWins: titleReigns,
+      totalDefenses: totalDefensesPost,
+      juniorTournamentWins: juniorWinsPost,
+      ppvMainEventWins: ppvWinsPost,
+    };
+    const hofPoints = Engine.awards.calcHofPoints(recPost);
     const hofLevel = Engine.awards.getHofLevel(hofPoints);
     const entry = {
       id: fighter.id, name: fighter.name, portrait: fighter.portrait,
@@ -17277,7 +17298,8 @@ Engine.awards = {
       hofPoints, hofLevel,
       shieldVariant: Engine.awards.assignShieldVariant(hofLevel, fighter.id),
       inductionSeason: state.season,
-      careerHighlights: Engine.awards.buildCareerHighlights(rec, orgName),
+      careerRecord: recPost,
+      careerHighlights: Engine.awards.buildCareerHighlights(recPost, orgName),
       retireOVR: Engine.util.ov(fighter),
       retireAge: fighter.age || 0,
       warWins: hist.filter(e => e.type === 'war' && e.won).length,
@@ -17286,7 +17308,7 @@ Engine.awards = {
       trust: fighter.trust ?? 50,
     };
     // biography用コンテキストをentryに格納
-    const ctx = Engine.awards._buildEpithetContext(rec, hist, fighter);
+    const ctx = Engine.awards._buildEpithetContext(recPost, hist, fighter);
     entry.mvpCount          = ctx.mvpCount;
     entry.bestMatchCount    = ctx.bestMatchCount;
     entry.hasRookie         = ctx.hasRookie;
@@ -17300,7 +17322,7 @@ Engine.awards = {
     const epithetRng = Engine.rng.create(Engine.rng.derive(
       state.rngSeed, fighter.id, 0xEF17
     ));
-    entry.epithet = Engine.awards.generateEpithet(rec, fighter, epithetRng);
+    entry.epithet = Engine.awards.generateEpithet(recPost, fighter, epithetRng);
     entry.biography = Engine.awards.generateBiography(entry);
     return entry;
   },
@@ -17335,14 +17357,37 @@ Engine.awards = {
   applyHallOfFame(state, inductees) {
     // 修正A: hofPoints/hofLevel が欠落している場合は再計算して補完
     const safeInductees = inductees.map(h => {
-      if (h.hofPoints != null && h.hofLevel != null) return h;
-      const pts = h.hofPoints != null ? h.hofPoints
-        : (h.titleReigns || 0) + (h.totalDefenses || 0)
-          + (h.juniorTournamentWins || 0) * 4 + (h.ppvMainEventWins || 0) * 5
-          + (h.warWins || 0) * 1.5
-          + (h.mvpCount || 0) * 2 + (h.hasRookie ? 1.5 : 0)
-          + (h.bestMatchCount || 0) * 1 + (h.mediaCount || 0) * 1.5;
-      return { ...h, hofPoints: pts, hofLevel: Engine.awards.getHofLevel(pts) };
+      const rec = h.careerRecord || {};
+      const histAll = rec.history || [];
+      const titleHistory = histAll.filter(e => e && (e.type === 'titleWin' || e.type === 'titleDefense' || e.type === 'titleLoss'));
+      let normalized = h;
+      let recalcPoints = h.hofPoints == null || h.hofLevel == null;
+      if (titleHistory.length > 0) {
+        const joinS = Engine.career.joinSeason({ ...h, careerRecord: rec });
+        const hist = Engine.career.filterPostJoin(histAll, joinS);
+        const titleStats = Engine.career.countTitleStats(hist);
+        recalcPoints = true;
+        normalized = {
+          ...h,
+          titleReigns: titleStats.titleReigns,
+          totalDefenses: titleStats.totalDefenses,
+          careerRecord: {
+            ...rec,
+            history: hist.map(e => ({ ...e })),
+            totalTitleWins: titleStats.titleReigns,
+            totalDefenses: titleStats.totalDefenses,
+          },
+        };
+      }
+      if (!recalcPoints && normalized.hofPoints != null && normalized.hofLevel != null) return normalized;
+      const pts = normalized.careerRecord && Array.isArray(normalized.careerRecord.history)
+        ? Engine.awards.calcHofPoints(normalized.careerRecord)
+        : (normalized.titleReigns || 0) + (normalized.totalDefenses || 0)
+          + (normalized.juniorTournamentWins || 0) * 4 + (normalized.ppvMainEventWins || 0) * 5
+          + (normalized.warWins || 0) * 1.5
+          + (normalized.mvpCount || 0) * 2 + (normalized.hasRookie ? 1.5 : 0)
+          + (normalized.bestMatchCount || 0) * 1 + (normalized.mediaCount || 0) * 1.5;
+      return { ...normalized, hofPoints: pts, hofLevel: Engine.awards.getHofLevel(pts) };
     });
     const allHof = { ...(state.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] }) };
     allHof.player = [...(allHof.player || []), ...safeInductees];
