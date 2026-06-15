@@ -4515,7 +4515,7 @@ const App = {
   setShowVenue(venueIdx) {
     // orgPop リバランス v1.1 §5: ドーム年1回制限
     if (venueIdx === 9 && (G.domeShowsThisSeason || 0) >= 1) return;
-    G = { ...G, showVenue: venueIdx };
+    G = { ...G, showVenue: venueIdx, showCard: Engine.util.normalizeShowCardForVenue(G.showCard, G.week, venueIdx) };
     renderShowPrep();
   },
 
@@ -4704,9 +4704,11 @@ const App = {
     });
     const titleSanitized = Engine.title.sanitizeShowCardTitles({ ...G, showCard: sanitized }, sanitized);
     const titleSanitizedChanged = JSON.stringify(titleSanitized) !== JSON.stringify(G.showCard);
-    if (hadStaleRef || titleSanitizedChanged) G = { ...G, showCard: titleSanitized };
+    const venueLimitedCard = Engine.util.normalizeShowCardForVenue(titleSanitized, G.week, G.showVenue);
+    const venueLimitChanged = JSON.stringify(venueLimitedCard) !== JSON.stringify(titleSanitized);
+    if (hadStaleRef || titleSanitizedChanged || venueLimitChanged) G = { ...G, showCard: venueLimitedCard };
 
-    const validMatches = ((hadStaleRef || titleSanitizedChanged) ? titleSanitized : G.showCard).filter(m =>
+    const validMatches = venueLimitedCard.filter(m =>
       m.matchType === 'tag'
         ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
         : (m.left > 0 && m.right > 0)

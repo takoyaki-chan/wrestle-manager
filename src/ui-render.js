@@ -2047,7 +2047,7 @@ function renderRoster() {
 }
 
 function getCardWeight(card) {
-  return card.reduce((sum, m) => sum + (m.matchType === 'tag' ? 2 : 1), 0);
+  return Engine.util.getCardWeight(card);
 }
 function getUsedFighterIds(excludeSlot) {
   // Returns Set of fighter IDs already assigned to other match slots (singles + tag)
@@ -2374,18 +2374,10 @@ function renderShowPrep() {
   html += '</div>';
 
   // Match card — 会場規模連動の試合枠
-  const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
   // pad up OR trim down to match the venue's limit (tag match = 2 slots)
   {
-    let adjusted = [...G.showCard];
-    while (getCardWeight(adjusted) < maxMatches) adjusted.push({left:0, right:0, isTitle:false});
-    // trim: remove empty singles from the end if over weight
-    while (getCardWeight(adjusted) > maxMatches && adjusted.length > 0) {
-      const last = adjusted[adjusted.length - 1];
-      if (!last.matchType && last.left === 0 && last.right === 0) adjusted.pop();
-      else break;
-    }
-    if (adjusted.length !== G.showCard.length || getCardWeight(adjusted) !== getCardWeight(G.showCard)) G = { ...G, showCard: adjusted };
+    const adjusted = Engine.util.normalizeShowCardForVenue(G.showCard, G.week, G.showVenue);
+    if (JSON.stringify(adjusted) !== JSON.stringify(G.showCard)) G = { ...G, showCard: adjusted };
   }
 
   // Sanitize stale IDs (released/retired/transferred wrestlers still in card)

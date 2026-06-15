@@ -547,6 +547,16 @@ const Engine = {
       const bonus = (Engine.util.isSpecialShow(week) || Engine.util.isPPV(week)) ? 1 : 0;
       return Math.min(base + bonus, 8);
     },
+    getCardWeight(card) {
+      return (Array.isArray(card) ? card : []).reduce((sum, m) => sum + (m && m.matchType === 'tag' ? 2 : 1), 0);
+    },
+    normalizeShowCardForVenue(card, week, venueIdx) {
+      const maxMatches = Engine.util.getMaxMatches(week, venueIdx);
+      const normalized = Array.isArray(card) ? [...card] : [];
+      while (Engine.util.getCardWeight(normalized) > maxMatches && normalized.length > 0) normalized.pop();
+      while (Engine.util.getCardWeight(normalized) < maxMatches) normalized.push({ left: 0, right: 0, isTitle: false });
+      return normalized;
+    },
     eff(x) {
       if (x <= ENG.effPivot) return x;
       return ENG.effPivot + (x - ENG.effPivot) * ENG.effSlopeAfterPivot;
