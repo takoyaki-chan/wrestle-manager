@@ -57,6 +57,10 @@ class Element {
     return child;
   }
 
+  contains(target) {
+    return this._all().includes(target);
+  }
+
   querySelector(selector) {
     const all = this._all();
     if (selector === '.fevt-overlay-stage, .fevt-overlay-office, .fevt-overlay-arena, .fevt-narration-act') {

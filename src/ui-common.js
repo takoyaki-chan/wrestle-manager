@@ -9040,7 +9040,11 @@ function _f09BgmStop(fadeMs) {
 
 // オープニング：両派閥全メンバー並列 + 両リーダー宣戦
 function showFactionF09OpeningModal(data, state, onContinue) {
-  if (_isPopupActive()) { _popupQueue.push(() => showFactionF09OpeningModal(data, state, onContinue)); return; }
+  // F09 is presented inside the live show flow, where showResultOverlay remains active
+  // as the match-preview shell. Treating that shell as a blocking popup creates a
+  // circular wait at the final result (the ending waits for the shell to close,
+  // while the shell waits for the ending callback before rendering the result).
+  if (_isPopupActive({ ignoreShowResultOverlay: true })) { _popupQueue.push(() => showFactionF09OpeningModal(data, state, onContinue)); return; }
   if (!data) { if (onContinue) onContinue(); return; }
 
   const aPp = _factionUpperUrl(data.factionA.leaderId);
@@ -9108,7 +9112,7 @@ function showFactionF09OpeningModal(data, state, onContinue) {
 
 // 各試合前 簡略 confrontation
 function showFactionF09MatchPreModal(data, state, onContinue) {
-  if (_isPopupActive()) { _popupQueue.push(() => showFactionF09MatchPreModal(data, state, onContinue)); return; }
+  if (_isPopupActive({ ignoreShowResultOverlay: true })) { _popupQueue.push(() => showFactionF09MatchPreModal(data, state, onContinue)); return; }
   if (!data) { if (onContinue) onContinue(); return; }
   const aPp = _factionUpperUrl(data.fighterA.id);
   const bPp = _factionUpperUrl(data.fighterB.id);
@@ -9156,7 +9160,7 @@ function showFactionF09MatchPreModal(data, state, onContinue) {
 
 // 各試合後 簡略 aftermath（ptDelta + 現在スコア表示）
 function showFactionF09MatchPostModal(data, state, onContinue) {
-  if (_isPopupActive()) { _popupQueue.push(() => showFactionF09MatchPostModal(data, state, onContinue)); return; }
+  if (_isPopupActive({ ignoreShowResultOverlay: true })) { _popupQueue.push(() => showFactionF09MatchPostModal(data, state, onContinue)); return; }
   if (!data) { if (onContinue) onContinue(); return; }
   const wPp = _factionUpperUrl(data.winner.id);
   const lPp = _factionUpperUrl(data.loser.id);
@@ -9204,7 +9208,7 @@ function showFactionF09MatchPostModal(data, state, onContinue) {
 
 // エンディング：勝ち越し派閥スポット + 両リーダー総括
 function showFactionF09EndingModal(data, state, onContinue) {
-  if (_isPopupActive()) { _popupQueue.push(() => showFactionF09EndingModal(data, state, onContinue)); return; }
+  if (_isPopupActive({ ignoreShowResultOverlay: true })) { _popupQueue.push(() => showFactionF09EndingModal(data, state, onContinue)); return; }
   if (!data) { if (onContinue) onContinue(); return; }
   const wPp = _factionUpperUrl(data.winnerFaction.leaderId);
   const lPp = _factionUpperUrl(data.loserFaction.leaderId);
