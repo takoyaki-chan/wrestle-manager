@@ -56,6 +56,7 @@ const jtWinnerAdvanceStateBody = extractAssignedFunctionBody("App._jtWinnerAdvan
 const jtSimulateMatchBody = extractAssignedFunctionBody("App._jtSimulateMatch = function(jt, left, right, roundIdx, pairIdx)");
 const jtRecomputeBody = extractAssignedFunctionBody("App._jtRecomputeSubsequentRounds = function(jt, fromRoundIdx)");
 const receiveJtBody = extractAssignedFunctionBody("App._receiveJTBattleResult = function(data)");
+const enterJtFromWeekBody = extractObjectMethodBody('enterJuniorTournamentFromWeek(options = null)');
 const resumeLoadedSpecialPhaseBody = extractObjectMethodBody('resumeLoadedSpecialPhase()');
 const escapeBattleBody = extractMethodBody('escapeBattle()', '// Skip all remaining matches');
 
@@ -66,6 +67,7 @@ const runReceiveJt = new Function(
   'App', 'Audio', 'document', 'clearTimeout', 'renderJuniorTournamentMatchResult', 'data',
   `${receiveJtBody}`
 );
+const runEnterJtFromWeek = new Function('App', 'Audio', 'Engine', 'Storage', 'showToast', 'G', 'options', `${enterJtFromWeekBody}`);
 const runResumeLoadedSpecialPhase = new Function('App', 'G', `${resumeLoadedSpecialPhaseBody}`);
 const runEscapeBattle = new Function('App', 'Audio', 'document', 'clearTimeout', 'renderMatchPreview', `${escapeBattleBody}`);
 
@@ -352,6 +354,72 @@ const runEscapeBattle = new Function('App', 'Audio', 'document', 'clearTimeout',
 
   assert.strictEqual(resumed, false);
   assert.deepStrictEqual(calls, ['enterJT']);
+})();
+
+(function testJuniorTournamentCancelButtonProcessesCurrentWeek() {
+  const calls = [];
+  const App = {
+    canEnterJuniorTournamentThisWeek() { return true; },
+    cancelJuniorTournamentForInsufficientParticipants() { calls.push('cancelJT'); },
+    processWeek() { calls.push('processWeek'); },
+  };
+  const Engine = {
+    juniorTournament: {
+      select() {
+        calls.push('selectJT');
+        return { cancelled: true };
+      },
+    },
+  };
+  const Audio = { play(kind) { calls.push(`audio:${kind}`); } };
+  const Storage = { autoSave() { calls.push('autosave'); } };
+  const toastMessages = [];
+
+  const handled = runEnterJtFromWeek(
+    App,
+    Audio,
+    Engine,
+    Storage,
+    (msg) => toastMessages.push(msg),
+    { weekPhase: 'manage', week: 25 },
+    { processWeekOnCancel: true }
+  );
+
+  assert.strictEqual(handled, true);
+  assert.deepStrictEqual(calls, ['selectJT', 'cancelJT', 'processWeek']);
+  assert.strictEqual(toastMessages.length, 1);
+})();
+
+(function testJuniorTournamentCancelWithoutButtonOptionDoesNotProcessWeek() {
+  const calls = [];
+  const App = {
+    canEnterJuniorTournamentThisWeek() { return true; },
+    cancelJuniorTournamentForInsufficientParticipants() { calls.push('cancelJT'); },
+    processWeek() { calls.push('processWeek'); },
+  };
+  const Engine = {
+    juniorTournament: {
+      select() {
+        calls.push('selectJT');
+        return { cancelled: true };
+      },
+    },
+  };
+  const Audio = { play(kind) { calls.push(`audio:${kind}`); } };
+  const Storage = { autoSave() { calls.push('autosave'); } };
+
+  const handled = runEnterJtFromWeek(
+    App,
+    Audio,
+    Engine,
+    Storage,
+    () => calls.push('toast'),
+    { weekPhase: 'manage', week: 25 },
+    {}
+  );
+
+  assert.strictEqual(handled, false);
+  assert.deepStrictEqual(calls, ['selectJT', 'cancelJT', 'toast']);
 })();
 
 (function testEscapeBattleFallsBackToJtSkip() {

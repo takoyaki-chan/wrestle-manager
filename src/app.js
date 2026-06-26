@@ -3121,7 +3121,7 @@ const App = {
     );
   },
 
-  enterJuniorTournamentFromWeek() {
+  enterJuniorTournamentFromWeek(options = null) {
     if (!App.canEnterJuniorTournamentThisWeek()) {
       Audio.play('error');
       return false;
@@ -3130,6 +3130,10 @@ const App = {
     if (!selection || selection.cancelled) {
       App.cancelJuniorTournamentForInsufficientParticipants();
       if (typeof showToast === 'function') showToast('ジュニアトーナメントは出場条件を満たす選手が足りないため開催されませんでした。');
+      if (options && options.processWeekOnCancel && typeof App.processWeek === 'function') {
+        App.processWeek();
+        return true;
+      }
       return false;
     }
     G = { ...G, _juniorTournamentSelection: selection, weekPhase: 'juniorTournament' };
