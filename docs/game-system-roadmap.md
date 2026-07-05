@@ -1,6 +1,10 @@
 # Wrestle Manager ロードマップ
 
-> 最終更新: 2026-07-05（ユーザー要望バックログ一括登録 + カウンター技名の帰属バグ修正）
+> 最終更新: 2026-07-05（C-1 派閥イベント新聞掲載 実装完了 + バックログ登録 + カウンター技名バグ修正）
+
+## 直近の調整（2026-07-05 C-1 派閥イベントの新聞掲載）
+
+バックログ C-1(アーク1)を実装。既存の業界ニュースキュー(`Engine.industryNews.push` → 1面 業界ニュース欄)に未配線だった派閥イベント13種を配線した。①**設計原則**: 「外から見える出来事」だけ記事化(慰留成功・告げ口などの未遂、社長の内々の決裁は載せない = 新聞は世間の視点)。②**Tier A 大ネタ(9種・発生したら必ず紙面候補)**: `factionCoup:118` 下剋上成立(`factions.js applyInternalChallengeResult` 禅譲ブランチ、エンジン内フック) / `factionWarSettled:115` F09 対抗戦決着(`app.js` sweep 決着ブロック、勝敗スコア付き) / `factionEndless:112` 無限抗争 / `factionDefection:105` F04 寝返り成立(A択のみ) / `factionShowdown:95` F08 リーダー直接対決決定(A択) / `factionSuccession:87` F03 後継就任(succession/turmoil 両方) / `factionPeace:84` 沈静化 / `factionReconcile:82` F06 和解(A択) / `factionHiatus:78` F05H 活動休止。③**Tier B 日常ネタ(4種・閑散週の埋め草)**: `factionInternalBout:58` Common-1 同門対決(A択) / `factionMediaFeature:52` Common-5 取材(A択) / `factionJointProject:50` Common-7 合同企画(A択) / `factionCamp:48` Common-4 合宿。低 priority に置くことで既存の「priority ソート+サブ記事3枠」が大ニュース週は自動で弾き、静かな週だけ紙面に上げる——新規制御ロジックなし。④**テンプレ**: `data.js NEWS_HEADLINE_TEMPLATES` に黒田トーンで計18本(大ネタ 1〜2本/種)。ついでに `factionFormed` 旧表記「{leaderName}組が動き出した」を「{leaderName}が旗を掲げた」に修正(5/3 派閥名「○○派」改名の追従漏れ)。⑤**検証**: node --check 4ファイル通過 + auto-sim 50シーズン × seed 42 ALL CLEAR ✓(violations 0 / errors 0)。⑥**実機確認推奨**: (a) 派閥イベント(F03後継・F04寝返りA・F08直接対決A など)を踏んだ週の新聞1面 業界ニュース欄に記事が出ること、(b) 大ニュースのある週に合宿・取材などの小ネタが紙面から落ちること、(c) 派閥成立記事に「○○組」表記が出ないこと。変更: src/management.js(PRIORITY 13種追加) + src/data.js(テンプレ 13 type 追加 + factionFormed 1箇所修正) + src/app.js(handleFactionEvent 10箇所 + F09 決着ブロック 1箇所) + src/factions.js(applyInternalChallengeResult 1箇所) + specs/newspaper-and-orgcompare-spec-v2.0.md(type 一覧+フックポイント更新) + 本項。
 
 ## 直近の調整（2026-07-05 カウンター技名の帰属バグ修正 + 要望バックログ登録）
 
@@ -451,7 +455,7 @@ Keisuke さんの変更希望・追加希望を一括登録。**やりやすい�
 
 | # | 項目 | メモ | 状態 |
 |---|------|------|------|
-| C-1 | 派閥関係のイベントも新聞に載せる | 既存の新聞パネル(newspaper-and-orgcompare-spec-v2.0)に派閥イベント記事を追加 | 未着手 |
+| C-1 | 派閥関係のイベントも新聞に載せる | 既存の業界ニュースキューに13種を配線(Tier A 大ネタ9 + Tier B 日常4)。詳細は specs/newspaper-and-orgcompare-spec-v2.0.md | ✅ 完了（2026-07-05） |
 | C-2 | 経営画面グラフ表示修正 | **季節の表記を変えると、それが反映されていないグラフが複数ある**（設定変更後の追従漏れ）。該当グラフの洗い出しから | 未着手 |
 | C-3 | 休暇辞令の効果拡張 | trust だけでなく調子回復 + wear 増加抑制。休暇週数スライダーで効果と金額がスケール | 未着手 |
 | C-4 | ヘルプ・ホバーティップスの見直しオーバーホール | 全画面横断の棚卸しが必要 | 未着手 |

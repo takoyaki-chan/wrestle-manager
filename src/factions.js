@@ -4794,6 +4794,21 @@ Engine.factions = {
           internalChallengeCooldownUntilWeek: absWeek + cfg.internalChallengeCooldownWeeks,
         }),
       };
+      // 業界ニュース: 下剋上成立（旧派閥名のまま報じ、新名は本文で紹介）
+      if (Engine.industryNews) {
+        const oldLeader = (s.roster || []).find(c => c.id === leaderId);
+        s = Engine.industryNews.push(s, {
+          type: 'factionCoup',
+          characterId: challengerId,
+          data: {
+            org: s.orgName || 'プレイヤー団体',
+            factionName: f.name,
+            newFactionName: newName,
+            challengerName: successor ? successor.name : '?',
+            oldLeaderName: oldLeader ? oldLeader.name : '?',
+          },
+        });
+      }
       // OVR 順位ベース割り振り（新旧リーダーは0pt）
       s = this._allocateInternalPointsByOvrRank(s, factionId, [challengerId, leaderId]);
       // effect: 旧リーダー trust / 新リーダー trust / 派閥 momentum / メンバー bond

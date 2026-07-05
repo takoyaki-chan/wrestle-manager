@@ -14024,7 +14024,7 @@ const NEWS_HEADLINE_TEMPLATES = {
   factionFormed: [
     { headline: '{org}に派閥誕生——{leaderName}を中心に旗揚げ',
       body: '{org}の{leaderName}を中心とした集団が、団体内で独自の旗を掲げた。「派閥」という言葉が好まれるかどうかは別として、控室の力学は確実に変わる。これからの興行の組み方にも影響が出るだろう。' },
-    { headline: '{leaderName}組が動き出した——{org}内の新たな勢力図',
+    { headline: '{leaderName}が旗を掲げた——{org}内の新たな勢力図',
       body: '{org}内に{leaderName}を中心とした集まりが形を成した。慕う者たちが集い、「ここで戦いたい」と表明し始めた格好だ。一枚岩だった団体が、初めて色分けされた瞬間でもある。' },
   ],
   factionEscalation: [
@@ -14046,6 +14046,68 @@ const NEWS_HEADLINE_TEMPLATES = {
   factionSplit: [
     { headline: '{org}派閥分裂——「{factionName}」から{ringleaderName}が離脱',
       body: '{org}内の「{factionName}」から、{ringleaderName}を中心とした一派が離脱した。控室には新たな勢力線が引かれ、興行の組み方はさらに難しくなる。一つだった旗が、いま二つに割れた瞬間だ。' },
+  ],
+  factionSuccession: [
+    { headline: '{org}「{factionName}」に新リーダー——{newLeaderName}が看板を継ぐ',
+      body: '{oldLeaderName}が去った「{factionName}」で、{newLeaderName}が新たに旗を預かることになった。慕われた前任者の穴は小さくない。それでも残った者たちは、この人の下でやっていくと決めたようだ。看板の重さを知るのは、これからだ。' },
+    { headline: '{newLeaderName}、「{factionName}」を継承——{org}の火は消えず',
+      body: 'リーダー不在となっていた{org}の「{factionName}」が、{newLeaderName}を新たな中心に据えて再出発する。{oldLeaderName}の色が濃かった集団だけに、率い方はおのずと変わるだろう。頭が替われば、控室の力学は必ず動く。' },
+  ],
+  factionCoup: [
+    { headline: '下剋上——{challengerName}が「{factionName}」の頭を獲った',
+      body: '{org}の「{factionName}」で、序列の頂点が入れ替わった。{challengerName}が{oldLeaderName}をリングで下し、派閥は「{newFactionName}」として看板を掛け替える。実力で頭を獲る——プロレスの派閥における、最も古くて最も正しい代替わりだ。' },
+    { headline: '「{factionName}」で政変——{challengerName}がリーダーの座を奪取',
+      body: '積み上げた序列を賭けた一戦は、挑む側に軍配が上がった。{org}の「{factionName}」は{challengerName}を新たな頭に頂き、「{newFactionName}」と名を改める。敗れた{oldLeaderName}がこの屈辱をどう飲み込むか——控室の目は、既にそちらへ向いている。' },
+  ],
+  factionDefection: [
+    { headline: '{targetName}が寝返った——「{fromFaction}」から「{toFaction}」へ電撃移籍',
+      body: '{org}の派閥地図が塗り替わった。{targetName}が「{fromFaction}」を離れ、抗争相手である「{toFaction}」の門を叩いたのだ。残された側の心中は穏やかではあるまい。裏切りと呼ぶか、決断と呼ぶか——それを決めるのは、これからの試合だ。' },
+    { headline: '衝撃の鞍替え——{targetName}、「{toFaction}」入り',
+      body: '「{fromFaction}」の一員だった{targetName}が、対立する「{toFaction}」へ身を移した。{org}の控室に走った緊張は、当分解けそうにない。かつての仲間と敵として向き合う日は、そう遠くないはずだ。' },
+  ],
+  factionHiatus: [
+    { headline: '{org}「{factionName}」が活動休止——{leaderName}の長期離脱が痛手',
+      body: '{leaderName}を欠いた「{factionName}」が、旗を一旦降ろすことを決めた。解散ではない、あくまで休止——残った者たちはそれぞれの戦いに戻る。頭の帰りを待つ集団が再び旗を掲げる日は、来るのだろうか。' },
+  ],
+  factionReconcile: [
+    { headline: '雪解け——{org}の「{factionAName}」と「{factionBName}」が和解',
+      body: '長く続いた対立に、両派が区切りをつけた。社長の仲介で場が持たれ、「{factionAName}」と「{factionBName}」は矛を収めることで一致したという。控室の空気は目に見えて軽くなった。もっとも、一度割れた線がそう簡単に消えないことも、皆知っている。' },
+  ],
+  factionShowdown: [
+    { headline: '頂上直接対決へ——「{factionAName}」{leaderAName} vs 「{factionBName}」{leaderBName}',
+      body: '{org}の派閥抗争が、ついに両リーダーの一騎打ちという形で決着の場を得た。次期興行のメインに据えられるこの一戦、負けた側の派閥が失うものは星ひとつでは済まない。控室の全員にとって、この試合だけは他人事ではない。' },
+    { headline: '{leaderAName}と{leaderBName}、リング上で白黒——{org}が仕掛けた頂上対決',
+      body: '「{factionAName}」と「{factionBName}」の対立は、言葉ではもう埋まらない段階に来ていた。社長はそれを承知で、両者をメインに置く。派閥の頭同士が直接ぶつかる——これ以上の決着方法を、プロレスは持っていない。' },
+  ],
+  factionWarSettled: [
+    { headline: '派閥対抗戦決着——「{winFaction}」が「{loseFaction}」を制す',
+      body: '{org}で組まれた派閥対抗戦は、{score}で「{winFaction}」に軍配が上がった。率いた{winLeader}の株は上がり、敗れた「{loseFaction}」の{loseLeader}は言葉少なにリングを降りた。序列はリングの上で決まる——その原則が、また一つ証明された。' },
+    { headline: '「{winFaction}」が対抗戦を制圧——{loseLeader}の派閥に重い星',
+      body: '派閥の意地を賭けた対抗戦は{score}。「{winFaction}」が地力の差を示す結果となった。勝った側の宴と、負けた側の沈黙。{org}の控室は今週、二つの温度に分かれている。' },
+  ],
+  factionEndless: [
+    { headline: '終わらない抗争——{org}の「{factionAName}」と「{factionBName}」、対立は年を越す',
+      body: '決着戦でも、話し合いでも消えなかった火がある。「{factionAName}」と「{factionBName}」の対立は、もはや{org}の風土の一部と化した。ファンはこの緊張を目当てに会場へ足を運ぶ。憎悪も、長く続けば名物になる。' },
+  ],
+  factionPeace: [
+    { headline: '{org}の派閥抗争が沈静化——「{factionAName}」と「{factionBName}」に停戦の空気',
+      body: '燃え上がった対立が、静かに温度を下げた。「{factionAName}」と「{factionBName}」の間に流れていた険悪な空気は、ここ数週で目に見えて薄まったという。決着がついたわけではない。ただ、いまは矛を交える理由がない——それだけのことだ。' },
+  ],
+  factionInternalBout: [
+    { headline: '同門対決実現——「{factionName}」の{nameA}と{nameB}がリングで激突',
+      body: '{org}の「{factionName}」内でくすぶっていた火種を、社長は隠さず試合にした。{nameA}と{nameB}、同じ旗の下の二人が正面からぶつかる。仲間割れと見るか、健全な競争と見るか。いずれにせよ、同門戦は嘘がつけない。' },
+  ],
+  factionCamp: [
+    { headline: '「{factionName}」が合宿へ——{org}の結束固め',
+      body: '{org}の「{factionName}」がまとまって汗を流したと聞く。派手なニュースではない。だが、同じ釜の飯がリングの連携に出ることを、この業界の人間は皆知っている。' },
+  ],
+  factionMediaFeature: [
+    { headline: '「{factionName}」にメディアの照明——{leaderName}が特集取材に応じる',
+      body: '{org}の「{factionName}」に取材が入った。カメラの前で語る{leaderName}の言葉は、良くも悪くも団体の外へ届く。派閥が団体の顔になる——それを歓迎するかどうかは、社長の胸三寸だ。' },
+  ],
+  factionJointProject: [
+    { headline: '「{factionAName}」と「{factionBName}」が合同企画——{org}に珍しい共闘',
+      body: '普段は別の旗を掲げる二つの派閥が、手を組んで企画を打った。{org}の控室に流れる空気は悪くない。対立だけが派閥の使い道ではない、ということだろう。' },
   ],
   reclaimChallenge: [
     { headline: '挑戦状！{challengerName}が{toOrg}に世界王座奪還を要求',

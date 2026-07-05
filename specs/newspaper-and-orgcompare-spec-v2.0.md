@@ -8,9 +8,10 @@
 
 - **キュー push API**: engine 側 `Engine.industryNews.push(state, ev)`、UI 側 `App._pushIndustryNews(ev)`。
 - **イベント type 一覧** (PRIORITY 値): `factionEscalation:125` / `factionResolution:122` / `reclaimSuccess:120` / `reclaimChallenge:108` / `reclaimFailure:102` / `factionFormed:90` / `factionSplit:88` / `factionDissolution:85` / `lockerRoomCrisis:75` / `firstMeetSinceDeparture:72` / `relationshipRepair:68` / `relationshipRepairFail:55` / `hatredContagion:50`。王座交代(130)と興行(120)の中位帯に配置し、興行記事を押し出さない設計。
+- **派閥イベント拡充 (2026-07-05 C-1)**: Tier A 大ネタ = `factionCoup:118`(下剋上) / `factionWarSettled:115`(F09 対抗戦決着) / `factionEndless:112`(無限抗争) / `factionDefection:105`(F04 寝返り成立) / `factionShowdown:95`(F08 リーダー直接対決決定) / `factionSuccession:87`(F03 後継就任・turmoil 含む) / `factionPeace:84`(F02 沈静化) / `factionReconcile:82`(F06 和解=A択) / `factionHiatus:78`(F05H 活動休止)。Tier B 日常ネタ(閑散週の埋め草・低 priority でソートに自然に弾かれる) = `factionInternalBout:58`(Common-1 同門対決=A択) / `factionMediaFeature:52`(Common-5 取材=A択) / `factionJointProject:50`(Common-7 合同企画=A択) / `factionCamp:48`(Common-4 合宿)。**設計原則: 「外から見える出来事」だけ記事化**(慰留成功・告げ口などの未遂、社長の内々の決裁は載せない)。
 - **テンプレ**: `data.js` の `NEWS_HEADLINE_TEMPLATES` に黒田トーンで各 type 1〜3バリエーション。
 - **クリア**: `tickWeek` 内 `weeklyNewspaper` 生成直後に `_industryNewsEvents: []` で消化(週次)。
-- **フックポイント**: `relationships.js`(P-4 ロッカー荒廃) / `management.js`(P-6 修復チャネル) / `app.js handleFactionEvent`(F01/F02/F02_RESOLUTION/F03/F05) / `app.js`(`confirmReclaim`・奪還結果) / 試合 h2h.update 時(B-3 firstMeetSinceDeparture)。
+- **フックポイント**: `relationships.js`(P-4 ロッカー荒廃) / `management.js`(P-6 修復チャネル) / `app.js handleFactionEvent`(F01/F02/F02_PEACE/F02_RESOLUTION/F02_ENDLESS/F03 消滅+後継/F04/F05/F05H/F06/F08/COMMON_1/COMMON_4/COMMON_5/COMMON_7) / `app.js`(`confirmReclaim`・奪還結果・F09 sweep 決着ブロック) / `factions.js applyInternalChallengeResult`(下剋上成立) / 試合 h2h.update 時(B-3 firstMeetSinceDeparture)。
 
 新聞画面(独立タブ「📰 新聞」、`screen-newspaper`)に統合された 1面/2面/3面 のUI仕様。`docs/ui/mockups/newspaper-mockup-v8.html` 準拠。Phase 2 の DBサブタブ実装(`_dbSubTab=2/5/8`)を破棄し、独立トップタブに移管した v3.0 設計。
 

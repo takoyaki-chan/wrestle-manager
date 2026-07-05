@@ -6008,6 +6008,19 @@ const App = {
         if (winF && losF) {
           const winLeader = (s.roster || []).find(c => c.id === winF.leaderId);
           const losLeader = (s.roster || []).find(c => c.id === losF.leaderId);
+          // 業界ニュース: 派閥対抗戦決着
+          s = Engine.industryNews.push(s, {
+            type: 'factionWarSettled',
+            characterId: winF.leaderId || null,
+            data: {
+              org: s.orgName || 'プレイヤー団体',
+              winFaction: winF.name,
+              loseFaction: losF.name,
+              score: `${Math.max(winsA, winsB)}勝${Math.min(winsA, winsB)}敗`,
+              winLeader: winLeader ? winLeader.name : '?',
+              loseLeader: losLeader ? losLeader.name : '?',
+            },
+          });
           const pickLine = (table, fighter) => {
             if (!table || !fighter) return '';
             const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
@@ -9638,6 +9651,16 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA27));
         const result = Engine.factions.applyF02PeaceResult(G, payload, rng);
         G = { ...result.state };
+        // 業界ニュース: 抗争沈静化
+        App._pushIndustryNews({
+          type: 'factionPeace',
+          characterId: null,
+          data: {
+            org: G.orgName || 'プレイヤー団体',
+            factionAName: payload.factionAName || '?',
+            factionBName: payload.factionBName || '?',
+          },
+        });
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -9712,6 +9735,16 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA25));
         const result = Engine.factions.applyF02EndlessResult(G, payload, rng);
         G = { ...result.state };
+        // 業界ニュース: 無限抗争
+        App._pushIndustryNews({
+          type: 'factionEndless',
+          characterId: null,
+          data: {
+            org: G.orgName || 'プレイヤー団体',
+            factionAName: payload.factionAName || '?',
+            factionBName: payload.factionBName || '?',
+          },
+        });
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -9744,6 +9777,18 @@ const App = {
               leaderName: payload.oldLeaderName || '?',
             },
           });
+        } else if (payload.branch === 'succession' || payload.branch === 'turmoil') {
+          // 業界ニュース: 後継リーダー就任（動揺含み turmoil も外から見れば代替わり）
+          App._pushIndustryNews({
+            type: 'factionSuccession',
+            characterId: payload.successorId || null,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              factionName: payload.factionName || '?',
+              newLeaderName: payload.successorName || '?',
+              oldLeaderName: payload.oldLeaderName || '?',
+            },
+          });
         }
         Storage.autoSave();
         Audio.play('event');
@@ -9769,6 +9814,19 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA14));
         const result = Engine.factions.applyF04Choice(G, payload, choiceId, rng);
         G = { ...result.state };
+        // 業界ニュース: 寝返り成立（A=転籍のみ。慰留・告げ口の未遂は外から見えないので載せない）
+        if (choiceId === 'A') {
+          App._pushIndustryNews({
+            type: 'factionDefection',
+            characterId: payload.targetId || null,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              targetName: payload.targetName || '?',
+              fromFaction: payload.fromFactionName || '?',
+              toFaction: payload.toFactionName || '?',
+            },
+          });
+        }
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -9789,6 +9847,16 @@ const App = {
       showFactionHiatusModal(payload, G, () => {
         const result = Engine.factions.applyF05HResult(G, payload);
         G = { ...result.state };
+        // 業界ニュース: 活動休止
+        App._pushIndustryNews({
+          type: 'factionHiatus',
+          characterId: payload.leaderId || null,
+          data: {
+            org: G.orgName || 'プレイヤー団体',
+            factionName: payload.factionName || '?',
+            leaderName: payload.leaderName || '?',
+          },
+        });
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -9843,6 +9911,18 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA16));
         const result = Engine.factions.applyF06Choice(G, payload, choiceId, rng);
         G = { ...result.state };
+        // 業界ニュース: 和解成立（A=仲裁のみ）
+        if (choiceId === 'A') {
+          App._pushIndustryNews({
+            type: 'factionReconcile',
+            characterId: payload.leaderAId || null,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              factionAName: payload.factionAName || '?',
+              factionBName: payload.factionBName || '?',
+            },
+          });
+        }
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -9905,6 +9985,20 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA18));
         const result = Engine.factions.applyF08Choice(G, payload, choiceId, rng);
         G = { ...result.state };
+        // 業界ニュース: リーダー直接対決の決定（A=次興行メインに据える）
+        if (choiceId === 'A') {
+          App._pushIndustryNews({
+            type: 'factionShowdown',
+            characterId: payload.leaderAId || null,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              factionAName: payload.factionAName || '?',
+              factionBName: payload.factionBName || '?',
+              leaderAName: payload.leaderAName || '?',
+              leaderBName: payload.leaderBName || '?',
+            },
+          });
+        }
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -9937,6 +10031,17 @@ const App = {
           const fA = (G.roster || []).find(c => c.id === payload.fighterAId);
           const fB = (G.roster || []).find(c => c.id === payload.fighterBId);
           if (!fA || !fB) { finalizeAudio && finalizeAudio(); return; }
+          // 業界ニュース: 同門対決の実現
+          App._pushIndustryNews({
+            type: 'factionInternalBout',
+            characterId: fA.id,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              factionName: payload.factionName || '?',
+              nameA: fA.name,
+              nameB: fB.name,
+            },
+          });
           App._common1Preview = {
             payload, fighterA: fA, fighterB: fB,
             watching: false, matchResult: null, finalizeAudio
@@ -9967,6 +10072,18 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAC5));
         const result = Engine.factions.applyCommon5Choice(G, payload, choiceId, rng);
         G = { ...result.state };
+        // 業界ニュース: メディア特集（A=取材を受けたときのみ）
+        if (choiceId === 'A') {
+          App._pushIndustryNews({
+            type: 'factionMediaFeature',
+            characterId: payload.leaderId || null,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              factionName: payload.factionName || '?',
+              leaderName: payload.leaderName || '?',
+            },
+          });
+        }
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -9991,6 +10108,18 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAC7));
         const result = Engine.factions.applyCommon7Choice(G, payload, choiceId, rng);
         G = { ...result.state };
+        // 業界ニュース: 合同企画の開催（A=乗ったときのみ）
+        if (choiceId === 'A') {
+          App._pushIndustryNews({
+            type: 'factionJointProject',
+            characterId: payload.leaderAId || null,
+            data: {
+              org: G.orgName || 'プレイヤー団体',
+              factionAName: payload.factionAName || '?',
+              factionBName: payload.factionBName || '?',
+            },
+          });
+        }
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
@@ -10015,6 +10144,15 @@ const App = {
         const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAC4));
         const result = Engine.factions.applyCommon4Result(G, payload, rng);
         G = { ...result.state };
+        // 業界ニュース: 派閥合宿
+        App._pushIndustryNews({
+          type: 'factionCamp',
+          characterId: payload.leaderId || null,
+          data: {
+            org: G.orgName || 'プレイヤー団体',
+            factionName: payload.factionName || '?',
+          },
+        });
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
