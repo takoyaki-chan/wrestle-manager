@@ -841,7 +841,7 @@ Engine.tagMatch = (() => {
           mom = clamp(mom, -50, 50);
           log.push(`T${totalTurn} [${ph.name}] ${defFighter.name}がカウンター！ ${cMv.n} → ${atkFighter.name}に${cDmg}ダメージ`);
           if (recordFrames) {
-            _turnAction = { attackerId: defFighter.id, defenderId: atkFighter.id, atkSide: atkSide === 'left' ? 'right' : 'left', move: cMv.n, moveD: cMv.d, moveCat: cMv.c, kind: 'counter', dmg: cDmg, isCrit: cDmg >= 15 };
+            _turnAction = { attackerId: defFighter.id, defenderId: atkFighter.id, atkSide: atkSide === 'left' ? 'right' : 'left', move: cMv.n, origMove: mv.n, moveD: cMv.d, moveCat: cMv.c, kind: 'counter', dmg: cDmg, isCrit: cDmg >= 15 };
           }
           if (isAAttacking) { lossStreakA++; lossStreakB = 0; }
           else { lossStreakB++; lossStreakA = 0; }

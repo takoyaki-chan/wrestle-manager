@@ -734,7 +734,7 @@ function _renderActionImpact(action){
   _playImpactSE(action);
 
   if (action.isCrit && isBig) _flashRedOverlay(document.getElementById('flashOv'));
-  if (action.isCrit && action.dmg >= 15) _showBigMoveSplash(action.move);
+  if (action.isCrit && action.dmg >= 15) _showBigMoveSplash(action.kind === 'counter' ? (action.counterMove || action.move) : action.move);
 }
 
 function _showDmgPop(side, val, isCrit, isCounter){
@@ -1490,7 +1490,7 @@ function _narrateFrame(fr){
   }
   if (action.kind === 'counter') {
     return {
-      text: `${atk.name}\u304c\u30ab\u30a6\u30f3\u30bf\u30fc\uff01 ${action.move || ''} \u2192 ${def.name}\u306b${action.dmg}\u30c0\u30e1\u30fc\u30b8`,
+      text: `${atk.name}\u304c\u30ab\u30a6\u30f3\u30bf\u30fc\uff01 ${action.counterMove || action.move || ''} \u2192 ${def.name}\u306b${action.dmg}\u30c0\u30e1\u30fc\u30b8`,
       dramatic: true,
     };
   }

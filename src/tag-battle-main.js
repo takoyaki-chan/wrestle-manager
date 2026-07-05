@@ -702,7 +702,7 @@ function _spawnAttackArrow(action){
     const origAtkSide = origAtkKey && (origAtkKey === 'a1' || origAtkKey === 'a2') ? 'a' : 'b';
     const stage1Dir = origAtkSide === 'a' ? 'ltr' : 'rtl';
     const stage2Dir = stage1Dir === 'ltr' ? 'rtl' : 'ltr';
-    _renderArrow(layer, stage1Dir, action.move || '攻撃', false, false);
+    _renderArrow(layer, stage1Dir, action.origMove || '攻撃', false, false);
     setTimeout(() => _renderArrow(layer, stage2Dir, 'カウンター！ ' + (action.move || ''), true, false), 1000);
   } else {
     const dir = atkSide === 'a' ? 'ltr' : 'rtl';
