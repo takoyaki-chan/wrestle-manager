@@ -1676,7 +1676,7 @@ function _renderRosterDetailPanel(c, hired) {
   log.forEach(entry => {
     if (entry.season !== prevSeason) {
       tab2 += `<div class="rd-growth-week" style="border-top:1px solid rgba(122,101,48,0.35);padding-top:8px;margin-top:4px">
-        <span class="rd-growth-label" style="color:#7a6530 !important">S${entry.season} 末</span>
+        <span class="rd-growth-label" style="color:#7a6530 !important">${entry.season}年目 末</span>
         <span class="rd-growth-event" style="color:#7a7466">— シーズン${entry.season}終了 —</span>
       </div>`;
       prevSeason = entry.season;
@@ -3071,10 +3071,10 @@ function _orgPopChart(points) {
   svg += `<polyline points="${polyline}" fill="none" stroke="${lineColor}" stroke-width="2.5"/>`;
   // データ点（ホバーtitleつき）+ 5シーズンおきにシーズン番号
   pts.forEach((p, i) => {
-    svg += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${lineColor}" stroke="var(--bg-main)" stroke-width="1.5"><title>S${p.season}: ${Math.round(p.pop * 10) / 10}</title></circle>`;
+    svg += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${lineColor}" stroke="var(--bg-main)" stroke-width="1.5"><title>${p.season}年目: ${Math.round(p.pop * 10) / 10}</title></circle>`;
     // シーズン番号ラベル（5の倍数 or 最初と最後）
     if (p.season % 5 === 0 || i === 0 || i === pts.length - 1) {
-      svg += `<text x="${p.x}" y="${height - 2}" text-anchor="middle" fill="rgba(200,190,170,0.35)" font-size="9">S${p.season}</text>`;
+      svg += `<text x="${p.x}" y="${height - 2}" text-anchor="middle" fill="rgba(200,190,170,0.35)" font-size="9">${p.season}年</text>`;
     }
   });
   // 最新値ラベル
@@ -3150,13 +3150,21 @@ function renderFinance() {
   if (tab === 'summary') {
     html += `<div style="font-size:24px;font-weight:900;margin-bottom:12px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${Math.round(G.funds).toLocaleString()}万</div>`;
 
-    // 資金推移チャート（今月以外は月末スナップショットに集約）
+    // 資金推移チャート — 期間フィルタに追従する
+    // fundsHistory は今シーズンの週次スナップショット（シーズン開幕でリセット）のため、
+    // 今月=直近4週 / 年間=今シーズンの月末値 / 全期間=seasonHistory のシーズン末資金 で描き分ける
     const fhRaw = G.fundsHistory || [];
-    const isMonthlyF = period !== 'month';
-    const fh = isMonthlyF ? _monthlySnapshotValues(fhRaw) : fhRaw;
-    const fhLabel = isMonthlyF
-      ? `💹 資金推移 (${fh.length}ヶ月)`
-      : `💹 資金推移 (${fhRaw.length}週)`;
+    let fh, fhLabel;
+    if (period === 'month') {
+      fh = fhRaw.slice(-4);
+      fhLabel = `💹 資金推移 (直近${fh.length}週)`;
+    } else if (period === 'all' && (G.seasonHistory || []).length >= 1) {
+      fh = [...G.seasonHistory.map(h => h.funds || 0), G.funds];
+      fhLabel = `💹 資金推移 (シーズン末値・${fh.length}年分)`;
+    } else {
+      fh = _monthlySnapshotValues(fhRaw);
+      fhLabel = `💹 資金推移 (今シーズン ${fh.length}ヶ月)`;
+    }
     html += _financeChart(fh, { color: '#2ecc71', negColor: '#e74c3c', label: fhLabel, showZeroLine: true });
 
     // 期間サマリ
@@ -3348,7 +3356,7 @@ function renderFinance() {
     chartPoints.push({ season: G.season, pop: G.orgPop || 0 });
 
     html += `<div class="panel-title" style="margin-top:0">団体人気推移</div>`;
-    html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">折れ線: 各シーズン末のorgPop ／ 破線: ドーム圏(90)</div>`;
+    html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">折れ線: 各シーズン末の団体人気 ／ 破線: ドーム圏(90)</div>`;
     html += _orgPopChart(chartPoints);
 
     // 現在のorgPop状態説明
