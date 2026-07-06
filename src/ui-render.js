@@ -990,6 +990,9 @@ function renderWeekScreen() {
       }
       const previewLabel = actionLabels[previewAction] || previewAction;
       const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="成長バフ ×${c._trainerBuff.mult} 残${c._trainerBuff.weeksLeft}週">🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
+      // care-rework v0.1 §3: 招聘中コーチのバッジ(コーチ名をtitleに)
+      const inviteCoach = c._inviteBuff ? (typeof ALL_COACHES !== 'undefined' ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null) : null;
+      const inviteBadge = c._inviteBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="${inviteCoach ? inviteCoach.name + 'コーチ招聘中' : '招聘中'} ×${c._inviteBuff.mult.toFixed(2)} 残${c._inviteBuff.weeksLeft}週">🏋️${c._inviteBuff.weeksLeft}w</span>` : '';
       const leaveBadge = isOnLeave ? ` <span style="font-size:10px;color:#3498db;background:rgba(52,152,219,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(52,152,219,0.3)" title="休暇中は興行に欠場します">🏖️休暇 あと${c.onLeave.weeksLeft}週</span>` : '';
       const tier = _wrOvrTier(ov(c));
       const popVal = Engine.util.dispPop(c.popularity);
@@ -1001,7 +1004,7 @@ function renderWeekScreen() {
           <div class="wr-name-cell">
             ${_imgOrInitial(faceUrl, c.id, 40, 'border-radius:8px;')}
             <span>
-              <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}${trainerBadge}${leaveBadge}
+              <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}${trainerBadge}${inviteBadge}${leaveBadge}
             </span>
           </div>
         </td>
@@ -1952,7 +1955,11 @@ function renderRoster() {
     // Coach mini-select in card row (inline, 1-click assign)
     const coachOfChar = c.isRental ? null : getCharCoach(c.id);
     let coachInlineHtml = '';
-    if (!c.isRental && hired.length > 0) {
+    if (c._inviteBuff) {
+      // care-rework v0.1 §3.5: 招聘中は雇用コーチのアサインから外れているため、
+      // 通常のコーチ選択プルダウンではなく招聘中である旨だけを表示する(操作不可)
+      coachInlineHtml = `<span style="font-size:10px;color:#7a6530;font-style:italic">コーチ: 招聘中</span>`;
+    } else if (!c.isRental && hired.length > 0) {
       const sm = coachOfChar ? getCoachStyleMatch(coachOfChar, c) : null;
       const smCls = sm ? sm.cls : '';
       let miniOpts = `<option value="0"${!coachOfChar?' selected':''}>コーチ: なし</option>`;
@@ -1979,6 +1986,10 @@ function renderRoster() {
             <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
             ${coachInlineHtml}
             ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
+            ${c._inviteBuff ? (() => {
+              const invCoach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null;
+              return `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="${invCoach ? invCoach.name + 'コーチ招聘中' : '招聘中'}">🏋️${c._inviteBuff.weeksLeft}w</span>`;
+            })() : ''}
             ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}${lowTrustBadge}
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">

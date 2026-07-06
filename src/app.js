@@ -10794,7 +10794,10 @@ const App = {
       return;
     }
     // 個人書類 / 団体書類 / ペア書類 で分岐
-    if (doc.effect && doc.effect.target === 'team') {
+    if (docId === 'trainer') {
+      // care-rework v0.1 §3: 招聘制は「コーチ候補選択→対象選手選択」の2段(bonus/refresh_leaveとは逆順)
+      showInviteCoachModal(G);
+    } else if (doc.effect && doc.effect.target === 'team') {
       showDecisionConfirmModal(docId, G);
     } else if (doc.effect && doc.effect.target === 'pair') {
       showDecisionPairModal(docId, G);
@@ -10822,6 +10825,9 @@ const App = {
     if (result.error === 'cooldown') { showToast('今週はすでに決裁済みです'); return { ok: false }; }
     if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません(${result.required} 必要)`); return { ok: false }; }
     if (result.error === 'condition_not_met') { showToast('この書類の発動条件を満たしていません'); return { ok: false }; }
+    // care-rework v0.1 §3: 招聘制の専用エラー
+    if (result.error === 'invite_active') { showToast('すでに招聘中のコーチがいます'); return { ok: false }; }
+    if (result.error === 'invalid_coach') { showToast('今期の候補にいないコーチです'); return { ok: false }; }
     if (result.error === 'unsupported_doc') { showToast(`未対応の書類です: ${result.docId}`); return { ok: false }; }
 
     // state 更新
@@ -10836,6 +10842,9 @@ const App = {
     };
     if (result.relationships) G = { ...G, relationships: result.relationships };
     if (result.h2h) G = { ...G, h2h: result.h2h };
+    // care-rework v0.1 §3: 招聘に伴う雇用コーチ退避(coachAssign)と招聘履歴(lastInvitedCoachId)
+    if (result.coachAssign) G = { ...G, coachAssign: result.coachAssign };
+    if (result.lastInvitedCoachId != null) G = { ...G, lastInvitedCoachId: result.lastInvitedCoachId };
     if (result.orgPopDelta) {
       const newOrgPop = Engine.util.clamp((G.orgPop || 0) + Engine.orgPop.applyOrgPopChange(result.orgPopDelta, G.orgPop, null), 0, 100);
       G = { ...G, orgPop: newOrgPop };

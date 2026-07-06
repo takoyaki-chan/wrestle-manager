@@ -3094,11 +3094,15 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${c.hotStreak ? `<span style="color:#ff9500">🔥 絶好調（残り${c.hotStreak.remainingWeeks}週 / OVR+${c.hotStreak.ovrBuff}）</span>` : ''}
             ${c._trainerBuff ? (() => {
               // 社長室 Phase 7: 成長バフ表示 + 信頼度がじわじわ育つことの明示
-              // _trainerBuff の出元 (trainer or camp) は pendingTrustDeltas の source から判定
+              // _trainerBuff は現在 camp 由来のみ(trainer は care-rework v0.1 で _inviteBuff に移行、既存セーブ互換のため残置)
               const weeks = c._trainerBuff.weeksLeft;
-              const pending = (c.pendingTrustDeltas || []).find(p => p.source === 'trainer' || p.source === 'camp');
-              const label = pending && pending.source === 'camp' ? '合宿' : '専属トレーナー';
-              return `<span style="color:#d4a843">🏋️ ${label} 残り${weeks}週 — 信頼もじわじわ育つ</span>`;
+              return `<span style="color:#d4a843">🏋️ 合宿 残り${weeks}週 — 信頼もじわじわ育つ</span>`;
+            })() : ''}
+            ${c._inviteBuff ? (() => {
+              // care-rework v0.1 §3: 招聘中コーチの表示
+              const coach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null;
+              const coachName = coach ? coach.name : '招聘コーチ';
+              return `<span style="color:#d4a843">🎓 ${coachName}コーチ招聘中 残り${c._inviteBuff.weeksLeft}週</span>`;
             })() : ''}
             ${c.slump ? `<span style="color:#7f8c8d">📉 スランプ中（${c.slump.weeksSinceStart}週目 / 回復確率${(2 + (c.slump.recoveryMomentum || 0)).toFixed(1)}%）</span>` : ''}
             ${c.motivationLoss ? `<span style="color:#95a5a6">😞 モチベ喪失（${c.motivationLoss.weeksSinceStart}週目）</span>` : ''}
@@ -7120,6 +7124,180 @@ function showLeaveWeeksModal(fighterId, state) {
     _mdlAClose();
     if (typeof App !== 'undefined' && App.executeDecision) {
       App.executeDecision('refresh_leave', fighterId, { weeks: opts[selectedIdx].weeks });
+    }
+  });
+}
+
+// care-rework v0.1 §3: 外部コーチ招聘 第1ステップ — 今期候補(2〜3名)からコーチを選ぶ。
+// bonus/refresh_leaveとは逆順(コーチ選択が先、対象選手選択は showInviteTargetModal で後段)。
+function showInviteCoachModal(state) {
+  const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS.trainer : null;
+  if (!doc) return;
+  const market = Engine.shachoshitsu.ensureInviteMarket(state);
+  const candidates = (market.candidateIds || []).map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
+  if (candidates.length === 0) {
+    showToast('今期招聘できるコーチがいません');
+    return;
+  }
+  const funds = state.funds || 0;
+  const gradeLabel = { C: 'C級', B: 'B級', A: 'A級' };
+  const defaultId = candidates.find(c => Engine.shachoshitsu.getInviteCost(c, state) <= funds)?.id ?? candidates[0].id;
+  const cards = candidates.map((c) => {
+    const cost = Engine.shachoshitsu.getInviteCost(c, state);
+    const afford = cost <= funds;
+    const typeLabel = (typeof COACHING_TYPE_LABELS !== 'undefined' && COACHING_TYPE_LABELS[c.coachingType]) || '';
+    const styleLabel = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[c.style]) || c.style;
+    const abilities = (c.abilities || []).slice(0, 2).join(' / ');
+    const selCls = c.id === defaultId ? ' is-selected' : '';
+    const faceUrl = (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(c.id) : '';
+    const bg = faceUrl
+      ? `background-image:url('${faceUrl}');background-size:cover;background-position:top center`
+      : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
+    return `<div class="mdl-a-decision-card${selCls}" data-id="${c.id}" style="text-align:center${afford ? '' : ';opacity:0.45;pointer-events:none'}">
+      <div style="width:64px;height:64px;margin:0 auto 8px;${bg};background-color:#2a2520;border:2px solid var(--cream-gold-dark);border-radius:50%"></div>
+      <div class="mdl-a-decision-label" style="font-size:15px;margin-bottom:2px">${c.name}</div>
+      <div style="font-family:var(--font-label);font-size:9px;color:var(--cream-gold);letter-spacing:1.5px;margin-bottom:6px">${gradeLabel[c.grade] || c.grade} ・ ${typeLabel}</div>
+      <div style="font-size:11px;color:var(--cream-text-sub);margin-bottom:4px">得意: ${styleLabel}</div>
+      <div style="font-size:10px;color:var(--cream-text-dim);line-height:1.5;min-height:2.2em">${abilities}</div>
+      <div style="font-size:13px;color:var(--cream-gold-dark);font-weight:700;margin-top:6px">${cost.toLocaleString()}万</div>
+      ${afford ? '' : '<div style="font-size:10px;color:var(--accent-negative);margin-top:4px">資金不足</div>'}
+    </div>`;
+  }).join('');
+
+  const stageBody = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">今期、招聘に応じてくれそうなコーチの顔ぶれ。指導タイプと得意スタイルを見て、誰に任せるか決める。</div>
+    <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">CANDIDATES ・ 招 聘 候 補</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px" id="mdlAInviteCoachGrid">
+      ${cards}
+    </div>
+  `;
+
+  const html = `
+    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAReporterStrip(state, '招聘するコーチを選んでください')}
+    <div class="mdl-a-subject-stage">${stageBody}</div>
+    <div class="mdl-a-prompt" style="padding-top:14px">選択後、次へ進んでください</div>
+    <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
+      <button class="mdl-a-continue-btn" id="mdlAInviteCoachCancel">— 取 消 —</button>
+      <button class="mdl-a-continue-btn" id="mdlAInviteCoachNext" style="background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)">— 次 へ —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html)) return;
+
+  let selectedCoachId = defaultId;
+  const grid = document.getElementById('mdlAInviteCoachGrid');
+  if (grid) {
+    grid.addEventListener('click', e => {
+      const el = e.target.closest('.mdl-a-decision-card');
+      if (!el) return;
+      selectedCoachId = parseInt(el.dataset.id);
+      grid.querySelectorAll('.mdl-a-decision-card').forEach(c => c.classList.remove('is-selected'));
+      el.classList.add('is-selected');
+    });
+  }
+  document.getElementById('mdlAInviteCoachCancel').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+  });
+  document.getElementById('mdlAInviteCoachNext').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+    showInviteTargetModal(selectedCoachId, G);
+  });
+}
+
+// care-rework v0.1 §3: 外部コーチ招聘 第2ステップ — 対象選手を選ぶ。
+// 候補は非レンタル・非怪我・非休暇・招聘中でない選手。スタイル一致(✦/○)だけ表示し、
+// 指導相性は「事前には完全に分からない」(spec §3.3)ため出さない。消化力逓減中はヒントのみ。
+function showInviteTargetModal(coachId, state) {
+  const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS.trainer : null;
+  const coach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(c => c.id === coachId) : null;
+  if (!doc || !coach) return;
+
+  const cost = Engine.shachoshitsu.getInviteCost(coach, state);
+  if ((state.funds || 0) < cost) {
+    showToast('資金が足りません');
+    return;
+  }
+
+  const roster = state.roster || [];
+  const candidates = roster.filter(f => !f.isRental && !f.injury && !f.onLeave && !f._inviteBuff);
+  if (candidates.length === 0) {
+    showToast('対象候補の選手がいません');
+    return;
+  }
+
+  const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
+  const cards = candidates.map((f, i) => {
+    const lastName = f.name.split(/\s/).pop();
+    const sm = (typeof getCoachStyleMatch === 'function') ? getCoachStyleMatch(coach, f) : { icon: '', cls: 'none' };
+    const matchHtml = sm.icon
+      ? `<span style="font-weight:700;color:${sm.cls === 'specialist' ? '#2ecc71' : '#f1c40f'}">${sm.icon}${sm.label}</span>`
+      : `<span style="color:var(--cream-text-dim)">不一致</span>`;
+    const diminishedHint = (f._lastInviteEndWeek != null && (absoluteWeek - f._lastInviteEndWeek) <= 12)
+      ? `<div class="mdl-a-decision-hint negative">詰め込み注意</div>` : '';
+    const faceUrl = (typeof getPortraitUrl === 'function') ? getPortraitUrl(f.id) : '';
+    const bg = faceUrl
+      ? `background-image:url('${faceUrl}');background-size:cover;background-position:center`
+      : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
+    const selCls = i === 0 ? ' is-selected' : '';
+    return `<div class="mdl-a-decision-card${selCls}" data-id="${f.id}" style="text-align:center">
+      <div style="width:72px;height:72px;margin:0 auto 8px;${bg};background-color:#2a2520;border:2px solid var(--cream-gold-dark);border-radius:50%"></div>
+      <div class="mdl-a-decision-label" style="margin-bottom:4px">${lastName}</div>
+      <div style="font-family:var(--font-label);font-size:9px;color:var(--cream-gold);letter-spacing:1.5px;margin-bottom:6px">AGE ${f.age || '—'} ・ OVR ${Engine.util.ov(f)}</div>
+      <div style="font-size:11px;margin-bottom:2px">${matchHtml}</div>
+      ${diminishedHint}
+    </div>`;
+  }).join('');
+
+  const stageBody = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:12px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${coach.name}コーチを、誰に付ける。4週間の指導になる。指導との相性までは、始めてみないと分からない。</div>
+    <div style="display:flex;justify-content:center;gap:18px;align-items:baseline;font-size:13px;color:var(--cream-text-main);margin-bottom:14px">
+      <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">COST</span><strong style="color:var(--cream-gold-dark)">${cost.toLocaleString()}万</strong></span>
+      <span style="color:rgba(122,101,48,0.3)">|</span>
+      <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">DP</span><strong>⚡${doc.decisionCost}</strong></span>
+    </div>
+    <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">CANDIDATES ・ 対 象 選 手</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px" id="mdlAInviteTargetGrid">
+      ${cards}
+    </div>
+  `;
+
+  const html = `
+    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAReporterStrip(state, '対象となる選手を選んでください')}
+    <div class="mdl-a-subject-stage">${stageBody}</div>
+    <div class="mdl-a-prompt" style="padding-top:14px">選択後、決裁ボタンを押してください</div>
+    <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
+      <button class="mdl-a-continue-btn" id="mdlAInviteTargetBack">— 戻 る —</button>
+      <button class="mdl-a-continue-btn" id="mdlAInviteTargetConfirm" style="background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)">— 決 裁 す る —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html)) return;
+
+  let selectedFighterId = candidates[0].id;
+  const grid = document.getElementById('mdlAInviteTargetGrid');
+  if (grid) {
+    grid.addEventListener('click', e => {
+      const el = e.target.closest('.mdl-a-decision-card');
+      if (!el) return;
+      selectedFighterId = parseInt(el.dataset.id);
+      grid.querySelectorAll('.mdl-a-decision-card').forEach(c => c.classList.remove('is-selected'));
+      el.classList.add('is-selected');
+    });
+  }
+  document.getElementById('mdlAInviteTargetBack').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+    showInviteCoachModal(G);
+  });
+  document.getElementById('mdlAInviteTargetConfirm').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+    if (typeof App !== 'undefined' && App.executeDecision) {
+      App.executeDecision('trainer', selectedFighterId, { coachId });
     }
   });
 }

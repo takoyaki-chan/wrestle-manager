@@ -5785,6 +5785,13 @@ const Engine = {
       });
     },
     getCharCoach(G, charId) {
+      // care-rework v0.1 §3.3: 招聘中(_inviteBuff)の選手は、招聘コーチをその期間だけ担当コーチとみなす。
+      // これにより getCharGrowthMult / getWearMult 等の既存コーチ能力適用経路にそのまま乗る。
+      const char = (G.roster || []).find(c => c.id === charId);
+      if (char && char._inviteBuff) {
+        const invited = ALL_COACHES.find(c => c.id === char._inviteBuff.coachId);
+        if (invited) return invited;
+      }
       for (const coachId of G.coaches) {
         if (Engine.coach.getCoachAssignees(G, coachId).includes(charId)) return ALL_COACHES.find(c => c.id === coachId);
       }
@@ -10020,7 +10027,18 @@ const Engine = {
       });
 
       // v2.0: トレーナーバフ週次消費（成長計算の後でデクリメント）
+      // 旧 _trainerBuff(既存セーブの camp 由来のみ残存): 現行経路のまま完走させる
       roster = Engine.shachoshitsu.tickTrainerBuffs(roster);
+      // care-rework v0.1 §3.4/§3.5: 招聘(_inviteBuff)の週次消費。期限切れで
+      // 卒業ログ + 雇用コーチ自動復帰(coachAssign)+ _lastInviteEndWeek 記録。
+      let inviteTickEvents = [];
+      let coachAssignAfterInviteTick = null;
+      {
+        const inviteTick = Engine.shachoshitsu.tickInviteBuffs({ ...G, roster });
+        roster = inviteTick.roster;
+        if (inviteTick.events.length > 0) inviteTickEvents = inviteTick.events;
+        coachAssignAfterInviteTick = inviteTick.coachAssign;
+      }
 
       // 社長室 Phase 7: trainer/camp の信頼度遅延発現 (tickTrainerBuffs と同タイミングで呼ぶ)
       // これにより _trainerBuff.weeksLeft と pendingTrustDeltas[].weeksRemaining が常に同期する
@@ -10142,9 +10160,11 @@ const Engine = {
         ...pendingSlumpEvents.map(e => ({ ...e })),
         ...pendingMotivationEvents.map(e => ({ ...e })),
       ];
-      const result = { roster, freeAgents, heatScore, events };
+      const result = { roster, freeAgents, heatScore, events: [...events, ...inviteTickEvents] };
       // Phase 4: 関係値更新をresultに含める
       if (G.relationships) result.relationships = G.relationships;
+      // care-rework v0.1 §3.5: 招聘終了に伴う雇用コーチ自動復帰(coachAssign)
+      if (coachAssignAfterInviteTick) result.coachAssign = coachAssignAfterInviteTick;
       if (pendingGrowthEvents.length > 0) result._pendingGrowthEvents = pendingGrowthEvents;
       if (pendingMotivationRetirements.length > 0) result._pendingMotivationRetirements = pendingMotivationRetirements;
       if (pendingNotifEvent) result._pendingNotifEvent = pendingNotifEvent;
@@ -10509,6 +10529,10 @@ const Engine = {
     let s = { ...state, roster: manage.roster, freeAgents: manage.freeAgents, heatScore: manage.heatScore };
     // Phase 4: processManage で更新された関係値を反映
     if (manage.relationships) s = { ...s, relationships: manage.relationships };
+    // care-rework v0.1 §3.5: 招聘終了に伴う雇用コーチ自動復帰(coachAssign)
+    if (manage.coachAssign) s = { ...s, coachAssign: manage.coachAssign };
+    // care-rework v0.1 §3.1: 四半期(12週)ごとに招聘候補市場を再抽選(periodKey変化時のみ)
+    s = { ...s, inviteMarket: Engine.shachoshitsu.ensureInviteMarket(s) };
     // v1.8: transient 成長イベントを state に乗せる
     if (manage._pendingGrowthEvents) s = { ...s, _pendingGrowthEvents: manage._pendingGrowthEvents };
     if (manage._pendingMotivationRetirements) s = { ...s, _pendingMotivationRetirements: manage._pendingMotivationRetirements };
@@ -14924,6 +14948,9 @@ const Engine = {
       availableCoaches: Engine.coach.generateSeasonalPool(Engine.rng.create(Engine.rng.derive(seed, 1, 0xC0AC)), { orgPop: 10, coaches: [], coachSlots: 1 }),
       seasonGrowth: {},
       coachAssign: {},
+      // shachoshitsu-care-rework v0.1 §3.1: 外部コーチ招聘市場(四半期ごとに再抽選、tickWeek が管理)
+      inviteMarket: null,
+      lastInvitedCoachId: null,
       // v0.9: Rival system
       aiOrgs,
       rivalOrgNames,
@@ -18595,6 +18622,125 @@ Engine.shachoshitsu = {
     return salary * Math.max(1, Math.min(4, weeks || 1)) + 50;
   },
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // care-rework v0.1 §3: 専属トレーナー → 外部コーチ招聘制
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // §3.1: 四半期キー(12週=1四半期、season内で最大5四半期になるが実運用上48週=4四半期)
+  getInvitePeriodKey(season, week) {
+    const quarter = Math.ceil((week || 1) / 12);
+    return `${season}-Q${quarter}`;
+  },
+
+  // §3.1: 候補市場を抽選する(純粋関数、periodKey が変わったときだけ tickWeek から呼ばれる)。
+  // 未雇用コーチ(自団体に居ない者)から2〜3名、直前に招聘したコーチは1回休み、
+  // 格の出現は orgPop 連動(コーチの minOrgPop ≤ 現orgPop のみ候補)。
+  rollInviteMarket(state) {
+    const season = state.season || 1;
+    const week = state.week || 1;
+    const quarter = Math.ceil(week / 12);
+    const periodKey = Engine.shachoshitsu.getInvitePeriodKey(season, week);
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, season, quarter, 0x1CB1));
+    const hired = new Set(state.coaches || []);
+    const orgPop = state.orgPop || 0;
+    const lastInvitedId = state.lastInvitedCoachId || null;
+    const eligible = ALL_COACHES.filter(c => {
+      if (hired.has(c.id)) return false;
+      if (c.id === lastInvitedId) return false;  // 招聘直後のコーチは次回抽選を1回休む
+      if ((c.minOrgPop || 0) > orgPop) return false;
+      return true;
+    });
+    const shuffled = [...eligible].sort(() => Engine.rng.float(rng) - 0.5);
+    const count = 2 + Engine.rng.int(rng, 0, 1);  // 2〜3名
+    const candidateIds = shuffled.slice(0, Math.min(count, shuffled.length)).map(c => c.id);
+    return { periodKey, candidateIds };
+  },
+
+  // periodKey が現在と食い違っていれば再抽選、そうでなければそのまま返す(tickWeek から毎週呼ぶ)
+  ensureInviteMarket(state) {
+    const periodKey = Engine.shachoshitsu.getInvitePeriodKey(state.season || 1, state.week || 1);
+    if (state.inviteMarket && state.inviteMarket.periodKey === periodKey) return state.inviteMarket;
+    return Engine.shachoshitsu.rollInviteMarket(state);
+  },
+
+  // §3.2: 招聘費 = コーチ週給×4週×スポット割増1.5(±10%ブレ、10万単位丸め)。
+  // ノイズシードは (season, quarter, coachId) 由来 — 期間中は同じ額で表示され続ける。
+  getInviteCost(coach, state) {
+    if (!coach) return 0;
+    const season = state.season || 1;
+    const quarter = Math.ceil((state.week || 1) / 12);
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, season, quarter, coach.id, 0x1CB2));
+    const noise = 0.9 + Engine.rng.float(rng) * 0.2;
+    const raw = (coach.salary || 0) * 4 * 1.5 * noise;
+    return Math.max(10, Math.round(raw / 10) * 10);
+  },
+
+  // §6.3: 指導タイプ×選手personalityの相性判定。'good' | 'bad' | 'normal'(普通)
+  getCoachingCompat(coachingType, personality) {
+    if (typeof COACHING_COMPAT_MATRIX === 'undefined') return 'normal';
+    const row = COACHING_COMPAT_MATRIX[coachingType];
+    if (!row) return 'normal';
+    const p = personality || 'normal';
+    if (p === 'normal') return 'normal';
+    if ((row.good || []).includes(p)) return 'good';
+    if ((row.bad || []).includes(p)) return 'bad';
+    return 'normal';
+  },
+
+  // §3.3: 招聘中の成長倍率 = 基礎(格) + スタイル一致 + 指導相性。
+  // §3.5 消化力逓減: 前回招聘終了(_lastInviteEndWeek)から12週以内の再招聘は、
+  // 1.0超過分(上乗せぶん)を半減させる(「詰め込みすぎ」)。
+  calcInviteMult(coach, fighter, state) {
+    if (!coach || !fighter) return 1.0;
+    const gradeBase = { C: 1.25, B: 1.30, A: 1.35 }[coach.grade] || 1.25;
+    let mult = gradeBase;
+    if (coach.style === 'Allround') mult += COACH_STYLE_BONUS.allround;
+    else if (coach.style === fighter.style) mult += COACH_STYLE_BONUS.specialist;
+    const compat = Engine.shachoshitsu.getCoachingCompat(coach.coachingType, fighter.personality);
+    if (compat === 'good') mult += 0.10;
+    else if (compat === 'bad') mult -= 0.10;
+
+    // §3.5: 消化力逓減判定
+    const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
+    const lastEnd = fighter._lastInviteEndWeek;
+    let diminished = false;
+    if (lastEnd != null && (absoluteWeek - lastEnd) <= 12) {
+      const excess = mult - 1.0;
+      if (excess > 0) mult = 1.0 + excess * 0.5;
+      diminished = true;
+    }
+    return { mult, compat, diminished };
+  },
+
+  // ── 発動中の招聘バフ週次消費(processManage内で呼び出し) ───────────────────
+  // 期限切れで除去 + _lastInviteEndWeek を記録 + 退避していた雇用コーチを自動復帰。
+  // 返り値: { roster, coachAssign, events }
+  tickInviteBuffs(state) {
+    const events = [];
+    let coachAssign = state.coachAssign ? { ...state.coachAssign } : {};
+    const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
+    const roster = (state.roster || []).map(f => {
+      if (!f._inviteBuff) return f;
+      const buf = f._inviteBuff;
+      if (buf.weeksLeft <= 1) {
+        const coach = ALL_COACHES.find(c => c.id === buf.coachId);
+        const coachName = coach ? coach.name : '招聘コーチ';
+        events.push(`🎓 ${f.name}への${coachName}コーチの指導期間が終わった`);
+        // 二重指導なし: 退避していた雇用コーチをアサイン枠に空きがあれば自動復帰
+        if (buf.prevCoachId != null && (state.coaches || []).includes(buf.prevCoachId)) {
+          const current = coachAssign[buf.prevCoachId] || [];
+          if (current.length < COACH_MAX_ASSIGN && !current.includes(f.id)) {
+            coachAssign = { ...coachAssign, [buf.prevCoachId]: [...current, f.id] };
+          }
+        }
+        const { _inviteBuff: _ib, ...rest } = f;
+        return { ...rest, _lastInviteEndWeek: absoluteWeek };
+      }
+      return { ...f, _inviteBuff: { ...buf, weeksLeft: buf.weeksLeft - 1 } };
+    });
+    return { roster, coachAssign, events };
+  },
+
   // ── 決裁実行(純粋関数) ────────────────────────────────────────────────────
   // Phase 4: 遅延発現(Phase 7)と不確実性(Phase 8)は未適用。即時・固定値で計算。
   // 返り値: { roster, lockerRoomMorale, funds, cost, events, reactionKey,
@@ -18678,6 +18824,9 @@ Engine.shachoshitsu = {
     let currentFinalMult = 1.0;
     // care-rework v0.1: 侮辱帯ではトーンマーカー(深く刺さった/響かなかった)を出さない
     let suppressTone = false;
+    // care-rework v0.1 §3: 招聘(trainer) 専用 — 雇用コーチ退避後の coachAssign / 直近招聘コーチID
+    let coachAssignAfterInvite = null;
+    let newLastInvitedCoachId = null;
 
     // ── 個人書類(target: 'individual') ──
     if (doc.effect && doc.effect.target === 'individual') {
@@ -18783,13 +18932,35 @@ Engine.shachoshitsu = {
         f = { ...f, onLeave: { weeksLeft: weeks, totalWeeks: weeks }, forcedRest: true, intensive: false };
         events.push(`🏖️ ${f.name}に休暇辞令(${weeks}週間・${actualCost}万)`);
       } else if (docId === 'trainer') {
-        // Phase 7: 信頼度はバフ期間 (4週) と並走して遅延発現。trust フィールドは即時には変わらない
-        // Phase 8: 性格×アーキタイプの倍率は pending エントリに保存され、毎週発現時に適用される
-        const gb = doc.effect.growthBoost || { weeks: 4, mult: 1.3 };
+        // care-rework v0.1 §3: 専属トレーナー廃止 → 外部コーチ招聘制。
+        // options.coachId で今期候補から1名を指定。期間は4週固定。
+        if (f._inviteBuff) return { error: 'invite_active' };
+        const coachId = options && options.coachId != null ? options.coachId : null;
+        const market = Engine.shachoshitsu.ensureInviteMarket(state);
+        if (coachId == null || !market.candidateIds.includes(coachId)) return { error: 'invalid_coach' };
+        // §3.2: 同時招聘は1件まで(団体内のどの選手にも招聘中コーチがいないこと)
+        if (roster.some(c => c._inviteBuff)) return { error: 'invite_active' };
+        const coach = ALL_COACHES.find(c => c.id === coachId);
+        if (!coach) return { error: 'invalid_coach' };
+        actualCost = Engine.shachoshitsu.getInviteCost(coach, state);
+        if ((state.funds || 0) < actualCost) return { error: 'funds_insufficient' };
+
+        const { mult, compat, diminished } = Engine.shachoshitsu.calcInviteMult(coach, f, state);
+        // 二重指導なし: 招聘中は雇用コーチのアサインから外し、prevCoachId に退避(終了時に自動復帰)
+        const prevCoach = Engine.coach.getCharCoach(state, fighterId);
+        if (prevCoach) {
+          const current = (state.coachAssign && state.coachAssign[prevCoach.id]) || [];
+          coachAssignAfterInvite = { ...(state.coachAssign || {}), [prevCoach.id]: current.filter(id => id !== fighterId) };
+        }
+        f._inviteBuff = {
+          coachId: coach.id, weeksLeft: 4, totalWeeks: 4, mult, compat,
+          prevCoachId: prevCoach ? prevCoach.id : null,
+        };
+        newLastInvitedCoachId = coach.id;
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('trainer', f);
-        f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', gb.weeks, currentFinalMult);
-        f._trainerBuff = { weeksLeft: gb.weeks, mult: gb.mult };
-        events.push(`💪 ${f.name}に専属トレーナー(${gb.weeks}週間 成長+${Math.round((gb.mult - 1) * 100)}%)`);
+        f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', 4, currentFinalMult);
+        const typeLabel = (typeof COACHING_TYPE_LABELS !== 'undefined' && COACHING_TYPE_LABELS[coach.coachingType]) || '';
+        events.push(`💪 ${f.name}に${coach.name}コーチ(${typeLabel})を招聘(4週間・${actualCost}万)`);
       } else if (docId === 'special_treatment') {
         // 怪我選手の回復期間を確率ベースで短縮(executeSpecialTreatment と同じロジック)
         if (!f.injury) return { error: 'not_injured' };
@@ -18831,18 +19002,24 @@ Engine.shachoshitsu = {
       const _after = { trust: f.trust, condition: f.condition || 70 };
       // Phase 7+8: trainer は trust が即時変わらない + 不確実性で予告文言を3段階出し分け
       if (docId === 'trainer') {
-        const gb = doc.effect.growthBoost || { weeks: 4, mult: 1.3 };
         const tone = Engine.shachoshitsu.classifyTone(currentFinalMult);
         let trustText;
         if (tone === 'high') {
-          trustText = `今後${gb.weeks}週にわたって、予想以上に深く響いていきそうだ`;
+          trustText = '今後4週にわたって、予想以上に深く響いていきそうだ';
         } else if (tone === 'low') {
-          trustText = `今後${gb.weeks}週にわたって、わずかに効いていくだけかもしれない`;
+          trustText = '今後4週にわたって、わずかに効いていくだけかもしれない';
         } else {
-          trustText = `今後${gb.weeks}週にわたって、じわじわと育っていく`;
+          trustText = '今後4週にわたって、じわじわと育っていく';
         }
         changes.push({ label: '信頼度', emoji: '🤝', text: trustText });
-        changes.push({ label: '成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
+        // care-rework v0.1 §3.3: 相性は完全には明かさない(良/悪の兆候だけ滲ませる)
+        const ib = f._inviteBuff || {};
+        const growthPct = Math.round(((ib.mult || 1) - 1) * 100);
+        let compatHint = '指導の噛み合わせは、しばらく見てみないと分からない';
+        if (ib.compat === 'good') compatHint = '初日から、手ごたえのある空気が伝わってくる';
+        else if (ib.compat === 'bad') compatHint = 'どこか噛み合わなさそうな、硬い空気が漂う';
+        changes.push({ label: '成長速度', emoji: '📈', text: `4週間 +${growthPct}%${ib.diminished ? '(詰め込み気味で伸びは控えめ)' : ''}` });
+        changes.push({ label: '指導の空気', emoji: '🎓', text: compatHint });
       } else if (docId !== 'special_treatment' && _after.trust !== _before.trust) {
         // bonus / refresh_leave / encourage / media は従来通り即時表示
         // describeChange は最終 delta の大きさから質的表現を返すので、不確実性は自然に反映される
@@ -19005,6 +19182,9 @@ Engine.shachoshitsu = {
       reactionFighterId, changes, _decisionWeekUsed, decisionPoints: newDp,
     };
     if (orgPopDelta) result.orgPopDelta = orgPopDelta;
+    // care-rework v0.1 §3: 招聘に伴う雇用コーチ退避(coachAssign)と招聘履歴(lastInvitedCoachId)
+    if (coachAssignAfterInvite) result.coachAssign = coachAssignAfterInvite;
+    if (newLastInvitedCoachId != null) result.lastInvitedCoachId = newLastInvitedCoachId;
     if (updatedRelationships) result.relationships = updatedRelationships;
     // bond-rivalry plan P-6: ペア修復が成功した場合は relationships を上書き反映
     if (pairRepairResult && pairRepairResult.success) {
@@ -19081,7 +19261,10 @@ Engine.shachoshitsu = {
   },
 
   // ── 成長計算時のトレーナーバフ取得 ──────────────────────────────────────
+  // 旧 _trainerBuff(廃止済みだが既存セーブ互換のため残置)/ 新 _inviteBuff(care-rework v0.1 §3)
+  // どちらも同じ経路(trainGrowth計算)に効かせる。両方が同時に立つことは execute 側のガードでない想定。
   getTrainerMult(fighter) {
+    if (fighter._inviteBuff) return fighter._inviteBuff.mult;
     return fighter._trainerBuff ? fighter._trainerBuff.mult : 1.0;
   },
 
