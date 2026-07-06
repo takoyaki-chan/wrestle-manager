@@ -6966,10 +6966,13 @@ function showDecisionTargetModal(docId, state) {
   });
   document.getElementById('mdlADecisionConfirm').addEventListener('click', () => {
     Audio.play('click');
-    _mdlAClose();
-    // care-rework v0.1: bonus / refresh_leave は金額・週数を決める第2ステップへ
+    // care-rework v0.1: bonus / refresh_leave は金額・週数を決める第2ステップへ。
+    // ※ここで _mdlAClose() を呼んではいけない — close は _drainPopupQueue を走らせるため、
+    //   キューに溜まったポップアップが第2ステップのモーダルを上書きして操作不能になる。
+    //   _mdlAOpen が card.innerHTML を差し替えるので、開いたまま次の画面へ遷移してよい。
     if (docId === 'bonus') { showBonusProposalModal(selectedFighterId, G); return; }
     if (docId === 'refresh_leave') { showLeaveWeeksModal(selectedFighterId, G); return; }
+    _mdlAClose();
     if (typeof App !== 'undefined' && App.executeDecision) {
       App.executeDecision(docId, selectedFighterId);
     }
@@ -7203,7 +7206,7 @@ function showInviteCoachModal(state) {
   });
   document.getElementById('mdlAInviteCoachNext').addEventListener('click', () => {
     Audio.play('click');
-    _mdlAClose();
+    // 連鎖遷移中は close しない(_drainPopupQueue が次画面を上書きするため)。_mdlAOpen が差し替える
     showInviteTargetModal(selectedCoachId, G);
   });
 }
@@ -7295,7 +7298,7 @@ function showInviteTargetModal(coachId, state) {
   }
   document.getElementById('mdlAInviteTargetBack').addEventListener('click', () => {
     Audio.play('click');
-    _mdlAClose();
+    // 連鎖遷移中は close しない(_drainPopupQueue が次画面を上書きするため)
     showInviteCoachModal(G);
   });
   document.getElementById('mdlAInviteTargetConfirm').addEventListener('click', () => {
