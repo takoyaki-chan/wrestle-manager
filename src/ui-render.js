@@ -111,7 +111,7 @@ function batchIntensive(on) {
   if (ids.length === 0) return;
   ids.forEach(id => {
     const c = G.roster.find(r => r.id === id);
-    if (!c || c.injury || c.isRental) return;
+    if (!c || c.injury || c.isRental || c.onLeave) return;
     if (on) {
       if (c.condition >= GROWTH_CONFIG.intensiveMinCond && c.intensiveWeeks < GROWTH_CONFIG.intensiveMaxConsec) {
         c.intensive = true;
@@ -962,13 +962,14 @@ function renderWeekScreen() {
         return;
       }
 
-      const schedDisabled = c.injury ? 'disabled' : '';
+      const isOnLeave = !!c.onLeave;
+      const schedDisabled = (c.injury || isOnLeave) ? 'disabled' : '';
       // Intensive button for week screen
       const isInjured = !!c.injury;
       const isResting = c.condition <= 30;
-      const canInt = canManageWeek && !isInjured && !isResting && c.condition >= GROWTH_CONFIG.intensiveMinCond && c.intensiveWeeks < GROWTH_CONFIG.intensiveMaxConsec;
+      const canInt = canManageWeek && !isInjured && !isOnLeave && !isResting && c.condition >= GROWTH_CONFIG.intensiveMinCond && c.intensiveWeeks < GROWTH_CONFIG.intensiveMaxConsec;
       let intBtnHtml = '';
-      if (isInjured || isResting) {
+      if (isInjured || isOnLeave || isResting) {
         intBtnHtml = '<span style="font-size:12px;color:var(--text-dim)">--</span>';
       } else if (!canManageWeek) {
         intBtnHtml = c.intensive ? '<span style="font-size:12px;color:#ffa500">⚡ON</span>' : '';
@@ -980,6 +981,7 @@ function renderWeekScreen() {
       // ※ _weekAction は前週の記録なので参照しない。常に現在のスケジュールから算出する
       let previewAction;
       if (c.injury) previewAction = '療養';
+      else if (isOnLeave) previewAction = '休暇';
       else if (c.intensive) previewAction = 'intensive';
       else {
         previewAction = c.schedule || 'balance';
@@ -988,17 +990,18 @@ function renderWeekScreen() {
       }
       const previewLabel = actionLabels[previewAction] || previewAction;
       const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="成長バフ ×${c._trainerBuff.mult} 残${c._trainerBuff.weeksLeft}週">🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
+      const leaveBadge = isOnLeave ? ` <span style="font-size:10px;color:#3498db;background:rgba(52,152,219,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(52,152,219,0.3)" title="休暇中は興行に欠場します">🏖️休暇 あと${c.onLeave.weeksLeft}週</span>` : '';
       const tier = _wrOvrTier(ov(c));
       const popVal = Engine.util.dispPop(c.popularity);
       const popCol = _popColor(popVal).color;
       const faceUrl = getPortraitUrl(c.id);
-      html += `<tr${c.injury ? ' style="opacity:0.65"' : ''}>
-        <td><input type="checkbox" class="week-check" data-id="${c.id}" ${c.injury ? 'disabled' : ''}></td>
+      html += `<tr${(c.injury || isOnLeave) ? ' style="opacity:0.65"' : ''}>
+        <td><input type="checkbox" class="week-check" data-id="${c.id}" ${(c.injury || isOnLeave) ? 'disabled' : ''}></td>
         <td>
           <div class="wr-name-cell">
             ${_imgOrInitial(faceUrl, c.id, 40, 'border-radius:8px;')}
             <span>
-              <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}${trainerBadge}
+              <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}${trainerBadge}${leaveBadge}
             </span>
           </div>
         </td>
@@ -1505,7 +1508,7 @@ function _renderRosterDojoHeader() {
 
   if (maxFighters > 0 && G.roster && G.roster.length > 0) {
     const fRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, 777));
-    const available = G.roster.filter(c => !c.injury);
+    const available = G.roster.filter(c => !c.injury && !c.onLeave);
     // シャッフル
     const shuffled = [...available];
     for (let i = shuffled.length - 1; i > 0; i--) {

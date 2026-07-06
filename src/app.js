@@ -10806,14 +10806,18 @@ const App = {
   // 社長室 Phase 4: 決裁実行エントリポイント
   // fighterId: 個人書類のとき対象選手ID、team書類のとき null
   // 返り値: { ok: true, displayData } | { ok: false, error? }
-  executeDecision(docId, fighterId) {
-    const result = Engine.shachoshitsu.execute(docId, fighterId, G);
+  // options: bonus → { presetIndex: 0..3 } / refresh_leave → { weeks: 1..4 }(care-rework v0.1)
+  executeDecision(docId, fighterId, options) {
+    const result = Engine.shachoshitsu.execute(docId, fighterId, G, options);
     if (!result) { showToast('書類が見つかりません'); return { ok: false }; }
     if (result.error === 'doc_not_found') { showToast('書類が見つかりません'); return { ok: false }; }
     if (result.error === 'decision_points_insufficient') { showToast('決裁枠が不足しています'); return { ok: false }; }
     if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return { ok: false }; }
     if (result.error === 'fighter_not_found') { showToast('選手が見つかりません'); return { ok: false }; }
     if (result.error === 'not_slump') { showToast('スランプ中の選手ではありません'); return { ok: false }; }
+    if (result.error === 'preset_required') { showToast('支給額が選ばれていません'); return { ok: false }; }
+    if (result.error === 'weeks_required') { showToast('休暇の週数が選ばれていません'); return { ok: false }; }
+    if (result.error === 'on_leave') { showToast('休暇中の選手には使用できません'); return { ok: false }; }
     if (result.error === 'not_injured') { showToast('怪我をしていない選手には使用できません'); return { ok: false }; }
     if (result.error === 'cooldown') { showToast('今週はすでに決裁済みです'); return { ok: false }; }
     if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません(${result.required} 必要)`); return { ok: false }; }
@@ -10859,8 +10863,8 @@ const App = {
         };
       }
     } else {
-      // 団体書類(party/camp): 参加者全員 + 代表セリフ + camp フレーバー
-      const participants = (G.roster || []).filter(f => !f.isRental && !f.injury);
+      // 団体書類(party/camp): 参加者全員 + 代表セリフ + camp フレーバー(休暇中は不参加)
+      const participants = (G.roster || []).filter(f => !f.isRental && !f.injury && !f.onLeave);
       const repFighter = participants.length > 0
         ? participants[Math.floor(Math.random() * participants.length)]
         : null;

@@ -6861,12 +6861,13 @@ function showDecisionTargetModal(docId, state) {
   if (docId === 'special_treatment') {
     candidates = roster.filter(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
   } else {
-    candidates = roster.filter(f => !f.isRental && !f.injury);
+    candidates = roster.filter(f => !f.isRental && !f.injury && !f.onLeave);
     if (docId === 'bonus') {
       candidates = candidates.filter(f => (f.trust != null ? f.trust : 50) < 60);
-    } else if (docId === 'encourage' || docId === 'refresh_leave') {
+    } else if (docId === 'encourage') {
       candidates = candidates.filter(f => f.slump || f.motivationLoss);
     }
+    // refresh_leave: care-rework v0.1 §2 でスランプ限定を廃止(常時可、疲労管理ツール)
   }
   const cooldown = doc.cooldown != null ? doc.cooldown : 1;
   const currentWeek = state.week || 0;
@@ -6881,15 +6882,25 @@ function showDecisionTargetModal(docId, state) {
   }
 
   const actualCost = Engine.shachoshitsu.calcCost(doc, state);
-  const costText = actualCost === 0 ? '無料' : `${actualCost}万`;
+  // bonus / refresh_leave は動的コスト(costLabel で表示、実額は次のステップで確定)
+  const costText = doc.costLabel ? doc.costLabel : (actualCost === 0 ? '無料' : `${actualCost}万`);
 
   const candidateCards = candidates.map((f, i) => {
     const lastName = f.name.split(/\s/).pop();
     let hintText = '';
     let hintCls = '';
-    if (docId === 'encourage' || docId === 'refresh_leave') {
+    if (docId === 'encourage') {
       hintText = f.slump ? 'スランプ' : 'モチベ喪失';
       hintCls = 'negative';
+    } else if (docId === 'refresh_leave') {
+      if (f.slump || f.motivationLoss) {
+        hintText = f.slump ? 'スランプ' : 'モチベ喪失';
+        hintCls = 'negative';
+      } else {
+        const cond = Math.round(f.condition != null ? f.condition : 70);
+        hintText = `体調 ${cond}`;
+        hintCls = cond < 60 ? 'negative' : '';
+      }
     } else if (docId === 'special_treatment' && f.injury) {
       hintText = `全治${f.injury.weeksLeft || '?'}週`;
       hintCls = 'negative';
@@ -6952,8 +6963,163 @@ function showDecisionTargetModal(docId, state) {
   document.getElementById('mdlADecisionConfirm').addEventListener('click', () => {
     Audio.play('click');
     _mdlAClose();
+    // care-rework v0.1: bonus / refresh_leave は金額・週数を決める第2ステップへ
+    if (docId === 'bonus') { showBonusProposalModal(selectedFighterId, G); return; }
+    if (docId === 'refresh_leave') { showLeaveWeeksModal(selectedFighterId, G); return; }
     if (typeof App !== 'undefined' && App.executeDecision) {
       App.executeDecision(docId, selectedFighterId);
+    }
+  });
+}
+
+// care-rework v0.1 §1.1: ボーナス起案4案の選択モーダル(対象選手決定後の第2ステップ)
+// 4案 = 基準額×{0.5, 1.0, 2.0, 3.0}(シード固定・開き直しても不変)。基準額そのものは見せない。
+function showBonusProposalModal(fighterId, state) {
+  const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS.bonus : null;
+  const f = (state.roster || []).find(c => c.id === fighterId);
+  if (!doc || !f) return;
+  const proposals = Engine.shachoshitsu.getBonusProposals(f, state);
+  const funds = state.funds || 0;
+  if (!proposals.some(p => p.amount <= funds)) {
+    showToast('どの起案額にも資金が足りません');
+    return;
+  }
+  const memos = (typeof BONUS_PROPOSAL_MEMOS !== 'undefined') ? BONUS_PROPOSAL_MEMOS : ['', '', '', ''];
+  const warning = (typeof BONUS_PROPOSAL_MEMO_WARNING !== 'undefined') ? BONUS_PROPOSAL_MEMO_WARNING : '';
+  // 初期選択: 案二(相場)が払えるならそこ、無理なら払える中で最上位の案
+  const affordable = [0, 1, 2, 3].filter(i => proposals[i].amount <= funds);
+  const defaultIdx = proposals[1].amount <= funds ? 1 : affordable[affordable.length - 1];
+  const kanji = ['一', '二', '三', '四'];
+  const cards = proposals.map((p, i) => {
+    const isWarned = i === 0 && p.proud;
+    const memo = isWarned ? warning : (memos[i] || '');
+    const afford = p.amount <= funds;
+    const selCls = (afford && i === defaultIdx) ? ' is-selected' : '';
+    return `<div class="mdl-a-decision-card${selCls}" data-idx="${i}" style="text-align:center${afford ? '' : ';opacity:0.45;pointer-events:none'}">
+      <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-bottom:6px">案 ${kanji[i]}</div>
+      <div class="mdl-a-decision-label" style="font-size:19px;margin-bottom:8px">${p.amount.toLocaleString()}<span style="font-size:12px">万</span></div>
+      <div style="font-size:11px;line-height:1.6;min-height:3.2em;${isWarned ? 'color:var(--accent-negative)' : 'color:var(--cream-text-sub)'}">${memo}</div>
+      ${afford ? '' : '<div style="font-size:10px;color:var(--accent-negative);margin-top:6px">資金不足</div>'}
+    </div>`;
+  }).join('');
+
+  const stageBody = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${f.name} への支給額の起案が上がっている。いくら積むかは、社長の判断ひとつ。</div>
+    <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">PROPOSALS ・ 起 案</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px" id="mdlABonusGrid">
+      ${cards}
+    </div>
+  `;
+
+  const html = `
+    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAReporterStrip(state, '支給額を選んでください')}
+    <div class="mdl-a-subject-stage">${stageBody}</div>
+    <div class="mdl-a-prompt" style="padding-top:14px">選択後、決裁ボタンを押してください</div>
+    <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
+      <button class="mdl-a-continue-btn" id="mdlABonusCancel">— 取 消 —</button>
+      <button class="mdl-a-continue-btn" id="mdlABonusConfirm" style="background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)">— 決 裁 す る —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html)) return;
+
+  let selectedIdx = defaultIdx;
+  const grid = document.getElementById('mdlABonusGrid');
+  if (grid) {
+    grid.addEventListener('click', e => {
+      const el = e.target.closest('.mdl-a-decision-card');
+      if (!el) return;
+      selectedIdx = parseInt(el.dataset.idx);
+      grid.querySelectorAll('.mdl-a-decision-card').forEach(c => c.classList.remove('is-selected'));
+      el.classList.add('is-selected');
+    });
+  }
+  document.getElementById('mdlABonusCancel').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+  });
+  document.getElementById('mdlABonusConfirm').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+    if (typeof App !== 'undefined' && App.executeDecision) {
+      App.executeDecision('bonus', fighterId, { presetIndex: selectedIdx });
+    }
+  });
+}
+
+// care-rework v0.1 §2.1: 休暇辞令の週数選択モーダル(対象選手決定後の第2ステップ)
+// 費用 = 週給×週数 + 手配費50万。「休暇中の試合には欠場します」は確定文言(Keisuke 指定)。
+function showLeaveWeeksModal(fighterId, state) {
+  const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS.refresh_leave : null;
+  const f = (state.roster || []).find(c => c.id === fighterId);
+  if (!doc || !f) return;
+  const funds = state.funds || 0;
+  const opts = [1, 2, 3, 4].map(w => ({ weeks: w, cost: Engine.shachoshitsu.getLeaveCost(f, state, w) }));
+  if (opts[0].cost > funds) {
+    showToast('資金が足りません');
+    return;
+  }
+  const effectHints = [
+    '体調が少し戻る',
+    '体調が戻り、積み重なった消耗もわずかに癒える',
+    '体調が大きく戻る。消耗の回復も',
+    '体調・消耗ともに回復は最大。ただし1ヶ月不在',
+  ];
+  const defaultIdx = opts[1].cost <= funds ? 1 : 0;
+  const cards = opts.map((o, i) => {
+    const afford = o.cost <= funds;
+    const selCls = (afford && i === defaultIdx) ? ' is-selected' : '';
+    return `<div class="mdl-a-decision-card${selCls}" data-idx="${i}" style="text-align:center${afford ? '' : ';opacity:0.45;pointer-events:none'}">
+      <div class="mdl-a-decision-label" style="font-size:18px;margin-bottom:4px">${o.weeks}週間</div>
+      <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold-dark);letter-spacing:1px;margin-bottom:8px">${o.cost.toLocaleString()}万</div>
+      <div style="font-size:11px;line-height:1.6;min-height:3.2em;color:var(--cream-text-sub)">${effectHints[i]}</div>
+      ${afford ? '' : '<div style="font-size:10px;color:var(--accent-negative);margin-top:6px">資金不足</div>'}
+    </div>`;
+  }).join('');
+
+  const stageBody = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:10px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${f.name} に与える休暇の長さを決める。長いほど心身は癒えるが、そのぶんリングを空ける。</div>
+    <div style="text-align:center;margin-bottom:14px"><span style="display:inline-block;font-size:12px;color:var(--accent-negative);border:1px solid var(--accent-negative);border-radius:4px;padding:4px 12px">※ 休暇中の試合には欠場します</span></div>
+    <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">DURATION ・ 休 暇 週 数</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px" id="mdlALeaveGrid">
+      ${cards}
+    </div>
+  `;
+
+  const html = `
+    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAReporterStrip(state, '休暇の週数を選んでください')}
+    <div class="mdl-a-subject-stage">${stageBody}</div>
+    <div class="mdl-a-prompt" style="padding-top:14px">選択後、決裁ボタンを押してください</div>
+    <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
+      <button class="mdl-a-continue-btn" id="mdlALeaveCancel">— 取 消 —</button>
+      <button class="mdl-a-continue-btn" id="mdlALeaveConfirm" style="background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)">— 決 裁 す る —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html)) return;
+
+  let selectedIdx = defaultIdx;
+  const grid = document.getElementById('mdlALeaveGrid');
+  if (grid) {
+    grid.addEventListener('click', e => {
+      const el = e.target.closest('.mdl-a-decision-card');
+      if (!el) return;
+      selectedIdx = parseInt(el.dataset.idx);
+      grid.querySelectorAll('.mdl-a-decision-card').forEach(c => c.classList.remove('is-selected'));
+      el.classList.add('is-selected');
+    });
+  }
+  document.getElementById('mdlALeaveCancel').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+  });
+  document.getElementById('mdlALeaveConfirm').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+    if (typeof App !== 'undefined' && App.executeDecision) {
+      App.executeDecision('refresh_leave', fighterId, { weeks: opts[selectedIdx].weeks });
     }
   });
 }

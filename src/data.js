@@ -14974,16 +14974,19 @@ const DECISION_DOCS = {
     category: 'care',
     categoryLabel: '選手ケア',
     icon: '💰',
-    cost: 50,              // 万円
+    // care-rework v0.1 §1: 固定50万を廃止し、起案4案(基準額×0.5/1.0/2.0/3.0)から選ぶ交渉型に。
+    // 実費は Engine.shachoshitsu.getBonusProposals で選手ごとに算出される。
+    cost: null,
+    costLabel: '起案額による',
     decisionCost: 1,       // 決裁枠
     activationCondition: 'trust_unstable',
     minOrgPop: 0,
-    cooldown: 1,
+    cooldown: 4,           // care-rework v0.1 §1.3: 1週→4週(乱発防止)
     body: '対象選手に特別手当を支給し、組織貢献への感謝を示す',
-    detailText: '特別手当の支給により、社長との間に揺らぎが生まれつつある選手の心を繋ぎ止める。額面よりも「見てくれている」という事実が響く。',
-    effectSummary: '対象選手の信頼が大きく上がる',
-    recommendation: '団体への気持ちが陰りはじめた選手に、早めに手を打つと効果的。',
-    effect: { target: 'individual', trust: 4.59 },
+    detailText: '起案された支給額の中から、いくら積むかを社長が決める。額面が彼女の格に見合ってこそ、誠意は伝わる。安すぎる額は、かえって心を離れさせることもある。',
+    effectSummary: '支給額しだいで信頼の動き方が変わる。相場を大きく超える額は深く響く',
+    recommendation: '団体への気持ちが陰りはじめた選手に、早めに手を打つと効果的。同じ選手への再支給は相場が吊り上がる点に注意。',
+    effect: { target: 'individual' },
   },
   encourage: {
     id: 'encourage',
@@ -15027,16 +15030,19 @@ const DECISION_DOCS = {
     category: 'care',
     categoryLabel: '選手ケア',
     icon: '🏖️',
-    cost: 100,
+    // care-rework v0.1 §2: スランプ限定を廃止して常時可に。週数1〜4を選び、
+    // 費用 = 週給×週数+手配費50万。休暇中は興行・プロモに出られない。
+    cost: null,
+    costLabel: '週給×週数+50万',
     decisionCost: 1,
-    activationCondition: 'slump_or_motivation_loss',
+    activationCondition: null,
     minOrgPop: 0,
-    cooldown: 4,
+    cooldown: 12,          // care-rework v0.1 §2.3: 4週→12週
     body: '心身の疲弊を察し、一定期間の休養を与える',
-    detailText: '数週間の休養を正式な辞令として発行。強制的に現場から離脱させることで、心身を根本から回復させる重い一手。',
-    effectSummary: 'スランプが大きく回復 + 体調が戻る + 信頼も上がる',
-    recommendation: '面談では効果が薄い、重めの不調に対する切り札。次に使えるまで4週かかる点に注意。',
-    effect: { target: 'individual', trust: 5.36, condition: 15, slumpMomentum: 12.0 },
+    detailText: '1〜4週間の休暇を正式な辞令として発行する。休暇中の試合には欠場するが、そのぶん心身は着実に回復していく。長い休みは、積み重なった消耗までも癒やす。',
+    effectSummary: '休みの長さに応じて体調が戻り、長期なら蓄積した消耗も癒える。信頼も上がる',
+    recommendation: '疲れの見える主力を、大事な興行の前に立て直す疲労管理の要。休暇中の欠場と引き換えになる点は覚悟すること。',
+    effect: { target: 'individual', slumpMomentum: 12.0 },
   },
   party: {
     id: 'party',
@@ -15180,6 +15186,19 @@ const DECISION_ARCHETYPE_MULT = {
   seductive:  { bonus: 1.00, party: 1.10, media: 1.30, refresh_leave: 1.10 }, // 華やかな場で輝く
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// care-rework v0.1 §1.4: ボーナス起案4案の「起案メモ」(基準額×0.5/1.0/2.0/3.0 の順)
+// 効果を数字で明かさないぼかし表現。文言は Keisuke 承認済み — 変更時は要レビュー。
+// ─────────────────────────────────────────────────────────────────────────────
+const BONUS_PROPOSAL_MEMOS = [
+  '無難な線です。ただ、響くかどうかは相手次第かと。',
+  '彼女の格に見合った額かと存じます。',
+  '相場を超えています。誠意は伝わるはずです。',
+  '……思い切りましたな。ここまで出す団体は他にありません。',
+];
+// プライドの高い選手の最安案(×0.5)は警告メモに差し替える
+const BONUS_PROPOSAL_MEMO_WARNING = 'この額は……お気を悪くされるかもしれません。';
+
 // §2-5: 資金投入リアクションセリフ（特性別）
 // {name} はプレースホルダ
 const CAMP_FLAVOR_TEXTS = [
@@ -15305,7 +15324,7 @@ const CARE_REACTION_DIALOGUES = {
       _default: [
         '…また？',
         'えっと…ありがとうございます',
-        '（また同じ金額か…）'
+        '（また、お金…か…）'
       ]
     },
     bold: {
@@ -15343,6 +15362,59 @@ const CARE_REACTION_DIALOGUES = {
       seductive: [
         'また……っ……ふふ、こんなに優しくされたら、応えないわけにはいかないわ……'
       ],
+    }
+  },
+  // care-rework v0.1 §1.3: 侮辱帯(r<0.4、プライド高い選手はr<0.8)専用リアクション
+  bonus_insult: {
+    normal: {
+      _default: [
+        '……これが、私の値段ですか',
+        '……お気持ちだけ、受け取っておきます'
+      ],
+      ojousama: [
+        'まあ。……わたくし、この程度に見られていましたのね'
+      ],
+      delinquent: [
+        'は？ ケチくさ。いらねーよ、こんなん'
+      ],
+      cool: [
+        '……そう。わかった'
+      ],
+      seductive: [
+        'あら……ずいぶん安く見られたものね'
+      ],
+      composed: [
+        '…これで済ませるつもりかい。そうか'
+      ]
+    },
+    bold: {
+      _default: [
+        'この額で私が喜ぶと思ったんですか',
+        'なめられたものね。受け取れない'
+      ],
+      ojousama: [
+        'お断りしますわ。わたくしの価値は、この程度ではありませんの'
+      ],
+    },
+    quiet: {
+      _default: [
+        '…………（何も言わず、封筒を見つめている）'
+      ]
+    },
+    easygoing: {
+      _default: [
+        'あはは……えっと、これは……うん……'
+      ]
+    },
+    earnest: {
+      _default: [
+        '……私の頑張りは、これくらいなんですね'
+      ]
+    },
+    emotional: {
+      _default: [
+        'え……これだけ、ですか……私って、その程度なんだ……'
+      ]
     }
   },
   trainer: {

@@ -9792,6 +9792,27 @@ const Engine = {
           return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + indomitableBonus), _weekAction: '療養', intensive: false, growthLog: [..._gl, { season: G.season, week: G.week, type: 'injury', detail: nc.injury.type }] };
         }
 
+        // care-rework v0.1 §2: 休暇中 — 試合・プロモ・練習なし。
+        // 体調+10/週(上限100)、休暇2週目・4週目に消耗-1(1回の休暇で最大-2、下限0)
+        if (nc.onLeave && nc.onLeave.weeksLeft > 0) {
+          const lvTotal = nc.onLeave.totalWeeks || nc.onLeave.weeksLeft;
+          const lvElapsed = lvTotal - nc.onLeave.weeksLeft + 1;  // 今週が休暇何週目か
+          nc.condition = Math.min(100, nc.condition + 10);
+          if (lvElapsed % 2 === 0 && lvElapsed <= 4) {
+            nc.wear = Math.max(0, (nc.wear || 0) - 1);
+          }
+          nc.intensive = false;
+          nc._weekAction = '休暇';
+          if (nc.onLeave.weeksLeft <= 1) {
+            events.push(`🏖️ ${nc.name}が休暇から戻ってきた`);
+            // forcedRest も落とす(興行が無い週に休暇明けすると post-show クリアが走らないため)
+            const { onLeave: _lv, ...lvRest } = nc;
+            return { ...lvRest, forcedRest: false };
+          }
+          // 休暇継続 → 次週の興行も欠場。forcedRest は興行後クリアされるので毎週張り直す
+          return { ...nc, onLeave: { ...nc.onLeave, weeksLeft: nc.onLeave.weeksLeft - 1 }, forcedRest: true };
+        }
+
         if (nc.intensive) {
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
@@ -18428,10 +18449,10 @@ Engine.shachoshitsu = {
     if (!cond) return true;  // null/undefined → 常時発動可
     const roster = state.roster || [];
 
-    // trust_unstable: 信頼度60未満の「現役・非レンタル・非怪我」選手が1人以上いること
+    // trust_unstable: 信頼度60未満の「現役・非レンタル・非怪我・非休暇」選手が1人以上いること
     if (cond === 'trust_unstable') {
       return roster.some(f =>
-        !f.isRental && !f.injury && (f.trust != null ? f.trust : 50) < 60
+        !f.isRental && !f.injury && !f.onLeave && (f.trust != null ? f.trust : 50) < 60
       );
     }
 
@@ -18458,7 +18479,7 @@ Engine.shachoshitsu = {
     // 両者ともに現役・非レンタル・非怪我・非引退であることを要件とする
     if (cond === 'hostile_pair_chronic') {
       const w1 = state.w1FireCount || {};
-      const eligibleIds = new Set(roster.filter(f => !f.isRental && !f.injury).map(f => f.id));
+      const eligibleIds = new Set(roster.filter(f => !f.isRental && !f.injury && !f.onLeave).map(f => f.id));
       return Object.keys(w1).some(key => {
         if ((w1[key] || 0) < 4) return false;
         const [a, b] = key.split('_').map(s => parseInt(s, 10));
@@ -18498,13 +18519,80 @@ Engine.shachoshitsu = {
   },
 
   // ── コスト計算(団体書類は unitCost×人数、個人書類は cost をそのまま) ─────────
+  // bonus / refresh_leave は選手・選択内容で実費が決まる動的コスト書類(cost: null)。
+  // ここでは 0 を返し、execute 内の各ブランチが実費を算定して資金チェックする。
   calcCost(doc, state) {
     if (!doc) return 0;
     if (doc.effect && doc.effect.target === 'team' && doc.unitCost) {
-      const headcount = (state.roster || []).filter(f => !f.isRental && !f.injury).length;
+      const headcount = (state.roster || []).filter(f => !f.isRental && !f.injury && !f.onLeave).length;
       return doc.unitCost * Math.max(headcount, doc.minHeadcount || 4);
     }
     return doc.cost || 0;
+  },
+
+  // ─── care-rework v0.1 §1: ボーナス交渉化ヘルパー群 ─────────────────────────
+
+  // §1.2: 基準額 = max(週給×6, 査定額×25%)。再支給は基準額×1.5^回数で吊り上がる
+  // (効果半減の旧逓減は廃止 — 「前ももらった」から相場が上がる、が物語として自然)。
+  // 基準額はプレイヤーに直接表示しない(起案メモで間接的に伝える)。
+  getBonusBaseAmount(fighter, state) {
+    const salary = Engine.util.getSalary(fighter, (state && state.titles) || {});
+    const assessed = fighter.assessedValue || 0;
+    let base = Math.max(salary * 6, assessed * 0.25);
+    const repeat = fighter._bonusRepeat || 0;
+    if (repeat > 0) base *= Math.pow(1.5, Math.min(repeat, 6));  // 極端な吊り上がりのガード
+    return base;
+  },
+
+  // §1.3: 「プライドの高い性格」判定 — 侮辱帯の上限が r<0.4 → r<0.8 に広がる。
+  // 根拠: 既存の不確実性マトリクスで「金では動かない」と定義済みの
+  // personality: bold(bonus 0.80) / archetype: ojousama(bonus 0.70「金には動じない」)。
+  isProudFighter(fighter) {
+    if (!fighter) return false;
+    return fighter.personality === 'bold' || fighter.archetype === 'ojousama';
+  },
+
+  // §1.1: 起案4案 = 基準額×{0.5, 1.0, 2.0, 3.0}。50万単位(1000万超は100万単位)に
+  // 丸め、±10%ノイズで式を透けさせない。ノイズは (season, week, fighterId) 固定シード
+  // 由来 — 書類を開き直しても4案は変わらない(リロール防止)。
+  getBonusProposals(fighter, state) {
+    const base = Engine.shachoshitsu.getBonusBaseAmount(fighter, state);
+    const rng = Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 0, state.season || 1, state.week || 1, fighter.id, 0xB0A5
+    ));
+    const proud = Engine.shachoshitsu.isProudFighter(fighter);
+    return [0.5, 1.0, 2.0, 3.0].map((mult, idx) => {
+      const noisy = base * mult * (0.9 + Engine.rng.float(rng) * 0.2);
+      const unit = noisy > 1000 ? 100 : 50;
+      const amount = Math.max(50, Math.round(noisy / unit) * unit);
+      const r = base > 0 ? amount / base : 0;
+      const insultMax = proud ? 0.8 : 0.4;
+      return { index: idx, mult, amount, r, isInsult: r < insultMax, proud };
+    });
+  },
+
+  // §1.3: 効果カーブ(r = 支給額÷基準額)。
+  // spec の表示値(+8〜12等)は実装基礎値の約2倍スケール(shachoshitsu-spec v1.0 が
+  // 基礎値4.59のボーナスを「+8〜12」と表記していた対応関係)のため、基礎値=表示値×0.5。
+  // 相場帯(基礎4.0〜6.0)が現行効果(4.59)を挟む =「現行効果はここに位置づけ」を満たす。
+  // 基礎値はこの後 applyTrust(メンタル係数×OVR傾斜×高信頼逓減)と Phase 8 不確実性を通る。
+  calcBonusTrustDelta(r, proud, rng) {
+    const insultMax = proud ? 0.8 : 0.4;
+    if (r < insultMax) {
+      if (!proud) return { band: 'insult', baseDelta: 0 };
+      // プライド高: -2〜-5(表示スケール) → 基礎値 -1.0〜-2.5
+      return { band: 'insult', baseDelta: -(1.0 + Engine.rng.float(rng) * 1.5) };
+    }
+    if (r < 0.8) return { band: 'token',    baseDelta: 1.0 + Engine.rng.float(rng) * 1.0 };  // 気持ち程度 +2〜4
+    if (r < 1.5) return { band: 'fair',     baseDelta: 4.0 + Engine.rng.float(rng) * 2.0 };  // 相場 +8〜12
+    if (r < 2.5) return { band: 'sincere',  baseDelta: 7.0 + Engine.rng.float(rng) * 2.0 };  // 誠意 +14〜18
+    return { band: 'lavish', baseDelta: 9.0 + Engine.rng.float(rng) * 2.0 };                 // 破格 +18〜22
+  },
+
+  // ─── care-rework v0.1 §2.2: 休暇費用 = 週給×週数 + 手配費50万 ──────────────
+  getLeaveCost(fighter, state, weeks) {
+    const salary = Engine.util.getSalary(fighter, (state && state.titles) || {});
+    return salary * Math.max(1, Math.min(4, weeks || 1)) + 50;
   },
 
   // ── 決裁実行(純粋関数) ────────────────────────────────────────────────────
@@ -18512,7 +18600,8 @@ Engine.shachoshitsu = {
   // 返り値: { roster, lockerRoomMorale, funds, cost, events, reactionKey,
   //          reactionFighterId, changes, _decisionWeekUsed, decisionPoints, ... }
   //        | { error: 'xxx', required?: number }
-  execute(docId, fighterId, state) {
+  // options: 書類ごとの追加パラメータ。bonus → { presetIndex: 0..3 } / refresh_leave → { weeks: 1..4 }
+  execute(docId, fighterId, state, options) {
     const doc = Engine.shachoshitsu.getDoc(docId);
     if (!doc) return { error: 'doc_not_found' };
 
@@ -18532,8 +18621,8 @@ Engine.shachoshitsu = {
     const currentDp = state.decisionPoints || 0;
     if (currentDp < dpCost) return { error: 'decision_points_insufficient' };
 
-    // 資金チェック
-    const actualCost = Engine.shachoshitsu.calcCost(doc, state);
+    // 資金チェック(bonus/refresh_leave は動的コストのためここでは 0 — 各ブランチで実費を再チェック)
+    let actualCost = Engine.shachoshitsu.calcCost(doc, state);
     if ((state.funds || 0) < actualCost) return { error: 'funds_insufficient' };
 
     let roster = [...state.roster];
@@ -18587,6 +18676,8 @@ Engine.shachoshitsu = {
     // Phase 8: 個人書類の finalMult (性格×アーキタイプ不確実性) を保持
     // team書類は選手ごとに finalMult が異なるため別管理 (後述)
     let currentFinalMult = 1.0;
+    // care-rework v0.1: 侮辱帯ではトーンマーカー(深く刺さった/響かなかった)を出さない
+    let suppressTone = false;
 
     // ── 個人書類(target: 'individual') ──
     if (doc.effect && doc.effect.target === 'individual') {
@@ -18604,15 +18695,42 @@ Engine.shachoshitsu = {
       const cooldown = doc.cooldown != null ? doc.cooldown : 1;
       if (state.week - lastUsed < cooldown) return { error: 'cooldown' };
 
+      // care-rework v0.1 §2: 休暇中の選手は現場にいない — 個人書類の対象にできない
+      if (f.onLeave) return { error: 'on_leave' };
+
       if (docId === 'bonus') {
-        const repeatCount = f._bonusRepeat || 0;
-        const trustGain = Math.max(0.77, (doc.effect.trust || 0) - repeatCount * 1.53);
-        // Phase 8: 性格×アーキタイプで効果量が ±50% 変動
+        // care-rework v0.1 §1: 起案4案(基準額×0.5/1.0/2.0/3.0)から選ばれた1案を執行
+        const proposals = Engine.shachoshitsu.getBonusProposals(f, state);
+        const presetIndex = options && options.presetIndex != null ? options.presetIndex : -1;
+        if (presetIndex < 0 || presetIndex >= proposals.length) return { error: 'preset_required' };
+        const proposal = proposals[presetIndex];
+        actualCost = proposal.amount;
+        if ((state.funds || 0) < actualCost) return { error: 'funds_insufficient' };
+        // §1.3: 効果は r = 支給額÷基準額 の帯で決まる(帯内の値は決定論シードで抽選)
+        const bandRng = Engine.rng.create(Engine.rng.derive(
+          state.rngSeed || 0, state.season, state.week, fighterId, 0xB0A6
+        ));
+        const bandResult = Engine.shachoshitsu.calcBonusTrustDelta(
+          proposal.r, Engine.shachoshitsu.isProudFighter(f), bandRng
+        );
+        // Phase 8: 性格×アーキタイプ不確実性を最終値に乗算(現行踏襲)
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('bonus', f);
-        f = applyTrust(f, trustGain * currentFinalMult);
-        f._bonusRepeat = repeatCount + 1;
-        events.push(`💰 ${f.name}にボーナスを支給`);
-        if (repeatCount >= 2) reactionKey = 'bonus_repeat';
+        const _trustBeforeBonus = f.trust != null ? f.trust : 50;
+        if (bandResult.baseDelta !== 0) {
+          f = applyTrust(f, bandResult.baseDelta * currentFinalMult);
+        }
+        f._bonusRepeat = (f._bonusRepeat || 0) + 1;
+        events.push(`💰 ${f.name}にボーナス${actualCost}万を支給`);
+        if (bandResult.band === 'insult') {
+          suppressTone = true;
+          reactionKey = 'bonus_insult';
+          if ((f.trust != null ? f.trust : 50) >= _trustBeforeBonus) {
+            // 信頼が動かなかった侮辱(非プライド枠): 標準の信頼度行が出ないため専用の反応行を出す
+            changes.push({ label: '反応', emoji: '💢', text: '金額を見た瞬間、彼女の表情が曇った' });
+          }
+        } else if ((f._bonusRepeat || 0) >= 3) {
+          reactionKey = 'bonus_repeat';
+        }
       } else if (docId === 'encourage') {
         // Phase 5: 選手ポップアップから「💬 声をかける」として実行される
         // 気にかける理由がある選手 = slump/motivationLoss OR 信頼が揺らぎ始めた(trust<50)
@@ -18640,20 +18758,30 @@ Engine.shachoshitsu = {
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
         events.push(`💬 社長が${f.name}に声をかけた`);
       } else if (docId === 'refresh_leave') {
-        if (!f.slump && !f.motivationLoss) return { error: 'not_slump' };
-        const momentumBoost = typeof doc.effect.slumpMomentum === 'number'
-          ? doc.effect.slumpMomentum : 12.0;
-        if (f.slump) {
-          f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + momentumBoost } };
+        // care-rework v0.1 §2: 常時可・週数1〜4選択・休暇中は欠場
+        const weeks = options && options.weeks != null ? Math.round(options.weeks) : 0;
+        if (weeks < 1 || weeks > 4) return { error: 'weeks_required' };
+        actualCost = Engine.shachoshitsu.getLeaveCost(f, state, weeks);
+        if ((state.funds || 0) < actualCost) return { error: 'funds_insufficient' };
+        // スランプ/モチベ喪失中なら回復モーメンタム(現行効果を継承。週数比例はさせない)
+        if (f.slump || f.motivationLoss) {
+          const momentumBoost = typeof doc.effect.slumpMomentum === 'number'
+            ? doc.effect.slumpMomentum : 12.0;
+          if (f.slump) {
+            f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + momentumBoost } };
+          }
+          if (f.motivationLoss) {
+            f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.67 } };
+          }
         }
-        if (f.motivationLoss) {
-          f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + momentumBoost * 0.67 } };
-        }
-        f = { ...f, condition: Math.min(100, (f.condition || 70) + (doc.effect.condition || 15)) };
-        // Phase 8: condition/slumpMomentum は固定、trust のみ不確実性
+        // 信頼: 基本+3+1×週(表示スケール→基礎値×0.5)。休暇は受けた瞬間が感情のピーク
+        // なので即時発現(shachoshitsu-spec v1.0 §4.3 の設計判断を踏襲)。Phase 8 不確実性あり
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('refresh_leave', f);
-        f = applyTrust(f, (doc.effect.trust || 5.36) * currentFinalMult);
-        events.push(`🏖️ ${f.name}に休暇辞令(スランプ回復大促進・状態+${doc.effect.condition || 15})`);
+        f = applyTrust(f, (3 + weeks) * 0.5 * currentFinalMult);
+        // 体調+10/週・消耗回復(2週ごと-1、最大-2)は休暇期間中に週次発現(processManage の休暇ブランチ)
+        // forcedRest で今週の興行から即欠場(既存の編成除外経路に乗せる。以降は週次で張り直し)
+        f = { ...f, onLeave: { weeksLeft: weeks, totalWeeks: weeks }, forcedRest: true, intensive: false };
+        events.push(`🏖️ ${f.name}に休暇辞令(${weeks}週間・${actualCost}万)`);
       } else if (docId === 'trainer') {
         // Phase 7: 信頼度はバフ期間 (4週) と並走して遅延発現。trust フィールドは即時には変わらない
         // Phase 8: 性格×アーキタイプの倍率は pending エントリに保存され、毎週発現時に適用される
@@ -18736,7 +18864,13 @@ Engine.shachoshitsu = {
           changes.push({ label: '気持ちの揺らぎ', emoji: '💭', text: '話を聞いてもらえたことで、少しだけ救われたようだ' });
         }
       }
-      if (docId === 'refresh_leave') changes.push({ label: 'スランプ回復', emoji: '💪', text: '心身ともにリフレッシュし、回復が大きく進んだ' });
+      if (docId === 'refresh_leave') {
+        const lvWeeks = (f.onLeave && f.onLeave.totalWeeks) || 1;
+        changes.push({ label: '休暇', emoji: '🏖️', text: `${lvWeeks}週間、興行を欠場して休養に入る` });
+        changes.push({ label: '体調', emoji: '🌿', text: '休んでいる間、少しずつ調子を取り戻していく' });
+        if (lvWeeks >= 2) changes.push({ label: '疲労', emoji: '🕊️', text: '長い休みが、積み重なった消耗を癒やしていく' });
+        if (f.slump || f.motivationLoss) changes.push({ label: 'スランプ回復', emoji: '💪', text: '現場を離れることで、回復が大きく進みそうだ' });
+      }
     }
 
     // ── 団体書類(target: 'team') ──
@@ -18746,8 +18880,9 @@ Engine.shachoshitsu = {
 
       if (docId === 'party') {
         // Phase 8: 選手ごとに性格×アーキタイプ倍率を計算して trust 効果に適用
+        // care-rework v0.1: 休暇中の選手は宴席に参加しない
         roster = roster.map(f => {
-          if (f.injury) return f;
+          if (f.injury || f.onLeave) return f;
           const mult = Engine.shachoshitsu.calcUncertainty('party', f);
           return applyTrust(f, (doc.effect.trust || 1.84) * mult);
         });
@@ -18760,8 +18895,9 @@ Engine.shachoshitsu = {
         // Phase 7: 信頼度はバフ期間 (2週) と並走して遅延発現。全員分を pending に積む
         // Phase 8: 選手ごとに性格×アーキタイプ倍率を計算して pending エントリに保存
         const gb = doc.effect.growthBoost || { weeks: 2, mult: 1.5 };
+        // care-rework v0.1: 休暇中の選手は合宿に参加しない
         roster = roster.map(f => {
-          if (f.injury) return f;
+          if (f.injury || f.onLeave) return f;
           const mult = Engine.shachoshitsu.calcUncertainty('camp', f);
           const queued = queueTrust(f, doc.effect.trust || 1.84, 'camp', gb.weeks, mult);
           return { ...queued, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
@@ -18855,7 +18991,7 @@ Engine.shachoshitsu = {
         relState = Engine.relationships.applyToRoster({ ...state, ...relState }, fighterId, relRosterIds, { min: 1, max: 2 }, { min: 0, max: 0 }, relRng);
         relState = Engine.relationships.applyFromRoster(relState, relRosterIds, fighterId, { min: -1, max: -1 }, { min: 0, max: 0 }, relRng);
       } else if (docId === 'camp' || docId === 'party') {
-        const pairIds = roster.filter(c => !c.isRental && !c.injury).map(c => c.id);
+        const pairIds = roster.filter(c => !c.isRental && !c.injury && !c.onLeave).map(c => c.id);
         relState = Engine.relationships.applyAllPairs({ ...state, ...relState }, pairIds, { min: 2, max: 4 }, { min: 0, max: 0 }, relRng);
       }
       updatedRelationships = relState.relationships;
@@ -18879,8 +19015,9 @@ Engine.shachoshitsu = {
     // 業界ニュース: 修復イベントを caller に渡す
     if (state._industryNewsEvents) result._industryNewsEvents = state._industryNewsEvents;
     // Phase 8: 個人書類のみトーン情報を返す (team書類は選手ごとに finalMult が異なるため無視)
+    // care-rework v0.1: 侮辱帯(suppressTone)はマーカー非表示 — 「響かなかった」と怒りが混線するため
     if (doc.effect && doc.effect.target === 'individual') {
-      result.reactionTone = Engine.shachoshitsu.classifyTone(currentFinalMult);
+      result.reactionTone = suppressTone ? null : Engine.shachoshitsu.classifyTone(currentFinalMult);
       result.finalMult = currentFinalMult;
     }
     return result;
