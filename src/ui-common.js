@@ -7165,7 +7165,8 @@ function showInviteCoachModal(state) {
   }).join('');
 
   const stageBody = `
-    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">今期、招聘に応じてくれそうなコーチの顔ぶれ。指導タイプと得意スタイルを見て、誰に任せるか決める。</div>
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:10px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">今期、招聘に応じてくれそうなコーチの顔ぶれ。指導タイプと得意スタイルを見て、誰に任せるか決める。</div>
+    <div style="text-align:center;margin-bottom:14px"><span style="display:inline-block;font-size:12px;color:var(--cream-gold-dark);border:1px solid var(--cream-gold-dark);border-radius:4px;padding:4px 12px">招聘期間は 4週間 ・ 同時に招聘できるのは1名まで</span></div>
     <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">CANDIDATES ・ 招 聘 候 補</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px" id="mdlAInviteCoachGrid">
       ${cards}
@@ -7232,9 +7233,13 @@ function showInviteTargetModal(coachId, state) {
   const cards = candidates.map((f, i) => {
     const lastName = f.name.split(/\s/).pop();
     const sm = (typeof getCoachStyleMatch === 'function') ? getCoachStyleMatch(coach, f) : { icon: '', cls: 'none' };
-    const matchHtml = sm.icon
-      ? `<span style="font-weight:700;color:${sm.cls === 'specialist' ? '#2ecc71' : '#f1c40f'}">${sm.icon}${sm.label}</span>`
-      : `<span style="color:var(--cream-text-dim)">不一致</span>`;
+    // 無印方式(2026-07-07 Keisuke 判断): 不一致が標準なので何も出さない。
+    // バッジが付くこと自体をボーナスとして見せる(「不一致」の減点表示をやめる)
+    const matchHtml = sm.cls === 'specialist'
+      ? `<span style="font-weight:700;color:#2ecc71">✦ 得意スタイル</span>`
+      : sm.cls === 'allround'
+        ? `<span style="font-weight:700;color:#f1c40f">○ 万能指導</span>`
+        : '&nbsp;';
     const diminishedHint = (f._lastInviteEndWeek != null && (absoluteWeek - f._lastInviteEndWeek) <= 12)
       ? `<div class="mdl-a-decision-hint negative">詰め込み注意</div>` : '';
     const faceUrl = (typeof getPortraitUrl === 'function') ? getPortraitUrl(f.id) : '';
