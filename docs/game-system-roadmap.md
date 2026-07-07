@@ -496,7 +496,7 @@ Keisuke さんの変更希望・追加希望を一括登録。**やりやすい�
 | E-5 | 自団体から他団体への殴り込み要素 | challenge-request-spec-v0.1（選手発信・自団体→他団体・DRAFT）と接続検討 | 未着手 |
 | E-6 | 引退選手との交流機能 | fighterArchive / 年代記データと接続 | 未着手 |
 | E-7 | オリキャラ作成 | エディット機能。データ構造・立ち絵の扱い要設計 | 未着手 |
-| E-8 | **コーチセリフの遡及キャラ分け**(2026-07-07 追加) | 観察レポート等が全35コーチ共通口調な問題。P4 の voice 8系統(coach-lines.js COACH_VOICE_MAP)を共通基盤に昇格し、Phase A 観察レポート(~150本・最頻出) → B 雇用/解雇 → C 派閥取次 → D A級5名の個別上乗せ の順で展開。セリフ草案=メイン+Keisukeレビュー、配線=Sonnet | 📝 計画済・Phase A 草案から着手予定 |
+| E-8 | **コーチセリフの遡及キャラ分け**(2026-07-07 追加) | 観察レポート等が全35コーチ共通口調な問題。P4 の voice 8系統(coach-lines.js COACH_VOICE_MAP)を共通基盤に昇格。**Phase 0: コーチ専用セリフの coach-lines.js への引っ越し**(COACH_REPORT_TEXTS / EVENT_COACH_HIRE・FIRE_LINES を data.js から移動、文言不変。data.js 末尾エクスポートと auto-sim のロード一覧の追従必須。派閥取次 coachReport は派閥テーブル内部のため移動対象外) → A 観察レポート voice 展開(~150本・最頻出) → B 雇用/解雇 → C 派閥取次 → D A級5名の個別上乗せ。セリフ草案=メイン+Keisukeレビュー、配線=Sonnet | 📝 計画済・P4完了後に Phase 0 から着手 |
 
 ### Trust Phase T4: 単発ガツン系イベント（未着手）
 
