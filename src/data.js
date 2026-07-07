@@ -6068,17 +6068,7 @@ const PPV_SUMMIT_VICTORY_LINES = {
   }
 };
 
-// ── PPVメインイベント勝利時：コーチ称賛コメント（敬語・性別不問） ──
-const PPV_COACH_PRAISE_LINES = [
-  'この選手は本当に素晴らしい。日頃の努力が、最高の舞台で実を結びました',
-  '見事です。あの大舞台で、持てる力を全て出し切りました',
-  'よくやってくれました。この勝利は、本人の努力の結晶です',
-  '素晴らしい試合でした。これだけの選手を指導できて光栄です',
-  'あの舞台で勝てる選手は限られています。本当に立派でした',
-  '成長を間近で見てきましたが、ここまでの選手になるとは……脱帽です',
-  '日頃の練習がそのままリングに出ていました。コーチ冥利に尽きます',
-  'この勝利は偶然ではありません。積み重ねてきたものが違います'
-];
+// PPV_COACH_PRAISE_LINES は src/coach-lines.js へ移動（E-8 Phase 0）
 
 // カード鮮度システム
 const FRESHNESS_CONFIG = {
@@ -11066,45 +11056,7 @@ const RETAIN_LINES = {
   }
 };
 
-// §4 コーチ引退アドバイス テキスト
-const COACH_RETIRE_ADVICE_TEXTS = {
-  C_positive: [
-    '多分、受け入れてくれると思いますよ',
-    '本人もそろそろかなって感じはありますね',
-  ],
-  C_negative: [
-    'うーん…まだ早いかもしれませんね',
-    '本人はまだやる気ですよ。難しいかと',
-  ],
-  B_high: [
-    '本人も覚悟しているようです。通ると思いますよ',
-    '体の衰えは本人が一番わかってますから。大丈夫でしょう',
-  ],
-  B_maybe: [
-    '正直、半々ですね。受け入れるかどうかは本人次第です',
-    '気持ちは揺れてると思います。タイミング次第かと',
-  ],
-  B_hard: [
-    'まだ本人には闘志がありますね。断られる覚悟はしてください',
-    '目が死んでないですよ、あの選手。引退は早いかと',
-  ],
-  A_sure: [
-    '間違いなく受け入れます。本人もそのつもりです',
-    'あの選手、次の身の振り方まで考え始めてますよ',
-  ],
-  A_likely: [
-    '多分通るでしょう。本人も薄々わかってますから',
-    '練習後の表情を見ていると…受け入れると思います',
-  ],
-  A_iffy: [
-    '正直読めないです。本人の中でも揺れてる感じですね',
-    '闘志はあるけど体がついてこない…複雑な状態です',
-  ],
-  A_hard: [
-    '止めた方がいい。あの目はまだ引退する目じゃない',
-    '断言しますが、今は無理です。怒らせるだけですよ',
-  ],
-};
+// COACH_RETIRE_ADVICE_TEXTS は src/coach-lines.js へ移動（E-8 Phase 0）
 
 // v1.4: 年末表彰式 セリフデータ（personality×archetype）
 const AWARD_LINES = {
@@ -19020,56 +18972,8 @@ const ATMOSPHERE_TEXTS = [
 
 // ─────────────────────────────────────────────────────────────────────────────
 // §2 観察眼システム: コーチ報告テキスト（ランク別）
+// → COACH_REPORT_TEXTS は src/coach-lines.js へ移動（E-8 Phase 0）
 // ─────────────────────────────────────────────────────────────────────────────
-const COACH_REPORT_TEXTS = {
-  // E-D rank: 名前なし・漠然とした雰囲気
-  vague: [
-    '最近、練習に身が入っている選手がいるようです',
-    'ちょっと元気のない選手がいますね',
-    '練習場の雰囲気は悪くないですよ',
-    '全体的にまずまずの仕上がりですね',
-    '最近、動きが良くなってきた選手がいます',
-    'ちょっと伸び悩んでいる選手がいるかもしれません',
-  ],
-  // C rank: 選手名+ムード
-  named_positive: [
-    '{name}選手、調子が良さそうですね',
-    '{name}選手、最近いい感じに仕上がってきています',
-    '{name}選手の動きに勢いを感じます',
-  ],
-  named_negative: [
-    '{name}選手、少し調子が落ちているかもしれません',
-    '{name}選手、ちょっと練習に集中できていない様子です',
-    '{name}選手、最近少し元気がないですね',
-  ],
-  named_neutral: [
-    '{name}選手は安定していますよ',
-    '{name}選手、特に問題はないようです',
-    '{name}選手はマイペースにやっています',
-  ],
-  // B rank: 選手名+具体的ステータス
-  stat_growing: [
-    '{name}選手の{stat}が伸びてきています',
-    '{name}選手、{stat}の成長が見られますね',
-    '{name}選手の{stat}に手応えを感じます',
-  ],
-  stat_stagnant: [
-    '{name}選手の{stat}、最近伸びが止まっている気がします',
-    '{name}選手、{stat}はちょっと頭打ち気味ですかね',
-    '{name}選手の{stat}、ここから先は時間がかかるかもしれません',
-  ],
-  // A rank: 天井接近ヒント（trainCap）
-  near_cap: [
-    '{name}選手の{stat}、そろそろ頭打ちかもしれません',
-    '{name}選手の{stat}はもう伸びしろが少ないと思います',
-    '{name}選手の{stat}、限界に近づいている気がします',
-  ],
-  far_from_cap: [
-    '{name}選手の{stat}、まだまだ伸びますよ',
-    '{name}選手の{stat}にはまだ余力がありますね',
-    '{name}選手の{stat}の成長余地は十分です',
-  ],
-};
 const STAT_LABELS_JP = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ' };
 const STAT_TIPS = {
   pw:'パワー：技の威力に影響',
@@ -25317,18 +25221,8 @@ RIVALRY_MATCH_REACTION.loserLines.emotional.composed.push('…っ…悔しい…
 // イベントセリフ定数群（旧 ui-common.js の EVENT_QUOTES から分解 / 2026-04-19）
 // pickQuote / getTraitQuote / getDraftQuote 等から参照
 // ─────────────────────────────────────────────────────────────────────────────
-const EVENT_COACH_HIRE_LINES = [
-  '一緒に頑張りましょう！期待してください。',
-  'お任せください。選手たちを鍛え上げてみせます！',
-  'この団体で働けて光栄です。全力でサポートします。',
-  '腕が鳴りますね…。素晴らしい選手たちだ。'
-];
-
-const EVENT_COACH_FIRE_LINES = [
-  'そうですか…。今までありがとうございました。',
-  'お世話になりました。選手たちによろしくお伝えください。',
-  '残念ですが…また機会があれば。',
-];
+// EVENT_COACH_HIRE_LINES / EVENT_COACH_FIRE_LINES は src/coach-lines.js へ移動（E-8 Phase 0）
+// EVENT_LINES_BY_KEY.coachHire / .coachFire は coach-lines.js 側で追記される
 
 const EVENT_DRAFT_JOIN_LINES = {
   normal: {
@@ -26280,9 +26174,8 @@ const EVENT_RENTAL_GREETING_GENERIC_LINES = [
 ];
 
 // 動的アクセス用ルックアップ（pickQuote/getTraitQuote の引数 category→定数）
+// coachHire/coachFire は src/coach-lines.js 側で追記される（EVENT_COACH_HIRE_LINES 等の移動先のため）
 const EVENT_LINES_BY_KEY = {
-  coachHire: EVENT_COACH_HIRE_LINES,
-  coachFire: EVENT_COACH_FIRE_LINES,
   draftJoin: EVENT_DRAFT_JOIN_LINES,
   draftInterest: EVENT_DRAFT_INTEREST_LINES,
   injury: EVENT_INJURY_LINES,
@@ -26378,7 +26271,7 @@ if (typeof module !== 'undefined' && module.exports) {
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
     CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG, RELEASE_INTERVIEW_LINES, CHALLENGE_REQUEST_LINES,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
-    RETAIN_LINES, COACH_RETIRE_ADVICE_TEXTS,
+    RETAIN_LINES,
     AWARD_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, MILESTONE_LINES, FIRST_MEET_LINES, POST_MATCH_FLAVOR_LINES, getDialoguePool, pickDialogueLine,
     SLUMP_START_LINES, SLUMP_END_LINES,
     MOTIVATION_LOSS_LINES, MOTIVATION_RECOVERY_LINES,
@@ -26394,11 +26287,10 @@ if (typeof module !== 'undefined' && module.exports) {
     TALENT_ACTIVITY_LABELS, TALENT_ACTIVITY_ICONS,
     RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE,
     CRISIS_DIALOGUE, GAMEOVER_LINES, ENDING_LINES, TEAM_SPIRIT_TEXTS, ATMOSPHERE_TEXTS,
-    COACH_REPORT_TEXTS, STAT_LABELS_JP, STAT_TIPS, COACH_OBS_INACCURACY, SNAPSHOT_TEXTS,
+    STAT_LABELS_JP, STAT_TIPS, COACH_OBS_INACCURACY, SNAPSHOT_TEXTS,
     PPV_UNLOCK_POP, PPV_SLOTS, PPV_REWARD, PPV_ENTRY_WEEK, PPV_SHOW_WEEK,
     PPV_NAMES, PPV_OPPONENT_LINES, WAR_VICTORY_LINES, PPV_HYPE_TEMPLATES,
     WAR_CHALLENGER_DIALOGUE, WAR_DECLINE_DIALOGUE, WAR_POST_DIALOGUE, CREDITS,
-    EVENT_COACH_HIRE_LINES, EVENT_COACH_FIRE_LINES,
     EVENT_DRAFT_JOIN_LINES, EVENT_DRAFT_INTEREST_LINES,
     EVENT_INJURY_LINES,
     EVENT_TITLE_WIN_LINES, EVENT_TITLE_DEFENSE_LINES,

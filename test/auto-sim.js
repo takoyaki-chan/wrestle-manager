@@ -61,6 +61,7 @@ function loadAsGlobal(filename) {
 // ブラウザと同じ読み込み順序: victory-lines.js → data.js → engine.js
 loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
+loadAsGlobal('coach-lines.js');
 loadAsGlobal('data-faction-dialogue.js');
 loadAsGlobal('management.js');
 loadAsGlobal('match-engine.js');
