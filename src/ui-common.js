@@ -7310,6 +7310,207 @@ function showInviteTargetModal(coachId, state) {
   });
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// care-rework v0.1 §3.4/§7 P4: 招聘 過程イベント(中間報告/衝突/延長打診/卒業レポート)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// コーチ本人を話者にした reporter-strip(_mdlAReporterStrip はランダム取次者用のため専用版を用意)
+function _inviteCoachReporterStrip(coach, line) {
+  const url = (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(coach.id) : '';
+  const bg = url
+    ? `background-image:url('${url}'),linear-gradient(135deg,#5a4a3a,#3a2d22);background-size:cover;background-position:center`
+    : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
+  return `<div class="mdl-a-reporter-strip">
+    <div class="mdl-a-reporter-portrait" style="${bg}"></div>
+    <div class="mdl-a-reporter-text">
+      <div class="mdl-a-reporter-name">${coach.name || ''} コーチ</div>
+      <div class="mdl-a-reporter-line">${String(line || '')}</div>
+    </div>
+  </div>`;
+}
+
+// 中間報告: コーチ顔+一言の軽いポップアップ(1クリックで閉じる) — showNotifEventToast(mdl-d)を流用
+function showInviteMidtermPopup(payload, state, onDone) {
+  const coach = ALL_COACHES.find(c => c.id === payload.coachId);
+  const fighter = (state.roster || []).find(f => f.id === payload.fighterId);
+  if (!coach || !fighter) { if (onDone) onDone(); return; }
+  const voiceKey = getCoachVoiceKey(coach.id);
+  const line = (COACH_INVITE_LINES.midterm && COACH_INVITE_LINES.midterm[voiceKey]) || '';
+  if (typeof showNotifEventToast !== 'function' || !document.getElementById('mdlDOverlay')) {
+    showToast(`${coach.name}コーチ: ${line}`);
+    if (onDone) onDone();
+    return;
+  }
+  showNotifEventToast({
+    type: 'N_invite_midterm',
+    fighter: coach.id,
+    text: `🎓 ${coach.name}コーチより、${fighter.name}の指導状況`,
+    detail: line,
+  });
+  // showNotifEventToast は OK ボタンで _drainPopupQueue するのみで onDone を呼ばないため、
+  // ここでは即座に onDone してキュー管理は App._drainInviteEvents 側に委ねる。
+  if (onDone) onDone();
+}
+
+// 衝突イベント: コーチ顔+申し立てセリフ+選択肢A(続行)/B(打ち切り)
+function showInviteConflictModal(payload, state, onChoice) {
+  const coach = ALL_COACHES.find(c => c.id === payload.coachId);
+  const fighter = (state.roster || []).find(f => f.id === payload.fighterId);
+  if (!coach || !fighter) { if (onChoice) onChoice(null); return; }
+  const voiceKey = getCoachVoiceKey(coach.id);
+  const line = (COACH_INVITE_LINES.conflict && COACH_INVITE_LINES.conflict[voiceKey]) || '';
+
+  const stageBody = `
+    <div class="mdl-a-observation centered" style="padding-top:6px">
+      <span class="marker">${fighter.name}</span> の指導について
+    </div>
+  `;
+  const html = `
+    ${_mdlAHeader(`⚠️ 指導方針の衝突`, `EVENT ・ ${_mdlASeasonLabel(state)}`, { urgent: true })}
+    ${_inviteCoachReporterStrip(coach, line)}
+    <div class="mdl-a-subject-stage">${stageBody}</div>
+    <div class="mdl-a-prompt">どう対応しますか？</div>
+    <div class="mdl-a-decision-tray two">
+      <div class="mdl-a-decision-card" data-choice="continue">
+        <div class="mdl-a-decision-letter">A</div>
+        <div class="mdl-a-decision-label">続行させる</div>
+        <div class="mdl-a-decision-hint negative">選手の信頼が少し下がるが、指導は続く</div>
+      </div>
+      <div class="mdl-a-decision-card" data-choice="cancel">
+        <div class="mdl-a-decision-letter">B</div>
+        <div class="mdl-a-decision-label">打ち切る</div>
+        <div class="mdl-a-decision-hint negative">返金なし・選手の心に跡が残る</div>
+      </div>
+    </div>
+  `;
+  if (!_mdlAOpen(html, { narrow: true })) { if (onChoice) onChoice(null); return; }
+  const card = document.getElementById('mdlACard');
+  card.querySelectorAll('.mdl-a-decision-card').forEach(el => {
+    el.addEventListener('click', () => {
+      Audio.play('click');
+      _mdlAClose();
+      if (onChoice) onChoice(el.dataset.choice);
+    });
+  });
+}
+
+// 延長打診: コーチ顔+セリフ+「受ける(費用表示)/断る」。資金不足なら受けるをグレーアウト
+function showInviteExtensionModal(payload, state, onChoice) {
+  const coach = ALL_COACHES.find(c => c.id === payload.coachId);
+  const fighter = (state.roster || []).find(f => f.id === payload.fighterId);
+  if (!coach || !fighter) { if (onChoice) onChoice(null); return; }
+  const voiceKey = getCoachVoiceKey(coach.id);
+  const line = (COACH_INVITE_LINES.extension && COACH_INVITE_LINES.extension[voiceKey]) || '';
+  const cost = payload.cost || 0;
+  const funds = state.funds || 0;
+  const afford = cost <= funds;
+
+  const stageBody = `
+    <div class="mdl-a-observation centered" style="padding-top:6px">
+      <span class="marker">${fighter.name}</span> の指導期間延長(+2週)
+    </div>
+    <div style="text-align:center;font-size:13px;color:var(--cream-text-main);margin-top:10px">
+      追加費用 <strong style="color:var(--cream-gold-dark)">${cost.toLocaleString()}万</strong>
+    </div>
+  `;
+  const html = `
+    ${_mdlAHeader(`📩 延長打診`, `EVENT ・ ${_mdlASeasonLabel(state)}`)}
+    ${_inviteCoachReporterStrip(coach, line)}
+    <div class="mdl-a-subject-stage">${stageBody}</div>
+    <div class="mdl-a-prompt">どうしますか？</div>
+    <div class="mdl-a-decision-tray two">
+      <div class="mdl-a-decision-card" data-choice="accept" ${afford ? '' : 'data-disabled="1" style="opacity:0.4;cursor:default"'}>
+        <div class="mdl-a-decision-letter">A</div>
+        <div class="mdl-a-decision-label">受ける(${cost.toLocaleString()}万)</div>
+        ${afford ? '' : '<div class="mdl-a-decision-hint negative">資金不足</div>'}
+      </div>
+      <div class="mdl-a-decision-card" data-choice="decline">
+        <div class="mdl-a-decision-letter">B</div>
+        <div class="mdl-a-decision-label">断る</div>
+      </div>
+    </div>
+  `;
+  if (!_mdlAOpen(html, { narrow: true })) { if (onChoice) onChoice(null); return; }
+  const card = document.getElementById('mdlACard');
+  card.querySelectorAll('.mdl-a-decision-card').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.dataset.disabled === '1') return;
+      Audio.play('click');
+      _mdlAClose();
+      if (onChoice) onChoice(el.dataset.choice);
+    });
+  });
+}
+
+// 卒業レポート: コーチ総評(voice別)+選手の一言(アーキタイプ別・頭上吹き出し)+伸び幅表示。
+// 化ける発生時はナレーション+コーチの一言を先頭に追加し、金色系トークンで一段豪華に演出。
+function showInviteGraduationModal(payload, state, onDone) {
+  const coach = ALL_COACHES.find(c => c.id === payload.coachId);
+  const fighter = (state.roster || []).find(f => f.id === payload.fighterId);
+  if (!coach || !fighter) { if (onDone) onDone(); return; }
+  const voiceKey = getCoachVoiceKey(coach.id);
+  const gradPool = payload.gradTier === 'good' ? COACH_INVITE_LINES.gradGood : COACH_INVITE_LINES.gradNormal;
+  const coachLine = (gradPool && gradPool[voiceKey]) || '';
+
+  const archetype = fighter.archetype || 'normal';
+  const fighterLine = payload.gradTier === 'good'
+    ? (FIGHTER_INVITE_GRAD_LINES[archetype] || FIGHTER_INVITE_GRAD_LINES.normal)
+    : FIGHTER_INVITE_GRAD_NORMAL_LINES[Math.floor(Math.random() * FIGHTER_INVITE_GRAD_NORMAL_LINES.length)];
+
+  // 伸び幅表示: statsAtStart が無い(旧セーブ互換)場合は「不明」表記に切り替え
+  let growthHtml = '';
+  if (payload.statsAtStart && payload.statsAtEnd) {
+    const STAT_JA = { pw: 'パワー', sp: 'スピード', te: 'テクニック', st: 'スタミナ', mn: 'メンタル' };
+    const rows = ['pw','sp','te','st','mn'].map(k => {
+      const delta = Math.round((payload.statsAtEnd[k] || 0) - (payload.statsAtStart[k] || 0));
+      if (delta <= 0) return '';
+      return `<div style="display:flex;justify-content:space-between;padding:2px 0">
+        <span style="color:var(--cream-text-sub)">${STAT_JA[k]}</span>
+        <span style="color:var(--accent-positive);font-weight:700">+${delta}</span>
+      </div>`;
+    }).filter(Boolean).join('');
+    growthHtml = rows
+      ? `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:10px 14px;margin:14px auto 0;max-width:320px;font-size:12px">${rows}</div>`
+      : `<div style="text-align:center;font-size:12px;color:var(--cream-text-dim);margin-top:12px">大きな変化は数値には出なかったが、確かな手応えが残った</div>`;
+  } else {
+    growthHtml = `<div style="text-align:center;font-size:12px;color:var(--cream-text-dim);margin-top:12px">伸び幅は記録が残っていません</div>`;
+  }
+
+  // 化ける演出: ナレーション + コーチの一言(全voice共通)を先頭に追加、金色トークンで一段豪華に
+  const awakeningHtml = payload.awakened
+    ? `<div style="text-align:center;margin-bottom:16px;padding:14px;border:1px solid var(--cream-gold);border-radius:8px;background:rgba(212,168,67,0.08)">
+        <div style="font-family:'Shippori Mincho',serif;font-size:13px;color:var(--cream-gold-dark);line-height:1.8;font-style:italic">${INVITE_AWAKENING_LINES.narration}</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--cream-text-main)">${coach.name}コーチ「${INVITE_AWAKENING_LINES.coachLine.replace(/^「|」$/g, '')}」</div>
+        <div style="margin-top:6px;font-size:11px;color:var(--cream-gold-dark);letter-spacing:2px;font-family:var(--font-label)">— 才能の壁を、一枚だけ超えた —</div>
+      </div>`
+    : '';
+
+  const tierLabel = payload.gradTier === 'good' ? '成果: 大' : '成果: 並';
+  const stageBody = `
+    ${awakeningHtml}
+    <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:8px">${tierLabel}</div>
+    ${growthHtml}
+  `;
+
+  const subjectHtml = _mdlASubjectStage(fighter, stageBody, { small: true, speech: fighterLine });
+
+  const html = `
+    ${_mdlAHeader(`🎓 卒業レポート`, `RESULT ・ ${_mdlASeasonLabel(state)}`)}
+    ${_inviteCoachReporterStrip(coach, coachLine)}
+    ${subjectHtml}
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" id="mdlAInviteGradClose">— 見 届 け る —</button>
+    </div>
+  `;
+  if (!_mdlAOpen(html)) { if (onDone) onDone(); return; }
+  const btn = document.getElementById('mdlAInviteGradClose');
+  if (btn) btn.addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+    if (onDone) onDone();
+  });
+}
+
 // 団体書類用: 実行確認モーダル
 function showDecisionConfirmModal(docId, state) {
   const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS[docId] : null;

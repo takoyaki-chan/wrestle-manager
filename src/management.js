@@ -10033,11 +10033,14 @@ const Engine = {
       // 卒業ログ + 雇用コーチ自動復帰(coachAssign)+ _lastInviteEndWeek 記録。
       let inviteTickEvents = [];
       let coachAssignAfterInviteTick = null;
+      let pendingInviteEvents = [];
       {
         const inviteTick = Engine.shachoshitsu.tickInviteBuffs({ ...G, roster });
         roster = inviteTick.roster;
         if (inviteTick.events.length > 0) inviteTickEvents = inviteTick.events;
         coachAssignAfterInviteTick = inviteTick.coachAssign;
+        // P4: 中間報告/衝突/延長打診/卒業レポートを週次ポップアップキューへ
+        if (inviteTick.inviteEvents && inviteTick.inviteEvents.length > 0) pendingInviteEvents = inviteTick.inviteEvents;
       }
 
       // 社長室 Phase 7: trainer/camp の信頼度遅延発現 (tickTrainerBuffs と同タイミングで呼ぶ)
@@ -10179,6 +10182,8 @@ const Engine = {
       if (_pendingInjuryPopDecay.length > 0) result._pendingInjuryPopDecay = _pendingInjuryPopDecay;
       // 社長室 Phase 7: trainer/camp の信頼度発現通知
       if (pendingTrustReveals.length > 0) result._pendingTrustReveals = pendingTrustReveals;
+      // care-rework v0.1 §3.4 P4: 招聘の過程イベント(中間報告/衝突/延長打診/卒業レポート)
+      if (pendingInviteEvents.length > 0) result._pendingInviteEvents = pendingInviteEvents;
       return result;
     },
 
@@ -10548,6 +10553,10 @@ const Engine = {
     if (manage._pendingHotStreakEnds) s = { ...s, _pendingHotStreakEnds: manage._pendingHotStreakEnds };
     // 社長室 Phase 7: trainer/camp の信頼度発現通知を state に乗せる
     if (manage._pendingTrustReveals) s = { ...s, _pendingTrustReveals: manage._pendingTrustReveals };
+    // care-rework v0.1 §3.4 P4: 招聘の過程イベントを state 直下のキューに積む(旧セーブ互換: 不在は空扱い)
+    if (manage._pendingInviteEvents) {
+      s = { ...s, _pendingInviteEvents: [...(s._pendingInviteEvents || []), ...manage._pendingInviteEvents] };
+    }
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
     // transient: pending収入は settlement で消費済み — 次週への重複計上を防止
@@ -18714,18 +18723,96 @@ Engine.shachoshitsu = {
 
   // ── 発動中の招聘バフ週次消費(processManage内で呼び出し) ───────────────────
   // 期限切れで除去 + _lastInviteEndWeek を記録 + 退避していた雇用コーチを自動復帰。
-  // 返り値: { roster, coachAssign, events }
+  // P4(§3.4/§7): 中間報告・衝突・延長打診・卒業レポートを inviteEvents に積んで返す。
+  // 返り値: { roster, coachAssign, events, inviteEvents }
   tickInviteBuffs(state) {
     const events = [];
+    const inviteEvents = [];
     let coachAssign = state.coachAssign ? { ...state.coachAssign } : {};
     const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
     const roster = (state.roster || []).map(f => {
       if (!f._inviteBuff) return f;
       const buf = f._inviteBuff;
-      if (buf.weeksLeft <= 1) {
+
+      // §3.4: 中間報告(2週目経過時=weeksLeftが totalWeeks-2 になった瞬間 に1回だけ判定)
+      // totalWeeks=4固定 → weeksLeft が 2 に落ちた週(=2週経過した週)がその判定タイミング。
+      // 延長済み(totalWeeks=6)の場合も「2週目経過」は totalWeeks-2 で一致させる。
+      const midtermWeek = buf.totalWeeks - 2;
+      if (buf.weeksLeft === midtermWeek && !buf._midtermDone && !buf._conflictDone) {
+        const midtermRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season, state.week, f.id, 0x1CE1));
+        if (Engine.rng.float(midtermRng) < 0.5) {
+          inviteEvents.push({ type: 'midterm', fighterId: f.id, coachId: buf.coachId });
+        }
+      }
+
+      // §3.4: 衝突イベント(相性✕のみ、期間中1回、weeksLeftが2週目経過タイミングで20%)
+      // 衝突と延長は同週に競合しない — 衝突判定が先。
+      let conflictFired = false;
+      if (buf.weeksLeft === midtermWeek && !buf._conflictDone && buf.compat === 'bad') {
+        const conflictRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season, state.week, f.id, 0x1CE2));
+        if (Engine.rng.float(conflictRng) < 0.20) {
+          inviteEvents.push({ type: 'conflict', fighterId: f.id, coachId: buf.coachId });
+          conflictFired = true;
+        }
+      }
+
+      // §3.4: 延長打診(相性◎のみ、衝突が発火していない同週タイミングで25%)
+      let extensionFired = false;
+      if (!conflictFired && buf.weeksLeft === midtermWeek && !buf._extensionDone && buf.compat === 'good') {
+        const extRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season, state.week, f.id, 0x1CE3));
+        if (Engine.rng.float(extRng) < 0.25) {
+          const coach = ALL_COACHES.find(c => c.id === buf.coachId);
+          const extCost = coach ? Math.round((coach.salary || 0) * 2 * 1.5) : 0;
+          inviteEvents.push({ type: 'extension', fighterId: f.id, coachId: buf.coachId, cost: extCost });
+          extensionFired = true;
+        }
+      }
+
+      const markedBuf = {
+        ...buf,
+        _midtermDone: buf._midtermDone || buf.weeksLeft === midtermWeek,
+        _conflictDone: buf._conflictDone || conflictFired || buf.weeksLeft === midtermWeek,
+        _extensionDone: buf._extensionDone || extensionFired || buf.weeksLeft === midtermWeek,
+      };
+
+      if (markedBuf.weeksLeft <= 1) {
         const coach = ALL_COACHES.find(c => c.id === buf.coachId);
         const coachName = coach ? coach.name : '招聘コーチ';
         events.push(`🎓 ${f.name}への${coachName}コーチの指導期間が終わった`);
+
+        // §3.4/§7.4: 卒業レポート — 終了時必ず発生。伸び幅・成果判定・化ける判定を積む。
+        const gradRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season, state.week, f.id, 0x1CE4));
+        const statsAtStart = buf.statsAtStart || null;
+        let totalGrowth = null;
+        if (statsAtStart) {
+          totalGrowth = ['pw','sp','te','st','mn'].reduce((s, k) => s + Math.max(0, (f[k] || 0) - (statsAtStart[k] || 0)), 0);
+        }
+        // 成果判定: 相性◎、または合計伸び幅が閾値(🔧15)以上で「大」
+        const GRAD_GROWTH_THRESHOLD = 15;
+        const gradTier = (buf.compat === 'good' || (totalGrowth != null && totalGrowth >= GRAD_GROWTH_THRESHOLD)) ? 'good' : 'normal';
+
+        // §3.5: 化ける — 相性◎ かつ 残成長余地10%以上 で5%。trainCap 全stat+1。
+        let awakened = false;
+        let awakenedRoster = f;
+        if (buf.compat === 'good') {
+          const potPct = Engine.util.getPotentialPct(f);
+          const remainingPct = 100 - potPct;
+          if (remainingPct >= 10 && Engine.rng.float(gradRng) < 0.05) {
+            awakened = true;
+            if (f.trainCap) {
+              const newCap = { ...f.trainCap };
+              ['pw','sp','te','st','mn'].forEach(k => { newCap[k] = (newCap[k] || 0) + 1; });
+              awakenedRoster = { ...f, trainCap: newCap };
+            }
+          }
+        }
+
+        inviteEvents.push({
+          type: 'graduation', fighterId: f.id, coachId: buf.coachId,
+          gradTier, totalGrowth, awakened,
+          statsAtStart, statsAtEnd: { pw: awakenedRoster.pw, sp: awakenedRoster.sp, te: awakenedRoster.te, st: awakenedRoster.st, mn: awakenedRoster.mn },
+        });
+
         // 二重指導なし: 退避していた雇用コーチをアサイン枠に空きがあれば自動復帰
         if (buf.prevCoachId != null && (state.coaches || []).includes(buf.prevCoachId)) {
           const current = coachAssign[buf.prevCoachId] || [];
@@ -18733,12 +18820,70 @@ Engine.shachoshitsu = {
             coachAssign = { ...coachAssign, [buf.prevCoachId]: [...current, f.id] };
           }
         }
-        const { _inviteBuff: _ib, ...rest } = f;
+        const { _inviteBuff: _ib, ...rest } = awakenedRoster;
         return { ...rest, _lastInviteEndWeek: absoluteWeek };
       }
-      return { ...f, _inviteBuff: { ...buf, weeksLeft: buf.weeksLeft - 1 } };
+      return { ...f, _inviteBuff: { ...markedBuf, weeksLeft: markedBuf.weeksLeft - 1 } };
     });
-    return { roster, coachAssign, events };
+    return { roster, coachAssign, events, inviteEvents };
+  },
+
+  // ── 衝突イベント選択の解決(A続行/B打ち切り) ─────────────────────────────
+  // 純粋関数。choice: 'continue' | 'cancel'
+  // 返り値: { roster, coachAssign } | { error: 'not_found' }
+  resolveInviteConflict(state, fighterId, choice) {
+    const f = (state.roster || []).find(c => c.id === fighterId);
+    if (!f || !f._inviteBuff) return { error: 'not_found' };
+    const buf = f._inviteBuff;
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season, state.week, fighterId, 0x1CE5));
+    const trustPenalty = -(2 + Engine.rng.int(rng, 0, 2));  // 固定レンジ -2〜-4(不確実性なし)
+
+    if (choice === 'cancel') {
+      // 打ち切り: 返金なし・バフ即除去・選手trust悪化・雇用コーチ即復帰
+      let coachAssign = state.coachAssign ? { ...state.coachAssign } : {};
+      if (buf.prevCoachId != null && (state.coaches || []).includes(buf.prevCoachId)) {
+        const current = coachAssign[buf.prevCoachId] || [];
+        if (current.length < COACH_MAX_ASSIGN && !current.includes(fighterId)) {
+          coachAssign = { ...coachAssign, [buf.prevCoachId]: [...current, fighterId] };
+        }
+      }
+      const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
+      const roster = (state.roster || []).map(c => {
+        if (c.id !== fighterId) return c;
+        const oldTrust = c.trust != null ? c.trust : 50;
+        const adj = Engine.trust.applyCoeff(trustPenalty, c.mn || 50);
+        const { _inviteBuff: _ib, ...rest } = c;
+        return { ...rest, trust: Engine.util.clamp(oldTrust + adj, 0, 100), _lastInviteEndWeek: absoluteWeek };
+      });
+      return { roster, coachAssign };
+    }
+
+    // 続行: バフは維持したまま選手trustのみ小ダウン
+    const roster = (state.roster || []).map(c => {
+      if (c.id !== fighterId) return c;
+      const oldTrust = c.trust != null ? c.trust : 50;
+      const adj = Engine.trust.applyCoeff(trustPenalty, c.mn || 50);
+      return { ...c, trust: Engine.util.clamp(oldTrust + adj, 0, 100) };
+    });
+    return { roster };
+  },
+
+  // ── 延長打診の解決(受諾/辞退) ────────────────────────────────────────────
+  // 純粋関数。accept: boolean
+  // 返り値: { roster, funds } | { error: 'not_found' | 'funds_insufficient' }
+  resolveInviteExtension(state, fighterId, accept) {
+    const f = (state.roster || []).find(c => c.id === fighterId);
+    if (!f || !f._inviteBuff) return { error: 'not_found' };
+    if (!accept) return { roster: state.roster, funds: state.funds };
+    const coach = ALL_COACHES.find(c => c.id === f._inviteBuff.coachId);
+    const cost = coach ? Math.round((coach.salary || 0) * 2 * 1.5) : 0;
+    if ((state.funds || 0) < cost) return { error: 'funds_insufficient' };
+    const roster = (state.roster || []).map(c => {
+      if (c.id !== fighterId) return c;
+      const buf = c._inviteBuff;
+      return { ...c, _inviteBuff: { ...buf, weeksLeft: buf.weeksLeft + 2, totalWeeks: buf.totalWeeks + 2 } };
+    });
+    return { roster, funds: (state.funds || 0) - cost, cost };
   },
 
   // ── 決裁実行(純粋関数) ────────────────────────────────────────────────────
@@ -18955,6 +19100,8 @@ Engine.shachoshitsu = {
         f._inviteBuff = {
           coachId: coach.id, weeksLeft: 4, totalWeeks: 4, mult, compat,
           prevCoachId: prevCoach ? prevCoach.id : null,
+          // P4: 発令時スナップショット。卒業レポートの伸び幅表示・化ける判定の元データ
+          statsAtStart: { pw: f.pw, sp: f.sp, te: f.te, st: f.st, mn: f.mn },
         };
         newLastInvitedCoachId = coach.id;
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('trainer', f);

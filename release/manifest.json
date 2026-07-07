@@ -6,6 +6,7 @@
     "src/victory-lines.js",
     "src/lz-string.min.js",
     "src/data.js",
+    "src/coach-lines.js",
     "src/data-faction-dialogue.js",
     "src/management.js",
     "src/match-engine.js",

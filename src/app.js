@@ -8342,6 +8342,8 @@ const App = {
     App._drainFactionJoinNotices();
     // §6 アーキタイプ遷移ナレーション（F07 rebuke 4 累積など週次処理で発生する）
     App._drainArchetypeTransitions();
+    // care-rework v0.1 §3.4 P4: 招聘の過程イベント（中間報告/衝突/延長打診/卒業レポート）
+    App._drainInviteEvents();
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
@@ -9575,6 +9577,58 @@ const App = {
         finalizeCRAudio();
       }
     });
+  },
+
+  // care-rework v0.1 §3.4 P4: 招聘の過程イベント(中間報告/衝突/延長打診/卒業レポート)を順次表示。
+  // G._pendingInviteEvents は tickWeek のたびに積まれる可能性があるため、_drainArchetypeTransitions
+  // と同じ「キューを取り出してから1件ずつ next() で消化する」パターンに従う。
+  _drainInviteEvents() {
+    if (!G || !G._pendingInviteEvents || !G._pendingInviteEvents.length) return;
+    const queue = [...G._pendingInviteEvents];
+    const { _pendingInviteEvents: _, ...rest } = G;
+    G = rest;
+    const next = () => {
+      const head = queue.shift();
+      if (!head) return;
+      if (head.type === 'midterm') {
+        if (typeof showInviteMidtermPopup !== 'function') { next(); return; }
+        showInviteMidtermPopup(head, G, next);
+      } else if (head.type === 'conflict') {
+        if (typeof showInviteConflictModal !== 'function') { next(); return; }
+        showInviteConflictModal(head, G, (choice) => {
+          if (choice === 'continue' || choice === 'cancel') {
+            const result = Engine.shachoshitsu.resolveInviteConflict(G, head.fighterId, choice);
+            if (!result.error) {
+              G = { ...G, roster: result.roster };
+              if (result.coachAssign) G = { ...G, coachAssign: result.coachAssign };
+              Storage.autoSave();
+              renderWeekScreen && renderWeekScreen();
+            }
+          }
+          next();
+        });
+      } else if (head.type === 'extension') {
+        if (typeof showInviteExtensionModal !== 'function') { next(); return; }
+        showInviteExtensionModal(head, G, (choice) => {
+          const accept = choice === 'accept';
+          const result = Engine.shachoshitsu.resolveInviteExtension(G, head.fighterId, accept);
+          if (!result.error) {
+            G = { ...G, roster: result.roster, funds: result.funds };
+            Storage.autoSave();
+            renderWeekScreen && renderWeekScreen();
+          } else if (result.error === 'funds_insufficient') {
+            showToast('資金が足りません');
+          }
+          next();
+        });
+      } else if (head.type === 'graduation') {
+        if (typeof showInviteGraduationModal !== 'function') { next(); return; }
+        showInviteGraduationModal(head, G, next);
+      } else {
+        next();
+      }
+    };
+    next();
   },
 
   // Phase 3a: 派閥イベントUIフロー制御（F01/F02/F03）
