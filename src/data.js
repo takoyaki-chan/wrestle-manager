@@ -6068,8 +6068,6 @@ const PPV_SUMMIT_VICTORY_LINES = {
   }
 };
 
-// PPV_COACH_PRAISE_LINES は src/coach-lines.js へ移動（E-8 Phase 0）
-
 // カード鮮度システム
 const FRESHNESS_CONFIG = {
   windowShows: 12,           // デフォルト（ロスター13人以上）
@@ -11055,8 +11053,6 @@ const RETAIN_LINES = {
     }
   }
 };
-
-// COACH_RETIRE_ADVICE_TEXTS は src/coach-lines.js へ移動（E-8 Phase 0）
 
 // v1.4: 年末表彰式 セリフデータ（personality×archetype）
 const AWARD_LINES = {
@@ -18970,10 +18966,6 @@ const ATMOSPHERE_TEXTS = [
   [{ emoji:'🔥', text:'自主練する選手が増えている' }, { emoji:'🔥', text:'練習場に笑い声が響いている' }, { emoji:'🔥', text:'全員の目つきが違う' }, { emoji:'🔥', text:'チーム全体に勢いがある' }],
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// §2 観察眼システム: コーチ報告テキスト（ランク別）
-// → COACH_REPORT_TEXTS は src/coach-lines.js へ移動（E-8 Phase 0）
-// ─────────────────────────────────────────────────────────────────────────────
 const STAT_LABELS_JP = { pw:'パワー', sp:'スピード', te:'テクニック', st:'スタミナ' };
 const STAT_TIPS = {
   pw:'パワー：技の威力に影響',
@@ -25221,9 +25213,6 @@ RIVALRY_MATCH_REACTION.loserLines.emotional.composed.push('…っ…悔しい…
 // イベントセリフ定数群（旧 ui-common.js の EVENT_QUOTES から分解 / 2026-04-19）
 // pickQuote / getTraitQuote / getDraftQuote 等から参照
 // ─────────────────────────────────────────────────────────────────────────────
-// EVENT_COACH_HIRE_LINES / EVENT_COACH_FIRE_LINES は src/coach-lines.js へ移動（E-8 Phase 0）
-// EVENT_LINES_BY_KEY.coachHire / .coachFire は coach-lines.js 側で追記される
-
 const EVENT_DRAFT_JOIN_LINES = {
   normal: {
     _default: [
@@ -26174,7 +26163,8 @@ const EVENT_RENTAL_GREETING_GENERIC_LINES = [
 ];
 
 // 動的アクセス用ルックアップ（pickQuote/getTraitQuote の引数 category→定数）
-// coachHire/coachFire は src/coach-lines.js 側で追記される（EVENT_COACH_HIRE_LINES 等の移動先のため）
+// コーチ雇用/解雇/PPV称賛は E-8 Phase A/B で pickCoachVoiceQuote() 経由(voiceKey別)に移行済み。
+// このマップには含まれない（coach-lines.js の COACH_VOICE_HIRE/FIRE/PRAISE_LINES を参照）。
 const EVENT_LINES_BY_KEY = {
   draftJoin: EVENT_DRAFT_JOIN_LINES,
   draftInterest: EVENT_DRAFT_INTEREST_LINES,

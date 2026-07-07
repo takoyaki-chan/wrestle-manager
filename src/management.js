@@ -6048,19 +6048,21 @@ const Engine = {
       const obsRank = coach.observation || 'D';
       const inaccuracy = COACH_OBS_INACCURACY[obsRank] || 0;
       const isInaccurate = inaccuracy > 0 && Engine.rng.float(rng) < inaccuracy;
-      const reportText = Engine.coach._buildReportText(rng, obsRank, fighter, isInaccurate);
+      const reportText = Engine.coach._buildReportText(rng, obsRank, fighter, isInaccurate, coach);
       return { coachId: coach.id, coachName: coach.name, coachEmoji: coach.emoji,
                hasPortrait: !!coach.hasPortrait, observation: obsRank,
                fighterId: fighter.id, fighterName: fighter.name, reportText, isInaccurate };
     },
-    _buildReportText(rng, obsRank, fighter, isInaccurate) {
+    _buildReportText(rng, obsRank, fighter, isInaccurate, coach) {
       const name = fighter.name;
       const stats = ['pw', 'sp', 'te', 'st'];
       const randomStat = stats[Engine.rng.int(rng, 0, stats.length - 1)];
       const statLabel = STAT_LABELS_JP[randomStat] || randomStat;
+      const voiceKey = getCoachVoiceKey(coach && coach.id);
+      const voicePool = COACH_VOICE_REPORT_LINES[voiceKey] || COACH_VOICE_REPORT_LINES.theorist;
       // E-D: 漠然（名前なし）
       if (obsRank === 'E' || obsRank === 'D') {
-        const pool = COACH_REPORT_TEXTS.vague;
+        const pool = voicePool.vague;
         return pool[Engine.rng.int(rng, 0, pool.length - 1)];
       }
       // C: 名前+ムード
@@ -6070,7 +6072,7 @@ const Engine = {
         let mood;
         if (isInaccurate) { mood = growing ? 'named_negative' : 'named_positive'; }
         else { mood = growing ? 'named_positive' : (fighter.condition < 40 || fighter.slump) ? 'named_negative' : 'named_neutral'; }
-        const pool = COACH_REPORT_TEXTS[mood];
+        const pool = voicePool[mood];
         return pool[Engine.rng.int(rng, 0, pool.length - 1)].replace('{name}', name);
       }
       // B: 名前+具体ステータス
@@ -6079,7 +6081,7 @@ const Engine = {
         let poolKey;
         if (isInaccurate) { poolKey = sg > 0.5 ? 'stat_stagnant' : 'stat_growing'; }
         else { poolKey = sg > 0.5 ? 'stat_growing' : 'stat_stagnant'; }
-        const pool = COACH_REPORT_TEXTS[poolKey];
+        const pool = voicePool[poolKey];
         return pool[Engine.rng.int(rng, 0, pool.length - 1)].replace('{name}', name).replace('{stat}', statLabel);
       }
       // A: 天井接近ヒント
@@ -6089,7 +6091,7 @@ const Engine = {
       let poolKey;
       if (isInaccurate) { poolKey = pct >= 0.85 ? 'far_from_cap' : 'near_cap'; }
       else { poolKey = pct >= 0.85 ? 'near_cap' : 'far_from_cap'; }
-      const pool = COACH_REPORT_TEXTS[poolKey];
+      const pool = voicePool[poolKey];
       return pool[Engine.rng.int(rng, 0, pool.length - 1)].replace('{name}', name).replace('{stat}', statLabel);
     },
     getSalaryTotal(G) {
@@ -6109,13 +6111,14 @@ const Engine = {
       const obsRank = coach.observation || 'D';
       const inaccuracy = COACH_OBS_INACCURACY[obsRank] || 0;
       const isInaccurate = inaccuracy > 0 && Math.random() < inaccuracy;
-      const text = Engine.coach._buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned);
+      const text = Engine.coach._buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned, coach);
       return { coachId: coach.id, coachName: coach.name, coachEmoji: coach.emoji, text };
     },
 
-    _buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned) {
+    _buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned, coach) {
       const prefix = isAssigned ? '' : '担当じゃないから確信はないですが…';
-      const pool = COACH_RETIRE_ADVICE_TEXTS;
+      const voiceKey = getCoachVoiceKey(coach && coach.id);
+      const pool = COACH_VOICE_RETIRE_LINES[voiceKey] || COACH_VOICE_RETIRE_LINES.theorist;
       if (obsRank === 'E' || obsRank === 'D') {
         return prefix + '…ちょっとわかりません';
       }

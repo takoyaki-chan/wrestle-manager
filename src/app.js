@@ -4433,7 +4433,7 @@ const App = {
     };
     refreshAll();
     showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
-      message: pickQuote('coachHire'), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万、決裁枠 -${dpCost}）` });
+      message: pickCoachVoiceQuote('coachHire', coachId), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万、決裁枠 -${dpCost}）` });
   },
 
   // Expand coach slot
@@ -4473,7 +4473,7 @@ const App = {
     };
     refreshAll();
     if (coach) showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'negative',
-      message: pickQuote('coachFire'), detail:`${coach.name}がチームを去りました` });
+      message: pickCoachVoiceQuote('coachFire', coachId), detail:`${coach.name}がチームを去りました` });
   },
 
   // Assign character to coach

@@ -2897,6 +2897,22 @@ function pickQuote(category) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+// E-8 Phase A/B: コーチの口調系統(voiceKey)別セリフ取得
+// category: 'coachHire' | 'coachFire' | 'ppvPraise'
+const COACH_VOICE_QUOTE_TABLES = {
+  coachHire: () => COACH_VOICE_HIRE_LINES,
+  coachFire: () => COACH_VOICE_FIRE_LINES,
+  ppvPraise: () => COACH_VOICE_PRAISE_LINES,
+};
+function pickCoachVoiceQuote(category, coachId) {
+  const getTable = COACH_VOICE_QUOTE_TABLES[category];
+  const table = getTable ? getTable() : null;
+  if (!table) return '...';
+  const voiceKey = getCoachVoiceKey(coachId);
+  const pool = table[voiceKey] || table.theorist;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 // personality×archetype セリフ取得（タイトルマッチリアクション等）
 function getTraitQuote(category, char) {
   const pool = EVENT_LINES_BY_KEY[category];
@@ -5918,8 +5934,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
         winLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
         const coach = Engine.coach.getCharCoach(G, winF.id);
         if (coach) {
-          const praiseIdx = Math.floor(Math.random() * PPV_COACH_PRAISE_LINES.length);
-          coachPraise = { name: coach.name, line: PPV_COACH_PRAISE_LINES[praiseIdx] };
+          coachPraise = { name: coach.name, line: pickCoachVoiceQuote('ppvPraise', coach.id) };
         }
       }
     }
