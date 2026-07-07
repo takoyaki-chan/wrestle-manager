@@ -4234,6 +4234,7 @@ function renderShachoshitsuHud() {
 // cost > 0              → "50万"
 function _formatShachoshitsuDocCost(doc) {
   if (doc.unitCost) return `${doc.unitCost}万×人数`;
+  if (doc.costLabel) return doc.costLabel;  // 動的コスト書類(ボーナス/休暇/招聘)は「—」でなく説明を出す
   if (doc.cost == null) return '—';
   if (doc.cost === 0) return '無料';
   return `${doc.cost}万`;
@@ -4389,9 +4390,11 @@ function _renderShachoshitsuDecisionDesk() {
       const isApproved = doneThisWeek.includes(doc.id);
       const approvedCls = isApproved ? ' is-approved' : '';
       const clickAttr = isApproved ? '' : ` onclick="App.onShachoshitsuDocClick('${doc.id}')"`;
+      // 朱印(決裁済)で無反応な理由をホバーで説明する(「クリックできない」報告対策)
+      const titleAttr = isApproved ? ' title="この書類は今週すでに決裁済みです。週を進めるとまた検討できます"' : '';
       const rot = docRotation(doc.id, G.week);
       html += `
-        <div class="shachoshitsu-doc${approvedCls}" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}" style="--doc-rotate:${rot}deg"${clickAttr}>
+        <div class="shachoshitsu-doc${approvedCls}" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}" style="--doc-rotate:${rot}deg"${clickAttr}${titleAttr}>
           <div class="shachoshitsu-doc-tag">${doc.categoryLabel}</div>
           <div class="shachoshitsu-doc-icon">${doc.icon}</div>
           <div class="shachoshitsu-doc-title">${doc.label}</div>
