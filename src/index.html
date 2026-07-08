@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WRESTLE MANAGER — 女子プロレス団体経営シミュレーション</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;600;700&family=Shippori+Mincho:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;600;700&family=Shippori+Mincho:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg-dark: #24221e;
@@ -177,6 +177,23 @@
   --signal-up:   var(--green);
   --signal-down: var(--red);
   --font-num:   var(--font-display);
+
+  /* ════════ シーズン総括(season-retrospective) 専用トークン ════════ */
+  /* 寒色ダーク＋金。金は既存 --gold/--gold-light を流用、銀/銅は本画面専用に新設 */
+  --sr-void: #0a0d12;
+  --sr-panel: #10151d;
+  --sr-panel-2: #161d28;
+  --sr-hair: rgba(212,168,67,0.40);
+  --sr-hair-dim: rgba(212,168,67,0.20);
+  --sr-hair-neutral: rgba(226,232,240,0.10);
+  --sr-ink: #e8ebef;
+  --sr-ink-sub: rgba(226,232,240,0.56);
+  --sr-ink-dim: rgba(226,232,240,0.3);
+  --sr-grid: rgba(226,232,240,0.07);
+  --sr-pos: #78c47a;
+  --sr-neg: #e0674f;
+  --sr-silver: #cdd3da;
+  --sr-bronze: #c08a52;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(--text-main);min-height:100vh}
@@ -8759,6 +8776,161 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 /* 体調バー(既存 .cond-bar/.cond-fill を再利用、ラッパのみ追加) */
 .wr-cond-wrap{display:flex;align-items:center;gap:8px;min-width:90px}
 .wr-cond-num{font-family:var(--font-display);font-size:16px;line-height:1;color:var(--text-main);min-width:26px;text-align:right}
+
+/* ══════════════════════════════════════════════════════════
+   season-retrospective-spec: シーズン総括(オフシーズン・レポート)
+   寒色ダーク(紺黒)＋金の証書様式。docs/ui/mockups/season-retrospective-ceremony.html 準拠
+   すべて .sr- プレフィックスでネームスペース。色は var(--sr-*) / var(--gold*) トークン経由のみ
+   ══════════════════════════════════════════════════════════ */
+.sr-stage{max-width:860px;margin:0 auto;background:
+    radial-gradient(135% 100% at 50% 0%,var(--sr-panel-2) 0%,var(--sr-panel) 48%,var(--sr-void) 100%);
+  border:1px solid var(--sr-hair);padding:34px 34px 30px;position:relative;
+  box-shadow:0 0 0 1px rgba(212,168,67,0.08),0 30px 80px rgba(0,0,0,0.55)}
+.sr-stage::before{content:"";position:absolute;inset:7px;border:1px solid var(--sr-hair-dim);pointer-events:none}
+.sr-tick{position:absolute;width:16px;height:16px;border-color:var(--gold);pointer-events:none;z-index:3}
+.sr-tick.sr-tl{top:14px;left:14px;border-top:2px solid;border-left:2px solid}
+.sr-tick.sr-tr{top:14px;right:14px;border-top:2px solid;border-right:2px solid}
+.sr-tick.sr-bl{bottom:14px;left:14px;border-bottom:2px solid;border-left:2px solid}
+.sr-tick.sr-br{bottom:14px;right:14px;border-bottom:2px solid;border-right:2px solid}
+
+.sr-masthead{text-align:center;position:relative;z-index:2;padding-bottom:22px;
+  border-bottom:1px solid var(--sr-hair-dim);margin-bottom:26px}
+.sr-eyebrow{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;letter-spacing:3px;color:var(--gold);
+  font-weight:500}
+.sr-eyebrow .sr-dot{display:inline-block;width:4px;height:4px;background:var(--gold);border-radius:0;
+  vertical-align:middle;margin:0 12px 4px}
+.sr-season-title{font-family:'Noto Serif JP',serif;font-weight:900;font-size:40px;letter-spacing:6px;color:var(--sr-ink);
+  line-height:1.1;margin:6px 0 2px}
+.sr-masthead .sr-sub{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:6px;text-transform:uppercase;
+  color:var(--sr-ink-sub)}
+
+.sr-verdict{display:grid;grid-template-columns:1fr 260px;gap:30px;align-items:stretch;
+  position:relative;z-index:2;margin-bottom:30px}
+.sr-verdict-l{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.sr-rank-line{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.sr-rank-line .sr-num{font-family:'Bebas Neue',sans-serif;font-size:80px;line-height:0.72;color:var(--gold)}
+.sr-rank-line .sr-suf{font-family:'Noto Serif JP',serif;font-weight:700;font-size:24px;color:var(--sr-ink)}
+.sr-rank-line .sr-delta{font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:var(--sr-pos);
+  letter-spacing:1px}
+.sr-rank-line .sr-delta.sr-down{color:var(--sr-neg)}
+.sr-rank-cap{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--sr-ink-dim);margin-bottom:18px}
+.sr-seal{display:inline-flex;align-items:center;gap:14px;border:1px solid var(--gold);
+  padding:9px 18px;margin-bottom:20px;align-self:flex-start;position:relative;
+  background:linear-gradient(180deg,rgba(212,168,67,0.10),rgba(212,168,67,0.02))}
+.sr-seal::before,.sr-seal::after{content:"";position:absolute;top:3px;bottom:3px;width:1px;background:var(--sr-hair)}
+.sr-seal::before{left:3px}.sr-seal::after{right:3px}
+.sr-seal .sr-w{font-family:'Noto Serif JP',serif;font-weight:900;font-size:24px;letter-spacing:9px;color:var(--gold-light);
+  text-indent:9px}
+.sr-lead{font-family:'Noto Serif JP',serif;font-weight:500;font-size:13.5px;line-height:2;color:var(--sr-ink-sub);
+  max-width:440px}
+.sr-portrait{position:relative;border:1px solid var(--sr-hair);background:
+    radial-gradient(80% 70% at 50% 30%,var(--sr-panel-2) 0%,var(--sr-void) 100%);overflow:hidden;
+  display:flex;align-items:flex-end;justify-content:center;min-height:220px}
+.sr-portrait img{height:100%;width:auto;object-fit:contain;object-position:bottom center;
+  filter:drop-shadow(0 6px 20px rgba(0,0,0,0.6))}
+.sr-portrait .sr-frame-tick{position:absolute;width:12px;height:12px;border-color:var(--gold)}
+.sr-portrait .sr-frame-tick.sr-tl{top:6px;left:6px;border-top:1px solid;border-left:1px solid}
+.sr-portrait .sr-frame-tick.sr-tr{top:6px;right:6px;border-top:1px solid;border-right:1px solid}
+.sr-plaque{position:absolute;left:0;right:0;bottom:0;text-align:center;padding:12px 8px 10px;
+  background:linear-gradient(0deg,rgba(6,4,3,0.96),rgba(6,4,3,0));z-index:2}
+.sr-plaque .sr-role{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--gold)}
+.sr-plaque .sr-nm{font-family:'Noto Serif JP',serif;font-weight:700;font-size:19px;letter-spacing:2px;color:#fff;margin-top:2px}
+
+.sr-sec-head{display:flex;align-items:center;gap:14px;margin:0 0 16px;position:relative;z-index:2}
+.sr-sec-head .sr-idx{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--gold);font-weight:600}
+.sr-sec-head .sr-t{font-family:'Noto Serif JP',serif;font-weight:700;font-size:15px;letter-spacing:4px;color:var(--sr-ink)}
+.sr-sec-head .sr-rule{flex:1;height:1px;background:var(--sr-hair-dim)}
+.sr-section{position:relative;z-index:2;margin-bottom:32px}
+
+.sr-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.sr-card{background:var(--sr-panel);border:1px solid var(--sr-hair-dim);position:relative;
+  display:flex;align-items:stretch}
+.sr-card .sr-card-tag{position:absolute;top:0;left:0;z-index:3;font-family:'Oswald',sans-serif;font-size:9px;
+  font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sr-void);background:var(--gold);
+  padding:3px 9px}
+.sr-card-img{width:92px;height:auto;flex-shrink:0;object-fit:cover;object-position:center 12%;display:block;
+  filter:grayscale(0.08) contrast(1.04);border-right:1px solid var(--sr-hair-dim)}
+.sr-card-body{padding:26px 14px 13px;flex:1;min-width:0}
+.sr-card-nm{font-family:'Noto Serif JP',serif;font-weight:700;font-size:14px;letter-spacing:1px;color:var(--sr-ink)}
+.sr-card-meta{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;color:var(--sr-ink-dim);margin-top:2px;text-transform:uppercase}
+.sr-card-narr{font-size:11px;line-height:1.7;color:var(--sr-ink-sub);margin-top:8px}
+
+.sr-chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sr-chart-card{background:var(--sr-panel);border:1px solid var(--sr-hair-dim);padding:15px 15px 11px}
+.sr-chart-card.sr-full{grid-column:span 2}
+.sr-chart-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:8px}
+.sr-chart-title{font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--sr-ink-sub)}
+.sr-chart-now{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);line-height:1;white-space:nowrap}
+.sr-chart-now .sr-d{font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;color:var(--sr-pos);margin-left:5px}
+.sr-chart-now .sr-d.sr-down{color:var(--sr-neg)}
+.sr-chart svg{display:block;width:100%;height:auto}
+.sr-chart-x{display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:9px;
+  letter-spacing:1px;color:var(--sr-ink-dim);margin-top:3px}
+.sr-pl-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.sr-pl-lbl{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--sr-ink-sub);width:48px;flex-shrink:0}
+.sr-pl-track{flex:1;height:22px;background:rgba(236,232,222,0.04);position:relative}
+.sr-pl-fill{height:100%;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;
+  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:var(--sr-void);white-space:nowrap}
+.sr-pl-fill.sr-rev{background:linear-gradient(90deg,var(--gold-deep),var(--gold))}
+.sr-pl-fill.sr-exp{background:linear-gradient(90deg,#2c2820,#544d3f);color:var(--sr-ink)}
+.sr-pl-net{text-align:right;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--sr-ink-sub);margin-top:4px}
+.sr-pl-net b{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--sr-pos);letter-spacing:1px;margin-left:8px}
+.sr-pl-net b.sr-negnet{color:var(--sr-neg)}
+
+.sr-roster-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.sr-rc-h{font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--sr-hair-dim)}
+.sr-rc-item{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--sr-hair-neutral)}
+.sr-rc-item:last-child{border-bottom:none}
+.sr-rc-thumb{width:38px;height:50px;object-fit:cover;object-position:top center;flex-shrink:0;
+  border:1px solid var(--sr-hair-dim);filter:grayscale(0.2)}
+.sr-rc-nm{font-family:'Noto Serif JP',serif;font-weight:700;font-size:13px;letter-spacing:1px;color:var(--sr-ink)}
+.sr-rc-sub{font-family:'Oswald',sans-serif;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--sr-ink-dim);margin-top:2px}
+.sr-rc-delta{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;padding-left:8px;white-space:nowrap}
+.sr-rc-delta.sr-up{color:var(--sr-pos)}.sr-rc-delta.sr-down{color:var(--sr-neg)}
+.sr-rc-tag{margin-left:auto;font-family:'Oswald',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;padding:3px 9px;border:1px solid;white-space:nowrap}
+.sr-rc-tag.sr-retire{color:var(--sr-neg);border-color:rgba(224,103,79,0.45)}
+.sr-rc-tag.sr-join{color:var(--gold);border-color:var(--sr-hair)}
+
+.sr-rank-bars{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.sr-rank-bar{display:flex;align-items:center;gap:12px}
+.sr-rank-bar .sr-medal{font-family:'Bebas Neue',sans-serif;font-size:20px;width:22px;text-align:center;flex-shrink:0}
+.sr-rank-bar:nth-child(1) .sr-medal{color:var(--gold)}
+.sr-rank-bar:nth-child(2) .sr-medal{color:var(--sr-silver)}
+.sr-rank-bar:nth-child(3) .sr-medal{color:var(--sr-bronze)}
+.sr-rank-bar:nth-child(n+4) .sr-medal{color:var(--sr-ink-dim)}
+.sr-rank-bar .sr-track{flex:1;height:26px;background:rgba(236,232,222,0.03);position:relative;
+  border-left:1px solid var(--sr-hair-neutral);min-width:0}
+.sr-rank-bar .sr-fill{height:100%;background:rgba(212,168,67,0.10);display:flex;align-items:center;padding:0 12px;
+  font-family:'Noto Serif JP',serif;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--sr-ink-sub);white-space:nowrap;overflow:hidden}
+.sr-rank-bar.sr-me .sr-fill{background:linear-gradient(90deg,rgba(212,168,67,0.32),rgba(212,168,67,0.10));
+  color:var(--sr-ink);box-shadow:inset 0 0 0 1px var(--sr-hair)}
+.sr-rank-bar .sr-pt{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:var(--sr-ink-sub);width:50px;text-align:right;flex-shrink:0}
+.sr-closing{font-family:'Noto Serif JP',serif;font-weight:500;font-size:13px;line-height:2;color:var(--sr-ink-sub);
+  text-align:center;max-width:600px;margin:0 auto 4px;padding-top:6px}
+
+.sr-next-btn{display:block;margin:22px auto 0;padding:13px 48px;border:1px solid var(--gold);background:transparent;
+  color:var(--gold-light);font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;letter-spacing:4px;
+  text-transform:uppercase;cursor:pointer;transition:all .2s}
+.sr-next-btn:hover{background:rgba(212,168,67,0.12)}
+
+@media (max-width:640px){
+  .sr-stage{padding:24px 16px 22px}
+  .sr-verdict{grid-template-columns:1fr;gap:18px}
+  .sr-portrait{min-height:180px}
+  .sr-strip{grid-template-columns:1fr}
+  .sr-chart-grid{grid-template-columns:1fr}
+  .sr-chart-card.sr-full{grid-column:span 1}
+  .sr-roster-grid{grid-template-columns:1fr}
+  .sr-season-title{font-size:30px;letter-spacing:3px}
+  .sr-rank-line .sr-num{font-size:60px}
+}
 
 </style>
 </head>

@@ -1,8 +1,8 @@
 # 画面：シーズン総括（オフシーズン・レポート）
 
 **ファイル**：`docs/ui/03-screens/season-retrospective.md`
-**最終更新**：2026-07-08（モック確定・実装フェーズ1へ）
-**実装状況**：実装中（Phase 1 を Sonnet に委譲 2026-07-08）
+**最終更新**：2026-07-08（フェーズ1実装完了）
+**実装状況**：フェーズ1実装完了（2026-07-08）。`Engine.seasonReview.build(G)` 新設 + `renderWeekScreen` offseason(`offWeek<=1`) 描画差し替え + `.sr-` スコープCSS。ナレーション本文は事実ベースの仮文（`// TODO: Phase3 narration table` 箇所を参照）。フェーズ3（Opus 4.6 執筆 + Keisuke 全文レビュー）待ち
 
 ---
 
@@ -152,7 +152,7 @@
 
 ## 実装フェーズ
 
-- **フェーズ1（Sonnet・今回）**：`Engine.seasonReview.build(state)` 新設＋offseason 週画面の描画差し替え＋スクリーンスコープ CSS。ナレーションは事実ベースの仮文スロット
+- **フェーズ1（Sonnet・完了 2026-07-08）**：`Engine.seasonReview.build(state)` 新設＋offseason 週画面の描画差し替え＋スクリーンスコープ CSS。ナレーションは事実ベースの仮文スロット（`src/management.js` / `src/ui-render.js` / `src/index.html` 内 `// TODO: Phase3 narration table` 箇所）
 - **フェーズ2**：顔ぶれ集計の精緻化（必要なら）
 - **フェーズ3（Opus 4.6）**：見出し語×セクション×条件のナレーション文面テーブル執筆＋Keisuke 全文レビュー＋配線
 

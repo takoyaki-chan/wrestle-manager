@@ -3509,6 +3509,7 @@ const Engine = {
           seasonalSnapshots: ((cr.seasonalSnapshots) || []).map(sn => ({ ...sn }))
         },
         traits,
+        age: fighter.age != null ? fighter.age : null, // season-retrospective-spec: 退団カード表示用（追加のみ・既存消費側に影響なし）
         retiredSeason: careerSeasonsEnd
       };
       const nextArchive = [...(ch.fighterArchive || []), entry];
@@ -6368,6 +6369,10 @@ const Engine = {
     // Season end: aging + decay + growth reset for player roster
     applySeasonEnd(rng, G) {
       const report = [];
+      // season-retrospective-spec: 成長/衰退の実数サマリ（seasonGrowthはこの関数末尾でリセットされ
+      // 消えてしまうため、リセット前にここで id/name/age/net を退避する。呼び出し側が
+      // G.lastSeasonGrowthSummary として state に保存する
+      const growthSummary = [];
       const newRoster = G.roster.map(c => {
         // レンタル選手はシーズン末処理対象外（wear/aging は元所属先が管理）
         if (c.isRental) return c;
@@ -6404,12 +6409,15 @@ const Engine = {
           if (decayDelta !== 0) changes[s] = decayDelta;
         });
         const parts = [];
+        let totalNet = 0;
         ['pw','sp','te','st','mn'].forEach(s => {
           const net = (nc.seasonGrowth[s] || 0) + (changes[s] || 0);
+          totalNet += net;
           if (net > 0) parts.push(`${s.toUpperCase()}+${net}`);
           else if (net < 0) parts.push(`${s.toUpperCase()}${net}`);
         });
         if (parts.length > 0) report.push(`${nc.name}(${nc.age}歳): ${parts.join(' ')}`);
+        growthSummary.push({ id: nc.id, name: nc.name, age: nc.age, net: totalNet });
         nc.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
         nc.seasonPopGrowth = 0;
         nc.seasonInjuries = 0; // v1.3-2: §5.4 シーズンリセット
@@ -6433,7 +6441,7 @@ const Engine = {
         }
         return nc;
       });
-      return { roster: newRoster, report };
+      return { roster: newRoster, report, growthSummary };
     }
   },
 
@@ -14037,8 +14045,10 @@ const Engine = {
         // 未実装のため、本フェーズでは保留。tracker 実装後に有効化する)
 
         // OffWeek 1: Player season end (aging + decay + growth reset) + AI season end
-        const { roster, report } = Engine.growth.applySeasonEnd(rng, s);
-        s = { ...s, roster };
+        const { roster, report, growthSummary } = Engine.growth.applySeasonEnd(rng, s);
+        // season-retrospective-spec: seasonGrowthはリセットされるため、シーズン総括画面用に
+        // ここでしか取れない成長/衰退の実数を退避しておく（lastAwards と同じ「退避フィールド」パターン）
+        s = { ...s, roster, lastSeasonGrowthSummary: growthSummary };
         events.push(`📊 シーズン${s.season}終了 — 成績レポート`);
         report.forEach(r => events.push(`  ${r}`));
 
@@ -17471,6 +17481,248 @@ Engine.awards = {
     });
     return { ...state, hallOfFame: newHallOfFame, allHallOfFame: allHof, retiredFighters: [], retiredIds: newRetiredIds, retiredSeasons: newRetiredSeasons };
   }
+};
+
+// ══════════════════════════════════════════════════════════
+//  Engine.seasonReview — シーズン総括(オフシーズン・レポート) v1.0 Phase 1
+//  Pure functions only — no DOM references。season-retrospective-spec 準拠
+//  ナレーション文面は仮文(TODO: Phase3 narration table でOpus 4.6執筆に差し替え)
+// ══════════════════════════════════════════════════════════
+Engine.seasonReview = {
+  /** N点程度に等間隔で間引く。データ数がN以下ならそのまま返す(平均化はしない=最新値を保つ) */
+  _downsample(values, n) {
+    const arr = Array.isArray(values) ? values : [];
+    if (arr.length <= n) return arr.slice();
+    const out = [];
+    const step = (arr.length - 1) / (n - 1);
+    for (let i = 0; i < n; i++) out.push(arr[Math.round(i * step)]);
+    return out;
+  },
+
+  /** 選手の在籍年数(現役年数)。joinSeason起点で概算。不明なら null */
+  _careerYears(fighter, season) {
+    const joinS = Engine.career.joinSeason(fighter);
+    if (joinS == null) return null;
+    return Math.max(1, season - joinS + 1);
+  },
+
+  /**
+   * 今季の退団者(引退)一覧を取得する。
+   * retiredFighters は年末表彰式完了後に空へリセットされる transient フィールドのため、
+   * それが空でも復元できるよう retiredSeasons(永続) + chronicle.fighterArchive(永続) の
+   * フォールバックを必ず用意する。
+   */
+  _getDepartures(state) {
+    const season = state.season;
+    const out = [];
+    const seen = new Set();
+    (state.retiredFighters || []).forEach(f => {
+      const hist = (f.careerRecord && f.careerRecord.history) || [];
+      const retireEv = hist.find(e => e.type === 'retire' && e.season === season);
+      if (retireEv && !seen.has(f.id)) {
+        seen.add(f.id);
+        const years = Engine.seasonReview._careerYears(f, season);
+        out.push({ id: f.id, name: f.name, age: f.age != null ? f.age : null,
+          note: years != null ? `${years}年の現役に幕` : '引退' });
+      }
+    });
+    const retiredSeasons = state.retiredSeasons || {};
+    const archive = (state.chronicle && state.chronicle.fighterArchive) || [];
+    Object.keys(retiredSeasons).forEach(idStr => {
+      if (retiredSeasons[idStr] !== season) return;
+      const id = Number(idStr);
+      if (seen.has(id)) return;
+      const a = archive.find(x => x.id === id);
+      if (!a) return;
+      seen.add(id);
+      const years = (a.careerSeasonsEnd != null && a.careerSeasonsStart != null)
+        ? Math.max(1, a.careerSeasonsEnd - a.careerSeasonsStart + 1) : null;
+      out.push({ id, name: a.name, age: a.age != null ? a.age : null,
+        note: years != null ? `${years}年の現役に幕` : '引退' });
+    });
+    return out;
+  },
+
+  /** 見出し語(金銘板)の決定。単一変数の閾値ではなく、複数条件の組み合わせで判定する */
+  _decideHeadline(ctx) {
+    const { rank, prevRank, financeNet, financeRevenue, awardsCount, departuresCount, titleWonThisSeason } = ctx;
+    if (rank === 1 || titleWonThisSeason) return '戴冠';
+    if (departuresCount >= 3) return '世代交代';
+    if (prevRank != null) {
+      const rankUp = rank < prevRank;
+      const rankDown = rank > prevRank;
+      const rankSame = rank === prevRank;
+      const isProfit = financeNet > 0;
+      const isDeficit = financeNet < 0;
+      const isBalanced = financeRevenue > 0 ? Math.abs(financeNet) <= financeRevenue * 0.08 : Math.abs(financeNet) < 300;
+      if (rankUp && isProfit && awardsCount >= 2) return '飛躍';
+      if (rankDown && isDeficit) return '雌伏';
+      if (rankSame && isBalanced) return '地固め';
+      if (isDeficit || rankDown) return '試練';
+      if (rankUp) return '飛躍';
+      return '地固め';
+    }
+    // 1年目: 前年比較材料がない
+    if (financeNet < 0) return '試練';
+    return '船出';
+  },
+
+  /**
+   * オフシーズン週画面(offWeek 0〜1)に必要な全データを1オブジェクトで返す。
+   * @param {Object} state - GameState
+   * @returns {Object} seasonReview データ
+   */
+  build(state) {
+    const G = state;
+    const ov = Engine.util.ov;
+    const season = G.season;
+    const processed = (G.offWeek || 0) >= 1; // offWeek1移行時点でシーズン末処理(applySeasonEnd)済み
+
+    // ── 最終順位＋前年比 ──
+    const rankings = Engine.ranking.updateRankings(G);
+    const rank = Engine.ranking.getPlayerRank(rankings);
+    const histArr = Array.isArray(G.seasonHistory) ? G.seasonHistory : [];
+    const lastHist = histArr.length > 0 ? histArr[histArr.length - 1] : null;
+    const prevRank = lastHist ? (lastHist.rank || null) : null;
+
+    // ── 受賞データ(今季分のみ。lastAwardsのseasonが一致する場合だけ採用) ──
+    const awards = (G.lastAwards && G.lastAwards.season === season) ? G.lastAwards : null;
+
+    // ── HERO 主役 ──
+    let hero = null;
+    if (awards && awards.mvp && awards.mvp.isPlayerOrg) {
+      hero = { id: awards.mvp.id, name: awards.mvp.name, role: 'MOST VALUABLE', ovr: awards.mvp.ovr };
+    }
+    if (!hero) {
+      const cand = (G.roster || []).filter(f => !f.isRental).sort((a, b) => ov(b) - ov(a))[0];
+      if (cand) hero = { id: cand.id, name: cand.name, role: 'TOP RATED', ovr: ov(cand) };
+    }
+
+    // ── 王座(自団体・現行の世界王者のみ。3階級構想のうち現データで実在するのは世界王座) ──
+    let titleWonThisSeason = false;
+    let champRecord = null;
+    if (G.titles && G.titles.world && G.titles.world.championId) {
+      const champ = (G.roster || []).find(f => f.id === G.titles.world.championId);
+      if (champ) {
+        const hist = (champ.careerRecord && champ.careerRecord.history) || [];
+        titleWonThisSeason = hist.some(e => e.type === 'titleWin' && e.season === season);
+        champRecord = {
+          tag: '王者', id: champ.id, name: champ.name,
+          meta: `世界 / V${G.titles.world.defenses || 0}`,
+          narr: `王座を${G.titles.world.defenses || 0}度守った。`, // TODO: Phase3 narration table
+        };
+      }
+    }
+
+    // ── §I 今季を彩った記録(自団体該当分のみ・ベストマッチ/勝敗記録は含めない) ──
+    const records = [];
+    if (awards && awards.rookieOfYear && awards.rookieOfYear.isPlayerOrg) {
+      const r = awards.rookieOfYear;
+      records.push({
+        tag: '新人王', id: r.id, name: r.name,
+        meta: `${r.age != null ? r.age : '?'} / OVR ${r.ovr}`,
+        narr: 'デビュー年でこの実績を残した。', // TODO: Phase3 narration table
+      });
+    }
+    if (champRecord) records.push(champRecord);
+    if (awards && awards.jtChampion && awards.jtChampion.isPlayerOrg) {
+      const j = awards.jtChampion;
+      records.push({
+        tag: 'JT優勝', id: j.id, name: j.name,
+        meta: `OVR ${j.ovr}`,
+        narr: 'ジュニアトーナメントを制した。', // TODO: Phase3 narration table
+      });
+    }
+    if (awards && awards.mediaAward && awards.mediaAward.isPlayerOrg) {
+      const m = awards.mediaAward;
+      records.push({
+        tag: 'メディア功労', id: m.id, name: m.name,
+        meta: `${m.age != null ? m.age : '?'}歳`,
+        narr: 'リング外での発信が団体を支えた。', // TODO: Phase3 narration table
+      });
+    }
+
+    // ── §II 経営の一年 ──
+    let popHistory = null;
+    if (histArr.length > 0) {
+      const arr = histArr.map(h => ({ season: h.season, orgPop: h.orgPop || 0 }));
+      arr.push({ season, orgPop: G.orgPop || 0 });
+      popHistory = arr.length > 10 ? arr.slice(-10) : arr;
+    }
+    const fundsCurve = Engine.seasonReview._downsample(G.fundsHistory || [], 12);
+    const st = G.seasonStats || {};
+    const finance = {
+      revenue: Math.round(st.totalRevenue || 0),
+      expense: Math.round(st.totalExpense || 0),
+      net: Math.round((st.totalRevenue || 0) - (st.totalExpense || 0)),
+    };
+
+    // ── §III 顔ぶれの変化 ──
+    const departures = Engine.seasonReview._getDepartures(G);
+    const joinThreshold = processed ? 1 : 0; // applySeasonEnd実行後はcareerSeasonsが+1されている
+    const joins = (G.roster || [])
+      .filter(f => !f.isRental && (f.careerSeasons || 0) === joinThreshold)
+      .map(f => ({ id: f.id, name: f.name, age: f.age != null ? f.age : null, note: '今季加入' }));
+      // TODO: Phase2 加入経路(ドラフト/移籍/スカウト)の判定精緻化
+
+    let grew = null, declined = null;
+    if (processed && Array.isArray(G.lastSeasonGrowthSummary) && G.lastSeasonGrowthSummary.length > 0) {
+      const sorted = [...G.lastSeasonGrowthSummary].sort((a, b) => b.net - a.net);
+      const top = sorted[0];
+      const bottom = sorted[sorted.length - 1];
+      if (top && top.net > 0) grew = { id: top.id, name: top.name, delta: top.net };
+      // 決定履歴2026-07-08: 陰りの見えた選手は毎年実名で名指しする(婉曲・間引きしない)
+      if (bottom && (!top || bottom.id !== top.id)) declined = { id: bottom.id, name: bottom.name, delta: bottom.net };
+    }
+
+    // ── §IV 団体ランキング ──
+    const rankingsOut = rankings.map(r => ({ name: r.name, rating: r.rating, isPlayer: r.orgId === 'player' }));
+
+    // ── 見出し語(金銘板) ──
+    let awardsCount = 0;
+    if (awards) {
+      if (awards.mvp && awards.mvp.isPlayerOrg) awardsCount++;
+      if (awards.rookieOfYear && awards.rookieOfYear.isPlayerOrg) awardsCount++;
+      if (awards.jtChampion && awards.jtChampion.isPlayerOrg) awardsCount++;
+      if (awards.mediaAward && awards.mediaAward.isPlayerOrg) awardsCount++;
+    }
+    if (champRecord) awardsCount++;
+    const headline = Engine.seasonReview._decideHeadline({
+      rank, prevRank, financeNet: finance.net, financeRevenue: finance.revenue,
+      awardsCount, departuresCount: departures.length, titleWonThisSeason,
+    });
+
+    // ── リード文/締めナレ(事実ベースの仮文。TODO: Phase3 narration table でOpus 4.6執筆に差し替え) ──
+    let lead;
+    if (prevRank != null) {
+      if (rank < prevRank) lead = `前年${prevRank}位から${rank}位に浮上した。`;
+      else if (rank > prevRank) lead = `前年${prevRank}位から${rank}位に後退した。`;
+      else lead = `前年に続き${rank}位で今季を終えた。`;
+    } else {
+      lead = `旗揚げ初年度、${rank}位でシーズンを終えた。`;
+    }
+    if (hero) lead += hero.role === 'MOST VALUABLE' ? `${hero.name}が年間MVPに輝いた。` : `${hero.name}がチームを牽引した。`;
+
+    let closing;
+    const meIdx = rankingsOut.findIndex(r => r.isPlayer);
+    const aboveMe = meIdx > 0 ? rankingsOut[meIdx - 1] : null;
+    if (aboveMe) {
+      const gap = Math.max(0, Math.round(aboveMe.rating - rankingsOut[meIdx].rating));
+      closing = `上位${aboveMe.name}との差は${gap}点。来季も、着実に積み上げたい。`;
+    } else if (meIdx === 0) {
+      closing = '業界の頂点として、来季も走り続ける。';
+    } else {
+      closing = '来季も、この団体の物語は続く。';
+    }
+
+    return {
+      rank, prevRank, headline, hero, records,
+      popHistory, fundsCurve, finance,
+      roster: { departures, joins, grew, declined },
+      rankings: rankingsOut,
+      lead, closing,
+    };
+  },
 };
 
 // ══════════════════════════════════════════════════════════

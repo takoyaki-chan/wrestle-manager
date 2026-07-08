@@ -351,6 +351,202 @@ function _finishOpening() {
   refreshAll();
 }
 
+// ══════════════════════════════════════════════════════════
+//  season-retrospective-spec Phase 1: シーズン総括(オフシーズン・レポート)
+//  Engine.seasonReview.build(G) の結果を寒色黒金の証書レイアウトへ描画する。
+// ══════════════════════════════════════════════════════════
+
+/** 単一系列(ゴールド)の折れ線+塗り+最新点強調 SVG。dataviz準拠: dual-axis禁止・凡例なし */
+function _srChartSvg(values) {
+  if (!values || values.length < 2) return '';
+  const w = 340, h = 140, x0 = 30, x1 = 320, yTop = 15, yBase = 120;
+  const vMin = Math.min(...values, 0);
+  const vMax = Math.max(...values, 0);
+  const range = (vMax - vMin) || 1;
+  const n = values.length;
+  const px = i => x0 + (n === 1 ? 0 : (i * (x1 - x0) / (n - 1)));
+  const py = v => yTop + (yBase - yTop) * (1 - (v - vMin) / range);
+  const pts = values.map((v, i) => [px(i), py(v)]);
+  const lineD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  const last = pts[pts.length - 1];
+  const areaD = `${lineD} L${last[0].toFixed(1)},${yBase} L${pts[0][0].toFixed(1)},${yBase} Z`;
+  const gid = 'srg' + Math.abs(Math.round(vMax * 7 + n * 13)).toString(36);
+  const dots = pts.slice(0, -1).map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="var(--gold)"/>`).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <line x1="${x0}" y1="${yBase}" x2="${x1}" y2="${yBase}" stroke="var(--sr-grid)"/>
+    <line x1="${x0}" y1="${(yTop + yBase) / 2}" x2="${x1}" y2="${(yTop + yBase) / 2}" stroke="var(--sr-grid)"/>
+    <line x1="${x0}" y1="${yTop}" x2="${x1}" y2="${yTop}" stroke="var(--sr-grid)"/>
+    <path d="${areaD}" fill="url(#${gid})" opacity="0.55"/>
+    <path d="${lineD}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4.5" fill="var(--gold-light)" stroke="var(--sr-void)" stroke-width="1.5"/>
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--gold)" stop-opacity="0.35"/><stop offset="1" stop-color="var(--gold)" stop-opacity="0"/></linearGradient></defs>
+  </svg>`;
+}
+
+/** 資金推移チャートのX軸ラベル(開幕→締め、間は空白で等間隔に見せる) */
+function _srFundsXLabels(n) {
+  if (n <= 1) return '';
+  const mid = ['春', '夏', '秋'];
+  const labels = new Array(n).fill('');
+  labels[0] = '開幕';
+  labels[n - 1] = '締め';
+  // 中間点にざっくり季節ラベルを均等配置(演出上の目安。厳密な週対応ではない)
+  for (let i = 1; i < mid.length + 1 && i < n - 1; i++) {
+    const idx = Math.round((i * (n - 1)) / (mid.length + 1));
+    if (idx > 0 && idx < n - 1) labels[idx] = mid[i - 1];
+  }
+  return labels.map(l => `<span>${l}</span>`).join('');
+}
+
+/** シーズン総括画面本体を描画する。review = Engine.seasonReview.build(G) の結果 */
+function _renderSeasonReview(review, state) {
+  let h = '';
+  h += `<div class="sr-stage">`;
+  h += `<span class="sr-tick sr-tl"></span><span class="sr-tick sr-tr"></span><span class="sr-tick sr-bl"></span><span class="sr-tick sr-br"></span>`;
+
+  // ── MASTHEAD ──
+  h += `<div class="sr-masthead">
+    <div class="sr-eyebrow">Season<span class="sr-dot"></span>Review</div>
+    <div class="sr-season-title">${state.season}年目 総括</div>
+    <div class="sr-sub">Annual Record</div>
+  </div>`;
+
+  // ── VERDICT ──
+  let deltaHtml = '';
+  if (review.prevRank != null) {
+    const up = review.rank < review.prevRank;
+    const down = review.rank > review.prevRank;
+    const arrow = up ? '▲' : down ? '▼' : '=';
+    deltaHtml = `<span class="sr-delta${down ? ' sr-down' : ''}">${arrow} 前年 ${review.prevRank}位</span>`;
+  }
+  const heroImg = review.hero ? getStandUrl(review.hero.id, review.hero.ovr) : '';
+  h += `<div class="sr-verdict">
+    <div class="sr-verdict-l">
+      <div class="sr-seal"><span class="sr-w">${review.headline}</span></div>
+      <div class="sr-rank-line"><span class="sr-num">${review.rank}</span><span class="sr-suf">位</span>${deltaHtml}</div>
+      <div class="sr-rank-cap">Final Standing — 最終順位</div>
+      <div class="sr-lead">${review.lead}</div>
+    </div>
+    <div class="sr-portrait">
+      <span class="sr-frame-tick sr-tl"></span><span class="sr-frame-tick sr-tr"></span>
+      ${heroImg ? `<img src="${heroImg}" alt="" onerror="this.style.display='none'">` : ''}
+      ${review.hero ? `<div class="sr-plaque"><div class="sr-role">${review.hero.role}</div><div class="sr-nm">${review.hero.name}</div></div>` : ''}
+    </div>
+  </div>`;
+
+  // ── §I 今季を彩った記録 ──
+  if (review.records && review.records.length > 0) {
+    h += `<div class="sr-section">
+      <div class="sr-sec-head"><span class="sr-idx">I</span><span class="sr-t">今季を彩った記録</span><span class="sr-rule"></span></div>
+      <div class="sr-strip">`;
+    review.records.forEach(r => {
+      h += `<div class="sr-card">
+        <span class="sr-card-tag">${r.tag}</span>
+        <img class="sr-card-img" src="${getUpperUrl(r.id)}" alt="" onerror="this.style.display='none'">
+        <div class="sr-card-body">
+          <div class="sr-card-nm">${r.name}</div>
+          <div class="sr-card-meta">${r.meta}</div>
+          <div class="sr-card-narr">${r.narr}</div>
+        </div>
+      </div>`;
+    });
+    h += `</div></div>`;
+  }
+
+  // ── §II 経営の一年 ──
+  h += `<div class="sr-section">
+    <div class="sr-sec-head"><span class="sr-idx">II</span><span class="sr-t">経営の一年</span><span class="sr-rule"></span></div>
+    <div class="sr-chart-grid">`;
+  if (review.popHistory && review.popHistory.length >= 2) {
+    const vals = review.popHistory.map(p => p.orgPop);
+    const cur = vals[vals.length - 1];
+    const d = Math.round(cur - vals[vals.length - 2]);
+    h += `<div class="sr-chart-card">
+      <div class="sr-chart-head"><span class="sr-chart-title">団体人気の歩み — 旗揚げから</span>
+        <span class="sr-chart-now">${Math.round(cur)}${d !== 0 ? `<span class="sr-d${d < 0 ? ' sr-down' : ''}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>` : ''}</span></div>
+      <div class="sr-chart">${_srChartSvg(vals)}</div>
+      <div class="sr-chart-x">${review.popHistory.map((p, i) => `<span>${(i === 0 || i === review.popHistory.length - 1) ? p.season + '年目' : p.season}</span>`).join('')}</div>
+    </div>`;
+  }
+  if (review.fundsCurve && review.fundsCurve.length >= 2) {
+    const cur = review.fundsCurve[review.fundsCurve.length - 1];
+    h += `<div class="sr-chart-card">
+      <div class="sr-chart-head"><span class="sr-chart-title">資金の推移 — 今季</span>
+        <span class="sr-chart-now" style="font-size:18px">${Math.round(cur).toLocaleString()}<span style="font-family:'Oswald';font-size:9px;color:var(--sr-ink-dim)">万</span></span></div>
+      <div class="sr-chart">${_srChartSvg(review.fundsCurve)}</div>
+      <div class="sr-chart-x">${_srFundsXLabels(review.fundsCurve.length)}</div>
+    </div>`;
+  }
+  {
+    const rev = review.finance.revenue, exp = review.finance.expense, net = review.finance.net;
+    const maxV = Math.max(rev, exp, 1);
+    h += `<div class="sr-chart-card sr-full">
+      <div class="sr-chart-head"><span class="sr-chart-title">今季の収支</span></div>
+      <div class="sr-pl-row"><span class="sr-pl-lbl">収入</span><div class="sr-pl-track"><div class="sr-pl-fill sr-rev" style="width:${Math.max(4, Math.round(rev / maxV * 100))}%">${rev.toLocaleString()}万</div></div></div>
+      <div class="sr-pl-row"><span class="sr-pl-lbl">支出</span><div class="sr-pl-track"><div class="sr-pl-fill sr-exp" style="width:${Math.max(4, Math.round(exp / maxV * 100))}%">${exp.toLocaleString()}万</div></div></div>
+      <div class="sr-pl-net">純益<b${net < 0 ? ' class="sr-negnet"' : ''}>${net >= 0 ? '+' : ''}${net.toLocaleString()}万</b></div>
+    </div>`;
+  }
+  h += `</div></div>`;
+
+  // ── §III 顔ぶれの変化 ──
+  const ro = review.roster || {};
+  const departures = ro.departures || [];
+  const joins = ro.joins || [];
+  if (departures.length > 0 || joins.length > 0 || ro.grew || ro.declined) {
+    h += `<div class="sr-section">
+      <div class="sr-sec-head"><span class="sr-idx">III</span><span class="sr-t">顔ぶれの変化</span><span class="sr-rule"></span></div>
+      <div class="sr-roster-grid">`;
+    if (departures.length > 0 || joins.length > 0) {
+      h += `<div><div class="sr-rc-h">出 入 り</div>`;
+      departures.forEach(d => {
+        h += `<div class="sr-rc-item"><img class="sr-rc-thumb" src="${getUpperUrl(d.id)}" alt="" onerror="this.style.display='none'">
+          <div><div class="sr-rc-nm">${d.name}</div><div class="sr-rc-sub">${d.age != null ? d.age : '?'} / ${d.note}</div></div>
+          <span class="sr-rc-tag sr-retire">引退</span></div>`;
+      });
+      joins.forEach(j => {
+        h += `<div class="sr-rc-item"><img class="sr-rc-thumb" src="${getUpperUrl(j.id)}" alt="" onerror="this.style.display='none'">
+          <div><div class="sr-rc-nm">${j.name}</div><div class="sr-rc-sub">${j.age != null ? j.age : '?'} / ${j.note}</div></div>
+          <span class="sr-rc-tag sr-join">加入</span></div>`;
+      });
+      h += `</div>`;
+    }
+    if (ro.grew || ro.declined) {
+      h += `<div><div class="sr-rc-h">成 長 と 陰 り</div>`;
+      if (ro.grew) {
+        h += `<div class="sr-rc-item"><img class="sr-rc-thumb" src="${getUpperUrl(ro.grew.id)}" alt="" onerror="this.style.display='none'">
+          <div><div class="sr-rc-nm">${ro.grew.name}</div><div class="sr-rc-sub">最も伸びた選手</div></div>
+          <span class="sr-rc-delta sr-up">+${Math.round(ro.grew.delta)}</span></div>`;
+      }
+      if (ro.declined) {
+        h += `<div class="sr-rc-item"><img class="sr-rc-thumb" src="${getUpperUrl(ro.declined.id)}" alt="" onerror="this.style.display='none'">
+          <div><div class="sr-rc-nm">${ro.declined.name}</div><div class="sr-rc-sub">陰りの見えた選手</div></div>
+          <span class="sr-rc-delta sr-down">${Math.round(ro.declined.delta)}</span></div>`;
+      }
+      h += `</div>`;
+    }
+    h += `</div></div>`;
+  }
+
+  // ── §IV 団体ランキングと来季 ──
+  const rankingsArr = review.rankings || [];
+  const maxRating = Math.max(...rankingsArr.map(r => r.rating), 1);
+  h += `<div class="sr-section" style="margin-bottom:8px">
+    <div class="sr-sec-head"><span class="sr-idx">IV</span><span class="sr-t">団体ランキングと来季</span><span class="sr-rule"></span></div>
+    <div class="sr-rank-bars">`;
+  rankingsArr.forEach((r, i) => {
+    const pct = Math.max(4, Math.round(r.rating / maxRating * 100));
+    h += `<div class="sr-rank-bar${r.isPlayer ? ' sr-me' : ''}"><span class="sr-medal">${i + 1}</span><div class="sr-track"><div class="sr-fill" style="width:${pct}%">${r.name}</div></div><span class="sr-pt">${Math.round(r.rating).toLocaleString()}</span></div>`;
+  });
+  h += `</div>`;
+  h += `<div class="sr-closing">${review.closing}</div>`;
+  h += `</div>`; // section IV
+
+  h += `</div>`; // sr-stage
+  return h;
+}
+
 function renderWeekScreen() {
   if (typeof App !== 'undefined' && App.repairProgressionState && App.repairProgressionState('renderWeekScreen')) {
     try { Storage.autoSave(); } catch (_e) {}
@@ -586,80 +782,35 @@ function renderWeekScreen() {
       </div>
     </div>`;
 
-    // v0.95: Season Recap Card (show detailed stats from completed season)
-    // 常に現在のシーズンデータを使う（lastArchiveは前シーズンのもので混同を防ぐ）
-    const st = G.seasonStats || {};
+    // season-retrospective-spec: シーズン総括(ANNUAL RECORD)。offWeek 0〜1 の一枚レポート
     if (offW <= 1) {
-      const src = st;
-      const profit = (src.totalRevenue || 0) - (src.totalExpense || 0);
-      // 現在のランキングを再計算（G.rankingsはシーズン開始時点で更新が止まるため）
-      const _recapRankings = Engine.ranking.updateRankings(G);
-      const recapRank = Engine.ranking.getPlayerRank(_recapRankings);
-      const recapRankColor = recapRank===1?'var(--gold)':recapRank===2?'#e74c3c':recapRank===3?'#9b59b6':'#2ecc71';
-      const _recapSeason = G.season;
-      html += `<div style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(241,196,15,0.04));border:1px solid rgba(212,168,67,0.2);border-radius:8px;padding:16px;margin-bottom:16px">
-        <h4 style="color:var(--gold);margin-bottom:12px;font-size:14px">📊 シーズン${_recapSeason} レポート</h4>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
-          <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
-            <div style="font-size:20px;font-weight:900;color:${recapRankColor}">${recapRank || '-'}位</div>
-            <div style="font-size:12px;color:var(--text-dim)">最終ランキング</div>
-          </div>
-          <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
-            <div style="font-size:20px;font-weight:900;color:#2ecc71">${src.showCount || 0}</div>
-            <div style="font-size:12px;color:var(--text-dim)">興行開催数</div>
-          </div>
-          <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.2);border-radius:4px">
-            <div style="font-size:20px;font-weight:900;color:#3498db">${src.bestMQ || 0}</div>
-            <div style="font-size:12px;color:var(--text-dim)">最高MQ</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
-          <div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px">
-            <span style="color:var(--text-dim)">収支:</span>
-            <span style="color:${profit>=0?'#2ecc71':'#e74c3c'};font-weight:700">${profit>=0?'+':''}${Math.round(profit).toLocaleString()}万</span>
-            <span style="color:var(--text-dim);font-size:12px">(収${Math.round(src.totalRevenue||0).toLocaleString()} / 支${Math.round(src.totalExpense||0).toLocaleString()})</span>
-          </div>
-          <div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px">
-            <span style="color:var(--text-dim)">ピーク資金:</span>
-            <span style="color:var(--gold);font-weight:700">${Math.round(src.peakFunds||0).toLocaleString()}万</span>
-          </div>
-          ${src.bestMQMatch ? `<div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px;grid-column:span 2">
-            <span style="color:var(--text-dim)">ベストマッチ:</span>
-            <span style="color:var(--text-main)">${src.bestMQMatch}</span>
-            <span style="color:#3498db;font-weight:700">MQ${src.bestMQ}</span>
-          </div>` : ''}
-          ${(src.eventsWon || src.eventsLost) ? `<div style="padding:6px 8px;background:rgba(0,0,0,0.15);border-radius:4px;grid-column:span 2">
-            <span style="color:var(--text-dim)">団体抗争:</span>
-            <span style="color:#2ecc71">${src.eventsWon||0}勝</span> / <span style="color:#e74c3c">${src.eventsLost||0}敗</span>
-          </div>` : ''}
-        </div>
-      </div>`;
-    }
+      const review = Engine.seasonReview.build(G);
+      html += _renderSeasonReview(review, G);
+    } else {
+      // offWeek 2以降(ドラフト/移籍/開幕準備週)は従来どおりgameLogフィルタ+ランキング要約を表示
+      const recentEvents = (G.gameLog || []).filter(e => typeof e === 'string' && (e.includes('オフシーズン') || e.includes('シーズン') || e.includes('引退') || e.includes('獲得') || e.includes('移籍') || e.includes('衰退') || e.includes('成長')));
+      const offEvents = recentEvents.slice(-15);
+      if (offEvents.length > 0) {
+        html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;max-height:300px;overflow-y:auto">';
+        html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📋 オフシーズンレポート</h4>';
+        offEvents.forEach(ev => {
+          const isHighlight = typeof ev === 'string' && (ev.includes('引退') || ev.includes('獲得') || ev.includes('移籍'));
+          html += `<div style="font-size:11px;padding:2px 0;color:${isHighlight ? 'var(--text-main)' : 'var(--text-sub)'}">${ev}</div>`;
+        });
+        html += '</div>';
+      }
 
-    // Show recent events from game log related to current offseason
-    const recentEvents = (G.gameLog || []).filter(e => typeof e === 'string' && (e.includes('オフシーズン') || e.includes('シーズン') || e.includes('引退') || e.includes('獲得') || e.includes('移籍') || e.includes('衰退') || e.includes('成長')));
-    const offEvents = recentEvents.slice(-15);
-    if (offEvents.length > 0) {
-      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;max-height:300px;overflow-y:auto">';
-      html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📋 オフシーズンレポート</h4>';
-      offEvents.forEach(ev => {
-        const isHighlight = typeof ev === 'string' && (ev.includes('引退') || ev.includes('獲得') || ev.includes('移籍'));
-        html += `<div style="font-size:11px;padding:2px 0;color:${isHighlight ? 'var(--text-main)' : 'var(--text-sub)'}">${ev}</div>`;
-      });
-      html += '</div>';
-    }
-
-    // Rankings summary during offseason
-    if (G.rankings && G.rankings.length > 0) {
-      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px">';
-      html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">🏆 現在のランキング</h4>';
-      G.rankings.forEach((r, i) => {
-        const isPlayer = r.orgId === 'player';
-        html += `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;${isPlayer ? 'color:var(--gold);font-weight:700' : 'color:var(--text-sub)'}">
-          <span>${i+1}位 ${r.name}</span><span>${Math.round(r.rating)}pt</span>
-        </div>`;
-      });
-      html += '</div>';
+      if (G.rankings && G.rankings.length > 0) {
+        html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px">';
+        html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">🏆 現在のランキング</h4>';
+        G.rankings.forEach((r, i) => {
+          const isPlayer = r.orgId === 'player';
+          html += `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;${isPlayer ? 'color:var(--gold);font-weight:700' : 'color:var(--text-sub)'}">
+            <span>${i+1}位 ${r.name}</span><span>${Math.round(r.rating)}pt</span>
+          </div>`;
+        });
+        html += '</div>';
+      }
     }
 
     const nextLabels = ['シーズンレポートへ →', 'ドラフト会議へ →', '移籍ウィンドウへ →', '新シーズン開幕 →'];
