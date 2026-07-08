@@ -177,7 +177,21 @@
       "Read(//usr/**)",
       "Bash(ls /c/Python*)",
       "Read(//c/Users/nkmrk/AppData/Local/Programs/Python//**)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(mkdir -p /c/Users/nkmrk/Downloads/wrestle-creative)",
+      "Read(//c/Users/nkmrk/Downloads/**)",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget",
+      "Read(//c/Users/nkmrk/**)",
+      "Read(//c/Users/nkmrk/AppData/Local/Programs/**)",
+      "Read(//c/Users/nkmrk/Documents/**)",
+      "Bash(ls /d/comfyUI 2>/dev/null | head -20; echo \"---output---\"; ls /d/comfyUI/output 2>/dev/null | head -20; echo \"---input---\"; ls /d/comfyUI/input 2>/dev/null | head -10)",
+      "Bash(curl -s \"http://localhost:8787/api/folders\")",
+      "Bash(curl -s \"http://localhost:8787/api/images?folder=\\(root\\)\")",
+      "Bash(curl -s -o /dev/null -w \"thumb: %{http_code} %{size_download}bytes type=%{content_type}\\\\n\" \"http://localhost:8787/thumb?folder=\\(root\\)&name=ComfyUI_24606_.png\")",
+      "Bash(curl -s \"http://localhost:8787/api/images?folder=260601かすみVSティナ\")",
+      "Bash(curl -s -o /dev/null -w \"src: %{http_code} %{size_download}bytes\\\\n\" \"http://localhost:8787/src?name=251009%20\\(22\\).png\")",
+      "Bash(curl -s \"http://localhost:8787/api/images?folder=260601%E3%81%8B%E3%81%99%E3%81%BFVS%E3%83%86%E3%82%A3%E3%83%8A\")"
     ]
   }
 }
