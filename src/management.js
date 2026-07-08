@@ -17671,8 +17671,9 @@ Engine.seasonReview = {
       const top = sorted[0];
       const bottom = sorted[sorted.length - 1];
       if (top && top.net > 0) grew = { id: top.id, name: top.name, delta: top.net };
-      // 決定履歴2026-07-08: 陰りの見えた選手は毎年実名で名指しする(婉曲・間引きしない)
-      if (bottom && (!top || bottom.id !== top.id)) declined = { id: bottom.id, name: bottom.name, delta: bottom.net };
+      // 決定履歴2026-07-08: 陰りの見えた選手は毎年実名で名指しする(婉曲・間引きしない)。
+      // ただし net<0 の選手が実在する年のみ — 全員成長の年に「陰り」を捏造しない(数値は嘘をつかない)
+      if (bottom && bottom.net < 0 && (!top || bottom.id !== top.id)) declined = { id: bottom.id, name: bottom.name, delta: bottom.net };
     }
 
     // ── §IV 団体ランキング ──
