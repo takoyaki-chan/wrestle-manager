@@ -10048,6 +10048,7 @@ const Engine = {
       {
         const inviteTick = Engine.shachoshitsu.tickInviteBuffs({ ...G, roster });
         roster = inviteTick.roster;
+        G = { ...G, funds: inviteTick.funds, decisionPoints: inviteTick.decisionPoints };
         if (inviteTick.events.length > 0) inviteTickEvents = inviteTick.events;
         coachAssignAfterInviteTick = inviteTick.coachAssign;
         // P4: 中間報告/衝突/延長打診/卒業レポートを週次ポップアップキューへ
@@ -18986,6 +18987,15 @@ Engine.shachoshitsu = {
     return Math.max(10, Math.round(raw / 10) * 10);
   },
 
+  getInviteDecisionCost() {
+    const doc = Engine.shachoshitsu.getDoc('trainer');
+    return doc ? (doc.decisionCost || 0) : 0;
+  },
+
+  getInviteExtensionCost(coach) {
+    return coach ? Math.round((coach.salary || 0) * 2 * 1.5) : 0;
+  },
+
   // §6.3: 指導タイプ×選手personalityの相性判定。'good' | 'bad' | 'normal'(普通)
   getCoachingCompat(coachingType, personality) {
     if (typeof COACHING_COMPAT_MATRIX === 'undefined') return 'normal';
@@ -19031,6 +19041,8 @@ Engine.shachoshitsu = {
     const events = [];
     const inviteEvents = [];
     let coachAssign = state.coachAssign ? { ...state.coachAssign } : {};
+    let funds = state.funds || 0;
+    let decisionPoints = state.decisionPoints || 0;
     const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
     const roster = (state.roster || []).map(f => {
       if (!f._inviteBuff) return f;
@@ -19064,8 +19076,14 @@ Engine.shachoshitsu = {
         const extRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season, state.week, f.id, 0x1CE3));
         if (Engine.rng.float(extRng) < 0.25) {
           const coach = ALL_COACHES.find(c => c.id === buf.coachId);
-          const extCost = coach ? Math.round((coach.salary || 0) * 2 * 1.5) : 0;
-          inviteEvents.push({ type: 'extension', fighterId: f.id, coachId: buf.coachId, cost: extCost });
+          const extCost = Engine.shachoshitsu.getInviteExtensionCost(coach);
+          inviteEvents.push({
+            type: 'extension',
+            fighterId: f.id,
+            coachId: buf.coachId,
+            cost: extCost,
+            autoRenew: !!buf.autoRenew,
+          });
           extensionFired = true;
         }
       }
@@ -19080,6 +19098,37 @@ Engine.shachoshitsu = {
       if (markedBuf.weeksLeft <= 1) {
         const coach = ALL_COACHES.find(c => c.id === buf.coachId);
         const coachName = coach ? coach.name : '招聘コーチ';
+        const renewalCost = Engine.shachoshitsu.getInviteCost(coach, state);
+        const renewalDpCost = Engine.shachoshitsu.getInviteDecisionCost();
+        if (markedBuf.autoRenew && coach && funds >= renewalCost && decisionPoints >= renewalDpCost) {
+          const refreshed = Engine.shachoshitsu.calcInviteMult(coach, f, state);
+          funds -= renewalCost;
+          decisionPoints = Math.max(0, decisionPoints - renewalDpCost);
+          events.push(`🏋️ ${f.name}への${coachName}コーチ招聘を自動継続した(4週・${renewalCost}万/⚡${renewalDpCost})`);
+          return {
+            ...f,
+            _inviteBuff: {
+              ...markedBuf,
+              weeksLeft: 4,
+              totalWeeks: 4,
+              mult: refreshed.mult,
+              compat: refreshed.compat,
+              autoRenew: true,
+              statsAtStart: { pw: f.pw, sp: f.sp, te: f.te, st: f.st, mn: f.mn },
+              _midtermDone: false,
+              _conflictDone: false,
+              _extensionDone: false,
+            },
+          };
+        }
+        if (markedBuf.autoRenew) {
+          const shortage = [];
+          if (funds < renewalCost) shortage.push(`資金${renewalCost}万`);
+          if (decisionPoints < renewalDpCost) shortage.push(`決裁枠⚡${renewalDpCost}`);
+          if (shortage.length > 0) {
+            events.push(`🏋️ ${f.name}への${coachName}コーチ自動継続は${shortage.join(' / ')}不足で見送られた`);
+          }
+        }
         events.push(`🎓 ${f.name}への${coachName}コーチの指導期間が終わった`);
 
         // §3.4/§7.4: 卒業レポート — 終了時必ず発生。伸び幅・成果判定・化ける判定を積む。
@@ -19127,7 +19176,7 @@ Engine.shachoshitsu = {
       }
       return { ...f, _inviteBuff: { ...markedBuf, weeksLeft: markedBuf.weeksLeft - 1 } };
     });
-    return { roster, coachAssign, events, inviteEvents };
+    return { roster, coachAssign, events, inviteEvents, funds, decisionPoints };
   },
 
   // ── 衝突イベント選択の解決(A続行/B打ち切り) ─────────────────────────────
@@ -19176,16 +19225,23 @@ Engine.shachoshitsu = {
   resolveInviteExtension(state, fighterId, accept) {
     const f = (state.roster || []).find(c => c.id === fighterId);
     if (!f || !f._inviteBuff) return { error: 'not_found' };
-    if (!accept) return { roster: state.roster, funds: state.funds };
+    if (!accept) return { roster: state.roster, funds: state.funds, decisionPoints: state.decisionPoints };
     const coach = ALL_COACHES.find(c => c.id === f._inviteBuff.coachId);
-    const cost = coach ? Math.round((coach.salary || 0) * 2 * 1.5) : 0;
+    const cost = Engine.shachoshitsu.getInviteExtensionCost(coach);
+    const dpCost = Engine.shachoshitsu.getInviteDecisionCost();
     if ((state.funds || 0) < cost) return { error: 'funds_insufficient' };
+    if ((state.decisionPoints || 0) < dpCost) return { error: 'decision_points_insufficient' };
     const roster = (state.roster || []).map(c => {
       if (c.id !== fighterId) return c;
       const buf = c._inviteBuff;
       return { ...c, _inviteBuff: { ...buf, weeksLeft: buf.weeksLeft + 2, totalWeeks: buf.totalWeeks + 2 } };
     });
-    return { roster, funds: (state.funds || 0) - cost, cost };
+    return {
+      roster,
+      funds: (state.funds || 0) - cost,
+      decisionPoints: Math.max(0, (state.decisionPoints || 0) - dpCost),
+      cost,
+    };
   },
 
   // ── 決裁実行(純粋関数) ────────────────────────────────────────────────────
@@ -19402,6 +19458,7 @@ Engine.shachoshitsu = {
         f._inviteBuff = {
           coachId: coach.id, weeksLeft: 4, totalWeeks: 4, mult, compat,
           prevCoachId: prevCoach ? prevCoach.id : null,
+          autoRenew: !!(options && options.autoRenew),
           // P4: 発令時スナップショット。卒業レポートの伸び幅表示・化ける判定の元データ
           statsAtStart: { pw: f.pw, sp: f.sp, te: f.te, st: f.st, mn: f.mn },
         };

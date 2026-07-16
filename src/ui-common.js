@@ -7281,6 +7281,10 @@ function showInviteTargetModal(coachId, state) {
       <span style="color:rgba(122,101,48,0.3)">|</span>
       <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">DP</span><strong>⚡${doc.decisionCost}</strong></span>
     </div>
+    <label style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 14px;padding:10px 14px;max-width:360px;border:1px solid rgba(100,85,50,0.18);border-radius:8px;background:rgba(255,255,255,0.45);font-size:12px;color:var(--cream-text-main)">
+      <input type="checkbox" id="mdlAInviteAutoRenew" checked>
+      <span>満了後は自動継続する。途中で2週延長が入った場合は、その終了後に継続する。</span>
+    </label>
     <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">CANDIDATES ・ 対 象 選 手</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px" id="mdlAInviteTargetGrid">
       ${cards}
@@ -7319,8 +7323,9 @@ function showInviteTargetModal(coachId, state) {
   document.getElementById('mdlAInviteTargetConfirm').addEventListener('click', () => {
     Audio.play('click');
     _mdlAClose();
+    const autoRenew = !!document.getElementById('mdlAInviteAutoRenew')?.checked;
     if (typeof App !== 'undefined' && App.executeDecision) {
-      App.executeDecision('trainer', selectedFighterId, { coachId });
+      App.executeDecision('trainer', selectedFighterId, { coachId, autoRenew });
     }
   });
 }
@@ -7418,7 +7423,11 @@ function showInviteExtensionModal(payload, state, onChoice) {
   const line = (COACH_INVITE_LINES.extension && COACH_INVITE_LINES.extension[voiceKey]) || '';
   const cost = payload.cost || 0;
   const funds = state.funds || 0;
+  const dpCost = (typeof DECISION_DOCS !== 'undefined' && DECISION_DOCS.trainer) ? (DECISION_DOCS.trainer.decisionCost || 0) : 0;
   const afford = cost <= funds;
+  const hasDp = (state.decisionPoints || 0) >= dpCost;
+  const canAccept = afford && hasDp;
+  const renewLabel = payload.autoRenew ? 'ON' : 'OFF';
 
   const stageBody = `
     <div class="mdl-a-observation centered" style="padding-top:6px">
@@ -7427,6 +7436,9 @@ function showInviteExtensionModal(payload, state, onChoice) {
     <div style="text-align:center;font-size:13px;color:var(--cream-text-main);margin-top:10px">
       追加費用 <strong style="color:var(--cream-gold-dark)">${cost.toLocaleString()}万</strong>
     </div>
+    <div style="text-align:center;font-size:12px;color:var(--cream-text-sub);margin-top:8px">
+      決裁枠 <strong>⚡${dpCost}</strong> ・ 自動継続 <strong>${renewLabel}</strong>
+    </div>
   `;
   const html = `
     ${_mdlAHeader(`📩 延長打診`, `EVENT ・ ${_mdlASeasonLabel(state)}`)}
@@ -7434,10 +7446,10 @@ function showInviteExtensionModal(payload, state, onChoice) {
     <div class="mdl-a-subject-stage">${stageBody}</div>
     <div class="mdl-a-prompt">どうしますか？</div>
     <div class="mdl-a-decision-tray two">
-      <div class="mdl-a-decision-card" data-choice="accept" ${afford ? '' : 'data-disabled="1" style="opacity:0.4;cursor:default"'}>
+      <div class="mdl-a-decision-card" data-choice="accept" ${canAccept ? '' : 'data-disabled="1" style="opacity:0.4;cursor:default"'}>
         <div class="mdl-a-decision-letter">A</div>
-        <div class="mdl-a-decision-label">受ける(${cost.toLocaleString()}万)</div>
-        ${afford ? '' : '<div class="mdl-a-decision-hint negative">資金不足</div>'}
+        <div class="mdl-a-decision-label">受ける(${cost.toLocaleString()}万 / ⚡${dpCost})</div>
+        ${canAccept ? '' : `<div class="mdl-a-decision-hint negative">${!afford ? '資金不足' : '決裁枠不足'}</div>`}
       </div>
       <div class="mdl-a-decision-card" data-choice="decline">
         <div class="mdl-a-decision-letter">B</div>

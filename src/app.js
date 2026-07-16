@@ -9616,11 +9616,18 @@ const App = {
           const accept = choice === 'accept';
           const result = Engine.shachoshitsu.resolveInviteExtension(G, head.fighterId, accept);
           if (!result.error) {
-            G = { ...G, roster: result.roster, funds: result.funds };
+            G = {
+              ...G,
+              roster: result.roster,
+              funds: result.funds,
+              decisionPoints: result.decisionPoints != null ? result.decisionPoints : G.decisionPoints,
+            };
             Storage.autoSave();
             renderWeekScreen && renderWeekScreen();
           } else if (result.error === 'funds_insufficient') {
             showToast('資金が足りません');
+          } else if (result.error === 'decision_points_insufficient') {
+            showToast('決裁枠が足りません');
           }
           next();
         });
