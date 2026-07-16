@@ -8714,7 +8714,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <div id="saveContent"></div>
     </div>
   </div>
-  <!-- SCREEN: Help / Tutorial (v1.0) -->
+  <!-- SCREEN: Help / Tutorial (v2.0 C-4) -->
   <div class="screen" id="screen-help">
     <div class="panel">
       <div class="panel-title">❓ 遊び方ガイド</div>
@@ -8726,49 +8726,52 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
           </button>
           <div class="help-body">
             <p>あなたは新興の女子プロレス団体のオーナーです。</p>
-            <p>選手をスカウト・育成し、興行を開催して資金と人気を集め、<strong style="color:var(--gold)">団体ランキング1位</strong>を目指しましょう。</p>
-            <p>ライバルの3団体（S級・A級・B級）が立ちはだかります。戦略的な経営で頂点に立ちましょう！</p>
-            <p style="color:var(--text-sub);font-size:12px">⚠️ 資金が-1000万円を下回ると<strong style="color:var(--red)">倒産（ゲームオーバー）</strong>になります。赤字経営にはご注意を。</p>
+            <p>選手をスカウト・育成し、興行を開催して資金と人気を集め、<strong style="color:var(--gold)">団体ランキング1位</strong>を目指しましょう。業界にはライバルの3団体（S級・A級・B級）がひしめいています。</p>
+            <p style="color:var(--text-sub);font-size:12px">⚠️ 資金がマイナスに落ちると<strong>資金危機</strong>に突入します。4週以内に黒字へ戻せなければ<strong style="color:var(--red)">倒産（ゲームオーバー）</strong>。赤字が深く沈みすぎれば、猶予を待たず経営は破綻します。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📅</span> 基本の流れ <span class="help-arrow">▶</span>
+            <span class="help-icon">📅</span> シーズンと週の流れ <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>ゲームは<strong>週単位</strong>で進行します。1シーズンは<strong>48週</strong>＋オフシーズン4週です。</p>
+            <p>ゲームは<strong>週単位</strong>で進行します。1シーズンは<strong>48週</strong>＋オフシーズンです。</p>
             <p><strong style="color:var(--gold)">興行週と練習週：</strong></p>
-            <p>偶数週（第2, 4, 6…週）が<strong>興行週</strong>、奇数週が<strong>練習週</strong>です。つまり<strong>2週に1回</strong>興行を開催できます。</p>
+            <p>偶数週（第2, 4, 6…週）が<strong>興行週</strong>、奇数週が<strong>練習週</strong>。つまり2週に1回、興行を開催できます。</p>
             <p><strong style="color:var(--gold)">毎週やること：</strong></p>
-            <p>① <strong>今週タブ</strong> — スケジュール選択・⚡追込設定で選手を鍛える</p>
-            <p>② <strong>興行準備</strong>（興行週のみ）— 対戦カードと会場を決めて大会を開催</p>
-            <p>③ <strong>週を進める</strong> — 「▶ 次の週へ」ボタンで結果処理</p>
+            <p>① <strong>今週タブ</strong> — 選手ごとの育成方針と⚡追込を設定</p>
+            <p>② <strong>興行準備</strong>（興行週のみ）— 対戦カードと会場を決めて開催</p>
+            <p>③ <strong>「▶ 次の週へ」</strong> — 結果処理</p>
             <p><strong style="color:var(--gold)">シーズンの終わり：</strong></p>
-            <p>48週目の後にオフシーズンへ。年末表彰式（新人王・MVP・殿堂入りなど）が開催され、新シーズンが始まります。</p>
+            <p>48週目の後はオフシーズンへ。年末表彰式（新人王・MVP・殿堂入りなど）と1年の総括に続き、<strong>契約更新 → ドラフト → 移籍ウィンドウ</strong>を経て新シーズンが始まります。</p>
             <p style="color:var(--text-sub);font-size:12px">💡 「おまかせ」をONにすると、体調管理を自動化してワンボタンで週を進められます。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">👥</span> 団体・育成管理 <span class="help-arrow">▶</span>
+            <span class="help-icon">👥</span> 選手の育成 <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>「団体」タブでは所属選手・コーチの管理と育成状況の確認ができます。</p>
-            <p><strong style="color:var(--gold)">スケジュール設定（今週タブ）：</strong></p>
+            <p><strong style="color:var(--gold)">今週タブの育成方針：</strong></p>
             <p>・<strong>バランス</strong> — 興行週はプロモ、練習週は練習（デフォルト）</p>
             <p>・<strong>練習優先</strong> — ステータス成長を重視</p>
-            <p>・<strong>プロモ優先</strong> — 人気上昇を重視（ただし上限あり）</p>
+            <p>・<strong>プロモ優先</strong> — 人気上昇を重視（人気には上限あり）</p>
             <p>・<strong>休養重視</strong> — 体調回復を優先</p>
-            <p><strong style="color:var(--gold)">⚡追込練習（今週タブ）：</strong></p>
-            <p>⚡ボタンで追込練習を設定。成長×1.5倍・体調消耗2倍・怪我リスク5%。最大2週連続、体調50以上が必要。</p>
+            <p>どの方針でも、<strong>体調が60を切った選手は自動で休養</strong>に切り替わります。</p>
+            <p><strong style="color:var(--gold)">⚡追込練習：</strong></p>
+            <p>⚡ボタンで設定。成長が大きく伸びる代わりに体調の消耗が激しく、怪我のリスクも背負います。<strong>最大2週連続、体調50以上</strong>が条件です。</p>
+            <p><strong style="color:var(--gold)">成長のかたち：</strong></p>
+            <p>選手は毎週の練習と試合経験で育ちます。伸び方は年齢・特性・コーチで大きく変わります。</p>
+            <p>・<strong>早熟</strong> — 若い時期に急成長、以降は鈍化</p>
+            <p>・<strong>晩成</strong> — スロースタート、20代後半で本領発揮</p>
+            <p>・<strong>努力家</strong> — 安定して伸びる</p>
+            <p>・<strong>破天荒</strong> — 振れ幅が極端</p>
             <p><strong style="color:var(--gold)">コーチ：</strong></p>
-            <p>「スタッフ募集」からコーチを雇用できます（団体人気に応じて最大3枠）。</p>
-            <p>・コーチの<strong>指導力</strong>（E〜A）で選手の成長速度がアップ（最大×1.25）</p>
-            <p>・選手とコーチの<strong>スタイル一致</strong>でさらにボーナス</p>
-            <p>・「団体」タブで選手カードの▼ボタンからコーチアサインを管理できます</p>
-            <p style="color:var(--text-sub);font-size:12px">⚠️ 体調が低い状態で練習すると怪我のリスクが上がります。体調60未満の選手は休養させましょう。</p>
+            <p>「スタッフ」からコーチを雇用できます。指導力の高いコーチは成長速度を引き上げ、選手と得意スタイルが合えばさらに伸びます。コーチ枠は最初1つ——<strong>資金を投資して最大4枠まで拡張</strong>できます。団体タブの選手カードからアサインを管理しましょう。</p>
+            <p><strong style="color:var(--gold)">外部コーチ招聘：</strong></p>
+            <p>社長室の「外部コーチ招聘状」で、団体の外から名伯楽を短期間だけ招けます。候補の顔ぶれは四半期ごとに入れ替わります。</p>
           </div>
         </div>
 
@@ -8777,148 +8780,170 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <span class="help-icon">🎤</span> 興行の組み方 <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>偶数週の興行週に、対戦カードと会場を決めて大会を開催します。</p>
-            <p><strong style="color:var(--gold)">カード編成のコツ：</strong></p>
-            <p>・メインイベントには実力の高い選手を配置（MQ＝試合品質が低いとペナルティ）</p>
-            <p>・実力の近い選手同士を組むとMQが高くなりやすい</p>
-            <p>・因縁のある選手同士は大幅なMQボーナス（最大+12）</p>
-            <p>・タイトルマッチはMQ+10のボーナス</p>
-            <p><strong style="color:var(--gold)">会場選び（全10段階）：</strong></p>
-            <p>公民館（150人）〜ドーム（30,000人）まで10段階。会場が大きいほどコストが高く、試合枠も増えます。</p>
-            <p>集客力は<strong>団体人気</strong>で決まります。満員率がボーナスに影響：</p>
-            <p>・🔥 超満員（95%超）→ チケット収入 ×1.2 ＋ MQ+3 ＋ Heat上昇</p>
-            <p>・✨ 大入り（80%超）→ ×1.1 ＋ MQ+2</p>
-            <p>・😰 ガラガラ（25%未満）→ ×0.5 ＋ MQ-3 ＋ Heat下落 ＋ 団体人気-0.5</p>
-            <p style="color:var(--text-sub);font-size:12px">💡 興行準備画面のリスク指標（🟢安全/🟡注意/🔴危険）を参考に会場を選びましょう。</p>
+            <p>偶数週に対戦カードと会場を決めて興行を開催します。</p>
+            <p><strong style="color:var(--gold)">MQ（Match Quality＝試合品質）：</strong></p>
+            <p>試合の面白さを表す指標で、団体の評判と収入に直結します。</p>
+            <p>・実力の近い者同士は良い試合になりやすい</p>
+            <p>・<strong>因縁の相手</strong>との一戦は大きく跳ねる</p>
+            <p>・タイトルマッチはそれ自体が興行の看板になる</p>
+            <p>・<strong>メインイベント</strong>の出来が、興行全体の印象を決めます</p>
+            <p><strong style="color:var(--gold)">おまかせ編成：</strong></p>
+            <p>🔥おすすめ（因縁・鮮度・話題性）／💪OVR順／🎤集客力順 の3ボタンで自動編成もできます。</p>
+            <p><strong style="color:var(--gold)">会場：</strong></p>
+            <p>公民館（150人）からドーム（22,500人）まで10段階。大きい会場ほどコストが上がり、試合枠が増えます。</p>
+            <p>集客力は<strong>団体人気</strong>で決まります。超満員（🔥）なら収入も会場の熱も跳ね上がり、ガラガラ（😰）だと収入が沈んで評判も落ちます。興行準備画面の<strong>リスク指標（🟢安全/🟡注意/🔴危険）</strong>を目安に選びましょう。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🔍</span> スカウト・レンタル <span class="help-arrow">▶</span>
+            <span class="help-icon">🏆</span> 王座とビッグマッチ <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p><strong style="color:var(--gold)">フリーエージェント（FA）：</strong></p>
-            <p>「スカウト」タブにFA選手が表示されます。契約金を支払うことで即入団。</p>
-            <p>FA市場は<strong>4週ごとに入れ替わり</strong>（2名退場＋2名新規参入）ます。良い選手は早めに確保を。</p>
-            <p><strong style="color:var(--gold)">レンタル契約：</strong></p>
-            <p>FA選手やライバル団体の選手を<strong>期間限定（1〜4シーズン）</strong>で借りることができます。</p>
-            <p>・費用は前払い一括。選手の実力とシーズン数で変動</p>
-            <p>・同時レンタル枠：ロスター8人未満→2枠、8人以上→3枠</p>
-            <p>・ライバル団体のトップ3選手はレンタル不可</p>
-            <p>・レンタル選手は<strong>タイトルマッチに出場不可</strong>、団体人気への貢献も50%</p>
-            <p>・契約終了で自動帰団（加齢・引退の影響なし）</p>
-            <p style="color:var(--text-sub);font-size:12px">💡 シーズン序盤のドラフトで5名を選んだ後、FAやレンタルで戦力を補強するのが基本戦略です。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📋</span> 引き抜き交渉 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>ランキング画面の「📋 全選手を見る」から、ライバル団体の選手を引き抜けます。</p>
-            <p><strong>交渉の流れ：</strong></p>
-            <p>① 選手を選んで交渉開始</p>
-            <p>② 3つのプランから1つを選択：</p>
-            <p style="padding-left:16px">🅰 堅実（費用×1.5 / ボーナスなし）— 低リスク低コスト</p>
-            <p style="padding-left:16px">🅱 勝負（費用×2.0 / 成功率+10%）— バランス型</p>
-            <p style="padding-left:16px">🅲 本気（費用×3.0 / 成功率+20%）— 高コスト高確率</p>
-            <p>③ 4週間後に結果が出る（失敗時は費用の半額を失う）</p>
-            <p style="color:var(--text-sub);font-size:12px">⚠️ 同時に交渉できるのは1件だけ。S級エースの引き抜きは非常に難しいです（基本成功率15%）。</p>
-            <p style="color:var(--text-sub);font-size:12px">⚠️ 移籍した選手の人気は×0.75にリセットされます。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🤝</span> 信頼・士気・ケア <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p><strong style="color:var(--gold)">信頼度（選手ごと）：</strong></p>
-            <p>選手一人ひとりの信頼度が試合パフォーマンスやイベントに影響します。出場やケアで上がり、冷遇・放置で下がります。信頼が不安定になると不満イベントや引き抜きリスクが発生します。内部的な数値は直接見えず、「気持ちが陰っている」「崩壊寸前」といった様子で察することになります。</p>
-            <p><strong style="color:var(--gold)">ロッカールームの空気（団体全体）：</strong></p>
-            <p>団体全体の空気が成長速度やイベント発生に影響します。勝ちが続くと和み、連敗や空席が目立つと悪化します。「人望」持ちの選手がいると毎週少し明るくなります。</p>
-            <p><strong style="color:var(--gold)">社長室の決裁（🏛️ 社長室タブ）：</strong></p>
-            <p>社長室の机に並ぶ決裁書類に印を押すことで、選手や団体に介入できます。各書類は決裁枠⚡を消費し、決裁枠はシーズン中 4週ごとに +2 回復します(上限6)。発動条件を満たさない書類は机に並びません。</p>
-            <p>・<strong>ボーナス支給願</strong>（⚡1 / 50万）→ 信頼が不安定な選手の気持ちを繋ぎ止める ※信頼に陰りのある選手がいるとき</p>
-            <p>・<strong>休暇辞令</strong>（⚡1 / 100万）→ 重いスランプ/モチベ喪失の選手に休養を与える</p>
-            <p>・<strong>慰労会開催届</strong>（⚡1 / 15万×人数）→ ロッカールームの空気が少し和らぐ ※空気低下時のみ</p>
-            <p>・<strong>専属トレーナー手配書</strong>（⚡2 / 160万）→ 対象選手の練習効果が4週間上がる</p>
-            <p>・<strong>合宿実施手配書</strong>（⚡3 / 40万×人数）→ 全員の練習効果が2週間上がる</p>
-            <p>・<strong>メディア露出手配書</strong>（⚡2 / 120万）→ 選手人気＆団体の知名度が上がる ※団体人気20以上</p>
-            <p>・<strong>コーチ雇用決裁書</strong>（⚡2）→ コーチ画面からの雇用時に消費される</p>
-            <p><strong style="color:var(--gold)">書類の効き方は選手によって変わる：</strong></p>
-            <p>同じ書類でも、選手の性格・タイプで効き目が大きく変わります。不良キャラにボーナスを渡せば大喜び、お嬢様は「お気持ちだけで十分ですわ」と軽く流す——そんな差が実際に数値に反映されます。特に響いたときは「🌟 深く刺さった」、響かなかったときは「💤 あまり響かなかったようだ」と決裁結果に表示されます。<strong>刺してみないとわからない</strong>のが社長の仕事です。</p>
-            <p><strong style="color:var(--gold)">成長バフと並走する信頼：</strong></p>
-            <p>専属トレーナー・合宿は「刺した瞬間に信頼が上がる」のではなく、<strong>バフ期間中にじわじわと信頼が育っていく</strong>設計です。トレーナーなら4週間、合宿なら2週間かけて、選手は「社長が投資してくれている」と実感していきます。選手ポップアップに「🏋️ 専属トレーナー 残り○週 — 信頼もじわじわ育つ」と表示されます。他の書類(ボーナス・休暇・慰労会・メディア)はその場で効きます。</p>
-            <p><strong style="color:var(--gold)">社長の自発的行動：</strong></p>
-            <p>・<strong>💬 声をかける</strong>（無料）→ 選手ポップアップから実行。決裁枠を消費しない、社長自ら足を運ぶ行為です。信頼が揺らぎ始めた選手(緑のバーで静かに誘い)、スランプ・モチベ喪失の選手や信頼が大きく下がった選手(オレンジで脈動)にボタンが表示されます。</p>
-            <p>・<strong>🏥 特別治療指示書</strong>（200万 / ⚡1）→ 社長室の机から実行。離脱中の選手がいるときに机に並びます。回復期間を1〜4週短縮(8週以上の重傷ならさらに+1週)。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📈</span> 成長・衰え・引退 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p><strong style="color:var(--gold)">成長：</strong></p>
-            <p>選手は毎週の練習と試合経験でステータスが成長します。成長速度はコーチの指導力、スケジュール、年齢、特性によって変動します。</p>
-            <p>・<strong>早熟</strong>：若い時期に急成長、26歳以降は鈍化</p>
-            <p>・<strong>晩成</strong>：スロースタート、26〜32歳で本領発揮</p>
-            <p>・<strong>努力家</strong>：練習の成長下限が高い（安定型）</p>
-            <p>・<strong>破天荒</strong>：成長の振れ幅が極端（ギャンブル型）</p>
-            <p><strong style="color:var(--gold)">衰え（wear）：</strong></p>
-            <p>年齢とともに衰えゲージが蓄積し、ステータスが低下していきます。</p>
-            <p>・0〜19：<strong>全盛期</strong>（影響なし）</p>
-            <p>・20〜39：⚠ 衰え（軽度低下）</p>
-            <p>・40〜59：⬇ 衰退期（中度低下＋20%引退判定）</p>
-            <p>・60〜79：⬇⬇ 限界（重度低下＋50%引退判定）</p>
-            <p>・80以上：確定引退</p>
-            <p><strong style="color:var(--gold)">引退：</strong></p>
-            <p>衰えの蓄積のほか、35歳以降は年齢でも引退判定があります（35歳30%〜39歳100%）。引退した選手はロスターから去り、功績に応じて殿堂入りの可能性があります。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📊</span> 人気・MQシステム <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p><strong style="color:var(--gold)">試合品質（MQ）：</strong></p>
-            <p>MQは試合の面白さを表す数値で、団体の評判と収入に直結します。</p>
-            <p>・基本値：両選手のOVR＋スタイル相性＋技のバリエーション</p>
-            <p>・ボーナス：因縁（+5/+8/+12）、タイトル戦（+10）、コーチ（+2）、観客熱（±3）、会場規模（最大+3）</p>
-            <p>・外部ボーナス上限は合計+15まで</p>
-            <p><strong style="color:var(--gold)">選手人気：</strong></p>
-            <p>選手の人気は試合やプロモで上がりますが、<strong>高くなるほど上がりにくく</strong>なります。</p>
-            <p>・高MQ試合、タイトル戴冠・防衛、メディア露出で上昇</p>
-            <p>・プロモで直接上昇（ただし上限あり）</p>
-            <p><strong style="color:var(--red)">人気が下がるケース：</strong></p>
-            <p>・連敗（3連敗-5、5連敗-10、7連敗-15）、スキャンダル、怪我中の忘却（-1/週）</p>
-            <p><strong style="color:var(--gold)">団体人気：</strong></p>
-            <p>団体人気（0〜100）は全体の経営基盤です。高くなるほど上がりにくくなる逓減カーブが適用されます。</p>
-            <p>・スポンサー収入、放送権料、集客力すべてに影響</p>
-            <p>・シーズン末に順位に応じた自然減があるため、維持にも努力が必要</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🎭</span> イベント <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>練習週に様々なイベントがランダムで発生します。</p>
-            <p><strong style="color:var(--gold)">通知イベント：</strong></p>
-            <p>怪我報告、スキャンダル、メンタル変動など自動で処理されるイベントです。</p>
-            <p><strong style="color:var(--gold)">選択イベント：</strong></p>
-            <p>タイトル挑戦要望、休養申請、不満爆発、特別練習志願など、オーナーの判断が求められるイベントです。選手の特性や信頼度に応じて内容が変わります。</p>
-            <p><strong style="color:var(--gold)">大型イベント：</strong></p>
-            <p>稀に発生する重大イベント（練習中の大怪我、内部紛争、対抗戦の挑戦状、ドキュメンタリー取材など）。団体の命運を左右する決断を迫られます。</p>
+            <p><strong style="color:var(--gold)">団体王座：</strong></p>
+            <p>興行の実績・団体人気・所属人数が一定に達すると、王座を設立できます。まずは「初代王者決定戦」を組みましょう。</p>
+            <p>・挑戦資格を持つのは団体の<strong>実力上位陣</strong>だけ</p>
+            <p>・タイトルマッチを組めるのは<strong>12週に1回</strong></p>
+            <p>・レンタル選手は出場できません</p>
+            <p><strong style="color:var(--gold)">ジュニアトーナメント：</strong></p>
+            <p>毎年<strong>25週目</strong>、20歳以下の若手による業界横断の一日トーナメント。優勝は若手にとって最初の勲章です。</p>
+            <p><strong style="color:var(--gold)">PPV GRAND FINAL：</strong></p>
+            <p>団体人気が30に達すると出場資格を獲得。<strong>43週目にエントリー、48週目</strong>に業界全体の大興行が開かれます。ランキング上位ほど出場枠が多く、頂点で待つのは「頂上決戦」——業界の看板を懸けたメインイベントです。</p>
             <p><strong style="color:var(--gold)">対抗戦：</strong></p>
-            <p>ライバル団体から対抗戦の挑戦状が届くことがあります。5対5の団体対抗戦で、勝利すると大きなHeat＋ランキングポイントを獲得。敗北はHeat低下とランキングダウン。</p>
-            <p style="color:var(--text-sub);font-size:12px">💡 対抗戦は大きなチャンス。エース級を温存して万全の状態で臨みましょう。</p>
+            <p>ライバル団体から挑戦状が届くことがあります。3本勝負または5本勝負の団体戦。勝てば人気と業界での立場が上がり、負ければ痛手を負います。選手が「あの団体とやらせてほしい」と直訴してくることもあります。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🤝</span> 選手の心 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p><strong style="color:var(--gold)">信頼：</strong></p>
+            <p>選手一人ひとりが、社長への信頼を胸の内に持っています。数値では見えません——表情や様子、コーチの報告から察してください。出場機会とケアで育ち、冷遇と放置で冷えます。冷え切った心は、不満・造反・移籍の火種になります。</p>
+            <p><strong style="color:var(--gold)">ロッカールームの空気：</strong></p>
+            <p>団体全体の空気は、成長やイベントの起きやすさに響きます。勝ちが続けば和み、連敗と空席が続けば荒みます。「人望」のある選手は、いるだけで空気を少し明るくします。</p>
+            <p><strong style="color:var(--gold)">スランプ・モチベ喪失：</strong></p>
+            <p>選手は時に沈みます。放置は禁物——休ませる、声をかける、環境を変える。手の打ち方は一つではありません。</p>
+            <p><strong style="color:var(--gold)">選択イベント：</strong></p>
+            <p>タイトル挑戦の直訴、休養申請、不満の爆発……社長の判断を求める出来事が起きます。選択肢に添えられた一言が、結果の手がかりです。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🏛️</span> 社長室 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>社長室の机には決裁書類が並びます。印を押せば実行——ただし<strong>決裁枠⚡</strong>を消費します。決裁枠はシーズン中<strong>4週ごとに+2回復（上限6）</strong>。発動条件を満たさない書類は机に並びません。</p>
+            <p>・<strong>💰 ボーナス支給願</strong> — 起案された4案から支給額を選ぶ交渉型。額面が選手の格に見合ってこそ誠意は伝わります。<strong style="color:var(--red)">安すぎる額は逆効果</strong>になることも。再支給のたびに「相場」は吊り上がります</p>
+            <p>・<strong>🏖️ 休暇辞令</strong> — 1〜4週の休暇を与える。体調が戻り、蓄積した衰えも少しだけ癒えます。<strong>休暇中は興行に欠場</strong>します</p>
+            <p>・<strong>🍶 慰労会開催届</strong> — ロッカールームの空気が和らぐ</p>
+            <p>・<strong>📜 外部コーチ招聘状</strong> — 団体の外から指導者を短期招聘する</p>
+            <p>・<strong>⛺ 合宿実施手配書</strong> — 全員の練習効果を短期間ブースト</p>
+            <p>・<strong>📺 メディア露出手配書</strong> — 選手の人気と団体の知名度を上げる</p>
+            <p>・<strong>🏥 特別治療指示書</strong> — 離脱中の選手の復帰を早める</p>
+            <p>・<strong>📋 コーチ雇用決裁書</strong> — コーチ雇用時に消費される</p>
+            <p><strong style="color:var(--gold)">効き方は選手それぞれ：</strong></p>
+            <p>同じ書類でも、性格とタイプで響き方がまるで違います。深く刺されば「🌟」、空振りなら「💤」。<strong>刺してみないとわからない</strong>のが社長の仕事です。トレーナー系の書類は即効ではなく、<strong>期間中にじわじわ信頼が育つ</strong>タイプもあります。</p>
+            <p>・<strong>💬 声をかける</strong>（無料） — 選手ポップアップから実行。決裁枠も資金も使わない、社長自らの行動です。気持ちが揺らいだ選手にボタンが灯ります。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">💞</span> 絆と因縁 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>選手同士の関係は<strong>絆</strong>と<strong>因縁</strong>、2つの軸で動きます。想いは一方通行のこともあります——彼女は慕っていても、相手はそうでもない、ということも。</p>
+            <p><strong style="color:var(--gold)">絆：</strong></p>
+            <p>タッグや日々の交わりの中で育ちます。深い絆は成長を後押しし、土壇場の踏ん張りに効きます。</p>
+            <p><strong style="color:var(--gold)">因縁：</strong></p>
+            <p>何度も拳を交えた相手、遺恨を残した相手。<strong>因縁の一戦は観客を沸かせ、試合を大きく熱くします</strong>。育てた因縁は団体の財産です。</p>
+            <p><strong style="color:var(--gold)">こじれたとき：</strong></p>
+            <p>関係が険悪に沈むと、ロッカーが荒れ、タッグが壊れ、最悪の場合は造反や離脱に至ります。修復の道も残されています——社長室に修復の書類が並ぶことがあります。</p>
+            <p>データベースの<strong>相関図</strong>で、団体内の人間模様を一望できます。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🏴</span> 派閥 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>団体が育ってくると、選手たちが旗を掲げ、<strong>派閥</strong>が生まれます。</p>
+            <p>派閥にはリーダーの気風が宿ります——権威で束ねる者、結束を誇る者、実力だけを信じる者……。気風によって、起きる事件も変わります。</p>
+            <p>派閥同士の火種は<strong>抗争ポイント</strong>として積み上がり、限界を超えると<strong>全面対抗戦</strong>に発展します。</p>
+            <p>合宿、取材、同門対決、下剋上——派閥がらみの報せには、社長の判断を求めるものもあります。静観するか、油を注ぐか、水を差すか。</p>
+            <p><strong>派閥タブ</strong>で、それぞれの勢力と火種を確認できます。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">🔍</span> 補強 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p><strong style="color:var(--gold)">FA（フリーエージェント）：</strong></p>
+            <p>スカウトタブに、契約金を払えば即入団のFA選手が並びます。市場は<strong>4週ごとに入れ替わり</strong>（2名去り、2名参入）。ドラフトで指名が掛からなかった若い世代が中心です。</p>
+            <p><strong style="color:var(--gold)">レンタル移籍：</strong></p>
+            <p>FAやライバル団体の選手を<strong>1〜4シーズン</strong>の期間限定で借りられます。</p>
+            <p>・費用は前払い一括</p>
+            <p>・同時レンタルは2〜3枠（ロスター規模による）</p>
+            <p>・相手団体の看板上位3名は借りられません</p>
+            <p>・レンタル選手は<strong>タイトルマッチに出場不可</strong>。契約が切れれば帰っていきます</p>
+            <p><strong style="color:var(--gold)">引き抜き交渉：</strong></p>
+            <p>ライバル団体の選手詳細から<strong>「🤝 選手を引き抜く」</strong>。予算プラン3種から選んで<strong>4週間</strong>の交渉に入ります。同時に進められるのは1件、失敗すれば費用の半分は戻りません。格上の看板選手ほど、財布だけでは落ちません。</p>
+            <p>※逆もあります。上位団体があなたの選手に引き抜きオファーを出してくることも。日頃の信頼が防波堤になります。</p>
+            <p><strong style="color:var(--gold)">オフシーズンの補強：</strong></p>
+            <p>契約更新（去就に迷う選手との1対1交渉）→ <strong>ドラフト</strong>（新人候補を巡ってライバル団体とセリ合い。各団体の関心と交渉のヒートを読みながら入札します）→ 移籍ウィンドウ、の順で進みます。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">📈</span> 峠と引退 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>選手の体には、リングで受けたダメージが静かに刻まれていきます。<strong>全盛期 → ⚠ 衰え → ⬇ 衰退期 → ⬇⬇ 限界</strong>——蓄積が峠を越えるとステータスは下り坂に入り、引退が視野に入ります。</p>
+            <p><strong style="color:var(--gold)">何が体を削るのか：</strong></p>
+            <p>20代半ばにさしかかる頃から、リングに上がり続けた分だけ毎年少しずつ蓄積します。そこに上乗せされるのが——</p>
+            <p>・<strong>試合の詰め込み</strong> — 年間の試合数が多い選手ほど体は削れます</p>
+            <p>・<strong>怪我</strong> — 一度の負傷は治っても、確実に体に残ります</p>
+            <p>・<strong>⚡追込の使いすぎ</strong> — 年中追い込み続けた体は、シーズンの終わりに答え合わせが来ます</p>
+            <p>一方で、<strong>練習やコーチの指導そのものは体を削りません</strong>。専属の指導で鍛え込むこと自体は安全です——削るのは、あくまでリングの上のダメージと無理な起用です。</p>
+            <p>蓄積の速さは体質でも変わります。「鉄人」や晩成型は長持ちし、早熟型は早く峠が来ます。減らす手段はただ一つ、<strong>休暇辞令</strong>——そして「延命術」を使うコーチは、蓄積そのものを緩やかにしてくれます。</p>
+            <p>30歳を過ぎると、選手は進退を考え始めます。引き際は選手それぞれ——引退した選手はロスターを去り、功績次第で<strong>殿堂</strong>に迎えられ、その名は年代記に残ります。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">📊</span> 人気とお金 <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p><strong style="color:var(--gold)">選手人気：</strong></p>
+            <p>良い試合、戴冠、メディア露出で上がります。高くなるほど上がりにくく、逆に連敗・スキャンダル・怪我での長期欠場は人気を削ります。</p>
+            <p><strong style="color:var(--gold)">団体人気：</strong></p>
+            <p>集客もスポンサーも放映料も、すべての土台です。こちらも高いほど上がりにくく、シーズン末には順位に応じた自然減があります——頂の維持にも努力が要ります。</p>
+            <p><strong style="color:var(--gold)">収支：</strong></p>
+            <p>収入の柱はチケット・グッズ・スポンサー・放映料。支出の柱は給与です。選手が育って格が上がれば、給与も上がります。赤字が続けば資金危機に（→ ゲームの目的）。</p>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <button class="help-toggle" onclick="toggleHelp(this)">
+            <span class="help-icon">📰</span> 読みもの <span class="help-arrow">▶</span>
+          </button>
+          <div class="help-body">
+            <p>この団体の歩みは、いくつもの紙面に記録されていきます。</p>
+            <p>・<strong>📰 新聞</strong> — 毎週発行。興行の結果、業界の動き、記者のコラム</p>
+            <p>・<strong>📜 団体年代記</strong> — 数シーズンごとに「章」が編まれ、時代の主役が刻まれます。旗揚げ世代の物語は「序章」として永久保存</p>
+            <p>・<strong>⚔ 因縁列伝</strong> — 宿命のライバル関係を特集する紙面</p>
+            <p>・<strong>👤 選手経歴</strong> — 選手詳細から見られる、一人ひとりの年表</p>
+            <p>・<strong>🏆 殿堂</strong> — 引退した名選手たちの記憶</p>
+            <p>・<strong>📅 シーズン総括</strong> — 年度末の総決算（ANNUAL RECORD）</p>
+            <p>攻略情報ではありません。でも、このゲームの主役は数字ではなく彼女たちです。ときどき、読み返してあげてください。</p>
           </div>
         </div>
 
@@ -8927,20 +8952,22 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
             <span class="help-icon">💡</span> 序盤攻略のコツ <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p><strong style="color:var(--gold)">1. ドラフトで即戦力を確保</strong></p>
-            <p>OVR（総合力）の高い選手を優先して獲得。バランスよりも1人のエース候補が大事。</p>
-            <p><strong style="color:var(--gold)">2. 公民館から始める</strong></p>
-            <p>序盤は公民館（150人）で十分。満員ボーナスを狙って確実に黒字を出しましょう。</p>
-            <p><strong style="color:var(--gold)">3. メインイベントを大切に</strong></p>
-            <p>エース候補をメインに据え、高MQを出すことが人気上昇のカギ。同じ相手と繰り返し当てると因縁ボーナスも狙えます。</p>
-            <p><strong style="color:var(--gold)">4. 体調管理を忘れずに</strong></p>
-            <p>怪我をすると長期離脱＋人気低下のダブルパンチ。体調60未満は必ず休養を。</p>
-            <p><strong style="color:var(--gold)">5. コーチを活用する</strong></p>
-            <p>なるべく早くコーチを雇い、エース候補にアサインしましょう。成長速度が大きく変わります。</p>
-            <p><strong style="color:var(--gold)">6. 会場のステップアップは慎重に</strong></p>
-            <p>団体人気が上がったら徐々に大きな会場へ。リスク指標が🟢の会場を選ぶのが安全です。</p>
-            <p><strong style="color:var(--gold)">7. 信頼を大切に</strong></p>
-            <p>選手の信頼度が下がると不満イベントが発生しやすくなります。勝利を重ね、たまにケアアクションで気持ちに応えましょう。</p>
+            <p><strong style="color:var(--gold)">1. ドラフトで軸を作る</strong></p>
+            <p>バランスより、エース候補を1人。団体の顔が育てば興行が回り始めます。</p>
+            <p><strong style="color:var(--gold)">2. 公民館から</strong></p>
+            <p>満員を確実に取り、黒字を積む。背伸びは資金危機への近道です。</p>
+            <p><strong style="color:var(--gold)">3. メインを大切に</strong></p>
+            <p>エース候補をメインに据えて高MQを。同じ相手と当て続ければ、因縁も育ちます。</p>
+            <p><strong style="color:var(--gold)">4. 体調管理</strong></p>
+            <p>怪我は長期離脱＋人気低下のダブルパンチ。⚡追込は使いどころを選んで。</p>
+            <p><strong style="color:var(--gold)">5. コーチは早めに</strong></p>
+            <p>エース候補にアサインすれば、成長がまるで違います。</p>
+            <p><strong style="color:var(--gold)">6. 王座を建てる</strong></p>
+            <p>条件が揃ったら初代王者決定戦を。ベルトは団体の格を一段上げます。</p>
+            <p><strong style="color:var(--gold)">7. 会場は一段ずつ</strong></p>
+            <p>リスク指標🟢を目安に。焦って大箱に出ると空席が団体を蝕みます。</p>
+            <p><strong style="color:var(--gold)">8. 信頼は資産</strong></p>
+            <p>選手の気持ちの動きを見逃さないこと。冷えてからでは高くつきます。</p>
           </div>
         </div>
 
