@@ -1,16 +1,21 @@
-# 画面：団体ランキング（v0.9）
+# 画面：団体ランキング（v1.0 — A案 Office標準）
 
 **ファイル**：`docs/ui/03-screens/ranking.md`
-**最終更新**：2026-04-25 / v0.9
-**実装状況**：完了（Phase 1-4 全実装、`plans/ranking-screen-redesign-v0.9-task.md` ハンドオフ）
-**モックアップ正本**：`docs/ui/mockups/ranking-redesign-v0.9-for-mockups-dir.html`
+**最終更新**：2026-07-16 / v1.0
+**実装状況**：完了（2026-07-16。CSSのみ差し替え、`renderRanking()` ロジック非変更。死にCSS(.org-card系)削除・--th-* トークン撤去済み）
+**モックアップ正本**：`docs/ui/mockups/ranking-restyle-A-office.html`（A案・採用決定 2026-07-16）
+**旧版**：v0.9（`docs/ui/mockups/ranking-redesign-v0.9-for-mockups-dir.html`、金銀銅鋼メタリック様式）
 
 ---
 
-## 0. スコープ
+## 0. スコープと経緯
 
-団体ランキング画面（`#screen-ranking`）の UI 構造、配色、データ接続、主力選手選定ロジックを定義する。
-`Engine.ranking.updateRankings(G)` のロジック自体は変更しない（UI のみのリファクタ）。
+団体ランキング画面（`#screen-ranking`）の UI 様式を定義する。
+
+v0.9 は「TV番組のチャンピオンシップ表」様式（金銀銅鋼のメタリック順位カラー・clip-path切り角・寒色寄り黒 `--th-*`・30px巨大マスト）だったが、**他のOffice画面（データベース・収支等）からの視覚的乖離が大きい**ため、v1.0 で Office 標準様式へ再スタイルする。
+
+- **変えるもの**：色使い・フォント運用・角の処理（デザインのみ）
+- **変えないもの**：セクション構造・文章・画像・データ接続・`Engine.ranking.updateRankings(G)`・`renderRanking()` の出力DOM
 
 ---
 
@@ -18,192 +23,114 @@
 
 | 項目 | 値 |
 |---|---|
-| 所属カテゴリ | **Office**（暖茶背景 `var(--office-bg)`） |
-| パネル様式 | Dark Panel（Cream Panel は使わない） |
-| レイアウトパターン | P1 Catalog 派生（独自 popup フレーム + 4セクション縦積み） |
-| 所属シーケンス | なし（独立画面、ナビバーから開く） |
+| 所属カテゴリ | **Office**（暖茶背景 `var(--bg-dark)`） |
+| パネル様式 | Dark Panel（`--panel-bg` / `--card-bg`。Cream Panel は使わない） |
+| 角の処理 | **角丸 6px**（clip-path 切り角は廃止） |
+| レイアウトパターン | P1 Catalog 派生（popup フレーム + 3〜4セクション縦積み） |
 | 使用フォント | Noto Sans JP（本文）+ Bebas Neue（数値）+ Oswald（ラベル） |
-| 実装ファイル | `src/index.html`（HTML + CSS）、`src/ui-render.js renderRanking()`、`src/data.js`（OVR_TIER_THRESHOLDS）、`src/ui-common.js valueClassOvr()` |
+| 実装ファイル | `src/index.html`（静的HTML + CSS 6713〜7813行付近 + :root トークン）、`src/ui-render.js renderRanking()`（**非変更**）、`src/data.js OVR_TIER_THRESHOLDS`、`src/ui-common.js valueClassOvr()` |
 
 ---
 
-## 2. 目的
+## 2. デザイン方針（v1.0 の核）
 
-業界全体での自団体の立ち位置を、TV番組のチャンピオンシップ表のような格式で見せる。
-
-- **頂点が誰か** を一目で：1位カードを拡大、金/銀/銅/鋼の順位カラーで視覚的差別化
-- **どのくらい離れているか** を明示：勝利条件バーで「あと N pt で頂点」
-- **各団体の主力** を一覧：T字フォーメーション（02）と5名フォーメーション（03）で団体ごとの個性を比較
+1. **ゴールド一元アクセント**：金銀銅鋼のメタリック順位カラーを廃止。順位は「数字の大きさ・1位カードの拡大・ゴールドの当て方」で表現する
+2. **Office 標準部品に準拠**：パネルは `.panel` 相当（`--panel-bg` + `--border` + 角丸6px）、セクション見出しは `.panel-title` 相当（Oswald 13px / letter-spacing 3px / uppercase / gold / 下線）、履歴テーブルは `.data-table` 相当
+3. **OVR 階調は維持**：`--v-*` 8階調と `valueClassOvr()` は現行のまま（金系階調なのでゴールド基調と両立）
+4. **役割バッジは維持**：王者（金）/ 看板（赤 `--board-red` 系）/ 主力（中立）。03 主力層サムネイル左上のバッジ表示も維持
+5. **自団体の強調はゴールド枠**：v0.9 の銀枠（rank-2 シルバー）をやめ、`rgba(212,168,67,0.4〜0.5)` のゴールド枠+薄金グラデ背景に統一
 
 ---
 
-## 3. HTML 構造
+## 3. HTML 構造（現行実装の出力、非変更）
 
 ```
 #screen-ranking
 └─ .ranking-popup
-   ├─ .popup-header        (🏆 団体ランキング)
-   ├─ .popup-mast          (INDUSTRY STANDINGS / 第N シーズン・全4団体 / Y{N} W{N})
-   ├─ .victory-bar         (▲1位 / 中央 −Npt / ▼自団体 — 1位プレイヤー時は .is-top フォールバック)
+   ├─ .popup-header        (静的HTML: 団体ランキング)
+   ├─ #rankingMast         → .popup-mast (INDUSTRY STANDINGS / 第N シーズン・全4団体 / 日付)
+   ├─ #rankingVictoryBar   → .victory-bar (▲1位 / 中央 −Npt / ▼自団体 — 1位時は .is-top + .vb-top)
    └─ #rankingContent
-      ├─ .section.bg-card  ── 02 全団体ロースター
-      │  ├─ .section-marker (kicker のみ、番号なし)
-      │  └─ .orgs-grid (1.3fr 1fr 1fr 1fr — 1位カード拡大)
-      │     └─ .orgcell × 4 (head + formation T字 + foot)
-      ├─ .section.bg-deep  ── 03 団体プロファイル
-      │  ├─ .section-marker
-      │  └─ .org-card × 4 (banner stand画像 + body 詳細＋5名フォーメーション)
-      └─ .section.bg-card.history-wrap ── 04 シーズン履歴
-         ├─ .section-marker
-         └─ table (順位カラム h-rank-1〜4)
+      ├─ section.section.bg-card  ── 02 — Roster 全団体ロースター
+      │  ├─ .section-marker > .text > .kicker/.title
+      │  └─ .orgs-grid (1.3fr 1fr 1fr 1fr)
+      │     └─ .orgcell × 4 (head[rank/nm/tier-pill] + formation[orgcell-fcell pos-1〜3 + role-badges + nm-tag] + foot[評価pt/平均OVR/対戦PT])
+      ├─ section.section.bg-deep  ── 03 — 団体詳細 団体プロフィール
+      │  └─ .rp-profiles > .rp-card × 4
+      │     (rp-rank紋章 / rp-info[tags+h3+リード文] / rp-ace[役割+名前+コピー+dl+画像] / rp-depth[head+faces+note] / rp-metrics[評価/基礎力/平均OVR/対戦PT/レガシー/実績+tooltip])
+      └─ section.section.bg-card.history-wrap ── 04 — History シーズン履歴
+         └─ table (h-rank-1〜4 / profit-pos/neg)
 ```
+
+※ v0.9 spec に記載のあった `.org-card`（03旧レイアウト：バナー+5名フォーメーション）は実装が `.rp-card` に移行済みで **死にCSS**。v1.0 実装時に削除する。
 
 ---
 
 ## 4. デザイントークン
 
-### 4-1 順位カラー（質的属性専用：金/銀/銅/鋼）
+### 4-1 使用する共通トークン（新規定義なし）
 
-```css
---rank-1: #d4a843;  /* Gold */    --rank-1-light: #f0d078;  --rank-1-deep: #9c7820;
---rank-2: #c0c0c0;  /* Silver */  --rank-2-light: #e8e8e8;  --rank-2-deep: #888888;
---rank-3: #c47e3a;  /* Bronze */  --rank-3-light: #d89858;  --rank-3-deep: #8a4f1f;
---rank-4: #6b6960;  /* Steel */   --rank-4-light: #b8b6ad;  --rank-4-deep: #5a584f;
+```
+背景・パネル: --bg-dark / --panel-bg / --card-bg / --border
+文字:        --text-main / --text-sub / --text-dim
+アクセント:  --gold / --gold-light（白→金グラデ: linear-gradient(180deg,#fff 20%,var(--gold-light)) + background-clip:text）
+状態:        --green / --red（signal-up/down エイリアス経由可）
+看板赤:      --board-red / --board-red-bg / --board-red-border（継続使用）
+OVR階調:     --v-mythic 〜 --v-poor（現行値のまま）
 ```
 
-**適用箇所**：順位番号、団体名（ヘッドライン）、ティアピル、カードの border-top、透かし数字、縦組オーバーライン、ace-name-plate、deck の border-left、王冠リングライト、シーズン履歴の順位列。
+### 4-2 廃止するトークン参照
 
-### 4-2 OVR 階調（数字専用、80以上で黄色味スタート）
+- `--rank-1〜4`（light/deep 含む）: ランキングCSSからの参照を全廃。**h-rank-1 のみ `--gold-light` に置換**、h-rank-2〜4 は `--text-main`
+- `--th-*`（accent/divider/text/border/section-bg/card-bg）: 参照を全廃し、`--border` / `--text-*` / `--panel-bg` / `--card-bg` に置換。参照ゼロになったら :root の定義ごと削除
+- `--office-bg-deep` / `--office-text-on-dark-*`: ランキング内の参照は `--text-*` 系へ置換（定義は他画面が使うため残置）
+- `--rank-*` の :root 定義自体は残置（将来・他画面用。削除はスコープ外）
 
-```css
---v-mythic:    #ffd700;  /* 100+   — 純金（殿堂入り、glow強化） */
---v-elite-mid: #ffc640;  /* 95-99  — 強金 */
---v-elite:     #ffd870;  /* 90-94  — 中金 */
---v-elite-low: #ffe898;  /* 85-89  — 淡シャンパン金 */
---v-high:      #fff0c0;  /* 80-84  — クリーム白 */
---v-mid:       #f0eee8;  /* 70-79  — 暖白 */
---v-low:       #b8b5a8;  /* 60-69  — 淡グレー */
---v-poor:      #7a766b;  /* ~59    — 暗グレー */
-```
+### 4-3 ゴールドの当て方（順位表現）
 
-OVR 数字にのみ適用。評価値・基礎力・レガシーなどの団体スコアには適用しない（白固定）。
-閾値は `OVR_TIER_THRESHOLDS`（`src/data.js`）+ `valueClassOvr(ovr)`（`src/ui-common.js`）で集中管理。
-
-### 4-3 看板バッジ赤
-
-```css
---board-red:        #ff4530;
---board-red-bg:     rgba(214,48,49,0.18);
---board-red-border: #e85040;
-```
-
-### 4-4 中性アクセント
-
-```css
---th-text-main: #f0eee8;  --th-text-sub: #a8a59a;  --th-text-dim: #6b6960;
---th-divider: rgba(255,255,255,0.12);  --th-border: rgba(255,255,255,0.06);
---th-card-bg: linear-gradient(180deg, #1d1b16, #100f0c);
-```
-
----
-
-## 5. データ接続
-
-### 5-1 ランキング取得
-
-`Engine.ranking.updateRankings(G)` の戻り値（変更しない）：
-
-```js
-[{ orgId, name, rating, baseScore, legacyScore, weightedOVR, weightedPop, battlePt, rosterSize, rank }, ...]
-```
-
-### 5-2 王者の取得
-
-- プレイヤー：`G.titles?.world?.championId` → `G.roster.find(c => c.id === ...)`
-- AI：`G.aiOrgs[orgId].titles?.world?.championId` → `G.aiOrgs[orgId].roster.find(...)`
-- 防衛回数：`G.titles.world.defenses` / `G.aiOrgs[orgId].titles.world.defenses`
-
-### 5-3 ロースター加工
-
-| 項目 | 除外 |
-|---|---|
-| プレイヤー（02 主力） | `isRental`, `injury`, `forcedRest` |
-| プレイヤー（03 主力） | 同上 |
-| AI 全般 | `isRental`（`Engine.rival.dedupeRoster` も適用） |
-
-### 5-4 主力選定（03 のみ順位連動）
-
-| 順位 | 主力人数 |
-|---|---|
-| 1位 | 5名 |
-| 2位 | 4名 |
-| 3位 | 3名 |
-| 4位 | 2名 |
-
-**02 ロースターはトップ3固定**（順位連動しない）。
-
-選定手順：
-1. ロースターを OVR 降順ソート
-2. 王者がいれば pos-1 に配置、残り上位 N-1 名を pos-2 以降に
-3. 看板：王者でない選手のうち OVR 最高位（pos-1 が看板になる場合は pos-1 のみで赤バッジ表示）
-
----
-
-## 6. 画像取得
-
-| 部位 | 関数 | 引数 |
+| 要素 | 1位 | 2〜4位 |
 |---|---|---|
-| 03 バナー（stand 大） | `getStandUrl(id, ovr)` | OVR 必須（`PORTRAIT_OVR_VARIANT` 切替のため） |
-| 03 フォーメーション 5名 | `getUpperUrl(id)` | id のみ |
-| 02 フォーメーション 3名 | `getUpperUrl(id)` | id のみ |
-| ロースターリスト | `portraitImg(id, 36)` | サイズ指定 |
-
-`PORTRAIT` 辞書未登録の id は空文字を返す。各 `<img>` 出力箇所で `onerror="this.style.display='none'"` を付けてフォールバック。
-
-### 6-1 stand 画像の向き反転（CSS）
-
-```css
-.org-card:not(.flip) .org-banner .ace-stand img { transform: scaleX(-1); }
-```
-
-- **左バナー（通常配置：1位・3位）**：`scaleX(-1)` で右向きに反転 → 中央のテキストを向く
-- **右バナー（`.flip` 配置：2位・4位）**：そのまま左向き
+| orgcell 枠 | `rgba(212,168,67,0.35)` + 拡大(min-height 420px) | `--border` |
+| orgcell 順位数字 | 白→金グラデ 46px | `--text-dim` 36px |
+| orgcell 評価値 | 白→金グラデ 32px | `--text-main` 26px |
+| rp-card 左ボーダー | `--gold` 3px + 薄金グラデ背景 | `rgba(232,230,224,0.18)` 3px |
+| rp-metrics 評価値 | 白→金グラデ | 白→金グラデ（全団体共通） |
+| 履歴 順位列 | `--gold-light` | `--text-main` |
+| 自団体(is-player) | ─ | ゴールド枠 `rgba(212,168,67,0.4〜0.5)` |
 
 ---
 
-## 7. 1位プレイヤー時の勝利条件バー
+## 5. 各部の様式（v0.9 → v1.0 差分）
 
-通常時：
-```
-▲1位 {1位団体} {pt}pt | −{差}pt で頂点 | ▼自団体 {自団体} {pt}pt
-```
+| 部位 | v0.9 | v1.0（A案） |
+|---|---|---|
+| popup フレーム | radius-lg + 黒影 | `--border` 枠 + 角丸6px、ヘッダは `--panel-bg` |
+| マスト | Bebas 30px 金ベタ + 4px二重金罫 | **Bebas 22px 白→金グラデ**（トップバータイトル様式）+ 1px `--border` |
+| 勝利条件バー | 金/銀の rank 色 | 1位ラベル=`--gold`、自団体ラベル=`--text-sub`、中央ギャップ数字=白→金グラデ。`.is-top`（1位時）は金系のまま維持 |
+| セクション見出し | kicker金 + title白 2行 | `.panel-title` 様式1行（`.text` を flex 化、kicker=`--text-dim` 小、title=Oswald 13px gold ls3 uppercase 下線付き） |
+| orgcell | clip-path切り角 + rank色 border-top + rank色団体名 + メタリックピル | 角丸6px + `--panel-bg`、団体名=`--text-main`、ピル=ゴールド枠チップ（`rgba(212,168,67,0.4)`枠 + `--gold`文字 + 薄金背景） |
+| tier-pill | rank色グラデ塗り | 全団体共通のゴールド枠チップ。自団体のみ濃いめ |
+| フォーメーション | rank色の床ライト | 床ライト・王者スポットとも金 `rgba(212,168,67,0.3)` に統一 |
+| rp-card | clip無しだが rank色 border-left + rank色タグ | 角丸6px、border-left は 4-3 の表どおり、rp-tags は全団体ゴールド統一 |
+| rp-face バッジ | ボーダー色のみ（is-champ/board/core） | ボーダー色 + **role-badges（7px、左上）を維持**（実装は既に出力済み。バッジ背景 `rgba(18,17,14,0.85)` で視認性確保） |
+| 履歴テーブル | th 金 2px 下線 + rank色順位列 | `.data-table` 様式（th=Oswald 11px gold、1px `--border` 下線）、順位列は 4-3 の表どおり |
+| 旧 org-card CSS 一式 | 残置（死にコード） | **削除**（`.org-card` / `.org-banner` / `.ace-stand` / `.fcell` / `.formation-*` / `.champ-row` / `.footer-actions` / `.roster-toggle` / `.roster-list` 系。`.orgcell-fcell` は現役なので残す） |
 
-1位プレイヤー時：`.victory-bar.is-top` クラスで1カラム表示にフォールバック：
-```
-👑 業界1位 ／ あなたの団体が頂点に立っています
-```
-
----
-
-## 8. 「全選手を見る」展開
-
-各 `.org-card` の foot に `.roster-toggle` ボタン。クリックで `.roster-list`（`display: none ⇄ flex`）を切替。
-リスト内の各選手 `.ri` クリックで `showFighterPopup(id, source)` を起動（既存挙動踏襲）。
-
----
-
-## 9. 既存 spec との関係
-
-- `specs/archive/org-ranking-spec-v1_0.md`（archive 行き、参照のみ）
-- 本リファクタはロジック非変更のため、`specs/` への新規 spec 追加は不要
+**維持するもの**：`.rank-metric` / `.rank-metric-tooltip`（teleport 型ツールチップ）、`.v-*` 階調クラス、`.orgcell-fcell .role-badges`（top:-16px 配置）、nm-tag の黒縁取り白文字、レスポンシブ規則。
 
 ---
 
-## 10. 関連ハンドオフ
+## 6. データ接続・画像取得・主力選定
 
-- `plans/ranking-screen-redesign-v0.9-task.md`（実装ハンドオフ、Phase 1-4 進行ガイド）
-- `docs/ui/mockups/ranking-redesign-v0.9-for-mockups-dir.html`（モックアップ正本）
+**v0.9 から変更なし**（`Engine.ranking.updateRankings(G)` / 王者取得 / ロースター加工 / 順位連動の主力人数 / `getUpperUrl`・`getOrgIconPath`・`onerror` フォールバック）。旧 spec §5〜§8 の記載のうち、03 の描画は `.rp-card`（紋章+リード文+エース+主力層+6指標）が現行の真実。
 
 ---
 
-*v0.9 確定版 / 2026-04-25*
+## 7. 関連
+
+- モックアップ3案の比較経緯: `docs/ui/mockups/ranking-restyle-A-office.html`（採用）/ `-B-cream.html` / `-C-tuned.html`（worklog 2026-07-16 参照）
+- 旧 v0.9 spec の内容はこのファイルの git 履歴を参照
+
+---
+
+*v1.0 / 2026-07-16（A案 Office標準・採用決定）*
