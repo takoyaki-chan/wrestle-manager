@@ -17625,7 +17625,7 @@ Engine.seasonReview = {
         const champNarr = _lines ? _pickLine(_lines.records[champKey], _nseed + 11) : '';
         champRecord = {
           tag: '王者', id: champ.id, name: champ.name,
-          meta: `世界 / V${defenses}`,
+          meta: `団体王座 / V${defenses}`,
           narr: champNarr || `王座を${defenses}度守った。`,
         };
       }
