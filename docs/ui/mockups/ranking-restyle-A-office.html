@@ -345,6 +345,11 @@ body { padding: 24px 0 80px; }
 .rp-face.is-champ { border-color: var(--gold); }
 .rp-face.is-board { border-color: var(--red); }
 .rp-face img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.rp-face .role-badges { position: absolute; left: 1px; top: 1px; display: flex; gap: 2px; z-index: 2; }
+.rp-face .role-badges .badge {
+  font-size: 7px; padding: 1px 3px; line-height: 1.1; letter-spacing: 0.5px;
+  background: rgba(18,17,14,0.85);
+}
 .rp-face b {
   position: absolute; right: 1px; bottom: 0;
   color: #fff; font-family: var(--font-num); font-size: 13px;
@@ -585,11 +590,11 @@ body { padding: 24px 0 80px; }
           <div class="rp-depth">
             <div class="rp-depth-head"><strong>主力層 8名（大枠含む）</strong><span>100 / 95 / 92 / 84 / 83 / 81 / 79台多数</span></div>
             <div class="rp-faces">
-              <span class="rp-face is-board"><img src="../../../image/upper/upper_abe_m.webp" alt=""><b>95</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_akabane_a.webp" alt=""><b>92</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_oba_a.webp" alt=""><b>84</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_kondo_y.webp" alt=""><b>83</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_hongo_m.webp" alt=""><b>81</b></span>
+              <span class="rp-face is-board"><span class="role-badges"><span class="badge board">看板</span></span><img src="../../../image/upper/upper_abe_m.webp" alt=""><b>95</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_akabane_a.webp" alt=""><b>92</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_oba_a.webp" alt=""><b>84</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_kondo_y.webp" alt=""><b>83</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_hongo_m.webp" alt=""><b>81</b></span>
               <span class="rp-face"><img src="../../../image/upper/upper_iijima_s.webp" alt=""><b>79</b></span>
               <span class="rp-face"><img src="../../../image/upper/upper_serizawa_a.webp" alt=""><b>78</b></span>
             </div>
@@ -624,10 +629,10 @@ body { padding: 24px 0 80px; }
           <div class="rp-depth">
             <div class="rp-depth-head"><strong>主力層 6名（大枠含む）</strong><span>85 / 82 / 79 / 77 / 74 / 73台多数</span></div>
             <div class="rp-faces">
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_hiramatsu_k.webp" alt=""><b>82</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""><b>79</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_kawanobe_n.webp" alt=""><b>77</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_akanuma_s.webp" alt=""><b>74</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_hiramatsu_k.webp" alt=""><b>82</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""><b>79</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_kawanobe_n.webp" alt=""><b>77</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_akanuma_s.webp" alt=""><b>74</b></span>
               <span class="rp-face"><img src="../../../image/upper/upper_asahina_h.webp" alt=""><b>73</b></span>
             </div>
             <div class="rp-depth-note">80前後に主力が集中。上積みは看板の一段上げ次第。</div>
@@ -661,9 +666,9 @@ body { padding: 24px 0 80px; }
           <div class="rp-depth">
             <div class="rp-depth-head"><strong>主力層 5名（大枠含む）</strong><span>86 / 81 / 78 / 75 / 72台多数</span></div>
             <div class="rp-faces">
-              <span class="rp-face is-board"><img src="../../../image/upper/upper_matsushita_m.webp" alt=""><b>81</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_umegaoka_m.webp" alt=""><b>78</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_minamitani_a.webp" alt=""><b>75</b></span>
+              <span class="rp-face is-board"><span class="role-badges"><span class="badge board">看板</span></span><img src="../../../image/upper/upper_matsushita_m.webp" alt=""><b>81</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_umegaoka_m.webp" alt=""><b>78</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_minamitani_a.webp" alt=""><b>75</b></span>
               <span class="rp-face"><img src="../../../image/upper/upper_sudo_m.webp" alt=""><b>72</b></span>
             </div>
             <div class="rp-depth-note">王者依存が強く、厚みはまだ発展途上。</div>
@@ -697,9 +702,9 @@ body { padding: 24px 0 80px; }
           <div class="rp-depth">
             <div class="rp-depth-head"><strong>主力層 4名（大枠含む）</strong><span>76 / 71 / 69 / 66台多数</span></div>
             <div class="rp-faces">
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""><b>71</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_niwa_h.webp" alt=""><b>69</b></span>
-              <span class="rp-face is-core"><img src="../../../image/upper/upper_komori_s.webp" alt=""><b>66</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_abukuma_t.webp" alt=""><b>71</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_niwa_h.webp" alt=""><b>69</b></span>
+              <span class="rp-face is-core"><span class="role-badges"><span class="badge core">主力</span></span><img src="../../../image/upper/upper_komori_s.webp" alt=""><b>66</b></span>
             </div>
             <div class="rp-depth-note">顔の少なさで、上位との差が一目で出る。</div>
           </div>
