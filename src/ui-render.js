@@ -5324,7 +5324,7 @@ function _renderDraftNegotiation() {
 
   // ── Banner ──
   html += `<div class="dn-banner">
-    <img src="image/draft-header.webp" alt="Draft Conference" class="dn-banner-img" onerror="this.style.display='none'">
+    <img src="../image/draft-header.webp" alt="Draft Conference" class="dn-banner-img" onerror="this.style.display='none'">
     <div class="dn-banner-strip">
       <span>シーズン${G.season || '?'} オフ第${G.offWeek || '?'}週</span>
       <span>ROUND ${String(ns.round || 0).padStart(2, '0')}</span>

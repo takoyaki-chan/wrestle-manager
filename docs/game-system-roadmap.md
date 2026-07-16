@@ -230,7 +230,7 @@ bond/rivalryシステムと連携する劇的イベント群。実装順推奨: 
 
 ## メモ
 
-- build-zip.shは要確認: `image/award-frame-*.png`（7枚）と `portrait-map.js` が未包含の可能性あり
+- ~~build-zip.shは要確認: `image/award-frame-*.png`（7枚）と `portrait-map.js` が未包含の可能性あり~~ → **解消(2026-07-16 配布監査 `docs/release-audit-report.md`)**: award-frameは実6枚で `image/` 再帰コピーにより配布済み、portrait-map.js はもはや存在しない(data.jsのPORTRAITに統合済み・manifestに追加してはいけない)。包含漏れ0件、幽霊参照1件(draft-header.webp 相対パス)は修正済み
 - README.mdの「120名以上のキャラクター」は固有キャラ98名＋スカウト生成＋コーチ35名の合算
 - 会場ロック判定は `Math.round(G.orgPop)` で比較すること（内部小数化対応）
 - **立ち絵画像**: stand(256×384 webp) / full(512×768 RGBA webp) / upper(256×384 RGBA webp) / face(256×256 png)。バトル中はstand、対戦カード/PPV/練習詳細ではfull、カットインではupper
