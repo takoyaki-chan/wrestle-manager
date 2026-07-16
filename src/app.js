@@ -7994,7 +7994,10 @@ const App = {
       || ['…！'];
     if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return baseVl;
     const pers = fighter.personality || 'normal';
-    const winArr = (VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {}).win || [];
+    const arch = fighter.archetype || 'normal';
+    const byP = VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {};
+    const byA = byP[arch] || byP.normal || {};
+    const winArr = byA.win || [];
     if (winArr.length === 0) return baseVl;
     return [...winArr, ...baseVl];
   },
@@ -8003,7 +8006,10 @@ const App = {
   _buildVsExHitLines(fighter, season, week, opponentOrgId) {
     if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return null;
     const pers = fighter.personality || 'normal';
-    const hitArr = (VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {}).hit || [];
+    const arch = fighter.archetype || 'normal';
+    const byP = VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {};
+    const byA = byP[arch] || byP.normal || {};
+    const hitArr = byA.hit || [];
     return hitArr.length > 0 ? hitArr : null;
   },
 

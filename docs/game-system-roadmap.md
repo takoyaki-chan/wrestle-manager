@@ -20,7 +20,7 @@
 | 宿題 | 条件・メモ |
 |---|---|
 | `docs/shachoshitsu-care-rework-spec-v0.1.md` を specs/ へ昇格 | アーク2 の実機確認が済んだら |
-| personality 単軸セリフテーブルの archetype 組み替え — **残走査完了(2026-07-16)** | 未変換7本を発見: tag-battle-lines.js の6本(HOT_TAG/DOUBLE_TEAM/CUTIN_SAVE/BETRAYAL/TAG_MATCH_WIN/TAG_MATCH_LOSS、性格7種単軸) + VS_EX_EMPLOYER_LINES(victory-lines.js、bold枠に一人称「俺」2行の問題も)。変換方針と着手時期は Keisuke 判断待ち |
+| personality 単軸セリフテーブルの archetype 組み替え — **全完了(2026-07-16)** | 残走査で発見した7本(タッグ6+VS_EX_EMPLOYER)を [personality][archetype] 二軸980本に変換済み(「俺」2行も解消)。文面は docs/tag-shout-lines-draft-v0.1.md ほか2ファイル、Keisuke 全文レビュー中 |
 | （任意）CR Phase3 興行枠 in-show 挿入 / firedReturn news の B3・奪還パス拡張 / CR Phase5 リアクション細分化 | 挑戦状システムの拡張候補 |
 
 ---

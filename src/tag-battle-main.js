@@ -783,7 +783,7 @@ function animateEvent(ev, fr){
     flashGold();
     const teamKey = ev.team === 'A' ? S.pos.legalA : S.pos.legalB;
     const fighter = f(teamKey);
-    if (fighter) showCutin(fighter, ev.team === 'A' ? 'left' : 'right', pickHotTagLine(fighter.personality || 'normal'), 'tag-hot');
+    if (fighter) showCutin(fighter, ev.team === 'A' ? 'left' : 'right', pickHotTagLine(fighter), 'tag-hot');
   } else if (ev.type === 'doubleTeam') {
     showBanner('DOUBLE TEAM!', 'red');
     try { sfx.doubleTeamSE(); } catch(e){}
@@ -797,7 +797,7 @@ function animateEvent(ev, fr){
     const saver = f(saverKey);
     if (saver) {
       const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
-      showCutin(saver, side, pickCutinSaveLine(saver.personality || 'normal'), 'tag-save');
+      showCutin(saver, side, pickCutinSaveLine(saver), 'tag-save');
     }
   } else if (ev.type === 'friendlyFire') {
     showBanner('同士討ち！', 'yellow');
@@ -817,7 +817,7 @@ function animateEvent(ev, fr){
     const betrayer = f(betrayerKey);
     if (betrayer) {
       const cutinSide = (betrayerKey === 'a1' || betrayerKey === 'a2') ? 'left' : 'right';
-      showCutin(betrayer, cutinSide, pickBetrayalLine(betrayer.personality || 'normal'), 'damage-serif');
+      showCutin(betrayer, cutinSide, pickBetrayalLine(betrayer), 'damage-serif');
     }
   }
   // pinAttempt は applyFrame 側の _beginPinSequence でクリック駆動処理するため、ここでは何もしない
@@ -985,7 +985,7 @@ function _buildPinCtrl(pinEv, fr){
         const saver = saverKey ? f(saverKey) : null;
         if (saver) {
           const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
-          seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver.personality || 'normal') });
+          seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver) });
         }
       }
     }
@@ -1007,7 +1007,7 @@ function _buildPinCtrl(pinEv, fr){
         const saver = saverKey ? f(saverKey) : null;
         if (saver) {
           const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
-          seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver.personality || 'normal') });
+          seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver) });
         }
       }
     }
