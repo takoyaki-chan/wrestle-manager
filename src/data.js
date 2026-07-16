@@ -14024,15 +14024,15 @@ const NEWS_HEADLINE_TEMPLATES = {
   ],
   contractBetrayalChampCarry: [
     { headline: '衝撃の裏切り――{name}がベルトを抱えて{toOrg}へ',
-      body: '{fromOrg}の{name}が契約を蹴って{toOrg}へ電撃移籍。世界王座まで持ち去られる前代未聞の事態に、ロッカールームには重い沈黙が流れた。「ベルトは私と一緒に動く」――その一言が業界に走った。' },
+      body: '{fromOrg}の{name}が契約を蹴って{toOrg}へ電撃移籍。団体王座まで持ち去られる前代未聞の事態に、ロッカールームには重い沈黙が流れた。「ベルトは私と一緒に動く」――その一言が業界に走った。' },
     { headline: '王座を抱えての離脱――{name}、{toOrg}入り',
       body: '{fromOrg}が抱える看板タイトルを保持したまま、{name}が{toOrg}への移籍を決断。残された選手たちは「あれが仲間だったとは思いたくない」と肩を落とす。奪還の挑戦状なくして決着はつかない。' },
   ],
   contractBetrayalChampLeave: [
     { headline: '{name}が{toOrg}へ――ベルトは置いて去った',
-      body: '{fromOrg}との契約交渉が決裂し、{name}が{toOrg}へ去った。世界王座は返上、空位に。「私が持つベルトじゃない」と最後の会見で語った姿に、複雑な思いを抱くファンも少なくない。' },
+      body: '{fromOrg}との契約交渉が決裂し、{name}が{toOrg}へ去った。王座は返上、空位に。「私が持つベルトじゃない」と最後の会見で語った姿に、複雑な思いを抱くファンも少なくない。' },
     { headline: '王座返上――{name}、{toOrg}へ移籍',
-      body: '世界王座を保持していた{name}が{toOrg}への移籍を表明。ベルトはリング中央に置かれたまま空位となった。{fromOrg}は早急に王座決定戦の準備に入る。' },
+      body: '団体王座を保持していた{name}が{toOrg}への移籍を表明。ベルトはリング中央に置かれたまま空位となった。{fromOrg}は早急に王座決定戦の準備に入る。' },
   ],
   contractBetrayalRivalOrg: [
     { headline: '因縁の相手へ――{name}、{toOrg}に移籍',
@@ -14191,19 +14191,19 @@ const NEWS_HEADLINE_TEMPLATES = {
       body: '普段は別の旗を掲げる二つの派閥が、手を組んで企画を打った。{org}の控室に流れる空気は悪くない。対立だけが派閥の使い道ではない、ということだろう。' },
   ],
   reclaimChallenge: [
-    { headline: '挑戦状！{challengerName}が{toOrg}に世界王座奪還を要求',
-      body: '{fromOrg}の{challengerName}が、{toOrg}に持ち去られた世界王座への奪還挑戦状を叩きつけた。「あのベルトは私たちのリングで生まれたものだ」——強い言葉が会見場に響いた。次の興行で運命の一戦が組まれる。' },
+    { headline: '挑戦状！{challengerName}が{toOrg}に王座奪還を要求',
+      body: '{fromOrg}の{challengerName}が、{toOrg}に持ち去られた団体王座への奪還挑戦状を叩きつけた。「あのベルトは私たちのリングで生まれたものだ」——強い言葉が会見場に響いた。次の興行で運命の一戦が組まれる。' },
     { headline: '{challengerName}、{toOrg}に殴り込み——「ベルトを取り戻す」',
-      body: '世界王座を抱えて{toOrg}へ移った元同僚に対し、{fromOrg}の{challengerName}が奪還を宣言した。「あの裏切りには、リングで答えを出させる」——次の興行のメインで決着がつく。' },
+      body: '王座のベルトを抱えて{toOrg}へ移った元同僚に対し、{fromOrg}の{challengerName}が奪還を宣言した。「あの裏切りには、リングで答えを出させる」——次の興行のメインで決着がつく。' },
   ],
   reclaimSuccess: [
-    { headline: '王座奪還！{challengerName}が{toOrg}から世界ベルトを取り戻した',
-      body: '{fromOrg}の{challengerName}が、{toOrg}に持ち去られていた世界王座を取り戻した。「やっとこのベルトを、本来の場所に戻せた」と新王者。裏切られた団体の意地が、リングの上で結実した瞬間だ。' },
+    { headline: '王座奪還！{challengerName}が{toOrg}からベルトを取り戻した',
+      body: '{fromOrg}の{challengerName}が、{toOrg}に持ち去られていた団体王座を取り戻した。「やっとこのベルトを、本来の場所に戻せた」と新王者。裏切られた団体の意地が、リングの上で結実した瞬間だ。' },
     { headline: '雪辱——{challengerName}、奪われた王座を取り戻す',
-      body: '{toOrg}に持ち去られていた世界王座が、{fromOrg}の{challengerName}の手元に帰ってきた。会見場には涙ぐむ関係者の姿もあった。失われたものを取り戻す——その重みを、彼女は背負ってリングに上がった。' },
+      body: '{toOrg}に持ち去られていたベルトが、{fromOrg}の{challengerName}の手元に帰ってきた。会見場には涙ぐむ関係者の姿もあった。失われたものを取り戻す——その重みを、彼女は背負ってリングに上がった。' },
   ],
   reclaimFailure: [
-    { headline: '{challengerName}の奪還挑戦は失敗——{toOrg}が世界王座を死守',
+    { headline: '{challengerName}の奪還挑戦は失敗——{toOrg}が王座を死守',
       body: '{fromOrg}の{challengerName}が仕掛けた奪還戦は、{toOrg}側の防衛に終わった。「またあのベルトに辿り着けなかった」——リングを降りる挑戦者の背中に、ファンから声援が飛んだ。物語はまだ終わらない。' },
   ],
   firstMeetSinceDeparture: [
