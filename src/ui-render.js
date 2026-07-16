@@ -1049,6 +1049,7 @@ function renderWeekScreen() {
       html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
     }
     html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに切り替えます。それ以外の方針は維持されます">🤖 おまかせ</button>';
+    html += _tipIcon('<strong style="color:var(--gold)">🤖 おまかせ</strong><br>体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに戻します。それ以外の方針は維持されます。');
     html += '</div>';
 
     // Roster schedule overview
@@ -1105,7 +1106,7 @@ function renderWeekScreen() {
               <span class="wr-cond-num">${condPct}</span>
             </div>
           </td>
-          <td><span style="font-size:12px;color:var(--text-dim)" title="レンタル選手は自律行動します">🤝自律</span></td>
+          <td><span style="font-size:12px;color:var(--text-dim);cursor:help" ${_tipAttr('レンタル選手は自律行動します。スケジュールの指定はできません。')}>🤝自律</span></td>
           <td><span style="font-size:12px;color:var(--text-dim)">--</span></td>
           <td><span class="sched-tag practice">${rentalAction}</span></td>
           <td></td>
@@ -1140,11 +1141,11 @@ function renderWeekScreen() {
         if (c.condition < 60) previewAction = 'auto_rest';
       }
       const previewLabel = actionLabels[previewAction] || previewAction;
-      const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="成長バフ ×${c._trainerBuff.mult} 残${c._trainerBuff.weeksLeft}週">🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
-      // care-rework v0.1 §3: 招聘中コーチのバッジ(コーチ名をtitleに)
+      const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(`専属指導中 — 練習効果アップ(残${c._trainerBuff.weeksLeft}週)`)}>🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
+      // care-rework v0.1 §3: 招聘中コーチのバッジ(コーチ名をツールチップに)
       const inviteCoach = c._inviteBuff ? (typeof ALL_COACHES !== 'undefined' ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null) : null;
-      const inviteBadge = c._inviteBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="${inviteCoach ? inviteCoach.name + 'コーチ招聘中' : '招聘中'} ×${c._inviteBuff.mult.toFixed(2)} 残${c._inviteBuff.weeksLeft}週">🏋️${c._inviteBuff.weeksLeft}w</span>` : '';
-      const leaveBadge = isOnLeave ? ` <span style="font-size:10px;color:#3498db;background:rgba(52,152,219,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(52,152,219,0.3)" title="休暇中は興行に欠場します">🏖️休暇 あと${c.onLeave.weeksLeft}週</span>` : '';
+      const inviteBadge = c._inviteBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(`${inviteCoach ? inviteCoach.name + 'コーチ招聘中' : 'コーチ招聘中'} — 練習効果アップ(残${c._inviteBuff.weeksLeft}週)`)}>🏋️${c._inviteBuff.weeksLeft}w</span>` : '';
+      const leaveBadge = isOnLeave ? ` <span style="font-size:10px;color:#3498db;background:rgba(52,152,219,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(52,152,219,0.3);cursor:help" ${_tipAttr('休暇中は興行に欠場します。体調が回復し、蓄積した衰えも少し癒えます。')}>🏖️休暇 あと${c.onLeave.weeksLeft}週</span>` : '';
       const tier = _wrOvrTier(ov(c));
       const popVal = Engine.util.dispPop(c.popularity);
       const popCol = _popColor(popVal).color;
@@ -1213,8 +1214,8 @@ function renderWeekScreen() {
       <th onclick="setWeekSort('pop')" class="num" style="width:60px;cursor:pointer">人気${_weekSortIndicator('pop')}</th>
       <th style="width:60px">状態</th>
       <th onclick="setWeekSort('cond')" style="width:120px;cursor:pointer">体調${_weekSortIndicator('cond')}</th>
-      <th onclick="setWeekSort('schedule')" style="width:130px;cursor:pointer">スケジュール${_weekSortIndicator('schedule')} <span class="info-tip" title="育成方針を選択します。体調60未満になると方針に関わらず自動で休養します。">ℹ️</span></th>
-      <th class="center" style="width:46px">⚡</th>
+      <th onclick="setWeekSort('schedule')" style="width:130px;cursor:pointer">スケジュール${_weekSortIndicator('schedule')} ${_tipIcon('<strong style="color:var(--gold)">育成方針</strong><br>・<strong>バランス</strong> — 興行週はプロモ、練習週は練習。迷ったらこれ<br>・<strong>練習優先</strong> — ステータス成長に集中<br>・<strong>プロモ優先</strong> — 人気を上げる(上限あり)<br>・<strong>休養重視</strong> — 確実に休ませる<br><br>どの方針でも、体調60未満になると自動で休養します。')}</th>
+      <th class="center" style="width:60px">⚡${_tipIcon('<strong style="color:var(--gold)">⚡追込練習</strong><br>成長が大きく伸びる代わりに体調の消耗が激しく、怪我のリスクも上がります。<br><br>体調50以上・最大2週連続まで。')}</th>
       <th style="width:92px">今週の行動</th>
       <th></th>
     </tr>`;
@@ -2245,7 +2246,7 @@ function _spOpenPicker(slotIdx, side) {
   // F08 ロック: 直接対決固定枠は選手差替え不可
   const slot = G.showCard && G.showCard[slotIdx];
   if (slot && slot._f08Locked) {
-    if (typeof showToast === 'function') showToast('🔥 F08 直接対決のため、この試合の選手は変更できません', 3000);
+    if (typeof showToast === 'function') showToast('🔥 派閥の直接対決のため、この試合の選手は変更できません', 3000);
     return;
   }
   // 派閥内序列戦 ロック
@@ -2804,7 +2805,7 @@ function renderShowPrep() {
     </div>
     <div class="sp-metrics">
       <div class="sp-metric"><div class="sp-metric-val" style="color:${heat.color}">${heat.label}</div><div class="sp-metric-label">Heat</div></div>
-      ${estCrowdMQ.total !== 0 ? `<div class="sp-metric"><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}</div><div class="sp-metric-label">予想MQ</div></div>` : ''}
+      ${estCrowdMQ.total !== 0 ? `<div class="sp-metric" style="cursor:help" ${_tipAttr('観客の入りによる試合品質(MQ)への補正予測。超満員は試合を熱くし、ガラガラは冷やします。')}><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}</div><div class="sp-metric-label">予想MQ</div></div>` : ''}
       ${hasTitlePreview
         ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">タイトル戦</div></div>`
         : (titleCd.allowed
@@ -2831,7 +2832,7 @@ function renderShowPrep() {
 
   // カードヘッダー v7
   html += `<div class="sp-card-header">
-    <span class="sp-card-header-title">Match Card</span>
+    <span class="sp-card-header-title">Match Card</span>${_tipIcon('<strong style="color:var(--gold)">おまかせ編成</strong><br>・🔥おすすめ — 因縁・鮮度・話題性を考慮した最適カード<br>・💪OVR順 — 実力上位同士をマッチング<br>・🎤集客力順 — 集客力の高い選手をメインに')}
     <button class="btn btn-sm" style="background:rgba(255,140,0,0.18);border:1px solid rgba(255,140,0,0.5);color:#ff8c00" onclick="_spActivePicker=null;autoFillCardByAppeal();renderShowPrep()" title="因縁・鮮度・話題性を考慮した最適カード">🔥 おすすめ</button>
     <button class="btn btn-sm" style="background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.4);color:#3498db" onclick="_spActivePicker=null;autoFillCard();renderShowPrep()" title="OVR上位同士をマッチング">💪 OVR順</button>
     <button class="btn btn-sm" style="background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.4);color:#9b59b6" onclick="_spActivePicker=null;autoFillCardByDraw();renderShowPrep()" title="個人集客力が高い選手をメインに">🎤 集客力順</button>
@@ -3033,13 +3034,13 @@ function renderShowPrep() {
       const fA = Engine.factions.getFactionByFighterId(G, curL);
       const fB = Engine.factions.getFactionByFighterId(G, curR);
       const label = (fA && fB) ? `${fA.name} vs ${fB.name}` : '派閥抗争';
-      tagParts.push(`<span class="sp-match-tag sp-tag-faction" title="派閥の顔役同士の試合：集客ブースト">🏴vs🏴 ${label}</span>`);
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" style="cursor:help" ${_tipAttr('派閥の顔役同士の試合：集客ブースト')}>🏴vs🏴 ${label}</span>`);
     }
     if (slot._f08Locked) {
-      tagParts.push(`<span class="sp-match-tag sp-tag-faction" title="F08 対立ヒートアップ：この試合は固定枠です" style="background:rgba(255,90,40,0.22);border-color:rgba(255,90,40,0.55);color:#ffd2b0">🔥 F08 直接対決（固定）</span>`);
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr('派閥対立のヒートアップによる直接対決：この試合は固定枠です')} style="background:rgba(255,90,40,0.22);border-color:rgba(255,90,40,0.55);color:#ffd2b0;cursor:help">🔥 直接対決（固定）</span>`);
     }
     if (slot._internalChallengeLocked) {
-      tagParts.push(`<span class="sp-match-tag sp-tag-faction" title="派閥内序列戦：挑戦者がリーダーの座を狙う、固定枠です" style="background:rgba(120,60,180,0.28);border-color:rgba(170,120,220,0.55);color:#e6c8ff">⚔ 派閥内序列戦（固定）</span>`);
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr('派閥内序列戦：挑戦者がリーダーの座を狙う、固定枠です')} style="background:rgba(120,60,180,0.28);border-color:rgba(170,120,220,0.55);color:#e6c8ff;cursor:help">⚔ 派閥内序列戦（固定）</span>`);
     }
     if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
@@ -3106,7 +3107,7 @@ function renderShowPrep() {
         ${_spPortrait(fl, ps)}
         <div class="sp-match-center">
           ${matchLabel ? `<div class="sp-match-num">${matchLabel}</div>` : ''}
-          ${slotBD ? `<div class="sp-appeal-label">カード魅力</div><div class="sp-appeal-score" style="${_scale6Style(_mqColor(slotBD.total))}">${slotBD.total}</div>` : ''}
+          ${slotBD ? `<div class="sp-appeal-label" style="cursor:help" ${_tipAttr('この一戦がどれだけ客を呼べるか。両選手の人気と実力に、拮抗・因縁・タイトル戦などの注目度が上乗せされます。')}>カード魅力</div><div class="sp-appeal-score" style="${_scale6Style(_mqColor(slotBD.total))}">${slotBD.total}</div>` : ''}
           ${appealParts.length > 0 ? `<div class="sp-appeal-bonuses">${appealParts.join('  ')}</div>` : ''}
           <div class="sp-match-vs">VS</div>
           ${matchRule ? `<div class="sp-match-rule">${matchRule}</div>` : ''}

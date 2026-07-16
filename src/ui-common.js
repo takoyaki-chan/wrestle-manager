@@ -422,6 +422,32 @@ function hideCustomTooltip() {
 // Global tap-outside hides tooltip
 document.addEventListener('click', hideCustomTooltip);
 
+// ── C-4 P2: 宣言的ツールチップ(data-tip) ───────────────
+// title 属性はスマホで一切表示されないため、説明系ティップスは data-tip に寄せる。
+// 属性を書いておくだけで、下の委譲リスナーが PCホバー+モバイルタップ の両方を拾う。
+// title 属性は「なくても困らない冗長情報」専用に格下げ(C-4 方針)。
+function _tipAttr(html) {
+  return `data-tip="${escHtml(html)}"`;
+}
+// ℹ型トリガーアイコン(列見出しやボタン群の隣に置く小さな「?」)
+function _tipIcon(html) {
+  return `<span class="tt" ${_tipAttr(html)}>?</span>`;
+}
+document.addEventListener('mouseover', (e) => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-tip]') : null;
+  if (el) showCustomTooltip(el, el.getAttribute('data-tip'));
+});
+document.addEventListener('mouseout', (e) => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-tip]') : null;
+  // 子要素間の移動では消さない(relatedTarget がまだ el 内なら維持)
+  if (el && !(e.relatedTarget && el.contains(e.relatedTarget))) hideCustomTooltip();
+});
+// タップ表示: capture 段階で拾い、親要素の onclick(列ソート等)より先に伝播を止める
+document.addEventListener('click', (e) => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-tip]') : null;
+  if (el) { e.stopPropagation(); showCustomTooltip(el, el.getAttribute('data-tip')); }
+}, true);
+
 // ── War Challenge Dialogue Generator (personality×archetype) ──
 function getWarChallengeDialogue(fighter, orgName) {
   if (typeof WAR_CHALLENGER_DIALOGUE !== 'undefined') {
