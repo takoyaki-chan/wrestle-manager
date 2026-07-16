@@ -7322,8 +7322,8 @@ function showInviteTargetModal(coachId, state) {
   });
   document.getElementById('mdlAInviteTargetConfirm').addEventListener('click', () => {
     Audio.play('click');
-    _mdlAClose();
     const autoRenew = !!document.getElementById('mdlAInviteAutoRenew')?.checked;
+    _mdlAClose();
     if (typeof App !== 'undefined' && App.executeDecision) {
       App.executeDecision('trainer', selectedFighterId, { coachId, autoRenew });
     }

@@ -10175,7 +10175,14 @@ const Engine = {
         ...pendingSlumpEvents.map(e => ({ ...e })),
         ...pendingMotivationEvents.map(e => ({ ...e })),
       ];
-      const result = { roster, freeAgents, heatScore, events: [...events, ...inviteTickEvents] };
+      const result = {
+        roster,
+        freeAgents,
+        heatScore,
+        funds: G.funds,
+        decisionPoints: G.decisionPoints,
+        events: [...events, ...inviteTickEvents],
+      };
       // Phase 4: 関係値更新をresultに含める
       if (G.relationships) result.relationships = G.relationships;
       // care-rework v0.1 §3.5: 招聘終了に伴う雇用コーチ自動復帰(coachAssign)
@@ -10543,7 +10550,14 @@ const Engine = {
     }
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week));
     const manage = Engine.season.processManage(rng, state);
-    let s = { ...state, roster: manage.roster, freeAgents: manage.freeAgents, heatScore: manage.heatScore };
+    let s = {
+      ...state,
+      roster: manage.roster,
+      freeAgents: manage.freeAgents,
+      heatScore: manage.heatScore,
+      funds: manage.funds != null ? manage.funds : state.funds,
+      decisionPoints: manage.decisionPoints != null ? manage.decisionPoints : state.decisionPoints,
+    };
     // Phase 4: processManage で更新された関係値を反映
     if (manage.relationships) s = { ...s, relationships: manage.relationships };
     // care-rework v0.1 §3.5: 招聘終了に伴う雇用コーチ自動復帰(coachAssign)

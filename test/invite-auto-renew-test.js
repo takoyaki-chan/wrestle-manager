@@ -18,6 +18,8 @@ loadAsGlobal('victory-lines.js');
 loadAsGlobal('data.js');
 loadAsGlobal('management.js');
 
+const uiSource = fs.readFileSync(path.join(srcDir, 'ui-common.js'), 'utf8').replace(/\r\n/g, '\n');
+
 function makeFighter(id, name) {
   return {
     id,
@@ -138,6 +140,72 @@ function pickCoachId(state) {
 
   assert.strictEqual(result.roster[0]._inviteBuff.weeksLeft, 4, 'auto-renew should trigger when the extended term actually ends');
   assert.strictEqual(result.roster[0]._inviteBuff.totalWeeks, 4, 'renewal after extension should start a fresh 4-week term');
+})();
+
+(function testWeeklyFlowPropagatesRenewalResourceDeductions() {
+  const initial = Engine.createInitialState(456, true);
+  const fighter = initial.roster[0];
+  const coach = ALL_COACHES[0];
+  const buff = {
+    coachId: coach.id,
+    weeksLeft: 1,
+    totalWeeks: 4,
+    mult: 1.2,
+    compat: 'normal',
+    statsAtStart: { pw: fighter.pw, sp: fighter.sp, te: fighter.te, st: fighter.st, mn: fighter.mn },
+  };
+  const base = {
+    ...initial,
+    week: 2,
+    weekPhase: 'manage',
+    showCard: null,
+    aiOrgs: {},
+    funds: 100000,
+    decisionPoints: 5,
+    roster: initial.roster.map((f, index) => index === 0 ? { ...f, _inviteBuff: buff } : f),
+  };
+  const withoutRenewal = Engine.season.processManage(
+    Engine.rng.create(Engine.rng.derive(base.rngSeed, base.season, base.week)),
+    base
+  );
+  const renewalState = {
+    ...base,
+    roster: base.roster.map((f, index) => index === 0
+      ? { ...f, _inviteBuff: { ...f._inviteBuff, autoRenew: true } }
+      : f),
+  };
+  const withRenewal = Engine.season.processManage(
+    Engine.rng.create(Engine.rng.derive(renewalState.rngSeed, renewalState.season, renewalState.week)),
+    renewalState
+  );
+
+  assert.strictEqual(
+    withRenewal.funds,
+    withoutRenewal.funds - Engine.shachoshitsu.getInviteCost(coach, base),
+    'weekly flow should retain the automatic renewal fee deduction'
+  );
+  assert.strictEqual(
+    withRenewal.decisionPoints,
+    withoutRenewal.decisionPoints - Engine.shachoshitsu.getInviteDecisionCost(),
+    'weekly flow should retain the automatic renewal decision-point deduction'
+  );
+  assert.match(
+    fs.readFileSync(path.join(srcDir, 'management.js'), 'utf8'),
+    /funds:\s*manage\.funds\s*!=\s*null\s*\?\s*manage\.funds\s*:\s*state\.funds[\s\S]*decisionPoints:\s*manage\.decisionPoints\s*!=\s*null\s*\?\s*manage\.decisionPoints\s*:\s*state\.decisionPoints/,
+    'tickWeek must carry processManage resource deductions into settlement and the returned state'
+  );
+})();
+
+(function testUiReadsAutoRenewBeforeClosingModal() {
+  const handlerStart = uiSource.indexOf("document.getElementById('mdlAInviteTargetConfirm').addEventListener");
+  const handlerEnd = uiSource.indexOf('\n  });', handlerStart);
+  const handler = uiSource.slice(handlerStart, handlerEnd);
+
+  assert.ok(handlerStart >= 0 && handlerEnd > handlerStart, 'invite target confirmation handler should exist');
+  assert.ok(
+    handler.indexOf("document.getElementById('mdlAInviteAutoRenew')") < handler.indexOf('_mdlAClose()'),
+    'auto-renew selection must be read before closing the modal drains the popup queue'
+  );
 })();
 
 console.log('invite-auto-renew-test: ok');
