@@ -962,7 +962,7 @@ function renderWeekScreen() {
       html += '<div class="survival-gauge-markers">';
       sMilestones.forEach(m => {
         const cls = m.done ? 'cleared' : (m === sMilestones.find(x => !x.done) ? 'active' : '');
-        html += `<span class="survival-gauge-marker ${cls}" title="${m.desc}">${m.done ? '✅' : '⬜'} ${m.label}</span>`;
+        html += `<span class="survival-gauge-marker ${cls}" style="cursor:help" ${_tipAttr(m.desc)}>${m.done ? '✅' : '⬜'} ${m.label}</span>`;
       });
       html += '</div>';
 
@@ -1812,7 +1812,7 @@ function _renderRosterDetailPanel(c, hired) {
       : '<span style="color:#1a8a4a">伸びしろ大</span>';
     const col = STAT_COLORS[s];
     tab1 += `<div class="rd-stat-row">
-      <span class="rd-stat-label" style="color:${col}" title="${STAT_TIPS[s]}">${STAT_LABELS[s]}</span>
+      <span class="rd-stat-label" style="color:${col};cursor:help" ${_tipAttr(STAT_TIPS[s])}>${STAT_LABELS[s]}</span>
       <div class="rd-stat-bar-outer"><div class="rd-stat-bar-current" style="width:${Math.min(100, current/1.5)}%;background:${col}"></div></div>
       <span class="rd-stat-val" style="color:${col}">${current}</span>
       <span class="rd-stat-growth" style="color:${sg > 0 ? '#1a8a4a' : '#7a7466'}">${sg > 0 ? '+' + sg : '—'}</span>
@@ -2098,7 +2098,7 @@ function renderRoster() {
     // 信頼が大きく揺らいでいる選手の警告バッジ(trust<40)。
     // 数値は出さず「やばい」ことだけ周囲に伝える(CLAUDE.md 数値哲学)
     const lowTrustBadge = (!c.isRental && (c.trust != null ? c.trust : 50) < 40)
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.45)" title="社長との関係が揺らいでいる">💔信頼低下</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.45);cursor:help" ${_tipAttr('社長との関係が揺らいでいる')}>💔信頼低下</span>`
       : '';
     const statG = (key) => {
       const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
@@ -2140,17 +2140,17 @@ function renderRoster() {
             ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
             ${c._inviteBuff ? (() => {
               const invCoach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null;
-              return `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)" title="${invCoach ? invCoach.name + 'コーチ招聘中' : '招聘中'}">🏋️${c._inviteBuff.weeksLeft}w</span>`;
+              return `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(`${invCoach ? invCoach.name + 'コーチ招聘中' : 'コーチ招聘中'} — 練習効果アップ(残${c._inviteBuff.weeksLeft}週)`)}>🏋️${c._inviteBuff.weeksLeft}w</span>`;
             })() : ''}
             ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}${lowTrustBadge}
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">
             <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
-            <span title="${STAT_TIPS.pw}">PW<b style="color:#1e1c16">${Math.round(c.pw)}</b>${statG('pw')}</span>
-            <span title="${STAT_TIPS.sp}">SP<b style="color:#1e1c16">${Math.round(c.sp)}</b>${statG('sp')}</span>
-            <span title="${STAT_TIPS.te}">TE<b style="color:#1e1c16">${Math.round(c.te)}</b>${statG('te')}</span>
-            <span title="${STAT_TIPS.st}">ST<b style="color:#1e1c16">${Math.round(c.st)}</b>${statG('st')}</span>
-            <span title="${STAT_TIPS.mn}">MN<b style="color:#1e1c16">${Math.round(c.mn)}</b>${statG('mn')}</span>
+            <span ${_tipAttr(STAT_TIPS.pw)}>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b>${statG('pw')}</span>
+            <span ${_tipAttr(STAT_TIPS.sp)}>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b>${statG('sp')}</span>
+            <span ${_tipAttr(STAT_TIPS.te)}>TE<b style="color:#1e1c16">${Math.round(c.te)}</b>${statG('te')}</span>
+            <span ${_tipAttr(STAT_TIPS.st)}>ST<b style="color:#1e1c16">${Math.round(c.st)}</b>${statG('st')}</span>
+            <span ${_tipAttr(STAT_TIPS.mn)}>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b>${statG('mn')}</span>
             <span style="color:#bcb39f;margin:0 2px">｜</span>
             <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></span>
           </div>
@@ -2189,11 +2189,11 @@ function renderRoster() {
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">
               <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
-              <span title="${STAT_TIPS.pw}">PW<b style="color:#1e1c16">${Math.round(c.pw)}</b></span>
-              <span title="${STAT_TIPS.sp}">SP<b style="color:#1e1c16">${Math.round(c.sp)}</b></span>
-              <span title="${STAT_TIPS.te}">TE<b style="color:#1e1c16">${Math.round(c.te)}</b></span>
-              <span title="${STAT_TIPS.st}">ST<b style="color:#1e1c16">${Math.round(c.st)}</b></span>
-              <span title="${STAT_TIPS.mn}">MN<b style="color:#1e1c16">${Math.round(c.mn)}</b></span>
+              <span ${_tipAttr(STAT_TIPS.pw)}>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b></span>
+              <span ${_tipAttr(STAT_TIPS.sp)}>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b></span>
+              <span ${_tipAttr(STAT_TIPS.te)}>TE<b style="color:#1e1c16">${Math.round(c.te)}</b></span>
+              <span ${_tipAttr(STAT_TIPS.st)}>ST<b style="color:#1e1c16">${Math.round(c.st)}</b></span>
+              <span ${_tipAttr(STAT_TIPS.mn)}>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b></span>
               <span style="color:#bcb39f;margin:0 2px">｜</span>
               <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></span>
             </div>
@@ -4542,8 +4542,8 @@ function _renderShachoshitsuDecisionDesk() {
       const isApproved = doneThisWeek.includes(doc.id);
       const approvedCls = isApproved ? ' is-approved' : '';
       const clickAttr = isApproved ? '' : ` onclick="App.onShachoshitsuDocClick('${doc.id}')"`;
-      // 朱印(決裁済)で無反応な理由をホバーで説明する(「クリックできない」報告対策)
-      const titleAttr = isApproved ? ' title="この書類は今週すでに決裁済みです。週を進めるとまた検討できます"' : '';
+      // 朱印(決裁済)で無反応な理由を説明する(「クリックできない」報告対策、data-tipでスマホ対応)
+      const titleAttr = isApproved ? ` ${_tipAttr('この書類は今週すでに決裁済みです。週を進めるとまた検討できます')}` : '';
       const rot = docRotation(doc.id, G.week);
       html += `
         <div class="shachoshitsu-doc${approvedCls}" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}" style="--doc-rotate:${rot}deg"${clickAttr}${titleAttr}>
@@ -4643,13 +4643,16 @@ function _renderShachoshitsuScoutDesk() {
 
     // ボタン
     let btnHtml = '';
+    // disabledボタンはマウスイベントを発火しないため、data-tipはラッパーspanに付け
+    // ボタン側をpointer-events:noneにして理由説明をPCホバー+スマホタップ両対応にする
+    const _disBtn = (label, tip) => `<span ${_tipAttr(tip)} style="display:inline-block;cursor:help"><button disabled style="pointer-events:none">${label}</button></span>`;
     if (G.offSeason) {
-      btnHtml = `<button disabled title="オフシーズン中は契約できません">⛔ オフシーズン</button>`;
+      btnHtml = _disBtn('⛔ オフシーズン', 'オフシーズン中は契約できません');
     } else if (!canNeg) {
       const tierReq = Engine.scout.getTierConfig(c.assessedTier || 'material');
-      btnHtml = `<button disabled title="団体人気${Engine.util.dispOrgPop(tierReq.reqPop)}以上で交渉可能">⛔ 知名度不足</button>`;
+      btnHtml = _disBtn('⛔ 知名度不足', `団体人気${Engine.util.dispOrgPop(tierReq.reqPop)}以上で交渉可能`);
     } else if (_capFull) {
-      btnHtml = `<button disabled title="ロスター枠が上限です">⛔ 枠上限</button>`;
+      btnHtml = _disBtn('⛔ 枠上限', 'ロスター枠が上限です');
     } else {
       btnHtml = `<button class="primary" onclick="event.stopPropagation();showFighterPopup(${c.id},'free')">✒️ 契約交渉</button>`;
     }
@@ -5473,7 +5476,7 @@ function _renderDraftNegotiation() {
     const aggressiveBid = Math.round(ns.currentBid * DRAFT_BID_MUL.aggressive);
     const standardBid = Math.round(ns.currentBid * DRAFT_BID_MUL.standard);
     html += `<div class="dn-actions">
-      <button class="dn-action-btn dn-action-aggressive" onclick="draftPlayerAction('aggressive')" title="相手の降り確率3倍。ただし一部の相手には逆効果の場合も">
+      <button class="dn-action-btn dn-action-aggressive" onclick="draftPlayerAction('aggressive')" title="相手が降りやすくなる。ただし一部の相手には逆効果の場合も">
         <div class="dn-action-label">強気で押す</div>
         <div class="dn-action-detail">→ <strong>¥${aggressiveBid.toLocaleString()}万</strong></div>
         <div class="dn-action-hint">相手の心を揺さぶる</div>

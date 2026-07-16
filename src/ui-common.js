@@ -3126,7 +3126,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
             const td = TRAIT_DEFS[t]; if (!td) return '';
-            return '<span title="' + td.desc + '" style="font-size:12px;padding:2px 7px;border-radius:8px;background:' + td.color + '22;color:' + td.color + ';border:1px solid ' + td.color + '44;white-space:nowrap;cursor:help">' + td.icon + ' ' + t + '</span>';
+            return '<span ' + _tipAttr(td.desc) + ' style="font-size:12px;padding:2px 7px;border-radius:8px;background:' + td.color + '22;color:' + td.color + ';border:1px solid ' + td.color + '44;white-space:nowrap;cursor:help">' + td.icon + ' ' + t + '</span>';
           }).join('')}</div>` : ''}
           <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--text-sub)">
             ${c.age !== undefined ? `<span>📅 ${c.age}歳</span>` : ''}
@@ -3243,7 +3243,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         const w = Math.min(100, val);
         const valColor = val >= 75 ? s.color : val >= 50 ? 'var(--text)' : 'var(--text-sub)';
         html += `<div class="fighter-popup-stat-row">
-          <span class="fighter-popup-stat-label" title="${STAT_TIPS[s.key]}">${s.label}</span>
+          <span class="fighter-popup-stat-label" style="cursor:help" ${_tipAttr(STAT_TIPS[s.key])}>${s.label}</span>
           <div class="fighter-popup-stat-bar"><div class="fighter-popup-stat-fill" style="width:${w}%;background:${s.color}"></div></div>
           <span class="fighter-popup-stat-val" style="color:${valColor};font-weight:${val>=75?700:400}">${val}${sg > 0 ? `<span style="color:#2ecc71;font-size:11px">+${sg}</span>` : ''}</span>
         </div>`;
