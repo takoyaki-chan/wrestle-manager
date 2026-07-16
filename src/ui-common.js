@@ -9780,6 +9780,9 @@ function showFactionF09EndingModal(data, state, onContinue) {
   if (!data) { if (onContinue) onContinue(); return; }
   const wPp = _factionUpperUrl(data.winnerFaction.leaderId);
   const lPp = _factionUpperUrl(data.loserFaction.leaderId);
+  if (Number.isFinite(data.winnerScore) && Number.isFinite(data.loserScore)) {
+    data = { ...data, scoreA: data.winnerScore, scoreB: data.loserScore };
+  }
   const html = `
     <div class="fevt-overlay-arena" id="fevtF09EndingOverlay">
       <div class="fevt-arena-card f08-post">

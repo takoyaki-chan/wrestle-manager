@@ -6032,12 +6032,15 @@ const App = {
           };
           const winTable = (typeof FACTION_F09_ENDING_WIN_LINES !== 'undefined') ? FACTION_F09_ENDING_WIN_LINES : null;
           const losTable = (typeof FACTION_F09_ENDING_LOSE_LINES !== 'undefined') ? FACTION_F09_ENDING_LOSE_LINES : null;
+          const winnerScore = winFid === f09.factionAId ? winsA : winsB;
+          const loserScore = winFid === f09.factionAId ? winsB : winsA;
           s = { ...s, _pendingF09Ending: {
             winnerFaction: { name: winF.name, leaderId: winF.leaderId, leaderName: winLeader ? winLeader.name : '' },
             loserFaction:  { name: losF.name, leaderId: losF.leaderId, leaderName: losLeader ? losLeader.name : '' },
             winnerLine: pickLine(winTable, winLeader),
             loserLine: pickLine(losTable, losLeader),
             scoreA: winsA, scoreB: winsB,
+            winnerScore, loserScore,
             swept: Math.abs(winsA - winsB) >= 2,
             narration: `${winF.name}が${winF.name === winF.name && winsA > winsB ? winsA + '勝' + winsB + '敗' : winsB + '勝' + winsA + '敗'}で${losF.name}を制した――対抗戦は決着した。`,
           }};
