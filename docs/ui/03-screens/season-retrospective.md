@@ -1,8 +1,8 @@
 # 画面：シーズン総括（オフシーズン・レポート）
 
 **ファイル**：`docs/ui/03-screens/season-retrospective.md`
-**最終更新**：2026-07-08（フェーズ1実装完了）
-**実装状況**：フェーズ1実装完了（2026-07-08）。`Engine.seasonReview.build(G)` 新設 + `renderWeekScreen` offseason(`offWeek<=1`) 描画差し替え + `.sr-` スコープCSS。ナレーション本文は事実ベースの仮文（`// TODO: Phase3 narration table` 箇所を参照）。フェーズ3（Opus 4.6 執筆 + Keisuke 全文レビュー）待ち
+**最終更新**：2026-07-16（フェーズ3 ナレーション配線完了）
+**実装状況**：フェーズ1（2026-07-08）+ フェーズ3（2026-07-16）完了。ナレーション本文は `SEASON_REVIEW_LINES`（`src/data.js`）の確定文面（Opus 執筆 + Keisuke 全文レビュー済み、文面ドラフト: `docs/season-review-narration-draft-v0.1.md` v0.2）。キー選択・シード固定バリアント選択は `Engine.seasonReview.build`（`src/management.js`）
 
 ---
 
@@ -154,7 +154,7 @@
 
 - **フェーズ1（Sonnet・完了 2026-07-08）**：`Engine.seasonReview.build(state)` 新設＋offseason 週画面の描画差し替え＋スクリーンスコープ CSS。ナレーションは事実ベースの仮文スロット（`src/management.js` / `src/ui-render.js` / `src/index.html` 内 `// TODO: Phase3 narration table` 箇所）
 - **フェーズ2**：顔ぶれ集計の精緻化（必要なら）
-- **フェーズ3（Opus 4.6）**：見出し語×セクション×条件のナレーション文面テーブル執筆＋Keisuke 全文レビュー＋配線
+- **フェーズ3（完了 2026-07-16）**：ナレーション文面テーブル執筆（Opus）＋Keisuke 全文レビュー（格言調禁止・事実記述で確定）＋配線（`SEASON_REVIEW_LINES` + シード固定バリアント選択。戴冠は rank===1 / タイトル奪取で lead キー二分岐、締めナレの射程圏閾値 gap≤40 🔧）
 
 ---
 

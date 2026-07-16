@@ -17486,9 +17486,19 @@ Engine.awards = {
 // ══════════════════════════════════════════════════════════
 //  Engine.seasonReview — シーズン総括(オフシーズン・レポート) v1.0 Phase 1
 //  Pure functions only — no DOM references。season-retrospective-spec 準拠
-//  ナレーション文面は仮文(TODO: Phase3 narration table でOpus 4.6執筆に差し替え)
+//  ナレーション文面はフェーズ3配線済み(2026-07-16) — SEASON_REVIEW_LINES(src/data.js)参照
 // ══════════════════════════════════════════════════════════
 Engine.seasonReview = {
+  /** シード固定でバリアント配列から1本選ぶ(renderRankingの_pickSeedと同じ流儀。Engine.rngは消費しない) */
+  _pickLine(arr, seed) {
+    return (Array.isArray(arr) && arr.length) ? arr[Math.abs(seed) % arr.length] : '';
+  },
+
+  /** {key} プレースホルダをvarsの値で埋める */
+  _fillLine(line, vars) {
+    return String(line || '').replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null) ? String(vars[k]) : m);
+  },
+
   /** N点程度に等間隔で間引く。データ数がN以下ならそのまま返す(平均化はしない=最新値を保つ) */
   _downsample(values, n) {
     const arr = Array.isArray(values) ? values : [];
@@ -17577,6 +17587,10 @@ Engine.seasonReview = {
     const ov = Engine.util.ov;
     const season = G.season;
     const processed = (G.offWeek || 0) >= 1; // offWeek1移行時点でシーズン末処理(applySeasonEnd)済み
+    const _pickLine = Engine.seasonReview._pickLine;
+    const _fillLine = Engine.seasonReview._fillLine;
+    const _lines = (typeof SEASON_REVIEW_LINES !== 'undefined') ? SEASON_REVIEW_LINES : null;
+    const _nseed = ((G.season || 1) * 7919) | 0; // シーズンごとに固定・rngは消費しない(build純関数のため)
 
     // ── 最終順位＋前年比 ──
     const rankings = Engine.ranking.updateRankings(G);
@@ -17606,10 +17620,13 @@ Engine.seasonReview = {
       if (champ) {
         const hist = (champ.careerRecord && champ.careerRecord.history) || [];
         titleWonThisSeason = hist.some(e => e.type === 'titleWin' && e.season === season);
+        const defenses = G.titles.world.defenses || 0;
+        const champKey = defenses === 0 ? 'champ_v0' : defenses <= 2 ? 'champ_low' : defenses <= 4 ? 'champ_mid' : 'champ_high';
+        const champNarr = _lines ? _pickLine(_lines.records[champKey], _nseed + 11) : '';
         champRecord = {
           tag: '王者', id: champ.id, name: champ.name,
-          meta: `世界 / V${G.titles.world.defenses || 0}`,
-          narr: `王座を${G.titles.world.defenses || 0}度守った。`, // TODO: Phase3 narration table
+          meta: `世界 / V${defenses}`,
+          narr: champNarr || `王座を${defenses}度守った。`,
         };
       }
     }
@@ -17621,7 +17638,7 @@ Engine.seasonReview = {
       records.push({
         tag: '新人王', id: r.id, name: r.name,
         meta: `${r.age != null ? r.age : '?'} / OVR ${r.ovr}`,
-        narr: 'デビュー年でこの実績を残した。', // TODO: Phase3 narration table
+        narr: (_lines && _pickLine(_lines.records.rookie, _nseed + 1)) || 'デビュー年でこの実績を残した。',
       });
     }
     if (champRecord) records.push(champRecord);
@@ -17630,7 +17647,7 @@ Engine.seasonReview = {
       records.push({
         tag: 'JT優勝', id: j.id, name: j.name,
         meta: `OVR ${j.ovr}`,
-        narr: 'ジュニアトーナメントを制した。', // TODO: Phase3 narration table
+        narr: (_lines && _pickLine(_lines.records.jt, _nseed + 21)) || 'ジュニアトーナメントを制した。',
       });
     }
     if (awards && awards.mediaAward && awards.mediaAward.isPlayerOrg) {
@@ -17638,7 +17655,7 @@ Engine.seasonReview = {
       records.push({
         tag: 'メディア功労', id: m.id, name: m.name,
         meta: `${m.age != null ? m.age : '?'}歳`,
-        narr: 'リング外での発信が団体を支えた。', // TODO: Phase3 narration table
+        narr: (_lines && _pickLine(_lines.records.media, _nseed + 31)) || 'リング外での発信が団体を支えた。',
       });
     }
 
@@ -17693,27 +17710,56 @@ Engine.seasonReview = {
       awardsCount, departuresCount: departures.length, titleWonThisSeason,
     });
 
-    // ── リード文/締めナレ(事実ベースの仮文。TODO: Phase3 narration table でOpus 4.6執筆に差し替え) ──
+    // ── リード文/締めナレ(SEASON_REVIEW_LINES配線・フェーズ3 2026-07-16) ──
     let lead;
-    if (prevRank != null) {
-      if (rank < prevRank) lead = `前年${prevRank}位から${rank}位に浮上した。`;
-      else if (rank > prevRank) lead = `前年${prevRank}位から${rank}位に後退した。`;
-      else lead = `前年に続き${rank}位で今季を終えた。`;
-    } else {
-      lead = `旗揚げ初年度、${rank}位でシーズンを終えた。`;
+    {
+      // 見出し語(金銘板) → lead テーブルキー変換。戴冠のみ rank===1 か否かで二分岐する
+      let leadKey = null;
+      if (headline === '戴冠') leadKey = rank === 1 ? 'taikan_summit' : 'taikan_belt';
+      else if (headline === '世代交代') leadKey = 'sedaikoutai';
+      else if (headline === '飛躍') leadKey = 'hiyaku';
+      else if (headline === '雌伏') leadKey = 'shifuku';
+      else if (headline === '地固め') leadKey = 'jigatame';
+      else if (headline === '試練') leadKey = 'shiren';
+      else if (headline === '船出') leadKey = 'funade';
+
+      const leadLine = (_lines && leadKey) ? _pickLine(_lines.lead[leadKey], _nseed) : '';
+      if (leadLine) {
+        lead = _fillLine(leadLine, { rank, prevRank });
+      } else {
+        // フォールバック(仮文)
+        if (prevRank != null) {
+          if (rank < prevRank) lead = `前年${prevRank}位から${rank}位に浮上した。`;
+          else if (rank > prevRank) lead = `前年${prevRank}位から${rank}位に後退した。`;
+          else lead = `前年に続き${rank}位で今季を終えた。`;
+        } else {
+          lead = `旗揚げ初年度、${rank}位でシーズンを終えた。`;
+        }
+      }
+      if (hero) {
+        const heroKey = hero.role === 'MOST VALUABLE' ? 'mvp' : 'ace';
+        const heroLine = _lines ? _pickLine(_lines.leadHero[heroKey], _nseed >> 2) : '';
+        lead += heroLine ? _fillLine(heroLine, { hero: hero.name })
+          : (hero.role === 'MOST VALUABLE' ? `${hero.name}が年間MVPに輝いた。` : `${hero.name}がチームを牽引した。`);
+      }
     }
-    if (hero) lead += hero.role === 'MOST VALUABLE' ? `${hero.name}が年間MVPに輝いた。` : `${hero.name}がチームを牽引した。`;
 
     let closing;
     const meIdx = rankingsOut.findIndex(r => r.isPlayer);
     const aboveMe = meIdx > 0 ? rankingsOut[meIdx - 1] : null;
     if (aboveMe) {
       const gap = Math.max(0, Math.round(aboveMe.rating - rankingsOut[meIdx].rating));
-      closing = `上位${aboveMe.name}との差は${gap}点。来季も、着実に積み上げたい。`;
+      const CHASE_CLOSE_THRESHOLD = 40; // 🔧 射程圏閾値
+      const closeKey = gap <= CHASE_CLOSE_THRESHOLD ? 'chase_close' : 'chase_far';
+      const closingLine = _lines ? _pickLine(_lines.closing[closeKey], _nseed >> 4) : '';
+      closing = closingLine ? _fillLine(closingLine, { above: aboveMe.name, gap })
+        : `上位${aboveMe.name}との差は${gap}点。来季も、着実に積み上げたい。`;
     } else if (meIdx === 0) {
-      closing = '業界の頂点として、来季も走り続ける。';
+      const closingLine = _lines ? _pickLine(_lines.closing.top, _nseed >> 4) : '';
+      closing = closingLine || '業界の頂点として、来季も走り続ける。';
     } else {
-      closing = '来季も、この団体の物語は続く。';
+      const closingLine = _lines ? _pickLine(_lines.closing.fallback, _nseed >> 4) : '';
+      closing = closingLine || '来季も、この団体の物語は続く。';
     }
 
     return {
