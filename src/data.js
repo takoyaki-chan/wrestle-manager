@@ -2895,7 +2895,7 @@ const F07_LINES = {
       C: ['{factionName}のメンバーは、自分たちの番だ、という顔で頷き合った。'],
     },
     INCIDENT_BONDING: {
-      A: ['{targetName}は、ぽつりと「次は、呼んでくれるかな」と呟いた。'],
+      A: ['{targetName}は、少しだけ顔を上げて、遠くの輪を見ていた。'],
       B: ['{targetName}は、誰にも見られないように、ロッカーの隅で目を伏せた。'],
     },
     INCIDENT_HEEL_PROVOKE: {
@@ -3017,7 +3017,7 @@ const COMMON3_LINES = {
 const COMMON1_LINES = {
   // コーチからの状況報告（アーキタイプ別 1 件）
   coachReport: {
-    AUTHORITY: ['{factionName}内で{aName}と{bName}が肩肘張り合っています。リーダーが「実力で示せ」と。'],
+    AUTHORITY: ['{factionName}内で{aName}と{bName}が肩肘張り合っています。リーダーは実力で示させる構えです。'],
     BOND:      ['{aName}と{bName}、ちょっと意地の張り合いが目立ってきまして……手合わせさせるのもアリかと。'],
     MERIT:     ['{factionName}内の序列確認の話が出ています。{aName}対{bName}、組んでみる価値はあります。'],
     HEEL:      ['{aName}と{bName}が派閥内で潰し合いを始めそうです。客に見せれば化けますよ。'],
