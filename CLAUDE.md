@@ -148,6 +148,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | ppv-grand-final-spec-v2.0.md | PPV GRAND FINAL(エントリー/頂上決戦/報酬) |
 | promo-system-spec-v1.0.md | プロモ活動(人気成長/収入/MQスタック) |
 | relationship-system-spec-v2.0.md | Bond/Rivalry(非対称2軸/試合影響/因縁称号) |
+| relationship-system-spec-v2.1.md | 他団体戦Bond/Rivalryリバランス(bond負値×1.5/基本Bond税/M-CO1好敵手認定/M-CO2抗争和解、確定) |
 | relationship-system-spec-v2.2.md | 離脱・裏切りイベント(A-1〜A-4 サーチャージ/B-3 元同僚初対戦/奪還挑戦) |
 | relationship-system-spec-v2.3.md | bond/rivalry ネガティブ拡張全項目(先行5項目 + P-1 タッグペナルティ/P-3 興行波及/P-4 ロッカー荒廃+嫌悪伝染/P-6 修復チャネル決裁/P-7 険悪可視化) |
 | rental-system-spec-v2.0.md | レンタル移籍(費用/制約/帰団処理) |
@@ -168,6 +169,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | league-elevation-mockup-spec.md | 業界底上げイベント仕様(未実装) |
 | tag-match-system-spec-v0.1.md | タッグマッチシステム設計(未実装v0.1) |
 | chronicle-system-spec-v0.1.md | 団体年代記(気風/章生成/fighterArchive、Phase 1-4 全実装完了) |
+| chronicle-system-spec-v0.2.md | 年代記 v0.1 への差分仕様(章mode判定/eraStats拡張+competitiveRecord/記者の目カテゴリ8種) |
 | chronicle-system-spec-v0.3.md | 章重複リデザイン(focusSeason 章境界 + 駆け出し章 + era-OVR + peer 4枠 + 記者の目 3段 + 重複バンドUI、Phase A-D 全実装完了 2026-05-04) |
 | chronicle-prologue-spec-v1.0.md | 序章システム(旗揚げ世代を独立レイヤーで永久保存、VARIANT B グリッド、Phase 1-5 全実装完了 2026-05-02) |
 | shachoshitsu-spec-v1.0.md | 社長室システム(Phase 1-9 全実装完了 2026-04-15) |
@@ -192,6 +194,16 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | autumn-gauntlet-war-spec-v0.1.md | 4団体勝ち残り対抗戦(E-4・Week36・3名制勝ち抜き・**連戦消耗モジュール定義元**、DRAFT・未実装 2026-07-17) |
 | quadrennial-ppv-tournament-spec-v0.1.md | 4年に一度のPPVトーナメント(C-6・season%4==0・8名シングルエリミ・称号効果なし、DRAFT・未実装 2026-07-17) |
 | autumn-unified-qualifier-spec-v0.1.md | 秋の統一王座挑戦権トーナメント(統一王座新設が前提。**保留 2026-07-17**、秋枠は4団体勝ち残り対抗戦を採用) |
+| bankruptcy-redesign-spec-v1.0.md | 破産再設計「予兆→抵抗→別れ」3段ドラマ(v1.0初版、v1.1で改訂・提案) |
+| bankruptcy-redesign-spec-v1.1.md | 破産再設計 v1.1(archetype主軸への転換+オフシーズン処理+セリフ全面書き直し、提案) |
+| dome-milestone-spec-v0.3.md | ドーム到達マイルストーン(first_dome_show/first_dome_sellout・記録的ナレーター型・選択肢報酬なし、確定版) |
+| dome-milestone-claude-code-prompt.md | ドーム到達マイルストーン実装用の起動プロンプト(仕様は dome-milestone-spec-v0.3、指示書系) |
+| relationship-affinity-spec-v1.0.md | 相性軸システム(キャラ固有360°相性軸+回帰圧緩和でbond分布健全化、承認済ドラフト) |
+| relationship-flags-spec-v1.0.md | 関係性フラグ第3層(事件ベース付与・原則永続・キャパ希少性・モーダル14種、実装完了/頻度未達) |
+| shachoshitsu-integration-spec-v0.2.md | 社長室統合(契約交渉/解雇面談/スカウト/レンタルを社長室に集約、方針合意済みドラフト) |
+| ai-draft-balance-spec-v0.1.md | AI団体ドラフト節度(年間獲得ソフト上限+ティア別調整+leagueElevated連動、構造確定・実装前) |
+| faction-internal-rank-spec-v0.2.md | 派閥内ポイント制+派閥内序列戦(ゼロサム移動/リーダーは蓄積枠外/猶予52週、v0.2起案) |
+| match-format-options-spec-v0.1.md | 特殊試合形式3種(アイアンマッチ/ハードコア+ケージ/6人タッグエリミネーション、議論用ドラフト) |
 
 ## UI実装ルール(必読)
 
