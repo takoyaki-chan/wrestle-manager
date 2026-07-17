@@ -139,7 +139,8 @@
 ## デザインモックアップ
 
 - `docs/ui/mockups/special-events-design-v1.html` — 共通言語+方向性3案(A斜幕/Bエンブレム/Cブロードキャスト)
-- `docs/ui/mockups/special-events-design-v2.html` — **B案「エンブレム」確定版(2026-07-17 Keisuke 裁定)**。実装はこれを正とする
+- `docs/ui/mockups/special-events-design-v2.html` — **B案「エンブレム」確定版(2026-07-17 Keisuke 裁定)**。ヘッダー様式・リーグ表はこれを正とする
+- `docs/ui/mockups/special-events-design-v3.html` — **トーナメント表の改稿比較(案1タワー/案2クライムライン/案3サミットライト)**。v2の縦型への Keisuke 指摘を反映: ①勝ち進むと**上**に行く(下段=1回戦、頂上=王者) ②開幕時は下段の枠だけが存在し、勝者確定のたびに上の枠がせり上がって出現する動的構成 ③顔アイコンでなく**アッパー画像**(`image/upper/upper_*.webp`) ④結果に**決着時間**表示(既存規約 `_npTurnsToTime`: 1ターン=1分30秒換算を流用)。**案の指名待ち**
 
 ### B案確定の要点(2026-07-17)
 
