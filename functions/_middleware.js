@@ -1,5 +1,5 @@
 export async function onRequest(context) {
-  const CORRECT_PASSWORD = "wrestle2025";
+  const CORRECT_PASSWORD = "ring1212";
 
   const cookie = context.request.headers.get("Cookie") || "";
   if (cookie.includes("wm_auth=ok")) {
