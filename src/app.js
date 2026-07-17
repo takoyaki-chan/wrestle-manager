@@ -3108,6 +3108,11 @@ const App = {
     if (App.canEnterJuniorTournamentThisWeek()) {
       return App.enterJuniorTournamentFromWeek();
     }
+    // S8 春のタッグリーグ: 結果確定済みでリプレイ未表示のまま保存/リロードされた場合、再開する
+    if (G._pendingSpringTagLeagueReplay) {
+      App.initSpringTagLeagueReplay();
+      return true;
+    }
     return false;
   },
 
@@ -3162,6 +3167,132 @@ const App = {
     if (typeof showScreen === 'function') showScreen('week');
     if (typeof renderWeekScreen === 'function') renderWeekScreen();
     if (typeof refreshAll === 'function') refreshAll();
+  },
+
+  // ═══ S8 春のタッグリーグ (spring-tag-league-spec-v0.1 UI実装 / P2a) ═══
+  // spec: docs/ui/03-screens/spring-tag-league.md
+  // A. 週11 編成モーダル（Office/Cream, mdl-a-* を流用）
+
+  stlOpenEntryModal() {
+    if (!G.springTagLeague || G.springTagLeague.cancelled) return;
+    const myTeam = (G.springTagLeague.teams || []).find(t => t.orgId === 'player');
+    App._stlEntrySelection = {
+      f1Id: myTeam && myTeam.confirmed ? myTeam.f1Id : null,
+      f2Id: myTeam && myTeam.confirmed ? myTeam.f2Id : null,
+    };
+    Audio.play('select');
+    _mdlAOpen(_stlEntryModalHtml());
+  },
+
+  stlPickFighter(id) {
+    const sel = App._stlEntrySelection;
+    if (!sel) return;
+    if (sel.f1Id === id) { sel.f1Id = null; }
+    else if (sel.f2Id === id) { sel.f2Id = null; }
+    else if (sel.f1Id == null) { sel.f1Id = id; }
+    else if (sel.f2Id == null) { sel.f2Id = id; }
+    else { return; } // 既に2名選択済み — 先に外してから選び直す
+    Audio.play('click');
+    const card = document.getElementById('mdlACard');
+    if (card) card.innerHTML = _stlEntryModalHtml();
+  },
+
+  stlPickSuggestion(f1Id, f2Id) {
+    App._stlEntrySelection = { f1Id, f2Id };
+    Audio.play('select');
+    const card = document.getElementById('mdlACard');
+    if (card) card.innerHTML = _stlEntryModalHtml();
+  },
+
+  stlConfirmTeam() {
+    const sel = App._stlEntrySelection;
+    if (!sel || sel.f1Id == null || sel.f2Id == null) return;
+    G = Engine.springTagLeague.confirmPlayerTeam(G, sel.f1Id, sel.f2Id);
+    App._stlEntrySelection = null;
+    _mdlAClose();
+    Audio.play('coin');
+    try { Storage.autoSave(); } catch (_e) {}
+    if (typeof showToast === 'function') showToast('🌸 春のタッグリーグ 出場チームを編成しました');
+    if (typeof renderWeekScreen === 'function') renderWeekScreen();
+    if (typeof refreshAll === 'function') refreshAll();
+  },
+
+  stlCloseEntryModal() {
+    App._stlEntrySelection = null;
+    _mdlAClose();
+  },
+
+  // B. 週12 リーグ興行画面（Stage/P7, showResultOverlayを共用）。
+  // 結果はEngine.advanceWeek内(springTagLeague.run/apply)で確定済み。UIは順に再生するのみ。
+  initSpringTagLeagueReplay() {
+    const stl = G.springTagLeague;
+    const clearFlag = () => {
+      if (G._pendingSpringTagLeagueReplay) {
+        const { _pendingSpringTagLeagueReplay: _, ...cleanG } = G;
+        G = cleanG;
+      }
+    };
+    if (!stl || stl.cancelled || !Array.isArray(stl.matches) || stl.matches.length === 0 || !stl.champion) {
+      // 不開催 or 異常系: 専用画面なしで静かにスキップ（ニュース・ログのみ）
+      clearFlag();
+      App._stlPreview = null;
+      try { Storage.autoSave(); } catch (_e) {}
+      if (typeof showScreen === 'function') showScreen('week');
+      if (typeof refreshAll === 'function') refreshAll();
+      return;
+    }
+    App._stlPreview = { idx: 0, phase: 'table' };
+    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (e) {}
+    renderSpringTagLeagueBoard();
+  },
+
+  stlAdvance() {
+    const p = App._stlPreview;
+    if (!p) return;
+    const stl = G.springTagLeague;
+    const matches = (stl && stl.matches) || [];
+    if (p.phase === 'table') {
+      if (p.idx < matches.length) {
+        p.idx++;
+        Audio.play('coin');
+        renderSpringTagLeagueBoard();
+      } else {
+        p.phase = 'finalReady';
+        Audio.play('notify');
+        renderSpringTagLeagueBoard();
+      }
+    } else if (p.phase === 'finalReady') {
+      p.phase = 'finalResult';
+      Audio.play('coin');
+      renderSpringTagLeagueFinal();
+    } else if (p.phase === 'finalResult') {
+      p.phase = 'champion';
+      try { Audio.fileBgm.fadeOut(800); } catch (e) {}
+      setTimeout(() => {
+        try { Audio.fileBgm.stop(); } catch (e) {}
+        try { Audio.bgm.playJingle('championship'); } catch (e) {}
+      }, 900);
+      renderSpringTagLeagueChampion();
+    }
+  },
+
+  finalizeSpringTagLeagueReplay() {
+    if (G._pendingSpringTagLeagueReplay) {
+      const { _pendingSpringTagLeagueReplay: _, ...cleanG } = G;
+      G = cleanG;
+    }
+    App._stlPreview = null;
+    const overlay = document.getElementById('showResultOverlay');
+    if (overlay) overlay.classList.remove('active');
+    const box = document.getElementById('showResultBox');
+    if (box) { box.style.maxWidth = ''; box.style.padding = ''; box.style.background = ''; box.style.border = ''; }
+    try { Audio.fileBgm.stop(); } catch (e) {}
+    try { Audio.bgm.playForState(); } catch (e) {}
+    try { Storage.autoSave(); } catch (_e) {}
+    showScreen('week');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    refreshAll();
   },
 
   // ═══ Title Screen (v1.0) ═══
@@ -8265,6 +8396,12 @@ const App = {
     if (G.weekPhase === 'ppvTV') {
       Storage.autoSave();
       App.initPPVTV();
+      return;
+    }
+    // S8 春のタッグリーグ Week12: 結果はEngine.advanceWeek内で確定済み。リプレイ演出を自動起動
+    if (G._pendingSpringTagLeagueReplay) {
+      Storage.autoSave();
+      App.initSpringTagLeagueReplay();
       return;
     }
     App.checkSurvivalUpdate();

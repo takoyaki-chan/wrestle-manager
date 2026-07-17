@@ -826,10 +826,11 @@ function renderWeekScreen() {
   }
 
   // ── REGULAR WEEK DISPLAY ──
-  const isShow = isShowWeek(G.week);
-  const special = isSpecialShow(G.week);
+  const stlBlocked = _stlIsLeagueWeek();
+  const isShow = isShowWeek(G.week) && !stlBlocked;
+  const special = isSpecialShow(G.week) && !stlBlocked;
   const ppv = isPPV(G.week);
-  let typeLabel = isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
+  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
   document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4 — ${typeLabel}` : `${Engine.util.formatDate(G.season, G.week)} — ${typeLabel}`;
 
   html = '';
@@ -1030,6 +1031,8 @@ function renderWeekScreen() {
       html += '</div></div>'; // .survival-body, .survival-panel
     }
 
+    html += renderSpringTagLeagueWeekBanner();
+
     const heat = getHeatLevel();
     const injuredCount = G.roster.filter(c => c.injury).length;
     html += `<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--text-sub)">
@@ -1037,7 +1040,7 @@ function renderWeekScreen() {
       ${injuredCount > 0 ? `<span style="color:#e17055">🏥 負傷者: ${injuredCount}名</span>` : ''}
       ${G.coaches.length > 0 ? `<span style="color:#2ecc71">🎓 コーチ: ${G.coaches.length}名</span>` : ''}
     </div>`;
-    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
+    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${stlBlocked ? '週を進めてください（今週は春のタッグリーグ開催週）' : isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
 
     // v1.0: Primary action buttons — top-left, large, prominent
     html += '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">';
@@ -2368,6 +2371,70 @@ function showMatchAppealTooltip(event, slotIdx) {
   showCustomTooltip(event.currentTarget, html);
 }
 
+// ── S8 春のタッグリーグ: 週12判定 + 今週バナー ──────────────────────
+// spec: docs/ui/03-screens/spring-tag-league.md
+function _stlIsLeagueWeek() {
+  const stl = G.springTagLeague;
+  return !!(stl && !stl.cancelled && stl.announcedSeason === G.season
+    && G.week === Engine.springTagLeague.LEAGUE_WEEK);
+}
+
+function _stlFindFighterAnywhere(id) {
+  if (id == null) return null;
+  return (G.roster || []).find(f => f.id === id)
+    || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === id)
+    || null;
+}
+
+/** 週10(出場4団体決定)/週11(編成期間・編成済み) の今週バナー。存在しないセーブでは何も出さない */
+function renderSpringTagLeagueWeekBanner() {
+  const stl = G.springTagLeague;
+  if (!stl || stl.cancelled || stl.announcedSeason !== G.season) return '';
+  if (G.week === Engine.springTagLeague.ANNOUNCE_WEEK) {
+    const names = (stl.teams || []).map(t => t.orgName).filter(Boolean).join(' / ');
+    return `<div class="stl-week-banner">
+      <div class="stl-week-banner-icon">🌸</div>
+      <div class="stl-week-banner-body">
+        <div class="stl-week-banner-title">春のタッグリーグ 出場4団体決定</div>
+        <div class="stl-week-banner-sub">${escHtml(names)}。編成期間は来週(第${Engine.springTagLeague.ENTRY_WEEK}週)です。</div>
+      </div>
+    </div>`;
+  }
+  if (G.week === Engine.springTagLeague.ENTRY_WEEK) {
+    const myTeam = (stl.teams || []).find(t => t.orgId === 'player');
+    const confirmed = !!(myTeam && myTeam.confirmed);
+    if (confirmed) {
+      const f1 = _stlFindFighterAnywhere(myTeam.f1Id);
+      const f2 = _stlFindFighterAnywhere(myTeam.f2Id);
+      return `<div class="stl-week-banner is-done">
+        <div class="stl-week-banner-icon">🌸</div>
+        <div class="stl-week-banner-body">
+          <div class="stl-week-banner-title">春のタッグリーグ 編成済み: ${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}</div>
+          <div class="stl-week-banner-sub">タップすると組み直せます。</div>
+        </div>
+        <button class="btn btn-gold" onclick="App.stlOpenEntryModal()">組み直す</button>
+      </div>`;
+    }
+    return `<div class="stl-week-banner is-urgent">
+      <div class="stl-week-banner-icon">🌸</div>
+      <div class="stl-week-banner-body">
+        <div class="stl-week-banner-title">春のタッグリーグ 出場チーム編成期間</div>
+        <div class="stl-week-banner-sub">代表タッグ1組を選出してください。編成しない場合はおまかせ編成(サジェスト1位)で開催されます。</div>
+      </div>
+      <button class="btn btn-gold" onclick="App.stlOpenEntryModal()">編成する</button>
+    </div>`;
+  }
+  return '';
+}
+
+function _stlBlockedShowPrepHtml() {
+  return `<div class="stl-block-banner">
+    <div class="stl-block-banner-icon">🌸</div>
+    <div class="stl-block-banner-title">今週は春のタッグリーグ開催週</div>
+    <div class="stl-block-banner-sub">第${Engine.springTagLeague.LEAGUE_WEEK}週は通常興行の代わりに春のタッグリーグ(4団体総当たり戦+優勝決定戦)が開催されます。今週のカード編成はありません。</div>
+  </div>`;
+}
+
 function renderShowPrep() {
   if (typeof App !== 'undefined' && App.repairProgressionState && App.repairProgressionState('renderShowPrep')) {
     try { Storage.autoSave(); } catch (_e) {}
@@ -2376,6 +2443,12 @@ function renderShowPrep() {
   // v2.0: 興行準備は manage/showPrep フェーズのみ（settled等の非興行フェーズでは表示しない）
   if (!isShowWeek(G.week) || !['manage', 'showPrep'].includes(G.weekPhase)) {
     el.innerHTML = '<p style="color:var(--text-sub)">興行週ではありません。</p>';
+    return;
+  }
+
+  // 春のタッグリーグ Week12: 通常カード編成をブロック（PPV week48バイパスと同型）
+  if (_stlIsLeagueWeek()) {
+    el.innerHTML = _stlBlockedShowPrepHtml();
     return;
   }
 

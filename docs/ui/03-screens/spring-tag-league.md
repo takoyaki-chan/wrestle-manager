@@ -2,7 +2,7 @@
 
 **ファイル**：`docs/ui/03-screens/spring-tag-league.md`
 **最終更新**：2026-07-17
-**実装状況**：未着手（エンジンP1は実装済み — `Engine.springTagLeague` / `Engine.wear`、コミット d078bfe）
+**実装状況**：P2a UI実装完了（2026-07-17、実機確認待ち）。エンジンP1実装済み（`Engine.springTagLeague` / `Engine.wear`）。残: P2b=ジュニアUIのクライムライン改修（`docs/jt-climbline-rework-inventory-v0.1.md` 承認済み）
 
 > 本ファイルは faction-events.md と同様、単一画面でなく**シーケンス一式**（編成モーダル + リーグ興行画面 + 週12ブロック導線）を1枚で定義する。
 

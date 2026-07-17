@@ -14951,3 +14951,425 @@ function renderJuniorTournamentResult() {
   box.innerHTML = html;
   overlay.classList.add('active');
 }
+
+// ══════════════════════════════════════════════════════════
+//  S8: 春のタッグリーグ（spring-tag-league-spec-v0.1 UI実装 / P2a）
+//  spec: docs/ui/03-screens/spring-tag-league.md
+//  リプレイ方式 — G.springTagLeague の確定済みデータを順に「再生」するのみ。
+//  UIは再計算しない（数値は嘘をつかない）。JTのS4姉妹シーケンス、showResultOverlayを共用。
+// ══════════════════════════════════════════════════════════
+
+const _STL_STYLE_CREAM = {
+  Grappler: 'tag-cream-grappler', Striker: 'tag-cream-striker', Submission: 'tag-cream-submission',
+  Aerial: 'tag-cream-aerial', Allround: 'tag-cream-allround', Brawler: 'tag-cream-brawler',
+};
+
+function _stlOrgTeam(orgId) {
+  const stl = G.springTagLeague;
+  return (stl && Array.isArray(stl.teams) ? stl.teams : []).find(t => t.orgId === orgId) || null;
+}
+
+function _stlFighterOf(orgId, fighterId) {
+  if (fighterId == null) return null;
+  if (orgId === 'player') return (G.roster || []).find(f => f.id === fighterId) || null;
+  const org = G.aiOrgs && G.aiOrgs[orgId];
+  return (org && org.roster ? org.roster : []).find(f => f.id === fighterId) || null;
+}
+
+function _stlFaceImg(f) {
+  if (!f) return '';
+  const u = getPortraitUrl(f.id);
+  return u ? `<img src="${u}" alt="${escHtml(f.name || '')}" onerror="this.style.display='none'">` : '';
+}
+
+function _stlSubPortrait(f) {
+  if (!f) return '';
+  const u = getPortraitUrl(f.id);
+  if (u) return `<img src="${u}" alt="" onerror="this.style.display='none'">`;
+  return `<span class="pb-champion-sub-init">${escHtml((f.name || '?')[0])}</span>`;
+}
+
+/** condition(40-80)を定性3段に変換。数値は表に出さない */
+function _stlConditionTier(cond) {
+  const c = cond == null ? Engine.springTagLeague.INITIAL_CONDITION : cond;
+  if (c >= 65) return { cls: 'is-fresh', label: '元気' };
+  if (c >= 52) return { cls: 'is-tired', label: '疲れが見える' };
+  return { cls: 'is-spent', label: '満身創痍' };
+}
+
+function _stlWearBarHtml(cond) {
+  const tier = _stlConditionTier(cond);
+  return `<div class="stl-wear-bar ${tier.cls}"><span class="stl-wear-dots"><span class="stl-wear-dot"></span><span class="stl-wear-dot"></span><span class="stl-wear-dot"></span></span><span>${tier.label}</span></div>`;
+}
+
+/** matches[0..count) から現在の condition を逆引きする（無ければ初期値） */
+function _stlCurrentCondition(matches, count, orgId) {
+  for (let i = count - 1; i >= 0; i--) {
+    const m = matches[i];
+    if (m && m.conditionAfter && m.conditionAfter[orgId] != null) return m.conditionAfter[orgId];
+  }
+  return Engine.springTagLeague.INITIAL_CONDITION;
+}
+
+/** matches[0..count) を集計した中間スタンディング（UI専用の簡易順位。h2h厳密tie-breakは行わない —
+ * 全試合終了後の最終順位は常に G.springTagLeague.standings を正とする） */
+function _stlComputeStandingsThrough(matches, count) {
+  const P = Engine.springTagLeague.POINTS;
+  const MQT = Engine.springTagLeague.MQ_BONUS_THRESHOLD;
+  const MQB = Engine.springTagLeague.MQ_BONUS;
+  const orgOrder = Engine.springTagLeague.ORG_ORDER;
+  const acc = {};
+  orgOrder.forEach(o => { acc[o] = { orgId: o, points: 0, wins: 0, losses: 0, draws: 0, mqTotal: 0, closeBonusCount: 0 }; });
+  matches.slice(0, count).forEach(m => {
+    if (m.isDraw) {
+      acc[m.orgA].points += P.draw; acc[m.orgB].points += P.draw;
+      acc[m.orgA].draws++; acc[m.orgB].draws++;
+    } else {
+      const winnerOrg = m.winner === 'teamA' ? m.orgA : m.orgB;
+      const loserOrg = winnerOrg === m.orgA ? m.orgB : m.orgA;
+      acc[winnerOrg].points += P.win; acc[winnerOrg].wins++;
+      acc[loserOrg].points += P.loss; acc[loserOrg].losses++;
+    }
+    if (m.mq >= MQT) {
+      acc[m.orgA].points += MQB; acc[m.orgB].points += MQB;
+      acc[m.orgA].closeBonusCount++; acc[m.orgB].closeBonusCount++;
+    }
+    acc[m.orgA].mqTotal += m.mq; acc[m.orgB].mqTotal += m.mq;
+  });
+  const arr = orgOrder.map(o => acc[o]);
+  arr.sort((a, b) => (b.points - a.points) || (b.mqTotal - a.mqTotal));
+  arr.forEach((row, i) => { row.rank = i + 1; });
+  return arr;
+}
+
+function _stlHeaderHtml(subLabel) {
+  const season = G.season;
+  return `<div class="stl-header">
+    <img class="stl-header-emblem" src="../image/emblem-spring.png" alt="" onerror="this.style.display='none'">
+    <div class="stl-header-title">SPRING TAG LEAGUE</div>
+    <div class="stl-header-sub">春のタッグリーグ — 総当たり戦</div>
+    <div class="stl-header-ed">第${season}回大会${subLabel ? ` / ${escHtml(subLabel)}` : ''}</div>
+  </div><div class="stl-double-rule"></div>`;
+}
+
+function _stlLastMatchStripHtml(m) {
+  if (!m) return '';
+  const fA1 = _stlFighterOf(m.orgA, m.teamA.f1Id), fA2 = _stlFighterOf(m.orgA, m.teamA.f2Id);
+  const fB1 = _stlFighterOf(m.orgB, m.teamB.f1Id), fB2 = _stlFighterOf(m.orgB, m.teamB.f2Id);
+  const aWin = !m.isDraw && m.winner === 'teamA';
+  const bWin = !m.isDraw && m.winner === 'teamB';
+  const timeStr = (typeof _npTurnsToTime === 'function') ? _npTurnsToTime(m.turns) : '';
+  const closeBonus = m.mq >= Engine.springTagLeague.MQ_BONUS_THRESHOLD;
+  return `<div class="stl-lastmatch">
+    <span class="stl-lastmatch-label">第${m.round}試合 結果</span>
+    <span class="stl-lastmatch-duo ${aWin ? 'is-win' : (m.isDraw ? '' : 'is-lose')}">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}<span class="n">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}${aWin ? '<br><b class="win-tag">WIN</b>' : ''}</span></span>
+    <span class="stl-lastmatch-vs">VS</span>
+    <span class="stl-lastmatch-duo ${bWin ? 'is-win' : (m.isDraw ? '' : 'is-lose')}">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}<span class="n">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}${bWin ? '<br><b class="win-tag">WIN</b>' : ''}</span></span>
+    <span class="stl-lastmatch-meta">MQ ${m.mq}${closeBonus ? '<span class="bonus">接戦+1pt（両者)</span>' : ''}<span class="stl-lastmatch-time">${escHtml(timeStr || '')}</span></span>
+  </div>`;
+}
+
+function _stlFinalPreviewHtml(finalM) {
+  const teamA = _stlOrgTeam(finalM.orgA), teamB = _stlOrgTeam(finalM.orgB);
+  const fA1 = _stlFighterOf(finalM.orgA, finalM.teamA.f1Id), fA2 = _stlFighterOf(finalM.orgA, finalM.teamA.f2Id);
+  const fB1 = _stlFighterOf(finalM.orgB, finalM.teamB.f1Id), fB2 = _stlFighterOf(finalM.orgB, finalM.teamB.f2Id);
+  return `<div class="stl-final-banner">
+    <div class="stl-final-label">FINAL</div>
+    <div class="stl-final-sub">優勝決定戦</div>
+    <div class="stl-final-faceoff">
+      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
+      <div class="stl-final-vs">VS</div>
+      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
+    </div>
+  </div>`;
+}
+
+/** リーグ表 + 直近試合ストリップ（週12リーグ興行画面のメイン画面。試合ごとにここへ戻ってくる） */
+function renderSpringTagLeagueBoard() {
+  const p = App._stlPreview;
+  if (!p) return;
+  const stl = G.springTagLeague;
+  if (!stl || !Array.isArray(stl.teams)) return;
+  const matches = stl.matches || [];
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  if (!overlay || !box) return;
+  box.style.maxWidth = '100%';
+  box.style.padding = '0';
+  box.style.background = 'transparent';
+  box.style.border = 'none';
+
+  const idx = p.idx;
+  const isFinalReady = p.phase === 'finalReady';
+  const progLabel = isFinalReady ? '決勝進出チーム決定'
+    : idx === 0 ? '開幕前'
+    : `リーグ 第${idx}試合まで終了`;
+
+  // FLIP用: 再描画前の行位置を記録
+  const oldRects = {};
+  document.querySelectorAll('.stl-league-row').forEach(tr => {
+    const org = tr.getAttribute('data-org');
+    if (org) oldRects[org] = tr.getBoundingClientRect();
+  });
+
+  const standings = _stlComputeStandingsThrough(matches, idx);
+
+  let html = `<div class="stl-wrap">`;
+  html += _stlHeaderHtml(progLabel);
+
+  html += `<table class="stl-league-table"><tr><th></th><th>チーム</th><th>戦績</th><th style="text-align:right">勝ち点</th></tr>`;
+  standings.forEach(row => {
+    const team = _stlOrgTeam(row.orgId);
+    if (!team) return;
+    const f1 = _stlFighterOf(row.orgId, team.f1Id);
+    const f2 = _stlFighterOf(row.orgId, team.f2Id);
+    const cond = _stlCurrentCondition(matches, idx, row.orgId);
+    const recParts = [];
+    if (row.wins) recParts.push(`${row.wins}勝`);
+    if (row.losses) recParts.push(`${row.losses}敗`);
+    if (row.draws) recParts.push(`${row.draws}分`);
+    const recText = recParts.length ? recParts.join('') : '——';
+    const isMine = row.orgId === 'player';
+    const rowCls = `stl-league-row${isMine ? ' is-mine' : ''}${row.rank === 1 ? ' is-rank1' : ''}`;
+    html += `<tr class="${rowCls}" data-org="${row.orgId}">
+      <td class="stl-league-rank">${row.rank}</td>
+      <td><div class="stl-league-pair">
+        <span class="stl-league-faces">${_stlFaceImg(f1)}${_stlFaceImg(f2)}</span>
+        <span>
+          <span class="stl-league-org">${isMine ? '★ 自団体' : escHtml(team.orgName)}</span>
+          <span class="stl-league-team-name">${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}</span>
+          ${idx > 0 ? `<span class="stl-league-condition">${_stlWearBarHtml(cond)}</span>` : ''}
+        </span>
+      </div></td>
+      <td class="stl-league-rec">${recText}${row.closeBonusCount ? `<span class="stl-league-bonus"> / 接戦+${row.closeBonusCount}</span>` : ''}</td>
+      <td class="stl-league-pts">${row.points}<small>pt</small></td>
+    </tr>`;
+  });
+  html += `</table>`;
+
+  if (idx > 0 && !isFinalReady) {
+    html += _stlLastMatchStripHtml(matches[idx - 1]);
+  }
+  if (isFinalReady) {
+    html += _stlFinalPreviewHtml(stl.finalMatch);
+  }
+
+  html += `<div class="stl-progress-btn-row">`;
+  if (!isFinalReady) {
+    const label = idx === 0 ? 'リーグ開幕 ▶' : (idx < matches.length ? '次の試合へ ▶' : '決勝へ ▶');
+    html += `<button class="btn btn-gold" style="padding:10px 26px;font-size:14px" onclick="App.stlAdvance()">${label}</button>`;
+  } else {
+    html += `<button class="btn btn-gold" style="padding:10px 26px;font-size:14px" onclick="App.stlAdvance()">決着 ▶</button>`;
+  }
+  html += `</div></div>`; // .stl-progress-btn-row, .stl-wrap
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+
+  // FLIP: 順位入れ替えアニメ + 変動行のフラッシュ
+  const lastMatch = idx > 0 ? matches[idx - 1] : null;
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.stl-league-row').forEach(tr => {
+      const org = tr.getAttribute('data-org');
+      const old = org ? oldRects[org] : null;
+      if (old) {
+        const newRect = tr.getBoundingClientRect();
+        const dy = old.top - newRect.top;
+        if (Math.abs(dy) > 1) {
+          tr.style.transition = 'none';
+          tr.style.transform = `translateY(${dy}px)`;
+          requestAnimationFrame(() => {
+            tr.style.transition = 'transform 420ms cubic-bezier(.2,.8,.2,1)';
+            tr.style.transform = '';
+          });
+        }
+      }
+      if (lastMatch && (org === lastMatch.orgA || org === lastMatch.orgB)) {
+        tr.classList.add('is-flash');
+        setTimeout(() => tr.classList.remove('is-flash'), 700);
+      }
+    });
+  });
+}
+
+/** 決勝の結果画面（対峙プレビューの次のクリックで表示） */
+function renderSpringTagLeagueFinal() {
+  const p = App._stlPreview;
+  if (!p) return;
+  const stl = G.springTagLeague;
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  if (!overlay || !box) return;
+  box.style.maxWidth = '100%';
+  box.style.padding = '0';
+  box.style.background = 'transparent';
+  box.style.border = 'none';
+
+  const m = stl.finalMatch;
+  const teamA = _stlOrgTeam(m.orgA), teamB = _stlOrgTeam(m.orgB);
+  const fA1 = _stlFighterOf(m.orgA, m.teamA.f1Id), fA2 = _stlFighterOf(m.orgA, m.teamA.f2Id);
+  const fB1 = _stlFighterOf(m.orgB, m.teamB.f1Id), fB2 = _stlFighterOf(m.orgB, m.teamB.f2Id);
+  const aWin = m.winner === 'teamA';
+  const timeStr = (typeof _npTurnsToTime === 'function') ? _npTurnsToTime(m.turns) : '';
+  const winnerOrgName = aWin ? (teamA ? teamA.orgName : '') : (teamB ? teamB.orgName : '');
+
+  let html = `<div class="stl-wrap">`;
+  html += _stlHeaderHtml('決勝');
+  html += `<div class="stl-final-banner">
+    <div class="stl-final-label">FINAL RESULT</div>
+    <div class="stl-final-faceoff">
+      <div class="stl-final-side ${aWin ? 'is-winner' : 'is-loser'}"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
+      <div class="stl-final-vs">VS</div>
+      <div class="stl-final-side ${!aWin ? 'is-winner' : 'is-loser'}"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
+    </div>
+    <div class="stl-final-result">🏆 ${escHtml(winnerOrgName)} 勝利 — MQ ${m.mq} ・ ${escHtml(timeStr || '')}</div>
+  </div>`;
+  html += `<div class="stl-progress-btn-row"><button class="btn btn-gold" style="padding:10px 26px;font-size:14px" onclick="App.stlAdvance()">優勝発表へ ▶</button></div>`;
+  html += `</div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+/** 優勝発表（Ceremony寄り、JT優勝発表の構成を流用。タッグなので2名対応） */
+function renderSpringTagLeagueChampion() {
+  const stl = G.springTagLeague;
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  if (!overlay || !box) return;
+  box.style.maxWidth = '';
+  box.style.padding = '';
+  box.style.background = '';
+  box.style.border = '';
+
+  const champTeam = _stlOrgTeam(stl.champion);
+  const runnerTeam = _stlOrgTeam(stl.runnerUp);
+  if (!champTeam) { App.finalizeSpringTagLeagueReplay(); return; }
+  const f1 = _stlFighterOf(stl.champion, champTeam.f1Id);
+  const f2 = _stlFighterOf(stl.champion, champTeam.f2Id);
+  const season = G.season;
+  const PRIZE = Engine.springTagLeague.PRIZE;
+
+  let html = `<div class="pb-container">`;
+  html += `<div class="pb-banner">
+    <div class="pb-live is-jt-champ">🏆 SPRING TAG LEAGUE</div>
+    <div class="pb-banner-title is-jt-champ">第${season}回大会 総合ベストタッグ</div>
+    <div class="pb-banner-sub">${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}<span class="dot">・</span>${escHtml(champTeam.orgName || '')}</div>
+  </div>`;
+
+  html += `<div class="pb-champion-card">
+    <div class="stl-champ-duo">
+      <div class="stl-champ-slot"><div class="pb-champion-portrait">${_pbPortraitImg(f1 || { id: null, name: '?' })}<div class="pb-champion-trophy">🏆</div></div></div>
+      <div class="stl-champ-slot"><div class="pb-champion-portrait">${_pbPortraitImg(f2 || { id: null, name: '?' })}</div></div>
+    </div>
+    <div class="stl-champ-team-name">${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}</div>
+    <div class="pb-champion-org">${escHtml(champTeam.orgName || '')}</div>
+    <div class="stl-champ-title">第${season}回大会 総合ベストタッグ</div>
+  </div>`;
+
+  if (runnerTeam) {
+    const r1 = _stlFighterOf(stl.runnerUp, runnerTeam.f1Id);
+    const r2 = _stlFighterOf(stl.runnerUp, runnerTeam.f2Id);
+    html += `<div class="pb-champion-sub">
+      <div class="pb-champion-sub-card is-runnerup">
+        <div class="pb-champion-sub-portrait">${_stlSubPortrait(r1)}</div>
+        <div class="pb-champion-sub-info">
+          <div class="pb-champion-sub-label">2nd Place</div>
+          <div class="pb-champion-sub-name">${escHtml(r1 ? r1.name : '?')} &amp; ${escHtml(r2 ? r2.name : '?')}</div>
+          <div class="pb-champion-sub-org">${escHtml(runnerTeam.orgName || '')}<span class="pb-champion-sub-prize">¥${PRIZE.runnerUp}万</span></div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const standing = (stl.standings || []).find(s => s.orgId === 'player');
+  if (standing) {
+    const prizeByRank = { 1: PRIZE.champion, 2: PRIZE.runnerUp, 3: PRIZE.third, 4: PRIZE.fourth };
+    const rankLabel = { 1: '優勝', 2: '準優勝', 3: '3位', 4: '4位' }[standing.rank] || `${standing.rank}位`;
+    const amt = prizeByRank[standing.rank] || 0;
+    if (amt > 0) {
+      html += `<div class="pb-champion-prizebox">
+        <div class="pb-champion-prizebox-label">💰 自団体の獲得賞金</div>
+        <div class="pb-champion-prizebox-total">${rankLabel} <span>¥${amt}万</span></div>
+      </div>`;
+    } else {
+      html += `<div class="pb-champion-prizebox is-empty">自団体は入賞圏外でした（${rankLabel}）</div>`;
+    }
+  }
+
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.finalizeSpringTagLeagueReplay()">閉じる</button>
+  </div>`;
+  html += `</div>`; // .pb-container
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+// ── 週11 編成モーダル（Office/Cream、mdl-a-card を土台に使用） ──
+function _stlEntryModalHtml() {
+  const sel = App._stlEntrySelection || { f1Id: null, f2Id: null };
+  const data = Engine.springTagLeague.getEntryCandidates(G);
+  const eligible = data.eligible || [];
+  const suggestions = data.suggestions || [];
+  const season = G.season;
+
+  let html = _mdlAHeader('🌸 春のタッグリーグ 出場チーム編成', `第${season}回大会 ・ 代表タッグ1組`);
+  html += `<div class="stl-modal-lead">代表タッグ1組を選出してください。編成しない場合はおまかせ編成（サジェスト1位）で開催されます。</div>`;
+
+  if (suggestions.length > 0) {
+    html += `<div class="stl-modal-section-label" style="padding:10px 24px 0">おすすめペア</div>`;
+    html += `<div class="stl-suggest-row">`;
+    suggestions.forEach(sug => {
+      const f1 = eligible.find(f => f.id === sug.f1Id);
+      const f2 = eligible.find(f => f.id === sug.f2Id);
+      if (!f1 || !f2) return;
+      const chemLabel = sug.chemistry >= 70 ? '◎' : sug.chemistry >= 45 ? '◯' : '△';
+      html += `<div class="stl-suggest-chip" onclick="App.stlPickSuggestion(${f1.id},${f2.id})">
+        <span class="faces">${_stlFaceImg(f1)}${_stlFaceImg(f2)}</span>
+        <span>${escHtml(f1.name)} &amp; ${escHtml(f2.name)}</span>
+        <span class="chem">${chemLabel}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<div class="stl-modal-section-label" style="padding:0 24px">出場資格のある選手</div>`;
+  html += `<div class="stl-pick-grid">`;
+  eligible.forEach(f => {
+    const picked = sel.f1Id === f.id || sel.f2Id === f.id;
+    const upperUrl = getUpperUrl(f.id);
+    const tagCls = _STL_STYLE_CREAM[f.style] || 'tag-cream-neutral';
+    html += `<div class="draft-fc cand${picked ? ' picked' : ''}" onclick="App.stlPickFighter(${f.id})">
+      <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(f.name)}">` : ''}</div>
+      <div class="draft-fc-info">
+        <div class="draft-fc-name-row"><span class="draft-fc-name">${escHtml(f.name)}</span></div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+          <span class="draft-fc-ovr-label">OVR</span><span class="draft-fc-ovr">${f.ovr}</span>
+        </div>
+        <div class="draft-fc-meta"><span class="draft-fc-tag ${tagCls}">${escHtml(f.style || '')}</span></div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  const f1 = sel.f1Id != null ? eligible.find(f => f.id === sel.f1Id) : null;
+  const f2 = sel.f2Id != null ? eligible.find(f => f.id === sel.f2Id) : null;
+  let chemLabel = '';
+  if (f1 && f2) {
+    const pairData = suggestions.find(s => (s.f1Id === f1.id && s.f2Id === f2.id) || (s.f1Id === f2.id && s.f2Id === f1.id));
+    if (pairData) chemLabel = pairData.chemistry >= 70 ? '◎' : pairData.chemistry >= 45 ? '◯' : '△';
+  }
+  html += `<div class="stl-summary-bar">
+    <span class="stl-summary-label">選択中</span>
+    <span class="stl-summary-names">${f1 ? escHtml(f1.name) : '未選択'} &amp; ${f2 ? escHtml(f2.name) : '未選択'}</span>
+    ${chemLabel ? `<span class="stl-summary-chem">相性 ${chemLabel}</span>` : ''}
+  </div>`;
+
+  const canConfirm = !!(f1 && f2);
+  html += `<div class="stl-modal-footer">
+    <button class="btn btn-gold" ${canConfirm ? '' : 'disabled'} onclick="App.stlConfirmTeam()">この2人で確定する</button>
+  </div>`;
+
+  return html;
+}

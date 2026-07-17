@@ -115,6 +115,11 @@
   --accent-arena-bg-from: #1a0a0a;
   --accent-arena-bg-to:   #2d0d0d;
   --accent-arena-frame-loser: rgba(180,40,40,0.4);
+  /* 年間カレンダー特別大会 カラーキー（春/夏/秋/冬、special-events-design-v2 B案確定） */
+  --ev-spring: #e07a9a;
+  --ev-summer: #56b1d8;
+  --ev-autumn: #c1503c;
+  --ev-winter: #cfc4a2;
   /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
@@ -705,7 +710,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .title-portraits img{height:280px;object-fit:cover;object-position:top;mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%);-webkit-mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%)}
 .title-content{position:relative;z-index:1;text-align:center;padding:20px}
 .title-logo{font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:12px;line-height:1;
-  background:linear-gradient(180deg,#fff 0%,var(--gold-light) 50%,var(--gold) 100%);
+  background:linear-gradient(180deg,var(--text-main) 0%,var(--gold-light) 50%,var(--gold) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   text-shadow:none;margin-bottom:8px;
   animation:title-glow 3s ease-in-out infinite alternate}
@@ -2738,7 +2743,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .pb-live.is-ppvtv{background:rgba(109,148,184,0.14);border-color:rgba(109,148,184,0.45);color:var(--c-info)}
 .pb-banner-title{font-family:var(--font-display);font-size:32px;letter-spacing:4px;color:var(--gold);text-shadow:0 0 20px rgba(212,168,67,0.3);margin-bottom:6px}
 .pb-banner-title.is-special{font-size:36px;background:linear-gradient(180deg,var(--gold-light) 0%,var(--gold) 60%,var(--gold-deep) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.pb-banner-title.is-ppv{font-size:40px;background:linear-gradient(180deg,#fff 0%,var(--gold-light) 50%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 32px rgba(240,208,120,0.35);letter-spacing:6px}
+.pb-banner-title.is-ppv{font-size:40px;background:linear-gradient(180deg,var(--text-main) 0%,var(--gold-light) 50%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 32px rgba(240,208,120,0.35);letter-spacing:6px}
 .pb-banner-title.is-ppvtv{font-size:34px}
 .pb-banner-sub{font-family:var(--font-label);font-size:12px;letter-spacing:3px;color:var(--stage-text-sub);text-transform:uppercase}
 .pb-banner-sub .dot{color:var(--stage-text-quiet);margin:0 8px}
@@ -2984,7 +2989,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .pb-champion-portrait{position:relative;width:200px;height:300px;border:3px solid var(--gold);box-shadow:0 0 0 1px rgba(212,168,67,0.25),0 0 0 6px rgba(0,0,0,0.6),0 0 0 7px rgba(212,168,67,0.5),0 0 60px rgba(212,168,67,0.4);background:rgba(0,0,0,0.5);overflow:hidden}
 .pb-champion-portrait img{width:100%;height:100%;object-fit:cover;object-position:top center}
 .pb-champion-trophy{position:absolute;top:-18px;right:-18px;font-size:44px;filter:drop-shadow(0 4px 10px rgba(212,168,67,0.8))}
-.pb-champion-label{font-family:var(--font-display);font-size:44px;letter-spacing:8px;line-height:1;margin-top:14px;background:linear-gradient(180deg,#fff 0%,var(--gold-light) 50%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 28px rgba(240,208,120,0.4)}
+.pb-champion-label{font-family:var(--font-display);font-size:44px;letter-spacing:8px;line-height:1;margin-top:14px;background:linear-gradient(180deg,var(--text-main) 0%,var(--gold-light) 50%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 28px rgba(240,208,120,0.4)}
 .pb-champion-name{font-size:26px;font-weight:900;color:var(--gold-light);letter-spacing:2px;margin-top:2px}
 .pb-champion-org{font-family:var(--font-label);font-size:12px;letter-spacing:2px;color:var(--stage-text-sub);text-transform:uppercase;margin-top:2px}
 .pb-champion-sub{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;max-width:720px;margin:16px auto 8px;padding:0 20px}
@@ -3344,6 +3349,124 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 @keyframes jtBlink{0%,100%{opacity:.25}50%{opacity:.7}}
 @keyframes jtSu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 .jt-su{animation:jtSu .5s cubic-bezier(.16,1,.3,1) forwards}
+
+/* ============================================================
+   S8: 春のタッグリーグ（spring-tag-league-spec-v0.1 UI実装）
+   B案「エンブレム」共通言語。カラーキーは --ev-spring 経由。
+   ============================================================ */
+
+/* ---- 今週バナー（週10/11、Office） ---- */
+.stl-week-banner{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(224,122,154,0.12),rgba(224,122,154,0.04));border:1px solid rgba(224,122,154,0.4);border-radius:8px;padding:12px 16px;margin-bottom:14px}
+.stl-week-banner-icon{font-size:22px;flex-shrink:0}
+.stl-week-banner-body{flex:1;min-width:0}
+.stl-week-banner-title{font-size:14px;font-weight:700;color:var(--ev-spring);letter-spacing:0.5px}
+.stl-week-banner-sub{font-size:12px;color:var(--text-sub);margin-top:3px;line-height:1.6}
+.stl-week-banner.is-urgent{border-color:rgba(224,122,154,0.6);background:linear-gradient(135deg,rgba(224,122,154,0.16),rgba(224,122,154,0.05))}
+.stl-week-banner.is-done{border-color:rgba(224,122,154,0.3)}
+.stl-week-banner .btn{flex-shrink:0}
+
+/* ---- 週12 通常興行ブロックバナー（興行準備タブ差し替え） ---- */
+.stl-block-banner{max-width:640px;margin:40px auto;text-align:center;padding:32px 28px;background:linear-gradient(180deg,rgba(224,122,154,0.08),transparent);border:1px solid rgba(224,122,154,0.3);border-radius:10px}
+.stl-block-banner-icon{font-size:34px;margin-bottom:10px}
+.stl-block-banner-title{font-size:17px;font-weight:700;color:var(--ev-spring);letter-spacing:0.5px;margin-bottom:8px}
+.stl-block-banner-sub{font-size:13px;color:var(--text-sub);line-height:1.8}
+
+/* ---- 編成モーダル（Office/Cream、mdl-a-card を土台に使用） ---- */
+.stl-modal-lead{font-size:13px;color:var(--cream-text-sub);text-align:center;padding:14px 24px 4px;line-height:1.7}
+.stl-modal-section{padding:14px 24px}
+.stl-modal-section-label{font-family:var(--font-label);font-size:10px;letter-spacing:2.5px;color:var(--cream-gold);text-transform:uppercase;margin-bottom:10px}
+.stl-suggest-row{display:flex;gap:10px;flex-wrap:wrap;padding:0 24px 14px}
+.stl-suggest-chip{display:flex;align-items:center;gap:8px;background:var(--office-panel-cream-card);border:1px solid var(--office-border-cream);border-radius:20px;padding:6px 14px 6px 8px;cursor:pointer;transition:all 160ms ease;font-size:12px;color:var(--cream-text-main)}
+.stl-suggest-chip:hover{border-color:var(--cream-gold);background:var(--cream-bg-card)}
+.stl-suggest-chip .faces{display:flex}
+.stl-suggest-chip .faces img{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid var(--office-panel-cream-card);background:var(--cream-panel-bg)}
+.stl-suggest-chip .faces img+img{margin-left:-10px}
+.stl-suggest-chip .chem{font-weight:700;color:var(--cream-gold-dark)}
+.stl-pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 24px 14px;max-height:340px;overflow-y:auto}
+.stl-summary-bar{display:flex;align-items:center;gap:14px;padding:12px 24px;background:var(--office-panel-cream-card);border-top:1px solid var(--office-border-cream)}
+.stl-summary-label{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--cream-gold);text-transform:uppercase}
+.stl-summary-names{flex:1;font-size:14px;font-weight:700;color:var(--cream-text-main)}
+.stl-summary-chem{font-size:12px;color:var(--cream-gold-dark);font-weight:700}
+.stl-modal-footer{padding:14px 24px 22px;text-align:center}
+
+/* ---- リーグ興行画面（Stage/P7、showResultOverlayを再利用） ---- */
+.stl-wrap{max-width:900px;margin:0 auto;padding:16px 16px 60px;text-align:center}
+.stl-header{padding:10px 0 8px}
+.stl-header-emblem{width:88px;height:88px;object-fit:contain;margin:0 auto 8px;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.6))}
+.stl-header-title{font-family:var(--font-display);font-size:32px;letter-spacing:5px;color:var(--stage-text-main)}
+.stl-header-sub{font-family:var(--font-label);font-size:12px;letter-spacing:3px;color:var(--ev-spring);text-transform:uppercase;margin-top:4px}
+.stl-header-ed{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);margin-top:5px;text-transform:uppercase}
+.stl-double-rule{width:320px;margin:12px auto 20px;border-top:1px solid var(--gold);position:relative;opacity:0.75}
+.stl-double-rule::after{content:'';position:absolute;left:22px;right:22px;top:3px;border-top:1px solid rgba(212,168,67,0.4)}
+
+.stl-league-table{width:100%;border-collapse:collapse;text-align:left;margin-bottom:18px}
+.stl-league-table th{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase;font-weight:400;padding:6px 12px;border-bottom:1px solid var(--stage-border)}
+.stl-league-table td{padding:10px 12px;border-bottom:1px solid var(--stage-border);font-size:13px;vertical-align:middle;transition:background-color 300ms ease}
+.stl-league-row{position:relative}
+.stl-league-row.is-mine td{background:rgba(212,168,67,0.05)}
+.stl-league-row.is-flash td{background:rgba(224,122,154,0.16)}
+.stl-league-rank{font-family:var(--font-display);font-size:24px;color:var(--stage-text-dim);width:36px}
+.stl-league-row.is-rank1 .stl-league-rank{color:var(--ev-spring)}
+.stl-league-pair{display:flex;align-items:center;gap:12px}
+.stl-league-faces{display:flex;flex-shrink:0}
+.stl-league-faces img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--stage-border-main);background:var(--panel-bg)}
+.stl-league-faces img+img{margin-left:-12px}
+.stl-league-row.is-rank1 .stl-league-faces img{border-color:var(--ev-spring)}
+.stl-league-org{display:block;font-family:var(--font-label);font-size:10px;letter-spacing:1px;color:var(--stage-text-dim);margin-bottom:2px}
+.stl-league-team-name{font-weight:700;color:var(--stage-text-main)}
+.stl-league-rec{font-size:11px;color:var(--stage-text-sub)}
+.stl-league-bonus{font-size:10px;color:var(--ev-spring)}
+.stl-league-pts{font-family:var(--font-display);font-size:26px;color:var(--gold-light);text-align:right}
+.stl-league-pts small{font-size:11px;color:var(--stage-text-dim)}
+.stl-league-condition{margin-top:4px}
+
+/* 定性消耗バー（3段。数値露出禁止） */
+.stl-wear-bar{display:flex;align-items:center;gap:5px;font-family:var(--font-label);font-size:9px;letter-spacing:0.5px;color:var(--stage-text-dim)}
+.stl-wear-dots{display:flex;gap:2px}
+.stl-wear-dot{width:6px;height:6px;border-radius:50%;background:rgba(200,190,170,0.15)}
+.stl-wear-bar.is-fresh .stl-wear-dot:nth-child(-n+3){background:var(--accent-faction-4)}
+.stl-wear-bar.is-tired .stl-wear-dot:nth-child(-n+2){background:var(--gold)}
+.stl-wear-bar.is-spent .stl-wear-dot:nth-child(-n+1){background:var(--red)}
+
+/* 直近試合ストリップ */
+.stl-lastmatch{margin:6px auto 22px;display:inline-flex;align-items:center;gap:18px;background:var(--stage-panel);border:1px solid var(--stage-border-lit);padding:14px 28px;border-radius:6px}
+.stl-lastmatch-label{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+.stl-lastmatch-duo{display:flex;align-items:center;gap:8px}
+.stl-lastmatch-duo img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--stage-border-main)}
+.stl-lastmatch-duo.is-win img{border-color:var(--ev-spring)}
+.stl-lastmatch-duo.is-lose img{filter:grayscale(0.85) brightness(0.6)}
+.stl-lastmatch-duo .n{font-size:12px;font-weight:700;text-align:left;line-height:1.5;color:var(--stage-text-main)}
+.stl-lastmatch-duo.is-lose .n{color:var(--stage-text-dim)}
+.stl-lastmatch-duo .win-tag{color:var(--ev-spring)}
+.stl-lastmatch-vs{font-family:var(--font-display);font-size:16px;color:var(--stage-text-dim)}
+.stl-lastmatch-meta{font-family:var(--font-display);font-size:17px;color:var(--gold);text-align:left}
+.stl-lastmatch-meta .bonus{font-size:11px;color:var(--ev-spring);font-family:var(--font-label);letter-spacing:0.5px;display:block;margin-top:2px}
+.stl-lastmatch-time{display:block;font-family:var(--font-label);font-size:10px;color:var(--stage-text-sub);letter-spacing:1px;margin-top:2px}
+
+.stl-progress-btn-row{margin-top:20px}
+
+/* FINAL 特別演出 */
+.stl-final-banner{padding:30px 0 10px}
+.stl-final-label{font-family:var(--font-display);font-size:46px;letter-spacing:8px;background:linear-gradient(180deg,var(--text-main) 0%,var(--gold-light) 50%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 28px rgba(240,208,120,0.4)}
+.stl-final-sub{font-family:var(--font-label);font-size:12px;letter-spacing:3px;color:var(--stage-text-sub);text-transform:uppercase;margin-top:6px}
+.stl-final-faceoff{display:flex;align-items:center;justify-content:center;gap:30px;margin:26px 0}
+.stl-final-side{display:flex;flex-direction:column;align-items:center;gap:8px;width:200px}
+.stl-final-side .faces{display:flex}
+.stl-final-side .faces img{width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid var(--stage-border-main);background:var(--panel-bg)}
+.stl-final-side .faces img+img{margin-left:-20px}
+.stl-final-side.is-winner .faces img{border-color:var(--ev-spring)}
+.stl-final-side.is-loser .faces img{filter:grayscale(0.85) brightness(0.6)}
+.stl-final-side .nm{font-size:14px;font-weight:700;color:var(--stage-text-main)}
+.stl-final-side .org{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-dim);text-transform:uppercase}
+.stl-final-vs{font-family:var(--font-display);font-size:24px;color:var(--stage-text-dim)}
+.stl-final-result{margin-top:6px;font-family:var(--font-label);font-size:11px;letter-spacing:1.5px;color:var(--gold)}
+
+/* 優勝発表（Ceremony寄り、pb-champion系を土台に2名対応拡張） */
+.stl-champ-duo{display:flex;gap:22px;justify-content:center;margin:8px 0 6px}
+.stl-champ-slot{display:flex;flex-direction:column;align-items:center;gap:6px}
+.stl-champ-slot .pb-champion-portrait{width:150px;height:210px}
+.stl-champ-team-name{font-size:24px;font-weight:900;color:var(--gold-light);letter-spacing:1px;margin-top:10px}
+.stl-champ-title{font-family:var(--font-label);font-size:11px;letter-spacing:2.5px;color:var(--gold);margin-top:4px;text-transform:uppercase}
 
 /* ====== A1: Draft Kickoff (号外紙面) ====== */
 .a1-wrap{background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 12px 48px rgba(0,0,0,0.55);overflow:hidden;position:relative;max-width:940px;margin:0 auto}

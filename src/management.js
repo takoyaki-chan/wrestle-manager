@@ -23268,7 +23268,7 @@ Engine.springTagLeague = {
         round: roundIdx + 1, orgA, orgB,
         teamA: { orgId: orgA, f1Id: teamA.f1Id, f2Id: teamA.f2Id },
         teamB: { orgId: orgB, f1Id: teamB.f1Id, f2Id: teamB.f2Id },
-        winner: result.winner, mq, isDraw,
+        winner: result.winner, mq, isDraw, turns: result.turns,
         conditionAfter: { [orgA]: Math.round(condState[orgA]), [orgB]: Math.round(condState[orgB]) },
         wear: { [orgA]: Math.round(wearA * 10) / 10, [orgB]: Math.round(wearB * 10) / 10 },
       });
@@ -23308,7 +23308,7 @@ Engine.springTagLeague = {
       standings: standingsArr,
       finalMatch: {
         orgA: finalA, orgB: finalB, teamA: finalTeamA, teamB: finalTeamB,
-        winner: finalResult.winner, mq: finalResult.mq,
+        winner: finalResult.winner, mq: finalResult.mq, turns: finalResult.turns,
       },
       champion: champOrg, runnerUp: runnerUpOrg,
       third: standingsArr[2].orgId, fourth: standingsArr[3].orgId,
@@ -23441,6 +23441,9 @@ Engine.springTagLeague = {
       ...s,
       springTagLeague: { ...s.springTagLeague, teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, cancelled: false },
       springTagPhase: 'result',
+      // UI: 週送り直後にリプレイ演出を自動起動するためのtransientフラグ（他の_pending*系と同じ規約）。
+      // UI側がリプレイ表示後にstateから取り除く。
+      _pendingSpringTagLeagueReplay: true,
     };
     return { state: s, events };
   },
