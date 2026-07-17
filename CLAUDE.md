@@ -190,6 +190,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | challenge-request-spec-v0.1.md | 選手発信 挑戦試合打診イベント(自団体→他団体・heat≥90で発火・3vs3団体戦・年1〜2回・DRAFT) |
 | firing-grudge-spec-v0.1.md | 解雇キャラの遺恨システム(grudge.intensity・解雇者→残留組の片方向更新・challenge-request連動・DRAFT) |
 | faction-bond-rivalry-spec-v1.0.md | 派閥イベント bond/rivalry 連動(F03/F04/F05/F07 の選択結果で当事者間の 絆/因縁 を動かす、_applyAxisBetweenGroups ヘルパー追加、実装完了 2026-05-04) |
+| shachoshitsu-care-rework-spec-v1.0.md | 社長室・選手ケア再設計(ボーナス交渉4案/休暇辞令v2/外部コーチ招聘制・指導タイプ5種・voice8系統、全実装済み 2026-07-06〜07、実機確認済 07-17) |
 | spring-tag-league-spec-v0.1.md | 春のタッグリーグ(Week12・4チーム総当たり+決勝・称号のみ王座なし・連戦消耗B案、v0.2 決定反映済み 2026-07-17、DRAFT・未実装) |
 | autumn-gauntlet-war-spec-v0.1.md | 4団体勝ち残り対抗戦(E-4・Week36・3名制勝ち抜き・**連戦消耗モジュール定義元**、DRAFT・未実装 2026-07-17) |
 | quadrennial-ppv-tournament-spec-v0.1.md | 4年に一度のPPVトーナメント(C-6・season%4==0・8名シングルエリミ・称号効果なし、DRAFT・未実装 2026-07-17) |
