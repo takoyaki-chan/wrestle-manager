@@ -7070,7 +7070,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   flex-direction: column;
   min-height: 360px;
 }
-.ranking-popup .orgcell.is-rank-1 { border-color: rgba(212,168,67,0.35); min-height: 420px; }
+.ranking-popup .orgcell.is-rank-1 { min-height: 420px; } /* 金枠廃止(2026-07-17 Keisuke指摘: ランキングの枠色分けは全廃) */
 /* is-player の金枠・グラデは廃止(2026-07-17 Keisuke指摘)。金枠=1位の意味に一本化し、
    自団体はティアピル「自」で識別する(原則9: 色は意味にのみ) */
 
@@ -7134,7 +7134,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   height: 1px; z-index: 0;
   background: radial-gradient(ellipse, rgba(212,168,67,0.3), transparent);
 }
-.ranking-popup .orgcell.is-rank-1 .orgcell-formation::after { background: radial-gradient(ellipse, rgba(212,168,67,0.5), transparent); }
+/* is-rank-1のフロアグロー強調は廃止(全カード共通の基本グローのみ) */
 
 .ranking-popup .orgcell-fcell { position: absolute; bottom: 12px; cursor: pointer; }
 .ranking-popup .orgcell-fcell.pos-1 {
@@ -7274,14 +7274,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   border-radius: var(--radius-md);
   border-left: 3px solid rgba(232,230,224,0.18);
 }
-.ranking-popup .rp-card.is-rank-1 {
-  border-left-color: var(--gold);
-  background: linear-gradient(90deg, rgba(212,168,67,0.08), transparent 38%), var(--panel-bg);
-}
-.ranking-popup .rp-card.is-player {
-  border-color: rgba(212,168,67,0.4);
-  border-left-color: var(--gold);
-}
+/* rp-card の is-rank-1/is-player 金枠・金ヘリ・グラデは全廃(2026-07-17 Keisuke指摘) */
 .ranking-popup .rp-rank { display: flex; align-items: center; justify-content: center; }
 .ranking-popup .rp-rank img {
   width: 64px; height: 64px;
@@ -7301,7 +7294,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   background: rgba(0,0,0,0.18);
   border-radius: var(--radius-md);
 }
-.ranking-popup .rp-card.is-rank-1 .rp-rank img { border-color: rgba(212,168,67,0.5); }
+/* is-rank-1 のエンブレム金枠も廃止 */
 .ranking-popup .rp-info { min-width: 0; padding-top: 2px; }
 .ranking-popup .rp-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
 .ranking-popup .rp-tags span {
