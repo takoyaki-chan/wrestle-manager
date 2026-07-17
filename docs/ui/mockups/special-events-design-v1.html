@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>特別大会 共通デザイン言語 モックアップ v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   特別大会 共通デザイン言語 モックアップ v1 (2026-07-17)
+   ※モックアップのため16進直書き。実装時は --stage-* / --gold 等の
+     トークンにマッピングする(01-foundations.md 参照)
+   ============================================================ */
+:root{
+  --stage-bg:#060606;
+  --panel:#101010;
+  --panel-edge:#1c1c1c;
+  --gold:#d4a843;
+  --gold-light:#f0d078;
+  --txt:#e8e6e0;
+  --dim:#9a958c;
+  --dark-dim:#55524c;
+  /* 大会カラーキー(四季) */
+  --ev-spring:#e07a9a;   /* 春タッグリーグ: 桜 */
+  --ev-summer:#56b1d8;   /* 夏ジュニア: 夏空 */
+  --ev-autumn:#c1503c;   /* 秋 勝ち残り対抗戦: 緋 */
+  --ev-winter:#cfc4a2;   /* 冬 C-6特別大会: 白金 */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#191817;color:var(--txt);font-family:'Noto Sans JP',sans-serif;padding:32px 16px 80px}
+.doc{max-width:1080px;margin:0 auto}
+.doc h1{font-family:'Bebas Neue';font-size:34px;letter-spacing:4px;color:var(--gold);margin-bottom:4px}
+.doc-note{font-size:12px;color:var(--dim);line-height:1.8;margin-bottom:28px}
+.sec-label{font-family:'Oswald';font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);border-left:3px solid var(--gold);padding-left:10px;margin:48px 0 6px}
+.sec-desc{font-size:12px;color:var(--dim);line-height:1.9;margin-bottom:14px}
+
+/* ---- モック画面の枠 ---- */
+.mock{background:var(--stage-bg);border:1px solid #2a2a2a;border-radius:6px;overflow:hidden;margin-bottom:22px;position:relative}
+.mock-tag{position:absolute;top:8px;right:10px;font-family:'Oswald';font-size:10px;letter-spacing:2px;color:#444;z-index:9}
+.screen{padding:34px 40px 38px;min-height:420px;position:relative}
+
+/* ============================================================
+   共通言語(全変種共通): タイポ階層 / -12°アングル / 金の細ルール
+   ============================================================ */
+.ev-title{font-family:'Bebas Neue';letter-spacing:6px;line-height:1}
+.ev-sub{font-family:'Oswald';font-weight:400;letter-spacing:4px;text-transform:uppercase;font-size:12px}
+.jp-label{font-family:'Oswald';font-weight:600;letter-spacing:2px;font-size:11px;text-transform:uppercase}
+.num{font-family:'Bebas Neue'}
+
+/* 季節カラーチップ(§0 用) */
+.season-strip{display:flex;gap:14px;margin:10px 0 4px}
+.season-chip{flex:1;background:var(--panel);border:1px solid var(--panel-edge);padding:14px;position:relative;overflow:hidden}
+.season-chip::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--ev)}
+.season-chip::after{content:'';position:absolute;right:-18px;top:-30px;width:52px;height:120px;background:var(--ev);opacity:.12;transform:rotate(12deg)}
+.season-chip .ev-title{font-size:21px;color:var(--txt)}
+.season-chip .when{font-size:10px;color:var(--dim);margin-top:5px;line-height:1.6}
+.season-chip .dot{display:inline-block;width:9px;height:9px;background:var(--ev);transform:skewX(-12deg);margin-right:6px}
+
+.type-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.type-table td{border:1px solid #2a2a2a;padding:9px 12px;background:var(--panel)}
+.type-table td:first-child{color:var(--dim);width:200px;font-size:11px}
+
+/* ============================================================
+   VARIANT A 「斜幕(しゃまく)」 — 斜めリボン + 斜断ちパネル
+   ============================================================ */
+.vA .banner{position:relative;margin:-34px -40px 26px;padding:20px 46px 16px;background:linear-gradient(100deg,#0c0c0c 55%,#101010);border-bottom:1px solid #222;overflow:hidden}
+.vA .banner::before{content:'';position:absolute;left:-30px;top:0;bottom:0;width:220px;background:linear-gradient(100deg,var(--ev) 0%,transparent 85%);opacity:.22;transform:skewX(-12deg)}
+.vA .banner::after{content:'';position:absolute;right:8%;top:-40px;width:3px;height:200px;background:var(--ev);opacity:.5;transform:rotate(12deg)}
+.vA .banner .ev-title{font-size:40px;color:var(--txt)}
+.vA .banner .ev-title .accent{color:var(--ev)}
+.vA .banner .ev-sub{color:var(--gold);margin-top:4px}
+.vA .banner .edition{position:absolute;right:46px;bottom:14px;font-family:'Bebas Neue';font-size:20px;color:var(--dark-dim);letter-spacing:3px}
+.vA .panel{background:var(--panel);border:1px solid var(--panel-edge);clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%)}
+.vA .p-head{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #222}
+.vA .p-head .jp-label{color:var(--gold)}
+.vA .p-head .rule{flex:1;height:1px;background:linear-gradient(90deg,#333,transparent)}
+/* 順位表 */
+.vA .st-row{display:flex;align-items:center;gap:14px;padding:10px 18px;border-bottom:1px solid #1a1a1a;position:relative}
+.vA .st-row:last-child{border-bottom:none}
+.vA .rank-chip{width:34px;height:26px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:19px;color:#0a0a0a;background:var(--dim);transform:skewX(-12deg)}
+.vA .st-row.r1 .rank-chip{background:var(--ev)}
+.vA .st-row.mine{background:linear-gradient(90deg,rgba(212,168,67,.08),transparent 70%)}
+.vA .st-row.mine::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold)}
+.vA .org{font-family:'Oswald';font-size:12px;letter-spacing:1px;color:var(--dim);width:128px}
+.vA .team{font-size:14px;font-weight:700;flex:1}
+.vA .rec{font-size:11px;color:var(--dim);width:90px}
+.vA .pts{font-family:'Bebas Neue';font-size:30px;color:var(--gold-light);width:60px;text-align:right}
+.vA .pts small{font-size:12px;color:var(--dim);letter-spacing:1px}
+.vA .delta{font-size:10px;color:var(--ev);width:64px}
+/* 試合結果ストリップ */
+.vA .match-strip{margin-top:20px;display:flex;align-items:stretch;gap:0}
+.vA .m-side{flex:1;background:var(--panel);border:1px solid var(--panel-edge);padding:14px 18px;position:relative}
+.vA .m-side.win::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ev)}
+.vA .m-side .org{width:auto;display:block;margin-bottom:2px}
+.vA .m-side .names{font-size:15px;font-weight:900}
+.vA .m-side.lose .names{color:var(--dim)}
+.vA .m-vs{width:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0b0b0b;border-top:1px solid var(--panel-edge);border-bottom:1px solid var(--panel-edge)}
+.vA .m-vs .v{font-family:'Bebas Neue';font-size:22px;color:var(--ev);transform:skewX(-12deg)}
+.vA .m-vs .mq{font-family:'Oswald';font-size:10px;color:var(--gold);letter-spacing:1px;margin-top:2px}
+.vA .wearbar{display:flex;gap:3px;margin-top:8px}
+.vA .wearbar i{width:22px;height:5px;background:#2c2c2c;transform:skewX(-12deg)}
+.vA .wearbar i.on{background:var(--ev)}
+.vA .wear-label{font-size:9px;color:var(--dark-dim);margin-top:4px;letter-spacing:1px}
+/* ブラケット(A) */
+.vA .bracket{display:flex;gap:26px;margin-top:6px}
+.vA .round{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+.vA .r-label{font-family:'Oswald';font-size:10px;letter-spacing:2px;color:var(--dim);text-align:center;text-transform:uppercase;margin-bottom:-4px}
+.vA .bm{background:var(--panel);border:1px solid var(--panel-edge);clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%);position:relative}
+.vA .bm::after{content:'';position:absolute;right:-27px;top:50%;width:26px;height:1px;background:#333}
+.vA .round:last-child .bm::after{display:none}
+.vA .slot{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-size:12px}
+.vA .slot + .slot{border-top:1px solid #1c1c1c}
+.vA .slot.w{color:var(--txt);font-weight:700}
+.vA .slot.w .sc{color:var(--ev);font-family:'Bebas Neue';font-size:15px}
+.vA .slot.l{color:var(--dark-dim)}
+.vA .slot.l .sc{color:var(--dark-dim);font-family:'Bebas Neue';font-size:15px}
+.vA .champ-box{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(160deg,#141210,#0c0b09);border:1px solid rgba(212,168,67,.45);padding:18px 10px;clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
+.vA .champ-box .crown{font-size:20px}
+.vA .champ-box .who{font-size:15px;font-weight:900;color:var(--gold-light);margin-top:4px}
+.vA .champ-box .ttl{font-family:'Oswald';font-size:9px;letter-spacing:2px;color:var(--gold);margin-top:4px;text-transform:uppercase}
+
+/* ============================================================
+   VARIANT B 「エンブレム」 — 中央章・左右対称・細二重罫
+   ============================================================ */
+.vB .screen{text-align:center}
+.vB .emblem{width:92px;height:92px;margin:0 auto 10px;border:1px solid var(--ev);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.vB .emblem::before{content:'';position:absolute;inset:5px;border:1px solid rgba(255,255,255,.14);border-radius:50%}
+.vB .emblem .yr{font-family:'Bebas Neue';font-size:26px;color:var(--ev);letter-spacing:2px}
+.vB .emblem .s{font-family:'Oswald';font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase}
+.vB .ev-title{font-size:34px;color:var(--txt)}
+.vB .ev-sub{color:var(--gold);margin-top:4px}
+.vB .double-rule{width:340px;margin:14px auto 24px;border-top:1px solid var(--gold);position:relative;opacity:.75}
+.vB .double-rule::after{content:'';position:absolute;left:24px;right:24px;top:3px;border-top:1px solid rgba(212,168,67,.4)}
+.vB table{width:100%;border-collapse:collapse;text-align:left}
+.vB th{font-family:'Oswald';font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;font-weight:400;padding:6px 14px;border-bottom:1px solid #2b2b2b}
+.vB td{padding:11px 14px;border-bottom:1px solid #191919;font-size:13px}
+.vB .rk{font-family:'Bebas Neue';font-size:22px;color:var(--dim);width:36px}
+.vB tr.r1 .rk{color:var(--ev)}
+.vB tr.mine td{background:rgba(212,168,67,.05)}
+.vB .pts{font-family:'Bebas Neue';font-size:24px;color:var(--gold-light)}
+.vB .orgn{color:var(--dim);font-size:11px;font-family:'Oswald';letter-spacing:1px}
+/* ブラケット(B): 左右対称シンメトリー */
+.vB .bracket-sym{display:flex;gap:18px;align-items:stretch;text-align:left}
+.vB .b-col{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+.vB .b-center{width:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.vB .bm{border:1px solid #242424;background:var(--panel)}
+.vB .slot{display:flex;justify-content:space-between;padding:7px 11px;font-size:12px}
+.vB .slot + .slot{border-top:1px solid #1b1b1b}
+.vB .slot.w{font-weight:700}
+.vB .slot.w .sc{color:var(--ev);font-family:'Bebas Neue';font-size:14px}
+.vB .slot.l{color:var(--dark-dim)}
+.vB .slot.l .sc{color:var(--dark-dim);font-family:'Bebas Neue';font-size:14px}
+.vB .final-medal{width:120px;height:120px;border-radius:50%;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#181510,#0b0a08)}
+.vB .final-medal .who{font-size:13px;font-weight:900;color:var(--gold-light);text-align:center;line-height:1.4}
+.vB .final-medal .ttl{font-family:'Oswald';font-size:8px;letter-spacing:2px;color:var(--gold);margin-top:3px}
+.vB .final-vs{font-family:'Bebas Neue';font-size:15px;color:var(--dim);letter-spacing:2px}
+
+/* ============================================================
+   VARIANT C 「ブロードキャスト」 — 中継グラフィックス・下辺テロップ
+   ============================================================ */
+.vC .screen{padding-bottom:66px}
+.vC .bc-head{display:flex;align-items:baseline;gap:16px;margin-bottom:22px}
+.vC .bc-head .ev-title{font-size:34px;color:var(--txt)}
+.vC .bc-head .live{font-family:'Oswald';font-size:10px;letter-spacing:2px;color:#0a0a0a;background:var(--ev);padding:3px 10px;transform:skewX(-12deg)}
+.vC .bc-head .edition{font-family:'Bebas Neue';font-size:16px;color:var(--dim);letter-spacing:2px}
+.vC .st-row{display:grid;grid-template-columns:56px 130px 1fr 90px 80px;align-items:center;margin-bottom:5px;background:linear-gradient(90deg,#131313,#0d0d0d);border-left:4px solid #2c2c2c;padding:8px 14px 8px 0}
+.vC .st-row.r1{border-left-color:var(--ev)}
+.vC .st-row.mine{outline:1px solid rgba(212,168,67,.4)}
+.vC .rk{font-family:'Bebas Neue';font-size:30px;text-align:center;color:#3d3a35}
+.vC .st-row.r1 .rk{color:var(--ev)}
+.vC .orgn{font-family:'Oswald';font-size:11px;letter-spacing:1px;color:var(--dim)}
+.vC .team{font-size:14px;font-weight:900}
+.vC .rec{font-size:11px;color:var(--dim)}
+.vC .pts{font-family:'Bebas Neue';font-size:28px;color:var(--gold-light);text-align:right}
+.vC .pts small{font-size:11px;color:var(--dim)}
+.vC .lower-third{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:stretch;border-top:1px solid #222;background:#0a0a0a}
+.vC .lt-ev{display:flex;align-items:center;padding:0 18px;background:var(--ev);color:#0a0a0a;font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%)}
+.vC .lt-body{flex:1;display:flex;align-items:center;gap:14px;padding:10px 18px;font-size:12px}
+.vC .lt-body b{font-weight:900}
+.vC .lt-mq{font-family:'Bebas Neue';font-size:18px;color:var(--gold)}
+/* ブラケット(C): 横積みリスト型 */
+.vC .rounds-list{display:flex;flex-direction:column;gap:16px}
+.vC .r-block .r-label{font-family:'Oswald';font-size:10px;letter-spacing:2px;color:var(--ev);text-transform:uppercase;margin-bottom:6px}
+.vC .m-line{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;background:#101010;border:1px solid #1d1d1d;margin-bottom:4px}
+.vC .m-line .p{padding:8px 14px;font-size:12px}
+.vC .m-line .p.w{font-weight:900}
+.vC .m-line .p.l{color:var(--dark-dim)}
+.vC .m-line .p.r{text-align:right}
+.vC .m-line .c{font-family:'Bebas Neue';font-size:14px;color:var(--dim);text-align:center;background:#0b0b0b;padding:8px 0}
+.vC .m-line .c b{color:var(--ev)}
+
+/* ---- 変種ごとの色替えデモ(ミニバナー) ---- */
+.mini-strip{display:flex;gap:10px;padding:14px 18px;background:#0b0b0b;border-top:1px dashed #262626}
+.mini{flex:1;padding:9px 12px;background:var(--panel);position:relative;overflow:hidden}
+.mini::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ev)}
+.mini::after{content:'';position:absolute;right:-14px;top:-20px;width:36px;height:90px;background:var(--ev);opacity:.14;transform:rotate(12deg)}
+.mini .ev-title{font-size:15px;letter-spacing:2px}
+.mini .ev-sub{font-size:8px;color:var(--gold);letter-spacing:2px;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>SPECIAL EVENTS — DESIGN LANGUAGE v1</h1>
+  <div class="doc-note">
+    特別大会(春タッグリーグ / 夏ジュニア / 秋 勝ち残り対抗戦 / 冬 C-6)の共通デザイン言語の提案 + 方向性3案。<br>
+    <b>共通で固定するもの</b>: フォント階層(Bebas Neue=大会名・数値 / Oswald=ラベル / Noto Sans JP=本文)、アングル -12°(skew/斜断ち)、金の細ルール、純黒Stage背景。<br>
+    <b>大会ごとに変えるもの</b>: カラーキー1色のみ。同じ部品に色を差し替えるだけで四季が出る構造。<br>
+    各案とも「春のリーグ表画面」と「夏のトーナメント表画面」の2枚 + 色替えデモ付き。
+  </div>
+
+  <!-- ============ §0 共通言語 ============ -->
+  <div class="sec-label">§0 共通言語 — 四季のカラーキー</div>
+  <div class="sec-desc">部品・フォント・角度は全大会共通。左端の色柱と斜めの差し色だけが季節で入れ替わる。</div>
+  <div class="season-strip">
+    <div class="season-chip" style="--ev:var(--ev-spring)"><span class="dot"></span><span class="ev-title">TAG LEAGUE</span><div class="when">春 / 第12週<br>タッグリーグ(チームの祭典)</div></div>
+    <div class="season-chip" style="--ev:var(--ev-summer)"><span class="dot"></span><span class="ev-title">JUNIOR CUP</span><div class="when">夏 / 第25週<br>ジュニアトーナメント(若手の登竜門)</div></div>
+    <div class="season-chip" style="--ev:var(--ev-autumn)"><span class="dot"></span><span class="ev-title">SURVIVAL WAR</span><div class="when">秋 / 第36週<br>4団体勝ち残り対抗戦(団体の全面戦争)</div></div>
+    <div class="season-chip" style="--ev:var(--ev-winter)"><span class="dot"></span><span class="ev-title">GRAND FINAL EX</span><div class="when">冬 / 第48週<br>4年に一度のPPVトーナメント</div></div>
+  </div>
+  <table class="type-table">
+    <tr><td>大会名 / 数値(勝ち点・スコア)</td><td style="font-family:'Bebas Neue';font-size:20px;letter-spacing:4px">BEBAS NEUE — TAG LEAGUE 7PT</td></tr>
+    <tr><td>ラベル(順位・ラウンド名)</td><td style="font-family:'Oswald';font-size:12px;letter-spacing:3px;text-transform:uppercase">OSWALD — STANDINGS / SEMI FINAL / 準決勝</td></tr>
+    <tr><td>本文・選手名</td><td style="font-weight:700">Noto Sans JP — 富岡加奈子 &amp; 高津小春</td></tr>
+    <tr><td>共通アングル</td><td>-12°(バナーの斜断ち・順位チップのskew・差し色の斜線)。全大会でこの角度以外は使わない</td></tr>
+  </table>
+
+  <!-- ============ A案 ============ -->
+  <div class="sec-label">A案 「斜幕」 — 斜めリボン + 斜断ちパネル</div>
+  <div class="sec-desc">画面上部を大会色の斜幕が横切る。パネルの右下も斜めに断ち、会場の垂れ幕・煽りVの躍動感。3案の中では一番「興行」寄り。</div>
+
+  <div class="mock vA" style="--ev:var(--ev-spring)">
+    <div class="mock-tag">A-1 春 / リーグ表</div>
+    <div class="screen">
+      <div class="banner">
+        <div class="ev-title">SPRING <span class="accent">TAG LEAGUE</span></div>
+        <div class="ev-sub">春のタッグリーグ — 総当たり戦</div>
+        <div class="edition">VOL.3</div>
+      </div>
+      <div class="panel">
+        <div class="p-head"><span class="jp-label">Standings — 順位表</span><span class="rule"></span><span class="jp-label" style="color:var(--dim)">第4試合 終了</span></div>
+        <div class="st-row r1 mine">
+          <div class="rank-chip">1</div><div class="org">★ 自団体</div><div class="team">富岡加奈子 &amp; 高津小春</div><div class="rec">2勝0敗1分</div><div class="delta">▲ 接戦+1</div><div class="pts">8<small>pt</small></div>
+        </div>
+        <div class="st-row">
+          <div class="rank-chip">2</div><div class="org">NOVA IMPACT</div><div class="team">早乙女リン &amp; 神谷千夏</div><div class="rec">2勝1敗</div><div class="delta"></div><div class="pts">6<small>pt</small></div>
+        </div>
+        <div class="st-row">
+          <div class="rank-chip">3</div><div class="org">EMPRESS GRAND</div><div class="team">大河内紗代子 &amp; 御堂静音</div><div class="rec">1勝1敗1分</div><div class="delta">▲ 接戦+1</div><div class="pts">5<small>pt</small></div>
+        </div>
+        <div class="st-row">
+          <div class="rank-chip">4</div><div class="org">CRESCENT RISE</div><div class="team">橘玲美 &amp; 生駒エリカ</div><div class="rec">0勝3敗</div><div class="delta"></div><div class="pts">0<small>pt</small></div>
+        </div>
+      </div>
+      <div class="match-strip">
+        <div class="m-side win">
+          <span class="org">★ 自団体</span>
+          <div class="names">富岡加奈子 &amp; 高津小春</div>
+          <div class="wearbar"><i class="on"></i><i class="on"></i><i></i></div>
+          <div class="wear-label">疲れが見えはじめた</div>
+        </div>
+        <div class="m-vs"><span class="v">WIN</span><span class="mq">MQ 63 ★</span></div>
+        <div class="m-side lose">
+          <span class="org">EMPRESS GRAND</span>
+          <div class="names">大河内紗代子 &amp; 御堂静音</div>
+          <div class="wearbar"><i class="on"></i><i></i><i></i></div>
+          <div class="wear-label">まだ余力がある</div>
+        </div>
+      </div>
+    </div>
+    <div class="mini-strip">
+      <div class="mini" style="--ev:var(--ev-spring)"><div class="ev-title">TAG LEAGUE</div><div class="ev-sub">SPRING / 桜</div></div>
+      <div class="mini" style="--ev:var(--ev-summer)"><div class="ev-title">JUNIOR CUP</div><div class="ev-sub">SUMMER / 夏空</div></div>
+      <div class="mini" style="--ev:var(--ev-autumn)"><div class="ev-title">SURVIVAL WAR</div><div class="ev-sub">AUTUMN / 緋</div></div>
+      <div class="mini" style="--ev:var(--ev-winter)"><div class="ev-title">GRAND FINAL EX</div><div class="ev-sub">WINTER / 白金</div></div>
+    </div>
+  </div>
+
+  <div class="mock vA" style="--ev:var(--ev-summer)">
+    <div class="mock-tag">A-2 夏 / トーナメント表(ジュニア作り直し)</div>
+    <div class="screen">
+      <div class="banner">
+        <div class="ev-title">JUNIOR <span class="accent">CUP</span></div>
+        <div class="ev-sub">ジュニアトーナメント — U-20</div>
+        <div class="edition">VOL.7</div>
+      </div>
+      <div class="bracket">
+        <div class="round">
+          <div class="r-label">Quarter Final</div>
+          <div class="bm"><div class="slot w"><span>七海 結</span><span class="sc">○</span></div><div class="slot l"><span>春日そら</span><span class="sc">●</span></div></div>
+          <div class="bm"><div class="slot l"><span>安藤メイ</span><span class="sc">●</span></div><div class="slot w"><span>桐生ちか</span><span class="sc">○</span></div></div>
+          <div class="bm"><div class="slot w"><span>白石 澪</span><span class="sc">○</span></div><div class="slot l"><span>矢代いつき</span><span class="sc">●</span></div></div>
+          <div class="bm"><div class="slot l"><span>小鳥遊ひな</span><span class="sc">●</span></div><div class="slot w"><span>結城アカリ</span><span class="sc">○</span></div></div>
+        </div>
+        <div class="round">
+          <div class="r-label">Semi Final</div>
+          <div class="bm"><div class="slot w"><span>七海 結</span><span class="sc">○</span></div><div class="slot l"><span>桐生ちか</span><span class="sc">●</span></div></div>
+          <div class="bm"><div class="slot l"><span>白石 澪</span><span class="sc">●</span></div><div class="slot w"><span>結城アカリ</span><span class="sc">○</span></div></div>
+        </div>
+        <div class="round">
+          <div class="r-label">Final</div>
+          <div class="bm"><div class="slot w"><span>七海 結</span><span class="sc">○</span></div><div class="slot l"><span>結城アカリ</span><span class="sc">●</span></div></div>
+        </div>
+        <div class="round">
+          <div class="r-label">Champion</div>
+          <div class="champ-box"><span class="crown">👑</span><div class="who">七海 結</div><div class="ttl">Junior Champion</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ B案 ============ -->
+  <div class="sec-label">B案 「エンブレム」 — 中央章 + 左右対称 + 細二重罫</div>
+  <div class="sec-desc">大会章(エンブレム)を中央に置く格式系。表彰式(Ceremony)への接続が最も滑らか。トーナメント表は左右対称ブラケットで中央に優勝メダル。落ち着くぶん、興行の熱は3案で最も控えめ。</div>
+
+  <div class="mock vB" style="--ev:var(--ev-spring)">
+    <div class="mock-tag">B-1 春 / リーグ表</div>
+    <div class="screen">
+      <div class="emblem"><span class="yr">III</span><span class="s">Spring</span></div>
+      <div class="ev-title">SPRING TAG LEAGUE</div>
+      <div class="ev-sub">春のタッグリーグ — 総当たり戦</div>
+      <div class="double-rule"></div>
+      <table>
+        <tr><th></th><th>Team</th><th>Record</th><th style="text-align:right">Points</th></tr>
+        <tr class="r1 mine"><td class="rk">1</td><td><span class="orgn">★ 自団体</span><br><b>富岡加奈子 &amp; 高津小春</b></td><td>2勝0敗1分 / 接戦+1</td><td style="text-align:right"><span class="pts">8</span></td></tr>
+        <tr><td class="rk">2</td><td><span class="orgn">NOVA IMPACT</span><br><b>早乙女リン &amp; 神谷千夏</b></td><td>2勝1敗</td><td style="text-align:right"><span class="pts">6</span></td></tr>
+        <tr><td class="rk">3</td><td><span class="orgn">EMPRESS GRAND</span><br><b>大河内紗代子 &amp; 御堂静音</b></td><td>1勝1敗1分 / 接戦+1</td><td style="text-align:right"><span class="pts">5</span></td></tr>
+        <tr><td class="rk">4</td><td><span class="orgn">CRESCENT RISE</span><br><b>橘玲美 &amp; 生駒エリカ</b></td><td>0勝3敗</td><td style="text-align:right"><span class="pts">0</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="mock vB" style="--ev:var(--ev-summer)">
+    <div class="mock-tag">B-2 夏 / トーナメント表(左右対称)</div>
+    <div class="screen">
+      <div class="emblem"><span class="yr">VII</span><span class="s">Summer</span></div>
+      <div class="ev-title">JUNIOR CUP</div>
+      <div class="ev-sub">ジュニアトーナメント — U-20</div>
+      <div class="double-rule"></div>
+      <div class="bracket-sym">
+        <div class="b-col">
+          <div class="bm"><div class="slot w"><span>七海 結</span><span class="sc">○</span></div><div class="slot l"><span>春日そら</span><span class="sc">●</span></div></div>
+          <div class="bm"><div class="slot l"><span>安藤メイ</span><span class="sc">●</span></div><div class="slot w"><span>桐生ちか</span><span class="sc">○</span></div></div>
+        </div>
+        <div class="b-col">
+          <div class="bm"><div class="slot w"><span>七海 結</span><span class="sc">○</span></div><div class="slot l"><span>桐生ちか</span><span class="sc">●</span></div></div>
+        </div>
+        <div class="b-center">
+          <div class="final-medal"><div class="who">七海 結</div><div class="ttl">Junior Champion</div></div>
+          <div class="final-vs">FINAL 7 - 6</div>
+        </div>
+        <div class="b-col">
+          <div class="bm"><div class="slot l"><span>白石 澪</span><span class="sc">●</span></div><div class="slot w"><span>結城アカリ</span><span class="sc">○</span></div></div>
+        </div>
+        <div class="b-col">
+          <div class="bm"><div class="slot w"><span>白石 澪</span><span class="sc">○</span></div><div class="slot l"><span>矢代いつき</span><span class="sc">●</span></div></div>
+          <div class="bm"><div class="slot l"><span>小鳥遊ひな</span><span class="sc">●</span></div><div class="slot w"><span>結城アカリ</span><span class="sc">○</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ C案 ============ -->
+  <div class="sec-label">C案 「ブロードキャスト」 — 中継グラフィックス + 下辺テロップ</div>
+  <div class="sec-desc">スポーツ中継の順位グラフィックス。順位数字を大きく、下辺に実況テロップ(いま何が起きたか)。情報の読み取りやすさは3案で最強。リーグ戦(順位推移が主役)との相性が良い。</div>
+
+  <div class="mock vC" style="--ev:var(--ev-spring)">
+    <div class="mock-tag">C-1 春 / リーグ表</div>
+    <div class="screen">
+      <div class="bc-head"><span class="ev-title">SPRING TAG LEAGUE</span><span class="live">ROUND 4/6</span><span class="edition">春のタッグリーグ</span></div>
+      <div class="st-row r1 mine"><div class="rk">1</div><div class="orgn">★ 自団体</div><div class="team">富岡加奈子 &amp; 高津小春</div><div class="rec">2勝0敗1分</div><div class="pts">8<small>pt</small></div></div>
+      <div class="st-row"><div class="rk">2</div><div class="orgn">NOVA IMPACT</div><div class="team">早乙女リン &amp; 神谷千夏</div><div class="rec">2勝1敗</div><div class="pts">6<small>pt</small></div></div>
+      <div class="st-row"><div class="rk">3</div><div class="orgn">EMPRESS GRAND</div><div class="team">大河内紗代子 &amp; 御堂静音</div><div class="rec">1勝1敗1分</div><div class="pts">5<small>pt</small></div></div>
+      <div class="st-row"><div class="rk">4</div><div class="orgn">CRESCENT RISE</div><div class="team">橘玲美 &amp; 生駒エリカ</div><div class="rec">0勝3敗</div><div class="pts">0<small>pt</small></div></div>
+      <div class="lower-third">
+        <div class="lt-ev">RESULT</div>
+        <div class="lt-body"><b>富岡加奈子 &amp; 高津小春</b> が <b>大河内組</b> を下し接戦ボーナス獲得 <span class="lt-mq">MQ 63</span><span style="color:var(--ev);font-weight:700">+4pt</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mock vC" style="--ev:var(--ev-summer)">
+    <div class="mock-tag">C-2 夏 / トーナメント表(ラウンド積み型)</div>
+    <div class="screen">
+      <div class="bc-head"><span class="ev-title">JUNIOR CUP</span><span class="live">SEMI FINAL</span><span class="edition">ジュニアトーナメント U-20</span></div>
+      <div class="rounds-list">
+        <div class="r-block">
+          <div class="r-label">Quarter Final — 準々決勝</div>
+          <div class="m-line"><div class="p w r">七海 結</div><div class="c"><b>○</b> - ●</div><div class="p l">春日そら</div></div>
+          <div class="m-line"><div class="p l r">安藤メイ</div><div class="c">● - <b>○</b></div><div class="p w">桐生ちか</div></div>
+          <div class="m-line"><div class="p w r">白石 澪</div><div class="c"><b>○</b> - ●</div><div class="p l">矢代いつき</div></div>
+          <div class="m-line"><div class="p l r">小鳥遊ひな</div><div class="c">● - <b>○</b></div><div class="p w">結城アカリ</div></div>
+        </div>
+        <div class="r-block">
+          <div class="r-label">Semi Final — 準決勝</div>
+          <div class="m-line"><div class="p w r">七海 結</div><div class="c"><b>○</b> - ●</div><div class="p l">桐生ちか</div></div>
+          <div class="m-line"><div class="p r">白石 澪</div><div class="c">NEXT</div><div class="p">結城アカリ</div></div>
+        </div>
+      </div>
+      <div class="lower-third">
+        <div class="lt-ev">NEXT</div>
+        <div class="lt-body">準決勝第2試合 <b>白石 澪</b> vs <b>結城アカリ</b> — 勝者が決勝で七海と激突</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-label">比較メモ</div>
+  <div class="sec-desc">
+    <b>A 斜幕</b>: 興行の熱・煽り感が最強。リーグ/ブラケット両対応が素直。消耗バー等の情報も乗せやすい。<br>
+    <b>B エンブレム</b>: 格式・記念感。優勝演出(Ceremony)と地続きだが、進行中の画面としては静的。<br>
+    <b>C ブロードキャスト</b>: 可読性と実況感。テロップで「いま何が起きたか」を語れるのがリーグ戦向き。ブラケットの樹形図は捨ててリスト型になる。<br><br>
+    組み合わせ(例: 進行中=C、優勝発表=B、ヘッダーはA)も可能。方向性の指名をください。
+  </div>
+</div>
+</body>
+</html>
