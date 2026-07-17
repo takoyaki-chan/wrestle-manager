@@ -12516,13 +12516,42 @@ App.jtSkipMatch = function(roundIdx, matchIdx) {
 };
 
 App.jtSkipAll = function() {
-  // 全試合スキップ → 最終結果へ
-  App._jtPreview.phase = 'finalResult';
-  try { Audio.fileBgm.fadeOut(800); } catch(e) {}
-  setTimeout(() => {
-    try { Audio.fileBgm.stop(); } catch(e) {}
-    Audio.bgm.playJingle('championship');
-  }, 900);
+  // 全試合スキップ → 1段ずつ段階的にせり上げてから優勝発表へ(2026-07-17裁定)
+  // 準々決勝の勝者たち→準決勝→決勝→頂上、と段単位でテンポよく積み上げる。
+  const jt = App._jtPreview;
+  if (!jt) return;
+  jt.phase = 'bracket';
+  const rounds = jt.result.rounds;
+  const stageDelay = 500; // 各段0.4〜0.6秒目安
+
+  const revealRound = (ri) => {
+    if (ri >= rounds.length) {
+      // 頂上せり上がりを見せてから優勝発表へ
+      setTimeout(() => { App.jtGoToFinalResult(); }, stageDelay);
+      return;
+    }
+    jt.currentRound = ri;
+    jt.currentMatch = rounds[ri].matches.length; // この段を完了扱いにしてせり上げる
+    renderJuniorTournamentBracket();
+    Audio.play('tick');
+    if (ri === rounds.length - 1) {
+      // 決勝決着(頂上出現) → チャンピオンジングル
+      try { Audio.fileBgm.fadeOut(800); } catch(e) {}
+      setTimeout(() => {
+        try { Audio.fileBgm.stop(); } catch(e) {}
+        Audio.bgm.playJingle('championship');
+      }, 900);
+    }
+    setTimeout(() => revealRound(ri + 1), stageDelay);
+  };
+  revealRound(jt.currentRound);
+};
+
+// クライムライン頂上(王者枠)タップ → 既存の優勝発表画面(pb形式)へ(棚卸し#9の二段構え)
+App.jtGoToFinalResult = function() {
+  const jt = App._jtPreview;
+  if (!jt) return;
+  jt.phase = 'finalResult';
   renderJuniorTournamentResult();
 };
 
@@ -12707,14 +12736,18 @@ App._jtAdvanceInternal = function(roundIdx, matchIdx) {
     jt.phase = 'bracket';
     renderJuniorTournamentBracket();
   } else {
-    jt.phase = 'finalResult';
-    // 決勝後: BGMを止めてチャンピオンジングルを鳴らす
+    // 決勝決着 → クライムラインの頂上に王者枠がせり上がる(二段構え、棚卸し#9)。
+    // 優勝発表(pb画面)は頂上ブロックをタップした時点で App.jtGoToFinalResult が開く。
+    jt.currentRound = roundIdx + 1; // ラウンド範囲外 = 「全段せり上がり済み」を表すポインタ
+    jt.currentMatch = 0;
+    jt.phase = 'bracket';
+    // 決勝後: BGMを止めてチャンピオンジングルを鳴らす(頂上出現の瞬間)
     try { Audio.fileBgm.fadeOut(800); } catch(e) {}
     setTimeout(() => {
       try { Audio.fileBgm.stop(); } catch(e) {}
       Audio.bgm.playJingle('championship');
     }, 900);
-    renderJuniorTournamentResult();
+    renderJuniorTournamentBracket();
   }
 };
 

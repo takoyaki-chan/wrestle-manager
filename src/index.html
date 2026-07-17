@@ -2979,6 +2979,13 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .pb-banner-title.is-jt{font-size:36px;background:linear-gradient(180deg,#fff 0%,var(--gold-light) 55%,var(--gold-deep) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 24px rgba(240,208,120,0.3);letter-spacing:6px}
 .pb-mrow.is-main.is-jt{background:linear-gradient(180deg,rgba(212,168,67,0.10) 0%,rgba(212,168,67,0.02) 70%,transparent 100%),rgba(255,255,255,0.015);border-left-width:3px}
 .pb-mrow.is-main.is-jt::before{content:'🥇 JT MATCH';color:var(--gold-light)}
+/* P2b: JT試合結果 クライムライン統一(アッパー画像=勝者リング/敗者モノクロ落ち)。is-jt スコープのみへの追加なので他画面に影響しない */
+.pb-mrow.is-jt .pb-fighter.is-winner .pb-portrait{border-color:var(--ev-summer);box-shadow:0 0 16px var(--ev-summer)}
+.pb-mrow.is-jt .pb-fighter.is-loser .pb-portrait{opacity:1}
+.pb-mrow.is-jt .pb-fighter.is-loser .pb-portrait img{filter:grayscale(0.85) brightness(0.6)}
+.pb-mrow.is-jt .pb-fighter.is-winner .pb-fighter-name{color:var(--ev-summer)}
+.pb-mrow.is-jt .pb-fighter.is-winner .pb-fighter-ovr .val{color:var(--ev-summer)}
+.jtc-result-minfo{display:flex;justify-content:center;padding:2px 0 16px}
 /* Phase 4b: JT Champion variant */
 .pb-live.is-jt-champ{background:linear-gradient(135deg,rgba(240,208,120,0.28),rgba(212,168,67,0.22));border-color:var(--gold);color:#fff;text-shadow:0 0 14px rgba(240,208,120,0.7);letter-spacing:4px;box-shadow:0 0 24px rgba(212,168,67,0.25)}
 .pb-banner-title.is-jt-champ{font-size:38px;background:linear-gradient(180deg,#fff 0%,#ffe89a 40%,var(--gold) 80%,var(--gold-deep) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 36px rgba(240,208,120,0.45);letter-spacing:5px}
@@ -3228,14 +3235,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .war-ace-overlay .mdl-a-subject-stage:not(.defeat){background:radial-gradient(ellipse 90% 60% at 50% 35%,rgba(212,168,67,0.08) 0%,transparent 65%),#14120e}
 .mdl-a-portrait-vignette{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to top,#14120e,transparent);border-radius:0 0 4px 4px;pointer-events:none}
 
-/* ═══ Jr Tournament V6 ═══ */
+/* ═══ Jr Tournament ═══ */
 .jt-wrap{max-width:1280px;margin:0 auto;padding:12px 14px 80px}
-.jt-hd{text-align:center;padding:24px 12px 12px;position:relative}
-.jt-hd::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:80px;height:2px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.jt-hd .jt-sp{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:7px;color:var(--gold)}
-.jt-hd h1{font-family:'Oswald',sans-serif;font-size:24px;font-weight:700;margin:3px 0 2px}
-.jt-hd .jt-sub{font-size:11px;color:var(--text-sub)}
 .jt-phase{position:fixed;top:8px;right:10px;background:rgba(212,168,83,.12);color:var(--gold);font-size:9px;
   font-weight:600;padding:4px 10px;border-radius:14px;z-index:200;font-family:'Bebas Neue',sans-serif;letter-spacing:2px}
 
@@ -3264,32 +3265,78 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .jt-so-dots .d.dn{background:var(--gold-dark,#8a7235)}
 .jt-so-hint{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:11px;color:var(--text-dim,#4a4d55);animation:jtBlink 1.5s ease infinite}
 
-/* Bracket */
-.jt-bk{display:flex;align-items:stretch;justify-content:center;padding:16px 0;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.jt-rd{display:flex;flex-direction:column;justify-content:center}
-.jt-rl{text-align:center;padding:4px 0 8px;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--gold-dark,#8a7235)}
-.jt-bm{margin:5px 0;position:relative}
-.jt-bm.act .jt-bf:first-child,.jt-bm.act .jt-bf:last-child{border-color:var(--gold-dark,#8a7235);background:rgba(212,168,83,.04)}
-.jt-bf{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--card-bg,#181a24);min-width:200px;border:1px solid var(--border);transition:.3s}
-.jt-bf:first-child{border-radius:6px 6px 0 0;border-bottom:none}
-.jt-bf:last-child{border-radius:0 0 6px 6px}
-.jt-bf.w{background:rgba(46,204,113,.06)}
-.jt-bf.w .jt-fn{color:#2ecc71;font-weight:700}
-.jt-bf.w .jt-av{border-color:rgba(46,204,113,.5)}
-.jt-bf.l{opacity:.3}
-.jt-bf.tbd{opacity:.15}
-.jt-bf.tbd .jt-fn{color:var(--text-dim,#4a4d55);font-style:italic}
-.jt-av{width:48px;height:48px;border-radius:4px;flex-shrink:0;background:var(--card-bg,#1e2030);border:1.5px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center}
-.jt-av img{width:100%;height:100%;object-fit:cover}
-.jt-av .ini{font-size:12px;font-weight:700;color:var(--gold)}
-.jt-fn{font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.jt-fo{font-size:11px;color:var(--gold);font-family:'Oswald',sans-serif;font-weight:600;
-  background:rgba(212,168,83,.1);padding:2px 6px;border-radius:3px;letter-spacing:.5px}
-.jt-bvs{text-align:center;font-size:8px;color:var(--text-dim,#4a4d55);font-family:'Bebas Neue',sans-serif;
-  letter-spacing:2px;background:var(--card-bg,#181a24);border-left:1px solid var(--border);border-right:1px solid var(--border);padding:2px 0}
-.jt-cn{width:24px;position:relative}
-.jt-cn svg{position:absolute;top:0;left:0;width:100%;height:100%}
-.jt-gap{height:20px}
+/* ============================================================
+   クライムライン(P2b: jt-climbline-rework-inventory-v0.1)
+   下段=1回戦、上へ勝ち進む。エンブレムは _jtHeader() の1個のみ。
+   大会色は --jtc-color(呼び出し側でインラインに --ev-summer 等を指定)で差し替え可能。
+   将来 C-6(冬)でも同じクラス群を再利用する前提の汎用設計。
+   ============================================================ */
+.jtc-header{text-align:center;padding:20px 12px 6px}
+.jtc-header-emblem{width:72px;height:72px;object-fit:contain;margin:0 auto 6px;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.6))}
+.jtc-header-title{font-family:var(--font-display);font-size:28px;letter-spacing:5px;color:var(--stage-text-main)}
+.jtc-header-sub{font-family:var(--font-label);font-size:11px;letter-spacing:3px;color:var(--jtc-color,var(--ev-summer));text-transform:uppercase;margin-top:4px}
+.jtc-header-ed{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);margin-top:5px;text-transform:uppercase}
+.jtc-double-rule{width:280px;margin:12px auto 6px;border-top:1px solid var(--gold);position:relative;opacity:0.75}
+.jtc-double-rule::after{content:'';position:absolute;left:20px;right:20px;top:3px;border-top:1px solid var(--gold);opacity:0.55}
+.jtc-climb-note{font-family:var(--font-label);font-size:9px;letter-spacing:2.5px;color:var(--stage-text-dim);text-transform:uppercase;margin-bottom:6px}
+
+.jtc-climb{max-width:680px;margin:0 auto;padding:4px 0 20px;text-align:center}
+.jtc-tier-label{font-family:var(--font-label);font-size:10px;letter-spacing:3px;color:var(--jtc-color,var(--ev-summer));text-transform:uppercase;text-align:center;margin:16px 0 8px}
+
+/* 頂上(王者) */
+.jtc-peak{display:inline-flex;flex-direction:column;align-items:center;cursor:pointer;padding:4px 10px;transition:transform .2s ease}
+.jtc-peak:hover{transform:translateY(-2px)}
+.jtc-up.jtc-up-peak{width:150px;height:225px;border:2px solid var(--gold);box-shadow:none}
+.jtc-peak-name{font-size:19px;font-weight:900;color:var(--gold-light);margin-top:10px}
+.jtc-peak-title{font-family:var(--font-label);font-size:11px;letter-spacing:2.5px;color:var(--gold);margin-top:4px;text-transform:uppercase}
+.jtc-peak-tap{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-dim);margin-top:9px;animation:jtBlink 1.6s ease infinite}
+.jtc-merge-peak{display:flex;justify-content:center;height:26px;margin:2px 0}
+.jtc-merge-peak svg{width:16px;height:100%;display:block}
+.jtc-merge-peak path{fill:none;stroke-width:2;vector-effect:non-scaling-stroke;stroke:var(--jtc-color,var(--gold))}
+
+/* 段(準々決勝/準決勝) */
+.jtc-row{display:grid;width:100%;align-items:end;margin:0 auto 2px}
+.jtc-cell{display:flex;flex-direction:column;align-items:center;padding:0 4px}
+.jtc-pair{display:flex;gap:2px}
+.jtc-cell.is-current .jtc-pair{outline:2px solid var(--jtc-color,var(--ev-summer));outline-offset:5px;border-radius:2px}
+.jtc-size-sm .jtc-fx{width:76px}
+.jtc-size-md .jtc-fx{width:112px}
+
+/* 決勝段 */
+.jtc-final-row{display:flex;align-items:center;justify-content:center;gap:20px;margin:0 auto 2px}
+.jtc-final-row.is-current{outline:2px solid var(--jtc-color,var(--ev-summer));outline-offset:6px;border-radius:2px}
+.jtc-final-row.jtc-size-lg .jtc-fx{width:132px}
+.jtc-vs{font-family:var(--font-display);font-size:22px;color:var(--stage-text-dim);padding:0 4px}
+
+/* 選手ボックス(アッパー画像) */
+.jtc-fx{width:100%}
+.jtc-up{position:relative;overflow:hidden;border-radius:3px;aspect-ratio:2/3;
+  background:linear-gradient(180deg,rgba(232,230,224,0.06),rgba(0,0,0,0.3));border-bottom:3px solid var(--stage-border)}
+.jtc-up img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.jtc-up.w{border-bottom:3px solid var(--jtc-color,var(--ev-summer))}
+.jtc-up.l{border-bottom:3px solid var(--stage-border)}
+.jtc-up.l img{filter:grayscale(0.9) brightness(0.55)}
+.jtc-ini{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:20px;font-weight:700;color:var(--gold)}
+.jtc-fn{font-size:11px;font-weight:700;text-align:center;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--stage-text-main)}
+.jtc-fx.is-lose .jtc-fn{color:var(--stage-text-dim);font-weight:400}
+.jtc-win-tag{color:var(--jtc-color,var(--ev-summer));font-size:9px;font-family:var(--font-label);letter-spacing:1px}
+
+/* 決着時間 / MQ チップ */
+.jtc-minfo{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-family:var(--font-label);font-size:9px;
+  letter-spacing:0.5px;color:var(--stage-text-dim);background:var(--panel-bg);border:1px solid var(--stage-border);padding:2px 8px;border-radius:3px}
+.jtc-minfo .t{color:var(--stage-text-main)}
+.jtc-minfo .mq{color:var(--gold)}
+.jtc-minfo-dot{opacity:0.5}
+
+/* 合流線(山型・CSS Gridの等分割センターで厳密位置合わせ) */
+.jtc-merge{display:grid;width:100%;height:24px;margin:2px 0}
+.jtc-chev{position:relative}
+.jtc-chev svg{width:100%;height:100%;display:block}
+.jtc-chev path{fill:none;stroke-width:2;vector-effect:non-scaling-stroke;stroke:var(--stage-border-main)}
+.jtc-chev path.hot{stroke:var(--jtc-color,var(--ev-summer))}
+
+/* せり上がり出現(フェード+上昇)。既存 jtSu キーフレームを流用 */
+.jtc-rise{opacity:0;animation:jtSu .5s cubic-bezier(.16,1,.3,1) forwards}
 
 /* Bubble */
 .jt-bub{background:#f0f0f0;color:#1a1a1a;border-radius:11px;padding:9px 14px;font-size:12px;line-height:1.5;

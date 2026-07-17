@@ -14303,26 +14303,16 @@ function showContractResultModal(results, salaryChanges, onDone) {
 //  U-20 ジュニアトーナメント UI  (V6 visual)
 // ══════════════════════════════════════════════════════════
 
-/** V6ヘッダー */
+/** クライムライン共通ヘッダー(B案「エンブレム」様式、夏=--ev-summer) */
 function _jtHeader() {
   const season = G.season;
   const bs = App._jtPreview?.result?.bracketSize || 8;
-  return `<div class="jt-hd"><div class="jt-sp">NATIONAL U-20</div><h1>第${season}回 ジュニアトーナメント</h1><div class="jt-sub">${bs}名トーナメント</div></div>`;
-}
-
-/** 選手セルHTML (ブラケット用) */
-function _jtFighterCell(p, isWin, isLose, isTbd) {
-  if (isTbd) return `<div class="jt-bf tbd"><div class="jt-av"><span class="ini">?</span></div><div class="jt-fn">— 未定 —</div></div>`;
-  const cls = isWin ? 'jt-bf w' : isLose ? 'jt-bf l' : 'jt-bf';
-  const faceUrl = getPortraitUrl(p.id);
-  const imgH = faceUrl
-    ? `<img src="${faceUrl}" alt="" onerror="this.outerHTML='<span class=ini>${(p.name||'?')[0]}</span>'">`
-    : `<span class="ini">${(p.name||'?')[0]}</span>`;
-  return `<div class="${cls}">
-    <div class="jt-av">${imgH}</div>
-    <div style="flex:1;min-width:0"><div class="jt-fn">${p.name}</div></div>
-    <div class="jt-fo">OVR${p.ovr}</div>${isWin ? '<div style="color:#2ecc71;font-size:9px;font-weight:700;margin-left:3px">WIN</div>' : ''}
-  </div>`;
+  return `<div class="jtc-header">
+    <img class="jtc-header-emblem" src="../image/emblem-summer.png" alt="" onerror="this.style.display='none'">
+    <div class="jtc-header-title">JUNIOR CUP</div>
+    <div class="jtc-header-sub">ジュニアトーナメント — U-20</div>
+    <div class="jtc-header-ed">第${season}回大会 / ${bs}名トーナメント</div>
+  </div><div class="jtc-double-rule"></div><div class="jtc-climb-note">▲ Climb to the top — 勝ち上がるほど上へ</div>`;
 }
 
 // ===== SUMMON (card-style full-screen) =====
@@ -14396,162 +14386,186 @@ function _showJTImpressionChain(list, idx, onDone) {
   Audio.play('notify');
 }
 
-// ===== BRACKET (V6 horizontal with SVG connectors) =====
+// ===== CLIMBLINE BRACKET (P2b: jt-climbline-rework-inventory-v0.1) =====
+// 下段=1回戦、勝ち進むほど上へ。開幕時は下段の枠のみ描画し、勝者確定のたびに
+// 上段の枠がフェード+上昇で出現する。全ラウンドのデータは Engine.juniorTournament.run() で
+// 事前に一括シミュレーション済みのため、ここでは「どこまで見せるか」を currentRound/currentMatch
+// のポインタで制御するのみ（数値の再計算はしない）。
+function _jtcRoundLabel(name) {
+  return name === 'final' ? '決勝' : name === 'semiFinal' ? '準決勝' : '準々決勝';
+}
+
+function _jtcSizeClass(matchCount) {
+  return matchCount >= 4 ? 'sm' : matchCount === 2 ? 'md' : 'lg';
+}
+
+/** アッパー画像フィッター(勝者=大会色リング/敗者=モノクロ落ち) */
+function _jtcFx(f, isWin, isLose) {
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+  const cls = isWin ? 'w' : isLose ? 'l' : '';
+  const img = upperUrl
+    ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
+    : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
+  return `<div class="jtc-fx${isLose ? ' is-lose' : ''}">
+    <div class="jtc-up ${cls}">${img}</div>
+    <div class="jtc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}</div>
+  </div>`;
+}
+
+/** 決着時間 / MQ チップ */
+function _jtcMinfo(match) {
+  const t = typeof _npTurnsToTime === 'function' ? _npTurnsToTime(match.turns) : '';
+  return `<div class="jtc-minfo">${t ? `<span class="t">${t}</span><span class="jtc-minfo-dot">/</span>` : ''}<span class="mq">MQ ${match.mq}</span></div>`;
+}
+
+/** 通常段(準々決勝/準決勝)の行。8名時は準々決勝(4試合)のみ縮小サイズになる */
+function _jtcRowGrid(round, ri, cRd, cMi, isDone, riseClass) {
+  const matches = round.matches;
+  const sizeClass = _jtcSizeClass(matches.length);
+  let cells = '';
+  matches.forEach((m, mi) => {
+    const fin = isDone(ri, mi);
+    const cur = ri === cRd && mi === cMi;
+    const lWin = fin && m.winnerId === m.left.id;
+    const rWin = fin && m.winnerId === m.right.id;
+    cells += `<div class="jtc-cell${cur ? ' is-current' : ''}">
+      <div class="jtc-pair">${_jtcFx(m.left, lWin, fin && !lWin)}${_jtcFx(m.right, rWin, fin && !rWin)}</div>
+      ${fin ? _jtcMinfo(m) : ''}
+    </div>`;
+  });
+  return `<div class="jtc-tier-label">${_jtcRoundLabel(round.name)}</div>
+  <div class="jtc-row jtc-size-${sizeClass}${riseClass}" style="grid-template-columns:repeat(${matches.length},1fr)">${cells}</div>`;
+}
+
+/** 決勝段(常に1試合、VS表記で大きく) */
+function _jtcFinalRow(round, ri, cRd, cMi, isDone, riseClass) {
+  const match = round.matches[0];
+  const fin = isDone(ri, 0);
+  const cur = ri === cRd && cMi === 0;
+  const lWin = fin && match.winnerId === match.left.id;
+  const rWin = fin && match.winnerId === match.right.id;
+  return `<div class="jtc-tier-label">決勝</div>
+  <div class="jtc-final-row jtc-size-lg${cur ? ' is-current' : ''}${riseClass}">
+    ${_jtcFx(match.left, lWin, fin && !lWin)}
+    <div class="jtc-vs">VS</div>
+    ${_jtcFx(match.right, rWin, fin && !rWin)}
+  </div>
+  ${fin ? _jtcMinfo(match) : ''}`;
+}
+
+/** 合流線(山型)。子段(childCount試合)→親段(childCount/2試合)を CSS Grid の等分割で厳密に位置合わせする。
+ * 親試合が決着済みかつその子の勝者==親の勝者のときだけ大会色に灯す(勝者ラインのみ点灯)。 */
+function _jtcMergeGrid(childCount, hotFlags) {
+  const half = childCount / 2;
+  let cells = '';
+  for (let j = 0; j < half; j++) {
+    const hotL = !!hotFlags[j * 2];
+    const hotR = !!hotFlags[j * 2 + 1];
+    cells += `<div class="jtc-chev"><svg viewBox="0 0 100 30" preserveAspectRatio="none">
+      <path class="${hotL ? 'hot' : ''}" d="M25 30 L25 16 L50 16 L50 2"/>
+      <path class="${hotR ? 'hot' : ''}" d="M75 30 L75 16 L50 16 L50 2"/>
+    </svg></div>`;
+  }
+  return `<div class="jtc-merge" style="grid-template-columns:repeat(${half},1fr)">${cells}</div>`;
+}
+
+/** 決勝→頂上の合流線(常に1本、常に大会色) */
+function _jtcMergePeak() {
+  return `<div class="jtc-merge-peak"><svg viewBox="0 0 20 30" preserveAspectRatio="none"><path class="hot" d="M10 30 L10 2"/></svg></div>`;
+}
+
+/** 同じ枠の出現アニメを再レンダーのたびに繰り返さないための一度きりフラグ */
+function _jtcMarkRise(jt, key) {
+  jt._jtcRevealed = jt._jtcRevealed || {};
+  const isNew = !jt._jtcRevealed[key];
+  jt._jtcRevealed[key] = true;
+  return isNew ? ' jtc-rise' : '';
+}
+
+/** 頂上(王者)ブロック。決勝決着の瞬間にせり上がって出現し、タップで優勝発表画面へ(二段構え) */
+function _jtcPeakBlock(jt, riseClass) {
+  const champion = jt.result.champion;
+  const season = G.season;
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(champion.id) : '';
+  const img = upperUrl
+    ? `<img src="${upperUrl}" alt="${escHtml(champion.name)}" onerror="this.style.display='none'">`
+    : `<span class="jtc-ini">${escHtml((champion.name || '?')[0])}</span>`;
+  return `<div class="jtc-peak${riseClass}" onclick="App.jtGoToFinalResult()">
+    <div class="jtc-up jtc-up-peak w">${img}</div>
+    <div class="jtc-peak-name">${escHtml(champion.name)}</div>
+    <div class="jtc-peak-title">第${season}回大会ジュニアチャンピオン</div>
+    <div class="jtc-peak-tap">タップして結果を見る ▶</div>
+  </div>`;
+}
+
+/** クライムライン本体(頂上〜決勝〜準決勝〜準々決勝)を currentRound/currentMatch まで構築する */
+function _jtcClimbHtml(jt) {
+  const { result, currentRound, currentMatch } = jt;
+  const rounds = result.rounds;
+  const finalRi = rounds.length - 1;
+  const isMatchDone = (ri, mi) => ri < currentRound || (ri === currentRound && mi < currentMatch);
+  const finalDone = isMatchDone(finalRi, 0);
+  const maxVisibleRi = Math.min(currentRound, finalRi);
+
+  let html = '';
+  if (finalDone) {
+    html += _jtcPeakBlock(jt, _jtcMarkRise(jt, 'peak'));
+    html += _jtcMergePeak();
+  }
+
+  for (let ri = maxVisibleRi; ri >= 0; ri--) {
+    const round = rounds[ri];
+    const riseClass = _jtcMarkRise(jt, 'r' + ri);
+    html += ri === finalRi
+      ? _jtcFinalRow(round, ri, currentRound, currentMatch, isMatchDone, riseClass)
+      : _jtcRowGrid(round, ri, currentRound, currentMatch, isMatchDone, riseClass);
+
+    // 現在進行中の段なら、その直下にフォーカスカード(既存演出を無変更で流用)
+    if (ri === currentRound && currentMatch < round.matches.length) {
+      html += _jtFocusCard(round.matches[currentMatch], round.name, ri, currentMatch);
+    }
+
+    if (ri > 0) {
+      const childRound = rounds[ri - 1];
+      const hotFlags = childRound.matches.map((cm, cmi) => {
+        const parentMi = Math.floor(cmi / 2);
+        const parentMatch = round.matches[parentMi];
+        return isMatchDone(ri, parentMi) && parentMatch.winnerId === cm.winnerId;
+      });
+      html += _jtcMergeGrid(childRound.matches.length, hotFlags);
+    }
+  }
+  return html;
+}
+
+// ===== BRACKET (クライムライン型 / P2b) =====
 function renderJuniorTournamentBracket() {
   const jt = App._jtPreview;
   if (!jt) return;
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const { result, currentRound, currentMatch } = jt;
-  const { rounds, bracketSize } = result;
 
-  // ブラケット表示用にboxを広げる（8名トーナメントは700pxに収まらない）
   box.style.maxWidth = '100%';
   box.style.padding = '0';
   box.style.background = 'transparent';
   box.style.border = 'none';
 
-  // 「現在の試合」かどうかを判定するヘルパー
-  const isMatchDone = (ri, mi) => ri < currentRound || (ri === currentRound && mi < currentMatch);
-  const isCurrentMatch = (ri, mi) => ri === currentRound && mi === currentMatch;
-
-  // 次ラウンドが既に進んでいるか（勝者吹き出し非表示判定用）
-  const nextRoundStarted = (ri) => {
-    if (ri + 1 >= rounds.length) return false;
-    for (let i = 0; i < rounds[ri + 1].matches.length; i++) {
-      if (isMatchDone(ri + 1, i) || isCurrentMatch(ri + 1, i)) return true;
-    }
-    return false;
-  };
-
   let html = `<div class="jt-phase">対戦表</div>`;
-  html += `<div class="jt-wrap">${_jtHeader()}`;
+  html += `<div class="jt-wrap" style="--jtc-color:var(--ev-summer)">${_jtHeader()}`;
+  html += `<div class="jtc-climb">${_jtcClimbHtml(jt)}</div>`;
 
-  // === 8名ブラケット ===
-  if (bracketSize === 8 && rounds.length === 3) {
-    html += _jtBracket8(rounds, currentRound, currentMatch, isMatchDone, isCurrentMatch, nextRoundStarted);
-  } else {
-    // 4名ブラケット
-    html += _jtBracket4(rounds, currentRound, currentMatch, isMatchDone, isCurrentMatch, nextRoundStarted);
-  }
-
-  // フォーカスカード（現在の試合）
-  const curRound = rounds[currentRound];
+  // 全試合スキップボタン(進行中の試合がある間のみ表示。頂上せり上がり後はタップ操作に切替)
+  const curRound = result.rounds[currentRound];
   if (curRound && currentMatch < curRound.matches.length) {
-    const match = curRound.matches[currentMatch];
-    html += _jtFocusCard(match, curRound.name, currentRound, currentMatch);
+    html += `<div style="text-align:center;margin-top:12px">
+      <button class="btn" style="padding:8px 24px;font-size:12px;opacity:0.6" onclick="App.jtSkipAll()">全試合スキップ →</button>
+    </div>`;
   }
-
-  // 全スキップボタン
-  html += `<div style="text-align:center;margin-top:12px">`;
-  html += `<button class="btn" style="padding:8px 24px;font-size:12px;opacity:0.6" onclick="App.jtSkipAll()">全試合スキップ →</button>`;
-  html += `</div></div>`;
+  html += `</div>`;
 
   box.innerHTML = html;
   overlay.classList.add('active');
-}
-
-/** 8名ブラケットHTML */
-function _jtBracket8(rounds, cRd, cMi, isDone, isCur, nrStarted) {
-  const qf = rounds[0], sf = rounds[1], fn = rounds[2];
-  let h = '<div class="jt-bk">';
-  // 左QF (match 0,1)
-  h += '<div class="jt-rd"><div class="jt-rl">準々決勝</div>';
-  h += _jtBkMatch(qf, 0, 0, cRd, cMi, isDone, isCur, nrStarted);
-  h += '<div class="jt-gap"></div>';
-  h += _jtBkMatch(qf, 0, 1, cRd, cMi, isDone, isCur, nrStarted);
-  h += '</div>';
-  // connector QF→SF left
-  h += '<div class="jt-cn" style="width:24px;min-height:220px"><svg width="24" height="100%" preserveAspectRatio="none" viewBox="0 0 24 200"><line x1="0" y1="36" x2="24" y2="72" stroke="var(--border)" stroke-width="1.5"/><line x1="0" y1="154" x2="24" y2="118" stroke="var(--border)" stroke-width="1.5"/></svg></div>';
-  // left SF (match 0)
-  h += '<div class="jt-rd"><div class="jt-rl">準決勝</div><div style="height:52px"></div>';
-  h += _jtBkMatch(sf, 1, 0, cRd, cMi, isDone, isCur, nrStarted);
-  h += '<div style="height:52px"></div></div>';
-  // connector SF→FN left
-  h += '<div class="jt-cn" style="width:24px;min-height:220px"><svg width="24" height="100%" preserveAspectRatio="none" viewBox="0 0 24 200"><line x1="0" y1="95" x2="24" y2="100" stroke="var(--border)" stroke-width="1.5"/></svg></div>';
-  // Final
-  h += '<div class="jt-rd" style="min-width:210px"><div class="jt-rl">🏆 決勝</div><div style="height:40px"></div>';
-  h += _jtBkMatch(fn, 2, 0, cRd, cMi, isDone, isCur, nrStarted);
-  h += '<div style="height:40px"></div></div>';
-  // connector SF→FN right
-  h += '<div class="jt-cn" style="width:24px;min-height:220px"><svg width="24" height="100%" preserveAspectRatio="none" viewBox="0 0 24 200"><line x1="24" y1="95" x2="0" y2="100" stroke="var(--border)" stroke-width="1.5"/></svg></div>';
-  // right SF (match 1)
-  h += '<div class="jt-rd"><div class="jt-rl">準決勝</div><div style="height:52px"></div>';
-  h += _jtBkMatch(sf, 1, 1, cRd, cMi, isDone, isCur, nrStarted);
-  h += '<div style="height:52px"></div></div>';
-  // connector QF→SF right
-  h += '<div class="jt-cn" style="width:24px;min-height:220px"><svg width="24" height="100%" preserveAspectRatio="none" viewBox="0 0 24 200"><line x1="24" y1="36" x2="0" y2="72" stroke="var(--border)" stroke-width="1.5"/><line x1="24" y1="154" x2="0" y2="118" stroke="var(--border)" stroke-width="1.5"/></svg></div>';
-  // 右QF (match 2,3)
-  h += '<div class="jt-rd"><div class="jt-rl">準々決勝</div>';
-  h += _jtBkMatch(qf, 0, 2, cRd, cMi, isDone, isCur, nrStarted);
-  h += '<div class="jt-gap"></div>';
-  h += _jtBkMatch(qf, 0, 3, cRd, cMi, isDone, isCur, nrStarted);
-  h += '</div>';
-  h += '</div>';
-  return h;
-}
-
-/** 4名ブラケットHTML */
-function _jtBracket4(rounds, cRd, cMi, isDone, isCur, nrStarted) {
-  const sf = rounds[0], fn = rounds[1];
-  let h = '<div class="jt-bk">';
-  // left SF
-  h += '<div class="jt-rd"><div class="jt-rl">準決勝</div>';
-  h += _jtBkMatch(sf, 0, 0, cRd, cMi, isDone, isCur, nrStarted);
-  h += '</div>';
-  // connector
-  h += '<div class="jt-cn" style="width:24px;min-height:180px"><svg width="24" height="100%" preserveAspectRatio="none" viewBox="0 0 24 200"><line x1="0" y1="80" x2="24" y2="100" stroke="var(--border)" stroke-width="1.5"/></svg></div>';
-  // Final
-  h += '<div class="jt-rd" style="min-width:210px"><div class="jt-rl">🏆 決勝</div>';
-  h += _jtBkMatch(fn, 1, 0, cRd, cMi, isDone, isCur, nrStarted);
-  h += '</div>';
-  // connector
-  h += '<div class="jt-cn" style="width:24px;min-height:180px"><svg width="24" height="100%" preserveAspectRatio="none" viewBox="0 0 24 200"><line x1="24" y1="80" x2="0" y2="100" stroke="var(--border)" stroke-width="1.5"/></svg></div>';
-  // right SF
-  h += '<div class="jt-rd"><div class="jt-rl">準決勝</div>';
-  h += _jtBkMatch(sf, 0, 1, cRd, cMi, isDone, isCur, nrStarted);
-  h += '</div>';
-  h += '</div>';
-  return h;
-}
-
-/** ブラケット内の1試合枠 */
-function _jtBkMatch(round, ri, mi, cRd, cMi, isDone, isCur, nrStarted) {
-  const match = round.matches[mi];
-  if (!match) return '';
-  const fin = isDone(ri, mi);
-  const cur = isCur(ri, mi);
-  const lWin = fin && match.winnerId === match.left.id;
-  const rWin = fin && match.winnerId === match.right.id;
-
-  // 前ラウンドが未消化なら TBD
-  let leftKnown = true, rightKnown = true;
-  if (ri === 1 && round.matches.length === 2) { // SF of 8-bracket
-    if (!isDone(0, mi * 2)) leftKnown = false;
-    if (!isDone(0, mi * 2 + 1)) rightKnown = false;
-  } else if (ri === 2) { // Final of 8-bracket
-    if (!isDone(1, 0)) leftKnown = false;
-    if (!isDone(1, 1)) rightKnown = false;
-  } else if (ri === 1 && round.matches.length === 1) { // Final of 4-bracket
-    if (!isDone(0, 0)) leftKnown = false;
-    if (!isDone(0, 1)) rightKnown = false;
-  }
-
-  let h = `<div class="jt-bm${cur ? ' act' : ''}">`;
-  h += leftKnown ? _jtFighterCell(match.left, lWin, fin && !lWin, false) : _jtFighterCell(null, false, false, true);
-  h += `<div class="jt-bvs">VS</div>`;
-  h += rightKnown ? _jtFighterCell(match.right, rWin, fin && !rWin, false) : _jtFighterCell(null, false, false, true);
-  h += `</div>`;
-
-  // 勝者吹き出し（次ラウンド未開始時のみ）
-  if (fin && !nrStarted(ri)) {
-    const winner = lWin ? match.left : match.right;
-    const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default');
-    if (winLine) {
-      h += `<div class="jt-bub" style="margin:5px auto;max-width:200px;font-size:11px;padding:7px 12px"><div class="sp gd">${winner.name}</div>「${winLine}」</div>`;
-    }
-  }
-  return h;
 }
 
 /** フォーカスカード（stand画像向かい合わせ + セリフ + ボタン） */
@@ -14686,13 +14700,16 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   const metaRight = `${match.right._orgName || ''}`.trim() || '—';
   const winnerLabel = `🏆 ${escHtml(winner.name)} WIN`;
   const seasonLabel = `第${G.season}回 JT`;
+  const matchNoLabel = isFinal ? '決勝' : `${escHtml(roundLabel)} 第${mi + 1}試合`;
 
-  let html = `<div class="pb-container">`;
+  // クライムライン画面と地続きに見せるため、同じヘッダー(エンブレム+金二重罫)を先頭に置く
+  let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--ev-summer)">${_jtHeader()}</div>`;
+  html += `<div class="pb-container">`;
 
   html += `<div class="pb-banner">
     <div class="pb-live is-jt">🥇 JUNIOR TOURNAMENT</div>
     <div class="pb-banner-title is-jt">${escHtml(roundLabel)}</div>
-    <div class="pb-banner-sub">${escHtml(seasonLabel)}<span class="dot">·</span>Match ${matchPos} / ${totalMatchesInTournament}<span class="dot">·</span>${isFinal ? 'Final' : `第${mi + 1}試合`}</div>
+    <div class="pb-banner-sub">${escHtml(seasonLabel)}<span class="dot">·</span>第${matchPos}試合 / 全${totalMatchesInTournament}試合<span class="dot">·</span>${escHtml(matchNoLabel)}</div>
   </div>`;
 
   // Scoreboard: Round / Match / MQ / Finish
@@ -14738,6 +14755,8 @@ function renderJuniorTournamentMatchResult(ri, mi) {
     });
   }
   html += `</div>`;
+  // 決着時間チップ(クライムライン画面と同一の見た目。_jtcMinfoを流用し視覚を地続きにする)
+  html += `<div class="jtc-result-minfo">${_jtcMinfo(match)}</div>`;
   html += `</div>`; // .pb-matches
 
   // Footer
