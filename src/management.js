@@ -19059,11 +19059,35 @@ Engine.shachoshitsu = {
   // ── コスト計算(団体書類は unitCost×人数、個人書類は cost をそのまま) ─────────
   // bonus / refresh_leave は選手・選択内容で実費が決まる動的コスト書類(cost: null)。
   // ここでは 0 を返し、execute 内の各ブランチが実費を算定して資金チェックする。
-  calcCost(doc, state) {
+  // pairKey: target: 'pair' 書類(関係修復斡旋書)のとき "idA_idB" 形式のペアキーを渡すと
+  // 当事者給与連動コストを算出する(タスクa: Keisuke裁定 2026-07-17)。省略時は基本額のみ返す。
+  calcCost(doc, state, pairKey) {
     if (!doc) return 0;
     if (doc.effect && doc.effect.target === 'team' && doc.unitCost) {
       const headcount = (state.roster || []).filter(f => !f.isRental && !f.injury && !f.onLeave).length;
       return doc.unitCost * Math.max(headcount, doc.minHeadcount || 4);
+    }
+    // タスクa(relationship-system-spec-v2.3 P-6 費用リバランス, 2026-07-17):
+    // 「新人もベテランも同額はおかしい」への対応。費用 = 基本額 + (給与A+給与B) × 係数。
+    // 実測給与レンジ(SALARY_PARAMS: 新人9〜13万 / 中堅38万 / エース124万 / トップ王者185〜227万)から、
+    // 🔧 base=90万・coeff=0.4 で「新人ペア→ほぼ現行固定額(≈100万)」「トップ選手ペア→2.4〜2.7倍(≈240〜270万)」
+    // になるよう較正。10万単位に丸めて表示をすっきりさせる。
+    if (doc.effect && doc.effect.target === 'pair' && typeof pairKey === 'string' && pairKey.includes('_')) {
+      const [aStr, bStr] = pairKey.split('_');
+      const idA = parseInt(aStr, 10);
+      const idB = parseInt(bStr, 10);
+      const roster = state.roster || [];
+      const fA = roster.find(c => c.id === idA);
+      const fB = roster.find(c => c.id === idB);
+      if (fA && fB) {
+        const titles = state.titles || {};
+        const salaryA = Engine.util.getSalary(fA, titles);
+        const salaryB = Engine.util.getSalary(fB, titles);
+        const PAIR_COST_BASE = 90;   // 🔧 基本額(万)
+        const PAIR_COST_COEFF = 0.4; // 🔧 給与連動係数
+        const raw = PAIR_COST_BASE + (salaryA + salaryB) * PAIR_COST_COEFF;
+        return Math.round(raw / 10) * 10;
+      }
     }
     return doc.cost || 0;
   },
@@ -19470,7 +19494,8 @@ Engine.shachoshitsu = {
     if (currentDp < dpCost) return { error: 'decision_points_insufficient' };
 
     // 資金チェック(bonus/refresh_leave は動的コストのためここでは 0 — 各ブランチで実費を再チェック)
-    let actualCost = Engine.shachoshitsu.calcCost(doc, state);
+    // pair書類は fighterId が "idA_idB" 形式のペアキーなのでそのまま calcCost に渡す(タスクa)
+    let actualCost = Engine.shachoshitsu.calcCost(doc, state, fighterId);
     if ((state.funds || 0) < actualCost) return { error: 'funds_insufficient' };
 
     let roster = [...state.roster];

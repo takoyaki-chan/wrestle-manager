@@ -7654,7 +7654,9 @@ function showDecisionPairModal(docId, state) {
       const bondAB = (rels[`${a}>${b}`] || {}).bond;
       const bondBA = (rels[`${b}>${a}`] || {}).bond;
       const avgBond = ((bondAB != null ? bondAB : 50) + (bondBA != null ? bondBA : 50)) / 2;
-      return { key: k, idA: a, idB: b, fA, fB, count: w1[k], avgBond };
+      // タスクa(2026-07-17): ペアごとに当事者給与連動コストを算出しておく
+      const cost = Engine.shachoshitsu.calcCost(doc, state, k);
+      return { key: k, idA: a, idB: b, fA, fB, count: w1[k], avgBond, cost };
     })
     .filter(p => p)
     .sort((x, y) => y.count - x.count);
@@ -7664,9 +7666,6 @@ function showDecisionPairModal(docId, state) {
     return;
   }
 
-  const actualCost = Engine.shachoshitsu.calcCost(doc, state);
-  const remainingFunds = (state.funds || 0) - actualCost;
-  const remainingColor = remainingFunds < 200 ? 'var(--accent-negative)' : 'var(--cream-gold-dark)';
   const successPct = Math.round(((doc.effect && doc.effect.successRate) || 0.7) * 100);
 
   let selectedPairKey = eligiblePairs[0].key;
@@ -7699,18 +7698,19 @@ function showDecisionPairModal(docId, state) {
         <div style="display:flex;gap:14px;align-items:center;font-size:12px">
           <span style="color:${rel.color};font-weight:${rel.weight}">二人の関係: ${rel.text}</span>
           <span style="color:var(--cream-text-sub)">対立累計 ${p.count}回</span>
+          <span style="color:var(--cream-gold-dark);font-weight:700">${p.cost}万</span>
         </div>
       </div>`;
     }).join('');
   };
 
-  const summaryHtml = `
-    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
-    <div style="max-width:560px;margin:0 auto 14px">
-      <div style="font-size:12px;color:var(--cream-text-sub);margin-bottom:8px">対象ペアを選択してください</div>
-      <div id="mdlAPairList" style="max-height:240px;overflow-y:auto">${_renderPairList()}</div>
-    </div>
-    <div style="max-width:460px;margin:0 auto;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:10px 16px;font-size:13px">
+  // タスクa(2026-07-17): 選択ペアごとにコスト・残金パネルを再描画する
+  const _renderCostPanel = () => {
+    const sel = eligiblePairs.find(p => p.key === selectedPairKey) || eligiblePairs[0];
+    const actualCost = sel.cost;
+    const remainingFunds = (state.funds || 0) - actualCost;
+    const remainingColor = remainingFunds < 200 ? 'var(--accent-negative)' : 'var(--cream-gold-dark)';
+    return `
       <div style="display:flex;justify-content:space-between;padding:3px 0">
         <span style="color:var(--cream-text-sub)">コスト</span>
         <span><strong style="color:var(--cream-gold-dark)">${actualCost}万</strong>　<span style="color:var(--cream-text-dim);font-size:11px">⚡${doc.decisionCost}</span></span>
@@ -7723,7 +7723,17 @@ function showDecisionPairModal(docId, state) {
         <span style="color:var(--cream-text-sub)">成功率</span>
         <span style="color:var(--cream-text-main);font-weight:700">${successPct}%</span>
       </div>
+      <div style="padding-top:6px;font-size:11px;color:var(--cream-text-dim)">当事者の格に応じて費用が変わる</div>
+    `;
+  };
+
+  const summaryHtml = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="max-width:560px;margin:0 auto 14px">
+      <div style="font-size:12px;color:var(--cream-text-sub);margin-bottom:8px">対象ペアを選択してください</div>
+      <div id="mdlAPairList" style="max-height:240px;overflow-y:auto">${_renderPairList()}</div>
     </div>
+    <div style="max-width:460px;margin:0 auto;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:10px 16px;font-size:13px" id="mdlAPairCostPanel">${_renderCostPanel()}</div>
   `;
 
   const html = `
@@ -7746,6 +7756,8 @@ function showDecisionPairModal(docId, state) {
         selectedPairKey = row.dataset.pairkey;
         const listEl = document.getElementById('mdlAPairList');
         if (listEl) listEl.innerHTML = _renderPairList();
+        const costEl = document.getElementById('mdlAPairCostPanel');
+        if (costEl) costEl.innerHTML = _renderCostPanel();
         _attachPairHandlers();
       });
     });
@@ -10939,19 +10951,24 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
         ? `社長、挑戦試合 ${playerScore}-${aiScore}。${reqName}選手の直訴…結果が伴いませんでした。`
         : `社長、挑戦試合 ${playerScore}-${aiScore}の痛み分け。${reqName}選手と${oppName}選手の決着は持ち越しです。`);
 
-  // 相手選手リアクションセリフ（archetype 別、CHALLENGE_REQUEST_OPPONENT_REACTIONS から1行抽選）
+  // 相手選手リアクションセリフ（Phase 5細分化 2026-07-17: archetype × 試合結果[teamB視点]で分岐）
   let oppReactionLine = '';
+  let oppReactionLabel = '受けて立つ側';
   if (typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined') {
     const oppArch = (card.teamB[0] && card.teamB[0].archetype) || 'normal';
-    const arr = CHALLENGE_REQUEST_OPPONENT_REACTIONS[oppArch] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal;
+    const pool = CHALLENGE_REQUEST_OPPONENT_REACTIONS[oppArch] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal;
+    // teamB(相手陣)視点の結果: teamWin==='B' なら勝利、'A' なら敗北、それ以外は引き分け
+    const oppOutcome = teamWin === 'B' ? 'win' : (teamWin === 'A' ? 'lose' : 'draw');
+    const arr = (pool && pool[oppOutcome] && pool[oppOutcome].length > 0) ? pool[oppOutcome] : (pool && pool._accept);
     if (arr && arr.length > 0) {
       const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xC4A3, card.opponentId));
       oppReactionLine = arr[Engine.rng.int(lineRng, 0, arr.length - 1)];
+      oppReactionLabel = oppOutcome === 'win' ? '受けて、勝った側' : (oppOutcome === 'lose' ? '受けて、敗れた側' : '受けて、決着つかずの側');
     }
   }
   const oppReactionHtml = oppReactionLine
     ? `<div class="crrm-opp-reaction">
-        <div class="crrm-opp-reaction-speaker">${oppName}（受けて立つ側）</div>
+        <div class="crrm-opp-reaction-speaker">${oppName}（${oppReactionLabel}）</div>
         <div class="crrm-opp-reaction-text">「${oppReactionLine}」</div>
       </div>`
     : '';

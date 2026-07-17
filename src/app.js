@@ -4917,6 +4917,55 @@ const App = {
       }
     }
 
+    // ── challenge-request-spec-v0.1 Phase 3(2026-07-17): 直訴試合の興行枠in-show挿入 ──
+    // _pendingReclaim と同じパターン: executeShow直前に3シングル分のカードスロットを注入し、
+    // 相手陣（他団体ロスター）はレンダー用に一時的にplayer rosterへゲスト注入する。
+    // 通常カードは潰さない（置き換えではなく追加）。
+    App._crMatchData = null;
+    if (G._pendingChallengeMatch) {
+      const pcm = G._pendingChallengeMatch;
+      const isInverseCR = !!pcm.isInverse;
+      const _crHealthy = f => f && !f.injury && !f.forcedRest && !f.suspended;
+      const _crFindAll = (ids, rosterArr) => ids.map(id => (rosterArr || []).find(f => f.id === id)).filter(Boolean);
+      const reqRosterCR = isInverseCR ? (G.aiOrgs?.[pcm.requesterOrgId]?.roster || []) : G.roster;
+      const oppRosterCR = isInverseCR ? G.roster : (G.aiOrgs?.[pcm.opponentOrgId]?.roster || []);
+      const teamACR = _crFindAll(pcm.teamAIds, reqRosterCR);
+      const teamBCR = _crFindAll(pcm.teamBIds, oppRosterCR);
+      if (teamACR.length === 3 && teamBCR.length === 3 && teamACR.every(_crHealthy) && teamBCR.every(_crHealthy)) {
+        const crGroupId = `cr_${pcm.requesterId}_${pcm.opponentId}_${G.season}_${G.week}`;
+        // ゲスト側 = 他団体所属の陣営（forward: teamB / inverse: teamA）
+        const guestTeamCR = isInverseCR ? teamACR : teamBCR;
+        const guestOrgIdCR = isInverseCR ? pcm.requesterOrgId : pcm.opponentOrgId;
+        const guestsForRosterCR = guestTeamCR.map(f => ({ ...f, isCRGuest: true, _crGuestOrgId: guestOrgIdCR }));
+        const crMatches = [0, 1, 2].map(i => ({
+          left: teamACR[i].id, right: teamBCR[i].id,
+          isTitle: false, isCRMatch: true, _crGroupId: crGroupId, _crSlot: i,
+        }));
+        G = { ...G, showCard: [...G.showCard, ...crMatches], roster: [...G.roster, ...guestsForRosterCR] };
+        validMatches.push(...crMatches);
+        App._crMatchData = {
+          groupId: crGroupId, isInverse: isInverseCR,
+          requesterId: pcm.requesterId, opponentId: pcm.opponentId,
+          requesterOrgId: pcm.requesterOrgId, opponentOrgId: pcm.opponentOrgId,
+          requesterOrgName: pcm.requesterOrgName, opponentOrgName: pcm.opponentOrgName,
+          teamAIds: teamACR.map(f => f.id), teamBIds: teamBCR.map(f => f.id),
+          guestIds: guestsForRosterCR.map(f => f.id),
+        };
+        const { _pendingChallengeMatch: _pcm1, ...restGCR } = G;
+        G = restGCR;
+        showEventPopup({
+          type: 'fighter', id: pcm.requesterId,
+          name: teamACR[0].name, tone: 'positive',
+          message: `⚔ 直訴の一戦、この興行で決着`,
+          detail: `${teamACR[0].name} が持ち込んだ舞台が、今日のカードに組み込まれた。`,
+        });
+      } else {
+        // 出場メンバーが揃わない（怪我・離脱等）→ 静かに取り下げ
+        const { _pendingChallengeMatch: _pcm2, ...restGCR2 } = G;
+        G = restGCR2;
+      }
+    }
+
     // v1.2: 乱入マッチ判定
     App._intrusionData = null;
     const intrusionRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 8888));
@@ -5718,6 +5767,13 @@ const App = {
             },
           });
         }
+        // firing-grudge-spec-v0.1 タスクc(2026-07-17): 奪還挑戦の結果パスにも firedReturn を接続。
+        // 防衛者(rd.orgId所属)が元プレイヤー解雇者なら「古巣から奪ったベルトを防衛/明け渡す」文脈、
+        // 挑戦者(player所属)がrd.orgIdの元解雇者ならその逆(古巣に取られたベルトを取り返しに行く)文脈。
+        const defenderFighter = roster.find(c => c.id === rd.defenderId);
+        const challengerFighter = roster.find(c => c.id === rd.challengerId);
+        if (defenderFighter) s = App._maybeEmitFiredReturn(s, defenderFighter, 'player', rd.orgId);
+        if (challengerFighter) s = App._maybeEmitFiredReturn(s, challengerFighter, rd.orgId, 'player');
       }
       // 防衛者を player roster から除去
       roster = roster.filter(c => !c.isReclaim);
@@ -5725,6 +5781,49 @@ const App = {
       const { _pendingReclaim, ...rest } = s;
       s = rest;
       App._reclaimData = null;
+    }
+
+    // ── challenge-request-spec-v0.1 Phase 3: 直訴試合(3シングル)の結果処理 ──
+    // 実際のショーパイプラインで解決済みの results から3枠分を抜き出し、
+    // 旧 resolveMatchCard と同じ shape ({matches, winsA, winsB, teamWin}) を組み立てて
+    // 既存の _applyChallengeRequestResult(h2h/career/news)にそのまま渡す。
+    if (App._crMatchData) {
+      const cd = App._crMatchData;
+      const crIdxs = validMatches
+        .map((m, i) => ({ m, i }))
+        .filter(({ m }) => m._crGroupId === cd.groupId)
+        .sort((a, b) => a.m._crSlot - b.m._crSlot)
+        .map(({ i }) => i);
+      if (crIdxs.length === 3 && crIdxs.every(i => results[i])) {
+        const crMatchResults = crIdxs.map(i => {
+          const r = results[i];
+          return { fighterA: r.left, fighterB: r.right, winner: r.winner, mq: r.mq, finType: r.finType, finMove: r.finMove };
+        });
+        const crWinsA = crMatchResults.filter(m => m.winner === 'left').length;
+        const crWinsB = crMatchResults.filter(m => m.winner === 'right').length;
+        const crTeamWin = crWinsA > crWinsB ? 'A' : (crWinsB > crWinsA ? 'B' : 'draw');
+        const crCard = {
+          isInverse: cd.isInverse,
+          requesterId: cd.requesterId, opponentId: cd.opponentId,
+          requesterOrgId: cd.requesterOrgId, opponentOrgId: cd.opponentOrgId,
+          requesterOrgName: cd.requesterOrgName, opponentOrgName: cd.opponentOrgName,
+          otherOrgId: cd.opponentOrgId, otherOrgName: cd.opponentOrgName,
+          teamA: cd.teamAIds.map(id => roster.find(c => c.id === id)).filter(Boolean),
+          teamB: cd.teamBIds.map(id => roster.find(c => c.id === id)).filter(Boolean),
+        };
+        if (crCard.teamA.length === 3 && crCard.teamB.length === 3) {
+          const crResult = { matches: crMatchResults, winsA: crWinsA, winsB: crWinsB, teamWin: crTeamWin };
+          const appliedCR = App._applyChallengeRequestResult({ ...s, roster }, crCard, crResult);
+          s = appliedCR;
+          roster = appliedCR.roster;
+          // 結果モーダルは結果画面表示前にキューで消化する(F08/F09と同じ「予約→drain」パターン)
+          s = { ...s, _pendingChallengeRequestResult: { card: crCard, result: crResult } };
+        }
+      }
+      // ゲスト選手をrosterから除去(他団体所属のため永続変更は自団体側に残さない)
+      roster = roster.filter(c => !cd.guestIds.includes(c.id));
+      s = { ...s, roster };
+      App._crMatchData = null;
     }
 
     // 集客v2: matchAppeals→showDraw→attendance算出
@@ -6514,6 +6613,9 @@ const App = {
             h2h = Engine.h2h.update(h2h, aId, bId, tagWinner, r.mq, false, false, s.season, s.week, 'show', 'player', 'player');
           }
         }
+      } else if (m.isCRMatch) {
+        // challenge-request-spec-v0.1 Phase 3: 直訴試合はh2h/betrayal通知を専用処理
+        // (_applyChallengeRequestResult内、正しいorg IDで)済みのためここでは二重記録しない
       } else {
         const meta = App._buildMatchMeta(s, m.left, m.right, !!m.isReclaim);
         h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player', meta);
@@ -6795,7 +6897,19 @@ const App = {
         drainF08Aftermath(then);
       }
     };
-    drainF09Ending(() => drainF08Aftermath(() => renderShowResult(results, injuryResults)));
+    // challenge-request-spec-v0.1 Phase 3: 直訴試合の結果モーダル(F08/F09と同じdrainパターン)
+    const drainCRResult = (then) => {
+      if (!G._pendingChallengeRequestResult) { if (then) then(); return; }
+      const data = G._pendingChallengeRequestResult;
+      const { _pendingChallengeRequestResult: _, ...rest } = G;
+      G = rest;
+      if (typeof showChallengeRequestResultModal === 'function') {
+        showChallengeRequestResultModal(data.card, data.result, G, () => { if (then) then(); });
+      } else {
+        if (then) then();
+      }
+    };
+    drainF09Ending(() => drainF08Aftermath(() => drainCRResult(() => renderShowResult(results, injuryResults))));
   },
 
   // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
@@ -8153,6 +8267,39 @@ const App = {
   // challenge-request-spec-v0.1 Phase 3: 試合結果を h2h / career / 業界ニュースに反映
   // forward: teamA = player roster / teamB = AI org roster
   // inverse: teamA = AI org (grudge保持) roster / teamB = player roster
+  // firing-grudge-spec-v0.1 タスクc(2026-07-17): grudge.vsOrgId 保持者が「元雇用主」org と対戦した際に
+  // firedReturn ニュースを発信する共有ヘルパー(1名分の純関数、state を返す)。
+  // 元は _applyChallengeRequestResult 内の _emitFiredReturn に埋め込まれていたが、
+  // B-3元同僚初対戦(通常興行/対抗戦/PPV)・奪還挑戦の結果パスでも使うため独立関数化。
+  // fighter: 判定対象キャラ / foeOrgId: 対戦相手側の現在org id / sideOrgId: fighter自身の現在org id
+  // 条件: grudge.intensity>=60 かつ 解雇から24週以内(spec §3.2)
+  _maybeEmitFiredReturn(state, fighter, foeOrgId, sideOrgId) {
+    const g = fighter && fighter.grudge;
+    if (!g || !g.vsOrgId || g.vsOrgId !== foeOrgId) return state;
+    if (!g.intensity || g.intensity < 60) return state;
+    const nowAbs = Engine.util && Engine.util.absWeek
+      ? Engine.util.absWeek(state.season, state.week)
+      : ((state.season - 1) * 20 + state.week);
+    const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
+    const weeksSinceFired = nowAbs - firedAbs;
+    if (weeksSinceFired > 24 || weeksSinceFired < 0) return state;
+    const _orgNameOf = (orgId) => {
+      if (orgId === 'player') return state.orgName || 'プレイヤー団体';
+      const cfg = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS.find(o => o.id === orgId) : null;
+      return (cfg && cfg.name) || '元所属団体';
+    };
+    return Engine.industryNews.push(state, {
+      type: 'firedReturn',
+      characterId: fighter.id,
+      data: {
+        name: fighter.name,
+        ourOrg: _orgNameOf(g.vsOrgId),   // 解雇した側＝grudge対象
+        toOrg: _orgNameOf(sideOrgId),     // 現所属
+        weeksSinceFired: String(weeksSinceFired),
+      },
+    });
+  },
+
   _applyChallengeRequestResult(state, card, result) {
     let s = { ...state };
     const isInverse = !!card.isInverse;
@@ -8257,42 +8404,13 @@ const App = {
     });
 
     // firing-grudge-spec-v0.1 Phase 4: 各陣に grudge.vsOrgId が相手陣 org と一致するキャラが居れば
-    // firedReturn ニュースを追加発信（intensity≥60 / 解雇から24週以内）
-    const nowAbs = Engine.util && Engine.util.absWeek ? Engine.util.absWeek(s.season, s.week) : ((s.season - 1) * 20 + s.week);
-    const _orgNameOf = (orgId) => {
-      if (orgId === 'player') return s.orgName || 'プレイヤー団体';
-      const cfg = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS.find(o => o.id === orgId) : null;
-      return (cfg && cfg.name) || '元所属団体';
-    };
-    const _emitFiredReturn = (lineupArr, sideOrgId, foeOrgId) => {
+    // firedReturn ニュースを追加発信（intensity≥60 / 解雇から24週以内）。判定は共有ヘルパー _maybeEmitFiredReturn に集約(タスクc 2026-07-17)。
+    const _emitFiredReturnForLineup = (lineupArr, sideOrgId, foeOrgId) => {
       if (!Array.isArray(lineupArr)) return;
-      for (const fighter of lineupArr) {
-        const g = fighter && fighter.grudge;
-        if (!g || !g.vsOrgId) continue;
-        if (g.vsOrgId !== foeOrgId) continue;
-        if (!g.intensity || g.intensity < 60) continue;
-        const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
-        const weeksSinceFired = nowAbs - firedAbs;
-        if (weeksSinceFired > 24 || weeksSinceFired < 0) continue;
-        s = Engine.industryNews.push(s, {
-          type: 'firedReturn',
-          characterId: fighter.id,
-          data: {
-            name: fighter.name,
-            ourOrg: _orgNameOf(g.vsOrgId),  // 解雇した側＝grudge対象
-            toOrg: _orgNameOf(sideOrgId),    // 現所属
-            weeksSinceFired: String(weeksSinceFired),
-          },
-        });
-      }
+      for (const fighter of lineupArr) s = App._maybeEmitFiredReturn(s, fighter, foeOrgId, sideOrgId);
     };
-    if (isInverse) {
-      _emitFiredReturn(card.teamA, requesterOrgId, opponentOrgId);
-      _emitFiredReturn(card.teamB, opponentOrgId, requesterOrgId);
-    } else {
-      _emitFiredReturn(card.teamA, requesterOrgId, opponentOrgId);
-      _emitFiredReturn(card.teamB, opponentOrgId, requesterOrgId);
-    }
+    _emitFiredReturnForLineup(card.teamA, requesterOrgId, opponentOrgId);
+    _emitFiredReturnForLineup(card.teamB, opponentOrgId, requesterOrgId);
 
     return s;
   },
@@ -9618,7 +9736,7 @@ const App = {
   },
 
   // challenge-request-spec-v0.1 Phase 2: 挑戦試合打診UIフロー
-  // YES → CD/クォータ更新 + （Phase 3 で団体戦カード挿入）
+  // YES → CD/クォータ更新 + 次回自団体興行への挿入予約（Phase 3, 2026-07-17: 即時解決から興行枠内挿入に変更）
   // NO  → CD延長 + 打診者 condition 一時悪化 + ティッカーセリフ
   handleChallengeRequest(payload) {
     if (!payload) return;
@@ -9654,26 +9772,30 @@ const App = {
         }
         // クォータ・CD更新
         G = Engine.challengeRequest.acceptPending(G);
-        // 試合実行
-        const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, payload.selfId, payload.otherId, 0xCA110));
-        const result = Engine.challengeRequest.resolveMatchCard(card, matchRng);
-        // h2h / career / news 反映
-        G = App._applyChallengeRequestResult(G, card, result);
+        // Phase 3(2026-07-17): 即時解決をやめ、次回の自団体興行の枠内に挿入して解決する。
+        // タイトル奪還挑戦(_pendingReclaim)と同じ「予約→executeShow直前に注入→試合後に結果処理」パターン。
+        // ID のみ保持し、実際の対戦相手は executeShow 時点の最新roster/aiOrgsから再取得する
+        // （数週先の興行になる可能性があり、その間に怪我・離脱で顔ぶれが変わり得るため）。
+        G = {
+          ...G,
+          _pendingChallengeMatch: {
+            isInverse,
+            requesterId: card.requesterId, opponentId: card.opponentId,
+            requesterOrgId: card.requesterOrgId, opponentOrgId: card.opponentOrgId,
+            requesterOrgName: card.requesterOrgName, opponentOrgName: card.opponentOrgName,
+            teamAIds: card.teamA.map(f => f.id), teamBIds: card.teamB.map(f => f.id),
+          },
+        };
         Storage.autoSave();
         Audio.play('event');
-        // 結果モーダル表示
-        if (typeof showChallengeRequestResultModal === 'function') {
-          showChallengeRequestResultModal(card, result, G, () => {
-            renderWeekScreen && renderWeekScreen();
-            finalizeCRAudio();
-          });
-        } else {
-          renderWeekScreen && renderWeekScreen();
-          const scoreLabel = `${result.winsA}-${result.winsB}`;
-          const tw = result.teamWin === 'A' ? '勝利' : (result.teamWin === 'B' ? '敗北' : '引き分け');
-          showToast(`挑戦試合 ${scoreLabel}（${tw}）— ${reqName} の直訴試合が決着。`);
-          finalizeCRAudio();
-        }
+        showEventPopup({
+          type: 'fighter', id: payload.selfId,
+          name: reqName, tone: 'positive',
+          message: `⚔ 直訴、受理。次の興行で舞台が組まれる`,
+          detail: `${reqName} の申し出を受け、次の興行に専用の一戦が組み込まれる。`,
+        });
+        renderWeekScreen && renderWeekScreen();
+        finalizeCRAudio();
       } else if (choice === 'NO') {
         G = Engine.challengeRequest.rejectPending(G);
         // 打診者の condition 一時悪化（次戦のパフォーマンスとセリフに反映）
@@ -11664,6 +11786,9 @@ const App = {
       const winner = r.playerWon ? 'left' : 'right';
       const warMeta = App._buildMatchMeta(G, r.playerFighter.id, r.aiFighter.id, false);
       warH2h = Engine.h2h.update(warH2h, r.playerFighter.id, r.aiFighter.id, winner, r.mq, false, false, G.season, G.week, 'war', 'player', ev.opponentOrgId, warMeta);
+      // firing-grudge-spec-v0.1 タスクc(2026-07-17): 対抗戦は元同僚(B-3)が最も出会いやすいクロス団体戦のため firedReturn を接続
+      G = App._maybeEmitFiredReturn(G, r.playerFighter, ev.opponentOrgId, 'player');
+      G = App._maybeEmitFiredReturn(G, r.aiFighter, 'player', ev.opponentOrgId);
     });
     G = { ...G, h2h: warH2h };
 
@@ -12167,6 +12292,11 @@ App.finalizePPV = function() {
     const rOrg = _findOrgKey(match.right.id);
     const ppvMeta = App._buildMatchMeta(s, match.left.id, match.right.id, false);
     ppvH2h = Engine.h2h.update(ppvH2h, match.left.id, match.right.id, r.winner, r.mq, false, true, s.season, s.week, 'ppv', lOrg, rOrg, ppvMeta);
+    // firing-grudge-spec-v0.1 タスクc(2026-07-17): PPVは合同興行=元同僚(B-3)の再会が起きやすいクロス団体戦のためfiredReturnを接続
+    if (lOrg && rOrg && lOrg !== rOrg) {
+      s = App._maybeEmitFiredReturn(s, match.left, rOrg, lOrg);
+      s = App._maybeEmitFiredReturn(s, match.right, lOrg, rOrg);
+    }
   });
   s = { ...s, h2h: ppvH2h };
 

@@ -3640,7 +3640,9 @@ Engine.challengeRequest = {
   },
 
   /** 3シングル連戦をシミュレート。state は変更しない。
-   *  returns { matches: [{fighterA, fighterB, winner, mq, finMove}], winsA, winsB, teamWin: 'A'|'B'|'draw' } */
+   *  returns { matches: [{fighterA, fighterB, winner, mq, finMove}], winsA, winsB, teamWin: 'A'|'B'|'draw' }
+   *  Phase 3(2026-07-17)以降、実際の直訴試合解決はshowCard経由(App.executeShow内)で行われるため
+   *  app.js からは呼ばれなくなった。簡易テスト・独立検証用に残置。 */
   resolveMatchCard(card, rng) {
     const matches = [];
     for (let i = 0; i < 3; i++) {

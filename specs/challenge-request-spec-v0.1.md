@@ -1,8 +1,9 @@
 # 選手発信 挑戦試合打診イベント 仕様 v0.1
 
 **ファイル**：`specs/challenge-request-spec-v0.1.md`
-**最終更新**：2026-05-03
-**実装状況**：全Phase完了（Phase 1: heat 計算 / 候補抽選 / GameState 構造 / CDガード / 4週サイクル抽選 / Phase 2: 打診モーダル UI / 打診者セリフ 7性格×2タイプ×3=42 / Phase 3: YES → buildMatchCard で 3シングル連戦カード生成 → Engine.battle.simulateMatch x3 即時解決 → h2h x3 / career x6 / 業界ニュース更新 → showChallengeRequestResultModal で結果表示 / Phase 4: NO 時 condition -8 + CD52w + 性格別ティッカーセリフ 7性格×2=14 / Phase 5: 相手リアクションセリフ 7性格×3=21（結果モーダル吹き出し）+ 新聞ヘッドライン challengeRequestWin/Lose/Draw 各 2-3 + 逆方向 InverseDefend/Fall/Draw 各 2-3、2026-05-03）。逆方向 (AI 解雇キャラ→player 直訴) は firing-grudge-spec Phase 3b で接続済み
+**最終更新**：2026-07-17
+**実装状況**：全Phase完了（Phase 1: heat 計算 / 候補抽選 / GameState 構造 / CDガード / 4週サイクル抽選 / Phase 2: 打診モーダル UI / 打診者セリフ 7性格×2タイプ×3=42 / Phase 3: YES → buildMatchCard で 3シングル連戦カード生成 → Engine.battle.simulateMatch x3 即時解決 → h2h x3 / career x6 / 業界ニュース更新 → showChallengeRequestResultModal で結果表示 / Phase 4: NO 時 condition -8 + CD52w + 性格別ティッカーセリフ 7性格×2=14 / Phase 5: 相手リアクションセリフ 7性格×3=21（結果モーダル吹き出し）+ 新聞ヘッドライン challengeRequestWin/Lose/Draw 各 2-3 + 逆方向 InverseDefend/Fall/Draw 各 2-3、2026-05-03）。逆方向 (AI 解雇キャラ→player 直訴) は firing-grudge-spec Phase 3b で接続済み。
+**2026-07-17 追加改修**：①Phase 3 を即時解決から「次回自団体興行への挿入解決」に変更 — YES 時は `_pendingReclaim`（タイトル奪還挑戦）と同じ予約パターンで `App.executeShow()` 直前に3シングル分のshowCardスロットへ注入し、通常興行と同じ解決パイプライン（injury/growth/economy含む）を通してから結果を反映。相手陣は一時ゲスト注入で処理し試合後に除去。バッジDOM表示は「打診自体がサプライズイベントで興行準備画面には現れない」ため見送り、事前ポップアップ+事後結果モーダルを「最低限の演出」として採用。②Phase 5 の相手リアクションセリフを archetype(6種)×結果(win/lose/draw)の36本に細分化（`CHALLENGE_REQUEST_OPPONENT_REACTIONS`、旧・受諾スタンス18本は`_accept`として保持）。詳細は `docs/worklog.md` 2026-07-17 該当項参照
 **親仕様**：
 - `specs/relationship-system-spec-v2.0.md`（Bond / Rivalry 非対称2軸）
 - `specs/relationship-system-spec-v2.2.md`（A-1〜A-4 / B-3 / C 奪還挑戦）

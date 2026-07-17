@@ -125,14 +125,14 @@
 **仕様**:
 - 新書類 `relationship_repair`(関係修復斡旋書) を `DECISION_DOCS` に追加
 - **対象**: W-1(rivalry ≥ 40 ∧ bond < 40)累計発火 4 回以上のペア(両者とも現役・非レンタル・非怪我)
-- **コスト**: 決裁枠 2pt、¥1,000,000、回数無制限
+- **コスト**: 決裁枠 2pt、回数無制限。**2026-07-17 改修**: 固定¥1,000,000 から当事者給与連動に変更 — `費用 = 90万 + (給与A+給与B) × 0.4`(10万単位丸め)。実測給与レンジ(新人9〜13万〜トップ王者185〜227万)から較正し、新人ペアはほぼ現行固定額(≈100万)、トップ選手ペアは2.4〜2.7倍(≈240〜270万)になる
 - **効果**: 成功率 70%。成功時、双方向 bond +5〜+10。失敗時は据え置き(rivalry には触らない)
 - **W-1 カウンタ**: `state.w1FireCount[`${minId}_${maxId}`]` で per-pair に積算。`processWeeklyStoryEvents` の憎い敵ゾーン処理内でインクリメント
-- **新 UI**: `target: 'pair'` 書類用に `showDecisionPairModal` を新設(W-1 ≥ 4 のペア一覧から選択)
+- **新 UI**: `target: 'pair'` 書類用に `showDecisionPairModal` を新設(W-1 ≥ 4 のペア一覧から選択)。ペア選択のたびにコスト・残金パネルを再描画し、一覧行にもペアごとの費用を表示(2026-07-17)
 
 **実装場所**:
 - `src/data.js` `DECISION_DOCS.relationship_repair` + `DECISION_DOC_ORDER` 追記
-- `src/management.js` `checkActivation` の `'hostile_pair_chronic'` 分岐 + `execute()` の `target: 'pair'` 分岐 + relationships 上書き反映
+- `src/management.js` `checkActivation` の `'hostile_pair_chronic'` 分岐 + `execute()` の `target: 'pair'` 分岐 + relationships 上書き反映 + `Engine.shachoshitsu.calcCost(doc, state, pairKey)` の給与連動コスト算出(2026-07-17)
 - `src/ui-common.js` `showDecisionPairModal` 関数
 - `src/app.js` `openDecisionDoc` ルーティング(team / pair / individual の3分岐)
 

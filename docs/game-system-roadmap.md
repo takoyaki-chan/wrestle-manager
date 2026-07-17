@@ -20,9 +20,9 @@
 
 | 宿題 | 条件・メモ |
 |---|---|
-| ~~`docs/shachoshitsu-care-rework-spec-v0.1.md` を specs/ へ昇格~~ | ✅ 完了（2026-07-17 実機確認OK → `specs/shachoshitsu-care-rework-spec-v1.0.md`）。派生宿題: **関係修復あっせん書の改善4点**（費用を当事者給与連動に/ペア行に顔画像/「平均bond」表記廃止/「二人の関係は◯◯」定性表示）— UIバッチで実装予定 |
+| ~~`docs/shachoshitsu-care-rework-spec-v0.1.md` を specs/ へ昇格~~ | ✅ 完了（2026-07-17 実機確認OK → `specs/shachoshitsu-care-rework-spec-v1.0.md`）。派生宿題4点のうち**費用の給与連動化は完了（2026-07-17）**。残り3点（ペア行顔画像/「平均bond」表記廃止/定性表示）は同日の別UIバッチで先行完了済み |
 | personality 単軸セリフテーブルの archetype 組み替え — **全完了・承認済(2026-07-16)** | 残走査で発見した7本(タッグ6+VS_EX_EMPLOYER)を [personality][archetype] 二軸980本に変換(「俺」2行も解消)。文面980本は Keisuke 全文レビュー承認済み(草案3ファイル=確定版) |
-| （任意）CR Phase3 興行枠 in-show 挿入 / firedReturn news の B3・奪還パス拡張 / CR Phase5 リアクション細分化 | 挑戦状システムの拡張候補 |
+| ~~（任意）CR Phase3 興行枠 in-show 挿入 / firedReturn news の B3・奪還パス拡張 / CR Phase5 リアクション細分化~~ | ✅ 完了（2026-07-17）。Phase3は即時解決→次回自団体興行への挿入解決に変更、firedReturnはB-3(対抗戦/PPV)・奪還挑戦にも配線、Phase5は勝敗別リアクション36本に細分化 |
 
 ---
 

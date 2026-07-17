@@ -1,9 +1,10 @@
 # 解雇キャラクター 遺恨システム 仕様 v0.1
 
 **ファイル**：`specs/firing-grudge-spec-v0.1.md`
-**最終更新**：2026-05-04
+**最終更新**：2026-07-17
 **実装状況**：全Phase完了 + AI団体汎用化（2026-05-04）— grudge.vsOrgId は player / AI org id を受け付ける汎用フラグに昇格。AI団体側の解雇パス2箇所（aiMidseasonFAAcquire 戦力外通告 / claimDepartedStar eject）でも applyFiringGrudge を呼び grudge を付与。getVsExEmployerLine / _vsExEmployeeFires / _buildVlVsPlayerForExEmployee / _buildVsExHitLines / _getWarVictoryLine / _emitFiredReturn は opponentOrgId を受け取り「対戦相手 org が grudge.vsOrgId と一致」する場合に発動。firedReturn ニュースの ourOrg は grudge.vsOrgId 側の組織名を解決して使用。challenge-request inverse（逆方向打診）の AI→AI 経路はスコープ外（player↔AI のみ）。auto-sim 100×1: ALL CLEAR / violations 0。
 旧履歴：Phase 1: grudge 構造 / intensity 算出 / decay / Phase 2: 解雇者→残留組ティア別更新+性格バイアス / Phase 3a: forward heat バイアス / Phase 3b: 逆方向 AI→player 打診インフラ / Phase 4: firedReturn 新聞テンプレ + 挑戦試合内トリガー / Phase 5: vsExEmployer victory-lines 28パターン + iframe 配信
+**2026-07-17 追加改修**：firedReturn の発火経路を challenge-request 経由のみから拡張。`App._maybeEmitFiredReturn(state, fighter, foeOrgId, sideOrgId)` を共有ヘルパーとして抽出し、①対抗戦（war）結果ループ、②PPV結果ループ（合同興行の所属org判定を利用）、③奪還挑戦（reclaimChallenge、防衛者→player向き/挑戦者→相手org向きの双方向）に接続。同一org内の通常興行（B-3 `firstMeetSinceDeparture`が発火する箇所）は「元同僚が現在も同僚」という文脈のため対象外と判断（意味的に成立しないため）。新聞テンプレプールに2案追加（計7本）。詳細は `docs/worklog.md` 2026-07-17 該当項参照
 **親仕様**：
 - `specs/relationship-system-spec-v2.0.md`（Bond / Rivalry 非対称2軸）
 - `specs/relationship-system-spec-v2.2.md`（A-1〜A-4 / B-3 元同僚初対戦 / 契約離脱裏切りハンドラ）
