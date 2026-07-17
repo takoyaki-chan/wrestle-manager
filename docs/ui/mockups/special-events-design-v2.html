@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>特別大会 B案「エンブレム」確定版 モックアップ v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   特別大会 B案「エンブレム」確定版 v2 (2026-07-17)
+   - エンブレムは仮画像 image/emblem-{spring,summer,autumn,winter}.png
+     を参照。Keisuke さんが同名ファイルを上書きすれば差し替わる
+   - トーナメント表は縦積みピラミッド型に刷新(顔画像入り)
+   ※モックのため16進直書き。実装時はトークンへマッピング
+   ============================================================ */
+:root{
+  --stage-bg:#060606; --panel:#101010; --panel-edge:#1e1e1e;
+  --gold:#d4a843; --gold-light:#f0d078;
+  --txt:#e8e6e0; --dim:#9a958c; --dark-dim:#55524c;
+  --ev-spring:#e07a9a; --ev-summer:#56b1d8; --ev-autumn:#c1503c; --ev-winter:#cfc4a2;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#191817;color:var(--txt);font-family:'Noto Sans JP',sans-serif;padding:32px 16px 80px}
+.doc{max-width:1080px;margin:0 auto}
+.doc h1{font-family:'Bebas Neue';font-size:32px;letter-spacing:4px;color:var(--gold);margin-bottom:4px}
+.doc-note{font-size:12px;color:var(--dim);line-height:1.8;margin-bottom:28px}
+.sec-label{font-family:'Oswald';font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);border-left:3px solid var(--gold);padding-left:10px;margin:44px 0 6px}
+.sec-desc{font-size:12px;color:var(--dim);line-height:1.9;margin-bottom:14px}
+.mock{background:var(--stage-bg);border:1px solid #2a2a2a;border-radius:6px;overflow:hidden;margin-bottom:22px;position:relative}
+.mock-tag{position:absolute;top:8px;right:10px;font-family:'Oswald';font-size:10px;letter-spacing:2px;color:#444;z-index:9}
+.screen{padding:30px 44px 40px;text-align:center;position:relative}
+.ev-title{font-family:'Bebas Neue';letter-spacing:6px;line-height:1}
+.ev-sub{font-family:'Oswald';font-weight:400;letter-spacing:4px;text-transform:uppercase;font-size:12px}
+.num{font-family:'Bebas Neue'}
+
+/* ---- 共通ヘッダーロックアップ(B案): エンブレム画像 + 題字 + 細二重罫 ---- */
+.emblem-img{width:96px;height:96px;object-fit:contain;display:block;margin:0 auto 8px;filter:drop-shadow(0 2px 10px rgba(0,0,0,.6))}
+.h-title{font-size:34px;color:var(--txt)}
+.h-sub{color:var(--gold);margin-top:5px}
+.h-ed{font-family:'Oswald';font-size:10px;letter-spacing:3px;color:var(--dim);margin-top:4px;text-transform:uppercase}
+.double-rule{width:360px;margin:14px auto 26px;border-top:1px solid var(--gold);position:relative;opacity:.75}
+.double-rule::after{content:'';position:absolute;left:24px;right:24px;top:3px;border-top:1px solid rgba(212,168,67,.4)}
+
+/* ---- §1 エンブレム置き場 ---- */
+.emblem-row{display:flex;gap:14px}
+.emblem-cell{flex:1;background:var(--panel);border:1px solid var(--panel-edge);padding:18px 10px 12px;text-align:center}
+.emblem-cell img{width:110px;height:110px;object-fit:contain}
+.emblem-cell .nm{font-family:'Oswald';font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:8px}
+.emblem-cell .pth{font-size:10px;color:var(--dark-dim);margin-top:3px;font-family:monospace}
+
+/* ---- 顔画像部品 ---- */
+.face{border-radius:50%;object-fit:cover;background:#1c1a17;border:2px solid #2c2c2c;display:block}
+.face.w{border-color:var(--ev)}
+.face.l{filter:grayscale(.9) brightness(.55)}
+
+/* ============================================================
+   B-1' 春リーグ表(顔画像入り)
+   ============================================================ */
+.league table{width:100%;border-collapse:collapse;text-align:left}
+.league th{font-family:'Oswald';font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;font-weight:400;padding:6px 14px;border-bottom:1px solid #2b2b2b}
+.league td{padding:12px 14px;border-bottom:1px solid #191919;font-size:13px;vertical-align:middle}
+.league .rk{font-family:'Bebas Neue';font-size:24px;color:var(--dim);width:40px}
+.league tr.r1 .rk{color:var(--ev)}
+.league tr.mine td{background:rgba(212,168,67,.05)}
+.league .pair{display:flex;align-items:center;gap:12px}
+.league .pair .faces{display:flex}
+.league .pair .faces img{width:46px;height:46px}
+.league .pair .faces img + img{margin-left:-12px}
+.league .orgn{color:var(--dim);font-size:11px;font-family:'Oswald';letter-spacing:1px;display:block;margin-bottom:2px}
+.league .tn{font-weight:700}
+.league .rec{font-size:11px;color:var(--dim)}
+.league .bonus{font-size:10px;color:var(--ev)}
+.league .pts{font-family:'Bebas Neue';font-size:26px;color:var(--gold-light);text-align:right}
+.league .pts small{font-size:11px;color:var(--dim)}
+/* 直近試合ストリップ */
+.last-match{margin-top:22px;display:inline-flex;align-items:center;gap:18px;background:var(--panel);border:1px solid var(--panel-edge);padding:12px 26px}
+.last-match .lm-label{font-family:'Oswald';font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+.last-match .duo{display:flex;align-items:center;gap:8px}
+.last-match .duo img{width:40px;height:40px}
+.last-match .duo .n{font-size:11px;font-weight:700;text-align:left;line-height:1.5}
+.last-match .duo.lose .n{color:var(--dark-dim)}
+.last-match .vs{font-family:'Bebas Neue';font-size:16px;color:var(--dim)}
+.last-match .mq{font-family:'Bebas Neue';font-size:18px;color:var(--gold)}
+
+/* ============================================================
+   B-2' 夏トーナメント: 縦積みピラミッド型(顔画像入り)
+   ============================================================ */
+.py-row{display:flex;justify-content:center;gap:22px}
+.py-label{font-family:'Oswald';font-size:10px;letter-spacing:3px;color:var(--ev);text-transform:uppercase;margin:2px 0 10px}
+.qm{background:var(--panel);border:1px solid var(--panel-edge);padding:14px 14px 12px;display:flex;gap:14px}
+.fighter{width:86px}
+.fighter img{width:72px;height:72px;margin:0 auto}
+.fighter .fn{font-size:11px;font-weight:700;margin-top:6px;line-height:1.4}
+.fighter.l .fn{color:var(--dark-dim)}
+.fighter .res{font-family:'Bebas Neue';font-size:13px;margin-top:1px}
+.fighter.w .res{color:var(--ev)}
+.fighter.l .res{color:var(--dark-dim)}
+/* 接続線 */
+.conn{display:flex;justify-content:center;margin:14px 0}
+.conn i{display:block;width:1px;height:22px;background:#3a3a3a;margin:0 0}
+.conn.c4{gap:224px}
+.conn.c2{gap:330px}
+.conn.c1{gap:0}
+/* SF は少し大きく */
+.sf .qm{padding:16px 18px 14px}
+.sf .fighter{width:104px}
+.sf .fighter img{width:88px;height:88px}
+.sf .fighter .fn{font-size:12px}
+/* FINAL */
+.final-card{display:inline-flex;align-items:center;gap:26px;background:linear-gradient(180deg,#131313,#0d0d0d);border:1px solid #2e2e2e;padding:20px 34px}
+.final-card .fighter{width:130px}
+.final-card .fighter img{width:112px;height:112px;border-width:3px}
+.final-card .fighter .fn{font-size:14px}
+.final-card .fvs{display:flex;flex-direction:column;align-items:center;gap:4px}
+.final-card .fvs .v{font-family:'Bebas Neue';font-size:26px;color:var(--dim);letter-spacing:2px}
+.final-card .fvs .sc{font-family:'Bebas Neue';font-size:15px;color:var(--ev)}
+/* CHAMPION */
+.champ-block{margin-top:6px;display:inline-flex;flex-direction:column;align-items:center;background:radial-gradient(ellipse at 50% 20%,#1a1712,#0b0a08);border:1px solid rgba(212,168,67,.5);padding:26px 60px 22px;position:relative}
+.champ-block::before,.champ-block::after{content:'';position:absolute;top:10px;bottom:10px;width:1px;background:linear-gradient(180deg,transparent,rgba(212,168,67,.5),transparent)}
+.champ-block::before{left:10px}.champ-block::after{right:10px}
+.champ-block .c-em{width:44px;height:44px;object-fit:contain;margin-bottom:8px}
+.champ-block img.cface{width:148px;height:148px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);box-shadow:0 0 30px rgba(212,168,67,.25)}
+.champ-block .c-name{font-size:19px;font-weight:900;color:var(--gold-light);margin-top:12px}
+.champ-block .c-ttl{font-family:'Oswald';font-size:10px;letter-spacing:3px;color:var(--gold);margin-top:4px;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>SPECIAL EVENTS — VARIANT B FINAL v2</h1>
+  <div class="doc-note">
+    B案「エンブレム」確定版。v1からの変更: ①エンブレムを<b>画像ファイル参照</b>に(仮画像を生成済み、同名上書きで差し替え) ②トーナメント表を<b>縦積みピラミッド型</b>に刷新 — 選手枠を縦に大きく、顔画像入り。<br>
+    フォント階層(Bebas/Oswald/Noto Sans JP)・金の細二重罫・純黒Stage・カラーキー1色は v1 の共通言語のまま。
+  </div>
+
+  <!-- §1 エンブレム運用 -->
+  <div class="sec-label">§1 エンブレム(仮画像 — 同名ファイル上書きで差し替え)</div>
+  <div class="sec-desc">置き場: <b>image/emblem-spring.png / emblem-summer.png / emblem-autumn.png / emblem-winter.png</b>(各256×256・透過PNG)。UIは常にこのパスを参照するので、Keisuke さん制作の本エンブレムを同じファイル名で上書きするだけで全画面に反映される。</div>
+  <div class="emblem-row">
+    <div class="emblem-cell"><img src="../../../image/emblem-spring.png" alt=""><div class="nm">SPRING — 春タッグリーグ</div><div class="pth">image/emblem-spring.png</div></div>
+    <div class="emblem-cell"><img src="../../../image/emblem-summer.png" alt=""><div class="nm">SUMMER — ジュニア</div><div class="pth">image/emblem-summer.png</div></div>
+    <div class="emblem-cell"><img src="../../../image/emblem-autumn.png" alt=""><div class="nm">AUTUMN — 勝ち残り対抗戦</div><div class="pth">image/emblem-autumn.png</div></div>
+    <div class="emblem-cell"><img src="../../../image/emblem-winter.png" alt=""><div class="nm">WINTER — C-6 PPVトーナメント</div><div class="pth">image/emblem-winter.png</div></div>
+  </div>
+
+  <!-- §2 リーグ表 -->
+  <div class="sec-label">§2 春リーグ表(顔画像入り)</div>
+  <div class="sec-desc">v1 B-1 に顔画像ペアと直近試合ストリップを追加。1位の順位数字と勝者リングだけが大会色。</div>
+  <div class="mock" style="--ev:var(--ev-spring)">
+    <div class="mock-tag">B-1' 春 / リーグ表</div>
+    <div class="screen league">
+      <img class="emblem-img" src="../../../image/emblem-spring.png" alt="">
+      <div class="ev-title h-title">SPRING TAG LEAGUE</div>
+      <div class="ev-sub h-sub">春のタッグリーグ — 総当たり戦</div>
+      <div class="h-ed">Vol.3 / Round 4 of 6</div>
+      <div class="double-rule"></div>
+      <table>
+        <tr><th></th><th>Team</th><th>Record</th><th style="text-align:right">Points</th></tr>
+        <tr class="r1 mine">
+          <td class="rk">1</td>
+          <td><div class="pair"><span class="faces"><img class="face w" src="../../../image/face_tomioka_k.png"><img class="face w" src="../../../image/face_takatsu_k.png"></span><span><span class="orgn">★ 自団体</span><span class="tn">富岡加奈子 &amp; 高津小春</span></span></div></td>
+          <td class="rec">2勝0敗1分 <span class="bonus">/ 接戦+1</span></td>
+          <td class="pts">8<small>pt</small></td>
+        </tr>
+        <tr>
+          <td class="rk">2</td>
+          <td><div class="pair"><span class="faces"><img class="face" src="../../../image/face_kawanobe_n.png"><img class="face" src="../../../image/face_sawade_m.png"></span><span><span class="orgn">NOVA IMPACT</span><span class="tn">川野辺菜穂子 &amp; 澤出みずき</span></span></div></td>
+          <td class="rec">2勝1敗</td>
+          <td class="pts">6<small>pt</small></td>
+        </tr>
+        <tr>
+          <td class="rk">3</td>
+          <td><div class="pair"><span class="faces"><img class="face" src="../../../image/face_okochi_s.png"><img class="face" src="../../../image/face_dewa_t.png"></span><span><span class="orgn">EMPRESS GRAND</span><span class="tn">大河内紗代子 &amp; 出羽鷹子</span></span></div></td>
+          <td class="rec">1勝1敗1分 <span class="bonus">/ 接戦+1</span></td>
+          <td class="pts">5<small>pt</small></td>
+        </tr>
+        <tr>
+          <td class="rk">4</td>
+          <td><div class="pair"><span class="faces"><img class="face" src="../../../image/face_tachibana_r.png"><img class="face" src="../../../image/face_ikoma_e.png"></span><span><span class="orgn">CRESCENT RISE</span><span class="tn">橘玲美 &amp; 生駒エリカ</span></span></div></td>
+          <td class="rec">0勝3敗</td>
+          <td class="pts">0<small>pt</small></td>
+        </tr>
+      </table>
+      <div class="last-match">
+        <span class="lm-label">Result — 第4試合</span>
+        <span class="duo"><img class="face w" src="../../../image/face_tomioka_k.png"><img class="face w" src="../../../image/face_takatsu_k.png" style="margin-left:-14px"><span class="n">富岡 &amp; 高津<br><b style="color:var(--ev)">WIN</b></span></span>
+        <span class="vs">VS</span>
+        <span class="duo lose"><img class="face l" src="../../../image/face_okochi_s.png"><img class="face l" src="../../../image/face_dewa_t.png" style="margin-left:-14px"><span class="n">大河内 &amp; 出羽</span></span>
+        <span class="mq">MQ 63 <span style="font-size:11px;color:var(--ev)">接戦+1pt</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- §3 トーナメント縦型 -->
+  <div class="sec-label">§3 夏トーナメント — 縦積みピラミッド型(作り直し)</div>
+  <div class="sec-desc">v1の横樹形図を廃止。準々決勝(8名の顔)→準決勝→決勝→王者と<b>上から下へ絞り込まれていく縦構成</b>。下段ほど顔が大きくなり、最下段の王者が最大+金枠。勝者は大会色リング、敗者はモノクロ落ち。</div>
+  <div class="mock" style="--ev:var(--ev-summer)">
+    <div class="mock-tag">B-2' 夏 / トーナメント(縦型)</div>
+    <div class="screen">
+      <img class="emblem-img" src="../../../image/emblem-summer.png" alt="">
+      <div class="ev-title h-title">JUNIOR CUP</div>
+      <div class="ev-sub h-sub">ジュニアトーナメント — U-20</div>
+      <div class="h-ed">Vol.7</div>
+      <div class="double-rule"></div>
+
+      <div class="py-label">Quarter Final — 準々決勝</div>
+      <div class="py-row">
+        <div class="qm">
+          <div class="fighter w"><img class="face w" src="../../../image/face_takatsu_k.png"><div class="fn">高津小春</div><div class="res">WIN</div></div>
+          <div class="fighter l"><img class="face l" src="../../../image/face_udagawa_r.png"><div class="fn">宇田川里奈</div><div class="res">—</div></div>
+        </div>
+        <div class="qm">
+          <div class="fighter w"><img class="face w" src="../../../image/face_fukamachi_m.png"><div class="fn">深町真琴</div><div class="res">WIN</div></div>
+          <div class="fighter l"><img class="face l" src="../../../image/face_takashina_m.png"><div class="fn">高階まさみ</div><div class="res">—</div></div>
+        </div>
+        <div class="qm">
+          <div class="fighter w"><img class="face w" src="../../../image/face_domae_y.png"><div class="fn">堂前ユキ</div><div class="res">WIN</div></div>
+          <div class="fighter l"><img class="face l" src="../../../image/face_soezawa_t.png"><div class="fn">副沢たまき</div><div class="res">—</div></div>
+        </div>
+        <div class="qm">
+          <div class="fighter w"><img class="face w" src="../../../image/face_kuroe_m.png"><div class="fn">黒江舞</div><div class="res">WIN</div></div>
+          <div class="fighter l"><img class="face l" src="../../../image/face_hayashi_m.png"><div class="fn">林真尋</div><div class="res">—</div></div>
+        </div>
+      </div>
+
+      <div class="conn c4"><i></i><i></i></div>
+
+      <div class="py-label">Semi Final — 準決勝</div>
+      <div class="py-row sf">
+        <div class="qm">
+          <div class="fighter w"><img class="face w" src="../../../image/face_takatsu_k.png"><div class="fn">高津小春</div><div class="res">WIN</div></div>
+          <div class="fighter l"><img class="face l" src="../../../image/face_fukamachi_m.png"><div class="fn">深町真琴</div><div class="res">—</div></div>
+        </div>
+        <div class="qm">
+          <div class="fighter l"><img class="face l" src="../../../image/face_domae_y.png"><div class="fn">堂前ユキ</div><div class="res">—</div></div>
+          <div class="fighter w"><img class="face w" src="../../../image/face_kuroe_m.png"><div class="fn">黒江舞</div><div class="res">WIN</div></div>
+        </div>
+      </div>
+
+      <div class="conn c2"><i></i><i></i></div>
+
+      <div class="py-label">Final — 決勝</div>
+      <div class="final-card">
+        <div class="fighter w"><img class="face w" src="../../../image/face_takatsu_k.png"><div class="fn">高津小春</div><div class="res">WIN</div></div>
+        <div class="fvs"><span class="v">VS</span><span class="sc">MQ 71</span></div>
+        <div class="fighter l"><img class="face l" src="../../../image/face_kuroe_m.png"><div class="fn">黒江舞</div><div class="res">—</div></div>
+      </div>
+
+      <div class="conn c1"><i></i></div>
+
+      <div class="champ-block">
+        <img class="c-em" src="../../../image/emblem-summer.png" alt="">
+        <img class="cface" src="../../../image/face_takatsu_k.png">
+        <div class="c-name">高津小春</div>
+        <div class="c-ttl">Junior Champion — Vol.7</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-label">メモ</div>
+  <div class="sec-desc">
+    ・この縦型はリーグ決勝(春)・勝ち残り対抗戦の布陣(秋)・C-6の8名(冬)にも同じ骨格で流用可能(下に行くほど大きく=勝ち残るほど大きく)。<br>
+    ・エンブレムは §1 の4ファイルを差し替えるだけで全画面反映。<br>
+    ・進行時は「次の試合へ」で行が1つずつ埋まり、敗者がモノクロに落ちる。優勝ブロックは最後にファンファーレとともに出現。
+  </div>
+</div>
+</body>
+</html>
