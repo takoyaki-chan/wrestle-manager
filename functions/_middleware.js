@@ -1,14 +1,41 @@
-export async function onRequest(context) {
-  const CORRECT_PASSWORD = "wrestle2025";
+// Cloudflare Pages 全体ゲート。
+// Patreon 連携が構成済み(環境変数あり)なら「支援者のみアクセス可」、
+// 未構成なら従来のパスワードゲートで動く(デプロイ順の事故防止)。
+// セットアップ手順: docs/cloudflare-patreon-auth-setup.md
+import { patreonConfigured, verifyAuthCookie, makeAuthCookie, loginPage } from "./_lib/auth.js";
 
-  const cookie = context.request.headers.get("Cookie") || "";
-  if (cookie.includes("wm_auth=ok")) {
+export async function onRequest(context) {
+  const { request, env } = context;
+  const url = new URL(request.url);
+
+  // 認証エンドポイントは素通し(それぞれのハンドラが処理)
+  if (url.pathname.startsWith("/auth/")) {
     return context.next();
   }
 
-  const url = new URL(context.request.url);
-  const password = url.searchParams.get("password");
+  // ── Patreon モード(環境変数構成済み) ──────────────────────────
+  if (patreonConfigured(env)) {
+    if (await verifyAuthCookie(request, env)) {
+      return context.next();
+    }
+    // 管理用バックドア(ADMIN_PASSWORD を設定した場合のみ有効)
+    const password = url.searchParams.get("password");
+    if (env.ADMIN_PASSWORD && password === env.ADMIN_PASSWORD) {
+      return new Response(null, {
+        status: 302,
+        headers: { Location: url.origin + "/", "Set-Cookie": await makeAuthCookie(env) },
+      });
+    }
+    return loginPage(url);
+  }
 
+  // ── レガシーモード(未構成時のフォールバック): 従来の共有パスワード ──
+  const CORRECT_PASSWORD = "wrestle2025";
+  const cookie = request.headers.get("Cookie") || "";
+  if (cookie.includes("wm_auth=ok")) {
+    return context.next();
+  }
+  const password = url.searchParams.get("password");
   if (password === CORRECT_PASSWORD) {
     return new Response(null, {
       status: 302,
@@ -18,7 +45,6 @@ export async function onRequest(context) {
       }
     });
   }
-
   return new Response(`<!DOCTYPE html>
 <html><head>
   <meta charset="utf-8">
