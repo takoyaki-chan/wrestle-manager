@@ -446,9 +446,11 @@ function collectViolations(G, violations) {
 // min/max を外れるとバグの疑いがある（ロジック到達不全・確率設定ミスなど）
 // ※ 閾値は100シーズン以上のシミュレーションで統計的に安定する値を設定
 const FREQ_THRESHOLDS = [
-  // 対抗戦: week12/24/36で55%チェック×3 + 干ばつボーナス = 実効約91%/シーズン
+  // 対抗戦: week10/22/34で55%チェック×3 + 干ばつボーナス = 実効約91%/シーズン
   // (バグあり時は transfer window の早期returnでスキップされ低下する)
   { key: 'warRate',   label: '対抗戦/シーズン',           min: 0.75, max: 1.00 },
+  { key: 'springTagRate', label: '春タッグ完走/シーズン', min: 0.95, max: 1.00 },
+  { key: 'autumnWarRate', label: '秋4団体戦完走/シーズン', min: 0.95, max: 1.00 },
   // スカウト: オフシーズン(1回) + シーズン中week29(1回) = 2.0/シーズンが正常
   // どちらかがバグで消えると ~1.0 まで低下する
   { key: 'scoutRate', label: 'スカウトイベント/シーズン', min: 1.00, max: 2.50 },
@@ -473,6 +475,8 @@ function runSimulation(seed, seasons) {
     ppvEvents: 0,        // weekPhase:'ppvEntry' に遷移した回数
     springTagCompletedCount: 0, // 春のタッグリーグが champion 確定まで完走した回数
     springTagCancelledCount: 0, // 春のタッグリーグが不開催(チーム不足等)になった回数
+    autumnWarCompletedCount: 0, // 4団体勝ち残り対抗戦が champion 確定まで完走した回数
+    autumnWarCancelledCount: 0, // 出場団体不足等で不開催になった回数
     showCount: 0,        // 実行した興行の総数
     titleMatchCount: 0,  // タイトルマッチの総数
     orgPopHistory: [],   // シーズン末orgPop記録
@@ -544,6 +548,16 @@ function runSimulation(seed, seasons) {
           G = Engine.springTagLeague.confirmPlayerTeam(G, pick.f1Id, pick.f2Id);
         }
       }
+      // 4団体勝ち残り対抗戦 Week35: OVR上位3名を弱い順に並べて自動確定。
+      // 決勝では準決勝後conditionの高い順へ自動再編成する。
+      if (G.autumnWarPhase === 'entry') {
+        const memberIds = Engine.autumnWar._selectMembers(G, 'player');
+        if (memberIds.length === Engine.autumnWar.TEAM_SIZE) {
+          const order = Engine.autumnWar._defaultOrder(G, 'player', memberIds);
+          G = Engine.autumnWar.confirmPlayerTeam(G, memberIds, order);
+          G = { ...G, autumnWar: { ...G.autumnWar, autoReorderFinal: true } };
+        }
+      }
       if (G.weekPhase === 'event' || G.weekPhase === 'transfer' || G.weekPhase === 'scoutEvent') {
         // スカウトでFA獲得を試みる
         if (G.weekPhase === 'scoutEvent') {
@@ -560,7 +574,10 @@ function runSimulation(seed, seasons) {
       // (Phase 1時点ではUI側の「週12は通常カード編成不可」導線が未実装のため、auto-sim側で代替)
       const springTagOccupiesThisWeek = G.week === 12 && G.springTagLeague && !G.springTagLeague.cancelled
         && G.springTagLeague.matches && G.springTagLeague.matches.length > 0;
-      if (!G.offSeason && Engine.util.isShowWeek(G.week) && G.weekPhase === 'manage' && !springTagOccupiesThisWeek) {
+      const autumnWarOccupiesThisWeek = G.week === 36 && G.autumnWar && !G.autumnWar.cancelled
+        && G.autumnWar.champion;
+      if (!G.offSeason && Engine.util.isShowWeek(G.week) && G.weekPhase === 'manage'
+          && !springTagOccupiesThisWeek && !autumnWarOccupiesThisWeek) {
         G = autoSetupShowCard(G, simRng);
         if (G.showCard && G.showCard.length > 0) {
           stats.showCount++;
@@ -624,6 +641,9 @@ function runSimulation(seed, seasons) {
       const _prevPhase = G.weekPhase;
       const _prevSpringTagChampion = G.springTagLeague ? G.springTagLeague.champion : undefined;
       const _prevSpringTagCancelled = G.springTagLeague ? G.springTagLeague.cancelled : undefined;
+      const _prevAutumnWarChampion = G.autumnWar ? G.autumnWar.champion : undefined;
+      const _prevAutumnWarCancelled = G.autumnWar ? G.autumnWar.cancelled : undefined;
+      const _prevAutumnWarSeason = G.autumnWar ? G.autumnWar.announcedSeason : undefined;
       const advResult = Engine.advanceWeek(G);
       G = { ...advResult.state, gameLog: [] };
       if (G.springTagLeague && G.springTagLeague.champion && G.springTagLeague.champion !== _prevSpringTagChampion) {
@@ -631,6 +651,13 @@ function runSimulation(seed, seasons) {
       }
       if (G.springTagLeague && G.springTagLeague.cancelled && !_prevSpringTagCancelled) {
         stats.springTagCancelledCount++;
+      }
+      if (G.autumnWar && G.autumnWar.champion && G.autumnWar.champion !== _prevAutumnWarChampion) {
+        stats.autumnWarCompletedCount++;
+      }
+      if (G.autumnWar && G.autumnWar.cancelled
+          && (!_prevAutumnWarCancelled || G.autumnWar.announcedSeason !== _prevAutumnWarSeason)) {
+        stats.autumnWarCancelledCount++;
       }
       // auto-sim には引き留めUIがないので、検出された引退候補をその場で全て確定
       if (G.pendingRetirements && G.pendingRetirements.length > 0) {
@@ -764,6 +791,8 @@ if (s.seasons >= 10) {
     ppvRate:   s.ppvEvents        / s.seasons,
     showRate:  s.showCount        / s.seasons,
     titleRate: s.titleMatchCount  / s.seasons,
+    springTagRate: s.springTagCompletedCount / s.seasons,
+    autumnWarRate: s.autumnWarCompletedCount / s.seasons,
   };
 
   console.log('');
@@ -780,7 +809,8 @@ if (s.seasons >= 10) {
 
   // 参考情報（閾値なし — ゲーム状態依存で変動するため）
   console.log(`  [--] ${'PPV/シーズン'.padEnd(24)} ${rates.ppvRate.toFixed(2).padStart(5)}`);
-  console.log(`  [--] ${'春のタッグリーグ完走/シーズン'.padEnd(20)} ${(s.springTagCompletedCount / s.seasons).toFixed(2).padStart(5)}   ※不開催: ${s.springTagCancelledCount}回`);
+  console.log(`  [--] ${'春のタッグリーグ完走/中止'.padEnd(20)} ${s.springTagCompletedCount}/${s.springTagCancelledCount}`);
+  console.log(`  [--] ${'秋4団体戦完走/中止'.padEnd(23)} ${s.autumnWarCompletedCount}/${s.autumnWarCancelledCount}`);
   console.log(`  [--] ${'引き抜き発生/シーズン'.padEnd(22)} ${rates.poachRate.toFixed(2).padStart(5)}   ※rank1時は0が正常`);
   console.log(`  [--] ${'タイトルマッチ/シーズン'.padEnd(22)} ${rates.titleRate.toFixed(2).padStart(5)}   ※auto-simでは0が正常(未設立)`);
 }

@@ -6426,6 +6426,8 @@ const BATTLE_POINT_CFG = {
   tournamentWeek: 24,
   // spring-tag-league-spec-v0.1 §12.1: 春のタッグリーグ 対戦ポイント（4団体それぞれへ）
   springTag: { champion: 12, runnerUp: 5, third: 0, fourth: -8 },
+  // autumn-gauntlet-war-spec-v0.1 §5.1: 4団体勝ち残り対抗戦
+  autumnWar: { semiWin: 6, semiLoss: -6, finalWin: 8 },
 };
 
 const RANKING_CONFIG = {
@@ -6460,6 +6462,7 @@ const ACHIEVEMENT_CONFIG = {
     mediaAward: 4,      // メディア厚労賞 受賞者所属団体
     bestAttend: 3,      // シーズン最大動員興行 開催団体
     springTag: 8,       // 春のタッグリーグ 優勝団体 (spring-tag-league-spec-v0.1 §12.2)
+    autumnWar: 10,      // 4団体勝ち残り対抗戦 優勝団体 (autumn-gauntlet-war-spec-v0.1 §5.2)
   },
   // 減衰: age <= graceAge までは満額、その後 decayRate^(age-graceAge) で減衰
   decayRate: 0.5,
@@ -13917,6 +13920,18 @@ const SEASON_REVIEW_LINES = {
 
 // §6.2 新聞パネル用テンプレート（イベント種別ごとに headline + body ペア、各3+パターン）
 const NEWS_HEADLINE_TEMPLATES = {
+  autumnWarAnnounce: [
+    { headline: '4団体勝ち残り対抗戦、組み合わせ決定',
+      body: '第{season}回4団体勝ち残り対抗戦は第36週に開催される。準決勝は第1シード{seed1}対第4シード{seed4}、第2シード{seed2}対第3シード{seed3}。各団体3名が先鋒・中堅・大将の順に立ち、最後の一人になるまでリングを譲らない。' },
+    { headline: '秋の団体決戦へ、4つの陣営が出揃う',
+      body: '第{season}回4団体勝ち残り対抗戦の出場団体は{seed1}・{seed2}・{seed3}・{seed4}。第36週、団体ランキング1位対4位、2位対3位の準決勝から、勝者同士の決勝までを一日で戦い抜く。' },
+  ],
+  autumnWarResult: [
+    { headline: '{championOrg}、4団体勝ち残り対抗戦を制覇',
+      body: '第{season}回4団体勝ち残り対抗戦。準決勝は{semi1}、{semi2}。決勝は{finalResult}となり、{championOrg}が頂点に立った。大会MVPは{mvpName}（{mvpOrg}）、通算{mvpWins}人抜き。{gauntletNote}{tieBreakNote}' },
+    { headline: '秋の総力戦決着——{championOrg}が最後まで立つ',
+      body: '第{season}回4団体勝ち残り対抗戦は{championOrg}が優勝。{runnerUpOrg}との決勝を制した。準決勝結果は{semi1}、{semi2}、決勝は{finalResult}。最多{mvpWins}勝を挙げた{mvpName}（{mvpOrg}）が大会MVPに選ばれた。{gauntletNote}{tieBreakNote}' },
+  ],
   springTagAnnounce: [
     { headline: '春のタッグリーグ 出場4団体が決定',
       body: '第{season}回春のタッグリーグの出場4団体が出揃った。{org1}・{org2}・{org3}・{org4}。各団体代表タッグは編成期間を経て、第12週に激突する。' },

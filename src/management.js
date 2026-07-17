@@ -14732,6 +14732,45 @@ const Engine = {
       events.push(...applied.events);
     }
 
+    // 4団体勝ち残り対抗戦 Week34: シード発表。直後の対抗戦チェックが発火しても告知を保持する。
+    if (s.week === Engine.autumnWar.ANNOUNCE_WEEK && !s.offSeason) {
+      const announcement = Engine.autumnWar.announce(s);
+      s = { ...s, autumnWar: announcement, autumnWarPhase: null };
+      if (!announcement.cancelled) {
+        const bySeed = n => announcement.teams.find(t => t.seed === n);
+        s = Engine.industryNews.push(s, {
+          type: 'autumnWarAnnounce',
+          data: {
+            season: s.season,
+            seed1: bySeed(1)?.orgName || '', seed2: bySeed(2)?.orgName || '',
+            seed3: bySeed(3)?.orgName || '', seed4: bySeed(4)?.orgName || '',
+          },
+        });
+        events.push(`📰 第${s.season}回4団体勝ち残り対抗戦 シード決定`);
+      } else {
+        events.push('📋 4団体勝ち残り対抗戦: 出場可能団体不足のため今年は不開催');
+      }
+    }
+
+    // Week35: プレイヤー代表3名の編成期間。weekPhaseは奪わない。
+    if (s.week === Engine.autumnWar.ENTRY_WEEK && !s.offSeason) {
+      const autumnWar = s.autumnWar || Engine.autumnWar.announce(s); // Week34直前セーブ互換
+      if (!autumnWar.cancelled) {
+        s = { ...s, autumnWar, autumnWarPhase: 'entry' };
+        events.push('⚔️ 4団体勝ち残り対抗戦: 代表3名と先鋒・中堅・大将を決める編成期間が始まった');
+      }
+    }
+
+    // Week36: 準決勝2試合と決勝を一括実行。
+    if (s.week === Engine.autumnWar.EVENT_WEEK && !s.offSeason) {
+      if (!s.autumnWar) s = { ...s, autumnWar: Engine.autumnWar.announce(s) }; // 旧セーブ互換
+      const autumnRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xA936));
+      const warResult = Engine.autumnWar.run(s, autumnRng);
+      const applied = Engine.autumnWar.apply(s, warResult);
+      s = applied.state;
+      events.push(...applied.events);
+    }
+
     // D-2: Rivalry war check（week10/22/34。春タッグリーグ week12・4団体勝ち残り対抗戦 week36
     // との同週衝突を避けるため2026-07-17に前倒し移動）
     // NOTE: C-2の早期リターン前に実行。transfer windowと週が重なるため後に置くとスキップされる
@@ -15114,6 +15153,9 @@ const Engine = {
       springTagLeague: null,
       springTagPhase: null,
       bestTagTeam: null,
+      // autumn-gauntlet-war-spec-v0.1: 4団体勝ち残り対抗戦（Week34-36）
+      autumnWar: null,
+      autumnWarPhase: null,
       battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 },
       achievementItems: { player: [], org_s: [], org_a: [], org_b: [] },
       // F2: Negotiation system
@@ -23548,6 +23590,398 @@ Engine.springTagLeague = {
 };
 
 // ══════════════════════════════════════════════════════════
+//  Engine.autumnWar — 4団体勝ち残り対抗戦（Q3末 Week34-36）
+//  spec: autumn-gauntlet-war-spec-v0.1。Pure functions only。
+// ══════════════════════════════════════════════════════════
+Engine.autumnWar = {
+  ANNOUNCE_WEEK: 34,
+  ENTRY_WEEK: 35,
+  EVENT_WEEK: 36,
+  TEAM_SIZE: 3,
+  INITIAL_CONDITION: 80,
+  ROUND_RECOVERY: 15,
+  FLOOR: 40,
+  CEILING: 80,
+  PRIZE: { champion: 1200, runnerUp: 500 }, // 万円
+  ORG_ORDER: ['player', 'org_s', 'org_a', 'org_b'],
+
+  _orgRoster(state, orgId) {
+    if (orgId === 'player') return state.roster || [];
+    return (state.aiOrgs && state.aiOrgs[orgId] && state.aiOrgs[orgId].roster) || [];
+  },
+  _orgName(state, orgId) {
+    if (orgId === 'player') return state.orgName || 'あなたの団体';
+    return (state.rivalOrgNames && state.rivalOrgNames[orgId])
+      || (RIVAL_ORGS.find(o => o.id === orgId) || {}).name
+      || orgId;
+  },
+  _eligible(roster) {
+    return (roster || []).filter(f => !f.injury && !f.isRental);
+  },
+  _rankedOrgIds(state) {
+    const liveRankings = Array.isArray(state.rankings) && state.rankings.length >= 4
+      ? state.rankings
+      : Engine.ranking.updateRankings(state);
+    const ranked = (liveRankings || []).map(r => r.orgId)
+      .filter(id => Engine.autumnWar.ORG_ORDER.includes(id));
+    Engine.autumnWar.ORG_ORDER.forEach(id => { if (!ranked.includes(id)) ranked.push(id); });
+    return ranked.slice(0, 4);
+  },
+  _selectMembers(state, orgId) {
+    return Engine.autumnWar._eligible(Engine.autumnWar._orgRoster(state, orgId))
+      .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a) || a.id - b.id)
+      .slice(0, Engine.autumnWar.TEAM_SIZE)
+      .map(f => f.id);
+  },
+  _defaultOrder(state, orgId, memberIds) {
+    const roster = Engine.autumnWar._orgRoster(state, orgId);
+    return [...memberIds].sort((a, b) => {
+      const fa = roster.find(f => f.id === a), fb = roster.find(f => f.id === b);
+      return Engine.util.ov(fa) - Engine.util.ov(fb) || a - b;
+    });
+  },
+  _orderForAI(state, orgId, memberIds) {
+    const order = Engine.autumnWar._defaultOrder(state, orgId, memberIds);
+    // 基本は先鋒からOVR昇順。40%で中堅と大将を入れ替え、教科書通り一辺倒を避ける。
+    const orgSalt = Engine.autumnWar.ORG_ORDER.indexOf(orgId) + 1;
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xA934, orgSalt));
+    if (order.length === 3 && Engine.rng.float(rng) < 0.4) [order[1], order[2]] = [order[2], order[1]];
+    return order;
+  },
+  _isPermutation(order, members) {
+    return Array.isArray(order) && Array.isArray(members)
+      && order.length === members.length
+      && new Set(order).size === order.length
+      && order.every(id => members.includes(id));
+  },
+  _buildBracket(teams) {
+    const seeded = (teams || []).filter(t => t.available).sort((a, b) => a.seed - b.seed);
+    if (seeded.length >= 4) {
+      const bySeed = n => seeded.find(t => t.seed === n);
+      return [
+        { round: 'semiFinal', orgA: bySeed(1).orgId, orgB: bySeed(4).orgId },
+        { round: 'semiFinal', orgA: bySeed(2).orgId, orgB: bySeed(3).orgId },
+      ];
+    }
+    if (seeded.length === 3) {
+      return [{ round: 'semiFinal', orgA: seeded[1].orgId, orgB: seeded[2].orgId, byeOrg: seeded[0].orgId }];
+    }
+    if (seeded.length === 2) return [];
+    return [];
+  },
+
+  /** Week34: 団体ランキング1位対4位・2位対3位のシードとAI代表を確定する。 */
+  announce(state) {
+    const ranked = Engine.autumnWar._rankedOrgIds(state);
+    const teams = ranked.map((orgId, idx) => {
+      const memberIds = orgId === 'player' ? [] : Engine.autumnWar._selectMembers(state, orgId);
+      const available = Engine.autumnWar._eligible(Engine.autumnWar._orgRoster(state, orgId)).length >= Engine.autumnWar.TEAM_SIZE;
+      return {
+        orgId,
+        orgName: Engine.autumnWar._orgName(state, orgId),
+        seed: idx + 1,
+        memberIds,
+        order: orgId === 'player' ? [] : Engine.autumnWar._orderForAI(state, orgId, memberIds),
+        confirmed: orgId !== 'player' && memberIds.length === Engine.autumnWar.TEAM_SIZE,
+        available,
+      };
+    });
+    const bracket = Engine.autumnWar._buildBracket(teams);
+    const cancelled = teams.filter(t => t.available).length < 2;
+    return { phase: 'announce', announcedSeason: state.season, teams, bracket, results: [], cancelled, reason: cancelled ? 'insufficientTeams' : null };
+  },
+
+  /** Week35: プレイヤー代表3名と先鋒・中堅・大将の順を確定する。 */
+  confirmPlayerTeam(state, memberIds, order) {
+    if (!state.autumnWar || !Array.isArray(state.autumnWar.teams)) return state;
+    if (!Array.isArray(memberIds) || memberIds.length !== Engine.autumnWar.TEAM_SIZE || new Set(memberIds).size !== Engine.autumnWar.TEAM_SIZE) return state;
+    const eligible = new Set(Engine.autumnWar._eligible(state.roster || []).map(f => f.id));
+    if (!memberIds.every(id => eligible.has(id))) return state;
+    const resolvedOrder = order || memberIds;
+    if (!Engine.autumnWar._isPermutation(resolvedOrder, memberIds)) return state;
+    const teams = state.autumnWar.teams.map(t => t.orgId === 'player'
+      ? { ...t, memberIds: [...memberIds], order: [...resolvedOrder], confirmed: true, available: true }
+      : t);
+    return { ...state, autumnWar: { ...state.autumnWar, teams }, autumnWarPhase: 'entry_done' };
+  },
+
+  /** 決勝前のプレイヤー並び替え予約。決勝進出時のみrun()が採用する。 */
+  reorderForFinal(state, order) {
+    if (!state.autumnWar || !Array.isArray(state.autumnWar.teams)) return state;
+    const playerTeam = state.autumnWar.teams.find(t => t.orgId === 'player');
+    if (!playerTeam || !Engine.autumnWar._isPermutation(order, playerTeam.memberIds)) return state;
+    const teams = state.autumnWar.teams.map(t => t.orgId === 'player' ? { ...t, finalOrder: [...order] } : t);
+    return { ...state, autumnWar: { ...state.autumnWar, teams } };
+  },
+
+  /** Week36: 準決勝と決勝を一括実行する。roster本体のconditionは変更しない。 */
+  run(state, rng) {
+    const aw = state.autumnWar;
+    if (!aw || !Array.isArray(aw.teams) || aw.cancelled) return { cancelled: true, reason: (aw && aw.reason) || 'noTeams' };
+    const eventRng = rng || Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xA936));
+
+    // Week36時点の怪我・移籍を再確認。無効な編成はOVR上位3名で自己修復する。
+    const teams = aw.teams.map(team => {
+      const roster = Engine.autumnWar._orgRoster(state, team.orgId);
+      const eligible = Engine.autumnWar._eligible(roster);
+      const validMembers = Array.isArray(team.memberIds) && team.memberIds.length === Engine.autumnWar.TEAM_SIZE
+        && new Set(team.memberIds).size === Engine.autumnWar.TEAM_SIZE
+        && team.memberIds.every(id => eligible.some(f => f.id === id));
+      const memberIds = validMembers ? [...team.memberIds] : Engine.autumnWar._selectMembers(state, team.orgId);
+      const validOrder = Engine.autumnWar._isPermutation(team.order, memberIds);
+      const order = validOrder ? [...team.order]
+        : team.orgId === 'player'
+          ? Engine.autumnWar._defaultOrder(state, team.orgId, memberIds)
+          : Engine.autumnWar._orderForAI(state, team.orgId, memberIds);
+      return { ...team, memberIds, order, confirmed: memberIds.length === Engine.autumnWar.TEAM_SIZE, available: memberIds.length === Engine.autumnWar.TEAM_SIZE };
+    });
+    const activeTeams = teams.filter(t => t.available);
+    if (activeTeams.length < 2) return { cancelled: true, reason: 'insufficientTeamsAtEventTime', teams };
+
+    const teamByOrg = orgId => teams.find(t => t.orgId === orgId);
+    const fighterOf = (orgId, id) => Engine.autumnWar._orgRoster(state, orgId).find(f => f.id === id);
+    const conditions = {};
+    activeTeams.forEach(t => t.memberIds.forEach(id => { conditions[id] = Engine.autumnWar.INITIAL_CONDITION; }));
+    const fighterWins = {};
+    const finalWins = {};
+    const teamMatches = [];
+
+    function runTeamMatch(orgA, orgB, round, orderA, orderB) {
+      const teamA = teamByOrg(orgA), teamB = teamByOrg(orgB);
+      const aOrder = orderA || teamA.order, bOrder = orderB || teamB.order;
+      let aIdx = 0, bIdx = 0, winsA = 0, winsB = 0;
+      const bouts = [];
+      while (aIdx < aOrder.length && bIdx < bOrder.length && bouts.length < 5) {
+        const left = fighterOf(orgA, aOrder[aIdx]);
+        const right = fighterOf(orgB, bOrder[bIdx]);
+        const beforeLeft = conditions[left.id], beforeRight = conditions[right.id];
+        const fullHpLeft = Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(left.st) * BIGMATCH_ENG.hpScale);
+        const fullHpRight = Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(right.st) * BIGMATCH_ENG.hpScale);
+        const matchResult = Engine.battle.simulateMatch(
+          { ...left, condition: beforeLeft, _hpOverride: Engine.wear.toHpOverride(beforeLeft, fullHpLeft) },
+          { ...right, condition: beforeRight, _hpOverride: Engine.wear.toHpOverride(beforeRight, fullHpRight) },
+          eventRng, 2
+        );
+        const wearLeft = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpLeft.final, matchResult.hpLeft.max));
+        const wearRight = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpRight.final, matchResult.hpRight.max));
+        conditions[left.id] = Engine.wear.nextCondition(beforeLeft, wearLeft, 0, Engine.autumnWar.FLOOR, Engine.autumnWar.CEILING);
+        conditions[right.id] = Engine.wear.nextCondition(beforeRight, wearRight, 0, Engine.autumnWar.FLOOR, Engine.autumnWar.CEILING);
+        const winnerId = matchResult.winner === 'left' ? left.id : matchResult.winner === 'right' ? right.id : null;
+        if (winnerId === left.id) {
+          winsA++; fighterWins[left.id] = (fighterWins[left.id] || 0) + 1;
+          if (round === 'final') finalWins[left.id] = (finalWins[left.id] || 0) + 1;
+          bIdx++;
+        } else if (winnerId === right.id) {
+          winsB++; fighterWins[right.id] = (fighterWins[right.id] || 0) + 1;
+          if (round === 'final') finalWins[right.id] = (finalWins[right.id] || 0) + 1;
+          aIdx++;
+        } else {
+          // 両者KO等は両者脱落。
+          aIdx++; bIdx++;
+        }
+        bouts.push({
+          index: bouts.length + 1,
+          left: { id: left.id, name: left.name, orgId: orgA },
+          right: { id: right.id, name: right.name, orgId: orgB },
+          winnerId,
+          draw: winnerId == null,
+          mq: matchResult.mq,
+          turns: matchResult.turns,
+          finType: matchResult.finType || '',
+          finMove: matchResult.finMove || '',
+          wear: { [left.id]: Math.round(wearLeft * 10) / 10, [right.id]: Math.round(wearRight * 10) / 10 },
+          conditionBefore: { [left.id]: Math.round(beforeLeft), [right.id]: Math.round(beforeRight) },
+          conditionAfter: { [left.id]: Math.round(conditions[left.id]), [right.id]: Math.round(conditions[right.id]) },
+        });
+      }
+      let winnerOrg, loserOrg, tieBreak = null;
+      if (aIdx >= aOrder.length && bIdx < bOrder.length) { winnerOrg = orgB; loserOrg = orgA; }
+      else if (bIdx >= bOrder.length && aIdx < aOrder.length) { winnerOrg = orgA; loserOrg = orgB; }
+      else {
+        if (winsA !== winsB) {
+          winnerOrg = winsA > winsB ? orgA : orgB;
+          tieBreak = { type: 'fallCount', winsA, winsB };
+        } else {
+          winnerOrg = Engine.rng.float(eventRng) < 0.5 ? orgA : orgB;
+          tieBreak = { type: 'deterministicRng', winsA, winsB };
+        }
+        loserOrg = winnerOrg === orgA ? orgB : orgA;
+      }
+      const match = { round, orgA, orgB, orderA: [...aOrder], orderB: [...bOrder], winnerOrg, loserOrg, teamWins: { [orgA]: winsA, [orgB]: winsB }, bouts, tieBreak };
+      teamMatches.push(match);
+      return match;
+    }
+
+    const bracket = Engine.autumnWar._buildBracket(teams);
+    const semifinalResults = [];
+    const finalists = [];
+    bracket.forEach(pair => {
+      const semi = runTeamMatch(pair.orgA, pair.orgB, 'semiFinal');
+      semifinalResults.push(semi);
+      finalists.push(semi.winnerOrg);
+      if (pair.byeOrg) finalists.push(pair.byeOrg);
+    });
+    if (bracket.length === 0) finalists.push(...activeTeams.sort((a, b) => a.seed - b.seed).slice(0, 2).map(t => t.orgId));
+
+    // 準決勝に出た決勝進出団体は、全3名復帰して各自+15回復（上限80）。
+    const semifinalOrgs = new Set(semifinalResults.flatMap(m => [m.orgA, m.orgB]));
+    [...new Set(finalists)].forEach(orgId => {
+      if (!semifinalOrgs.has(orgId)) return;
+      teamByOrg(orgId).memberIds.forEach(id => { conditions[id] = Math.min(Engine.autumnWar.CEILING, conditions[id] + Engine.autumnWar.ROUND_RECOVERY); });
+    });
+    const finalistOrgs = [...new Set(finalists)].slice(0, 2);
+    if (finalistOrgs.length < 2) return { cancelled: true, reason: 'finalistsMissing', teams };
+
+    const finalOrderFor = orgId => {
+      const team = teamByOrg(orgId);
+      if (Engine.autumnWar._isPermutation(team.finalOrder, team.memberIds)) return [...team.finalOrder];
+      if (orgId !== 'player' || aw.autoReorderFinal) {
+        return [...team.memberIds].sort((a, b) => conditions[b] - conditions[a]
+          || Engine.util.ov(fighterOf(orgId, a)) - Engine.util.ov(fighterOf(orgId, b)) || a - b);
+      }
+      return [...team.order];
+    };
+    const finalResult = runTeamMatch(finalistOrgs[0], finalistOrgs[1], 'final', finalOrderFor(finalistOrgs[0]), finalOrderFor(finalistOrgs[1]));
+    const champion = finalResult.winnerOrg, runnerUp = finalResult.loserOrg;
+
+    // 最多勝ち抜き→優勝チーム→決勝での勝ち抜き→決定論的乱数。
+    const participantIds = activeTeams.flatMap(t => t.memberIds);
+    const mvpTie = {};
+    participantIds.forEach(id => { mvpTie[id] = Engine.rng.float(eventRng); });
+    participantIds.sort((a, b) => (fighterWins[b] || 0) - (fighterWins[a] || 0)
+      || (teamByOrg(champion).memberIds.includes(b) ? 1 : 0) - (teamByOrg(champion).memberIds.includes(a) ? 1 : 0)
+      || (finalWins[b] || 0) - (finalWins[a] || 0)
+      || mvpTie[b] - mvpTie[a]);
+    const mvpId = participantIds[0] || null;
+    const mvpTeam = activeTeams.find(t => t.memberIds.includes(mvpId));
+
+    return {
+      cancelled: false,
+      teams,
+      bracket,
+      results: teamMatches,
+      semifinalResults,
+      finalResult,
+      champion,
+      runnerUp,
+      semiFinalLosers: semifinalResults.map(m => m.loserOrg),
+      conditions: Object.fromEntries(Object.entries(conditions).map(([id, value]) => [id, Math.round(value * 10) / 10])),
+      fighterWins,
+      finalWins,
+      mvpId,
+      mvpOrgId: mvpTeam ? mvpTeam.orgId : null,
+    };
+  },
+
+  /** Week36: 大会結果・ポイント・賞金・経歴・MVP・ニュースをGameStateへ反映する。 */
+  apply(state, result) {
+    let s = { ...state };
+    const events = [];
+    if (!result || result.cancelled) {
+      s = { ...s, autumnWar: { ...(s.autumnWar || {}), ...(result || {}), cancelled: true }, autumnWarPhase: 'result' };
+      return { state: s, events };
+    }
+    const { teams, semifinalResults, finalResult, champion, runnerUp, fighterWins, mvpId, mvpOrgId } = result;
+
+    // 対戦ポイント: 準決勝+6/-6、決勝勝者にさらに+8。
+    const bp = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+    const cfg = (typeof BATTLE_POINT_CFG !== 'undefined' && BATTLE_POINT_CFG.autumnWar)
+      || { semiWin: 6, semiLoss: -6, finalWin: 8 };
+    semifinalResults.forEach(m => {
+      bp[m.winnerOrg] = (bp[m.winnerOrg] || 0) + cfg.semiWin;
+      bp[m.loserOrg] = (bp[m.loserOrg] || 0) + cfg.semiLoss;
+    });
+    bp[champion] = (bp[champion] || 0) + cfg.finalWin;
+    s = { ...s, battlePoints: bp };
+
+    // 出場選手全員へ大会結果を1件ずつ記録する。
+    const addHistory = (fighters, memberIds, resultLabel) => fighters.map(f => {
+      if (!memberIds.includes(f.id)) return f;
+      const rec = f.careerRecord || Engine.career.createRecord();
+      const history = [...(rec.history || []), { type: 'autumnWar', season: s.season, result: resultLabel, wins: fighterWins[f.id] || 0 }];
+      return { ...f, careerRecord: { ...rec, history } };
+    });
+    teams.filter(t => t.available).forEach(team => {
+      const label = team.orgId === champion ? 'champion' : team.orgId === runnerUp ? 'runnerUp' : 'semiFinal';
+      if (team.orgId === 'player') {
+        s = { ...s, roster: addHistory(s.roster || [], team.memberIds, label) };
+      } else if (s.aiOrgs && s.aiOrgs[team.orgId]) {
+        const aiOrgs = { ...s.aiOrgs };
+        aiOrgs[team.orgId] = { ...aiOrgs[team.orgId], roster: addHistory(aiOrgs[team.orgId].roster || [], team.memberIds, label) };
+        s = { ...s, aiOrgs };
+      }
+    });
+
+    // 優勝団体のシーズン実績。
+    Engine.achievement.ensureInit(s);
+    const ACFG = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG) || { pt: {} };
+    Engine.achievement.add(s, champion, {
+      id: `autumnWar_${s.season}`, type: 'autumnWar',
+      originalPt: ACFG.pt.autumnWar || 10,
+      label: '4団体勝ち残り対抗戦 優勝',
+      winnerName: Engine.autumnWar._orgName(s, champion),
+    });
+
+    // プレイヤー団体のみ順位報酬を反映。
+    const playerEntered = teams.some(t => t.orgId === 'player' && t.available);
+    let popDelta = 0, prize = 0;
+    if (champion === 'player') { popDelta = 4; prize = Engine.autumnWar.PRIZE.champion; }
+    else if (runnerUp === 'player') { popDelta = 1; prize = Engine.autumnWar.PRIZE.runnerUp; }
+    else if (playerEntered) popDelta = -2;
+    if (playerEntered) s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + popDelta, 0, 100), funds: (s.funds || 0) + prize };
+
+    // 大会MVPは人気+5（所属団体を問わない）。
+    const bumpMvp = fighters => fighters.map(f => f.id === mvpId ? { ...f, popularity: Math.min(100, (f.popularity || 0) + 5) } : f);
+    if (mvpOrgId === 'player') s = { ...s, roster: bumpMvp(s.roster || []) };
+    else if (mvpOrgId && s.aiOrgs && s.aiOrgs[mvpOrgId]) {
+      const aiOrgs = { ...s.aiOrgs };
+      aiOrgs[mvpOrgId] = { ...aiOrgs[mvpOrgId], roster: bumpMvp(aiOrgs[mvpOrgId].roster || []) };
+      s = { ...s, aiOrgs };
+    }
+
+    const matchSummary = m => {
+      const scoreW = m.teamWins[m.winnerOrg] || 0, scoreL = m.teamWins[m.loserOrg] || 0;
+      const note = m.tieBreak ? (m.tieBreak.type === 'fallCount' ? '（同時全滅、勝ち抜き数判定）' : '（同時全滅、抽選決着）') : '';
+      return `${Engine.autumnWar._orgName(s, m.winnerOrg)} ${scoreW}-${scoreL} ${Engine.autumnWar._orgName(s, m.loserOrg)}${note}`;
+    };
+    const mvpFighter = Engine.autumnWar._orgRoster(s, mvpOrgId).find(f => f.id === mvpId);
+    const gauntletHeroes = teams.flatMap(t => t.memberIds.map(id => ({ id, orgId: t.orgId })))
+      .filter(x => (fighterWins[x.id] || 0) >= 3)
+      .map(x => {
+        const fighter = Engine.autumnWar._orgRoster(s, x.orgId).find(f => f.id === x.id);
+        return fighter ? `${fighter.name}が${fighterWins[x.id]}人抜きを達成した。` : '';
+      }).filter(Boolean).join('');
+    const tieBreakNotes = result.results.filter(m => m.tieBreak).map(m => `${m.round === 'final' ? '決勝' : '準決勝'}は${matchSummary(m)}。`).join('');
+    s = Engine.industryNews.push(s, {
+      type: 'autumnWarResult',
+      characterId: mvpId,
+      data: {
+        season: s.season,
+        championOrg: Engine.autumnWar._orgName(s, champion),
+        runnerUpOrg: Engine.autumnWar._orgName(s, runnerUp),
+        semi1: semifinalResults[0] ? matchSummary(semifinalResults[0]) : '上位シードが不戦勝',
+        semi2: semifinalResults[1] ? matchSummary(semifinalResults[1]) : '上位シードが不戦勝',
+        finalResult: matchSummary(finalResult),
+        mvpName: mvpFighter ? mvpFighter.name : '該当選手',
+        mvpOrg: Engine.autumnWar._orgName(s, mvpOrgId),
+        mvpWins: fighterWins[mvpId] || 0,
+        gauntletNote: gauntletHeroes,
+        tieBreakNote: tieBreakNotes,
+      },
+    });
+    events.push(`🏆 第${s.season}回4団体勝ち残り対抗戦優勝: ${Engine.autumnWar._orgName(s, champion)}`);
+    if (prize > 0) events.push(`💰 4団体勝ち残り対抗戦 賞金${prize}万を獲得`);
+
+    s = {
+      ...s,
+      autumnWar: { ...s.autumnWar, ...result, phase: 'result', cancelled: false },
+      autumnWarPhase: 'result',
+    };
+    return { state: s, events };
+  },
+};
+
+// ══════════════════════════════════════════════════════════
 //  Engine.newspaper — 新聞v2 毎週生成システム
 //  Pure functions only — no DOM references
 // ══════════════════════════════════════════════════════════
@@ -23666,7 +24100,9 @@ Engine.newspaper = {
   PRIORITY: {
     juniorTournamentResult: 260,
     juniorTournamentPreview: 250,
+    autumnWarResult:       240,
     springTagResult:      230,
+    autumnWarAnnounce:     150,
     springTagAnnounce:    150,
     ppvSummitResult:     200,
     playerTitleChange:   180,
@@ -24161,7 +24597,7 @@ Engine.newspaper = {
     const MATCH_TYPES = new Set([
       'ppvSummitResult', 'playerTitleChange', 'warMilestone', 'crossWarResult',
       'aiWarResult', 'aiB3Result', 'playerShowTitle', 'playerShowNormal',
-      'aiShowHighlight', 'juniorTournamentResult', 'springTagResult',
+      'aiShowHighlight', 'juniorTournamentResult', 'springTagResult', 'autumnWarResult',
     ]);
     const subPool = stories.slice(1);
     const matchPicks = [];
