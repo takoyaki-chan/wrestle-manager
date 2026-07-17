@@ -46,19 +46,15 @@ body{
 
 /* Momentum bar */
 .wm-mom{display:flex;height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;margin-bottom:6px}
-.wm-mom-l{background:linear-gradient(90deg,rgba(74,143,212,0.3),rgba(74,143,212,0.8));transition:width .4s}
-.wm-mom-r{background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.3));transition:width .4s}
+.wm-mom-l{background:linear-gradient(90deg,rgba(212,168,67,0.3),rgba(212,168,67,0.8));transition:width .4s;border-right:1px solid rgba(240,208,120,0.95)}
+.wm-mom-r{background:linear-gradient(90deg,rgba(212,168,67,0.8),rgba(212,168,67,0.3));transition:width .4s}
 
 /* HP row */
 .wm-hp-row{display:flex;gap:8px;align-items:center}
 .wm-hp-bar{height:28px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative;flex:1}
 .wm-hp-fill{height:100%;border-radius:4px;transition:width .5s;background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}
-.wm-hp-fill.warn{background:linear-gradient(90deg,#d4a843,#f0d078) !important}
-.wm-hp-fill.danger{background:linear-gradient(90deg,#c41e3a,#e85d75) !important}
 .wm-hp-fill.rev{float:right}
 .wm-hp-pct{font-family:'Bebas Neue',sans-serif;font-size:28px;min-width:52px;letter-spacing:1px;color:#5dd9ca}
-.wm-hp-pct.warn{color:#f0d078}
-.wm-hp-pct.danger{color:#e85d75}
 .wm-hp-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:rgba(232,230,224,0.25);min-width:20px;text-align:center}
 .wm-hp-name{font-size:10px;color:rgba(232,230,224,0.45);min-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Noto Sans JP',sans-serif}
 .wm-hp-name.right{text-align:right}
@@ -69,8 +65,7 @@ body{
 
 /* ─── FIGHTER PANEL ─── */
 .fighter-panel{background:var(--card-bg);border:1px solid rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;transition:border-color .15s,box-shadow .15s;position:relative}
-.fighter-panel.left{border-color:rgba(74,143,212,0.2)}
-.fighter-panel.right{border-color:rgba(196,30,58,0.2)}
+.fighter-panel.left,.fighter-panel.right{border-color:rgba(212,168,67,0.15)}
 .fighter-panel.flash-atk{border-color:rgba(255,255,255,0.6);box-shadow:0 0 18px rgba(255,255,255,0.15)}
 .fighter-panel.grit-active{border-color:rgba(212,168,67,0.5) !important;box-shadow:0 0 20px rgba(212,168,67,0.15) !important}
 .fighter-panel.shake{animation:shakePanel .25s ease-out}
@@ -89,8 +84,6 @@ body{
   background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);mix-blend-mode:multiply}
 .portrait-area::after{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
   background:radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,0.4) 100%);box-shadow:inset 0 0 15px rgba(0,0,0,0.3)}
-.fighter-panel.left .portrait-area::after{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset 2px 0 6px rgba(74,143,212,0.1)}
-.fighter-panel.right .portrait-area::after{box-shadow:inset 0 0 15px rgba(0,0,0,0.3),inset -2px 0 6px rgba(196,30,58,0.1)}
 /* portrait-holder alias (used by CSS selector references) */
 .portrait-holder{width:100%;aspect-ratio:2/3;background:var(--portrait-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .portrait-holder img{width:100%;height:100%;object-fit:contain;filter:brightness(0.92) contrast(1.05);position:relative;z-index:2;transition:filter .3s}
@@ -160,6 +153,12 @@ body{
 .fighter-panel.right .ab-row{flex-direction:row-reverse}
 .fighter-panel.right .ab-name{text-align:right}
 .fighter-panel.right .ab-val{text-align:left}
+.fighter-panel.right .ab-fill{float:right}
+.fighter-panel.right .ab-fill.pow,.fighter-panel.right .ab-fill.power{background:linear-gradient(270deg,#c41e3a,#e85d75)}
+.fighter-panel.right .ab-fill.spd,.fighter-panel.right .ab-fill.speed{background:linear-gradient(270deg,#2a6bd4,#5da0f0)}
+.fighter-panel.right .ab-fill.tec,.fighter-panel.right .ab-fill.technique{background:linear-gradient(270deg,#2a9d8f,#5dd9ca)}
+.fighter-panel.right .ab-fill.sta,.fighter-panel.right .ab-fill.stamina{background:linear-gradient(270deg,#d4a843,#f0d078)}
+.fighter-panel.right .ab-fill.mn,.fighter-panel.right .ab-fill.mental{background:linear-gradient(270deg,#8b5cf6,#a78bfa)}
 
 /* ─── CHARGING (big move wind-up glow on attacker panel) ─── */
 @keyframes chargePulse{0%{box-shadow:0 0 20px rgba(212,168,67,0.3),inset 0 0 12px rgba(212,168,67,0.1)}50%{box-shadow:0 0 50px rgba(212,168,67,0.7),inset 0 0 30px rgba(212,168,67,0.25)}100%{box-shadow:0 0 20px rgba(212,168,67,0.3),inset 0 0 12px rgba(212,168,67,0.1)}}

@@ -42,19 +42,15 @@ body{
 
 /* Momentum bar */
 .wm-mom{display:flex;height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;margin-bottom:6px}
-.wm-mom-l{background:linear-gradient(90deg,rgba(74,143,212,0.3),rgba(74,143,212,0.8));transition:width .4s}
-.wm-mom-r{background:linear-gradient(90deg,rgba(196,30,58,0.8),rgba(196,30,58,0.3));transition:width .4s}
+.wm-mom-l{background:linear-gradient(90deg,rgba(212,168,67,0.3),rgba(212,168,67,0.8));transition:width .4s;border-right:1px solid rgba(240,208,120,0.95)}
+.wm-mom-r{background:linear-gradient(90deg,rgba(212,168,67,0.8),rgba(212,168,67,0.3));transition:width .4s}
 
 /* HP row (team total) */
 .wm-hp-row{display:flex;gap:8px;align-items:center}
 .wm-hp-bar{height:28px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;position:relative;flex:1}
 .wm-hp-fill{height:100%;border-radius:4px;transition:width .5s;background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}
-.wm-hp-fill.warn{background:linear-gradient(90deg,#d4a843,#f0d078) !important}
-.wm-hp-fill.danger{background:linear-gradient(90deg,#c41e3a,#e85d75) !important}
 .wm-hp-fill.rev{float:right}
 .wm-hp-pct{font-family:'Bebas Neue',sans-serif;font-size:28px;min-width:52px;letter-spacing:1px;color:#5dd9ca}
-.wm-hp-pct.warn{color:#f0d078}
-.wm-hp-pct.danger{color:#e85d75}
 .wm-hp-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:rgba(232,230,224,0.25);min-width:20px;text-align:center}
 .wm-hp-name{font-size:10px;color:rgba(232,230,224,0.45);min-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Noto Sans JP',sans-serif}
 .wm-hp-name.right{text-align:right}
@@ -127,11 +123,7 @@ body{
 .card-hp-track{height:14px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;position:relative}
 .card-hp-track.rtl{direction:rtl}
 .card-hp-fill{height:100%;border-radius:3px;transition:width .5s;background:linear-gradient(90deg,#2a9d8f,#5dd9ca)}
-.card-hp-fill.warn{background:linear-gradient(90deg,#d4a843,#f0d078) !important}
-.card-hp-fill.danger{background:linear-gradient(90deg,#c41e3a,#e85d75) !important}
 .card-hp-text{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;color:#5dd9ca;margin-top:2px;display:block}
-.card-hp-text.warn{color:#f0d078}
-.card-hp-text.danger{color:#e85d75}
 .card-hp-text.right{text-align:right}
 
 /* Danger glow */
@@ -164,11 +156,7 @@ body{
 .apron-hp-track{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
 .apron-hp-track.rtl{direction:rtl}
 .apron-hp-fill{height:100%;background:linear-gradient(90deg,#2a9d8f,#5dd9ca);border-radius:2px;transition:width .5s}
-.apron-hp-fill.warn{background:linear-gradient(90deg,#d4a843,#f0d078)}
-.apron-hp-fill.danger{background:linear-gradient(90deg,#c41e3a,#e85d75)}
 .apron-hp-val{font-size:11px;min-width:32px;color:#5dd9ca}
-.apron-hp-val.warn{color:#f0d078}
-.apron-hp-val.danger{color:#e85d75}
 .apron-hp-val.right{text-align:right}
 .apron-recovery{font-size:9px;color:#4a7;margin-top:2px}
 .apron-recovery.right{text-align:right}
