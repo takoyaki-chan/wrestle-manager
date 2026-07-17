@@ -23,8 +23,13 @@
 
 ### 2. キャンペーンIDの確認
 
-- ブラウザで https://www.patreon.com/api/oauth2/v2/campaigns を開く(ログイン状態で)か、
-  自分のPatreonページのソースにある `campaign_id` を確認。数字のIDを控える
+**方法A(ページソースから)**: 自分のクリエイターページを開き Ctrl+U(ソース表示)→ Ctrl+F で `campaign/` を検索。画像URL中の `.../patreon-media/p/campaign/1234567/...` の数字がキャンペーンID(見つからなければ `campaign_id` や `"campaign"` で検索)。
+
+**方法B(APIで)**: クライアント登録ページに表示される Creator's Access Token を使い、PowerShellで:
+```powershell
+Invoke-RestMethod -Uri "https://www.patreon.com/api/oauth2/v2/campaigns" -Headers @{Authorization="Bearer <トークン>"} | ConvertTo-Json -Depth 5
+```
+`data` 内の `"id"` がキャンペーンID。※ブラウザで同URLを直接開いても認証が通らず空になるので不可。
 
 ### 3. Cloudflare側: 環境変数の設定
 
