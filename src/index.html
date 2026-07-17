@@ -7071,10 +7071,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   min-height: 360px;
 }
 .ranking-popup .orgcell.is-rank-1 { border-color: rgba(212,168,67,0.35); min-height: 420px; }
-.ranking-popup .orgcell.is-player {
-  border-color: rgba(212,168,67,0.5);
-  background: linear-gradient(180deg, rgba(212,168,67,0.05), transparent 30%), var(--panel-bg);
-}
+/* is-player の金枠・グラデは廃止(2026-07-17 Keisuke指摘)。金枠=1位の意味に一本化し、
+   自団体はティアピル「自」で識別する(原則9: 色は意味にのみ) */
 
 .ranking-popup .orgcell-head {
   display: flex; align-items: center; gap: 10px;
