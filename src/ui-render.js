@@ -6246,6 +6246,9 @@ let _dbCoachSortAsc = false;
 let _dbCoachFilterGrade = '';
 let _dbCoachFilterName = '';
 // Phase 6v2: 相関図 state (force-directed network)
+// C-4宿題: 絆/因縁バーの説明ティップス(data-tip)。内部変数名(bond/rivalry)は出さず日本語のみ
+const _RM_TIP_BOND = '一緒に過ごした時間や共闘で深まる、相手への信頼と親愛。高いほど息が合いやすくなります';
+const _RM_TIP_RIVALRY = '対戦の因縁や敵意。高いほど試合が激しくなります';
 let _relmapCenterId = null;
 let _relmapFilter = 'all';
 let _relmapSelected = null;
@@ -14523,7 +14526,7 @@ function _relmapShowDetailForNode(nodeId) {
 
   panel.innerHTML = `<div class="rm-detail-faces"><div class="rm-detail-face" style="border-color:${n.color}" onclick="showFighterPopup(${n.id})">${_relmapFaceHtml(n.id, 42)}</div><span class="rm-detail-arr">\u21C4</span><div class="rm-detail-face" style="border-color:${other.color}" onclick="showFighterPopup(${other.id})">${_relmapFaceHtml(other.id, 42)}</div></div>
     <div class="rm-detail-info"><div class="rm-detail-names"><span style="cursor:pointer" onclick="showFighterPopup(${n.id})">${n.name}</span><span style="color:var(--text-dim);font-size:11px">\u21C4</span><span style="cursor:pointer" onclick="showFighterPopup(${other.id})">${other.name}</span>${tb}</div>
-    <div class="rm-detail-meters"><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="rm-detail-meter-label">${n.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rfc}">${Math.round(rf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rf}%;background:${rfc}"></div></div></div><div><div class="rm-detail-meter-label">${other.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rrc}">${Math.round(rr)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rr}%;background:${rrc}"></div></div></div></div></div>
+    <div class="rm-detail-meters"><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_BOND)}>${n.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_BOND)}>${other.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_RIVALRY)}>${n.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rfc}">${Math.round(rf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rf}%;background:${rfc}"></div></div></div><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_RIVALRY)}>${other.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rrc}">${Math.round(rr)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rr}%;background:${rrc}"></div></div></div></div></div>
     <div style="text-align:right;font-size:10px;color:var(--text-dim);flex-shrink:0">他 ${nl.length-1}件<br><span style="cursor:pointer;color:var(--gold)" onclick="showFighterPopup(${n.id})">\uD83D\uDCCB 詳細</span><span style="margin-left:8px;cursor:pointer;color:#74b9ff" onclick="_relmapCompareA=${n.id};_relmapCompareB=${other.id};_relmapShowComparePopup()">\u2696 比較</span></div>`;
   panel.classList.add('show');
 }
@@ -14583,8 +14586,8 @@ function _relmapShowComparePopup() {
   if (rel) {
     h += `<div class="rm-cmp-rel-inline">`;
     h += `<div class="rm-cmp-rel-direction" style="color:${bColor}">→ ${b.name.slice(0,5)} への感情</div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_BOND)}>親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_RIVALRY)}>競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
     const emotionAtoB = getEmotionText(bAtoB, rAtoB, a.ovr, b.ovr, a._char?.archetype);
     h += `<div class="rm-cmp-emotion-text">\uD83D\uDCAD ${emotionAtoB}</div>`;
     h += `</div>`;
@@ -14596,8 +14599,8 @@ function _relmapShowComparePopup() {
   if (rel) {
     h += `<div class="rm-cmp-rel-inline">`;
     h += `<div class="rm-cmp-rel-direction" style="color:${aColor}">← ${a.name.slice(0,5)} への感情</div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label">競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_BOND)}>親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_RIVALRY)}>競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
     const emotionBtoA = getEmotionText(bBtoA, rBtoA, b.ovr, a.ovr, b._char?.archetype);
     h += `<div class="rm-cmp-emotion-text">\uD83D\uDCAD ${emotionBtoA}</div>`;
     h += `</div>`;

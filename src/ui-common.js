@@ -7671,18 +7671,33 @@ function showDecisionPairModal(docId, state) {
 
   let selectedPairKey = eligiblePairs[0].key;
 
+  // P-6モーダル改善(2026-07-17 Keisuke指摘): 平均bond数値の露出をやめ、定性ラベルに置換
+  const _pairRelLabel = (avgBond) => {
+    if (avgBond <= 15) return { text: '冷え切っている', color: 'var(--accent-negative)', weight: 700 };
+    if (avgBond <= 25) return { text: '険悪', color: 'var(--accent-negative)', weight: 400 };
+    if (avgBond <= 35) return { text: 'ぎくしゃくしている', color: 'var(--accent-milestone)', weight: 400 };
+    return { text: 'わだかまりが残る', color: 'var(--cream-text-sub)', weight: 400 };
+  };
+  const _pairFaceImg = (f, overlap) => {
+    const u = getPortraitUrl(f.id);
+    const base = 'width:30px;height:30px;border-radius:50%;object-fit:cover;border:1.5px solid var(--cream-gold);background:var(--cream-panel-bg);display:block';
+    if (!u) return `<span style="${base};display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--cream-text-dim);background:var(--cream-panel-bg)${overlap ? ';margin-left:-10px' : ''}">👤</span>`;
+    return `<img src="${u}" alt="${escHtml(f.name || '')}" style="${base}${overlap ? ';margin-left:-10px' : ''}" onerror="this.style.display='none'">`;
+  };
+
   const _renderPairList = () => {
     return eligiblePairs.map(p => {
       const sel = p.key === selectedPairKey;
-      const bondColor = p.avgBond <= 20 ? '#ff7675' : (p.avgBond <= 30 ? '#e17055' : 'var(--cream-text-sub)');
+      const rel = _pairRelLabel(p.avgBond);
       return `<div class="mdl-a-pair-row" data-pairkey="${p.key}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:6px;cursor:pointer;background:${sel ? 'rgba(232,196,118,0.35)' : 'rgba(255,255,255,0.35)'};border:1px solid ${sel ? 'var(--cream-gold)' : 'rgba(100,85,50,0.15)'};margin-bottom:6px">
         <div style="display:flex;align-items:center;gap:10px">
+          <span style="display:flex;align-items:center">${_pairFaceImg(p.fA, false)}${_pairFaceImg(p.fB, true)}</span>
           <span style="font-weight:700;color:var(--cream-text-main)">${p.fA.name}</span>
           <span style="color:var(--cream-text-dim);font-size:12px">×</span>
           <span style="font-weight:700;color:var(--cream-text-main)">${p.fB.name}</span>
         </div>
         <div style="display:flex;gap:14px;align-items:center;font-size:12px">
-          <span style="color:${bondColor}">平均bond ${Math.round(p.avgBond)}</span>
+          <span style="color:${rel.color};font-weight:${rel.weight}">二人の関係: ${rel.text}</span>
           <span style="color:var(--cream-text-sub)">対立累計 ${p.count}回</span>
         </div>
       </div>`;
