@@ -8750,6 +8750,10 @@ function _renderDbFighters() {
   const _champIds = new Set();
   if (G.titles?.world?.championId) _champIds.add(G.titles.world.championId);
   if (G.aiOrgs) { for (const oData of Object.values(G.aiOrgs)) { if (oData.titles?.world?.championId) _champIds.add(oData.titles.world.championId); } }
+  // 春のタッグリーグ「総合ベストタッグ」IDセット（遅延失効判定込み）
+  const _bestTagIds = new Set();
+  const _dbActiveBestTag = Engine.springTagLeague.getActiveBestTagTeam(G);
+  if (_dbActiveBestTag) { _bestTagIds.add(_dbActiveBestTag.f1Id); _bestTagIds.add(_dbActiveBestTag.f2Id); }
 
   filtered.forEach(f => {
     const ovr = Engine.util.ov(f);
@@ -8767,10 +8771,13 @@ function _renderDbFighters() {
     const champBadge = _champIds.has(f.id)
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.2);color:var(--gold);border:1px solid rgba(212,168,67,0.4);margin-left:4px">👑</span>`
       : '';
+    const bestTagBadge = _bestTagIds.has(f.id)
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(255,111,156,0.2);color:#ff6f9c;border:1px solid rgba(255,111,156,0.4);margin-left:4px">🌸</span>`
+      : '';
     const source = f._orgTier === 'player' ? 'roster' : f._orgTier === 'fa' ? 'free' : `ai:${f._orgId}`;
     html += `<tr class="clickable" onclick="showFighterPopup(${f.id},'${source}')">
       <td>${portraitImg(f.id, 36, '', false)}</td>
-      <td style="font-weight:600">${f.name}${champBadge}</td>
+      <td style="font-weight:600">${f.name}${champBadge}${bestTagBadge}</td>
       <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
       <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
       <td class="num" style="${_scale6Style(_ovrSc)};font-weight:700;font-size:15px">${ovr}</td>
@@ -8883,7 +8890,7 @@ function _hofShieldImg(level, id, size) {
   return `<img src="${url}" style="width:${size}px;height:auto;display:block;margin:0 auto" alt="${_getHofStarText(level)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:${Math.round(size*0.6)}px;text-align:center">${_getHofShieldEmoji(level)}</span>`;
 }
 function _getHighlightIcon(type) {
-  return { titleWin: '👑', titleDefense: '🛡️', titleLoss: '💔', juniorTournament: '🏟️', ppvMainEvent: '🏆' }[type] || '📌';
+  return { titleWin: '👑', titleDefense: '🛡️', titleLoss: '💔', juniorTournament: '🏟️', ppvMainEvent: '🏆', springTagLeague: '🌸' }[type] || '📌';
 }
 
 function _getAllHofEntries() {
@@ -8944,7 +8951,7 @@ function _renderDbHallOfFame() {
       <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
       <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>
       <span style="display:inline-block;margin-top:8px;text-align:left;line-height:1.8">
-      <span style="color:var(--text-sub)">【実績】</span> 戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ PPV勝利5 ／ 対抗戦勝利1.5<br>
+      <span style="color:var(--text-sub)">【実績】</span> 戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ 春タッグ優勝3 ／ PPV勝利5 ／ 対抗戦勝利1.5<br>
       <span style="color:var(--text-sub)">【表彰】</span> MVP2 ／ 新人王1.5 ／ ベストマッチ1 ／ メディア功労賞1.5
       </span></div>
     </div>`;
@@ -9017,7 +9024,7 @@ function showHofDetail(idx) {
   // §6 キャリアハイライト年表
   let highlights = h.careerHighlights || [];
   if (highlights.length === 0 && h.careerRecord && h.careerRecord.history) {
-    highlights = Engine.awards.buildCareerHighlights(h.careerRecord, orgName);
+    highlights = Engine.awards.buildCareerHighlights(h.careerRecord, orgName, G);
   }
   let highlightsHtml = '';
   if (highlights.length > 0) {

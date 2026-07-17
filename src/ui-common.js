@@ -3068,6 +3068,13 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const _npcChamp = _npcChampOrgData?.titles?.world?.championId === c.id;
   const isChamp = _playerChamp || _npcChamp;
   const _champDefenses = _playerChamp ? G.titles.world.defenses : (_npcChamp ? (_npcChampOrgData.titles.world.defenses || 0) : 0);
+  // 春のタッグリーグ「総合ベストタッグ」称号（遅延失効判定 — 片方が退団/引退していれば自動非表示）
+  const _activeBestTag = (typeof Engine !== 'undefined' && Engine.springTagLeague) ? Engine.springTagLeague.getActiveBestTagTeam(G) : null;
+  const _isBestTagTeam = !!(_activeBestTag && (_activeBestTag.f1Id === c.id || _activeBestTag.f2Id === c.id));
+  const _bestTagPartnerName = _isBestTagTeam
+    ? Engine.career.resolveFighterName(G, _activeBestTag.f1Id === c.id ? _activeBestTag.f2Id : _activeBestTag.f1Id)
+    : null;
+  const _bestTagSeason = _isBestTagTeam ? _activeBestTag.awardedSeason : null;
 
   // Stats
   const STATS = [
@@ -3112,6 +3119,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <span class="badge badge-${c.style}" style="font-size:13px;padding:3px 10px">${c.style}</span>
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:13px;padding:3px 10px">${c.role}</span>` : ''}
             ${isChamp ? '<span style="font-size:14px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
+            ${_isBestTagTeam ? `<span style="font-size:13px;color:#ff6f9c;font-weight:700">🌸 総合ベストタッグ（第${_bestTagSeason}回${_bestTagPartnerName ? '・' + _bestTagPartnerName + 'と' : ''}）</span>` : ''}
             ${c.lastRun ? '<span style="font-size:13px;color:var(--gold);font-weight:700;background:rgba(212,168,67,0.15);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,168,67,0.4)">🌅 ラストラン</span>' : ''}
             ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">🤝 レンタル（残${ct ? ct.weeksLeft : '?'}週）</span>`; })() : ''}
             ${(() => {

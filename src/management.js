@@ -2353,6 +2353,30 @@ const Engine = {
       return Math.max(1, absSeason - joinSeason + 1);
     },
 
+    /** state/G から ID指定で選手名を解決する（roster→aiOrgs→freeAgents→retiredFighters→
+     * fighterArchive→ALL_CHARS の順）。春のタッグリーグ等、履歴に partnerId のみ保持する
+     * イベントの表示時に使う。state が無い/見つからない場合は null。 */
+    resolveFighterName(state, id) {
+      if (!state || id == null) return null;
+      const found = (state.roster || []).find(c => c.id === id);
+      if (found) return found.name || null;
+      if (state.aiOrgs) {
+        for (const org of Object.values(state.aiOrgs)) {
+          const f = (org.roster || []).find(c => c.id === id);
+          if (f) return f.name || null;
+        }
+      }
+      const fa = (state.freeAgents || []).find(c => c.id === id);
+      if (fa) return fa.name || null;
+      const ret = (state.retiredFighters || []).find(c => c.id === id);
+      if (ret) return ret.name || null;
+      const arc = ((state.chronicle && state.chronicle.fighterArchive) || []).find(a => a.id === id);
+      if (arc) return arc.name || null;
+      const raw = (typeof ALL_CHARS !== 'undefined') ? ALL_CHARS.find(c => c.id === id) : null;
+      if (raw) return raw.name || null;
+      return null;
+    },
+
     /** §D-2 キャリアサマリー生成（UI表示用）
      * @returns {{ wins, losses, draws, winRate, bestMQ, peakOVR, peakSeason, titleSummary }} */
     buildSummary(fighter) {
@@ -4209,6 +4233,15 @@ const Engine = {
             addSingle({ season: ev.season, type: ev.type, text, tier: 'silver' });
             return;
           }
+          if (ev.type === 'springTagLeague' && ev.result === 'champion') {
+            addGrouped(`${c.id}:springTagLeague`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
+            return;
+          }
+          if (ev.type === 'springTagLeague' && ev.result === 'runnerUp') {
+            const text = `<strong>${charName}</strong> 春のタッグリーグ準優勝`;
+            addSingle({ season: ev.season, type: ev.type, text, tier: 'silver' });
+            return;
+          }
           if (ev.type === 'ppvMainEvent' && (ev.result === 'champion' || ev.result === 'win' || ev.won === true)) {
             addGrouped(`${c.id}:ppvMainEvent`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
             return;
@@ -4323,6 +4356,11 @@ const Engine = {
             text = g.count >= 2
               ? `<strong>${g.charName}</strong> ジュニアトーナメント ${g.count}度優勝${streak >= 2 ? `・${streak}連覇` : ''}（${years}）`
               : `<strong>${g.charName}</strong> ジュニアトーナメント優勝`;
+            break;
+          case 'springTagLeague':
+            text = g.count >= 2
+              ? `<strong>${g.charName}</strong> 春のタッグリーグ ${g.count}度優勝${streak >= 2 ? `・${streak}連覇` : ''}（${years}）`
+              : `<strong>${g.charName}</strong> 春のタッグリーグ優勝`;
             break;
           case 'ppvMainEvent':
             text = g.count >= 2
@@ -5301,6 +5339,20 @@ const Engine = {
               text: `挑戦状を${b3ROrg}に拒絶される` });
             break;
           }
+          case 'springTagLeague': {
+            const stMap = { champion: '優勝', runnerUp: '準優勝', third: '3位', fourth: '4位' };
+            const stLabel = stMap[ev.result] || '出場';
+            const stPartner = Engine.career.resolveFighterName(G, ev.partnerId);
+            let stDetail;
+            if (stPartner) {
+              stDetail = ev.result === 'champion' ? `${stPartner}とのタッグで頂点に立つ`
+                : ev.result === 'runnerUp' ? `${stPartner}とのタッグで決勝進出`
+                : `${stPartner}とのタッグで参戦`;
+            }
+            milestones.push({ season: rel(ev.season), week: ev.week || 24, type: 'spring_tag',
+              text: `第${ev.season}回 春のタッグリーグ ${stLabel}`, detail: stDetail });
+            break;
+          }
           case 'breakthrough':
             // peakOVR と重複するため年表には出さない(全盛期マイルストーンに集約)
             break;
@@ -5358,6 +5410,7 @@ const Engine = {
         jt_round:      { icon: '🏅', color: '#f39c12' },
         dome_main:     { icon: '🏟️', color: '#e74c3c' },
         b3_event:      { icon: '📣', color: '#16a085' },
+        spring_tag:    { icon: '🌸', color: '#ff6f9c' },
         release:        { icon: '🚪', color: '#7f8c8d' },
         contract_end:   { icon: '📄', color: '#7f8c8d' },
         sudden_dep:     { icon: '💨', color: '#c0392b' },
@@ -16887,6 +16940,10 @@ Engine.awards = {
     const juniorPt = hist.filter(e => e.type === 'juniorTournament' && e.result === 'champion').length * 4;
     // spring-tag-league-spec-v0.1 §12.3: 春のタッグリーグ優勝（両選手それぞれ）+3/回
     const springTagPt = hist.filter(e => e.type === 'springTagLeague' && e.result === 'champion').length * 3;
+    // autumn-gauntlet-war-spec-v0.1 §5.5: 勝ち抜き+1.5、優勝チーム+2、3人抜き以上+2
+    const autumnWarPt = hist
+      .filter(e => e.type === 'autumnWar')
+      .reduce((sum, e) => sum + (e.wins || 0) * 1.5 + (e.result === 'champion' ? 2 : 0) + ((e.wins || 0) >= 3 ? 2 : 0), 0);
     const ppvPt = hist.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length * 5;
     const warWins = hist.filter(e => e.type === 'war' && e.won).length;
     const warPt = warWins * 1.5;
@@ -16898,7 +16955,7 @@ Engine.awards = {
     // orgPop リバランス v1.1: ドームメイン加点（勝利+3、敗北+1）
     const domeMainPt = hist.filter(e => e.type === 'domeMain' && e.result === 'win').length * 3
                      + hist.filter(e => e.type === 'domeMain' && e.result === 'lose').length * 1;
-    return titlePt + juniorPt + springTagPt + ppvPt + warPt + mvpPt + rookiePt + bestMatchPt + mediaPt + domeMainPt;
+    return titlePt + juniorPt + springTagPt + autumnWarPt + ppvPt + warPt + mvpPt + rookiePt + bestMatchPt + mediaPt + domeMainPt;
   },
   getHofLevel(points) {
     if (points >= 35) return 3; // ★★★ レジェンド
@@ -16909,8 +16966,9 @@ Engine.awards = {
 
   /** v2.0 HOF拡張: careerRecord.history → 固有名詞テキストの実績リスト
    * 転生前（NPC事前史）は別人扱いで除外。joinSeason 以降のみ。
+   * @param {object} state - 任意。渡すと springTagLeague のパートナー名解決に使う
    */
-  buildCareerHighlights(rec, orgName) {
+  buildCareerHighlights(rec, orgName, state) {
     const histAll = (rec && rec.history) || [];
     const playerJoin = histAll.find(e => e.type === 'transfer' && e.toOrg === 'player');
     const rentalJoin = histAll.find(e => e.type === 'rentalIn' && (e.toOrg === 'player' || e.toOrg === undefined));
@@ -16978,6 +17036,15 @@ Engine.awards = {
             type: 'domeMain', season: ev.season,
             text: `ドーム公演 ${ev.matchType === 'title' ? 'タイトルマッチ' : 'メインイベント'} ${ev.result === 'win' ? '勝利' : '出場'}`
           });
+          break;
+        case 'springTagLeague':
+          if (ev.result === 'champion') {
+            const partnerName = Engine.career.resolveFighterName(state, ev.partnerId);
+            highlights.push({
+              type: 'springTagLeague', season: ev.season,
+              text: partnerName ? `第${ev.season}回 春のタッグリーグ優勝（${partnerName}と）` : `第${ev.season}回 春のタッグリーグ優勝`
+            });
+          }
           break;
       }
     });
@@ -17451,7 +17518,7 @@ Engine.awards = {
       shieldVariant: Engine.awards.assignShieldVariant(hofLevel, fighter.id),
       inductionSeason: state.season,
       careerRecord: recPost,
-      careerHighlights: Engine.awards.buildCareerHighlights(recPost, orgName),
+      careerHighlights: Engine.awards.buildCareerHighlights(recPost, orgName, state),
       retireOVR: Engine.util.ov(fighter),
       retireAge: fighter.age || 0,
       warWins: hist.filter(e => e.type === 'war' && e.won).length,
@@ -17730,6 +17797,24 @@ Engine.seasonReview = {
         narr: (_lines && _pickLine(_lines.records.media, _nseed + 31)) || 'リング外での発信が団体を支えた。',
       });
     }
+    // 春のタッグリーグ優勝（自団体該当分のみ）。spring-tag-league-spec-v0.1 §12.4
+    // state.springTagLeague は Week12 実施後、次回大会の announce (Week10) まで持続する。
+    let springTagPlayerWon = false;
+    if (state.springTagLeague && !state.springTagLeague.cancelled
+        && state.springTagLeague.champion === 'player'
+        && state.springTagLeague.announcedSeason === season) {
+      const champTeam = (state.springTagLeague.teams || []).find(t => t.orgId === 'player');
+      const f1 = champTeam ? (G.roster || []).find(f => f.id === champTeam.f1Id) : null;
+      const f2 = champTeam ? (G.roster || []).find(f => f.id === champTeam.f2Id) : null;
+      if (f1) {
+        springTagPlayerWon = true;
+        records.push({
+          tag: '春タッグ優勝', id: f1.id, name: f1.name,
+          meta: f2 ? `${f2.name}と組んで` : '',
+          narr: (_lines && _pickLine(_lines.records.springTag, _nseed + 41)) || '春のタッグリーグを制した。',
+        });
+      }
+    }
 
     // ── §II 経営の一年 ──
     let popHistory = null;
@@ -17777,6 +17862,7 @@ Engine.seasonReview = {
       if (awards.mediaAward && awards.mediaAward.isPlayerOrg) awardsCount++;
     }
     if (champRecord) awardsCount++;
+    if (springTagPlayerWon) awardsCount++;
     const headline = Engine.seasonReview._decideHeadline({
       rank, prevRank, financeNet: finance.net, financeRevenue: finance.revenue,
       awardsCount, departuresCount: departures.length, titleWonThisSeason,

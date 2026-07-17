@@ -2439,7 +2439,7 @@ const Storage = {
           ...h,
           orgId: 'player',
           orgName: h.orgName || G.orgName || 'あなたの団体',
-          careerHighlights: h.careerHighlights || Engine.awards.buildCareerHighlights(h, h.orgName || G.orgName || 'あなたの団体'),
+          careerHighlights: h.careerHighlights || Engine.awards.buildCareerHighlights(h, h.orgName || G.orgName || 'あなたの団体', G),
           retireOVR: h.retireOVR || h.ovr || 0,
           retireAge: h.retireAge || 0,
         }));
