@@ -499,6 +499,11 @@ Engine.tagMatch = (() => {
     return Math.max(ENG.dmgFloor, Math.round(dmg * TAG_MATCH_CONFIG.damageScale));
   }
 
+  // 連戦消耗モジュール用: タッグ戦の満タンHPを事前算出したいときのヘルパー
+  function calcFullHp(char) {
+    return Math.round(TAG_MATCH_CONFIG.hpBase + Engine.util.eff(char.st) * TAG_MATCH_CONFIG.hpScale);
+  }
+
   // ── HP減衰曲線 (§3.1.1): 後半急降下型。MNTで緩和 ──
   function effectiveStatMul(hpRatio, mnt) {
     let base;
@@ -625,9 +630,12 @@ Engine.tagMatch = (() => {
 
     function initFighter(char) {
       const hp = Math.round(TC.hpBase + eff(char.st) * TC.hpScale);
+      // 連戦消耗モジュール(autumn-gauntlet-war-spec-v0.1 §3)用: _hpOverride が指定されていれば
+      // 開始HPをその値にする(JT の jtCarryHpPct と同じ仕組み)。未指定時は従来通り満タン開始。
+      const startHp = char._hpOverride != null ? Math.max(1, Math.min(hp, Math.round(char._hpOverride))) : hp;
       return {
         ...char,
-        hp, mhp: hp,
+        hp: startHp, mhp: hp,
         _basePw: char.pw, _baseSp: char.sp, _baseTe: char.te, _baseSt: char.st,
         gritTurns: 0, kickoutCount: 0, consecutiveHits: 0,
         turnsLegal: 0, turnsApron: 0,
@@ -1315,10 +1323,10 @@ Engine.tagMatch = (() => {
       teamB: { f1Id: fB1.id, f1Name: fB1.name, f2Id: fB2.id, f2Name: fB2.name },
       frames: recordFrames ? frames : undefined,
       perFighter: {
-        [fA1.id]: { hpFinal: Math.round(fA1.hp), turnsLegal: fA1.turnsLegal, turnsApron: fA1.turnsApron, damageDealt: fA1.damageDealt, damageTaken: fA1.damageTaken },
-        [fA2.id]: { hpFinal: Math.round(fA2.hp), turnsLegal: fA2.turnsLegal, turnsApron: fA2.turnsApron, damageDealt: fA2.damageDealt, damageTaken: fA2.damageTaken },
-        [fB1.id]: { hpFinal: Math.round(fB1.hp), turnsLegal: fB1.turnsLegal, turnsApron: fB1.turnsApron, damageDealt: fB1.damageDealt, damageTaken: fB1.damageTaken },
-        [fB2.id]: { hpFinal: Math.round(fB2.hp), turnsLegal: fB2.turnsLegal, turnsApron: fB2.turnsApron, damageDealt: fB2.damageDealt, damageTaken: fB2.damageTaken },
+        [fA1.id]: { hpFinal: Math.round(fA1.hp), hpMax: fA1.mhp, turnsLegal: fA1.turnsLegal, turnsApron: fA1.turnsApron, damageDealt: fA1.damageDealt, damageTaken: fA1.damageTaken },
+        [fA2.id]: { hpFinal: Math.round(fA2.hp), hpMax: fA2.mhp, turnsLegal: fA2.turnsLegal, turnsApron: fA2.turnsApron, damageDealt: fA2.damageDealt, damageTaken: fA2.damageTaken },
+        [fB1.id]: { hpFinal: Math.round(fB1.hp), hpMax: fB1.mhp, turnsLegal: fB1.turnsLegal, turnsApron: fB1.turnsApron, damageDealt: fB1.damageDealt, damageTaken: fB1.damageTaken },
+        [fB2.id]: { hpFinal: Math.round(fB2.hp), hpMax: fB2.mhp, turnsLegal: fB2.turnsLegal, turnsApron: fB2.turnsApron, damageDealt: fB2.damageDealt, damageTaken: fB2.damageTaken },
       },
     };
   }
@@ -1418,6 +1426,7 @@ Engine.tagMatch = (() => {
     getPhase,
     effectiveStatMul,
     calcTagMQ,
+    calcFullHp,
   };
 })();
 
@@ -1430,5 +1439,37 @@ Engine.tagExp = {
     const ne = { ...(tagExp || {}) };
     ne[key] = (ne[key] || 0) + 1;
     return ne;
+  },
+};
+
+// ══════════════════════════════════════════════════════════
+//  Engine.wear — 連戦消耗モジュール（共通機構）
+//  定義元: autumn-gauntlet-war-spec-v0.1 §3。同一興行内で連戦が発生する
+//  イベント（春タッグリーグ / 秋4団体勝ち残り対抗戦 / 4年に一度PPVトーナメント）
+//  で共用する。数値は嘘をつかない — 固定値ではなく試合の実ダメージから算出する。
+//  Pure functions only.
+// ══════════════════════════════════════════════════════════
+Engine.wear = {
+  /** wear = 12 + (1 - hpRatio) × 20  （レンジ12〜32） */
+  calc(hpRatio) {
+    const ratio = Engine.util.clamp(hpRatio == null ? 1 : hpRatio, 0, 1);
+    return Engine.util.clamp(12 + (1 - ratio) * 20, 12, 32);
+  },
+  /** hpFinal/hpMax から hpRatio を算出（0〜1） */
+  hpRatio(hpFinal, hpMax) {
+    if (!hpMax) return 1;
+    return Engine.util.clamp(hpFinal / hpMax, 0, 1);
+  },
+  /** 次戦condition = clamp(前戦condition - wear + recovery, floor, ceiling) */
+  nextCondition(prevCondition, wear, recovery, floor, ceiling) {
+    const f = floor != null ? floor : 40;
+    const c = ceiling != null ? ceiling : 80;
+    const base = prevCondition != null ? prevCondition : c;
+    return Engine.util.clamp(base - (wear || 0) + (recovery || 0), f, c);
+  },
+  /** condition(0-100) を満タンHPに対する開始HP値へ変換する（_hpOverride 用） */
+  toHpOverride(condition, fullHp) {
+    const pct = Engine.util.clamp(condition == null ? 80 : condition, 1, 100);
+    return Math.max(1, Math.round(fullHp * pct / 100));
   },
 };

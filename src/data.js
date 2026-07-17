@@ -6424,6 +6424,8 @@ const BATTLE_POINT_CFG = {
   intrusion: 3,
   tournament: { champion: 20, runnerUp: 8, semiFinal: 0, firstRound: -14 },
   tournamentWeek: 24,
+  // spring-tag-league-spec-v0.1 §12.1: 春のタッグリーグ 対戦ポイント（4団体それぞれへ）
+  springTag: { champion: 12, runnerUp: 5, third: 0, fourth: -8 },
 };
 
 const RANKING_CONFIG = {
@@ -6457,6 +6459,7 @@ const ACHIEVEMENT_CONFIG = {
     bestMatch: 5,       // ベストマッチ賞 受賞試合の所属団体 (両団体に各5pt)
     mediaAward: 4,      // メディア厚労賞 受賞者所属団体
     bestAttend: 3,      // シーズン最大動員興行 開催団体
+    springTag: 8,       // 春のタッグリーグ 優勝団体 (spring-tag-league-spec-v0.1 §12.2)
   },
   // 減衰: age <= graceAge までは満額、その後 decayRate^(age-graceAge) で減衰
   decayRate: 0.5,
@@ -13910,6 +13913,18 @@ const SEASON_REVIEW_LINES = {
 
 // §6.2 新聞パネル用テンプレート（イベント種別ごとに headline + body ペア、各3+パターン）
 const NEWS_HEADLINE_TEMPLATES = {
+  springTagAnnounce: [
+    { headline: '春のタッグリーグ 出場4団体が決定',
+      body: '第{season}回春のタッグリーグの出場4団体が出揃った。{org1}・{org2}・{org3}・{org4}。各団体代表タッグは編成期間を経て、第12週に激突する。' },
+    { headline: '春のタッグリーグ開幕迫る、参加団体出揃う',
+      body: '第{season}回春のタッグリーグに{org1}・{org2}・{org3}・{org4}の4団体が名乗りを上げた。第12週、4団体総当たりのリーグ戦と優勝決定戦が1日で行われる。' },
+  ],
+  springTagResult: [
+    { headline: '{championOrg}『{champ1}&{champ2}』組、春のタッグリーグ制覇',
+      body: '第{season}回春のタッグリーグは{championOrg}の{champ1}・{champ2}組が優勝。決勝で{runnerUpOrg}の{runner1}・{runner2}組を下した。' },
+    { headline: '春のタッグリーグ、{championOrg}が頂点に',
+      body: '4団体総当たりを経て行われた決勝で、{championOrg}の{champ1}・{champ2}組が{runnerUpOrg}の{runner1}・{runner2}組を破り、第{season}回春のタッグリーグの優勝チームとなった。' },
+  ],
   challengeRequestWin: [
     { headline: '{requesterName}の直訴が実った！{ourOrg}が{opponentOrg}を {score} で下す',
       body: '{requesterName}が直訴して実現した{opponentOrg}との3対3団体戦。{ourOrg}は{opponentName}陣を {score} で下し、リング上で握手を交わすことなく解散した。' },

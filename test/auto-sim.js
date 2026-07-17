@@ -471,6 +471,8 @@ function runSimulation(seed, seasons) {
     poachEvents: 0,      // weekPhase:'transfer' に遷移した回数
     scoutEvents: 0,      // weekPhase:'scoutEvent' に遷移した回数
     ppvEvents: 0,        // weekPhase:'ppvEntry' に遷移した回数
+    springTagCompletedCount: 0, // 春のタッグリーグが champion 確定まで完走した回数
+    springTagCancelledCount: 0, // 春のタッグリーグが不開催(チーム不足等)になった回数
     showCount: 0,        // 実行した興行の総数
     titleMatchCount: 0,  // タイトルマッチの総数
     orgPopHistory: [],   // シーズン末orgPop記録
@@ -527,6 +529,21 @@ function runSimulation(seed, seasons) {
         }
         delete G._juniorTournamentSelection;
       }
+      // 春のタッグリーグ Week11: プレイヤーチーム編成の自動化
+      // TODO[heuristic]: サジェスト上位ペア（なければ適格選手からランダムペア）で即確定。
+      //   本番ではプレイヤーがケミストリー・因縁等を見て戦略的に組む。
+      //   （エンジンは weekPhase を奪わず springTagPhase==='entry' で編成期間を表す）
+      if (G.springTagPhase === 'entry') {
+        const cand = Engine.springTagLeague.getEntryCandidates(G);
+        let pick = cand.suggestions && cand.suggestions[0];
+        if (!pick && cand.eligible && cand.eligible.length >= 2) {
+          const shuffled = [...cand.eligible].sort(() => Engine.rng.float(simRng) - 0.5);
+          pick = { f1Id: shuffled[0].id, f2Id: shuffled[1].id };
+        }
+        if (pick) {
+          G = Engine.springTagLeague.confirmPlayerTeam(G, pick.f1Id, pick.f2Id);
+        }
+      }
       if (G.weekPhase === 'event' || G.weekPhase === 'transfer' || G.weekPhase === 'scoutEvent') {
         // スカウトでFA獲得を試みる
         if (G.weekPhase === 'scoutEvent') {
@@ -539,7 +556,11 @@ function runSimulation(seed, seasons) {
       }
 
       // ── 興行週: カード自動編成→executeShow ──
-      if (!G.offSeason && Engine.util.isShowWeek(G.week) && G.weekPhase === 'manage') {
+      // 春のタッグリーグ開催週(Week12)はリーグ興行がその週の枠を占めるため、通常興行はスキップ
+      // (Phase 1時点ではUI側の「週12は通常カード編成不可」導線が未実装のため、auto-sim側で代替)
+      const springTagOccupiesThisWeek = G.week === 12 && G.springTagLeague && !G.springTagLeague.cancelled
+        && G.springTagLeague.matches && G.springTagLeague.matches.length > 0;
+      if (!G.offSeason && Engine.util.isShowWeek(G.week) && G.weekPhase === 'manage' && !springTagOccupiesThisWeek) {
         G = autoSetupShowCard(G, simRng);
         if (G.showCard && G.showCard.length > 0) {
           stats.showCount++;
@@ -601,8 +622,16 @@ function runSimulation(seed, seasons) {
       // ── advanceWeek（次の週へ）── 対抗戦・移籍・スカウト等のチェックはここで行われる
       const _wasWar = G.warThisSeason;
       const _prevPhase = G.weekPhase;
+      const _prevSpringTagChampion = G.springTagLeague ? G.springTagLeague.champion : undefined;
+      const _prevSpringTagCancelled = G.springTagLeague ? G.springTagLeague.cancelled : undefined;
       const advResult = Engine.advanceWeek(G);
       G = { ...advResult.state, gameLog: [] };
+      if (G.springTagLeague && G.springTagLeague.champion && G.springTagLeague.champion !== _prevSpringTagChampion) {
+        stats.springTagCompletedCount++;
+      }
+      if (G.springTagLeague && G.springTagLeague.cancelled && !_prevSpringTagCancelled) {
+        stats.springTagCancelledCount++;
+      }
       // auto-sim には引き留めUIがないので、検出された引退候補をその場で全て確定
       if (G.pendingRetirements && G.pendingRetirements.length > 0) {
         const confirmed = G.pendingRetirements.map(r => r.fighter);
@@ -751,6 +780,7 @@ if (s.seasons >= 10) {
 
   // 参考情報（閾値なし — ゲーム状態依存で変動するため）
   console.log(`  [--] ${'PPV/シーズン'.padEnd(24)} ${rates.ppvRate.toFixed(2).padStart(5)}`);
+  console.log(`  [--] ${'春のタッグリーグ完走/シーズン'.padEnd(20)} ${(s.springTagCompletedCount / s.seasons).toFixed(2).padStart(5)}   ※不開催: ${s.springTagCancelledCount}回`);
   console.log(`  [--] ${'引き抜き発生/シーズン'.padEnd(22)} ${rates.poachRate.toFixed(2).padStart(5)}   ※rank1時は0が正常`);
   console.log(`  [--] ${'タイトルマッチ/シーズン'.padEnd(22)} ${rates.titleRate.toFixed(2).padStart(5)}   ※auto-simでは0が正常(未設立)`);
 }
