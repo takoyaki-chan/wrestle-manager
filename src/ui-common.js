@@ -4413,7 +4413,7 @@ function renderShowResult(results, injuryResults) {
   html += `<div class="pb-banner">
     <div class="${liveCls}">${liveText}</div>
     <div class="${titleCls}">${escHtml(showName)}</div>
-    <div class="pb-banner-sub">Year ${G.year || 1}<span class="dot">·</span>Week ${week}<span class="dot">·</span>${monthLabel}</div>
+    <div class="pb-banner-sub">Year ${G.season || 1}<span class="dot">·</span>Week ${week}<span class="dot">·</span>${monthLabel}</div>
   </div>`;
 
   // Hero: Attendance (客入り) — most prominent element
@@ -5893,7 +5893,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
   html += `<div class="pb-banner">
     <div class="pb-live is-ppv">🏆 GRAND FINAL</div>
     <div class="pb-banner-title is-ppv">${escHtml(ppvName)}</div>
-    <div class="pb-banner-sub">Year ${G.year || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>頂上決戦</div>
+    <div class="pb-banner-sub">Year ${G.season || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>頂上決戦</div>
   </div>`;
 
   // Scoreboard: Avg MQ / Best MQ / Heat / Matches
@@ -6133,7 +6133,7 @@ function renderPPVTVResult(card, results, ppvName) {
   html += `<div class="pb-banner">
     <div class="pb-live is-ppvtv">📺 PPV 観戦</div>
     <div class="pb-banner-title is-ppvtv">${escHtml(ppvName || 'GRAND FINAL')}</div>
-    <div class="pb-banner-sub">Year ${G.year || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>テレビの前で</div>
+    <div class="pb-banner-sub">Year ${G.season || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>テレビの前で</div>
   </div>`;
 
   // Scoreboard: Avg MQ / Best MQ / Matches
