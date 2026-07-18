@@ -477,6 +477,15 @@ function runSimulation(seed, seasons) {
     springTagCancelledCount: 0, // 春のタッグリーグが不開催(チーム不足等)になった回数
     autumnWarCompletedCount: 0, // 4団体勝ち残り対抗戦が champion 確定まで完走した回数
     autumnWarCancelledCount: 0, // 出場団体不足等で不開催になった回数
+    tenchosenEligibleCount: 0,   // season%4===0 の対象シーズン数
+    tenchosenStartedCount: 0,    // Week43でエントリーが生成された回数
+    tenchosenCompletedCount: 0,  // Week48で決勝まで完走した回数
+    tenchosenDramaEvents: 0,
+    tenchosenZeroDramaCount: 0,
+    tenchosenFinalMq: [],
+    tenchosenFailedSeasons: [],
+    normalPpvCompletedCount: 0,
+    normalPpvMainMq: [],
     showCount: 0,        // 実行した興行の総数
     titleMatchCount: 0,  // タイトルマッチの総数
     orgPopHistory: [],   // シーズン末orgPop記録
@@ -496,6 +505,10 @@ function runSimulation(seed, seasons) {
   let simRng = Engine.rng.create(Engine.rng.derive(currentSeed, 0xABCD));
   let completed = 0;
   let iter = 0;
+  const tenchosenEligibleSeasons = new Set();
+  const tenchosenStartedSeasons = new Set();
+  const tenchosenCompletedSeasons = new Set();
+  const normalPpvCompletedSeasons = new Set();
 
   while (completed < seasons && iter < MAX_ITER) {
     iter++;
@@ -511,13 +524,46 @@ function runSimulation(seed, seasons) {
       }
 
       // ── 特殊weekPhaseの即座処理（UIが処理するフェーズをバイパス） ──
+      if (Engine.ppvTournament.isTournamentSeason(G.season) && !tenchosenEligibleSeasons.has(G.season)) {
+        tenchosenEligibleSeasons.add(G.season);
+        stats.tenchosenEligibleCount++;
+      }
+      if (G.ppvTournament && G.ppvTournament.season === G.season
+          && !tenchosenStartedSeasons.has(G.season)) {
+        tenchosenStartedSeasons.add(G.season);
+        stats.tenchosenStartedCount++;
+      }
+      if (G.ppvTournament?.phase === 'entry') {
+        // 天頂戦は weekPhase を奪わないため、専用phaseを見てOVR上位を自動確定する。
+        G = Engine.ppvTournament.confirmPlayerEntries(G, Engine.ppvTournament.suggestPlayerEntries(G));
+      }
       if (G.weekPhase === 'ppvEntry') {
         G = { ...G, ppvPhase: 'locked' };
       }
       if (G.weekPhase === 'ppvShow') {
+        if (!Engine.ppvTournament.isTournamentSeason(G.season) && !normalPpvCompletedSeasons.has(G.season)) {
+          const ppvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBBA0));
+          const sample = Engine.ppv.simulateTVResults(G, ppvRng);
+          const idx = sample.card.findIndex(m => m.isSummit);
+          if (idx >= 0 && sample.results[idx]) {
+            stats.normalPpvMainMq.push(sample.results[idx].mq);
+            stats.normalPpvCompletedCount++;
+            normalPpvCompletedSeasons.add(G.season);
+          }
+        }
         G = { ...G, ppvPhase: 'tv' };
       }
       if (G.weekPhase === 'ppvTV') {
+        if (!Engine.ppvTournament.isTournamentSeason(G.season) && !normalPpvCompletedSeasons.has(G.season)) {
+          const ppvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBBA0));
+          const sample = Engine.ppv.simulateTVResults(G, ppvRng);
+          const idx = sample.card.findIndex(m => m.isSummit);
+          if (idx >= 0 && sample.results[idx]) {
+            stats.normalPpvMainMq.push(sample.results[idx].mq);
+            stats.normalPpvCompletedCount++;
+            normalPpvCompletedSeasons.add(G.season);
+          }
+        }
         G = { ...G, ppvPhase: null };
       }
       if (G.weekPhase === 'juniorTournament') {
@@ -576,8 +622,10 @@ function runSimulation(seed, seasons) {
         && G.springTagLeague.matches && G.springTagLeague.matches.length > 0;
       const autumnWarOccupiesThisWeek = G.week === 36 && G.autumnWar && !G.autumnWar.cancelled
         && G.autumnWar.champion;
+      const tenchosenOccupiesThisWeek = G.week === 48 && G.ppvTournament?.phase === 'done'
+        && G.ppvTournament.season === G.season;
       if (!G.offSeason && Engine.util.isShowWeek(G.week) && G.weekPhase === 'manage'
-          && !springTagOccupiesThisWeek && !autumnWarOccupiesThisWeek) {
+          && !springTagOccupiesThisWeek && !autumnWarOccupiesThisWeek && !tenchosenOccupiesThisWeek) {
         G = autoSetupShowCard(G, simRng);
         if (G.showCard && G.showCard.length > 0) {
           stats.showCount++;
@@ -644,6 +692,7 @@ function runSimulation(seed, seasons) {
       const _prevAutumnWarChampion = G.autumnWar ? G.autumnWar.champion : undefined;
       const _prevAutumnWarCancelled = G.autumnWar ? G.autumnWar.cancelled : undefined;
       const _prevAutumnWarSeason = G.autumnWar ? G.autumnWar.announcedSeason : undefined;
+      const _prevTournamentPhase = G.ppvTournament?.phase;
       const advResult = Engine.advanceWeek(G);
       G = { ...advResult.state, gameLog: [] };
       if (G.springTagLeague && G.springTagLeague.champion && G.springTagLeague.champion !== _prevSpringTagChampion) {
@@ -658,6 +707,21 @@ function runSimulation(seed, seasons) {
       if (G.autumnWar && G.autumnWar.cancelled
           && (!_prevAutumnWarCancelled || G.autumnWar.announcedSeason !== _prevAutumnWarSeason)) {
         stats.autumnWarCancelledCount++;
+      }
+      if (G.ppvTournament?.phase === 'done' && _prevTournamentPhase !== 'done'
+          && !tenchosenCompletedSeasons.has(G.ppvTournament.season)) {
+        tenchosenCompletedSeasons.add(G.ppvTournament.season);
+        stats.tenchosenCompletedCount++;
+        const finalMatch = G.ppvTournament.rounds?.find(r => r.name === 'final')?.matches?.[0];
+        if (finalMatch && Number.isFinite(finalMatch.mq)) stats.tenchosenFinalMq.push(finalMatch.mq);
+        const dramaCount = G.ppvTournament.dramaEvents?.length || 0;
+        stats.tenchosenDramaEvents += dramaCount;
+        if (dramaCount === 0) stats.tenchosenZeroDramaCount++;
+      }
+      if (Engine.ppvTournament.isTournamentSeason(G.season) && G.week === 48
+          && G.ppvTournament && G.ppvTournament.phase !== 'done'
+          && !stats.tenchosenFailedSeasons.includes(G.season)) {
+        stats.tenchosenFailedSeasons.push(G.season);
       }
       // auto-sim には引き留めUIがないので、検出された引退候補をその場で全て確定
       if (G.pendingRetirements && G.pendingRetirements.length > 0) {
@@ -813,6 +877,38 @@ if (s.seasons >= 10) {
   console.log(`  [--] ${'秋4団体戦完走/中止'.padEnd(23)} ${s.autumnWarCompletedCount}/${s.autumnWarCancelledCount}`);
   console.log(`  [--] ${'引き抜き発生/シーズン'.padEnd(22)} ${rates.poachRate.toFixed(2).padStart(5)}   ※rank1時は0が正常`);
   console.log(`  [--] ${'タイトルマッチ/シーズン'.padEnd(22)} ${rates.titleRate.toFixed(2).padStart(5)}   ※auto-simでは0が正常(未設立)`);
+
+  const tenchosenStartRate = s.tenchosenEligibleCount > 0 ? s.tenchosenStartedCount / s.tenchosenEligibleCount : 0;
+  const tenchosenCompleteRate = s.tenchosenEligibleCount > 0 ? s.tenchosenCompletedCount / s.tenchosenEligibleCount : 0;
+  const normalExpected = Math.max(0, s.seasons - s.tenchosenEligibleCount);
+  const normalCompleteRate = normalExpected > 0 ? s.normalPpvCompletedCount / normalExpected : 0;
+  const mqSummary = values => {
+    if (!values.length) return 'n=0';
+    const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+    const bands = [
+      ['<50', value => value < 50], ['50-59', value => value >= 50 && value < 60],
+      ['60-69', value => value >= 60 && value < 70], ['70-79', value => value >= 70 && value < 80],
+      ['80-89', value => value >= 80 && value < 90], ['90+', value => value >= 90],
+    ];
+    return `n=${values.length} avg=${avg.toFixed(1)} ` + bands.map(([label, test]) => `${label}:${values.filter(test).length}`).join(' ');
+  };
+  const zeroDramaRate = s.tenchosenCompletedCount > 0 ? s.tenchosenZeroDramaCount / s.tenchosenCompletedCount : 0;
+  const dramaPerEvent = s.tenchosenCompletedCount > 0 ? s.tenchosenDramaEvents / s.tenchosenCompletedCount : 0;
+  console.log('');
+  console.log('天頂戦 / 通常年PPV 比較:');
+  console.log(`  [${tenchosenStartRate === 1 ? 'OK' : '!!'}] 天頂戦開催       ${s.tenchosenStartedCount}/${s.tenchosenEligibleCount} (${tenchosenStartRate.toFixed(2)})`);
+  console.log(`  [${tenchosenCompleteRate === 1 ? 'OK' : '!!'}] 天頂戦完走       ${s.tenchosenCompletedCount}/${s.tenchosenEligibleCount} (${tenchosenCompleteRate.toFixed(2)})`);
+  console.log(`  [${normalCompleteRate === 1 ? 'OK' : '!!'}] 通常年PPV実行    ${s.normalPpvCompletedCount}/${normalExpected} (${normalCompleteRate.toFixed(2)})`);
+  console.log(`  [--] 天頂戦ドラマ       平均${dramaPerEvent.toFixed(2)}件 / 0件率${zeroDramaRate.toFixed(2)}`);
+  console.log(`  [--] 天頂戦決勝MQ       ${mqSummary(s.tenchosenFinalMq)}`);
+  console.log(`  [--] 通常年PPVメインMQ  ${mqSummary(s.normalPpvMainMq)}`);
+  if (s.tenchosenFailedSeasons.length) console.log(`  [!!] 未完走シーズン      ${s.tenchosenFailedSeasons.join(', ')}`);
+  if (tenchosenStartRate !== 1) freqWarnings.push(`天頂戦開催率: ${tenchosenStartRate.toFixed(2)} (期待値 1.00)`);
+  if (tenchosenCompleteRate !== 1) freqWarnings.push(`天頂戦完走率: ${tenchosenCompleteRate.toFixed(2)} (期待値 1.00)`);
+  if (normalCompleteRate !== 1) freqWarnings.push(`通常年PPV実行率: ${normalCompleteRate.toFixed(2)} (期待値 1.00)`);
+  if (s.tenchosenCompletedCount >= 4 && s.tenchosenZeroDramaCount === 0) {
+    freqWarnings.push('天頂戦ドラマ0件の大会がない (常時発火の疑い)');
+  }
 }
 
 if (freqWarnings.length > 0) {

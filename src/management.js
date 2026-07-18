@@ -14521,7 +14521,7 @@ const Engine = {
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
               battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 }, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
-              ppvPhase: null, ppvEntries: null, ppvName: '', _ppvAIEntries: undefined,
+              ppvPhase: null, ppvEntries: null, ppvName: '', _ppvAIEntries: undefined, ppvTournament: null,
               domeShowsThisSeason: 0, // orgPop リバランス v1.1 §5: シーズン開幕時にリセット
               seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
               seasonHistory, fundsHistory: [s.funds],
@@ -14552,6 +14552,13 @@ const Engine = {
           events.push(`  ${i+1}位 ${emoji} ${r.name}: ${r.rating}pt (基礎${r.baseScore} 対戦${r.battlePt >= 0 ? '+' : ''}${r.battlePt})`);
         });
         events.push(`🎬 シーズン${s.season}開幕！`);
+        if (Engine.ppvTournament.isTournamentSeason(s.season)) {
+          s = Engine.industryNews.push(s, {
+            type: 'tenchosenAnnounce',
+            data: { season: s.season },
+          });
+          events.push('📰 今季は4年に一度の全国女子プロレス最強王者決定戦「天頂戦」開催年');
+        }
         // orgPop リバランス v1.1 §7: シーズン開始時のorgPop変動通知（暫定表示）
         {
           const preDecay = s._prevSeasonEndOrgPop != null ? s._prevSeasonEndOrgPop : null;
@@ -14579,6 +14586,19 @@ const Engine = {
     s = { ...s, week: s.week + 1 };
 
     // PPV Week 48: PPVフェーズがアクティブなら通常興行をバイパス
+    if (s.week === Engine.ppvTournament.SHOW_WEEK && Engine.ppvTournament.isTournamentSeason(s.season)) {
+      s = Engine.ppvTournament.ensureReady(s);
+      const tournamentRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x7E48));
+      const tournamentResult = Engine.ppvTournament.run(s, tournamentRng);
+      if (!tournamentResult.cancelled) {
+        const applied = Engine.ppvTournament.apply(s, tournamentResult, { tvMode: !s.ppvUnlocked });
+        s = applied.state;
+        events.push(...applied.events);
+      } else {
+        events.push('📋 天頂戦は出場選手不足のため開催できなかった');
+      }
+      return { state: { ...s, weekPhase: 'manage' }, events };
+    }
     if (s.week === PPV_SHOW_WEEK && s.ppvPhase === 'locked') {
       s = { ...s, ppvPhase: 'show' };
       events.push(`🏟️ PPV GRAND FINAL「${s.ppvName}」開催日！`);
@@ -14811,8 +14831,18 @@ const Engine = {
       }
     }
 
-    // PPV GRAND FINAL: Week 43 エントリー受付
-    if (s.week === PPV_ENTRY_WEEK) {
+    // 天頂戦: Week43 エントリー受付。通常PPVと異なり weekPhase は奪わない。
+    if (s.week === Engine.ppvTournament.ENTRY_WEEK && Engine.ppvTournament.isTournamentSeason(s.season)) {
+      s = Engine.ppvTournament.startEntry(s, { tvMode: !s.ppvUnlocked });
+      if (s.ppvUnlocked && s.ppvTournament.phase === 'entry') {
+        events.push('🏛️ 全国女子プロレス最強王者決定戦「天頂戦」エントリー受付開始');
+      } else {
+        events.push('📺 全国女子プロレス最強王者決定戦「天頂戦」テレビ中継が決定');
+      }
+    }
+
+    // PPV GRAND FINAL: Week 43 エントリー受付（天頂戦開催年は差し替え）
+    if (s.week === PPV_ENTRY_WEEK && !Engine.ppvTournament.isTournamentSeason(s.season)) {
       const ppvRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xBBF1));
       const ppvName = Engine.ppv.pickName(ppvRng);
       if (s.ppvUnlocked) {
@@ -15221,6 +15251,7 @@ const Engine = {
       ppvEntries: null,    // { player: [fighter,...], org_s: [...], ... }
       ppvPhase: null,      // null | 'entry' | 'locked' | 'show' | 'tv'
       ppvName: '',
+      ppvTournament: null, // 4年に一度の天頂戦（既存セーブでは undefined も許容）
       // 財務タブリデザイン: 週次決算履歴（永続蓄積・クリアしない）
       financeHistory: [],
       // デバッグ・検証システム
@@ -16986,6 +17017,7 @@ Engine.awards = {
     const autumnWarPt = hist
       .filter(e => e.type === 'autumnWar')
       .reduce((sum, e) => sum + (e.wins || 0) * 1.5 + (e.result === 'champion' ? 2 : 0) + ((e.wins || 0) >= 3 ? 2 : 0), 0);
+    const ppvTournamentPt = hist.filter(e => e.type === 'ppvTournament' && e.result === 'champion').length * 8;
     const ppvPt = hist.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length * 5;
     const warWins = hist.filter(e => e.type === 'war' && e.won).length;
     const warPt = warWins * 1.5;
@@ -16997,7 +17029,7 @@ Engine.awards = {
     // orgPop リバランス v1.1: ドームメイン加点（勝利+3、敗北+1）
     const domeMainPt = hist.filter(e => e.type === 'domeMain' && e.result === 'win').length * 3
                      + hist.filter(e => e.type === 'domeMain' && e.result === 'lose').length * 1;
-    return titlePt + juniorPt + springTagPt + autumnWarPt + ppvPt + warPt + mvpPt + rookiePt + bestMatchPt + mediaPt + domeMainPt;
+    return titlePt + juniorPt + springTagPt + autumnWarPt + ppvTournamentPt + ppvPt + warPt + mvpPt + rookiePt + bestMatchPt + mediaPt + domeMainPt;
   },
   getHofLevel(points) {
     if (points >= 35) return 3; // ★★★ レジェンド
@@ -22066,6 +22098,14 @@ Engine.validateGameState = function(G) {
   if (G.ppvPhase !== undefined && G.ppvPhase !== null && !['entry', 'locked', 'show', 'tv'].includes(G.ppvPhase)) {
     warn(`ppvPhaseが不正値: "${G.ppvPhase}"`);
   }
+  if (G.ppvTournament != null) {
+    const t = G.ppvTournament;
+    if (!['entry', 'ready', 'done'].includes(t.phase)) warn(`ppvTournament.phaseが不正値: "${t.phase}"`);
+    if (!Array.isArray(t.specialInvites) || t.specialInvites.length > 2) warn('ppvTournament.specialInvitesが不正');
+    if (!Array.isArray(t.entries) || t.entries.length > 16) warn('ppvTournament.entriesが不正');
+    if (!Array.isArray(t.rounds) || (t.phase === 'done' && t.championId && t.rounds.length !== 4)) warn('ppvTournament.roundsが不正');
+    if (!Array.isArray(t.dramaEvents) || t.dramaEvents.length > 2) warn('ppvTournament.dramaEventsが不正');
+  }
 
   // ── タイトル関連 ──
   if (G.titles && G.titles.world) {
@@ -23198,6 +23238,587 @@ Engine.juniorTournament = {
 };
 
 // ══════════════════════════════════════════════════════════
+//  Engine.ppvTournament — 4年に一度の「天頂戦」
+//  Week43で16名を確定し、Week48に15試合を一括実行する。
+// ══════════════════════════════════════════════════════════
+Engine.ppvTournament = {
+  ENTRY_WEEK: 43,
+  SHOW_WEEK: 48,
+  SIZE: 16,
+  INITIAL_CONDITION: 80,
+  FLOOR: 50,
+  RECOVERY_RATIO: 2 / 3,
+  PRIZE: { champion: 3000, runnerUp: 1200, semiFinal: 500 },
+
+  isTournamentSeason(season) {
+    return Number.isInteger(season) && season > 0 && season % 4 === 0;
+  },
+
+  _orgName(state, orgId) {
+    if (orgId === 'player') return state.orgName || 'プレイヤー団体';
+    return state.rivalOrgNames?.[orgId]
+      || RIVAL_ORGS.find(o => o.id === orgId)?.name
+      || orgId;
+  },
+
+  _orgRoster(state, orgId) {
+    return orgId === 'player'
+      ? (state.roster || [])
+      : (state.aiOrgs?.[orgId]?.roster || []);
+  },
+
+  _eligible(roster) {
+    return (roster || []).filter(f => f && !f.injury && !f.isRental && !f.isIntrusion);
+  },
+
+  _allCandidates(state, aiOnly) {
+    const result = [];
+    if (!aiOnly) {
+      this._eligible(state.roster).forEach(f => result.push({ fighter: f, orgId: 'player' }));
+    }
+    Object.keys(state.aiOrgs || {}).forEach(orgId => {
+      this._eligible(state.aiOrgs[orgId]?.roster).forEach(f => result.push({ fighter: f, orgId }));
+    });
+    return result;
+  },
+
+  /** 「個人ランキング」は既存の年間MVPレースポイントを全候補で再計算する。 */
+  _individualRanking(state, candidates) {
+    return [...candidates].sort((a, b) => {
+      const pa = Engine.mvpRace?.calcSeasonPoints
+        ? Engine.mvpRace.calcSeasonPoints(a.fighter, a.orgId, state.season, state).points : Engine.util.ov(a.fighter);
+      const pb = Engine.mvpRace?.calcSeasonPoints
+        ? Engine.mvpRace.calcSeasonPoints(b.fighter, b.orgId, state.season, state).points : Engine.util.ov(b.fighter);
+      return pb - pa || Engine.util.ov(b.fighter) - Engine.util.ov(a.fighter) || String(a.fighter.id).localeCompare(String(b.fighter.id));
+    });
+  },
+
+  _selectSpecialInvites(state, aiOnly) {
+    const candidates = this._allCandidates(state, aiOnly);
+    const ranking = this._individualRanking(state, candidates);
+    const rankingPick = ranking[0] || null;
+    const popularity = [...candidates].sort((a, b) =>
+      (b.fighter.popularity || 0) - (a.fighter.popularity || 0)
+      || Engine.util.ov(b.fighter) - Engine.util.ov(a.fighter)
+      || String(a.fighter.id).localeCompare(String(b.fighter.id)));
+    const popularityPick = popularity.find(c => !rankingPick || c.fighter.id !== rankingPick.fighter.id) || null;
+    return [
+      rankingPick && { id: rankingPick.fighter.id, orgId: rankingPick.orgId, kind: 'ranking' },
+      popularityPick && { id: popularityPick.fighter.id, orgId: popularityPick.orgId, kind: 'popularity' },
+    ].filter(Boolean);
+  },
+
+  _rankedOrgIds(state) {
+    const known = ['player', ...Object.keys(state.aiOrgs || {})];
+    const ranked = (state.rankings || [])
+      .filter(r => known.includes(r.orgId))
+      .sort((a, b) => (a.rank || 99) - (b.rank || 99))
+      .map(r => r.orgId);
+    known.forEach(id => { if (!ranked.includes(id)) ranked.push(id); });
+    return ranked;
+  },
+
+  _allocateSlots(state, specialInvites, aiOnly) {
+    const order = this._rankedOrgIds(state);
+    const specialIds = new Set((specialInvites || []).map(x => x.id));
+    const allocations = {};
+    const capacity = {};
+    order.forEach((orgId, index) => {
+      capacity[orgId] = aiOnly && orgId === 'player' ? 0
+        : this._eligible(this._orgRoster(state, orgId)).filter(f => !specialIds.has(f.id)).length;
+      allocations[orgId] = Math.min([5, 4, 3, 2][index] || 0, capacity[orgId]);
+    });
+    let deficit = 14 - Object.values(allocations).reduce((sum, n) => sum + n, 0);
+    while (deficit > 0) {
+      const receiver = order.find(orgId => allocations[orgId] < capacity[orgId]);
+      if (!receiver) break;
+      allocations[receiver] += 1;
+      deficit -= 1;
+    }
+    return allocations;
+  },
+
+  _championId(state, orgId) {
+    return orgId === 'player'
+      ? state.titles?.world?.championId
+      : state.aiOrgs?.[orgId]?.titles?.world?.championId;
+  },
+
+  _selectOrgEntries(state, orgId, count, excludedIds) {
+    const excluded = excludedIds || new Set();
+    const eligible = this._eligible(this._orgRoster(state, orgId))
+      .filter(f => !excluded.has(f.id))
+      .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a) || String(a.id).localeCompare(String(b.id)));
+    const champId = this._championId(state, orgId);
+    const champion = eligible.find(f => f.id === champId);
+    const ordered = champion ? [champion, ...eligible.filter(f => f.id !== champId)] : eligible;
+    return ordered.slice(0, count);
+  },
+
+  _entry(id, orgId, special, seed) {
+    return { id, orgId, seed: seed || 0, special: special || null };
+  },
+
+  _finalizeEntries(state, entries) {
+    return [...entries].sort((a, b) => {
+      const fa = this._resolveFighter(state, a.id);
+      const fb = this._resolveFighter(state, b.id);
+      return Engine.util.ov(fb || {}) - Engine.util.ov(fa || {})
+        || String(a.id).localeCompare(String(b.id));
+    }).map((entry, index) => ({ ...entry, seed: index + 1 }));
+  },
+
+  startEntry(state, options) {
+    const tvMode = !!options?.tvMode;
+    const specialInvites = this._selectSpecialInvites(state, tvMode);
+    const specialIds = new Set(specialInvites.map(x => x.id));
+    const allocations = this._allocateSlots(state, specialInvites, tvMode);
+    const entries = specialInvites.map(x => this._entry(x.id, x.orgId, x.kind));
+    this._rankedOrgIds(state).forEach(orgId => {
+      this._selectOrgEntries(state, orgId, allocations[orgId] || 0, specialIds)
+        .forEach(f => entries.push(this._entry(f.id, orgId, null)));
+    });
+    const finalized = this._finalizeEntries(state, entries);
+    const waitingForPlayer = !tvMode && (allocations.player || 0) > 0;
+    return {
+      ...state,
+      ppvTournament: {
+        season: state.season,
+        phase: waitingForPlayer ? 'entry' : 'ready',
+        specialInvites,
+        entries: finalized,
+        rounds: [],
+        championId: null,
+        dramaEvents: [],
+        prizesPaid: false,
+      },
+    };
+  },
+
+  getPlayerSlotCount(state) {
+    const tournament = state.ppvTournament;
+    if (!tournament || tournament.season !== state.season) return 0;
+    const fixed = (tournament.entries || []).filter(e => e.orgId !== 'player' || e.special).length;
+    return Math.max(0, this.SIZE - fixed);
+  },
+
+  getPlayerEntryCandidates(state) {
+    const specialIds = new Set((state.ppvTournament?.specialInvites || []).map(x => x.id));
+    return this._eligible(state.roster).filter(f => !specialIds.has(f.id));
+  },
+
+  suggestPlayerEntries(state) {
+    const count = Math.min(this.getPlayerSlotCount(state), this.getPlayerEntryCandidates(state).length);
+    const specialIds = new Set((state.ppvTournament?.specialInvites || []).map(x => x.id));
+    return this._selectOrgEntries(state, 'player', count, specialIds).map(f => f.id);
+  },
+
+  confirmPlayerEntries(state, fighterIds) {
+    const tournament = state.ppvTournament;
+    if (!tournament || tournament.phase !== 'entry' || tournament.season !== state.season) return state;
+    const expected = Math.min(this.getPlayerSlotCount(state), this.getPlayerEntryCandidates(state).length);
+    if (!Array.isArray(fighterIds) || fighterIds.length !== expected || new Set(fighterIds).size !== expected) return state;
+    const eligibleIds = new Set(this.getPlayerEntryCandidates(state).map(f => f.id));
+    if (fighterIds.some(id => !eligibleIds.has(id))) return state;
+    const champId = this._championId(state, 'player');
+    if (champId && eligibleIds.has(champId) && expected > 0 && !fighterIds.includes(champId)) return state;
+    const baseEntries = (tournament.entries || []).filter(e => e.orgId !== 'player' || e.special);
+    const entries = this._finalizeEntries(state, [
+      ...baseEntries,
+      ...fighterIds.map(id => this._entry(id, 'player', null)),
+    ]);
+    return { ...state, ppvTournament: { ...tournament, entries, phase: entries.length >= this.SIZE ? 'ready' : 'entry' } };
+  },
+
+  ensureReady(state) {
+    let s = state;
+    const currentEntries = s.ppvTournament?.entries || [];
+    const hasInvalidEntry = currentEntries.some(entry => {
+      const fighter = this._resolveFighter(s, entry.id);
+      return !fighter || fighter.injury || fighter.isRental || fighter.isIntrusion;
+    });
+    if (hasInvalidEntry) {
+      // Week43以降の負傷・引退に備え、特別招待を含む候補全体を当日再検証する。
+      // プレイヤーが選んだ有効な選手は可能な限り維持し、成立しなければOVR上位で補う。
+      const previousPlayerIds = currentEntries
+        .filter(entry => entry.orgId === 'player' && !entry.special)
+        .map(entry => entry.id)
+        .filter(id => this.getPlayerEntryCandidates(s).some(f => f.id === id));
+      s = this.startEntry(s, { tvMode: !s.ppvUnlocked });
+      if (s.ppvTournament?.phase === 'entry') {
+        const expected = Math.min(this.getPlayerSlotCount(s), this.getPlayerEntryCandidates(s).length);
+        const suggested = this.suggestPlayerEntries(s);
+        const retained = [...new Set([...previousPlayerIds, ...suggested])].slice(0, expected);
+        s = this.confirmPlayerEntries(s, retained);
+        if (s.ppvTournament?.phase === 'entry') {
+          s = this.confirmPlayerEntries(s, suggested);
+        }
+      }
+    }
+    if (s.ppvTournament?.phase === 'entry') {
+      s = this.confirmPlayerEntries(s, this.suggestPlayerEntries(s));
+    }
+    const tournament = s.ppvTournament;
+    if (!tournament || tournament.phase === 'done') return s;
+    if ((tournament.entries || []).length < this.SIZE) {
+      const used = new Set((tournament.entries || []).map(e => e.id));
+      const fill = this._allCandidates(s, !s.ppvUnlocked)
+        .filter(c => !used.has(c.fighter.id))
+        .sort((a, b) => Engine.util.ov(b.fighter) - Engine.util.ov(a.fighter))
+        .slice(0, this.SIZE - tournament.entries.length)
+        .map(c => this._entry(c.fighter.id, c.orgId, null));
+      const entries = this._finalizeEntries(s, [...tournament.entries, ...fill]);
+      s = { ...s, ppvTournament: { ...tournament, entries, phase: entries.length >= this.SIZE ? 'ready' : 'entry' } };
+    }
+    return s;
+  },
+
+  _resolveFighter(state, fighterId) {
+    return (state.roster || []).find(f => f.id === fighterId)
+      || Object.values(state.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === fighterId)
+      || null;
+  },
+
+  _bracketOrder(entries) {
+    const bySeed = new Map(entries.map(e => [e.seed, e]));
+    const ordered = [1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11]
+      .map(seed => bySeed.get(seed)).filter(Boolean);
+    for (let i = 0; i + 1 < ordered.length; i += 2) {
+      if (ordered[i].orgId !== ordered[i + 1].orgId) continue;
+      let best = -1;
+      let bestGap = Infinity;
+      for (let j = i + 2; j < ordered.length; j++) {
+        const pairStart = j % 2 === 0 ? j : j - 1;
+        const partner = ordered[pairStart === j ? j + 1 : j - 1];
+        if (!partner || ordered[i].orgId === ordered[j].orgId || partner.orgId === ordered[i + 1].orgId) continue;
+        const gap = Math.abs(ordered[j].seed - ordered[i + 1].seed);
+        if (gap < bestGap) { best = j; bestGap = gap; }
+      }
+      if (best >= 0) [ordered[i + 1], ordered[best]] = [ordered[best], ordered[i + 1]];
+    }
+    return ordered;
+  },
+
+  _fullHp(fighter) {
+    return Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(fighter.st) * BIGMATCH_ENG.hpScale);
+  },
+
+  _withCarryHp(fighter, carryPct) {
+    return {
+      ...fighter,
+      condition: this.INITIAL_CONDITION,
+      jtCarryHpPct: carryPct,
+      _hpOverride: Engine.wear.toHpOverride(carryPct, this._fullHp(fighter)),
+    };
+  },
+
+  _trimFighter(fighter, entry, carryPct, state) {
+    return {
+      id: fighter.id, name: fighter.name, ovr: Engine.util.ov(fighter), seed: entry.seed,
+      orgId: entry.orgId, _orgId: entry.orgId, _ppvOrgId: entry.orgId,
+      _orgName: this._orgName(state, entry.orgId), _ppvOrgName: this._orgName(state, entry.orgId),
+      style: fighter.style, portrait: fighter.portrait, personality: fighter.personality,
+      archetype: fighter.archetype, age: fighter.age, jtCarryHpPct: carryPct,
+    };
+  },
+
+  _applyMqBonuses(state, matchResult, left, right) {
+    const result = { ...matchResult };
+    if (!Engine.title) return result;
+    const pairState = Engine.title.getRivalryPairState(state, left.id, right.id);
+    const rivalry = Engine.title.getRivalryLevel(state, left.id, right.id);
+    if (rivalry) {
+      result.mq += rivalry.mqBonus;
+      result.rivalryBonus = rivalry;
+    }
+    const chemistry = Engine.title.getMatchChemistryBonus(pairState);
+    if (chemistry > 0) {
+      result.mq += chemistry;
+      result.friendshipBonus = chemistry;
+    }
+    return result;
+  },
+
+  run(state, rng) {
+    const tournament = state.ppvTournament;
+    if (!tournament || tournament.phase !== 'ready' || (tournament.entries || []).length !== this.SIZE) {
+      return { cancelled: true, rounds: [], championId: null };
+    }
+    const entryById = new Map(tournament.entries.map(e => [e.id, e]));
+    let current = this._bracketOrder(tournament.entries).map(entry => ({
+      entry,
+      fighter: this._resolveFighter(state, entry.id),
+      carryPct: 100,
+      cumulativeWear: 0,
+    })).filter(x => x.fighter);
+    if (current.length !== this.SIZE) return { cancelled: true, rounds: [], championId: null };
+    const rounds = [];
+    const roundNames = ['firstRound', 'quarterFinal', 'semiFinal', 'final'];
+    for (let roundIndex = 0; roundIndex < roundNames.length; roundIndex++) {
+      const matches = [];
+      const next = [];
+      for (let i = 0; i < current.length; i += 2) {
+        const leftState = current[i];
+        const rightState = current[i + 1];
+        const matchRng = Engine.rng.create(Engine.rng.derive(
+          state.rngSeed, state.season, 0x7E00 + roundIndex * 32 + i,
+          leftState.fighter.id, rightState.fighter.id));
+        const left = this._withCarryHp(leftState.fighter, leftState.carryPct);
+        const right = this._withCarryHp(rightState.fighter, rightState.carryPct);
+        let result = Engine.battle.simulateMatch(left, right, matchRng, 2, { recordFrames: true });
+        result = this._applyMqBonuses(state, result, leftState.fighter, rightState.fighter);
+        const winnerIsRight = result.winner === 'right';
+        const winnerState = winnerIsRight ? rightState : leftState;
+        const loserState = winnerIsRight ? leftState : rightState;
+        const winnerHp = winnerIsRight ? result.hpRight : result.hpLeft;
+        const wear = Engine.wear.calc(Engine.wear.hpRatio(winnerHp?.final, winnerHp?.max));
+        const cumulativeWear = winnerState.cumulativeWear + wear;
+        const carryPct = Math.max(this.FLOOR, 100 - cumulativeWear * (1 - this.RECOVERY_RATIO));
+        const winnerId = winnerState.fighter.id;
+        matches.push({
+          left: this._trimFighter(leftState.fighter, entryById.get(leftState.fighter.id), leftState.carryPct, state),
+          right: this._trimFighter(rightState.fighter, entryById.get(rightState.fighter.id), rightState.carryPct, state),
+          winnerId, loserId: loserState.fighter.id,
+          mq: result.mq, turns: result.turns,
+          hpLeft: result.hpLeft, hpRight: result.hpRight,
+          carryLeftPct: leftState.carryPct, carryRightPct: rightState.carryPct,
+          finType: result.finType || '', finMove: result.finMove || '', winner: result.winner,
+          log: result.log || [], frames: result.frames || [],
+        });
+        next.push({ ...winnerState, carryPct, cumulativeWear });
+      }
+      rounds.push({ name: roundNames[roundIndex], matches });
+      current = next;
+    }
+    return { cancelled: false, rounds, championId: current[0]?.fighter.id || null };
+  },
+
+  _relation(state, fromId, toId) {
+    return state.relationships?.[`${fromId}>${toId}`] || { bond: 50, rivalry: 0 };
+  },
+
+  _pickDramaLine(role, speaker, target, rng) {
+    const table = typeof TENCHOSEN_DRAMA_LINES !== 'undefined' ? TENCHOSEN_DRAMA_LINES[role] : null;
+    if (!table) return '';
+    const archetype = speaker?.archetype || 'normal';
+    const base = table[archetype] || table.normal || [];
+    const eligible = base.filter(line => line.maxAge == null
+      || ((speaker?.age || 0) <= line.maxAge && (target?.age || 0) <= line.maxAge));
+    const pool = eligible.length ? eligible : (table.normal || []).filter(line => line.maxAge == null);
+    return pool.length ? pool[Engine.rng.int(rng, 0, pool.length - 1)].text : '';
+  },
+
+  _buildDramaEvents(state, tournamentResult, rng, tvMode) {
+    if (tvMode || !(state.ppvTournament?.entries || []).some(e => e.orgId === 'player')) return [];
+    const candidates = [];
+    const roundPriority = { firstRound: 0, quarterFinal: 1, semiFinal: 2, final: 3 };
+    tournamentResult.rounds.forEach(round => round.matches.forEach((match, index) => {
+      const winner = match.winnerId === match.left.id ? match.left : match.right;
+      const loser = match.winnerId === match.left.id ? match.right : match.left;
+      const relLW = this._relation(state, loser.id, winner.id);
+      const relWL = this._relation(state, winner.id, loser.id);
+      const ref = { round: round.name, index };
+      const base = { match, winner, loser, matchRef: ref, priority: roundPriority[round.name] || 0 };
+      if ((round.name === 'semiFinal' || round.name === 'final') && match.mq >= 90
+          && (Math.max(relLW.bond || 0, relWL.bond || 0) >= 15
+              || Math.max(relLW.rivalry || 0, relWL.rivalry || 0) >= 15 || match.mq >= 94)) {
+        candidates.push({ ...base, class: 'epic', classPriority: 3 });
+      }
+      if (Math.abs((loser.seed || 0) - (winner.seed || 0)) >= 6 && loser.seed < winner.seed) {
+        candidates.push({ ...base, class: 'humiliation', classPriority: 2 });
+      }
+      if (loser.orgId === winner.orgId) {
+        candidates.push({ ...base, class: 'stablemate', classPriority: 1 });
+      }
+    }));
+    candidates.sort((a, b) => b.priority - a.priority || b.classPriority - a.classPriority || b.match.mq - a.match.mq);
+    const used = new Set();
+    const events = [];
+    for (const candidate of candidates) {
+      if (events.length >= 2) break;
+      if (used.has(candidate.winner.id) || used.has(candidate.loser.id)) continue;
+      // 条件成立は候補化であり、演出を必ず配るわけではない。文脈の希少性を保つ暫定発火率。
+      const activationRate = candidate.class === 'epic' ? 0.8 : candidate.class === 'humiliation' ? 0.7 : 0.25;
+      if (Engine.rng.float(rng) >= activationRate) continue;
+      const winner = this._resolveFighter(state, candidate.winner.id) || candidate.winner;
+      const loser = this._resolveFighter(state, candidate.loser.id) || candidate.loser;
+      let eventClass = candidate.class;
+      let mutual = true;
+      let roles;
+      if (candidate.class === 'epic') {
+        roles = [{ speaker: loser, target: winner, role: 'A' }, { speaker: winner, target: loser, role: 'B' }];
+      } else if (candidate.class === 'humiliation') {
+        mutual = false;
+        roles = [{ speaker: loser, target: winner, role: 'C' }];
+      } else {
+        const bond = this._relation(state, loser.id, winner.id).bond || 0;
+        const deepens = bond >= 25 || Engine.rng.float(rng) >= 0.5;
+        eventClass = deepens ? 'stablemate_bond' : 'stablemate_rift';
+        roles = [{ speaker: loser, target: winner, role: deepens ? 'E' : 'D' }];
+      }
+      const lines = roles.map(item => ({
+        speakerId: item.speaker.id,
+        role: item.role,
+        text: this._pickDramaLine(item.role, item.speaker, item.target, rng),
+      })).filter(line => line.text);
+      if (!lines.length) continue;
+      events.push({
+        class: eventClass, matchRef: candidate.matchRef,
+        speakerId: loser.id, targetId: winner.id, mutual, lines, applied: true,
+      });
+      used.add(winner.id);
+      used.add(loser.id);
+    }
+    return events;
+  },
+
+  _applyDramaEvents(state, dramaEvents) {
+    if (!state.relationships || !dramaEvents.length) return state;
+    const relationships = { ...state.relationships };
+    const apply = (fromId, toId, axis, delta) => {
+      const key = `${fromId}>${toId}`;
+      const current = relationships[key] || { bond: 50, rivalry: 0 };
+      relationships[key] = {
+        ...current,
+        [axis]: Engine.relationships._clampAxisValue((current[axis] || 0) + delta, axis),
+      };
+    };
+    dramaEvents.forEach(event => {
+      const a = event.speakerId, b = event.targetId;
+      if (event.class === 'epic') {
+        [[a, b], [b, a]].forEach(([from, to]) => { apply(from, to, 'rivalry', 8); apply(from, to, 'bond', 6); });
+      } else if (event.class === 'humiliation') {
+        apply(a, b, 'rivalry', 12);
+      } else {
+        const delta = event.class === 'stablemate_bond' ? 8 : -8;
+        [[a, b], [b, a]].forEach(([from, to]) => apply(from, to, 'bond', delta));
+      }
+    });
+    return { ...state, relationships };
+  },
+
+  _recordCareerResults(state, tournamentResult) {
+    const resultById = new Map();
+    tournamentResult.rounds.forEach(round => round.matches.forEach(match => {
+      resultById.set(match.loserId, round.name === 'final' ? 'runnerUp' : round.name);
+    }));
+    resultById.set(tournamentResult.championId, 'champion');
+    const update = fighters => (fighters || []).map(f => {
+      const result = resultById.get(f.id);
+      if (!result) return f;
+      const careerRecord = { ...(f.careerRecord || Engine.career.createRecord()) };
+      const history = [...(careerRecord.history || [])];
+      if (!history.some(e => e.type === 'ppvTournament' && e.season === state.season)) {
+        history.push({ type: 'ppvTournament', season: state.season, result });
+      }
+      return { ...f, careerRecord: { ...careerRecord, history } };
+    });
+    const aiOrgs = {};
+    Object.entries(state.aiOrgs || {}).forEach(([orgId, org]) => {
+      aiOrgs[orgId] = { ...org, roster: update(org.roster) };
+    });
+    return { ...state, roster: update(state.roster), aiOrgs };
+  },
+
+  apply(state, tournamentResult, options) {
+    const tvMode = !!options?.tvMode;
+    if (!tournamentResult || tournamentResult.cancelled || !tournamentResult.championId) return state;
+    let s = { ...state };
+    const events = [];
+    const finalMatch = tournamentResult.rounds[tournamentResult.rounds.length - 1]?.matches?.[0];
+    const championEntry = s.ppvTournament.entries.find(e => e.id === tournamentResult.championId);
+    const runnerUpId = finalMatch?.loserId;
+    const runnerUpEntry = s.ppvTournament.entries.find(e => e.id === runnerUpId);
+    const champion = this._resolveFighter(s, tournamentResult.championId);
+    const runnerUp = this._resolveFighter(s, runnerUpId);
+    const dramaRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x7ED4));
+    const dramaEvents = this._buildDramaEvents(s, tournamentResult, dramaRng, tvMode);
+
+    if (!tvMode && s.relationships && Engine.relationships?.applyMatchResult) {
+      let relState = s;
+      const relRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x7E12));
+      tournamentResult.rounds.forEach(round => round.matches.forEach(match => {
+        relState = Engine.relationships.applyMatchResult(relState, match.left.id, match.right.id, {
+          mq: match.mq,
+          winner: match.winnerId === match.left.id ? 'win' : 'lose',
+          hpA: match.hpLeft, hpB: match.hpRight, turns: match.turns,
+          stage: 'ppv', isTitleMatch: false, rivalryResolved: false, injuredId: null,
+          isCareerBestA: false, isCareerBestB: false,
+          ovrA: match.left.ovr, ovrB: match.right.ovr,
+          isCrossOrg: match.left.orgId !== match.right.orgId,
+        }, relRng);
+      }));
+      s = { ...s, relationships: relState.relationships, relationshipCounters: relState.relationshipCounters };
+      s = this._applyDramaEvents(s, dramaEvents);
+    }
+
+    s = this._recordCareerResults(s, tournamentResult);
+    const battlePoints = { ...(s.battlePoints || {}) };
+    if (championEntry && runnerUpEntry) {
+      const transfer = 7;
+      battlePoints[championEntry.orgId] = (battlePoints[championEntry.orgId] || 0) + transfer;
+      battlePoints[runnerUpEntry.orgId] = Math.max(-50, (battlePoints[runnerUpEntry.orgId] || 0) - transfer);
+    }
+    let orgWarRecord = { ...(s.orgWarRecord || {}) };
+    tournamentResult.rounds.forEach(round => round.matches.forEach(match => {
+      if (match.left.orgId === match.right.orgId) return;
+      const winnerOrg = match.winnerId === match.left.id ? match.left.orgId : match.right.orgId;
+      const loserOrg = match.winnerId === match.left.id ? match.right.orgId : match.left.orgId;
+      orgWarRecord = Engine.orgWar.recordPPVMatch(orgWarRecord, winnerOrg, loserOrg, s.season, s.week);
+    }));
+
+    const achievementItems = {};
+    Object.entries(s.achievementItems || {}).forEach(([orgId, list]) => { achievementItems[orgId] = [...list]; });
+    s = { ...s, achievementItems, battlePoints, orgWarRecord };
+    if (championEntry && Engine.achievement) {
+      Engine.achievement.ensureInit(s);
+      Engine.achievement.add(s, championEntry.orgId, {
+        id: `ppvT_${s.season}`, type: 'ppvTournament', originalPt: 20,
+        label: '天頂戦 優勝', winnerName: champion?.name || '',
+      });
+    }
+
+    if (!tvMode) {
+      const prizeById = new Map([[tournamentResult.championId, this.PRIZE.champion], [runnerUpId, this.PRIZE.runnerUp]]);
+      const semiRound = tournamentResult.rounds.find(r => r.name === 'semiFinal');
+      (semiRound?.matches || []).forEach(match => prizeById.set(match.loserId, this.PRIZE.semiFinal));
+      let totalPrize = 0;
+      prizeById.forEach((amount, id) => {
+        if (s.ppvTournament.entries.find(e => e.id === id)?.orgId === 'player') totalPrize += amount;
+      });
+      if (totalPrize > 0) {
+        s = { ...s, funds: (s.funds || 0) + totalPrize };
+        events.push(`💰 天頂戦賞金 ¥${totalPrize}万`);
+      }
+    }
+
+    s = Engine.industryNews.push(s, {
+      type: 'tenchosenResult',
+      characterId: champion?.id || null,
+      data: {
+        season: s.season,
+        championName: champion?.name || '', championOrg: this._orgName(s, championEntry?.orgId),
+        runnerUpName: runnerUp?.name || '', runnerUpOrg: this._orgName(s, runnerUpEntry?.orgId),
+        mq: finalMatch?.mq ?? '',
+      },
+    });
+    events.push(`🏆 ${champion?.name || '優勝者'}が全国女子プロレス最強王者決定戦「天頂戦」優勝！`);
+    s = {
+      ...s,
+      ppvTournament: {
+        ...s.ppvTournament,
+        phase: 'done', rounds: tournamentResult.rounds,
+        championId: tournamentResult.championId,
+        dramaEvents, prizesPaid: true,
+      },
+      ppvPhase: null,
+      ppvEntries: null,
+    };
+    return { state: s, events };
+  },
+};
+
+// ══════════════════════════════════════════════════════════
 //  Engine.springTagLeague — 春のタッグリーグ（Q1末 Week10-12）
 //  spec: spring-tag-league-spec-v0.1(v0.2) / autumn-gauntlet-war-spec-v0.1 §3
 //  Phase 1: エンジン基盤のみ（UIは後続フェーズ）。Pure functions only。
@@ -24123,6 +24744,8 @@ function _buildPpvSummitStory(sr, season, week, P) {
 
 Engine.newspaper = {
   PRIORITY: {
+    tenchosenResult:         270,
+    tenchosenAnnounce:       150,
     juniorTournamentResult: 260,
     juniorTournamentPreview: 250,
     autumnWarResult:       240,
@@ -24623,6 +25246,7 @@ Engine.newspaper = {
       'ppvSummitResult', 'playerTitleChange', 'warMilestone', 'crossWarResult',
       'aiWarResult', 'aiB3Result', 'playerShowTitle', 'playerShowNormal',
       'aiShowHighlight', 'juniorTournamentResult', 'springTagResult', 'autumnWarResult',
+      'tenchosenResult',
     ]);
     const subPool = stories.slice(1);
     const matchPicks = [];
