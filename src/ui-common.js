@@ -15566,7 +15566,7 @@ function _tcPeakBlock(tc, riseClass) {
     <div class="jtc-up jtc-up-peak w">${img}</div>
     <div class="jtc-peak-name">${escHtml(champion.name)}</div>
     <div class="jtc-peak-title">第${_tcEditionNo()}回 天頂戦 覇者</div>
-    <div class="jtc-peak-tap">タップして結果を見る ▶</div>
+    <div class="jtc-peak-tap">タップして表彰へ ▶</div>
   </div>`;
 }
 

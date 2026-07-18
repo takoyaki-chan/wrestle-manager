@@ -13166,7 +13166,9 @@ App.tcAdvanceAfterResult = function(roundIdx, matchIdx) {
     tc.phase = 'bracket';
     renderTenchosenBracket();
   } else {
-    // 決勝決着 → 頂上せり上がり(タップで優勝画面へ、JTの二段構え)
+    // 決勝決着 → 頂上せり上がり(0.5s) → 1.6秒で優勝画面へ自動遷移。
+    // タップ待ちで止めない(実機フィードバック: 二段構えの待ちがフリーズに見える)。
+    // 頂上タップで即時スキップも可。
     tc.currentRound = roundIdx + 1;
     tc.currentMatch = 0;
     tc.phase = 'bracket';
@@ -13176,6 +13178,14 @@ App.tcAdvanceAfterResult = function(roundIdx, matchIdx) {
       Audio.bgm.playJingle('championship');
     }, 900);
     renderTenchosenBracket();
+    // 頂上ブロックは画面上部にあるためスクロールを先頭へ戻して見せる
+    const tcOverlay = document.getElementById('showResultOverlay');
+    if (tcOverlay) tcOverlay.scrollTop = 0;
+    clearTimeout(App._tcPeakTimer);
+    App._tcPeakTimer = setTimeout(() => {
+      const cur = App._tcPreview;
+      if (cur && cur.phase === 'bracket') App.tcGoToFinalResult();
+    }, 1600);
   }
 };
 
@@ -13211,6 +13221,7 @@ App.tcSkipAll = function() {
 App.tcGoToFinalResult = function() {
   const tc = App._tcPreview;
   if (!tc) return;
+  clearTimeout(App._tcPeakTimer);
   tc.phase = 'finalResult';
   renderTenchosenResult();
 };
@@ -13238,6 +13249,7 @@ App.tcNextDrama = function(idx) {
 
 App.finalizeTenchosen = function() {
   // 状態は advanceWeek 内で適用済み。ここでは演出を畳むだけ
+  clearTimeout(App._tcPeakTimer);
   App._tcPreview = null;
   const overlay = document.getElementById('showResultOverlay');
   if (overlay) overlay.classList.remove('active');
