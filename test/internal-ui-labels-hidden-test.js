@@ -26,13 +26,11 @@ assert.ok(!jtChampion.includes('pathText'), 'JT champion screen must not compute
 assert.ok(!jtChampion.includes('QF'), 'JT champion screen must not show QF abbreviation');
 assert.ok(!jtChampion.includes('SF'), 'JT champion screen must not show SF abbreviation');
 
-const jtCell = bodyOf('function _jtFighterCell');
-assert.ok(!jtCell.includes('TBD'), 'JT bracket placeholder should be localized, not show TBD');
-assert.ok(jtCell.includes('未定'), 'JT bracket placeholder should show a player-facing pending label');
+assert.ok(!ui.includes('TBD'), 'JT UI should not expose an internal TBD label');
 
 const jtFocus = bodyOf('function _jtFocusCard');
 assert.ok(!jtFocus.includes('START HP'), 'JT pre-match card should not show internal English start HP label');
-assert.ok(jtFocus.includes('開始HP'), 'JT pre-match card should use player-facing start HP label');
+assert.ok(jtFocus.includes("hpMidLabel: '開始HP'"), 'JT pre-match card should use player-facing start HP label');
 
 const c1Result = bodyOf('function _renderCommon1MatchResult');
 assert.ok(!c1Result.includes('finishPhase'), 'Common1 result should not expose battle engine phase labels');

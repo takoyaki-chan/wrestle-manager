@@ -11825,7 +11825,7 @@ function _findFighterOrgName(state, charId) {
 }
 
 function _pickRivalryFeatured(state) {
-  const totalWeek = ((state.season || 1) - 1) * 52 + (state.week || 1);
+  const totalWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
   const period = Math.floor(totalWeek / 2);
 
   // featured 選出用プレイヤーボーナス: ローテーションごとに 0〜15 をランダム抽選
@@ -12210,8 +12210,8 @@ function _dfcEra(state, faction) {
   if (!faction) return '—';
   const since = (faction.createdSeason || state.season || 1) - 1;
   const sinceWeek = (faction.createdWeek || 1);
-  const nowAbs = (state.season - 1) * 52 + state.week;
-  const startAbs = since * 52 + sinceWeek;
+  const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+  const startAbs = Engine.util.absWeekTotal(since + 1, sinceWeek, false, 0);
   return Math.max(0, nowAbs - startAbs);
 }
 // 黒田ナレーション・テンプレ生成（5パターン以上、抗争中/中立で分岐、状態スロット埋め）
@@ -12427,8 +12427,8 @@ function _dfcRenderCard(faction, state, opts = {}) {
       : (faction.createdSeason != null ? faction.createdSeason : 1);
     const enthronedWeek = faction.lastLeaderChangeWeek != null ? faction.lastLeaderChangeWeek
       : (faction.createdWeek != null ? faction.createdWeek : 1);
-    const enthronedAbs = enthronedSeason * 52 + enthronedWeek;
-    const nowAbs = (state.season || 1) * 52 + (state.week || 1);
+    const enthronedAbs = Engine.util.absWeekTotal(enthronedSeason, enthronedWeek, false, 0);
+    const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
     const enthronedWeeks = Math.max(0, nowAbs - enthronedAbs);
     const enthronedLabel = (enthronedWeeks < 52) ? `就任${enthronedWeeks + 1}週目` : '';
     const arrow = challengerActive ? '⚔' : '·';
@@ -12461,9 +12461,9 @@ function _dfcRenderFeudTimeline(state, factionAId, factionBId, feudEntry) {
     return ids.includes(factionAId) || ids.includes(factionBId);
   });
   // 開始週以降のみ
-  const startAbs = feudEntry ? ((feudEntry.startedSeason - 1) * 52 + feudEntry.startedWeek) : 0;
+  const startAbs = feudEntry ? Engine.util.absWeekTotal(feudEntry.startedSeason, feudEntry.startedWeek, false, 0) : 0;
   const filtered = relevant.filter(ev => {
-    const evAbs = (ev.season - 1) * 52 + (ev.week || 0);
+    const evAbs = Engine.util.absWeekTotal(ev.season, ev.week, false, 0);
     return evAbs >= startAbs;
   });
   // 直近6件
@@ -12491,8 +12491,8 @@ function _dfcRenderFeudAxis(state, factionAId, factionBId, feudEntry, opts = {})
   const goal = cfg.pointsResolutionThreshold || 100;
   const f09NearH = cfg.f09NearBadgeHostility || 60;
   const f09H = cfg.f09HostilityMin || 65;
-  const startAbs = feudEntry ? ((feudEntry.startedSeason - 1) * 52 + feudEntry.startedWeek) : 0;
-  const nowAbs = (state.season - 1) * 52 + state.week;
+  const startAbs = feudEntry ? Engine.util.absWeekTotal(feudEntry.startedSeason, feudEntry.startedWeek, false, 0) : 0;
+  const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
   const weeks = Math.max(1, nowAbs - startAbs + 1);
   const hostMap = state.factionHostility || {};
   const hAB = hostMap[`${factionAId}>${factionBId}`] || 0;

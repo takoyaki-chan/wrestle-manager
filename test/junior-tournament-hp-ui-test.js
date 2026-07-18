@@ -22,9 +22,13 @@ function bodyOf(signature) {
 }
 
 const focusBody = bodyOf('function _jtFocusCard');
-assert.ok(focusBody.includes('jt-pre-hp-row'), 'pre-match JT card must render a start HP row under stand portraits');
-assert.ok(focusBody.includes("_jtPreHpBlock('left', f1, match.hpLeft)"), 'pre-match JT left HP must use match max HP and jtCarryHpPct');
-assert.ok(focusBody.includes("_jtPreHpBlock('right', f2, match.hpRight)"), 'pre-match JT right HP must use match max HP and jtCarryHpPct');
+assert.ok(focusBody.includes('_jtStartHp(f1, match.hpLeft)'), 'pre-match JT left HP must use match max HP and jtCarryHpPct');
+assert.ok(focusBody.includes('_jtStartHp(f2, match.hpRight)'), 'pre-match JT right HP must use match max HP and jtCarryHpPct');
+assert.ok(focusBody.includes("_jtcFcHpBlock('left', startL.final, startL.max, startL.pct)"), 'pre-match JT card must render the shared left start HP block');
+assert.ok(focusBody.includes("_jtcFcHpBlock('right', startR.final, startR.max, startR.pct)"), 'pre-match JT card must render the shared right start HP block');
+
+const focusCoreBody = bodyOf('function _jtcFcCore');
+assert.ok(focusCoreBody.includes('jtc-fc-hp-row'), 'shared tournament focus card must render a start HP row under stand portraits');
 
 const resultBody = bodyOf('function renderJuniorTournamentMatchResult');
 assert.ok(resultBody.includes("className: 'is-jt-recovery'"), 'JT match result HP mini bar must be marked for recovery animation');
@@ -40,7 +44,7 @@ const animBody = bodyOf('function _jtAnimateHpRecoveryBars');
 assert.ok(animBody.includes('data-jt-recover-pct'), 'JT recovery animation must target data-marked HP fills');
 assert.ok(animBody.includes('requestAnimationFrame(tick)'), 'JT recovery animation must animate with requestAnimationFrame');
 
-assert.ok(html.includes('.jt-pre-hp-row'), 'index CSS must style JT pre-match HP row');
-assert.ok(html.includes('.jt-pre-hp-fill.is-danger'), 'index CSS must style low JT HP state');
+assert.ok(html.includes('.jtc-fc-hp-row'), 'index CSS must style the shared tournament pre-match HP row');
+assert.ok(html.includes('.jtc-fc-hp-fill'), 'index CSS must style shared tournament HP fills');
 
 console.log('junior-tournament-hp-ui-test: ok');

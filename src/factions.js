@@ -378,7 +378,7 @@ Engine.factions = {
       // 直近の遷移後 CD（36 週）
       const last = f.lastArchetypeTransition;
       if (last && last.season != null) {
-        const lastAbs = (last.season - 1) * 53 + (last.week || 1);
+        const lastAbs = Engine.util.absWeekTotal(last.season, last.week, false, 0);
         if (now - lastAbs < cfg.alignFlipPostCooldown) continue;
       }
       const memberIds = (f.memberIds || []).filter(id => roster.find(c => c.id === id));
@@ -979,7 +979,7 @@ Engine.factions = {
       && Engine.rng.float(rng) < cfg.successionShockProbability;
 
     // 派閥情報を更新
-    const absWeekLL = (s.season || 1) * 52 + (s.week || 1);
+    const absWeekLL = Engine.util.absWeekTotal(s.season, s.week, s.offSeason, s.offWeek);
     const newFactions = s.factions.map(f => {
       if (f.id !== factionId) return f;
       const newMemberIds = f.memberIds.filter(id => id !== faction.leaderId);
@@ -1867,7 +1867,7 @@ Engine.factions = {
     }
 
     const cfgF03 = FACTION_CONFIG;
-    const absWeekF03 = (s.season || 1) * 52 + (s.week || 1);
+    const absWeekF03 = Engine.util.absWeekTotal(s.season, s.week, s.offSeason, s.offWeek);
     const newFactions = s.factions.map(f => {
       if (f.id !== factionId) return f;
       const newMemberIds = f.memberIds.filter(id => id !== faction.leaderId);
@@ -3005,7 +3005,7 @@ Engine.factions = {
   // 下克上の発生を派閥側に記録（後段でリーダー交代イベント等のフックに使う）
   _flagFactionUpset(state, factionId, winnerId, leaderId) {
     if (!factionId) return state;
-    const week = (state.season || 1) * 52 + (state.week || 1);
+    const week = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
     const factions = (state.factions || []).map(f => {
       if (f.id !== factionId) return f;
       return { ...f, _lastUpset: { winnerId, leaderId, absWeek: week } };
@@ -4745,7 +4745,7 @@ Engine.factions = {
     }
     const cfg = FACTION_CONFIG;
     const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
-    const absWeek = (state.season || 1) * 52 + (state.week || 1);
+    const absWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
     const challengerWon = matchResult.winnerId === challengerId;
     let s = state;
 
@@ -4908,7 +4908,7 @@ Engine.factions = {
       return rest;
     }
     const cfg = FACTION_CONFIG;
-    const absWeek = (state.season || 1) * 52 + (state.week || 1);
+    const absWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
     let s = {
       ...state,
       factions: (state.factions || []).map(x => x.id !== factionId ? x : {
@@ -5081,8 +5081,8 @@ Engine.factions = {
       }
 
       // §4.3 40週経過
-      const startAbs = (e.startedSeason - 1) * 52 + e.startedWeek;
-      const nowAbs = (state.season - 1) * 52 + state.week;
+      const startAbs = Engine.util.absWeekTotal(e.startedSeason, e.startedWeek, false, 0);
+      const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
       if (nowAbs - startAbs >= cfg.pointsForceCloseWeeks) {
         // F06 強制発火フラグを立てる（モーダル処理は management.js 側で拾う）
         state._pendingForceCloseRivalry = {
@@ -5213,7 +5213,7 @@ Engine.factions = {
       if (rp[k] && rp[k].f09Active) return null;
     }
     const cfg = FACTION_CONFIG;
-    const absWeek = (state.season || 1) * 52 + (state.week || 1);
+    const absWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
     const roster = state.roster || [];
     const rosterById = new Map(roster.map(c => [c.id, c]));
     const isAvailable = (fighter) => !!fighter && !fighter.injury && !fighter.forcedRest;
@@ -5236,7 +5236,7 @@ Engine.factions = {
         : (f.createdSeason != null ? f.createdSeason : 1);
       const enthronedWeek = f.lastLeaderChangeWeek != null ? f.lastLeaderChangeWeek
         : (f.createdWeek != null ? f.createdWeek : 1);
-      const enthronedAbs = enthronedSeason * 52 + enthronedWeek;
+      const enthronedAbs = Engine.util.absWeekTotal(enthronedSeason, enthronedWeek, false, 0);
       if (absWeek - enthronedAbs < cfg.internalChallengeGraceWeeksAfterEnthronement) continue;
 
       // リーダー在籍チェック
@@ -5324,7 +5324,7 @@ Engine.factions = {
   // F09 後半補正
   _f09LateGameMult(state) {
     const cfg = FACTION_CONFIG;
-    const week = (state.season - 1) * 52 + (state.week || 0);
+    const week = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
     const tiers = Object.keys(cfg.f09LateGameMult).map(Number).sort((a, b) => a - b);
     let mult = cfg.f09LateGameMult[tiers[tiers.length - 1]];
     for (const t of tiers) {

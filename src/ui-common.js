@@ -7281,7 +7281,7 @@ function showInviteTargetModal(coachId, state) {
     return;
   }
 
-  const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
+  const absoluteWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
   const cards = candidates.map((f, i) => {
     const lastName = f.name.split(/\s/).pop();
     const sm = (typeof getCoachStyleMatch === 'function') ? getCoachStyleMatch(coach, f) : { icon: '', cls: 'none' };

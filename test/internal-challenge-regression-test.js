@@ -121,11 +121,51 @@ function buildInternalChallengeState(overrides = {}) {
       registeredWeek: 20,
     },
   });
-  const absWeek = state.season * 52 + state.week;
+  const absWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
   const next = Engine.factions.resolveInternalChallengeDraw(state);
   assert.strictEqual(next._pendingInternalChallenge, undefined);
   assert.strictEqual(next.factions[0].internalChallengeCooldownUntilWeek, absWeek + FACTION_CONFIG.internalChallengeCooldownWeeks);
   assert.strictEqual(next.factionTimeline[next.factionTimeline.length - 1].type, 'INTERNAL_CHALLENGE_DRAWN');
+}
+
+{
+  const rivalry = {
+    '10:20': {
+      factionAId: 10,
+      factionBId: 20,
+      pointsA: 10,
+      pointsB: 10,
+      startedSeason: 1,
+      startedWeek: 20,
+    },
+  };
+  const factions = [
+    { id: 10, status: 'active', memberIds: [1] },
+    { id: 20, status: 'active', memberIds: [2] },
+  ];
+  const hostility = { '10>20': 50, '20>10': 50 };
+  const before40Weeks = buildInternalChallengeState({
+    season: 2,
+    week: 7,
+    factions,
+    factionRivalryPoints: structuredClone(rivalry),
+    factionHostility: hostility,
+  });
+  assert.strictEqual(
+    Engine.factions.checkRivalryResolution(before40Weeks, {}),
+    null,
+    'cross-season rivalry must include four offseason weeks without closing before week 40'
+  );
+
+  const at40Weeks = buildInternalChallengeState({
+    season: 2,
+    week: 8,
+    factions,
+    factionRivalryPoints: structuredClone(rivalry),
+    factionHostility: hostility,
+  });
+  const result = Engine.factions.checkRivalryResolution(at40Weeks, {});
+  assert.strictEqual(result.reason, 'FORCE_CLOSE_PENDING');
 }
 
 console.log('internal-challenge-regression-test: ok');

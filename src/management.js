@@ -411,11 +411,20 @@ const Engine = {
 
   // ── Utilities ──────────────────────────────────────────
   util: {
-    /** 絶対週番号（48週制）。シーズン・週をまたいだクールダウン比較に使う */
+    /** 絶対実働週番号（48週制・オフ期間を数えない）。興行/練習など通常シーズン内だけ進む計算に使う */
     absWeek(season, week) { return ((season || 1) - 1) * 48 + (week || 1); },
-    /** オフシーズン込み絶対週番号（53週/シーズン: 通常48週+オフ5週）。ラストラン期限など、オフ中も進行する計算に使う */
+    /** オフシーズン込み絶対週番号（52週/シーズン: 通常48週+オフ4週）。ラストラン期限など、オフ中も進行する計算に使う */
     absWeekTotal(season, week, offSeason, offWeek) {
-      return ((season || 1) - 1) * 53 + (week || 1) + (offSeason ? (offWeek || 0) : 0);
+      return ((season || 1) - 1) * 52 + (week || 1) + (offSeason ? (offWeek || 0) : 0);
+    },
+    /** 旧53週軸で保存された絶対週を、48+オフ4週の52週軸へ変換する（ロード移行専用） */
+    convertLegacyAbsWeek53To52(value) {
+      if (!Number.isFinite(value) || value <= 0) return value;
+      const seasonIndex = Math.floor((value - 1) / 53);
+      const position = value - seasonIndex * 53;
+      return position === 53
+        ? (seasonIndex + 1) * 52 + 1
+        : seasonIndex * 52 + position;
     },
     clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); },
     ov(c) { return Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5); },
@@ -14131,7 +14140,7 @@ const Engine = {
         const lastRunActive = [];
         s.roster.forEach(c => {
           if (c.lastRun) {
-            // lastRunWeek はオフ込み絶対週（53週/シーズン）で保存。現在より4週以上前なら期限切れ
+            // lastRunWeek はオフ込み絶対週（52週/シーズン）で保存。現在より4週以上前なら期限切れ
             const startAbsWeek = c.lastRunWeek || 0;
             const currentAbsWeek = Engine.util.absWeekTotal(s.season, s.week, s.offSeason, s.offWeek);
             if (currentAbsWeek - startAbsWeek >= 4) {
@@ -19290,7 +19299,7 @@ Engine.shachoshitsu = {
     else if (compat === 'bad') mult -= 0.10;
 
     // §3.5: 消化力逓減判定
-    const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
+    const absoluteWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
     const lastEnd = fighter._lastInviteEndWeek;
     let diminished = false;
     if (lastEnd != null && (absoluteWeek - lastEnd) <= 12) {
@@ -19311,7 +19320,7 @@ Engine.shachoshitsu = {
     let coachAssign = state.coachAssign ? { ...state.coachAssign } : {};
     let funds = state.funds || 0;
     let decisionPoints = state.decisionPoints || 0;
-    const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
+    const absoluteWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
     const roster = (state.roster || []).map(f => {
       if (!f._inviteBuff) return f;
       const buf = f._inviteBuff;
@@ -19489,7 +19498,7 @@ Engine.shachoshitsu = {
           events.push(`🏋️ ${f.name}の担当コーチ復帰は、${prevCoachName}コーチが解任済みのため見送られた`);
         }
       }
-      const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
+      const absoluteWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
       const roster = (state.roster || []).map(c => {
         if (c.id !== fighterId) return c;
         const oldTrust = c.trust != null ? c.trust : 50;

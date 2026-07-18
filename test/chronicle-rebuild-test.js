@@ -206,7 +206,11 @@ function makeRetiredFighter(id = 101) {
   assert.ok(chapters.length > 0, 'segmentation should create chapter bounds');
   chapters.forEach(ch => {
     const len = ch.seasonEnd - ch.seasonStart + 1;
-    assert.ok(len >= 4 && len <= 7, `chapter length should be 4-7 seasons, got ${len}`);
+    if (ch._fledgling) {
+      assert.strictEqual(len, 2, 'fledgling chapter should cover seasons 1-2');
+    } else {
+      assert.ok(len >= 4 && len <= 7, `chapter length should be 4-7 seasons, got ${len}`);
+    }
   });
 })();
 

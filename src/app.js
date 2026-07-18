@@ -2665,6 +2665,96 @@ const Storage = {
         };
       }
 
+      // 暦週を「通常48週+オフ4週=52週」に統一する。
+      // 旧 absWeekTotal は誤って53週基準だったため、保存済みの派閥CD等を52週軸へ変換する。
+      // 内部挑戦/招聘は旧実装の原点が1シーズン分(+52)ずれていたため、併せて正規化する。
+      if (!G._migrated_calendarWeek52_v1) {
+        // 旧軸の53番目は実在週ではなく期限値としてのみ生じるため、
+        // Engine.util 側で翌シーズン第1週と同じ境界へ畳み込む。
+        const from53Week = Engine.util.convertLegacyAbsWeek53To52;
+        const removeLegacyOrigin = value => (
+          Number.isFinite(value) && value > 0 ? Math.max(0, value - 52) : value
+        );
+        const mapNumberRecord = (record, convert) => Object.fromEntries(
+          Object.entries(record || {}).map(([key, value]) => [key, convert(value)])
+        );
+        const fixFactionCooldownEntry = value => {
+          if (Number.isFinite(value)) return from53Week(value);
+          if (!value || typeof value !== 'object') return value;
+          return Number.isFinite(value.lastTriggeredWeek)
+            ? { ...value, lastTriggeredWeek: from53Week(value.lastTriggeredWeek) }
+            : value;
+        };
+        const fixFaction = f => {
+          if (!f) return f;
+          const next = { ...f };
+          if (Number.isFinite(next.internalChallengeCooldownUntilWeek)) {
+            next.internalChallengeCooldownUntilWeek = removeLegacyOrigin(next.internalChallengeCooldownUntilWeek);
+          }
+          if (next._lastUpset && Number.isFinite(next._lastUpset.absWeek)) {
+            next._lastUpset = { ...next._lastUpset, absWeek: removeLegacyOrigin(next._lastUpset.absWeek) };
+          }
+          for (const key of [
+            '_alignDriftStartedAbsWeek', '_commonEventLastWeek',
+            '_f07PostRebukeQuietUntil', '_f07DemandQuietUntil', '_f07DemandMoneyQuietUntil'
+          ]) {
+            if (Number.isFinite(next[key])) next[key] = from53Week(next[key]);
+          }
+          if (next._commonEventCooldowns) {
+            next._commonEventCooldowns = mapNumberRecord(next._commonEventCooldowns, from53Week);
+          }
+          if (Array.isArray(next._f07RecentIncidents)) {
+            next._f07RecentIncidents = next._f07RecentIncidents.map(ev => (
+              ev && Number.isFinite(ev.week) ? { ...ev, week: from53Week(ev.week) } : ev
+            ));
+          }
+          return next;
+        };
+        const fixFighterCalendar = c => {
+          if (!c) return c;
+          const next = { ...c };
+          if (Number.isFinite(next._lastInviteEndWeek)) {
+            next._lastInviteEndWeek = removeLegacyOrigin(next._lastInviteEndWeek);
+          }
+          if (Number.isFinite(next.lastRunWeek)) next.lastRunWeek = from53Week(next.lastRunWeek);
+          return next;
+        };
+        const fixedStateCooldowns = Object.fromEntries(
+          Object.entries(G.factionEventCooldowns || {}).map(([key, value]) => [key, fixFactionCooldownEntry(value)])
+        );
+        const patchCalendar = {
+          factionEventCooldowns: fixedStateCooldowns,
+          factions: (G.factions || []).map(fixFaction),
+          roster: (G.roster || []).map(fixFighterCalendar),
+          _migrated_calendarWeek52_v1: true,
+        };
+        for (const key of ['_f07TeamCooldownUntil', '_commonEventTeamCooldownUntil']) {
+          if (Number.isFinite(G[key])) patchCalendar[key] = from53Week(G[key]);
+        }
+        if (G._commonEvent7PairCooldowns) {
+          patchCalendar._commonEvent7PairCooldowns = mapNumberRecord(G._commonEvent7PairCooldowns, from53Week);
+        }
+        if (G.factionPendingIgnite) {
+          patchCalendar.factionPendingIgnite = { ...G.factionPendingIgnite };
+          for (const key of ['scheduledFromWeek', 'expireWeek']) {
+            if (Number.isFinite(patchCalendar.factionPendingIgnite[key])) {
+              patchCalendar.factionPendingIgnite[key] = from53Week(patchCalendar.factionPendingIgnite[key]);
+            }
+          }
+        }
+        if (Array.isArray(G.f02MediationWatches)) {
+          patchCalendar.f02MediationWatches = G.f02MediationWatches.map(watch => {
+            if (!watch) return watch;
+            const next = { ...watch };
+            for (const key of ['startWeek', 'deadlineWeek']) {
+              if (Number.isFinite(next[key])) next[key] = from53Week(next[key]);
+            }
+            return next;
+          });
+        }
+        G = { ...G, ...patchCalendar };
+      }
+
       if (!G._migrated_style_aerial_v1) {
         const fixStyle = c => c.style === 'Speed' ? { ...c, style: 'Aerial' } : c;
         G = {
