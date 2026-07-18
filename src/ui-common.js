@@ -14436,7 +14436,10 @@ function _jtcRoundLabel(name) {
 }
 
 function _jtcSizeClass(matchCount) {
-  return matchCount >= 4 ? 'sm' : matchCount === 2 ? 'md' : 'lg';
+  // mockup-jt-restyle-v0.1 tab1: 準々決勝(4試合)・準決勝(2試合)は常にsm(76px)に統一。
+  // 決勝(jtc-final-row.jtc-size-lg=132px)・頂上(jtc-up-peak=150x225)との段差を際立たせるため、
+  // 旧mdサイズ(112px)分岐は廃止(8名大会でも準々決勝→準決勝は同sizeでよく、決勝への跳躍幅こそが要)。
+  return 'sm';
 }
 
 /** アッパー画像フィッター(勝者=大会色リング/敗者=モノクロ落ち) */
@@ -14534,7 +14537,8 @@ function _jtcPeakBlock(jt, riseClass) {
     <div class="jtc-up jtc-up-peak w">${img}</div>
     <div class="jtc-peak-name">${escHtml(champion.name)}</div>
     <div class="jtc-peak-title">第${season}回大会ジュニアチャンピオン</div>
-    <div class="jtc-peak-tap">タップして表彰へ ▶</div>
+    <div class="jtc-peak-cta">表彰へ ▶</div>
+    <div class="jtc-peak-auto-note">1.6秒で自動的に進みます(タップで即スキップ)</div>
   </div>`;
 }
 
@@ -14592,7 +14596,7 @@ function renderJuniorTournamentBracket() {
   box.style.border = 'none';
 
   let html = `<div class="jt-phase">対戦表</div>`;
-  html += `<div class="jt-wrap" style="--jtc-color:var(--ev-summer)">${_jtHeader()}`;
+  html += `<div class="jt-wrap" style="--jtc-color:var(--ev-summer);--jtc-color-rgb:var(--ev-summer-rgb)">${_jtHeader()}`;
   html += `<div class="jtc-climb">${_jtcClimbHtml(jt)}</div>`;
 
   // 全試合スキップボタン(進行中の試合がある間のみ表示。頂上せり上がり後はタップ操作に切替)
@@ -14608,7 +14612,7 @@ function renderJuniorTournamentBracket() {
   overlay.classList.add('active');
 }
 
-/** フォーカスカード（stand画像向かい合わせ + セリフ + ボタン） */
+/** フォーカスカード（アッパー対面 + セリフ + ボタン） */
 function _jtHpTone(pct) {
   return pct >= 70 ? 'is-healthy' : pct >= 40 ? 'is-warning' : 'is-danger';
 }
@@ -14624,13 +14628,50 @@ function _jtStartHp(f, hp) {
   return { final: Math.max(1, Math.round(max * pct / 100)), max, pct };
 }
 
-function _jtPreHpBlock(side, f, hp) {
-  const start = _jtStartHp(f, hp);
-  const tone = _jtHpTone(start.pct);
-  return `<div class="jt-pre-hp ${side} ${tone}">
-    <div class="jt-pre-hp-top"><span>HP</span><strong>${start.final} / ${start.max}</strong><em>${start.pct}%</em></div>
-    <div class="jt-pre-hp-track"><div class="jt-pre-hp-fill ${tone}" style="width:${start.pct}%"></div></div>
+// ── mockup-jt-restyle-v0.1 tab2: JT/天頂戦 共通フォーカスカード部品 ──────────
+// 呼び出し側の祖先(.jt-wrap)で --jtc-color/--jtc-color-rgb が設定済みであること
+// (JT=--ev-summer/天頂戦=--gold)。_jtFocusCard(JT)・_tcFocusCard(天頂戦)の双方から利用する。
+
+/** 自団体(自)ピル。JT/天頂戦 共通。--jtc-color未設定時は旧tc-own-pillと同じgold表示 */
+function _jtcOwnPill(isOwn) {
+  return isOwn ? ' <span class="jtc-own-pill">自</span>' : '';
+}
+
+/** フォーカスカードの開始HPブロック(片側)。左右常に大会色で統一(HP残量による色替えはしない・原則9) */
+function _jtcFcHpBlock(side, final, max, pct) {
+  const top = side === 'right'
+    ? `<em>${pct}%</em><strong>${final} / ${max}</strong><span>HP</span>`
+    : `<span>HP</span><strong>${final} / ${max}</strong><em>${pct}%</em>`;
+  return `<div class="jtc-fc-hp ${side}">
+    <div class="jtc-fc-hp-top">${top}</div>
+    <div class="jtc-fc-hp-track"><div class="jtc-fc-hp-fill" style="width:${pct}%"></div></div>
   </div>`;
+}
+
+/** フォーカスカード本体(アッパー画像対面・左右とも非反転+開始HPバー+観戦/スキップ)。
+ * extraHtml があれば names 行の直後(JTのみ: セリフ吹き出し)に挿入する。 */
+function _jtcFcCore({ label, f1, f2, own1, own2, upperL, upperR, hpLeftBlock, hpRightBlock, hpMidLabel, extraHtml, onWatch, onSkip }) {
+  let h = `<div class="jtc-fc jt-su">`;
+  h += `<div class="jtc-fc-lb">${escHtml(label)}</div>`;
+  h += `<div class="jtc-fc-names">`;
+  h += `<div class="jtc-fc-nm"><div class="n">${escHtml(f1.name)}</div><div class="o">${escHtml(f1._orgName || '')}${own1} OVR ${f1.ovr}</div></div>`;
+  h += `<div class="jtc-fc-vl">VS</div>`;
+  h += `<div class="jtc-fc-nm"><div class="n">${escHtml(f2.name)}</div><div class="o">${escHtml(f2._orgName || '')}${own2} OVR ${f2.ovr}</div></div>`;
+  h += `</div>`;
+  if (extraHtml) h += extraHtml;
+  // アッパー画像対面(反転禁止: 左右とも素の向き)
+  h += `<div class="jtc-fc-uppers">`;
+  h += `<div class="jtc-fc-upper">${upperL ? `<img src="${upperL}" alt="" onerror="this.style.opacity=0">` : ''}</div>`;
+  h += `<div class="vs-mark">VS</div>`;
+  h += `<div class="jtc-fc-upper">${upperR ? `<img src="${upperR}" alt="" onerror="this.style.opacity=0">` : ''}</div>`;
+  h += `</div>`;
+  h += `<div class="jtc-fc-hp-row">${hpLeftBlock}<div class="jtc-fc-hp-mid">${hpMidLabel}</div>${hpRightBlock}</div>`;
+  h += `<div class="jtc-fc-bt">`;
+  h += `<button class="btn btn-gold" style="padding:8px 22px;font-size:13px" onclick="${onWatch}">観戦する</button>`;
+  h += `<button class="btn" style="padding:8px 22px;font-size:13px" onclick="${onSkip}">スキップ</button>`;
+  h += `</div>`;
+  h += `</div>`;
+  return h;
 }
 
 function _jtRecoveredHpTarget(match, side, isFinal) {
@@ -14653,47 +14694,37 @@ function _jtFocusCard(match, roundName, ri, mi) {
   const f1 = match.left, f2 = match.right;
   const isFinal = roundName === 'final';
   const roundLabel = isFinal ? '🏆 決勝' : roundName === 'semiFinal' ? '準決勝' : '準々決勝';
-  const standL = getStandUrl(f1.id, f1.ovr);
-  const standR = getStandUrl(f2.id, f2.ovr);
+  const label = isFinal ? roundLabel : `${roundLabel} — 第${mi + 1}試合`;
+  const upperL = typeof getUpperUrl === 'function' ? getUpperUrl(f1.id) : '';
+  const upperR = typeof getUpperUrl === 'function' ? getUpperUrl(f2.id) : '';
 
-  // セリフ
+  // セリフ(JTのみ・天頂戦にはない)
   const timing = isFinal ? 'preFinal' : 'preMatch';
   const lineL = getJuniorTournamentLine(timing, f1.personality || 'normal', f1.archetype || '_default');
   const lineR = getJuniorTournamentLine(timing, f2.personality || 'normal', f2.archetype || '_default');
-
-  let h = `<div class="jt-mf jt-su">`;
-  h += `<div class="jt-mf-lb">${roundLabel} — 第${mi + 1}試合</div>`;
-  // names + condition
-  h += `<div class="jt-mf-names">`;
-  h += `<div class="jt-mf-nm"><div class="n">${f1.name}</div><div class="o">${f1._orgName || ''} OVR${f1.ovr}</div></div>`;
-  h += `<div class="jt-mf-vl">VS</div>`;
-  h += `<div class="jt-mf-nm"><div class="n">${f2.name}</div><div class="o">${f2._orgName || ''} OVR${f2.ovr}</div></div>`;
-  h += `</div>`;
-  // pre-match speech
+  let bubbleHtml = '';
   if (lineL || lineR) {
-    h += `<div class="jt-bub-pair">`;
-    if (lineL) h += `<div class="jt-bub"><div class="sp bl">${f1.name}</div>「${lineL}」</div>`;
-    if (lineR) h += `<div class="jt-bub"><div class="sp bl">${f2.name}</div>「${lineR}」</div>`;
-    h += `</div>`;
+    bubbleHtml = `<div class="jt-bub-pair">`;
+    if (lineL) bubbleHtml += `<div class="jt-bub"><div class="sp bl">${escHtml(f1.name)}</div>「${escHtml(lineL)}」</div>`;
+    if (lineR) bubbleHtml += `<div class="jt-bub"><div class="sp bl">${escHtml(f2.name)}</div>「${escHtml(lineR)}」</div>`;
+    bubbleHtml += `</div>`;
   }
-  // stand images face-off
-  h += `<div class="jt-mf-stands">`;
-  h += `<div class="st left"><img src="${standL}" alt="${f1.name}" onerror="this.style.opacity=0"></div>`;
-  h += `<div class="vs-mark">VS</div>`;
-  h += `<div class="st right"><img src="${standR}" alt="${f2.name}" onerror="this.style.opacity=0"></div>`;
-  h += `</div>`;
-  h += `<div class="jt-pre-hp-row">`;
-  h += _jtPreHpBlock('left', f1, match.hpLeft);
-  h += `<div class="jt-pre-hp-mid">開始HP</div>`;
-  h += _jtPreHpBlock('right', f2, match.hpRight);
-  h += `</div>`;
-  // buttons
-  h += `<div class="jt-bt">`;
-  h += `<button class="btn btn-gold" style="padding:8px 20px;font-size:13px" onclick="App.jtWatchMatch(${ri},${mi})">観戦する</button>`;
-  h += `<button class="btn" style="padding:8px 20px;font-size:13px" onclick="App.jtSkipMatch(${ri},${mi})">スキップ</button>`;
-  h += `</div>`;
-  h += `</div>`;
-  return h;
+
+  const startL = _jtStartHp(f1, match.hpLeft);
+  const startR = _jtStartHp(f2, match.hpRight);
+
+  return _jtcFcCore({
+    label, f1, f2,
+    own1: _jtcOwnPill(f1._orgId === 'player'),
+    own2: _jtcOwnPill(f2._orgId === 'player'),
+    upperL, upperR,
+    extraHtml: bubbleHtml,
+    hpLeftBlock: _jtcFcHpBlock('left', startL.final, startL.max, startL.pct),
+    hpRightBlock: _jtcFcHpBlock('right', startR.final, startR.max, startR.pct),
+    hpMidLabel: '開始HP',
+    onWatch: `App.jtWatchMatch(${ri},${mi})`,
+    onSkip: `App.jtSkipMatch(${ri},${mi})`,
+  });
 }
 
 /** JT 用: trimmed fighter (ovr のみ持つ) を _pbFighterBlock が使えるように拡張 */
@@ -14743,7 +14774,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   const matchNoLabel = isFinal ? '決勝' : `${escHtml(roundLabel)} 第${mi + 1}試合`;
 
   // クライムライン画面と地続きに見せるため、同じヘッダー(エンブレム+金二重罫)を先頭に置く
-  let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--ev-summer)">${_jtHeader()}</div>`;
+  let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--ev-summer);--jtc-color-rgb:var(--ev-summer-rgb)">${_jtHeader()}</div>`;
   html += `<div class="pb-container">`;
 
   html += `<div class="pb-banner">
@@ -15451,7 +15482,7 @@ function _tcEditionNo() {
 }
 
 function _tcOwnPill(orgId) {
-  return orgId === 'player' ? ' <span class="tc-own-pill">自</span>' : '';
+  return _jtcOwnPill(orgId === 'player');
 }
 
 function _tcRoundLabel(name) {
@@ -15566,7 +15597,8 @@ function _tcPeakBlock(tc, riseClass) {
     <div class="jtc-up jtc-up-peak w">${img}</div>
     <div class="jtc-peak-name">${escHtml(champion.name)}</div>
     <div class="jtc-peak-title">第${_tcEditionNo()}回 天頂戦 覇者</div>
-    <div class="jtc-peak-tap">タップして表彰へ ▶</div>
+    <div class="jtc-peak-cta">表彰へ ▶</div>
+    <div class="jtc-peak-auto-note">1.6秒で自動的に進みます(タップで即スキップ)</div>
   </div>`;
 }
 
@@ -15578,7 +15610,7 @@ function _tcPeakEmpty() {
   </div>`;
 }
 
-/** フォーカスカード: アッパー画像対面(左右とも非反転)+開始HP(持ち越し) */
+/** フォーカスカード: アッパー画像対面(左右とも非反転)+開始HP(持ち越し)。JT共通部品(_jtcFcCore)を利用 */
 function _tcFocusCard(match, roundName, ri, mi) {
   const f1 = match.left, f2 = match.right;
   const isFinal = roundName === 'final';
@@ -15589,36 +15621,18 @@ function _tcFocusCard(match, roundName, ri, mi) {
   const pctR = Math.max(1, Math.min(100, Math.round(match.carryRightPct != null ? match.carryRightPct : 100)));
   const carryNote = ri > 0 ? `<br>(${ri}試合分持ち越し)` : '';
 
-  let h = `<div class="tc-fc jt-su">`;
-  h += `<div class="tc-fc-lb">${label}</div>`;
-  h += `<div class="tc-fc-names">
-    <div class="tc-fc-nm"><div class="n">${escHtml(f1.name)}</div><div class="o">${escHtml(f1._orgName || '')}${_tcOwnPill(f1.orgId)} OVR ${f1.ovr}</div></div>
-    <div class="tc-fc-vl">VS</div>
-    <div class="tc-fc-nm"><div class="n">${escHtml(f2.name)}</div><div class="o">${escHtml(f2._orgName || '')}${_tcOwnPill(f2.orgId)} OVR ${f2.ovr}</div></div>
-  </div>`;
-  // アッパー画像対面(反転禁止: 左右とも素の向き)
-  h += `<div class="tc-fc-uppers">
-    <div class="tc-fc-upper">${upperL ? `<img src="${upperL}" alt="" onerror="this.style.opacity=0">` : ''}</div>
-    <div class="vs-mark">VS</div>
-    <div class="tc-fc-upper">${upperR ? `<img src="${upperR}" alt="" onerror="this.style.opacity=0">` : ''}</div>
-  </div>`;
-  h += `<div class="tc-hp-row">
-    <div class="tc-hp left">
-      <div class="tc-hp-top"><span>HP</span><strong>${pctL} / 100</strong><em>${pctL}%</em></div>
-      <div class="tc-hp-track"><div class="tc-hp-fill" style="width:${pctL}%"></div></div>
-    </div>
-    <div class="tc-hp-mid">開始HP${carryNote}</div>
-    <div class="tc-hp right">
-      <div class="tc-hp-top"><em>${pctR}%</em><strong>${pctR} / 100</strong><span>HP</span></div>
-      <div class="tc-hp-track"><div class="tc-hp-fill" style="width:${pctR}%"></div></div>
-    </div>
-  </div>`;
-  h += `<div class="tc-fc-bt">
-    <button class="btn btn-gold" style="padding:8px 22px;font-size:13px" onclick="App.tcWatchMatch(${ri},${mi})">観戦する</button>
-    <button class="btn" style="padding:8px 22px;font-size:13px" onclick="App.tcSkipMatch(${ri},${mi})">スキップ</button>
-  </div>`;
-  h += `</div>`;
-  return h;
+  return _jtcFcCore({
+    label, f1, f2,
+    own1: _tcOwnPill(f1.orgId),
+    own2: _tcOwnPill(f2.orgId),
+    upperL, upperR,
+    extraHtml: '',
+    hpLeftBlock: _jtcFcHpBlock('left', pctL, 100, pctL),
+    hpRightBlock: _jtcFcHpBlock('right', pctR, 100, pctR),
+    hpMidLabel: `開始HP${carryNote}`,
+    onWatch: `App.tcWatchMatch(${ri},${mi})`,
+    onSkip: `App.tcSkipMatch(${ri},${mi})`,
+  });
 }
 
 /** クライムライン本体(頂上〜決勝〜…〜1回戦)。currentRound/currentMatch まで構築 */
@@ -15675,7 +15689,7 @@ function renderTenchosenBracket() {
   box.style.border = 'none';
 
   let html = `<div class="jt-phase">天頂戦</div>`;
-  html += `<div class="jt-wrap" style="--jtc-color:var(--gold)">${_tcHeader()}`;
+  html += `<div class="jt-wrap" style="--jtc-color:var(--gold);--jtc-color-rgb:var(--gold-rgb)">${_tcHeader()}`;
   html += `<div class="tc-scroll"><div class="jtc-climb tc-climb">${_tcClimbHtml(tc)}</div></div>`;
 
   const curRound = tc.rounds[tc.currentRound];
@@ -15741,7 +15755,7 @@ function renderTenchosenMatchResult(ri, mi) {
   const metaRight = `${match.right._orgName || ''}`.trim() || '—';
   const matchNoLabel = isFinal ? '決勝' : `${_tcRoundLabel(round.name)} 第${mi + 1}試合`;
 
-  let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--gold)">${_tcHeader()}</div>`;
+  let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--gold);--jtc-color-rgb:var(--gold-rgb)">${_tcHeader()}</div>`;
   html += `<div class="pb-container">`;
 
   html += `<div class="pb-banner">
@@ -15950,7 +15964,7 @@ function renderTenchosenTVResult() {
   const champion = finalMatch.winnerId === finalMatch.left.id ? finalMatch.left : finalMatch.right;
   const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(champion.id) : '';
 
-  let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--gold)">${_tcHeader()}</div>`;
+  let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--gold);--jtc-color-rgb:var(--gold-rgb)">${_tcHeader()}</div>`;
   html += `<div class="pb-container">`;
   html += `<div class="pb-banner">
     <div class="pb-live is-ppvtv">📺 テレビ観戦</div>
