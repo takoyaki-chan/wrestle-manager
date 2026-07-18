@@ -10908,7 +10908,9 @@ if (typeof window !== 'undefined') {
 // 3シングル連戦の結果を「果たし状成就/不発/痛み分け」のクリームOfficeトーンで提示。
 // ─────────────────────────────────────────────────────────────────────────────
 function showChallengeRequestResultModal(card, result, state, onClose) {
-  if (_isPopupActive()) {
+  // The match-preview/result shell stays active while the post-show modal chain runs.
+  // Waiting on that shell would deadlock: renderShowResult is only called by onClose.
+  if (_isPopupActive({ ignoreShowResultOverlay: true })) {
     _popupQueue.push(() => showChallengeRequestResultModal(card, result, state, onClose));
     return;
   }
