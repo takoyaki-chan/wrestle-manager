@@ -14521,7 +14521,7 @@ const Engine = {
         s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
               transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
               battlePoints: { player: 0, org_s: 0, org_a: 0, org_b: 0 }, negotiatedThisSeason: [], pendingNegotiation: null, warVictories: [],
-              ppvPhase: null, ppvEntries: null, ppvName: '', _ppvAIEntries: undefined, ppvTournament: null,
+              ppvPhase: null, ppvEntries: null, ppvName: '', _ppvAIEntries: undefined, ppvTournament: null, tenchosenPreEvent: null,
               domeShowsThisSeason: 0, // orgPop リバランス v1.1 §5: シーズン開幕時にリセット
               seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
               seasonHistory, fundsHistory: [s.funds],
@@ -14829,6 +14829,13 @@ const Engine = {
         }).state;
         events.push('📋 ジュニアトーナメント: U-20選手不足のため今年は不開催');
       }
+    }
+
+    // 天頂戦: Week42 開催前ミニイベント（数値効果なし・純演出）。weekPhaseは奪わない。
+    if (s.week === Engine.ppvTournament.PRE_EVENT_WEEK && Engine.ppvTournament.isTournamentSeason(s.season) && s.ppvUnlocked) {
+      const preRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0x7E42));
+      s = { ...s, tenchosenPreEvent: { ...Engine.ppvTournament.buildPreEvent(s, preRng), seen: false } };
+      events.push('🏛️ 道場の空気が変わってきた——4年に一度の大舞台まで、あと6週');
     }
 
     // 天頂戦: Week43 エントリー受付。通常PPVと異なり weekPhase は奪わない。
@@ -15252,6 +15259,7 @@ const Engine = {
       ppvPhase: null,      // null | 'entry' | 'locked' | 'show' | 'tv'
       ppvName: '',
       ppvTournament: null, // 4年に一度の天頂戦（既存セーブでは undefined も許容）
+      tenchosenPreEvent: null, // 天頂戦 開催前ミニイベント（Week42・数値効果なし。既存セーブでは undefined も許容）
       // 財務タブリデザイン: 週次決算履歴（永続蓄積・クリアしない）
       financeHistory: [],
       // デバッグ・検証システム
@@ -23819,6 +23827,52 @@ Engine.ppvTournament = {
       ppvEntries: null,
     };
     return { state: s, events };
+  },
+
+  // ── 開催前ミニイベント（Week42・数値効果なし・純演出） ──────────────
+  PRE_EVENT_WEEK: 42,
+
+  /** コーチ（社長への語りかけ）+ 自団体OVR上位3名のコメントを選ぶ純関数。数値には一切触れない。 */
+  buildPreEvent(state, rng) {
+    const usedTexts = new Set();
+
+    const hiredCoaches = Engine.coach.getHiredCoaches(state);
+    let coach = null;
+    if (hiredCoaches.length) {
+      const picked = Engine.rng.pick(rng, hiredCoaches);
+      const pool = TENCHOSEN_PREEVENT_LINES.coach[picked.coachingType] || [];
+      if (pool.length) {
+        coach = { id: picked.id, name: picked.name, coachingType: picked.coachingType, line: Engine.rng.pick(rng, pool) };
+      }
+    }
+
+    const priorSeason = state.season - 4;
+    const topFighters = this._eligible(state.roster)
+      .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a) || String(a.id).localeCompare(String(b.id)))
+      .slice(0, 3);
+    const fighters = topFighters.map(f => {
+      const archetype = f.archetype || 'normal';
+      const pool = TENCHOSEN_PREEVENT_LINES.fighter[archetype] || TENCHOSEN_PREEVENT_LINES.fighter.normal;
+      const isVeteran = (f.age || 0) > 30;
+      const hasPriorEntry = ((f.careerRecord && f.careerRecord.history) || [])
+        .some(ev => ev.type === 'ppvTournament' && ev.season === priorSeason);
+      const candidates = pool.filter(line => (!line.veteran || isVeteran) && (!line.notPriorEntrant || !hasPriorEntry));
+      const veteranCandidates = candidates.filter(line => line.veteran);
+      const preferred = veteranCandidates.length ? veteranCandidates : candidates;
+      const unused = preferred.filter(line => !usedTexts.has(line.text));
+      const finalPool = unused.length ? unused : (preferred.length ? preferred : pool);
+      const chosen = Engine.rng.pick(rng, finalPool);
+      usedTexts.add(chosen.text);
+      return { id: f.id, name: f.name, archetype, line: chosen.text };
+    });
+
+    return { season: state.season, coach, fighters };
+  },
+
+  /** UI側で「見た」ことを記録する小API。 */
+  markPreEventSeen(state) {
+    if (!state.tenchosenPreEvent) return state;
+    return { ...state, tenchosenPreEvent: { ...state.tenchosenPreEvent, seen: true } };
   },
 };
 
