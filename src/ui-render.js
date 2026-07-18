@@ -1887,7 +1887,11 @@ function _renderRosterDetailPanel(c, hired) {
   // === Tab 3: 育成 ===
   let tab3 = '<div style="display:flex;flex-direction:column;gap:8px">';
   // Coach assign — 常にドロップダウン表示（負傷中はdisabled）
-  if (hired.length > 0) {
+  // 招聘中(_inviteBuff)は §3.5「二重指導なし」のためドロップダウンを出さない
+  // (ここにガードが無いと招聘中の選手に雇用コーチを重ねて割り当てられてしまう)
+  if (c._inviteBuff) {
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val" style="color:#7a6530;font-style:italic">招聘中: ${coach ? coach.name : '外部コーチ'}（残${c._inviteBuff.weeksLeft}週・終了後は元の担当に自動復帰）</span></div>`;
+  } else if (hired.length > 0) {
     let opts = `<option value="0"${!coach?' selected':''}>--- なし ---</option>`;
     hired.forEach(h => {
       const aCount = getCoachAssignees(h.id).length;
@@ -2113,8 +2117,11 @@ function renderRoster() {
     let coachInlineHtml = '';
     if (c._inviteBuff) {
       // care-rework v0.1 §3.5: 招聘中は雇用コーチのアサインから外れているため、
-      // 通常のコーチ選択プルダウンではなく招聘中である旨だけを表示する(操作不可)
-      coachInlineHtml = `<span style="font-size:10px;color:#7a6530;font-style:italic">コーチ: 招聘中</span>`;
+      // 通常のコーチ選択プルダウンではなく招聘状況を表示する(操作不可)。
+      // 「コーチ: 招聘中」だけだと設定欄が消えたように見えるため、誰が・あと何週かを明示する
+      const invCoach = getCharCoach(c.id);
+      const invName = invCoach ? invCoach.name.split(' ')[0] : '外部コーチ';
+      coachInlineHtml = `<span style="font-size:10px;color:#7a6530;font-style:italic">招聘中: ${invName}（残${c._inviteBuff.weeksLeft}週）</span>`;
     } else if (!c.isRental && hired.length > 0) {
       const sm = coachOfChar ? getCoachStyleMatch(coachOfChar, c) : null;
       const smCls = sm ? sm.cls : '';
@@ -6194,6 +6201,13 @@ function toggleIntensive(charId) {
 }
 
 function changeCoachAssign(charId, newCoachId) {
+  // §3.5 二重指導なし: 招聘中の選手には雇用コーチを割り当てない(UI側ガードの保険)
+  const targetChar = (G.roster || []).find(f => f.id === charId);
+  if (targetChar && targetChar._inviteBuff) {
+    Audio.play('error');
+    alert('外部コーチの招聘期間中は担当コーチを変更できません（終了後に自動で元へ戻ります）');
+    return;
+  }
   // First unassign from any current coach
   const unassigned = Engine.coach.unassignFromCoach(G, charId);
   if (newCoachId > 0) {

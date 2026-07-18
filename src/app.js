@@ -4539,6 +4539,10 @@ const App = {
   hireCoach(coachId) {
     const coach = ALL_COACHES.find(c => c.id === coachId);
     if (!coach) return;
+    // 外部招聘(_inviteBuff)で指導中のコーチは雇用不可(専属と雇用の同時登録・二重支払いの防止)
+    if ((G.roster || []).some(f => f._inviteBuff && f._inviteBuff.coachId === coachId)) {
+      Audio.play('error'); alert(`${coach.name}は現在、外部コーチとして招聘期間中のため雇用できません`); return;
+    }
     const maxCoaches = Engine.coach.getMaxCoaches(G);
     if (G.coaches.length >= maxCoaches) { Audio.play('error'); alert(`コーチは現在最大${maxCoaches}名まで（枠拡張で増加）`); return; }
     // A級雇用条件: 4枠目開放済み
