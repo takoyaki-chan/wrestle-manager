@@ -13215,18 +13215,24 @@ function _relmapGetFilteredFactions() {
   if (_relmapOrgFilter === 'player') addRoster(G.roster);
   else if (_relmapOrgFilter === 'fa') addRoster(G.freeAgents);
   else {
-    const org = (G.rivalOrgs || {})[_relmapOrgFilter];
+    // 修正: state のAIロスターは G.aiOrgs(G.rivalOrgs は存在しないフィールドで常に空だった)
+    const org = (G.aiOrgs || {})[_relmapOrgFilter];
     if (org) addRoster(org.roster);
   }
-  // 孤児派閥フィルタ: リーダーが現存ロスター（player+全rivalOrgs+FA）に存在しない派閥は隠す。
-  // 派閥リスト UI（_dfcRenderCard）は同条件で非表示にしているため、相関図と整合させる。
+  // 孤児派閥フィルタ: 派閥の現存メンバーが誰もいない派閥だけを隠す。
+  // 旧実装は「リーダーが現存ロスターにいること」を必須にしていたが、
+  // (a) AIロスターを G.rivalOrgs(存在しない)から引いていたため常に空で、AI団体所属リーダーの派閥が全滅する
+  // (b) リーダー継承の遷移中など leaderId が一時的に stale なだけで派閥円ごと消える
+  // の2点で「派閥円が表示されない」実バグになっていた。メンバー生存で救済する。
   const liveIds = new Set();
   (G.roster || []).forEach(c => { if (c && c.id != null) liveIds.add(c.id); });
   (G.freeAgents || []).forEach(c => { if (c && c.id != null) liveIds.add(c.id); });
-  Object.values(G.rivalOrgs || {}).forEach(org => {
+  Object.values(G.aiOrgs || {}).forEach(org => {
     (org && org.roster || []).forEach(c => { if (c && c.id != null) liveIds.add(c.id); });
   });
-  return factions.filter(f => liveIds.has(f.leaderId) && f.memberIds.some(id => orgIds.has(id)));
+  return factions.filter(f =>
+    f.memberIds.some(id => orgIds.has(id)) &&
+    (liveIds.has(f.leaderId) || f.memberIds.some(id => liveIds.has(id))));
 }
 
 // Phase 3c: 派閥レイヤー描画（団体フィルタ ON 時のみ、フィルタ団体内の派閥を対象）
@@ -13245,7 +13251,7 @@ function _relmapDrawFactionLayer() {
   const ovrMap = new Map();
   (G.roster || []).forEach(c => { if (c && c.id != null) ovrMap.set(c.id, Engine.util.ov(c)); });
   (G.freeAgents || []).forEach(c => { if (c && c.id != null) ovrMap.set(c.id, Engine.util.ov(c)); });
-  Object.values(G.rivalOrgs || {}).forEach(org => {
+  Object.values(G.aiOrgs || {}).forEach(org => {
     (org.roster || []).forEach(c => { if (c && c.id != null) ovrMap.set(c.id, Engine.util.ov(c)); });
   });
 
