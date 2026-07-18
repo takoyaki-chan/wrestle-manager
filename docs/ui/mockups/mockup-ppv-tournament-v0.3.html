@@ -71,7 +71,11 @@
   /* ========== クライムライン共通ヘッダー ========== */
   .cl-header { text-align: center; padding: 22px 12px 6px; }
   .cl-emblem { width: 76px; height: 76px; margin: 0 auto 4px; position: relative; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.6)); }
-  .cl-emblem svg { width: 100%; height: 100%; display: block; }
+  .cl-emblem img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .cl-header-kanmuri {
+    font-size: 12px; font-weight: 700; letter-spacing: 4px;
+    color: var(--stage-text-sub); margin-bottom: 2px;
+  }
   .cl-emblem .tmp-tag {
     position: absolute; right: -18px; top: -2px;
     font-family: var(--font-label); font-size: 8px; letter-spacing: 1px;
@@ -462,15 +466,7 @@
 
 <nav class="mockup-nav">
   <h1>PPV TOURNAMENT</h1>
-  <span class="status">Mockup v0.3</span>
-  <label class="name-picker">大会名(和名)
-    <select id="namePicker" onchange="applyName()">
-      <option value="天頂戦">天頂戦(てんちょうせん)</option>
-      <option value="王冠祭">王冠祭(おうかんさい)</option>
-      <option value="四年の頂">四年の頂(よねんのいただき)</option>
-      <option value="覇天祭">覇天祭(はてんさい)</option>
-    </select>
-  </label>
+  <span class="status">Mockup v0.3 — 大会名「天頂戦」確定</span>
   <div class="mockup-tabs">
     <button class="active" onclick="showVariant('a', this)">クライムライン(16名)</button>
     <button onclick="showVariant('r', this)">大会後ドラマ(仮)</button>
@@ -486,39 +482,10 @@
   <header class="cl-header">
     <div class="cl-emblem">
       <span class="tmp-tag">仮</span>
-      <svg viewBox="0 0 100 100" aria-hidden="true">
-        <defs>
-          <linearGradient id="embGold" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#f0d078"/>
-            <stop offset="0.55" stop-color="#d4a843"/>
-            <stop offset="1" stop-color="#8a7235"/>
-          </linearGradient>
-        </defs>
-        <circle cx="50" cy="50" r="46" fill="rgba(212,168,67,0.05)" stroke="url(#embGold)" stroke-width="2.5"/>
-        <circle cx="50" cy="50" r="39.5" fill="none" stroke="rgba(212,168,67,0.35)" stroke-width="1"/>
-        <g stroke="url(#embGold)" stroke-width="1.6" fill="none" stroke-linecap="round">
-          <path d="M24 66 Q19 52 26 38"/>
-          <path d="M76 66 Q81 52 74 38"/>
-        </g>
-        <g fill="url(#embGold)">
-          <ellipse cx="23" cy="60" rx="4" ry="1.8" transform="rotate(-55 23 60)"/>
-          <ellipse cx="21.5" cy="52" rx="4" ry="1.8" transform="rotate(-70 21.5 52)"/>
-          <ellipse cx="22.5" cy="44" rx="4" ry="1.8" transform="rotate(-85 22.5 44)"/>
-          <ellipse cx="25.5" cy="37" rx="4" ry="1.8" transform="rotate(-100 25.5 37)"/>
-          <ellipse cx="77" cy="60" rx="4" ry="1.8" transform="rotate(55 77 60)"/>
-          <ellipse cx="78.5" cy="52" rx="4" ry="1.8" transform="rotate(70 78.5 52)"/>
-          <ellipse cx="77.5" cy="44" rx="4" ry="1.8" transform="rotate(85 77.5 44)"/>
-          <ellipse cx="74.5" cy="37" rx="4" ry="1.8" transform="rotate(100 74.5 37)"/>
-        </g>
-        <path d="M33 57 L36 39 L44 49 L50 34 L56 49 L64 39 L67 57 Z" fill="url(#embGold)"/>
-        <rect x="33" y="58.5" width="34" height="4.5" rx="1.5" fill="url(#embGold)"/>
-        <circle cx="36" cy="37" r="2" fill="#f0d078"/>
-        <circle cx="50" cy="31.5" r="2.4" fill="#f0d078"/>
-        <circle cx="64" cy="37" r="2" fill="#f0d078"/>
-        <text x="50" y="76" text-anchor="middle" font-family="'Bebas Neue',sans-serif" font-size="12" letter-spacing="1.5" fill="url(#embGold)">IV</text>
-      </svg>
+      <img src="../../../image/emblem-tenchosen.png" alt="天頂戦" onerror="this.style.display='none'">
     </div>
-    <div class="cl-header-title evname">天頂戦</div>
+    <div class="cl-header-kanmuri">全国女子プロレス最強王者決定戦</div>
+    <div class="cl-header-title">天頂戦</div>
     <div class="cl-header-sub">Quadrennial Tournament — 4年に一度の祭典</div>
     <div class="cl-header-ed">Season 8 / 第2回大会 / 16名トーナメント / 全試合ビッグマッチルール</div>
     <div class="cl-double-rule"></div>
@@ -916,40 +883,11 @@
   <div class="wn-wrap">
     <div class="wn-rays"></div>
     <div class="wn-emblem">
-      <svg viewBox="0 0 100 100" aria-hidden="true">
-        <defs>
-          <linearGradient id="embGold2" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#f0d078"/>
-            <stop offset="0.55" stop-color="#d4a843"/>
-            <stop offset="1" stop-color="#8a7235"/>
-          </linearGradient>
-        </defs>
-        <circle cx="50" cy="50" r="46" fill="rgba(212,168,67,0.05)" stroke="url(#embGold2)" stroke-width="2.5"/>
-        <circle cx="50" cy="50" r="39.5" fill="none" stroke="rgba(212,168,67,0.35)" stroke-width="1"/>
-        <g stroke="url(#embGold2)" stroke-width="1.6" fill="none" stroke-linecap="round">
-          <path d="M24 66 Q19 52 26 38"/>
-          <path d="M76 66 Q81 52 74 38"/>
-        </g>
-        <g fill="url(#embGold2)">
-          <ellipse cx="23" cy="60" rx="4" ry="1.8" transform="rotate(-55 23 60)"/>
-          <ellipse cx="21.5" cy="52" rx="4" ry="1.8" transform="rotate(-70 21.5 52)"/>
-          <ellipse cx="22.5" cy="44" rx="4" ry="1.8" transform="rotate(-85 22.5 44)"/>
-          <ellipse cx="25.5" cy="37" rx="4" ry="1.8" transform="rotate(-100 25.5 37)"/>
-          <ellipse cx="77" cy="60" rx="4" ry="1.8" transform="rotate(55 77 60)"/>
-          <ellipse cx="78.5" cy="52" rx="4" ry="1.8" transform="rotate(70 78.5 52)"/>
-          <ellipse cx="77.5" cy="44" rx="4" ry="1.8" transform="rotate(85 77.5 44)"/>
-          <ellipse cx="74.5" cy="37" rx="4" ry="1.8" transform="rotate(100 74.5 37)"/>
-        </g>
-        <path d="M33 57 L36 39 L44 49 L50 34 L56 49 L64 39 L67 57 Z" fill="url(#embGold2)"/>
-        <rect x="33" y="58.5" width="34" height="4.5" rx="1.5" fill="url(#embGold2)"/>
-        <circle cx="36" cy="37" r="2" fill="#f0d078"/>
-        <circle cx="50" cy="31.5" r="2.4" fill="#f0d078"/>
-        <circle cx="64" cy="37" r="2" fill="#f0d078"/>
-        <text x="50" y="76" text-anchor="middle" font-family="'Bebas Neue',sans-serif" font-size="12" letter-spacing="1.5" fill="url(#embGold2)">IV</text>
-      </svg>
+      <img src="../../../image/emblem-tenchosen.png" alt="天頂戦" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">
     </div>
     <div class="wn-tour">Season 8 — Quadrennial Tournament</div>
-    <div class="wn-evname evname">天頂戦</div>
+    <div class="wn-kanmuri" style="font-size:11px;font-weight:700;letter-spacing:3px;color:var(--stage-text-sub);position:relative;margin-top:2px">全国女子プロレス最強王者決定戦</div>
+    <div class="wn-evname">天頂戦</div>
     <div class="wn-up"><img src="../../../image/upper/upper_fukamachi_m.webp" alt="" onerror="this.style.display='none'"></div>
     <div class="wn-champ-lb">Champion</div>
     <div class="wn-name">深町真琴</div>
@@ -979,10 +917,6 @@
     document.querySelectorAll('.mockup-tabs button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     window.scrollTo(0, 0);
-  }
-  function applyName() {
-    const name = document.getElementById('namePicker').value;
-    document.querySelectorAll('.evname, .wn-title-ev').forEach(el => { el.textContent = name; });
   }
 </script>
 </body>
