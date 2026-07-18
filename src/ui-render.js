@@ -1032,6 +1032,7 @@ function renderWeekScreen() {
     }
 
     html += renderSpringTagLeagueWeekBanner();
+    html += renderTenchosenWeekBanner();
 
     const heat = getHeatLevel();
     const injuredCount = G.roster.filter(c => c.injury).length;
@@ -2422,6 +2423,34 @@ function renderSpringTagLeagueWeekBanner() {
         <div class="stl-week-banner-sub">代表タッグ1組を選出してください。編成しない場合はおまかせ編成(サジェスト1位)で開催されます。</div>
       </div>
       <button class="btn btn-gold" onclick="App.stlOpenEntryModal()">編成する</button>
+    </div>`;
+  }
+  return '';
+}
+
+// ── C-6 天頂戦: Week43〜 エントリー導線バナー ──────────────────────
+// spec: docs/ui/03-screens/tenchosen.md。weekPhaseは奪わず、manage画面のバナーから
+// モーダルを開く(STLバナーの様式踏襲)。未確定でも週送りでエンジンが自己修復する。
+function renderTenchosenWeekBanner() {
+  const t = G.ppvTournament;
+  if (!t || t.season !== G.season) return '';
+  if (t.phase === 'entry') {
+    return `<div class="stl-week-banner is-urgent tc-week-banner">
+      <div class="stl-week-banner-icon">👑</div>
+      <div class="stl-week-banner-body">
+        <div class="stl-week-banner-title">天頂戦 エントリー受付中 — 4年に一度の全国女子プロレス最強王者決定戦</div>
+        <div class="stl-week-banner-sub">特別招待2名が発表されました。自団体の出場選手を選出してください。未選出のまま大会週(第${Engine.ppvTournament.SHOW_WEEK}週)を迎えた場合はおまかせ編成で出場します。</div>
+      </div>
+      <button class="btn btn-gold" onclick="App.tcOpenEntryModal()">エントリー</button>
+    </div>`;
+  }
+  if (t.phase === 'ready' && G.week < Engine.ppvTournament.SHOW_WEEK) {
+    return `<div class="stl-week-banner is-done tc-week-banner">
+      <div class="stl-week-banner-icon">👑</div>
+      <div class="stl-week-banner-body">
+        <div class="stl-week-banner-title">天頂戦 出場選手 確定済み</div>
+        <div class="stl-week-banner-sub">第${Engine.ppvTournament.SHOW_WEEK}週に16名トーナメントが開催されます。</div>
+      </div>
     </div>`;
   }
   return '';
@@ -8954,7 +8983,7 @@ function _renderDbHallOfFame() {
       <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
       <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>
       <span style="display:inline-block;margin-top:8px;text-align:left;line-height:1.8">
-      <span style="color:var(--text-sub)">【実績】</span> 戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ 春タッグ優勝3 ／ PPV勝利5 ／ 対抗戦勝利1.5<br>
+      <span style="color:var(--text-sub)">【実績】</span> 戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ 春タッグ優勝3 ／ PPV勝利5 ／ 対抗戦勝利1.5 ／ 天頂戦 優勝8・準優勝5・ベスト4 3<br>
       <span style="color:var(--text-sub)">【表彰】</span> MVP2 ／ 新人王1.5 ／ ベストマッチ1 ／ メディア功労賞1.5
       </span></div>
     </div>`;

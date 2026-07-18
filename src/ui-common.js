@@ -15432,3 +15432,627 @@ function _stlEntryModalHtml() {
 
   return html;
 }
+
+// ══════════════════════════════════════════════════════════
+//  C-6 天頂戦 UI (quadrennial-ppv-tournament-spec-v0.1 / tenchosen.md)
+//  進行の骨格はJTクライムライン(jtc-*)を流用。差分は tc-* クラス。
+//  確定ビジュアル: docs/ui/mockups/mockup-ppv-tournament-v0.3.html
+// ══════════════════════════════════════════════════════════
+
+function _tcFindFighterAnywhere(id) {
+  if (id == null) return null;
+  return (G.roster || []).find(f => f.id === id)
+    || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === id)
+    || null;
+}
+
+function _tcEditionNo() {
+  return Math.max(1, Math.round((G.season || 4) / 4));
+}
+
+function _tcOwnPill(orgId) {
+  return orgId === 'player' ? ' <span class="tc-own-pill">自</span>' : '';
+}
+
+function _tcRoundLabel(name) {
+  return name === 'final' ? '決勝'
+    : name === 'semiFinal' ? '準決勝'
+    : name === 'quarterFinal' ? '準々決勝' : '1回戦';
+}
+
+/** 共通ヘッダー: エンブレム → 冠(小) → 天頂戦(大・金グラデ) → ed行 */
+function _tcHeader() {
+  return `<div class="jtc-header">
+    <img class="jtc-header-emblem" src="../image/emblem-tenchosen.png" alt="" onerror="this.style.display='none'">
+    <div class="tc-header-kanmuri">全国女子プロレス最強王者決定戦</div>
+    <div class="tc-header-title">天頂戦</div>
+    <div class="tc-header-sub">Quadrennial Tournament — 4年に一度の祭典</div>
+    <div class="jtc-header-ed">SEASON ${G.season} / 第${_tcEditionNo()}回大会 / 16名トーナメント / 全試合ビッグマッチルール</div>
+  </div><div class="jtc-double-rule"></div><div class="jtc-climb-note">▲ Climb to the top — 勝ち上がるほど上へ / 消耗は次の試合へ持ち越し</div>`;
+}
+
+/** 丸アイコンフィッター(1回戦・準々決勝)。withOrg=準々決勝のみ所属表示 */
+function _tcCircleFx(f, isWin, isLose, withOrg) {
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+  const cls = isWin ? 'w' : isLose ? 'l' : '';
+  const img = upperUrl
+    ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
+    : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
+  const org = withOrg ? `<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span>` : '';
+  return `<div class="tc-fx${isLose ? ' is-lose' : ''}">
+    <div class="tc-cir ${cls}">${img}</div>
+    <div class="tc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}${org}</div>
+  </div>`;
+}
+
+/** 2:3矩形フィッター(準決勝md/決勝lg)。jtc-up流用+セル幅は tc-rc-fx で指定 */
+function _tcRectFx(f, isWin, isLose) {
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+  const cls = isWin ? 'w' : isLose ? 'l' : '';
+  const img = upperUrl
+    ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
+    : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
+  return `<div class="tc-rc-fx${isLose ? ' is-lose' : ''}">
+    <div class="jtc-up ${cls}">${img}</div>
+    <div class="tc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span></div>
+  </div>`;
+}
+
+/** 次戦タグ(赤) */
+function _tcNextTag(cur) {
+  return cur ? '<span class="tc-next-tag">▶ 次戦 — 未決着</span>' : '';
+}
+
+/** 通常段(1回戦・準々決勝=丸 / 準決勝=矩形md)の行 */
+function _tcRowGrid(round, ri, cRd, cMi, isDone, riseClass) {
+  const matches = round.matches;
+  const isR16 = round.name === 'firstRound';
+  const isRect = round.name === 'semiFinal';
+  let cells = '';
+  matches.forEach((m, mi) => {
+    const fin = isDone(ri, mi);
+    const cur = ri === cRd && mi === cMi;
+    const lWin = fin && m.winnerId === m.left.id;
+    const rWin = fin && m.winnerId === m.right.id;
+    const fx = isRect
+      ? _tcRectFx(m.left, lWin, fin && !lWin) + _tcRectFx(m.right, rWin, fin && !rWin)
+      : _tcCircleFx(m.left, lWin, fin && !lWin, !isR16) + _tcCircleFx(m.right, rWin, fin && !rWin, !isR16);
+    const seed = isR16 ? `<span class="tc-seed">${m.left.seed || '?'}·${m.right.seed || '?'}</span>` : '';
+    cells += `<div class="tc-cell${cur ? ' is-current' : ''}">
+      ${seed}${_tcNextTag(cur)}
+      <div class="tc-pair">${fx}</div>
+      ${fin ? _jtcMinfo(m) : ''}
+    </div>`;
+  });
+  const maxW = isR16 ? '' : isRect ? 'max-width:560px;' : 'max-width:760px;';
+  return `<div class="tc-tier-label">${_tcRoundLabel(round.name)}</div>
+  <div class="tc-row${isR16 ? ' tc-r16' : ''}${riseClass}" style="grid-template-columns:repeat(${matches.length},1fr);${maxW}">${cells}</div>`;
+}
+
+/** 決勝段(矩形lg・VS大) */
+function _tcFinalRow(round, ri, cRd, cMi, isDone, riseClass) {
+  const match = round.matches[0];
+  const fin = isDone(ri, 0);
+  const cur = ri === cRd && cMi === 0;
+  const lWin = fin && match.winnerId === match.left.id;
+  const rWin = fin && match.winnerId === match.right.id;
+  return `<div class="tc-tier-label gold">決勝</div>
+  <div class="tc-final-row${cur ? ' is-current' : ''}${riseClass}">
+    ${_tcNextTag(cur)}
+    ${_tcRectFx(match.left, lWin, fin && !lWin)}
+    <div class="tc-vs">VS</div>
+    ${_tcRectFx(match.right, rWin, fin && !rWin)}
+  </div>
+  ${fin ? _jtcMinfo(match) : ''}`;
+}
+
+/** 出現アニメの一度きりフラグ(JT流儀) */
+function _tcMarkRise(tc, key) {
+  tc._revealed = tc._revealed || {};
+  const isNew = !tc._revealed[key];
+  tc._revealed[key] = true;
+  return isNew ? ' jtc-rise' : '';
+}
+
+/** 頂上(覇者)ブロック。決勝決着後にせり上がり、タップで優勝画面へ */
+function _tcPeakBlock(tc, riseClass) {
+  const finalMatch = tc.rounds[tc.rounds.length - 1].matches[0];
+  const champion = finalMatch.winnerId === finalMatch.left.id ? finalMatch.left : finalMatch.right;
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(champion.id) : '';
+  const img = upperUrl
+    ? `<img src="${upperUrl}" alt="${escHtml(champion.name)}" onerror="this.style.display='none'">`
+    : `<span class="jtc-ini">${escHtml((champion.name || '?')[0])}</span>`;
+  return `<div class="jtc-peak${riseClass}" onclick="App.tcGoToFinalResult()">
+    <div class="jtc-up jtc-up-peak w">${img}</div>
+    <div class="jtc-peak-name">${escHtml(champion.name)}</div>
+    <div class="jtc-peak-title">第${_tcEditionNo()}回 天頂戦 覇者</div>
+    <div class="jtc-peak-tap">タップして結果を見る ▶</div>
+  </div>`;
+}
+
+/** 頂上空位クレスト(決着前) */
+function _tcPeakEmpty() {
+  return `<div class="tc-peak-empty">
+    <div class="crest">👑</div>
+    <div class="cap">第${_tcEditionNo()}回大会覇者</div>
+  </div>`;
+}
+
+/** フォーカスカード: アッパー画像対面(左右とも非反転)+開始HP(持ち越し) */
+function _tcFocusCard(match, roundName, ri, mi) {
+  const f1 = match.left, f2 = match.right;
+  const isFinal = roundName === 'final';
+  const label = isFinal ? '👑 決勝' : `${_tcRoundLabel(roundName)} — 第${mi + 1}試合`;
+  const upperL = typeof getUpperUrl === 'function' ? getUpperUrl(f1.id) : '';
+  const upperR = typeof getUpperUrl === 'function' ? getUpperUrl(f2.id) : '';
+  const pctL = Math.max(1, Math.min(100, Math.round(match.carryLeftPct != null ? match.carryLeftPct : 100)));
+  const pctR = Math.max(1, Math.min(100, Math.round(match.carryRightPct != null ? match.carryRightPct : 100)));
+  const carryNote = ri > 0 ? `<br>(${ri}試合分持ち越し)` : '';
+
+  let h = `<div class="tc-fc jt-su">`;
+  h += `<div class="tc-fc-lb">${label}</div>`;
+  h += `<div class="tc-fc-names">
+    <div class="tc-fc-nm"><div class="n">${escHtml(f1.name)}</div><div class="o">${escHtml(f1._orgName || '')}${_tcOwnPill(f1.orgId)} OVR ${f1.ovr}</div></div>
+    <div class="tc-fc-vl">VS</div>
+    <div class="tc-fc-nm"><div class="n">${escHtml(f2.name)}</div><div class="o">${escHtml(f2._orgName || '')}${_tcOwnPill(f2.orgId)} OVR ${f2.ovr}</div></div>
+  </div>`;
+  // アッパー画像対面(反転禁止: 左右とも素の向き)
+  h += `<div class="tc-fc-uppers">
+    <div class="tc-fc-upper">${upperL ? `<img src="${upperL}" alt="" onerror="this.style.opacity=0">` : ''}</div>
+    <div class="vs-mark">VS</div>
+    <div class="tc-fc-upper">${upperR ? `<img src="${upperR}" alt="" onerror="this.style.opacity=0">` : ''}</div>
+  </div>`;
+  h += `<div class="tc-hp-row">
+    <div class="tc-hp left">
+      <div class="tc-hp-top"><span>HP</span><strong>${pctL} / 100</strong><em>${pctL}%</em></div>
+      <div class="tc-hp-track"><div class="tc-hp-fill" style="width:${pctL}%"></div></div>
+    </div>
+    <div class="tc-hp-mid">開始HP${carryNote}</div>
+    <div class="tc-hp right">
+      <div class="tc-hp-top"><em>${pctR}%</em><strong>${pctR} / 100</strong><span>HP</span></div>
+      <div class="tc-hp-track"><div class="tc-hp-fill" style="width:${pctR}%"></div></div>
+    </div>
+  </div>`;
+  h += `<div class="tc-fc-bt">
+    <button class="btn btn-gold" style="padding:8px 22px;font-size:13px" onclick="App.tcWatchMatch(${ri},${mi})">観戦する</button>
+    <button class="btn" style="padding:8px 22px;font-size:13px" onclick="App.tcSkipMatch(${ri},${mi})">スキップ</button>
+  </div>`;
+  h += `</div>`;
+  return h;
+}
+
+/** クライムライン本体(頂上〜決勝〜…〜1回戦)。currentRound/currentMatch まで構築 */
+function _tcClimbHtml(tc) {
+  const rounds = tc.rounds;
+  const { currentRound, currentMatch } = tc;
+  const finalRi = rounds.length - 1;
+  const isMatchDone = (ri, mi) => ri < currentRound || (ri === currentRound && mi < currentMatch);
+  const finalDone = isMatchDone(finalRi, 0);
+  const maxVisibleRi = Math.min(currentRound, finalRi);
+
+  let html = '';
+  if (finalDone) {
+    html += _tcPeakBlock(tc, _tcMarkRise(tc, 'peak'));
+    html += _jtcMergePeak();
+  } else {
+    html += _tcPeakEmpty();
+    html += `<div class="jtc-merge-peak"><svg viewBox="0 0 20 30" preserveAspectRatio="none"><path d="M10 30 L10 2" style="stroke:rgba(212,168,67,0.35)"/></svg></div>`;
+  }
+
+  for (let ri = maxVisibleRi; ri >= 0; ri--) {
+    const round = rounds[ri];
+    const riseClass = _tcMarkRise(tc, 'r' + ri);
+    html += ri === finalRi
+      ? _tcFinalRow(round, ri, currentRound, currentMatch, isMatchDone, riseClass)
+      : _tcRowGrid(round, ri, currentRound, currentMatch, isMatchDone, riseClass);
+
+    if (ri === currentRound && currentMatch < round.matches.length) {
+      html += _tcFocusCard(round.matches[currentMatch], round.name, ri, currentMatch);
+    }
+
+    if (ri > 0) {
+      const childRound = rounds[ri - 1];
+      const hotFlags = childRound.matches.map((cm, cmi) => {
+        const parentMi = Math.floor(cmi / 2);
+        const parentMatch = round.matches[parentMi];
+        return isMatchDone(ri, parentMi) && parentMatch.winnerId === cm.winnerId;
+      });
+      html += _jtcMergeGrid(childRound.matches.length, hotFlags);
+    }
+  }
+  return html;
+}
+
+/** ブラケット画面(P7クライムライン) */
+function renderTenchosenBracket() {
+  const tc = App._tcPreview;
+  if (!tc) return;
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  box.style.maxWidth = '100%';
+  box.style.padding = '0';
+  box.style.background = 'transparent';
+  box.style.border = 'none';
+
+  let html = `<div class="jt-phase">天頂戦</div>`;
+  html += `<div class="jt-wrap" style="--jtc-color:var(--gold)">${_tcHeader()}`;
+  html += `<div class="tc-scroll"><div class="jtc-climb tc-climb">${_tcClimbHtml(tc)}</div></div>`;
+
+  const curRound = tc.rounds[tc.currentRound];
+  if (curRound && tc.currentMatch < curRound.matches.length) {
+    html += `<div style="text-align:center;margin-top:12px">
+      <button class="btn" style="padding:8px 24px;font-size:12px;opacity:0.6" onclick="App.tcSkipAll()">全試合スキップ →</button>
+    </div>`;
+  }
+  html += `</div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+/** 勝者の次戦開始HP(回復後)ターゲット。JTの回復バーアニメを流用するための data 属性 */
+function _tcRecoveredHpTarget(tc, ri, mi, side) {
+  const match = tc.rounds[ri].matches[mi];
+  const hp = side === 'left' ? match.hpLeft : match.hpRight;
+  if (!hp || !hp.max) return {};
+  const isWinner = side === 'left' ? match.winnerId === match.left.id : match.winnerId === match.right.id;
+  if (!isWinner || ri + 1 >= tc.rounds.length) return {};
+  const next = tc.rounds[ri + 1].matches[Math.floor(mi / 2)];
+  if (!next) return {};
+  const targetPct = next.left.id === match.winnerId ? next.carryLeftPct
+    : next.right.id === match.winnerId ? next.carryRightPct : null;
+  if (targetPct == null) return {};
+  const pct = Math.max(1, Math.min(100, Math.round(targetPct)));
+  return {
+    'jt-recover-final': Math.max(1, Math.round(hp.max * pct / 100)),
+    'jt-recover-max': hp.max,
+    'jt-recover-pct': pct,
+  };
+}
+
+/** 試合結果画面(Pattern B: pb-container。JT版の天頂戦差し替え) */
+function renderTenchosenMatchResult(ri, mi) {
+  const tc = App._tcPreview;
+  if (!tc) return;
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  box.style.maxWidth = '';
+  box.style.padding = '';
+  box.style.background = '';
+  box.style.border = '';
+
+  const rounds = tc.rounds;
+  const round = rounds[ri];
+  const match = round.matches[mi];
+  const totalMatches = rounds.reduce((s, r) => s + r.matches.length, 0);
+  let matchPos = 0;
+  for (let r = 0; r < ri; r++) matchPos += rounds[r].matches.length;
+  matchPos += mi + 1;
+
+  const isFinal = round.name === 'final';
+  const roundLabel = isFinal ? '👑 決勝' : _tcRoundLabel(round.name);
+  const lWin = match.winnerId === match.left.id;
+  const winner = lWin ? match.left : match.right;
+  const leftF = _jtFighterShim(match.left);
+  const rightF = _jtFighterShim(match.right);
+  const leftCls = lWin ? 'is-winner' : 'is-loser';
+  const rightCls = lWin ? 'is-loser' : 'is-winner';
+  const metaLeft = `${match.left._orgName || ''}`.trim() || '—';
+  const metaRight = `${match.right._orgName || ''}`.trim() || '—';
+  const matchNoLabel = isFinal ? '決勝' : `${_tcRoundLabel(round.name)} 第${mi + 1}試合`;
+
+  let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--gold)">${_tcHeader()}</div>`;
+  html += `<div class="pb-container">`;
+
+  html += `<div class="pb-banner">
+    <div class="pb-live is-jt">👑 TENCHOSEN</div>
+    <div class="pb-banner-title is-jt">${escHtml(roundLabel)}</div>
+    <div class="pb-banner-sub">第${_tcEditionNo()}回 天頂戦<span class="dot">·</span>第${matchPos}試合 / 全${totalMatches}試合<span class="dot">·</span>${escHtml(matchNoLabel)}</div>
+  </div>`;
+
+  html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr 1.2fr">
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="color:var(--gold-light);font-size:20px">${escHtml(roundLabel)}</div>
+      <div class="pb-score-lbl">Round</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val is-neutral">${matchPos}<span style="font-size:14px;color:var(--stage-text-dim)"> / ${totalMatches}</span></div>
+      <div class="pb-score-lbl">Match</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-stars">${_pbStars(match.mq)}</div>
+      <div class="pb-score-val" style="margin-top:3px">${match.mq}</div>
+      <div class="pb-score-lbl">MQ</div>
+    </div>
+    <div class="pb-score-cell">
+      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(match.finType, match.finMove))}</div>
+      <div class="pb-score-lbl">Finish</div>
+    </div>
+  </div>`;
+
+  html += `<div class="pb-matches">`;
+  html += `<div class="pb-divider is-main">${isFinal ? '👑 FINAL' : '⚔ MATCH'} — ${escHtml(roundLabel)}</div>`;
+  html += `<div class="pb-mrow is-main is-jt">`;
+  html += _pbFighterBlock('left', leftF, leftCls, metaLeft, '');
+  html += _pbResultColumn({
+    winnerLabel: `🏆 ${escHtml(winner.name)} WIN`,
+    winnerIsDraw: false,
+    finishText: Engine.formatFinish(match.finType, match.finMove),
+    turns: match.turns || 0,
+    mq: match.mq
+  });
+  html += _pbFighterBlock('right', rightF, rightCls, metaRight, '');
+  if (match.hpLeft && match.hpRight) {
+    html += _pbHpMini(match.hpLeft, match.hpRight, {
+      className: 'is-jt-recovery',
+      label: isFinal ? 'HP' : '回復後HP',
+      left: _tcRecoveredHpTarget(tc, ri, mi, 'left'),
+      right: _tcRecoveredHpTarget(tc, ri, mi, 'right'),
+    });
+  }
+  html += `</div>`;
+  html += `<div class="jtc-result-minfo">${_jtcMinfo(match)}</div>`;
+  html += `</div>`;
+
+  const nextLabel = isFinal ? '優勝発表へ →' : '次の試合へ →';
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.tcAdvanceAfterResult(${ri},${mi})">${nextLabel}</button>
+  </div>`;
+  html += `</div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+  if (!isFinal) setTimeout(_jtAnimateHpRecoveryBars, 350);
+}
+
+/** 優勝画面(モックv0.3 優勝演出タブ準拠) */
+function renderTenchosenResult() {
+  const tc = App._tcPreview;
+  if (!tc) return;
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  box.style.maxWidth = '100%';
+  box.style.padding = '0';
+  box.style.background = 'transparent';
+  box.style.border = 'none';
+
+  const finalMatch = tc.rounds[tc.rounds.length - 1].matches[0];
+  const champion = finalMatch.winnerId === finalMatch.left.id ? finalMatch.left : finalMatch.right;
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(champion.id) : '';
+  const isPlayerChamp = champion.orgId === 'player';
+  const prize = (Engine.ppvTournament.PRIZE && Engine.ppvTournament.PRIZE.champion) || 3000;
+  const winCount = tc.rounds.length;
+
+  let html = `<div class="tcwn-wrap" onclick="App.tcAfterWinner()">
+    <div class="tcwn-rays"></div>
+    <div class="tcwn-emblem"><img src="../image/emblem-tenchosen.png" alt="" onerror="this.style.display='none'"></div>
+    <div class="tcwn-tour">Season ${G.season} — Quadrennial Tournament</div>
+    <div class="tcwn-kanmuri">全国女子プロレス最強王者決定戦</div>
+    <div class="tcwn-evname">天頂戦</div>
+    <div class="tcwn-up">${upperUrl ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">` : ''}</div>
+    <div class="tcwn-champ-lb">Champion</div>
+    <div class="tcwn-name">${escHtml(champion.name)}</div>
+    <div class="tcwn-org">${escHtml(champion._orgName || '')}${_tcOwnPill(champion.orgId)} — ${winCount}勝0敗</div>
+    <div class="tcwn-title-line">
+      第${_tcEditionNo()}回 天頂戦 覇者
+      <small>4年に一度の頂点 — 記録と名誉</small>
+    </div>
+    ${isPlayerChamp ? `<div class="tcwn-prize">優勝賞金 <b>¥${prize.toLocaleString()}万</b></div>` : ''}
+    <div class="tcwn-tap">タップして進む ▶</div>
+  </div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+/** 関係性ドラマ: ナレーション(事実記述・固定文) */
+function _tcDramaNarration(evClass, winner, loser) {
+  if (evClass === 'epic') return '死闘の後、敗者は勝者の前に立った。';
+  if (evClass === 'humiliation') return `敗れた${loser.name}は、バックステージで${winner.name}を待っていた。`;
+  if (evClass === 'stablemate_rift') return '試合後の控室で、二人の間に言葉は少なかった。';
+  return `試合後の控室で、${loser.name}は${winner.name}のもとへ歩み寄った。`;
+}
+
+/** 関係性ドラマ: 関係変化チップ */
+function _tcDramaChip(evClass, winner, loser) {
+  if (evClass === 'epic') return `<span class="tcdr-chip bond">好敵手 — 絆・因縁 ともに上昇(相互)</span>`;
+  if (evClass === 'humiliation') return `<span class="tcdr-chip riv">因縁 激発展(${escHtml(loser.name)} → ${escHtml(winner.name)})</span>`;
+  if (evClass === 'stablemate_rift') return `<span class="tcdr-chip riv">絆に亀裂</span>`;
+  return `<span class="tcdr-chip bond">絆 深化</span>`;
+}
+
+/** 関係性ドラマ: 相手側の感情バッジ(非相互時) */
+function _tcDramaEmoBadge(evClass) {
+  if (evClass === 'humiliation') return '⚡ 因縁を刻まれた';
+  if (evClass === 'stablemate_rift') return '…… 亀裂が生まれた';
+  return '🤝 絆が深まった';
+}
+
+/** 関係性ドラマ: 出演者1名ぶんのカラム(頭上白吹き出し or 感情バッジ + 2:3矩形) */
+function _tcDramaActor(fighter, bubbleText, emoBadge, crimson) {
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  const top = bubbleText
+    ? `<div class="tcdr-bub${crimson ? ' crimson' : ''}"><div class="sp">${escHtml(fighter.name)}</div>「${escHtml(bubbleText)}」</div>`
+    : (emoBadge ? `<div class="tcdr-emo">${emoBadge}</div>` : '');
+  return `<div class="tcdr-actor">
+    ${top}
+    <div class="tcdr-rc">${upperUrl ? `<img src="${upperUrl}" alt="" onerror="this.style.opacity=0">` : ''}</div>
+    <div class="tcdr-name">${escHtml(fighter.name)}<span class="org">${escHtml(fighter._orgName || '')}${_tcOwnPill(fighter.orgId)}</span></div>
+  </div>`;
+}
+
+/** 関係性ドラマモーダル(1件ずつ)。idx番目の dramaEvents を表示 */
+function renderTenchosenDrama(idx) {
+  const tc = App._tcPreview;
+  const events = (G.ppvTournament && G.ppvTournament.dramaEvents) || [];
+  const ev = events[idx];
+  if (!tc || !ev) { App.finalizeTenchosen(); return; }
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  box.style.maxWidth = '100%';
+  box.style.padding = '0';
+  box.style.background = 'transparent';
+  box.style.border = 'none';
+
+  // matchRef からラウンド・対戦を復元(trimmed fighter に name/_orgName/orgId が入っている)
+  const round = tc.rounds.find(r => r.name === ev.matchRef.round) || tc.rounds[tc.rounds.length - 1];
+  const match = (round.matches && round.matches[ev.matchRef.index]) || round.matches[0];
+  const winner = match.winnerId === match.left.id ? match.left : match.right;
+  const loser = match.winnerId === match.left.id ? match.right : match.left;
+  const roundLabel = round.name === 'final' ? '決勝' : `${_tcRoundLabel(round.name)} 第${ev.matchRef.index + 1}試合`;
+  const mqNote = ev.class === 'epic' ? ` (MQ ${match.mq})` : '';
+
+  const lineBySpeaker = {};
+  (ev.lines || []).forEach(l => { lineBySpeaker[l.speakerId] = l.text; });
+  const crimson = ev.class === 'humiliation' || ev.class === 'stablemate_rift';
+
+  let actors = '';
+  if (ev.mutual) {
+    actors = _tcDramaActor(loser, lineBySpeaker[loser.id] || '', '', false)
+      + _tcDramaActor(winner, lineBySpeaker[winner.id] || '', '', false);
+  } else {
+    actors = _tcDramaActor(loser, lineBySpeaker[loser.id] || '', '', crimson)
+      + _tcDramaActor(winner, '', _tcDramaEmoBadge(ev.class), false)
+      + (ev.class === 'humiliation' ? '<div class="tcdr-arrow">→</div>' : '');
+  }
+
+  const isLast = idx + 1 >= events.length;
+  let html = `<div class="tcdr-wrap">
+    <div class="tcdr-head">Aftermath — Backstage</div>
+    <div class="tcdr-head-jp">大会が生んだ関係</div>
+    <div class="tcdr-card jt-su">
+      <div class="tcdr-src">${escHtml(roundLabel)} — ${escHtml(winner.name)} ○ ${escHtml(loser.name)} ●${mqNote}</div>
+      <div class="tcdr-narr">${escHtml(_tcDramaNarration(ev.class, winner, loser))}</div>
+      <div class="tcdr-stagegrid">${actors}</div>
+      <div class="tcdr-chips">${_tcDramaChip(ev.class, winner, loser)}</div>
+    </div>
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn btn-gold" style="padding:9px 28px;font-size:13px" onclick="App.tcNextDrama(${idx + 1})">${isLast ? '閉じる' : '次へ ▶'}</button>
+    </div>
+  </div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+/** TV観戦モード(orgPop<30): ラウンドごとの勝者一覧+優勝者の簡易リザルト */
+function renderTenchosenTVResult() {
+  const t = G.ppvTournament;
+  if (!t || !t.rounds || !t.rounds.length) { App.finalizeTenchosen(); return; }
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  box.style.maxWidth = '';
+  box.style.padding = '';
+  box.style.background = '';
+  box.style.border = '';
+
+  const finalMatch = t.rounds[t.rounds.length - 1].matches[0];
+  const champion = finalMatch.winnerId === finalMatch.left.id ? finalMatch.left : finalMatch.right;
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(champion.id) : '';
+
+  let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--gold)">${_tcHeader()}</div>`;
+  html += `<div class="pb-container">`;
+  html += `<div class="pb-banner">
+    <div class="pb-live is-ppvtv">📺 テレビ観戦</div>
+    <div class="pb-banner-title is-ppvtv">天頂戦</div>
+    <div class="pb-banner-sub">第${_tcEditionNo()}回大会<span class="dot">·</span>テレビの前で</div>
+  </div>`;
+
+  html += `<div class="pb-matches">`;
+  t.rounds.forEach(round => {
+    const isFinal = round.name === 'final';
+    html += `<div class="pb-divider${isFinal ? ' is-main' : ''}">${isFinal ? '👑 ' : ''}${escHtml(_tcRoundLabel(round.name))}</div>`;
+    round.matches.forEach(m => {
+      const w = m.winnerId === m.left.id ? m.left : m.right;
+      const l = m.winnerId === m.left.id ? m.right : m.left;
+      html += `<div class="tc-tv-row">
+        <span class="w">○ ${escHtml(w.name)}</span><span style="color:var(--stage-text-dim)">(${escHtml(w._orgName || '')})</span>
+        <span style="color:var(--stage-text-dim)">—</span>
+        <span>● ${escHtml(l.name)}</span><span style="color:var(--stage-text-dim)">(${escHtml(l._orgName || '')})</span>
+        <span class="mq">MQ ${m.mq}</span>
+      </div>`;
+    });
+  });
+  html += `</div>`;
+
+  html += `<div style="text-align:center;padding:16px 0 4px">
+    <div style="width:84px;aspect-ratio:2/3;border-radius:4px;overflow:hidden;margin:0 auto 8px;border:2px solid var(--gold);background:#121110">
+      ${upperUrl ? `<img src="${upperUrl}" style="width:100%;height:100%;object-fit:cover;object-position:top" alt="">` : ''}
+    </div>
+    <div style="font-family:var(--font-label);font-size:10px;letter-spacing:5px;color:var(--gold);text-transform:uppercase">Champion</div>
+    <div style="font-size:22px;font-weight:900;color:var(--stage-text-main);margin-top:2px">${escHtml(champion.name)}</div>
+    <div style="font-size:11px;color:var(--stage-text-sub);margin-top:2px">${escHtml(champion._orgName || '')} — 第${_tcEditionNo()}回 天頂戦 覇者</div>
+  </div>`;
+
+  html += `<div class="pb-footer">
+    <button type="button" class="pb-close-btn" onclick="App.finalizeTenchosen()">閉じる</button>
+  </div>`;
+  html += `</div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
+// ── 天頂戦 エントリーモーダル(Week43〜) ──────────────────────
+
+function _tcEntryModalHtml() {
+  const t = G.ppvTournament;
+  if (!t) return '';
+  const picks = App._tcEntryPicks || [];
+  const slotCount = Engine.ppvTournament.getPlayerSlotCount(G);
+  const candidates = Engine.ppvTournament.getPlayerEntryCandidates(G);
+  const expected = Math.min(slotCount, candidates.length);
+  const champId = G.titles && G.titles.world ? G.titles.world.championId : null;
+  const champLocked = champId != null && candidates.some(f => f.id === champId);
+
+  let html = _mdlAHeader('👑 天頂戦 エントリー', `SEASON ${G.season} ・ 第${_tcEditionNo()}回大会 ・ 16名トーナメント`);
+  html += `<div class="tc-entry-lead">4年に一度の全国女子プロレス最強王者決定戦。<br>特別招待2名に続き、団体枠 ${expected}名を選出してください。</div>`;
+
+  // 特別招待2名の発表ブロック
+  html += `<div class="tc-entry-section-label">特別招待 — 先行確定</div>`;
+  html += `<div class="tc-invite-row">`;
+  (t.specialInvites || []).forEach(inv => {
+    const f = _tcFindFighterAnywhere(inv.id);
+    if (!f) return;
+    const orgName = typeof Engine.ppvTournament._orgName === 'function'
+      ? Engine.ppvTournament._orgName(G, inv.orgId) : '';
+    const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+    const kindLabel = inv.kind === 'ranking' ? '個人ランキング 1位' : '人気 1位';
+    html += `<div class="tc-invite-card">
+      <div class="tc-invite-kind">${kindLabel}</div>
+      <div class="tc-invite-up">${upperUrl ? `<img src="${upperUrl}" alt="">` : ''}</div>
+      <div class="tc-invite-name">${escHtml(f.name)}</div>
+      <div class="tc-invite-org">${escHtml(orgName)}${_tcOwnPill(inv.orgId)}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // 団体枠の選択
+  html += `<div class="tc-entry-section-label">団体枠 — ${expected}名を選出(団体順位による)</div>`;
+  html += `<div class="tc-entry-list">`;
+  candidates.forEach(f => {
+    const ovr = Engine.util.ov(f);
+    const isChamp = champLocked && f.id === champId;
+    const picked = picks.includes(f.id);
+    const full = picks.length >= expected && !picked;
+    const cls = `ppv-pick-item${picked ? ' picked' : ''}${full && !isChamp ? ' disabled' : ''}`;
+    const click = isChamp ? '' : ` onclick="App.tcTogglePick(${f.id})"`;
+    html += `<div class="${cls}" style="border:1px solid var(--stage-border-lit);border-radius:6px;cursor:${isChamp ? 'default' : 'pointer'}"${click}>
+      <span style="font-size:18px;width:24px;text-align:center">${picked ? (isChamp ? '👑' : '✅') : '⬜'}</span>
+      ${portraitImg(f.id, 36)}
+      <span style="flex:1;font-size:13px;color:var(--stage-text-main)">${escHtml(f.name)}${isChamp ? ' <span style="font-size:10px;color:var(--gold)">王者・出場必須</span>' : ''}</span>
+      <span style="font-size:11px;color:var(--stage-text-sub)">OVR ${ovr}</span>
+      <span style="font-size:11px;color:var(--stage-text-dim)">人気 ${Math.round(f.popularity || 0)}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="tc-entry-lead" style="font-size:11px;color:var(--stage-text-dim);padding-top:8px">※ 大会当日までに負傷した場合は自動で補充されます。未確定のまま大会週を迎えた場合はおまかせ編成で出場します。</div>`;
+
+  const canConfirm = picks.length === expected;
+  html += `<div class="tc-entry-footer">
+    <button class="btn" style="padding:9px 18px;font-size:12px" onclick="App.tcSuggestPicks()">おまかせ選出</button>
+    <button class="btn btn-gold" style="padding:9px 24px;font-size:13px" ${canConfirm ? '' : 'disabled'} onclick="App.tcConfirmEntries()">エントリー確定（${picks.length}/${expected}名）</button>
+  </div>`;
+  return html;
+}

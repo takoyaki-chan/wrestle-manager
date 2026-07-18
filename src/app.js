@@ -5362,6 +5362,12 @@ const App = {
       App._receiveJTBattleResult(data);
       return;
     }
+    // 天頂戦 context: route to Tenchosen handler
+    const tcPre = App._tcPreview;
+    if (tcPre && tcPre.phase === 'watching') {
+      App._receiveTcBattleResult(data);
+      return;
+    }
     // PPV context: route to PPV handler
     const pp = App._ppvPreview;
     if (pp && pp.currentWatching >= 0) {
@@ -5492,6 +5498,12 @@ const App = {
       const mi = jt.currentMatch;
       jt.phase = 'matchResult';
       App.jtSkipMatch(ri, mi);
+      return;
+    }
+    // 天頂戦
+    const tc = App._tcPreview;
+    if (tc && tc.phase === 'watching') {
+      App.tcSkipMatch(tc.currentRound, tc.currentMatch);
       return;
     }
     // B3
@@ -8516,6 +8528,12 @@ const App = {
       App.initPPVTV();
       return;
     }
+    // C-6 天頂戦 Week48: 結果はEngine.advanceWeek内で確定済み。リプレイ演出を自動起動
+    if (App._shouldStartTenchosenReplay()) {
+      Storage.autoSave();
+      App.initTenchosenReplay();
+      return;
+    }
     // S8 春のタッグリーグ Week12: 結果はEngine.advanceWeek内で確定済み。リプレイ演出を自動起動
     if (G._pendingSpringTagLeagueReplay) {
       Storage.autoSave();
@@ -9091,6 +9109,12 @@ const App = {
     if (G.weekPhase === 'ppvTV') {
       Storage.autoSave();
       App.initPPVTV();
+      return;
+    }
+    // C-6 天頂戦 Week48: 結果はEngine.advanceWeek内で確定済み。リプレイ演出を自動起動
+    if (App._shouldStartTenchosenReplay()) {
+      Storage.autoSave();
+      App.initTenchosenReplay();
       return;
     }
     // ジュニアトーナメント Week 25
@@ -12975,6 +12999,307 @@ App.finalizeJuniorTournament = function() {
   } else {
     finishUp();
   }
+};
+
+// ══════════════════════════════════════════════════════════
+//  C-6 天頂戦 進行フック (quadrennial-ppv-tournament-spec-v0.1)
+//  結果は Engine.advanceWeek 内(ppvTournament.run/apply)で確定済み。
+//  UIは JT と同じ「どこまで見せるか」ポインタ制御のリプレイのみ。
+// ══════════════════════════════════════════════════════════
+
+// advanceWeek 直後の検知: Week48 でトーナメントが done になった瞬間だけ演出を起動する。
+// リロード時は再演出しない(結果は新聞・経歴で追える)割り切り(tenchosen.md)。
+App._shouldStartTenchosenReplay = function() {
+  const t = G.ppvTournament;
+  return !!(t && t.phase === 'done' && t.season === G.season
+    && G.week === Engine.ppvTournament.SHOW_WEEK
+    && Array.isArray(t.rounds) && t.rounds.length > 0 && t.championId != null);
+};
+
+App.initTenchosenReplay = function() {
+  const t = G.ppvTournament;
+  if (!t || !t.rounds || !t.rounds.length) return;
+  // TV観戦モード(orgPop<30): フル演出の代わりに簡易リザルト
+  if (!G.ppvUnlocked) {
+    App._tcPreview = { tvMode: true, rounds: t.rounds };
+    Audio.play('notify');
+    renderTenchosenTVResult();
+    return;
+  }
+  App._tcPreview = {
+    rounds: t.rounds,
+    championId: t.championId,
+    currentRound: 0,
+    currentMatch: 0,
+    phase: 'bracket',
+    _revealed: {},
+  };
+  try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
+  Audio.play('notify');
+  renderTenchosenBracket();
+};
+
+App.tcWatchMatch = function(roundIdx, matchIdx) {
+  const tc = App._tcPreview;
+  if (!tc) return;
+  tc.currentRound = roundIdx;
+  tc.currentMatch = matchIdx;
+  tc.phase = 'watching';
+
+  const round = tc.rounds[roundIdx];
+  const match = round.matches[matchIdx];
+  const isFinal = round.name === 'final';
+
+  const overlay = document.getElementById('battleOverlay');
+  overlay.style.display = 'block';
+  const escBtn = document.getElementById('battleEscapeBtn');
+  if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+  clearTimeout(App._escBtnTimer);
+  App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
+
+  const iframe = document.getElementById('battleIframe');
+  if (!iframe) return;
+
+  const leftF = App._jtLookupFighter(match.left.id) || match.left;
+  const rightF = App._jtLookupFighter(match.right.id) || match.right;
+  const roundLabel = isFinal ? '決勝' : round.name === 'semiFinal' ? '準決勝' : round.name === 'quarterFinal' ? '準々決勝' : '1回戦';
+
+  // Replay: 事前シミュ済みの match から frames+winner 等を組み立てる(結果は書き換えない)
+  const tcResult = {
+    winner: match.winner, mq: match.mq, turns: match.turns,
+    finType: match.finType || '', finMove: match.finMove || '',
+    hpLeft: match.hpLeft, hpRight: match.hpRight,
+    log: match.log || [], frames: match.frames || [],
+  };
+  const msg = {
+    type: 'START_MATCH',
+    left: {
+      ...Engine.ppvTournament._withCarryHp(leftF, match.carryLeftPct != null ? match.carryLeftPct : 100),
+      portraitUrl: getPortraitUrl(leftF.id), profile: CHAR_PROFILES[leftF.id] || '',
+      vl: leftF.voiceLines || leftF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[leftF.id]) || ['…！']
+    },
+    right: {
+      ...Engine.ppvTournament._withCarryHp(rightF, match.carryRightPct != null ? match.carryRightPct : 100),
+      portraitUrl: getPortraitUrl(rightF.id), profile: CHAR_PROFILES[rightF.id] || '',
+      vl: rightF.voiceLines || rightF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[rightF.id]) || ['…！']
+    },
+    matchInfo: {
+      header: `👑 天頂戦 ${roundLabel}`,
+      subHeader: `${match.left.name} vs ${match.right.name}`,
+      matchNum: matchIdx + 1,
+      totalMatches: round.matches.length,
+      isSpecialMatch: !!isFinal,
+      matchTier: 2,
+      leftPersonality: leftF.personality || 'normal',
+      leftArchetype: leftF.archetype || 'normal',
+      rightPersonality: rightF.personality || 'normal',
+      rightArchetype: rightF.archetype || 'normal',
+      sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
+    },
+    result: tcResult,
+  };
+  if (isFinal) {
+    try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
+  }
+  let sent = false;
+  const sendOnce = () => {
+    if (sent) return; sent = true;
+    iframe.contentWindow.postMessage(msg, '*');
+  };
+  iframe.onload = () => setTimeout(sendOnce, 200);
+  iframe.src = 'battle-engine.html?t=' + Date.now();
+  setTimeout(sendOnce, 800);
+};
+
+App._receiveTcBattleResult = function(data) {
+  const tc = App._tcPreview;
+  if (!tc) return;
+  const ri = tc.currentRound;
+  const mi = tc.currentMatch;
+  const round = tc.rounds[ri];
+  const match = round && round.matches ? round.matches[mi] : null;
+  if (!match) return;
+  clearTimeout(App._escBtnTimer);
+  const escBtn = document.getElementById('battleEscapeBtn');
+  if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+  try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
+  document.getElementById('battleOverlay').style.display = 'none';
+  // Watch mode is replay-only: iframe の返り値で結果を書き換えない(JT流儀)
+  const incomingWinnerId = data.winnerId != null
+    ? data.winnerId
+    : ((data.winner || 'left') === 'right' ? match.right.id : match.left.id);
+  if (incomingWinnerId !== match.winnerId || (data.mq != null && data.mq !== match.mq)) {
+    try { console.warn('[TC] replay result mismatch ignored', { round: ri, match: mi }); } catch(e) {}
+  }
+  tc.phase = 'matchResult';
+  Audio.play('coin');
+  renderTenchosenMatchResult(ri, mi);
+};
+
+App.tcSkipMatch = function(roundIdx, matchIdx) {
+  const tc = App._tcPreview;
+  if (!tc) return;
+  tc.phase = 'matchResult';
+  Audio.play('coin');
+  renderTenchosenMatchResult(roundIdx, matchIdx);
+};
+
+App.tcAdvanceAfterResult = function(roundIdx, matchIdx) {
+  const tc = App._tcPreview;
+  if (!tc) return;
+  // トーナメントBGMを再開(決勝観戦後のフェードアウトからの復帰)
+  if (!Audio.fileBgm._audio) {
+    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
+  }
+  const round = tc.rounds[roundIdx];
+  if (matchIdx + 1 < round.matches.length) {
+    tc.currentMatch = matchIdx + 1;
+    tc.phase = 'bracket';
+    renderTenchosenBracket();
+  } else if (roundIdx + 1 < tc.rounds.length) {
+    tc.currentRound = roundIdx + 1;
+    tc.currentMatch = 0;
+    tc.phase = 'bracket';
+    renderTenchosenBracket();
+  } else {
+    // 決勝決着 → 頂上せり上がり(タップで優勝画面へ、JTの二段構え)
+    tc.currentRound = roundIdx + 1;
+    tc.currentMatch = 0;
+    tc.phase = 'bracket';
+    try { Audio.fileBgm.fadeOut(800); } catch(e) {}
+    setTimeout(() => {
+      try { Audio.fileBgm.stop(); } catch(e) {}
+      Audio.bgm.playJingle('championship');
+    }, 900);
+    renderTenchosenBracket();
+  }
+};
+
+App.tcSkipAll = function() {
+  // 全試合スキップ → 段単位でテンポよくせり上げてから優勝発表へ(JT流儀)
+  const tc = App._tcPreview;
+  if (!tc) return;
+  tc.phase = 'bracket';
+  const rounds = tc.rounds;
+  const stageDelay = 500;
+
+  const revealRound = (ri) => {
+    if (ri >= rounds.length) {
+      setTimeout(() => { App.tcGoToFinalResult(); }, stageDelay);
+      return;
+    }
+    tc.currentRound = ri;
+    tc.currentMatch = rounds[ri].matches.length;
+    renderTenchosenBracket();
+    Audio.play('tick');
+    if (ri === rounds.length - 1) {
+      try { Audio.fileBgm.fadeOut(800); } catch(e) {}
+      setTimeout(() => {
+        try { Audio.fileBgm.stop(); } catch(e) {}
+        Audio.bgm.playJingle('championship');
+      }, 900);
+    }
+    setTimeout(() => revealRound(ri + 1), stageDelay);
+  };
+  revealRound(tc.currentRound);
+};
+
+App.tcGoToFinalResult = function() {
+  const tc = App._tcPreview;
+  if (!tc) return;
+  tc.phase = 'finalResult';
+  renderTenchosenResult();
+};
+
+// 優勝画面タップ → 関係性ドラマ(0件なら何も出さず終了。不在の説明も出さない)
+App.tcAfterWinner = function() {
+  const events = (G.ppvTournament && G.ppvTournament.dramaEvents) || [];
+  if (events.length > 0) {
+    Audio.play('notify');
+    renderTenchosenDrama(0);
+  } else {
+    App.finalizeTenchosen();
+  }
+};
+
+App.tcNextDrama = function(idx) {
+  const events = (G.ppvTournament && G.ppvTournament.dramaEvents) || [];
+  if (idx < events.length) {
+    Audio.play('notify');
+    renderTenchosenDrama(idx);
+  } else {
+    App.finalizeTenchosen();
+  }
+};
+
+App.finalizeTenchosen = function() {
+  // 状態は advanceWeek 内で適用済み。ここでは演出を畳むだけ
+  App._tcPreview = null;
+  const overlay = document.getElementById('showResultOverlay');
+  if (overlay) overlay.classList.remove('active');
+  const box = document.getElementById('showResultBox');
+  if (box) { box.style.maxWidth = ''; box.style.padding = ''; box.style.background = ''; box.style.border = ''; }
+  try { Audio.fileBgm.stop(); } catch(e) {}
+  App.restoreBgmForState();
+  try { Storage.autoSave(); } catch(e) {}
+  showScreen('week');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn')[0].classList.add('active');
+  refreshAll();
+};
+
+// ── 天頂戦 エントリー(Week43〜) ──────────────────────
+
+App.tcOpenEntryModal = function() {
+  const t = G.ppvTournament;
+  if (!t || t.season !== G.season || t.phase !== 'entry') return;
+  // 初期選択はおまかせ(王者含むOVR上位)。プレイヤーが自由に組み替えられる
+  App._tcEntryPicks = Engine.ppvTournament.suggestPlayerEntries(G);
+  Audio.play('select');
+  _mdlAOpen(_tcEntryModalHtml(), { dark: true, wide: true });
+};
+
+App.tcTogglePick = function(id) {
+  const picks = App._tcEntryPicks || [];
+  const expected = Math.min(
+    Engine.ppvTournament.getPlayerSlotCount(G),
+    Engine.ppvTournament.getPlayerEntryCandidates(G).length);
+  const champId = G.titles && G.titles.world ? G.titles.world.championId : null;
+  if (id === champId) return; // 王者は外せない
+  if (picks.includes(id)) {
+    App._tcEntryPicks = picks.filter(p => p !== id);
+  } else {
+    if (picks.length >= expected) return;
+    App._tcEntryPicks = [...picks, id];
+  }
+  Audio.play('click');
+  const card = document.getElementById('mdlACard');
+  if (card) card.innerHTML = _tcEntryModalHtml();
+};
+
+App.tcSuggestPicks = function() {
+  App._tcEntryPicks = Engine.ppvTournament.suggestPlayerEntries(G);
+  Audio.play('select');
+  const card = document.getElementById('mdlACard');
+  if (card) card.innerHTML = _tcEntryModalHtml();
+};
+
+App.tcConfirmEntries = function() {
+  const picks = App._tcEntryPicks || [];
+  const next = Engine.ppvTournament.confirmPlayerEntries(G, picks);
+  if (next === G) {
+    // エンジンに弾かれた(王者未選出・重複など)。UI側バリデーション済みなら通常来ない
+    Audio.play('error');
+    return;
+  }
+  G = next;
+  App._tcEntryPicks = null;
+  _mdlAClose();
+  Audio.play('coin');
+  try { Storage.autoSave(); } catch(e) {}
+  if (typeof showToast === 'function') showToast('👑 天頂戦 出場選手を確定しました');
+  if (typeof renderWeekScreen === 'function') renderWeekScreen();
+  if (typeof refreshAll === 'function') refreshAll();
 };
 
 // v2.1: クレジット画面
