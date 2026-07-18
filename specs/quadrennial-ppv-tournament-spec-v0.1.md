@@ -180,7 +180,8 @@
 ### 実装接続（想定）
 
 - 既存機構: relationships の bond/rivalry 2軸 / h2h.history / relationship-flags / glimpse 系演出（吹き出しは頭上 `.fc1m-bubble` 系、下段クリームパネル禁止）
-- セリフ執筆: archetype 6種 ×（勝者/敗者）× 分類。草案は Opus 委譲 → Keisuke 全文レビュー（composed は oyou-style-guide 準拠）
+- **セリフは全 archetype 7種**（normal / composed / ojousama / delinquent / cool / seductive / polite）**× 役割 × 分類でパターン化し、各パターン複数本のバリエーションを持つ**（2026-07-18 Keisuke 裁定「かなりバリエーションを増やして全属性でパターンを作る」。モックの仮セリフは雰囲気承認済み）。役割構成: 名勝負=敗者(認める)+勝者(返し) / 屈辱=敗者(因縁を刻む) / 同門=亀裂(敗者)・深化(敗者) の5役割
+- セリフ草案: `docs/quadrennial-drama-lines-draft-v0.1.md`（Opus 草案 → Keisuke 全文レビュー。composed は oyou-style-guide 準拠、汎用テンプレのため相手の名指しなし）
 - 詳細設計（発火判定・変化量・モーダルUI）は実装前に本仕様の改訂 or 別spec化 🔧
 
 ---
