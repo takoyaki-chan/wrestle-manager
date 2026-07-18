@@ -6081,6 +6081,8 @@ const Engine = {
         if (hired.has(c.id)) return false;
         if (c.grade === 'B' && orgPop < 30) return false;
         if (c.grade === 'A' && slots < 4) return false;
+        // 外部招聘(_inviteBuff)で選手に貼り付き中のコーチは募集プールに出さない(二重雇用防止)
+        if ((G.roster || []).some(f => f._inviteBuff && f._inviteBuff.coachId === c.id)) return false;
         return true;
       });
       const shuffled = [...eligible].sort(() => Engine.rng.float(rng) - 0.5);
@@ -19431,10 +19433,21 @@ Engine.shachoshitsu = {
         });
 
         // 二重指導なし: 退避していた雇用コーチをアサイン枠に空きがあれば自動復帰
-        if (buf.prevCoachId != null && (state.coaches || []).includes(buf.prevCoachId)) {
-          const current = coachAssign[buf.prevCoachId] || [];
-          if (current.length < COACH_MAX_ASSIGN && !current.includes(f.id)) {
-            coachAssign = { ...coachAssign, [buf.prevCoachId]: [...current, f.id] };
+        // 復帰できなかった場合(枠満杯/コーチ解任済み)は理由つきで通知する
+        if (buf.prevCoachId != null) {
+          const prevCoach = ALL_COACHES.find(c => c.id === buf.prevCoachId);
+          const prevCoachName = prevCoach ? prevCoach.name : '担当コーチ';
+          if ((state.coaches || []).includes(buf.prevCoachId)) {
+            const current = coachAssign[buf.prevCoachId] || [];
+            if (!current.includes(f.id)) {
+              if (current.length < COACH_MAX_ASSIGN) {
+                coachAssign = { ...coachAssign, [buf.prevCoachId]: [...current, f.id] };
+              } else {
+                events.push(`🏋️ ${f.name}の${prevCoachName}コーチ復帰は、担当枠が埋まっているため見送られた`);
+              }
+            }
+          } else {
+            events.push(`🏋️ ${f.name}の担当コーチ復帰は、${prevCoachName}コーチが解任済みのため見送られた`);
           }
         }
         const { _inviteBuff: _ib, ...rest } = awakenedRoster;
@@ -19447,7 +19460,7 @@ Engine.shachoshitsu = {
 
   // ── 衝突イベント選択の解決(A続行/B打ち切り) ─────────────────────────────
   // 純粋関数。choice: 'continue' | 'cancel'
-  // 返り値: { roster, coachAssign } | { error: 'not_found' }
+  // 返り値: { roster, coachAssign, events } | { error: 'not_found' }
   resolveInviteConflict(state, fighterId, choice) {
     const f = (state.roster || []).find(c => c.id === fighterId);
     if (!f || !f._inviteBuff) return { error: 'not_found' };
@@ -19457,11 +19470,23 @@ Engine.shachoshitsu = {
 
     if (choice === 'cancel') {
       // 打ち切り: 返金なし・バフ即除去・選手trust悪化・雇用コーチ即復帰
+      // 復帰できなかった場合(枠満杯/コーチ解任済み)は理由つきで通知する
       let coachAssign = state.coachAssign ? { ...state.coachAssign } : {};
-      if (buf.prevCoachId != null && (state.coaches || []).includes(buf.prevCoachId)) {
-        const current = coachAssign[buf.prevCoachId] || [];
-        if (current.length < COACH_MAX_ASSIGN && !current.includes(fighterId)) {
-          coachAssign = { ...coachAssign, [buf.prevCoachId]: [...current, fighterId] };
+      const events = [];
+      if (buf.prevCoachId != null) {
+        const prevCoach = ALL_COACHES.find(c => c.id === buf.prevCoachId);
+        const prevCoachName = prevCoach ? prevCoach.name : '担当コーチ';
+        if ((state.coaches || []).includes(buf.prevCoachId)) {
+          const current = coachAssign[buf.prevCoachId] || [];
+          if (!current.includes(fighterId)) {
+            if (current.length < COACH_MAX_ASSIGN) {
+              coachAssign = { ...coachAssign, [buf.prevCoachId]: [...current, fighterId] };
+            } else {
+              events.push(`🏋️ ${f.name}の${prevCoachName}コーチ復帰は、担当枠が埋まっているため見送られた`);
+            }
+          }
+        } else {
+          events.push(`🏋️ ${f.name}の担当コーチ復帰は、${prevCoachName}コーチが解任済みのため見送られた`);
         }
       }
       const absoluteWeek = (state.season || 1) * 52 + (state.week || 1);
@@ -19472,7 +19497,7 @@ Engine.shachoshitsu = {
         const { _inviteBuff: _ib, ...rest } = c;
         return { ...rest, trust: Engine.util.clamp(oldTrust + adj, 0, 100), _lastInviteEndWeek: absoluteWeek };
       });
-      return { roster, coachAssign };
+      return { roster, coachAssign, events };
     }
 
     // 続行: バフは維持したまま選手trustのみ小ダウン

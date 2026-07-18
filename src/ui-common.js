@@ -15993,6 +15993,49 @@ function renderTenchosenTVResult() {
   overlay.classList.add('active');
 }
 
+/** 開催前ミニイベント(Week42・数値効果なし・純演出)。コーチ+自団体上位3名のセリフを見せる */
+function renderTenchosenPreEvent() {
+  const tp = G.tenchosenPreEvent;
+  if (!tp) return;
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  box.style.maxWidth = '100%';
+  box.style.padding = '0';
+  box.style.background = 'transparent';
+  box.style.border = 'none';
+
+  const coach = tp.coach;
+  const coachFaceUrl = coach && typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(coach.id) : '';
+  const coachHtml = coach ? `
+    <div class="tcpe-coach">
+      <div class="tcdr-bub"><div class="sp">${escHtml(coach.name)} コーチ</div>「${escHtml(coach.line)}」</div>
+      <div class="tc-cir w">${coachFaceUrl
+        ? `<img src="${coachFaceUrl}" alt="" onerror="this.style.display='none'">`
+        : `<span class="tcpe-coach-face">👩‍🏫</span>`}</div>
+      <div class="tcdr-name">${escHtml(coach.name)} コーチ</div>
+    </div>` : '';
+
+  const fightersHtml = (tp.fighters || []).map(f => {
+    const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+    return `<div class="tcdr-actor">
+      <div class="tcdr-bub"><div class="sp">${escHtml(f.name)}</div>「${escHtml(f.line)}」</div>
+      <div class="tcdr-rc">${upperUrl ? `<img src="${upperUrl}" alt="" onerror="this.style.opacity=0">` : ''}</div>
+      <div class="tcdr-name">${escHtml(f.name)}</div>
+    </div>`;
+  }).join('');
+
+  const html = `<div class="tcpe-wrap">
+    <img class="tcpe-emblem" src="../image/emblem-tenchosen.png" alt="" onerror="this.style.display='none'">
+    <div class="tcpe-head-jp">4年に一度の大舞台まで、あと6週</div>
+    ${coachHtml}
+    <div class="tcpe-fighters">${fightersHtml}</div>
+    <div class="tcpe-bt"><button class="btn btn-gold" onclick="App.closeTenchosenPreEvent()">閉じる</button></div>
+  </div>`;
+
+  box.innerHTML = html;
+  overlay.classList.add('active');
+}
+
 // ── 天頂戦 エントリーモーダル(Week43〜) ──────────────────────
 
 function _tcEntryModalHtml() {

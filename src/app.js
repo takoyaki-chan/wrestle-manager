@@ -8548,6 +8548,7 @@ const App = {
     App.checkCrisisEnteredPopup();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     App.checkPrologueHighlights();
+    App.checkTenchosenPreEvent();
     sessionRng = Engine.rng.create(G.rngSeed);
     App._refreshTicker();
     Storage.autoSave();
@@ -9132,6 +9133,7 @@ const App = {
     App.checkCrisisEnteredPopup();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     App.checkPrologueHighlights();
+    App.checkTenchosenPreEvent();
     sessionRng = Engine.rng.create(G.rngSeed);
 
     // v1.4w: 交渉成功時の新聞イベント
@@ -9897,6 +9899,9 @@ const App = {
             if (!result.error) {
               G = { ...G, roster: result.roster };
               if (result.coachAssign) G = { ...G, coachAssign: result.coachAssign };
+              if (result.events && result.events.length > 0) {
+                G = { ...G, gameLog: [...(G.gameLog || []), ...result.events] };
+              }
               Storage.autoSave();
               renderWeekScreen && renderWeekScreen();
             }
@@ -11467,6 +11472,24 @@ const App = {
         tone: 'gold'
       }), 300);
     }
+  },
+
+  // C-6 天頂戦: Week42 開催前ミニイベント(数値効果なし・純演出)を1回だけ表示
+  checkTenchosenPreEvent() {
+    const tp = G.tenchosenPreEvent;
+    if (!tp || tp.seen || tp.season !== G.season) return;
+    _enqueuePopup(() => {
+      if (typeof renderTenchosenPreEvent === 'function') renderTenchosenPreEvent();
+    });
+  },
+
+  // 天頂戦 開催前ミニイベントを閉じる: 既読化してオーバーレイを畳む
+  closeTenchosenPreEvent() {
+    const overlay = document.getElementById('showResultOverlay');
+    if (overlay) overlay.classList.remove('active');
+    G = Engine.ppvTournament.markPreEventSeen(G);
+    Storage.autoSave();
+    _drainPopupQueue();
   },
 
   // ══════════════════════════════════════════════
