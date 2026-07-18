@@ -134,6 +134,12 @@
     border-color: rgba(233,69,96,0.55);
     animation: pulseCur 1.6s ease infinite;
   }
+  .cl-next-tag {
+    position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-label); font-size: 9px; letter-spacing: 2px;
+    color: #fff; background: var(--ppv-crimson);
+    border-radius: 2px; padding: 1px 8px; white-space: nowrap;
+  }
   @keyframes pulseCur {
     0%,100% { box-shadow: 0 0 10px rgba(233,69,96,0.10); }
     50% { box-shadow: 0 0 22px rgba(233,69,96,0.26); }
@@ -568,6 +574,7 @@
         <div class="cl-minfo"><span class="t">18:48</span><span class="dot">/</span><span class="mq">MQ 88</span></div>
       </div>
       <div class="cl-cell is-current">
+        <span class="cl-next-tag">▶ 次戦 — 未決着</span>
         <div class="cl-pair">
           <div class="cl-rc-fx">
             <div class="cl-rc"><img src="../../../image/upper/upper_fukamachi_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>深</span>'"></div>
@@ -826,6 +833,9 @@
     </div>
 
     <div class="mock-notes">
+      <b>このモックの進行状態</b>: 1回戦8試合と準々決勝4試合が消化済、準決勝は第1試合(阿武隈○-●黒江)だけ消化済。
+      <b>赤枠の深町vs橘は「これから行われる次戦」</b>なので、勝敗表示(WIN/モノクロ落ち)がまだ付いていない — バグではなく未決着の状態。
+      誤読防止に「▶ 次戦 — 未決着」タグを追加した。なお「大会後ドラマ」「優勝演出」タブは大会終了後(深町が準決勝・決勝を勝った世界線)の別シーンなので、このタブとは時点が異なる。<br><br>
       <b>v0.3 変更点(2026-07-18 Keisuke 裁定反映)</b><br>
       ・<b>大会名を和名化</b>: プルダウンは 天頂戦/王冠祭/四年の頂/覇天祭 の4候補(称号線も連動)。タイトルは Noto Sans JP 900+金グラデ<br>
       ・<b>準決勝以上は 2:3 矩形アッパー</b>(JT準拠): 準決勝 md 104px / 決勝 lg 132px。勝者=大会色の下ボーダー、敗者=モノクロ。1回戦・準々決勝は丸アイコンのまま<br>
