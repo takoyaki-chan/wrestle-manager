@@ -184,7 +184,9 @@
 
 - 既存機構: relationships の bond/rivalry 2軸 / h2h.history / relationship-flags / glimpse 系演出（吹き出しは頭上 `.fc1m-bubble` 系、下段クリームパネル禁止）
 - **セリフは全 archetype 7種**（normal / composed / ojousama / delinquent / cool / seductive / polite）**× 役割 × 分類でパターン化し、各パターン複数本のバリエーションを持つ**（2026-07-18 Keisuke 裁定「かなりバリエーションを増やして全属性でパターンを作る」。モックの仮セリフは雰囲気承認済み）。役割構成: 名勝負=敗者(認める)+勝者(返し) / 屈辱=敗者(因縁を刻む) / 同門=亀裂(敗者)・深化(敗者) の5役割
-- セリフ草案: `docs/quadrennial-drama-lines-draft-v0.1.md`（Opus 草案 → Keisuke 全文レビュー。composed は oyou-style-guide 準拠、汎用テンプレのため相手の名指しなし）
+- セリフ草案: `docs/quadrennial-drama-lines-draft-v0.1.md`（Opus 草案 → Keisuke 1次レビュー反映済み v0.2。composed は oyou-style-guide 準拠、汎用テンプレのため相手の名指しなし）
+- **年齢条件**（2026-07-18 裁定）: 「4年後の再戦」を前提とするセリフは、**話者または相手が30歳超 🔧 なら選択肢から除外**（4年後に現役でいる保証のない相手に再戦を誓わせない）。草案の【年齢条件】タグで管理
+- **同門(D/E)のセリフは「同じ団体なのに」系のメタ言及をしない**（2026-07-18 裁定）: 同門でも大会で当たれば本気で戦うのが礼儀。亀裂は「祝いの言葉が上滑りする気まずさ」だけで表現する
 - 詳細設計（発火判定・変化量・モーダルUI）は実装前に本仕様の改訂 or 別spec化 🔧
 
 ---
