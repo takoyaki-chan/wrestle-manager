@@ -23246,7 +23246,7 @@ Engine.ppvTournament = {
   SHOW_WEEK: 48,
   SIZE: 16,
   INITIAL_CONDITION: 80,
-  FLOOR: 50,
+  FLOOR: 55, // auto-sim実測(48シーズン)で決勝MQ50点台が12回中2回出たため50→55に較正
   RECOVERY_RATIO: 2 / 3,
   PRIZE: { champion: 3000, runnerUp: 1200, semiFinal: 500 },
 
@@ -23638,7 +23638,8 @@ Engine.ppvTournament = {
       if (events.length >= 2) break;
       if (used.has(candidate.winner.id) || used.has(candidate.loser.id)) continue;
       // 条件成立は候補化であり、演出を必ず配るわけではない。文脈の希少性を保つ暫定発火率。
-      const activationRate = candidate.class === 'epic' ? 0.8 : candidate.class === 'humiliation' ? 0.7 : 0.25;
+      // auto-sim実測で平均1.42件/0件率0%と過剰だったため 0.8/0.7/0.25 から半減(目安: 2大会に1〜2回・0件の大会が普通にある)
+      const activationRate = candidate.class === 'epic' ? 0.5 : candidate.class === 'humiliation' ? 0.35 : 0.15;
       if (Engine.rng.float(rng) >= activationRate) continue;
       const winner = this._resolveFighter(state, candidate.winner.id) || candidate.winner;
       const loser = this._resolveFighter(state, candidate.loser.id) || candidate.loser;

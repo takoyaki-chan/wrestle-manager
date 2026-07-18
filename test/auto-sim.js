@@ -906,7 +906,8 @@ if (s.seasons >= 10) {
   if (tenchosenStartRate !== 1) freqWarnings.push(`天頂戦開催率: ${tenchosenStartRate.toFixed(2)} (期待値 1.00)`);
   if (tenchosenCompleteRate !== 1) freqWarnings.push(`天頂戦完走率: ${tenchosenCompleteRate.toFixed(2)} (期待値 1.00)`);
   if (normalCompleteRate !== 1) freqWarnings.push(`通常年PPV実行率: ${normalCompleteRate.toFixed(2)} (期待値 1.00)`);
-  if (s.tenchosenCompletedCount >= 4 && s.tenchosenZeroDramaCount === 0) {
+  // 完走8大会未満(=32シーズン未満)では統計ブレで誤検知するため発動させない(0件率0.4でも5大会全部非0になる確率は8%/シードある)
+  if (s.tenchosenCompletedCount >= 8 && s.tenchosenZeroDramaCount === 0) {
     freqWarnings.push('天頂戦ドラマ0件の大会がない (常時発火の疑い)');
   }
 }
