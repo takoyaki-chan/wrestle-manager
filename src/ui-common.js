@@ -15786,7 +15786,7 @@ function renderTenchosenMatchResult(ri, mi) {
 
   html += `<div class="pb-matches">`;
   html += `<div class="pb-divider is-main">${isFinal ? '👑 FINAL' : '⚔ MATCH'} — ${escHtml(roundLabel)}</div>`;
-  html += `<div class="pb-mrow is-main is-jt">`;
+  html += `<div class="pb-mrow is-main is-jt is-tenchosen">`;
   html += _pbFighterBlock('left', leftF, leftCls, metaLeft, '');
   html += _pbResultColumn({
     winnerLabel: `🏆 ${escHtml(winner.name)} WIN`,

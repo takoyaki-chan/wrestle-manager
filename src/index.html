@@ -2976,16 +2976,19 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .pb-live.is-jt{background:linear-gradient(135deg,rgba(240,208,120,0.18),rgba(184,145,46,0.14));border-color:var(--gold-light);color:#fff;text-shadow:0 0 10px rgba(240,208,120,0.45);letter-spacing:3px}
 .pb-banner-title.is-jt{font-size:36px;background:linear-gradient(180deg,#fff 0%,var(--gold-light) 55%,var(--gold-deep) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 24px rgba(240,208,120,0.3);letter-spacing:6px}
 .pb-mrow.is-main.is-jt{background:linear-gradient(180deg,rgba(212,168,67,0.10) 0%,rgba(212,168,67,0.02) 70%,transparent 100%),rgba(255,255,255,0.015);border-left-width:3px}
-.pb-mrow.is-main.is-jt::before{content:'🥇 JT MATCH';color:var(--gold-light)}
+/* トーナメント単試合結果(JT/天頂戦 共用)。コーナータグ文言と勝者色は変数駆動:
+   デフォルト=JT(夏色/🥇 JT MATCH)、天頂戦は .is-tenchosen モディファイアが --pb-tourney-* を金/👑 天頂戦 に上書きする */
+.pb-mrow.is-main.is-jt::before{content:var(--pb-tourney-tag,'🥇 JT MATCH');color:var(--gold-light)}
 /* P2b: JT試合結果 クライムライン統一(アッパー画像=勝者リング/敗者モノクロ落ち)。is-jt スコープのみへの追加なので他画面に影響しない */
 /* mockup-jt-restyle-v0.1 tab3: アッパー対面をヒーロー主役化(頂上ブロックと同じ150x225まで拡大)。
    is-main.is-jt のみへの追加 = JT/天頂戦の単試合結果画面のみに影響、他のpb-mrow画面(通常興行/PPV等)は変化なし */
 .pb-mrow.is-main.is-jt .pb-portrait{width:150px;height:225px}
-.pb-mrow.is-jt .pb-fighter.is-winner .pb-portrait{border-color:var(--ev-summer);box-shadow:0 0 0 1px var(--ev-summer),0 0 28px var(--ev-summer)}
+.pb-mrow.is-jt .pb-fighter.is-winner .pb-portrait{border-color:var(--pb-tourney-color,var(--ev-summer));box-shadow:0 0 0 1px var(--pb-tourney-color,var(--ev-summer)),0 0 28px var(--pb-tourney-color,var(--ev-summer))}
 .pb-mrow.is-jt .pb-fighter.is-loser .pb-portrait{opacity:1}
 .pb-mrow.is-jt .pb-fighter.is-loser .pb-portrait img{filter:grayscale(0.85) brightness(0.6)}
-.pb-mrow.is-jt .pb-fighter.is-winner .pb-fighter-name{color:var(--ev-summer)}
-.pb-mrow.is-jt .pb-fighter.is-winner .pb-fighter-ovr .val{color:var(--ev-summer)}
+.pb-mrow.is-jt .pb-fighter.is-winner .pb-fighter-name{color:var(--pb-tourney-color,var(--ev-summer))}
+.pb-mrow.is-jt .pb-fighter.is-winner .pb-fighter-ovr .val{color:var(--pb-tourney-color,var(--ev-summer))}
+.pb-mrow.is-jt.is-tenchosen{--pb-tourney-color:var(--gold);--pb-tourney-tag:'👑 天頂戦'}
 .jtc-result-minfo{display:flex;justify-content:center;padding:2px 0 16px}
 /* Phase 4b: JT Champion variant */
 .pb-live.is-jt-champ{background:linear-gradient(135deg,rgba(240,208,120,0.28),rgba(212,168,67,0.22));border-color:var(--gold);color:#fff;text-shadow:0 0 14px rgba(240,208,120,0.7);letter-spacing:4px;box-shadow:0 0 24px rgba(212,168,67,0.25)}
