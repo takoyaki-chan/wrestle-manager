@@ -6171,12 +6171,12 @@ const App = {
           rels[keyAB] = { ...rels[keyAB], rivalry: clamp((rels[keyAB].rivalry || 0) + rivalryBoost) };
           rels[keyBA] = { ...rels[keyBA], rivalry: clamp((rels[keyBA].rivalry || 0) + rivalryBoost) };
           s = { ...s, relationships: rels };
-          if (typeof console !== 'undefined') console.log(`[WM Faction] F08 direct bout rivalry boost: leaders ${d.leaderAId}↔${d.leaderBId} rivalry +${rivalryBoost}`);
+          wmDiag(`[WM Faction] F08 direct bout rivalry boost: leaders ${d.leaderAId}↔${d.leaderBId} rivalry +${rivalryBoost}`);
         }
         executed = true;
       });
       // 該当試合が実行されたかに関わらず、この興行後はディレクティブを落とす
-      if (executed && typeof console !== 'undefined') console.log('[WM Faction] F08 directive resolved by direct match');
+      if (executed) wmDiag('[WM Faction] F08 directive resolved by direct match');
       const { _pendingF08Directive: _, ...rest } = s;
       s = rest;
     }
@@ -6200,10 +6200,10 @@ const App = {
         }
         if (containsFactionMember && Engine.factions._applyTrustToMembers) {
           s = Engine.factions._applyTrustToMembers(s, fac.memberIds, 1);
-          if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN fulfilled (this show): ${fac.name} member appeared in main`);
+          wmDiag(`[WM Faction] F07 DEMAND_MAIN fulfilled (this show): ${fac.name} member appeared in main`);
         } else if (Engine.factions._applyTrustToMembers && fac.leaderId) {
           s = Engine.factions._applyTrustToMembers(s, [fac.leaderId], -2);
-          if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN unfulfilled (this show): ${fac.name} leader trust -2`);
+          wmDiag(`[WM Faction] F07 DEMAND_MAIN unfulfilled (this show): ${fac.name} leader trust -2`);
         }
       }
       // remainingShows をデクリメント、0 で解除
@@ -6213,7 +6213,7 @@ const App = {
       } else {
         const { _pendingF07Directive: _, ...restF07 } = s;
         s = restF07;
-        if (typeof console !== 'undefined') console.log(`[WM Faction] F07 DEMAND_MAIN directive expired`);
+        wmDiag(`[WM Faction] F07 DEMAND_MAIN directive expired`);
       }
     }
 
@@ -6294,7 +6294,7 @@ const App = {
       }
       const { _pendingF09: _f9, ...restF9 } = s;
       s = restF9;
-      if (typeof console !== 'undefined') console.log('[WM Faction] F09 sweep bonus applied');
+      wmDiag('[WM Faction] F09 sweep bonus applied');
     }
 
     // ── 派閥内序列戦 試合結果反映（spec: faction-internal-rank-spec-v0.2 §4.4）──
@@ -6806,7 +6806,7 @@ const App = {
     });
     const lastRunRetirees = [...lastRunRetireesById.values()];
     try {
-      console.warn('[WM][lastrun-diag] processShowResult:lastRunRetirees',
+      wmDiag('[WM][lastrun-diag] processShowResult:lastRunRetirees',
         { count: lastRunRetirees.length, names: lastRunRetirees.map(c => c?.name), resultsLen: results.length, validMatchesLen: validMatches.length });
     } catch (_e) {}
     if (lastRunRetirees.length > 0) {
@@ -7744,7 +7744,7 @@ const App = {
       G = cleanG;
     }
     try {
-      console.warn('[WM][injury-retire-diag] entry',
+      wmDiag('[WM][injury-retire-diag] entry',
         { count: pendingInjuryRetirements.length,
           names: pendingInjuryRetirements.map(r => r?.fighter?.name),
           season: G.season, week: G.week });
@@ -7788,7 +7788,7 @@ const App = {
       G = cleanG;
     }
     try {
-      console.warn('[WM][lastrun-diag] closeShowResult:entry',
+      wmDiag('[WM][lastrun-diag] closeShowResult:entry',
         { pendingLastRunCount: pendingLastRunRetirements.length,
           names: pendingLastRunRetirements.map(r => r?.fighter?.name),
           hasPendingR3: !!G._pendingR3Modal,
@@ -8089,7 +8089,7 @@ const App = {
       });
     }
     try {
-      console.warn('[WM][lastrun-diag] closeShowResult:popupActions',
+      wmDiag('[WM][lastrun-diag] closeShowResult:popupActions',
         { actionCount: popupActions.length,
           pendingLastRun: pendingLastRunRetirements.length,
           pendingInjury: pendingInjuryRetirements.length,
@@ -8668,7 +8668,7 @@ const App = {
       G = cleanMr;
     }
     try {
-      console.warn('[WM][motiv-retire-diag] entry',
+      wmDiag('[WM][motiv-retire-diag] entry',
         { count: motivRetirements.length,
           ids: motivRetirements.map(r => r?.fighterId),
           season: G.season, week: G.week });
@@ -8708,7 +8708,7 @@ const App = {
           const { line } = Engine.retirement.selectLine(recF, 'motivation', G, lineRng);
           const summary = Engine.retirement.buildCareerSummary(recF);
           const delay = (newInjuries.length + flavorEvents.length) * 100 + 200;
-          console.warn('[WM][motiv-retire-diag] firing recovered showRetirementPopups', { id: recF.id, name: recF.name });
+          wmDiag('[WM][motiv-retire-diag] firing recovered showRetirementPopups', { id: recF.id, name: recF.name });
           setTimeout(() => showRetirementPopups([{ fighter: recF, route: 'motivation', line, summary }]), delay);
           return;
         }
@@ -8734,7 +8734,7 @@ const App = {
         // §2.3: 引退者の関係値を凍結
         if (G.relationships) G = Engine.relationships.freezeRelationships(G, f.id);
         const delay = (newInjuries.length + flavorEvents.length) * 100 + 200;
-        console.warn('[WM][motiv-retire-diag] firing showRetirementPopups', { id: retiredF.id, name: retiredF.name });
+        wmDiag('[WM][motiv-retire-diag] firing showRetirementPopups', { id: retiredF.id, name: retiredF.name });
         setTimeout(() => showRetirementPopups([{ fighter: retiredF, route: 'motivation', line, summary }]), delay);
       });
     }

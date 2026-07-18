@@ -454,9 +454,7 @@ Engine.factions = {
       fromArchetype,
       toArchetype,
     });
-    if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] Archetype transition: ${target.name} ${fromArchetype} → ${toArchetype} (${ctx.reasonKey})`);
-    }
+    wmDiag(`[WM Faction] Archetype transition: ${target.name} ${fromArchetype} → ${toArchetype} (${ctx.reasonKey})`);
     let next = { ...state, factions: newFactions, _pendingArchetypeTransitions: queue };
     // 派閥内ポイント整合（spec §6.6）
     if (toArchetype === 'BOND' && next.factionInternalPoints && next.factionInternalPoints[factionId]) {
@@ -563,9 +561,7 @@ Engine.factions = {
       internalChallengeCooldownUntilWeek: 0,
     };
 
-    if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] ${type === 'loyal' ? 'Loyal' : 'Rivalrous'} faction formed: ${leader.surname || leader.name}派 (members: ${faction.memberIds.length})`);
-    }
+    wmDiag(`[WM Faction] ${type === 'loyal' ? 'Loyal' : 'Rivalrous'} faction formed: ${leader.surname || leader.name}派 (members: ${faction.memberIds.length})`);
 
     let next = { ...state, factions: [...(state.factions || []), faction] };
     // 派閥内ポイント初期割り振り（spec: faction-internal-rank-spec-v0.3 — リーダー初期値 + 非リーダー OVR 順位）
@@ -639,9 +635,7 @@ Engine.factions = {
       }
       newFactions = newFactions.map(f => {
         if (f.inHostility && !stillHostile.has(f.id)) {
-          if (typeof console !== 'undefined') {
-            console.log(`[WM Faction] ${f.name} hostility cooled down`);
-          }
+          wmDiag(`[WM Faction] ${f.name} hostility cooled down`);
           return { ...f, inHostility: false, momentum: 0 };
         }
         return f;
@@ -828,7 +822,7 @@ Engine.factions = {
         f.memberIds.push(bestCandId);
         assigned.add(bestCandId);
         const name = (s.roster || []).find(c => c.id === bestCandId)?.name || `#${bestCandId}`;
-        if (typeof console !== 'undefined') console.log(`[WM Faction] ${name} joined ${f.name}`);
+        wmDiag(`[WM Faction] ${name} joined ${f.name}`);
         // Common-3: 加入通知キューに積む
         joinNotices.push({
           factionId: f.id,
@@ -862,7 +856,7 @@ Engine.factions = {
       for (const rid of toRemove) {
         f.memberIds = f.memberIds.filter(id => id !== rid);
         const name = (s.roster || []).find(c => c.id === rid)?.name || `#${rid}`;
-        if (typeof console !== 'undefined') console.log(`[WM Faction] ${name} left ${f.name}`);
+        wmDiag(`[WM Faction] ${name} left ${f.name}`);
       }
       // §2.3 勢い -60未満: 全メンバーに trust -0.3
       if (this._isHostile(f) && f.momentum < -60) {
@@ -905,9 +899,7 @@ Engine.factions = {
     // §2.6 解散判定（単一派閥がロスター80%超）
     for (const f of s.factions) {
       if (rosterSize > 0 && f.memberIds.length / rosterSize >= cfg.dissolveRatioThreshold) {
-        if (typeof console !== 'undefined') {
-          console.log(`[WM Faction] Faction system dissolved (${f.name} dominated ${f.memberIds.length}/${rosterSize} of roster)`);
-        }
+        wmDiag(`[WM Faction] Faction system dissolved (${f.name} dominated ${f.memberIds.length}/${rosterSize} of roster)`);
         return { ...s, factions: [], factionHostility: {}, factionEventCooldowns: {} };
       }
     }
@@ -925,9 +917,7 @@ Engine.factions = {
     // 消滅の影響: 対立派閥に勢い -3〜-5（ここでは簡易固定 -4）
     let newFactions = survivors;
     for (const dead of removed) {
-      if (typeof console !== 'undefined') {
-        console.log(`[WM Faction] ${dead.name} dissolved (members: ${dead.memberIds.length})`);
-      }
+      wmDiag(`[WM Faction] ${dead.name} dissolved (members: ${dead.memberIds.length})`);
       newFactions = newFactions.map(f => {
         if (!this._isHostile(f)) return f;
         return { ...f, momentum: Engine.util.clamp(f.momentum - 4, -100, 100) };
@@ -1028,9 +1018,7 @@ Engine.factions = {
       : -(3 + Math.floor(Engine.rng.float(rng) * 4)); // -3〜-6
     s = this._applyTrustToMembers(s, memberIds, trustDelta);
 
-    if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] Leader succession: ${faction.name} → ${successor.surname || successor.name}派 (ratio=${ratio.toFixed(2)}, ${isShock ? 'shock' : 'normal'})`);
-    }
+    wmDiag(`[WM Faction] Leader succession: ${faction.name} → ${successor.surname || successor.name}派 (ratio=${ratio.toFixed(2)}, ${isShock ? 'shock' : 'normal'})`);
 
     // 動揺時: 対立派閥の勢い +15〜+25
     if (isShock) {
@@ -1046,9 +1034,7 @@ Engine.factions = {
     let s = state;
     const dead = (s.factions || []).find(f => f.id === factionId);
     if (!dead) return s;
-    if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] ${dead.name} dissolved (${reason})`);
-    }
+    wmDiag(`[WM Faction] ${dead.name} dissolved (${reason})`);
     // 派閥内ポイントエントリ削除（spec §6.2 dissolution）
     if (s.factionInternalPoints && s.factionInternalPoints[factionId]) {
       const ip = { ...s.factionInternalPoints };
@@ -1153,9 +1139,7 @@ Engine.factions = {
         const owner = claimed.get(id);
         if (owner === undefined) { claimed.set(id, f.id); return true; }
         if (owner === f.id) return true;
-        if (typeof console !== 'undefined') {
-          console.warn(`[WM Faction] dedupe: fighter#${id} was in faction#${owner} and faction#${f.id} — keeping in f${owner}`);
-        }
+        wmDiag(`[WM Faction] dedupe: fighter#${id} was in faction#${owner} and faction#${f.id} — keeping in f${owner}`);
         changed = true;
         return false;
       });
@@ -1281,9 +1265,7 @@ Engine.factions = {
       const weeksLeft = (leader.injury && leader.injury.weeksLeft) || 0;
       if (weeksLeft === 0) {
         changed = true;
-        if (typeof console !== 'undefined') {
-          console.log(`[WM Faction] ${f.name} resumed activity (leader ${leader.name} recovered)`);
-        }
+        wmDiag(`[WM Faction] ${f.name} resumed activity (leader ${leader.name} recovered)`);
         return { ...f, status: 'active' };
       }
       return f;
@@ -1301,9 +1283,7 @@ Engine.factions = {
       if (f.id !== factionId) return f;
       return { ...f, status: 'hiatus', inHostility: false, momentum: 0 };
     });
-    if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] ${faction.name} entered hiatus (leader absent ${payload.estimatedWeeks || 8}w+)`);
-    }
+    wmDiag(`[WM Faction] ${faction.name} entered hiatus (leader absent ${payload.estimatedWeeks || 8}w+)`);
     return {
       state: { ...state, factions: newFactions },
       resultText: `派閥「${faction.name}」は旗を畳み、活動を一時休止した。`,
@@ -1420,9 +1400,7 @@ Engine.factions = {
       };
     }
 
-    if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] F02 resolved: ${facW.name} (winner) vs ${facL.name} (loser)`);
-    }
+    wmDiag(`[WM Faction] F02 resolved: ${facW.name} (winner) vs ${facL.name} (loser)`);
 
     const impactSummary = [
       { label: `${facW.name} 勢い`, delta: `+${mW}` },
@@ -2310,9 +2288,7 @@ Engine.factions = {
       s = { ...s, factionEndlessStreak: updated };
     }
 
-    if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] F02 endless triggered: ${factionAName} vs ${factionBName} (${payload.weeksContinued}週)`);
-    }
+    wmDiag(`[WM Faction] F02 endless triggered: ${factionAName} vs ${factionBName} (${payload.weeksContinued}週)`);
 
     return {
       state: s,
@@ -2395,9 +2371,7 @@ Engine.factions = {
     const { factionPendingIgnite: _, ...rest } = s;
     s = rest;
 
-    if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] F02 ignite fired: ${factionAName} vs ${factionBName}`);
-    }
+    wmDiag(`[WM Faction] F02 ignite fired: ${factionAName} vs ${factionBName}`);
 
     return {
       state: s,
@@ -2504,9 +2478,7 @@ Engine.factions = {
       };
     }
 
-    if (typeof console !== 'undefined') {
-      console.log(`[WM Faction] F02 peace fired: ${factionAName} vs ${factionBName}`);
-    }
+    wmDiag(`[WM Faction] F02 peace fired: ${factionAName} vs ${factionBName}`);
 
     return {
       state: s,
@@ -2529,9 +2501,7 @@ Engine.factions = {
     const now = this._absWeek(state);
     if (typeof pi.expireWeek === 'number' && now > pi.expireWeek) {
       const { factionPendingIgnite: _, ...rest } = state;
-      if (typeof console !== 'undefined') {
-        console.log(`[WM Faction] F02 pending ignite expired (${pi.factionAName} vs ${pi.factionBName})`);
-      }
+      wmDiag(`[WM Faction] F02 pending ignite expired (${pi.factionAName} vs ${pi.factionBName})`);
       return rest;
     }
     return state;
@@ -3611,7 +3581,7 @@ Engine.factions = {
         const dBond2 = 2 + Math.floor(Engine.rng.float(rng) * 3);
         s = this._applyBondDirected(s, targetId, toFaction.leaderId, dBond2);
       }
-      if (typeof console !== 'undefined') console.log(`[WM Faction] F04 defection: ${targetName} ${fromFactionName} → ${toFactionName}`);
+      wmDiag(`[WM Faction] F04 defection: ${targetName} ${fromFactionName} → ${toFactionName}`);
       return {
         state: s,
         resultText: `${targetName}は${toFactionName}へ移っていった。${fromFactionName}の空気は凍りついている。`,
@@ -3712,7 +3682,7 @@ Engine.factions = {
       };
       const ringleader = roster.find(c => c.id === ringleaderId);
       if (ringleader) s = this.createFaction(s, ringleaderId, dissidentIds, { type: 'loyal' });
-      if (typeof console !== 'undefined') console.log(`[WM Faction] F05 split (natural): ${factionName} → ${ringleader?.surname || ringleaderName}派 (${dissidentIds.length} members)`);
+      wmDiag(`[WM Faction] F05 split (natural): ${factionName} → ${ringleader?.surname || ringleaderName}派 (${dissidentIds.length} members)`);
       // 旧派閥は OVR 順位ベース再構成（リーダーは0pt）/ 新派閥も初期割り振り
       const oldFac = (s.factions || []).find(f => f.id === factionId);
       if (oldFac) s = this._allocateInternalPointsByOvrRank(s, factionId, [oldFac.leaderId]);
@@ -4228,7 +4198,7 @@ Engine.factions = {
           triggeredWeek: s.week,
         },
       };
-      if (typeof console !== 'undefined') console.log(`[WM Faction] F08 directive set: ${factionAName} vs ${factionBName}`);
+      wmDiag(`[WM Faction] F08 directive set: ${factionAName} vs ${factionBName}`);
       return {
         state: s,
         resultText: `${factionAName}と${factionBName}、両リーダーの直接対決を次興行のメインに据えると決めた。`,

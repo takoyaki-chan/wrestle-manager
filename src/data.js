@@ -3,6 +3,9 @@
 // ╚══════════════════════════════════════════════════════════╝
 const FEEDBACK_FORM_URL = 'https://forms.gle/73biRkZ9c23EgRuP7';
 
+// 診断ログゲート: 既定OFF。開発時のみコンソールで window.WM_DIAG = true にすると出力される
+function wmDiag(...args) { try { if (typeof window !== 'undefined' && window.WM_DIAG) console.warn(...args); } catch (_) {} }
+
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 1: CHARACTER DATA                               ║
 // ╚══════════════════════════════════════════════════════════╝
@@ -454,7 +457,7 @@ function generateDraftConfig(seed) {
     const eliteShuffled = seededShuffle(elitePool.map(x => x.id), rng);
     guaranteed.push(eliteShuffled[0]);
   } else {
-    console.warn('Draft: no elite candidate in FA pool');
+    wmDiag('Draft: no elite candidate in FA pool');
   }
 
   // §3.6: 安価候補保証 — assessedValue <= cheapMax から最低2名
