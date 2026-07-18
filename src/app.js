@@ -12732,6 +12732,7 @@ App.jtSkipAll = function() {
 App.jtGoToFinalResult = function() {
   const jt = App._jtPreview;
   if (!jt) return;
+  clearTimeout(App._jtPeakTimer);
   jt.phase = 'finalResult';
   renderJuniorTournamentResult();
 };
@@ -12917,8 +12918,9 @@ App._jtAdvanceInternal = function(roundIdx, matchIdx) {
     jt.phase = 'bracket';
     renderJuniorTournamentBracket();
   } else {
-    // 決勝決着 → クライムラインの頂上に王者枠がせり上がる(二段構え、棚卸し#9)。
-    // 優勝発表(pb画面)は頂上ブロックをタップした時点で App.jtGoToFinalResult が開く。
+    // 決勝決着 → 頂上せり上がり(0.5s) → 1.6秒で優勝画面へ自動遷移。
+    // タップ待ちで止めない(実機フィードバック: 二段構えの待ちがフリーズに見える。天頂戦と同じ修正)。
+    // 頂上タップで即時スキップも可。
     jt.currentRound = roundIdx + 1; // ラウンド範囲外 = 「全段せり上がり済み」を表すポインタ
     jt.currentMatch = 0;
     jt.phase = 'bracket';
@@ -12929,6 +12931,14 @@ App._jtAdvanceInternal = function(roundIdx, matchIdx) {
       Audio.bgm.playJingle('championship');
     }, 900);
     renderJuniorTournamentBracket();
+    // 頂上ブロックは画面上部にあるためスクロールを先頭へ戻して見せる
+    const jtOverlay = document.getElementById('showResultOverlay');
+    if (jtOverlay) jtOverlay.scrollTop = 0;
+    clearTimeout(App._jtPeakTimer);
+    App._jtPeakTimer = setTimeout(() => {
+      const cur = App._jtPreview;
+      if (cur && cur.phase === 'bracket') App.jtGoToFinalResult();
+    }, 1600);
   }
 };
 
@@ -12999,6 +13009,7 @@ App.finalizeJuniorTournament = function() {
 
   // transientクリア（_juniorTournamentResultはtickWeekで新聞が読むので残す）
   delete G._juniorTournamentSelection;
+  clearTimeout(App._jtPeakTimer);
   App._jtPreview = null;
 
   // V6 summon で変更した box スタイルをリセット
