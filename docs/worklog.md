@@ -6,6 +6,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 直近の調整（2026-07-18 C-6「天頂戦」実装着手: 画面仕様書 + Codex task-04 発行）
+
+実装フェーズ開始。Codex併用方針(仕様確定済み・衝突しないタスクをCodexへ)に従い2分割: **P1エンジン=Codex / P2 UI=メイン側(Sonnet委譲)**。①**画面仕様書** `docs/ui/03-screens/tenchosen.md` 新規(テンプレート準拠): Stage/P7クライムライン/S2×S4継承、確定ビジュアルはモックv0.3を正とし、段別画像文法・アッパー非反転・ドラマモーダル(0件なら非表示)・エントリー画面(特別招待発表ブロック)・TV観戦を記載。②**Codex指示書** `docs/codex-tasks/task-04-tenchosen-engine.md` 新規(task-03書式踏襲): 許可3ファイル(management.js/data.js/auto-sim)、開催判定〜エントリー(特別招待2+団体枠5/4/3/2・confirmPlayerEntries・未確定自己修復)〜16名15試合一括シム(tier2/wear持ち越し回復2/3 floor50/JT方式)〜報酬配線(決勝±7/ppvT 20pt/殿堂+8/賞金3000-1200-500×2/careerRecord 5段result/頂上決戦スキップ分岐)〜**関係性ドラマ判定エンジン**(3分類の発火暫定値🔧: epic=SF以上MQ≥90+文脈/humiliation=シード差6+上位シード敗北/stablemate=同団体対決、上限2件・下限0・同一選手1件)〜セリフ91本のdata.js定数化(承認版から文言改変禁止・年齢条件タグのフラグ化=話者or相手30歳超で除外)〜TV観戦〜auto-sim(エントリー自動化+開催率+決勝MQ分布vs通常年比較レポート)。**GameStateコントラクト**(ppvTournament: specialInvites/entries/rounds/dramaEvents/championId)を明文化しUI側の依存先として固定。ニュース2種各2案は全文報告(レビュー)指定。③**次工程**: Keisuke が task-04 を Codex アプリで実行 → 着地したらメイン側で git show 後追いレビュー(fix-forward) → P2 UI 実装(Sonnet委譲、tenchosen.md+モックv0.3参照)。変更: docs/ui/03-screens/tenchosen.md(新規) + docs/codex-tasks/task-04-tenchosen-engine.md(新規) + docs/game-system-roadmap.md(C-6行) + 本項。
+
 ## 直近の調整（2026-07-18 C-6「天頂戦」設計確定 — Keisuke全項目追認・設計フェーズ完了）
 
 残項目(セリフEの同門ポジティブ言及の残置を含む)をKeisukeが全て追認し、**C-6の設計フェーズが完了**。specステータスを🟢設計確定に更新(§8は「実装時確認」のみ残る整理に)、セリフ草案を✅承認済みv0.2に、ロードマップC-6行を✅設計確定に更新。**確定内容の総括**: 大会名「天頂戦」(冠: 全国女子プロレス最強王者決定戦/称号: 第N回天頂戦覇者) / season%4==0開催・Week48のPPV GRAND FINAL置き換え / エントリー=特別招待2名(個人ランキング1位+人気1位・団体枠消費なし)+団体枠14名(5/4/3/2) / 16名シングルエリミ15試合・全試合ビッグマッチルール・消耗全ラウンド持ち越し(回復2/3・floor50はauto-sim較正) / 優勝は記録と名誉のみ(数値効果なし・殿堂+8/実績20pt/賞金3000-1200-500万) / UIはクライムライン型(1回戦・準々=丸アイコン、準決勝以上=2:3矩形アッパー、アッパー非反転、仮エンブレムimage/emblem-tenchosen.png) / 関係性ドラマ(文脈前提・下限0・上限1〜2件、セリフ91本承認済み)。**次工程**: docs/ui/03-screens/ に画面仕様書(tenchosen)を起こしてレビュー → 実装(Sonnet委譲予定)。実装時の主な参照: spec v0.5全§ + セリフ承認版 + JTクライムライン実装(ui-common.js 14342〜)。変更: specs/quadrennial-ppv-tournament-spec-v0.1.md(ステータス/§8/変更履歴) + docs/quadrennial-drama-lines-draft-v0.1.md(承認済み化) + CLAUDE.md(索引) + docs/game-system-roadmap.md(C-6行) + 本項。
