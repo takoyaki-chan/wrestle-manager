@@ -17017,7 +17017,10 @@ Engine.awards = {
     const autumnWarPt = hist
       .filter(e => e.type === 'autumnWar')
       .reduce((sum, e) => sum + (e.wins || 0) * 1.5 + (e.result === 'champion' ? 2 : 0) + ((e.wins || 0) >= 3 ? 2 : 0), 0);
-    const ppvTournamentPt = hist.filter(e => e.type === 'ppvTournament' && e.result === 'champion').length * 8;
+    // 天頂戦はベスト4まで殿堂加点(毎年の頂上決戦勝利5ptより重い傾斜: 準優勝=毎年の頂上制覇と同格)
+    const ppvTournamentPt = hist
+      .filter(e => e.type === 'ppvTournament')
+      .reduce((sum, e) => sum + (e.result === 'champion' ? 8 : e.result === 'runnerUp' ? 5 : e.result === 'semiFinal' ? 3 : 0), 0);
     const ppvPt = hist.filter(e => e.type === 'ppvMainEvent' && e.isSummit && e.won).length * 5;
     const warWins = hist.filter(e => e.type === 'war' && e.won).length;
     const warPt = warWins * 1.5;
