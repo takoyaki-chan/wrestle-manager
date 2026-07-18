@@ -4750,7 +4750,14 @@ const App = {
 
   // Set show card slot
   setShowCardSlot(slotIndex, side, newId) {
+    if (G.showCard?.[slotIndex]?._crMatchLocked) {
+      Audio.play('error'); showToast('⚔ 挑戦試合の上位3枠は固定です', 3000); return;
+    }
     newId = +newId;
+    const reservedCRIds = new Set(Engine.challengeRequest?.getScheduledCard?.(G)?.reservedIds || []);
+    if (newId > 0 && reservedCRIds.has(newId)) {
+      Audio.play('error'); showToast('⚔ この選手は上位3枠の挑戦試合に出場します', 3000); return;
+    }
     const newCard = G.showCard.map(s => ({ ...s }));
     // Swap: if newId is already used in another slot, exchange fighters
     if (newId > 0) {
@@ -4822,6 +4829,9 @@ const App = {
   mergeToTagSlot(idx) {
     const card = [...G.showCard];
     if (idx < 0 || idx + 1 >= card.length) return;
+    if (card[idx]?._crMatchLocked || card[idx + 1]?._crMatchLocked) {
+      Audio.play('error'); showToast('⚔ 挑戦試合の固定枠はタッグに変更できません', 3000); return;
+    }
     if (idx === 0) { Audio.play('error'); showToast('メインイベントはシングルマッチのみです'); return; }
     if (card[idx].matchType === 'tag' || card[idx + 1].matchType === 'tag') {
       Audio.play('error'); showToast('タッグ枠同士は合体できません'); return;
@@ -4852,6 +4862,10 @@ const App = {
 
   setTagSlotFighter(slotIdx, team, pos, fighterId) {
     fighterId = +fighterId;
+    const reservedCRIds = new Set(Engine.challengeRequest?.getScheduledCard?.(G)?.reservedIds || []);
+    if (fighterId > 0 && reservedCRIds.has(fighterId)) {
+      Audio.play('error'); showToast('⚔ この選手は上位3枠の挑戦試合に出場します', 3000); return;
+    }
     const newCard = G.showCard.map(s => s.matchType === 'tag'
       ? { ...s, teamA: { ...s.teamA }, teamB: { ...s.teamB } }
       : { ...s });
@@ -4889,6 +4903,9 @@ const App = {
 
   // Toggle title match
   toggleTitleMatch(slotIndex) {
+    if (G.showCard?.[slotIndex]?._crMatchLocked) {
+      Audio.play('error'); showToast('⚔ 挑戦試合の固定枠はタイトル戦に変更できません', 3000); return;
+    }
     const newVal = !G.showCard[slotIndex].isTitle;
     // ONにするときは必ず他スロットのisTitleをクリア（チャンピオン在籍/空位どちらも）
     const nextCard = G.showCard.map((slot, i) => {
@@ -4909,6 +4926,23 @@ const App = {
     }
     // v2.0: weekPhase guard — settled/weekSummary等の非興行フェーズでは実行不可
     if (G.offSeason || !['manage', 'showPrep'].includes(G.weekPhase)) { Audio.play('error'); return; }
+    // Accepted challenge requests reserve the top three slots inside the venue
+    // limit. Inject only the visiting fighters needed to render/simulate them.
+    if (G._pendingChallengeMatch && Engine.challengeRequest?.reserveScheduledMatches) {
+      const reservedCR = Engine.challengeRequest.reserveScheduledMatches(G, G.showCard);
+      if (reservedCR) {
+        const existingIds = new Set((G.roster || []).map(f => f.id));
+        const guests = reservedCR.scheduled.guestTeam
+          .filter(f => !existingIds.has(f.id))
+          .map(f => ({ ...f, isCRGuest: true, _crGuestOrgId: reservedCR.scheduled.guestOrgId }));
+        G = { ...G, showCard: reservedCR.card, roster: [...G.roster, ...guests] };
+      } else {
+        const clearedCard = Engine.challengeRequest.clearReservedMatches(G, G.showCard);
+        const { _pendingChallengeMatch: _invalidCR, ...rest } = G;
+        G = { ...rest, showCard: clearedCard };
+        showToast('⚠ 挑戦試合の出場メンバーが揃わないため、予約を解除しました', 5000);
+      }
+    }
     // Guard: sanitize stale card refs (released/retired/transferred wrestlers)
     const rosterIdSet = new Set(G.roster.map(c => c.id));
     let hadStaleRef = false;
@@ -4980,41 +5014,42 @@ const App = {
       } else {
         // 防衛者を player roster に isReclaim 印で一時注入
         const defenderForRoster = { ...defender, isReclaim: true, _reclaimOrgId: eh.orgId };
-        // 既存メイン枠 (slot 0) を奪還挑戦試合に置き換え
+        // 挑戦シリーズの上位3枠は維持し、その直下の通常枠を奪還戦に置き換える。
         const newCard = [...G.showCard];
         const reclaimMatch = {
           left: pr.challengerId, right: defender.id,
           isTitle: true, isReclaim: true,
           _reclaimDefenderId: defender.id, _reclaimOrgId: eh.orgId,
         };
-        if (newCard.length === 0) newCard.push(reclaimMatch);
-        else newCard[0] = reclaimMatch;
-        G = { ...G, showCard: newCard, roster: [...G.roster, defenderForRoster] };
-        // validMatches も再構築（メインを反映）
-        validMatches.length = 0;
-        newCard.forEach(m => {
-          if (m.matchType === 'tag'
-            ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
-            : (m.left > 0 && m.right > 0)) validMatches.push(m);
-        });
-        App._reclaimData = {
-          challengerId: pr.challengerId, defenderId: defender.id,
-          orgId: eh.orgId, orgName: aiOrg?.name || eh.orgId,
-          defenderName: defender.name, challengerName: challenger.name,
-        };
-        showEventPopup({
-          type: 'fighter', id: pr.challengerId,
-          name: challenger.name, tone: 'positive',
-          message: `⚔ 王座奪還の決戦！ ${challenger.name} vs ${defender.name}`,
-          detail: `${aiOrg?.name || eh.orgId} に持ち去られた世界王座を取り戻せ！`,
-        });
+        const reclaimIdx = newCard.findIndex(m => !m?._crMatchLocked && !m?.isCRMatch);
+        // 3試合会場では挑戦シリーズだけで満枠。奪還戦は次の興行へ持ち越す。
+        if (reclaimIdx >= 0) {
+          newCard[reclaimIdx] = reclaimMatch;
+          G = { ...G, showCard: newCard, roster: [...G.roster, defenderForRoster] };
+          // validMatches も再構築（奪還戦を反映）
+          validMatches.length = 0;
+          newCard.forEach(m => {
+            if (m.matchType === 'tag'
+              ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
+              : (m.left > 0 && m.right > 0)) validMatches.push(m);
+          });
+          App._reclaimData = {
+            challengerId: pr.challengerId, defenderId: defender.id,
+            orgId: eh.orgId, orgName: aiOrg?.name || eh.orgId,
+            defenderName: defender.name, challengerName: challenger.name,
+          };
+          showEventPopup({
+            type: 'fighter', id: pr.challengerId,
+            name: challenger.name, tone: 'positive',
+            message: `⚔ 王座奪還の決戦！ ${challenger.name} vs ${defender.name}`,
+            detail: `${aiOrg?.name || eh.orgId} に持ち去られた世界王座を取り戻せ！`,
+          });
+        }
       }
     }
 
-    // ── challenge-request-spec-v0.1 Phase 3(2026-07-17): 直訴試合の興行枠in-show挿入 ──
-    // _pendingReclaim と同じパターン: executeShow直前に3シングル分のカードスロットを注入し、
-    // 相手陣（他団体ロスター）はレンダー用に一時的にplayer rosterへゲスト注入する。
-    // 通常カードは潰さない（置き換えではなく追加）。
+    // ── challenge-request-spec-v0.1 Phase 3: 予約済み挑戦シリーズを実行 ──
+    // 上位3枠は会場上限の内数として興行準備時点で確保済み。
     App._crMatchData = null;
     if (G._pendingChallengeMatch) {
       const pcm = G._pendingChallengeMatch;
@@ -5026,24 +5061,19 @@ const App = {
       const teamACR = _crFindAll(pcm.teamAIds, reqRosterCR);
       const teamBCR = _crFindAll(pcm.teamBIds, oppRosterCR);
       if (teamACR.length === 3 && teamBCR.length === 3 && teamACR.every(_crHealthy) && teamBCR.every(_crHealthy)) {
-        const crGroupId = `cr_${pcm.requesterId}_${pcm.opponentId}_${G.season}_${G.week}`;
+        const crMatches = G.showCard
+          .filter(m => m && m._crMatchLocked && m.isCRMatch)
+          .sort((a, b) => a._crSlot - b._crSlot);
+        const crGroupId = crMatches[0]?._crGroupId || `cr_${pcm.requesterId}_${pcm.opponentId}_${G.season}_${G.week}`;
         // ゲスト側 = 他団体所属の陣営（forward: teamB / inverse: teamA）
-        const guestTeamCR = isInverseCR ? teamACR : teamBCR;
-        const guestOrgIdCR = isInverseCR ? pcm.requesterOrgId : pcm.opponentOrgId;
-        const guestsForRosterCR = guestTeamCR.map(f => ({ ...f, isCRGuest: true, _crGuestOrgId: guestOrgIdCR }));
-        const crMatches = [0, 1, 2].map(i => ({
-          left: teamACR[i].id, right: teamBCR[i].id,
-          isTitle: false, isCRMatch: true, _crGroupId: crGroupId, _crSlot: i,
-        }));
-        G = { ...G, showCard: [...G.showCard, ...crMatches], roster: [...G.roster, ...guestsForRosterCR] };
-        validMatches.push(...crMatches);
+        const guestIdsCR = (isInverseCR ? teamACR : teamBCR).map(f => f.id);
         App._crMatchData = {
           groupId: crGroupId, isInverse: isInverseCR,
           requesterId: pcm.requesterId, opponentId: pcm.opponentId,
           requesterOrgId: pcm.requesterOrgId, opponentOrgId: pcm.opponentOrgId,
           requesterOrgName: pcm.requesterOrgName, opponentOrgName: pcm.opponentOrgName,
           teamAIds: teamACR.map(f => f.id), teamBIds: teamBCR.map(f => f.id),
-          guestIds: guestsForRosterCR.map(f => f.id),
+          guestIds: guestIdsCR,
         };
         const { _pendingChallengeMatch: _pcm1, ...restGCR } = G;
         G = restGCR;
@@ -5934,7 +5964,7 @@ const App = {
 
     // 集客v2: matchAppeals→showDraw→attendance算出
     const appFanExpects = Engine.fanExpect.generate(s);
-    const appMatchAppeals = validMatches.map(m => {
+    const appMatchAppeals = validMatches.map((m, matchIndex) => {
       if (m.matchType === 'tag') {
         // タッグ: 4人の平均集客力で簡易計算
         const ids = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
@@ -5942,8 +5972,10 @@ const App = {
         if (fighters.length < 4) return 0;
         return fighters.reduce((sum, f) => sum + Engine.attendanceV2.calcDrawPower(f, s), 0) / 2;
       }
-      const fA = roster.find(c => c.id === m.left);
-      const fB = roster.find(c => c.id === m.right);
+      // 挑戦試合のゲストは結果処理後に一時ロスターから外れるため、
+      // 解決済み結果に保持されている選手データをフォールバックに使う。
+      const fA = roster.find(c => c.id === m.left) || results[matchIndex]?.left;
+      const fB = roster.find(c => c.id === m.right) || results[matchIndex]?.right;
       if (!fA || !fB) return { totalAppeal: 0 };
       const rivalryAB = s.relationships ? (s.relationships[`${m.left}>${m.right}`]?.rivalry || 0) : 0;
       const rivalryBA = s.relationships ? (s.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
@@ -5955,6 +5987,7 @@ const App = {
       const isF08Match = !!m._f08Locked || (Engine.factions && Engine.factions.isF08DirectiveMatch && Engine.factions.isF08DirectiveMatch(s, m.left, m.right));
       return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
         rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+        isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
         pendingClashBonus: appPendingClash, isFirstMeet: appFr.isFirstMeet, freshnessCount: appFr.countInWindow,
         isF08Match,
       }, s);

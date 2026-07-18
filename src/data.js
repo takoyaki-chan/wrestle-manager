@@ -1353,6 +1353,7 @@ const MATCH_APPEAL_CONFIG = {
   rivalryScale: 0.3,          // rivalry値 → appeal変換係数
   titleAppeal: 20,            // タイトル戦加算
   fanExpectAppeal: 12,         // ファン期待カード加算
+  challengeRequestAppeal: 12,  // 他団体との挑戦シリーズ自体への注目度
   heelFaceAppeal: 6,           // ヒールvsベビー構図加算
   pendingClashAppeal: 15,      // 乱闘蓄積1あたり（話題性大）
   firstMeetAppeal: 8,          // 初顔合わせ（未知のカードへの興味）

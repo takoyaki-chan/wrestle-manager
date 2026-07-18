@@ -1028,6 +1028,7 @@ const Engine = {
       const feudSum = Math.min(feudCore, FACTION_CONFIG.feudSumCap);
       const titleBonus = context.isTitle ? cfg.titleAppeal : 0;
       const fanExpectBonus = context.isFanExpect ? cfg.fanExpectAppeal : 0;
+      const challengeRequestBonus = context.isChallengeRequest ? cfg.challengeRequestAppeal : 0;
       let heelFaceBonus = 0;
       if ((Traits.has(fighterA, 'ヒール') && !Traits.has(fighterB, 'ヒール')) || (!Traits.has(fighterA, 'ヒール') && Traits.has(fighterB, 'ヒール'))) heelFaceBonus = cfg.heelFaceAppeal;
       const clashAppeal = (context.pendingClashBonus || 0) * cfg.pendingClashAppeal;
@@ -1038,7 +1039,7 @@ const Engine = {
       }
       const total = Math.round(Engine.attendanceV2.calcMatchAppeal(fighterA, fighterB, context, G));
       // UI互換: rivalryAppeal フィールドに派閥抗争とのmax+キャップ後を返す
-      return { total, drawA, drawB, parityBonus, rivalryAppeal: feudSum, factionAppeal, titleBonus, fanExpectBonus, heelFaceBonus, clashAppeal, firstMeetBonus, stalePenalty };
+      return { total, drawA, drawB, parityBonus, rivalryAppeal: feudSum, factionAppeal, titleBonus, fanExpectBonus, challengeRequestBonus, heelFaceBonus, clashAppeal, firstMeetBonus, stalePenalty };
     },
 
     // ── B系: matchAppeal（カード魅力） ──
@@ -1085,6 +1086,10 @@ const Engine = {
       // B6: ファン期待カード
       const fanExpectBonus = context.isFanExpect ? cfg.fanExpectAppeal : 0;
 
+      // Accepted cross-organization challenge series carries its own draw,
+      // even when the supporting pairings have not built a rivalry yet.
+      const challengeRequestBonus = context.isChallengeRequest ? cfg.challengeRequestAppeal : 0;
+
       // ヒールvsベビー
       let heelFaceBonus = 0;
       const aIsHeel = Traits.has(fighterA, 'ヒール');
@@ -1103,7 +1108,7 @@ const Engine = {
         stalePenalty = Math.max((context.freshnessCount - 2) * cfg.stalePenaltyPerCount, cfg.stalePenaltyMax);
       }
 
-      const totalAppeal = avgDraw + parityBonus + feudSum + titleBonus + fanExpectBonus + heelFaceBonus + clashAppeal + firstMeetBonus + stalePenalty;
+      const totalAppeal = avgDraw + parityBonus + feudSum + titleBonus + fanExpectBonus + challengeRequestBonus + heelFaceBonus + clashAppeal + firstMeetBonus + stalePenalty;
       return totalAppeal;
     },
 
@@ -1280,6 +1285,7 @@ const Engine = {
         const context = {
           isTitle: !!m.isTitle,
           isFanExpect: !!(m.isFanExpect || m.fanExpectMatched),
+          isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
           pendingClashBonus: prvPendingClash, isFirstMeet: prvFr.isFirstMeet, freshnessCount: prvFr.countInWindow,
         };
         const matchAppeal = this.calcMatchAppeal(fA, fB, context, G);
@@ -10402,6 +10408,7 @@ const Engine = {
           const sFr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows, G.roster.length, null);
           return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
             rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+            isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
             pendingClashBonus: sPendingClash, isFirstMeet: sFr.isFirstMeet, freshnessCount: sFr.countInWindow,
           }, G);
         });
@@ -11344,6 +11351,7 @@ const Engine = {
       const fr = Engine.freshness.calc(s.matchupLog || [], m.left, m.right, s.totalShows, s.roster.length, null);
       return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
         rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+        isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
         pendingClashBonus, isFirstMeet: fr.isFirstMeet, freshnessCount: fr.countInWindow,
       }, s);
     });

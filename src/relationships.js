@@ -3643,6 +3643,79 @@ Engine.challengeRequest = {
    *  returns { matches: [{fighterA, fighterB, winner, mq, finMove}], winsA, winsB, teamWin: 'A'|'B'|'draw' }
    *  Phase 3(2026-07-17)以降、実際の直訴試合解決はshowCard経由(App.executeShow内)で行われるため
    *  app.js からは呼ばれなくなった。簡易テスト・独立検証用に残置。 */
+  /** Resolve an accepted challenge against the latest rosters. */
+  getScheduledCard(state) {
+    const pending = state && state._pendingChallengeMatch;
+    if (!pending) return null;
+    const isInverse = !!pending.isInverse;
+    const requesterRoster = isInverse
+      ? (state.aiOrgs?.[pending.requesterOrgId]?.roster || [])
+      : (state.roster || []);
+    const opponentRoster = isInverse
+      ? (state.roster || [])
+      : (state.aiOrgs?.[pending.opponentOrgId]?.roster || []);
+    const findAll = (ids, roster) => (ids || []).map(id => roster.find(f => f.id === id)).filter(Boolean);
+    const healthy = f => f && !f.injury && !f.forcedRest && !f.suspended;
+    const teamA = findAll(pending.teamAIds, requesterRoster);
+    const teamB = findAll(pending.teamBIds, opponentRoster);
+    if (teamA.length !== 3 || teamB.length !== 3 || !teamA.every(healthy) || !teamB.every(healthy)) return null;
+    const guestTeam = isInverse ? teamA : teamB;
+    const guestOrgId = isInverse ? pending.requesterOrgId : pending.opponentOrgId;
+    return {
+      ...pending,
+      teamA,
+      teamB,
+      guestTeam,
+      guestOrgId,
+      reservedIds: [...teamA, ...teamB].map(f => f.id),
+    };
+  },
+
+  /**
+   * Reserve the main event, semi-main, and third-from-top slots for the
+   * accepted three-match challenge series. The venue limit includes them.
+   */
+  reserveScheduledMatches(state, card) {
+    const scheduled = this.getScheduledCard(state);
+    if (!scheduled) return null;
+    const reservedIds = new Set(scheduled.reservedIds);
+    const remaining = [];
+    for (const slot of (Array.isArray(card) ? card : [])) {
+      if (!slot || slot._crMatchLocked || slot.isCRMatch) continue;
+      if (slot.matchType === 'tag') {
+        const teamA = { ...(slot.teamA || {}) };
+        const teamB = { ...(slot.teamB || {}) };
+        for (const key of ['fighter1', 'fighter2']) {
+          if (reservedIds.has(teamA[key])) teamA[key] = 0;
+          if (reservedIds.has(teamB[key])) teamB[key] = 0;
+        }
+        remaining.push({ ...slot, teamA, teamB });
+      } else {
+        const left = reservedIds.has(slot.left) ? 0 : (slot.left || 0);
+        const right = reservedIds.has(slot.right) ? 0 : (slot.right || 0);
+        remaining.push({ ...slot, left, right, isTitle: left > 0 && right > 0 ? !!slot.isTitle : false });
+      }
+    }
+    const groupId = `cr_${scheduled.requesterId}_${scheduled.opponentId}_${state.season}_${state.week}`;
+    const locked = [0, 1, 2].map(i => ({
+      left: scheduled.teamA[i].id,
+      right: scheduled.teamB[i].id,
+      isTitle: false,
+      isCRMatch: true,
+      _crMatchLocked: true,
+      _crGroupId: groupId,
+      _crSlot: i,
+    }));
+    const merged = Engine.util.normalizeShowCardForVenue([...locked, ...remaining], state.week, state.showVenue);
+    return { card: merged, scheduled, groupId };
+  },
+
+  /** Remove stale reserved slots after a scheduled challenge becomes invalid. */
+  clearReservedMatches(state, card) {
+    const remaining = (Array.isArray(card) ? card : []).filter(slot => slot && !slot._crMatchLocked && !slot.isCRMatch);
+    return Engine.util.normalizeShowCardForVenue(remaining, state.week, state.showVenue);
+  },
+
   resolveMatchCard(card, rng) {
     const matches = [];
     for (let i = 0; i < 3; i++) {

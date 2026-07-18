@@ -2247,7 +2247,8 @@ function getAvailableForSlot(slotIndex, side) {
   // Fighters in other slots are included but marked with _usedInOtherSlot for swap UI
   const used = getUsedFighterIds(slotIndex);
   const otherSide = side === 'left' ? G.showCard[slotIndex].right : G.showCard[slotIndex].left;
-  return G.roster.filter(c => c.id !== otherSide && !c.injury && !c.forcedRest).map(c => ({
+  const reservedCRIds = new Set(getScheduledChallengeCard()?.reservedIds || []);
+  return G.roster.filter(c => c.id !== otherSide && !c.injury && !c.forcedRest && !reservedCRIds.has(c.id)).map(c => ({
     ...c, _usedInOtherSlot: used.has(c.id)
   }));
 }
@@ -2256,6 +2257,10 @@ function getAvailableForSlot(slotIndex, side) {
 function _spOpenPicker(slotIdx, side) {
   // F08 ロック: 直接対決固定枠は選手差替え不可
   const slot = G.showCard && G.showCard[slotIdx];
+  if (slot && slot._crMatchLocked) {
+    if (typeof showToast === 'function') showToast('⚔ 挑戦試合の上位3枠は固定です', 3000);
+    return;
+  }
   if (slot && slot._f08Locked) {
     if (typeof showToast === 'function') showToast('🔥 派閥の直接対決のため、この試合の選手は変更できません', 3000);
     return;
@@ -2278,6 +2283,10 @@ function _spOpenPicker(slotIdx, side) {
   renderShowPrep();
 }
 function _spOpenTagPicker(slotIdx, tagTeam, tagPos) {
+  if (G.showCard?.[slotIdx]?._crMatchLocked) {
+    if (typeof showToast === 'function') showToast('⚔ 挑戦試合の上位3枠は固定です', 3000);
+    return;
+  }
   if (_spActivePicker && _spActivePicker.slotIdx === slotIdx && _spActivePicker.tagTeam === tagTeam && _spActivePicker.tagPos === tagPos) {
     _spActivePicker = null;
   } else {
@@ -2323,8 +2332,8 @@ function showMatchAppealTooltip(event, slotIdx) {
   if (!G.showCard || !G.showCard[slotIdx]) return;
   const m = G.showCard[slotIdx];
   if (!m.left || m.left <= 0 || !m.right || m.right <= 0) return;
-  const fA = G.roster.find(c => c.id === m.left);
-  const fB = G.roster.find(c => c.id === m.right);
+  const fA = getShowCardFighter(m.left);
+  const fB = getShowCardFighter(m.right);
   if (!fA || !fB) return;
 
   const fanExpects = Engine.fanExpect.generate(G);
@@ -2336,6 +2345,7 @@ function showMatchAppealTooltip(event, slotIdx) {
   const bdPendingClash = bdRivalryLevel?.pendingClashBonus || 0;
   const bdFr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows, G.roster.length, null);
   const context = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
+    isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
     pendingClashBonus: bdPendingClash, isFirstMeet: bdFr.isFirstMeet, freshnessCount: bdFr.countInWindow };
   const bd = Engine.attendanceV2.calcMatchAppealBreakdown(fA, fB, context, G);
 
@@ -2352,6 +2362,7 @@ function showMatchAppealTooltip(event, slotIdx) {
   if (bd.rivalryAppeal > 0) bonuses.push(`⚡因縁+${bd.rivalryAppeal}`);
   if (bd.titleBonus > 0) bonuses.push(`🏆タイトル+${bd.titleBonus}`);
   if (bd.fanExpectBonus > 0) bonuses.push(`📣期待+${bd.fanExpectBonus}`);
+  if (bd.challengeRequestBonus > 0) bonuses.push(`⚔他団体挑戦+${bd.challengeRequestBonus}`);
   if (bd.heelFaceBonus > 0) bonuses.push(`😈善悪+${bd.heelFaceBonus}`);
   if (bd.clashAppeal > 0) bonuses.push(`🥊乱闘蓄積+${bd.clashAppeal}`);
   if (bd.firstMeetBonus > 0) bonuses.push(`🆕初顔合わせ+${bd.firstMeetBonus}`);
@@ -2658,7 +2669,11 @@ function renderShowPrep() {
   // Sanitize stale IDs (released/retired/transferred wrestlers still in card)
   // forcedRest（S3休養願い承認）の選手も除外
   {
-    const rosterMap = new Map(G.roster.map(c => [c.id, c]));
+    const scheduledCR = getScheduledChallengeCard();
+    const rosterMap = new Map([
+      ...G.roster,
+      ...(scheduledCR ? [...scheduledCR.teamA, ...scheduledCR.teamB] : []),
+    ].map(c => [c.id, c]));
     let dirty = false;
     const _isOk = id => { const f = rosterMap.get(id); return id > 0 && f && !f.forcedRest; };
     const cleaned = G.showCard.map(m => {
@@ -2847,6 +2862,34 @@ function renderShowPrep() {
   // ── 集客予測 + ファンの声 + マッチカード v7 ──────────────────────────────
 
   // 集客予測計算（v2）
+  // Reserve the three highest card positions for an accepted inter-org
+  // challenge before the player fills the remaining venue slots.
+  if (G._pendingChallengeMatch && Engine.challengeRequest?.reserveScheduledMatches) {
+    const reservedCR = Engine.challengeRequest.reserveScheduledMatches(G, G.showCard);
+    if (reservedCR) {
+      if (JSON.stringify(reservedCR.card) !== JSON.stringify(G.showCard)) {
+        G = { ...G, showCard: reservedCR.card };
+      }
+    } else {
+      const clearedCard = Engine.challengeRequest.clearReservedMatches(G, G.showCard);
+      const { _pendingChallengeMatch: _invalidCR, ...rest } = G;
+      G = { ...rest, showCard: clearedCard };
+      if (typeof showToast === 'function') showToast('⚠ 挑戦試合の出場メンバーが揃わないため、予約を解除しました', 5000);
+    }
+  }
+
+  const scheduledCRNotice = getScheduledChallengeCard();
+  if (scheduledCRNotice) {
+    const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
+    const regularSlots = Math.max(0, maxMatches - 3);
+    const requesterName = scheduledCRNotice.requesterOrgName || scheduledCRNotice.requesterOrgId || '挑戦側';
+    const opponentName = scheduledCRNotice.opponentOrgName || scheduledCRNotice.opponentOrgId || '迎撃側';
+    html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid rgba(235,105,90,.55);background:rgba(145,45,40,.18);border-radius:6px;color:#ffd9d2;font-size:12px;line-height:1.65">
+      <strong style="color:#ff9e8f">⚔ 他団体挑戦シリーズ</strong>　${requesterName} vs ${opponentName}<br>
+      メインイベントから上位3試合を固定しています。会場の全${maxMatches}枠のうち、通常カードは残り${regularSlots}枠です。各挑戦試合には集客評価+${MATCH_APPEAL_CONFIG.challengeRequestAppeal}が入ります。
+    </div>`;
+  }
+
   const fanExpects = Engine.fanExpect.generate(G);
   const _isValidSlot = m => m.matchType === 'tag'
     ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
@@ -2859,12 +2902,12 @@ function renderShowPrep() {
     if (m.matchType === 'tag') {
       // タッグ: 4人の平均集客力で簡易計算
       const ids = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
-      const fighters = ids.map(id => G.roster.find(c => c.id === id)).filter(Boolean);
+      const fighters = ids.map(id => getShowCardFighter(id)).filter(Boolean);
       if (fighters.length < 4) return 0;
       return fighters.reduce((sum, f) => sum + Engine.attendanceV2.calcDrawPower(f, G), 0) / 2;
     }
-    const fA = G.roster.find(c => c.id === m.left);
-    const fB = G.roster.find(c => c.id === m.right);
+    const fA = getShowCardFighter(m.left);
+    const fB = getShowCardFighter(m.right);
     if (!fA || !fB) return 0;
     const rivalryAB = G.relationships ? (G.relationships[`${m.left}>${m.right}`]?.rivalry || 0) : 0;
     const rivalryBA = G.relationships ? (G.relationships[`${m.right}>${m.left}`]?.rivalry || 0) : 0;
@@ -2875,6 +2918,7 @@ function renderShowPrep() {
     const uiFr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows, G.roster.length, null);
     return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
       rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect: isFE,
+      isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
       pendingClashBonus: uiPendingClash, isFirstMeet: uiFr.isFirstMeet, freshnessCount: uiFr.countInWindow,
     }, G);
   });
@@ -2979,10 +3023,10 @@ function renderShowPrep() {
 
     // ── タッグマッチカード描画 ──
     if (slot.matchType === 'tag') {
-      const tA1 = slot.teamA.fighter1 > 0 ? G.roster.find(c => c.id === slot.teamA.fighter1) : null;
-      const tA2 = slot.teamA.fighter2 > 0 ? G.roster.find(c => c.id === slot.teamA.fighter2) : null;
-      const tB1 = slot.teamB.fighter1 > 0 ? G.roster.find(c => c.id === slot.teamB.fighter1) : null;
-      const tB2 = slot.teamB.fighter2 > 0 ? G.roster.find(c => c.id === slot.teamB.fighter2) : null;
+      const tA1 = slot.teamA.fighter1 > 0 ? getShowCardFighter(slot.teamA.fighter1) : null;
+      const tA2 = slot.teamA.fighter2 > 0 ? getShowCardFighter(slot.teamA.fighter2) : null;
+      const tB1 = slot.teamB.fighter1 > 0 ? getShowCardFighter(slot.teamB.fighter1) : null;
+      const tB2 = slot.teamB.fighter2 > 0 ? getShowCardFighter(slot.teamB.fighter2) : null;
       const tagFilled = tA1 && tA2 && tB1 && tB2;
       // ケミストリー情報
       const bondA = (tA1 && tA2 && G.relationships) ? ((G.relationships[`${Math.min(tA1.id,tA2.id)}>${Math.max(tA1.id,tA2.id)}`] || {}).bond || 50) : 50;
@@ -3023,8 +3067,9 @@ function renderShowPrep() {
           }
         }
         const curInPos = slot[tagTeam][tagPos];
+        const reservedCRIds = new Set(getScheduledChallengeCard()?.reservedIds || []);
         const pickerFighters = G.roster
-          .filter(c => !c.injury && !c.forcedRest && c.id !== curInPos && !sameSlotIds.has(c.id))
+          .filter(c => !c.injury && !c.forcedRest && c.id !== curInPos && !sameSlotIds.has(c.id) && !reservedCRIds.has(c.id))
           .sort((a, b) => ov(b) - ov(a));
         const rows = pickerFighters.map(c => {
           const isAssigned = usedInOther.has(c.id);
@@ -3083,8 +3128,8 @@ function renderShowPrep() {
     // ── シングルマッチカード描画 ──
     const curL = slot.left;
     const curR = slot.right;
-    const fl = curL > 0 ? G.roster.find(c => c.id === curL) : null;
-    const fr = curR > 0 ? G.roster.find(c => c.id === curR) : null;
+    const fl = curL > 0 ? getShowCardFighter(curL) : null;
+    const fr = curR > 0 ? getShowCardFighter(curR) : null;
     const isFilled = !!fl && !!fr;
     const isEmpty = !fl && !fr;
 
@@ -3117,15 +3162,15 @@ function renderShowPrep() {
     const cdCheck = Engine.title.canTitleMatch(G);
     const titleEligible = G.titleEstablished && (hasChamp || (isVacant && curL > 0 && curR > 0));
     const slotHasRental = [curL, curR].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
-    const canTitle = titleEligible && cdCheck.allowed && !slotHasRental;
+    const canTitle = !slot._crMatchLocked && titleEligible && cdCheck.allowed && !slotHasRental;
     const isTitle = G.showCard[i].isTitle || false;
     const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
     const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
     const freshnessPreview = (curL > 0 && curR > 0)
       ? Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows || 0, G.roster.length, null)
       : null;
-    const isLastRunMatch = (curL > 0 && G.roster.find(c => c.id === curL)?.lastRun) ||
-                           (curR > 0 && G.roster.find(c => c.id === curR)?.lastRun);
+    const isLastRunMatch = (curL > 0 && getShowCardFighter(curL)?.lastRun) ||
+                           (curR > 0 && getShowCardFighter(curR)?.lastRun);
     const isFanExpect = fanExpects && fanExpects.some(fe =>
       (fe.leftId === curL && fe.rightId === curR) || (fe.leftId === curR && fe.rightId === curL));
 
@@ -3151,6 +3196,9 @@ function renderShowPrep() {
     if (slot._internalChallengeLocked) {
       tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr('派閥内序列戦：挑戦者がリーダーの座を狙う、固定枠です')} style="background:rgba(120,60,180,0.28);border-color:rgba(170,120,220,0.55);color:#e6c8ff;cursor:help">⚔ 派閥内序列戦（固定）</span>`);
     }
+    if (slot._crMatchLocked) {
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr('他団体との3試合挑戦シリーズ：会場枠内の上位3試合として固定され、カード魅力に専用ボーナスが入ります')} style="background:rgba(170,55,55,0.28);border-color:rgba(235,105,90,0.6);color:#ffd0c8;cursor:help">⚔ 他団体挑戦（固定）</span>`);
+    }
     if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
       const isFresh = freshnessPreview.bonus > 0;
@@ -3169,6 +3217,7 @@ function renderShowPrep() {
       const slotPendingClash = slotRivalryLevel?.pendingClashBonus || 0;
       const slotFr = Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows, G.roster.length, null);
       const ctx = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!G.showCard[i].isTitle, isFanExpect,
+        isChallengeRequest: !!(slot._crMatchLocked || slot.isCRMatch),
         pendingClashBonus: slotPendingClash, isFirstMeet: slotFr.isFirstMeet, freshnessCount: slotFr.countInWindow };
       try { slotBD = Engine.attendanceV2.calcMatchAppealBreakdown(fl, fr, ctx, G); } catch(e) {}
     }
@@ -3181,8 +3230,9 @@ function renderShowPrep() {
       const otherSideCur = G.showCard[i][pickerSide === 'left' ? 'right' : 'left'];
       const usedInOther = getUsedFighterIds(i);
       const curInSide = G.showCard[i][pickerSide];
+      const reservedCRIds = new Set(getScheduledChallengeCard()?.reservedIds || []);
       const pickerFighters = G.roster
-        .filter(c => !c.injury && !c.forcedRest && c.id !== curInSide && c.id !== otherSideCur)
+        .filter(c => !c.injury && !c.forcedRest && c.id !== curInSide && c.id !== otherSideCur && !reservedCRIds.has(c.id))
         .sort((a, b) => ov(b) - ov(a));
       const rows = pickerFighters.map(c => {
         const isAssigned = usedInOther.has(c.id);
@@ -3203,12 +3253,15 @@ function renderShowPrep() {
       if (slotBD.rivalryAppeal > 0) appealParts.push(`⚡因縁+${slotBD.rivalryAppeal}`);
       if (slotBD.titleBonus > 0) appealParts.push(`🏆タイトル+${slotBD.titleBonus}`);
       if (slotBD.fanExpectBonus > 0) appealParts.push(`📣期待+${slotBD.fanExpectBonus}`);
+      if (slotBD.challengeRequestBonus > 0) appealParts.push(`⚔他団体挑戦+${slotBD.challengeRequestBonus}`);
       if (slotBD.heelFaceBonus > 0) appealParts.push(`😈善悪+${slotBD.heelFaceBonus}`);
     }
 
-    const cardBorder = isLastRunMatch ? ' style="border-color:rgba(212,168,67,0.4)"' : '';
-    const moveUpBtn = i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
-    const moveDnBtn = i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+    const cardBorder = slot._crMatchLocked
+      ? ' style="border-color:rgba(235,105,90,0.5)"'
+      : isLastRunMatch ? ' style="border-color:rgba(212,168,67,0.4)"' : '';
+    const moveUpBtn = !slot._crMatchLocked && i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+    const moveDnBtn = !slot._crMatchLocked && i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
     html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}>
       <div class="sp-match-card-inner">
         <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
@@ -3221,7 +3274,7 @@ function renderShowPrep() {
           <div class="sp-match-vs">VS</div>
           ${matchRule ? `<div class="sp-match-rule">${matchRule}</div>` : ''}
           ${tagParts.length > 0 ? `<div class="sp-match-tags">${tagParts.join('')}</div>` : ''}
-          ${(i > 0 && i + 1 < G.showCard.length && G.showCard[i + 1]?.matchType !== 'tag') ? `<div class="sp-tag-merge-btn" onclick="App.mergeToTagSlot(${i})" title="下の枠と合体してタッグマッチに">🤝 タッグに変換</div>` : ''}
+          ${(!slot._crMatchLocked && i > 0 && i + 1 < G.showCard.length && !G.showCard[i + 1]?._crMatchLocked && G.showCard[i + 1]?.matchType !== 'tag') ? `<div class="sp-tag-merge-btn" onclick="App.mergeToTagSlot(${i})" title="下の枠と合体してタッグマッチに">🤝 タッグに変換</div>` : ''}
         </div>
         ${_spPortrait(fr, ps)}
         ${_spFighterInfo(fr, 'right', i, slotBD?.drawB)}

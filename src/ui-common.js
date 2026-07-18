@@ -3824,11 +3824,30 @@ function fLink(c, opts = {}) {
   return `<span class="flink" style="${cls}${sizeStyle}" onclick="event.stopPropagation();showFighterPopup(${c.id},'${src}'${skipArg})">${c.name}</span>${extra}`;
 }
 
+function getScheduledChallengeCard() {
+  return (typeof Engine !== 'undefined' && Engine.challengeRequest?.getScheduledCard)
+    ? Engine.challengeRequest.getScheduledCard(G)
+    : null;
+}
+
+function getShowCardFighter(id) {
+  if (!(id > 0)) return null;
+  const own = (G.roster || []).find(c => c.id === id);
+  if (own) return own;
+  const scheduled = getScheduledChallengeCard();
+  return scheduled ? [...scheduled.teamA, ...scheduled.teamB].find(c => c.id === id) || null : null;
+}
+
 function moveShowCard(idx, dir) {
   const target = idx + dir;
   if (target < 0 || target >= G.showCard.length) return;
   // メインイベント(位置0)にタッグ枠を移動させない
   const card = [...G.showCard];
+  if (card[idx]?._crMatchLocked || card[target]?._crMatchLocked) {
+    Audio.play('error');
+    showToast('⚔ 挑戦試合の上位3枠は固定です', 3000);
+    return;
+  }
   if (target === 0 && card[idx].matchType === 'tag') { Audio.play('error'); return; }
   if (idx === 0 && card[target].matchType === 'tag') { Audio.play('error'); return; }
   [card[idx], card[target]] = [card[target], card[idx]];
@@ -3838,22 +3857,33 @@ function moveShowCard(idx, dir) {
 
 // タッグ枠保持ヘルパー: 既存タッグ枠を保持し、タッグ選手IDを除外セットに追加
 function _preserveTagSlots(maxMatches) {
-  const tags = G.showCard.filter(m => m.matchType === 'tag');
+  const scheduled = getScheduledChallengeCard();
+  const reservedIds = new Set(scheduled ? scheduled.reservedIds : []);
+  const prefix = scheduled ? [0, 1, 2].map(i => ({
+    left: scheduled.teamA[i].id, right: scheduled.teamB[i].id,
+    isTitle: false, isCRMatch: true, _crMatchLocked: true,
+    _crGroupId: `cr_${scheduled.requesterId}_${scheduled.opponentId}_${G.season}_${G.week}`,
+    _crSlot: i,
+  })) : [];
+  const maxTags = Math.max(0, Math.floor((maxMatches - prefix.length) / 2));
+  const tags = G.showCard.filter(m => m.matchType === 'tag' &&
+    ![m.teamA?.fighter1, m.teamA?.fighter2, m.teamB?.fighter1, m.teamB?.fighter2].some(id => reservedIds.has(id)))
+    .slice(0, maxTags);
   const tagUsed = new Set();
   tags.forEach(t => {
     [t.teamA.fighter1, t.teamA.fighter2, t.teamB.fighter1, t.teamB.fighter2]
       .filter(id => id > 0).forEach(id => tagUsed.add(id));
   });
   const tagWeight = tags.length * 2;
-  const singlesCount = maxMatches - tagWeight;
-  return { tags, tagUsed, singlesCount };
+  const singlesCount = Math.max(0, maxMatches - prefix.length - tagWeight);
+  return { tags, tagUsed, singlesCount, prefix, reservedIds };
 }
 function autoFillCard() {
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
-  const { tags, tagUsed, singlesCount } = _preserveTagSlots(maxMatches);
-  const card = [];
+  const { tags, tagUsed, singlesCount, prefix, reservedIds } = _preserveTagSlots(maxMatches);
+  const card = [...prefix];
   for (let i = 0; i < singlesCount; i++) card.push({left:0, right:0, isTitle:false});
-  const sorted = [...G.roster].filter(c => !c.injury && !c.forcedRest && !tagUsed.has(c.id)).sort((a,b) => ov(b) - ov(a));
+  const sorted = [...G.roster].filter(c => !c.injury && !c.forcedRest && !tagUsed.has(c.id) && !reservedIds.has(c.id)).sort((a,b) => ov(b) - ov(a));
   const used = new Set();
   const numMatches = Math.min(singlesCount, Math.floor(sorted.length / 2));
   const champId = G.titles.world.championId;
@@ -3869,7 +3899,7 @@ function autoFillCard() {
     const cdOk = Engine.title.canTitleMatch(G).allowed;
     const slotHasRental = (left.isRental || right.isRental);
     const slotIsTitle = i === 0 && G.titleEstablished && cdOk && (hasChamp || isVacant) && !slotHasRental;
-    card[i] = {left: left.id, right: right.id, isTitle: slotIsTitle};
+    card[prefix.length + i] = {left: left.id, right: right.id, isTitle: slotIsTitle};
   }
   // タッグ枠を末尾に追加
   tags.forEach(t => card.push(t));
@@ -3879,8 +3909,8 @@ function autoFillCard() {
 // ── おすすめ編成: matchAppeal合計最大化 ──
 function autoFillCardByAppeal() {
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
-  const { tags, tagUsed, singlesCount } = _preserveTagSlots(maxMatches);
-  const available = G.roster.filter(c => !c.injury && !c.forcedRest && !tagUsed.has(c.id));
+  const { tags, tagUsed, singlesCount, prefix, reservedIds } = _preserveTagSlots(maxMatches);
+  const available = G.roster.filter(c => !c.injury && !c.forcedRest && !tagUsed.has(c.id) && !reservedIds.has(c.id));
   if (available.length < 2) { autoFillCard(); return; }
 
   const fanExpects = Engine.fanExpect.generate(G) || [];
@@ -3905,18 +3935,20 @@ function autoFillCardByAppeal() {
   }
 
   pairs.sort((x, y) => y.appeal - x.appeal);
-  const card = [];
+  const card = [...prefix];
   const used = new Set();
+  let regularCount = 0;
   for (const p of pairs) {
-    if (card.length >= singlesCount) break;
+    if (regularCount >= singlesCount) break;
     if (used.has(p.aId) || used.has(p.bId)) continue;
     card.push({ left: p.aId, right: p.bId, isTitle: false });
+    regularCount++;
     used.add(p.aId);
     used.add(p.bId);
   }
 
   _applyAutoTitleMatch(card);
-  while (card.length < singlesCount) card.push({ left: 0, right: 0, isTitle: false });
+  while (regularCount < singlesCount) { card.push({ left: 0, right: 0, isTitle: false }); regularCount++; }
   tags.forEach(t => card.push(t));
   G = { ...G, showCard: card };
 }
@@ -3924,8 +3956,8 @@ function autoFillCardByAppeal() {
 // ── 集客力順編成: drawPower合計最大化 ──
 function autoFillCardByDraw() {
   const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
-  const { tags, tagUsed, singlesCount } = _preserveTagSlots(maxMatches);
-  const available = G.roster.filter(c => !c.injury && !c.forcedRest && !tagUsed.has(c.id));
+  const { tags, tagUsed, singlesCount, prefix, reservedIds } = _preserveTagSlots(maxMatches);
+  const available = G.roster.filter(c => !c.injury && !c.forcedRest && !tagUsed.has(c.id) && !reservedIds.has(c.id));
   if (available.length < 2) { autoFillCard(); return; }
 
   const pairs = [];
@@ -3938,18 +3970,20 @@ function autoFillCardByDraw() {
   }
 
   pairs.sort((x, y) => y.drawSum - x.drawSum);
-  const card = [];
+  const card = [...prefix];
   const used = new Set();
+  let regularCount = 0;
   for (const p of pairs) {
-    if (card.length >= singlesCount) break;
+    if (regularCount >= singlesCount) break;
     if (used.has(p.aId) || used.has(p.bId)) continue;
     card.push({ left: p.aId, right: p.bId, isTitle: false });
+    regularCount++;
     used.add(p.aId);
     used.add(p.bId);
   }
 
   _applyAutoTitleMatch(card);
-  while (card.length < singlesCount) card.push({ left: 0, right: 0, isTitle: false });
+  while (regularCount < singlesCount) { card.push({ left: 0, right: 0, isTitle: false }); regularCount++; }
   tags.forEach(t => card.push(t));
   G = { ...G, showCard: card };
 }
@@ -3959,19 +3993,22 @@ function _applyAutoTitleMatch(card) {
   if (!card.length || !G.titleEstablished) return;
   const cdOk = Engine.title.canTitleMatch(G).allowed;
   if (!cdOk) return;
+  const topRegularIdx = card.findIndex(m => m && !m._crMatchLocked && !m.isCRMatch && m.matchType !== 'tag');
+  if (topRegularIdx < 0) return;
   const champId = G.titles.world.championId;
   if (champId) {
     // 王者在位: 王者が含まれるスロットをメインに移動してタイトル戦に
     const champIdx = card.findIndex(m => m.left === champId || m.right === champId);
     if (champIdx < 0) return;
-    if (champIdx !== 0) { [card[0], card[champIdx]] = [card[champIdx], card[0]]; }
-    card[0].isTitle = true;
+    if (card[champIdx]?._crMatchLocked || card[champIdx]?.isCRMatch) return;
+    if (champIdx !== topRegularIdx) { [card[topRegularIdx], card[champIdx]] = [card[champIdx], card[topRegularIdx]]; }
+    card[topRegularIdx].isTitle = true;
   } else {
     // 王座空位: メイン枠（両選手が埋まっていれば）を初代王者決定戦に
-    if (card[0] && card[0].left > 0 && card[0].right > 0) {
+    if (card[topRegularIdx] && card[topRegularIdx].left > 0 && card[topRegularIdx].right > 0) {
       // レンタル選手チェック
-      const hasRental = [card[0].left, card[0].right].some(id => G.roster.find(c => c.id === id)?.isRental);
-      if (!hasRental) card[0].isTitle = true;
+      const hasRental = [card[topRegularIdx].left, card[topRegularIdx].right].some(id => G.roster.find(c => c.id === id)?.isRental);
+      if (!hasRental) card[topRegularIdx].isTitle = true;
     }
   }
 }
