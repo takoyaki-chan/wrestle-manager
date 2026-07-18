@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4年に一度のPPVトーナメント Mockup v0.2 — クライムライン16名</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --stage-bg: #060606;
+    --stage-text-main: #e8e6e0;
+    --stage-text-sub: rgba(232,230,224,0.55);
+    --stage-text-dim: rgba(232,230,224,0.28);
+    --gold: #d4a843;
+    --gold-light: #f0d078;
+    --gold-deep: #8a7235;
+    --ppv-crimson: #e94560;
+    --tourney-color: var(--gold);
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-label: 'Oswald', sans-serif;
+    --font-body: 'Noto Sans JP', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--stage-bg); color: var(--stage-text-main);
+    font-family: var(--font-body); min-height: 100vh;
+  }
+  img { -webkit-user-drag: none; user-select: none; }
+
+  /* ========== Mockup nav ========== */
+  .mockup-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10000;
+    background: #0d0d0d; border-bottom: 1px solid rgba(200,190,170,0.12);
+    padding: 10px 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .mockup-nav h1 {
+    font-family: var(--font-display); font-size: 17px; letter-spacing: 3px;
+    color: var(--stage-text-main); white-space: nowrap;
+  }
+  .mockup-nav .status {
+    font-family: var(--font-label); font-size: 9px; letter-spacing: 2px;
+    color: var(--stage-text-sub); text-transform: uppercase;
+    padding: 3px 8px; border: 1px solid rgba(200,190,170,0.2); border-radius: 2px;
+  }
+  .mockup-tabs { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+  .mockup-tabs button {
+    background: transparent; border: 1px solid rgba(200,190,170,0.2);
+    color: var(--stage-text-sub); padding: 7px 14px; cursor: pointer;
+    font-family: var(--font-label); font-size: 11px; letter-spacing: 1.5px;
+    text-transform: uppercase; transition: all 200ms;
+  }
+  .mockup-tabs button.active {
+    background: rgba(212,168,67,0.12); border-color: var(--gold);
+    color: var(--gold-light);
+  }
+  .mockup-tabs button:hover:not(.active) { color: var(--stage-text-main); }
+  .name-picker {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-label); font-size: 10px; letter-spacing: 1px;
+    color: var(--stage-text-sub); text-transform: uppercase;
+  }
+  .name-picker select {
+    background: #161410; color: var(--gold-light);
+    border: 1px solid rgba(212,168,67,0.35); padding: 6px 8px;
+    font-family: var(--font-label); font-size: 12px; letter-spacing: 1px; cursor: pointer;
+  }
+
+  .variant { display: none; padding-top: 64px; }
+  .variant.active { display: block; }
+
+  /* ========== クライムライン共通ヘッダー(JT jtc-header 準拠 + エンブレム) ========== */
+  .cl-header { text-align: center; padding: 22px 12px 6px; }
+  .cl-emblem { width: 76px; height: 76px; margin: 0 auto 4px; position: relative; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.6)); }
+  .cl-emblem svg { width: 100%; height: 100%; display: block; }
+  .cl-emblem .tmp-tag {
+    position: absolute; right: -18px; top: -2px;
+    font-family: var(--font-label); font-size: 8px; letter-spacing: 1px;
+    color: var(--stage-text-dim); border: 1px dashed rgba(232,230,224,0.25);
+    border-radius: 2px; padding: 1px 4px;
+  }
+  .cl-header-title {
+    font-family: var(--font-display); font-size: 34px; letter-spacing: 6px;
+    background: linear-gradient(180deg, #fff 0%, var(--gold-light) 35%, var(--gold) 75%, var(--gold-deep) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .cl-header-sub {
+    font-family: var(--font-label); font-size: 11px; letter-spacing: 3px;
+    color: var(--ppv-crimson); text-transform: uppercase; margin-top: 4px;
+  }
+  .cl-header-ed {
+    font-family: var(--font-label); font-size: 10px; letter-spacing: 2px;
+    color: var(--stage-text-dim); margin-top: 5px; text-transform: uppercase;
+  }
+  .cl-double-rule {
+    width: 220px; margin: 12px auto 0; border-top: 1px solid rgba(212,168,67,0.55); position: relative;
+  }
+  .cl-double-rule::after {
+    content: ''; position: absolute; left: 24px; right: 24px; top: 3px;
+    border-top: 1px solid rgba(212,168,67,0.25);
+  }
+
+  .own-pill {
+    display: inline-block; font-family: var(--font-label); font-size: 8px;
+    letter-spacing: 1px; color: var(--gold-light);
+    border: 1px solid rgba(212,168,67,0.5); border-radius: 2px;
+    padding: 0 4px; margin-left: 3px; vertical-align: 1px;
+  }
+
+  /* ========== クライムライン本体 ========== */
+  .cl-scroll { overflow-x: auto; }
+  .cl-wrap {
+    min-width: 940px; max-width: 1120px; margin: 0 auto;
+    padding: 4px 14px 90px; text-align: center;
+  }
+  .cl-note {
+    font-family: var(--font-label); font-size: 9px; letter-spacing: 2.5px;
+    color: var(--stage-text-dim); text-transform: uppercase; margin: 8px 0 18px;
+  }
+  .cl-tier-label {
+    font-family: var(--font-label); font-size: 10px; letter-spacing: 4px;
+    color: var(--ppv-crimson); text-transform: uppercase; margin: 4px 0 8px;
+  }
+  .cl-tier-label.gold { color: var(--gold); }
+
+  .cl-row { display: grid; gap: 8px; }
+  .cl-cell {
+    background: rgba(255,255,255,0.025); border: 1px solid rgba(212,168,67,0.14);
+    border-radius: 10px; padding: 8px 4px 6px; position: relative;
+  }
+  .cl-cell.is-current {
+    border-color: rgba(233,69,96,0.55);
+    animation: pulseCur 1.6s ease infinite;
+  }
+  @keyframes pulseCur {
+    0%,100% { box-shadow: 0 0 10px rgba(233,69,96,0.10); }
+    50% { box-shadow: 0 0 22px rgba(233,69,96,0.26); }
+  }
+  .cl-pair { display: flex; justify-content: center; gap: 6px; }
+
+  .cl-fx { width: 76px; }
+  .cl-fx.is-lose { opacity: 0.45; }
+  .cl-up {
+    width: 58px; height: 58px; margin: 0 auto; border-radius: 50%;
+    overflow: hidden; border: 2px solid rgba(232,230,224,0.15);
+    background: #121110; display: flex; align-items: center; justify-content: center;
+  }
+  .cl-up img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .cl-up.w { border-color: var(--tourney-color); box-shadow: 0 0 12px rgba(212,168,67,0.4); }
+  .cl-up.l img { filter: grayscale(1) brightness(0.75); }
+  .cl-ini { font-family: var(--font-display); font-size: 20px; color: var(--stage-text-dim); }
+  .cl-fn { font-size: 10px; font-weight: 700; margin-top: 3px; line-height: 1.25; }
+  .cl-fn .org { display: block; font-weight: 400; font-size: 8px; color: var(--stage-text-dim); }
+  .cl-win-tag { font-family: var(--font-label); font-size: 7px; letter-spacing: 1px; color: var(--tourney-color); }
+  .cl-minfo {
+    margin-top: 4px; font-family: var(--font-display); font-size: 11px;
+    letter-spacing: 1px; color: var(--stage-text-sub);
+  }
+  .cl-minfo .mq { color: var(--gold-light); }
+  .cl-minfo .dot { margin: 0 4px; color: var(--stage-text-dim); }
+  .cl-seed {
+    position: absolute; top: 3px; left: 5px;
+    font-family: var(--font-display); font-size: 9px; color: var(--stage-text-dim); letter-spacing: 1px;
+  }
+
+  /* 1回戦(16名)用ミニセル */
+  .cl-row.r16 .cl-cell { padding: 7px 2px 5px; }
+  .cl-row.r16 .cl-fx { width: 52px; }
+  .cl-row.r16 .cl-up { width: 38px; height: 38px; border-width: 1.5px; }
+  .cl-row.r16 .cl-fn { font-size: 8.5px; margin-top: 2px; }
+  .cl-row.r16 .cl-fn .org { display: none; }
+  .cl-row.r16 .cl-minfo { font-size: 9px; margin-top: 3px; }
+  .cl-row.r16 .cl-win-tag { display: none; }
+  .cl-row.r16 .cl-pair { gap: 3px; }
+
+  .cl-merge { display: grid; margin: 2px auto 2px; }
+  .cl-chev { height: 28px; }
+  .cl-chev svg { width: 100%; height: 100%; display: block; }
+  .cl-chev path { fill: none; stroke: rgba(232,230,224,0.14); stroke-width: 2; }
+  .cl-chev path.hot { stroke: var(--tourney-color); filter: drop-shadow(0 0 4px rgba(212,168,67,0.6)); }
+
+  .cl-final-row {
+    display: flex; align-items: center; justify-content: center; gap: 26px;
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(212,168,67,0.22);
+    border-radius: 12px; padding: 14px 10px; max-width: 380px; margin: 0 auto;
+  }
+  .cl-final-row .cl-fx { width: 96px; }
+  .cl-final-row .cl-up { width: 76px; height: 76px; }
+  .cl-final-row .cl-fn { font-size: 12px; }
+  .cl-vs {
+    font-family: var(--font-display); font-size: 30px; letter-spacing: 3px;
+    background: linear-gradient(180deg, var(--ppv-crimson), #c23152);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px rgba(233,69,96,0.35));
+  }
+  .cl-tbd .cl-up { border-style: dashed; }
+  .cl-tbd .cl-fn { color: var(--stage-text-dim); }
+
+  .cl-peak-empty { margin-bottom: 4px; }
+  .cl-peak-empty .crest {
+    width: 84px; height: 84px; margin: 0 auto; border-radius: 50%;
+    border: 2px dashed rgba(212,168,67,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; opacity: 0.75;
+  }
+  .cl-peak-empty .cap {
+    font-family: var(--font-label); font-size: 9px; letter-spacing: 3px;
+    color: var(--stage-text-dim); text-transform: uppercase; margin-top: 6px;
+  }
+  .cl-merge-peak { height: 26px; width: 20px; margin: 0 auto; }
+  .cl-merge-peak svg { width: 100%; height: 100%; display: block; }
+  .cl-merge-peak path { fill: none; stroke-width: 2; stroke: rgba(212,168,67,0.35); }
+
+  /* ========== フォーカスカード(アッパー画像対面) ========== */
+  .fc {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(212,168,67,0.2);
+    border-radius: 12px; max-width: 560px; margin: 18px auto 0;
+    position: relative; overflow: hidden;
+  }
+  .fc::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(212,168,67,0.04), transparent 70%);
+  }
+  .fc-lb {
+    text-align: center; padding: 12px 0 4px; font-family: var(--font-display);
+    font-size: 14px; letter-spacing: 4px; color: var(--gold); position: relative;
+  }
+  .fc-names { display: flex; align-items: center; justify-content: center; gap: 18px; padding: 2px 10px 6px; }
+  .fc-nm .n { font-size: 17px; font-weight: 900; }
+  .fc-nm .o { font-size: 10px; color: var(--stage-text-sub); }
+  .fc-vl { font-family: var(--font-display); font-size: 20px; color: var(--ppv-crimson); letter-spacing: 2px; }
+  .fc-bub-pair { display: flex; gap: 8px; margin: 4px 14px 8px; }
+  .fc-bub {
+    flex: 1; min-width: 0; background: #f0f0f0; color: #1a1a1a; border-radius: 11px;
+    padding: 9px 13px; font-size: 12px; line-height: 1.55; text-align: left;
+  }
+  .fc-bub .sp { font-size: 9px; font-weight: 700; color: #8a6d1f; margin-bottom: 1px; }
+
+  /* アッパー画像対面(2026-07-18: スタンド画像→アッパー画像に変更) */
+  .fc-uppers {
+    display: flex; align-items: center; justify-content: center; gap: 24px;
+    padding: 10px 0 6px; position: relative;
+  }
+  .fc-upper {
+    width: 128px; height: 128px; border-radius: 14px; overflow: hidden;
+    border: 2px solid rgba(212,168,67,0.3); background: #121110;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .fc-upper img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .fc-upper.left img { transform: scaleX(-1); }
+  .fc-uppers .vs-mark {
+    font-family: var(--font-display); font-size: 38px; letter-spacing: 3px;
+    background: linear-gradient(180deg, var(--gold-light), var(--ppv-crimson));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 16px rgba(233,69,96,0.3));
+  }
+
+  .fc-hp-row {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center;
+    padding: 6px 26px 2px; position: relative;
+  }
+  .fc-hp-top {
+    display: flex; align-items: center; gap: 7px; margin-bottom: 4px;
+    font-family: var(--font-label); font-size: 10px; letter-spacing: 1px; color: var(--stage-text-sub);
+  }
+  .fc-hp.right .fc-hp-top { justify-content: flex-end; }
+  .fc-hp-top strong { color: var(--stage-text-main); }
+  .fc-hp-track { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+  .fc-hp-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold-deep), var(--gold)); }
+  .fc-hp.right .fc-hp-track { direction: rtl; }
+  .fc-hp-mid { font-family: var(--font-label); font-size: 9px; letter-spacing: 2px; color: var(--stage-text-dim); }
+  .fc-bt { display: flex; justify-content: center; gap: 10px; padding: 12px 0 16px; position: relative; }
+  .btn {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(232,230,224,0.2);
+    color: var(--stage-text-main); border-radius: 6px; cursor: pointer;
+    font-family: var(--font-body); font-weight: 700;
+  }
+  .btn:hover { border-color: rgba(232,230,224,0.45); }
+  .btn-gold {
+    background: linear-gradient(135deg, rgba(212,168,67,0.25), rgba(138,114,53,0.2));
+    border-color: var(--gold); color: var(--gold-light);
+  }
+  .btn-gold:hover { box-shadow: 0 0 14px rgba(212,168,67,0.3); }
+  .skip-row { text-align: center; margin-top: 14px; }
+
+  /* ========== 優勝演出 ========== */
+  .wn-wrap {
+    min-height: calc(100vh - 64px); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 30px 16px 60px; position: relative; overflow: hidden;
+  }
+  .wn-rays {
+    position: absolute; inset: -20%; pointer-events: none; opacity: 0.55;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 38%, rgba(212,168,67,0.13), transparent 65%),
+      conic-gradient(from 0deg at 50% 38%,
+        transparent 0deg, rgba(212,168,67,0.05) 6deg, transparent 12deg,
+        transparent 30deg, rgba(212,168,67,0.05) 36deg, transparent 42deg,
+        transparent 60deg, rgba(212,168,67,0.05) 66deg, transparent 72deg,
+        transparent 90deg, rgba(212,168,67,0.05) 96deg, transparent 102deg,
+        transparent 120deg, rgba(212,168,67,0.05) 126deg, transparent 132deg,
+        transparent 150deg, rgba(212,168,67,0.05) 156deg, transparent 162deg,
+        transparent 180deg, rgba(212,168,67,0.05) 186deg, transparent 192deg,
+        transparent 210deg, rgba(212,168,67,0.05) 216deg, transparent 222deg,
+        transparent 240deg, rgba(212,168,67,0.05) 246deg, transparent 252deg,
+        transparent 270deg, rgba(212,168,67,0.05) 276deg, transparent 282deg,
+        transparent 300deg, rgba(212,168,67,0.05) 306deg, transparent 312deg,
+        transparent 330deg, rgba(212,168,67,0.05) 336deg, transparent 342deg, transparent 360deg);
+    animation: slowspin 60s linear infinite;
+  }
+  @keyframes slowspin { to { transform: rotate(360deg); } }
+  .wn-emblem { width: 86px; height: 86px; margin-bottom: 6px; position: relative; filter: drop-shadow(0 2px 12px rgba(0,0,0,0.6)); }
+  .wn-emblem svg { width: 100%; height: 100%; display: block; }
+  .wn-tour {
+    font-family: var(--font-label); font-size: 11px; letter-spacing: 6px;
+    color: var(--ppv-crimson); text-transform: uppercase; position: relative;
+  }
+  .wn-evname {
+    font-family: var(--font-display); font-size: 40px; letter-spacing: 5px; position: relative;
+    background: linear-gradient(180deg, #fff 0%, var(--gold-light) 35%, var(--gold) 75%, var(--gold-deep) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 26px;
+  }
+  .wn-up {
+    width: 168px; height: 168px; border-radius: 50%; overflow: hidden; position: relative;
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 40px rgba(212,168,67,0.45), 0 0 100px rgba(212,168,67,0.15);
+    background: #121110; margin-bottom: 18px;
+  }
+  .wn-up img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .wn-champ-lb {
+    font-family: var(--font-label); font-size: 10px; letter-spacing: 8px;
+    color: var(--gold); text-transform: uppercase; position: relative;
+  }
+  .wn-name {
+    font-size: 34px; font-weight: 900; position: relative; margin: 2px 0 4px;
+    text-shadow: 0 0 24px rgba(240,208,120,0.35);
+  }
+  .wn-org { font-size: 12px; color: var(--stage-text-sub); position: relative; }
+  .wn-title-line {
+    position: relative; margin-top: 18px; padding: 10px 26px;
+    border-top: 1px solid rgba(212,168,67,0.4); border-bottom: 1px solid rgba(212,168,67,0.4);
+    font-family: 'Noto Serif JP', serif; font-size: 17px; font-weight: 700; letter-spacing: 2px;
+    color: var(--gold-light);
+  }
+  .wn-title-line small { display: block; font-family: var(--font-label); font-weight: 400; font-size: 9px; letter-spacing: 4px; color: var(--stage-text-dim); margin-top: 3px; text-transform: uppercase; }
+  .wn-prize {
+    position: relative; margin-top: 16px; font-family: var(--font-display);
+    font-size: 15px; letter-spacing: 2px; color: var(--stage-text-sub);
+  }
+  .wn-prize b { color: var(--gold-light); font-size: 19px; }
+  .wn-records {
+    position: relative; display: flex; gap: 8px; margin-top: 22px; flex-wrap: wrap; justify-content: center;
+  }
+  .wn-records span {
+    font-family: var(--font-label); font-size: 9px; letter-spacing: 2px;
+    color: var(--stage-text-sub); text-transform: uppercase;
+    border: 1px solid rgba(232,230,224,0.15); border-radius: 2px; padding: 4px 10px;
+  }
+  .wn-tap {
+    position: relative; margin-top: 30px; font-size: 11px; color: var(--stage-text-dim);
+    animation: blink 1.6s ease infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.35; } }
+
+  .mock-notes {
+    max-width: 680px; margin: 30px auto 0; padding: 14px 18px;
+    border: 1px dashed rgba(212,168,67,0.3); border-radius: 8px;
+    font-size: 11px; line-height: 1.8; color: var(--stage-text-sub); text-align: left;
+  }
+  .mock-notes b { color: var(--gold-light); }
+</style>
+</head>
+<body>
+
+<nav class="mockup-nav">
+  <h1>PPV TOURNAMENT</h1>
+  <span class="status">Mockup v0.2 — 16名クライムライン</span>
+  <label class="name-picker">大会名称
+    <select id="namePicker" onchange="applyName()">
+      <option value="GRAND CROWN">GRAND CROWN(グランドクラウン)</option>
+      <option value="ZENITH">ZENITH(ゼニス)</option>
+      <option value="GREAT EIGHT">GREAT EIGHT(グレートエイト)</option>
+      <option value="SOVEREIGN">SOVEREIGN(ソブリン)</option>
+    </select>
+  </label>
+  <div class="mockup-tabs">
+    <button class="active" onclick="showVariant('a', this)">クライムライン(16名)</button>
+    <button onclick="showVariant('d', this)">優勝演出</button>
+  </div>
+</nav>
+
+<!-- ================================================================
+     クライムライン(16名) — JT流用・PPV金
+     状態: 1回戦8試合消化 / 準々決勝4試合消化 / 準決勝1試合消化 / 準決勝第2試合が次戦
+     ================================================================ -->
+<section class="variant active" id="variant-a">
+  <header class="cl-header">
+    <div class="cl-emblem">
+      <span class="tmp-tag">仮</span>
+      <!-- 仮エンブレム(インラインSVG)。本番は Keisuke 作画の image/emblem-ppvt.png に差し替え -->
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <linearGradient id="embGold" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f0d078"/>
+            <stop offset="0.55" stop-color="#d4a843"/>
+            <stop offset="1" stop-color="#8a7235"/>
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r="46" fill="rgba(212,168,67,0.05)" stroke="url(#embGold)" stroke-width="2.5"/>
+        <circle cx="50" cy="50" r="39.5" fill="none" stroke="rgba(212,168,67,0.35)" stroke-width="1"/>
+        <!-- 月桂樹(左右) -->
+        <g stroke="url(#embGold)" stroke-width="1.6" fill="none" stroke-linecap="round">
+          <path d="M24 66 Q19 52 26 38"/>
+          <path d="M76 66 Q81 52 74 38"/>
+        </g>
+        <g fill="url(#embGold)">
+          <ellipse cx="23" cy="60" rx="4" ry="1.8" transform="rotate(-55 23 60)"/>
+          <ellipse cx="21.5" cy="52" rx="4" ry="1.8" transform="rotate(-70 21.5 52)"/>
+          <ellipse cx="22.5" cy="44" rx="4" ry="1.8" transform="rotate(-85 22.5 44)"/>
+          <ellipse cx="25.5" cy="37" rx="4" ry="1.8" transform="rotate(-100 25.5 37)"/>
+          <ellipse cx="77" cy="60" rx="4" ry="1.8" transform="rotate(55 77 60)"/>
+          <ellipse cx="78.5" cy="52" rx="4" ry="1.8" transform="rotate(70 78.5 52)"/>
+          <ellipse cx="77.5" cy="44" rx="4" ry="1.8" transform="rotate(85 77.5 44)"/>
+          <ellipse cx="74.5" cy="37" rx="4" ry="1.8" transform="rotate(100 74.5 37)"/>
+        </g>
+        <!-- 王冠 -->
+        <path d="M33 57 L36 39 L44 49 L50 34 L56 49 L64 39 L67 57 Z" fill="url(#embGold)"/>
+        <rect x="33" y="58.5" width="34" height="4.5" rx="1.5" fill="url(#embGold)"/>
+        <circle cx="36" cy="37" r="2" fill="#f0d078"/>
+        <circle cx="50" cy="31.5" r="2.4" fill="#f0d078"/>
+        <circle cx="64" cy="37" r="2" fill="#f0d078"/>
+        <!-- 4年周期の IV -->
+        <text x="50" y="76" text-anchor="middle" font-family="'Bebas Neue',sans-serif" font-size="12" letter-spacing="1.5" fill="url(#embGold)">IV</text>
+      </svg>
+    </div>
+    <div class="cl-header-title evname">GRAND CROWN</div>
+    <div class="cl-header-sub">Quadrennial Tournament — 4年に一度の祭典</div>
+    <div class="cl-header-ed">Season 8 / 第2回大会 / 16名トーナメント / 全試合ビッグマッチルール</div>
+    <div class="cl-double-rule"></div>
+  </header>
+
+  <div class="cl-scroll">
+  <div class="cl-wrap">
+    <div class="cl-note">▲ Climb to the top — 勝ち上がるほど上へ / 消耗は次の試合へ持ち越し</div>
+
+    <!-- 頂上(空位) -->
+    <div class="cl-peak-empty">
+      <div class="crest">👑</div>
+      <div class="cap">第2回大会覇者</div>
+    </div>
+    <div class="cl-merge-peak"><svg viewBox="0 0 20 30" preserveAspectRatio="none"><path d="M10 30 L10 2"/></svg></div>
+
+    <!-- 決勝(片側確定) -->
+    <div class="cl-tier-label gold">決勝</div>
+    <div class="cl-final-row">
+      <div class="cl-fx">
+        <div class="cl-up w"><img src="../../../image/upper/upper_abukuma_t.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>阿</span>'"></div>
+        <div class="cl-fn">阿武隈塔子<span class="org">皇武館</span></div>
+      </div>
+      <div class="cl-vs">VS</div>
+      <div class="cl-fx cl-tbd">
+        <div class="cl-up"><span class="cl-ini">?</span></div>
+        <div class="cl-fn">勝者未定<span class="org">準決勝 第2試合</span></div>
+      </div>
+    </div>
+
+    <!-- 合流線 準決勝→決勝 -->
+    <div class="cl-merge" style="grid-template-columns:repeat(1,1fr); max-width:380px;">
+      <div class="cl-chev"><svg viewBox="0 0 100 30" preserveAspectRatio="none">
+        <path class="hot" d="M25 30 L25 16 L50 16 L50 2"/>
+        <path d="M75 30 L75 16 L50 16 L50 2"/>
+      </svg></div>
+    </div>
+
+    <!-- 準決勝 -->
+    <div class="cl-tier-label">準決勝</div>
+    <div class="cl-row" style="grid-template-columns:repeat(2,1fr); max-width:480px; margin:0 auto;">
+      <div class="cl-cell">
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_abukuma_t.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>阿</span>'"></div>
+            <div class="cl-fn">阿武隈塔子 <span class="cl-win-tag">WIN</span><span class="org">皇武館</span></div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_kuroe_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>黒</span>'"></div>
+            <div class="cl-fn">黒江舞<span class="org">クレセント</span></div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="t">18:48</span><span class="dot">/</span><span class="mq">MQ 88</span></div>
+      </div>
+      <div class="cl-cell is-current">
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up"><img src="../../../image/upper/upper_fukamachi_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>深</span>'"></div>
+            <div class="cl-fn">深町真琴<span class="org">クレセント<span class="own-pill">自</span></span></div>
+          </div>
+          <div class="cl-fx">
+            <div class="cl-up"><img src="../../../image/upper/upper_tachibana_r.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>橘</span>'"></div>
+            <div class="cl-fn">橘玲美<span class="org">ノヴァインパクト</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 合流線 準々決勝→準決勝 -->
+    <div class="cl-merge" style="grid-template-columns:repeat(2,1fr); max-width:480px;">
+      <div class="cl-chev"><svg viewBox="0 0 100 30" preserveAspectRatio="none">
+        <path class="hot" d="M25 30 L25 16 L50 16 L50 2"/>
+        <path d="M75 30 L75 16 L50 16 L50 2"/>
+      </svg></div>
+      <div class="cl-chev"><svg viewBox="0 0 100 30" preserveAspectRatio="none">
+        <path d="M25 30 L25 16 L50 16 L50 2"/>
+        <path d="M75 30 L75 16 L50 16 L50 2"/>
+      </svg></div>
+    </div>
+
+    <!-- 準々決勝 -->
+    <div class="cl-tier-label">準々決勝</div>
+    <div class="cl-row" style="grid-template-columns:repeat(4,1fr); max-width:760px; margin:0 auto;">
+      <div class="cl-cell">
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_abukuma_t.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>阿</span>'"></div>
+            <div class="cl-fn">阿武隈塔子 <span class="cl-win-tag">WIN</span><span class="org">皇武館</span></div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_domae_y.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>堂</span>'"></div>
+            <div class="cl-fn">堂前ユキ<span class="org">なでしこ</span></div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="t">14:12</span><span class="dot">/</span><span class="mq">MQ 78</span></div>
+      </div>
+      <div class="cl-cell">
+        <div class="cl-pair">
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_okochi_s.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>大</span>'"></div>
+            <div class="cl-fn">大河内紗代子<span class="org">皇武館</span></div>
+          </div>
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_kuroe_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>黒</span>'"></div>
+            <div class="cl-fn">黒江舞 <span class="cl-win-tag">WIN</span><span class="org">クレセント</span></div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="t">21:33</span><span class="dot">/</span><span class="mq">MQ 92</span></div>
+      </div>
+      <div class="cl-cell">
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_fukamachi_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>深</span>'"></div>
+            <div class="cl-fn">深町真琴 <span class="cl-win-tag">WIN</span><span class="org">クレセント</span></div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_ikoma_e.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>生</span>'"></div>
+            <div class="cl-fn">生駒エリカ<span class="org">ノヴァ</span></div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="t">16:05</span><span class="dot">/</span><span class="mq">MQ 84</span></div>
+      </div>
+      <div class="cl-cell">
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_tachibana_r.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>橘</span>'"></div>
+            <div class="cl-fn">橘玲美 <span class="cl-win-tag">WIN</span><span class="org">ノヴァ</span></div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_tomioka_k.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>富</span>'"></div>
+            <div class="cl-fn">富岡加奈子<span class="org">皇武館</span></div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="t">17:20</span><span class="dot">/</span><span class="mq">MQ 81</span></div>
+      </div>
+    </div>
+
+    <!-- 合流線 1回戦→準々決勝 -->
+    <div class="cl-merge" style="grid-template-columns:repeat(4,1fr);">
+      <div class="cl-chev"><svg viewBox="0 0 100 30" preserveAspectRatio="none">
+        <path class="hot" d="M25 30 L25 16 L50 16 L50 2"/>
+        <path d="M75 30 L75 16 L50 16 L50 2"/>
+      </svg></div>
+      <div class="cl-chev"><svg viewBox="0 0 100 30" preserveAspectRatio="none">
+        <path d="M25 30 L25 16 L50 16 L50 2"/>
+        <path class="hot" d="M75 30 L75 16 L50 16 L50 2"/>
+      </svg></div>
+      <div class="cl-chev"><svg viewBox="0 0 100 30" preserveAspectRatio="none">
+        <path class="hot" d="M25 30 L25 16 L50 16 L50 2"/>
+        <path d="M75 30 L75 16 L50 16 L50 2"/>
+      </svg></div>
+      <div class="cl-chev"><svg viewBox="0 0 100 30" preserveAspectRatio="none">
+        <path class="hot" d="M25 30 L25 16 L50 16 L50 2"/>
+        <path d="M75 30 L75 16 L50 16 L50 2"/>
+      </svg></div>
+    </div>
+
+    <!-- 1回戦(16名・8セル) -->
+    <div class="cl-tier-label">1回戦</div>
+    <div class="cl-row r16" style="grid-template-columns:repeat(8,1fr);">
+      <div class="cl-cell">
+        <span class="cl-seed">1·16</span>
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_abukuma_t.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>阿</span>'"></div>
+            <div class="cl-fn">阿武隈塔子</div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_kusunoki_n.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>楠</span>'"></div>
+            <div class="cl-fn">楠木なぎさ</div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="mq">MQ 68</span></div>
+      </div>
+      <div class="cl-cell">
+        <span class="cl-seed">8·9</span>
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_domae_y.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>堂</span>'"></div>
+            <div class="cl-fn">堂前ユキ</div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_takatsu_k.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>高</span>'"></div>
+            <div class="cl-fn">高津小春</div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="mq">MQ 72</span></div>
+      </div>
+      <div class="cl-cell">
+        <span class="cl-seed">4·13</span>
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_okochi_s.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>大</span>'"></div>
+            <div class="cl-fn">大河内紗代子</div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_kinouchi_y.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>木</span>'"></div>
+            <div class="cl-fn">木ノ内幸音</div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="mq">MQ 70</span></div>
+      </div>
+      <div class="cl-cell">
+        <span class="cl-seed">5·12</span>
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_kuroe_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>黒</span>'"></div>
+            <div class="cl-fn">黒江舞</div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_takashina_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>高</span>'"></div>
+            <div class="cl-fn">高階まさみ</div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="mq">MQ 76</span></div>
+      </div>
+      <div class="cl-cell">
+        <span class="cl-seed">2·15</span>
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_fukamachi_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>深</span>'"></div>
+            <div class="cl-fn">深町真琴</div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_soezawa_t.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>副</span>'"></div>
+            <div class="cl-fn">副沢たまき</div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="mq">MQ 74</span></div>
+      </div>
+      <div class="cl-cell">
+        <span class="cl-seed">7·10</span>
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_ikoma_e.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>生</span>'"></div>
+            <div class="cl-fn">生駒エリカ</div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_sawade_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>澤</span>'"></div>
+            <div class="cl-fn">澤出みずき</div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="mq">MQ 69</span></div>
+      </div>
+      <div class="cl-cell">
+        <span class="cl-seed">3·14</span>
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_tachibana_r.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>橘</span>'"></div>
+            <div class="cl-fn">橘玲美</div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_hayashi_m.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>林</span>'"></div>
+            <div class="cl-fn">林真尋</div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="mq">MQ 73</span></div>
+      </div>
+      <div class="cl-cell">
+        <span class="cl-seed">6·11</span>
+        <div class="cl-pair">
+          <div class="cl-fx">
+            <div class="cl-up w"><img src="../../../image/upper/upper_tomioka_k.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>富</span>'"></div>
+            <div class="cl-fn">富岡加奈子</div>
+          </div>
+          <div class="cl-fx is-lose">
+            <div class="cl-up l"><img src="../../../image/upper/upper_udagawa_r.webp" alt="" onerror="this.parentNode.innerHTML='<span class=cl-ini>宇</span>'"></div>
+            <div class="cl-fn">宇田川里奈</div>
+          </div>
+        </div>
+        <div class="cl-minfo"><span class="mq">MQ 71</span></div>
+      </div>
+    </div>
+
+    <!-- フォーカスカード: 次戦 準決勝 第2試合(アッパー画像対面) -->
+    <div class="fc">
+      <div class="fc-lb">準決勝 — 第2試合</div>
+      <div class="fc-names">
+        <div class="fc-nm"><div class="n">深町真琴</div><div class="o">クレセント OVR 90</div></div>
+        <div class="fc-vl">VS</div>
+        <div class="fc-nm"><div class="n">橘玲美</div><div class="o">ノヴァインパクト OVR 88</div></div>
+      </div>
+      <div class="fc-bub-pair">
+        <div class="fc-bub"><div class="sp">深町真琴</div>「4年待った。この舞台で獲れなきゃ、次は28歳だ。……獲るよ、今日」</div>
+        <div class="fc-bub"><div class="sp">橘玲美</div>「あなたの4年も、わたしの4年も、重さは同じ。だったら――今夜強い方が上に行くだけ」</div>
+      </div>
+      <div class="fc-uppers">
+        <div class="fc-upper left"><img src="../../../image/upper/upper_fukamachi_m.webp" alt="" onerror="this.style.opacity=0"></div>
+        <div class="vs-mark">VS</div>
+        <div class="fc-upper"><img src="../../../image/upper/upper_tachibana_r.webp" alt="" onerror="this.style.opacity=0"></div>
+      </div>
+      <div class="fc-hp-row">
+        <div class="fc-hp left">
+          <div class="fc-hp-top"><span>HP</span><strong>79 / 100</strong><em>79%</em></div>
+          <div class="fc-hp-track"><div class="fc-hp-fill" style="width:79%"></div></div>
+        </div>
+        <div class="fc-hp-mid">開始HP<br>(2試合分持ち越し)</div>
+        <div class="fc-hp right">
+          <div class="fc-hp-top"><em>72%</em><strong>72 / 100</strong><span>HP</span></div>
+          <div class="fc-hp-track"><div class="fc-hp-fill" style="width:72%"></div></div>
+        </div>
+      </div>
+      <div class="fc-bt">
+        <button class="btn btn-gold" style="padding:8px 22px;font-size:13px">観戦する</button>
+        <button class="btn" style="padding:8px 22px;font-size:13px">スキップ</button>
+      </div>
+    </div>
+
+    <div class="skip-row">
+      <button class="btn" style="padding:8px 24px;font-size:12px;opacity:0.6">全試合スキップ →</button>
+    </div>
+
+    <div class="mock-notes">
+      <b>v0.2 変更点(2026-07-18 Keisuke 裁定反映)</b><br>
+      ・<b>16名トーナメント</b>: 1回戦8セルは縮小ミニセル(38px円・団体名省略・MQのみ)。この段組みは詰めポイント —
+      現状は横幅940px確保+スマホ横スクロール。代案: 2段折り(4+4) / さらに縮小して1画面収め<br>
+      ・<b>全試合ビッグマッチルール</b>: ヘッダー最下行に明記。決着時間も長尺(14〜21分台)でモック<br>
+      ・<b>消耗持ち越し</b>: フォーカスカードの開始HPに「(2試合分持ち越し)」注記。準決勝時点で79%/72%の想定<br>
+      ・<b>アッパー画像対面</b>: スタンド画像の全身対面を廃止し、アッパー画像2枚(左は鏡映し)+VSに変更<br>
+      ・<b>仮エンブレム</b>: ヘッダー最上部にインラインSVG(王冠+月桂樹+IV)。「仮」タグ付き。
+      本番は Keisuke 作画 → <code>image/emblem-ppvt.png</code>(名称確定後にファイル名決定)で差し替え<br>
+      ・大会名称はナビのプルダウンで4候補切替(称号線も連動)
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     優勝演出(決勝決着後の頂上ブロック)
+     ================================================================ -->
+<section class="variant" id="variant-d">
+  <div class="wn-wrap">
+    <div class="wn-rays"></div>
+    <div class="wn-emblem">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <linearGradient id="embGold2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f0d078"/>
+            <stop offset="0.55" stop-color="#d4a843"/>
+            <stop offset="1" stop-color="#8a7235"/>
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r="46" fill="rgba(212,168,67,0.05)" stroke="url(#embGold2)" stroke-width="2.5"/>
+        <circle cx="50" cy="50" r="39.5" fill="none" stroke="rgba(212,168,67,0.35)" stroke-width="1"/>
+        <g stroke="url(#embGold2)" stroke-width="1.6" fill="none" stroke-linecap="round">
+          <path d="M24 66 Q19 52 26 38"/>
+          <path d="M76 66 Q81 52 74 38"/>
+        </g>
+        <g fill="url(#embGold2)">
+          <ellipse cx="23" cy="60" rx="4" ry="1.8" transform="rotate(-55 23 60)"/>
+          <ellipse cx="21.5" cy="52" rx="4" ry="1.8" transform="rotate(-70 21.5 52)"/>
+          <ellipse cx="22.5" cy="44" rx="4" ry="1.8" transform="rotate(-85 22.5 44)"/>
+          <ellipse cx="25.5" cy="37" rx="4" ry="1.8" transform="rotate(-100 25.5 37)"/>
+          <ellipse cx="77" cy="60" rx="4" ry="1.8" transform="rotate(55 77 60)"/>
+          <ellipse cx="78.5" cy="52" rx="4" ry="1.8" transform="rotate(70 78.5 52)"/>
+          <ellipse cx="77.5" cy="44" rx="4" ry="1.8" transform="rotate(85 77.5 44)"/>
+          <ellipse cx="74.5" cy="37" rx="4" ry="1.8" transform="rotate(100 74.5 37)"/>
+        </g>
+        <path d="M33 57 L36 39 L44 49 L50 34 L56 49 L64 39 L67 57 Z" fill="url(#embGold2)"/>
+        <rect x="33" y="58.5" width="34" height="4.5" rx="1.5" fill="url(#embGold2)"/>
+        <circle cx="36" cy="37" r="2" fill="#f0d078"/>
+        <circle cx="50" cy="31.5" r="2.4" fill="#f0d078"/>
+        <circle cx="64" cy="37" r="2" fill="#f0d078"/>
+        <text x="50" y="76" text-anchor="middle" font-family="'Bebas Neue',sans-serif" font-size="12" letter-spacing="1.5" fill="url(#embGold2)">IV</text>
+      </svg>
+    </div>
+    <div class="wn-tour">Season 8 — Quadrennial Tournament</div>
+    <div class="wn-evname evname">GRAND CROWN</div>
+    <div class="wn-up"><img src="../../../image/upper/upper_fukamachi_m.webp" alt="" onerror="this.style.display='none'"></div>
+    <div class="wn-champ-lb">Champion</div>
+    <div class="wn-name">深町真琴</div>
+    <div class="wn-org">クレセント <span class="own-pill">自</span> — 4勝0敗(1回戦・準々決勝・準決勝・決勝)</div>
+    <div class="wn-title-line">
+      第2回 <span class="wn-title-ev">GRAND CROWN</span> 覇者
+      <small>4年に一度の頂点 — 記録と名誉のみ・数値効果なし</small>
+    </div>
+    <div class="wn-prize">優勝賞金 <b>¥3,000万</b></div>
+    <div class="wn-records">
+      <span>経歴年表に記録</span><span>殿堂 +8pt</span><span>年代記に刻銘</span><span>シーズン実績 +20pt</span>
+    </div>
+    <div class="wn-tap">タップして表彰へ ▶</div>
+
+    <div class="mock-notes" style="text-align:left">
+      <b>優勝演出(頂上ブロック→表彰)</b><br>
+      クライムライン頂上の「せり上がり」から遷移する優勝画面。最上部に大会エンブレム(仮)を追加。
+      勝敗記録は16名化に伴い4勝0敗表記。称号線(第N回 ○○ 覇者)は名称プルダウンに連動。
+      下部のチップ列は開発用の説明であり、本実装では簡略化の選択肢あり。
+    </div>
+  </div>
+</section>
+
+<script>
+  function showVariant(key, btn) {
+    document.querySelectorAll('.variant').forEach(v => v.classList.remove('active'));
+    document.getElementById('variant-' + key).classList.add('active');
+    document.querySelectorAll('.mockup-tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function applyName() {
+    const name = document.getElementById('namePicker').value;
+    document.querySelectorAll('.evname, .wn-title-ev').forEach(el => { el.textContent = name; });
+  }
+</script>
+</body>
+</html>

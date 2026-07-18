@@ -193,7 +193,7 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | shachoshitsu-care-rework-spec-v1.0.md | 社長室・選手ケア再設計(ボーナス交渉4案/休暇辞令v2/外部コーチ招聘制・指導タイプ5種・voice8系統、全実装済み 2026-07-06〜07、実機確認済 07-17) |
 | spring-tag-league-spec-v0.1.md | 春のタッグリーグ(Week12・4チーム総当たり+決勝・称号のみ王座なし・連戦消耗B案、v0.2。**P1〜P3全実装完了 2026-07-17**) |
 | autumn-gauntlet-war-spec-v0.1.md | 4団体勝ち残り対抗戦(E-4・Week36・3名制勝ち抜き・**連戦消耗モジュール定義元**、DRAFT・未実装 2026-07-17) |
-| quadrennial-ppv-tournament-spec-v0.1.md | 4年に一度のPPVトーナメント(C-6・season%4==0・8名シングルエリミ・称号効果なし、DRAFT・未実装 2026-07-17) |
+| quadrennial-ppv-tournament-spec-v0.1.md | 4年に一度のPPVトーナメント(C-6・season%4==0・**16名シングルエリミ15試合**・全試合ビッグマッチルール・消耗持ち越し・称号効果なし・UIクライムライン型確定、v0.2 DRAFT・未実装 2026-07-18) |
 | autumn-unified-qualifier-spec-v0.1.md | 秋の統一王座挑戦権トーナメント(統一王座新設が前提。**保留 2026-07-17**、秋枠は4団体勝ち残り対抗戦を採用) |
 | bankruptcy-redesign-spec-v1.0.md | 破産再設計「予兆→抵抗→別れ」3段ドラマ(v1.0初版、v1.1で改訂・提案) |
 | bankruptcy-redesign-spec-v1.1.md | 破産再設計 v1.1(archetype主軸への転換+オフシーズン処理+セリフ全面書き直し、提案) |
