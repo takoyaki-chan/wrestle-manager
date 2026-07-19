@@ -268,7 +268,44 @@
     min-width: 100%;
   }
 
-  .week-roster-table tbody { min-width: 900px; }
+  .week-roster-table tbody { min-width: 620px; }
+  .week-roster-table th,
+  .week-roster-table td { padding: 6px 3px; font-size: 9px; }
+  .week-roster-table th { letter-spacing: 0; }
+  .week-roster-table th:nth-child(1), .week-roster-table td:nth-child(1) { width: 24px !important; }
+  .week-roster-table th:nth-child(2), .week-roster-table td:nth-child(2) { width: 112px !important; }
+  .week-roster-table th:nth-child(3), .week-roster-table td:nth-child(3) { width: 44px !important; }
+  .week-roster-table th:nth-child(4), .week-roster-table td:nth-child(4) { width: 40px !important; }
+  .week-roster-table th:nth-child(5), .week-roster-table td:nth-child(5) { width: 54px !important; }
+  .week-roster-table th:nth-child(6), .week-roster-table td:nth-child(6) { width: 78px !important; }
+  .week-roster-table th:nth-child(7), .week-roster-table td:nth-child(7) { width: 92px !important; }
+  .week-roster-table th:nth-child(8), .week-roster-table td:nth-child(8) { width: 42px !important; }
+  .week-roster-table th:nth-child(9), .week-roster-table td:nth-child(9) { width: 68px !important; }
+  .week-roster-table th:nth-child(10), .week-roster-table td:nth-child(10) { display: none; }
+  .week-roster-table .wr-name-cell { gap: 4px; }
+  .week-roster-table .wr-name-cell > img,
+  .week-roster-table .wr-name-cell > div { width: 30px !important; height: 30px !important; flex: 0 0 30px; }
+  .week-roster-table .wr-name-cell > span { display: flex; align-items: center; min-width: 0; max-width: 74px; overflow: hidden; }
+  .week-roster-table .wr-name-link {
+    display: block; max-width: 6em; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; font-size: 10px;
+  }
+  .week-roster-table .wr-ovr-num { font-size: 20px; }
+  .week-roster-table .wr-ovr-tier { display: none; }
+  .week-roster-table .wr-pop-num { font-size: 14px; }
+  .week-roster-table .wr-cond-wrap { gap: 3px; }
+  .week-roster-table .cond-bar { width: 42px; }
+  .week-roster-table .wr-cond-num { font-size: 9px; }
+  .week-roster-table td:nth-child(5) span,
+  .week-roster-table td:nth-child(7) > span,
+  .week-roster-table td:nth-child(8) > span { font-size: 9px !important; padding-left: 3px !important; padding-right: 3px !important; }
+  .week-roster-table select { min-height: 34px; padding: 4px 2px !important; font-size: 10px !important; }
+  .week-roster-table .sched-tag { font-size: 9px; padding-left: 3px; padding-right: 3px; }
+
+  .survival-header { padding: 8px 9px; gap: 6px; }
+  .survival-header-actions { gap: 5px; }
+  .survival-phase-badge { display: none; }
+  .survival-toggle { min-height: 34px; padding: 5px 8px; }
 
   .db-table-scroll {
     width: 100%;
@@ -703,6 +740,7 @@
   .relmap-canvas { top: 100px; touch-action: none; }
   .relmap-legend { display: none; }
   .rm-zoom-controls { right: 8px; bottom: 8px; }
+  .rm-zoom-fit { width: auto; min-width: 44px; padding: 0 7px; font-size: 10px; }
   .relmap-detail,
   .relmap-detail.show {
     left: 6px;
@@ -715,6 +753,32 @@
   }
   .relmap-detail.show { flex-wrap: wrap; }
   .rm-detail-meters { gap: 8px; }
+
+  /* Newspaper comparison: keep both fighters and the verdict inside the paper. */
+  #screen-newspaper .np-content { padding-left: 9px; padding-right: 9px; }
+  .np-ace-confront { padding: 11px 7px 10px; }
+  .np-ace-arena { grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr); gap: 4px; align-items: start; }
+  .np-stand-wrap { height: auto; aspect-ratio: 3 / 4; max-height: 180px; align-items: flex-start; }
+  .np-stand-img { background-size: auto 118%; background-position: center top; }
+  .np-ace-vs-text { font-size: 34px; }
+  .np-ace-vs-metrics { font-size: 8px; }
+  .np-ace-name-bar { gap: 4px; }
+  .np-ace-side { min-width: 0; padding: 6px 4px; }
+  .np-ace-side .org { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .np-ace-side .name { font-size: 12px; overflow-wrap: anywhere; }
+  .np-matchup-row { grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr); gap: 4px; padding: 8px 5px; }
+  .np-matchup-fighter,
+  .np-matchup-fighter.right { min-width: 0; flex-direction: column; gap: 5px; text-align: center; }
+  .np-matchup-photo { width: 48px; height: 48px; }
+  .np-matchup-org-line,
+  .np-matchup-org-line.right { max-width: 100%; justify-content: center; flex-direction: row; font-size: 8px; letter-spacing: 0; }
+  .np-matchup-org-line span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .np-matchup-name { font-size: 10px; overflow-wrap: anywhere; }
+  .np-matchup-ovr { font-size: 8px; white-space: nowrap; }
+  .np-matchup-ovr strong { font-size: 11px; }
+  .np-matchup-vs .role { font-size: 9px; letter-spacing: 0; overflow-wrap: anywhere; }
+  .np-matchup-vs .verdict { font-size: 8px; padding: 2px 5px; }
+  .np-matchup-comment { min-width: 0; font-size: 10px; overflow-wrap: anywhere; }
   .smc-tag-arena,
   .smc-arena { gap: 6px; padding-left: 4px; padding-right: 4px; }
   .smc-tag-team { max-width: none; }

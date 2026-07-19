@@ -1340,6 +1340,13 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   border-color:rgba(46,204,113,0.25);box-shadow:none}
 .survival-header{display:flex;align-items:center;justify-content:space-between;
   padding:10px 14px;border-bottom:1px solid rgba(200,190,170,0.08)}
+.survival-header-actions{display:flex;align-items:center;gap:8px}
+.survival-toggle{min-height:30px;padding:4px 9px;border-radius:4px;border:1px solid rgba(200,190,170,0.18);
+  background:rgba(0,0,0,0.2);color:var(--text-sub);font-size:10px;font-weight:700;cursor:pointer}
+.survival-toggle:hover{border-color:var(--gold);color:var(--gold)}
+.survival-panel.is-collapsed .survival-header{border-bottom:0}
+.survival-panel.is-collapsed .survival-body{display:none}
+.survival-panel.is-collapsed.critical{animation:none}
 .survival-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;
   display:flex;align-items:center;gap:8px}
 .survival-phase-badge{font-size:11px;padding:3px 8px;border-radius:3px;font-weight:700;letter-spacing:0.5px;

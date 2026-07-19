@@ -37,6 +37,18 @@ assert.ok(
 );
 assert.ok(mobile.includes('.sp-match-card-inner'), 'show preparation cards need a phone layout');
 assert.ok(mobile.includes('.week-roster-table'), 'wide roster tables need phone overflow handling');
+assert.ok(
+  mobile.includes('.week-roster-table tbody { min-width: 620px; }') &&
+    mobile.includes('.week-roster-table .wr-name-link') &&
+    mobile.includes('max-width: 6em;'),
+  'the week roster must use compact columns and truncate long names on phones'
+);
+assert.ok(
+  uiRender.includes('toggleSurvivalPanel') &&
+    uiRender.includes('wm-survival-panel-collapsed') &&
+    index.includes('.survival-panel.is-collapsed .survival-body'),
+  'the survival panel needs a persistent one-button minimize control'
+);
 assert.ok(mobile.includes('.draft-fc.cand .draft-fc-portrait'), 'draft candidates need compact full-width phone cards');
 assert.ok(
   mobile.includes('.app.draft-cream {') &&
@@ -97,6 +109,18 @@ assert.ok(
     uiRender.includes("svg.addEventListener('pointermove'") &&
     uiRender.includes('candidateLinks.length > 0 && !visibleNodeIds.has(n.id)'),
   'the relationship map needs a visible phone layout and touch dragging'
+);
+assert.ok(
+  uiRender.includes("title=\"全員が入るように表示\"") &&
+    uiRender.includes('const visible = _relmapNodes.filter') &&
+    uiRender.includes("window.matchMedia?.('(max-width: 700px)').matches"),
+  'the relationship map must calculate and apply an actual fit-to-all view'
+);
+assert.ok(
+  uiRender.includes('.chron-two-col { grid-template-columns: minmax(0, 1fr); }') &&
+    mobile.includes('.np-stand-img { background-size: auto 118%; background-position: center top; }') &&
+    mobile.includes('.np-matchup-row { grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr);'),
+  'chronicle highlights and newspaper matchups need single-width phone layouts'
 );
 
 for (const file of ['src/mobile.css', 'src/battle-mobile.css']) {

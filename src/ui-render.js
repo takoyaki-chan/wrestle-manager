@@ -58,6 +58,25 @@ function setRosterSort(key) { _rosterSortKey = key; renderRoster(); }
 // v2.1: Week screen sort state
 let _weekSortKey = 'ovr';
 let _weekSortDir = 'desc';
+let _survivalPanelCollapsed = false;
+try {
+  _survivalPanelCollapsed = typeof localStorage !== 'undefined' && localStorage.getItem('wm-survival-panel-collapsed') === '1';
+} catch (e) {}
+
+function toggleSurvivalPanel(button) {
+  _survivalPanelCollapsed = !_survivalPanelCollapsed;
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('wm-survival-panel-collapsed', _survivalPanelCollapsed ? '1' : '0');
+    }
+  } catch (e) {}
+  const panel = button && button.closest ? button.closest('.survival-panel') : null;
+  if (!panel) return;
+  panel.classList.toggle('is-collapsed', _survivalPanelCollapsed);
+  button.setAttribute('aria-expanded', _survivalPanelCollapsed ? 'false' : 'true');
+  button.textContent = _survivalPanelCollapsed ? '＋ 展開' : '− 最小化';
+}
+window.toggleSurvivalPanel = toggleSurvivalPanel;
 let _spActivePicker = null; // showprep v7 picker state: { slotIdx, side } | null
 function setWeekSort(key) {
   if (_weekSortKey === key) _weekSortDir = _weekSortDir === 'desc' ? 'asc' : 'desc';
@@ -951,13 +970,16 @@ function renderWeekScreen() {
       const isCritical = sFuel < 25 && sPhase && sPhase.id === 'red';
 
       const gaugeColor = sPhase ? sPhase.id : 'red';
-      html += `<div class="survival-panel ${sPhase ? sPhase.cssClass : 'phase-red'}${isCritical ? ' critical' : ''}">`;
+      html += `<div class="survival-panel ${sPhase ? sPhase.cssClass : 'phase-red'}${isCritical ? ' critical' : ''}${_survivalPanelCollapsed ? ' is-collapsed' : ''}">`;
       html += `<div class="survival-header">
         <span class="survival-title" style="color:${sPhase?.color || '#e74c3c'}">
           <span style="font-size:16px">⛽</span> 経営サバイバル
         </span>
-        <span class="survival-phase-badge" style="background:${sPhase?.color || '#e74c3c'}22;color:${sPhase?.color || '#e74c3c'};border:1px solid ${sPhase?.color || '#e74c3c'}44">
-          ${sPhase?.emoji || '🔴'} ${sPhase?.label || '赤字地獄'}
+        <span class="survival-header-actions">
+          <span class="survival-phase-badge" style="background:${sPhase?.color || '#e74c3c'}22;color:${sPhase?.color || '#e74c3c'};border:1px solid ${sPhase?.color || '#e74c3c'}44">
+            ${sPhase?.emoji || '🔴'} ${sPhase?.label || '赤字地獄'}
+          </span>
+          <button class="survival-toggle" type="button" onclick="toggleSurvivalPanel(this)" aria-expanded="${_survivalPanelCollapsed ? 'false' : 'true'}">${_survivalPanelCollapsed ? '＋ 展開' : '− 最小化'}</button>
         </span>
       </div>`;
 
@@ -10047,6 +10069,27 @@ function _chronicleStyleBlock() {
   color: var(--chr-gold-light); font-weight: 700;
   text-transform: uppercase; margin-bottom: 4px;
 }
+@media (max-width: 700px) {
+  .chron-wrap { margin-top: 6px; border-radius: 5px; }
+  .chron-subhead, .chron-header, .chron-section,
+  .chron-col-left, .chron-col-right { padding-left: 12px; padding-right: 12px; }
+  .chron-title { font-size: 21px; }
+  .chron-two-col { grid-template-columns: minmax(0, 1fr); }
+  .chron-col-left { border-right: 0; border-bottom: 1px solid var(--chr-rule); }
+  .chron-highlights { max-height: none; padding-right: 0; overflow: visible; }
+  .chron-highlight { gap: 8px; align-items: flex-start; }
+  .chron-highlight-season { width: 34px; font-size: 11px; }
+  .chron-highlight-text { min-width: 0; font-size: 11px; line-height: 1.65; overflow-wrap: anywhere; }
+  .chron-ace-row { grid-template-columns: 104px minmax(0, 1fr); gap: 12px; }
+  .chron-ace-portrait { width: 104px; height: 140px; }
+  .chron-ace-name { font-size: 20px; }
+  .chron-ace-meta-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .chron-dual-wrap { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 0; }
+  .chron-dual-divider { display: none; }
+  .chron-dual-card { border-bottom: 1px solid var(--chr-rule); padding-bottom: 12px; }
+  .chron-dual-card:last-child { border-bottom: 0; }
+  .chron-dual-shared-quote { margin-left: 0; margin-right: 0; }
+}
 </style>`;
 }
 
@@ -12735,7 +12778,7 @@ function _renderDbRelmap() {
   html += `<div class="rm-zoom-controls">`;
   html += `<button class="rm-zoom-btn" onclick="_relmapZoomIn()" title="拡大">＋</button>`;
   html += `<button class="rm-zoom-btn" onclick="_relmapZoomOut()" title="縮小">−</button>`;
-  html += `<button class="rm-zoom-btn rm-zoom-fit" onclick="_relmapZoomFit()" title="リセット">⊙</button>`;
+  html += `<button class="rm-zoom-btn rm-zoom-fit" onclick="_relmapZoomFit()" title="全員が入るように表示">全体</button>`;
   html += `</div>`;
 
   html += `</div>`; // end main
@@ -12894,6 +12937,11 @@ function _drawRelmapAfterRender() {
 
   // Show detail for initial center if set
   if (_relmapCenterId) _relmapShowDetailForNode(_relmapCenterId);
+  if (window.matchMedia?.('(max-width: 700px)').matches) {
+    setTimeout(() => {
+      if (document.getElementById('relmapSvg')) _relmapZoomFit();
+    }, 700);
+  }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -14869,8 +14917,30 @@ function _relmapZoomOut() {
 }
 
 function _relmapZoomFit() {
-  _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
-  _relmapReheat();
+  if (_relmapViewMode === 'power') {
+    _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
+    _relmapRenderPowerView();
+    return;
+  }
+  const visible = _relmapNodes.filter(n => !n._hidden && Number.isFinite(n.x) && Number.isFinite(n.y));
+  if (!visible.length || !_relmapW || !_relmapH) {
+    _relmapZoom = 1.0; _relmapPanX = 0; _relmapPanY = 0;
+    _relmapRender(_relmapOrgCenters);
+    return;
+  }
+  const pad = window.matchMedia?.('(max-width: 700px)').matches ? 42 : 64;
+  const minX = Math.min(...visible.map(n => n.x - n.r)) - pad;
+  const maxX = Math.max(...visible.map(n => n.x + n.r)) + pad;
+  const minY = Math.min(...visible.map(n => n.y - n.r)) - pad;
+  const maxY = Math.max(...visible.map(n => n.y + n.r)) + pad;
+  const boundsW = Math.max(1, maxX - minX);
+  const boundsH = Math.max(1, maxY - minY);
+  _relmapZoom = Math.max(0.3, Math.min(1.15, _relmapW / boundsW, _relmapH / boundsH));
+  const viewW = _relmapW / _relmapZoom;
+  const viewH = _relmapH / _relmapZoom;
+  _relmapPanX = (minX + maxX) / 2 - viewW / 2;
+  _relmapPanY = (minY + maxY) / 2 - viewH / 2;
+  _relmapRender(_relmapOrgCenters);
 }
 
 // ── ランキング画面: 指標ツールチップを document.body に teleport してクリッピング回避 ──
