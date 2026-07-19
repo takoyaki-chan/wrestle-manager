@@ -219,6 +219,7 @@ function refreshTopBar() {
 // ╚══════════════════════════════════════════════════╝
 let _openingAct = 0;
 let _openingOverlay = null;
+let _openingTransitioning = false;
 
 function renderOpeningScreen() {
   const el = document.getElementById('weekContent');
@@ -233,8 +234,10 @@ function renderOpeningScreen() {
   const name2 = fixed[1]?.name || '???';
   const upper1 = getUpperUrl(fixed[0]?.id);
   const upper2 = getUpperUrl(fixed[1]?.id);
+  const orgLengthClass = orgName.length >= 16 ? ' is-long' : orgName.length >= 11 ? ' is-medium' : '';
 
   _openingAct = 0;
+  _openingTransitioning = false;
 
   // ── Acts データ ──
   const acts = [
@@ -242,7 +245,8 @@ function renderOpeningScreen() {
     `<div class="opening-act" id="openingAct0">
       <div class="opening-act-line">
         今、ひとつの団体が旗を揚げようとしている。<br>
-        団体の名は「<span class="org">${orgName}</span>」。
+        団体の名は
+        <span class="opening-org-line${orgLengthClass}">「<span class="org">${orgName}</span>」。</span>
       </div>
     </div>`,
     // 幕2: 弱小団体としての宣言
@@ -319,26 +323,32 @@ function renderOpeningScreen() {
 }
 
 function _advanceOpening() {
-  _openingAct++;
-  if (_openingAct >= 4) {
-    _finishOpening();
-    return;
-  }
-  // 前の幕をフェードアウト、次の幕をフェードイン
-  for (let i = 0; i < 4; i++) {
-    const actEl = document.getElementById('openingAct' + i);
-    if (!actEl) continue;
-    if (i === _openingAct) {
-      actEl.style.display = '';
-      requestAnimationFrame(() => { requestAnimationFrame(() => { actEl.classList.add('show'); }); });
-    } else {
-      actEl.classList.remove('show');
-      setTimeout(() => { actEl.style.display = 'none'; }, 400);
-    }
-  }
+  if (_openingTransitioning) return;
+  const nextAct = _openingAct + 1;
+  if (nextAct >= 4) { _finishOpening(); return; }
+
+  _openingTransitioning = true;
+  const currentEl = document.getElementById('openingAct' + _openingAct);
+  if (currentEl) currentEl.classList.remove('show');
+
+  // 前の文章を完全に隠してから次を表示し、二重描画を防ぐ。
+  setTimeout(() => {
+    if (currentEl) currentEl.style.display = 'none';
+    _openingAct = nextAct;
+    const nextEl = document.getElementById('openingAct' + _openingAct);
+    if (!nextEl) { _openingTransitioning = false; return; }
+    nextEl.style.display = '';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        nextEl.classList.add('show');
+        setTimeout(() => { _openingTransitioning = false; }, 700);
+      });
+    });
+  }, 450);
 }
 
 function _finishOpening() {
+  _openingTransitioning = false;
   // クリーンアップ
   if (_openingOverlay) {
     if (_openingOverlay._escHandler) document.removeEventListener('keydown', _openingOverlay._escHandler);

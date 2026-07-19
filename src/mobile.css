@@ -179,6 +179,7 @@
   /* Title and new-game overlays must scroll on short phones. */
   .title-screen,
   .org-setup {
+    z-index: 9000;
     min-height: 100dvh;
     height: 100dvh;
     overflow-x: hidden;
@@ -203,6 +204,11 @@
     padding: 0 10px;
     line-height: 1.6;
   }
+
+  .opening-act { width: 100%; padding: 28px 14px; }
+  .opening-org-line .org { font-size: clamp(20px, 7vw, 28px); }
+  .opening-org-line.is-medium .org { font-size: clamp(16px, 5vw, 22px); }
+  .opening-org-line.is-long .org { font-size: clamp(13px, 3.7vw, 18px); letter-spacing: .03em; }
 
   .title-btn {
     width: min(100%, 300px);
@@ -782,6 +788,13 @@
   }
   .comp-text .org-name { font-size: 15px; }
   .comp-text .start { font-size: 26px; }
+  .team-greetings { width: min(100%, 380px); margin-top: 14px; gap: 3px; }
+  .team-greeting {
+    grid-template-columns: minmax(72px, auto) minmax(0, 1fr);
+    gap: 6px;
+    padding: 3px 6px;
+    font-size: 9px;
+  }
 
   /* Ranking report: each organization owns the full phone width. */
   #screen-ranking { padding: 0; }

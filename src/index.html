@@ -3806,6 +3806,9 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   letter-spacing:0.08em;font-weight:400;text-shadow:0 2px 12px rgba(0,0,0,0.8)}
 .opening-act-line .org{font-size:28px;letter-spacing:0.15em;color:var(--gold);font-weight:600;
   display:inline-block;padding:0 6px;border-bottom:1px solid rgba(212,168,67,0.4)}
+.opening-org-line{display:block;margin-top:4px;white-space:nowrap}
+.opening-org-line.is-medium .org{font-size:24px;letter-spacing:0.1em}
+.opening-org-line.is-long .org{font-size:18px;letter-spacing:0.04em}
 .opening-act-line .question{font-family:var(--font-ceremony);font-size:19px;color:var(--text-main);
   font-weight:400;letter-spacing:0.08em;display:inline-block;margin-top:18px}
 /* Act 3 portraits */
@@ -3858,6 +3861,17 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .completion-overlay.show .comp-text{opacity:1;transform:translateY(0)}
 .comp-text .org-name{font-size:18px;letter-spacing:0.2em;color:var(--text-main);font-weight:500}
 .comp-text .start{font-size:32px;letter-spacing:0.4em;color:var(--gold);font-weight:700;display:block;margin-top:8px}
+.team-greetings{position:relative;z-index:2;width:min(620px,100%);margin-top:22px;display:grid;gap:5px;
+  opacity:0;transform:translateY(8px);transition:opacity .8s ease 2.2s,transform .8s ease 2.2s}
+.completion-overlay.show .team-greetings{opacity:1;transform:translateY(0)}
+.team-greeting{display:grid;grid-template-columns:minmax(90px,auto) minmax(0,1fr);gap:10px;align-items:baseline;
+  padding:4px 10px;border-left:1px solid rgba(212,168,67,.25);background:rgba(255,255,255,.025);
+  font-family:'Noto Sans JP',sans-serif;font-size:11px;line-height:1.5;
+  opacity:0;transform:translateX(-6px);transition:opacity .45s ease,transform .45s ease;
+  transition-delay:calc(2.25s + var(--greeting-index) * .14s)}
+.completion-overlay.show .team-greeting{opacity:1;transform:translateX(0)}
+.team-greeting-name{color:var(--gold-light);font-weight:700;text-align:right;white-space:nowrap}
+.team-greeting-line{color:var(--text-main);text-align:left}
 
 /* ============================================================
    DRAFT CREAM THEME — 新聞風レイアウト

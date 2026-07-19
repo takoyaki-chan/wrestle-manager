@@ -3654,6 +3654,13 @@ const App = {
       const c = G.roster.find(r => r.id === id) || ALL_CHARS.find(r => r.id === id);
       return { id, name: c ? c.name : '???', isFixed: fixedIds.includes(id) };
     });
+    const foundingGreetings = [
+      '社長、これからよろしくお願いします！',
+      'この団体を、必ず大きくしてみせます。',
+      '私たちのリング、ここから始めましょう。',
+      '期待には試合で応えます。',
+      '全員で一番を目指しましょう、社長。',
+    ];
 
     const overlay = document.createElement('div');
     overlay.className = 'completion-overlay';
@@ -3671,6 +3678,12 @@ const App = {
       <div class="comp-text">
         <span class="org-name">${orgName}</span>
         <span class="start">始動</span>
+      </div>
+      <div class="team-greetings">
+        ${teamMembers.map((m, i) => `<div class="team-greeting" style="--greeting-index:${i}">
+          <span class="team-greeting-name">${m.name}</span>
+          <span class="team-greeting-line">「${foundingGreetings[i]}」</span>
+        </div>`).join('')}
       </div>
     `;
     document.body.appendChild(overlay);
