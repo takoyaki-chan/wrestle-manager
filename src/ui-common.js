@@ -368,11 +368,11 @@ function _mdlASubjectStage(fighter, bodyHtml, opts) {
   </div>`;
 }
 
-document.addEventListener('click', (event) => {
+function _handlePatternBResultClose(event) {
   const closeBtn = event.target.closest('.pb-close-btn, .sr-close-btn');
   if (!closeBtn) return;
-  // JT進行中は干渉しない（JTボタンはonclickで直接処理する）
-  if (App._jtPreview) return;
+  // トーナメント進行中は干渉しない（各ボタンは onclick で専用の次試合処理を行う）
+  if (App._jtPreview || App._tcPreview) return;
   event.preventDefault();
   event.stopPropagation();
   try {
@@ -387,7 +387,9 @@ document.addEventListener('click', (event) => {
       console.error('[WM] App.closeShowResult fallback failed:', inner);
     }
   }
-});
+}
+
+document.addEventListener('click', _handlePatternBResultClose);
 
 // MutationObserverで全オーバーレイのclass変更を監視し、閉じたら自動でキュー処理
 document.addEventListener('DOMContentLoaded', () => {

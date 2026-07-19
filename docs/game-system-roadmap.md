@@ -59,7 +59,7 @@ Keisuke さんの変更希望・追加希望を一括登録。**やりやすい�
 | C-3 | 休暇辞令の効果拡張 | 週数4案 + wear回復 + 休暇中欠場 | ✅ 完了（2026-07-06 P2） |
 | C-4 | ヘルプ・ホバーティップスの見直しオーバーホール | P1 ガイド14節改訂 + P2-P4 説明系ティップスの data-tip 統一(スマホ対応)。残: データベース絆/因縁バー等への新規ティップス追加は任意の宿題 | ✅ 完了（2026-07-17）実機確認待ち |
 | C-5 | シーズン終了レポートのリデザイン | 寒色黒金の年次記録様式で確定。仕様 `docs/ui/03-screens/season-retrospective.md` | ✅ 完了（フェーズ1 07-08 + フェーズ3ナレーション配線 07-16） |
-| C-6 | 4年に一度 PPV がトーナメントに化ける「天頂戦」 | 設計書 `specs/quadrennial-ppv-tournament-spec-v0.1.md`（v0.5）+ 画面仕様書 `docs/ui/03-screens/tenchosen.md` | ✅ **実装完了（2026-07-18、P1エンジンCodex+P2 UI+P3ミニイベント+較正+間延び修正まで全部入り。auto-sim ALL CLEAR）— Keisuke実機確認待ち** |
+| C-6 | 4年に一度 PPV がトーナメントに化ける「天頂戦」 | 設計書 `specs/quadrennial-ppv-tournament-spec-v0.1.md`（v0.5）+ 画面仕様書 `docs/ui/03-screens/tenchosen.md` | ✅ **実装完了（2026-07-18、P1エンジンCodex+P2 UI+P3ミニイベント+較正+間延び修正まで全部入り。auto-sim ALL CLEAR）。07-19 個別観戦/スキップ後の通常興行クローズ誤発火を修正 — Keisuke実機確認待ち** |
 
 #### 要設計相談（社長室コマンド系）
 
