@@ -712,13 +712,13 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .title-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(212,168,67,0.08) 0%,transparent 60%)}
 .title-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-dark) 0%,transparent 30%,transparent 70%,var(--bg-dark) 100%)}
 .title-portraits{position:absolute;right:0;bottom:0;left:0;overflow:hidden;opacity:0.3;filter:saturate(0.4);pointer-events:none}
-.title-portraits-track{display:flex;width:max-content;align-items:flex-end;will-change:transform;animation:title-portraits-scroll 110s linear infinite}
+.title-portraits-track{display:flex;width:max-content;min-width:max-content;align-items:flex-end;will-change:transform;transform:translate3d(0,0,0)}
+.title-portraits-track.is-running{animation:title-portraits-scroll 110s linear infinite;animation-play-state:running}
 .title-portraits-group{display:flex;flex:0 0 auto;align-items:flex-end}
 .title-portraits img{flex:0 0 auto;width:280px;height:280px;object-fit:cover;object-position:top;mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%);-webkit-mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%)}
 @keyframes title-portraits-scroll{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 @media(prefers-reduced-motion:reduce){
-  .title-portraits-track{animation:none;will-change:auto}
-  .title-portraits-group[aria-hidden="true"]{display:none}
+  .title-portraits-track.is-running{animation-duration:180s}
 }
 .title-content{position:relative;z-index:1;text-align:center;padding:20px}
 .title-logo{font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:12px;line-height:1;

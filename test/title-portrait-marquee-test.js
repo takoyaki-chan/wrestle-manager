@@ -8,12 +8,14 @@ const app = fs.readFileSync(path.join(root, 'src', 'app.js'), 'utf8');
 
 assert.ok(
   index.includes('@keyframes title-portraits-scroll') &&
-    index.includes('animation:title-portraits-scroll 110s linear infinite'),
+    index.includes('.title-portraits-track.is-running{animation:title-portraits-scroll 110s linear infinite'),
   'title portraits need a slow continuous marquee animation'
 );
 assert.ok(
-  index.includes('@media(prefers-reduced-motion:reduce)'),
-  'title portrait motion must respect reduced-motion preferences'
+  index.includes('@media(prefers-reduced-motion:reduce)') &&
+    index.includes('animation-duration:180s') &&
+    !index.includes('.title-portraits-track{animation:none'),
+  'reduced-motion preferences may slow the title marquee but must not stop it'
 );
 assert.ok(
   app.includes('Math.floor(Math.random() * (i + 1))') &&
@@ -23,6 +25,10 @@ assert.ok(
 assert.ok(
   app.includes('class="title-portraits-group" aria-hidden="true"'),
   'title portrait row must be duplicated for a seamless loop'
+);
+assert.ok(
+  app.includes("portraitTrack.classList.add('is-running')"),
+  'the title marquee animation must restart whenever the title is shown'
 );
 
 console.log('title-portrait-marquee-test: ok');

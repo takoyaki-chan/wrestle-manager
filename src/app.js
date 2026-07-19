@@ -3448,6 +3448,10 @@ const App = {
           <div class="title-portraits-group" aria-hidden="true">${portraitRow}</div>
         </div>`
       : '';
+    const portraitTrack = portraitsEl.querySelector('.title-portraits-track');
+    if (portraitTrack) {
+      requestAnimationFrame(() => portraitTrack.classList.add('is-running'));
+    }
 
     // Show CONTINUE button if autosave exists (体験版ではオートセーブ無効)
     const autoInfo = window.IS_TRIAL ? null : Storage.getAutoSaveInfo();
