@@ -105,10 +105,28 @@ assert.ok(
 assert.ok(
   mobile.includes('.relmap-main { flex: none;') &&
     mobile.includes('.relmap-canvas { top: 100px; touch-action: none;') &&
+    mobile.includes('.relmap-canvas svg { touch-action: none; cursor: grab; }') &&
     uiRender.includes("svg.addEventListener('pointerdown'") &&
     uiRender.includes("svg.addEventListener('pointermove'") &&
+    uiRender.includes('svg.setPointerCapture(e.pointerId)') &&
     uiRender.includes('candidateLinks.length > 0 && !visibleNodeIds.has(n.id)'),
   'the relationship map needs a visible phone layout and touch dragging'
+);
+assert.ok(
+  mobile.includes('.db-subtab-bar {') &&
+    mobile.includes('position: sticky;') &&
+    uiRender.includes('const targetTop = Math.max(0, screen.offsetTop - 8);') &&
+    uiRender.includes("app.scrollTo({ top: targetTop, behavior: 'auto' })"),
+  'database subtabs must remain at the top when phone content is replaced'
+);
+assert.ok(
+  uiRender.includes("_relmapViewMode = 'focus';") &&
+    uiRender.includes("return window.matchMedia?.('(max-width: 700px)').matches ? 7") &&
+    uiRender.includes('n.x = target.x;') &&
+    uiRender.includes('n.y = target.y;') &&
+    uiRender.includes("window.matchMedia?.('(max-width: 700px)').matches && shownIds.size < focusLimit + 1") &&
+    uiRender.includes('_relmapFocusTargets[_relmapDragTarget.id] = { x: nextX, y: nextY }'),
+  'the phone relationship map must start in a stable compact focus layout'
 );
 assert.ok(
   uiRender.includes("title=\"全員が入るように表示\"") &&

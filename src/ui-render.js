@@ -6429,6 +6429,16 @@ function renderDatabase() {
   if (!el) return;
   // Normalize stale _dbSubTab from prior versions where 2/5/8 were valid
   if (_dbSubTab === 2 || _dbSubTab === 5 || _dbSubTab === 8) _dbSubTab = 0;
+  const isPhoneRelmap = _dbSubTab === 4 && !!window.matchMedia?.('(max-width: 700px)').matches;
+  if (isPhoneRelmap) {
+    // The full force-directed industry graph is too dense for a phone.
+    // Start from one wrestler and the strongest nearby relationships.
+    _relmapViewMode = 'focus';
+    if (!_relmapFilterUserSet) {
+      _relmapFilterRelOnly = false;
+      _relmapFilterThreshold = 0;
+    }
+  }
   // Toggle relmap-active class on panel
   const panel = el.closest('.panel') || el.parentElement;
   if (panel) panel.classList.toggle('relmap-active', _dbSubTab === 4);
@@ -6484,6 +6494,16 @@ function setDbSubTab(idx) {
   _newspaperPage = 0; // タブ切替時はページリセット
   _newspaperArchiveIdx = -1; // 最新号にリセット
   renderDatabase();
+  if (window.matchMedia?.('(max-width: 700px)').matches) {
+    requestAnimationFrame(() => {
+      const app = document.querySelector('.app');
+      const screen = document.getElementById('screen-database');
+      if (!app || !screen) return;
+      const targetTop = Math.max(0, screen.offsetTop - 8);
+      if (typeof app.scrollTo === 'function') app.scrollTo({ top: targetTop, behavior: 'auto' });
+      else app.scrollTop = targetTop;
+    });
+  }
 }
 function setNewspaperPage(page) {
   _newspaperPage = page;
@@ -12909,8 +12929,26 @@ function _drawRelmapAfterRender() {
   // Build face image patterns in <defs> (persistent across innerHTML updates)
   _relmapBuildFacePatterns(svg);
 
+  const isPhoneLayout = !!window.matchMedia?.('(max-width: 700px)').matches;
+
   // Apply visibility
   _relmapUpdateVisibility();
+
+  // A phone focus graph must be readable immediately rather than waiting for
+  // the force simulation to drift into its target layout.
+  if (isPhoneLayout && _relmapViewMode === 'focus') {
+    _relmapNodes.forEach((n, i) => {
+      if (n._hidden) return;
+      const target = _relmapFocusTargets[n.id];
+      if (!target) return;
+      n.x = target.x;
+      n.y = target.y;
+      if (_relmapVelocities[i]) {
+        _relmapVelocities[i].vx = 0;
+        _relmapVelocities[i].vy = 0;
+      }
+    });
+  }
 
   // Draw org zones
   _relmapDrawOrgZones(orgCenters);
@@ -12936,11 +12974,11 @@ function _drawRelmapAfterRender() {
   // Popup overlay: ボタンでのみ閉じる（外部クリック無効）
 
   // Show detail for initial center if set
-  if (_relmapCenterId) _relmapShowDetailForNode(_relmapCenterId);
-  if (window.matchMedia?.('(max-width: 700px)').matches) {
+  if (_relmapCenterId && !isPhoneLayout) _relmapShowDetailForNode(_relmapCenterId);
+  if (isPhoneLayout) {
     setTimeout(() => {
       if (document.getElementById('relmapSvg')) _relmapZoomFit();
-    }, 700);
+    }, 80);
   }
 }
 
@@ -13486,6 +13524,10 @@ function _relmapPlaceFocusTargets(centerId, otherIds) {
   });
 }
 
+function _relmapFocusLimit() {
+  return window.matchMedia?.('(max-width: 700px)').matches ? 7 : _RELMAP_FOCUS_MAX_CONN;
+}
+
 function _relmapUpdateVisibility() {
   const nodes = _relmapNodes;
   const links = _relmapLinks;
@@ -13506,7 +13548,7 @@ function _relmapUpdateVisibility() {
       const fl = _relmapGetLinksFor(_relmapCenterId)
         .filter(l => visibleNodeIds.has(l.a) && visibleNodeIds.has(l.b) && _relmapLinkPassesDisplayControls(l, _relmapFilter));
       const shownIds = new Set([_relmapCenterId]);
-      fl.slice(0, _RELMAP_FOCUS_MAX_CONN).forEach(l => shownIds.add(l.a === _relmapCenterId ? l.b : l.a));
+      fl.slice(0, _relmapFocusLimit()).forEach(l => shownIds.add(l.a === _relmapCenterId ? l.b : l.a));
       nodes.forEach(n => { if (visibleNodeIds.has(n.id)) n._hidden = !shownIds.has(n.id); });
       _relmapPlaceFocusTargets(_relmapCenterId, [...shownIds].filter(id => id !== _relmapCenterId));
       candidateLinks = fl.filter(l => shownIds.has(l.a) && shownIds.has(l.b));
@@ -13533,12 +13575,29 @@ function _relmapUpdateVisibility() {
       return { oid, intensity, l };
     }).sort((a, b) => b.intensity - a.intensity);
 
-    const shown = intensityLinks.slice(0, _RELMAP_FOCUS_MAX_CONN);
+    const focusLimit = _relmapFocusLimit();
+    const shown = intensityLinks.slice(0, focusLimit);
     const shownIds = new Set(shown.map(il => il.oid));
     shownIds.add(_relmapCenterId);
+    // New saves can have very few relationship records. Fill empty places
+    // with same-organization wrestlers first so the phone graph is not blank.
+    if (window.matchMedia?.('(max-width: 700px)').matches && shownIds.size < focusLimit + 1) {
+      const centerNode = _relmapNodeMap[_relmapCenterId];
+      const fillers = nodes
+        .filter(n => n.id !== _relmapCenterId && !shownIds.has(n.id))
+        .sort((a, b) => {
+          const aSame = a.orgId === centerNode?.orgId ? 1 : 0;
+          const bSame = b.orgId === centerNode?.orgId ? 1 : 0;
+          return bSame - aSame || b.ovr - a.ovr;
+        });
+      for (const n of fillers) {
+        if (shownIds.size >= focusLimit + 1) break;
+        shownIds.add(n.id);
+      }
+    }
     nodes.forEach(n => { n._hidden = !shownIds.has(n.id); });
 
-    _relmapPlaceFocusTargets(_relmapCenterId, shown.map(il => il.oid));
+    _relmapPlaceFocusTargets(_relmapCenterId, [...shownIds].filter(id => id !== _relmapCenterId));
 
     _relmapVisibleLinks = shown.map(il => il.l);
     _relmapRebuildVisibleLinkState();
@@ -13672,6 +13731,9 @@ function _relmapSetupInteraction(svg, container) {
       } else {
         _relmapDragTarget.x = nextX;
         _relmapDragTarget.y = nextY;
+        if (_relmapViewMode === 'focus' && _relmapFocusTargets[_relmapDragTarget.id]) {
+          _relmapFocusTargets[_relmapDragTarget.id] = { x: nextX, y: nextY };
+        }
         _relmapReheat();
       }
     } else if (_relmapPanning) {
@@ -13720,6 +13782,9 @@ function _relmapSetupInteraction(svg, container) {
   svg.addEventListener('pointerdown', e => {
     if (e.pointerType === 'mouse' || !e.isPrimary) return;
     e.preventDefault();
+    if (typeof svg.setPointerCapture === 'function') {
+      try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    }
     const g = e.target.closest('.rm-node-group');
     if (g) {
       const id = parseInt(g.dataset.id), n = _relmapNodeMap[id];
@@ -13756,6 +13821,9 @@ function _relmapSetupInteraction(svg, container) {
       } else {
         _relmapDragTarget.x = nextX;
         _relmapDragTarget.y = nextY;
+        if (_relmapViewMode === 'focus' && _relmapFocusTargets[_relmapDragTarget.id]) {
+          _relmapFocusTargets[_relmapDragTarget.id] = { x: nextX, y: nextY };
+        }
         _relmapReheat();
       }
     } else {
@@ -13781,6 +13849,9 @@ function _relmapSetupInteraction(svg, container) {
     }
     _relmapPanning = false;
     touchStartNodeId = null;
+    if (typeof svg.releasePointerCapture === 'function') {
+      try { svg.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
     if (!wasMoved && !cancelled) {
       if (tappedNodeId != null) {
         if (_relmapViewMode === 'power') showFighterPopup(tappedNodeId);

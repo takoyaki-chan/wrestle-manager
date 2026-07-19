@@ -694,9 +694,14 @@
   .db-faction-card { min-width: 0; padding: 14px 12px; }
   .db-faction-faces { flex-wrap: wrap; }
   .db-subtab-bar {
+    position: sticky;
+    top: 0;
+    z-index: 120;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
+    background: rgba(20, 19, 17, 0.98);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.32);
   }
   .db-subtab-bar::-webkit-scrollbar { display: none; }
   .db-subtab-btn {
@@ -712,6 +717,7 @@
   /* Relationship map: keep controls out of the graph on narrow screens. */
   #databasePanel.relmap-active .panel-title { padding: 10px 12px 0; }
   #databasePanel.relmap-active .db-subtab-bar { padding: 0 8px; margin-bottom: 8px; }
+  #databasePanel.relmap-active { overflow-anchor: none; }
   .relmap-root { height: auto; min-height: 0; }
   .relmap-header { padding: 6px 8px; gap: 6px; }
   .relmap-header .rm-title { width: 100%; }
@@ -721,7 +727,7 @@
   .rm-center-indicator { max-width: 100%; }
   .rm-header-controls { width: 100%; margin-left: 0; overflow-x: auto; }
   .rm-ctrl-btn { flex: 1 0 auto; min-height: 36px; }
-  .relmap-main { flex: none; height: min(68dvh, 580px); min-height: 460px; }
+  .relmap-main { flex: none; height: min(62dvh, 520px); min-height: 420px; }
   .relmap-sidebar {
     left: 6px;
     top: 6px;
@@ -738,6 +744,8 @@
   .relmap-sidebar > * { flex: 0 0 145px; }
   .relmap-sidebar .rm-filter-panel { flex-basis: 190px; }
   .relmap-canvas { top: 100px; touch-action: none; }
+  .relmap-canvas svg { touch-action: none; cursor: grab; }
+  .relmap-canvas svg:active { cursor: grabbing; }
   .relmap-legend { display: none; }
   .rm-zoom-controls { right: 8px; bottom: 8px; }
   .rm-zoom-fit { width: auto; min-width: 44px; padding: 0 7px; font-size: 10px; }
