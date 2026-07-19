@@ -2186,7 +2186,7 @@ function _renderRivalryPopup() {
     const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
     const winLine = pickDialogueLine(winLineObj, winFighter);
     const loseLine = pickDialogueLine(loseLineObj, loseFighter);
-    title = isBitter ? '決 着、な お 宿 怨'
+    title = isBitter ? '決 着。し か し、宿 怨 は 消 え ず'
       : isGoodRival ? '好 敵 手 誕 生'
       : (o.isSecondResolution ? '最 終 決 着' : (o.isFate ? '宿命の相手 決着' : '宿 敵 決 着'));
     sub = isBitter ? 'THE MATCH IS OVER ・ THE GRUDGE REMAINS'

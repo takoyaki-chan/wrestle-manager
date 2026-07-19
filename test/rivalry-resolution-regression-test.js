@@ -101,7 +101,8 @@ function testCopyClarifiesBitterResolutionAndAwardDialogue() {
   const ui = fs.readFileSync(path.join(root, 'src', 'ui-common.js'), 'utf8');
   const data = fs.readFileSync(path.join(root, 'src', 'data.js'), 'utf8');
 
-  assert.ok(ui.includes('決 着、な お 宿 怨'));
+  assert.ok(ui.includes('決 着。し か し、宿 怨 は 消 え ず'));
+  assert.ok(!ui.includes('決 着、な お 宿 怨'));
   assert.ok(ui.includes('勝敗は決した。しかし、遺恨は消えなかった'));
   assert.ok(!ui.includes('ふたりは「宿怨」になった'));
   assert.ok(data.includes('すっごく楽しかった！ 終わった瞬間「もう1回！」って思ったもん'));
