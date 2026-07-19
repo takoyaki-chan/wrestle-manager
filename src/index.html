@@ -1605,9 +1605,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .bestmatch-quotes .speech-bubble:last-child{border-radius:10px 2px 10px 10px}
 .bestmatch-quotes .speech-bubble:last-child::before{left:auto;right:16px}
 /* -- Champions -- */
-.champions-layout{display:flex;align-items:flex-end;justify-content:center;gap:24px;margin-bottom:16px}
+.champions-layout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:12px;margin-bottom:16px}
+.champ-slot{min-width:0;display:flex;align-items:flex-end;justify-content:center}
 .champ-col{display:flex;flex-direction:column;align-items:center;gap:6px;
-  opacity:0;transition:opacity .6s ease,transform .6s cubic-bezier(0.22,1,0.36,1);transform:translateY(20px)}
+  width:100%;min-width:0;opacity:0;transition:opacity .6s ease,transform .6s cubic-bezier(0.22,1,0.36,1);transform:translateY(20px)}
 .champ-col.revealed{opacity:1;transform:translateY(0)}
 .champ-portrait{background:#0d0d14;border-radius:3px;display:flex;align-items:center;justify-content:center;
   position:relative;overflow:hidden}
@@ -1625,7 +1626,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .champ-org{font-size:10px;color:var(--gold);text-align:center;letter-spacing:1px}
 .champ-defense{font-size:11px;color:#7a7060;text-align:center}
 .champ-quote{margin-top:6px;width:100%}
-.champ-quote .speech-bubble{padding:8px 12px}
+.champ-quote .speech-bubble{width:100%;padding:8px 12px}
 .champ-quote .speech-text{font-size:11px}
 /* -- MVP -- */
 .mvp-layout{display:flex;gap:32px;align-items:center}

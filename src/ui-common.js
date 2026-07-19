@@ -2530,9 +2530,9 @@ function _buildChampionsAward(champions) {
 
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏆</span><span class="badge-jp">タイトル王者</span></div>
   <div class="champions-layout" id="aw-champions-layout">
-    ${buildCol(c2, 2)}
-    ${buildCol(c1, 1)}
-    ${buildCol(c3, 3)}
+    <div class="champ-slot">${buildCol(c2, 2)}</div>
+    <div class="champ-slot">${buildCol(c1, 1)}</div>
+    <div class="champ-slot">${buildCol(c3, 3)}</div>
   </div></div>`;
 }
 
