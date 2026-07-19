@@ -935,57 +935,57 @@
     padding: 16px 8px;
   }
 
-  /* Standard show results: fighters share the first row; result details sit below. */
-  .pb-container.is-standard-show .pb-mrow:not(.is-pending) {
+  /* All match-result formats: fighters share the first row; result details sit below. */
+  .pb-container .pb-mrow:not(.is-pending) {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 8px 6px;
     padding: 14px 7px 12px;
   }
-  .pb-container.is-standard-show .pb-mrow.is-main:not(.is-pending) {
+  .pb-container .pb-mrow.is-main:not(.is-pending) {
     padding-top: 30px;
   }
-  .pb-container.is-standard-show .pb-fighter {
+  .pb-container .pb-fighter {
     min-width: 0;
     gap: 6px;
   }
-  .pb-container.is-standard-show .pb-fighter.is-left {
+  .pb-container .pb-fighter.is-left {
     grid-column: 1;
     grid-row: 1;
   }
-  .pb-container.is-standard-show .pb-fighter.is-right {
+  .pb-container .pb-fighter.is-right {
     grid-column: 2;
     grid-row: 1;
   }
-  .pb-container.is-standard-show .pb-portrait,
-  .pb-container.is-standard-show .pb-mrow.is-main .pb-portrait {
+  .pb-container .pb-portrait,
+  .pb-container .pb-mrow.is-main .pb-portrait {
     width: 62px;
     height: 93px;
   }
-  .pb-container.is-standard-show .pb-mrow.is-main .pb-portrait {
+  .pb-container .pb-mrow.is-main .pb-portrait {
     width: 68px;
     height: 102px;
   }
-  .pb-container.is-standard-show .pb-fighter-name,
-  .pb-container.is-standard-show .pb-mrow.is-main .pb-fighter.is-winner .pb-fighter-name {
+  .pb-container .pb-fighter-name,
+  .pb-container .pb-mrow.is-main .pb-fighter.is-winner .pb-fighter-name {
     max-width: 100%;
     font-size: 12px;
   }
-  .pb-container.is-standard-show .pb-fighter-meta {
+  .pb-container .pb-fighter-meta {
     font-size: 8px;
     letter-spacing: .7px;
   }
-  .pb-container.is-standard-show .pb-fighter-ovr {
+  .pb-container .pb-fighter-ovr {
     gap: 3px;
   }
-  .pb-container.is-standard-show .pb-fighter-ovr .lbl {
+  .pb-container .pb-fighter-ovr .lbl {
     font-size: 8px;
     letter-spacing: 1px;
   }
-  .pb-container.is-standard-show .pb-fighter-ovr .val,
-  .pb-container.is-standard-show .pb-mrow.is-main .pb-fighter-ovr .val {
+  .pb-container .pb-fighter-ovr .val,
+  .pb-container .pb-mrow.is-main .pb-fighter-ovr .val {
     font-size: 27px;
   }
-  .pb-container.is-standard-show .pb-result {
+  .pb-container .pb-result {
     grid-column: 1 / -1;
     grid-row: 2;
     flex-flow: row wrap;
@@ -996,65 +996,65 @@
     border-top: 1px solid rgba(200,190,170,0.08);
     border-bottom: 1px solid rgba(200,190,170,0.08);
   }
-  .pb-container.is-standard-show .pb-result-vs {
+  .pb-container .pb-result-vs {
     display: none;
   }
-  .pb-container.is-standard-show .pb-result-winner {
+  .pb-container .pb-result-winner {
     flex-basis: 100%;
     text-align: center;
   }
-  .pb-container.is-standard-show .pb-result-finish,
-  .pb-container.is-standard-show .pb-result-turns {
+  .pb-container .pb-result-finish,
+  .pb-container .pb-result-turns {
     font-size: 10px;
   }
-  .pb-container.is-standard-show .pb-result-mq {
+  .pb-container .pb-result-mq {
     margin-top: 0;
   }
-  .pb-container.is-standard-show .pb-result-mq-stars .star {
+  .pb-container .pb-result-mq-stars .star {
     font-size: 10px;
   }
-  .pb-container.is-standard-show .pb-result-mq-val,
-  .pb-container.is-standard-show .pb-mrow.is-main .pb-result-mq-val {
+  .pb-container .pb-result-mq-val,
+  .pb-container .pb-mrow.is-main .pb-result-mq-val {
     font-size: 15px;
   }
-  .pb-container.is-standard-show .pb-mrow-tags,
-  .pb-container.is-standard-show .pb-hp-mini,
-  .pb-container.is-standard-show .pb-coach-praise,
-  .pb-container.is-standard-show .pb-injury {
+  .pb-container .pb-mrow-tags,
+  .pb-container .pb-hp-mini,
+  .pb-container .pb-coach-praise,
+  .pb-container .pb-injury {
     grid-column: 1 / -1;
   }
-  .pb-container.is-standard-show .pb-dialogue {
+  .pb-container .pb-dialogue {
     min-width: 0;
     width: 130px;
     max-width: calc(50vw - 24px);
     padding: 7px 8px 8px;
     font-size: 10px;
   }
-  .pb-container.is-standard-show .pb-mrow.has-dialogue,
-  .pb-container.is-standard-show .pb-mrow.has-dialogue.is-main {
+  .pb-container .pb-mrow.has-dialogue,
+  .pb-container .pb-mrow.has-dialogue.is-main {
     padding-top: 88px;
   }
-  .pb-container.is-standard-show .pb-fighter.is-tag .pb-tag-members {
+  .pb-container .pb-fighter.is-tag .pb-tag-members {
     width: 100%;
     justify-content: center;
     gap: 3px;
   }
-  .pb-container.is-standard-show .pb-fighter.is-tag .pb-tag-member {
+  .pb-container .pb-fighter.is-tag .pb-tag-member {
     max-width: calc(50% - 2px);
   }
-  .pb-container.is-standard-show .pb-fighter.is-tag .pb-portrait,
-  .pb-container.is-standard-show .pb-mrow.is-main .pb-fighter.is-tag .pb-portrait {
+  .pb-container .pb-fighter.is-tag .pb-portrait,
+  .pb-container .pb-mrow.is-main .pb-fighter.is-tag .pb-portrait {
     width: 48px;
     height: 72px;
   }
-  .pb-container.is-standard-show .pb-tag-member-name {
+  .pb-container .pb-tag-member-name {
     font-size: 9px;
   }
-  .pb-container.is-standard-show .pb-tag-member-ovr .val {
+  .pb-container .pb-tag-member-ovr .val {
     font-size: 17px;
   }
   .pb-ace-area { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 16px 10px; }
-  .pb-score-strip { grid-template-columns: repeat(2, 1fr); }
+  .pb-score-strip { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 
   /* The founding draft owns the phone viewport so swipes work over its cards. */
   .app.draft-cream {

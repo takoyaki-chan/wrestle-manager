@@ -4448,7 +4448,7 @@ function renderShowResult(results, injuryResults) {
   const titleCls = special ? 'pb-banner-title is-special' : 'pb-banner-title';
   const showName = special ? '特 別 興 行' : `第 ${G.totalShows} 回 定期興行`;
 
-  let html = `<div class="pb-container is-standard-show">`;
+  let html = `<div class="pb-container">`;
   html += `<div class="pb-banner">
     <div class="${liveCls}">${liveText}</div>
     <div class="${titleCls}">${escHtml(showName)}</div>

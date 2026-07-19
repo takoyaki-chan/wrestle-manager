@@ -89,12 +89,16 @@ assert.ok(
   'empty show-card slots must occupy the same phone grid cells as portraits'
 );
 assert.ok(
-  uiCommon.includes('<div class="pb-container is-standard-show">') &&
-    mobile.includes('.pb-container.is-standard-show .pb-fighter.is-left') &&
-    mobile.includes('.pb-container.is-standard-show .pb-fighter.is-right') &&
-    mobile.includes('.pb-container.is-standard-show .pb-result {') &&
-    mobile.includes('grid-column: 1 / -1;'),
-  'standard show results must keep both fighters side by side with result details below on phones'
+  mobile.includes('.pb-container .pb-mrow:not(.is-pending)') &&
+    mobile.includes('.pb-container .pb-fighter.is-left') &&
+    mobile.includes('.pb-container .pb-fighter.is-right') &&
+    mobile.includes('.pb-container .pb-result {') &&
+    mobile.includes('grid-column: 1 / -1;') &&
+    mobile.includes('.pb-score-strip { grid-template-columns: repeat(2, minmax(0, 1fr)) !important;') &&
+    uiCommon.includes('pb-mrow is-main is-b3') &&
+    uiCommon.includes('pb-mrow is-main is-b2') &&
+    uiCommon.includes('pb-mrow is-main is-jt'),
+  'all match-result formats must keep both fighters side by side with result details below on phones'
 );
 assert.ok(
   uiRender.includes('class="sp-portrait-placeholder"'),
