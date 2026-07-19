@@ -37,7 +37,7 @@
     padding: var(--mobile-edge);
     padding-left: max(var(--mobile-edge), env(safe-area-inset-left));
     padding-right: max(var(--mobile-edge), env(safe-area-inset-right));
-    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + 10px);
+    padding-bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px));
   }
 
   /* Compact status header */
@@ -101,16 +101,17 @@
     text-align: center;
   }
 
-  /* Bottom navigation: all destinations remain available by horizontal swipe. */
+  /* Keep the main menu in its normal place below the status header. */
   .nav-bar {
-    position: fixed;
-    z-index: 8500;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
-    margin: 0;
-    padding: 7px max(8px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    position: sticky;
+    z-index: 80;
+    top: 0;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    height: auto;
+    margin: 0 0 10px;
+    padding: 7px 8px;
     gap: 6px;
     overflow-x: auto;
     overflow-y: hidden;
@@ -762,8 +763,136 @@
   .relmap-detail.show { flex-wrap: wrap; }
   .rm-detail-meters { gap: 8px; }
 
-  /* Newspaper comparison: keep both fighters and the verdict inside the paper. */
+  /* Newspaper: rebuild the dense desktop cards for a phone-width paper. */
   #screen-newspaper .np-content { padding-left: 9px; padding-right: 9px; }
+  #screen-newspaper .np-top-photo {
+    width: 100%;
+    height: 250px;
+    box-sizing: border-box;
+    background-size: auto 100%;
+    background-position: center top;
+  }
+  #screen-newspaper .np-versus-grid {
+    grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr);
+    gap: 4px;
+  }
+  #screen-newspaper .np-fc {
+    min-width: 0;
+    padding: 7px 4px;
+    overflow: hidden;
+  }
+  #screen-newspaper .np-fphoto {
+    width: min(94px, 100%);
+    height: auto;
+    aspect-ratio: 1;
+    box-sizing: border-box;
+  }
+  #screen-newspaper .np-tag-photo { gap: 2px; }
+  #screen-newspaper .np-tag-photo-member {
+    width: calc(50% - 1px);
+    height: 76px;
+  }
+  #screen-newspaper .np-fname {
+    max-width: 100%;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+  #screen-newspaper .np-vs-text { font-size: 25px; }
+  #screen-newspaper .np-vs-finish { font-size: 8px; letter-spacing: 0; overflow-wrap: anywhere; }
+
+  /* Rivalry feature uses height-fit portraits; side cropping is intentional. */
+  #screen-newspaper .np-rivalry-main-photos {
+    grid-template-columns: minmax(0, 1fr) 54px minmax(0, 1fr);
+    gap: 4px;
+    padding: 10px 7px 0;
+  }
+  #screen-newspaper .np-rivalry-stand { min-width: 0; height: 250px; }
+  #screen-newspaper .np-rivalry-stand .img {
+    background-size: auto 100%;
+    background-position: center bottom;
+  }
+  #screen-newspaper .np-rivalry-vs .vs { font-size: 31px; }
+  #screen-newspaper .np-rivalry-vs .h2h { max-width: 54px; padding: 3px 4px; font-size: 9px; white-space: normal; }
+  #screen-newspaper .np-rivalry-info { padding-left: 7px; padding-right: 7px; }
+  #screen-newspaper .np-rivalry-side { min-width: 0; padding: 8px 5px; }
+  #screen-newspaper .np-rivalry-side .name { font-size: 13px; overflow-wrap: anywhere; }
+  #screen-newspaper .np-rivalry-side .stats { gap: 5px; flex-wrap: wrap; }
+
+  /* MVP race: identity on top, numbers and article copy on full-width rows below. */
+  #screen-newspaper .np-mvprace-card-1 {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 7px 10px;
+    padding: 10px;
+    align-items: start;
+  }
+  #screen-newspaper .np-mvprace-card-1 .np-mvprace-photo {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+  #screen-newspaper .np-mvprace-card-1 .np-mvprace-info,
+  #screen-newspaper .np-mvprace-card-minor .np-mvprace-minor-mid { display: contents; }
+  #screen-newspaper .np-mvprace-card-1 .np-mvprace-name-row { grid-column: 2; grid-row: 1; align-self: end; }
+  #screen-newspaper .np-mvprace-card-1 .np-mvprace-meta { grid-column: 2; grid-row: 2; align-self: start; }
+  #screen-newspaper .np-mvprace-card-1 .np-mvprace-stats,
+  #screen-newspaper .np-mvprace-card-1 .np-mvprace-narrative,
+  #screen-newspaper .np-mvprace-card-1 .np-mvprace-rich-line,
+  #screen-newspaper .np-mvprace-card-1 .np-mvprace-badges { grid-column: 1 / -1; }
+  #screen-newspaper .np-mvprace-name { font-size: 17px; overflow-wrap: anywhere; }
+  #screen-newspaper .np-mvprace-card-1 .char-img-lg,
+  #screen-newspaper .np-mvprace-card-minor .char-img-lg {
+    background-size: auto 100% !important;
+    background-position: center top !important;
+  }
+  #screen-newspaper .np-mvprace-badges { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  #screen-newspaper .np-mvprace-card-minor {
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 6px 9px;
+    padding: 9px;
+    align-items: start;
+  }
+  #screen-newspaper .np-mvprace-photo-mini { grid-column: 1; grid-row: 1 / span 2; }
+  #screen-newspaper .np-mvprace-minor-name-row { grid-column: 2; grid-row: 1; align-self: end; }
+  #screen-newspaper .np-mvprace-minor-meta { grid-column: 2; grid-row: 2; align-self: start; }
+  #screen-newspaper .np-mvprace-minor-narrative,
+  #screen-newspaper .np-mvprace-fact-chips,
+  #screen-newspaper .np-mvprace-flavor,
+  #screen-newspaper .np-mvprace-minor-pills,
+  #screen-newspaper .np-mvprace-minor-num { grid-column: 1 / -1; }
+  #screen-newspaper .np-mvprace-minor-name { font-size: 15px; overflow-wrap: anywhere; }
+  #screen-newspaper .np-mvprace-minor-num {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-left: 0;
+    border-top: 1px solid rgba(120,84,39,0.25);
+    padding: 7px 0 0;
+  }
+
+  #screen-newspaper .np-mvprace-list-row--rich {
+    grid-template-columns: 24px 28px 36px 20px minmax(0, 1fr);
+    column-gap: 5px;
+    row-gap: 6px;
+    padding: 9px 4px 12px;
+  }
+  #screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-rank { grid-column: 1; grid-row: 1; }
+  #screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-arrow { grid-column: 2; grid-row: 1; }
+  #screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-thumb { grid-column: 3; grid-row: 1; }
+  #screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-emb { grid-column: 4; grid-row: 1; }
+  #screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-name { grid-column: 5; grid-row: 1; }
+  #screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-ovr { grid-column: 1 / 3; grid-row: 2; }
+  #screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-pts {
+    grid-column: 3 / -1;
+    grid-row: 2;
+    padding: 5px 8px;
+    text-align: center;
+    background: rgba(120,84,39,0.08);
+    border: 1px solid rgba(120,84,39,0.2);
+    border-radius: 3px;
+  }
+  #screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-facts,
+  #screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-flavor { grid-column: 1 / -1; }
+
+  /* Newspaper comparison: keep both fighters and the verdict inside the paper. */
   .np-ace-confront { padding: 11px 7px 10px; }
   .np-ace-arena { grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr); gap: 4px; align-items: start; }
   .np-stand-wrap { height: auto; aspect-ratio: 3 / 4; max-height: 180px; align-items: flex-start; }

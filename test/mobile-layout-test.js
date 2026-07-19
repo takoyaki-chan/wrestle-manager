@@ -28,7 +28,12 @@ assert.ok(battle.includes('href="battle-mobile.css"'), 'single battle must load 
 assert.ok(tagBattle.includes('href="battle-mobile.css"'), 'tag battle must load its phone layout');
 
 assert.ok(mobile.includes('@media (max-width: 700px)'), 'main phone breakpoint is missing');
-assert.ok(mobile.includes('position: fixed'), 'phone navigation must remain reachable');
+assert.ok(
+  mobile.includes('.nav-bar {') &&
+    mobile.includes('position: sticky;') &&
+    mobile.includes('top: 0;'),
+  'phone navigation must remain at the top of the scrolling app'
+);
 assert.ok(
   mobile.includes('height: 100dvh;') &&
     mobile.includes('overflow-y: auto;') &&
@@ -147,6 +152,20 @@ assert.ok(
     mobile.includes('.np-stand-img { background-size: auto 118%; background-position: center top; }') &&
     mobile.includes('.np-matchup-row { grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr);'),
   'chronicle highlights and newspaper matchups need single-width phone layouts'
+);
+assert.ok(
+  mobile.includes('#screen-newspaper .np-top-photo {') &&
+    mobile.includes('background-size: auto 100%;') &&
+    mobile.includes('#screen-newspaper .np-versus-grid {') &&
+    mobile.includes('grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr);'),
+  'newspaper lead and show-result portraits must fit phone-width paper cards'
+);
+assert.ok(
+  mobile.includes('#screen-newspaper .np-rivalry-stand .img {') &&
+    mobile.includes('#screen-newspaper .np-mvprace-card-1 .np-mvprace-stats') &&
+    mobile.includes('#screen-newspaper .np-mvprace-minor-num {') &&
+    mobile.includes('#screen-newspaper .np-mvprace-list-row--rich .np-mvprace-list-facts'),
+  'rivalry portraits and every MVP tier need phone-specific full-width rows'
 );
 
 for (const file of ['src/mobile.css', 'src/battle-mobile.css']) {
