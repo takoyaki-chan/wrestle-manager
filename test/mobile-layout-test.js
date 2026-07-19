@@ -84,6 +84,14 @@ assert.ok(
   'empty show-card slots must occupy the same phone grid cells as portraits'
 );
 assert.ok(
+  uiCommon.includes('<div class="pb-container is-standard-show">') &&
+    mobile.includes('.pb-container.is-standard-show .pb-fighter.is-left') &&
+    mobile.includes('.pb-container.is-standard-show .pb-fighter.is-right') &&
+    mobile.includes('.pb-container.is-standard-show .pb-result {') &&
+    mobile.includes('grid-column: 1 / -1;'),
+  'standard show results must keep both fighters side by side with result details below on phones'
+);
+assert.ok(
   uiRender.includes('class="sp-portrait-placeholder"'),
   'empty show-card portraits must have a stable responsive-layout hook'
 );
