@@ -695,6 +695,14 @@ function runSimulation(seed, seasons) {
       const _prevTournamentPhase = G.ppvTournament?.phase;
       const advResult = Engine.advanceWeek(G);
       G = { ...advResult.state, gameLog: [] };
+      // UIなしのauto-simでは秋大会リプレイを即時確定する。
+      // プレイヤー編成時にautoReorderFinal=trueを予約済みなので、previewResultが正となる。
+      if (G._pendingAutumnWarReplay && G.autumnWar?.previewResult) {
+        const appliedAutumn = Engine.autumnWar.apply(G, G.autumnWar.previewResult);
+        const { _pendingAutumnWarReplay: _awPending, ...autumnClean } = appliedAutumn.state;
+        const { previewResult: _awPreviewResult, ...autumnWarClean } = autumnClean.autumnWar || {};
+        G = { ...autumnClean, autumnWar: autumnWarClean, gameLog: [] };
+      }
       if (G.springTagLeague && G.springTagLeague.champion && G.springTagLeague.champion !== _prevSpringTagChampion) {
         stats.springTagCompletedCount++;
       }

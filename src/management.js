@@ -14808,14 +14808,26 @@ const Engine = {
       }
     }
 
-    // Week36: 準決勝2試合と決勝を一括実行。
+    // Week36: 大会を決定論的に仮シミュレーションし、UIリプレイへ渡す。
+    // プレイヤーが決勝進出した場合は、準決勝後の消耗を見て最終布陣を決めた後、
+    // 同じseedで再実行して決勝だけを正当に変化させる。applyはUI確定時の1回だけ。
     if (s.week === Engine.autumnWar.EVENT_WEEK && !s.offSeason) {
       if (!s.autumnWar) s = { ...s, autumnWar: Engine.autumnWar.announce(s) }; // 旧セーブ互換
       const autumnRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xA936));
       const warResult = Engine.autumnWar.run(s, autumnRng);
-      const applied = Engine.autumnWar.apply(s, warResult);
-      s = applied.state;
-      events.push(...applied.events);
+      if (warResult.cancelled) {
+        const applied = Engine.autumnWar.apply(s, warResult);
+        s = applied.state;
+        events.push(...applied.events);
+      } else {
+        s = {
+          ...s,
+          autumnWar: { ...s.autumnWar, previewResult: warResult, phase: 'replay' },
+          autumnWarPhase: 'replay',
+          _pendingAutumnWarReplay: true,
+        };
+        events.push(`⚔️ 第${s.season}回4団体勝ち残り対抗戦 開幕`);
+      }
     }
 
     // D-2: Rivalry war check（week10/22/34。春タッグリーグ week12・4団体勝ち残り対抗戦 week36

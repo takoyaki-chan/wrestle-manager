@@ -3389,6 +3389,139 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .jt-su{animation:jtSu .5s cubic-bezier(.16,1,.3,1) forwards}
 
 /* ============================================================
+   E-4: 4団体勝ち残り対抗戦
+   案1 布陣ボード + 案2 小型クライムライン + 案3 リングサイド
+   ============================================================ */
+.agw-wrap{min-height:100vh;background:var(--stage-bg);color:var(--stage-text-main);padding:18px 24px 34px;font-family:var(--font-body)}
+.agw-header{text-align:center;position:relative;padding-bottom:8px}
+.agw-emblem{width:74px;height:74px;object-fit:contain;display:block;margin:0 auto 2px;filter:drop-shadow(0 0 16px var(--ev-autumn))}
+.agw-kicker{font-family:var(--font-label);font-size:10px;letter-spacing:5px;color:var(--ev-autumn);text-transform:uppercase}
+.agw-title{font-size:31px;font-weight:900;letter-spacing:5px;margin-top:3px}
+.agw-meta{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);margin-top:4px}
+.agw-rule{height:3px;max-width:760px;margin:12px auto 0;border-top:1px solid var(--ev-autumn);border-bottom:1px solid var(--stage-border-lit)}
+
+.agw-climb{max-width:720px;margin:6px auto 16px;display:flex;align-items:center;justify-content:center;gap:8px}
+.agw-climb-semis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:1}
+.agw-climb-cell{min-height:46px;padding:7px 10px;background:var(--stage-panel);border:1px solid var(--stage-border);border-radius:var(--radius-md);text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.agw-climb-cell.is-done{border-color:var(--ev-autumn)}
+.agw-climb-cell span,.agw-climb-cell small{font-family:var(--font-label);font-size:8px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase}
+.agw-climb-cell b{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:2px 0}
+.agw-climb-line{width:30px;height:1px;background:var(--ev-autumn);flex-shrink:0}
+.agw-climb>.agw-climb-cell{width:190px;flex-shrink:0}
+
+.agw-board{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.agw-team{background:var(--stage-panel);border:1px solid var(--stage-border-lit);border-radius:var(--radius-md);overflow:hidden;min-width:0}
+.agw-team.is-mine{border-top:3px solid var(--gold)}
+.agw-team.is-eliminated{opacity:.52}
+.agw-team-head{padding:8px 10px;border-bottom:1px solid var(--stage-border);display:grid;grid-template-columns:1fr auto;gap:2px 6px;align-items:center}
+.agw-team-head span{font-family:var(--font-label);font-size:8px;letter-spacing:1.5px;color:var(--stage-text-dim)}
+.agw-team-head b{grid-column:1/-1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agw-team-head em{position:absolute;opacity:0;pointer-events:none}
+.agw-team-remaining{padding:5px 10px;text-align:right;background:var(--stage-panel-deep);border-bottom:1px solid var(--stage-border)}
+.agw-team-remaining b{font-family:var(--font-display);font-size:24px;color:var(--ev-autumn)}
+.agw-team-remaining span{font-family:var(--font-label);font-size:8px;letter-spacing:1px;color:var(--stage-text-dim)}
+.agw-member{display:grid;grid-template-columns:42px 1fr 28px;gap:8px;align-items:center;padding:7px 8px;border-bottom:1px solid var(--stage-border);position:relative}
+.agw-member:last-child{border-bottom:0}
+.agw-member-img{width:42px;height:42px;border-radius:50%;overflow:hidden;border:2px solid var(--stage-border-main);background:var(--stage-panel-deep)}
+.agw-member-img img{width:100%;height:100%;object-fit:cover;object-position:top}
+.agw-member-main{min-width:0}
+.agw-member-main strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agw-member-main small,.agw-member-role{display:block;font-family:var(--font-label);font-size:8px;letter-spacing:1px;color:var(--stage-text-dim)}
+.agw-member-role{color:var(--gold)}
+.agw-member-cond{font-family:var(--font-display);font-size:18px;text-align:right;color:var(--c-positive)}
+.agw-member-cond.is-warn{color:var(--c-warning)}
+.agw-member-cond.is-danger{color:var(--c-negative)}
+.agw-member.is-ring{background:linear-gradient(90deg,var(--stage-panel),var(--stage-panel-deep));box-shadow:inset 3px 0 0 var(--ev-autumn)}
+.agw-member.is-ring .agw-member-img{border-color:var(--ev-autumn);box-shadow:0 0 12px var(--ev-autumn)}
+.agw-member.is-out .agw-member-img img{filter:grayscale(1) brightness(.45)}
+.agw-member.is-out .agw-member-main strong{color:var(--stage-text-dim);text-decoration:line-through}
+
+.agw-focus{max-width:720px;margin:18px auto 0;background:var(--stage-panel-deep);border:1px solid var(--stage-border-lit);border-radius:var(--radius-lg);overflow:hidden;text-align:center}
+.agw-focus-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--ev-autumn);font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-main)}
+.agw-focus-bar b{font-family:var(--font-display);font-size:19px}
+.agw-faceoff{display:flex;align-items:center;justify-content:center;gap:28px;padding:12px 20px}
+.agw-faceoff-side{width:190px;text-align:left}
+.agw-faceoff-side.is-right{text-align:right}
+.agw-upper{width:112px;aspect-ratio:2/3;margin:0 auto 6px;overflow:hidden;border-bottom:3px solid var(--ev-autumn);background:var(--stage-panel)}
+.agw-upper img{width:100%;height:100%;object-fit:cover;object-position:top}
+.agw-faceoff-side strong{display:block;font-size:15px}
+.agw-faceoff-side small{display:block;font-family:var(--font-label);font-size:9px;color:var(--stage-text-dim);letter-spacing:1px;margin-top:2px}
+.agw-vs{font-family:var(--font-display);font-size:28px;color:var(--ev-autumn)}
+.agw-cond{margin-top:6px}
+.agw-cond-top{display:flex;justify-content:space-between;font-family:var(--font-label);font-size:8px;color:var(--stage-text-sub);letter-spacing:1px}
+.agw-cond.is-mirror .agw-cond-top{flex-direction:row-reverse}
+.agw-cond-track{height:5px;background:var(--stage-border);overflow:hidden;border-radius:2px;margin-top:3px}
+.agw-cond-track span{display:block;height:100%;background:var(--c-positive)}
+.agw-cond-track span.is-warn{background:var(--c-warning)}
+.agw-cond-track span.is-danger{background:var(--c-negative)}
+.agw-cond.is-mirror .agw-cond-track span{margin-left:auto}
+.agw-last-result{font-size:10px;color:var(--stage-text-sub);border-top:1px solid var(--stage-border);padding:7px 12px}
+.agw-reveal-btn{margin:8px 0 14px}
+.agw-focus.is-complete{padding:28px 20px}
+.agw-focus-kicker{font-family:var(--font-label);font-size:10px;letter-spacing:4px;color:var(--ev-autumn)}
+.agw-focus-winner{font-size:25px;font-weight:900;margin-top:7px}
+.agw-focus-score{font-family:var(--font-display);font-size:42px;color:var(--gold);line-height:1.15}
+.agw-focus-note{font-size:11px;color:var(--stage-text-sub);margin-bottom:16px}
+
+.agw-reorder-grid{max-width:820px;margin:22px auto 0;display:grid;grid-template-columns:1fr 250px;gap:16px}
+.agw-order-panel,.agw-opponent-panel{background:var(--stage-panel);border:1px solid var(--stage-border-lit);border-radius:var(--radius-lg);padding:18px;text-align:center}
+.agw-panel-label{font-family:var(--font-label);font-size:9px;letter-spacing:3px;color:var(--ev-autumn);margin-bottom:12px;text-transform:uppercase}
+.agw-order-row{display:grid;grid-template-columns:48px 48px 1fr auto;gap:10px;align-items:center;text-align:left;padding:8px;border-bottom:1px solid var(--stage-border)}
+.agw-order-role{font-weight:900;color:var(--gold)}
+.agw-order-face{width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid var(--stage-border-main)}
+.agw-order-face img{width:100%;height:100%;object-fit:cover;object-position:top}
+.agw-order-name b{display:block;font-size:13px}.agw-order-name small{font-size:9px;color:var(--stage-text-dim)}
+.agw-order-actions{display:flex;gap:4px}.agw-order-actions button,.agw-entry-move button{width:28px;height:28px;border:1px solid var(--stage-border-main);background:var(--stage-panel-deep);color:var(--stage-text-main);cursor:pointer;border-radius:var(--radius-sm)}
+.agw-order-actions button:disabled,.agw-entry-move button:disabled{opacity:.2;cursor:default}
+.agw-order-panel>.btn{margin-top:16px}
+.agw-opponent-panel strong{display:block;font-size:18px;margin:22px 0}
+.agw-opponent-hidden{border:1px dashed var(--stage-border-main);padding:30px 12px;font-size:13px;line-height:1.8;color:var(--stage-text-dim)}
+.agw-opponent-hidden span{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--ev-autumn)}
+
+.agw-result{text-align:center}
+.agw-result-org{font-size:34px;font-weight:900;color:var(--gold-light);margin-top:8px}
+.agw-result-title{font-family:var(--font-label);font-size:11px;letter-spacing:4px;color:var(--ev-autumn)}
+.agw-champ-lineup{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin:20px auto;max-width:760px}
+.agw-champ-card{width:160px;background:var(--stage-panel);border:1px solid var(--stage-border-lit);padding-bottom:10px}
+.agw-champ-card.is-mvp{width:190px;border-color:var(--gold);box-shadow:0 0 24px var(--stage-border-main)}
+.agw-champ-card>div{height:190px;overflow:hidden}.agw-champ-card.is-mvp>div{height:230px}
+.agw-champ-card img{width:100%;height:100%;object-fit:cover;object-position:top}
+.agw-champ-card strong{display:block;font-size:14px;margin-top:8px}.agw-champ-card small{font-size:9px;color:var(--stage-text-sub)}
+.agw-result-score{display:flex;align-items:center;justify-content:center;gap:18px;margin:12px 0 20px;font-family:var(--font-label);color:var(--stage-text-sub)}
+.agw-result-score b{font-family:var(--font-display);font-size:34px;color:var(--gold)}
+
+.agw-mvp-scene{min-height:100vh;background:var(--stage-bg);color:var(--stage-text-main);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:30px;text-align:center}
+.agw-mvp-light{position:absolute;top:-35%;width:520px;height:130%;background:radial-gradient(ellipse at center,var(--stage-border-main),transparent 68%);pointer-events:none}
+.agw-mvp-kicker{font-family:var(--font-label);font-size:11px;letter-spacing:7px;color:var(--gold);position:relative;margin-bottom:12px}
+.agw-mvp-stage{display:flex;align-items:center;gap:34px;position:relative;max-width:800px;text-align:left}
+.agw-mvp-portrait{width:230px;height:330px;overflow:hidden;border-bottom:4px solid var(--gold);background:var(--stage-panel)}
+.agw-mvp-portrait img{width:100%;height:100%;object-fit:cover;object-position:top;filter:drop-shadow(0 8px 22px var(--stage-bg-deep))}
+.agw-mvp-copy{max-width:430px}.agw-mvp-copy>span{font-family:var(--font-label);font-size:10px;letter-spacing:3px;color:var(--ev-autumn)}
+.agw-mvp-copy h2{font-size:34px;margin:4px 0 0}.agw-mvp-copy small{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-sub)}
+.agw-mvp-copy blockquote{font-size:18px;line-height:1.9;margin:20px 0 0;padding:16px 0;border-top:1px solid var(--stage-border-lit);border-bottom:1px solid var(--stage-border-lit)}
+.agw-mvp-scene>.pb-close-btn{position:relative;margin-top:24px}
+
+/* Office: 代表編成 */
+.agw-entry-lead{padding:14px 24px 8px;color:var(--cream-text-sub);font-size:12px;line-height:1.7;text-align:center}
+.agw-entry-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px;padding:8px 20px 14px}
+.agw-pick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:7px}
+.agw-pick-grid .draft-fc{min-width:0}.agw-pick-grid .draft-fc-portrait{height:118px;position:relative}
+.agw-pick-role{position:absolute;left:6px;top:6px;background:var(--cream-gold-dark);color:var(--cream-bg-card);padding:2px 7px;border-radius:var(--radius-sm);font-size:10px;font-weight:900}
+.agw-pick-meta{display:flex;align-items:baseline;gap:6px}.agw-pick-meta>span{font-size:8px;color:var(--cream-text-dim)}.agw-pick-meta>b{font-family:var(--font-display);font-size:22px;color:var(--cream-gold-dark)}.agw-pick-meta>em{margin-left:auto}
+.agw-entry-order{background:var(--cream-info-bg);border:1px solid var(--cream-border);padding:10px;border-radius:var(--radius-md)}
+.agw-entry-slot{display:grid;grid-template-columns:38px 42px 1fr auto;gap:6px;align-items:center;min-height:58px;padding:6px 0;border-bottom:1px solid var(--cream-border);color:var(--cream-text-main)}
+.agw-entry-slot>span{font-weight:900;color:var(--cream-gold-dark)}.agw-entry-slot>div:nth-child(2){width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--cream-portrait-bg)}
+.agw-entry-slot img{width:100%;height:100%;object-fit:cover;object-position:top}.agw-entry-slot b{display:block;font-size:11px}.agw-entry-slot small{grid-column:3/5;font-size:8px;color:var(--cream-text-dim);margin-top:-18px}
+.agw-entry-move{display:flex;gap:2px}.agw-entry-move button{border-color:var(--cream-border-hover);background:var(--cream-bg-card);color:var(--cream-text-main)}
+.agw-entry-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 20px;border-top:1px solid var(--cream-border);background:var(--cream-info-bg);color:var(--cream-text-sub)}
+.agw-entry-footer>span b{font-family:var(--font-display);font-size:24px;color:var(--cream-gold-dark)}.agw-entry-footer>div{display:flex;gap:8px}
+
+.agw-week-banner{border-color:var(--ev-autumn);background:linear-gradient(135deg,var(--stage-panel),transparent)}
+.agw-week-banner .stl-week-banner-title{color:var(--ev-autumn)}
+
+@media(max-width:1000px){.agw-board{grid-template-columns:repeat(2,minmax(0,1fr))}.agw-entry-layout{grid-template-columns:1fr}.agw-entry-order{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.agw-entry-order>.stl-modal-section-label{grid-column:1/-1}.agw-entry-slot{grid-template-columns:34px 38px 1fr}.agw-entry-slot small{display:none}.agw-entry-move{grid-column:1/-1;justify-content:center}.agw-reorder-grid{grid-template-columns:1fr}.agw-opponent-panel{display:none}}
+
+/* ============================================================
    C-6: 天頂戦（quadrennial-ppv-tournament-spec / tenchosen.md）
    JTクライムライン(jtc-*)を --jtc-color:var(--gold) で流用し、
    差分のみ tc-* で追加。深紅 #e94560 は既存PPV系の直値に合わせる

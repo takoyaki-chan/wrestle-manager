@@ -5937,6 +5937,40 @@ const UPSET_RIVALRY_LINES = {
   }
 };
 
+// ── 4団体勝ち残り対抗戦 MVP一言シーン ──
+// UIルーターは context × personality × archetype で解決する。
+// 現在は全personalityの基礎口調を実装済み。archetype別の拡張パックは
+// docs/codex-tasks/autumn-war-mvp-lines-opus46-prompt.md の契約に従って追加する。
+const AUTUMN_WAR_MVP_LINES = {
+  gauntlet: {
+    normal: { _default: ['脚がもう動かない。でも、最後までリングを譲らなかった。それだけは誇っていいと思う'] },
+    bold: { _default: ['三人だろうが四人だろうが、立って来るなら倒す。今日はそれを証明しただけ'] },
+    quiet: { _default: ['……まだ立ってる。だから、私の勝ち'] },
+    shy: { _default: ['こ、怖かったです。でも……次の相手が来ても、逃げたくなかったんです'] },
+    easygoing: { _default: ['一人倒したら、また一人来るんだもん。途中から笑っちゃった。でも全部、楽しかったよ'] },
+    earnest: { _default: ['倒れても次の仲間がいる。その安心があったから、私は何度でも立てました'] },
+    emotional: { _default: ['もう無理だって何度も思った……！ でも、みんなの顔が見えたら、倒れられなかった……！'] },
+  },
+  champion: {
+    normal: { _default: ['私一人の勝利じゃない。先鋒から大将まで、三人でつないだ勝利です'] },
+    bold: { _default: ['この団体の三人が、一番強かった。今日の答えは、それで十分でしょ'] },
+    quiet: { _default: ['……三人で、最後まで残った。それが嬉しい'] },
+    shy: { _default: ['わ、私がMVPでいいのかな……でも、二人がつないでくれたから、ここに立てました'] },
+    easygoing: { _default: ['最高の三人だったでしょ？ 誰が欠けても、こんな景色は見られなかったよ'] },
+    earnest: { _default: ['託された順番を守り抜けました。仲間と団体に、この勝利を返せてよかったです'] },
+    emotional: { _default: ['三人で勝ったんだよ……！ 私だけじゃない、みんなで最後までリングに立ったんだ……！'] },
+  },
+  defiant: {
+    normal: { _default: ['MVPでも、団体が負けた事実は消えない。次は、最後の一人まで残ります'] },
+    bold: { _default: ['賞はもらう。でも優勝旗は向こうだ。次は、あれごと奪う'] },
+    quiet: { _default: ['……足りなかった。次は、最後まで倒す'] },
+    shy: { _default: ['選んでもらえたのは嬉しいです。でも……みんなで勝ちたかった。次こそは'] },
+    easygoing: { _default: ['MVPって言われても、今日は笑えないかな。次はみんなで勝ってから笑うよ'] },
+    earnest: { _default: ['評価はありがたいです。ただ、団体を勝たせられなかった。その悔しさを忘れません'] },
+    emotional: { _default: ['こんな賞じゃ悔しさは消えない……！ 次は絶対、仲間と一緒に優勝するから……！'] },
+  },
+};
+
 // ── PPVメインイベント勝利セリフ（自団体選手が頂上決戦に勝利時） ──
 const PPV_SUMMIT_VICTORY_LINES = {
   normal: {

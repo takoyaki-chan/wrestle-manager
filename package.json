@@ -10,6 +10,7 @@
     "test:ui:title-marquee": "node test/title-portrait-marquee-test.js",
     "test:ui:opening-scene": "node test/opening-scene-ui-test.js",
     "test:ui:spring-tag-watch": "node test/spring-tag-league-watch-test.js",
+    "test:ui:autumn-war": "node test/autumn-war-ui-flow-test.js",
     "test:balance:match": "node test/_match-system-v5-validation.js",
     "test:smoke:economy": "node test/economy-check.js 2 1",
     "test:smoke:growth": "node test/growth-v2-verification.js 2 1",

@@ -856,10 +856,12 @@ function renderWeekScreen() {
 
   // ── REGULAR WEEK DISPLAY ──
   const stlBlocked = _stlIsLeagueWeek();
-  const isShow = isShowWeek(G.week) && !stlBlocked;
-  const special = isSpecialShow(G.week) && !stlBlocked;
+  const agwBlocked = _agwIsEventWeek();
+  const specialEventBlocked = stlBlocked || agwBlocked;
+  const isShow = isShowWeek(G.week) && !specialEventBlocked;
+  const special = isSpecialShow(G.week) && !specialEventBlocked;
   const ppv = isPPV(G.week);
-  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
+  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : agwBlocked ? '⚔️ 4団体勝ち残り対抗戦' : isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
   document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4 — ${typeLabel}` : `${Engine.util.formatDate(G.season, G.week)} — ${typeLabel}`;
 
   html = '';
@@ -1064,6 +1066,7 @@ function renderWeekScreen() {
     }
 
     html += renderSpringTagLeagueWeekBanner();
+    html += renderAutumnWarWeekBanner();
     html += renderTenchosenWeekBanner();
 
     const heat = getHeatLevel();
@@ -1073,7 +1076,7 @@ function renderWeekScreen() {
       ${injuredCount > 0 ? `<span style="color:#e17055">🏥 負傷者: ${injuredCount}名</span>` : ''}
       ${G.coaches.length > 0 ? `<span style="color:#2ecc71">🎓 コーチ: ${G.coaches.length}名</span>` : ''}
     </div>`;
-    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${stlBlocked ? '週を進めてください（今週は春のタッグリーグ開催週）' : isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
+    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${stlBlocked ? '週を進めてください（今週は春のタッグリーグ開催週）' : agwBlocked ? '週を進めてください（今週は4団体勝ち残り対抗戦）' : isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
 
     // v1.0: Primary action buttons — top-left, large, prominent
     html += '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">';
@@ -2478,6 +2481,67 @@ function renderSpringTagLeagueWeekBanner() {
   return '';
 }
 
+// ── 4団体勝ち残り対抗戦: Week34告知 / Week35代表選出 / Week36開催 ──
+function _agwIsEventWeek() {
+  const aw = G.autumnWar;
+  return !!(aw && !aw.cancelled && G.week === Engine.autumnWar.EVENT_WEEK);
+}
+
+function _agwBannerFighter(id) {
+  return G.roster.find(f => f.id === id)
+    || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === id)
+    || null;
+}
+
+function renderAutumnWarWeekBanner() {
+  const aw = G.autumnWar;
+  if (!aw || aw.cancelled || aw.announcedSeason !== G.season) return '';
+  if (G.week === Engine.autumnWar.ANNOUNCE_WEEK) {
+    const names = (aw.teams || []).map(t => t.orgName).filter(Boolean).join(' / ');
+    return `<div class="stl-week-banner agw-week-banner">
+      <div class="stl-week-banner-icon">⚔️</div>
+      <div class="stl-week-banner-body">
+        <div class="stl-week-banner-title">4団体勝ち残り対抗戦 出場団体決定</div>
+        <div class="stl-week-banner-sub">${escHtml(names)}。来週、代表3名と出場順を決定します。</div>
+      </div>
+    </div>`;
+  }
+  if (G.week === Engine.autumnWar.ENTRY_WEEK) {
+    const myTeam = (aw.teams || []).find(t => t.orgId === 'player');
+    const confirmed = !!(myTeam && myTeam.confirmed);
+    if (confirmed) {
+      const names = (myTeam.memberIds || []).map(id => _agwBannerFighter(id)?.name || '?').join(' → ');
+      return `<div class="stl-week-banner agw-week-banner is-done">
+        <div class="stl-week-banner-icon">⚔️</div>
+        <div class="stl-week-banner-body">
+          <div class="stl-week-banner-title">代表チーム編成済み</div>
+          <div class="stl-week-banner-sub">先鋒から ${escHtml(names)}</div>
+        </div>
+        <button class="btn btn-gold" onclick="App.awOpenEntryModal()">編成を見直す</button>
+      </div>`;
+    }
+    return `<div class="stl-week-banner agw-week-banner is-urgent">
+      <div class="stl-week-banner-icon">⚔️</div>
+      <div class="stl-week-banner-body">
+        <div class="stl-week-banner-title">4団体勝ち残り対抗戦 代表選出期間</div>
+        <div class="stl-week-banner-sub">代表3名と、先鋒・中堅・大将の出場順を決めてください。</div>
+      </div>
+      <button class="btn btn-gold" onclick="App.awOpenEntryModal()">代表を選ぶ</button>
+    </div>`;
+  }
+  if (G.week === Engine.autumnWar.EVENT_WEEK && aw.champion) {
+    const championName = (aw.teams || []).find(t => t.orgId === aw.champion)?.orgName || aw.champion;
+    return `<div class="stl-week-banner agw-week-banner is-done">
+      <div class="stl-week-banner-icon">🏆</div>
+      <div class="stl-week-banner-body">
+        <div class="stl-week-banner-title">4団体勝ち残り対抗戦 決着</div>
+        <div class="stl-week-banner-sub">優勝 ${escHtml(championName)}。大会結果を記録しました。</div>
+      </div>
+    </div>`;
+  }
+  return '';
+}
+
 // ── C-6 天頂戦: Week43〜 エントリー導線バナー ──────────────────────
 // spec: docs/ui/03-screens/tenchosen.md。weekPhaseは奪わず、manage画面のバナーから
 // モーダルを開く(STLバナーの様式踏襲)。未確定でも週送りでエンジンが自己修復する。
@@ -2514,6 +2578,14 @@ function _stlBlockedShowPrepHtml() {
   </div>`;
 }
 
+function _agwBlockedShowPrepHtml() {
+  return `<div class="stl-block-banner agw-block-banner">
+    <div class="stl-block-banner-icon">⚔️</div>
+    <div class="stl-block-banner-title">今週は4団体勝ち残り対抗戦</div>
+    <div class="stl-block-banner-sub">第${Engine.autumnWar.EVENT_WEEK}週は通常興行の代わりに、各団体3名による勝ち残り戦が開催されます。週を処理すると大会画面へ進みます。</div>
+  </div>`;
+}
+
 function renderShowPrep() {
   if (typeof App !== 'undefined' && App.repairProgressionState && App.repairProgressionState('renderShowPrep')) {
     try { Storage.autoSave(); } catch (_e) {}
@@ -2528,6 +2600,11 @@ function renderShowPrep() {
   // 春のタッグリーグ Week12: 通常カード編成をブロック（PPV week48バイパスと同型）
   if (_stlIsLeagueWeek()) {
     el.innerHTML = _stlBlockedShowPrepHtml();
+    return;
+  }
+
+  if (_agwIsEventWeek()) {
+    el.innerHTML = _agwBlockedShowPrepHtml();
     return;
   }
 

@@ -3203,6 +3203,10 @@ const App = {
       App.initSpringTagLeagueReplay();
       return true;
     }
+    if (G._pendingAutumnWarReplay) {
+      App.initAutumnWarReplay();
+      return true;
+    }
     return false;
   },
 
@@ -3256,6 +3260,210 @@ const App = {
     try { Storage.autoSave(); } catch (_e) {}
     if (typeof showScreen === 'function') showScreen('week');
     if (typeof renderWeekScreen === 'function') renderWeekScreen();
+    if (typeof refreshAll === 'function') refreshAll();
+  },
+
+  // ═══ 秋 4団体勝ち残り対抗戦 (autumn-gauntlet-war-spec-v0.1) ═══
+  // A. 週35 代表編成（Office / Cream Panel）
+
+  awOpenEntryModal() {
+    if (!G.autumnWar || G.autumnWar.cancelled) return;
+    const myTeam = (G.autumnWar.teams || []).find(t => t.orgId === 'player');
+    App._awEntrySelection = myTeam && myTeam.confirmed
+      ? [...(myTeam.order || myTeam.memberIds || [])]
+      : [];
+    Audio.play('select');
+    _mdlAOpen(_awEntryModalHtml());
+  },
+
+  awPickFighter(id) {
+    const order = App._awEntrySelection;
+    if (!Array.isArray(order)) return;
+    const idx = order.indexOf(id);
+    if (idx >= 0) order.splice(idx, 1);
+    else if (order.length < Engine.autumnWar.TEAM_SIZE) order.push(id);
+    else return;
+    Audio.play('click');
+    const card = document.getElementById('mdlACard');
+    if (card) card.innerHTML = _awEntryModalHtml();
+  },
+
+  awMoveEntry(index, delta) {
+    const order = App._awEntrySelection;
+    const next = index + delta;
+    if (!Array.isArray(order) || index < 0 || next < 0 || next >= order.length) return;
+    [order[index], order[next]] = [order[next], order[index]];
+    Audio.play('click');
+    const card = document.getElementById('mdlACard');
+    if (card) card.innerHTML = _awEntryModalHtml();
+  },
+
+  awAutoEntry() {
+    const memberIds = Engine.autumnWar._selectMembers(G, 'player');
+    App._awEntrySelection = Engine.autumnWar._defaultOrder(G, 'player', memberIds);
+    Audio.play('select');
+    const card = document.getElementById('mdlACard');
+    if (card) card.innerHTML = _awEntryModalHtml();
+  },
+
+  awConfirmEntry() {
+    const order = App._awEntrySelection;
+    if (!Array.isArray(order) || order.length !== Engine.autumnWar.TEAM_SIZE) return;
+    G = Engine.autumnWar.confirmPlayerTeam(G, [...order], [...order]);
+    App._awEntrySelection = null;
+    _mdlAClose();
+    Audio.play('coin');
+    try { Storage.autoSave(); } catch (_e) {}
+    if (typeof showToast === 'function') showToast('⚔️ 秋の代表3名と出場順を確定しました');
+    if (typeof renderWeekScreen === 'function') renderWeekScreen();
+    if (typeof refreshAll === 'function') refreshAll();
+  },
+
+  awCloseEntryModal() {
+    App._awEntrySelection = null;
+    _mdlAClose();
+  },
+
+  // B. 週36 大会リプレイ（Stage / P7）
+  initAutumnWarReplay() {
+    const result = G.autumnWar?.previewResult || (G.autumnWar?.champion ? G.autumnWar : null);
+    if (!result || result.cancelled || !Array.isArray(result.results) || result.results.length === 0) {
+      App._awPreview = null;
+      const { _pendingAutumnWarReplay: _pending, ...cleanG } = G;
+      G = cleanG;
+      try { Storage.autoSave(); } catch (_e) {}
+      if (typeof showScreen === 'function') showScreen('week');
+      if (typeof refreshAll === 'function') refreshAll();
+      return;
+    }
+    App._awPreview = {
+      result,
+      matchIndex: 0,
+      boutIndex: 0,
+      phase: 'board',
+      committed: !!G.autumnWar?.champion,
+      finalOrder: null,
+    };
+    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
+    Audio.play('notify');
+    renderAutumnWarBoard();
+  },
+
+  awRevealBout() {
+    const p = App._awPreview;
+    const match = p?.result?.results?.[p.matchIndex];
+    if (!p || !match || p.phase !== 'board') return;
+    if (p.boutIndex < match.bouts.length) {
+      p.boutIndex += 1;
+      Audio.play('coin');
+      renderAutumnWarBoard();
+    }
+  },
+
+  awAdvanceMatch() {
+    const p = App._awPreview;
+    if (!p) return;
+    const matches = p.result.results || [];
+    const current = matches[p.matchIndex];
+    if (!current || p.boutIndex < current.bouts.length) return;
+    const nextIndex = p.matchIndex + 1;
+    const next = matches[nextIndex];
+    if (!next) {
+      p.phase = 'result';
+      renderAutumnWarResult();
+      return;
+    }
+    if (current.round === 'semiFinal' && next.round === 'final') {
+      const playerFinalist = next.orgA === 'player' || next.orgB === 'player';
+      if (playerFinalist && !p.committed) {
+        const myTeam = (G.autumnWar?.teams || []).find(t => t.orgId === 'player');
+        p.finalOrder = _agwSuggestedFinalOrder(p.result, myTeam);
+        p.phase = 'reorder';
+        Audio.play('notify');
+        renderAutumnWarReorder();
+        return;
+      }
+      if (!p.committed) App._awCommitResult(null);
+    }
+    p.matchIndex = nextIndex;
+    p.boutIndex = 0;
+    p.phase = 'board';
+    renderAutumnWarBoard();
+  },
+
+  awMoveFinal(index, delta) {
+    const p = App._awPreview;
+    const order = p?.finalOrder;
+    const next = index + delta;
+    if (!Array.isArray(order) || index < 0 || next < 0 || next >= order.length) return;
+    [order[index], order[next]] = [order[next], order[index]];
+    Audio.play('click');
+    renderAutumnWarReorder();
+  },
+
+  awConfirmFinalOrder() {
+    const p = App._awPreview;
+    if (!p || !Array.isArray(p.finalOrder) || p.finalOrder.length !== Engine.autumnWar.TEAM_SIZE) return;
+    App._awCommitResult(p.finalOrder);
+    const finalIndex = p.result.results.findIndex(m => m.round === 'final');
+    p.matchIndex = finalIndex >= 0 ? finalIndex : p.result.results.length - 1;
+    p.boutIndex = 0;
+    p.phase = 'board';
+    Audio.play('coin');
+    renderAutumnWarBoard();
+  },
+
+  _awCommitResult(finalOrder) {
+    const p = App._awPreview;
+    if (!p || p.committed) return;
+    let state = G;
+    let canonical = p.result;
+    if (Array.isArray(finalOrder)) {
+      state = Engine.autumnWar.reorderForFinal(state, finalOrder);
+      const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xA936));
+      canonical = Engine.autumnWar.run(state, rng);
+    }
+    const applied = Engine.autumnWar.apply(state, canonical);
+    G = {
+      ...applied.state,
+      autumnWar: { ...applied.state.autumnWar, previewResult: canonical },
+      _pendingAutumnWarReplay: true,
+      gameLog: [...(G.gameLog || []), ...(applied.events || [])],
+    };
+    p.result = canonical;
+    p.committed = true;
+    try { Storage.autoSave(); } catch (_e) {}
+  },
+
+  awShowMvpScene() {
+    const p = App._awPreview;
+    if (!p) return;
+    if (!p.committed) App._awCommitResult(null);
+    p.phase = 'mvp';
+    try { Audio.fileBgm.fadeOut(700); } catch (_e) {}
+    setTimeout(() => {
+      try { Audio.fileBgm.stop(); } catch (_e) {}
+      try { Audio.bgm.playJingle('championship'); } catch (_e) {}
+    }, 750);
+    renderAutumnWarMvpScene();
+  },
+
+  finalizeAutumnWarReplay() {
+    const { _pendingAutumnWarReplay: _pending, ...cleanG } = G;
+    const { previewResult: _previewResult, ...cleanWar } = cleanG.autumnWar || {};
+    G = { ...cleanG, autumnWar: cleanWar, autumnWarPhase: 'result' };
+    App._awPreview = null;
+    const overlay = document.getElementById('showResultOverlay');
+    if (overlay) overlay.classList.remove('active');
+    const box = document.getElementById('showResultBox');
+    if (box) { box.style.maxWidth = ''; box.style.padding = ''; box.style.background = ''; box.style.border = ''; box.innerHTML = ''; }
+    try { Audio.fileBgm.stop(); } catch (_e) {}
+    try { App.restoreBgmForState(); } catch (_e) {}
+    try { Storage.autoSave(); } catch (_e) {}
+    if (typeof showScreen === 'function') showScreen('week');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const firstNav = document.querySelectorAll('.nav-btn')[0];
+    if (firstNav) firstNav.classList.add('active');
     if (typeof refreshAll === 'function') refreshAll();
   },
 
@@ -8806,6 +9014,12 @@ const App = {
       App.initPPVTV();
       return;
     }
+    // 秋4団体戦 Week36: 結果確定前のリプレイを自動起動
+    if (G._pendingAutumnWarReplay) {
+      Storage.autoSave();
+      App.initAutumnWarReplay();
+      return;
+    }
     // C-6 天頂戦 Week48: 結果はEngine.advanceWeek内で確定済み。リプレイ演出を自動起動
     if (App._shouldStartTenchosenReplay()) {
       Storage.autoSave();
@@ -9388,6 +9602,12 @@ const App = {
     if (G.weekPhase === 'ppvTV') {
       Storage.autoSave();
       App.initPPVTV();
+      return;
+    }
+    // 秋4団体戦 Week36: 結果確定前のリプレイを自動起動
+    if (G._pendingAutumnWarReplay) {
+      Storage.autoSave();
+      App.initAutumnWarReplay();
       return;
     }
     // C-6 天頂戦 Week48: 結果はEngine.advanceWeek内で確定済み。リプレイ演出を自動起動
