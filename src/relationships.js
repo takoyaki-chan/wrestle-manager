@@ -95,6 +95,22 @@ const PERSONALITY_RIVALRY_BONUS = {
 };
 
 Engine.relationships = {
+  // relationshipHistory は、旧版では引退因縁の配列、現行では裏切り履歴の
+  // オブジェクトとして使われていた。両方を失わず単一ストアへ正規化する。
+  normalizeHistoryStore(historyStore) {
+    if (Array.isArray(historyStore)) {
+      return { betrayalRecord: [], retiredRivalries: [...historyStore] };
+    }
+    if (!historyStore || typeof historyStore !== 'object') {
+      return { betrayalRecord: [], retiredRivalries: [] };
+    }
+    return {
+      ...historyStore,
+      betrayalRecord: Array.isArray(historyStore.betrayalRecord) ? historyStore.betrayalRecord : [],
+      retiredRivalries: Array.isArray(historyStore.retiredRivalries) ? historyStore.retiredRivalries : [],
+    };
+  },
+
 
   // ══════════════════════════════════════════════════════════
   //  逓減倍率の取得（spec §2.3）
@@ -2546,8 +2562,7 @@ Engine.relationships = {
       };
       if (!state.relationshipFlagLockouts) state.relationshipFlagLockouts = {};
       if (!state.relationshipFlagCounters) state.relationshipFlagCounters = {};
-      if (!state.relationshipHistory) state.relationshipHistory = { betrayalRecord: [] };
-      else if (!state.relationshipHistory.betrayalRecord) state.relationshipHistory.betrayalRecord = [];
+      state.relationshipHistory = Engine.relationships.normalizeHistoryStore(state.relationshipHistory);
       if (!state._modalQueue) state._modalQueue = [];
       return state;
     },

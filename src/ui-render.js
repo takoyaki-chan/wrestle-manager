@@ -11608,7 +11608,8 @@ function _relmapPairKey(aId, bId) {
 
 function _relmapBuildLinks(allChars) {
   const rels = G.relationships || {};
-  const history = G.relationshipHistory || [];
+  const historyStore = Engine.relationships.normalizeHistoryStore(G.relationshipHistory);
+  const history = historyStore.retiredRivalries;
   const rivalries = G.rivalries || {};
   const links = [];
   const charsById = new Map(allChars.map(c => [String(c.id), c]));

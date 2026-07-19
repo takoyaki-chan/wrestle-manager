@@ -1464,7 +1464,7 @@ const Storage = {
         }
       });
     }
-    state._saveVersion = '1.05';
+    state._saveVersion = '1.14b';
     state._saveDate = new Date().toISOString();
     // LZ圧縮 + マーカー
     const json = JSON.stringify(state);
@@ -2174,6 +2174,15 @@ const Storage = {
         G = { ...G, _migrated_relationships_v1: true };
       }
 
+      // relationshipHistory の旧配列形式と、裏切り履歴オブジェクト形式を統合する。
+      if (!G._migrated_relationship_history_store_v1) {
+        G = {
+          ...G,
+          relationshipHistory: Engine.relationships.normalizeHistoryStore(G.relationshipHistory),
+          _migrated_relationship_history_store_v1: true,
+        };
+      }
+
       // Phase 5: ライバル称号tierフィールドマイグレーション
       if (!G._migrated_rivalry_tier_v1) {
         const rivalries = { ...G.rivalries };
@@ -2196,7 +2205,7 @@ const Storage = {
             };
           }
         }
-        G = { ...G, rivalries, relationshipHistory: G.relationshipHistory || [], _migrated_rivalry_tier_v1: true };
+        G = { ...G, rivalries, _migrated_rivalry_tier_v1: true };
       }
 
       if (!G._migrated_retired_rivalry_cleanup_v1) {
@@ -3101,7 +3110,8 @@ function archiveRetiredRivalryState(state, fighter) {
 
   const relationships = { ...(state.relationships || {}) };
   const rivalries = { ...(state.rivalries || {}) };
-  const history = [...(state.relationshipHistory || [])];
+  const historyStore = Engine.relationships.normalizeHistoryStore(state.relationshipHistory);
+  const history = [...historyStore.retiredRivalries];
   const fighterId = fighter.id;
   const fighterMap = new Map();
   const register = candidate => {
@@ -3175,7 +3185,12 @@ function archiveRetiredRivalryState(state, fighter) {
     delete rivalries[pairKey];
   });
 
-  return { ...state, relationships, rivalries, relationshipHistory: history };
+  return {
+    ...state,
+    relationships,
+    rivalries,
+    relationshipHistory: { ...historyStore, retiredRivalries: history },
+  };
 }
 // ── App Commands (G mutation ONLY via G = newState) ──
 let _pendingOrgName = '';

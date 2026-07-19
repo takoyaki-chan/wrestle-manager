@@ -15311,7 +15311,7 @@ const Engine = {
       relationshipFlags: { betrayer: [], returner: [], master: [], cohort: [], rivalCohort: [], admire: [], envy: [] },
       relationshipFlagLockouts: {},
       relationshipFlagCounters: {},
-      relationshipHistory: { betrayalRecord: [] },
+      relationshipHistory: { betrayalRecord: [], retiredRivalries: [] },
       _modalQueue: [],
       // h2h: ペア別対戦履歴
       h2h: {},

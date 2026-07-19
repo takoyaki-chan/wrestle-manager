@@ -6,6 +6,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 直近の調整（2026-07-19 相関図停止修正・端末互換確認・v1.14b表記統一）
+
+データベースの相関図で「ネットワーク」「フォーカス」「派閥」が表示されず、「勢力図」でも選手の選択・右クリック詳細が動かない不具合を修正。Chromeで実機再現し、描画開始時の `history.forEach is not a function` を確認した。原因は `relationshipHistory` が、引退因縁では配列、裏切り履歴ではオブジェクトという二つの形式で使われていたこと。保存形式を `{ betrayalRecord, retiredRivalries }` に統一し、旧配列セーブを記録を失わず自動変換するマイグレーションを追加した。新規ゲーム、旧セーブ変換、裏切り履歴保持、引退因縁アーカイブ、相関図の参照形式を回帰テストで固定。Chrome実機ではネットワーク37名・フォーカス2名・勢力図44名の描画と、左クリック選択・右クリック詳細を確認。端末別監査では、700px以下のスマホは検索可能な人物中心リスト、タブレット／PCはマウスとPointer Events対応のネットワーク図へ分岐することを契約テストで固定した。配布manifest・タイトル画面・セーブ情報のバージョン表記も `1.14b` に統一。5シード×20シーズン（計100シーズン）のauto-simは violations 0 / errors 0 / 全件ALL CLEAR。変更: `release/manifest.json` / `src/index.html` / `src/relationships.js` / `src/management.js` / `src/app.js` / `src/ui-render.js` / 相関図・端末・バージョン回帰テスト3本 / `package.json` / 関係性仕様書 / 相関図採用メモ / ロードマップ / 本項。
+
 ## 直近の調整（2026-07-19 春のタッグリーグ・決勝逆転時の実績順位修正）
 
 春のタッグリーグでリーグ2位ペアが決勝を制した際、優勝ペアの `careerRecord.history` が準優勝として記録される不具合を修正。原因は、決勝後の実績とプレイヤー賞金だけが最終結果ではなく総当たりリーグの `standings.rank` を参照していたこと。`champion / runnerUp / third / fourth` から大会最終順位マップを作り、実績ラベル・賞金・賞金ログをすべて同じ最終順位に統一した。リーグ2位のプレイヤーが決勝でリーグ1位のAI団体を破る固定ケースを回帰テストとして新設し、優勝ペア2名の `champion`、敗者ペア2名の `runnerUp`、優勝賞金1500万円を検証。既存の春リーグ観戦テストも通過し、5シード×20シーズン（計100シーズン）のauto-simは春リーグ完走率1.00、violations 0 / errors 0 / 全件ALL CLEAR。変更: `src/management.js` / `test/spring-tag-league-result-placement-test.js` / `package.json` / 春リーグ仕様書 / ロードマップ / 本項。

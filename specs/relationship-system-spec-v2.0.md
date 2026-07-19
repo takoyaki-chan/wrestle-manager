@@ -427,10 +427,15 @@ scout / playerPoach / resolvePoach×2 / release / suddenDeparture / contractDepa
 | ID | 内容 |
 |----|------|
 | `_migrated_relationships_v1` | GameState.relationships / relationshipCounters 初期化 |
+| `_migrated_relationship_history_store_v1` | 旧配列形式の引退因縁と裏切り履歴を `{ betrayalRecord, retiredRivalries }` に統合 |
 | `_migrated_rivalry_tier_v1` | matches数からtier逆算 |
 | `_migrated_h2h_orgTimeline_v1` | h2h / orgTimeline 初期化 |
 
 <!-- 再同期: 2026-04-06, 指示書: docs/specs-resync-instruction.md -->
+
+`relationshipHistory` は、裏切り記録の `betrayalRecord` と引退済み因縁の
+`retiredRivalries` を持つオブジェクトとする。旧セーブの配列形式は
+`retiredRivalries` として読み込み、既存の記録を保持する。
 
 ---
 
@@ -471,4 +476,3 @@ scout / playerPoach / resolvePoach×2 / release / suddenDeparture / contractDepa
 - `composed`: 穏やかな完全拒絶
 
 マイナス側（distant / irritation / dislike / cold_loathing / dislike_strong / hatred / contempt）は丁寧表現に押し負けて嫌悪が薄まらないよう、polite/composed/ojousama でも明確な拒絶が伝わる文面にする。
-
