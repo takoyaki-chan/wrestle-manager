@@ -24073,9 +24073,15 @@ Engine.springTagLeague = {
     const condState = {};
     orgOrder.forEach(o => { condState[o] = Engine.springTagLeague.INITIAL_CONDITION; });
     const tagExpSnapshot = {};
+    const popularitySnapshot = {};
     orgOrder.forEach(o => {
       const t = resolvedTeams.find(x => x.orgId === o);
       tagExpSnapshot[o] = Engine.tagExp.getCount(state, t.f1Id, t.f2Id);
+      const roster = Engine.springTagLeague._orgRoster(state, o);
+      [t.f1Id, t.f2Id].forEach(id => {
+        const fighter = roster.find(f => f.id === id);
+        if (fighter) popularitySnapshot[id] = fighter.popularity || 0;
+      });
     });
     const bondOf = (id1, id2) => Engine.springTagLeague._bond(state, id1, id2);
 
@@ -24084,6 +24090,7 @@ Engine.springTagLeague = {
       const teamB = resolvedTeams.find(t => t.orgId === orgB);
       const fA1 = fighterOf(orgA, teamA.f1Id), fA2 = fighterOf(orgA, teamA.f2Id);
       const fB1 = fighterOf(orgB, teamB.f1Id), fB2 = fighterOf(orgB, teamB.f2Id);
+      const conditionBefore = { [orgA]: condState[orgA], [orgB]: condState[orgB] };
       const mRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC7A6, seedTag));
       const result = Engine.tagMatch.simulateTagMatch(
         {
@@ -24114,7 +24121,7 @@ Engine.springTagLeague = {
       const wearB = Engine.wear.calc(ratioB);
       condState[orgA] = Engine.wear.nextCondition(condState[orgA], wearA, wearA * Engine.springTagLeague.RECOVERY_RATIO, Engine.springTagLeague.FLOOR, Engine.springTagLeague.CEILING);
       condState[orgB] = Engine.wear.nextCondition(condState[orgB], wearB, wearB * Engine.springTagLeague.RECOVERY_RATIO, Engine.springTagLeague.FLOOR, Engine.springTagLeague.CEILING);
-      return { result, teamA, teamB, wearA, wearB };
+      return { result, teamA, teamB, wearA, wearB, conditionBefore };
     }
 
     const matches = [];
@@ -24123,7 +24130,7 @@ Engine.springTagLeague = {
 
     Engine.springTagLeague.ROUND_ROBIN.forEach((pairIdx, roundIdx) => {
       const orgA = orgOrder[pairIdx[0]], orgB = orgOrder[pairIdx[1]];
-      const { result, teamA, teamB, wearA, wearB } = runOneMatch(orgA, orgB, roundIdx);
+      const { result, teamA, teamB, wearA, wearB, conditionBefore } = runOneMatch(orgA, orgB, roundIdx);
       const mq = result.mq;
       let winnerOrg = null, loserOrg = null, isDraw = false;
       if (result.winner === 'teamA') { winnerOrg = orgA; loserOrg = orgB; }
@@ -24151,6 +24158,7 @@ Engine.springTagLeague = {
         teamA: { orgId: orgA, f1Id: teamA.f1Id, f2Id: teamA.f2Id },
         teamB: { orgId: orgB, f1Id: teamB.f1Id, f2Id: teamB.f2Id },
         winner: result.winner, mq, isDraw, turns: result.turns,
+        conditionBefore,
         conditionAfter: { [orgA]: Math.round(condState[orgA]), [orgB]: Math.round(condState[orgB]) },
         wear: { [orgA]: Math.round(wearA * 10) / 10, [orgB]: Math.round(wearB * 10) / 10 },
       });
@@ -24179,7 +24187,7 @@ Engine.springTagLeague = {
     // 決勝: リーグ1位 vs 2位（引き分けは1位の勝ち、spec §4）
     const finalA = standingsArr[0].orgId, finalB = standingsArr[1].orgId;
     // seedTag=6: ROUND_ROBIN(0-5)と衝突しない専用シード（Engine.rng.deriveは数値以外のkeyを0扱いするため注意）
-    const { result: finalResult, teamA: finalTeamA, teamB: finalTeamB } = runOneMatch(finalA, finalB, 6);
+    const { result: finalResult, teamA: finalTeamA, teamB: finalTeamB, conditionBefore: finalConditionBefore } = runOneMatch(finalA, finalB, 6);
     const champOrg = finalResult.winner === 'teamB' ? finalB : finalA;
     const runnerUpOrg = champOrg === finalA ? finalB : finalA;
 
@@ -24191,10 +24199,89 @@ Engine.springTagLeague = {
       finalMatch: {
         orgA: finalA, orgB: finalB, teamA: finalTeamA, teamB: finalTeamB,
         winner: finalResult.winner, mq: finalResult.mq, turns: finalResult.turns,
+        conditionBefore: finalConditionBefore,
       },
       champion: champOrg, runnerUp: runnerUpOrg,
       third: standingsArr[2].orgId, fourth: standingsArr[3].orgId,
+      replayContext: { tagExpSnapshot, popularitySnapshot },
     };
+  },
+
+  /** 確定済みの春タッグ結果を、同じシード・消耗・大会開始時能力で観戦用フレームへ再構築する。
+   * canonical な勝敗は state.springTagLeague 側に保持し、この結果で上書きしない。 */
+  simulateReplay(state, match, options) {
+    if (!state || !match || !match.teamA || !match.teamB) return null;
+    const opts = options || {};
+    const stl = state.springTagLeague || {};
+    const leagueMatches = Array.isArray(stl.matches) ? stl.matches : [];
+    const isFinal = !!opts.isFinal;
+    const matchIndex = isFinal ? leagueMatches.length : Math.max(0, Number(opts.matchIndex) || 0);
+    const seedTag = isFinal ? 6 : matchIndex;
+    const replayContext = stl.replayContext || {};
+    const popularitySnapshot = replayContext.popularitySnapshot || {};
+
+    const fighterOf = (orgId, id) => Engine.springTagLeague._orgRoster(state, orgId).find(f => f.id === id) || null;
+    const restoreFighter = (orgId, id) => {
+      const fighter = fighterOf(orgId, id);
+      if (!fighter) return null;
+      let popularity = popularitySnapshot[id];
+      if (popularity == null && stl.champion === orgId && (stl.teams || []).some(t =>
+        t.orgId === orgId && (t.f1Id === id || t.f2Id === id)
+      )) {
+        // 旧セーブ互換: replayContext がない大会は、apply()で加算済みの優勝ボーナスを戻して近似する。
+        popularity = Math.max(0, (fighter.popularity || 0) - Engine.springTagLeague.POP_BONUS);
+      }
+      return popularity == null ? { ...fighter } : { ...fighter, popularity };
+    };
+    const conditionBefore = (orgId) => {
+      if (match.conditionBefore && match.conditionBefore[orgId] != null) {
+        return match.conditionBefore[orgId];
+      }
+      for (let i = Math.min(matchIndex, leagueMatches.length) - 1; i >= 0; i--) {
+        const previous = leagueMatches[i];
+        if (previous && previous.conditionAfter && previous.conditionAfter[orgId] != null) {
+          return previous.conditionAfter[orgId];
+        }
+      }
+      return Engine.springTagLeague.INITIAL_CONDITION;
+    };
+    const tagExpBefore = (orgId, team) => {
+      const snapshot = replayContext.tagExpSnapshot && replayContext.tagExpSnapshot[orgId];
+      if (snapshot != null) return snapshot;
+      const played = leagueMatches.reduce((count, m) => count + (m.orgA === orgId || m.orgB === orgId ? 1 : 0), 0)
+        + (stl.finalMatch && (stl.finalMatch.orgA === orgId || stl.finalMatch.orgB === orgId) ? 1 : 0);
+      return Math.max(0, Engine.tagExp.getCount(state, team.f1Id, team.f2Id) - played);
+    };
+
+    const teamA = match.teamA;
+    const teamB = match.teamB;
+    const fA1 = restoreFighter(match.orgA, teamA.f1Id);
+    const fA2 = restoreFighter(match.orgA, teamA.f2Id);
+    const fB1 = restoreFighter(match.orgB, teamB.f1Id);
+    const fB2 = restoreFighter(match.orgB, teamB.f2Id);
+    if (!fA1 || !fA2 || !fB1 || !fB2) return null;
+    const condA = conditionBefore(match.orgA);
+    const condB = conditionBefore(match.orgB);
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC7A6, seedTag));
+    const result = Engine.tagMatch.simulateTagMatch(
+      {
+        fighter1: { ...fA1, _hpOverride: Engine.wear.toHpOverride(condA, Engine.tagMatch.calcFullHp(fA1)) },
+        fighter2: { ...fA2, _hpOverride: Engine.wear.toHpOverride(condA, Engine.tagMatch.calcFullHp(fA2)) },
+      },
+      {
+        fighter1: { ...fB1, _hpOverride: Engine.wear.toHpOverride(condB, Engine.tagMatch.calcFullHp(fB1)) },
+        fighter2: { ...fB2, _hpOverride: Engine.wear.toHpOverride(condB, Engine.tagMatch.calcFullHp(fB2)) },
+      },
+      rng,
+      {
+        bond_A: Engine.springTagLeague._bond(state, teamA.f1Id, teamA.f2Id),
+        bond_B: Engine.springTagLeague._bond(state, teamB.f1Id, teamB.f2Id),
+        tagExp_A: tagExpBefore(match.orgA, teamA),
+        tagExp_B: tagExpBefore(match.orgB, teamB),
+        recordFrames: true,
+      }
+    );
+    return { result, fighters: { fA1, fA2, fB1, fB2 } };
   },
 
   /** Week12: run()の結果をGameStateへ反映する（純粋関数） */
@@ -24210,7 +24297,7 @@ Engine.springTagLeague = {
       return { state: s, events };
     }
     const orgOrder = Engine.springTagLeague.ORG_ORDER;
-    const { teams, matches, standings, finalMatch, champion, runnerUp, third, fourth } = result;
+    const { teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, replayContext } = result;
 
     // タッグ経験値の蓄積(§5.3): 実際に戦った試合数ぶん加算
     let tagExp = { ...(s.tagExp || {}) };
@@ -24321,7 +24408,7 @@ Engine.springTagLeague = {
 
     s = {
       ...s,
-      springTagLeague: { ...s.springTagLeague, teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, cancelled: false },
+      springTagLeague: { ...s.springTagLeague, teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, replayContext, cancelled: false },
       springTagPhase: 'result',
       // UI: 週送り直後にリプレイ演出を自動起動するためのtransientフラグ（他の_pending*系と同じ規約）。
       // UI側がリプレイ表示後にstateから取り除く。

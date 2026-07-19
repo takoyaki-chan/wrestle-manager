@@ -3366,6 +3366,107 @@ const App = {
     }
   },
 
+  stlWatchMatch() {
+    const p = App._stlPreview;
+    const stl = G.springTagLeague;
+    if (!p || !stl || p.phase === 'watching') return;
+    const isFinal = p.phase === 'finalReady';
+    const matchIndex = isFinal ? (stl.matches || []).length : p.idx;
+    const match = isFinal ? stl.finalMatch : (stl.matches || [])[matchIndex];
+    if (!match) {
+      App.stlAdvance();
+      return;
+    }
+    const replay = Engine.springTagLeague.simulateReplay(G, match, { isFinal, matchIndex });
+    if (!replay || !replay.result || !Array.isArray(replay.result.frames) || replay.result.frames.length === 0) {
+      Audio.play('error');
+      App.stlAdvance();
+      return;
+    }
+
+    if (replay.result.winner !== match.winner || replay.result.mq !== match.mq || replay.result.turns !== match.turns) {
+      try {
+        console.warn('[SpringTag] replay result mismatch; canonical league result is preserved', {
+          matchIndex,
+          isFinal,
+          expected: { winner: match.winner, mq: match.mq, turns: match.turns },
+          replay: { winner: replay.result.winner, mq: replay.result.mq, turns: replay.result.turns },
+        });
+      } catch (_e) {}
+    }
+
+    const overlay = document.getElementById('battleOverlay');
+    const iframe = document.getElementById('battleIframe');
+    if (!overlay || !iframe) {
+      App.stlAdvance();
+      return;
+    }
+    p.watchReturnPhase = p.phase;
+    p.watchCanonical = { winner: match.winner, mq: match.mq, turns: match.turns };
+    p.phase = 'watching';
+    overlay.style.display = 'block';
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    clearTimeout(App._escBtnTimer);
+    App._escBtnTimer = setTimeout(() => {
+      if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; }
+    }, 8000);
+
+    const profile = fighter => ({
+      ...fighter,
+      portraitUrl: getPortraitUrl(fighter.id),
+      profile: CHAR_PROFILES[fighter.id] || '',
+    });
+    const { fA1, fA2, fB1, fB2 } = replay.fighters;
+    const roundLabel = isFinal ? '優勝決定戦' : `リーグ 第${matchIndex + 1}試合`;
+    const msg = {
+      type: 'START_TAG_MATCH',
+      teamA: { fighter1: profile(fA1), fighter2: profile(fA2) },
+      teamB: { fighter1: profile(fB1), fighter2: profile(fB2) },
+      result: replay.result,
+      matchInfo: {
+        header: `🌸 春のタッグリーグ ${roundLabel}`,
+        matchNum: isFinal ? 7 : matchIndex + 1,
+        totalMatches: 7,
+        sfxMasterVol: Audio.sfxMasterVol,
+        bgmMasterVol: Audio.bgmMasterVol,
+        chemA: replay.result.chemA,
+        chemB: replay.result.chemB,
+      },
+    };
+    try { Audio.fileBgm.stop(); } catch (_e) {}
+    try { Audio.bgm.play('battle'); } catch (_e) {}
+    let sent = false;
+    const sendOnce = () => {
+      if (sent) return;
+      sent = true;
+      iframe.contentWindow.postMessage(msg, '*');
+    };
+    iframe.onload = () => setTimeout(sendOnce, 200);
+    iframe.src = 'tag-battle.html?t=' + Date.now();
+    setTimeout(sendOnce, 800);
+  },
+
+  _receiveSpringTagLeagueBattleResult(data) {
+    const p = App._stlPreview;
+    if (!p || p.phase !== 'watching') return;
+    clearTimeout(App._escBtnTimer);
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    const overlay = document.getElementById('battleOverlay');
+    if (overlay) overlay.style.display = 'none';
+    const expected = p.watchCanonical;
+    if (expected && data && (data.winner !== expected.winner || data.mq !== expected.mq || data.turns !== expected.turns)) {
+      try { console.warn('[SpringTag] iframe replay completion differs from canonical result; ignored'); } catch (_e) {}
+    }
+    p.phase = p.watchReturnPhase || 'table';
+    delete p.watchReturnPhase;
+    delete p.watchCanonical;
+    try { Audio.bgm.stop(); } catch (_e) {}
+    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
+    App.stlAdvance();
+  },
+
   finalizeSpringTagLeagueReplay() {
     if (G._pendingSpringTagLeagueReplay) {
       const { _pendingSpringTagLeagueReplay: _, ...cleanG } = G;
@@ -5510,6 +5611,12 @@ const App = {
     clearTimeout(App._escBtnTimer);
     const escBtn = document.getElementById('battleEscapeBtn');
     if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    // 春のタッグリーグ context: 確定済み結果のリプレイ完了として扱う
+    const stlPre = App._stlPreview;
+    if (stlPre && stlPre.phase === 'watching') {
+      App._receiveSpringTagLeagueBattleResult(data);
+      return;
+    }
     // Junior Tournament context: route to JT handler
     const jtPre = App._jtPreview;
     if (jtPre && jtPre.phase === 'watching') {
@@ -5645,6 +5752,16 @@ const App = {
       if (!wp.results.every(r => r !== null)) {
         setTimeout(() => { if (App._warPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {} } }, 300);
       }
+    }
+    const stl = App._stlPreview;
+    if (stl && stl.phase === 'watching') {
+      stl.phase = stl.watchReturnPhase || 'table';
+      delete stl.watchReturnPhase;
+      delete stl.watchCanonical;
+      try { Audio.bgm.stop(); } catch (_e) {}
+      try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
+      App.stlAdvance();
+      return;
     }
     const jt = App._jtPreview;
     if (jt && jt.phase === 'watching') {

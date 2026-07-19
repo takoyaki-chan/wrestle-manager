@@ -15238,6 +15238,22 @@ function _stlFinalPreviewHtml(finalM) {
   </div>`;
 }
 
+function _stlUpcomingMatchHtml(m, matchNumber) {
+  if (!m) return '';
+  const teamA = _stlOrgTeam(m.orgA), teamB = _stlOrgTeam(m.orgB);
+  const fA1 = _stlFighterOf(m.orgA, m.teamA.f1Id), fA2 = _stlFighterOf(m.orgA, m.teamA.f2Id);
+  const fB1 = _stlFighterOf(m.orgB, m.teamB.f1Id), fB2 = _stlFighterOf(m.orgB, m.teamB.f2Id);
+  return `<div class="stl-match-preview">
+    <div class="stl-match-preview-label">NEXT MATCH</div>
+    <div class="stl-match-preview-round">リーグ 第${matchNumber}試合</div>
+    <div class="stl-final-faceoff">
+      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
+      <div class="stl-final-vs">VS</div>
+      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
+    </div>
+  </div>`;
+}
+
 /** リーグ表 + 直近試合ストリップ（週12リーグ興行画面のメイン画面。試合ごとにここへ戻ってくる） */
 function renderSpringTagLeagueBoard() {
   const p = App._stlPreview;
@@ -15306,14 +15322,16 @@ function renderSpringTagLeagueBoard() {
   }
   if (isFinalReady) {
     html += _stlFinalPreviewHtml(stl.finalMatch);
+  } else if (idx < matches.length) {
+    html += _stlUpcomingMatchHtml(matches[idx], idx + 1);
   }
 
   html += `<div class="stl-progress-btn-row">`;
-  if (!isFinalReady) {
-    const label = idx === 0 ? 'リーグ開幕 ▶' : (idx < matches.length ? '次の試合へ ▶' : '決勝へ ▶');
-    html += `<button class="btn btn-gold" style="padding:10px 26px;font-size:14px" onclick="App.stlAdvance()">${label}</button>`;
+  if (isFinalReady || idx < matches.length) {
+    html += `<button class="btn btn-gold" style="padding:10px 26px;font-size:14px" onclick="App.stlWatchMatch()">🎬 観戦する</button>`;
+    html += `<button class="btn" style="padding:10px 26px;font-size:14px" onclick="App.stlAdvance()">結果を見る ▶</button>`;
   } else {
-    html += `<button class="btn btn-gold" style="padding:10px 26px;font-size:14px" onclick="App.stlAdvance()">決着 ▶</button>`;
+    html += `<button class="btn btn-gold" style="padding:10px 26px;font-size:14px" onclick="App.stlAdvance()">決勝へ ▶</button>`;
   }
   html += `</div></div>`; // .stl-progress-btn-row, .stl-wrap
 

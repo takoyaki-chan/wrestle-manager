@@ -1345,6 +1345,13 @@
   }
 
   .stl-pick-grid { grid-template-columns: repeat(2, 1fr); padding: 0 8px 14px; }
+  .stl-match-preview { width: 100%; padding: 12px 6px 4px; box-sizing: border-box; }
+  .stl-match-preview .stl-final-faceoff { gap: 8px; }
+  .stl-match-preview .stl-final-side { flex: 1 1 0; width: auto; min-width: 0; }
+  .stl-match-preview .stl-final-side .faces img { width: 48px; height: 48px; }
+  .stl-match-preview .stl-final-side .nm { font-size: 11px; overflow-wrap: anywhere; }
+  .stl-progress-btn-row { gap: 8px; padding: 0 6px; }
+  .stl-progress-btn-row .btn { flex: 1 1 130px; min-height: 44px; padding-left: 10px !important; padding-right: 10px !important; }
   .a1-sil-row { grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .tc-climb { min-width: 0; padding-left: 0; padding-right: 0; }
   .tcpe-fighters { grid-template-columns: 1fr; }
