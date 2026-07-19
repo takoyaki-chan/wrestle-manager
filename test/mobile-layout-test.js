@@ -32,6 +32,12 @@ assert.ok(mobile.includes('position: fixed'), 'phone navigation must remain reac
 assert.ok(mobile.includes('.sp-match-card-inner'), 'show preparation cards need a phone layout');
 assert.ok(mobile.includes('.week-roster-table'), 'wide roster tables need phone overflow handling');
 assert.ok(mobile.includes('.draft-fc.cand .draft-fc-portrait'), 'draft candidates need compact full-width phone cards');
+assert.ok(
+  mobile.includes('.app.draft-cream {') &&
+    mobile.includes('touch-action: pan-y;') &&
+    mobile.includes('-webkit-overflow-scrolling: touch;'),
+  'the founding draft must accept momentum swipe scrolling on phones'
+);
 assert.ok(mobile.includes('.team-member:nth-child(4)'), 'the five-person launch photo needs a 3+2 phone grid');
 assert.ok(mobile.includes('.ranking-popup .orgs-grid'), 'organization rankings need a one-column phone layout');
 assert.ok(mobile.includes('.ranking-popup .rp-card'), 'organization profiles need a phone layout');

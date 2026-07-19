@@ -3429,12 +3429,25 @@ const App = {
     orgEl.style.display = 'none';
     if (diffEl) diffEl.style.display = 'none';
 
-    // Populate title portraits (pick 7 iconic characters)
-    const titleIds = [1, 16, 11, 5, 17, 12, 4];
+    // Pick a fresh cast on every visit and duplicate the row for a seamless marquee.
+    const titlePool = (Array.isArray(ALL_CHARS) ? ALL_CHARS : [])
+      .map(c => ({ id: c.id, url: getPortraitUrl(c.id) }))
+      .filter(c => c.url);
+    for (let i = titlePool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [titlePool[i], titlePool[j]] = [titlePool[j], titlePool[i]];
+    }
+    const titleCast = titlePool.slice(0, Math.min(18, titlePool.length));
     const portraitsEl = document.getElementById('titlePortraits');
-    portraitsEl.innerHTML = titleIds
-      .map(id => { const url = getPortraitUrl(id); return url ? `<img src="${url}" alt="">` : ''; })
+    const portraitRow = titleCast
+      .map(c => `<img src="${c.url}" alt="" loading="eager" decoding="async" onerror="this.style.display='none'">`)
       .join('');
+    portraitsEl.innerHTML = portraitRow
+      ? `<div class="title-portraits-track">
+          <div class="title-portraits-group">${portraitRow}</div>
+          <div class="title-portraits-group" aria-hidden="true">${portraitRow}</div>
+        </div>`
+      : '';
 
     // Show CONTINUE button if autosave exists (体験版ではオートセーブ無効)
     const autoInfo = window.IS_TRIAL ? null : Storage.getAutoSaveInfo();

@@ -711,8 +711,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .title-bg{position:absolute;inset:0;overflow:hidden}
 .title-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(212,168,67,0.08) 0%,transparent 60%)}
 .title-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-dark) 0%,transparent 30%,transparent 70%,var(--bg-dark) 100%)}
-.title-portraits{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;gap:0;align-items:flex-end;opacity:0.3;filter:saturate(0.4)}
-.title-portraits img{height:280px;object-fit:cover;object-position:top;mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%);-webkit-mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%)}
+.title-portraits{position:absolute;right:0;bottom:0;left:0;overflow:hidden;opacity:0.3;filter:saturate(0.4);pointer-events:none}
+.title-portraits-track{display:flex;width:max-content;align-items:flex-end;will-change:transform;animation:title-portraits-scroll 110s linear infinite}
+.title-portraits-group{display:flex;flex:0 0 auto;align-items:flex-end}
+.title-portraits img{flex:0 0 auto;width:280px;height:280px;object-fit:cover;object-position:top;mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%);-webkit-mask-image:linear-gradient(to top,transparent 0%,black 30%,black 70%,transparent 100%)}
+@keyframes title-portraits-scroll{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+@media(prefers-reduced-motion:reduce){
+  .title-portraits-track{animation:none;will-change:auto}
+  .title-portraits-group[aria-hidden="true"]{display:none}
+}
 .title-content{position:relative;z-index:1;text-align:center;padding:20px}
 .title-logo{font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:12px;line-height:1;
   background:linear-gradient(180deg,var(--text-main) 0%,var(--gold-light) 50%,var(--gold) 100%);
@@ -774,7 +781,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 @media(max-width:600px){
   .title-logo{font-size:42px;letter-spacing:6px}
   .title-sub{font-size:12px;letter-spacing:3px}
-  .title-portraits img{height:180px}
+  .title-portraits img{width:180px;height:180px}
   .org-setup-title{font-size:28px}
   .app{padding:8px}
   .top-bar{padding:8px 10px}
