@@ -6,6 +6,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 直近の調整（2026-07-19 4団体勝ち残り対抗戦・MVP台詞パック全147セル実装）
+
+MVP一言シーン用の台詞テーブル `AUTUMN_WAR_MVP_LINES` を基礎21本から全147セル（3 context × 7 personality × 7 archetype）315本へ拡張。①gauntlet（3勝以上の連戦耐久）、champion（団体優勝・本人3勝未満）、defiant（個人MVPだが団体敗退）の3文脈それぞれに、7 personality × 7 archetype（_default/composed/ojousama/polite/seductive/delinquent/cool）の全セルを各2〜3本で埋めた。②既存の基礎21本は各 `_default` の1本目として保持。③契約テスト `test/autumn-war-mvp-lines-test.js` を新設し、構造完全性（3 context/7 personality/7 archetype/配列・2本以上）、品質チェック（string・非空・12〜90文字・許可外プレースホルダー排除・ASCII `...` 排除・完全一致重複排除・294本以上）の10項目を自動検証。④ `package.json` に専用script `test:data:autumn-war-mvp` を追加。⑤既存テスト `autumn-war-ui-flow-test.js` も通過、auto-sim 20シーズン ALL CLEAR。⑥画面仕様書の実装状況を更新。変更: src/data.js、test/autumn-war-mvp-lines-test.js（新設）、package.json、docs/ui/03-screens/autumn-gauntlet-war.md、本項。
+
 ## 直近の調整（2026-07-19 4団体勝ち残り対抗戦・1フォール逐次シミュレーション化）
 
 季節を代表する年次大会として、初版UIの「大会全体を先にシミュレートして結果を順番に見せる」方式を廃止し、現在リング上にいる2選手だけを操作時に解決するライブ進行へ変更。①Week36開始時は代表・組み合わせ・初期condition・seeded RNG状態のみを `autumnWar.session` に作り、勝敗は未生成。②`simulateNextBout` は1回の操作につき `simulateMatch` をちょうど1回だけ呼び、勝敗、実HP由来wear、脱落位置、団体スコア、個人勝ち抜き数、更新後RNGをGameStateへ保存。③各団体戦終了時に次の準決勝へ遷移し、全準決勝終了後のみ+15回復を適用。プレイヤーが決勝進出した場合は `finalOrder` で停止し、回復後conditionを見て布陣確定後に初めて決勝カードを生成するため、準決勝の再計算と未来の決勝結果保持がなくなった。④途中セーブ・リロードは保存済みactiveMatch/RNGから再開し、最終フォール後にのみ報酬・経歴・MVPを1回適用。⑤auto-simも本番同様に1フォールずつ進めるよう変更。新規エンジンテストで大会開始時0フォール、1操作後1フォール、JSON保存・再開後の次フォール/RNG一致、決勝布陣確定時点でも決勝0フォール、最大15フォール完走を実動検証し、UIソース回帰では1ステップに `simulateMatch` 1回・未来フォールのwhile実行なしを固定。5シード×20シーズン（計100）で violations 0 / errors 0 / frequency warnings 0 / 全ALL CLEAR。変更: src/management.js / app.js / ui-common.js、test/auto-sim.js / autumn-war-ui-flow-test.js / autumn-war-live-engine-test.js、package.json、画面仕様・本体仕様・ロードマップ・本項。

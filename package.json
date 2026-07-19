@@ -11,6 +11,7 @@
     "test:ui:opening-scene": "node test/opening-scene-ui-test.js",
     "test:ui:spring-tag-watch": "node test/spring-tag-league-watch-test.js",
     "test:ui:autumn-war": "node test/autumn-war-ui-flow-test.js",
+    "test:data:autumn-war-mvp": "node test/autumn-war-mvp-lines-test.js",
     "test:engine:autumn-war-live": "node test/autumn-war-live-engine-test.js",
     "test:balance:match": "node test/_match-system-v5-validation.js",
     "test:smoke:economy": "node test/economy-check.js 2 1",
