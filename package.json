@@ -6,6 +6,7 @@
     "test:balance:relationships": "node test/relationship-balance-test.js",
     "test:regression:rivalry": "node test/rivalry-resolution-regression-test.js",
     "test:ui:awards-layout": "node test/awards-champions-layout-test.js",
+    "test:ui:mobile": "node test/mobile-layout-test.js",
     "test:balance:match": "node test/_match-system-v5-validation.js",
     "test:smoke:economy": "node test/economy-check.js 2 1",
     "test:smoke:growth": "node test/growth-v2-verification.js 2 1",

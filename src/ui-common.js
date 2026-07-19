@@ -6438,8 +6438,18 @@ function showScreen(id, evt) {
   if (screenEl) screenEl.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   const t = evt?.currentTarget || evt?.target || null;
-  const btn = t?.closest ? t.closest('.nav-btn') : t;
-  if (btn && btn.classList) btn.classList.add('active');
+  let btn = t?.closest ? t.closest('.nav-btn') : t;
+  if (!btn || !btn.classList?.contains('nav-btn')) {
+    btn = Array.from(document.querySelectorAll('.nav-btn')).find(b =>
+      b.getAttribute('onclick')?.includes(`'${id}'`)
+    ) || null;
+  }
+  if (btn && btn.classList) {
+    btn.classList.add('active');
+    if (window.matchMedia?.('(max-width: 700px)').matches) {
+      requestAnimationFrame(() => btn.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }));
+    }
+  }
   // v0.9: Auto-render screens that need fresh data
   // BGM: Restore appropriate BGM when leaving show screens
   if (id !== 'show' && G.weekPhase !== 'showExec') Audio.bgm.playForState();

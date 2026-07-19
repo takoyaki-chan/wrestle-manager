@@ -3,6 +3,7 @@
   "description": "Wrestle Manager 配布対象ファイル一覧。新規JS/CSS追加時は必ずここも更新すること。manifest に載っていないファイルは配布されないため、追加忘れは即バグになる。",
   "sourceFiles": [
     "src/index.html",
+    "src/mobile.css",
     "src/victory-lines.js",
     "src/lz-string.min.js",
     "src/data.js",
@@ -19,6 +20,7 @@
     "src/ui-common.js",
     "src/ui-render.js",
     "src/battle-engine.html",
+    "src/battle-mobile.css",
     "src/battle-shared.css",
     "src/battle-sfx.js",
     "src/battle-anim.js",

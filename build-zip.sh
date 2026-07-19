@@ -83,10 +83,10 @@ build_one() {
 
   # Copy game files
   echo "📦 ゲームファイルをコピー中..."
-  cp src/index.html src/data.js src/management.js src/match-engine.js \
+  cp src/index.html src/mobile.css src/data.js src/management.js src/match-engine.js \
      src/relationships.js src/app.js \
      src/ui-common.js src/ui-render.js src/victory-lines.js \
-     src/battle-engine.html src/lz-string.min.js src/kuroda-text.js \
+     src/battle-engine.html src/battle-mobile.css src/lz-string.min.js src/kuroda-text.js \
      src/draft-negotiation.js \
      src/data-faction-dialogue.js src/flag-dialogue.js src/factions.js \
      src/battle-sfx.js src/battle-shared.css src/battle-anim.js src/battle-lines.js \

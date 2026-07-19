@@ -3015,7 +3015,7 @@ function renderShowPrep() {
   };
   const _spPortrait = (f, size) => {
     if (f) return portraitImg(f.id, size);
-    return `<div style="width:${size}px;height:${size}px;border-radius:4px;border:1px dashed rgba(200,190,170,.08);flex-shrink:0"></div>`;
+    return `<div class="sp-portrait-placeholder" style="width:${size}px;height:${size}px;border-radius:4px;border:1px dashed rgba(200,190,170,.08);flex-shrink:0"></div>`;
   };
 
   for (let i = 0; i < G.showCard.length; i++) {
@@ -8828,7 +8828,7 @@ function _renderDbFighters() {
     return `<th class="${active ? 'sorted' : ''}" style="${w ? `width:${w}` : ''}" onclick="_dbSortKey='${key}';_dbSortAsc=${active ? !_dbSortAsc : false};renderDatabase()">${label}${ind}</th>`;
   };
 
-  html += `<table class="db-table">
+  html += `<div class="db-table-scroll"><table class="db-table db-fighter-table">
     <thead><tr>
       <th style="width:40px"></th>
       ${th('name', '名前')}
@@ -8886,7 +8886,7 @@ function _renderDbFighters() {
     </tr>`;
   });
 
-  html += `</tbody></table>`;
+  html += `</tbody></table></div>`;
   return html;
 }
 
@@ -8943,7 +8943,7 @@ function _renderDbCoaches() {
     return `<th class="${active ? 'sorted' : ''}" style="${w ? `width:${w}` : ''}" onclick="_dbCoachSortKey='${key}';_dbCoachSortAsc=${active ? !_dbCoachSortAsc : false};renderDatabase()">${label}${ind}</th>`;
   };
 
-  html += `<table class="db-table">
+  html += `<div class="db-table-scroll"><table class="db-table">
     <thead><tr>
       <th style="width:40px"></th>
       ${th('name', '名前')}
@@ -8975,7 +8975,7 @@ function _renderDbCoaches() {
     </tr>`;
   });
 
-  html += `</tbody></table>`;
+  html += `</tbody></table></div>`;
   return html;
 }
 
