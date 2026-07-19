@@ -29,6 +29,12 @@ assert.ok(tagBattle.includes('href="battle-mobile.css"'), 'tag battle must load 
 
 assert.ok(mobile.includes('@media (max-width: 700px)'), 'main phone breakpoint is missing');
 assert.ok(mobile.includes('position: fixed'), 'phone navigation must remain reachable');
+assert.ok(
+  mobile.includes('height: 100dvh;') &&
+    mobile.includes('overflow-y: auto;') &&
+    mobile.includes('-webkit-overflow-scrolling: touch;'),
+  'the phone app must own a momentum-enabled vertical scroll viewport'
+);
 assert.ok(mobile.includes('.sp-match-card-inner'), 'show preparation cards need a phone layout');
 assert.ok(mobile.includes('.week-roster-table'), 'wide roster tables need phone overflow handling');
 assert.ok(mobile.includes('.draft-fc.cand .draft-fc-portrait'), 'draft candidates need compact full-width phone cards');
@@ -80,8 +86,17 @@ assert.ok(
 
 assert.ok(
   uiCommon.includes("window.matchMedia?.('(max-width: 700px)')") &&
-    uiCommon.includes("inline: 'center'"),
-  'programmatic screen changes must reveal the active item in the phone navigation'
+    uiCommon.includes("nav.scrollTo({ left:") &&
+    !uiCommon.includes('btn.scrollIntoView'),
+  'phone navigation must center horizontally without moving the page vertically'
+);
+assert.ok(
+  mobile.includes('.relmap-main { flex: none;') &&
+    mobile.includes('.relmap-canvas { top: 100px; touch-action: none;') &&
+    uiRender.includes("svg.addEventListener('pointerdown'") &&
+    uiRender.includes("svg.addEventListener('pointermove'") &&
+    uiRender.includes('candidateLinks.length > 0 && !visibleNodeIds.has(n.id)'),
+  'the relationship map needs a visible phone layout and touch dragging'
 );
 
 for (const file of ['src/mobile.css', 'src/battle-mobile.css']) {

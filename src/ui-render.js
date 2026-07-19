@@ -13519,7 +13519,8 @@ function _relmapUpdateVisibility() {
     const visibleNodeIds = new Set();
     candidateLinks = links.filter(l => _relmapHasVisibleRelation(l) && _relmapRelationshipPassesThreshold(l));
     candidateLinks.forEach(l => { visibleNodeIds.add(l.a); visibleNodeIds.add(l.b); });
-    nodes.forEach(n => { n._hidden = !visibleNodeIds.has(n.id); });
+    // 旗揚げ直後など関係リンクがまだ無い時も、空画面にはせず選手を表示する。
+    nodes.forEach(n => { n._hidden = candidateLinks.length > 0 && !visibleNodeIds.has(n.id); });
   } else {
     nodes.forEach(n => { n._hidden = false; });
     candidateLinks = links.filter(l => _relmapLinkPassesDisplayControls(l, _relmapFilter));
@@ -13584,6 +13585,9 @@ function _relmapRenderSidebar(orgCenters) {
 // Interaction (drag, click, context menu, tooltip)
 // ══════════════════════════════════════════════════════════
 function _relmapSetupInteraction(svg, container) {
+  let touchStartNodeId = null;
+  let suppressTouchClick = false;
+
   function svgCoords(e) {
     const r = svg.getBoundingClientRect();
     const vw = _relmapW / _relmapZoom, vh = _relmapH / _relmapZoom;
@@ -13664,8 +13668,87 @@ function _relmapSetupInteraction(svg, container) {
     _relmapPanning = false;
   });
 
+  // Touch/pen support: drag nodes or pan the canvas without relying on mouse events.
+  svg.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' || !e.isPrimary) return;
+    e.preventDefault();
+    const g = e.target.closest('.rm-node-group');
+    if (g) {
+      const id = parseInt(g.dataset.id), n = _relmapNodeMap[id];
+      if (!n) return;
+      touchStartNodeId = id;
+      _relmapDragTarget = n;
+      n._dragging = true;
+      _relmapDragMoved = false;
+      const p = svgCoords(e);
+      const displayPos = _relmapGetDisplayPos(n);
+      _relmapDragOffset.x = p.x - displayPos.x;
+      _relmapDragOffset.y = p.y - displayPos.y;
+    } else {
+      touchStartNodeId = null;
+      _relmapPanning = true;
+      _relmapDragMoved = false;
+      _relmapPanStart = { x: e.clientX, y: e.clientY };
+      _relmapPanStartPan = { x: _relmapPanX, y: _relmapPanY };
+    }
+  });
+
+  svg.addEventListener('pointermove', e => {
+    if (e.pointerType === 'mouse' || !e.isPrimary || (!_relmapDragTarget && !_relmapPanning)) return;
+    e.preventDefault();
+    if (_relmapDragTarget) {
+      _relmapDragMoved = true;
+      const p = svgCoords(e);
+      const nextX = p.x - _relmapDragOffset.x;
+      const nextY = p.y - _relmapDragOffset.y;
+      if (_relmapViewMode === 'power') {
+        const key = _relmapPowerLayoutKey();
+        _relmapSetPowerPos(_relmapDragTarget, key, nextX, nextY);
+        _relmapRenderPowerView();
+      } else {
+        _relmapDragTarget.x = nextX;
+        _relmapDragTarget.y = nextY;
+        _relmapReheat();
+      }
+    } else {
+      const r = svg.getBoundingClientRect();
+      const vw = _relmapW / _relmapZoom, vh = _relmapH / _relmapZoom;
+      const dx = (e.clientX - _relmapPanStart.x) / r.width * vw;
+      const dy = (e.clientY - _relmapPanStart.y) / r.height * vh;
+      _relmapPanX = _relmapPanStartPan.x - dx;
+      _relmapPanY = _relmapPanStartPan.y - dy;
+      _relmapDragMoved = true;
+      if (_relmapViewMode === 'power') _relmapApplyViewport(svg);
+      else _relmapReheat();
+    }
+  });
+
+  const finishPointer = (e, cancelled = false) => {
+    if (e.pointerType === 'mouse') return;
+    const wasMoved = _relmapDragMoved;
+    const tappedNodeId = touchStartNodeId;
+    if (_relmapDragTarget) {
+      _relmapDragTarget._dragging = false;
+      _relmapDragTarget = null;
+    }
+    _relmapPanning = false;
+    touchStartNodeId = null;
+    if (!wasMoved && !cancelled) {
+      if (tappedNodeId != null) {
+        if (_relmapViewMode === 'power') showFighterPopup(tappedNodeId);
+        else _relmapSetCenter(tappedNodeId);
+      } else if (_relmapViewMode === 'network') {
+        _relmapClearCenter();
+      }
+      suppressTouchClick = true;
+    }
+  };
+  svg.addEventListener('pointerup', finishPointer);
+  svg.addEventListener('pointercancel', e => finishPointer(e, true));
+
   // Click: close compare popup + set center (or open popup in power mode)
   svg.addEventListener('click', e => {
+    if (suppressTouchClick) { suppressTouchClick = false; return; }
     if (_relmapDragMoved) { _relmapDragMoved = false; return; }
     _relmapHideCtxMenu();
     // Close compare popup if open

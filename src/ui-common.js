@@ -6444,10 +6444,23 @@ function showScreen(id, evt) {
       b.getAttribute('onclick')?.includes(`'${id}'`)
     ) || null;
   }
+  const isPhoneLayout = !!window.matchMedia?.('(max-width: 700px)').matches;
+  if (isPhoneLayout) {
+    const scroller = document.querySelector('.app');
+    if (scroller) scroller.scrollTop = 0;
+  }
   if (btn && btn.classList) {
     btn.classList.add('active');
-    if (window.matchMedia?.('(max-width: 700px)').matches) {
-      requestAnimationFrame(() => btn.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }));
+    if (isPhoneLayout) {
+      requestAnimationFrame(() => {
+        const nav = btn.closest('.nav-bar');
+        if (!nav) return;
+        const navRect = nav.getBoundingClientRect();
+        const btnRect = btn.getBoundingClientRect();
+        const left = nav.scrollLeft + btnRect.left - navRect.left - (nav.clientWidth - btnRect.width) / 2;
+        if (typeof nav.scrollTo === 'function') nav.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+        else nav.scrollLeft = Math.max(0, left);
+      });
     }
   }
   // v0.9: Auto-render screens that need fresh data
