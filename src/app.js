@@ -3326,7 +3326,12 @@ const App = {
 
   // B. 週36 大会リプレイ（Stage / P7）
   initAutumnWarReplay() {
-    const result = G.autumnWar?.previewResult || (G.autumnWar?.champion ? G.autumnWar : null);
+    // 逐次化前の短期間に保存された事前生成previewは破棄し、未決着なら大会冒頭から再開する。
+    if (!G.autumnWar?.session && G.autumnWar?.previewResult && !G.autumnWar?.champion) {
+      const { previewResult: _legacyPreview, ...cleanWar } = G.autumnWar;
+      G = Engine.autumnWar.startSession({ ...G, autumnWar: cleanWar });
+    }
+    const result = Engine.autumnWar.getProgress(G) || (G.autumnWar?.champion ? G.autumnWar : null);
     if (!result || result.cancelled || !Array.isArray(result.results) || result.results.length === 0) {
       App._awPreview = null;
       const { _pendingAutumnWarReplay: _pending, ...cleanG } = G;
@@ -3336,28 +3341,38 @@ const App = {
       if (typeof refreshAll === 'function') refreshAll();
       return;
     }
+    const livePhase = G.autumnWar?.session?.phase;
+    const activeIndex = Math.max(0, result.results.length - 1);
+    const activeMatch = result.results[activeIndex];
     App._awPreview = {
       result,
-      matchIndex: 0,
-      boutIndex: 0,
-      phase: 'board',
+      matchIndex: activeIndex,
+      boutIndex: activeMatch?.bouts?.length || 0,
+      phase: livePhase === 'finalOrder' ? 'reorder' : livePhase === 'complete' ? 'result' : 'board',
       committed: !!G.autumnWar?.champion,
-      finalOrder: null,
+      finalOrder: livePhase === 'finalOrder' ? Engine.autumnWar.suggestFinalOrder(G, 'player') : null,
     };
     try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
     Audio.play('notify');
-    renderAutumnWarBoard();
+    if (App._awPreview.phase === 'reorder') renderAutumnWarReorder();
+    else if (App._awPreview.phase === 'result') renderAutumnWarResult();
+    else renderAutumnWarBoard();
   },
 
   awRevealBout() {
     const p = App._awPreview;
     const match = p?.result?.results?.[p.matchIndex];
-    if (!p || !match || p.phase !== 'board') return;
-    if (p.boutIndex < match.bouts.length) {
-      p.boutIndex += 1;
-      Audio.play('coin');
-      renderAutumnWarBoard();
-    }
+    if (!p || !match || match.winnerOrg || p.phase !== 'board') return;
+    if (p.boutIndex < match.bouts.length) return;
+    const stepped = Engine.autumnWar.simulateNextBout(G);
+    if (!stepped.bout) return;
+    G = stepped.state;
+    p.result = Engine.autumnWar.getProgress(G);
+    const revealedMatch = p.result?.results?.[p.matchIndex];
+    p.boutIndex = revealedMatch?.bouts?.length || 0;
+    Audio.play('coin');
+    try { Storage.autoSave(); } catch (_e) {}
+    renderAutumnWarBoard();
   },
 
   awAdvanceMatch() {
@@ -3365,28 +3380,27 @@ const App = {
     if (!p) return;
     const matches = p.result.results || [];
     const current = matches[p.matchIndex];
-    if (!current || p.boutIndex < current.bouts.length) return;
-    const nextIndex = p.matchIndex + 1;
-    const next = matches[nextIndex];
-    if (!next) {
+    if (!current || !current.winnerOrg || p.boutIndex < current.bouts.length) return;
+    const livePhase = G.autumnWar?.session?.phase;
+    if (livePhase === 'finalOrder') {
+      p.result = Engine.autumnWar.getProgress(G);
+      p.finalOrder = Engine.autumnWar.suggestFinalOrder(G, 'player');
+      p.phase = 'reorder';
+      Audio.play('notify');
+      renderAutumnWarReorder();
+      return;
+    }
+    if (livePhase === 'complete') {
       p.phase = 'result';
       renderAutumnWarResult();
       return;
     }
-    if (current.round === 'semiFinal' && next.round === 'final') {
-      const playerFinalist = next.orgA === 'player' || next.orgB === 'player';
-      if (playerFinalist && !p.committed) {
-        const myTeam = (G.autumnWar?.teams || []).find(t => t.orgId === 'player');
-        p.finalOrder = _agwSuggestedFinalOrder(p.result, myTeam);
-        p.phase = 'reorder';
-        Audio.play('notify');
-        renderAutumnWarReorder();
-        return;
-      }
-      if (!p.committed) App._awCommitResult(null);
-    }
+    p.result = Engine.autumnWar.getProgress(G);
+    const nextIndex = p.matchIndex + 1;
+    const next = p.result?.results?.[nextIndex];
+    if (!next) return;
     p.matchIndex = nextIndex;
-    p.boutIndex = 0;
+    p.boutIndex = next.bouts?.length || 0;
     p.phase = 'board';
     renderAutumnWarBoard();
   },
@@ -3404,29 +3418,25 @@ const App = {
   awConfirmFinalOrder() {
     const p = App._awPreview;
     if (!p || !Array.isArray(p.finalOrder) || p.finalOrder.length !== Engine.autumnWar.TEAM_SIZE) return;
-    App._awCommitResult(p.finalOrder);
+    G = Engine.autumnWar.reorderForFinal(G, p.finalOrder);
+    p.result = Engine.autumnWar.getProgress(G);
     const finalIndex = p.result.results.findIndex(m => m.round === 'final');
     p.matchIndex = finalIndex >= 0 ? finalIndex : p.result.results.length - 1;
     p.boutIndex = 0;
     p.phase = 'board';
     Audio.play('coin');
+    try { Storage.autoSave(); } catch (_e) {}
     renderAutumnWarBoard();
   },
 
-  _awCommitResult(finalOrder) {
+  _awCommitResult() {
     const p = App._awPreview;
     if (!p || p.committed) return;
-    let state = G;
-    let canonical = p.result;
-    if (Array.isArray(finalOrder)) {
-      state = Engine.autumnWar.reorderForFinal(state, finalOrder);
-      const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xA936));
-      canonical = Engine.autumnWar.run(state, rng);
-    }
-    const applied = Engine.autumnWar.apply(state, canonical);
+    const canonical = Engine.autumnWar.getProgress(G);
+    if (!canonical || canonical.livePhase !== 'complete') return;
+    const applied = Engine.autumnWar.apply(G, canonical);
     G = {
       ...applied.state,
-      autumnWar: { ...applied.state.autumnWar, previewResult: canonical },
       _pendingAutumnWarReplay: true,
       gameLog: [...(G.gameLog || []), ...(applied.events || [])],
     };
@@ -3438,7 +3448,7 @@ const App = {
   awShowMvpScene() {
     const p = App._awPreview;
     if (!p) return;
-    if (!p.committed) App._awCommitResult(null);
+    if (!p.committed) App._awCommitResult();
     p.phase = 'mvp';
     try { Audio.fileBgm.fadeOut(700); } catch (_e) {}
     setTimeout(() => {
@@ -3450,7 +3460,7 @@ const App = {
 
   finalizeAutumnWarReplay() {
     const { _pendingAutumnWarReplay: _pending, ...cleanG } = G;
-    const { previewResult: _previewResult, ...cleanWar } = cleanG.autumnWar || {};
+    const { session: _session, previewResult: _legacyPreview, ...cleanWar } = cleanG.autumnWar || {};
     G = { ...cleanG, autumnWar: cleanWar, autumnWarPhase: 'result' };
     App._awPreview = null;
     const overlay = document.getElementById('showResultOverlay');

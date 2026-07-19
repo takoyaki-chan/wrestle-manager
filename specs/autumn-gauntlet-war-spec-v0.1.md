@@ -189,7 +189,8 @@ hpRatio = 勝者の試合終了時 残HP ÷ 開始HP
 - **採用ハイブリッド**: 案1の布陣ボードを主画面、案2の小型クライムラインを勝ち上がり補助、案3のリングサイドを現在試合のフォーカス部として統合
 - **布陣ボード**: 4チーム×3名の生存/脱落/消耗状態を一覧表示（春リーグの「リーグ表逐次更新」に対応する秋の顔）
 - フォールごとに結果を逐次表示、勝ち残り選手の連戦を強調
-- プレイヤー決勝進出時は、準決勝後の回復状態を確認して3名を再配置する。同じseedで再計算し、準決勝を変えずに決勝布陣だけを結果へ反映する
+- 大会開始時に全結果を作らない。「結果を見る」ごとにリング上の2名だけをシミュレートし、勝敗・消耗・脱落・勝ち抜き数・RNG状態を保存する
+- プレイヤー決勝進出時は、準決勝後の回復状態を確認して3名を再配置する。決勝カードは布陣確定後に初めて生成し、準決勝の再計算は行わない
 - 3人抜き達成時は特別演出（新聞見出し・ティッカー）
 - 優勝結果の後にMVP選手だけを映す一言シーンを表示。台詞は結果文脈（3人抜き / 優勝 / 敗退）× personality × archetype で解決する
 
@@ -215,8 +216,9 @@ hpRatio = 勝者の試合終了時 残HP ÷ 開始HP
 
 | フィールド | 型 | 説明 |
 |-----------|-----|------|
-| `autumnWar` | object\|null | `{phase, teams, bracket, currentBout, results, mvpId}` |
-| `autumnWarPhase` | string\|null | 'announce' / 'entry' / 'show' / 'result' |
+| `autumnWar` | object\|null | `{phase, teams, bracket, session, results, mvpId}` |
+| `autumnWar.session` | object\|null | `{phase, rng, activeMatch, semiCursor, finalists, conditions, fighterWins, finalWins, results}`。各フォール後に保存可能なライブ進行状態 |
+| `autumnWarPhase` | string\|null | 'announce' / 'entry' / 'live' / 'result' |
 
 teams: `[{orgId, members: [id×3], order: [id×3], eliminated: [id...], conditions: {id: n}}]`
 
@@ -240,3 +242,4 @@ teams: `[{orgId, members: [id×3], order: [id×3], eliminated: [id...], conditio
 |------|------|
 | 2026-07-17 | v0.1 初版。アーク5設計議論の決定（3名制 / 消耗B案実測連動 / ポイント仮配点）を書き起こし |
 | 2026-07-19 | エンジンと推奨ハイブリッドUIを実装。週36逐次リプレイ、決勝再配置、MVP一言シーンを追加 |
+| 2026-07-19 | 大会全体の事前生成を廃止。1フォール逐次実行、RNG途中保存、布陣確定後の決勝生成へ変更 |

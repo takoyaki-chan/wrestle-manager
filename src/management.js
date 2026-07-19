@@ -14808,22 +14808,19 @@ const Engine = {
       }
     }
 
-    // Week36: 大会を決定論的に仮シミュレーションし、UIリプレイへ渡す。
-    // プレイヤーが決勝進出した場合は、準決勝後の消耗を見て最終布陣を決めた後、
-    // 同じseedで再実行して決勝だけを正当に変化させる。applyはUI確定時の1回だけ。
+    // Week36: 組み合わせと初期状態だけを確定し、各フォールはUI操作時に逐次実行する。
+    // 未発生の勝敗を先に生成せず、消耗・脱落・RNG状態をautumnWar.sessionへ保存する。
     if (s.week === Engine.autumnWar.EVENT_WEEK && !s.offSeason) {
       if (!s.autumnWar) s = { ...s, autumnWar: Engine.autumnWar.announce(s) }; // 旧セーブ互換
-      const autumnRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xA936));
-      const warResult = Engine.autumnWar.run(s, autumnRng);
-      if (warResult.cancelled) {
-        const applied = Engine.autumnWar.apply(s, warResult);
+      s = Engine.autumnWar.startSession(s);
+      if (s.autumnWar?.cancelled) {
+        const applied = Engine.autumnWar.apply(s, s.autumnWar);
         s = applied.state;
         events.push(...applied.events);
       } else {
         s = {
           ...s,
-          autumnWar: { ...s.autumnWar, previewResult: warResult, phase: 'replay' },
-          autumnWarPhase: 'replay',
+          autumnWarPhase: 'live',
           _pendingAutumnWarReplay: true,
         };
         events.push(`⚔️ 第${s.season}回4団体勝ち残り対抗戦 開幕`);
@@ -24558,17 +24555,315 @@ Engine.autumnWar = {
     return { ...state, autumnWar: { ...state.autumnWar, teams }, autumnWarPhase: 'entry_done' };
   },
 
-  /** 決勝前のプレイヤー並び替え予約。決勝進出時のみrun()が採用する。 */
+  /** Week36時点の怪我・移籍を再確認し、無効な編成だけ自己修復する。 */
+  _normalizeEventTeams(state) {
+    return (state.autumnWar?.teams || []).map(team => {
+      const eligible = Engine.autumnWar._eligible(Engine.autumnWar._orgRoster(state, team.orgId));
+      const validMembers = Array.isArray(team.memberIds) && team.memberIds.length === Engine.autumnWar.TEAM_SIZE
+        && new Set(team.memberIds).size === Engine.autumnWar.TEAM_SIZE
+        && team.memberIds.every(id => eligible.some(f => f.id === id));
+      const memberIds = validMembers ? [...team.memberIds] : Engine.autumnWar._selectMembers(state, team.orgId);
+      const validOrder = Engine.autumnWar._isPermutation(team.order, memberIds);
+      const order = validOrder ? [...team.order]
+        : team.orgId === 'player'
+          ? Engine.autumnWar._defaultOrder(state, team.orgId, memberIds)
+          : Engine.autumnWar._orderForAI(state, team.orgId, memberIds);
+      return {
+        ...team,
+        memberIds,
+        order,
+        confirmed: memberIds.length === Engine.autumnWar.TEAM_SIZE,
+        available: memberIds.length === Engine.autumnWar.TEAM_SIZE,
+      };
+    });
+  },
+
+  _fighterOf(state, orgId, id) {
+    return Engine.autumnWar._orgRoster(state, orgId).find(f => f.id === id) || null;
+  },
+
+  _createLiveMatch(teams, pair, round, orderA, orderB) {
+    const teamA = teams.find(t => t.orgId === pair.orgA);
+    const teamB = teams.find(t => t.orgId === pair.orgB);
+    return {
+      round,
+      orgA: pair.orgA,
+      orgB: pair.orgB,
+      byeOrg: pair.byeOrg || null,
+      orderA: [...(orderA || teamA.order)],
+      orderB: [...(orderB || teamB.order)],
+      aIdx: 0,
+      bIdx: 0,
+      teamWins: { [pair.orgA]: 0, [pair.orgB]: 0 },
+      bouts: [],
+      winnerOrg: null,
+      loserOrg: null,
+      tieBreak: null,
+    };
+  },
+
+  /** Week36開始。勝敗は作らず、最初の2選手と保存可能なRNG状態だけを用意する。 */
+  startSession(state) {
+    const aw = state.autumnWar;
+    if (!aw || !Array.isArray(aw.teams) || aw.cancelled) {
+      return { ...state, autumnWar: { ...(aw || {}), cancelled: true, reason: aw?.reason || 'noTeams' }, autumnWarPhase: 'result' };
+    }
+    const teams = Engine.autumnWar._normalizeEventTeams(state);
+    const activeTeams = teams.filter(t => t.available);
+    if (activeTeams.length < 2) {
+      return { ...state, autumnWar: { ...aw, teams, cancelled: true, reason: 'insufficientTeamsAtEventTime' }, autumnWarPhase: 'result' };
+    }
+    const conditions = {};
+    activeTeams.forEach(t => t.memberIds.forEach(id => { conditions[id] = Engine.autumnWar.INITIAL_CONDITION; }));
+    const bracket = Engine.autumnWar._buildBracket(teams);
+    let session = {
+      phase: 'semiFinal',
+      rng: Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xA936)),
+      bracket,
+      semiCursor: 0,
+      finalists: [],
+      results: [],
+      activeMatch: null,
+      conditions,
+      fighterWins: {},
+      finalWins: {},
+      recoveryApplied: false,
+      champion: null,
+      runnerUp: null,
+      mvpId: null,
+      mvpOrgId: null,
+    };
+    if (bracket.length > 0) {
+      session.activeMatch = Engine.autumnWar._createLiveMatch(teams, bracket[0], 'semiFinal');
+      session.semiCursor = 1;
+    } else {
+      session.finalists = activeTeams.sort((a, b) => a.seed - b.seed).slice(0, 2).map(t => t.orgId);
+      session = Engine.autumnWar._prepareFinal(state, teams, session, false);
+    }
+    return {
+      ...state,
+      autumnWar: { ...aw, teams, bracket, results: [], session, phase: 'live', cancelled: false },
+      autumnWarPhase: 'live',
+    };
+  },
+
+  _suggestOrder(state, teams, session, orgId) {
+    const team = teams.find(t => t.orgId === orgId);
+    return [...(team?.memberIds || [])].sort((a, b) => (session.conditions[b] || 0) - (session.conditions[a] || 0)
+      || Engine.util.ov(Engine.autumnWar._fighterOf(state, orgId, a)) - Engine.util.ov(Engine.autumnWar._fighterOf(state, orgId, b)) || a - b);
+  },
+
+  suggestFinalOrder(state, orgId = 'player') {
+    const aw = state.autumnWar;
+    if (!aw?.session) return [];
+    return Engine.autumnWar._suggestOrder(state, aw.teams || [], aw.session, orgId);
+  },
+
+  _prepareFinal(state, teams, session, allowPlayerChoice) {
+    const finalists = [...new Set(session.finalists)].slice(0, 2);
+    if (finalists.length < 2) return { ...session, phase: 'cancelled', activeMatch: null };
+    let next = { ...session, finalists };
+    if (!next.recoveryApplied && next.results.some(m => m.round === 'semiFinal')) {
+      const conditions = { ...next.conditions };
+      const semiOrgs = new Set(next.results.filter(m => m.round === 'semiFinal').flatMap(m => [m.orgA, m.orgB]));
+      finalists.forEach(orgId => {
+        if (!semiOrgs.has(orgId)) return;
+        const team = teams.find(t => t.orgId === orgId);
+        (team?.memberIds || []).forEach(id => {
+          conditions[id] = Math.min(Engine.autumnWar.CEILING, conditions[id] + Engine.autumnWar.ROUND_RECOVERY);
+        });
+      });
+      next = { ...next, conditions, recoveryApplied: true };
+    }
+    const playerFinalist = finalists.includes('player');
+    if (allowPlayerChoice && playerFinalist && !state.autumnWar?.autoReorderFinal) {
+      return { ...next, phase: 'finalOrder', activeMatch: null };
+    }
+    const orderFor = orgId => {
+      const team = teams.find(t => t.orgId === orgId);
+      if (Engine.autumnWar._isPermutation(team?.finalOrder, team?.memberIds)) return [...team.finalOrder];
+      if (orgId !== 'player' || state.autumnWar?.autoReorderFinal) {
+        return Engine.autumnWar._suggestOrder(state, teams, next, orgId);
+      }
+      return [...team.order];
+    };
+    const pair = { orgA: finalists[0], orgB: finalists[1] };
+    return {
+      ...next,
+      phase: 'final',
+      activeMatch: Engine.autumnWar._createLiveMatch(teams, pair, 'final', orderFor(pair.orgA), orderFor(pair.orgB)),
+    };
+  },
+
+  /** 決勝進出後のプレイヤー並び替え。確定した時点で初めて決勝カードを作る。 */
   reorderForFinal(state, order) {
     if (!state.autumnWar || !Array.isArray(state.autumnWar.teams)) return state;
     const playerTeam = state.autumnWar.teams.find(t => t.orgId === 'player');
     if (!playerTeam || !Engine.autumnWar._isPermutation(order, playerTeam.memberIds)) return state;
     const teams = state.autumnWar.teams.map(t => t.orgId === 'player' ? { ...t, finalOrder: [...order] } : t);
-    return { ...state, autumnWar: { ...state.autumnWar, teams } };
+    let session = state.autumnWar.session;
+    if (session?.phase === 'finalOrder') {
+      const staged = { ...state, autumnWar: { ...state.autumnWar, teams } };
+      session = Engine.autumnWar._prepareFinal(staged, teams, session, false);
+    }
+    return { ...state, autumnWar: { ...state.autumnWar, teams, session } };
   },
 
-  /** Week36: 準決勝と決勝を一括実行する。roster本体のconditionは変更しない。 */
-  run(state, rng) {
+  _afterLiveMatch(state, teams, session, match) {
+    const results = [...session.results, match];
+    let next = { ...session, results, activeMatch: null };
+    if (match.round === 'semiFinal') {
+      const finalists = [...session.finalists, match.winnerOrg];
+      if (match.byeOrg) finalists.push(match.byeOrg);
+      next = { ...next, finalists };
+      if (next.semiCursor < next.bracket.length) {
+        const pair = next.bracket[next.semiCursor];
+        return {
+          ...next,
+          semiCursor: next.semiCursor + 1,
+          phase: 'semiFinal',
+          activeMatch: Engine.autumnWar._createLiveMatch(teams, pair, 'semiFinal'),
+        };
+      }
+      return Engine.autumnWar._prepareFinal(state, teams, next, true);
+    }
+
+    const champion = match.winnerOrg;
+    const runnerUp = match.loserOrg;
+    const participantIds = teams.filter(t => t.available).flatMap(t => t.memberIds);
+    const rng = { ...next.rng };
+    const mvpTie = {};
+    participantIds.forEach(id => { mvpTie[id] = Engine.rng.float(rng); });
+    const championTeam = teams.find(t => t.orgId === champion);
+    participantIds.sort((a, b) => (next.fighterWins[b] || 0) - (next.fighterWins[a] || 0)
+      || (championTeam.memberIds.includes(b) ? 1 : 0) - (championTeam.memberIds.includes(a) ? 1 : 0)
+      || (next.finalWins[b] || 0) - (next.finalWins[a] || 0)
+      || mvpTie[b] - mvpTie[a]);
+    const mvpId = participantIds[0] || null;
+    const mvpTeam = teams.find(t => t.memberIds.includes(mvpId));
+    return {
+      ...next,
+      rng,
+      phase: 'complete',
+      champion,
+      runnerUp,
+      mvpId,
+      mvpOrgId: mvpTeam?.orgId || null,
+    };
+  },
+
+  /** 現在リング上にいる2人だけをシミュレートし、結果とRNG状態を保存する。 */
+  simulateNextBout(state) {
+    const aw = state.autumnWar;
+    const session = aw?.session;
+    const source = session?.activeMatch;
+    if (!aw || !session || !source || !['semiFinal', 'final'].includes(session.phase)) {
+      return { state, bout: null, matchCompleted: false, tournamentCompleted: session?.phase === 'complete' };
+    }
+    const teams = aw.teams || [];
+    const match = { ...source, teamWins: { ...source.teamWins }, bouts: [...source.bouts] };
+    const leftId = match.orderA[match.aIdx], rightId = match.orderB[match.bIdx];
+    const left = Engine.autumnWar._fighterOf(state, match.orgA, leftId);
+    const right = Engine.autumnWar._fighterOf(state, match.orgB, rightId);
+    if (!left || !right) return { state, bout: null, matchCompleted: false, tournamentCompleted: false };
+    const rng = { ...session.rng };
+    const conditions = { ...session.conditions };
+    const fighterWins = { ...session.fighterWins };
+    const finalWins = { ...session.finalWins };
+    const beforeLeft = conditions[left.id], beforeRight = conditions[right.id];
+    const fullHpLeft = Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(left.st) * BIGMATCH_ENG.hpScale);
+    const fullHpRight = Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(right.st) * BIGMATCH_ENG.hpScale);
+    const matchResult = Engine.battle.simulateMatch(
+      { ...left, condition: beforeLeft, _hpOverride: Engine.wear.toHpOverride(beforeLeft, fullHpLeft) },
+      { ...right, condition: beforeRight, _hpOverride: Engine.wear.toHpOverride(beforeRight, fullHpRight) },
+      rng, 2
+    );
+    const wearLeft = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpLeft.final, matchResult.hpLeft.max));
+    const wearRight = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpRight.final, matchResult.hpRight.max));
+    conditions[left.id] = Engine.wear.nextCondition(beforeLeft, wearLeft, 0, Engine.autumnWar.FLOOR, Engine.autumnWar.CEILING);
+    conditions[right.id] = Engine.wear.nextCondition(beforeRight, wearRight, 0, Engine.autumnWar.FLOOR, Engine.autumnWar.CEILING);
+    const winnerId = matchResult.winner === 'left' ? left.id : matchResult.winner === 'right' ? right.id : null;
+    if (winnerId === left.id) {
+      match.teamWins[match.orgA] += 1;
+      fighterWins[left.id] = (fighterWins[left.id] || 0) + 1;
+      if (match.round === 'final') finalWins[left.id] = (finalWins[left.id] || 0) + 1;
+      match.bIdx += 1;
+    } else if (winnerId === right.id) {
+      match.teamWins[match.orgB] += 1;
+      fighterWins[right.id] = (fighterWins[right.id] || 0) + 1;
+      if (match.round === 'final') finalWins[right.id] = (finalWins[right.id] || 0) + 1;
+      match.aIdx += 1;
+    } else {
+      match.aIdx += 1;
+      match.bIdx += 1;
+    }
+    const bout = {
+      index: match.bouts.length + 1,
+      left: { id: left.id, name: left.name, orgId: match.orgA },
+      right: { id: right.id, name: right.name, orgId: match.orgB },
+      winnerId,
+      draw: winnerId == null,
+      mq: matchResult.mq,
+      turns: matchResult.turns,
+      finType: matchResult.finType || '',
+      finMove: matchResult.finMove || '',
+      wear: { [left.id]: Math.round(wearLeft * 10) / 10, [right.id]: Math.round(wearRight * 10) / 10 },
+      conditionBefore: { [left.id]: Math.round(beforeLeft), [right.id]: Math.round(beforeRight) },
+      conditionAfter: { [left.id]: Math.round(conditions[left.id]), [right.id]: Math.round(conditions[right.id]) },
+    };
+    match.bouts.push(bout);
+    const matchCompleted = match.aIdx >= match.orderA.length || match.bIdx >= match.orderB.length || match.bouts.length >= 5;
+    let nextSession = { ...session, rng, conditions, fighterWins, finalWins, activeMatch: match };
+    if (matchCompleted) {
+      if (match.aIdx >= match.orderA.length && match.bIdx < match.orderB.length) {
+        match.winnerOrg = match.orgB; match.loserOrg = match.orgA;
+      } else if (match.bIdx >= match.orderB.length && match.aIdx < match.orderA.length) {
+        match.winnerOrg = match.orgA; match.loserOrg = match.orgB;
+      } else if (match.teamWins[match.orgA] !== match.teamWins[match.orgB]) {
+        match.winnerOrg = match.teamWins[match.orgA] > match.teamWins[match.orgB] ? match.orgA : match.orgB;
+        match.loserOrg = match.winnerOrg === match.orgA ? match.orgB : match.orgA;
+        match.tieBreak = { type: 'fallCount', winsA: match.teamWins[match.orgA], winsB: match.teamWins[match.orgB] };
+      } else {
+        match.winnerOrg = Engine.rng.float(rng) < 0.5 ? match.orgA : match.orgB;
+        match.loserOrg = match.winnerOrg === match.orgA ? match.orgB : match.orgA;
+        match.tieBreak = { type: 'deterministicRng', winsA: match.teamWins[match.orgA], winsB: match.teamWins[match.orgB] };
+      }
+      nextSession = Engine.autumnWar._afterLiveMatch(state, teams, { ...nextSession, rng }, match);
+    }
+    const nextState = { ...state, autumnWar: { ...aw, session: nextSession, results: [...nextSession.results] } };
+    return { state: nextState, bout, matchCompleted, tournamentCompleted: nextSession.phase === 'complete' };
+  },
+
+  getProgress(state) {
+    const aw = state.autumnWar;
+    const s = aw?.session;
+    if (!aw || !s) return null;
+    const results = [...s.results];
+    if (s.activeMatch) results.push(s.activeMatch);
+    const completedSemis = s.results.filter(m => m.round === 'semiFinal');
+    const completedFinal = s.results.find(m => m.round === 'final') || null;
+    return {
+      cancelled: s.phase === 'cancelled',
+      teams: aw.teams || [],
+      bracket: s.bracket || [],
+      results,
+      semifinalResults: completedSemis,
+      finalResult: completedFinal,
+      champion: s.champion,
+      runnerUp: s.runnerUp,
+      semiFinalLosers: completedSemis.map(m => m.loserOrg),
+      conditions: { ...s.conditions },
+      fighterWins: { ...s.fighterWins },
+      finalWins: { ...s.finalWins },
+      finalists: [...(s.finalists || [])],
+      mvpId: s.mvpId,
+      mvpOrgId: s.mvpOrgId,
+      livePhase: s.phase,
+    };
+  },
+
+  /** 旧一括実行。過去の検証用に残すが、ゲーム進行からは呼ばない。 */
+  runLegacy(state, rng) {
     const aw = state.autumnWar;
     if (!aw || !Array.isArray(aw.teams) || aw.cancelled) return { cancelled: true, reason: (aw && aw.reason) || 'noTeams' };
     const eventRng = rng || Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xA936));

@@ -33,10 +33,24 @@ function objectLiteralAfter(source, marker) {
   throw new Error(`${marker} object did not close`);
 }
 
-(function testEngineDefersApplicationUntilReplayDecision() {
-  assert.ok(management.includes('previewResult: warResult'));
+function section(source, startMarker, endMarker) {
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker, start + startMarker.length);
+  assert.ok(start >= 0 && end > start, `${startMarker} section not found`);
+  return source.slice(start, end);
+}
+
+(function testEngineStartsWithoutPrecomputingResults() {
+  assert.ok(management.includes('s = Engine.autumnWar.startSession(s)'));
   assert.ok(management.includes('_pendingAutumnWarReplay: true'));
-  assert.ok(management.includes('同じseedで再実行して決勝だけを正当に変化させる'));
+  assert.ok(management.includes('simulateNextBout(state)'));
+  assert.ok(management.includes('未発生の勝敗を先に生成せず'));
+  assert.ok(!management.slice(management.indexOf('// Week36: 組み合わせ')).split('// D-2:')[0].includes('autumnWar.run'));
+  const startSession = section(management, 'startSession(state) {', '_suggestOrder(state');
+  assert.ok(!startSession.includes('simulateMatch('), 'starting the event must not create any bout result');
+  const nextBout = section(management, 'simulateNextBout(state) {', 'getProgress(state) {');
+  assert.strictEqual((nextBout.match(/\.simulateMatch\(/g) || []).length, 1, 'one step must simulate exactly one bout');
+  assert.ok(!nextBout.includes('while ('), 'live bout execution must not loop through future bouts');
 })();
 
 (function testAppOwnsTheFullEventFlow() {
@@ -48,9 +62,9 @@ function objectLiteralAfter(source, marker) {
     'awShowMvpScene()',
     'finalizeAutumnWarReplay()',
   ].forEach(signature => assert.ok(app.includes(signature), `${signature} missing`));
-  assert.ok(app.includes('Engine.autumnWar.reorderForFinal(state, finalOrder)'));
-  assert.ok(app.includes('Engine.rng.derive(state.rngSeed, state.season, 0xA936)'));
-  assert.ok(app.includes('Engine.autumnWar.apply(state, canonical)'));
+  assert.ok(app.includes('Engine.autumnWar.reorderForFinal(G, p.finalOrder)'));
+  assert.ok(app.includes('Engine.autumnWar.simulateNextBout(G)'));
+  assert.ok(app.includes('Engine.autumnWar.apply(G, canonical)'));
   assert.ok(app.includes("overlay.classList.remove('active')"), 'finishing the event must close its full-screen overlay');
 })();
 

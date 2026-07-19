@@ -695,12 +695,21 @@ function runSimulation(seed, seasons) {
       const _prevTournamentPhase = G.ppvTournament?.phase;
       const advResult = Engine.advanceWeek(G);
       G = { ...advResult.state, gameLog: [] };
-      // UIなしのauto-simでは秋大会リプレイを即時確定する。
-      // プレイヤー編成時にautoReorderFinal=trueを予約済みなので、previewResultが正となる。
-      if (G._pendingAutumnWarReplay && G.autumnWar?.previewResult) {
-        const appliedAutumn = Engine.autumnWar.apply(G, G.autumnWar.previewResult);
+      // UIなしのauto-simでも本番と同じく1フォールずつ実行する。
+      if (G._pendingAutumnWarReplay && G.autumnWar?.session) {
+        let guard = 0;
+        while (G.autumnWar?.session && G.autumnWar.session.phase !== 'complete' && guard++ < 20) {
+          if (G.autumnWar.session.phase === 'finalOrder') {
+            G = Engine.autumnWar.reorderForFinal(G, Engine.autumnWar.suggestFinalOrder(G, 'player'));
+          } else {
+            G = Engine.autumnWar.simulateNextBout(G).state;
+          }
+        }
+        if (G.autumnWar?.session?.phase !== 'complete') throw new Error('autumnWar live session did not complete within 20 steps');
+        const autumnResult = Engine.autumnWar.getProgress(G);
+        const appliedAutumn = Engine.autumnWar.apply(G, autumnResult);
         const { _pendingAutumnWarReplay: _awPending, ...autumnClean } = appliedAutumn.state;
-        const { previewResult: _awPreviewResult, ...autumnWarClean } = autumnClean.autumnWar || {};
+        const { session: _awSession, ...autumnWarClean } = autumnClean.autumnWar || {};
         G = { ...autumnClean, autumnWar: autumnWarClean, gameLog: [] };
       }
       if (G.springTagLeague && G.springTagLeague.champion && G.springTagLeague.champion !== _prevSpringTagChampion) {

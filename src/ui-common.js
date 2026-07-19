@@ -15599,7 +15599,7 @@ function _agwTeamViewState(result, matchIndex, boutIndex, team) {
   const conditions = {};
   (team.memberIds || []).forEach(id => {
     states[id] = 'wait';
-    conditions[id] = Engine.autumnWar.INITIAL_CONDITION;
+    conditions[id] = result.conditions?.[id] ?? Engine.autumnWar.INITIAL_CONDITION;
   });
 
   const prior = matches.slice(0, matchIndex);
@@ -15628,7 +15628,16 @@ function _agwTeamViewState(result, matchIndex, boutIndex, team) {
     }
   });
 
-  const nextBout = (current.bouts || [])[boutIndex];
+  const nextBout = !current.winnerOrg && current.orderA && current.orderB
+    ? {
+        left: { id: current.orderA[current.aIdx], orgId: current.orgA },
+        right: { id: current.orderB[current.bIdx], orgId: current.orgB },
+        conditionBefore: {
+          [current.orderA[current.aIdx]]: conditions[current.orderA[current.aIdx]],
+          [current.orderB[current.bIdx]]: conditions[current.orderB[current.bIdx]],
+        },
+      }
+    : null;
   if (nextBout) {
     [nextBout.left.id, nextBout.right.id].forEach(id => {
       if (states[id] !== 'out') states[id] = 'ring';
@@ -15636,7 +15645,7 @@ function _agwTeamViewState(result, matchIndex, boutIndex, team) {
     });
   }
   const remaining = Object.values(states).filter(v => v !== 'out').length;
-  const done = boutIndex >= (current.bouts || []).length;
+  const done = !!current.winnerOrg;
   const label = done
     ? current.winnerOrg === team.orgId ? (current.round === 'final' ? '優勝' : '決勝進出') : '敗退'
     : '対戦中';
@@ -15679,13 +15688,14 @@ function _agwScoreThrough(match, boutIndex) {
 
 function _agwMiniClimbHtml(result, matchIndex, boutIndex) {
   const semis = result.results.filter(m => m.round === 'semiFinal');
-  const final = result.results.find(m => m.round === 'final');
+  const final = result.results.find(m => m.round === 'final')
+    || (result.finalists?.length === 2 ? { round: 'final', orgA: result.finalists[0], orgB: result.finalists[1], bouts: [] } : null);
   const matchDone = m => {
     const idx = result.results.indexOf(m);
-    return idx < matchIndex || (idx === matchIndex && boutIndex >= (m.bouts || []).length);
+    return idx >= 0 && (idx < matchIndex || (idx === matchIndex && !!m.winnerOrg));
   };
   const cell = (m, label) => {
-    if (!m) return `<div class="agw-climb-cell"><span>${label}</span><b>不戦勝</b></div>`;
+    if (!m) return `<div class="agw-climb-cell"><span>${label}</span><b>進出団体 未決定</b></div>`;
     const done = matchDone(m);
     const a = _agwTeam(m.orgA), b = _agwTeam(m.orgB);
     return `<div class="agw-climb-cell${done ? ' is-done' : ''}"><span>${label}</span><b>${done ? escHtml(_agwTeam(m.winnerOrg)?.orgName || '') : `${escHtml(a?.orgName || '')} vs ${escHtml(b?.orgName || '')}`}</b><small>${done ? 'WINNER' : 'UPCOMING'}</small></div>`;
@@ -15699,8 +15709,18 @@ function _agwMiniClimbHtml(result, matchIndex, boutIndex) {
 
 function _agwFocusHtml(match, boutIndex) {
   const score = _agwScoreThrough(match, boutIndex);
-  const next = (match.bouts || [])[boutIndex];
-  const last = boutIndex > 0 ? match.bouts[boutIndex - 1] : null;
+  const next = !match.winnerOrg && match.orderA && match.orderB
+    ? {
+        index: (match.bouts?.length || 0) + 1,
+        left: { id: match.orderA[match.aIdx], orgId: match.orgA },
+        right: { id: match.orderB[match.bIdx], orgId: match.orgB },
+        conditionBefore: {
+          [match.orderA[match.aIdx]]: App._awPreview?.result?.conditions?.[match.orderA[match.aIdx]],
+          [match.orderB[match.bIdx]]: App._awPreview?.result?.conditions?.[match.orderB[match.bIdx]],
+        },
+      }
+    : null;
+  const last = (match.bouts || []).length > 0 ? match.bouts[match.bouts.length - 1] : null;
   if (!next) {
     const winner = _agwTeam(match.winnerOrg);
     return `<div class="agw-focus is-complete">
@@ -15740,8 +15760,9 @@ function renderAutumnWarBoard() {
   box.style.padding = '0';
   box.style.background = 'transparent';
   box.style.border = 'none';
-  const roundLabel = match.round === 'final' ? '決勝' : `準決勝 ${result.semifinalResults.indexOf(match) + 1}`;
-  let html = `<div class="agw-wrap">${_agwHeaderHtml('Autumn Survival War', `${roundLabel}・第${Math.min(p.boutIndex + 1, match.bouts.length)}フォール`)}`;
+  const roundLabel = match.round === 'final' ? '決勝' : `準決勝 ${Math.max(1, result.results.filter(m => m.round === 'semiFinal').indexOf(match) + 1)}`;
+  const displayBout = match.winnerOrg ? match.bouts.length : match.bouts.length + 1;
+  let html = `<div class="agw-wrap">${_agwHeaderHtml('Autumn Survival War', `${roundLabel}・第${displayBout}フォール`)}`;
   html += _agwMiniClimbHtml(result, p.matchIndex, p.boutIndex);
   html += `<div class="agw-board">${(result.teams || []).map(t => _agwTeamCardHtml(result, p.matchIndex, p.boutIndex, t)).join('')}</div>`;
   html += _agwFocusHtml(match, p.boutIndex);
@@ -15753,23 +15774,8 @@ function renderAutumnWarBoard() {
 function _agwRecoveredConditions(result, orgId) {
   const team = (result.teams || []).find(t => t.orgId === orgId);
   const values = {};
-  (team?.memberIds || []).forEach(id => { values[id] = Engine.autumnWar.INITIAL_CONDITION; });
-  const semi = (result.semifinalResults || []).find(m => m.orgA === orgId || m.orgB === orgId);
-  (semi?.bouts || []).forEach(b => {
-    [b.left.id, b.right.id].forEach(id => {
-      if (values[id] != null && b.conditionAfter?.[id] != null) values[id] = b.conditionAfter[id];
-    });
-  });
-  Object.keys(values).forEach(id => {
-    values[id] = Math.min(Engine.autumnWar.CEILING, values[id] + Engine.autumnWar.ROUND_RECOVERY);
-  });
+  (team?.memberIds || []).forEach(id => { values[id] = result.conditions?.[id] ?? Engine.autumnWar.INITIAL_CONDITION; });
   return values;
-}
-
-function _agwSuggestedFinalOrder(result, team) {
-  const conditions = _agwRecoveredConditions(result, 'player');
-  return [...(team?.memberIds || [])].sort((a, b) => (conditions[b] || 0) - (conditions[a] || 0)
-    || Engine.util.ov(_agwFighter('player', a)) - Engine.util.ov(_agwFighter('player', b)) || a - b);
 }
 
 function renderAutumnWarReorder() {
@@ -15779,7 +15785,8 @@ function renderAutumnWarReorder() {
   if (!p || !overlay || !box || !Array.isArray(p.finalOrder)) return;
   const conditions = _agwRecoveredConditions(p.result, 'player');
   const final = p.result.results.find(m => m.round === 'final');
-  const opponentId = final?.orgA === 'player' ? final.orgB : final?.orgA;
+  const opponentId = p.result.finalists?.find(id => id !== 'player')
+    || (final?.orgA === 'player' ? final.orgB : final?.orgA);
   box.style.maxWidth = '100%';
   box.style.padding = '0';
   box.style.background = 'transparent';
@@ -15808,7 +15815,7 @@ function renderAutumnWarReorder() {
 function renderAutumnWarResult() {
   const p = App._awPreview;
   if (!p) return;
-  if (!p.committed) App._awCommitResult(null);
+  if (!p.committed) App._awCommitResult();
   const result = p.result;
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');

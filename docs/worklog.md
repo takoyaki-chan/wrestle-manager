@@ -6,6 +6,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 直近の調整（2026-07-19 4団体勝ち残り対抗戦・1フォール逐次シミュレーション化）
+
+季節を代表する年次大会として、初版UIの「大会全体を先にシミュレートして結果を順番に見せる」方式を廃止し、現在リング上にいる2選手だけを操作時に解決するライブ進行へ変更。①Week36開始時は代表・組み合わせ・初期condition・seeded RNG状態のみを `autumnWar.session` に作り、勝敗は未生成。②`simulateNextBout` は1回の操作につき `simulateMatch` をちょうど1回だけ呼び、勝敗、実HP由来wear、脱落位置、団体スコア、個人勝ち抜き数、更新後RNGをGameStateへ保存。③各団体戦終了時に次の準決勝へ遷移し、全準決勝終了後のみ+15回復を適用。プレイヤーが決勝進出した場合は `finalOrder` で停止し、回復後conditionを見て布陣確定後に初めて決勝カードを生成するため、準決勝の再計算と未来の決勝結果保持がなくなった。④途中セーブ・リロードは保存済みactiveMatch/RNGから再開し、最終フォール後にのみ報酬・経歴・MVPを1回適用。⑤auto-simも本番同様に1フォールずつ進めるよう変更。新規エンジンテストで大会開始時0フォール、1操作後1フォール、JSON保存・再開後の次フォール/RNG一致、決勝布陣確定時点でも決勝0フォール、最大15フォール完走を実動検証し、UIソース回帰では1ステップに `simulateMatch` 1回・未来フォールのwhile実行なしを固定。5シード×20シーズン（計100）で violations 0 / errors 0 / frequency warnings 0 / 全ALL CLEAR。変更: src/management.js / app.js / ui-common.js、test/auto-sim.js / autumn-war-ui-flow-test.js / autumn-war-live-engine-test.js、package.json、画面仕様・本体仕様・ロードマップ・本項。
+
 ## 直近の調整（2026-07-19 4団体勝ち残り対抗戦・推奨ハイブリッドUI実装）
 
 比較モックアップ3案のレビュー結果を受け、案1「4団体布陣ボード」を主画面、案2「小型クライムライン」を勝ち上がり補助、案3「リングサイド」を現在試合のフォーカス部として統合し、実ゲームへ接続。①Week34告知、Week35の代表3名・先鋒/中堅/大将編成（春タッグ準拠Cream Panel）、Week36の通常興行ブロックと大会自動起動を追加。②4団体×3名の生存/脱落/消耗、フォール逐次開示、準決勝→決勝進行を専用Stageで表示。③プレイヤー決勝進出時だけ回復後の状態を見せて最終布陣を変更可能にし、同一seed再計算で準決勝を保持したまま決勝へ反映。結果applyは確定時の1回に限定し、UIなしauto-simはプレビューを即時確定する互換処理を追加。④優勝画面の後にMVP選手だけを映す独立一言シーンを追加し、`gauntlet/champion/defiant × personality × archetype` ルーターと基礎21本を実装。全147セル・294本以上の台詞量産はClaude Code Opus 4.6へそのまま渡せる指示書へ分離。⑤構文チェックと専用回帰テストを通過し、100シーズンauto-simを実施。実機では代表編成、大会逐次進行、決勝再配置、優勝→MVP→今週画面復帰の確認をユーザーへ委任。変更: src/management.js / app.js / ui-common.js / ui-render.js / data.js / index.html、test/auto-sim.js / autumn-war-ui-flow-test.js、package.json、画面仕様・本体仕様・ロードマップ・CLAUDE.md、Opus指示書、本項。
