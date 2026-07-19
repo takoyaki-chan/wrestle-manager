@@ -6116,6 +6116,8 @@ const App = {
           popBonus: resolution.popBonus, orgPopBonus: rivalOrgPopDelta,
         });
         r.rivalryResolved = true;
+        r.rivalryResolutionValue = nextRivalry;
+        r.rivalryResolutionType = resolution.resolved || 'first';
         if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
         s._rivalryResolvedThisWeek.push({ fighterId: m.left, fighter2Id: m.right });
         const emoji = resolution.emoji || '⚡';
@@ -6246,6 +6248,8 @@ const App = {
           isChampionA: isTitleM ? (charIdA === champId) : undefined,
           isChampionB: isTitleM ? (charIdB === champId) : undefined,
           rivalryResolved: !!r.rivalryResolved,
+          rivalryResolutionValue: r.rivalryResolutionValue,
+          rivalryResolutionType: r.rivalryResolutionType,
           injuredId: matchInjuredIds[idx],
           isCareerBestA: fA ? r.mq > (fA.careerBestMQ || 0) : false,
           isCareerBestB: fB ? r.mq > (fB.careerBestMQ || 0) : false,

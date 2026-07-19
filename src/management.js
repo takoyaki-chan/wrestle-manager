@@ -11528,6 +11528,8 @@ const Engine = {
             popBonus: resolution.popBonus, orgPopBonus: rivalOrgPopDelta,
           });
           r.rivalryResolved = true;
+          r.rivalryResolutionValue = nextRivalry;
+          r.rivalryResolutionType = resolution.resolved || 'first';
           if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
           s._rivalryResolvedThisWeek.push({ fighterId: m.left, fighter2Id: m.right });
           const emoji = resolution.emoji || '⚡';
@@ -11773,7 +11775,9 @@ const Engine = {
           isTitleMatch: isTitleM,
           isChampionA: isTitleM ? (charIdA === champId) : undefined,
           isChampionB: isTitleM ? (charIdB === champId) : undefined,
-          rivalryResolved: false, // Phase 5の因縁決着判定後にresults[idx].rivalryResolvedが更新される
+          rivalryResolved: !!r.rivalryResolved,
+          rivalryResolutionValue: r.rivalryResolutionValue,
+          rivalryResolutionType: r.rivalryResolutionType,
           injuredId: matchInjuredIds[idx],
           isCareerBestA: fA ? r.mq > (fA.careerBestMQ || 0) : false,
           isCareerBestB: fB ? r.mq > (fB.careerBestMQ || 0) : false,
@@ -13502,6 +13506,8 @@ const Engine = {
             popBonus: resolution.popBonus, orgPopBonus: rivalOrgPopDelta,
           });
           r.rivalryResolved = true;
+          r.rivalryResolutionValue = nextRivalry;
+          r.rivalryResolutionType = resolution.resolved || 'first';
           if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
           s._rivalryResolvedThisWeek.push({ fighterId: match.left.id, fighter2Id: match.right.id });
           const emoji = resolution.emoji || '⚡';
@@ -13624,6 +13630,8 @@ const Engine = {
             stage: 'ppv',
             isTitleMatch: false,
             rivalryResolved: !!r.rivalryResolved,
+            rivalryResolutionValue: r.rivalryResolutionValue,
+            rivalryResolutionType: r.rivalryResolutionType,
             injuredId: null, // PPVは怪我なし
             isCareerBestA: r.mq > (fA.careerBestMQ || 0),
             isCareerBestB: r.mq > (fB.careerBestMQ || 0),

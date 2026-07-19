@@ -2142,17 +2142,26 @@ Engine.relationships = {
     }
 
     // ═══ M-10 / M-CO2: 因縁決着 → rivalryリセット（0〜10）（M-14不成立時のみ）
+    const hasExplicitRivalryResolution = context.rivalryResolved
+      && Number.isFinite(context.rivalryResolutionValue);
     if (context.rivalryResolved && !context._destinySettled) {
-      const m10Reset = Engine.rng.float(rng) * 10;
-      rAB.rivalry = this._clampAxisValue(m10Reset, 'rivalry');
-      rBA.rivalry = this._clampAxisValue(m10Reset, 'rivalry');
-      if (isCrossOrg) {
-        // M-CO2 抗争和解: bond +12〜+20（§4.4.3 乗数対象外）
-        apply('AB', 'rivalryResolutionCross', context.stage, 12, 20, 0, 0, false, { skipCrossOrgBondMult: true });
-        apply('BA', 'rivalryResolutionCross', context.stage, 12, 20, 0, 0, false, { skipCrossOrgBondMult: true });
-      } else {
-        apply('AB', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
-        apply('BA', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
+      // New resolution routes decide their own final rivalry band. Keep the
+      // legacy 0-10 reset only for callers that do not provide that value.
+      if (!hasExplicitRivalryResolution) {
+        const m10Reset = Engine.rng.float(rng) * 10;
+        rAB.rivalry = this._clampAxisValue(m10Reset, 'rivalry');
+        rBA.rivalry = this._clampAxisValue(m10Reset, 'rivalry');
+      }
+      // A bitter resolution settles the result, but does not reconcile the pair.
+      if (context.rivalryResolutionType !== 'bitter') {
+        if (isCrossOrg) {
+          // M-CO2 抗争和解: bond +12〜+20（§4.4.3 乗数対象外）
+          apply('AB', 'rivalryResolutionCross', context.stage, 12, 20, 0, 0, false, { skipCrossOrgBondMult: true });
+          apply('BA', 'rivalryResolutionCross', context.stage, 12, 20, 0, 0, false, { skipCrossOrgBondMult: true });
+        } else {
+          apply('AB', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
+          apply('BA', 'rivalryResolution', context.stage, 5, 10, 0, 0, false);
+        }
       }
     }
 
@@ -2317,6 +2326,14 @@ Engine.relationships = {
       if (deltaAB > CROSS_ORG_RIVALRY_CAP) rAB.rivalry = rivalryStartAB + CROSS_ORG_RIVALRY_CAP;
       const deltaBA = rBA.rivalry - rivalryStartBA;
       if (deltaBA > CROSS_ORG_RIVALRY_CAP) rBA.rivalry = rivalryStartBA + CROSS_ORG_RIVALRY_CAP;
+    }
+
+    // Resolution is authoritative over ordinary match effects and cross-org caps.
+    // This keeps every show execution route inside the band chosen by checkResolution.
+    if (hasExplicitRivalryResolution) {
+      const settledRivalry = this._clampAxisValue(context.rivalryResolutionValue, 'rivalry');
+      rAB.rivalry = settledRivalry;
+      rBA.rivalry = settledRivalry;
     }
 
     // ── knownRival自動付与: MQ65+ OR 僅差の好勝負 → decay 1/3で持続 ──

@@ -2186,10 +2186,10 @@ function _renderRivalryPopup() {
     const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
     const winLine = pickDialogueLine(winLineObj, winFighter);
     const loseLine = pickDialogueLine(loseLineObj, loseFighter);
-    title = isBitter ? '宿 怨 決 着'
+    title = isBitter ? '決 着、な お 宿 怨'
       : isGoodRival ? '好 敵 手 誕 生'
       : (o.isSecondResolution ? '最 終 決 着' : (o.isFate ? '宿命の相手 決着' : '宿 敵 決 着'));
-    sub = isBitter ? 'BITTER RIVALRY ・ FINAL'
+    sub = isBitter ? 'THE MATCH IS OVER ・ THE GRUDGE REMAINS'
       : isGoodRival ? 'GOOD RIVALS ・ MUTUAL RESPECT'
       : (o.isFate ? 'FATED RIVALRY ・ RESOLVED' : 'RIVALRY RESOLVED');
     toneCls = isGoodRival ? 'tone-goodrival'
@@ -2201,7 +2201,7 @@ function _renderRivalryPopup() {
     vsLabel = '決 着';
     const bonusLine = `📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}`;
     const tagText = isGoodRival ? '🤝 ふたりは「好敵手」になった'
-      : isBitter ? '💀 ふたりは「宿怨」になった'
+      : isBitter ? '💀 勝敗は決した。しかし、遺恨は消えなかった'
       : o.isFate ? '✨ 宿命の相手との決着がついた'
       : '🔥 宿敵の決着';
     resultHtml = `<div class="vd-tag">${tagText}</div><div class="vd-bonus">${bonusLine}</div>`;
