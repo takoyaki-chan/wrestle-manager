@@ -24307,6 +24307,8 @@ Engine.springTagLeague = {
     }
     const orgOrder = Engine.springTagLeague.ORG_ORDER;
     const { teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, replayContext } = result;
+    // リーグ順位は決勝進出者を決めるためのもの。決勝後の賞金・実績は最終結果を正とする。
+    const placementByOrg = { [champion]: 1, [runnerUp]: 2, [third]: 3, [fourth]: 4 };
 
     // タッグ経験値の蓄積(§5.3): 実際に戦った試合数ぶん加算
     let tagExp = { ...(s.tagExp || {}) };
@@ -24333,13 +24335,14 @@ Engine.springTagLeague = {
 
     // 賞金(プレイヤー団体の順位に応じて。AI団体には財務がないためスキップ — junior方式に準拠)
     const playerStanding = standings.find(x => x.orgId === 'player');
-    if (playerStanding) {
+    const playerPlacement = placementByOrg.player;
+    if (playerStanding && playerPlacement) {
       const PRIZE = Engine.springTagLeague.PRIZE;
       const prizeByRank = { 1: PRIZE.champion, 2: PRIZE.runnerUp, 3: PRIZE.third, 4: PRIZE.fourth };
-      const amount = prizeByRank[playerStanding.rank] || 0;
+      const amount = prizeByRank[playerPlacement] || 0;
       if (amount > 0) {
         s = { ...s, funds: (s.funds || 0) + amount };
-        events.push(`💰 春のタッグリーグ ${playerStanding.rank}位入賞 賞金¥${amount}万`);
+        events.push(`💰 春のタッグリーグ ${playerPlacement}位入賞 賞金¥${amount}万`);
       }
     }
 
@@ -24363,7 +24366,7 @@ Engine.springTagLeague = {
     standings.forEach(st => {
       const t = teams.find(x => x.orgId === st.orgId);
       if (!t) return;
-      const label = resultLabelByRank[st.rank];
+      const label = resultLabelByRank[placementByOrg[st.orgId]];
       applyHistoryForOrg(st.orgId, t.f1Id, t.f2Id, label);
       applyHistoryForOrg(st.orgId, t.f2Id, t.f1Id, label);
     });

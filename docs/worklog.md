@@ -6,6 +6,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 直近の調整（2026-07-19 春のタッグリーグ・決勝逆転時の実績順位修正）
+
+春のタッグリーグでリーグ2位ペアが決勝を制した際、優勝ペアの `careerRecord.history` が準優勝として記録される不具合を修正。原因は、決勝後の実績とプレイヤー賞金だけが最終結果ではなく総当たりリーグの `standings.rank` を参照していたこと。`champion / runnerUp / third / fourth` から大会最終順位マップを作り、実績ラベル・賞金・賞金ログをすべて同じ最終順位に統一した。リーグ2位のプレイヤーが決勝でリーグ1位のAI団体を破る固定ケースを回帰テストとして新設し、優勝ペア2名の `champion`、敗者ペア2名の `runnerUp`、優勝賞金1500万円を検証。既存の春リーグ観戦テストも通過し、5シード×20シーズン（計100シーズン）のauto-simは春リーグ完走率1.00、violations 0 / errors 0 / 全件ALL CLEAR。変更: `src/management.js` / `test/spring-tag-league-result-placement-test.js` / `package.json` / 春リーグ仕様書 / ロードマップ / 本項。
+
 ## 直近の調整（2026-07-19 4団体勝ち残り対抗戦・MVP台詞パック全147セル実装）
 
 MVP一言シーン用の台詞テーブル `AUTUMN_WAR_MVP_LINES` を基礎21本から全147セル（3 context × 7 personality × 7 archetype）315本へ拡張。①gauntlet（3勝以上の連戦耐久）、champion（団体優勝・本人3勝未満）、defiant（個人MVPだが団体敗退）の3文脈それぞれに、7 personality × 7 archetype（_default/composed/ojousama/polite/seductive/delinquent/cool）の全セルを各2〜3本で埋めた。②既存の基礎21本は各 `_default` の1本目として保持。③契約テスト `test/autumn-war-mvp-lines-test.js` を新設し、構造完全性（3 context/7 personality/7 archetype/配列・2本以上）、品質チェック（string・非空・12〜90文字・許可外プレースホルダー排除・ASCII `...` 排除・完全一致重複排除・294本以上）の10項目を自動検証。④ `package.json` に専用script `test:data:autumn-war-mvp` を追加。⑤既存テスト `autumn-war-ui-flow-test.js` も通過、auto-sim 20シーズン ALL CLEAR。⑥画面仕様書の実装状況を更新。変更: src/data.js、test/autumn-war-mvp-lines-test.js（新設）、package.json、docs/ui/03-screens/autumn-gauntlet-war.md、本項。
