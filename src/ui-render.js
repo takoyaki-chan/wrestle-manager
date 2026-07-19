@@ -6381,6 +6381,8 @@ let _relmapCenterId = null;
 let _relmapFilter = 'all';
 let _relmapSelected = null;
 let _relmapViewMode = 'network'; // 'network' | 'focus' | 'power'
+let _relmapMobileStrongOnly = true;
+let _relmapMobileSearchTerm = '';
 let _relmapFactionCenters = {}; // { factionId: {x, y, keepR} } — Phase 3c 団体フィルタ時の派閥中心
 let _relmapFactionOverlay = false; // Phase 3c 団体フィルタ ON 時の派閥オーバーレイ ON/OFF
 let _relmapSavedCenterId = null; // 派閥オーバーレイ ON 時に CENTER 選手を退避
@@ -6429,16 +6431,6 @@ function renderDatabase() {
   if (!el) return;
   // Normalize stale _dbSubTab from prior versions where 2/5/8 were valid
   if (_dbSubTab === 2 || _dbSubTab === 5 || _dbSubTab === 8) _dbSubTab = 0;
-  const isPhoneRelmap = _dbSubTab === 4 && !!window.matchMedia?.('(max-width: 700px)').matches;
-  if (isPhoneRelmap) {
-    // The full force-directed industry graph is too dense for a phone.
-    // Start from one wrestler and the strongest nearby relationships.
-    _relmapViewMode = 'focus';
-    if (!_relmapFilterUserSet) {
-      _relmapFilterRelOnly = false;
-      _relmapFilterThreshold = 0;
-    }
-  }
   // Toggle relmap-active class on panel
   const panel = el.closest('.panel') || el.parentElement;
   if (panel) panel.classList.toggle('relmap-active', _dbSubTab === 4);
@@ -12722,6 +12714,233 @@ function _renderDbFactions() {
 // ══════════════════════════════════════════════════════════
 // _renderDbRelmap — HTML skeleton generation
 // ══════════════════════════════════════════════════════════
+function _relmapPrepareMobileData(allChars) {
+  _relmapNodeMap = {};
+  _relmapNodes = allChars.map((c, index) => {
+    const node = {
+      id: c.id,
+      name: c.name,
+      orgId: c._orgId,
+      ovr: Engine.util.ov(c),
+      style: c.style,
+      color: _relmapGetOrgColorById(c._orgId),
+      _char: c,
+      _index: index,
+    };
+    _relmapNodeMap[node.id] = node;
+    return node;
+  });
+  _relmapLinks = _relmapBuildLinks(allChars);
+  _relmapBuildLinkIndexes(_relmapLinks);
+}
+
+function _relmapMobileFactionNames(charId) {
+  return (G.factions || [])
+    .filter(f => (f.memberIds || []).some(id => String(id) === String(charId)))
+    .map(f => f.name)
+    .filter(Boolean);
+}
+
+function _relmapMobileOrientedValues(link, centerId) {
+  const centerIsA = String(link.a) === String(centerId);
+  return centerIsA
+    ? { bondOut: link.bondAB, bondIn: link.bondBA, rivOut: link.rivAB, rivIn: link.rivBA }
+    : { bondOut: link.bondBA, bondIn: link.bondAB, rivOut: link.rivBA, rivIn: link.rivAB };
+}
+
+function _relmapMobileCategory(link) {
+  const maxRiv = Math.max(link.rivAB, link.rivBA);
+  const avgBond = (link.bondAB + link.bondBA) / 2;
+  const minBond = Math.min(link.bondAB, link.bondBA);
+  if (link.rivalTitle || link.hostileLabel || maxRiv >= 40) return 'rivalry';
+  if (avgBond >= 60) return 'trust';
+  if (minBond <= 40) return 'tension';
+  return 'history';
+}
+
+function _relmapMobileIsStrong(link) {
+  return !!(
+    link.rivalTitle ||
+    link.hostileLabel ||
+    Math.max(link.rivAB, link.rivBA) >= 40 ||
+    Math.max(Math.abs(link.bondAB - 50), Math.abs(link.bondBA - 50)) >= 20
+  );
+}
+
+function _relmapMobileRelationLabel(link, values) {
+  if (link.rivalTitle) return `${link.titleEmoji || '🔥'} ${link.rivalTitle}`;
+  if (link.hostileLabel) return `⚡ ${link.hostileLabel}`;
+  const maxRiv = Math.max(values.rivOut, values.rivIn);
+  const avgBond = (values.bondOut + values.bondIn) / 2;
+  if (maxRiv >= 60) return '激しいライバル関係';
+  if (maxRiv >= 40) return '意識し合う相手';
+  if (avgBond >= 75) return '強い信頼関係';
+  if (avgBond >= 60) return '友好的な関係';
+  if (Math.min(values.bondOut, values.bondIn) <= 25) return '深い不和';
+  if (Math.min(values.bondOut, values.bondIn) <= 40) return '警戒・距離感';
+  return link.hasPast ? '過去に接点あり' : '関係あり';
+}
+
+function _relmapMobileRelationCard(centerChar, otherChar, link, factionNames = []) {
+  const centerOvr = Engine.util.ov(centerChar);
+  const otherOvr = Engine.util.ov(otherChar);
+  const safeName = _escapeHtml(otherChar.name || '不明');
+  const safeOrg = _escapeHtml(_relmapGetOrgLabel(otherChar));
+  const safeStyle = _escapeHtml(otherChar.style || '');
+  const factionText = factionNames.length ? `🎭 ${factionNames.map(_escapeHtml).join(' / ')}` : '';
+  let relationHtml = '';
+
+  if (link) {
+    const values = _relmapMobileOrientedValues(link, centerChar.id);
+    const label = _relmapMobileRelationLabel(link, values);
+    const emotion = getEmotionText(
+      values.bondOut,
+      values.rivOut,
+      centerOvr,
+      otherOvr,
+      centerChar.archetype
+    );
+    relationHtml = `
+      <div class="rm-mobile-relation-label">${_escapeHtml(label)}</div>
+      <div class="rm-mobile-direction-grid">
+        <div><span>${_escapeHtml(centerChar.name)} →</span><b>親密 ${Math.round(values.bondOut)}</b><b>競争 ${Math.round(values.rivOut)}</b></div>
+        <div><span>← ${safeName}</span><b>親密 ${Math.round(values.bondIn)}</b><b>競争 ${Math.round(values.rivIn)}</b></div>
+      </div>
+      <div class="rm-mobile-emotion">「${_escapeHtml(emotion)}」</div>`;
+  } else {
+    relationHtml = `<div class="rm-mobile-relation-label">同じ派閥に所属</div>`;
+  }
+
+  return `<article class="rm-mobile-card" role="button" tabindex="0"
+      onclick="_relmapMobileSetCenter(${Number(otherChar.id)})"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_relmapMobileSetCenter(${Number(otherChar.id)})}">
+    <div class="rm-mobile-card-head">
+      <div class="rm-mobile-face">${_relmapFaceHtml(otherChar.id, 54)}</div>
+      <div class="rm-mobile-person">
+        <strong>${safeName}</strong>
+        <span>${safeOrg}</span>
+        <small>OVR ${otherOvr}${safeStyle ? ` ・ ${safeStyle}` : ''}</small>
+      </div>
+      <button class="rm-mobile-detail-btn" type="button" onclick="event.stopPropagation();showFighterPopup(${Number(otherChar.id)})">詳細</button>
+    </div>
+    ${factionText ? `<div class="rm-mobile-faction-chip">${factionText}</div>` : ''}
+    ${relationHtml}
+    <div class="rm-mobile-change-hint">この選手を中心に見る ›</div>
+  </article>`;
+}
+
+function _relmapMobileSearchResultsHtml(allChars, query) {
+  const normalized = String(query || '').trim().toLocaleLowerCase('ja');
+  if (!normalized) return '';
+  const results = allChars
+    .filter(c => String(c.id) !== String(_relmapCenterId))
+    .filter(c => `${c.name || ''} ${_relmapGetOrgLabel(c)}`.toLocaleLowerCase('ja').includes(normalized))
+    .slice(0, 8);
+  if (!results.length) return '<div class="rm-mobile-search-empty">該当する選手がいません</div>';
+  return results.map(c => `<button type="button" onclick="_relmapMobileSetCenter(${Number(c.id)})">
+    <span class="rm-mobile-search-face">${_relmapFaceHtml(c.id, 34)}</span>
+    <span><b>${_escapeHtml(c.name)}</b><small>${_escapeHtml(_relmapGetOrgLabel(c))} ・ OVR ${Engine.util.ov(c)}</small></span>
+  </button>`).join('');
+}
+
+function _relmapMobileSearch(value) {
+  _relmapMobileSearchTerm = String(value || '');
+  const results = document.getElementById('rmMobileSearchResults');
+  if (results) results.innerHTML = _relmapMobileSearchResultsHtml(_relmapGetAllChars(), _relmapMobileSearchTerm);
+}
+
+function _relmapMobileToggleStrong(checked) {
+  _relmapMobileStrongOnly = !!checked;
+  renderDatabase();
+}
+
+function _relmapMobileSetCenter(charId) {
+  _relmapCenterId = Number(charId);
+  _relmapMobileSearchTerm = '';
+  renderDatabase();
+  requestAnimationFrame(() => {
+    const root = document.getElementById('relmapMobileRoot');
+    if (root) root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+function _renderDbRelmapMobile(allChars, centerChar) {
+  _relmapPrepareMobileData(allChars);
+  const links = _relmapGetLinksFor(centerChar.id)
+    .filter(link => !_relmapMobileStrongOnly || _relmapMobileIsStrong(link));
+  const charsById = new Map(allChars.map(c => [String(c.id), c]));
+  const groups = { rivalry: [], trust: [], tension: [], faction: [], history: [] };
+  const includedIds = new Set();
+
+  links.forEach(link => {
+    const otherId = String(String(link.a) === String(centerChar.id) ? link.b : link.a);
+    const otherChar = charsById.get(otherId);
+    if (!otherChar) return;
+    const category = _relmapMobileCategory(link);
+    groups[category].push({ otherChar, link, factionNames: _relmapMobileFactionNames(otherChar.id).filter(name => _relmapMobileFactionNames(centerChar.id).includes(name)) });
+    includedIds.add(otherId);
+  });
+
+  const centerFactions = (G.factions || []).filter(f =>
+    (f.memberIds || []).some(id => String(id) === String(centerChar.id))
+  );
+  centerFactions.forEach(faction => {
+    (faction.memberIds || []).forEach(memberId => {
+      const key = String(memberId);
+      if (key === String(centerChar.id) || includedIds.has(key)) return;
+      const otherChar = charsById.get(key);
+      if (!otherChar) return;
+      const factionNames = centerFactions
+        .filter(f => (f.memberIds || []).some(id => String(id) === key))
+        .map(f => f.name)
+        .filter(Boolean);
+      groups.faction.push({ otherChar, link: null, factionNames });
+      includedIds.add(key);
+    });
+  });
+
+  const sections = [
+    ['rivalry', '🔥 因縁・ライバル'],
+    ['trust', '🤝 友情・信頼'],
+    ['tension', '⚠️ 警戒・不和'],
+    ['faction', '🎭 同門・派閥'],
+    ['history', '📖 その他の関係'],
+  ];
+  const relationCount = links.length + groups.faction.length;
+  const centerFactionNames = _relmapMobileFactionNames(centerChar.id);
+
+  let html = `<div id="relmapMobileRoot" class="relmap-mobile-root">`;
+  html += `<section class="rm-mobile-hero">
+    <div class="rm-mobile-hero-face">${_relmapFaceHtml(centerChar.id, 74)}</div>
+    <div class="rm-mobile-hero-main">
+      <span class="rm-mobile-center-label">CENTER</span>
+      <h3>${_escapeHtml(centerChar.name)}</h3>
+      <p>${_escapeHtml(_relmapGetOrgLabel(centerChar))}</p>
+      <div><b>OVR ${Engine.util.ov(centerChar)}</b>${centerChar.style ? `<span>${_escapeHtml(centerChar.style)}</span>` : ''}<span>関係 ${relationCount}人</span></div>
+    </div>
+    <button type="button" onclick="showFighterPopup(${Number(centerChar.id)})">選手詳細</button>
+    ${centerFactionNames.length ? `<div class="rm-mobile-hero-factions">🎭 ${centerFactionNames.map(_escapeHtml).join(' / ')}</div>` : ''}
+  </section>`;
+  html += `<section class="rm-mobile-tools">
+    <label class="rm-mobile-search"><span>🔎</span><input type="search" value="${_relmapEscapeAttr(_relmapMobileSearchTerm)}" placeholder="中心にする選手を検索" oninput="_relmapMobileSearch(this.value)"></label>
+    <label class="rm-mobile-strong"><input type="checkbox" ${_relmapMobileStrongOnly ? 'checked' : ''} onchange="_relmapMobileToggleStrong(this.checked)"><span>強い関係のみ</span></label>
+    <div id="rmMobileSearchResults" class="rm-mobile-search-results">${_relmapMobileSearchResultsHtml(allChars, _relmapMobileSearchTerm)}</div>
+  </section>`;
+
+  const visibleSections = sections.filter(([key]) => groups[key].length);
+  if (!visibleSections.length) {
+    html += `<div class="rm-mobile-no-relations">${_relmapMobileStrongOnly ? '強い関係はまだありません。絞り込みを外すと、すべての関係を確認できます。' : '表示できる関係はまだありません。'}</div>`;
+  } else {
+    visibleSections.forEach(([key, title]) => {
+      html += `<section class="rm-mobile-section"><h4>${title}<span>${groups[key].length}</span></h4>`;
+      html += groups[key].map(item => _relmapMobileRelationCard(centerChar, item.otherChar, item.link, item.factionNames)).join('');
+      html += `</section>`;
+    });
+  }
+  html += `</div>`;
+  return html;
+}
+
 function _renderDbRelmap() {
   const allChars = _relmapGetAllChars();
   if (!allChars.length) return '<div style="text-align:center;padding:40px;color:var(--text-dim)">選手がいません</div>';
@@ -12732,6 +12951,10 @@ function _renderDbRelmap() {
   }
 
   const centerChar = _relmapCenterId ? allChars.find(c => c.id === _relmapCenterId) : null;
+
+  if (window.matchMedia?.('(max-width: 700px)').matches && centerChar) {
+    return _renderDbRelmapMobile(allChars, centerChar);
+  }
 
   let html = `<div id="relmapRoot" class="relmap-root">`;
 

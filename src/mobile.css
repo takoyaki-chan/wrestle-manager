@@ -715,53 +715,175 @@
   .db-hof-detail-modal { width: 94%; padding: 18px 14px; }
   .db-hof-stats-grid { grid-template-columns: 1fr; }
 
-  /* Relationship map: keep controls out of the graph on narrow screens. */
+  /* Relationship map: use a person-centered vertical list on phones. */
   #databasePanel.relmap-active .panel-title { padding: 10px 12px 0; }
   #databasePanel.relmap-active .db-subtab-bar { padding: 0 8px; margin-bottom: 8px; }
   #databasePanel.relmap-active { overflow-anchor: none; }
-  .relmap-root { height: auto; min-height: 0; }
-  .relmap-header { padding: 6px 8px; gap: 6px; }
-  .relmap-header .rm-title { width: 100%; }
-  .rm-header-sep { display: none; }
-  .rm-view-toggle { max-width: 100%; overflow-x: auto; }
-  .rm-view-toggle .rm-vt-btn { flex: 0 0 auto; min-height: 36px; padding: 5px 8px; }
-  .rm-center-indicator { max-width: 100%; }
-  .rm-header-controls { width: 100%; margin-left: 0; overflow-x: auto; }
-  .rm-ctrl-btn { flex: 1 0 auto; min-height: 36px; }
-  .relmap-main { flex: none; height: min(62dvh, 520px); min-height: 420px; }
-  .relmap-sidebar {
-    left: 6px;
-    top: 6px;
-    right: 6px;
-    bottom: auto;
-    width: auto;
-    height: 88px;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-    pointer-events: auto;
-    -webkit-overflow-scrolling: touch;
+  .relmap-mobile-root {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 0 8px 20px;
+    box-sizing: border-box;
+    touch-action: pan-y;
   }
-  .relmap-sidebar > * { flex: 0 0 145px; }
-  .relmap-sidebar .rm-filter-panel { flex-basis: 190px; }
-  .relmap-canvas { top: 100px; touch-action: none; }
-  .relmap-canvas svg { touch-action: none; cursor: grab; }
-  .relmap-canvas svg:active { cursor: grabbing; }
-  .relmap-legend { display: none; }
-  .rm-zoom-controls { right: 8px; bottom: 8px; }
-  .rm-zoom-fit { width: auto; min-width: 44px; padding: 0 7px; font-size: 10px; }
-  .relmap-detail,
-  .relmap-detail.show {
-    left: 6px;
-    right: 6px;
-    bottom: 6px;
-    max-height: 150px;
-    overflow-y: auto;
-    padding: 8px;
+  .rm-mobile-hero {
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid rgba(212, 168, 67, 0.55);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(212, 168, 67, 0.15), rgba(19, 18, 17, 0.96));
+  }
+  .rm-mobile-hero-face,
+  .rm-mobile-face,
+  .rm-mobile-search-face {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .rm-mobile-hero-face { width: 74px; height: 74px; border: 2px solid var(--gold); }
+  .rm-mobile-hero-main { min-width: 0; }
+  .rm-mobile-center-label { display: block; font: 700 9px/1 Oswald, sans-serif; letter-spacing: 1.2px; color: var(--gold); }
+  .rm-mobile-hero h3 { margin: 4px 0 2px; font-size: 19px; line-height: 1.2; overflow-wrap: anywhere; }
+  .rm-mobile-hero p { margin: 0 0 5px; font-size: 11px; color: var(--text-sub); }
+  .rm-mobile-hero-main > div { display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: 10px; color: var(--text-dim); }
+  .rm-mobile-hero-main > div b { color: var(--gold); }
+  .rm-mobile-hero > button,
+  .rm-mobile-detail-btn {
+    min-height: 36px;
+    padding: 5px 9px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-sub);
+    font-size: 10px;
+  }
+  .rm-mobile-hero-factions {
+    grid-column: 1 / -1;
+    padding-top: 7px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 11px;
+    color: #cbb9df;
+  }
+  .rm-mobile-tools {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
+    margin: 10px 0 14px;
   }
-  .relmap-detail.show { flex-wrap: wrap; }
-  .rm-detail-meters { gap: 8px; }
+  .rm-mobile-search {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: rgba(0, 0, 0, 0.28);
+  }
+  .rm-mobile-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 6px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 16px;
+  }
+  .rm-mobile-strong {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 42px;
+    padding: 0 9px;
+    border: 1px solid rgba(212, 168, 67, 0.35);
+    border-radius: 9px;
+    color: var(--gold);
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .rm-mobile-strong input { width: 17px; height: 17px; accent-color: var(--gold); }
+  .rm-mobile-search-results {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 4px;
+    max-height: 286px;
+    overflow-y: auto;
+    border-radius: 9px;
+  }
+  .rm-mobile-search-results:empty { display: none; }
+  .rm-mobile-search-results > button {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 9px;
+    align-items: center;
+    min-height: 48px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(29, 27, 25, 0.98);
+    color: var(--text);
+    text-align: left;
+  }
+  .rm-mobile-search-results b,
+  .rm-mobile-search-results small { display: block; }
+  .rm-mobile-search-results small { margin-top: 2px; color: var(--text-dim); }
+  .rm-mobile-search-empty,
+  .rm-mobile-no-relations { padding: 20px 12px; text-align: center; color: var(--text-dim); font-size: 12px; }
+  .rm-mobile-section { margin: 0 0 17px; }
+  .rm-mobile-section > h4 {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 7px;
+    padding: 0 2px;
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+  .rm-mobile-section > h4 span {
+    min-width: 20px;
+    padding: 1px 5px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-dim);
+    font: 700 10px/1.5 Oswald, sans-serif;
+    text-align: center;
+  }
+  .rm-mobile-card {
+    display: block;
+    margin-bottom: 7px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(25, 23, 21, 0.92);
+    box-sizing: border-box;
+  }
+  .rm-mobile-card:active { background: rgba(212, 168, 67, 0.1); }
+  .rm-mobile-card-head { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; gap: 9px; align-items: center; }
+  .rm-mobile-face { width: 54px; height: 54px; border: 1px solid rgba(255, 255, 255, 0.16); }
+  .rm-mobile-person { min-width: 0; }
+  .rm-mobile-person strong,
+  .rm-mobile-person span,
+  .rm-mobile-person small { display: block; }
+  .rm-mobile-person strong { font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
+  .rm-mobile-person span { margin-top: 2px; font-size: 10px; color: var(--text-dim); }
+  .rm-mobile-person small { margin-top: 3px; color: var(--gold); }
+  .rm-mobile-faction-chip { margin: 7px 0 0 63px; font-size: 10px; color: #cbb9df; }
+  .rm-mobile-relation-label { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(255, 255, 255, 0.08); color: #f0c96b; font-size: 12px; font-weight: 700; }
+  .rm-mobile-direction-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5px; margin-top: 6px; }
+  .rm-mobile-direction-grid > div { display: grid; grid-template-columns: 1fr auto; gap: 2px 5px; min-width: 0; padding: 5px 7px; border-radius: 7px; background: rgba(255, 255, 255, 0.035); }
+  .rm-mobile-direction-grid span { grid-column: 1 / -1; overflow: hidden; color: var(--text-dim); font-size: 9px; white-space: nowrap; text-overflow: ellipsis; }
+  .rm-mobile-direction-grid b { font-size: 10px; font-weight: 600; color: var(--text-sub); }
+  .rm-mobile-emotion { margin-top: 6px; font-size: 10px; line-height: 1.45; color: var(--text-dim); }
+  .rm-mobile-change-hint { margin-top: 7px; text-align: right; color: var(--gold); font-size: 9px; }
 
   /* Newspaper: rebuild the dense desktop cards for a phone-width paper. */
   #screen-newspaper .np-content { padding-left: 9px; padding-right: 9px; }

@@ -120,14 +120,24 @@ assert.ok(
   'phone navigation must center horizontally without moving the page vertically'
 );
 assert.ok(
-  mobile.includes('.relmap-main { flex: none;') &&
-    mobile.includes('.relmap-canvas { top: 100px; touch-action: none;') &&
-    mobile.includes('.relmap-canvas svg { touch-action: none; cursor: grab; }') &&
-    uiRender.includes("svg.addEventListener('pointerdown'") &&
-    uiRender.includes("svg.addEventListener('pointermove'") &&
-    uiRender.includes('svg.setPointerCapture(e.pointerId)') &&
-    uiRender.includes('candidateLinks.length > 0 && !visibleNodeIds.has(n.id)'),
-  'the relationship map needs a visible phone layout and touch dragging'
+  uiRender.includes("window.matchMedia?.('(max-width: 700px)').matches && centerChar") &&
+    uiRender.includes('return _renderDbRelmapMobile(allChars, centerChar);') &&
+    uiRender.includes('function _relmapMobileSetCenter(charId)') &&
+    uiRender.includes('function _relmapMobileSearch(value)') &&
+    uiRender.includes('強い関係のみ') &&
+    uiRender.includes('🔥 因縁・ライバル') &&
+    uiRender.includes('🤝 友情・信頼') &&
+    uiRender.includes('⚠️ 警戒・不和') &&
+    uiRender.includes('🎭 同門・派閥'),
+  'the phone relationship view must use a searchable person-centered list'
+);
+assert.ok(
+  mobile.includes('.relmap-mobile-root {') &&
+    mobile.includes('touch-action: pan-y;') &&
+    mobile.includes('.rm-mobile-card {') &&
+    mobile.includes('.rm-mobile-direction-grid {') &&
+    mobile.includes('grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);'),
+  'phone relationship cards must fit the viewport and keep vertical scrolling'
 );
 assert.ok(
   mobile.includes('.db-subtab-bar {') &&
@@ -137,19 +147,12 @@ assert.ok(
   'database subtabs must remain at the top when phone content is replaced'
 );
 assert.ok(
-  uiRender.includes("_relmapViewMode = 'focus';") &&
-    uiRender.includes("return window.matchMedia?.('(max-width: 700px)').matches ? 7") &&
-    uiRender.includes('n.x = target.x;') &&
-    uiRender.includes('n.y = target.y;') &&
-    uiRender.includes("window.matchMedia?.('(max-width: 700px)').matches && shownIds.size < focusLimit + 1") &&
-    uiRender.includes('_relmapFocusTargets[_relmapDragTarget.id] = { x: nextX, y: nextY }'),
-  'the phone relationship map must start in a stable compact focus layout'
-);
-assert.ok(
-  uiRender.includes("title=\"全員が入るように表示\"") &&
-    uiRender.includes('const visible = _relmapNodes.filter') &&
-    uiRender.includes("window.matchMedia?.('(max-width: 700px)').matches"),
-  'the relationship map must calculate and apply an actual fit-to-all view'
+  uiRender.includes('<svg id="relmapSvg"') &&
+    uiRender.includes('function _drawRelmapAfterRender()') &&
+    uiRender.includes("svg.addEventListener('pointerdown'") &&
+    uiRender.includes("svg.addEventListener('pointermove'") &&
+    uiRender.includes('svg.setPointerCapture(e.pointerId)'),
+  'the desktop force-directed relationship graph must remain available'
 );
 assert.ok(
   uiRender.includes('.chron-two-col { grid-template-columns: minmax(0, 1fr); }') &&
