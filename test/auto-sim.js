@@ -116,7 +116,8 @@ function recordBigStartGroup(stats, result, startHpRatios, origin, overrideAtFul
   stats.matches++;
   stats.turns += turns;
   if (overrideAtFullHealth) stats.overrideAtFullHealth++;
-  if (turns >= 19) stats.reachedClimax++;
+  const climaxStart = BIGMATCH_PHASES[BIGMATCH_PHASES.length - 1].min;
+  if (turns >= climaxStart) stats.reachedClimax++;
   stats.turnHistogram[turns]++;
   const finishPhase = result.finishPhase === 'Timeout' ? 'Timeout' : result.finishPhase;
   if (stats.finishPhases[finishPhase] != null) stats.finishPhases[finishPhase]++;
@@ -155,8 +156,8 @@ const matchBalanceProbe = {
   rollupSelections: 0,
   tiersByPhase: {},
   phaseTiming: {
-    normal: createPhaseTimingStats(MAX_T, 13),
-    big: createPhaseTimingStats(BIGMATCH_MAX_T, 19),
+    normal: createPhaseTimingStats(MAX_T, PHASES[PHASES.length - 1].min),
+    big: createPhaseTimingStats(BIGMATCH_MAX_T, BIGMATCH_PHASES[BIGMATCH_PHASES.length - 1].min),
   },
   bigStartGroups: {
     full: createBigStartGroupStats(),

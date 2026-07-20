@@ -77,6 +77,10 @@ Engine.battle = {
       const fighter = ctx.fighter || null;
       const wasCoolingDown = !!(fighter && fighter.bigMoveCooldown);
       if (fighter) fighter.bigMoveCooldown = false;
+      const eng = ctx.eng || ENG;
+      const defender = ctx.defender;
+      const defenderHpRatio = defender ? defender.hp / defender.mhp : 1;
+      const finisherUnlocked = defenderHpRatio <= eng.finisherUnlockHpThreshold;
 
       let move;
       let tier;
@@ -88,7 +92,9 @@ Engine.battle = {
           tier = ctx.forcedTier;
         } else {
           const tierWeights = { ...ph.tierW };
-          if (wasCoolingDown) tierWeights.big = 0;
+          // Normal big moves (d11-13) cool down for one turn. Finishers
+          // (d14-16) are exempt, so an unlocked finisher remains selectable.
+          if (wasCoolingDown && !finisherUnlocked) tierWeights.big = 0;
           const selectableTierWeights = Object.fromEntries(
             Object.entries(tierWeights).filter(([, weight]) => weight > 0)
           );
@@ -97,11 +103,10 @@ Engine.battle = {
 
         let pool = MOVE_TIER_POOLS[resolvedStyle][tier];
         if (tier === 'big' && !ctx.ignoreFinisherLock) {
-          const eng = ctx.eng || ENG;
-          const defender = ctx.defender;
-          const defenderHpRatio = defender ? defender.hp / defender.mhp : 1;
-          if (defenderHpRatio > eng.finisherUnlockHpThreshold) {
+          if (!finisherUnlocked) {
             pool = pool.filter(candidate => candidate.d <= 13);
+          } else if (wasCoolingDown) {
+            pool = pool.filter(candidate => candidate.d >= 14);
           }
         }
 
@@ -116,7 +121,7 @@ Engine.battle = {
           : null;
         const candidates = category ? pool.filter(candidate => candidate.c === category) : pool;
         move = Engine.rng.pick(rng, candidates);
-        if (fighter && tier === 'big') fighter.bigMoveCooldown = true;
+        if (fighter && move.d >= 11 && move.d <= 13) fighter.bigMoveCooldown = true;
       }
 
       const stats = ctx.stats;
@@ -131,9 +136,9 @@ Engine.battle = {
         stats.byPhase[ph.name][tier]++;
         if (fighter) {
           const fighterKey = String(fighter.id != null ? fighter.id : fighter.name);
-          // 開幕大技は通常ティア抽選の外側にあるため、クールダウン違反の計測対象外。
-          if (!ctx.forcedTier && stats._lastTierByFighter[fighterKey] === 'big' && tier === 'big') stats.consecutiveBig++;
-          stats._lastTierByFighter[fighterKey] = tier;
+          const isNormalBig = !ctx.forcedTier && move.d >= 11 && move.d <= 13;
+          if (stats._lastTierByFighter[fighterKey] === 'normalBig' && isNormalBig) stats.consecutiveBig++;
+          stats._lastTierByFighter[fighterKey] = isNormalBig ? 'normalBig' : 'other';
         }
       }
       return move;

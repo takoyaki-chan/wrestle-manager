@@ -88,7 +88,7 @@ function classifyFinishType(finType) {
 
 function recordResult(stats, result, tier) {
   const phases = tier >= 2 ? BIGMATCH_PHASES : PHASES;
-  const climaxStart = tier >= 2 ? 19 : 13;
+  const climaxStart = phases[phases.length - 1].min;
   const maxTurn = stats.turnHistogram.length - 1;
   const turns = Math.max(0, Math.min(result.turns || 0, maxTurn));
   stats.matches++;
