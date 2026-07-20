@@ -1055,6 +1055,9 @@ function showConfirm(msg, yesLabel, onYes) {
 }
 
 // ── セーブスロット名 入力モーダル（showConfirmと同系統の D型モーダルを流用） ──
+// input の maxlength は UTF-16 コード単位でカウントされるため、絵文字等のサロゲートペア文字だけを
+// 入力すると SAVE_NAME_MAX_LEN(コードポイント基準)の半分で頭打ちになってしまう。
+// そのため maxlength は 2倍に緩め、実際の32文字上限は送信時に _sanitizeSaveNameLabel（コードポイント基準）で確定させる。
 function showSaveNameModal(slot) {
   Audio.play('notify');
   const info = Storage.getSaveInfo(slot);
@@ -1063,8 +1066,8 @@ function showSaveNameModal(slot) {
   _mdlDOpen(`
     <div class="mdl-d-title">セーブ名を変更</div>
     <div class="mdl-d-body">スロット${slot}の表示名を設定します。空欄のまま決定すると名前を解除します。</div>
-    <input id="mdlSaveNameInput" class="mdl-d-input" type="text" maxlength="${SAVE_NAME_MAX_LEN}"
-      value="${_escapeHtml(currentName)}" placeholder="例: メインセーブ"
+    <input id="mdlSaveNameInput" class="mdl-d-input" type="text" maxlength="${SAVE_NAME_MAX_LEN * 2}"
+      value="${_escapeHtml(currentName)}" placeholder="例: メインセーブ（${SAVE_NAME_MAX_LEN}文字まで）"
       onkeydown="if(event.key==='Enter'){event.preventDefault();_confirmSaveNameModal();}">
     <div class="mdl-d-actions">
       <button class="mdl-d-btn primary" onclick="_confirmSaveNameModal()">決定</button>
