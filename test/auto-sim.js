@@ -34,6 +34,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { execFileSync } = require('child_process');
 
 // window stub（Engine内で IS_TRIAL 参照がある）
 global.window = { IS_TRIAL: false };
@@ -45,9 +46,20 @@ global.window = { IS_TRIAL: false };
 
 const vm = require('vm');
 const srcDir = path.join(__dirname, '..', 'src');
+const repoDir = path.join(__dirname, '..');
+const sourceRef = process.env.WM_SOURCE_REF || '';
+
+function readSource(filename) {
+  if (!sourceRef) return fs.readFileSync(path.join(srcDir, filename), 'utf-8');
+  return execFileSync('git', ['show', `${sourceRef}:src/${filename}`], {
+    cwd: repoDir,
+    encoding: 'utf-8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+}
 
 function loadAsGlobal(filename) {
-  let code = fs.readFileSync(path.join(srcDir, filename), 'utf-8');
+  let code = readSource(filename);
   // module.exports ブロックを除去（Node.js の module 変数との衝突防止）
   // 末尾の "if (typeof module !== 'undefined' ...)" ブロック全体を削除
   code = code.replace(/\/\/ Node\.js モジュールエクスポート[\s\S]*$/, '');
@@ -92,13 +104,14 @@ function createBigStartGroupStats() {
     phaseTurns: { Opening: 0, Mid: 0, End: 0, Climax: 0 },
     finisherSelections: 0,
     zeroFinisherMatches: 0,
+    mqTotal: 0,
     finishTypes: { fall: 0, gu: 0, TKO: 0, decision: 0 },
     startHpRatios: [],
     origins: {
-      juniorTournament: { matches: 0, startHpRatios: [] },
-      autumnWar: { matches: 0, startHpRatios: [] },
-      tenchosen: { matches: 0, startHpRatios: [] },
-      other: { matches: 0, startHpRatios: [] },
+      juniorTournament: { matches: 0, mqTotal: 0, startHpRatios: [] },
+      autumnWar: { matches: 0, mqTotal: 0, startHpRatios: [] },
+      tenchosen: { matches: 0, mqTotal: 0, startHpRatios: [] },
+      other: { matches: 0, mqTotal: 0, startHpRatios: [] },
     },
   };
 }
@@ -129,14 +142,81 @@ function recordBigStartGroup(stats, result, startHpRatios, origin, overrideAtFul
   stats.finisherSelections += normalFinishers;
   if (normalFinishers === 0) stats.zeroFinisherMatches++;
   stats.finishTypes[classifyFinishType(result.finType)]++;
+  stats.mqTotal += result.mq || 0;
   stats.startHpRatios.push(...startHpRatios);
   if (origin && stats.origins[origin]) {
     stats.origins[origin].matches++;
+    stats.origins[origin].mqTotal += result.mq || 0;
     stats.origins[origin].startHpRatios.push(...startHpRatios);
   }
 }
 
 let activeBigMatchOrigin = 'other';
+
+// Task 10: match-injury totals. Player match injuries go through
+// Engine.injury.check; AI match injuries are detected around processAIWeek.
+// Training injuries are intentionally excluded because match length cannot
+// affect their probability.
+const injuryProbe = {
+  all: { injuries: 0, weeks: 0, severe: 0, fighterSeasons: new Set() },
+  player: { injuries: 0, weeks: 0, severe: 0, fighterSeasons: new Set() },
+  contextKey: 'initial',
+};
+
+function injuryFighterSeasonKey(scope, orgId, fighterId, season) {
+  return `${injuryProbe.contextKey}:${season}:${scope}:${orgId || 'player'}:${fighterId}`;
+}
+
+function recordInjury(scope, orgId, fighter, injury, weeks, season) {
+  if (!fighter || !injury) return;
+  const key = injuryFighterSeasonKey(scope, orgId, fighter.id, season);
+  injuryProbe.all.fighterSeasons.add(key);
+  injuryProbe.all.injuries++;
+  injuryProbe.all.weeks += weeks || 0;
+  if (injury.type === '重傷' || injury.severity === 'severe') injuryProbe.all.severe++;
+  if (scope === 'player') {
+    injuryProbe.player.fighterSeasons.add(key);
+    injuryProbe.player.injuries++;
+    injuryProbe.player.weeks += weeks || 0;
+    if (injury.type === '重傷' || injury.severity === 'severe') injuryProbe.player.severe++;
+  }
+}
+
+function observeFighterSeasons(state) {
+  for (const fighter of state.roster || []) {
+    const key = injuryFighterSeasonKey('player', 'player', fighter.id, state.season);
+    injuryProbe.player.fighterSeasons.add(key);
+    injuryProbe.all.fighterSeasons.add(key);
+  }
+  for (const [orgId, orgData] of Object.entries(state.aiOrgs || {})) {
+    for (const fighter of orgData.roster || []) {
+      injuryProbe.all.fighterSeasons.add(injuryFighterSeasonKey('ai', orgId, fighter.id, state.season));
+    }
+  }
+}
+
+const _injuryCheckForProbe = Engine.injury.check;
+Engine.injury.check = function(...args) {
+  const result = _injuryCheckForProbe.apply(this, args);
+  if (result && result.injuryInfo) {
+    recordInjury('player', 'player', args[1], result.injuryInfo.injury, result.injuryInfo.weeks, args[5]);
+  }
+  return result;
+};
+
+const _processAIWeekForInjuryProbe = Engine.rival.processAIWeek;
+Engine.rival.processAIWeek = function(rng, state, org) {
+  const before = new Map(((state.aiOrgs?.[org.id]?.roster) || []).map(fighter => [fighter.id, fighter]));
+  const result = _processAIWeekForInjuryProbe.call(this, rng, state, org);
+  for (const fighter of result?.roster || []) {
+    const prior = before.get(fighter.id);
+    const injury = fighter.injury;
+    if ((!prior || !prior.injury) && injury && injury.type !== 'training injury') {
+      recordInjury('ai', org.id, fighter, injury, injury.weeksLeft, state.season);
+    }
+  }
+  return result;
+};
 
 // Task 05-07 balance probe: aggregate real single-match results produced by the
 // engine-integrity run.  Keeping this beside auto-sim makes before/after runs
@@ -312,6 +392,7 @@ console.log('Mode: engine-integrity (エンジン整合性チェック)');
 console.log('※ プレイ再現ではありません。バランス判断の単独根拠にしないでください。');
 console.log(`Seed: ${userSeed}`);
 console.log(`Seasons: ${targetSeasons}`);
+console.log(`Source: ${sourceRef || 'working-tree'}`);
 console.log('--------------------------------------');
 
 // ── Step 3: ゲーム初期化 ──
@@ -735,6 +816,8 @@ function runSimulation(seed, seasons) {
   while (completed < seasons && iter < MAX_ITER) {
     iter++;
     try {
+      injuryProbe.contextKey = String(currentSeed);
+      observeFighterSeasons(G);
       // ── ゲームオーバー判定 ──
       if (G.weekPhase === 'gameover') {
         gameOverCount++;
@@ -1204,6 +1287,20 @@ if (result.stats.v2Samples && result.stats.v2Samples.length > 0) {
 }
 
 // relationship-flags-spec-v1.0 §7-4: フラグ発火頻度
+{
+  const seasons = Math.max(1, result.stats.seasons || targetSeasons);
+  const injurySummary = scope => {
+    const perSeason = scope.injuries / seasons;
+    const perFighterSeason = scope.fighterSeasons.size ? scope.injuries / scope.fighterSeasons.size : 0;
+    return `total=${scope.injuries} annual=${perSeason.toFixed(2)} fighter-year=${perFighterSeason.toFixed(4)} weeks=${scope.weeks} annualWeeks=${(scope.weeks / seasons).toFixed(2)} severe=${scope.severe}`;
+  };
+  console.log('');
+  console.log('Match injury probe (training injuries excluded):');
+  console.log(`  all organizations: ${injurySummary(injuryProbe.all)}`);
+  console.log(`  player organization: ${injurySummary(injuryProbe.player)}`);
+}
+
+// relationship-flags-spec-v1.0 §7-4: フラグ発火頻度
 if (result.flagStats) {
   const seasons = Math.max(1, result.finalSeasons || 1);
   const fs = result.flagStats;
@@ -1325,6 +1422,7 @@ if (matchBalanceProbe.matches > 0) {
       console.log(`      Climax reach ${group.reachedClimax}/${group.matches} (${pct(group.reachedClimax).toFixed(2)}%)`);
       console.log(`      finishTurn ${histogramText}`);
       console.log(`      phaseResidence ${residenceText}`);
+      console.log(`      MQ avg=${(group.mqTotal / group.matches).toFixed(2)}`);
       console.log(`      finisher/match=${(group.finisherSelections / group.matches).toFixed(3)} zero=${group.zeroFinisherMatches}/${group.matches} (${pct(group.zeroFinisherMatches).toFixed(2)}%)`);
       console.log(`      finishType ${finishTypeText}`);
       console.log(`      startHP ${hpDistribution(group.startHpRatios)}`);
@@ -1333,7 +1431,8 @@ if (matchBalanceProbe.matches > 0) {
       }
       if (key === 'carried') {
         for (const [origin, originStats] of Object.entries(group.origins)) {
-          console.log(`      origin=${origin} matches=${originStats.matches} startHP ${hpDistribution(originStats.startHpRatios)}`);
+          const mq = originStats.matches ? (originStats.mqTotal / originStats.matches).toFixed(2) : 'n/a';
+          console.log(`      origin=${origin} matches=${originStats.matches} MQ=${mq} startHP ${hpDistribution(originStats.startHpRatios)}`);
         }
       }
     }

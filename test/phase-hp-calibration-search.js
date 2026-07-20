@@ -172,6 +172,11 @@ const candidates = [
     normal: { maxT: 21, hpBase: 141, hpScale: 2.36, finisherUnlock: 0.75, phases: phases([[1, 4], [5, 8], [9, 11], [12, 21]], [0.60, 0.85, 1.05, 1.38], 55) },
     big: { maxT: 33, hpBase: 272, hpScale: 3.20, finisherUnlock: 0.80, phases: phases([[1, 6], [7, 12], [13, 17], [18, 33]], [0.70, 0.75, 0.85, 1.57], 55, [0, 2, 4, 7]) },
   },
+  {
+    name: 'task10-proposed-hp-tuned-climax',
+    normal: { maxT: 21, hpBase: 141, hpScale: 2.50, finisherUnlock: 0.75, phases: phases([[1, 4], [5, 8], [9, 11], [12, 21]], [0.60, 0.85, 1.05, 1.50], 55) },
+    big: { maxT: 33, hpBase: 272, hpScale: 3.50, finisherUnlock: 0.80, phases: phases([[1, 6], [7, 12], [13, 17], [18, 33]], [0.70, 0.75, 0.85, 1.79], 55, [0, 2, 4, 7]) },
+  },
 ];
 
 function makeFighter(id, rating) {
