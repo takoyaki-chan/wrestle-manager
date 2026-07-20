@@ -4384,7 +4384,7 @@ function renderMatchPreview() {
     // 左キャラ
     html += `<div class="smc-char ${leftCharClass}">
       <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
-        <div class="upper-wrap"${isNext ? ' style="border-color:rgba(52,152,219,0.4)"' : ''}>
+        <div class="upper-wrap">
           ${upperL ? `<img src="${upperL}" alt="${charL.name}" onerror="this.style.display='none'">` : portraitImg(charL.id, imgW)}
         </div>
       </button>
@@ -4398,7 +4398,7 @@ function renderMatchPreview() {
     // 右キャラ
     html += `<div class="smc-char ${rightCharClass}">
       <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
-        <div class="upper-wrap"${isNext ? ' style="border-color:rgba(231,76,60,0.4)"' : ''}>
+        <div class="upper-wrap">
           ${upperR ? `<img src="${upperR}" alt="${charR.name}" onerror="this.style.display='none'">` : portraitImg(charR.id, imgW)}
         </div>
       </button>

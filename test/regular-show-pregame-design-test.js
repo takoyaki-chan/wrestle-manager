@@ -18,6 +18,7 @@ assert(preview.includes('show-pregame-a'), '試合前画面はA案で固定す�
 assert(preview.includes("const cardStateClass = isResolved ? ' is-resolved' : isNext ? ' is-next' : ' is-waiting'"), 'A案カードへ進行状態クラスを付与する');
 assert(!preview.includes('const cardBg ='), '旧インライン背景色を残さない');
 assert(!preview.includes('const borderColor ='), '旧インライン枠色を残さない');
+assert(!preview.includes('border-color:rgba(52,152,219,0.4)') && !preview.includes('border-color:rgba(231,76,60,0.4)'), '左右キャラ枠へ旧青赤色をインライン指定しない');
 
 const ovrStyleCalls = preview.match(/_scale6Style\(_ovrColor\(/g) || [];
 assert(ovrStyleCalls.length >= 3, 'シングル左右とタッグのOVRへデータベースと同じ色階調を使う');
@@ -25,6 +26,8 @@ assert(render.includes('_scale6Style(_ovrSc)'), 'データベースのOVR階調�
 
 assert(css.includes('Regular show pre-match — Pattern A / dark platinum cards'), 'A案のスタイル定義が必要');
 assert(css.includes('.show-pregame-a .match-card{background:linear-gradient(145deg,#101318,#0b0e12)'), 'カード背景を暗色にする');
+assert(css.includes('.show-pregame-a .match-card.is-next{border-color:rgba(207,196,162,.56)'), '次戦カード外枠を結果画面と同じ白金系にする');
+assert(css.includes('border-bottom:3px solid #cfc4a2'), 'キャラ枠を結果画面と同じ白金系アクセントにする');
 assert(css.includes('.show-pregame-a .smc-stat-fill,.show-pregame-a .smc-tag-sfill{background:linear-gradient(90deg,#bd8b18,#f0c75e)!important'), '能力バーを黄色系単色言語へ統一する');
 assert(css.includes('.show-result-overlay.active:has(.show-pregame-a)'), '試合前画面を全画面ステージとして扱う');
 
