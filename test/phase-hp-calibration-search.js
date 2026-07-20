@@ -157,6 +157,21 @@ const candidates = [
     normal: { maxT: 21, hpBase: 198, hpScale: 1.55, finisherUnlock: 0.75, phases: phases([[1, 4], [5, 8], [9, 11], [12, 21]], [0.60, 0.85, 1.05, 1.38], 55) },
     big: { maxT: 33, hpBase: 401, hpScale: 1.35, finisherUnlock: 0.80, phases: phases([[1, 6], [7, 12], [13, 17], [18, 33]], [0.70, 0.75, 0.85, 1.57], 55, [0, 2, 4, 7]) },
   },
+  {
+    name: 'task10-proposed-hp-shape',
+    normal: { maxT: 21, hpBase: 141, hpScale: 2.50, finisherUnlock: 0.75, phases: phases([[1, 4], [5, 8], [9, 11], [12, 21]], [0.60, 0.85, 1.05, 1.38], 55) },
+    big: { maxT: 33, hpBase: 272, hpScale: 3.50, finisherUnlock: 0.80, phases: phases([[1, 6], [7, 12], [13, 17], [18, 33]], [0.70, 0.75, 0.85, 1.57], 55, [0, 2, 4, 7]) },
+  },
+  {
+    name: 'task10-control-centered-hp-shape',
+    normal: { maxT: 21, hpBase: 131, hpScale: 2.50, finisherUnlock: 0.75, phases: phases([[1, 4], [5, 8], [9, 11], [12, 21]], [0.60, 0.85, 1.05, 1.38], 55) },
+    big: { maxT: 33, hpBase: 250, hpScale: 3.50, finisherUnlock: 0.80, phases: phases([[1, 6], [7, 12], [13, 17], [18, 33]], [0.70, 0.75, 0.85, 1.57], 55, [0, 2, 4, 7]) },
+  },
+  {
+    name: 'task10-minratio-control-centered',
+    normal: { maxT: 21, hpBase: 141, hpScale: 2.36, finisherUnlock: 0.75, phases: phases([[1, 4], [5, 8], [9, 11], [12, 21]], [0.60, 0.85, 1.05, 1.38], 55) },
+    big: { maxT: 33, hpBase: 272, hpScale: 3.20, finisherUnlock: 0.80, phases: phases([[1, 6], [7, 12], [13, 17], [18, 33]], [0.70, 0.75, 0.85, 1.57], 55, [0, 2, 4, 7]) },
+  },
 ];
 
 function makeFighter(id, rating) {
