@@ -1054,6 +1054,38 @@ function showConfirm(msg, yesLabel, onYes) {
   `);
 }
 
+// ── セーブスロット名 入力モーダル（showConfirmと同系統の D型モーダルを流用） ──
+function showSaveNameModal(slot) {
+  Audio.play('notify');
+  const info = Storage.getSaveInfo(slot);
+  const currentName = (info && info.name) || '';
+  window._saveNameModalSlot = slot;
+  _mdlDOpen(`
+    <div class="mdl-d-title">セーブ名を変更</div>
+    <div class="mdl-d-body">スロット${slot}の表示名を設定します。空欄のまま決定すると名前を解除します。</div>
+    <input id="mdlSaveNameInput" class="mdl-d-input" type="text" maxlength="${SAVE_NAME_MAX_LEN}"
+      value="${_escapeHtml(currentName)}" placeholder="例: メインセーブ"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();_confirmSaveNameModal();}">
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="_confirmSaveNameModal()">決定</button>
+      <button class="mdl-d-btn secondary" onclick="_mdlDClose()">キャンセル</button>
+    </div>
+  `);
+  setTimeout(() => {
+    const el = document.getElementById('mdlSaveNameInput');
+    if (el) { el.focus(); el.select(); }
+  }, 50);
+}
+
+function _confirmSaveNameModal() {
+  const slot = window._saveNameModalSlot;
+  const el = document.getElementById('mdlSaveNameInput');
+  const val = el ? el.value : '';
+  _mdlDClose();
+  if (slot == null) return;
+  renameSaveSlot(slot, val);
+}
+
 function showRosterOverflowSigningModal(pending) {
   if (!pending) return;
   const fighter = pending.fighter || {};

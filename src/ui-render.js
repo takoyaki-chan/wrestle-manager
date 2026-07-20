@@ -6223,9 +6223,12 @@ function renderSave() {
   for (let i = 1; i <= maxSlots; i++) {
     const info = getSaveInfo(i);
     if (info) {
+      const slotTitle = info.name
+        ? `${_escapeHtml(info.name)}<span style="font-weight:400;font-size:11px;color:var(--text-dim);margin-left:6px">スロット ${i}</span>`
+        : `スロット ${i}`;
       html += `<div class="save-slot has-data">
         <div>
-          <div class="save-slot-title">スロット ${i}</div>
+          <div class="save-slot-title">${slotTitle}</div>
           <div class="save-slot-meta">${Engine.util.formatDate(info.season, info.week)} ｜ 資金${Math.round(info.funds).toLocaleString()}万 ｜ 人気${Engine.util.dispOrgPop(info.orgPop)} ｜ 所属${info.rosterSize}名</div>
           <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} ｜ v${info.version}</div>
         </div>
@@ -6233,6 +6236,7 @@ function renderSave() {
           <button class="btn btn-gold btn-sm" onclick="showConfirm('スロット${i}に上書きセーブしますか？','セーブ',()=>saveGame(${i}))">セーブ</button>
           <button class="btn btn-blue btn-sm" onclick="showConfirm('スロット${i}からロードしますか？\\n現在の進行は失われます。','ロード',()=>loadGame(${i}))">ロード</button>
           <button class="btn btn-red btn-sm" onclick="showConfirm('スロット${i}のデータを削除しますか？','削除',()=>deleteSave(${i}))">削除</button>
+          <button class="btn btn-sm" style="background:rgba(212,168,67,0.08);color:var(--gold-light);border:1px solid rgba(212,168,67,0.25)" onclick="showSaveNameModal(${i})">✏️ 名前</button>
           <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave(${i})">📥 書出</button>
         </div>
       </div>`;

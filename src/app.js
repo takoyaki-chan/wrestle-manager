@@ -1381,6 +1381,7 @@ const SAVE_KEY = 'wrestle_manager_save_';
 const SAVE_SLOTS = 3;
 const AUTOSAVE_KEY = 'wrestle_manager_autosave';
 const SAVE_COMPRESS_MARKER = 'WM_LZ|';
+const SAVE_NAME_MAX_LEN = 32; // セーブ名の上限文字数（全角考慮、コードポイント基準）
 
 // ─── セーブデータ トリミング定数 ───
 const SAVE_TRIM = {
@@ -1393,8 +1394,32 @@ const SAVE_TRIM = {
 };
 
 const Storage = {
+  // ─── セーブ名サニタイズ: ラベル表示用（トリム＋文字数上限のみ、記号は許容） ───
+  _sanitizeSaveNameLabel(name) {
+    if (name === undefined || name === null) return '';
+    // 制御文字を除去してトリム
+    let s = String(name).replace(/[\x00-\x1F\x7F]/g, '').trim();
+    if (!s) return '';
+    // 全角絵文字等のサロゲートペアを考慮し、コードポイント単位で上限を適用
+    const chars = Array.from(s);
+    if (chars.length > SAVE_NAME_MAX_LEN) s = chars.slice(0, SAVE_NAME_MAX_LEN).join('');
+    return s.trim();
+  },
+
+  // ─── セーブ名サニタイズ: ファイル名用（OS禁止文字を除去/置換） ───
+  _sanitizeFilenamePart(name) {
+    const label = Storage._sanitizeSaveNameLabel(name);
+    if (!label) return '';
+    // Windows/Mac/Linux で使用できない文字を "_" に置換
+    const safe = label.replace(/[\/\\:*?"<>|]/g, '_').trim();
+    return safe;
+  },
+
   // ─── セーブデータ圧縮: トリミング + LZ-UTF16 ───
-  serialize(G) {
+  // saveNameOverride を渡すとセーブ名として state._saveName に反映する。
+  // 渡さない場合（undefined/空文字）は既存の G._saveName に汚染があっても必ず消去する
+  // （別スロットからロードした名前が無関係なスロットに紛れ込むのを防ぐため）。
+  serialize(G, saveNameOverride) {
     const state = JSON.parse(JSON.stringify(G));
     state.roster.forEach(c => {
       delete c._weekAction; c.intensive = false;
@@ -1466,6 +1491,8 @@ const Storage = {
     }
     state._saveVersion = '1.14b';
     state._saveDate = new Date().toISOString();
+    const sanitizedName = Storage._sanitizeSaveNameLabel(saveNameOverride);
+    if (sanitizedName) state._saveName = sanitizedName; else delete state._saveName;
     // LZ圧縮 + マーカー
     const json = JSON.stringify(state);
     return SAVE_COMPRESS_MARKER + LZString.compressToUTF16(json);
@@ -2930,11 +2957,32 @@ const Storage = {
 
   save(slot) {
     try {
-      localStorage.setItem(SAVE_KEY + slot, Storage.serialize(G));
+      // 上書きセーブでは、そのスロットに既に設定されているセーブ名を引き継ぐ。
+      // G自体は複数スロットで共有される単一の状態なので、G側の名前は使わない。
+      let existingName;
+      try {
+        const oldRaw = localStorage.getItem(SAVE_KEY + slot);
+        if (oldRaw) existingName = Storage._parseRaw(oldRaw)._saveName;
+      } catch (e) { /* 旧データ破損時は名前なし扱いで続行 */ }
+      localStorage.setItem(SAVE_KEY + slot, Storage.serialize(G, existingName));
       G = { ...G, gameLog: [...G.gameLog, `💾 スロット${slot}にセーブしました`] };
       refreshAll();
       return true;
     } catch(e) { alert('セーブに失敗しました: ' + e.message); return false; }
+  },
+
+  // ─── スロットのセーブ名だけを変更する（ゲーム進行状態には一切触れない） ───
+  renameSave(slot, name) {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY + slot);
+      if (!raw) return false;
+      const state = Storage._parseRaw(raw);
+      const sanitized = Storage._sanitizeSaveNameLabel(name);
+      if (sanitized) state._saveName = sanitized; else delete state._saveName;
+      const json = JSON.stringify(state);
+      localStorage.setItem(SAVE_KEY + slot, SAVE_COMPRESS_MARKER + LZString.compressToUTF16(json));
+      return true;
+    } catch(e) { console.error('[WM] セーブ名の変更に失敗:', e.message); return false; }
   },
 
   load(slot) {
@@ -2986,7 +3034,7 @@ const Storage = {
       const raw = localStorage.getItem(SAVE_KEY + slot);
       if (!raw) return null;
       const s = Storage._parseRaw(raw);
-      return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate, version: s._saveVersion, orgPop: s.orgPop || 0, rosterSize: s.roster ? s.roster.length : 0 };
+      return { season: s.season, week: s.week, funds: s.funds, date: s._saveDate, version: s._saveVersion, orgPop: s.orgPop || 0, rosterSize: s.roster ? s.roster.length : 0, name: s._saveName || '' };
     } catch { return null; }
   },
 
@@ -3003,7 +3051,10 @@ const Storage = {
     const datePart = new Date().toISOString().slice(0, 10);
     const seasonPart = `S${parsed.season || 1}W${parsed.week || 1}`;
     const slotLabel = slotOrAuto === 'auto' ? 'auto' : `slot${slotOrAuto}`;
-    const filename = `wm_save_${slotLabel}_${seasonPart}_${datePart}.json`;
+    const namedPart = Storage._sanitizeFilenamePart(parsed._saveName);
+    const filename = namedPart
+      ? `${namedPart}_${seasonPart}_${datePart}.json`
+      : `wm_save_${slotLabel}_${seasonPart}_${datePart}.json`;
 
     const jsonStr = JSON.stringify(parsed);
     const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -3078,6 +3129,11 @@ function loadGame(slot) {
   return r;
 }
 function deleteSave(slot) { Audio.play('click'); Storage.deleteSave(slot); refreshAll(); }
+function renameSaveSlot(slot, name) {
+  const ok = Storage.renameSave(slot, name);
+  if (ok) { Audio.play('stamp'); renderSave(); }
+  return ok;
+}
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 8: APP BRIDGE (v0.85)                            ║
