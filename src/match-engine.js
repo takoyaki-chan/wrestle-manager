@@ -45,6 +45,14 @@ function snapshotMoveSelectionStats(stats) {
 
 // ── Battle Engine (DOM-free) ──────────────────────────
 Engine.battle = {
+    pacingPenalty(matchTurns, tier, hasHikidashi) {
+      const limits = tier >= 2
+        ? (hasHikidashi ? { ideal: 14, ok: 10 } : { ideal: 18, ok: 14 })
+        : (hasHikidashi ? { ideal: 6, ok: 4 } : { ideal: 8, ok: 6 });
+      if (matchTurns >= limits.ideal) return 0;
+      if (matchTurns >= limits.ok) return 3;
+      return 12;
+    },
     phase(t, _phases) {
       const p = _phases || PHASES;
       return p.find(pp => t >= pp.min && t <= pp.max) || p[p.length - 1];
@@ -667,20 +675,7 @@ Engine.battle = {
       dramaPenalty = Math.max(0, Math.round(dramaPenalty));
 
       // §3 ペーシング減点（Tier別適正ターン帯、引き出し上手で緩和）
-      let pacingPenalty = 0;
-      if (tier >= 2) {
-        const idealMin = hasHikidashi ? 10 : 13;
-        const okMin = hasHikidashi ? 7 : 10;
-        if (matchTurns >= idealMin) pacingPenalty = 0;
-        else if (matchTurns >= okMin) pacingPenalty = 3;
-        else pacingPenalty = 12;
-      } else {
-        const idealMin = hasHikidashi ? 5 : 7;
-        const okMin = hasHikidashi ? 3 : 5;
-        if (matchTurns >= idealMin) pacingPenalty = 0;
-        else if (matchTurns >= okMin) pacingPenalty = 3;
-        else pacingPenalty = 12;
-      }
+      const pacingPenalty = B.pacingPenalty(matchTurns, tier, hasHikidashi);
 
       // §4 決着減点
       let finishPenalty = 0;

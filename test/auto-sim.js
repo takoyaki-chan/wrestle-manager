@@ -28,6 +28,8 @@
 //
 //  Usage: node test/auto-sim.js [シーズン数] [シード]
 //  Example: node test/auto-sim.js 500 12345
+//  Historical source comparison (PowerShell):
+//    $env:WM_SOURCE_REF='3e9ca50'; node test/auto-sim.js 100 42
 // ══════════════════════════════════════════════════════════════════════════════
 
 'use strict';
@@ -35,6 +37,18 @@
 const path = require('path');
 const fs = require('fs');
 const { execFileSync } = require('child_process');
+
+const args = process.argv.slice(2);
+const targetSeasons = parseInt(args[0], 10) || 100;
+const userSeed = args[1] ? parseInt(args[1], 10) : (Date.now() ^ 0xABCD1234);
+
+// Some non-match simulation paths still use Math.random(). Seed those calls as
+// well so commit-to-commit measurements with the same CLI seed are comparable.
+let legacyRandomState = userSeed >>> 0;
+Math.random = function seededLegacyRandom() {
+  legacyRandomState = (Math.imul(legacyRandomState, 1664525) + 1013904223) >>> 0;
+  return legacyRandomState / 0x100000000;
+};
 
 // window stub（Engine内で IS_TRIAL 参照がある）
 global.window = { IS_TRIAL: false };
@@ -105,13 +119,14 @@ function createBigStartGroupStats() {
     finisherSelections: 0,
     zeroFinisherMatches: 0,
     mqTotal: 0,
+    legacyPacingMqTotal: 0,
     finishTypes: { fall: 0, gu: 0, TKO: 0, decision: 0 },
     startHpRatios: [],
     origins: {
-      juniorTournament: { matches: 0, mqTotal: 0, startHpRatios: [] },
-      autumnWar: { matches: 0, mqTotal: 0, startHpRatios: [] },
-      tenchosen: { matches: 0, mqTotal: 0, startHpRatios: [] },
-      other: { matches: 0, mqTotal: 0, startHpRatios: [] },
+      juniorTournament: { matches: 0, mqTotal: 0, legacyPacingMqTotal: 0, startHpRatios: [] },
+      autumnWar: { matches: 0, mqTotal: 0, legacyPacingMqTotal: 0, startHpRatios: [] },
+      tenchosen: { matches: 0, mqTotal: 0, legacyPacingMqTotal: 0, startHpRatios: [] },
+      other: { matches: 0, mqTotal: 0, legacyPacingMqTotal: 0, startHpRatios: [] },
     },
   };
 }
@@ -143,15 +158,34 @@ function recordBigStartGroup(stats, result, startHpRatios, origin, overrideAtFul
   if (normalFinishers === 0) stats.zeroFinisherMatches++;
   stats.finishTypes[classifyFinishType(result.finType)]++;
   stats.mqTotal += result.mq || 0;
+  stats.legacyPacingMqTotal += result._legacyPacingMq || result.mq || 0;
   stats.startHpRatios.push(...startHpRatios);
   if (origin && stats.origins[origin]) {
     stats.origins[origin].matches++;
     stats.origins[origin].mqTotal += result.mq || 0;
+    stats.origins[origin].legacyPacingMqTotal += result._legacyPacingMq || result.mq || 0;
     stats.origins[origin].startHpRatios.push(...startHpRatios);
   }
 }
 
 let activeBigMatchOrigin = 'other';
+
+function legacyPacingPenalty(matchTurns, tier, hasHikidashi) {
+  const limits = tier >= 2
+    ? (hasHikidashi ? { ideal: 10, ok: 7 } : { ideal: 13, ok: 10 })
+    : (hasHikidashi ? { ideal: 5, ok: 3 } : { ideal: 7, ok: 5 });
+  if (matchTurns >= limits.ideal) return 0;
+  if (matchTurns >= limits.ok) return 3;
+  return 12;
+}
+
+function mqWithLegacyPacing(result, tier, charL, charR) {
+  const detail = result.mqDetail;
+  if (!detail) return result.mq || 0;
+  const hasHikidashi = Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手');
+  const pacingPenalty = legacyPacingPenalty(result.turns || 0, tier, hasHikidashi);
+  return Math.max(5, Math.round(detail.ceiling - detail.dramaPenalty - pacingPenalty - detail.finishPenalty));
+}
 
 // Task 10: match-injury totals. Player match injuries go through
 // Engine.injury.check; AI match injuries are detected around processAIWeek.
@@ -206,13 +240,20 @@ Engine.injury.check = function(...args) {
 
 const _processAIWeekForInjuryProbe = Engine.rival.processAIWeek;
 Engine.rival.processAIWeek = function(rng, state, org) {
-  const before = new Map(((state.aiOrgs?.[org.id]?.roster) || []).map(fighter => [fighter.id, fighter]));
+  const priorOrg = state.aiOrgs?.[org.id] || {};
+  const before = new Map((priorOrg.roster || []).map(fighter => [fighter.id, fighter]));
+  const priorRetirees = new Set((priorOrg._midSeasonRetirees || []).map(fighter => fighter.id));
   const result = _processAIWeekForInjuryProbe.call(this, rng, state, org);
   for (const fighter of result?.roster || []) {
     const prior = before.get(fighter.id);
     const injury = fighter.injury;
     if ((!prior || !prior.injury) && injury && injury.type !== 'training injury') {
       recordInjury('ai', org.id, fighter, injury, injury.weeksLeft, state.season);
+    }
+  }
+  for (const fighter of result?._midSeasonRetirees || []) {
+    if (!priorRetirees.has(fighter.id) && (!before.get(fighter.id) || !before.get(fighter.id).injury)) {
+      recordInjury('ai', org.id, fighter, fighter.injury, fighter.injury?.weeksLeft, state.season);
     }
   }
   return result;
@@ -226,6 +267,7 @@ const matchBalanceProbe = {
   turns: 0,
   timeouts: 0,
   mq: [],
+  legacyPacingMq: [],
   smallFallOrGuFinishes: 0,
   smallTkoFinishes: 0,
   finisherSelections: 0,
@@ -262,6 +304,8 @@ const matchBalanceProbe = {
 const _simulateMatchForBalanceProbe = Engine.battle.simulateMatch;
 Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   const result = _simulateMatchForBalanceProbe.call(this, charL, charR, rng, matchTier, opts);
+  const resolvedTier = result.matchTier || matchTier || 1;
+  result._legacyPacingMq = mqWithLegacyPacing(result, resolvedTier, charL, charR);
   const leftOvr = Engine.util.ov(charL);
   const rightOvr = Engine.util.ov(charR);
   const gap = Math.abs(leftOvr - rightOvr);
@@ -271,6 +315,7 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   matchBalanceProbe.turns += result.turns || 0;
   matchBalanceProbe.timeouts += result.finishPhase === 'Timeout' ? 1 : 0;
   matchBalanceProbe.mq.push(result.mq || 0);
+  matchBalanceProbe.legacyPacingMq.push(result._legacyPacingMq);
   const phaseTiming = matchBalanceProbe.phaseTiming[(result.matchTier || matchTier || 1) >= 2 ? 'big' : 'normal'];
   const phaseConfig = (result.matchTier || matchTier || 1) >= 2 ? BIGMATCH_PHASES : PHASES;
   const completedTurns = Math.max(0, Math.min(result.turns || 0, phaseTiming.turnHistogram.length - 1));
@@ -383,10 +428,6 @@ if (typeof ALL_CHARS === 'undefined') {
 }
 
 // ── Step 2: パラメータ解析 ──
-const args = process.argv.slice(2);
-const targetSeasons = parseInt(args[0], 10) || 100;
-const userSeed = args[1] ? parseInt(args[1], 10) : (Date.now() ^ 0xABCD1234);
-
 console.log('=== Wrestle Manager Auto-Simulation ===');
 console.log('Mode: engine-integrity (エンジン整合性チェック)');
 console.log('※ プレイ再現ではありません。バランス判断の単独根拠にしないでください。');
@@ -1320,6 +1361,7 @@ if (matchBalanceProbe.matches > 0) {
   const avgTurns = matchBalanceProbe.turns / matchBalanceProbe.matches;
   const timeoutRate = matchBalanceProbe.timeouts / matchBalanceProbe.matches * 100;
   const avgMq = matchBalanceProbe.mq.reduce((sum, value) => sum + value, 0) / matchBalanceProbe.mq.length;
+  const legacyPacingAvgMq = matchBalanceProbe.legacyPacingMq.reduce((sum, value) => sum + value, 0) / matchBalanceProbe.legacyPacingMq.length;
   const mqBands = [
     ['<50', value => value < 50],
     ['50-59', value => value >= 50 && value < 60],
@@ -1333,6 +1375,7 @@ if (matchBalanceProbe.matches > 0) {
   console.log(`  平均ターン数: ${avgTurns.toFixed(2)}`);
   console.log(`  時間切れ判定: ${matchBalanceProbe.timeouts}/${matchBalanceProbe.matches} (${timeoutRate.toFixed(2)}%)`);
   console.log(`  MQ: avg=${avgMq.toFixed(2)} ${mqBands.map(([label, test]) => `${label}:${matchBalanceProbe.mq.filter(test).length}`).join(' ')}`);
+  console.log(`  MQ with legacy pacing thresholds: avg=${legacyPacingAvgMq.toFixed(2)} delta=${(avgMq - legacyPacingAvgMq).toFixed(2)}`);
   if (matchBalanceProbe.moveSelections > 0) {
     console.log(`  小技決着: フォール/ギブアップ=${matchBalanceProbe.smallFallOrGuFinishes} TKO=${matchBalanceProbe.smallTkoFinishes}`);
     console.log(`  フィニッシュ級(開幕大技除外): 平均${(matchBalanceProbe.finisherSelections / matchBalanceProbe.matches).toFixed(3)}回/試合 0回率=${(matchBalanceProbe.zeroFinisherMatches / matchBalanceProbe.matches * 100).toFixed(2)}%`);
@@ -1422,7 +1465,7 @@ if (matchBalanceProbe.matches > 0) {
       console.log(`      Climax reach ${group.reachedClimax}/${group.matches} (${pct(group.reachedClimax).toFixed(2)}%)`);
       console.log(`      finishTurn ${histogramText}`);
       console.log(`      phaseResidence ${residenceText}`);
-      console.log(`      MQ avg=${(group.mqTotal / group.matches).toFixed(2)}`);
+      console.log(`      MQ avg=${(group.mqTotal / group.matches).toFixed(2)} legacyPacing=${(group.legacyPacingMqTotal / group.matches).toFixed(2)}`);
       console.log(`      finisher/match=${(group.finisherSelections / group.matches).toFixed(3)} zero=${group.zeroFinisherMatches}/${group.matches} (${pct(group.zeroFinisherMatches).toFixed(2)}%)`);
       console.log(`      finishType ${finishTypeText}`);
       console.log(`      startHP ${hpDistribution(group.startHpRatios)}`);
@@ -1432,7 +1475,8 @@ if (matchBalanceProbe.matches > 0) {
       if (key === 'carried') {
         for (const [origin, originStats] of Object.entries(group.origins)) {
           const mq = originStats.matches ? (originStats.mqTotal / originStats.matches).toFixed(2) : 'n/a';
-          console.log(`      origin=${origin} matches=${originStats.matches} MQ=${mq} startHP ${hpDistribution(originStats.startHpRatios)}`);
+          const legacyMq = originStats.matches ? (originStats.legacyPacingMqTotal / originStats.matches).toFixed(2) : 'n/a';
+          console.log(`      origin=${origin} matches=${originStats.matches} MQ=${mq} legacyPacing=${legacyMq} startHP ${hpDistribution(originStats.startHpRatios)}`);
         }
       }
     }

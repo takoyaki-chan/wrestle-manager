@@ -701,24 +701,25 @@ Brawler:{strike:30,throw:25,submission:5,aerial:5,ground:20}
 // ║  SECTION 3: ENGINE CONFIG (v4.1b tuneB)                  ║
 // ╚══════════════════════════════════════════════════════════╝
 const MAX_T = 21;
-// Task 09: measured phase/HP calibration. Climax starts one turn earlier,
-// match HP and turn caps grow together, and Climax big weight reflects the
-// measured rate after finisher cooldown exemption.
+// Task 09/10: measured phase/HP calibration. Task 10 restores the stamina
+// contribution to max HP while preserving the ST60 center point. Climax
+// multipliers and the direct ST defense scale avoid double-counting that wider
+// HP distribution without flattening it again.
 const PHASES = [
   {name:'Opening',min:1,max:4,mult:0.60,tierW:{small:70,medium:25,big:5},rollupRate:0,counterBonus:0},
   {name:'Mid',min:5,max:8,mult:0.85,tierW:{small:35,medium:45,big:20},rollupRate:3,counterBonus:3},
   {name:'End',min:9,max:11,mult:1.05,tierW:{small:15,medium:55,big:30},rollupRate:5,counterBonus:5},
-  {name:'Climax',min:12,max:21,mult:1.38,tierW:{small:0,medium:45,big:55},rollupRate:7,counterBonus:8}
+  {name:'Climax',min:12,max:21,mult:1.45,tierW:{small:0,medium:45,big:55},rollupRate:7,counterBonus:8}
 ];
 const ENG = {
-  hpBase: 198, hpScale: 1.55,
+  hpBase: 141, hpScale: 2.50,
   effPivot: 100, effSlopeAfterPivot: 1.0,
   hitBase: {1:97,2:97,3:96,4:94,5:92,6:89,7:86,8:84,9:81,10:78,11:76,12:74,13:72,14:70,15:68,16:66},
   tecHitBonus: 0.17, spdDodgeBonus: 0.18, hitMin: 42, hitMax: 98,
   counterBase: 3, counterTecScale: 0.055, counterSpdPenalty: 0.07, counterMin: 2, counterMax: 18,
   counterDmgMult: 0.6, counterMomShift: 18,
   dmgPwrScale: 0.27, dmgTecScale: 0.115, dmgSpdScale: 0.115,
-  defStaScale: 0.025, defMntScale: 0.06, momDmgScale: 0.001,
+  defStaScale: 0.0125, defMntScale: 0.06, momDmgScale: 0.001,
   dmgRandMin: 0.90, dmgRandRange: 0.20, dmgFloor: 3,
   gritDuration: 2, gritDmgReduction: 0.20, gritCounterBonus: 8,
   finisherUnlockHpThreshold: 0.75,
@@ -762,12 +763,12 @@ const BIGMATCH_PHASES = [
   {name:'Opening',min:1,max:6,mult:0.70,tierW:{small:70,medium:25,big:5},rollupRate:0,counterBonus:0},
   {name:'Mid',min:7,max:12,mult:0.75,tierW:{small:35,medium:45,big:20},rollupRate:3,counterBonus:2},
   {name:'End',min:13,max:17,mult:0.85,tierW:{small:15,medium:55,big:30},rollupRate:5,counterBonus:4},
-  {name:'Climax',min:18,max:33,mult:1.57,tierW:{small:0,medium:45,big:55},rollupRate:7,counterBonus:7}
+  {name:'Climax',min:18,max:33,mult:1.70,tierW:{small:0,medium:45,big:55},rollupRate:7,counterBonus:7}
 ];
 const BIGMATCH_ENG = {
   ...ENG,
-  hpBase: 401,
-  hpScale: 1.35,
+  hpBase: 272,
+  hpScale: 3.50,
   rollupBaseSuccess: 10,
   rollupHpThreshold: 0.25,
   finisherUnlockHpThreshold: 0.80,
