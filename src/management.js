@@ -11377,7 +11377,7 @@ const Engine = {
     // v1.5s25b: next_match_mq バフ（特定ペアの次の対戦のみ）
     const nextMatchMqBuff = (state.milestoneBuffs || []).find(b => b.type === 'next_match_mq');
     let nextMatchMqConsumed = false;
-    // v2.0: ファン期待度チェック（期待カードは MQ+5 ボーナス）
+    // v2.0: ファン期待度チェック（MQ加算は廃止済み。現在は集客側にのみ効く）
     const fanExpects = Engine.fanExpect.generate(s);
     const results = rawResults.map((r, matchIdx) => {
       // タッグ試合: crowdMQのみ加算（因縁/タイトル等はPhase 5以降）
