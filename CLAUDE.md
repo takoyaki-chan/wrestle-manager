@@ -205,6 +205,9 @@ for i in $(seq 1 100); do node test/auto-sim.js 100 $((i * 7919)); done | grep "
 | ai-draft-balance-spec-v0.1.md | AI団体ドラフト節度(年間獲得ソフト上限+ティア別調整+leagueElevated連動、構造確定・実装前) |
 | faction-internal-rank-spec-v0.2.md | 派閥内ポイント制+派閥内序列戦(ゼロサム移動/リーダーは蓄積枠外/猶予52週、v0.2起案) |
 | match-format-options-spec-v0.1.md | 特殊試合形式3種(アイアンマッチ/ハードコア+ケージ/6人タッグエリミネーション、議論用ドラフト) |
+| move-selection-spec-v0.1.md | 技選択ロジック再設計(威力ベース3ティア制/フェーズ別重み/フィニッシュ級d14+のHP解禁/丸め込み独立経路/大技クールダウン、実装前レビュー待ち) |
+| opening-execution-spec-v0.1.md | 開幕大技システム(OVR差15+で格上のみOpeningに高威力の一撃/ダメージ帯20〜105%/透かし時反撃補正/キックアウト無効、実装前レビュー待ち) |
+| finisher-system-spec-v1.0.md | フィニッシャー(キャラ固有必殺技の演出レイヤー。設計完了・**優先順位低**・将来の拡張枠) |
 
 ## UI実装ルール(必読)
 
