@@ -308,6 +308,7 @@ const mqInventoryProbe = {
   singlesRaw: [],
   tagRaw: [],
   regularFinal: [],
+  uiRouteEstimate: [],
 };
 
 const _simulateMatchForBalanceProbe = Engine.battle.simulateMatch;
@@ -1032,7 +1033,49 @@ function runSimulation(seed, seasons) {
           const showResult = Engine.executeShow(G);
           if (showResult && !showResult.error) {
             for (const matchResult of showResult.results || []) {
-              if (matchResult.mqInventory) mqInventoryProbe.regularFinal.push({ ...matchResult.mqInventory });
+              if (!matchResult.mqInventory) continue;
+              const inventory = { ...matchResult.mqInventory };
+              mqInventoryProbe.regularFinal.push(inventory);
+              let uiMq = inventory.baseEngineMq;
+              let upperClampCount = 0;
+              let upperOverageTotal = 0;
+              let upperOverageMax = 0;
+              const addWithUpperClamp = amount => {
+                const raw = uiMq + amount;
+                if (raw > 100) {
+                  upperClampCount++;
+                  upperOverageTotal += raw - 100;
+                  upperOverageMax = Math.max(upperOverageMax, raw - 100);
+                }
+                uiMq = Math.min(100, raw);
+              };
+              if (inventory.matchType === 'singles') {
+                addWithUpperClamp(inventory.rivalry || 0);
+                addWithUpperClamp(inventory.title || 0);
+              }
+              const crowdRaw = uiMq + (inventory.crowd || 0);
+              if (crowdRaw > 100) {
+                upperClampCount++;
+                upperOverageTotal += crowdRaw - 100;
+                upperOverageMax = Math.max(upperOverageMax, crowdRaw - 100);
+              }
+              uiMq = Engine.util.clamp(crowdRaw, 5, 100);
+              const freshness = inventory.matchType === 'singles' ? (matchResult.freshnessBonus || 0) : 0;
+              const freshnessRaw = uiMq + freshness;
+              if (freshnessRaw > 100) {
+                upperClampCount++;
+                upperOverageTotal += freshnessRaw - 100;
+                upperOverageMax = Math.max(upperOverageMax, freshnessRaw - 100);
+              }
+              uiMq = Engine.util.clamp(freshnessRaw, 5, 100);
+              mqInventoryProbe.uiRouteEstimate.push({
+                ...inventory,
+                freshness,
+                finalMq: uiMq,
+                upperClampCount,
+                upperOverageTotal,
+                upperOverageMax,
+              });
             }
             // ── 新集客v2計測（既存ロジック非接続・横で計算するだけ） ──
             if (typeof Engine.attendanceV2 !== 'undefined' && showResult.results) {
@@ -1631,6 +1674,15 @@ if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqIn
       const activeText = bonusKeys.map(key => `${key}:${band.filter(sample => (sample[key] || 0) > 0).length}`).join(' ');
       console.log(`    OV ${label}: n=${band.length} cap=${capCount} >100=${overCount} ${activeText}`);
     }
+  }
+  const uiEstimates = mqInventoryProbe.uiRouteEstimate;
+  if (uiEstimates.length) {
+    printMqInventoryMetrics('player UI route reconstruction', uiEstimates,
+      ['baseEngineMq', 'rivalry', 'title', 'crowd', 'freshness', 'upperOverageTotal', 'finalMq']);
+    const clampedMatches = uiEstimates.filter(sample => sample.upperClampCount > 0);
+    const lowerMatches = uiEstimates.filter(sample => sample.finalMq === 5);
+    const overages = clampedMatches.map(sample => sample.upperOverageTotal);
+    console.log(`    clamps: upper=${clampedMatches.length}/${uiEstimates.length} lower-final=${lowerMatches.length}/${uiEstimates.length} overage-mean=${mqInventoryMetric(clampedMatches, 'upperOverageTotal').mean} overage-max=${overages.length ? Math.max(...overages) : 0}`);
   }
 }
 console.log('--------------------------------------');
