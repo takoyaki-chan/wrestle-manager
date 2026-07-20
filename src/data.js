@@ -688,13 +688,13 @@ Brawler:[{n:'エルボースマッシュ',d:12,c:'strike'},{n:'バックハン�
 {n:'フェイスウォッシュ連打',d:10,c:'ground'},{n:'ストンピング乱打',d:11,c:'ground'}]
 };
 const catW={
-Grappler:{strike:30,throw:30,submission:5,aerial:5,ground:15,rollup:5},
-Aerial:{strike:20,throw:15,submission:10,aerial:35,ground:5,rollup:10},
-Technique:{strike:15,throw:20,submission:30,aerial:5,ground:10,rollup:15},
-Allround:{strike:25,throw:25,submission:15,aerial:15,ground:10,rollup:10},
-Striker:{strike:45,throw:15,submission:5,aerial:10,ground:15,rollup:5},
-Submission:{strike:10,throw:10,submission:45,aerial:5,ground:15,rollup:10},
-Brawler:{strike:30,throw:25,submission:5,aerial:5,ground:20,rollup:5}
+Grappler:{strike:30,throw:30,submission:5,aerial:5,ground:15},
+Aerial:{strike:20,throw:15,submission:10,aerial:35,ground:5},
+Technique:{strike:15,throw:20,submission:30,aerial:5,ground:10},
+Allround:{strike:25,throw:25,submission:15,aerial:15,ground:10},
+Striker:{strike:45,throw:15,submission:5,aerial:10,ground:15},
+Submission:{strike:10,throw:10,submission:45,aerial:5,ground:15},
+Brawler:{strike:30,throw:25,submission:5,aerial:5,ground:20}
 };
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -704,10 +704,10 @@ const MAX_T = 16;
 // v5.2 ダメージカーブ再調整 (2026-05-01): Opening の dmg 20+ 連発を抑制し
 // 起承転結を回復。mult 0.90/1.05/1.20/1.40 → 0.60/0.85/1.05/1.30
 const PHASES = [
-  {name:'Opening',min:1,max:4,mult:0.60,sCh:20,counterBonus:0},
-  {name:'Mid',min:5,max:8,mult:0.85,sCh:40,counterBonus:3},
-  {name:'End',min:9,max:12,mult:1.05,sCh:55,counterBonus:5},
-  {name:'Climax',min:13,max:20,mult:1.30,sCh:70,counterBonus:8}
+  {name:'Opening',min:1,max:4,mult:0.60,tierW:{small:70,medium:25,big:5},rollupRate:0,counterBonus:0},
+  {name:'Mid',min:5,max:8,mult:0.85,tierW:{small:35,medium:45,big:20},rollupRate:3,counterBonus:3},
+  {name:'End',min:9,max:12,mult:1.05,tierW:{small:15,medium:55,big:30},rollupRate:5,counterBonus:5},
+  {name:'Climax',min:13,max:20,mult:1.30,tierW:{small:0,medium:35,big:65},rollupRate:7,counterBonus:8}
 ];
 const ENG = {
   hpBase: 100, hpScale: 1.80,
@@ -742,10 +742,10 @@ const ENG = {
 // ── Tier 2: ビッグマッチ用パラメータ（PPV/タイトル/対抗戦/トーナメント）──
 const BIGMATCH_MAX_T = 24;
 const BIGMATCH_PHASES = [
-  {name:'Opening',min:1,max:6,mult:0.70,sCh:15,counterBonus:0},
-  {name:'Mid',min:7,max:12,mult:0.85,sCh:35,counterBonus:2},
-  {name:'End',min:13,max:18,mult:1.00,sCh:50,counterBonus:4},
-  {name:'Climax',min:19,max:24,mult:1.20,sCh:65,counterBonus:7}
+  {name:'Opening',min:1,max:6,mult:0.70,tierW:{small:70,medium:25,big:5},rollupRate:0,counterBonus:0},
+  {name:'Mid',min:7,max:12,mult:0.85,tierW:{small:35,medium:45,big:20},rollupRate:3,counterBonus:2},
+  {name:'End',min:13,max:18,mult:1.00,tierW:{small:15,medium:55,big:30},rollupRate:5,counterBonus:4},
+  {name:'Climax',min:19,max:24,mult:1.20,tierW:{small:0,medium:35,big:65},rollupRate:7,counterBonus:7}
 ];
 const BIGMATCH_ENG = {
   ...ENG,
@@ -768,10 +768,10 @@ const TAG_MATCH_CONFIG = {
   hpScale: 1.00,
   apronRecovery: 5.0,
   phases: [
-    { name: 'Opening', min: 1,  max: 12, mult: 0.90, sCh: 20, counterBonus: 0 },
-    { name: 'Mid',     min: 13, max: 22, mult: 1.05, sCh: 40, counterBonus: 3 },
-    { name: 'End',     min: 23, max: 32, mult: 1.20, sCh: 55, counterBonus: 5 },
-    { name: 'Climax',  min: 33, max: 50, mult: 1.40, sCh: 70, counterBonus: 8 },
+    { name: 'Opening', min: 1,  max: 12, mult: 0.90, tierW: {small:70,medium:25,big:5}, rollupRate: 0, counterBonus: 0 },
+    { name: 'Mid',     min: 13, max: 22, mult: 1.05, tierW: {small:35,medium:45,big:20}, rollupRate: 3, counterBonus: 3 },
+    { name: 'End',     min: 23, max: 32, mult: 1.20, tierW: {small:15,medium:55,big:30}, rollupRate: 5, counterBonus: 5 },
+    { name: 'Climax',  min: 33, max: 50, mult: 1.40, tierW: {small:0,medium:35,big:65}, rollupRate: 7, counterBonus: 8 },
   ],
   kickoutMax: 2,
   guEscapeMax: 2,

@@ -3,20 +3,118 @@
 // ║  Pure logic layer — no DOM references                     ║
 // ╚══════════════════════════════════════════════════════════╝
 
+// 技候補はモジュール初期化時に一度だけ威力ティアへ分類する。
+// 丸め込みは独立抽選なので、通常ティアの候補からは除外する。
+const MOVE_TIER_POOLS = {};
+const ROLLUP_MOVES = commonMoves.filter(move => move.c === 'rollup');
+const MOVE_BY_NAME = new Map();
+[...commonMoves, ...Object.values(styleMoves).flat()].forEach(move => {
+  if (!MOVE_BY_NAME.has(move.n)) MOVE_BY_NAME.set(move.n, move);
+});
+Object.keys(styleMoves).forEach(style => {
+  const moves = [...commonMoves, ...styleMoves[style]].filter(move => move.c !== 'rollup');
+  MOVE_TIER_POOLS[style] = {
+    small: moves.filter(move => move.d >= 2 && move.d <= 5),
+    medium: moves.filter(move => move.d >= 6 && move.d <= 10),
+    big: moves.filter(move => move.d >= 11 && move.d <= 16),
+  };
+});
+
+function createMoveSelectionStats() {
+  return {
+    total: 0,
+    rollup: 0,
+    finisher: 0,
+    consecutiveBig: 0,
+    byPhase: {},
+    _lastTierByFighter: {},
+  };
+}
+
+function snapshotMoveSelectionStats(stats) {
+  return {
+    total: stats.total,
+    rollup: stats.rollup,
+    finisher: stats.finisher,
+    consecutiveBig: stats.consecutiveBig,
+    byPhase: stats.byPhase,
+  };
+}
+
 // ── Battle Engine (DOM-free) ──────────────────────────
 Engine.battle = {
     phase(t, _phases) {
       const p = _phases || PHASES;
       return p.find(pp => t >= pp.min && t <= pp.max) || p[p.length - 1];
     },
-    selMove(rng, style, turn, _phases) {
+    moveTier(move) {
+      if (!move || move.c === 'rollup') return 'rollup';
+      if (move.d <= 5) return 'small';
+      if (move.d <= 10) return 'medium';
+      return 'big';
+    },
+    findMoveByName(name) {
+      return MOVE_BY_NAME.get(name) || null;
+    },
+    selMove(rng, style, turn, _phases, context) {
       const ph = Engine.battle.phase(turn, _phases);
-      const use = Engine.rng.float(rng) * 100 < ph.sCh;
       const resolvedStyle = (style && styleMoves[style] && catW[style]) ? style : 'Allround';
-      const pool = use ? styleMoves[resolvedStyle] : commonMoves;
-      const cat = Engine.rng.weighted(rng, catW[resolvedStyle]);
-      const cands = pool.filter(m => m.c === cat);
-      return cands.length ? Engine.rng.pick(rng, cands) : Engine.rng.pick(rng, pool);
+      const ctx = context || {};
+      const fighter = ctx.fighter || null;
+      const wasCoolingDown = !!(fighter && fighter.bigMoveCooldown);
+      if (fighter) fighter.bigMoveCooldown = false;
+
+      let move;
+      let tier;
+      if (ph.rollupRate > 0 && Engine.rng.float(rng) * 100 < ph.rollupRate) {
+        tier = 'rollup';
+        move = Engine.rng.pick(rng, ROLLUP_MOVES);
+      } else {
+        const tierWeights = { ...ph.tierW };
+        if (wasCoolingDown) tierWeights.big = 0;
+        const selectableTierWeights = Object.fromEntries(
+          Object.entries(tierWeights).filter(([, weight]) => weight > 0)
+        );
+        tier = Engine.rng.weighted(rng, selectableTierWeights);
+
+        let pool = MOVE_TIER_POOLS[resolvedStyle][tier];
+        if (tier === 'big') {
+          const eng = ctx.eng || ENG;
+          const defender = ctx.defender;
+          const defenderHpRatio = defender ? defender.hp / defender.mhp : 1;
+          if (defenderHpRatio > eng.pinAttemptHpThreshold) {
+            pool = pool.filter(candidate => candidate.d <= 13);
+          }
+        }
+
+        // 通常は全スタイル・全ティアに候補がある。データ破損時だけ全候補へ退避する。
+        if (!pool.length) pool = Object.values(MOVE_TIER_POOLS[resolvedStyle]).flat();
+        const presentCategories = new Set(pool.map(candidate => candidate.c));
+        const categoryWeights = Object.fromEntries(
+          Object.entries(catW[resolvedStyle]).filter(([category, weight]) => weight > 0 && presentCategories.has(category))
+        );
+        const category = Object.keys(categoryWeights).length
+          ? Engine.rng.weighted(rng, categoryWeights)
+          : null;
+        const candidates = category ? pool.filter(candidate => candidate.c === category) : pool;
+        move = Engine.rng.pick(rng, candidates);
+        if (fighter && tier === 'big') fighter.bigMoveCooldown = true;
+      }
+
+      const stats = ctx.stats;
+      if (stats) {
+        stats.total++;
+        if (tier === 'rollup') stats.rollup++;
+        if (move.d >= 14) stats.finisher++;
+        if (!stats.byPhase[ph.name]) stats.byPhase[ph.name] = { small: 0, medium: 0, big: 0, rollup: 0 };
+        stats.byPhase[ph.name][tier]++;
+        if (fighter) {
+          const fighterKey = String(fighter.id != null ? fighter.id : fighter.name);
+          if (stats._lastTierByFighter[fighterKey] === 'big' && tier === 'big') stats.consecutiveBig++;
+          stats._lastTierByFighter[fighterKey] = tier;
+        }
+      }
+      return move;
     },
     calcHitRate(mv, atk, def) {
       const eff = Engine.util.eff;
@@ -113,11 +211,11 @@ Engine.battle = {
       const fullHpR = Math.round(eng.hpBase + eff(charR.st) * eng.hpScale);
       const L = {
         ...charL, hp: charL._hpOverride != null ? charL._hpOverride : fullHpL,
-        mhp: fullHpL, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
+        mhp: fullHpL, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0, bigMoveCooldown: false
       };
       const R = {
         ...charR, hp: charR._hpOverride != null ? charR._hpOverride : fullHpR,
-        mhp: fullHpR, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0
+        mhp: fullHpR, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0, bigMoveCooldown: false
       };
 
       let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null, finishPhase = null;
@@ -135,6 +233,7 @@ Engine.battle = {
       // 先攻3ターンのカウンター率ペナルティ（PW優位な側が攻撃時、相手のカウンター率DOWN）
       const _pwLead   = _pwGap * 10;  // PW+30 → 相手カウンター率-3.0pt
       let totalCounters = 0, totalKickouts = 0, leadChanges = 0, lastLeader = null, bigMoves = 0;
+      const moveSelectionStats = createMoveSelectionStats();
       // 名勝負製造機: ドラマ素材（キックアウト・カウンター）の発生率UP
       // 仕様(v2.1): 双方持ちでも効果は1試合1回分のみ（boolean OR で重複適用なし）
       const hasMeishoubu = Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機');
@@ -204,7 +303,8 @@ Engine.battle = {
         const def = isLeftAtk ? R : L;
         const atkSide = isLeftAtk ? 'left' : 'right';
 
-        const mv = B.selMove(rng, atk.style, turn, phases);
+        const mv = B.selMove(rng, atk.style, turn, phases, { fighter: atk, defender: def, eng, stats: moveSelectionStats });
+        const moveTier = B.moveTier(mv);
         let hitRate = B.calcHitRate(mv, atk, def);
         // v5.1 パターンB: 先攻3ターンの命中/回避バフ（TE/SP優位な側が攻撃時に命中UP）
         if (turn <= 3) {
@@ -229,9 +329,9 @@ Engine.battle = {
             counterRate = Engine.util.clamp(counterRate, ENG.counterMin, ENG.counterMax);
           }
           if (Engine.rng.float(rng) * 100 < counterRate) {
-            const cMv = B.selMove(rng, def.style, turn, phases);
+            const cMv = B.selMove(rng, def.style, turn, phases, { fighter: def, defender: atk, eng, stats: moveSelectionStats });
             const cDmg = Math.max(eng.dmgFloor, Math.round(mv.d * eng.counterDmgMult));
-            atk.hp -= cDmg;
+            atk.hp = B.moveTier(cMv) === 'small' ? Math.max(1, atk.hp - cDmg) : atk.hp - cDmg;
             mom += isLeftAtk ? -eng.counterMomShift : eng.counterMomShift;
             def.consecutiveHits = 0;
             totalCounters++;
@@ -253,7 +353,7 @@ Engine.battle = {
             if (ph.name === 'End') _mnLateMult = 1 - Math.max(0, (def.mn - 50) / 100) * 0.08;
             else if (ph.name === 'Climax') _mnLateMult = 1 - Math.max(0, (def.mn - 50) / 100) * 0.12;
             dmg = Math.max(eng.dmgFloor, Math.round(dmg * _ovrMult * (1 - _popAdvD * 0.06 * _popMultD) * _mnLateMult));
-            def.hp -= dmg;
+            def.hp = moveTier === 'small' ? Math.max(1, def.hp - dmg) : def.hp - dmg;
             mom += isLeftAtk ? 8 : -8;
             atk.consecutiveHits++;
             def.consecutiveHits = 0;
@@ -324,7 +424,7 @@ Engine.battle = {
                 }
               }
             }
-            else if (!winner && B.checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph)) {
+            else if (!winner && moveTier !== 'small' && B.checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph)) {
               const successRate = B.calcPinAttemptSuccess(atk, def, dmg, ph);
               const isSubPin = mv.c === 'submission';
               if (Engine.rng.float(rng) * 100 < successRate) {
@@ -460,6 +560,9 @@ Engine.battle = {
         hpRight: { final: Math.max(0, R.hp), current: Math.max(0, R.hp), max: R.mhp },
         mq, log,
         finishPhase, matchTier: tier, btHintTurn: null,
+        finMoveD: B.findMoveByName(finMove)?.d || null,
+        finMoveTier: B.moveTier(B.findMoveByName(finMove)),
+        moveSelectionStats: snapshotMoveSelectionStats(moveSelectionStats),
         mqDetail: { ceiling, dramaPenalty, pacingPenalty, finishPenalty },
         frames: recordFrames ? frames : undefined,
       };
@@ -637,7 +740,7 @@ Engine.tagMatch = (() => {
         ...char,
         hp: startHp, mhp: hp,
         _basePw: char.pw, _baseSp: char.sp, _baseTe: char.te, _baseSt: char.st,
-        gritTurns: 0, kickoutCount: 0, consecutiveHits: 0,
+        gritTurns: 0, kickoutCount: 0, consecutiveHits: 0, bigMoveCooldown: false,
         turnsLegal: 0, turnsApron: 0,
         damageDealt: 0, damageTaken: 0,
         cutinCount: 0, hotTagBuff: 0,
@@ -668,6 +771,7 @@ Engine.tagMatch = (() => {
     let dramaSummary = [];
     let touchTypes = new Set();
     let totalKickouts = 0, totalCounters = 0, leadChanges = 0, bigMoves = 0;
+    const moveSelectionStats = createMoveSelectionStats();
     let lastMomSign = 0;
 
     // ── フレーム記録（観戦用） ──
@@ -816,7 +920,8 @@ Engine.tagMatch = (() => {
       const defFighter = isAAttacking ? legalB : legalA;
       const atkSide = isAAttacking ? 'left' : 'right';
 
-      const mv = B.selMove(rng, atk.style, totalTurn, TC.phases);
+      const mv = B.selMove(rng, atk.style, totalTurn, TC.phases, { fighter: atkFighter, defender: defFighter, eng: ENG, stats: moveSelectionStats });
+      const moveTier = B.moveTier(mv);
       const hitRate = B.calcHitRate(mv, atk, def);
       const hit = Engine.rng.float(rng) * 100 < hitRate;
 
@@ -838,13 +943,15 @@ Engine.tagMatch = (() => {
         if (isCounter) {
           _turnOutcome = 'counter';
           totalCounters++;
-          const cMv = B.selMove(rng, def.style, totalTurn, TC.phases);
+          const cMv = B.selMove(rng, def.style, totalTurn, TC.phases, { fighter: defFighter, defender: atkFighter, eng: ENG, stats: moveSelectionStats });
           let cDmg = B.calcDamage(rng, cMv, def, atk, mom, atkSide === 'left' ? 'right' : 'left', ph);
           cDmg = Math.round(cDmg * ENG.counterDmgMult);
           cDmg = tagScaleDmg(cDmg);
-          atkFighter.hp -= cDmg;
+          atkFighter.hp = B.moveTier(cMv) === 'small' ? Math.max(1, atkFighter.hp - cDmg) : atkFighter.hp - cDmg;
           defFighter.damageDealt += cDmg;
           atkFighter.damageTaken += cDmg;
+          defFighter.consecutiveHits++;
+          atkFighter.consecutiveHits = 0;
           mom += isAAttacking ? -ENG.counterMomShift : ENG.counterMomShift;
           mom = clamp(mom, -50, 50);
           log.push(`T${totalTurn} [${ph.name}] ${defFighter.name}がカウンター！ ${cMv.n} → ${atkFighter.name}に${cDmg}ダメージ`);
@@ -924,6 +1031,47 @@ Engine.tagMatch = (() => {
               break;
             }
           }
+          if (!winner && cMv.c === 'rollup' && atkFighter.hp > 0
+              && atkFighter.hp / atkFighter.mhp <= ENG.rollupHpThreshold) {
+            let rSuccess = ENG.rollupBaseSuccess + (eff(def.te) * ENG.rollupTecBonus);
+            if (ph.name === 'Climax') rSuccess += 15;
+            if (Engine.rng.float(rng) * 100 < rSuccess) {
+              const apronAtk = isAAttacking ? apronA : apronB;
+              const atkBond = isAAttacking ? bondA : bondB;
+              const cutinRate = calcCutinRate('pin', apronAtk, atkBond, apronAtk.cutinCount);
+              if (Engine.rng.float(rng) < cutinRate) {
+                apronAtk.cutinCount++;
+                dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronAtk.id, saved: atkFighter.id });
+                dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: defFighter.id, onId: atkFighter.id, outcome: 'cutinSave', count: 2 });
+                log.push(`  → ${defFighter.name}の${cMv.n}！ しかし${apronAtk.name}がカットイン！`);
+              } else {
+                winner = isAAttacking ? 'teamB' : 'teamA';
+                finType = '丸め込み';
+                finMove = cMv.n;
+                finishPhase = ph.name;
+                winAttribution.pinnedBy = defFighter.id;
+                winAttribution.pinnedWho = atkFighter.id;
+                dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: defFighter.id, onId: atkFighter.id, outcome: 'win', count: 3 });
+                log.push(`  ★ ${defFighter.name}が${cMv.n}で3カウント！ (${ph.name})`);
+                pushFrame(ph.name);
+                break;
+              }
+            }
+          }
+          if (!winner && defFighter.consecutiveHits >= ENG.tkoConsecutiveThreshold
+              && atkFighter.hp / atkFighter.mhp < ENG.tkoHpThreshold
+              && Engine.rng.float(rng) * 100 < ENG.tkoBaseRate) {
+            winner = isAAttacking ? 'teamB' : 'teamA';
+            finType = 'TKO';
+            finMove = cMv.n;
+            finishPhase = ph.name;
+            winAttribution.pinnedBy = defFighter.id;
+            winAttribution.pinnedWho = atkFighter.id;
+            dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'tko', byId: defFighter.id, onId: atkFighter.id, outcome: 'win', count: 0 });
+            log.push(`  ★ レフェリーストップ！ ${defFighter.name}のTKO勝利！ (${ph.name})`);
+            pushFrame(ph.name);
+            break;
+          }
         } else {
           _turnOutcome = 'hit';
           // 通常ヒット
@@ -941,10 +1089,11 @@ Engine.tagMatch = (() => {
           }
           if (atkFighter.hotTagBuff > 0) dmg = Math.round(dmg * TC.touch.hotTagBuffMult);
           dmg = tagScaleDmg(dmg);
-          defFighter.hp -= dmg;
+          defFighter.hp = moveTier === 'small' ? Math.max(1, defFighter.hp - dmg) : defFighter.hp - dmg;
           atkFighter.damageDealt += dmg;
           defFighter.damageTaken += dmg;
           atkFighter.consecutiveHits++;
+          defFighter.consecutiveHits = 0;
           mom += isAAttacking ? 8 : -8;
           mom = clamp(mom, -50, 50);
           if (mv.d >= 10) bigMoves++;
@@ -1029,7 +1178,8 @@ Engine.tagMatch = (() => {
           }
 
           // ピン試み
-          if (!winner && defFighter.hp > 0 && defFighter.hp / defFighter.mhp <= ENG.pinAttemptHpThreshold) {
+          if (!winner && moveTier !== 'small' && mv.c !== 'rollup'
+              && defFighter.hp > 0 && defFighter.hp / defFighter.mhp <= ENG.pinAttemptHpThreshold) {
             if (B.checkPinAttempt(rng, mv, atk, defFighter, dmg, mom, atkSide, ph)) {
               const pinSuccess = B.calcPinAttemptSuccess(atk, defFighter, dmg, ph);
               if (Engine.rng.float(rng) * 100 < pinSuccess) {
@@ -1073,35 +1223,48 @@ Engine.tagMatch = (() => {
             }
           }
 
-          // 丸め込み判定
-          if (!winner && defFighter.hp > 0 && defFighter.hp / defFighter.mhp <= ENG.rollupHpThreshold && ph.name !== 'Opening') {
-            const rollupRate = 5 + (eff(def.te) * 0.15);
-            if (Engine.rng.float(rng) * 100 < rollupRate) {
-              let rSuccess = ENG.rollupBaseSuccess + (eff(def.te) * ENG.rollupTecBonus);
-              if (ph.name === 'Climax') rSuccess += 15;
-              if (Engine.rng.float(rng) * 100 < rSuccess) {
-                const apronAtk = isAAttacking ? apronA : apronB;
-                const atkBond = isAAttacking ? bondA : bondB;
-                const cutinRate = calcCutinRate('pin', apronAtk, atkBond, apronAtk.cutinCount);
-                if (Engine.rng.float(rng) < cutinRate) {
-                  apronAtk.cutinCount++;
-                  dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronAtk.id, saved: atkFighter.id });
-                  dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: defFighter.id, onId: atkFighter.id, outcome: 'cutinSave', count: 2 });
-                  log.push(`  → ${defFighter.name}が丸め込み！ しかし${apronAtk.name}がカットイン！`);
-                } else {
-                  winner = isAAttacking ? 'teamB' : 'teamA';
-                  finType = '丸め込み';
-                  finMove = '丸め込み';
-                  finishPhase = ph.name;
-                  winAttribution.pinnedBy = defFighter.id;
-                  winAttribution.pinnedWho = atkFighter.id;
-                  dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: defFighter.id, onId: atkFighter.id, outcome: 'win', count: 3 });
-                  log.push(`  ★ ${defFighter.name}が丸め込みで逆転勝利！ (${ph.name})`);
-                  pushFrame(ph.name);
-                  break;
-                }
+          // 丸め込みは selMove の独立経路で選ばれたときだけ決着判定する。
+          if (!winner && mv.c === 'rollup' && defFighter.hp > 0
+              && defFighter.hp / defFighter.mhp <= ENG.rollupHpThreshold) {
+            let rSuccess = ENG.rollupBaseSuccess + (eff(atk.te) * ENG.rollupTecBonus);
+            if (ph.name === 'Climax') rSuccess += 15;
+            if (Engine.rng.float(rng) * 100 < rSuccess) {
+              const apronDef = isAAttacking ? apronB : apronA;
+              const defBond = isAAttacking ? bondB : bondA;
+              const cutinRate = calcCutinRate('pin', apronDef, defBond, apronDef.cutinCount);
+              if (Engine.rng.float(rng) < cutinRate) {
+                apronDef.cutinCount++;
+                dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronDef.id, saved: defFighter.id });
+                dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: atkFighter.id, onId: defFighter.id, outcome: 'cutinSave', count: 2 });
+                log.push(`  → ${atkFighter.name}の${mv.n}！ しかし${apronDef.name}がカットイン！`);
+              } else {
+                winner = isAAttacking ? 'teamA' : 'teamB';
+                finType = '丸め込み';
+                finMove = mv.n;
+                finishPhase = ph.name;
+                winAttribution.pinnedBy = atkFighter.id;
+                winAttribution.pinnedWho = defFighter.id;
+                dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: atkFighter.id, onId: defFighter.id, outcome: 'win', count: 3 });
+                log.push(`  ★ ${atkFighter.name}が${mv.n}で3カウント！ (${ph.name})`);
+                pushFrame(ph.name);
+                break;
               }
             }
+          }
+
+          if (!winner && atkFighter.consecutiveHits >= ENG.tkoConsecutiveThreshold
+              && defFighter.hp / defFighter.mhp < ENG.tkoHpThreshold
+              && Engine.rng.float(rng) * 100 < ENG.tkoBaseRate) {
+            winner = isAAttacking ? 'teamA' : 'teamB';
+            finType = 'TKO';
+            finMove = mv.n;
+            finishPhase = ph.name;
+            winAttribution.pinnedBy = atkFighter.id;
+            winAttribution.pinnedWho = defFighter.id;
+            dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'tko', byId: atkFighter.id, onId: defFighter.id, outcome: 'win', count: 0 });
+            log.push(`  ★ レフェリーストップ！ ${atkFighter.name}のTKO勝利！ (${ph.name})`);
+            pushFrame(ph.name);
+            break;
           }
         }
       }
@@ -1318,6 +1481,9 @@ Engine.tagMatch = (() => {
       turns: totalTurn, segments, log,
       mq: mq.final, mqDetail: mq,
       chemA, chemB, dramaSummary, postMatchFlags, winAttribution,
+      finMoveD: B.findMoveByName(finMove)?.d || null,
+      finMoveTier: B.moveTier(B.findMoveByName(finMove)),
+      moveSelectionStats: snapshotMoveSelectionStats(moveSelectionStats),
       matchType: 'tag',
       teamA: { f1Id: fA1.id, f1Name: fA1.name, f2Id: fA2.id, f2Name: fA2.name },
       teamB: { f1Id: fB1.id, f1Name: fB1.name, f2Id: fB2.id, f2Name: fB2.name },

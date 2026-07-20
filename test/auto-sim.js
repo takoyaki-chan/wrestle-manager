@@ -70,6 +70,68 @@ loadAsGlobal('flag-dialogue.js');
 loadAsGlobal('factions.js');
 loadAsGlobal('draft-negotiation.js');
 
+// Task 05/06 balance probe: aggregate real single-match results produced by the
+// engine-integrity run.  Keeping this beside auto-sim makes before/after runs
+// directly comparable under the same seed without changing production logic.
+const matchBalanceProbe = {
+  matches: 0,
+  turns: 0,
+  timeouts: 0,
+  mq: [],
+  smallFallOrGuFinishes: 0,
+  smallTkoFinishes: 0,
+  finisherSelections: 0,
+  zeroFinisherMatches: 0,
+  consecutiveBigSelections: 0,
+  moveSelections: 0,
+  rollupSelections: 0,
+  tiersByPhase: {},
+  ovrBands: {
+    '0-4': { matches: 0, strongerWins: 0 },
+    '5-9': { matches: 0, strongerWins: 0 },
+    '10-14': { matches: 0, strongerWins: 0 },
+    '15-19': { matches: 0, strongerWins: 0 },
+    '20+': { matches: 0, strongerWins: 0 },
+  },
+};
+
+const _simulateMatchForBalanceProbe = Engine.battle.simulateMatch;
+Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
+  const result = _simulateMatchForBalanceProbe.call(this, charL, charR, rng, matchTier, opts);
+  const leftOvr = Engine.util.ov(charL);
+  const rightOvr = Engine.util.ov(charR);
+  const gap = Math.abs(leftOvr - rightOvr);
+  const band = gap < 5 ? '0-4' : gap < 10 ? '5-9' : gap < 15 ? '10-14' : gap < 20 ? '15-19' : '20+';
+  const strongerSide = leftOvr === rightOvr ? null : leftOvr > rightOvr ? 'left' : 'right';
+  matchBalanceProbe.matches++;
+  matchBalanceProbe.turns += result.turns || 0;
+  matchBalanceProbe.timeouts += result.finishPhase === 'Timeout' ? 1 : 0;
+  matchBalanceProbe.mq.push(result.mq || 0);
+  const selection = result.moveSelectionStats;
+  if (selection) {
+    matchBalanceProbe.moveSelections += selection.total || 0;
+    matchBalanceProbe.rollupSelections += selection.rollup || 0;
+    matchBalanceProbe.finisherSelections += selection.finisher || 0;
+    matchBalanceProbe.consecutiveBigSelections += selection.consecutiveBig || 0;
+    if ((selection.finisher || 0) === 0) matchBalanceProbe.zeroFinisherMatches++;
+    for (const [phase, counts] of Object.entries(selection.byPhase || {})) {
+      if (!matchBalanceProbe.tiersByPhase[phase]) {
+        matchBalanceProbe.tiersByPhase[phase] = { small: 0, medium: 0, big: 0, rollup: 0 };
+      }
+      for (const tier of ['small', 'medium', 'big', 'rollup']) {
+        matchBalanceProbe.tiersByPhase[phase][tier] += counts[tier] || 0;
+      }
+    }
+  }
+  if (result.finMoveTier === 'small') {
+    if (result.finType === 'TKO') matchBalanceProbe.smallTkoFinishes++;
+    else matchBalanceProbe.smallFallOrGuFinishes++;
+  }
+  matchBalanceProbe.ovrBands[band].matches++;
+  if (strongerSide && result.winner === strongerSide) matchBalanceProbe.ovrBands[band].strongerWins++;
+  return result;
+};
+
 // グローバルに展開されたか確認
 if (typeof Engine === 'undefined') {
   console.error('ERROR: Engine が読み込めませんでした');
@@ -995,6 +1057,42 @@ if (result.flagStats) {
   console.log(`  F-5 ライバル同期 : ${fmt(fs.F5_rivalCohort)} [目標: 0.2〜0.5]`);
   console.log(`  F-6 憧れ         : ${fmt(fs.F6_admire)}    [目標: 0.5〜1.5]`);
   console.log(`  F-7 嫉妬         : ${fmt(fs.F7_envy)}    [目標: 0.3〜1.0]`);
+}
+
+if (matchBalanceProbe.matches > 0) {
+  const avgTurns = matchBalanceProbe.turns / matchBalanceProbe.matches;
+  const timeoutRate = matchBalanceProbe.timeouts / matchBalanceProbe.matches * 100;
+  const avgMq = matchBalanceProbe.mq.reduce((sum, value) => sum + value, 0) / matchBalanceProbe.mq.length;
+  const mqBands = [
+    ['<50', value => value < 50],
+    ['50-59', value => value >= 50 && value < 60],
+    ['60-69', value => value >= 60 && value < 70],
+    ['70-79', value => value >= 70 && value < 80],
+    ['80-89', value => value >= 80 && value < 90],
+    ['90+', value => value >= 90],
+  ];
+  console.log('--------------------------------------');
+  console.log(`Match Balance Probe (${matchBalanceProbe.matches} singles):`);
+  console.log(`  平均ターン数: ${avgTurns.toFixed(2)}`);
+  console.log(`  時間切れ判定: ${matchBalanceProbe.timeouts}/${matchBalanceProbe.matches} (${timeoutRate.toFixed(2)}%)`);
+  console.log(`  MQ: avg=${avgMq.toFixed(2)} ${mqBands.map(([label, test]) => `${label}:${matchBalanceProbe.mq.filter(test).length}`).join(' ')}`);
+  if (matchBalanceProbe.moveSelections > 0) {
+    console.log(`  小技決着: フォール/ギブアップ=${matchBalanceProbe.smallFallOrGuFinishes} TKO=${matchBalanceProbe.smallTkoFinishes}`);
+    console.log(`  フィニッシュ級: 平均${(matchBalanceProbe.finisherSelections / matchBalanceProbe.matches).toFixed(3)}回/試合 0回率=${(matchBalanceProbe.zeroFinisherMatches / matchBalanceProbe.matches * 100).toFixed(2)}%`);
+    console.log(`  大技2連続: ${matchBalanceProbe.consecutiveBigSelections}`);
+    console.log(`  丸め込み選択: ${matchBalanceProbe.rollupSelections}/${matchBalanceProbe.moveSelections} (${(matchBalanceProbe.rollupSelections / matchBalanceProbe.moveSelections * 100).toFixed(2)}%)`);
+    for (const phase of ['Opening', 'Mid', 'End', 'Climax']) {
+      const counts = matchBalanceProbe.tiersByPhase[phase];
+      if (!counts) continue;
+      const tierTotal = counts.small + counts.medium + counts.big;
+      const pct = tier => tierTotal > 0 ? counts[tier] / tierTotal * 100 : 0;
+      console.log(`  ${phase}ティア(丸め込み除外): 小${pct('small').toFixed(2)}% 中${pct('medium').toFixed(2)}% 大${pct('big').toFixed(2)}% (n=${tierTotal}, rollup=${counts.rollup})`);
+    }
+  }
+  for (const [label, band] of Object.entries(matchBalanceProbe.ovrBands)) {
+    const winRate = band.matches > 0 ? band.strongerWins / band.matches * 100 : 0;
+    console.log(`  OVR差${label}: 格上勝利 ${band.strongerWins}/${band.matches} (${winRate.toFixed(2)}%)`);
+  }
 }
 console.log('--------------------------------------');
 console.log(`Total violations: ${result.violations.length} (${uniqueViolations.length} unique)`);
