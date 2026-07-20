@@ -11382,36 +11382,80 @@ const Engine = {
     const results = rawResults.map((r, matchIdx) => {
       // タッグ試合: crowdMQのみ加算（因縁/タイトル等はPhase 5以降）
       let externalMQ = 0;
+      let lastRunMQ = 0;
       const slot = validMatches[matchIdx];
       const participantIds = r.matchType === 'tag'
         ? [slot?.teamA?.fighter1, slot?.teamA?.fighter2, slot?.teamB?.fighter1, slot?.teamB?.fighter2].filter(id => id > 0)
         : [r.left?.id, r.right?.id].filter(id => id > 0);
+      const participantFighters = participantIds
+        .map(id => s.roster.find(c => c.id === id))
+        .filter(Boolean);
+      const inventoryBase = {
+        path: 'Engine.executeShow',
+        matchType: r.matchType === 'tag' ? 'tag' : 'singles',
+        baseEngineMq: r.mq,
+        avgOV: participantFighters.length > 0
+          ? participantFighters.reduce((sum, fighter) => sum + Engine.util.ov(fighter), 0) / participantFighters.length
+          : null,
+        hasMeishoubu: participantFighters.some(fighter => Traits.has(fighter, '名勝負製造機')),
+        hasHikidashi: participantFighters.some(fighter => Traits.has(fighter, '引き出し上手')),
+      };
       const tagOrSinglesLastRunFighter = participantIds
         .map(id => s.roster.find(c => c.id === id))
         .find(f => f?.lastRun) || null;
       if (tagOrSinglesLastRunFighter) {
         externalMQ += 2;
-        if (matchIdx === 0) externalMQ += 3;
+        lastRunMQ += 2;
+        if (matchIdx === 0) {
+          externalMQ += 3;
+          lastRunMQ += 3;
+        }
         r.isLastRunMatch = true;
         r.lastRunFighterId = tagOrSinglesLastRunFighter.id;
       }
       if (r.matchType === 'tag') {
-        r.mq = Math.max(5, r.mq + crowdMQ.total + externalMQ);
+        const preLowerClampMq = r.mq + crowdMQ.total + externalMQ;
+        r.mq = Math.max(5, preLowerClampMq);
         r.externalMQBonus = crowdMQ.total + externalMQ;
+        r.mqInventory = {
+          ...inventoryBase,
+          rivalry: 0,
+          title: 0,
+          crowd: crowdMQ.total,
+          milestoneMqBoost: 0,
+          nextMatchMq: 0,
+          lastRun: lastRunMQ,
+          trust: 0,
+          uncappedExternal: crowdMQ.total + externalMQ,
+          positiveExternal: Math.max(0, crowdMQ.total + externalMQ),
+          negativeExternal: Math.min(0, crowdMQ.total + externalMQ),
+          cappedPositive: Math.max(0, crowdMQ.total + externalMQ),
+          cap: null,
+          capLoss: 0,
+          capReached: false,
+          preLowerClampMq,
+          lowerClampHit: preLowerClampMq < 5,
+          upperClampApplied: false,
+          finalMq: r.mq,
+        };
         return r;
       }
-      if (r.rivalryBonus) externalMQ += r.rivalryBonus.mqBonus;
+      const rivalryMQ = r.rivalryBonus ? r.rivalryBonus.mqBonus : 0;
+      if (r.rivalryBonus) externalMQ += rivalryMQ;
       // ケミストリー（友情）MQ削除済み — r.friendshipBonus は加算しない
-      if (r.isTitleMatch) externalMQ += (TITLES.find(t => t.id === 'world')?.mqBonus || 5);
+      const titleMQ = r.isTitleMatch ? (TITLES.find(t => t.id === 'world')?.mqBonus || 5) : 0;
+      if (r.isTitleMatch) externalMQ += titleMQ;
       // coachMQBonus / promoStackBonus は MQ外部ボーナス整理で廃止
       externalMQ += crowdMQ.total;
       // v1.5s25b: mq_boost（キャップ対象）
       externalMQ += mqBoostAmount;
       // v1.5s25b: next_match_mq（特定ペアのみ、1回限り）
+      let nextMatchMQ = 0;
       if (nextMatchMqBuff && !nextMatchMqConsumed && nextMatchMqBuff.pair) {
         const [p1, p2] = nextMatchMqBuff.pair;
         if ((r.left.id === p1 && r.right.id === p2) || (r.left.id === p2 && r.right.id === p1)) {
           externalMQ += nextMatchMqBuff.amount;
+          nextMatchMQ = nextMatchMqBuff.amount;
           nextMatchMqConsumed = true;
         }
       }
@@ -11428,7 +11472,11 @@ const Engine = {
       const lastRunFighter = r.isLastRunMatch ? null : (lrLeft?.lastRun ? lrLeft : (lrRight?.lastRun ? lrRight : null));
       if (lastRunFighter) {
         externalMQ += 2;  // ラストラン基本 +2
-        if (matchIdx === 0) externalMQ += 3;  // メインイベント +3
+        lastRunMQ += 2;
+        if (matchIdx === 0) {
+          externalMQ += 3;  // メインイベント +3
+          lastRunMQ += 3;
+        }
         r.isLastRunMatch = true;
         r.lastRunFighterId = lastRunFighter.id;
         // ラストラン因縁相手ボーナス削除済み
@@ -11453,9 +11501,31 @@ const Engine = {
       const rightTrust = lrRight ? (lrRight.trust != null ? lrRight.trust : 50) : 50;
       if (leftTrust < 35) trustMQPenalty -= 1.53;
       if (rightTrust < 35) trustMQPenalty -= 1.53;
-      r.mq = Math.max(5, r.mq + cappedPositive + negativeExternal + trustMQPenalty);
+      const preLowerClampMq = r.mq + cappedPositive + negativeExternal + trustMQPenalty;
+      r.mq = Math.max(5, preLowerClampMq);
       r.externalMQBonus = cappedPositive + negativeExternal + trustMQPenalty;
       if (trustMQPenalty < 0) r.trustMQPenalty = trustMQPenalty;
+      r.mqInventory = {
+        ...inventoryBase,
+        rivalry: rivalryMQ,
+        title: titleMQ,
+        crowd: crowdMQ.total,
+        milestoneMqBoost: mqBoostAmount,
+        nextMatchMq: nextMatchMQ,
+        lastRun: lastRunMQ,
+        trust: trustMQPenalty,
+        uncappedExternal: externalMQ,
+        positiveExternal,
+        negativeExternal,
+        cappedPositive,
+        cap: MQ_EXTERNAL_CAP,
+        capLoss: positiveExternal - cappedPositive,
+        capReached: positiveExternal >= MQ_EXTERNAL_CAP,
+        preLowerClampMq,
+        lowerClampHit: preLowerClampMq < 5,
+        upperClampApplied: false,
+        finalMq: r.mq,
+      };
       return r;
     });
 

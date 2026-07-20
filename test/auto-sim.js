@@ -301,6 +301,15 @@ const matchBalanceProbe = {
   },
 };
 
+// Task 11: MQ inventory probe. These samples only observe values already
+// returned by the engines or by Engine.executeShow; they do not feed back into
+// simulation state.
+const mqInventoryProbe = {
+  singlesRaw: [],
+  tagRaw: [],
+  regularFinal: [],
+};
+
 const _simulateMatchForBalanceProbe = Engine.battle.simulateMatch;
 Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   const result = _simulateMatchForBalanceProbe.call(this, charL, charR, rng, matchTier, opts);
@@ -316,6 +325,21 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   matchBalanceProbe.timeouts += result.finishPhase === 'Timeout' ? 1 : 0;
   matchBalanceProbe.mq.push(result.mq || 0);
   matchBalanceProbe.legacyPacingMq.push(result._legacyPacingMq);
+  if (result.mqDetail) {
+    const detail = result.mqDetail;
+    mqInventoryProbe.singlesRaw.push({
+      ceiling: detail.ceiling,
+      dramaPenalty: detail.dramaPenalty,
+      pacingPenalty: detail.pacingPenalty,
+      finishPenalty: detail.finishPenalty,
+      rawBeforeLowerClamp: detail.ceiling - detail.dramaPenalty - detail.pacingPenalty - detail.finishPenalty,
+      finalMq: result.mq,
+      avgOV: (leftOvr + rightOvr) / 2,
+      tier: resolvedTier,
+      hasMeishoubu: Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機'),
+      hasHikidashi: Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手'),
+    });
+  }
   const phaseTiming = matchBalanceProbe.phaseTiming[(result.matchTier || matchTier || 1) >= 2 ? 'big' : 'normal'];
   const phaseConfig = (result.matchTier || matchTier || 1) >= 2 ? BIGMATCH_PHASES : PHASES;
   const completedTurns = Math.max(0, Math.min(result.turns || 0, phaseTiming.turnHistogram.length - 1));
@@ -395,6 +419,35 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   }
   matchBalanceProbe.ovrBands[band].matches++;
   if (strongerSide && result.winner === strongerSide) matchBalanceProbe.ovrBands[band].strongerWins++;
+  return result;
+};
+
+const _simulateTagMatchForMqInventory = Engine.tagMatch.simulateTagMatch;
+Engine.tagMatch.simulateTagMatch = function(teamA, teamB, rng, opts) {
+  const result = _simulateTagMatchForMqInventory.call(this, teamA, teamB, rng, opts);
+  if (result?.mqDetail) {
+    const detail = result.mqDetail;
+    const fighters = [teamA.fighter1, teamA.fighter2, teamB.fighter1, teamB.fighter2];
+    mqInventoryProbe.tagRaw.push({
+      ceiling: detail.ceiling,
+      dramaPenalty: detail.dramaPenalty,
+      pacingPenalty: detail.pacingPenalty,
+      finishPenalty: detail.finishPenalty,
+      screenTimeBonus: detail.screenTimeBonus,
+      touchDiversityBonus: detail.touchDiversityBonus,
+      dramaEventBonus: detail.dramaEventBonus,
+      finishBonus: detail.finishBonus,
+      longSegPenalty: detail.longSegPenalty,
+      screenTimePenalty: detail.screenTimePenalty,
+      tagBonus: detail.tagBonus,
+      tagPenalty: detail.tagPenalty,
+      rawBeforeClamp: detail.ceiling - detail.dramaPenalty - detail.pacingPenalty - detail.finishPenalty
+        + detail.tagBonus - detail.tagPenalty,
+      finalMq: result.mq,
+      avgOV: fighters.reduce((sum, fighter) => sum + Engine.util.ov(fighter), 0) / fighters.length,
+      hasMeishoubu: fighters.some(fighter => Traits.has(fighter, '名勝負製造機')),
+    });
+  }
   return result;
 };
 
@@ -978,6 +1031,9 @@ function runSimulation(seed, seasons) {
           stats.titleMatchCount += G.showCard.filter(m => m.isTitle).length;
           const showResult = Engine.executeShow(G);
           if (showResult && !showResult.error) {
+            for (const matchResult of showResult.results || []) {
+              if (matchResult.mqInventory) mqInventoryProbe.regularFinal.push({ ...matchResult.mqInventory });
+            }
             // ── 新集客v2計測（既存ロジック非接続・横で計算するだけ） ──
             if (typeof Engine.attendanceV2 !== 'undefined' && showResult.results) {
               try {
@@ -1166,7 +1222,20 @@ function runSimulation(seed, seasons) {
     flagStats.F2_returner_history = (G.relationshipHistory.betrayalRecord || []).length;
   }
 
-  return { violations, errors, totalWeeks, gameOverCount, stats, flagStats, finalSeasons: G ? G.season : 0 };
+  const semanticJson = JSON.stringify({ G, stats, flagStats, totalWeeks, gameOverCount }, (key, value) => {
+    if (key === 'mqInventory' || key === 'debugLog' || key === 'gameLog') return undefined;
+    return value;
+  });
+  let semanticFingerprint = 2166136261;
+  for (let i = 0; i < semanticJson.length; i++) {
+    semanticFingerprint ^= semanticJson.charCodeAt(i);
+    semanticFingerprint = Math.imul(semanticFingerprint, 16777619) >>> 0;
+  }
+  return {
+    violations, errors, totalWeeks, gameOverCount, stats, flagStats,
+    finalSeasons: G ? G.season : 0,
+    semanticFingerprint: semanticFingerprint.toString(16).padStart(8, '0'),
+  };
 }
 
 // ── Step 6: 実行 & レポート出力 ──
@@ -1486,12 +1555,91 @@ if (matchBalanceProbe.matches > 0) {
     console.log(`  OVR差${label}: 格上勝利 ${band.strongerWins}/${band.matches} (${winRate.toFixed(2)}%)`);
   }
 }
+
+function mqInventoryMetric(samples, key) {
+  const values = samples.map(sample => Number(sample[key]) || 0).sort((a, b) => a - b);
+  if (values.length === 0) return { n: 0, mean: 0, median: 0, stddev: 0, activationPct: 0, min: 0, max: 0 };
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const middle = Math.floor(values.length / 2);
+  const median = values.length % 2 ? values[middle] : (values[middle - 1] + values[middle]) / 2;
+  const variance = values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
+  return {
+    n: values.length,
+    mean: Math.round(mean * 1000) / 1000,
+    median: Math.round(median * 1000) / 1000,
+    stddev: Math.round(Math.sqrt(variance) * 1000) / 1000,
+    activationPct: Math.round(values.filter(value => Math.abs(value) > 1e-9).length / values.length * 10000) / 100,
+    min: values[0],
+    max: values[values.length - 1],
+  };
+}
+
+function printMqInventoryMetrics(label, samples, keys) {
+  console.log(`  ${label} (n=${samples.length})`);
+  for (const key of keys) {
+    const metric = mqInventoryMetric(samples, key);
+    console.log(`    ${key}: mean=${metric.mean} median=${metric.median} sd=${metric.stddev} active=${metric.activationPct}% range=${metric.min}..${metric.max}`);
+  }
+}
+
+if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqInventoryProbe.regularFinal.length) {
+  console.log('--------------------------------------');
+  console.log('MQ Inventory Probe:');
+  printMqInventoryMetrics('raw singles', mqInventoryProbe.singlesRaw,
+    ['ceiling', 'dramaPenalty', 'pacingPenalty', 'finishPenalty', 'rawBeforeLowerClamp', 'finalMq']);
+  const singlesLower = mqInventoryProbe.singlesRaw.filter(sample => sample.rawBeforeLowerClamp < 5).length;
+  const singlesUpper = mqInventoryProbe.singlesRaw.filter(sample => sample.rawBeforeLowerClamp > 100).length;
+  console.log(`    clamps: lower=${singlesLower} upper-overage=${singlesUpper} (singles engine has no upper clamp)`);
+  for (const [traitKey, label, metricKey] of [
+    ['hasMeishoubu', '名勝負製造機', 'dramaPenalty'],
+    ['hasHikidashi', '引き出し上手', 'pacingPenalty'],
+  ]) {
+    const active = mqInventoryProbe.singlesRaw.filter(sample => sample[traitKey]);
+    const inactive = mqInventoryProbe.singlesRaw.filter(sample => !sample[traitKey]);
+    console.log(`    ${label}: active n=${active.length} ${metricKey}=${mqInventoryMetric(active, metricKey).mean} final=${mqInventoryMetric(active, 'finalMq').mean}; inactive n=${inactive.length} ${metricKey}=${mqInventoryMetric(inactive, metricKey).mean} final=${mqInventoryMetric(inactive, 'finalMq').mean}`);
+  }
+
+  if (mqInventoryProbe.tagRaw.length) {
+    printMqInventoryMetrics('raw tag', mqInventoryProbe.tagRaw,
+      ['ceiling', 'dramaPenalty', 'pacingPenalty', 'finishPenalty', 'screenTimeBonus', 'touchDiversityBonus', 'dramaEventBonus', 'finishBonus', 'longSegPenalty', 'screenTimePenalty', 'tagBonus', 'tagPenalty', 'rawBeforeClamp', 'finalMq']);
+    const tagLower = mqInventoryProbe.tagRaw.filter(sample => sample.rawBeforeClamp < 5).length;
+    const tagUpper = mqInventoryProbe.tagRaw.filter(sample => sample.rawBeforeClamp > 100).length;
+    console.log(`    clamps: lower=${tagLower} upper=${tagUpper}`);
+  }
+
+  const finals = mqInventoryProbe.regularFinal;
+  if (finals.length) {
+    printMqInventoryMetrics('regular show final', finals,
+      ['baseEngineMq', 'rivalry', 'title', 'crowd', 'milestoneMqBoost', 'nextMatchMq', 'lastRun', 'trust', 'uncappedExternal', 'cappedPositive', 'capLoss', 'finalMq']);
+    const capped = finals.filter(sample => sample.capReached).length;
+    const capLoss = finals.filter(sample => sample.capLoss > 0).length;
+    const lower = finals.filter(sample => sample.lowerClampHit).length;
+    const over100 = finals.filter(sample => sample.finalMq > 100).length;
+    console.log(`    clamp/cap: positive-cap-reached=${capped} cap-loss=${capLoss} lower=${lower} final>100=${over100}`);
+    const ovBands = [
+      ['<=50', value => value <= 50],
+      ['50-65', value => value > 50 && value <= 65],
+      ['65-80', value => value > 65 && value <= 80],
+      ['80+', value => value > 80],
+    ];
+    const bonusKeys = ['rivalry', 'title', 'crowd', 'milestoneMqBoost', 'nextMatchMq', 'lastRun'];
+    for (const [label, test] of ovBands) {
+      const band = finals.filter(sample => sample.avgOV != null && test(sample.avgOV));
+      if (!band.length) continue;
+      const capCount = band.filter(sample => sample.capReached).length;
+      const overCount = band.filter(sample => sample.finalMq > 100).length;
+      const activeText = bonusKeys.map(key => `${key}:${band.filter(sample => (sample[key] || 0) > 0).length}`).join(' ');
+      console.log(`    OV ${label}: n=${band.length} cap=${capCount} >100=${overCount} ${activeText}`);
+    }
+  }
+}
 console.log('--------------------------------------');
 console.log(`Total violations: ${result.violations.length} (${uniqueViolations.length} unique)`);
 console.log(`Total errors: ${result.errors.length}`);
 console.log(`Freq warnings: ${freqWarnings.length}`);
 console.log(`Total weeks simulated: ${result.totalWeeks}`);
 console.log(`Game overs: ${result.gameOverCount}`);
+console.log(`Semantic fingerprint: ${result.semanticFingerprint}`);
 console.log(`Elapsed: ${elapsed}s`);
 const allClear = uniqueViolations.length === 0 && result.errors.length === 0 && freqWarnings.length === 0;
 console.log(`Result: ${allClear ? 'ALL CLEAR ✓' : 'ISSUES FOUND'}`);
