@@ -25,6 +25,7 @@ function createMoveSelectionStats() {
     total: 0,
     rollup: 0,
     finisher: 0,
+    forcedFinisher: 0,
     consecutiveBig: 0,
     byPhase: {},
     _lastTierByFighter: {},
@@ -36,6 +37,7 @@ function snapshotMoveSelectionStats(stats) {
     total: stats.total,
     rollup: stats.rollup,
     finisher: stats.finisher,
+    forcedFinisher: stats.forcedFinisher,
     consecutiveBig: stats.consecutiveBig,
     byPhase: stats.byPhase,
   };
@@ -98,7 +100,7 @@ Engine.battle = {
           const eng = ctx.eng || ENG;
           const defender = ctx.defender;
           const defenderHpRatio = defender ? defender.hp / defender.mhp : 1;
-          if (defenderHpRatio > eng.pinAttemptHpThreshold) {
+          if (defenderHpRatio > eng.finisherUnlockHpThreshold) {
             pool = pool.filter(candidate => candidate.d <= 13);
           }
         }
@@ -121,12 +123,16 @@ Engine.battle = {
       if (stats) {
         stats.total++;
         if (tier === 'rollup') stats.rollup++;
-        if (move.d >= 14) stats.finisher++;
+        if (move.d >= 14) {
+          stats.finisher++;
+          if (ctx.forcedTier) stats.forcedFinisher++;
+        }
         if (!stats.byPhase[ph.name]) stats.byPhase[ph.name] = { small: 0, medium: 0, big: 0, rollup: 0 };
         stats.byPhase[ph.name][tier]++;
         if (fighter) {
           const fighterKey = String(fighter.id != null ? fighter.id : fighter.name);
-          if (stats._lastTierByFighter[fighterKey] === 'big' && tier === 'big') stats.consecutiveBig++;
+          // 開幕大技は通常ティア抽選の外側にあるため、クールダウン違反の計測対象外。
+          if (!ctx.forcedTier && stats._lastTierByFighter[fighterKey] === 'big' && tier === 'big') stats.consecutiveBig++;
           stats._lastTierByFighter[fighterKey] = tier;
         }
       }

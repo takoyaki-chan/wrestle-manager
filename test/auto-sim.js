@@ -70,7 +70,18 @@ loadAsGlobal('flag-dialogue.js');
 loadAsGlobal('factions.js');
 loadAsGlobal('draft-negotiation.js');
 
-// Task 05/06 balance probe: aggregate real single-match results produced by the
+function createPhaseTimingStats(maxTurn, climaxStart) {
+  return {
+    matches: 0,
+    climaxStart,
+    reachedClimax: 0,
+    finishPhases: { Opening: 0, Mid: 0, End: 0, Climax: 0, Timeout: 0 },
+    turnHistogram: Array(maxTurn + 1).fill(0),
+    phaseTurns: { Opening: 0, Mid: 0, End: 0, Climax: 0 },
+  };
+}
+
+// Task 05-07 balance probe: aggregate real single-match results produced by the
 // engine-integrity run.  Keeping this beside auto-sim makes before/after runs
 // directly comparable under the same seed without changing production logic.
 const matchBalanceProbe = {
@@ -81,11 +92,16 @@ const matchBalanceProbe = {
   smallFallOrGuFinishes: 0,
   smallTkoFinishes: 0,
   finisherSelections: 0,
+  forcedFinisherSelections: 0,
   zeroFinisherMatches: 0,
   consecutiveBigSelections: 0,
   moveSelections: 0,
   rollupSelections: 0,
   tiersByPhase: {},
+  phaseTiming: {
+    normal: createPhaseTimingStats(MAX_T, 13),
+    big: createPhaseTimingStats(BIGMATCH_MAX_T, 19),
+  },
   openingExecution: {
     '15-19': { eligible: 0, checked: 0, fired: 0, hit: 0, finishes: 0, misses: 0, underdogWinsAfterMiss: 0, damageBands: { shallow: 0, medium: 0, deep: 0, fatal: 0 } },
     '20-24': { eligible: 0, checked: 0, fired: 0, hit: 0, finishes: 0, misses: 0, underdogWinsAfterMiss: 0, damageBands: { shallow: 0, medium: 0, deep: 0, fatal: 0 } },
@@ -114,13 +130,28 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   matchBalanceProbe.turns += result.turns || 0;
   matchBalanceProbe.timeouts += result.finishPhase === 'Timeout' ? 1 : 0;
   matchBalanceProbe.mq.push(result.mq || 0);
+  const phaseTiming = matchBalanceProbe.phaseTiming[(result.matchTier || matchTier || 1) >= 2 ? 'big' : 'normal'];
+  const phaseConfig = (result.matchTier || matchTier || 1) >= 2 ? BIGMATCH_PHASES : PHASES;
+  const completedTurns = Math.max(0, Math.min(result.turns || 0, phaseTiming.turnHistogram.length - 1));
+  phaseTiming.matches++;
+  if (completedTurns >= phaseTiming.climaxStart) phaseTiming.reachedClimax++;
+  phaseTiming.turnHistogram[completedTurns]++;
+  const finishPhaseKey = result.finishPhase === 'Timeout' ? 'Timeout' : result.finishPhase;
+  if (phaseTiming.finishPhases[finishPhaseKey] != null) phaseTiming.finishPhases[finishPhaseKey]++;
+  for (const phase of phaseConfig) {
+    const turnsInPhase = Math.max(0, Math.min(completedTurns, phase.max) - phase.min + 1);
+    phaseTiming.phaseTurns[phase.name] += turnsInPhase;
+  }
   const selection = result.moveSelectionStats;
   if (selection) {
     matchBalanceProbe.moveSelections += selection.total || 0;
     matchBalanceProbe.rollupSelections += selection.rollup || 0;
-    matchBalanceProbe.finisherSelections += selection.finisher || 0;
+    const forcedFinisher = selection.forcedFinisher || 0;
+    const normalFinisher = Math.max(0, (selection.finisher || 0) - forcedFinisher);
+    matchBalanceProbe.finisherSelections += normalFinisher;
+    matchBalanceProbe.forcedFinisherSelections += forcedFinisher;
     matchBalanceProbe.consecutiveBigSelections += selection.consecutiveBig || 0;
-    if ((selection.finisher || 0) === 0) matchBalanceProbe.zeroFinisherMatches++;
+    if (normalFinisher === 0) matchBalanceProbe.zeroFinisherMatches++;
     for (const [phase, counts] of Object.entries(selection.byPhase || {})) {
       if (!matchBalanceProbe.tiersByPhase[phase]) {
         matchBalanceProbe.tiersByPhase[phase] = { small: 0, medium: 0, big: 0, rollup: 0 };
@@ -1111,7 +1142,8 @@ if (matchBalanceProbe.matches > 0) {
   console.log(`  MQ: avg=${avgMq.toFixed(2)} ${mqBands.map(([label, test]) => `${label}:${matchBalanceProbe.mq.filter(test).length}`).join(' ')}`);
   if (matchBalanceProbe.moveSelections > 0) {
     console.log(`  小技決着: フォール/ギブアップ=${matchBalanceProbe.smallFallOrGuFinishes} TKO=${matchBalanceProbe.smallTkoFinishes}`);
-    console.log(`  フィニッシュ級: 平均${(matchBalanceProbe.finisherSelections / matchBalanceProbe.matches).toFixed(3)}回/試合 0回率=${(matchBalanceProbe.zeroFinisherMatches / matchBalanceProbe.matches * 100).toFixed(2)}%`);
+    console.log(`  フィニッシュ級(開幕大技除外): 平均${(matchBalanceProbe.finisherSelections / matchBalanceProbe.matches).toFixed(3)}回/試合 0回率=${(matchBalanceProbe.zeroFinisherMatches / matchBalanceProbe.matches * 100).toFixed(2)}%`);
+    console.log(`  開幕大技によるフィニッシュ級選択: ${matchBalanceProbe.forcedFinisherSelections}`);
     console.log(`  大技2連続: ${matchBalanceProbe.consecutiveBigSelections}`);
     console.log(`  丸め込み選択: ${matchBalanceProbe.rollupSelections}/${matchBalanceProbe.moveSelections} (${(matchBalanceProbe.rollupSelections / matchBalanceProbe.moveSelections * 100).toFixed(2)}%)`);
     for (const phase of ['Opening', 'Mid', 'End', 'Climax']) {
@@ -1140,6 +1172,23 @@ if (matchBalanceProbe.matches > 0) {
       console.log(`    開幕決着MQ: n=${openingFinishCount} avg=${openingMqAvg.toFixed(2)} min=${Math.min(...matchBalanceProbe.openingFinishMq)} max=${Math.max(...matchBalanceProbe.openingFinishMq)}`);
       console.log(`    開幕決着/シーズン: ${(openingFinishCount / Math.max(1, targetSeasons)).toFixed(2)}`);
     }
+  }
+  console.log('  フェーズ到達・決着ターン:');
+  for (const [key, label] of [['normal', '通常'], ['big', 'ビッグマッチ']]) {
+    const timing = matchBalanceProbe.phaseTiming[key];
+    if (!timing.matches) continue;
+    const pct = count => count / timing.matches * 100;
+    const finishText = ['Opening', 'Mid', 'End', 'Climax', 'Timeout']
+      .map(phase => `${phase}:${timing.finishPhases[phase]}(${pct(timing.finishPhases[phase]).toFixed(2)}%)`).join(' ');
+    const histogramText = timing.turnHistogram
+      .slice(1)
+      .map((count, index) => `T${index + 1}:${count}(${pct(count).toFixed(2)}%)`).join(' ');
+    const residenceText = ['Opening', 'Mid', 'End', 'Climax']
+      .map(phase => `${phase}:${(timing.phaseTurns[phase] / timing.matches).toFixed(2)}T`).join(' ');
+    console.log(`    ${label} (n=${timing.matches}): 終了フェーズ ${finishText}`);
+    console.log(`      Climax到達: ${timing.reachedClimax}/${timing.matches} (${pct(timing.reachedClimax).toFixed(2)}%)`);
+    console.log(`      決着ターン: ${histogramText}`);
+    console.log(`      平均滞在: ${residenceText}`);
   }
   for (const [label, band] of Object.entries(matchBalanceProbe.ovrBands)) {
     const winRate = band.matches > 0 ? band.strongerWins / band.matches * 100 : 0;
