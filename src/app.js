@@ -5624,9 +5624,10 @@ const App = {
     return filled;
   },
 
-  // 試合確定後の共通フロー: (観戦時のみ)試合結果ポップアップ → 試合後フレーバー → 一覧/興行結果
+  // 試合確定後の共通フロー: 試合結果ポップアップ → (観戦時のみ)試合後フレーバー → 一覧/興行結果
   // (specs/match-flavor-popup-spec-v0.1.md §4.6)
-  // opts.skipFlavor: true でスキップ(省略の意思表示)。余韻ポップアップを出さず即 finalize する。
+  // opts.skipFlavor: true は余韻だけを省略する。1試合スキップでも結果ポップアップは表示する。
+  // 「残り全試合スキップ」はこの関数を通らず finalizeShow へ進むため、連続ポップアップにはならない。
   _afterMatchSettle(idx, opts) {
     const sp = App._showPreview;
     if (!sp) return;
@@ -5637,11 +5638,13 @@ const App = {
       renderMatchPreview();
       if (sp.results.every(r => r !== null)) App.finalizeShow();
     };
-    // skipFlavor / _stale (選手不在フォールバック) のときは結果・余韻ともスキップ
-    if (skipFlavor || !result || result._stale) { finalize(); return; }
+    // 選手不在フォールバックだけは結果画面を出さず静かに進める。
+    if (!result || result._stale) { finalize(); return; }
     // バトル開始前から残っている興行画面を、そのまま減彩した背面として使う。
     // 一覧更新と次カードの試合前演出は、結果ポップアップを閉じてから行う。
-    renderRegularMatchResultPopup(idx, () => App._runPostMatchFlavorForMatch(idx, result, finalize));
+    renderRegularMatchResultPopup(idx, skipFlavor
+      ? finalize
+      : () => App._runPostMatchFlavorForMatch(idx, result, finalize));
   },
 
   // 派閥内序列戦は試合終了直後に pending を消化し、試合後モーダルと次カード強制を同期する。

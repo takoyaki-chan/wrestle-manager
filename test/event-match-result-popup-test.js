@@ -26,7 +26,8 @@ assert(ui.includes('theme: \'autumn\''), '秋団体戦テーマを接続する')
 assert(ui.includes('theme: \'tenchosen\''), '天頂戦テーマを接続する');
 assert(ui.includes('theme: \'ppv\''), 'PPVテーマを接続する');
 
-assert(app.includes('renderRegularMatchResultPopup(idx, () => App._runPostMatchFlavorForMatch'), '通常興行は結果後に既存フレーバーへ戻す');
+assert(app.includes('renderRegularMatchResultPopup(idx, skipFlavor'), '通常興行は観戦・1試合スキップの両方で結果ポップアップを出す');
+assert(app.includes('? finalize\n      : () => App._runPostMatchFlavorForMatch'), '1試合スキップでは余韻だけを省略し、結果画面は維持する');
 assert(app.includes('renderSpringTagLeagueMatchResultPopup(revealed, false)'), '春リーグ各試合で結果ポップアップを出す');
 assert(app.includes('renderAutumnWarBoutResultPopup(revealedMatch, revealedBout)'), '秋団体戦の各フォールで結果ポップアップを出す');
 assert(app.includes('renderPPVMatchResultPopup(idx, () =>'), 'PPV各試合で結果ポップアップを出す');
