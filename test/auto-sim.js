@@ -81,6 +81,62 @@ function createPhaseTimingStats(maxTurn, climaxStart) {
   };
 }
 
+function createBigStartGroupStats() {
+  return {
+    matches: 0,
+    turns: 0,
+    overrideAtFullHealth: 0,
+    reachedClimax: 0,
+    finishPhases: { Opening: 0, Mid: 0, End: 0, Climax: 0, Timeout: 0 },
+    turnHistogram: Array(BIGMATCH_MAX_T + 1).fill(0),
+    phaseTurns: { Opening: 0, Mid: 0, End: 0, Climax: 0 },
+    finisherSelections: 0,
+    zeroFinisherMatches: 0,
+    finishTypes: { fall: 0, gu: 0, TKO: 0, decision: 0 },
+    startHpRatios: [],
+    origins: {
+      juniorTournament: { matches: 0, startHpRatios: [] },
+      autumnWar: { matches: 0, startHpRatios: [] },
+      tenchosen: { matches: 0, startHpRatios: [] },
+      other: { matches: 0, startHpRatios: [] },
+    },
+  };
+}
+
+function classifyFinishType(finType) {
+  const text = String(finType || '');
+  if (text === 'TKO') return 'TKO';
+  if (text.includes('\u30ae\u30d6\u30a2\u30c3\u30d7')) return 'gu';
+  if (text.includes('\u30d5\u30a9\u30fc\u30eb') || text.includes('\u30d4\u30f3') || text.includes('\u4e38\u3081\u8fbc\u307f')) return 'fall';
+  return 'decision';
+}
+
+function recordBigStartGroup(stats, result, startHpRatios, origin, overrideAtFullHealth) {
+  const turns = Math.max(0, Math.min(result.turns || 0, BIGMATCH_MAX_T));
+  stats.matches++;
+  stats.turns += turns;
+  if (overrideAtFullHealth) stats.overrideAtFullHealth++;
+  if (turns >= 19) stats.reachedClimax++;
+  stats.turnHistogram[turns]++;
+  const finishPhase = result.finishPhase === 'Timeout' ? 'Timeout' : result.finishPhase;
+  if (stats.finishPhases[finishPhase] != null) stats.finishPhases[finishPhase]++;
+  for (const phase of BIGMATCH_PHASES) {
+    stats.phaseTurns[phase.name] += Math.max(0, Math.min(turns, phase.max) - phase.min + 1);
+  }
+  const selections = result.moveSelectionStats || {};
+  const normalFinishers = Math.max(0, (selections.finisher || 0) - (selections.forcedFinisher || 0));
+  stats.finisherSelections += normalFinishers;
+  if (normalFinishers === 0) stats.zeroFinisherMatches++;
+  stats.finishTypes[classifyFinishType(result.finType)]++;
+  stats.startHpRatios.push(...startHpRatios);
+  if (origin && stats.origins[origin]) {
+    stats.origins[origin].matches++;
+    stats.origins[origin].startHpRatios.push(...startHpRatios);
+  }
+}
+
+let activeBigMatchOrigin = 'other';
+
 // Task 05-07 balance probe: aggregate real single-match results produced by the
 // engine-integrity run.  Keeping this beside auto-sim makes before/after runs
 // directly comparable under the same seed without changing production logic.
@@ -101,6 +157,10 @@ const matchBalanceProbe = {
   phaseTiming: {
     normal: createPhaseTimingStats(MAX_T, 13),
     big: createPhaseTimingStats(BIGMATCH_MAX_T, 19),
+  },
+  bigStartGroups: {
+    full: createBigStartGroupStats(),
+    carried: createBigStartGroupStats(),
   },
   openingExecution: {
     '15-19': { eligible: 0, checked: 0, fired: 0, hit: 0, finishes: 0, misses: 0, underdogWinsAfterMiss: 0, damageBands: { shallow: 0, medium: 0, deep: 0, fatal: 0 } },
@@ -141,6 +201,22 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   for (const phase of phaseConfig) {
     const turnsInPhase = Math.max(0, Math.min(completedTurns, phase.max) - phase.min + 1);
     phaseTiming.phaseTurns[phase.name] += turnsInPhase;
+  }
+  if ((result.matchTier || matchTier || 1) >= 2) {
+    const maxLeft = result.hpLeft.max;
+    const maxRight = result.hpRight.max;
+    const startLeft = charL._hpOverride != null ? charL._hpOverride : maxLeft;
+    const startRight = charR._hpOverride != null ? charR._hpOverride : maxRight;
+    const startHpRatios = [startLeft / maxLeft, startRight / maxRight];
+    const isCarried = startLeft < maxLeft || startRight < maxRight;
+    const overrideAtFullHealth = !isCarried && (charL._hpOverride != null || charR._hpOverride != null);
+    recordBigStartGroup(
+      matchBalanceProbe.bigStartGroups[isCarried ? 'carried' : 'full'],
+      result,
+      startHpRatios,
+      isCarried ? activeBigMatchOrigin : null,
+      overrideAtFullHealth
+    );
   }
   const selection = result.moveSelectionStats;
   if (selection) {
@@ -195,6 +271,25 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   if (strongerSide && result.winner === strongerSide) matchBalanceProbe.ovrBands[band].strongerWins++;
   return result;
 };
+
+function wrapBigMatchOrigin(target, method, origin) {
+  if (!target || typeof target[method] !== 'function') return;
+  const original = target[method];
+  target[method] = function(...args) {
+    const previous = activeBigMatchOrigin;
+    activeBigMatchOrigin = origin;
+    try {
+      return original.apply(this, args);
+    } finally {
+      activeBigMatchOrigin = previous;
+    }
+  };
+}
+
+wrapBigMatchOrigin(Engine.juniorTournament, 'run', 'juniorTournament');
+wrapBigMatchOrigin(Engine.ppvTournament, 'run', 'tenchosen');
+wrapBigMatchOrigin(Engine.autumnWar, 'simulateNextBout', 'autumnWar');
+wrapBigMatchOrigin(Engine.autumnWar, 'runLegacy', 'autumnWar');
 
 // グローバルに展開されたか確認
 if (typeof Engine === 'undefined') {
@@ -1189,6 +1284,58 @@ if (matchBalanceProbe.matches > 0) {
     console.log(`      Climax到達: ${timing.reachedClimax}/${timing.matches} (${pct(timing.reachedClimax).toFixed(2)}%)`);
     console.log(`      決着ターン: ${histogramText}`);
     console.log(`      平均滞在: ${residenceText}`);
+  }
+  const bigStartTotal = matchBalanceProbe.bigStartGroups.full.matches
+    + matchBalanceProbe.bigStartGroups.carried.matches;
+  if (bigStartTotal > 0) {
+    const hpDistribution = ratios => {
+      if (!ratios.length) return 'n=0';
+      const bins = { '0-20': 0, '20-40': 0, '40-60': 0, '60-80': 0, '80-<100': 0, '100': 0 };
+      for (const ratio of ratios) {
+        if (ratio >= 0.9995) bins['100']++;
+        else if (ratio < 0.2) bins['0-20']++;
+        else if (ratio < 0.4) bins['20-40']++;
+        else if (ratio < 0.6) bins['40-60']++;
+        else if (ratio < 0.8) bins['60-80']++;
+        else bins['80-<100']++;
+      }
+      const avg = ratios.reduce((sum, ratio) => sum + ratio, 0) / ratios.length * 100;
+      const range = `${Math.min(...ratios).toFixed(3)}-${Math.max(...ratios).toFixed(3)}`;
+      return `fighters=${ratios.length} avg=${avg.toFixed(2)}% range=${range} ${Object.entries(bins).map(([bin, count]) => `${bin}:${count}`).join(' ')}`;
+    };
+    console.log('  Big-match start-HP diagnosis:');
+    for (const [key, label] of [['full', 'full-health'], ['carried', 'carried-fatigue']]) {
+      const group = matchBalanceProbe.bigStartGroups[key];
+      if (!group.matches) {
+        console.log(`    ${label}: n=0 (0.00%)`);
+        continue;
+      }
+      const pct = count => count / group.matches * 100;
+      const finishText = ['Opening', 'Mid', 'End', 'Climax', 'Timeout']
+        .map(phase => `${phase}:${group.finishPhases[phase]}(${pct(group.finishPhases[phase]).toFixed(2)}%)`).join(' ');
+      const histogramText = group.turnHistogram.slice(1)
+        .map((count, index) => `T${index + 1}:${count}(${pct(count).toFixed(2)}%)`).join(' ');
+      const residenceText = ['Opening', 'Mid', 'End', 'Climax']
+        .map(phase => `${phase}:${(group.phaseTurns[phase] / group.matches).toFixed(2)}T`).join(' ');
+      const finishTypeText = Object.entries(group.finishTypes)
+        .map(([type, count]) => `${type}:${count}(${pct(count).toFixed(2)}%)`).join(' ');
+      console.log(`    ${label}: n=${group.matches}/${bigStartTotal} (${(group.matches / bigStartTotal * 100).toFixed(2)}%) avgTurns=${(group.turns / group.matches).toFixed(2)}`);
+      console.log(`      finishPhase ${finishText}`);
+      console.log(`      Climax reach ${group.reachedClimax}/${group.matches} (${pct(group.reachedClimax).toFixed(2)}%)`);
+      console.log(`      finishTurn ${histogramText}`);
+      console.log(`      phaseResidence ${residenceText}`);
+      console.log(`      finisher/match=${(group.finisherSelections / group.matches).toFixed(3)} zero=${group.zeroFinisherMatches}/${group.matches} (${pct(group.zeroFinisherMatches).toFixed(2)}%)`);
+      console.log(`      finishType ${finishTypeText}`);
+      console.log(`      startHP ${hpDistribution(group.startHpRatios)}`);
+      if (key === 'full' && group.overrideAtFullHealth > 0) {
+        console.log(`      note: ${group.overrideAtFullHealth} matches supplied _hpOverride equal to max HP and are classified by actual full-health start.`);
+      }
+      if (key === 'carried') {
+        for (const [origin, originStats] of Object.entries(group.origins)) {
+          console.log(`      origin=${origin} matches=${originStats.matches} startHP ${hpDistribution(originStats.startHpRatios)}`);
+        }
+      }
+    }
   }
   for (const [label, band] of Object.entries(matchBalanceProbe.ovrBands)) {
     const winRate = band.matches > 0 ? band.strongerWins / band.matches * 100 : 0;
