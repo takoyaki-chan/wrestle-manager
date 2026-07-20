@@ -126,7 +126,7 @@ assert.ok(
     uiRender.includes('function _relmapMobileSearch(value)') &&
     uiRender.includes('強い関係のみ') &&
     uiRender.includes('🔥 因縁・ライバル') &&
-    uiRender.includes('🤝 友情・信頼') &&
+    uiRender.includes('🤝 友情・親愛') &&
     uiRender.includes('⚠️ 警戒・不和') &&
     uiRender.includes('🎭 同門・派閥'),
   'the phone relationship view must use a searchable person-centered list'

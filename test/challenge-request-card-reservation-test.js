@@ -16,25 +16,25 @@ function fighter(id, name) {
 const own = Array.from({ length: 7 }, (_, i) => fighter(i + 1, `Own ${i + 1}`));
 const away = Array.from({ length: 3 }, (_, i) => fighter(101 + i, `Away ${i + 1}`));
 const pending = {
-  requesterId: own[0].id,
-  opponentId: away[0].id,
-  requesterOrgId: 'PLAYER',
-  opponentOrgId: 'AWAY',
-  requesterOrgName: 'Player Org',
-  opponentOrgName: 'Away Org',
-  teamAIds: own.slice(0, 3).map(f => f.id),
-  teamBIds: away.map(f => f.id),
-  isInverse: false,
+  requesterId: away[0].id,
+  opponentId: own[0].id,
+  requesterOrgId: 'AWAY',
+  opponentOrgId: 'player',
+  requesterOrgName: 'Away Org',
+  opponentOrgName: 'Player Org',
+  teamAIds: away.map(f => f.id),
+  teamBIds: own.slice(0, 3).map(f => f.id),
+  isInverse: true,
 };
 
 function makeState(showVenue = 8) {
   return {
     season: 2,
-    week: 1,
+    week: 2,
     showVenue,
     roster: own.map(f => ({ ...f })),
     aiOrgs: { AWAY: { roster: away.map(f => ({ ...f })) } },
-    _pendingChallengeMatch: { ...pending },
+    _pendingIncomingChallengeMatch: { ...pending },
     relationships: {},
     factions: [],
     titles: { world: { championId: null } },
@@ -60,7 +60,7 @@ function makeState(showVenue = 8) {
   assert.strictEqual(reserved.card.length, 7);
   assert.deepStrictEqual(
     reserved.card.slice(0, 3).map(m => [m.left, m.right]),
-    [[1, 101], [2, 102], [3, 103]],
+    [[101, 1], [102, 2], [103, 3]],
     'main, semi-main and third-from-top must be the three challenge matches'
   );
   assert.ok(reserved.card.slice(0, 3).every(m => m._crMatchLocked && m.isCRMatch));
@@ -88,6 +88,101 @@ function makeState(showVenue = 8) {
   const state = makeState();
   state.roster[0].forcedRest = true;
   assert.strictEqual(Engine.challengeRequest.reserveScheduledMatches(state, []), null);
+})();
+
+(function fixedSeasonalShowsDoNotConsumeChallengeBookings() {
+  const special = makeState();
+  special.week = 12;
+  assert.strictEqual(Engine.challengeRequest.reserveScheduledMatches(special, []), null);
+  assert.ok(special._pendingIncomingChallengeMatch, 'booking remains pending outside an ordinary show');
+
+  const ppv = makeState();
+  ppv.week = 48;
+  assert.strictEqual(Engine.challengeRequest.reserveScheduledMatches(ppv, []), null);
+})();
+
+(function challengeLettersAreSampledOnlyAtOrdinaryShowHeads() {
+  assert.strictEqual(Engine.challengeRequest._isSamplingWeek({ week: 3 }), false);
+  assert.strictEqual(Engine.challengeRequest._isSamplingWeek({ week: 4 }), true);
+  assert.strictEqual(Engine.challengeRequest._isSamplingWeek({ week: 8 }), true);
+  assert.strictEqual(Engine.challengeRequest._isSamplingWeek({ week: 12 }), false, 'seasonal show keeps its fixed card');
+  assert.strictEqual(Engine.challengeRequest._isSamplingWeek({ week: 48 }), false, 'PPV keeps its fixed card');
+})();
+
+(function challengeCooldownsUseTheFortyEightWeekSeasonClock() {
+  const self = own[0];
+  const other = away[0];
+  const pairKey = Engine.challengeRequest._pairKey(self.id, other.id);
+  const state = makeState();
+  state.season = 2;
+  state.week = 4;
+  state.challengeRequest = {
+    pendingThisWeek: null,
+    acceptedThisSeason: 0,
+    perOrgThisSeason: {},
+    cdByFighter: { [self.id]: Engine.util.absWeek(1, 30) },
+    cdByPair: { [pairKey]: { lastWeek: Engine.util.absWeek(1, 30), coolWeeks: 36 } },
+  };
+  assert.strictEqual(
+    Engine.challengeRequest._passesCD(state, self, other),
+    false,
+    'a cross-season pair cooldown must still be active after only 22 show weeks'
+  );
+
+  state.challengeRequest.cdByFighter[self.id] = Engine.util.absWeek(1, 1);
+  state.challengeRequest.cdByPair[pairKey] = { lastWeek: Engine.util.absWeek(1, 1), coolWeeks: 36 };
+  assert.strictEqual(
+    Engine.challengeRequest._passesCD(state, self, other),
+    true,
+    'a cross-season cooldown must expire after the configured active weeks'
+  );
+})();
+
+(function reservesOneOffChallengeAsMainEvent() {
+  const state = makeState();
+  delete state._pendingIncomingChallengeMatch;
+  state._pendingIncomingB3Match = {
+    fighterId: own[0].id,
+    challenger: { ...away[0] },
+    orgId: 'AWAY',
+    orgName: 'Away Org',
+  };
+  const reserved = Engine.challengeRequest.reserveScheduledSingleMatch(state, [
+    { left: own[0].id, right: own[3].id, isTitle: true },
+    { left: own[1].id, right: own[4].id },
+  ]);
+  assert.ok(reserved);
+  assert.strictEqual(reserved.card[0].left, own[0].id);
+  assert.strictEqual(reserved.card[0].right, away[0].id);
+  assert.ok(reserved.card[0]._b3ChallengeMatch && reserved.card[0]._crMatchLocked);
+  assert.ok(!reserved.card.slice(1).some(m => m.left === own[0].id || m.right === own[0].id));
+})();
+
+(function removesAwayTravelersFromExistingSinglesAndTags() {
+  const cleared = Engine.challengeRequest.removeFightersFromCard([
+    { left: 1, right: 4, isTitle: true },
+    { matchType: 'tag', teamA: { fighter1: 2, fighter2: 5 }, teamB: { fighter1: 6, fighter2: 3 } },
+  ], [1, 2, 3]);
+  assert.deepStrictEqual(cleared[0], { left: 0, right: 4, isTitle: false });
+  assert.deepStrictEqual(cleared[1].teamA, { fighter1: 0, fighter2: 5 });
+  assert.deepStrictEqual(cleared[1].teamB, { fighter1: 6, fighter2: 0 });
+})();
+
+(function detectsAwayConflictWithoutConsumingTheIncomingBooking() {
+  const state = makeState();
+  state._pendingAwayChallengeMatch = {
+    teamAIds: [own[0].id, own[1].id, own[2].id],
+    teamBIds: away.map(f => f.id),
+  };
+  assert.strictEqual(
+    Engine.challengeRequest.hasAwayParticipantConflict(state, [own[0].id, 999]),
+    true,
+    'a B3 match sharing either side with the away card must wait'
+  );
+  assert.strictEqual(
+    Engine.challengeRequest.hasAwayParticipantConflict(state, [own[4].id, 999]),
+    false
+  );
 })();
 
 (function challengeAppealBonusIsDedicatedAndVisibleInBreakdown() {

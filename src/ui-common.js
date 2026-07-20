@@ -3179,10 +3179,10 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${(() => { const gp = c.growthPenalty; if (!gp) return ''; const m = gp.multiplier; const lbl = m <= 0.2 ? '成長大幅低下' : m <= 0.5 ? '成長低下' : '成長やや低下'; return `<span style="color:#a29bfe">🩹 ${lbl}（残り${gp.remainingWeeks}週）</span>`; })()}
             ${c.hotStreak ? `<span style="color:#ff9500">🔥 絶好調（残り${c.hotStreak.remainingWeeks}週 / OVR+${c.hotStreak.ovrBuff}）</span>` : ''}
             ${c._trainerBuff ? (() => {
-              // 社長室 Phase 7: 成長バフ表示 + 信頼度がじわじわ育つことの明示
+              // 社長室 Phase 7: 成長バフと、合宿に馴染んでいる様子を表示
               // _trainerBuff は現在 camp 由来のみ(trainer は care-rework v0.1 で _inviteBuff に移行、既存セーブ互換のため残置)
               const weeks = c._trainerBuff.weeksLeft;
-              return `<span style="color:#d4a843">🏋️ 合宿 残り${weeks}週 — 信頼もじわじわ育つ</span>`;
+              return `<span style="color:#d4a843">🏋️ 合宿 残り${weeks}週 — 団体にも馴染んできている</span>`;
             })() : ''}
             ${c._inviteBuff ? (() => {
               // care-rework v0.1 §3: 招聘中コーチの表示
@@ -3192,7 +3192,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             })() : ''}
             ${c.slump ? `<span style="color:#7f8c8d">📉 スランプ中（${c.slump.weeksSinceStart}週目 / 回復確率${(2 + (c.slump.recoveryMomentum || 0)).toFixed(1)}%）</span>` : ''}
             ${c.motivationLoss ? `<span style="color:#95a5a6">😞 モチベ喪失（${c.motivationLoss.weeksSinceStart}週目）</span>` : ''}
-            ${(isRoster && !c.isRental && (c.trust != null ? c.trust : 50) < 40) ? '<span style="color:#e67e22;font-weight:700">💔 信頼が揺らいでいる</span>' : ''}
+            ${(isRoster && !c.isRental && (c.trust != null ? c.trust : 50) < 40) ? '<span style="color:#e67e22;font-weight:700">💭 最近よそよそしい</span>' : ''}
             ${isRoster ? '<span style="color:#2ecc71">🏠 所属中</span>' : ''}
             ${isFree ? '<span style="color:#8bc4f0">🆓 フリー</span>' : ''}
             ${isScoutCandidate ? '<span style="color:#f39c12">🔍 スカウト候補</span>' : ''}
@@ -3866,12 +3866,26 @@ function getScheduledChallengeCard() {
     : null;
 }
 
+function getChallengeUnavailableIds() {
+  const ids = new Set(getScheduledChallengeCard()?.reservedIds || []);
+  const single = Engine.challengeRequest?.getScheduledSingleChallenge?.(G);
+  (single?.reservedIds || []).forEach(id => ids.add(id));
+  const away = G && G._pendingAwayChallengeMatch;
+  if (away && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
+    const playerIds = away.requesterOrgId === 'player' ? away.teamAIds : away.teamBIds;
+    (playerIds || []).forEach(id => ids.add(id));
+  }
+  return ids;
+}
+
 function getShowCardFighter(id) {
   if (!(id > 0)) return null;
   const own = (G.roster || []).find(c => c.id === id);
   if (own) return own;
   const scheduled = getScheduledChallengeCard();
-  return scheduled ? [...scheduled.teamA, ...scheduled.teamB].find(c => c.id === id) || null : null;
+  if (scheduled) return [...scheduled.teamA, ...scheduled.teamB].find(c => c.id === id) || null;
+  const single = Engine.challengeRequest?.getScheduledSingleChallenge?.(G);
+  return single && (single.playerFighter.id === id ? single.playerFighter : single.challenger.id === id ? single.challenger : null);
 }
 
 function moveShowCard(idx, dir) {
@@ -3894,7 +3908,7 @@ function moveShowCard(idx, dir) {
 // タッグ枠保持ヘルパー: 既存タッグ枠を保持し、タッグ選手IDを除外セットに追加
 function _preserveTagSlots(maxMatches) {
   const scheduled = getScheduledChallengeCard();
-  const reservedIds = new Set(scheduled ? scheduled.reservedIds : []);
+  const reservedIds = getChallengeUnavailableIds();
   const prefix = scheduled ? [0, 1, 2].map(i => ({
     left: scheduled.teamA[i].id, right: scheduled.teamB[i].id,
     isTitle: false, isCRMatch: true, _crMatchLocked: true,
@@ -4211,7 +4225,9 @@ function renderMatchPreview() {
   const box = document.getElementById('showResultBox');
   const special = isSpecialShow(G.week);
   const ppv = isPPV(G.week);
-  const showName = ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `第${G.totalShows + 1}回 定期興行`;
+  const showName = sp.isAwayChallenge
+    ? `🚌 ${sp.awayBooking?.opponentOrgName || '相手団体'} 興行・遠征試合`
+    : ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `第${G.totalShows + 1}回 定期興行`;
   const resolved = sp.results.filter(r => r !== null).length;
   const total = sp.validMatches.length;
 
@@ -4222,7 +4238,7 @@ function renderMatchPreview() {
 
   // ヘッダー
   let html = `<div class="show-pregame-a"><div class="show-header">
-    <div class="show-label">Weekly Show</div>
+    <div class="show-label">${sp.isAwayChallenge ? 'Away Challenge' : 'Weekly Show'}</div>
     <div class="show-title">${showName}</div>
     <div class="show-progress">全${total}試合 ─ ${resolved}/${total} 完了</div>
   </div>`;
@@ -4283,7 +4299,7 @@ function renderMatchPreview() {
       // bond-rivalry plan P-1: bond ≤ 20 不仲ペアの警告マーカー
       const _chemHtml = (bond) => {
         if (bond <= 20) {
-          return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">⚠ 不仲 ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">能力-3 / 連携不可 / 信頼-1</div></div>`;
+          return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">⚠ 不仲 ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">能力-3 / 連携不可 / 相手との関係-1</div></div>`;
         }
         return `<div class="smc-tag-chem">🤝 ${Math.round(bond)}</div>`;
       };
@@ -4552,6 +4568,7 @@ function renderShowResult(results, injuryResults) {
 
   results.forEach((r, i) => {
     const isMain = i === 0;
+    const sourceMatch = _srValidMatches[i];
     const spotlightInMatch = G.mediaSpotlight && (
       (r.left && G.mediaSpotlight.fighterId === r.left.id) ||
       (r.right && G.mediaSpotlight.fighterId === r.right.id)
@@ -4570,6 +4587,7 @@ function renderShowResult(results, injuryResults) {
     // Tags
     const tags = [];
     if (r.matchType === 'tag') tags.push(`<span class="pb-tag is-tag">TAG MATCH</span>`);
+    if (sourceMatch?.isCRMatch) tags.push(`<span class="pb-tag is-rivalry">⚔ 挑戦試合</span>`);
     if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
     if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">⚡ 決着！</span>`);
     else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
@@ -4643,6 +4661,15 @@ function renderShowResult(results, injuryResults) {
     html += _pbFighterBlock('right', r.right, rightCls, metaRight, '');
     if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
     if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
+    if (sourceMatch?.isCRMatch && r._challengeRelationshipDelta) {
+      const signedRel = value => `${value >= 0 ? '+' : ''}${Math.round(value * 10) / 10}`;
+      const leftRel = r._challengeRelationshipDelta[r.left.id];
+      const rightRel = r._challengeRelationshipDelta[r.right.id];
+      const relLine = (fighter, delta) => delta
+        ? `<span><strong>${escHtml(fighter.name)}</strong> → 因縁 ${signedRel(delta.rivalry)} / 相手との関係 ${signedRel(delta.bond)}</span>`
+        : '';
+      html += `<div style="grid-column:1/-1;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;padding:7px 10px;border-top:1px solid var(--line);color:var(--accent-warm);font-size:11px">${relLine(r.left, leftRel)}${relLine(r.right, rightRel)}</div>`;
+    }
     if (injuriesThisMatch.length) html += _pbInjuryBlock(injuriesThisMatch);
     html += `</div>`;
   });
@@ -7491,7 +7518,7 @@ function showInviteConflictModal(payload, state, onChoice) {
       <div class="mdl-a-decision-card" data-choice="continue">
         <div class="mdl-a-decision-letter">A</div>
         <div class="mdl-a-decision-label">続行させる</div>
-        <div class="mdl-a-decision-hint negative">選手の信頼が少し下がるが、指導は続く</div>
+        <div class="mdl-a-decision-hint negative">選手は不満を残すが、指導は続く</div>
       </div>
       <div class="mdl-a-decision-card" data-choice="cancel">
         <div class="mdl-a-decision-letter">B</div>
@@ -9051,7 +9078,7 @@ function showFactionF06Modal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">そっと結束を後押しする</div>
-            <div class="fevt-decision-hint">敵対度を一気に解消、両リーダー trust +3〜+5。大々的な興行は組まない、静かな終結</div>
+            <div class="fevt-decision-hint">敵対度を一気に解消。両リーダーも社長の仲裁を好意的に受け止める、静かな終結</div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>
@@ -9088,82 +9115,82 @@ function showFactionF06Modal(payload, state, onChoice) {
 const _F07_INCIDENT_META = {
   DEMAND_MAIN: { titleEmoji: '👑', titleText: 'メインカード相談', shape: 'choice3', source: 'leader',
     choices: [
-      { id: 'A', label: '相談に乗る',          hint: '次回興行のメイン提案で、{factionName}メンバーを優先候補にする。<br>派閥メンバー信頼 <strong>+3〜+5</strong>。' },
-      { id: 'B', label: '受け流す',            hint: 'リーダーの要求は黙認する。<br>リーダー信頼 <strong>-3〜-5</strong>／派閥外信頼 <strong>+2</strong>。' },
-      { id: 'C', label: '別ルートで応える',    hint: '要求自体には応じず、メンバーへの個別ケアで返す。<br>派閥メンバー信頼 <strong>+2</strong>／注意累積 +1。' },
+      { id: 'A', label: '相談に乗る',          hint: '次回興行のメイン提案で、{factionName}メンバーを優先候補にする。<br>派閥内では期待に応えたと受け止められそうだ。' },
+      { id: 'B', label: '受け流す',            hint: 'リーダーは不満を募らせるが、派閥外には公平な対応と映りそうだ。' },
+      { id: 'C', label: '別ルートで応える',    hint: '要求自体には応じず、メンバーへの個別ケアで返す。<br>注意累積 +1。' },
     ],
   },
   DEMAND_MONEY: { titleEmoji: '💰', titleText: '待遇相談', shape: 'choice3', source: 'leader',
     choices: [
-      { id: 'A', label: '次オフで反映する',    hint: '次オフ契約交渉で +10% 反映予定（Phase D 実装）。<br>派閥メンバー信頼 <strong>+3〜+5</strong>。' },
-      { id: 'B', label: '受け流す',            hint: '待遇相談は黙認する。<br>リーダー信頼 <strong>-3〜-4</strong>。' },
-      { id: 'C', label: '個別ケアで応える',    hint: 'メンバー一人一人に目を配る。<br>派閥メンバー信頼 <strong>+1</strong>／注意累積 +1。' },
+      { id: 'A', label: '次オフで反映する',    hint: '次オフ契約交渉で +10% 反映予定（Phase D 実装）。<br>派閥メンバーは前向きな回答と受け止める。' },
+      { id: 'B', label: '受け流す',            hint: '待遇相談は黙認する。リーダーは不満を残しそうだ。' },
+      { id: 'C', label: '個別ケアで応える',    hint: 'メンバー一人一人に目を配る。<br>注意累積 +1。' },
     ],
   },
   DEMAND_ABSTRACT: { titleEmoji: '👑', titleText: 'リーダーの要求', shape: 'choice3', source: 'leader',
     choices: [
-      { id: 'A', label: '権威を認める',        hint: 'リーダー信頼 <strong>+5</strong>／非メンバー信頼 <strong>-3〜-6</strong>／ロッカー士気 <strong>-3〜-5</strong>。<br>権威型なら「独裁化」する。' },
-      { id: 'B', label: '釘を刺す',            hint: 'リーダー信頼 <strong>-8〜-12</strong>／非メンバー信頼 <strong>+2〜+3</strong>。<br>4 回累積で権威型資格剥がし。' },
-      { id: 'C', label: '別の幹部を立てる',    hint: 'リーダー信頼 <strong>-5〜-8</strong>／別幹部信頼 <strong>+5〜+8</strong>。<br>権威型資格は剥がれるが、派閥内に新たな対立軸。' },
+      { id: 'A', label: '権威を認める',        hint: 'リーダーは満足するが、非メンバーとロッカー全体には反発が広がる。<br>権威型なら「独裁化」する。' },
+      { id: 'B', label: '釘を刺す',            hint: 'リーダーは強く反発する一方、非メンバーには歓迎される。<br>4 回累積で権威型資格剥がし。' },
+      { id: 'C', label: '別の幹部を立てる',    hint: '現リーダーは反発し、別幹部は社長の意図を汲む。<br>権威型資格は剥がれるが、派閥内に新たな対立軸。' },
     ],
   },
   DEMAND_RECOGNITION: { titleEmoji: '🎤', titleText: '評価要求', shape: 'choice3', source: 'leader',
     choices: [
-      { id: 'A', label: '貢献を認める',        hint: '派閥メンバー信頼 <strong>+3〜+5</strong>／ロッカー士気 <strong>+1〜2</strong>。' },
-      { id: 'B', label: '受け流す',            hint: 'リーダー信頼 <strong>-2〜-4</strong>。' },
-      { id: 'C', label: '個別の声かけで応える', hint: '派閥メンバー信頼 <strong>+1</strong>／注意累積 +1。' },
+      { id: 'A', label: '貢献を認める',        hint: '派閥メンバーは報われたと感じ、ロッカーの空気も少し明るくなる。' },
+      { id: 'B', label: '受け流す',            hint: 'リーダーは評価されなかったと感じそうだ。' },
+      { id: 'C', label: '個別の声かけで応える', hint: 'メンバーごとに労をねぎらう。注意累積 +1。' },
     ],
   },
   OBSERVE_RIVAL_HEAT: { titleEmoji: '⚠️', titleText: '派閥外への当たり', shape: 'choice3', source: 'coach',
     choices: [
-      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-3</strong>／対象信頼 <strong>+5</strong>。' },
-      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+2</strong>／対象信頼 <strong>-5</strong>／ロッカー士気 <strong>-3</strong>。' },
-      { id: 'C', label: '別ルートで諭す',      hint: 'リーダー信頼 <strong>-1</strong>／対象信頼 <strong>+3</strong>／注意累積 +1。' },
+      { id: 'A', label: '介入する',            hint: 'リーダーは口出しに反発するが、標的になった選手は守られたと感じる。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダーは勢いづく一方、標的とロッカー全体に不満が残る。' },
+      { id: 'C', label: '別ルートで諭す',      hint: 'リーダーの顔を立てつつ、標的を個別に支える。注意累積 +1。' },
     ],
   },
   OBSERVE_ABSENCE: { titleEmoji: '🌙', titleText: '練習サボり連鎖', shape: 'choice3', source: 'coach',
     choices: [
-      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-5</strong>／派閥メンバー信頼 <strong>-2</strong>／ロッカー士気 <strong>+3</strong>。' },
-      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+3</strong>／ロッカー士気 <strong>-4</strong>。' },
+      { id: 'A', label: '介入する',            hint: '派閥は反発するが、ロッカー全体には規律を示せる。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダーは満足するが、ロッカー全体の空気が悪くなる。' },
       { id: 'C', label: '別ルートで諭す',      hint: 'コーチ経由で個別ケア／注意累積 +1。' },
     ],
   },
   OBSERVE_INTERNAL_RANK: { titleEmoji: '📊', titleText: '内部格付け争い', shape: 'choice3', source: 'coach',
     choices: [
-      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-2</strong>／中位メンバー信頼 <strong>+3</strong>。' },
-      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+1</strong>／ロッカー士気 <strong>-2</strong>。' },
+      { id: 'A', label: '介入する',            hint: 'リーダーは不服そうだが、中位メンバーは救われる。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダーの顔は立つが、ロッカーにわだかまりが残る。' },
       { id: 'C', label: '別ルートで諭す',      hint: '派閥内 bond 微増／注意累積 +1。' },
     ],
   },
   OBSERVE_FAN_PRESSURE: { titleEmoji: '🎭', titleText: 'ファン期待の重圧', shape: 'choice3', source: 'coach',
     choices: [
-      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-2</strong>／コンディション <strong>+5</strong>。' },
-      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+2</strong>／コンディション <strong>-3</strong>。' },
+      { id: 'A', label: '介入する',            hint: 'リーダーは不服そうだが、コンディションは回復する。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダーの意向を尊重する代わりに、コンディションが落ちる。' },
       { id: 'C', label: '別ルートで諭す',      hint: 'コンディション <strong>+3</strong>／注意累積 +1。' },
     ],
   },
   OBSERVE_TRAINING_HARD: { titleEmoji: '💪', titleText: '過度な追い込み', shape: 'choice3', source: 'coach',
     choices: [
-      { id: 'A', label: '介入する',            hint: 'リーダー信頼 <strong>-3</strong>／メンバー condition <strong>+3</strong>／勢い <strong>-2</strong>。' },
-      { id: 'B', label: '黙認する',            hint: 'リーダー信頼 <strong>+2</strong>／勢い <strong>+3</strong>／怪我リスク上昇。' },
+      { id: 'A', label: '介入する',            hint: 'リーダーは反発するが、メンバーの消耗を抑えられる。勢いは落ちる。' },
+      { id: 'B', label: '黙認する',            hint: 'リーダーは勢いづくが、怪我の危険が高まる。' },
       { id: 'C', label: '別ルートで諭す',      hint: 'コーチ経由で調整／注意累積 +1。' },
     ],
   },
   INCIDENT_BOUNDARY: { titleEmoji: '🧱', titleText: '派閥の壁', shape: 'choice2', source: 'coach',
     choices: [
-      { id: 'A', label: '注意する',            hint: 'リーダー信頼 <strong>-2</strong>／対象信頼 <strong>+3</strong>／注意累積 +1。' },
-      { id: 'B', label: '流す',                hint: '派閥メンバー信頼 <strong>+2</strong>／対象信頼 <strong>-3</strong>。' },
+      { id: 'A', label: '注意する',            hint: 'リーダーは反発するが、対象選手は守られたと感じる。注意累積 +1。' },
+      { id: 'B', label: '流す',                hint: '派閥は勢いづく一方、対象選手に不満が残る。' },
     ],
   },
   INCIDENT_BONDING: { titleEmoji: '🤝', titleText: '派閥内結束', shape: 'choice2', source: 'coach',
     choices: [
-      { id: 'A', label: 'たしなめる',          hint: '派閥メンバー信頼 <strong>-1</strong>／派閥外信頼 <strong>+2</strong>。' },
-      { id: 'B', label: '見守る',              hint: '派閥メンバー信頼 <strong>+3</strong>／派閥外信頼 <strong>-2</strong>。' },
+      { id: 'A', label: 'たしなめる',          hint: '派閥は少し不満を持つが、派閥外には公平な態度と映る。' },
+      { id: 'B', label: '見守る',              hint: '派閥の結束は強まるが、派閥外には距離を置かれる。' },
     ],
   },
   INCIDENT_HEEL_PROVOKE: { titleEmoji: '🔥', titleText: '観客挑発エピソード', shape: 'choice2', source: 'coach',
     choices: [
-      { id: 'A', label: '注意する',            hint: 'リーダー信頼 <strong>-3</strong>／次回興行集客一時微減／注意累積 +1。' },
+      { id: 'A', label: '注意する',            hint: 'リーダーは反発。次回興行の集客が一時微減し、注意累積 +1。' },
       { id: 'B', label: '流す',                hint: '次回興行集客一時+。' },
     ],
   },
@@ -10190,7 +10217,7 @@ function showFactionF02ResolutionModal(payload, state, onContinue) {
         <div class="fevt-res-ledger-col win">
           <div class="fevt-res-ledger-head">${String(winnerFactionName)} ・ VICTOR</div>
           <div class="fevt-res-ledger-line">求心力　<span class="delta-up">+12</span> ・ 勢い <span class="delta-up">+18</span></div>
-          <div class="fevt-res-ledger-line">リーダー信頼　<span class="delta-up">+6</span></div>
+          <div class="fevt-res-ledger-line">リーダーは社長の裁定を受け入れている</div>
           <div class="fevt-res-ledger-line">${String(loserFactionName)}への敵対度　<span class="delta-down">-40</span></div>
         </div>
         <div class="fevt-res-ledger-col lose">
@@ -10602,7 +10629,7 @@ function showFactionCommon1Modal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">派閥内対決を組む</div>
-            <div class="fevt-decision-hint">ビッグマッチとして実際に試合。勝者 trust <strong>+3〜+5</strong>／敗者 <strong>-1〜-3</strong>／因縁 <strong>-30〜-50</strong></div>
+            <div class="fevt-decision-hint">ビッグマッチとして実際に試合。勝者は報われ、敗者はわだかまりを残す／因縁 <strong>-30〜-50</strong></div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>
@@ -10935,7 +10962,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="YES">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">${isInverse ? '受けて立つ' : 'この舞台、組もう'}</div>
-            <div class="fevt-decision-hint">${isInverse ? `${requesterOrgName}の挑戦を受け、3 vs 3 団体戦を即実施` : '今すぐ 3 vs 3 団体戦として実施し、その場で決着をつける'}</div>
+            <div class="fevt-decision-hint">${isInverse ? `${requesterOrgName}の挑戦を受け、次の自団体興行の上位3試合で迎え撃つ` : `次の自団体興行後、${opponentOrgName}の興行へ3人で遠征する`}</div>
           </div>
           <div class="fevt-decision-card" data-choice="NO">
             <div class="fevt-decision-letter">B</div>
@@ -11049,12 +11076,18 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
     const rightFighter = isInverse ? m.fighterA : m.fighterB;
     const leftLabel = isInverse ? winLabelB : winLabelA;
     const rightLabel = isInverse ? winLabelA : winLabelB;
+    const relText = fighter => {
+      const delta = m.relationshipDelta && m.relationshipDelta[fighter.id];
+      if (!delta) return '';
+      const signed = value => `${value >= 0 ? '+' : ''}${Math.round(value * 10) / 10}`;
+      return `<small class="crrm-rel">因縁 ${signed(delta.rivalry)} / 相手との関係 ${signed(delta.bond)}</small>`;
+    };
     return `
       <div class="crrm-row">
         <div class="crrm-row-num">${numLabel}</div>
-        <div class="crrm-row-side crrm-row-a">${leftLabel} <span class="crrm-name">${leftFighter.name}</span></div>
+        <div class="crrm-row-side crrm-row-a">${leftLabel} <span class="crrm-name">${leftFighter.name}${relText(leftFighter)}</span></div>
         <div class="crrm-row-vs">vs</div>
-        <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${rightFighter.name}</span> ${rightLabel}</div>
+        <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${rightFighter.name}${relText(rightFighter)}</span> ${rightLabel}</div>
         <div class="crrm-row-mq">MQ ${Math.round(m.mq || 0)}</div>
         <div class="crrm-row-fin">${finLabel}</div>
       </div>`;
@@ -11081,6 +11114,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
       .crrm-row-mq { font-size:11px; color:var(--ink-soft, #5a4a3a); text-align:center; }
       .crrm-row-fin { font-size:11px; color:var(--ink-soft, #5a4a3a); }
       .crrm-name { font-weight:600; color:var(--ink, #2a1a08); }
+      .crrm-rel { display:block; margin-top:3px; font-size:9px; font-weight:600; color:var(--accent-warm); white-space:nowrap; }
       .crrm-win { color:var(--accent-positive, #2d6a2d); font-weight:700; }
       .crrm-loss { color:rgba(120,90,60,0.5); }
       .crrm-draw { color:var(--ink-soft, #5a4a3a); }
@@ -11265,7 +11299,7 @@ function _buildB1Modal(event, state, roster) {
   const canAfford = funds >= 200;
   html += `<button class="btn" data-choice="0" ${canAfford ? '' : 'disabled'}
     style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between${canAfford ? '' : ';opacity:0.4;cursor:default'}">
-    <span>特別治療（-200万）</span><span style="font-size:11px;color:var(--text-dim)">回復期間半減・信頼が上がる</span>
+    <span>特別治療（-200万）</span><span style="font-size:11px;color:var(--text-dim)">回復期間半減・手厚い対応が伝わる</span>
   </button>`;
   html += `<button class="btn" data-choice="1"
     style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
@@ -11273,7 +11307,7 @@ function _buildB1Modal(event, state, roster) {
   </button>`;
   html += `<button class="btn" data-choice="2"
     style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>無理させる</span><span style="font-size:11px;color:var(--text-dim)">信頼が少し上がる、40%で悪化リスク</span>
+    <span>無理させる</span><span style="font-size:11px;color:var(--text-dim)">期待に応えようとする、40%で悪化リスク</span>
   </button>`;
   html += '</div>';
   return html;
@@ -11332,7 +11366,7 @@ function _buildB2Step1(event, state, roster) {
       <div class="mdl-a-decision-card" data-choice="0">
         <div class="mdl-a-decision-letter">A</div>
         <div class="mdl-a-decision-label">話し合いで解決</div>
-        <div class="mdl-a-decision-hint positive">両者の信頼↑ ／ 士気回復</div>
+        <div class="mdl-a-decision-hint positive">両者とも話を聞く姿勢を取り戻す ／ 士気回復</div>
       </div>
       <div class="mdl-a-decision-card danger-accent" data-choice="1">
         <div class="mdl-a-decision-letter">B</div>
@@ -11342,7 +11376,7 @@ function _buildB2Step1(event, state, roster) {
       <div class="mdl-a-decision-card" data-choice="2">
         <div class="mdl-a-decision-letter">C</div>
         <div class="mdl-a-decision-label">放置する</div>
-        <div class="mdl-a-decision-hint negative">両者の信頼↓↓ ／ 士気低下</div>
+        <div class="mdl-a-decision-hint negative">両者とも社長への不満を募らせる ／ 士気低下</div>
       </div>
     </div>`;
 }
@@ -11391,12 +11425,12 @@ function _buildB2Step2(event, state, roster) {
       <div class="mdl-a-decision-card" data-choice="0">
         <div class="mdl-a-decision-letter">B</div>
         <div class="mdl-a-decision-label">${n1}を後押し</div>
-        <div class="mdl-a-decision-hint">${n1}信頼↑ ／ ${n2}↓</div>
+        <div class="mdl-a-decision-hint">${n1}は後押しを喜ぶ ／ ${n2}はえこひいきと感じる</div>
       </div>
       <div class="mdl-a-decision-card" data-choice="1">
         <div class="mdl-a-decision-letter">C</div>
         <div class="mdl-a-decision-label">${n2}を後押し</div>
-        <div class="mdl-a-decision-hint">${n2}信頼↑ ／ ${n1}↓</div>
+        <div class="mdl-a-decision-hint">${n2}は後押しを喜ぶ ／ ${n1}はえこひいきと感じる</div>
       </div>
     </div>`;
 }
@@ -11431,8 +11465,8 @@ function _buildB2Step3(event, state, roster) {
   const n2 = f2 ? f2.name : (event.name2 || '?');
   const resultRow = isDraw
     ? `<div class="mdl-a-result-row"><span>結果</span><strong>引き分け</strong></div>`
-    : `<div class="mdl-a-result-row"><span>${winnerF ? winnerF.name : ''}の信頼</span><span class="pos">+8</span></div>
-       <div class="mdl-a-result-row"><span>${loserF ? loserF.name : ''}の信頼</span><span class="neg">−4</span></div>
+    : `<div class="mdl-a-result-row"><span>${winnerF ? winnerF.name : ''}</span><strong>社長の判断に満足</strong></div>
+       <div class="mdl-a-result-row"><span>${loserF ? loserF.name : ''}</span><strong>わだかまりを残した</strong></div>
        <div class="mdl-a-result-row"><span>両者の士気</span><strong>一旦リセット</strong></div>`;
 
   const closePart = isDraw
@@ -12064,12 +12098,16 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
 
   // 影響行を方向で色分け
   const impactRows = (applyResult.impactSummary || []).map(item => {
-    const label = String(item.label || '').replace(/\btrust\b/g, '信頼度').replace(/\brivalry\b/g, '因縁');
+    const rawLabel = String(item.label || '');
+    const isOrgTrust = /\btrust\b|信頼度/.test(rawLabel);
+    const label = rawLabel.replace(/\btrust\b/g, '社長への反応').replace(/\brivalry\b/g, '因縁');
     let cls = '';
     const deltaStr = item.delta != null ? String(item.delta) : '';
     if (deltaStr.startsWith('+')) cls = 'pos';
     else if (deltaStr.startsWith('-')) cls = label.includes('因縁') ? 'resolved' : 'neg';
-    const display = label.includes('因縁') && deltaStr.startsWith('-') ? `${deltaStr}(解消)` : deltaStr;
+    const display = isOrgTrust
+      ? (deltaStr.startsWith('+') ? '納得した様子' : deltaStr.startsWith('-') || deltaStr.startsWith('−') ? '不満を残した様子' : '態度に変化')
+      : (label.includes('因縁') && deltaStr.startsWith('-') ? `${deltaStr}(解消)` : deltaStr);
     return `<div class="c1r-impact-row"><span>${escHtml(label)}</span><span class="${cls}">${escHtml(display)}</span></div>`;
   }).join('');
 
@@ -12543,11 +12581,11 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   html += `<div class="pb-b2-resolution">
     <div class="pb-b2-resolution-label">💭 対立解決</div>`;
   if (!draw) {
-    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-positive)">✅</span><span><b>${escHtml(winChar.name)}</b>：信頼が大きく上がり、気持ちにも張りが戻った</span></div>`;
-    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-negative)">❌</span><span><b>${escHtml(loseChar.name)}</b>：${intensePenalty ? '信頼が大きく揺らぎ、わだかまりを残した' : '信頼がわずかに揺らいだが、気持ちは立て直している'}</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-positive)">✅</span><span><b>${escHtml(winChar.name)}</b>：社長の裁定に納得し、気持ちにも張りが戻った</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-negative)">❌</span><span><b>${escHtml(loseChar.name)}</b>：${intensePenalty ? '社長の裁定に強い不満とわだかまりを残した' : '少し不満そうだが、気持ちは立て直している'}</span></div>`;
   } else {
-    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f1.name)}</b>：互いに力を認め合い、信頼が少し上がった</span></div>`;
-    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f2.name)}</b>：互いに力を認め合い、信頼が少し上がった</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f1.name)}</b>：互いに力を認め合い、表情が和らいだ</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f2.name)}</b>：互いに力を認め合い、表情が和らいだ</span></div>`;
   }
   html += `</div>`;
 
@@ -12614,7 +12652,7 @@ function _buildB4Modal(event, state, roster) {
       variety: 'メディア収入がアップします',
       brand: 'グッズ収入がアップします（2週間）',
       fashion: '人気が即座にアップします',
-      fan: '信頼度が即座にアップします',
+      fan: '選手が団体への愛着を深めます',
     };
     html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">
       参加する選手を選んでください。${effectDesc[activityType] || ''}
@@ -14195,9 +14233,9 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   let choices;
   if (neg.attitude === 'raise') {
     choices = [
-      { label: '昇給を受ける', hint: `信頼↑↑　給与+${neg.raiseAmount}万/週`, idx: 0 },
+      { label: '昇給を受ける', hint: `本人は強く報われたと感じる　給与+${neg.raiseAmount}万/週`, idx: 0 },
       { label: '交渉する',     hint: `成功時　給与+${neg.counterOffer}万/週`, idx: 1 },
-      { label: '拒否する',     hint: '信頼↓↓', idx: 2 },
+      { label: '拒否する',     hint: '本人に強い不満が残るおそれ', idx: 2 },
     ];
   } else {
     choices = [
@@ -14849,12 +14887,25 @@ function _emrHp(hp) {
   return { pct, text: `${pct}%` };
 }
 
+function _emrTeamHp(result, fighterIds) {
+  const perFighter = result && result.perFighter;
+  if (!perFighter || !Array.isArray(fighterIds)) return null;
+  const values = fighterIds.map(id => perFighter[id]).filter(Boolean);
+  if (!values.length) return null;
+  return {
+    final: values.reduce((sum, item) => sum + (Number(item.hpFinal) || 0), 0),
+    max: values.reduce((sum, item) => sum + (Number(item.hpMax) || 0), 0),
+  };
+}
+
 function _emrSingleSide(fighter, side, winnerSide, role, statLabel, statValue) {
   const isWinner = winnerSide === side;
+  const stateClass = winnerSide === 'draw' ? 'is-draw' : isWinner ? 'is-winner' : 'is-loser';
+  const displayRole = winnerSide === 'draw' ? 'Draw' : (role || (isWinner ? 'Winner' : 'Challenger'));
   const upper = _emrUpper(fighter);
-  return `<div class="emr-side ${side === 'right' ? 'is-right ' : ''}${isWinner ? 'is-winner' : 'is-loser'}">
+  return `<div class="emr-side ${side === 'right' ? 'is-right ' : ''}${stateClass}">
     <div class="emr-upper">${upper ? `<img src="${upper}" alt="" onerror="this.style.display='none'">` : ''}</div>
-    <div class="emr-side-copy"><div class="emr-role">${escHtml(role || (isWinner ? 'Winner' : 'Challenger'))}</div>
+    <div class="emr-side-copy"><div class="emr-role">${escHtml(displayRole)}</div>
       <div class="emr-name">${escHtml(fighter?.name || '?')}</div><div class="emr-org">${escHtml(fighter?.org || fighter?._orgName || fighter?._ppvOrgName || '')}</div>
       <div class="emr-stat"><small>${escHtml(statLabel || 'OVR')}</small>${escHtml(statValue != null ? statValue : _emrOvr(fighter))}</div>
     </div></div>`;
@@ -14863,9 +14914,10 @@ function _emrSingleSide(fighter, side, winnerSide, role, statLabel, statValue) {
 function _emrTeamSide(team, side, winnerSide) {
   const members = (team?.members || []).slice(0, 2);
   const isWinner = winnerSide === side;
-  return `<div class="emr-team ${side === 'right' ? 'is-right ' : ''}${isWinner ? 'is-winner' : 'is-loser'}">
+  const stateClass = winnerSide === 'draw' ? 'is-draw' : isWinner ? 'is-winner' : 'is-loser';
+  return `<div class="emr-team ${side === 'right' ? 'is-right ' : ''}${stateClass}">
     <div class="emr-pair">${members.map(f => { const upper = _emrUpper(f); return `<div class="emr-upper">${upper ? `<img src="${upper}" alt="" onerror="this.style.display='none'">` : ''}</div>`; }).join('')}</div>
-    <div><div class="emr-role">${isWinner ? 'Winner Team' : 'Loser Team'}</div><div class="emr-team-name">${members.map(f => escHtml(f?.name || '?')).join('<br>&amp; ')}</div><div class="emr-team-meta">${escHtml(team?.org || '')}</div></div>
+    <div><div class="emr-role">${winnerSide === 'draw' ? 'Draw Team' : isWinner ? 'Winner Team' : 'Loser Team'}</div><div class="emr-team-name">${members.map(f => escHtml(f?.name || '?')).join('<br>&amp; ')}</div><div class="emr-team-meta">${escHtml(team?.org || '')}</div></div>
   </div>`;
 }
 
@@ -14889,7 +14941,7 @@ function showEventMatchResultPopup(opts) {
   while (contexts.length < 3) contexts.push(['', '—']);
   const hpL = _emrHp(opts.hpLeft), hpR = _emrHp(opts.hpRight);
   const emblem = theme.emblem ? `<img src="${theme.emblem}" alt="" onerror="this.style.display='none'">` : escHtml(theme.mark);
-  const line = winnerSide === 'draw' ? (opts.victoryLine || 'この決着は、次に持ち越しだ。') : _emrVictoryLine(winnerFighter, opts.victoryLine);
+  const line = winnerSide === 'draw' ? '' : _emrVictoryLine(winnerFighter, opts.victoryLine);
   const isTag = !!opts.isTag;
   const sides = isTag
     ? `${_emrTeamSide(opts.teamLeft, 'left', winnerSide)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'DRAW' : 'TEAM WIN'))}</div><div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">MQ <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrTeamSide(opts.teamRight, 'right', winnerSide)}`
@@ -14901,7 +14953,7 @@ function showEventMatchResultPopup(opts) {
   layer.innerHTML = `<article class="emr-popup" role="dialog" aria-modal="true" aria-label="1試合結果">
     <header class="emr-head"><div class="emr-emblem">${emblem}</div><div><div class="emr-kicker">${escHtml(opts.kicker || theme.kicker)}</div><div class="emr-title">${escHtml(opts.title || '試合結果')}</div><div class="emr-meta">${escHtml(opts.meta || '')}</div></div><div class="emr-progress">${escHtml(opts.progress || '')}<small>${escHtml(opts.progressLabel || 'MATCH')}</small></div></header>
     <div class="emr-context">${contexts.map(([label, value]) => `<div class="emr-context-cell"><span>${escHtml(label)}</span><b>${escHtml(value)}</b></div>`).join('')}</div>
-    <div class="emr-bout ${isTag ? 'is-tag' : ''}"><div class="emr-bubble ${bubbleSide}"><b>${escHtml(winnerFighter?.name || 'WINNER')}</b>「${escHtml(line)}」</div>${sides}</div>
+    <div class="emr-bout ${isTag ? 'is-tag' : ''}">${winnerSide === 'draw' ? '' : `<div class="emr-bubble ${bubbleSide}"><b>${escHtml(winnerFighter?.name || 'WINNER')}</b>「${escHtml(line)}」</div>`}${sides}</div>
     ${chips ? `<div class="emr-chips">${chips}</div>` : ''}
     <div class="emr-hp"><div class="emr-hp-half"><span class="emr-hp-val">${hpL.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpL.pct}%"></div></div></div><span class="emr-hp-label">${escHtml(opts.hpLabel || 'FINAL HP')}</span><div class="emr-hp-half is-right"><span class="emr-hp-val">${hpR.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpR.pct}%"></div></div></div></div>
     <footer class="emr-foot"><span class="emr-foot-note">${escHtml(opts.footNote || '')}</span><button type="button" class="emr-next" onclick="closeEventMatchResultPopup()">${escHtml(opts.nextLabel || '試合一覧へ戻る →')}</button></footer>
@@ -14918,6 +14970,14 @@ function renderRegularMatchResultPopup(idx, onContinue) {
   if (!match || !result) { if (onContinue) onContinue(); return; }
   const total = sp.validMatches.length;
   const venue = typeof VENUES !== 'undefined' ? VENUES[G.showVenue || 0] : null;
+  const challenge = sp.awayBooking || sp.incomingChallenge;
+  const isChallenge = !!(challenge && (match.isCRMatch || match._crMatchLocked || match._awayChallengeMatch));
+  const resultTitle = sp.isAwayChallenge
+    ? `${challenge?.opponentOrgName || '相手団体'}興行　遠征試合結果`
+    : `第${G.totalShows + 1}回 定期興行　試合結果`;
+  const venueLabel = sp.isAwayChallenge ? `${challenge?.opponentOrgName || '相手団体'} 興行` : (venue?.name || '通常興行');
+  const leftOrg = isChallenge ? (challenge.requesterOrgName || challenge.requesterOrgId) : 'プレイヤー団体';
+  const rightOrg = isChallenge ? (challenge.opponentOrgName || challenge.opponentOrgId) : 'プレイヤー団体';
   if (match.matchType === 'tag') {
     const idsA = [match.teamA.fighter1, match.teamA.fighter2];
     const idsB = [match.teamB.fighter1, match.teamB.fighter2];
@@ -14925,11 +14985,12 @@ function renderRegularMatchResultPopup(idx, onContinue) {
     const membersB = idsB.map(id => (G.roster || []).find(f => f.id === id)).filter(Boolean);
     const winnerSide = result.winner === 'teamB' || result.winner === 'right' ? 'right' : result.winner === 'draw' ? 'draw' : 'left';
     const winnerFighter = (winnerSide === 'right' ? membersB : membersA)[0];
+    const boutNumber = total - idx;
     showEventMatchResultPopup({
-      theme: 'normal', title: `第${G.totalShows + 1}回 定期興行　試合結果`, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${idx + 1}試合 / 全${total}試合`,
-      progress: `${idx + 1} / ${total}`, progressLabel: 'MATCH', context: [['会場', venue?.name || '通常興行'], ['試合形式', 'TAG MATCH'], ['MQ', String(result.mq ?? '—')]],
-      isTag: true, teamLeft: { members: membersA, org: 'プレイヤー団体' }, teamRight: { members: membersB, org: 'プレイヤー団体' }, winnerSide, winnerFighter,
-      finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, chips: ['通常興行', 'タッグマッチ'], hpLeft: result.hpLeft, hpRight: result.hpRight,
+      theme: 'normal', title: resultTitle, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${boutNumber}試合 / 全${total}試合`,
+      progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', 'TAG MATCH'], ['MQ', String(result.mq ?? '—')]],
+      isTag: true, teamLeft: { members: membersA, org: leftOrg }, teamRight: { members: membersB, org: rightOrg }, winnerSide, winnerFighter,
+      finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, chips: ['通常興行', 'タッグマッチ'], hpLeft: _emrTeamHp(result, idsA), hpRight: _emrTeamHp(result, idsB),
       footNote: '通常興行 ・ 試合結果', nextLabel: sp.results.every(Boolean) ? '興行結果へ →' : '試合一覧へ戻る →', onContinue,
     });
     return;
@@ -14938,17 +14999,18 @@ function renderRegularMatchResultPopup(idx, onContinue) {
   const right = (G.roster || []).find(f => f.id === match.right) || result.right;
   const winnerSide = result.winner === 'right' ? 'right' : result.winner === 'draw' ? 'draw' : 'left';
   const winner = winnerSide === 'right' ? right : left;
+  const boutNumber = total - idx;
   let victoryLine = '';
   if (winnerSide !== 'draw' && winner && typeof POST_MATCH_FLAVOR_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
     try { victoryLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.winner, winner); } catch (_e) {}
   }
   showEventMatchResultPopup({
-    theme: 'normal', title: `第${G.totalShows + 1}回 定期興行　試合結果`, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${idx + 1}試合 / 全${total}試合`,
-    progress: `${idx + 1} / ${total}`, progressLabel: 'MATCH', context: [['会場', venue?.name || '通常興行'], ['試合形式', match.isTitle ? 'TITLE MATCH' : 'SINGLE MATCH'], ['MQ', String(result.mq ?? '—')]],
-    left: { ...left, org: 'プレイヤー団体' }, right: { ...right, org: 'プレイヤー団体' }, winnerSide, winnerFighter: winner,
+    theme: 'normal', title: resultTitle, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${boutNumber}試合 / 全${total}試合`,
+    progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', isChallenge ? 'CHALLENGE MATCH' : match.isTitle ? 'TITLE MATCH' : 'SINGLE MATCH'], ['MQ', String(result.mq ?? '—')]],
+    left: { ...left, org: leftOrg }, right: { ...right, org: rightOrg }, winnerSide, winnerFighter: winner,
     leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'DRAW' : match.isTitle ? 'TITLE WIN' : 'WIN',
-    finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine, chips: [match.isTitle ? 'タイトルマッチ' : '通常興行', `MQ ${result.mq}`], hpLeft: result.hpLeft, hpRight: result.hpRight,
-    footNote: '通常興行 ・ 試合結果', nextLabel: sp.results.every(Boolean) ? '興行結果へ →' : '試合一覧へ戻る →', onContinue,
+    finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine, chips: [isChallenge ? '挑戦試合' : match.isTitle ? 'タイトルマッチ' : '通常興行', `MQ ${result.mq}`], hpLeft: result.hpLeft, hpRight: result.hpRight,
+    footNote: isChallenge ? `${leftOrg} vs ${rightOrg}` : '通常興行 ・ 試合結果', nextLabel: sp.results.every(Boolean) ? (sp.isAwayChallenge ? '遠征結果へ →' : '興行結果へ →') : '試合一覧へ戻る →', onContinue,
   });
 }
 

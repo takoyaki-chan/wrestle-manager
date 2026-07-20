@@ -2001,6 +2001,7 @@ Engine.relationships = {
     const bWon = context.winner === 'lose';
     const isDraw = context.winner === 'draw';
     const isCrossOrg = !!context.isCrossOrg;
+    const isChallengeShowMatch = !!context.isChallengeShowMatch;
     const getOrgId = (fighterId) => {
       if ((state.roster || []).some(c => c.id === fighterId)) return 'player';
       for (const [orgId, org] of Object.entries(state.aiOrgs || {})) {
@@ -2015,6 +2016,8 @@ Engine.relationships = {
     // 他団体戦キャップ用: 初期rivalry記録
     const rivalryStartAB = rAB.rivalry;
     const rivalryStartBA = rBA.rivalry;
+    const bondStartAB = rAB.bond;
+    const bondStartBA = rBA.bond;
     const CROSS_ORG_RIVALRY_CAP = 35; // 1試合あたりのrivalry増加上限
 
     // ── ヘルパー: レンジ内ランダム値（整数レンジはint、小数レンジは10倍スケール） ──
@@ -2109,11 +2112,11 @@ Engine.relationships = {
 
     // ═══ M-04 / M-CO1: 名勝負（MQ80+） ═══
     if (context.mq >= 80) {
-      if (isCrossOrg) {
+      if (isCrossOrg && !isChallengeShowMatch) {
         // M-CO1 好敵手認定: bond +6〜+10（§4.4.3 乗数対象外）、逓減キー独立
         apply('AB', 'famousMatch:cross-org', context.stage, 6, 10, 8, 12, true, { skipCrossOrgBondMult: true });
         apply('BA', 'famousMatch:cross-org', context.stage, 6, 10, 8, 12, true, { skipCrossOrgBondMult: true });
-      } else {
+      } else if (!isCrossOrg) {
         apply('AB', 'greatMatch', context.stage, 3, 6, 8, 12, true);
         apply('BA', 'greatMatch', context.stage, 3, 6, 8, 12, true);
       }
@@ -2148,7 +2151,7 @@ Engine.relationships = {
     }
 
     // ═══ M-14: 宿命の決着（rivalry80+ AND bond60+ AND mq75+ → rivalry 0〜5にリセット）
-    if (rAB.rivalry >= 80 && rAB.bond >= 60 && rBA.rivalry >= 80 && rBA.bond >= 60 && context.mq >= 75) {
+    if (!isChallengeShowMatch && rAB.rivalry >= 80 && rAB.bond >= 60 && rBA.rivalry >= 80 && rBA.bond >= 60 && context.mq >= 75) {
       const m14Reset = Engine.rng.float(rng) * 5;
       rAB.rivalry = this._clampAxisValue(m14Reset, 'rivalry');
       rBA.rivalry = this._clampAxisValue(m14Reset, 'rivalry');
@@ -2158,9 +2161,9 @@ Engine.relationships = {
     }
 
     // ═══ M-10 / M-CO2: 因縁決着 → rivalryリセット（0〜10）（M-14不成立時のみ）
-    const hasExplicitRivalryResolution = context.rivalryResolved
+    const hasExplicitRivalryResolution = !isChallengeShowMatch && context.rivalryResolved
       && Number.isFinite(context.rivalryResolutionValue);
-    if (context.rivalryResolved && !context._destinySettled) {
+    if (!isChallengeShowMatch && context.rivalryResolved && !context._destinySettled) {
       // New resolution routes decide their own final rivalry band. Keep the
       // legacy 0-10 reset only for callers that do not provide that value.
       if (!hasExplicitRivalryResolution) {
@@ -2336,8 +2339,39 @@ Engine.relationships = {
       apply('BA', 'firstMeetExColleague', context.stage, -3, -1, 6, 10, false, { skipCrossOrgBondMult: true });
     }
 
+    // 挑戦試合は「決着」ではなく因縁の発火点。通常試合の複合効果より優先し、
+    // 勝者は小幅、敗者は大幅な逆恨みになるよう方向別の最終差分を確定する。
+    if (isChallengeShowMatch) {
+      const setChallengeDelta = (rel, bondStart, rivalryStart, bondDelta, rivalryDelta) => {
+        rel.bond = this._clampAxisValue(bondStart + bondDelta, 'bond');
+        rel.rivalry = this._clampAxisValue(rivalryStart + rivalryDelta, 'rivalry');
+      };
+      if (isDraw) {
+        setChallengeDelta(rAB, bondStartAB, rivalryStartAB, -roll(4, 7), roll(10, 16));
+        setChallengeDelta(rBA, bondStartBA, rivalryStartBA, -roll(4, 7), roll(10, 16));
+      } else {
+        const winnerRel = aWon ? rAB : rBA;
+        const loserRel = aWon ? rBA : rAB;
+        const winnerBondStart = aWon ? bondStartAB : bondStartBA;
+        const loserBondStart = aWon ? bondStartBA : bondStartAB;
+        const winnerRivalryStart = aWon ? rivalryStartAB : rivalryStartBA;
+        const loserRivalryStart = aWon ? rivalryStartBA : rivalryStartAB;
+        let loserRivalryDelta = roll(20, 30);
+        if (context.mq >= 80) loserRivalryDelta += roll(3, 7);
+        const ovrA = Number(context.ovrA) || 0;
+        const ovrB = Number(context.ovrB) || 0;
+        const underdogWon = Math.abs(ovrA - ovrB) >= 10
+          && ((aWon && ovrA < ovrB) || (bWon && ovrB < ovrA));
+        if (underdogWon) loserRivalryDelta += roll(5, 8);
+        setChallengeDelta(winnerRel, winnerBondStart, winnerRivalryStart, -roll(1, 3), roll(2, 6));
+        setChallengeDelta(loserRel, loserBondStart, loserRivalryStart, -roll(8, 14), loserRivalryDelta);
+      }
+      context.rivalryResolved = false;
+      context._destinySettled = false;
+    }
+
     // ── 他団体戦キャップ: 1試合あたりのrivalry増加を+35に制限 ──
-    if (isCrossOrg) {
+    if (isCrossOrg && !isChallengeShowMatch) {
       const deltaAB = rAB.rivalry - rivalryStartAB;
       if (deltaAB > CROSS_ORG_RIVALRY_CAP) rAB.rivalry = rivalryStartAB + CROSS_ORG_RIVALRY_CAP;
       const deltaBA = rBA.rivalry - rivalryStartBA;
@@ -2364,6 +2398,21 @@ Engine.relationships = {
     rBA.bond = this._clampAxisValue(rBA.bond, 'bond');
     rBA.rivalry = this._clampAxisValue(rBA.rivalry, 'rivalry');
 
+    if (isChallengeShowMatch) {
+      context._challengeRelationshipDelta = {
+        [charIdA]: {
+          towardId: charIdB,
+          rivalry: this._roundAxisValue(rAB.rivalry - rivalryStartAB),
+          bond: this._roundAxisValue(rAB.bond - bondStartAB),
+        },
+        [charIdB]: {
+          towardId: charIdA,
+          rivalry: this._roundAxisValue(rBA.rivalry - rivalryStartBA),
+          bond: this._roundAxisValue(rBA.bond - bondStartBA),
+        },
+      };
+    }
+
     rels[keyAB] = rAB;
     rels[keyBA] = rBA;
 
@@ -2373,7 +2422,7 @@ Engine.relationships = {
     newState = Engine.relationships.flags.applyRivalCohort(newState, charIdA, charIdB);
 
     // ── F-6 憧れ抽選: 名勝負 (M-04 / M-CO1, mq>=80) 直後 ──
-    if (context.mq >= 80) {
+    if (context.mq >= 80 && !isChallengeShowMatch) {
       newState = Engine.relationships.flags.processAdmireCandidates(newState, charIdA, charIdB, context);
     }
 
@@ -3298,6 +3347,43 @@ Engine.relationships = {
 // ══════════════════════════════════════════════════════════════════════════════
 Engine.challengeRequest = {
 
+  /** Accepted challenges wait for an ordinary home show. Fixed seasonal shows
+   *  and the PPV keep their own cards and never consume a challenge booking. */
+  isEligibleHomeShow(state) {
+    const week = state?.week || 0;
+    return !!(Engine.util?.isShowWeek?.(week))
+      && !Engine.util.isSpecialShow(week)
+      && !Engine.util.isPPV(week);
+  },
+
+  /** Remove booked travelers from an already-authored home card. */
+  removeFightersFromCard(card, fighterIds) {
+    const blocked = fighterIds instanceof Set ? fighterIds : new Set(fighterIds || []);
+    return (Array.isArray(card) ? card : []).map(slot => {
+      if (!slot) return slot;
+      if (slot.matchType === 'tag') {
+        const teamA = { ...(slot.teamA || {}) };
+        const teamB = { ...(slot.teamB || {}) };
+        for (const key of ['fighter1', 'fighter2']) {
+          if (blocked.has(teamA[key])) teamA[key] = 0;
+          if (blocked.has(teamB[key])) teamB[key] = 0;
+        }
+        return { ...slot, teamA, teamB };
+      }
+      const left = blocked.has(slot.left) ? 0 : (slot.left || 0);
+      const right = blocked.has(slot.right) ? 0 : (slot.right || 0);
+      return { ...slot, left, right, isTitle: left > 0 && right > 0 ? !!slot.isTitle : false };
+    });
+  },
+
+  /** True when any fighter is already booked on the same day's away challenge. */
+  hasAwayParticipantConflict(state, fighterIds) {
+    const away = state?._pendingAwayChallengeMatch;
+    if (!away) return false;
+    const awayIds = new Set([...(away.teamAIds || []), ...(away.teamBIds || [])]);
+    return (fighterIds || []).some(id => id != null && awayIds.has(id));
+  },
+
   /** GameState の challengeRequest フィールドを保証 */
   ensureInit(state) {
     if (!state.challengeRequest) {
@@ -3340,8 +3426,8 @@ Engine.challengeRequest = {
     // 直近8週以内の対戦実績なし（h2h.lastMatch を参照）
     const rec = Engine.h2h && Engine.h2h.getRecord ? Engine.h2h.getRecord(state, self.id, other.id) : null;
     if (rec && rec.lastMatch && rec.lastMatch.season != null && rec.lastMatch.week != null) {
-      const lastAbs = (rec.lastMatch.season - 1) * 20 + rec.lastMatch.week;
-      const nowAbs = (state.season - 1) * 20 + (state.week || 1);
+      const lastAbs = Engine.util.absWeek(rec.lastMatch.season, rec.lastMatch.week);
+      const nowAbs = Engine.util.absWeek(state.season, state.week || 1);
       if ((nowAbs - lastAbs) < 8) return false;
     }
     return true;
@@ -3351,7 +3437,7 @@ Engine.challengeRequest = {
   _passesCD(state, self, other) {
     const cr = state.challengeRequest;
     if (!cr) return true;
-    const nowAbs = (state.season - 1) * 20 + (state.week || 1);
+    const nowAbs = Engine.util.absWeek(state.season, state.week || 1);
     const fCD = cr.cdByFighter[self.id];
     if (fCD != null && (nowAbs - fCD) < 24) return false;
     const pCD = cr.cdByPair[this._pairKey(self.id, other.id)];
@@ -3371,10 +3457,10 @@ Engine.challengeRequest = {
     return true;
   },
 
-  /** 4週サイクル抽選トリガー判定（シーズン第3週以降、4週ごと） */
+  /** 4週サイクル抽選トリガー判定。挑戦状は通常興行週の冒頭だけ届く。 */
   _isSamplingWeek(state) {
     const w = state.week || 0;
-    return w >= 3 && (w - 3) % 4 === 0;
+    return this.isEligibleHomeShow(state) && w >= 4 && (w - 4) % 4 === 0;
   },
 
   /**
@@ -3384,6 +3470,7 @@ Engine.challengeRequest = {
   processWeekly(state, rng) {
     let s = this.ensureInit(state);
     if (s.challengeRequest.pendingThisWeek) return s;
+    if (s._pendingIncomingChallengeMatch || s._pendingAwayChallengeMatch || s._pendingIncomingB3Match || s._pendingChallengeMatch) return s;
     if (!this._isSamplingWeek(s)) return s;
     if ((s.orgPop || 0) < 15) return s;
     if (!s.relationships) return s;
@@ -3440,8 +3527,8 @@ Engine.challengeRequest = {
           // 直近8週以内の対戦実績なし
           const rec = Engine.h2h && Engine.h2h.getRecord ? Engine.h2h.getRecord(s, fired.id, target.id) : null;
           if (rec && rec.lastMatch && rec.lastMatch.season != null && rec.lastMatch.week != null) {
-            const lastAbs = (rec.lastMatch.season - 1) * 20 + rec.lastMatch.week;
-            const nowAbs = (s.season - 1) * 20 + (s.week || 1);
+            const lastAbs = Engine.util.absWeek(rec.lastMatch.season, rec.lastMatch.week);
+            const nowAbs = Engine.util.absWeek(s.season, s.week || 1);
             if ((nowAbs - lastAbs) < 8) continue;
           }
           // CD（pair / fighter）は同方向で参照（fired→target）
@@ -3490,7 +3577,7 @@ Engine.challengeRequest = {
     let s = this.ensureInit(state);
     const p = s.challengeRequest.pendingThisWeek;
     if (!p) return s;
-    const nowAbs = (s.season - 1) * 20 + (s.week || 1);
+    const nowAbs = Engine.util.absWeek(s.season, s.week || 1);
     const cr = { ...s.challengeRequest };
     cr.acceptedThisSeason = (cr.acceptedThisSeason || 0) + 1;
     // クォータキー: forward は相手AI org、inverse は requester AI org（どちらも「player ↔ AI org」のペア対戦カウントとして対称）
@@ -3507,7 +3594,7 @@ Engine.challengeRequest = {
     let s = this.ensureInit(state);
     const p = s.challengeRequest.pendingThisWeek;
     if (!p) return s;
-    const nowAbs = (s.season - 1) * 20 + (s.week || 1);
+    const nowAbs = Engine.util.absWeek(s.season, s.week || 1);
     const cr = { ...s.challengeRequest };
     cr.cdByFighter = { ...cr.cdByFighter, [p.selfId]: nowAbs };
     cr.cdByPair = { ...cr.cdByPair, [this._pairKey(p.selfId, p.otherId)]: { lastWeek: nowAbs, coolWeeks: 52 } };
@@ -3677,7 +3764,9 @@ Engine.challengeRequest = {
    *  app.js からは呼ばれなくなった。簡易テスト・独立検証用に残置。 */
   /** Resolve an accepted challenge against the latest rosters. */
   getScheduledCard(state) {
-    const pending = state && state._pendingChallengeMatch;
+    if (!this.isEligibleHomeShow(state)) return null;
+    const legacy = state && state._pendingChallengeMatch;
+    const pending = state && (state._pendingIncomingChallengeMatch || (legacy && legacy.isInverse ? legacy : null));
     if (!pending) return null;
     const isInverse = !!pending.isInverse;
     const requesterRoster = isInverse
@@ -3739,6 +3828,40 @@ Engine.challengeRequest = {
       _crSlot: i,
     }));
     const merged = Engine.util.normalizeShowCardForVenue([...locked, ...remaining], state.week, state.showVenue);
+    return { card: merged, scheduled, groupId };
+  },
+
+  /** One-off incoming challenge (large event B3) scheduled into the main event. */
+  getScheduledSingleChallenge(state) {
+    if (!this.isEligibleHomeShow(state)) return null;
+    const pending = state?._pendingIncomingB3Match;
+    if (!pending) return null;
+    const playerFighter = (state.roster || []).find(f => f.id === pending.fighterId);
+    const challenger = pending.challenger;
+    const healthy = f => f && !f.injury && !f.forcedRest && !f.suspended;
+    if (!healthy(playerFighter) || !healthy(challenger)) return null;
+    return { ...pending, playerFighter, challenger, reservedIds: [playerFighter.id, challenger.id] };
+  },
+
+  reserveScheduledSingleMatch(state, card) {
+    const scheduled = this.getScheduledSingleChallenge(state);
+    if (!scheduled) return null;
+    const remaining = this.removeFightersFromCard(
+      (Array.isArray(card) ? card : []).filter(slot => slot && !slot._crMatchLocked && !slot.isCRMatch),
+      scheduled.reservedIds
+    );
+    const groupId = `b3_${scheduled.playerFighter.id}_${scheduled.challenger.id}_${state.season}_${state.week}`;
+    const locked = {
+      left: scheduled.playerFighter.id,
+      right: scheduled.challenger.id,
+      isTitle: false,
+      isCRMatch: true,
+      _crMatchLocked: true,
+      _b3ChallengeMatch: true,
+      _crGroupId: groupId,
+      _crSlot: 0,
+    };
+    const merged = Engine.util.normalizeShowCardForVenue([locked, ...remaining], state.week, state.showVenue);
     return { card: merged, scheduled, groupId };
   },
 
@@ -4665,7 +4788,7 @@ Engine.glimpse = {
           const sub = trustDelta > 0 ? 'up' : 'down';
           candidates.push({ type: 'GL-03', subType: sub, weight: 3, fighterId: f.id,
             fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-03'][sub], f),
-            tone: sub === 'up' ? 'positive' : 'negative', label: '信頼の揺れ' });
+            tone: sub === 'up' ? 'positive' : 'negative', label: sub === 'up' ? '表情が和らいだ' : '距離を置く気配' });
         }
       }
 

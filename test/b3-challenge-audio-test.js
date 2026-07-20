@@ -42,9 +42,10 @@ assert(
 
 assert(
   executeLargeEventMatchBody.includes('const finalizeAudio = App._largeEventAudioFinalize') &&
-    executeLargeEventMatchBody.includes('prevResult, finalizeAudio') &&
+    executeLargeEventMatchBody.includes('_pendingIncomingB3Match') &&
+    executeLargeEventMatchBody.includes('if (finalizeAudio) finalizeAudio()') &&
     executeLargeEventMatchBody.includes('App._largeEventAudioFinalize = null'),
-  'B3 match preview should carry the pending audio finalizer'
+  'accepting B3 should close the letter audio and reserve the match for an ordinary show'
 );
 
 assert(

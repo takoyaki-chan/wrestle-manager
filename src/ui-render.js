@@ -2138,10 +2138,9 @@ function renderRoster() {
     const motivLossBadge = c.motivationLoss
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(44,62,80,0.15);color:#95a5a6;border:1px solid rgba(149,165,166,0.3)">😞モチベ喪失</span>`
       : '';
-    // 信頼が大きく揺らいでいる選手の警告バッジ(trust<40)。
-    // 数値は出さず「やばい」ことだけ周囲に伝える(CLAUDE.md 数値哲学)
+    // 所属への気持ちが冷えている選手は、行動としてだけ示す。内部値は表示しない。
     const lowTrustBadge = (!c.isRental && (c.trust != null ? c.trust : 50) < 40)
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.45);cursor:help" ${_tipAttr('社長との関係が揺らいでいる')}>💔信頼低下</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.45);cursor:help" ${_tipAttr('最近は社長室を避けがちだという噂がある')}>💭よそよそしい</span>`
       : '';
     const statG = (key) => {
       const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
@@ -2282,7 +2281,7 @@ function getAvailableForSlot(slotIndex, side) {
   // Fighters in other slots are included but marked with _usedInOtherSlot for swap UI
   const used = getUsedFighterIds(slotIndex);
   const otherSide = side === 'left' ? G.showCard[slotIndex].right : G.showCard[slotIndex].left;
-  const reservedCRIds = new Set(getScheduledChallengeCard()?.reservedIds || []);
+  const reservedCRIds = getChallengeUnavailableIds();
   return G.roster.filter(c => c.id !== otherSide && !c.injury && !c.forcedRest && !reservedCRIds.has(c.id)).map(c => ({
     ...c, _usedInOtherSlot: used.has(c.id)
   }));
@@ -2731,7 +2730,7 @@ function renderShowPrep() {
           メイン枠に <strong>${fac.name}</strong> のメンバーを推す約束をしています。<br>
           <span style="color:#aaa;font-size:11px">候補: ${memberNames || '—'}</span><br>
           <span style="color:${ok ? '#9be08a' : '#e0a85a'};font-size:11px;margin-top:2px;display:inline-block">
-            ${ok ? '✓ 現在のメインに該当メンバーが入っています' : '⚠ 現在のメインに該当メンバー無し（興行終了時にリーダー trust 減少）'}
+            ${ok ? '✓ 現在のメインに該当メンバーが入っています' : '⚠ 現在のメインに該当メンバー無し（リーダーが不満を募らせます）'}
           </span>
         </div>
       </div>`;
@@ -2973,7 +2972,15 @@ function renderShowPrep() {
   // 集客予測計算（v2）
   // Reserve the three highest card positions for an accepted inter-org
   // challenge before the player fills the remaining venue slots.
-  if (G._pendingChallengeMatch && Engine.challengeRequest?.reserveScheduledMatches) {
+  const eligibleChallengeShow = !!Engine.challengeRequest?.isEligibleHomeShow?.(G);
+  if (eligibleChallengeShow && G._pendingAwayChallengeMatch && Engine.challengeRequest?.removeFightersFromCard) {
+    const awayOwnIds = G._pendingAwayChallengeMatch.requesterOrgId === 'player'
+      ? G._pendingAwayChallengeMatch.teamAIds
+      : G._pendingAwayChallengeMatch.teamBIds;
+    const clearedAwayCard = Engine.challengeRequest.removeFightersFromCard(G.showCard, awayOwnIds);
+    if (JSON.stringify(clearedAwayCard) !== JSON.stringify(G.showCard)) G = { ...G, showCard: clearedAwayCard };
+  }
+  if (eligibleChallengeShow && (G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse) && Engine.challengeRequest?.reserveScheduledMatches) {
     const reservedCR = Engine.challengeRequest.reserveScheduledMatches(G, G.showCard);
     if (reservedCR) {
       if (JSON.stringify(reservedCR.card) !== JSON.stringify(G.showCard)) {
@@ -2981,9 +2988,26 @@ function renderShowPrep() {
       }
     } else {
       const clearedCard = Engine.challengeRequest.clearReservedMatches(G, G.showCard);
-      const { _pendingChallengeMatch: _invalidCR, ...rest } = G;
+      const { _pendingIncomingChallengeMatch: _invalidIncomingCR, _pendingChallengeMatch: _legacyIncomingCR, ...rest } = G;
       G = { ...rest, showCard: clearedCard };
       if (typeof showToast === 'function') showToast('⚠ 挑戦試合の出場メンバーが揃わないため、予約を解除しました', 5000);
+    }
+  }
+
+  let scheduledSingleNotice = null;
+  const b3AwayConflict = G._pendingIncomingB3Match && Engine.challengeRequest?.hasAwayParticipantConflict?.(G, [
+    G._pendingIncomingB3Match.fighterId,
+    G._pendingIncomingB3Match.challenger?.id,
+  ]);
+  if (eligibleChallengeShow && !getScheduledChallengeCard() && G._pendingIncomingB3Match && !b3AwayConflict && Engine.challengeRequest?.reserveScheduledSingleMatch) {
+    const reservedSingle = Engine.challengeRequest.reserveScheduledSingleMatch(G, G.showCard);
+    if (reservedSingle) {
+      scheduledSingleNotice = reservedSingle.scheduled;
+      if (JSON.stringify(reservedSingle.card) !== JSON.stringify(G.showCard)) G = { ...G, showCard: reservedSingle.card };
+    } else {
+      const { _pendingIncomingB3Match: _invalidB3, ...rest } = G;
+      G = { ...rest, showCard: Engine.challengeRequest.clearReservedMatches(G, G.showCard) };
+      if (typeof showToast === 'function') showToast('⚠ 挑戦試合の出場条件が整わないため、予約を解除しました', 5000);
     }
   }
 
@@ -2996,6 +3020,35 @@ function renderShowPrep() {
     html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid rgba(235,105,90,.55);background:rgba(145,45,40,.18);border-radius:6px;color:#ffd9d2;font-size:12px;line-height:1.65">
       <strong style="color:#ff9e8f">⚔ 他団体挑戦シリーズ</strong>　${requesterName} vs ${opponentName}<br>
       メインイベントから上位3試合を固定しています。会場の全${maxMatches}枠のうち、通常カードは残り${regularSlots}枠です。各挑戦試合には集客評価+${MATCH_APPEAL_CONFIG.challengeRequestAppeal}が入ります。
+    </div>`;
+  }
+  if (scheduledSingleNotice) {
+    html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-negative);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
+      <strong style="color:var(--c-negative)">⚔ 挑戦状によるメインイベント</strong>　${scheduledSingleNotice.playerFighter.name} vs ${scheduledSingleNotice.challenger.name}<br>
+      挑戦試合をメインイベントに固定しています。残りの枠に通常カードを編成してください。
+    </div>`;
+  }
+  if (eligibleChallengeShow && b3AwayConflict) {
+    html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-info);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
+      <strong style="color:var(--c-info)">📨 挑戦状は次の通常興行へ</strong><br>
+      対戦予定者が敵地遠征にも出場するため、この挑戦試合は破棄せず次の通常興行まで持ち越します。
+    </div>`;
+  }
+  if (!eligibleChallengeShow && (G._pendingIncomingChallengeMatch || G._pendingIncomingB3Match)) {
+    html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-info);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
+      <strong style="color:var(--c-info)">📨 挑戦試合は次の通常興行へ</strong><br>
+      今回は固定興行のためカードへ割り込まず、挑戦試合は次の通常興行まで持ち越されます。
+    </div>`;
+  }
+  if (G._pendingAwayChallengeMatch) {
+    const away = G._pendingAwayChallengeMatch;
+    const ownIds = away.requesterOrgId === 'player' ? away.teamAIds : away.teamBIds;
+    const ownNames = (ownIds || []).map(id => G.roster.find(f => f.id === id)?.name).filter(Boolean);
+    html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-info);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
+      <strong style="color:var(--c-info)">🚌 敵地遠征の予約</strong>　${away.opponentOrgName || away.opponentOrgId}<br>
+      ${eligibleChallengeShow
+        ? `${ownNames.join('・')} はこの興行後に相手団体の興行へ出場するため、自団体カードには編成できません。`
+        : `固定興行には割り込まず、次の通常興行が終わった後に${ownNames.join('・')}が敵地へ向かいます。`}
     </div>`;
   }
 
@@ -3176,7 +3229,7 @@ function renderShowPrep() {
           }
         }
         const curInPos = slot[tagTeam][tagPos];
-        const reservedCRIds = new Set(getScheduledChallengeCard()?.reservedIds || []);
+        const reservedCRIds = getChallengeUnavailableIds();
         const pickerFighters = G.roster
           .filter(c => !c.injury && !c.forcedRest && c.id !== curInPos && !sameSlotIds.has(c.id) && !reservedCRIds.has(c.id))
           .sort((a, b) => ov(b) - ov(a));
@@ -3339,7 +3392,7 @@ function renderShowPrep() {
       const otherSideCur = G.showCard[i][pickerSide === 'left' ? 'right' : 'left'];
       const usedInOther = getUsedFighterIds(i);
       const curInSide = G.showCard[i][pickerSide];
-      const reservedCRIds = new Set(getScheduledChallengeCard()?.reservedIds || []);
+      const reservedCRIds = getChallengeUnavailableIds();
       const pickerFighters = G.roster
         .filter(c => !c.injury && !c.forcedRest && c.id !== curInSide && c.id !== otherSideCur && !reservedCRIds.has(c.id))
         .sort((a, b) => ov(b) - ov(a));
@@ -12983,7 +13036,7 @@ function _renderDbRelmapMobile(allChars, centerChar) {
 
   const sections = [
     ['rivalry', '🔥 因縁・ライバル'],
-    ['trust', '🤝 友情・信頼'],
+    ['trust', '🤝 友情・親愛'],
     ['tension', '⚠️ 警戒・不和'],
     ['faction', '🎭 同門・派閥'],
     ['history', '📖 その他の関係'],
@@ -13536,7 +13589,7 @@ function _relmapRender(orgCenters) {
           if (_relmapRivalryVisible(l.rivBA)) lh += `<text x="${mx-ox}" y="${my-oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="9" font-weight="700" fill="${rc}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">${dir.ba}</text>`;
         }
       } else if (vm === 'focus' || highlighted) {
-        if (_relmapTrustVisible(l.bondAB)) lh += `<text x="${mx+ox}" y="${my+oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="8.5" font-weight="700" fill="${_relmapTrustColor(l.bondAB)}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">信頼 ${Math.round(l.bondAB)}→</text>`;
+        if (_relmapTrustVisible(l.bondAB)) lh += `<text x="${mx+ox}" y="${my+oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="8.5" font-weight="700" fill="${_relmapTrustColor(l.bondAB)}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">相手との関係 ${Math.round(l.bondAB)}→</text>`;
         if (_relmapTrustVisible(l.bondBA)) lh += `<text x="${mx-ox}" y="${my-oy}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-size="8.5" font-weight="700" fill="${_relmapTrustColor(l.bondBA)}" paint-order="stroke" stroke="rgba(0,0,0,0.88)" stroke-width="2.5" opacity="${baseOp}">←${Math.round(l.bondBA)}</text>`;
         const maxRiv = Math.max(l.rivAB, l.rivBA);
         if (_relmapRivalryVisible(maxRiv)) {

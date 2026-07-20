@@ -19035,13 +19035,13 @@ Engine.trust = {
   describeChange(delta) {
     const d = Math.abs(delta);
     if (delta > 0) {
-      if (d >= 5.0) return '信頼が大きく上がった';
-      if (d >= 2.5) return '信頼が上がった';
-      return '少し信頼が増したようだ';
+      if (d >= 5.0) return 'はっきりと報われた表情を見せた';
+      if (d >= 2.5) return '表情が和らいだ';
+      return '少し肩の力が抜けたようだ';
     }
     if (delta < 0) {
-      if (d >= 5.0) return '信頼が大きく下がった';
-      if (d >= 2.5) return '信頼が下がった';
+      if (d >= 5.0) return '強い不満を隠そうとしない';
+      if (d >= 2.5) return '社長室を避ける姿が目立つ';
       return '少し距離を感じる';
     }
     return '';
@@ -19050,14 +19050,14 @@ Engine.trust = {
   describeChangeHint(delta) {
     const d = Math.abs(delta);
     if (delta > 0) {
-      if (d >= 5.0) return '信頼が大きく上がる';
-      if (d >= 2.5) return '信頼が上がる';
-      return '信頼が少し上がる';
+      if (d >= 5.0) return '本人の大きな励みになりそう';
+      if (d >= 2.5) return '本人も納得しそう';
+      return '少し気持ちがほぐれそう';
     }
     if (delta < 0) {
-      if (d >= 5.0) return '信頼が大きく下がる';
-      if (d >= 2.5) return '信頼が下がる';
-      return '信頼が少し下がる';
+      if (d >= 5.0) return '強い反発を招きそう';
+      if (d >= 2.5) return '不満を残しそう';
+      return '少し距離を置かれそう';
     }
     return '';
   },
@@ -19913,7 +19913,7 @@ Engine.shachoshitsu = {
         } else {
           trustText = '今後4週にわたって、じわじわと育っていく';
         }
-        changes.push({ label: '信頼度', emoji: '🤝', text: trustText });
+        changes.push({ label: '本人の様子', emoji: '💭', text: trustText });
         // care-rework v0.1 §3.3: 相性は完全には明かさない(良/悪の兆候だけ滲ませる)
         const ib = f._inviteBuff || {};
         const growthPct = Math.round(((ib.mult || 1) - 1) * 100);
@@ -19923,10 +19923,16 @@ Engine.shachoshitsu = {
         changes.push({ label: '成長速度', emoji: '📈', text: `4週間 +${growthPct}%${ib.diminished ? '(詰め込み気味で伸びは控えめ)' : ''}` });
         changes.push({ label: '指導の空気', emoji: '🎓', text: compatHint });
       } else if (docId !== 'special_treatment' && _after.trust !== _before.trust) {
-        // bonus / refresh_leave / encourage / media は従来通り即時表示
-        // describeChange は最終 delta の大きさから質的表現を返すので、不確実性は自然に反映される
-        // special_treatment は trust に触れないので除外(変化通知が出ないようにする)
-        changes.push({ label: '信頼度', emoji: '🤝', text: Engine.trust.describeChange(_after.trust - _before.trust) });
+        // 内部値は見せず、選手の反応として伝える。
+        const trustDelta = _after.trust - _before.trust;
+        const reactionText = trustDelta >= 5
+          ? '社長の対応に、はっきりと報われた表情を見せた'
+          : trustDelta > 0
+            ? '表情が少し和らいだようだ'
+            : trustDelta <= -5
+              ? '社長への強い不満を隠そうとしない'
+              : 'どこか距離を置くような態度が見える';
+        changes.push({ label: '本人の様子', emoji: '💭', text: reactionText });
       }
       if (_after.condition !== _before.condition) {
         changes.push({ label: '状態', emoji: '💪', before: Math.round(_before.condition), after: Math.round(_after.condition) });
@@ -19966,7 +19972,7 @@ Engine.shachoshitsu = {
           return applyTrust(f, (doc.effect.trust || 1.84) * mult);
         });
         lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 5), 0, 100);
-        changes.push({ label: '全員の信頼度', emoji: '🤝', text: '少し上がった' });
+        changes.push({ label: 'ロッカーの様子', emoji: '🏠', text: '選手同士の会話が増え、社長への空気も柔らかくなった' });
         changes.push({ label: 'ロッカールーム', emoji: '🏠', before: Math.round(_beforeMorale), after: Math.round(lockerRoomMorale) });
         events.push(`🍻 慰労会を開催(チームの雰囲気が良くなった)`);
         reactionFighterId = null;
@@ -19981,7 +19987,7 @@ Engine.shachoshitsu = {
           const queued = queueTrust(f, doc.effect.trust || 1.84, 'camp', gb.weeks, mult);
           return { ...queued, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
         });
-        changes.push({ label: '全員の信頼度', emoji: '🤝', text: `今後${gb.weeks}週にわたって、団体全体にじわじわと育っていく` });
+        changes.push({ label: '合宿中の空気', emoji: '🏕️', text: `今後${gb.weeks}週、団体全体に一体感が育っていきそうだ` });
         changes.push({ label: '全員の成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
         events.push(`🏕️ 合宿を実施(全員の成長バフ ${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%)`);
         reactionFighterId = null;
@@ -20496,14 +20502,14 @@ Engine.eventSystem = {
     const funds = state.funds || 0;
     switch (event.type) {
       case 'S1': return [
-        { label: '受ける',       hint: '信頼が上がる、次興行でタイトルマッチ調整を検討',  idx: 0 },
-        { label: 'まだ早い',     hint: '信頼が下がる（約束として記憶）',                  idx: 1 },
-        { label: '却下する',     hint: '信頼が大きく下がる',                              idx: 2 },
+        { label: '受ける',       hint: '本人は期待に応えてもらえたと感じる。次興行でタイトルマッチ調整を検討', idx: 0 },
+        { label: 'まだ早い',     hint: '本人は不満を残す（約束として記憶）', idx: 1 },
+        { label: '却下する',     hint: '本人の強い反発を招く', idx: 2 },
       ];
       case 'S3': return [
-        { label: '休ませる',     hint: '信頼が少し上がる、回復促進',                  idx: 0 },
-        { label: '励ます',       hint: '信頼が少し下がる（無理強い）',                idx: 1 },
-        { label: '無視する',     hint: '信頼が下がる、怪我リスク増',                  idx: 2 },
+        { label: '休ませる',     hint: '本人は気遣いを感じ、回復も早まる', idx: 0 },
+        { label: '励ます',       hint: '無理強いだと受け取られるおそれ', idx: 1 },
+        { label: '無視する',     hint: '本人に不満が残り、怪我の危険も増す', idx: 2 },
       ];
       case 'S4': {
         // §13.4: S4リデザイン — コスト動的化（週給×12）、2回目強化
@@ -20513,21 +20519,21 @@ Engine.eventSystem = {
         const costMult = s4Count >= 1 ? 1.5 : 1.0;
         const s4Cost = Math.round(weeklySalary * 12 * costMult * 0.5);  // 市場価値50% (2回目は75%)
         const s4Choices = [
-          { label: `待遇改善（-${s4Cost}万）`, hint: funds >= s4Cost ? '信頼が大きく上がる（ただし効果には限度がある）' : '資金不足', idx: 0, disabled: funds < s4Cost },
-          { label: '出場を約束する',     hint: '次興行で出さないと信頼が大きく損なわれる',     idx: 1 },
-          { label: '励ましの言葉',       hint: '信頼が少し上がる（焼け石に水）',               idx: 3 },
-          { label: '突っぱねる',         hint: '信頼が大きく下がり、チームの士気も下がる',     idx: 2 },
+          { label: `待遇改善（-${s4Cost}万）`, hint: funds >= s4Cost ? '本人の態度は大きく軟化する（ただし効果には限度がある）' : '資金不足', idx: 0, disabled: funds < s4Cost },
+          { label: '出場を約束する',     hint: '次興行で出さないと、本人の強い反発を招く', idx: 1 },
+          { label: '励ましの言葉',       hint: '少し表情は和らぐが、焼け石に水かもしれない', idx: 3 },
+          { label: '突っぱねる',         hint: '本人の強い反発を招き、チームの士気も下がる', idx: 2 },
         ];
         if (s4Count >= 1) s4Choices.push({ label: '放出する', hint: '移籍金回収して退団', idx: 4 });
         return s4Choices;
       }
       case 'S5': return [
-        { label: '許可する',       hint: '強化練習に設定、信頼が少し上がる',        idx: 0 },
+        { label: '許可する',       hint: '強化練習に設定。本人は意欲を汲んでもらえたと感じる', idx: 0 },
         { label: '通常練習を指示', hint: '変化なし',                               idx: 1 },
-        { label: '別メニューを提案', hint: '信頼がわずかに上がる',                 idx: 2 },
+        { label: '別メニューを提案', hint: '本人は話を聞いてもらえたと感じる', idx: 2 },
       ];
       case 'E1': return [
-        { label: '出す',       hint: '人気が上がり信頼も少し上がるが、体調を消耗する', idx: 0 },
+        { label: '出す',       hint: '人気が上がり、本人も機会を喜ぶが、体調を消耗する', idx: 0 },
         { label: '断る',       hint: '変化なし',                                        idx: 1 },
         { label: '別の選手を推薦', hint: 'チームの誰かの人気が少し上がる',              idx: 2 },
       ];
@@ -20542,23 +20548,23 @@ Engine.eventSystem = {
         const e6Cost = Math.round(e6Salary * 12);
         return [
           { label: `契約金を積む（-${e6Cost}万）`, hint: funds >= e6Cost ? '引き止め確定、キャップ発動' : '資金不足', idx: 0, disabled: funds < e6Cost },
-          { label: '説得する',              hint: '信頼次第で引き止め成功',                                      idx: 1 },
+          { label: '説得する',              hint: 'これまでの社長との関係次第で引き止め成功', idx: 1 },
           { label: '放出する',              hint: '資金+50、選手が退団',                                         idx: 2 },
         ];
       }
       // §13.3: 新規選択型イベント
       case 'S_boycott': return [
-        { label: '話を聞く',       hint: '信頼が回復に向かう(ただし今週は成長が止まる)',   idx: 0 },
-        { label: '放っておく',     hint: '信頼がさらに揺らぎ、体調も落ちる',               idx: 1 },
-        { label: `ボーナスで釣る（-50万）`, hint: funds >= 50 ? '信頼は大きく回復するが今週の成長は止まる' : '資金不足', idx: 2, disabled: funds < 50 },
+        { label: '話を聞く',       hint: '本人の態度は軟化する（ただし今週は成長が止まる）', idx: 0 },
+        { label: '放っておく',     hint: '本人はさらに心を閉ざし、体調も落ちる', idx: 1 },
+        { label: `ボーナスで釣る（-50万）`, hint: funds >= 50 ? '本人の態度は大きく軟化するが、今週の成長は止まる' : '資金不足', idx: 2, disabled: funds < 50 },
       ];
       case 'S_grumble': return [
-        { label: '個別に声をかける',       hint: '本人の信頼が少し回復する(ロッカーの空気はそのまま)', idx: 0 },
-        { label: '全体ミーティングを開く', hint: '本人の信頼はわずかに回復し、ロッカーの空気も少し和らぐ', idx: 1 },
+        { label: '個別に声をかける',       hint: '本人は少し話を聞く姿勢になる（ロッカーの空気はそのまま）', idx: 0 },
+        { label: '全体ミーティングを開く', hint: '本人の表情とロッカーの空気が少し和らぐ', idx: 1 },
         { label: '無視する',               hint: 'ロッカーの空気がさらに悪化する',                     idx: 2 },
       ];
       case 'S_sns': return [
-        { label: '直接話す',       hint: '信頼が回復する(団体の知名度は損なわれたまま)',   idx: 0 },
+        { label: '直接話す',       hint: '本人の態度は軟化する（団体の知名度は損なわれたまま）', idx: 0 },
         { label: `メディア対応する（-30万）`, hint: funds >= 30 ? '団体の知名度への傷が消える' : '資金不足', idx: 1, disabled: funds < 30 },
         { label: '放置する',       hint: '団体の知名度がさらに損なわれる',                 idx: 2 },
       ];
@@ -20643,7 +20649,7 @@ Engine.eventSystem = {
               trustCap: { value: capVal, expiresWeek: currentWeek + capWeeks },
             };
           });
-          events.push(`💴 ${event.name}の待遇を改善（-${s4Cost}万、信頼キャップ発動）`);
+          events.push(`💴 ${event.name}の待遇を改善（-${s4Cost}万）。本人の態度が軟化した`);
         } else if (choiceIdx === 1) {
           roster = roster.map(f => f.id === event.fighter ? { ...f, s4Count: s4Count + 1 } : f);
           events.push(`🤝 ${event.name}への出場約束（次の興行に出場させること）`);
@@ -20725,7 +20731,7 @@ Engine.eventSystem = {
           const currentWeek = (state.season || 1) * 100 + (state.week || 1);
           roster = roster.map(f => f.id === event.fighter
             ? { ...f, trustCap: { value: 60, expiresWeek: currentWeek + 8 } } : f);
-          events.push(`💴 ${event.name}を契約金で引き止め（-${e6Cost}万、信頼キャップ発動）`);
+          events.push(`💴 ${event.name}に契約金を提示（-${e6Cost}万）。残留を決断した`);
         } else if (choiceIdx === 1) {
           // §13.4: 説得成功率をtrust依存に段階化
           const trust = f6 ? (f6.trust != null ? f6.trust : 50) : 50;
@@ -21310,7 +21316,7 @@ Engine.eventSystem = {
           // Phase 4 E-03: 挑戦状の関係値反映
           let relationships = null;
           let relationshipCounters = null;
-          if (state.relationships) {
+          if (state.relationships && !event.scheduledInShow) {
             const relRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xBE55));
             // 対戦した2選手間: rivalry +8~+12（§4.2ブースト）
             // ※ AI相手のIDは event.challenger?.id（旧: event.opponentId はバグ）

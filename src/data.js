@@ -15836,7 +15836,7 @@ const DECISION_DOCS = {
     cooldown: 4,           // care-rework v0.1 §1.3: 1週→4週(乱発防止)
     body: '対象選手に特別手当を支給し、組織貢献への感謝を示す',
     detailText: '起案された支給額の中から、いくら積むかを社長が決める。額面が彼女の格に見合ってこそ、誠意は伝わる。安すぎる額は、かえって心を離れさせることもある。',
-    effectSummary: '支給額しだいで信頼の動き方が変わる。相場を大きく超える額は深く響く',
+    effectSummary: '支給額しだいで本人の受け止め方が変わる。相場を大きく超える額は深く響く',
     recommendation: '団体への気持ちが陰りはじめた選手に、早めに手を打つと効果的。同じ選手への再支給は相場が吊り上がる点に注意。',
     effect: { target: 'individual' },
   },
@@ -15854,8 +15854,8 @@ const DECISION_DOCS = {
     minOrgPop: 0,
     cooldown: 1,
     body: '気にかけている選手に社長自ら声をかけに行く',
-    detailText: '決裁枠も資金も使わない、社長自らの自発的な行動。スランプ中・モチベ喪失中・信頼が揺らいでいる選手に足を運んで声をかける。',
-    effectSummary: '信頼がわずかに上がる(スランプ/モチベ喪失なら回復促進も)',
+    detailText: '決裁枠も資金も使わない、社長自らの自発的な行動。スランプ中・モチベ喪失中・最近様子が気になる選手に足を運んで声をかける。',
+    effectSummary: '本人の表情が少し和らぐ（スランプ・モチベ喪失なら回復促進も）',
     recommendation: '気になる選手のポップアップから直接実行する。机には並ばない。',
     effect: { target: 'individual', trust: 0.77, slumpMomentum: { high: 4.0, low: 2.5 } },
   },
@@ -15892,7 +15892,7 @@ const DECISION_DOCS = {
     cooldown: 12,          // care-rework v0.1 §2.3: 4週→12週
     body: '心身の疲弊を察し、一定期間の休養を与える',
     detailText: '1〜4週間の休暇を正式な辞令として発行する。休暇中の試合には欠場するが、そのぶん心身は着実に回復していく。長い休みは、積み重なった消耗までも癒やす。',
-    effectSummary: '休みの長さに応じて体調が戻り、長期なら蓄積した消耗も癒える。信頼も上がる',
+    effectSummary: '休みの長さに応じて体調が戻り、長期なら蓄積した消耗も癒える。本人にも気遣いが伝わる',
     recommendation: '疲れの見える主力を、大事な興行の前に立て直す疲労管理の要。休暇中の欠場と引き換えになる点は覚悟すること。',
     effect: { target: 'individual', slumpMomentum: 12.0 },
   },
@@ -15910,7 +15910,7 @@ const DECISION_DOCS = {
     minHeadcount: 4,
     body: '団体の雰囲気を立て直すべく、慰労の宴席を設ける',
     detailText: '全選手を集めた慰労の宴席。個別の数値を動かすより、ロッカールームの空気そのものを立て直すのが主目的。',
-    effectSummary: '全員の信頼がわずかに上がる + ロッカールームの雰囲気が良くなる',
+    effectSummary: '選手同士の会話が増え、ロッカールームと社長への空気が柔らかくなる',
     recommendation: 'ロッカールームの空気に少し陰りが見えてきたときの応急処置として。単発では決定打にならない点に留意。',
     effect: { target: 'team', trust: 1.84, morale: 5 },
   },
@@ -15948,7 +15948,7 @@ const DECISION_DOCS = {
     minHeadcount: 4,
     body: '全選手を集中的に強化するため、合宿を実施する',
     detailText: '選手全員を合宿地へ送り込み、短期集中で基礎を鍛え直す。ひとり40万×人数ぶんの費用と決裁枠3を消費する重量級書類。',
-    effectSummary: '2週間のあいだ全員の練習効果が上がる + 全員の信頼もわずかに上がる',
+    effectSummary: '2週間のあいだ全員の練習効果が上がり、団体全体に一体感が育つ',
     recommendation: '資金に余裕があり、オフシーズン前後に全体を底上げしたいとき。年1〜2回が現実的な使用頻度。',
     effect: { target: 'team', trust: 1.84, growthBoost: { weeks: 2, mult: 1.5 } },
   },
@@ -15965,7 +15965,7 @@ const DECISION_DOCS = {
     cooldown: 2,
     body: '対象選手を広告塔とし、団体の知名度向上を図る',
     detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度向上と本人の体調維持を両立させる外向き施策。',
-    effectSummary: '選手人気が上がる + 団体人気も上がる + 体調が整う + 信頼も上がる',
+    effectSummary: '選手人気と団体人気が上がり、体調が整う。本人も起用を前向きに受け止める',
     recommendation: '団体人気がある程度育ってから解禁される書類。看板選手の体調管理と兼ねて回すと無駄がない。選手の人気を直接押し上げたい時にも有効。',
     effect: { target: 'individual', trust: 5.36, condition: 5, orgPopDelta: 0.4, popGainMin: 6, popGainMax: 8 },
   },
@@ -21264,9 +21264,9 @@ const GLIMPSE_A_THRESHOLDS = [
   // rivalry下降
   { id: 'rivalry_29_down', axis: 'rivalry', dir: 'down', value: 29, rate: 0.80, tone: 'calm',  cooldown: 8,  label: '因縁の終息' },
   // trust
-  { id: 'trust_below_35', axis: 'trust', dir: 'down', value: 35, rate: 0.95, tone: 'warning',  cooldown: 12, label: '信頼の揺らぎ' },
-  { id: 'trust_below_20', axis: 'trust', dir: 'down', value: 20, rate: 1.00, tone: 'danger',   cooldown: 12, label: '不信感の極み' },
-  { id: 'trust_above_75', axis: 'trust', dir: 'up',   value: 75, rate: 0.85, tone: 'positive', cooldown: 12, label: '厚い信頼' },
+  { id: 'trust_below_35', axis: 'trust', dir: 'down', value: 35, rate: 0.95, tone: 'warning',  cooldown: 12, label: '社長室を避ける気配' },
+  { id: 'trust_below_20', axis: 'trust', dir: 'down', value: 20, rate: 1.00, tone: 'danger',   cooldown: 12, label: '退団を考えているという噂' },
+  { id: 'trust_above_75', axis: 'trust', dir: 'up',   value: 75, rate: 0.85, tone: 'positive', cooldown: 12, label: '団体への愛着がにじむ' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────

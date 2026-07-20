@@ -44,7 +44,7 @@ loadGame();
 })();
 
 (function testRetirementArchiveUsesNestedStore() {
-  const appSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8');
+  const appSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8').replace(/\r\n/g, '\n');
   const match = appSource.match(/function archiveRetiredRivalryState[\s\S]*?\n}\n\/\/ ── App Commands/);
   assert(match, 'archiveRetiredRivalryState source must be extractable');
   const functionSource = match[0].replace(/\n\/\/ ── App Commands[\s\S]*$/, '');
@@ -75,7 +75,7 @@ loadGame();
 })();
 
 (function testRelmapReadsOnlyRetiredRivalryArray() {
-  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-render.js'), 'utf8');
+  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-render.js'), 'utf8').replace(/\r\n/g, '\n');
   const functionSource = source.match(/function _relmapBuildLinks[\s\S]*?\n}\n\nfunction _relmap/);
   assert(functionSource, '_relmapBuildLinks source must be extractable');
   assert(functionSource[0].includes('normalizeHistoryStore(G.relationshipHistory)'));

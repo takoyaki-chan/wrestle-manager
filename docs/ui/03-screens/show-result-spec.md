@@ -22,7 +22,7 @@
 | 6 | 3 | 対抗戦 試合進行画面 | `renderWarMatchPreview()` | `ui-common.js:286` |
 | 7 | 4 | JT 各試合結果 | `renderJuniorTournamentMatchResult()` | `ui-common.js:10117` |
 | 8 | 4 | JT 優勝発表 | `renderJuniorTournamentResult()` | `ui-common.js:10234` |
-| 9 | 4 | B3 挑戦状 結果 | `_renderB3MatchResult()` | `ui-common.js:8018` |
+| 9 | 4 | B3 挑戦状 結果 | 通常興行 `renderShowResult()` 内の挑戦試合行 | `ui-common.js` |
 | 10 | 4 | B2 深刻対立 決着結果 | `_renderB2MatchResult()` | `ui-common.js:8214` |
 
 **スコープ外**：battle-engine.html / tag-battle.html 内の試合中勝利演出（`victoryOv`）— 別レイヤーのため今回は対象外。
@@ -71,7 +71,7 @@
 | #6 対抗戦進行 | S3 War の試合間（次試合待ち） |
 | #7 JT各試合 | S4 JT の各試合終了後 |
 | #8 JT優勝 | S4 JT 決勝終了後 |
-| #9 B3挑戦状 | B3 イベント受諾 → 試合消化後 |
+| #9 B3挑戦状 | B3 イベント受諾 → 次の通常興行メインへ予約 → 試合消化後 |
 | #10 B2対立 | B2 イベント「試合決着」選択後 |
 
 ### 出ていく経路
@@ -87,7 +87,10 @@
 | #6 | 次試合ボタン → 次の #6 または #5 |
 | #7 | 次試合ボタン → 次の #7 または #8 |
 | #8 | 翌週 |
-| #9-10 | イベント終了 → 週処理へ戻る |
+| #9 | 通常興行結果の一部として処理 → 週終了処理 |
+| #10 | イベント終了 → 週処理へ戻る |
+
+挑戦試合では、対戦した両者について方向別の「因縁 ±N / 相手との関係 ±N」を表示してよい。所属団体への信頼値・信頼差分は、すべての結果画面で数値表示しない。
 
 **戻るボタン**：なし（全画面 forward のみ）
 

@@ -19,6 +19,9 @@ assert(css.includes('--emr-accent:var(--ev-winter)'), '通常興行は旧冬色�
 assert(ui.includes('function showEventMatchResultPopup(opts)'), '共通ポップアップレンダラーが必要');
 assert(ui.includes('function closeEventMatchResultPopup()'), '背面画面を維持したまま閉じる処理が必要');
 assert(ui.includes('function _emrVictoryLine(fighter, preferred)'), '全大会で勝者セリフを解決する処理が必要');
+assert(ui.includes("winnerSide === 'draw' ? 'is-draw'"), '引き分けでは両者を敗者表示にしない');
+assert(ui.includes("winnerSide === 'draw' ? '' : `<div class=\"emr-bubble"), '引き分けでは架空の勝者コメントを出さない');
+assert(ui.includes('function _emrTeamHp(result, fighterIds)'), '通常タッグ結果はperFighterからチームHPを集計する');
 assert(ui.includes('theme: \'normal\''), '通常興行テーマを接続する');
 assert(ui.includes('theme: \'spring\''), '春タッグテーマを接続する');
 assert(ui.includes('theme: \'summer\''), '夏ジュニアテーマを接続する');
@@ -27,6 +30,8 @@ assert(ui.includes('theme: \'tenchosen\''), '天頂戦テーマを接続する')
 assert(ui.includes('theme: \'ppv\''), 'PPVテーマを接続する');
 
 assert(app.includes('renderRegularMatchResultPopup(idx, skipFlavor'), '通常興行は観戦・1試合スキップの両方で結果ポップアップを出す');
+assert(ui.includes('const boutNumber = total - idx;'), '通常興行の結果番号は前座からメインへの実施順に合わせる');
+assert(ui.includes('sourceMatch?.isCRMatch && r._challengeRelationshipDelta'), '挑戦試合の興行結果には方向別の因縁・相手との関係変化を表示する');
 assert(app.includes('? finalize\n      : () => App._runPostMatchFlavorForMatch'), '1試合スキップでは余韻だけを省略し、結果画面は維持する');
 assert(app.includes('renderSpringTagLeagueMatchResultPopup(revealed, false)'), '春リーグ各試合で結果ポップアップを出す');
 assert(app.includes('renderAutumnWarBoutResultPopup(revealedMatch, revealedBout)'), '秋団体戦の各フォールで結果ポップアップを出す');

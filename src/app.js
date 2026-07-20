@@ -1518,6 +1518,15 @@ const Storage = {
       const base = Engine.createInitialState(state.rngSeed || (Date.now() ^ 0xDEADBEEF));
       G = { ...base, ...state };
 
+      // 挑戦試合旧予約を開催地別の新フィールドへ移行する。
+      if (G._pendingChallengeMatch) {
+        const legacyChallenge = G._pendingChallengeMatch;
+        const { _pendingChallengeMatch: _legacyChallenge, ...restChallenge } = G;
+        G = legacyChallenge.isInverse
+          ? { ...restChallenge, _pendingIncomingChallengeMatch: legacyChallenge }
+          : { ...restChallenge, _pendingAwayChallengeMatch: legacyChallenge };
+      }
+
       // v0.6 backward compat: coaches
       if (!G.coaches) G = { ...G, coaches: [] };
       if (!G.availableCoaches) G = { ...G, availableCoaches: ALL_COACHES.map(c => c.id).filter(id => !G.coaches.includes(id)) };
@@ -1956,7 +1965,7 @@ const Storage = {
           lockerRoomMorale: G.lockerRoomMorale != null ? G.lockerRoomMorale : 60,
           _migrated_trust: true,
         };
-        G = { ...G, gameLog: [...(G.gameLog || []), '📢 システム更新(v2.0): 信頼度パラメータを追加しました'] };
+        G = { ...G, gameLog: [...(G.gameLog || []), '📢 システム更新(v2.0): 選手の反応表現を更新しました'] };
       }
 
       if (!G._migrated_npc_traits) {
@@ -5178,9 +5187,11 @@ const App = {
       Audio.play('error'); showToast('⚔ 挑戦試合の上位3枠は固定です', 3000); return;
     }
     newId = +newId;
-    const reservedCRIds = new Set(Engine.challengeRequest?.getScheduledCard?.(G)?.reservedIds || []);
+    const reservedCRIds = typeof getChallengeUnavailableIds === 'function'
+      ? getChallengeUnavailableIds()
+      : new Set(Engine.challengeRequest?.getScheduledCard?.(G)?.reservedIds || []);
     if (newId > 0 && reservedCRIds.has(newId)) {
-      Audio.play('error'); showToast('⚔ この選手は上位3枠の挑戦試合に出場します', 3000); return;
+      Audio.play('error'); showToast('⚔ この選手は挑戦試合への出場が決まっています', 3000); return;
     }
     const newCard = G.showCard.map(s => ({ ...s }));
     // Swap: if newId is already used in another slot, exchange fighters
@@ -5286,9 +5297,11 @@ const App = {
 
   setTagSlotFighter(slotIdx, team, pos, fighterId) {
     fighterId = +fighterId;
-    const reservedCRIds = new Set(Engine.challengeRequest?.getScheduledCard?.(G)?.reservedIds || []);
+    const reservedCRIds = typeof getChallengeUnavailableIds === 'function'
+      ? getChallengeUnavailableIds()
+      : new Set(Engine.challengeRequest?.getScheduledCard?.(G)?.reservedIds || []);
     if (fighterId > 0 && reservedCRIds.has(fighterId)) {
-      Audio.play('error'); showToast('⚔ この選手は上位3枠の挑戦試合に出場します', 3000); return;
+      Audio.play('error'); showToast('⚔ この選手は挑戦試合への出場が決まっています', 3000); return;
     }
     const newCard = G.showCard.map(s => s.matchType === 'tag'
       ? { ...s, teamA: { ...s.teamA }, teamB: { ...s.teamB } }
@@ -5352,7 +5365,14 @@ const App = {
     if (G.offSeason || !['manage', 'showPrep'].includes(G.weekPhase)) { Audio.play('error'); return; }
     // Accepted challenge requests reserve the top three slots inside the venue
     // limit. Inject only the visiting fighters needed to render/simulate them.
-    if (G._pendingChallengeMatch && Engine.challengeRequest?.reserveScheduledMatches) {
+    const eligibleChallengeShow = !!Engine.challengeRequest?.isEligibleHomeShow?.(G);
+    if (eligibleChallengeShow && G._pendingAwayChallengeMatch && Engine.challengeRequest?.removeFightersFromCard) {
+      const awayOwnIds = G._pendingAwayChallengeMatch.requesterOrgId === 'player'
+        ? G._pendingAwayChallengeMatch.teamAIds
+        : G._pendingAwayChallengeMatch.teamBIds;
+      G = { ...G, showCard: Engine.challengeRequest.removeFightersFromCard(G.showCard, awayOwnIds) };
+    }
+    if (eligibleChallengeShow && (G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse) && Engine.challengeRequest?.reserveScheduledMatches) {
       const reservedCR = Engine.challengeRequest.reserveScheduledMatches(G, G.showCard);
       if (reservedCR) {
         const existingIds = new Set((G.roster || []).map(f => f.id));
@@ -5362,9 +5382,31 @@ const App = {
         G = { ...G, showCard: reservedCR.card, roster: [...G.roster, ...guests] };
       } else {
         const clearedCard = Engine.challengeRequest.clearReservedMatches(G, G.showCard);
-        const { _pendingChallengeMatch: _invalidCR, ...rest } = G;
+        const { _pendingIncomingChallengeMatch: _invalidIncomingCR, _pendingChallengeMatch: _legacyIncomingCR, ...rest } = G;
         G = { ...rest, showCard: clearedCard };
         showToast('⚠ 挑戦試合の出場メンバーが揃わないため、予約を解除しました', 5000);
+      }
+    }
+    App._b3ShowData = null;
+    const b3AwayConflict = G._pendingIncomingB3Match && Engine.challengeRequest?.hasAwayParticipantConflict?.(G, [
+      G._pendingIncomingB3Match.fighterId,
+      G._pendingIncomingB3Match.challenger?.id,
+    ]);
+    if (eligibleChallengeShow && !Engine.challengeRequest?.getScheduledCard?.(G) && G._pendingIncomingB3Match && !b3AwayConflict && Engine.challengeRequest?.reserveScheduledSingleMatch) {
+      const reservedB3 = Engine.challengeRequest.reserveScheduledSingleMatch(G, G.showCard);
+      if (reservedB3) {
+        const scheduled = reservedB3.scheduled;
+        const existingIds = new Set((G.roster || []).map(f => f.id));
+        const guest = existingIds.has(scheduled.challenger.id)
+          ? []
+          : [{ ...scheduled.challenger, isB3ChallengeGuest: true, _b3GuestOrgId: scheduled.orgId }];
+        const { _pendingIncomingB3Match: _consumedB3, ...rest } = G;
+        G = { ...rest, showCard: reservedB3.card, roster: [...rest.roster, ...guest] };
+        App._b3ShowData = { ...scheduled, groupId: reservedB3.groupId, guestIds: guest.map(f => f.id) };
+      } else {
+        const { _pendingIncomingB3Match: _invalidB3, ...rest } = G;
+        G = { ...rest, showCard: Engine.challengeRequest.clearReservedMatches(G, G.showCard) };
+        showToast('⚠ 挑戦試合の出場条件が整わないため、予約を解除しました', 5000);
       }
     }
     // Guard: sanitize stale card refs (released/retired/transferred wrestlers)
@@ -5475,8 +5517,8 @@ const App = {
     // ── challenge-request-spec-v0.1 Phase 3: 予約済み挑戦シリーズを実行 ──
     // 上位3枠は会場上限の内数として興行準備時点で確保済み。
     App._crMatchData = null;
-    if (G._pendingChallengeMatch) {
-      const pcm = G._pendingChallengeMatch;
+    if (eligibleChallengeShow && (G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse)) {
+      const pcm = G._pendingIncomingChallengeMatch || G._pendingChallengeMatch;
       const isInverseCR = !!pcm.isInverse;
       const _crHealthy = f => f && !f.injury && !f.forcedRest && !f.suspended;
       const _crFindAll = (ids, rosterArr) => ids.map(id => (rosterArr || []).find(f => f.id === id)).filter(Boolean);
@@ -5499,7 +5541,7 @@ const App = {
           teamAIds: teamACR.map(f => f.id), teamBIds: teamBCR.map(f => f.id),
           guestIds: guestIdsCR,
         };
-        const { _pendingChallengeMatch: _pcm1, ...restGCR } = G;
+        const { _pendingIncomingChallengeMatch: _pcm1, _pendingChallengeMatch: _legacyPcm1, ...restGCR } = G;
         G = restGCR;
         showEventPopup({
           type: 'fighter', id: pcm.requesterId,
@@ -5509,7 +5551,7 @@ const App = {
         });
       } else {
         // 出場メンバーが揃わない（怪我・離脱等）→ 静かに取り下げ
-        const { _pendingChallengeMatch: _pcm2, ...restGCR2 } = G;
+        const { _pendingIncomingChallengeMatch: _pcm2, _pendingChallengeMatch: _legacyPcm2, ...restGCR2 } = G;
         G = restGCR2;
       }
     }
@@ -5593,6 +5635,7 @@ const App = {
       confrontationPairs: confrontations.map(c => c.idx),
       confrontationMap: Object.fromEntries(confrontations.map(c => [c.idx, c])),
       _shownConfrontations: new Set(),
+      incomingChallenge: App._crMatchData ? { ...App._crMatchData } : null,
     };
 
     // 宣戦布告ポップアップは各試合がフォーカスされた瞬間に表示（renderMatchPreview内で制御）
@@ -6143,6 +6186,10 @@ const App = {
 
   // Post-processing: apply titles, popularity, injuries (mirrors Engine.executeShow logic)
   finalizeShow() {
+    if (App._showPreview?.isAwayChallenge) {
+      App._finalizeAwayChallengeShow();
+      return;
+    }
     try {
       App._finalizeShowImpl();
     } catch (e) {
@@ -6401,8 +6448,11 @@ const App = {
           s = { ...s, _pendingChallengeRequestResult: { card: crCard, result: crResult } };
         }
       }
-      // ゲスト選手をrosterから除去(他団体所属のため永続変更は自団体側に残さない)
-      roster = roster.filter(c => !cd.guestIds.includes(c.id));
+      // ゲストも怪我・成長・関係変化まで通常の興行後処理を通し、最後に所属団体へ戻す。
+      App._crGuestSyncData = {
+        guestIds: [...cd.guestIds],
+        guestOrgId: cd.isInverse ? cd.requesterOrgId : cd.opponentOrgId,
+      };
       s = { ...s, roster };
       App._crMatchData = null;
     }
@@ -6704,13 +6754,31 @@ const App = {
           isProveModeB: fB ? (fB.proveMode || 0) > 0 : false,
           ovrA: fA ? Engine.util.ov(fA) : 0,
           ovrB: fB ? Engine.util.ov(fB) : 0,
-          // Phase 4: 奪還挑戦は cross-org 試合（残留 vs 元同僚 / B-3 などが効く）
-          isCrossOrg: !!m.isReclaim,
+          // 奪還戦と挑戦試合は cross-org。挑戦試合は決着ではなく因縁を増幅する。
+          isCrossOrg: !!(m.isReclaim || m.isCRMatch || m._crMatchLocked || m._awayChallengeMatch),
+          isChallengeShowMatch: !!(m.isCRMatch || m._crMatchLocked || m._awayChallengeMatch),
         };
         relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
+        if (context._challengeRelationshipDelta) r._challengeRelationshipDelta = context._challengeRelationshipDelta;
       });
       roster = relState.roster || roster;
       s = { ...s, relationships: relState.relationships, relationshipCounters: relState.relationshipCounters };
+      if (s._pendingChallengeRequestResult) {
+        const pendingResult = s._pendingChallengeRequestResult;
+        const matchesWithRelations = pendingResult.result.matches.map(match => {
+          const source = results.find(r => r?.left?.id === match.fighterA.id && r?.right?.id === match.fighterB.id);
+          return source?._challengeRelationshipDelta
+            ? { ...match, relationshipDelta: source._challengeRelationshipDelta }
+            : match;
+        });
+        s = {
+          ...s,
+          _pendingChallengeRequestResult: {
+            ...pendingResult,
+            result: { ...pendingResult.result, matches: matchesWithRelations },
+          },
+        };
+      }
       // Phase 4: 興行コンテキストの関係値反映（C-04/C-05/C-06/C-10）
       const showCtxRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE5C));
       s = Engine.relationships.applyShowContextEffects(s, validMatches, results, preShowLosingStreaks, showCtxRng);
@@ -7330,6 +7398,104 @@ const App = {
     }
     if (pendingGrowthEvents.length > 0) {
       s = { ...s, _pendingGrowthEvents: pendingGrowthEvents };
+    }
+
+    // 単発の挑戦状(B3)は通常興行のメインとして解決する。
+    // 試合そのものの消耗・怪我・成長・関係変化は上の共通処理済みなので、
+    // ここでは大型イベント固有の人気・キャリア・ニュースだけを反映する。
+    if (App._b3ShowData) {
+      const b3 = App._b3ShowData;
+      const b3Idx = validMatches.findIndex(m => m._b3ChallengeMatch && m._crGroupId === b3.groupId);
+      const matchResult = b3Idx >= 0 ? results[b3Idx] : null;
+      if (matchResult) {
+        const enrichedEvent = {
+          ...b3.event,
+          matchResult,
+          selectedFighterId: b3.fighterId,
+          scheduledInShow: true,
+        };
+        const b3Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB1B6));
+        const b3Result = Engine.eventSystem.applyLargeEventEffect(enrichedEvent, 2, 0, { ...s, roster }, b3Rng);
+        if (b3Result.roster) roster = b3Result.roster;
+        const b3Updates = {};
+        for (const key of ['funds', 'lockerRoomMorale', 'mediaSpotlight', 'lastLargeEventWeek', 'lastB3ChallengeWeek', 'battlePoints']) {
+          if (b3Result[key] !== undefined) b3Updates[key] = b3Result[key];
+        }
+        if (b3Result.aiOrgs) b3Updates.aiOrgs = b3Result.aiOrgs;
+        if (b3Result.orgPopDelta) b3Updates.orgPop = Engine.util.clamp((s.orgPop || 0) + b3Result.orgPopDelta, 0, 100);
+        if (b3Result.events?.length) events.push(...b3Result.events);
+        const b3H2h = Engine.h2h.update(
+          s.h2h || {}, b3.fighterId, b3.challenger.id, matchResult.winner, matchResult.mq,
+          false, false, s.season, s.week, 'show', 'player', b3.orgId || b3.challenger.orgId || 'rival', null
+        );
+        const newsType = matchResult.winner === 'left' ? 'interPromoWin' : (matchResult.winner === 'right' ? 'interPromoLoss' : 'interPromoDraw');
+        s = {
+          ...s,
+          ...b3Updates,
+          roster,
+          h2h: b3H2h,
+          _newsEvents: [...(s._newsEvents || []), {
+            type: newsType,
+            data: { orgName: b3.orgName, fighterName: b3.playerFighter.name, challengerName: b3.challenger.name },
+          }],
+        };
+      }
+      const b3GuestIds = new Set(b3.guestIds || []);
+      if (b3GuestIds.size > 0) {
+        const updatedGuest = roster.find(f => b3GuestIds.has(f.id));
+        const aiOrgs = { ...(s.aiOrgs || {}) };
+        const guestOrg = aiOrgs[b3.orgId];
+        if (updatedGuest && guestOrg?.roster) {
+          aiOrgs[b3.orgId] = {
+            ...guestOrg,
+            roster: guestOrg.roster.map(f => {
+              if (f.id !== updatedGuest.id) return f;
+              const baseCareer = f.careerRecord || { history: [] };
+              const updatedCareer = updatedGuest.careerRecord || { history: [] };
+              const history = [...(baseCareer.history || [])];
+              for (const entry of (updatedCareer.history || [])) {
+                const signature = `${entry.type}|${entry.season}|${entry.week}|${entry.opponentName || ''}|${entry.mq || ''}`;
+                if (!history.some(h => `${h.type}|${h.season}|${h.week}|${h.opponentName || ''}|${h.mq || ''}` === signature)) history.push(entry);
+              }
+              return { ...f, ...updatedGuest, careerRecord: { ...updatedCareer, ...baseCareer, history } };
+            }),
+          };
+        }
+        roster = roster.filter(f => !b3GuestIds.has(f.id));
+        s = { ...s, aiOrgs, roster };
+      }
+      App._b3ShowData = null;
+    }
+
+    // 挑戦シリーズの一時ゲストを、興行後に更新済みの状態で本来の所属団体へ戻す。
+    // 先に _applyChallengeRequestResult が付けたキャリア履歴は保持しつつ、
+    // この興行で発生した消耗・怪我・成長・人気変化を同期する。
+    if (App._crGuestSyncData) {
+      const sync = App._crGuestSyncData;
+      const guestIds = new Set(sync.guestIds || []);
+      const updatedGuests = new Map(roster.filter(c => guestIds.has(c.id)).map(c => [c.id, c]));
+      const aiOrgs = { ...(s.aiOrgs || {}) };
+      const guestOrg = aiOrgs[sync.guestOrgId];
+      if (guestOrg && Array.isArray(guestOrg.roster)) {
+        aiOrgs[sync.guestOrgId] = {
+          ...guestOrg,
+          roster: guestOrg.roster.map(f => {
+            const updated = updatedGuests.get(f.id);
+            if (!updated) return f;
+            const baseCareer = f.careerRecord || { history: [] };
+            const updatedCareer = updated.careerRecord || { history: [] };
+            const history = [...(baseCareer.history || [])];
+            for (const entry of (updatedCareer.history || [])) {
+              const signature = `${entry.type}|${entry.season}|${entry.week}|${entry.opponentName || ''}|${entry.mq || ''}`;
+              if (!history.some(h => `${h.type}|${h.season}|${h.week}|${h.opponentName || ''}|${h.mq || ''}` === signature)) history.push(entry);
+            }
+            return { ...f, ...updated, careerRecord: { ...updatedCareer, ...baseCareer, history } };
+          }),
+        };
+      }
+      roster = roster.filter(c => !guestIds.has(c.id));
+      s = { ...s, aiOrgs, roster };
+      App._crGuestSyncData = null;
     }
 
     // s 起点でマージ。{...G, ...s} だと s 側で destructure 削除した
@@ -8254,6 +8420,135 @@ const App = {
     }
   },
 
+  _startAwayChallengeShow() {
+    const booking = G._pendingAwayChallengeMatch;
+    if (!booking || App._awayChallengeInProgress) return false;
+    const requesterRoster = booking.requesterOrgId === 'player' ? (G.roster || []) : (G.aiOrgs?.[booking.requesterOrgId]?.roster || []);
+    const opponentRoster = booking.opponentOrgId === 'player' ? (G.roster || []) : (G.aiOrgs?.[booking.opponentOrgId]?.roster || []);
+    const findAll = (ids, roster) => (ids || []).map(id => roster.find(f => f.id === id)).filter(Boolean);
+    const healthy = f => f && !f.injury && !f.forcedRest && !f.suspended;
+    const teamA = findAll(booking.teamAIds, requesterRoster);
+    const teamB = findAll(booking.teamBIds, opponentRoster);
+    if (teamA.length !== 3 || teamB.length !== 3 || !teamA.every(healthy) || !teamB.every(healthy)) {
+      const { _pendingAwayChallengeMatch: _invalidAway, ...rest } = G;
+      G = rest;
+      showToast('⚠ 遠征メンバーが揃わないため、挑戦試合は中止になりました', 5000);
+      try { Storage.autoSave(); } catch (_e) {}
+      return false;
+    }
+    const ownIds = new Set((G.roster || []).map(f => f.id));
+    const guests = [...teamA, ...teamB].filter(f => !ownIds.has(f.id)).map(f => ({ ...f, isAwayChallengeGuest: true }));
+    const groupId = `away_cr_${booking.requesterId}_${booking.opponentId}_${G.season}_${G.week}`;
+    const validMatches = [0, 1, 2].map(i => ({
+      left: teamA[i].id, right: teamB[i].id, isTitle: false,
+      isCRMatch: true, _awayChallengeMatch: true, _crGroupId: groupId, _crSlot: i,
+    }));
+    G = { ...G, roster: [...G.roster, ...guests] };
+    App._awayChallengeInProgress = true;
+    App._showPreview = {
+      validMatches, results: new Array(3).fill(null), currentWatching: -1,
+      stateSnapshot: JSON.parse(JSON.stringify(G)), confrontationPairs: [], confrontationMap: {},
+      _shownConfrontations: new Set(), isAwayChallenge: true, awayBooking: booking,
+      awayGuestIds: guests.map(f => f.id),
+    };
+    try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch (_e) {}
+    renderMatchPreview();
+    return true;
+  },
+
+  _finalizeAwayChallengeShow() {
+    const sp = App._showPreview;
+    if (!sp?.isAwayChallenge || sp.results.some(r => !r)) return;
+    const booking = sp.awayBooking;
+    const results = sp.results;
+    const allById = new Map((G.roster || []).map(f => [f.id, { ...f }]));
+    let s = { ...G };
+    const relRng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season, G.week, 0xC4A7));
+    const growthRng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season, G.week, 0xC4A8));
+    const injuryResults = [];
+    results.forEach((r, idx) => {
+      const match = sp.validMatches[idx];
+      const left = allById.get(match.left) || r.left;
+      const right = allById.get(match.right) || r.right;
+      if (!left || !right) return;
+      const context = {
+        mq: r.mq, winner: r.winner === 'left' ? 'win' : r.winner === 'right' ? 'lose' : 'draw',
+        hpA: r.hpLeft, hpB: r.hpRight, turns: r.turns, stage: 'challenge', isTitleMatch: false,
+        rivalryResolved: false, injuredId: null,
+        isCareerBestA: r.mq > (left.careerBestMQ || 0), isCareerBestB: r.mq > (right.careerBestMQ || 0),
+        losingStreakA: left.losingStreak || 0, losingStreakB: right.losingStreak || 0,
+        isProveModeA: (left.proveMode || 0) > 0, isProveModeB: (right.proveMode || 0) > 0,
+        ovrA: Engine.util.ov(left), ovrB: Engine.util.ov(right), isCrossOrg: true, isChallengeShowMatch: true,
+      };
+      s = Engine.relationships.applyMatchResult(s, left.id, right.id, context, relRng);
+      r._challengeRelationshipDelta = context._challengeRelationshipDelta;
+      [
+        { fighter: left, hp: r.hpLeft, opponent: right, won: r.winner === 'left' },
+        { fighter: right, hp: r.hpRight, opponent: left, won: r.winner === 'right' },
+      ].forEach((entry, sideIdx) => {
+        let fighter = allById.get(entry.fighter.id) || entry.fighter;
+        const ratio = Engine.wear.hpRatio(entry.hp?.final, entry.hp?.max);
+        fighter = { ...fighter, condition: Engine.wear.nextCondition(fighter.condition, Engine.wear.calc(ratio), 0, 30, 100) };
+        const stats = ['pw', 'sp', 'te', 'st', 'mn'];
+        const stat = stats[Engine.rng.int(growthRng, 0, stats.length - 1)];
+        const opponentBonus = Engine.util.ov(entry.opponent) > Engine.util.ov(fighter) ? 1 : 0;
+        const gain = Math.max(1, Math.round((GROWTH_CONFIG.matchGrowthBase || 0) + opponentBonus + (entry.won ? 0 : 0.2)));
+        const cap = fighter.trainCap?.[stat] || 100;
+        if (!fighter.slump && !fighter.motivationLoss && fighter[stat] < cap) {
+          const actualGain = Math.max(0, Math.min(gain, cap - (fighter[stat] || 0)));
+          fighter = {
+            ...fighter,
+            [stat]: (fighter[stat] || 0) + actualGain,
+            seasonGrowth: { ...(fighter.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }), [stat]: (fighter.seasonGrowth?.[stat] || 0) + actualGain },
+          };
+          if (actualGain > 0 && fighter.growthLog && !fighter.isRental) {
+            fighter.growthLog = [...fighter.growthLog, {
+              season: G.season, week: G.week, type: 'match', detail: `敵地遠征 vs ${entry.opponent.name}`,
+              opponent: entry.opponent.name, result: r.winner === 'draw' ? 'draw' : entry.won ? 'win' : 'lose', deltas: { [stat]: actualGain },
+            }];
+          }
+        }
+        if (r.mq > (fighter.careerBestMQ || 0)) fighter = { ...fighter, careerBestMQ: r.mq };
+        const injRng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season, G.week, 0xC4A9, idx, sideIdx, fighter.id));
+        const injury = Engine.injury.check(injRng, fighter, { ...r, left, right }, 1, G.week, G.season, 0, {});
+        if (injury) {
+          fighter = injury.newFighter;
+          injuryResults.push({ id: fighter.id, name: fighter.name, injury: fighter.injury, retireType: injury.retireType || null });
+        }
+        allById.set(fighter.id, fighter);
+      });
+    });
+    const guestIds = new Set(sp.awayGuestIds || []);
+    s = {
+      ...s,
+      roster: (s.roster || []).filter(f => !guestIds.has(f.id)).map(f => allById.get(f.id) || f),
+      aiOrgs: Object.fromEntries(Object.entries(s.aiOrgs || {}).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(f => allById.get(f.id) || f) }])),
+      matchupLog: [...(s.matchupLog || []), ...sp.validMatches.map(m => ({ leftId: m.left, rightId: m.right, showCount: s.totalShows, awayChallenge: true }))],
+    };
+    const card = {
+      ...booking, otherOrgId: booking.opponentOrgId, otherOrgName: booking.opponentOrgName,
+      teamA: booking.teamAIds.map(id => allById.get(id)).filter(Boolean),
+      teamB: booking.teamBIds.map(id => allById.get(id)).filter(Boolean),
+    };
+    const matches = results.map((r, i) => ({
+      fighterA: card.teamA[i], fighterB: card.teamB[i], winner: r.winner, mq: r.mq,
+      finType: r.finType, finMove: r.finMove, relationshipDelta: r._challengeRelationshipDelta,
+    }));
+    const winsA = matches.filter(m => m.winner === 'left').length;
+    const winsB = matches.filter(m => m.winner === 'right').length;
+    const result = { matches, winsA, winsB, teamWin: winsA > winsB ? 'A' : winsB > winsA ? 'B' : 'draw' };
+    s = App._applyChallengeRequestResult(s, card, result);
+    const { _pendingAwayChallengeMatch: _doneAway, ...clean } = s;
+    G = clean;
+    App._showPreview = null;
+    App._awayChallengeInProgress = false;
+    App._awayChallengeCompletedForClose = true;
+    App._lastInjuries = [...(App._lastInjuries || []), ...injuryResults.filter(ir => !guestIds.has(ir.id))];
+    try { Storage.autoSave(); } catch (_e) {}
+    const continueClose = () => App.closeShowResult();
+    if (typeof showChallengeRequestResultModal === 'function') showChallengeRequestResultModal(card, result, G, continueClose);
+    else continueClose();
+  },
 
   // Close show result and advance via tickWeek
   closeShowResult() {
@@ -8287,6 +8582,14 @@ const App = {
         showCeremonyEvent(domeEvt, speakers, () => { App.closeShowResult(); });
         return;
       }
+    }
+    if (App._awayChallengeCompletedForClose) {
+      App._awayChallengeCompletedForClose = false;
+    } else if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
+      resultOverlay.classList.remove('active');
+      App._showResultInlinePreviewPrepared = false;
+      App._showResultInlinePreview = null;
+      if (App._startAwayChallengeShow()) return;
     }
     App._closingShowResult = true;
     try {
@@ -10381,27 +10684,32 @@ const App = {
         }
         // クォータ・CD更新
         G = Engine.challengeRequest.acceptPending(G);
-        // Phase 3(2026-07-17): 即時解決をやめ、次回の自団体興行の枠内に挿入して解決する。
-        // タイトル奪還挑戦(_pendingReclaim)と同じ「予約→executeShow直前に注入→試合後に結果処理」パターン。
+        // 相手発信(inverse)は次回の自団体興行へ固定編成、
+        // 自団体発信(forward)は次回自団体興行後に相手団体興行の遠征枠として実施する。
         // ID のみ保持し、実際の対戦相手は executeShow 時点の最新roster/aiOrgsから再取得する
         // （数週先の興行になる可能性があり、その間に怪我・離脱で顔ぶれが変わり得るため）。
-        G = {
-          ...G,
-          _pendingChallengeMatch: {
-            isInverse,
-            requesterId: card.requesterId, opponentId: card.opponentId,
-            requesterOrgId: card.requesterOrgId, opponentOrgId: card.opponentOrgId,
-            requesterOrgName: card.requesterOrgName, opponentOrgName: card.opponentOrgName,
-            teamAIds: card.teamA.map(f => f.id), teamBIds: card.teamB.map(f => f.id),
-          },
+        const booking = {
+          isInverse,
+          requesterId: card.requesterId, opponentId: card.opponentId,
+          requesterOrgId: card.requesterOrgId, opponentOrgId: card.opponentOrgId,
+          requesterOrgName: card.requesterOrgName, opponentOrgName: card.opponentOrgName,
+          teamAIds: card.teamA.map(f => f.id), teamBIds: card.teamB.map(f => f.id),
+          acceptedSeason: G.season, acceptedWeek: G.week,
         };
+        G = isInverse
+          ? { ...G, _pendingIncomingChallengeMatch: booking }
+          : { ...G, _pendingAwayChallengeMatch: booking };
         Storage.autoSave();
         Audio.play('event');
         showEventPopup({
           type: 'fighter', id: payload.selfId,
           name: reqName, tone: 'positive',
-          message: `⚔ 直訴、受理。次の興行で舞台が組まれる`,
-          detail: `${reqName} の申し出を受け、次の興行に専用の一戦が組み込まれる。`,
+          message: isInverse
+            ? `⚔ 挑戦状を受理。次の自団体興行で迎え撃つ`
+            : `⚔ 直訴を受理。次の興行後、敵地へ向かう`,
+          detail: isInverse
+            ? `${reqName} らの挑戦試合は、自団体興行の上位3試合に固定される。`
+            : `${reqName} らは次の自団体興行を終えた後、${card.opponentOrgName}の興行へ遠征する。`,
         });
         renderWeekScreen && renderWeekScreen();
         finalizeCRAudio();
@@ -11155,11 +11463,31 @@ const App = {
         return;
       }
 
-      App._b3Preview = {
-        event, playerFighter, challenger, watching: false, matchResult: null, prevResult, finalizeAudio
+      // 挑戦状を受けた時点では試合を行わず、次の通常興行のメインへ予約する。
+      // 特別興行・PPVには割り込ませない。
+      G = {
+        ...G,
+        _pendingIncomingB3Match: {
+          event,
+          prevResult,
+          fighterId,
+          challenger: { ...challenger },
+          orgId: event.orgId || challenger.orgId || null,
+          orgName: event.orgName || challenger.orgName || '相手団体',
+          acceptedSeason: G.season,
+          acceptedWeek: G.week,
+        },
       };
-      App._largeEventAudioFinalize = null;
-      _renderB3MatchPreview(event, playerFighter, challenger);
+      if (finalizeAudio) finalizeAudio();
+      if (App._largeEventAudioFinalize === finalizeAudio) App._largeEventAudioFinalize = null;
+      Storage.autoSave();
+      showEventPopup({
+        type: 'fighter', id: fighterId,
+        name: playerFighter.name, tone: 'positive',
+        message: '📨 挑戦試合を正式決定',
+        detail: `${playerFighter.name} vs ${challenger.name} は、次の通常興行のメインイベントで行われます。`,
+      });
+      renderWeekScreen();
     }
   },
 
@@ -11275,7 +11603,7 @@ const App = {
         isCareerBestB: false,
         losingStreakA: playerFighter.losingStreak || 0, losingStreakB: 0,
         ovrA: Engine.util.ov(playerFighter), ovrB: Engine.util.ov(challenger),
-        isCrossOrg: true,
+        isCrossOrg: true, isChallengeShowMatch: true,
       };
       G = Engine.relationships.applyMatchResult(G, fighterId, challenger.id, b3Context, b3RelRng);
     }
