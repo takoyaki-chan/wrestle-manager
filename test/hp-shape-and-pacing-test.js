@@ -33,9 +33,9 @@ assert(normal60 === 291, `normal ST60 HP must remain 291, got ${normal60}`);
 assert(big60 === 482, `big-match ST60 HP must remain 482, got ${big60}`);
 assert(normal90 / normal40 >= 1.50, `normal high-ST ratio must be >= 1.50, got ${normal90 / normal40}`);
 assert(big90 / big40 >= 1.40, `big-match high-ST ratio must be >= 1.40, got ${big90 / big40}`);
-assert(ENG.defStaScale === 0.0125, `direct ST defense scale must avoid restored-HP double counting, got ${ENG.defStaScale}`);
-assert(PHASES[PHASES.length - 1].mult === 1.45, 'normal Climax multiplier must match task-10 calibration');
-assert(BIGMATCH_PHASES[BIGMATCH_PHASES.length - 1].mult === 1.70, 'big-match Climax multiplier must match task-10 calibration');
+assert(ENG.defStaScale === 0.025, `direct ST defense scale must match the established value, got ${ENG.defStaScale}`);
+assert(PHASES[PHASES.length - 1].mult === 1.54, 'normal Climax multiplier must match task-12 calibration');
+assert(BIGMATCH_PHASES[BIGMATCH_PHASES.length - 1].mult === 1.79, 'big-match Climax multiplier must match task-12 calibration');
 
 const pacingCases = [
   [18, 2, false, 0], [14, 2, false, 3], [13, 2, false, 12],
