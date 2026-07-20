@@ -1,0 +1,36 @@
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const assert = require('assert');
+
+const root = path.resolve(__dirname, '..');
+const ui = fs.readFileSync(path.join(root, 'src', 'ui-common.js'), 'utf8');
+const app = fs.readFileSync(path.join(root, 'src', 'app.js'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'src', 'index.html'), 'utf8');
+
+assert(css.includes('.emr-layer'), '共通の1試合結果レイヤーが必要');
+assert(css.includes('backdrop-filter:grayscale(.72) saturate(.28) brightness(.68) blur(2px)'), '背面を減彩するフィルターが必要');
+assert(css.includes('.emr-popup') && css.includes('border-radius:14px'), '結果ポップアップの外枠は14px角丸にする');
+assert(css.includes('.emr-bubble') && css.includes('.emr-bubble::after'), '勝者セリフの吹き出しと尻尾が必要');
+assert(css.includes('.emr-layer.is-tenchosen,.emr-layer.is-ppv{--emr-accent:#d63d46'), '天頂戦とPPVは深紅のカラー言語を共有する');
+assert(css.includes('--emr-accent:var(--ev-winter)'), '通常興行は旧冬色の白金を標準色にする');
+
+assert(ui.includes('function showEventMatchResultPopup(opts)'), '共通ポップアップレンダラーが必要');
+assert(ui.includes('function closeEventMatchResultPopup()'), '背面画面を維持したまま閉じる処理が必要');
+assert(ui.includes('function _emrVictoryLine(fighter, preferred)'), '全大会で勝者セリフを解決する処理が必要');
+assert(ui.includes('theme: \'normal\''), '通常興行テーマを接続する');
+assert(ui.includes('theme: \'spring\''), '春タッグテーマを接続する');
+assert(ui.includes('theme: \'summer\''), '夏ジュニアテーマを接続する');
+assert(ui.includes('theme: \'autumn\''), '秋団体戦テーマを接続する');
+assert(ui.includes('theme: \'tenchosen\''), '天頂戦テーマを接続する');
+assert(ui.includes('theme: \'ppv\''), 'PPVテーマを接続する');
+
+assert(app.includes('renderRegularMatchResultPopup(idx, () => App._runPostMatchFlavorForMatch'), '通常興行は結果後に既存フレーバーへ戻す');
+assert(app.includes('renderSpringTagLeagueMatchResultPopup(revealed, false)'), '春リーグ各試合で結果ポップアップを出す');
+assert(app.includes('renderAutumnWarBoutResultPopup(revealedMatch, revealedBout)'), '秋団体戦の各フォールで結果ポップアップを出す');
+assert(app.includes('renderPPVMatchResultPopup(idx, () =>'), 'PPV各試合で結果ポップアップを出す');
+assert(ui.includes('onContinue: () => App.jtAdvanceAfterResult(ri, mi)'), 'ジュニア結果を閉じた後に従来進行へ戻す');
+assert(ui.includes('onContinue: () => App.tcAdvanceAfterResult(ri, mi)'), '天頂戦結果を閉じた後に従来進行へ戻す');
+
+console.log('event-match-result-popup-test: ok');

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大会別・1試合結果ポップアップ モックアップ v0.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#17191d;--stage:#07090c;--panel:#101318;--panel2:#151920;--line:rgba(255,255,255,.09);
+  --text:#eeece7;--sub:#a9abb0;--dim:#686c73;--gold:#d4a843;--gold-hi:#f0d078;
+  --display:'Bebas Neue',sans-serif;--label:'Oswald',sans-serif;--body:'Noto Sans JP',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:var(--page);color:var(--text);font-family:var(--body);padding:28px 18px 60px}
+button{font:inherit}
+.doc{max-width:1260px;margin:auto}
+.doc-head{display:flex;justify-content:space-between;gap:28px;align-items:end;margin-bottom:18px}
+.doc-kicker{font:600 10px var(--label);letter-spacing:.28em;color:var(--gold);text-transform:uppercase}
+h1{font:400 38px/1 var(--display);letter-spacing:.08em;margin-top:6px}
+.lead{max-width:560px;text-align:right;color:var(--sub);font-size:12px;line-height:1.8}
+.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;padding:5px;background:#0f1115;border:1px solid #30343b;position:sticky;top:6px;z-index:30;box-shadow:0 10px 28px rgba(0,0,0,.3)}
+.tab{border:0;background:transparent;color:#777c84;padding:10px 7px;cursor:pointer;font:600 10px var(--label);letter-spacing:.12em;transition:.2s}
+.tab:hover{color:#fff;background:rgba(255,255,255,.04)}
+.tab.active{color:var(--t);background:rgba(var(--tr),.12);box-shadow:inset 0 -2px 0 var(--t)}
+.compare-note{font-size:10px;color:#656a72;margin:8px 2px 14px}.compare-note b{color:#969ba3}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
+
+/* 実画面想定: 背面の大会画面 + 彩度低下 + 灰色半透明幕 + ポップアップ */
+.mock-stage{--accent:#cfc4a2;--accent-rgb:207,196,162;--metal:#d8edf7;position:relative;height:730px;overflow:hidden;border:1px solid rgba(var(--accent-rgb),.28);border-radius:12px;background:var(--stage);box-shadow:0 20px 58px rgba(0,0,0,.36)}
+.underlay{position:absolute;inset:0;padding:24px 30px;background:radial-gradient(ellipse at 50% -10%,rgba(var(--accent-rgb),.20),transparent 45%),#080a0d;filter:saturate(.18) contrast(.82) brightness(.66);transform:scale(1.012)}
+.under-head{text-align:center;padding:10px 0 16px;border-bottom:1px solid rgba(var(--accent-rgb),.26)}
+.under-emblem{width:66px;height:66px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(var(--accent-rgb),.4))}
+.under-title{font:400 31px var(--display);letter-spacing:.15em;margin-top:3px}
+.under-sub{font:500 9px var(--label);letter-spacing:.26em;color:var(--accent);text-transform:uppercase;margin-top:5px}
+.under-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:18px 0}
+.under-cell{height:72px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.025);padding:11px}
+.under-cell b{display:block;font:400 24px var(--display);color:var(--accent)}
+.under-cell span{font:500 8px var(--label);letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.under-board{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.under-card{height:165px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(145deg,rgba(var(--accent-rgb),.08),rgba(255,255,255,.015));padding:15px}
+.under-card-line{height:7px;background:rgba(255,255,255,.08);border-radius:4px;margin:10px 0}.under-card-line.short{width:55%}.under-card-line.hot{width:82%;background:rgba(var(--accent-rgb),.28)}
+.under-next{margin:15px auto 0;max-width:610px;border:1px solid rgba(var(--accent-rgb),.25);border-radius:10px;background:rgba(0,0,0,.25);padding:14px;text-align:center;font:500 10px var(--label);letter-spacing:.18em;color:var(--accent)}
+.gray-veil{position:absolute;inset:0;background:rgba(108,112,120,.34);backdrop-filter:blur(2px);z-index:2}
+.gray-veil::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 8%,rgba(10,12,15,.34) 78%)}
+
+.result-popup{position:absolute;z-index:4;width:min(720px,calc(100% - 42px));left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,#14171c,#0d1014);border:1px solid rgba(var(--accent-rgb),.56);border-radius:14px;overflow:hidden;box-shadow:0 28px 85px rgba(0,0,0,.76),0 0 30px rgba(var(--accent-rgb),.13)}
+.result-popup::before{content:'';position:absolute;left:14%;right:14%;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--metal),transparent)}
+.pop-head{min-height:86px;display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:13px;padding:12px 18px;background:linear-gradient(120deg,rgba(var(--accent-rgb),.16),transparent 56%);border-bottom:1px solid var(--line)}
+.pop-emblem-wrap{width:58px;height:58px;border-radius:10px;border:1px solid rgba(var(--accent-rgb),.26);display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.2)}
+.pop-emblem{width:50px;height:50px;object-fit:contain}.pop-mark{font-size:30px;color:var(--metal)}
+.pop-kicker{font:600 8px var(--label);letter-spacing:.22em;color:var(--accent);text-transform:uppercase}
+.pop-title{font-size:18px;font-weight:900;letter-spacing:.06em;margin-top:3px}
+.pop-meta{font-size:9px;color:var(--dim);margin-top:4px}
+.pop-progress{text-align:right;font:400 25px var(--display);color:var(--metal)}
+.pop-progress small{display:block;font:500 8px var(--label);letter-spacing:.13em;color:var(--dim);margin-top:2px}
+.context{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line);background:rgba(0,0,0,.17)}
+.context-cell{text-align:center;padding:8px 7px;border-right:1px solid var(--line)}.context-cell:last-child{border:0}
+.context-cell span{display:block;font:500 7px var(--label);letter-spacing:.15em;color:var(--dim);text-transform:uppercase}
+.context-cell b{display:block;font-size:10px;color:var(--sub);margin-top:2px}.context-cell b.hot{color:var(--accent)}
+.bout{position:relative;display:grid;grid-template-columns:1fr 122px 1fr;align-items:end;gap:10px;padding:16px 24px 10px;min-height:286px}
+.bout::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 20%,rgba(var(--accent-rgb),.08),transparent 55%);pointer-events:none}
+.side{position:relative;display:flex;align-items:flex-end;gap:10px;min-width:0}.side.right{flex-direction:row-reverse;text-align:right}.side.loser{opacity:.65}
+.upper{width:104px;height:166px;overflow:hidden;border-radius:9px 9px 5px 5px;border:1px solid rgba(var(--accent-rgb),.24);border-bottom:3px solid var(--accent);background:#171a20;flex:0 0 auto}
+.upper img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}.loser .upper img{filter:grayscale(.9) brightness(.54)}.loser .upper{border-bottom-color:#40444c}
+.side-copy{padding-bottom:14px;min-width:0}.side-role{font:500 7px var(--label);letter-spacing:.16em;color:var(--accent);text-transform:uppercase}.loser .side-role{color:var(--dim)}
+.side-name{font-size:15px;font-weight:900;line-height:1.3;margin-top:4px}.loser .side-name{color:#858990}
+.side-org{font-size:8px;color:var(--dim);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-stat{font:400 21px var(--display);margin-top:7px}.side-stat small{font:500 7px var(--label);color:var(--dim);letter-spacing:.1em;margin-right:4px}
+.center{text-align:center;align-self:center;padding-bottom:12px;position:relative}.winner{font:400 29px var(--display);letter-spacing:.08em;color:var(--metal)}
+.finish{font-size:10px;font-weight:700;line-height:1.5;margin-top:4px}.turn{font:500 8px var(--label);letter-spacing:.11em;color:var(--sub);margin-top:4px}
+.mq{display:inline-flex;align-items:baseline;gap:5px;margin-top:7px;padding-top:6px;border-top:1px solid rgba(var(--accent-rgb),.28);font:500 8px var(--label);color:var(--dim)}.mq b{font:400 23px var(--display);color:var(--gold-hi)}
+.quote{position:absolute;top:10px;left:20px;max-width:205px;background:#f1eee7;color:#171717;border-radius:10px;padding:7px 10px;font-size:9px;line-height:1.55;box-shadow:0 7px 18px rgba(0,0,0,.3)}
+.quote b{display:block;font:600 7px var(--label);letter-spacing:.08em;color:#725b20;margin-bottom:2px}
+.quote::after{content:'';position:absolute;left:28px;bottom:-7px;border:7px solid transparent;border-top-color:#f1eee7;border-bottom:0}
+.chips{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;padding:0 14px 10px}
+.chip{border:1px solid rgba(var(--accent-rgb),.32);border-radius:5px;padding:3px 7px;background:rgba(var(--accent-rgb),.07);color:var(--accent);font:500 7px var(--label);letter-spacing:.08em}
+.hp-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:0 20px 12px;padding-top:9px;border-top:1px solid var(--line)}
+.hp-half{display:flex;align-items:center;gap:7px}.hp-half.right{flex-direction:row-reverse}.hp-track{height:5px;background:#292d34;border-radius:4px;overflow:hidden;flex:1}.hp-fill{height:100%;background:var(--accent);border-radius:4px}.hp-half.right .hp-fill{margin-left:auto}.hp-val{font:400 13px var(--display);color:var(--sub)}.hp-label{font:500 7px var(--label);letter-spacing:.12em;color:var(--dim)}
+.pop-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 15px;border-top:1px solid var(--line);background:rgba(0,0,0,.22)}
+.foot-note{font-size:9px;color:var(--sub)}
+.next{border:1px solid rgba(var(--accent-rgb),.46);border-radius:7px;background:rgba(var(--accent-rgb),.10);color:var(--metal);padding:8px 19px;font:600 9px var(--label);letter-spacing:.13em}
+
+/* 春タッグ: 1チーム2人を同一面にまとめる */
+.bout.is-tag{grid-template-columns:1fr 112px 1fr}.team{display:flex;align-items:end;gap:8px}.team.right{flex-direction:row-reverse;text-align:right}.team.loser{opacity:.62}.pair-pics{display:flex;align-items:end}.pair-pics .upper{width:79px;height:126px}.pair-pics .upper+ .upper{margin-left:-13px}.team.right .pair-pics .upper+ .upper{margin-left:-13px}.team-name{font-size:12px;font-weight:900;line-height:1.4}.team-meta{font-size:8px;color:var(--dim);margin-top:4px}.team-score{font:400 18px var(--display);color:var(--accent);margin-top:6px}
+
+/* PPVと天頂戦は同一カラー言語。PPV=放送、天頂戦=格式で形だけ変える */
+.mock-stage.is-ppv,.mock-stage.is-tenchosen{--accent:#d63d46;--accent-rgb:214,61,70;--metal:#f0d078}
+.is-ppv .result-popup{border-color:rgba(212,168,67,.55);box-shadow:0 28px 85px rgba(0,0,0,.78),0 0 34px rgba(214,61,70,.20)}
+.is-ppv .pop-head{background:linear-gradient(120deg,rgba(214,61,70,.23),transparent 58%)}
+.is-tenchosen .result-popup{border-color:rgba(212,168,67,.52)}
+.is-tenchosen .pop-head{background:radial-gradient(ellipse at 16% 10%,rgba(212,168,67,.18),transparent 46%),linear-gradient(120deg,rgba(214,61,70,.15),transparent 62%)}
+.is-tenchosen .pop-emblem-wrap{border-radius:50%;border-color:rgba(212,168,67,.42)}
+
+.notes{--note:#cfc4a2;--note-rgb:207,196,162;background:#111318;border:1px solid #30343b;border-radius:10px;overflow:hidden;position:sticky;top:66px}
+.note-head{padding:15px 16px;border-bottom:1px solid #2d3036;background:linear-gradient(135deg,rgba(var(--note-rgb),.12),transparent)}
+.note-kicker{font:600 8px var(--label);letter-spacing:.2em;color:var(--note);text-transform:uppercase}.note-title{font-size:16px;font-weight:900;margin-top:4px}
+.note-body{padding:15px 16px}.note-block{margin-bottom:16px}.note-block:last-child{margin:0}.note-label{font:600 8px var(--label);letter-spacing:.16em;color:var(--note);text-transform:uppercase;margin-bottom:5px}
+.note-text{font-size:10px;color:#afb2b8;line-height:1.75}.rules{display:grid;grid-template-columns:56px 1fr;gap:7px 8px;font-size:10px;line-height:1.55}.rules b{font:500 8px var(--label);letter-spacing:.08em;color:#6f747d}.rules span{color:#b8bbc1}
+.swatches{display:flex;gap:6px}.swatch{width:34px;height:18px;border:1px solid rgba(255,255,255,.12);border-radius:4px}
+
+@media(max-width:980px){.layout{grid-template-columns:1fr}.notes{position:static}.mock-stage{height:700px}.tabs{position:static}.doc-head{display:block}.lead{text-align:left;margin-top:10px}}
+@media(max-width:700px){body{padding:12px 8px 40px}.tabs{grid-template-columns:repeat(3,1fr)}.mock-stage{height:650px}.underlay{padding:18px 14px}.result-popup{width:calc(100% - 18px)}.pop-head{grid-template-columns:54px 1fr auto;padding:10px}.pop-emblem-wrap{width:46px;height:46px}.pop-emblem{width:39px;height:39px}.pop-title{font-size:14px}.bout{grid-template-columns:1fr 82px 1fr;padding:14px 9px 8px;min-height:245px}.upper{width:72px;height:114px}.side{gap:5px}.side-name{font-size:11px}.side-org{display:none}.winner{font-size:21px}.finish{font-size:8px}.quote{display:none}.pair-pics .upper{width:54px;height:88px}.team-name{font-size:10px}.context-cell b{font-size:8px}.foot-note{display:none}.pop-foot{justify-content:flex-end}}
+</style>
+</head>
+<body>
+<main class="doc">
+  <header class="doc-head">
+    <div><div class="doc-kicker">Wrestle Manager / Match Result Popup</div><h1>ONE MATCH, ONE POPUP</h1></div>
+    <p class="lead">大会画面を消さず、彩度を落とした背面に灰色の半透明幕をかけ、その上へ1試合分だけをポップアップ表示する。外枠14px・内部8〜10pxの穏やかな角丸で、既存の試合カードと統一する。</p>
+  </header>
+
+  <nav class="tabs" aria-label="比較用モック切替">
+    <button class="tab active" data-key="normal" style="--t:#cfc4a2;--tr:207,196,162">通常興行</button>
+    <button class="tab" data-key="spring" style="--t:#e07a9a;--tr:224,122,154">🌸 春タッグ</button>
+    <button class="tab" data-key="summer" style="--t:#56b1d8;--tr:86,177,216">☀ 夏ジュニア</button>
+    <button class="tab" data-key="autumn" style="--t:#c1503c;--tr:193,80,60">⚔ 秋団体戦</button>
+    <button class="tab" data-key="tenchosen" style="--t:#d4a843;--tr:212,168,67">👑 天頂戦</button>
+    <button class="tab" data-key="ppv" style="--t:#d63d46;--tr:214,61,70">🏆 PPV</button>
+  </nav>
+  <p class="compare-note"><b>注:</b> 上のタブはモック比較用。ゲーム内では各大会画面を背面に残したまま、試合終了ごとにこのポップアップだけが開く想定。</p>
+
+  <div class="layout">
+    <section class="mock-stage" id="stage">
+      <div class="underlay">
+        <header class="under-head"><img class="under-emblem" id="underEmblem" alt=""><div class="under-title" id="underTitle"></div><div class="under-sub" id="underSub"></div></header>
+        <div class="under-progress"><div class="under-cell"><b>2</b><span>Completed</span></div><div class="under-cell"><b id="underNext">3</b><span>Current Match</span></div><div class="under-cell"><b>74</b><span>Best MQ</span></div><div class="under-cell"><b>0</b><span>Injuries</span></div></div>
+        <div class="under-board"><div class="under-card"><div class="under-card-line hot"></div><div class="under-card-line"></div><div class="under-card-line short"></div></div><div class="under-card"><div class="under-card-line"></div><div class="under-card-line hot"></div><div class="under-card-line short"></div></div></div>
+        <div class="under-next" id="underHint">次の試合カードが背面に残る</div>
+      </div>
+      <div class="gray-veil"></div>
+
+      <article class="result-popup" role="dialog" aria-modal="true" aria-label="1試合結果">
+        <header class="pop-head"><div class="pop-emblem-wrap" id="emblemWrap"><img class="pop-emblem" id="popEmblem" alt=""><span class="pop-mark" id="popMark"></span></div><div><div class="pop-kicker" id="popKicker"></div><div class="pop-title" id="popTitle"></div><div class="pop-meta" id="popMeta"></div></div><div class="pop-progress" id="popProgress"></div></header>
+        <div class="context" id="context"></div>
+        <div id="boutWrap"></div>
+        <footer class="pop-foot"><span class="foot-note" id="footNote"></span><button class="next" id="nextButton">次の試合へ →</button></footer>
+      </article>
+    </section>
+
+    <aside class="notes" id="notes"><div class="note-head"><div class="note-kicker">Design Intent</div><div class="note-title" id="noteTitle"></div></div><div class="note-body"><div class="note-block"><div class="note-label">この大会で読むもの</div><p class="note-text" id="noteText"></p></div><div class="note-block"><div class="note-label">Palette</div><div class="swatches" id="swatches"></div></div><div class="note-block"><div class="note-label">Popup Rules</div><div class="rules" id="rules"></div></div><div class="note-block"><div class="note-label">Transition</div><p class="note-text" id="motion"></p></div></div></aside>
+  </div>
+</main>
+
+<script>
+const img = '../../../image/';
+const upper = id => `${img}upper/upper_${id}.webp`;
+const face = id => `${img}face_${id}.png`;
+const singleBout = d => `
+  <div class="bout">
+    ${d.quote ? `<div class="quote">${d.quote}</div>` : ''}
+    <div class="side"><div class="upper"><img src="${upper(d.left.id)}" alt=""></div><div class="side-copy"><div class="side-role">${d.left.role}</div><div class="side-name">${d.left.name}</div><div class="side-org">${d.left.org}</div><div class="side-stat"><small>${d.left.statLabel}</small>${d.left.stat}</div></div></div>
+    <div class="center"><div class="winner">${d.result}</div><div class="finish">${d.finish}</div><div class="turn">${d.turn}</div><div class="mq">MQ <b>${d.mq}</b></div></div>
+    <div class="side right loser"><div class="upper"><img src="${upper(d.right.id)}" alt=""></div><div class="side-copy"><div class="side-role">${d.right.role}</div><div class="side-name">${d.right.name}</div><div class="side-org">${d.right.org}</div><div class="side-stat"><small>${d.right.statLabel}</small>${d.right.stat}</div></div></div>
+  </div>
+  <div class="chips">${d.chips.map(x=>`<span class="chip">${x}</span>`).join('')}</div>
+  <div class="hp-row"><div class="hp-half"><span class="hp-val">${d.hpL}%</span><div class="hp-track"><div class="hp-fill" style="width:${d.hpL}%"></div></div></div><span class="hp-label">${d.hpLabel}</span><div class="hp-half right"><span class="hp-val">${d.hpR}%</span><div class="hp-track"><div class="hp-fill" style="width:${d.hpR}%"></div></div></div>`;
+const tagBout = d => `
+  <div class="bout is-tag">
+    <div class="quote"><b>富岡 加奈子</b>「二人で取った一勝。次もこのまま行くよ」</div>
+    <div class="team"><div class="pair-pics"><div class="upper"><img src="${upper('tomioka_k')}" alt=""></div><div class="upper"><img src="${upper('takatsu_k')}" alt=""></div></div><div><div class="side-role">WINNER TEAM</div><div class="team-name">富岡 加奈子<br>&amp; 高津 小春</div><div class="team-meta">プレイヤー団体</div><div class="team-score">BOND +4</div></div></div>
+    <div class="center"><div class="winner">TEAM WIN</div><div class="finish">合体式<br>バックドロップ</div><div class="turn">18 TURN / PINFALL</div><div class="mq">MQ <b>74</b></div></div>
+    <div class="team right loser"><div class="pair-pics"><div class="upper"><img src="${upper('okochi_s')}" alt=""></div><div class="upper"><img src="${upper('kuroe_m')}" alt=""></div></div><div><div class="side-role">LOSER TEAM</div><div class="team-name">大河内 紗代子<br>&amp; 黒江 舞</div><div class="team-meta">皇武館</div><div class="team-score">0 PT</div></div></div>
+  </div><div class="chips"><span class="chip">リーグ勝点 +3</span><span class="chip">接戦ボーナス +1</span><span class="chip">Bond +4</span></div>
+  <div class="hp-row"><div class="hp-half"><span class="hp-val">44%</span><div class="hp-track"><div class="hp-fill" style="width:44%"></div></div></div><span class="hp-label">TEAM WEAR</span><div class="hp-half right"><span class="hp-val">71%</span><div class="hp-track"><div class="hp-fill" style="width:71%"></div></div></div>`;
+
+const themes = {
+ normal:{accent:'#cfc4a2',rgb:'207,196,162',metal:'#d8edf7',cls:'',emblem:'',mark:'●',under:'REGULAR SHOW',underSub:'通常興行 ・ 試合カード',underHint:'ポップアップを閉じると、同じ興行の試合一覧へ戻る',kicker:'Regular Show / Match Result',title:'第18回 定期興行　試合結果',meta:'YEAR 9 ・ WEEK 39 ・ 第3試合 / 全5試合',progress:'3 / 5<small>MATCH</small>',ctx:[['会場','市民ホール'],['客入り','1,842 / 2,000'],['興行平均MQ','61']],noteTitle:'冬の白金を、通常興行の標準色へ',noteText:'大会固有の物語を背負わない日常の結果。勝者・決着・MQ・残HPだけを静かに読める、最もシンプルな基準形。',colors:['#cfc4a2','#d8edf7','#6b7f90','#080a0d'],rules:[['外枠','14px。標準形として全大会の基準'],['情報','勝者→決着→MQ→残HP'],['装飾','エンブレムなし。白金の細線だけ']],motion:'背面を200msで減彩し、ポップアップを8px下から表示。閉じると同じ興行一覧へ戻る。',foot:'通常興行 ・ 因縁 +2 / 人気 +1',next:'試合一覧へ戻る →',bout:{left:{id:'tomioka_k',name:'富岡 加奈子',org:'プレイヤー団体',role:'Winner',statLabel:'OVR',stat:'86'},right:{id:'okochi_s',name:'大河内 紗代子',org:'皇武館',role:'Challenger',statLabel:'OVR',stat:'84'},quote:'「この一勝を、次の試合につなげるよ」',result:'WIN',finish:'ノーザンライトボム',turn:'15 TURN / PINFALL',mq:67,chips:['好勝負','因縁 +2'],hpL:38,hpR:0,hpLabel:'FINAL HP'}},
+ spring:{accent:'#e07a9a',rgb:'224,122,154',metal:'#f5bfd0',cls:'',emblem:'emblem-spring.png',mark:'',under:'SPRING TAG LEAGUE',underSub:'春のタッグリーグ ・ リーグボード',underHint:'リーグ順位表と次カードを背面に残す',kicker:'Spring Tag League / Match Result',title:'リーグ 第4試合　結果',meta:'第9回大会 ・ 第4試合 / 全7試合',progress:'4 / 7<small>LEAGUE</small>',ctx:[['勝者勝点','+3'],['接戦ボーナス','+1'],['暫定順位','1位']],noteTitle:'結果の単位は「選手」ではなく「ペア」',noteText:'4人を詰め込まず、2人を重ねて1チームとして見せる。リーグ勝点・接戦ボーナス・タッグ消耗をこの場で更新する。',colors:['#e07a9a','#f5bfd0','#86a978','#080a0d'],rules:[['外枠','14px。桜色は線と勝者だけ'],['情報','チーム勝利→勝点→Bond→消耗'],['写真','2人を同格で少し重ねる']],motion:'背面リーグ表を減彩。勝点が加算された後、順位セルだけが背面で一度点灯する。',foot:'春タッグ ・ 暫定1位へ浮上',next:'リーグ表へ戻る →',tag:true},
+ summer:{accent:'#56b1d8',rgb:'86,177,216',metal:'#bdeeff',cls:'',emblem:'emblem-summer.png',mark:'',under:'JUNIOR CUP',underSub:'夏季ジュニアトーナメント ・ クライムライン',underHint:'勝ち上がり線と次の対戦位置を背面に残す',kicker:'Junior Cup / Match Result',title:'準決勝 第2試合　結果',meta:'第9回大会 ・ 第6試合 / 全7試合',progress:'6 / 7<small>SEMI FINAL</small>',ctx:[['Round','準決勝'],['成長','+3'],['次戦','決勝']],noteTitle:'勝利が上へ続いていく',noteText:'この試合の結果だけでなく、勝者が次にどこへ進むかを明示する。青い細線と軽い透明感で若手大会らしい速度を出す。',colors:['#56b1d8','#bdeeff','#ffd166','#071018'],rules:[['外枠','14px。内部カードは8px'],['情報','勝者→次戦→成長→回復後HP'],['写真','勝者だけ彩度を維持']],motion:'背面クライムラインを減彩し、勝者側から決勝枠へ青い線が伸びる。',foot:'夏ジュニア ・ 決勝進出 / 成長 +3',next:'決勝カードへ →',bout:{left:{id:'takatsu_k',name:'高津 小春',org:'プレイヤー団体',role:'Finalist',statLabel:'OVR',stat:'72'},right:{id:'kuroe_m',name:'黒江 舞',org:'NOVA IMPACT',role:'Eliminated',statLabel:'OVR',stat:'70'},quote:'「次は決勝。まだ終わってない」',result:'ADVANCE',finish:'ジャーマンスープレックス',turn:'14 TURN / PINFALL',mq:71,chips:['決勝進出','成長 +3','大会ベストMQ'],hpL:42,hpR:0,hpLabel:'回復後HP'}},
+ autumn:{accent:'#c1503c',rgb:'193,80,60',metal:'#d4a843',cls:'',emblem:'emblem-autumn.png',mark:'',under:'FOUR-ORG GAUNTLET',underSub:'秋の4団体勝ち残り対抗戦 ・ 布陣ボード',underHint:'団体スコア・生存者・消耗を背面に残す',kicker:'Autumn Survival War / Fall Result',title:'決勝 第3フォール　結果',meta:'プレイヤー団体 vs NOVA IMPACT ・ スコア 2–2',progress:'3<small>FINAL FALL</small>',ctx:[['団体スコア','3–2'],['勝者残存HP','18%'],['戦況','決着']],noteTitle:'この結果は「勝利」より「生存」',noteText:'秋は団体戦なので、個人のWINより先にスコア変化・残存HP・次も立つのかを読む。緋色の面は戦況だけに使う。',colors:['#c1503c','#7d2f26','#d4a843','#090a0c'],rules:[['外枠','14px。縦の緋線で戦況を示す'],['情報','スコア→生存/脱落→消耗→MQ'],['敗者','モノクロ＋脱落ラベル']],motion:'背面布陣ボードの敗者を消灯し、勝者の残存ランプだけ緋色で残す。',foot:'秋団体戦 ・ プレイヤー団体 3–2で勝利',next:'戦況ボードへ →',bout:{left:{id:'okochi_s',name:'大河内 紗代子',org:'プレイヤー団体 / 大将',role:'Survivor',statLabel:'COND',stat:'18'},right:{id:'kuroe_m',name:'黒江 舞',org:'NOVA IMPACT / 大将',role:'Eliminated',statLabel:'COND',stat:'0'},quote:'「まだ立てる。団体の勝利まで、ここは譲らない」',result:'SURVIVE',finish:'ラリアット',turn:'22 TURN / TKO',mq:76,chips:['団体スコア 3–2','2人抜き','大将戦'],hpL:18,hpR:0,hpLabel:'CONDITION'}},
+ tenchosen:{accent:'#d63d46',rgb:'214,61,70',metal:'#f0d078',cls:'is-tenchosen',emblem:'emblem-tenchosen.png',mark:'',under:'TENCHOSEN',underSub:'4年に一度の最強王者決定戦 ・ クライムライン',underHint:'深紅×金はPPVと共有。天頂戦は冬ではなく「4年に一度」の格で見せる',kicker:'Quadrennial Tournament / Match Result',title:'準決勝 第2試合　結果',meta:'第3回 天頂戦 ・ 第6試合 / 全7試合',progress:'6 / 7<small>SEMI FINAL</small>',ctx:[['Round','準決勝'],['次戦','決勝'],['回復後HP','31%']],noteTitle:'PPVと同じ深紅×金、意味は「希少性」',noteText:'冬色は使わない。PPVと同じ最高格の色体系を共有し、エンブレム・回次・4年周期の表記で天頂戦らしさを分ける。',colors:['#d63d46','#7a1119','#d4a843','#050506'],rules:[['色','PPVと共通。深紅の面＋金の価値'],['情報','回次→勝ち上がり→回復後HP'],['形','丸い紋章枠と左右対称の構図']],motion:'深紅の幕が短く閉じて結果を開示。背面の決勝枠へ金線が接続する。',foot:'第3回 天頂戦 ・ 決勝進出',next:'決勝カードへ →',bout:{left:{id:'tomioka_k',name:'富岡 加奈子',org:'プレイヤー団体',role:'Finalist',statLabel:'OVR',stat:'91'},right:{id:'okochi_s',name:'大河内 紗代子',org:'皇武館',role:'Eliminated',statLabel:'OVR',stat:'90'},quote:'「四年に一度の頂まで、あと一つ」',result:'ADVANCE',finish:'ノーザンライトボム',turn:'23 TURN / PINFALL',mq:88,chips:['第3回天頂戦','決勝進出','キャリア最高MQ'],hpL:31,hpR:0,hpLabel:'回復後HP'}},
+ ppv:{accent:'#d63d46',rgb:'214,61,70',metal:'#f0d078',cls:'is-ppv',emblem:'',mark:'♛',under:'PPV GRAND FINAL',underSub:'年間最大興行 ・ ライブカード',underHint:'深紅×金の放送画面と残りカードを背面に残す',kicker:'PPV Grand Final / Live Result',title:'第7試合　結果',meta:'YEAR 9 ・ GRAND DOME ・ 第7試合 / 全8試合',progress:'7 / 8<small>CO-MAIN</small>',ctx:[['会場','GRAND DOME'],['客入り','12,000 SOLD OUT'],['大会最高MQ','92']],noteTitle:'PPVの深紅×金は「一年の代表」',noteText:'色は天頂戦と共有するが、PPVは生放送・満員・カード順を前面に出す。天頂戦の歴史性ではなく、その年最大の興行熱を見せる。',colors:['#d63d46','#7a1119','#d4a843','#050506'],rules:[['色','天頂戦と共通。赤は放送、金は価値'],['情報','カード順→満員→決着→大会最高MQ'],['形','放送パッケージ型、角丸は同じ14px']],motion:'赤い放送ワイプで結果を開示し、閉じると背面のメインイベントカードへ戻る。',foot:'PPV ・ 次は頂上決戦 MAIN EVENT',next:'メインイベントへ →',bout:{left:{id:'takatsu_k',name:'高津 小春',org:'プレイヤー団体 / Rank 2',role:'Winner',statLabel:'OVR',stat:'82'},right:{id:'kuroe_m',name:'黒江 舞',org:'NOVA IMPACT / Rank 3',role:'Challenger',statLabel:'OVR',stat:'81'},quote:'「あとは、メインに全部つなぐ」',result:'VICTORY',finish:'ジャーマンスープレックス',turn:'20 TURN / PINFALL',mq:84,chips:['PPV CO-MAIN','因縁決着','大会ベスト更新'],hpL:22,hpR:0,hpLabel:'FINAL HP'}}
+};
+
+const $ = id => document.getElementById(id);
+function renderTheme(key){
+  const t=themes[key],stage=$('stage');
+  stage.className=`mock-stage ${t.cls}`;
+  stage.style.setProperty('--accent',t.accent);stage.style.setProperty('--accent-rgb',t.rgb);stage.style.setProperty('--metal',t.metal);
+  $('notes').style.setProperty('--note',t.accent);$('notes').style.setProperty('--note-rgb',t.rgb);
+  $('underTitle').textContent=t.under;$('underSub').textContent=t.underSub;$('underHint').textContent=t.underHint;
+  $('underEmblem').src=t.emblem?img+t.emblem:'';$('underEmblem').style.display=t.emblem?'inline-block':'none';
+  $('popEmblem').src=t.emblem?img+t.emblem:'';$('popEmblem').style.display=t.emblem?'block':'none';$('popMark').textContent=t.mark;
+  $('popKicker').textContent=t.kicker;$('popTitle').textContent=t.title;$('popMeta').textContent=t.meta;$('popProgress').innerHTML=t.progress;
+  $('context').innerHTML=t.ctx.map((x,i)=>`<div class="context-cell"><span>${x[0]}</span><b class="${i===0?'hot':''}">${x[1]}</b></div>`).join('');
+  $('boutWrap').innerHTML=t.tag?tagBout(t):singleBout(t.bout);
+  $('footNote').textContent=t.foot;$('nextButton').textContent=t.next;
+  $('noteTitle').textContent=t.noteTitle;$('noteText').textContent=t.noteText;$('motion').textContent=t.motion;
+  $('swatches').innerHTML=t.colors.map(c=>`<i class="swatch" style="background:${c}"></i>`).join('');
+  $('rules').innerHTML=t.rules.map(x=>`<b>${x[0]}</b><span>${x[1]}</span>`).join('');
+}
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));tab.classList.add('active');renderTheme(tab.dataset.key);
+}));
+renderTheme('normal');
+</script>
+</body>
+</html>

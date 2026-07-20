@@ -3444,6 +3444,8 @@ const App = {
     Audio.play('coin');
     try { Storage.autoSave(); } catch (_e) {}
     renderAutumnWarBoard();
+    const revealedBout = revealedMatch?.bouts?.[revealedMatch.bouts.length - 1] || stepped.bout;
+    renderAutumnWarBoutResultPopup(revealedMatch, revealedBout);
   },
 
   awAdvanceMatch() {
@@ -3632,9 +3634,11 @@ const App = {
     const matches = (stl && stl.matches) || [];
     if (p.phase === 'table') {
       if (p.idx < matches.length) {
+        const revealed = matches[p.idx];
         p.idx++;
         Audio.play('coin');
         renderSpringTagLeagueBoard();
+        renderSpringTagLeagueMatchResultPopup(revealed, false);
       } else {
         p.phase = 'finalReady';
         Audio.play('notify');
@@ -3643,7 +3647,7 @@ const App = {
     } else if (p.phase === 'finalReady') {
       p.phase = 'finalResult';
       Audio.play('coin');
-      renderSpringTagLeagueFinal();
+      renderSpringTagLeagueMatchResultPopup(stl.finalMatch, true, () => App.stlAdvance());
     } else if (p.phase === 'finalResult') {
       p.phase = 'champion';
       try { Audio.fileBgm.fadeOut(800); } catch (e) {}
@@ -5620,7 +5624,7 @@ const App = {
     return filled;
   },
 
-  // 試合確定後の共通フロー: (観戦時のみ)試合後フレーバーポップアップ → renderMatchPreview → 全完了なら finalizeShow
+  // 試合確定後の共通フロー: (観戦時のみ)試合結果ポップアップ → 試合後フレーバー → 一覧/興行結果
   // (specs/match-flavor-popup-spec-v0.1.md §4.6)
   // opts.skipFlavor: true でスキップ(省略の意思表示)。余韻ポップアップを出さず即 finalize する。
   _afterMatchSettle(idx, opts) {
@@ -5633,9 +5637,11 @@ const App = {
       renderMatchPreview();
       if (sp.results.every(r => r !== null)) App.finalizeShow();
     };
-    // skipFlavor / _stale (選手不在フォールバック) のときは余韻スキップ
+    // skipFlavor / _stale (選手不在フォールバック) のときは結果・余韻ともスキップ
     if (skipFlavor || !result || result._stale) { finalize(); return; }
-    App._runPostMatchFlavorForMatch(idx, result, finalize);
+    // バトル開始前から残っている興行画面を、そのまま減彩した背面として使う。
+    // 一覧更新と次カードの試合前演出は、結果ポップアップを閉じてから行う。
+    renderRegularMatchResultPopup(idx, () => App._runPostMatchFlavorForMatch(idx, result, finalize));
   },
 
   // 派閥内序列戦は試合終了直後に pending を消化し、試合後モーダルと次カード強制を同期する。
@@ -7529,7 +7535,7 @@ const App = {
   },
 
   // 試合後フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.6）
-  // 試合結果から勝者/敗者の余韻一言を返す。skipMatch/watchMatch で結果反映直後に呼ぶ。
+  // 勝者の一言は試合結果ポップアップ内の吹き出しへ統合。ここでは敗者の余韻だけを返す。
   _collectPostMatchPopupsForMatch(idx, result) {
     const popups = [];
     const sp = App._showPreview;
@@ -7543,12 +7549,7 @@ const App = {
     const loserFighter  = (G.roster || []).find(c => c.id === loserId)  || ALL_CHARS.find(c => c.id === loserId);
     if (!winnerFighter || !loserFighter) return popups;
     if (typeof POST_MATCH_FLAVOR_LINES === 'undefined') return popups;
-    const winLine  = pickDialogueLine(POST_MATCH_FLAVOR_LINES.winner, winnerFighter);
     const loseLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.loser,  loserFighter);
-    popups.push({
-      type: 'fighter', id: winnerId, name: winnerFighter.name,
-      message: winLine, detail: '🏆 勝者の余韻', autoCloseMs: 1800, sound: 'event',
-    });
     popups.push({
       type: 'fighter', id: loserId, name: loserFighter.name,
       message: loseLine, detail: '— 敗者の心 —', autoCloseMs: 1800, sound: 'event',
@@ -12593,7 +12594,9 @@ App.ppvSkipMatch = function(idx) {
   pp.results[idx] = Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng);
   Audio.play('tick');
   renderPPVMatchPreview();
-  if (pp.results.every(r => r !== null)) App.finalizePPV();
+  renderPPVMatchResultPopup(idx, () => {
+    if (pp.results.every(r => r !== null)) App.finalizePPV();
+  });
 };
 
 App.ppvSkipAll = function() {
@@ -12622,8 +12625,10 @@ App._receivePPVBattleResult = function(data) {
     pp.currentWatching = -1;
     try { Audio.play('coin'); } catch(e) {}
     renderPPVMatchPreview();
-    if (pp.results.every(r => r !== null)) App.finalizePPV();
-    else setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 1600);
+    renderPPVMatchResultPopup(idx, () => {
+      if (pp.results.every(r => r !== null)) App.finalizePPV();
+      else setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 1600);
+    });
     return;
   }
   const match = pp.card[idx];
@@ -12642,12 +12647,10 @@ App._receivePPVBattleResult = function(data) {
   pp.currentWatching = -1;
   try { Audio.play('coin'); } catch(e) {}
   renderPPVMatchPreview();
-  if (pp.results.every(r => r !== null)) {
-    App.finalizePPV();
-  } else {
-    // まだ試合が残っている → PPV BGMを再開
-    setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 1600);
-  }
+  renderPPVMatchResultPopup(idx, () => {
+    if (pp.results.every(r => r !== null)) App.finalizePPV();
+    else setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 1600);
+  });
 };
 
 App.finalizePPV = function() {

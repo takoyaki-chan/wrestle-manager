@@ -5945,6 +5945,33 @@ function renderPPVMatchPreview() {
   overlay.classList.add('active');
 }
 
+function renderPPVMatchResultPopup(idx, onContinue) {
+  const pp = App._ppvPreview;
+  const match = pp?.card?.[idx];
+  const result = pp?.results?.[idx];
+  if (!match || !result) { if (onContinue) onContinue(); return; }
+  const total = pp.card.length;
+  const winnerSide = result.winner === 'right' ? 'right' : result.winner === 'draw' ? 'draw' : 'left';
+  const winner = winnerSide === 'right' ? match.right : match.left;
+  let victoryLine = '';
+  if (match.isSummit && winnerSide !== 'draw' && typeof PPV_SUMMIT_VICTORY_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
+    try { victoryLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winner); } catch (_e) {}
+  }
+  const bestMq = Math.max(...pp.results.filter(Boolean).map(r => r.mq || 0));
+  const next = pp.results.findIndex((r, i) => i > idx && r === null);
+  showEventMatchResultPopup({
+    theme: 'ppv', title: `第${idx + 1}試合　結果`, meta: `YEAR ${G.season} ・ ${G.ppvName || 'GRAND FINAL'} ・ 第${idx + 1}試合 / 全${total}試合`,
+    progress: `${idx + 1} / ${total}`, progressLabel: match.isSummit ? 'MAIN EVENT' : idx === total - 2 ? 'CO-MAIN' : 'LIVE',
+    context: [['カード', match.isSummit ? '頂上決戦' : `第${idx + 1}試合`], ['大会最高MQ', String(bestMq)], ['次戦', next >= 0 ? `第${next + 1}試合` : '大会結果']],
+    left: { ...match.left, org: match.left._ppvOrgName || '' }, right: { ...match.right, org: match.right._ppvOrgName || '' }, winnerSide, winnerFighter: winner,
+    leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'DRAW' : match.isSummit ? 'SUMMIT WIN' : 'VICTORY',
+    finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine,
+    chips: [match.isSummit ? 'PPV MAIN EVENT' : `PPV 第${idx + 1}試合`, result.mq === bestMq ? '大会ベストMQ' : '', match.isRivalry ? '因縁対決' : ''],
+    hpLeft: result.hpLeft, hpRight: result.hpRight, hpLabel: 'FINAL HP', footNote: winnerSide === 'draw' ? 'PPV ・ 引き分け' : `PPV ・ ${winner?.name || ''} 勝利`,
+    nextLabel: pp.results.every(Boolean) ? '大会結果へ →' : '次のカードへ →', onContinue,
+  });
+}
+
 /** PPV試合前のキャラセリフ取得（personality×archetypeベースの汎用セリフ） */
 function _getPPVPreMatchLine(fighter) {
   return pickDialogueLine(PPV_OPPONENT_LINES, fighter);
@@ -14833,10 +14860,194 @@ function _jtFighterShim(f) {
   return { ...f, pw: f.ovr, sp: f.ovr, te: f.ovr, st: f.ovr, mn: f.ovr };
 }
 
-// ===== MATCH RESULT (Pattern B: pb-container) =====
+// ===== ONE-MATCH RESULT POPUP =====
+// The event board stays in the DOM. Only this fixed layer is added/removed, so closing
+// the result always returns the player to the exact board/card they came from.
+let _eventMatchResultContinue = null;
+
+function _emrTheme(key) {
+  const themes = {
+    normal:    { cls: '',             emblem: '',                          mark: '●', kicker: 'Regular Show / Match Result' },
+    spring:    { cls: 'is-spring',    emblem: '../image/emblem-spring.png', mark: '',  kicker: 'Spring Tag League / Match Result' },
+    summer:    { cls: 'is-summer',    emblem: '../image/emblem-summer.png', mark: '',  kicker: 'Junior Cup / Match Result' },
+    autumn:    { cls: 'is-autumn',    emblem: '../image/emblem-autumn.png', mark: '',  kicker: 'Autumn Survival War / Fall Result' },
+    tenchosen: { cls: 'is-tenchosen', emblem: '../image/emblem-tenchosen.png', mark: '', kicker: 'Quadrennial Tournament / Match Result' },
+    ppv:       { cls: 'is-ppv',       emblem: '',                          mark: '♛', kicker: 'PPV Grand Final / Live Result' },
+  };
+  return themes[key] || themes.normal;
+}
+
+function _emrUpper(fighter) {
+  return fighter && fighter.id != null && typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+}
+
+function _emrOvr(fighter) {
+  if (!fighter) return '—';
+  if (fighter.ovr != null) return Math.round(fighter.ovr);
+  try { return Math.round(Engine.util.ov(fighter)); } catch (_e) { return '—'; }
+}
+
+function _emrVictoryLine(fighter, preferred) {
+  if (preferred) return String(preferred).replace(/^[「『]|[」』]$/g, '');
+  if (!fighter) return 'この勝利を、次につなげる。';
+  const own = fighter.voiceLines || fighter.vl;
+  const byId = typeof VICTORY_LINES !== 'undefined' ? VICTORY_LINES[fighter.id] : null;
+  const pool = Array.isArray(own) && own.length ? own : (Array.isArray(byId) ? byId : []);
+  if (!pool.length) return 'この勝利を、次につなげる。';
+  const seed = `${fighter.id || ''}${G?.season || 0}${G?.week || 0}`.split('').reduce((n, ch) => n + ch.charCodeAt(0), 0);
+  return String(pool[seed % pool.length]).replace(/^[「『]|[」』]$/g, '');
+}
+
+function _emrHp(hp) {
+  if (hp == null) return { pct: 0, text: '—' };
+  if (typeof hp === 'number') {
+    const pct = Math.max(0, Math.min(100, Math.round(hp)));
+    return { pct, text: `${pct}%` };
+  }
+  const max = Number(hp.max) || 100;
+  const final = Number(hp.final != null ? hp.final : hp.current) || 0;
+  const pct = Math.max(0, Math.min(100, Math.round(final / max * 100)));
+  return { pct, text: `${pct}%` };
+}
+
+function _emrSingleSide(fighter, side, winnerSide, role, statLabel, statValue) {
+  const isWinner = winnerSide === side;
+  const upper = _emrUpper(fighter);
+  return `<div class="emr-side ${side === 'right' ? 'is-right ' : ''}${isWinner ? 'is-winner' : 'is-loser'}">
+    <div class="emr-upper">${upper ? `<img src="${upper}" alt="" onerror="this.style.display='none'">` : ''}</div>
+    <div class="emr-side-copy"><div class="emr-role">${escHtml(role || (isWinner ? 'Winner' : 'Challenger'))}</div>
+      <div class="emr-name">${escHtml(fighter?.name || '?')}</div><div class="emr-org">${escHtml(fighter?.org || fighter?._orgName || fighter?._ppvOrgName || '')}</div>
+      <div class="emr-stat"><small>${escHtml(statLabel || 'OVR')}</small>${escHtml(statValue != null ? statValue : _emrOvr(fighter))}</div>
+    </div></div>`;
+}
+
+function _emrTeamSide(team, side, winnerSide) {
+  const members = (team?.members || []).slice(0, 2);
+  const isWinner = winnerSide === side;
+  return `<div class="emr-team ${side === 'right' ? 'is-right ' : ''}${isWinner ? 'is-winner' : 'is-loser'}">
+    <div class="emr-pair">${members.map(f => { const upper = _emrUpper(f); return `<div class="emr-upper">${upper ? `<img src="${upper}" alt="" onerror="this.style.display='none'">` : ''}</div>`; }).join('')}</div>
+    <div><div class="emr-role">${isWinner ? 'Winner Team' : 'Loser Team'}</div><div class="emr-team-name">${members.map(f => escHtml(f?.name || '?')).join('<br>&amp; ')}</div><div class="emr-team-meta">${escHtml(team?.org || '')}</div></div>
+  </div>`;
+}
+
+function closeEventMatchResultPopup() {
+  const layer = document.querySelector('.emr-layer');
+  if (layer) layer.remove();
+  const next = _eventMatchResultContinue;
+  _eventMatchResultContinue = null;
+  if (typeof next === 'function') next();
+}
+
+function showEventMatchResultPopup(opts) {
+  if (!opts) return;
+  const old = document.querySelector('.emr-layer');
+  if (old) old.remove();
+  const theme = _emrTheme(opts.theme);
+  const winnerSide = opts.winnerSide === 'right' ? 'right' : opts.winnerSide === 'draw' ? 'draw' : 'left';
+  const winnerFighter = opts.winnerFighter || (winnerSide === 'right' ? opts.right : opts.left);
+  const bubbleSide = winnerSide === 'right' ? 'is-right' : '';
+  const contexts = (opts.context || []).slice(0, 3);
+  while (contexts.length < 3) contexts.push(['', '—']);
+  const hpL = _emrHp(opts.hpLeft), hpR = _emrHp(opts.hpRight);
+  const emblem = theme.emblem ? `<img src="${theme.emblem}" alt="" onerror="this.style.display='none'">` : escHtml(theme.mark);
+  const line = winnerSide === 'draw' ? (opts.victoryLine || 'この決着は、次に持ち越しだ。') : _emrVictoryLine(winnerFighter, opts.victoryLine);
+  const isTag = !!opts.isTag;
+  const sides = isTag
+    ? `${_emrTeamSide(opts.teamLeft, 'left', winnerSide)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'DRAW' : 'TEAM WIN'))}</div><div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">MQ <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrTeamSide(opts.teamRight, 'right', winnerSide)}`
+    : `${_emrSingleSide(opts.left, 'left', winnerSide, opts.leftRole, opts.leftStatLabel, opts.leftStat)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'DRAW' : 'WIN'))}</div><div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">MQ <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrSingleSide(opts.right, 'right', winnerSide, opts.rightRole, opts.rightStatLabel, opts.rightStat)}`;
+  const chips = (opts.chips || []).filter(Boolean).map(chip => `<span class="emr-chip">${escHtml(chip)}</span>`).join('');
+  const layer = document.createElement('div');
+  layer.className = `emr-layer ${theme.cls}`.trim();
+  layer.setAttribute('role', 'presentation');
+  layer.innerHTML = `<article class="emr-popup" role="dialog" aria-modal="true" aria-label="1試合結果">
+    <header class="emr-head"><div class="emr-emblem">${emblem}</div><div><div class="emr-kicker">${escHtml(opts.kicker || theme.kicker)}</div><div class="emr-title">${escHtml(opts.title || '試合結果')}</div><div class="emr-meta">${escHtml(opts.meta || '')}</div></div><div class="emr-progress">${escHtml(opts.progress || '')}<small>${escHtml(opts.progressLabel || 'MATCH')}</small></div></header>
+    <div class="emr-context">${contexts.map(([label, value]) => `<div class="emr-context-cell"><span>${escHtml(label)}</span><b>${escHtml(value)}</b></div>`).join('')}</div>
+    <div class="emr-bout ${isTag ? 'is-tag' : ''}"><div class="emr-bubble ${bubbleSide}"><b>${escHtml(winnerFighter?.name || 'WINNER')}</b>「${escHtml(line)}」</div>${sides}</div>
+    ${chips ? `<div class="emr-chips">${chips}</div>` : ''}
+    <div class="emr-hp"><div class="emr-hp-half"><span class="emr-hp-val">${hpL.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpL.pct}%"></div></div></div><span class="emr-hp-label">${escHtml(opts.hpLabel || 'FINAL HP')}</span><div class="emr-hp-half is-right"><span class="emr-hp-val">${hpR.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpR.pct}%"></div></div></div></div>
+    <footer class="emr-foot"><span class="emr-foot-note">${escHtml(opts.footNote || '')}</span><button type="button" class="emr-next" onclick="closeEventMatchResultPopup()">${escHtml(opts.nextLabel || '試合一覧へ戻る →')}</button></footer>
+  </article>`;
+  _eventMatchResultContinue = typeof opts.onContinue === 'function' ? opts.onContinue : null;
+  document.body.appendChild(layer);
+  requestAnimationFrame(() => layer.querySelector('.emr-next')?.focus());
+}
+
+function renderRegularMatchResultPopup(idx, onContinue) {
+  const sp = App._showPreview;
+  const match = sp?.validMatches?.[idx];
+  const result = sp?.results?.[idx];
+  if (!match || !result) { if (onContinue) onContinue(); return; }
+  const total = sp.validMatches.length;
+  const venue = typeof VENUES !== 'undefined' ? VENUES[G.showVenue || 0] : null;
+  if (match.matchType === 'tag') {
+    const idsA = [match.teamA.fighter1, match.teamA.fighter2];
+    const idsB = [match.teamB.fighter1, match.teamB.fighter2];
+    const membersA = idsA.map(id => (G.roster || []).find(f => f.id === id)).filter(Boolean);
+    const membersB = idsB.map(id => (G.roster || []).find(f => f.id === id)).filter(Boolean);
+    const winnerSide = result.winner === 'teamB' || result.winner === 'right' ? 'right' : result.winner === 'draw' ? 'draw' : 'left';
+    const winnerFighter = (winnerSide === 'right' ? membersB : membersA)[0];
+    showEventMatchResultPopup({
+      theme: 'normal', title: `第${G.totalShows + 1}回 定期興行　試合結果`, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${idx + 1}試合 / 全${total}試合`,
+      progress: `${idx + 1} / ${total}`, progressLabel: 'MATCH', context: [['会場', venue?.name || '通常興行'], ['試合形式', 'TAG MATCH'], ['MQ', String(result.mq ?? '—')]],
+      isTag: true, teamLeft: { members: membersA, org: 'プレイヤー団体' }, teamRight: { members: membersB, org: 'プレイヤー団体' }, winnerSide, winnerFighter,
+      finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, chips: ['通常興行', 'タッグマッチ'], hpLeft: result.hpLeft, hpRight: result.hpRight,
+      footNote: '通常興行 ・ 試合結果', nextLabel: sp.results.every(Boolean) ? '興行結果へ →' : '試合一覧へ戻る →', onContinue,
+    });
+    return;
+  }
+  const left = (G.roster || []).find(f => f.id === match.left) || result.left;
+  const right = (G.roster || []).find(f => f.id === match.right) || result.right;
+  const winnerSide = result.winner === 'right' ? 'right' : result.winner === 'draw' ? 'draw' : 'left';
+  const winner = winnerSide === 'right' ? right : left;
+  let victoryLine = '';
+  if (winnerSide !== 'draw' && winner && typeof POST_MATCH_FLAVOR_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
+    try { victoryLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.winner, winner); } catch (_e) {}
+  }
+  showEventMatchResultPopup({
+    theme: 'normal', title: `第${G.totalShows + 1}回 定期興行　試合結果`, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${idx + 1}試合 / 全${total}試合`,
+    progress: `${idx + 1} / ${total}`, progressLabel: 'MATCH', context: [['会場', venue?.name || '通常興行'], ['試合形式', match.isTitle ? 'TITLE MATCH' : 'SINGLE MATCH'], ['MQ', String(result.mq ?? '—')]],
+    left: { ...left, org: 'プレイヤー団体' }, right: { ...right, org: 'プレイヤー団体' }, winnerSide, winnerFighter: winner,
+    leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'DRAW' : match.isTitle ? 'TITLE WIN' : 'WIN',
+    finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine, chips: [match.isTitle ? 'タイトルマッチ' : '通常興行', `MQ ${result.mq}`], hpLeft: result.hpLeft, hpRight: result.hpRight,
+    footNote: '通常興行 ・ 試合結果', nextLabel: sp.results.every(Boolean) ? '興行結果へ →' : '試合一覧へ戻る →', onContinue,
+  });
+}
+
+// ===== MATCH RESULT =====
 function renderJuniorTournamentMatchResult(ri, mi) {
   const jt = App._jtPreview;
   if (!jt) return;
+  {
+    const rounds = jt.result.rounds;
+    const round = rounds[ri];
+    const match = round?.matches?.[mi];
+    if (!match) return;
+    const total = rounds.reduce((sum, item) => sum + item.matches.length, 0);
+    const position = rounds.slice(0, ri).reduce((sum, item) => sum + item.matches.length, 0) + mi + 1;
+    const isFinal = ri === rounds.length - 1;
+    const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
+    const left = _jtFighterShim(match.left), right = _jtFighterShim(match.right);
+    const leftWins = match.winnerId === match.left.id;
+    const winner = leftWins ? left : right;
+    const recover = side => {
+      if (isFinal) return side === 'left' ? match.hpLeft : match.hpRight;
+      const target = _jtRecoveredHpTarget(match, side, false);
+      return target && target['jt-recover-pct'] != null ? target['jt-recover-pct'] : (side === 'left' ? match.hpLeft : match.hpRight);
+    };
+    const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default');
+    showEventMatchResultPopup({
+      theme: 'summer', title: `${roundLabel} 第${mi + 1}試合　結果`, meta: `第${G.season}回大会 ・ 第${position}試合 / 全${total}試合`,
+      progress: `${position} / ${total}`, progressLabel: isFinal ? 'FINAL' : round.name === 'semiFinal' ? 'SEMI FINAL' : 'TOURNAMENT',
+      context: [['Round', roundLabel], ['勝ち上がり', isFinal ? '優勝' : '次戦進出'], ['次戦', isFinal ? '優勝発表' : (ri + 1 === rounds.length - 1 ? '決勝' : '次ラウンド')]],
+      left: { ...left, org: match.left._orgName || '' }, right: { ...right, org: match.right._orgName || '' }, winnerSide: leftWins ? 'left' : 'right', winnerFighter: winner,
+      leftRole: leftWins ? 'Finalist' : 'Eliminated', rightRole: leftWins ? 'Eliminated' : 'Finalist', resultLabel: isFinal ? 'CHAMPION' : 'ADVANCE',
+      finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq, victoryLine: winLine,
+      chips: [isFinal ? 'ジュニア王者' : '次戦進出', `${roundLabel}`, `MQ ${match.mq}`], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : '回復後HP',
+      footNote: `夏季ジュニア ・ ${winner.name} ${isFinal ? '優勝' : '勝ち上がり'}`, nextLabel: isFinal ? '優勝発表へ →' : '次の試合へ →',
+      onContinue: () => App.jtAdvanceAfterResult(ri, mi),
+    });
+    return;
+  }
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   box.style.maxWidth = '';
@@ -15287,6 +15498,27 @@ function _stlUpcomingMatchHtml(m, matchNumber) {
       <div class="stl-final-side"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
     </div>
   </div>`;
+}
+
+function renderSpringTagLeagueMatchResultPopup(match, isFinal, onContinue) {
+  if (!match) { if (onContinue) onContinue(); return; }
+  const teamA = _stlOrgTeam(match.orgA), teamB = _stlOrgTeam(match.orgB);
+  const membersA = [_stlFighterOf(match.orgA, match.teamA.f1Id), _stlFighterOf(match.orgA, match.teamA.f2Id)].filter(Boolean);
+  const membersB = [_stlFighterOf(match.orgB, match.teamB.f1Id), _stlFighterOf(match.orgB, match.teamB.f2Id)].filter(Boolean);
+  const winnerSide = match.isDraw ? 'draw' : match.winner === 'teamB' ? 'right' : 'left';
+  const winnerFighter = (winnerSide === 'right' ? membersB : membersA)[0];
+  const closeBonus = match.mq >= Engine.springTagLeague.MQ_BONUS_THRESHOLD;
+  const winnerOrg = winnerSide === 'right' ? match.orgB : match.orgA;
+  showEventMatchResultPopup({
+    theme: 'spring', title: `${isFinal ? '優勝決定戦' : `リーグ 第${match.round}試合`}　結果`, meta: `第${G.season}回大会 ・ 春のタッグリーグ`,
+    progress: isFinal ? 'FINAL' : `${match.round} / ${(G.springTagLeague?.matches || []).length}`, progressLabel: isFinal ? 'CHAMPIONSHIP' : 'LEAGUE',
+    context: [['勝者勝点', match.isDraw ? '+1' : '+3'], ['接戦ボーナス', closeBonus ? '+1' : '—'], ['勝利団体', _stlOrgTeam(winnerOrg)?.orgName || '引き分け']],
+    isTag: true, teamLeft: { members: membersA, org: teamA?.orgName || '' }, teamRight: { members: membersB, org: teamB?.orgName || '' }, winnerSide, winnerFighter,
+    resultLabel: match.isDraw ? 'DRAW' : isFinal ? 'CHAMPION' : 'TEAM WIN', finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
+    chips: [match.isDraw ? '勝点 +1' : 'リーグ勝点 +3', closeBonus ? '接戦ボーナス +1' : '', isFinal ? '春の王者' : 'リーグ戦'],
+    hpLeft: match.conditionAfter?.[match.orgA], hpRight: match.conditionAfter?.[match.orgB], hpLabel: 'TEAM WEAR', footNote: `春タッグ ・ ${_stlOrgTeam(winnerOrg)?.orgName || '引き分け'}`,
+    nextLabel: isFinal ? '優勝発表へ →' : 'リーグ表へ戻る →', onContinue,
+  });
 }
 
 /** リーグ表 + 直近試合ストリップ（週12リーグ興行画面のメイン画面。試合ごとにここへ戻ってくる） */
@@ -15784,6 +16016,28 @@ function _agwFocusHtml(match, boutIndex) {
   </div>`;
 }
 
+function renderAutumnWarBoutResultPopup(match, bout, onContinue) {
+  if (!match || !bout) { if (onContinue) onContinue(); return; }
+  const left = _agwFighter(bout.left.orgId, bout.left.id) || bout.left;
+  const right = _agwFighter(bout.right.orgId, bout.right.id) || bout.right;
+  const winnerSide = bout.draw ? 'draw' : bout.winnerId === bout.right.id ? 'right' : 'left';
+  const winner = winnerSide === 'right' ? right : left;
+  const winnerCond = bout.conditionAfter?.[winner?.id];
+  const score = _agwScoreThrough(match, match.bouts.length);
+  const roundLabel = match.round === 'final' ? '決勝' : '準決勝';
+  showEventMatchResultPopup({
+    theme: 'autumn', title: `${roundLabel} 第${bout.index || match.bouts.length}フォール　結果`, meta: `${_agwTeam(match.orgA)?.orgName || ''} vs ${_agwTeam(match.orgB)?.orgName || ''} ・ スコア ${score[match.orgA] || 0}–${score[match.orgB] || 0}`,
+    progress: String(bout.index || match.bouts.length), progressLabel: match.winnerOrg ? 'FINAL FALL' : 'FALL',
+    context: [['団体スコア', `${score[match.orgA] || 0}–${score[match.orgB] || 0}`], ['勝者コンディション', winnerCond != null ? `${Math.round(winnerCond)}%` : '—'], ['戦況', match.winnerOrg ? '団体戦決着' : '続行']],
+    left: { ...left, org: `${_agwTeam(bout.left.orgId)?.orgName || ''} / ${_agwRoleLabel(match.orderA, bout.left.id)}` }, right: { ...right, org: `${_agwTeam(bout.right.orgId)?.orgName || ''} / ${_agwRoleLabel(match.orderB, bout.right.id)}` },
+    winnerSide, winnerFighter: winner, leftRole: winnerSide === 'left' ? 'Survivor' : 'Eliminated', rightRole: winnerSide === 'right' ? 'Survivor' : 'Eliminated',
+    leftStatLabel: 'COND', leftStat: Math.round(bout.conditionAfter?.[bout.left.id] || 0), rightStatLabel: 'COND', rightStat: Math.round(bout.conditionAfter?.[bout.right.id] || 0),
+    resultLabel: bout.draw ? 'DOUBLE OUT' : 'SURVIVE', finish: Engine.formatFinish(bout.finType, bout.finMove), turns: bout.turns || 0, mq: bout.mq,
+    chips: [`団体スコア ${score[match.orgA] || 0}–${score[match.orgB] || 0}`, match.winnerOrg ? '団体戦決着' : '勝ち残り', roundLabel], hpLeft: bout.conditionAfter?.[bout.left.id], hpRight: bout.conditionAfter?.[bout.right.id], hpLabel: 'CONDITION',
+    footNote: `秋団体戦 ・ ${bout.draw ? '両者脱落' : `${winner.name} 生存`}`, nextLabel: '戦況ボードへ →', onContinue,
+  });
+}
+
 function renderAutumnWarBoard() {
   const p = App._awPreview;
   const result = p?.result;
@@ -16210,6 +16464,39 @@ function _tcRecoveredHpTarget(tc, ri, mi, side) {
 function renderTenchosenMatchResult(ri, mi) {
   const tc = App._tcPreview;
   if (!tc) return;
+  {
+    const rounds = tc.rounds;
+    const round = rounds[ri];
+    const match = round?.matches?.[mi];
+    if (!match) return;
+    const total = rounds.reduce((sum, item) => sum + item.matches.length, 0);
+    const position = rounds.slice(0, ri).reduce((sum, item) => sum + item.matches.length, 0) + mi + 1;
+    const isFinal = round.name === 'final';
+    const roundLabel = isFinal ? '決勝' : _tcRoundLabel(round.name);
+    const leftFull = _tcFindFighterAnywhere(match.left.id) || match.left;
+    const rightFull = _tcFindFighterAnywhere(match.right.id) || match.right;
+    const left = { ...leftFull, ..._jtFighterShim(match.left), org: match.left._orgName || '' };
+    const right = { ...rightFull, ..._jtFighterShim(match.right), org: match.right._orgName || '' };
+    const leftWins = match.winnerId === match.left.id;
+    const winner = leftWins ? left : right;
+    const recover = side => {
+      if (isFinal) return side === 'left' ? match.hpLeft : match.hpRight;
+      const target = _tcRecoveredHpTarget(tc, ri, mi, side);
+      return target && target['jt-recover-pct'] != null ? target['jt-recover-pct'] : (side === 'left' ? match.hpLeft : match.hpRight);
+    };
+    showEventMatchResultPopup({
+      theme: 'tenchosen', title: `${roundLabel} 第${mi + 1}試合　結果`, meta: `第${_tcEditionNo()}回 天頂戦 ・ 第${position}試合 / 全${total}試合`,
+      progress: `${position} / ${total}`, progressLabel: isFinal ? 'FINAL' : 'QUADRENNIAL',
+      context: [['Round', roundLabel], ['次戦', isFinal ? '優勝発表' : '勝ち上がり'], ['4年周期', `第${_tcEditionNo()}回大会`]],
+      left, right, winnerSide: leftWins ? 'left' : 'right', winnerFighter: winner,
+      leftRole: leftWins ? 'Finalist' : 'Eliminated', rightRole: leftWins ? 'Eliminated' : 'Finalist', resultLabel: isFinal ? 'CHAMPION' : 'ADVANCE',
+      finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
+      chips: [`第${_tcEditionNo()}回天頂戦`, isFinal ? '最強王者' : '次戦進出', `MQ ${match.mq}`], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : '回復後HP',
+      footNote: `天頂戦 ・ ${winner.name} ${isFinal ? '優勝' : '勝ち上がり'}`, nextLabel: isFinal ? '優勝発表へ →' : '次の試合へ →',
+      onContinue: () => App.tcAdvanceAfterResult(ri, mi),
+    });
+    return;
+  }
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   box.style.maxWidth = '';
