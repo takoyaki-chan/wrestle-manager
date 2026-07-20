@@ -412,7 +412,7 @@ return cands.length ? Engine.rng.pick(rng, cands) : Engine.rng.pick(rng, pool);
 
 目標は通常15ターン前後 / 大一番22ターン前後、Climax到達70%以上、Climax滞在2.5〜3.5T（大一番3.5〜5.0T）。
 
-→ `docs/codex-tasks/task-09-phase-and-hp-calibration.md`。残課題A'（フィニッシュ級をクールダウン対象外に）と残課題B も同タスクに統合。
+→ 指示書は `docs/archive/codex-tasks/task-09-phase-and-hp-calibration.md`（完了済み）。残課題A'（フィニッシュ級をクールダウン対象外に）と残課題B も同タスクに統合された。
 
 ---
 
