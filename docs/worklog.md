@@ -16,7 +16,9 @@
 
 **③ フィニッシャーシステムの位置づけを整理**。`specs/archive/` に誤って置かれていた `finisher-system-spec-v1.0.md` を `specs/` 直下へ戻した（実装未着手のためアーカイブは不適切、CLAUDE.md索引にも未掲載でロードマップの参照がリンク切れだった）。議論の結果、固有フィニッシャーは「決め技が1つに固定される」「技名を設定したキャラだけ特別扱いになる」問題があるため**優先順位を大きく下げ**、代わりに全キャラ共通の「決着演出の強化」を優先する方針に変更。実装順は 技選択是正 → 決着演出強化 → 開幕大技 と決定。
 
-変更: `specs/move-selection-spec-v0.1.md`（新設）/ `specs/opening-execution-spec-v0.1.md`（新設）/ `specs/finisher-system-spec-v1.0.md`（archive から移動）/ `docs/codex-tasks/task-05-move-selection-rework.md`（新設）/ `CLAUDE.md` / ロードマップ / 本項。
+**④ 開幕大技のCodex指示書を追加**（同日追記）。`docs/codex-tasks/task-06-opening-execution.md` を作成。あわせて仕様書に §4.3「使用する技の選択」を追加した——開幕大技が発動したターンにどのプールから技を選ぶかが未定義で、放置すると一撃が「ストンピング」になりかねなかったため。発動ターンは通常のティア抽選を行わず大技ティア（d11〜16、フィニッシュ級のHP解禁を無視して含む）から抽選し、選ばれた技の `d` 値はダメージ計算に使わず名称・カテゴリ・決着タイプのみを供給する形とした。これにより本タスクは①（技選択再設計）への依存が確定したため、指示書冒頭に前提タスクとして明記し、同一ファイルを触ることによる並行実行禁止も併記した。回帰確認の最重要項目として「OVR差15未満の試合は同一シードで変更前後が完全一致すること」を指定。
+
+変更: `specs/move-selection-spec-v0.1.md`（新設）/ `specs/opening-execution-spec-v0.1.md`（新設）/ `specs/finisher-system-spec-v1.0.md`（archive から移動）/ `docs/codex-tasks/task-05-move-selection-rework.md`（新設）/ `docs/codex-tasks/task-06-opening-execution.md`（新設）/ `CLAUDE.md` / ロードマップ / 本項。
 
 ## 直近の調整（2026-07-19 相関図停止修正・端末互換確認・v1.14b表記統一）
 
