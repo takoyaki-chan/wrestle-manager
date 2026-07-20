@@ -56,6 +56,18 @@ Engine.battle = {
     findMoveByName(name) {
       return MOVE_BY_NAME.get(name) || null;
     },
+    openingExecutionConfig(gap, _eng) {
+      const eng = _eng || ENG;
+      return eng.openingExecution.gapBands.find(band => gap >= band.minGap) || null;
+    },
+    rollOpeningExecutionDamage(rng, gap, maxHp, _eng) {
+      const eng = _eng || ENG;
+      const config = Engine.battle.openingExecutionConfig(gap, eng);
+      const band = Engine.rng.weighted(rng, config.damageW);
+      const [minRatio, maxRatio] = eng.openingExecution.damageRanges[band];
+      const ratio = minRatio + Engine.rng.float(rng) * (maxRatio - minRatio);
+      return { band, ratio, damage: Math.round(maxHp * ratio) };
+    },
     selMove(rng, style, turn, _phases, context) {
       const ph = Engine.battle.phase(turn, _phases);
       const resolvedStyle = (style && styleMoves[style] && catW[style]) ? style : 'Allround';
@@ -66,19 +78,23 @@ Engine.battle = {
 
       let move;
       let tier;
-      if (ph.rollupRate > 0 && Engine.rng.float(rng) * 100 < ph.rollupRate) {
+      if (!ctx.forcedTier && ph.rollupRate > 0 && Engine.rng.float(rng) * 100 < ph.rollupRate) {
         tier = 'rollup';
         move = Engine.rng.pick(rng, ROLLUP_MOVES);
       } else {
-        const tierWeights = { ...ph.tierW };
-        if (wasCoolingDown) tierWeights.big = 0;
-        const selectableTierWeights = Object.fromEntries(
-          Object.entries(tierWeights).filter(([, weight]) => weight > 0)
-        );
-        tier = Engine.rng.weighted(rng, selectableTierWeights);
+        if (ctx.forcedTier) {
+          tier = ctx.forcedTier;
+        } else {
+          const tierWeights = { ...ph.tierW };
+          if (wasCoolingDown) tierWeights.big = 0;
+          const selectableTierWeights = Object.fromEntries(
+            Object.entries(tierWeights).filter(([, weight]) => weight > 0)
+          );
+          tier = Engine.rng.weighted(rng, selectableTierWeights);
+        }
 
         let pool = MOVE_TIER_POOLS[resolvedStyle][tier];
-        if (tier === 'big') {
+        if (tier === 'big' && !ctx.ignoreFinisherLock) {
           const eng = ctx.eng || ENG;
           const defender = ctx.defender;
           const defenderHpRatio = defender ? defender.hp / defender.mhp : 1;
@@ -211,11 +227,13 @@ Engine.battle = {
       const fullHpR = Math.round(eng.hpBase + eff(charR.st) * eng.hpScale);
       const L = {
         ...charL, hp: charL._hpOverride != null ? charL._hpOverride : fullHpL,
-        mhp: fullHpL, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0, bigMoveCooldown: false
+        mhp: fullHpL, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0,
+        bigMoveCooldown: false, openingCounterBoost: false
       };
       const R = {
         ...charR, hp: charR._hpOverride != null ? charR._hpOverride : fullHpR,
-        mhp: fullHpR, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0, bigMoveCooldown: false
+        mhp: fullHpR, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0,
+        bigMoveCooldown: false, openingCounterBoost: false
       };
 
       let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null, finishPhase = null;
@@ -232,6 +250,14 @@ Engine.battle = {
       const _spdLead  = _spGap * 15;  // SP+30 → 相手命中-4.5pt
       // 先攻3ターンのカウンター率ペナルティ（PW優位な側が攻撃時、相手のカウンター率DOWN）
       const _pwLead   = _pwGap * 10;  // PW+30 → 相手カウンター率-3.0pt
+      const _ovrL = Engine.util.ov(charL);
+      const _ovrR = Engine.util.ov(charR);
+      const _openingExecutionGap = Math.abs(_ovrL - _ovrR);
+      const _openingExecutionStrongerSide = _openingExecutionGap >= 15
+        ? (_ovrL > _ovrR ? 'left' : 'right')
+        : null;
+      let _openingExecutionChecked = false;
+      let _openingExecutionData = null;
       let totalCounters = 0, totalKickouts = 0, leadChanges = 0, lastLeader = null, bigMoves = 0;
       const moveSelectionStats = createMoveSelectionStats();
       // 名勝負製造機: ドラマ素材（キックアウト・カウンター）の発生率UP
@@ -302,6 +328,109 @@ Engine.battle = {
         const atk = isLeftAtk ? L : R;
         const def = isLeftAtk ? R : L;
         const atkSide = isLeftAtk ? 'left' : 'right';
+        const openingCounterBoost = !!atk.openingCounterBoost;
+        if (openingCounterBoost) atk.openingCounterBoost = false;
+        if (openingCounterBoost && _openingExecutionData) {
+          _openingExecutionData.counterBoostUsed = true;
+          _openingExecutionData.counterBoostTurn = turn;
+          _openingExecutionData.counterBoostDamage = 0;
+        }
+
+        // OVR差15以上の格上がOpeningで得た最初の攻撃ターンに一度だけ判定する。
+        // 対象外カードではこの分岐に入らず、追加の乱数を一切消費しない。
+        if (_openingExecutionStrongerSide === atkSide && ph.name === 'Opening' && !_openingExecutionChecked) {
+          _openingExecutionChecked = true;
+          const executionConfig = B.openingExecutionConfig(_openingExecutionGap, eng);
+          const fires = Engine.rng.float(rng) * 100 < executionConfig.triggerRate;
+          if (fires) {
+            const mv = B.selMove(rng, atk.style, turn, phases, {
+              fighter: atk,
+              defender: def,
+              eng,
+              stats: moveSelectionStats,
+              forcedTier: 'big',
+              ignoreFinisherLock: true,
+            });
+            const hit = Engine.rng.float(rng) * 100 < executionConfig.hitRate;
+            _openingExecutionData = {
+              openingExecution: true,
+              turn,
+              attackerSide: atkSide,
+              attackerId: atk.id,
+              defenderId: def.id,
+              move: mv.n,
+              moveD: mv.d,
+              moveCat: mv.c,
+              ovrGap: _openingExecutionGap,
+              hit,
+              damage: 0,
+              damageRatio: 0,
+              damageBand: null,
+              defenderMaxHp: def.mhp,
+              finished: false,
+            };
+
+            if (!hit) {
+              def.openingCounterBoost = true;
+              mom += isLeftAtk ? -eng.counterMomShift : eng.counterMomShift;
+              log.push(`T${turn}: [開幕大技] ${atk.name}の${mv.n} → 透かされた！ ${def.name}に反撃の好機！`);
+              if (recordFrames) {
+                _turnAction = {
+                  kind: 'miss', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c,
+                  dmg: 0, isCrit: false, isBig: true, openingExecution: true,
+                  openingExecutionHit: false, openingExecutionDamageRatio: 0,
+                  openingExecutionOvrGap: _openingExecutionGap,
+                };
+              }
+            } else {
+              const executionDamage = B.rollOpeningExecutionDamage(rng, _openingExecutionGap, def.mhp, eng);
+              const dmg = executionDamage.damage;
+              def.hp -= dmg;
+              mom += isLeftAtk ? 8 : -8;
+              atk.consecutiveHits++;
+              def.consecutiveHits = 0;
+              bigMoves++;
+              _openingExecutionData.damage = dmg;
+              _openingExecutionData.damageRatio = executionDamage.ratio;
+              _openingExecutionData.damageBand = executionDamage.band;
+              log.push(`T${turn}: [開幕大技] ${atk.name}の${mv.n} → ${def.name}に${dmg}の大ダメージ！ (HP:${Math.max(0, def.hp)}/${def.mhp})`);
+              if (recordFrames) {
+                _turnAction = {
+                  kind: 'hit', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c,
+                  dmg, isCrit: true, isBig: true, openingExecution: true,
+                  openingExecutionHit: true, openingExecutionDamageRatio: executionDamage.ratio,
+                  openingExecutionDamageBand: executionDamage.band,
+                  openingExecutionOvrGap: _openingExecutionGap,
+                };
+              }
+
+              if (def.hp <= 0) {
+                const fType = B.determineFinishType(rng, mv);
+                const finLabel = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
+                winner = atkSide;
+                finType = finLabel;
+                finMove = mv.n;
+                finishPhase = ph.name;
+                _openingExecutionData.finished = true;
+                log.push(`★ [開幕決着] ${atk.name}、${mv.n}で${finLabel}勝ち！`);
+                if (recordFrames) {
+                  if (fType === 'tko') _turnTkoStop = true;
+                  else if (fType === 'gu') {
+                    _turnPinAttempt = 'success';
+                    _turnKickout = { count: 0, escapeType: 'gu' };
+                  } else {
+                    _turnPinAttempt = 'success';
+                  }
+                }
+              }
+            }
+
+            mom = clamp(mom, -50, 50);
+            pushFrame(ph.name);
+            turn++;
+            continue;
+          }
+        }
 
         const mv = B.selMove(rng, atk.style, turn, phases, { fighter: atk, defender: def, eng, stats: moveSelectionStats });
         const moveTier = B.moveTier(mv);
@@ -353,13 +482,21 @@ Engine.battle = {
             if (ph.name === 'End') _mnLateMult = 1 - Math.max(0, (def.mn - 50) / 100) * 0.08;
             else if (ph.name === 'Climax') _mnLateMult = 1 - Math.max(0, (def.mn - 50) / 100) * 0.12;
             dmg = Math.max(eng.dmgFloor, Math.round(dmg * _ovrMult * (1 - _popAdvD * 0.06 * _popMultD) * _mnLateMult));
+            if (openingCounterBoost) {
+              dmg = Math.max(eng.dmgFloor, Math.round(dmg * eng.openingExecutionCounterDmgMult));
+              if (_openingExecutionData) _openingExecutionData.counterBoostDamage = dmg;
+            }
             def.hp = moveTier === 'small' ? Math.max(1, def.hp - dmg) : def.hp - dmg;
             mom += isLeftAtk ? 8 : -8;
             atk.consecutiveHits++;
             def.consecutiveHits = 0;
             if (dmg >= 10) bigMoves++;
             if (recordFrames) {
-              _turnAction = { kind: 'hit', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, dmg, isCrit: dmg >= 15, isBig: dmg >= 10 };
+              _turnAction = {
+                kind: 'hit', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c,
+                dmg, isCrit: dmg >= 15, isBig: dmg >= 10,
+                ...(openingCounterBoost ? { openingCounterBoost: true } : {}),
+              };
             }
             const curLeader = mom > 5 ? 'left' : mom < -5 ? 'right' : null;
             if (curLeader && curLeader !== lastLeader) { leadChanges++; lastLeader = curLeader; }
@@ -368,7 +505,7 @@ Engine.battle = {
             if (R.gritTurns > 0) R.gritTurns--;
 
             const dmgStr = dmg >= 15 ? `${dmg}の大ダメージ！` : `${dmg}ダメージ`;
-            log.push(`T${turn}: ${atk.name}の${mv.n} → ${def.name}に${dmgStr} (HP:${Math.max(0, def.hp)}/${def.mhp})`);
+            log.push(`T${turn}: ${atk.name}の${mv.n}${openingCounterBoost ? '（透かし後の反撃）' : ''} → ${def.name}に${dmgStr} (HP:${Math.max(0, def.hp)}/${def.mhp})`);
 
             if (def.hp <= 0) {
               const fType = B.determineFinishType(rng, mv);
@@ -563,6 +700,20 @@ Engine.battle = {
         finMoveD: B.findMoveByName(finMove)?.d || null,
         finMoveTier: B.moveTier(B.findMoveByName(finMove)),
         moveSelectionStats: snapshotMoveSelectionStats(moveSelectionStats),
+        ...(_openingExecutionStrongerSide ? {
+          openingExecutionEligible: true,
+          openingExecutionGap: _openingExecutionGap,
+          openingExecutionStrongerSide: _openingExecutionStrongerSide,
+          openingExecutionChecked: _openingExecutionChecked,
+        } : {}),
+        ...(_openingExecutionData ? {
+          openingExecution: true,
+          openingExecutionHit: _openingExecutionData.hit,
+          openingExecutionDamage: _openingExecutionData.damage,
+          openingExecutionDamageRatio: _openingExecutionData.damageRatio,
+          openingExecutionOvrGap: _openingExecutionData.ovrGap,
+          openingExecutionData: _openingExecutionData,
+        } : {}),
         mqDetail: { ceiling, dramaPenalty, pacingPenalty, finishPenalty },
         frames: recordFrames ? frames : undefined,
       };

@@ -736,7 +736,22 @@ const ENG = {
   kickoutMnScale: 0.50, kickoutMax: 2, kickoutClimaxMult: 0.7,
   guEscapeMnScale: 0.45, guEscapeMax: 2,
   tkoConsecutiveThreshold: 3, tkoHpThreshold: 0.15, tkoBaseRate: 14,
-  rollupHpThreshold: 0.35, rollupTecBonus: 0.18, rollupBaseSuccess: 10
+  rollupHpThreshold: 0.35, rollupTecBonus: 0.18, rollupBaseSuccess: 10,
+  openingExecutionCounterDmgMult: 1.4,
+  openingExecution: {
+    gapBands: [
+      { minGap: 30, triggerRate: 40, hitRate: 80, damageW: { shallow: 12, medium: 30, deep: 33, fatal: 25 } },
+      { minGap: 25, triggerRate: 22, hitRate: 70, damageW: { shallow: 22, medium: 36, deep: 30, fatal: 12 } },
+      { minGap: 20, triggerRate: 12, hitRate: 60, damageW: { shallow: 35, medium: 38, deep: 22, fatal: 5 } },
+      { minGap: 15, triggerRate: 5,  hitRate: 50, damageW: { shallow: 50, medium: 35, deep: 14, fatal: 1 } },
+    ],
+    damageRanges: {
+      shallow: [0.20, 0.40],
+      medium: [0.40, 0.70],
+      deep: [0.70, 0.99],
+      fatal: [1.00, 1.05],
+    },
+  }
 };
 
 // ── Tier 2: ビッグマッチ用パラメータ（PPV/タイトル/対抗戦/トーナメント）──

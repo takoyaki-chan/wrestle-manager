@@ -86,6 +86,13 @@ const matchBalanceProbe = {
   moveSelections: 0,
   rollupSelections: 0,
   tiersByPhase: {},
+  openingExecution: {
+    '15-19': { eligible: 0, checked: 0, fired: 0, hit: 0, finishes: 0, misses: 0, underdogWinsAfterMiss: 0, damageBands: { shallow: 0, medium: 0, deep: 0, fatal: 0 } },
+    '20-24': { eligible: 0, checked: 0, fired: 0, hit: 0, finishes: 0, misses: 0, underdogWinsAfterMiss: 0, damageBands: { shallow: 0, medium: 0, deep: 0, fatal: 0 } },
+    '25-29': { eligible: 0, checked: 0, fired: 0, hit: 0, finishes: 0, misses: 0, underdogWinsAfterMiss: 0, damageBands: { shallow: 0, medium: 0, deep: 0, fatal: 0 } },
+    '30+': { eligible: 0, checked: 0, fired: 0, hit: 0, finishes: 0, misses: 0, underdogWinsAfterMiss: 0, damageBands: { shallow: 0, medium: 0, deep: 0, fatal: 0 } },
+  },
+  openingFinishMq: [],
   ovrBands: {
     '0-4': { matches: 0, strongerWins: 0 },
     '5-9': { matches: 0, strongerWins: 0 },
@@ -126,6 +133,32 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   if (result.finMoveTier === 'small') {
     if (result.finType === 'TKO') matchBalanceProbe.smallTkoFinishes++;
     else matchBalanceProbe.smallFallOrGuFinishes++;
+  }
+  if (result.openingExecutionEligible) {
+    const openingBand = result.openingExecutionGap < 20 ? '15-19'
+      : result.openingExecutionGap < 25 ? '20-24'
+      : result.openingExecutionGap < 30 ? '25-29'
+      : '30+';
+    const opening = matchBalanceProbe.openingExecution[openingBand];
+    opening.eligible++;
+    if (result.openingExecutionChecked) opening.checked++;
+    if (result.openingExecution) {
+      opening.fired++;
+      if (result.openingExecutionHit) {
+        opening.hit++;
+        const damageBand = result.openingExecutionData && result.openingExecutionData.damageBand;
+        if (damageBand && opening.damageBands[damageBand] != null) opening.damageBands[damageBand]++;
+      } else {
+        opening.misses++;
+        if (result.winner !== result.openingExecutionStrongerSide && result.winner !== 'draw') {
+          opening.underdogWinsAfterMiss++;
+        }
+      }
+      if (result.openingExecutionData && result.openingExecutionData.finished) {
+        opening.finishes++;
+        matchBalanceProbe.openingFinishMq.push(result.mq || 0);
+      }
+    }
   }
   matchBalanceProbe.ovrBands[band].matches++;
   if (strongerSide && result.winner === strongerSide) matchBalanceProbe.ovrBands[band].strongerWins++;
@@ -1087,6 +1120,25 @@ if (matchBalanceProbe.matches > 0) {
       const tierTotal = counts.small + counts.medium + counts.big;
       const pct = tier => tierTotal > 0 ? counts[tier] / tierTotal * 100 : 0;
       console.log(`  ${phase}ティア(丸め込み除外): 小${pct('small').toFixed(2)}% 中${pct('medium').toFixed(2)}% 大${pct('big').toFixed(2)}% (n=${tierTotal}, rollup=${counts.rollup})`);
+    }
+    const openingFinishCount = matchBalanceProbe.openingFinishMq.length;
+    console.log('  開幕大技:');
+    for (const [label, opening] of Object.entries(matchBalanceProbe.openingExecution)) {
+      const triggerRate = opening.checked ? opening.fired / opening.checked * 100 : 0;
+      const overallTriggerRate = opening.eligible ? opening.fired / opening.eligible * 100 : 0;
+      const hitRate = opening.fired ? opening.hit / opening.fired * 100 : 0;
+      const finishRate = opening.eligible ? opening.finishes / opening.eligible * 100 : 0;
+      const reversalRate = opening.misses ? opening.underdogWinsAfterMiss / opening.misses * 100 : 0;
+      const hitTotal = opening.hit || 1;
+      const damageText = Object.entries(opening.damageBands)
+        .map(([band, count]) => `${band}:${(count / hitTotal * 100).toFixed(1)}%`).join(' ');
+      console.log(`    OVR差${label}: 判定時発動${opening.fired}/${opening.checked} (${triggerRate.toFixed(2)}%) 全対象比${overallTriggerRate.toFixed(2)}% 命中${opening.hit}/${opening.fired} (${hitRate.toFixed(2)}%) 開幕決着${opening.finishes}/${opening.eligible} (${finishRate.toFixed(2)}%)`);
+      console.log(`      ダメージ帯 ${damageText} / 透かし後格下勝利 ${opening.underdogWinsAfterMiss}/${opening.misses} (${reversalRate.toFixed(2)}%)`);
+    }
+    if (openingFinishCount > 0) {
+      const openingMqAvg = matchBalanceProbe.openingFinishMq.reduce((sum, value) => sum + value, 0) / openingFinishCount;
+      console.log(`    開幕決着MQ: n=${openingFinishCount} avg=${openingMqAvg.toFixed(2)} min=${Math.min(...matchBalanceProbe.openingFinishMq)} max=${Math.max(...matchBalanceProbe.openingFinishMq)}`);
+      console.log(`    開幕決着/シーズン: ${(openingFinishCount / Math.max(1, targetSeasons)).toFixed(2)}`);
     }
   }
   for (const [label, band] of Object.entries(matchBalanceProbe.ovrBands)) {
