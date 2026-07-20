@@ -14844,7 +14844,7 @@ let _eventMatchResultContinue = null;
 
 function _emrTheme(key) {
   const themes = {
-    normal:    { cls: '',             emblem: '',                          mark: '●', kicker: 'Regular Show / Match Result' },
+    normal:    { cls: 'is-normal',    emblem: '',                          mark: '●', kicker: 'Regular Show / Match Result' },
     spring:    { cls: 'is-spring',    emblem: '../image/emblem-spring.png', mark: '',  kicker: 'Spring Tag League / Match Result' },
     summer:    { cls: 'is-summer',    emblem: '../image/emblem-summer.png', mark: '',  kicker: 'Junior Cup / Match Result' },
     autumn:    { cls: 'is-autumn',    emblem: '../image/emblem-autumn.png', mark: '',  kicker: 'Autumn Survival War / Fall Result' },
@@ -14956,7 +14956,7 @@ function showEventMatchResultPopup(opts) {
     <div class="emr-bout ${isTag ? 'is-tag' : ''}">${winnerSide === 'draw' ? '' : `<div class="emr-bubble ${bubbleSide}"><b>${escHtml(winnerFighter?.name || 'WINNER')}</b>「${escHtml(line)}」</div>`}${sides}</div>
     ${chips ? `<div class="emr-chips">${chips}</div>` : ''}
     <div class="emr-hp"><div class="emr-hp-half"><span class="emr-hp-val">${hpL.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpL.pct}%"></div></div></div><span class="emr-hp-label">${escHtml(opts.hpLabel || 'FINAL HP')}</span><div class="emr-hp-half is-right"><span class="emr-hp-val">${hpR.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpR.pct}%"></div></div></div></div>
-    <footer class="emr-foot"><span class="emr-foot-note">${escHtml(opts.footNote || '')}</span><button type="button" class="emr-next" onclick="closeEventMatchResultPopup()">${escHtml(opts.nextLabel || '試合一覧へ戻る →')}</button></footer>
+    <footer class="emr-foot"><span class="emr-foot-note">${escHtml(opts.footNote || '')}</span><button type="button" class="emr-next" onclick="closeEventMatchResultPopup()">${escHtml(opts.nextLabel || '進む →')}</button></footer>
   </article>`;
   _eventMatchResultContinue = typeof opts.onContinue === 'function' ? opts.onContinue : null;
   document.body.appendChild(layer);
@@ -14991,7 +14991,7 @@ function renderRegularMatchResultPopup(idx, onContinue) {
       progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', 'TAG MATCH'], ['MQ', String(result.mq ?? '—')]],
       isTag: true, teamLeft: { members: membersA, org: leftOrg }, teamRight: { members: membersB, org: rightOrg }, winnerSide, winnerFighter,
       finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, chips: ['通常興行', 'タッグマッチ'], hpLeft: _emrTeamHp(result, idsA), hpRight: _emrTeamHp(result, idsB),
-      footNote: '通常興行 ・ 試合結果', nextLabel: sp.results.every(Boolean) ? '興行結果へ →' : '試合一覧へ戻る →', onContinue,
+      footNote: '通常興行 ・ 試合結果', nextLabel: '進む →', onContinue,
     });
     return;
   }
@@ -15010,7 +15010,7 @@ function renderRegularMatchResultPopup(idx, onContinue) {
     left: { ...left, org: leftOrg }, right: { ...right, org: rightOrg }, winnerSide, winnerFighter: winner,
     leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'DRAW' : match.isTitle ? 'TITLE WIN' : 'WIN',
     finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine, chips: [isChallenge ? '挑戦試合' : match.isTitle ? 'タイトルマッチ' : '通常興行', `MQ ${result.mq}`], hpLeft: result.hpLeft, hpRight: result.hpRight,
-    footNote: isChallenge ? `${leftOrg} vs ${rightOrg}` : '通常興行 ・ 試合結果', nextLabel: sp.results.every(Boolean) ? (sp.isAwayChallenge ? '遠征結果へ →' : '興行結果へ →') : '試合一覧へ戻る →', onContinue,
+    footNote: isChallenge ? `${leftOrg} vs ${rightOrg}` : '通常興行 ・ 試合結果', nextLabel: '進む →', onContinue,
   });
 }
 

@@ -15,6 +15,9 @@ assert(css.includes('.emr-popup') && css.includes('border-radius:14px'), '結果
 assert(css.includes('.emr-bubble') && css.includes('.emr-bubble::after'), '勝者セリフの吹き出しと尻尾が必要');
 assert(css.includes('.emr-layer.is-tenchosen,.emr-layer.is-ppv{--emr-accent:#d63d46'), '天頂戦とPPVは深紅のカラー言語を共有する');
 assert(css.includes('--emr-accent:var(--ev-winter)'), '通常興行は旧冬色の白金を標準色にする');
+assert(css.includes('grid-template-columns:minmax(0,1fr) 130px minmax(0,1fr)') && css.includes('padding:66px 58px 14px'), '選手画像はモックアップどおり中央寄りに配置する');
+assert(css.includes('.emr-foot{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px) minmax(0,1fr)') && css.includes('.emr-next{grid-column:2;grid-row:1;width:100%') && css.includes('padding:12px 18px'), '進行ボタンは試合前ボタン相当の大きさで下中央へ配置する');
+assert(css.includes('.emr-layer.is-normal .emr-hp-fill{background:linear-gradient(90deg,#bd8b18,#f0c75e)') && css.includes('.emr-layer.is-normal .emr-next{border-color:#f0c75e'), '通常興行のHPと進行ボタンは試合前画面と同じ黄色系にする');
 
 assert(ui.includes('function showEventMatchResultPopup(opts)'), '共通ポップアップレンダラーが必要');
 assert(ui.includes('function closeEventMatchResultPopup()'), '背面画面を維持したまま閉じる処理が必要');
@@ -23,6 +26,8 @@ assert(ui.includes("winnerSide === 'draw' ? 'is-draw'"), '引き分けでは両�
 assert(ui.includes("winnerSide === 'draw' ? '' : `<div class=\"emr-bubble"), '引き分けでは架空の勝者コメントを出さない');
 assert(ui.includes('function _emrTeamHp(result, fighterIds)'), '通常タッグ結果はperFighterからチームHPを集計する');
 assert(ui.includes('theme: \'normal\''), '通常興行テーマを接続する');
+assert(ui.includes("normal:    { cls: 'is-normal'"), '通常興行だけの黄色系アクセントを適用できるテーマクラスが必要');
+assert((ui.match(/nextLabel: '進む →'/g) || []).length >= 2, '通常興行の結果ボタンは試合途中・興行終了を問わず「進む」に統一する');
 assert(ui.includes('theme: \'spring\''), '春タッグテーマを接続する');
 assert(ui.includes('theme: \'summer\''), '夏ジュニアテーマを接続する');
 assert(ui.includes('theme: \'autumn\''), '秋団体戦テーマを接続する');
