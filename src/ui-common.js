@@ -843,12 +843,11 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
     // 左: プレイヤー / 右: 敵
     // 通常の pb-fighter 枠のみ使用（is-player-side / is-enemy-side のサイドアクセントは
     // 勝者/敗者の標準フレームと二重表示になっていたため撤去）
-    const leftBlock = _pbFighterBlock('left', pf, `${leftCls}`, playerOrgName, r.victoryLine && playerWon ? r.victoryLine : '');
-    const rightBlock = _pbFighterBlock('right', af, `${rightCls}`, ev.opponentName, r.victoryLine && !playerWon ? r.victoryLine : '');
+    const leftBlock = _pbFighterBlock('left', pf, `${leftCls}`, playerOrgName, '');
+    const rightBlock = _pbFighterBlock('right', af, `${rightCls}`, ev.opponentName, '');
 
     const winnerLabel = `🏆 ${escHtml(playerWon ? pf.name : af.name)} WIN`;
-    const hasDialogue = !!r.victoryLine;
-    const rowCls = `pb-mrow${isMain ? ' is-main' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+    const rowCls = `pb-mrow${isMain ? ' is-main' : ''}`;
 
     html += `<div class="${rowCls}">`;
     html += leftBlock;
@@ -4222,7 +4221,7 @@ function renderMatchPreview() {
   }
 
   // ヘッダー
-  let html = `<div class="show-header">
+  let html = `<div class="show-pregame-a"><div class="show-header">
     <div class="show-label">Weekly Show</div>
     <div class="show-title">${showName}</div>
     <div class="show-progress">全${total}試合 ─ ${resolved}/${total} 完了</div>
@@ -4238,8 +4237,7 @@ function renderMatchPreview() {
     const order = total - idx;
     const matchLabel = isMain ? '★ メインイベント' : `第${order}試合`;
     const cardClass = isMain ? 'card-main' : 'card-sub';
-    const borderColor = isMain ? 'rgba(212,168,67,0.25)' : isNext ? 'rgba(74,143,212,0.3)' : 'rgba(200,190,170,0.08)';
-    const cardBg = isMain ? 'rgba(212,168,67,0.04)' : isNext ? 'rgba(74,143,212,0.05)' : 'rgba(0,0,0,0.25)';
+    const cardStateClass = isResolved ? ' is-resolved' : isNext ? ' is-next' : ' is-waiting';
     const statusBadge = isResolved
       ? '<span class="smc-badge done">完了</span>'
       : isNext ? '<span class="smc-badge next">次戦</span>'
@@ -4264,7 +4262,7 @@ function renderMatchPreview() {
             <div class="fname">${f.name}</div>
             <div class="smc-tag-ovr-row">
               <span class="smc-tag-style-label">${f.style || '—'}</span>
-              <span class="ovr-line">OVR&thinsp;<span class="ovr-num">${ovr}</span></span>
+              <span class="ovr-line">OVR&thinsp;<span class="ovr-num" style="${_scale6Style(_ovrColor(ovr))}">${ovr}</span></span>
             </div>
             <div class="smc-tag-statbars">
               <div class="smc-tag-srow"><span class="smc-tag-sl">PW</span><div class="smc-tag-strk"><div class="smc-tag-sfill pw" style="width:${pw}%"></div></div></div>
@@ -4277,7 +4275,7 @@ function renderMatchPreview() {
       };
       const bondA = G.relationships ? ((G.relationships[`${Math.min(tA1.id,tA2.id)}>${Math.max(tA1.id,tA2.id)}`] || {}).bond || 50) : 50;
       const bondB = G.relationships ? ((G.relationships[`${Math.min(tB1.id,tB2.id)}>${Math.max(tB1.id,tB2.id)}`] || {}).bond || 50) : 50;
-      html += `<div class="match-card ${cardClass}" data-match-next="${isNext}" style="background:${cardBg};border:1px solid ${borderColor};opacity:${isResolved ? 1 : isNext ? 1 : 0.55}">`;
+      html += `<div class="match-card ${cardClass}${cardStateClass}" data-match-next="${isNext}" style="opacity:${isResolved ? 1 : isNext ? 1 : 0.62}">`;
       html += `<div class="smc-head">
         <span class="smc-label" style="font-size:${isMain ? '18px' : '15px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}">${matchLabel}</span>
         ${statusBadge} <span class="smc-tag-badge">TAG MATCH</span>
@@ -4348,7 +4346,7 @@ function renderMatchPreview() {
     const leftDimmed = isResolved && !leftIsWinner ? ' dimmed' : '';
     const rightDimmed = isResolved && !rightIsWinner ? ' dimmed' : '';
 
-    html += `<div class="match-card ${cardClass}" data-match-next="${isNext}" style="background:${cardBg};border:1px solid ${borderColor};opacity:${isResolved ? 1 : isNext ? 1 : 0.55}">`;
+    html += `<div class="match-card ${cardClass}${cardStateClass}" data-match-next="${isNext}" style="opacity:${isResolved ? 1 : isNext ? 1 : 0.62}">`;
 
     // ヘッド行
     html += `<div class="smc-head">
@@ -4375,7 +4373,7 @@ function renderMatchPreview() {
         </div>
       </button>
       <div class="fname">${charL.name}</div>
-      <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num">${ovrL}</span></div>
+      <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrL))}">${ovrL}</span></div>
     </div>`;
 
     // VS
@@ -4389,7 +4387,7 @@ function renderMatchPreview() {
         </div>
       </button>
       <div class="fname">${charR.name}</div>
-      <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num">${ovrR}</span></div>
+      <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrR))}">${ovrR}</span></div>
     </div>`;
 
     // 右ステータス
@@ -4428,6 +4426,7 @@ function renderMatchPreview() {
   if (remaining > 0) {
     html += `<div class="smc-skip-all"><button onclick="App.skipAllMatches()">残り全試合をスキップ（${remaining}試合）</button></div>`;
   }
+  html += `</div>`; // .show-pregame-a
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -4453,6 +4452,15 @@ function renderMatchPreview() {
 // ── Show Result Renderer ────────────────────────────────
 let _pendingMatchDialogues = [];
 
+function _pbShowSummaryTheme(week) {
+  const normalizedWeek = ((((Number(week) || 1) - 1) % 48) + 48) % 48 + 1;
+  if (normalizedWeek === 12) return { key: 'spring', emblem: '../image/emblem-spring.png', liveText: '🌸 SPRING SPECIAL' };
+  if (normalizedWeek === 24) return { key: 'summer', emblem: '../image/emblem-summer.png', liveText: '☀ SUMMER SPECIAL' };
+  if (normalizedWeek === 36) return { key: 'autumn', emblem: '../image/emblem-autumn.png', liveText: '🍁 AUTUMN SPECIAL' };
+  if (normalizedWeek === 48) return { key: 'ppv', emblem: '', liveText: '♛ GRAND FINAL' };
+  return { key: 'normal', emblem: '', liveText: '● ON AIR' };
+}
+
 function renderShowResult(results, injuryResults) {
   _pendingMatchDialogues = [];
   const overlay = document.getElementById('showResultOverlay');
@@ -4476,15 +4484,20 @@ function renderShowResult(results, injuryResults) {
   const monthIdx = Math.floor((week - 1) / 4) + 1;
   const weekInMonth = ((week - 1) % 4) + 1;
   const monthLabel = `${monthIdx}月 第${weekInMonth}週`;
+  const summaryTheme = _pbShowSummaryTheme(week);
 
   // Banner
-  const liveText = special ? '⭐ MONTHLY SPECIAL' : '● ON AIR';
+  const liveText = summaryTheme.liveText;
   const liveCls = special ? 'pb-live is-special' : 'pb-live';
   const titleCls = special ? 'pb-banner-title is-special' : 'pb-banner-title';
   const showName = special ? '特 別 興 行' : `第 ${G.totalShows} 回 定期興行`;
 
-  let html = `<div class="pb-container">`;
+  const summaryEmblem = summaryTheme.emblem
+    ? `<img src="${summaryTheme.emblem}" alt="" onerror="this.style.display='none'">`
+    : '<span aria-hidden="true">●</span>';
+  let html = `<div class="pb-container pb-event-summary pb-theme-${summaryTheme.key}">`;
   html += `<div class="pb-banner">
+    <div class="pb-summary-emblem">${summaryEmblem}</div>
     <div class="${liveCls}">${liveText}</div>
     <div class="${titleCls}">${escHtml(showName)}</div>
     <div class="pb-banner-sub">Year ${G.season || 1}<span class="dot">·</span>Week ${week}<span class="dot">·</span>${monthLabel}</div>
@@ -4607,27 +4620,6 @@ function renderShowResult(results, injuryResults) {
     const leftCls = isDraw ? 'is-draw' : (leftIsWinner ? 'is-winner' : 'is-loser');
     const rightCls = isDraw ? 'is-draw' : (rightIsWinner ? 'is-winner' : 'is-loser');
 
-    // Dialogue (rivalry 30+)
-    const hasRivalryDialogue = !isDraw && r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 30;
-    let winLine = '', loseLine = '';
-    if (hasRivalryDialogue) {
-      const winF = leftIsWinner ? r.left : r.right;
-      const loseF = leftIsWinner ? r.right : r.left;
-      const winChar = ALL_CHARS.find(c => c.id === winF.id);
-      const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
-      const ovrW = Engine.util.ov(winF);
-      const ovrLose = Engine.util.ov(loseF);
-      const isUpsetRivalry = ovrW < ovrLose - 8;
-      const winPool = isUpsetRivalry && UPSET_RIVALRY_LINES ? UPSET_RIVALRY_LINES.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
-      const losePool = isUpsetRivalry && UPSET_RIVALRY_LINES?.loserLines ? UPSET_RIVALRY_LINES.loserLines : RIVALRY_MATCH_REACTION.loserLines;
-      winLine = pickDialogueLine(winPool, winChar);
-      loseLine = pickDialogueLine(losePool, loseChar);
-    }
-
-    const leftLine = leftIsWinner ? winLine : (!isDraw ? loseLine : '');
-    const rightLine = rightIsWinner ? winLine : (!isDraw ? loseLine : '');
-    const hasDialogue = !!(leftLine || rightLine);
-
     const metaLeft = isMain ? (leftIsWinner ? 'Winner' : isDraw ? 'Draw' : 'Challenger') : `Match ${results.length - i}`;
     const metaRight = isMain ? (rightIsWinner ? 'Winner' : isDraw ? 'Draw' : 'Challenger') : `Match ${results.length - i}`;
 
@@ -4638,9 +4630,9 @@ function renderShowResult(results, injuryResults) {
       winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
     }
 
-    const rowCls = `pb-mrow${isMain ? ' is-main' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+    const rowCls = `pb-mrow${isMain ? ' is-main' : ''}`;
     html += `<div class="${rowCls}">`;
-    html += _pbFighterBlock('left', r.left, leftCls, metaLeft, leftLine);
+    html += _pbFighterBlock('left', r.left, leftCls, metaLeft, '');
     html += _pbResultColumn({
       winnerLabel,
       winnerIsDraw: isDraw,
@@ -4648,7 +4640,7 @@ function renderShowResult(results, injuryResults) {
       turns: r.turns,
       mq: r.mq
     });
-    html += _pbFighterBlock('right', r.right, rightCls, metaRight, rightLine);
+    html += _pbFighterBlock('right', r.right, rightCls, metaRight, '');
     if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
     if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
     if (injuriesThisMatch.length) html += _pbInjuryBlock(injuriesThisMatch);
@@ -5988,10 +5980,11 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
   const heatFooterCls = (heat.id === 'hot' || heat.id === 'on_fire') ? 'is-hot' :
                        (heat.id === 'cold' || heat.id === 'ice_cold') ? 'is-cold' : '';
 
-  let html = `<div class="pb-container">`;
+  let html = `<div class="pb-container pb-event-summary pb-theme-ppv">`;
 
   // Banner
   html += `<div class="pb-banner">
+    <div class="pb-summary-emblem"><span aria-hidden="true">♛</span></div>
     <div class="pb-live is-ppv">🏆 GRAND FINAL</div>
     <div class="pb-banner-title is-ppv">${escHtml(ppvName)}</div>
     <div class="pb-banner-sub">Year ${G.season || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>頂上決戦</div>
@@ -6048,36 +6041,6 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     const leftCls = isDraw ? 'is-draw' : (leftIsWinner ? 'is-winner' : 'is-loser');
     const rightCls = isDraw ? 'is-draw' : (rightIsWinner ? 'is-winner' : 'is-loser');
 
-    // Dialogue triggers
-    let winLine = '', loseLine = '';
-    let coachPraise = null;
-    if (!isDraw) {
-      const winF = leftIsWinner ? r.left : r.right;
-      const loseF = leftIsWinner ? r.right : r.left;
-      const winChar = ALL_CHARS.find(c => c.id === winF.id);
-      const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
-
-      if (r.rivalryBonus && (r.rivalryBonus.rivalry || 0) >= 30) {
-        const ovrW = Engine.util.ov(winF);
-        const ovrL = Engine.util.ov(loseF);
-        const isUpsetRivalry = ovrW < ovrL - 8;
-        const winPool = isUpsetRivalry && UPSET_RIVALRY_LINES ? UPSET_RIVALRY_LINES.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
-        const losePool = isUpsetRivalry && UPSET_RIVALRY_LINES?.loserLines ? UPSET_RIVALRY_LINES.loserLines : RIVALRY_MATCH_REACTION.loserLines;
-        winLine = pickDialogueLine(winPool, winChar);
-        loseLine = pickDialogueLine(losePool, loseChar);
-      } else if (isMain && winF._ppvOrgId === 'player') {
-        winLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
-        const coach = Engine.coach.getCharCoach(G, winF.id);
-        if (coach) {
-          coachPraise = { name: coach.name, line: pickCoachVoiceQuote('ppvPraise', coach.id) };
-        }
-      }
-    }
-
-    const leftLine = leftIsWinner ? winLine : (!isDraw ? loseLine : '');
-    const rightLine = rightIsWinner ? winLine : (!isDraw ? loseLine : '');
-    const hasDialogue = !!(leftLine || rightLine);
-
     // Tags
     const tags = [];
     if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
@@ -6099,9 +6062,9 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
       winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
     }
 
-    const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+    const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}`;
     html += `<div class="${rowCls}">`;
-    html += _pbFighterBlock('left', r.left, leftCls, metaLeft, leftLine);
+    html += _pbFighterBlock('left', r.left, leftCls, metaLeft, '');
     html += _pbResultColumn({
       winnerLabel,
       winnerIsDraw: isDraw,
@@ -6109,15 +6072,9 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
       turns: r.turns,
       mq: r.mq
     });
-    html += _pbFighterBlock('right', r.right, rightCls, metaRight, rightLine);
+    html += _pbFighterBlock('right', r.right, rightCls, metaRight, '');
     if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
     if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
-    if (coachPraise) {
-      html += `<div class="pb-coach-praise">
-        <span class="pb-coach-praise-label">🎓 Coach</span>
-        <div class="pb-coach-praise-text"><span class="coach-name">${escHtml(coachPraise.name)}</span>「${escHtml(coachPraise.line)}」</div>
-      </div>`;
-    }
     html += `</div>`;
   }
 
@@ -6221,17 +6178,11 @@ function renderPPVTVResult(card, results, ppvName) {
   if (summitIdx >= 0) sortedIdx.push(summitIdx);
   for (let i = total - 1; i >= 0; i--) { if (i !== summitIdx) sortedIdx.push(i); }
 
-  // 感情テキスト（bestMQ帯で分岐）
-  const emotionText =
-    bestMQ >= 80 ? '……すごい試合だった。来年こそ、あの舞台で戦う' :
-    bestMQ >= 70 ? 'いい大会だった。来年は、絶対にあの舞台に立つ' :
-    bestMQ >= 55 ? 'まだ差がある。でも来年は必ず——' :
-                   '来年こそは、この舞台に……';
-
-  let html = `<div class="pb-container">`;
+  let html = `<div class="pb-container pb-event-summary pb-theme-ppv">`;
 
   // Banner: PPV TV (青系バッジ、プレイヤー不参加なので控えめ)
   html += `<div class="pb-banner">
+    <div class="pb-summary-emblem"><span aria-hidden="true">♛</span></div>
     <div class="pb-live is-ppvtv">📺 PPV 観戦</div>
     <div class="pb-banner-title is-ppvtv">${escHtml(ppvName || 'GRAND FINAL')}</div>
     <div class="pb-banner-sub">Year ${G.season || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>テレビの前で</div>
@@ -6279,17 +6230,6 @@ function renderPPVTVResult(card, results, ppvName) {
     const leftCls = isDraw ? 'is-draw' : (leftIsWinner ? 'is-winner' : 'is-loser');
     const rightCls = isDraw ? 'is-draw' : (rightIsWinner ? 'is-winner' : 'is-loser');
 
-    // 頂上決戦勝者のみセリフ
-    let winLine = '';
-    if (isMain && !isDraw) {
-      const winF = leftIsWinner ? match.left : match.right;
-      const winChar = ALL_CHARS.find(c => c.id === winF.id);
-      if (winChar) winLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winChar);
-    }
-    const leftLine = leftIsWinner ? winLine : '';
-    const rightLine = rightIsWinner ? winLine : '';
-    const hasDialogue = !!(leftLine || rightLine);
-
     const metaLeft = match.left._ppvOrgName || '—';
     const metaRight = match.right._ppvOrgName || '—';
 
@@ -6304,9 +6244,9 @@ function renderPPVTVResult(card, results, ppvName) {
     if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
     if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
 
-    const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
+    const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}`;
     html += `<div class="${rowCls}">`;
-    html += _pbFighterBlock('left', match.left, leftCls, metaLeft, leftLine);
+    html += _pbFighterBlock('left', match.left, leftCls, metaLeft, '');
     html += _pbResultColumn({
       winnerLabel,
       winnerIsDraw: isDraw,
@@ -6314,7 +6254,7 @@ function renderPPVTVResult(card, results, ppvName) {
       turns: r.turns,
       mq: r.mq
     });
-    html += _pbFighterBlock('right', match.right, rightCls, metaRight, rightLine);
+    html += _pbFighterBlock('right', match.right, rightCls, metaRight, '');
     if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
     if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
     html += `</div>`;
@@ -6322,9 +6262,8 @@ function renderPPVTVResult(card, results, ppvName) {
 
   html += `</div>`; // .pb-matches
 
-  // Footer: 感情テキスト + button
-  html += `<div class="pb-footer" style="flex-direction:column;gap:12px">
-    <div style="font-size:13px;color:var(--stage-text-sub);font-style:italic;line-height:1.8;text-align:center;max-width:540px">「${escHtml(emotionText)}」</div>
+  // Footer
+  html += `<div class="pb-footer" style="justify-content:center">
     <button type="button" class="pb-close-btn" onclick="App.closePPVTV()">オフシーズンへ →</button>
   </div>`;
 
