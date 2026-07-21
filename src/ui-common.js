@@ -16349,8 +16349,8 @@ function renderAutumnWarMvpScene() {
     <div class="agw-mvp-light"></div>
     <div class="agw-mvp-kicker">MOST VALUABLE WRESTLER</div>
     <div class="agw-mvp-stage">
-      <button type="button" class="agw-mvp-portrait" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')">${upper ? `<img src="${upper}" alt="">` : ''}</button>
-      <div class="agw-mvp-copy"><span>大会MVP / 通算${wins}人抜き</span><button type="button" class="agw-mvp-name" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')"><h2>${escHtml(fighter?.name || '該当選手')}</h2></button><small>${escHtml(_agwTeam(result.mvpOrgId)?.orgName || '')}</small><blockquote>「${escHtml(line)}」</blockquote></div>
+      <div class="agw-mvp-figure"><blockquote class="agw-mvp-speech">「${escHtml(line)}」</blockquote><button type="button" class="agw-mvp-portrait" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')">${upper ? `<img src="${upper}" alt="">` : ''}</button></div>
+      <div class="agw-mvp-copy"><span>大会MVP / 通算${wins}人抜き</span><button type="button" class="agw-mvp-name" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')"><h2>${escHtml(fighter?.name || '該当選手')}</h2></button><small>${escHtml(_agwTeam(result.mvpOrgId)?.orgName || '')}</small></div>
     </div>
     <button type="button" class="pb-close-btn" onclick="App.finalizeAutumnWarReplay()">大会を終える</button>
   </div>`;

@@ -27,7 +27,7 @@ const Audio = (() => {
     season_end: { file: '../bgm/bgm_season_end_v1.mp3',  vol: 0.17 },
     tension:    { file: '../bgm/bgm_tension_v1.mp3',     vol: 0.17 },
   };
-  const JINGLE_MIX = { victory:0.38, championship:0.20 };
+  const JINGLE_MIX = { victory:0.38, championship:0.29 };
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
   const SE_MIX = {
     click:.50, hover:.40, select:.50, deselect:.40, error:.50, save:.40, notify:.50,
@@ -35,7 +35,7 @@ const Audio = (() => {
     fanfare:.74, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
     war:.60, transfer:.52, award:.72, tension_hit:.66,
     rivalry_confrontation:.64, fate_confrontation:.63, rivalry_resolution:.50, fate_resolution:.57,
-    coin:.40, spend:.40, stamp:.40,
+    coin:.40, spend:.40, stamp:.40, matchVictoryFanfare:.50,
   };
 
   // Lazy-init AudioContext (must be triggered by user gesture)
@@ -109,6 +109,23 @@ const Audio = (() => {
     flt.Q.value = 1;
     src.connect(flt);
     flt.connect(g);
+    g.connect(dest || sfxGain);
+    src.start(startTime);
+    src.stop(startTime + duration + 0.05);
+  }
+
+  // battle-sfx.js の mkNoise と同じ無加工ホワイトノイズ
+  function rawNoise(startTime, duration, gain, dest) {
+    const c = ensure();
+    const buf = c.createBuffer(1, c.sampleRate * duration, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource();
+    const g = c.createGain();
+    src.buffer = buf;
+    g.gain.setValueAtTime(gain, startTime);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    src.connect(g);
     g.connect(dest || sfxGain);
     src.start(startTime);
     src.stop(startTime + duration + 0.05);
@@ -337,6 +354,22 @@ const Audio = (() => {
       osc(1047, 'triangle', t + 0.28, 0.6, 0.08);
       osc(2094, 'sine', t + 0.28, 0.4, 0.04);
       noiseHP(t + 0.28, 0.15, 0.03, 6000);
+    },
+    // オーディオミキサー ff04 / battle f10 と同じ試合勝利ファンファーレ
+    matchVictoryFanfare() {
+      const c = ensure();
+      const t = c.currentTime;
+      [0, 0.06, 0.12, 0.18].forEach(offset => oscSweep(60, 30, 'sine', t + offset, 0.08, 0.15));
+      [523, 659, 784, 1047].forEach((freq, index) => {
+        const at = t + 0.4 + index * 0.08;
+        osc(freq, 'sawtooth', at, 0.12, 0.05);
+        osc(freq, 'sine', at, 0.15, 0.13);
+        osc(freq * 2, 'sine', at, 0.1, 0.03);
+      });
+      [523, 659, 784, 988, 1047, 1319].forEach(freq => osc(freq, 'sine', t + 0.9, 1.2, 0.16));
+      rawNoise(t + 0.9, 0.3, 0.03);
+      [2093, 2637, 3136].forEach((freq, index) => osc(freq, 'sine', t + 1.5 + index * 0.1, 0.25, 0.07));
+      osc(131, 'sine', t + 1.8, 0.6, 0.08);
     },
     defeat() {
       const t = ensure().currentTime;
@@ -584,10 +617,10 @@ const Audio = (() => {
 
     playJingle(name) {
       BGM.stop(); // Stop looping BGM, then play jingle (always plays regardless of bgmMuted)
-      // タイトル戴冠: MP3ファイル版を使用（bgmMuted無視で必ず再生）
+      // 特別大会結果: オーディオミキサー ff07 のMP3 v5を使用（bgmMuted無視で必ず再生）
       if (name === 'championship') {
         FileBGM.stop();
-        const a = new window.Audio('../bgm/fanfare_brass_v1.mp3');
+        const a = new window.Audio('../bgm/f10_victory_fanfare_v5.mp3');
         a.volume = Math.min(1.0, JINGLE_MIX.championship);
         a.addEventListener('error', () => {
           console.warn('[Audio] championship jingle failed to load, falling back to synth');
@@ -3454,7 +3487,10 @@ const App = {
     try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
     Audio.play('notify');
     if (App._awPreview.phase === 'reorder') renderAutumnWarReorder();
-    else if (App._awPreview.phase === 'result') renderAutumnWarResult();
+    else if (App._awPreview.phase === 'result') {
+      renderAutumnWarResult();
+      App._playAutumnWarChampionFanfare();
+    }
     else renderAutumnWarBoard();
   },
 
@@ -3627,6 +3663,7 @@ const App = {
     if (livePhase === 'complete') {
       p.phase = 'result';
       renderAutumnWarResult();
+      App._playAutumnWarChampionFanfare();
       return;
     }
     p.result = Engine.autumnWar.getProgress(G);
@@ -3712,20 +3749,39 @@ const App = {
     try { Storage.autoSave(); } catch (_e) {}
   },
 
+  _playAutumnWarChampionFanfare() {
+    const p = App._awPreview;
+    if (!p || p._championFanfareStarted) return;
+    p._championFanfareStarted = true;
+    clearTimeout(App._awChampionFanfareTimer);
+    try { Audio.fileBgm.fadeOut(500); } catch (_e) {}
+    App._awChampionFanfareTimer = setTimeout(() => {
+      App._awChampionFanfareTimer = null;
+      if (!App._awPreview || App._awPreview.phase !== 'result') return;
+      try { Audio.fileBgm.stop(); } catch (_e) {}
+      try { Audio.bgm.playJingle('championship'); } catch (_e) {}
+    }, 550);
+  },
+
   awShowMvpScene() {
     const p = App._awPreview;
     if (!p) return;
     if (!p.committed) App._awCommitResult();
+    clearTimeout(App._awChampionFanfareTimer);
+    App._awChampionFanfareTimer = null;
     p.phase = 'mvp';
-    try { Audio.fileBgm.fadeOut(700); } catch (_e) {}
+    try { Audio.fileBgm.fadeOut(400); } catch (_e) {}
     setTimeout(() => {
       try { Audio.fileBgm.stop(); } catch (_e) {}
-      try { Audio.bgm.playJingle('championship'); } catch (_e) {}
-    }, 750);
+      try { Audio.bgm.stop(); } catch (_e) {}
+      try { Audio.play('matchVictoryFanfare'); } catch (_e) {}
+    }, 450);
     renderAutumnWarMvpScene();
   },
 
   finalizeAutumnWarReplay() {
+    clearTimeout(App._awChampionFanfareTimer);
+    App._awChampionFanfareTimer = null;
     const { _pendingAutumnWarReplay: _pending, ...cleanG } = G;
     const { session: _session, previewResult: _legacyPreview, ...cleanWar } = cleanG.autumnWar || {};
     G = { ...cleanG, autumnWar: cleanWar, autumnWarPhase: 'result' };

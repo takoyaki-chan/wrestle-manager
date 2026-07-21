@@ -3615,13 +3615,15 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .agw-mvp-scene{min-height:100vh;background:var(--stage-bg);color:var(--stage-text-main);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:30px;text-align:center}
 .agw-mvp-light{position:absolute;top:-35%;width:520px;height:130%;background:radial-gradient(ellipse at center,var(--stage-border-main),transparent 68%);pointer-events:none}
 .agw-mvp-kicker{font-family:var(--font-label);font-size:11px;letter-spacing:7px;color:var(--gold);position:relative;margin-bottom:12px}
-.agw-mvp-stage{display:flex;align-items:center;gap:34px;position:relative;max-width:800px;text-align:left}
+.agw-mvp-stage{display:flex;align-items:flex-end;gap:34px;position:relative;max-width:800px;text-align:left}
+.agw-mvp-figure{display:flex;flex-direction:column;align-items:center;width:300px}
+.agw-mvp-speech{position:relative;width:100%;margin:0 0 16px;padding:14px 16px;border:1px solid var(--cream-border);border-radius:var(--radius-lg);background:var(--cream-bg-card);box-shadow:0 10px 28px var(--stage-bg-deep);color:var(--cream-text-main);font-size:15px;line-height:1.75;text-align:left}
+.agw-mvp-speech:after{content:"";position:absolute;bottom:-13px;left:50%;width:0;height:0;border:7px solid transparent;border-top-color:var(--cream-bg-card);transform:translateX(-50%)}
 .agw-mvp-portrait{width:230px;height:330px;overflow:hidden;padding:0;border:0;border-bottom:4px solid var(--gold);background:var(--stage-panel);cursor:pointer}
 .agw-mvp-portrait img{width:100%;height:100%;object-fit:cover;object-position:top;filter:drop-shadow(0 8px 22px var(--stage-bg-deep))}
 .agw-mvp-copy{max-width:430px}.agw-mvp-copy>span{font-family:var(--font-label);font-size:10px;letter-spacing:3px;color:var(--ev-autumn)}
 .agw-mvp-name{display:block;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
 .agw-mvp-copy h2{font-size:34px;margin:4px 0 0}.agw-mvp-copy small{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-sub)}
-.agw-mvp-copy blockquote{font-size:18px;line-height:1.9;margin:20px 0 0;padding:16px 0;border-top:1px solid var(--stage-border-lit);border-bottom:1px solid var(--stage-border-lit)}
 .agw-mvp-scene>.pb-close-btn{position:relative;margin-top:24px}
 
 /* Week36 Stage: 承認済み代表編成（Desktop対面 / 700px以下L1） */
