@@ -1585,6 +1585,9 @@ function renderWeekScreen() {
   // ── SCOUT EVENT PHASE (A1: 号外紙面型ドラフト開幕画面) ──
   else if (G.weekPhase === 'scoutEvent') {
     const eventLabel = 'メインドラフト';
+    const weekLabel = G.offSeason
+      ? `シーズン${G.season} オフ第${G.offWeek || 3}週`
+      : `シーズン${G.season} 第${G.week}週`;
     document.getElementById('weekTitle').textContent = `⚖ ${eventLabel}`;
 
     const candidates = G.scoutCandidates || [];
