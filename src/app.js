@@ -9719,7 +9719,6 @@ const App = {
       return { ...c, schedule: nextPolicy };
     });
     G = { ...G, roster };
-    showToast('🤖 おまかせ完了 — 内容を確認してください');
     refreshAll();
   },
 
