@@ -9909,6 +9909,11 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 <!-- ④ UI（全部に依存） -->
 <script src="ui-common.js"></script>
 <script src="ui-render.js"></script>
+<script src="dev-tools.js"></script>
+
+<style>
+#wmDevPanel{position:fixed;inset:0;z-index:30000;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#f4eee7}.wm-dev-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px)}.wm-dev-card{position:relative;width:min(540px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;margin:14px auto;padding:20px;border:1px solid rgba(237,179,62,.7);border-radius:12px;background:linear-gradient(145deg,#1b1714,#0e0d0d);box-shadow:0 24px 70px rgba(0,0,0,.6)}.wm-dev-card header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(237,179,62,.25);padding-bottom:12px}.wm-dev-card header b{display:block;color:#f2c24a;letter-spacing:2px;font-size:15px}.wm-dev-card header span{display:block;color:#b7aa9d;font-size:11px;margin-top:4px}.wm-dev-card header button{color:#f4eee7;background:none;border:0;font-size:26px;cursor:pointer}.wm-dev-status{font-size:13px;line-height:1.6;color:#e7ddd4}.wm-dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wm-dev-grid label{font-size:11px;color:#b7aa9d}.wm-dev-grid input{box-sizing:border-box;width:100%;margin-top:4px;padding:9px;background:#080808;color:#fff;border:1px solid #4b4135;border-radius:5px}.wm-dev-primary,.wm-dev-buttons button{cursor:pointer;border:1px solid rgba(237,179,62,.45);border-radius:6px;background:rgba(237,179,62,.12);color:#f9db82;padding:9px 11px;font-weight:700}.wm-dev-primary{width:100%;margin:12px 0}.wm-dev-section{margin-top:14px;font-size:12px;color:#d2c8be}.wm-dev-buttons{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}.wm-dev-buttons button{font-size:11px;text-align:left}.wm-dev-buttons small{display:block;margin-top:2px;color:#a99f95;font-weight:400}.wm-dev-empty{font-size:11px;color:#978d84}.wm-dev-note{font-size:10px;line-height:1.65;color:#9a9087;margin:16px 0 0}
+</style>
 
 <script>
 // ╔══════════════════════════════════════════════════════════╗
