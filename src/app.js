@@ -2164,6 +2164,23 @@ const Storage = {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null, _draftNegotiationStarted: false };
       }
 
+      // Repair saves affected by away-challenge display guests. Guests must not
+      // count as signed wrestlers, ratings, or a roster-cap unlock condition.
+      if (!G._migrated_roster_cap_away_guest_repair_v1) {
+        const cleanedRoster = (G.roster || []).filter(f => !f?.isAwayChallengeGuest);
+        if (cleanedRoster.length !== (G.roster || []).length) {
+          G = { ...G, roster: cleanedRoster };
+          if (Engine.ranking?.updateRankings) G = { ...G, rankings: Engine.ranking.updateRankings(G) };
+        }
+        const repairedRank1Unlock = App.hasPermanentRosterCap16Unlock(G);
+        G = {
+          ...G,
+          rosterCap: App.getRosterCapTarget(G),
+          rosterCapRank1Notified: repairedRank1Unlock,
+          _migrated_roster_cap_away_guest_repair_v1: true,
+        };
+      }
+
       // roster-cap v2.0: popularity-based progression (8 -> 10 -> 12 -> 16)
       if (!G._migrated_roster_cap_pop_v2) {
         const orgPop = G.orgPop || 0;
@@ -12594,13 +12611,7 @@ const App = {
 
   hasPermanentRosterCap16Unlock(state = G) {
     if (!state) return false;
-    const ownCount = (state.roster || []).filter(f => !f?.isRental).length;
-    if (state.endingCleared) return true;
-    if (ownCount > 12) return true;
-    if ((state.rosterCap || 0) >= 16) return true;
-    if (state.rosterCapRank1Notified) return true;
-    if ((state.rankings || [])[0]?.orgId === 'player') return true;
-    return (state.seasonHistory || []).some(season => (season?.rank || 99) === 1);
+    return hasPlayerHistoricRank1(state);
   },
 
   getRosterCapTarget(state = G) {

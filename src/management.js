@@ -6668,8 +6668,8 @@ const Engine = {
       const rawBp = state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 };
       const bp = {};
       for (const k in rawBp) bp[k] = Math.round(rawBp[k] || 0);
-      const playerRoster = (state.roster || []).filter(f => !f.isRental);
-      const playerBreakdown = Engine.ranking.calcOrgRating(state, 'player', state.roster || [], bp.player);
+      const playerRoster = (state.roster || []).filter(f => !f.isRental && !f.isAwayChallengeGuest);
+      const playerBreakdown = Engine.ranking.calcOrgRating(state, 'player', playerRoster, bp.player);
       const entries = [{
         orgId:'player', name: state.orgName || 'プレイヤー団体',
         rating: Math.round(playerBreakdown.rating),
