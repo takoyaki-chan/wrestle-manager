@@ -172,7 +172,8 @@ function section(source, startMarker, endMarker) {
   assert.ok(sectionText.includes('champion: 0.75'));
   assert.ok(sectionText.includes('Engine.rng.create(seed | 0)'), 'dialogue inclusion must use a local seeded RNG');
   assert.ok(!sectionText.includes('Math.random'), 'autumn-war dialogue must stay stable across reloads');
-  assert.ok(sectionText.includes('getJuniorTournamentLine(timing'), 'pre-bout pair must reuse the personality/archetype tournament matrix');
+  assert.ok(sectionText.includes('getAutumnWarMatchLine(timing'), 'pre-bout pair must use the Autumn War personality/archetype matrix');
+  assert.ok(sectionText.includes("getAutumnWarMatchLine('survivor'"), 'survivor speech must use the Autumn War personality/archetype matrix');
   assert.ok(sectionText.includes('jt-bub-pair agw-bout-dialogue'), 'optional two-wrestler exchange is missing');
   const boutPopup = section(ui, 'function renderAutumnWarBoutResultPopup', 'function renderAutumnWarBoard');
   assert.ok(boutPopup.includes('showVictoryLine: !!victoryLine'), 'survivor line must be allowed to disappear');

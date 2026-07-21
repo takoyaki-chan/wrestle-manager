@@ -16057,10 +16057,10 @@ function _agwDialogueRng(kind, parts, chance) {
 
 function _agwPreBoutDialogueHtml(match, next, left, right) {
   const rng = _agwDialogueRng('preBout', [match.round, match.orgA, match.orgB, next.index, left.id, right.id], _AGW_DIALOGUE_CHANCE.preBout);
-  if (!rng || typeof getJuniorTournamentLine !== 'function') return '';
+  if (!rng || typeof getAutumnWarMatchLine !== 'function') return '';
   const timing = match.round === 'final' ? 'preFinal' : 'preMatch';
-  const leftLine = getJuniorTournamentLine(timing, left.personality || 'normal', left.archetype || '_default', rng);
-  const rightLine = getJuniorTournamentLine(timing, right.personality || 'normal', right.archetype || '_default', rng);
+  const leftLine = getAutumnWarMatchLine(timing, left.personality || 'normal', left.archetype || '_default', rng);
+  const rightLine = getAutumnWarMatchLine(timing, right.personality || 'normal', right.archetype || '_default', rng);
   if (!leftLine && !rightLine) return '';
   return `<div class="jt-bub-pair agw-bout-dialogue">
     ${leftLine ? `<div class="jt-bub"><div class="sp bl">${escHtml(left.name)}</div>「${escHtml(leftLine)}」</div>` : ''}
@@ -16069,10 +16069,10 @@ function _agwPreBoutDialogueHtml(match, next, left, right) {
 }
 
 function _agwSurvivorLine(match, bout, winner) {
-  if (!winner || bout.draw || typeof getJuniorTournamentLine !== 'function') return '';
+  if (!winner || bout.draw || typeof getAutumnWarMatchLine !== 'function') return '';
   const rng = _agwDialogueRng('survivor', [match.round, match.orgA, match.orgB, bout.index || match.bouts.length, winner.id], _AGW_DIALOGUE_CHANCE.survivor);
   if (!rng) return '';
-  return getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default', rng);
+  return getAutumnWarMatchLine('survivor', winner.personality || 'normal', winner.archetype || '_default', rng);
 }
 
 function _agwChampionSpeech(result, championTeam) {

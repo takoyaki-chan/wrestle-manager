@@ -6,6 +6,12 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 直近の調整（2026-07-21 秋4団体戦・試合中セリフ確定稿の実装）
+
+task-20に従い、`docs/autumn-war-match-dialogue-draft-v0.1.md` の3つのJavaScriptコードブロックを無改変で `AUTUMN_WAR_MATCH_LINES.preMatch / preFinal / survivor` として `src/data.js` へ収録した。専用 `getAutumnWarMatchLine()` は既存ジュニア取得関数と同じ `archetype → _default` フォールバックを持つ。秋大会の試合前・決勝前・勝ち残り後だけを新テーブルへ接続し、ジュニア側、`AUTUMN_WAR_MVP_LINES`、決定的seed抽選、表示確率55%／60%／75%は変更していない。
+
+確定稿と実装オブジェクトを深い一致で比較する `autumn-war-match-dialogue-test` を追加し、秋大会UI／ライブ進行／既存MVP315本の回帰も通過。auto-simは `200 42` と `200 7919` がともに `ALL CLEAR`（違反0・エラー0・Game Over 0・秋大会200/200完走）。実機では1大会を通し、試合前と勝ち残り後に会話あり／なしが混在すること、準決勝と決勝で文脈が変わること、各選手のpersonality × archetypeに沿う口調を確認する。
+
 ## 直近の調整（2026-07-21 今週画面・おまかせ完了通知の撤去）
 
 今週画面の `App.autoManage()` から「おまかせ完了 — 内容を確認してください」のトースト表示を撤去した。おまかせによる休養・方針設定、GameStateへの反映、`refreshAll()` による画面更新は変更していない。`weekly-auto-manage-toast-test` を追加し、完了トーストがないことと、設定反映・画面更新が残っていることを固定した。
