@@ -2480,16 +2480,10 @@ function renderSpringTagLeagueWeekBanner() {
   return '';
 }
 
-// ── 4団体勝ち残り対抗戦: Week34告知 / Week35代表選出 / Week36開催 ──
+// ── 4団体勝ち残り対抗戦: Week34告知 / Week36専用Stage ──
 function _agwIsEventWeek() {
   const aw = G.autumnWar;
   return !!(aw && !aw.cancelled && G.week === Engine.autumnWar.EVENT_WEEK);
-}
-
-function _agwBannerFighter(id) {
-  return G.roster.find(f => f.id === id)
-    || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === id)
-    || null;
 }
 
 function renderAutumnWarWeekBanner() {
@@ -2501,31 +2495,8 @@ function renderAutumnWarWeekBanner() {
       <div class="stl-week-banner-icon">⚔️</div>
       <div class="stl-week-banner-body">
         <div class="stl-week-banner-title">4団体勝ち残り対抗戦 出場団体決定</div>
-        <div class="stl-week-banner-sub">${escHtml(names)}。来週、代表3名と出場順を決定します。</div>
+        <div class="stl-week-banner-sub">${escHtml(names)}。第${Engine.autumnWar.EVENT_WEEK}週、大会導入の直後に代表3名と出場順を決定します。</div>
       </div>
-    </div>`;
-  }
-  if (G.week === Engine.autumnWar.ENTRY_WEEK) {
-    const myTeam = (aw.teams || []).find(t => t.orgId === 'player');
-    const confirmed = !!(myTeam && myTeam.confirmed);
-    if (confirmed) {
-      const names = (myTeam.memberIds || []).map(id => _agwBannerFighter(id)?.name || '?').join(' → ');
-      return `<div class="stl-week-banner agw-week-banner is-done">
-        <div class="stl-week-banner-icon">⚔️</div>
-        <div class="stl-week-banner-body">
-          <div class="stl-week-banner-title">代表チーム編成済み</div>
-          <div class="stl-week-banner-sub">先鋒から ${escHtml(names)}</div>
-        </div>
-        <button class="btn btn-gold" onclick="App.awOpenEntryModal()">編成を見直す</button>
-      </div>`;
-    }
-    return `<div class="stl-week-banner agw-week-banner is-urgent">
-      <div class="stl-week-banner-icon">⚔️</div>
-      <div class="stl-week-banner-body">
-        <div class="stl-week-banner-title">4団体勝ち残り対抗戦 代表選出期間</div>
-        <div class="stl-week-banner-sub">代表3名と、先鋒・中堅・大将の出場順を決めてください。</div>
-      </div>
-      <button class="btn btn-gold" onclick="App.awOpenEntryModal()">代表を選ぶ</button>
     </div>`;
   }
   if (G.week === Engine.autumnWar.EVENT_WEEK && aw.champion) {

@@ -14869,20 +14869,10 @@ const Engine = {
       }
     }
 
-    // Week35: プレイヤー代表3名の編成期間。weekPhaseは奪わない。
-    if (s.week === Engine.autumnWar.ENTRY_WEEK && !s.offSeason) {
-      const autumnWar = s.autumnWar || Engine.autumnWar.announce(s); // Week34直前セーブ互換
-      if (!autumnWar.cancelled) {
-        s = { ...s, autumnWar, autumnWarPhase: 'entry' };
-        events.push('⚔️ 4団体勝ち残り対抗戦: 代表3名と先鋒・中堅・大将を決める編成期間が始まった');
-      }
-    }
-
-    // Week36: 組み合わせと初期状態だけを確定し、各フォールはUI操作時に逐次実行する。
-    // 未発生の勝敗を先に生成せず、消耗・脱落・RNG状態をautumnWar.sessionへ保存する。
+    // Week36: 専用Stageの導入から開始する。編成確定までは勝敗もsessionも作らない。
+    // UIなし環境は _pendingAutumnWarReplay を検知してOVR順の自動編成後にstartSessionする。
     if (s.week === Engine.autumnWar.EVENT_WEEK && !s.offSeason) {
       if (!s.autumnWar) s = { ...s, autumnWar: Engine.autumnWar.announce(s) }; // 旧セーブ互換
-      s = Engine.autumnWar.startSession(s);
       if (s.autumnWar?.cancelled) {
         const applied = Engine.autumnWar.apply(s, s.autumnWar);
         s = applied.state;
@@ -14890,7 +14880,7 @@ const Engine = {
       } else {
         s = {
           ...s,
-          autumnWarPhase: 'live',
+          autumnWarPhase: 'intro',
           _pendingAutumnWarReplay: true,
         };
         events.push(`⚔️ 第${s.season}回4団体勝ち残り対抗戦 開幕`);
@@ -24524,7 +24514,6 @@ Engine.springTagLeague = {
 // ══════════════════════════════════════════════════════════
 Engine.autumnWar = {
   ANNOUNCE_WEEK: 34,
-  ENTRY_WEEK: 35,
   EVENT_WEEK: 36,
   TEAM_SIZE: 3,
   INITIAL_CONDITION: 80,
@@ -24533,6 +24522,7 @@ Engine.autumnWar = {
   CEILING: 80,
   PRIZE: { champion: 1200, runnerUp: 500 }, // 万円
   ORG_ORDER: ['player', 'org_s', 'org_a', 'org_b'],
+  MATCH_TIER: 2,
 
   _orgRoster(state, orgId) {
     if (orgId === 'player') return state.roster || [];
@@ -24620,7 +24610,7 @@ Engine.autumnWar = {
     return { phase: 'announce', announcedSeason: state.season, teams, bracket, results: [], cancelled, reason: cancelled ? 'insufficientTeams' : null };
   },
 
-  /** Week35: プレイヤー代表3名と先鋒・中堅・大将の順を確定する。 */
+  /** Week36導入直後: プレイヤー代表3名と先鋒・中堅・大将の順を確定する。 */
   confirmPlayerTeam(state, memberIds, order) {
     if (!state.autumnWar || !Array.isArray(state.autumnWar.teams)) return state;
     if (!Array.isArray(memberIds) || memberIds.length !== Engine.autumnWar.TEAM_SIZE || new Set(memberIds).size !== Engine.autumnWar.TEAM_SIZE) return state;
@@ -24831,31 +24821,39 @@ Engine.autumnWar = {
     };
   },
 
+  _fullHp(fighter) {
+    return Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(fighter.st) * BIGMATCH_ENG.hpScale);
+  },
+
   /** 現在リング上にいる2人だけをシミュレートし、結果とRNG状態を保存する。 */
-  simulateNextBout(state) {
+  simulateNextBout(state, options = null) {
     const aw = state.autumnWar;
     const session = aw?.session;
     const source = session?.activeMatch;
     if (!aw || !session || !source || !['semiFinal', 'final'].includes(session.phase)) {
-      return { state, bout: null, matchCompleted: false, tournamentCompleted: session?.phase === 'complete' };
+      return { state, bout: null, replay: null, matchCompleted: false, tournamentCompleted: session?.phase === 'complete' };
     }
     const teams = aw.teams || [];
     const match = { ...source, teamWins: { ...source.teamWins }, bouts: [...source.bouts] };
     const leftId = match.orderA[match.aIdx], rightId = match.orderB[match.bIdx];
     const left = Engine.autumnWar._fighterOf(state, match.orgA, leftId);
     const right = Engine.autumnWar._fighterOf(state, match.orgB, rightId);
-    if (!left || !right) return { state, bout: null, matchCompleted: false, tournamentCompleted: false };
+    if (!left || !right) return { state, bout: null, replay: null, matchCompleted: false, tournamentCompleted: false };
     const rng = { ...session.rng };
     const conditions = { ...session.conditions };
     const fighterWins = { ...session.fighterWins };
     const finalWins = { ...session.finalWins };
     const beforeLeft = conditions[left.id], beforeRight = conditions[right.id];
-    const fullHpLeft = Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(left.st) * BIGMATCH_ENG.hpScale);
-    const fullHpRight = Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(right.st) * BIGMATCH_ENG.hpScale);
+    const fullHpLeft = Engine.autumnWar._fullHp(left);
+    const fullHpRight = Engine.autumnWar._fullHp(right);
+    const preparedLeft = { ...left, condition: beforeLeft, _hpOverride: Engine.wear.toHpOverride(beforeLeft, fullHpLeft) };
+    const preparedRight = { ...right, condition: beforeRight, _hpOverride: Engine.wear.toHpOverride(beforeRight, fullHpRight) };
+    const recordFrames = !!options?.recordFrames;
     const matchResult = Engine.battle.simulateMatch(
-      { ...left, condition: beforeLeft, _hpOverride: Engine.wear.toHpOverride(beforeLeft, fullHpLeft) },
-      { ...right, condition: beforeRight, _hpOverride: Engine.wear.toHpOverride(beforeRight, fullHpRight) },
-      rng, 2
+      preparedLeft,
+      preparedRight,
+      rng, Engine.autumnWar.MATCH_TIER,
+      recordFrames ? { recordFrames: true } : undefined
     );
     const wearLeft = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpLeft.final, matchResult.hpLeft.max));
     const wearRight = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpRight.final, matchResult.hpRight.max));
@@ -24910,7 +24908,8 @@ Engine.autumnWar = {
       nextSession = Engine.autumnWar._afterLiveMatch(state, teams, { ...nextSession, rng }, match);
     }
     const nextState = { ...state, autumnWar: { ...aw, session: nextSession, results: [...nextSession.results] } };
-    return { state: nextState, bout, matchCompleted, tournamentCompleted: nextSession.phase === 'complete' };
+    const replay = recordFrames ? { left: preparedLeft, right: preparedRight, result: matchResult } : null;
+    return { state: nextState, bout, replay, matchCompleted, tournamentCompleted: nextSession.phase === 'complete' };
   },
 
   getProgress(state) {
@@ -24982,12 +24981,12 @@ Engine.autumnWar = {
         const left = fighterOf(orgA, aOrder[aIdx]);
         const right = fighterOf(orgB, bOrder[bIdx]);
         const beforeLeft = conditions[left.id], beforeRight = conditions[right.id];
-        const fullHpLeft = Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(left.st) * BIGMATCH_ENG.hpScale);
-        const fullHpRight = Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(right.st) * BIGMATCH_ENG.hpScale);
+        const fullHpLeft = Engine.autumnWar._fullHp(left);
+        const fullHpRight = Engine.autumnWar._fullHp(right);
         const matchResult = Engine.battle.simulateMatch(
           { ...left, condition: beforeLeft, _hpOverride: Engine.wear.toHpOverride(beforeLeft, fullHpLeft) },
           { ...right, condition: beforeRight, _hpOverride: Engine.wear.toHpOverride(beforeRight, fullHpRight) },
-          eventRng, 2
+          eventRng, Engine.autumnWar.MATCH_TIER
         );
         const wearLeft = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpLeft.final, matchResult.hpLeft.max));
         const wearRight = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpRight.final, matchResult.hpRight.max));

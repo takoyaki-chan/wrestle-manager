@@ -3344,28 +3344,44 @@ const App = {
   },
 
   // ═══ 秋 4団体勝ち残り対抗戦 (autumn-gauntlet-war-spec-v0.1) ═══
-  // A. 週35 代表編成（Office / Cream Panel）
+  // Week36専用Stage: 導入 → 編成 → 進行 → 決勝采配 → 結果 → MVP
 
-  awOpenEntryModal() {
-    if (!G.autumnWar || G.autumnWar.cancelled) return;
-    const myTeam = (G.autumnWar.teams || []).find(t => t.orgId === 'player');
-    App._awEntrySelection = myTeam && myTeam.confirmed
-      ? [...(myTeam.order || myTeam.memberIds || [])]
-      : [];
+  awBeginEntry() {
+    if (!G.autumnWar || G.autumnWar.cancelled || G.autumnWar.session) return;
+    const members = Engine.autumnWar._selectMembers(G, 'player');
+    if (members.length !== Engine.autumnWar.TEAM_SIZE) {
+      G = Engine.autumnWar.startSession(G);
+      App.initAutumnWarReplay();
+      return;
+    }
+    App._awEntrySelection = Engine.autumnWar._defaultOrder(G, 'player', members);
+    App._awEntryActiveRole = 0;
+    if (!App._awPreview) App._awPreview = {};
+    App._awPreview.phase = 'entry';
+    G = { ...G, autumnWarPhase: 'entry' };
     Audio.play('select');
-    _mdlAOpen(_awEntryModalHtml());
+    renderAutumnWarEntry();
+  },
+
+  awSelectEntryRole(index) {
+    if (!Array.isArray(App._awEntrySelection) || index < 0 || index >= Engine.autumnWar.TEAM_SIZE) return;
+    App._awEntryActiveRole = index;
+    Audio.play('click');
+    renderAutumnWarEntry();
   },
 
   awPickFighter(id) {
     const order = App._awEntrySelection;
     if (!Array.isArray(order)) return;
     const idx = order.indexOf(id);
-    if (idx >= 0) order.splice(idx, 1);
-    else if (order.length < Engine.autumnWar.TEAM_SIZE) order.push(id);
-    else return;
+    if (idx >= 0) App._awEntryActiveRole = idx;
+    else {
+      const role = Math.max(0, Math.min(Engine.autumnWar.TEAM_SIZE - 1, App._awEntryActiveRole || 0));
+      if (order.length < Engine.autumnWar.TEAM_SIZE) order.push(id);
+      else order[role] = id;
+    }
     Audio.play('click');
-    const card = document.getElementById('mdlACard');
-    if (card) card.innerHTML = _awEntryModalHtml();
+    renderAutumnWarEntry();
   },
 
   awMoveEntry(index, delta) {
@@ -3373,46 +3389,39 @@ const App = {
     const next = index + delta;
     if (!Array.isArray(order) || index < 0 || next < 0 || next >= order.length) return;
     [order[index], order[next]] = [order[next], order[index]];
+    App._awEntryActiveRole = next;
     Audio.play('click');
-    const card = document.getElementById('mdlACard');
-    if (card) card.innerHTML = _awEntryModalHtml();
+    renderAutumnWarEntry();
   },
 
   awAutoEntry() {
     const memberIds = Engine.autumnWar._selectMembers(G, 'player');
     App._awEntrySelection = Engine.autumnWar._defaultOrder(G, 'player', memberIds);
+    App._awEntryActiveRole = 0;
     Audio.play('select');
-    const card = document.getElementById('mdlACard');
-    if (card) card.innerHTML = _awEntryModalHtml();
+    renderAutumnWarEntry();
   },
 
   awConfirmEntry() {
     const order = App._awEntrySelection;
     if (!Array.isArray(order) || order.length !== Engine.autumnWar.TEAM_SIZE) return;
     G = Engine.autumnWar.confirmPlayerTeam(G, [...order], [...order]);
+    G = Engine.autumnWar.startSession(G);
     App._awEntrySelection = null;
-    _mdlAClose();
+    App._awEntryActiveRole = null;
     Audio.play('coin');
     try { Storage.autoSave(); } catch (_e) {}
-    if (typeof showToast === 'function') showToast('⚔️ 秋の代表3名と出場順を確定しました');
-    if (typeof renderWeekScreen === 'function') renderWeekScreen();
-    if (typeof refreshAll === 'function') refreshAll();
+    App.initAutumnWarReplay();
   },
 
-  awCloseEntryModal() {
-    App._awEntrySelection = null;
-    _mdlAClose();
-  },
-
-  // B. 週36 大会リプレイ（Stage / P7）
+  // 週36 大会ライブ進行（Stage / P7）
   initAutumnWarReplay() {
     // 逐次化前の短期間に保存された事前生成previewは破棄し、未決着なら大会冒頭から再開する。
     if (!G.autumnWar?.session && G.autumnWar?.previewResult && !G.autumnWar?.champion) {
       const { previewResult: _legacyPreview, ...cleanWar } = G.autumnWar;
       G = Engine.autumnWar.startSession({ ...G, autumnWar: cleanWar });
     }
-    const result = Engine.autumnWar.getProgress(G) || (G.autumnWar?.champion ? G.autumnWar : null);
-    if (!result || result.cancelled || !Array.isArray(result.results) || result.results.length === 0) {
+    if (!G.autumnWar || G.autumnWar.cancelled) {
       App._awPreview = null;
       const { _pendingAutumnWarReplay: _pending, ...cleanG } = G;
       G = cleanG;
@@ -3421,6 +3430,15 @@ const App = {
       if (typeof refreshAll === 'function') refreshAll();
       return;
     }
+    if (!G.autumnWar.session && !G.autumnWar.champion) {
+      App._awPreview = { phase: 'intro', committed: false };
+      try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
+      Audio.play('notify');
+      renderAutumnWarIntro();
+      return;
+    }
+    const result = Engine.autumnWar.getProgress(G) || (G.autumnWar?.champion ? G.autumnWar : null);
+    if (!result || result.cancelled || !Array.isArray(result.results) || result.results.length === 0) return;
     const livePhase = G.autumnWar?.session?.phase;
     const activeIndex = Math.max(0, result.results.length - 1);
     const activeMatch = result.results[activeIndex];
@@ -3428,7 +3446,7 @@ const App = {
       result,
       matchIndex: activeIndex,
       boutIndex: activeMatch?.bouts?.length || 0,
-      phase: livePhase === 'finalOrder' ? 'reorder' : livePhase === 'complete' ? 'result' : 'board',
+      phase: livePhase === 'finalOrder' ? 'reorder' : (livePhase === 'complete' || (!livePhase && G.autumnWar?.champion)) ? 'result' : 'board',
       committed: !!G.autumnWar?.champion,
       finalOrder: livePhase === 'finalOrder' ? Engine.autumnWar.suggestFinalOrder(G, 'player') : null,
     };
@@ -3446,15 +3464,114 @@ const App = {
     if (p.boutIndex < match.bouts.length) return;
     const stepped = Engine.autumnWar.simulateNextBout(G);
     if (!stepped.bout) return;
+    const resolved = App._awConsumeBoutStep(stepped);
+    if (!resolved) return;
+    Audio.play('coin');
+    renderAutumnWarBoard();
+    renderAutumnWarBoutResultPopup(resolved.match, resolved.bout);
+  },
+
+  _awConsumeBoutStep(stepped) {
+    const p = App._awPreview;
+    if (!p || !stepped?.bout) return null;
     G = stepped.state;
     p.result = Engine.autumnWar.getProgress(G);
     const revealedMatch = p.result?.results?.[p.matchIndex];
     p.boutIndex = revealedMatch?.bouts?.length || 0;
-    Audio.play('coin');
     try { Storage.autoSave(); } catch (_e) {}
+    return {
+      match: revealedMatch,
+      bout: revealedMatch?.bouts?.[revealedMatch.bouts.length - 1] || stepped.bout,
+    };
+  },
+
+  awWatchBout() {
+    const p = App._awPreview;
+    const match = p?.result?.results?.[p.matchIndex];
+    if (!p || !match || match.winnerOrg || p.phase !== 'board' || p.watchResolved) return;
+    if (p.boutIndex < match.bouts.length) return;
+    const stepped = Engine.autumnWar.simulateNextBout(G, { recordFrames: true });
+    const replay = stepped.replay;
+    if (!stepped.bout || !replay?.result || !Array.isArray(replay.result.frames) || replay.result.frames.length === 0) {
+      Audio.play('error');
+      return;
+    }
+    const resolved = App._awConsumeBoutStep(stepped);
+    if (!resolved) return;
+    const battleOverlay = document.getElementById('battleOverlay');
+    const iframe = document.getElementById('battleIframe');
+    if (!battleOverlay || !iframe) {
+      renderAutumnWarBoard();
+      renderAutumnWarBoutResultPopup(resolved.match, resolved.bout);
+      return;
+    }
+    p.phase = 'watching';
+    p.watchResolved = { matchIndex: p.matchIndex, boutIndex: p.boutIndex - 1, bout: resolved.bout };
+    document.getElementById('autumnWarOverlay')?.classList.add('is-suspended');
+    battleOverlay.style.display = 'block';
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    clearTimeout(App._escBtnTimer);
+    App._escBtnTimer = setTimeout(() => {
+      if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; }
+    }, 8000);
+    const profile = fighter => ({
+      ...fighter,
+      portraitUrl: getPortraitUrl(fighter.id),
+      profile: CHAR_PROFILES[fighter.id] || '',
+      vl: fighter.voiceLines || fighter.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fighter.id]) || ['…！'],
+    });
+    const roundLabel = match.round === 'final' ? '決勝' : '準決勝';
+    const msg = {
+      type: 'START_MATCH',
+      left: profile(replay.left),
+      right: profile(replay.right),
+      result: replay.result,
+      matchInfo: {
+        header: `⚔️ 4団体勝ち残り対抗戦 ${roundLabel}`,
+        subHeader: `第${resolved.bout.index}フォール・勝者はリングに残る`,
+        matchNum: resolved.bout.index,
+        totalMatches: 5,
+        matchTier: Engine.autumnWar.MATCH_TIER,
+        leftPersonality: replay.left.personality || 'normal',
+        leftArchetype: replay.left.archetype || 'normal',
+        rightPersonality: replay.right.personality || 'normal',
+        rightArchetype: replay.right.archetype || 'normal',
+        sfxMasterVol: Audio.sfxMasterVol,
+        bgmMasterVol: Audio.bgmMasterVol,
+      },
+    };
+    try { Audio.fileBgm.stop(); } catch (_e) {}
+    try { Audio.bgm.play('battle'); } catch (_e) {}
+    let sent = false;
+    const sendOnce = () => {
+      if (sent) return;
+      sent = true;
+      iframe.contentWindow.postMessage(msg, '*');
+    };
+    iframe.onload = () => setTimeout(sendOnce, 200);
+    iframe.src = 'battle-engine.html?t=' + Date.now();
+    setTimeout(sendOnce, 800);
+  },
+
+  _finishAutumnWarWatch() {
+    const p = App._awPreview;
+    if (!p || p.phase !== 'watching' || !p.watchResolved) return false;
+    const resolved = p.watchResolved;
+    delete p.watchResolved;
+    p.phase = 'board';
+    clearTimeout(App._escBtnTimer);
+    const escBtn = document.getElementById('battleEscapeBtn');
+    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    const battleOverlay = document.getElementById('battleOverlay');
+    if (battleOverlay) battleOverlay.style.display = 'none';
+    document.getElementById('autumnWarOverlay')?.classList.remove('is-suspended');
+    try { Audio.bgm.stop(); } catch (_e) {}
+    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
     renderAutumnWarBoard();
-    const revealedBout = revealedMatch?.bouts?.[revealedMatch.bouts.length - 1] || stepped.bout;
-    renderAutumnWarBoutResultPopup(revealedMatch, revealedBout);
+    const match = p.result?.results?.[resolved.matchIndex];
+    renderAutumnWarBoutResultPopup(match, match?.bouts?.[resolved.boutIndex] || resolved.bout);
+    return true;
   },
 
   awAdvanceMatch() {
@@ -3545,10 +3662,13 @@ const App = {
     const { session: _session, previewResult: _legacyPreview, ...cleanWar } = cleanG.autumnWar || {};
     G = { ...cleanG, autumnWar: cleanWar, autumnWarPhase: 'result' };
     App._awPreview = null;
-    const overlay = document.getElementById('showResultOverlay');
-    if (overlay) overlay.classList.remove('active');
-    const box = document.getElementById('showResultBox');
-    if (box) { box.style.maxWidth = ''; box.style.padding = ''; box.style.background = ''; box.style.border = ''; box.innerHTML = ''; }
+    const overlay = document.getElementById('autumnWarOverlay');
+    if (overlay) {
+      overlay.classList.remove('active', 'is-suspended');
+      overlay.removeAttribute('data-phase');
+    }
+    const screen = document.getElementById('autumnWarScreen');
+    if (screen) screen.innerHTML = '';
     try { Audio.fileBgm.stop(); } catch (_e) {}
     try { App.restoreBgmForState(); } catch (_e) {}
     try { Storage.autoSave(); } catch (_e) {}
@@ -5952,6 +6072,12 @@ const App = {
     clearTimeout(App._escBtnTimer);
     const escBtn = document.getElementById('battleEscapeBtn');
     if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
+    // 秋の勝ち残り対抗戦: 観戦開始時に確定済みの1フォールを再適用せず、画面だけ復帰する
+    const awPre = App._awPreview;
+    if (awPre && awPre.phase === 'watching') {
+      App._finishAutumnWarWatch(data);
+      return;
+    }
     // 春のタッグリーグ context: 確定済み結果のリプレイ完了として扱う
     const stlPre = App._stlPreview;
     if (stlPre && stlPre.phase === 'watching') {
@@ -6093,6 +6219,11 @@ const App = {
       if (!wp.results.every(r => r !== null)) {
         setTimeout(() => { if (App._warPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {} } }, 300);
       }
+    }
+    const aw = App._awPreview;
+    if (aw && aw.phase === 'watching') {
+      App._finishAutumnWarWatch();
+      return;
     }
     const stl = App._stlPreview;
     if (stl && stl.phase === 'watching') {

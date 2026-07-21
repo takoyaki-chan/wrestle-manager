@@ -1352,6 +1352,72 @@
   .stl-match-preview .stl-final-side .nm { font-size: 11px; overflow-wrap: anywhere; }
   .stl-progress-btn-row { gap: 8px; padding: 0 6px; }
   .stl-progress-btn-row .btn { flex: 1 1 130px; min-height: 44px; padding-left: 10px !important; padding-right: 10px !important; }
+  .agw-wrap { padding: 12px 10px calc(18px + env(safe-area-inset-bottom)); overflow-x: hidden; }
+  .agw-title { font-size: 24px; letter-spacing: 2px; }
+  .agw-emblem { width: 58px; height: 58px; }
+  .agw-intro-lead > strong { font-size: 25px; letter-spacing: 2px; }
+  .agw-intro-bracket,
+  .agw-intro-steps { grid-template-columns: 1fr; }
+  .agw-intro-steps { gap: 22px; }
+  .agw-board { grid-template-columns: 1fr; }
+  .agw-climb { align-items: stretch; }
+  .agw-climb-semis { grid-template-columns: 1fr; }
+  .agw-climb-line { width: 1px; height: auto; }
+  .agw-climb > .agw-climb-cell { width: 42%; }
+  .agw-member { padding: 8px; }
+  .agw-member-detail { grid-template-columns: 46px minmax(0, 1fr); min-height: 46px; }
+  .agw-member-img { width: 46px; height: 46px; }
+  .agw-focus .jtc-fc { padding-left: 8px; padding-right: 8px; }
+  .agw-focus .jtc-fc-bt { flex-wrap: wrap; }
+  .agw-focus .jtc-fc-bt .btn { flex: 1 1 130px; min-height: 44px; }
+  .agw-entry-stage,
+  .agw-entry-role-tabs { display: none; }
+  .agw-entry-mobile { display: block; max-width: 520px; margin: 8px auto 0; }
+  .agw-entry-mobile > .agw-entry-opponent-summary { padding: 8px 10px; border: 1px solid var(--stage-border-lit); border-radius: var(--radius-md); background: var(--stage-panel); flex-wrap: wrap; }
+  .agw-entry-mobile > .agw-entry-opponent-summary > small { width: 100%; }
+  .agw-entry-mobile-head { display: flex; justify-content: space-between; align-items: end; gap: 8px; margin: 10px 0 7px; }
+  .agw-entry-mobile-head strong { font-size: 11px; color: var(--gold-light); }
+  .agw-entry-mobile-head span { max-width: 58%; color: var(--stage-text-dim); font-size: 8px; text-align: right; }
+  .agw-entry-mobile-card { display: grid; grid-template-columns: 88px minmax(0, 1fr) 46px; min-height: 126px; margin-bottom: 7px; overflow: hidden; border: 1px solid var(--stage-border-lit); border-radius: var(--radius-md); background: var(--stage-panel-deep); }
+  .agw-entry-mobile-card.is-active { border-color: var(--gold); box-shadow: inset 3px 0 0 var(--gold); }
+  .agw-entry-mobile-detail { width: 88px; height: 126px; padding: 0; border: 0; background: transparent; }
+  .agw-entry-mobile-detail img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
+  .agw-entry-mobile-info { align-self: center; min-width: 0; padding: 8px; }
+  .agw-entry-mobile-info > span { display: block; color: var(--ev-autumn); font-size: 9px; font-weight: 900; }
+  .agw-entry-mobile-info > button { display: block; max-width: 100%; margin: 3px 0; padding: 0; border: 0; background: transparent; color: var(--stage-text-main); font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+  .agw-entry-mobile-info > div { display: flex; align-items: baseline; gap: 8px; }
+  .agw-entry-mobile-info > div > small,
+  .agw-entry-mobile-info > em { display: block; color: var(--stage-text-dim); font-size: 8px; font-style: normal; }
+  .agw-entry-mobile-info .agw-ovr b { font-size: 26px; }
+  .agw-entry-mobile-actions { display: grid; align-content: center; gap: 5px; padding-right: 7px; }
+  .agw-entry-mobile-actions button { width: 38px; height: 36px; padding: 0; border: 1px solid var(--stage-border-lit); border-radius: var(--radius-md); background: var(--stage-panel); color: var(--gold-light); font-size: 10px; }
+  .agw-entry-mobile-actions button:disabled { opacity: .25; }
+  .agw-entry-candidate-section { padding: 10px 8px; }
+  .agw-entry-section-head span { display: none; }
+  .agw-entry-candidate { flex-basis: 108px; min-width: 108px; }
+  .agw-entry-footer { grid-template-columns: 1fr; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+  .agw-entry-footer > .agw-entry-opponent-summary,
+  .agw-entry-footer > span { display: none; }
+  .agw-entry-footer > div { width: 100%; }
+  .agw-entry-footer .btn { flex: 1; min-height: 44px; }
+  .agw-reorder-grid { margin-top: 12px; }
+  .agw-order-panel,
+  .agw-opponent-panel { padding: 10px; }
+  .agw-order-row { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 7px; }
+  .agw-order-row > .agw-ovr { grid-column: 3; grid-row: 1; }
+  .agw-order-actions { grid-column: 1 / -1; justify-content: flex-end; }
+  .agw-order-actions button { width: 42px; height: 38px; }
+  .agw-opponent-panel strong { margin: 8px 0; }
+  .agw-opponent-hidden { padding: 8px; }
+  .agw-champ-lineup { gap: 5px; align-items: stretch; }
+  .agw-champ-card,
+  .agw-champ-card.is-mvp { width: 33%; }
+  .agw-champ-card > span,
+  .agw-champ-card.is-mvp > span { height: 130px; }
+  .agw-mvp-stage { flex-direction: column; gap: 12px; text-align: center; }
+  .agw-mvp-portrait { width: 180px; height: 250px; }
+  .agw-mvp-name { margin: 0 auto; text-align: center; }
+  .agw-mvp-copy blockquote { font-size: 14px; margin-top: 12px; }
   .a1-sil-row { grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .tc-climb { min-width: 0; padding-left: 0; padding-right: 0; }
   .tcpe-fighters { grid-template-columns: 1fr; }

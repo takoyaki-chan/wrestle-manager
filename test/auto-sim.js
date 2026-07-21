@@ -1038,16 +1038,6 @@ function runSimulation(seed, seasons) {
           G = Engine.springTagLeague.confirmPlayerTeam(G, pick.f1Id, pick.f2Id);
         }
       }
-      // 4団体勝ち残り対抗戦 Week35: OVR上位3名を弱い順に並べて自動確定。
-      // 決勝では準決勝後conditionの高い順へ自動再編成する。
-      if (G.autumnWarPhase === 'entry') {
-        const memberIds = Engine.autumnWar._selectMembers(G, 'player');
-        if (memberIds.length === Engine.autumnWar.TEAM_SIZE) {
-          const order = Engine.autumnWar._defaultOrder(G, 'player', memberIds);
-          G = Engine.autumnWar.confirmPlayerTeam(G, memberIds, order);
-          G = { ...G, autumnWar: { ...G.autumnWar, autoReorderFinal: true } };
-        }
-      }
       if (G.weekPhase === 'event' || G.weekPhase === 'transfer' || G.weekPhase === 'scoutEvent') {
         // スカウトでFA獲得を試みる
         if (G.weekPhase === 'scoutEvent') {
@@ -1185,6 +1175,20 @@ function runSimulation(seed, seasons) {
       const advResult = Engine.advanceWeek(G);
       G = { ...advResult.state, gameLog: [] };
       // UIなしのauto-simでも本番と同じく1フォールずつ実行する。
+      if (G._pendingAutumnWarReplay && G.autumnWar && !G.autumnWar.session) {
+        const memberIds = Engine.autumnWar._selectMembers(G, 'player');
+        if (memberIds.length === Engine.autumnWar.TEAM_SIZE) {
+          const order = Engine.autumnWar._defaultOrder(G, 'player', memberIds);
+          G = Engine.autumnWar.confirmPlayerTeam(G, memberIds, order);
+        }
+        G = { ...G, autumnWar: { ...G.autumnWar, autoReorderFinal: true } };
+        G = Engine.autumnWar.startSession(G);
+        if (G.autumnWar?.cancelled && !G.autumnWar.session) {
+          const cancelledAutumn = Engine.autumnWar.apply(G, G.autumnWar);
+          const { _pendingAutumnWarReplay: _awCancelledPending, ...cancelledClean } = cancelledAutumn.state;
+          G = { ...cancelledClean, gameLog: [] };
+        }
+      }
       if (G._pendingAutumnWarReplay && G.autumnWar?.session) {
         let guard = 0;
         while (G.autumnWar?.session && G.autumnWar.session.phase !== 'complete' && guard++ < 20) {

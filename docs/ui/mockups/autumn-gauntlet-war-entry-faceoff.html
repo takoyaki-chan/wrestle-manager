@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>秋の陣 編成・3対3フル対面 モックアップ</title>
+  <style>
+    :root {
+      /* src/index.html の現行トークンから使用分を転記。 */
+      --bg-dark: #24221e;
+      --card-bg: #12110e;
+      --panel-bg: #181614;
+      --gold: #d4a843;
+      --gold-light: #f0d078;
+      --gold-rgb: 212,168,67;
+      --red: #c41e3a;
+      --green: #2ecc71;
+      --text-main: #e8e6e0;
+      --text-sub: rgba(232,230,224,0.5);
+      --text-dim: rgba(232,230,224,0.25);
+      --border: rgba(200,190,170,0.08);
+      --stage-bg: #060606;
+      --stage-panel: rgba(20,18,15,0.62);
+      --stage-panel-deep: rgba(10,9,7,0.80);
+      --stage-border: rgba(200,190,170,0.08);
+      --stage-border-lit: rgba(212,168,67,0.22);
+      --stage-border-main: rgba(212,168,67,0.42);
+      --stage-text-main: #e8e6e0;
+      --stage-text-sub: rgba(232,230,224,0.55);
+      --stage-text-dim: rgba(232,230,224,0.28);
+      --ev-autumn: #c1503c;
+      /* 選手データベースと同じ OVR 階調 */
+      --v-mythic: #ffd700;
+      --v-elite-mid: #ffc640;
+      --v-elite: #ffd870;
+      --v-elite-low: #ffe898;
+      --v-high: #fff0c0;
+      --v-mid: #f0eee8;
+      --v-low: #b8b5a8;
+      --v-poor: #7a766b;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-label: 'Oswald', sans-serif;
+      --font-body: 'Noto Sans JP', sans-serif;
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 10px;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg-dark); color: var(--text-main); font-family: var(--font-body); }
+    button { font: inherit; }
+    button:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+    .review-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-lg);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--stage-border-main);
+      background: var(--panel-bg);
+    }
+    .review-copy strong { color: var(--gold-light); }
+    .review-copy small { display: block; color: var(--text-sub); }
+    .control-group { display: flex; gap: var(--space-sm); }
+    .control-group button,
+    .secondary-btn,
+    .role-tab {
+      min-height: 36px;
+      padding: 6px 12px;
+      border: 1px solid var(--stage-border-lit);
+      border-radius: var(--radius-md);
+      background: var(--card-bg);
+      color: var(--stage-text-sub);
+      cursor: pointer;
+    }
+    .control-group button.active,
+    .role-tab.active { border-color: var(--gold); background: rgba(var(--gold-rgb), .12); color: var(--gold-light); }
+    .preview-wrap { padding: 24px; overflow-x: auto; }
+    .viewport {
+      width: min(1180px, 100%);
+      min-height: 780px;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--stage-border-main);
+      border-radius: var(--radius-lg);
+      background: var(--stage-bg);
+      transition: width .2s ease;
+    }
+    body.mobile-preview .viewport { width: 375px; }
+    .agw-screen { min-height: 780px; display: flex; flex-direction: column; background: linear-gradient(180deg, var(--stage-panel), transparent 42%), var(--stage-bg); }
+    .agw-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: var(--space-lg);
+      align-items: center;
+      padding: 15px 20px 12px;
+      border-bottom: 1px solid var(--stage-border-lit);
+    }
+    .event-mark { width: 48px; height: 48px; display: grid; place-items: center; border: 2px solid var(--ev-autumn); border-radius: 50%; color: var(--gold-light); font: 21px/1 var(--font-display); }
+    .kicker { color: var(--ev-autumn); font: 700 10px/1.2 var(--font-label); letter-spacing: .18em; }
+    h1 { margin: 2px 0 0; font-size: clamp(22px, 3vw, 32px); }
+    .head-note { color: var(--stage-text-sub); font-size: 11px; text-align: right; }
+    .faceoff {
+      position: relative;
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 70px minmax(0, 1fr);
+      min-height: 465px;
+      overflow: hidden;
+      border-bottom: 1px solid var(--stage-border-lit);
+    }
+    .mobile-l1 { display: none; }
+    .team {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .team::after { content: ''; position: absolute; inset: auto 7% 0; height: 1px; background: var(--stage-border-main); }
+    .team-title { position: absolute; z-index: 12; top: 12px; left: 16px; }
+    .team.player .team-title { left: auto; right: 16px; text-align: right; }
+    .team-title span { display: block; color: var(--stage-text-dim); font: 10px/1.3 var(--font-label); letter-spacing: .14em; }
+    .team-title strong { color: var(--stage-text-main); font-size: 14px; }
+    .team-title small { display: block; color: var(--stage-text-dim); font-size: 9px; }
+    .versus { position: relative; z-index: 15; display: grid; place-items: center; color: var(--ev-autumn); font: 36px/1 var(--font-display); }
+    .versus::before, .versus::after { content: ''; position: absolute; left: 50%; width: 1px; height: 35%; background: var(--stage-border-main); }
+    .versus::before { top: 0; }
+    .versus::after { bottom: 0; }
+    .formation { position: absolute; inset: 40px 0 0; }
+    .figure {
+      position: absolute;
+      bottom: 0;
+      width: 48%;
+      height: 82%;
+      transition: transform .2s ease, opacity .2s ease, filter .2s ease;
+      cursor: pointer;
+    }
+    .figure img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 15px 20px var(--stage-bg)); }
+    /* 前列に先鋒・大将、背後の高い位置に中堅。3人の画像サイズは同一。 */
+    .player .figure[data-order="0"] { left: 0; bottom: 0; z-index: 8; }
+    .player .figure[data-order="1"] { left: 25%; bottom: 60px; z-index: 6; }
+    .player .figure[data-order="2"] { left: 50%; bottom: 0; z-index: 8; }
+    .player .figure.active img { filter: drop-shadow(0 0 12px var(--gold)); }
+    .opponent .figure[data-order="0"] { right: 0; bottom: 0; z-index: 8; }
+    .opponent .figure[data-order="1"] { right: 25%; bottom: 60px; z-index: 6; }
+    .opponent .figure[data-order="2"] { right: 50%; bottom: 0; z-index: 8; }
+    .opponent .figure img { transform: scaleX(-1); }
+    .figure-label {
+      position: absolute;
+      z-index: 10;
+      bottom: 8px;
+      left: 50%;
+      min-width: 112px;
+      transform: translateX(-50%);
+      padding: 5px 8px;
+      border-left: 3px solid var(--ev-autumn);
+      background: var(--card-bg);
+      box-shadow: 0 5px 16px var(--stage-bg);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .figure-label b { display: block; color: var(--stage-text-main); font-size: 11px; }
+    .figure-label .figure-meta { display: flex; justify-content: center; align-items: baseline; gap: 6px; color: var(--stage-text-dim); font-size: 9px; }
+    .figure.active .figure-label { border-left-color: var(--gold); }
+    .ovr-mark { display: inline-flex; align-items: baseline; gap: 3px; white-space: nowrap; }
+    .ovr-label { color: var(--stage-text-dim); font: 700 8px/1 var(--font-label); letter-spacing: .08em; }
+    .ovr-value { font: 700 18px/1 var(--font-display); letter-spacing: .03em; }
+    .v-mythic { color: var(--v-mythic); text-shadow: 0 0 10px var(--v-mythic); }
+    .v-elite-mid { color: var(--v-elite-mid); }
+    .v-elite { color: var(--v-elite); }
+    .v-elite-low { color: var(--v-elite-low); }
+    .v-high { color: var(--v-high); }
+    .v-mid { color: var(--v-mid); }
+    .v-low { color: var(--v-low); }
+    .v-poor { color: var(--v-poor); }
+    .figure-label .ovr-value { font-size: 17px; }
+    .empty-figure {
+      position: absolute;
+      bottom: 18px;
+      width: 35%;
+      height: 74%;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--stage-border-main);
+      border-radius: 48% 48% 12px 12px;
+      background: var(--stage-panel-deep);
+      color: var(--stage-text-dim);
+      font: 42px/1 var(--font-display);
+      opacity: .46;
+    }
+    .empty-figure::after { content: attr(data-role); position: absolute; bottom: 10px; font: 700 10px/1 var(--font-body); }
+    .empty-figure[data-order="0"] { right: 0; bottom: 18px; z-index: 5; }
+    .empty-figure[data-order="1"] { right: 32.5%; bottom: 90px; z-index: 3; }
+    .empty-figure[data-order="2"] { right: 65%; bottom: 18px; z-index: 5; }
+    body.confirmed .empty-figure { display: none; }
+    body:not(.confirmed) .opponent .figure { display: none; }
+    .order-rail { display: grid; grid-template-columns: auto 1fr; gap: var(--space-md); align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--stage-border); background: var(--stage-panel-deep); }
+    .order-rail > strong { color: var(--gold-light); font-size: 12px; }
+    .role-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); }
+    .role-tab { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); padding: 7px 10px; text-align: left; }
+    .role-tab b { color: var(--stage-text-main); }
+    .role-tab small { color: var(--stage-text-dim); }
+    .role-tab .ovr-value { font-size: 19px; }
+    .candidate-section { padding: 12px 18px; }
+    .section-head { display: flex; justify-content: space-between; gap: var(--space-md); align-items: end; margin-bottom: 8px; }
+    .section-head strong { color: var(--gold-light); font-size: 12px; }
+    .section-head span { color: var(--stage-text-dim); font-size: 10px; }
+    .candidate-rail { display: grid; grid-template-columns: repeat(6, minmax(100px, 1fr)); gap: 7px; }
+    .candidate {
+      position: relative;
+      min-height: 132px;
+      overflow: hidden;
+      padding: 0;
+      border: 1px solid var(--stage-border);
+      border-radius: var(--radius-md);
+      background: var(--card-bg);
+      color: var(--stage-text-main);
+      cursor: pointer;
+    }
+    .candidate.selected { border-color: var(--gold); }
+    .candidate img { width: 100%; height: 92px; object-fit: contain; object-position: center bottom; }
+    .candidate div { padding: 5px 7px; border-top: 1px solid var(--stage-border); text-align: left; }
+    .candidate b { display: block; font-size: 10px; }
+    .candidate small { color: var(--stage-text-dim); font-size: 8px; }
+    .candidate .ovr-mark { margin-top: 3px; }
+    .candidate .ovr-value { font-size: 16px; }
+    .candidate em { position: absolute; top: 5px; right: 5px; padding: 2px 5px; border-radius: 999px; background: var(--gold); color: var(--card-bg); font-size: 8px; font-style: normal; font-weight: 900; }
+    .footer { display: flex; justify-content: space-between; align-items: center; gap: var(--space-md); margin-top: auto; padding: 11px 18px; border-top: 1px solid var(--stage-border-lit); background: var(--stage-panel-deep); }
+    .footer-copy { color: var(--stage-text-sub); font-size: 10px; }
+    .footer-copy b { color: var(--gold-light); }
+    .footer-actions { display: flex; gap: var(--space-sm); }
+    .secondary-btn { padding: 7px 13px; }
+    .primary-btn { min-height: 40px; padding: 8px 18px; border: 1px solid var(--gold-light); border-radius: var(--radius-md); background: var(--gold); color: var(--card-bg); font-weight: 900; cursor: pointer; }
+    body.confirmed .candidate-section,
+    body.confirmed .order-rail { display: none; }
+    body.confirmed #autoButton { display: none; }
+    body.confirmed .footer-copy::before { content: '3対3の対面を確認してください。'; }
+    body.confirmed .footer-copy span { display: none; }
+
+    body.mobile-preview .preview-wrap { padding: 12px 0 30px; }
+    body.mobile-preview .agw-head { grid-template-columns: auto 1fr; gap: 9px; padding: 10px 12px; }
+    body.mobile-preview .event-mark { width: 40px; height: 40px; font-size: 17px; }
+    body.mobile-preview .head-note { grid-column: 1 / -1; text-align: left; }
+    body.mobile-preview .faceoff { display: none; }
+    body.mobile-preview .mobile-l1 { display: block; padding: 10px 12px 12px; border-bottom: 1px solid var(--stage-border-lit); }
+    .mobile-opponent-summary { display: flex; justify-content: space-between; gap: var(--space-sm); padding: 8px 10px; border: 1px solid var(--stage-border-lit); border-radius: var(--radius-md); background: var(--stage-panel); }
+    .mobile-opponent-summary strong { display: block; font-size: 11px; }
+    .mobile-opponent-summary small { color: var(--stage-text-dim); font-size: 8px; }
+    .mobile-opponent-summary b { color: var(--gold-light); font: 18px/1.2 var(--font-display); white-space: nowrap; }
+    .mobile-l1-head { display: flex; justify-content: space-between; align-items: end; gap: var(--space-sm); margin: 10px 0 7px; }
+    .mobile-l1-head strong { color: var(--gold-light); font-size: 11px; }
+    .mobile-l1-head span { color: var(--stage-text-dim); font-size: 8px; }
+    .mobile-lineup { display: grid; gap: 7px; }
+    .mobile-slot { display: grid; grid-template-columns: 88px minmax(0, 1fr) auto; min-height: 126px; overflow: hidden; border: 1px solid var(--stage-border-lit); border-radius: var(--radius-md); background: var(--stage-panel-deep); cursor: pointer; }
+    .mobile-slot.active { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(var(--gold-rgb), .12); }
+    .mobile-slot img { width: 88px; height: 126px; object-fit: contain; object-position: center bottom; }
+    .mobile-slot-info { align-self: center; min-width: 0; padding: 8px; }
+    .mobile-slot-role { display: block; color: var(--ev-autumn); font-size: 9px; font-weight: 900; }
+    .mobile-slot-name { display: block; margin: 3px 0; color: var(--stage-text-main); font-size: 14px; }
+    .mobile-slot-meta { color: var(--stage-text-sub); font-size: 9px; }
+    .mobile-slot-meta { display: flex; align-items: baseline; gap: 8px; }
+    .mobile-slot .ovr-value { font-size: 26px; }
+    .mobile-slot .ovr-label { font-size: 9px; }
+    .mobile-slot-moves { display: grid; align-content: center; gap: 5px; padding-right: 7px; }
+    .mobile-slot-moves button { width: 36px; height: 36px; padding: 0; border: 1px solid var(--stage-border-lit); border-radius: var(--radius-md); background: var(--card-bg); color: var(--gold-light); cursor: pointer; }
+    body.mobile-preview.confirmed .mobile-slot { border-color: var(--stage-border-main); }
+    body.mobile-preview .team-title { top: 8px; left: 7px; }
+    body.mobile-preview .team.player .team-title { right: 7px; }
+    body.mobile-preview .team-title strong { font-size: 10px; }
+    body.mobile-preview .team-title small { display: none; }
+    body.mobile-preview .versus { font-size: 25px; }
+    body.mobile-preview .formation { inset: 48px 0 0; }
+    body.mobile-preview .figure { width: 100%; height: 42%; left: auto !important; right: 0 !important; transform: scale(.8) !important; transform-origin: bottom center !important; }
+    /* モバイルは下から先鋒→大将→中堅。進行方向は上。 */
+    body.mobile-preview .player .figure[data-order="0"],
+    body.mobile-preview .opponent .figure[data-order="0"] { bottom: 0; z-index: 8; }
+    body.mobile-preview .player .figure[data-order="1"],
+    body.mobile-preview .opponent .figure[data-order="1"] { bottom: 264px; z-index: 6; }
+    body.mobile-preview .player .figure[data-order="2"],
+    body.mobile-preview .opponent .figure[data-order="2"] { bottom: 132px; z-index: 7; }
+    body.mobile-preview .opponent .figure img { transform: scaleX(-1); }
+    body.mobile-preview .figure-label { min-width: 72px; padding: 3px 4px; }
+    body.mobile-preview .figure-label b { font-size: 8px; }
+    body.mobile-preview .figure-label span { font-size: 7px; }
+    body.mobile-preview .empty-figure { width: 68%; height: 31%; right: 3% !important; border-radius: 42% 42% 8px 8px; font-size: 24px; }
+    body.mobile-preview .empty-figure[data-order="0"] { bottom: 12px; z-index: 8; }
+    body.mobile-preview .empty-figure[data-order="1"] { bottom: 272px; z-index: 6; }
+    body.mobile-preview .empty-figure[data-order="2"] { bottom: 142px; z-index: 7; }
+    body.mobile-preview .order-rail { display: none; }
+    body.mobile-preview.confirmed .order-rail { display: none; }
+    body.mobile-preview .order-rail > strong { display: block; margin-bottom: 6px; }
+    body.mobile-preview .role-tabs { grid-template-columns: 1fr; }
+    body.mobile-preview .role-tab { min-height: 34px; }
+    body.mobile-preview .role-tab:nth-child(1) { order: 3; }
+    body.mobile-preview .role-tab:nth-child(2) { order: 1; }
+    body.mobile-preview .role-tab:nth-child(3) { order: 2; }
+    body.mobile-preview .candidate-section { padding: 10px 12px; }
+    body.mobile-preview .candidate-rail { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+    body.mobile-preview .candidate { min-width: 108px; scroll-snap-align: start; }
+    body.mobile-preview .footer { position: sticky; bottom: 0; padding: 9px 12px; }
+    body.mobile-preview .footer-copy { display: none; }
+    body.mobile-preview .footer-actions { width: 100%; }
+    body.mobile-preview .secondary-btn,
+    body.mobile-preview .primary-btn { flex: 1; }
+
+    @media (max-width: 760px) {
+      .review-bar { align-items: flex-start; flex-direction: column; }
+      .control-group { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <header class="review-bar">
+    <div class="review-copy">
+      <strong>最終候補：Desktop 全身3対3 ／ 375px L1</strong>
+      <small>Desktopは三角配置の対面、375pxは縦カード＋横スクロール候補棚。</small>
+    </div>
+    <div>
+      <div class="control-group" aria-label="表示状態">
+        <button type="button" class="active" data-state="entry">編成中</button>
+        <button type="button" data-state="confirmed">対面確認</button>
+        <button type="button" class="active" data-width="desktop">Desktop</button>
+        <button type="button" data-width="mobile">375px</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="preview-wrap">
+    <div class="viewport">
+      <main class="agw-screen">
+        <header class="agw-head">
+          <div class="event-mark">AGW</div>
+          <div><div class="kicker">AUTUMN GAUNTLET WAR · WEEK 36</div><h1 id="screenTitle">3人の陣形を組む</h1></div>
+          <div id="headNote" class="head-note">右側が自団体。全身の重なりで先鋒から大将までを表示。</div>
+        </header>
+
+        <section class="faceoff" aria-label="3対3の陣形">
+          <div class="team opponent">
+            <div class="team-title"><span>SEED 4</span><strong>EMPRESS GRAND</strong><small>平均OVR <span class="ovr-value v-mid">78</span> · 順番は未公開</small></div>
+            <div id="opponentFormation" class="formation"></div>
+          </div>
+          <div class="versus">VS</div>
+          <div class="team player">
+            <div class="team-title"><span>YOUR TEAM</span><strong>WRESTLE REGALIA</strong><small>下から先鋒 → 大将 → 中堅</small></div>
+            <div id="playerFormation" class="formation"></div>
+          </div>
+        </section>
+
+        <section class="mobile-l1" aria-label="スマートフォン用L1編成">
+          <div class="mobile-opponent-summary">
+            <div><strong>準決勝：EMPRESS GRAND</strong><small>相手の順番は開戦時に公開</small></div>
+            <b><span class="ovr-label">平均OVR</span> <span class="ovr-value v-mid">78</span></b>
+          </div>
+          <div class="mobile-l1-head"><strong>L1 — 先鋒・中堅・大将</strong><span>カードを選択して候補と交代</span></div>
+          <div id="mobileLineup" class="mobile-lineup"></div>
+        </section>
+
+        <section class="order-rail">
+          <strong>変更する役割</strong>
+          <div id="roleTabs" class="role-tabs"></div>
+        </section>
+
+        <section class="candidate-section">
+          <div class="section-head"><strong>出場可能選手</strong><span>役割を選び、候補をクリックして交代</span></div>
+          <div id="candidateRail" class="candidate-rail"></div>
+        </section>
+
+        <footer class="footer">
+          <div class="footer-copy"><span><b>3 / 3名</b>　全身画像で陣形を確認</span></div>
+          <div class="footer-actions"><button id="autoButton" type="button" class="secondary-btn">おまかせ</button><button id="confirmButton" type="button" class="primary-btn">この3人で対面確認</button></div>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const roster = [
+      { id: 4, name: '高津小春', ovr: 76, condition: 80, image: '../../../image/full/full_takatsu_k.webp', stand: '../../../image/stand/stand_takatsu_k.webp' },
+      { id: 5, name: '深町真琴', ovr: 79, condition: 74, image: '../../../image/full/full_fukamachi_m.webp', stand: '../../../image/stand/stand_fukamachi_m.webp' },
+      { id: 3, name: '澤出みずき', ovr: 84, condition: 80, image: '../../../image/full/full_sawade_m.webp', stand: '../../../image/stand/stand_sawade_m.webp' },
+      { id: 7, name: '高階まさみ', ovr: 68, condition: 80, image: '../../../image/full/full_takashina_m.webp', stand: '../../../image/stand/stand_takashina_m.webp' },
+      { id: 9, name: '宇田川里奈', ovr: 59, condition: 62, image: '../../../image/full/full_udagawa_r.webp', stand: '../../../image/stand/stand_udagawa_r.webp' },
+      { id: 8, name: '林真尋', ovr: 72, condition: 69, image: '../../../image/full/full_hayashi_m.webp', stand: '../../../image/stand/stand_hayashi_m.webp' }
+    ];
+    const opponents = [
+      { name: '出羽鷹子', ovr: 72, image: '../../../image/full/full_dewa_t.webp' },
+      { name: '浅見玲', ovr: 78, image: '../../../image/full/full_asami_r.webp' },
+      { name: '阿武隈塔子', ovr: 84, image: '../../../image/full/full_abukuma_t.webp' }
+    ];
+    const roles = ['先鋒', '中堅', '大将'];
+    let selectedIds = [4, 5, 3];
+    let activeRole = 0;
+
+    const playerFormation = document.querySelector('#playerFormation');
+    const opponentFormation = document.querySelector('#opponentFormation');
+    const mobileLineup = document.querySelector('#mobileLineup');
+    const roleTabs = document.querySelector('#roleTabs');
+    const candidateRail = document.querySelector('#candidateRail');
+
+    function getFighter(id) { return roster.find(item => item.id === id); }
+    function ovrClass(value) {
+      if (value >= 100) return 'v-mythic';
+      if (value >= 95) return 'v-elite-mid';
+      if (value >= 90) return 'v-elite';
+      if (value >= 85) return 'v-elite-low';
+      if (value >= 80) return 'v-high';
+      if (value >= 70) return 'v-mid';
+      if (value >= 60) return 'v-low';
+      return 'v-poor';
+    }
+    function ovrHtml(value) {
+      return `<span class="ovr-mark"><span class="ovr-label">OVR</span><span class="ovr-value ${ovrClass(value)}">${value}</span></span>`;
+    }
+    function figure(item, index, active, opponent) {
+      return `<article class="figure${active ? ' active' : ''}" data-order="${index}"${opponent ? '' : ` data-player-order="${index}"`} tabindex="0">
+        <img src="${item.image}" alt="${item.name}"><div class="figure-label"><b>${roles[index]} · ${item.name}</b><span class="figure-meta">${ovrHtml(item.ovr)}${item.condition ? `<span>condition ${item.condition}</span>` : ''}</span></div>
+      </article>`;
+    }
+
+    function render() {
+      const selected = selectedIds.map(getFighter);
+      playerFormation.innerHTML = selected.map((item, index) => figure(item, index, index === activeRole, false)).join('');
+      opponentFormation.innerHTML = `<div class="empty-figure" data-order="0" data-role="先鋒">?</div><div class="empty-figure" data-order="1" data-role="中堅">?</div><div class="empty-figure" data-order="2" data-role="大将">?</div>`
+        + opponents.map((item, index) => figure(item, index, false, true)).join('');
+      roleTabs.innerHTML = selected.map((item, index) => `<button type="button" class="role-tab${index === activeRole ? ' active' : ''}" data-role="${index}"><b>${roles[index]} · ${item.name}</b>${ovrHtml(item.ovr)}</button>`).join('');
+      mobileLineup.innerHTML = selected.map((item, index) => `<article class="mobile-slot${index === activeRole ? ' active' : ''}" data-mobile-role="${index}" tabindex="0">
+        <img src="${item.stand}" alt="${item.name}"><div class="mobile-slot-info"><span class="mobile-slot-role">${roles[index]}</span><b class="mobile-slot-name">${item.name}</b><span class="mobile-slot-meta">${ovrHtml(item.ovr)}<span>condition ${item.condition}</span></span></div>
+        <div class="mobile-slot-moves"><button type="button" data-mobile-move="up" data-index="${index}" aria-label="${item.name}を前へ">↑</button><button type="button" data-mobile-move="down" data-index="${index}" aria-label="${item.name}を後ろへ">↓</button></div>
+      </article>`).join('');
+      candidateRail.innerHTML = roster.map(item => {
+        const selectedIndex = selectedIds.indexOf(item.id);
+        return `<button type="button" class="candidate${selectedIndex >= 0 ? ' selected' : ''}" data-candidate="${item.id}">${selectedIndex >= 0 ? `<em>${roles[selectedIndex]}</em>` : ''}<img src="${item.image}" alt=""><div><b>${item.name}</b>${ovrHtml(item.ovr)}<small>condition ${item.condition}</small></div></button>`;
+      }).join('');
+    }
+
+    playerFormation.addEventListener('click', event => {
+      const item = event.target.closest('[data-player-order]');
+      if (item) { activeRole = Number(item.dataset.playerOrder); render(); }
+    });
+    playerFormation.addEventListener('keydown', event => {
+      const item = event.target.closest('[data-player-order]');
+      if (item && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); activeRole = Number(item.dataset.playerOrder); render(); }
+    });
+    roleTabs.addEventListener('click', event => {
+      const role = event.target.closest('[data-role]');
+      if (role) { activeRole = Number(role.dataset.role); render(); }
+    });
+    mobileLineup.addEventListener('click', event => {
+      const move = event.target.closest('[data-mobile-move]');
+      if (move) {
+        event.stopPropagation();
+        const index = Number(move.dataset.index);
+        const destination = move.dataset.mobileMove === 'up' ? index - 1 : index + 1;
+        if (destination >= 0 && destination < selectedIds.length) {
+          [selectedIds[index], selectedIds[destination]] = [selectedIds[destination], selectedIds[index]];
+          activeRole = destination;
+          render();
+        }
+        return;
+      }
+      const slot = event.target.closest('[data-mobile-role]');
+      if (slot) { activeRole = Number(slot.dataset.mobileRole); render(); }
+    });
+    mobileLineup.addEventListener('keydown', event => {
+      const slot = event.target.closest('[data-mobile-role]');
+      if (slot && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); activeRole = Number(slot.dataset.mobileRole); render(); }
+    });
+    candidateRail.addEventListener('click', event => {
+      const card = event.target.closest('[data-candidate]');
+      if (!card) return;
+      const id = Number(card.dataset.candidate);
+      const existing = selectedIds.indexOf(id);
+      if (existing >= 0) activeRole = existing;
+      else selectedIds[activeRole] = id;
+      render();
+    });
+    document.querySelector('#autoButton').addEventListener('click', () => { selectedIds = [4, 5, 3]; activeRole = 0; render(); });
+    document.querySelector('#confirmButton').addEventListener('click', () => setConfirmed(!document.body.classList.contains('confirmed')));
+
+    function setConfirmed(confirmed) {
+      document.body.classList.toggle('confirmed', confirmed);
+      document.querySelectorAll('[data-state]').forEach(item => item.classList.toggle('active', item.dataset.state === (confirmed ? 'confirmed' : 'entry')));
+      updateHeading();
+    }
+
+    function updateHeading() {
+      const confirmed = document.body.classList.contains('confirmed');
+      const mobile = document.body.classList.contains('mobile-preview');
+      document.querySelector('#screenTitle').textContent = mobile
+        ? (confirmed ? '代表3名、布陣決定' : '代表3名と出場順を決める')
+        : (confirmed ? '3対3、布陣決定' : '3人の陣形を組む');
+      document.querySelector('#headNote').textContent = mobile
+        ? 'スマートフォンはL1縦カード。候補棚は横スクロール。'
+        : (confirmed ? '相手3名が反転して入り、中央で向かい合う本番直前の構図。' : '右側が自団体。全身の重なりで先鋒から大将までを表示。');
+      document.querySelector('#confirmButton').textContent = confirmed
+        ? '編成へ戻る'
+        : (mobile ? 'この布陣で確定' : 'この3人で対面確認');
+    }
+
+    document.querySelectorAll('[data-state]').forEach(button => button.addEventListener('click', () => {
+      const confirmed = button.dataset.state === 'confirmed';
+      setConfirmed(confirmed);
+    }));
+    document.querySelectorAll('[data-width]').forEach(button => button.addEventListener('click', () => {
+      document.body.classList.toggle('mobile-preview', button.dataset.width === 'mobile');
+      document.querySelectorAll('[data-width]').forEach(item => item.classList.toggle('active', item === button));
+      updateHeading();
+    }));
+
+    render();
+  </script>
+</body>
+</html>

@@ -27,7 +27,7 @@ function loadAsGlobal(filename) {
 ].forEach(loadAsGlobal);
 
 let state = Engine.createInitialState(4242, true);
-state = { ...state, season: 1, week: Engine.autumnWar.ENTRY_WEEK };
+state = { ...state, season: 1, week: Engine.autumnWar.EVENT_WEEK };
 state = {
   ...state,
   roster: state.roster.map(f => ({ ...f, pw: 100, sp: 100, te: 100, st: 100, mn: 100, condition: 100 })),
@@ -49,6 +49,13 @@ const initialRng = { ...state.autumnWar.session.rng };
 
 const first = Engine.autumnWar.simulateNextBout(state);
 assert.ok(first.bout, '最初の操作で1フォールが解決される');
+const watchedFirst = Engine.autumnWar.simulateNextBout(
+  JSON.parse(JSON.stringify(state)),
+  { recordFrames: true }
+);
+assert.deepStrictEqual(watchedFirst.bout, first.bout, 'watched and skipped bouts must resolve identically');
+assert.deepStrictEqual(watchedFirst.state.autumnWar, first.state.autumnWar, 'watched and skipped tournament state must match');
+assert.ok(watchedFirst.replay?.result?.frames?.length > 0, 'watched bout must include replay frames');
 const firstProgress = Engine.autumnWar.getProgress(first.state);
 const firstBoutCount = firstProgress.results.reduce((sum, match) => sum + match.bouts.length, 0);
 assert.strictEqual(firstBoutCount, 1, '1回の操作で未来のフォールまで生成してはならない');
