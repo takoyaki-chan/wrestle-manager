@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ヘッダー・季節表示 再設計比較モックアップ</title>
+  <style>
+    :root {
+      /* src/index.html の現行トークンを転記。色指定は以下の変数に集約する。 */
+      --bg-dark: #24221e;
+      --card-bg: #12110e;
+      --panel-bg: #181614;
+      --gold: #d4a843;
+      --gold-light: #f0d078;
+      --gold-rgb: 212, 168, 67;
+      --green: #2ecc71;
+      --red: #c41e3a;
+      --text-main: #e8e6e0;
+      --text-sub: rgba(232, 230, 224, 0.5);
+      --text-dim: rgba(232, 230, 224, 0.25);
+      --border: rgba(200, 190, 170, 0.08);
+      --office-bg: var(--bg-dark);
+      --office-panel-dark: #181614;
+      --font-display: "Bebas Neue", "Arial Narrow", sans-serif;
+      --font-body: "Noto Sans JP", "Yu Gothic UI", sans-serif;
+      --radius-lg: 10px;
+      --radius-md: 6px;
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
+      --ev-spring: #e07a9a;
+      --ev-summer: #56b1d8;
+      --ev-autumn: #c1503c;
+      --ev-winter: #cfc4a2;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--office-bg);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.5;
+    }
+    main { width: min(1440px, 100%); margin: 0 auto; padding: 32px 24px 64px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { color: var(--gold-light); font: 40px/1.05 var(--font-display); letter-spacing: .05em; }
+    h2 { margin-top: 40px; color: var(--gold-light); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    h3 { margin-bottom: 10px; color: var(--text-main); }
+    .lead, .note { color: var(--text-sub); max-width: 960px; }
+    .tag {
+      display: inline-block;
+      margin: 0 6px 6px 0;
+      padding: 3px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--gold-light);
+      font-size: 12px;
+    }
+    .compare-grid { display: grid; grid-template-columns: minmax(620px, 1fr) 375px; gap: 20px; align-items: start; }
+    .device { min-width: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--card-bg); }
+    .device-label { padding: 5px 10px; background: var(--bg-dark); color: var(--text-dim); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .mobile { width: 375px; }
+
+    .office-header {
+      min-height: 78px;
+      display: grid;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      background: var(--office-panel-dark);
+      border-bottom: 2px solid var(--gold);
+    }
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      color: var(--gold-light);
+      font: 20px/1 var(--font-display);
+      box-shadow: inset 0 0 0 3px var(--office-panel-dark), inset 0 0 0 4px var(--border);
+    }
+    .date-block { min-width: 0; }
+    .date-main {
+      color: var(--text-main);
+      font-size: clamp(20px, 2.1vw, 30px);
+      font-weight: 800;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .date-sub { color: var(--text-sub); font-size: 12px; margin-top: 3px; }
+    .stats { min-width: 0; display: grid; gap: 7px 12px; }
+    .stat { min-width: 0; }
+    .stat-label { display: block; color: var(--text-dim); font-size: 10px; letter-spacing: .06em; }
+    .stat-value { display: block; color: var(--text-main); font: 19px/1.15 var(--font-display); letter-spacing: .035em; white-space: nowrap; }
+    .stat-value.hot { color: var(--gold-light); }
+    .stat-value.champion { color: var(--gold-light); }
+    .audio {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      justify-self: end;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-size: 17px;
+    }
+    .audio::after { content: ""; }
+    .audio-zone { display: flex; gap: 6px; align-items: center; justify-self: end; }
+
+    .h1-header { grid-template-columns: auto minmax(190px, 1.15fr) minmax(440px, 2fr) auto; }
+    .h1-header .stats { grid-template-columns: repeat(5, minmax(58px, auto)); }
+
+    .h2-header { grid-template-columns: minmax(245px, 1.1fr) minmax(360px, 1.7fr) auto; }
+    .h2-header .stats { grid-template-columns: repeat(3, minmax(86px, 1fr)); }
+    .h2-header .audio-zone { display: flex; gap: 9px; align-items: center; padding-left: 14px; border-left: 1px solid var(--border); }
+    .date-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .date-option { padding: 5px 7px; border: 1px solid var(--border); border-radius: var(--radius-md); }
+    .date-option small { display: block; color: var(--text-dim); font-size: 9px; }
+    .date-option .date-main { font-size: clamp(16px, 1.65vw, 23px); }
+    .date-option.two-line .date-main span { display: block; }
+
+    .h3-header { grid-template-columns: minmax(205px, .9fr) minmax(460px, 2fr) auto; }
+    .h3-header .stats { grid-template-columns: .8fr 1.15fr .75fr 1.15fr; }
+    .h3-header .secondary { opacity: .7; }
+    .h3-header .key .stat-value { font-size: 24px; }
+    .h3-header .audio-zone { display: flex; padding-left: 14px; border-left: 1px solid var(--border); }
+    .h3-header .audio { width: 36px; height: 36px; border-color: transparent; background: transparent; color: var(--text-dim); }
+
+    .mobile .office-header { min-height: auto; padding: 10px 12px; gap: 9px 10px; }
+    .mobile .date-main { font-size: 20px; }
+    .mobile .date-sub { font-size: 10px; }
+    .mobile .stat-label { font-size: 9px; }
+    .mobile .stat-value { font-size: 16px; }
+    .mobile .h1-header { grid-template-columns: auto 1fr auto; }
+    .mobile .h1-header .stats { grid-column: 1 / -1; grid-template-columns: repeat(3, 1fr); padding-top: 8px; border-top: 1px solid var(--border); }
+    .mobile .h2-header { grid-template-columns: 1fr auto; }
+    .mobile .h2-header .date-choice { grid-template-columns: 1fr; }
+    .mobile .h2-header .date-option:first-child { display: none; }
+    .mobile .h2-header .stats { grid-column: 1 / -1; grid-row: 2; grid-template-columns: repeat(3, 1fr); padding-top: 8px; border-top: 1px solid var(--border); }
+    .mobile .h2-header .audio-zone { grid-column: 2; grid-row: 1; padding-left: 8px; }
+    .mobile .h3-header { grid-template-columns: 1fr auto; }
+    .mobile .h3-header .stats { grid-column: 1 / -1; grid-template-columns: repeat(2, 1fr); padding-top: 8px; border-top: 1px solid var(--border); }
+    .mobile .h3-header .key .stat-value { font-size: 20px; }
+
+    table { width: min(820px, 100%); border-collapse: collapse; margin: 14px 0 22px; background: var(--office-panel-dark); }
+    th, td { padding: 8px 10px; border: 1px solid var(--border); text-align: left; }
+    th { color: var(--gold-light); font-size: 12px; }
+    td { color: var(--text-sub); font-size: 13px; }
+
+    .timeline-stack { display: grid; gap: 16px; padding: 16px; }
+    .timeline-card { padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--office-panel-dark); }
+    .timeline-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 20px; color: var(--text-main); font-weight: 700; }
+    .timeline-title small { color: var(--text-dim); font-weight: 400; }
+    .year-track { position: relative; height: 18px; background: var(--bg-dark); border: 1px solid var(--border); }
+    .season-fill { position: absolute; inset-block: 0; }
+    .spring { left: 0; width: 25%; background: var(--ev-spring); }
+    .summer { left: 25%; width: 25%; background: var(--ev-summer); }
+    .autumn { left: 50%; width: 25%; background: var(--ev-autumn); }
+    .winter { left: 75%; width: 25%; background: var(--ev-winter); }
+    .season-boundary { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text-main); opacity: .8; }
+    .month-tick { position: absolute; top: 0; height: 100%; width: 1px; background: var(--card-bg); opacity: .65; }
+    .current-marker { position: absolute; top: -8px; width: 3px; height: 32px; background: var(--gold-light); transform: translateX(-50%); box-shadow: 0 0 0 2px rgba(var(--gold-rgb), .28); }
+    [data-week="48"] .current-marker { transform: translateX(-100%); }
+    .current-marker::before { content: "▼"; position: absolute; top: -16px; left: 50%; transform: translateX(-50%); color: var(--gold-light); font-size: 11px; }
+    .season-labels, .month-labels { position: relative; height: 18px; color: var(--text-sub); font-size: 10px; }
+    .season-label, .month-label { position: absolute; white-space: nowrap; }
+    .season-labels { margin-top: 7px; }
+    .season-label { color: var(--text-main); font-weight: 700; transform: translateX(2px); }
+    .month-labels { margin-top: 1px; color: var(--text-dim); }
+    .timeline-note { margin-top: 8px; color: var(--text-dim); font-size: 11px; }
+    .month-label { transform: translateX(-50%); }
+    .offseason-track { height: 18px; border: 1px solid var(--border); background: var(--bg-dark); }
+    .offseason-fill { width: 100%; height: 100%; background: var(--gold); opacity: .28; }
+    .mobile .timeline-stack { padding: 10px; }
+    .mobile .timeline-card { padding: 11px 9px; }
+    .mobile .timeline-title { align-items: flex-end; margin-bottom: 18px; font-size: 13px; }
+    .mobile .season-labels, .mobile .month-labels { font-size: 8px; }
+
+    @media (max-width: 1050px) {
+      main { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Global Header / Season Timeline Redesign</h1>
+    <p class="lead">レビュー用の静的比較モックアップ。製品名「WRESTLE MANAGER」をヘッダーから外し、日付を左側の最大情報として扱う。ヘッダーは3案を比較するが、季節バーは共通の決定案を1種類だけ示す。</p>
+    <p>
+      <span class="tag">Office Dark</span>
+      <span class="tag">Desktop + 375px</span>
+      <span class="tag">Static HTML</span>
+      <span class="tag">未実装</span>
+    </p>
+
+    <h2>日付表記の比較</h2>
+    <table>
+      <thead><tr><th>案</th><th>例</th><th>最大想定</th><th>文字数目安</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>2年目 ❄️冬 第3週</td><td>10年目 ❄️冬 第12週</td><td>12 grapheme</td></tr>
+        <tr><td>B</td><td>2年目 ❄️冬 2月 第1週</td><td>10年目 🍂秋 12月 第4週</td><td>15 grapheme</td></tr>
+        <tr><td>B2</td><td>2年目 ❄️冬<br>2月 第1週</td><td>各行 7 grapheme</td><td>2行固定</td></tr>
+        <tr><td>C</td><td>2年目 第39週 ❄️冬</td><td>10年目 第48週 ❄️冬</td><td>12 grapheme</td></tr>
+      </tbody>
+    </table>
+
+    <h2>H1 — 日付と団体紋章を一体化</h2>
+    <p class="note">日付案 A。既存の団体アイコンを日付の左へ置き、経営指標を横一列に保つ。最も現行構造から移行しやすい案。</p>
+    <div class="compare-grid">
+      <section class="device desktop">
+        <div class="device-label">Desktop / H1</div>
+        <header class="office-header h1-header">
+          <span class="brand-mark" aria-label="団体紋章">WM</span>
+          <div class="date-block"><div class="date-main">2年目 ❄️冬 第3週</div><div class="date-sub">次回興行まで 1週</div></div>
+          <div class="stats">
+            <div class="stat"><span class="stat-label">資金</span><span class="stat-value">12,480万</span></div>
+            <div class="stat"><span class="stat-label">人気</span><span class="stat-value">72</span></div>
+            <div class="stat"><span class="stat-label">HEAT</span><span class="stat-value hot">🔥 HOT</span></div>
+            <div class="stat"><span class="stat-label">順位</span><span class="stat-value">2位</span></div>
+            <div class="stat"><span class="stat-label">王者</span><span class="stat-value champion">🏆 赤沼紗稀</span></div>
+          </div>
+          <div class="audio-zone"><button class="audio" type="button" aria-label="SEをミュート">🔊</button><button class="audio" type="button" aria-label="BGMをミュート">🎵</button></div>
+        </header>
+      </section>
+      <section class="device mobile">
+        <div class="device-label">375px / H1</div>
+        <header class="office-header h1-header">
+          <span class="brand-mark" aria-label="団体紋章">WM</span>
+          <div class="date-block"><div class="date-main">2年目 ❄️冬 第3週</div><div class="date-sub">次回興行まで 1週</div></div>
+          <div class="audio-zone"><button class="audio" type="button" aria-label="SEをミュート">🔊</button><button class="audio" type="button" aria-label="BGMをミュート">🎵</button></div>
+          <div class="stats">
+            <div class="stat"><span class="stat-label">資金</span><span class="stat-value">12,480万</span></div>
+            <div class="stat"><span class="stat-label">人気</span><span class="stat-value">72</span></div>
+            <div class="stat"><span class="stat-label">HEAT</span><span class="stat-value hot">🔥 HOT</span></div>
+            <div class="stat"><span class="stat-label">順位</span><span class="stat-value">2位</span></div>
+            <div class="stat"><span class="stat-label">王者</span><span class="stat-value champion">🏆 赤沼紗稀</span></div>
+          </div>
+        </header>
+      </section>
+    </div>
+
+    <h2>H2 — 音声操作を独立、日付は月まで表示</h2>
+    <p class="note">日付案 B / B2。団体紋章と音声操作を右端の独立ゾーンにまとめ、経営指標を2段にする。デスクトップで1行と2行を比較し、375pxではB2を採用。</p>
+    <div class="compare-grid">
+      <section class="device desktop">
+        <div class="device-label">Desktop / H2</div>
+        <header class="office-header h2-header">
+          <div class="date-choice">
+            <div class="date-option"><small>B / 1行</small><div class="date-main">2年目 ❄️冬 2月 第1週</div></div>
+            <div class="date-option two-line"><small>B2 / 2行</small><div class="date-main"><span>2年目 ❄️冬</span><span>2月 第1週</span></div></div>
+          </div>
+          <div class="stats">
+            <div class="stat"><span class="stat-label">資金</span><span class="stat-value">12,480万</span></div>
+            <div class="stat"><span class="stat-label">人気</span><span class="stat-value">72</span></div>
+            <div class="stat"><span class="stat-label">HEAT</span><span class="stat-value hot">🔥 HOT</span></div>
+            <div class="stat"><span class="stat-label">順位</span><span class="stat-value">2位</span></div>
+            <div class="stat"><span class="stat-label">王者</span><span class="stat-value champion">🏆 赤沼紗稀</span></div>
+          </div>
+          <div class="audio-zone"><span class="brand-mark" aria-label="団体紋章">WM</span><button class="audio" type="button" aria-label="SEをミュート">🔊</button><button class="audio" type="button" aria-label="BGMをミュート">🎵</button></div>
+        </header>
+      </section>
+      <section class="device mobile">
+        <div class="device-label">375px / H2</div>
+        <header class="office-header h2-header">
+          <div class="date-choice">
+            <div class="date-option"><small>B / 1行</small><div class="date-main">2年目 ❄️冬 2月 第1週</div></div>
+            <div class="date-option two-line"><small>B2 / 2行</small><div class="date-main"><span>2年目 ❄️冬</span><span>2月 第1週</span></div></div>
+          </div>
+          <div class="audio-zone"><span class="brand-mark" aria-label="団体紋章">WM</span><button class="audio" type="button" aria-label="SEをミュート">🔊</button><button class="audio" type="button" aria-label="BGMをミュート">🎵</button></div>
+          <div class="stats">
+            <div class="stat"><span class="stat-label">資金</span><span class="stat-value">12,480万</span></div>
+            <div class="stat"><span class="stat-label">人気</span><span class="stat-value">72</span></div>
+            <div class="stat"><span class="stat-label">HEAT</span><span class="stat-value hot">🔥 HOT</span></div>
+            <div class="stat"><span class="stat-label">順位</span><span class="stat-value">2位</span></div>
+            <div class="stat"><span class="stat-label">王者</span><span class="stat-value champion">🏆 赤沼紗稀</span></div>
+          </div>
+        </header>
+      </section>
+    </div>
+
+    <h2>H3 — 経営判断を優先</h2>
+    <p class="note">日付案 C。紋章を外し、「資金・王者」を大きく、「人気・順位」を補助情報にする。音声操作は区切り線の外側へ弱く配置する。</p>
+    <div class="compare-grid">
+      <section class="device desktop">
+        <div class="device-label">Desktop / H3</div>
+        <header class="office-header h3-header">
+          <div class="date-block"><div class="date-main">2年目 第39週 ❄️冬</div><div class="date-sub">年間 48週 / 進行 81%</div></div>
+          <div class="stats">
+            <div class="stat key"><span class="stat-label">資金</span><span class="stat-value">12,480万</span></div>
+            <div class="stat key"><span class="stat-label">王者</span><span class="stat-value champion">🏆 赤沼紗稀</span></div>
+            <div class="stat secondary"><span class="stat-label">人気 / 順位</span><span class="stat-value">72 / 2位</span></div>
+            <div class="stat"><span class="stat-label">HEAT</span><span class="stat-value hot">🔥 HOT</span></div>
+          </div>
+          <div class="audio-zone"><button class="audio" type="button" aria-label="SEをミュート">🔊</button><button class="audio" type="button" aria-label="BGMをミュート">🎵</button></div>
+        </header>
+      </section>
+      <section class="device mobile">
+        <div class="device-label">375px / H3</div>
+        <header class="office-header h3-header">
+          <div class="date-block"><div class="date-main">2年目 第39週 ❄️冬</div><div class="date-sub">年間 48週 / 進行 81%</div></div>
+          <div class="audio-zone"><button class="audio" type="button" aria-label="SEをミュート">🔊</button><button class="audio" type="button" aria-label="BGMをミュート">🎵</button></div>
+          <div class="stats">
+            <div class="stat key"><span class="stat-label">資金</span><span class="stat-value">12,480万</span></div>
+            <div class="stat key"><span class="stat-label">王者</span><span class="stat-value champion">🏆 赤沼紗稀</span></div>
+            <div class="stat secondary"><span class="stat-label">人気 / 順位</span><span class="stat-value">72 / 2位</span></div>
+            <div class="stat"><span class="stat-label">HEAT</span><span class="stat-value hot">🔥 HOT</span></div>
+          </div>
+        </header>
+      </section>
+    </div>
+
+    <h2>共通決定案 — 年間季節バー</h2>
+    <p class="note">春夏秋冬を各12週・25%で固定し、各月の開始を細線、季節開始を太線で示す。現在週マーカーは週末到達位置の <code>week / 48</code> とし、第48週は右端に置く。</p>
+    <div class="compare-grid">
+      <section class="device desktop">
+        <div class="device-label">Desktop / Week 1, 12, 13, 37, 48</div>
+        <div class="timeline-stack">
+          <div class="timeline-card"><div class="timeline-title">2年目 🌸春 第1週 <small>2.083%</small></div><div class="timeline" data-week="1"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 🌸春 第12週 <small>25%</small></div><div class="timeline" data-week="12"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 ☀️夏 第13週 <small>27.083%</small></div><div class="timeline" data-week="13"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 ❄️冬 第37週 <small>77.083%</small></div><div class="timeline" data-week="37"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 ❄️冬 第48週 <small>100%</small></div><div class="timeline" data-week="48"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 年度末 <small>オフシーズン 2/4</small></div><div class="offseason-track"><div class="offseason-fill"></div></div><div class="timeline-note">季節絵文字と現在週マーカーを外し、次年度への独立した橋渡し期間として表示。</div></div>
+        </div>
+      </section>
+      <section class="device mobile">
+        <div class="device-label">375px / Same decision</div>
+        <div class="timeline-stack">
+          <div class="timeline-card"><div class="timeline-title">2年目 🌸春 第1週 <small>2.083%</small></div><div class="timeline" data-week="1"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 🌸春 第12週 <small>25%</small></div><div class="timeline" data-week="12"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 ☀️夏 第13週 <small>27.083%</small></div><div class="timeline" data-week="13"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 ❄️冬 第37週 <small>77.083%</small></div><div class="timeline" data-week="37"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 ❄️冬 第48週 <small>100%</small></div><div class="timeline" data-week="48"></div></div>
+          <div class="timeline-card"><div class="timeline-title">2年目 年度末 <small>オフシーズン 2/4</small></div><div class="offseason-track"><div class="offseason-fill"></div></div></div>
+        </div>
+      </section>
+    </div>
+
+    <h2>レビュー観点</h2>
+    <p class="note">H1〜H3から1案、Bを選ぶ場合はB/B2のどちらを正とするかを決める。あわせて、既存レイアウト仕様の「団体名を左、週情報を右」「モバイル対象外」との矛盾、およびオフシーズンの正式名称・週数を確定する。</p>
+  </main>
+
+  <template id="timeline-template">
+    <div class="year-track">
+      <span class="season-fill spring"></span><span class="season-fill summer"></span><span class="season-fill autumn"></span><span class="season-fill winter"></span>
+      <span class="season-boundary" style="left:0"></span><span class="season-boundary" style="left:25%"></span><span class="season-boundary" style="left:50%"></span><span class="season-boundary" style="left:75%"></span>
+      <span class="month-tick" style="left:0"></span><span class="month-tick" style="left:8.333%"></span><span class="month-tick" style="left:16.667%"></span><span class="month-tick" style="left:25%"></span><span class="month-tick" style="left:33.333%"></span><span class="month-tick" style="left:41.667%"></span><span class="month-tick" style="left:50%"></span><span class="month-tick" style="left:58.333%"></span><span class="month-tick" style="left:66.667%"></span><span class="month-tick" style="left:75%"></span><span class="month-tick" style="left:83.333%"></span><span class="month-tick" style="left:91.667%"></span>
+      <span class="current-marker"></span>
+    </div>
+    <div class="season-labels"><span class="season-label" style="left:0">🌸春</span><span class="season-label" style="left:25%">☀️夏</span><span class="season-label" style="left:50%">🍂秋</span><span class="season-label" style="left:75%">❄️冬</span></div>
+    <div class="month-labels"><span class="month-label" style="left:4.167%">4月</span><span class="month-label" style="left:12.5%">5月</span><span class="month-label" style="left:20.833%">6月</span><span class="month-label" style="left:29.167%">7月</span><span class="month-label" style="left:37.5%">8月</span><span class="month-label" style="left:45.833%">9月</span><span class="month-label" style="left:54.167%">10月</span><span class="month-label" style="left:62.5%">11月</span><span class="month-label" style="left:70.833%">12月</span><span class="month-label" style="left:79.167%">1月</span><span class="month-label" style="left:87.5%">2月</span><span class="month-label" style="left:95.833%">3月</span></div>
+  </template>
+  <script>
+    const markerPositions = { 1: "2.083%", 12: "25%", 13: "27.083%", 37: "77.083%", 48: "100%" };
+    document.querySelectorAll(".timeline").forEach((timeline) => {
+      timeline.append(document.querySelector("#timeline-template").content.cloneNode(true));
+      timeline.querySelector(".current-marker").style.left = markerPositions[timeline.dataset.week];
+    });
+  </script>
+</body>
+</html>
