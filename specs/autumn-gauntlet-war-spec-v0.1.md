@@ -1,6 +1,6 @@
 # ⚔️ 4団体勝ち残り対抗戦 設計書 v0.1
 
-> **ステータス**: 🟢 エンジン・UI実装済み（2026-07-19、実機確認待ち。MVP全アーキタイプ台詞パックのみ別タスク）
+> **ステータス**: 🟢 Phase 2実装済み（2026-07-21、専用Stage・観戦・レスポンシブ編成・通常試合tier。実機確認待ち）
 > **作成日**: 2026-07-17
 > **位置付け**: Q3末（Week 36）の特別興行。年1回開催。ロードマップ E-4
 > **依存**: battle-engine-spec-v4.2 / rival-org-spec-v1.0 / org-ranking-spec-v2.0 / weekly-gameloop-spec-v1_0
@@ -50,9 +50,11 @@
 
 | 項目 | 仕様 |
 |------|------|
-| 編成時期 | Week 35（前週）に3名 + 並び順を決定 |
+| 編成時期 | Week 36の大会導入直後に3名 + 並び順を決定。Week 35編成は廃止 |
 | 出場不可 | 怪我中・レンタル選手 |
 | 並び替え | **決勝進出時、決勝前に並び順の組み直し可**（§4。消耗状況を見た采配が社長の見せ場） |
+
+- 初期値と `[おまかせ]` は、OVR上位3名をOVR昇順（大将＝最強）に並べる。未操作のまま確定しても同じ順を使う。
 
 ### §2.2 AI団体
 
@@ -98,7 +100,9 @@ hpRatio = 勝者の試合終了時 残HP ÷ 開始HP
 
 - イベント試合は既存準拠で **roster 本体の condition に影響しない**（`resolveEventMatch` が `{...fighter, condition: X}` のコピーで戦う）。消耗はイベント内限定の概念
 - 怪我なし（イベント試合準拠）
-- **要確認**: `Engine.battle.simulateMatch` の返却値に勝者の残HPが含まれるか。なければ返却値に追加する（既存消費側に影響しない追加のみ）
+- `MATCH_TIER = 1`。各フォールは通常試合ルールと `ENG` の通常HP基準で開始HPを作る。大一番ルール／`BIGMATCH_ENG` は使わない。
+- 消耗式、初期80、floor 40、準決勝→決勝の回復+15はtier変更後も据え置く。
+- `simulateMatch` の残HP比からwearを計算する。観戦時だけ `recordFrames` を要求し、framesはGameStateへ保存しない。
 
 ---
 
@@ -181,15 +185,20 @@ hpRatio = 勝者の試合終了時 残HP ÷ 開始HP
 | 週 | 処理 |
 |----|------|
 | Week 34 | 出場4団体・シード発表（新聞: 週刊グラップル特別号） |
-| Week 35 | プレイヤー編成UI（3名選出 + 先鋒/中堅/大将の並び順） |
-| Week 36 | 準決勝2試合 → 決勝前の並び替え → 決勝 → 結果・賞金・MVP |
+| Week 35 | 大会固有処理なし |
+| Week 36 | 導入 → 代表編成 → 準決勝2試合 → 決勝前の並び替え → 決勝 → 結果・賞金・MVP |
 
 ### §6.1 進行UI
 
+- `#showResultOverlay` は使わず、専用の `#autumnWarOverlay` / `#autumnWarScreen` で全phaseを描画する。`data-phase` は `intro / entry / board / reorder / result / mvp`。
+- Week 36開始後は大会終了までグローバルChromeを覆い、Officeへ戻る導線を持たない。
 - **採用ハイブリッド**: 案1の布陣ボードを主画面、案2の小型クライムラインを勝ち上がり補助、案3のリングサイドを現在試合のフォーカス部として統合
+- **編成**: Desktopは同サイズのフル画像3名を先鋒・大将が前、中堅が背後上の三角配置。375pxはL1縦カード。候補棚はスタンド画像の横スクロール。相手の平均OVR・OVR幅を両方で表示する。
+- OVR数値は選手データベース共通の閾値色を使い、主要な選手画像・名前から選手詳細を開ける。
 - **布陣ボード**: 4チーム×3名の生存/脱落/消耗状態を一覧表示（春リーグの「リーグ表逐次更新」に対応する秋の顔）
 - フォールごとに結果を逐次表示、勝ち残り選手の連戦を強調
 - 大会開始時に全結果を作らない。「結果を見る」ごとにリング上の2名だけをシミュレートし、勝敗・消耗・脱落・勝ち抜き数・RNG状態を保存する
+- 「観戦する」も同じ逐次関数を1回だけ呼び、その確定結果とframesをバトル画面へ渡す。観戦完了／中断時に再シミュレートせず、保存済みの1フォールを戦況ボードへ表示する。
 - プレイヤー決勝進出時は、準決勝後の回復状態を確認して3名を再配置する。決勝カードは布陣確定後に初めて生成し、準決勝の再計算は行わない
 - 3人抜き達成時は特別演出（新聞見出し・ティッカー）
 - 優勝結果の後にMVP選手だけを映す一言シーンを表示。台詞は結果文脈（3人抜き / 優勝 / 敗退）× personality × archetype で解決する
@@ -218,7 +227,8 @@ hpRatio = 勝者の試合終了時 残HP ÷ 開始HP
 |-----------|-----|------|
 | `autumnWar` | object\|null | `{phase, teams, bracket, session, results, mvpId}` |
 | `autumnWar.session` | object\|null | `{phase, rng, activeMatch, semiCursor, finalists, conditions, fighterWins, finalWins, results}`。各フォール後に保存可能なライブ進行状態 |
-| `autumnWarPhase` | string\|null | 'announce' / 'entry' / 'live' / 'result' |
+| `autumnWarPhase` | string\|null | エンジン側の進行目印。`announce / intro / entry_done / live / result` |
+| `#autumnWarOverlay[data-phase]` | DOM属性 | UI表示phase。`intro / entry / board / reorder / result / mvp` |
 
 teams: `[{orgId, members: [id×3], order: [id×3], eliminated: [id...], conditions: {id: n}}]`
 
@@ -243,3 +253,4 @@ teams: `[{orgId, members: [id×3], order: [id×3], eliminated: [id...], conditio
 | 2026-07-17 | v0.1 初版。アーク5設計議論の決定（3名制 / 消耗B案実測連動 / ポイント仮配点）を書き起こし |
 | 2026-07-19 | エンジンと推奨ハイブリッドUIを実装。週36逐次リプレイ、決勝再配置、MVP一言シーンを追加 |
 | 2026-07-19 | 大会全体の事前生成を廃止。1フォール逐次実行、RNG途中保存、布陣確定後の決勝生成へ変更 |
+| 2026-07-21 | Phase 2改修。Week 35編成をWeek 36導入後へ統合し、専用Stage、観戦経路、Desktop三角編成＋375px L1、選手詳細・OVR強調、通常試合tierを実装 |
