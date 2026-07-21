@@ -3974,14 +3974,13 @@ const App = {
         header: `🌸 春のタッグリーグ ${roundLabel}`,
         matchNum: isFinal ? 7 : matchIndex + 1,
         totalMatches: 7,
+        preserveParentFileBgm: true,
         sfxMasterVol: Audio.sfxMasterVol,
         bgmMasterVol: Audio.bgmMasterVol,
         chemA: replay.result.chemA,
         chemB: replay.result.chemB,
       },
     };
-    try { Audio.fileBgm.stop(); } catch (_e) {}
-    try { Audio.bgm.play('battle'); } catch (_e) {}
     let sent = false;
     const sendOnce = () => {
       if (sent) return;
@@ -4008,8 +4007,6 @@ const App = {
     p.phase = p.watchReturnPhase || 'table';
     delete p.watchReturnPhase;
     delete p.watchCanonical;
-    try { Audio.bgm.stop(); } catch (_e) {}
-    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
     App.stlAdvance();
   },
 
@@ -6311,8 +6308,20 @@ const App = {
     clearTimeout(App._escBtnTimer);
     const escBtn = document.getElementById('battleEscapeBtn');
     if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
-    // BGM停止 + 復帰
-    try { Audio.fileBgm.stop(); } catch(e) {}
+    const aw = App._awPreview;
+    const stl = App._stlPreview;
+    const jt = App._jtPreview;
+    const tc = App._tcPreview;
+    const preserveTournamentFileBgm = !!(
+      (aw && aw.phase === 'watching')
+      || (stl && stl.phase === 'watching')
+      || (jt && jt.phase === 'watching')
+      || (tc && tc.phase === 'watching')
+    );
+    // 大会観戦は現在の大会曲（決勝専用曲を含む）を保ち、通常試合だけ従来どおり止める。
+    if (!preserveTournamentFileBgm) {
+      try { Audio.fileBgm.stop(); } catch(e) {}
+    }
     document.getElementById('battleOverlay').style.display = 'none';
     // Auto-skip the stuck match
     const sp = App._showPreview;
@@ -6344,22 +6353,17 @@ const App = {
         setTimeout(() => { if (App._warPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {} } }, 300);
       }
     }
-    const aw = App._awPreview;
     if (aw && aw.phase === 'watching') {
       App._finishAutumnWarWatch();
       return;
     }
-    const stl = App._stlPreview;
     if (stl && stl.phase === 'watching') {
       stl.phase = stl.watchReturnPhase || 'table';
       delete stl.watchReturnPhase;
       delete stl.watchCanonical;
-      try { Audio.bgm.stop(); } catch (_e) {}
-      try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
       App.stlAdvance();
       return;
     }
-    const jt = App._jtPreview;
     if (jt && jt.phase === 'watching') {
       const ri = jt.currentRound;
       const mi = jt.currentMatch;
@@ -6368,7 +6372,6 @@ const App = {
       return;
     }
     // 天頂戦
-    const tc = App._tcPreview;
     if (tc && tc.phase === 'watching') {
       App.tcSkipMatch(tc.currentRound, tc.currentMatch);
       return;
@@ -13834,6 +13837,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
       leftArchetype: leftF.archetype || 'normal',
       rightPersonality: rightF.personality || 'normal',
       rightArchetype: rightF.archetype || 'normal',
+      preserveParentFileBgm: true,
       sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
     },
     result: jtResult,
@@ -13918,8 +13922,6 @@ App._receiveJTBattleResult = function(data) {
   clearTimeout(App._escBtnTimer);
   const escBtn = document.getElementById('battleEscapeBtn');
   if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
-  // BGMフェードアウト（決勝時）
-  try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
   // iframeを閉じる
   document.getElementById('battleOverlay').style.display = 'none';
 
@@ -14060,10 +14062,6 @@ App.jtAdvanceAfterMatch = function(roundIdx, matchIdx) {
 
 App.jtAdvanceAfterResult = function(roundIdx, matchIdx) {
   // 試合結果画面から次へ進む
-  // トーナメントBGMを再開（決勝観戦後のフェードアウトからの復帰）
-  if (!Audio.fileBgm._audio) {
-    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
-  }
   App._jtAdvanceInternal(roundIdx, matchIdx);
 };
 
@@ -14295,6 +14293,7 @@ App.tcWatchMatch = function(roundIdx, matchIdx) {
       leftArchetype: leftF.archetype || 'normal',
       rightPersonality: rightF.personality || 'normal',
       rightArchetype: rightF.archetype || 'normal',
+      preserveParentFileBgm: true,
       sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
     },
     result: tcResult,
@@ -14323,7 +14322,6 @@ App._receiveTcBattleResult = function(data) {
   clearTimeout(App._escBtnTimer);
   const escBtn = document.getElementById('battleEscapeBtn');
   if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
-  try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
   document.getElementById('battleOverlay').style.display = 'none';
   // Watch mode is replay-only: iframe の返り値で結果を書き換えない(JT流儀)
   const incomingWinnerId = data.winnerId != null
@@ -14348,10 +14346,6 @@ App.tcSkipMatch = function(roundIdx, matchIdx) {
 App.tcAdvanceAfterResult = function(roundIdx, matchIdx) {
   const tc = App._tcPreview;
   if (!tc) return;
-  // トーナメントBGMを再開(決勝観戦後のフェードアウトからの復帰)
-  if (!Audio.fileBgm._audio) {
-    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
-  }
   const round = tc.rounds[roundIdx];
   if (matchIdx + 1 < round.matches.length) {
     tc.currentMatch = matchIdx + 1;

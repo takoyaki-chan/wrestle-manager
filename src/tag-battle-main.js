@@ -1127,7 +1127,10 @@ function _advancePinStep(){
 function _notifyFinishCue(){
   if (S.finishCueSent || window.parent === window) return;
   S.finishCueSent = true;
-  try { window.parent.postMessage({ type: 'BATTLE_FINISH_CUE' }, '*'); } catch(e) {}
+  try { window.parent.postMessage({
+    type: 'BATTLE_FINISH_CUE',
+    preserveParentFileBgm: !!(S.matchInfo && S.matchInfo.preserveParentFileBgm),
+  }, '*'); } catch(e) {}
 }
 
 function _finishPinSeq(){
