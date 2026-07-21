@@ -15,5 +15,7 @@ assert(app.includes('if (App._awayChallengeManualStart)'), 'manual away results 
 assert(app.includes('awayPlayerRosterIds: [...ownIds]'), 'away previews must retain the pre-away player roster boundary');
 assert(app.includes('isTemporaryAwayGuest'), 'away result finalization must identify temporary opponent guests');
 assert(app.includes('Reassert the pre-away player roster boundary'), 'away result application must purge guests a second time after result hooks');
+assert(app.includes('playerRosterIds: (G.roster || []).filter(f => !f.isCRGuest).map(f => f.id)'), 'incoming challenge flow must retain the pre-match player roster boundary');
+assert(app.includes('isTemporaryChallengeGuest'), 'incoming challenge cleanup must use guest provenance rather than guest IDs alone');
 
 console.log('challenge-request-away-launch-test: ok');

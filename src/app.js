@@ -2167,7 +2167,7 @@ const Storage = {
       // Repair saves affected by away-challenge display guests. Guests must not
       // count as signed wrestlers, ratings, or a roster-cap unlock condition.
       if (!G._migrated_roster_cap_away_guest_repair_v1) {
-        const cleanedRoster = (G.roster || []).filter(f => !f?.isAwayChallengeGuest);
+        const cleanedRoster = (G.roster || []).filter(f => !f?.isAwayChallengeGuest && !f?.isCRGuest && !f?.isB3ChallengeGuest);
         if (cleanedRoster.length !== (G.roster || []).length) {
           G = { ...G, roster: cleanedRoster };
           if (Engine.ranking?.updateRankings) G = { ...G, rankings: Engine.ranking.updateRankings(G) };
@@ -5843,6 +5843,7 @@ const App = {
           requesterOrgName: pcm.requesterOrgName, opponentOrgName: pcm.opponentOrgName,
           teamAIds: teamACR.map(f => f.id), teamBIds: teamBCR.map(f => f.id),
           guestIds: guestIdsCR,
+          playerRosterIds: (G.roster || []).filter(f => !f.isCRGuest).map(f => f.id),
         };
         const { _pendingIncomingChallengeMatch: _pcm1, _pendingChallengeMatch: _legacyPcm1, ...restGCR } = G;
         G = restGCR;
@@ -6772,6 +6773,7 @@ const App = {
       App._crGuestSyncData = {
         guestIds: [...cd.guestIds],
         guestOrgId: cd.isInverse ? cd.requesterOrgId : cd.opponentOrgId,
+        playerRosterIds: [...(cd.playerRosterIds || [])],
       };
       s = { ...s, roster };
       App._crMatchData = null;
@@ -7793,7 +7795,11 @@ const App = {
     if (App._crGuestSyncData) {
       const sync = App._crGuestSyncData;
       const guestIds = new Set(sync.guestIds || []);
-      const updatedGuests = new Map(roster.filter(c => guestIds.has(c.id)).map(c => [c.id, c]));
+      const playerRosterIds = new Set(sync.playerRosterIds || []);
+      const isTemporaryChallengeGuest = fighter => !!fighter && (
+        fighter.isCRGuest || (guestIds.has(fighter.id) && !playerRosterIds.has(fighter.id))
+      );
+      const updatedGuests = new Map(roster.filter(c => isTemporaryChallengeGuest(c)).map(c => [c.id, c]));
       const aiOrgs = { ...(s.aiOrgs || {}) };
       const guestOrg = aiOrgs[sync.guestOrgId];
       if (guestOrg && Array.isArray(guestOrg.roster)) {
@@ -7813,7 +7819,7 @@ const App = {
           }),
         };
       }
-      roster = roster.filter(c => !guestIds.has(c.id));
+      roster = roster.filter(c => !isTemporaryChallengeGuest(c));
       s = { ...s, aiOrgs, roster };
       App._crGuestSyncData = null;
     }
@@ -8860,8 +8866,8 @@ const App = {
     const guestIds = new Set(sp.awayGuestIds || []);
     const playerRosterIds = new Set(sp.awayPlayerRosterIds || []);
     const isTemporaryAwayGuest = fighter => !fighter
-      || guestIds.has(fighter.id)
       || fighter.isAwayChallengeGuest
+      || (guestIds.has(fighter.id) && !playerRosterIds.has(fighter.id))
       || !playerRosterIds.has(fighter.id);
     s = {
       ...s,
