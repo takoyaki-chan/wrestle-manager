@@ -1560,6 +1560,13 @@ const Storage = {
           : { ...restChallenge, _pendingAwayChallengeMatch: legacyChallenge };
       }
 
+      // A saved pre-direct-execution reservation must never keep its members
+      // unavailable forever.  This also repairs affected saves immediately on
+      // reload, rather than requiring the player to advance another week.
+      if (Engine.challengeRequest?.releaseExpiredAwayBooking) {
+        G = Engine.challengeRequest.releaseExpiredAwayBooking(G);
+      }
+
       // v0.6 backward compat: coaches
       if (!G.coaches) G = { ...G, coaches: [] };
       if (!G.availableCoaches) G = { ...G, availableCoaches: ALL_COACHES.map(c => c.id).filter(id => !G.coaches.includes(id)) };

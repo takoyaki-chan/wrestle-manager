@@ -76,6 +76,24 @@ function makeState(showVenue = 8) {
   assert.deepStrictEqual(again.card, reserved.card, 're-rendering show prep must keep the reservation stable');
 })();
 
+(function releasesOnlyStaleAwayReservations() {
+  const booking = {
+    requesterOrgId: 'player', opponentOrgId: 'AWAY',
+    teamAIds: [1, 2, 3], teamBIds: [101, 102, 103],
+    acceptedSeason: 2, acceptedWeek: 2,
+  };
+  const recent = Engine.challengeRequest.releaseExpiredAwayBooking({
+    season: 2, week: 9, _pendingAwayChallengeMatch: booking,
+  });
+  assert.ok(recent._pendingAwayChallengeMatch, 'away bookings remain active during the eight-week grace period');
+
+  const expired = Engine.challengeRequest.releaseExpiredAwayBooking({
+    season: 2, week: 10, _pendingAwayChallengeMatch: booking,
+  });
+  assert.ok(!expired._pendingAwayChallengeMatch, 'stale away bookings must release their reserved wrestlers');
+  assert.strictEqual(expired._expiredAwayChallengeNotice.age, 8, 'expiry keeps diagnostic context for the restored save');
+})();
+
 (function challengeSeriesCanFillAThreeMatchVenueWithoutOverflow() {
   const state = makeState(0);
   const reserved = Engine.challengeRequest.reserveScheduledMatches(state, []);

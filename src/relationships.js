@@ -3384,6 +3384,31 @@ Engine.challengeRequest = {
     return (fighterIds || []).some(id => id != null && awayIds.has(id));
   },
 
+  /**
+   * An away booking is only a reservation; its wrestlers remain in the roster.
+   * Older builds could leave that reservation behind indefinitely, which made
+   * the same three wrestlers unavailable forever.  Keep a generous grace
+   * period for seasonal-show collisions, then release only the stale booking.
+   */
+  releaseExpiredAwayBooking(state) {
+    const booking = state?._pendingAwayChallengeMatch;
+    if (!booking) return state;
+    const acceptedSeason = Number(booking.acceptedSeason);
+    const acceptedWeek = Number(booking.acceptedWeek);
+    const currentSeason = Number(state.season);
+    const currentWeek = Number(state.week);
+    const hasDate = Number.isInteger(acceptedSeason) && Number.isInteger(acceptedWeek)
+      && Number.isInteger(currentSeason) && Number.isInteger(currentWeek);
+    const age = hasDate
+      ? Engine.util.absWeek(currentSeason, currentWeek) - Engine.util.absWeek(acceptedSeason, acceptedWeek)
+      : Infinity;
+    // Four ordinary-show opportunities are enough to absorb fixed events;
+    // beyond this point retaining the reservation is worse than cancellation.
+    if (age < 8) return state;
+    const { _pendingAwayChallengeMatch: _expiredAway, ...clean } = state;
+    return { ...clean, _expiredAwayChallengeNotice: { opponentOrgName: booking.opponentOrgName || booking.opponentOrgId || '', age } };
+  },
+
   /** GameState の challengeRequest フィールドを保証 */
   ensureInit(state) {
     if (!state.challengeRequest) {
@@ -3468,7 +3493,7 @@ Engine.challengeRequest = {
    * 既に pendingThisWeek がある（前週の打診が未解決）場合は何もしない。
    */
   processWeekly(state, rng) {
-    let s = this.ensureInit(state);
+    let s = this.releaseExpiredAwayBooking(this.ensureInit(state));
     if (s.challengeRequest.pendingThisWeek) return s;
     if (s._pendingIncomingChallengeMatch || s._pendingAwayChallengeMatch || s._pendingIncomingB3Match || s._pendingChallengeMatch) return s;
     if (!this._isSamplingWeek(s)) return s;
