@@ -56,6 +56,15 @@ const watchedFirst = Engine.autumnWar.simulateNextBout(
 assert.deepStrictEqual(watchedFirst.bout, first.bout, 'watched and skipped bouts must resolve identically');
 assert.deepStrictEqual(watchedFirst.state.autumnWar, first.state.autumnWar, 'watched and skipped tournament state must match');
 assert.ok(watchedFirst.replay?.result?.frames?.length > 0, 'watched bout must include replay frames');
+assert.strictEqual(Engine.autumnWar.MATCH_TIER, 1, 'autumn war must use normal match rules');
+const expectedLeftFullHp = Math.round(ENG.hpBase + Engine.util.eff(watchedFirst.replay.left.st) * ENG.hpScale);
+assert.strictEqual(Engine.autumnWar._fullHp(watchedFirst.replay.left), expectedLeftFullHp, 'carry HP must use the normal-match HP scale');
+assert.strictEqual(
+  watchedFirst.replay.left._hpOverride,
+  Engine.wear.toHpOverride(Engine.autumnWar.INITIAL_CONDITION, expectedLeftFullHp),
+  'first fall must start from 80% of normal-match full HP'
+);
+assert.strictEqual(watchedFirst.replay.result.hpLeft.max, expectedLeftFullHp, 'normal-match full HP must remain the replay meter maximum');
 const firstProgress = Engine.autumnWar.getProgress(first.state);
 const firstBoutCount = firstProgress.results.reduce((sum, match) => sum + match.bouts.length, 0);
 assert.strictEqual(firstBoutCount, 1, '1回の操作で未来のフォールまで生成してはならない');

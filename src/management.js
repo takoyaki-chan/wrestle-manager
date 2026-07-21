@@ -24522,7 +24522,7 @@ Engine.autumnWar = {
   CEILING: 80,
   PRIZE: { champion: 1200, runnerUp: 500 }, // 万円
   ORG_ORDER: ['player', 'org_s', 'org_a', 'org_b'],
-  MATCH_TIER: 2,
+  MATCH_TIER: 1,
 
   _orgRoster(state, orgId) {
     if (orgId === 'player') return state.roster || [];
@@ -24822,7 +24822,7 @@ Engine.autumnWar = {
   },
 
   _fullHp(fighter) {
-    return Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(fighter.st) * BIGMATCH_ENG.hpScale);
+    return Math.round(ENG.hpBase + Engine.util.eff(fighter.st) * ENG.hpScale);
   },
 
   /** 現在リング上にいる2人だけをシミュレートし、結果とRNG状態を保存する。 */
