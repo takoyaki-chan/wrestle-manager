@@ -8118,6 +8118,14 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .np-top-photo .stamp { position: absolute; top: 8px; right: 8px; background: #8b1a1a; color: #fff; font-size: 8px; font-weight: 900; padding: 2px 6px; letter-spacing: 1px; border-radius: 2px; transform: rotate(3deg); }
 .np-top-photo .caption { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.85)); color: #fff; font-size: 9px; padding: 14px 8px 6px; line-height: 1.4; }
 .np-top-photo .caption strong { font-size: 11px; font-family: 'Noto Serif JP', serif; display: block; margin-bottom: 1px; }
+.np-top-photo--tag { background-image: none !important; }
+.np-top-tag-photo { position: absolute; inset: 0; overflow: hidden; }
+.np-top-tag-photo-member { position: absolute; top: 0; bottom: 0; width: 58%; cursor: pointer; }
+.np-top-tag-photo-member-1 { left: 0; z-index: 1; }
+.np-top-tag-photo-member-2 { right: 0; z-index: 2; }
+.np-top-tag-photo-member img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.np-top-photo--tag .stamp { z-index: 5; }
+.np-top-photo--tag .caption { z-index: 4; }
 .np-top-body { display: grid; align-content: start; gap: 8px; }
 .np-top-headline { font-size: 24px; line-height: 1.18; font-weight: 900; font-family: 'Noto Serif JP', serif; letter-spacing: -0.01em; color: #1a0d04; }
 .np-top-sub { font-size: 12px; font-weight: 700; color: #8b1a1a; border-top: 1px solid rgba(120,84,39,0.35); border-bottom: 1px solid rgba(120,84,39,0.35); padding: 4px 0; letter-spacing: 0.5px; }

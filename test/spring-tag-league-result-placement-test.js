@@ -46,6 +46,18 @@ const applied = Engine.springTagLeague.apply(state, finalResult).state;
 assert.strictEqual(applied.funds - fundsBefore, Engine.springTagLeague.PRIZE.champion,
   'league-second final winner must receive the champion prize');
 
+const resultNewsEvent = applied._industryNewsEvents.find(event => event.type === 'springTagResult');
+assert.ok(resultNewsEvent, 'spring tag result must enqueue an industry-news event');
+assert.strictEqual(resultNewsEvent.characterId, playerTeam.f1Id,
+  'spring tag result must keep a primary winner ID for legacy newspaper consumers');
+assert.deepStrictEqual(resultNewsEvent.characterIds, [playerTeam.f1Id, playerTeam.f2Id],
+  'spring tag result must preserve both champion IDs for the page-one team photo');
+
+const newspaper = Engine.newspaper.generate(applied, Engine.rng.create(42012));
+assert.strictEqual(newspaper.topStory.type, 'springTagResult');
+assert.deepStrictEqual(newspaper.topStory.characterIds, [playerTeam.f1Id, playerTeam.f2Id],
+  'generated newspaper must retain both champion IDs');
+
 for (const fighterId of [playerTeam.f1Id, playerTeam.f2Id]) {
   const fighter = applied.roster.find(item => item.id === fighterId);
   const event = fighter.careerRecord.history.find(item =>

@@ -1,6 +1,6 @@
 # 新聞タブ独立 v3.0 — 確定UI仕様
 
-最終更新: 2026-04-30 (業界ニュース拡充 — bond/rivalry/派閥/奪還イベント feed)
+最終更新: 2026-07-21 (春タッグリーグ優勝ペアの一面写真に対応)
 
 ## 業界ニュースキュー (2026-04-30 追加)
 
@@ -49,7 +49,7 @@
 ## 3. 1面: 興行 (`_npRenderPage1`)
 
 表示順:
-1. **np-top-story** — `grid-template-columns:200px 1fr` + `.np-top-photo` 200×240 額装(EXCLUSIVE スタンプ + キャプション overlay) + 24px見出し + sub バー + justify本文
+1. **np-top-story** — `grid-template-columns:200px 1fr` + `.np-top-photo` 200×240 額装(EXCLUSIVE スタンプ + キャプション overlay) + 24px見出し + sub バー + justify本文。通常記事は代表選手1名のupper画像、`springTagResult` は優勝ペアの `characterIds[0..1]` を左右58%幅で配置し、中央を少し重ねて2名を同じ枠へ表示する。修正前セーブの同記事は、記事と同じシーズンの `springTagLeague` または `bestTagTeam` からペアIDを補完し、別シーズンの結果は流用しない
 2. **np-show-result** — `playerShowData` がある週のみ。130×130 fighter-card×2 + WIN スタンプ(勝者) + result-line(MQ大字) + show-article + rating-block(★+headline+黒田コメント)
 3. **np-digest** — `_npRenderDigest()`。テーブル形式 4列(#/badge/カード/MQ右寄せ)、寸評行は colspan
 4. **np-sub-stories** — 2col グリッド。subStories の portrait + headline + body、まとめ末尾に黒田寸評

@@ -6658,6 +6658,38 @@ function _npPhotoBg(id) {
   const url = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
   return url ? `background-image: url('${url}');` : '';
 }
+function _npSpringTagStoryIds(state, story, seasonNum) {
+  if (!story || story.type !== 'springTagResult') return [];
+  const direct = Array.isArray(story.characterIds)
+    ? story.characterIds.filter(id => Number.isInteger(id) && id > 0).slice(0, 2)
+    : [];
+  if (direct.length >= 2) return direct;
+
+  // v1.2以前に生成済みの新聞は優勝ペアIDを保持していないため、
+  // 同じシーズンの大会結果またはベストタッグ記録から補完する。
+  const league = state.springTagLeague;
+  if (league && !league.cancelled && league.announcedSeason === seasonNum) {
+    const team = (league.teams || []).find(t => t.orgId === league.champion);
+    if (team?.f1Id && team?.f2Id) return [team.f1Id, team.f2Id];
+  }
+  const best = state.bestTagTeam;
+  if (best && best.awardedSeason === seasonNum && best.f1Id && best.f2Id) {
+    return [best.f1Id, best.f2Id];
+  }
+  return direct;
+}
+function _npTopTagPhotoHtml(ids) {
+  if (!Array.isArray(ids) || ids.length < 2) return '';
+  const members = ids.slice(0, 2).map((id, idx) => {
+    const upper = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
+    const portrait = (typeof getPortraitUrl === 'function') ? getPortraitUrl(id) : '';
+    const src = upper || portrait;
+    if (!src) return '';
+    const fighter = ALL_CHARS.find(c => c.id === id);
+    return `<div class="np-top-tag-photo-member np-top-tag-photo-member-${idx + 1}" onclick="showFighterPopup(${id})"><img src="${src}" alt="${escHtml(fighter?.name || '')}"></div>`;
+  }).join('');
+  return members ? `<div class="np-top-tag-photo">${members}</div>` : '';
+}
 function _npThumbBg(id) {
   if (!id) return '';
   const url = (typeof getPortraitUrl === 'function') ? getPortraitUrl(id) : '';
@@ -6881,18 +6913,23 @@ function _npRenderPage1() {
   // 一面記事
   if (wp.topStory) {
     const ts = wp.topStory;
-    const photoBg = _npPhotoBg(ts.characterId);
-    const tsName = ts.characterId ? (ALL_CHARS.find(c => c.id === ts.characterId)?.name || '') : '';
-    const tsOrgKey = ts.characterId ? _npFindFighterOrgKey(G, ts.characterId) : null;
-    const tsOrgName = ts.characterId ? _findFighterOrgName(G, ts.characterId) : '';
+    const tagPhotoIds = _npSpringTagStoryIds(G, ts, seasonNum);
+    const isTagPhoto = tagPhotoIds.length >= 2;
+    const primaryId = tagPhotoIds[0] || ts.characterId || null;
+    const photoBg = isTagPhoto ? '' : _npPhotoBg(primaryId);
+    const photoIds = isTagPhoto ? tagPhotoIds : (primaryId ? [primaryId] : []);
+    const tsName = photoIds.map(id => ALL_CHARS.find(c => c.id === id)?.name || '').filter(Boolean).join(' / ');
+    const tsOrgKey = primaryId ? _npFindFighterOrgKey(G, primaryId) : null;
+    const tsOrgName = primaryId ? _findFighterOrgName(G, primaryId) : '';
     const tsOrgEmblem = tsOrgKey ? _npOrgEmblem(G, tsOrgKey, 18) : '';
     const tsOrgLineHtml = (tsOrgEmblem || tsOrgName)
       ? `<div class="np-top-org-line">${tsOrgEmblem}<span>${tsOrgName || ''}</span></div>`
       : '';
     html += `<article class="np-top-story">
-      <div class="np-top-photo" style="${photoBg}">
-        ${ts.characterId ? `<div class="stamp">EXCLUSIVE</div>` : ''}
-        ${ts.characterId ? `<div class="caption">${tsOrgLineHtml}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>` : ''}
+      <div class="np-top-photo${isTagPhoto ? ' np-top-photo--tag' : ''}" style="${photoBg}">
+        ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds) : ''}
+        ${primaryId ? `<div class="stamp">EXCLUSIVE</div>` : ''}
+        ${primaryId ? `<div class="caption">${tsOrgLineHtml}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>` : ''}
       </div>
       <div class="np-top-body">
         <div class="np-sec">一面記事</div>

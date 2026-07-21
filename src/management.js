@@ -24499,6 +24499,8 @@ Engine.springTagLeague = {
       const rf2 = runnerUpTeam && runnerRoster.find(f => f.id === runnerUpTeam.f2Id);
       s = Engine.industryNews.push(s, {
         type: 'springTagResult',
+        characterId: champTeam.f1Id,
+        characterIds: [champTeam.f1Id, champTeam.f2Id],
         data: {
           season: s.season,
           championOrg: Engine.springTagLeague._orgName(s, champion),
@@ -25833,6 +25835,7 @@ Engine.newspaper = {
           headline: rep(tpl.headline),
           body: rep(tpl.body),
           characterId: ev.characterId || null,
+          characterIds: Array.isArray(ev.characterIds) ? ev.characterIds.slice(0, 2) : null,
         });
       });
     }
