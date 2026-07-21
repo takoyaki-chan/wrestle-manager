@@ -94,7 +94,11 @@
     let next = resolveDefaultBlockingPhase(state);
     if (next.weekPhase === 'manage') {
       next = defaultSchedules(next);
-      if (!next.offSeason && Engine.util.isShowWeek(next.week)) {
+      // 天頂戦の第48週は Engine.advanceWeek() が自動処理する。ここで通常興行も
+      // 組むと、早送り時だけ同じ週に通常興行が重複してしまう。
+      const isTenchosenShowWeek = next.week === Engine.ppvTournament.SHOW_WEEK
+        && Engine.ppvTournament.isTournamentSeason(next.season);
+      if (!next.offSeason && Engine.util.isShowWeek(next.week) && !isTenchosenShowWeek) {
         const prepared = defaultShowCard(next); const show = prepared.showCard.length ? Engine.executeShow(prepared) : null; next = show?.state || prepared;
       }
       next = { ...Engine.tickWeek(next).state, gameLog: [] };
