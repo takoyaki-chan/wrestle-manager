@@ -80,6 +80,7 @@ function section(source, startMarker, endMarker) {
   assert.ok(watchedBout.includes('App._awOrientReplayForBoard(replay, match)'), 'watched bouts must use the same side order as the live board');
   const orientReplay = section(app, '_awOrientReplayForBoard(replay, match) {', 'awWatchBout() {');
   assert.ok(orientReplay.includes("const displayLeftOrgId = match.orgA === 'player' ? match.orgB : match.orgA"), 'replay orientation must follow the board side order');
+  assert.ok(orientReplay.includes('if (match.orgA === displayLeftOrgId) return replay;'), 'replay orientation must rely on the canonical match side, not missing fighter org ids');
   assert.ok(orientReplay.includes("atkSide: swapSide(frame.action.atkSide)"), 'replay orientation must flip attack direction with the wrestlers');
   assert.ok(app.includes('Engine.autumnWar.apply(G, canonical)'));
   assert.ok(app.includes('delete p.watchResolved'), 'watch completion must be consumed only once');
@@ -158,9 +159,10 @@ function section(source, startMarker, endMarker) {
   assert.ok(board.includes('この試合の結果を見る ▶'));
   assert.ok(board.includes('App.awSkipTeamMatch()'));
   assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure img{transform:scaleX(-1)}'), 'only the left team should be mirrored toward center');
-  assert.ok(html.includes('.agw-live-figure[data-order="0"]{right:0;left:auto;z-index:6}'), 'the vanguard should stand closest to center on the left team');
-  assert.ok(html.includes('.agw-live-team.is-right .agw-live-figure[data-order="0"]{right:auto;left:0}'), 'the vanguard should stand closest to center on the right team');
-  assert.ok(html.includes('.agw-live-team.is-right .agw-live-names{direction:ltr}'), 'right-side names must stay under their corresponding figures');
+  assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure.is-ring{right:0;left:auto;z-index:6}'), 'the active wrestler must stand closest to center on the left team');
+  assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure.is-out{left:0;right:auto;z-index:2}'), 'the eliminated wrestler must stand at the outer edge on the left team');
+  assert.ok(html.includes('.agw-live-team.is-right .agw-live-figure.is-out{right:0;left:auto;z-index:2}'), 'the eliminated wrestler must stand at the outer edge on the right team');
+  assert.ok(html.includes('.agw-live-team.is-right .agw-live-name.is-ring{grid-column:1}'), 'right-side nameplates must stay beneath their matching state position');
   assert.ok(html.includes('.agw-live-actions>.btn{flex:1 1 0;max-width:220px;height:48px}'), 'desktop action buttons must have equal sizing');
   assert.ok(mobile.includes('grid-template-columns: repeat(3, minmax(0, 1fr))'), '375px actions must use three equal columns');
   assert.ok(mobile.includes('height: 54px'), '375px action buttons must share one height');

@@ -3564,7 +3564,9 @@ const App = {
   _awOrientReplayForBoard(replay, match) {
     if (!replay || !match) return replay;
     const displayLeftOrgId = match.orgA === 'player' ? match.orgB : match.orgA;
-    if (replay.left?.orgId === displayLeftOrgId || replay.right?.orgId !== displayLeftOrgId) return replay;
+    // simulateNextBout always generates orgA as replay.left. Fighters themselves do not
+    // carry a reliable orgId, so orient from the live match rather than replay payloads.
+    if (match.orgA === displayLeftOrgId) return replay;
 
     const swapSide = side => side === 'left' ? 'right' : side === 'right' ? 'left' : side;
     const swapFrame = frame => ({
