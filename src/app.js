@@ -3573,12 +3573,11 @@ const App = {
         leftArchetype: replay.left.archetype || 'normal',
         rightPersonality: replay.right.personality || 'normal',
         rightArchetype: replay.right.archetype || 'normal',
+        preserveParentFileBgm: true,
         sfxMasterVol: Audio.sfxMasterVol,
         bgmMasterVol: Audio.bgmMasterVol,
       },
     };
-    try { Audio.fileBgm.stop(); } catch (_e) {}
-    try { Audio.bgm.play('battle'); } catch (_e) {}
     let sent = false;
     const sendOnce = () => {
       if (sent) return;
@@ -3602,8 +3601,6 @@ const App = {
     const battleOverlay = document.getElementById('battleOverlay');
     if (battleOverlay) battleOverlay.style.display = 'none';
     document.getElementById('autumnWarOverlay')?.classList.remove('is-suspended');
-    try { Audio.bgm.stop(); } catch (_e) {}
-    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
     renderAutumnWarBoard();
     const match = p.result?.results?.[resolved.matchIndex];
     renderAutumnWarBoutResultPopup(match, match?.bouts?.[resolved.boutIndex] || resolved.bout);

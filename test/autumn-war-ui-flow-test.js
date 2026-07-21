@@ -72,6 +72,12 @@ function section(source, startMarker, endMarker) {
   assert.ok(app.includes('Engine.autumnWar.apply(G, canonical)'));
   assert.ok(app.includes('delete p.watchResolved'), 'watch completion must be consumed only once');
   assert.ok(app.includes("overlay.classList.remove('active')"), 'finishing the event must close its full-screen overlay');
+  const watch = section(app, 'awWatchBout() {', '_finishAutumnWarWatch() {');
+  assert.ok(watch.includes('preserveParentFileBgm: true'), 'watched bouts must preserve the autumn tournament BGM');
+  assert.ok(!watch.includes("Audio.bgm.play('battle')"), 'watched bouts must not switch to the standard battle BGM');
+  assert.ok(!watch.includes('Audio.fileBgm.stop()'), 'watched bouts must not stop the autumn tournament BGM');
+  const finishWatch = section(app, '_finishAutumnWarWatch() {', 'awAdvanceMatch() {');
+  assert.ok(!finishWatch.includes('Audio.fileBgm.play('), 'returning from a watched bout must not restart an uninterrupted tournament BGM');
   const init = section(app, 'initAutumnWarReplay() {', 'awRevealBout() {');
   assert.ok(init.includes("phase: 'intro'"), 'event replay must enter the dedicated intro before entry');
   assert.ok(init.includes('const result = Engine.autumnWar.getProgress(G)'), 'live replay must reconstruct progress before rendering');
@@ -133,6 +139,18 @@ function section(source, startMarker, endMarker) {
   assert.ok(html.includes('.agw-live-actions>.btn{flex:1 1 0;max-width:220px;height:48px}'), 'desktop action buttons must have equal sizing');
   assert.ok(mobile.includes('grid-template-columns: repeat(3, minmax(0, 1fr))'), '375px actions must use three equal columns');
   assert.ok(mobile.includes('height: 54px'), '375px action buttons must share one height');
+  const boutPopup = section(ui, 'function renderAutumnWarBoutResultPopup', 'function renderAutumnWarBoard');
+  assert.ok(boutPopup.includes('const displayOrgIds = _agwDisplayOrgIds(match)'), 'bout result must reuse the live-board side order');
+  assert.ok(boutPopup.includes('bout.winnerId === right.id'), 'winner styling must follow the displayed right-side wrestler');
+  assert.ok(boutPopup.includes('score[displayOrgIds.left]'), 'bout result score must follow the displayed side order');
+})();
+
+(function testBattleFinishCanPreserveTournamentBgm() {
+  const finishListener = section(ui, "if (e.data && e.data.type === 'BATTLE_FINISH_CUE')", "if (e.data && e.data.type === 'MATCH_RESULT')");
+  assert.ok(finishListener.includes('if (!e.data.preserveParentFileBgm)'), 'finish cue must respect a parent BGM preservation request');
+  const battle = fs.readFileSync(path.join(root, 'src/battle-engine-main.js'), 'utf8');
+  const finishCue = section(battle, 'function _notifyFinishCue()', 'function _finishPinSeq()');
+  assert.ok(finishCue.includes('S.matchInfo.preserveParentFileBgm'), 'battle iframe must pass the BGM preservation request back to the parent');
 })();
 
 (function testOptionalSeededDialogueMoments() {

@@ -4169,7 +4169,9 @@ function advanceWeek() { App.advanceCurrentFlow(); }
 // ═══ Battle Engine postMessage Listener (v0.86) ═══
 window.addEventListener('message', function(e) {
   if (e.data && e.data.type === 'BATTLE_FINISH_CUE') {
-    try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.stop(); } catch(err) {}
+    if (!e.data.preserveParentFileBgm) {
+      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.stop(); } catch(err) {}
+    }
     try { if (typeof Audio !== 'undefined' && Audio.bgm) Audio.bgm.stop(); } catch(err) {}
     try { if (typeof Audio !== 'undefined' && Audio.play) Audio.play('bellx3'); } catch(err) {}
     return;
@@ -16192,23 +16194,30 @@ function _agwLiveBoardHtml(result, matchIndex, boutIndex, match) {
 
 function renderAutumnWarBoutResultPopup(match, bout, onContinue) {
   if (!match || !bout) { if (onContinue) onContinue(); return; }
-  const left = _agwFighter(bout.left.orgId, bout.left.id) || bout.left;
-  const right = _agwFighter(bout.right.orgId, bout.right.id) || bout.right;
-  const winnerSide = bout.draw ? 'draw' : bout.winnerId === bout.right.id ? 'right' : 'left';
+  const displayOrgIds = _agwDisplayOrgIds(match);
+  const boutSides = {
+    [bout.left.orgId]: bout.left,
+    [bout.right.orgId]: bout.right,
+  };
+  const displayLeft = boutSides[displayOrgIds.left];
+  const displayRight = boutSides[displayOrgIds.right];
+  const left = _agwFighter(displayOrgIds.left, displayLeft.id) || displayLeft;
+  const right = _agwFighter(displayOrgIds.right, displayRight.id) || displayRight;
+  const winnerSide = bout.draw ? 'draw' : bout.winnerId === right.id ? 'right' : 'left';
   const winner = winnerSide === 'right' ? right : left;
   const winnerCond = bout.conditionAfter?.[winner?.id];
   const score = _agwScoreThrough(match, match.bouts.length);
   const roundLabel = match.round === 'final' ? '決勝' : '準決勝';
   const victoryLine = _agwSurvivorLine(match, bout, winner);
   showEventMatchResultPopup({
-    theme: 'autumn', title: `${roundLabel} 第${bout.index || match.bouts.length}フォール　結果`, meta: `${_agwTeam(match.orgA)?.orgName || ''} vs ${_agwTeam(match.orgB)?.orgName || ''} ・ スコア ${score[match.orgA] || 0}–${score[match.orgB] || 0}`,
+    theme: 'autumn', title: `${roundLabel} 第${bout.index || match.bouts.length}フォール　結果`, meta: `${_agwTeam(displayOrgIds.left)?.orgName || ''} vs ${_agwTeam(displayOrgIds.right)?.orgName || ''} ・ スコア ${score[displayOrgIds.left] || 0}–${score[displayOrgIds.right] || 0}`,
     progress: String(bout.index || match.bouts.length), progressLabel: match.winnerOrg ? 'FINAL FALL' : 'FALL',
-    context: [['団体スコア', `${score[match.orgA] || 0}–${score[match.orgB] || 0}`], ['勝者コンディション', winnerCond != null ? `${Math.round(winnerCond)}%` : '—'], ['戦況', match.winnerOrg ? '団体戦決着' : '続行']],
-    left: { ...left, org: `${_agwTeam(bout.left.orgId)?.orgName || ''} / ${_agwRoleLabel(match.orderA, bout.left.id)}` }, right: { ...right, org: `${_agwTeam(bout.right.orgId)?.orgName || ''} / ${_agwRoleLabel(match.orderB, bout.right.id)}` },
+    context: [['団体スコア', `${score[displayOrgIds.left] || 0}–${score[displayOrgIds.right] || 0}`], ['勝者コンディション', winnerCond != null ? `${Math.round(winnerCond)}%` : '—'], ['戦況', match.winnerOrg ? '団体戦決着' : '続行']],
+    left: { ...left, org: `${_agwTeam(displayOrgIds.left)?.orgName || ''} / ${_agwRoleLabel(_agwOrderFor(match, displayOrgIds.left), left.id)}` }, right: { ...right, org: `${_agwTeam(displayOrgIds.right)?.orgName || ''} / ${_agwRoleLabel(_agwOrderFor(match, displayOrgIds.right), right.id)}` },
     winnerSide, winnerFighter: winner, victoryLine, showVictoryLine: !!victoryLine, leftRole: winnerSide === 'left' ? 'Survivor' : 'Eliminated', rightRole: winnerSide === 'right' ? 'Survivor' : 'Eliminated',
-    leftStatLabel: 'COND', leftStat: Math.round(bout.conditionAfter?.[bout.left.id] || 0), rightStatLabel: 'COND', rightStat: Math.round(bout.conditionAfter?.[bout.right.id] || 0),
+    leftStatLabel: 'COND', leftStat: Math.round(bout.conditionAfter?.[left.id] || 0), rightStatLabel: 'COND', rightStat: Math.round(bout.conditionAfter?.[right.id] || 0),
     resultLabel: bout.draw ? 'DOUBLE OUT' : 'SURVIVE', finish: Engine.formatFinish(bout.finType, bout.finMove), turns: bout.turns || 0, mq: bout.mq,
-    chips: [`団体スコア ${score[match.orgA] || 0}–${score[match.orgB] || 0}`, match.winnerOrg ? '団体戦決着' : '勝ち残り', roundLabel], hpLeft: bout.conditionAfter?.[bout.left.id], hpRight: bout.conditionAfter?.[bout.right.id], hpLabel: 'CONDITION',
+    chips: [`団体スコア ${score[displayOrgIds.left] || 0}–${score[displayOrgIds.right] || 0}`, match.winnerOrg ? '団体戦決着' : '勝ち残り', roundLabel], hpLeft: bout.conditionAfter?.[left.id], hpRight: bout.conditionAfter?.[right.id], hpLabel: 'CONDITION',
     footNote: `秋団体戦 ・ ${bout.draw ? '両者脱落' : `${winner.name} 生存`}`, nextLabel: '戦況ボードへ →', onContinue,
   });
 }
