@@ -3406,10 +3406,13 @@ const App = {
   awPickFighter(id) {
     const order = App._awEntrySelection;
     if (!Array.isArray(order)) return;
+    const role = Math.max(0, Math.min(Engine.autumnWar.TEAM_SIZE - 1, App._awEntryActiveRole || 0));
     const idx = order.indexOf(id);
-    if (idx >= 0) App._awEntryActiveRole = idx;
+    if (idx >= 0) {
+      if (idx !== role) [order[role], order[idx]] = [order[idx], order[role]];
+      App._awEntryActiveRole = role;
+    }
     else {
-      const role = Math.max(0, Math.min(Engine.autumnWar.TEAM_SIZE - 1, App._awEntryActiveRole || 0));
       if (order.length < Engine.autumnWar.TEAM_SIZE) order.push(id);
       else order[role] = id;
     }
@@ -3558,6 +3561,45 @@ const App = {
     };
   },
 
+  _awOrientReplayForBoard(replay, match) {
+    if (!replay || !match) return replay;
+    const displayLeftOrgId = match.orgA === 'player' ? match.orgB : match.orgA;
+    if (replay.left?.orgId === displayLeftOrgId || replay.right?.orgId !== displayLeftOrgId) return replay;
+
+    const swapSide = side => side === 'left' ? 'right' : side === 'right' ? 'left' : side;
+    const swapFrame = frame => ({
+      ...frame,
+      hpL: frame.hpR,
+      hpR: frame.hpL,
+      mhpL: frame.mhpR,
+      mhpR: frame.mhpL,
+      gritL: frame.gritR,
+      gritR: frame.gritL,
+      kickoutCountL: frame.kickoutCountR,
+      kickoutCountR: frame.kickoutCountL,
+      consecL: frame.consecR,
+      consecR: frame.consecL,
+      mom: typeof frame.mom === 'number' ? -frame.mom : frame.mom,
+      action: frame.action ? { ...frame.action, atkSide: swapSide(frame.action.atkSide) } : frame.action,
+      winner: swapSide(frame.winner),
+    });
+    const result = replay.result || {};
+    return {
+      ...replay,
+      left: replay.right,
+      right: replay.left,
+      result: {
+        ...result,
+        left: result.right,
+        right: result.left,
+        hpLeft: result.hpRight,
+        hpRight: result.hpLeft,
+        winner: swapSide(result.winner),
+        frames: Array.isArray(result.frames) ? result.frames.map(swapFrame) : result.frames,
+      },
+    };
+  },
+
   awWatchBout() {
     const p = App._awPreview;
     const match = p?.result?.results?.[p.matchIndex];
@@ -3571,6 +3613,7 @@ const App = {
     }
     const resolved = App._awConsumeBoutStep(stepped);
     if (!resolved) return;
+    const displayReplay = App._awOrientReplayForBoard(replay, match);
     const battleOverlay = document.getElementById('battleOverlay');
     const iframe = document.getElementById('battleIframe');
     if (!battleOverlay || !iframe) {
@@ -3597,19 +3640,19 @@ const App = {
     const roundLabel = match.round === 'final' ? '決勝' : '準決勝';
     const msg = {
       type: 'START_MATCH',
-      left: profile(replay.left),
-      right: profile(replay.right),
-      result: replay.result,
+      left: profile(displayReplay.left),
+      right: profile(displayReplay.right),
+      result: displayReplay.result,
       matchInfo: {
         header: `⚔️ 4団体勝ち残り対抗戦 ${roundLabel}`,
         subHeader: `第${resolved.bout.index}フォール・勝者はリングに残る`,
         matchNum: resolved.bout.index,
         totalMatches: 5,
         matchTier: Engine.autumnWar.MATCH_TIER,
-        leftPersonality: replay.left.personality || 'normal',
-        leftArchetype: replay.left.archetype || 'normal',
-        rightPersonality: replay.right.personality || 'normal',
-        rightArchetype: replay.right.archetype || 'normal',
+        leftPersonality: displayReplay.left.personality || 'normal',
+        leftArchetype: displayReplay.left.archetype || 'normal',
+        rightPersonality: displayReplay.right.personality || 'normal',
+        rightArchetype: displayReplay.right.archetype || 'normal',
         preserveParentFileBgm: true,
         sfxMasterVol: Audio.sfxMasterVol,
         bgmMasterVol: Audio.bgmMasterVol,

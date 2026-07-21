@@ -70,10 +70,17 @@ function section(source, startMarker, endMarker) {
     .forEach(signature => assert.ok(app.includes(signature), `${signature} missing`));
   const finalControls = section(app, 'awMoveFinal(index, delta) {', 'awConfirmFinalOrder() {');
   assert.ok(finalControls.includes('[order[role], order[fighterIndex]] = [order[fighterIndex], order[role]]'), 'final role selection must swap only the three qualified representatives');
+  const entryControls = section(app, 'awPickFighter(id) {', 'awMoveEntry(index, delta) {');
+  assert.ok(entryControls.includes('[order[role], order[idx]] = [order[idx], order[role]]'), 'entry role selection must swap already-assigned wrestlers');
   assert.ok(finalControls.includes("Engine.autumnWar.suggestFinalOrder(G, 'player')"), 'final auto order must use the canonical condition-aware suggestion');
   assert.ok(app.includes('Engine.autumnWar.reorderForFinal(G, p.finalOrder)'));
   assert.ok(app.includes('Engine.autumnWar.simulateNextBout(G)'));
   assert.ok(app.includes("Engine.autumnWar.simulateNextBout(G, { recordFrames: true })"));
+  const watchedBout = section(app, 'awWatchBout() {', '_finishAutumnWarWatch() {');
+  assert.ok(watchedBout.includes('App._awOrientReplayForBoard(replay, match)'), 'watched bouts must use the same side order as the live board');
+  const orientReplay = section(app, '_awOrientReplayForBoard(replay, match) {', 'awWatchBout() {');
+  assert.ok(orientReplay.includes("const displayLeftOrgId = match.orgA === 'player' ? match.orgB : match.orgA"), 'replay orientation must follow the board side order');
+  assert.ok(orientReplay.includes("atkSide: swapSide(frame.action.atkSide)"), 'replay orientation must flip attack direction with the wrestlers');
   assert.ok(app.includes('Engine.autumnWar.apply(G, canonical)'));
   assert.ok(app.includes('delete p.watchResolved'), 'watch completion must be consumed only once');
   assert.ok(app.includes("overlay.classList.remove('active')"), 'finishing the event must close its full-screen overlay');
@@ -135,6 +142,7 @@ function section(source, startMarker, endMarker) {
   assert.ok(finalOrder.includes('agw-entry-candidate-rail'), 'final order must retain the familiar wrestler shelf');
   assert.ok(finalOrder.includes('App.awPickFinalFighter'), 'final wrestler shelf must support role swapping');
   assert.ok(finalOrder.includes('conditionValue'), 'final formation must show post-semifinal condition');
+  assert.ok(finalOrder.includes('_agwConditionBar(conditionValue(fighter.id), false)'), 'final formation must show each wrestler condition as a bar');
   assert.ok(!finalOrder.includes('agw-order-row'), 'the old final-only list layout must be removed');
 })();
 
@@ -143,11 +151,16 @@ function section(source, startMarker, endMarker) {
   assert.ok(board.includes("match.orgA === 'player'"));
   assert.ok(board.includes('return { left: match.orgB, right: match.orgA }'), 'player organization must render on the right');
   assert.ok(board.includes('getFullUrl('), 'live board must show all six full-body images');
+  const liveTeam = section(ui, 'function _agwLiveTeamHtml', 'function _agwStatusRailHtml');
+  assert.ok(liveTeam.includes('const stateOrder = { ring: 0, wait: 1, out: 2 };'), 'the active wrestler must be displayed closest to center');
+  assert.ok(liveTeam.includes('const names = displayOrder.map'), 'live-board nameplates must follow the reordered wrestler positions');
   assert.ok(board.includes('agw-status-rail'), 'four-team status rail missing');
   assert.ok(board.includes('この試合の結果を見る ▶'));
   assert.ok(board.includes('App.awSkipTeamMatch()'));
   assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure img{transform:scaleX(-1)}'), 'only the left team should be mirrored toward center');
-  assert.ok(html.includes('.agw-live-team.is-right .agw-live-names{direction:rtl}'), 'right-side names must stay under their corresponding figures');
+  assert.ok(html.includes('.agw-live-figure[data-order="0"]{right:0;left:auto;z-index:6}'), 'the vanguard should stand closest to center on the left team');
+  assert.ok(html.includes('.agw-live-team.is-right .agw-live-figure[data-order="0"]{right:auto;left:0}'), 'the vanguard should stand closest to center on the right team');
+  assert.ok(html.includes('.agw-live-team.is-right .agw-live-names{direction:ltr}'), 'right-side names must stay under their corresponding figures');
   assert.ok(html.includes('.agw-live-actions>.btn{flex:1 1 0;max-width:220px;height:48px}'), 'desktop action buttons must have equal sizing');
   assert.ok(mobile.includes('grid-template-columns: repeat(3, minmax(0, 1fr))'), '375px actions must use three equal columns');
   assert.ok(mobile.includes('height: 54px'), '375px action buttons must share one height');
@@ -174,11 +187,15 @@ function section(source, startMarker, endMarker) {
   assert.ok(!sectionText.includes('Math.random'), 'autumn-war dialogue must stay stable across reloads');
   assert.ok(sectionText.includes('getAutumnWarMatchLine(timing'), 'pre-bout pair must use the Autumn War personality/archetype matrix');
   assert.ok(sectionText.includes("getAutumnWarMatchLine('survivor'"), 'survivor speech must use the Autumn War personality/archetype matrix');
+  assert.ok(sectionText.includes('match.winnerOrg'), 'completed team matches must bypass the next-challenger speech');
+  assert.ok(sectionText.includes("match.round === 'final' ? 'champion' : 'gauntlet'"), 'team victories must choose the correct Autumn War victory context');
+  assert.ok(sectionText.includes('getDialoguePool(lineSet, winner)'), 'team victory dialogue must resolve from the winner personality and archetype');
   assert.ok(sectionText.includes('jt-bub-pair agw-bout-dialogue'), 'optional two-wrestler exchange is missing');
   const boutPopup = section(ui, 'function renderAutumnWarBoutResultPopup', 'function renderAutumnWarBoard');
   assert.ok(boutPopup.includes('showVictoryLine: !!victoryLine'), 'survivor line must be allowed to disappear');
   const resultView = section(ui, 'function renderAutumnWarResult', 'function _agwMvpLine');
   assert.ok(resultView.includes('agw-champion-speech'), 'optional championship speech is missing');
+  assert.ok(resultView.includes('agw-champ-member'), 'championship speech must be attached to its speaker card');
   assert.ok(html.includes('.agw-champion-speech'));
 })();
 

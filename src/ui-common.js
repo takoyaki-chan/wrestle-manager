@@ -16007,20 +16007,24 @@ function _agwLiveTeamHtml(result, matchIndex, boutIndex, match, orgId, side) {
   if (!team) return '<div class="agw-live-team"></div>';
   const view = _agwTeamViewState(result, matchIndex, boutIndex, team);
   const order = _agwOrderFor(match, orgId) || team.order || team.memberIds || [];
-  const figures = order.map((id, index) => {
+  const stateOrder = { ring: 0, wait: 1, out: 2 };
+  const displayOrder = order.map((id, originalIndex) => ({
+    id,
+    originalIndex,
+    state: view.states[id] || 'wait',
+  })).sort((a, b) => (stateOrder[a.state] - stateOrder[b.state]) || (a.originalIndex - b.originalIndex));
+  const figures = displayOrder.map(({ id, state }, index) => {
     const fighter = _agwFighter(orgId, id);
     if (!fighter) return '';
-    const state = view.states[id] || 'wait';
     const full = typeof getFullUrl === 'function' ? getFullUrl(id, Engine.util.ov(fighter)) : '';
     return `<div class="agw-live-figure is-${state}" data-order="${index}">
       ${state === 'ring' ? '<span>IN RING</span>' : ''}
       ${full ? `<img src="${full}" alt="${escHtml(fighter.name)}">` : ''}
     </div>`;
   }).join('');
-  const names = order.map(id => {
+  const names = displayOrder.map(({ id, state }) => {
     const fighter = _agwFighter(orgId, id);
     if (!fighter) return '';
-    const state = view.states[id] || 'wait';
     const stateLabel = state === 'out' ? 'OUT' : state === 'ring' ? 'RING' : 'WAIT';
     return `<button type="button" class="agw-live-name is-${state}" onclick="event.stopPropagation();showFighterPopup(${id},'autumnWar')">
       <small>${_agwRoleLabel(order, id)} / ${stateLabel}</small><b>${escHtml(fighter.name)}</b>
@@ -16069,7 +16073,15 @@ function _agwPreBoutDialogueHtml(match, next, left, right) {
 }
 
 function _agwSurvivorLine(match, bout, winner) {
-  if (!winner || bout.draw || typeof getAutumnWarMatchLine !== 'function') return '';
+  if (!winner || bout.draw) return '';
+  if (match.winnerOrg) {
+    const context = match.round === 'final' ? 'champion' : 'gauntlet';
+    const rng = _agwDialogueRng('teamVictory', [match.round, match.orgA, match.orgB, bout.index || match.bouts.length, winner.id], 1);
+    const lineSet = typeof AUTUMN_WAR_MVP_LINES !== 'undefined' ? AUTUMN_WAR_MVP_LINES[context] : null;
+    const pool = lineSet && typeof getDialoguePool === 'function' ? getDialoguePool(lineSet, winner) : [];
+    return pool.length ? pool[Engine.rng.int(rng, 0, pool.length - 1)] : '';
+  }
+  if (typeof getAutumnWarMatchLine !== 'function') return '';
   const rng = _agwDialogueRng('survivor', [match.round, match.orgA, match.orgB, bout.index || match.bouts.length, winner.id], _AGW_DIALOGUE_CHANCE.survivor);
   if (!rng) return '';
   return getAutumnWarMatchLine('survivor', winner.personality || 'normal', winner.archetype || '_default', rng);
@@ -16268,12 +16280,12 @@ function renderAutumnWarReorder() {
   }).join('');
   const placeholders = roles.map((role, index) => `<div class="agw-entry-placeholder" data-order="${index}"><span>?</span><b>${role}</b></div>`).join('');
   const opponentSlots = roles.map(() => '<div class="agw-entry-empty-slot" aria-hidden="true"></div>').join('');
-  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectFinalRole(${index})"><span>${roles[index]}</span><b>${escHtml(fighter.name)}</b>${_agwOvrHtml(Engine.util.ov(fighter))}</button>`).join('');
+  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectFinalRole(${index})"><span>${roles[index]}</span><b>${escHtml(fighter.name)}</b>${_agwOvrHtml(Engine.util.ov(fighter))}${_agwConditionBar(conditionValue(fighter.id), false)}</button>`).join('');
   const mobileCards = selected.map((fighter, index) => {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, Engine.util.ov(fighter)) : '';
     return `<article class="agw-entry-mobile-card${index === activeRole ? ' is-active' : ''}">
       <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${stand ? `<img src="${stand}" alt="${escHtml(fighter.name)}">` : ''}</button>
-      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${escHtml(fighter.name)}</button><div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>CONDITION ${conditionValue(fighter.id)}</small></div><em>${roleNotes[index]}</em></div>
+      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${escHtml(fighter.name)}</button><div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>CONDITION ${conditionValue(fighter.id)}</small></div>${_agwConditionBar(conditionValue(fighter.id), false)}<em>${roleNotes[index]}</em></div>
       <div class="agw-entry-mobile-actions"><button type="button" onclick="App.awSelectFinalRole(${index})">交代</button><button type="button" ${index === 0 ? 'disabled' : ''} onclick="App.awMoveFinal(${index},-1)">↑</button><button type="button" ${index === 2 ? 'disabled' : ''} onclick="App.awMoveFinal(${index},1)">↓</button></div>
     </article>`;
   }).join('');
@@ -16284,6 +16296,7 @@ function renderAutumnWarReorder() {
       <button type="button" class="agw-entry-candidate-pick" onclick="App.awPickFinalFighter(${fighter.id})">${stand ? `<img src="${stand}" alt="">` : ''}<em>${roles[selectedIndex]}</em></button>
       <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${escHtml(fighter.name)}</button>
       <div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>COND ${conditionValue(fighter.id)} / ${escHtml(fighter.style || '')}</small></div>
+      ${_agwConditionBar(conditionValue(fighter.id), false)}
     </article>`;
   }).join('');
   const html = `<div class="agw-wrap agw-entry agw-reorder">${_agwHeaderHtml('Final Order', '準決勝後・決勝布陣の再編成')}
@@ -16313,12 +16326,14 @@ function renderAutumnWarResult() {
     const f = _agwFighter(champ.orgId, id);
     const upper = f && typeof getUpperUrl === 'function' ? getUpperUrl(id) : '';
     const wins = result.fighterWins?.[id] || 0;
-    return `<button type="button" class="agw-champ-card${id === result.mvpId ? ' is-mvp' : ''}" onclick="showFighterPopup(${id},'autumnWar')"><span>${upper ? `<img src="${upper}" alt="">` : ''}</span><strong>${escHtml(f?.name || '?')}</strong><small>${id === result.mvpId ? '大会MVP・' : ''}通算${wins}人抜き</small></button>`;
+    const speechBubble = speech?.fighter?.id === id
+      ? `<div class="agw-champion-speech"><button type="button" onclick="showFighterPopup(${id},'autumnWar')">${escHtml(f?.name || '?')}</button><blockquote>「${escHtml(speech.line)}」</blockquote></div>`
+      : '';
+    return `<div class="agw-champ-member">${speechBubble}<button type="button" class="agw-champ-card${id === result.mvpId ? ' is-mvp' : ''}" onclick="showFighterPopup(${id},'autumnWar')"><span>${upper ? `<img src="${upper}" alt="">` : ''}</span><strong>${escHtml(f?.name || '?')}</strong><small>${id === result.mvpId ? '大会MVP・' : ''}通算${wins}人抜き</small></button></div>`;
   }).join('');
   const html = `<div class="agw-wrap agw-result">${_agwHeaderHtml('Survival War Champion', '全団体戦終了')}
     <div class="agw-result-org">${escHtml(champ?.orgName || '')}</div>
     <div class="agw-result-title">第${G.season}回大会 優勝</div>
-    ${speech ? `<div class="agw-champion-speech"><button type="button" onclick="showFighterPopup(${speech.fighter.id},'autumnWar')">${escHtml(speech.fighter.name)}</button><blockquote>「${escHtml(speech.line)}」</blockquote></div>` : ''}
     <div class="agw-champ-lineup">${cards}</div>
     <div class="agw-result-score"><span>FINAL</span><b>${scoreW} — ${scoreL}</b><small>${escHtml(_agwTeam(result.runnerUp)?.orgName || '')}</small></div>
     <button class="btn btn-gold" onclick="App.awShowMvpScene()">大会MVP発表へ ▶</button>
