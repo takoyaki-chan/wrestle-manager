@@ -311,9 +311,27 @@ const mqInventoryProbe = {
   uiRouteEstimate: [],
 };
 
+// Task 16: production paths other than executeShow finalize MQ in their own
+// functions. Keep references to their returned result objects so the final MQ
+// can be compared with a hypothetical App-style upper clamp without changing
+// the simulation state or the production calculation.
+const mqPathProbe = {
+  aiShow: [],
+  ppv: [],
+  eventMatch: [],
+  juniorTournament: [],
+  tenchosen: [],
+  springTagLeague: [],
+  autumnWar: [],
+};
+let activeMqPathOrigin = null;
+
 const _simulateMatchForBalanceProbe = Engine.battle.simulateMatch;
 Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   const result = _simulateMatchForBalanceProbe.call(this, charL, charR, rng, matchTier, opts);
+  if (activeMqPathOrigin && mqPathProbe[activeMqPathOrigin]) {
+    mqPathProbe[activeMqPathOrigin].push({ result, baseMq: result.mq });
+  }
   const resolvedTier = result.matchTier || matchTier || 1;
   result._legacyPacingMq = mqWithLegacyPacing(result, resolvedTier, charL, charR);
   const leftOvr = Engine.util.ov(charL);
@@ -426,6 +444,9 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
 const _simulateTagMatchForMqInventory = Engine.tagMatch.simulateTagMatch;
 Engine.tagMatch.simulateTagMatch = function(teamA, teamB, rng, opts) {
   const result = _simulateTagMatchForMqInventory.call(this, teamA, teamB, rng, opts);
+  if (activeMqPathOrigin && mqPathProbe[activeMqPathOrigin]) {
+    mqPathProbe[activeMqPathOrigin].push({ result, baseMq: result.mq });
+  }
   if (result?.mqDetail) {
     const detail = result.mqDetail;
     const fighters = [teamA.fighter1, teamA.fighter2, teamB.fighter1, teamB.fighter2];
@@ -466,10 +487,33 @@ function wrapBigMatchOrigin(target, method, origin) {
   };
 }
 
+function wrapMqPathOrigin(target, method, origin) {
+  if (!target || typeof target[method] !== 'function') return;
+  const original = target[method];
+  target[method] = function(...args) {
+    const previous = activeMqPathOrigin;
+    activeMqPathOrigin = origin;
+    try {
+      return original.apply(this, args);
+    } finally {
+      activeMqPathOrigin = previous;
+    }
+  };
+}
+
 wrapBigMatchOrigin(Engine.juniorTournament, 'run', 'juniorTournament');
 wrapBigMatchOrigin(Engine.ppvTournament, 'run', 'tenchosen');
 wrapBigMatchOrigin(Engine.autumnWar, 'simulateNextBout', 'autumnWar');
 wrapBigMatchOrigin(Engine.autumnWar, 'runLegacy', 'autumnWar');
+wrapMqPathOrigin(Engine.rival, 'processAIWeek', 'aiShow');
+wrapMqPathOrigin(Engine.ppv, 'simulateTVResults', 'ppv');
+wrapMqPathOrigin(Engine.ppv, 'simulatePPVMatch', 'ppv');
+wrapMqPathOrigin(Engine.event, 'resolveEventMatch', 'eventMatch');
+wrapMqPathOrigin(Engine.juniorTournament, 'run', 'juniorTournament');
+wrapMqPathOrigin(Engine.ppvTournament, 'run', 'tenchosen');
+wrapMqPathOrigin(Engine.springTagLeague, 'run', 'springTagLeague');
+wrapMqPathOrigin(Engine.autumnWar, 'simulateNextBout', 'autumnWar');
+wrapMqPathOrigin(Engine.autumnWar, 'runLegacy', 'autumnWar');
 
 // グローバルに展開されたか確認
 if (typeof Engine === 'undefined') {
@@ -1683,6 +1727,29 @@ if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqIn
     const lowerMatches = uiEstimates.filter(sample => sample.finalMq === 5);
     const overages = clampedMatches.map(sample => sample.upperOverageTotal);
     console.log(`    clamps: upper=${clampedMatches.length}/${uiEstimates.length} lower-final=${lowerMatches.length}/${uiEstimates.length} overage-mean=${mqInventoryMetric(clampedMatches, 'upperOverageTotal').mean} overage-max=${overages.length ? Math.max(...overages) : 0}`);
+  }
+}
+
+const mqPathRows = Object.entries(mqPathProbe)
+  .map(([pathName, entries]) => {
+    const unique = [...new Map(entries.map(entry => [entry.result, entry])).values()];
+    const finals = unique.map(entry => Number(entry.result?.mq) || 0);
+    const capped = finals.map(value => Math.min(100, value));
+    const mean = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+    return {
+      pathName,
+      count: finals.length,
+      meanFinal: mean(finals),
+      meanAppClamp: mean(capped),
+      over100: finals.filter(value => value > 100).length,
+      max: finals.length ? Math.max(...finals) : 0,
+    };
+  })
+  .filter(row => row.count > 0);
+if (mqPathRows.length) {
+  console.log('  special-path upper-clamp reconstruction:');
+  for (const row of mqPathRows) {
+    console.log(`    ${row.pathName}: n=${row.count} current=${row.meanFinal.toFixed(3)} appClamp=${row.meanAppClamp.toFixed(3)} delta=${(row.meanAppClamp - row.meanFinal).toFixed(3)} >100=${row.over100} max=${row.max}`);
   }
 }
 console.log('--------------------------------------');
