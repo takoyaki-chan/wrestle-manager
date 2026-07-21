@@ -14752,7 +14752,7 @@ function _jtcFcHpBlock(side, final, max, pct) {
 }
 
 /** フォーカスカード本体(アッパー画像対面・左右とも非反転+開始HPバー+観戦/スキップ)。
- * extraHtml があれば names 行の直後(JTのみ: セリフ吹き出し)に挿入する。 */
+ * extraHtml があれば names 行の直後（大会固有のセリフ・案内）に挿入する。 */
 function _jtcFcCore({ label, f1, f2, own1, own2, upperL, upperR, hpLeftBlock, hpRightBlock, hpMidLabel, extraHtml, onWatch, onSkip, onLeftDetail, onRightDetail, skipLabel }) {
   const leftDetail = onLeftDetail ? ` role="button" tabindex="0" onclick="${onLeftDetail}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onLeftDetail}}"` : '';
   const rightDetail = onRightDetail ? ` role="button" tabindex="0" onclick="${onRightDetail}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onRightDetail}}"` : '';
@@ -14945,7 +14945,8 @@ function showEventMatchResultPopup(opts) {
   while (contexts.length < 3) contexts.push(['', '—']);
   const hpL = _emrHp(opts.hpLeft), hpR = _emrHp(opts.hpRight);
   const emblem = theme.emblem ? `<img src="${theme.emblem}" alt="" onerror="this.style.display='none'">` : escHtml(theme.mark);
-  const line = winnerSide === 'draw' ? '' : _emrVictoryLine(winnerFighter, opts.victoryLine);
+  const showVictoryLine = winnerSide !== 'draw' && opts.showVictoryLine !== false;
+  const line = showVictoryLine ? _emrVictoryLine(winnerFighter, opts.victoryLine) : '';
   const isTag = !!opts.isTag;
   const sides = isTag
     ? `${_emrTeamSide(opts.teamLeft, 'left', winnerSide)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'DRAW' : 'TEAM WIN'))}</div><div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">MQ <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrTeamSide(opts.teamRight, 'right', winnerSide)}`
@@ -14957,7 +14958,7 @@ function showEventMatchResultPopup(opts) {
   layer.innerHTML = `<article class="emr-popup" role="dialog" aria-modal="true" aria-label="1試合結果">
     <header class="emr-head"><div class="emr-emblem">${emblem}</div><div><div class="emr-kicker">${escHtml(opts.kicker || theme.kicker)}</div><div class="emr-title">${escHtml(opts.title || '試合結果')}</div><div class="emr-meta">${escHtml(opts.meta || '')}</div></div><div class="emr-progress">${escHtml(opts.progress || '')}<small>${escHtml(opts.progressLabel || 'MATCH')}</small></div></header>
     <div class="emr-context">${contexts.map(([label, value]) => `<div class="emr-context-cell"><span>${escHtml(label)}</span><b>${escHtml(value)}</b></div>`).join('')}</div>
-    <div class="emr-bout ${isTag ? 'is-tag' : ''}">${winnerSide === 'draw' ? '' : `<div class="emr-bubble ${bubbleSide}"><b>${escHtml(winnerFighter?.name || 'WINNER')}</b>「${escHtml(line)}」</div>`}${sides}</div>
+    <div class="emr-bout ${isTag ? 'is-tag' : ''}">${showVictoryLine && line ? `<div class="emr-bubble ${bubbleSide}"><b>${escHtml(winnerFighter?.name || 'WINNER')}</b>「${escHtml(line)}」</div>` : ''}${sides}</div>
     ${chips ? `<div class="emr-chips">${chips}</div>` : ''}
     <div class="emr-hp"><div class="emr-hp-half"><span class="emr-hp-val">${hpL.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpL.pct}%"></div></div></div><span class="emr-hp-label">${escHtml(opts.hpLabel || 'FINAL HP')}</span><div class="emr-hp-half is-right"><span class="emr-hp-val">${hpR.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpR.pct}%"></div></div></div></div>
     <footer class="emr-foot"><span class="emr-foot-note">${escHtml(opts.footNote || '')}</span><button type="button" class="emr-next" onclick="closeEventMatchResultPopup()">${escHtml(opts.nextLabel || '進む →')}</button></footer>
@@ -16016,6 +16017,59 @@ function _agwScoreThrough(match, boutIndex) {
   return score;
 }
 
+const _AGW_DIALOGUE_CHANCE = Object.freeze({ preBout: 0.55, survivor: 0.60, champion: 0.75 });
+
+function _agwDialogueRng(kind, parts, chance) {
+  const signature = [kind, G.rngSeed || 42, G.season || 1, G.week || 36, ...(parts || [])].join('|');
+  let seed = 2166136261;
+  for (let i = 0; i < signature.length; i++) {
+    seed ^= signature.charCodeAt(i);
+    seed = Math.imul(seed, 16777619);
+  }
+  const rng = Engine.rng.create(seed | 0);
+  return Engine.rng.float(rng) < chance ? rng : null;
+}
+
+function _agwPreBoutDialogueHtml(match, next, left, right) {
+  const rng = _agwDialogueRng('preBout', [match.round, match.orgA, match.orgB, next.index, left.id, right.id], _AGW_DIALOGUE_CHANCE.preBout);
+  if (!rng || typeof getJuniorTournamentLine !== 'function') return '';
+  const timing = match.round === 'final' ? 'preFinal' : 'preMatch';
+  const leftLine = getJuniorTournamentLine(timing, left.personality || 'normal', left.archetype || '_default', rng);
+  const rightLine = getJuniorTournamentLine(timing, right.personality || 'normal', right.archetype || '_default', rng);
+  if (!leftLine && !rightLine) return '';
+  return `<div class="jt-bub-pair agw-bout-dialogue">
+    ${leftLine ? `<div class="jt-bub"><div class="sp bl">${escHtml(left.name)}</div>「${escHtml(leftLine)}」</div>` : ''}
+    ${rightLine ? `<div class="jt-bub"><div class="sp gd">${escHtml(right.name)}</div>「${escHtml(rightLine)}」</div>` : ''}
+  </div>`;
+}
+
+function _agwSurvivorLine(match, bout, winner) {
+  if (!winner || bout.draw || typeof getJuniorTournamentLine !== 'function') return '';
+  const rng = _agwDialogueRng('survivor', [match.round, match.orgA, match.orgB, bout.index || match.bouts.length, winner.id], _AGW_DIALOGUE_CHANCE.survivor);
+  if (!rng) return '';
+  return getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default', rng);
+}
+
+function _agwChampionSpeech(result, championTeam) {
+  const candidates = (championTeam?.memberIds || []).map(id => _agwFighter(championTeam.orgId, id)).filter(Boolean)
+    .sort((a, b) => (result.fighterWins?.[b.id] || 0) - (result.fighterWins?.[a.id] || 0) || a.id - b.id);
+  const fighter = candidates[0];
+  if (!fighter) return null;
+  const wins = result.fighterWins?.[fighter.id] || 0;
+  const rng = _agwDialogueRng('champion', [result.champion, fighter.id, wins], _AGW_DIALOGUE_CHANCE.champion);
+  if (!rng) return null;
+  const lineSet = typeof AUTUMN_WAR_MVP_LINES !== 'undefined' ? AUTUMN_WAR_MVP_LINES.champion : null;
+  let pool = [];
+  if (lineSet && typeof getDialoguePool === 'function') pool = getDialoguePool(lineSet, fighter);
+  let line = pool.length ? pool[Engine.rng.int(rng, 0, pool.length - 1)] : '';
+  if (!line && typeof getJuniorTournamentLine === 'function') line = getJuniorTournamentLine('champion', fighter.personality || 'normal', fighter.archetype || '_default', rng);
+  if (!line) return null;
+  return {
+    fighter,
+    line: String(line).replaceAll('{wins}', String(wins)).replaceAll('{org}', championTeam.orgName || 'この団体'),
+  };
+}
+
 function _agwMiniClimbHtml(result, matchIndex, boutIndex) {
   const semis = result.results.filter(m => m.round === 'semiFinal');
   const final = result.results.find(m => m.round === 'final')
@@ -16067,6 +16121,7 @@ function _agwFocusHtml(match, boutIndex) {
   const upperR = right && typeof getUpperUrl === 'function' ? getUpperUrl(right.id) : '';
   const beforeL = next.conditionBefore?.[next.left.id];
   const beforeR = next.conditionBefore?.[next.right.id];
+  const dialogueHtml = _agwPreBoutDialogueHtml(match, next, left, right);
   const focus = _jtcFcCore({
     label: `${match.round === 'final' ? 'FINAL' : 'SEMI FINAL'} — 第${next.index}フォール`,
     f1: { ...left, ovr: Engine.util.ov(left), _orgName: _agwTeam(next.left.orgId)?.orgName || '' },
@@ -16078,7 +16133,7 @@ function _agwFocusHtml(match, boutIndex) {
     hpLeftBlock: _agwConditionBar(beforeL, false),
     hpRightBlock: _agwConditionBar(beforeR, true),
     hpMidLabel: 'CONDITION',
-    extraHtml: '<div class="agw-focus-guide">勝者はリングに残り、敗者側の次の選手が登場</div>',
+    extraHtml: `${dialogueHtml}<div class="agw-focus-guide">勝者はリングに残り、敗者側の次の選手が登場</div>`,
     onWatch: 'App.awWatchBout()',
     onSkip: 'App.awRevealBout()',
     skipLabel: '結果を見る ▶',
@@ -16101,12 +16156,13 @@ function renderAutumnWarBoutResultPopup(match, bout, onContinue) {
   const winnerCond = bout.conditionAfter?.[winner?.id];
   const score = _agwScoreThrough(match, match.bouts.length);
   const roundLabel = match.round === 'final' ? '決勝' : '準決勝';
+  const victoryLine = _agwSurvivorLine(match, bout, winner);
   showEventMatchResultPopup({
     theme: 'autumn', title: `${roundLabel} 第${bout.index || match.bouts.length}フォール　結果`, meta: `${_agwTeam(match.orgA)?.orgName || ''} vs ${_agwTeam(match.orgB)?.orgName || ''} ・ スコア ${score[match.orgA] || 0}–${score[match.orgB] || 0}`,
     progress: String(bout.index || match.bouts.length), progressLabel: match.winnerOrg ? 'FINAL FALL' : 'FALL',
     context: [['団体スコア', `${score[match.orgA] || 0}–${score[match.orgB] || 0}`], ['勝者コンディション', winnerCond != null ? `${Math.round(winnerCond)}%` : '—'], ['戦況', match.winnerOrg ? '団体戦決着' : '続行']],
     left: { ...left, org: `${_agwTeam(bout.left.orgId)?.orgName || ''} / ${_agwRoleLabel(match.orderA, bout.left.id)}` }, right: { ...right, org: `${_agwTeam(bout.right.orgId)?.orgName || ''} / ${_agwRoleLabel(match.orderB, bout.right.id)}` },
-    winnerSide, winnerFighter: winner, leftRole: winnerSide === 'left' ? 'Survivor' : 'Eliminated', rightRole: winnerSide === 'right' ? 'Survivor' : 'Eliminated',
+    winnerSide, winnerFighter: winner, victoryLine, showVictoryLine: !!victoryLine, leftRole: winnerSide === 'left' ? 'Survivor' : 'Eliminated', rightRole: winnerSide === 'right' ? 'Survivor' : 'Eliminated',
     leftStatLabel: 'COND', leftStat: Math.round(bout.conditionAfter?.[bout.left.id] || 0), rightStatLabel: 'COND', rightStat: Math.round(bout.conditionAfter?.[bout.right.id] || 0),
     resultLabel: bout.draw ? 'DOUBLE OUT' : 'SURVIVE', finish: Engine.formatFinish(bout.finType, bout.finMove), turns: bout.turns || 0, mq: bout.mq,
     chips: [`団体スコア ${score[match.orgA] || 0}–${score[match.orgB] || 0}`, match.winnerOrg ? '団体戦決着' : '勝ち残り', roundLabel], hpLeft: bout.conditionAfter?.[bout.left.id], hpRight: bout.conditionAfter?.[bout.right.id], hpLabel: 'CONDITION',
@@ -16173,6 +16229,7 @@ function renderAutumnWarResult() {
   const final = result.finalResult;
   const scoreW = final.teamWins?.[result.champion] || 0;
   const scoreL = final.teamWins?.[result.runnerUp] || 0;
+  const speech = _agwChampionSpeech(result, champ);
   const cards = (champ?.memberIds || []).map(id => {
     const f = _agwFighter(champ.orgId, id);
     const upper = f && typeof getUpperUrl === 'function' ? getUpperUrl(id) : '';
@@ -16182,6 +16239,7 @@ function renderAutumnWarResult() {
   const html = `<div class="agw-wrap agw-result">${_agwHeaderHtml('Survival War Champion', '全団体戦終了')}
     <div class="agw-result-org">${escHtml(champ?.orgName || '')}</div>
     <div class="agw-result-title">第${G.season}回大会 優勝</div>
+    ${speech ? `<div class="agw-champion-speech"><button type="button" onclick="showFighterPopup(${speech.fighter.id},'autumnWar')">${escHtml(speech.fighter.name)}</button><blockquote>「${escHtml(speech.line)}」</blockquote></div>` : ''}
     <div class="agw-champ-lineup">${cards}</div>
     <div class="agw-result-score"><span>FINAL</span><b>${scoreW} — ${scoreL}</b><small>${escHtml(_agwTeam(result.runnerUp)?.orgName || '')}</small></div>
     <button class="btn btn-gold" onclick="App.awShowMvpScene()">大会MVP発表へ ▶</button>

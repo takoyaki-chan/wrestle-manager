@@ -1444,6 +1444,8 @@
   .agw-opponent-panel strong { margin: 8px 0; }
   .agw-opponent-hidden { padding: 8px; }
   .agw-champ-lineup { gap: 5px; align-items: stretch; }
+  .agw-champion-speech { margin-top: 10px; padding: 8px 10px; }
+  .agw-champion-speech blockquote { font-size: 12px; }
   .agw-champ-card,
   .agw-champ-card.is-mvp { width: 33%; }
   .agw-champ-card > span,

@@ -23,7 +23,8 @@ assert(ui.includes('function showEventMatchResultPopup(opts)'), '共通ポップ
 assert(ui.includes('function closeEventMatchResultPopup()'), '背面画面を維持したまま閉じる処理が必要');
 assert(ui.includes('function _emrVictoryLine(fighter, preferred)'), '全大会で勝者セリフを解決する処理が必要');
 assert(ui.includes("winnerSide === 'draw' ? 'is-draw'"), '引き分けでは両者を敗者表示にしない');
-assert(ui.includes("winnerSide === 'draw' ? '' : `<div class=\"emr-bubble"), '引き分けでは架空の勝者コメントを出さない');
+assert(ui.includes("const showVictoryLine = winnerSide !== 'draw' && opts.showVictoryLine !== false"), '引き分けと明示的なセリフ省略では勝者コメントを出さない');
+assert(ui.includes('showVictoryLine && line ? `<div class="emr-bubble'), '勝者セリフは表示対象かつ文面がある場合だけ描画する');
 assert(ui.includes('function _emrTeamHp(result, fighterIds)'), '通常タッグ結果はperFighterからチームHPを集計する');
 assert(ui.includes('theme: \'normal\''), '通常興行テーマを接続する');
 assert(ui.includes("normal:    { cls: 'is-normal'"), '通常興行だけの黄色系アクセントを適用できるテーマクラスが必要');
@@ -39,7 +40,7 @@ assert(ui.includes('const boutNumber = total - idx;'), '通常興行の結果番
 assert(ui.includes('sourceMatch?.isCRMatch && r._challengeRelationshipDelta'), '挑戦試合の興行結果には方向別の因縁・相手との関係変化を表示する');
 assert(app.includes('? finalize\n      : () => App._runPostMatchFlavorForMatch'), '1試合スキップでは余韻だけを省略し、結果画面は維持する');
 assert(app.includes('renderSpringTagLeagueMatchResultPopup(revealed, false)'), '春リーグ各試合で結果ポップアップを出す');
-assert(app.includes('renderAutumnWarBoutResultPopup(revealedMatch, revealedBout)'), '秋団体戦の各フォールで結果ポップアップを出す');
+assert(app.includes('renderAutumnWarBoutResultPopup(resolved.match, resolved.bout)') && app.includes('renderAutumnWarBoutResultPopup(match, match?.bouts?.[resolved.boutIndex] || resolved.bout)'), '秋団体戦のスキップ・観戦の各フォールで結果ポップアップを出す');
 assert(app.includes('renderPPVMatchResultPopup(idx, () =>'), 'PPV各試合で結果ポップアップを出す');
 assert(ui.includes('onContinue: () => App.jtAdvanceAfterResult(ri, mi)'), 'ジュニア結果を閉じた後に従来進行へ戻す');
 assert(ui.includes('onContinue: () => App.tcAdvanceAfterResult(ri, mi)'), '天頂戦結果を閉じた後に従来進行へ戻す');

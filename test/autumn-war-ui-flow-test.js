@@ -110,6 +110,22 @@ function section(source, startMarker, endMarker) {
   assert.ok(mobile.includes('.agw-entry-opponent-summary'), 'mobile opponent strength summary must remain visible');
 })();
 
+(function testOptionalSeededDialogueMoments() {
+  const sectionText = section(ui, 'const _AGW_DIALOGUE_CHANCE', 'function renderAutumnWarBoard');
+  assert.ok(sectionText.includes('preBout: 0.55'));
+  assert.ok(sectionText.includes('survivor: 0.60'));
+  assert.ok(sectionText.includes('champion: 0.75'));
+  assert.ok(sectionText.includes('Engine.rng.create(seed | 0)'), 'dialogue inclusion must use a local seeded RNG');
+  assert.ok(!sectionText.includes('Math.random'), 'autumn-war dialogue must stay stable across reloads');
+  assert.ok(sectionText.includes('getJuniorTournamentLine(timing'), 'pre-bout pair must reuse the personality/archetype tournament matrix');
+  assert.ok(sectionText.includes('jt-bub-pair agw-bout-dialogue'), 'optional two-wrestler exchange is missing');
+  const boutPopup = section(ui, 'function renderAutumnWarBoutResultPopup', 'function renderAutumnWarBoard');
+  assert.ok(boutPopup.includes('showVictoryLine: !!victoryLine'), 'survivor line must be allowed to disappear');
+  const resultView = section(ui, 'function renderAutumnWarResult', 'function _agwMvpLine');
+  assert.ok(resultView.includes('agw-champion-speech'), 'optional championship speech is missing');
+  assert.ok(html.includes('.agw-champion-speech'));
+})();
+
 (function testAutumnCssUsesThemeTokens() {
   const start = html.indexOf('.agw-overlay');
   const end = html.indexOf('   C-6:', start);
