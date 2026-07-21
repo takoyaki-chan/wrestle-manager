@@ -3036,6 +3036,9 @@ function renderShowPrep() {
         ? `${ownNames.join('・')} はこの興行後に相手団体の興行へ出場するため、自団体カードには編成できません。`
         : `固定興行には割り込まず、次の通常興行が終わった後に${ownNames.join('・')}が敵地へ向かいます。`}
     </div>`;
+    if (eligibleChallengeShow) {
+      html += `<button onclick="App.startAwayChallengeFromPrep()" style="margin:0 0 10px;padding:8px 13px;border:1px solid var(--c-info);border-radius:4px;background:rgba(70,130,180,.18);color:var(--c-info);font-weight:700;cursor:pointer">遠征対抗戦を実行</button><div style="margin:-4px 0 10px;color:var(--text-dim);font-size:11px">結果を確認した後、この週の自団体興行を編成できます。</div>`;
+    }
   }
 
   const fanExpects = Engine.fanExpect.generate(G);

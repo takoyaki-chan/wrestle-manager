@@ -8759,6 +8759,22 @@ const App = {
     return true;
   },
 
+  // Run an accepted away challenge directly from show preparation so its result
+  // is not hidden behind the player organization's local-show result screen.
+  startAwayChallengeFromPrep() {
+    if (!G._pendingAwayChallengeMatch || !Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
+      Audio.play('error');
+      showToast('この週は遠征対抗戦を実行できません。', 3000);
+      return false;
+    }
+    App._awayChallengeManualStart = true;
+    if (!App._startAwayChallengeShow()) {
+      App._awayChallengeManualStart = false;
+      return false;
+    }
+    return true;
+  },
+
   _finalizeAwayChallengeShow() {
     const sp = App._showPreview;
     if (!sp?.isAwayChallenge || sp.results.some(r => !r)) return;
@@ -8848,7 +8864,17 @@ const App = {
     App._awayChallengeCompletedForClose = true;
     App._lastInjuries = [...(App._lastInjuries || []), ...injuryResults.filter(ir => !guestIds.has(ir.id))];
     try { Storage.autoSave(); } catch (_e) {}
-    const continueClose = () => App.closeShowResult();
+    const continueClose = () => {
+      if (App._awayChallengeManualStart) {
+        App._awayChallengeManualStart = false;
+        try { Audio.bgm.playForState(); } catch (_e) {}
+        showScreen('week');
+        refreshAll();
+        if (G.weekPhase === 'showPrep' && typeof renderShowPrep === 'function') renderShowPrep();
+        return;
+      }
+      App.closeShowResult();
+    };
     if (typeof showChallengeRequestResultModal === 'function') showChallengeRequestResultModal(card, result, G, continueClose);
     else continueClose();
   },
