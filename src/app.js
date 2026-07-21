@@ -1522,7 +1522,7 @@ const Storage = {
         }
       });
     }
-    state._saveVersion = '1.14b';
+    state._saveVersion = '1.2';
     state._saveDate = new Date().toISOString();
     const sanitizedName = Storage._sanitizeSaveNameLabel(saveNameOverride);
     if (sanitizedName) state._saveName = sanitizedName; else delete state._saveName;
