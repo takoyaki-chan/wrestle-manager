@@ -267,3 +267,4 @@ teams: `[{orgId, members: [id×3], order: [id×3], eliminated: [id...], conditio
 | 2026-07-21 | 決勝前の再配置を初回編成と同じDesktop三角配置・375px L1・代表3名候補棚へ統一 |
 | 2026-07-21 | 特別大会結果ファンファーレをff07 MP3へ変更。秋優勝結果で再生し、MVPはff04 Synthへ分離。MVP台詞を頭上吹き出し化 |
 | 2026-07-21 | 試合前・決勝前・勝ち残り後の台詞を、確定稿どおりの秋大会専用 personality × archetype テーブルへ差し替え |
+| 2026-07-21 | Desktop／375px、編成、戦況、左右配置、BGM、スキップ、決勝再編成、結果～MVPの全実機項目をKeisuke確認済み |

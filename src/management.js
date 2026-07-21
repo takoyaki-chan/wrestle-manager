@@ -1974,14 +1974,17 @@ const Engine = {
     },
 
     // タイトルマッチ挑戦資格判定
-    // OVR上位3位以内 or ロスター最高OVRとの差5以内
-    getEligibleChallengers(roster, champId) {
+    // player: OVR上位5位以内 or ロスター最高OVRとの差8以内
+    // ai: OVR上位3位以内 or ロスター最高OVRとの差5以内
+    getEligibleChallengers(roster, champId, policy = 'player') {
       const available = roster.filter(f => f.id !== champId && !f.injury && !f.isRental);
       if (available.length === 0) return [];
       const sorted = [...available].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-      const top3Ids = new Set(sorted.slice(0, 3).map(f => f.id));
+      const rankingLimit = policy === 'ai' ? 3 : 5;
+      const maxOvrGap = policy === 'ai' ? 5 : 8;
+      const topRankedIds = new Set(sorted.slice(0, rankingLimit).map(f => f.id));
       const maxOvr = Math.max(...roster.filter(f => !f.injury && !f.isRental).map(f => Engine.util.ov(f)));
-      return available.filter(f => top3Ids.has(f.id) || maxOvr - Engine.util.ov(f) <= 5).map(f => f.id);
+      return available.filter(f => topRankedIds.has(f.id) || maxOvr - Engine.util.ov(f) <= maxOvrGap).map(f => f.id);
     },
 
     // v1.2: タイトルマッチ12週クールダウン
@@ -8074,7 +8077,7 @@ const Engine = {
         const aiAbsWeek = Engine.title.getAbsWeek(state);
         const aiCdOk = aiLastTMW == null ? true : (aiAbsWeek - aiLastTMW) >= 12;
         if (aiChampId && aiCdOk && matchCard.length > 0) {
-          const eligibleIds = new Set(Engine.title.getEligibleChallengers(roster, aiChampId));
+          const eligibleIds = new Set(Engine.title.getEligibleChallengers(roster, aiChampId, 'ai'));
           // 王者がカードにいるか確認
           const champCardIdx = matchCard.findIndex(m => m.left.id === aiChampId || m.right.id === aiChampId);
           if (champCardIdx >= 0 && eligibleIds.size > 0) {
@@ -8387,7 +8390,7 @@ const Engine = {
 
           if (cdOk) {
             // 挑戦資格判定
-            const eligibleIds = new Set(Engine.title.getEligibleChallengers(roster, champId));
+            const eligibleIds = new Set(Engine.title.getEligibleChallengers(roster, champId, 'ai'));
             // 王者の対戦相手を確認
             const champResult = matchResults.find(r => r.left?.id === champId || r.right?.id === champId);
             const oppId = champResult ? (champResult.left?.id === champId ? champResult.right?.id : champResult.left?.id) : null;
