@@ -16017,16 +16017,16 @@ function _agwLiveTeamHtml(result, matchIndex, boutIndex, match, orgId, side) {
     const fighter = _agwFighter(orgId, id);
     if (!fighter) return '';
     const full = typeof getFullUrl === 'function' ? getFullUrl(id, Engine.util.ov(fighter)) : '';
-    return `<div class="agw-live-figure is-${state}" data-order="${index}">
+    return `<div class="agw-live-figure is-${state} agw-live-slot-${index}">
       ${state === 'ring' ? '<span>IN RING</span>' : ''}
       ${full ? `<img src="${full}" alt="${escHtml(fighter.name)}">` : ''}
     </div>`;
   }).join('');
-  const names = displayOrder.map(({ id, state }) => {
+  const names = displayOrder.map(({ id, state }, index) => {
     const fighter = _agwFighter(orgId, id);
     if (!fighter) return '';
     const stateLabel = state === 'out' ? 'OUT' : state === 'ring' ? 'RING' : 'WAIT';
-    return `<button type="button" class="agw-live-name is-${state}" onclick="event.stopPropagation();showFighterPopup(${id},'autumnWar')">
+    return `<button type="button" class="agw-live-name is-${state} agw-live-slot-${index}" onclick="event.stopPropagation();showFighterPopup(${id},'autumnWar')">
       <small>${_agwRoleLabel(order, id)} / ${stateLabel}</small><b>${escHtml(fighter.name)}</b>
     </button>`;
   }).join('');

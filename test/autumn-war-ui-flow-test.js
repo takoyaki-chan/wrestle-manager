@@ -155,14 +155,14 @@ function section(source, startMarker, endMarker) {
   const liveTeam = section(ui, 'function _agwLiveTeamHtml', 'function _agwStatusRailHtml');
   assert.ok(liveTeam.includes('const stateOrder = { ring: 0, wait: 1, out: 2 };'), 'the active wrestler must be displayed closest to center');
   assert.ok(liveTeam.includes('const names = displayOrder.map'), 'live-board nameplates must follow the reordered wrestler positions');
+  assert.ok(liveTeam.includes('agw-live-slot-${index}'), 'every active, waiting, or eliminated wrestler must receive a unique board slot');
   assert.ok(board.includes('agw-status-rail'), 'four-team status rail missing');
   assert.ok(board.includes('この試合の結果を見る ▶'));
   assert.ok(board.includes('App.awSkipTeamMatch()'));
   assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure img{transform:scaleX(-1)}'), 'only the left team should be mirrored toward center');
-  assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure.is-ring{right:0;left:auto;z-index:6}'), 'the active wrestler must stand closest to center on the left team');
-  assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure.is-out{left:0;right:auto;z-index:2}'), 'the eliminated wrestler must stand at the outer edge on the left team');
-  assert.ok(html.includes('.agw-live-team.is-right .agw-live-figure.is-out{right:0;left:auto;z-index:2}'), 'the eliminated wrestler must stand at the outer edge on the right team');
-  assert.ok(html.includes('.agw-live-team.is-right .agw-live-name.is-ring{grid-column:1}'), 'right-side nameplates must stay beneath their matching state position');
+  assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure.agw-live-slot-0{right:0;left:auto;z-index:6}'), 'the active wrestler must stand closest to center on the left team');
+  assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure.agw-live-slot-2{left:0;right:auto;z-index:2}'), 'the outermost slot must be used for eliminated wrestlers after the waiting fighters');
+  assert.ok(html.includes('.agw-live-team.is-right .agw-live-name.agw-live-slot-0{grid-column:1}'), 'right-side nameplates must stay beneath their matching slot');
   assert.ok(html.includes('.agw-live-actions>.btn{flex:1 1 0;max-width:220px;height:48px}'), 'desktop action buttons must have equal sizing');
   assert.ok(mobile.includes('grid-template-columns: repeat(3, minmax(0, 1fr))'), '375px actions must use three equal columns');
   assert.ok(mobile.includes('height: 54px'), '375px action buttons must share one height');
