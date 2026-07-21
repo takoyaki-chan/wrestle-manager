@@ -44,22 +44,33 @@
   .top-bar {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 8px;
     padding: 8px 10px;
     margin-bottom: 8px;
   }
 
-  .top-bar > div:first-child {
-    width: 100%;
+  .top-bar-clock {
     min-width: 0;
   }
 
-  .top-bar-title {
+  .top-bar-date {
     min-width: 0;
-    font-size: 16px;
-    letter-spacing: 2px;
+    font-size: 23px;
+    letter-spacing: 0;
     white-space: nowrap;
+  }
+
+  #dispOrgIcon img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .top-bar-audio {
+    grid-column: 2;
+    grid-row: 1;
+    border-left: 0;
+    padding-left: 0;
   }
 
   #muteBtn,
@@ -70,6 +81,8 @@
   }
 
   .top-bar-info {
+    grid-column: 1 / -1;
+    grid-row: 2;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
@@ -89,8 +102,29 @@
     text-overflow: ellipsis;
   }
 
-  #dispDate {
-    font-size: 11px !important;
+  .top-bar-info .info-item:nth-child(4),
+  .top-bar-info .info-item:nth-child(5) {
+    grid-column: span 1;
+  }
+
+  .top-bar-info .info-item:nth-child(5) {
+    grid-column: span 2;
+  }
+
+  .week-overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .week-season-quarter {
+    font-size: 9px;
+  }
+
+  .week-season-quarter strong {
+    font-size: 10px;
+  }
+
+  .week-season-track {
+    height: 10px;
   }
 
   .crisis-bar {

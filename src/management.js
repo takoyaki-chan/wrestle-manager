@@ -411,6 +411,15 @@ const Engine = {
 
   // ── Utilities ──────────────────────────────────────────
   util: {
+    WEEKS_PER_SEASON: 48,
+    WEEKS_PER_QUARTER: 12,
+    WEEKS_PER_MONTH: 4,
+    SEASON_DEFINITIONS: Object.freeze([
+      Object.freeze({ quarter: 1, id: 'spring', emoji: '🌸', name: '春', months: Object.freeze([4, 5, 6]) }),
+      Object.freeze({ quarter: 2, id: 'summer', emoji: '☀️', name: '夏', months: Object.freeze([7, 8, 9]) }),
+      Object.freeze({ quarter: 3, id: 'autumn', emoji: '🍂', name: '秋', months: Object.freeze([10, 11, 12]) }),
+      Object.freeze({ quarter: 4, id: 'winter', emoji: '❄️', name: '冬', months: Object.freeze([1, 2, 3]) }),
+    ]),
     /** 絶対実働週番号（48週制・オフ期間を数えない）。興行/練習など通常シーズン内だけ進む計算に使う */
     absWeek(season, week) { return ((season || 1) - 1) * 48 + (week || 1); },
     /** オフシーズン込み絶対週番号（52週/シーズン: 通常48週+オフ4週）。ラストラン期限など、オフ中も進行する計算に使う */
@@ -429,10 +438,27 @@ const Engine = {
     clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); },
     ov(c) { return Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5); },
     isShowWeek(w) { return w % 2 === 0; },
-    getQuarter(w) { return Math.ceil(w / 12); },
-    getMonth(w) { return ((Math.ceil(w / 4) - 1 + 3) % 12) + 1; },
-    getWeekInMonth(w) { return ((w - 1) % 4) + 1; },
-    formatDate(s, w) { return `${s}年目 ${this.getMonth(w)}月 第${this.getWeekInMonth(w)}週`; },
+    getSeasonInfo(w) {
+      const week = this.clamp(Math.floor(Number(w) || 1), 1, this.WEEKS_PER_SEASON);
+      const quarter = Math.ceil(week / this.WEEKS_PER_QUARTER);
+      const definition = this.SEASON_DEFINITIONS[quarter - 1];
+      return {
+        ...definition,
+        week,
+        weekInQuarter: ((week - 1) % this.WEEKS_PER_QUARTER) + 1,
+        month: definition.months[Math.floor(((week - 1) % this.WEEKS_PER_QUARTER) / this.WEEKS_PER_MONTH)],
+        weekInMonth: ((week - 1) % this.WEEKS_PER_MONTH) + 1,
+        label: `${definition.emoji}${definition.name}`,
+      };
+    },
+    getQuarter(w) { return this.getSeasonInfo(w).quarter; },
+    getMonth(w) { return this.getSeasonInfo(w).month; },
+    getWeekInMonth(w) { return this.getSeasonInfo(w).weekInMonth; },
+    getWeekInQuarter(w) { return this.getSeasonInfo(w).weekInQuarter; },
+    formatDate(s, w) {
+      const season = this.getSeasonInfo(w);
+      return `${s}年目 ${season.label} 第${season.weekInQuarter}週`;
+    },
     // v1.5s25: 内部小数化 — 表示用ヘルパー（popularity/orgPopは内部小数、表示は整数）
     dispPop(v) { return Math.round(v || 0); },
     dispOrgPop(v) { return Math.round(v || 0); },

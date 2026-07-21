@@ -29,6 +29,19 @@ assert.ok(tagBattle.includes('href="battle-mobile.css"'), 'tag battle must load 
 
 assert.ok(mobile.includes('@media (max-width: 700px)'), 'main phone breakpoint is missing');
 assert.ok(
+  mobile.includes('.top-bar-clock {') &&
+    mobile.includes('.top-bar-date {') &&
+    mobile.includes('.top-bar-audio {') &&
+    mobile.includes('grid-column: 1 / -1;'),
+  'the phone header must keep the date prominent and move status values below it'
+);
+assert.ok(
+  mobile.includes('.week-overview-grid {') &&
+    mobile.includes('grid-template-columns: minmax(0, 1fr);') &&
+    mobile.includes('.week-season-track {'),
+  'the phone week dashboard must keep the season track full-width'
+);
+assert.ok(
   mobile.includes('.nav-bar {') &&
     mobile.includes('position: sticky;') &&
     mobile.includes('top: 0;'),

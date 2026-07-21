@@ -199,17 +199,40 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .app{max-width:1200px;margin:0 auto;padding:12px}
 
 /* Header */
-.top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;
-  background:var(--panel-bg);border:1px solid rgba(200,190,170,0.08);border-radius:6px;margin-bottom:12px;flex-wrap:wrap;gap:8px}
-.top-bar-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;
-  background:linear-gradient(180deg,#fff 20%,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.top-bar-info{display:flex;gap:16px;font-size:12px;flex-wrap:wrap}
-.info-item{display:flex;align-items:center;gap:4px}
-.info-label{color:var(--text-sub);font-size:12px;font-family:'Oswald',sans-serif;letter-spacing:1px;text-transform:uppercase}
-.info-val{font-weight:700;font-size:14px}
+.top-bar{display:grid;grid-template-columns:minmax(max-content,1.35fr) minmax(0,2fr) auto;align-items:center;padding:10px 16px;
+  background:var(--panel-bg);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:12px;gap:18px}
+.top-bar-clock{display:flex;align-items:center;gap:8px;min-width:0}
+.top-bar-date{min-width:0;color:var(--gold-light);font-family:var(--font-display);font-size:30px;font-weight:700;line-height:1;
+  letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-bar-info{display:grid;grid-template-columns:repeat(5,minmax(max-content,1fr));align-items:center;gap:14px;min-width:0}
+.info-item{display:flex;align-items:center;gap:5px;min-width:0}
+.info-label{color:var(--text-sub);font-size:10px;font-family:var(--font-label);letter-spacing:1px;text-transform:uppercase}
+.info-val{font-weight:700;font-size:16px;white-space:nowrap}
 .info-val.positive{color:var(--green)}
 .info-val.negative{color:var(--red)}
 .info-val.gold{color:var(--gold-light)}
+.top-bar-audio{display:flex;align-items:center;border-left:1px solid var(--border);padding-left:8px}
+.top-bar-audio button{min-width:36px;min-height:36px;background:none;border:0;color:var(--text-sub);cursor:pointer;opacity:.62}
+
+/* Week dashboard season track */
+.week-overview-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:12px}
+.week-overview-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px;min-width:0}
+.week-season-card{display:grid;gap:6px}
+.week-season-labels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));font-family:var(--font-label)}
+.week-season-quarter{min-width:0;color:var(--text-dim);font-size:11px;line-height:1.25}
+.week-season-quarter strong{display:block;color:inherit;font-size:12px;letter-spacing:.04em}
+.week-season-quarter span{display:block;white-space:nowrap}
+.week-season-quarter.is-active{color:var(--gold-light)}
+.week-season-track{display:grid;grid-template-columns:repeat(48,minmax(0,1fr));height:9px;border-right:1px solid var(--border);background:var(--panel-bg);position:relative}
+.week-season-cell{position:relative;border-left:1px solid transparent;background:transparent}
+.week-season-cell:nth-child(4n+1){border-left-color:var(--text-dim)}
+.week-season-cell:nth-child(12n+1){border-left-width:2px;border-left-color:var(--gold)}
+.week-season-cell.is-filled{background:var(--gold)}
+.week-season-cell.is-current::after{content:'';position:absolute;z-index:2;top:-4px;right:0;width:3px;height:17px;background:var(--text-main);transform:translateX(50%);border-radius:var(--radius-sm)}
+.week-season-cell:last-child.is-current::after{transform:none}
+.week-season-bridge{display:none;color:var(--gold-light);font-family:var(--font-label);font-size:11px;letter-spacing:.08em;text-align:right}
+.week-season-card.is-offseason .week-season-quarter{color:var(--text-dim)}
+.week-season-card.is-offseason .week-season-bridge{display:block}
 
 /* Crisis Warning Bar (bankruptcy-redesign v1.1) */
 .crisis-bar{display:none;align-items:center;justify-content:center;gap:12px;
@@ -836,7 +859,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   .org-setup-title{font-size:28px}
   .app{padding:8px}
   .top-bar{padding:8px 10px}
-  .top-bar-title{font-size:16px}
   .top-bar-info{gap:8px}
   .data-table{font-size:11px}
   .nav-btn{padding:6px 10px;font-size:12px}
@@ -9223,19 +9245,20 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 <div class="app">
   <!-- Top Bar -->
   <div class="top-bar">
-    <div style="display:flex;align-items:center;gap:8px">
+    <div class="top-bar-clock">
       <span id="dispOrgIcon"></span>
-      <div class="top-bar-title">WRESTLE MANAGER</div>
-      <button id="muteBtn" onclick="Audio.toggleMute();document.getElementById('muteBtn').textContent=Audio.muted?'🔇':'🔊'" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;opacity:0.6" title="サウンド ON/OFF">🔊</button>
-      <button id="bgmMuteBtn" onclick="Audio.toggleBgmMute();document.getElementById('bgmMuteBtn').textContent=Audio.bgmMuted?'🎵❌':'🎵'" style="background:none;border:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:0.6" title="BGMのみ ON/OFF（効果音・ジングルは残る）">🎵</button>
+      <div class="top-bar-date" id="dispDate">1年目 🌸春 第1週</div>
     </div>
     <div class="top-bar-info">
-      <div class="info-item"><span class="info-val gold" id="dispDate" style="font-size:12px;letter-spacing:0.5px">1年目 4月 第1週</span></div>
       <div class="info-item"><span class="info-label">資金</span><span class="info-val positive" id="dispFunds">5,000万</span></div>
       <div class="info-item"><span class="info-label">人気</span><span class="info-val" id="dispPop">10</span><span id="dispSubsidy" class="subsidy-badge"></span></div>
       <div class="info-item"><span class="info-label">Heat</span><span class="info-val" id="dispHeat">➖ Neutral</span></div>
       <div class="info-item"><span class="info-label">順位</span><span class="info-val" id="dispRank" style="color:var(--gold)">4位</span></div>
       <div class="info-item"><span class="info-label">王座</span><span class="info-val" id="dispChamp" style="color:var(--gold)">🏆 空位</span></div>
+    </div>
+    <div class="top-bar-audio">
+      <button id="muteBtn" onclick="Audio.toggleMute();document.getElementById('muteBtn').textContent=Audio.muted?'🔇':'🔊'" title="サウンド ON/OFF">🔊</button>
+      <button id="bgmMuteBtn" onclick="Audio.toggleBgmMute();document.getElementById('bgmMuteBtn').textContent=Audio.bgmMuted?'🎵❌':'🎵'" title="BGMのみ ON/OFF（効果音・ジングルは残る）">🎵</button>
     </div>
   </div>
 

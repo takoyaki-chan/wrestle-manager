@@ -185,7 +185,7 @@ function refreshTopBar() {
   const dateEl = document.getElementById('dispDate');
   if (dateEl) {
     if (G.offSeason) {
-      dateEl.textContent = `${G.season}年目 オフシーズン ${G.offWeek || 0}/4`;
+      dateEl.textContent = `${G.season}年目 年度末 — オフシーズン ${G.offWeek || 0}/4`;
     } else {
       dateEl.textContent = Engine.util.formatDate(G.season, G.week);
     }
@@ -230,7 +230,7 @@ function refreshTopBar() {
   }
   const champEl = document.getElementById('dispChamp');
   const champ = getWorldChampion();
-  champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:12px">${portraitImg(champ.id, 80)}<span style="font-size:16px">🏆 ${fLink(champ, {source:'roster', bold:false, size:'16px'})} (${G.titles.world.defenses}防衛)</span></span>` : '<span style="color:var(--text-dim)">🏆 空位</span>';
+  champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(champ.id, 28)}<span>🏆 ${fLink(champ, {source:'roster', bold:false, size:'15px'})} (${G.titles.world.defenses}防衛)</span></span>` : '<span style="color:var(--text-dim)">🏆 空位</span>';
 }
 
 // ╔══════════════════════════════════════════════════╗
@@ -576,6 +576,33 @@ function _renderSeasonReview(review, state) {
   return h;
 }
 
+function _renderWeekSeasonTrack(week, offSeason = false, offWeek = 0) {
+  const info = Engine.util.getSeasonInfo(week);
+  const filledThrough = offSeason ? Engine.util.WEEKS_PER_SEASON : info.week;
+  const labels = Engine.util.SEASON_DEFINITIONS.map(season => `
+    <div class="week-season-quarter${!offSeason && season.quarter === info.quarter ? ' is-active' : ''}">
+      <strong>${season.emoji}${season.name}</strong>
+      <span>${season.months.join('·')}</span>
+    </div>`).join('');
+  const cells = Array.from({ length: Engine.util.WEEKS_PER_SEASON }, (_, index) => {
+    const cellWeek = index + 1;
+    const classes = [
+      'week-season-cell',
+      cellWeek <= filledThrough ? 'is-filled' : '',
+      !offSeason && cellWeek === info.week ? 'is-current' : '',
+    ].filter(Boolean).join(' ');
+    return `<span class="${classes}"></span>`;
+  }).join('');
+  const ariaLabel = offSeason
+    ? `年間48週完了、年度末オフシーズン${offWeek}/4`
+    : `${info.label} 第${info.weekInQuarter}週、年間第${info.week}週`;
+  return `<div class="week-season-card${offSeason ? ' is-offseason' : ''}">
+    <div class="week-season-labels">${labels}</div>
+    <div class="week-season-track" role="img" aria-label="${ariaLabel}">${cells}</div>
+    <div class="week-season-bridge">年度末ブリッジ ${offWeek}/4</div>
+  </div>`;
+}
+
 function renderWeekScreen() {
   if (typeof App !== 'undefined' && App.repairProgressionState && App.repairProgressionState('renderWeekScreen')) {
     try { Storage.autoSave(); } catch (_e) {}
@@ -796,10 +823,11 @@ function renderWeekScreen() {
   // ── OFFSEASON DISPLAY ──
   if (G.weekPhase === 'offseason') {
     const offW = G.offWeek || 0;
-    const offLabels = ['🏁 シーズン終了', '📊 シーズンレポート', '⚖ ドラフト', '🔄 移籍ウィンドウ', '🎬 新シーズン準備'];
     document.getElementById('weekTitle').textContent = offW === 0
-      ? `${G.season}年目 オフシーズン突入`
-      : `オフシーズン第${offW}週 — ${offLabels[offW] || ''}`;
+      ? 'オフシーズン突入'
+      : `オフシーズン ${offW}/4`;
+
+    html += `<div class="week-overview-card">${_renderWeekSeasonTrack(48, true, offW)}</div>`;
 
     // Progress bar
     html += `<div style="margin-bottom:16px">
@@ -862,14 +890,12 @@ function renderWeekScreen() {
   const special = isSpecialShow(G.week) && !specialEventBlocked;
   const ppv = isPPV(G.week);
   let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : agwBlocked ? '⚔️ 4団体勝ち残り対抗戦' : isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
-  document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4 — ${typeLabel}` : `${Engine.util.formatDate(G.season, G.week)} — ${typeLabel}`;
+  document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4` : typeLabel;
 
   html = '';
 
   if (G.weekPhase === 'manage') {
     // ── v0.95: Dashboard Panel ──
-    const qtr = QUARTER_LABELS[getQuarter(G.week)] || '🌸 春';
-    const weekPct = Math.round((G.week / 48) * 100);
     const pRank = G.rankings && G.rankings.length ? Engine.ranking.getPlayerRank(G.rankings) : '-';
     const stats = G.seasonStats || {};
     const fh = G.fundsHistory || [];
@@ -897,24 +923,11 @@ function renderWeekScreen() {
       upcomingItems.push(`🤝 交渉中: ${G.pendingNegotiation.fighterName}（残${remainW}週）`);
     }
 
-    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+    html += `<div class="week-overview-grid">
       <!-- Season Progress -->
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-size:11px;color:var(--gold);font-weight:700">${Engine.util.formatDate(G.season, G.week)}</span>
-        </div>
-        <div style="height:4px;background:rgba(200,190,170,0.08);border-radius:2px;overflow:hidden;margin-bottom:6px">
-          <div style="height:100%;width:${weekPct}%;background:linear-gradient(90deg,var(--gold),#f1c40f);border-radius:2px;transition:width 0.3s"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim)">
-          <span style="${G.week<=12?'color:var(--gold)':''}">🌸春</span>
-          <span style="${G.week>12&&G.week<=24?'color:var(--gold)':''}">☀️夏</span>
-          <span style="${G.week>24&&G.week<=36?'color:var(--gold)':''}">🍂秋</span>
-          <span style="${G.week>36?'color:var(--gold)':''}">❄️冬</span>
-        </div>
-      </div>
+      <div class="week-overview-card">${_renderWeekSeasonTrack(G.week)}</div>
       <!-- Mini Ranking + Finance -->
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px">
+      <div class="week-overview-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span style="font-size:11px;color:var(--text-dim)">ランキング <strong style="color:${pRank===1?'var(--gold)':pRank===2?'#e74c3c':pRank===3?'#9b59b6':'#2ecc71'};font-size:14px">#${pRank}</strong></span>
           <span style="font-size:11px;color:var(--text-dim)">資金 <strong style="color:${G.funds>=0?'#2ecc71':'#e74c3c'};font-size:13px">${Math.round(G.funds).toLocaleString()}万</strong></span>
@@ -1269,7 +1282,7 @@ function renderWeekScreen() {
   else if (G.weekPhase === 'weekSummary') {
     // v2.0-C3: Brief weekly summary — non-month-end weeks stop here
     const dateStr = G.offSeason ? `オフシーズン ${G.offWeek}/4` : Engine.util.formatDate(G.season, G.week);
-    document.getElementById('weekTitle').textContent = `${dateStr} — 完了`;
+    document.getElementById('weekTitle').textContent = '完了';
     // 直近4週バッファを集計（_tryAutoAdvance で当週分が push 済み）
     const _wsCycleNum = Math.ceil(G.week / 4);
     const _wsMonthStart = (_wsCycleNum - 1) * 4 + 1;
@@ -1409,7 +1422,7 @@ function renderWeekScreen() {
   }
   // ── C-4: TRANSFER WINDOW UI ──
   else if (G.weekPhase === 'transfer') {
-    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🔄 移籍ウィンドウ`;
+    document.getElementById('weekTitle').textContent = '🔄 移籍ウィンドウ';
     const pending = G.pendingPoach || [];
     if (pending.length > 0) {
       html += '<h3 style="color:#e17055;margin-bottom:12px">⚠️ 引き抜きオファー</h3>';
@@ -1455,7 +1468,7 @@ function renderWeekScreen() {
       html += '<h3 style="color:var(--text-sub)">イベントデータなし</h3>';
       html += '<div class="btn-row"><button class="btn btn-gold" onclick="skipEvent()">スキップ →</button></div>';
     } else if (ev.type === 'war') {
-      document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — ⚔ 対抗戦`;
+      document.getElementById('weekTitle').textContent = '⚔ 対抗戦';
       html += `<div style="background:linear-gradient(135deg,rgba(196,30,58,0.15),rgba(231,76,60,0.1));border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
         <h3 style="color:#e74c3c;margin-bottom:8px">⚔ 対抗戦の申し入れ</h3>
         <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.opponentName}から挑戦状が届いています</p>
@@ -1467,7 +1480,7 @@ function renderWeekScreen() {
       // Auto-show the challenge popup on first render
       setTimeout(() => showWarChallenge(), 300);
     } else if (ev.type === 'summit') {
-      document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏆 頂上決戦`;
+      document.getElementById('weekTitle').textContent = '🏆 頂上決戦';
       html += `<div style="background:linear-gradient(135deg,rgba(241,196,15,0.2),rgba(255,215,0,0.1));border:1px solid rgba(241,196,15,0.4);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
         <h3 style="color:var(--gold);margin-bottom:8px">🏆 頂上決戦</h3>
         <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.orgName}のエースに挑む！</p>
@@ -1487,7 +1500,7 @@ function renderWeekScreen() {
   // ── PPV ENTRY PHASE ──
   else if (G.weekPhase === 'ppvEntry') {
     const ppvName = G.ppvName || 'GRAND FINAL';
-    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏟️ PPV GRAND FINAL`;
+    document.getElementById('weekTitle').textContent = '🏟️ PPV GRAND FINAL';
     const rankings = G.rankings || [];
     const pRank = Engine.ranking.getPlayerRank(rankings);
     const maxSlots = Engine.ppv.getSlotCount(pRank);
@@ -1554,7 +1567,7 @@ function renderWeekScreen() {
   }
   // ── PPV SHOW DAY PHASE ──
   else if (G.weekPhase === 'ppvShow') {
-    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 🏟️ PPV GRAND FINAL`;
+    document.getElementById('weekTitle').textContent = '🏟️ PPV GRAND FINAL';
     html += `<div style="text-align:center;padding:24px">
       <div style="color:var(--gold);font-size:18px;margin-bottom:16px">PPV GRAND FINAL「${G.ppvName || 'GRAND FINAL'}」開催日！</div>
       <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="App.initPPVShow()">🏟️ PPV カードを表示</button>
@@ -1562,7 +1575,7 @@ function renderWeekScreen() {
   }
   // ── PPV TV PHASE ──
   else if (G.weekPhase === 'ppvTV') {
-    document.getElementById('weekTitle').textContent = `${Engine.util.formatDate(G.season, G.week)} — 📺 PPV テレビ中継`;
+    document.getElementById('weekTitle').textContent = '📺 PPV テレビ中継';
     html += `<div style="text-align:center;padding:24px">
       <div style="color:var(--text-sub);font-size:16px;margin-bottom:16px">📺 PPV GRAND FINAL テレビ中継中…</div>
       <button class="btn btn-blue" style="padding:10px 24px;font-size:14px" onclick="App.initPPVTV()">📺 テレビ中継を見る</button>
@@ -1571,9 +1584,8 @@ function renderWeekScreen() {
 
   // ── SCOUT EVENT PHASE (A1: 号外紙面型ドラフト開幕画面) ──
   else if (G.weekPhase === 'scoutEvent') {
-    const weekLabel = G.offSeason ? `オフシーズン第${G.offWeek}週` : Engine.util.formatDate(G.season, G.week);
     const eventLabel = 'メインドラフト';
-    document.getElementById('weekTitle').textContent = `${weekLabel} — ⚖ ${eventLabel}`;
+    document.getElementById('weekTitle').textContent = `⚖ ${eventLabel}`;
 
     const candidates = G.scoutCandidates || [];
     const totalCount = candidates.length;
@@ -4639,14 +4651,6 @@ function renderRanking() {
 //  見た目だけの骨組み。書類プレースホルダー7枚 + HUD + 壁/机背景
 // ══════════════════════════════════════════════════════════
 
-// 週番号から季節IDを返す (春:1-12 / 夏:13-24 / 秋:25-36 / 冬:37-48)
-function getShachoshitsuSeasonId(week) {
-  if (week <= 12) return 'spring';
-  if (week <= 24) return 'summer';
-  if (week <= 36) return 'autumn';
-  return 'winter';
-}
-
 // HUDバー (日付 / 資金 / 決裁印鑑6本)
 function renderShachoshitsuHud() {
   // Phase 2: 決裁枠は G.decisionPoints 連動
@@ -4695,7 +4699,7 @@ function renderShachoshitsu() {
   if (G.weekPhase === 'contractNegotiation') return;
   if (G._releaseInterviewTarget) return;
 
-  const season = getShachoshitsuSeasonId(G.week);
+  const season = Engine.util.getSeasonInfo(G.week).id;
 
   // タブ状態: ドラフト開催週はスカウトをデフォルトに
   const hasDraft = !!(G.scoutCandidates && G.scoutCandidates.length > 0);
@@ -5130,7 +5134,7 @@ function renderShachoshitsuReleaseInterview(fighter, dialogue) {
   const el = document.getElementById('shachoshitsuContent');
   if (!el) return;
 
-  const seasonId = getShachoshitsuSeasonId(G.offSeason ? 52 : G.week);
+  const seasonId = Engine.util.getSeasonInfo(G.offSeason ? 48 : G.week).id;
   const fundsStr = Math.round(G.funds).toLocaleString();
   const dateStr = Engine.util.formatDate(G.season, G.week);
 
