@@ -1443,15 +1443,6 @@
   .agw-entry-footer > span { display: none; }
   .agw-entry-footer > div { width: 100%; }
   .agw-entry-footer .btn { flex: 1; min-height: 44px; }
-  .agw-reorder-grid { margin-top: 12px; }
-  .agw-order-panel,
-  .agw-opponent-panel { padding: 10px; }
-  .agw-order-row { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 7px; }
-  .agw-order-row > .agw-ovr { grid-column: 3; grid-row: 1; }
-  .agw-order-actions { grid-column: 1 / -1; justify-content: flex-end; }
-  .agw-order-actions button { width: 42px; height: 38px; }
-  .agw-opponent-panel strong { margin: 8px 0; }
-  .agw-opponent-hidden { padding: 8px; }
   .agw-champ-lineup { gap: 5px; align-items: stretch; }
   .agw-champion-speech { margin-top: 10px; padding: 8px 10px; }
   .agw-champion-speech blockquote { font-size: 12px; }

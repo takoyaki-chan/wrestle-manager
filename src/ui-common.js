@@ -16247,29 +16247,56 @@ function _agwRecoveredConditions(result, orgId) {
 function renderAutumnWarReorder() {
   const p = App._awPreview;
   if (!p || !Array.isArray(p.finalOrder)) return;
+  const order = p.finalOrder;
+  const activeRole = Math.max(0, Math.min(Engine.autumnWar.TEAM_SIZE - 1, App._awFinalActiveRole || 0));
   const conditions = _agwRecoveredConditions(p.result, 'player');
   const final = p.result.results.find(m => m.round === 'final');
   const opponentId = p.result.finalists?.find(id => id !== 'player')
     || (final?.orgA === 'player' ? final.orgB : final?.orgA);
-  let rows = '';
-  p.finalOrder.forEach((id, idx) => {
-    const fighter = _agwFighter('player', id);
-    const face = typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '';
-    const cond = _agwConditionMeta(conditions[id]);
-    rows += `<div class="agw-order-row">
-      <span class="agw-order-role">${['先鋒', '中堅', '大将'][idx]}</span>
-      <button type="button" class="agw-order-detail" onclick="event.stopPropagation();showFighterPopup(${id},'autumnWar')"><span class="agw-order-face">${face ? `<img src="${face}" alt="">` : ''}</span><span class="agw-order-name"><b>${escHtml(fighter?.name || '?')}</b><small>${cond.label} / CONDITION ${cond.value}</small></span></button>
-      ${_agwOvrHtml(Engine.util.ov(fighter))}
-      <div class="agw-order-actions"><button ${idx === 0 ? 'disabled' : ''} onclick="App.awMoveFinal(${idx},-1)">↑</button><button ${idx === p.finalOrder.length - 1 ? 'disabled' : ''} onclick="App.awMoveFinal(${idx},1)">↓</button></div>
-    </div>`;
-  });
-  const html = `<div class="agw-wrap agw-reorder">${_agwHeaderHtml('Final Order', '準決勝後・決勝布陣の再編成')}
-    <div class="agw-reorder-grid">
-      <div class="agw-order-panel"><div class="agw-panel-label">社長の決断 — 自団体の最終布陣</div>${rows}<button class="btn btn-gold" onclick="App.awConfirmFinalOrder()">この布陣で決勝へ ▶</button></div>
-      <div class="agw-opponent-panel"><div class="agw-panel-label">FINAL OPPONENT</div><strong>${escHtml(_agwTeam(opponentId)?.orgName || '')}</strong><div class="agw-opponent-hidden">相手も布陣を<br>組み直している<br><span>決勝開始時に公開</span></div></div>
+  const opponent = _agwTeam(opponentId);
+  const strength = _agwOpponentStrength(opponent);
+  const playerTeam = _agwTeam('player');
+  const roles = ['先鋒', '中堅', '大将'];
+  const roleNotes = ['最初にリングへ', '流れを引き戻す二番手', '最後に控える団体の柱'];
+  const selected = order.map(id => _agwFighter('player', id)).filter(Boolean);
+  const eligible = (playerTeam?.memberIds || order).map(id => _agwFighter('player', id)).filter(Boolean);
+  const conditionValue = id => Math.round(conditions[id] ?? Engine.autumnWar.INITIAL_CONDITION);
+  const opponentSummary = `<div class="agw-entry-opponent-summary"><span>決勝の相手</span><strong>${escHtml(opponent?.orgName || '決勝進出団体')}</strong>${_agwOvrHtml(strength.average, '平均OVR')}<small>OVR幅 ${strength.min}〜${strength.max} / 最終出場順は開戦時に公開</small></div>`;
+  const figures = selected.map((fighter, index) => {
+    const full = typeof getFullUrl === 'function' ? getFullUrl(fighter.id, Engine.util.ov(fighter)) : '';
+    return `<div class="agw-entry-figure" data-order="${index}">${full ? `<img src="${full}" alt="${escHtml(fighter.name)}">` : ''}</div>`;
+  }).join('');
+  const placeholders = roles.map((role, index) => `<div class="agw-entry-placeholder" data-order="${index}"><span>?</span><b>${role}</b></div>`).join('');
+  const opponentSlots = roles.map(() => '<div class="agw-entry-empty-slot" aria-hidden="true"></div>').join('');
+  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectFinalRole(${index})"><span>${roles[index]}</span><b>${escHtml(fighter.name)}</b>${_agwOvrHtml(Engine.util.ov(fighter))}</button>`).join('');
+  const mobileCards = selected.map((fighter, index) => {
+    const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, Engine.util.ov(fighter)) : '';
+    return `<article class="agw-entry-mobile-card${index === activeRole ? ' is-active' : ''}">
+      <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${stand ? `<img src="${stand}" alt="${escHtml(fighter.name)}">` : ''}</button>
+      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${escHtml(fighter.name)}</button><div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>CONDITION ${conditionValue(fighter.id)}</small></div><em>${roleNotes[index]}</em></div>
+      <div class="agw-entry-mobile-actions"><button type="button" onclick="App.awSelectFinalRole(${index})">交代</button><button type="button" ${index === 0 ? 'disabled' : ''} onclick="App.awMoveFinal(${index},-1)">↑</button><button type="button" ${index === 2 ? 'disabled' : ''} onclick="App.awMoveFinal(${index},1)">↓</button></div>
+    </article>`;
+  }).join('');
+  const candidates = eligible.map(fighter => {
+    const selectedIndex = order.indexOf(fighter.id);
+    const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, Engine.util.ov(fighter)) : '';
+    return `<article class="agw-entry-candidate is-selected">
+      <button type="button" class="agw-entry-candidate-pick" onclick="App.awPickFinalFighter(${fighter.id})">${stand ? `<img src="${stand}" alt="">` : ''}<em>${roles[selectedIndex]}</em></button>
+      <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${escHtml(fighter.name)}</button>
+      <div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>COND ${conditionValue(fighter.id)} / ${escHtml(fighter.style || '')}</small></div>
+    </article>`;
+  }).join('');
+  const html = `<div class="agw-wrap agw-entry agw-reorder">${_agwHeaderHtml('Final Order', '準決勝後・決勝布陣の再編成')}
+    <div class="agw-entry-stage">
+      <div class="agw-entry-team is-opponent"><div class="agw-entry-team-label"><span>FINAL OPPONENT</span><b>${escHtml(opponent?.orgName || '決勝進出団体')}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>
+      <div class="agw-entry-versus">VS</div>
+      <div class="agw-entry-team is-player"><div class="agw-entry-team-label"><span>YOUR FINAL ORDER</span><b>${escHtml(G.orgName || '自団体')}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>
     </div>
+    <div class="agw-entry-mobile">${opponentSummary}<div class="agw-entry-mobile-head"><strong>L1 — 決勝の先鋒・中堅・大将</strong><span>交代する枠を選び、代表3名を並べ替える</span></div>${mobileCards}</div>
+    <div class="agw-entry-candidate-section"><div class="agw-entry-section-head"><strong>準決勝を戦った代表3名</strong><span>枠を選んでから選手を押すと、その位置へ入れ替え</span></div><div class="agw-entry-candidate-rail">${candidates}</div></div>
+    <div class="agw-entry-footer">${opponentSummary}<span>準決勝後のコンディションを見て、決勝の出場順を組み直せます。</span><div><button type="button" class="btn" onclick="App.awAutoFinalOrder()">おまかせ</button><button type="button" class="btn btn-gold" onclick="App.awConfirmFinalOrder()">この布陣で決勝へ ▶</button></div></div>
   </div>`;
-  _agwRenderPhase('reorder', html, '.agw-order-panel > .btn');
+  _agwRenderPhase('reorder', html, '.agw-entry-footer .btn-gold');
 }
 
 function renderAutumnWarResult() {

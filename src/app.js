@@ -3450,6 +3450,7 @@ const App = {
       committed: !!G.autumnWar?.champion,
       finalOrder: livePhase === 'finalOrder' ? Engine.autumnWar.suggestFinalOrder(G, 'player') : null,
     };
+    App._awFinalActiveRole = App._awPreview.phase === 'reorder' ? 0 : null;
     try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
     Audio.play('notify');
     if (App._awPreview.phase === 'reorder') renderAutumnWarReorder();
@@ -3617,6 +3618,7 @@ const App = {
     if (livePhase === 'finalOrder') {
       p.result = Engine.autumnWar.getProgress(G);
       p.finalOrder = Engine.autumnWar.suggestFinalOrder(G, 'player');
+      App._awFinalActiveRole = 0;
       p.phase = 'reorder';
       Audio.play('notify');
       renderAutumnWarReorder();
@@ -3643,7 +3645,39 @@ const App = {
     const next = index + delta;
     if (!Array.isArray(order) || index < 0 || next < 0 || next >= order.length) return;
     [order[index], order[next]] = [order[next], order[index]];
+    App._awFinalActiveRole = next;
     Audio.play('click');
+    renderAutumnWarReorder();
+  },
+
+  awSelectFinalRole(index) {
+    const order = App._awPreview?.finalOrder;
+    if (!Array.isArray(order) || index < 0 || index >= Engine.autumnWar.TEAM_SIZE) return;
+    App._awFinalActiveRole = index;
+    Audio.play('click');
+    renderAutumnWarReorder();
+  },
+
+  awPickFinalFighter(id) {
+    const order = App._awPreview?.finalOrder;
+    if (!Array.isArray(order)) return;
+    const fighterIndex = order.indexOf(id);
+    const role = Math.max(0, Math.min(Engine.autumnWar.TEAM_SIZE - 1, App._awFinalActiveRole || 0));
+    if (fighterIndex < 0 || fighterIndex === role) {
+      App._awFinalActiveRole = fighterIndex >= 0 ? fighterIndex : role;
+    } else {
+      [order[role], order[fighterIndex]] = [order[fighterIndex], order[role]];
+    }
+    Audio.play('click');
+    renderAutumnWarReorder();
+  },
+
+  awAutoFinalOrder() {
+    const p = App._awPreview;
+    if (!p) return;
+    p.finalOrder = Engine.autumnWar.suggestFinalOrder(G, 'player');
+    App._awFinalActiveRole = 0;
+    Audio.play('select');
     renderAutumnWarReorder();
   },
 
@@ -3656,6 +3690,7 @@ const App = {
     p.matchIndex = finalIndex >= 0 ? finalIndex : p.result.results.length - 1;
     p.boutIndex = 0;
     p.phase = 'board';
+    App._awFinalActiveRole = null;
     Audio.play('coin');
     try { Storage.autoSave(); } catch (_e) {}
     renderAutumnWarBoard();

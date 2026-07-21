@@ -66,6 +66,11 @@ function section(source, startMarker, endMarker) {
     'awShowMvpScene()',
     'finalizeAutumnWarReplay()',
   ].forEach(signature => assert.ok(app.includes(signature), `${signature} missing`));
+  ['awSelectFinalRole(', 'awPickFinalFighter(', 'awAutoFinalOrder()']
+    .forEach(signature => assert.ok(app.includes(signature), `${signature} missing`));
+  const finalControls = section(app, 'awMoveFinal(index, delta) {', 'awConfirmFinalOrder() {');
+  assert.ok(finalControls.includes('[order[role], order[fighterIndex]] = [order[fighterIndex], order[role]]'), 'final role selection must swap only the three qualified representatives');
+  assert.ok(finalControls.includes("Engine.autumnWar.suggestFinalOrder(G, 'player')"), 'final auto order must use the canonical condition-aware suggestion');
   assert.ok(app.includes('Engine.autumnWar.reorderForFinal(G, p.finalOrder)'));
   assert.ok(app.includes('Engine.autumnWar.simulateNextBout(G)'));
   assert.ok(app.includes("Engine.autumnWar.simulateNextBout(G, { recordFrames: true })"));
@@ -124,6 +129,13 @@ function section(source, startMarker, endMarker) {
   assert.ok(ui.includes('Engine.autumnWar.CEILING * 100'), 'condition meter must use the tournament ceiling');
   assert.ok(/\.agw-entry-mobile\s*\{\s*display:\s*block/.test(mobile));
   assert.ok(mobile.includes('.agw-entry-opponent-summary'), 'mobile opponent strength summary must remain visible');
+  const finalOrder = section(ui, 'function renderAutumnWarReorder', 'function renderAutumnWarResult');
+  assert.ok(finalOrder.includes('agw-entry-stage'), 'desktop final order must reuse the opening formation stage');
+  assert.ok(finalOrder.includes('agw-entry-mobile'), 'mobile final order must reuse the L1 card format');
+  assert.ok(finalOrder.includes('agw-entry-candidate-rail'), 'final order must retain the familiar wrestler shelf');
+  assert.ok(finalOrder.includes('App.awPickFinalFighter'), 'final wrestler shelf must support role swapping');
+  assert.ok(finalOrder.includes('conditionValue'), 'final formation must show post-semifinal condition');
+  assert.ok(!finalOrder.includes('agw-order-row'), 'the old final-only list layout must be removed');
 })();
 
 (function testApprovedLiveBoardLayoutAndActions() {
