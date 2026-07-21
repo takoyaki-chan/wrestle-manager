@@ -92,6 +92,11 @@ function makeState(showVenue = 8) {
   });
   assert.ok(!expired._pendingAwayChallengeMatch, 'stale away bookings must release their reserved wrestlers');
   assert.strictEqual(expired._expiredAwayChallengeNotice.age, 8, 'expiry keeps diagnostic context for the restored save');
+
+  const legacy = Engine.challengeRequest.releaseExpiredAwayBooking({
+    season: 2, week: 10, _pendingAwayChallengeMatch: { ...booking, acceptedSeason: undefined, acceptedWeek: undefined },
+  });
+  assert.ok(!legacy._pendingAwayChallengeMatch, 'legacy bookings without a timestamp must not lock wrestlers forever');
 })();
 
 (function challengeSeriesCanFillAThreeMatchVenueWithoutOverflow() {
