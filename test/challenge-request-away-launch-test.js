@@ -17,5 +17,8 @@ assert(app.includes('isTemporaryAwayGuest'), 'away result finalization must iden
 assert(app.includes('Reassert the pre-away player roster boundary'), 'away result application must purge guests a second time after result hooks');
 assert(app.includes('playerRosterIds: (G.roster || []).filter(f => !f.isCRGuest).map(f => f.id)'), 'incoming challenge flow must retain the pre-match player roster boundary');
 assert(app.includes('isTemporaryChallengeGuest'), 'incoming challenge cleanup must use guest provenance rather than guest IDs alone');
+assert(app.includes('_recoverAwayChallengeAfterError(error)'), 'away finalization errors must purge temporary guests');
+assert(app.includes("state.roster = (state.roster || []).filter(c =>"), 'serialized saves must exclude temporary challenge guests');
+assert(app.includes('const removedChallengeGuests = cleanedRoster.length'), 'every load must repair newly contaminated saves even after the old migration marker');
 
 console.log('challenge-request-away-launch-test: ok');

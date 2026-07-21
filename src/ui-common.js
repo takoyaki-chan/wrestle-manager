@@ -10964,7 +10964,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="YES">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">${isInverse ? '受けて立つ' : 'この舞台、組もう'}</div>
-            <div class="fevt-decision-hint">${isInverse ? `${requesterOrgName}の挑戦を受け、次の自団体興行の上位3試合で迎え撃つ` : `次の自団体興行後、${opponentOrgName}の興行へ3人で遠征する`}</div>
+            <div class="fevt-decision-hint">${isInverse ? `${requesterOrgName}の挑戦を受け、次の自団体興行の上位3試合で迎え撃つ` : `次の通常興行週、自団体興行より先に${opponentOrgName}へ3人で遠征する`}</div>
           </div>
           <div class="fevt-decision-card" data-choice="NO">
             <div class="fevt-decision-letter">B</div>

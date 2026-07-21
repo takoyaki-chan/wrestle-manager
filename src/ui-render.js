@@ -3033,8 +3033,8 @@ function renderShowPrep() {
     html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-info);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
       <strong style="color:var(--c-info)">🚌 敵地遠征の予約</strong>　${away.opponentOrgName || away.opponentOrgId}<br>
       ${eligibleChallengeShow
-        ? `${ownNames.join('・')} はこの興行後に相手団体の興行へ出場するため、自団体カードには編成できません。`
-        : `固定興行には割り込まず、次の通常興行が終わった後に${ownNames.join('・')}が敵地へ向かいます。`}
+        ? `${ownNames.join('・')} は先に相手団体の興行へ出場します。遠征結果の確認後、この週の自団体カードを編成できます。`
+        : `固定興行には割り込まず、次の通常興行週に${ownNames.join('・')}が先に敵地へ向かいます。`}
     </div>`;
     if (eligibleChallengeShow) {
       html += `<button onclick="App.startAwayChallengeFromPrep()" style="margin:0 0 10px;padding:8px 13px;border:1px solid var(--c-info);border-radius:4px;background:rgba(70,130,180,.18);color:var(--c-info);font-weight:700;cursor:pointer">遠征対抗戦を実行</button><div style="margin:-4px 0 10px;color:var(--text-dim);font-size:11px">結果を確認した後、この週の自団体興行を編成できます。</div>`;

@@ -33,6 +33,13 @@ const startAway = methodBody('_startAwayChallengeShow()');
 assert.ok(startAway.includes('isAwayChallenge: true'));
 assert.ok(startAway.includes('_awayChallengeMatch: true'));
 
+const executeShow = methodBody('executeShow()');
+assert.ok(executeShow.includes('App.startAwayChallengeFromPrep()'), 'local show execution must resolve an away booking first');
+assert.ok(
+  executeShow.indexOf('App.startAwayChallengeFromPrep()') < executeShow.indexOf('const eligibleChallengeShow'),
+  'away booking gate must run before the local show card is prepared'
+);
+
 const finishAway = methodBody('_finalizeAwayChallengeShow()');
 assert.ok(finishAway.includes('Engine.relationships.applyMatchResult'));
 assert.ok(finishAway.includes('Engine.injury.check'));
@@ -42,7 +49,6 @@ assert.ok(!finishAway.includes('attendance'), 'away challenge must not add playe
 assert.ok(!finishAway.includes('funds:'), 'away challenge must not add player show funds');
 
 const closeResult = methodBody('closeShowResult()');
-assert.ok(closeResult.includes('G._pendingAwayChallengeMatch'));
-assert.ok(closeResult.includes('App._startAwayChallengeShow()'));
+assert.ok(!closeResult.includes('App._startAwayChallengeShow()'), 'completed local shows must not re-enter the unsafe legacy away branch');
 
 console.log('challenge-show-orchestration-test: ok');

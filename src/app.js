@@ -1454,6 +1454,12 @@ const Storage = {
   // （別スロットからロードした名前が無関係なスロットに紛れ込むのを防ぐため）。
   serialize(G, saveNameOverride) {
     const state = JSON.parse(JSON.stringify(G));
+    // Challenge opponents are injected into the live roster only while their
+    // battle UI is open.  Never persist them, even if an autosave is triggered
+    // by an unrelated recovery path before the normal result cleanup runs.
+    state.roster = (state.roster || []).filter(c =>
+      !c?.isAwayChallengeGuest && !c?.isCRGuest && !c?.isB3ChallengeGuest
+    );
     state.roster.forEach(c => {
       delete c._weekAction; c.intensive = false;
       // growthLog トリミング
@@ -2171,14 +2177,18 @@ const Storage = {
         G = { ...G, scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null, scoutPendingPick: null, scoutEventType: null, _draftNegotiationStarted: false };
       }
 
-      // Repair saves affected by away-challenge display guests. Guests must not
-      // count as signed wrestlers, ratings, or a roster-cap unlock condition.
-      if (!G._migrated_roster_cap_away_guest_repair_v1) {
-        const cleanedRoster = (G.roster || []).filter(f => !f?.isAwayChallengeGuest && !f?.isCRGuest && !f?.isB3ChallengeGuest);
-        if (cleanedRoster.length !== (G.roster || []).length) {
-          G = { ...G, roster: cleanedRoster };
-          if (Engine.ranking?.updateRankings) G = { ...G, rankings: Engine.ranking.updateRankings(G) };
-        }
+      // Repair challenge display guests on every load.  The migration marker
+      // only records the roster-cap recalculation; it must not disable future
+      // cleanup if an interrupted battle polluted a newer save.
+      const cleanedRoster = (G.roster || []).filter(f =>
+        !f?.isAwayChallengeGuest && !f?.isCRGuest && !f?.isB3ChallengeGuest
+      );
+      const removedChallengeGuests = cleanedRoster.length !== (G.roster || []).length;
+      if (removedChallengeGuests) {
+        G = { ...G, roster: cleanedRoster };
+        if (Engine.ranking?.updateRankings) G = { ...G, rankings: Engine.ranking.updateRankings(G) };
+      }
+      if (!G._migrated_roster_cap_away_guest_repair_v1 || removedChallengeGuests) {
         const repairedRank1Unlock = App.hasPermanentRosterCap16Unlock(G);
         G = {
           ...G,
@@ -5673,6 +5683,16 @@ const App = {
     }
     // v2.0: weekPhase guard — settled/weekSummary等の非興行フェーズでは実行不可
     if (G.offSeason || !['manage', 'showPrep'].includes(G.weekPhase)) { Audio.play('error'); return; }
+    // An accepted away challenge must be resolved before the local show.  The
+    // old post-show branch temporarily mixed opponent guests into a completed
+    // local-show state and could persist them if result processing failed.
+    // Route both buttons through the same transactional away-show flow.
+    if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
+      if (App.startAwayChallengeFromPrep()) return;
+      // Invalid bookings are cancelled by _startAwayChallengeShow(). Continue
+      // the local show only after that reservation has actually been cleared.
+      if (G._pendingAwayChallengeMatch) return;
+    }
     // Accepted challenge requests reserve the top three slots inside the venue
     // limit. Inject only the visiting fighters needed to render/simulate them.
     const eligibleChallengeShow = !!Engine.challengeRequest?.isEligibleHomeShow?.(G);
@@ -6515,7 +6535,11 @@ const App = {
   // Post-processing: apply titles, popularity, injuries (mirrors Engine.executeShow logic)
   finalizeShow() {
     if (App._showPreview?.isAwayChallenge) {
-      App._finalizeAwayChallengeShow();
+      try {
+        App._finalizeAwayChallengeShow();
+      } catch (e) {
+        App._recoverAwayChallengeAfterError(e);
+      }
       return;
     }
     try {
@@ -8795,7 +8819,9 @@ const App = {
   // Run an accepted away challenge directly from show preparation so its result
   // is not hidden behind the player organization's local-show result screen.
   startAwayChallengeFromPrep() {
-    if (!G._pendingAwayChallengeMatch || !Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
+    if (!G._pendingAwayChallengeMatch
+      || !['manage', 'showPrep'].includes(G.weekPhase)
+      || !Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
       Audio.play('error');
       showToast('この週は遠征対抗戦を実行できません。', 3000);
       return false;
@@ -8806,6 +8832,31 @@ const App = {
       return false;
     }
     return true;
+  },
+
+  _recoverAwayChallengeAfterError(error) {
+    console.error('[WM] away challenge finalization failed:', error);
+    const sp = App._showPreview;
+    const playerRosterIds = new Set(sp?.awayPlayerRosterIds || []);
+    const isTemporaryAwayGuest = fighter => !fighter
+      || fighter.isAwayChallengeGuest
+      || (playerRosterIds.size > 0 && !playerRosterIds.has(fighter.id));
+    const wasManualStart = !!App._awayChallengeManualStart;
+    const { _pendingAwayChallengeMatch: _failedAway, ...clean } = G;
+    G = { ...clean, roster: (G.roster || []).filter(f => !isTemporaryAwayGuest(f)) };
+    App._showPreview = null;
+    App._awayChallengeInProgress = false;
+    App._awayChallengeManualStart = false;
+    App._awayChallengeCompletedForClose = !wasManualStart && G.weekPhase === 'showExec';
+    try { Storage.autoSave(); } catch (_e) {}
+    try { showToast('⚠️ 遠征対抗戦の処理に問題が発生したため、相手選手を除去して予約を解除しました。', 6000); } catch (_e) {}
+    if (wasManualStart || G.weekPhase !== 'showExec') {
+      try { Audio.bgm.playForState(); } catch (_e) {}
+      try { showScreen('week'); refreshAll(); } catch (_e) {}
+      if (G.weekPhase === 'showPrep' && typeof renderShowPrep === 'function') renderShowPrep();
+      return;
+    }
+    App.closeShowResult();
   },
 
   _finalizeAwayChallengeShow() {
@@ -8903,7 +8954,7 @@ const App = {
     G = clean;
     App._showPreview = null;
     App._awayChallengeInProgress = false;
-    App._awayChallengeCompletedForClose = true;
+    App._awayChallengeCompletedForClose = !App._awayChallengeManualStart;
     App._lastInjuries = [...(App._lastInjuries || []), ...injuryResults.filter(ir => !guestIds.has(ir.id))];
     try { Storage.autoSave(); } catch (_e) {}
     const continueClose = () => {
@@ -8954,14 +9005,7 @@ const App = {
         return;
       }
     }
-    if (App._awayChallengeCompletedForClose) {
-      App._awayChallengeCompletedForClose = false;
-    } else if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
-      resultOverlay.classList.remove('active');
-      App._showResultInlinePreviewPrepared = false;
-      App._showResultInlinePreview = null;
-      if (App._startAwayChallengeShow()) return;
-    }
+    if (App._awayChallengeCompletedForClose) App._awayChallengeCompletedForClose = false;
     App._closingShowResult = true;
     try {
       const inlinePreview = App._showResultInlinePreview;
@@ -11055,7 +11099,7 @@ const App = {
         // クォータ・CD更新
         G = Engine.challengeRequest.acceptPending(G);
         // 相手発信(inverse)は次回の自団体興行へ固定編成、
-        // 自団体発信(forward)は次回自団体興行後に相手団体興行の遠征枠として実施する。
+        // 自団体発信(forward)は次回通常興行週、自団体興行より先に敵地遠征として実施する。
         // ID のみ保持し、実際の対戦相手は executeShow 時点の最新roster/aiOrgsから再取得する
         // （数週先の興行になる可能性があり、その間に怪我・離脱で顔ぶれが変わり得るため）。
         const booking = {
@@ -11076,10 +11120,10 @@ const App = {
           name: reqName, tone: 'positive',
           message: isInverse
             ? `⚔ 挑戦状を受理。次の自団体興行で迎え撃つ`
-            : `⚔ 直訴を受理。次の興行後、敵地へ向かう`,
+            : `⚔ 直訴を受理。次の通常興行週、まず敵地へ向かう`,
           detail: isInverse
             ? `${reqName} らの挑戦試合は、自団体興行の上位3試合に固定される。`
-            : `${reqName} らは次の自団体興行を終えた後、${card.opponentOrgName}の興行へ遠征する。`,
+            : `${reqName} らは次の自団体興行を組む前に、${card.opponentOrgName}の興行へ遠征する。`,
         });
         renderWeekScreen && renderWeekScreen();
         finalizeCRAudio();
