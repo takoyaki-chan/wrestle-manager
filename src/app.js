@@ -3471,6 +3471,42 @@ const App = {
     renderAutumnWarBoutResultPopup(resolved.match, resolved.bout);
   },
 
+  awSkipTeamMatch() {
+    const p = App._awPreview;
+    const match = p?.result?.results?.[p.matchIndex];
+    if (!p || !match || match.winnerOrg || p.phase !== 'board') return;
+    showConfirm(
+      'この団体戦の残り全試合を自動進行し、団体戦の決着画面へ移ります。',
+      'まとめてスキップ',
+      () => App._awSkipTeamMatchConfirmed()
+    );
+  },
+
+  _awSkipTeamMatchConfirmed() {
+    const p = App._awPreview;
+    const match = p?.result?.results?.[p.matchIndex];
+    if (!p || !match || match.winnerOrg || p.phase !== 'board') return;
+    const maxSteps = Engine.autumnWar.TEAM_SIZE * 2 - 1;
+    let steps = 0;
+    while (steps < maxSteps) {
+      const stepped = Engine.autumnWar.simulateNextBout(G);
+      if (!stepped.bout) break;
+      G = stepped.state;
+      steps += 1;
+      if (stepped.matchCompleted) break;
+    }
+    p.result = Engine.autumnWar.getProgress(G);
+    const resolvedMatch = p.result?.results?.[p.matchIndex];
+    p.boutIndex = resolvedMatch?.bouts?.length || 0;
+    if (!resolvedMatch?.winnerOrg) {
+      Audio.play('error');
+      return;
+    }
+    try { Storage.autoSave(); } catch (_e) {}
+    Audio.play('coin');
+    renderAutumnWarBoard();
+  },
+
   _awConsumeBoutStep(stepped) {
     const p = App._awPreview;
     if (!p || !stepped?.bout) return null;

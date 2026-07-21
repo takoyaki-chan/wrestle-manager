@@ -60,6 +60,7 @@ function section(source, startMarker, endMarker) {
     'initAutumnWarReplay()',
     'awWatchBout()',
     'awRevealBout()',
+    'awSkipTeamMatch()',
     '_finishAutumnWarWatch()',
     'awConfirmFinalOrder()',
     'awShowMvpScene()',
@@ -74,6 +75,12 @@ function section(source, startMarker, endMarker) {
   const init = section(app, 'initAutumnWarReplay() {', 'awRevealBout() {');
   assert.ok(init.includes("phase: 'intro'"), 'event replay must enter the dedicated intro before entry');
   assert.ok(init.includes('const result = Engine.autumnWar.getProgress(G)'), 'live replay must reconstruct progress before rendering');
+  const teamSkip = section(app, 'awSkipTeamMatch() {', '_awConsumeBoutStep(stepped) {');
+  assert.ok(teamSkip.includes("'まとめてスキップ'"), 'team-match skip must use the approved short label');
+  assert.ok(teamSkip.includes('showConfirm('), 'team-match skip must require confirmation');
+  assert.ok(teamSkip.includes('while (steps < maxSteps)'), 'team-match skip must advance the remaining live bouts');
+  assert.strictEqual((teamSkip.match(/Engine\.autumnWar\.simulateNextBout\(G\)/g) || []).length, 1, 'team-match skip must reuse the canonical one-bout engine step');
+  assert.ok(!teamSkip.includes('runLegacy'), 'team-match skip must not use the legacy bulk simulator');
   const finalizeShow = section(app, 'finalizeShow() {', '_finalizeShowImpl() {');
   assert.ok(!finalizeShow.includes('G.autumnWar.session'), 'normal show finalization must not depend on autumn-war state');
 })();
@@ -102,12 +109,30 @@ function section(source, startMarker, endMarker) {
   assert.ok(entry.includes('getStandUrl('), 'mobile and candidates must use stand images');
   assert.ok(entry.includes('agw-entry-mobile'), '375px L1 entry cards missing');
   assert.ok(entry.includes('agw-entry-placeholder'), 'opponent empty formation missing');
+  assert.ok(entry.includes('agw-entry-empty-slot'), 'opponent unlabeled slots missing');
+  assert.ok(entry.includes('agw-entry-slot-row'), 'desktop role slots must stay inside the player half');
+  assert.ok(!entry.includes('agw-entry-role-select'), 'overlapping figure-level role buttons must be removed');
   assert.ok(entry.includes('showFighterPopup'), 'wrestler details must remain reachable');
-  assert.ok(ui.includes('_jtcFcCore({'), 'bout focus must reuse the shared focus component');
+  assert.ok(ui.includes('agw-live-stage'), 'six-wrestler live stage missing');
   assert.ok(ui.includes('valueClassOvr('), 'OVR database color thresholds must be reused');
   assert.ok(ui.includes('Engine.autumnWar.CEILING * 100'), 'condition meter must use the tournament ceiling');
   assert.ok(/\.agw-entry-mobile\s*\{\s*display:\s*block/.test(mobile));
   assert.ok(mobile.includes('.agw-entry-opponent-summary'), 'mobile opponent strength summary must remain visible');
+})();
+
+(function testApprovedLiveBoardLayoutAndActions() {
+  const board = section(ui, 'function _agwDisplayOrgIds', 'function renderAutumnWarBoutResultPopup');
+  assert.ok(board.includes("match.orgA === 'player'"));
+  assert.ok(board.includes('return { left: match.orgB, right: match.orgA }'), 'player organization must render on the right');
+  assert.ok(board.includes('getFullUrl('), 'live board must show all six full-body images');
+  assert.ok(board.includes('agw-status-rail'), 'four-team status rail missing');
+  assert.ok(board.includes('この試合の結果を見る ▶'));
+  assert.ok(board.includes('App.awSkipTeamMatch()'));
+  assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure img{transform:scaleX(-1)}'), 'only the left team should be mirrored toward center');
+  assert.ok(html.includes('.agw-live-team.is-right .agw-live-names{direction:rtl}'), 'right-side names must stay under their corresponding figures');
+  assert.ok(html.includes('.agw-live-actions>.btn{flex:1 1 0;max-width:220px;height:48px}'), 'desktop action buttons must have equal sizing');
+  assert.ok(mobile.includes('grid-template-columns: repeat(3, minmax(0, 1fr))'), '375px actions must use three equal columns');
+  assert.ok(mobile.includes('height: 54px'), '375px action buttons must share one height');
 })();
 
 (function testOptionalSeededDialogueMoments() {
