@@ -8739,6 +8739,8 @@ const App = {
       try { Storage.autoSave(); } catch (_e) {}
       return false;
     }
+    // Keep the canonical player roster boundary. Opponent wrestlers are only
+    // temporary battle guests and must never survive result application.
     const ownIds = new Set((G.roster || []).map(f => f.id));
     const guests = [...teamA, ...teamB].filter(f => !ownIds.has(f.id)).map(f => ({ ...f, isAwayChallengeGuest: true }));
     const groupId = `away_cr_${booking.requesterId}_${booking.opponentId}_${G.season}_${G.week}`;
@@ -8753,6 +8755,7 @@ const App = {
       stateSnapshot: JSON.parse(JSON.stringify(G)), confrontationPairs: [], confrontationMap: {},
       _shownConfrontations: new Set(), isAwayChallenge: true, awayBooking: booking,
       awayGuestIds: guests.map(f => f.id),
+      awayPlayerRosterIds: [...ownIds],
     };
     try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch (_e) {}
     renderMatchPreview();
@@ -8838,9 +8841,14 @@ const App = {
       });
     });
     const guestIds = new Set(sp.awayGuestIds || []);
+    const playerRosterIds = new Set(sp.awayPlayerRosterIds || []);
+    const isTemporaryAwayGuest = fighter => !fighter
+      || guestIds.has(fighter.id)
+      || fighter.isAwayChallengeGuest
+      || !playerRosterIds.has(fighter.id);
     s = {
       ...s,
-      roster: (s.roster || []).filter(f => !guestIds.has(f.id)).map(f => allById.get(f.id) || f),
+      roster: (s.roster || []).filter(f => !isTemporaryAwayGuest(f)).map(f => allById.get(f.id) || f),
       aiOrgs: Object.fromEntries(Object.entries(s.aiOrgs || {}).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(f => allById.get(f.id) || f) }])),
       matchupLog: [...(s.matchupLog || []), ...sp.validMatches.map(m => ({ leftId: m.left, rightId: m.right, showCount: s.totalShows, awayChallenge: true }))],
     };
@@ -8857,6 +8865,10 @@ const App = {
     const winsB = matches.filter(m => m.winner === 'right').length;
     const result = { matches, winsA, winsB, teamWin: winsA > winsB ? 'A' : winsB > winsA ? 'B' : 'draw' };
     s = App._applyChallengeRequestResult(s, card, result);
+    // _applyChallengeRequestResult updates career records on both rosters.
+    // Reassert the pre-away player roster boundary in case a future result hook
+    // copies a guest into the local roster.
+    s = { ...s, roster: (s.roster || []).filter(f => !isTemporaryAwayGuest(f)) };
     const { _pendingAwayChallengeMatch: _doneAway, ...clean } = s;
     G = clean;
     App._showPreview = null;
