@@ -52,7 +52,7 @@ for (const [label, watch, result, advance, championshipTransition] of [
   ['Tenchosen', tcWatch, tcResult, tcAdvance, tcAdvance],
 ]) {
   assert.ok(watch.includes('preserveParentFileBgm: true'), `${label} watch must preserve its active track through the result`);
-  assert.ok(watch.includes("if (isFinal)") && watch.includes("iwashiro_elevate_perfect.ogg"), `${label} final must retain its dedicated big-match BGM switch`);
+  assert.ok(watch.includes("if (isFinal)") && watch.includes("Audio.bgm.playStage('bigMatch')"), `${label} final must retain its dedicated FB1 big-match BGM switch`);
   assert.ok(!result.includes('Audio.fileBgm.fadeOut(') && !result.includes('Audio.fileBgm.stop()'), `${label} result must not stop or fade the active track`);
   assert.ok(!advance.includes('MusMus-BGM-052.mp3'), `${label} result advance must not restart the tournament loop from its beginning`);
   assert.ok(championshipTransition.includes('Audio.fileBgm.fadeOut(800)'), `${label} championship transition must still replace the final track with the fanfare`);

@@ -465,7 +465,7 @@ function showWarChallenge() {
   if (!ev || ev.type !== 'war') return;
   Audio.play('war');
 
-  try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {}
+  try { Audio.bgm.playStage('war'); } catch(e) {}
 
   const aiOrg = Engine.rival.getOrgInfo(G.aiOrgs, ev.opponentOrgId);
   if (!aiOrg) { skipEvent(); return; }

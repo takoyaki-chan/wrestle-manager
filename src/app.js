@@ -3,6 +3,42 @@
 // ║  Web Audio API synthesized sounds — no external files     ║
 // ╚══════════════════════════════════════════════════════════╝
 
+// Stage overlays live outside weekPhase, so ordinary state restoration cannot
+// infer their BGM from G alone. Keep this resolver pure so every restore path
+// (navigation, load, mute/unmute and emergency return) makes the same choice.
+function resolveActiveStageBgm(app) {
+  if (!app) return null;
+  const show = app._showPreview;
+  if (show && show.currentWatching >= 0) {
+    const match = show.validMatches?.[show.currentWatching];
+    const isTagMatch = !!(match?.teamA || match?.teamB || match?.matchType === 'tag');
+    return match?.isTitle && !isTagMatch ? 'bigMatch' : 'battle';
+  }
+  if (app._b3Preview?.watching || app._common1Preview?.watching || app._b2Preview?.watching) return 'bigMatch';
+  if (app._warPreview) return app._warPreview.currentWatching >= 0 ? 'bigMatch' : 'war';
+  if (app._ppvPreview) return app._ppvPreview.currentWatching >= 0 ? 'bigMatch' : 'tournament';
+
+  const spring = app._stlPreview;
+  if (spring) return spring.phase === 'champion' ? 'preserve' : 'tournament';
+
+  const autumn = app._awPreview;
+  if (autumn) return autumn.phase === 'result' || autumn.phase === 'mvp' ? 'preserve' : 'tournament';
+
+  const junior = app._jtPreview;
+  if (junior) {
+    if (junior.phase === 'finalResult' || junior.bgmTrack === 'preserve') return 'preserve';
+    return junior.bgmTrack || 'tournament';
+  }
+
+  const tenchosen = app._tcPreview;
+  if (tenchosen) {
+    if (tenchosen.tvMode) return null;
+    if (tenchosen.phase === 'finalResult' || tenchosen.bgmTrack === 'preserve') return 'preserve';
+    return tenchosen.bgmTrack || 'tournament';
+  }
+  return null;
+}
+
 const Audio = (() => {
   let ctx = null;
   let masterGain = null;
@@ -26,6 +62,12 @@ const Audio = (() => {
     battle:     { file: '../bgm/bgm_battle_v1.mp3',      vol: 0.12 },
     season_end: { file: '../bgm/bgm_season_end_v1.mp3',  vol: 0.17 },
     tension:    { file: '../bgm/bgm_tension_v1.mp3',     vol: 0.17 },
+  };
+  // WM Audio Mixer file-BGM assignments used by match and tournament screens.
+  const STAGE_BGM = {
+    bigMatch:   { file: '../bgm/iwashiro_elevate_perfect.ogg', vol: 0.12 }, // FB1
+    tournament: { file: '../bgm/MusMus-BGM-052.mp3', vol: 0.12 },          // FB2
+    war:        { file: '../bgm/MusMus-BGM-125.mp3', vol: 0.10 },          // FB3
   };
   const JINGLE_MIX = { victory:0.38, championship:0.29 };
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
@@ -615,6 +657,22 @@ const Audio = (() => {
       if (fn) fn();
     },
 
+    playStage(name) {
+      if (_bgmMuted) return;
+      const stage = STAGE_BGM[name];
+      if (!stage) return;
+      const activeSrc = FileBGM._audio?.src || '';
+      const filename = stage.file.split('/').pop();
+      if (FileBGM._audio && activeSrc.includes(filename)) {
+        BGM._playing = true;
+        BGM._current = `stage:${name}`;
+        return;
+      }
+      FileBGM.play(stage.file, { loop: true, volume: stage.vol });
+      BGM._playing = true;
+      BGM._current = `stage:${name}`;
+    },
+
     playJingle(name) {
       BGM.stop(); // Stop looping BGM, then play jingle (always plays regardless of bgmMuted)
       // 特別大会結果: オーディオミキサー ff07 のMP3 v5を使用（bgmMuted無視で必ず再生）
@@ -655,6 +713,7 @@ const Audio = (() => {
 
     stop() {
       const wasSuno = BGM._current && SUNO_BGM[BGM._current];
+      const wasStage = typeof BGM._current === 'string' && BGM._current.startsWith('stage:');
       BGM._playing = false;
       BGM._current = null;
       if (BGM._interval) { clearInterval(BGM._interval); BGM._interval = null; }
@@ -662,7 +721,7 @@ const Audio = (() => {
         bgmNodes.forEach(n => { try { n.stop(); } catch(e) {} });
         bgmNodes = [];
       }
-      if (wasSuno && FileBGM._audio) FileBGM.stop();
+      if ((wasSuno || wasStage) && FileBGM._audio) FileBGM.stop();
     },
 
     // ── Track implementations ──
@@ -914,14 +973,16 @@ const Audio = (() => {
     // ── Smart BGM selector based on game state ──
     playForState() {
       if (!G) return;
+      const stageBgm = resolveActiveStageBgm(App);
+      if (stageBgm === 'preserve') return;
+      if (stageBgm === 'battle') { BGM.play('battle'); return; }
+      if (stageBgm) { BGM.playStage(stageBgm); return; }
       if (G.weekPhase === 'draft' || G.weekPhase === 'opening') { BGM.play('kaimaku'); return; }
       if ((G.offSeason && G.offWeek >= 2) || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
       if (G.weekPhase === 'showExec') { BGM.play('battle'); return; }
       if (G.weekPhase === 'event') {
         if (G.pendingEvent && G.pendingEvent.type === 'war') {
-          const warSrc = '../bgm/MusMus-BGM-125.mp3';
-          if (FileBGM._audio && FileBGM._audio.src && FileBGM._audio.src.indexOf('MusMus-BGM-125') >= 0) return;
-          FileBGM.play(warSrc, { loop: true, volume: 0.10 });
+          BGM.playStage('war');
           return;
         }
         BGM.play('tension'); return;
@@ -929,9 +990,7 @@ const Audio = (() => {
       // draft-negotiation-spec §8.1: ドラフト速報+交渉時はtension
       if (G.weekPhase === 'scoutEvent' && (G._draftInterests || G._draftNegotiation)) { BGM.play('tension'); return; }
       if (G.weekPhase === 'juniorTournament') {
-        const jtSrc = '../bgm/MusMus-BGM-052.mp3';
-        if (FileBGM._audio && FileBGM._audio.src && FileBGM._audio.src.indexOf('MusMus-BGM-052') >= 0) return;
-        FileBGM.play(jtSrc, { loop: true, volume: 0.12 });
+        BGM.playStage('tournament');
         return;
       }
       BGM.play('management'); // management + showPrep + draft newspaper all use this
@@ -3502,7 +3561,7 @@ const App = {
     }
     if (!G.autumnWar.session && !G.autumnWar.champion) {
       App._awPreview = { phase: 'intro', committed: false };
-      try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
+      try { Audio.bgm.playStage('tournament'); } catch (_e) {}
       Audio.play('notify');
       renderAutumnWarIntro();
       return;
@@ -3521,7 +3580,7 @@ const App = {
       finalOrder: livePhase === 'finalOrder' ? Engine.autumnWar.suggestFinalOrder(G, 'player') : null,
     };
     App._awFinalActiveRole = App._awPreview.phase === 'reorder' ? 0 : null;
-    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (_e) {}
+    try { Audio.bgm.playStage('tournament'); } catch (_e) {}
     Audio.play('notify');
     if (App._awPreview.phase === 'reorder') renderAutumnWarReorder();
     else if (App._awPreview.phase === 'result') {
@@ -3955,7 +4014,7 @@ const App = {
       return;
     }
     App._stlPreview = { idx: 0, phase: 'table' };
-    try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch (e) {}
+    try { Audio.bgm.playStage('tournament'); } catch (e) {}
     renderSpringTagLeagueBoard();
   },
 
@@ -6178,7 +6237,7 @@ const App = {
     };
     // BGM切替: タイトル戦はFileBGM、通常試合はチップチューンbattle
     if (m.isTitle) {
-      try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
+      try { Audio.bgm.playStage('bigMatch'); } catch(e) {}
     } else {
       try { Audio.bgm.play('battle'); } catch(e) {}
     }
@@ -6423,7 +6482,7 @@ const App = {
       if (!ppvPrev.results[idx]) App.ppvSkipMatch(idx);
       // PPV BGM復帰
       if (!ppvPrev.results.every(r => r !== null)) {
-        setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 300);
+        setTimeout(() => { if (App._ppvPreview) { try { Audio.bgm.playStage('tournament'); } catch(e) {} } }, 300);
       }
     } else if (sp && sp.currentWatching >= 0) {
       const idx = sp.currentWatching;
@@ -6440,7 +6499,7 @@ const App = {
       if (!wp.results[idx]) App._skipWarMatch(idx);
       // 対抗戦BGM復帰
       if (!wp.results.every(r => r !== null)) {
-        setTimeout(() => { if (App._warPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {} } }, 300);
+        setTimeout(() => { if (App._warPreview) { try { Audio.bgm.playStage('war'); } catch(e) {} } }, 300);
       }
     }
     if (aw && aw.phase === 'watching') {
@@ -11950,7 +12009,7 @@ const App = {
       },
       result: b3Result,
     };
-    try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
+    try { Audio.bgm.playStage('bigMatch'); } catch(e) {}
     let sent = false;
     const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
     iframe.onload = () => setTimeout(sendOnce, 200);
@@ -12113,7 +12172,7 @@ const App = {
       },
       result: c1Result,
     };
-    try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
+    try { Audio.bgm.playStage('bigMatch'); } catch(e) {}
     let sent = false;
     const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
     iframe.onload = () => setTimeout(sendOnce, 200);
@@ -12253,7 +12312,7 @@ const App = {
       },
       result: b2Result,
     };
-    try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
+    try { Audio.bgm.playStage('bigMatch'); } catch(e) {}
     let sent = false;
     const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
     iframe.onload = () => setTimeout(sendOnce, 200);
@@ -12833,7 +12892,7 @@ const App = {
     App._warBgmTimer = setTimeout(() => {
       App._warBgmTimer = null;
       if (!App._isWarUiTokenCurrent(token) || !App._warPreview) return;
-      try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {}
+      try { Audio.bgm.playStage('war'); } catch(e) {}
     }, delayMs);
   },
 
@@ -12846,7 +12905,7 @@ const App = {
       results: card.map(() => null), // null = unresolved
       currentWatching: -1
     };
-    try { Audio.fileBgm.play('../bgm/MusMus-BGM-125.mp3', { loop: true, volume: 0.10 }); } catch(e) {}
+    try { Audio.bgm.playStage('war'); } catch(e) {}
     renderWarMatchPreview();
   },
 
@@ -12915,7 +12974,7 @@ const App = {
       result: warResult,
     };
     // ビッグマッチBGM（対抗戦）
-    try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
+    try { Audio.bgm.playStage('bigMatch'); } catch(e) {}
     let sent = false;
     const sendOnce = () => {
       if (sent) return; sent = true;
@@ -13229,7 +13288,7 @@ App.initPPVShow = function() {
     results: new Array(ppvDay.card.length).fill(null),
     currentWatching: -1,
   };
-  try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
+  try { Audio.bgm.playStage('tournament'); } catch(e) {}
 
   // カードが空の場合は即座にfinalize（スタック防止）
   if (ppvDay.card.length === 0) {
@@ -13317,7 +13376,7 @@ App.ppvWatchMatch = function(idx) {
     result: ppvResult,
   };
   // ビッグマッチBGM（PPV）
-  try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
+  try { Audio.bgm.playStage('bigMatch'); } catch(e) {}
   let sent = false;
   const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
   iframe.onload = () => setTimeout(sendOnce, 200);
@@ -13366,7 +13425,7 @@ App._receivePPVBattleResult = function(data) {
     renderPPVMatchPreview();
     renderPPVMatchResultPopup(idx, () => {
       if (pp.results.every(r => r !== null)) App.finalizePPV();
-      else setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 1600);
+      else setTimeout(() => { if (App._ppvPreview) { try { Audio.bgm.playStage('tournament'); } catch(e) {} } }, 1600);
     });
     return;
   }
@@ -13388,7 +13447,7 @@ App._receivePPVBattleResult = function(data) {
   renderPPVMatchPreview();
   renderPPVMatchResultPopup(idx, () => {
     if (pp.results.every(r => r !== null)) App.finalizePPV();
-    else setTimeout(() => { if (App._ppvPreview) { try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {} } }, 1600);
+    else setTimeout(() => { if (App._ppvPreview) { try { Audio.bgm.playStage('tournament'); } catch(e) {} } }, 1600);
   });
 };
 
@@ -13902,10 +13961,11 @@ App.initJuniorTournament = function() {
     currentRound: 0,
     currentMatch: 0,
     phase: myParticipants.length > 0 ? 'summon' : 'bracket',
+    bgmTrack: 'tournament',
     summonIndex: 0,
     myParticipants,
   };
-  try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
+  Audio.bgm.playStage('tournament');
   if (myParticipants.length > 0) {
     Audio.play('notify');
     renderJuniorTournamentSummon();
@@ -13938,6 +13998,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
   const round = jt.result.rounds[roundIdx];
   const match = round.matches[matchIdx];
   const isFinal = roundIdx === jt.result.rounds.length - 1;
+  jt.bgmTrack = isFinal ? 'bigMatch' : 'tournament';
 
   // battle-engine iframe に試合データを送る（battleOverlay + battleIframe を使用）
   const overlay = document.getElementById('battleOverlay');
@@ -13994,9 +14055,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
     result: jtResult,
   };
   // ビッグマッチBGM（決勝のみ）
-  if (isFinal) {
-    try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
-  }
+  if (isFinal) Audio.bgm.playStage('bigMatch');
   let sent = false;
   const sendOnce = () => {
     if (sent) return; sent = true;
@@ -14008,6 +14067,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
 };
 
 App.jtSkipMatch = function(roundIdx, matchIdx) {
+  App._jtPreview.bgmTrack = 'tournament';
   // 試合結果画面を表示
   App._jtPreview.phase = 'matchResult';
   Audio.play('coin');
@@ -14020,6 +14080,7 @@ App.jtSkipAll = function() {
   const jt = App._jtPreview;
   if (!jt) return;
   jt.phase = 'bracket';
+  jt.bgmTrack = 'tournament';
   const rounds = jt.result.rounds;
   const stageDelay = 500; // 各段0.4〜0.6秒目安
 
@@ -14034,6 +14095,7 @@ App.jtSkipAll = function() {
     renderJuniorTournamentBracket();
     Audio.play('tick');
     if (ri === rounds.length - 1) {
+      jt.bgmTrack = 'preserve';
       // 決勝決着(頂上出現) → チャンピオンジングル
       try { Audio.fileBgm.fadeOut(800); } catch(e) {}
       setTimeout(() => {
@@ -14223,11 +14285,13 @@ App._jtAdvanceInternal = function(roundIdx, matchIdx) {
   if (matchIdx + 1 < round.matches.length) {
     jt.currentMatch = matchIdx + 1;
     jt.phase = 'bracket';
+    jt.bgmTrack = 'tournament';
     renderJuniorTournamentBracket();
   } else if (roundIdx + 1 < jt.result.rounds.length) {
     jt.currentRound = roundIdx + 1;
     jt.currentMatch = 0;
     jt.phase = 'bracket';
+    jt.bgmTrack = 'tournament';
     renderJuniorTournamentBracket();
   } else {
     // 決勝決着 → 頂上せり上がり(0.5s) → 1.6秒で優勝画面へ自動遷移。
@@ -14237,6 +14301,7 @@ App._jtAdvanceInternal = function(roundIdx, matchIdx) {
     jt.currentMatch = 0;
     jt.phase = 'bracket';
     // 決勝後: BGMを止めてチャンピオンジングルを鳴らす(頂上出現の瞬間)
+    jt.bgmTrack = 'preserve';
     try { Audio.fileBgm.fadeOut(800); } catch(e) {}
     setTimeout(() => {
       try { Audio.fileBgm.stop(); } catch(e) {}
@@ -14382,9 +14447,10 @@ App.initTenchosenReplay = function() {
     currentRound: 0,
     currentMatch: 0,
     phase: 'bracket',
+    bgmTrack: 'tournament',
     _revealed: {},
   };
-  try { Audio.fileBgm.play('../bgm/MusMus-BGM-052.mp3', { loop: true, volume: 0.12 }); } catch(e) {}
+  Audio.bgm.playStage('tournament');
   Audio.play('notify');
   renderTenchosenBracket();
 };
@@ -14399,6 +14465,7 @@ App.tcWatchMatch = function(roundIdx, matchIdx) {
   const round = tc.rounds[roundIdx];
   const match = round.matches[matchIdx];
   const isFinal = round.name === 'final';
+  tc.bgmTrack = isFinal ? 'bigMatch' : 'tournament';
 
   const overlay = document.getElementById('battleOverlay');
   overlay.style.display = 'block';
@@ -14449,9 +14516,7 @@ App.tcWatchMatch = function(roundIdx, matchIdx) {
     },
     result: tcResult,
   };
-  if (isFinal) {
-    try { Audio.fileBgm.play('../bgm/iwashiro_elevate_perfect.ogg', { loop: true, volume: 0.12 }); } catch(e) {}
-  }
+  if (isFinal) Audio.bgm.playStage('bigMatch');
   let sent = false;
   const sendOnce = () => {
     if (sent) return; sent = true;
@@ -14489,6 +14554,7 @@ App._receiveTcBattleResult = function(data) {
 App.tcSkipMatch = function(roundIdx, matchIdx) {
   const tc = App._tcPreview;
   if (!tc) return;
+  tc.bgmTrack = 'tournament';
   tc.phase = 'matchResult';
   Audio.play('coin');
   renderTenchosenMatchResult(roundIdx, matchIdx);
@@ -14501,11 +14567,13 @@ App.tcAdvanceAfterResult = function(roundIdx, matchIdx) {
   if (matchIdx + 1 < round.matches.length) {
     tc.currentMatch = matchIdx + 1;
     tc.phase = 'bracket';
+    tc.bgmTrack = 'tournament';
     renderTenchosenBracket();
   } else if (roundIdx + 1 < tc.rounds.length) {
     tc.currentRound = roundIdx + 1;
     tc.currentMatch = 0;
     tc.phase = 'bracket';
+    tc.bgmTrack = 'tournament';
     renderTenchosenBracket();
   } else {
     // 決勝決着 → 頂上せり上がり(0.5s) → 1.6秒で優勝画面へ自動遷移。
@@ -14514,6 +14582,7 @@ App.tcAdvanceAfterResult = function(roundIdx, matchIdx) {
     tc.currentRound = roundIdx + 1;
     tc.currentMatch = 0;
     tc.phase = 'bracket';
+    tc.bgmTrack = 'preserve';
     try { Audio.fileBgm.fadeOut(800); } catch(e) {}
     setTimeout(() => {
       try { Audio.fileBgm.stop(); } catch(e) {}
@@ -14536,6 +14605,7 @@ App.tcSkipAll = function() {
   const tc = App._tcPreview;
   if (!tc) return;
   tc.phase = 'bracket';
+  tc.bgmTrack = 'tournament';
   const rounds = tc.rounds;
   const stageDelay = 500;
 
@@ -14549,6 +14619,7 @@ App.tcSkipAll = function() {
     renderTenchosenBracket();
     Audio.play('tick');
     if (ri === rounds.length - 1) {
+      tc.bgmTrack = 'preserve';
       try { Audio.fileBgm.fadeOut(800); } catch(e) {}
       setTimeout(() => {
         try { Audio.fileBgm.stop(); } catch(e) {}
