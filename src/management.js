@@ -90,8 +90,15 @@ const Engine = {
       const allIds = Engine.saveDoctor._allIds();
       const seen = new Map();
       const duplicates = [];
+      const rentalOrigins = new Map((state.rentals || [])
+        .filter(r => r?.fromSource === 'rival' && r.fromOrgId != null)
+        .map(r => [Number(r.fighterId), r.fromOrgId]));
       const addSeen = (id, bucket) => {
         if (!allIds.has(id)) return;
+        // Rival rentals intentionally keep a source-org copy while the player
+        // roster holds the active rental copy.
+        if (bucket.startsWith('ai:') && seen.get(id) === 'roster'
+            && rentalOrigins.get(Number(id)) === bucket.slice(3)) return;
         if (seen.has(id)) duplicates.push({ id, first: seen.get(id), second: bucket });
         else seen.set(id, bucket);
       };
@@ -252,6 +259,7 @@ const Engine = {
       let state = {
         ...rawState,
         roster: [...(rawState.roster || [])],
+        rentals: Array.isArray(rawState.rentals) ? rawState.rentals.map(r => ({ ...r })) : [],
         freeAgents: [...(rawState.freeAgents || [])],
         scoutCandidates: [...(rawState.scoutCandidates || [])],
         retiredFighters: [...(rawState.retiredFighters || [])],
@@ -272,8 +280,50 @@ const Engine = {
       };
 
       state.roster = state.roster.filter(c => claim(Number(c.id)));
+      const rentalRosterIds = new Set(state.roster.filter(c => c?.isRental).map(c => Number(c.id)));
+      const seenRentalIds = new Set();
+      const orphanedRentalContracts = [];
+      state.rentals = state.rentals.filter(contract => {
+        const fighterId = Number(contract?.fighterId);
+        const valid = Number.isFinite(fighterId) && rentalRosterIds.has(fighterId) && !seenRentalIds.has(fighterId);
+        if (!valid) {
+          orphanedRentalContracts.push(contract);
+          return false;
+        }
+        seenRentalIds.add(fighterId);
+        return true;
+      });
+      if (orphanedRentalContracts.length > 0) {
+        changes.push(`rental_orphan_contracts_removed:${orphanedRentalContracts.length}`);
+        const retiredIds = new Set([
+          ...(state.retiredIds || []).map(Number),
+          ...(state.retiredFighters || []).map(f => Number(f?.id)),
+        ]);
+        orphanedRentalContracts.forEach(contract => {
+          const fighterId = Number(contract?.fighterId);
+          if (!retiredIds.has(fighterId) || contract?.fromSource !== 'rival' || !contract.fromOrgId) return;
+          const sourceOrg = state.aiOrgs[contract.fromOrgId];
+          if (sourceOrg) {
+            state.aiOrgs[contract.fromOrgId] = {
+              ...sourceOrg,
+              roster: (sourceOrg.roster || []).filter(f => Number(f.id) !== fighterId),
+            };
+          }
+        });
+      }
+      const rentalOrigins = new Map(state.rentals
+        .filter(r => r?.fromSource === 'rival' && r.fromOrgId != null)
+        .map(r => [Number(r.fighterId), r.fromOrgId]));
+      const preservedRentalSources = new Set();
       Object.keys(state.aiOrgs).forEach(orgId => {
-        state.aiOrgs[orgId].roster = state.aiOrgs[orgId].roster.filter(c => claim(Number(c.id)));
+        state.aiOrgs[orgId].roster = state.aiOrgs[orgId].roster.filter(c => {
+          const fighterId = Number(c.id);
+          if (rentalOrigins.get(fighterId) === orgId && !preservedRentalSources.has(fighterId)) {
+            preservedRentalSources.add(fighterId);
+            return true;
+          }
+          return claim(fighterId);
+        });
       });
       const prevFA = state.freeAgents.length;
       state.freeAgents = state.freeAgents.filter(c => claim(Number(c.id)));
@@ -11754,6 +11804,7 @@ const Engine = {
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== lc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== lc.id), lc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [lc.id]: s.season } };
+          s = Engine.rental.terminateForRetirement(s, lc.id);
           // 団体年代記: アーカイブ + 気風寄与
           s = Engine.chronicle.archiveFighter(s, retiredF);
           s = Engine.chronicle.applySpiritContribution(s, retiredF);
@@ -11781,6 +11832,7 @@ const Engine = {
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== rc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== rc.id), rc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [rc.id]: s.season } };
+          s = Engine.rental.terminateForRetirement(s, rc.id);
           // 団体年代記: アーカイブ + 気風寄与
           s = Engine.chronicle.archiveFighter(s, retiredF);
           s = Engine.chronicle.applySpiritContribution(s, retiredF);
@@ -12913,6 +12965,28 @@ const Engine = {
       return { success: true, state: s, events };
     },
 
+    /** End an active rental immediately when its fighter retires. */
+    terminateForRetirement(state, fighterId) {
+      const contract = (state.rentals || []).find(r => Number(r.fighterId) === Number(fighterId));
+      if (!contract) return state;
+      let aiOrgs = state.aiOrgs || {};
+      if (contract.fromSource === 'rival' && contract.fromOrgId && aiOrgs[contract.fromOrgId]) {
+        const sourceOrg = aiOrgs[contract.fromOrgId];
+        aiOrgs = {
+          ...aiOrgs,
+          [contract.fromOrgId]: {
+            ...sourceOrg,
+            roster: (sourceOrg.roster || []).filter(f => Number(f.id) !== Number(fighterId)),
+          },
+        };
+      }
+      return {
+        ...state,
+        aiOrgs,
+        rentals: (state.rentals || []).filter(r => Number(r.fighterId) !== Number(fighterId)),
+      };
+    },
+
     /** 週次レンタル処理: weeksLeft を毎週1減算し、0になったら返却 */
     processWeeklyRental(state) {
       const rentals = state.rentals || [];
@@ -12926,6 +13000,11 @@ const Engine = {
 
       const rentalRetRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3E, s.season, s.week));
       for (const contract of rentals) {
+        const rentalF = roster.find(c => c.id === contract.fighterId && c.isRental);
+        if (!rentalF) {
+          events.push('⚠ 対応する選手がいないレンタル契約を整理しました');
+          continue;
+        }
         const newWeeksLeft = contract.weeksLeft - 1;
         if (newWeeksLeft <= 0) {
           // O-11: レンタル帰団 — 同僚全員→帰団者 bond -3〜-6（roster除外前に処理）
@@ -12934,7 +13013,6 @@ const Engine = {
             s = Engine.relationships.applyFromRoster(s, colleagueIds, contract.fighterId, { min: -6, max: -3 }, { min: 0, max: 0 }, rentalRetRelRng);
           }
           // Return fighter
-          const rentalF = roster.find(c => c.id === contract.fighterId);
           roster = roster.filter(c => c.id !== contract.fighterId);
           // Phase E: レンタル帰団 history を本体側 fighter に push
           const returnOrgName = contract.fromSource === 'rival' && contract.fromOrgId
