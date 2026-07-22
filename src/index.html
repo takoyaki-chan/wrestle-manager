@@ -3613,6 +3613,13 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .agw-champ-card strong{display:block;font-size:14px;margin-top:8px}.agw-champ-card small{font-size:9px;color:var(--stage-text-sub)}
 .agw-result-score{display:flex;align-items:center;justify-content:center;gap:18px;margin:12px 0 20px;font-family:var(--font-label);color:var(--stage-text-sub)}
 .agw-result-score b{font-family:var(--font-display);font-size:34px;color:var(--gold)}
+.agw-result-finance{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:720px;margin:0 auto 18px;text-align:left}
+.agw-result-finance>div{display:flex;flex-direction:column;gap:3px;padding:11px 14px;border:1px solid var(--stage-border);background:var(--stage-panel-deep)}
+.agw-result-finance>div.is-player{border-color:var(--ev-autumn);background:var(--stage-panel)}
+.agw-result-finance span{font:700 10px/1.3 var(--font-label);letter-spacing:1px;color:var(--stage-text-sub)}
+.agw-result-finance strong{font:700 22px/1 var(--font-display);color:var(--gold-light)}
+.agw-result-finance small{font-size:10px;line-height:1.5;color:var(--stage-text-dim)}
+@media(max-width:700px){.agw-result-finance{grid-template-columns:1fr;margin:0 10px 16px}.agw-result-finance>div{padding:9px 11px}.agw-result-finance strong{font-size:19px}}
 
 .agw-mvp-scene{min-height:100vh;background:var(--stage-bg);color:var(--stage-text-main);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:30px;text-align:center}
 .agw-mvp-light{position:absolute;top:-35%;width:520px;height:130%;background:radial-gradient(ellipse at center,var(--stage-border-main),transparent 68%);pointer-events:none}
@@ -3630,14 +3637,17 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 
 /* Week36 Stage: 承認済み代表編成（Desktop対面 / 700px以下L1） */
 .agw-entry-stage{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);min-height:410px;max-width:1060px;margin:8px auto 0;border:1px solid var(--stage-border-lit);background:var(--stage-panel-deep);overflow:hidden}
-.agw-entry-team{position:relative;min-width:0;overflow:hidden}.agw-entry-team-label{position:absolute;z-index:12;top:12px;left:14px}.agw-entry-team.is-player .agw-entry-team-label{left:auto;right:14px;text-align:right}
+.agw-entry-team{position:relative;min-width:0;overflow:hidden}.agw-entry-team-label{position:absolute;z-index:12;top:12px;left:14px}.agw-entry-team.is-right .agw-entry-team-label{left:auto;right:14px;text-align:right}
 .agw-entry-team-label span{display:block;font-family:var(--font-label);font-size:8px;letter-spacing:2px;color:var(--stage-text-dim)}.agw-entry-team-label b{font-size:12px}
 .agw-entry-versus{display:grid;place-items:center;position:relative;z-index:10;font-family:var(--font-display);font-size:34px;color:var(--ev-autumn)}
 .agw-entry-formation{position:absolute;inset:38px 0 62px;pointer-events:none}
 .agw-entry-figure{position:absolute;bottom:0;width:48%;height:92%;pointer-events:none}.agw-entry-figure[data-order="0"]{left:0;z-index:8}.agw-entry-figure[data-order="1"]{left:25%;bottom:44px;z-index:6}.agw-entry-figure[data-order="2"]{left:50%;z-index:8}.agw-entry-figure img{width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 12px 18px var(--stage-bg))}
+.agw-entry-team.is-left .agw-entry-figure[data-order="0"]{right:0;left:auto}.agw-entry-team.is-left .agw-entry-figure[data-order="1"]{right:25%;left:auto}.agw-entry-team.is-left .agw-entry-figure[data-order="2"]{right:50%;left:auto}.agw-entry-team.is-left .agw-entry-figure img{transform:scaleX(-1)}
 .agw-entry-placeholder{position:absolute;bottom:0;width:35%;height:90%;display:grid;place-items:center;border:1px dashed var(--stage-border-main);border-radius:48% 48% var(--radius-lg) var(--radius-lg);background:var(--stage-panel);color:var(--stage-text-dim);opacity:.46}.agw-entry-placeholder[data-order="0"]{right:0;z-index:5}.agw-entry-placeholder[data-order="1"]{right:32.5%;bottom:44px;z-index:3}.agw-entry-placeholder[data-order="2"]{right:65%;z-index:5}.agw-entry-placeholder span{font-family:var(--font-display);font-size:40px}.agw-entry-placeholder b{position:absolute;bottom:10px;font-size:9px}
+.agw-entry-team.is-right .agw-entry-placeholder[data-order="0"]{right:auto;left:0}.agw-entry-team.is-right .agw-entry-placeholder[data-order="1"]{right:auto;left:32.5%}.agw-entry-team.is-right .agw-entry-placeholder[data-order="2"]{right:auto;left:65%}
 .agw-entry-mobile{display:none}
 .agw-entry-slot-row{position:absolute;z-index:30;right:8px;bottom:8px;left:8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.agw-entry-slot-row.is-opponent{pointer-events:none}.agw-entry-empty-slot{min-height:48px;border:1px dashed var(--stage-border-main);border-radius:var(--radius-md);background:var(--stage-panel-deep);opacity:.46}
+.agw-entry-team.is-left.is-player .agw-entry-slot-row{direction:rtl}.agw-entry-team.is-left.is-player .agw-entry-slot-row>*{direction:ltr}
 .agw-entry-role-tab{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 6px;min-width:0;min-height:48px;padding:5px 7px;border:1px solid var(--stage-border);border-radius:var(--radius-md);background:var(--stage-panel-deep);color:inherit;text-align:left;cursor:pointer}.agw-entry-role-tab.is-active{border-color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold)}.agw-entry-role-tab>span{grid-column:1/-1;font-size:8px;font-weight:900;color:var(--ev-autumn)}.agw-entry-role-tab>b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}.agw-entry-role-tab>.agw-ovr{margin-left:auto}.agw-entry-role-tab>.agw-ovr small{display:none}.agw-entry-role-tab>.agw-ovr b{font-size:15px}.agw-entry-role-tab>.agw-cond{grid-column:1/-1;margin-top:1px}
 .agw-entry-candidate-section{max-width:1060px;margin:10px auto 0;padding:10px 12px;border:1px solid var(--stage-border);background:var(--stage-panel)}
 .agw-entry-section-head{display:flex;justify-content:space-between;gap:10px;align-items:end;margin-bottom:8px}.agw-entry-section-head strong{font-size:11px;color:var(--gold-light)}.agw-entry-section-head span{font-size:9px;color:var(--stage-text-dim)}

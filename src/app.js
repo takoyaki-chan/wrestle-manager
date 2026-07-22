@@ -3654,47 +3654,6 @@ const App = {
     };
   },
 
-  _awOrientReplayForBoard(replay, match) {
-    if (!replay || !match) return replay;
-    const displayLeftOrgId = match.orgA === 'player' ? match.orgB : match.orgA;
-    // simulateNextBout always generates orgA as replay.left. Fighters themselves do not
-    // carry a reliable orgId, so orient from the live match rather than replay payloads.
-    if (match.orgA === displayLeftOrgId) return replay;
-
-    const swapSide = side => side === 'left' ? 'right' : side === 'right' ? 'left' : side;
-    const swapFrame = frame => ({
-      ...frame,
-      hpL: frame.hpR,
-      hpR: frame.hpL,
-      mhpL: frame.mhpR,
-      mhpR: frame.mhpL,
-      gritL: frame.gritR,
-      gritR: frame.gritL,
-      kickoutCountL: frame.kickoutCountR,
-      kickoutCountR: frame.kickoutCountL,
-      consecL: frame.consecR,
-      consecR: frame.consecL,
-      mom: typeof frame.mom === 'number' ? -frame.mom : frame.mom,
-      action: frame.action ? { ...frame.action, atkSide: swapSide(frame.action.atkSide) } : frame.action,
-      winner: swapSide(frame.winner),
-    });
-    const result = replay.result || {};
-    return {
-      ...replay,
-      left: replay.right,
-      right: replay.left,
-      result: {
-        ...result,
-        left: result.right,
-        right: result.left,
-        hpLeft: result.hpRight,
-        hpRight: result.hpLeft,
-        winner: swapSide(result.winner),
-        frames: Array.isArray(result.frames) ? result.frames.map(swapFrame) : result.frames,
-      },
-    };
-  },
-
   awWatchBout() {
     const p = App._awPreview;
     const match = p?.result?.results?.[p.matchIndex];
@@ -3708,7 +3667,7 @@ const App = {
     }
     const resolved = App._awConsumeBoutStep(stepped);
     if (!resolved) return;
-    const displayReplay = App._awOrientReplayForBoard(replay, match);
+    const displayReplay = replay;
     const battleOverlay = document.getElementById('battleOverlay');
     const iframe = document.getElementById('battleIframe');
     if (!battleOverlay || !iframe) {
@@ -3882,7 +3841,8 @@ const App = {
       _pendingAutumnWarReplay: true,
       gameLog: [...(G.gameLog || []), ...(applied.events || [])],
     };
-    p.result = canonical;
+    // apply()で確定した大会収益分配も、結果画面へそのまま渡す。
+    p.result = applied.state.autumnWar;
     p.committed = true;
     try { Storage.autoSave(); } catch (_e) {}
   },
@@ -13548,43 +13508,6 @@ App.finalizePPV = function() {
 
   s = { ...s, roster };
 
-  // 金銭バランス改善: PPVメディア収入（出演料）
-  const ppvMediaIncomes = s._pendingMediaIncomes ? [...s._pendingMediaIncomes] : [];
-  let ppvMediaTotal = 0;
-  pp.results.forEach((r, idx) => {
-    const match = pp.card[idx];
-    // カード位置判定: summitならmain、最後から2番目ならsemi、それ以外は試合数で判定
-    let position = 'mid';
-    if (match.isSummit) position = 'main';
-    else if (idx === pp.results.length - 2) position = 'semi';
-    else if (idx < Math.floor(pp.results.length / 2)) position = 'under';
-    const cardMult = PPV_CARD_MULT[position] || PPV_CARD_MULT.mid;
-    [match.left, match.right].forEach(f => {
-      if (!f) return;
-      const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.ppvPerPop * cardMult);
-      if (rev <= 0) return;
-      if (f._ppvOrgId === 'player') {
-        ppvMediaTotal += rev;
-        // メディア功労賞: 個人別メディア収入累計に加算
-        s = { ...s, roster: s.roster.map(c =>
-          c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
-        )};
-      } else if (f._ppvOrgId && s.aiOrgs && s.aiOrgs[f._ppvOrgId]) {
-        // AI団体選手のメディア収入個人トラッキング
-        const aiOrg = s.aiOrgs[f._ppvOrgId];
-        s = { ...s, aiOrgs: { ...s.aiOrgs, [f._ppvOrgId]: {
-          ...aiOrg, roster: aiOrg.roster.map(c =>
-            c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
-          )
-        }}};
-      }
-    });
-  });
-  if (ppvMediaTotal > 0) {
-    ppvMediaIncomes.push({ amount: ppvMediaTotal, label: 'PPV出演料' });
-    s = { ...s, _pendingMediaIncomes: ppvMediaIncomes };
-  }
-
   // 新聞用: 頂上決戦結果を保存（次週の新聞生成で使用）
   if (pp.summitPair) {
     const summitIdx = pp.card.findIndex(m => m.isSummit);
@@ -14326,42 +14249,6 @@ App.finalizeJuniorTournament = function() {
   // Engine.juniorTournament.apply で state 反映
   const applied = Engine.juniorTournament.apply(G, jt.result);
   G = { ...applied.state, gameLog: [...G.gameLog, ...applied.events] };
-
-  // 金銭バランス改善: JTメディア収入（出演料）
-  const jtMediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
-  const jtPlayerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
-  let jtMediaTotal = 0;
-  jt.result.rounds.forEach(round => {
-    round.matches.forEach(m => {
-      [m.left, m.right].forEach(f => {
-        if (!f) return;
-        const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.jtPerPop);
-        if (rev <= 0) return;
-        if (jtPlayerIds.has(f.id)) {
-          jtMediaTotal += rev;
-          // メディア功労賞: 個人別メディア収入累計に加算
-          G = { ...G, roster: G.roster.map(c =>
-            c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
-          )};
-        } else {
-          // AI団体選手のメディア収入個人トラッキング
-          const fOrgId = f._jtOrgId || Object.keys(G.aiOrgs || {}).find(oid => G.aiOrgs[oid]?.roster?.some(r => r.id === f.id));
-          if (fOrgId && G.aiOrgs && G.aiOrgs[fOrgId]) {
-            const aiOrg = G.aiOrgs[fOrgId];
-            G = { ...G, aiOrgs: { ...G.aiOrgs, [fOrgId]: {
-              ...aiOrg, roster: aiOrg.roster.map(c =>
-                c.id === f.id ? { ...c, mediaRevSeason: (c.mediaRevSeason || 0) + rev } : c
-              )
-            }}};
-          }
-        }
-      });
-    });
-  });
-  if (jtMediaTotal > 0) {
-    jtMediaIncomes.push({ amount: jtMediaTotal, label: 'JT出演料' });
-    G = { ...G, _pendingMediaIncomes: jtMediaIncomes };
-  }
 
   // 新聞を再生成（JT結果を反映させる）
   const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xEE57));

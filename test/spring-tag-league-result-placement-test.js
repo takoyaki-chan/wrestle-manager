@@ -43,8 +43,12 @@ const finalResult = {
 
 const fundsBefore = state.funds;
 const applied = Engine.springTagLeague.apply(state, finalResult).state;
-assert.strictEqual(applied.funds - fundsBefore, Engine.springTagLeague.PRIZE.champion,
-  'league-second final winner must receive the champion prize');
+const springFinance = applied.springTagLeague.revenueDistribution;
+const playerFinance = springFinance.orgShares.find(share => share.orgId === 'player');
+assert.strictEqual(springFinance.fixedRevenue, 7000, 'spring special-event revenue must be fixed at 7000');
+assert.strictEqual(applied.funds - fundsBefore, Engine.springTagLeague.PRIZE.champion + playerFinance.amount,
+  'league-second final winner must receive both the champion prize and special-event income');
+assert.strictEqual(playerFinance.placementBonusRate, 1, 'final winner must receive the 100% champion brand bonus');
 
 const resultNewsEvent = applied._industryNewsEvents.find(event => event.type === 'springTagResult');
 assert.ok(resultNewsEvent, 'spring tag result must enqueue an industry-news event');

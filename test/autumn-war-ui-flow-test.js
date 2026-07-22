@@ -1,6 +1,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm');
 
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/\r\n/g, '\n');
@@ -77,11 +78,8 @@ function section(source, startMarker, endMarker) {
   assert.ok(app.includes('Engine.autumnWar.simulateNextBout(G)'));
   assert.ok(app.includes("Engine.autumnWar.simulateNextBout(G, { recordFrames: true })"));
   const watchedBout = section(app, 'awWatchBout() {', '_finishAutumnWarWatch() {');
-  assert.ok(watchedBout.includes('App._awOrientReplayForBoard(replay, match)'), 'watched bouts must use the same side order as the live board');
-  const orientReplay = section(app, '_awOrientReplayForBoard(replay, match) {', 'awWatchBout() {');
-  assert.ok(orientReplay.includes("const displayLeftOrgId = match.orgA === 'player' ? match.orgB : match.orgA"), 'replay orientation must follow the board side order');
-  assert.ok(orientReplay.includes('if (match.orgA === displayLeftOrgId) return replay;'), 'replay orientation must rely on the canonical match side, not missing fighter org ids');
-  assert.ok(orientReplay.includes("atkSide: swapSide(frame.action.atkSide)"), 'replay orientation must flip attack direction with the wrestlers');
+  assert.ok(watchedBout.includes('const displayReplay = replay;'), 'watched bouts must retain the bracket left/right order');
+  assert.ok(!app.includes('_awOrientReplayForBoard'), 'player-side replay forcing must be removed');
   assert.ok(app.includes('Engine.autumnWar.apply(G, canonical)'));
   assert.ok(app.includes('delete p.watchResolved'), 'watch completion must be consumed only once');
   assert.ok(app.includes("overlay.classList.remove('active')"), 'finishing the event must close its full-screen overlay');
@@ -94,6 +92,8 @@ function section(source, startMarker, endMarker) {
   const init = section(app, 'initAutumnWarReplay() {', 'awRevealBout() {');
   assert.ok(init.includes("phase: 'intro'"), 'event replay must enter the dedicated intro before entry');
   assert.ok(init.includes('const result = Engine.autumnWar.getProgress(G)'), 'live replay must reconstruct progress before rendering');
+  const commit = section(app, '_awCommitResult() {', '_playAutumnWarChampionFanfare() {');
+  assert.ok(commit.includes('p.result = applied.state.autumnWar'), 'result view must receive the committed revenue distribution');
   const teamSkip = section(app, 'awSkipTeamMatch() {', '_awConsumeBoutStep(stepped) {');
   assert.ok(teamSkip.includes("'まとめてスキップ'"), 'team-match skip must use the approved short label');
   assert.ok(teamSkip.includes('showConfirm('), 'team-match skip must require confirmation');
@@ -131,6 +131,8 @@ function section(source, startMarker, endMarker) {
   assert.ok(entry.includes('agw-entry-empty-slot'), 'opponent unlabeled slots missing');
   assert.ok(entry.includes('agw-entry-slot-row'), 'desktop role slots must stay inside the player half');
   assert.ok(!entry.includes('agw-entry-role-select'), 'overlapping figure-level role buttons must be removed');
+  assert.ok(entry.includes("const playerOnLeft = playerPair?.orgA === 'player'"), 'entry formation must follow the player bracket side');
+  assert.ok(entry.includes('${playerOnLeft ? playerPanel : opponentPanel}'), 'entry formation must move the complete player panel between sides');
   assert.ok(entry.includes('showFighterPopup'), 'wrestler details must remain reachable');
   assert.ok(ui.includes('agw-live-stage'), 'six-wrestler live stage missing');
   assert.ok(ui.includes('valueClassOvr('), 'OVR database color thresholds must be reused');
@@ -144,13 +146,16 @@ function section(source, startMarker, endMarker) {
   assert.ok(finalOrder.includes('App.awPickFinalFighter'), 'final wrestler shelf must support role swapping');
   assert.ok(finalOrder.includes('conditionValue'), 'final formation must show post-semifinal condition');
   assert.ok(finalOrder.includes('_agwConditionBar(conditionValue(fighter.id), false)'), 'final formation must show each wrestler condition as a bar');
+  assert.ok(finalOrder.includes("const playerOnLeft = finalOrgIds[0] === 'player'"), 'final formation must follow the finalist bracket order');
+  assert.ok(finalOrder.includes('${playerOnLeft ? playerPanel : opponentPanel}'), 'final formation must move the complete player panel between sides');
   assert.ok(!finalOrder.includes('agw-order-row'), 'the old final-only list layout must be removed');
 })();
 
 (function testApprovedLiveBoardLayoutAndActions() {
   const board = section(ui, 'function _agwDisplayOrgIds', 'function renderAutumnWarBoutResultPopup');
-  assert.ok(board.includes("match.orgA === 'player'"));
-  assert.ok(board.includes('return { left: match.orgB, right: match.orgA }'), 'player organization must render on the right');
+  const displaySides = section(ui, 'function _agwDisplayOrgIds', 'function _agwOrderFor');
+  assert.ok(displaySides.includes('return { left: match.orgA, right: match.orgB }'), 'live board must retain the tournament bracket order');
+  assert.ok(!displaySides.includes("=== 'player'"), 'live board must not force the player organization onto either side');
   assert.ok(board.includes('getFullUrl('), 'live board must show all six full-body images');
   const liveTeam = section(ui, 'function _agwLiveTeamHtml', 'function _agwStatusRailHtml');
   assert.ok(liveTeam.includes('const stateOrder = { ring: 0, wait: 1, out: 2 };'), 'the active wrestler must be displayed closest to center');
@@ -163,6 +168,8 @@ function section(source, startMarker, endMarker) {
   assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure.agw-live-slot-0{right:0;left:auto;z-index:6}'), 'the active wrestler must stand closest to center on the left team');
   assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure.agw-live-slot-2{left:0;right:auto;z-index:2}'), 'the outermost slot must be used for eliminated wrestlers after the waiting fighters');
   assert.ok(html.includes('.agw-live-team.is-right .agw-live-name.agw-live-slot-0{grid-column:1}'), 'right-side nameplates must stay beneath their matching slot');
+  assert.ok(html.includes('.agw-entry-team.is-left .agw-entry-figure[data-order="0"]{right:0;left:auto}'), 'left-side entry figures must place the opener closest to center');
+  assert.ok(html.includes('.agw-entry-team.is-right .agw-entry-placeholder[data-order="0"]{right:auto;left:0}'), 'right-side opponent placeholders must mirror with the bracket side');
   assert.ok(html.includes('.agw-live-actions>.btn{flex:1 1 0;max-width:220px;height:48px}'), 'desktop action buttons must have equal sizing');
   assert.ok(mobile.includes('grid-template-columns: repeat(3, minmax(0, 1fr))'), '375px actions must use three equal columns');
   assert.ok(mobile.includes('height: 54px'), '375px action buttons must share one height');
@@ -198,7 +205,54 @@ function section(source, startMarker, endMarker) {
   const resultView = section(ui, 'function renderAutumnWarResult', 'function _agwMvpLine');
   assert.ok(resultView.includes('agw-champion-speech'), 'optional championship speech is missing');
   assert.ok(resultView.includes('agw-champ-member'), 'championship speech must be attached to its speaker card');
+  assert.ok(resultView.includes('result.revenueDistribution'), 'result view must read the saved dome-event distribution');
+  assert.ok(resultView.includes('大会総収入'), 'result view must show the event revenue basis');
+  assert.ok(resultView.includes('興行分配 ¥${playerShare.gateAmount}万'), 'player payout must separate gate revenue');
+  assert.ok(resultView.includes('延べ出場${playerShare.appearances}人'), 'gate payout must expose the appearance component');
+  assert.ok(resultView.includes('ブランド ¥${playerShare.brandAmount}万'), 'player payout must separate brand revenue');
+  assert.ok(resultView.includes('通常興行基礎${playerShare.brandBase}'), 'brand payout must expose the ordinary-show baseline');
+  assert.ok(resultView.includes('結果ボーナス +${Math.round(playerShare.brandBonusRate * 100)}%'), 'brand payout must expose the tournament-result percentage bonus');
+  assert.ok(resultView.includes('${playerShare.brandBonusAmount}'), 'brand payout must expose the bonus amount');
   assert.ok(html.includes('.agw-champion-speech'));
+  assert.ok(html.includes('.agw-result-finance'));
+})();
+
+(function testPreBoutDialogueFollowsDisplayedSides() {
+  const dialogueSource = section(ui, 'const _AGW_DIALOGUE_CHANCE', 'function _agwSurvivorLine');
+  const sandbox = {
+    G: { rngSeed: 42, season: 1, week: 36 },
+    Engine: {
+      rng: {
+        create: seed => ({ seed }),
+        float: () => 0,
+      },
+    },
+    escHtml: value => String(value),
+    getAutumnWarMatchLine: (_timing, personality) => `${personality}のセリフ`,
+  };
+  vm.runInNewContext(`${dialogueSource}\nthis.renderDialogue = _agwPreBoutDialogueHtml;`, sandbox);
+
+  const playerLeftMatch = { round: 'semiFinal', orgA: 'player', orgB: 'rival' };
+  const playerLeftNext = {
+    index: 1,
+    left: { id: 10, orgId: 'player' },
+    right: { id: 20, orgId: 'rival' },
+  };
+  const player = { id: 10, name: 'プレイヤー選手', personality: 'bold', archetype: 'cool' };
+  const rival = { id: 20, name: '対戦相手', personality: 'quiet', archetype: 'normal' };
+  const playerLeftOutput = sandbox.renderDialogue(playerLeftMatch, playerLeftNext, player, rival, { left: 'player', right: 'rival' });
+  assert.ok(playerLeftOutput.indexOf('プレイヤー選手') < playerLeftOutput.indexOf('対戦相手'), 'player dialogue must render left when the bracket puts the player on the left');
+  assert.ok(playerLeftOutput.indexOf('boldのセリフ') < playerLeftOutput.indexOf('quietのセリフ'), 'left and right dialogue text must stay with their displayed speakers');
+
+  const playerRightMatch = { round: 'semiFinal', orgA: 'rival', orgB: 'player' };
+  const playerRightNext = {
+    index: 1,
+    left: { id: 20, orgId: 'rival' },
+    right: { id: 10, orgId: 'player' },
+  };
+  const playerRightOutput = sandbox.renderDialogue(playerRightMatch, playerRightNext, rival, player, { left: 'rival', right: 'player' });
+  assert.ok(playerRightOutput.indexOf('対戦相手') < playerRightOutput.indexOf('プレイヤー選手'), 'player dialogue must render right when the bracket puts the player on the right');
+  assert.ok(playerRightOutput.indexOf('quietのセリフ') < playerRightOutput.indexOf('boldのセリフ'), 'right-side player dialogue must keep the player text');
 })();
 
 (function testAutumnCssUsesThemeTokens() {

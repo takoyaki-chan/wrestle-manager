@@ -13489,8 +13489,6 @@ const Engine = {
       let roster = (s.roster || []).map(c => ({ ...c }));
       let rivalries = { ...(s.rivalries || {}) };
       const events = [];
-      const rankings = s.rankings || [];
-      const pRank = Engine.ranking.getPlayerRank(rankings);
       const mqBonuses = []; // 各試合のMQボーナス内訳（UI表示用）
 
       // PPVでは双方rivalry60+ペアを決着判定用に保留
@@ -13904,9 +13902,45 @@ const Engine = {
         }
       }
 
-      // PPV出場報酬（従来のランク別固定報酬）
-      const reward = PPV_REWARD[pRank] || PPV_REWARD[4];
-      events.push(`💰 PPV出場報酬: ${reward}万円`);
+      const ppvEntries = new Map();
+      const ppvAppearances = {};
+      const ppvWins = {};
+      const ppvPlacement = {};
+      card.forEach((match, idx) => {
+        [match.left, match.right].forEach(fighter => {
+          if (!fighter) return;
+          ppvEntries.set(fighter.id, fighter);
+          ppvAppearances[fighter.id] = (ppvAppearances[fighter.id] || 0) + 1;
+          if (!ppvPlacement[fighter.id]) ppvPlacement[fighter.id] = 'participant';
+        });
+        const matchResult = results[idx];
+        if (!matchResult || matchResult.winner === 'draw') return;
+        const winner = matchResult.winner === 'left' ? match.left : match.right;
+        const loser = matchResult.winner === 'left' ? match.right : match.left;
+        ppvWins[winner.id] = (ppvWins[winner.id] || 0) + 1;
+        if (match.isSummit) {
+          ppvPlacement[winner.id] = 'champion';
+          ppvPlacement[loser.id] = 'runnerUp';
+        } else {
+          ppvPlacement[winner.id] = 'semiFinal';
+        }
+      });
+      const revenueDistribution = Engine.specialEventFinance.calculate(s, {
+        eventId: 'ppvGrandFinal',
+        tier: 'premium',
+        entries: [...ppvEntries.values()].map(fighter => ({
+          entryId: `ppv:${fighter.id}`,
+          orgId: fighter._ppvOrgId || fighter.orgId,
+          memberIds: [fighter.id],
+          placement: ppvPlacement[fighter.id],
+          appearances: ppvAppearances[fighter.id],
+          wins: ppvWins[fighter.id] || 0,
+        })),
+        matchMqs: results.map(matchResult => matchResult.mq),
+      });
+      const credited = Engine.specialEventFinance.creditPlayer(s, revenueDistribution);
+      s = credited.state;
+      if (credited.amount > 0) events.push(`💰 PPV特別興行・ブランド収入 ¥${credited.amount}万`);
 
       // orgWarRecord: PPVクロス対戦記録（サミット以外）
       results.forEach((r, idx) => {
@@ -13922,7 +13956,7 @@ const Engine = {
       });
 
       s = { ...s, roster, rivalries, battlePoints: bp, heatScore: newHeatScore,
-            funds: (s.funds || 0) + reward, orgWarRecord: owr,
+            orgWarRecord: owr, ppvRevenueDistribution: revenueDistribution,
             matchupLog: [...(s.matchupLog || []), ...newMatchupEntries] };
       return { state: s, events, rivalryResolutions, heatChange, mqBonuses };
     },
@@ -23081,6 +23115,167 @@ Engine.eventSystem.applyLargeEventEffect = function(event, step, choiceIdx, stat
   return result;
 };
 // ══════════════════════════════════════════════════════════
+//  Engine.specialEventFinance — 5大特別大会の共通収益計算
+// ══════════════════════════════════════════════════════════
+Engine.specialEventFinance = {
+  FIXED_REVENUE: { standard: 7000, premium: 11000 }, // 万円
+  VENUE_INDEX: 8,
+  VENUE_SCALE: 2,
+  GATE_SPLIT: { equal: 0.30, appearances: 0.70 },
+  BONUS: {
+    placement: { champion: 1.00, runnerUp: 0.50, semiFinal: 0.20, third: 0.20, fourth: 0.15, quarterFinal: 0.10, participant: 0.10 },
+    perWin: 0.05,
+    winCap: 0.25,
+    mvp: 0.15,
+  },
+
+  _orgRoster(state, orgId) {
+    return orgId === 'player' ? (state.roster || []) : (state.aiOrgs?.[orgId]?.roster || []);
+  },
+  _orgPop(state, orgId) {
+    return orgId === 'player' ? (state.orgPop || 0) : (state.aiOrgs?.[orgId]?.orgPop ?? 30);
+  },
+  _allocate(amount, entries, weightOf) {
+    const rows = entries.map((entry, index) => {
+      const weight = Math.max(0, Number(weightOf(entry)) || 0);
+      return { entry, index, weight };
+    });
+    const totalWeight = rows.reduce((sum, row) => sum + row.weight, 0);
+    if (totalWeight <= 0) return Object.fromEntries(rows.map(row => [row.entry.entryId, 0]));
+    rows.forEach(row => {
+      const raw = amount * row.weight / totalWeight;
+      row.amount = Math.floor(raw);
+      row.fraction = raw - row.amount;
+    });
+    let remainder = amount - rows.reduce((sum, row) => sum + row.amount, 0);
+    rows.sort((a, b) => b.fraction - a.fraction || a.index - b.index);
+    for (let i = 0; remainder > 0; i = (i + 1) % rows.length, remainder--) rows[i].amount += 1;
+    return Object.fromEntries(rows.map(row => [row.entry.entryId, row.amount]));
+  },
+
+  /**
+   * entries: [{ entryId, orgId, memberIds, placement, appearances, wins, isMvp }]
+   * 固定興行収入は出場枠へ分配し、通常型ブランド収入は出場枠ごとに積み上げる。
+   */
+  calculate(state, options) {
+    const entries = (options?.entries || []).filter(entry => entry && entry.entryId != null && entry.orgId);
+    if (!entries.length) return null;
+    const tier = options.tier === 'premium' ? 'premium' : 'standard';
+    const fixedRevenue = Engine.specialEventFinance.FIXED_REVENUE[tier];
+    const venueIndex = options.venueIndex ?? Engine.specialEventFinance.VENUE_INDEX;
+    const venueScale = options.venueScale ?? Engine.specialEventFinance.VENUE_SCALE;
+    const venue = VENUES[venueIndex];
+    const matchResults = (options.matchMqs || []).map(mq => ({ mq: Number(mq) || 0 }));
+    const eventStars = matchResults.length
+      ? Engine.attendanceV2.calcShowRating(matchResults, venue.cap, venue.cap, venueIndex,
+        { hasRivalryResolution: false, hasRivalryCard: false, fanExpectCount: 0 }).stars
+      : 3;
+    const equalPool = Math.round(fixedRevenue * Engine.specialEventFinance.GATE_SPLIT.equal);
+    const appearancePool = fixedRevenue - equalPool;
+    const equalShares = Engine.specialEventFinance._allocate(equalPool, entries, () => 1);
+    const appearanceShares = Engine.specialEventFinance._allocate(appearancePool, entries, entry => Math.max(1, entry.appearances || 0));
+    const entryShares = entries.map(entry => {
+      const roster = Engine.specialEventFinance._orgRoster(state, entry.orgId);
+      const memberIds = new Set(entry.memberIds || []);
+      const goodsBase = Math.round(roster.reduce((sum, fighter) => memberIds.has(fighter.id)
+        ? sum + (fighter.popularity || 0) * GOODS_CONFIG.showBoostPerPop
+        : sum, 0) * venueScale);
+      const mediaBase = Engine.economy.calcShowMediaRev(
+        eventStars, venueIndex, Engine.specialEventFinance._orgPop(state, entry.orgId)) * venueScale;
+      const brandBase = goodsBase + mediaBase;
+      const placementBonusRate = Engine.specialEventFinance.BONUS.placement[entry.placement] || 0;
+      const winBonusRate = Math.min(Engine.specialEventFinance.BONUS.winCap,
+        Math.max(0, entry.wins || 0) * Engine.specialEventFinance.BONUS.perWin);
+      const mvpBonusRate = entry.isMvp ? Engine.specialEventFinance.BONUS.mvp : 0;
+      const brandBonusRate = placementBonusRate + winBonusRate + mvpBonusRate;
+      const placementBonusAmount = Math.round(brandBase * placementBonusRate);
+      const winBonusAmount = Math.round(brandBase * winBonusRate);
+      const mvpBonusAmount = Math.round(brandBase * mvpBonusRate);
+      const brandBonusAmount = Math.round(brandBase * brandBonusRate);
+      const brandAmount = brandBase + brandBonusAmount;
+      const gateEqual = equalShares[entry.entryId];
+      const gateAppearances = appearanceShares[entry.entryId];
+      const gateAmount = gateEqual + gateAppearances;
+      return {
+        ...entry,
+        eventStars,
+        gateEqual,
+        gateAppearances,
+        gateAmount,
+        brandGoodsBase: goodsBase,
+        brandMediaBase: mediaBase,
+        brandBase,
+        placementBonusRate,
+        winBonusRate,
+        mvpBonusRate,
+        placementBonusAmount,
+        winBonusAmount,
+        mvpBonusAmount,
+        brandBonusRate,
+        brandBonusAmount,
+        brandAmount,
+        amount: gateAmount + brandAmount,
+      };
+    });
+    const byOrg = new Map();
+    entryShares.forEach(share => {
+      const current = byOrg.get(share.orgId) || {
+        orgId: share.orgId, entryCount: 0, appearances: 0, wins: 0,
+        gateEqual: 0, gateAppearances: 0, gateAmount: 0,
+        brandGoodsBase: 0, brandMediaBase: 0, brandBase: 0,
+        placementBonusAmount: 0, winBonusAmount: 0, mvpBonusAmount: 0,
+        brandBonusAmount: 0, brandAmount: 0, amount: 0,
+      };
+      current.entryCount += 1;
+      ['appearances', 'wins', 'gateEqual', 'gateAppearances', 'gateAmount', 'brandGoodsBase', 'brandMediaBase',
+        'brandBase', 'placementBonusAmount', 'winBonusAmount', 'mvpBonusAmount',
+        'brandBonusAmount', 'brandAmount', 'amount'].forEach(key => { current[key] += share[key] || 0; });
+      byOrg.set(share.orgId, current);
+    });
+    const orgShares = [...byOrg.values()].map(share => {
+      const ownEntries = entryShares.filter(entry => entry.orgId === share.orgId);
+      const single = ownEntries.length === 1 ? ownEntries[0] : null;
+      return {
+        ...share,
+        placement: single?.placement,
+        brandBonusRate: single?.brandBonusRate ?? (share.brandBase > 0 ? share.brandBonusAmount / share.brandBase : 0),
+        placementBonusRate: single?.placementBonusRate ?? (share.brandBase > 0 ? share.placementBonusAmount / share.brandBase : 0),
+        winBonusRate: single?.winBonusRate ?? (share.brandBase > 0 ? share.winBonusAmount / share.brandBase : 0),
+        mvpBonusRate: single?.mvpBonusRate ?? (share.brandBase > 0 ? share.mvpBonusAmount / share.brandBase : 0),
+      };
+    });
+    const brandBase = entryShares.reduce((sum, share) => sum + share.brandBase, 0);
+    const brandBonus = entryShares.reduce((sum, share) => sum + share.brandBonusAmount, 0);
+    const brandRevenue = brandBase + brandBonus;
+    return {
+      eventId: options.eventId,
+      tier,
+      fixedRevenue,
+      venueIndex,
+      venueName: venue.name,
+      venueScale,
+      eventStars,
+      totalPool: fixedRevenue + brandRevenue,
+      brandRevenue,
+      pools: { gate: { equal: equalPool, appearances: appearancePool }, brand: { base: brandBase, bonus: brandBonus } },
+      entryShares,
+      orgShares,
+    };
+  },
+
+  creditPlayer(state, finance) {
+    const amount = finance?.orgShares?.find(share => share.orgId === 'player')?.amount || 0;
+    if (amount <= 0) return { state, amount: 0 };
+    const seasonStats = state.seasonStats ? {
+      ...state.seasonStats,
+      totalRevenue: (state.seasonStats.totalRevenue || 0) + amount,
+      peakFunds: Math.max(state.seasonStats.peakFunds || 0, (state.funds || 0) + amount),
+    } : state.seasonStats;
+    return { state: { ...state, funds: (state.funds || 0) + amount, seasonStats }, amount };
+  },
+};
+
+// ══════════════════════════════════════════════════════════
 //  Engine.juniorTournament — U-20ジュニアトーナメント
 //  国家主催1日トーナメント。秋 Week 25 開催。Pure functions only.
 // ══════════════════════════════════════════════════════════
@@ -23278,6 +23473,38 @@ Engine.juniorTournament = {
     firstRound.matches.forEach(m => {
       allParticipantIds.push(m.left.id, m.right.id);
     });
+    const participantById = new Map(firstRound.matches.flatMap(m => [m.left, m.right]).map(f => [f.id, f]));
+    const placementById = new Map();
+    if (champion) placementById.set(champion.id, 'champion');
+    if (runnerUp) placementById.set(runnerUp.id, 'runnerUp');
+    semiFinalists.filter(Boolean).forEach(f => placementById.set(f.id, 'semiFinal'));
+    allParticipantIds.forEach(id => { if (!placementById.has(id)) placementById.set(id, 'quarterFinal'); });
+    const appearancesById = Object.fromEntries(allParticipantIds.map(id => [id, 0]));
+    const winsById = Object.fromEntries(allParticipantIds.map(id => [id, 0]));
+    rounds.forEach(round => round.matches.forEach(match => {
+      appearancesById[match.left.id] = (appearancesById[match.left.id] || 0) + 1;
+      appearancesById[match.right.id] = (appearancesById[match.right.id] || 0) + 1;
+      winsById[match.winnerId] = (winsById[match.winnerId] || 0) + 1;
+    }));
+    const revenueDistribution = Engine.specialEventFinance.calculate(s, {
+      eventId: 'juniorTournament',
+      tier: 'standard',
+      entries: allParticipantIds.map(id => {
+        const fighter = participantById.get(id);
+        return {
+          entryId: `jt:${id}`,
+          orgId: fighter?._orgId,
+          memberIds: [id],
+          placement: placementById.get(id),
+          appearances: appearancesById[id],
+          wins: winsById[id],
+        };
+      }),
+      matchMqs: rounds.flatMap(round => round.matches.map(match => match.mq)),
+    });
+    const credited = Engine.specialEventFinance.creditPlayer(s, revenueDistribution);
+    s = credited.state;
+    if (credited.amount > 0) events.push(`💰 ジュニアトーナメント特別興行・ブランド収入 ¥${credited.amount}万`);
     // Phase C: 各敗者に対し「誰に敗れたか」を解決するヘルパー
     const finalRoundForOpp = rounds[rounds.length - 1];
     const semiRoundForOpp = rounds.length >= 2 ? rounds[rounds.length - 2] : null;
@@ -23396,7 +23623,7 @@ Engine.juniorTournament = {
     }
 
     // トーナメント結果をstateに保存（UI表示用）
-    s = { ...s, _juniorTournamentResult: tournamentResult };
+    s = { ...s, _juniorTournamentResult: { ...tournamentResult, revenueDistribution } };
 
     return { state: s, events };
   },
@@ -23958,6 +24185,35 @@ Engine.ppvTournament = {
       }
     }
 
+    const resultByEntryId = new Map((s.ppvTournament.entries || []).map(entry => [entry.id, 'participant']));
+    const appearancesByEntryId = Object.fromEntries((s.ppvTournament.entries || []).map(entry => [entry.id, 0]));
+    const winsByEntryId = Object.fromEntries((s.ppvTournament.entries || []).map(entry => [entry.id, 0]));
+    tournamentResult.rounds.forEach(round => round.matches.forEach(match => {
+      appearancesByEntryId[match.left.id] = (appearancesByEntryId[match.left.id] || 0) + 1;
+      appearancesByEntryId[match.right.id] = (appearancesByEntryId[match.right.id] || 0) + 1;
+      winsByEntryId[match.winnerId] = (winsByEntryId[match.winnerId] || 0) + 1;
+      resultByEntryId.set(match.loserId,
+        round.name === 'final' ? 'runnerUp' : round.name === 'semiFinal' ? 'semiFinal'
+          : round.name === 'quarterFinal' ? 'quarterFinal' : 'participant');
+    }));
+    resultByEntryId.set(tournamentResult.championId, 'champion');
+    const revenueDistribution = Engine.specialEventFinance.calculate(s, {
+      eventId: 'tenchosen',
+      tier: 'premium',
+      entries: (s.ppvTournament.entries || []).map(entry => ({
+        entryId: `tenchosen:${entry.id}`,
+        orgId: entry.orgId,
+        memberIds: [entry.id],
+        placement: resultByEntryId.get(entry.id),
+        appearances: appearancesByEntryId[entry.id],
+        wins: winsByEntryId[entry.id],
+      })),
+      matchMqs: tournamentResult.rounds.flatMap(round => round.matches.map(match => match.mq)),
+    });
+    const credited = Engine.specialEventFinance.creditPlayer(s, revenueDistribution);
+    s = credited.state;
+    if (credited.amount > 0) events.push(`💰 天頂戦特別興行・ブランド収入 ¥${credited.amount}万`);
+
     s = Engine.industryNews.push(s, {
       type: 'tenchosenResult',
       characterId: champion?.id || null,
@@ -23975,7 +24231,7 @@ Engine.ppvTournament = {
         ...s.ppvTournament,
         phase: 'done', rounds: tournamentResult.rounds,
         championId: tournamentResult.championId,
-        dramaEvents, prizesPaid: true,
+        dramaEvents, prizesPaid: true, revenueDistribution,
       },
       ppvPhase: null,
       ppvEntries: null,
@@ -24418,6 +24674,27 @@ Engine.springTagLeague = {
     });
     s = { ...s, tagExp };
 
+    const revenueDistribution = Engine.specialEventFinance.calculate(s, {
+      eventId: 'springTagLeague',
+      tier: 'standard',
+      entries: teams.map(team => {
+        const standing = standings.find(st => st.orgId === team.orgId);
+        const placement = placementByOrg[team.orgId];
+        return {
+          entryId: `spring:${team.orgId}:${team.f1Id}:${team.f2Id}`,
+          orgId: team.orgId,
+          memberIds: [team.f1Id, team.f2Id],
+          placement: placement === 1 ? 'champion' : placement === 2 ? 'runnerUp' : placement === 3 ? 'third' : 'fourth',
+          appearances: matchCounts[team.orgId] || 1,
+          wins: (standing?.wins || 0) + (team.orgId === champion ? 1 : 0),
+        };
+      }),
+      matchMqs: [...matches.map(match => match.mq), finalMatch.mq],
+    });
+    const credited = Engine.specialEventFinance.creditPlayer(s, revenueDistribution);
+    s = credited.state;
+    if (credited.amount > 0) events.push(`💰 春のタッグリーグ特別興行・ブランド収入 ¥${credited.amount}万`);
+
     // 対戦ポイント(§12.1 BATTLE_POINT_CFG.springTag)
     const bp = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
     const stCfg = (typeof BATTLE_POINT_CFG !== 'undefined' && BATTLE_POINT_CFG.springTag)
@@ -24517,7 +24794,7 @@ Engine.springTagLeague = {
 
     s = {
       ...s,
-      springTagLeague: { ...s.springTagLeague, teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, replayContext, cancelled: false },
+      springTagLeague: { ...s.springTagLeague, teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, replayContext, revenueDistribution, cancelled: false },
       springTagPhase: 'result',
       // UI: 週送り直後にリプレイ演出を自動起動するためのtransientフラグ（他の_pending*系と同じ規約）。
       // UI側がリプレイ表示後にstateから取り除く。
@@ -24552,6 +24829,11 @@ Engine.autumnWar = {
   FLOOR: 40,
   CEILING: 80,
   PRIZE: { champion: 1200, runnerUp: 500 }, // 万円
+  EVENT_FINANCE: {
+    venueIndex: 8,
+    attendance: 12000,
+    venueScale: 2,
+  },
   ORG_ORDER: ['player', 'org_s', 'org_a', 'org_b'],
   MATCH_TIER: 1,
 
@@ -24576,6 +24858,90 @@ Engine.autumnWar = {
       .filter(id => Engine.autumnWar.ORG_ORDER.includes(id));
     Engine.autumnWar.ORG_ORDER.forEach(id => { if (!ranked.includes(id)) ranked.push(id); });
     return ranked.slice(0, 4);
+  },
+  _allocateRevenuePool(amount, teams, weightOf) {
+    const weighted = teams.map(team => ({
+      team,
+      weight: Math.max(0, Number(weightOf(team)) || 0),
+    }));
+    const totalWeight = weighted.reduce((sum, row) => sum + row.weight, 0);
+    if (totalWeight <= 0) return Object.fromEntries(teams.map(team => [team.orgId, 0]));
+    const rows = weighted.map(row => {
+      const raw = amount * row.weight / totalWeight;
+      return { ...row, amount: Math.floor(raw), fraction: raw - Math.floor(raw) };
+    });
+    let remainder = amount - rows.reduce((sum, row) => sum + row.amount, 0);
+    rows.sort((a, b) => b.fraction - a.fraction
+      || (a.team.seed || 99) - (b.team.seed || 99)
+      || Engine.autumnWar.ORG_ORDER.indexOf(a.team.orgId) - Engine.autumnWar.ORG_ORDER.indexOf(b.team.orgId));
+    for (let i = 0; i < rows.length && remainder > 0; i++, remainder--) rows[i].amount += 1;
+    return Object.fromEntries(rows.map(row => [row.team.orgId, row.amount]));
+  },
+  /**
+    * 秋大会の共同興行収益を算出する。
+    * チケット純収益は興行参加で分配する。ブランド収入は通常興行と同じ計算を団体別に行い、
+    * 大会結果・チームのフォール勝利・MVPを割合ボーナスとして加える。
+    */
+  calcRevenueDistribution(state, result) {
+    const cfg = Engine.autumnWar.EVENT_FINANCE;
+    const teams = (result?.teams || []).filter(team => team.available);
+    if (teams.length === 0) return null;
+    const venue = VENUES[cfg.venueIndex];
+    const attendance = Math.min(cfg.attendance, venue.cap);
+    const showRevenue = Engine.economy.calcShowRevenue(cfg.venueIndex, attendance);
+    const entryIdOf = (team, index) => team.entryId || `autumn:${index}:${team.orgId}`;
+    const appearanceCounts = Object.fromEntries(teams.map((team, index) => [entryIdOf(team, index), 0]));
+    (result.results || []).forEach(match => (match.bouts || []).forEach(bout => {
+      [bout.left, bout.right].forEach(side => {
+        const directId = side?.entryId;
+        if (directId && Object.prototype.hasOwnProperty.call(appearanceCounts, directId)) appearanceCounts[directId] += 1;
+        else {
+          const matching = teams.map((team, index) => ({ team, id: entryIdOf(team, index) }))
+            .filter(row => row.team.orgId === side?.orgId);
+          if (matching.length === 1) appearanceCounts[matching[0].id] += 1;
+        }
+      });
+    }));
+    if (Object.values(appearanceCounts).every(count => count === 0)) {
+      Object.keys(appearanceCounts).forEach(id => { appearanceCounts[id] = 1; });
+    }
+    const finance = Engine.specialEventFinance.calculate(state, {
+      eventId: 'autumnWar',
+      tier: 'standard',
+      venueIndex: cfg.venueIndex,
+      venueScale: cfg.venueScale,
+      entries: teams.map((team, index) => {
+        const entryId = entryIdOf(team, index);
+        const championEntry = result.championEntryId || result.champion;
+        const runnerUpEntry = result.runnerUpEntryId || result.runnerUp;
+        const identity = team.entryId || team.orgId;
+        const wins = (result.results || []).reduce((sum, match) =>
+          sum + (match.teamWins?.[entryId] ?? match.teamWins?.[team.orgId] ?? 0), 0);
+        return {
+          entryId,
+          orgId: team.orgId,
+          memberIds: team.memberIds || [],
+          placement: identity === championEntry ? 'champion' : identity === runnerUpEntry ? 'runnerUp' : 'semiFinal',
+          appearances: appearanceCounts[entryId],
+          wins,
+          isMvp: (team.memberIds || []).includes(result.mvpId),
+        };
+      }),
+      matchMqs: (result.results || []).flatMap(match => (match.bouts || []).map(bout => bout.mq)),
+    });
+    return {
+      ...finance,
+      season: state.season,
+      venueIndex: cfg.venueIndex,
+      venueName: `${venue.name}×${cfg.venueScale}規模`,
+      attendance,
+      benchmarkTicketRevenue: showRevenue.ticketRev,
+      ticketRevenue: finance.fixedRevenue,
+      venueCost: 0,
+      venueScale: cfg.venueScale,
+      gateNet: finance.fixedRevenue,
+      shares: finance.orgShares,
+    };
   },
   _selectMembers(state, orgId) {
     return Engine.autumnWar._eligible(Engine.autumnWar._orgRoster(state, orgId))
@@ -24604,20 +24970,37 @@ Engine.autumnWar = {
       && new Set(order).size === order.length
       && order.every(id => members.includes(id));
   },
-  _buildBracket(teams) {
+  _buildBracket(teams, state) {
     const seeded = (teams || []).filter(t => t.available).sort((a, b) => a.seed - b.seed);
+    // 1位対4位・2位対3位は維持し、各カードの左右だけをシーズンごとに変える。
+    // 派生seedを使うため、告知後の保存・再読込やライブ進行では配置が変わらない。
+    const rng = Engine.rng.create(Engine.rng.derive(state?.rngSeed || 42, state?.season || 1, 0xA935));
+    const orient = pair => Engine.rng.float(rng) < 0.5
+      ? pair
+      : { ...pair, orgA: pair.orgB, orgB: pair.orgA };
     if (seeded.length >= 4) {
       const bySeed = n => seeded.find(t => t.seed === n);
       return [
-        { round: 'semiFinal', orgA: bySeed(1).orgId, orgB: bySeed(4).orgId },
-        { round: 'semiFinal', orgA: bySeed(2).orgId, orgB: bySeed(3).orgId },
+        orient({ round: 'semiFinal', orgA: bySeed(1).orgId, orgB: bySeed(4).orgId }),
+        orient({ round: 'semiFinal', orgA: bySeed(2).orgId, orgB: bySeed(3).orgId }),
       ];
     }
     if (seeded.length === 3) {
-      return [{ round: 'semiFinal', orgA: seeded[1].orgId, orgB: seeded[2].orgId, byeOrg: seeded[0].orgId }];
+      return [orient({ round: 'semiFinal', orgA: seeded[1].orgId, orgB: seeded[2].orgId, byeOrg: seeded[0].orgId })];
     }
     if (seeded.length === 2) return [];
     return [];
+  },
+
+  _resolveBracket(teams, state, storedBracket) {
+    const generated = Engine.autumnWar._buildBracket(teams, state);
+    const pairKey = pair => [pair?.orgA, pair?.orgB].sort().join('|');
+    const compatible = Array.isArray(storedBracket)
+      && storedBracket.length === generated.length
+      && storedBracket.every((pair, index) => pair?.round === generated[index].round
+        && pairKey(pair) === pairKey(generated[index])
+        && (pair.byeOrg || null) === (generated[index].byeOrg || null));
+    return compatible ? storedBracket.map(pair => ({ ...pair })) : generated;
   },
 
   /** Week34: 団体ランキング1位対4位・2位対3位のシードとAI代表を確定する。 */
@@ -24636,7 +25019,7 @@ Engine.autumnWar = {
         available,
       };
     });
-    const bracket = Engine.autumnWar._buildBracket(teams);
+    const bracket = Engine.autumnWar._buildBracket(teams, state);
     const cancelled = teams.filter(t => t.available).length < 2;
     return { phase: 'announce', announcedSeason: state.season, teams, bracket, results: [], cancelled, reason: cancelled ? 'insufficientTeams' : null };
   },
@@ -24715,7 +25098,7 @@ Engine.autumnWar = {
     }
     const conditions = {};
     activeTeams.forEach(t => t.memberIds.forEach(id => { conditions[id] = Engine.autumnWar.INITIAL_CONDITION; }));
-    const bracket = Engine.autumnWar._buildBracket(teams);
+    const bracket = Engine.autumnWar._resolveBracket(teams, state, aw.bracket);
     let session = {
       phase: 'semiFinal',
       rng: Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xA936)),
@@ -25069,7 +25452,7 @@ Engine.autumnWar = {
       return match;
     }
 
-    const bracket = Engine.autumnWar._buildBracket(teams);
+    const bracket = Engine.autumnWar._resolveBracket(teams, state, aw.bracket);
     const semifinalResults = [];
     const finalists = [];
     bracket.forEach(pair => {
@@ -25179,13 +25562,28 @@ Engine.autumnWar = {
       winnerName: Engine.autumnWar._orgName(s, champion),
     });
 
-    // プレイヤー団体のみ順位報酬を反映。
+    // 4団体特別大会の収益分配と、プレイヤー団体の順位報酬を反映。
+    const revenueDistribution = Engine.autumnWar.calcRevenueDistribution(s, result);
     const playerEntered = teams.some(t => t.orgId === 'player' && t.available);
+    const playerRevenue = revenueDistribution?.shares.find(share => share.orgId === 'player')?.amount || 0;
     let popDelta = 0, prize = 0;
     if (champion === 'player') { popDelta = 4; prize = Engine.autumnWar.PRIZE.champion; }
     else if (runnerUp === 'player') { popDelta = 1; prize = Engine.autumnWar.PRIZE.runnerUp; }
     else if (playerEntered) popDelta = -2;
-    if (playerEntered) s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + popDelta, 0, 100), funds: (s.funds || 0) + prize };
+    if (playerEntered) {
+      const totalEventIncome = playerRevenue + prize;
+      const seasonStats = s.seasonStats ? {
+        ...s.seasonStats,
+        totalRevenue: (s.seasonStats.totalRevenue || 0) + totalEventIncome,
+        peakFunds: Math.max(s.seasonStats.peakFunds || 0, (s.funds || 0) + totalEventIncome),
+      } : s.seasonStats;
+      s = {
+        ...s,
+        orgPop: Engine.util.clamp((s.orgPop || 0) + popDelta, 0, 100),
+        funds: (s.funds || 0) + totalEventIncome,
+        seasonStats,
+      };
+    }
 
     // 大会MVPは人気+5（所属団体を問わない）。
     const bumpMvp = fighters => fighters.map(f => f.id === mvpId ? { ...f, popularity: Math.min(100, (f.popularity || 0) + 5) } : f);
@@ -25227,11 +25625,16 @@ Engine.autumnWar = {
       },
     });
     events.push(`🏆 第${s.season}回4団体勝ち残り対抗戦優勝: ${Engine.autumnWar._orgName(s, champion)}`);
+    if (playerRevenue > 0) {
+      const playerShare = revenueDistribution.shares.find(share => share.orgId === 'player');
+      events.push(`💰 秋の4団体特別大会 分配金${playerRevenue}万（共同興行${playerShare.gateAmount}・ブランド${playerShare.brandAmount}）`);
+      events.push(`📣 通常興行基準のブランド収入${playerShare.brandAmount}万（基礎${playerShare.brandBase}・大会結果ボーナス${playerShare.brandBonusAmount}／+${Math.round(playerShare.brandBonusRate * 100)}%）`);
+    }
     if (prize > 0) events.push(`💰 4団体勝ち残り対抗戦 賞金${prize}万を獲得`);
 
     s = {
       ...s,
-      autumnWar: { ...s.autumnWar, ...result, phase: 'result', cancelled: false },
+      autumnWar: { ...s.autumnWar, ...result, revenueDistribution, phase: 'result', cancelled: false },
       autumnWarPhase: 'result',
     };
     return { state: s, events };

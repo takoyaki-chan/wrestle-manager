@@ -10999,6 +10999,51 @@ if (typeof window !== 'undefined') {
 // challenge-request-spec-v0.1 Phase 3: 挑戦試合 結果モーダル
 // 3シングル連戦の結果を「果たし状成就/不発/痛み分け」のクリームOfficeトーンで提示。
 // ─────────────────────────────────────────────────────────────────────────────
+function _challengeRequestResultReaction(card, result, state, playerWon, playerLost) {
+  const isInverse = !!card.isInverse;
+  const pickLine = (lines, fighter, salt) => {
+    if (!Array.isArray(lines) || lines.length === 0) return '';
+    const fighterId = Number(fighter && fighter.id) || 0;
+    const rng = Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 0, state.season || 0, state.week || 0, 0xC4A3, fighterId, salt || 0
+    ));
+    return lines[Engine.rng.int(rng, 0, lines.length - 1)];
+  };
+
+  // 自団体から挑んで勝ったときだけ、挑戦を実らせた自団体代表が喜びを語る。
+  if (!isInverse && playerWon) {
+    const fighter = card.teamA && card.teamA[0];
+    const lines = fighter && (fighter.voiceLines || fighter.vl
+      || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fighter.id]));
+    return {
+      fighter,
+      line: pickLine(lines, fighter, 1) || 'この勝利、みんなでつかみ取りました！',
+      label: '挑戦を実らせた代表',
+      defeated: false,
+    };
+  }
+
+  // それ以外はAI側代表。相手発信を返り討ちにした場合は、挑んで敗れた相手を映す。
+  const fighter = isInverse ? (card.teamA && card.teamA[0]) : (card.teamB && card.teamB[0]);
+  const outcome = playerWon ? 'lose' : (playerLost ? 'win' : 'draw');
+  const arch = (fighter && fighter.archetype) || 'normal';
+  const pool = typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined'
+    ? (CHALLENGE_REQUEST_OPPONENT_REACTIONS[arch] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal)
+    : null;
+  const lines = pool && ((pool[outcome] && pool[outcome].length > 0) ? pool[outcome] : pool._accept);
+  const label = outcome === 'lose'
+    ? (isInverse ? '挑み、敗れた代表' : '受けて、敗れた代表')
+    : outcome === 'win'
+    ? (isInverse ? '挑戦を実らせた代表' : '受けて、勝った代表')
+    : (isInverse ? '挑んだ代表・決着つかず' : '受けた代表・決着つかず');
+  return {
+    fighter,
+    line: pickLine(lines, fighter, 2),
+    label,
+    defeated: outcome === 'lose',
+  };
+}
+
 function showChallengeRequestResultModal(card, result, state, onClose) {
   // The match-preview/result shell stays active while the post-show modal chain runs.
   // Waiting on that shell would deadlock: renderShowResult is only called by onClose.
@@ -11045,25 +11090,20 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
         ? `社長、挑戦試合 ${playerScore}-${aiScore}。${reqName}選手の直訴…結果が伴いませんでした。`
         : `社長、挑戦試合 ${playerScore}-${aiScore}の痛み分け。${reqName}選手と${oppName}選手の決着は持ち越しです。`);
 
-  // 相手選手リアクションセリフ（Phase 5細分化 2026-07-17: archetype × 試合結果[teamB視点]で分岐）
-  let oppReactionLine = '';
-  let oppReactionLabel = '受けて立つ側';
-  if (typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined') {
-    const oppArch = (card.teamB[0] && card.teamB[0].archetype) || 'normal';
-    const pool = CHALLENGE_REQUEST_OPPONENT_REACTIONS[oppArch] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal;
-    // teamB(相手陣)視点の結果: teamWin==='B' なら勝利、'A' なら敗北、それ以外は引き分け
-    const oppOutcome = teamWin === 'B' ? 'win' : (teamWin === 'A' ? 'lose' : 'draw');
-    const arr = (pool && pool[oppOutcome] && pool[oppOutcome].length > 0) ? pool[oppOutcome] : (pool && pool._accept);
-    if (arr && arr.length > 0) {
-      const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xC4A3, card.opponentId));
-      oppReactionLine = arr[Engine.rng.int(lineRng, 0, arr.length - 1)];
-      oppReactionLabel = oppOutcome === 'win' ? '受けて、勝った側' : (oppOutcome === 'lose' ? '受けて、敗れた側' : '受けて、決着つかずの側');
-    }
-  }
-  const oppReactionHtml = oppReactionLine
-    ? `<div class="crrm-opp-reaction">
-        <div class="crrm-opp-reaction-speaker">${oppName}（${oppReactionLabel}）</div>
-        <div class="crrm-opp-reaction-text">「${oppReactionLine}」</div>
+  const reaction = _challengeRequestResultReaction(card, result, state, playerWon, playerLost);
+  const reactionFighter = reaction.fighter;
+  const reactionPortraitUrl = reactionFighter ? _factionUpperUrl(reactionFighter.id) : '';
+  const reactionName = reactionFighter ? escHtml(reactionFighter.name || '') : '';
+  const reactionHtml = reaction.line && reactionFighter
+    ? `<div class="crrm-reaction-scene${reaction.defeated ? ' is-defeated' : ' is-victorious'}">
+        <div class="crrm-reaction-bubble">
+          <div class="crrm-reaction-speaker">${reactionName}<span>${escHtml(reaction.label)}</span></div>
+          <div class="crrm-reaction-text">「${escHtml(reaction.line)}」</div>
+        </div>
+        <div class="crrm-reaction-figure">
+          <div class="crrm-reaction-portrait"${reactionPortraitUrl ? ` style="background-image:url('${reactionPortraitUrl}')"` : ''}>${reactionPortraitUrl ? '' : escHtml((reactionFighter.name || '?').slice(0, 1))}</div>
+          <div class="crrm-reaction-name">${reactionName}</div>
+        </div>
       </div>`
     : '';
 
@@ -11097,7 +11137,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
 
   const html = `
     <style>
-      .crrm-card { padding: 22px 26px 18px; }
+      .crrm-card { padding: 22px 26px 18px; max-height:calc(100vh - 24px); overflow-y:auto; }
       .crrm-score-banner { display:flex; align-items:center; justify-content:center; gap:18px; margin:8px 0 14px; }
       .crrm-score-org { font-size:14px; font-weight:600; color:var(--ink-soft, #5a4a3a); flex:1; text-align:center; }
       .crrm-score-num { font-size:42px; font-weight:800; color:var(--ink, #2a1a08); letter-spacing:2px; }
@@ -11124,9 +11164,25 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
       .crrm-close-tray { display:flex; justify-content:center; margin-top:12px; }
       .crrm-close-btn { padding:10px 28px; background:var(--accent, #8b5a2b); color:#fff8e8; border:none; border-radius:4px; font-weight:600; cursor:pointer; font-size:13px; }
       .crrm-close-btn:hover { background:var(--accent-strong, #6b4520); }
-      .crrm-opp-reaction { margin: 6px 0 12px; padding: 10px 14px; background: rgba(255,247,230,0.45); border-left: 3px solid var(--accent-warm, #a06030); border-radius: 4px; }
-      .crrm-opp-reaction-speaker { font-size: 11px; color: var(--ink-soft, #5a4a3a); margin-bottom: 4px; }
-      .crrm-opp-reaction-text { font-size: 13px; color: var(--ink, #2a1a08); font-style: italic; }
+      .crrm-reaction-scene { display:flex; flex-direction:column; align-items:flex-start; margin:8px 0 14px; padding:0 14px; }
+      .crrm-reaction-bubble { position:relative; z-index:2; min-width:260px; max-width:520px; padding:10px 14px; background:#fffdf6; border:1px solid rgba(122,101,48,.3); border-radius:10px; box-shadow:0 5px 14px rgba(70,48,20,.12); }
+      .crrm-reaction-bubble::after { content:''; position:absolute; bottom:-11px; left:48px; border:6px solid transparent; border-top-color:#fffdf6; }
+      .crrm-reaction-speaker { display:flex; align-items:baseline; gap:8px; font-size:12px; font-weight:700; color:var(--ink, #2a1a08); margin-bottom:4px; }
+      .crrm-reaction-speaker span { font-size:9px; font-weight:500; color:var(--ink-soft, #5a4a3a); }
+      .crrm-reaction-text { font-size:13px; line-height:1.65; color:var(--ink, #2a1a08); font-style:italic; }
+      .crrm-reaction-figure { width:116px; margin:8px 0 0 8px; text-align:center; }
+      .crrm-reaction-portrait { display:grid; place-items:center; width:116px; height:132px; overflow:hidden; border-bottom:3px solid var(--accent-warm, #a06030); background:rgba(60,48,36,.12) center bottom/contain no-repeat; color:rgba(90,70,50,.45); font-size:36px; font-weight:800; filter:drop-shadow(0 6px 8px rgba(60,40,20,.18)); }
+      .crrm-reaction-name { margin-top:3px; font-size:10px; font-weight:700; color:var(--ink-soft, #5a4a3a); }
+      .crrm-reaction-scene.is-defeated .crrm-reaction-portrait { filter:grayscale(.9) saturate(.2) brightness(.76); opacity:.82; border-bottom-color:rgba(100,92,82,.55); }
+      .crrm-reaction-scene.is-defeated .crrm-reaction-bubble { background:#eeeae2; border-color:rgba(100,92,82,.3); }
+      .crrm-reaction-scene.is-defeated .crrm-reaction-bubble::after { border-top-color:#eeeae2; }
+      @media(max-width:600px) {
+        .crrm-card { padding:14px 12px 12px; }
+        .crrm-reaction-scene { padding:0 4px; }
+        .crrm-reaction-bubble { min-width:0; width:calc(100% - 30px); }
+        .crrm-reaction-portrait { width:96px; height:110px; }
+        .crrm-reaction-figure { width:96px; }
+      }
     </style>
     <div class="fevt-overlay-office" id="challengeRequestResultOverlay">
       <div class="fevt-report-card crrm-card">
@@ -11135,7 +11191,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
           <div class="fevt-report-meta">${_factionSeasonLabel(state)} · 挑戦試合（${ourOrg} vs ${otherOrgName}）</div>
         </div>
         ${_factionReporterStrip(state, coachLine)}
-        ${oppReactionHtml}
+        ${reactionHtml}
         <div class="crrm-score-banner">
           <div class="crrm-score-org">${ourOrg}<br><small>${isInverse ? `迎撃: ${oppName}陣` : `${reqName}陣`}</small></div>
           <div class="crrm-score-num ${playerWon ? 'win' : (playerLost ? 'lose' : '')}">${playerScore} - ${aiScore}</div>
@@ -15858,10 +15914,17 @@ function _agwOvrHtml(value, label = 'OVR') {
 }
 
 function _agwPlayerOpponent() {
-  const aw = G.autumnWar;
-  const pair = (aw?.bracket || []).find(item => item.orgA === 'player' || item.orgB === 'player');
+  const pair = _agwBracket().find(item => item.orgA === 'player' || item.orgB === 'player');
   if (!pair) return null;
   return _agwTeam(pair.orgA === 'player' ? pair.orgB : pair.orgA);
+}
+
+function _agwBracket() {
+  const aw = G.autumnWar;
+  if (Array.isArray(aw?.session?.bracket)) return aw.session.bracket;
+  if (Array.isArray(aw?.bracket)) return aw.bracket;
+  if (typeof Engine !== 'undefined' && typeof Engine.autumnWar?._buildBracket === 'function') return Engine.autumnWar._buildBracket(aw?.teams || [], G);
+  return [];
 }
 
 function _agwOpponentStrength(team) {
@@ -15879,9 +15942,13 @@ function renderAutumnWarIntro() {
   if (!aw || aw.cancelled) return;
   const bySeed = seed => (aw.teams || []).find(team => team.seed === seed);
   const matchCard = (a, b, label) => `<div class="agw-intro-match"><span>${label}</span><b>${escHtml(a?.orgName || '未定')}</b><em>VS</em><b>${escHtml(b?.orgName || '未定')}</b></div>`;
+  const bracket = _agwBracket();
+  const semiFinals = bracket.length >= 2
+    ? bracket.slice(0, 2).map((pair, index) => matchCard(_agwTeam(pair.orgA), _agwTeam(pair.orgB), `SEMI FINAL ${index + 1}`)).join('')
+    : `${matchCard(bySeed(1), bySeed(4), 'SEMI FINAL 1')}${matchCard(bySeed(2), bySeed(3), 'SEMI FINAL 2')}`;
   const html = `<div class="agw-wrap agw-intro">${_agwHeaderHtml('Autumn Survival War', 'WEEK 36・開幕')}
     <div class="agw-intro-lead"><span>今週は</span><strong>4団体勝ち残り対抗戦</strong><p>各団体の3名が、最後の一人になるまでリングを譲らない。</p></div>
-    <div class="agw-intro-bracket">${matchCard(bySeed(1), bySeed(4), 'SEMI FINAL 1')}${matchCard(bySeed(2), bySeed(3), 'SEMI FINAL 2')}</div>
+    <div class="agw-intro-bracket">${semiFinals}</div>
     <div class="agw-intro-steps" aria-label="勝ち残り戦の3ステップ">
       <div><b>1</b><strong>3名を送り出す</strong><span>先鋒・中堅・大将の順を決める</span></div>
       <div><b>2</b><strong>勝者はリングに残る</strong><span>消耗したまま次の相手と連戦する</span></div>
@@ -15993,8 +16060,6 @@ function _agwScoreThrough(match, boutIndex) {
 }
 
 function _agwDisplayOrgIds(match) {
-  if (match.orgA === 'player') return { left: match.orgB, right: match.orgA };
-  if (match.orgB === 'player') return { left: match.orgA, right: match.orgB };
   return { left: match.orgA, right: match.orgB };
 }
 
@@ -16059,16 +16124,22 @@ function _agwDialogueRng(kind, parts, chance) {
   return Engine.rng.float(rng) < chance ? rng : null;
 }
 
-function _agwPreBoutDialogueHtml(match, next, left, right) {
+function _agwPreBoutDialogueHtml(match, next, left, right, displayOrgIds) {
   const rng = _agwDialogueRng('preBout', [match.round, match.orgA, match.orgB, next.index, left.id, right.id], _AGW_DIALOGUE_CHANCE.preBout);
   if (!rng || typeof getAutumnWarMatchLine !== 'function') return '';
   const timing = match.round === 'final' ? 'preFinal' : 'preMatch';
   const leftLine = getAutumnWarMatchLine(timing, left.personality || 'normal', left.archetype || '_default', rng);
   const rightLine = getAutumnWarMatchLine(timing, right.personality || 'normal', right.archetype || '_default', rng);
   if (!leftLine && !rightLine) return '';
+  const dialogueByOrg = {
+    [next.left.orgId]: { fighter: left, line: leftLine },
+    [next.right.orgId]: { fighter: right, line: rightLine },
+  };
+  const displayLeft = dialogueByOrg[displayOrgIds.left];
+  const displayRight = dialogueByOrg[displayOrgIds.right];
   return `<div class="jt-bub-pair agw-bout-dialogue">
-    ${leftLine ? `<div class="jt-bub"><div class="sp bl">${escHtml(left.name)}</div>「${escHtml(leftLine)}」</div>` : ''}
-    ${rightLine ? `<div class="jt-bub"><div class="sp gd">${escHtml(right.name)}</div>「${escHtml(rightLine)}」</div>` : ''}
+    ${displayLeft?.line ? `<div class="jt-bub"><div class="sp bl">${escHtml(displayLeft.fighter.name)}</div>「${escHtml(displayLeft.line)}」</div>` : ''}
+    ${displayRight?.line ? `<div class="jt-bub"><div class="sp gd">${escHtml(displayRight.fighter.name)}</div>「${escHtml(displayRight.line)}」</div>` : ''}
   </div>`;
 }
 
@@ -16162,7 +16233,7 @@ function _agwFocusHtml(match, boutIndex, displayOrgIds) {
   const displayRight = byOrg[displayOrgIds.right];
   const leftOrder = _agwOrderFor(match, displayOrgIds.left);
   const rightOrder = _agwOrderFor(match, displayOrgIds.right);
-  const dialogueHtml = _agwPreBoutDialogueHtml(match, next, engineLeft, engineRight);
+  const dialogueHtml = _agwPreBoutDialogueHtml(match, next, engineLeft, engineRight, displayOrgIds);
   const sideHtml = (current, orgId, order, side) => `<div class="agw-bout-side is-${side}">
     <small>第${next.index}フォール・${escHtml(_agwTeam(orgId)?.orgName || '')} / ${_agwRoleLabel(order, current.id)}</small>
     <button type="button" onclick="event.stopPropagation();showFighterPopup(${current.id},'autumnWar')">${escHtml(current.fighter?.name || '')}</button>
@@ -16281,6 +16352,12 @@ function renderAutumnWarReorder() {
   const placeholders = roles.map((role, index) => `<div class="agw-entry-placeholder" data-order="${index}"><span>?</span><b>${role}</b></div>`).join('');
   const opponentSlots = roles.map(() => '<div class="agw-entry-empty-slot" aria-hidden="true"></div>').join('');
   const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectFinalRole(${index})"><span>${roles[index]}</span><b>${escHtml(fighter.name)}</b>${_agwOvrHtml(Engine.util.ov(fighter))}${_agwConditionBar(conditionValue(fighter.id), false)}</button>`).join('');
+  const finalOrgIds = final ? [final.orgA, final.orgB] : (p.result.finalists || []);
+  const playerOnLeft = finalOrgIds[0] === 'player';
+  const playerSide = playerOnLeft ? 'left' : 'right';
+  const opponentSide = playerOnLeft ? 'right' : 'left';
+  const playerPanel = `<div class="agw-entry-team is-player is-${playerSide}"><div class="agw-entry-team-label"><span>YOUR FINAL ORDER</span><b>${escHtml(G.orgName || '自団体')}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>`;
+  const opponentPanel = `<div class="agw-entry-team is-opponent is-${opponentSide}"><div class="agw-entry-team-label"><span>FINAL OPPONENT</span><b>${escHtml(opponent?.orgName || '決勝進出団体')}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>`;
   const mobileCards = selected.map((fighter, index) => {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, Engine.util.ov(fighter)) : '';
     return `<article class="agw-entry-mobile-card${index === activeRole ? ' is-active' : ''}">
@@ -16301,9 +16378,9 @@ function renderAutumnWarReorder() {
   }).join('');
   const html = `<div class="agw-wrap agw-entry agw-reorder">${_agwHeaderHtml('Final Order', '準決勝後・決勝布陣の再編成')}
     <div class="agw-entry-stage">
-      <div class="agw-entry-team is-opponent"><div class="agw-entry-team-label"><span>FINAL OPPONENT</span><b>${escHtml(opponent?.orgName || '決勝進出団体')}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>
+      ${playerOnLeft ? playerPanel : opponentPanel}
       <div class="agw-entry-versus">VS</div>
-      <div class="agw-entry-team is-player"><div class="agw-entry-team-label"><span>YOUR FINAL ORDER</span><b>${escHtml(G.orgName || '自団体')}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>
+      ${playerOnLeft ? opponentPanel : playerPanel}
     </div>
     <div class="agw-entry-mobile">${opponentSummary}<div class="agw-entry-mobile-head"><strong>L1 — 決勝の先鋒・中堅・大将</strong><span>交代する枠を選び、代表3名を並べ替える</span></div>${mobileCards}</div>
     <div class="agw-entry-candidate-section"><div class="agw-entry-section-head"><strong>準決勝を戦った代表3名</strong><span>枠を選んでから選手を押すと、その位置へ入れ替え</span></div><div class="agw-entry-candidate-rail">${candidates}</div></div>
@@ -16321,6 +16398,14 @@ function renderAutumnWarResult() {
   const final = result.finalResult;
   const scoreW = final.teamWins?.[result.champion] || 0;
   const scoreL = final.teamWins?.[result.runnerUp] || 0;
+  const revenue = result.revenueDistribution;
+  const playerShare = revenue?.shares?.find(share => share.orgId === 'player');
+  const playerPrize = result.champion === 'player' ? Engine.autumnWar.PRIZE.champion
+    : result.runnerUp === 'player' ? Engine.autumnWar.PRIZE.runnerUp : 0;
+  const financeHtml = playerShare ? `<div class="agw-result-finance">
+    <div><span>${escHtml(revenue.venueName)}・大会総収入</span><strong>¥${revenue.totalPool}万</strong><small>共同興行分配原資 ¥${revenue.gateNet}万 ＋ 各団体の通常型ブランド収入 計¥${revenue.brandRevenue}万</small></div>
+    <div class="is-player"><span>自団体の大会収入</span><strong>¥${playerShare.amount + playerPrize}万</strong><small>興行分配 ¥${playerShare.gateAmount}万（均等${playerShare.gateEqual}・延べ出場${playerShare.appearances}人 ${playerShare.gateAppearances}）<br>ブランド ¥${playerShare.brandAmount}万（通常興行基礎${playerShare.brandBase}・結果ボーナス +${Math.round(playerShare.brandBonusRate * 100)}%／${playerShare.brandBonusAmount}）${playerPrize ? `<br>入賞賞金 ¥${playerPrize}万` : ''}</small></div>
+  </div>` : '';
   const speech = _agwChampionSpeech(result, champ);
   const cards = (champ?.memberIds || []).map(id => {
     const f = _agwFighter(champ.orgId, id);
@@ -16336,6 +16421,7 @@ function renderAutumnWarResult() {
     <div class="agw-result-title">第${G.season}回大会 優勝</div>
     <div class="agw-champ-lineup">${cards}</div>
     <div class="agw-result-score"><span>FINAL</span><b>${scoreW} — ${scoreL}</b><small>${escHtml(_agwTeam(result.runnerUp)?.orgName || '')}</small></div>
+    ${financeHtml}
     <button class="btn btn-gold" onclick="App.awShowMvpScene()">大会MVP発表へ ▶</button>
   </div>`;
   _agwRenderPhase('result', html, '.agw-result > .btn');
@@ -16383,6 +16469,10 @@ function _awEntryScreenHtml() {
   const roleNotes = ['最初にリングへ', '流れを引き戻す二番手', '最後に控える団体の柱'];
   const selected = order.map(id => eligible.find(f => f.id === id)).filter(Boolean);
   const opponent = _agwPlayerOpponent();
+  const playerPair = _agwBracket().find(pair => pair.orgA === 'player' || pair.orgB === 'player');
+  const playerOnLeft = playerPair?.orgA === 'player';
+  const playerSide = playerOnLeft ? 'left' : 'right';
+  const opponentSide = playerOnLeft ? 'right' : 'left';
   const strength = _agwOpponentStrength(opponent);
   const opponentSummary = `<div class="agw-entry-opponent-summary"><span>初戦の相手</span><strong>${escHtml(opponent?.orgName || '上位シード待ち')}</strong>${_agwOvrHtml(strength.average, '平均OVR')}<small>OVR幅 ${strength.min}〜${strength.max} / 出場順は開戦時に公開</small></div>`;
   const figures = selected.map((fighter, index) => {
@@ -16401,6 +16491,8 @@ function _awEntryScreenHtml() {
     </article>`;
   }).join('');
   const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectEntryRole(${index})"><span>${roles[index]}</span><b>${escHtml(fighter.name)}</b>${_agwOvrHtml(fighter.ovr)}</button>`).join('');
+  const playerPanel = `<div class="agw-entry-team is-player is-${playerSide}"><div class="agw-entry-team-label"><span>YOUR TEAM</span><b>${escHtml(G.orgName || '自団体')}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>`;
+  const opponentPanel = `<div class="agw-entry-team is-opponent is-${opponentSide}"><div class="agw-entry-team-label"><span>OPPONENT</span><b>${escHtml(opponent?.orgName || '対戦団体')}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>`;
   const candidates = eligible.map(fighter => {
     const selectedIndex = order.indexOf(fighter.id);
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, fighter.ovr) : '';
@@ -16413,9 +16505,9 @@ function _awEntryScreenHtml() {
   }).join('');
   return `<div class="agw-wrap agw-entry">${_agwHeaderHtml('Select Your Three', '代表3名・先鋒 / 中堅 / 大将')}
     <div class="agw-entry-stage">
-      <div class="agw-entry-team is-opponent"><div class="agw-entry-team-label"><span>OPPONENT</span><b>${escHtml(opponent?.orgName || '対戦団体')}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>
+      ${playerOnLeft ? playerPanel : opponentPanel}
       <div class="agw-entry-versus">VS</div>
-      <div class="agw-entry-team is-player"><div class="agw-entry-team-label"><span>YOUR TEAM</span><b>${escHtml(G.orgName || '自団体')}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>
+      ${playerOnLeft ? opponentPanel : playerPanel}
     </div>
     <div class="agw-entry-mobile">${opponentSummary}<div class="agw-entry-mobile-head"><strong>L1 — 先鋒・中堅・大将</strong><span>交代する枠を選び、候補棚から選手を選択</span></div>${mobileCards}</div>
     <div class="agw-entry-candidate-section"><div class="agw-entry-section-head"><strong>出場可能選手</strong><span>スタンド画像または名前で詳細を確認</span></div><div class="agw-entry-candidate-rail">${candidates}</div></div>
