@@ -9,10 +9,14 @@
 function resolveActiveStageBgm(app) {
   if (!app) return null;
   const show = app._showPreview;
-  if (show && show.currentWatching >= 0) {
-    const match = show.validMatches?.[show.currentWatching];
-    const isTagMatch = !!(match?.teamA || match?.teamB || match?.matchType === 'tag');
-    return match?.isTitle && !isTagMatch ? 'bigMatch' : 'battle';
+  if (show) {
+    if (show.currentWatching >= 0) {
+      const match = show.validMatches?.[show.currentWatching];
+      const isTagMatch = !!(match?.teamA || match?.teamB || match?.matchType === 'tag');
+      return match?.isTitle && !isTagMatch ? 'bigMatch' : 'battle';
+    }
+    // 興行進行画面(カード一覧) = WM-SP00。観戦を開いた瞬間に試合曲へ切り替わる(2026-07-23裁定)
+    return 'showProgress';
   }
   if (app._b3Preview?.watching || app._common1Preview?.watching || app._b2Preview?.watching) return 'bigMatch';
   if (app._warPreview) return app._warPreview.currentWatching >= 0 ? 'bigMatch' : 'war';
@@ -68,7 +72,8 @@ const Audio = (() => {
   };
   // WM Audio Mixer file-BGM assignments used by match and tournament screens.
   const STAGE_BGM = {
-    bigMatch:   { file: '../bgm/production-ogg/wm_bgm_m04_v01.ogg', vol: 0.15 }, // WM-M04 ビッグマッチ
+    bigMatch:     { file: '../bgm/production-ogg/wm_bgm_m04_v01.ogg', vol: 0.15 }, // WM-M04 ビッグマッチ
+    showProgress: { file: '../bgm/production-ogg/wm_bgm_sp00_v01.ogg', vol: 0.15 }, // WM-SP00 通常興行(進行画面)
     tournament: { file: '../bgm/MusMus-BGM-052.mp3', vol: 0.12 },          // Phase 2でイベント別(SP01〜SP09)に分岐予定
     war:        { file: '../bgm/MusMus-BGM-125.mp3', vol: 0.10 },          // Phase 2で秋対抗戦=SP05/06等に分岐予定
   };
@@ -983,7 +988,7 @@ const Audio = (() => {
       if (stageBgm) { BGM.playStage(stageBgm); return; }
       if (G.weekPhase === 'draft' || G.weekPhase === 'opening') { BGM.play('kaimaku'); return; }
       if ((G.offSeason && G.offWeek >= 2) || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
-      if (G.weekPhase === 'showExec') { BGM.play('battle'); return; }
+      if (G.weekPhase === 'showExec') { BGM.playStage('showProgress'); return; }
       if (G.weekPhase === 'event') {
         if (G.pendingEvent && G.pendingEvent.type === 'war') {
           BGM.playStage('war');
@@ -5956,7 +5961,7 @@ const App = {
     }
 
     try { Audio.play('bell'); } catch(e) {}
-    try { Audio.bgm.play('battle'); } catch(e) {}
+    try { Audio.bgm.playStage('showProgress'); } catch(e) {}
 
     // rivalry50+ ペアの宣戦布告ポップアップを検出（好敵手/宿怨は対象外、タッグはスキップ）
     // Phase 3e: F08 ロック試合は専用の試合前モーダルが優先するためここでは除外
@@ -6376,7 +6381,7 @@ const App = {
       if (allDone) {
         try { Audio.bgm.play('management'); } catch(e) {}
       } else {
-        setTimeout(() => { if (App._showPreview) { try { Audio.bgm.play('battle'); } catch(e) {} } }, 300);
+        setTimeout(() => { if (App._showPreview) { try { Audio.bgm.playStage('showProgress'); } catch(e) {} } }, 300);
       }
       // タッグは試合後フレーバーは出さない (`_collectPostMatchPopupsForMatch` 側で tag をスキップ)
       App._afterMatchSettle(tagIdx);
@@ -6404,9 +6409,9 @@ const App = {
     if (sp.results.every(r => r !== null)) {
       // 全試合完了: management BGMは流さずjingle待機(finalizeShowで2.5秒後に再生)
     } else {
-      // まだ試合が残っている → battleBGMを再開（興行中）
-      // fadeOut後にBGM._current='battle'が残るため、stop()でリセットしてから再生
-      setTimeout(() => { if (App._showPreview) { try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch(e) {} } }, 1600);
+      // まだ試合が残っている → 興行進行曲(SP00)へ復帰
+      // fadeOut後にBGM._currentが残るため、stop()でリセットしてから再生
+      setTimeout(() => { if (App._showPreview) { try { Audio.bgm.stop(); Audio.bgm.playStage('showProgress'); } catch(e) {} } }, 1600);
     }
     // Hide iframe
     document.getElementById('battleOverlay').style.display = 'none';
@@ -6453,9 +6458,9 @@ const App = {
       sp.currentWatching = -1;
       if (!sp.results[idx]) App.skipMatch(idx);
       else { renderMatchPreview(); if (sp.results.every(r => r !== null)) App.finalizeShow(); }
-      // 興行BGM復帰（興行中はbattle）— stop()でBGM状態リセット後に再生
+      // 興行BGM復帰（進行画面=SP00）— stop()でBGM状態リセット後に再生
       if (!sp.results.every(r => r !== null)) {
-        setTimeout(() => { if (App._showPreview) { try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch(e) {} } }, 300);
+        setTimeout(() => { if (App._showPreview) { try { Audio.bgm.stop(); Audio.bgm.playStage('showProgress'); } catch(e) {} } }, 300);
       }
     } else if (wp && wp.currentWatching >= 0) {
       const idx = wp.currentWatching;
@@ -8834,7 +8839,7 @@ const App = {
       awayGuestIds: guests.map(f => f.id),
       awayPlayerRosterIds: [...ownIds],
     };
-    try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch (_e) {}
+    try { Audio.bgm.stop(); Audio.bgm.playStage('showProgress'); } catch (_e) {}
     renderMatchPreview();
     return true;
   },
