@@ -116,8 +116,9 @@
 | WM-SE-MG04 | 支出 | `Short restrained retro expense sound, two coin pings dropping into a muted low stamp, clear and neutral, dry isolated one-shot.` |
 | WM-SE-MG05 | 上昇・成長 | `Very short rewarding NES progress-up sound, two rising square-wave notes and a tiny sparkle, suitable for pitch variations, dry isolated one-shot.` |
 | WM-SE-MG06 | 低下・衰え | `Short subdued NES progress-down sound, three clipped notes stepping downward, disappointed but not comedic, dry isolated one-shot.` |
-| WM-SE-MG07 | 危機・負傷 | `Short urgent NES danger alert, abrupt low impact followed by three clipped warning beeps, serious and scalable for stronger crisis versions, no voice.` |
+| WM-SE-MG07 | 危機（軽度） | `Short urgent NES warning alert, one low impact and two clipped warning beeps, serious but restrained, a minor crisis demanding attention, dry isolated one-shot, no voice.` |
 | WM-SE-MG08 | 回復・復帰 | `NES recovery sound effect, cautious opening resolving into a warm rising square-wave phrase, hopeful, compact and clean, no vocals.` |
+| WM-SE-MG09 | 危機2（重度） | `Short heavy NES emergency alarm, deep abrupt impact followed by four harsh warning beeps and a low rumbling tail, severe injury or existential crisis, alarming and weighty, dry isolated one-shot, no voice.` |
 
 ## 6. 人事・契約 8 Cue
 
