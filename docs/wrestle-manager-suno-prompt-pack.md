@@ -54,7 +54,7 @@ Instrumental NES/Famicom 2A03 title theme, grand royal opening, memorable heroic
 Instrumental NES/Famicom 2A03 menu theme, confident and inviting, steady pulse melody, anticipation before building a wrestling empire, relaxed seamless loop.
 ```
 
-### WM-C03 通常経営 — 50秒 / Music
+### WM-S00 メインメニュー — 50秒 / Music
 
 WM-C02名で生成済みのメインメニュー候補だけを、この用途の候補へ合流する。WM-C01オープニングの既存曲・候補は通常経営へ混ぜない。
 

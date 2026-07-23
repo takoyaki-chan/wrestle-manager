@@ -126,13 +126,14 @@ footer#player{position:fixed;left:0;right:0;bottom:0;background:#0b0e14f6;border
 /* ================= 定義(ドキュメント由来のドメイン知識) ================= */
 // UI10名のファイルはUI09(紙)仕様の再生成版
 const ALIAS = {'WM-SE-UI10':'WM-SE-UI09'};
-// 旧C02(メインメニュー)名で生成した候補はC03(通常経営)枠で比較する
-const CANDIDATE_ALIAS = {'WM-C02':'WM-C03'};
+// 旧C02(メインメニュー)・旧C03(通常経営)名の候補は S00(メインメニュー)枠で比較する(2026-07-23改番)
+const CANDIDATE_ALIAS = {'WM-C02':'WM-S00','WM-C03':'WM-S00'};
 // 廃止済みID(2026-07-23裁定: 経営画面は全タブC03の1曲。生成済み候補は他枠へ転用)
 const RETIRED_NOTES = {
-  'WM-C04':'選手一覧の専用曲は廃止(経営画面は全タブ C03 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
-  'WM-C05':'育成の専用曲は廃止(経営画面は全タブ C03 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
-  'WM-C06':'スカウトの専用曲は廃止(経営画面は全タブ C03 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。'
+  'WM-C04':'選手一覧の専用曲は廃止(経営画面は全タブ S00 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
+  'WM-C05':'育成の専用曲は廃止(経営画面は全タブ S00 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
+  'WM-C06':'スカウトの専用曲は廃止(経営画面は全タブ S00 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
+  'WM-S04':'負傷での経営BGM切替は廃止(負傷はイベント演出側で扱う)。この候補は他枠の候補としてドラッグで転用できます。'
 };
 // 制作計画で方針が明記済みの枠(選定は可能、注意書きのみ)
 const PLAN_NOTES = {
@@ -142,8 +143,8 @@ const PLAN_NOTES = {
 };
 // 各枠の「現在の音」(比較レーン)
 const REFERENCES = {
-'WM-C01':['bgm_kaimaku_v1.mp3'],'WM-C03':['bgm_management_v1.mp3'],'WM-C04':['bgm_management_v1.mp3'],'WM-C05':['bgm_management_v1.mp3'],'WM-C06':['bgm_management_v1.mp3','bgm_tension_v1.mp3'],'WM-C07':['bgm_tension_v1.mp3','Soft Bids, Sharp Minds.mp3'],
-'WM-S01':['bgm_management_v1.mp3'],'WM-S02':['bgm_tension_v1.mp3'],'WM-S03':['bgm_tension_v1.mp3'],'WM-S04':['bgm_tension_v1.mp3'],'WM-S05':['bgm_tension_v1.mp3','iwa_gameover001.mp3'],
+'WM-C01':['bgm_kaimaku_v1.mp3'],'WM-C07':['bgm_tension_v1.mp3','Soft Bids, Sharp Minds.mp3'],
+'WM-S00':['bgm_management_v1.mp3'],'WM-S01':['bgm_management_v1.mp3'],'WM-S02':['bgm_tension_v1.mp3'],'WM-S03':['bgm_tension_v1.mp3'],'WM-S04':['bgm_tension_v1.mp3'],'WM-S05':['bgm_tension_v1.mp3','iwa_gameover001.mp3'],
 'WM-M01':['bgm_battle_v1.mp3'],'WM-M02':['bgm_battle_v1.mp3'],'WM-M03':['bgm_tension_v1.mp3','MusMus-BGM-125.mp3'],'WM-M04':['iwashiro_elevate_perfect.ogg'],
 'WM-E01':['MusMus-BGM-052.mp3'],'WM-E02':['MusMus-BGM-052.mp3'],'WM-E03':['iwashiro_elevate_perfect.ogg','MusMus-BGM-125.mp3'],'WM-E04':['MusMus-BGM-052.mp3'],'WM-E05':['MusMus-BGM-052.mp3','iwashiro_elevate_perfect.ogg'],
 'WM-J01':['f10_victory_fanfare_v8.mp3'],'WM-J02':['iwa_gameover001.mp3'],'WM-J04':['f10_victory_fanfare_v5.mp3'],
@@ -153,7 +154,7 @@ const REFERENCES = {
 'WM-SE-BTA01':['f01_count_v6.mp3'],'WM-SE-CR03':['e02_crowd_v2.mp3'],'WM-SE-RS01':['f10_victory_fanfare_v8.mp3'],'WM-SE-RS04':['f10_victory_fanfare_v5.mp3']
 };
 const CATEGORY_DEFS = [
-[/^WM-C/,'コア・経営'],[/^WM-SP/,'季節特別興行・試合前'],[/^WM-S(?!E-)/,'団体状況'],[/^WM-M/,'通常試合前'],[/^WM-E/,'大会・大型興行'],[/^WM-J/,'結果ジングル'],[/^WM-D/,'人物ドラマ'],[/^WM-H/,'歴史・セレモニー'],[/^WM-F/,'将来機能'],
+[/^WM-C/,'コア・経営'],[/^WM-SP/,'季節特別興行・試合前'],[/^WM-S(?!E-)/,'メインメニュー・団体状況'],[/^WM-M/,'通常試合前'],[/^WM-E/,'大会・大型興行'],[/^WM-J/,'結果ジングル'],[/^WM-D/,'人物ドラマ'],[/^WM-H/,'歴史・セレモニー'],[/^WM-F/,'将来機能'],
 [/^WM-SE-UI/,'共通UI'],[/^WM-SE-MG/,'経営・数値'],[/^WM-SE-HR/,'人事・契約'],[/^WM-SE-SH/,'興行編成'],[/^WM-SE-BTA/,'試合追加音'],[/^WM-SE-CR/,'観客反応'],[/^WM-SE-RS/,'結果・達成'],[/^WM-SE-EV/,'物語イベント']
 ];
 const CAT_UNKNOWN='仕様外・未割当', CAT_INVENTORY='参考在庫';
@@ -472,6 +473,11 @@ function download(name,content,type){
 
 /* ================= 起動 ================= */
 (async function init(){
+  // 改番移行: 旧C03(通常経営)の判断・割当をS00(メインメニュー)へ引き継ぐ
+  if(saved['WM-C03']&&!saved['WM-S00']){saved['WM-S00']=saved['WM-C03'];delete saved['WM-C03'];persistDecisions()}
+  let migrated=false;
+  manualAssign.forEach(a=>{if(a.cueId==='WM-C03'){a.cueId='WM-S00';migrated=true}});
+  if(migrated)persistAssign();
   try{droppedFiles=await dbAll()}catch(e){idbOk=false;droppedFiles=[]}
   if(!manifestFiles.length){
     el('#root').innerHTML='音声目録(manifest.js)が読み込めませんでした。<br>audio-review/generate-manifest.ps1 を実行するか、上の「フォルダ再選択」で音声フォルダを指定してください。';
