@@ -55,19 +55,22 @@ const Audio = (() => {
   let _sfxMasterVol = 1.0;  // SEマスター（デフォルト100%）
   // ── Per-track volume targets (bgmGain.gain.value) ──
   const CHIPTUNE_BGM_MIX = { kaimaku:0.19, management:0.35, battle:0.32, season_end:0.46, tension:0.42 };
-  // ── SUNO BGM file mapping (replaces chiptune for 5 main tracks) ──
+  // ── SUNO BGM file mapping ──
+  // 音響刷新 Phase 1 (2026-07-23): 新音源セット bgm/production-ogg/ へ差し替え。
+  // 新BGMは -17 LUFS 正規化済みのため vol は一律 0.15 を基準にする。
+  // tension / season_end は新台帳で1:1後継がない(裏切り=現状維持 等)ため旧ファイル継続。
   const SUNO_BGM = {
-    kaimaku:    { file: '../bgm/bgm_kaimaku_v1.mp3',     vol: 0.17 },
-    management: { file: '../bgm/bgm_management_v1.mp3',  vol: 0.12 },
-    battle:     { file: '../bgm/bgm_battle_v1.mp3',      vol: 0.12 },
+    kaimaku:    { file: '../bgm/production-ogg/wm_bgm_c01_v01.ogg', vol: 0.15 }, // WM-C01 タイトル・オープニング
+    management: { file: '../bgm/production-ogg/wm_bgm_s00_v01.ogg', vol: 0.15 }, // WM-S00 メインメニュー
+    battle:     { file: '../bgm/production-ogg/wm_bgm_m01_v01.ogg', vol: 0.15 }, // WM-M01 通常試合
     season_end: { file: '../bgm/bgm_season_end_v1.mp3',  vol: 0.17 },
     tension:    { file: '../bgm/bgm_tension_v1.mp3',     vol: 0.17 },
   };
   // WM Audio Mixer file-BGM assignments used by match and tournament screens.
   const STAGE_BGM = {
-    bigMatch:   { file: '../bgm/iwashiro_elevate_perfect.ogg', vol: 0.12 }, // FB1
-    tournament: { file: '../bgm/MusMus-BGM-052.mp3', vol: 0.12 },          // FB2
-    war:        { file: '../bgm/MusMus-BGM-125.mp3', vol: 0.10 },          // FB3
+    bigMatch:   { file: '../bgm/production-ogg/wm_bgm_m04_v01.ogg', vol: 0.15 }, // WM-M04 ビッグマッチ
+    tournament: { file: '../bgm/MusMus-BGM-052.mp3', vol: 0.12 },          // Phase 2でイベント別(SP01〜SP09)に分岐予定
+    war:        { file: '../bgm/MusMus-BGM-125.mp3', vol: 0.10 },          // Phase 2で秋対抗戦=SP05/06等に分岐予定
   };
   const JINGLE_MIX = { victory:0.38, championship:0.29 };
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
@@ -678,7 +681,8 @@ const Audio = (() => {
       // 特別大会結果: オーディオミキサー ff07 のMP3 v5を使用（bgmMuted無視で必ず再生）
       if (name === 'championship') {
         FileBGM.stop();
-        const a = new window.Audio('../bgm/f10_victory_fanfare_v5.mp3');
+        // 音響刷新 Phase 1: 最高栄誉ジングルを WM-SE-RS04 (旧J04王座移動採用曲) へ差し替え
+        const a = new window.Audio('../bgm/production-ogg/wm_se_rs04_v01.ogg');
         a.volume = Math.min(1.0, JINGLE_MIX.championship);
         a.addEventListener('error', () => {
           console.warn('[Audio] championship jingle failed to load, falling back to synth');
