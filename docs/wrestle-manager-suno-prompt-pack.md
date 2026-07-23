@@ -160,6 +160,12 @@ Instrumental NES/Famicom 2A03 big-match faceoff loop, 74 BPM, solemn sparse puls
 
 共通方針: 試合中より一段低い熱量。82～104 BPM、低～中密度、未解決の和声と間で「ゴングを待つ緊張」を作る。その奥に、通常興行とは違う季節祭典の華やぎと観客の期待を薄く加える。高速ドラム、陽気なカーニバル、戦闘のクライマックスは避ける。
 
+### WM-SP00 通常興行（進行） — 40秒 / Music
+
+```text
+Instrumental NES/Famicom 2A03 wrestling show-progress loop, 110 BPM, lively arena energy, bright pulse riff over steady drums, crowd-warming excitement between matches, seamless loop.
+```
+
 ### WM-SP01 春A — 30秒 / Music
 
 ```text
