@@ -128,6 +128,8 @@ footer#player{position:fixed;left:0;right:0;bottom:0;background:#0b0e14f6;border
 const ALIAS = {'WM-SE-UI10':'WM-SE-UI09'};
 // 旧C02(メインメニュー)・旧C03(通常経営)名の候補は S00(メインメニュー)枠、旧M02(重量級)名は M01(通常試合前)枠で比較する(2026-07-23改番)
 const CANDIDATE_ALIAS = {'WM-C02':'WM-S00','WM-C03':'WM-S00','WM-M02':'WM-M01',
+  // 旧E03(最終戦)はM05(ビッグマッチ2)へ改番・統合(2026-07-23)
+  'WM-E03':'WM-M05',
   // J系結果ジングルはRS系(結果・達成SE)へ一本化(2026-07-23監査)
   'WM-J01':'WM-SE-RS01','WM-J02':'WM-SE-RS02','WM-J03':'WM-SE-RS03','WM-J04':'WM-SE-RS04'};
 // 枠を移動したIDの表示カテゴリ上書き
@@ -143,8 +145,8 @@ const PLAN_NOTES = {
 const REFERENCES = {
 'WM-C01':['bgm_kaimaku_v1.mp3'],'WM-C07':['bgm_tension_v1.mp3','Soft Bids, Sharp Minds.mp3'],'WM-C08':['bgm_kaimaku_v1.mp3'],'WM-C09':['bgm_tension_v1.mp3','High Stakes Pixel Bids.mp3','Soft Bids, Sharp Minds.mp3'],
 'WM-S00':['bgm_management_v1.mp3'],'WM-S01':['bgm_management_v1.mp3'],'WM-S02':['bgm_tension_v1.mp3'],'WM-S03':['bgm_tension_v1.mp3'],'WM-S04':['bgm_tension_v1.mp3'],'WM-S05':['bgm_tension_v1.mp3','iwa_gameover001.mp3'],
-'WM-M01':['bgm_battle_v1.mp3'],'WM-M03':['bgm_tension_v1.mp3','MusMus-BGM-125.mp3'],'WM-M04':['iwashiro_elevate_perfect.ogg'],'WM-M05':['bgm_tension_v1.mp3','f04_heartbeat_v1.mp3'],
-'WM-E03':['iwashiro_elevate_perfect.ogg','MusMus-BGM-125.mp3'],'WM-E05':['MusMus-BGM-052.mp3','iwashiro_elevate_perfect.ogg'],
+'WM-M01':['bgm_battle_v1.mp3'],'WM-M03':['bgm_tension_v1.mp3','MusMus-BGM-125.mp3'],'WM-M04':['iwashiro_elevate_perfect.ogg'],'WM-M05':['iwashiro_elevate_perfect.ogg','MusMus-BGM-125.mp3'],'WM-M06':['bgm_tension_v1.mp3','f04_heartbeat_v1.mp3'],
+'WM-E05':['MusMus-BGM-052.mp3','iwashiro_elevate_perfect.ogg'],
 'WM-SP01':['MusMus-BGM-052.mp3'],'WM-SP02':['MusMus-BGM-052.mp3'],'WM-SP03':['MusMus-BGM-052.mp3'],'WM-SP04':['MusMus-BGM-052.mp3'],'WM-SP05':['MusMus-BGM-052.mp3'],'WM-SP06':['MusMus-BGM-052.mp3'],'WM-SP07':['MusMus-BGM-052.mp3'],'WM-SP08':['MusMus-BGM-052.mp3','iwashiro_elevate_perfect.ogg'],
 'WM-D01':['bgm_tension_v1.mp3'],'WM-D04':['bgm_season_end_v1.mp3'],
 'WM-H01':['bgm_season_end_v1.mp3'],'WM-H02':['8bit-jo-jokyoku.mp3'],'WM-H04':['8bit-ending-theme_Loop.ogg'],'WM-H05':['8bit-jo-jokyoku.mp3','8bit-ending-theme_Loop.ogg'],
@@ -152,7 +154,7 @@ const REFERENCES = {
 'WM-SE-BTA01':['f01_count_v6.mp3'],'WM-SE-CR03':['e02_crowd_v2.mp3'],'WM-SE-RS01':['f10_victory_fanfare_v8.mp3'],'WM-SE-RS04':['f10_victory_fanfare_v5.mp3']
 };
 const CATEGORY_DEFS = [
-[/^WM-C/,'コア・経営'],[/^WM-SP/,'特別興行(季節イベント)'],[/^WM-S(?!E-)/,'メインメニュー・団体状況'],[/^WM-M/,'試合中'],[/^WM-E/,'決勝・天頂戦'],[/^WM-J/,'結果ジングル'],[/^WM-D/,'人物ドラマ'],[/^WM-H/,'歴史・セレモニー'],[/^WM-F/,'将来機能'],
+[/^WM-C/,'コア・経営'],[/^WM-SP/,'特別興行(季節イベント)'],[/^WM-S(?!E-)/,'メインメニュー・団体状況'],[/^WM-M/,'試合中'],[/^WM-E/,'天頂戦'],[/^WM-J/,'結果ジングル'],[/^WM-D/,'人物ドラマ'],[/^WM-H/,'歴史・セレモニー'],[/^WM-F/,'将来機能'],
 [/^WM-SE-UI/,'共通UI'],[/^WM-SE-MG/,'経営・数値'],[/^WM-SE-HR/,'人事・契約'],[/^WM-SE-SH/,'興行編成'],[/^WM-SE-BTA/,'試合追加音'],[/^WM-SE-CR/,'観客反応'],[/^WM-SE-RS/,'結果・達成'],[/^WM-SE-EV/,'物語イベント']
 ];
 const CAT_UNKNOWN='転用プール', CAT_INVENTORY='参考在庫';
@@ -206,8 +208,9 @@ function buildGroups(){
   for(const d of droppedFiles){
     const path='DROP:'+d.key;
     pathIndex.set(path,{blob:d.blob});
-    if(!candMap.has(d.cueId))candMap.set(d.cueId,[]);
-    candMap.get(d.cueId).push({path,name:d.name,size:d.size,tag:'drop',dropKey:d.key});
+    const dropCue=CANDIDATE_ALIAS[d.cueId]||d.cueId; // 改番済み枠へのドロップも引き継ぐ
+    if(!candMap.has(dropCue))candMap.set(dropCue,[]);
+    candMap.get(dropCue).push({path,name:d.name,size:d.size,tag:'drop',dropKey:d.key});
   }
   for(const a of manualAssign){
     const src=manifestFiles.find(f=>f.url===a.url);if(!src)continue;
@@ -474,11 +477,16 @@ function download(name,content,type){
 
 /* ================= 起動 ================= */
 (async function init(){
-  // 改番移行: 旧C03(通常経営)の判断・割当をS00(メインメニュー)へ引き継ぐ
-  if(saved['WM-C03']&&!saved['WM-S00']){saved['WM-S00']=saved['WM-C03'];delete saved['WM-C03'];persistDecisions()}
-  let migrated=false;
-  manualAssign.forEach(a=>{if(a.cueId==='WM-C03'){a.cueId='WM-S00';migrated=true}});
-  if(migrated)persistAssign();
+  // 改番移行(1回だけ): C03→S00 / 旧M05(直前)→M06 / E03(最終戦)→M05(ビッグマッチ2)
+  if(!localStorage.getItem('wmAudioRenumV2')){
+    const RENUM=[['WM-C03','WM-S00'],['WM-M05','WM-M06'],['WM-E03','WM-M05']];
+    for(const [oldId,newId] of RENUM){
+      if(saved[oldId]&&!saved[newId]){saved[newId]=saved[oldId];delete saved[oldId]}
+      manualAssign.forEach(a=>{if(a.cueId===oldId)a.cueId=newId});
+    }
+    persistDecisions();persistAssign();
+    localStorage.setItem('wmAudioRenumV2','1');
+  }
   try{droppedFiles=await dbAll()}catch(e){idbOk=false;droppedFiles=[]}
   if(!manifestFiles.length){
     el('#root').innerHTML='音声目録(manifest.js)が読み込めませんでした。<br>audio-review/generate-manifest.ps1 を実行するか、上の「フォルダ再選択」で音声フォルダを指定してください。';

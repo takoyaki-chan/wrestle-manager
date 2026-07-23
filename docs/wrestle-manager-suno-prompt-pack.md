@@ -142,7 +142,13 @@ Instrumental NES/Famicom 2A03 grudge-match battle loop, 124 BPM, hostile minor m
 Instrumental NES/Famicom 2A03 big-match battle loop, 120 BPM, noble minor fanfare, driving bass and drums, enormous championship stakes and furious combat, seamless loop.
 ```
 
-### WM-M05 ビッグマッチ直前 — 40秒 / Music
+### WM-M05 ビッグマッチ2 — 45秒 / Music
+
+```text
+Instrumental NES/Famicom 2A03 grand-final battle loop, 128 BPM, severe heroic theme, relentless bass, rising counterline, the last match of the biggest event with everything on the line, monumental and furious, seamless loop.
+```
+
+### WM-M06 ビッグマッチ直前 — 40秒 / Music
 
 ```text
 Instrumental NES/Famicom 2A03 big-match faceoff loop, 74 BPM, solemn sparse pulse motif over a deep triangle drone, slow heartbeat rhythm, hushed crowd before ring introductions, two rivals locking eyes before the biggest bout, heavy ceremonial anticipation, seamless loop.
@@ -205,12 +211,6 @@ Instrumental NES/Famicom 2A03 year-end grand-festival event-progress loop, 96 BP
 ---
 
 ## E. 大会・大型興行
-
-### WM-E03 最終戦 — 45秒 / Music
-
-```text
-Instrumental NES/Famicom 2A03 final-match loop, 128 BPM, severe heroic theme, relentless bass, rising counterline, a long tournament reaching its decisive battle.
-```
 
 ### WM-E05 天頂戦 — 50秒 / Music
 
