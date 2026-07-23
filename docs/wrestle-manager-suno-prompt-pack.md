@@ -288,10 +288,16 @@ Instrumental NES/Famicom 2A03 award-ceremony loop, stately warm fanfare motif, d
 Instrumental NES/Famicom 2A03 expedition loop, adventurous minor-major melody, unfamiliar arena and distant challenge, determined travel energy without cultural clichés.
 ```
 
-### WM-F02 ドラフト — 45秒 / Music
+### WM-C08 ドラフト選択 — 45秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 draft loop, tense selection pulse, ticking noise rhythm, rival bids and career-changing choices, strategic and urgent.
+Instrumental NES/Famicom 2A03 draft-selection loop, thoughtful strategic mood, measured pulse melody, calm triangle bass, weighing young talents and choosing a future, quiet focus with hopeful anticipation, seamless loop.
+```
+
+### WM-C09 ドラフト入札 — 45秒 / Music
+
+```text
+Instrumental NES/Famicom 2A03 draft-bidding loop, tense auction pulse, ticking noise rhythm, rival bids climbing and career-changing stakes, strategic and urgent, seamless loop.
 ```
 
 ### WM-F03 TV放送 — 40秒 / Music
