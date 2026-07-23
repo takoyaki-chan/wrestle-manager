@@ -4416,12 +4416,14 @@ const App = {
 
     const overlay = document.createElement('div');
     overlay.className = 'completion-overlay';
+    // 挨拶セリフは各選手の頭上に吹き出しで配置(セリフは吹き出しに収めるのが基本形・2026-07-23)
     overlay.innerHTML = `
       <div class="comp-vignette"></div>
       <div class="team-photo">
-        ${teamMembers.map(m => {
+        ${teamMembers.map((m, i) => {
           const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(m.id) : '';
           return `<div class="team-member${m.isFixed ? ' fixed-mark' : ''}">
+            <div class="team-bubble" style="--greeting-index:${i}">${foundingGreetings[i]}</div>
             ${upperUrl ? `<img src="${upperUrl}" alt="${m.name}">` : '<div style="width:100%;aspect-ratio:2/3;background:#222"></div>'}
             <div class="team-member-name">${m.name}</div>
           </div>`;
@@ -4430,12 +4432,6 @@ const App = {
       <div class="comp-text">
         <span class="org-name">${orgName}</span>
         <span class="start">始動</span>
-      </div>
-      <div class="team-greetings">
-        ${teamMembers.map((m, i) => `<div class="team-greeting" style="--greeting-index:${i}">
-          <span class="team-greeting-name">${m.name}</span>
-          <span class="team-greeting-line">「${foundingGreetings[i]}」</span>
-        </div>`).join('')}
       </div>
     `;
     document.body.appendChild(overlay);

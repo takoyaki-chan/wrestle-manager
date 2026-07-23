@@ -4149,17 +4149,17 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .completion-overlay.show .comp-text{opacity:1;transform:translateY(0)}
 .comp-text .org-name{font-size:18px;letter-spacing:0.2em;color:var(--text-main);font-weight:500}
 .comp-text .start{font-size:32px;letter-spacing:0.4em;color:var(--gold);font-weight:700;display:block;margin-top:8px}
-.team-greetings{position:relative;z-index:2;width:min(620px,100%);margin-top:22px;display:grid;gap:5px;
-  opacity:0;transform:translateY(8px);transition:opacity .8s ease 2.2s,transform .8s ease 2.2s}
-.completion-overlay.show .team-greetings{opacity:1;transform:translateY(0)}
-.team-greeting{display:grid;grid-template-columns:minmax(90px,auto) minmax(0,1fr);gap:10px;align-items:baseline;
-  padding:4px 10px;border-left:1px solid rgba(212,168,67,.25);background:rgba(255,255,255,.025);
-  font-family:'Noto Sans JP',sans-serif;font-size:11px;line-height:1.5;
-  opacity:0;transform:translateX(-6px);transition:opacity .45s ease,transform .45s ease;
-  transition-delay:calc(2.25s + var(--greeting-index) * .14s)}
-.completion-overlay.show .team-greeting{opacity:1;transform:translateX(0)}
-.team-greeting-name{color:var(--gold-light);font-weight:700;text-align:right;white-space:nowrap}
-.team-greeting-line{color:var(--text-main);text-align:left}
+/* 旗揚げ挨拶: 各選手の頭上に吹き出しで表示(セリフは吹き出しに収めるのが基本形・2026-07-23) */
+.team-member{display:flex;flex-direction:column;justify-content:flex-end}
+.team-bubble{position:relative;background:var(--cream-bg-card);color:var(--cream-text-main);border-radius:10px;
+  padding:7px 9px;font-family:'Noto Sans JP',sans-serif;font-size:11px;line-height:1.55;font-weight:500;
+  margin:0 2px 12px;box-shadow:0 4px 14px rgba(0,0,0,.45);
+  opacity:0;transform:translateY(6px);transition:opacity .5s ease,transform .5s ease;
+  transition-delay:calc(1.7s + var(--greeting-index) * .3s)}
+.team-bubble::after{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);
+  border:7px solid transparent;border-top-color:var(--cream-bg-card);border-bottom:none}
+.completion-overlay.show .team-bubble{opacity:1;transform:translateY(0)}
+.team-member.fixed-mark .team-bubble{outline:1px solid rgba(212,168,67,.55)}
 
 /* ============================================================
    DRAFT CREAM THEME — 新聞風レイアウト
@@ -4273,6 +4273,10 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   .draft-roster-grid{grid-template-columns:1fr}
   .team-photo{gap:2px}
   .team-member{width:18%;min-width:60px}
+  /* スマホ: 吹き出しを上下交互に振り分けて横の重なりを避ける(偶数番は脚元側・尻尾は上向き) */
+  .team-bubble{font-size:9.5px;padding:5px 6px;margin:0 1px 9px}
+  .team-member:nth-child(even) .team-bubble{order:3;margin:9px 1px 0}
+  .team-member:nth-child(even) .team-bubble::after{bottom:auto;top:-7px;border-top:none;border-bottom:7px solid var(--cream-bg-card)}
   .opening-portraits{gap:30px}
   .opening-portrait{width:130px}
   .draft-paper{margin:20px 12px 40px}
