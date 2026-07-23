@@ -150,6 +150,11 @@ foreach ($d in $Manifest.assetDirectories) {
     $Src  = Join-Path $ProjectDir $d
     $Dest = Join-Path $StagingDir $d
     Copy-Item -Recurse $Src $Dest
+    # 開発用ファイルを配布物から除外（ローカル試聴ツール・音声編集の作業ファイル等）
+    $DevPatterns = @('audio-mixer.html', '*.aup3', '*.wav')
+    foreach ($pat in $DevPatterns) {
+        Get-ChildItem -Recurse -File $Dest -Filter $pat -ErrorAction SilentlyContinue | Remove-Item -Force
+    }
     $Count = (Get-ChildItem -Recurse -File $Dest).Count
     Write-Host "  ✓ $d/ ($Count ファイル)" -ForegroundColor Green
 }
