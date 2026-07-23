@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wrestle Manager サウンド選定ボード</title>
+<style>
+:root{color-scheme:dark;--bg:#0e1117;--panel:#181d27;--panel2:#121720;--line:#30394a;--gold:#e8bd58;--text:#edf1f7;--muted:#9da9bb;--green:#5bd095;--red:#ef7777;--blue:#76aef4;--amber:#f0ad55}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Yu Gothic UI","Hiragino Sans",sans-serif;line-height:1.55;padding-bottom:92px}
+
+/* ---------- ヘッダー ---------- */
+header{position:sticky;top:0;z-index:20;background:#0e1117f0;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:11px 18px}
+h1{font-size:18px;margin:0}
+.sub{font-size:11.5px;color:var(--muted);margin:2px 0 9px}
+.toolbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+select,input[type=search]{background:#151a23;color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:13px}
+input[type=search]{min-width:200px}
+button{border:1px solid var(--line);background:#252c39;color:var(--text);padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:700;font-size:12.5px}
+button:hover{filter:brightness(1.18)}
+.stats{color:var(--muted);font-size:12px;margin-left:auto}
+.catnav{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.catchip{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:#161c27;cursor:pointer;white-space:nowrap}
+.catchip:hover{border-color:var(--gold)}
+.catchip .n{color:var(--muted);margin-left:4px}
+.catchip.alldone{border-color:#2f6c4c}.catchip.alldone .n{color:var(--green)}
+
+/* ---------- 本文 ---------- */
+main{max-width:1200px;margin:auto;padding:16px}
+.notice{padding:26px;border:1px dashed var(--line);text-align:center;color:var(--muted);border-radius:10px}
+section.cat>h2{font-size:15px;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:5px;margin:26px 0 12px}
+.cue{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.cue.is-adopted{border-color:#2f6c4c}
+.cue-head{display:flex;gap:10px;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.cid{font-weight:900;color:var(--gold);font-size:14px}
+.ctitle{font-size:16px;font-weight:800}
+.chead-sub{font-size:11.5px;color:var(--muted)}
+.badge{font-size:11px;padding:2px 9px;border-radius:999px;background:#30394b;margin-left:auto;white-space:nowrap}
+.badge.done{background:#174f35;color:#a7e7c4}
+.badge.warn{background:#5a3424;color:#ffd2ab}
+.spec{padding:10px 14px;background:#131923;border-bottom:1px solid var(--line);font-size:12.5px}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:5px 18px}
+.spec-label{font-size:10.5px;font-weight:800;color:var(--blue)}
+.spec-note{margin-top:7px;padding:8px 10px;background:#3d2c17;color:#ffe2ae;border-radius:6px;font-size:12px}
+.criteria{margin:6px 0 0;padding-left:18px}
+.criteria li{margin:1px 0}
+.prompt{margin-top:7px}
+.prompt summary{cursor:pointer;color:#cbd5e4;font-size:11.5px;font-weight:700}
+.prompt code{display:block;white-space:pre-wrap;margin-top:5px;padding:8px;background:#0d1219;border-radius:6px;color:#c8d3e1;font-size:11px}
+
+/* ---------- 音源行 ---------- */
+.rows{padding:7px 14px 3px}
+.rows h3{font-size:11px;color:var(--blue);margin:6px 0 3px;font-weight:800}
+.row{display:flex;align-items:center;gap:9px;padding:4px 8px;border:1px solid transparent;border-radius:7px}
+.row[draggable=true]{cursor:grab}
+.row:hover{background:#1c2330}
+.row.playing{background:#20304a;border-color:#3d5b8a}
+.row.adopted{background:#15301f;border-color:#2f6c4c}
+.row .p{width:36px;padding:4px 0;text-align:center}
+.rname{flex:1;font-size:13px;word-break:break-all;min-width:0}
+.rsize{font-size:11px;color:var(--muted);white-space:nowrap}
+.tag{font-size:10px;padding:1px 6px;border-radius:4px;background:#283142;color:#cbd4e2;margin-left:6px;white-space:nowrap}
+.tag.drop{background:#173f2c;color:#aee9c9}
+.tag.assign{background:#1c3a55;color:#a9d1f7}
+.tag.ref{background:#303344;color:#d6d9e5}
+.adoptbtn{background:#183f2b;border-color:#2b7650;white-space:nowrap}
+.adoptbtn.on{background:#2b7650;color:#eafff3}
+.xbtn{background:#3a2727;border-color:#6b3d3d;padding:4px 8px}
+.empty{font-size:12px;color:var(--muted);padding:9px 4px}
+
+/* ---------- ドロップ・判断 ---------- */
+.dropzone{margin:8px 14px 12px;padding:11px;border:2px dashed #42516a;border-radius:8px;text-align:center;color:#aeb9c9;font-size:12px;background:#10151d;transition:.12s}
+.dropzone strong{color:#dce5f2}
+.dropzone.dragover{border-color:var(--green);background:#123122;color:#c5f2d9;transform:translateY(-1px)}
+.decision-row{display:flex;gap:8px;padding:0 14px 12px;align-items:flex-start}
+.decision-row textarea{flex:1;min-height:38px;resize:vertical;background:#151a23;color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px;font-size:12.5px;font-family:inherit}
+.decision{min-width:150px}
+
+/* ---------- プレイヤー ---------- */
+footer#player{position:fixed;left:0;right:0;bottom:0;background:#0b0e14f6;border-top:1px solid var(--line);padding:9px 16px;display:flex;gap:12px;align-items:center;z-index:30;backdrop-filter:blur(8px)}
+#pname{font-size:12.5px;min-width:180px;max-width:34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pname .who{color:var(--gold);font-weight:800;margin-right:7px}
+#seek{flex:1;accent-color:var(--gold)}
+#ptime{font-size:11px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pctl{display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted);white-space:nowrap}
+#vol{width:90px;accent-color:var(--gold)}
+.pick{border:1px solid #a77c26;background:#684b18;color:var(--text);padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:700;font-size:12.5px}
+.pick input{display:none}
+@media(max-width:840px){.stats{width:100%;margin-left:0}#pname{min-width:110px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Wrestle Manager サウンド選定ボード</h1>
+  <div class="sub">▶で試聴 →「採用」で決定。候補にない音は <strong>PCからカードへ直接ドロップ</strong>(保存され、リロード後も残る)、または下部「参考在庫」等の行を<strong>カードへドラッグ</strong>して候補に追加。</div>
+  <div class="toolbar">
+    <select id="kind"><option value="all">BGM＋効果音</option><option value="bgm">BGMのみ</option><option value="sfx">効果音のみ</option><option value="unknown">仕様外・在庫のみ</option></select>
+    <select id="avail"><option value="all">全仕様</option><option value="ready">候補がある枠</option><option value="missing">候補がない枠</option></select>
+    <select id="dec"><option value="all">全判断</option><option value="pending">未判断</option><option value="adopted">採用済</option><option value="keep">現状維持</option><option value="regenerate">作り直す</option><option value="reject">不採用</option></select>
+    <input id="search" type="search" placeholder="ID・用途・ファイル名で検索">
+    <button id="export">JSON書き出し</button>
+    <button id="exportMd">一覧表(MD)書き出し</button>
+    <label class="pick">フォルダ再選択<input id="folder" type="file" webkitdirectory multiple></label>
+    <span id="stats" class="stats">読込中…</span>
+  </div>
+  <nav class="catnav" id="catnav"></nav>
+</header>
+
+<main><div id="root" class="notice">仕様と音声目録を読み込んでいます…</div></main>
+
+<footer id="player">
+  <button id="ptoggle" title="スペースキーでも再生/停止">▶</button>
+  <div id="pname"><span class="who">–</span>未再生</div>
+  <input id="seek" type="range" min="0" max="1000" value="0">
+  <span id="ptime">0:00 / 0:00</span>
+  <div class="pctl">
+    <label><input id="loop" type="checkbox"> ループ</label>
+    <label>音量 <input id="vol" type="range" min="0" max="1" step="0.01"></label>
+  </div>
+</footer>
+
+<script src="manifest.js"></script>
+<script src="specs.js"></script>
+<script>
+'use strict';
+/* ================= 定義(ドキュメント由来のドメイン知識) ================= */
+// UI10名のファイルはUI09(紙)仕様の再生成版
+const ALIAS = {'WM-SE-UI10':'WM-SE-UI09'};
+// 旧C02(メインメニュー)名で生成した候補はC03(通常経営)枠で比較する
+const CANDIDATE_ALIAS = {'WM-C02':'WM-C03'};
+// 制作計画で方針が明記済みの枠(選定は可能、注意書きのみ)
+const PLAN_NOTES = {
+  'WM-C01':'制作計画では「既存オープニング曲を継続使用」が既定。差し替えるなら意図的な変更として扱うこと。',
+  'WM-SE-UI07':'役割マップでは Web Audio コード合成が確定仕様。ファイル採用する場合は実装方針の変更になる。',
+  'WM-SE-UI08':'役割マップでは Web Audio コード合成が確定仕様。ファイル採用する場合は実装方針の変更になる。'
+};
+// 各枠の「現在の音」(比較レーン)
+const REFERENCES = {
+'WM-C01':['bgm_kaimaku_v1.mp3'],'WM-C03':['bgm_management_v1.mp3'],'WM-C04':['bgm_management_v1.mp3'],'WM-C05':['bgm_management_v1.mp3'],'WM-C06':['bgm_management_v1.mp3','bgm_tension_v1.mp3'],'WM-C07':['bgm_tension_v1.mp3','Soft Bids, Sharp Minds.mp3'],
+'WM-S01':['bgm_management_v1.mp3'],'WM-S02':['bgm_tension_v1.mp3'],'WM-S03':['bgm_tension_v1.mp3'],'WM-S04':['bgm_tension_v1.mp3'],'WM-S05':['bgm_tension_v1.mp3','iwa_gameover001.mp3'],
+'WM-M01':['bgm_battle_v1.mp3'],'WM-M02':['bgm_battle_v1.mp3'],'WM-M03':['bgm_tension_v1.mp3','MusMus-BGM-125.mp3'],'WM-M04':['iwashiro_elevate_perfect.ogg'],
+'WM-E01':['MusMus-BGM-052.mp3'],'WM-E02':['MusMus-BGM-052.mp3'],'WM-E03':['iwashiro_elevate_perfect.ogg','MusMus-BGM-125.mp3'],'WM-E04':['MusMus-BGM-052.mp3'],
+'WM-J01':['f10_victory_fanfare_v8.mp3'],'WM-J02':['iwa_gameover001.mp3'],'WM-J04':['f10_victory_fanfare_v5.mp3'],
+'WM-D01':['bgm_tension_v1.mp3'],'WM-D04':['bgm_season_end_v1.mp3'],
+'WM-H01':['bgm_season_end_v1.mp3'],'WM-H02':['8bit-jo-jokyoku.mp3'],'WM-H04':['8bit-ending-theme_Loop.ogg'],
+'WM-F02':['bgm_tension_v1.mp3'],'WM-F04':['iwashiro_elevate_perfect.ogg'],
+'WM-SE-BTA01':['f01_count_v6.mp3'],'WM-SE-CR03':['e02_crowd_v2.mp3'],'WM-SE-RS01':['f10_victory_fanfare_v8.mp3'],'WM-SE-RS04':['f10_victory_fanfare_v5.mp3']
+};
+const CATEGORY_DEFS = [
+[/^WM-C/,'コア・経営'],[/^WM-SP/,'季節特別興行・試合前'],[/^WM-S(?!E-)/,'団体状況'],[/^WM-M/,'通常試合前'],[/^WM-E/,'大会・大型興行'],[/^WM-J/,'結果ジングル'],[/^WM-D/,'人物ドラマ'],[/^WM-H/,'歴史・セレモニー'],[/^WM-F/,'将来機能'],
+[/^WM-SE-UI/,'共通UI'],[/^WM-SE-MG/,'経営・数値'],[/^WM-SE-HR/,'人事・契約'],[/^WM-SE-SH/,'興行編成'],[/^WM-SE-BTA/,'試合追加音'],[/^WM-SE-CR/,'観客反応'],[/^WM-SE-RS/,'結果・達成'],[/^WM-SE-EV/,'物語イベント']
+];
+const CAT_UNKNOWN='仕様外・未割当', CAT_INVENTORY='参考在庫';
+const CATEGORY_ORDER = CATEGORY_DEFS.map(c=>c[1]).concat([CAT_UNKNOWN, CAT_INVENTORY]);
+const DECISION_LABEL = {adopted:'採用済',keep:'現状維持',regenerate:'作り直す',reject:'不採用'};
+const AUDIO_RE = /\.(mp3|ogg|wav|m4a|flac)$/i;
+
+/* ================= 状態 ================= */
+const specs = (Array.isArray(window.AUDIO_REVIEW_SPECS)?window.AUDIO_REVIEW_SPECS:[]).filter(s=>s.id!=='WM-C02');
+const specMap = new Map(specs.map(s=>[s.id,s]));
+let manifestFiles = Array.isArray(window.AUDIO_REVIEW_MANIFEST)?window.AUDIO_REVIEW_MANIFEST.filter(f=>AUDIO_RE.test(f.name)):[];
+let droppedFiles = [];                       // IndexedDB: {key,cueId,name,size,blob,addedAt}
+let manualAssign = loadJson('wmAudioAssignments',[]); // [{cueId,url}]
+const saved = loadJson('wmAudioReview',{});  // {cueId:{decision,file,note}}
+let groups = [], pathIndex = new Map(), idbOk = true;
+
+function loadJson(key,fb){try{return JSON.parse(localStorage.getItem(key))??fb}catch(e){return fb}}
+function persistDecisions(){localStorage.setItem('wmAudioReview',JSON.stringify(saved))}
+function persistAssign(){localStorage.setItem('wmAudioAssignments',JSON.stringify(manualAssign))}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmtMB(n){return (n/1024/1024).toFixed(2)+' MB'}
+function fmtTime(t){if(!isFinite(t))return'–:––';t=Math.max(0,t|0);return `${(t/60)|0}:${String(t%60).padStart(2,'0')}`}
+function idFromName(name){const m=String(name).match(/WM-(?:SE-)?[A-Z]+\d+/i);if(!m)return'';const id=m[0].toUpperCase();return ALIAS[id]||id}
+function categoryFor(id){return (CATEGORY_DEFS.find(([re])=>re.test(id))||[])[1]||CAT_UNKNOWN}
+
+/* ================= IndexedDB(ドロップ音源の永続化) ================= */
+function openDb(){return new Promise((res,rej)=>{const r=indexedDB.open('wm-audio-review-drops',1);
+  r.onupgradeneeded=()=>r.result.createObjectStore('drops',{keyPath:'key'});
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function dbAll(){const db=await openDb();return new Promise((res,rej)=>{const q=db.transaction('drops').objectStore('drops').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)})}
+async function dbPut(rec){const db=await openDb();return new Promise((res,rej)=>{const t=db.transaction('drops','readwrite');t.objectStore('drops').put(rec);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+async function dbDel(key){const db=await openDb();return new Promise((res,rej)=>{const t=db.transaction('drops','readwrite');t.objectStore('drops').delete(key);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+
+/* ================= グループ構築 ================= */
+function buildGroups(){
+  groups=[];pathIndex=new Map();
+  const candMap=new Map(), unassigned=[], refPool=[];
+  for(const f of manifestFiles){
+    const path=f.url?f.url:'PICK:'+(f.webkitRelativePath||f.name);
+    pathIndex.set(path, f.url?{url:f.url}:{blob:f.file||f});
+    const entry={path,name:f.name,size:f.size,tag:'auto'};
+    if(/^WM-/i.test(f.name)){
+      const rawId=idFromName(f.name);
+      if(!rawId){unassigned.push(entry);continue}
+      const id=CANDIDATE_ALIAS[rawId]||rawId;
+      if(!candMap.has(id))candMap.set(id,[]);
+      candMap.get(id).push(entry);
+    }else refPool.push(entry);
+  }
+  for(const d of droppedFiles){
+    const path='DROP:'+d.key;
+    pathIndex.set(path,{blob:d.blob});
+    if(!candMap.has(d.cueId))candMap.set(d.cueId,[]);
+    candMap.get(d.cueId).push({path,name:d.name,size:d.size,tag:'drop',dropKey:d.key});
+  }
+  for(const a of manualAssign){
+    const src=manifestFiles.find(f=>f.url===a.url);if(!src)continue;
+    if(!candMap.has(a.cueId))candMap.set(a.cueId,[]);
+    const list=candMap.get(a.cueId);
+    if(!list.some(c=>c.path===a.url))list.push({path:a.url,name:src.name,size:src.size,tag:'assign'});
+  }
+  const byName=name=>refPool.filter(e=>e.name===name);
+  for(const spec of specs){
+    const cands=(candMap.get(spec.id)||[]).sort((a,b)=>a.name.localeCompare(b.name,'ja',{numeric:true}));
+    groups.push({id:spec.id,spec,kind:spec.kind,candidates:cands,references:(REFERENCES[spec.id]||[]).flatMap(byName)});
+  }
+  candMap.forEach((items,id)=>{if(!specMap.has(id))groups.push({id,spec:null,kind:'unknown',unknown:true,candidates:items.sort((a,b)=>a.name.localeCompare(b.name,'ja',{numeric:true})),references:[]})});
+  if(unassigned.length)groups.push({id:'WM-未割当ファイル',spec:null,kind:'unknown',unknown:true,candidates:unassigned,references:[]});
+  const linked=new Set(Object.values(REFERENCES).flat());
+  const inv=refPool.filter(e=>!linked.has(e.name)).sort((a,b)=>a.name.localeCompare(b.name,'ja',{numeric:true}));
+  if(inv.length)groups.push({id:'参考在庫',spec:null,kind:'unknown',inventory:true,candidates:[],references:inv});
+}
+
+/* ================= 描画 ================= */
+function statusOf(g){
+  if(!g.spec)return g.inventory?'試聴・ドラッグ用':'仕様外';
+  const d=saved[g.id]?.decision;
+  if(d)return DECISION_LABEL[d]||d;
+  return g.candidates.length?'未判断':'候補未収録';
+}
+function rowHtml(g,c,isRef){
+  const adopted=!isRef&&saved[g.id]?.decision==='adopted'&&saved[g.id]?.file===c.path;
+  const playing=nowPath===c.path&&nowLabel===g.id&&!audio.paused;
+  const tag=isRef?'<span class="tag ref">現行・比較用</span>':c.tag==='drop'?'<span class="tag drop">ドロップ追加</span>':c.tag==='assign'?'<span class="tag assign">在庫から割当</span>':'';
+  const canAdopt=!isRef&&g.spec;
+  return `<div class="row ${playing?'playing':''} ${adopted?'adopted':''}" draggable="true" data-path="${esc(c.path)}">
+    <button class="p" data-act="play" data-path="${esc(c.path)}" data-gid="${esc(g.id)}">${playing?'❚❚':'▶'}</button>
+    <div class="rname">${esc(c.name)}${tag}</div><div class="rsize">${fmtMB(c.size)}</div>
+    ${canAdopt?`<button class="adoptbtn ${adopted?'on':''}" data-act="adopt" data-gid="${esc(g.id)}" data-path="${esc(c.path)}">${adopted?'✓ 採用中(解除)':'採用'}</button>`:''}
+    ${c.tag==='drop'?`<button class="xbtn" data-act="deldrop" data-key="${esc(c.dropKey)}" title="ドロップ音源を削除">✕</button>`:''}
+    ${c.tag==='assign'?`<button class="xbtn" data-act="unassign" data-gid="${esc(g.id)}" data-path="${esc(c.path)}" title="割当を外す">✕</button>`:''}
+  </div>`;
+}
+function cueHtml(g){
+  const s=saved[g.id]||{},spec=g.spec;
+  const decided=!!s.decision, status=statusOf(g);
+  const badgeCls=decided?'done':(!spec&&!g.inventory)?'warn':'';
+  let specBlock='';
+  if(spec){
+    const crit=[];
+    if(spec.kind==='bgm'){crit.push(`想定尺 ${spec.duration}。自然にループへ切り出せること(ループ再生で確認)。`);crit.push('歌なし。ファミコン系音色で、役割・場面に合った温度であること。');}
+    else{crit.push('鳴った瞬間に意味が一聴で伝わること。');if(spec.constraint)crit.push('使い分け: '+spec.constraint);}
+    specBlock=`<div class="spec">
+      <div class="spec-grid">
+        <div><span class="spec-label">使用場面</span><br>${esc(spec.usage||spec.title+'の画面・イベント')}</div>
+        <div><span class="spec-label">狙う印象</span><br>${esc(spec.target||'—')}</div>
+        <div><span class="spec-label">形式・尺${spec.priority?'・優先度':''}</span><br>${esc(spec.duration)}${spec.priority?' ／ '+esc(spec.priority):''}</div>
+        <div><span class="spec-label">現在の扱い</span><br>${esc(spec.current||'新規用途')}</div>
+      </div>
+      <ul class="criteria">${crit.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      ${PLAN_NOTES[g.id]?`<div class="spec-note">⚠ ${esc(PLAN_NOTES[g.id])}</div>`:''}
+      <details class="prompt"><summary>生成プロンプトを見る</summary><code>${esc(spec.prompt||'(コード合成予定)')}</code></details>
+    </div>`;
+  }else{
+    specBlock=`<div class="spec">${g.inventory
+      ?'既存・参考音源の在庫。行を上の用途カードへドラッグすると、その枠の候補に追加できます。'
+      :'現行仕様にないID。行を正式な用途カードへドラッグして候補に加えるか、保留にしてください。'}</div>`;
+  }
+  const refs=g.references.length?`<h3>現在の音・比較用</h3>${g.references.map(c=>rowHtml(g,c,true)).join('')}`:'';
+  const cands=g.spec||g.unknown?`<h3>${g.spec?'新候補':'ファイル'} (${g.candidates.length})</h3>${g.candidates.length?g.candidates.map(c=>rowHtml(g,c,false)).join(''):'<div class="empty">候補ファイルなし — 下のドロップ欄から追加できます。</div>'}`:'';
+  const invRows=g.inventory?g.references.map(c=>rowHtml(g,c,true)).join(''):'';
+  return `<article class="cue ${s.decision==='adopted'?'is-adopted':''}" id="cue-${esc(g.id)}">
+    <div class="cue-head"><span class="cid">${esc(g.id)}</span><span class="ctitle">${esc(spec?spec.title:(g.inventory?'既存・参考音源':'仕様外ファイル'))}</span>
+      ${spec?`<span class="chead-sub">${esc(spec.kind==='bgm'?'BGM':'効果音')}</span>`:''}
+      <span class="badge ${badgeCls}">${esc(status)}</span></div>
+    ${specBlock}
+    <div class="rows">${g.inventory?invRows:refs+cands}</div>
+    ${spec?`<div class="dropzone" data-drop="${esc(g.id)}"><strong>ここへ音声ファイルをドロップ</strong> — PCから(MP3/OGG/WAV/M4A/FLAC、${idbOk?'保存されリロード後も残る':'※このブラウザでは保持はページを閉じるまで'})、またはページ内の行をドラッグ</div>`:''}
+    ${spec?`<div class="decision-row">
+      <select class="decision" data-decision="${esc(g.id)}">
+        <option value="">未判断</option>
+        <option value="adopted" ${s.decision==='adopted'?'selected':''}>候補を採用</option>
+        <option value="keep" ${s.decision==='keep'?'selected':''}>現状維持</option>
+        <option value="regenerate" ${s.decision==='regenerate'?'selected':''}>作り直す</option>
+        <option value="reject" ${s.decision==='reject'?'selected':''}>全候補不採用</option>
+      </select>
+      <textarea data-note="${esc(g.id)}" placeholder="メモ:仕様のどこが合う/合わないか">${esc(s.note||'')}</textarea>
+    </div>`:''}
+  </article>`;
+}
+function visibleGroups(){
+  const kind=el('#kind').value,avail=el('#avail').value,dec=el('#dec').value,q=el('#search').value.trim().toLowerCase();
+  return groups.filter(g=>{
+    if(kind!=='all'&&g.kind!==kind)return false;
+    if(avail==='ready'&&(!g.spec||!g.candidates.length))return false;
+    if(avail==='missing'&&(!g.spec||g.candidates.length))return false;
+    const d=saved[g.id]?.decision||'';
+    if(dec==='pending'&&(d||!g.spec))return false;
+    if(dec!=='all'&&dec!=='pending'&&d!==dec)return false;
+    if(q){
+      const text=[g.id,g.spec?.title,g.spec?.usage,g.spec?.target,g.spec?.constraint,g.spec?.prompt,...g.candidates.map(c=>c.name),...g.references.map(c=>c.name)].filter(Boolean).join(' ').toLowerCase();
+      if(!text.includes(q))return false;
+    }
+    return true;
+  });
+}
+function render(){
+  const shown=visibleGroups();
+  const byCat=new Map();
+  for(const g of shown){const cat=g.inventory?CAT_INVENTORY:categoryFor(g.id);if(!byCat.has(cat))byCat.set(cat,[]);byCat.get(cat).push(g)}
+  const root=el('#root');root.className='';
+  root.innerHTML=CATEGORY_ORDER.filter(c=>byCat.has(c)).map(cat=>
+    `<section class="cat" id="cat-${esc(cat)}"><h2>${esc(cat)}</h2>${byCat.get(cat).map(cueHtml).join('')}</section>`
+  ).join('')||'<div class="notice">条件に合う項目がありません。</div>';
+  // 統計とカテゴリナビ
+  const specGroups=groups.filter(g=>g.spec);
+  const decided=specGroups.filter(g=>saved[g.id]?.decision).length;
+  const adopted=specGroups.filter(g=>saved[g.id]?.decision==='adopted').length;
+  const nCand=specGroups.reduce((n,g)=>n+g.candidates.length,0);
+  el('#stats').textContent=`仕様 ${specGroups.length}枠 ／ 判断済 ${decided}(うち採用 ${adopted}) ／ 候補 ${nCand}ファイル ／ 表示 ${shown.length}件`;
+  el('#catnav').innerHTML=CATEGORY_ORDER.map(cat=>{
+    const gs=groups.filter(g=>(g.inventory?CAT_INVENTORY:categoryFor(g.id))===cat);if(!gs.length)return'';
+    const sg=gs.filter(g=>g.spec),d=sg.filter(g=>saved[g.id]?.decision).length;
+    const label=sg.length?`${d}/${sg.length}`:`${gs.reduce((n,g)=>n+g.candidates.length+g.references.length,0)}`;
+    return `<span class="catchip ${sg.length&&d===sg.length?'alldone':''}" data-cat="${esc(cat)}">${esc(cat)}<span class="n">${label}</span></span>`;
+  }).join('');
+  bindDom();
+}
+
+/* ================= 操作 ================= */
+function el(sel){return document.querySelector(sel)}
+const audio=new Audio();let nowPath=null,nowLabel='';
+audio.volume=+(localStorage.getItem('wmAudioVol')||0.8);
+function startPlay(path,gid){
+  const src=pathIndex.get(path);if(!src)return;
+  if(audio.src&&audio.src.startsWith('blob:'))URL.revokeObjectURL(audio.src);
+  audio.src=src.url?encodeURI(src.url):URL.createObjectURL(src.blob);
+  const g=groups.find(x=>x.id===gid);
+  const isLoopBgm=g?.spec?.kind==='bgm'&&!/one-shot/.test(g.spec.duration||'');
+  audio.loop=el('#loop').checked=!!isLoopBgm;
+  nowPath=path;nowLabel=gid;
+  audio.play().catch(()=>{el('#pname').innerHTML=`<span class="who">${esc(gid)}</span>再生失敗`});
+  updatePlayerBar();render();
+}
+function togglePlay(path,gid){
+  if(nowPath===path){if(audio.paused)audio.play();else audio.pause();render();updatePlayerBar()}
+  else startPlay(path,gid);
+}
+function updatePlayerBar(){
+  const name=nowPath?(nowPath.split(/[\\/]/).pop().replace(/^DROP:.*?:/,'')):'未再生';
+  const cand=nowPath&&[...groups.flatMap(g=>[...g.candidates,...g.references].map(c=>({g,c})))].find(x=>x.c.path===nowPath);
+  el('#pname').innerHTML=`<span class="who">${esc(nowLabel||'–')}</span>${esc(cand?cand.c.name:name)}`;
+  el('#ptoggle').textContent=audio.paused?'▶':'❚❚';
+}
+audio.addEventListener('timeupdate',()=>{
+  if(isFinite(audio.duration)&&audio.duration>0)el('#seek').value=Math.round(audio.currentTime/audio.duration*1000);
+  el('#ptime').textContent=`${fmtTime(audio.currentTime)} / ${fmtTime(audio.duration)}`;
+});
+audio.addEventListener('ended',()=>{updatePlayerBar();render()});
+audio.addEventListener('play',updatePlayerBar);
+audio.addEventListener('pause',updatePlayerBar);
+
+async function addOsFiles(cueId,fileList){
+  const accepted=[...fileList].filter(f=>AUDIO_RE.test(f.name));
+  for(const f of accepted){
+    const key=`${cueId}::${f.name}::${f.size}`;
+    if(droppedFiles.some(d=>d.key===key))continue;
+    const rec={key,cueId,name:f.name,size:f.size,blob:f,addedAt:Date.now()};
+    droppedFiles.push(rec);
+    if(idbOk){try{await dbPut(rec)}catch(e){idbOk=false}}
+  }
+  if(accepted.length){buildGroups();render()}
+}
+function bindDom(){
+  document.querySelectorAll('[data-act]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const a=b.dataset;
+    if(a.act==='play')togglePlay(a.path,a.gid);
+    if(a.act==='adopt'){
+      const cur=saved[a.gid]||{};
+      if(cur.decision==='adopted'&&cur.file===a.path){delete cur.decision;delete cur.file;saved[a.gid]=cur}
+      else saved[a.gid]={...cur,decision:'adopted',file:a.path};
+      persistDecisions();render();
+    }
+    if(a.act==='deldrop'){
+      droppedFiles=droppedFiles.filter(d=>d.key!==a.key);
+      if(idbOk)dbDel(a.key).catch(()=>{});
+      buildGroups();render();
+    }
+    if(a.act==='unassign'){
+      manualAssign=manualAssign.filter(x=>!(x.cueId===a.gid&&x.url===a.path));
+      persistAssign();buildGroups();render();
+    }
+  });
+  document.querySelectorAll('.row[draggable=true]').forEach(row=>{
+    row.ondragstart=e=>{e.dataTransfer.setData('text/wm-audio-path',row.dataset.path);e.dataTransfer.setData('text/plain',row.dataset.path);e.dataTransfer.effectAllowed='copy'};
+  });
+  document.querySelectorAll('[data-drop]').forEach(zone=>{
+    zone.ondragover=e=>{e.preventDefault();zone.classList.add('dragover')};
+    zone.ondragleave=()=>zone.classList.remove('dragover');
+    zone.ondrop=e=>{
+      e.preventDefault();zone.classList.remove('dragover');
+      const cueId=zone.dataset.drop;
+      if(e.dataTransfer.files&&e.dataTransfer.files.length){addOsFiles(cueId,e.dataTransfer.files);return}
+      const path=e.dataTransfer.getData('text/wm-audio-path')||e.dataTransfer.getData('text/plain');
+      if(!path)return;
+      if(!path.startsWith('../')){alert('この音源はページ内割当に対応していません(PCから直接ドロップしてください)');return}
+      const g=groups.find(x=>x.id===cueId);
+      if(g&&g.candidates.some(c=>c.path===path))return;
+      manualAssign.push({cueId,url:path});persistAssign();buildGroups();render();
+    };
+  });
+  document.querySelectorAll('[data-decision]').forEach(x=>x.onchange=()=>{
+    const id=x.dataset.decision,cur=saved[id]||{};
+    if(x.value)saved[id]={...cur,decision:x.value};
+    else{delete cur.decision;delete cur.file;saved[id]=cur}
+    persistDecisions();render();
+  });
+  document.querySelectorAll('[data-note]').forEach(x=>x.onchange=()=>{
+    saved[x.dataset.note]={...(saved[x.dataset.note]||{}),note:x.value};persistDecisions();
+  });
+  document.querySelectorAll('.catchip').forEach(c=>c.onclick=()=>{
+    const t=document.getElementById('cat-'+c.dataset.cat);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+}
+
+/* ================= ツールバー・プレイヤー・書き出し ================= */
+['kind','avail','dec'].forEach(id=>el('#'+id).onchange=render);
+el('#search').oninput=render;
+el('#ptoggle').onclick=()=>{if(!nowPath)return;if(audio.paused)audio.play();else audio.pause();render()};
+el('#seek').oninput=e=>{if(isFinite(audio.duration))audio.currentTime=audio.duration*e.target.value/1000};
+el('#loop').onchange=e=>audio.loop=e.target.checked;
+el('#vol').value=audio.volume;
+el('#vol').oninput=e=>{audio.volume=+e.target.value;localStorage.setItem('wmAudioVol',e.target.value)};
+document.addEventListener('keydown',e=>{
+  if(e.code!=='Space'||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+  e.preventDefault();if(!nowPath)return;if(audio.paused)audio.play();else audio.pause();render();
+});
+el('#folder').onchange=e=>{
+  manifestFiles=[...e.target.files].filter(f=>AUDIO_RE.test(f.name)).map(f=>({name:f.name,webkitRelativePath:f.webkitRelativePath||f.name,size:f.size,file:f,url:null}));
+  buildGroups();render();
+};
+function fileLabel(path){
+  if(!path)return'';
+  if(path.startsWith('DROP:'))return'(ドロップ)'+path.split('::')[1];
+  return decodeURI(path).split('/').pop();
+}
+el('#export').onclick=()=>{
+  const data={exportedAt:new Date().toISOString(),specVersion:'93-cue-audio-plan',selections:saved,
+    droppedFiles:droppedFiles.map(d=>({cueId:d.cueId,name:d.name,size:d.size})),manualAssign};
+  download('wm-audio-selections.json',JSON.stringify(data,null,2),'application/json');
+};
+el('#exportMd').onclick=()=>{
+  const lines=['# サウンド選定結果','', `書き出し: ${new Date().toLocaleString('ja-JP')}`,'','| ID | 用途 | 判断 | 採用ファイル | メモ |','|---|---|---|---|---|'];
+  for(const g of groups.filter(x=>x.spec)){
+    const s=saved[g.id]||{};
+    lines.push(`| ${g.id} | ${g.spec.title} | ${s.decision?DECISION_LABEL[s.decision]:'未判断'} | ${s.decision==='adopted'?fileLabel(s.file):''} | ${(s.note||'').replace(/\n/g,' ')} |`);
+  }
+  download('wm-audio-selections.md',lines.join('\n'),'text/markdown');
+};
+function download(name,content,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+
+/* ================= 起動 ================= */
+(async function init(){
+  try{droppedFiles=await dbAll()}catch(e){idbOk=false;droppedFiles=[]}
+  if(!manifestFiles.length){
+    el('#root').innerHTML='音声目録(manifest.js)が読み込めませんでした。<br>audio-review/generate-manifest.ps1 を実行するか、上の「フォルダ再選択」で音声フォルダを指定してください。';
+    el('#stats').textContent='目録なし';return;
+  }
+  buildGroups();render();
+})();
+</script>
+</body>
+</html>
