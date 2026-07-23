@@ -124,16 +124,10 @@ Instrumental NES/Famicom 2A03 organization-crisis loop, urgent minor ostinato, u
 
 ## C. 通常興行の試合前
 
-### WM-M01 軽量級 — 30秒 / Music
+### WM-M01 通常試合前 — 30秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 pre-battle loop, 145 BPM, lightning-fast pulse lead, agile triangle bass, crisp noise drums, high-risk lightweight wrestling seconds before the bell.
-```
-
-### WM-M02 重量級 — 30秒 / Music
-
-```text
-Instrumental NES/Famicom 2A03 pre-battle loop, 112 BPM, heavy pulse riff, stomping triangle bass, crushing noise drums, two heavyweights ready to collide.
+Instrumental NES/Famicom 2A03 pre-battle loop, 128 BPM, driving pulse lead, tense triangle bass, crisp noise drums, two wrestlers facing off seconds before the bell, speed and weight in balance.
 ```
 
 ### WM-M03 因縁戦 — 35秒 / Music
@@ -206,18 +200,6 @@ Instrumental NES/Famicom 2A03 year-end grand-festival pre-match loop, 96 BPM, se
 
 ## E. 大会・大型興行
 
-### WM-E01 トーナメント — 50秒 / Music
-
-```text
-Instrumental NES/Famicom 2A03 tournament loop, 125 BPM, driving bracket-climb motif, escalating competition and repeated battles, heroic tension with a clean reset.
-```
-
-### WM-E02 ジュニア大会 — 45秒 / Music
-
-```text
-Instrumental NES/Famicom 2A03 junior-tournament loop, 145 BPM, agile pulse melody, rapid bass and drums, youthful ambition, speed and high-risk competition.
-```
-
 ### WM-E03 最終戦 — 45秒 / Music
 
 ```text
@@ -238,31 +220,7 @@ Instrumental NES/Famicom 2A03 grand-summit tournament loop, 116 BPM, solemn cere
 
 ---
 
-## F. 試合・大会結果ジングル
-
-### WM-J01 勝利 — 7秒 / Sounds One Shot
-
-```text
-7-second instrumental NES/Famicom victory jingle, bright heroic pulse-wave fanfare, triangle bass, crisp noise-drum finish, clean ending, no vocals.
-```
-
-### WM-J02 敗北 — 7秒 / Sounds One Shot
-
-```text
-7-second instrumental NES/Famicom defeat jingle, short falling minor phrase, low triangle bass, restrained noise hit, disappointed but not comedic, clean ending.
-```
-
-### WM-J03 番狂わせ — 10秒 / Sounds One Shot
-
-```text
-10-second instrumental NES/Famicom upset jingle, shocking dissonant opening turning into a sudden triumphant pulse-wave fanfare, dramatic clean ending.
-```
-
-### WM-J04 王座移動 — 13秒 / Sounds One Shot
-
-```text
-13-second instrumental NES/Famicom new-champion fanfare, solemn opening, grand royal pulse melody, triangle bass and noise-drum climax, historic and majestic.
-```
+## F. 試合・大会結果ジングル — 廃止（2026-07-23、SE側 WM-SE-RS01～RS06 へ一本化。生成済みJ名義候補はRS枠で比較）
 
 ---
 
@@ -308,12 +266,6 @@ Instrumental NES/Famicom 2A03 chronicle loop, reflective heroic melody, changing
 Instrumental NES/Famicom 2A03 hall-of-fame ceremony loop, stately royal fanfare, warm noble melody, gratitude and lasting wrestling legacy.
 ```
 
-### WM-H03 追悼 — 50秒 / Music
-
-```text
-Instrumental NES/Famicom 2A03 memorial loop, sparse respectful pulse melody, gentle minor-major harmony, quiet gratitude and remembrance, never melodramatic.
-```
-
 ### WM-H04 エンディング — 55秒 / Music
 
 ```text
@@ -324,7 +276,7 @@ Instrumental grand symphonic RPG ending performed only with NES/Famicom 2A03 sou
 
 ## I. 将来機能
 
-### WM-F01 海外遠征 — 45秒 / Music
+### WM-F01 敵地遠征 — 45秒 / Music
 
 ```text
 Instrumental NES/Famicom 2A03 expedition loop, adventurous minor-major melody, unfamiliar arena and distant challenge, determined travel energy without cultural clichés.

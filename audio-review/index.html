@@ -126,15 +126,13 @@ footer#player{position:fixed;left:0;right:0;bottom:0;background:#0b0e14f6;border
 /* ================= 定義(ドキュメント由来のドメイン知識) ================= */
 // UI10名のファイルはUI09(紙)仕様の再生成版
 const ALIAS = {'WM-SE-UI10':'WM-SE-UI09'};
-// 旧C02(メインメニュー)・旧C03(通常経営)名の候補は S00(メインメニュー)枠で比較する(2026-07-23改番)
-const CANDIDATE_ALIAS = {'WM-C02':'WM-S00','WM-C03':'WM-S00'};
-// 廃止済みID(2026-07-23裁定: 経営画面は全タブC03の1曲。生成済み候補は他枠へ転用)
-const RETIRED_NOTES = {
-  'WM-C04':'選手一覧の専用曲は廃止(経営画面は全タブ S00 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
-  'WM-C05':'育成の専用曲は廃止(経営画面は全タブ S00 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
-  'WM-C06':'スカウトの専用曲は廃止(経営画面は全タブ S00 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
-  'WM-S04':'負傷での経営BGM切替は廃止(負傷はイベント演出側で扱う)。この候補は他枠の候補としてドラッグで転用できます。'
-};
+// 旧C02(メインメニュー)・旧C03(通常経営)名の候補は S00(メインメニュー)枠、旧M02(重量級)名は M01(通常試合前)枠で比較する(2026-07-23改番)
+const CANDIDATE_ALIAS = {'WM-C02':'WM-S00','WM-C03':'WM-S00','WM-M02':'WM-M01',
+  // J系結果ジングルはRS系(結果・達成SE)へ一本化(2026-07-23監査)
+  'WM-J01':'WM-SE-RS01','WM-J02':'WM-SE-RS02','WM-J03':'WM-SE-RS03','WM-J04':'WM-SE-RS04'};
+// 枠を移動したIDの表示カテゴリ上書き
+const CATEGORY_OVERRIDE = {'WM-E04':'特別興行(季節イベント)'};
+// 廃止・統合済みIDのカードは作らない。該当ファイルは「転用プール」へ集約する(2026-07-23裁定)
 // 制作計画で方針が明記済みの枠(選定は可能、注意書きのみ)
 const PLAN_NOTES = {
   'WM-C01':'制作計画では「既存オープニング曲を継続使用」が既定。差し替えるなら意図的な変更として扱うこと。',
@@ -145,19 +143,18 @@ const PLAN_NOTES = {
 const REFERENCES = {
 'WM-C01':['bgm_kaimaku_v1.mp3'],'WM-C07':['bgm_tension_v1.mp3','Soft Bids, Sharp Minds.mp3'],
 'WM-S00':['bgm_management_v1.mp3'],'WM-S01':['bgm_management_v1.mp3'],'WM-S02':['bgm_tension_v1.mp3'],'WM-S03':['bgm_tension_v1.mp3'],'WM-S04':['bgm_tension_v1.mp3'],'WM-S05':['bgm_tension_v1.mp3','iwa_gameover001.mp3'],
-'WM-M01':['bgm_battle_v1.mp3'],'WM-M02':['bgm_battle_v1.mp3'],'WM-M03':['bgm_tension_v1.mp3','MusMus-BGM-125.mp3'],'WM-M04':['iwashiro_elevate_perfect.ogg'],
-'WM-E01':['MusMus-BGM-052.mp3'],'WM-E02':['MusMus-BGM-052.mp3'],'WM-E03':['iwashiro_elevate_perfect.ogg','MusMus-BGM-125.mp3'],'WM-E04':['MusMus-BGM-052.mp3'],'WM-E05':['MusMus-BGM-052.mp3','iwashiro_elevate_perfect.ogg'],
-'WM-J01':['f10_victory_fanfare_v8.mp3'],'WM-J02':['iwa_gameover001.mp3'],'WM-J04':['f10_victory_fanfare_v5.mp3'],
+'WM-M01':['bgm_battle_v1.mp3'],'WM-M03':['bgm_tension_v1.mp3','MusMus-BGM-125.mp3'],'WM-M04':['iwashiro_elevate_perfect.ogg'],
+'WM-E03':['iwashiro_elevate_perfect.ogg','MusMus-BGM-125.mp3'],'WM-E04':['MusMus-BGM-052.mp3'],'WM-E05':['MusMus-BGM-052.mp3','iwashiro_elevate_perfect.ogg'],
 'WM-D01':['bgm_tension_v1.mp3'],'WM-D04':['bgm_season_end_v1.mp3'],
 'WM-H01':['bgm_season_end_v1.mp3'],'WM-H02':['8bit-jo-jokyoku.mp3'],'WM-H04':['8bit-ending-theme_Loop.ogg'],
 'WM-F02':['bgm_tension_v1.mp3'],'WM-F04':['iwashiro_elevate_perfect.ogg'],
 'WM-SE-BTA01':['f01_count_v6.mp3'],'WM-SE-CR03':['e02_crowd_v2.mp3'],'WM-SE-RS01':['f10_victory_fanfare_v8.mp3'],'WM-SE-RS04':['f10_victory_fanfare_v5.mp3']
 };
 const CATEGORY_DEFS = [
-[/^WM-C/,'コア・経営'],[/^WM-SP/,'季節特別興行・試合前'],[/^WM-S(?!E-)/,'メインメニュー・団体状況'],[/^WM-M/,'通常試合前'],[/^WM-E/,'大会・大型興行'],[/^WM-J/,'結果ジングル'],[/^WM-D/,'人物ドラマ'],[/^WM-H/,'歴史・セレモニー'],[/^WM-F/,'将来機能'],
+[/^WM-C/,'コア・経営'],[/^WM-SP/,'特別興行(季節イベント)'],[/^WM-S(?!E-)/,'メインメニュー・団体状況'],[/^WM-M/,'通常試合前'],[/^WM-E/,'決勝・天頂戦'],[/^WM-J/,'結果ジングル'],[/^WM-D/,'人物ドラマ'],[/^WM-H/,'歴史・セレモニー'],[/^WM-F/,'将来機能'],
 [/^WM-SE-UI/,'共通UI'],[/^WM-SE-MG/,'経営・数値'],[/^WM-SE-HR/,'人事・契約'],[/^WM-SE-SH/,'興行編成'],[/^WM-SE-BTA/,'試合追加音'],[/^WM-SE-CR/,'観客反応'],[/^WM-SE-RS/,'結果・達成'],[/^WM-SE-EV/,'物語イベント']
 ];
-const CAT_UNKNOWN='仕様外・未割当', CAT_INVENTORY='参考在庫';
+const CAT_UNKNOWN='転用プール', CAT_INVENTORY='参考在庫';
 const CATEGORY_ORDER = CATEGORY_DEFS.map(c=>c[1]).concat([CAT_UNKNOWN, CAT_INVENTORY]);
 const DECISION_LABEL = {adopted:'採用済',keep:'現状維持',regenerate:'作り直す',reject:'不採用'};
 const AUDIO_RE = /\.(mp3|ogg|wav|m4a|flac)$/i;
@@ -179,6 +176,7 @@ function fmtMB(n){return (n/1024/1024).toFixed(2)+' MB'}
 function fmtTime(t){if(!isFinite(t))return'–:––';t=Math.max(0,t|0);return `${(t/60)|0}:${String(t%60).padStart(2,'0')}`}
 function idFromName(name){const m=String(name).match(/WM-(?:SE-)?[A-Z]+\d+/i);if(!m)return'';const id=m[0].toUpperCase();return ALIAS[id]||id}
 function categoryFor(id){return (CATEGORY_DEFS.find(([re])=>re.test(id))||[])[1]||CAT_UNKNOWN}
+function catOf(g){return g.inventory?CAT_INVENTORY:(CATEGORY_OVERRIDE[g.id]||categoryFor(g.id))}
 
 /* ================= IndexedDB(ドロップ音源の永続化) ================= */
 function openDb(){return new Promise((res,rej)=>{const r=indexedDB.open('wm-audio-review-drops',1);
@@ -221,8 +219,10 @@ function buildGroups(){
     const cands=(candMap.get(spec.id)||[]).sort((a,b)=>a.name.localeCompare(b.name,'ja',{numeric:true}));
     groups.push({id:spec.id,spec,kind:spec.kind,candidates:cands,references:(REFERENCES[spec.id]||[]).flatMap(byName)});
   }
-  candMap.forEach((items,id)=>{if(!specMap.has(id))groups.push({id,spec:null,kind:'unknown',unknown:true,candidates:items.sort((a,b)=>a.name.localeCompare(b.name,'ja',{numeric:true})),references:[]})});
-  if(unassigned.length)groups.push({id:'WM-未割当ファイル',spec:null,kind:'unknown',unknown:true,candidates:unassigned,references:[]});
+  // 廃止・統合・仕様外IDのファイルは1つの転用プールへ集約(個別の廃止枠カードは作らない)
+  const pool=[...unassigned];
+  candMap.forEach((items,id)=>{if(!specMap.has(id))pool.push(...items)});
+  if(pool.length)groups.push({id:'転用プール',spec:null,kind:'unknown',unknown:true,candidates:pool.sort((a,b)=>a.name.localeCompare(b.name,'ja',{numeric:true})),references:[]});
   const linked=new Set(Object.values(REFERENCES).flat());
   const inv=refPool.filter(e=>!linked.has(e.name)).sort((a,b)=>a.name.localeCompare(b.name,'ja',{numeric:true}));
   if(inv.length)groups.push({id:'参考在庫',spec:null,kind:'unknown',inventory:true,candidates:[],references:inv});
@@ -230,7 +230,7 @@ function buildGroups(){
 
 /* ================= 描画 ================= */
 function statusOf(g){
-  if(!g.spec)return g.inventory?'試聴・ドラッグ用':'仕様外';
+  if(!g.spec)return g.inventory?'試聴・ドラッグ用':'転用素材';
   const d=saved[g.id]?.decision;
   if(d)return DECISION_LABEL[d]||d;
   return g.candidates.length?'未判断':'候補未収録';
@@ -269,15 +269,15 @@ function cueHtml(g){
       <details class="prompt"><summary>生成プロンプトを見る</summary><code>${esc(spec.prompt||'(コード合成予定)')}</code></details>
     </div>`;
   }else{
-    specBlock=`<div class="spec">${RETIRED_NOTES[g.id]?'<div class="spec-note">'+esc(RETIRED_NOTES[g.id])+'</div>':g.inventory
+    specBlock=`<div class="spec">${g.inventory
       ?'既存・参考音源の在庫。行を上の用途カードへドラッグすると、その枠の候補に追加できます。'
-      :'現行仕様にないID。行を正式な用途カードへドラッグして候補に加えるか、保留にしてください。'}</div>`;
+      :'廃止・統合された旧枠や仕様外IDの生成済み候補の置き場。行を上の用途カードへドラッグすると、その枠の候補として使えます。'}</div>`;
   }
   const refs=g.references.length?`<h3>現在の音・比較用</h3>${g.references.map(c=>rowHtml(g,c,true)).join('')}`:'';
   const cands=g.spec||g.unknown?`<h3>${g.spec?'新候補':'ファイル'} (${g.candidates.length})</h3>${g.candidates.length?g.candidates.map(c=>rowHtml(g,c,false)).join(''):'<div class="empty">候補ファイルなし — 下のドロップ欄から追加できます。</div>'}`:'';
   const invRows=g.inventory?g.references.map(c=>rowHtml(g,c,true)).join(''):'';
   return `<article class="cue ${s.decision==='adopted'?'is-adopted':''}" id="cue-${esc(g.id)}">
-    <div class="cue-head"><span class="cid">${esc(g.id)}</span><span class="ctitle">${esc(spec?spec.title:(g.inventory?'既存・参考音源':RETIRED_NOTES[g.id]?'廃止枠(候補は転用可)':'仕様外ファイル'))}</span>
+    <div class="cue-head"><span class="cid">${esc(g.id)}</span><span class="ctitle">${esc(spec?spec.title:(g.inventory?'既存・参考音源':'転用プール(旧枠・未割当の候補)'))}</span>
       ${spec?`<span class="chead-sub">${esc(spec.kind==='bgm'?'BGM':'効果音')}</span>`:''}
       <span class="badge ${badgeCls}">${esc(status)}</span></div>
     ${specBlock}
@@ -314,7 +314,7 @@ function visibleGroups(){
 function render(){
   const shown=visibleGroups();
   const byCat=new Map();
-  for(const g of shown){const cat=g.inventory?CAT_INVENTORY:categoryFor(g.id);if(!byCat.has(cat))byCat.set(cat,[]);byCat.get(cat).push(g)}
+  for(const g of shown){const cat=catOf(g);if(!byCat.has(cat))byCat.set(cat,[]);byCat.get(cat).push(g)}
   const root=el('#root');root.className='';
   root.innerHTML=CATEGORY_ORDER.filter(c=>byCat.has(c)).map(cat=>
     `<section class="cat" id="cat-${esc(cat)}"><h2>${esc(cat)}</h2>${byCat.get(cat).map(cueHtml).join('')}</section>`
@@ -326,7 +326,7 @@ function render(){
   const nCand=specGroups.reduce((n,g)=>n+g.candidates.length,0);
   el('#stats').textContent=`仕様 ${specGroups.length}枠 ／ 判断済 ${decided}(うち採用 ${adopted}) ／ 候補 ${nCand}ファイル ／ 表示 ${shown.length}件`;
   el('#catnav').innerHTML=CATEGORY_ORDER.map(cat=>{
-    const gs=groups.filter(g=>(g.inventory?CAT_INVENTORY:categoryFor(g.id))===cat);if(!gs.length)return'';
+    const gs=groups.filter(g=>catOf(g)===cat);if(!gs.length)return'';
     const sg=gs.filter(g=>g.spec),d=sg.filter(g=>saved[g.id]?.decision).length;
     const label=sg.length?`${d}/${sg.length}`:`${gs.reduce((n,g)=>n+g.candidates.length+g.references.length,0)}`;
     return `<span class="catchip ${sg.length&&d===sg.length?'alldone':''}" data-cat="${esc(cat)}">${esc(cat)}<span class="n">${label}</span></span>`;
