@@ -128,6 +128,12 @@ footer#player{position:fixed;left:0;right:0;bottom:0;background:#0b0e14f6;border
 const ALIAS = {'WM-SE-UI10':'WM-SE-UI09'};
 // 旧C02(メインメニュー)名で生成した候補はC03(通常経営)枠で比較する
 const CANDIDATE_ALIAS = {'WM-C02':'WM-C03'};
+// 廃止済みID(2026-07-23裁定: 経営画面は全タブC03の1曲。生成済み候補は他枠へ転用)
+const RETIRED_NOTES = {
+  'WM-C04':'選手一覧の専用曲は廃止(経営画面は全タブ C03 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
+  'WM-C05':'育成の専用曲は廃止(経営画面は全タブ C03 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。',
+  'WM-C06':'スカウトの専用曲は廃止(経営画面は全タブ C03 メインメニュー1曲)。この候補は団体状況・イベント系など他枠の候補としてドラッグで転用できます。'
+};
 // 制作計画で方針が明記済みの枠(選定は可能、注意書きのみ)
 const PLAN_NOTES = {
   'WM-C01':'制作計画では「既存オープニング曲を継続使用」が既定。差し替えるなら意図的な変更として扱うこと。',
@@ -262,7 +268,7 @@ function cueHtml(g){
       <details class="prompt"><summary>生成プロンプトを見る</summary><code>${esc(spec.prompt||'(コード合成予定)')}</code></details>
     </div>`;
   }else{
-    specBlock=`<div class="spec">${g.inventory
+    specBlock=`<div class="spec">${RETIRED_NOTES[g.id]?'<div class="spec-note">'+esc(RETIRED_NOTES[g.id])+'</div>':g.inventory
       ?'既存・参考音源の在庫。行を上の用途カードへドラッグすると、その枠の候補に追加できます。'
       :'現行仕様にないID。行を正式な用途カードへドラッグして候補に加えるか、保留にしてください。'}</div>`;
   }
@@ -270,7 +276,7 @@ function cueHtml(g){
   const cands=g.spec||g.unknown?`<h3>${g.spec?'新候補':'ファイル'} (${g.candidates.length})</h3>${g.candidates.length?g.candidates.map(c=>rowHtml(g,c,false)).join(''):'<div class="empty">候補ファイルなし — 下のドロップ欄から追加できます。</div>'}`:'';
   const invRows=g.inventory?g.references.map(c=>rowHtml(g,c,true)).join(''):'';
   return `<article class="cue ${s.decision==='adopted'?'is-adopted':''}" id="cue-${esc(g.id)}">
-    <div class="cue-head"><span class="cid">${esc(g.id)}</span><span class="ctitle">${esc(spec?spec.title:(g.inventory?'既存・参考音源':'仕様外ファイル'))}</span>
+    <div class="cue-head"><span class="cid">${esc(g.id)}</span><span class="ctitle">${esc(spec?spec.title:(g.inventory?'既存・参考音源':RETIRED_NOTES[g.id]?'廃止枠(候補は転用可)':'仕様外ファイル'))}</span>
       ${spec?`<span class="chead-sub">${esc(spec.kind==='bgm'?'BGM':'効果音')}</span>`:''}
       <span class="badge ${badgeCls}">${esc(status)}</span></div>
     ${specBlock}
