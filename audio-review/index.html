@@ -128,8 +128,6 @@ footer#player{position:fixed;left:0;right:0;bottom:0;background:#0b0e14f6;border
 const ALIAS = {'WM-SE-UI10':'WM-SE-UI09'};
 // 旧C02(メインメニュー)・旧C03(通常経営)名の候補は S00(メインメニュー)枠、旧M02(重量級)名は M01(通常試合前)枠で比較する(2026-07-23改番)
 const CANDIDATE_ALIAS = {'WM-C02':'WM-S00','WM-C03':'WM-S00','WM-M02':'WM-M01',
-  // 旧E01(特別興行)名義の候補はSP00(通常興行・進行)の候補として選定する(2026-07-23)
-  'WM-E01':'WM-SP00',
   // 旧E03(最終戦)はM05(ビッグマッチ2)、旧E05(天頂戦)はSP09へ改番・統合(2026-07-23)
   'WM-E03':'WM-M05','WM-E05':'WM-SP09',
   // J系結果ジングルはRS系(結果・達成SE)へ一本化(2026-07-23監査)
@@ -148,7 +146,6 @@ const REFERENCES = {
 'WM-C01':['bgm_kaimaku_v1.mp3'],'WM-C07':['bgm_tension_v1.mp3','Soft Bids, Sharp Minds.mp3'],'WM-C08':['bgm_kaimaku_v1.mp3'],'WM-C09':['bgm_tension_v1.mp3','High Stakes Pixel Bids.mp3','Soft Bids, Sharp Minds.mp3'],
 'WM-S00':['bgm_management_v1.mp3'],'WM-S01':['bgm_management_v1.mp3'],'WM-S02':['bgm_tension_v1.mp3'],'WM-S03':['bgm_tension_v1.mp3'],'WM-S04':['bgm_tension_v1.mp3'],'WM-S05':['bgm_tension_v1.mp3','iwa_gameover001.mp3'],
 'WM-M01':['bgm_battle_v1.mp3'],'WM-M03':['bgm_tension_v1.mp3','MusMus-BGM-125.mp3'],'WM-M04':['iwashiro_elevate_perfect.ogg'],'WM-M05':['iwashiro_elevate_perfect.ogg','MusMus-BGM-125.mp3'],'WM-M06':['bgm_tension_v1.mp3','f04_heartbeat_v1.mp3'],
-'WM-SP00':['bgm_battle_v1.mp3'],
 'WM-SP09':['MusMus-BGM-052.mp3','iwashiro_elevate_perfect.ogg'],
 'WM-SP01':['MusMus-BGM-052.mp3'],'WM-SP02':['MusMus-BGM-052.mp3'],'WM-SP03':['MusMus-BGM-052.mp3'],'WM-SP04':['MusMus-BGM-052.mp3'],'WM-SP05':['MusMus-BGM-052.mp3'],'WM-SP06':['MusMus-BGM-052.mp3'],'WM-SP07':['MusMus-BGM-052.mp3'],'WM-SP08':['MusMus-BGM-052.mp3','iwashiro_elevate_perfect.ogg'],
 'WM-D01':['bgm_tension_v1.mp3'],'WM-D04':['bgm_season_end_v1.mp3'],
