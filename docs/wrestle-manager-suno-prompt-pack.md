@@ -230,6 +230,12 @@ Instrumental NES/Famicom 2A03 final-match loop, 128 BPM, severe heroic theme, re
 Instrumental NES/Famicom 2A03 PPV event loop, 122 BPM, bold broadcast fanfare, glamorous pulse melody, championship pressure and packed-arena spectacle.
 ```
 
+### WM-E05 天頂戦 — 50秒 / Music
+
+```text
+Instrumental NES/Famicom 2A03 grand-summit tournament loop, 116 BPM, solemn ceremonial fanfare motif above relentless battle drums, once-in-four-years championship gravity, sixteen challengers climbing toward the zenith, towering and sacred, seamless loop.
+```
+
 ---
 
 ## F. 試合・大会結果ジングル
