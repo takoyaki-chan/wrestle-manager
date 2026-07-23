@@ -136,10 +136,16 @@ Instrumental NES/Famicom 2A03 wrestling battle loop, 128 BPM, driving pulse lead
 Instrumental NES/Famicom 2A03 grudge-match battle loop, 124 BPM, hostile minor melody, relentless bass, sharp noise drums, bitter rivals trading violent revenge in the ring, seamless loop.
 ```
 
-### WM-M04 王座戦 — 40秒 / Music
+### WM-M04 ビッグマッチ — 40秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 championship battle loop, 120 BPM, noble minor fanfare, driving bass and drums, enormous stakes and furious combat for the belt, seamless loop.
+Instrumental NES/Famicom 2A03 big-match battle loop, 120 BPM, noble minor fanfare, driving bass and drums, enormous championship stakes and furious combat, seamless loop.
+```
+
+### WM-M05 ビッグマッチ直前 — 40秒 / Music
+
+```text
+Instrumental NES/Famicom 2A03 big-match faceoff loop, 74 BPM, solemn sparse pulse motif over a deep triangle drone, slow heartbeat rhythm, hushed crowd before ring introductions, two rivals locking eyes before the biggest bout, heavy ceremonial anticipation, seamless loop.
 ```
 
 ---
