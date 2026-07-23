@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>モックアップ: PPV GRAND FINAL テレビ中継画面 v1</title>
+<style>
+/* ── モックアップ用トークン(実装時は --stage-* トークンへ移行) ── */
+:root{
+  --stage-bg:#000;
+  --stage-bg-deep:#050505;
+  --stage-panel:#101014;
+  --stage-panel-2:#16161c;
+  --stage-line:#2a2a33;
+  --gold:#e8bd58;
+  --gold-light:#f5d98d;
+  --text:#f0ede6;
+  --text-sub:#a8a49a;
+  --live-red:#e2493b;
+  --win:#5bd095;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#1c1a17;color:var(--text);font-family:"Yu Gothic UI","Hiragino Sans",sans-serif;line-height:1.6;padding:26px 14px 60px}
+.note{max-width:760px;margin:0 auto 14px;font-size:12.5px;color:#c9c2b4;background:#2a2620;border:1px solid #4a4438;border-radius:8px;padding:10px 14px}
+.scene-label{max-width:760px;margin:30px auto 8px;font-size:13px;font-weight:800;color:#e8bd58}
+.spec{max-width:760px;margin:6px auto 0;font-size:11.5px;color:#8f897c}
+
+/* ── テレビ受像機フレーム ── */
+.tv{max-width:760px;margin:0 auto;background:var(--stage-bg);border-radius:14px;border:1px solid #333;
+  box-shadow:0 0 0 6px #17171a, 0 0 0 7px #3a3a41, 0 18px 50px #000c;overflow:hidden;position:relative}
+.tv::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0 2px,#ffffff05 2px 3px);} /* 走査線(ごく薄く) */
+.screen{position:relative;min-height:430px;background:radial-gradient(120% 90% at 50% 0%,#14141a 0%,var(--stage-bg) 55%)}
+
+/* 放送クロム(局ロゴ・LIVE・時刻) */
+.chrome-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;z-index:5}
+.ch-logo{font-size:11px;font-weight:900;letter-spacing:.14em;color:#fffd;background:#ffffff14;border:1px solid #ffffff2b;padding:3px 9px;border-radius:4px}
+.live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:900;letter-spacing:.1em;color:#fff;background:var(--live-red);padding:3px 10px;border-radius:4px}
+.live::before{content:'';width:7px;height:7px;border-radius:50%;background:#fff;animation:bl 1.2s infinite}
+@keyframes bl{50%{opacity:.25}}
+
+/* 下部テロップ帯 */
+.telop{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#000a 0%,#000e 100%);border-top:2px solid var(--gold);padding:8px 14px 9px;z-index:5}
+.telop-cat{display:inline-block;font-size:10px;font-weight:900;color:#111;background:var(--gold);border-radius:3px;padding:1px 7px;margin-right:9px;vertical-align:1px}
+.telop-main{font-size:14px;font-weight:800}
+.telop-sub{font-size:11px;color:var(--text-sub);margin-top:1px}
+
+/* 場面1: 放送オープニング */
+.op{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px;text-align:center;padding:40px 20px 70px}
+.op-emblem{font-size:52px;color:var(--gold);text-shadow:0 0 26px #e8bd5866}
+.op-kicker{font-size:12px;letter-spacing:.42em;color:var(--text-sub);margin-top:14px}
+.op-title{font-size:34px;font-weight:900;letter-spacing:.06em;color:var(--gold-light);margin-top:6px;text-shadow:0 2px 18px #e8bd5833}
+.op-sub{font-size:13px;color:var(--text-sub);margin-top:10px}
+.op-badge{margin-top:18px;font-size:12px;color:#111;background:linear-gradient(180deg,var(--gold-light),var(--gold));font-weight:900;padding:5px 18px;border-radius:999px}
+
+/* 場面2: 対戦カード */
+.card-list{padding:52px 22px 66px}
+.h-row{font-size:12px;font-weight:900;letter-spacing:.3em;color:var(--gold);text-align:center;margin-bottom:14px}
+.m-row{display:grid;grid-template-columns:1fr 46px 1fr;align-items:center;gap:8px;background:var(--stage-panel);border:1px solid var(--stage-line);border-radius:9px;padding:9px 14px;margin-bottom:8px}
+.m-row.is-main{background:linear-gradient(180deg,#1d1708,#141005);border-color:#8a6d2b}
+.w-cell{display:flex;align-items:center;gap:9px;min-width:0}
+.w-cell.right{flex-direction:row-reverse;text-align:right}
+.face{width:34px;height:34px;border-radius:50%;background:#2c2c35;border:1px solid #44444e;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#cfcabb;flex:none}
+.is-main .face{border-color:var(--gold)}
+.w-name{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w-org{font-size:10px;color:var(--text-sub)}
+.vs{font-size:11px;font-weight:900;color:var(--text-sub);text-align:center}
+.is-main .vs{color:var(--gold)}
+.m-tag{grid-column:1/-1;font-size:10px;color:var(--gold);letter-spacing:.2em;text-align:center;margin:-2px 0 2px}
+
+/* 場面3: 速報テロップ(試合結果) */
+.flash{padding:60px 22px 70px;display:flex;flex-direction:column;justify-content:center;min-height:430px}
+.flash-band{background:linear-gradient(90deg,#000 0%,#1a1408 18%,#1a1408 82%,#000 100%);border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);padding:16px 18px;text-align:center}
+.flash-kicker{font-size:11px;font-weight:900;letter-spacing:.34em;color:var(--gold)}
+.flash-win{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
+.flash-face{width:62px;height:62px;border-radius:50%;background:#2c2c35;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:var(--gold-light)}
+.flash-name{font-size:26px;font-weight:900}
+.flash-name small{display:block;font-size:11px;color:var(--text-sub);font-weight:700;letter-spacing:.1em}
+.flash-detail{font-size:12.5px;color:var(--text-sub);margin-top:9px}
+.flash-detail b{color:var(--gold-light)}
+.commentary{margin-top:22px;background:var(--stage-panel);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px}
+.commentary .who{font-size:10px;color:var(--text-sub);letter-spacing:.15em;margin-bottom:2px}
+.progress-dots{display:flex;gap:6px;justify-content:center;margin-top:26px}
+.dot{width:8px;height:8px;border-radius:50%;background:#33333c}
+.dot.done{background:var(--gold)}
+
+/* 場面4: メインイベント */
+.summit{padding:56px 22px 70px;text-align:center}
+.summit-kicker{font-size:12px;font-weight:900;letter-spacing:.4em;color:var(--gold)}
+.summit-vs{display:flex;align-items:center;justify-content:center;gap:26px;margin:22px 0 8px}
+.s-face{width:92px;height:92px;border-radius:50%;background:#2c2c35;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:var(--gold-light);box-shadow:0 0 30px #e8bd5822}
+.s-name{font-size:15px;font-weight:900;margin-top:8px}
+.s-org{font-size:10.5px;color:var(--text-sub)}
+.summit-vs .vs-big{font-size:22px;font-weight:900;color:var(--gold)}
+.summit-result{margin-top:18px;font-size:13px;color:var(--text-sub)}
+.summit-result .win-line{font-size:19px;font-weight:900;color:var(--gold-light);margin-top:4px}
+
+/* 場面5: 放送終了 */
+.ending{padding:70px 22px 80px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px}
+.end-msg{font-size:15px;color:var(--text);max-width:430px}
+.end-msg b{color:var(--gold-light)}
+.end-note{font-size:12px;color:var(--text-sub);margin-top:14px}
+.btn{margin-top:26px;background:linear-gradient(180deg,var(--gold-light),var(--gold));color:#151004;font-weight:900;font-size:14px;border:none;border-radius:8px;padding:12px 34px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="note">
+<b>モックアップ v1 — PPV GRAND FINAL テレビ中継画面(ppvTV の作り直し)</b><br>
+現状は「結果一覧ポップアップ1枚」で終わるところを、実PPV画面の構造をテレビ放送のフレームに載せ替えた5場面構成にする案です。
+全場面共通: テレビ受像機フレーム(薄い走査線)+局ロゴ+LIVEバッジ+下部テロップ帯。クリックで場面を進める(実況コメントは1試合ごとに切替)。
+色は Stage カテゴリ(純黒+金)。実装時は --stage-* トークンへ移行。
+</div>
+
+<!-- ══ 場面① 放送オープニング ══ -->
+<div class="scene-label">場面① 放送オープニング(局アイデント)</div>
+<div class="tv"><div class="screen">
+  <div class="chrome-top"><span class="ch-logo">WRESTLE TV</span><span class="live">LIVE</span></div>
+  <div class="op">
+    <div class="op-emblem">♛</div>
+    <div class="op-kicker">YEAR-END SPECIAL</div>
+    <div class="op-title">GRAND FINAL</div>
+    <div class="op-sub">年間総決算ペイ・パー・ビュー 「黄金天下一」</div>
+    <div class="op-badge">全国生中継</div>
+  </div>
+  <div class="telop"><span class="telop-cat">中継</span><span class="telop-main">年末恒例・女子プロレス年間総決算</span>
+  <div class="telop-sub">今夜、業界の頂点が決まる — 4団体の代表が集結</div></div>
+</div></div>
+<div class="spec">仕様メモ: 大会名はG.ppvNameを表示。BGMはSP07/08(冬・GRAND FINAL進行曲)を使用。</div>
+
+<!-- ══ 場面② 対戦カード発表 ══ -->
+<div class="scene-label">場面② 本日の対戦カード(テロップ風)</div>
+<div class="tv"><div class="screen">
+  <div class="chrome-top"><span class="ch-logo">WRESTLE TV</span><span class="live">LIVE</span></div>
+  <div class="card-list">
+    <div class="h-row">TONIGHT'S CARD</div>
+    <div class="m-row is-main">
+      <div class="m-tag">MAIN EVENT — 頂上決戦</div>
+      <div class="w-cell"><div class="face">紅</div><div><div class="w-name">紅崎 玲央</div><div class="w-org">スターダム・レボリューション</div></div></div>
+      <div class="vs">VS</div>
+      <div class="w-cell right"><div class="face">白</div><div><div class="w-name">白鳥 舞香</div><div class="w-org">アイス・リボンズ</div></div></div>
+    </div>
+    <div class="m-row">
+      <div class="w-cell"><div class="face">青</div><div><div class="w-name">青葉 つばさ</div><div class="w-org">スターダム・レボリューション</div></div></div>
+      <div class="vs">VS</div>
+      <div class="w-cell right"><div class="face">桜</div><div><div class="w-name">桜庭 ちほ</div><div class="w-org">マーベラス・プロ</div></div></div>
+    </div>
+    <div class="m-row">
+      <div class="w-cell"><div class="face">岩</div><div><div class="w-name">岩谷 まこ</div><div class="w-org">アイス・リボンズ</div></div></div>
+      <div class="vs">VS</div>
+      <div class="w-cell right"><div class="face">火</div><div><div class="w-name">火野 りんご</div><div class="w-org">マーベラス・プロ</div></div></div>
+    </div>
+  </div>
+  <div class="telop"><span class="telop-cat">カード</span><span class="telop-main">全7試合 — メインは両団体エースの頂上決戦</span>
+  <div class="telop-sub">うちの団体の名前は…今年もここにない。</div></div>
+</div></div>
+<div class="spec">仕様メモ: 実PPVのカード紹介(showPPVMatchCardIntro)と同データ。顔写真は実ポートレートを使用(モックはイニシャル)。</div>
+
+<!-- ══ 場面③ 試合速報(1試合ずつ) ══ -->
+<div class="scene-label">場面③ 試合速報テロップ(クリックで1試合ずつ進む)</div>
+<div class="tv"><div class="screen">
+  <div class="chrome-top"><span class="ch-logo">WRESTLE TV</span><span class="live">LIVE</span></div>
+  <div class="flash">
+    <div class="flash-band">
+      <div class="flash-kicker">RESULT — 第3試合</div>
+      <div class="flash-win">
+        <div class="flash-face">岩</div>
+        <div class="flash-name">岩谷 まこ<small>アイス・リボンズ</small></div>
+      </div>
+      <div class="flash-detail">12分04秒 <b>ムーンサルト・プレス</b> → 体固め ／ MQ <b>78</b> ★★★★</div>
+    </div>
+    <div class="commentary">
+      <div class="who">実況</div>
+      「決まったーッ!! 最後は代名詞のムーンサルト! 会場、割れんばかりの拍手です!」
+    </div>
+    <div class="progress-dots">
+      <span class="dot done"></span><span class="dot done"></span><span class="dot done"></span>
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+  </div>
+  <div class="telop"><span class="telop-cat">速報</span><span class="telop-main">第3試合 岩谷まこ 勝利</span>
+  <div class="telop-sub">次はセミファイナル — 画面の前で正座して見届ける。</div></div>
+</div></div>
+<div class="spec">仕様メモ: 実況コメントはMQ帯・決まり手タイプで分岐(高MQ=絶叫系/低MQ=淡々)。進行ドットで残試合を可視化。SEはRS系を音量控えめで(テレビ越し感)。</div>
+
+<!-- ══ 場面④ メインイベント(頂上決戦) ══ -->
+<div class="scene-label">場面④ メインイベント 頂上決戦(特別演出)</div>
+<div class="tv"><div class="screen">
+  <div class="chrome-top"><span class="ch-logo">WRESTLE TV</span><span class="live">LIVE</span></div>
+  <div class="summit">
+    <div class="summit-kicker">MAIN EVENT ─ 頂上決戦</div>
+    <div class="summit-vs">
+      <div><div class="s-face">紅</div><div class="s-name">紅崎 玲央</div><div class="s-org">スターダム・レボリューション</div></div>
+      <div class="vs-big">VS</div>
+      <div><div class="s-face">白</div><div class="s-name">白鳥 舞香</div><div class="s-org">アイス・リボンズ</div></div>
+    </div>
+    <div class="summit-result">
+      18分44秒、死闘の末に——
+      <div class="win-line">🏆 紅崎 玲央、業界の頂点へ</div>
+    </div>
+  </div>
+  <div class="telop"><span class="telop-cat">速報</span><span class="telop-main">頂上決戦 決着 — MQ 92 ★★★★★</span>
+  <div class="telop-sub">これが、頂点の景色。</div></div>
+</div></div>
+<div class="spec">仕様メモ: メインのみ大型VS演出→結果発表の2段階。BGMはM05(ビッグマッチ2)のテレビ音量版、決着でRS04(最高栄誉)を控えめに。</div>
+
+<!-- ══ 場面⑤ 放送終了 ══ -->
+<div class="scene-label">場面⑤ 放送終了(社長の独白で締め)</div>
+<div class="tv"><div class="screen">
+  <div class="chrome-top"><span class="ch-logo">WRESTLE TV</span><span class="live" style="background:#3a3a41">放送終了</span></div>
+  <div class="ending">
+    <div class="end-msg">テレビの明かりを消す。<br><br>
+    今夜の歓声は、私たちのものではなかった。<br>
+    でも——<b>来年、あの画面の中に立つのはうちの選手たちだ。</b></div>
+    <div class="end-note">団体人気30以上でPPV GRAND FINALへの出場資格を獲得できます</div>
+    <button class="btn">事務所へ戻る</button>
+  </div>
+  <div class="telop"><span class="telop-cat">次回</span><span class="telop-main">また来年 — GRAND FINAL</span>
+  <div class="telop-sub">ご視聴ありがとうございました</div></div>
+</div></div>
+<div class="spec">仕様メモ: 締めの独白は毎年固定にせず数パターン(初視聴/連続視聴年数/あと一歩だった年で分岐)。閉じると従来どおり週次処理→オフシーズンへ。</div>
+
+</body>
+</html>
