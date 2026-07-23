@@ -9223,6 +9223,90 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 
 </style>
 <link rel="stylesheet" href="mobile.css">
+<style id="ptv-style">
+/* ══ PPV GRAND FINAL テレビ中継 (ptv-*) — Stageカテゴリ ══
+   Stage専用トークン初導入(docs/ui/01-foundations.md 1-4。:root定義のみ16進可) */
+:root{
+  --stage-bg:#000;
+  --stage-panel:#101014;
+  --stage-panel-2:#16161c;
+  --stage-line:#2a2a33;
+  --stage-live:#e2493b;
+  --stage-text:#f0ede6;
+  --stage-text-sub:#a8a49a;
+}
+.ptv-tv{max-width:720px;margin:0 auto;background:var(--stage-bg);border-radius:14px;border:1px solid var(--stage-line);
+  box-shadow:0 0 0 6px #17171a,0 0 0 7px #3a3a41,0 18px 50px rgba(0,0,0,.8);overflow:hidden;position:relative;cursor:pointer}
+.ptv-tv::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(255,255,255,.02) 2px 3px)}
+.ptv-screen{position:relative;min-height:430px;color:var(--stage-text);
+  background:radial-gradient(120% 90% at 50% 0%,#14141a 0%,var(--stage-bg) 55%)}
+.ptv-chrome{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;z-index:5}
+.ptv-ch{font-size:11px;font-weight:900;letter-spacing:.14em;color:rgba(255,255,255,.87);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.17);padding:3px 9px;border-radius:4px}
+.ptv-live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:900;letter-spacing:.1em;color:#fff;background:var(--stage-live);padding:3px 10px;border-radius:4px}
+.ptv-live::before{content:'';width:7px;height:7px;border-radius:50%;background:#fff;animation:ptvbl 1.2s infinite}
+.ptv-live.is-off{background:#3a3a41}.ptv-live.is-off::before{animation:none;opacity:.4}
+@keyframes ptvbl{50%{opacity:.25}}
+.ptv-telop{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,.65),rgba(0,0,0,.9));border-top:2px solid var(--gold);padding:8px 14px 9px;z-index:5}
+.ptv-telop-cat{display:inline-block;font-size:10px;font-weight:900;color:#111;background:var(--gold);border-radius:3px;padding:1px 7px;margin-right:9px;vertical-align:1px}
+.ptv-telop-main{font-size:13.5px;font-weight:800}
+.ptv-telop-sub{font-size:11px;color:var(--stage-text-sub);margin-top:1px}
+.ptv-hint{position:absolute;right:14px;bottom:52px;font-size:10.5px;color:var(--stage-text-sub);z-index:5;animation:ptvbl 2.4s infinite}
+.ptv-face{width:38px;height:38px;border-radius:50%;overflow:hidden;border:1px solid #44444e;flex:none;background:var(--stage-panel-2)}
+.ptv-face img{width:100%;height:100%;object-fit:cover;display:block}
+.ptv-face.is-big{width:92px;height:92px;border:2px solid var(--gold);box-shadow:0 0 30px rgba(232,189,88,.13)}
+/* 場面1 OP */
+.ptv-op{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px;text-align:center;padding:40px 20px 70px}
+.ptv-op-emblem{font-size:52px;color:var(--gold);text-shadow:0 0 26px rgba(232,189,88,.4)}
+.ptv-op-kicker{font-size:12px;letter-spacing:.42em;color:var(--stage-text-sub);margin-top:14px}
+.ptv-op-title{font-size:34px;font-weight:900;letter-spacing:.06em;color:var(--gold-light,#f5d98d);margin-top:6px;text-shadow:0 2px 18px rgba(232,189,88,.2)}
+.ptv-op-sub{font-size:13px;color:var(--stage-text-sub);margin-top:10px}
+.ptv-op-badge{margin-top:18px;font-size:12px;color:#111;background:linear-gradient(180deg,var(--gold-light,#f5d98d),var(--gold));font-weight:900;padding:5px 18px;border-radius:999px}
+/* 場面2 カード */
+.ptv-cardlist{padding:52px 22px 78px}
+.ptv-h-row{font-size:12px;font-weight:900;letter-spacing:.3em;color:var(--gold);text-align:center;margin-bottom:14px}
+.ptv-mrow{display:grid;grid-template-columns:1fr 46px 1fr;align-items:center;gap:8px;background:var(--stage-panel);border:1px solid var(--stage-line);border-radius:9px;padding:9px 14px;margin-bottom:8px}
+.ptv-mrow.is-main{background:linear-gradient(180deg,#1d1708,#141005);border-color:#8a6d2b}
+.ptv-mtag{grid-column:1/-1;font-size:10px;color:var(--gold);letter-spacing:.2em;text-align:center;margin:-2px 0 2px}
+.ptv-wcell{display:flex;align-items:center;gap:9px;min-width:0}
+.ptv-wcell.is-right{flex-direction:row;justify-content:flex-end;text-align:right}
+.ptv-wname{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptv-worg{font-size:10px;color:var(--stage-text-sub)}
+.ptv-vs{font-size:11px;font-weight:900;color:var(--stage-text-sub);text-align:center}
+.ptv-mrow.is-main .ptv-vs{color:var(--gold)}
+/* 場面3 速報 */
+.ptv-flash{padding:60px 22px 82px;display:flex;flex-direction:column;justify-content:center;min-height:430px}
+.ptv-flash-band{background:linear-gradient(90deg,rgba(0,0,0,0) 0%,#1a1408 18%,#1a1408 82%,rgba(0,0,0,0) 100%);border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);padding:16px 18px;text-align:center}
+.ptv-flash-kicker{font-size:11px;font-weight:900;letter-spacing:.34em;color:var(--gold)}
+.ptv-flash-win{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
+.ptv-flash-win .ptv-face{width:62px;height:62px;border:2px solid var(--gold)}
+.ptv-flash-name{font-size:24px;font-weight:900;text-align:left}
+.ptv-flash-name small{display:block;font-size:11px;color:var(--stage-text-sub);font-weight:700;letter-spacing:.1em}
+.ptv-flash-detail{font-size:12.5px;color:var(--stage-text-sub);margin-top:9px}
+.ptv-flash-detail b{color:var(--gold-light,#f5d98d)}
+.ptv-commentary{margin-top:22px;background:var(--stage-panel);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px}
+.ptv-who{font-size:10px;color:var(--stage-text-sub);letter-spacing:.15em;margin-bottom:2px}
+.ptv-dots{display:flex;gap:6px;justify-content:center;margin-top:24px}
+.ptv-dot{width:8px;height:8px;border-radius:50%;background:#33333c}
+.ptv-dot.done{background:var(--gold)}
+/* 場面4 頂上決戦 */
+.ptv-summit{padding:56px 22px 82px;text-align:center;min-height:430px;display:flex;flex-direction:column;justify-content:center}
+.ptv-summit-kicker{font-size:12px;font-weight:900;letter-spacing:.4em;color:var(--gold)}
+.ptv-summit-vs{display:flex;align-items:flex-start;justify-content:center;gap:26px;margin:22px 0 8px}
+.ptv-summit-vs .ptv-face{margin:0 auto}
+.ptv-sname{font-size:15px;font-weight:900;margin-top:8px}
+.ptv-sorg{font-size:10.5px;color:var(--stage-text-sub)}
+.ptv-vs-big{font-size:22px;font-weight:900;color:var(--gold);align-self:center}
+.ptv-summit-result{margin-top:16px;font-size:13px;color:var(--stage-text-sub)}
+.ptv-win-line{font-size:19px;font-weight:900;color:var(--gold-light,#f5d98d);margin-top:4px}
+/* 場面5 放送終了 */
+.ptv-ending{padding:70px 22px 86px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px}
+.ptv-end-msg{font-size:15px;max-width:430px;line-height:1.9}
+.ptv-end-msg b{color:var(--gold-light,#f5d98d)}
+.ptv-end-note{font-size:12px;color:var(--stage-text-sub);margin-top:14px}
+.ptv-btn{margin-top:26px;background:linear-gradient(180deg,var(--gold-light,#f5d98d),var(--gold));color:#151004;font-weight:900;font-size:14px;border:none;border-radius:8px;padding:12px 34px;cursor:pointer}
+.ptv-btn:hover{filter:brightness(1.08)}
+</style>
 </head>
 <body>
 <div class="app">

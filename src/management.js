@@ -14099,7 +14099,109 @@ const Engine = {
         owr = Engine.orgWar.recordPPVMatch(owr, winnerOrg, loserOrg, state.season, state.week);
       });
 
-      return { card, results, battlePoints: bp, orgWarRecord: owr, events };
+      // ── TV観戦でも実績を残す(2026-07-23): h2h・サミット戦績・新聞素材を
+      //    プレイヤー参加時(finalizePPV/applyPPVResults)と同等に記録する ──
+      // 1. h2h: 全試合をPPVステージとして記録
+      let h2h = { ...(state.h2h || {}) };
+      results.forEach((r, idx) => {
+        const match = card[idx];
+        h2h = Engine.h2h.update(h2h, match.left.id, match.right.id, r.winner, r.mq,
+          false, true, state.season, state.week, 'ppv',
+          match.left._ppvOrgId, match.right._ppvOrgId);
+      });
+
+      // 2. サミット戦績: ppvMainEventWins + careerRecord history(ppvMainEvent) をAIロスターへ
+      let aiOrgsPatch = null;
+      let newsSummitResult = null;
+      if (summitPair) {
+        const sIdx = card.findIndex(m => m.isSummit);
+        if (sIdx >= 0 && results[sIdx].winner !== 'draw') {
+          const sr = results[sIdx];
+          const sm = card[sIdx];
+          const winnerF = sr.winner === 'left' ? sm.left : sm.right;
+          const loserF = sr.winner === 'left' ? sm.right : sm.left;
+          const _applyToAI = (orgs, fid, fn) => {
+            const next = { ...orgs };
+            Object.keys(next).forEach(orgId => {
+              const od = next[orgId];
+              if (od && od.roster && od.roster.some(f => f.id === fid)) {
+                next[orgId] = { ...od, roster: fn(od.roster) };
+              }
+            });
+            return next;
+          };
+          const _updatePpvWins = (fighters, fid) => fighters.map(f => {
+            if (f.id !== fid) return f;
+            const rec = { ...(f.careerRecord || Engine.career.createRecord()) };
+            rec.ppvMainEventWins = (rec.ppvMainEventWins || 0) + 1;
+            return { ...f, careerRecord: rec };
+          });
+          const _addPpvEvent = (fighters, fid, won, opponentName) => fighters.map(f => {
+            if (f.id !== fid) return f;
+            const cr = f.careerRecord || Engine.career.createRecord();
+            const ev = { type: 'ppvMainEvent', season: state.season, week: state.week, won, isSummit: true, opponentName };
+            return { ...f, careerRecord: { ...cr, history: [...(cr.history || []), ev] } };
+          });
+          aiOrgsPatch = _applyToAI(state.aiOrgs || {}, winnerF.id,
+            (rs) => _addPpvEvent(_updatePpvWins(rs, winnerF.id), winnerF.id, true, loserF.name));
+          aiOrgsPatch = _applyToAI(aiOrgsPatch, loserF.id,
+            (rs) => _addPpvEvent(rs, loserF.id, false, winnerF.name));
+
+          // 3. 新聞素材: 頂上決戦結果(TV観戦=playerInvolved:false)
+          const orgNameOf = (orgId) => (state.aiOrgs?.[orgId]?.name) || '他団体';
+          const rankings2 = state.rankings || [];
+          const winnerSide = sr.winner;
+          newsSummitResult = {
+            playerInvolved: false,
+            playerName: sm.left.name, playerId: sm.left.id,
+            playerOrgName: orgNameOf(sm.left._ppvOrgId),
+            aiName: sm.right.name, aiId: sm.right.id,
+            aiOrgName: orgNameOf(sm.right._ppvOrgId),
+            opponentName: orgNameOf(sm.right._ppvOrgId),
+            won: false,
+            winnerName: winnerF.name, winnerId: winnerF.id,
+            loserName: loserF.name, loserId: loserF.id,
+            mq: sr.mq, finType: sr.finType, finMove: sr.finMove,
+            finishPhase: sr.finishPhase, turns: sr.turns,
+            winnerHpFinal: winnerSide === 'left' ? (sr.hpLeft?.final ?? 0) : (sr.hpRight?.final ?? 0),
+            winnerHpMax: winnerSide === 'left' ? (sr.hpLeft?.max ?? 100) : (sr.hpRight?.max ?? 100),
+            loserHpFinal: winnerSide === 'left' ? (sr.hpRight?.final ?? 0) : (sr.hpLeft?.final ?? 0),
+            loserHpMax: winnerSide === 'left' ? (sr.hpRight?.max ?? 100) : (sr.hpLeft?.max ?? 100),
+            playerRank: (rankings2.find(x => x.orgId === sm.left._ppvOrgId) || {}).rank || null,
+            aiRank: (rankings2.find(x => x.orgId === sm.right._ppvOrgId) || {}).rank || null,
+            priorH2h: null,
+            winnerLine: null,
+          };
+        }
+      }
+
+      // 4. 新聞素材: アンダーカード上位3件
+      const orgNameOfU = (orgId) => (state.aiOrgs?.[orgId]?.name) || '他団体';
+      const undercards = [];
+      results.forEach((r, idx) => {
+        const match = card[idx];
+        if (match.isSummit) return;
+        if (r.winner !== 'left' && r.winner !== 'right') return;
+        const winnerF = r.winner === 'left' ? match.left : match.right;
+        const loserF = r.winner === 'left' ? match.right : match.left;
+        undercards.push({
+          winnerName: winnerF.name, winnerId: winnerF.id,
+          winnerOrgName: orgNameOfU(winnerF._ppvOrgId), winnerOrgId: winnerF._ppvOrgId,
+          loserName: loserF.name, loserId: loserF.id,
+          loserOrgName: orgNameOfU(loserF._ppvOrgId), loserOrgId: loserF._ppvOrgId,
+          mq: r.mq || 0, finType: r.finType || '', finMove: r.finMove || '',
+          turns: r.turns || 0, isTitleMatch: false,
+        });
+      });
+      undercards.sort((a, b) => b.mq - a.mq);
+
+      return {
+        card, results, battlePoints: bp, orgWarRecord: owr, events,
+        h2h,
+        aiOrgs: aiOrgsPatch,          // null = サミット記録なし(引き分け等)
+        newsSummitResult,             // null = サミットなし
+        newsPpvUndercards: undercards.slice(0, 3),
+      };
     },
   },
 

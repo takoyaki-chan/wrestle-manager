@@ -71,6 +71,8 @@ const Audio = (() => {
     bigMatch:   { file: '../bgm/production-ogg/wm_bgm_m04_v01.ogg', vol: 0.15 }, // WM-M04 ビッグマッチ
     tournament: { file: '../bgm/MusMus-BGM-052.mp3', vol: 0.12 },          // Phase 2でイベント別(SP01〜SP09)に分岐予定
     war:        { file: '../bgm/MusMus-BGM-125.mp3', vol: 0.10 },          // Phase 2で秋対抗戦=SP05/06等に分岐予定
+    grandFinalProgress: { file: '../bgm/production-ogg/wm_bgm_sp07_v01.ogg', vol: 0.13 }, // WM-SP07 冬・GRAND FINAL進行(TV中継)
+    grandFinalMain:     { file: '../bgm/production-ogg/wm_bgm_m05_v01.ogg', vol: 0.13 }, // WM-M05 ビッグマッチ2(頂上決戦・TV中継)
   };
   const JINGLE_MIX = { victory:0.38, championship:0.29 };
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
@@ -13758,19 +13760,24 @@ App.initPPVTV = function() {
   const tvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF5));
   const tvResult = Engine.ppv.simulateTVResults(G, tvRng);
 
-  // battlePoints + orgWarRecord 反映
-  G = { ...G, battlePoints: tvResult.battlePoints, orgWarRecord: tvResult.orgWarRecord || G.orgWarRecord, gameLog: [...G.gameLog, ...tvResult.events] };
+  // 実績反映: battlePoints + orgWarRecord + h2h + サミット戦績(AIロスター) + 新聞素材
+  G = {
+    ...G,
+    battlePoints: tvResult.battlePoints,
+    orgWarRecord: tvResult.orgWarRecord || G.orgWarRecord,
+    h2h: tvResult.h2h || G.h2h,
+    aiOrgs: tvResult.aiOrgs || G.aiOrgs,
+    _newsSummitResult: tvResult.newsSummitResult || G._newsSummitResult,
+    _newsPpvUndercards: (tvResult.newsPpvUndercards && tvResult.newsPpvUndercards.length > 0)
+      ? tvResult.newsPpvUndercards : G._newsPpvUndercards,
+    ppvTvWatchCount: (G.ppvTvWatchCount || 0) + 1,
+    gameLog: [...G.gameLog, ...tvResult.events],
+  };
+  Storage.autoSave();
 
+  // テレビ中継5場面(放送OP→カード→速報→頂上決戦→放送終了)
   _chainEventPopupQueueEmpty(() => {
-    renderPPVTVResult(tvResult.card, tvResult.results, G.ppvName);
-  });
-
-  showEventPopup({
-    type: 'system',
-    emoji: '📺',
-    tone: 'gold',
-    name: G.ppvName || 'PPV GRAND FINAL',
-    message: 'ついに年間総決算のPPV当日です。あと一歩届かず、私たちの名前は今夜のカードにありません。悔しさはありますが、まずは他団体の大一番をテレビで確認しましょう。'
+    renderPPVTvBroadcast(tvResult.card, tvResult.results, G.ppvName);
   });
 };
 

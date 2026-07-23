@@ -6193,112 +6193,171 @@ function _ppvBonusTags(r, mqBonuses, di) {
   return tags;
 }
 
-function renderPPVTVResult(card, results, ppvName) {
+// ── PPV GRAND FINAL テレビ中継（5場面構成・docs/ui/mockups/ppv-tv-broadcast-mockup.html v1 準拠）──
+// 場面: 放送OP → 対戦カード → 試合速報(1試合ずつ) → 頂上決戦(VS→決着) → 放送終了
+// カード・結果は Engine.ppv.simulateTVResults の実選手・実シミュレーション値をそのまま表示する
+function renderPPVTvBroadcast(card, results, ppvName) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
 
-  const validResults = results.filter((r, i) => card[i] && r);
-  const avgMQ = validResults.length > 0 ? Math.round(validResults.reduce((s, r) => s + r.mq, 0) / validResults.length) : 0;
-  const bestMQ = validResults.length > 0 ? Math.max(...validResults.map(r => r.mq)) : 0;
-
-  const total = card.length;
   const summitIdx = card.findIndex(m => m.isSummit);
-  const sortedIdx = [];
-  if (summitIdx >= 0) sortedIdx.push(summitIdx);
-  for (let i = total - 1; i >= 0; i--) { if (i !== summitIdx) sortedIdx.push(i); }
+  const underIdxs = card.map((m, i) => i).filter(i => i !== summitIdx && results[i]);
+  const hasSummit = summitIdx >= 0 && !!results[summitIdx];
+  const totalMatches = underIdxs.length + (hasSummit ? 1 : 0);
+  const watchCount = G.ppvTvWatchCount || 1;
 
-  let html = `<div class="pb-container pb-event-summary pb-theme-ppv">`;
+  // 実況コメント(匿名の実況アナ)。MQ帯で温度を分け、(mq+turns)で決定的に選ぶ
+  const LIVE_LINES = {
+    epic: ['なんという試合だ…！今夜この瞬間を見られた人は幸せ者です！', '場内、総立ち！実況席まで震えが伝わってきます！', 'これぞプロレス！長く語り継がれる一戦になるでしょう！'],
+    good: ['決まったーッ！！見事なフィニッシュです！', '大熱戦！客席のボルテージが最高潮です！', '素晴らしい攻防でした！拍手が鳴り止みません！'],
+    mid:  ['勝負あり！手堅くまとめました！', '決着です！実力どおりの内容と言えるでしょう。', 'ここで試合終了！さあ、次のカードへ参りましょう。'],
+    low:  ['…勝負あり。少し噛み合わなかった印象です。', '決着はつきましたが、静かな幕切れとなりました。', '淡々とした展開のまま、試合終了です。'],
+    draw: ['時間切れ…！決着はつきませんでした！', '両者譲らず！これはドローの裁定です！'],
+  };
+  const _liveLine = (r) => {
+    const pool = r.winner === 'draw' ? LIVE_LINES.draw
+      : r.mq >= 85 ? LIVE_LINES.epic : r.mq >= 70 ? LIVE_LINES.good : r.mq >= 50 ? LIVE_LINES.mid : LIVE_LINES.low;
+    return pool[((r.mq || 0) + (r.turns || 0)) % pool.length];
+  };
 
-  // Banner: PPV TV (青系バッジ、プレイヤー不参加なので控えめ)
-  html += `<div class="pb-banner">
-    <div class="pb-summary-emblem"><span aria-hidden="true">♛</span></div>
-    <div class="pb-live is-ppvtv">📺 PPV 観戦</div>
-    <div class="pb-banner-title is-ppvtv">${escHtml(ppvName || 'GRAND FINAL')}</div>
-    <div class="pb-banner-sub">Year ${G.season || 1}<span class="dot">·</span>Week ${G.week || 48}<span class="dot">·</span>テレビの前で</div>
+  const _face = (f, cls) => `<div class="ptv-face ${cls || ''}">${portraitImg(f.id, 96)}</div>`;
+  const _chrome = (liveLabel) => `<div class="ptv-chrome">
+    <span class="ptv-ch">WRESTLE TV</span>
+    <span class="ptv-live ${liveLabel === 'LIVE' ? '' : 'is-off'}">${liveLabel}</span>
   </div>`;
-
-  // Scoreboard: Avg MQ / Best MQ / Matches
-  html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr">
-    <div class="pb-score-cell">
-      <div class="pb-score-stars">${_pbStars(avgMQ)}</div>
-      <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
-      <div class="pb-score-lbl">Avg MQ</div>
-    </div>
-    <div class="pb-score-cell">
-      <div class="pb-score-stars">${_pbStars(bestMQ)}</div>
-      <div class="pb-score-val" style="margin-top:3px">${bestMQ}</div>
-      <div class="pb-score-lbl">Best MQ</div>
-    </div>
-    <div class="pb-score-cell">
-      <div class="pb-score-val is-neutral">${validResults.length}</div>
-      <div class="pb-score-lbl">Matches</div>
-    </div>
+  const _telop = (cat, main, sub) => `<div class="ptv-telop">
+    <div><span class="ptv-telop-cat">${cat}</span><span class="ptv-telop-main">${main}</span></div>
+    ${sub ? `<div class="ptv-telop-sub">${sub}</div>` : ''}
   </div>`;
+  const _hint = '<div class="ptv-hint">クリックで進む ▶</div>';
 
-  html += `<div class="pb-matches">`;
-  let shownMainLabel = false;
-  let shownUndercardLabel = false;
+  const scenes = [];
 
-  sortedIdx.forEach((di, pos) => {
-    const match = card[di];
-    const r = results[di];
-    if (!r) return;
-    const isMain = match.isSummit;
-
-    if (isMain && !shownMainLabel) {
-      html += `<div class="pb-divider is-main">🏆 MAIN EVENT — 頂上決戦</div>`;
-      shownMainLabel = true;
-    } else if (!isMain && !shownUndercardLabel && shownMainLabel) {
-      html += `<div class="pb-divider">UNDERCARD</div>`;
-      shownUndercardLabel = true;
-    }
-
-    const isDraw = r.winner === 'draw';
-    const leftIsWinner = r.winner === 'left';
-    const rightIsWinner = r.winner === 'right';
-    const leftCls = isDraw ? 'is-draw' : (leftIsWinner ? 'is-winner' : 'is-loser');
-    const rightCls = isDraw ? 'is-draw' : (rightIsWinner ? 'is-winner' : 'is-loser');
-
-    const metaLeft = match.left._ppvOrgName || '—';
-    const metaRight = match.right._ppvOrgName || '—';
-
-    let winnerLabel;
-    if (isDraw) winnerLabel = 'DRAW';
-    else {
-      const winF = leftIsWinner ? match.left : match.right;
-      winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
-    }
-
-    const tags = [];
-    if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
-    if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
-
-    const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}`;
-    html += `<div class="${rowCls}">`;
-    html += _pbFighterBlock('left', match.left, leftCls, metaLeft, '');
-    html += _pbResultColumn({
-      winnerLabel,
-      winnerIsDraw: isDraw,
-      finishText: Engine.formatFinish(r.finType, r.finMove),
-      turns: r.turns,
-      mq: r.mq
-    });
-    html += _pbFighterBlock('right', match.right, rightCls, metaRight, '');
-    if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
-    if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
-    html += `</div>`;
+  // ① 放送オープニング
+  scenes.push({
+    bgm: 'grandFinalProgress',
+    html: _chrome('LIVE') + `<div class="ptv-op">
+      <div class="ptv-op-emblem">♛</div>
+      <div class="ptv-op-kicker">YEAR-END SPECIAL</div>
+      <div class="ptv-op-title">GRAND FINAL</div>
+      <div class="ptv-op-sub">年間総決算ペイ・パー・ビュー「${escHtml(ppvName || 'GRAND FINAL')}」</div>
+      <div class="ptv-op-badge">全国生中継</div>
+    </div>` + _hint + _telop('中継', '年末恒例・女子プロレス年間総決算', '今夜、業界の頂点が決まる — 4団体の代表が集結'),
   });
 
-  html += `</div>`; // .pb-matches
+  // ② 本日の対戦カード(メイン先頭)
+  {
+    const rowFor = (i) => {
+      const m = card[i];
+      const main = m.isSummit;
+      return `<div class="ptv-mrow ${main ? 'is-main' : ''}">
+        ${main ? '<div class="ptv-mtag">MAIN EVENT — 頂上決戦</div>' : ''}
+        <div class="ptv-wcell">${_face(m.left)}<div><div class="ptv-wname">${escHtml(m.left.name)}</div><div class="ptv-worg">${escHtml(m.left._ppvOrgName || '')}</div></div></div>
+        <div class="ptv-vs">VS</div>
+        <div class="ptv-wcell is-right"><div><div class="ptv-wname">${escHtml(m.right.name)}</div><div class="ptv-worg">${escHtml(m.right._ppvOrgName || '')}</div></div>${_face(m.right)}</div>
+      </div>`;
+    };
+    const order = hasSummit ? [summitIdx, ...underIdxs] : [...underIdxs];
+    scenes.push({
+      bgm: 'grandFinalProgress',
+      html: _chrome('LIVE') + `<div class="ptv-cardlist">
+        <div class="ptv-h-row">TONIGHT'S CARD</div>
+        ${order.map(rowFor).join('')}
+      </div>` + _hint + _telop('カード', `全${totalMatches}試合 — メインは頂上決戦`,
+        watchCount <= 1 ? '画面の向こうは、まだ遠い世界だ。' : 'うちの名前は…今年もここにない。'),
+    });
+  }
 
-  // Footer
-  html += `<div class="pb-footer" style="justify-content:center">
-    <button type="button" class="pb-close-btn" onclick="App.closePPVTV()">オフシーズンへ →</button>
-  </div>`;
+  // ③ 試合速報(アンダーカードを1試合ずつ)
+  underIdxs.forEach((di, pos) => {
+    const m = card[di], r = results[di];
+    const isDraw = r.winner === 'draw';
+    const winF = r.winner === 'left' ? m.left : r.winner === 'right' ? m.right : null;
+    const dots = underIdxs.map((_, j) => `<span class="ptv-dot ${j <= pos ? 'done' : ''}"></span>`).join('')
+      + (hasSummit ? '<span class="ptv-dot"></span>' : '');
+    scenes.push({
+      bgm: 'grandFinalProgress',
+      html: _chrome('LIVE') + `<div class="ptv-flash">
+        <div class="ptv-flash-band">
+          <div class="ptv-flash-kicker">RESULT — 第${pos + 1}試合</div>
+          ${winF ? `<div class="ptv-flash-win">${_face(winF)}<div class="ptv-flash-name">${escHtml(winF.name)}<small>${escHtml(winF._ppvOrgName || '')}</small></div></div>`
+                 : `<div class="ptv-flash-win"><div class="ptv-flash-name">引き分け<small>${escHtml(m.left.name)} vs ${escHtml(m.right.name)}</small></div></div>`}
+          <div class="ptv-flash-detail">${r.turns || 0}ターン ${isDraw ? '' : `<b>${escHtml(Engine.formatFinish(r.finType, r.finMove))}</b>`} ／ MQ <b>${r.mq}</b> ${_pbStars(r.mq)}</div>
+        </div>
+        <div class="ptv-commentary"><div class="ptv-who">実況</div>「${_liveLine(r)}」</div>
+        <div class="ptv-dots">${dots}</div>
+      </div>` + _hint + _telop('速報', `第${pos + 1}試合 ${winF ? escHtml(winF.name) + ' 勝利' : '引き分け'}`,
+        pos < underIdxs.length - 1 ? '画面の前で、次を見届ける。' : '次はいよいよ、メインイベント。'),
+    });
+  });
 
-  html += `</div>`; // .pb-container
+  // ④ 頂上決戦(VS対峙 → 決着の2段階)
+  if (hasSummit) {
+    const m = card[summitIdx], r = results[summitIdx];
+    const isDraw = r.winner === 'draw';
+    const winF = r.winner === 'left' ? m.left : r.winner === 'right' ? m.right : null;
+    const vsBlock = `<div class="ptv-summit-vs">
+        <div>${_face(m.left, 'is-big')}<div class="ptv-sname">${escHtml(m.left.name)}</div><div class="ptv-sorg">${escHtml(m.left._ppvOrgName || '')}</div></div>
+        <div class="ptv-vs-big">VS</div>
+        <div>${_face(m.right, 'is-big')}<div class="ptv-sname">${escHtml(m.right.name)}</div><div class="ptv-sorg">${escHtml(m.right._ppvOrgName || '')}</div></div>
+      </div>`;
+    scenes.push({
+      bgm: 'grandFinalMain',
+      html: _chrome('LIVE') + `<div class="ptv-summit">
+        <div class="ptv-summit-kicker">MAIN EVENT ─ 頂上決戦</div>
+        ${vsBlock}
+        <div class="ptv-summit-result">両団体の誇りを懸けて——</div>
+      </div>` + _hint + _telop('中継', '頂上決戦 まもなくゴング', '実況席にも、張り詰めた空気。'),
+    });
+    scenes.push({
+      bgm: 'grandFinalMain',
+      se: 'rs04',
+      html: _chrome('LIVE') + `<div class="ptv-summit">
+        <div class="ptv-summit-kicker">MAIN EVENT ─ 頂上決戦</div>
+        ${vsBlock}
+        <div class="ptv-summit-result">${r.turns || 0}ターンの死闘の末に——
+          <div class="ptv-win-line">${isDraw ? '⚖ 両者譲らず、引き分け' : `🏆 ${escHtml(winF.name)}、業界の頂点へ`}</div>
+        </div>
+      </div>` + _hint + _telop('速報', `頂上決戦 決着 — MQ ${r.mq} ${_pbStars(r.mq)}`, isDraw ? '決着は、来年に持ち越された。' : 'これが、頂点の景色。'),
+    });
+  }
 
-  box.innerHTML = html;
+  // ⑤ 放送終了(視聴回数で独白を変える)
+  const endMsg = watchCount <= 1
+    ? 'テレビの明かりを消す。<br><br>初めて画面越しに見た、年末の大舞台。<br>いつか——<b>あの画面の中に立つのはうちの選手たちだ。</b>'
+    : 'テレビの明かりを消す。<br><br>今夜の歓声も、私たちのものではなかった。<br>でも——<b>来年こそ、あの画面の中に立つ。</b>';
+  scenes.push({
+    bgm: null,
+    final: true,
+    html: _chrome('放送終了') + `<div class="ptv-ending">
+      <div class="ptv-end-msg">${endMsg}</div>
+      <div class="ptv-end-note">団体人気${typeof PPV_UNLOCK_POP !== 'undefined' ? PPV_UNLOCK_POP : 30}以上で PPV GRAND FINAL への出場資格を獲得できます</div>
+      <button type="button" class="ptv-btn" onclick="App.closePPVTV()">事務所へ戻る</button>
+    </div>` + _telop('次回', 'また来年 — GRAND FINAL', 'ご視聴ありがとうございました'),
+  });
+
+  let sceneIdx = 0;
+  const show = () => {
+    const sc = scenes[sceneIdx];
+    box.innerHTML = `<div class="ptv-tv"><div class="ptv-screen">${sc.html}</div></div>`;
+    if (sc.bgm) { try { Audio.bgm.playStage(sc.bgm); } catch (e) {} }
+    if (sc.se === 'rs04' && !Audio.muted) {
+      try {
+        const a = new window.Audio('../bgm/production-ogg/wm_se_rs04_v01.ogg');
+        a.volume = Math.min(1, 0.14 * (Audio.sfxMasterVol != null ? Audio.sfxMasterVol : 1));
+        a.play().catch(() => {});
+      } catch (e) {}
+    }
+    if (!sc.final) {
+      const tv = box.querySelector('.ptv-tv');
+      if (tv) tv.addEventListener('click', () => {
+        sceneIdx++;
+        try { Audio.play('click'); } catch (e) {}
+        show();
+      }, { once: true });
+    }
+  };
+  show();
   overlay.classList.add('active');
 }
 
