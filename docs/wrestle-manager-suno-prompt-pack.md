@@ -276,6 +276,12 @@ Instrumental grand symphonic RPG ending performed only with NES/Famicom 2A03 sou
 
 ## I. 将来機能
 
+### WM-H05 表彰式 — 40秒 / Music
+
+```text
+Instrumental NES/Famicom 2A03 award-ceremony loop, stately warm fanfare motif, dignified celebration honoring a year of battles, gracious applause mood, proud and gentle, seamless loop.
+```
+
 ### WM-F01 敵地遠征 — 45秒 / Music
 
 ```text
