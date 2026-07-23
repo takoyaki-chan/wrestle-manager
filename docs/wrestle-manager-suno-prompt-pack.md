@@ -254,18 +254,6 @@ Instrumental NES/Famicom 2A03 generational-change loop, old noble motif answered
 
 ## H. 歴史・セレモニー
 
-### WM-H01 年代記 — 55秒 / Music
-
-```text
-Instrumental NES/Famicom 2A03 chronicle loop, reflective heroic melody, changing eras and remembered rivalries, dignified history with a warm seamless return.
-```
-
-### WM-H02 殿堂入り — 55秒 / Music
-
-```text
-Instrumental NES/Famicom 2A03 hall-of-fame ceremony loop, stately royal fanfare, warm noble melody, gratitude and lasting wrestling legacy.
-```
-
 ### WM-H04 エンディング — 55秒 / Music
 
 ```text
