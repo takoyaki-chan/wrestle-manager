@@ -885,11 +885,12 @@ function renderWeekScreen() {
   // ── REGULAR WEEK DISPLAY ──
   const stlBlocked = _stlIsLeagueWeek();
   const agwBlocked = _agwIsEventWeek();
-  const specialEventBlocked = stlBlocked || agwBlocked;
+  const jtBlocked = _jtIsEventWeek();
+  const specialEventBlocked = stlBlocked || agwBlocked || jtBlocked;
   const isShow = isShowWeek(G.week) && !specialEventBlocked;
   const special = isSpecialShow(G.week) && !specialEventBlocked;
   const ppv = isPPV(G.week);
-  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : agwBlocked ? '⚔️ 4団体勝ち残り対抗戦' : isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
+  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : agwBlocked ? '⚔️ 4団体勝ち残り対抗戦' : jtBlocked ? '🏟️ ジュニアトーナメント' : isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
   document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4` : typeLabel;
 
   html = '';
@@ -1089,7 +1090,7 @@ function renderWeekScreen() {
       ${injuredCount > 0 ? `<span style="color:#e17055">🏥 負傷者: ${injuredCount}名</span>` : ''}
       ${G.coaches.length > 0 ? `<span style="color:#2ecc71">🎓 コーチ: ${G.coaches.length}名</span>` : ''}
     </div>`;
-    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${stlBlocked ? '週を進めてください（今週は春のタッグリーグ開催週）' : agwBlocked ? '週を進めてください（今週は4団体勝ち残り対抗戦）' : isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
+    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${stlBlocked ? '週を進めてください（今週は春のタッグリーグ開催週）' : agwBlocked ? '週を進めてください（今週は4団体勝ち残り対抗戦）' : jtBlocked ? '週を進めてください（今週はジュニアトーナメント開催週）' : isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
 
     // v1.0: Primary action buttons — top-left, large, prominent
     html += '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">';
@@ -2501,6 +2502,14 @@ function _agwIsEventWeek() {
   return !!(aw && !aw.cancelled && G.week === Engine.autumnWar.EVENT_WEEK);
 }
 
+/** ジュニアトーナメント開催週(Week24=夏の最終興行週)。開催成立時は通常興行をブロックする。
+ *  不開催年(選手不足キャンセル)は従来どおり通常の特別興行にフォールバック */
+function _jtIsEventWeek() {
+  return !!(!G.offSeason && G.week === Engine.juniorTournament.WEEK
+    && (G.weekPhase === 'juniorTournament'
+        || (G._juniorTournamentResult && !G._juniorTournamentResult.cancelled)));
+}
+
 function renderAutumnWarWeekBanner() {
   const aw = G.autumnWar;
   if (!aw || aw.cancelled || aw.announcedSeason !== G.season) return '';
@@ -2563,6 +2572,14 @@ function _stlBlockedShowPrepHtml() {
   </div>`;
 }
 
+function _jtBlockedShowPrepHtml() {
+  return `<div class="stl-block-banner">
+    <div class="stl-block-banner-icon">🏟️</div>
+    <div class="stl-block-banner-title">今週はジュニアトーナメント</div>
+    <div class="stl-block-banner-sub">第${Engine.juniorTournament.WEEK}週は通常興行の代わりに、U-20ジュニアトーナメントが開催されます。今週のカード編成はありません。</div>
+  </div>`;
+}
+
 function _agwBlockedShowPrepHtml() {
   return `<div class="stl-block-banner agw-block-banner">
     <div class="stl-block-banner-icon">⚔️</div>
@@ -2590,6 +2607,11 @@ function renderShowPrep() {
 
   if (_agwIsEventWeek()) {
     el.innerHTML = _agwBlockedShowPrepHtml();
+    return;
+  }
+
+  if (_jtIsEventWeek()) {
+    el.innerHTML = _jtBlockedShowPrepHtml();
     return;
   }
 

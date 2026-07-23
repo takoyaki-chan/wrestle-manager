@@ -14837,6 +14837,45 @@ const Engine = {
       }
       return { state: { ...s, weekPhase: 'manage' }, events };
     }
+    // ── PPV週の正規化（2026-07-23）: 第48週が「名前だけPPVの通常興行」にならないよう、
+    // どの経路で来ても必ず ppvShow / ppvTV に接続する。week43のエントリー初期化が
+    // 他イベントに先取りされた場合(ppvPhase=null)や、エントリー未確定のまま
+    // 第48週へ入った場合(ppvPhase='entry')を自動補完する。
+    if (s.week === PPV_SHOW_WEEK && !s.offSeason
+        && !Engine.ppvTournament.isTournamentSeason(s.season)
+        && !['locked', 'tv', 'show'].includes(s.ppvPhase)) {
+      if (!s.ppvName) {
+        const ppvNameRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xBBF1));
+        s = { ...s, ppvName: Engine.ppv.pickName(ppvNameRng) };
+      }
+      if (s.ppvUnlocked) {
+        const rankings = s.rankings || [];
+        const ppvEntries = {};
+        RIVAL_ORGS.forEach(org => {
+          const orgRank = rankings.find(r => r.orgId === org.id);
+          const slots = Engine.ppv.getSlotCount(orgRank ? orgRank.rank : 4);
+          const pre = (s._ppvAIEntries || {})[org.id];
+          const aiData = s.aiOrgs[org.id];
+          ppvEntries[org.id] = (pre && pre.length) ? pre : (aiData ? Engine.ppv.getAIEntries(aiData, slots) : []);
+        });
+        const pSlots = Engine.ppv.getSlotCount(Engine.ranking.getPlayerRank(rankings));
+        const champId = s.titles?.world?.championId;
+        const healthy = (s.roster || []).filter(f => !f.injury && !f.isRental);
+        const champ = healthy.find(f => f.id === champId);
+        const rest = healthy.filter(f => !champ || f.id !== champ.id)
+          .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+        const playerEntries = (champ ? [champ, ...rest] : rest).slice(0, pSlots).map(f => ({ ...f }));
+        if (playerEntries.length > 0) {
+          ppvEntries.player = playerEntries;
+          s = { ...s, ppvEntries, ppvPhase: 'locked', _ppvPicks: undefined, _ppvAIEntries: undefined };
+          events.push(`🏟️ PPV GRAND FINAL「${s.ppvName}」出場選手を自動選出した（エントリー未確定のため）`);
+        } else {
+          s = { ...s, ppvPhase: 'tv' };
+        }
+      } else {
+        s = { ...s, ppvPhase: 'tv' };
+      }
+    }
     if (s.week === PPV_SHOW_WEEK && s.ppvPhase === 'locked') {
       s = { ...s, ppvPhase: 'show' };
       events.push(`🏟️ PPV GRAND FINAL「${s.ppvName}」開催日！`);
@@ -15028,6 +15067,25 @@ const Engine = {
       }
     }
 
+    // U-20ジュニアトーナメント（Week 24 = 夏の最終興行週。通常興行を置き換える。
+    // 2026-07-23: 25→24へ移動。transfer window(週24)の早期リターンに先取りされないよう、
+    // warCheck/transferより前に配置する）
+    if (s.week === Engine.juniorTournament.WEEK && !s.offSeason) {
+      const selection = Engine.juniorTournament.select(s);
+      if (!selection.cancelled) {
+        s = { ...s, _juniorTournamentSelection: selection };
+        events.push(`🏟️ 第${s.season}回ジュニアトーナメント開催！ U-20選手${selection.bracketSize}名が集結`);
+        return { state: { ...s, weekPhase: 'juniorTournament' }, events };
+      } else {
+        s = Engine.juniorTournament.apply(s, {
+          cancelled: true,
+          reason: 'insufficientParticipants',
+          rounds: [],
+        }).state;
+        events.push('📋 ジュニアトーナメント: U-20選手不足のため今年は不開催');
+      }
+    }
+
     // D-2: Rivalry war check（week10/22/34。春タッグリーグ week12・4団体勝ち残り対抗戦 week36
     // との同週衝突を避けるため2026-07-17に前倒し移動）
     // NOTE: C-2の早期リターン前に実行。transfer windowと週が重なるため後に置くとスキップされる
@@ -15047,24 +15105,6 @@ const Engine = {
       events.push(...tfResult.events);
       if (s.pendingPoach && s.pendingPoach.length > 0) {
         return { state: { ...s, weekPhase: 'transfer' }, events };
-      }
-    }
-
-    // U-20ジュニアトーナメント（Week 25 = 秋 Week 1）
-    if (s.week === Engine.juniorTournament.WEEK) {
-      const jtRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xBB10));
-      const selection = Engine.juniorTournament.select(s);
-      if (!selection.cancelled) {
-        s = { ...s, _juniorTournamentSelection: selection };
-        events.push(`🏟️ 第${s.season}回ジュニアトーナメント開催！ U-20選手${selection.bracketSize}名が集結`);
-        return { state: { ...s, weekPhase: 'juniorTournament' }, events };
-      } else {
-        s = Engine.juniorTournament.apply(s, {
-          cancelled: true,
-          reason: 'insufficientParticipants',
-          rounds: [],
-        }).state;
-        events.push('📋 ジュニアトーナメント: U-20選手不足のため今年は不開催');
       }
     }
 
@@ -18352,7 +18392,7 @@ Engine.news = {
       }
     }
 
-    // ジュニアトーナメント結果（Week 25の翌週以降に表示）
+    // ジュニアトーナメント結果（開催週の翌週以降に表示）
     if (state._juniorTournamentResult) {
       const jtr = state._juniorTournamentResult;
       if (jtr.champion) {
@@ -23355,10 +23395,11 @@ Engine.specialEventFinance = {
 
 // ══════════════════════════════════════════════════════════
 //  Engine.juniorTournament — U-20ジュニアトーナメント
-//  国家主催1日トーナメント。秋 Week 25 開催。Pure functions only.
+//  国家主催1日トーナメント。夏の最終興行週 Week 24 開催（2026-07-23 に25→24へ移動:
+//  特別興行は各季節の最終興行週に開催し、その週の通常興行を置き換える方針）。Pure functions only.
 // ══════════════════════════════════════════════════════════
 Engine.juniorTournament = {
-  WEEK: 25,
+  WEEK: 24,
   CONDITION_RECOVERY: 25, // ラウンド間固定回復
   PRIZE: { champion: 1000, runnerUp: 500, semiFinal: 250 }, // 万円（国庫支出）
   /** 全団体からU-20選手を選出し、トーナメント参加者リストを返す */
@@ -25936,7 +25977,7 @@ Engine.newspaper = {
       });
     }
 
-    // === ジュニアトーナメント結果（Week 25）===
+    // === ジュニアトーナメント結果 ===
     if (state._juniorTournamentResult) {
       const jtr = state._juniorTournamentResult;
       if (jtr.champion) {
@@ -26372,7 +26413,7 @@ Engine.newspaper = {
       pages: null, // 複数ページ時のみ設定
     };
 
-    // === 複数ページ: ジュニアトーナメント結果（Week 25）===
+    // === 複数ページ: ジュニアトーナメント結果 ===
     if (state._juniorTournamentResult) {
       const jtr = state._juniorTournamentResult;
       if (jtr.champion) {
@@ -26416,8 +26457,8 @@ Engine.newspaper = {
       }
     }
 
-    // === 複数ページ: ジュニアトーナメント前週プレビュー（Week 24）===
-    if (state.week === 24 && !state.offSeason) {
+    // === 複数ページ: ジュニアトーナメント前週プレビュー（開催週の前の興行週 = Week 22）===
+    if (state.week === Engine.juniorTournament.WEEK - 2 && !state.offSeason) {
       const sel = Engine.juniorTournament.select(state);
       if (!sel.cancelled && sel.participants.length >= 4) {
         const pList = sel.participants;
@@ -26426,7 +26467,7 @@ Engine.newspaper = {
         page2Stories.push({
           type: 'juniorTournamentPreviewRoster',
           headline: `第${state.season + 1}回ジュニアトーナメント 出場選手決定！`,
-          body: `来週開催のU-20ジュニアトーナメントに${pList.length}名が選出された。`,
+          body: `第${Engine.juniorTournament.WEEK}週開催のU-20ジュニアトーナメントに${pList.length}名が選出された。`,
           participants: pList.map(p => ({ name: p.name, id: p.id, orgName: p._orgName, ovr: Engine.util.ov(p), age: p.age, style: p.style })),
         });
         // 展望コメント

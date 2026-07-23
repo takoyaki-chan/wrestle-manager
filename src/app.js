@@ -10441,7 +10441,7 @@ const App = {
       App.initTenchosenReplay();
       return;
     }
-    // ジュニアトーナメント Week 25
+    // ジュニアトーナメント Week 24（夏の最終興行週）
     if (G.weekPhase === 'juniorTournament') {
       Storage.autoSave();
       App.initJuniorTournament();
