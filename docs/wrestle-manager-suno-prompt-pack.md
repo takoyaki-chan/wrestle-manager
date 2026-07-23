@@ -124,22 +124,22 @@ Instrumental NES/Famicom 2A03 organization-crisis loop, urgent minor ostinato, u
 
 ## C. 通常興行の試合前
 
-### WM-M01 通常試合前 — 30秒 / Music
+### WM-M01 通常試合 — 30秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 pre-battle loop, 128 BPM, driving pulse lead, tense triangle bass, crisp noise drums, two wrestlers facing off seconds before the bell, speed and weight in balance.
+Instrumental NES/Famicom 2A03 wrestling battle loop, 128 BPM, driving pulse lead, tense triangle bass, crisp noise drums, fast-paced in-ring action, speed and weight in balance, seamless loop.
 ```
 
 ### WM-M03 因縁戦 — 35秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 pre-battle loop, 124 BPM, hostile minor melody, relentless bass, sharp noise drums, bitter rivals staring down before violent revenge.
+Instrumental NES/Famicom 2A03 grudge-match battle loop, 124 BPM, hostile minor melody, relentless bass, sharp noise drums, bitter rivals trading violent revenge in the ring, seamless loop.
 ```
 
 ### WM-M04 王座戦 — 40秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 championship pre-battle loop, 120 BPM, noble minor fanfare, driving bass and drums, enormous stakes and imminent combat.
+Instrumental NES/Famicom 2A03 championship battle loop, 120 BPM, noble minor fanfare, driving bass and drums, enormous stakes and furious combat for the belt, seamless loop.
 ```
 
 ---
@@ -151,19 +151,19 @@ Instrumental NES/Famicom 2A03 championship pre-battle loop, 120 BPM, noble minor
 ### WM-SP01 春A — 30秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 spring-festival pre-match loop, 96 BPM, cool major-minor ambiguity, measured pulse, small rising motif and bright ceremonial blips, fresh challengers under festive banners, restrained tension, no frantic drums.
+Instrumental NES/Famicom 2A03 spring-festival event-progress loop, 96 BPM, cool major-minor ambiguity, measured pulse, small rising motif and bright ceremonial blips, fresh challengers under festive banners, restrained tension, no frantic drums.
 ```
 
 ### WM-SP02 春B — 35秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 spring special-event pre-match loop, 90 BPM, suspended minor harmony, alternating youthful square-wave phrases, cautious triangle bass and a subtle opening-day fanfare fragment, held breath before a major clash, controlled and unresolved.
+Instrumental NES/Famicom 2A03 spring special-event event-progress loop, 90 BPM, suspended minor harmony, alternating youthful square-wave phrases, cautious triangle bass and a subtle opening-day fanfare fragment, held breath before a major clash, controlled and unresolved.
 ```
 
 ### WM-SP03 夏A — 30秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 summer-festival pre-match loop, 102 BPM, dry minor harmony, oppressive heat, pulsing triangle bass, sparse festival-noise ticks and heat-haze arpeggios, excited crowd anticipation beneath mounting pressure, no battle climax.
+Instrumental NES/Famicom 2A03 summer-festival event-progress loop, 102 BPM, dry minor harmony, oppressive heat, pulsing triangle bass, sparse festival-noise ticks and heat-haze arpeggios, excited crowd anticipation beneath mounting pressure, no battle climax.
 ```
 
 ### WM-SP04 夏B — 35秒 / Music
@@ -175,25 +175,25 @@ Instrumental NES/Famicom 2A03 summer-night festival championship loop, 86 BPM, h
 ### WM-SP05 秋A — 30秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 autumn-festival pre-match loop, 94 BPM, warm dark minor mode, clipped tactical motif, steady measured bass and brief ceremonial flourishes, veteran wrestlers studying each other before an expectant special-event crowd.
+Instrumental NES/Famicom 2A03 autumn-festival event-progress loop, 94 BPM, warm dark minor mode, clipped tactical motif, steady measured bass and brief ceremonial flourishes, veteran wrestlers studying each other before an expectant special-event crowd.
 ```
 
 ### WM-SP06 秋B — 35秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 autumn grand-event pre-match loop, 88 BPM, dark golden modal harmony, low ostinato, unresolved noble melody and stately pageant accents, pride and old grudges under quiet pressure, dignified and threatening.
+Instrumental NES/Famicom 2A03 autumn grand-event event-progress loop, 88 BPM, dark golden modal harmony, low ostinato, unresolved noble melody and stately pageant accents, pride and old grudges under quiet pressure, dignified and threatening.
 ```
 
 ### WM-SP07 冬A — 30秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 winter-festival pre-match loop, 82 BPM, icy modal minor, wide rests, isolated square-wave notes, slow heartbeat triangle bass and distant ceremonial chimes, a hushed crowd sharing cold anticipation before the bell.
+Instrumental NES/Famicom 2A03 winter-festival event-progress loop, 82 BPM, icy modal minor, wide rests, isolated square-wave notes, slow heartbeat triangle bass and distant ceremonial chimes, a hushed crowd sharing cold anticipation before the bell.
 ```
 
 ### WM-SP08 冬B — 35秒 / Music
 
 ```text
-Instrumental NES/Famicom 2A03 year-end grand-festival pre-match loop, 96 BPM, severe heroic minor theme, slow rising cadence, restrained noise drum, warning blips and sparse triumphal fanfare fragments, a packed crowd awaiting the decisive bell, monumental finality held back.
+Instrumental NES/Famicom 2A03 year-end grand-festival event-progress loop, 96 BPM, severe heroic minor theme, slow rising cadence, restrained noise drum, warning blips and sparse triumphal fanfare fragments, a packed crowd awaiting the decisive bell, monumental finality held back.
 ```
 
 ---
@@ -204,12 +204,6 @@ Instrumental NES/Famicom 2A03 year-end grand-festival pre-match loop, 96 BPM, se
 
 ```text
 Instrumental NES/Famicom 2A03 final-match loop, 128 BPM, severe heroic theme, relentless bass, rising counterline, a long tournament reaching its decisive battle.
-```
-
-### WM-E04 PPV — 50秒 / Music
-
-```text
-Instrumental NES/Famicom 2A03 PPV event loop, 122 BPM, bold broadcast fanfare, glamorous pulse melody, championship pressure and packed-arena spectacle.
 ```
 
 ### WM-E05 天頂戦 — 50秒 / Music
