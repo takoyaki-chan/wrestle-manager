@@ -8713,21 +8713,22 @@ function _renderNewspaperShowRating(d) {
 
 // ── 会場レベル別 期待MQ計算 (handoff §2-2) ──
 // ショー評価系 expectedMQTotal (data.js SHOW_RATING_CONFIG) と整合させた per-match 期待MQ。
+// MQ再設計P3d(§3.8a): 観客下駄撤去後の分布実測に合わせbase全段-4、cap 80→76。popCoefは不変。
 const EXPECTED_MQ_BY_VENUE = [
-  { base: 30, popCoef: 0.15 },  // 0: 公民館
-  { base: 33, popCoef: 0.18 },  // 1: 小ホール
-  { base: 36, popCoef: 0.20 },  // 2: 中ホール
-  { base: 40, popCoef: 0.22 },  // 3: 大ホール
-  { base: 44, popCoef: 0.25 },  // 4: アリーナ
-  { base: 48, popCoef: 0.28 },  // 5: 大アリーナ
-  { base: 52, popCoef: 0.32 },  // 6: 武道館
-  { base: 56, popCoef: 0.35 },  // 7: スタジアム
-  { base: 60, popCoef: 0.38 },  // 8: 大スタジアム
-  { base: 65, popCoef: 0.40 },  // 9: ドーム
+  { base: 26, popCoef: 0.15 },  // 0: 公民館
+  { base: 29, popCoef: 0.18 },  // 1: 小ホール
+  { base: 32, popCoef: 0.20 },  // 2: 中ホール
+  { base: 36, popCoef: 0.22 },  // 3: 大ホール
+  { base: 40, popCoef: 0.25 },  // 4: アリーナ
+  { base: 44, popCoef: 0.28 },  // 5: 大アリーナ
+  { base: 48, popCoef: 0.32 },  // 6: 武道館
+  { base: 52, popCoef: 0.35 },  // 7: スタジアム
+  { base: 56, popCoef: 0.38 },  // 8: 大スタジアム
+  { base: 61, popCoef: 0.40 },  // 9: ドーム
 ];
 function _calcExpectedMQ(venueIdx, orgPop) {
   const conf = EXPECTED_MQ_BY_VENUE[venueIdx] || EXPECTED_MQ_BY_VENUE[0];
-  return Math.min(80, Math.round(conf.base + (orgPop || 0) * conf.popCoef));
+  return Math.min(76, Math.round(conf.base + (orgPop || 0) * conf.popCoef));
 }
 
 // ── 全試合ダイジェストセクション（テーブル形式） ──

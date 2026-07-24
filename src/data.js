@@ -1256,11 +1256,13 @@ const CARD_DEPTH_MULT = [0.85, 0.92, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
 // 会場規模は観客熱の"器"(振れ幅)を決める — 埋め切ったときだけ他会場より高く跳ねる。ドーム(idx9)は別格。
 const VENUE_HEAT_TIER_AMP = [2, 2, 2, 3, 3, 3, 4, 5, 5, 7];
 //                          公民 小A  小B  市民 中A  中B  大   arena 大会場 ドーム
+// MQ再設計P3d(§3.8a)確定値: 実測percentile(p90=2.233/p10=1.041/p5=0.914)に基づく再較正。
+// 完売(fp≥1.0)を負にしない設計判断は維持——負帯は本当に埋まらなかった興行だけ。
 const FILL_PRESSURE_BANDS = [
-  { min: 1.30, pf: +1.0, label: '客席が沸き返る超満員' },
-  { min: 1.05, pf: +0.5, label: '押し寄せる大盛況' },
-  { min: 0.85, pf:  0.0, label: '' },
-  { min: 0.55, pf: -0.5, label: '空席が目立つ客入り' },
+  { min: 2.25, pf: +1.0, label: '客席が沸き返る超満員' },
+  { min: 1.90, pf: +0.5, label: '押し寄せる大盛況' },
+  { min: 0.95, pf:  0.0, label: '' },
+  { min: 0.70, pf: -0.5, label: '空席が目立つ客入り' },
   { min: 0.00, pf: -1.0, label: '閑古鳥の会場' },
 ];
 
@@ -3385,7 +3387,8 @@ const SHOW_RATING_CONFIG = {
   mqJunkThreshold: 30,         // MQ30以下は重み半減
   mqJunkWeightMult: 0.5,
   // ※auto-sim実測: orgPop40+帯のmqScore≈58/60(cap付近)→基準が甘すぎた
-  expectedMQTotal: [0, 0, 110, 150, 180, 200, 220, 240, 260], // 試合数別基準（index=試合数）
+  // MQ再設計P3d(§3.8a): 220→200(6試合基準)。他試合数も同率×(200/220)で丸めて再較正。
+  expectedMQTotal: [0, 0, 100, 136, 164, 182, 200, 218, 236], // 試合数別基準（index=試合数）
   // 占有率スコア（max 15点）
   occupancyScoreTable: [
     { min: 0.95, score: 15 },
