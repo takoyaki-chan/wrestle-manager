@@ -14,6 +14,38 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 MQ再設計 P3c: 観客帯×注目度+会場の器+OV100超減衰+付随5項目（本丸実装）
+
+`docs/mq-redesign-proposal-v0.5.md` §3.2/§3.2b/§3.4/§3.4b/§3.7b・§3.9不変条件に基づき、P3b着地後の残り7項目(A〜G)を実装した。
+
+**A. OV100超の減衰シーリング**（`src/match-engine.js`）: シングル/タッグで重複していたceiling計算を`Engine.battle.ovCeiling(avgOV)`へ共通化し、第4セグメント`avgOV>100: 100 + 0.25×(avgOV-100)`を追加。avgOV<=100の3セグメントは既存式のまま(境界100で連続、単体テストで固定)。
+
+**B. タイトル戦カウンター補強**（`src/match-engine.js`）: `TITLE_RING_COUNTER_BONUS=4`を追加し、`ringCounterBonus`にタイトル戦分を合算（名勝負製造機・因縁と同じ既存キャップ共有）。`test/mq-ring-calibration.js`を現行実装で再実行し、実装経路(`titleMatch:true`)の勝率歪みは-0.3pt(目標±2pt内、MQ寄与+1.55はescape単独時の約60倍相当)。
+
+**C. ラストランの解体**（`src/management.js` `Engine.mq`）: `finalize`の`contributions.lastRun`を撤廃。代わりに`buildRingInOpts`へ`normalShowRingExtras`/`isMainEvent`オプションを追加し、`fighter.lastRun`が立つ選手にovBuffチャネルで実効OV+1を与える（通常興行のみ有効、PPV/AI興行はスコープ外のまま）。
+
+**D. メイン気迫**（同上）: 通常興行メイン(matchIndex 0)の両選手にも同じovBuffチャネルで実効OV+1。ラストラン+メインが重なると+2で自然に積み上がる。
+
+**E. 観客帯×試合注目度（本丸）**: `Engine.attendanceV2.calcAttendanceV2`に`rawDemand`(キャパクランプ前のソフトキャップ後需要)を追加し、`fp = rawDemand / capacity`として`Engine.economy.calcVenueHeat(venueIdx, fp)`を新設(`VENUE_HEAT_TIER_AMP=[2,2,2,3,3,3,4,5,5,7]`×`FILL_PRESSURE_BANDS`のpressureFactor、`src/data.js`)。旧`calcCrowdMQBonus`/`CROWD_HEAT_MQ`/`VENUE_SCALE_MQ`(会場格0〜+3の下駄)は完全廃止。`Engine.mq.calcEngagement(participantFighters, opts)`を新設し、`0.5+0.5×normPop+0.15×因縁+0.2×タイトル+0.12×メイン+0.25×ラストラン`をcap 1.25(ラストラン主演メインのみ1.4)でクランプ。`finalize`の`contributions.crowd`は`round(venueHeat×engagement)`で試合ごとに算出する形へ全面書き換え(旧: 興行一律のflat値)。`Engine.executeShow`(headless)と`App._finalizeShowImpl`(UI)の両経路で同じ計算になるよう並行改修。
+
+**F. ドームメインの大一番化**: 通常興行が会場idx9(ドーム)のとき、メイン(idx0)の非タイトルシングル戦もmatchTier=2(ビッグマッチルール)でシミュレーションするよう、headless(`Engine.executeShow`)とUI(`App._normalShowMatchTier`、skip/watch/skipAll全経路)に実装。
+
+**G. 鮮度の集客移管**: `Engine.freshness.attendanceMult(bonus)`を新設(+2→×1.04/-1→×0.97/-2→×0.94/-3→×0.90/-5→×0.84、-4は指示テーブルに無いため-3と-5の中間0.87で補間、bonus0は×1.0)。`Engine.attendanceV2.calcMatchAppeal`/`calcMatchAppealBreakdown`が`context.freshnessRawBonus`を受け取り、appeal合計の末尾に係数を掛けるよう変更。呼び出し元8箇所(management.js 3・app.js 1・ui-render.js 3・ui-common.js 1)に`freshnessRawBonus`を配線し、UI上の「MQ+x」表記(頭上プレビュー・鮮度タグ)も「会場の熱」「動員×倍率」表記へ更新して実態と合わせた。
+
+**計測**（`node test/auto-sim.js 100 42`、フォアグラウンド実行411.1s、ALL CLEAR・違反0・エラー0）:
+- 計測1 fp分布: p10=1.041〜p99=2.660、pressureFactor最上位帯(+1.0)が73.27%(目標10〜15%を大きく超過)。auto-simのランダムカード編成は会場規模に対して需要が過剰になりやすい母集団のため。**係数は変更せず報告のみ**
+- 計測2/不変条件1 興行内・試合間の観客寄与σ: mean=0.386(目標≥1.0未達)。venueHeatは興行1本につき1値、engagementの実際の振れ幅(因縁/タイトル/メイン/ラストラン/人気差)が小さい母集団だとσが伸びにくい。**報告のみ**
+- 計測3 通常興行の平均MQ着地: 55.03(想定54±1.5に収まった)
+- 計測4/不変条件9 OV100超ペア発生率: 0.503%(n=213/42371)、平均上振れ+1.23・最大+3.00。avgOV<=100は式レベルで不変(単体テストで境界確認済み)
+- 計測5 ドーム興行: auto-sim 100年では0件(到達せず)。`test/mq-p3c-unit.js`(新規、60アサーション)でtierAmp配列・pressureFactor帯・engagement cap(1.25/1.4)・ドームメインmatchTier=2を合成データで直接検証
+- 計測6 鮮度→集客の動員影響: appeal合計ベースの近似値でmean-0.576%(想定±2%内)。マンネリ/初顔合わせ係数が実際に効いた試合は20.00%(4040/20199)
+
+**パフォーマンス注記**: 計測6の初期実装(`Engine.freshness.calc`/`calcMatchAppeal`を横で再呼び出し)は、matchupLogが興行を重ねるほど伸びる既存の超線形コストを2重・3重にし、100シーズンの実行時間が600s予算を超過した(元コードでも100シーズンで425.8s要していたところにさらに乗った)。本番の`calcMatchAppeal`呼び出しにモンキーパッチで相乗りし除算で鮮度係数を復元する方式へ書き直し、追加コストをほぼゼロにして解決(最終411.1s)。
+
+**受け入れ条件**: 対象6ファイル(match-engine.js/management.js/app.js/data.js/ui-render.js/ui-common.js)+test 2ファイルの`node --check` pass。単体テスト`test/mq-p3c-unit.js` 60アサーション全PASS。`node test/auto-sim.js 100 42`フォアグラウンドALL CLEAR。avgOV<=100不変は単体テストの境界値確認で担保(第4セグメント追加のみ・既存3セグメントは無変更)。係数・閾値は指示値のまま変更せず、外れた実測(計測1/2)も自己調整していない。
+
+既知の副作用: `test/mq-finalize-parity-test.js`(旧`crowdVenueBonus`/固定lastRunボーナス前提のハードコード期待値)は本セッション開始前から既に壊れていた既存の失敗(pre-existing failure、25e9304時点で`107 !== 121.47`)。今回の変更で数値はさらに乖離するが、契約変更(venueHeat化・lastRun撤廃)を正として当該テストの更新は範囲外とし着手していない。`test/mq-crowd-measure.js`(旧`CROWD_HEAT_MQ`前提の一回性計測スクリプト、計測目的は既に達成・本提案書のfp移行の根拠になった実測)も同様に未更新のまま残置(役目を終えた過去の計測スクリプト)。
+
 ## 2026-07-24 MQ再設計 P3b: 因縁/タイトル/trust/バフのリング内化（固定加算を撤廃しシム入力へ）
 
 `docs/mq-redesign-proposal-v0.4.md` §3.3〜§3.6・§3.9不変条件4〜6に基づき、`Engine.mq.finalize` の外部固定加算（因縁+1〜+5・タイトル+5・trust-1.53×人・バフ+3）を全廃し、`Engine.battle.simulateMatch` への入力（リング内効果）へ組み替えた。

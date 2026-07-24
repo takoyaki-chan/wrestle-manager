@@ -311,6 +311,19 @@ const mqInventoryProbe = {
   uiRouteEstimate: [],
 };
 
+// MQ再設計P3c(mq-redesign-proposal-v0.5 §3.2/§3.2b/§3.4b/G) 計測:
+// fp分布・観客帯pressureFactor割合・興行内観客寄与σ・興行平均MQ・鮮度→集客移管の影響。
+const mqP3cProbe = {
+  showFp: [],
+  pressureBandCounts: { plus10: 0, plus05: 0, zero: 0, minus05: 0, minus10: 0 },
+  showCrowdSigma: [],
+  showAvgMq: [],
+  freshnessAttendanceDeltaPct: [],
+  freshnessMultActiveMatches: 0,
+  freshnessMultTotalMatches: 0,
+  domeShowCount: 0,
+};
+
 // Task 22: observe industry-wide all-time MQ record updates without changing
 // production state or RNG consumption.
 const mqRecordProbe = { updates: [] };
@@ -372,6 +385,10 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
       transcendFired: !!result.transcend?.fired,
       transcendExcess: result.transcend?.excess || 0,
       transcendOverflow: result.transcend?.overflow || 0,
+      // MQ再設計P3c(§3.7b計測4): OV100超の減衰シーリング。detail.ceilingはringOvAdjust込みの
+      // 実効avgOVで計算済みなので、こちらを基準にOV>100ペアを判定する。
+      ovCeilingOver100: detail.ceiling > 100,
+      ovCeilingUpshift: Math.max(0, detail.ceiling - 100),
       // MQ再設計P3b: リング内化(因縁/タイトル/trust/バフ)の観測。
       winner: result.winner,
       strongerSide,
@@ -569,6 +586,27 @@ function initGame(seed) {
 }
 
 // ── Step 4: プレイヤー判断のランダム自動化 ──
+
+// MQ再設計P3c 計測6: 鮮度→集客移管(§1.3/G)の動員影響。
+// パフォーマンス注記: Engine.freshness.calc は matchupLog 全体を毎回フィルタする O(log長) 処理で、
+// 興行を重ねるほど log が伸びて重くなる(auto-simの実行時間が季節数に対し超線形な主因)。
+// 独自に calc() や calcMatchAppeal を追加で呼び直すと、その O(log長) コストが二重・三重になり
+// 実行時間が跳ね上がる。そのため「本番が実際に呼んでいる calcMatchAppeal 呼び出し」に相乗りし、
+// 鮮度係数を後から除算で復元する(追加コストは実質ゼロ)。
+let _freshnessShowWithSum = 0;
+let _freshnessShowWithoutSum = 0;
+const _origCalcMatchAppealForFreshnessProbe = Engine.attendanceV2.calcMatchAppeal;
+Engine.attendanceV2.calcMatchAppeal = function(fighterA, fighterB, context, G) {
+  const result = _origCalcMatchAppealForFreshnessProbe.call(this, fighterA, fighterB, context, G);
+  const bonus = (context && context.freshnessRawBonus) || 0;
+  mqP3cProbe.freshnessMultTotalMatches++;
+  if (bonus) mqP3cProbe.freshnessMultActiveMatches++;
+  const mult = Engine.freshness.attendanceMult(bonus);
+  const withoutF = mult ? result / mult : result;
+  _freshnessShowWithSum += result;
+  _freshnessShowWithoutSum += withoutF;
+  return result;
+};
 
 // 興行カード自動編成
 // TODO[heuristic]: ランダムシャッフルで代用。本番ではプレイヤーが戦略的に編成する。
@@ -1091,6 +1129,9 @@ function runSimulation(seed, seasons) {
         if (G.showCard && G.showCard.length > 0) {
           stats.showCount++;
           stats.titleMatchCount += G.showCard.filter(m => m.isTitle).length;
+          // 計測6用リセット(Engine.executeShow内の実際のcalcMatchAppeal呼び出しに相乗りする)
+          _freshnessShowWithSum = 0;
+          _freshnessShowWithoutSum = 0;
           const showResult = Engine.executeShow(G);
           if (showResult && !showResult.error) {
             for (const matchResult of showResult.results || []) {
@@ -1138,6 +1179,44 @@ function runSimulation(seed, seasons) {
                 upperOverageMax,
               });
             }
+            // ── MQ再設計P3c計測(§3.2/§3.2b/G): fp分布・観客帯割合・興行内観客寄与σ・
+            //    興行平均MQ・鮮度→集客移管の動員影響。既存ロジックには接続しない横計測。 ──
+            try {
+              if (Number.isFinite(showResult.fp)) {
+                mqP3cProbe.showFp.push(showResult.fp);
+                const pf = showResult.pressureFactor;
+                const band = pf === 1.0 ? 'plus10' : pf === 0.5 ? 'plus05'
+                  : pf === -0.5 ? 'minus05' : pf === -1.0 ? 'minus10' : 'zero';
+                mqP3cProbe.pressureBandCounts[band]++;
+              }
+              const normalCrowdVals = [];
+              const normalMqVals = [];
+              for (const r of showResult.results || []) {
+                const inv = r.mqInventory;
+                if (inv && (inv.profile === 'normal-single' || inv.profile === 'normal-tag')) {
+                  normalCrowdVals.push(inv.crowd || 0);
+                  normalMqVals.push(r.mq || 0);
+                }
+              }
+              if (normalCrowdVals.length >= 2) {
+                const mean = normalCrowdVals.reduce((a, b) => a + b, 0) / normalCrowdVals.length;
+                const variance = normalCrowdVals.reduce((s, v) => s + (v - mean) ** 2, 0) / normalCrowdVals.length;
+                mqP3cProbe.showCrowdSigma.push(Math.sqrt(variance));
+              }
+              if (normalMqVals.length > 0) {
+                mqP3cProbe.showAvgMq.push(normalMqVals.reduce((a, b) => a + b, 0) / normalMqVals.length);
+              }
+              // 計測6: 鮮度→集客移管の動員影響。上のcalcMatchAppealモンキーパッチが本番呼び出しに
+              // 相乗りして集計済みの _freshnessShowWithSum/_freshnessShowWithoutSum を読むだけ
+              // (追加のfreshness.calc/calcMatchAppeal呼び出しなし。appeal合計ベースの近似値であり、
+              // calcShowDrawの位置重みや集客の非線形カーブ通過後の厳密な%ではない点に留意)。
+              const venueIdxForFreshness = (G.showVenue) || 0;
+              if (venueIdxForFreshness === 9) mqP3cProbe.domeShowCount++;
+              if (_freshnessShowWithoutSum > 0) {
+                mqP3cProbe.freshnessAttendanceDeltaPct.push(
+                  (_freshnessShowWithSum - _freshnessShowWithoutSum) / _freshnessShowWithoutSum * 100);
+              }
+            } catch (_e) { /* 計測エラーはゲームに影響させない */ }
             // ── 新集客v2計測（既存ロジック非接続・横で計算するだけ） ──
             if (typeof Engine.attendanceV2 !== 'undefined' && showResult.results) {
               try {
@@ -1848,6 +1927,68 @@ if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqIn
     const transcendRate = arr => arr.length ? arr.filter(x => x.transcendFired).length / arr.length * 100 : 0;
     console.log(`  超過レイヤー発生率: 因縁あり=${transcendRate(rivalrySamples).toFixed(3)}%(n=${rivalrySamples.length}) 因縁なし=${transcendRate(noneSamples).toFixed(3)}%(n=${noneSamples.length}) 全体=${transcendRate(singles).toFixed(3)}%`);
   }
+}
+
+// MQ再設計P3c(mq-redesign-proposal-v0.5 §3.2/§3.2b/§3.7b/G) 計測レポート
+console.log('--------------------------------------');
+console.log('MQ P3c Probe (観客帯×試合注目度・会場の熱・OV100超・鮮度→集客移管):');
+{
+  const percentile = (arr, p) => {
+    if (!arr.length) return null;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const idx = Engine.util.clamp(Math.round((sorted.length - 1) * p), 0, sorted.length - 1);
+    return sorted[idx];
+  };
+  const fpArr = mqP3cProbe.showFp;
+  if (fpArr.length) {
+    console.log(`  [計測1] fp(fill pressure)分布 n=${fpArr.length}:`);
+    console.log(`    p10=${percentile(fpArr, 0.10).toFixed(3)} p25=${percentile(fpArr, 0.25).toFixed(3)} p50=${percentile(fpArr, 0.50).toFixed(3)} p75=${percentile(fpArr, 0.75).toFixed(3)} p90=${percentile(fpArr, 0.90).toFixed(3)} p95=${percentile(fpArr, 0.95).toFixed(3)} p99=${percentile(fpArr, 0.99).toFixed(3)}`);
+    const bc = mqP3cProbe.pressureBandCounts;
+    const total = fpArr.length;
+    const pct = n => (n / total * 100).toFixed(2);
+    console.log(`    pressureFactor帯割合: +1.0=${pct(bc.plus10)}% +0.5=${pct(bc.plus05)}% 0=${pct(bc.zero)}% -0.5=${pct(bc.minus05)}% -1.0=${pct(bc.minus10)}%`);
+    const topBandPct = Number(pct(bc.plus10));
+    console.log(`    [目標: 最上位帯(+1.0)が興行の10〜15%以下] 実測=${topBandPct}% ${topBandPct <= 15 ? 'OK' : '(目標外・報告のみ、係数は変更しない)'}`);
+  } else {
+    console.log('  [計測1] fp分布: サンプルなし(通常興行が発生しなかった)');
+  }
+
+  const sigmaArr = mqP3cProbe.showCrowdSigma;
+  if (sigmaArr.length) {
+    const sigmaMean = sigmaArr.reduce((a, b) => a + b, 0) / sigmaArr.length;
+    console.log(`  [計測2/不変条件1] 興行内・試合間の観客寄与σ: mean=${sigmaMean.toFixed(3)} n(興行, 2試合以上)=${sigmaArr.length} [目標: ≥1.0] ${sigmaMean >= 1.0 ? 'OK' : 'NG'}`);
+  } else {
+    console.log('  [計測2] 観客寄与σ: サンプルなし(2試合以上の通常興行が発生しなかった)');
+  }
+
+  const avgMqArr = mqP3cProbe.showAvgMq;
+  if (avgMqArr.length) {
+    const avgMqMean = avgMqArr.reduce((a, b) => a + b, 0) / avgMqArr.length;
+    console.log(`  [計測3] 通常興行の平均MQ着地: mean=${avgMqMean.toFixed(2)} n(興行)=${avgMqArr.length} [想定: 約54±1.5]`);
+  }
+
+  const singlesAll = mqInventoryProbe.singlesRaw;
+  const over100 = singlesAll.filter(s => s.ovCeilingOver100);
+  if (singlesAll.length) {
+    const rate = (over100.length / singlesAll.length * 100);
+    console.log(`  [計測4/不変条件9] OV100超ペア発生率(シングル全経路): n=${over100.length}/${singlesAll.length} (${rate.toFixed(3)}%)`);
+    if (over100.length) {
+      const upshiftMean = over100.reduce((s, x) => s + x.ovCeilingUpshift, 0) / over100.length;
+      const upshiftMax = Math.max(...over100.map(x => x.ovCeilingUpshift));
+      console.log(`    平均上振れ(ceiling-100): mean=+${upshiftMean.toFixed(2)} max=+${upshiftMax.toFixed(2)}`);
+    }
+    // 不変条件9: avgOV<=100のペアは素点が完全不変であること(第4セグメント追加のみ・既存3セグメントは触っていない)
+    console.log(`    [不変条件9注記] avgOV<=100は既存3セグメントの式そのまま(コード上不変)。第4セグメントはavgOV>100のみに作用`);
+  }
+
+  const deltaArr = mqP3cProbe.freshnessAttendanceDeltaPct;
+  if (deltaArr.length) {
+    const deltaMean = deltaArr.reduce((a, b) => a + b, 0) / deltaArr.length;
+    console.log(`  [計測6] 鮮度→集客移管によるappeal合計の平均変化(動員%の近似値): mean=${deltaMean >= 0 ? '+' : ''}${deltaMean.toFixed(3)}% n(興行)=${deltaArr.length} [想定: ±2%以内]`);
+    console.log(`    マンネリ/初顔合わせ係数が実際に効いた試合数: ${mqP3cProbe.freshnessMultActiveMatches}/${mqP3cProbe.freshnessMultTotalMatches} (${(mqP3cProbe.freshnessMultActiveMatches / Math.max(1, mqP3cProbe.freshnessMultTotalMatches) * 100).toFixed(2)}%)`);
+  }
+
+  console.log(`  [計測5] ドーム(venueIdx=9)興行の発生回数: ${mqP3cProbe.domeShowCount || 0}件。0件ならtest/mq-p3c-unit.jsの単体テストで検証(tierAmp/大一番化/engagement cap)。`);
 }
 
 console.log('--------------------------------------');

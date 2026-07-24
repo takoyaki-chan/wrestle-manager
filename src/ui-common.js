@@ -3979,6 +3979,7 @@ function autoFillCardByAppeal() {
       const ctx = {
         rivalry: Math.max(rivAB, rivBA), isTitle: false, isFanExpect: feSet.has(pairKey),
         pendingClashBonus: pendingClash, isFirstMeet: fr.isFirstMeet, freshnessCount: fr.countInWindow,
+        freshnessRawBonus: fr.bonus,
       };
       pairs.push({ aId: a.id, bId: b.id, appeal: Engine.attendanceV2.calcMatchAppeal(a, b, ctx, G) });
     }

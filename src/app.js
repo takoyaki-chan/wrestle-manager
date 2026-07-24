@@ -6077,8 +6077,17 @@ const App = {
     const targetIdx = Engine.mq.resolveNextMatchMqTargetIndex(sp.validMatches, G.milestoneBuffs);
     const ringIn = Engine.mq.buildRingInOpts(G, m.left, m.right, {
       roster: G.roster, isTitle: !!m.isTitle, applyNextMatchMq: idx === targetIdx,
+      normalShowRingExtras: true, isMainEvent: idx === 0,
     });
     return ringIn.simOpts;
+  },
+
+  // MQ再設計P3c(§3.2b): 通常興行がドーム(venueIdx=9)のとき、メイン(idx=0)のシングル戦は
+  // 大一番(ビッグマッチ)ルールでシミュレーションする。タイトル戦は従来通りtier2。
+  _normalShowMatchTier(idx, m) {
+    if (m.isTitle) return 2;
+    if (idx === 0 && G.showVenue === 9) return 2;
+    return 1;
   },
 
   // Skip a single match (instant calculation) — 余韻フレーバーは出さない(省略の意思表示)
@@ -6140,7 +6149,7 @@ const App = {
       return;
     }
     const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
-    sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1,
+    sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, App._normalShowMatchTier(idx, m),
       App._normalShowRingInOpts(sp, idx, m));
     try { Audio.play('tick'); } catch(e) {}
     App._afterMatchSettle(idx, { skipFlavor: true });
@@ -6167,7 +6176,7 @@ const App = {
       return;
     }
     // エンジン実行（recordFrames=true）— Replay 方式: シミュレート結果＋フレーム列を iframe へ渡して再生
-    const matchTier = m.isTitle ? 2 : 1;
+    const matchTier = App._normalShowMatchTier(idx, m);
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
     const result = Engine.battle.simulateMatch(charL, charR, rng, matchTier,
       { recordFrames: true, ...App._normalShowRingInOpts(sp, idx, m) });
@@ -6555,7 +6564,7 @@ const App = {
         return;
       }
       const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
-      sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1,
+      sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, App._normalShowMatchTier(idx, m),
         App._normalShowRingInOpts(sp, idx, m));
     });
     if (sp.results.some(r => r === null)) {
@@ -6873,6 +6882,7 @@ const App = {
         rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
         isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
         pendingClashBonus: appPendingClash, isFirstMeet: appFr.isFirstMeet, freshnessCount: appFr.countInWindow,
+        freshnessRawBonus: appFr.bonus,
         isF08Match,
       }, s);
     });
@@ -6886,12 +6896,20 @@ const App = {
     const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
     const appV2Result = Engine.attendanceV2.calcAttendanceV2(s, s.showVenue, appShowDraw, attendRng);
     let preAttendance = appV2Result.attendance;
+    // MQ再設計P3c(§3.2): fp(fill pressure)算出用の「キャパでクランプする前の需要」。
+    let rawDemand = appV2Result.rawDemand;
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuffPre = (s.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
-    if (attendBoostBuffPre) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuffPre.multiplier));
+    if (attendBoostBuffPre) {
+      preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuffPre.multiplier));
+      rawDemand = Math.round(rawDemand * attendBoostBuffPre.multiplier);
+    }
     // mq_boost バフに付随する集客倍率（カードイベント effect 拡張で MQ+ と同時に集客効果を持つようになった）
     const mqBoostWithAttendance = (s.milestoneBuffs || []).find(b => b.type === 'mq_boost' && b.attendanceMultiplier);
-    if (mqBoostWithAttendance) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * mqBoostWithAttendance.attendanceMultiplier));
+    if (mqBoostWithAttendance) {
+      preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * mqBoostWithAttendance.attendanceMultiplier));
+      rawDemand = Math.round(rawDemand * mqBoostWithAttendance.attendanceMultiplier);
+    }
     // next_match_mq バフは特定ペア対象。該当ペアが showCard のいずれかに組まれていれば、その興行の集客倍率を適用
     const nextMatchMqWithAttendance = (s.milestoneBuffs || []).find(b => b.type === 'next_match_mq' && b.attendanceMultiplier && b.pair);
     if (nextMatchMqWithAttendance) {
@@ -6904,9 +6922,11 @@ const App = {
         }
         return (slot.left === p1 && slot.right === p2) || (slot.left === p2 && slot.right === p1);
       });
-      if (pairInCard) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * nextMatchMqWithAttendance.attendanceMultiplier));
+      if (pairInCard) {
+        preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * nextMatchMqWithAttendance.attendanceMultiplier));
+        rawDemand = Math.round(rawDemand * nextMatchMqWithAttendance.attendanceMultiplier);
+      }
     }
-    const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     // 興行結果画面で動員数を表示するためにstateに保存
     s = { ...s, lastShowAttendance: preAttendance };
     // D層 first_dome_sellout: postShow トリガー設定
@@ -6914,9 +6934,12 @@ const App = {
       const _domeCap = VENUES[9]?.cap || 22500;
       if (preAttendance / _domeCap >= 0.95) s = { ...s, _pendingDomeSelloutCeremony: true };
     }
-    const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
-    if (crowdMQ.crowdLabel) {
-      events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
+    // MQ再設計P3c(§3.2/§3.2b): venueHeat = tierAmp(会場の器) × pressureFactor(fp)。
+    const fp = rawDemand / VENUES[s.showVenue].cap;
+    const venueHeatResult = Engine.economy.calcVenueHeat(s.showVenue, fp);
+    if (venueHeatResult.crowdLabel) {
+      const heatText = Math.round(venueHeatResult.total * 10) / 10;
+      events.push(`🏟️ ${venueHeatResult.crowdLabel}（観客熱 ${heatText >= 0 ? '+' : ''}${heatText}）`);
     }
 
     // UI and headless share the same context builder and finalizer.
@@ -6935,7 +6958,9 @@ const App = {
           rivalries,
           path: 'App._finalizeShowImpl',
           matchIndex: i,
-          crowdVenueBonus: crowdMQ.total,
+          venueHeat: venueHeatResult.total,
+          fp,
+          pressureFactor: venueHeatResult.pressureFactor,
           nextMatchMqApplied: i === nextMatchMqTargetIdx,
         });
       const finalized = Engine.mq.finalize(s, r, context, profile);

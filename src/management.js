@@ -935,13 +935,15 @@ const Engine = {
       const pred = ATTENDANCE_PREDICTION.find(p => estOccRate >= p.min) || ATTENDANCE_PREDICTION[ATTENDANCE_PREDICTION.length - 1];
       return { text: pred.text, color: pred.color, estOccRate };
     },
-    // v1.0c: 会場熱気MQボーナス（満員率 + 会場規模）
-    calcCrowdMQBonus(venueIdx, occupancyRate) {
-      const crowdEntry = CROWD_HEAT_MQ.find(c => occupancyRate >= c.min)
-        || CROWD_HEAT_MQ[CROWD_HEAT_MQ.length - 1];
-      const crowdBonus = crowdEntry.bonus;
-      const scaleBonus = VENUE_SCALE_MQ[venueIdx] || 0;
-      return { total: crowdBonus + scaleBonus, crowdBonus, scaleBonus, crowdLabel: crowdEntry.label };
+    // MQ再設計P3c(mq-redesign-proposal-v0.5 §3.2/§3.2b): 会場の熱 = tierAmp(会場の器) × pressureFactor(fp)。
+    // fp = rawDemand(キャパでクランプする前の需要) / capacity。興行一律の値であり、試合ごとの
+    // 観客寄与はEngine.mq.finalizeがengagementと掛け合わせて算出する(このtotalはその素材)。
+    calcVenueHeat(venueIdx, fp) {
+      const band = FILL_PRESSURE_BANDS.find(b => fp >= b.min)
+        || FILL_PRESSURE_BANDS[FILL_PRESSURE_BANDS.length - 1];
+      const tierAmp = VENUE_HEAT_TIER_AMP[venueIdx] || 0;
+      const total = tierAmp * band.pf;
+      return { total, tierAmp, pressureFactor: band.pf, crowdLabel: band.label };
     },
     // v3.1: チケット単価逓減 — 集客が増えるほど1人あたり単価が下がる
     calcTieredTicketRevenue(attendance) {
@@ -1184,7 +1186,11 @@ const Engine = {
         stalePenalty = Math.max((context.freshnessCount - 2) * cfg.stalePenaltyPerCount, cfg.stalePenaltyMax);
       }
 
-      const totalAppeal = avgDraw + parityBonus + feudSum + titleBonus + fanExpectBonus + challengeRequestBonus + heelFaceBonus + clashAppeal + firstMeetBonus + stalePenalty;
+      const rawAppeal = avgDraw + parityBonus + feudSum + titleBonus + fanExpectBonus + challengeRequestBonus + heelFaceBonus + clashAppeal + firstMeetBonus + stalePenalty;
+      // MQ再設計P3c(§1.3/G): 鮮度ラベル(Engine.freshness.calcのbonus)の集客移管。
+      // 初顔合わせ→やや上振れ、マンネリ段階→段階的な減衰。MQへの鮮度加算は既に全廃済み(触らない)。
+      const freshnessMult = Engine.freshness.attendanceMult(context.freshnessRawBonus || 0);
+      const totalAppeal = rawAppeal * freshnessMult;
       return totalAppeal;
     },
 
@@ -1254,6 +1260,10 @@ const Engine = {
       const minAttendance = Math.max(10, Math.round(v.cap * 0.05));
       return {
         attendance: Engine.util.clamp(Math.round(attendance), minAttendance, v.cap),
+        // MQ再設計P3c(§3.2): 「キャパでクランプする前の需要」。fill pressure(fp = rawDemand/capacity)
+        // の入力に使う。ソフトキャップは適用済み(需要そのものの飽和)だが、会場キャパの
+        // 有無に依存しない「客がどれだけ来たがっているか」を表す。
+        rawDemand: Math.round(attendance),
         reach: Math.round(reach),
         draw: Math.round(draw * 100) / 100,
         rawAttendance: Math.round(rawAttendance),
@@ -1363,6 +1373,7 @@ const Engine = {
           isFanExpect: !!(m.isFanExpect || m.fanExpectMatched),
           isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
           pendingClashBonus: prvPendingClash, isFirstMeet: prvFr.isFirstMeet, freshnessCount: prvFr.countInWindow,
+          freshnessRawBonus: prvFr.bonus,
         };
         const matchAppeal = this.calcMatchAppeal(fA, fB, context, G);
         const promoBonus = Math.max(fA.promoStack || 0, fB.promoStack || 0) * SHOW_DRAW_CONFIG.promoStackPerMatch;
@@ -2121,6 +2132,14 @@ const Engine = {
       3: { counterPt: 4, escape: 0.11 },
       4: { counterPt: 5, escape: 0.15 },
     },
+    // MQ再設計P3c(mq-redesign-proposal-v0.5 §3.4b/§3.2b): ラストラン出場+通常興行メインの
+    // 気迫。固定MQ加算ではなく当人の実効OV(ovBuffチャネル)に乗せる。通常興行のみ適用
+    // (buildRingInOptsのoptions.normalShowRingExtras経由。PPV/AI興行は既存スコープ通り対象外)。
+    LASTRUN_RING_OV_BONUS: 1,
+    MAIN_EVENT_RING_OV_BONUS: 1,
+    // 観客帯×試合注目度(§3.2/§3.2b)。会場熱の器(tierAmp)はEngine.economy.calcVenueHeatが持つ。
+    ENGAGEMENT_CAP: 1.25,
+    ENGAGEMENT_CAP_LASTRUN_MAIN: 1.4,
 
     // 因縁のリング内化(§3.3): getRivalryLevel() の結果をリング内効果へ変換する。
     // 解決済み(好敵手/宿怨)はtier2相当(+3pt/+0.08)。一方的な因縁(oneSided)は対象外(旧mqBonusも0だった)。
@@ -2177,6 +2196,18 @@ const Engine = {
         nextMatchMqApplied = true;
       }
 
+      // MQ再設計P3c(§3.4b/§3.2b): ラストラン出場の気迫+通常興行メインの気迫。
+      // 通常興行のみ(options.normalShowRingExtras)。PPV/AI興行は従来スコープ通り対象外。
+      if (options.normalShowRingExtras) {
+        const mainBonus = options.isMainEvent ? Engine.mq.MAIN_EVENT_RING_OV_BONUS : 0;
+        const lastRunBonusL = (fighterL && fighterL.lastRun) ? Engine.mq.LASTRUN_RING_OV_BONUS : 0;
+        const lastRunBonusR = (fighterR && fighterR.lastRun) ? Engine.mq.LASTRUN_RING_OV_BONUS : 0;
+        ovBuff = [
+          ovBuff[0] + mainBonus + lastRunBonusL,
+          ovBuff[1] + mainBonus + lastRunBonusR,
+        ];
+      }
+
       return {
         simOpts: { rivalryRing, titleMatch, trustDebuff, ovBuff },
         rivalryLevel,
@@ -2220,10 +2251,9 @@ const Engine = {
           rivalryState, participantIds[0], participantIds[1]);
       }
 
+      // MQ再設計P3c(§3.4b): ラストランの固定MQ加算は撤廃。出場有無のメタデータのみ残す
+      // (リング内の実効OV+1化はEngine.mq.buildRingInOptsのovBuffチャネルで別途処理済み)。
       const lastRunFighter = participantFighters.find(fighter => fighter.lastRun) || null;
-      const lastRunBonus = lastRunFighter
-        ? (options.matchIndex === 0 ? 5 : 2)
-        : 0;
 
       return {
         path: options.path || 'normal-show',
@@ -2231,11 +2261,39 @@ const Engine = {
         participantFighters,
         rivalryLevel,
         isTitle: !isTag && !!(slot?.isTitle || matchResult?.isTitleMatch),
-        crowdVenueBonus: Number(options.crowdVenueBonus) || 0,
-        lastRunBonus,
+        // MQ再設計P3c(§3.2/§3.2b): 会場の熱(fp×tierAmp、興行1本につき1値)。試合ごとの
+        // 観客寄与はfinalize側でengagementと掛け合わせて算出する。fp/pressureFactorは
+        // mqInventoryの観測用メタデータとしてそのまま引き継ぐ。
+        venueHeat: Number(options.venueHeat) || 0,
+        fp: options.fp != null ? Number(options.fp) : null,
+        pressureFactor: options.pressureFactor != null ? Number(options.pressureFactor) : null,
+        isMainEvent: options.matchIndex === 0,
         lastRunFighterId: lastRunFighter?.id ?? null,
         nextMatchMqApplied: !!options.nextMatchMqApplied,
       };
+    },
+
+    // 観客帯×試合注目度(§3.2/§3.2b): その試合が観客の興味をどれだけ引いているか。
+    // normPop=人気(主成分)、+因縁/+タイトル/+メイン枠/+ラストラン出場で加点。
+    // capはラストラン選手が出場するメインのみ1.4、それ以外は1.25。
+    calcEngagement(participantFighters, opts = {}) {
+      const fighters = participantFighters || [];
+      const avgPop = fighters.length > 0
+        ? fighters.reduce((sum, fighter) => sum + (fighter?.popularity || 0), 0) / fighters.length
+        : 0;
+      const normPop = Engine.util.clamp((avgPop - 35) / 55, 0, 1);
+      const hasLastRun = !!opts.hasLastRun;
+      const isMainEvent = !!opts.isMainEvent;
+      const cap = (hasLastRun && isMainEvent)
+        ? Engine.mq.ENGAGEMENT_CAP_LASTRUN_MAIN
+        : Engine.mq.ENGAGEMENT_CAP;
+      const raw = 0.5
+        + 0.5 * normPop
+        + (opts.hasRivalry ? 0.15 : 0)
+        + (opts.isTitle ? 0.2 : 0)
+        + (isMainEvent ? 0.12 : 0)
+        + (hasLastRun ? 0.25 : 0);
+      return Engine.util.clamp(raw, 0.35, cap);
     },
 
     finalize(state, matchResult, context = {}, profile = 'raw') {
@@ -2248,8 +2306,8 @@ const Engine = {
       }
 
       const participantFighters = context.participantFighters || [];
-      // MQ再設計P3b: 因縁/タイトル/trust/バフはリング内化済み(simulateMatch側の入力)。
-      // finalize側の外部加算は crowd(会場の空気)+lastRun(稀な例外)のみに整理。
+      // MQ再設計P3b/P3c: 因縁/タイトル/trust/バフ/ラストランはリング内化済み(simulateMatch側の
+      // 入力)。finalize側の外部加算は crowd(会場の熱×試合注目度)のみに整理。
       // ppv/ai-showは外部加算なし(リング内化がシム側で自然に働く)。
       const contributions = {
         rivalry: 0,
@@ -2257,12 +2315,18 @@ const Engine = {
         crowd: 0,
         milestoneMqBoost: 0,
         nextMatchMq: 0,
-        lastRun: 0,
         trust: 0,
       };
+      let engagement = null;
+      const venueHeat = Number(context.venueHeat) || 0;
       if (profile === 'normal-single' || profile === 'normal-tag') {
-        contributions.crowd = Number(context.crowdVenueBonus) || 0;
-        contributions.lastRun = Number(context.lastRunBonus) || 0;
+        engagement = Engine.mq.calcEngagement(participantFighters, {
+          hasRivalry: !!context.rivalryLevel,
+          isTitle: !!context.isTitle,
+          isMainEvent: !!context.isMainEvent,
+          hasLastRun: context.lastRunFighterId != null,
+        });
+        contributions.crowd = Math.round(venueHeat * engagement);
       }
 
       const external = Object.values(contributions).reduce((sum, value) => sum + value, 0);
@@ -2282,6 +2346,11 @@ const Engine = {
         hasMeishoubu: participantFighters.some(fighter => Traits.has(fighter, '名勝負製造機')),
         hasHikidashi: participantFighters.some(fighter => Traits.has(fighter, '引き出し上手')),
         ...contributions,
+        // MQ再設計P3c 観測用メタデータ(fp/venueHeat/engagementは通常興行profileのみ非null)
+        venueHeat: engagement != null ? venueHeat : null,
+        fp: engagement != null ? (context.fp ?? null) : null,
+        pressureFactor: engagement != null ? (context.pressureFactor ?? null) : null,
+        engagement,
         uncappedExternal: external,
         positiveExternal,
         negativeExternal,
@@ -2302,7 +2371,7 @@ const Engine = {
         trustMQPenalty: contributions.trust,
         consumedNextMatchMqBuff: profile === 'normal-single'
           && !!context.nextMatchMqApplied,
-        lastRunFighterId: contributions.lastRun !== 0
+        lastRunFighterId: (profile === 'normal-single' || profile === 'normal-tag')
           ? (context.lastRunFighterId ?? null)
           : null,
       };
@@ -10799,6 +10868,7 @@ const Engine = {
             rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
             isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
             pendingClashBonus: sPendingClash, isFirstMeet: sFr.isFirstMeet, freshnessCount: sFr.countInWindow,
+            freshnessRawBonus: sFr.bonus,
           }, G);
         });
         const settleNonMatchPromo = roster.filter(c => !settleValidMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
@@ -11698,12 +11768,17 @@ const Engine = {
       const charL = roster.find(c => c.id === m.left);
       const charR = roster.find(c => c.id === m.right);
       if (!charL || !charR) return null;
+      const isMainEvent = matchIdx === 0;
       const ringIn = Engine.mq.buildRingInOpts({ ...s, roster }, m.left, m.right, {
         roster, rivalries, isTitle: !!m.isTitle,
         applyNextMatchMq: matchIdx === nextMatchMqTargetIdx,
+        normalShowRingExtras: true, isMainEvent,
       });
       const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right));
-      const result = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1, ringIn.simOpts);
+      // MQ再設計P3c(§3.2b): ドーム興行のメインは大一番(ビッグマッチ)ルールでシミュレーションする。
+      const isDomeMain = isMainEvent && s.showVenue === 9;
+      const matchTier = (m.isTitle || isDomeMain) ? 2 : 1;
+      const result = Engine.battle.simulateMatch(charL, charR, matchRng, matchTier, ringIn.simOpts);
       // メタデータ記録（MQにはまだ加算しない）。_mqRingInはPass2で読み取り後に破棄する。
       if (ringIn.rivalryLevel) result.rivalryBonus = ringIn.rivalryLevel;
       if (m.isTitle) {
@@ -11762,6 +11837,7 @@ const Engine = {
         rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
         isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
         pendingClashBonus, isFirstMeet: fr.isFirstMeet, freshnessCount: fr.countInWindow,
+        freshnessRawBonus: fr.bonus,
       }, s);
     });
     const usedIds = new Set();
@@ -11783,15 +11859,22 @@ const Engine = {
     const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
     const v2Result = Engine.attendanceV2.calcAttendanceV2(s, s.showVenue, v2ShowDraw, attendRng);
     let preAttendance = v2Result.attendance;
+    // MQ再設計P3c(§3.2): fp(fill pressure)算出用の「キャパでクランプする前の需要」。
+    // 動員系バフはこちらにもクランプなしで反映し、fpが実際の需要超過を反映するようにする。
+    let rawDemand = v2Result.rawDemand;
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
-    if (attendBoostBuff) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuff.multiplier));
+    if (attendBoostBuff) {
+      preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuff.multiplier));
+      rawDemand = Math.round(rawDemand * attendBoostBuff.multiplier);
+    }
     const mqBoostWithAttendance = (state.milestoneBuffs || [])
       .find(b => b.type === 'mq_boost' && b.attendanceMultiplier);
     if (mqBoostWithAttendance) {
       preAttendance = Math.min(
         VENUES[s.showVenue].cap,
         Math.round(preAttendance * mqBoostWithAttendance.attendanceMultiplier));
+      rawDemand = Math.round(rawDemand * mqBoostWithAttendance.attendanceMultiplier);
     }
     const nextMatchMqWithAttendance = (state.milestoneBuffs || [])
       .find(b => b.type === 'next_match_mq' && b.attendanceMultiplier && b.pair);
@@ -11812,13 +11895,16 @@ const Engine = {
         preAttendance = Math.min(
           VENUES[s.showVenue].cap,
           Math.round(preAttendance * nextMatchMqWithAttendance.attendanceMultiplier));
+        rawDemand = Math.round(rawDemand * nextMatchMqWithAttendance.attendanceMultiplier);
       }
     }
     s = { ...s, lastShowAttendance: preAttendance };
-    const preOccRate = preAttendance / VENUES[s.showVenue].cap;
-    const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
-    if (crowdMQ.crowdLabel) {
-      events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
+    // MQ再設計P3c(§3.2/§3.2b): venueHeat = tierAmp(会場の器) × pressureFactor(fp)。
+    const fp = rawDemand / VENUES[s.showVenue].cap;
+    const venueHeatResult = Engine.economy.calcVenueHeat(s.showVenue, fp);
+    if (venueHeatResult.crowdLabel) {
+      const heatText = Math.round(venueHeatResult.total * 10) / 10;
+      events.push(`🏟️ ${venueHeatResult.crowdLabel}（観客熱 ${heatText >= 0 ? '+' : ''}${heatText}）`);
     }
 
     // Pass 2: all normal-show MQ finalization goes through Engine.mq.finalize.
@@ -11839,7 +11925,9 @@ const Engine = {
           rivalries,
           path: 'Engine.executeShow',
           matchIndex: matchIdx,
-          crowdVenueBonus: crowdMQ.total,
+          venueHeat: venueHeatResult.total,
+          fp,
+          pressureFactor: venueHeatResult.pressureFactor,
           rivalryLevel: ringIn ? ringIn.rivalryLevel : undefined,
           nextMatchMqApplied: ringIn ? ringIn.nextMatchMqApplied : false,
         });
@@ -12567,7 +12655,8 @@ const Engine = {
       }
     }
 
-    return { state: s, results, injuryResults, events, showRivalryResolutions };
+    // MQ再設計P3c: fp/venueHeatは興行1本につき1値。観測・計測用にトップレベルにも残す。
+    return { state: s, results, injuryResults, events, showRivalryResolutions, fp, venueHeat: venueHeatResult.total, pressureFactor: venueHeatResult.pressureFactor };
   },
 
   // MQ/Show popularity helpers (pure functions)
@@ -22122,6 +22211,20 @@ Engine.freshness = {
       }
     }
     return { bonus: 0, label: null, isFirstMeet: false, countInWindow };
+  },
+
+  // MQ再設計P3c(mq-redesign-proposal-v0.5 §1.3/G): 鮮度ラベルの集客移管。
+  // calc()のbonus(+2初顔合わせ/-1〜-5マンネリ段階)を動員appeal寄与への係数に変換する。
+  // MQへの鮮度加算は既に全廃済み(P1) — この係数は動員計算専用。
+  attendanceMult(bonus) {
+    if (!bonus) return 1.0;
+    if (bonus >= 2) return 1.04;
+    if (bonus === -1) return 0.97;
+    if (bonus === -2) return 0.94;
+    if (bonus === -3) return 0.90;
+    if (bonus === -4) return 0.87; // -3と-5の間の補間(指示テーブルに-4の明示値なし)
+    if (bonus <= -5) return 0.84;
+    return 1.0;
   },
 };
 

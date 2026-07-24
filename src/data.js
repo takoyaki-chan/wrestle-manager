@@ -1251,16 +1251,18 @@ const CARD_POP_CONFIG = {
 };
 const CARD_DEPTH_MULT = [0.85, 0.92, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
 //                        1試合  2試合  3試合  4試合  5試合  6試合  7試合  8試合
-const CROWD_HEAT_MQ = [
-  { min: 0.95, bonus: +3, label: '超満員の熱気' },
-  { min: 0.80, bonus: +2, label: '大入りの声援' },
-  { min: 0.60, bonus: +1, label: '盛況の雰囲気' },
-  { min: 0.40, bonus:  0, label: '' },
-  { min: 0.25, bonus: -1, label: '空席の静けさ' },
-  { min: 0.00, bonus: -3, label: 'ガラガラの寂しさ' },
+// MQ再設計P3c(mq-redesign-proposal-v0.5 §3.2/§3.2b): 観客帯×試合注目度。
+// venueHeat = tierAmp[venueIdx] × pressureFactor(fp)。fp = rawDemand(キャパクランプ前の需要) / capacity。
+// 会場規模は観客熱の"器"(振れ幅)を決める — 埋め切ったときだけ他会場より高く跳ねる。ドーム(idx9)は別格。
+const VENUE_HEAT_TIER_AMP = [2, 2, 2, 3, 3, 3, 4, 5, 5, 7];
+//                          公民 小A  小B  市民 中A  中B  大   arena 大会場 ドーム
+const FILL_PRESSURE_BANDS = [
+  { min: 1.30, pf: +1.0, label: '客席が沸き返る超満員' },
+  { min: 1.05, pf: +0.5, label: '押し寄せる大盛況' },
+  { min: 0.85, pf:  0.0, label: '' },
+  { min: 0.55, pf: -0.5, label: '空席が目立つ客入り' },
+  { min: 0.00, pf: -1.0, label: '閑古鳥の会場' },
 ];
-// L1: 10段対応 — 公民館=0, 小A=0, 小B=+1, 市民=+1, 中A=+1, 中B=+1, 大ホール=+2, アリーナ=+2, 大会場=+2, ドーム=+3
-const VENUE_SCALE_MQ = [0, 0, 1, 1, 1, 1, 2, 2, 2, 3];
 
 // ── Popularity System Constants (v1.0b) ──
 const SCANDAL_CONFIG = {
@@ -27870,7 +27872,7 @@ if (typeof module !== 'undefined' && module.exports) {
     PORTRAIT, COACH_PORTRAIT, MAX_T, PHASES, ENG, SALARY_PARAMS, FAN_EXPECT_REACTIONS,
     VENUES, BASE_ATTENDANCE_CURVE, TICKET_PRICE_TIERS, VENUE_MQ_THRESHOLD, GOODS_CONFIG, OCCUPANCY_BONUS,
     MOMENTUM_CONFIG, ATTENDANCE_PREDICTION,
-    CARD_POP_CONFIG, CARD_DEPTH_MULT, CROWD_HEAT_MQ, VENUE_SCALE_MQ,
+    CARD_POP_CONFIG, CARD_DEPTH_MULT, VENUE_HEAT_TIER_AMP, FILL_PRESSURE_BANDS,
     SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_EVENT_INCOME_CURVE, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
     MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, MEDIA_AWARD_CONFIG, VENUE_MEDIA_MULT, PPV_CARD_MULT, TRUST_RAISE_DISCOUNT,
     FIXED_COSTS, SUBSIDY_TABLE,

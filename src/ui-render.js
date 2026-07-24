@@ -2396,7 +2396,8 @@ function showMatchAppealTooltip(event, slotIdx) {
   const bdFr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows, G.roster.length, null);
   const context = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect,
     isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
-    pendingClashBonus: bdPendingClash, isFirstMeet: bdFr.isFirstMeet, freshnessCount: bdFr.countInWindow };
+    pendingClashBonus: bdPendingClash, isFirstMeet: bdFr.isFirstMeet, freshnessCount: bdFr.countInWindow,
+    freshnessRawBonus: bdFr.bonus };
   const bd = Engine.attendanceV2.calcMatchAppealBreakdown(fA, fB, context, G);
 
   const _drawLine = (d) => {
@@ -3093,6 +3094,7 @@ function renderShowPrep() {
       rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!m.isTitle, isFanExpect: isFE,
       isChallengeRequest: !!(m._crMatchLocked || m.isCRMatch),
       pendingClashBonus: uiPendingClash, isFirstMeet: uiFr.isFirstMeet, freshnessCount: uiFr.countInWindow,
+      freshnessRawBonus: uiFr.bonus,
     }, G);
   });
   const _allMatchFighterIds = new Set();
@@ -3104,7 +3106,11 @@ function renderShowPrep() {
   const previewNonMatchPromo = G.roster.filter(c => !_allMatchFighterIds.has(c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
   const previewShowDraw = Engine.attendanceV2.calcShowDraw(previewMatchAppeals, previewNonMatchPromo, G.showVenue);
   const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, previewShowDraw);
-  const estCrowdMQ = Engine.economy.calcCrowdMQBonus(G.showVenue, prediction.estOccRate);
+  // MQ再設計P3c(§3.2/§3.2b): 予想MQタイルは会場の熱(venueHeat)ベースに変更。
+  // fp(fill pressure)はrawDemand/capacityで、実際のfinalize計算と同じ経路(calcAttendanceV2)を使う。
+  const previewV2Result = Engine.attendanceV2.calcAttendanceV2(G, G.showVenue, previewShowDraw, null);
+  const previewFp = previewV2Result.rawDemand / VENUES[G.showVenue].cap;
+  const estCrowdMQ = Engine.economy.calcVenueHeat(G.showVenue, previewFp);
   const v = VENUES[G.showVenue];
   const heat = getHeatLevel();
   const titleCd = Engine.title.canTitleMatch(G);
@@ -3131,7 +3137,7 @@ function renderShowPrep() {
     </div>
     <div class="sp-metrics">
       <div class="sp-metric"><div class="sp-metric-val" style="color:${heat.color}">${heat.label}</div><div class="sp-metric-label">Heat</div></div>
-      ${estCrowdMQ.total !== 0 ? `<div class="sp-metric" style="cursor:help" ${_tipAttr('観客の入りによる試合品質(MQ)への補正予測。超満員は試合を熱くし、ガラガラは冷やします。')}><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${estCrowdMQ.total}</div><div class="sp-metric-label">予想MQ</div></div>` : ''}
+      ${estCrowdMQ.total !== 0 ? `<div class="sp-metric" style="cursor:help" ${_tipAttr('会場の熱気予測。ここに各試合の注目度(人気・因縁・タイトル・メイン枠など)を掛けた分だけ試合品質(MQ)に効きます。超満員は試合を熱くし、ガラガラは冷やします。')}><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${Math.round(estCrowdMQ.total * 10) / 10}</div><div class="sp-metric-label">会場の熱</div></div>` : ''}
       ${hasTitlePreview
         ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">タイトル戦</div></div>`
         : (titleCd.allowed
@@ -3375,7 +3381,9 @@ function renderShowPrep() {
     if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
       const isFresh = freshnessPreview.bonus > 0;
-      tagParts.push(`<span class="sp-match-tag ${isFresh ? 'sp-tag-fresh' : 'sp-tag-stale'}">${isFresh ? '✨' : '😐'}${freshnessPreview.label} MQ${freshnessPreview.bonus >= 0 ? '+' : ''}${freshnessPreview.bonus}</span>`);
+      // MQ再設計P3c(§1.3/G): 鮮度は集客(appeal)側の係数に移管済み。MQ表記はやめて動員への効きを示す。
+      const freshMult = Engine.freshness.attendanceMult(freshnessPreview.bonus);
+      tagParts.push(`<span class="sp-match-tag ${isFresh ? 'sp-tag-fresh' : 'sp-tag-stale'}">${isFresh ? '✨' : '😐'}${freshnessPreview.label} 動員×${freshMult.toFixed(2)}</span>`);
     }
     if (isFanExpect) tagParts.push(`<span class="sp-match-tag sp-tag-fanexpect">📣ファン期待</span>`);
     if (isLastRunMatch) tagParts.push(`<span class="sp-match-tag sp-tag-lastrun">🌅ラストマッチ</span>`);
@@ -3391,7 +3399,8 @@ function renderShowPrep() {
       const slotFr = Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows, G.roster.length, null);
       const ctx = { rivalry: Math.max(rivalryAB, rivalryBA), isTitle: !!G.showCard[i].isTitle, isFanExpect,
         isChallengeRequest: !!(slot._crMatchLocked || slot.isCRMatch),
-        pendingClashBonus: slotPendingClash, isFirstMeet: slotFr.isFirstMeet, freshnessCount: slotFr.countInWindow };
+        pendingClashBonus: slotPendingClash, isFirstMeet: slotFr.isFirstMeet, freshnessCount: slotFr.countInWindow,
+        freshnessRawBonus: slotFr.bonus };
       try { slotBD = Engine.attendanceV2.calcMatchAppealBreakdown(fl, fr, ctx, G); } catch(e) {}
     }
 
