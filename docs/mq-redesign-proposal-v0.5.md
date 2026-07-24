@@ -298,6 +298,7 @@ avgOV > 100: ceiling = 100 + 0.25 × (avgOV − 100)   🔧
 | `hotProspectDebut` | trainCap-OVR 125+ の新人の**デビュー戦が行われた週** | `Engine.rival.trainCapOVR`(management.js:6949)+careerHistoryのdebutイベント。デビュー記事自体が現状ゼロなので新設 |
 | `fatedRivals` | 同年代・trainCap-OVR 117+ が2人**初めて揃った年**の、2人目のデビュー戦週 | 同上+年齢差判定。1団体内に限定しない(業界紙視点) |
 | `topChampionInjury` | 業界ランキング1位または2位の団体の**現王者**が**重傷以上**の怪我を負った週 | 団体ランキング(org-ranking-spec-v2.0)+王座保持情報+怪我重篤度。**AI団体の王者・怪我データがどこまで追跡されているかの調査が実装前に必要** |
+| `mqTagRecord` | タッグ業界記録(`mqRecordTag`)が更新された週 | 記録分離(§2.2)に伴う追加(2026-07-24)。**一面は上下ぶち抜き大記事レイアウト+勝者2人写真**(springTagResultの優勝ペア写真枠を流用)。本文A/B/C承認済み+勝者組称賛段落つき(Keisuke要望) |
 
 ※ ロードマップは「年齢差1歳以内」。コードベースの同世代慣例は3歳以内(relationships.js)だが、**こちらは"逸材が同時代に現れた"という希少事件**なので、起案どおり1歳以内の狭い定義を維持する。
 
