@@ -6,6 +6,9 @@
 // MQ再設計P3b(mq-redesign-proposal-v0.4 §3.4): タイトル戦のリング内効果。
 // 王座戦は挑戦者・王者ともフォール/ギブアップ脱出率+0.10(既存キャップに従う)。
 const TITLE_RING_ESCAPE_BONUS = 0.10;
+// MQ再設計P3c(mq-redesign-proposal-v0.5 §3.4較正結果): escape単独ではMQへの寄与が薄いため
+// カウンター率+4ptを補強(名勝負製造機・因縁と同じ既存キャップ共有)。
+const TITLE_RING_COUNTER_BONUS = 4;
 
 // 技候補はモジュール初期化時に一度だけ威力ティアへ分類する。
 // 丸め込みは独立抽選なので、通常ティアの候補からは除外する。
@@ -49,6 +52,16 @@ function snapshotMoveSelectionStats(stats) {
 
 // ── Battle Engine (DOM-free) ──────────────────────────
 Engine.battle = {
+    // MQ再設計P3c(mq-redesign-proposal-v0.5 §3.7b): OV100超の減衰シーリング。
+    // 第4セグメントを追加するのみ — avgOV<=100の3セグメントは既存式のまま完全不変。
+    ovCeiling(avgOV) {
+      let ceiling;
+      if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
+      else if (avgOV <= 80) ceiling = 50 + (avgOV - 50) * 1.10;
+      else if (avgOV <= 100) ceiling = 83 + (avgOV - 80) * 0.85;
+      else ceiling = 100 + (avgOV - 100) * 0.25;
+      return Engine.util.clamp(ceiling, 15, Infinity);
+    },
     pacingPenalty(matchTurns, tier, hasHikidashi) {
       const limits = tier >= 2
         ? (hasHikidashi ? { ideal: 14, ok: 10 } : { ideal: 18, ok: 14 })
@@ -296,7 +309,8 @@ Engine.battle = {
       const ringOpts = opts || {};
       const rivalryRing = ringOpts.rivalryRing || null;
       const titleRingMatch = !!ringOpts.titleMatch;
-      const ringCounterBonus = rivalryRing ? (Number(rivalryRing.counterPt) || 0) : 0;
+      const ringCounterBonus = (rivalryRing ? (Number(rivalryRing.counterPt) || 0) : 0)
+        + (titleRingMatch ? TITLE_RING_COUNTER_BONUS : 0);
       const ringEscapeBonus = (rivalryRing ? (Number(rivalryRing.escape) || 0) : 0)
         + (titleRingMatch ? TITLE_RING_ESCAPE_BONUS : 0);
       const trustRingDebuff = Array.isArray(ringOpts.trustDebuff) ? ringOpts.trustDebuff : [0, 0];
@@ -683,12 +697,8 @@ Engine.battle = {
       // (恒久的なステータス変更ではなく、その試合の天井だけをその場で動かす)。
       const avgOV = (Engine.util.ov(charL) + ringOvAdjustL + Engine.util.ov(charR) + ringOvAdjustR) / 2;
 
-      // §1 天井（OVシーリング）
-      let ceiling;
-      if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
-      else if (avgOV <= 80) ceiling = 50 + (avgOV - 50) * 1.10;
-      else ceiling = 83 + (avgOV - 80) * 0.85;
-      ceiling = Math.round(Engine.util.clamp(ceiling, 15, 100));
+      // §1 天井（OVシーリング。OV100超は§3.7bの減衰セグメントを含む共通関数を使う）
+      const ceiling = Math.round(B.ovCeiling(avgOV));
 
       // §2 ドラマ減点（見せ場不足がペナルティ）
       let dramaPenalty = 30;
@@ -765,7 +775,7 @@ Engine.battle = {
         transcend: { fired: transcendFired && transcendOverflow > 0, excess: transcendExcess, overflow: transcendOverflow },
         // MQ再設計P3b: リング内化の適用メタデータ(観測・新聞演出用。存在する場合のみ付与)
         ...(rivalryRing ? { rivalryRing: { tier: rivalryRing.tier, counterPt: rivalryRing.counterPt, escape: rivalryRing.escape } } : {}),
-        ...(titleRingMatch ? { titleRing: { escape: TITLE_RING_ESCAPE_BONUS } } : {}),
+        ...(titleRingMatch ? { titleRing: { escape: TITLE_RING_ESCAPE_BONUS, counterPt: TITLE_RING_COUNTER_BONUS } } : {}),
         ...((trustRingDebuff[0] || trustRingDebuff[1]) ? { trustDebuff: [trustRingDebuff[0] || 0, trustRingDebuff[1] || 0] } : {}),
         ...((buffRingBonus[0] || buffRingBonus[1]) ? { ovBuff: [buffRingBonus[0] || 0, buffRingBonus[1] || 0] } : {}),
         ...((ringOvAdjustL || ringOvAdjustR) ? { ovAdjust: [ringOvAdjustL, ringOvAdjustR] } : {}),
@@ -1715,11 +1725,8 @@ Engine.tagMatch = (() => {
     const avgOV = Math.round((
       Engine.util.ov(fA1) + Engine.util.ov(fA2) + Engine.util.ov(fB1) + Engine.util.ov(fB2)
     ) / 4);
-    let ceiling;
-    if (avgOV <= 50) ceiling = 20 + avgOV * 0.60;
-    else if (avgOV <= 80) ceiling = 50 + (avgOV - 50) * 1.10;
-    else ceiling = 83 + (avgOV - 80) * 0.85;
-    ceiling = clamp(ceiling, 15, 100);
+    // §3.7b: OV100超の減衰シーリングは共通関数(Engine.battle.ovCeiling)を使う。avgOV<=100は不変。
+    const ceiling = Engine.battle.ovCeiling(avgOV);
 
     let dramaPenalty = 30;
     dramaPenalty -= Math.min(totalKickouts, 3) * 6;
