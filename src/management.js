@@ -2377,9 +2377,15 @@ const Engine = {
       };
     },
 
-    createRecord(value = 100) {
+    // MQ再設計P3e(§2.2): 記録をシングル/タッグで分離。スタート値はそれぞれの物差しの
+    // 基準帯に合わせた別値(シングル90/タッグ94)。
+    SINGLE_RECORD_START: 90,
+    TAG_RECORD_START: 94,
+
+    createRecord(startValue = Engine.mq.SINGLE_RECORD_START, value) {
+      const base = value != null ? Number(value) : startValue;
       return {
-        value: Math.max(100, Number(value) || 0),
+        value: Math.max(startValue, Number.isFinite(base) ? base : startValue),
         holderIds: null,
         orgId: null,
         season: null,
@@ -2388,6 +2394,8 @@ const Engine = {
       };
     },
 
+    // v1: mqRecordが存在しない旧セーブに、キャラのcareerBestMQ実測から単一記録を1本補完する。
+    // 分離前の挙動そのまま(フロアは旧仕様通り100)。v2がこの後段で分離・再較正を行う。
     migrateRecord(state) {
       if (state?.mqRecord && state?._migrated_mq_record_v1) return state;
       if (state?.mqRecord) {
@@ -2404,13 +2412,63 @@ const Engine = {
         100);
       return {
         ...state,
-        mqRecord: Engine.mq.createRecord(savedBest),
+        mqRecord: Engine.mq.createRecord(100, savedBest),
         _migrated_mq_record_v1: true,
       };
     },
 
+    // v2(P3e §2.2): シングル/タッグ分離。v1世代(単一mqRecordのみ)も含めて1回限り再移行する。
+    // - 既存mqRecordが更新済み(value>100 かつ holderIds あり):
+    //   - holderIds.length>=3 (=タッグ試合だった) → mqRecordTagへ移し、mqRecordは
+    //     careerBestMQ実測からシングル基準(90)で再初期化
+    //   - holderIds.length<=2 (=シングル試合) → mqRecordはそのまま(下限90への引き上げはしない)
+    //     mqRecordTagはcareerBestMQ実測からタッグ基準(94)で新規初期化
+    // - 未更新(holderIds null): 両記録ともcareerBestMQ実測(共通の走査値)からそれぞれの
+    //   下限(90/94)で再初期化
+    migrateRecordV2(state) {
+      if (state?._migrated_mq_record_v2) return state;
+      const oldRecord = state?.mqRecord || Engine.mq.createRecord(100);
+      const wasUpdated = Number(oldRecord.value) > 100
+        && Array.isArray(oldRecord.holderIds) && oldRecord.holderIds.length > 0;
+
+      const fighters = [
+        ...(state?.roster || []),
+        ...Object.values(state?.aiOrgs || {}).flatMap(org => org.roster || []),
+        ...(state?.freeAgents || []),
+        ...(state?.retiredFighters || []),
+      ];
+      const scanBest = fighters.reduce(
+        (best, fighter) => Math.max(best, Number(fighter?.careerBestMQ) || 0), 0);
+
+      let mqRecord;
+      let mqRecordTag;
+      if (wasUpdated && oldRecord.holderIds.length >= 3) {
+        // 実はタッグの更新だった → タッグ記録へ移設、シングルは実測から再初期化
+        mqRecordTag = { ...oldRecord, value: Math.max(Engine.mq.TAG_RECORD_START, oldRecord.value) };
+        mqRecord = Engine.mq.createRecord(Engine.mq.SINGLE_RECORD_START, scanBest);
+      } else if (wasUpdated) {
+        // シングルの更新 → そのまま維持、タッグは実測から新規初期化
+        mqRecord = oldRecord;
+        mqRecordTag = Engine.mq.createRecord(Engine.mq.TAG_RECORD_START, scanBest);
+      } else {
+        // 未更新 → 両方とも実測(共通の走査値)から各下限で再初期化
+        mqRecord = Engine.mq.createRecord(Engine.mq.SINGLE_RECORD_START, scanBest);
+        mqRecordTag = Engine.mq.createRecord(Engine.mq.TAG_RECORD_START, scanBest);
+      }
+
+      return {
+        ...state,
+        mqRecord,
+        mqRecordTag,
+        _migrated_mq_record_v2: true,
+      };
+    },
+
     updateRecord(state, matchResult, metadata = {}) {
-      const current = state?.mqRecord || Engine.mq.createRecord();
+      const isTag = metadata.matchType === 'tag';
+      const recordKey = isTag ? 'mqRecordTag' : 'mqRecord';
+      const startValue = isTag ? Engine.mq.TAG_RECORD_START : Engine.mq.SINGLE_RECORD_START;
+      const current = state?.[recordKey] || Engine.mq.createRecord(startValue);
       const value = Number(matchResult?.mq);
       if (!Number.isFinite(value) || value <= current.value) {
         return { state, updated: false, record: current };
@@ -2429,7 +2487,7 @@ const Engine = {
         stage: metadata.stage ?? null,
       };
       return {
-        state: { ...state, mqRecord: record },
+        state: { ...state, [recordKey]: record },
         updated: true,
         record,
       };
@@ -8164,6 +8222,7 @@ const Engine = {
               holderIds: [event.fighter1, event.fighter2],
               orgId,
               stage: 'ai',
+              matchType: 'singles',
             },
           };
           if (result.relationships) retVal._b2Relationships = result.relationships;
@@ -9384,6 +9443,7 @@ const Engine = {
           holderIds: [rep1.id, rep2.id],
           orgId: null,
           stage: 'ai',
+          matchType: 'singles',
         }).state;
 
         const winner = matchResult.winner; // 'left' or 'right' or 'draw'
@@ -9647,6 +9707,7 @@ const Engine = {
           holderIds: [challenger.id, defender.id],
           orgId: null,
           stage: 'ai',
+          matchType: 'singles',
         }).state;
 
         const winner = matchResult.winner; // 'left' | 'right' | 'draw'
@@ -11171,6 +11232,7 @@ const Engine = {
             holderIds: [matchResult.left?.id, matchResult.right?.id],
             orgId,
             stage: 'ai',
+            matchType: 'singles',
           }).state;
         });
         // Phase 2: 新規試合ペアを収集（matchupLogの差分から取得）
@@ -11980,6 +12042,7 @@ const Engine = {
         holderIds,
         orgId: 'player',
         stage: 'normal',
+        matchType: result.matchType === 'tag' ? 'tag' : 'singles',
       }).state;
     });
 
@@ -13977,6 +14040,7 @@ const Engine = {
           holderIds: [match.left.id, match.right.id],
           orgId: null,
           stage: 'ppv',
+          matchType: 'singles',
         }).state;
         if (rivalLvl) {
           r.rivalryBonus = rivalLvl;
@@ -15906,8 +15970,10 @@ const Engine = {
       domeShowsThisSeason: 0, // orgPop リバランス v1.1 §5: ドーム年1回制限
       attendanceMomentum: 0, // L1: 勢い補正（-0.15〜+0.15）
       lastShowResults: [],
-      mqRecord: Engine.mq.createRecord(),
+      mqRecord: Engine.mq.createRecord(Engine.mq.SINGLE_RECORD_START),
+      mqRecordTag: Engine.mq.createRecord(Engine.mq.TAG_RECORD_START),
       _migrated_mq_record_v1: true,
+      _migrated_mq_record_v2: true,
       weeklyFinance: { income: 0, expense: 0, details: [] },
       totalShows: 0,
       heatScore: 0,
@@ -24096,6 +24162,7 @@ Engine.juniorTournament = {
         holderIds: [match.left?.id, match.right?.id],
         orgId: null,
         stage: 'junior',
+        matchType: 'singles',
       }).state;
     }));
 
@@ -24755,6 +24822,7 @@ Engine.ppvTournament = {
         holderIds: [match.left?.id, match.right?.id],
         orgId: null,
         stage: 'tenchosen',
+        matchType: 'singles',
       }).state;
     }));
     const finalMatch = tournamentResult.rounds[tournamentResult.rounds.length - 1]?.matches?.[0];
@@ -25317,6 +25385,7 @@ Engine.springTagLeague = {
         ],
         orgId: null,
         stage: 'springTag',
+        matchType: 'tag',
       }).state;
     });
     // リーグ順位は決勝進出者を決めるためのもの。決勝後の賞金・実績は最終結果を正とする。
@@ -26209,6 +26278,7 @@ Engine.autumnWar = {
           holderIds: [bout.left?.id, bout.right?.id],
           orgId: null,
           stage: 'autumnWar',
+          matchType: 'singles',
         }).state;
       });
     });

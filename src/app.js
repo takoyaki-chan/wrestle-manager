@@ -2043,6 +2043,9 @@ const Storage = {
       // MQ historical industry record: initialize once from all saved fighter pools.
       G = Engine.mq.migrateRecord(G);
 
+      // MQ再設計P3e(§2.2): シングル/タッグ記録の分離。v1世代も含めて1回限り再移行する。
+      G = Engine.mq.migrateRecordV2(G);
+
       // v1.5: 難易度リバランス — 既存セーブのorgPopをリスケール（×0.7）
       // ※ orgPop < 20 は逓減カーブが×1.0帯のため補正不要（序盤セーブには適用しない）
       if (!G._migrated_v1_5_rebalance) {

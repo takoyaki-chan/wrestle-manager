@@ -14,6 +14,43 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 MQ再設計 P3e: 記録のシングル/タッグ分離+スタート値
+
+`docs/mq-redesign-proposal-v0.5.md` §2.2/§3.9不変条件8。P3d-2の直後に着手。対象は`src/management.js`(`Engine.mq`)/`src/app.js`/`test/auto-sim.js`。
+
+**1. 記録の分離**（`src/management.js` `Engine.mq`）:
+- `SINGLE_RECORD_START=90`/`TAG_RECORD_START=94`を新設。
+- `createRecord(startValue=SINGLE_RECORD_START, value)`にシグネチャ変更(旧: `createRecord(value=100)`、フロア100固定)。
+- `updateRecord`は`metadata.matchType==='tag'`で`mqRecordTag`、それ以外(既定)で`mqRecord`に振り分け。フロアもキーに応じてSINGLE/TAG_RECORD_STARTを使用。
+- 全10箇所の`Engine.mq.updateRecord`呼び出し(aiWar/aiB3Challenge/B2団体内紛/AI週次/通常興行/PPV/ジュニア/天頂戦/春タッグ/秋勝ち残り)に`matchType`を明示付与。通常興行のみ`result.matchType==='tag'?'tag':'singles'`で動的判定(既存の`holderIds`分岐と同じ条件式)、春タッグのみ`'tag'`固定、他は全て`'singles'`固定(タッグ形式が存在しない経路のため)。
+
+**2. セーブ移行**（`Engine.mq.migrateRecordV2`、`src/app.js`で`migrateRecord`の直後に実行）: 新フラグ`_migrated_mq_record_v2`で1回限り。
+- 既存`mqRecord`が更新済み(value>100 かつ holderIds あり)かつ`holderIds.length>=3`→実はタッグの更新だったとみなし`mqRecordTag`へ移設(floor=max(94,value))、`mqRecord`は全キャラ`careerBestMQ`実測値からシングルfloor(90)で再初期化。
+- 更新済みかつ`holderIds.length<=2`→`mqRecord`はそのまま(90へのフロア引き上げはしない)、`mqRecordTag`は実測値からタッグfloor(94)で新規初期化。
+- 未更新→両方とも実測値(共通の走査値)から各floorで再初期化。
+- 新規ゲーム(`createInitialState`)は`mqRecord`/`mqRecordTag`を最初からfloor通りに生成し、両マイグレーションフラグをtrueで初期化(移行不要)。
+
+**3. 計測系の追随**:
+- `test/auto-sim.js`の`mqRecordProbe`を`updatesSingle`/`updatesTag`に分離収集し、ログ出力(`MQ All-Time Record Probe`/`mqRecord更新回数`)をシングル/タッグ別+合算の両方で表示するよう変更。
+- `test/mq-record-trajectory.js`は変更なし(元々`Engine.mq.updateRecord`をフックしてmatchTypeを独自分類する完全独立スクリプトのため、分離後もそのまま利用可能)。
+
+**4. 軌跡再計測**（`node test/mq-record-trajectory.js`、40シーズン×5シード: 42/7919/15838/23757/31676、P3後の現行コードで再実行）:
+
+シングル(start=90): 初更新シーズン S5/S7/S10/S7/S5 → **中央値S7**。10年区間別更新回数(5シード平均): S1-10=1.80 / S11-20=1.40 / S21-30=0.20 / S31-40=0.00。
+
+タッグ(start=94): 初更新シーズン S13/S17/S14/S14/S10 → **中央値S14**。10年区間別更新回数(5シード平均): S1-10=0.20 / S11-20=0.80 / S21-30=0.00 / S31-40=0.20。
+
+不変条件8(初更新中央値S4〜8/最初の20年で10年あたり0.5〜1.5回/以後逓減)との対比(**報告のみ・数値変更なし**):
+- シングル: 中央値S7は範囲内。ただしS1-10の更新回数1.80/10年は上限1.5をやや超過。S21-30以降は0.20→0.00と逓減し条件を満たす。
+- タッグ: 中央値S14は範囲(S4-8)から外れて後ろ倒し。S1-10の更新回数0.20/10年は下限0.5を下回り、S11-20で0.80に上がってから0.00/0.20と不規則。タッグのスタート値94は不変条件8の想定より「更新が遅く・少ない」方向にずれている。判断は設計側(Keisuke)に委ねる。
+
+**5. 検証**: `node --check`全対象pass。`node test/auto-sim.js 100 42`(フォアグラウンド)→**ALL CLEAR ✓**、★分布は前段(P3d-2)の採用値と一致(★1=0.2%/★2=1.4%/★3=14.3%/★4=66.0%/★5=18.0%、n=2005)、mqRecord更新内訳=シングル4件/タッグ2件(合算6件/100季)。P3e自体はmqRecord/mqRecordTagへの書き込み先を変えるだけの副作用のない変更(RNG消費なし・他コードから未参照)のため、★分布・fp帯はP3d-2確定時の実測をそのまま流用可能と判断し重複実行はしていない。
+
+別シード再現性チェック(`node test/auto-sim.js 40 7919`、P3d-2のグリッド探索中に採取した同一コード相当の実測値を流用):
+- fp最上位帯(+1.0): seed42(100季,n=2005)=4.79% / seed7919(40季,n=803)=7.35% → 差2.56pt(±5pt内)
+- ★5: seed42=18.0% / seed7919=13.2% → 差4.8pt(±5pt内)
+- ★3: seed42=14.3% / seed7919=20.3% → **差6.0pt(±5pt をやや超過)**。40季(n≈800)のサンプルサイズによる振れと判断されるが、数値は変更せず報告のみ
+
 ## 2026-07-24 MQ再設計 P3d-2: ★評価の微調整(expectedMQTotal再々較正+星5カット追加ノブ)
 
 P3d直後の実測で★5=31.9%(目標21%)が過多だった件の是正。`docs/mq-redesign-proposal-v0.5.md`は変更なし(§3.8a後の追加チューニングのため本作業はworklogのみで報告)。対象は`src/data.js`(`SHOW_RATING_CONFIG`)と`test/mq-p3c-unit.js`。

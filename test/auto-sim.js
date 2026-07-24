@@ -350,12 +350,20 @@ Engine.growthEvents.checkAndApplyBreakthrough = function(rng, fighter, mq, oppOv
 
 // Task 22: observe industry-wide all-time MQ record updates without changing
 // production state or RNG consumption.
-const mqRecordProbe = { updates: [] };
+// MQ再設計P3e(§2.2): シングル/タッグ分離後は記録プローブも用途別に分けて収集する。
+const mqRecordProbe = { updates: [], updatesSingle: [], updatesTag: [] };
 if (Engine.mq && typeof Engine.mq.updateRecord === 'function') {
   const updateMqRecord = Engine.mq.updateRecord;
   Engine.mq.updateRecord = function(state, matchResult, metadata) {
     const result = updateMqRecord.call(this, state, matchResult, metadata);
-    if (result.updated) mqRecordProbe.updates.push({ ...result.record });
+    if (result.updated) {
+      mqRecordProbe.updates.push({ ...result.record });
+      if (metadata && metadata.matchType === 'tag') {
+        mqRecordProbe.updatesTag.push({ ...result.record });
+      } else {
+        mqRecordProbe.updatesSingle.push({ ...result.record });
+      }
+    }
     return result;
   };
 }
@@ -2055,11 +2063,22 @@ console.log('MQ P3c Probe (観客帯×試合注目度・会場の熱・OV100超�
 
 console.log('--------------------------------------');
 console.log('MQ All-Time Record Probe:');
-console.log(`  updates: ${mqRecordProbe.updates.length} / ${targetSeasons} seasons`);
-console.log(`  updates per 10 seasons: ${(mqRecordProbe.updates.length / Math.max(1, targetSeasons) * 10).toFixed(2)}`);
+console.log(`  updates(合算): ${mqRecordProbe.updates.length} / ${targetSeasons} seasons`);
+console.log(`  updates per 10 seasons(合算): ${(mqRecordProbe.updates.length / Math.max(1, targetSeasons) * 10).toFixed(2)}`);
+// MQ再設計P3e(§2.2): mqRecord(シングル)/mqRecordTag(タッグ)を分離して報告する。
+console.log(`  [シングル] updates: ${mqRecordProbe.updatesSingle.length} / ${targetSeasons} seasons (${(mqRecordProbe.updatesSingle.length / Math.max(1, targetSeasons) * 10).toFixed(2)}/10seasons)`);
+if (mqRecordProbe.updatesSingle.length > 0) {
+  const lastSingle = mqRecordProbe.updatesSingle[mqRecordProbe.updatesSingle.length - 1];
+  console.log(`    final observed record: MQ${lastSingle.value} (${lastSingle.stage}, S${lastSingle.season} W${lastSingle.week})`);
+}
+console.log(`  [タッグ] updates: ${mqRecordProbe.updatesTag.length} / ${targetSeasons} seasons (${(mqRecordProbe.updatesTag.length / Math.max(1, targetSeasons) * 10).toFixed(2)}/10seasons)`);
+if (mqRecordProbe.updatesTag.length > 0) {
+  const lastTag = mqRecordProbe.updatesTag[mqRecordProbe.updatesTag.length - 1];
+  console.log(`    final observed record: MQ${lastTag.value} (${lastTag.stage}, S${lastTag.season} W${lastTag.week})`);
+}
 if (mqRecordProbe.updates.length > 0) {
   const lastRecord = mqRecordProbe.updates[mqRecordProbe.updates.length - 1];
-  console.log(`  final observed record: MQ${lastRecord.value} (${lastRecord.stage}, S${lastRecord.season} W${lastRecord.week})`);
+  console.log(`  final observed record(合算): MQ${lastRecord.value} (${lastRecord.stage}, S${lastRecord.season} W${lastRecord.week})`);
 }
 
 const mqPathRows = Object.entries(mqPathProbe)
@@ -2166,7 +2185,8 @@ console.log('MQ P3d Baseline Compare Probe (mq-p3d-baseline-compare-v0.1) — �
     const rate = singles.filter(x => x.transcendFired).length / singles.length * 100;
     return `n=${singles.length} rate=${rate.toFixed(3)}%`;
   })()}`);
-  console.log(`  [mqRecord更新回数(既存計測の再掲)] updates=${mqRecordProbe.updates.length} / ${targetSeasons} seasons (${(mqRecordProbe.updates.length / Math.max(1, targetSeasons) * 10).toFixed(2)}/10seasons)`);
+  console.log(`  [mqRecord更新回数(既存計測の再掲・合算)] updates=${mqRecordProbe.updates.length} / ${targetSeasons} seasons (${(mqRecordProbe.updates.length / Math.max(1, targetSeasons) * 10).toFixed(2)}/10seasons)`);
+  console.log(`  [mqRecord更新回数 シングル/タッグ内訳] singles=${mqRecordProbe.updatesSingle.length} tag=${mqRecordProbe.updatesTag.length}`);
 }
 console.log('--------------------------------------');
 console.log(`Total violations: ${result.violations.length} (${uniqueViolations.length} unique)`);
