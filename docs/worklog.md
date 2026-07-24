@@ -14,6 +14,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 MQ確定経路を`Engine.mq.finalize`へ一本化（Task 21 / P1）
+
+通常興行のUI経路とheadless経路で別々だったMQ確定処理を、DOM非依存の純粋関数`Engine.mq.finalize(state, matchResult, context, profile)`へ統合。`normal-single`（因縁・王座・観客/会場・MQバフ2種・ラストラン・trust）、`normal-tag`（観客/会場・ラストラン）、`ppv`（因縁）、`ai-show`（因縁）、`raw`（素点のみ）の5profileを実装し、プレイヤー通常興行、auto-sim通常興行、AI興行、PPV、天頂戦、ジュニア、春タッグ、秋勝ち残り、B2/B3/Common-1等の特殊戦を接続した。UI側の段階的100クランプ、鮮度MQ加減算、タイトル+15 fallback、ケミストリー分岐、headless側の外部+12キャップ、タイトル格差メタデータを撤去。鮮度ラベル計算は集客移管用に維持し、次戦MQバフ消費を共通返却値へ統合した。タッグ4人draw powerと`mq_boost`/`next_match_mq`のattendanceMultiplierをheadlessへ移植して動員経路も一致させた。新規`test/mq-finalize-parity-test.js`で全5profile、100超、下限5、次戦バフ1回消費、state非破壊を固定。検証: `node --check`（management/app/test）pass、parity PASS、tag-match ALL CLEAR、rivalry regression pass、`node test/auto-sim.js 100 42`は違反0・errors 0・ALL CLEAR。通常興行MQ平均は58.349で指示書目安55.8±1.5を1.049上回ったが、外部cap到達・損失は0件、P1で係数調整は禁止のため数値は変更せずP3再較正へ送る。
+
 ## 2026-07-24 MQシステム再設計 方針確定（提案書v0.3・Keisuke決裁完了）
 
 Fable復帰後の本丸だったMQ再設計の設計フェーズを完了。task-11棚卸し/task-13最悪ケース/task-16経路調査の3資料を統合し、`docs/mq-redesign-proposal-v0.3.md` として決裁資料化→Keisuke決裁4点+フェーブル設計判断3点で**方針確定**。骨子: (A) `Engine.mq.finalize(state, matchResult, context, profile)` 純粋関数による確定経路一本化（profile 5種: normal-single/normal-tag/ppv/ai-show/raw、UI側独立加算は全廃） (B) シングル・タッグとも上限撤廃+`state.mqRecord`（業界歴代最高、初期値100、既存セーブは保存ベストと100の大きい方）、相対評価は新聞・年代記など物語系のみ・機械系閾値は絶対値維持、線形報酬2箇所は入力を100で飽和 (C) 観客/会場補正を「普通=0」の正負対称帯へ組み直し・会場格ボーナスは廃止して期待MQ側へ移管・+12外部キャップ廃止（実測到達0%） (D) 大ニュース新聞システム=新設4種（MQ記録更新/大物ルーキー125+/期待のライバル/トップ2団体王者の重傷【Keisuke追加起案】）、既存記事の昇格なし、`BIG_NEWS_TYPES` 集合+週頭SE+新聞アイコンPU+ナビ未読バッジ。**主要決裁**: 鮮度はMQから全経路除去し集客専用へ移管（フェーブル推奨の「MQ残し」を退けKeisuke裁定。マンネリ抑止の動員側維持が不変条件）/ 記録スコープは業界1本 / 素点側（OVシーリング/ドラマ減点）は今回触らず次段。実装はP1〜P6分割（P1-P2=Codex指示書、P3数値=フェーブル、P4-P5=Sonnet、P6記事文面=Opus→Keisuke全文レビュー）。auto-simはP1-P2完了時とP3完了時の2回のみ大規模実行。

@@ -1787,10 +1787,6 @@ const Engine = {
       return { state: { ...state, rivalries }, events };
     },
 
-    getMatchChemistryBonus(pairState) {
-      return 0;
-    },
-
     getBookedRivalryOrgPopBonus(state, matches) {
       if (!matches || matches.length === 0) return 0;
       let raw = 0;
@@ -2107,6 +2103,151 @@ const Engine = {
       }
       return '団体王座';
     }
+  },
+
+  // ── MQ finalization (all match paths share this pure function) ───────────
+  mq: {
+    TITLE_MQ_BONUS: 5,
+    PROFILES: new Set(['normal-single', 'normal-tag', 'ppv', 'ai-show', 'raw']),
+
+    buildNormalContext(state, matchResult, slot, options = {}) {
+      const roster = options.roster || state?.roster || [];
+      const isTag = slot?.matchType === 'tag' || matchResult?.matchType === 'tag';
+      const participantIds = isTag
+        ? [
+            slot?.teamA?.fighter1, slot?.teamA?.fighter2,
+            slot?.teamB?.fighter1, slot?.teamB?.fighter2,
+          ].filter(id => id != null)
+        : [slot?.left ?? matchResult?.left?.id, slot?.right ?? matchResult?.right?.id]
+            .filter(id => id != null);
+      const participantFighters = participantIds
+        .map(id => roster.find(fighter => fighter.id === id))
+        .filter(Boolean);
+      let rivalryLevel = options.rivalryLevel || matchResult?.rivalryBonus || null;
+      if (!isTag && !rivalryLevel && state && participantIds.length === 2) {
+        const rivalryState = options.rivalries
+          ? { ...state, rivalries: options.rivalries }
+          : state;
+        rivalryLevel = Engine.title.getRivalryLevel(
+          rivalryState, participantIds[0], participantIds[1]);
+      }
+
+      const milestoneBuffs = state?.milestoneBuffs || [];
+      const mqBoostBuff = milestoneBuffs.find(buff => buff.type === 'mq_boost');
+      const nextMatchMqBuff = milestoneBuffs.find(buff => buff.type === 'next_match_mq');
+      let nextMatchMq = 0;
+      if (!isTag && options.allowNextMatchMq !== false && nextMatchMqBuff?.pair
+          && participantIds.length === 2) {
+        const [p1, p2] = nextMatchMqBuff.pair;
+        if ((participantIds[0] === p1 && participantIds[1] === p2)
+            || (participantIds[0] === p2 && participantIds[1] === p1)) {
+          nextMatchMq = Number(nextMatchMqBuff.amount) || 0;
+        }
+      }
+
+      const lastRunFighter = participantFighters.find(fighter => fighter.lastRun) || null;
+      const lastRunBonus = lastRunFighter
+        ? (options.matchIndex === 0 ? 5 : 2)
+        : 0;
+      let trustPenalty = 0;
+      if (!isTag) {
+        participantFighters.forEach(fighter => {
+          if ((fighter.trust ?? 50) < 35) trustPenalty -= 1.53;
+        });
+      }
+
+      return {
+        path: options.path || 'normal-show',
+        matchType: isTag ? 'tag' : 'singles',
+        participantFighters,
+        rivalryLevel,
+        rivalryBonus: Number(rivalryLevel?.mqBonus) || 0,
+        isTitle: !isTag && !!(slot?.isTitle || matchResult?.isTitleMatch),
+        crowdVenueBonus: Number(options.crowdVenueBonus) || 0,
+        milestoneMqBoost: !isTag ? (Number(mqBoostBuff?.amount) || 0) : 0,
+        nextMatchMq,
+        lastRunBonus,
+        lastRunFighterId: lastRunFighter?.id ?? null,
+        trustPenalty,
+      };
+    },
+
+    finalize(state, matchResult, context = {}, profile = 'raw') {
+      if (!Engine.mq.PROFILES.has(profile)) {
+        throw new Error(`Unknown MQ profile: ${profile}`);
+      }
+      const baseEngineMq = Number(matchResult?.mq);
+      if (!Number.isFinite(baseEngineMq)) {
+        throw new Error('Engine.mq.finalize requires a finite matchResult.mq');
+      }
+
+      const participantFighters = context.participantFighters || [];
+      const contributions = {
+        rivalry: 0,
+        title: 0,
+        crowd: 0,
+        milestoneMqBoost: 0,
+        nextMatchMq: 0,
+        lastRun: 0,
+        trust: 0,
+      };
+      if (profile === 'normal-single') {
+        contributions.rivalry = Number(context.rivalryBonus) || 0;
+        contributions.title = context.isTitle ? Engine.mq.TITLE_MQ_BONUS : 0;
+        contributions.crowd = Number(context.crowdVenueBonus) || 0;
+        contributions.milestoneMqBoost = Number(context.milestoneMqBoost) || 0;
+        contributions.nextMatchMq = Number(context.nextMatchMq) || 0;
+        contributions.lastRun = Number(context.lastRunBonus) || 0;
+        contributions.trust = Number(context.trustPenalty) || 0;
+      } else if (profile === 'normal-tag') {
+        contributions.crowd = Number(context.crowdVenueBonus) || 0;
+        contributions.lastRun = Number(context.lastRunBonus) || 0;
+      } else if (profile === 'ppv' || profile === 'ai-show') {
+        contributions.rivalry = Number(context.rivalryBonus) || 0;
+      }
+
+      const external = Object.values(contributions).reduce((sum, value) => sum + value, 0);
+      const preLowerClampMq = baseEngineMq + external;
+      const finalMq = Math.max(5, preLowerClampMq);
+      const positiveExternal = Math.max(0, external);
+      const negativeExternal = Math.min(0, external);
+      const mqInventory = {
+        path: context.path || profile,
+        profile,
+        matchType: context.matchType || (matchResult?.matchType === 'tag' ? 'tag' : 'singles'),
+        baseEngineMq,
+        avgOV: participantFighters.length > 0
+          ? participantFighters.reduce((sum, fighter) => sum + Engine.util.ov(fighter), 0)
+            / participantFighters.length
+          : null,
+        hasMeishoubu: participantFighters.some(fighter => Traits.has(fighter, '名勝負製造機')),
+        hasHikidashi: participantFighters.some(fighter => Traits.has(fighter, '引き出し上手')),
+        ...contributions,
+        uncappedExternal: external,
+        positiveExternal,
+        negativeExternal,
+        cappedPositive: positiveExternal,
+        cap: null,
+        capLoss: 0,
+        capReached: false,
+        preLowerClampMq,
+        lowerClampHit: preLowerClampMq < 5,
+        upperClampApplied: false,
+        finalMq,
+      };
+
+      return {
+        mq: finalMq,
+        mqInventory,
+        externalMQBonus: external,
+        trustMQPenalty: contributions.trust,
+        consumedNextMatchMqBuff: profile === 'normal-single'
+          && contributions.nextMatchMq !== 0,
+        lastRunFighterId: contributions.lastRun !== 0
+          ? (context.lastRunFighterId ?? null)
+          : null,
+      };
+    },
   },
 
   // ── v1.2: Intrusion Match (乱入マッチ) ────────────────────────
@@ -7801,7 +7942,17 @@ const Engine = {
 
           // 試合シミュレーション
           const matchRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xB2A1, event.fighter1 ^ event.fighter2));
-          const matchResult = Engine.battle.simulateMatch(matchF1, matchF2, matchRng, 1);
+          let matchResult = Engine.battle.simulateMatch(matchF1, matchF2, matchRng, 1);
+          const finalized = Engine.mq.finalize(state, matchResult, {
+            path: 'Engine.rival.processAIWeeklyEvent.B2',
+            matchType: 'singles',
+            participantFighters: [matchF1, matchF2],
+          }, 'raw');
+          matchResult = {
+            ...matchResult,
+            mq: finalized.mq,
+            mqInventory: finalized.mqInventory,
+          };
 
           // 試合結果判定
           const winner = matchResult.winner === 'left' ? 'fighter1' : (matchResult.winner === 'right' ? 'fighter2' : 'draw');
@@ -8177,19 +8328,21 @@ const Engine = {
           const matchRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, card.left.id ^ card.right.id));
           let result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng);
           // coachMQBonus は MQ外部ボーナス整理で廃止
-          // AI vs AI 試合にも rivalry/chemistry MQボーナスを適用（プレイヤー試合との不公平是正 v2.1）
+          // AI vs AI match MQ uses the shared ai-show profile.
           {
-            const pairState = Engine.title.getRivalryPairState(state, card.left.id, card.right.id);
             const rivalLvl = Engine.title.getRivalryLevel(state, card.left.id, card.right.id);
-            if (rivalLvl) {
-              result.mq = result.mq + rivalLvl.mqBonus;
-              result.rivalryBonus = rivalLvl;
-            }
-            const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
-            if (chemistryBonus > 0) {
-              result.mq = result.mq + chemistryBonus;
-              result.friendshipBonus = chemistryBonus;
-            }
+            const finalized = Engine.mq.finalize(state, result, {
+              path: 'Engine.rival.processAIWeek',
+              matchType: 'singles',
+              participantFighters: [roster[leftIdx], roster[rightIdx]],
+              rivalryBonus: Number(rivalLvl?.mqBonus) || 0,
+            }, 'ai-show');
+            result = {
+              ...result,
+              mq: finalized.mq,
+              mqInventory: finalized.mqInventory,
+              ...(rivalLvl ? { rivalryBonus: rivalLvl } : {}),
+            };
           }
           matchResults.push(result);
 
@@ -9020,7 +9173,17 @@ const Engine = {
 
         // 試合実行
         const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB3A1, orgId.charCodeAt(0) || 0));
-        const matchResult = Engine.battle.simulateMatch(rep1, rep2, matchRng, 2);
+        let matchResult = Engine.battle.simulateMatch(rep1, rep2, matchRng, 2);
+        const finalized = Engine.mq.finalize(s, matchResult, {
+          path: 'Engine.rival.aiWar',
+          matchType: 'singles',
+          participantFighters: [rep1, rep2],
+        }, 'raw');
+        matchResult = {
+          ...matchResult,
+          mq: finalized.mq,
+          mqInventory: finalized.mqInventory,
+        };
 
         const winner = matchResult.winner; // 'left' or 'right' or 'draw'
         const isDraw = winner === 'draw';
@@ -9268,7 +9431,17 @@ const Engine = {
 
         // 受諾→試合実行（matchTier=2、ビッグマッチ）
         const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB3B1, orgId.charCodeAt(0) || 0));
-        const matchResult = Engine.battle.simulateMatch(challenger, defender, matchRng, 2);
+        let matchResult = Engine.battle.simulateMatch(challenger, defender, matchRng, 2);
+        const finalized = Engine.mq.finalize(s, matchResult, {
+          path: 'Engine.rival.aiB3Challenge',
+          matchType: 'singles',
+          participantFighters: [challenger, defender],
+        }, 'raw');
+        matchResult = {
+          ...matchResult,
+          mq: finalized.mq,
+          mqInventory: finalized.mqInventory,
+        };
 
         const winner = matchResult.winner; // 'left' | 'right' | 'draw'
         const isDraw = winner === 'draw';
@@ -11375,20 +11548,10 @@ const Engine = {
       const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right));
       const result = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
       // メタデータ記録（MQにはまだ加算しない）
-      const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
       if (rivalLvl) result.rivalryBonus = rivalLvl;
-      const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
-      if (chemistryBonus > 0) result.friendshipBonus = chemistryBonus;
       if (m.isTitle) {
         result.isTitleMatch = true;
-        // v2.1: OVR差格差ペナルティ用にチャンピオンvs挑戦者のOVR差を記録
-        const champId = titles.world.championId;
-        if (champId) {
-          const champF = charL.id === champId ? charL : (charR.id === champId ? charR : null);
-          const chalF  = charL.id === champId ? charR  : (charR.id === champId ? charL  : null);
-          if (champF && chalF) result.titleOVRGap = Engine.util.ov(champF) - Engine.util.ov(chalF);
-        }
       }
       // coachMQBonus / promoStackBonus は MQ外部ボーナス整理で廃止
       return result;
@@ -11417,6 +11580,16 @@ const Engine = {
     // 集客v2: matchAppeals→showDraw→attendance算出
     const execFanExpects = Engine.fanExpect.generate(s);
     const v2MatchAppeals = validMatches.map(m => {
+      if (m.matchType === 'tag') {
+        const ids = [
+          m.teamA?.fighter1, m.teamA?.fighter2,
+          m.teamB?.fighter1, m.teamB?.fighter2,
+        ];
+        const fighters = ids.map(id => roster.find(c => c.id === id)).filter(Boolean);
+        if (fighters.length < 4) return 0;
+        return fighters.reduce(
+          (sum, fighter) => sum + Engine.attendanceV2.calcDrawPower(fighter, s), 0) / 2;
+      }
       const fA = roster.find(c => c.id === m.left);
       const fB = roster.find(c => c.id === m.right);
       if (!fA || !fB) return { totalAppeal: 0 };
@@ -11434,7 +11607,21 @@ const Engine = {
         pendingClashBonus, isFirstMeet: fr.isFirstMeet, freshnessCount: fr.countInWindow,
       }, s);
     });
-    const nonMatchPromo = roster.filter(c => !validMatches.some(m => m.left === c.id || m.right === c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
+    const usedIds = new Set();
+    validMatches.forEach(match => {
+      if (match.matchType === 'tag') {
+        [
+          match.teamA?.fighter1, match.teamA?.fighter2,
+          match.teamB?.fighter1, match.teamB?.fighter2,
+        ].forEach(id => usedIds.add(id));
+      } else {
+        usedIds.add(match.left);
+        usedIds.add(match.right);
+      }
+    });
+    const nonMatchPromo = roster
+      .filter(c => !usedIds.has(c.id))
+      .reduce((sum, c) => sum + (c.promoStack || 0), 0);
     const v2ShowDraw = Engine.attendanceV2.calcShowDraw(v2MatchAppeals, nonMatchPromo, s.showVenue);
     const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
     const v2Result = Engine.attendanceV2.calcAttendanceV2(s, s.showVenue, v2ShowDraw, attendRng);
@@ -11442,6 +11629,34 @@ const Engine = {
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuff) preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * attendBoostBuff.multiplier));
+    const mqBoostWithAttendance = (state.milestoneBuffs || [])
+      .find(b => b.type === 'mq_boost' && b.attendanceMultiplier);
+    if (mqBoostWithAttendance) {
+      preAttendance = Math.min(
+        VENUES[s.showVenue].cap,
+        Math.round(preAttendance * mqBoostWithAttendance.attendanceMultiplier));
+    }
+    const nextMatchMqWithAttendance = (state.milestoneBuffs || [])
+      .find(b => b.type === 'next_match_mq' && b.attendanceMultiplier && b.pair);
+    if (nextMatchMqWithAttendance) {
+      const [p1, p2] = nextMatchMqWithAttendance.pair;
+      const pairInCard = validMatches.some(slot => {
+        if (slot.matchType === 'tag') {
+          const ids = [
+            slot.teamA?.fighter1, slot.teamA?.fighter2,
+            slot.teamB?.fighter1, slot.teamB?.fighter2,
+          ].filter(Boolean);
+          return ids.includes(p1) && ids.includes(p2);
+        }
+        return (slot.left === p1 && slot.right === p2)
+          || (slot.left === p2 && slot.right === p1);
+      });
+      if (pairInCard) {
+        preAttendance = Math.min(
+          VENUES[s.showVenue].cap,
+          Math.round(preAttendance * nextMatchMqWithAttendance.attendanceMultiplier));
+      }
+    }
     s = { ...s, lastShowAttendance: preAttendance };
     const preOccRate = preAttendance / VENUES[s.showVenue].cap;
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
@@ -11449,162 +11664,52 @@ const Engine = {
       events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
     }
 
-    // v1.5s25: Pass 2 — 外部MQボーナスキャップ適用（正方向合計 +15 上限。ガラガラペナルティはキャップ対象外）
-    // v1.5s25b: mq_boost バフ（マイルストーン）
-    const mqBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'mq_boost');
-    const mqBoostAmount = mqBoostBuff ? mqBoostBuff.amount : 0;
-    // v1.5s25b: next_match_mq バフ（特定ペアの次の対戦のみ）
-    const nextMatchMqBuff = (state.milestoneBuffs || []).find(b => b.type === 'next_match_mq');
+    // Pass 2: all normal-show MQ finalization goes through Engine.mq.finalize.
     let nextMatchMqConsumed = false;
-    // v2.0: ファン期待度チェック（MQ加算は廃止済み。現在は集客側にのみ効く）
     const fanExpects = Engine.fanExpect.generate(s);
     const results = rawResults.map((r, matchIdx) => {
-      // タッグ試合: crowdMQのみ加算（因縁/タイトル等はPhase 5以降）
-      let externalMQ = 0;
-      let lastRunMQ = 0;
       const slot = validMatches[matchIdx];
-      const participantIds = r.matchType === 'tag'
-        ? [slot?.teamA?.fighter1, slot?.teamA?.fighter2, slot?.teamB?.fighter1, slot?.teamB?.fighter2].filter(id => id > 0)
-        : [r.left?.id, r.right?.id].filter(id => id > 0);
-      const participantFighters = participantIds
-        .map(id => s.roster.find(c => c.id === id))
-        .filter(Boolean);
-      const inventoryBase = {
-        path: 'Engine.executeShow',
-        matchType: r.matchType === 'tag' ? 'tag' : 'singles',
-        baseEngineMq: r.mq,
-        avgOV: participantFighters.length > 0
-          ? participantFighters.reduce((sum, fighter) => sum + Engine.util.ov(fighter), 0) / participantFighters.length
-          : null,
-        hasMeishoubu: participantFighters.some(fighter => Traits.has(fighter, '名勝負製造機')),
-        hasHikidashi: participantFighters.some(fighter => Traits.has(fighter, '引き出し上手')),
-      };
-      const tagOrSinglesLastRunFighter = participantIds
-        .map(id => s.roster.find(c => c.id === id))
-        .find(f => f?.lastRun) || null;
-      if (tagOrSinglesLastRunFighter) {
-        externalMQ += 2;
-        lastRunMQ += 2;
-        if (matchIdx === 0) {
-          externalMQ += 3;
-          lastRunMQ += 3;
-        }
+      const profile = r.matchType === 'tag' ? 'normal-tag' : 'normal-single';
+      const context = Engine.mq.buildNormalContext(
+        { ...s, roster, rivalries },
+        r,
+        slot,
+        {
+          roster,
+          rivalries,
+          path: 'Engine.executeShow',
+          matchIndex: matchIdx,
+          crowdVenueBonus: crowdMQ.total,
+          allowNextMatchMq: !nextMatchMqConsumed,
+        });
+      const finalized = Engine.mq.finalize(s, r, context, profile);
+      r.mq = finalized.mq;
+      r.mqInventory = finalized.mqInventory;
+      r.externalMQBonus = finalized.externalMQBonus;
+      if (context.rivalryLevel) r.rivalryBonus = context.rivalryLevel;
+      if (context.isTitle) r.isTitleMatch = true;
+      if (finalized.trustMQPenalty < 0) r.trustMQPenalty = finalized.trustMQPenalty;
+      if (finalized.lastRunFighterId != null) {
         r.isLastRunMatch = true;
-        r.lastRunFighterId = tagOrSinglesLastRunFighter.id;
+        r.lastRunFighterId = finalized.lastRunFighterId;
       }
-      if (r.matchType === 'tag') {
-        const preLowerClampMq = r.mq + crowdMQ.total + externalMQ;
-        r.mq = Math.max(5, preLowerClampMq);
-        r.externalMQBonus = crowdMQ.total + externalMQ;
-        r.mqInventory = {
-          ...inventoryBase,
-          rivalry: 0,
-          title: 0,
-          crowd: crowdMQ.total,
-          milestoneMqBoost: 0,
-          nextMatchMq: 0,
-          lastRun: lastRunMQ,
-          trust: 0,
-          uncappedExternal: crowdMQ.total + externalMQ,
-          positiveExternal: Math.max(0, crowdMQ.total + externalMQ),
-          negativeExternal: Math.min(0, crowdMQ.total + externalMQ),
-          cappedPositive: Math.max(0, crowdMQ.total + externalMQ),
-          cap: null,
-          capLoss: 0,
-          capReached: false,
-          preLowerClampMq,
-          lowerClampHit: preLowerClampMq < 5,
-          upperClampApplied: false,
-          finalMq: r.mq,
-        };
-        return r;
-      }
-      const rivalryMQ = r.rivalryBonus ? r.rivalryBonus.mqBonus : 0;
-      if (r.rivalryBonus) externalMQ += rivalryMQ;
-      // ケミストリー（友情）MQ削除済み — r.friendshipBonus は加算しない
-      const titleMQ = r.isTitleMatch ? (TITLES.find(t => t.id === 'world')?.mqBonus || 5) : 0;
-      if (r.isTitleMatch) externalMQ += titleMQ;
-      // coachMQBonus / promoStackBonus は MQ外部ボーナス整理で廃止
-      externalMQ += crowdMQ.total;
-      // v1.5s25b: mq_boost（キャップ対象）
-      externalMQ += mqBoostAmount;
-      // v1.5s25b: next_match_mq（特定ペアのみ、1回限り）
-      let nextMatchMQ = 0;
-      if (nextMatchMqBuff && !nextMatchMqConsumed && nextMatchMqBuff.pair) {
-        const [p1, p2] = nextMatchMqBuff.pair;
-        if ((r.left.id === p1 && r.right.id === p2) || (r.left.id === p2 && r.right.id === p1)) {
-          externalMQ += nextMatchMqBuff.amount;
-          nextMatchMQ = nextMatchMqBuff.amount;
-          nextMatchMqConsumed = true;
+      if (finalized.consumedNextMatchMqBuff) nextMatchMqConsumed = true;
+
+      if (r.matchType !== 'tag') {
+        const isFanExpectMatch = fanExpects.some(exp =>
+          (exp.leftId === r.left.id && exp.rightId === r.right.id)
+          || (exp.leftId === r.right.id && exp.rightId === r.left.id));
+        if (isFanExpectMatch) r.fanExpectMatch = true;
+        const freshnessRng = Engine.rng.create(
+          Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF5E5, matchIdx));
+        const freshnessResult = Engine.freshness.calc(
+          s.matchupLog || [], r.left.id, r.right.id,
+          s.totalShows, s.roster.length, freshnessRng);
+        if (freshnessResult.bonus !== 0) {
+          r.freshnessBonus = freshnessResult.bonus;
+          r.freshnessLabel = freshnessResult.label;
         }
       }
-      // ファン期待カード MQボーナス廃止（集客側で効かせる）。フラグは集客・メディア判定に必要なので残す
-      const isFanExpectMatch = fanExpects.some(exp =>
-        (exp.leftId === r.left.id && exp.rightId === r.right.id) ||
-        (exp.leftId === r.right.id && exp.rightId === r.left.id)
-      );
-      if (isFanExpectMatch) r.fanExpectMatch = true;
-      // 野心MQ削除済み
-      // ラストランMQボーナス (§2.2)
-      const lrLeft  = s.roster.find(c => c.id === r.left.id);
-      const lrRight = s.roster.find(c => c.id === r.right.id);
-      const lastRunFighter = r.isLastRunMatch ? null : (lrLeft?.lastRun ? lrLeft : (lrRight?.lastRun ? lrRight : null));
-      if (lastRunFighter) {
-        externalMQ += 2;  // ラストラン基本 +2
-        lastRunMQ += 2;
-        if (matchIdx === 0) {
-          externalMQ += 3;  // メインイベント +3
-          lastRunMQ += 3;
-        }
-        r.isLastRunMatch = true;
-        r.lastRunFighterId = lastRunFighter.id;
-        // ラストラン因縁相手ボーナス削除済み
-      }
-      // 見返しモードMQ削除済み
-      // コスチュームデビューMQ削除済み
-      // カード鮮度: MQへの影響は廃止（集客側で効かせる）。ラベル情報のみ記録
-      const freshnessRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF5E5, matchIdx));
-      const freshnessResult = Engine.freshness.calc(s.matchupLog || [], r.left.id, r.right.id, s.totalShows, s.roster.length, freshnessRng);
-      if (freshnessResult.bonus !== 0) {
-        r.freshnessBonus = freshnessResult.bonus;
-        r.freshnessLabel = freshnessResult.label;
-      }
-      // 初顔合わせ・マンネリともにMQ加減算しない
-      const positiveExternal = Math.max(0, externalMQ);
-      const negativeExternal = Math.min(0, externalMQ);
-      const cappedPositive = Math.min(positiveExternal, MQ_EXTERNAL_CAP);
-      // タイトルマッチ格差ペナルティ廃止（試合結果で自明に反映される）
-      // §13.2: trust < 35 → MQ -1.53（意欲低下ペナルティ、キャップ対象外）
-      let trustMQPenalty = 0;
-      const leftTrust = lrLeft ? (lrLeft.trust != null ? lrLeft.trust : 50) : 50;
-      const rightTrust = lrRight ? (lrRight.trust != null ? lrRight.trust : 50) : 50;
-      if (leftTrust < 35) trustMQPenalty -= 1.53;
-      if (rightTrust < 35) trustMQPenalty -= 1.53;
-      const preLowerClampMq = r.mq + cappedPositive + negativeExternal + trustMQPenalty;
-      r.mq = Math.max(5, preLowerClampMq);
-      r.externalMQBonus = cappedPositive + negativeExternal + trustMQPenalty;
-      if (trustMQPenalty < 0) r.trustMQPenalty = trustMQPenalty;
-      r.mqInventory = {
-        ...inventoryBase,
-        rivalry: rivalryMQ,
-        title: titleMQ,
-        crowd: crowdMQ.total,
-        milestoneMqBoost: mqBoostAmount,
-        nextMatchMq: nextMatchMQ,
-        lastRun: lastRunMQ,
-        trust: trustMQPenalty,
-        uncappedExternal: externalMQ,
-        positiveExternal,
-        negativeExternal,
-        cappedPositive,
-        cap: MQ_EXTERNAL_CAP,
-        capLoss: positiveExternal - cappedPositive,
-        capReached: positiveExternal >= MQ_EXTERNAL_CAP,
-        preLowerClampMq,
-        lowerClampHit: preLowerClampMq < 5,
-        upperClampApplied: false,
-        finalMq: r.mq,
-      };
       return r;
     });
 
@@ -13587,22 +13692,25 @@ const Engine = {
         const pLeft = roster.find(c => c.id === match.left.id);
         const pRight = roster.find(c => c.id === match.right.id);
         const bonusInfo = { rivalry: 0, coach: 0 };
+        let rivalLvl = null;
 
         // Step 5-6: 因縁MQボーナス（プレイヤー選手が関与する試合のみ）
         if (pLeft || pRight) {
-          const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, match.left.id, match.right.id);
-          const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, match.left.id, match.right.id);
-          if (rivalLvl) {
-            r.mq = r.mq + rivalLvl.mqBonus;
-            r.rivalryBonus = rivalLvl;
-            bonusInfo.rivalry = rivalLvl.mqBonus;
-          }
-          const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
-          if (chemistryBonus > 0) {
-            r.mq = r.mq + chemistryBonus;
-            r.friendshipBonus = chemistryBonus;
-          }
+          rivalLvl = Engine.title.getRivalryLevel(
+            { ...s, rivalries }, match.left.id, match.right.id);
           // coachMQBonus は MQ外部ボーナス整理で廃止
+        }
+        const finalized = Engine.mq.finalize(s, r, {
+          path: 'Engine.ppv.applyPPVResults',
+          matchType: 'singles',
+          participantFighters: [match.left, match.right],
+          rivalryBonus: Number(rivalLvl?.mqBonus) || 0,
+        }, 'ppv');
+        r.mq = finalized.mq;
+        r.mqInventory = finalized.mqInventory;
+        if (rivalLvl) {
+          r.rivalryBonus = rivalLvl;
+          bonusInfo.rivalry = rivalLvl.mqBonus;
         }
         mqBonuses.push(bonusInfo);
 
@@ -14258,14 +14366,17 @@ const Engine = {
 
     /** Resolve a single event match using battle engine (no injury, condition=80) */
     resolveEventMatch(rng, playerFighter, aiFighter, mqBonus, opts) {
-      mqBonus = mqBonus || 0;
       // Prepare fighters with fixed condition for event matches
       const pf = { ...playerFighter, condition: 80 };
       const af = { ...aiFighter, condition: 80 };
       // Use battle engine (opts: { recordFrames } を透過)
       const result = Engine.battle.simulateMatch(pf, af, rng, 2, opts);
-      result.mq = result.mq + (mqBonus || 0);
-      return result;
+      const finalized = Engine.mq.finalize(null, result, {
+        path: 'Engine.event.resolveEventMatch',
+        matchType: 'singles',
+        participantFighters: [playerFighter, aiFighter],
+      }, 'raw');
+      return { ...result, mq: finalized.mq, mqInventory: finalized.mqInventory };
     },
 
     /** Resolve entire war event. Returns { state, results, playerWins, aiWins } */
@@ -23610,7 +23721,14 @@ Engine.juniorTournament = {
           state.rngSeed, state.season, 0xBB00 + r * 10 + i));
         const pf = Engine.juniorTournament._withTournamentHp(left, matchTier);
         const af = Engine.juniorTournament._withTournamentHp(right, matchTier);
-        const result = Engine.battle.simulateMatch(pf, af, matchRng, matchTier, { recordFrames: true });
+        let result = Engine.battle.simulateMatch(
+          pf, af, matchRng, matchTier, { recordFrames: true });
+        const finalized = Engine.mq.finalize(state, result, {
+          path: 'Engine.juniorTournament.run',
+          matchType: 'singles',
+          participantFighters: [left, right],
+        }, 'raw');
+        result = { ...result, mq: finalized.mq, mqInventory: finalized.mqInventory };
         // 引き分け時は左側を勝者扱い（トーナメントなので必ず決着）
         const winnerId = result.winner === 'right' ? right.id : left.id;
         const loserId = winnerId === left.id ? right.id : left.id;
@@ -24135,22 +24253,22 @@ Engine.ppvTournament = {
     };
   },
 
-  _applyMqBonuses(state, matchResult, left, right) {
-    const result = { ...matchResult };
-    if (!Engine.title) return result;
-    const pairState = Engine.title.getRivalryPairState(state, left.id, right.id);
-    const rivalry = Engine.title.getRivalryLevel(state, left.id, right.id);
-    if (rivalry) {
-      result.mq += rivalry.mqBonus;
-      result.rivalryBonus = rivalry;
-    }
-    const chemistry = Engine.title.getMatchChemistryBonus(pairState);
-    if (chemistry > 0) {
-      result.mq += chemistry;
-      result.friendshipBonus = chemistry;
-    }
-    return result;
-  },
+    _applyMqBonuses(state, matchResult, left, right) {
+      const result = { ...matchResult };
+      const rivalry = Engine.title.getRivalryLevel(state, left.id, right.id);
+      const finalized = Engine.mq.finalize(state, result, {
+        path: 'Engine.ppvTournament._applyMqBonuses',
+        matchType: 'singles',
+        participantFighters: [left, right],
+        rivalryBonus: Number(rivalry?.mqBonus) || 0,
+      }, 'ppv');
+      return {
+        ...result,
+        mq: finalized.mq,
+        mqInventory: finalized.mqInventory,
+        ...(rivalry ? { rivalryBonus: rivalry } : {}),
+      };
+    },
 
   run(state, rng) {
     const tournament = state.ppvTournament;
@@ -24673,7 +24791,7 @@ Engine.springTagLeague = {
       const fB1 = fighterOf(orgB, teamB.f1Id), fB2 = fighterOf(orgB, teamB.f2Id);
       const conditionBefore = { [orgA]: condState[orgA], [orgB]: condState[orgB] };
       const mRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC7A6, seedTag));
-      const result = Engine.tagMatch.simulateTagMatch(
+      let result = Engine.tagMatch.simulateTagMatch(
         {
           fighter1: { ...fA1, _hpOverride: Engine.wear.toHpOverride(condState[orgA], Engine.tagMatch.calcFullHp(fA1)) },
           fighter2: { ...fA2, _hpOverride: Engine.wear.toHpOverride(condState[orgA], Engine.tagMatch.calcFullHp(fA2)) },
@@ -24688,6 +24806,12 @@ Engine.springTagLeague = {
           tagExp_A: tagExpSnapshot[orgA], tagExp_B: tagExpSnapshot[orgB],
         }
       );
+      const finalized = Engine.mq.finalize(state, result, {
+        path: 'Engine.springTagLeague.run',
+        matchType: 'tag',
+        participantFighters: [fA1, fA2, fB1, fB2],
+      }, 'raw');
+      result = { ...result, mq: finalized.mq, mqInventory: finalized.mqInventory };
       // 連戦消耗モジュール適用: 両チームとも自チームのHP残量(2名平均)で次戦conditionを更新
       const pf = result.perFighter;
       const ratioA = Engine.wear.hpRatio(
@@ -24844,7 +24968,7 @@ Engine.springTagLeague = {
     const condA = conditionBefore(match.orgA);
     const condB = conditionBefore(match.orgB);
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC7A6, seedTag));
-    const result = Engine.tagMatch.simulateTagMatch(
+    let result = Engine.tagMatch.simulateTagMatch(
       {
         fighter1: { ...fA1, _hpOverride: Engine.wear.toHpOverride(condA, Engine.tagMatch.calcFullHp(fA1)) },
         fighter2: { ...fA2, _hpOverride: Engine.wear.toHpOverride(condA, Engine.tagMatch.calcFullHp(fA2)) },
@@ -24862,6 +24986,12 @@ Engine.springTagLeague = {
         recordFrames: true,
       }
     );
+    const finalized = Engine.mq.finalize(state, result, {
+      path: 'Engine.springTagLeague.simulateReplay',
+      matchType: 'tag',
+      participantFighters: [fA1, fA2, fB1, fB2],
+    }, 'raw');
+    result = { ...result, mq: finalized.mq, mqInventory: finalized.mqInventory };
     return { result, fighters: { fA1, fA2, fB1, fB2 } };
   },
 
@@ -25484,12 +25614,22 @@ Engine.autumnWar = {
     const preparedLeft = { ...left, condition: beforeLeft, _hpOverride: Engine.wear.toHpOverride(beforeLeft, fullHpLeft) };
     const preparedRight = { ...right, condition: beforeRight, _hpOverride: Engine.wear.toHpOverride(beforeRight, fullHpRight) };
     const recordFrames = !!options?.recordFrames;
-    const matchResult = Engine.battle.simulateMatch(
+    let matchResult = Engine.battle.simulateMatch(
       preparedLeft,
       preparedRight,
       rng, Engine.autumnWar.MATCH_TIER,
       recordFrames ? { recordFrames: true } : undefined
     );
+    const finalized = Engine.mq.finalize(state, matchResult, {
+      path: 'Engine.autumnWar.simulateNextBout',
+      matchType: 'singles',
+      participantFighters: [left, right],
+    }, 'raw');
+    matchResult = {
+      ...matchResult,
+      mq: finalized.mq,
+      mqInventory: finalized.mqInventory,
+    };
     const wearLeft = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpLeft.final, matchResult.hpLeft.max));
     const wearRight = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpRight.final, matchResult.hpRight.max));
     conditions[left.id] = Engine.wear.nextCondition(beforeLeft, wearLeft, 0, Engine.autumnWar.FLOOR, Engine.autumnWar.CEILING);
@@ -25618,11 +25758,21 @@ Engine.autumnWar = {
         const beforeLeft = conditions[left.id], beforeRight = conditions[right.id];
         const fullHpLeft = Engine.autumnWar._fullHp(left);
         const fullHpRight = Engine.autumnWar._fullHp(right);
-        const matchResult = Engine.battle.simulateMatch(
+        let matchResult = Engine.battle.simulateMatch(
           { ...left, condition: beforeLeft, _hpOverride: Engine.wear.toHpOverride(beforeLeft, fullHpLeft) },
           { ...right, condition: beforeRight, _hpOverride: Engine.wear.toHpOverride(beforeRight, fullHpRight) },
           eventRng, Engine.autumnWar.MATCH_TIER
         );
+        const finalized = Engine.mq.finalize(state, matchResult, {
+          path: 'Engine.autumnWar.legacyRun',
+          matchType: 'singles',
+          participantFighters: [left, right],
+        }, 'raw');
+        matchResult = {
+          ...matchResult,
+          mq: finalized.mq,
+          mqInventory: finalized.mqInventory,
+        };
         const wearLeft = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpLeft.final, matchResult.hpLeft.max));
         const wearRight = Engine.wear.calc(Engine.wear.hpRatio(matchResult.hpRight.final, matchResult.hpRight.max));
         conditions[left.id] = Engine.wear.nextCondition(beforeLeft, wearLeft, 0, Engine.autumnWar.FLOOR, Engine.autumnWar.CEILING);

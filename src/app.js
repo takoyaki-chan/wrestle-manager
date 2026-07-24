@@ -6617,7 +6617,7 @@ const App = {
       }
     }
 
-    // Rivalry & coach bonuses (タッグはスキップ)
+    // Rivalry/title metadata (MQ is finalized later by Engine.mq.finalize)
     const confrontationPairs = sp.confrontationPairs || [];
     const deferredRivalryIdxs = []; // 因縁決着候補ペアの recordRivalry を MQ確定後まで保留
     results.forEach((result, i) => {
@@ -6625,10 +6625,8 @@ const App = {
       if (m.matchType === 'tag') return; // タッグ試合は因縁・ケミストリーボーナス対象外
       const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
-      if (rivalLvl) { result.mq = Math.min(100, result.mq + rivalLvl.mqBonus); result.rivalryBonus = rivalLvl; }
-      const chemistryBonus = Engine.title.getMatchChemistryBonus(pairState);
-      if (chemistryBonus > 0) { result.mq = Math.min(100, result.mq + chemistryBonus); result.friendshipBonus = chemistryBonus; }
-      if (m.isTitle) { result.mq = Math.min(100, result.mq + (TITLES.find(t => t.id === 'world')?.mqBonus || 15)); result.isTitleMatch = true; }
+      if (rivalLvl) result.rivalryBonus = rivalLvl;
+      if (m.isTitle) result.isTitleMatch = true;
       // 因縁決着候補（minRivalry>=60 or resolutionCount>=1）は recordRivalry をMQ確定後まで保留
       const isResolutionCandidate = pairState && !pairState.resolvedType && pairState.minRivalry >= 60;
       const hasPartialResolution = pairState && !pairState.resolvedType && (rivalries[Engine.title.getRivalryKey(m.left, m.right)]?.resolutionCount || 0) >= 1 && pairState.minRivalry >= 80;
@@ -6900,27 +6898,58 @@ const App = {
       if (preAttendance / _domeCap >= 0.95) s = { ...s, _pendingDomeSelloutCeremony: true };
     }
     const crowdMQ = Engine.economy.calcCrowdMQBonus(s.showVenue, preOccRate);
-    if (crowdMQ.total !== 0) {
-      results.forEach(r => { r.mq = Engine.util.clamp(r.mq + crowdMQ.total, 5, 100); });
-      if (crowdMQ.crowdLabel) {
-        events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
-      }
+    if (crowdMQ.crowdLabel) {
+      events.push(`🏟️ ${crowdMQ.crowdLabel}（MQ全試合 ${crowdMQ.total >= 0 ? '+' : ''}${crowdMQ.total}）`);
     }
 
-    // カード鮮度MQ補正（matchupLog記録の前に計算 — 今回の試合は履歴に含めない、タッグはスキップ）
+    // UI and headless share the same context builder and finalizer.
+    let nextMatchMqConsumed = false;
     results.forEach((r, i) => {
       const m = validMatches[i];
-      if (m.matchType === 'tag') return;
-      const appFreshnessRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF5E5, i));
-      const fr = Engine.freshness.calc(s.matchupLog || [], m.left, m.right, s.totalShows, s.roster.length, appFreshnessRng);
-      if (fr.bonus > 0) {
-        r.mq = Math.min(100, r.mq + fr.bonus);
-        r.freshnessBonus = fr.bonus; r.freshnessLabel = fr.label;
-      } else if (fr.bonus < 0) {
-        r.mq = Engine.util.clamp(r.mq + fr.bonus, 5, 100);
-        r.freshnessBonus = fr.bonus; r.freshnessLabel = fr.label;
+      const profile = r.matchType === 'tag' ? 'normal-tag' : 'normal-single';
+      const context = Engine.mq.buildNormalContext(
+        { ...s, roster, rivalries },
+        r,
+        m,
+        {
+          roster,
+          rivalries,
+          path: 'App._finalizeShowImpl',
+          matchIndex: i,
+          crowdVenueBonus: crowdMQ.total,
+          allowNextMatchMq: !nextMatchMqConsumed,
+        });
+      const finalized = Engine.mq.finalize(s, r, context, profile);
+      r.mq = finalized.mq;
+      r.mqInventory = finalized.mqInventory;
+      r.externalMQBonus = finalized.externalMQBonus;
+      if (finalized.trustMQPenalty < 0) r.trustMQPenalty = finalized.trustMQPenalty;
+      if (finalized.lastRunFighterId != null) {
+        r.isLastRunMatch = true;
+        r.lastRunFighterId = finalized.lastRunFighterId;
+      }
+      if (finalized.consumedNextMatchMqBuff) nextMatchMqConsumed = true;
+
+      // Keep freshness labels for future attendance use; do not add them to MQ.
+      if (m.matchType !== 'tag') {
+        const appFreshnessRng = Engine.rng.create(
+          Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF5E5, i));
+        const fr = Engine.freshness.calc(
+          s.matchupLog || [], m.left, m.right,
+          s.totalShows, s.roster.length, appFreshnessRng);
+        if (fr.bonus !== 0) {
+          r.freshnessBonus = fr.bonus;
+          r.freshnessLabel = fr.label;
+        }
       }
     });
+    if (nextMatchMqConsumed) {
+      s = {
+        ...s,
+        milestoneBuffs: (s.milestoneBuffs || [])
+          .filter(buff => buff.type !== 'next_match_mq'),
+      };
+    }
 
     // 因縁決着判定（MQ確定後、保留ペアのみ）
     const rivalryResolutions = [];
@@ -11943,7 +11972,18 @@ const App = {
     const af = b3.challenger;
     // Replay: 結果事前計算 (skip と同 seed: 0xB1B4 + 代表選手ID)
     const b3Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4, pf.id));
-    const b3Result = Engine.battle.simulateMatch(pf, af, b3Rng, 2, { recordFrames: true, popularityInfluence: 0.35 });
+    const b3RawResult = Engine.battle.simulateMatch(
+      pf, af, b3Rng, 2, { recordFrames: true, popularityInfluence: 0.35 });
+    const b3Finalized = Engine.mq.finalize(G, b3RawResult, {
+      path: 'App.b3WatchMatch',
+      matchType: 'singles',
+      participantFighters: [pf, af],
+    }, 'raw');
+    const b3Result = {
+      ...b3RawResult,
+      mq: b3Finalized.mq,
+      mqInventory: b3Finalized.mqInventory,
+    };
     b3._preResult = b3Result;
     const iframe = document.getElementById('battleIframe');
     const msg = {
@@ -11985,7 +12025,18 @@ const App = {
     const b3 = App._b3Preview;
     if (!b3) return;
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4, b3.playerFighter.id));
-    const matchResult = Engine.battle.simulateMatch(b3.playerFighter, b3.challenger, rng, 2, { popularityInfluence: 0.35 });
+    const rawResult = Engine.battle.simulateMatch(
+      b3.playerFighter, b3.challenger, rng, 2, { popularityInfluence: 0.35 });
+    const finalized = Engine.mq.finalize(G, rawResult, {
+      path: 'App.b3SkipMatch',
+      matchType: 'singles',
+      participantFighters: [b3.playerFighter, b3.challenger],
+    }, 'raw');
+    const matchResult = {
+      ...rawResult,
+      mq: finalized.mq,
+      mqInventory: finalized.mqInventory,
+    };
     b3.matchResult = matchResult;
     App._finalizeB3Match(matchResult);
   },
@@ -12106,7 +12157,19 @@ const App = {
 
     const fA = c1.fighterA, fB = c1.fighterB;
     const c1Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0F1));
-    const c1Result = Engine.battle.simulateMatch({ ...fA, condition: 80 }, { ...fB, condition: 80 }, c1Rng, 2, { recordFrames: true });
+    const c1RawResult = Engine.battle.simulateMatch(
+      { ...fA, condition: 80 }, { ...fB, condition: 80 },
+      c1Rng, 2, { recordFrames: true });
+    const c1Finalized = Engine.mq.finalize(G, c1RawResult, {
+      path: 'App.common1WatchMatch',
+      matchType: 'singles',
+      participantFighters: [fA, fB],
+    }, 'raw');
+    const c1Result = {
+      ...c1RawResult,
+      mq: c1Finalized.mq,
+      mqInventory: c1Finalized.mqInventory,
+    };
     c1._preResult = c1Result;
     const iframe = document.getElementById('battleIframe');
     const factionName = c1.payload.factionName || '派閥';
@@ -12146,7 +12209,17 @@ const App = {
     const c1 = App._common1Preview;
     if (!c1) return;
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0F1));
-    const matchResult = Engine.battle.simulateMatch(c1.fighterA, c1.fighterB, rng, 2);
+    const rawResult = Engine.battle.simulateMatch(c1.fighterA, c1.fighterB, rng, 2);
+    const finalized = Engine.mq.finalize(G, rawResult, {
+      path: 'App.common1SkipMatch',
+      matchType: 'singles',
+      participantFighters: [c1.fighterA, c1.fighterB],
+    }, 'raw');
+    const matchResult = {
+      ...rawResult,
+      mq: finalized.mq,
+      mqInventory: finalized.mqInventory,
+    };
     c1.matchResult = matchResult;
     App._finalizeCommon1Match(matchResult);
   },
@@ -12247,7 +12320,19 @@ const App = {
     const f1 = b2.f1, f2 = b2.f2;
     // Replay: 結果事前計算 (skip と同 seed: 0xB1B4)
     const b2Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4));
-    const b2Result = Engine.battle.simulateMatch({ ...f1, condition: 80 }, { ...f2, condition: 80 }, b2Rng, 2, { recordFrames: true });
+    const b2RawResult = Engine.battle.simulateMatch(
+      { ...f1, condition: 80 }, { ...f2, condition: 80 },
+      b2Rng, 2, { recordFrames: true });
+    const b2Finalized = Engine.mq.finalize(G, b2RawResult, {
+      path: 'App.b2WatchMatch',
+      matchType: 'singles',
+      participantFighters: [f1, f2],
+    }, 'raw');
+    const b2Result = {
+      ...b2RawResult,
+      mq: b2Finalized.mq,
+      mqInventory: b2Finalized.mqInventory,
+    };
     b2._preResult = b2Result;
     const iframe = document.getElementById('battleIframe');
     const msg = {
@@ -12288,7 +12373,17 @@ const App = {
     const b2 = App._b2Preview;
     if (!b2) return;
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB1B4));
-    const matchResult = Engine.battle.simulateMatch(b2.f1, b2.f2, rng, 2);
+    const rawResult = Engine.battle.simulateMatch(b2.f1, b2.f2, rng, 2);
+    const finalized = Engine.mq.finalize(G, rawResult, {
+      path: 'App.b2SkipMatch',
+      matchType: 'singles',
+      participantFighters: [b2.f1, b2.f2],
+    }, 'raw');
+    const matchResult = {
+      ...rawResult,
+      mq: finalized.mq,
+      mqInventory: finalized.mqInventory,
+    };
     b2.matchResult = matchResult;
     App._finalizeB2Match(matchResult);
   },
@@ -14119,13 +14214,19 @@ App._jtSimulateMatch = function(jt, left, right, roundIdx, pairIdx) {
     { ...rightF, jtCarryHpPct: right.jtCarryHpPct != null ? right.jtCarryHpPct : 100 },
     matchTier
   );
-  const result = Engine.battle.simulateMatch(
+  let result = Engine.battle.simulateMatch(
     leftForMatch,
     rightForMatch,
     matchRng,
     matchTier,
     { recordFrames: true }
   );
+  const finalized = Engine.mq.finalize(G, result, {
+    path: 'App._jtSimulateMatch',
+    matchType: 'singles',
+    participantFighters: [leftF, rightF],
+  }, 'raw');
+  result = { ...result, mq: finalized.mq, mqInventory: finalized.mqInventory };
   const winnerId = result.winner === 'right' ? right.id : left.id;
   const loserId = winnerId === left.id ? right.id : left.id;
   return {
