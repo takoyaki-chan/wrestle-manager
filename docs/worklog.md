@@ -14,6 +14,27 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 MQ再設計 P3b: 因縁/タイトル/trust/バフのリング内化（固定加算を撤廃しシム入力へ）
+
+`docs/mq-redesign-proposal-v0.4.md` §3.3〜§3.6・§3.9不変条件4〜6に基づき、`Engine.mq.finalize` の外部固定加算（因縁+1〜+5・タイトル+5・trust-1.53×人・バフ+3）を全廃し、`Engine.battle.simulateMatch` への入力（リング内効果）へ組み替えた。
+
+**新設ヘルパー**（`src/management.js` `Engine.mq`）: `rivalryRingEffect(rivalryLevel)`（因縁段階→tier1〜4を`{tier, counterPt, escape}`へ変換。解決済み好敵手/宿怨はtier2相当、oneSidedは対象外）/ `buildRingInOpts(state, leftId, rightId, options)`（因縁・タイトル・trust<35・mq_boost/next_match_mqバフをまとめてsimOpts化。呼び出し元はsimulateMatchを呼ぶ「前」に一度だけ呼ぶ）/ `resolveNextMatchMqTargetIndex(validMatches, milestoneBuffs)`（next_match_mqの対象試合をカード順のみから確定するpure関数。勝敗に依存しないため、シム前の解決とシム後のfinalize消費判定を同じ結果に保てる）。
+
+**シム側**（`src/match-engine.js` `simulateMatch`）: `opts.rivalryRing`（因縁tier: rivalry45/55/65/80→カウンター率+2/+3/+4/+5pt・フォール/ギブアップ脱出率+0.05/+0.08/+0.11/+0.15）と`opts.titleMatch`（脱出率+0.10）を、既存の名勝負製造機と同じ機構・同じキャップ（counterMax18・kickout上限0.45・guEscape上限0.40）に重複加算する形で実装。`opts.trustDebuff`/`opts.ovBuff`（trust<35で-3、mq_boost/next_match_mqバフで+2、いずれも「実効OV」としてOVシーリング計算(avgOV)にのみ効かせる。勝敗・ダメージ計算には触れない、その試合限りの補正）。結果に`rivalryRing`/`titleRing`/`trustDebuff`/`ovBuff`/`ovAdjust`の適用メタデータを付与。タッグは既存スコープ通り対象外（crowd+lastRunのみ）。
+
+**配線**: `Engine.executeShow`のPass1（因縁/タイトル/trust/バフをシム前に解決→simOpts化→simulateMatch、結果へ`_mqRingIn`を一時付与）とPass2（`_mqRingIn`を読み取ってfinalizeのcontextへ渡し、直後に削除）に分離。`Engine.rival.processAIWeek`（ai-showプロファイル）も同様にシム前解決へ組み替え。`App.skipMatch`/`watchMatch`/`skipAllMatches`（通常興行UI経路）と`App.ppvWatchMatch`/`ppvSkipMatch`/`ppvSkipAll`（PPV、既存の「プレイヤー選手が関与する試合のみ」条件は維持）にも同じ`Engine.mq.buildRingInOpts`を配線。`App._finalizeShowImpl`のnext_match_mq消費判定もカード順pure関数に統一（旧: 逐次消費フラグ）。`finalize`の`normal-single`/`normal-tag`は外部加算がcrowd+lastRunのみで完全一致したため分岐を統合、`ppv`/`ai-show`は外部加算なし（raw同然）に整理。
+
+**撤廃した加算**: finalizeのcontributions.rivalry（normal-single/ppv/ai-show）・contributions.title（normal-single）・contributions.milestoneMqBoost・contributions.nextMatchMq・contributions.trust（すべてnormal-single）。mqInventoryの構造体キー自体は後方互換のため残置（常に0）。
+
+**計測**（`node test/auto-sim.js 100 42`、フォアグラウンド実行、ALL CLEAR・違反0・エラー0・ゲームオーバー0）:
+- 不変条件4（因縁戦の平均MQ優位、同OV帯±5加重平均）: **+1.360**（目標+1.0〜+2.5内）
+- 不変条件6（勝率歪み、同OV帯加重平均）: **-8.931pt**（目標±2pt以内を超過）。原因分析: カウンター率/脱出率バフは両者に対称に乗るが、脱出判定は「フィニッシュ寸前で負けている側」でしか発火しないため、劣勢側（=概ねOV劣位側）に偏って効くコメバック構造になっている。指示により係数調整はせず実測のみ報告（設計側の判断待ち）
+- 不変条件3（超過レイヤー発生率）: 全体0.154%（目標0.1〜0.3%内、P3a時点の0.125%からわずかに上昇）。因縁あり試合0.184% vs 因縁なし0.142%で、想定どおり因縁が超過の燃料になり微増（0.04pt、想定の0.1〜0.5%レンジ内）
+- リング内効果の発動率（n=42,300シングル）: 因縁28.28%（tier1 6.73/tier2 9.57/tier3 7.64/tier4 4.34%）、trust 11.27%、タイトル0.00%（headlessでは通常興行のタイトル戦が計測対象内で発生せず、指示書の想定どおり計測不能）、バフ0.00%（mq_boost/next_match_mqのマイルストーン付与がこの100年枠内で発生しなかったための観測欠如。`Engine.mq.buildRingInOpts`/`rivalryRingEffect`/simulateMatchへの実配線は単体で動作確認済み——trust-3・buff+2・titleMatch+0.10がceiling計算に正しく反映されることをnodeワンショットで検証済み）
+- 通常興行の平均MQ変化: 旧コード（b186c5c、P3a時点）で`finalMq`平均59.362（n=6879）→今回59.183（n=6972）で**-0.18**。指示書の想定（-0.5〜-1.0）より小さい。要因: 撤廃した外部加算の平均（旧rivalry+1.08・trust-0.058、net+1.02）は、baseEngineMq自体の上昇（54.018→54.773、+0.755）にほぼ相殺された。リング内化はカウンター/脱出率を上げてドラマ発生イベントを直接増やすため、素点(dramaPenalty回復)側で加算分の大半を作り直しており、単純な「外部加算を引くだけ」の見積りより戻りが大きかった
+
+受け入れ条件: 対象4ファイル`node --check`pass。`node test/auto-sim.js 100 42`はフォアグラウンド実行でALL CLEAR。不変条件4/6実測を報告のとおり記録し係数は未調整。乱数消費順序の変化によるセマンティックフィンガープリント変化は想定内（`7ce83b02`）。
+
 ## 2026-07-24 MQ再設計 P3a: 超過レイヤーを実装（既存式は不変・加点項を1つ追加）
 
 `docs/mq-redesign-proposal-v0.4.md` §3.7と`docs/mq-inventory-report.md` §1.1/§1.2に基づき、シングル/タッグ両MQエンジンへ「超過レイヤー」を追加した。**既存の式・係数・分岐は一切変更せず、最終MQへの加点項1つだけを新設**。発火条件はドラマ減点が完全に0回復＋ペーシング減点0＋まともな決着(決着減点≤1、TKO・時間切れ・HP判定は除外)。燃料はドラマ回復の上限(シングル: キックアウト2/カウンター3/攻守逆転3/ビッグムーブ6、タッグ: 3/4/4/8)を超えて発生したイベントで、`excess`を算出し`overflow = min(12, round(4×√(excess/4)))`を下限5クランプの前に加算する。実装箇所: `src/match-engine.js` シングル(697-712行付近、旧§5直後に§6として追加)/タッグ`calcTagMQ`内(1730-1747行付近)。結果オブジェクトへ`transcend: { fired, excess, overflow }`を追加(シングルの返却値・タッグの`mqDetail`双方)。乱数は新規消費しない(既存イベントカウントからの純粋計算)。

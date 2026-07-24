@@ -3,6 +3,10 @@
 // ║  Pure logic layer — no DOM references                     ║
 // ╚══════════════════════════════════════════════════════════╝
 
+// MQ再設計P3b(mq-redesign-proposal-v0.4 §3.4): タイトル戦のリング内効果。
+// 王座戦は挑戦者・王者ともフォール/ギブアップ脱出率+0.10(既存キャップに従う)。
+const TITLE_RING_ESCAPE_BONUS = 0.10;
+
 // 技候補はモジュール初期化時に一度だけ威力ティアへ分類する。
 // 丸め込みは独立抽選なので、通常ティアの候補からは除外する。
 const MOVE_TIER_POOLS = {};
@@ -285,6 +289,21 @@ Engine.battle = {
       // 引き出し上手: 格下戦でのペーシング減点緩和
       const hasHikidashi = Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手');
 
+      // MQ再設計P3b(mq-redesign-proposal-v0.4 §3.3〜§3.6): 因縁/タイトル/trust/バフを
+      // 固定MQ加算ではなく「シムへの入力」として受け取る。因縁段階・タイトル戦フラグは
+      // 名勝負製造機と同じ機構(カウンター率・脱出率)に乗る。trust/バフはOV参照(シーリング)を
+      // その試合限りで補正する。呼び出し元は Engine.mq.buildRingInOpts で事前に解決して渡す。
+      const ringOpts = opts || {};
+      const rivalryRing = ringOpts.rivalryRing || null;
+      const titleRingMatch = !!ringOpts.titleMatch;
+      const ringCounterBonus = rivalryRing ? (Number(rivalryRing.counterPt) || 0) : 0;
+      const ringEscapeBonus = (rivalryRing ? (Number(rivalryRing.escape) || 0) : 0)
+        + (titleRingMatch ? TITLE_RING_ESCAPE_BONUS : 0);
+      const trustRingDebuff = Array.isArray(ringOpts.trustDebuff) ? ringOpts.trustDebuff : [0, 0];
+      const buffRingBonus = Array.isArray(ringOpts.ovBuff) ? ringOpts.ovBuff : [0, 0];
+      const ringOvAdjustL = (Number(trustRingDebuff[0]) || 0) + (Number(buffRingBonus[0]) || 0);
+      const ringOvAdjustR = (Number(trustRingDebuff[1]) || 0) + (Number(buffRingBonus[1]) || 0);
+
       // ── フレーム記録（観戦用） ──
       // ターン毎に1フレーム push。battle-engine.html (リプレイ版) が再生する。
       const frames = recordFrames ? [] : null;
@@ -470,7 +489,8 @@ Engine.battle = {
           }
         } else {
           let counterRate = B.calcCounterRate(atk, def, ph);
-          if (hasMeishoubu) counterRate = Math.min(counterRate + 5, ENG.counterMax);
+          const counterFlatBonus = (hasMeishoubu ? 5 : 0) + ringCounterBonus;
+          if (counterFlatBonus > 0) counterRate = Math.min(counterRate + counterFlatBonus, ENG.counterMax);
           // v5.1 パターンB: 先攻3ターン PW優位な側が攻撃時、相手カウンター率ペナルティ
           if (turn <= 3) {
             counterRate -= isLeftAtk ? _pwLead : -_pwLead;
@@ -534,7 +554,8 @@ Engine.battle = {
                 const _popAdvKo = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
                 const _popMultKo = (tier >= 2 ? 2.0 : 1.0);
                 let koChance = B.calcKickoutChance(def, ph, eng, _popAdvKo, _popMultKo);
-                if (hasMeishoubu) koChance = Math.min(koChance + 0.15, 0.45);
+                const koFlatBonus = (hasMeishoubu ? 0.15 : 0) + ringEscapeBonus;
+                if (koFlatBonus > 0) koChance = Math.min(koChance + koFlatBonus, 0.45);
                 if (Engine.rng.float(rng) < koChance) {
                   escaped = true;
                   def.hp = Math.round(def.mhp * 0.05);
@@ -549,7 +570,8 @@ Engine.battle = {
                 const _popAdvGu = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
                 const _popMultGu = (tier >= 2 ? 2.0 : 1.0);
                 let escChance = B.calcGuEscapeChance(def, ph, eng, _popAdvGu, _popMultGu);
-                if (hasMeishoubu) escChance = Math.min(escChance + 0.15, 0.40);
+                const guFlatBonus = (hasMeishoubu ? 0.15 : 0) + ringEscapeBonus;
+                if (guFlatBonus > 0) escChance = Math.min(escChance + guFlatBonus, 0.40);
                 if (Engine.rng.float(rng) < escChance) {
                   escaped = true;
                   def.hp = Math.round(def.mhp * 0.05);
@@ -657,7 +679,9 @@ Engine.battle = {
 
       // Calculate MQ (v2.0 deduction system — §1〜§5 of mq-deduction-redesign-v2.0.md)
       const matchTurns = turn - 1;
-      const avgOV = (Engine.util.ov(charL) + Engine.util.ov(charR)) / 2;
+      // MQ再設計P3b §3.5〜§3.6: trust低下/バフによる実効OV補正はシーリング計算にのみ効かせる
+      // (恒久的なステータス変更ではなく、その試合の天井だけをその場で動かす)。
+      const avgOV = (Engine.util.ov(charL) + ringOvAdjustL + Engine.util.ov(charR) + ringOvAdjustR) / 2;
 
       // §1 天井（OVシーリング）
       let ceiling;
@@ -739,6 +763,12 @@ Engine.battle = {
         } : {}),
         mqDetail: { ceiling, dramaPenalty, pacingPenalty, finishPenalty },
         transcend: { fired: transcendFired && transcendOverflow > 0, excess: transcendExcess, overflow: transcendOverflow },
+        // MQ再設計P3b: リング内化の適用メタデータ(観測・新聞演出用。存在する場合のみ付与)
+        ...(rivalryRing ? { rivalryRing: { tier: rivalryRing.tier, counterPt: rivalryRing.counterPt, escape: rivalryRing.escape } } : {}),
+        ...(titleRingMatch ? { titleRing: { escape: TITLE_RING_ESCAPE_BONUS } } : {}),
+        ...((trustRingDebuff[0] || trustRingDebuff[1]) ? { trustDebuff: [trustRingDebuff[0] || 0, trustRingDebuff[1] || 0] } : {}),
+        ...((buffRingBonus[0] || buffRingBonus[1]) ? { ovBuff: [buffRingBonus[0] || 0, buffRingBonus[1] || 0] } : {}),
+        ...((ringOvAdjustL || ringOvAdjustR) ? { ovAdjust: [ringOvAdjustL, ringOvAdjustR] } : {}),
         frames: recordFrames ? frames : undefined,
       };
     }

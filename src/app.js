@@ -6070,6 +6070,17 @@ const App = {
     }, rng);
   },
 
+  // MQ再設計P3b: 因縁/タイトル/trust/バフのリング内化(§3.3〜§3.6)。通常興行シングルの
+  // simulateMatch呼び出し全箇所(skip/watch/skipAll)で同一の解決を使う。next_match_mqの対象は
+  // カード順のみから決まる純関数なので、どの経路から呼んでも同じ結果になる。
+  _normalShowRingInOpts(sp, idx, m) {
+    const targetIdx = Engine.mq.resolveNextMatchMqTargetIndex(sp.validMatches, G.milestoneBuffs);
+    const ringIn = Engine.mq.buildRingInOpts(G, m.left, m.right, {
+      roster: G.roster, isTitle: !!m.isTitle, applyNextMatchMq: idx === targetIdx,
+    });
+    return ringIn.simOpts;
+  },
+
   // Skip a single match (instant calculation) — 余韻フレーバーは出さない(省略の意思表示)
   skipMatch(idx) {
     const sp = App._showPreview;
@@ -6129,7 +6140,8 @@ const App = {
       return;
     }
     const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
-    sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
+    sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1,
+      App._normalShowRingInOpts(sp, idx, m));
     try { Audio.play('tick'); } catch(e) {}
     App._afterMatchSettle(idx, { skipFlavor: true });
   },
@@ -6157,7 +6169,8 @@ const App = {
     // エンジン実行（recordFrames=true）— Replay 方式: シミュレート結果＋フレーム列を iframe へ渡して再生
     const matchTier = m.isTitle ? 2 : 1;
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
-    const result = Engine.battle.simulateMatch(charL, charR, rng, matchTier, { recordFrames: true });
+    const result = Engine.battle.simulateMatch(charL, charR, rng, matchTier,
+      { recordFrames: true, ...App._normalShowRingInOpts(sp, idx, m) });
     const h2hForLeft = (Engine.h2h && Engine.h2h.getRecordFor) ? Engine.h2h.getRecordFor(G, charL.id, charR.id) : null;
     sp.results[idx] = result;
     sp.currentWatching = idx;
@@ -6542,7 +6555,8 @@ const App = {
         return;
       }
       const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
-      sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
+      sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1,
+        App._normalShowRingInOpts(sp, idx, m));
     });
     if (sp.results.some(r => r === null)) {
       renderMatchPreview();
@@ -6906,7 +6920,9 @@ const App = {
     }
 
     // UI and headless share the same context builder and finalizer.
+    // MQ再設計P3b: next_match_mqの対象試合はカード順のみで決まる純関数(シム前の解決と対称)。
     let nextMatchMqConsumed = false;
+    const nextMatchMqTargetIdx = Engine.mq.resolveNextMatchMqTargetIndex(validMatches, s.milestoneBuffs);
     results.forEach((r, i) => {
       const m = validMatches[i];
       const profile = r.matchType === 'tag' ? 'normal-tag' : 'normal-single';
@@ -6920,7 +6936,7 @@ const App = {
           path: 'App._finalizeShowImpl',
           matchIndex: i,
           crowdVenueBonus: crowdMQ.total,
-          allowNextMatchMq: !nextMatchMqConsumed,
+          nextMatchMqApplied: i === nextMatchMqTargetIdx,
         });
       const finalized = Engine.mq.finalize(s, r, context, profile);
       r.mq = finalized.mq;
@@ -13421,6 +13437,16 @@ App.initPPVShow = function() {
   }
 };
 
+// MQ再設計P3b: 因縁のリング内化(§3.3)。PPVは「プレイヤー選手が関与する試合のみ」という
+// 既存の因縁判定条件を変えず、シム前に解決してopts化する(applyPPVResultsの判定条件と対称)。
+App._ppvRingInOpts = function(match) {
+  const pLeft = G.roster.find(c => c.id === match.left.id);
+  const pRight = G.roster.find(c => c.id === match.right.id);
+  if (!pLeft && !pRight) return undefined;
+  const ringIn = Engine.mq.buildRingInOpts(G, match.left.id, match.right.id, { roster: G.roster });
+  return ringIn.simOpts;
+};
+
 App.ppvWatchMatch = function(idx) {
   const pp = App._ppvPreview;
   if (!pp || pp.results[idx]) return;
@@ -13429,7 +13455,8 @@ App.ppvWatchMatch = function(idx) {
 
   // Replay: 結果事前計算 (skip と同 seed)
   const ppvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF3, idx, match.left.id));
-  const ppvResult = Engine.ppv.simulatePPVMatch(match.left, match.right, ppvRng, { recordFrames: true });
+  const ppvResult = Engine.ppv.simulatePPVMatch(match.left, match.right, ppvRng,
+    { recordFrames: true, ...App._ppvRingInOpts(match) });
   pp.results[idx] = ppvResult;
 
   const overlay = document.getElementById('battleOverlay');
@@ -13487,7 +13514,7 @@ App.ppvSkipMatch = function(idx) {
   if (!pp || pp.results[idx]) return;
   const match = pp.card[idx];
   const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF3, idx, match.left.id));
-  pp.results[idx] = Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng);
+  pp.results[idx] = Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng, App._ppvRingInOpts(match));
   Audio.play('tick');
   renderPPVMatchPreview();
   renderPPVMatchResultPopup(idx, () => {
@@ -13501,7 +13528,7 @@ App.ppvSkipAll = function() {
   pp.card.forEach((match, idx) => {
     if (pp.results[idx]) return;
     const matchRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF3, idx, match.left.id));
-    pp.results[idx] = Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng);
+    pp.results[idx] = Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng, App._ppvRingInOpts(match));
   });
   Audio.play('bellx3');
   App.finalizePPV();

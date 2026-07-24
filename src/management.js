@@ -2110,6 +2110,91 @@ const Engine = {
     TITLE_MQ_BONUS: 5,
     PROFILES: new Set(['normal-single', 'normal-tag', 'ppv', 'ai-show', 'raw']),
 
+    // MQ再設計P3b(mq-redesign-proposal-v0.4 §3.3〜§3.6): 因縁/タイトル/trust/バフの
+    // 固定加算を撤廃し、simulateMatch への入力(リング内効果)へ変換する定数群。
+    TITLE_RING_ESCAPE: 0.10,
+    TRUST_RING_OV_PENALTY: -3,
+    BUFF_RING_OV_BONUS: 2,
+    RIVALRY_RING_TABLE: {
+      1: { counterPt: 2, escape: 0.05 },
+      2: { counterPt: 3, escape: 0.08 },
+      3: { counterPt: 4, escape: 0.11 },
+      4: { counterPt: 5, escape: 0.15 },
+    },
+
+    // 因縁のリング内化(§3.3): getRivalryLevel() の結果をリング内効果へ変換する。
+    // 解決済み(好敵手/宿怨)はtier2相当(+3pt/+0.08)。一方的な因縁(oneSided)は対象外(旧mqBonusも0だった)。
+    rivalryRingEffect(rivalryLevel) {
+      if (!rivalryLevel) return null;
+      let tier;
+      if (rivalryLevel.resolvedType === 'goodRival' || rivalryLevel.resolvedType === 'bitter') {
+        tier = 2;
+      } else if (rivalryLevel.isOneSided) {
+        return null;
+      } else {
+        const r = Number(rivalryLevel.rivalry);
+        if (!Number.isFinite(r) || r < 45) return null;
+        tier = r < 55 ? 1 : r < 65 ? 2 : r < 80 ? 3 : 4;
+      }
+      const row = Engine.mq.RIVALRY_RING_TABLE[tier];
+      return row ? { tier, counterPt: row.counterPt, escape: row.escape } : null;
+    },
+
+    // 因縁/タイトル/trust/バフを simulateMatch への入力(リング内効果)へ組み立てる。
+    // シングルのみ対象(タッグは既存スコープ通り対象外)。呼び出し元は simulateMatch を
+    // 呼ぶ「前」にこれを呼び、返り値の simOpts をそのまま渡す。
+    buildRingInOpts(state, leftId, rightId, options = {}) {
+      const roster = options.roster || state?.roster || [];
+      const fighterL = roster.find(f => f.id === leftId) || null;
+      const fighterR = roster.find(f => f.id === rightId) || null;
+
+      let rivalryLevel;
+      if (options.rivalryLevel !== undefined) {
+        rivalryLevel = options.rivalryLevel;
+      } else if (state) {
+        const rivalryState = options.rivalries ? { ...state, rivalries: options.rivalries } : state;
+        rivalryLevel = Engine.title.getRivalryLevel(rivalryState, leftId, rightId);
+      } else {
+        rivalryLevel = null;
+      }
+      const rivalryRing = Engine.mq.rivalryRingEffect(rivalryLevel);
+
+      const titleMatch = !!options.isTitle;
+
+      const trustDebuff = [
+        (fighterL && (fighterL.trust ?? 50) < 35) ? Engine.mq.TRUST_RING_OV_PENALTY : 0,
+        (fighterR && (fighterR.trust ?? 50) < 35) ? Engine.mq.TRUST_RING_OV_PENALTY : 0,
+      ];
+
+      const milestoneBuffs = state?.milestoneBuffs || [];
+      const mqBoostBuff = milestoneBuffs.find(buff => buff.type === 'mq_boost');
+      let ovBuff = mqBoostBuff
+        ? [Engine.mq.BUFF_RING_OV_BONUS, Engine.mq.BUFF_RING_OV_BONUS]
+        : [0, 0];
+      let nextMatchMqApplied = false;
+      if (options.applyNextMatchMq) {
+        ovBuff = [ovBuff[0] + Engine.mq.BUFF_RING_OV_BONUS, ovBuff[1] + Engine.mq.BUFF_RING_OV_BONUS];
+        nextMatchMqApplied = true;
+      }
+
+      return {
+        simOpts: { rivalryRing, titleMatch, trustDebuff, ovBuff },
+        rivalryLevel,
+        nextMatchMqApplied,
+      };
+    },
+
+    // next_match_mq バフの対象試合を、カード順のみから確定する(勝敗に依存しないpure判定)。
+    // simulateMatch を呼ぶ前に「どの試合が消費するか」を確定させるためのヘルパー。
+    // シングルのみ対象(既存スコープ通り)。
+    resolveNextMatchMqTargetIndex(validMatches, milestoneBuffs) {
+      const buff = (milestoneBuffs || []).find(b => b.type === 'next_match_mq');
+      if (!buff || !buff.pair) return -1;
+      const [p1, p2] = buff.pair;
+      return (validMatches || []).findIndex(m => m && m.matchType !== 'tag'
+        && ((m.left === p1 && m.right === p2) || (m.left === p2 && m.right === p1)));
+    },
+
     buildNormalContext(state, matchResult, slot, options = {}) {
       const roster = options.roster || state?.roster || [];
       const isTag = slot?.matchType === 'tag' || matchResult?.matchType === 'tag';
@@ -2123,8 +2208,11 @@ const Engine = {
       const participantFighters = participantIds
         .map(id => roster.find(fighter => fighter.id === id))
         .filter(Boolean);
-      let rivalryLevel = options.rivalryLevel || matchResult?.rivalryBonus || null;
-      if (!isTag && !rivalryLevel && state && participantIds.length === 2) {
+      let rivalryLevel = options.rivalryLevel !== undefined
+        ? options.rivalryLevel
+        : (matchResult?.rivalryBonus || null);
+      if (!isTag && !rivalryLevel && options.rivalryLevel === undefined
+          && state && participantIds.length === 2) {
         const rivalryState = options.rivalries
           ? { ...state, rivalries: options.rivalries }
           : state;
@@ -2132,43 +2220,21 @@ const Engine = {
           rivalryState, participantIds[0], participantIds[1]);
       }
 
-      const milestoneBuffs = state?.milestoneBuffs || [];
-      const mqBoostBuff = milestoneBuffs.find(buff => buff.type === 'mq_boost');
-      const nextMatchMqBuff = milestoneBuffs.find(buff => buff.type === 'next_match_mq');
-      let nextMatchMq = 0;
-      if (!isTag && options.allowNextMatchMq !== false && nextMatchMqBuff?.pair
-          && participantIds.length === 2) {
-        const [p1, p2] = nextMatchMqBuff.pair;
-        if ((participantIds[0] === p1 && participantIds[1] === p2)
-            || (participantIds[0] === p2 && participantIds[1] === p1)) {
-          nextMatchMq = Number(nextMatchMqBuff.amount) || 0;
-        }
-      }
-
       const lastRunFighter = participantFighters.find(fighter => fighter.lastRun) || null;
       const lastRunBonus = lastRunFighter
         ? (options.matchIndex === 0 ? 5 : 2)
         : 0;
-      let trustPenalty = 0;
-      if (!isTag) {
-        participantFighters.forEach(fighter => {
-          if ((fighter.trust ?? 50) < 35) trustPenalty -= 1.53;
-        });
-      }
 
       return {
         path: options.path || 'normal-show',
         matchType: isTag ? 'tag' : 'singles',
         participantFighters,
         rivalryLevel,
-        rivalryBonus: Number(rivalryLevel?.mqBonus) || 0,
         isTitle: !isTag && !!(slot?.isTitle || matchResult?.isTitleMatch),
         crowdVenueBonus: Number(options.crowdVenueBonus) || 0,
-        milestoneMqBoost: !isTag ? (Number(mqBoostBuff?.amount) || 0) : 0,
-        nextMatchMq,
         lastRunBonus,
         lastRunFighterId: lastRunFighter?.id ?? null,
-        trustPenalty,
+        nextMatchMqApplied: !!options.nextMatchMqApplied,
       };
     },
 
@@ -2182,6 +2248,9 @@ const Engine = {
       }
 
       const participantFighters = context.participantFighters || [];
+      // MQ再設計P3b: 因縁/タイトル/trust/バフはリング内化済み(simulateMatch側の入力)。
+      // finalize側の外部加算は crowd(会場の空気)+lastRun(稀な例外)のみに整理。
+      // ppv/ai-showは外部加算なし(リング内化がシム側で自然に働く)。
       const contributions = {
         rivalry: 0,
         title: 0,
@@ -2191,19 +2260,9 @@ const Engine = {
         lastRun: 0,
         trust: 0,
       };
-      if (profile === 'normal-single') {
-        contributions.rivalry = Number(context.rivalryBonus) || 0;
-        contributions.title = context.isTitle ? Engine.mq.TITLE_MQ_BONUS : 0;
-        contributions.crowd = Number(context.crowdVenueBonus) || 0;
-        contributions.milestoneMqBoost = Number(context.milestoneMqBoost) || 0;
-        contributions.nextMatchMq = Number(context.nextMatchMq) || 0;
-        contributions.lastRun = Number(context.lastRunBonus) || 0;
-        contributions.trust = Number(context.trustPenalty) || 0;
-      } else if (profile === 'normal-tag') {
+      if (profile === 'normal-single' || profile === 'normal-tag') {
         contributions.crowd = Number(context.crowdVenueBonus) || 0;
         contributions.lastRun = Number(context.lastRunBonus) || 0;
-      } else if (profile === 'ppv' || profile === 'ai-show') {
-        contributions.rivalry = Number(context.rivalryBonus) || 0;
       }
 
       const external = Object.values(contributions).reduce((sum, value) => sum + value, 0);
@@ -2242,7 +2301,7 @@ const Engine = {
         externalMQBonus: external,
         trustMQPenalty: contributions.trust,
         consumedNextMatchMqBuff: profile === 'normal-single'
-          && contributions.nextMatchMq !== 0,
+          && !!context.nextMatchMqApplied,
         lastRunFighterId: contributions.lastRun !== 0
           ? (context.lastRunFighterId ?? null)
           : null,
@@ -8390,16 +8449,17 @@ const Engine = {
           if (leftIdx < 0 || rightIdx < 0) continue;
 
           const matchRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, card.left.id ^ card.right.id));
-          let result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng);
+          // MQ再設計P3b: 因縁のリング内化はシム前に解決して opts で渡す(ai-showプロファイル)。
+          const ringIn = Engine.mq.buildRingInOpts(state, card.left.id, card.right.id, { roster });
+          let result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng, 1, ringIn.simOpts);
           // coachMQBonus は MQ外部ボーナス整理で廃止
           // AI vs AI match MQ uses the shared ai-show profile.
           {
-            const rivalLvl = Engine.title.getRivalryLevel(state, card.left.id, card.right.id);
+            const rivalLvl = ringIn.rivalryLevel;
             const finalized = Engine.mq.finalize(state, result, {
               path: 'Engine.rival.processAIWeek',
               matchType: 'singles',
               participantFighters: [roster[leftIdx], roster[rightIdx]],
-              rivalryBonus: Number(rivalLvl?.mqBonus) || 0,
             }, 'ai-show');
             result = {
               ...result,
@@ -11611,8 +11671,12 @@ const Engine = {
       }
     }
 
+    // MQ再設計P3b: next_match_mqバフの対象試合をカード順のみから確定する(勝敗に依存しないpure判定)。
+    const nextMatchMqTargetIdx = Engine.mq.resolveNextMatchMqTargetIndex(validMatches, s.milestoneBuffs);
+
     // v1.5s25: Pass 1 — バトル結果生成（外部MQボーナスなし・メタデータのみ記録）
-    const rawResults = validMatches.map(m => {
+    // P3b: 因縁/タイトル/trust/バフのリング内化(§3.3〜§3.6)はここでシム入力として解決する。
+    const rawResults = validMatches.map((m, matchIdx) => {
       // ── タッグマッチ ──
       if (m.matchType === 'tag') {
         const f1 = roster.find(c => c.id === m.teamA.fighter1);
@@ -11634,14 +11698,18 @@ const Engine = {
       const charL = roster.find(c => c.id === m.left);
       const charR = roster.find(c => c.id === m.right);
       if (!charL || !charR) return null;
+      const ringIn = Engine.mq.buildRingInOpts({ ...s, roster }, m.left, m.right, {
+        roster, rivalries, isTitle: !!m.isTitle,
+        applyNextMatchMq: matchIdx === nextMatchMqTargetIdx,
+      });
       const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right));
-      const result = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1);
-      // メタデータ記録（MQにはまだ加算しない）
-      const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
-      if (rivalLvl) result.rivalryBonus = rivalLvl;
+      const result = Engine.battle.simulateMatch(charL, charR, matchRng, m.isTitle ? 2 : 1, ringIn.simOpts);
+      // メタデータ記録（MQにはまだ加算しない）。_mqRingInはPass2で読み取り後に破棄する。
+      if (ringIn.rivalryLevel) result.rivalryBonus = ringIn.rivalryLevel;
       if (m.isTitle) {
         result.isTitleMatch = true;
       }
+      result._mqRingIn = { rivalryLevel: ringIn.rivalryLevel, nextMatchMqApplied: ringIn.nextMatchMqApplied };
       // coachMQBonus / promoStackBonus は MQ外部ボーナス整理で廃止
       return result;
     }).filter(Boolean);
@@ -11754,11 +11822,14 @@ const Engine = {
     }
 
     // Pass 2: all normal-show MQ finalization goes through Engine.mq.finalize.
+    // P3b: 因縁/タイトル/trust/バフはPass1でシム入力済み。ここではmetadata引き継ぎのみ。
     let nextMatchMqConsumed = false;
     const fanExpects = Engine.fanExpect.generate(s);
     const results = rawResults.map((r, matchIdx) => {
       const slot = validMatches[matchIdx];
       const profile = r.matchType === 'tag' ? 'normal-tag' : 'normal-single';
+      const ringIn = r._mqRingIn || null;
+      delete r._mqRingIn;
       const context = Engine.mq.buildNormalContext(
         { ...s, roster, rivalries },
         r,
@@ -11769,7 +11840,8 @@ const Engine = {
           path: 'Engine.executeShow',
           matchIndex: matchIdx,
           crowdVenueBonus: crowdMQ.total,
-          allowNextMatchMq: !nextMatchMqConsumed,
+          rivalryLevel: ringIn ? ringIn.rivalryLevel : undefined,
+          nextMatchMqApplied: ringIn ? ringIn.nextMatchMqApplied : false,
         });
       const finalized = Engine.mq.finalize(s, r, context, profile);
       r.mq = finalized.mq;

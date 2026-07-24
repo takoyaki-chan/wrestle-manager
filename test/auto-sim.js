@@ -372,6 +372,15 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
       transcendFired: !!result.transcend?.fired,
       transcendExcess: result.transcend?.excess || 0,
       transcendOverflow: result.transcend?.overflow || 0,
+      // MQ再設計P3b: リング内化(因縁/タイトル/trust/バフ)の観測。
+      winner: result.winner,
+      strongerSide,
+      rivalryRingTier: result.rivalryRing ? result.rivalryRing.tier : 0,
+      titleRingApplied: !!result.titleRing,
+      trustDebuffSum: Array.isArray(result.trustDebuff)
+        ? (result.trustDebuff[0] || 0) + (result.trustDebuff[1] || 0) : 0,
+      ovBuffSum: Array.isArray(result.ovBuff)
+        ? (result.ovBuff[0] || 0) + (result.ovBuff[1] || 0) : 0,
     });
   }
   const phaseTiming = matchBalanceProbe.phaseTiming[(result.matchTier || matchTier || 1) >= 2 ? 'big' : 'normal'];
@@ -1773,6 +1782,72 @@ if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqIn
   console.log('Transcend Layer Probe (P3a):');
   printTranscendMetrics('singles', mqInventoryProbe.singlesRaw);
   printTranscendMetrics('tag', mqInventoryProbe.tagRaw);
+
+  // MQ再設計P3b(mq-redesign-proposal-v0.4 §3.3〜§3.6)観測: 固定加算撤廃→リング内化の効果測定。
+  // 不変条件4: 因縁戦の平均MQ優位(同OV帯±5、非因縁戦比)+1.0〜+2.5
+  // 不変条件6: 因縁/タイトルのリング内化による勝率歪みは同OV帯で±2pt以内
+  {
+    const singles = mqInventoryProbe.singlesRaw;
+    const ovBandOf = value => Math.round(value / 5) * 5;
+    const byBand = new Map();
+    for (const sample of singles) {
+      const band = ovBandOf(sample.avgOV);
+      if (!byBand.has(band)) byBand.set(band, { rivalry: [], none: [] });
+      const bucket = byBand.get(band);
+      (sample.rivalryRingTier > 0 ? bucket.rivalry : bucket.none).push(sample);
+    }
+    let weightedMqDiffSum = 0, mqDiffWeight = 0;
+    let weightedWinDiffSum = 0, winDiffWeight = 0;
+    const bandRows = [];
+    for (const [band, bucket] of [...byBand.entries()].sort((a, b) => a[0] - b[0])) {
+      if (bucket.rivalry.length < 5 || bucket.none.length < 5) continue; // サンプル不足帯は除外
+      const rivalryMq = bucket.rivalry.reduce((s, x) => s + x.finalMq, 0) / bucket.rivalry.length;
+      const noneMq = bucket.none.reduce((s, x) => s + x.finalMq, 0) / bucket.none.length;
+      const mqDiff = rivalryMq - noneMq;
+      weightedMqDiffSum += mqDiff * bucket.rivalry.length;
+      mqDiffWeight += bucket.rivalry.length;
+
+      const decided = arr => arr.filter(x => x.strongerSide && (x.winner === 'left' || x.winner === 'right'));
+      const rivalryDecided = decided(bucket.rivalry);
+      const noneDecided = decided(bucket.none);
+      let winDiff = null;
+      if (rivalryDecided.length >= 5 && noneDecided.length >= 5) {
+        const rivalryWinRate = rivalryDecided.filter(x => x.winner === x.strongerSide).length / rivalryDecided.length * 100;
+        const noneWinRate = noneDecided.filter(x => x.winner === x.strongerSide).length / noneDecided.length * 100;
+        winDiff = rivalryWinRate - noneWinRate;
+        weightedWinDiffSum += winDiff * rivalryDecided.length;
+        winDiffWeight += rivalryDecided.length;
+      }
+      bandRows.push({ band, nRivalry: bucket.rivalry.length, nNone: bucket.none.length, mqDiff, winDiff });
+    }
+    console.log('--------------------------------------');
+    console.log('Ring-in Effect Probe (P3b, mq-redesign-proposal-v0.4 §3.3〜§3.6):');
+    for (const row of bandRows) {
+      console.log(`  avgOV~${row.band}: n(因縁)=${row.nRivalry} n(非因縁)=${row.nNone} MQ差=${row.mqDiff.toFixed(2)} 勝率歪み=${row.winDiff == null ? 'n/a' : row.winDiff.toFixed(2) + 'pt'}`);
+    }
+    const overallMqDiff = mqDiffWeight ? weightedMqDiffSum / mqDiffWeight : null;
+    const overallWinDiff = winDiffWeight ? weightedWinDiffSum / winDiffWeight : null;
+    console.log(`  [不変条件4] 因縁戦の平均MQ優位(同OV帯±5、加重平均): ${overallMqDiff == null ? 'n/a(サンプル不足)' : overallMqDiff.toFixed(3)} (目標+1.0〜+2.5)`);
+    console.log(`  [不変条件6] 勝率歪み(同OV帯、加重平均): ${overallWinDiff == null ? 'n/a(サンプル不足)' : overallWinDiff.toFixed(3) + 'pt'} (目標±2pt以内)`);
+
+    // リング内効果の発動率(母数=シングル全試合)
+    const n = singles.length || 1;
+    const rivalryActive = singles.filter(s => s.rivalryRingTier > 0).length;
+    const titleActive = singles.filter(s => s.titleRingApplied).length;
+    const trustActive = singles.filter(s => s.trustDebuffSum < 0).length;
+    const buffActive = singles.filter(s => s.ovBuffSum > 0).length;
+    console.log(`  発動率(n=${singles.length}): 因縁=${(rivalryActive / n * 100).toFixed(2)}% タイトル=${(titleActive / n * 100).toFixed(2)}% trust=${(trustActive / n * 100).toFixed(2)}% バフ=${(buffActive / n * 100).toFixed(2)}%`);
+    for (let tier = 1; tier <= 4; tier++) {
+      const tierN = singles.filter(s => s.rivalryRingTier === tier).length;
+      if (tierN) console.log(`    因縁tier${tier}: n=${tierN} (${(tierN / n * 100).toFixed(2)}%)`);
+    }
+
+    // 超過レイヤー(P3a)発生率: 因縁あり/なしでの比較(因縁が燃料になり微増するはず)
+    const rivalrySamples = singles.filter(s => s.rivalryRingTier > 0);
+    const noneSamples = singles.filter(s => s.rivalryRingTier === 0);
+    const transcendRate = arr => arr.length ? arr.filter(x => x.transcendFired).length / arr.length * 100 : 0;
+    console.log(`  超過レイヤー発生率: 因縁あり=${transcendRate(rivalrySamples).toFixed(3)}%(n=${rivalrySamples.length}) 因縁なし=${transcendRate(noneSamples).toFixed(3)}%(n=${noneSamples.length}) 全体=${transcendRate(singles).toFixed(3)}%`);
+  }
 }
 
 console.log('--------------------------------------');
