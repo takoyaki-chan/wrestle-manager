@@ -13,7 +13,7 @@ export async function onRequest(context) {
     + "?response_type=code"
     + `&client_id=${encodeURIComponent(env.PATREON_CLIENT_ID)}`
     + `&redirect_uri=${encodeURIComponent(redirectUri(url))}`
-    + `&scope=${encodeURIComponent("identity identity.memberships")}`
+    + `&scope=${encodeURIComponent("identity identity.memberships campaigns")}`
     + `&state=${state}`;
   return new Response(null, {
     status: 302,

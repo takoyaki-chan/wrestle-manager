@@ -66,11 +66,24 @@ export async function exchangeCode(env, url, code) {
 /** ログインユーザーが対象キャンペーンの有効な有料メンバーかを判定する */
 export async function checkMembership(env, accessToken) {
   const url = "https://www.patreon.com/api/oauth2/v2/identity"
-    + "?include=memberships.campaign"
+    + "?include=memberships.campaign,campaign"
     + "&fields%5Bmember%5D=patron_status,currently_entitled_amount_cents";
   const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
   if (!res.ok) return { ok: false, reason: "api_error" };
   const data = await res.json();
+  const userId = data.data?.id || null;
+
+  // クリエイター本人は自分のキャンペーンの「支援者」ではないため、所有キャンペーン一致で通す
+  const ownCampaignId = data.data?.relationships?.campaign?.data?.id;
+  if (ownCampaignId && ownCampaignId === env.PATREON_CAMPAIGN_ID) {
+    return { ok: true, creator: true };
+  }
+
+  // 手動許可リスト(カンマ区切りのPatreonユーザーID。テスターや campaigns スコープ不調時の保険)
+  const allowIds = (env.PATREON_ALLOW_USER_IDS || "").split(",").map(s => s.trim()).filter(Boolean);
+  if (userId && allowIds.includes(userId)) {
+    return { ok: true, allowlisted: true };
+  }
 
   const minCents = parseInt(env.PATREON_MIN_CENTS || "1", 10); // 🔧 最低支援額(セント)。既定=有料メンバーなら誰でも
   const members = (data.included || []).filter(x => x.type === "member");
@@ -80,9 +93,9 @@ export async function checkMembership(env, accessToken) {
     const status = mem.attributes?.patron_status;
     const cents = mem.attributes?.currently_entitled_amount_cents || 0;
     if (status === "active_patron" && cents >= minCents) return { ok: true };
-    return { ok: false, reason: status === "active_patron" ? "tier_too_low" : "not_active" };
+    return { ok: false, reason: status === "active_patron" ? "tier_too_low" : "not_active", userId };
   }
-  return { ok: false, reason: "not_member" };
+  return { ok: false, reason: "not_member", userId };
 }
 
 /** ログイン画面(Patreonボタン)を返す */

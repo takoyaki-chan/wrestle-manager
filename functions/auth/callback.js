@@ -23,10 +23,12 @@ export async function onRequest(context) {
 
   const membership = await checkMembership(env, token.access_token);
   if (!membership.ok) {
-    const msg = membership.reason === "tier_too_low"
+    const base = membership.reason === "tier_too_low"
       ? "現在の支援プランでは先行プレイ版の対象外です。"
       : "有効な支援メンバーシップが確認できませんでした。Patreon で支援中のアカウントでログインしてください。";
-    return loginPage(url, msg);
+    // 表示するIDはログインした本人自身のもの。許可リスト(PATREON_ALLOW_USER_IDS)設定用
+    const idNote = membership.userId ? `<br><small>ユーザーID: ${membership.userId}</small>` : "";
+    return loginPage(url, base + idNote);
   }
 
   const authCookie = await makeAuthCookie(env);
