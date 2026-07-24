@@ -6698,15 +6698,18 @@ function _npPhotoBg(id) {
   const url = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
   return url ? `background-image: url('${url}');` : '';
 }
+// MQ再設計P5補: 一面トップで2名を並び写真にする対象タイプ。
+// springTagResult(優勝ペア)とfatedRivals(同年代の逸材2名)が該当。
 function _npSpringTagStoryIds(state, story, seasonNum) {
-  if (!story || story.type !== 'springTagResult') return [];
+  if (!story || (story.type !== 'springTagResult' && story.type !== 'fatedRivals')) return [];
   const direct = Array.isArray(story.characterIds)
     ? story.characterIds.filter(id => Number.isInteger(id) && id > 0).slice(0, 2)
     : [];
   if (direct.length >= 2) return direct;
+  if (story.type !== 'springTagResult') return direct;
 
   // v1.2以前に生成済みの新聞は優勝ペアIDを保持していないため、
-  // 同じシーズンの大会結果またはベストタッグ記録から補完する。
+  // 同じシーズンの大会結果またはベストタッグ記録から補完する(springTagResult専用の救済)。
   const league = state.springTagLeague;
   if (league && !league.cancelled && league.announcedSeason === seasonNum) {
     const team = (league.teams || []).find(t => t.orgId === league.champion);

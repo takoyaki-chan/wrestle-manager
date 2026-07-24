@@ -14,6 +14,21 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 MQ再設計 P5補: fatedRivals一面の2人並び写真
+
+前提HEAD=d29cb9c(P5着地時点。fatedRivalsはnp-top-story単数写真流用のためKeisuke確認項目として2人並びが宿題化していた)。対象: `src/ui-render.js`。
+
+- `_npSpringTagStoryIds`(既存、springTagResult優勝ペア用の2人ID解決関数)のガードを`fatedRivals`にも拡張。`story.characterIds`から直接2件取得できる場合はそのまま返し、springTagLeague/bestTagTeamからの旧セーブ救済ロジックは`springTagResult`専用のまま維持(fatedRivalsは常にcharacterIdsを保持しているため不要)。
+- 描画側(`np-top-story`の`else if`分岐)は元々`isTagPhoto = tagPhotoIds.length >= 2`で`_npTopTagPhotoHtml`に切り替える設計だったため、上記1点の変更だけでfatedRivalsも自動的に2人並び(58%幅・中央重ね、`.np-top-tag-photo-member-1/2`)になる。新規CSSは追加していない。
+- **流用元の選択**: `_npRenderBignewsTag`(mqTagRecord専用の上下ぶち抜き大記事)ではなく、`springTagResult`が使う通常`np-top-story`内の2人並び写真枠を流用。理由: fatedRivalsは元々P4/P5でも通常`np-top-story`分岐(単数写真)で描画される設計であり、`_npRenderBignewsTag`はmqTagRecord固有の「記録更新」専用レイアウトとして新設されたもの(P4 worklog参照)。既存の設計意図(fatedRivalsは通常一面枠+2人写真)に沿う前者を選んだ。
+- **反転の扱い**: 反転は行わない。`_npTopTagPhotoHtml`が使う画像は`getUpperUrl`(アッパー)→`getPortraitUrl`(顔)のみで、2026-07-18裁定によりアッパー/顔画像の反転は禁止のため、springTagResultの前例と同様に非反転のまま採用。
+
+**検証**: `node --check src/ui-render.js` pass。`test/spring-tag-newspaper-team-photo-test.js`(既存、`_npSpringTagStoryIds`の文字列抽出テスト)PASS維持——関数名・シグネチャは変更していないため影響なし。`test/mq-bignews-templates.js` ALL CLEAR。シミュレーション系(auto-sim)は表示層のみの変更のため未実施。
+
+**Keisuke確認項目**: fatedRivalsは「trainCapOVR≥117の新人2名(年齢差1歳以内)が入団し、後発側がデビュー戦(初勝敗)を迎える」という条件でのみ発火する稀イベントのため、最短の実機確認手順は無い(自然発生を待つか、該当条件のロスターを意図的に用意してプレイする形になる)。見た目確認は一面の2人並び写真(springTagResult優勝ペアと同じレイアウト)が意図通りか。
+
+コミット: (このログ追記後にローカルコミット。ハッシュは完了報告参照)
+
 ## 2026-07-24 MQ再設計 P5: 大ニュース新記事3種(大物ルーキー/期待のライバル/トップ王者重傷)+ドキュメント整合
 
 `docs/mq-redesign-proposal-v0.5.md` §5.1/§5.4 / `docs/bignews-article-drafts-v1.0.md`(正本、§2-4)。前提HEAD=408aad7(P4着地: BIG_NEWS_TYPES/industryNewsキュー/週頭PU/一面ジャック稼働中)。対象: `src/data.js`/`src/management.js`/`src/app.js`/`src/ui-common.js`/`test/auto-sim.js`/`test/mq-bignews-templates.js`/`docs/design-decisions.md`/`docs/game-system-roadmap.md`。
