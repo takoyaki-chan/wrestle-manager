@@ -693,7 +693,24 @@ Engine.battle = {
 
       // §5 最終MQ
       let mq = ceiling - dramaPenalty - pacingPenalty - finishPenalty;
-      mq = Math.max(5, Math.round(mq));
+      mq = Math.max(0, Math.round(mq)); // 下限クランプ前に超過レイヤーを加算するため一旦0以上に留める
+
+      // §6 超過レイヤー（mq-redesign-proposal-v0.4 §3.7）— 天井の蓋を外す限定加点。
+      // 発火条件: ドラマ減点完全回復 + ペーシング減点0 + まともな決着（決着減点≤1）。既存式・係数は不変。
+      const transcendFired = dramaPenalty === 0 && pacingPenalty === 0 && finishPenalty <= 1;
+      let transcendExcess = 0;
+      let transcendOverflow = 0;
+      if (transcendFired) {
+        transcendExcess = 4 * Math.max(0, totalKickouts - 2)
+          + 1.5 * Math.max(0, totalCounters - 3)
+          + 1 * Math.max(0, leadChanges - 3)
+          + 0.3 * Math.max(0, bigMoves - 6);
+        if (transcendExcess > 0) {
+          transcendOverflow = Math.min(12, Math.round(4 * Math.sqrt(transcendExcess / 4)));
+        }
+      }
+      mq += transcendOverflow;
+      mq = Math.max(5, mq);
 
       return {
         left: charL, right: charR,
@@ -721,6 +738,7 @@ Engine.battle = {
           openingExecutionData: _openingExecutionData,
         } : {}),
         mqDetail: { ceiling, dramaPenalty, pacingPenalty, finishPenalty },
+        transcend: { fired: transcendFired && transcendOverflow > 0, excess: transcendExcess, overflow: transcendOverflow },
         frames: recordFrames ? frames : undefined,
       };
     }
@@ -1727,10 +1745,26 @@ Engine.tagMatch = (() => {
 
     const tagBonus = screenTimeBonus + touchDiversityBonus + dramaEventBonus + finishBonus;
     const tagPenalty = longSegPenalty + screenTimePenalty;
-    const final = Math.max(
-      5,
+    let final = Math.max(
+      0,
       Math.round(ceiling - dramaPenalty - pacingPenalty - finishPenalty + tagBonus - tagPenalty)
-    );
+    ); // 下限クランプ前に超過レイヤーを加算するため一旦0以上に留める
+
+    // 超過レイヤー（mq-redesign-proposal-v0.4 §3.7・タッグ版）。既存式・係数は不変、加点項のみ追加。
+    const transcendFired = dramaPenalty === 0 && pacingPenalty === 0 && finishPenalty <= 1;
+    let transcendExcess = 0;
+    let transcendOverflow = 0;
+    if (transcendFired) {
+      transcendExcess = 3 * Math.max(0, totalKickouts - 3)
+        + 1 * Math.max(0, totalCounters - 4)
+        + 0.75 * Math.max(0, leadChanges - 4)
+        + 0.2 * Math.max(0, bigMoves - 8);
+      if (transcendExcess > 0) {
+        transcendOverflow = Math.min(12, Math.round(4 * Math.sqrt(transcendExcess / 4)));
+      }
+    }
+    final += transcendOverflow;
+    final = Math.max(5, final);
 
     return {
       ceiling: Math.round(ceiling), dramaPenalty: Math.round(dramaPenalty * 10) / 10,
@@ -1741,6 +1775,7 @@ Engine.tagMatch = (() => {
       screenTimePenalty: Math.round(screenTimePenalty * 10) / 10,
       tagBonus: Math.round(tagBonus * 10) / 10,
       tagPenalty: Math.round(tagPenalty * 10) / 10,
+      transcend: { fired: transcendFired && transcendOverflow > 0, excess: transcendExcess, overflow: transcendOverflow },
       final,
     };
   }

@@ -369,6 +369,9 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
       tier: resolvedTier,
       hasMeishoubu: Traits.has(charL, '名勝負製造機') || Traits.has(charR, '名勝負製造機'),
       hasHikidashi: Traits.has(charL, '引き出し上手') || Traits.has(charR, '引き出し上手'),
+      transcendFired: !!result.transcend?.fired,
+      transcendExcess: result.transcend?.excess || 0,
+      transcendOverflow: result.transcend?.overflow || 0,
     });
   }
   const phaseTiming = matchBalanceProbe.phaseTiming[(result.matchTier || matchTier || 1) >= 2 ? 'big' : 'normal'];
@@ -480,6 +483,9 @@ Engine.tagMatch.simulateTagMatch = function(teamA, teamB, rng, opts) {
       finalMq: result.mq,
       avgOV: fighters.reduce((sum, fighter) => sum + Engine.util.ov(fighter), 0) / fighters.length,
       hasMeishoubu: fighters.some(fighter => Traits.has(fighter, '名勝負製造機')),
+      transcendFired: !!detail.transcend?.fired,
+      transcendExcess: detail.transcend?.excess || 0,
+      transcendOverflow: detail.transcend?.overflow || 0,
     });
   }
   return result;
@@ -1744,6 +1750,29 @@ if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqIn
     const overages = clampedMatches.map(sample => sample.upperOverageTotal);
     console.log(`    clamps: upper=${clampedMatches.length}/${uiEstimates.length} lower-final=${lowerMatches.length}/${uiEstimates.length} overage-mean=${mqInventoryMetric(clampedMatches, 'upperOverageTotal').mean} overage-max=${overages.length ? Math.max(...overages) : 0}`);
   }
+
+  // 超過レイヤー(mq-redesign-proposal-v0.4 §3.7 / P3a)観測。不変条件#3の検証用。
+  function printTranscendMetrics(label, samples) {
+    if (!samples.length) return;
+    const fired = samples.filter(sample => sample.transcendFired);
+    const firedPct = Math.round(fired.length / samples.length * 100000) / 1000;
+    console.log(`  ${label}: n=${samples.length} fired=${fired.length} (${firedPct}%)`);
+    if (fired.length) {
+      const overflows = fired.map(sample => sample.transcendOverflow);
+      const overflowMean = Math.round(overflows.reduce((a, b) => a + b, 0) / overflows.length * 1000) / 1000;
+      const overflowMax = Math.max(...overflows);
+      console.log(`    overflow: mean=${overflowMean} max=${overflowMax}`);
+      const finals = fired.map(sample => sample.finalMq).sort((a, b) => a - b);
+      const finalMean = Math.round(finals.reduce((a, b) => a + b, 0) / finals.length * 1000) / 1000;
+      console.log(`    finalMq(fired matches): mean=${finalMean} min=${finals[0]} max=${finals[finals.length - 1]}`);
+    }
+    const shiftMean = Math.round(samples.reduce((sum, sample) => sum + (sample.transcendOverflow || 0), 0) / samples.length * 1000) / 1000;
+    console.log(`    average MQ shift across all ${label}: +${shiftMean}`);
+  }
+  console.log('--------------------------------------');
+  console.log('Transcend Layer Probe (P3a):');
+  printTranscendMetrics('singles', mqInventoryProbe.singlesRaw);
+  printTranscendMetrics('tag', mqInventoryProbe.tagRaw);
 }
 
 console.log('--------------------------------------');
