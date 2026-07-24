@@ -21,7 +21,10 @@ assert.ok(source.includes('Engine.juniorTournament.WEEK'), '夏大会のプリ�
 assert.ok(source.includes('Engine.autumnWar.EVENT_WEEK'), '秋大会のプリセットを用意する');
 assert.ok(source.includes('Engine.ppvTournament.SHOW_WEEK'), '冬大会のプリセットを用意する');
 assert.ok(source.includes('const isTenchosenShowWeek = next.week === Engine.ppvTournament.SHOW_WEEK'), '天頂戦の開催週を通常興行から除外する');
-assert.ok(source.includes('&& !isTenchosenShowWeek)'), '天頂戦の開催週には早送りの通常興行を実行しない');
+assert.ok(source.includes('const isSpringTagWeek = next.week === Engine.springTagLeague.LEAGUE_WEEK'), '春のタッグリーグ開催週を通常興行から除外する');
+assert.ok(source.includes('const isAutumnWarWeek = next.week === Engine.autumnWar.EVENT_WEEK'), '秋4団体対抗戦の開催週を通常興行から除外する');
+assert.ok(source.includes('const isJuniorTournamentWeek = next.week === Engine.juniorTournament.WEEK'), 'ジュニアトーナメント開催週(成立時)を通常興行から除外する');
+assert.ok(source.includes('&& !isTenchosenShowWeek && !isSpringTagWeek && !isAutumnWarWeek && !isJuniorTournamentWeek)'), '各大型イベント開催週には早送りの通常興行を実行しない');
 assert.ok(source.includes('G = state; saveCheckpoint(label || `S${targetSeason}W${targetWeek}`);'), '目標週はイベントを消化せず停止する');
 
 console.log('dev-tools-static-test: ok');

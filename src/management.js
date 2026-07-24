@@ -25529,11 +25529,16 @@ Engine.springTagLeague = {
     const tieRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC7A7));
     const tieRandom = {};
     orgOrder.forEach(o => { tieRandom[o] = Engine.rng.float(tieRng); });
+    // 直接対決は同点グループ内のミニリーグ勝ち数(スカラー)に事前変換してから比較する。
+    // pairwise比較をsort内で行うと3すくみ等で非推移的になり、Array.sortの結果が不定になるため。
+    standingsArr.forEach(st => {
+      st.h2hMiniWins = standingsArr.reduce((n, other) => (
+        other.orgId !== st.orgId && other.points === st.points && h2hWinnerOf(st.orgId, other.orgId) === st.orgId
+      ) ? n + 1 : n, 0);
+    });
     standingsArr.sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points;
-      const h2h = h2hWinnerOf(a.orgId, b.orgId);
-      if (h2h === a.orgId) return -1;
-      if (h2h === b.orgId) return 1;
+      if (b.h2hMiniWins !== a.h2hMiniWins) return b.h2hMiniWins - a.h2hMiniWins;
       if (b.mqTotal !== a.mqTotal) return b.mqTotal - a.mqTotal;
       return tieRandom[b.orgId] - tieRandom[a.orgId];
     });

@@ -13588,16 +13588,21 @@ function showLeagueElevationCeremony(state, onDone) {
   });
 
   // ── 「続ける」ボタン ──
+  let _leClosing = false;
   document.getElementById('leCloseBtn').addEventListener('click', () => {
+    if (_leClosing) return;
+    _leClosing = true;
     if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.fadeOut(1500);
     overlay.style.transition = 'opacity .6s';
     overlay.style.opacity = '0';
+    // オーバーレイが不透明なうちに背景を正しい画面へ差し替える。
+    // フェード完了を待つと、透けて見える間だけ演出前の古い画面が一瞬映ってしまう。
+    if (onDone) onDone();
     setTimeout(() => {
       overlay.classList.remove('active');
       overlay.innerHTML = '';
       overlay.style.opacity = '';
       overlay.style.transition = '';
-      if (onDone) onDone();
     }, 600);
   });
 

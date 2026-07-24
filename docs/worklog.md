@@ -14,6 +14,18 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 全体バグチェックで確定したゲーム本体バグ5件を修正(C/F/G/J/K)
+
+セッションのバグ監査(auto-sim + 静的監査4エージェント)で確定した本体バグのうち、安全に直せる5件を修正。auto-sim 40年 ALL CLEAR / npm test 84/84。
+
+- **C 春タッグ順位ソートの非推移的比較子** (`src/management.js` §25529付近): 直接対決をsort内でpairwise比較していたため3すくみ同点で `Array.sort` の結果が不定→決勝進出2チームが不確定だった。同点グループ内のミニリーグ勝ち数 `h2hMiniWins` をスカラーで事前計算し、points→h2hMiniWins→mqTotal→tieRandom の全スカラー比較に変更(推移的)。2チーム同点は従来同値、3すくみはmqTotalで決定論的決着。
+- **F 業界底上げ式典の閉じ遷移** (`src/ui-common.js` leCloseBtn): フェード完了後の setTimeout 内で `onDone()`(refreshAll)を呼んでいたため、600msフェード中に背後の演出前画面が透けていた。オーバーレイが不透明なうちに `onDone()` を先に呼んで背景を差し替える順に変更(App.completeDraftと同型)。二重発火ガード `_leClosing` も追加。
+- **G ロード時の王者再検証漏れ** (`src/app.js` repairOnLoad直後): 王者在籍の安全弁が repair の前に走るため、repair がロスターを間引くと `titles.world.championId` が不在者を指したまま残りえた。repair直後に既存ヘルパー `Engine.title.validateChampion` を呼んで再検証(worldティアのみ実データありを確認)。
+- **J dev早送りの通常興行二重開催** (`src/dev-tools.js`): 天頂戦(週48)だけ除外されていた通常興行ビルドを、春タッグ(週12)・秋対抗戦(週36)・ジュニア(週24・成立時)にも拡張除外。実プレイでも各 *IsEventWeek() で通常興行ボタンはブロックされ専用イベントが興行を代替する挙動に一致。
+- **K dev早送りでジュニア週の tickWeek スキップ** (`src/dev-tools.js`): `juniorTournament.apply` の非キャンセル分岐が weekPhase を 'manage' に戻さず(実UIは finishUp で戻す)、週24の tickWeek がスキップされていた。apply後に weekPhase:'manage' を復元。これで週24が J のガード対象に入るため isJuniorTournamentWeek も追加。
+- 付随: `test/dev-tools-static-test.js` の旧ガード文字列アサーションを新ガード節に追従更新。
+- 未対応(別タスク): A(MQ二重クランプ)・B(天頂戦リング内化欠落)は balance-sensitive のため100年auto-sim前後比較つきで別途。I(dev早送りの秋対抗戦が実シミュレーションされず結果偽装)・D(天頂戦の無効エントリで全ブラケット再抽選)・E(秋対抗戦の同週引き抜きで大会報酬消失)・H(引退時の派閥memberIds掃除漏れ)は要相談で保留。
+
 ## 2026-07-24 検査体制の立て直し（統合テストランナー+陳腐化リンター+CRLF耐性ヘルパー）
 
 大量アップデートで既存テストが本体進化に追従できず陳腐化する問題への恒久対処。根因は「テストが振る舞いでなくソース文字列を検査している」こと(クラス名変更/バージョンハードコード/CRLF/モック未更新で、動作が正しくてもFAIL)。対象: `test/` + `package.json`(ゲームコード無改変)。

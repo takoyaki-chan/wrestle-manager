@@ -3105,6 +3105,16 @@ const Storage = {
         }
       }
 
+      // repairOnLoad がロスターからキャラを間引くことがあるため、王座在位者を再検証する
+      // （安全弁 v1776 は repair 前に走るため、repair で消えたケースを拾えていなかった）
+      {
+        const vc = Engine.title.validateChampion(G);
+        if (vc.msg) {
+          G = { ...G, titles: vc.titles };
+          console.log(`[WM Load Repair] ${vc.msg}`);
+        }
+      }
+
       return true;
     } catch(e) {
       G = prevG;

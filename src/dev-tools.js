@@ -85,6 +85,9 @@
       const selection = next._juniorTournamentSelection || Engine.juniorTournament.select(next);
       const rng = Engine.rng.create(Engine.rng.derive(next.rngSeed, next.season, 0xBB10));
       next = Engine.juniorTournament.apply(next, Engine.juniorTournament.run(next, selection.participants, rng)).state;
+      // apply()の非キャンセル分岐はweekPhaseを'manage'に戻さない（実UIのApp.finalizeJuniorTournamentが
+      // finishUp内で明示的に戻している）。ここで戻さないとtickWeek()がこの週スキップされてしまう。
+      next = { ...next, weekPhase: 'manage' };
     }
     if (next._pendingAutumnWarReplay) { delete next._pendingAutumnWarReplay; next = { ...next, autumnWarPhase: 'result', weekPhase: 'manage' }; }
     if (next.weekPhase === 'ppvShow' || next.weekPhase === 'ppvTV') next = { ...next, weekPhase: 'manage', ppvPhase: null };
@@ -94,11 +97,20 @@
     let next = resolveDefaultBlockingPhase(state);
     if (next.weekPhase === 'manage') {
       next = defaultSchedules(next);
-      // 天頂戦の第48週は Engine.advanceWeek() が自動処理する。ここで通常興行も
-      // 組むと、早送り時だけ同じ週に通常興行が重複してしまう。
+      // 天頂戦(第48週)・春のタッグリーグ(第12週)・秋4団体対抗戦(第36週)・
+      // ジュニアトーナメント(第24週、開催成立時)は Engine.advanceWeek()/tickWeek() や
+      // 上のresolveDefaultBlockingPhaseが自動でその週の興行を処理する。ここで通常興行も
+      // 組むと、早送り時だけ同じ週に通常興行が重複してしまう（実プレイでも各種 *IsEventWeek()
+      // により通常興行ボタンはブロックされ、この週は専用イベントが興行を代替する）。
       const isTenchosenShowWeek = next.week === Engine.ppvTournament.SHOW_WEEK
         && Engine.ppvTournament.isTournamentSeason(next.season);
-      if (!next.offSeason && Engine.util.isShowWeek(next.week) && !isTenchosenShowWeek) {
+      const isSpringTagWeek = next.week === Engine.springTagLeague.LEAGUE_WEEK
+        && next.springTagLeague && !next.springTagLeague.cancelled;
+      const isAutumnWarWeek = next.week === Engine.autumnWar.EVENT_WEEK
+        && next.autumnWar && !next.autumnWar.cancelled;
+      const isJuniorTournamentWeek = next.week === Engine.juniorTournament.WEEK
+        && next._juniorTournamentResult && !next._juniorTournamentResult.cancelled;
+      if (!next.offSeason && Engine.util.isShowWeek(next.week) && !isTenchosenShowWeek && !isSpringTagWeek && !isAutumnWarWeek && !isJuniorTournamentWeek) {
         const prepared = defaultShowCard(next); const show = prepared.showCard.length ? Engine.executeShow(prepared) : null; next = show?.state || prepared;
       }
       next = { ...Engine.tickWeek(next).state, gameLog: [] };
