@@ -4467,15 +4467,20 @@ const App = {
     if (appEl) appEl.classList.remove('draft-cream');
 
     // クリックで本編へ
+    let _leaving = false;
     overlay.addEventListener('click', () => {
+      if (_leaving) return;
+      _leaving = true;
+      // オーバーレイが不透明なうちに背景をメインメニューへ差し替える。
+      // こうしないとフェード中に背後の旗揚げメンバー選択画面が透けて見え、
+      // 「選ぶ前の画面が一瞬出てからメニューへ移る」引っかかりになる。
+      Audio.bgm.play('management');
+      Storage.autoSave();
+      refreshAll();
+      // 背景が本編に差し替わってからフェードアウト → 透けて見えるのはメインメニュー
       overlay.style.transition = 'opacity 1s ease';
       overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.remove();
-        Audio.bgm.play('management');
-        Storage.autoSave();
-        refreshAll();
-      }, 1000);
+      setTimeout(() => { overlay.remove(); }, 1000);
     });
   },
 
