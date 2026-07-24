@@ -14,6 +14,19 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 検査体制の立て直し（統合テストランナー+陳腐化リンター+CRLF耐性ヘルパー）
+
+大量アップデートで既存テストが本体進化に追従できず陳腐化する問題への恒久対処。根因は「テストが振る舞いでなくソース文字列を検査している」こと(クラス名変更/バージョンハードコード/CRLF/モック未更新で、動作が正しくてもFAIL)。対象: `test/` + `package.json`(ゲームコード無改変)。
+
+- **新規 `test/run-all.js`**: 全 `*-test.js` を子プロセスで実行しPASS/FAIL集計・失敗末尾表示・非ゼロ終了。`--quick`(実測3秒未満サブセット)/`--engine`(auto-sim 20年ステージ)/名前フィルタ対応。assert無しプロファイラ(`decay-longevity-test.js`)は EXCLUDE で除外。
+- **新規 `test/stale-lint.js`**: `VAR.includes('literal')` 型のソース文字列アサーションを静的走査し、対象文字列が現ソースに存在しないものを "stale" として可視化。silent rot を検出可能に。
+- **新規 `test/helpers/source.js`**: `readSource()`(CRLF吸収・テストのソース読取はこれ経由に統一)/`manifestVersion()`(バージョンの単一真実源)。
+- **新規 `test/README.md`**: 陳腐化を避ける執筆規約(振る舞い検査優先/readSource必須/バージョン非ハードコード/モックは実Engineと形を合わせる)。
+- **npm scripts**: `test`/`test:quick`/`test:stale`/`test:engine` を追加(既存は温存)。
+- **壊れていた4本を修正**: version-consistency(manifest真実源化)/opening-scene-ui(team-bubble追従)/event-match-result-popup(readSourceでCRLF吸収)/junior-tournament-watch-fix(モックEngineに mq.finalize スタブ追加)。全PASS確認。
+- **検証**: `node test/run-all.js` = 85本中 81 PASS / 3 FAIL(=音声・PPV-TV改修による既知の陳腐化、実バグではない) / 0 TIMEOUT。stale-lint = 466アサーション中 stale 0。auto-sim 60年 ALL CLEAR。
+- 未了(次工程): stale-lint の被覆拡張(`section()` 抽出・`.strictEqual` マッピング idiom を見逃す盲点あり)、音声/PPV陳腐化3本の現状追従(再生実確認込み)。
+
 ## 2026-07-24 オープニング完了演出→メインメニュー遷移の引っかかりを修正
 
 旗揚げ5人の集合写真オーバーレイをクリックして本編へ移る際、`refreshAll()`(メインメニュー描画)がフェード完了後の`setTimeout`内にあったため、1秒のフェードアウト中は背後に残った旗揚げメンバー選択画面が透けて見え、「選ぶ前の画面が一瞬出てからメニューへ移る」引っかかりになっていた。対象: `src/app.js`(完了演出クリック処理)。修正: オーバーレイがまだ不透明なうちに`Audio.bgm.play('management')`/`Storage.autoSave()`/`refreshAll()`を先に実行して背景をメインメニューへ差し替えてからフェードアウトさせる順に入れ替え。透けて見えるのが本編になり滑らかに切り替わる。あわせて連打による二重遷移防止ガード`_leaving`を追加。UI-onlyのためauto-sim不要。実機確認(通しプレイ)はKeisukeに委任。

@@ -1,5 +1,9 @@
 {
   "scripts": {
+    "test": "node test/run-all.js",
+    "test:quick": "node test/run-all.js --quick",
+    "test:stale": "node test/stale-lint.js",
+    "test:engine": "node test/auto-sim.js 20",
     "bug:audit": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1",
     "bug:audit:full": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1 -Mode Full",
     "save:doctor": "node tools/save-doctor.js",

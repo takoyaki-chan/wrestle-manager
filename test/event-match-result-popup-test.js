@@ -1,13 +1,11 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 const assert = require('assert');
+const { readSource } = require('./helpers/source');
 
-const root = path.resolve(__dirname, '..');
-const ui = fs.readFileSync(path.join(root, 'src', 'ui-common.js'), 'utf8');
-const app = fs.readFileSync(path.join(root, 'src', 'app.js'), 'utf8');
-const css = fs.readFileSync(path.join(root, 'src', 'index.html'), 'utf8');
+const ui = readSource('src', 'ui-common.js');
+const app = readSource('src', 'app.js');
+const css = readSource('src', 'index.html');
 
 assert(css.includes('.emr-layer'), '共通の1試合結果レイヤーが必要');
 assert(css.includes('backdrop-filter:grayscale(.72) saturate(.28) brightness(.68) blur(2px)'), '背面を減彩するフィルターが必要');

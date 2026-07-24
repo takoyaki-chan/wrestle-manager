@@ -104,6 +104,29 @@ const runEscapeBattle = new Function('App', 'Audio', 'document', 'clearTimeout',
         return { ...fighter, _hpOverride: Math.round(100 * (fighter.jtCarryHpPct ?? 100) / 100) };
       },
     },
+    // 実 Engine.mq.finalize(state, matchResult, context, profile) の返り値の形を最小限で再現する
+    // スタブ(management.js 2299行目以降参照)。profile='raw' は外部加算なしで
+    // finalMq = max(5, baseEngineMq) を返すだけなので、それに合わせる。
+    mq: {
+      finalize(state, matchResult, context, profile) {
+        const baseEngineMq = Number(matchResult?.mq) || 0;
+        const finalMq = Math.max(5, baseEngineMq);
+        return {
+          mq: finalMq,
+          mqInventory: {
+            path: (context && context.path) || profile,
+            profile,
+            matchType: (context && context.matchType) || 'singles',
+            baseEngineMq,
+            finalMq,
+          },
+          externalMQBonus: 0,
+          trustMQPenalty: 0,
+          consumedNextMatchMqBuff: false,
+          lastRunFighterId: null,
+        };
+      },
+    },
     battle: {
       simulateMatch(left, right, rng, tier, options) {
         calls.push({ left, right, rng, tier, options });
