@@ -2382,6 +2382,11 @@ const Engine = {
     SINGLE_RECORD_START: 90,
     TAG_RECORD_START: 94,
 
+    // MQ再設計P5(§5.1/§5.4): 大物ルーキー/期待のライバル の trainCapOVR 閾値と年齢差上限
+    HOT_PROSPECT_TCOVR: 125,
+    FATED_RIVAL_TCOVR: 117,
+    FATED_RIVAL_AGE_DIFF: 1,
+
     createRecord(startValue = Engine.mq.SINGLE_RECORD_START, value) {
       const base = value != null ? Number(value) : startValue;
       return {
@@ -2580,6 +2585,163 @@ const Engine = {
         orgName: Engine.mq._fighterOrgName(state, a1),
       };
       return Engine.industryNews.push(state, { type: 'mqTagRecord', characterIds: [a1, a2], data });
+    },
+
+    // ── MQ再設計P5 §5.1/§5.4: 大物ルーキーデビュー / 期待のライバル ──
+    //
+    // 設計: 「入団時にフラグを立て、本当のデビュー戦(初の総試合数1)で発火する」方式。
+    // 既存ロスター(旧セーブ/AI団体の経歴事前史)を誤って「デビュー」と誤検知しないよう、
+    // フラグは入団時(registerBignewsHire)にのみ立て、かつ「wins+losses+draws===0 かつ
+    // careerSeasons===0」の正真正銘の未経験者だけを対象にする(移籍/戦力外復帰などの
+    // 経験者はこのガードで自然に除外される)。
+
+    /** 入団コミット直後に呼ぶ純粋関数。trainCapOVR>=117の正真正銘の新人にのみ
+     * _bignewsProspect フラグを立て、fatedRivals のペア候補プール(state._fatedTalentPool)
+     * を更新する。戻り値 { state, fighter } は呼び出し側で両方差し替えること。 */
+    registerBignewsHire(state, fighter) {
+      if (!fighter || !state) return { state, fighter };
+      const totalMatches = (fighter.wins || 0) + (fighter.losses || 0) + (fighter.draws || 0);
+      const isGenuineRookie = totalMatches === 0 && (fighter.careerSeasons || 0) === 0;
+      if (!isGenuineRookie) return { state, fighter };
+      const tcOvr = Engine.rival.trainCapOVR(fighter);
+      if (tcOvr < Engine.mq.FATED_RIVAL_TCOVR) return { state, fighter };
+
+      let f = { ...fighter, _bignewsProspect: true };
+      let s = state;
+      const age = f.age || 17;
+      const season = s.season || 1;
+      const pool = s._fatedTalentPool || [];
+      const partner = pool.find(p => Math.abs((p.age || 0) - age) <= Engine.mq.FATED_RIVAL_AGE_DIFF);
+      const formedSeason = s._fatedRivalsFormedSeason;
+      if (partner && formedSeason !== season) {
+        // §5.4: 年1回まで(同年に複数ペア成立なら最初の1組のみ) — ペア形成そのものを年1回に制限
+        f = { ...f, _fatedRivalPartnerId: partner.id };
+        s = { ...s, _fatedTalentPool: pool.filter(p => p.id !== partner.id), _fatedRivalsFormedSeason: season };
+      } else {
+        s = { ...s, _fatedTalentPool: [...pool, { id: f.id, age }] };
+      }
+      return { state: s, fighter: f };
+    },
+
+    _getRosterRef(state, loc) {
+      return loc === 'player' ? (state.roster || []) : ((state.aiOrgs || {})[loc]?.roster || []);
+    },
+    _setRosterRef(state, loc, roster) {
+      if (loc === 'player') return { ...state, roster };
+      return { ...state, aiOrgs: { ...state.aiOrgs, [loc]: { ...state.aiOrgs[loc], roster } } };
+    },
+
+    /** _bignewsProspect フラグ付きの選手を全ロスター横断で走査し、デビュー戦
+     * (総試合数が0→1以上に転じた週)を検出したら hotProspectDebut / fatedRivals を記事化する。
+     * tickWeek末尾、新聞生成の直前に1回だけ呼ぶ想定。 */
+    scanBignewsDebuts(state) {
+      let s = state;
+      const targets = [];
+      const scan = (list, loc) => {
+        (list || []).forEach(f => {
+          if (!f || !f._bignewsProspect) return;
+          if ((f.wins || 0) + (f.losses || 0) + (f.draws || 0) < 1) return;
+          targets.push({ loc, id: f.id });
+        });
+      };
+      scan(s.roster, 'player');
+      Object.keys(s.aiOrgs || {}).forEach(orgId => scan(s.aiOrgs[orgId]?.roster, orgId));
+      targets.forEach(t => { s = Engine.mq._resolveBignewsDebut(s, t.loc, t.id); });
+      return s;
+    },
+
+    _resolveBignewsDebut(state, loc, fighterId) {
+      let s = state;
+      const fighter = Engine.mq._getRosterRef(s, loc).find(f => f.id === fighterId);
+      if (!fighter) return s;
+      const tcOvr = Engine.rival.trainCapOVR(fighter);
+      const result = fighter.lastMatchResult === 'win' ? '白星' : '黒星';
+      const age = fighter.age || 17;
+      const orgName = loc === 'player' ? (s.orgName || 'あなたの団体') : Engine.contract._getOrgName(loc, s);
+
+      if (tcOvr >= Engine.mq.HOT_PROSPECT_TCOVR) {
+        s = Engine.industryNews.push(s, {
+          type: 'hotProspectDebut', characterId: fighter.id,
+          data: { name: fighter.name, orgName, age, result },
+        });
+      }
+      if (fighter._fatedRivalPartnerId != null) {
+        const partnerFound = Engine.mq._findFighter(s, fighter._fatedRivalPartnerId);
+        if (partnerFound && partnerFound.fighter) {
+          const partnerOrgName = partnerFound.orgKey === 'player' ? (s.orgName || 'あなたの団体')
+            : partnerFound.orgKey ? Engine.contract._getOrgName(partnerFound.orgKey, s) : orgName;
+          const sameOrg = partnerOrgName === orgName;
+          s = Engine.industryNews.push(s, {
+            type: 'fatedRivals', characterIds: [fighter.id, fighter._fatedRivalPartnerId],
+            data: {
+              name: fighter.name,
+              name2: partnerFound.fighter.name,
+              orgName,
+              // 実装メモ(bignews-article-drafts-v1.0.md): 同一団体なら{orgName2}→「同門」置換(bodyのみ)
+              orgName2: sameOrg ? '同門' : partnerOrgName,
+              age,
+            },
+          });
+        }
+      }
+      // フラグは一度限りの判定に使うので、発火有無に関わらず消費する
+      const clearedRoster = Engine.mq._getRosterRef(s, loc).map(f => {
+        if (f.id !== fighterId) return f;
+        const { _bignewsProspect, _fatedRivalPartnerId, ...rest } = f;
+        return rest;
+      });
+      s = Engine.mq._setRosterRef(s, loc, clearedRoster);
+      return s;
+    },
+
+    // ── MQ再設計P5 §5.1/§5.4: トップ団体王者の重傷 ──
+
+    /** tickWeek冒頭で呼び、週内処理前の各団体王者の怪我状態をスナップショットする。
+     * 「今週新たに重傷になったか」を判定するための前提材料(checkTopChampionInjuryで使用)。 */
+    snapshotChampionInjuries(state) {
+      const champOf = (roster, championId) => (roster || []).find(f => f.id === championId) || null;
+      const snap = {};
+      const pChamp = champOf(state.roster, state.titles?.world?.championId);
+      snap.player = { id: pChamp ? pChamp.id : null, injuryType: pChamp?.injury?.type || null };
+      Object.keys(state.aiOrgs || {}).forEach(orgId => {
+        const od = state.aiOrgs[orgId];
+        const champ = champOf(od?.roster, od?.titles?.world?.championId);
+        snap[orgId] = { id: champ ? champ.id : null, injuryType: champ?.injury?.type || null };
+      });
+      return snap;
+    },
+
+    /** 業界ランキング1位/2位の団体(プレイヤー団体含む)の現王者が「重傷」に
+     * 新規に見舞われた週を検出して記事化する。snapshotはsnapshotChampionInjuriesの戻り値。
+     * 王座交代が同時に起きた週は同定不能として対象外(稀な複合イベントのため簡略化)。
+     * 怪我データの追跡範囲は「通常興行(プレイヤー/AI)で発生した重傷」のみ
+     * (PPV/各種トーナメントは既存実装でも怪我判定が無いため対象外)。 */
+    checkTopChampionInjury(state, snapshot) {
+      if (!snapshot) return state;
+      let s = state;
+      const rankings = s.rankings || [];
+      const topOrgIds = new Set(rankings.filter(r => r.rank === 1 || r.rank === 2).map(r => r.orgId));
+      if (topOrgIds.size === 0) return s;
+
+      const check = (loc) => {
+        if (!topOrgIds.has(loc)) return;
+        const before = snapshot[loc];
+        if (!before) return;
+        const roster = Engine.mq._getRosterRef(s, loc);
+        const championId = loc === 'player' ? s.titles?.world?.championId : s.aiOrgs?.[loc]?.titles?.world?.championId;
+        if (championId == null || championId !== before.id) return; // 王座交代週は同定不能のため対象外
+        const champ = roster.find(f => f.id === championId);
+        if (!champ || champ.injury?.type !== '重傷') return;
+        if (before.injuryType === '重傷') return; // 継続中の重傷は対象外、新規発生のみ
+        const orgName = loc === 'player' ? (s.orgName || 'あなたの団体') : Engine.contract._getOrgName(loc, s);
+        s = Engine.industryNews.push(s, {
+          type: 'topChampionInjury', characterId: champ.id,
+          data: { name: champ.name, orgName, titleName: `${orgName}王座`, weeks: champ.injury.weeksLeft || 0 },
+        });
+      };
+      check('player');
+      Object.keys(s.aiOrgs || {}).forEach(check);
+      return s;
     },
   },
 
@@ -11220,6 +11382,8 @@ const Engine = {
       pop: c.popularity || 0,
       stats: { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn },
     }));
+    // MQ再設計P5 §5.4: topChampionInjury — 週内処理前の各団体王者の怪我状態スナップショット
+    const _championInjurySnapshot = Engine.mq.snapshotChampionInjuries(state);
 
     // 安全弁: 王者がロスターに存在しない場合は即座に空位にする
     if (state.titles?.world?.championId && !state.roster.find(c => c.id === state.titles.world.championId)) {
@@ -11798,6 +11962,13 @@ const Engine = {
         const leaderDelta = Engine.orgPop.applyOrgPopChange(0.3, s.orgPop, null);
         s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + leaderDelta, 0, 100) };
       }
+    }
+
+    // MQ再設計P5 §5.4: hotProspectDebut/fatedRivals(デビュー戦検出) + topChampionInjury(新規重傷検出)
+    // 新聞生成が読み取る _industryNewsEvents キューへ、生成の直前に積む
+    if (!s.offSeason) {
+      s = Engine.mq.scanBignewsDebuts(s);
+      s = Engine.mq.checkTopChampionInjury(s, _championInjurySnapshot);
     }
 
     // 新聞v2: 毎週の新聞生成（オフシーズン以外）
@@ -26666,9 +26837,12 @@ Engine.newspaper = {
     transfer:             50,
     leagueElevation:     300,
     general:              30,
-    // MQ再設計P4 §5.2: 大ニュース(BIG_NEWS_TYPES)。leagueElevation(300)より上で一面を保証
+    // MQ再設計P4/P5 §5.2: 大ニュース(BIG_NEWS_TYPES)。leagueElevation(300)より上で一面を保証
     mqAllTimeRecord:     320,
+    hotProspectDebut:    315,
     mqTagRecord:         310,
+    fatedRivals:         308,
+    topChampionInjury:   305,
     // ── 業界ニュース拡充: bond/rivalry/派閥/奪還 ──
     factionEscalation:    125,
     factionResolution:    122,

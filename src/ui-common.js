@@ -4951,7 +4951,10 @@ function startDraftNegotiation() {
         const wOrg = result.winner;
         const orgData = newAiOrgs[wOrg];
         if (orgData && canAIDraftAcquire(wOrg, orgData.roster.length)) {
-          Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: wOrg }));
+          let bgAiFighter = normFighter({ ...clean, orgId: wOrg });
+          // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
+          { const reg = Engine.mq.registerBignewsHire(G, bgAiFighter); G = reg.state; bgAiFighter = reg.fighter; }
+          Engine.rival.pushUniqueFighter(orgData.roster, bgAiFighter);
           draftSummary.aiAcquired[wOrg].push(clean.name);
           log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[wOrg] || wOrg}と電撃契約`);
         } else {
@@ -4971,7 +4974,10 @@ function startDraftNegotiation() {
       const winner = aiParticipants[0].orgId;
       const orgData = newAiOrgs[winner];
       if (orgData && canAIDraftAcquire(winner, orgData.roster.length)) {
-        Engine.rival.pushUniqueFighter(orgData.roster, normFighter({ ...clean, orgId: winner }));
+        let soloAiFighter = normFighter({ ...clean, orgId: winner });
+        // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
+        { const reg = Engine.mq.registerBignewsHire(G, soloAiFighter); G = reg.state; soloAiFighter = reg.fighter; }
+        Engine.rival.pushUniqueFighter(orgData.roster, soloAiFighter);
         draftSummary.aiAcquired[winner].push(clean.name);
         log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
       } else {
@@ -5449,6 +5455,8 @@ function draftNextCandidate() {
       signed.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       signed = Engine.orgTimeline.transfer(signed, 'player', G.season, G.week);
       signed = Engine.career.addEvent(signed, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
+      // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
+      { const reg = Engine.mq.registerBignewsHire(G, signed); G = reg.state; signed = reg.fighter; }
       // draft-value-rebalance: ドラフト指名ボーナス（trust + bond）
       {
         const rounds = ns.round || 0;
@@ -5492,7 +5500,7 @@ function draftNextCandidate() {
     const orgData = newAiOrgs[ns.winner];
     const wIdeal = (AI_SCOUT_CFG[ns.winner === 'org_s' ? 'S' : ns.winner === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
     if (orgData && orgData.roster.length < wIdeal + 2) {
-      const aiFighter = normFighter({ ...clean, orgId: ns.winner });
+      let aiFighter = normFighter({ ...clean, orgId: ns.winner });
       // draft-value-rebalance: AI落札時もtrust指名ボーナス
       {
         const rounds = ns.round || 0;
@@ -5500,6 +5508,8 @@ function draftNextCandidate() {
         const trustBonus = Math.min(bonus.trustCap, bonus.trustBase + rounds * bonus.trustPerRound);
         aiFighter.trust = Math.min(100, (aiFighter.trust || 50) + trustBonus);
       }
+      // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
+      { const reg = Engine.mq.registerBignewsHire(G, aiFighter); G = reg.state; aiFighter = reg.fighter; }
       Engine.rival.pushUniqueFighter(orgData.roster, aiFighter);
       if (!draftSummary.aiAcquired[ns.winner]) draftSummary.aiAcquired[ns.winner] = [];
       draftSummary.aiAcquired[ns.winner].push(clean.name);

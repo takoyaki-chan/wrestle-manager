@@ -14,6 +14,38 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 MQ再設計 P5: 大ニュース新記事3種(大物ルーキー/期待のライバル/トップ王者重傷)+ドキュメント整合
+
+`docs/mq-redesign-proposal-v0.5.md` §5.1/§5.4 / `docs/bignews-article-drafts-v1.0.md`(正本、§2-4)。前提HEAD=408aad7(P4着地: BIG_NEWS_TYPES/industryNewsキュー/週頭PU/一面ジャック稼働中)。対象: `src/data.js`/`src/management.js`/`src/app.js`/`src/ui-common.js`/`test/auto-sim.js`/`test/mq-bignews-templates.js`/`docs/design-decisions.md`/`docs/game-system-roadmap.md`。
+
+**1. 記事テンプレ・大ニュース判定集合（`src/data.js`）**:
+- `NEWS_HEADLINE_TEMPLATES`に`hotProspectDebut`/`fatedRivals`/`topChampionInjury`を`bignews-article-drafts-v1.0.md`から一字一句そのまま追加(各3バリエーション)。
+- `BIG_NEWS_TYPES`に3種を追加(計5種)。`BIG_NEWS_LEAD_LINES`に週頭ポップアップの号外リード(各2バリエーション)を追加。
+
+**2. hotProspectDebut/fatedRivals — 「入団時フラグ→デビュー戦検出」方式（`src/management.js` `Engine.mq`）**:
+- 設計の要点: 既存ロスター(旧セーブ・AI団体の経歴事前史)を誤ってデビュー扱いしないよう、フラグは**入団コミット直後にのみ**新設`registerBignewsHire(state, fighter)`で立て、「wins+losses+draws===0 かつ careerSeasons===0」の正真正銘の未経験者だけを対象にする(移籍・戦力外復帰などの経験者はこのガードで自然に除外される)。trainCapOVR>=117(`FATED_RIVAL_TCOVR`)で`_bignewsProspect`フラグ、>=125(`HOT_PROSPECT_TCOVR`)かどうかは発火時に再判定。
+- fatedRivalsのペア候補プールは`state._fatedTalentPool`(`{id,age}`配列)。入団時、年齢差1歳以内(`FATED_RIVAL_AGE_DIFF`)の未ペア候補がいれば即ペア形成し`_fatedRivalPartnerId`を後発側に付与、プールから相方を除去。ペア形成は`state._fatedRivalsFormedSeason`で年1回に制限(§5.4「同年に複数ペア成立なら最初の1組のみ」)——ペア不成立の候補はプールに残り翌シーズン以降に持ち越せる。
+- 毎週`tickWeek`末尾(新聞生成直前)で新設`scanBignewsDebuts(state)`が全ロスター(プレイヤー+AI団体)を横断走査し、`_bignewsProspect`かつ総試合数(wins+losses+draws)が1以上に転じた選手を「デビュー戦を終えた」と判定。tcOvr>=125なら`hotProspectDebut`、`_fatedRivalPartnerId`が設定されていれば相方を`_findFighter`で解決して`fatedRivals`を記事化。発火有無に関わらずフラグは消費(一度限り)。
+- 入団コミット箇所への配線: `src/app.js`(初期ドラフト/FA署名/ロスター超過時FA・スカウト解決/スカウト成立/スカウト競り負けAI移籍)、`src/ui-common.js`(ドラフト交渉プレイヤー落札/AI落札、非選択候補のバックグラウンド自動セリ2箇所)。AI団体のFA自動獲得(`Engine.rival.aiFAAcquire`/`aiMidseasonFAAcquire`)は戻り値契約の変更が必要になるため**今回は対象外**(スコープ限定。ドラフト/スカウトが主要チャネルのため実害は小さいと判断)。
+- `{result}`(白星/黒星)は`lastMatchResult`から、`{orgName2}`の「同門」置換(fatedRivals同一団体時)はdata生成時点で文字列を直接「同門」にすることで実現(テンプレ側は無変更)。
+
+**3. topChampionInjury — スナップショット差分方式（`src/management.js` `Engine.mq`）**:
+- **調査結果**: 王座保持は`state.titles.world.championId`(プレイヤー)/`state.aiOrgs[orgId].titles.world.championId`(AI、既存構造)で追跡済み。怪我の重篤度は`INJURY_TABLE`(軽傷/中傷/重傷、既存)の3段階のみ存在し、「重傷以上」=最重段階の「重傷」(6〜8週欠場)がそのまま閾値になる。ただし怪我判定自体は**通常興行(プレイヤー画面`App._finalizeShowImpl`系+AI週次`Engine.rival.processAIWeek`)の試合内負傷のみ**実装されており、PPV/ジュニア/春タッグ/秋勝ち残り/天頂戦には怪我判定のコードが元々存在しない(既存実装の制約であり今回新設していない)。よって追跡範囲は「プレイヤー/AI団体とも通常興行の試合内重傷」に限定される。
+- 実装: `tickWeek`冒頭で新設`snapshotChampionInjuries(state)`が週内処理前の各団体(プレイヤー+AI全団体)の現王者の怪我typeを記録。週末(新聞生成直前)で新設`checkTopChampionInjury(state, snapshot)`が、`state.rankings`のrank1/2の団体について「王座保持者が同一(交代週は同定不能として対象外)かつ現在injury.type==='重傷'かつスナップショット時点では重傷でなかった(新規発生)」を判定して記事化。継続中の重傷での再発火は起きない。
+
+**4. ドキュメント整合**:
+- `src/data.js`の「名勝負製造機」説明文「MQ+1〜5」は**既に前コミット(714834c)で修正済み**と確認(現況「試合がたまに大化けする。キックアウトやカウンターが生まれやすい」で実装実態と一致)。追加修正は不要と判断。
+- `docs/design-decisions.md`の「MQスコア」節を全面書き換え: 旧v2.0(2経路併存+固定加算+外部+12キャップ)の記述を、MQ再設計P1〜P4後の実態(`Engine.mq.finalize`一本化/profile方式/外部加算はcrowd(観客の熱×注目度)のみ・因縁・タイトル・trust・バフ・ラストランは全てリング内化またはコンディション化/上限撤廃+`mqRecord`/`mqRecordTag`記録制/OV100超減衰シーリング/超過レイヤー)に合わせて置換。因縁節・引退勧告(ラストラン)節も連動更新。mq-inventory-report.md §5の食い違い一覧のうち現在も参照可能な項目は本改訂で解消。
+- `docs/game-system-roadmap.md`: MQ再設計サマリをP5完了に更新。「大物ルーキー&期待のライバル一面演出」起案節を実装完了ステータスへ短縮。
+
+**検証**: `node --check`全対象pass。`test/mq-bignews-templates.js`拡張(新設3種のテンプレ変数展開・未置換なし/同門置換/registerBignewsHire→scanBignewsDebutsの発火経路(初回スキップ→デビュー戦発火→フラグ消費→再発火なし)/経験者ガード/fatedRivalsペア形成・年1回制限・同一団体判定/checkTopChampionInjuryの新規発火・継続中不発火・低ランク対象外、全項目PASS)。`node test/auto-sim.js 40 42`×2回 ALL CLEAR(violations 0/errors 0)、新設3種は40シーズンでは0件(稀イベントのため想定内。合成イベントテストで発火経路を検証済み)。`test/auto-sim.js`に3種の生成回数カウンタを追加(既存mqAllTimeRecord/mqTagRecordカウンタと同じ形式)。
+
+**Keisuke確認項目**:
+- UIの見た目は未確認(委任): 新設3種の一面記事レイアウトはP4の`np-top-story`(単数/写真1枚)をそのまま流用しており専用レイアウトは無い。fatedRivalsは2名関係の記事だが現状写真は`characterId`(後発側)1枚のみ表示される可能性がある(春タッグ写真枠の2名表示ロジックは`springTagResult`専用のため今回は流用していない)。見た目が要件と合うか確認をお願いしたい。
+- 週頭ポップアップ(号外)・一面ジャックの実機表示、SE`bignews`の鳴動を各type 1回ずつ確認いただきたい(合成データでの確認のみで、実プレイでの発生頻度は「稀」設計のため長期プレイでないと自然発生を見られない可能性が高い)。
+
+コミット: (このログ追記後にローカルコミット。ハッシュは完了報告参照)
+
 ## 2026-07-24 MQ再設計 P4: 大ニュース新聞システム基盤
 
 `docs/mq-redesign-proposal-v0.5.md` §5 / `docs/bignews-article-drafts-v1.0.md`(正本) / `specs/newspaper-and-orgcompare-spec-v2.0.md`。前提HEAD=58c7c2a(P1〜P3e着地済み)。対象: `src/data.js`/`src/management.js`/`src/app.js`/`src/ui-common.js`/`src/ui-render.js`/`src/index.html`/`test/auto-sim.js`/新規`test/mq-bignews-templates.js`。

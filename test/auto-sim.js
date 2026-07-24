@@ -1034,6 +1034,10 @@ function runSimulation(seed, seasons) {
     // MQ再設計P4: 大ニュース記事(mqAllTimeRecord/mqTagRecord)が一面になった週数
     mqAllTimeRecordNewsCount: 0,
     mqTagRecordNewsCount: 0,
+    // MQ再設計P5: 大ニュース記事(hotProspectDebut/fatedRivals/topChampionInjury)が一面になった週数
+    hotProspectDebutNewsCount: 0,
+    fatedRivalsNewsCount: 0,
+    topChampionInjuryNewsCount: 0,
   };
 
   let G;
@@ -1319,6 +1323,10 @@ function runSimulation(seed, seasons) {
       const bigNewsType = G.weeklyNewspaper && G.weeklyNewspaper.topStory && G.weeklyNewspaper.topStory.type;
       if (bigNewsType === 'mqAllTimeRecord') stats.mqAllTimeRecordNewsCount++;
       else if (bigNewsType === 'mqTagRecord') stats.mqTagRecordNewsCount++;
+      // MQ再設計P5: hotProspectDebut/fatedRivals/topChampionInjuryの生成回数を計測
+      else if (bigNewsType === 'hotProspectDebut') stats.hotProspectDebutNewsCount++;
+      else if (bigNewsType === 'fatedRivals') stats.fatedRivalsNewsCount++;
+      else if (bigNewsType === 'topChampionInjury') stats.topChampionInjuryNewsCount++;
       // MQ再設計P3d: 通常興行があった週のみ、processSettlement(tickWeek内)が積んだ
       // weeklyFinance.details から興行連動収入(チケット/興行ブースト/興行放映/期待カード/
       // ライバル抗争メディア)だけを抽出して合算する。週次経常収入(グッズ週次・メディア週次・
@@ -1584,6 +1592,7 @@ if (s.seasons >= 10) {
   console.log(`  [--] ${'引き抜き発生/シーズン'.padEnd(22)} ${rates.poachRate.toFixed(2).padStart(5)}   ※rank1時は0が正常`);
   console.log(`  [--] ${'タイトルマッチ/シーズン'.padEnd(22)} ${rates.titleRate.toFixed(2).padStart(5)}   ※auto-simでは0が正常(未設立)`);
   console.log(`  [--] ${'大ニュース(MQ記録更新: シングル/タッグ)'.padEnd(20)} ${s.mqAllTimeRecordNewsCount}/${s.mqTagRecordNewsCount}`);
+  console.log(`  [--] ${'大ニュース(ルーキー/ライバル/王者重傷)'.padEnd(20)} ${s.hotProspectDebutNewsCount}/${s.fatedRivalsNewsCount}/${s.topChampionInjuryNewsCount}   ※稀イベントのため0が正常`);
 
   const tenchosenStartRate = s.tenchosenEligibleCount > 0 ? s.tenchosenStartedCount / s.tenchosenEligibleCount : 0;
   const tenchosenCompleteRate = s.tenchosenEligibleCount > 0 ? s.tenchosenCompletedCount / s.tenchosenEligibleCount : 0;

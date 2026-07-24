@@ -4408,6 +4408,12 @@ const App = {
     G = { ...G, roster: G.roster.map(c => picks.includes(c.id)
       ? Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'draft' })
       : c) };
+    // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ(初期ドラフト分)
+    G.roster.forEach(c => {
+      const reg = Engine.mq.registerBignewsHire(G, c);
+      G = reg.state;
+      if (reg.fighter !== c) G = { ...G, roster: G.roster.map(r => r.id === c.id ? reg.fighter : r) };
+    });
     // 序章 (Phase 2): 旗揚げ5人を確定し org_founded ハイライトを刻む
     G = Engine.prologue.create(G);
     delete G._draftPicks;
@@ -4528,6 +4534,8 @@ const App = {
     c.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
     // v1.3: Record debut event
     c = Engine.career.addEvent(c, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
+    // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
+    { const reg = Engine.mq.registerBignewsHire(G, c); G = reg.state; c = reg.fighter; }
     const tierCfg = Engine.scout.getTierConfig(c.assessedTier || 'material');
     const newFA = G.freeAgents.filter((_, i) => i !== idx);
     const newRoster = [...G.roster, c];
@@ -4700,6 +4708,8 @@ const App = {
       normalized = Engine.chronicle.applySpiritToFighter(normalized, G.chronicle); // Phase 4: 気風 trainCap 補正
       normalized.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       normalized = Engine.career.addEvent(normalized, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'freeagent' });
+      // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
+      { const reg = Engine.mq.registerBignewsHire(G, normalized); G = reg.state; normalized = reg.fighter; }
       const tierCfg = Engine.scout.getTierConfig(normalized.assessedTier || 'material');
       const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
       const newFA = G.freeAgents.filter((_, i) => i !== idx);
@@ -4723,6 +4733,8 @@ const App = {
       normalizedSigned.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
       normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
+      // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
+      { const reg = Engine.mq.registerBignewsHire(G, normalizedSigned); G = reg.state; normalizedSigned = reg.fighter; }
       const candidates = (G.scoutCandidates || []).filter(c => c.id !== pending.fighterId);
       const picks = [...(G.scoutPicks || [])];
       if (!picks.includes(pending.fighterId)) picks.push(pending.fighterId);
@@ -4851,6 +4863,8 @@ const App = {
       // orgTimeline: スカウト獲得で所属変更
       normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
       normalizedSigned = Engine.career.addEvent(normalizedSigned, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || 'プレイヤー団体', via: 'scout' });
+      // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
+      { const reg = Engine.mq.registerBignewsHire(G, normalizedSigned); G = reg.state; normalizedSigned = reg.fighter; }
       newRoster.push(normalizedSigned);
       newFunds -= result.cost;
       picks.push(candidateId);
@@ -4875,7 +4889,10 @@ const App = {
       if (lostResult.destination === 'aiOrg') {
         const orgData = aiOrgs[lostResult.orgId];
         if (orgData) {
-          const nextRoster = Engine.rival.dedupeRoster([...(orgData.roster || []), normalizeFighterForRoster(cleanFighter)]);
+          let aiFighter = normalizeFighterForRoster(cleanFighter);
+          // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ(AI団体側スカウト)
+          { const reg = Engine.mq.registerBignewsHire(G, { ...aiFighter, orgId: lostResult.orgId }); G = reg.state; aiFighter = reg.fighter; }
+          const nextRoster = Engine.rival.dedupeRoster([...(orgData.roster || []), aiFighter]);
           aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: nextRoster } };
         }
         const orgInfo = RIVAL_ORGS.find(o => o.id === lostResult.orgId);
