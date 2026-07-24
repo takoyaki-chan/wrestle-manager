@@ -1040,6 +1040,29 @@ function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
   `);
 }
 
+// ── MQ再設計P4 §5.3: 大ニュース週頭通知モーダル ──
+// weeklyNewspaper.isBigNews の週に1回だけ表示。号外リード1行+「紙面を読む」/「あとで」。
+function showBigNewsPopup(topStory) {
+  if (_isPopupActive()) { _popupQueue.push(() => showBigNewsPopup(topStory)); return; }
+  if (!topStory) { _drainPopupQueue(); return; }
+  const leadPool = (typeof BIG_NEWS_LEAD_LINES !== 'undefined') ? (BIG_NEWS_LEAD_LINES[topStory.type] || []) : [];
+  const pickIdx = leadPool.length > 0 ? ((G.season || 0) * 7 + (G.week || 0)) % leadPool.length : 0;
+  let lead = leadPool.length > 0 ? leadPool[pickIdx] : '号外――大ニュースが届いた';
+  const mqVal = topStory.newsData && topStory.newsData.mq;
+  if (mqVal != null) lead = lead.replace(/\{mq\}/g, mqVal);
+
+  const box = document.getElementById('mdlDBox');
+  if (box) box.className = 'mdl-d-box cream bignews';
+  _mdlDOpen(`
+    <div class="bignews-icon-dropin">📰</div>
+    <div class="mdl-d-title" style="text-align:center">${_escapeHtml(lead)}</div>
+    <div class="mdl-d-actions">
+      <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue();showScreen('newspaper')">紙面を読む</button>
+      <button class="mdl-d-btn secondary" onclick="_mdlDClose();_drainPopupQueue()">あとで</button>
+    </div>
+  `);
+}
+
 function showConfirm(msg, yesLabel, onYes) {
   Audio.play('notify');
   window._confirmYes = onYes;
@@ -6561,7 +6584,12 @@ function showScreen(id, evt) {
   if (id === 'coach') renderCoach();
   if (id === 'scoutEvent') renderScoutEvent();
   if (id === 'database') renderDatabase();
-  if (id === 'newspaper') renderNewspaper();
+  if (id === 'newspaper') {
+    // MQ再設計P4 §5.3: 新聞を開いたら大ニュース未読バッジを消灯
+    if (G._bigNewsUnread) G = { ...G, _bigNewsUnread: false };
+    renderNewspaper();
+    if (typeof refreshTopBar === 'function') refreshTopBar();
+  }
   if (id === 'shachoshitsu') renderShachoshitsu();
   if (id === 'week') renderWeekScreen();
 }

@@ -255,9 +255,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .nav-bar{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
 .nav-btn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;
   padding:8px 16px;background:var(--panel-bg);border:1px solid rgba(200,190,170,0.08);border-radius:4px;
-  color:var(--text-sub);cursor:pointer;white-space:nowrap;transition:all .2s}
+  color:var(--text-sub);cursor:pointer;white-space:nowrap;transition:all .2s;position:relative}
 .nav-btn:hover{border-color:rgba(212,168,67,0.3);color:var(--text-main)}
 .nav-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(212,168,67,0.08)}
+/* MQ再設計P4 §5.3: 新聞ナビの大ニュース未読バッジ */
+.nav-badge-dot{position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;
+  background:var(--red);box-shadow:0 0 6px rgba(196,30,58,0.7)}
 
 /* Panels */
 .screen{display:none}
@@ -7364,6 +7367,17 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   background: var(--cream-gold-dark); border-color: var(--cream-gold-dark);
 }
 
+/* MQ再設計P4 §5.3: 大ニュース週頭通知モーダル（D型 cream + 新聞アイコンのドロップイン） */
+.bignews-icon-dropin {
+  font-size: 44px; text-align: center; margin: 2px 0 12px; line-height: 1;
+  animation: bignewsDropIn 620ms cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes bignewsDropIn {
+  0%   { transform: translateY(-36px) scale(0.6); opacity: 0; }
+  70%  { transform: translateY(4px) scale(1.06); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 /* ══════════════════════════════════════════════════════════
    Ranking Screen v1.0 — A案 Office標準（金銀銅鋼メタリック様式を廃止）
    ══════════════════════════════════════════════════════════ */
@@ -8242,6 +8256,22 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .np-preview-text { font-size: 12px; line-height: 1.8; color: #3a2e1c; margin-top: 6px; font-family: 'Noto Serif JP', serif; }
 .np-preview-text strong { color: #8b1a1a; }
 
+/* ── MQ再設計P4 §5: mqTagRecord 上下ぶち抜き大記事（タッグ歴代最高評価） ── */
+.np-bignews-tag { padding: 0 0 18px; border-bottom: 3px double rgba(120,84,39,0.35); margin-bottom: 16px; }
+.np-bignews-photobar { position: relative; width: 100%; height: 260px; border-radius: 4px; border: 4px solid #d4a82a; outline: 1px solid rgba(154,112,32,0.5); overflow: hidden; background-color: #2a1a10; box-shadow: 0 6px 20px rgba(0,0,0,0.4); margin-bottom: 14px; }
+.np-bignews-photo-member { position: absolute; top: 0; bottom: 0; width: 58%; cursor: pointer; }
+.np-bignews-photo-member-1 { left: 0; z-index: 1; }
+.np-bignews-photo-member-2 { right: 0; z-index: 2; }
+.np-bignews-photo-member img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.np-bignews-stamp { position: absolute; top: 10px; right: 10px; z-index: 5; background: #8b1a1a; color: #fff; font-size: 9px; font-weight: 900; padding: 3px 8px; letter-spacing: 1px; border-radius: 2px; transform: rotate(3deg); }
+.np-bignews-caption { position: absolute; bottom: 0; left: 0; right: 0; z-index: 4; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.85)); color: #fff; font-size: 11px; padding: 22px 12px 8px; line-height: 1.4; }
+.np-bignews-caption strong { font-size: 15px; font-family: 'Noto Serif JP', serif; display: block; margin-bottom: 2px; }
+.np-bignews-headline { font-size: 26px; line-height: 1.22; font-weight: 900; font-family: 'Noto Serif JP', serif; letter-spacing: -0.01em; color: #1a0d04; margin: 2px 0 10px; }
+.np-bignews-situation { display: inline-block; font-size: 10.5px; color: #6a4a10; background: rgba(212,168,67,0.18); border: 1px solid rgba(154,112,32,0.45); padding: 2px 8px; border-radius: 2px; letter-spacing: 0.6px; font-weight: 700; margin: 0 0 8px; }
+.np-bignews-text { font-size: 13px; line-height: 1.9; color: #2a2014; text-align: justify; }
+.np-bignews-text p { text-indent: 1em; margin-bottom: 10px; }
+.np-bignews-text p.np-bignews-praise { border-top: 1px dashed rgba(120,84,39,0.35); padding-top: 10px; }
+
 /* ── 2面: 団体比較 ── */
 .np-cmp-select { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: rgba(120,84,39,0.08); border-radius: 6px; border: 1px solid rgba(120,84,39,0.18); margin-bottom: 14px; }
 .np-cmp-select label { font-size: 10px; color: #6a5e4c; letter-spacing: 2px; font-weight: 800; }
@@ -8626,6 +8656,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   .np-org-summary { grid-template-columns: 1fr; }
   .np-versus-mark { padding: 6px 0; }
   .np-rivalry-stand { height: 240px; }
+  .np-bignews-photobar { height: 190px; }
+  .np-bignews-headline { font-size: 21px; }
 }
 
 /* ════════ 今週画面ロスターテーブル v1.0 ════════ */
@@ -9349,7 +9381,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     <button class="nav-btn" onclick="showScreen('shachoshitsu',event)">🏛️ 社長室</button>
     <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
     <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>
-    <button class="nav-btn" onclick="showScreen('newspaper',event)">📰 新聞</button>
+    <button class="nav-btn" onclick="showScreen('newspaper',event)">📰 新聞<span id="newspaperBadge" class="nav-badge-dot" style="display:none"></span></button>
     <button class="nav-btn" onclick="showScreen('finance',event)">🏢 経営</button>
     <button class="nav-btn" onclick="showScreen('log',event)">📋 ログ</button>
     <button class="nav-btn" onclick="showScreen('save',event)">💾 セーブ</button>

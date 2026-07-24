@@ -159,6 +159,9 @@ function refreshTopBar() {
   // Org icon in top bar
   const orgIconEl = document.getElementById('dispOrgIcon');
   if (orgIconEl) orgIconEl.innerHTML = orgIconHtml('player', 24);
+  // MQ再設計P4 §5.3: 大ニュース未読バッジ（既存セーブでフィールドが無ければ静かに非表示）
+  const npBadge = document.getElementById('newspaperBadge');
+  if (npBadge) npBadge.style.display = G._bigNewsUnread ? '' : 'none';
   // Hide nav during draft/opening
   const navBar = document.querySelector('.nav-bar');
   if (navBar) navBar.style.display = (['draft','opening'].includes(G.weekPhase)) ? 'none' : '';
@@ -6727,6 +6730,47 @@ function _npTopTagPhotoHtml(ids) {
   }).join('');
   return members ? `<div class="np-top-tag-photo">${members}</div>` : '';
 }
+// MQ再設計P4 §5: mqTagRecord の本文｜区切りを段落配列へ展開（前半=記録事実／後半=称賛）
+function _npSplitBignewsBody(body) {
+  return (body || '').split('｜').map(s => s.trim()).filter(Boolean);
+}
+// MQ再設計P4 §5: mqTagRecord 専用「上下ぶち抜き大記事」レイアウト。
+// springTagResult の優勝ペア写真枠（58%幅・中央重ね）の実装を流用し、全幅フォトバー+2段落本文で描画する。
+function _npRenderBignewsTag(state, ts, seasonNum, weekNum) {
+  const ids = Array.isArray(ts.characterIds) ? ts.characterIds.slice(0, 2) : [];
+  const photoHtml = ids.length >= 2
+    ? ids.map((id, idx) => {
+        const upper = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
+        const portrait = (typeof getPortraitUrl === 'function') ? getPortraitUrl(id) : '';
+        const src = upper || portrait;
+        if (!src) return '';
+        const fighter = ALL_CHARS.find(c => c.id === id);
+        return `<div class="np-bignews-photo-member np-bignews-photo-member-${idx + 1}" onclick="showFighterPopup(${id})"><img src="${src}" alt="${escHtml(fighter?.name || '')}"></div>`;
+      }).join('')
+    : '';
+  const tsName = ids.map(id => ALL_CHARS.find(c => c.id === id)?.name || '').filter(Boolean).join(' ＆ ');
+  const primaryId = ids[0] || null;
+  const tsOrgKey = primaryId ? _npFindFighterOrgKey(state, primaryId) : null;
+  const tsOrgName = primaryId ? _findFighterOrgName(state, primaryId) : '';
+  const tsOrgEmblem = tsOrgKey ? _npOrgEmblem(state, tsOrgKey, 18) : '';
+  const tsOrgLineHtml = (tsOrgEmblem || tsOrgName)
+    ? `<div class="np-top-org-line">${tsOrgEmblem}<span>${tsOrgName || ''}</span></div>`
+    : '';
+  const paragraphs = _npSplitBignewsBody(ts.body);
+  const bodyHtml = paragraphs.map((p, idx) =>
+    `<p${idx > 0 ? ' class="np-bignews-praise"' : ''}>${p}</p>`).join('');
+  return `<article class="np-bignews-tag">
+    <div class="np-bignews-photobar">
+      ${photoHtml}
+      <div class="np-bignews-stamp">EXCLUSIVE</div>
+      <div class="np-bignews-caption">${tsOrgLineHtml}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>
+    </div>
+    <div class="np-sec-gold">大ニュース・タッグ歴代最高評価</div>
+    ${ts.situation ? `<div class="np-bignews-situation">${ts.situation}</div>` : ''}
+    <h2 class="np-bignews-headline">${ts.headline || '——'}</h2>
+    <div class="np-bignews-text">${bodyHtml}</div>
+  </article>`;
+}
 function _npThumbBg(id) {
   if (!id) return '';
   const url = (typeof getPortraitUrl === 'function') ? getPortraitUrl(id) : '';
@@ -6948,7 +6992,10 @@ function _npRenderPage1() {
   }
 
   // 一面記事
-  if (wp.topStory) {
+  if (wp.topStory && wp.topStory.type === 'mqTagRecord') {
+    // MQ再設計P4 §5: タッグ歴代最高評価は上下ぶち抜き大記事の専用レイアウト
+    html += _npRenderBignewsTag(G, wp.topStory, seasonNum, weekNum);
+  } else if (wp.topStory) {
     const ts = wp.topStory;
     const tagPhotoIds = _npSpringTagStoryIds(G, ts, seasonNum);
     const isTagPhoto = tagPhotoIds.length >= 2;

@@ -14,6 +14,40 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 MQ再設計 P4: 大ニュース新聞システム基盤
+
+`docs/mq-redesign-proposal-v0.5.md` §5 / `docs/bignews-article-drafts-v1.0.md`(正本) / `specs/newspaper-and-orgcompare-spec-v2.0.md`。前提HEAD=58c7c2a(P1〜P3e着地済み)。対象: `src/data.js`/`src/management.js`/`src/app.js`/`src/ui-common.js`/`src/ui-render.js`/`src/index.html`/`test/auto-sim.js`/新規`test/mq-bignews-templates.js`。
+
+**1. BIG_NEWS_TYPES・記事テンプレ（`src/data.js`）**:
+- `BIG_NEWS_TYPES = new Set(['mqAllTimeRecord', 'mqTagRecord'])`。P5で`hotProspectDebut`等を追加する前提のコメント付き。
+- `NEWS_HEADLINE_TEMPLATES.mqAllTimeRecord`/`.mqTagRecord`を`bignews-article-drafts-v1.0.md`から一字一句そのまま追加(各3バリエーション)。`mqTagRecord`の`｜`区切りはテンプレ文字列側は変更せず、描画側で段落展開。
+- `BIG_NEWS_LEAD_LINES`(週頭ポップアップの号外リード、正本の2バリエーション×2type)を新設。
+
+**2. 記録更新→記事化キュー（`src/management.js` `Engine.mq`）**:
+- `updateRecord`を「数値記録更新」と「記事化」に分離。数値更新(`state.mqRecord`/`mqRecordTag`書き換え)は既存のまま、成立時に新設`_pushRecordNews`を呼んで`Engine.industryNews.push`経由でキューへ積む。**旧記録値(prevRecord)は上書き前の`current.value`から捕捉**。
+- `_pushRecordNews`はシングル/タッグで分岐: シングルは`metadata.winnerId`必須、タッグは`metadata.winnerIds`(2件)必須。**いずれも解決できない場合(ドロー等)は数値記録のみ更新し記事化を静かにスキップ**する設計(記事は書けないが記録は嘘をつかない)。
+- タッグの変数充填規則(`{nameA1}`=勝者組OVR上位)を`_sortByOvrDesc`で実装。名前解決は`_findFighter`(roster/aiOrgs/freeAgents/retiredFighters を順に走査)経由、`{stage}`は`STAGE_LABELS`(normal/ai/ppv/junior/tenchosen/springTag/autumnWar→日本語)、`{orgName}`は勝者(タッグはエース)の所属組織名。
+- 全10箇所の`Engine.mq.updateRecord`呼び出し(aiWar/aiB3Challenge/B2団体内紛/AI週次_lastMatchResults/通常興行/PPV/ジュニア/天頂戦/春タッグ/秋勝ち残り)に`winnerId`(シングル)または`winnerIds`(タッグ)を追加。各呼び出し元の既存`matchResult.winner`(またはjunior/tenchosen/autumnWarの`match.winnerId`)からその場で導出するのみで、新規シミュレーションは行わない。
+- `Engine.newspaper.PRIORITY`に`mqAllTimeRecord:320`/`mqTagRecord:310`を追加(leagueElevation 300より上=一面保証)。
+- `Engine.newspaper.generate`の`industryEvents.forEach`が積むstoryに`newsData: data`(テンプレ変数の生値)を追加(既存呼び出しへの副作用なし、週頭PUの号外リード{mq}展開に使用)。
+- `generate()`の返却値に`isBigNews: topStory.type ∈ BIG_NEWS_TYPES`を追加。
+
+**3. 一面ジャック描画（`src/ui-render.js`/`src/index.html`）**:
+- `mqAllTimeRecord`は既存`np-top-story`型(勝者1名upper写真)をそのまま流用(`ts.characterId`=winnerId)。
+- `mqTagRecord`は新設`_npRenderBignewsTag`で「上下ぶち抜き大記事」を描画: `springTagResult`の優勝ペア写真(58%幅・中央重ね)の実装パターンを流用した全幅フォトバー(`np-bignews-photobar`)+`np-sec-gold`ラベル+2段落本文(`_npSplitBignewsBody`で`｜`をパラグラフ配列へ展開、後半に`np-bignews-praise`装飾)。CSSは`np-bignews-*`接頭辞で新規、既存の新聞ハードコード配色(#8b1a1a/#d4a82a等)に合わせて統一(新聞画面は階層1確立前からハードコード配色が既定のため、既存トークンに追随)。
+
+**4. 週頭通知（`src/app.js`/`src/ui-common.js`/`src/index.html`）**:
+- SFX`bignews`を新設: 既存`notify`(C6→F6 2音)にベル系スパークル(`bellPartial`2発+`noiseHP`)を重ねた合成。`SE_MIX.bignews=.58`。
+- `App._maybeShowBigNewsPopup(delay)`: `weeklyNewspaper.isBigNews`かつ週単位で未通知の場合のみ`G._bigNewsNotifiedWeek`を立てて1回発火。`closeShowResult`(興行後)/`processWeek`(非興行週)双方の末尾、他ポップアップの後段に追加(`_isPopupActive`/`_popupQueue`パターンに乗る`showBigNewsPopup`側が実際の順序調整を担う)。
+- `showBigNewsPopup`(`src/ui-common.js`): 既存の汎用D型モーダル(`_mdlDOpen`/`.mdl-d-box.cream`、Office Cream Panel)に新聞アイコンドロップインアニメ(`.bignews-icon-dropin`)+号外リード1行+「紙面を読む」(→`showScreen('newspaper')`)/「あとで」の2ボタン。
+- 未読バッジ: ナビ📰ボタンに`#newspaperBadge`(`.nav-badge-dot`、`var(--red)`)を追加。`refreshTopBar()`で`G._bigNewsUnread`に応じて表示切替、`showScreen('newspaper')`で消灯。既存セーブにフィールドが無い場合はfalsy判定で自然に非表示(不在データ説明文は出さない)。
+
+**5. 検証**:
+- `node --check`全対象pass。
+- 新規`test/mq-bignews-templates.js`: 合成の記録更新イベント→`Engine.mq.updateRecord`→`NEWS_HEADLINE_TEMPLATES`展開まで通し、全stage×全バリエーションで未置換`{変数}`が残らないことを確認。タッグのエース優先充填規則(勝者組OVR上位が`{nameA1}`)、winnerId不明時の記事化スキップも回帰化。
+- `test/auto-sim.js`に大ニュース記事生成カウンタ(`mqAllTimeRecordNewsCount`/`mqTagRecordNewsCount`、topStory.type基準)を追加。
+- `node test/auto-sim.js 40 42`: **ALL CLEAR**(violations=0/errors=0)。大ニュース記事生成=シングル4件/タッグ2件(既存`mqRecordProbe`の更新回数4/2と完全一致=全経路でwinnerId/winnerIds解決が機能している確認)。
+
 ## 2026-07-24 MQ再設計 P3e: 記録のシングル/タッグ分離+スタート値
 
 `docs/mq-redesign-proposal-v0.5.md` §2.2/§3.9不変条件8。P3d-2の直後に着手。対象は`src/management.js`(`Engine.mq`)/`src/app.js`/`test/auto-sim.js`。

@@ -78,7 +78,7 @@ const Audio = (() => {
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
   const SE_MIX = {
     click:.50, hover:.40, select:.50, deselect:.40, error:.50, save:.40, notify:.50,
-    tick:.50, event:.50, reveal:.50, paper:.50,
+    tick:.50, event:.50, reveal:.50, paper:.50, bignews:.58,
     fanfare:.74, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
     war:.60, transfer:.52, award:.72, tension_hit:.66,
     rivalry_confrontation:.64, fate_confrontation:.63, rivalry_resolution:.50, fate_resolution:.57,
@@ -313,6 +313,17 @@ const Audio = (() => {
       osc(1047, 'triangle', t, 0.06, 0.04);
       osc(1397, 'sine', t + 0.12, 0.1, 0.12);
       osc(1397, 'triangle', t + 0.12, 0.08, 0.04);
+    },
+    // MQ再設計P4: 大ニュース専用SE — notify(C6→F6)にベル系スパークルを重ねた合成
+    bignews() {
+      const t = ensure().currentTime;
+      osc(1047, 'sine', t, 0.08, 0.12);
+      osc(1047, 'triangle', t, 0.06, 0.04);
+      osc(1397, 'sine', t + 0.12, 0.1, 0.12);
+      osc(1397, 'triangle', t + 0.12, 0.08, 0.04);
+      bellPartial(2093, t + 0.12, 0.5, 0.09);
+      bellPartial(3136, t + 0.18, 0.4, 0.06);
+      noiseHP(t + 0.12, 0.18, 0.05, 7000);
     },
     tick() {
       const t = ensure().currentTime;
@@ -9544,6 +9555,9 @@ const App = {
       }
     }
 
+    // MQ再設計P4 §5.3: 大ニュース週頭通知（他のポップアップの後に鳴らす）
+    App._maybeShowBigNewsPopup(1200);
+
     // v1.0: Auto-advance on non-monthly weeks (same as processWeek)
     if (App._tryAutoAdvance()) return;
     showScreen('week');
@@ -9590,6 +9604,22 @@ const App = {
   _pushNewsEvent(ev) {
     const queue = [...(G._newsEvents || []), ev];
     G = { ...G, _newsEvents: queue };
+  },
+
+  // MQ再設計P4 §5.3: 大ニュース週頭通知（号外PU+ピロりん）。
+  // weeklyNewspaper.isBigNews な週かつ同週内で未通知の場合のみ1回だけ発火する。
+  // _isPopupActive/_popupQueue パターンに乗る showBigNewsPopup 側が他ポップアップとの
+  // 順序調整を担うため、ここでは「その週にもう鳴らしたか」だけを見る。
+  _maybeShowBigNewsPopup(delay) {
+    const wp = G && G.weeklyNewspaper;
+    if (!wp || !wp.isBigNews || !wp.topStory) return;
+    const weekKey = `${G.season}:${G.week}`;
+    if (G._bigNewsNotifiedWeek === weekKey) return;
+    G = { ...G, _bigNewsNotifiedWeek: weekKey, _bigNewsUnread: true };
+    setTimeout(() => {
+      Audio.play('bignews');
+      if (typeof showBigNewsPopup === 'function') showBigNewsPopup(wp.topStory);
+    }, delay != null ? delay : 200);
   },
 
   // Common-3: 派閥加入通知キューを順次表示
@@ -10434,6 +10464,9 @@ const App = {
       const overflowDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 1100;
       App._showRosterOverflowSigningModalIfNeeded(overflowDelay);
     }
+
+    // MQ再設計P4 §5.3: 大ニュース週頭通知（他のポップアップの後に鳴らす）
+    App._maybeShowBigNewsPopup((newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 1300);
 
     // v1.0: Auto-advance on non-monthly weeks
     if (App._tryAutoAdvance()) return;

@@ -2486,11 +2486,100 @@ const Engine = {
         week: metadata.week ?? state?.week ?? null,
         stage: metadata.stage ?? null,
       };
+      let nextState = { ...state, [recordKey]: record };
+      // MQ再設計P4 §5.4: 記録更新の瞬間を大ニュース記事(mqAllTimeRecord/mqTagRecord)として記事化キューへ
+      nextState = Engine.mq._pushRecordNews(nextState, { isTag, prevRecord: current.value, record, metadata });
       return {
-        state: { ...state, [recordKey]: record },
+        state: nextState,
         updated: true,
         record,
       };
+    },
+
+    // ── MQ再設計P4 §5.4: 記録更新記事のためのファインダー/整形ヘルパー(全てstate走査の純粋関数) ──
+    STAGE_LABELS: {
+      normal: '通常興行',
+      ai: '他団体の興行',
+      ppv: 'PPV GRAND FINAL',
+      junior: 'ジュニアトーナメント',
+      tenchosen: '天頂戦',
+      springTag: '春のタッグリーグ',
+      autumnWar: '秋の勝ち残り対抗戦',
+    },
+
+    _findFighter(state, id) {
+      if (id == null) return null;
+      const inRoster = (state?.roster || []).find(c => c.id === id);
+      if (inRoster) return { fighter: inRoster, orgKey: 'player' };
+      const aiOrgs = state?.aiOrgs || {};
+      for (const k in aiOrgs) {
+        const f = (aiOrgs[k].roster || []).find(c => c.id === id);
+        if (f) return { fighter: f, orgKey: k };
+      }
+      const inFA = (state?.freeAgents || []).find(c => c.id === id);
+      if (inFA) return { fighter: inFA, orgKey: null };
+      const inRet = (state?.retiredFighters || []).find(c => c.id === id);
+      if (inRet) return { fighter: inRet, orgKey: null };
+      return null;
+    },
+
+    _fighterName(state, id) {
+      return Engine.mq._findFighter(state, id)?.fighter?.name || '???';
+    },
+
+    _fighterOrgName(state, id) {
+      const found = Engine.mq._findFighter(state, id);
+      if (!found || !found.orgKey) return state?.orgName || 'あなたの団体';
+      if (found.orgKey === 'player') return state?.orgName || 'あなたの団体';
+      return Engine.contract._getOrgName(found.orgKey, state);
+    },
+
+    _sortByOvrDesc(state, ids) {
+      return [...ids].sort((a, b) => {
+        const fa = Engine.mq._findFighter(state, a)?.fighter;
+        const fb = Engine.mq._findFighter(state, b)?.fighter;
+        return (fb ? Engine.util.ov(fb) : 0) - (fa ? Engine.util.ov(fa) : 0);
+      });
+    },
+
+    /** 記録更新(updateRecord内部専用)を大ニュース記事キューへ積む。
+     * winnerId(シングル)/winnerIds(タッグ)がmetadataに無い場合は記事化せず数値記録のみ更新する
+     * (記録自体はドローでも成立しうるが、勝者を名指しできない記事は書けないため静かにスキップ)。 */
+    _pushRecordNews(state, { isTag, prevRecord, record, metadata }) {
+      const stageLabel = Engine.mq.STAGE_LABELS[metadata.stage] || '興行';
+      const prevRecordDisp = Math.round(Number(prevRecord) || 0);
+      if (!isTag) {
+        const winnerId = metadata.winnerId;
+        if (winnerId == null || !Array.isArray(record.holderIds)) return state;
+        const loserId = record.holderIds.find(id => id !== winnerId);
+        if (loserId == null) return state;
+        const data = {
+          name: Engine.mq._fighterName(state, winnerId),
+          name2: Engine.mq._fighterName(state, loserId),
+          mq: record.value,
+          prevRecord: prevRecordDisp,
+          stage: stageLabel,
+          orgName: Engine.mq._fighterOrgName(state, winnerId),
+        };
+        return Engine.industryNews.push(state, { type: 'mqAllTimeRecord', characterId: winnerId, data });
+      }
+      const winnerIds = Array.isArray(metadata.winnerIds) ? metadata.winnerIds.filter(id => id != null) : [];
+      if (winnerIds.length < 2 || !Array.isArray(record.holderIds)) return state;
+      const loserIds = record.holderIds.filter(id => !winnerIds.includes(id));
+      if (loserIds.length < 2) return state;
+      const [a1, a2] = Engine.mq._sortByOvrDesc(state, winnerIds.slice(0, 2));
+      const [b1, b2] = loserIds;
+      const data = {
+        nameA1: Engine.mq._fighterName(state, a1),
+        nameA2: Engine.mq._fighterName(state, a2),
+        nameB1: Engine.mq._fighterName(state, b1),
+        nameB2: Engine.mq._fighterName(state, b2),
+        mq: record.value,
+        prevRecord: prevRecordDisp,
+        stage: stageLabel,
+        orgName: Engine.mq._fighterOrgName(state, a1),
+      };
+      return Engine.industryNews.push(state, { type: 'mqTagRecord', characterIds: [a1, a2], data });
     },
   },
 
@@ -8223,6 +8312,7 @@ const Engine = {
               orgId,
               stage: 'ai',
               matchType: 'singles',
+              winnerId: matchWinnerId,
             },
           };
           if (result.relationships) retVal._b2Relationships = result.relationships;
@@ -9444,6 +9534,7 @@ const Engine = {
           orgId: null,
           stage: 'ai',
           matchType: 'singles',
+          winnerId: matchResult.winner === 'left' ? rep1.id : matchResult.winner === 'right' ? rep2.id : null,
         }).state;
 
         const winner = matchResult.winner; // 'left' or 'right' or 'draw'
@@ -9708,6 +9799,7 @@ const Engine = {
           orgId: null,
           stage: 'ai',
           matchType: 'singles',
+          winnerId: matchResult.winner === 'left' ? challenger.id : matchResult.winner === 'right' ? defender.id : null,
         }).state;
 
         const winner = matchResult.winner; // 'left' | 'right' | 'draw'
@@ -11233,6 +11325,8 @@ const Engine = {
             orgId,
             stage: 'ai',
             matchType: 'singles',
+            winnerId: matchResult.winner === 'left' ? matchResult.left?.id
+              : matchResult.winner === 'right' ? matchResult.right?.id : null,
           }).state;
         });
         // Phase 2: 新規試合ペアを収集（matchupLogの差分から取得）
@@ -12032,17 +12126,31 @@ const Engine = {
 
     results.forEach((result, matchIndex) => {
       const slot = validMatches[matchIndex];
-      const holderIds = result.matchType === 'tag'
+      const isTagResult = result.matchType === 'tag';
+      const holderIds = isTagResult
         ? [
             slot?.teamA?.fighter1, slot?.teamA?.fighter2,
             slot?.teamB?.fighter1, slot?.teamB?.fighter2,
           ]
         : [slot?.left, slot?.right];
+      const winnerMeta = isTagResult
+        ? {
+            winnerIds: result.winner === 'teamA'
+              ? [slot?.teamA?.fighter1, slot?.teamA?.fighter2]
+              : result.winner === 'teamB'
+                ? [slot?.teamB?.fighter1, slot?.teamB?.fighter2]
+                : null,
+          }
+        : {
+            winnerId: result.winner === 'left' ? slot?.left
+              : result.winner === 'right' ? slot?.right : null,
+          };
       s = Engine.mq.updateRecord(s, result, {
         holderIds,
         orgId: 'player',
         stage: 'normal',
-        matchType: result.matchType === 'tag' ? 'tag' : 'singles',
+        matchType: isTagResult ? 'tag' : 'singles',
+        ...winnerMeta,
       }).state;
     });
 
@@ -14041,6 +14149,7 @@ const Engine = {
           orgId: null,
           stage: 'ppv',
           matchType: 'singles',
+          winnerId: r.winner === 'left' ? match.left.id : r.winner === 'right' ? match.right.id : null,
         }).state;
         if (rivalLvl) {
           r.rivalryBonus = rivalLvl;
@@ -24163,6 +24272,7 @@ Engine.juniorTournament = {
         orgId: null,
         stage: 'junior',
         matchType: 'singles',
+        winnerId: match.winnerId ?? null,
       }).state;
     }));
 
@@ -24823,6 +24933,7 @@ Engine.ppvTournament = {
         orgId: null,
         stage: 'tenchosen',
         matchType: 'singles',
+        winnerId: match.winnerId ?? null,
       }).state;
     }));
     const finalMatch = tournamentResult.rounds[tournamentResult.rounds.length - 1]?.matches?.[0];
@@ -25386,6 +25497,8 @@ Engine.springTagLeague = {
         orgId: null,
         stage: 'springTag',
         matchType: 'tag',
+        winnerIds: match.winner === 'teamA' ? [match.teamA?.f1Id, match.teamA?.f2Id]
+          : match.winner === 'teamB' ? [match.teamB?.f1Id, match.teamB?.f2Id] : null,
       }).state;
     });
     // リーグ順位は決勝進出者を決めるためのもの。決勝後の賞金・実績は最終結果を正とする。
@@ -26279,6 +26392,7 @@ Engine.autumnWar = {
           orgId: null,
           stage: 'autumnWar',
           matchType: 'singles',
+          winnerId: bout.winnerId ?? null,
         }).state;
       });
     });
@@ -26552,6 +26666,9 @@ Engine.newspaper = {
     transfer:             50,
     leagueElevation:     300,
     general:              30,
+    // MQ再設計P4 §5.2: 大ニュース(BIG_NEWS_TYPES)。leagueElevation(300)より上で一面を保証
+    mqAllTimeRecord:     320,
+    mqTagRecord:         310,
     // ── 業界ニュース拡充: bond/rivalry/派閥/奪還 ──
     factionEscalation:    125,
     factionResolution:    122,
@@ -27002,6 +27119,8 @@ Engine.newspaper = {
           body: rep(tpl.body),
           characterId: ev.characterId || null,
           characterIds: Array.isArray(ev.characterIds) ? ev.characterIds.slice(0, 2) : null,
+          // MQ再設計P4: 週頭ポップアップの号外リード文言展開など、テンプレ変数の生値を残す
+          newsData: data,
         });
       });
     }
@@ -27052,6 +27171,8 @@ Engine.newspaper = {
       playerShowData: state.currentNewspaper || null,
       preview,
       pages: null, // 複数ページ時のみ設定
+      // MQ再設計P4 §5.2: BIG_NEWS_TYPES に載ったら大ニュース週。週頭PU+一面ジャックの起点
+      isBigNews: !!(topStory && typeof BIG_NEWS_TYPES !== 'undefined' && BIG_NEWS_TYPES.has(topStory.type)),
     };
 
     // === 複数ページ: ジュニアトーナメント結果 ===
