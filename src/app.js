@@ -8860,15 +8860,18 @@ const App = {
   },
 
   _glimpseSignature(glimpse) {
+    // 識別に使うのは「どのペアの、どの種類の」glimpseかという安定情報のみ。
+    // tone/label は type(=GLIMPSE_A_THRESHOLDS の id)に対して1:1で決まる派生値、
+    // dialogue は pickDialogueLine() が Math.random() で選ぶ非決定的なセリフ文字列
+    // （プレビューtickと本tickで別々に消費されるため一致しない）。
+    // これらを署名に含めると、同一glimpseなのにセリフ違いで signature が変わり、
+    // 重複排除が機能しなくなる（SHOW AFTERMATH 二重表示の原因）。
     return [
       glimpse.layer || '',
       glimpse.type || '',
       glimpse.axis || '',
-      glimpse.tone || '',
       glimpse.speakerId || '',
       glimpse.targetId || '',
-      glimpse.label || '',
-      glimpse.dialogue || '',
     ].join('|');
   },
 
@@ -8899,6 +8902,10 @@ const App = {
     if (App._showResultInlinePreviewPrepared) return;
     App._showResultInlinePreviewPrepared = true;
     App._showResultInlinePreview = null;
+    // 新しい興行の結果画面が開くたびにリセット。SHOW AFTERMATH カスケードは
+    // この興行につき一度しか出さない（プレビュー経路/本tick経路のどちらが
+    // 先に発火しても、後発側はここで弾かれる）。
+    App._glimpseCascadeShownThisShow = false;
 
     try {
       const previewBaseState = App._buildShowResultPreviewState(G);
@@ -8923,6 +8930,8 @@ const App = {
         tier1.forEach(glimpse => {
           App._showResultInlinePreview.shownSignatures.add(App._glimpseSignature(glimpse));
         });
+        if (App._glimpseCascadeShownThisShow) return;
+        App._glimpseCascadeShownThisShow = true;
         showGlimpseCascade(tier1, { allowWhileShowResult: true });
       }, 500);
     } catch (e) {
@@ -9583,7 +9592,11 @@ const App = {
         refreshDojoLogFeed();
       }
       if (tier1.length > 0) {
-        setTimeout(() => { showGlimpseCascade(tier1); }, 900);
+        setTimeout(() => {
+          if (App._glimpseCascadeShownThisShow) return;
+          App._glimpseCascadeShownThisShow = true;
+          showGlimpseCascade(tier1);
+        }, 900);
       }
     }
 

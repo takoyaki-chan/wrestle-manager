@@ -14,6 +14,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-25 興行後「SHOW AFTERMATH(興行のあとで…)」glimpse cascade の二重表示を修正
+
+通常興行後、Tier1 glimpse を集約する「SHOW AFTERMATH」オーバーレイが2回出ていた(結果画面プレビュー経路 + closeShowResult 本tick経路)。設計上は `_showResultInlinePreview.shownSignatures` で dedup する想定だったが、`App._glimpseSignature`(app.js:8862)が署名に **`dialogue`(pickDialogueLineがMath.randomで選ぶ非決定的セリフ)** と派生値 `tone`/`label` を含んでいたため、プレビューtickと本tickで別々にRNGを消費して同一glimpseでもセリフ違いで署名が変わり、dedupが全滅していた。glimpseのペア選択自体は `Engine.rng.derive(rngSeed,season,week,opcode)` で決定的(relationships.js:4625/4751)なので、署名を **安定識別子のみ(layer/type/axis/speakerId/targetId)** に変更してdedupを機能させた。加えて `App._glimpseCascadeShownThisShow` ガードを両経路に入れ、レース時も二度目を弾く二重の保険とした。対象: `src/app.js` のみ。npm test 84/84 / auto-sim 20年 ALL CLEAR。他興行(遠征挑戦は同一結果画面経路で自動的にカバー、PPV/PPV-TV/非興行週は別経路で無影響)を確認。
+
 ## 2026-07-24 全体バグチェックで確定したゲーム本体バグ5件を修正(C/F/G/J/K)
 
 セッションのバグ監査(auto-sim + 静的監査4エージェント)で確定した本体バグのうち、安全に直せる5件を修正。auto-sim 40年 ALL CLEAR / npm test 84/84。
