@@ -311,6 +311,18 @@ const mqInventoryProbe = {
   uiRouteEstimate: [],
 };
 
+// Task 22: observe industry-wide all-time MQ record updates without changing
+// production state or RNG consumption.
+const mqRecordProbe = { updates: [] };
+if (Engine.mq && typeof Engine.mq.updateRecord === 'function') {
+  const updateMqRecord = Engine.mq.updateRecord;
+  Engine.mq.updateRecord = function(state, matchResult, metadata) {
+    const result = updateMqRecord.call(this, state, matchResult, metadata);
+    if (result.updated) mqRecordProbe.updates.push({ ...result.record });
+    return result;
+  };
+}
+
 // Task 16: production paths other than executeShow finalize MQ in their own
 // functions. Keep references to their returned result objects so the final MQ
 // can be compared with a hypothetical App-style upper clamp without changing
@@ -1695,7 +1707,7 @@ if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqIn
       ['ceiling', 'dramaPenalty', 'pacingPenalty', 'finishPenalty', 'screenTimeBonus', 'touchDiversityBonus', 'dramaEventBonus', 'finishBonus', 'longSegPenalty', 'screenTimePenalty', 'tagBonus', 'tagPenalty', 'rawBeforeClamp', 'finalMq']);
     const tagLower = mqInventoryProbe.tagRaw.filter(sample => sample.rawBeforeClamp < 5).length;
     const tagUpper = mqInventoryProbe.tagRaw.filter(sample => sample.rawBeforeClamp > 100).length;
-    console.log(`    clamps: lower=${tagLower} upper=${tagUpper}`);
+    console.log(`    clamp: lower=${tagLower}; upper-overage=${tagUpper} (tag engine has no upper clamp)`);
   }
 
   const finals = mqInventoryProbe.regularFinal;
@@ -1732,6 +1744,15 @@ if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqIn
     const overages = clampedMatches.map(sample => sample.upperOverageTotal);
     console.log(`    clamps: upper=${clampedMatches.length}/${uiEstimates.length} lower-final=${lowerMatches.length}/${uiEstimates.length} overage-mean=${mqInventoryMetric(clampedMatches, 'upperOverageTotal').mean} overage-max=${overages.length ? Math.max(...overages) : 0}`);
   }
+}
+
+console.log('--------------------------------------');
+console.log('MQ All-Time Record Probe:');
+console.log(`  updates: ${mqRecordProbe.updates.length} / ${targetSeasons} seasons`);
+console.log(`  updates per 10 seasons: ${(mqRecordProbe.updates.length / Math.max(1, targetSeasons) * 10).toFixed(2)}`);
+if (mqRecordProbe.updates.length > 0) {
+  const lastRecord = mqRecordProbe.updates[mqRecordProbe.updates.length - 1];
+  console.log(`  final observed record: MQ${lastRecord.value} (${lastRecord.stage}, S${lastRecord.season} W${lastRecord.week})`);
 }
 
 const mqPathRows = Object.entries(mqPathProbe)

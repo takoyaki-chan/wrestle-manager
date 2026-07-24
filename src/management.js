@@ -2248,6 +2248,64 @@ const Engine = {
           : null,
       };
     },
+
+    createRecord(value = 100) {
+      return {
+        value: Math.max(100, Number(value) || 0),
+        holderIds: null,
+        orgId: null,
+        season: null,
+        week: null,
+        stage: null,
+      };
+    },
+
+    migrateRecord(state) {
+      if (state?.mqRecord && state?._migrated_mq_record_v1) return state;
+      if (state?.mqRecord) {
+        return { ...state, _migrated_mq_record_v1: true };
+      }
+      const fighters = [
+        ...(state?.roster || []),
+        ...Object.values(state?.aiOrgs || {}).flatMap(org => org.roster || []),
+        ...(state?.freeAgents || []),
+        ...(state?.retiredFighters || []),
+      ];
+      const savedBest = fighters.reduce(
+        (best, fighter) => Math.max(best, Number(fighter?.careerBestMQ) || 0),
+        100);
+      return {
+        ...state,
+        mqRecord: Engine.mq.createRecord(savedBest),
+        _migrated_mq_record_v1: true,
+      };
+    },
+
+    updateRecord(state, matchResult, metadata = {}) {
+      const current = state?.mqRecord || Engine.mq.createRecord();
+      const value = Number(matchResult?.mq);
+      if (!Number.isFinite(value) || value <= current.value) {
+        return { state, updated: false, record: current };
+      }
+      const holderIds = [...new Set((metadata.holderIds || [])
+        .filter(id => id != null))].slice(0, 4);
+      if (holderIds.length < 2) {
+        return { state, updated: false, record: current };
+      }
+      const record = {
+        value,
+        holderIds: holderIds.length > 0 ? holderIds : null,
+        orgId: metadata.orgId ?? null,
+        season: metadata.season ?? state?.season ?? null,
+        week: metadata.week ?? state?.week ?? null,
+        stage: metadata.stage ?? null,
+      };
+      return {
+        state: { ...state, mqRecord: record },
+        updated: true,
+        record,
+      };
+    },
   },
 
   // ── v1.2: Intrusion Match (乱入マッチ) ────────────────────────
@@ -7973,6 +8031,12 @@ const Engine = {
             lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : aiState.lockerRoomMorale,
             orgPopDelta: 0,
             _newsTeamConflict: newsEntry,
+            _mqRecordCandidate: {
+              mq: matchResult.mq,
+              holderIds: [event.fighter1, event.fighter2],
+              orgId,
+              stage: 'ai',
+            },
           };
           if (result.relationships) retVal._b2Relationships = result.relationships;
           return retVal;
@@ -8830,6 +8894,9 @@ const Engine = {
           if (aiEventResult._newsMediaStart) {
             nextOrgData._newsMediaStart = aiEventResult._newsMediaStart;
           }
+          if (aiEventResult._mqRecordCandidate) {
+            nextOrgData._mqRecordCandidate = aiEventResult._mqRecordCandidate;
+          }
         }
 
         const aiCareRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xAC01, org.id.charCodeAt(4) || 0));
@@ -9184,6 +9251,11 @@ const Engine = {
           mq: finalized.mq,
           mqInventory: finalized.mqInventory,
         };
+        s = Engine.mq.updateRecord(s, matchResult, {
+          holderIds: [rep1.id, rep2.id],
+          orgId: null,
+          stage: 'ai',
+        }).state;
 
         const winner = matchResult.winner; // 'left' or 'right' or 'draw'
         const isDraw = winner === 'draw';
@@ -9442,6 +9514,11 @@ const Engine = {
           mq: finalized.mq,
           mqInventory: finalized.mqInventory,
         };
+        s = Engine.mq.updateRecord(s, matchResult, {
+          holderIds: [challenger.id, defender.id],
+          orgId: null,
+          stage: 'ai',
+        }).state;
 
         const winner = matchResult.winner; // 'left' | 'right' | 'draw'
         const isDraw = winner === 'draw';
@@ -10954,6 +11031,18 @@ const Engine = {
         const oldLogLen = (s.aiOrgs[orgId]?.matchupLog || []).length;
         const aiRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, AI_WEEK_SEEDS[orgId] || 0xA100));
         newAiOrgs[orgId] = Engine.rival.processAIWeek(aiRng, s, org);
+        const mqCandidate = newAiOrgs[orgId]._mqRecordCandidate;
+        if (mqCandidate) {
+          s = Engine.mq.updateRecord(s, { mq: mqCandidate.mq }, mqCandidate).state;
+          delete newAiOrgs[orgId]._mqRecordCandidate;
+        }
+        (newAiOrgs[orgId]._lastMatchResults || []).forEach(matchResult => {
+          s = Engine.mq.updateRecord(s, matchResult, {
+            holderIds: [matchResult.left?.id, matchResult.right?.id],
+            orgId,
+            stage: 'ai',
+          }).state;
+        });
         // Phase 2: 新規試合ペアを収集（matchupLogの差分から取得）
         const newLog = newAiOrgs[orgId].matchupLog || [];
         for (let i = oldLogLen; i < newLog.length; i++) {
@@ -11718,6 +11807,21 @@ const Engine = {
       const cleanedBuffs = (s.milestoneBuffs || []).filter(b => b.type !== 'next_match_mq');
       s = { ...s, milestoneBuffs: cleanedBuffs };
     }
+
+    results.forEach((result, matchIndex) => {
+      const slot = validMatches[matchIndex];
+      const holderIds = result.matchType === 'tag'
+        ? [
+            slot?.teamA?.fighter1, slot?.teamA?.fighter2,
+            slot?.teamB?.fighter1, slot?.teamB?.fighter2,
+          ]
+        : [slot?.left, slot?.right];
+      s = Engine.mq.updateRecord(s, result, {
+        holderIds,
+        orgId: 'player',
+        stage: 'normal',
+      }).state;
+    });
 
     // Phase 5: Pass 2完了後に因縁更新+決着判定（MQ確定値を渡す）
     const showRivalryResolutions = [];
@@ -13708,6 +13812,11 @@ const Engine = {
         }, 'ppv');
         r.mq = finalized.mq;
         r.mqInventory = finalized.mqInventory;
+        s = Engine.mq.updateRecord(s, r, {
+          holderIds: [match.left.id, match.right.id],
+          orgId: null,
+          stage: 'ppv',
+        }).state;
         if (rivalLvl) {
           r.rivalryBonus = rivalLvl;
           bonusInfo.rivalry = rivalLvl.mqBonus;
@@ -15636,6 +15745,8 @@ const Engine = {
       domeShowsThisSeason: 0, // orgPop リバランス v1.1 §5: ドーム年1回制限
       attendanceMomentum: 0, // L1: 勢い補正（-0.15〜+0.15）
       lastShowResults: [],
+      mqRecord: Engine.mq.createRecord(),
+      _migrated_mq_record_v1: true,
       weeklyFinance: { income: 0, expense: 0, details: [] },
       totalShows: 0,
       heatScore: 0,
@@ -17330,7 +17441,7 @@ Engine.awards = {
       else if (orgId !== 'player' && state.aiOrgs?.[orgId]?.titles?.world?.championId === fighter.id) isChamp = true;
 
       const score = ovr
-        + bestMQ * 0.3
+        + Math.min(bestMQ, 100) * 0.3
         + pop * 0.4
         + winRate * 0.15
         + events.ppvWins * 5
@@ -23805,6 +23916,13 @@ Engine.juniorTournament = {
     }
     const { champion, runnerUp, semiFinalists, rounds, bracketSize } = tournamentResult;
     const PRIZE = Engine.juniorTournament.PRIZE;
+    rounds.forEach(round => round.matches.forEach(match => {
+      s = Engine.mq.updateRecord(s, { mq: match.mq }, {
+        holderIds: [match.left?.id, match.right?.id],
+        orgId: null,
+        stage: 'junior',
+      }).state;
+    }));
 
     // 全参加者のIDリストを抽出
     const firstRound = rounds[0];
@@ -24457,6 +24575,13 @@ Engine.ppvTournament = {
     if (!tournamentResult || tournamentResult.cancelled || !tournamentResult.championId) return state;
     let s = { ...state };
     const events = [];
+    tournamentResult.rounds.forEach(round => round.matches.forEach(match => {
+      s = Engine.mq.updateRecord(s, { mq: match.mq }, {
+        holderIds: [match.left?.id, match.right?.id],
+        orgId: null,
+        stage: 'tenchosen',
+      }).state;
+    }));
     const finalMatch = tournamentResult.rounds[tournamentResult.rounds.length - 1]?.matches?.[0];
     const championEntry = s.ppvTournament.entries.find(e => e.id === tournamentResult.championId);
     const runnerUpId = finalMatch?.loserId;
@@ -25009,6 +25134,16 @@ Engine.springTagLeague = {
     }
     const orgOrder = Engine.springTagLeague.ORG_ORDER;
     const { teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, replayContext } = result;
+    [...matches, finalMatch].forEach(match => {
+      s = Engine.mq.updateRecord(s, { mq: match.mq }, {
+        holderIds: [
+          match.teamA?.f1Id, match.teamA?.f2Id,
+          match.teamB?.f1Id, match.teamB?.f2Id,
+        ],
+        orgId: null,
+        stage: 'springTag',
+      }).state;
+    });
     // リーグ順位は決勝進出者を決めるためのもの。決勝後の賞金・実績は最終結果を正とする。
     const placementByOrg = { [champion]: 1, [runnerUp]: 2, [third]: 3, [fourth]: 4 };
 
@@ -25893,6 +26028,15 @@ Engine.autumnWar = {
       return { state: s, events };
     }
     const { teams, semifinalResults, finalResult, champion, runnerUp, fighterWins, mvpId, mvpOrgId } = result;
+    (result.results || [...semifinalResults, finalResult]).filter(Boolean).forEach(teamMatch => {
+      (teamMatch.bouts || []).forEach(bout => {
+        s = Engine.mq.updateRecord(s, { mq: bout.mq }, {
+          holderIds: [bout.left?.id, bout.right?.id],
+          orgId: null,
+          stage: 'autumnWar',
+        }).state;
+      });
+    });
 
     // 対戦ポイント: 準決勝+6/-6、決勝勝者にさらに+8。
     const bp = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };

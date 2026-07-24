@@ -1727,7 +1727,10 @@ Engine.tagMatch = (() => {
 
     const tagBonus = screenTimeBonus + touchDiversityBonus + dramaEventBonus + finishBonus;
     const tagPenalty = longSegPenalty + screenTimePenalty;
-    const final = clamp(Math.round(ceiling - dramaPenalty - pacingPenalty - finishPenalty + tagBonus - tagPenalty), 5, 100);
+    const final = Math.max(
+      5,
+      Math.round(ceiling - dramaPenalty - pacingPenalty - finishPenalty + tagBonus - tagPenalty)
+    );
 
     return {
       ceiling: Math.round(ceiling), dramaPenalty: Math.round(dramaPenalty * 10) / 10,

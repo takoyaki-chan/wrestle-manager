@@ -2040,6 +2040,9 @@ const Storage = {
         G = { ...G, _migrated_growth_events: true };
       }
 
+      // MQ historical industry record: initialize once from all saved fighter pools.
+      G = Engine.mq.migrateRecord(G);
+
       // v1.5: 難易度リバランス — 既存セーブのorgPopをリスケール（×0.7）
       // ※ orgPop < 20 は逓減カーブが×1.0帯のため補正不要（序盤セーブには適用しない）
       if (!G._migrated_v1_5_rebalance) {
@@ -6950,6 +6953,20 @@ const App = {
           .filter(buff => buff.type !== 'next_match_mq'),
       };
     }
+    results.forEach((result, matchIndex) => {
+      const slot = validMatches[matchIndex];
+      const holderIds = result.matchType === 'tag'
+        ? [
+            slot?.teamA?.fighter1, slot?.teamA?.fighter2,
+            slot?.teamB?.fighter1, slot?.teamB?.fighter2,
+          ]
+        : [slot?.left, slot?.right];
+      s = Engine.mq.updateRecord(s, result, {
+        holderIds,
+        orgId: 'player',
+        stage: 'normal',
+      }).state;
+    });
 
     // 因縁決着判定（MQ確定後、保留ペアのみ）
     const rivalryResolutions = [];
@@ -12069,6 +12086,11 @@ const App = {
     if (!b3) return;
     const { event, playerFighter, challenger } = b3;
     const fighterId = playerFighter.id;
+    G = Engine.mq.updateRecord(G, matchResult, {
+      holderIds: [playerFighter.id, challenger.id],
+      orgId: null,
+      stage: 'event',
+    }).state;
 
     // 結果をeventに添付して Step 2 を適用
     const enrichedEvent = { ...event, matchResult, selectedFighterId: fighterId };
@@ -12128,7 +12150,8 @@ const App = {
     // 金銭バランス改善: 挑戦状メディア収入
     const b3VenueIdx = G.showVenue || 0;
     const b3VenueMult = VENUE_MEDIA_MULT[b3VenueIdx] || 1.0;
-    const b3MediaRev = Math.round(matchResult.mq * MEDIA_CONFIG.eventPerMQ * b3VenueMult * 1.0);
+    const b3MediaRev = Math.round(
+      Math.min(matchResult.mq, 100) * MEDIA_CONFIG.eventPerMQ * b3VenueMult * 1.0);
     if (b3MediaRev > 0) {
       const b3MediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
       b3MediaIncomes.push({ amount: b3MediaRev, label: `挑戦状 vs ${event.orgName}` });
@@ -12249,6 +12272,11 @@ const App = {
     const { payload, fighterA, fighterB, finalizeAudio } = c1;
     const winnerId = matchResult.winner === 'left' ? fighterA.id : fighterB.id;
     const loserId  = matchResult.winner === 'left' ? fighterB.id : fighterA.id;
+    G = Engine.mq.updateRecord(G, matchResult, {
+      holderIds: [fighterA.id, fighterB.id],
+      orgId: 'player',
+      stage: 'event',
+    }).state;
 
     // 因縁・関係性の正規パイプライン（同団体ペア）
     if (G.relationships) {
@@ -12415,6 +12443,11 @@ const App = {
     if (!b2) return;
     const { event, interventionChoice } = b2;
     const winner = matchResult.winner === 'left' ? 'fighter1' : (matchResult.winner === 'right' ? 'fighter2' : 'draw');
+    G = Engine.mq.updateRecord(G, matchResult, {
+      holderIds: [b2.f1.id, b2.f2.id],
+      orgId: 'player',
+      stage: 'event',
+    }).state;
 
     // 結果をeventに添付して Step 2 を適用
     const enrichedEvent = { ...event, matchResult: { ...matchResult, winner }, interventionChoice };
@@ -13120,6 +13153,13 @@ const App = {
     const ev = wp.ev;
     let playerWins = 0, aiWins = 0;
     wp.results.forEach(r => { if (r.playerWon) playerWins++; else aiWins++; });
+    wp.results.forEach(result => {
+      G = Engine.mq.updateRecord(G, { mq: result.mq }, {
+        holderIds: [result.playerFighter.id, result.aiFighter.id],
+        orgId: null,
+        stage: 'event',
+      }).state;
+    });
 
     // Apply outcome to state
     const events = [];
@@ -13220,7 +13260,8 @@ const App = {
     wp.results.forEach(r => {
       const venueIdx = G.showVenue || 0;
       const venueMult = VENUE_MEDIA_MULT[venueIdx] || 1.0;
-      warMediaTotal += Math.round(r.mq * MEDIA_CONFIG.eventPerMQ * venueMult * 1.5);
+      warMediaTotal += Math.round(
+        Math.min(r.mq, 100) * MEDIA_CONFIG.eventPerMQ * venueMult * 1.5);
     });
     // JT出演料: 出場選手の人気×出場試合数
     let jtMediaTotal = 0;

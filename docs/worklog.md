@@ -14,6 +14,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 MQ上限撤廃・業界歴代最高記録を実装（Task 22 / P2）
+
+タッグエンジン内部の上限100クランプを撤去し、シングルと同じく下限5だけを維持。新規GameStateへ初期値100の`mqRecord`を追加し、通常興行、AI興行、PPV、天頂戦、ジュニア、春タッグ、秋4団体戦、B2/B3/Common-1、対抗戦の各結果適用地点で、確定MQが現記録を厳密に上回る場合だけ業界記録を不変更新するよう接続した。保持者IDはシングル2名・タッグ4名で保存し、同値は更新しない。既存セーブはプレイヤー/全AI/freeAgents/retiredFightersの`careerBestMQ`最大値と100の大きい方で一度だけ初期化し、移行済みマーカーで再初期化を防止。挑戦状・対抗戦の`eventPerMQ`収入2経路とMVP評価の`bestMQ * 0.3`入力は100で飽和させ、MQ100超が線形報酬を増幅しないよう保護した。新規`test/mq-record-migration-test.js`で旧セーブ移行、既存記録保持、一回性、同値無視、2名未満拒否、state非破壊を固定。検証: 対象5ファイルの`node --check` pass、移行テスト PASS、MQ finalize parity PASS、tag-match ALL CLEAR、rivalry regression pass、`node test/auto-sim.js 100 42`は違反0・errors 0・ALL CLEAR。タッグMQはTask 21基準の平均60.277/最大100から平均60.283/最大105へ変化し、100超過は951試合中2件で分布本体はほぼ不変。業界記録更新は2回/100シーズン（10シーズンあたり0.20回）、最終観測記録はS55 W12の春タッグMQ105で、目標0〜2回/10シーズン内だった。係数は変更していない。
+
 ## 2026-07-24 MQ確定経路を`Engine.mq.finalize`へ一本化（Task 21 / P1）
 
 通常興行のUI経路とheadless経路で別々だったMQ確定処理を、DOM非依存の純粋関数`Engine.mq.finalize(state, matchResult, context, profile)`へ統合。`normal-single`（因縁・王座・観客/会場・MQバフ2種・ラストラン・trust）、`normal-tag`（観客/会場・ラストラン）、`ppv`（因縁）、`ai-show`（因縁）、`raw`（素点のみ）の5profileを実装し、プレイヤー通常興行、auto-sim通常興行、AI興行、PPV、天頂戦、ジュニア、春タッグ、秋勝ち残り、B2/B3/Common-1等の特殊戦を接続した。UI側の段階的100クランプ、鮮度MQ加減算、タイトル+15 fallback、ケミストリー分岐、headless側の外部+12キャップ、タイトル格差メタデータを撤去。鮮度ラベル計算は集客移管用に維持し、次戦MQバフ消費を共通返却値へ統合した。タッグ4人draw powerと`mq_boost`/`next_match_mq`のattendanceMultiplierをheadlessへ移植して動員経路も一致させた。新規`test/mq-finalize-parity-test.js`で全5profile、100超、下限5、次戦バフ1回消費、state非破壊を固定。検証: `node --check`（management/app/test）pass、parity PASS、tag-match ALL CLEAR、rivalry regression pass、`node test/auto-sim.js 100 42`は違反0・errors 0・ALL CLEAR。通常興行MQ平均は58.349で指示書目安55.8±1.5を1.049上回ったが、外部cap到達・損失は0件、P1で係数調整は禁止のため数値は変更せずP3再較正へ送る。
