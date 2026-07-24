@@ -324,6 +324,30 @@ const mqP3cProbe = {
   domeShowCount: 0,
 };
 
+// MQ再設計P3d 物差し再較正(mq-p3d-baseline-compare-v0.1) 計測:
+// 回収前後の同一seed比較用。fp/season/venueIdxタグ付き分布、通常興行の生MQ、
+// 興行収入(チケット+興行連動グッズ/メディア)、ブレークスルー発火数、シーズン末trust/人気平均。
+// 既存ロジックには接続しない横計測(読み取り専用)。
+const p3dProbe = {
+  fpSamples: [],       // {fp, season, venueIdx}
+  normalShowMq: [],    // {mq, season} 通常興行の全試合(シングル+タッグ)の生MQ
+  showRevenue: [],     // {revenue, season} 興行収入(チケット/興行ブースト/興行放映/期待カード/ライバル抗争メディア)
+  breakthroughs: { total: 0, perSeason: new Map() },
+  seasonEnd: [],       // {season, avgTrust, avgPopularity} 自団体ロスター(レンタル除く)
+};
+
+// 成長ブレークスルー発火の観測(既存戻り値を横取りするだけ・シミュレーション状態には影響しない)
+const _checkAndApplyBreakthroughForP3dProbe = Engine.growthEvents.checkAndApplyBreakthrough;
+Engine.growthEvents.checkAndApplyBreakthrough = function(rng, fighter, mq, oppOvr, context, season, week, breakthroughMult) {
+  const result = _checkAndApplyBreakthroughForP3dProbe.apply(this, arguments);
+  if (result) {
+    p3dProbe.breakthroughs.total++;
+    const key = String(season);
+    p3dProbe.breakthroughs.perSeason.set(key, (p3dProbe.breakthroughs.perSeason.get(key) || 0) + 1);
+  }
+  return result;
+};
+
 // Task 22: observe industry-wide all-time MQ record updates without changing
 // production state or RNG consumption.
 const mqRecordProbe = { updates: [] };
@@ -1123,6 +1147,10 @@ function runSimulation(seed, seasons) {
         && G.autumnWar.champion;
       const tenchosenOccupiesThisWeek = G.week === 48 && G.ppvTournament?.phase === 'done'
         && G.ppvTournament.season === G.season;
+      // MQ再設計P3d 物差し再較正: この反復で通常興行が実行されたかどうか(tickWeek後の
+      // weeklyFinance読み取りに使う)。通常興行以外(春タッグ/秋対抗戦/天頂戦)は対象外。
+      let p3dShowHappenedThisIter = false;
+      let p3dShowSeason = null;
       if (!G.offSeason && Engine.util.isShowWeek(G.week) && G.weekPhase === 'manage'
           && !springTagOccupiesThisWeek && !autumnWarOccupiesThisWeek && !tenchosenOccupiesThisWeek) {
         G = autoSetupShowCard(G, simRng);
@@ -1134,6 +1162,17 @@ function runSimulation(seed, seasons) {
           _freshnessShowWithoutSum = 0;
           const showResult = Engine.executeShow(G);
           if (showResult && !showResult.error) {
+            p3dShowHappenedThisIter = true;
+            p3dShowSeason = G.season;
+            // MQ再設計P3d: 通常興行の生MQ(シングル+タッグ全試合)をseasonタグ付きで採取。
+            for (const r of showResult.results || []) {
+              if (typeof r.mq === 'number') {
+                p3dProbe.normalShowMq.push({ mq: r.mq, season: G.season });
+              }
+            }
+            if (Number.isFinite(showResult.fp)) {
+              p3dProbe.fpSamples.push({ fp: showResult.fp, season: G.season, venueIdx: G.showVenue || 0 });
+            }
             for (const matchResult of showResult.results || []) {
               if (!matchResult.mqInventory) continue;
               const inventory = { ...matchResult.mqInventory };
@@ -1265,6 +1304,19 @@ function runSimulation(seed, seasons) {
       // ── tickWeek（週次パイプライン） ── validateGameStateはtickWeek内で実行される
       const tickResult = Engine.tickWeek(G);
       G = { ...tickResult.state, gameLog: [] };
+      // MQ再設計P3d: 通常興行があった週のみ、processSettlement(tickWeek内)が積んだ
+      // weeklyFinance.details から興行連動収入(チケット/興行ブースト/興行放映/期待カード/
+      // ライバル抗争メディア)だけを抽出して合算する。週次経常収入(グッズ週次・メディア週次・
+      // プロモ収入)は含めない。既存ロジックには接続しない読み取り専用の横計測。
+      if (p3dShowHappenedThisIter) {
+        const p3dShowLabels = ['チケット収入', 'グッズ収入（興行ブースト）', 'メディア収入（興行放映）',
+          'メディア収入（期待カード）', 'メディア収入（ライバル抗争）'];
+        const p3dDetails = (G.weeklyFinance && G.weeklyFinance.details) || [];
+        const p3dRevenue = p3dDetails
+          .filter(d => d.type === 'income' && p3dShowLabels.some(label => d.label.startsWith(label)))
+          .reduce((sum, d) => sum + (d.val || 0), 0);
+        p3dProbe.showRevenue.push({ revenue: p3dRevenue, season: p3dShowSeason });
+      }
       G = autoHandleFactionEvent(G, simRng);
       G = clearTransients(G);
       G = collectViolations(G, violations);
@@ -1367,6 +1419,16 @@ function runSimulation(seed, seasons) {
         stats.orgPopHistory.push(Math.round((G.orgPop || 0) * 10) / 10);
         stats.fundsHistory.push(Math.round(G.funds || 0));
 
+        // MQ再設計P3d: シーズン末(オフシーズン明け=季節切替検出時点)の自団体ロスター
+        // (レンタル除く)平均trust/平均人気。既存ロジックには接続しない読み取り専用。
+        {
+          const p3dActiveRoster = (G.roster || []).filter(c => !c.isRental);
+          if (p3dActiveRoster.length > 0) {
+            const p3dAvgTrust = p3dActiveRoster.reduce((sum, c) => sum + (c.trust != null ? c.trust : 50), 0) / p3dActiveRoster.length;
+            const p3dAvgPop = p3dActiveRoster.reduce((sum, c) => sum + (c.popularity || 0), 0) / p3dActiveRoster.length;
+            p3dProbe.seasonEnd.push({ season: G.season - 1, avgTrust: p3dAvgTrust, avgPopularity: p3dAvgPop });
+          }
+        }
 
         if (completed % 50 === 0) {
           process.stdout.write(`  ... ${completed}/${seasons} seasons completed\r`);
@@ -2021,6 +2083,90 @@ if (mqPathRows.length) {
   for (const row of mqPathRows) {
     console.log(`    ${row.pathName}: n=${row.count} current=${row.meanFinal.toFixed(3)} appClamp=${row.meanAppClamp.toFixed(3)} delta=${(row.meanAppClamp - row.meanFinal).toFixed(3)} >100=${row.over100} max=${row.max}`);
   }
+}
+console.log('--------------------------------------');
+console.log('MQ P3d Baseline Compare Probe (mq-p3d-baseline-compare-v0.1) — 物差し再較正の材料:');
+{
+  const percentile = (arr, p) => {
+    if (!arr.length) return null;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const idx = Engine.util.clamp(Math.round((sorted.length - 1) * p), 0, sorted.length - 1);
+    return sorted[idx];
+  };
+  const pctRow = arr => {
+    if (!arr.length) return 'n=0';
+    const ps = [0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99];
+    const labels = ['p5', 'p10', 'p25', 'p50', 'p75', 'p90', 'p95', 'p99'];
+    return `n=${arr.length} ` + ps.map((p, i) => `${labels[i]}=${percentile(arr, p).toFixed(3)}`).join(' ');
+  };
+
+  console.log('  [fp(fill pressure) percentile]');
+  const fpAll = p3dProbe.fpSamples.map(x => x.fp);
+  console.log(`    全体: ${pctRow(fpAll)}`);
+  const seasonBandOf = season => (season <= 10 ? 'S1-10' : season <= 25 ? 'S11-25' : 'S26+');
+  for (const band of ['S1-10', 'S11-25', 'S26+']) {
+    const arr = p3dProbe.fpSamples.filter(x => seasonBandOf(x.season) === band).map(x => x.fp);
+    console.log(`    season=${band}: ${pctRow(arr)}`);
+  }
+  const venueTierOf = idx => (idx <= 2 ? '小会場(0-2)' : idx <= 5 ? '中会場(3-5)' : idx <= 8 ? '大会場(6-8)' : 'ドーム(9)');
+  for (const tier of ['小会場(0-2)', '中会場(3-5)', '大会場(6-8)', 'ドーム(9)']) {
+    const arr = p3dProbe.fpSamples.filter(x => venueTierOf(x.venueIdx) === tier).map(x => x.fp);
+    console.log(`    venue=${tier}: ${pctRow(arr)}`);
+  }
+
+  console.log('  [MQ閾値越え率(通常興行の全試合・シングル+タッグ)]');
+  const mqAll = p3dProbe.normalShowMq.map(x => x.mq);
+  const mqLabels = { 45: 'メディア系下限', 60: 'メディア系上位', 65: '成長系(closeMatch)', 70: 'trust好試合', 80: '成長系(高MQ)' };
+  console.log(`    n(試合)=${mqAll.length}`);
+  [45, 60, 65, 70, 80].forEach(t => {
+    const rate = mqAll.length ? (mqAll.filter(v => v >= t).length / mqAll.length * 100) : 0;
+    console.log(`    MQ>=${t} (${mqLabels[t]}): ${rate.toFixed(2)}%`);
+  });
+
+  const avgMqArr = mqP3cProbe.showAvgMq;
+  if (avgMqArr.length) {
+    const r50 = avgMqArr.filter(v => v >= 50).length / avgMqArr.length * 100;
+    const r30 = avgMqArr.filter(v => v >= 30).length / avgMqArr.length * 100;
+    console.log(`  [興行平均MQ閾値越え率] n(興行)=${avgMqArr.length} 平均MQ>=50: ${r50.toFixed(2)}%  平均MQ>=30: ${r30.toFixed(2)}%`);
+  } else {
+    console.log('  [興行平均MQ閾値越え率] サンプルなし');
+  }
+
+  const revArr = p3dProbe.showRevenue.map(x => x.revenue);
+  if (revArr.length) {
+    const revMean = revArr.reduce((a, b) => a + b, 0) / revArr.length;
+    console.log(`  [興行収入(チケット+興行連動グッズ/メディア)] n(興行)=${revArr.length} 平均=${revMean.toFixed(1)}万円 min=${Math.min(...revArr).toFixed(0)}万円 max=${Math.max(...revArr).toFixed(0)}万円`);
+  } else {
+    console.log('  [興行収入] サンプルなし');
+  }
+
+  const seasonsCount = Math.max(1, result.stats.seasons || 0);
+  console.log(`  [ブレークスルー] total=${p3dProbe.breakthroughs.total} 平均/シーズン=${(p3dProbe.breakthroughs.total / seasonsCount).toFixed(3)} (n(seasons)=${seasonsCount})`);
+
+  if (p3dProbe.seasonEnd.length) {
+    const avgTrustAll = p3dProbe.seasonEnd.reduce((sum, x) => sum + x.avgTrust, 0) / p3dProbe.seasonEnd.length;
+    const avgPopAll = p3dProbe.seasonEnd.reduce((sum, x) => sum + x.avgPopularity, 0) / p3dProbe.seasonEnd.length;
+    console.log(`  [シーズン末 自団体ロスター平均(レンタル除く)] n(seasons)=${p3dProbe.seasonEnd.length} avgTrust=${avgTrustAll.toFixed(2)} avgPopularity=${avgPopAll.toFixed(2)}`);
+  } else {
+    console.log('  [シーズン末ロスター平均] サンプルなし');
+  }
+
+  if (result.stats.v2Samples && result.stats.v2Samples.length) {
+    const samples = result.stats.v2Samples;
+    const total = samples.length;
+    const distPct = [1, 2, 3, 4, 5].map(st => (samples.filter(x => x.stars === st).length / total * 100).toFixed(1));
+    console.log(`  [ショー評価★分布] n=${total} ` + [1, 2, 3, 4, 5].map((st, i) => `★${st}=${distPct[i]}%`).join(' '));
+  } else {
+    console.log('  [ショー評価★分布] サンプルなし');
+  }
+
+  console.log(`  [超過レイヤー発生率(既存計測の再掲)] ${(() => {
+    const singles = mqInventoryProbe.singlesRaw;
+    if (!singles.length) return 'n=0';
+    const rate = singles.filter(x => x.transcendFired).length / singles.length * 100;
+    return `n=${singles.length} rate=${rate.toFixed(3)}%`;
+  })()}`);
+  console.log(`  [mqRecord更新回数(既存計測の再掲)] updates=${mqRecordProbe.updates.length} / ${targetSeasons} seasons (${(mqRecordProbe.updates.length / Math.max(1, targetSeasons) * 10).toFixed(2)}/10seasons)`);
 }
 console.log('--------------------------------------');
 console.log(`Total violations: ${result.violations.length} (${uniqueViolations.length} unique)`);
