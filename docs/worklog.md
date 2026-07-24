@@ -14,6 +14,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-25 遠征挑戦後の「進行不具合(showPrep)」復旧UI落ちを修正(自団体興行が中止に見える問題の正体)
+
+敵地遠征(挑戦状・自団体発)の試合後、`App._finalizeAwayChallengeShow` の `continueClose()`(app.js:9124-9130)が `showScreen('week')` を呼びつつ `weekPhase` は `showPrep` のまま `renderShowPrep()` していた。`renderWeekScreen`(今週タブ)には showPrep 分岐が無いため html が空になり「⚠ 進行不具合が発生しました(showPrep)」の復旧UIに落ちていた。ユーザーには自団体の興行が中止されたように見えていたが、実際は遠征後に同じ週の自団体興行準備へ戻る設計(遠征選手は `removeFightersFromCard` でカードから除外済み・中止はしていない)で、着地先の画面指定が誤っていただけ。`showScreen('week')`→`showScreen('show')` に修正(`startShowPrep` と同じ着地)。これで遠征後は自団体興行準備画面(カードエディタ)に正しく着地し、遠征に出た選手を除いて通常どおり興行を組める。対象: `src/app.js` 1箇所。挑戦系テスト8本 PASS。実プレイ確認(遠征→自団体興行の一連)はユーザーに委任。
+
 ## 2026-07-25 興行後「SHOW AFTERMATH(興行のあとで…)」glimpse cascade の二重表示を修正
 
 通常興行後、Tier1 glimpse を集約する「SHOW AFTERMATH」オーバーレイが2回出ていた(結果画面プレビュー経路 + closeShowResult 本tick経路)。設計上は `_showResultInlinePreview.shownSignatures` で dedup する想定だったが、`App._glimpseSignature`(app.js:8862)が署名に **`dialogue`(pickDialogueLineがMath.randomで選ぶ非決定的セリフ)** と派生値 `tone`/`label` を含んでいたため、プレビューtickと本tickで別々にRNGを消費して同一glimpseでもセリフ違いで署名が変わり、dedupが全滅していた。glimpseのペア選択自体は `Engine.rng.derive(rngSeed,season,week,opcode)` で決定的(relationships.js:4625/4751)なので、署名を **安定識別子のみ(layer/type/axis/speakerId/targetId)** に変更してdedupを機能させた。加えて `App._glimpseCascadeShownThisShow` ガードを両経路に入れ、レース時も二度目を弾く二重の保険とした。対象: `src/app.js` のみ。npm test 84/84 / auto-sim 20年 ALL CLEAR。他興行(遠征挑戦は同一結果画面経路で自動的にカバー、PPV/PPV-TV/非興行週は別経路で無影響)を確認。

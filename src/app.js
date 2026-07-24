@@ -9124,7 +9124,11 @@ const App = {
       if (App._awayChallengeManualStart) {
         App._awayChallengeManualStart = false;
         try { Audio.bgm.playForState(); } catch (_e) {}
-        showScreen('week');
+        // 遠征試合後は同じ週の自団体興行準備へ戻す(遠征選手はカードから除外済み)。
+        // weekPhase は 'showPrep' のままなので着地先は 'week' タブではなく 'show' 画面。
+        // 'week' を出すと renderWeekScreen が showPrep を描けず「進行不具合」復旧UIに
+        // 落ち、自団体興行が中止されたように見えてしまう。
+        showScreen('show');
         refreshAll();
         if (G.weekPhase === 'showPrep' && typeof renderShowPrep === 'function') renderShowPrep();
         return;
