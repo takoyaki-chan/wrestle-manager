@@ -20,6 +20,22 @@
 //     VAR.includes(`literal`) (backtick only when it contains no ${...} interpolation).
 //   - Literals with string-concatenation or interpolation are NOT statically resolvable
 //     and are skipped (counted, not silently dropped).
+//   - Recognizes the direct VAR.indexOf('literal') idiom the same way as .includes().
+//   - Recognizes the "section extractor" helper idiom — a local function such as
+//     `function section(source, startMarker, endMarker) { const from =
+//     source.indexOf(startMarker); ... }` or `function extractFunction(source, signature)`
+//     — by inspecting the helper's own body to learn which parameter is the source text
+//     and which parameter is the start-marker literal, then checking every CALL SITE's
+//     start-marker literal against the resolved source file. Only the start marker is
+//     checked (an end marker is frequently the start of the *next* section and checking
+//     it would be noisy/redundant); call sites whose source argument isn't a plain
+//     identifier already known to be a whole-file read are skipped as ambiguous, same
+//     philosophy as the plain includes()/indexOf() checks above.
+//   - Best-effort "equality vs. a real file" check: `assert.strictEqual(x, 'LITERAL', ...)`
+//     / `assert.equal(x, 'LITERAL', ...)` where LITERAL looks like a file path (starts
+//     with '../', or contains '/' and ends in a known asset/source extension) is flagged
+//     if no file exists on disk at that resolved path. Anything not clearly path-shaped
+//     is skipped, not guessed at.
 //
 // Exit code: 0 always, unless --strict is passed, in which case it's non-zero when any
 // stale assertion is found (useful for a stricter CI gate later).
@@ -139,6 +155,236 @@ function findIncludesUsages(text) {
   return usages;
 }
 
+// Find VAR.indexOf('literal' | "literal" | `literal-no-interpolation`) usages — the same
+// idiom as findIncludesUsages() but for .indexOf(). This catches the common
+// `const xStart = someSource.indexOf('/* a marker comment */');` pattern used to slice
+// out a section of a source file without going through a named helper.
+function findIndexOfUsages(text) {
+  const usages = [];
+  const re = /\b(\w+)\.indexOf\(\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)\s*[),]/g;
+  let m;
+  while ((m = re.exec(text))) {
+    const varName = m[1];
+    const rawLiteral = m[2];
+    const quote = rawLiteral[0];
+    const inner = rawLiteral.slice(1, -1);
+    if (quote === '`' && /\$\{/.test(inner)) {
+      usages.push({ varName, literal: null, resolvable: false });
+      continue;
+    }
+    usages.push({ varName, literal: unescapeJsString(inner), resolvable: true });
+  }
+  return usages;
+}
+
+// ── Section-extractor helper idiom ──────────────────────────────────────────────────
+//
+// Tests in this suite commonly define a small local helper to slice a named function or
+// region out of a source file, e.g.:
+//   function section(source, startMarker, endMarker) {
+//     const from = source.indexOf(startMarker);
+//     const to = source.indexOf(endMarker, from + startMarker.length);
+//     return source.slice(from, to);
+//   }
+//   const playJingle = section(app, 'playJingle(name) {', 'stop() {');
+// or a closure-captured variant (`function section(start, end) { ui.indexOf(start) }`),
+// or a brace-balancing variant (`function extractFunction(source, signature) {
+// source.indexOf(signature) ... }`). In every observed case the helper body contains a
+// call shaped like `RECEIVER.indexOf(ARG` where RECEIVER is either one of the helper's
+// own parameters (the source text, passed positionally at each call site) or a free
+// variable closed over from the outer scope (a fixed source for every call), and ARG is
+// one of the helper's own parameters (the start-marker literal, passed positionally).
+
+// Find the matching '}' for a '{' at braceStart, respecting string/template literals so
+// braces inside string content don't throw off the depth count. Returns the body text
+// (without the surrounding braces) or null if unbalanced.
+function extractBraceBody(text, braceStart) {
+  let depth = 0;
+  let inStr = null;
+  for (let i = braceStart; i < text.length; i++) {
+    const ch = text[i];
+    if (inStr) {
+      if (ch === '\\') { i++; continue; }
+      if (ch === inStr) inStr = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === '`') { inStr = ch; continue; }
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return text.slice(braceStart + 1, i);
+    }
+  }
+  return null;
+}
+
+// Split a call's argument list into raw text fragments, respecting nested parens and
+// string/template literals (call-site literals in this suite routinely contain their own
+// parens, e.g. section(app, 'playJingle(name) {', 'stop() {')). `openIdx` must point at
+// the '(' that opens the call. Returns { args, endIdx } where endIdx is the matching ')'
+// index, or endIdx: -1 if unbalanced.
+function extractCallArgs(text, openIdx) {
+  let depth = 0;
+  let inStr = null;
+  let cur = '';
+  const args = [];
+  for (let i = openIdx; i < text.length; i++) {
+    const ch = text[i];
+    if (inStr) {
+      cur += ch;
+      if (ch === '\\') { i++; cur += text[i] || ''; continue; }
+      if (ch === inStr) inStr = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === '`') { inStr = ch; cur += ch; continue; }
+    if (ch === '(') { depth++; if (depth === 1) continue; cur += ch; continue; }
+    if (ch === ')') {
+      depth--;
+      if (depth === 0) { if (cur.trim() !== '' || args.length > 0) args.push(cur); return { args, endIdx: i }; }
+      cur += ch; continue;
+    }
+    if (ch === ',' && depth === 1) { args.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  return { args, endIdx: -1 };
+}
+
+// Discover local "section extractor" helper functions and, for each, which parameter is
+// the source text and which parameter is the start-marker literal. Best-effort: only
+// recognizes plain `function NAME(a, b, c) { ... }` declarations with simple identifier
+// parameters (every helper actually used in this suite is shaped this way).
+function findExtractorHelpers(text) {
+  const helpers = new Map();
+  const declRe = /function\s+(\w+)\s*\(([^)]*)\)\s*\{/g;
+  let m;
+  while ((m = declRe.exec(text))) {
+    const name = m[1];
+    const paramNames = m[2].split(',').map(s => s.trim()).filter(Boolean);
+    if (paramNames.some(p => !/^\w+$/.test(p))) continue; // destructuring/defaults — skip
+    const braceStart = m.index + m[0].length - 1;
+    const body = extractBraceBody(text, braceStart);
+    if (!body) continue;
+
+    const idxCallRe = /(\w+)\.indexOf\(\s*(\w+)\s*[,)]/g;
+    let im;
+    let sourceIdent = null;
+    let markerParamIndex = null;
+    while ((im = idxCallRe.exec(body))) {
+      const receiver = im[1];
+      const argName = im[2];
+      if (sourceIdent === null) sourceIdent = receiver;
+      if (markerParamIndex === null && paramNames.includes(argName)) {
+        markerParamIndex = paramNames.indexOf(argName);
+      }
+    }
+    if (sourceIdent === null || markerParamIndex === null) continue; // doesn't fit the idiom
+
+    const sourceParamIndex = paramNames.indexOf(sourceIdent);
+    helpers.set(name, {
+      sourceParamIndex: sourceParamIndex >= 0 ? sourceParamIndex : null,
+      sourceClosureVar: sourceParamIndex >= 0 ? null : sourceIdent,
+      markerParamIndex,
+    });
+  }
+  return helpers;
+}
+
+const PLAIN_STRING_LITERAL_RE = /^'(?:[^'\\]|\\.)*'$|^"(?:[^"\\]|\\.)*"$|^`(?:[^`\\]|\\.)*`$/;
+
+function parsePlainStringLiteral(argText) {
+  const t = argText.trim();
+  if (!PLAIN_STRING_LITERAL_RE.test(t)) return null;
+  const quote = t[0];
+  const inner = t.slice(1, -1);
+  if (quote === '`' && /\$\{/.test(inner)) return null; // interpolated — not resolvable
+  return unescapeJsString(inner);
+}
+
+// Find every call site of a discovered extractor helper (excluding its own declaration)
+// and return { relPath, literal, resolvable } entries for its start-marker argument, in
+// the same shape lintFile()'s main loop expects. `varMap` is the whole-file-read map from
+// findSourceVarMap() — call sites whose source argument isn't a plain identifier already
+// in that map are marked unresolvable (skipped), same conservative stance as the other
+// idioms here: a chained/derived source variable (a section sliced from another section)
+// is intentionally not traced further.
+function findSectionCallUsages(text, varMap, helpers) {
+  const usages = [];
+  for (const [name, helper] of helpers) {
+    const callRe = new RegExp(`\\b${name}\\s*\\(`, 'g');
+    let m;
+    while ((m = callRe.exec(text))) {
+      const before = text.slice(0, m.index).replace(/\s+$/, '');
+      if (before.endsWith('function')) continue; // this is the declaration, not a call
+      const openIdx = m.index + m[0].length - 1;
+      const { args, endIdx } = extractCallArgs(text, openIdx);
+      if (endIdx === -1) continue;
+      callRe.lastIndex = endIdx; // resume scanning after this call
+
+      let relPath = null;
+      if (helper.sourceParamIndex !== null) {
+        const raw = (args[helper.sourceParamIndex] || '').trim();
+        if (/^\w+$/.test(raw) && varMap.has(raw)) relPath = varMap.get(raw);
+      } else if (helper.sourceClosureVar && varMap.has(helper.sourceClosureVar)) {
+        relPath = varMap.get(helper.sourceClosureVar);
+      }
+      if (!relPath) { usages.push({ relPath: null, literal: null, resolvable: false }); continue; }
+
+      const markerArg = args[helper.markerParamIndex];
+      const literal = markerArg !== undefined ? parsePlainStringLiteral(markerArg) : null;
+      if (literal === null) { usages.push({ relPath: null, literal: null, resolvable: false }); continue; }
+
+      usages.push({ relPath, literal, resolvable: true });
+    }
+  }
+  return usages;
+}
+
+// ── Equality-vs-source idiom (conservative) ─────────────────────────────────────────
+//
+// assert.strictEqual(x, 'LITERAL', msg) / assert.equal(x, 'LITERAL', msg) where LITERAL
+// is a file path is a different failure mode than the includes()/indexOf() text-search
+// idioms above: the literal isn't searched for inside a source file, it's compared for
+// exact equality against some runtime value (often itself extracted from source text via
+// one of the idioms above). We can't generally know what that runtime value SHOULD be,
+// but when the literal looks like a path we CAN check whether it points at a file that
+// still exists — a dangling path is unambiguous staleness regardless of what the test
+// meant to compare it to. Anything not clearly path-shaped is left alone.
+function isPathLikeLiteral(lit) {
+  if (!lit || /\s/.test(lit)) return false; // paths in this codebase never contain spaces
+  if (lit.startsWith('../')) return true;
+  if (lit.includes('/') && /\.(json|mp3|ogg|wav|png|jpg|jpeg|gif|html|js|css)$/i.test(lit)) return true;
+  return false;
+}
+
+// Resolve a path-like literal to a path relative to the repo root. Literals in this
+// codebase are authored relative to src/ (e.g. '../bgm/foo.mp3' from inside src/app.js),
+// so leading '../' segments are stripped rather than walked — that lands on the intended
+// repo-root-relative path ('bgm/foo.mp3') without needing to know the literal's authoring
+// file's own location.
+function resolvePathLiteralToRepoRoot(lit) {
+  let rest = lit;
+  while (rest.startsWith('../')) rest = rest.slice(3);
+  return rest.replace(/^\.?\//, '');
+}
+
+function findEqualityPathUsages(text) {
+  const findings = []; // { literal, resolvable }
+  const callRe = /\bassert\.(strictEqual|equal)\s*\(/g;
+  let m;
+  while ((m = callRe.exec(text))) {
+    const openIdx = m.index + m[0].length - 1;
+    const { args, endIdx } = extractCallArgs(text, openIdx);
+    if (endIdx === -1) continue;
+    callRe.lastIndex = endIdx;
+    if (args.length < 2) continue;
+    const literal = parsePlainStringLiteral(args[1]);
+    if (literal === null) continue; // second arg isn't a plain literal — not our concern
+    if (!isPathLikeLiteral(literal)) continue; // not path-shaped — skip, don't guess
+    findings.push({ literal });
+  }
+  return findings;
+}
+
 function truncate(str, n) {
   const oneLine = str.replace(/\n/g, '\\n');
   return oneLine.length > n ? oneLine.slice(0, n) + '…' : oneLine;
@@ -147,18 +393,9 @@ function truncate(str, n) {
 function lintFile(file) {
   const text = fs.readFileSync(path.join(testDir, file), 'utf8').replace(/\r\n/g, '\n');
   const varMap = findSourceVarMap(text);
-  const usages = findIncludesUsages(text);
-
-  const stale = [];
-  let skipped = 0;
   const sourceCache = new Map();
 
-  for (const usage of usages) {
-    if (!varMap.has(usage.varName)) continue; // not a source-file variable, ignore
-    if (!usage.resolvable) { skipped++; continue; }
-    const relPath = varMap.get(usage.varName);
-    if (!relPath) { skipped++; continue; }
-
+  function readCached(relPath) {
     let sourceText = sourceCache.get(relPath);
     if (sourceText === undefined) {
       try {
@@ -168,15 +405,59 @@ function lintFile(file) {
       }
       sourceCache.set(relPath, sourceText);
     }
+    return sourceText;
+  }
+
+  const stale = [];
+  let skipped = 0;
+  let checked = 0;
+
+  // Idiom 1: VAR.includes('literal') / VAR.indexOf('literal') for whole-file-read vars.
+  const directUsages = [...findIncludesUsages(text), ...findIndexOfUsages(text)];
+  for (const usage of directUsages) {
+    if (!varMap.has(usage.varName)) continue; // not a source-file variable, ignore
+    if (!usage.resolvable) { skipped++; continue; }
+    const relPath = varMap.get(usage.varName);
+    if (!relPath) { skipped++; continue; }
+
+    const sourceText = readCached(relPath);
     if (sourceText === null) { skipped++; continue; }
+    checked++;
 
     const normalizedLiteral = usage.literal.replace(/\r/g, '');
     if (!sourceText.includes(normalizedLiteral)) {
-      stale.push({ testFile: file, sourceFile: relPath, literal: usage.literal });
+      stale.push({ testFile: file, sourceFile: relPath, literal: usage.literal, idiom: 'text-search' });
     }
   }
 
-  return { stale, skipped, checked: usages.length - skipped };
+  // Idiom 2: section(source, 'START_MARKER', 'END_MARKER') / extractFunction(source, 'sig')
+  // style helpers — check the start-marker literal at each call site.
+  const helpers = findExtractorHelpers(text);
+  const sectionUsages = findSectionCallUsages(text, varMap, helpers);
+  for (const usage of sectionUsages) {
+    if (!usage.resolvable) { skipped++; continue; }
+    const sourceText = readCached(usage.relPath);
+    if (sourceText === null) { skipped++; continue; }
+    checked++;
+
+    const normalizedLiteral = usage.literal.replace(/\r/g, '');
+    if (!sourceText.includes(normalizedLiteral)) {
+      stale.push({ testFile: file, sourceFile: usage.relPath, literal: usage.literal, idiom: 'section-marker' });
+    }
+  }
+
+  // Idiom 3: assert.strictEqual(x, 'path/like/literal') — flag only if the file is gone.
+  const equalityUsages = findEqualityPathUsages(text);
+  for (const usage of equalityUsages) {
+    checked++;
+    const relPath = resolvePathLiteralToRepoRoot(usage.literal);
+    const exists = fs.existsSync(path.join(repoRoot, relPath));
+    if (!exists) {
+      stale.push({ testFile: file, sourceFile: relPath, literal: usage.literal, idiom: 'equality-path' });
+    }
+  }
+
+  return { stale, skipped, checked };
 }
 
 function main() {
@@ -197,7 +478,9 @@ function main() {
       filesWithStale.add(file);
       totalStale += stale.length;
       for (const s of stale) {
-        report.push(`${s.testFile}: expects string "${truncate(s.literal, 70)}" in ${s.sourceFile} — NOT FOUND`);
+        const verb = s.idiom === 'equality-path' ? 'expects file' : 'expects string';
+        const where = s.idiom === 'equality-path' ? 'at' : 'in';
+        report.push(`${s.testFile} [${s.idiom}]: ${verb} "${truncate(s.literal, 70)}" ${where} ${s.sourceFile} — NOT FOUND`);
       }
     }
   }

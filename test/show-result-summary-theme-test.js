@@ -1,12 +1,10 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 const assert = require('assert');
+const { readSource } = require('./helpers/source');
 
-const root = path.resolve(__dirname, '..');
-const ui = fs.readFileSync(path.join(root, 'src', 'ui-common.js'), 'utf8');
-const css = fs.readFileSync(path.join(root, 'src', 'index.html'), 'utf8');
+const ui = readSource('src', 'ui-common.js');
+const css = readSource('src', 'index.html');
 
 function section(start, end) {
   const from = ui.indexOf(start);
@@ -17,7 +15,7 @@ function section(start, end) {
 
 const showSummary = section('function renderShowResult(results, injuryResults)', '// ── Pattern B ヘルパー');
 const ppvSummary = section('function renderPPVResult(card, results, summitPair, heatChange, mqBonuses)', '/** HP対比バー');
-const ppvTvSummary = section('function renderPPVTVResult(card, results, ppvName)', '// ── Phase D');
+const ppvTvSummary = section('function renderPPVTvBroadcast(card, results, ppvName)', '// ── Phase D');
 const warSummary = section('function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon)', 'let _warVictoryWinners');
 
 assert(ui.includes('function _pbShowSummaryTheme(week)'), '週から全試合結果テーマを解決する必要がある');

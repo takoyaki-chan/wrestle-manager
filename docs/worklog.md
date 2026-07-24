@@ -25,7 +25,17 @@
 - **npm scripts**: `test`/`test:quick`/`test:stale`/`test:engine` を追加(既存は温存)。
 - **壊れていた4本を修正**: version-consistency(manifest真実源化)/opening-scene-ui(team-bubble追従)/event-match-result-popup(readSourceでCRLF吸収)/junior-tournament-watch-fix(モックEngineに mq.finalize スタブ追加)。全PASS確認。
 - **検証**: `node test/run-all.js` = 85本中 81 PASS / 3 FAIL(=音声・PPV-TV改修による既知の陳腐化、実バグではない) / 0 TIMEOUT。stale-lint = 466アサーション中 stale 0。auto-sim 60年 ALL CLEAR。
-- 未了(次工程): stale-lint の被覆拡張(`section()` 抽出・`.strictEqual` マッピング idiom を見逃す盲点あり)、音声/PPV陳腐化3本の現状追従(再生実確認込み)。
+- 未了(次工程): stale-lint の被覆拡張(`section()` 抽出・`.strictEqual` マッピング idiom を見逃す盲点あり)、音声/PPV陳腐化3本の現状追従(再生実確認込み)。→ **下記の続きで完了**。
+
+## 2026-07-24 検査体制 続き: stale-lint 被覆拡張 + 音声/PPV陳腐化3本の追従(→ npm test 完全緑)
+
+上記の未了2件を処理。対象: `test/` のみ(ゲームコード無改変)。3本は機能確認のうえ陳腐化リテラルのみ追従、実バグなし。
+
+- **show-result-summary-theme**: `renderPPVTVResult`→`renderPPVTvBroadcast`(ui-common.js:6233、同一シグネチャ・PPV-TV五幕中継リビルドでの改名)へ追従。テーマ/CSSアサーションは現状維持を確認。readSource化。
+- **special-tournament-fanfare**: 優勝ファンファーレのファイルが音声改修phase1で `f10_victory_fanfare_v5.mp3`→`production-ogg/wm_se_rs04_v01.ogg`(WM-SE-RS04)へ差替。`playJingle('championship')`(app.js:692、_playAutumnWarChampionFanfareから)/MVPの`matchVictoryFanfare`分離は健在を確認。現行ファイルへ追従、readSource化。
+- **stage-bgm-state**: `resolveActiveStageBgm` ロジックは不変、`STAGE_BGM.bigMatch` のマッピングが `iwashiro_elevate_perfect.ogg`→`production-ogg/wm_bgm_m04_v01.ogg`(WM-M04)へdrift(wm-audio-map.jsonと一致確認)。リテラル追従、readSource/readJSON化。
+- **stale-lint 拡張**: (1)section抽出idiom(`section(src,start,end)`/`extractFunction`/`VAR.indexOf('literal')`)の開始マーカー不在検出、(2)equality-vs-source(`assert.strictEqual(x,'path-like')` でファイル不在のパス文字列を検出)。既存 `.includes()` 検出は温存。85本に誤検出なしを確認。
+- **検証**: `node test/run-all.js` = 84/84 PASS・0 FAIL・0 TIMEOUT。`node test/stale-lint.js` = 315検査/87スキップ/stale 0。これで `npm test` がゲーム健全性の信頼できる単一シグナルになった。
 
 ## 2026-07-24 オープニング完了演出→メインメニュー遷移の引っかかりを修正
 

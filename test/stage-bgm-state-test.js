@@ -1,11 +1,9 @@
 'use strict';
 
 const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
+const { readSource } = require('./helpers/source');
 
-const root = path.resolve(__dirname, '..');
-const appSource = fs.readFileSync(path.join(root, 'src', 'app.js'), 'utf8').replace(/\r\n/g, '\n');
+const appSource = readSource('src', 'app.js');
 
 function extractFunction(source, signature) {
   const start = source.indexOf(signature);
@@ -70,7 +68,8 @@ assert.ok(playForState.includes('BGM.playStage(stageBgm)'), 'playForState must r
 for (const [key, file] of [
   ['tournament', 'MusMus-BGM-052.mp3'],
   ['war', 'MusMus-BGM-125.mp3'],
-  ['bigMatch', 'iwashiro_elevate_perfect.ogg'],
+  // Audio redesign phase 1 (f4dd425) moved bigMatch to the production-ogg set (WM-M04).
+  ['bigMatch', 'production-ogg/wm_bgm_m04_v01.ogg'],
 ]) {
   const mapping = new RegExp(`${key}:\\s*\\{ file: '\\.\\./bgm/${file.replace('.', '\\.')}'`);
   assert.ok(mapping.test(appSource), `${key} must retain its WM Audio Mixer file mapping`);

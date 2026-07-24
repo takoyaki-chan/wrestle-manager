@@ -1,11 +1,8 @@
 const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
+const { readSource } = require('./helpers/source');
 
-const root = path.join(__dirname, '..');
-const read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/\r\n/g, '\n');
-const app = read('src/app.js');
-const ui = read('src/ui-common.js');
+const app = readSource('src/app.js');
+const ui = readSource('src/ui-common.js');
 
 function section(source, startMarker, endMarker) {
   const start = source.indexOf(startMarker);
@@ -15,9 +12,14 @@ function section(source, startMarker, endMarker) {
   return source.slice(start, end);
 }
 
-(function testSpecialTournamentResultUsesApprovedMp3() {
+(function testSpecialTournamentResultUsesApprovedAudioFile() {
+  // Audio redesign phase 1 (f4dd425) swapped the championship jingle source from the
+  // f10 mp3 to the WM Audio Mixer production set (WM-SE-RS04, formerly the J04
+  // championship-belt-move theme). Assert on the CURRENT approved file, and that the
+  // two prior sources are no longer used for this jingle.
   const playJingle = section(app, 'playJingle(name) {', 'stop() {');
-  assert.ok(playJingle.includes("new window.Audio('../bgm/f10_victory_fanfare_v5.mp3')"));
+  assert.ok(playJingle.includes("new window.Audio('../bgm/production-ogg/wm_se_rs04_v01.ogg')"));
+  assert.ok(!playJingle.includes("new window.Audio('../bgm/f10_victory_fanfare_v5.mp3')"));
   assert.ok(!playJingle.includes("new window.Audio('../bgm/fanfare_brass_v1.mp3')"));
 })();
 
