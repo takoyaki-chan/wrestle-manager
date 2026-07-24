@@ -14,6 +14,10 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-24 MQ再設計 全工程完了 — specs/mq-system-spec-v1.0.md へ昇格・push
+
+朝の設計対話から始めたMQ回収の全工程(P1経路一本化/P2上限撤廃+記録制/P3a超過レイヤー/P3bリング内化/P3c観客帯×注目度+会場の器+ドームメイン大一番+OV100超減衰/P3d物差し再較正/P3e記録シングル・タッグ分離/P4大ニュース基盤/P5新記事3種/P6記事文面5種承認)が**1日で完了**。確定仕様を `specs/mq-system-spec-v1.0.md` に昇格(§9不変条件表は最終実測で確定: 11本中、実測達成9・合成検証達成1・実機確認事項1[王座戦優位])し、CLAUDE.mdのspecs索引に追記。設計経緯の正は docs/mq-redesign-proposal-v0.5.md。実装体制: 設計・数値=フェーブル/実装=Codex(P1-P2)+Sonnetエージェント(P3以降)/記事=Opus+Keisuke全文レビュー。Keisuke指示により本コミットで**push実施**(Cloudflare Pages自動デプロイ)。実機確認事項: P4週頭通知一式(SE/モーダル/バッジ)・一面レイアウト(ぶち抜きタッグ/2人並びfatedRivals)・王座戦MQ優位の体感。
+
 ## 2026-07-24 MQ再設計 P5補: fatedRivals一面の2人並び写真
 
 前提HEAD=d29cb9c(P5着地時点。fatedRivalsはnp-top-story単数写真流用のためKeisuke確認項目として2人並びが宿題化していた)。対象: `src/ui-render.js`。
