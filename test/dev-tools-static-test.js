@@ -8,8 +8,20 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'src', 'dev-tools.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'src', 'index.html'), 'utf8');
+const manifest = JSON.parse(fs.readFileSync(path.join(root, 'release', 'manifest.json'), 'utf8'));
+const packageScript = fs.readFileSync(path.join(root, 'release', 'package-release.ps1'), 'utf8');
+const verifyScript = fs.readFileSync(path.join(root, 'release', 'verify-package.ps1'), 'utf8');
 
 assert.ok(index.includes('<script src="dev-tools.js"></script>'), '開発者モードのスクリプトを読み込む');
+
+// 配布物には含めない。src/index.html は参照を持ったままなので、梱包時に参照行を除去する必要がある
+// （残すと製品版で dev-tools.js の 404 が出る）。
+assert.ok(!manifest.sourceFiles.includes('src/dev-tools.js'), '開発者モードは配布物に含めない');
+assert.ok(Array.isArray(manifest.devOnlyFiles) && manifest.devOnlyFiles.includes('src/dev-tools.js'),
+  '開発専用ファイルとして manifest.json の devOnlyFiles に宣言する');
+assert.ok(packageScript.includes('$Manifest.devOnlyFiles'), '梱包スクリプトが devOnlyFiles を読む');
+assert.ok(packageScript.includes('$TagPattern'), '梱包時に配布用 HTML から開発専用ファイルの参照タグを除去する');
+assert.ok(verifyScript.includes('$Manifest.devOnlyFiles'), '検証スクリプトが開発専用ファイルの混入と参照残りを見る');
 assert.ok(source.includes("event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'd'"), '隠しショートカットを用意する');
 assert.ok(source.includes("const DEV_AUTOSAVE_KEY = 'wm_dev_autosave'"), '通常セーブとは別の開発用オートセーブを使う');
 assert.ok(source.includes("const DEV_SESSION_BASE_KEY = 'wm_dev_session_base'"), '開発開始地点も復元できる');

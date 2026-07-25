@@ -31,6 +31,10 @@
     "src/tag-battle-main.js",
     "src/tag-battle-lines.js"
   ],
+  "devOnlyFiles": [
+    "src/dev-tools.js"
+  ],
+  "devOnlyFilesNote": "開発専用ファイル。配布物に含めない。package-release.ps1 はこれらを『manifest 未記載』警告の対象から除外し、配布用 HTML から該当ファイルへの <script>/<link> 参照行を除去する（残すと製品版で 404 になる）。src/ から開発専用ファイルを削除したらこの配列からも消すこと。",
   "rootFiles": [
     "ガイド01-はじめの一歩.html",
     "ガイド02-さらに先へ.html",

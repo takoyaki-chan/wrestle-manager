@@ -1526,6 +1526,19 @@ Keisuke の実際の編集手順が「**その属性×性格の一人を想像�
 ## 2026-07-25 開発者モードに「イベント即時発火」を追加
 
 `Ctrl+Shift+D` の開発者パネルに、条件を迂回してイベントを即表示するセクションを新設。第一弾として**挑戦の直訴(自団体→他団体/他団体→自団体の双方向)**。heat≥90 等の週次抽選条件を通さず、ロスターから `buildMatchCard` が成立するペアを自前で選んで payload を組み `App.handleChallengeRequest` を直接呼ぶ。関係性が既にあるペアを優先採用。健康な選手が3名未満なら理由を表示して中断。ゲーム本体は無改変・`dev-tools.js` のみ。実ブラウザで往復動作確認済み。
+## 2026-07-25 配布版で dev-tools.js の 404 が出る問題を修正(梱包時に参照を除去)
+
+`src/index.html:10045` の `<script src="dev-tools.js"></script>` は開発者パネル用で、`release/manifest.json` は意図的に `src/dev-tools.js` を配布対象から外している。しかし梱包スクリプトに参照を落とす処理が無く、DLsite/BOOTH 配布版を起動すると毎回コンソールに 404 が出ていた(機能的な実害は無く、開発者パネルが無いだけ)。**対応案A(梱包時に除去)を採用**。案B(`onerror` 握り潰し/動的挿入)は製品版のためだけに開発側コードを歪めるので不採用、案C(配布に含める)は「開発者パネルは配布版に入れない」方針に反するため不採用。
+
+- **manifest 駆動にした**: `release/manifest.json` に `devOnlyFiles: ["src/dev-tools.js"]` を新設し、「配布しない開発専用ファイル」の単一の真実の情報源にした。除去対象をスクリプトへ直書きしていない。
+- **既存の「manifest 未記載ファイル検出」と整合**: `package-release.ps1` の未記載警告は `devOnlyFiles` を対象外にした。従来は毎回 `! src/dev-tools.js` が出ており、**意図的な除外が「記載忘れ」と同じ見た目で警告に混ざっていた**。これで警告に残るのは本当の記載漏れだけになる。逆に `devOnlyFiles` にあるのに実体が無い場合は「除去ルールが古い」警告を出す。`sourceFiles` と `devOnlyFiles` の両方に載っていたらビルドを停止。
+- **除去処理**: ステージング後、配布用 HTML(`sourceFiles` の `*.html` 全部)から該当ファイルへの `<script src>` / `<link href>` をタグ行ごと除去。**`src/` は一切書き換えない**ので、開発時は従来どおり Ctrl+Shift+D で開発者パネルが開く。除去しきれない参照(動的 `s.src = '...'` 等)が残った場合はステージングを片付けた上でビルドを停止する — 404 を出す zip を作らないため。
+- **検証側にも同じ不変条件**: `verify-package.ps1` に「devOnlyFiles が zip に入っていないこと」「配布 HTML から参照されていないこと」の検査を追加。梱包側が壊れても検証で捕まる二重化。
+- **`-CheckOnly` を追加**: `verify-package.ps1` は末尾が `Read-Host` の手動ブラウザチェックリストのため非対話環境で完走できなかった。自動検証([1/3]〜[2/3])だけ回して終了するスイッチを追加(既定動作は変更なし)。**配布前は従来どおり `-CheckOnly` 無しで手動チェックリストまで通すこと。**
+- **検証**: 実際に `package-release.ps1` → `verify-package.ps1 -CheckOnly` を通し合格。配布版 index.html を zip から取り出して `src/index.html` と diff し、**差分が該当1行の削除のみ**(710,335→710,297 バイト = タグ36字+CRLF)であること、BOM 混入・改行コード変化が無いこと、zip 内に dev-tools エントリが0件であることを確認。正規表現は CRLF/LF/インデント/`defer`付き/シングルクォート/相対パス/末尾改行なしの7形を除去し、`vendor-dev-tools.js`・`dev-tools-extra.js` を誤爆しないことを個別に確認済み。`node test/run-all.js` 84/84 PASS(変更前後で同数)。
+- **`dev-tools-static-test.js` を拡張**: 「配布に含めない」「`devOnlyFiles` に宣言済み」「梱包・検証スクリプトが除去/検査を持つ」を静的アサートに追加し、将来この 404 が再発しないよう固定した(テストファイル数は増やしていない)。
+- 残: 配布版 index.html には開発者パネル用のインライン `<style>#wmDevPanel{...}` が残っている(約1KB)。**インライン CSS のため 404 にはならず**今回は未対応。気になるなら別途。
+- 対象: `release/manifest.json`、`release/package-release.ps1`、`release/verify-package.ps1`、`test/dev-tools-static-test.js`。
 
 ## 2026-07-25 挑戦試合セリフを全面刷新(CHALLENGE_LINES 34セル・sendoff新設)
 

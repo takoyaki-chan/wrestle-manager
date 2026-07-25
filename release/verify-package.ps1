@@ -9,12 +9,17 @@
 #   4. ブラウザで開いて手動チェックリストを表示
 #   5. Enter 入力で HTTP サーバー停止 + verify-tmp\ 削除
 #
+# -CheckOnly : 1〜2 だけ実行して終了（サーバー起動・ブラウザ・手動チェックリストを省略）。
+#              自動検証だけ回したいとき用。DLsite/BOOTH 差し替え前の確認は
+#              -CheckOnly を付けずに実行し、手動チェックリストまで通すこと。
+#
 # 要件: Windows PowerShell 5.1 以降
 
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [string]$ZipPath
+    [string]$ZipPath,
+    [switch]$CheckOnly
 )
 
 Set-StrictMode -Version Latest
@@ -99,9 +104,33 @@ foreach ($d in $Manifest.assetDirectories) {
     }
 }
 
+# 開発専用ファイル: zip に入っていないこと & HTML から参照されていないこと（残ると製品版で 404）
+$DevOnlyFiles = @()
+if ($Manifest.PSObject.Properties['devOnlyFiles']) {
+    $DevOnlyFiles = @($Manifest.devOnlyFiles)
+}
+
+foreach ($dev in $DevOnlyFiles) {
+    $FullPath = Join-Path $PackageRoot $dev
+    if (Test-Path $FullPath) {
+        $Errors += "SHOULD NOT BE PACKAGED: $dev (devOnlyFiles)"
+    }
+
+    $Esc = [regex]::Escape((Split-Path -Leaf $dev))
+    $RefPattern = "(?:src|href)\s*=\s*[""'](?:[^""']*[/\\])?" + $Esc + "[""']"
+    foreach ($html in ($Manifest.sourceFiles | Where-Object { $_ -like "*.html" })) {
+        $HtmlPath = Join-Path $PackageRoot $html
+        if (-not (Test-Path $HtmlPath)) { continue }
+        $Content = [System.IO.File]::ReadAllText($HtmlPath, [System.Text.Encoding]::UTF8)
+        if ([regex]::IsMatch($Content, $RefPattern)) {
+            $Errors += "DANGLING REF (404 の原因): $html が $dev を参照しています"
+        }
+    }
+}
+
 if ($Errors.Count -gt 0) {
     Write-Host ""
-    Write-Host "  ✗ 検証失敗 — 以下のファイルが zip に含まれていません:" -ForegroundColor Red
+    Write-Host "  ✗ 検証失敗 — zip の内容に問題があります:" -ForegroundColor Red
     foreach ($e in $Errors) {
         Write-Host "    $e" -ForegroundColor Red
     }
@@ -117,6 +146,16 @@ foreach ($w in $Warnings) {
 
 $TotalExpected = $Manifest.sourceFiles.Count + $Manifest.rootFiles.Count
 Write-Host "  ✓ $TotalExpected ファイル + $($Manifest.assetDirectories.Count) アセットディレクトリ — すべて確認" -ForegroundColor Green
+
+# ── -CheckOnly: 自動検証のみで終了 ────────────────────────────────────────────
+if ($CheckOnly) {
+    Remove-Item -Recurse -Force $VerifyTmp
+    Write-Host ""
+    Write-Host "  自動検証のみ完了（-CheckOnly）。" -ForegroundColor Green
+    Write-Host "  配布前には -CheckOnly なしで実行し、ブラウザ手動チェックリストまで通してください。" -ForegroundColor Yellow
+    Write-Host ""
+    exit 0
+}
 
 # ── HTTP サーバー起動 ─────────────────────────────────────────────────────────
 Write-Host ""
