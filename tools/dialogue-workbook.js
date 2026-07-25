@@ -5,18 +5,39 @@
  *
  * セリフ編集用 Excel(.xlsx) 往復ツール。
  *
- *   node tools/dialogue-workbook.js export [カテゴリ名...]
+ *   node tools/dialogue-workbook.js export
  *   node tools/dialogue-workbook.js apply  [ファイル...] [--dry-run]
  *
  * export: docs/dialogue/ の抽出基盤(tools/extract-dialogue.js の
  *   TABLE_MANIFEST / CATEGORIES / パース評価パイプライン)を再利用し、
- *   セリフ編集/<カテゴリ名>.xlsx を生成する。「改訂」列は空欄。
+ *   セリフ編集/ 配下に「archetype × personality の人格」単位で xlsx を
+ *   生成する(2026-07-25 分割軸の再設計。旧・カテゴリ別20ファイル構成は
+ *   廃止)。フォルダ構成:
  *
- * apply: 生成済み .xlsx を読み、「改訂」列が「現在」列と異なる行だけを
- *   対象に、ID(=ソース上のプロパティパス)で src/*.js の該当リテラルを
- *   直接置換する(オブジェクト全体の再シリアライズはしない — コメント・
- *   1行配列などの元の書式を壊さないための方針)。書き換え前に「現在」列が
- *   実ソースと一致するか検証し、不一致ならその行はスキップ+警告する。
+ *     セリフ編集/キャラタイプ別/    実在する archetype×personality の組
+ *                                    (34組)ごとに1ファイル。カテゴリ横断で
+ *                                    全セリフを収録 + 在籍キャラ一覧シート。
+ *                                    現在キャラのいない組み合わせは
+ *                                    _該当者なし.xlsx にまとめる。
+ *     セリフ編集/キャラ個人別/      VICTORY_LINES / CHAR_PROFILES など
+ *                                    キャラID鍵のテーブル。
+ *     セリフ編集/ナレーション・記事/ 話者のいないテキスト(新聞・通知・
+ *                                    黒田記者コラム・年代記など)。
+ *     セリフ編集/コーチ/            コーチ関連(選手とは別人格系統)。
+ *     セリフ編集/その他セリフ/      話者はいるが archetype×personality
+ *                                    以外の軸で分岐するもの。
+ *     セリフ編集/_キャラ対応表.xlsx  archetype×personality の人数・
+ *                                    キャラ名マトリクス。
+ *
+ *   「改訂」列は空欄で出力する。
+ *
+ * apply: セリフ編集/ 配下を再帰的に走査して全 .xlsx を読み、「改訂」列が
+ *   「現在」列と異なる行だけを対象に、ID(=ソース上のプロパティパス)で
+ *   src/*.js の該当リテラルを直接置換する(オブジェクト全体の再シリアライズ
+ *   はしない — コメント・1行配列などの元の書式を壊さないための方針)。
+ *   書き換え前に「現在」列が実ソースと一致するか検証し、不一致ならその行は
+ *   スキップ+警告する。ファイルの置き場所(どのフォルダの xlsx か)は
+ *   書き戻し判定に一切影響しない — IDだけで解決する。
  *
  * 外部npm依存なし(fs/path/vm/zlib のみ)。archive/scripts/
  * generate-dialogue-workbooks.js(xlsx生成) と
@@ -60,6 +81,15 @@ const ARCHETYPE_LABELS = {
 
 const PERSONALITY_KEYS = new Set(Object.keys(PERSONALITY_LABELS));
 const ARCHETYPE_KEYS = new Set(Object.keys(ARCHETYPE_LABELS));
+
+// ラベル(日本語) -> 内部キー の逆引き。ALL_CHARS の archetype/personality
+// (内部キー)と、detectMeta が返すラベルを突き合わせるために使う。
+const ARCHETYPE_LABEL_TO_KEY = Object.fromEntries(
+  Object.entries(ARCHETYPE_LABELS).map(([k, v]) => [v, k])
+);
+const PERSONALITY_LABEL_TO_KEY = Object.fromEntries(
+  Object.entries(PERSONALITY_LABELS).map(([k, v]) => [v, k])
+);
 
 const PERSONALITY_FILL = {
   '': 'metaCommon',
@@ -529,34 +559,7 @@ function readWorkbookSheets(filePath) {
 }
 
 // ───────────────────────────────────────────────────────────────────────
-// 3. カテゴリ選択の解決(CLIの引数は "04" / "04-challenge-request" /
-//    "04-challenge-request.xlsx" いずれでも受け付ける)。
-// ───────────────────────────────────────────────────────────────────────
-function categoryBaseName(cat) {
-  return EX.CATEGORIES[cat].file.replace(/\.md$/, '');
-}
-
-function resolveCategoryArg(arg) {
-  const stripped = arg.replace(/\.xlsx$/i, '').replace(/\.md$/i, '');
-  for (const cat of Object.keys(EX.CATEGORIES)) {
-    if (cat === stripped || categoryBaseName(cat) === stripped) return cat;
-  }
-  return null;
-}
-
-function selectCategories(args) {
-  if (!args.length) return Object.keys(EX.CATEGORIES).sort();
-  const cats = [];
-  for (const arg of args) {
-    const cat = resolveCategoryArg(arg);
-    if (!cat) throw new Error(`unknown category: ${arg}`);
-    cats.push(cat);
-  }
-  return cats;
-}
-
-// ───────────────────────────────────────────────────────────────────────
-// 4. export
+// 3. シート名の一意化ユーティリティ
 // ───────────────────────────────────────────────────────────────────────
 function sanitizeSheetName(name) {
   let s = String(name).replace(/[:\\/?*[\]]/g, '_');
@@ -577,12 +580,40 @@ function uniqueSheetName(name, used) {
   return candidate;
 }
 
-function headerRow() {
-  return ['ID(編集不可)', '出典', 'テーブル', 'パス', 'archetype', 'personality', '現在', '改訂', '備考']
-    .map(value => ({ value, style: STYLES.header }));
+// ───────────────────────────────────────────────────────────────────────
+// 4. export — 「分割軸」の再設計(2026-07-25)
+//
+//    旧版はカテゴリ別(20ファイル)に出力していたが、実際の編集は
+//    「archetype × personality の一人格を想像して、その人の全セリフを
+//    通しで直す」という単位で行われる。そのため以下の5フォルダに
+//    再編する(詳細は セリフ編集/README.txt):
+//
+//      キャラタイプ別/   実在する archetype×personality の組(34組)ごとに
+//                         1ファイル。カテゴリ横断で全セリフを収録。
+//      キャラ個人別/     VICTORY_LINES / CHAR_PROFILES など、キャラIDが
+//                         鍵になっている「その子固有」のテーブル。
+//      ナレーション・記事/ 話者のいないテキスト(新聞・通知・年代記等)。
+//      コーチ/           コーチ関連(選手とは別人格系統)。
+//      その他セリフ/     話者はいるが archetype×personality 以外の軸で
+//                         分岐するもの(派閥イベント・Glimpse等)。
+//
+//    行の割り振りは「テーブル単位」ではなく「行(セリフ1本)単位」で行う:
+//    detectMeta が archetype+personality を両方解決でき、かつその組が
+//    実在キャラ(ALL_CHARS)に存在するなら → キャラタイプ別。
+//    それ以外は、由来テーブルごとに割り当てた「ホーム」フォルダへ。
+// ───────────────────────────────────────────────────────────────────────
+
+function headerCells(labels) {
+  return labels.map(value => ({ value, style: STYLES.header }));
 }
 
-function buildDataRow(row) {
+// 4-1. 標準レイアウト(ナレーション・記事 / コーチ / その他セリフ で使用)。
+//      archetype/personality 列は残すが、この束に来る行は定義上どちらも
+//      未解決(または部分解決)なので実質空欄になることが多い。
+const GENERIC_HEADER = ['ID(編集不可)', '出典', 'テーブル', 'パス', 'archetype', 'personality', '現在', '改訂', '備考'];
+const GENERIC_WIDTHS = [30, 16, 22, 26, 10, 10, 50, 50, 20];
+
+function buildGenericRow(row) {
   const personalityStyle = styleForPersonality(row.personality);
   const archetypeStyle = row.personality || row.archetype ? personalityStyle : STYLES.metaCommon;
   return [
@@ -591,6 +622,46 @@ function buildDataRow(row) {
     { value: row.table, style: STYLES.metaCommon },
     { value: row.path, style: STYLES.note },
     { value: row.archetype, style: archetypeStyle },
+    { value: row.personality, style: personalityStyle },
+    { value: row.current, style: STYLES.current },
+    { value: row.revised, style: STYLES.revised },
+    { value: row.note, style: STYLES.note },
+  ];
+}
+
+// 4-2. キャラタイプ別レイアウト。archetype/personality 列はファイル単位で
+//      自明なので省き、代わりに「どの場面のセリフか」が分かる カテゴリ 列を置く。
+const COMBO_HEADER = ['ID(編集不可)', '出典', 'テーブル', 'パス', 'カテゴリ', '現在', '改訂', '備考'];
+const COMBO_WIDTHS = [30, 16, 22, 26, 20, 50, 50, 20];
+
+function buildComboRow(row) {
+  return [
+    { value: row.id, style: STYLES.idLock },
+    { value: row.source, style: STYLES.metaCommon },
+    { value: row.table, style: STYLES.metaCommon },
+    { value: row.path, style: STYLES.note },
+    { value: row.category, style: STYLES.metaCommon },
+    { value: row.current, style: STYLES.current },
+    { value: row.revised, style: STYLES.revised },
+    { value: row.note, style: STYLES.note },
+  ];
+}
+
+// 4-3. キャラ個人別レイアウト(VICTORY_LINES / CHAR_PROFILES)。
+//      キャラID鍵のテーブルは detectMeta では archetype/personality を
+//      解決できないため、ALL_CHARS から引いて列に足す。
+const CHAR_HEADER = ['ID(編集不可)', '出典', 'テーブル', 'パス', 'キャラ名', 'archetype', 'personality', '現在', '改訂', '備考'];
+const CHAR_WIDTHS = [30, 16, 22, 16, 14, 10, 10, 50, 50, 20];
+
+function buildCharRow(row) {
+  const personalityStyle = styleForPersonality(row.personality);
+  return [
+    { value: row.id, style: STYLES.idLock },
+    { value: row.source, style: STYLES.metaCommon },
+    { value: row.table, style: STYLES.metaCommon },
+    { value: row.path, style: STYLES.note },
+    { value: row.charName, style: personalityStyle },
+    { value: row.archetype, style: personalityStyle },
     { value: row.personality, style: personalityStyle },
     { value: row.current, style: STYLES.current },
     { value: row.revised, style: STYLES.revised },
@@ -632,12 +703,11 @@ function buildRowsForTable(sandbox, entry) {
   return rows;
 }
 
-function makeSheet(name, rows) {
-  const widths = [30, 16, 22, 26, 10, 10, 50, 50, 20];
+function makeSheet(name, header, widths, dataRows) {
   const rowHeights = (_, rowIndex) => (rowIndex === 0 ? 24 : 40);
   return {
     name,
-    rows: [headerRow(), ...rows.map(buildDataRow)],
+    rows: [headerCells(header), ...dataRows],
     widths,
     defaultRowHeight: 20,
     freezeTopRow: true,
@@ -646,53 +716,256 @@ function makeSheet(name, rows) {
   };
 }
 
-// カテゴリ内のテーブル数が多い(>8)場合はテーブル単位でシートを分割する。
-// 少ない場合は1カテゴリ1シート("全セリフ")にまとめる方が見通しがよい。
-// (docs/dialogue/README.md のxlsxワークフロー節に理由を明記)
-const SPLIT_TABLE_COUNT_THRESHOLD = 8;
-
-function exportCategory(sandbox, cat) {
-  const info = EX.CATEGORIES[cat];
-  const entries = EX.TABLE_MANIFEST.filter(t => t.cat === cat);
-  const tableRows = [];
-  let totalRows = 0;
-  for (const entry of entries) {
-    const rows = buildRowsForTable(sandbox, entry);
-    if (rows === null) {
-      console.error(`[dialogue-workbook] WARN: table not resolvable, skipped: ${entry.path}`);
-      continue;
-    }
-    tableRows.push({ entry, rows });
-    totalRows += rows.length;
+// 4-4. 実在する archetype×personality の組(ALL_CHARS から集計)。
+function getRealCombos(sandbox) {
+  const combos = new Map(); // "archKey::persKey" -> [{name,style,role,traits}]
+  for (const c of sandbox.ALL_CHARS) {
+    const key = `${c.archetype}::${c.personality}`;
+    if (!combos.has(key)) combos.set(key, []);
+    combos.get(key).push(c);
   }
-
-  const split = entries.length > SPLIT_TABLE_COUNT_THRESHOLD;
-  const used = new Set();
-  let sheets;
-  if (split) {
-    sheets = tableRows
-      .filter(t => t.rows.length > 0)
-      .map(t => {
-        const shortName = t.entry.path.split('.').pop();
-        return makeSheet(uniqueSheetName(shortName, used), t.rows);
-      });
-  } else {
-    const allRows = tableRows.flatMap(t => t.rows);
-    sheets = [makeSheet(uniqueSheetName('全セリフ', used), allRows)];
-  }
-
-  if (sheets.length === 0) {
-    console.error(`[dialogue-workbook] WARN: category ${cat} produced 0 rows, skipping xlsx write`);
-    return null;
-  }
-
-  const outPath = path.join(XLSX_DIR, `${categoryBaseName(cat)}.xlsx`);
-  writeWorkbook(outPath, sheets);
-  return { cat, outPath, tableCount: entries.length, rowCount: totalRows, sheetCount: sheets.length, split };
+  return combos;
 }
 
+// 4-5. 「その他セリフ / ナレーション・記事 / コーチ」への行き先(ホーム)分類。
+//      char-ID鍵テーブル(VICTORY_LINES/CHAR_PROFILES)は呼び出し側で別扱い。
+const COACH_TABLE_OVERRIDE = new Set(['ALL_COACHES', 'COACH_ABILITY_CATALOG', 'COACH_FLAVOR_DEFS']);
+const NARRATION_CAT_SET = new Set(['09', '10', '16', '19', '20']);
+const NARRATION_NAME_SUBSTR = ['COMMENTARY', 'HEADLINE', 'TICKER', 'TEMPLATE', 'EDITORIAL', '_TEXTS', '_MEMOS', '_DOCS', 'NARRATION'];
+const NARRATION_PATH_OVERRIDE = new Set(['FINISH_SUSPENSE', 'BESTMATCH_FLAVOR']);
+const MISC_HOME_OVERRIDE = new Set(['NOTIF_DIALOGUES']); // cat10 だが話者ありダイアログなので misc に残す
+
+function classifyHome(entry) {
+  if (entry.path === 'VICTORY_LINES' || entry.path === 'CHAR_PROFILES') return 'char';
+  if (entry.file === 'coach-lines.js' || COACH_TABLE_OVERRIDE.has(entry.path)) return 'coach';
+  if (entry.file === 'kuroda-text.js') return 'narration';
+  if (MISC_HOME_OVERRIDE.has(entry.path)) return 'misc';
+  if (NARRATION_CAT_SET.has(entry.cat)) return 'narration';
+  const lastSeg = entry.path.split('.').pop();
+  if (NARRATION_NAME_SUBSTR.some(s => lastSeg.includes(s))) return 'narration';
+  if (NARRATION_PATH_OVERRIDE.has(entry.path)) return 'narration';
+  return 'misc';
+}
+
+// 4-6. ナレーション・記事 の6ブック分類。
+function narrationBucket(entry) {
+  if (entry.file === 'kuroda-text.js' || entry.path.includes('KURODA')) return '黒田記者の目';
+  if (entry.path.includes('NEWS') || entry.path.includes('HEADLINE') || entry.path === 'SEASON_REVIEW_LINES') return '新聞見出し系';
+  if (entry.path.includes('NOTIF') || entry.path === 'SNAPSHOT_TEXTS' || entry.path === 'LARGE_EVENT_TEXTS' ||
+      entry.path === 'DECISION_DOCS' || entry.path === 'BONUS_PROPOSAL_MEMOS' || entry.path === 'CAMP_FLAVOR_TEXTS') {
+    return '通知・スナップショット系';
+  }
+  if (entry.path.includes('chronicle') || entry.path.includes('EPITHET') || entry.path === 'CREDITS' ||
+      entry.path === 'MILESTONE_EVENTS' || entry.path.includes('DOME_') || entry.path === 'AWARD_LINES' || entry.path === 'TRAIT_DEFS') {
+    return '称号・記録・年代記';
+  }
+  if (entry.path.includes('COMMENTARY') || entry.path === 'FINISH_SUSPENSE' || entry.path === 'BESTMATCH_FLAVOR' ||
+      entry.path === 'WEEKLY_STORY_TICKER' || entry.path === 'PPV_HYPE_TEMPLATES') {
+    return '実況・演出';
+  }
+  return '雰囲気・その他';
+}
+
+// 4-7. コーチ の3ブック分類。
+function coachBucket(entry) {
+  if (entry.path === 'ALL_COACHES') return 'コーチ紹介文';
+  if (entry.path === 'COACH_ABILITY_CATALOG' || entry.path === 'COACH_FLAVOR_DEFS') return 'コーチ能力名鑑';
+  return 'コーチボイス';
+}
+
+// 4-8. その他セリフ の分類(カテゴリ単位。F07_LINES のみ突出して大きい
+//      (leftover 1000本超)ため単独ファイルに分ける)。
+const MISC_CAT_LABEL = {
+  '01': '01-試合本編・勝利演出',
+  '02': '02-タッグマッチ',
+  '03': '03-因縁・絆イベント',
+  '04': '04-挑戦試合',
+  '05': '05-引退・引き抜き・引き留め',
+  '06': '06-契約交渉',
+  '07b': '07b-派閥イベント',
+  '08': '08-成長・スランプ・モチベーション',
+  '10': '10-通知ダイアログ',
+  '11': '11-選択イベント・大型イベント',
+  '12': '12-選手経歴イベント',
+  '13': '13-Glimpse Cascade',
+  '14': '14-PPV・対抗戦・トーナメント',
+  '17': '17-関係性フラグ',
+  '18': '18-経営危機・エンディング',
+};
+
+function miscBucket(entry) {
+  if (entry.path === 'F07_LINES') return '07a-派閥動向(F07)';
+  const key = entry.cat === '07' ? '07b' : entry.cat;
+  return MISC_CAT_LABEL[key] || `${entry.cat}-その他`;
+}
+
+// 4-9. 全テーブルを走査し、行を「キャラタイプ別 / 該当者なし / char個別
+//      テーブル / home(coach・narration・misc)のバケツ」に振り分ける。
+function collectAllRows(sandbox) {
+  const realCombos = getRealCombos(sandbox);
+  const comboRows = new Map(); // "archKey::persKey" -> rows[]
+  for (const key of realCombos.keys()) comboRows.set(key, []);
+  const orphanRows = []; // 実在キャラのいない組み合わせ
+  const bucketRows = new Map(); // "home/bucketName" -> rows[]
+  const notFound = [];
+
+  for (const entry of EX.TABLE_MANIFEST) {
+    if (entry.path === 'VICTORY_LINES' || entry.path === 'CHAR_PROFILES') continue; // 別扱い
+    const rows = buildRowsForTable(sandbox, entry);
+    if (rows === null) { notFound.push(entry); continue; }
+    const home = classifyHome(entry);
+    for (const r of rows) {
+      if (r.archetype && r.personality) {
+        const archKey = ARCHETYPE_LABEL_TO_KEY[r.archetype];
+        const persKey = PERSONALITY_LABEL_TO_KEY[r.personality];
+        const comboKey = `${archKey}::${persKey}`;
+        if (realCombos.has(comboKey)) {
+          comboRows.get(comboKey).push({ ...r, category: `${entry.cat} ${EX.CATEGORIES[entry.cat].title}` });
+          continue;
+        }
+        orphanRows.push({ ...r, category: `${entry.cat} ${EX.CATEGORIES[entry.cat].title}`, combo: `${ARCHETYPE_LABELS[archKey]}×${PERSONALITY_LABELS[persKey]}` });
+        continue;
+      }
+      let bucketName;
+      if (home === 'coach') bucketName = coachBucket(entry);
+      else if (home === 'narration') bucketName = narrationBucket(entry);
+      else bucketName = miscBucket(entry);
+      const key = `${home}/${bucketName}`;
+      if (!bucketRows.has(key)) bucketRows.set(key, []);
+      bucketRows.get(key).push(r);
+    }
+  }
+
+  return { realCombos, comboRows, orphanRows, bucketRows, notFound };
+}
+
+// 4-10. キャラID鍵テーブル(VICTORY_LINES / CHAR_PROFILES)を
+//       ALL_CHARS と結合して「キャラ個人別」の行を作る。
+function buildCharKeyedRows(sandbox, entry) {
+  const charById = new Map(sandbox.ALL_CHARS.map(c => [String(c.id), c]));
+  const rows = buildRowsForTable(sandbox, entry);
+  if (!rows) return [];
+  for (const r of rows) {
+    // ID は "VICTORY_LINES.1[2]" や "CHAR_PROFILES.1" の形。テーブル名を
+    // 除いた先頭の数字列がキャラID。
+    const m = /^(\d+)/.exec(r.path);
+    const cid = m ? m[1] : null;
+    const c = cid ? charById.get(cid) : null;
+    r.charName = c ? c.name : `(不明: id=${cid})`;
+    r.archetype = c ? ARCHETYPE_LABELS[c.archetype] || c.archetype : '';
+    r.personality = c ? PERSONALITY_LABELS[c.personality] || c.personality : '';
+    r._charId = cid ? Number(cid) : 0;
+  }
+  rows.sort((a, b) => a._charId - b._charId || a.path.localeCompare(b.path));
+  return rows;
+}
+
+// 4-11. 「在籍キャラ一覧」シート(キャラタイプ別ファイル先頭)。
+function buildRosterSheet(comboKey, members) {
+  const header = ['名前', 'スタイル', 'ロール', '特性'];
+  const note = [
+    { value: `このタイプ(${labelForCombo(comboKey)})に該当するキャラクター: ${members.length}名`, style: STYLES.summaryHeader },
+    { value: '', style: STYLES.summaryHeader },
+    { value: '', style: STYLES.summaryHeader },
+    { value: '', style: STYLES.summaryHeader },
+  ];
+  const blank = ['', '', '', ''].map(value => ({ value, style: STYLES.base }));
+  const dataRows = members
+    .slice()
+    .sort((a, b) => a.id - b.id)
+    .map(c => [
+      { value: c.name, style: STYLES.note },
+      { value: c.style, style: STYLES.metaCommon },
+      { value: c.role, style: STYLES.metaCommon },
+      { value: (c.traits || []).join('、'), style: STYLES.note },
+    ]);
+  return {
+    name: '在籍キャラ',
+    rows: [note, blank, headerCells(header), ...dataRows],
+    widths: [16, 14, 12, 40],
+    defaultRowHeight: 20,
+    freezeTopRow: false,
+    autoFilter: false,
+  };
+}
+
+function labelForCombo(comboKey) {
+  const [archKey, persKey] = comboKey.split('::');
+  return `${ARCHETYPE_LABELS[archKey]}×${PERSONALITY_LABELS[persKey]}`;
+}
+
+function comboFileName(comboKey) {
+  const [archKey, persKey] = comboKey.split('::');
+  return `${ARCHETYPE_LABELS[archKey]}×${PERSONALITY_LABELS[persKey]}`;
+}
+
+// 4-12. _キャラ対応表.xlsx — どの archetype×personality に誰がいるかの一覧。
+//       (archive/scripts/generate-dialogue-workbooks.js の gatherComboMap を参考)
+function buildComboMapWorkbook(sandbox) {
+  const archKeys = Object.keys(ARCHETYPE_LABELS);
+  const persKeys = Object.keys(PERSONALITY_LABELS);
+  const realCombos = getRealCombos(sandbox);
+
+  // シート1: マトリクス(archetype × personality の人数表)
+  const matrixHeader = ['', ...archKeys.map(a => ARCHETYPE_LABELS[a])].map(v => ({ value: v, style: STYLES.header }));
+  const matrixRows = persKeys.map(p => {
+    const row = [{ value: PERSONALITY_LABELS[p], style: STYLES.header }];
+    for (const a of archKeys) {
+      const n = (realCombos.get(`${a}::${p}`) || []).length;
+      row.push({ value: n ? String(n) : '0', style: n ? STYLES.number : STYLES.note });
+    }
+    return row;
+  });
+  const matrixSheet = {
+    name: '組み合わせ表',
+    rows: [matrixHeader, ...matrixRows],
+    widths: [12, ...archKeys.map(() => 10)],
+    defaultRowHeight: 20,
+    freezeTopRow: true,
+    autoFilter: false,
+  };
+
+  // シート2: 組み合わせ内訳(49組すべて。0人の組も明記)
+  const detailHeader = headerCells(['archetype', 'personality', '人数', 'キャラ名']);
+  const detailRows = [];
+  for (const a of archKeys) {
+    for (const p of persKeys) {
+      const members = realCombos.get(`${a}::${p}`) || [];
+      detailRows.push([
+        { value: ARCHETYPE_LABELS[a], style: STYLES.metaCommon },
+        { value: PERSONALITY_LABELS[p], style: STYLES.metaCommon },
+        { value: String(members.length), style: members.length ? STYLES.number : STYLES.note },
+        { value: members.map(c => c.name).join('、') || '(該当者なし)', style: STYLES.note },
+      ]);
+    }
+  }
+  const detailSheet = makeSheet('組み合わせ内訳', ['archetype', 'personality', '人数', 'キャラ名'], [14, 14, 8, 60], detailRows);
+
+  // シート3: キャラ一覧(127名)
+  const charRows = sandbox.ALL_CHARS
+    .slice()
+    .sort((a, b) => a.id - b.id)
+    .map(c => [
+      { value: String(c.id), style: STYLES.metaCommon },
+      { value: c.name, style: STYLES.note },
+      { value: ARCHETYPE_LABELS[c.archetype] || c.archetype, style: STYLES.metaCommon },
+      { value: PERSONALITY_LABELS[c.personality] || c.personality, style: STYLES.metaCommon },
+      { value: c.style, style: STYLES.metaCommon },
+      { value: c.role, style: STYLES.metaCommon },
+      { value: (c.traits || []).join('、'), style: STYLES.note },
+    ]);
+  const charSheet = makeSheet('キャラ一覧', ['ID', '名前', 'archetype', 'personality', 'スタイル', 'ロール', '特性'], [8, 14, 10, 10, 12, 10, 40], charRows);
+
+  return [matrixSheet, detailSheet, charSheet];
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// 4-13. export メイン処理
+// ───────────────────────────────────────────────────────────────────────
 function runExport(args) {
-  const cats = selectCategories(args);
+  if (args.length) {
+    console.error('[dialogue-workbook] NOTE: export はカテゴリ引数を受け付けなくなりました(常に全件書き出し)。指定された引数は無視します。');
+  }
   console.log('[dialogue-workbook] parsing + evaluating src/*.js ...');
   const { allDecls } = EX.loadAllDecls();
   const sandbox = EX.evalAll(allDecls);
@@ -701,17 +974,112 @@ function runExport(args) {
     console.error(`[dialogue-workbook] ${errs.length} declaration(s) failed to evaluate (see extract-dialogue.js output for detail)`);
   }
 
-  const results = [];
-  for (const cat of cats) {
-    const result = exportCategory(sandbox, cat);
-    if (result) results.push(result);
+  const { comboRows, orphanRows, bucketRows, notFound } = collectAllRows(sandbox);
+  if (notFound.length) {
+    for (const e of notFound) console.error(`[dialogue-workbook] WARN: table not resolvable, skipped: ${e.path}`);
+  }
+
+  let totalWritten = 0;
+  const summary = [];
+
+  // --- キャラタイプ別/ (34ファイル) ---
+  const realCombos = getRealCombos(sandbox);
+  for (const [comboKey, members] of realCombos.entries()) {
+    const rows = (comboRows.get(comboKey) || []).slice().sort((a, b) => a.category.localeCompare(b.category) || a.id.localeCompare(b.id));
+    const used = new Set();
+    const rosterSheet = buildRosterSheet(comboKey, members);
+    const dataSheet = makeSheet(uniqueSheetName('全セリフ', used), COMBO_HEADER, COMBO_WIDTHS, rows.map(buildComboRow));
+    const outPath = path.join(XLSX_DIR, 'キャラタイプ別', `${comboFileName(comboKey)}.xlsx`);
+    writeWorkbook(outPath, [rosterSheet, dataSheet]);
+    totalWritten += rows.length;
+    summary.push(`  キャラタイプ別/${comboFileName(comboKey)}.xlsx — 在籍${members.length}名 / セリフ${rows.length}本`);
+  }
+
+  // --- キャラタイプ別/_該当者なし.xlsx (現在キャラがいない組み合わせ) ---
+  {
+    const rows = orphanRows.slice().sort((a, b) => a.combo.localeCompare(b.combo) || a.category.localeCompare(b.category) || a.id.localeCompare(b.id));
+    if (rows.length) {
+      const header = ['ID(編集不可)', '出典', 'テーブル', 'パス', '口調×性格', 'カテゴリ', '現在', '改訂', '備考'];
+      const widths = [30, 16, 22, 26, 18, 20, 50, 50, 20];
+      const dataRows = rows.map(r => [
+        { value: r.id, style: STYLES.idLock },
+        { value: r.source, style: STYLES.metaCommon },
+        { value: r.table, style: STYLES.metaCommon },
+        { value: r.path, style: STYLES.note },
+        { value: r.combo, style: STYLES.metaCommon },
+        { value: r.category, style: STYLES.metaCommon },
+        { value: r.current, style: STYLES.current },
+        { value: r.revised, style: STYLES.revised },
+        { value: r.note, style: STYLES.note },
+      ]);
+      // 注記は別シートに置く(データシートの row0 は常にヘッダーである
+      // 前提を崩さないため — collectCandidatesFromWorkbook は sheet.rows[0]
+      // をヘッダー行として読む)。
+      const noteSheet = {
+        name: '説明',
+        rows: [[{ value: '現在このゲームに該当キャラが存在しない口調×性格の組み合わせ(将来キャラ用の予備セリフ)。34組ファイルには含めていない。', style: STYLES.summaryHeader }]],
+        widths: [100],
+        defaultRowHeight: 30,
+        freezeTopRow: false,
+        autoFilter: false,
+      };
+      const sheet = makeSheet('全セリフ', header, widths, dataRows);
+      const outPath = path.join(XLSX_DIR, 'キャラタイプ別', '_該当者なし.xlsx');
+      writeWorkbook(outPath, [noteSheet, sheet]);
+      totalWritten += rows.length;
+      summary.push(`  キャラタイプ別/_該当者なし.xlsx — セリフ${rows.length}本(実在しない組み合わせ${new Set(rows.map(r => r.combo)).size}種)`);
+    }
+  }
+
+  // --- キャラ個人別/ ---
+  {
+    const victoryEntry = EX.TABLE_MANIFEST.find(t => t.path === 'VICTORY_LINES');
+    const rows = buildCharKeyedRows(sandbox, victoryEntry);
+    const used = new Set();
+    const sheet = makeSheet(uniqueSheetName('全セリフ', used), CHAR_HEADER, CHAR_WIDTHS, rows.map(buildCharRow));
+    const outPath = path.join(XLSX_DIR, 'キャラ個人別', '勝利セリフ.xlsx');
+    writeWorkbook(outPath, [sheet]);
+    totalWritten += rows.length;
+    summary.push(`  キャラ個人別/勝利セリフ.xlsx — ${rows.length}本`);
+  }
+  {
+    const profileEntry = EX.TABLE_MANIFEST.find(t => t.path === 'CHAR_PROFILES');
+    const rows = buildCharKeyedRows(sandbox, profileEntry);
+    const used = new Set();
+    const sheet = makeSheet(uniqueSheetName('全セリフ', used), CHAR_HEADER, CHAR_WIDTHS, rows.map(buildCharRow));
+    const outPath = path.join(XLSX_DIR, 'キャラ個人別', 'プロフィール.xlsx');
+    writeWorkbook(outPath, [sheet]);
+    totalWritten += rows.length;
+    summary.push(`  キャラ個人別/プロフィール.xlsx — ${rows.length}本`);
+  }
+
+  // --- ナレーション・記事/ , コーチ/ , その他セリフ/ ---
+  const HOME_FOLDER = { coach: 'コーチ', narration: 'ナレーション・記事', misc: 'その他セリフ' };
+  const bucketKeys = [...bucketRows.keys()].sort();
+  for (const key of bucketKeys) {
+    const [home, bucketName] = key.split('/');
+    const folder = HOME_FOLDER[home];
+    const rows = bucketRows.get(key);
+    const used = new Set();
+    const sheet = makeSheet(uniqueSheetName('全セリフ', used), GENERIC_HEADER, GENERIC_WIDTHS, rows.map(buildGenericRow));
+    const outPath = path.join(XLSX_DIR, folder, `${bucketName}.xlsx`);
+    writeWorkbook(outPath, [sheet]);
+    totalWritten += rows.length;
+    summary.push(`  ${folder}/${bucketName}.xlsx — ${rows.length}本`);
+  }
+
+  // --- _キャラ対応表.xlsx ---
+  {
+    const sheets = buildComboMapWorkbook(sandbox);
+    const outPath = path.join(XLSX_DIR, '_キャラ対応表.xlsx');
+    writeWorkbook(outPath, sheets);
+    summary.push(`  _キャラ対応表.xlsx`);
   }
 
   console.log('[dialogue-workbook] export summary:');
-  for (const r of results) {
-    console.log(`  ${categoryBaseName(r.cat)}.xlsx — tables:${r.tableCount} rows:${r.rowCount} sheets:${r.sheetCount}${r.split ? ' (per-table split)' : ' (combined)'}`);
-  }
-  console.log(`[dialogue-workbook] wrote ${results.length} workbook(s) to ${XLSX_DIR}`);
+  for (const s of summary) console.log(s);
+  console.log(`[dialogue-workbook] total dialogue rows written: ${totalWritten} (+ 該当者なし分は上記に含む)`);
+  console.log(`[dialogue-workbook] wrote workbooks under ${XLSX_DIR}`);
 }
 
 // ───────────────────────────────────────────────────────────────────────
@@ -996,6 +1364,11 @@ function resolveDeclarationForId(allDecls, id) {
 // ───────────────────────────────────────────────────────────────────────
 // 6. apply — xlsx から改訂候補を集める
 // ───────────────────────────────────────────────────────────────────────
+// 編集対象ではない参照専用シート(在籍キャラ一覧・注記・_キャラ対応表の
+// マトリクス/内訳/一覧など)は ID/現在/改訂 列を持たないのが仕様。
+// これらは黙ってスキップし、警告で埋もれさせない。
+const REFERENCE_ONLY_SHEET_NAMES = new Set(['在籍キャラ', '説明', '組み合わせ表', '組み合わせ内訳', 'キャラ一覧']);
+
 function collectCandidatesFromWorkbook(filePath) {
   const sheets = readWorkbookSheets(filePath);
   const candidates = [];
@@ -1009,7 +1382,9 @@ function collectCandidatesFromWorkbook(filePath) {
     const currentCol = headerIndex['現在'];
     const revisedCol = headerIndex['改訂'];
     if (idCol === undefined || currentCol === undefined || revisedCol === undefined) {
-      console.error(`[dialogue-workbook] WARN: sheet "${sheet.name}" in ${path.basename(filePath)} does not look like a dialogue-workbook sheet (missing ID/現在/改訂 header), skipped`);
+      if (!REFERENCE_ONLY_SHEET_NAMES.has(sheet.name)) {
+        console.error(`[dialogue-workbook] WARN: sheet "${sheet.name}" in ${path.basename(filePath)} does not look like a dialogue-workbook sheet (missing ID/現在/改訂 header), skipped`);
+      }
       continue;
     }
 
@@ -1116,19 +1491,49 @@ function planEdit(candidate, allDecls, fileSrcMap, sandboxCtx) {
 // ───────────────────────────────────────────────────────────────────────
 // 8. apply — メイン処理
 // ───────────────────────────────────────────────────────────────────────
+// セリフ編集/ はフォルダ分割(キャラタイプ別/コーチ/ナレーション・記事/...)に
+// なったため、直下だけでなく再帰的に .xlsx を拾う必要がある。Excel が開いて
+// いる間に作る一時ロックファイル(~$xxx.xlsx)は除外する。
+function findAllXlsxRecursive(dir) {
+  const out = [];
+  if (!fs.existsSync(dir)) return out;
+  for (const name of fs.readdirSync(dir)) {
+    if (name.startsWith('~$')) continue;
+    const full = path.join(dir, name);
+    const stat = fs.statSync(full);
+    if (stat.isDirectory()) {
+      out.push(...findAllXlsxRecursive(full));
+    } else if (name.toLowerCase().endsWith('.xlsx')) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+function findXlsxByBaseName(dir, baseNameWithExt) {
+  const all = findAllXlsxRecursive(dir);
+  return all.filter(f => path.basename(f).toLowerCase() === baseNameWithExt.toLowerCase());
+}
+
 function resolveApplyTargets(args) {
   if (args.length === 0) {
-    if (!fs.existsSync(XLSX_DIR)) return [];
-    return fs.readdirSync(XLSX_DIR)
-      .filter(f => f.toLowerCase().endsWith('.xlsx'))
-      .map(f => path.join(XLSX_DIR, f));
+    return findAllXlsxRecursive(XLSX_DIR);
   }
   return args.map(arg => {
-    if (fs.existsSync(arg)) return path.resolve(arg);
+    if (fs.existsSync(arg) && fs.statSync(arg).isFile()) return path.resolve(arg);
     const withExt = arg.toLowerCase().endsWith('.xlsx') ? arg : `${arg}.xlsx`;
-    const inXlsxDir = path.join(XLSX_DIR, withExt);
-    if (fs.existsSync(inXlsxDir)) return inXlsxDir;
-    throw new Error(`workbook not found: ${arg} (looked at "${arg}" and "${inXlsxDir}")`);
+    // フォルダ相対パス(例: "キャラタイプ別/丁寧×真面目.xlsx")として
+    // そのまま存在するか。
+    const asRelative = path.join(XLSX_DIR, withExt);
+    if (fs.existsSync(asRelative)) return asRelative;
+    // ファイル名だけ(拡張子込み/抜き)で渡された場合は再帰的に探す。
+    const baseName = path.basename(withExt);
+    const matches = findXlsxByBaseName(XLSX_DIR, baseName);
+    if (matches.length === 1) return matches[0];
+    if (matches.length > 1) {
+      throw new Error(`workbook name is ambiguous: "${arg}" matches multiple files:\n  ${matches.join('\n  ')}\n(指定するときは セリフ編集/ からの相対パスで指定してください)`);
+    }
+    throw new Error(`workbook not found: ${arg} (looked at "${arg}", "${asRelative}", and recursively under ${XLSX_DIR})`);
   });
 }
 
@@ -1287,7 +1692,7 @@ function main() {
       runApply(rest);
     } else {
       console.log('Usage:');
-      console.log('  node tools/dialogue-workbook.js export [カテゴリ名...]');
+      console.log('  node tools/dialogue-workbook.js export');
       console.log('  node tools/dialogue-workbook.js apply  [ファイル...] [--dry-run]');
       process.exit(cmd ? 1 : 0);
     }
