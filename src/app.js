@@ -8997,6 +8997,56 @@ const App = {
     return true;
   },
 
+  // away-flow-redesign 実装B(CH-2): 「敵地へ向かう」移動演出を挟んでから遠征試合を開始する。
+  // startShowPrep()（ui-common.js）が、興行準備画面(会場選択・カード編集)という寄り道を
+  // 見せる前にこれを呼ぶ。演出が終わると _startAwayChallengeShow() が試合前画面を開く。
+  // weekPhase は呼び出し側で既に 'showPrep' になっている前提
+  // （_finalizeAwayChallengeShow の continueClose が _awayChallengeManualStart 経由で
+  // 興行準備画面へ正しく復帰できるようにするため。既存の安全弁 startAwayChallengeFromPrep()
+  // /executeShow() 側のフォールバックは変更しない）。
+  beginAwayChallengeTravel() {
+    const booking = G._pendingAwayChallengeMatch;
+    if (!booking) return;
+    if (typeof showTravelScene !== 'function') {
+      // 演出コンポーネント未読込時のフォールバック: 演出なしで直接開始
+      App.startAwayChallengeFromPrep();
+      return;
+    }
+    const ownIsRequester = booking.requesterOrgId === 'player';
+    const ownIds = ownIsRequester ? booking.teamAIds : booking.teamBIds;
+    const partyFighters = (ownIds || []).map(id => (G.roster || []).find(f => f.id === id)).filter(Boolean);
+    const destOrgId = ownIsRequester ? booking.opponentOrgId : booking.requesterOrgId;
+    const destOrgName = (ownIsRequester ? booking.opponentOrgName : booking.requesterOrgName) || destOrgId || '相手団体';
+    const selfOrgName = (ownIsRequester ? booking.requesterOrgName : booking.opponentOrgName) || G.orgName || 'プレイヤー団体';
+    // 名指しされた相手本人の現在の名前（受理から数週経ち、入れ替わっている可能性を考慮して再取得）
+    const namedOpponentId = ownIsRequester ? booking.opponentId : booking.requesterId;
+    const destRoster = destOrgId === 'player' ? (G.roster || []) : ((G.aiOrgs && G.aiOrgs[destOrgId] && G.aiOrgs[destOrgId].roster) || []);
+    const namedOpponentName = (destRoster.find(f => f.id === namedOpponentId) || {}).name || `${destOrgName}の選手`;
+    const partyCountLabel = partyFighters.length === 1 ? '一人' : partyFighters.length === 2 ? '二人' : partyFighters.length === 3 ? '三人' : `${partyFighters.length}人`;
+
+    App._awayChallengeManualStart = true;
+    showTravelScene({
+      heading: '— 移 動 中 —',
+      from: { label: selfOrgName, emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''), accent: 'var(--c-positive)' },
+      to: { label: destOrgName, emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml(destOrgId, 22) : ''), accent: 'var(--accent-hostility)' },
+      party: partyFighters.map(f => ({ id: f.id, name: f.name })),
+      lines: [
+        `${partyCountLabel}を乗せた車が、他団体の会場へ向かう。`,
+        `迎えるのは、名指しされた${namedOpponentName}。ここから先は敵地だ。`,
+      ],
+      vehicleIcon: '🚌',
+      durationMs: 5800,
+    }, () => {
+      if (!App._startAwayChallengeShow()) {
+        App._awayChallengeManualStart = false;
+        // 予約が無効化された場合(メンバーが揃わない等)は通常の興行準備画面へ戻す
+        showScreen('show');
+        refreshAll();
+        if (G.weekPhase === 'showPrep' && typeof renderShowPrep === 'function') renderShowPrep();
+      }
+    });
+  },
+
   _recoverAwayChallengeAfterError(error) {
     console.error('[WM] away challenge finalization failed:', error);
     const sp = App._showPreview;
@@ -11279,63 +11329,86 @@ const App = {
       if (choice === 'YES') {
         const requesterFighter = _findRequester();
         const reqName = requesterFighter.name || '';
-        // 試合カード生成（味方/相手陣が足りなければ却下扱い）
-        const card = Engine.challengeRequest.buildMatchCard(G);
-        if (!card) {
-          G = Engine.challengeRequest.rejectPending(G);
+
+        const proceedWithCard = () => {
+          // 試合カード生成（味方/相手陣が足りなければ却下扱い）
+          const card = Engine.challengeRequest.buildMatchCard(G);
+          // away-flow-redesign CH-1b: buildMatchCard が消費した一時ピックは即座に破棄する
+          // （セーブに残さない。inverse/未指定時はそもそもここで何もしない）
+          if (G._awayTeamPick) { const { _awayTeamPick: _pick, ...rest } = G; G = rest; }
+          if (!card) {
+            G = Engine.challengeRequest.rejectPending(G);
+            Storage.autoSave();
+            Audio.play('error');
+            renderWeekScreen && renderWeekScreen();
+            showToast(`${reqName} の直訴を受けたが、メンバー編成が整わず実現できなかった。`);
+            finalizeCRAudio();
+            return;
+          }
+          // クォータ・CD更新
+          G = Engine.challengeRequest.acceptPending(G);
+          // 相手発信(inverse)は次回の自団体興行へ固定編成、
+          // 自団体発信(forward)は次回通常興行週、自団体興行より先に敵地遠征として実施する。
+          // ID のみ保持し、実際の対戦相手は executeShow 時点の最新roster/aiOrgsから再取得する
+          // （数週先の興行になる可能性があり、その間に怪我・離脱で顔ぶれが変わり得るため）。
+          const booking = {
+            isInverse,
+            requesterId: card.requesterId, opponentId: card.opponentId,
+            requesterOrgId: card.requesterOrgId, opponentOrgId: card.opponentOrgId,
+            requesterOrgName: card.requesterOrgName, opponentOrgName: card.opponentOrgName,
+            teamAIds: card.teamA.map(f => f.id), teamBIds: card.teamB.map(f => f.id),
+            acceptedSeason: G.season, acceptedWeek: G.week,
+          };
+          G = isInverse
+            ? { ...G, _pendingIncomingChallengeMatch: booking }
+            : { ...G, _pendingAwayChallengeMatch: booking };
           Storage.autoSave();
-          Audio.play('error');
-          renderWeekScreen && renderWeekScreen();
-          showToast(`${reqName} の直訴を受けたが、メンバー編成が整わず実現できなかった。`);
-          finalizeCRAudio();
-          return;
-        }
-        // クォータ・CD更新
-        G = Engine.challengeRequest.acceptPending(G);
-        // 相手発信(inverse)は次回の自団体興行へ固定編成、
-        // 自団体発信(forward)は次回通常興行週、自団体興行より先に敵地遠征として実施する。
-        // ID のみ保持し、実際の対戦相手は executeShow 時点の最新roster/aiOrgsから再取得する
-        // （数週先の興行になる可能性があり、その間に怪我・離脱で顔ぶれが変わり得るため）。
-        const booking = {
-          isInverse,
-          requesterId: card.requesterId, opponentId: card.opponentId,
-          requesterOrgId: card.requesterOrgId, opponentOrgId: card.opponentOrgId,
-          requesterOrgName: card.requesterOrgName, opponentOrgName: card.opponentOrgName,
-          teamAIds: card.teamA.map(f => f.id), teamBIds: card.teamB.map(f => f.id),
-          acceptedSeason: G.season, acceptedWeek: G.week,
-        };
-        G = isInverse
-          ? { ...G, _pendingIncomingChallengeMatch: booking }
-          : { ...G, _pendingAwayChallengeMatch: booking };
-        Storage.autoSave();
 
-        const finishAccept = () => {
-          Audio.play('event');
-          showEventPopup({
-            type: 'fighter', id: payload.selfId,
-            name: reqName, tone: 'positive',
-            message: isInverse
-              ? `⚔ 挑戦状を受理。次の自団体興行で迎え撃つ`
-              : `⚔ 直訴を受理。次の通常興行週、まず敵地へ向かう`,
-            detail: isInverse
-              ? `${reqName} らの挑戦試合は、自団体興行の上位3試合に固定される。`
-              : `${reqName} らは次の自団体興行を組む前に、${card.opponentOrgName}の興行へ遠征する。`,
-          });
-          renderWeekScreen && renderWeekScreen();
-          finalizeCRAudio();
-        };
+          const finishAccept = () => {
+            Audio.play('event');
+            showEventPopup({
+              type: 'fighter', id: payload.selfId,
+              name: reqName, tone: 'positive',
+              message: isInverse
+                ? `⚔ 挑戦状を受理。次の自団体興行で迎え撃つ`
+                : `⚔ 直訴を受理。次の通常興行週、まず敵地へ向かう`,
+              detail: isInverse
+                ? `${reqName} らの挑戦試合は、自団体興行の上位3試合に固定される。`
+                : `${reqName} らは次の自団体興行を組む前に、${card.opponentOrgName}の興行へ遠征する。`,
+            });
+            renderWeekScreen && renderWeekScreen();
+            finalizeCRAudio();
+          };
 
-        // challenge-request-spec-v0.1 追加: YES 直後、直訴した本人の返事を頭上吹き出しで見せる
-        if (typeof showChallengeSendoffModal === 'function' && Engine.challengeRequest.pickLine) {
-          const sendoffRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC4A4, payload.selfId, payload.otherId));
-          const sendoffLine = Engine.challengeRequest.pickLine(requesterFighter, 'sendoff', sendoffRng, card.opponentOrgName);
-          if (sendoffLine) {
-            showChallengeSendoffModal(requesterFighter, sendoffLine, G, finishAccept);
+          // challenge-request-spec-v0.1 追加: YES 直後、直訴した本人の返事を頭上吹き出しで見せる
+          if (typeof showChallengeSendoffModal === 'function' && Engine.challengeRequest.pickLine) {
+            const sendoffRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC4A4, payload.selfId, payload.otherId));
+            const sendoffLine = Engine.challengeRequest.pickLine(requesterFighter, 'sendoff', sendoffRng, card.opponentOrgName);
+            if (sendoffLine) {
+              showChallengeSendoffModal(requesterFighter, sendoffLine, G, finishAccept);
+            } else {
+              finishAccept();
+            }
           } else {
             finishAccept();
           }
+        };
+
+        // away-flow-redesign CH-1b: forward（自団体→他団体）のときだけ、
+        // buildMatchCardの自動選抜(bond→OVR順)の前にプレイヤーへ同行2名を選ばせる。
+        // inverse（迎撃）は対象外＝現状維持。
+        if (!isInverse && typeof showAwayTeamPickModal === 'function') {
+          const otherOrg = G.aiOrgs && G.aiOrgs[payload.otherOrgId];
+          const opponentOrgName = (G.rivalOrgNames && G.rivalOrgNames[payload.otherOrgId])
+            || (otherOrg && otherOrg.name) || payload.otherOrgId || '他団体';
+          showAwayTeamPickModal(G, requesterFighter, opponentOrgName, (pickedIds) => {
+            if (Array.isArray(pickedIds) && pickedIds.length === 2) {
+              G = { ...G, _awayTeamPick: pickedIds };
+            }
+            proceedWithCard();
+          });
         } else {
-          finishAccept();
+          proceedWithCard();
         }
       } else if (choice === 'NO') {
         G = Engine.challengeRequest.rejectPending(G);

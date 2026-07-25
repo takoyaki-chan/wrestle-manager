@@ -3755,6 +3755,17 @@ Engine.challengeRequest = {
       });
     if (reqMates.length < 2) return null;
 
+    // away-flow-redesign CH-1b: forward のみ、社長(プレイヤー)が選んだ同行2名を優先する。
+    // state._awayTeamPick = [id1, id2] が両方とも reqMates 内に見つかった場合だけ採用し、
+    // 見つからない/未指定/inverse の場合は従来どおり bond→OVR 順の自動選抜にフォールバックする。
+    let mateA = reqMates[0], mateB = reqMates[1];
+    if (!isInverse && Array.isArray(state._awayTeamPick) && state._awayTeamPick.length === 2) {
+      const picked = state._awayTeamPick
+        .map(id => reqMates.find(f => f.id === id))
+        .filter(Boolean);
+      if (picked.length === 2) { mateA = picked[0]; mateB = picked[1]; }
+    }
+
     // 相手陣 2名
     const oppMates = opponentOrgRoster
       .filter(f => f.id !== opponent.id && _healthy(f) && (isInverse ? !f.isRental : true))
@@ -3772,7 +3783,7 @@ Engine.challengeRequest = {
       // 後方互換: forward 既存呼出が参照する otherOrgId / otherOrgName
       otherOrgId: opponentOrgId,
       otherOrgName: opponentOrgName,
-      teamA: [requester, reqMates[0], reqMates[1]],
+      teamA: [requester, mateA, mateB],
       teamB: [opponent, oppMates[0], oppMates[1]],
     };
   },

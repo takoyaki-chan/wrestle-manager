@@ -56,6 +56,7 @@
   --accent-faction-3: #8a7aa8;   /* 藤紫 */
   --accent-faction-4: #6fa28c;   /* 鶯緑 */
   --accent-hostility: #d07a3e;   /* 対立度の橙 */
+  --accent-hostility-rgb: 208,122,62; /* 上記のrgba()用トリプレット（遠征フロー「敵地」配色で使用） */
   --accent-faction-feud: #c38c54; /* 派閥抗争バッジ（accent-faction-1 と同系統）*/
   --pop-pink: #d4538a;            /* 人気値（POP）数値色（Faction Tab v0.9 で導入）*/
   --pop-pink-light: #f0a0bf;      /* 人気★アイコンの薄色版 */
@@ -2856,6 +2857,24 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 @media(max-width:700px){.show-pregame-a{padding-left:7px;padding-right:7px}.show-pregame-a .match-list{padding-left:3px;padding-right:3px}.show-result-overlay:has(.show-pregame-a) .show-title{font-size:24px;letter-spacing:4px}.show-pregame-a .smc-stat-col{width:82px}.show-pregame-a .card-main .smc-stat-col{width:88px}.show-pregame-a .smc-char{min-width:100px}.show-pregame-a .card-main .smc-char .upper-wrap{width:88px;height:112px}.show-pregame-a .card-sub .smc-char .upper-wrap{width:76px;height:96px}.show-pregame-a .smc-stat-label{font-size:9px}.show-pregame-a .smc-stat-val{font-size:11px}}
 
 /* ============================================================
+   away-flow-redesign 実装C: 試合前画面「敵地仕様」
+   .show-pregame-a はレギュラー興行(regular-show-pregame-design-test.js)と共有するため
+   ベース定義は一切変更せず、.away 修飾クラスで上乗せする（色と補助情報の追加のみ）。
+   ============================================================ */
+.show-pregame-a.away{background:linear-gradient(180deg,rgba(46,22,14,.96),rgba(16,10,7,.98))}
+.show-result-overlay:has(.show-pregame-a.away) .show-header{background:linear-gradient(180deg,rgba(var(--accent-hostility-rgb),.16),transparent);border-bottom-color:rgba(var(--accent-hostility-rgb),.34)}
+.show-result-overlay:has(.show-pregame-a.away) .show-header::after{background:linear-gradient(90deg,transparent,var(--accent-hostility),transparent)}
+.show-result-overlay:has(.show-pregame-a.away) .show-label{color:var(--accent-hostility)}
+.show-pregame-a.away .hdr-emblem{width:62px;height:62px;margin:0 auto 10px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid rgba(232,230,224,.55);box-shadow:0 6px 20px rgba(0,0,0,.55),0 0 22px rgba(var(--accent-hostility-rgb),.34)}
+.show-pregame-a.away .hdr-emblem img{width:100%!important;height:100%!important;object-fit:cover;border-radius:50%!important;margin:0!important}
+.show-pregame-a.away .awaybar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;padding:8px 14px;background:linear-gradient(90deg,rgba(var(--accent-hostility-rgb),.2),rgba(var(--accent-hostility-rgb),.05));border-bottom:1px solid rgba(var(--accent-hostility-rgb),.3);font-family:var(--font-label);font-size:11.5px;letter-spacing:1.5px;color:var(--stage-text-main);font-weight:700}
+.show-pregame-a.away .awaybar-sep{color:var(--stage-text-dim);font-weight:400;letter-spacing:normal}
+.show-pregame-a.away .forg{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:3px;font-size:9.5px;color:var(--stage-text-dim);letter-spacing:.5px}
+.show-pregame-a.away .forg .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.show-pregame-a.away .forg .dot.home{background:var(--c-positive)}
+.show-pregame-a.away .forg .dot.away{background:var(--accent-hostility)}
+
+/* ============================================================
    Show Result — Pattern B "Broadcast Scoreboard" (Stage カテゴリ)
    ※モックアップ正本: docs/ui/mockups/show-result-pattern-b.html
    ============================================================ */
@@ -5006,6 +5025,103 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   background: linear-gradient(180deg, rgba(180,42,42,0.16) 0%, rgba(180,42,42,0.03) 100%);
 }
 .fevt-report-card.f08 .fevt-report-title { color: #7a1414; letter-spacing: 2.5px; }
+
+/* ============================================================
+   away-flow-redesign 実装A: 同行2名を選ぶ（Office / .fevt-overlay-office 流用）
+   ポート元: away-flow-mockup.html
+   ============================================================ */
+.awpick-body { background: var(--office-panel-cream); color: var(--cream-text-main); padding: 16px 20px 20px; }
+.awpick-note { font-size: 12.5px; color: var(--cream-text-sub); margin: 0 0 14px; line-height: 1.75; }
+.awpick-slots { display: flex; gap: 12px; align-items: stretch; margin-bottom: 16px; }
+.awpick-slot { flex: 1; background: var(--cream-bg-card); border: 1px solid rgba(100,85,50,0.22); border-radius: 8px; padding: 10px; text-align: center; position: relative; }
+.awpick-slot.fixed { border-color: rgba(111,162,140,0.5); background: linear-gradient(180deg,var(--cream-bg-card),rgba(111,162,140,0.08)); }
+.awpick-slot.empty { border-style: dashed; border-color: rgba(160,96,48,0.5); background: rgba(212,168,67,0.07); }
+.awpick-slot .awpick-tag { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); font-family: 'Oswald',sans-serif; font-size: 9px; letter-spacing: 1px; padding: 2px 9px; border-radius: 8px; font-weight: 700; white-space: nowrap; color: var(--office-panel-cream-card); background: var(--cream-gold-dark); }
+.awpick-slot.fixed .awpick-tag { background: var(--c-positive); }
+.awpick-slot.empty .awpick-tag { background: var(--accent-hostility); }
+.awpick-face { width: 72px; height: 86px; border-radius: 4px; margin: 8px auto 6px; position: relative; overflow: hidden; }
+.awpick-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.awpick-face .awpick-ini { position: absolute; inset: 0; display: grid; place-items: center; font-size: 26px; font-weight: 800; color: rgba(255,255,255,0.92); }
+.awpick-face.blank { background: repeating-linear-gradient(45deg,var(--cream-info-bg) 0 7px,var(--cream-portrait-bg) 7px 14px); display: grid; place-items: center; color: var(--cream-text-dim); font-size: 24px; }
+.awpick-nm { font-size: 13.5px; font-weight: 700; color: var(--cream-text-main); }
+.awpick-nm.awpick-empty { color: var(--cream-text-dim); }
+.awpick-sub { font-size: 10.5px; color: var(--cream-gold); margin-top: 1px; }
+.awpick-ov { font-family: 'Oswald',sans-serif; font-size: 10px; letter-spacing: 1px; color: var(--cream-gold-dark); background: rgba(212,168,67,0.14); border: 1px solid rgba(212,168,67,0.4); border-radius: 3px; padding: 1px 8px; display: inline-block; margin-top: 5px; }
+.awpick-cand-head { font-size: 11.5px; color: var(--cream-text-sub); margin: 4px 0 8px; font-weight: 700; letter-spacing: 0.5px; }
+.awpick-cands { display: grid; grid-template-columns: repeat(auto-fill,minmax(108px,1fr)); gap: 8px; max-height: 260px; overflow-y: auto; padding: 2px; }
+.awpick-cand { background: var(--cream-bg-card); border: 1px solid rgba(100,85,50,0.2); border-radius: 6px; padding: 8px 6px; text-align: center; position: relative; cursor: pointer; transition: transform 120ms ease, box-shadow 120ms ease; }
+.awpick-cand:hover:not(.dis) { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
+.awpick-cand.sel { border-color: var(--cream-gold-dark); background: linear-gradient(180deg,var(--cream-bg-card),rgba(122,101,48,0.08)); box-shadow: 0 2px 8px rgba(122,101,48,0.18); }
+.awpick-cand.dis { opacity: 0.45; cursor: default; }
+.awpick-cand .awpick-cf { width: 46px; height: 56px; border-radius: 3px; margin: 0 auto 5px; position: relative; overflow: hidden; }
+.awpick-cand .awpick-cf img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.awpick-cand .awpick-cf .awpick-ini { font-size: 17px; }
+.awpick-cand .awpick-cnm { font-size: 12px; font-weight: 700; color: var(--cream-text-main); }
+.awpick-cand .awpick-cst { font-size: 10px; color: var(--cream-text-sub); margin-top: 1px; }
+.awpick-cand .awpick-chk { position: absolute; top: 4px; right: 5px; width: 16px; height: 16px; border-radius: 50%; background: var(--cream-gold-dark); color: var(--office-panel-cream-card); font-size: 10px; display: grid; place-items: center; font-weight: 700; }
+.awpick-cand .awpick-warn { font-size: 9.5px; color: var(--cream-red); margin-top: 2px; }
+.awpick-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; gap: 10px; flex-wrap: wrap; }
+.awpick-sum { font-size: 12px; color: var(--cream-text-sub); }
+.awpick-actions { display: flex; gap: 9px; }
+.awpick-btn-auto { padding: 10px 16px; background: transparent; color: var(--cream-gold-dark); border: 1px solid rgba(122,101,48,0.5); border-radius: 4px; font-weight: 600; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.awpick-btn-auto:hover { background: rgba(122,101,48,0.08); }
+.awpick-btn-go { padding: 10px 26px; background: var(--cream-gold-dark); color: var(--office-panel-cream-card); border: none; border-radius: 4px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; }
+.awpick-btn-go:disabled { opacity: 0.4; cursor: default; }
+.awpick-btn-go:not(:disabled):hover { filter: brightness(1.08); }
+
+/* ============================================================
+   away-flow-redesign 実装B: 汎用「移動演出」コンポーネント (showTravelScene)
+   遠征に限定しない汎用命名（.travel-*）。移動はWeb Animations APIで駆動する
+   （CSS @keyframes 内に var() を書くとChromeが離散補間にして動かないため、
+   .travel-convoy の移動そのものはCSSに持たせない）。
+   ============================================================ */
+.travel-overlay {
+  position: fixed; inset: 0; z-index: 9200;
+  background: radial-gradient(ellipse 90% 70% at 50% 50%, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.85) 100%);
+  display: none; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 500ms ease; cursor: pointer;
+}
+.travel-overlay.active { display: flex; opacity: 1; }
+.travel-panel {
+  position: relative; width: 100%; max-width: 640px; margin: 0 24px;
+  background: linear-gradient(180deg, var(--stage-panel-deep), var(--stage-bg-deep));
+  border: 1px solid var(--stage-border-lit); border-radius: 14px;
+  overflow: hidden; padding: 30px 24px 26px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.travel-panel::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 60px, rgba(var(--gold-rgb),0.06) 60px 62px);
+  animation: travelFlow 1.1s linear infinite;
+}
+@keyframes travelFlow { to { transform: translateX(-62px); } }
+.travel-kicker { position: relative; font-family: var(--font-label); letter-spacing: 5px; font-size: 11.5px; color: var(--stage-text-sub); }
+.travel-parties { position: relative; display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: var(--font-label); font-size: 12.5px; font-weight: 700; color: var(--stage-text-main); }
+.travel-party { display: flex; align-items: center; gap: 6px; }
+.travel-party.to { flex-direction: row-reverse; }
+.travel-stage { position: relative; width: 100%; height: 92px; }
+.travel-track { position: absolute; left: 0; right: 0; bottom: 16px; height: 2px; border-radius: 2px; }
+.travel-dot { position: absolute; bottom: 11px; width: 12px; height: 12px; border-radius: 50%; }
+.travel-dot.from { left: -2px; }
+.travel-dot.to { right: -2px; }
+.travel-convoy { position: absolute; bottom: 22px; left: 0; display: flex; align-items: flex-end; gap: 7px; will-change: transform; }
+.travel-vehicle { font-size: 26px; line-height: 1; margin-right: 2px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+.travel-face { width: 46px; height: 56px; border-radius: 4px; position: relative; overflow: hidden; border: 1px solid rgba(232,230,224,0.25); box-shadow: 0 3px 10px rgba(0,0,0,0.5); animation: travelBob 1.05s ease-in-out infinite; }
+.travel-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.travel-face-ini { position: absolute; inset: 0; display: grid; place-items: center; font-size: 18px; font-weight: 800; color: rgba(255,255,255,0.92); }
+@keyframes travelBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.travel-msg { position: relative; font-size: 14.5px; color: var(--stage-text-main); text-align: center; line-height: 1.9; max-width: 560px; }
+.travel-msg small { display: block; color: var(--stage-text-dim); font-size: 12px; margin-top: 6px; }
+.travel-skip { position: relative; font-size: 11.5px; color: var(--stage-text-quiet); letter-spacing: 1px; }
+.travel-skip b { color: var(--stage-text-sub); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) {
+  .travel-panel::before { animation: none; }
+  .travel-face { animation: none; }
+}
+@media (max-width: 600px) {
+  .travel-panel { padding: 22px 14px 20px; max-width: calc(100vw - 24px); }
+  .travel-kicker { letter-spacing: 3px; }
+}
 
 /* ============================================================
    Phase 3e: F08-A 試合前後モーダル ダーク Arena テーマ

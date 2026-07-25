@@ -2360,6 +2360,151 @@ function _awSpeech(name, line) {
   return `<div class="speech-bubble"><div class="speech-speaker">${name}</div><div class="speech-text">「${line}」</div></div>`;
 }
 
+// ── 汎用の顔アイコン背景パレット ────────────────────────────────
+// キャラ固有の色を持たない場面（遠征メンバー選択・移動演出など）で、
+// idから決定論的に選ぶ配色。ハードコード16進を避け、既存トークンの組み合わせのみで構成する。
+const _GENERIC_FACE_BG = [
+  'linear-gradient(160deg, var(--accent-faction-1), var(--office-panel-dark-deep))',
+  'linear-gradient(160deg, var(--accent-faction-2), var(--office-panel-dark-deep))',
+  'linear-gradient(160deg, var(--accent-faction-3), var(--office-panel-dark-deep))',
+  'linear-gradient(160deg, var(--accent-faction-4), var(--office-panel-dark-deep))',
+  'linear-gradient(160deg, var(--gold-deep), var(--office-panel-dark-deep))',
+  'linear-gradient(160deg, var(--c-negative), var(--office-panel-dark-deep))',
+];
+function _genericFaceBg(id) {
+  const idx = Math.abs(Number(id) || 0) % _GENERIC_FACE_BG.length;
+  return _GENERIC_FACE_BG[idx];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 汎用「移動演出」コンポーネント（away-flow-redesign 実装B）
+// 特定の場面（遠征）に依存しない再利用可能なフルスクリーン演出。
+// 想定される再利用先: 出稽古・合宿・巡業・大会会場入りなど、キャラが移動する任意の場面。
+//
+// showTravelScene(opts, onDone)
+//   opts.heading      見出し文字列。既定 '— 移 動 中 —'
+//   opts.from         { label, emblemHtml, accent } 出発側。accentはvar(--*)文字列
+//   opts.to           { label, emblemHtml, accent } 到着側
+//   opts.party        [{ id, name, portraitUrl? }, ...] 同行者の顔アイコン（人数可変・0人可）
+//   opts.lines        [主文, 補足] 本文2行。補足は省略可
+//   opts.vehicleIcon  隊列先頭のアイコン文字。既定 '🚌'
+//   opts.durationMs   移動アニメーションの所要時間(ms)。既定 5800
+//   onDone            演出終了（自動到着 or クリックでスキップ）時に1回だけ呼ばれる
+//
+// 実装メモ: 隊列(.travel-convoy)の移動はCSS @keyframesではなくWeb Animations APIで駆動する。
+// @keyframes内にvar()を書くとChromeが離散補間にしてしまい動かないため（モック作成時に実際に踏んだ罠）。
+// 距離はステージ幅(.travel-stage)と隊列の実測幅(.travel-convoy)から算出するので、人数が変わっても破綻しない。
+// ─────────────────────────────────────────────────────────────────────────────
+function _travelSceneEnsureRoot() {
+  let root = document.getElementById('travelSceneRoot');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'travelSceneRoot';
+    document.body.appendChild(root);
+  }
+  return root;
+}
+
+function _travelFaceHtml(member) {
+  const id = member && member.id;
+  const url = (member && member.portraitUrl) || (id != null && typeof getUpperUrl === 'function' ? getUpperUrl(id) : '');
+  const bg = _genericFaceBg(id);
+  if (url) {
+    return `<div class="travel-face" style="background:${bg}"><img src="${url}" alt="" onerror="this.style.display='none'"></div>`;
+  }
+  const initial = escHtml(((member && member.name) || '?').charAt(0));
+  return `<div class="travel-face" style="background:${bg}"><span class="travel-face-ini">${initial}</span></div>`;
+}
+
+function showTravelScene(opts, onDone) {
+  opts = opts || {};
+  const root = _travelSceneEnsureRoot();
+  const heading = opts.heading || '— 移 動 中 —';
+  const from = opts.from || {};
+  const to = opts.to || {};
+  const fromAccent = from.accent || 'var(--gold)';
+  const toAccent = to.accent || 'var(--gold)';
+  const party = Array.isArray(opts.party) ? opts.party : [];
+  const vehicleIcon = opts.vehicleIcon || '🚌';
+  const lines = Array.isArray(opts.lines) ? opts.lines : [];
+  const primaryLine = lines[0] || '';
+  const secondaryLine = lines[1] || '';
+  const durationMs = opts.durationMs > 0 ? opts.durationMs : 5800;
+
+  let reduce = false;
+  try { reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+  const convoyHtml = [
+    `<span class="travel-vehicle">${escHtml(vehicleIcon)}</span>`,
+    ...party.map(_travelFaceHtml),
+  ].join('');
+
+  const html = `
+    <div class="travel-overlay" id="travelSceneOverlay">
+      <div class="travel-panel">
+        <div class="travel-kicker">${escHtml(heading)}</div>
+        <div class="travel-parties">
+          <span class="travel-party from">${from.emblemHtml || ''}<span>${escHtml(from.label || '')}</span></span>
+          <span class="travel-party to">${to.emblemHtml || ''}<span>${escHtml(to.label || '')}</span></span>
+        </div>
+        <div class="travel-stage">
+          <span class="travel-track" style="background:linear-gradient(90deg, ${fromAccent}, var(--stage-text-quiet) 45%, ${toAccent})"></span>
+          <span class="travel-dot from" style="background:${fromAccent};box-shadow:0 0 12px ${fromAccent}"></span>
+          <span class="travel-dot to" style="background:${toAccent};box-shadow:0 0 12px ${toAccent}"></span>
+          <div class="travel-convoy" id="travelConvoy">${convoyHtml}</div>
+        </div>
+        <div class="travel-msg">${escHtml(primaryLine)}${secondaryLine ? `<small>${escHtml(secondaryLine)}</small>` : ''}</div>
+        <div class="travel-skip">画面をクリックで<b>すぐ進む</b>　／　そのままでも自動で進みます</div>
+      </div>
+    </div>`;
+
+  root.innerHTML = html;
+  const overlay = root.querySelector('.travel-overlay');
+  const stage = root.querySelector('.travel-stage');
+  const convoy = root.querySelector('#travelConvoy');
+  if (!overlay || !stage || !convoy) { root.innerHTML = ''; if (typeof onDone === 'function') onDone(); return; }
+
+  void overlay.offsetWidth;
+  overlay.classList.add('active');
+
+  let done = false;
+  let anim = null;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    if (anim) { try { anim.cancel(); } catch (e) {} }
+    overlay.removeEventListener('click', onOverlayClick);
+    overlay.classList.remove('active');
+    setTimeout(() => { if (root.contains(overlay)) root.innerHTML = ''; }, 400);
+    if (typeof onDone === 'function') onDone();
+  };
+  const onOverlayClick = () => finish();
+  overlay.addEventListener('click', onOverlayClick);
+
+  requestAnimationFrame(() => {
+    if (done) return;
+    const stageW = stage.getBoundingClientRect().width;
+    const convoyW = convoy.getBoundingClientRect().width || 190;
+    const end = Math.max(40, stageW - convoyW - 10);
+    const dur = reduce ? Math.round(durationMs * 1.25) : durationMs;
+    if (typeof convoy.animate !== 'function') { setTimeout(finish, dur); return; }
+    try {
+      anim = convoy.animate(
+        [
+          { transform: 'translateX(8px)' },
+          { transform: `translateX(${end}px)`, offset: 0.72 },
+          { transform: `translateX(${end}px)` },
+        ],
+        { duration: dur, easing: 'cubic-bezier(.34,.03,.24,1)', fill: 'forwards' }
+      );
+      anim.onfinish = finish;
+    } catch (e) {
+      setTimeout(finish, dur);
+    }
+  });
+}
+if (typeof window !== 'undefined') { window.showTravelScene = showTravelScene; }
+
 function _mqStars(mq) {
   if (mq >= 90) return '★★★★★';
   if (mq >= 80) return '★★★★';
@@ -4159,6 +4304,13 @@ function startShowPrep() {
   };
   if (G.showCard.length === 0) autoFillCardByAppeal();
   Audio.bgm.play('management');
+  // away-flow-redesign CH-2: 遠征(敵地遠征)が未消化なら、興行準備(会場選択・カード編集)
+  // という寄り道を見せる前に「敵地へ向かう」演出→遠征試合を挟む。
+  // 遠征が解決すると App.beginAwayChallengeTravel() 経由で通常の興行準備へ戻ってくる。
+  if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G) && typeof App !== 'undefined' && typeof App.beginAwayChallengeTravel === 'function') {
+    App.beginAwayChallengeTravel();
+    return;
+  }
   showScreen('show');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => { if (b.textContent.includes('興行準備')) b.classList.add('active'); });
@@ -4262,12 +4414,33 @@ function renderMatchPreview() {
     if (sp.results[i] === null) { nextIdx = i; break; }
   }
 
+  // away-flow-redesign 実装C: 敵地仕様（sp.isAwayChallenge のときのみ）。
+  // 構造(縦並びの試合カード)は変えず、.away修飾クラスによる色replaceと補助情報の追加のみ。
+  const isAway = !!sp.isAwayChallenge;
+  const awayOpponentOrgId = isAway ? (sp.awayBooking?.opponentOrgId || '') : '';
+  const awayOpponentOrgName = isAway ? (sp.awayBooking?.opponentOrgName || '相手団体') : '';
+  const awaySelfOrgName = isAway ? (sp.awayBooking?.requesterOrgName || G.orgName || '自団体') : '';
+  const hdrEmblemHtml = isAway
+    ? `<div class="hdr-emblem">${typeof orgIconHtml === 'function' ? orgIconHtml(awayOpponentOrgId, 58) : ''}</div>`
+    : '';
+  const awayBarHtml = isAway
+    ? `<div class="awaybar">${typeof orgIconHtml === 'function' ? orgIconHtml('player', 20) : ''}${escHtml(awaySelfOrgName)}<span class="awaybar-sep">が</span>${typeof orgIconHtml === 'function' ? orgIconHtml(awayOpponentOrgId, 20) : ''}${escHtml(awayOpponentOrgName)}のリングへ乗り込む</div>`
+    : '';
+  // 試合行の選手名下に出す所属団体ラベル（自陣=緑ドット／敵地=赤茶ドット）
+  const _awayOrgLabel = (fighterId) => {
+    if (!isAway) return '';
+    const isHome = (sp.awayPlayerRosterIds || []).includes(fighterId);
+    const name = isHome ? awaySelfOrgName : awayOpponentOrgName;
+    return `<div class="forg"><span class="dot ${isHome ? 'home' : 'away'}"></span>${escHtml(name)}</div>`;
+  };
+
   // ヘッダー
-  let html = `<div class="show-pregame-a"><div class="show-header">
+  let html = `<div class="show-pregame-a${isAway ? ' away' : ''}"><div class="show-header">
+    ${hdrEmblemHtml}
     <div class="show-label">${sp.isAwayChallenge ? 'Away Challenge' : 'Weekly Show'}</div>
     <div class="show-title">${showName}</div>
     <div class="show-progress">全${total}試合 ─ ${resolved}/${total} 完了</div>
-  </div>`;
+  </div>${awayBarHtml}`;
 
   html += `<div class="match-list">`;
   for (let idx = 0; idx < total; idx++) {
@@ -4416,6 +4589,7 @@ function renderMatchPreview() {
       </button>
       <div class="fname">${charL.name}</div>
       <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrL))}">${ovrL}</span></div>
+      ${_awayOrgLabel(charL.id)}
     </div>`;
 
     // VS
@@ -4430,6 +4604,7 @@ function renderMatchPreview() {
       </button>
       <div class="fname">${charR.name}</div>
       <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrR))}">${ovrR}</span></div>
+      ${_awayOrgLabel(charR.id)}
     </div>`;
 
     // 右ステータス
@@ -11093,6 +11268,167 @@ function showChallengeRequestModal(payload, state, onChoice) {
 
 if (typeof window !== 'undefined') {
   window.showChallengeRequestModal = showChallengeRequestModal;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// away-flow-redesign 実装A: 同行2名を選ぶ（CH-1b）
+// 直訴YESの直後、forward（自団体→他団体）のときだけプレイヤーに選ばせる。
+// 言い出し手はロック、残り2枠を自団体ロスターから選ぶ。負傷・休養中・謹慎中の選手は
+// 理由付きでグレーアウト表示する（buildMatchCard の _healthy 判定と同じ基準）。
+// 健康な候補が2名に満たない場合はモーダルを開かず null で即コールバックし、
+// 呼び出し側の既存フォールバック（buildMatchCard 失敗時の却下トースト）に委ねる。
+// ─────────────────────────────────────────────────────────────────────────────
+function showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm) {
+  if (_isPopupActive()) { _popupQueue.push(() => showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm)); return; }
+  if (!state || !requester) { if (onConfirm) onConfirm(null); return; }
+
+  const ov = f => (typeof Engine !== 'undefined' && Engine.util && Engine.util.ov) ? Engine.util.ov(f) : 0;
+  const roster = state.roster || [];
+  const candidates = roster
+    .filter(f => f && f.id !== requester.id && !f.isRental)
+    .map(f => ({
+      fighter: f,
+      ovr: ov(f),
+      healthy: !f.injury && !f.forcedRest && !f.suspended,
+      reason: f.injury ? `${f.injury.type} ${f.injury.weeksLeft}週`
+        : f.forcedRest ? '休養中'
+        : f.suspended ? '謹慎中'
+        : '',
+    }))
+    .sort((a, b) => b.ovr - a.ovr);
+
+  const healthyOnly = candidates.filter(c => c.healthy);
+  if (healthyOnly.length < 2) { if (onConfirm) onConfirm(null); return; }
+
+  let selected = [healthyOnly[0].fighter.id, healthyOnly[1].fighter.id];
+
+  const root = _factionEnsureOverlayRoot();
+
+  const _awpickFaceHtml = (fighter, cls) => {
+    const url = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+    const bg = _genericFaceBg(fighter.id);
+    if (url) return `<div class="${cls}" style="background:${bg}"><img src="${url}" alt="" onerror="this.style.display='none'"></div>`;
+    return `<div class="${cls}" style="background:${bg}"><span class="awpick-ini">${escHtml((fighter.name || '?').charAt(0))}</span></div>`;
+  };
+
+  const slotHtml = (idx) => {
+    const id = selected[idx];
+    const c = id ? candidates.find(x => x.fighter.id === id) : null;
+    if (!c) {
+      return `<div class="awpick-slot empty">
+        <span class="awpick-tag">同行者 ${idx + 1}</span>
+        <div class="awpick-face blank">＋</div>
+        <div class="awpick-nm awpick-empty">未選択</div>
+        <div class="awpick-sub">あと1名</div>
+      </div>`;
+    }
+    return `<div class="awpick-slot">
+      <span class="awpick-tag">同行者 ${idx + 1}</span>
+      ${_awpickFaceHtml(c.fighter, 'awpick-face')}
+      <div class="awpick-nm">${escHtml(c.fighter.name)}</div>
+      <div class="awpick-sub">選択中</div>
+      <div class="awpick-ov">OVR ${c.ovr}</div>
+    </div>`;
+  };
+
+  const candHtml = (c) => {
+    const isSel = selected.includes(c.fighter.id);
+    const cls = ['awpick-cand', isSel ? 'sel' : '', !c.healthy ? 'dis' : ''].filter(Boolean).join(' ');
+    const condLabel = c.healthy && c.fighter.condition != null ? ` ／ 体調 ${Math.round(c.fighter.condition)}` : '';
+    return `<div class="${cls}" data-id="${c.fighter.id}" data-healthy="${c.healthy ? '1' : '0'}">
+      ${isSel ? '<span class="awpick-chk">✓</span>' : ''}
+      ${_awpickFaceHtml(c.fighter, 'awpick-cf')}
+      <div class="awpick-cnm">${escHtml(c.fighter.name)}</div>
+      <div class="awpick-cst">OVR ${c.ovr}${condLabel}</div>
+      ${!c.healthy ? `<div class="awpick-warn">${escHtml(c.reason)}</div>` : ''}
+    </div>`;
+  };
+
+  function confirmAndClose() {
+    const overlay = root.querySelector('.fevt-overlay-office');
+    if (overlay) overlay.classList.remove('active');
+    setTimeout(() => { if (overlay && root.contains(overlay)) root.innerHTML = ''; _drainPopupQueue(); }, 500);
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    root.removeEventListener('click', handleClick);
+    if (onConfirm) onConfirm(selected.filter(Boolean));
+  }
+
+  function paint() {
+    const selCount = selected.filter(Boolean).length;
+    const html = `
+      <div class="fevt-overlay-office" id="awayTeamPickOverlay">
+        <div class="fevt-report-card">
+          <div class="fevt-report-header">
+            <div class="fevt-report-title">🚌 遠征メンバーを決める</div>
+            <div class="fevt-report-meta">${_mdlASeasonLabel(state)}</div>
+          </div>
+          <div class="awpick-body">
+            <p class="awpick-note">${escHtml(requester.name)}が名指しした一戦です。<strong>あと2名</strong>を連れて${escHtml(opponentOrgName)}へ乗り込みます。<br>遠征に出た選手は、同じ週の自団体興行には出られません。</p>
+            <div class="awpick-slots">
+              <div class="awpick-slot fixed">
+                <span class="awpick-tag">言い出し手・確定</span>
+                ${_awpickFaceHtml(requester, 'awpick-face')}
+                <div class="awpick-nm">${escHtml(requester.name)}</div>
+                <div class="awpick-sub">この一戦の当事者</div>
+                <div class="awpick-ov">OVR ${ov(requester)}</div>
+              </div>
+              ${slotHtml(0)}
+              ${slotHtml(1)}
+            </div>
+            <div class="awpick-cand-head">出せる選手（体調・負傷を考慮）</div>
+            <div class="awpick-cands">${candidates.map(candHtml).join('')}</div>
+            <div class="awpick-foot">
+              <div class="awpick-sum">選択 <strong>${selCount}</strong> / 2 名${selCount < 2 ? `　—　残り${2 - selCount}名を選んでください` : ''}</div>
+              <div class="awpick-actions">
+                <button class="awpick-btn-auto" id="awpickAuto" type="button">おまかせ（OVR順）</button>
+                <button class="awpick-btn-go" id="awpickGo" type="button"${selCount === 2 ? '' : ' disabled'}>この3人で行く →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    root.innerHTML = html;
+    const overlay = root.querySelector('.fevt-overlay-office');
+    if (overlay) { void overlay.offsetWidth; overlay.classList.add('active'); }
+  }
+
+  function handleClick(e) {
+    const cand = e.target.closest('.awpick-cand');
+    if (cand) {
+      if (cand.dataset.healthy !== '1') return;
+      const id = Number(cand.dataset.id);
+      const pos = selected.indexOf(id);
+      if (pos >= 0) {
+        selected[pos] = null;
+      } else {
+        const emptyIdx = selected.indexOf(null);
+        if (emptyIdx >= 0) {
+          selected[emptyIdx] = id;
+        } else {
+          if (typeof showToast === 'function') showToast('すでに2名選択済みです。先に1名を外してください', 2200);
+          return;
+        }
+      }
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      paint();
+      return;
+    }
+    if (e.target.closest('#awpickAuto')) {
+      selected = [healthyOnly[0].fighter.id, healthyOnly[1].fighter.id];
+      confirmAndClose();
+      return;
+    }
+    if (e.target.closest('#awpickGo')) {
+      if (selected.filter(Boolean).length !== 2) return;
+      confirmAndClose();
+    }
+  }
+
+  root.addEventListener('click', handleClick);
+  paint();
+}
+if (typeof window !== 'undefined') {
+  window.showAwayTeamPickModal = showAwayTeamPickModal;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

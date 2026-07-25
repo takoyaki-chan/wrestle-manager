@@ -3052,20 +3052,11 @@ function renderShowPrep() {
       今回は固定興行のためカードへ割り込まず、挑戦試合は次の通常興行まで持ち越されます。
     </div>`;
   }
-  if (G._pendingAwayChallengeMatch) {
-    const away = G._pendingAwayChallengeMatch;
-    const ownIds = away.requesterOrgId === 'player' ? away.teamAIds : away.teamBIds;
-    const ownNames = (ownIds || []).map(id => G.roster.find(f => f.id === id)?.name).filter(Boolean);
-    html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-info);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
-      <strong style="color:var(--c-info)">🚌 敵地遠征の予約</strong>　${away.opponentOrgName || away.opponentOrgId}<br>
-      ${eligibleChallengeShow
-        ? `${ownNames.join('・')} は先に相手団体の興行へ出場します。遠征結果の確認後、この週の自団体カードを編成できます。`
-        : `固定興行には割り込まず、次の通常興行週に${ownNames.join('・')}が先に敵地へ向かいます。`}
-    </div>`;
-    if (eligibleChallengeShow) {
-      html += `<button onclick="App.startAwayChallengeFromPrep()" style="margin:0 0 10px;padding:8px 13px;border:1px solid var(--c-info);border-radius:4px;background:rgba(70,130,180,.18);color:var(--c-info);font-weight:700;cursor:pointer">遠征対抗戦を実行</button><div style="margin:-4px 0 10px;color:var(--text-dim);font-size:11px">結果を確認した後、この週の自団体興行を編成できます。</div>`;
-    }
-  }
+  // away-flow-redesign CH-2: 「🚌 敵地遠征の予約」バナーと手動起動ボタンは廃止。
+  // 遠征が未消化のときは startShowPrep()（ui-common.js）がこの興行準備画面自体を経由させず、
+  // App.beginAwayChallengeTravel() で先に「敵地へ向かう」演出→遠征試合を挟むため、
+  // この画面が描画される時点では原則として遠征は解決済み（固定興行週で消化待ちの間は無表示）。
+  // App.startAwayChallengeFromPrep() 自体は安全弁として executeShow() 側に残置している。
 
   const fanExpects = Engine.fanExpect.generate(G);
   const _isValidSlot = m => m.matchType === 'tag'
