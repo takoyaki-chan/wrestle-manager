@@ -137,15 +137,75 @@
     let tenchosenSeason = G.season || 1; while (!Engine.ppvTournament.isTournamentSeason(tenchosenSeason)) tenchosenSeason++;
     return [['春タッグ編成', G.season, Engine.springTagLeague.ENTRY_WEEK],['夏ジュニア大会', G.season, Engine.juniorTournament.WEEK],['秋4団体対抗戦', G.season, Engine.autumnWar.EVENT_WEEK],['冬・天頂戦', tenchosenSeason, Engine.ppvTournament.SHOW_WEEK]];
   }
+
+  // ── イベント即時発火: 挑戦試合の直訴 (challenge-request-spec-v0.1) ──
+  // 通常は Engine.challengeRequest.processWeekly() の週次抽選（heat>=90 等の条件）でしか
+  // pendingThisWeek が立たない。ここでは条件判定を丸ごと迂回し、現在のロスターから
+  // buildMatchCard が成立する妥当なペアを自前で選んで payload を組み、
+  // App.handleChallengeRequest を直接呼ぶ。
+  function healthyRosterList(roster) {
+    return (roster || []).filter(f => f && !f.injury && !f.forcedRest && !f.suspended && !f.isRental);
+  }
+  function pickAiOrgWithHealthy(state, minCount) {
+    const aiOrgs = state.aiOrgs || {};
+    for (const [orgId, org] of Object.entries(aiOrgs)) {
+      if (!org || org.disbanded || !Array.isArray(org.roster)) continue;
+      const healthy = healthyRosterList(org.roster);
+      if (healthy.length >= minCount) return { orgId, org, healthy };
+    }
+    return null;
+  }
+  // buildMatchCard(state) は「打診者陣・相手陣それぞれに健康な味方2名」を要求する
+  // （src/relationships.js buildMatchCard 内 _healthy フィルタ、reqMates/oppMates.length<2 で null）。
+  // つまり自団体・相手団体とも「健康な選手3名以上（本人+味方2）」いれば成立する。
+  function buildChallengeRequestPayload(inverse) {
+    const playerHealthy = healthyRosterList(G.roster);
+    if (playerHealthy.length < 3) return { error: `自団体に健康な選手が3名以上必要です（現在${playerHealthy.length}名）。` };
+    const aiPick = pickAiOrgWithHealthy(G, 3);
+    if (!aiPick) return { error: '健康な選手が3名以上いる他団体がありません。' };
+
+    const selfList = inverse ? aiPick.healthy : playerHealthy;
+    const otherList = inverse ? playerHealthy : aiPick.healthy;
+
+    // 既存の関係性（rivalry/bond）が張られているペアがあれば優先採用し、
+    // 見た目のドラマ性を出す。なければ先頭同士＋既定値でフォールバック。
+    let self = selfList[0], other = otherList[0], rivalry = 70, bond = 30;
+    outer:
+    for (const p of selfList) {
+      for (const o of otherList) {
+        const key = Engine.relationships._key(p.id, o.id);
+        const rel = G.relationships && G.relationships[key];
+        if (rel) { self = p; other = o; rivalry = rel.rivalry || 70; bond = rel.bond != null ? rel.bond : 30; break outer; }
+      }
+    }
+
+    const heat = Engine.challengeRequest.computeHeat(rivalry, bond);
+    const payload = { selfId: self.id, otherId: other.id, heat, rivalry, bond, issuedSeason: G.season, issuedWeek: G.week };
+    if (inverse) { payload._inverse = true; payload.otherOrgId = 'player'; payload.requesterOrgId = aiPick.orgId; }
+    else { payload.otherOrgId = aiPick.orgId; }
+    return { payload };
+  }
+  function fireChallengeRequest(inverse) {
+    const result = buildChallengeRequestPayload(inverse);
+    if (result.error) { renderPanel(result.error); return; }
+    const payload = result.payload;
+    // processWeekly が通常立てる pendingThisWeek と同じ場所に積む
+    // （acceptPending/rejectPending/buildMatchCard がここを参照するため）。
+    G = Engine.challengeRequest.ensureInit(G);
+    G = { ...G, challengeRequest: { ...G.challengeRequest, pendingThisWeek: payload } };
+    close();
+    App.handleChallengeRequest(payload);
+  }
   function renderPanel(message) {
     if (!panel) return;
     const checkpoints = checkpointKeys().map(key => { try { const s = Storage._parseRaw(localStorage.getItem(key)); return { key, label: s._saveName || key.slice(DEV_CHECKPOINT_PREFIX.length), phase: phaseLabel(s) }; } catch (_) { return null; } }).filter(Boolean);
     const presets = presetRows().map(([name, season, week]) => `<button data-dev-preset="${season}:${week}:${esc(name)}">${esc(name)}<small>S${season} W${week}</small></button>`).join('');
     const restores = checkpoints.length ? checkpoints.map(c => `<button data-dev-restore="${esc(c.key)}">${esc(c.label)}<small>${esc(c.phase)}</small></button>`).join('') : '<div class="wm-dev-empty">まだ開発用チェックポイントはありません。</div>';
-    panel.innerHTML = `<div class="wm-dev-backdrop" data-dev-close></div><section class="wm-dev-card" role="dialog" aria-modal="true" aria-label="開発者モード"><header><div><b>DEVELOPER MODE</b><span>通常オートセーブは保護されています</span></div><button data-dev-close aria-label="閉じる">×</button></header><p class="wm-dev-status">${esc(message || `${phaseLabel(G)} — すべての自動選択は既定値で処理します。`)}</p><div class="wm-dev-grid"><label>シーズン<input id="wmDevSeason" type="number" min="1" value="${G.season || 1}"></label><label>週<input id="wmDevWeek" type="number" min="1" max="48" value="${G.week || 1}"></label></div><button class="wm-dev-primary" data-dev-go>指定週まで高速進行して保存</button><div class="wm-dev-section"><b>大会プリセット</b><div class="wm-dev-buttons">${presets}</div></div><div class="wm-dev-section"><b>検証用チェックポイント</b><div class="wm-dev-buttons"><button data-dev-base>開発開始地点へ戻す</button><button data-dev-save>現在地を保存</button>${restores}</div></div><p class="wm-dev-note">開く: Ctrl + Shift + D ／ 高速進行中は興行・選択イベントを既定値で自動処理します。通常のオートセーブと手動セーブには書き込みません。</p></section>`;
+    panel.innerHTML = `<div class="wm-dev-backdrop" data-dev-close></div><section class="wm-dev-card" role="dialog" aria-modal="true" aria-label="開発者モード"><header><div><b>DEVELOPER MODE</b><span>通常オートセーブは保護されています</span></div><button data-dev-close aria-label="閉じる">×</button></header><p class="wm-dev-status">${esc(message || `${phaseLabel(G)} — すべての自動選択は既定値で処理します。`)}</p><div class="wm-dev-grid"><label>シーズン<input id="wmDevSeason" type="number" min="1" value="${G.season || 1}"></label><label>週<input id="wmDevWeek" type="number" min="1" max="48" value="${G.week || 1}"></label></div><button class="wm-dev-primary" data-dev-go>指定週まで高速進行して保存</button><div class="wm-dev-section"><b>大会プリセット</b><div class="wm-dev-buttons">${presets}</div></div><div class="wm-dev-section"><b>イベント即時発火</b><div class="wm-dev-buttons"><button data-dev-fire="forward">挑戦の直訴（自団体→他団体）<small>条件を無視して即表示</small></button><button data-dev-fire="inverse">挑戦の直訴（他団体→自団体）<small>条件を無視して即表示</small></button></div></div><div class="wm-dev-section"><b>検証用チェックポイント</b><div class="wm-dev-buttons"><button data-dev-base>開発開始地点へ戻す</button><button data-dev-save>現在地を保存</button>${restores}</div></div><p class="wm-dev-note">開く: Ctrl + Shift + D ／ 高速進行中は興行・選択イベントを既定値で自動処理します。通常のオートセーブと手動セーブには書き込みません。</p></section>`;
     panel.querySelectorAll('[data-dev-close]').forEach(el => el.addEventListener('click', close));
     panel.querySelector('[data-dev-go]').addEventListener('click', () => { try { fastForward(panel.querySelector('#wmDevSeason').value, panel.querySelector('#wmDevWeek').value); } catch (e) { renderPanel(e.message); } });
     panel.querySelectorAll('[data-dev-preset]').forEach(el => el.addEventListener('click', () => { const [season, week, label] = el.dataset.devPreset.split(':'); try { fastForward(season, week, label); } catch (e) { renderPanel(e.message); } }));
+    panel.querySelectorAll('[data-dev-fire]').forEach(el => el.addEventListener('click', () => { try { fireChallengeRequest(el.dataset.devFire === 'inverse'); } catch (e) { open(); renderPanel(e.message); } }));
     panel.querySelector('[data-dev-save]').addEventListener('click', () => renderPanel(`「${saveCheckpoint(phaseLabel(G))}」を保存しました。`));
     panel.querySelector('[data-dev-base]').addEventListener('click', () => { try { restore(localStorage.getItem(DEV_SESSION_BASE_KEY)); renderPanel('開発開始地点へ戻しました。'); } catch (e) { renderPanel(e.message); } });
     panel.querySelectorAll('[data-dev-restore]').forEach(el => el.addEventListener('click', () => { try { restore(localStorage.getItem(el.dataset.devRestore)); renderPanel('チェックポイントを復元しました。'); } catch (e) { renderPanel(e.message); } }));
