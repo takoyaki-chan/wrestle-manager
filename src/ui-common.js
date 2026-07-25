@@ -11161,19 +11161,34 @@ function _challengeRequestResultReaction(card, result, state, playerWon, playerL
     };
   }
 
-  // それ以外はAI側代表。相手発信を返り討ちにした場合は、挑んで敗れた相手を映す。
+  // それ以外はAI側代表。ただし inverse で敗れた場合だけは、迎え撃って敗れた「自団体」代表を映す。
   const fighter = isInverse ? (card.teamA && card.teamA[0]) : (card.teamB && card.teamB[0]);
   const outcome = playerWon ? 'lose' : (playerLost ? 'win' : 'draw');
-  const arch = (fighter && fighter.archetype) || 'normal';
-  const pool = typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined'
-    ? (CHALLENGE_REQUEST_OPPONENT_REACTIONS[arch] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal)
-    : null;
-  const lines = pool && ((pool[outcome] && pool[outcome].length > 0) ? pool[outcome] : pool._accept);
   const label = outcome === 'lose'
     ? (isInverse ? '挑み、敗れた代表' : '受けて、敗れた代表')
     : outcome === 'win'
     ? (isInverse ? '挑戦を実らせた代表' : '受けて、勝った代表')
     : (isInverse ? '挑んだ代表・決着つかず' : '受けた代表・決着つかず');
+
+  // 映るのが自団体の選手なら、AI用テーブルではなく挑戦試合専用テーブル(CHALLENGE_LINES)を使う。
+  // inverse かつプレイヤー敗北 = 迎え撃った自団体代表が teamB 側に立つケース。
+  const selfSideFighter = (isInverse && playerLost) ? (card.teamB && card.teamB[0]) : null;
+  if (selfSideFighter && Engine.challengeRequest && Engine.challengeRequest.pickLine) {
+    const orgName = card.requesterOrgName || card.otherOrgName;
+    const selfRng = Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 0, state.season || 0, state.week || 0, 0xC4A3, Number(selfSideFighter.id) || 0, 3
+    ));
+    const selfLine = Engine.challengeRequest.pickLine(selfSideFighter, 'lose', selfRng, orgName);
+    if (selfLine) {
+      return { fighter: selfSideFighter, line: selfLine, label: '受けて、敗れた代表', defeated: true };
+    }
+  }
+
+  const arch = (fighter && fighter.archetype) || 'normal';
+  const pool = typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined'
+    ? (CHALLENGE_REQUEST_OPPONENT_REACTIONS[arch] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal)
+    : null;
+  const lines = pool && ((pool[outcome] && pool[outcome].length > 0) ? pool[outcome] : pool._accept);
   return {
     fighter,
     line: pickLine(lines, fighter, 2),
