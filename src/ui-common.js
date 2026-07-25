@@ -9243,10 +9243,8 @@ function showFactionF05Modal(payload, state, onChoice) {
   const line = _factionLine(FACTION_F05_DISSIDENT_LINES, ringleader,
     Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA51));
 
-  const centerPortrait = ringleaderUrl
-    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${ringleaderUrl}')"></div>`
-    : `<div class="fevt-subject-portrait-wrap"></div>`;
-
+  // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は頭上の白い吹き出しへ移行(mockup-baseline-v0.1 §3)。
+  // F08 と同じ手法(_u3bSideHtml + u3b-theme-cream)。ringleaderMeta は role ラベルへ吸収。
   const html = `
     <div class="fevt-overlay-office" id="fevtF05Overlay">
       <div class="fevt-report-card f05">
@@ -9255,22 +9253,18 @@ function showFactionF05Modal(payload, state, onChoice) {
           <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ FOR YOUR INFORMATION</div>
         </div>
         ${_factionReporterStrip(state, '社長。お耳に入れておきます。あの組、中で軋みが出てるみたいです')}
-        <div class="fevt-subject-stage">
-          <div class="fevt-subject-trio">
-            ${centerPortrait}
-          </div>
-          <div class="fevt-subject-name">${String(ringleaderName)}</div>
-          <div class="fevt-subject-org">${ringleaderMeta}</div>
-          <div class="fevt-subject-divider"></div>
+        <div class="fevt-subject-stage u3b-theme-cream">
+          ${_u3bSideHtml({
+            name: ringleaderName, line: line || '……もう、ついていけない。',
+            imgUrl: ringleaderUrl, role: ringleaderMeta,
+            bubbleClass: 'fevt-bubble',
+          })}
+          <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-observation-note">
             練習後のロッカーでの会話が減った。<span class="marker">${String(ringleaderSurname)}</span>はリーダー
             <span class="marker">${String(leaderSurname)}</span>の方針に
             <span class="marker hostile">不満を抱えている</span>ようだ。<br>
             まだ表には出ていないが、このまま放っておけば派閥が割れるかもしれない。
-          </div>
-          <div class="fevt-quote hostile">
-            <div class="fevt-quote-speaker">${String(ringleaderName)}</div>
-            ${String(line || '……もう、ついていけない。')}
           </div>
         </div>
         <div class="fevt-decision-prompt" style="padding-bottom:24px">
@@ -9328,18 +9322,14 @@ function showFactionF06Modal(payload, state, onChoice) {
 
   // 代表セリフ（leaderB の諦観風）。seed 決定性
   const seedPick = (state && state.season || 0) + (state && state.week || 0);
-  const speaker = (seedPick % 2 === 0) ? leaderB : leaderA;
-  const speakerName = speaker ? speaker.name : leaderBName;
+  const speakerIsB = (seedPick % 2 === 0);
+  const speaker = speakerIsB ? leaderB : leaderA;
   const line = _factionLine(FACTION_F06_AMBIENT_LINES, speaker,
     Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA61));
+  const resolvedLine = line || '……もう、いいかな。あの人とぶつかり続ける理由も、正直、思い出せないし。';
 
-  const leftPortrait = leaderAUrl
-    ? `<div class="fevt-pair-portrait" style="background-image:url('${leaderAUrl}');background-size:cover;background-position:center 20%"></div>`
-    : `<div class="fevt-pair-portrait"></div>`;
-  const rightPortrait = leaderBUrl
-    ? `<div class="fevt-pair-portrait" style="background-image:url('${leaderBUrl}');background-size:cover;background-position:center 20%"></div>`
-    : `<div class="fevt-pair-portrait"></div>`;
-
+  // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は発言者側の頭上吹き出しへ移行。
+  // 発言しない側は line を渡さず(mockup-baseline-v0.1 §2-B「発言しない人は枠だけ」)予約枠のみ出す。
   const html = `
     <div class="fevt-overlay-office" id="fevtF06Overlay">
       <div class="fevt-report-card f06">
@@ -9348,23 +9338,30 @@ function showFactionF06Modal(payload, state, onChoice) {
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, 'あの2組、もう揉めてませんよ。先週の合同練習でも、普通に挨拶してました')}
-        <div class="fevt-subject-stage">
+        <div class="fevt-subject-stage u3b-theme-cream">
           <div class="fevt-subject-pair">
-            ${leftPortrait}
+            <div class="col">
+              ${_u3bSideHtml({
+                name: leaderAName, line: speakerIsB ? '' : resolvedLine,
+                imgUrl: leaderAUrl, role: factionAName,
+                bubbleClass: 'fevt-bubble',
+              })}
+            </div>
             <div class="fevt-pair-bridge">↔</div>
-            ${rightPortrait}
+            <div class="col right">
+              ${_u3bSideHtml({
+                name: leaderBName, line: speakerIsB ? resolvedLine : '',
+                imgUrl: leaderBUrl, role: factionBName,
+                bubbleClass: 'fevt-bubble',
+              })}
+            </div>
           </div>
-          <div class="fevt-subject-name">${String(factionAName)} ・ ${String(factionBName)}</div>
-          <div class="fevt-subject-org">FORMER RIVALS ・ HOSTILITY ${hostAvg} / 100</div>
-          <div class="fevt-subject-divider"></div>
+          <div class="fevt-subject-org" style="margin-top:6px">FORMER RIVALS ・ HOSTILITY ${hostAvg} / 100</div>
+          <div class="fevt-subject-divider" style="margin-top:12px"></div>
           <div class="fevt-observation-note">
             対立が始まって以来、両派閥のリーダー<span class="marker">${String(leaderASurname)}</span>と<span class="marker">${String(leaderBSurname)}</span>の間にあった棘は、
             ここ数週間で<span class="marker peace">明らかに和らいで</span>いる。<br>
             メンバー間でも私的な交流が戻り始めた。社長の一押しがあれば、抗争は完全に終結する。
-          </div>
-          <div class="fevt-quote peace">
-            <div class="fevt-quote-speaker">${String(speakerName)}</div>
-            ${String(line || '……もう、いいかな。あの人とぶつかり続ける理由も、正直、思い出せないし。')}
           </div>
         </div>
         <div class="fevt-decision-prompt">この空気を、社長としてどう扱いますか？</div>
@@ -10677,10 +10674,8 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
   const fromLabel = ARCHETYPE_LABEL[payload.fromArchetype] || payload.fromArchetype || '';
   const toLabel = ARCHETYPE_LABEL[payload.toArchetype] || payload.toArchetype || '';
 
-  const leaderPortrait = leaderUrl
-    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}');width:96px;height:120px"></div>`
-    : `<div class="fevt-subject-portrait-wrap" style="width:96px;height:120px"></div>`;
-
+  // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は頭上の白い吹き出しへ移行(_u3bSideHtml)。
+  // 旧96×120の生img肖像はladder Mサイズ(132×194)に統一。地の文(fevt-narration)は位置そのまま。
   const html = `
     <div class="fevt-overlay-office" id="fevtTransitionOverlay">
       <div class="fevt-report-card">
@@ -10689,16 +10684,13 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, `${factionName}の色合いが変わったようです——${fromLabel}から${toLabel}へ。`)}
-        <div class="fevt-subject-stage">
-          <div style="display:flex;gap:18px;align-items:flex-end;justify-content:center;margin-bottom:8px">
-            ${leaderPortrait}
-          </div>
-          <div class="fevt-subject-name">${factionName} : ${fromLabel} → ${toLabel}</div>
-          <div class="fevt-subject-divider"></div>
-          <div class="fevt-quote leader">
-            <div class="fevt-quote-speaker">${leaderName}（${factionName}）</div>
-            ${lines.leaderLine || ''}
-          </div>
+        <div class="fevt-subject-stage u3b-theme-cream">
+          ${_u3bSideHtml({
+            name: leaderName, line: lines.leaderLine || '',
+            imgUrl: leaderUrl, role: `${factionName} : ${fromLabel} → ${toLabel}`,
+            bubbleClass: 'fevt-bubble',
+          })}
+          <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-narration" style="margin-top:10px;color:var(--text-muted);font-size:0.92em;line-height:1.55">
             ${lines.narration || ''}
           </div>
@@ -10746,10 +10738,7 @@ function showFactionCommon4Modal(payload, state, onClose) {
     ? Engine.factions.getCommon4Line(archetypeId, lineRng)
     : { headline: '派閥合宿', narration: '揃って数日を過ごした。', leaderQuote: '' };
 
-  const leaderPortrait = leaderUrl
-    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}');width:96px;height:120px"></div>`
-    : `<div class="fevt-subject-portrait-wrap" style="width:96px;height:120px"></div>`;
-
+  // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は頭上の白い吹き出しへ移行(_u3bSideHtml)。
   const html = `
     <div class="fevt-overlay-office" id="fevtCommon4Overlay">
       <div class="fevt-report-card">
@@ -10758,17 +10747,14 @@ function showFactionCommon4Modal(payload, state, onClose) {
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, `${factionName}が${line.headline}を組んだみたいです。`)}
-        <div class="fevt-subject-stage">
-          <div style="display:flex;gap:18px;align-items:flex-end;justify-content:center;margin-bottom:8px">
-            ${leaderPortrait}
-          </div>
-          <div class="fevt-subject-name">${factionName} — ${line.headline}</div>
-          <div class="fevt-subject-divider"></div>
+        <div class="fevt-subject-stage u3b-theme-cream">
+          ${_u3bSideHtml({
+            name: leaderName, line: line.leaderQuote || '',
+            imgUrl: leaderUrl, role: `${factionName} — ${line.headline}`,
+            bubbleClass: 'fevt-bubble',
+          })}
+          <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div style="color:#5d4a30;line-height:1.7;margin:8px 4px 0;font-size:14px">${line.narration}</div>
-          <div class="fevt-quote leader" style="margin-top:12px">
-            <div class="fevt-quote-speaker">${leaderName}（${factionName}）</div>
-            ${line.leaderQuote}
-          </div>
         </div>
         <div class="fevt-decision-tray" style="justify-content:center">
           <div class="fevt-decision-card" data-choice="OK" style="max-width:200px">
@@ -10985,8 +10971,6 @@ function showFactionCommon7Modal(payload, state, onChoice) {
   const planType = String(payload.planType || '合同企画');
   const archA = payload.archetypeAId || null;
   const archB = payload.archetypeBId || null;
-  const leftPortrait = lA ? `<div class="fevt-pair-portrait" style="background-image:url('${_factionUpperUrl(lA.id)}');background-size:cover;background-position:center 20%"></div>` : `<div class="fevt-pair-portrait"></div>`;
-  const rightPortrait = lB ? `<div class="fevt-pair-portrait" style="background-image:url('${_factionUpperUrl(lB.id)}');background-size:cover;background-position:center 20%"></div>` : `<div class="fevt-pair-portrait"></div>`;
 
   const vars = { factionAName, factionBName, planType };
   const coachLine = (Engine.factions.getCommon7Line)
@@ -10999,6 +10983,8 @@ function showFactionCommon7Modal(payload, state, onChoice) {
     ? Engine.factions.getCommon7Line('leaderBQuote', { archetypeId: archB, vars })
     : '「乗った」';
 
+  // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は各リーダー側の頭上吹き出しへ移行。
+  // 両者とも発言するので F08 の duel 型と同様、両側の bubble-slot を埋める。
   const html = `
     <div class="fevt-overlay-office" id="fevtCommon7Overlay">
       <div class="fevt-report-card">
@@ -11007,23 +10993,24 @@ function showFactionCommon7Modal(payload, state, onChoice) {
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, coachLine)}
-        <div class="fevt-subject-stage">
+        <div class="fevt-subject-stage u3b-theme-cream">
           <div class="fevt-subject-pair">
-            ${leftPortrait}
+            <div class="col">
+              ${_u3bSideHtml({
+                name: lAName, line: aQuote, imgUrl: lA ? _factionUpperUrl(lA.id) : '',
+                role: factionAName, bubbleClass: 'fevt-bubble',
+              })}
+            </div>
             <div class="fevt-pair-bridge">＋</div>
-            ${rightPortrait}
+            <div class="col right">
+              ${_u3bSideHtml({
+                name: lBName, line: bQuote, imgUrl: lB ? _factionUpperUrl(lB.id) : '',
+                role: factionBName, bubbleClass: 'fevt-bubble',
+              })}
+            </div>
           </div>
-          <div class="fevt-subject-name">${factionAName} × ${factionBName}</div>
-          <div class="fevt-subject-org">${planType}</div>
-          <div class="fevt-subject-divider"></div>
-          <div class="fevt-quote leader">
-            <div class="fevt-quote-speaker">${lAName}（${factionAName}）</div>
-            ${aQuote}
-          </div>
-          <div class="fevt-quote leader" style="margin-top:8px">
-            <div class="fevt-quote-speaker">${lBName}（${factionBName}）</div>
-            ${bQuote}
-          </div>
+          <div class="fevt-subject-org" style="margin-top:6px">${planType}</div>
+          <div class="fevt-subject-divider" style="margin-top:12px"></div>
         </div>
         <div class="fevt-decision-prompt">この合同企画、社長としてどう扱いますか？</div>
         <div class="fevt-decision-tray three">
@@ -13591,34 +13578,51 @@ function _glimpseEmoIcon(g) {
   return '♥';
 }
 
+/** Glimpse Cascade カード内、アッパー画像+感情バッジ(対象側のみ)のHTML。
+ *  U3グループD統一(2026-07-26): _u3bSideHtml の imgHtml に差し込む。画像が無い場合は
+ *  既存の .u3b-upper-fallback(頭文字)を再利用する。 */
+function _gcAvatarImgHtml(charId, name, badgeEmoji) {
+  const url = (typeof getUpperUrl === 'function') ? getUpperUrl(charId) : '';
+  const inner = url
+    ? `<img src="${escHtml(url)}" alt="" onerror="this.style.display='none'">`
+    : `<div class="u3b-upper-fallback">${escHtml((name || '?').charAt(0))}</div>`;
+  const badge = badgeEmoji ? `<span class="gc-emo-badge">${escHtml(badgeEmoji)}</span>` : '';
+  return `<span class="gc-upper-inner">${inner}${badge}</span>`;
+}
+
+/** U3グループD統一(2026-07-26): 丸96pxアバターは梯子のS(108×162)アッパー画像へ移行
+ *  (mockup-baseline-v0.1 §2案2)。顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。
+ *  構造は「発言者→対象の2人1組(対象の右下に感情アイコン)」。単独版(targetなし)も対応。 */
 function _renderGlimpseCardHtml(g) {
   const toneCls = _glimpseToneClass(g);
   const emo = _glimpseEmoIcon(g);
-  const dialogue = g.dialogue ? `「${escHtml(g.dialogue)}」` : escHtml(g.label || '');
-  const speakerName = escHtml(g.speakerName || '');
-  const targetName = escHtml(g.targetName || '');
-  const label = escHtml(g.label || '');
+  const dialogue = g.dialogue ? `「${g.dialogue}」` : (g.label || '');
+  const label = g.label || '';
+  const tagHtml = label ? `<div class="gc-tag">${escHtml(label)}</div>` : '';
 
   if (g.targetId) {
-    return `<div class="gc-card ${toneCls}">
-      <div class="gc-bubble">${dialogue}</div>
-      <div class="gc-pair">
-        <div class="gc-avatar gc-from">${portraitImg(g.speakerId, 96)}</div>
-        <div class="gc-avatar gc-to">${portraitImg(g.targetId, 96)}<div class="gc-emo">${emo}</div></div>
+    return `<div class="gc-card ${toneCls} u3b-theme-stage">
+      <div class="gc-duo">
+        ${_u3bSideHtml({
+          name: g.speakerName, line: dialogue, size: 's',
+          imgHtml: _gcAvatarImgHtml(g.speakerId, g.speakerName),
+        })}
+        <div class="gc-duo-arrow">➜</div>
+        ${_u3bSideHtml({
+          name: g.targetName, size: 's',
+          imgHtml: _gcAvatarImgHtml(g.targetId, g.targetName, emo),
+        })}
       </div>
-      <div class="gc-rel">
-        <span class="gc-from-name">${speakerName}</span> → <span class="gc-to-name">${targetName}</span>
-        <span class="gc-tag">${label}</span>
-      </div>
+      ${tagHtml}
     </div>`;
   }
-  // 単独 Glimpse(target なし): アバター1枚を中央に
-  return `<div class="gc-card ${toneCls}">
-    <div class="gc-bubble solo">${dialogue}</div>
-    <div class="gc-pair" style="justify-content:center;padding-right:0">
-      <div class="gc-avatar">${portraitImg(g.speakerId, 96)}</div>
-    </div>
-    <div class="gc-rel"><span class="gc-from-name">${speakerName}</span><span class="gc-tag">${label}</span></div>
+  // 単独 Glimpse(target なし): 1人が語る
+  return `<div class="gc-card ${toneCls} u3b-theme-stage">
+    ${_u3bSideHtml({
+      name: g.speakerName, line: dialogue, size: 's',
+      imgHtml: _gcAvatarImgHtml(g.speakerId, g.speakerName),
+    })}
+    ${tagHtml}
   </div>`;
 }
 
@@ -13674,102 +13678,13 @@ function closeGlimpseCascade() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tier 2: バナーログフィードUI
-// ─────────────────────────────────────────────────────────────────────────────
-let _logFeedRotationTimer = null;
-let _logFeedCurrentIndex = 0;
-
-function refreshDojoLogFeed() {
-  const feed = (typeof G !== 'undefined' && G.weekLogFeed) || [];
-  const icon = document.querySelector('.dojo-log-feed-icon');
-  if (!icon) return;
-
-  // バッジ更新
-  const badge = icon.querySelector('.dojo-log-feed-badge');
-  if (badge) {
-    if (feed.length > 0) {
-      badge.textContent = feed.length;
-      badge.style.display = 'flex';
-    } else {
-      badge.style.display = 'none';
-    }
-  }
-
-  // 吹き出しローテーション
-  if (_logFeedRotationTimer) { clearInterval(_logFeedRotationTimer); _logFeedRotationTimer = null; }
-  const bubble = document.querySelector('.dojo-log-feed-bubble');
-  if (feed.length > 0) {
-    _logFeedCurrentIndex = 0;
-    _showLogFeedBubble(feed[0]);
-    if (feed.length > 1) {
-      _logFeedRotationTimer = setInterval(() => {
-        _logFeedCurrentIndex = (_logFeedCurrentIndex + 1) % feed.length;
-        _showLogFeedBubble(feed[_logFeedCurrentIndex]);
-      }, 5000);
-    }
-  } else if (bubble) {
-    bubble.style.display = 'none';
-  }
-
-  // パネルが開いていれば更新
-  const panel = document.getElementById('logFeedPanel');
-  if (panel && panel.style.display !== 'none') _renderLogFeedPanel();
-}
-
-function _showLogFeedBubble(log) {
-  const bubble = document.querySelector('.dojo-log-feed-bubble');
-  if (!bubble) return;
-  let text = `「${log.dialogue}」`;
-  if (log.targetName) text += ` → ${log.targetName}`;
-  bubble.innerHTML = `${portraitImg(log.speakerId, 24, 'dojo-log-feed-face')}<span class="dojo-log-feed-text">${text}</span>`;
-  bubble.style.display = 'flex';
-  bubble.style.animation = 'none';
-  void bubble.offsetWidth;
-  bubble.style.animation = '';
-}
-
-function toggleLogFeedPanel() {
-  const panel = document.getElementById('logFeedPanel');
-  if (!panel) return;
-  if (panel.style.display === 'none' || !panel.style.display) {
-    _renderLogFeedPanel();
-    panel.style.display = 'block';
-  } else {
-    panel.style.display = 'none';
-  }
-}
-
-function _renderLogFeedPanel() {
-  const panel = document.getElementById('logFeedPanel');
-  if (!panel) return;
-  const feed = (typeof G !== 'undefined' && G.weekLogFeed) || [];
-  const header = panel.querySelector('.log-feed-panel-header');
-  const list = panel.querySelector('.log-feed-panel-list');
-  if (header) header.textContent = `📋 今週の声（${feed.length}件）`;
-  if (!list) return;
-
-  if (feed.length === 0) {
-    list.innerHTML = '<div style="padding:12px;color:var(--text-dim);font-size:12px">今週は特に報告なし</div>';
-    return;
-  }
-
-  const toneEmoji = { positive: '💙', negative: '💔', warning: '⚠️', calm: '😌', dramatic: '⚡' };
-  list.innerHTML = feed.map(log => {
-    const emoji = toneEmoji[log.tone] || '💭';
-    const namesHtml = log.targetName
-      ? `${log.speakerName} <span class="log-feed-item-arrow">→</span> ${log.targetName}`
-      : log.speakerName;
-    return `<div class="log-feed-item">
-      <div class="log-feed-item-header">
-        ${portraitImg(log.speakerId, 24, 'log-feed-item-face')}
-        <span class="log-feed-item-names">${namesHtml}</span>
-      </div>
-      <div class="log-feed-item-label">${emoji} ${log.label}</div>
-      <div class="log-feed-item-dialogue">「${log.dialogue}」</div>
-    </div>`;
-  }).join('');
-}
-
+// U3グループD統一(2026-07-26): 旧「Tier 2: バナーログフィードUI」(「今週の声」アイコン+
+// ローテーション吹き出し+一覧パネル)はKeisuke決定で機能ごと廃止。refreshDojoLogFeed /
+// _showLogFeedBubble / _renderLogFeedPanel / toggleLogFeedPanel と、ローテーション用の
+// _logFeedRotationTimer / _logFeedCurrentIndex を削除(呼び出し元は app.js 4箇所・
+// ui-render.js 1箇所を確認しすべて除去済み)。G.weekLogFeed のデータ自体は残し、
+// 道場バナーの「休憩中の選手」(_renderRosterDojoHeader 内 _isDojoRestEligibleGlimpse)の
+// 素材として使う。
 // ─────────────────────────────────────────────────────────────────────────────
 // 業界底上げ演出 — 1位達成翌シーズン開幕時の全画面演出 (v3: クリック送りカットイン)
 // ─────────────────────────────────────────────────────────────────────────────

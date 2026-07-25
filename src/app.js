@@ -9645,7 +9645,6 @@ const App = {
       }
       if (tier2.length > 0) {
         G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
-        refreshDojoLogFeed();
       }
       if (tier1.length > 0) {
         setTimeout(() => {
@@ -10530,7 +10529,6 @@ const App = {
       const tier2 = allGlimpses.filter(g => !_isGlimpseTier1(g));
       if (tier2.length > 0) {
         G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
-        refreshDojoLogFeed();
       }
       if (tier1.length > 0) {
         const glimpseDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 800;
@@ -14104,7 +14102,6 @@ App.closePPVResult = function() {
     const tier2 = allGlimpses.filter(g => !_isGlimpseTier1(g));
     if (tier2.length > 0) {
       G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
-      refreshDojoLogFeed();
     }
     if (tier1.length > 0) {
       setTimeout(() => { showGlimpseCascade(tier1); }, 500);
@@ -14176,7 +14173,6 @@ App.closePPVTV = function() {
     const tier2 = allGlimpses.filter(g => !_isGlimpseTier1(g));
     if (tier2.length > 0) {
       G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
-      refreshDojoLogFeed();
     }
     if (tier1.length > 0) {
       setTimeout(() => { showGlimpseCascade(tier1); }, 500);

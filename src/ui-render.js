@@ -1679,6 +1679,32 @@ function renderWeekScreen() {
   el.innerHTML = html;
 }
 
+// U3グループD統一(2026-07-26): mockup-baseline-v0.1 §3「セリフの吹き出しは白(クリーム)に黒文字。
+// 例外なし」に合わせ、コーチ吹き出し(.dojo-scene-bubble)を白+黒文字化。コーチ名は吹き出しの外(上)へ。
+// コーチ不在時の雰囲気テキストは話者のいない地の文なので白塗り・鉤括弧にしない(.dojo-scene-atmosphere)。
+// 旧ログフィードUI(「今週の声」パネル/アイコン)はKeisuke決定で機能ごと廃止し、
+// 「休憩中の選手」(バナー右下、G.weekLogFeedの心情・関係性グリンプスから低確率で1〜2人)に置き換えた。
+// G.weekLogFeed のデータ自体は残す(このセクションが素材として使う)。
+const DOJO_REST_B_TYPES = new Set(['GL-02', 'GL-03', 'GL-04', 'GL-05', 'GL-06', 'GL-07', 'GL-10', 'GL-11', 'GL-12']);
+const DOJO_REST_A_AXES = new Set(['bond', 'rivalry', 'trust']);
+const DOJO_REST_PROB = 0.18; // 控えめ: 対象1件につき18%抽選、最大2人。該当ゼロなら何も出さない
+/** 休憩中の選手候補として使える Glimpse か判定する。
+ *  心の状態・人間関係を映すものだけに絞り、成績・数値・試合結果の報告は除外する:
+ *  - layer A: axis が bond/rivalry/trust の閾値通過(tier2側。tone=gold/dangerの濃いものは
+ *    Glimpse Cascadeで既出のためここには来ない)。いずれも関係性・信頼度そのもの
+ *  - layer B: GL-02(練習中のひとこと)/GL-03(信頼度の揺れ)/GL-04(仲間への想い)/
+ *    GL-05(ライバルへの意識)/GL-06(不出場の鬱憤)/GL-07(コンディション不良)/
+ *    GL-10(怪我中の焦り)/GL-11(冷たい距離)/GL-12(第三者の証言)のみ許可
+ *  - 除外: GL-01(試合後の感情。セリフが「勝てた」「負けた」と勝敗を直接報告する)/
+ *    GL-08(連敗のストレス)/GL-09(連勝の自信。どちらも連勝・連敗という成績記録が主題)/
+ *    hotstreak_end(絶好調の終わりという成績変化の告知) */
+function _isDojoRestEligibleGlimpse(g) {
+  if (!g) return false;
+  if (g.layer === 'A') return DOJO_REST_A_AXES.has(g.axis);
+  if (g.layer === 'B') return DOJO_REST_B_TYPES.has(g.type);
+  return false;
+}
+
 function _renderRosterDojoHeader() {
   const el = document.getElementById('rosterDojoHeader');
   if (!el) return;
@@ -1704,26 +1730,25 @@ function _renderRosterDojoHeader() {
       html += `<div class="dojo-scene-coach-avatar" onclick="showCoachTooltip(${coachForBubble.id})" style="cursor:pointer">
         ${coachPortraitImg(coachForBubble, 48)}
       </div>`;
-    }
-    html += '<div class="dojo-scene-bubble">';
-    if (report && coachForBubble) {
-      html += `<div class="coach-name">💬 ${report.coachName}</div>`;
-      html += `「${report.reportText}」`;
-    } else if (coachForBubble) {
-      html += `<div class="coach-name">💬 ${coachForBubble.name}</div>`;
-      html += `「${atmo.text}」`;
+      const speakerName = (report && report.coachName) ? report.coachName : coachForBubble.name;
+      const speechText = (report && report.reportText) ? report.reportText : atmo.text;
+      html += `<div class="dojo-scene-coach-text">
+        <div class="dojo-scene-coach-name">${speakerName}</div>
+        <div class="dojo-scene-bubble">「${speechText}」</div>
+      </div>`;
     } else {
-      html += `${atmo.emoji}「${atmo.text}」`;
+      html += `<div class="dojo-scene-atmosphere">${atmo.emoji} ${atmo.text}</div>`;
     }
-    html += '</div></div>';
+    html += '</div>';
   }
 
-  // --- 選手アイコン（右下） ---
+  // --- 選手アイコン（中央・練習中） ---
   // 雰囲気レベルに応じた人数: level1=0, level2=0-1, level3=1, level4=1-2, level5=2-3
   const levelMaxMap = [0, 0, 1, 1, 2, 3]; // index = atmo.level (1-5)
   const levelMinMap = [0, 0, 0, 1, 1, 2];
   const maxFighters = levelMaxMap[atmo.level] || 0;
   const minFighters = levelMinMap[atmo.level] || 0;
+  const practicingIds = new Set();
 
   if (maxFighters > 0 && G.roster && G.roster.length > 0) {
     const fRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, 777));
@@ -1740,6 +1765,7 @@ function _renderRosterDojoHeader() {
     if (picked.length > 0) {
       html += '<div class="dojo-scene-fighters">';
       picked.forEach((c, idx) => {
+        practicingIds.add(c.id);
         const offsetY = Engine.rng.int(fRng, -5, 5);
         const delay = Engine.rng.int(fRng, 0, 8);
         const cycle = 13 + Engine.rng.int(fRng, 0, 6); // 13-19sでバラけさせる
@@ -1752,19 +1778,32 @@ function _renderRosterDojoHeader() {
     }
   }
 
-  // ログフィードアイコン（バナー右下）
-  html += `<div class="dojo-log-feed">
-    <div class="dojo-log-feed-icon" onclick="toggleLogFeedPanel()">📋<span class="dojo-log-feed-badge" style="display:none">0</span></div>
-    <div class="dojo-log-feed-bubble" style="display:none"></div>
-  </div>`;
+  // --- 休憩中の選手（右下）。中央で練習中の面々とは重複させない ---
+  const eligibleRest = (G.weekLogFeed || []).filter(_isDojoRestEligibleGlimpse);
+  if (eligibleRest.length > 0 && G.roster && G.roster.length > 0) {
+    const restRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, 555));
+    const availableIds = new Set(G.roster.filter(c => !c.injury && !c.onLeave).map(c => c.id));
+    const restCandidates = eligibleRest.filter(g => availableIds.has(g.speakerId) && !practicingIds.has(g.speakerId));
+    const restPicked = [];
+    restCandidates.forEach(g => {
+      if (restPicked.length >= 2) return;
+      if (Engine.rng.float(restRng) < DOJO_REST_PROB) restPicked.push(g);
+    });
+
+    if (restPicked.length > 0) {
+      html += '<div class="dojo-rest-fighters">';
+      restPicked.forEach(g => {
+        const delay = Engine.rng.int(restRng, 0, 14); // 22s周期の中でバラけさせる
+        html += `<div class="dojo-rest-fighter" title="${g.speakerName || ''}" onclick="showFighterPopup(${g.speakerId},'roster')">`;
+        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">「${g.dialogue || g.label || ''}」</div>`;
+        html += `<div class="dojo-rest-avatar">${portraitImg(g.speakerId, 34)}</div>`;
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+  }
 
   html += '</div>'; // .dojo-header 閉じ
-
-  // ログ一覧パネル（バナー直後）
-  html += '<div class="log-feed-panel" id="logFeedPanel" style="display:none">';
-  html += '<div class="log-feed-panel-header" onclick="toggleLogFeedPanel()">📋 今週の声（0件）</div>';
-  html += '<div class="log-feed-panel-list"></div>';
-  html += '</div>';
 
   // コーチ特性（バナー外に残す）
   if (hired.length > 0) {
@@ -1772,9 +1811,6 @@ function _renderRosterDojoHeader() {
     html += `<div class="train-tendency" style="margin-bottom:8px">→ コーチ能力: <strong>${abilityParts.join('、')}</strong></div>`;
   }
   el.innerHTML = html;
-
-  // ログフィードの状態を反映
-  refreshDojoLogFeed();
 
   // 吹き出しテキストを毎サイクルでランダム差し替え
   const DOJO_SHOUTS = [
