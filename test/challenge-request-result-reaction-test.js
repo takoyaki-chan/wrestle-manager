@@ -70,7 +70,7 @@ assert.strictEqual(inverse.defeated, false, 'the winning defender portrait stays
 // 勝った回は、報告の前に「敗れた相手団体の代表」の顔を挟む（Keisuke 要望）。
 const foe = foeReactionFor(inverseCard, { teamWin: 'B' }, state, true, false);
 assert.strictEqual(foe.fighter, awayChallenger, 'the beaten opposing representative is the one shown');
-assert.ok(CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama.lose.includes(foe.line),
+assert.ok(CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_normal.lose.includes(foe.line),
   'the defeated challenger uses an archetype-specific loss line');
 assert.strictEqual(foe.defeated, true, 'the defeated challenger portrait is marked for grayscale styling');
 assert.ok(ui.includes('const showFoeFirst'),

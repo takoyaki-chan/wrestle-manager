@@ -11183,8 +11183,11 @@ function _challengeRequestOpponentReaction(card, result, state, playerWon, playe
     : (isInverse ? '挑んだ代表・決着つかず' : '受けた代表・決着つかず');
 
   const arch = (fighter && fighter.archetype) || 'normal';
+  const personality = (fighter && fighter.personality) || 'normal';
   const pool = typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined'
-    ? (CHALLENGE_REQUEST_OPPONENT_REACTIONS[arch] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal)
+    ? (CHALLENGE_REQUEST_OPPONENT_REACTIONS[`${arch}_${personality}`]
+      || CHALLENGE_REQUEST_OPPONENT_REACTIONS[`${arch}_normal`]
+      || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal)
     : null;
   const lines = pool && ((pool[outcome] && pool[outcome].length > 0) ? pool[outcome] : pool._accept);
   const rng = fighter ? Engine.rng.create(Engine.rng.derive(
