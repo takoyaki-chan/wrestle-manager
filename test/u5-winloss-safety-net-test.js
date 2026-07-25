@@ -32,27 +32,44 @@
 //   11. ロースター一覧カードの通算(_renderRosterDetailPanel)
 //
 // 重要な既知の欠落・不審点(このテストを書く過程で発見。直さず報告する。詳細は各セクション内のコメント):
-//   a. showChallengeRequestResultModal: 自陣/相手陣リアクション(顔+セリフ)はescHtml済みだが、
-//      試合ごとの行(crrm-name)・スコアバナーの団体名(reqName/oppName/ourOrg/otherOrgName)は
-//      生のまま差し込まれる(escHtml無し)。同一画面内で一貫していない。
+//   a. [U5で修正済み] showChallengeRequestResultModal: 旧実装は自陣/相手陣リアクション(顔+セリフ)
+//      だけescHtml済みで、試合ごとの行(crrm-name)・スコアバナー/coachLineの団体名
+//      (reqName/oppName/ourOrg/otherOrgName)は生のまま差し込まれていた(同一画面内で不統一)。
+//      U5で表示用に*Safe変数(reqNameSafe等)を追加しescHtml()を通すよう修正。ただし生の
+//      reqName/ourOrg/otherOrgNameは_awOrgEmblem()の団体名完全一致検索にも使われているため、
+//      その変数自体は書き換えずそのまま残した(セクション1eで回帰テスト化)。
 //   b. renderWarFinalResult: 個々の試合行は winnerIsDraw を常に false 固定で _pbResultColumn に渡す。
-//      War対抗戦は1v1×N試合の構造上、個々の試合自体はドローになり得るが(matchEngineの仕様次第)、
-//      この画面は「シリーズ通算(勝ち越し/引き分け/負け越し)」の3状態しか表現できず、
-//      個々の試合行では常に is-winner/is-loser の2値になる(3値目が構造的に出せない)。
-//   c. renderWarFinalResult / _renderB3MatchResult / _renderB2MatchResult: winnerLabel文字列は
-//      escHtml(fighter.name)で組み立てるが、_pbFighterBlock内の選手名リンク(fLink経由)は
-//      c.nameを生のまま差し込む(fLinkにescHtml無し)。同じ画面内で「勝者ラベルの名前」はエスケープ
-//      され「顔の下の名前リンク」はエスケープされない非対称がある。
-//   d. _buildB2Step3 / _buildB3Step3: escHtml()を一度も呼ばない(選手名・相手名が生のまま)。
-//   e. _npRenderDigest / _npRenderPlayerShow / _npRenderPage2: いずれもescHtml()を一度も呼ばない
-//      (選手名・団体名が生のまま新聞紙面に差し込まれる)。
-//   f. renderSpringTagLeagueBoard の直近試合ストリップ(_stlLastMatchStripHtml)は勝者側にのみ
-//      「WIN」タグを出す。引き分け時はどちらの陣営にも is-win/is-lose/明示テキストが一切付かず、
-//      「両者ともWINタグが無い」という消去法でしか引き分けと判別できない
-//      (順位表側は${draws}分の文言があり判別できるので、画面全体としては致命的ではないが、
-//      ストリップ単体では引き分けを明示しない)。
-//   g. _renderRosterDetailPanel(ロースター一覧カードの通算): escHtml()を一度も呼ばない
-//      (選手名がrd-portrait-name等に生のまま差し込まれる)。
+//      U5で調査確定: match-engine.js の simulateMatch は singles で winner:'draw'(時間切れ引き分け)を
+//      実際に返し得る。App.warWatchMatch/warSkipMatch/warSkipAll(app.js)と Engine.event.resolveWar
+//      (management.js)はこの結果を `{...r, playerWon: (winner==='left')}` の形で results[] に積むため、
+//      raw な winner フィールド自体は renderWarFinalResult まで残っている(表示だけなら draw を復元できる)。
+//      ただし同じ playerWon 判定が「シリーズ通算スコア」の集計(app.js: `if (r.playerWon) playerWins++;
+//      else aiWins++;`)にも使われており、drawになった試合はそこで無条件にAI側の勝ち数へ算入されている。
+//      そのため試合行だけ draw 表示に直しても、直上のスコアバナー(playerWins-aiWins)とは整合しない
+//      (例: 1勝1分1敗のはずが「1-2」と表示される)。見せ方だけの修正では片手落ちになるため、
+//      U5では見送り、実装しないまま報告する(スコア集計側の修正はapp.js/management.jsの勝敗判定ロジック
+//      そのものに手を入れる話で、UI統一の範囲を超える)。
+//   c. [U5で修正済み] renderWarFinalResult / _renderB3MatchResult / _renderB2MatchResult: winnerLabel
+//      文字列はescHtml(fighter.name)で組み立てていたが、_pbFighterBlock内の選手名リンク(fLink経由)は
+//      c.nameを生のまま差し込んでいた(非対称)。U5で共有ヘルパーfLink()自体にescHtml()を組み込んで
+//      修正(セクション4d/5dで回帰テスト化。fLinkは他7箇所からも呼ばれる共有部品のため、そちらにも
+//      副次的に効く)。
+//   d. [U5で修正済み] _buildB2Step3 / _buildB3Step3: 旧実装は escHtml() を一度も呼ばず選手名・
+//      相手名が生のまま出力されていた。U5で escHtml() を通すよう修正(セクション6dで回帰テスト化)。
+//   e. [U5で修正済み] _npRenderDigest / _npRenderPlayerShow / _npRenderPage2: 旧実装はいずれも
+//      escHtml()を一度も呼ばず選手名・団体名が生のまま新聞紙面に差し込まれていた。U5でescHtml()を
+//      通すよう修正(セクション7c/8c/9cで回帰テスト化)。_npRenderPage2は関数内でd.playerName/
+//      d.rivalNameをescHtml済みの値へ上書きする方式(dはこの関数呼び出し専用の新規オブジェクトなので
+//      安全)。共有ヘルパー_npClickNameも内部でescHtml化(他4箇所の呼び出し元にも波及する副次的な修正)。
+//   f. [U5で修正済み] renderSpringTagLeagueBoard の直近試合ストリップ(_stlLastMatchStripHtml)は
+//      旧実装では勝者側にのみ「WIN」タグを出し、引き分け時はどちらの陣営にも is-win/is-lose/明示
+//      テキストが一切付かず「両者ともWINタグが無い」という消去法でしか判別できなかった。
+//      U5で is-draw クラス + 「△ DRAW」タグ(draw-tag)を両陣営に明示するよう修正。以下のセクション
+//      2c で回帰テストとして固定する(もう known gap ではない)。
+//   g. [U5で修正済み] _renderRosterDetailPanel(ロースター一覧カードの通算): 旧実装はescHtml()を
+//      一度も呼ばず選手名がrd-portrait-name等に生のまま差し込まれていた。U5でescHtml()を通すよう
+//      修正(セクション11cで回帰テスト化)。同関数内の担当コーチ名(coach.name)は選手名ではなく、
+//      固定35名の既存データのみが入るため対象外(未修正のまま)。
 //
 // ===========================================================================
 
@@ -213,7 +230,8 @@ function logGap(msg) {
       '例外を投げない(不変条件1)');
     const html = getRoot().innerHTML;
     // playerWon(forward, teamWin==='A') なので playerScore=winsA=2, aiScore=winsB=1
-    assert.ok(/crrm-score-num[^>]*>\s*2\s*-\s*1\s*</.test(html), 'スコアが「2 - 1」の順で出る。左=自陣勝ち数、右=相手陣勝ち数の取り違えが無い(不変条件3)');
+    // U5でスコア区切りをemダッシュ「—」に統一(旧: ハイフン)。左右の数値順が正しいことが本質の不変条件。
+    assert.ok(/crrm-score-num[^>]*>\s*2\s*—\s*1\s*</.test(html), 'スコアが「2 — 1」の順で出る。左=自陣勝ち数、右=相手陣勝ち数の取り違えが無い(不変条件3)');
   });
 
   // --- 1b. inverse(他団体からの逆打診)でもプレイヤー側スコアが左に来る(左右取り違えチェック) ---
@@ -225,7 +243,7 @@ function logGap(msg) {
     const state = { orgName: 'プレイヤー団体', season: 2, week: 5, rngSeed: 1 };
     built.showChallengeRequestResultModal(card, result, state, () => {});
     const html = getRoot().innerHTML;
-    assert.ok(/crrm-score-num[^>]*>\s*3\s*-\s*1\s*</.test(html),
+    assert.ok(/crrm-score-num[^>]*>\s*3\s*—\s*1\s*</.test(html),
       'inverseでも自陣(プレイヤー)勝ち数が左に出る。isInverseでplayerScore/aiScoreの取り違えが無い(不変条件3)');
   });
 
@@ -266,8 +284,9 @@ function logGap(msg) {
     });
   });
 
-  // --- 1e. HTMLエスケープ: リアクション欄はescHtml済み、試合行/スコアバナーの団体名は生のまま(既知) ---
-  section('crrm: reaction scene is escaped; match-row names and org names are not (mixed — known gap logged, not fixed)', () => {
+  // --- 1e. HTMLエスケープ: U5でスコアバナー/coachLine/試合行もescHtml()を通すよう修正 ---
+  // (旧: リアクション欄だけescHtml済みで、それ以外は生のままという非対称な既知の欠落だった。不変条件7)
+  section('crrm: reaction scene, score banner, coach line, and match rows are all escaped now (fixed in U5, was a mixed known gap)', () => {
     const { built, getRoot } = makeBundle({});
     const card = baseCard({
       teamA: [{ id: 1, name: '<script>alert(1)</script>' }],
@@ -279,25 +298,18 @@ function logGap(msg) {
     assert.doesNotThrow(() => built.showChallengeRequestResultModal(card, result, state, () => {}),
       '悪意ある名前でも例外を投げない(不変条件6の派生)');
     const html = getRoot().innerHTML;
-    // reqName(=card.teamA[0].name)は「リアクション欄(escHtml経由)」と「スコアバナー/coachLine(生のまま)」の
-    // 両方に流れ込むため、全体からの単純な有無だけでは判定できない。crrm-reaction-name枠だけを切り出して検証する。
+    // reqName(=card.teamA[0].name)は「リアクション欄」「スコアバナー/coachLine」の両方に流れ込む。
     const reactionIdx = html.indexOf('crrm-reaction-name">'); // CSS内の.crrm-reaction-name(セレクタ)ではなく実際のdivを狙う
     assert.ok(reactionIdx >= 0, 'リアクション欄が出力される');
     const reactionSlice = html.slice(reactionIdx, reactionIdx + 200);
-    assert.ok(!reactionSlice.includes('<script>alert(1)</script>'), 'リアクション欄内の選手名はエスケープされる(現状の正しい挙動として固定)');
+    assert.ok(!reactionSlice.includes('<script>alert(1)</script>'), 'リアクション欄内の選手名はエスケープされる(不変条件7)');
     assert.ok(reactionSlice.includes('&lt;script&gt;'), 'リアクション欄内はescHtml()でエスケープされた形で出力される');
-    // 同じ名前がスコアバナー/coachLine(reqName)には生のまま出ることを確認する(既知の欠落)
-    if (html.includes('<script>alert(1)</script>')) {
-      logGap('showChallengeRequestResultModal: スコアバナー/coachLine内のreqName(=card.teamA[0].name)はescHtmlされない(リアクション欄は同じ名前をescHtmlするのに対して非対称)');
-    }
-    // 試合行の選手名(crrm-name)はescHtmlを通らず生のまま出る
-    if (html.includes('<script>alert(3)</script>')) {
-      logGap('showChallengeRequestResultModal: 試合行(crrm-name)の選手名はescHtmlされない');
-    }
-    // スコアバナーの相手団体名(otherOrgName)もescHtmlを通らない
-    if (html.includes('<script>alert(2)</script>')) {
-      logGap('showChallengeRequestResultModal: スコアバナー/見出しの団体名(otherOrgName)はescHtmlされない');
-    }
+    // スコアバナー/coachLine内のreqNameもエスケープされる(U5で修正)
+    assert.ok(!html.includes('<script>alert(1)</script>'), 'reqNameはどこにも生のまま出力されない(不変条件7)');
+    // 試合行の選手名(crrm-name)もエスケープされる(U5で修正)
+    assert.ok(!html.includes('<script>alert(3)</script>'), '試合行(crrm-name)の選手名は生のまま出力されない(不変条件7)');
+    // スコアバナーの相手団体名(otherOrgName)もエスケープされる(U5で修正)
+    assert.ok(!html.includes('<script>alert(2)</script>'), 'スコアバナー/見出しの団体名(otherOrgName)は生のまま出力されない(不変条件7)');
   });
 })();
 
@@ -422,13 +434,13 @@ function logGap(msg) {
     assert.ok(html.includes('1勝') && html.includes('1分'), 'playerの戦績「1勝」「1分」がテキストで出る(不変条件2)');
     assert.ok(html.includes('1敗'), '敗北チームの「1敗」がテキストで出る(不変条件2)');
     assert.ok(html.includes('5<small>pt</small>') || /5<small>pt/.test(html), 'player(5pt)の勝ち点数値が出る(不変条件3)');
-    // 直近試合ストリップ(m2=引き分け)には勝者側のWINタグが両方とも無い
+    // 直近試合ストリップ(m2=引き分け)。U5で△DRAWタグを明示するようになったため、
+    // 「両陣営ともWINタグが無いことでしか判別できない」という旧既知の欠落は解消(fixed, not a known gap)。
     const stripStart = html.indexOf('stl-lastmatch-label');
     assert.ok(stripStart >= 0, '直近試合ストリップが出る');
     const strip = html.slice(stripStart - 40, stripStart + 800);
-    if (!strip.includes('win-tag') ) {
-      logGap('renderSpringTagLeagueBoard: 直近試合が引き分けのとき、ストリップ内にWINタグ以外の明示的な引き分け表示が無い(両陣営ともWINタグが無いことでしか判別できない)');
-    }
+    assert.ok(!strip.includes('win-tag'), '引き分け行にはWINタグが付かない');
+    assert.strictEqual((strip.match(/draw-tag/g) || []).length, 2, '引き分け行は両陣営に△DRAWタグ相当(draw-tag)が明示される(不変条件2)');
     // 次戦プレビュー(matches[3]、未消化)も出る
     assert.ok(html.includes('NEXT MATCH'), '次戦プレビューが出る');
   });
@@ -764,17 +776,16 @@ function logGap(msg) {
     assert.doesNotThrow(() => built.renderWarFinalResult(ev, [], 0, 0, false));
   });
 
-  // --- 4d. エスケープ: verdictLabel近辺のwinnerLabelはescHtml済みだが、選手名リンク(fLink)は生のまま(既知) ---
-  section('renderWarFinalResult: winnerLabel is escaped but the fLink name is not (mixed — known gap logged, not fixed)', () => {
+  // --- 4d. エスケープ: U5でfLink()自体がescHtml()を通すよう修正。winnerLabelとの非対称は解消(不変条件7) ---
+  section('renderWarFinalResult: winnerLabel and the fLink name are both escaped now (fixed in U5, was a mixed known gap)', () => {
     const ev = { opponentOrgId: 'org_a', opponentName: '鬼道場' };
     const evilResults = [
       { playerFighter: fighter(1, '<script>alert(1)</script>'), aiFighter: fighter(11, '敵1'), playerWon: true, mq: 50, turns: 10, finType: 'pin', finMove: 'm1' },
     ];
     const { built, box } = makeBundle({});
     assert.doesNotThrow(() => built.renderWarFinalResult(ev, evilResults, 1, 0, true), '例外を投げない(不変条件6の派生)');
-    if (box.innerHTML.includes('<script>alert(1)</script>')) {
-      logGap('renderWarFinalResult: _pbFighterBlock内の選手名リンク(fLink経由)はescHtmlされない(winnerLabelの方はescHtml済みという非対称)');
-    }
+    assert.ok(!box.innerHTML.includes('<script>alert(1)</script>'), '_pbFighterBlock内の選手名リンク(fLink経由)も生のまま出力されない(不変条件7)');
+    assert.ok(box.innerHTML.includes('&lt;script&gt;'), 'escHtml()でエスケープされた形で出力される');
   });
 })();
 
@@ -868,16 +879,15 @@ function logGap(msg) {
     assert.doesNotThrow(() => built._renderB2MatchResult({}, { winner: 'draw', mq: 0, turns: 0 }, fighter(1, 'A'), fighter(2, 'B'), 2));
   });
 
-  // --- 5d. エスケープ: winnerLabelはescHtml済みだがfLink名は生のまま(既知, 不変条件7) ---
-  section('_renderB3MatchResult / _renderB2MatchResult: winnerLabel escaped, fLink fighter name not (mixed — known gap logged, not fixed)', () => {
+  // --- 5d. エスケープ: U5でfLink()自体がescHtml()を通すよう修正。winnerLabelとの非対称は解消(不変条件7) ---
+  section('_renderB3MatchResult / _renderB2MatchResult: winnerLabel and fLink fighter name are both escaped now (fixed in U5, was a mixed known gap)', () => {
     const evilF = fighter(1, '<script>alert(1)</script>');
     const okF = fighter(2, 'B');
     const { built, box } = makeBundle({});
     assert.doesNotThrow(() => built._renderB3MatchResult({ orgName: 'X', orgId: 'org_a' }, { winner: 'left', mq: 10, turns: 1 }, evilF, okF),
       '例外を投げない(不変条件6の派生)');
-    if (box.innerHTML.includes('<script>alert(1)</script>')) {
-      logGap('_renderB3MatchResult: _pbFighterBlock内の選手名リンク(fLink経由)はescHtmlされない');
-    }
+    assert.ok(!box.innerHTML.includes('<script>alert(1)</script>'), '_pbFighterBlock内の選手名リンク(fLink経由)も生のまま出力されない(不変条件7)');
+    assert.ok(box.innerHTML.includes('&lt;script&gt;'), 'escHtml()でエスケープされた形で出力される');
   });
 })();
 
@@ -888,7 +898,8 @@ function logGap(msg) {
 (function step3Suite() {
   const build = new Function(
     'Engine', 'getUpperUrl',
-    `${uiFn('_factionPickReporter')}
+    `${uiFn('escHtml')}
+     ${uiFn('_factionPickReporter')}
      ${uiFn('_mdlAReporterStrip')}
      ${uiFn('_mdlASeasonLabel')}
      ${uiFn('_buildB2Step3')}
@@ -939,20 +950,19 @@ function logGap(msg) {
     assert.doesNotThrow(() => built._buildB3Step3({ challenger: {}, selectedFighterId: 1 }, {}, roster));
   });
 
-  // --- 6d. エスケープ: escHtmlを一度も呼ばない(既知の欠落, 不変条件7) ---
-  section('_buildB2Step3 / _buildB3Step3: do not escape fighter/challenger names at all (known gap, reported not fixed)', () => {
+  // --- 6d. エスケープ: U5で escHtml() を通すよう修正(旧: 一度も呼ばない既知の欠落だった。不変条件7) ---
+  section('_buildB2Step3 / _buildB3Step3: now escape fighter/challenger names (fixed in U5, was a known gap)', () => {
     const built = makeBundle({});
     const evilRoster = [{ id: 1, name: '<script>alert(1)</script>', age: 20 }, { id: 2, name: 'B', age: 22 }];
     const html2 = built._buildB2Step3({ fighter1: 1, fighter2: 2, matchResult: { winner: 'fighter1' } }, {}, evilRoster);
     assert.doesNotThrow(() => built._buildB2Step3({ fighter1: 1, fighter2: 2, matchResult: { winner: 'fighter1' } }, {}, evilRoster),
       '例外を投げない(不変条件6の派生)');
-    if (html2.includes('<script>alert(1)</script>')) {
-      logGap('_buildB2Step3: escHtml()を一度も呼ばないため選手名が生のまま出力される');
-    }
+    assert.ok(!html2.includes('<script>alert(1)</script>'), '_buildB2Step3: 選手名は生のまま出力されない(不変条件7)');
+    assert.ok(html2.includes('&lt;script&gt;'), '_buildB2Step3: escHtml()でエスケープされた形で出力される');
+
     const html3 = built._buildB3Step3({ challenger: { id: 9, name: '<script>alert(2)</script>' }, orgName: '鬼道場', selectedFighterId: 1, matchResult: { winner: 'left', mq: 10 } }, {}, roster);
-    if (html3.includes('<script>alert(2)</script>')) {
-      logGap('_buildB3Step3: escHtml()を一度も呼ばないため相手選手名が生のまま出力される');
-    }
+    assert.ok(!html3.includes('<script>alert(2)</script>'), '_buildB3Step3: 相手選手名は生のまま出力されない(不変条件7)');
+    assert.ok(html3.includes('&lt;script&gt;'), '_buildB3Step3: escHtml()でエスケープされた形で出力される');
   });
 })();
 
@@ -962,7 +972,8 @@ function logGap(msg) {
 (function npDigestSuite() {
   const build = new Function(
     'G', 'Engine',
-    `${uiRenderFn('_npTurnsToTime')}
+    `${uiFn('escHtml')}
+     ${uiRenderFn('_npTurnsToTime')}
      ${uiRenderFn('_npThumbBg')}
      ${uiRenderFn('_npRenderDigest')}
      return { _npRenderDigest };`
@@ -1014,15 +1025,14 @@ function logGap(msg) {
     assert.doesNotThrow(() => built._npRenderDigest({ allMatches: [tagDraw] }, 1, 1), 'タッグ引き分けで例外なし');
   });
 
-  // --- 7c. エスケープ: escHtmlを一度も呼ばない(既知の欠落, 不変条件7) ---
-  section('_npRenderDigest: does not escape fighter names at all (known gap, reported not fixed)', () => {
+  // --- 7c. エスケープ: U5でescHtml()を通すよう修正(旧: 一度も呼ばない既知の欠落だった。不変条件7) ---
+  section('_npRenderDigest: now escapes fighter names (fixed in U5, was a known gap)', () => {
     const built = makeBundle({});
     const evilMatch = m({ left: { id: 1, name: '<script>alert(1)</script>' }, right: { id: 2, name: 'B' } });
     let html;
     assert.doesNotThrow(() => { html = built._npRenderDigest({ allMatches: [evilMatch] }, 1, 1); }, '例外を投げない(不変条件6の派生)');
-    if (html.includes('<script>alert(1)</script>')) {
-      logGap('_npRenderDigest: escHtml()を一度も呼ばないため選手名が生のまま新聞紙面に出力される');
-    }
+    assert.ok(!html.includes('<script>alert(1)</script>'), '選手名は生のまま出力されない(不変条件7)');
+    assert.ok(html.includes('&lt;script&gt;'), 'escHtml()でエスケープされた形で出力される');
   });
 })();
 
@@ -1032,7 +1042,8 @@ function logGap(msg) {
 (function npPlayerShowSuite() {
   const build = new Function(
     'G', 'Engine', 'getUpperUrl',
-    `${uiRenderFn('_npPhotoBg')}
+    `${uiFn('escHtml')}
+     ${uiRenderFn('_npPhotoBg')}
      ${uiRenderFn('_npTurnsToTime')}
      ${uiRenderFn('_npThumbBg')}
      ${uiRenderFn('_renderNewspaperInjuries')}
@@ -1081,15 +1092,14 @@ function logGap(msg) {
     assert.strictEqual(built._npRenderPlayerShow({ left: null, right: { id: 2 } }, 1, 1), '', 'left/right欠落時は空文字を返す');
   });
 
-  // --- 8c. エスケープ: escHtmlを一度も呼ばない(既知の欠落, 不変条件7) ---
-  section('_npRenderPlayerShow: does not escape fighter names at all (known gap, reported not fixed)', () => {
+  // --- 8c. エスケープ: U5でescHtml()を通すよう修正(旧: 一度も呼ばない既知の欠落だった。不変条件7) ---
+  section('_npRenderPlayerShow: now escapes fighter names (fixed in U5, was a known gap)', () => {
     const built = makeBundle({});
     const d = baseD({ left: { id: 1, name: '<script>alert(1)</script>' }, winner: { id: 1 } });
     let html;
     assert.doesNotThrow(() => { html = built._npRenderPlayerShow(d, 1, 1); }, '例外を投げない(不変条件6の派生)');
-    if (html.includes('<script>alert(1)</script>')) {
-      logGap('_npRenderPlayerShow: escHtml()を一度も呼ばないため選手名が生のまま新聞紙面に出力される');
-    }
+    assert.ok(!html.includes('<script>alert(1)</script>'), '選手名は生のまま出力されない(不変条件7)');
+    assert.ok(html.includes('&lt;script&gt;'), 'escHtml()でエスケープされた形で出力される');
   });
 })();
 
@@ -1150,12 +1160,15 @@ function logGap(msg) {
     'G', 'Engine', 'RIVAL_ORGS',
     `let _dbCompareTarget = null;
      const NP_KURODA_BYLINE = { news: 'x', rating: 'x', editorial: 'x', rivalry: 'x', warRecord: 'x' };
+     ${uiFn('escHtml')}
      ${uiRenderFn('_npPaperHeader')}
      ${uiRenderFn('_npKurodaFaceUrl')}
      ${uiRenderFn('_npOrgEmblem')}
+     ${uiRenderFn('_npClickName')}
      ${uiRenderFn('_npFindOrgChampion')}
      ${uiRenderFn('_npComputeWarRecord')}
      ${uiRenderFn('_npThumbBg')}
+     ${uiRenderFn('_npStandBg')}
      ${uiRenderFn('_npRenderPage2')}
      return { _npRenderPage2, getCompareTarget: () => _dbCompareTarget };`
   );
@@ -1204,10 +1217,12 @@ function logGap(msg) {
     };
     let html;
     assert.doesNotThrow(() => { html = built._npRenderPage2(); }, '例外を投げない(不変条件1)');
-    assert.ok(html.includes('3勝-1敗-1分'), '通算「3勝-1敗-1分」が数値どおりに出る(不変条件3, 4)');
-    assert.ok(html.includes('3-0'), '対抗戦(war)内訳「3-0」が出る');
-    assert.ok(html.includes('0-1'), 'PPV内訳「0-1」が出る');
-    assert.ok(html.includes('0-0-1分'), '挑戦状(b3)内訳「0-0-1分」が出る');
+    // U5で通算成績の書式を「N勝N敗N分」に統一(旧: overallが「N勝-N敗-N分」、breakdownが「N-N-N分」で
+    // 同じウィジェット内でも不統一だった)。数値そのものが正しく出ることが本質の不変条件。
+    assert.ok(html.includes('3勝1敗1分'), '通算「3勝1敗1分」が数値どおりに出る(不変条件3, 4)');
+    assert.ok(html.includes('3勝0敗'), '対抗戦(war)内訳「3勝0敗」が出る');
+    assert.ok(html.includes('0勝1敗'), 'PPV内訳「0勝1敗」が出る');
+    assert.ok(html.includes('0勝0敗1分'), '挑戦状(b3)内訳「0勝0敗1分」が出る');
     assert.ok(html.includes('2連勝中'), '連勝ラベルが出る(不変条件2)');
   });
 
@@ -1219,14 +1234,14 @@ function logGap(msg) {
     assert.ok(!html.includes('np-war-record'), '対戦履歴が無いときは通算成績ブロック自体を出さない(0-0-0の端のケースで落ちない)');
   });
 
-  section('_npRenderPage2: does not escape the player org name at all (known gap, reported not fixed)', () => {
+  // U5で escHtml() を通すよう修正(旧: 一度も呼ばない既知の欠落だった。不変条件7)
+  section('_npRenderPage2: now escapes the player org name (fixed in U5, was a known gap)', () => {
     const d = makePage2D({ playerName: '<script>alert(1)</script>' });
     const { built } = makePage2Bundle({ d });
     let html;
     assert.doesNotThrow(() => { html = built._npRenderPage2(); }, '例外を投げない(不変条件6の派生)');
-    if (html.includes('<script>alert(1)</script>')) {
-      logGap('_npRenderPage2: escHtml()を一度も呼ばないため団体名(playerName等)が生のまま新聞紙面に出力される');
-    }
+    assert.ok(!html.includes('<script>alert(1)</script>'), '団体名(playerName)は生のまま出力されない(不変条件7)');
+    assert.ok(html.includes('&lt;script&gt;'), 'escHtml()でエスケープされた形で出力される');
   });
 })();
 
@@ -1254,6 +1269,7 @@ console.log('  [skip] fighter popup overall record / last-5 (embedded in showFig
     `let _rosterDetailOpenId = null;
      let _rosterDetailTab = {};
      const STAT_TIPS = {};
+     ${uiFn('escHtml')}
      function ov(c) { return Engine.util.ov(c); }
      function _tipAttr() { return ''; }
      function _scale6Style() { return ''; }
@@ -1310,15 +1326,14 @@ console.log('  [skip] fighter popup overall record / last-5 (embedded in showFig
     assert.ok(html.includes('王者'), 'タイトル保持者のとき王者バッジが出る');
   });
 
-  // --- 11c. エスケープ: escHtmlを一度も呼ばない(既知の欠落, 不変条件7) ---
-  section('_renderRosterDetailPanel: does not escape the fighter name at all (known gap, reported not fixed)', () => {
+  // --- 11c. エスケープ: U5でescHtml()を通すよう修正(旧: 一度も呼ばない既知の欠落だった。不変条件7) ---
+  section('_renderRosterDetailPanel: now escapes the fighter name (fixed in U5, was a known gap)', () => {
     const built = makeBundle({});
     const evilChar = baseChar({ name: '<script>alert(1)</script>' });
     let html;
     assert.doesNotThrow(() => { html = built._renderRosterDetailPanel(evilChar, []); }, '例外を投げない(不変条件6の派生)');
-    if (html.includes('<script>alert(1)</script>')) {
-      logGap('_renderRosterDetailPanel: escHtml()を一度も呼ばないため選手名が生のまま出力される(rd-portrait-name等)');
-    }
+    assert.ok(!html.includes('<script>alert(1)</script>'), '選手名(rd-portrait-name等)は生のまま出力されない(不変条件7)');
+    assert.ok(html.includes('&lt;script&gt;'), 'escHtml()でエスケープされた形で出力される');
   });
 })();
 

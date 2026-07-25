@@ -1869,7 +1869,7 @@ function _renderRosterDetailPanel(c, hired) {
     const _ini = _ch ? _ch.name.charAt(0) : '?';
     const _SC = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Aerial:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
     const _co = _ch ? (_SC[_ch.style] || '#888') : '#888';
-    leftCol += `<img class="rd-portrait-img" src="${fullUrl}" alt="${c.name}" onerror="this.outerHTML='<div class=\\'rd-portrait-img\\' style=\\'display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${_co}22,${_co}08);font-size:72px;font-weight:900;color:${_co}\\'>${_ini}</div>'">`;
+    leftCol += `<img class="rd-portrait-img" src="${fullUrl}" alt="${escHtml(c.name)}" onerror="this.outerHTML='<div class=\\'rd-portrait-img\\' style=\\'display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${_co}22,${_co}08);font-size:72px;font-weight:900;color:${_co}\\'>${_ini}</div>'">`;
   } else {
     const _ch = ALL_CHARS.find(x => x.id === c.id);
     const _ini = _ch ? _ch.name.charAt(0) : '?';
@@ -1879,7 +1879,7 @@ function _renderRosterDetailPanel(c, hired) {
   }
   leftCol += `<div class="rd-portrait-overlay"></div>
     <div class="rd-portrait-info">
-      <div class="rd-portrait-name">${c.name}</div>
+      <div class="rd-portrait-name">${escHtml(c.name)}</div>
       <div class="rd-portrait-sub">${c.h || '?'}cm ｜ ${c.age || '?'}歳 ｜ ${tenure}年目</div>
       <div class="rd-portrait-badges">
         <span class="badge badge-${c.style}" style="font-size:10px">${c.style}</span>
@@ -6815,8 +6815,8 @@ function _npThumbBg(id) {
   return url ? `background-image: url('${url}');` : '';
 }
 function _npClickName(name, id) {
-  if (id == null) return name || '';
-  return `<a href="javascript:void(0)" onclick="event.stopPropagation();showFighterPopup(${id})" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(120,84,39,0.5);">${name || '?'}</a>`;
+  if (id == null) return escHtml(name || '');
+  return `<a href="javascript:void(0)" onclick="event.stopPropagation();showFighterPopup(${id})" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(120,84,39,0.5);">${escHtml(name || '?')}</a>`;
 }
 function _npKurodaFaceUrl() {
   return (typeof getNpcPortraitUrl === 'function') ? getNpcPortraitUrl('reporter') : '';
@@ -7268,13 +7268,13 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
   const rightCls = rightWin ? 'np-fc win' : 'np-fc';
   const tagMembers = team => (team?.members || [])
     .filter(f => f && f.name)
-    .map(f => f.id ? `<span onclick="showFighterPopup(${f.id})">${f.name}</span>` : `<span>${f.name}</span>`)
+    .map(f => f.id ? `<span onclick="showFighterPopup(${f.id})">${escHtml(f.name)}</span>` : `<span>${escHtml(f.name)}</span>`)
     .join('<em> / </em>');
   const tagPhotos = (team, isWinner) => {
     const members = (team?.members || []).filter(f => f && f.id).slice(0, 2);
     if (members.length === 0) return '';
     return `<div class="np-fphoto np-tag-photo${isWinner ? ' win' : ''}">` + members.map(f =>
-      `<div class="np-tag-photo-member" style="${_npPhotoBg(f.id)}" onclick="showFighterPopup(${f.id})" title="${f.name}"></div>`
+      `<div class="np-tag-photo-member" style="${_npPhotoBg(f.id)}" onclick="showFighterPopup(${f.id})" title="${escHtml(f.name)}"></div>`
     ).join('') + `</div>`;
   };
 
@@ -7284,7 +7284,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
     <div class="np-versus-grid">
       <div class="${leftCls}">
         ${d.isTag && d.teamA ? tagPhotos(d.teamA, leftWin) : `<div class="np-fphoto" style="${leftBg}" onclick="showFighterPopup(${d.left.id})"></div>`}
-        <div class="np-fname">${d.left.name}${leftWin ? '<span class="np-winner-mark">○</span>' : (rightWin ? '<span class="np-loser-mark">×</span>' : '')}</div>
+        <div class="np-fname">${escHtml(d.left.name)}${leftWin ? '<span class="np-winner-mark">○</span>' : (rightWin ? '<span class="np-loser-mark">×</span>' : '')}</div>
         ${d.isTag && d.teamA ? `<div class="np-frole">${tagMembers(d.teamA)}</div>` : ''}
         ${d.left.role ? `<div class="np-frole">${d.left.role}</div>` : ''}
       </div>
@@ -7294,7 +7294,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
       </div>
       <div class="${rightCls}">
         ${d.isTag && d.teamB ? tagPhotos(d.teamB, rightWin) : `<div class="np-fphoto" style="${rightBg}" onclick="showFighterPopup(${d.right.id})"></div>`}
-        <div class="np-fname">${d.right.name}${rightWin ? '<span class="np-winner-mark">○</span>' : (leftWin ? '<span class="np-loser-mark">×</span>' : '')}</div>
+        <div class="np-fname">${escHtml(d.right.name)}${rightWin ? '<span class="np-winner-mark">○</span>' : (leftWin ? '<span class="np-loser-mark">×</span>' : '')}</div>
         ${d.isTag && d.teamB ? `<div class="np-frole">${tagMembers(d.teamB)}</div>` : ''}
         ${d.right.role ? `<div class="np-frole">${d.right.role}</div>` : ''}
       </div>
@@ -7306,7 +7306,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
       if (d.isDraw) {
         return `<div class="np-show-decision draw"><span class="dec-text">時間切れ引き分け</span></div>`;
       }
-      const winName = leftWin ? d.left.name : (rightWin ? d.right.name : null);
+      const winName = leftWin ? escHtml(d.left.name) : (rightWin ? escHtml(d.right.name) : null);
       if (!winName) return '';
       return `<div class="np-show-decision">
         <span class="dec-winner"><strong>${winName}</strong> 勝利</span>
@@ -7373,8 +7373,10 @@ function _npRenderDigest(d, seasonNum, weekNum) {
     const loserName = leftWon ? m.right.name : (rightWon ? m.left.name : m.right.name);
     const wId = m.isDraw ? m.left.id : winnerId;
     const lId = m.isDraw ? m.right.id : loserId;
-    const wName = m.isDraw ? m.left.name : winnerName;
-    const lName = m.isDraw ? m.right.name : loserName;
+    // U5: escHtml済みの形でwName/lNameを確定させる(以降このスコープで参照する箇所は
+    // マーク表示・寸評コメント埋め込みも含めてすべてこの安全な値を使う)。
+    const wName = escHtml(m.isDraw ? m.left.name : winnerName);
+    const lName = escHtml(m.isDraw ? m.right.name : loserName);
 
     let badge = '';
     if (m.isTitleMatch) badge = '<span class="badge-title">王座戦</span>';
@@ -7425,18 +7427,18 @@ function _npRenderDigest(d, seasonNum, weekNum) {
       const members = (team?.members || []).filter(f => f && f.id).slice(0, 2);
       if (!members.length) return '';
       return `<div class="np-digest-thumb-stack${isWinner ? ' win' : ''}">` + members.map(f =>
-        `<div class="np-digest-thumb sm" style="${_npThumbBg(f.id)}" onclick="showFighterPopup(${f.id})" title="${f.name}"></div>`
+        `<div class="np-digest-thumb sm" style="${_npThumbBg(f.id)}" onclick="showFighterPopup(${f.id})" title="${escHtml(f.name)}"></div>`
       ).join('') + `</div>`;
     };
     rows += `<tr>
-      <td class="num" title="${rowLabel}">${rowNo}</td>
+      <td class="num" title="${escHtml(rowLabel)}">${rowNo}</td>
       <td class="tag">${badge}</td>
       <td>
         ${m.isTag ? `<div class="np-digest-card">
           ${digestTagThumbs(m.teamA, leftWon)}
-          <span class="np-digest-name${leftWon ? ' win' : ''}">${m.left.name}${leftWon ? '<span class="np-digest-mark win">○</span>' : ''}</span>
+          <span class="np-digest-name${leftWon ? ' win' : ''}">${escHtml(m.left.name)}${leftWon ? '<span class="np-digest-mark win">○</span>' : ''}</span>
           <span class="np-digest-vs">${m.isDraw ? 'DRAW' : 'vs'}</span>
-          <span class="np-digest-name${rightWon ? ' win' : ' lose'}">${!m.isDraw && rightWon ? '<span class="np-digest-mark win">○</span>' : (!m.isDraw ? '<span class="np-digest-mark lose">×</span>' : '')}${m.right.name}</span>
+          <span class="np-digest-name${rightWon ? ' win' : ' lose'}">${!m.isDraw && rightWon ? '<span class="np-digest-mark win">○</span>' : (!m.isDraw ? '<span class="np-digest-mark lose">×</span>' : '')}${escHtml(m.right.name)}</span>
           ${digestTagThumbs(m.teamB, rightWon)}
         </div>` : `<div class="np-digest-card">
           <div class="np-digest-thumb" style="${_npThumbBg(wId)}" onclick="showFighterPopup(${wId})"></div>
@@ -7486,11 +7488,16 @@ function _npRenderPage2() {
   orgs.forEach(o => {
     const sel = (o.id === _dbCompareTarget) ? ' selected' : '';
     const nameDisp = (G.rivalOrgNames && G.rivalOrgNames[o.id]) || o.name || o.id;
-    html += `<option value="${o.id}"${sel}>${nameDisp} (Tier ${o.tier})</option>`;
+    html += `<option value="${o.id}"${sel}>${escHtml(nameDisp)} (Tier ${o.tier})</option>`;
   });
   html += `</select></div>`;
 
   const d = Engine.database.getOrgCompareAnalysis(G, _dbCompareTarget);
+  // U5: この関数はescHtml()を一度も呼んでいなかった(既知の欠落)。playerName/rivalNameは
+  // このオブジェクトのローカルコピーなので、ここで一度だけ安全化すれば以降の全参照(黒田コラム・
+  // ファンの声など地の文への埋め込みも含む)にそのまま効く。
+  d.playerName = escHtml(d.playerName || '');
+  d.rivalName = escHtml(d.rivalName || '');
 
   // ヘッドラインセクション (黒田顔 + 引用 + グレード)
   html += `<div class="np-headline-section">
@@ -7528,7 +7535,7 @@ function _npRenderPage2() {
         <div class="stat-item"><label>TOP5実力</label><strong>${d.pTop5Ovr}</strong></div>
         <div class="stat-item"><label>エース</label><strong>${d.playerScores.ace}</strong></div>
       </div>
-      <div class="np-org-champ">王者: ${playerChamp ? `<strong>${playerChamp.name}</strong>` : '<strong>不在</strong>'}</div>
+      <div class="np-org-champ">王者: ${playerChamp ? `<strong>${escHtml(playerChamp.name)}</strong>` : '<strong>不在</strong>'}</div>
     </div>
     <div class="np-versus-mark">VS</div>
     <div class="np-org-card rival">
@@ -7549,7 +7556,7 @@ function _npRenderPage2() {
         <div class="stat-item"><label>TOP5実力</label><strong>${d.rTop5Ovr}</strong></div>
         <div class="stat-item"><label>エース</label><strong>${d.rivalScores.ace}</strong></div>
       </div>
-      <div class="np-org-champ">王者: ${rivalChamp ? `<strong>${rivalChamp.name}</strong>` : '<strong>不在</strong>'}</div>
+      <div class="np-org-champ">王者: ${rivalChamp ? `<strong>${escHtml(rivalChamp.name)}</strong>` : '<strong>不在</strong>'}</div>
     </div>
   </div>`;
 
@@ -7604,12 +7611,12 @@ function _npRenderPage2() {
       <div class="np-war-grid">
         <div class="np-war-overall">
           <span class="lbl">通算（団体間ガチンコのみ）</span>
-          <span class="wl">${warStats.wins}勝-${warStats.losses}敗${warStats.draws ? `-${warStats.draws}分` : ''}</span>
+          <span class="wl">${warStats.wins}勝${warStats.losses}敗${warStats.draws ? `${warStats.draws}分` : ''}</span>
         </div>
         <div class="np-war-breakdown">
-          <div class="item"><label>対抗戦</label><span>${warStats.byWar.w}-${warStats.byWar.l}${warStats.byWar.d ? `-${warStats.byWar.d}分` : ''}</span></div>
-          <div class="item"><label>PPV</label><span>${warStats.byPpv.w}-${warStats.byPpv.l}${warStats.byPpv.d ? `-${warStats.byPpv.d}分` : ''}</span></div>
-          <div class="item"><label>挑戦状</label><span>${warStats.byB3.w}-${warStats.byB3.l}${warStats.byB3.d ? `-${warStats.byB3.d}分` : ''}</span></div>
+          <div class="item"><label>対抗戦</label><span>${warStats.byWar.w}勝${warStats.byWar.l}敗${warStats.byWar.d ? `${warStats.byWar.d}分` : ''}</span></div>
+          <div class="item"><label>PPV</label><span>${warStats.byPpv.w}勝${warStats.byPpv.l}敗${warStats.byPpv.d ? `${warStats.byPpv.d}分` : ''}</span></div>
+          <div class="item"><label>挑戦状</label><span>${warStats.byB3.w}勝${warStats.byB3.l}敗${warStats.byB3.d ? `${warStats.byB3.d}分` : ''}</span></div>
         </div>
         ${streakLabel ? `<div class="np-war-streak ${streakCls}">${streakLabel}</div>` : ''}
       </div>
@@ -7678,8 +7685,8 @@ function _npRenderPage2() {
         }
       }
       if (!comment) {
-        comment = diff > 5 ? `${m.player.name}にOVR優位がある。${m.rival.name}は地力で押し返したい。`
-          : diff < -5 ? `${m.rival.name}が地力で勝る。${m.player.name}は工夫が要る。`
+        comment = diff > 5 ? `${escHtml(m.player.name)}にOVR優位がある。${escHtml(m.rival.name)}は地力で押し返したい。`
+          : diff < -5 ? `${escHtml(m.rival.name)}が地力で勝る。${escHtml(m.player.name)}は工夫が要る。`
           : `OVRは互角。${m.role}対決として見逃せない一戦になる。`;
       }
       const pEmblem = _npOrgEmblem(G, 'player', 14);
@@ -7689,7 +7696,7 @@ function _npRenderPage2() {
           <div class="np-matchup-photo" style="${_npThumbBg(m.player.id)}" onclick="showFighterPopup(${m.player.id})"></div>
           <div>
             <div class="np-matchup-org-line">${pEmblem}<span>${d.playerName}</span></div>
-            <div class="np-matchup-name">${m.player.name}</div>
+            <div class="np-matchup-name">${escHtml(m.player.name)}</div>
             <div class="np-matchup-ovr">OVR<strong>${m.player.ovr}</strong> 人気<strong>${m.player.pop}</strong></div>
           </div>
         </div>
@@ -7701,7 +7708,7 @@ function _npRenderPage2() {
           <div class="np-matchup-photo right" style="${_npThumbBg(m.rival.id)}" onclick="showFighterPopup(${m.rival.id})"></div>
           <div>
             <div class="np-matchup-org-line right">${rEmblem}<span>${d.rivalName}</span></div>
-            <div class="np-matchup-name">${m.rival.name}</div>
+            <div class="np-matchup-name">${escHtml(m.rival.name)}</div>
             <div class="np-matchup-ovr">OVR<strong>${m.rival.ovr}</strong> 人気<strong>${m.rival.pop}</strong></div>
           </div>
         </div>
@@ -7791,7 +7798,7 @@ function _npRenderPage2() {
         if (pool.length > 0) {
           const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, f.id, 0xC3A1));
           const fn = Engine.rng.pick(rng, pool);
-          try { comment = fn({ name: f.name, ovr: fOvr, pop: fPop, orgName: d.rivalName, age: fAge }); } catch(e) {}
+          try { comment = fn({ name: escHtml(f.name), ovr: fOvr, pop: fPop, orgName: d.rivalName, age: fAge }); } catch(e) {}
         }
       }
       if (!comment) {
@@ -7803,7 +7810,7 @@ function _npRenderPage2() {
         <div class="np-spotlight-head">
           <div class="np-spotlight-photo" style="${_npThumbBg(f.id)}" onclick="showFighterPopup(${f.id})"></div>
           <div style="flex:1;min-width:0">
-            <div class="np-spotlight-name">${f.name}</div>
+            <div class="np-spotlight-name">${escHtml(f.name)}</div>
             <div class="np-spotlight-meta">OVR<strong>${fOvr}</strong> / 人気<strong>${fPop}</strong> / 年齢<strong>${fAge}</strong></div>
           </div>
           <span class="np-spotlight-tag ${tagCls}">${tagText}</span>
@@ -10866,7 +10873,7 @@ function _renderDbChronicle() {
         : '';
       html += `<li class="chron-rival">
         <div class="chron-rival-org">${r.orgName}</div>
-        <div class="chron-rival-record">${r.total}戦 ${record}</div>
+        <div class="chron-rival-record">${record}</div>
         ${oppFrag}
       </li>`;
     });
