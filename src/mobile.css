@@ -1317,13 +1317,6 @@
   }
   .comp-text .org-name { font-size: 15px; }
   .comp-text .start { font-size: 26px; }
-  .team-greetings { width: min(100%, 380px); margin-top: 14px; gap: 3px; }
-  .team-greeting {
-    grid-template-columns: minmax(72px, auto) minmax(0, 1fr);
-    gap: 6px;
-    padding: 3px 6px;
-    font-size: 9px;
-  }
 
   /* Ranking report: each organization owns the full phone width. */
   #screen-ranking { padding: 0; }
