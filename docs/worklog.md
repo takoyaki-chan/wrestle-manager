@@ -14,6 +14,13 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-25 挑戦UI再設計 CH-4(団体エンブレム)/CH-5(勝利代表の拡大) 実装
+
+モックアップ承認(rev.2)を受けて、セリフに依存しないビジュアル2点を先行実装。対象 `src/ui-common.js`＋`src/index.html`。
+- **CH-4**: 直訴モーダル(`showChallengeRequestModal`)の両サイドに `.fc1m-org`(エンブレム＋団体名)を追加、結果モーダル(`showChallengeRequestResultModal`)のスコアバナー両脇にも同様。`_awOrgEmblem(orgName,isPlayerOrg,20)` 流用。isPlayerOrg は forward:左=自団体/右=相手、inverse:左=相手/右=自団体。エンブレム未解決時は `orgIconHtml` が空文字を返すためレイアウト非破壊。
+- **CH-5**: 空だった `.crrm-reaction-scene.is-victorious` を実装(中央寄せ＋ポートレート172×196＋金グロー、モバイル140×160)。`.is-defeated` は不変。CSSは既存命名慣習に合わせ `.fc1m-*`=index.html / `.crrm-*`=ui-common.js内`<style>`、色は全てトークン。
+- 検証: `node test/run-all.js` 84/84 PASS。CSS/markupのみでauto-sim不要。
+- CH-5の**勝利セリフ差し替えは保留**(Keisukeが挑戦セリフ全体を書き直す方針。棚卸しを `docs/draft-notes/challenge-dialogue-inventory.md` に作成)。
 ## 2026-07-25 遠征挑戦後の「進行不具合(showPrep)」復旧UI落ちを修正(自団体興行が中止に見える問題の正体)
 
 敵地遠征(挑戦状・自団体発)の試合後、`App._finalizeAwayChallengeShow` の `continueClose()`(app.js:9124-9130)が `showScreen('week')` を呼びつつ `weekPhase` は `showPrep` のまま `renderShowPrep()` していた。`renderWeekScreen`(今週タブ)には showPrep 分岐が無いため html が空になり「⚠ 進行不具合が発生しました(showPrep)」の復旧UIに落ちていた。ユーザーには自団体の興行が中止されたように見えていたが、実際は遠征後に同じ週の自団体興行準備へ戻る設計(遠征選手は `removeFightersFromCard` でカードから除外済み・中止はしていない)で、着地先の画面指定が誤っていただけ。`showScreen('week')`→`showScreen('show')` に修正(`startShowPrep` と同じ着地)。これで遠征後は自団体興行準備画面(カードエディタ)に正しく着地し、遠征に出た選手を除いて通常どおり興行を組める。対象: `src/app.js` 1箇所。挑戦系テスト8本 PASS。実プレイ確認(遠征→自団体興行の一連)はユーザーに委任。

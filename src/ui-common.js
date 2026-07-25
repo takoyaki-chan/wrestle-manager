@@ -11040,6 +11040,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
         <div class="fc1m-compare">
           <div class="fc1m-side">
             ${bubbleHtml}
+            <div class="fc1m-org">${_awOrgEmblem(requesterOrgName, !isInverse, 20)}<span class="fc1m-org-name">${requesterOrgName}</span></div>
             <div class="fc1m-portrait" ${aClickHandler} ${aClickHandler ? 'title="クリックで選手詳細"' : ''} style="${aPortraitStyle}"></div>
             <div class="fc1m-name" ${aClickHandler} ${aClickHandler ? 'title="クリックで選手詳細" style="cursor:pointer"' : ''}>${requester.name}</div>
             <div class="fc1m-faction">${requesterSideLabel}</div>
@@ -11049,6 +11050,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
           <div class="fc1m-vs">VS</div>
           <div class="fc1m-side">
             <div class="fc1m-bubble-spacer"></div>
+            <div class="fc1m-org">${_awOrgEmblem(opponentOrgName, isInverse, 20)}<span class="fc1m-org-name">${opponentOrgName}</span></div>
             <div class="fc1m-portrait" ${bClickHandler} ${bClickHandler ? 'title="クリックで選手詳細"' : ''} style="${bPortraitStyle}"></div>
             <div class="fc1m-name" ${bClickHandler} ${bClickHandler ? 'title="クリックで選手詳細" style="cursor:pointer"' : ''}>${opponent.name}</div>
             <div class="fc1m-faction">${opponentSideLabel}</div>
@@ -11238,6 +11240,8 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
       .crrm-card { padding: 22px 26px 18px; max-height:calc(100vh - 24px); overflow-y:auto; }
       .crrm-score-banner { display:flex; align-items:center; justify-content:center; gap:18px; margin:8px 0 14px; }
       .crrm-score-org { font-size:14px; font-weight:600; color:var(--ink-soft, #5a4a3a); flex:1; text-align:center; }
+      .crrm-score-org-name { display:flex; align-items:center; justify-content:center; gap:6px; }
+      .crrm-score-org-name .aw-org-emblem { margin-bottom:0; }
       .crrm-score-num { font-size:42px; font-weight:800; color:var(--ink, #2a1a08); letter-spacing:2px; }
       .crrm-score-num.win { color:var(--accent-positive, #2d6a2d); }
       .crrm-score-num.lose { color:var(--accent-negative, #8b3a3a); }
@@ -11274,12 +11278,23 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
       .crrm-reaction-scene.is-defeated .crrm-reaction-portrait { filter:grayscale(.9) saturate(.2) brightness(.76); opacity:.82; border-bottom-color:rgba(100,92,82,.55); }
       .crrm-reaction-scene.is-defeated .crrm-reaction-bubble { background:#eeeae2; border-color:rgba(100,92,82,.3); }
       .crrm-reaction-scene.is-defeated .crrm-reaction-bubble::after { border-top-color:#eeeae2; }
+      .crrm-reaction-scene.is-victorious { align-items:center; text-align:center; }
+      .crrm-reaction-scene.is-victorious .crrm-reaction-bubble::after { left:50%; transform:translateX(-50%); }
+      .crrm-reaction-scene.is-victorious .crrm-reaction-figure { width:172px; margin:14px 0 0 0; position:relative; }
+      .crrm-reaction-scene.is-victorious .crrm-reaction-figure::before {
+        content:''; position:absolute; inset:-30% -20% auto; height:90%;
+        background:radial-gradient(ellipse at 50% 35%, rgba(212,168,67,.35), transparent 65%);
+        pointer-events:none; z-index:0;
+      }
+      .crrm-reaction-scene.is-victorious .crrm-reaction-portrait { width:172px; height:196px; position:relative; z-index:1; }
       @media(max-width:600px) {
         .crrm-card { padding:14px 12px 12px; }
         .crrm-reaction-scene { padding:0 4px; }
         .crrm-reaction-bubble { min-width:0; width:calc(100% - 30px); }
         .crrm-reaction-portrait { width:96px; height:110px; }
         .crrm-reaction-figure { width:96px; }
+        .crrm-reaction-scene.is-victorious .crrm-reaction-figure { width:140px; }
+        .crrm-reaction-scene.is-victorious .crrm-reaction-portrait { width:140px; height:160px; }
       }
     </style>
     <div class="fevt-overlay-office" id="challengeRequestResultOverlay">
@@ -11291,9 +11306,9 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
         ${_factionReporterStrip(state, coachLine)}
         ${reactionHtml}
         <div class="crrm-score-banner">
-          <div class="crrm-score-org">${ourOrg}<br><small>${isInverse ? `迎撃: ${oppName}陣` : `${reqName}陣`}</small></div>
+          <div class="crrm-score-org"><div class="crrm-score-org-name">${_awOrgEmblem(ourOrg, true, 20)}<span>${ourOrg}</span></div><small>${isInverse ? `迎撃: ${oppName}陣` : `${reqName}陣`}</small></div>
           <div class="crrm-score-num ${playerWon ? 'win' : (playerLost ? 'lose' : '')}">${playerScore} - ${aiScore}</div>
-          <div class="crrm-score-org">${otherOrgName}<br><small>${isInverse ? `打診: ${reqName}陣` : `${oppName}陣`}</small></div>
+          <div class="crrm-score-org"><div class="crrm-score-org-name">${_awOrgEmblem(otherOrgName, false, 20)}<span>${otherOrgName}</span></div><small>${isInverse ? `打診: ${reqName}陣` : `${oppName}陣`}</small></div>
         </div>
         <div class="crrm-rows">${matchRows}</div>
         <div class="crrm-close-tray">
