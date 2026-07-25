@@ -1526,6 +1526,18 @@ Keisuke の実際の編集手順が「**その属性×性格の一人を想像�
 ## 2026-07-25 開発者モードに「イベント即時発火」を追加
 
 `Ctrl+Shift+D` の開発者パネルに、条件を迂回してイベントを即表示するセクションを新設。第一弾として**挑戦の直訴(自団体→他団体/他団体→自団体の双方向)**。heat≥90 等の週次抽選条件を通さず、ロスターから `buildMatchCard` が成立するペアを自前で選んで payload を組み `App.handleChallengeRequest` を直接呼ぶ。関係性が既にあるペアを優先採用。健康な選手が3名未満なら理由を表示して中断。ゲーム本体は無改変・`dev-tools.js` のみ。実ブラウザで往復動作確認済み。
+## 2026-07-25 開発者モードが Ctrl+Shift+D で開かない問題を修正(Alt+Shift+D を併設)
+
+配布版404修正の実機確認中に発覚。**Chrome は `Ctrl+Shift+D` を「全てのタブをブックマークに追加」へ割り当てており、ブラウザ側が先に処理するためページの keydown ハンドラまで届かない**(押すとブックマークのダイアログが出る)。`event.preventDefault()` を書いてあっても、ブラウザ予約ショートカットには効かない。前段の404修正とは無関係の既存不具合。
+
+- **Alt+Shift+D を同義キーとして併設**(Chrome 未割り当て)。既存の `Ctrl+Shift+D` は削除せず残したので、キーを奪われない環境・他ブラウザでは従来どおり開く。判定は `(event.ctrlKey || event.altKey) && event.shiftKey` + Dキー。
+- **キー判定を `event.code === 'KeyD'` 優先に変更**。Alt 併用時はキーボードレイアウト次第で `event.key` が別文字になりうるため、レイアウト非依存の `code` を先に見て `key` はフォールバックに落とした。
+- **誤爆しないことを実機確認**: `Ctrl+D`(このページをブックマーク)・`Alt+D`(アドレスバー)は Shift 無しなので発火せず、`Shift+D` 単独(大文字D入力)でも発火しない。開く→閉じる→再度開くのサイクルも正常。
+- `docs/developer-mode.md` の起動手順を更新し、Chrome の競合と `WrestleManagerDev.open()` の逃げ道を明記。
+- **配布への影響なし**。`src/dev-tools.js` は `devOnlyFiles` で配布対象外のため製品版のファイルは1バイトも変わらない。
+- 検証: `node test/run-all.js` 84/84 PASS、`node test/stale-lint.js` 陳腐化ゼロ。
+- 対象: `src/dev-tools.js`、`docs/developer-mode.md`、`test/dev-tools-static-test.js`。
+
 ## 2026-07-25 配布版で dev-tools.js の 404 が出る問題を修正(梱包時に参照を除去)
 
 `src/index.html:10045` の `<script src="dev-tools.js"></script>` は開発者パネル用で、`release/manifest.json` は意図的に `src/dev-tools.js` を配布対象から外している。しかし梱包スクリプトに参照を落とす処理が無く、DLsite/BOOTH 配布版を起動すると毎回コンソールに 404 が出ていた(機能的な実害は無く、開発者パネルが無いだけ)。**対応案A(梱包時に除去)を採用**。案B(`onerror` 握り潰し/動的挿入)は製品版のためだけに開発側コードを歪めるので不採用、案C(配布に含める)は「開発者パネルは配布版に入れない」方針に反するため不採用。

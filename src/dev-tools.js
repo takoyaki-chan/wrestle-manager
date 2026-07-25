@@ -283,6 +283,14 @@
     renderPanel();
   }
   function close() { if (panel) panel.remove(); panel = null; }
-  document.addEventListener('keydown', event => { if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'd') { event.preventDefault(); open(); } });
+  // Ctrl+Shift+D は Chrome が「全てのタブをブックマークに追加」へ割り当てており、ブラウザが先に
+  // 処理してページへ届かないことがある。Alt+Shift+D を同義キーとして併設する（Chrome 未割り当て）。
+  // 判定に event.code を優先するのは、Alt 併用時にレイアウト次第で event.key が変わりうるため。
+  document.addEventListener('keydown', event => {
+    const isD = event.code === 'KeyD' || (typeof event.key === 'string' && event.key.toLowerCase() === 'd');
+    if (!isD || !event.shiftKey || !(event.ctrlKey || event.altKey)) return;
+    event.preventDefault();
+    open();
+  });
   window.WrestleManagerDev = { open, saveCheckpoint, fastForward, restoreDevAutosave: () => restore(localStorage.getItem(DEV_AUTOSAVE_KEY)) };
 })();

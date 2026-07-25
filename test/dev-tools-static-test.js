@@ -22,7 +22,9 @@ assert.ok(Array.isArray(manifest.devOnlyFiles) && manifest.devOnlyFiles.includes
 assert.ok(packageScript.includes('$Manifest.devOnlyFiles'), '梱包スクリプトが devOnlyFiles を読む');
 assert.ok(packageScript.includes('$TagPattern'), '梱包時に配布用 HTML から開発専用ファイルの参照タグを除去する');
 assert.ok(verifyScript.includes('$Manifest.devOnlyFiles'), '検証スクリプトが開発専用ファイルの混入と参照残りを見る');
-assert.ok(source.includes("event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'd'"), '隠しショートカットを用意する');
+assert.ok(source.includes("event.code === 'KeyD'"), '隠しショートカットを用意する');
+// Chrome は Ctrl+Shift+D を「全てのタブをブックマークに追加」で先取りするため、Alt+Shift+D も受ける
+assert.ok(source.includes('!(event.ctrlKey || event.altKey)'), 'Ctrl+Shift+D と Alt+Shift+D の両方で開く');
 assert.ok(source.includes("const DEV_AUTOSAVE_KEY = 'wm_dev_autosave'"), '通常セーブとは別の開発用オートセーブを使う');
 assert.ok(source.includes("const DEV_SESSION_BASE_KEY = 'wm_dev_session_base'"), '開発開始地点も復元できる');
 assert.ok(source.includes("const DEV_CHECKPOINT_PREFIX = 'wm_dev_checkpoint_'"), '複数の開発用チェックポイントを保持する');
