@@ -79,11 +79,13 @@ const appFn = makeFnReader(appSrc, 'app.js');
 const dataFn = makeFnReader(dataSrc, 'data.js');
 
 // ---------------------------------------------------------------------------
-// CSS存在確認(この回で扱うクラスが実際に定義されていること。#8は仕様上クラスを持たないため対象外)
+// CSS存在確認(この回で扱うクラスが実際に定義されていること。
+// #8は元々仕様上クラスを持たなかったが、U3統一で champion-worry-bubble を新設したため追加)
 // ---------------------------------------------------------------------------
 [
   'coach-fg-bubble', 'care-reaction-bubble', 'cerem-bubble-wrap', 'cerem-bubble',
   'pb-ace-bubble', 'war-victory-line', 'negotiation-bubble', 'mdl-b-speech',
+  'champion-worry-bubble',
 ].forEach(cls => {
   assert.ok(cssIndex.includes(`.${cls}`), `.${cls}がindex.htmlに存在する`);
 });
@@ -103,9 +105,15 @@ function section(name, fn) {
   // (同関数内の他の外部参照は `typeof G !== 'undefined'` 等でガードされているのと対照的)。
   // ブラウザでは常にwindowが存在するため実害は無いが、Node実行時はwindowスタブが無いと
   // ReferenceErrorになる非対称性であり、不審点として報告する(直さず、テストではスタブを与える)。
+  // U3グループA実装(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行したため、
+  // 関数本体と一緒に依存先(escHtml/_u3bSideHtml/_u3bInitialFallback)もサンドボックスへ持ち込む
+  // (test/u3-group-b-safety-net-test.js が確立した手法を踏襲)。
   const build = new Function(
     'document', 'window', 'G', 'ALL_COACHES', 'AWARD_LINES', 'getCoachPortraitUrl',
-    `${uiFn('_awShowCoachFg')}
+    `${uiFn('escHtml')}
+     ${uiFn('_u3bInitialFallback')}
+     ${uiFn('_u3bSideHtml')}
+     ${uiFn('_awShowCoachFg')}
      return { _awShowCoachFg };`
   );
 
@@ -141,7 +149,7 @@ function section(name, fn) {
     assert.ok(html.includes('coach-fg-bubble'), 'coach-fg-bubbleが出る');
     assert.ok(html.includes('<img src="image/coach/5.webp"'), 'コーチの顔画像が出る(不変条件2)');
     assert.ok(html.includes('よくやってくれた。感謝している。'), 'セリフ本文が出る(不変条件3)');
-    assert.ok(html.includes('道場長 コーチ'), 'コーチ名(話者名)が出る(不変条件4)');
+    assert.ok(html.includes('道場長') && html.includes('コーチ'), 'コーチ名(話者名)・役割ラベルが出る(不変条件4)');
   });
 
   section('coach-fg-bubble: falls back to the coach emoji when there is no portrait URL', () => {
@@ -182,12 +190,12 @@ function section(name, fn) {
     assert.strictEqual(fg2.innerHTML, '', 'セリフが無いときは演出自体を出さない(フォールバック)');
   });
 
-  section('coach-fg-bubble: does not throw on a <script>-bearing coach name (escaping gap logged, not fixed)', () => {
+  section('coach-fg-bubble: escapes a <script>-bearing coach name (U3統一で修正済み。旧known gap)', () => {
     const { built, coachFg } = makeBundle({ ALL_COACHES: [{ id: 5, name: '<script>alert(1)</script>', emoji: '🥋' }] });
     assert.doesNotThrow(() => built._awShowCoachFg({ orgId: 'player', id: 42 }, {}), '例外を投げない(不変条件6の派生)');
-    if (coachFg.innerHTML.includes('<script>alert(1)</script>')) {
-      console.log('    [known gap] _awShowCoachFg: coach name is NOT escaped (escHtml not called) — reported, not fixed');
-    }
+    const html = coachFg.innerHTML;
+    assert.ok(!html.includes('<script>alert(1)</script>'), 'コーチ名は生のまま出力されない(不変条件7)');
+    assert.ok(html.includes('&lt;script&gt;'), 'escHtml()によりエスケープされた形で出力される');
   });
 })();
 
@@ -198,6 +206,9 @@ function section(name, fn) {
   const build = new Function(
     'ALL_CHARS', 'G', 'getPortraitUrl',
     `${dataFn('portraitImg')}
+     ${uiFn('escHtml')}
+     ${uiFn('_u3bInitialFallback')}
+     ${uiFn('_u3bSideHtml')}
      ${uiFn('_buildB1Modal')}
      return { _buildB1Modal };`
   );
@@ -251,16 +262,16 @@ function section(name, fn) {
     });
   });
 
-  section('care-reaction-bubble: does not throw on a <script>-bearing name/dialogue (escaping gap logged, not fixed)', () => {
+  section('care-reaction-bubble: escapes a <script>-bearing name/dialogue (U3統一で修正済み。旧known gap)', () => {
     const { built } = makeBundle({ ALL_CHARS: [{ id: 1, name: '<script>alert(1)</script>', style: 'Grappler' }] });
     const evilRoster = [{ id: 1, name: '<script>alert(1)</script>' }];
     let html;
     assert.doesNotThrow(() => {
       html = built._buildB1Modal({ fighter: 1, severity: 'mild', dialogue: '<script>alert(2)</script>' }, { funds: 500 }, evilRoster);
     }, '例外を投げない(不変条件6の派生)');
-    if (html.includes('<script>alert(1)</script>') || html.includes('<script>alert(2)</script>')) {
-      console.log('    [known gap] _buildB1Modal: name/dialogue are NOT escaped (escHtml not called) — reported, not fixed');
-    }
+    assert.ok(!html.includes('<script>alert(1)</script>') && !html.includes('<script>alert(2)</script>'),
+      '選手名・セリフは生のまま出力されない(不変条件7)');
+    assert.ok(html.includes('&lt;script&gt;'), 'escHtml()によりエスケープされた形で出力される');
   });
 })();
 
@@ -272,7 +283,10 @@ function section(name, fn) {
 (function ceremSuite() {
   const build = new Function(
     'document', 'G', 'App', 'getUpperUrl', 'Audio',
-    `${appFn('_ceremAudioOpen')}
+    `${uiFn('escHtml')}
+     ${uiFn('_u3bInitialFallback')}
+     ${uiFn('_u3bSideHtml')}
+     ${appFn('_ceremAudioOpen')}
      ${appFn('_ceremAudioClose')}
      ${appFn('showCeremonyEvent')}
      return { showCeremonyEvent };`
@@ -354,14 +368,13 @@ function section(name, fn) {
     });
   });
 
-  section('cerem-bubble: does not throw on a <script>-bearing fighter name (escaping gap logged, not fixed)', () => {
+  section('cerem-bubble: escapes a <script>-bearing fighter name (U3統一で修正済み。旧known gap)', () => {
     const { built, getAppended } = makeBundle({});
     const evilSpeakers = [{ fighter: { id: 1, name: '<script>alert(1)</script>' }, roleLabel: 'MAIN' }];
     assert.doesNotThrow(() => built.showCeremonyEvent(evt, evilSpeakers, () => {}), '例外を投げない(不変条件6の派生)');
     const html = getAppended().innerHTML;
-    if (html.includes('<script>alert(1)</script>')) {
-      console.log('    [known gap] showCeremonyEvent: fighter name is NOT escaped (escHtml not called) — reported, not fixed');
-    }
+    assert.ok(!html.includes('<script>alert(1)</script>'), '選手名は生のまま出力されない(不変条件7)');
+    assert.ok(html.includes('&lt;script&gt;'), 'escHtml()によりエスケープされた形で出力される');
   });
 })();
 
@@ -374,6 +387,9 @@ function section(name, fn) {
     'document', 'G', 'Audio', 'getUpperUrl', 'getWarPostDialogue',
     `let _warPostCtx = null;
      ${uiFn('escHtml')}
+     ${uiFn('_u3bInitialFallback')}
+     ${uiFn('_u3bOrgBadgeHtml')}
+     ${uiFn('_u3bSideHtml')}
      ${uiFn('_showWarEnemyAceStatement')}
      return {
        _showWarEnemyAceStatement,
@@ -428,13 +444,13 @@ function section(name, fn) {
     assert.strictEqual(called, false, '閉じるボタンをクリックするまでonDoneは呼ばれない');
   });
 
-  section('pb-ace-bubble: no face element at all when the upper image URL is empty (observation)', () => {
+  section('pb-ace-bubble: falls back to an initial-letter portrait when the upper image URL is empty (U3統一で修正済み。旧known gap)', () => {
     const { built, getCreated } = makeBundle({ getUpperUrl: () => '' });
     built.setCtx(ctxBase);
     built._showWarEnemyAceStatement(() => {});
     const html = getCreated().innerHTML;
     assert.ok(!html.includes('<img'), '画像URLが空のとき<img>タグ自体が出ない');
-    console.log('    [observation] _showWarEnemyAceStatement: no initial-letter fallback when upperUrl is empty (unlike portraitImg/_imgOrInitial elsewhere)');
+    assert.ok(html.includes('>黒</div>'), 'イニシャル文字にフォールバックする(不変条件2)');
   });
 
   section('pb-ace-bubble: calls onDone immediately (no throw) when there is no war context or no enemy ace (unvariant 6)', () => {
@@ -468,7 +484,10 @@ function section(name, fn) {
 (function warVictoryChainSuite() {
   const build = new Function(
     'document', 'Audio', 'getPortraitUrl', '_getWarVictoryLine', 'ALL_CHARS',
-    `${uiFn('_imgOrInitial')}
+    `${uiFn('escHtml')}
+     ${uiFn('_imgOrInitial')}
+     ${uiFn('_u3bInitialFallback')}
+     ${uiFn('_u3bSideHtml')}
      ${uiFn('_showWarVictoryChain')}
      return { _showWarVictoryChain };`
   );
@@ -538,14 +557,14 @@ function section(name, fn) {
     });
   });
 
-  section('war-victory-line: does not throw on a <script>-bearing name/line (escaping gap logged, not fixed)', () => {
+  section('war-victory-line: escapes a <script>-bearing name/line (U3統一で修正済み。旧known gap)', () => {
     const { built, getCreated } = makeBundle({ _getWarVictoryLine: () => '<script>alert(2)</script>' });
     assert.doesNotThrow(() => built._showWarVictoryChain([{ id: 1, name: '<script>alert(1)</script>' }], 0, () => {}),
       '例外を投げない(不変条件6の派生)');
     const html = getCreated()[0].innerHTML;
-    if (html.includes('<script>alert(1)</script>') || html.includes('<script>alert(2)</script>')) {
-      console.log('    [known gap] _showWarVictoryChain: name/line are NOT escaped (escHtml not called) — reported, not fixed');
-    }
+    assert.ok(!html.includes('<script>alert(1)</script>') && !html.includes('<script>alert(2)</script>'),
+      '選手名・セリフは生のまま出力されない(不変条件7)');
+    assert.ok(html.includes('&lt;script&gt;'), 'escHtml()によりエスケープされた形で出力される');
   });
 })();
 
@@ -556,6 +575,9 @@ function section(name, fn) {
   const build = new Function(
     'document', 'G', 'Engine', 'getPortraitUrl', 'ALL_CHARS',
     `${dataFn('portraitImg')}
+     ${uiFn('escHtml')}
+     ${uiFn('_u3bInitialFallback')}
+     ${uiFn('_u3bSideHtml')}
      ${uiRenderFn('renderShachoshitsuReleaseInterview')}
      return { renderShachoshitsuReleaseInterview };`
   );
@@ -601,22 +623,22 @@ function section(name, fn) {
     assert.doesNotThrow(() => built.renderShachoshitsuReleaseInterview(fighter, 'x'), '要素が無くても例外なし');
   });
 
-  section('negotiation-bubble: does not throw when dialogue is undefined/empty/null (unvariant 6)', () => {
-    const { built } = makeBundle({});
+  section('negotiation-bubble: falls back to \'…\' when dialogue is undefined/empty/null (U3統一で修正済み。旧known gap)', () => {
+    const { built, el } = makeBundle({});
     [undefined, '', null].forEach((v) => {
       assert.doesNotThrow(() => built.renderShachoshitsuReleaseInterview(fighter, v), `dialogue=${JSON.stringify(v)}でも例外なし`);
+      assert.ok(!el.innerHTML.includes('undefined'), `dialogue=${JSON.stringify(v)}のとき画面に"undefined"の文字列が出ない(_buildB1Modalと同じ'…'フォールバック)`);
     });
-    console.log('    [observation] renderShachoshitsuReleaseInterview: dialogue=undefined leaves the literal text "undefined" on screen (no \'…\' fallback, unlike _buildB1Modal)');
   });
 
-  section('negotiation-bubble: does not throw on a <script>-bearing name/dialogue (escaping gap logged, not fixed)', () => {
+  section('negotiation-bubble: escapes a <script>-bearing name/dialogue (U3統一で修正済み。旧known gap)', () => {
     const { built, el } = makeBundle({ ALL_CHARS: [{ id: 3, name: '<script>alert(1)</script>', style: 'Striker' }] });
     const evilFighter = { id: 3, name: '<script>alert(1)</script>' };
     assert.doesNotThrow(() => built.renderShachoshitsuReleaseInterview(evilFighter, '<script>alert(2)</script>'),
       '例外を投げない(不変条件6の派生)');
-    if (el.innerHTML.includes('<script>alert(1)</script>') || el.innerHTML.includes('<script>alert(2)</script>')) {
-      console.log('    [known gap] renderShachoshitsuReleaseInterview: name/dialogue are NOT escaped (escHtml not called) — reported, not fixed');
-    }
+    assert.ok(!el.innerHTML.includes('<script>alert(1)</script>') && !el.innerHTML.includes('<script>alert(2)</script>'),
+      '選手名・セリフは生のまま出力されない(不変条件7)');
+    assert.ok(el.innerHTML.includes('&lt;script&gt;'), 'escHtml()によりエスケープされた形で出力される');
   });
 })();
 
@@ -625,14 +647,19 @@ function section(name, fn) {
 //    _renderRetirementPopup(引退) / showRetireAdviseResultPopup(引退勧告の結果)
 // ===========================================================================
 (function retirementSuite() {
+  // U3グループA統一(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行したため依存を追加。
+  // 旧 _mdlBSpeech(このソロ画面専用の頭上吹き出し実装)は _mdlBSoloStage 内部から削除されたため、
+  // サンドボックスへの注入も削除(uiFn()はソースに存在しない関数を渡すとthrowする)
   const build = new Function(
     'document', 'Engine', 'getUpperUrl', 'Audio', 'wmDiag',
     `let _retirementPopupQueue = [];
      let _retirementPopupCallback = null;
+     ${uiFn('escHtml')}
+     ${uiFn('_u3bInitialFallback')}
+     ${uiFn('_u3bSideHtml')}
      ${uiFn('_mdlBOpen')}
      ${uiFn('_mdlBClose')}
      ${uiFn('_mdlBTitleBand')}
-     ${uiFn('_mdlBSpeech')}
      ${uiFn('_mdlBSoloStage')}
      ${uiFn('_mdlBActions')}
      ${uiFn('_renderRetirementPopup')}
@@ -678,7 +705,7 @@ function section(name, fn) {
     assert.doesNotThrow(() => built._renderRetirementPopup(), '例外を投げない(不変条件1)');
     const html = overlay.innerHTML;
     assert.ok(html.includes('mdl-b-speech'), 'mdl-b-speechが出る');
-    assert.ok(html.includes('<img class="mdl-b-upper" src="image/upper/5.webp"'), '選手の顔画像が出る(不変条件2)');
+    assert.ok(html.includes('src="image/upper/5.webp"'), '選手の顔画像が出る(不変条件2)');
     assert.ok(html.includes('長い間、応援ありがとうございました。'), 'セリフ本文が出る(不変条件3)');
     assert.ok(html.includes('白鳥レイ'), '選手名が出る(不変条件4)');
     assert.ok(html.includes('現役期間') && html.includes('>6<'), '現役期間が出る(不変条件5)');
@@ -700,7 +727,7 @@ function section(name, fn) {
     built.setQueue([{ fighter: retiringFighter, route: 'age', line: '', summary: [] }], () => {});
     assert.doesNotThrow(() => built._renderRetirementPopup(), 'line=""でも例外なし');
     assert.ok(overlay.innerHTML.length > 0, '吹き出し以外の内容(タイトル・戦績等)は出る');
-    assert.ok(!overlay.innerHTML.includes('mdl-b-speech'), 'セリフが無いときはmdl-b-speech自体を出さない(_mdlBSpeechの早期return)');
+    assert.ok(!overlay.innerHTML.includes('mdl-b-speech'), 'セリフが無いときはmdl-b-speech自体を出さない(_u3bSideHtmlの空バブル省略)');
   });
 
   section('mdl-b-speech: retire-advise result popup renders face, line, name, and accepted/rejected framing', () => {
@@ -709,7 +736,7 @@ function section(name, fn) {
       '例外を投げない(不変条件1)');
     const html = overlay.innerHTML;
     assert.ok(html.includes('mdl-b-speech'), 'mdl-b-speechが出る');
-    assert.ok(html.includes('<img class="mdl-b-upper" src="image/upper/5.webp"'), '選手の顔画像が出る(不変条件2)');
+    assert.ok(html.includes('src="image/upper/5.webp"'), '選手の顔画像が出る(不変条件2)');
     assert.ok(html.includes('見届けてくれてありがとう。'), 'セリフ本文が出る(不変条件3)');
     assert.ok(html.includes('白鳥レイ'), '選手名が出る(不変条件4)');
     assert.ok(html.includes('LAST RUN BEGINS'), '受諾のときはラストラン開始が明示される(不変条件5)');
@@ -726,22 +753,22 @@ function section(name, fn) {
     });
   });
 
-  section('mdl-b-speech: does not throw on a <script>-bearing name/line (escaping gap logged, not fixed)', () => {
+  section('mdl-b-speech: escapes a <script>-bearing name/line (U3統一で修正済み。旧known gap)', () => {
     const { built, overlay } = makeBundle({});
     const evilFighter = { ...retiringFighter, name: '<script>alert(1)</script>' };
     assert.doesNotThrow(() => built.showRetireAdviseResultPopup(true, evilFighter, '<script>alert(2)</script>'),
       '例外を投げない(不変条件6の派生)');
-    if (overlay.innerHTML.includes('<script>alert(1)</script>') || overlay.innerHTML.includes('<script>alert(2)</script>')) {
-      console.log('    [known gap] _mdlBSoloStage/_mdlBSpeech: name/line are NOT escaped (escHtml not called) — reported, not fixed');
-    }
+    assert.ok(!overlay.innerHTML.includes('<script>alert(1)</script>') && !overlay.innerHTML.includes('<script>alert(2)</script>'),
+      '選手名・セリフは生のまま出力されない(不変条件7)');
+    assert.ok(overlay.innerHTML.includes('&lt;script&gt;'), 'escHtml()によりエスケープされた形で出力される');
   });
 
-  section('mdl-b-speech: no face element at all when the upper image URL is empty (observation)', () => {
+  section('mdl-b-speech: falls back to an initial-letter portrait when the upper image URL is empty (U3統一で修正済み。旧known gap)', () => {
     const { built, overlay } = makeBundle({ getUpperUrl: () => '' });
     built.setQueue([{ fighter: retiringFighter, route: 'age', line: 'x', summary: [] }], () => {});
     built._renderRetirementPopup();
     assert.ok(!overlay.innerHTML.includes('<img'), '画像URLが空のとき<img>タグ自体が出ない');
-    console.log('    [observation] _mdlBSoloStage: no initial-letter fallback when upperUrl is empty (same gap as pb-ace-bubble)');
+    assert.ok(overlay.innerHTML.includes('>白</div>'), 'イニシャル文字にフォールバックする(不変条件2)');
   });
 })();
 
@@ -753,6 +780,9 @@ function section(name, fn) {
   const build = new Function(
     'document', 'getPortraitUrl', 'ALL_CHARS', 'G',
     `${dataFn('portraitImg')}
+     ${uiFn('escHtml')}
+     ${uiFn('_u3bInitialFallback')}
+     ${uiFn('_u3bSideHtml')}
      ${uiFn('_showChampionWorryBubble')}
      return { _showChampionWorryBubble };`
   );
@@ -776,7 +806,7 @@ function section(name, fn) {
 
   const fighter = { id: 8, name: '東城カレン' };
 
-  section('champion-worry (no dedicated class): renders face, line, name via inline style only (no throw)', () => {
+  section('champion-worry: renders face, line, name via _u3bSideHtml (U3統一で専用クラスを付与)', () => {
     const { built, getCreated } = makeBundle({});
     assert.doesNotThrow(() => built._showChampionWorryBubble(fighter, '応援してくれる人がいる限り、また立てる。', () => {}),
       '例外を投げない(不変条件1)');
@@ -784,9 +814,7 @@ function section(name, fn) {
     assert.ok(html.includes('<img src="image/face/8.png"'), '選手の顔画像が出る(不変条件2)');
     assert.ok(html.includes('応援してくれる人がいる限り、また立てる。'), 'セリフ本文が出る(不変条件3)');
     assert.ok(html.includes('東城カレン'), '選手名が出る(不変条件4)');
-    // 注: この画面には .xxx-bubble のような専用クラスが無い(グループ内で唯一)。
-    // 顔画像はportraitImg由来のclass="portrait ..."を持つが、それはこの画面固有のクラスではない。
-    // 統一作業で専用クラスが付く可能性が高いため、「クラスが無いこと」自体はassertしない。
+    assert.ok(html.includes('champion-worry-bubble'), 'U3統一で専用クラス(champion-worry-bubble)が付いた');
   });
 
   section('champion-worry: falls back to an initial-letter portrait when there is no image URL', () => {
@@ -797,23 +825,23 @@ function section(name, fn) {
     assert.ok(html.includes('>東</div>'), 'イニシャル文字にフォールバックする(不変条件2)');
   });
 
-  section('champion-worry: does not throw when the line is undefined/empty/null (unvariant 6)', () => {
-    const { built } = makeBundle({});
+  section('champion-worry: falls back to \'…\' when the line is undefined/empty/null (U3統一で修正済み。旧known gap)', () => {
+    const { built, getCreated } = makeBundle({});
     [undefined, '', null].forEach((v) => {
       assert.doesNotThrow(() => built._showChampionWorryBubble(fighter, v, () => {}), `line=${JSON.stringify(v)}でも例外なし`);
+      assert.ok(!getCreated().innerHTML.includes('undefined'), `line=${JSON.stringify(v)}のとき画面に"undefined"の文字列が出ない(_buildB1Modalと同じ'…'フォールバック)`);
     });
-    console.log('    [observation] _showChampionWorryBubble: line=undefined leaves the literal text "undefined" on screen (no fallback)');
   });
 
-  section('champion-worry: does not throw on a <script>-bearing name/line (escaping gap logged, not fixed)', () => {
+  section('champion-worry: escapes a <script>-bearing name/line (U3統一で修正済み。旧known gap)', () => {
     const { built, getCreated } = makeBundle({ ALL_CHARS: [{ id: 8, name: '<script>alert(1)</script>', style: 'Aerial' }] });
     const evilFighter = { id: 8, name: '<script>alert(1)</script>' };
     assert.doesNotThrow(() => built._showChampionWorryBubble(evilFighter, '<script>alert(2)</script>', () => {}),
       '例外を投げない(不変条件6の派生)');
     const html = getCreated().innerHTML;
-    if (html.includes('<script>alert(1)</script>') || html.includes('<script>alert(2)</script>')) {
-      console.log('    [known gap] _showChampionWorryBubble: name/line are NOT escaped (escHtml not called) — reported, not fixed');
-    }
+    assert.ok(!html.includes('<script>alert(1)</script>') && !html.includes('<script>alert(2)</script>'),
+      '選手名・セリフは生のまま出力されない(不変条件7)');
+    assert.ok(html.includes('&lt;script&gt;'), 'escHtml()によりエスケープされた形で出力される');
   });
 })();
 

@@ -5175,20 +5175,22 @@ function renderShachoshitsuReleaseInterview(fighter, dialogue) {
   const fundsStr = Math.round(G.funds).toLocaleString();
   const dateStr = Engine.util.formatDate(G.season, G.week);
 
-  const face = portraitImg(fighter.id, 96, 'negotiation-speaker-portrait');
-
+  // U3グループA統一(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
+  // Office/Dark Panel(社長室の壁前、暗色の吹き出し)のため theme=dark。解雇という重い一対一の
+  // 局面なので size:'l'(150×224)。「'…'フォールバック」は_buildB1Modalの形に揃える(あわせて直すもの#1)
+  const upperUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl(fighter.id) : '';
   const wallHtml = `
-    <div class="negotiation-speaker">
-      ${face}
-      <div class="negotiation-bubble">
-        <strong style="font-size:12px;color:rgba(255,255,255,0.55)">${fighter.name}</strong><br>
-        「${dialogue}」
-      </div>
+    <div class="negotiation-speaker u3b-theme-dark">
+      ${_u3bSideHtml({
+        name: fighter.name, line: dialogue || '…', imgUrl: upperUrl,
+        fallback: (fighter.name || '?').charAt(0), size: 'l',
+        bubbleClass: 'negotiation-bubble', portraitClass: 'negotiation-speaker-portrait',
+      })}
     </div>`;
 
   const deskHtml = `
     <div class="neg-card-title">🚪 解雇の確認</div>
-    <div class="release-card-fighter-name">${fighter.name}</div>
+    <div class="release-card-fighter-name">${escHtml(fighter.name)}</div>
     <div class="release-card-warning">⚠️ 選手の解雇は取り消せません</div>
     <div class="neg-choices release-choices">
       <button class="neg-btn release-confirm-btn" onclick="App.confirmRelease(${fighter.id})">

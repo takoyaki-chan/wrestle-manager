@@ -62,14 +62,19 @@ function orgIconHtml(orgId, size = 40) {
 /**
  * @param {Object} o
  *   name, imgUrl, line, role(役割ラベル文字列 or null), isLoser(bool),
- *   isBig(true で L サイズ 150×224。「1人ずつ見せる」勝者非対称画面のみ使う),
- *   small(true で吹き出し枠46px。既定は52px),
+ *   size('xl'|'l'|'m'|'s'|'chip'。既定'm'=132×194。U3グループA「1人が語る」画面用に
+ *     xl=172×258/s=108×162/chip=40×40丸を追加。isBigは旧互換で size:'l' と同じ),
+ *   isBig(旧互換。true で L サイズ 150×224。「1人ずつ見せる」勝者非対称画面のみ使う),
+ *   small(true で吹き出し枠46px。既定は52px。sizeが's'/'chip'のときは自動でそれぞれ46px/40pxになる),
  *   statLabel, statValue(nullなら数値行を省く),
  *   orgBadge: { orgId, orgName, isHome } | null, orgHtml(prebuilt HTML優先),
- *   bubbleClass / portraitClass / extraSideClass(安全網テスト互換のため既存クラス名を co-class する),
+ *   bubbleClass / portraitClass / extraSideClass / slotClass(安全網テスト互換のため既存クラス名を co-class する),
  *   onClick(画像・名前クリックのonclick属性文字列。選手詳細への導線がある画面のみ),
  *   extraHtml(数値行の後ろに追加するHTML。fc1mの5項目比較などスクリーン固有の内容),
- *   roleHtml(役割ラベルを生のHTMLで差し込む。旧 vd-badge-w/l のような既存装飾を保つ場合に role の代わりに使う)
+ *   roleHtml(役割ラベルを生のHTMLで差し込む。旧 vd-badge-w/l のような既存装飾を保つ場合に role の代わりに使う),
+ *   imgHtml(画像タグを生のHTMLで差し込む。imgUrlが空でも<img>タグ自体は出したい画面向け。指定時はimgUrl/fallbackより優先),
+ *   fallback(imgUrl/imgHtmlが無いときに .u3b-upper-fallback へ差し込む頭文字・絵文字などの文字列。
+ *     escHtml済みで出力するため呼び出し側は生文字列でよい)
  */
 function _u3bSideHtml(o) {
   o = o || {};
@@ -77,12 +82,15 @@ function _u3bSideHtml(o) {
   const line = (o.line != null && o.line !== '') ? escHtml(o.line) : '';
   const bubbleCls = ['u3b-bubble', o.bubbleClass].filter(Boolean).join(' ');
   const bubbleInner = line ? `<div class="${bubbleCls}"><div class="u3b-bubble-text">${line}</div></div>` : '';
-  const slotCls = ['u3b-bubble-slot', o.small ? 'is-s' : ''].filter(Boolean).join(' ');
-  const upperCls = ['u3b-upper', o.isBig ? 'is-l' : '', o.portraitClass].filter(Boolean).join(' ');
+  const sizeKey = o.size || (o.isBig ? 'l' : 'm');
+  const slotSizeCls = o.small ? 'is-s' : (sizeKey === 's' ? 'is-s' : sizeKey === 'chip' ? 'is-chip' : '');
+  const slotCls = ['u3b-bubble-slot', slotSizeCls, o.slotClass].filter(Boolean).join(' ');
+  const upperSizeCls = sizeKey === 'xl' ? 'is-xl' : sizeKey === 'l' ? 'is-l' : sizeKey === 's' ? 'is-s' : sizeKey === 'chip' ? 'is-chip' : '';
+  const upperCls = ['u3b-upper', upperSizeCls, o.portraitClass].filter(Boolean).join(' ');
   const clickAttr = o.onClick ? ` style="cursor:pointer" onclick="${o.onClick}"` : '';
-  const imgHtml = o.imgUrl
+  const imgHtml = o.imgHtml != null ? o.imgHtml : (o.imgUrl
     ? `<img src="${escHtml(o.imgUrl)}" alt="" onerror="this.style.display='none'">`
-    : '';
+    : (o.fallback != null ? _u3bInitialFallback(o.fallback) : ''));
   const roleHtml = o.roleHtml != null ? o.roleHtml : (o.role ? `<div class="u3b-role">${escHtml(o.role)}</div>` : '');
   const orgHtml = o.orgHtml != null ? o.orgHtml : (o.orgBadge ? _u3bOrgBadgeHtml(o.orgBadge) : '');
   const statHtml = (o.statValue != null && o.statValue !== '')
@@ -100,6 +108,13 @@ function _u3bSideHtml(o) {
       ${o.extraHtml || ''}
     </div>
   </div>`;
+}
+
+/** 顔画像が無いときの汎用フォールバック(.u3b-upper 内へ差し込む頭文字/絵文字)。
+ *  U3グループA(2026-07-25): 1人が語る画面のうち「画像URLが空でも必ず何かが見える」べき
+ *  画面向けに追加。label は escHtml 済みで出力するので呼び出し側は生文字列を渡してよい。 */
+function _u3bInitialFallback(label) {
+  return `<div class="u3b-upper-fallback">${escHtml(label != null ? label : '?')}</div>`;
 }
 
 /** 団体バッジ(.u3b-org-badge)。実エンブレム画像を使う(mockup-baseline §5)。
@@ -292,40 +307,24 @@ function _mdlBTitleBand(title, titleCls, sub) {
   </div>`;
 }
 
-/** B型 頭上吹き出し。variant: default|rival|gold|soft, size: 'large'|null */
-function _mdlBSpeech(speaker, text, variant, size) {
-  if (!text) return '';
-  const v = variant && variant !== 'default' ? ' ' + variant : '';
-  const sz = size === 'large' ? ' large' : '';
-  return `<div class="mdl-b-speech${v}">
-    ${speaker ? `<div class="mdl-b-speech-speaker">${speaker}</div>` : ''}
-    <div class="mdl-b-speech-text${sz}">${text}</div>
-  </div>`;
-}
-
-/** B型 ソロステージ(1選手中央)。opts.sepia で sepia 影 */
+/** B型 ソロステージ(1選手中央)。opts.sepia で琥珀掛かったアクセント(受諾/年齢引退など穏やかな別れ)。
+ *  U3グループA統一(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
+ *  節目(引退)の主役なので size:'xl'(172×258、指示書の明示指定)。画像URLが空でも頭文字フォールバックを
+ *  出すよう修正(あわせて直すもの#2)。旧 _mdlBSpeech(このソロ画面専用だった頭上吹き出し実装)は
+ *  役目を終えたため削除し、共通の _u3bSideHtml 吹き出しへ統合した */
 function _mdlBSoloStage(fighter, speech, opts) {
   opts = opts || {};
-  const upperUrl = fighter && typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
-  const sizeStyle = opts.large ? 'style="width:300px;height:360px"' : '';
-  const imgHtml = upperUrl
-    ? `<img class="mdl-b-upper" src="${upperUrl}" alt="" ${sizeStyle} onerror="this.style.display='none'">`
-    : '';
-  const speechHtml = speech
-    ? _mdlBSpeech(speech.speaker, speech.text, speech.variant, speech.size)
-    : '';
-  const stageCls = 'mdl-b-solo-stage' + (opts.sepia ? ' sepia' : '');
-  const nameMeta = fighter
-    ? `<div class="mdl-b-name" style="margin-top:16px${opts.sepia ? ';color:rgba(232,220,200,0.9)' : ''}">${fighter.name || ''}</div>
-       <div class="mdl-b-org"${opts.sepia ? ' style="color:rgba(200,180,150,0.7)"' : ''}>${opts.meta || `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''}`}</div>`
-    : '';
-  return `<div class="${stageCls}">
-    <div class="mdl-b-upper-wrap">
-      ${speechHtml}
-      ${imgHtml}
-    </div>
-    ${nameMeta}
-  </div>`;
+  if (!fighter) return '<div class="mdl-b-solo-stage"></div>';
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  const meta = opts.meta || `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''}`;
+  const stageCls = ['mdl-b-solo-stage', opts.sepia ? 'sepia' : '', 'u3b-theme-stage', opts.sepia ? 'is-sepia' : '']
+    .filter(Boolean).join(' ');
+  return `<div class="${stageCls}">${_u3bSideHtml({
+    name: fighter.name, line: speech && speech.text, imgUrl: upperUrl,
+    fallback: (fighter.name || '?').charAt(0), size: 'xl',
+    role: meta,
+    bubbleClass: 'mdl-b-speech',
+  })}</div>`;
 }
 
 /** B型 アクション行(ボタン群)。buttons: [{label, sub, primary, onclick}] */
@@ -949,16 +948,20 @@ function _showWarVictoryChain(list, idx, onDone) {
   if (idx >= list.length) { if (onDone) onDone(); return; }
   const w = list[idx];
   const overlay = document.createElement('div');
-  overlay.className = 'war-victory-overlay';
+  overlay.className = 'war-victory-overlay u3b-theme-stage is-victory';
   const portraitUrl = getPortraitUrl(w.id);
   const line = _getWarVictoryLine(w);
+  // U3グループA統一(2026-07-26): 1人ずつ全画面モーダルを▶で送る演出であり一覧ではないため、
+  // 他のグループA画面と同じ規則で顔出しブロックを _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
+  // 1人を主役として見せるモーダルなので size:'m'(132×194)以上を採用
+  const sideHtml = _u3bSideHtml({
+    name: w.name, line, imgUrl: portraitUrl,
+    fallback: (w.name || '?').charAt(0), size: 'm',
+    bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
+  });
   overlay.innerHTML = `
     <div class="war-victory-modal">
-      <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);margin:0 auto 12px;box-shadow:0 0 20px rgba(212,168,83,0.15)">
-        ${_imgOrInitial(portraitUrl, w.id, 80, 'border-radius:50%;')}
-      </div>
-      <div class="war-victory-name">${w.name}</div>
-      <div class="war-victory-line">「${line}」</div>
+      ${sideHtml}
       <button class="war-victory-close">▶</button>
     </div>
   `;
@@ -977,26 +980,28 @@ function _showWarEnemyAceStatement(onDone) {
   const playerOrgName = G.orgName || 'プレイヤー団体';
   const dialogue = getWarPostDialogue(enemyAce, playerOrgName, eventWon, playerWins, aiWins);
   const upperUrl = getUpperUrl(enemyAce.id);
-  const dialogueHtml = escHtml(dialogue).replace(/\n/g, '<br>');
   const eColor = orgCfg.color || '#e74c3c';
 
+  // U3グループA統一(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
+  // Stage(対抗戦サマリ後の全画面オーバーレイ、--stage-*系トークン)。相手団体のエースなので
+  // .u3b-theme-stage.is-hostility(既存の敵陣アクセント)+ 団体バッジ(away、実エンブレム)。
+  // 団体の「大将」格として size:'l'(150×224)。旧 pb-ace-label/pb-ace-speaker の重複表記
+  // (団体名を2回出していた)は role="ACE" + 団体バッジに統合(情報は保持、表記だけ整理)
+  const sideHtml = _u3bSideHtml({
+    name: enemyAce.name, line: dialogue, imgUrl: upperUrl,
+    fallback: (enemyAce.name || '?').charAt(0), size: 'l',
+    isLoser: !!eventWon, role: 'ACE',
+    orgBadge: { orgId: ev.opponentOrgId, orgName: ev.opponentName, isHome: false },
+    bubbleClass: 'pb-ace-bubble', portraitClass: 'pb-ace-portrait',
+  });
+
   const overlay = document.createElement('div');
-  overlay.className = 'war-victory-overlay war-ace-overlay';
+  overlay.className = 'war-victory-overlay war-ace-overlay u3b-theme-stage is-hostility';
   overlay.style.setProperty('--pb-enemy-color', eColor);
   overlay.innerHTML = `
     <div class="war-ace-modal pb-container" style="--pb-enemy-color:${eColor}">
       <div class="pb-ace-area" style="margin-top:0">
-        <div class="pb-ace-label">${escHtml(ev.opponentName)} — Ace Statement</div>
-        <div class="pb-ace-portrait-wrap">
-          <div class="pb-ace-portrait${eventWon ? ' is-defeated' : ''}">
-            ${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(enemyAce.name)}" onerror="this.style.display='none'">` : ''}
-          </div>
-          <div class="pb-ace-name">${escHtml(enemyAce.name)}</div>
-        </div>
-        <div class="pb-ace-speech">
-          <div class="pb-ace-speaker">${escHtml(ev.opponentName)}エース — ${escHtml(enemyAce.name)}</div>
-          <div class="pb-ace-bubble">「${dialogueHtml}」</div>
-        </div>
+        ${sideHtml}
       </div>
       <div style="text-align:center;margin-top:16px">
         <button class="war-victory-close war-ace-close" type="button">▶</button>
@@ -2110,17 +2115,19 @@ function closeRetirementPopup() {
 }
 
 // B4タレント活動§13: チャンピオン怪我引退時の社長への一言（Glimpse B形式吹き出し）
+// U3グループA統一(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
+// 画面の下から差し込まれる通知トーストのため、主役級の矩形梯子ではなく
+// §2-B「丸い顔アイコン(第4系統・小さく差し込む場所限定)」を採用し size:'chip'(40px丸)。
+// '…'フォールバックは_buildB1Modalに揃える(あわせて直すもの#1)
 function _showChampionWorryBubble(fighter, line, onClose) {
-  const face = portraitImg(fighter.id, 56, '');
+  const face = typeof getPortraitUrl === 'function' ? getPortraitUrl(fighter.id) : '';
   const bubble = document.createElement('div');
-  bubble.style.cssText = 'position:fixed;bottom:20%;left:50%;transform:translateX(-50%);z-index:10001;display:flex;align-items:center;gap:10px;padding:14px 18px;background:rgba(30,28,25,0.95);border:1px solid rgba(200,190,170,0.2);border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.5);cursor:pointer;max-width:380px;animation:fadeInUp 0.4s ease';
-  bubble.innerHTML = `
-    <div style="flex-shrink:0;width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid rgba(200,190,170,0.3)">${face}</div>
-    <div>
-      <div style="font-size:10px;color:var(--text-dim);margin-bottom:3px">${fighter.name}</div>
-      <div style="font-size:13px;color:var(--text-main);line-height:1.5">${line}</div>
-    </div>
-  `;
+  bubble.className = 'champion-worry-toast u3b-theme-dark';
+  bubble.innerHTML = _u3bSideHtml({
+    name: fighter.name, line: line || '…', imgUrl: face,
+    fallback: (fighter.name || '?').charAt(0), size: 'chip',
+    bubbleClass: 'champion-worry-bubble',
+  });
   bubble.addEventListener('click', () => {
     bubble.style.opacity = '0';
     bubble.style.transition = 'opacity 0.3s';
@@ -3105,25 +3112,20 @@ function _awShowCoachFg(hofData, awards) {
   const line = lines.length > 0 ? lines[Math.floor(Math.random() * lines.length)] : '';
   if (!line) return;
 
-  // コーチポートレート
+  // コーチポートレート(U3グループA統一 2026-07-26: _u3bSideHtml(.u3b-*)へ移行。
+  // 殿堂入り本人の脇で語る補助的な反応のため size:'s'(108×162)。
+  // 縦順は吹き出し→画像→名前→役割ラベルの固定順、mockup-baseline-v0.1 §4)
   const coachPortUrl = typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(coach.id) : '';
-  const coachPortHtml = coachPortUrl
-    ? `<img src="${coachPortUrl}" alt="">`
-    : (coach.emoji || '👩‍🏫');
 
-  coachFg.innerHTML = `
-    <div class="coach-fg-bubble">
-      <div class="speech-speaker">${coach.name} コーチ</div>
-      <div class="speech-text">「${line}」</div>
-    </div>
-    <div class="coach-fg-portrait">
-      <div class="coach-fg-badge">COACH</div>
-      ${coachPortHtml}
-    </div>`;
+  coachFg.innerHTML = _u3bSideHtml({
+    name: coach.name, line, imgUrl: coachPortUrl, fallback: coach.emoji || '👩‍🏫',
+    role: 'コーチ', size: 's',
+    bubbleClass: 'coach-fg-bubble',
+  });
 
   // コーチFGは非表示のまま待機（タップで表示する）
   // _hofCoachReady フラグを立てて goToSlide 内のクリックハンドラで使う
-  window._hofCoachReady = true;
+  if (typeof window !== 'undefined') window._hofCoachReady = true;
 }
 
 
@@ -11872,7 +11874,6 @@ function showLargeEventModal(event, state, step, onChoice) {
 // ── B1: 練習中の怪我 ──────────────────────────────────────────────────────
 function _buildB1Modal(event, state, roster) {
   const fighter = roster.find(f => f.id === event.fighter);
-  const face = fighter ? portraitImg(fighter.id, 72, 'care-reaction-portrait') : '';
   const severityLabel = event.severity === 'moderate' ? '（重め）' : '（軽め）';
   const funds = state.funds || 0;
 
@@ -11883,12 +11884,16 @@ function _buildB1Modal(event, state, roster) {
   }
 
   if (fighter) {
-    html += `<div class="care-reaction" style="border-color:#e67e22">
-      ${face}
-      <div class="care-reaction-bubble" style="border-color:#e67e22">
-        <strong style="font-size:12px;color:var(--text-dim)">${fighter.name}</strong><br>
-        「${event.dialogue || '…'}」
-      </div>
+    // U3グループA統一(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
+    // Office/Dark Panel(care-overlay は --bg-card 等の非Cream暗色トークン)のため theme=dark。
+    // 日常のケアモーダルなので size:'m'(132×194、指示書の明示指定)
+    const upperUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl(fighter.id) : '';
+    html += `<div class="care-reaction u3b-theme-dark" style="border-color:var(--accent-hostility)">
+      ${_u3bSideHtml({
+        name: fighter.name, line: event.dialogue || '…', imgUrl: upperUrl,
+        fallback: (fighter.name || '?').charAt(0), size: 'm',
+        bubbleClass: 'care-reaction-bubble', portraitClass: 'care-reaction-portrait',
+      })}
     </div>`;
   }
 
@@ -14701,12 +14706,15 @@ function showTrialEndMessage() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // 壁前の発言者HTML (ポートレイト96px + 吹き出し)
+// U3グループA統一(2026-07-26)注記: 解雇面談(renderShachoshitsuReleaseInterview)だけを
+// _u3bSideHtml(.u3b-*)へ移行したため、意匠の異なるこちら(契約更新交渉)は
+// .negotiation-* とのクラス名衝突を避けて .negc-* に改名した(見た目・挙動は変更なし)。
 function _negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel) {
-  const face = portraitImg(neg.fighterId, 96, 'negotiation-speaker-portrait');
+  const face = portraitImg(neg.fighterId, 96, 'negc-speaker-portrait');
   return `
-    <div class="negotiation-speaker">
+    <div class="negc-speaker">
       ${face}
-      <div class="negotiation-bubble">
+      <div class="negc-bubble">
         <strong style="font-size:12px;color:rgba(255,255,255,0.55)">${neg.fighterName}</strong>
         <span class="neg-badge ${badgeCls}">${badgeLabel}</span><br>
         「${dialogue}」
@@ -15044,18 +15052,21 @@ function _showJTImpressionChain(list, idx, onDone) {
 
   const portraitUrl = getPortraitUrl(f.id);
   const resultLabel = timing === 'champion' ? '優勝' : timing === 'postWin' ? '入賞' : '敗退';
-  const resultColor = timing === 'champion' ? 'var(--gold)' : timing === 'postWin' ? '#2ecc71' : 'var(--text-sub)';
+  const resultColor = timing === 'champion' ? 'var(--gold)' : timing === 'postWin' ? 'var(--c-positive)' : 'var(--text-sub)';
 
+  // U3グループA統一(2026-07-26): war-victory-line(_showWarVictoryChain)と同じ顔出しブロックへ移行
+  // (mockup-baseline-v0.1)。旧#2ecc71(緑のハードコード)はvar(--c-positive)へトークン化。
+  // 結果ラベル(優勝/入賞/敗退)は role スロットへ、色は resultColor をそのまま引き継ぐ
   const overlay = document.createElement('div');
-  overlay.className = 'war-victory-overlay';
+  overlay.className = 'war-victory-overlay u3b-theme-stage is-victory';
   overlay.innerHTML = `
     <div class="war-victory-modal">
-      <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid ${resultColor};margin:0 auto 12px;box-shadow:0 0 20px rgba(212,168,83,0.15)">
-        ${_imgOrInitial(portraitUrl, f.id, 80, 'border-radius:50%;')}
-      </div>
-      <div style="font-size:11px;color:${resultColor};letter-spacing:2px;margin-bottom:4px">${resultLabel}</div>
-      <div class="war-victory-name">${f.name}</div>
-      <div class="war-victory-line">「${line}」</div>
+      ${_u3bSideHtml({
+        name: f.name, line, imgUrl: portraitUrl,
+        fallback: (f.name || '?').charAt(0), size: 'm',
+        roleHtml: `<div class="u3b-role" style="color:${resultColor}">${escHtml(resultLabel)}</div>`,
+        bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
+      })}
       <button class="war-victory-close">▶</button>
     </div>
   `;

@@ -1213,23 +1213,25 @@ function showCeremonyEvent(evt, speakers, onContinue) {
   }).join('');
 
   // Phase 2: speakers
+  // U3グループA統一(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
+  // 縦順を 吹き出し→画像→名前→役割ラベル の固定順に修正(旧実装は役割ラベルが名前より先だった)。
+  // 節目セレモニーの主役なので size:'xl'(172×258、指示書の明示指定)。
+  // Ceremony専用のトークン層は未整備(階層4未着手)。この画面の色(#e8e6e0系オフホワイト・ゴールド)は
+  // 既存 Stage トークン(--stage-text-*)と数値が一致しているため、そのまま流用する(u3b-theme-stage)。
+  // imgUrlではなくimgHtmlで組み立てるのは、画像URLが空でも<img>タグ自体は出す既存の仕様
+  // (onerrorで非表示にするだけ)を維持するため
   const speakerHtml = speakers.map(({ fighter, roleLabel }) => {
     const line = App.resolveDomeLine(fighter, evt.dialogueKey);
     const portraitSrc = getUpperUrl(fighter.id);
     const isTriumph = evt.visualVariant === 'triumph' ? ' triumph-glow' : '';
-    return `
-      <div class="cerem-speaker">
-        <div class="cerem-bubble-wrap">
-          <div class="cerem-bubble">${line}</div>
-        </div>
-        <div class="cerem-portrait${isTriumph}">
-          <img src="${portraitSrc}" alt="${fighter.name}"
+    const imgHtml = `<img src="${escHtml(portraitSrc || '')}" alt="${escHtml(fighter.name)}"
             style="width:100%;height:100%;object-fit:cover;object-position:top"
-            onerror="this.style.display='none'">
-        </div>
-        <div class="cerem-role-label">${roleLabel}</div>
-        <div class="cerem-speaker-name">${fighter.name}</div>
-      </div>`;
+            onerror="this.style.display='none'">`;
+    return `<div class="cerem-speaker">${_u3bSideHtml({
+      name: fighter.name, line, imgHtml, role: roleLabel, size: 'xl',
+      slotClass: 'cerem-bubble-wrap', bubbleClass: 'cerem-bubble',
+      portraitClass: 'cerem-portrait' + isTriumph,
+    })}</div>`;
   }).join('');
 
   overlay.innerHTML = `
