@@ -203,8 +203,8 @@ function section(source, startMarker, endMarker) {
   const boutPopup = section(ui, 'function renderAutumnWarBoutResultPopup', 'function renderAutumnWarBoard');
   assert.ok(boutPopup.includes('showVictoryLine: !!victoryLine'), 'survivor line must be allowed to disappear');
   const resultView = section(ui, 'function renderAutumnWarResult', 'function _agwMvpLine');
-  assert.ok(resultView.includes('agw-champion-speech'), 'optional championship speech is missing');
-  assert.ok(resultView.includes('agw-champ-member'), 'championship speech must be attached to its speaker card');
+  assert.ok(resultView.includes('_chBubbleSlot(line)'), 'optional championship speech is missing');
+  assert.ok(resultView.includes('class="ch-mem'), 'championship speech must be attached to its speaker card (U2 unified .ch-mem)');
   assert.ok(resultView.includes('result.revenueDistribution'), 'result view must read the saved dome-event distribution');
   assert.ok(resultView.includes('大会総収入'), 'result view must show the event revenue basis');
   assert.ok(resultView.includes('興行分配 ¥${playerShare.gateAmount}万'), 'player payout must separate gate revenue');
@@ -213,7 +213,7 @@ function section(source, startMarker, endMarker) {
   assert.ok(resultView.includes('通常興行基礎${playerShare.brandBase}'), 'brand payout must expose the ordinary-show baseline');
   assert.ok(resultView.includes('結果ボーナス +${Math.round(playerShare.brandBonusRate * 100)}%'), 'brand payout must expose the tournament-result percentage bonus');
   assert.ok(resultView.includes('${playerShare.brandBonusAmount}'), 'brand payout must expose the bonus amount');
-  assert.ok(html.includes('.agw-champion-speech'));
+  assert.ok(html.includes('.ch-bubble-slot'), 'U2 unified champion bubble slot CSS must exist');
   assert.ok(html.includes('.agw-result-finance'));
 })();
 

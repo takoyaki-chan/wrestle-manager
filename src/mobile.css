@@ -1444,18 +1444,21 @@
   .agw-entry-footer > span { display: none; }
   .agw-entry-footer > div { width: 100%; }
   .agw-entry-footer .btn { flex: 1; min-height: 44px; }
-  .agw-champ-lineup { gap: 5px; align-items: stretch; }
-  .agw-champion-speech { margin-bottom: 10px; padding: 8px 10px; }
-  .agw-champion-speech blockquote { font-size: 12px; }
-  .agw-champ-card,
-  .agw-champ-card.is-mvp { width: 33%; }
-  .agw-champ-card > span,
-  .agw-champ-card.is-mvp > span { height: 130px; }
-  .agw-mvp-stage { flex-direction: column; align-items: center; gap: 12px; text-align: center; }
-  .agw-mvp-figure { width: min(280px, calc(100vw - 40px)); }
-  .agw-mvp-speech { margin-bottom: 13px; padding: 10px 12px; font-size: 13px; }
-  .agw-mvp-portrait { width: 180px; height: 250px; }
-  .agw-mvp-name { margin: 0 auto; text-align: center; }
+  /* U2統一デザイン(.champ/.ch-*): 狭幅では横並びを維持したまま画像を縮める。折り返して縦積みにはしない */
+  .ch-duo, .ch-trio { gap: var(--space-sm); padding-left: 8px; padding-right: 8px; }
+  .ch-duo .ch-por { width: 108px; height: 161px; }
+  .ch-duo .ch-por .ini { font-size: 40px; }
+  .ch-trio .ch-por { width: 92px; height: 137px; }
+  .ch-trio .ch-por .ini { font-size: 34px; }
+  .ch-trio .ch-mem.is-ace .ch-por { width: 110px; height: 164px; }
+  .ch-hero .ch-por { width: 132px; height: 198px; }
+  .ch-hero .ch-por .ini { font-size: 48px; }
+  .ch-bubble, .ch-duo .ch-bubble, .ch-trio .ch-bubble { max-width: min(200px, calc(100vw - 48px)); }
+  .agw-mvp-stage { max-width: min(320px, calc(100vw - 40px)); }
+  .agw-mvp-speech { max-width: min(240px, calc(100vw - 56px)); padding: 8px 11px; font-size: 12px; }
+  /* 3名の表彰(モバイルの大将 110x164)より小さく保つ */
+  .agw-mvp-portrait { width: 92px; height: 138px; }
+  .agw-mvp-name h2 { font-size: 15px; }
   .a1-sil-row { grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .tc-climb { min-width: 0; padding-left: 0; padding-right: 0; }
   .tcpe-fighters { grid-template-columns: 1fr; }

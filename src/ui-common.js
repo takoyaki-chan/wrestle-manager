@@ -15570,11 +15570,18 @@ function _emrOrgInitial(name) {
   return [...s][0];
 }
 
-/** 対外試合(所属が左右で異なる)のときだけ、名前の下にエンブレム+団体名バッジを出す */
-function _emrOrgBadgeHtml(orgName, side) {
+/** 対外試合(所属が左右で異なる)のときだけ、名前の下にエンブレム+団体名バッジを出す。
+ *  実エンブレム画像を使う(mockup-baseline-v0.1 §5)。orgIdが取れない経路だけ頭文字色丸へフォールバック */
+function _emrOrgBadgeHtml(orgId, orgName, side) {
   if (!orgName) return '';
   const sideCls = side === 'right' ? 'emr-org-away' : 'emr-org-home';
-  return `<div class="emr-org-badge ${sideCls}"><span class="emr-org-emblem">${escHtml(_emrOrgInitial(orgName))}</span><span class="emr-org-name">${escHtml(orgName)}</span></div>`;
+  const path = orgId != null && typeof Engine !== 'undefined' && Engine.util
+    ? (orgId === 'player'
+        ? (typeof Engine.util.getPlayerOrgIconPath === 'function' ? Engine.util.getPlayerOrgIconPath(G) : '')
+        : (typeof Engine.util.getOrgIconPath === 'function' ? Engine.util.getOrgIconPath(G, orgId) : ''))
+    : '';
+  const emblem = path ? `<img src="${path}" alt="" loading="lazy">` : escHtml(_emrOrgInitial(orgName));
+  return `<div class="emr-org-badge ${sideCls}"><span class="emr-org-emblem">${emblem}</span><span class="emr-org-name">${escHtml(orgName)}</span></div>`;
 }
 
 function _emrSingleSide(fighter, side, winnerSide, role, statLabel, statValue, bubbleHtml, crossOrg) {
@@ -15587,7 +15594,7 @@ function _emrSingleSide(fighter, side, winnerSide, role, statLabel, statValue, b
     <div class="emr-bubble-slot">${bubbleHtml || ''}</div>
     <div class="emr-upper">${upper ? `<img src="${upper}" alt="" onerror="this.style.display='none'">` : ''}</div>
     <div class="emr-side-copy"><div class="emr-name">${escHtml(fighter?.name || '?')}</div>
-      <div class="emr-role">${escHtml(displayRole)}</div>${crossOrg ? _emrOrgBadgeHtml(orgName, side) : ''}
+      <div class="emr-role">${escHtml(displayRole)}</div>${crossOrg ? _emrOrgBadgeHtml(fighter?.orgId, orgName, side) : ''}
       <div class="emr-stat"><small>${escHtml(statLabel || 'OVR')}</small>${escHtml(statValue != null ? statValue : _emrOvr(fighter))}</div>
     </div></div>`;
 }
@@ -15599,7 +15606,7 @@ function _emrTeamSide(team, side, winnerSide, bubbleHtml, crossOrg) {
   return `<div class="emr-team ${side === 'right' ? 'is-right ' : ''}${stateClass}">
     <div class="emr-bubble-slot">${bubbleHtml || ''}</div>
     <div class="emr-pair">${members.map(f => { const upper = _emrUpper(f); return `<div class="emr-upper">${upper ? `<img src="${upper}" alt="" onerror="this.style.display='none'">` : ''}</div>`; }).join('')}</div>
-    <div><div class="emr-team-name">${members.map(f => escHtml(f?.name || '?')).join('<br>&amp; ')}</div><div class="emr-role">${winnerSide === 'draw' ? 'Draw Team' : isWinner ? 'Winner Team' : 'Loser Team'}</div>${crossOrg ? _emrOrgBadgeHtml(team?.org || '', side) : ''}</div>
+    <div><div class="emr-team-name">${members.map(f => escHtml(f?.name || '?')).join('<br>&amp; ')}</div><div class="emr-role">${winnerSide === 'draw' ? 'Draw Team' : isWinner ? 'Winner Team' : 'Loser Team'}</div>${crossOrg ? _emrOrgBadgeHtml(team?.orgId, team?.org || '', side) : ''}</div>
   </div>`;
 }
 
@@ -15915,6 +15922,67 @@ function _jtAnimateHpRecoveryBars() {
   });
 }
 
+// ══════════════════════════════════════════════════════════
+//  U2: 大会の優勝発表 統一デザイン (.champ / .ch-*)
+//  JT・春タッグリーグ・秋4団体対抗戦・天頂戦の優勝発表を1つの型に統一する共通ヘルパー。
+//  大会ごとの差分はテーマ色(.th-*, --ev-rgb)のみ。縦の並び順は固定(吹き出し→画像→名前→役割→団体→数値)。
+//  spec: docs/ui/mockup-baseline-v0.1.md, docs/game-system-roadmap.md「UI統一リデザイン」U2
+// ══════════════════════════════════════════════════════════
+
+/** ヒーロー/デュオ/トリオ用の主役ポートレート。実画像優先、無ければイニシャル */
+function _chPortraitImg(fighter) {
+  const url = fighter && fighter.id != null && typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  if (url) return `<img src="${url}" alt="${escHtml(fighter?.name || '')}" onerror="this.style.display='none'">`;
+  return `<span class="ini">${escHtml((fighter?.name || '?').charAt(0))}</span>`;
+}
+
+/** 準優勝以下チップ用の小さいポートレート */
+function _chSubImg(fighter) {
+  if (!fighter) return '';
+  const url = typeof getPortraitUrl === 'function' ? getPortraitUrl(fighter.id) : '';
+  if (url) return `<img src="${url}" alt="" onerror="this.style.display='none'">`;
+  return `<span class="ini">${escHtml((fighter.name || '?').charAt(0))}</span>`;
+}
+
+/** 吹き出しの予約枠。発言が無くても同じ高さの空枠を返し、左右/複数人の画像上端を揃える */
+function _chBubbleSlot(text) {
+  return `<div class="ch-bubble-slot">${text ? `<div class="ch-bubble">「${escHtml(text)}」</div>` : ''}</div>`;
+}
+
+/** 団体エンブレム(実画像)。orgIdが取れないときだけ頭文字色丸へフォールバック(mockup-baseline-v0.1 §5) */
+function _chOrgEmblemInner(orgId, orgName) {
+  if (orgId != null && typeof Engine !== 'undefined' && Engine.util) {
+    const path = orgId === 'player'
+      ? (typeof Engine.util.getPlayerOrgIconPath === 'function' ? Engine.util.getPlayerOrgIconPath(G) : '')
+      : (typeof Engine.util.getOrgIconPath === 'function' ? Engine.util.getOrgIconPath(G, orgId) : '');
+    if (path) return `<img src="${path}" alt="" loading="lazy">`;
+  }
+  return `<span class="ch-org-ini">${escHtml(_emrOrgInitial(orgName))}</span>`;
+}
+
+/** 個人優勝(JT/天頂戦)の団体バッジ。対外(他団体が絡む)ときだけ呼ぶこと */
+function _chOrgBadgeHtml(orgId, orgName) {
+  if (!orgName) return '';
+  return `<div class="ch-org"><span class="oe">${_chOrgEmblemInner(orgId, orgName)}</span><span class="on">${escHtml(orgName)}</span></div>`;
+}
+
+/** 団体優勝(春タッグ/秋対抗戦)の団体名帯。主役は団体そのもの */
+function _chTeamlineHtml(orgId, orgName) {
+  if (!orgName) return '';
+  return `<div class="ch-teamline"><span class="oe">${_chOrgEmblemInner(orgId, orgName)}</span><span class="ch-teamname">${escHtml(orgName)}</span></div>`;
+}
+
+/** 準優勝以下チップ1枚 */
+function _chSubCardHtml(rankLabel, fighter, orgId, orgName, prizeAmt) {
+  if (!fighter) return '';
+  const isOwn = orgId === 'player';
+  return `<div class="ch-sub-card">
+    <span class="ch-sub-rank">${escHtml(rankLabel)}</span>
+    <div class="ch-sub-img">${_chSubImg(fighter)}</div>
+    <div><div class="ch-sub-nm">${escHtml(fighter.name || '?')}</div><div class="ch-sub-org">${orgName ? `<span class="ch-sub-dot" style="background:${isOwn ? 'var(--c-positive)' : 'var(--accent-hostility)'}"></span>${escHtml(orgName)}` : ''}${prizeAmt ? `<span class="ch-sub-prize">¥${prizeAmt}万</span>` : ''}</div></div>
+  </div>`;
+}
+
 // ===== CHAMPION (Pattern B pb-container) =====
 function renderJuniorTournamentResult() {
   const jt = App._jtPreview;
@@ -15929,7 +15997,6 @@ function renderJuniorTournamentResult() {
   const { result } = jt;
   const { rounds, champion, runnerUp, semiFinalists } = result;
   const season = G.season;
-  const upperUrl = getUpperUrl(champion.id);
   const PRIZE = Engine.juniorTournament.PRIZE;
 
   // チャンピオンの通算MQ + 決勝MQ
@@ -15951,11 +16018,42 @@ function renderJuniorTournamentResult() {
 
   let html = `<div class="pb-container">`;
 
-  html += `<div class="pb-banner">
-    <div class="pb-live is-jt-champ">🏆 JT CHAMPION</div>
-    <div class="pb-banner-title is-jt-champ">第${season}回 ジュニアトーナメント 優勝</div>
-    <div class="pb-banner-sub">${escHtml(champion.name)}<span class="dot">·</span>${escHtml(champion._orgName || '')}</div>
+  // U2統一デザイン: 大会ヘッダー→吹き出し→画像→名前→役割→団体→数値→準優勝以下→フッター
+  html += `<div class="champ th-summer">
+    <div class="ch-head">
+      <div class="ch-emb"><img src="../image/emblem-summer.png" alt="" onerror="this.style.display='none'"></div>
+      <div class="ch-kicker">Junior Cup / Champion</div>
+      <div class="ch-title">第${season}回 ジュニアトーナメント</div>
+      <div class="ch-meta">第${G.week}週 ・ 全${rounds[0] ? rounds[0].matches.length * 2 : 0}名参加</div>
+    </div>
+    <div class="ch-hero">
+      ${_chBubbleSlot(champLine)}
+      <div class="ch-por-wrap"><span class="ch-glow"></span><span class="ch-crown">🏆</span><div class="ch-por">${_chPortraitImg(champion)}</div></div>
+      <div class="ch-name">${escHtml(champion.name)}</div>
+      <div class="ch-role">優勝</div>
+      ${_chOrgBadgeHtml(champion._orgId, champion._orgName)}
+      <div class="ch-stat"><small>OVR</small>${champOvr}</div>
+    </div>`;
+
+  // Runner-up + semifinalists
+  const subEntries = [];
+  if (runnerUp) {
+    subEntries.push({ f: runnerUp, rank: '2', prize: PRIZE.runnerUp });
+  }
+  if (semiFinalists) {
+    semiFinalists.forEach(sf => {
+      if (sf) subEntries.push({ f: sf, rank: '3', prize: PRIZE.semiFinal });
+    });
+  }
+  if (subEntries.length > 0) {
+    html += `<div class="ch-sub">${subEntries.map(e => _chSubCardHtml(e.rank, e.f, e.f._orgId, e.f._orgName, e.prize)).join('')}</div>`;
+  }
+
+  html += `<div class="ch-foot">
+    <span class="ch-prize">優勝賞金<b>¥${PRIZE.champion}万</b></span>
+    <button type="button" class="ch-next" onclick="App.finalizeJuniorTournament()">閉じる</button>
   </div>`;
+  html += `</div>`; // .champ
 
   // Scoreboard: Total MQ / Final MQ / Prize / OVR
   html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr 1fr">
@@ -15978,49 +16076,6 @@ function renderJuniorTournamentResult() {
       <div class="pb-score-lbl">OVR</div>
     </div>
   </div>`;
-
-  // Champion card
-  html += `<div class="pb-champion-card">`;
-  if (champLine) {
-    html += `<div class="pb-champion-bubble">
-      <div class="pb-champion-bubble-speaker">🏆 ${escHtml(champion.name)}</div>
-      「${escHtml(champLine)}」
-    </div>`;
-  }
-  html += `<div class="pb-champion-portrait">
-    ${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(champion.name)}" onerror="this.style.display='none'">` : ''}
-    <div class="pb-champion-trophy">🏆</div>
-  </div>`;
-  html += `<div class="pb-champion-label">CHAMPION</div>`;
-  html += `<div class="pb-champion-name">${escHtml(champion.name)}</div>`;
-  html += `<div class="pb-champion-org">${escHtml(champion._orgName || '')}</div>`;
-  html += `</div>`;
-
-  // Runner-up + semifinalists
-  const subEntries = [];
-  if (runnerUp) {
-    subEntries.push({ f: runnerUp, labelCls: 'is-runnerup', labelText: '2nd Place', prize: PRIZE.runnerUp });
-  }
-  if (semiFinalists) {
-    semiFinalists.forEach(sf => {
-      if (sf) subEntries.push({ f: sf, labelCls: 'is-semifinalist', labelText: 'Semifinalist', prize: PRIZE.semiFinal });
-    });
-  }
-  if (subEntries.length > 0) {
-    html += `<div class="pb-champion-sub">`;
-    subEntries.forEach(e => {
-      const face = getPortraitUrl(e.f.id);
-      html += `<div class="pb-champion-sub-card ${e.labelCls}">
-        <div class="pb-champion-sub-portrait">${face ? `<img src="${face}" alt="" onerror="this.style.display='none'">` : `<span class="pb-champion-sub-init">${escHtml((e.f.name || '?')[0])}</span>`}</div>
-        <div class="pb-champion-sub-info">
-          <div class="pb-champion-sub-label">${e.labelText}</div>
-          <div class="pb-champion-sub-name">${escHtml(e.f.name)}</div>
-          <div class="pb-champion-sub-org">${escHtml(e.f._orgName || '')}<span class="pb-champion-sub-prize">¥${e.prize}万</span></div>
-        </div>
-      </div>`;
-    });
-    html += `</div>`;
-  }
 
   // プレイヤー団体賞金サマリー
   const playerIds = new Set((G.roster || []).map(f => f.id));
@@ -16053,11 +16108,6 @@ function renderJuniorTournamentResult() {
   } else {
     html += `<div class="pb-champion-prizebox is-empty">自団体からの入賞者はいませんでした</div>`;
   }
-
-  // Footer
-  html += `<div class="pb-footer">
-    <button type="button" class="pb-close-btn" onclick="App.finalizeJuniorTournament()">閉じる</button>
-  </div>`;
 
   html += `</div>`; // .pb-container
 
@@ -16093,13 +16143,6 @@ function _stlFaceImg(f) {
   if (!f) return '';
   const u = getPortraitUrl(f.id);
   return u ? `<img src="${u}" alt="${escHtml(f.name || '')}" onerror="this.style.display='none'">` : '';
-}
-
-function _stlSubPortrait(f) {
-  if (!f) return '';
-  const u = getPortraitUrl(f.id);
-  if (u) return `<img src="${u}" alt="" onerror="this.style.display='none'">`;
-  return `<span class="pb-champion-sub-init">${escHtml((f.name || '?')[0])}</span>`;
 }
 
 /** condition(40-80)を定性3段に変換。数値は表に出さない */
@@ -16401,38 +16444,44 @@ function renderSpringTagLeagueChampion() {
   const f2 = _stlFighterOf(stl.champion, champTeam.f2Id);
   const season = G.season;
   const PRIZE = Engine.springTagLeague.PRIZE;
+  // タッグ優勝は2名とも主役 → 2名とも吹き出しを持つ(既存の勝利セリフ機構=JT champion timingを流用)
+  const line1 = f1 ? getJuniorTournamentLine('champion', f1.personality || 'normal', f1.archetype || '_default') : '';
+  const line2 = f2 ? getJuniorTournamentLine('champion', f2.personality || 'normal', f2.archetype || '_default') : '';
 
   let html = `<div class="pb-container">`;
-  html += `<div class="pb-banner">
-    <div class="pb-live is-jt-champ">🏆 SPRING TAG LEAGUE</div>
-    <div class="pb-banner-title is-jt-champ">第${season}回大会 総合ベストタッグ</div>
-    <div class="pb-banner-sub">${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}<span class="dot">・</span>${escHtml(champTeam.orgName || '')}</div>
-  </div>`;
-
-  html += `<div class="pb-champion-card">
-    <div class="stl-champ-duo">
-      <div class="stl-champ-slot"><div class="pb-champion-portrait">${_pbPortraitImg(f1 || { id: null, name: '?' })}<div class="pb-champion-trophy">🏆</div></div></div>
-      <div class="stl-champ-slot"><div class="pb-champion-portrait">${_pbPortraitImg(f2 || { id: null, name: '?' })}</div></div>
+  html += `<div class="champ th-spring">
+    <div class="ch-head">
+      <div class="ch-emb"><img src="../image/emblem-spring.png" alt="" onerror="this.style.display='none'"></div>
+      <div class="ch-kicker">Spring Tag League / Champion</div>
+      <div class="ch-title">春のタッグリーグ</div>
+      <div class="ch-meta">第${season}回大会 ・ 総合ベストタッグ</div>
     </div>
-    <div class="stl-champ-team-name">${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}</div>
-    <div class="pb-champion-org">${escHtml(champTeam.orgName || '')}</div>
-    <div class="stl-champ-title">第${season}回大会 総合ベストタッグ</div>
-  </div>`;
+    ${_chTeamlineHtml(champTeam.orgId, champTeam.orgName)}
+    <div class="ch-role-line"><div class="ch-role">優 勝</div></div>
+    <div class="ch-duo">
+      <div class="ch-mem">
+        ${_chBubbleSlot(line1)}
+        <div class="ch-por-wrap"><span class="ch-glow"></span><span class="ch-crown">🏆</span><div class="ch-por">${_chPortraitImg(f1 || { id: null, name: '?' })}</div></div>
+        <div class="ch-name">${escHtml(f1 ? f1.name : '?')}</div>
+      </div>
+      <div class="ch-mem">
+        ${_chBubbleSlot(line2)}
+        <div class="ch-por-wrap"><span class="ch-glow"></span><div class="ch-por">${_chPortraitImg(f2 || { id: null, name: '?' })}</div></div>
+        <div class="ch-name">${escHtml(f2 ? f2.name : '?')}</div>
+      </div>
+    </div>`;
 
   if (runnerTeam) {
     const r1 = _stlFighterOf(stl.runnerUp, runnerTeam.f1Id);
     const r2 = _stlFighterOf(stl.runnerUp, runnerTeam.f2Id);
-    html += `<div class="pb-champion-sub">
-      <div class="pb-champion-sub-card is-runnerup">
-        <div class="pb-champion-sub-portrait">${_stlSubPortrait(r1)}</div>
-        <div class="pb-champion-sub-info">
-          <div class="pb-champion-sub-label">2nd Place</div>
-          <div class="pb-champion-sub-name">${escHtml(r1 ? r1.name : '?')} &amp; ${escHtml(r2 ? r2.name : '?')}</div>
-          <div class="pb-champion-sub-org">${escHtml(runnerTeam.orgName || '')}<span class="pb-champion-sub-prize">¥${PRIZE.runnerUp}万</span></div>
-        </div>
-      </div>
-    </div>`;
+    html += `<div class="ch-sub">${_chSubCardHtml('2', r1, runnerTeam.orgId, runnerTeam.orgName, PRIZE.runnerUp)}${_chSubCardHtml('2', r2, runnerTeam.orgId, runnerTeam.orgName, PRIZE.runnerUp)}</div>`;
   }
+
+  html += `<div class="ch-foot">
+    <span class="ch-prize">優勝賞金<b>¥${PRIZE.champion}万</b></span>
+    <button type="button" class="ch-next" onclick="App.finalizeSpringTagLeagueReplay()">閉じる</button>
+  </div>`;
+  html += `</div>`; // .champ
 
   const standing = (stl.standings || []).find(s => s.orgId === 'player');
   if (standing) {
@@ -16449,9 +16498,6 @@ function renderSpringTagLeagueChampion() {
     }
   }
 
-  html += `<div class="pb-footer">
-    <button type="button" class="pb-close-btn" onclick="App.finalizeSpringTagLeagueReplay()">閉じる</button>
-  </div>`;
   html += `</div>`; // .pb-container
 
   box.innerHTML = html;
@@ -17058,19 +17104,33 @@ function renderAutumnWarResult() {
     <div class="is-player"><span>自団体の大会収入</span><strong>¥${playerShare.amount + playerPrize}万</strong><small>興行分配 ¥${playerShare.gateAmount}万（均等${playerShare.gateEqual}・延べ出場${playerShare.appearances}人 ${playerShare.gateAppearances}）<br>ブランド ¥${playerShare.brandAmount}万（通常興行基礎${playerShare.brandBase}・結果ボーナス +${Math.round(playerShare.brandBonusRate * 100)}%／${playerShare.brandBonusAmount}）${playerPrize ? `<br>入賞賞金 ¥${playerPrize}万` : ''}</small></div>
   </div>` : '';
   const speech = _agwChampionSpeech(result, champ);
-  const cards = (champ?.memberIds || []).map(id => {
-    const f = _agwFighter(champ.orgId, id);
-    const upper = f && typeof getUpperUrl === 'function' ? getUpperUrl(id) : '';
-    const wins = result.fighterWins?.[id] || 0;
-    const speechBubble = speech?.fighter?.id === id
-      ? `<div class="agw-champion-speech"><button type="button" onclick="showFighterPopup(${id},'autumnWar')">${escHtml(f?.name || '?')}</button><blockquote>「${escHtml(speech.line)}」</blockquote></div>`
-      : '';
-    return `<div class="agw-champ-member">${speechBubble}<button type="button" class="agw-champ-card${id === result.mvpId ? ' is-mvp' : ''}" onclick="showFighterPopup(${id},'autumnWar')"><span>${upper ? `<img src="${upper}" alt="">` : ''}</span><strong>${escHtml(f?.name || '?')}</strong><small>${id === result.mvpId ? '大会MVP・' : ''}通算${wins}人抜き</small></button></div>`;
+  // U2統一デザイン: 団体優勝(秋4団体対抗戦)は3名を横一列、大将を中央に一回り大きく。全員に吹き出しの予約枠を置く
+  const champOrder = (final && champ) ? (final.orgA === champ.orgId ? final.orderA : final.orderB) : null;
+  const roleRank = { '先鋒': 0, '大将': 1, '中堅': 2 };
+  const members = (champ?.memberIds || [])
+    .map(id => ({ id, f: _agwFighter(champ.orgId, id), role: _agwRoleLabel(champOrder || champ?.order || champ?.memberIds, id) }))
+    .filter(m => m.f)
+    .sort((a, b) => (roleRank[a.role] ?? 9) - (roleRank[b.role] ?? 9));
+  const cards = members.map(m => {
+    const isAce = m.role === '大将';
+    const wins = result.fighterWins?.[m.id] || 0;
+    const line = speech?.fighter?.id === m.id ? speech.line : '';
+    return `<div class="ch-mem${isAce ? ' is-ace' : ''}">
+      <div class="ch-order">${escHtml(m.role)}</div>
+      ${_chBubbleSlot(line)}
+      <div class="ch-por-wrap"><span class="ch-glow"></span>${isAce ? '<span class="ch-crown">🏆</span>' : ''}
+        <div class="ch-por" style="cursor:pointer" onclick="showFighterPopup(${m.id},'autumnWar')">${_chPortraitImg(m.f)}</div></div>
+      <div class="ch-name">${escHtml(m.f.name)}</div>
+      <div class="ch-mem-rec">通算${wins}人抜き${m.id === result.mvpId ? ' ・ 大会MVP' : ''}</div>
+    </div>`;
   }).join('');
   const html = `<div class="agw-wrap agw-result">${_agwHeaderHtml('Survival War Champion', '全団体戦終了')}
-    <div class="agw-result-org">${escHtml(champ?.orgName || '')}</div>
-    <div class="agw-result-title">第${G.season}回大会 優勝</div>
-    <div class="agw-champ-lineup">${cards}</div>
+    <div class="champ th-autumn">
+      ${_chTeamlineHtml(champ?.orgId, champ?.orgName)}
+      <div class="ch-role-line"><div class="ch-role">優 勝</div></div>
+      <div class="ch-trio">${cards}</div>
+      <div class="ch-foot"><span class="ch-prize">優勝賞金<b>¥${Engine.autumnWar.PRIZE.champion}万</b></span></div>
+    </div>
     <div class="agw-result-score"><span>FINAL</span><b>${scoreW} — ${scoreL}</b><small>${escHtml(_agwTeam(result.runnerUp)?.orgName || '')}</small></div>
     ${financeHtml}
     <button class="btn btn-gold" onclick="App.awShowMvpScene()">大会MVP発表へ ▶</button>
@@ -17101,8 +17161,11 @@ function renderAutumnWarMvpScene() {
     <div class="agw-mvp-light"></div>
     <div class="agw-mvp-kicker">MOST VALUABLE WRESTLER</div>
     <div class="agw-mvp-stage">
-      <div class="agw-mvp-figure"><blockquote class="agw-mvp-speech">「${escHtml(line)}」</blockquote><button type="button" class="agw-mvp-portrait" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')">${upper ? `<img src="${upper}" alt="">` : ''}</button></div>
-      <div class="agw-mvp-copy"><span>大会MVP / 通算${wins}人抜き</span><button type="button" class="agw-mvp-name" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')"><h2>${escHtml(fighter?.name || '該当選手')}</h2></button><small>${escHtml(_agwTeam(result.mvpOrgId)?.orgName || '')}</small></div>
+      <blockquote class="agw-mvp-speech">「${escHtml(line)}」</blockquote>
+      <button type="button" class="agw-mvp-portrait" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')">${upper ? `<img src="${upper}" alt="">` : ''}</button>
+      <button type="button" class="agw-mvp-name" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')"><h2>${escHtml(fighter?.name || '該当選手')}</h2></button>
+      <span class="agw-mvp-role">大会MVP</span>
+      <small class="agw-mvp-org">${escHtml(_agwTeam(result.mvpOrgId)?.orgName || '')} ・ 通算${wins}人抜き</small>
     </div>
     <button type="button" class="pb-close-btn" onclick="App.finalizeAutumnWarReplay()">大会を終える</button>
   </div>`;
@@ -17571,26 +17634,32 @@ function renderTenchosenResult() {
 
   const finalMatch = tc.rounds[tc.rounds.length - 1].matches[0];
   const champion = finalMatch.winnerId === finalMatch.left.id ? finalMatch.left : finalMatch.right;
-  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(champion.id) : '';
   const isPlayerChamp = champion.orgId === 'player';
   const prize = (Engine.ppvTournament.PRIZE && Engine.ppvTournament.PRIZE.champion) || 3000;
   const winCount = tc.rounds.length;
+  // 天頂戦には専用の優勝セリフ機構が無いため、JT/秋対抗戦と同じ「優勝タイミング」テーブルを流用する
+  const champLine = getJuniorTournamentLine('champion', champion.personality || 'normal', champion.archetype || '_default');
 
+  // U2統一デザイン: 全画面の回転レイズ演出(.tcwn-wrap/.tcwn-rays)は温存し、内側の優勝カードだけ統一デザインへ
   let html = `<div class="tcwn-wrap" onclick="App.tcAfterWinner()">
     <div class="tcwn-rays"></div>
-    <div class="tcwn-emblem"><img src="../image/emblem-tenchosen.png" alt="" onerror="this.style.display='none'"></div>
-    <div class="tcwn-tour">Season ${G.season} — Quadrennial Tournament</div>
-    <div class="tcwn-kanmuri">全国女子プロレス最強王者決定戦</div>
-    <div class="tcwn-evname">天頂戦</div>
-    <div class="tcwn-up">${upperUrl ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">` : ''}</div>
-    <div class="tcwn-champ-lb">Champion</div>
-    <div class="tcwn-name">${escHtml(champion.name)}</div>
-    <div class="tcwn-org">${escHtml(champion._orgName || '')}${_tcOwnPill(champion.orgId)} — ${winCount}勝0敗</div>
-    <div class="tcwn-title-line">
-      第${_tcEditionNo()}回 天頂戦 覇者
-      <small>4年に一度の頂点 — 記録と名誉</small>
+    <div class="champ th-tenchosen">
+      <div class="ch-head">
+        <div class="ch-emb"><img src="../image/emblem-tenchosen.png" alt="" onerror="this.style.display='none'"></div>
+        <div class="ch-kicker">Season ${G.season} — Quadrennial Tournament</div>
+        <div class="ch-title">天 頂 戦</div>
+        <div class="ch-meta">全国女子プロレス最強王者決定戦 ・ 第${_tcEditionNo()}回</div>
+      </div>
+      <div class="ch-hero">
+        ${_chBubbleSlot(champLine)}
+        <div class="ch-por-wrap"><span class="ch-glow"></span><span class="ch-crown">👑</span><div class="ch-por">${_chPortraitImg(champion)}</div></div>
+        <div class="ch-name">${escHtml(champion.name)}</div>
+        <div class="ch-role">戴冠</div>
+        ${_chOrgBadgeHtml(champion.orgId, champion._orgName)}
+        <div class="ch-stat"><small>WINS</small>${winCount}</div>
+      </div>
+      ${isPlayerChamp ? `<div class="ch-foot"><span class="ch-prize">優勝賞金<b>¥${prize.toLocaleString()}万</b></span></div>` : ''}
     </div>
-    ${isPlayerChamp ? `<div class="tcwn-prize">優勝賞金 <b>¥${prize.toLocaleString()}万</b></div>` : ''}
     <div class="tcwn-tap">タップして進む ▶</div>
   </div>`;
 

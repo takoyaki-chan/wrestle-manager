@@ -38,8 +38,21 @@ function section(source, startMarker, endMarker) {
   const mvp = section(ui, 'function renderAutumnWarMvpScene()', 'function _awEntryScreenHtml()');
   assert.ok(mvp.includes('class="agw-mvp-speech"'));
   assert.ok(mvp.indexOf('class="agw-mvp-speech"') < mvp.indexOf('class="agw-mvp-portrait"'), 'speech bubble must render before and above the portrait');
-  const sideCopy = section(mvp, '<div class="agw-mvp-copy">', '</div>');
-  assert.ok(!sideCopy.includes('blockquote'), 'dialogue must not remain in the side copy block');
+  // 縦の並び順は優勝発表と共通: 吹き出し→画像→名前→役割→所属
+  assert.ok(mvp.indexOf('class="agw-mvp-portrait"') < mvp.indexOf('class="agw-mvp-name"'), 'name must render below the portrait, not beside it');
+  assert.ok(mvp.indexOf('class="agw-mvp-name"') < mvp.indexOf('class="agw-mvp-role"'), 'role label must follow the name');
+})();
+
+(function testMvpIsSmallerThanTheThreeChampions() {
+  // MVPは優勝3名の「おまけ」。3名の表彰(大将 150x224)より格が上がってはいけない
+  const css = readSource('src/index.html');
+  const portrait = section(css, '.agw-mvp-portrait{', '}');
+  const m = portrait.match(/width:(\d+)px;height:(\d+)px/);
+  assert.ok(m, 'MVP portrait size must be declared in px');
+  const aceW = 150;
+  assert.ok(Number(m[1]) < aceW, `MVP portrait (${m[1]}px) must be smaller than the 大将 portrait (${aceW}px)`);
+  assert.ok(!css.includes('.agw-mvp-copy'), '横並びの側カラムは廃止済み');
+  assert.ok(!css.includes('.agw-mvp-figure'), '横並びのfigureラッパは廃止済み');
 })();
 
 console.log('special-tournament-fanfare-test: ok');

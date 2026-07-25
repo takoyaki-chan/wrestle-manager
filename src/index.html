@@ -67,6 +67,9 @@
   --stage-bg-deep: #000000;
   --stage-panel: rgba(20,18,15,0.62);
   --stage-panel-deep: rgba(10,9,7,0.80);
+  /* 大判カードの面（試合結果ポップアップ・優勝発表で共有。個別に決めると微妙に色がずれる） */
+  --stage-card-top: #14171c;
+  --stage-card-bottom: #0d1014;
   --stage-border: rgba(200,190,170,0.08);
   --stage-border-lit: rgba(212,168,67,0.22);
   --stage-border-main: rgba(212,168,67,0.42);
@@ -708,7 +711,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .emr-layer.is-autumn{--emr-accent:var(--ev-autumn);--emr-accent-rgb:193,80,60;--emr-metal:var(--gold-light)}
 .emr-layer.is-tenchosen,.emr-layer.is-ppv{--emr-accent:#d63d46;--emr-accent-rgb:214,61,70;--emr-metal:var(--gold-light)}
 .emr-popup{position:relative;width:min(720px,100%);max-height:calc(100vh - 44px);overflow:auto;color:var(--stage-text-main);
-  background:linear-gradient(180deg,#14171c,#0d1014);border:1px solid rgba(var(--emr-accent-rgb),.56);border-radius:14px;
+  background:linear-gradient(180deg,var(--stage-card-top),var(--stage-card-bottom));border:1px solid rgba(var(--emr-accent-rgb),.56);border-radius:14px;
   box-shadow:0 28px 85px rgba(0,0,0,.76),0 0 30px rgba(var(--emr-accent-rgb),.13);animation:emrPopupIn .24s cubic-bezier(.2,.8,.2,1) both}
 .emr-layer.is-tenchosen .emr-popup,.emr-layer.is-ppv .emr-popup{border-color:rgba(212,168,67,.55);box-shadow:0 28px 85px rgba(0,0,0,.78),0 0 34px rgba(214,61,70,.2)}
 .emr-popup::before{content:'';position:absolute;z-index:2;left:14%;right:14%;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--emr-metal),transparent)}
@@ -737,7 +740,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .emr-name{font-size:16px;font-weight:900;line-height:1.3;margin-top:3px}.emr-side.is-loser .emr-name{color:#858990}
 .emr-org-badge{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:3px 10px 3px 4px;border-radius:20px;border:1px solid rgba(var(--emr-org-rgb),.5);background:rgba(var(--emr-org-rgb),.14)}
 .emr-org-badge.emr-org-home{--emr-org-rgb:var(--c-positive-rgb)}.emr-org-badge.emr-org-away{--emr-org-rgb:var(--accent-hostility-rgb)}
-.emr-org-emblem{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:rgb(var(--emr-org-rgb));color:var(--stage-text-main);font-family:var(--font-display);font-size:10px;flex-shrink:0}
+.emr-org-emblem{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:rgb(var(--emr-org-rgb));color:var(--stage-text-main);font-family:var(--font-display);font-size:10px;flex-shrink:0;overflow:hidden}
+.emr-org-emblem img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .emr-org-name{font-family:var(--font-label);font-size:10px;font-weight:700;letter-spacing:.04em;color:rgb(var(--emr-org-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
 .emr-side.is-loser .emr-org-badge{opacity:.7}
 .emr-stat{font-family:var(--font-display);font-size:22px;margin-top:5px}.emr-stat small{font-family:var(--font-label);font-size:7px;color:var(--stage-text-dim);letter-spacing:.1em;margin-right:4px}
@@ -3163,33 +3167,6 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .pb-mrow.is-jt .pb-fighter.is-winner .pb-fighter-ovr .val{color:var(--pb-tourney-color,var(--ev-summer))}
 .pb-mrow.is-jt.is-tenchosen{--pb-tourney-color:var(--gold);--pb-tourney-tag:'👑 天頂戦'}
 .jtc-result-minfo{display:flex;justify-content:center;padding:2px 0 16px}
-/* Phase 4b: JT Champion variant */
-.pb-live.is-jt-champ{background:linear-gradient(135deg,rgba(240,208,120,0.28),rgba(212,168,67,0.22));border-color:var(--gold);color:#fff;text-shadow:0 0 14px rgba(240,208,120,0.7);letter-spacing:4px;box-shadow:0 0 24px rgba(212,168,67,0.25)}
-.pb-banner-title.is-jt-champ{font-size:38px;background:linear-gradient(180deg,#fff 0%,#ffe89a 40%,var(--gold) 80%,var(--gold-deep) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 36px rgba(240,208,120,0.45);letter-spacing:5px}
-.pb-champion-card{position:relative;margin:24px auto 20px;padding:0 20px 20px;display:flex;flex-direction:column;align-items:center;gap:10px}
-.pb-champion-bubble{position:relative;background:rgba(245,240,230,0.96);color:#1a1713;padding:12px 22px 14px;border-radius:10px;font-size:15px;line-height:1.7;box-shadow:0 4px 18px rgba(0,0,0,0.55),0 0 0 2px var(--gold-deep);min-width:200px;max-width:420px;text-align:center;margin-bottom:14px}
-.pb-champion-bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);width:0;height:0;border:9px solid transparent;border-top-color:var(--gold-deep);border-bottom:0}
-.pb-champion-bubble-speaker{font-family:var(--font-label);font-size:11px;letter-spacing:2px;font-weight:700;color:var(--gold-deep);text-transform:uppercase;margin-bottom:5px}
-.pb-champion-portrait{position:relative;width:200px;height:300px;border:3px solid var(--gold);box-shadow:0 0 0 1px rgba(212,168,67,0.25),0 0 0 6px rgba(0,0,0,0.6),0 0 0 7px rgba(212,168,67,0.5),0 0 60px rgba(212,168,67,0.4);background:rgba(0,0,0,0.5);overflow:hidden}
-.pb-champion-portrait img{width:100%;height:100%;object-fit:cover;object-position:top center}
-.pb-champion-trophy{position:absolute;top:-18px;right:-18px;font-size:44px;filter:drop-shadow(0 4px 10px rgba(212,168,67,0.8))}
-.pb-champion-label{font-family:var(--font-display);font-size:44px;letter-spacing:8px;line-height:1;margin-top:14px;background:linear-gradient(180deg,var(--text-main) 0%,var(--gold-light) 50%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 28px rgba(240,208,120,0.4)}
-.pb-champion-name{font-size:26px;font-weight:900;color:var(--gold-light);letter-spacing:2px;margin-top:2px}
-.pb-champion-org{font-family:var(--font-label);font-size:12px;letter-spacing:2px;color:var(--stage-text-sub);text-transform:uppercase;margin-top:2px}
-.pb-champion-sub{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;max-width:720px;margin:16px auto 8px;padding:0 20px}
-.pb-champion-sub-card{display:flex;gap:12px;align-items:center;padding:12px 14px;background:var(--stage-panel);border:1px solid var(--stage-border-lit);border-radius:4px}
-.pb-champion-sub-card.is-runnerup{border-color:rgba(200,200,210,0.3);background:linear-gradient(180deg,rgba(220,220,230,0.04),transparent)}
-.pb-champion-sub-card.is-semifinalist{border-color:rgba(184,130,80,0.22)}
-.pb-champion-sub-portrait{width:56px;height:84px;flex-shrink:0;border:1px solid var(--stage-border-main);overflow:hidden;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center}
-.pb-champion-sub-portrait img{width:100%;height:100%;object-fit:cover;object-position:top center}
-.pb-champion-sub-init{font-size:24px;font-weight:800;color:var(--stage-text-dim)}
-.pb-champion-sub-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.pb-champion-sub-label{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase}
-.pb-champion-sub-card.is-runnerup .pb-champion-sub-label{color:#c8c8d0}
-.pb-champion-sub-card.is-semifinalist .pb-champion-sub-label{color:#b88250}
-.pb-champion-sub-name{font-size:14px;font-weight:700;color:var(--stage-text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pb-champion-sub-org{font-family:var(--font-label);font-size:10px;letter-spacing:1.2px;color:var(--stage-text-quiet);text-transform:uppercase;display:flex;align-items:center;gap:8px}
-.pb-champion-sub-prize{color:var(--gold);margin-left:auto}
 .pb-champion-prizebox{max-width:480px;margin:20px auto 4px;padding:16px 20px;background:rgba(212,168,67,0.07);border:1px solid rgba(212,168,67,0.28);border-radius:6px;text-align:center}
 .pb-champion-prizebox.is-empty{color:var(--stage-text-dim);font-size:12px;padding:12px 20px;background:transparent;border-style:dashed}
 .pb-champion-prizebox-label{font-family:var(--font-label);font-size:11px;letter-spacing:2.5px;color:var(--gold);margin-bottom:10px;text-transform:uppercase}
@@ -3200,6 +3177,125 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .pb-champion-prizebox-item .a{color:var(--gold);font-weight:700;margin-left:4px}
 .pb-champion-prizebox-total{font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:var(--gold);padding-top:8px;border-top:1px solid rgba(212,168,67,0.2)}
 .pb-champion-prizebox-total span{font-size:26px}
+
+/* ══════════════════════════════════════════════════════════
+   U2: 大会の優勝発表 統一デザイン (.champ / .ch-*)
+   JT・春タッグリーグ・秋4団体対抗戦・天頂戦の優勝発表を1つの型に統一。
+   大会ごとの差分はテーマ色(.th-*, --ev-rgb)のみ。縦の並び順は固定
+   (吹き出し→画像→名前→役割ラベル→団体バッジ→数値→準優勝以下→フッター)。
+   spec: docs/ui/mockup-baseline-v0.1.md
+   ══════════════════════════════════════════════════════════ */
+.champ{width:100%;max-width:720px;margin:0 auto;background:linear-gradient(180deg,var(--stage-card-top),var(--stage-card-bottom));
+  border:1px solid var(--stage-border-lit);border-radius:var(--radius-lg);overflow:hidden;position:relative;
+  box-shadow:0 24px 70px rgba(0,0,0,0.75)}
+.champ::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 42% at 50% 8%,rgba(var(--ev-rgb),0.16),transparent 62%)}
+/* 大会テーマ(--ev-rgbのみ差し替え。エンブレム背景はそこから導出) */
+.champ.th-normal{--ev-rgb:var(--gold-rgb)}
+.champ.th-spring{--ev-rgb:224,122,154}
+.champ.th-summer{--ev-rgb:var(--ev-summer-rgb)}
+.champ.th-autumn{--ev-rgb:193,80,60}
+.champ.th-tenchosen{--ev-rgb:214,61,70}
+/* 大会ヘッダー */
+.ch-head{position:relative;text-align:center;padding:18px 20px 14px;border-bottom:1px solid rgba(var(--ev-rgb),0.28);
+  background:linear-gradient(180deg,rgba(var(--ev-rgb),0.12),transparent)}
+.ch-emb{width:62px;height:62px;border-radius:50%;margin:0 auto 8px;overflow:hidden;display:grid;place-items:center;
+  border:2px solid rgba(255,255,255,0.5);background:linear-gradient(135deg,rgba(var(--ev-rgb),0.6),rgba(var(--ev-rgb),0.95));
+  box-shadow:0 6px 20px rgba(0,0,0,0.5),0 0 22px rgba(var(--ev-rgb),0.35)}
+.ch-emb img{width:100%;height:100%;object-fit:contain}
+.ch-kicker{font-family:var(--font-label);font-size:8px;letter-spacing:0.22em;color:rgb(var(--ev-rgb));text-transform:uppercase}
+.ch-title{font-size:18px;font-weight:900;letter-spacing:0.06em;margin-top:4px;color:var(--stage-text-main)}
+.ch-meta{font-size:10px;color:var(--stage-text-dim);margin-top:4px}
+/* 主役(1人) */
+.ch-hero{position:relative;padding:22px 20px 16px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.ch-bubble-slot{min-height:52px;display:flex;align-items:flex-end;justify-content:center;width:100%;margin-bottom:var(--space-md)}
+.ch-bubble{position:relative;max-width:420px;padding:10px 16px;border-radius:var(--radius-lg);
+  background:var(--cream-bg-card);color:var(--cream-text-main);font-size:13px;line-height:1.65;
+  box-shadow:0 6px 18px rgba(0,0,0,0.5);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ch-bubble::after{content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:-8px;
+  border:7px solid transparent;border-top-color:var(--cream-bg-card);border-bottom:0}
+.ch-por-wrap{position:relative}
+.ch-glow{position:absolute;left:50%;top:-14%;transform:translateX(-50%);width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(var(--ev-rgb),0.32),transparent 66%);pointer-events:none}
+.ch-por{position:relative;width:172px;height:258px;border-radius:var(--radius-md);overflow:hidden;
+  border:3px solid var(--gold);background:rgba(0,0,0,0.5);
+  box-shadow:0 0 0 1px rgba(212,168,67,0.25),0 0 0 6px rgba(0,0,0,0.6),0 0 0 7px rgba(212,168,67,0.5),
+    0 0 52px rgba(212,168,67,0.4),0 14px 34px rgba(0,0,0,0.6)}
+.ch-por img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.ch-por .ini{position:absolute;inset:0;display:grid;place-items:center;font-size:64px;font-weight:800;color:rgba(255,255,255,0.9)}
+.ch-crown{position:absolute;top:-14px;right:-12px;font-size:30px;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.7));z-index:2}
+.ch-name{font-size:15px;font-weight:900;margin-top:10px;letter-spacing:0.04em;color:var(--gold-light)}
+.ch-role{font-family:var(--font-display);font-size:38px;letter-spacing:7px;line-height:1;margin-top:10px;
+  background:linear-gradient(180deg,var(--stage-text-main) 0%,var(--gold-light) 50%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:0 0 26px rgba(240,208,120,0.4)}
+.ch-org{display:inline-flex;align-items:center;gap:7px;margin-top:var(--space-sm);padding:4px 13px 4px 5px;border-radius:20px;
+  border:1px solid rgba(var(--c-positive-rgb),0.5);background:rgba(var(--c-positive-rgb),0.14)}
+.ch-org .oe{width:26px;height:26px;border-radius:50%;overflow:hidden;display:grid;place-items:center;
+  font-family:var(--font-display);font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.55);background:var(--stage-panel)}
+.ch-org .oe img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ch-org-ini{display:block}
+.ch-org .on{font-family:var(--font-label);font-size:11px;font-weight:700;color:rgb(var(--c-positive-rgb))}
+.ch-stat{font-family:var(--font-display);font-size:28px;margin-top:var(--space-sm);color:var(--gold-light)}
+.ch-stat small{font-family:var(--font-label);font-size:8px;color:var(--stage-text-dim);letter-spacing:0.1em;margin-right:5px}
+/* 準優勝以下 */
+.ch-sub{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--space-sm);
+  padding:0 20px 16px;max-width:640px;margin:0 auto}
+.ch-sub-card{display:flex;gap:10px;align-items:center;padding:9px 11px;background:var(--stage-panel);
+  border:1px solid var(--stage-border-lit);border-radius:var(--radius-sm)}
+.ch-sub-rank{font-family:var(--font-display);font-size:18px;color:var(--stage-text-dim);min-width:22px}
+.ch-sub-img{width:46px;height:66px;border-radius:var(--radius-sm);overflow:hidden;position:relative;flex-shrink:0;
+  background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center}
+.ch-sub-img img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.ch-sub-img .ini{font-size:18px;font-weight:800;color:var(--stage-text-dim)}
+.ch-sub-nm{font-size:13px;font-weight:700;color:var(--stage-text-main)}
+.ch-sub-org{font-size:10px;color:var(--stage-text-dim);margin-top:2px;display:flex;align-items:center;gap:4px}
+.ch-sub-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ch-sub-prize{margin-left:auto;color:var(--gold);font-family:var(--font-label);font-size:10px}
+/* フッター */
+.ch-foot{border-top:1px solid rgba(200,190,170,0.1);background:rgba(0,0,0,0.22);padding:12px 16px 14px;
+  display:flex;align-items:center;justify-content:center;gap:var(--space-md);flex-wrap:wrap}
+.ch-prize{font-family:var(--font-label);font-size:11px;color:var(--stage-text-sub);letter-spacing:0.08em}
+.ch-prize b{font-family:var(--font-display);font-size:28px;color:var(--gold-light);margin-left:6px}
+.ch-next{border:1px solid var(--gold);border-radius:var(--radius-sm);background:linear-gradient(135deg,#bd8b18,var(--gold-light));
+  color:#17130a;padding:10px 26px;font-family:var(--font-label);font-size:13px;font-weight:900;letter-spacing:0.12em;cursor:pointer}
+/* タッグ優勝(春): 2人を並べる。団体名は主役として上に掲げる */
+.ch-teamline{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px 16px 0}
+.ch-teamline .oe{width:38px;height:38px;border-radius:50%;overflow:hidden;display:grid;place-items:center;
+  font-family:var(--font-display);font-size:18px;color:#fff;border:2px solid rgba(255,255,255,0.55);background:var(--stage-panel)}
+.ch-teamline .oe img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ch-teamname{font-family:var(--font-display);font-size:32px;letter-spacing:4px;line-height:1;
+  background:linear-gradient(180deg,var(--stage-text-main) 0%,var(--gold-light) 50%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:0 0 26px rgba(240,208,120,0.4)}
+.ch-role-line{text-align:center;position:relative}
+.ch-role-line .ch-role{font-size:30px;margin-top:6px}
+.ch-duo{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:var(--space-lg);
+  padding:20px 16px 14px;flex-wrap:nowrap;overflow-x:auto}
+.ch-duo .ch-por{width:150px;height:224px}
+.ch-duo .ch-por .ini{font-size:54px}
+.ch-duo .ch-glow{width:210px;height:210px}
+.ch-duo .ch-name{font-size:15px}
+.ch-duo .ch-bubble-slot{min-height:50px;margin-bottom:var(--space-sm)}
+.ch-duo .ch-bubble{font-size:11px;max-width:220px;padding:8px 12px}
+/* 団体優勝(秋): 3人を横一列で全員主役。大将を中央に一回り大きく */
+.ch-trio{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:var(--space-lg);
+  padding:20px 16px 14px;flex-wrap:nowrap;overflow-x:auto}
+.ch-trio .ch-por{width:126px;height:188px}
+.ch-trio .ch-por .ini{font-size:46px}
+.ch-trio .ch-glow{width:190px;height:190px}
+.ch-trio .ch-name{font-size:13px}
+.ch-trio .ch-bubble-slot{min-height:46px;margin-bottom:var(--space-sm)}
+.ch-trio .ch-bubble{font-size:11px;max-width:200px;padding:8px 12px}
+.ch-trio .ch-mem.is-ace .ch-por{width:150px;height:224px}
+.ch-trio .ch-mem.is-ace .ch-glow{width:210px;height:210px}
+.ch-trio .ch-mem.is-ace .ch-name{font-size:15px}
+.ch-order{font-family:var(--font-label);font-size:8px;letter-spacing:0.2em;color:rgb(var(--ev-rgb));
+  text-transform:uppercase;margin-bottom:4px}
+.ch-mem{display:flex;flex-direction:column;align-items:center;text-align:center}
+.ch-mem-rec{font-family:var(--font-label);font-size:11px;color:var(--stage-text-sub);margin-top:3px;letter-spacing:0.06em}
+
 /* Phase 4c: B3 Challenge Match variant */
 .pb-live.is-b3{background:rgba(225,112,85,0.14);border-color:rgba(225,112,85,0.5);color:var(--c-rivalry);letter-spacing:3.5px}
 .pb-banner-title.is-b3{font-size:34px;background:linear-gradient(180deg,#fff 0%,#ffd9cc 50%,var(--c-rivalry) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 24px rgba(225,112,85,0.28);letter-spacing:6px}
@@ -3627,19 +3723,6 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .agw-screen-actions{display:flex;justify-content:center;margin:24px auto 0}
 
 .agw-result{text-align:center}
-.agw-result-org{font-size:34px;font-weight:900;color:var(--gold-light);margin-top:8px}
-.agw-result-title{font-family:var(--font-label);font-size:11px;letter-spacing:4px;color:var(--ev-autumn)}
-.agw-champ-lineup{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin:20px auto;max-width:760px}
-.agw-champ-member{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
-.agw-champion-speech{position:relative;z-index:1;width:min(240px,calc(100vw - 36px));margin:0 0 14px;padding:10px 13px;border:1px solid var(--cream-border);border-radius:var(--radius-lg);background:var(--cream-bg-card);box-shadow:0 8px 22px var(--stage-bg-deep);color:var(--cream-text-main);text-align:left}
-.agw-champion-speech:after{content:"";position:absolute;bottom:-12px;left:50%;width:0;height:0;border:6px solid transparent;border-top-color:var(--cream-bg-card);transform:translateX(-50%)}
-.agw-champion-speech button{display:block;padding:0;border:0;background:transparent;color:var(--ev-autumn);font-family:var(--font-label);font-size:9px;font-weight:700;letter-spacing:1.5px;cursor:pointer}
-.agw-champion-speech blockquote{margin:4px 0 0;color:var(--cream-text-main);font-size:13px;line-height:1.65}
-.agw-champ-card{width:160px;background:var(--stage-panel);border:1px solid var(--stage-border-lit);padding:0 0 10px;color:inherit;cursor:pointer}
-.agw-champ-card.is-mvp{width:190px;border-color:var(--gold);box-shadow:0 0 24px var(--stage-border-main)}
-.agw-champ-card>span{display:block;height:190px;overflow:hidden}.agw-champ-card.is-mvp>span{height:230px}
-.agw-champ-card img{width:100%;height:100%;object-fit:cover;object-position:top}
-.agw-champ-card strong{display:block;font-size:14px;margin-top:8px}.agw-champ-card small{font-size:9px;color:var(--stage-text-sub)}
 .agw-result-score{display:flex;align-items:center;justify-content:center;gap:18px;margin:12px 0 20px;font-family:var(--font-label);color:var(--stage-text-sub)}
 .agw-result-score b{font-family:var(--font-display);font-size:34px;color:var(--gold)}
 .agw-result-finance{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:720px;margin:0 auto 18px;text-align:left}
@@ -3653,15 +3736,17 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .agw-mvp-scene{min-height:100vh;background:var(--stage-bg);color:var(--stage-text-main);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:30px;text-align:center}
 .agw-mvp-light{position:absolute;top:-35%;width:520px;height:130%;background:radial-gradient(ellipse at center,var(--stage-border-main),transparent 68%);pointer-events:none}
 .agw-mvp-kicker{font-family:var(--font-label);font-size:11px;letter-spacing:7px;color:var(--gold);position:relative;margin-bottom:12px}
-.agw-mvp-stage{display:flex;align-items:flex-end;gap:34px;position:relative;max-width:800px;text-align:left}
-.agw-mvp-figure{display:flex;flex-direction:column;align-items:center;width:300px}
-.agw-mvp-speech{position:relative;width:100%;margin:0 0 16px;padding:14px 16px;border:1px solid var(--cream-border);border-radius:var(--radius-lg);background:var(--cream-bg-card);box-shadow:0 10px 28px var(--stage-bg-deep);color:var(--cream-text-main);font-size:15px;line-height:1.75;text-align:left}
-.agw-mvp-speech:after{content:"";position:absolute;bottom:-13px;left:50%;width:0;height:0;border:7px solid transparent;border-top-color:var(--cream-bg-card);transform:translateX(-50%)}
-.agw-mvp-portrait{width:230px;height:330px;overflow:hidden;padding:0;border:0;border-bottom:4px solid var(--gold);background:var(--stage-panel);cursor:pointer}
-.agw-mvp-portrait img{width:100%;height:100%;object-fit:cover;object-position:top;filter:drop-shadow(0 8px 22px var(--stage-bg-deep))}
-.agw-mvp-copy{max-width:430px}.agw-mvp-copy>span{font-family:var(--font-label);font-size:10px;letter-spacing:3px;color:var(--ev-autumn)}
-.agw-mvp-name{display:block;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
-.agw-mvp-copy h2{font-size:34px;margin:4px 0 0}.agw-mvp-copy small{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-sub)}
+/* MVPは優勝3名の「おまけ」。3名の表彰(大将 150x224)より一段小さくし、格が逆転しないようにする。
+   並び順は優勝発表と同じ 吹き出し→画像→名前→役割→所属 の縦積み。 */
+.agw-mvp-stage{display:flex;flex-direction:column;align-items:center;position:relative;max-width:380px;text-align:center}
+.agw-mvp-speech{position:relative;max-width:280px;margin:0 0 var(--space-md);padding:9px 13px;border:1px solid var(--cream-border);border-radius:var(--radius-lg);background:var(--cream-bg-card);box-shadow:0 8px 20px var(--stage-bg-deep);color:var(--cream-text-main);font-size:12px;line-height:1.6;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.agw-mvp-speech:after{content:"";position:absolute;bottom:-7px;left:50%;width:0;height:0;border:7px solid transparent;border-top-color:var(--cream-bg-card);border-bottom:0;transform:translateX(-50%)}
+.agw-mvp-portrait{width:120px;height:180px;overflow:hidden;padding:0;border:0;border-bottom:3px solid var(--gold);border-radius:var(--radius-md) var(--radius-md) var(--radius-sm) var(--radius-sm);background:var(--stage-panel);cursor:pointer}
+.agw-mvp-portrait img{width:100%;height:100%;object-fit:cover;object-position:top;filter:drop-shadow(0 6px 16px var(--stage-bg-deep))}
+.agw-mvp-name{display:block;padding:0;border:0;background:transparent;color:inherit;text-align:center;cursor:pointer}
+.agw-mvp-name h2{font-size:18px;margin:var(--space-sm) 0 0}
+.agw-mvp-role{font-family:var(--font-label);font-size:10px;letter-spacing:3px;color:var(--ev-autumn);margin-top:var(--space-xs)}
+.agw-mvp-org{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-sub);margin-top:2px}
 .agw-mvp-scene>.pb-close-btn{position:relative;margin-top:24px}
 
 /* Week36 Stage: 承認済み代表編成（Desktop対面 / 700px以下L1） */
@@ -3847,25 +3932,9 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
     repeating-conic-gradient(from 0deg at 50% 38%,transparent 0deg,rgba(212,168,67,0.05) 6deg,transparent 12deg,transparent 30deg);
   animation:tcSlowspin 60s linear infinite}
 @keyframes tcSlowspin{to{transform:rotate(360deg)}}
-.tcwn-emblem{width:86px;height:86px;margin-bottom:6px;position:relative;filter:drop-shadow(0 2px 12px rgba(0,0,0,0.6))}
-.tcwn-emblem img{width:100%;height:100%;object-fit:contain;display:block}
-.tcwn-tour{font-family:var(--font-label);font-size:11px;letter-spacing:6px;color:#e94560;text-transform:uppercase;position:relative}
-.tcwn-kanmuri{font-size:11px;font-weight:700;letter-spacing:3px;color:var(--stage-text-sub);position:relative;margin-top:2px}
-.tcwn-evname{font-family:var(--font-body);font-weight:900;font-size:34px;letter-spacing:8px;padding-left:8px;position:relative;
-  background:linear-gradient(180deg,#fff 0%,var(--gold-light) 35%,var(--gold) 75%,var(--gold-deep) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:26px}
-.tcwn-up{width:158px;aspect-ratio:2/3;border-radius:4px;overflow:hidden;position:relative;border:2px solid var(--gold);
-  box-shadow:0 0 40px rgba(212,168,67,0.45),0 0 100px rgba(212,168,67,0.15);background:#121110;margin-bottom:18px}
-.tcwn-up img{width:100%;height:100%;object-fit:cover;object-position:top}
-.tcwn-champ-lb{font-family:var(--font-label);font-size:10px;letter-spacing:8px;color:var(--gold);text-transform:uppercase;position:relative}
-.tcwn-name{font-size:34px;font-weight:900;position:relative;margin:2px 0 4px;color:var(--stage-text-main);text-shadow:0 0 24px rgba(240,208,120,0.35)}
-.tcwn-org{font-size:12px;color:var(--stage-text-sub);position:relative}
-.tcwn-title-line{position:relative;margin-top:18px;padding:10px 26px;border-top:1px solid rgba(212,168,67,0.4);border-bottom:1px solid rgba(212,168,67,0.4);
-  font-family:'Noto Serif JP',serif;font-size:17px;font-weight:700;letter-spacing:2px;color:var(--gold-light)}
-.tcwn-title-line small{display:block;font-family:var(--font-label);font-weight:400;font-size:9px;letter-spacing:4px;color:var(--stage-text-dim);margin-top:3px;text-transform:uppercase}
-.tcwn-prize{position:relative;margin-top:16px;font-family:var(--font-display);font-size:15px;letter-spacing:2px;color:var(--stage-text-sub)}
-.tcwn-prize b{color:var(--gold-light);font-size:19px}
-.tcwn-tap{position:relative;margin-top:30px;font-size:11px;color:var(--stage-text-dim);animation:jtBlink 1.6s ease infinite}
+/* 優勝カード本体は .champ.th-tenchosen(U2統一デザイン)。.tcwn-wrap/.tcwn-rays は全画面のレイズ演出として温存 */
+.tcwn-wrap .champ{margin-top:6px}
+.tcwn-tap{position:relative;margin-top:22px;font-size:11px;color:var(--stage-text-dim);animation:jtBlink 1.6s ease infinite}
 
 /* own-pill(自団体マーク・小)。JT/天頂戦 共通(_jtcOwnPill)。--jtc-color未設定時はgold(旧tc-own-pillと同一見た目) */
 .jtc-own-pill{display:inline-block;font-family:var(--font-label);font-size:8px;letter-spacing:1px;color:var(--jtc-color,var(--gold-light));
@@ -4002,13 +4071,6 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .stl-final-side .org{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-dim);text-transform:uppercase}
 .stl-final-vs{font-family:var(--font-display);font-size:24px;color:var(--stage-text-dim)}
 .stl-final-result{margin-top:6px;font-family:var(--font-label);font-size:11px;letter-spacing:1.5px;color:var(--gold)}
-
-/* 優勝発表（Ceremony寄り、pb-champion系を土台に2名対応拡張） */
-.stl-champ-duo{display:flex;gap:22px;justify-content:center;margin:8px 0 6px}
-.stl-champ-slot{display:flex;flex-direction:column;align-items:center;gap:6px}
-.stl-champ-slot .pb-champion-portrait{width:150px;height:210px}
-.stl-champ-team-name{font-size:24px;font-weight:900;color:var(--gold-light);letter-spacing:1px;margin-top:10px}
-.stl-champ-title{font-family:var(--font-label);font-size:11px;letter-spacing:2.5px;color:var(--gold);margin-top:4px;text-transform:uppercase}
 
 /* ====== A1: Draft Kickoff (号外紙面) ====== */
 .a1-wrap{background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 12px 48px rgba(0,0,0,0.55);overflow:hidden;position:relative;max-width:940px;margin:0 auto}
