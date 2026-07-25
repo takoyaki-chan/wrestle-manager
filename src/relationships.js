@@ -4632,6 +4632,10 @@ Engine.glimpse = {
     const roster = state.roster || [];
     const relationships = state.relationships || {};
     const cooldowns = { ...(state._glimpseACooldowns || {}) };
+    // ヒステリシス: 一度跨いだ閾値は、値が GLIMPSE_A_REARM_MARGIN ぶん戻るまで再武装しない。
+    // 従来はクールダウン(8週)だけだったため、値が閾値付近を行き来すると同じペア・同じ閾値で
+    // 何度も鳴っていた(実測: cdKeyの半数以上が2回以上、最多24回)。
+    const fired = { ...(state._glimpseAFired || {}) };
     const absWeek = Engine.util.absWeek(state.season, state.week);
 
     // 初週初期化: prevスナップショットが無ければ現在値で作成（初回は何も発火しない）
@@ -4681,16 +4685,28 @@ Engine.glimpse = {
           const curVal = th.axis === 'bond' ? curBond : curRivalry;
           if (prevVal === undefined) return;
 
+          // 再武装: 値が閾値から十分に戻ったら、また鳴ってよい状態に戻す。
+          // 「80に届いた」→「70を下回った」→「また80に届いた」なら、それは新しい出来事。
+          const reKey = `${th.id}_${speakerId}_${targetId}`;
+          if (fired[reKey]) {
+            const rearmed = th.dir === 'up'
+              ? curVal < th.value - GLIMPSE_A_REARM_MARGIN
+              : curVal > th.value + GLIMPSE_A_REARM_MARGIN;
+            if (rearmed) delete fired[reKey];
+          }
+
           let crossed = false;
           if (th.dir === 'up' && prevVal < th.value && curVal >= th.value) crossed = true;
           if (th.dir === 'down' && prevVal >= th.value + 1 && curVal <= th.value) crossed = true;
           if (!crossed) return;
 
           const cdKey = `${th.id}_${speakerId}_${targetId}`;
+          if (fired[cdKey]) return;
           if (cooldowns[cdKey] && absWeek - cooldowns[cdKey] < th.cooldown) return;
           if (Engine.rng.float(rng) >= th.rate) return;
 
           cooldowns[cdKey] = absWeek;
+          fired[cdKey] = true;
           const target = roster.find(f => f.id === targetId) || allAIChars.find(f => f.id === targetId);
           if (!target) return;
 
@@ -4716,16 +4732,25 @@ Engine.glimpse = {
 
       GLIMPSE_A_THRESHOLDS.forEach(th => {
         if (th.axis !== 'trust') return;
+        const reKeyT = `trust_${th.id}_${f.id}`;
+        if (fired[reKeyT]) {
+          const rearmedT = th.dir === 'up'
+            ? curTrust < th.value - GLIMPSE_A_REARM_MARGIN
+            : curTrust > th.value + GLIMPSE_A_REARM_MARGIN;
+          if (rearmedT) delete fired[reKeyT];
+        }
         let crossed = false;
         if (th.dir === 'down' && prevTrust >= th.value && curTrust < th.value) crossed = true;
         if (th.dir === 'up' && prevTrust < th.value && curTrust >= th.value) crossed = true;
         if (!crossed) return;
 
         const cdKey = `trust_${th.id}_${f.id}`;
+        if (fired[cdKey]) return;
         if (cooldowns[cdKey] && absWeek - cooldowns[cdKey] < th.cooldown) return;
         if (Engine.rng.float(rng) >= th.rate) return;
 
         cooldowns[cdKey] = absWeek;
+        fired[cdKey] = true;
         const line = pickDialogueLine(GLIMPSE_A_LINES[th.id], f);
         glimpses.push({
           layer: 'A', type: th.id, tone: th.tone, label: th.label,
@@ -4743,6 +4768,7 @@ Engine.glimpse = {
     const newState = {
       ...state,
       _glimpseACooldowns: cooldowns,
+      _glimpseAFired: fired,
       _glimpseAPrevValues: newSnap,
       _glimpseAPrevTrust: newPrevTrust,
     };

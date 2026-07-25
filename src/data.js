@@ -23074,6 +23074,11 @@ const PPV_HYPE_TEMPLATES = {
 // ─────────────────────────────────────────────────────────────────────────────
 // P4: Glimpse A層 閾値定義
 // ─────────────────────────────────────────────────────────────────────────────
+// 閾値を跨いで鳴った後、値がこの幅ぶん戻るまで同じペア・同じ閾値では再び鳴らさない(ヒステリシス)。
+// 8週のクールダウンだけでは、値が閾値付近を行き来するたびに同じことを何度も言われていた
+// (実測: 同一ペア・同一閾値のcdKeyの半数以上が2回以上発火、最多24回)。
+const GLIMPSE_A_REARM_MARGIN = 10;
+
 const GLIMPSE_A_THRESHOLDS = [
   // bond上昇
   { id: 'bond_60_up',   axis: 'bond',    dir: 'up',   value: 60, rate: 0.90, tone: 'positive', cooldown: 8,  label: '打ち解けた様子' },
@@ -29699,6 +29704,6 @@ if (typeof module !== 'undefined' && module.exports) {
     EVENT_LINES_BY_KEY,
     DRAFT_CONFIG, ORG_ASSIGN, generateDraftConfig, seededShuffle,
     SALARY_PARAMS, LOSING_STREAK_PENALTIES,
-    GLIMPSE_A_THRESHOLDS, GLIMPSE_A_LINES, GLIMPSE_HOTSTREAK_END_LINES, GLIMPSE_B_LINES,
+    GLIMPSE_A_THRESHOLDS, GLIMPSE_A_REARM_MARGIN, GLIMPSE_A_LINES, GLIMPSE_HOTSTREAK_END_LINES, GLIMPSE_B_LINES,
   };
 }
