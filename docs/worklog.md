@@ -1,5 +1,22 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## UI統一リデザイン U6: 団体の識別表示（2026-07-26）
+
+`docs/ui/mockup-baseline-v0.1.md`（v0.4）§5「団体バッジ」の承認済みルール（実エンブレム必須・頭文字の代用禁止・他団体戦のみ表示）を全画面に適用する作業。全数調査を先に行い、`_emrOrgBadgeHtml` / `_u3bOrgBadgeHtml` / `_awOrgEmblem` / `_chOrgEmblemInner` / `_npOrgEmblem` / ランキング画面の `.rp-rank-fallback` / ドラフト画面の `dn-emblem-player` は**いずれも既に実画像優先＋orgId未解決時のみ頭文字フォールバック**という正しい実装で、「頭文字1文字を色丸で代用している」是正対象は0件だった。
+
+代わりに見つかった実際の欠落は「エンブレムそのものが一切出ていない」5画面:
+1. `showPPVVSDetail`（PPV VS比較ポップアップ, ui-common.js） — 団体はリング枠の色とテキストのみで識別、実画像なし
+2. `_renderB3MatchPreview`（挑戦状B3プレビュー, ui-common.js） — 同上
+3. `renderPPVTvBroadcast`（PPV GRAND FINALテレビ中継, ui-common.js） — 対戦カード一覧・試合速報・頂上決戦VSの3箇所とも団体名テキストのみ
+4. `_npRenderPage2`（新聞2面「団体比較」, ui-render.js） — カード見出しが名前+ティアバッジのみ
+5. `_renderDbOrgCompare`（database タブ旧「団体比較」, ui-render.js） — `_npRenderPage2` と同じ構造の重複実装。specs/newspaper-and-orgcompare-spec-v2.0.md §7 で**呼び出し元なし(dead code)と既に明記済み**と判明（`_dbSubTab` を2/5/8にする経路がどこにも無い）。プレイヤーには見えない画面だが、ついでに直っていて害はないため据え置いた
+
+4画面（5含む）に `orgIconHtml()` 経由の実エンブレムを追加。他団体が絡む対戦だけに出す条件（GRAND FINALは複数団体混成のため同一団体どうしの組み合わせも起こり得る）を `_ppvOrgId` 比較で判定し、該当なしなら配置を変えずバッジだけ省く形にした。ついでに `_renderB3MatchPreview` と `renderPPVTvBroadcast` の団体名がそれまで一度も `escHtml()` を通っていなかった箇所も直した。
+
+**判断が要る点（据え置き・未決）**: `--pb-enemy-color`（War対抗戦ポップアップ）や `showPPVVSDetail`/`_renderB3MatchPreview` の団体固有色（`RIVAL_ORGS.color`）は、過去に War敵将エースコメントで一度消して復元する羽目になった経緯があるため、今回は削除せず残置した。標準の敵陣色（`--accent-hostility`）へ統一するかどうかは Keisuke 判断待ち。
+
+安全網テスト `test/u6-org-identity-safety-net-test.js`（20セクション）を新設。test: 89/89 緑。
+
 ## UI統一リデザイン U3 完了 + Glimpse のヒステリシス（2026-07-26）
 
 ### U3: 顔出し＋セリフ吹き出し（27系統）

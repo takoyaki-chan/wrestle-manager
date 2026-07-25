@@ -64,7 +64,7 @@
 データ源: `Engine.database.getOrgCompareAnalysis(state, orgId)`。表示順:
 1. **np-cmp-select** — ライバル団体ドロップダウン
 2. **np-headline-section** — 黒田顔(40px丸) + 引用(summaryText) + GRADE(36px Bebas)
-3. **np-org-summary** — `grid 1fr 50px 1fr`。player/VS/rival 各カード(name + tier badge + tags + stats grid + 王者表示)
+3. **np-org-summary** — `grid 1fr 50px 1fr`。player/VS/rival 各カード(`.np-org-card-title`に実エンブレム26px `_npOrgEmblem()` + name + tier badge + tags + stats grid + 王者表示。U6団体バッジ統一で2026-07-26追加、`orgIconHtml()`実画像のみ・頭文字代用なし)
 4. **np-ace-confront** — `grid 1fr 100px 1fr` の 280px 高 upper画像対峙(右側のみ `scaleX(-1)` flip)。中央 VS+OVR メトリクス。下に `.np-ace-name-bar`(2col 中央寄せ: 団体/名前/OVR・人気)。フレーバー文(opportunity)
 5. **np-matchup-list** — 主力対決 2件 (matchups[1..])。1fr/110px/1fr で player(左)/VS+role+verdict/rival(右反転)
 6. **np-power-section** — **戦力レーダー4軸 単色バー**(`.player-side` 単色 `#9a7020`、`.rival-side` 単色 `#8b1a1a`)。左右に伸び、中央 1px ライン、右端に diff

@@ -3941,6 +3941,12 @@ function showPPVVSDetail(matchIdx) {
   const left = match.left, right = match.right;
   Audio.play('hover');
 
+  // U6団体バッジ統一: 他団体が絡む対戦(orgIdが無ければorgName比較にフォールバック)のときだけ
+  // 実エンブレムを出す(mockup-baseline-v0.1 §5「出す条件: 他団体が絡む試合のみ」)
+  const crossOrg = (left._ppvOrgId != null && right._ppvOrgId != null)
+    ? String(left._ppvOrgId) !== String(right._ppvOrgId)
+    : (left._ppvOrgName || '') !== (right._ppvOrgName || '');
+
   const STYLE_META = {
     Grappler:{color:'#bb8fce',icon:'GRP'}, Striker:{color:'#e74c3c',icon:'STK'},
     Submission:{color:'#e67e22',icon:'SUB'}, Aerial:{color:'#2ecc71',icon:'AER'},
@@ -3966,7 +3972,8 @@ function showPPVVSDetail(matchIdx) {
     let html = `<div style="text-align:center;flex:1;min-width:130px">`;
     html += imgHtml;
     html += `<div style="font-size:14px;font-weight:700;color:${orgColor};margin-top:6px">${f.name}</div>`;
-    html += `<div style="font-size:10px;color:var(--text-dim);margin-bottom:6px">${f._ppvOrgName || ''}</div>`;
+    const orgEmblemHtml = crossOrg && typeof orgIconHtml === 'function' ? orgIconHtml(f._ppvOrgId, 14) : '';
+    html += `<div style="font-size:10px;color:var(--text-dim);margin-bottom:6px">${orgEmblemHtml}${escHtml(f._ppvOrgName || '')}</div>`;
     html += `<div style="font-size:11px;margin-bottom:2px"><span class="badge badge-${f.style}" style="font-size:10px;padding:1px 6px">${f.style}</span>`;
     if (f.role) html += ` <span class="badge badge-${f.role==='Babyface'?'bf':f.role==='Heel'?'heel':'neutral'}" style="font-size:10px;padding:1px 6px">${f.role}</span>`;
     html += `</div>`;
@@ -6453,6 +6460,15 @@ function renderPPVTvBroadcast(card, results, ppvName) {
   };
 
   const _face = (f, cls) => `<div class="ptv-face ${cls || ''}">${portraitImg(f.id, 96)}</div>`;
+  // U6団体バッジ統一: 対戦相手と所属団体が異なるときだけ実エンブレムを出す
+  // (mockup-baseline-v0.1 §5「出す条件: 他団体が絡む試合のみ」。GRAND FINALは複数団体混成のため
+  // 同一団体の組み合わせも起こり得る)
+  const _ptvOrgTag = (f, otherF) => {
+    const cross = (f._ppvOrgId != null && otherF._ppvOrgId != null)
+      ? String(f._ppvOrgId) !== String(otherF._ppvOrgId)
+      : (f._ppvOrgName || '') !== (otherF._ppvOrgName || '');
+    return cross && typeof orgIconHtml === 'function' ? orgIconHtml(f._ppvOrgId, 14) : '';
+  };
   const _chrome = (liveLabel) => `<div class="ptv-chrome">
     <span class="ptv-ch">WRESTLE TV</span>
     <span class="ptv-live ${liveLabel === 'LIVE' ? '' : 'is-off'}">${liveLabel}</span>
@@ -6484,9 +6500,9 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       const main = m.isSummit;
       return `<div class="ptv-mrow ${main ? 'is-main' : ''}">
         ${main ? '<div class="ptv-mtag">MAIN EVENT — 頂上決戦</div>' : ''}
-        <div class="ptv-wcell">${_face(m.left)}<div><div class="ptv-wname">${escHtml(m.left.name)}</div><div class="ptv-worg">${escHtml(m.left._ppvOrgName || '')}</div></div></div>
+        <div class="ptv-wcell">${_face(m.left)}<div><div class="ptv-wname">${escHtml(m.left.name)}</div><div class="ptv-worg">${_ptvOrgTag(m.left, m.right)}${escHtml(m.left._ppvOrgName || '')}</div></div></div>
         <div class="ptv-vs">VS</div>
-        <div class="ptv-wcell is-right"><div><div class="ptv-wname">${escHtml(m.right.name)}</div><div class="ptv-worg">${escHtml(m.right._ppvOrgName || '')}</div></div>${_face(m.right)}</div>
+        <div class="ptv-wcell is-right"><div><div class="ptv-wname">${escHtml(m.right.name)}</div><div class="ptv-worg">${_ptvOrgTag(m.right, m.left)}${escHtml(m.right._ppvOrgName || '')}</div></div>${_face(m.right)}</div>
       </div>`;
     };
     const order = hasSummit ? [summitIdx, ...underIdxs] : [...underIdxs];
@@ -6512,7 +6528,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       html: _chrome('LIVE') + `<div class="ptv-flash">
         <div class="ptv-flash-band">
           <div class="ptv-flash-kicker">RESULT — 第${pos + 1}試合</div>
-          ${winF ? `<div class="ptv-flash-win">${_face(winF)}<div class="ptv-flash-name">${escHtml(winF.name)}<small>${escHtml(winF._ppvOrgName || '')}</small></div></div>`
+          ${winF ? `<div class="ptv-flash-win">${_face(winF)}<div class="ptv-flash-name">${escHtml(winF.name)}<small>${_ptvOrgTag(winF, winF === m.left ? m.right : m.left)}${escHtml(winF._ppvOrgName || '')}</small></div></div>`
                  : `<div class="ptv-flash-win"><div class="ptv-flash-name">引き分け<small>${escHtml(m.left.name)} vs ${escHtml(m.right.name)}</small></div></div>`}
           <div class="ptv-flash-detail">${r.turns || 0}ターン ${isDraw ? '' : `<b>${escHtml(Engine.formatFinish(r.finType, r.finMove))}</b>`} ／ MQ <b>${r.mq}</b> ${_pbStars(r.mq)}</div>
         </div>
@@ -6529,9 +6545,9 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     const isDraw = r.winner === 'draw';
     const winF = r.winner === 'left' ? m.left : r.winner === 'right' ? m.right : null;
     const vsBlock = `<div class="ptv-summit-vs">
-        <div>${_face(m.left, 'is-big')}<div class="ptv-sname">${escHtml(m.left.name)}</div><div class="ptv-sorg">${escHtml(m.left._ppvOrgName || '')}</div></div>
+        <div>${_face(m.left, 'is-big')}<div class="ptv-sname">${escHtml(m.left.name)}</div><div class="ptv-sorg">${_ptvOrgTag(m.left, m.right)}${escHtml(m.left._ppvOrgName || '')}</div></div>
         <div class="ptv-vs-big">VS</div>
-        <div>${_face(m.right, 'is-big')}<div class="ptv-sname">${escHtml(m.right.name)}</div><div class="ptv-sorg">${escHtml(m.right._ppvOrgName || '')}</div></div>
+        <div>${_face(m.right, 'is-big')}<div class="ptv-sname">${escHtml(m.right.name)}</div><div class="ptv-sorg">${_ptvOrgTag(m.right, m.left)}${escHtml(m.right._ppvOrgName || '')}</div></div>
       </div>`;
     scenes.push({
       bgm: 'grandFinalMain',
@@ -12575,7 +12591,7 @@ function _renderB3MatchPreview(event, playerFighter, challenger) {
   let html = `<div style="text-align:center;padding:8px 0 4px">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:6px;color:#aaa">Challenge Match</div>
     <div style="font-size:20px;font-weight:700;letter-spacing:4px;color:#e8e0d0">⚔️ 挑 戦 状</div>
-    <div style="font-size:12px;color:var(--text-sub);margin-top:4px">${orgName}からの挑戦を受けて立つ</div>
+    <div style="font-size:12px;color:var(--text-sub);margin-top:4px">${escHtml(orgName)}からの挑戦を受けて立つ</div>
   </div>`;
 
   // セリフ吹き出し
@@ -12591,7 +12607,7 @@ function _renderB3MatchPreview(event, playerFighter, challenger) {
     <div class="mc-fc left">
       <div class="mc-fi">
         <div class="mc-fn">${playerFighter.name}</div>
-        <div class="mc-fo" style="color:${pColor}">${G.orgName || 'プレイヤー団体'}</div>
+        <div class="mc-fo" style="color:${pColor}">${typeof orgIconHtml === 'function' ? orgIconHtml('player', 16) : ''}${escHtml(G.orgName || 'プレイヤー団体')}</div>
         <div class="mc-fol">OVR</div>
         <div class="mc-fov" style="background:linear-gradient(180deg,${pColor},#3498db);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrL}</div>
       </div>
@@ -12604,7 +12620,7 @@ function _renderB3MatchPreview(event, playerFighter, challenger) {
       <div class="mc-fp">${standR ? `<img src="${standR}" alt="" onerror="this.style.display='none'">` : ''}</div>
       <div class="mc-fi">
         <div class="mc-fn">${challenger.name}</div>
-        <div class="mc-fo" style="color:${eLight}">${orgCfg.emoji || ''} ${orgName}</div>
+        <div class="mc-fo" style="color:${eLight}">${typeof orgIconHtml === 'function' ? orgIconHtml(event.orgId, 16) : ''}${orgCfg.emoji || ''} ${escHtml(orgName)}</div>
         <div class="mc-fol">OVR</div>
         <div class="mc-fov" style="background:linear-gradient(180deg,${eLight},${eColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrR}</div>
       </div>

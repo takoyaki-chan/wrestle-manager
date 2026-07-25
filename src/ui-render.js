@@ -7512,9 +7512,12 @@ function _npRenderPage2() {
   html += `<div class="np-org-summary">
     <div class="np-org-card player">
       <div class="np-org-card-head">
-        <div>
-          <div class="np-org-name">${d.playerName}</div>
-          <div class="np-org-sub">${d.playerSubtitle || ''}</div>
+        <div class="np-org-card-title">
+          ${_npOrgEmblem(G, 'player', 26)}
+          <div>
+            <div class="np-org-name">${d.playerName}</div>
+            <div class="np-org-sub">${d.playerSubtitle || ''}</div>
+          </div>
         </div>
         <div class="np-org-tier">プレイヤー</div>
       </div>
@@ -7530,9 +7533,12 @@ function _npRenderPage2() {
     <div class="np-versus-mark">VS</div>
     <div class="np-org-card rival">
       <div class="np-org-card-head">
-        <div>
-          <div class="np-org-name">${d.rivalName}</div>
-          <div class="np-org-sub">${d.rivalSubtitle || ''}</div>
+        <div class="np-org-card-title">
+          ${_npOrgEmblem(G, _dbCompareTarget, 26)}
+          <div>
+            <div class="np-org-name">${d.rivalName}</div>
+            <div class="np-org-sub">${d.rivalSubtitle || ''}</div>
+          </div>
         </div>
         <div class="np-org-tier">Tier ${d.rivalTier}</div>
       </div>
@@ -11201,12 +11207,15 @@ function _renderDbOrgCompare() {
     return `<div style="margin-top:6px;font-size:11px;color:#3a2a1a">S1: ${s1Pop} → 現在: ${currentPop} <span class="${cls}">${delta > 0 ? '+' : ''}${delta}</span></div>`;
   }
 
-  function buildOrgSummaryCard(name, subtitle, sideCls, tierHtml, tags, rosterCount, orgPop, scores, championName, popTrend, styleAttr = '') {
+  function buildOrgSummaryCard(name, subtitle, sideCls, tierHtml, tags, rosterCount, orgPop, scores, championName, popTrend, styleAttr = '', emblemHtml = '') {
     return `<article class="db-cmp-org-summary-card ${sideCls}" ${styleAttr}>
       <div class="db-cmp-org-summary-head">
-        <div class="db-cmp-org-summary-name">
-          <strong>${name}</strong>
-          <span>${subtitle}</span>
+        <div class="db-cmp-org-summary-title">
+          ${emblemHtml}
+          <div class="db-cmp-org-summary-name">
+            <strong>${name}</strong>
+            <span>${subtitle}</span>
+          </div>
         </div>
         ${tierHtml}
       </div>
@@ -11223,8 +11232,8 @@ function _renderDbOrgCompare() {
 
   html += `<div class="db-cmp-org-summary">
     <div class="db-cmp-org-summary-row" style="grid-template-columns:1fr 1fr;gap:14px;position:relative;">
-      ${buildOrgSummaryCard(d.playerName, d.playerSubtitle, 'player', '<div class="db-cmp-tier player">プレイヤー</div>', playerTags, d.playerRosterCount, d.pOrgPop, d.playerScores, playerChampionName, getPopTrend('player'))}
-      ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">ティア${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, rivalChampionName, getPopTrend(_dbCompareTarget), `style="--rival-dim:${rivalDim}"`)}
+      ${buildOrgSummaryCard(d.playerName, d.playerSubtitle, 'player', '<div class="db-cmp-tier player">プレイヤー</div>', playerTags, d.playerRosterCount, d.pOrgPop, d.playerScores, playerChampionName, getPopTrend('player'), '', _npOrgEmblem(G, 'player', 26))}
+      ${buildOrgSummaryCard(d.rivalName, d.rivalSubtitle, 'rival', `<div class="db-cmp-tier ${tierCls}">ティア${d.rivalTier}</div>`, rivalTags, d.rivalRosterCount, d.rOrgPop, d.rivalScores, rivalChampionName, getPopTrend(_dbCompareTarget), `style="--rival-dim:${rivalDim}"`, _npOrgEmblem(G, _dbCompareTarget, 26))}
       <div class="db-cmp-vs-mark-circle">VS</div>
     </div>
   </div>`;
