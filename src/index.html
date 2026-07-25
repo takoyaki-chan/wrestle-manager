@@ -3246,30 +3246,38 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   text-shadow:0 0 26px rgba(240,208,120,0.4)}
 .ch-role-line{text-align:center;position:relative}
+/* 隊列は全員が主役なので、トロフィーは個人ではなく群の見出しに掛ける */
+.ch-role-crown{display:block;font-size:26px;line-height:1;margin-top:8px;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.7))}
 .ch-role-line .ch-role{font-size:30px;margin-top:6px}
-.ch-duo{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:var(--space-lg);
-  padding:20px 16px 14px;flex-wrap:nowrap;overflow-x:auto}
+/* 隊列(春タッグ2名/秋4団体対抗戦3名): 個々に額縁を付けず、群の外側を1つの枠で囲む(案C確定, mockup-baseline-v0.1 §2-B) */
+.ch-duo,.ch-trio{position:relative;display:flex;flex-direction:column;align-items:center;padding:20px 16px 14px}
+.ch-lineup-bubs,.ch-lineup-imgs,.ch-lineup-names{display:flex;justify-content:center;align-items:flex-end}
+.ch-lineup-imgs{border:1px solid rgba(var(--gold-rgb),.55);border-bottom:3px solid var(--gold);border-radius:var(--radius-md);
+  overflow:hidden;padding:var(--space-lg) 18px 0;
+  background:radial-gradient(ellipse 80% 60% at 50% 100%,rgba(var(--ev-rgb),.13),transparent 70%),
+    linear-gradient(180deg,var(--stage-card-top),var(--stage-card-bottom))}
+.ch-mem{display:flex;flex-direction:column;align-items:center;text-align:center;width:132px;flex:0 0 auto}
+.ch-mem+.ch-mem{margin-left:-18px}
+.ch-mem.is-ace{width:150px;position:relative;z-index:2}
+.ch-duo .ch-mem{width:150px}
+.ch-duo .ch-por,.ch-trio .ch-por{background:transparent;border:0;border-radius:0;box-shadow:none;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.55))}
 .ch-duo .ch-por{width:150px;height:224px}
 .ch-duo .ch-por .ini{font-size:54px}
-.ch-duo .ch-glow{width:210px;height:210px}
 .ch-duo .ch-name{font-size:15px}
 .ch-duo .ch-bubble-slot{min-height:50px;margin-bottom:var(--space-sm)}
-.ch-duo .ch-bubble{font-size:11px;max-width:220px;padding:8px 12px}
+.ch-duo .ch-bubble{font-size:11px;max-width:100%;padding:8px 12px}
 /* 団体優勝(秋): 3人を横一列で全員主役。大将を中央に一回り大きく */
-.ch-trio{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:var(--space-lg);
-  padding:20px 16px 14px;flex-wrap:nowrap;overflow-x:auto}
-.ch-trio .ch-por{width:126px;height:188px}
+.ch-trio .ch-por{width:132px;height:194px}
 .ch-trio .ch-por .ini{font-size:46px}
-.ch-trio .ch-glow{width:190px;height:190px}
 .ch-trio .ch-name{font-size:13px}
 .ch-trio .ch-bubble-slot{min-height:46px;margin-bottom:var(--space-sm)}
-.ch-trio .ch-bubble{font-size:11px;max-width:200px;padding:8px 12px}
+.ch-trio .ch-bubble{font-size:11px;max-width:100%;padding:8px 12px}
 .ch-trio .ch-mem.is-ace .ch-por{width:150px;height:224px}
-.ch-trio .ch-mem.is-ace .ch-glow{width:210px;height:210px}
+.ch-trio .ch-mem.is-ace .ch-por .ini{font-size:52px}
 .ch-trio .ch-mem.is-ace .ch-name{font-size:15px}
 .ch-order{font-family:var(--font-label);font-size:8px;letter-spacing:0.2em;color:rgb(var(--ev-rgb));
   text-transform:uppercase;margin-bottom:4px}
-.ch-mem{display:flex;flex-direction:column;align-items:center;text-align:center}
 .ch-mem-rec{font-family:var(--font-label);font-size:11px;color:var(--stage-text-sub);margin-top:3px;letter-spacing:0.06em}
 
 /* Phase 4c: B3 Challenge Match variant */
@@ -3717,7 +3725,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .agw-mvp-stage{display:flex;flex-direction:column;align-items:center;position:relative;max-width:380px;text-align:center}
 .agw-mvp-speech{position:relative;max-width:280px;margin:0 0 var(--space-md);padding:9px 13px;border:1px solid var(--cream-border);border-radius:var(--radius-lg);background:var(--cream-bg-card);box-shadow:0 8px 20px var(--stage-bg-deep);color:var(--cream-text-main);font-size:12px;line-height:1.6;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .agw-mvp-speech:after{content:"";position:absolute;bottom:-7px;left:50%;width:0;height:0;border:7px solid transparent;border-top-color:var(--cream-bg-card);border-bottom:0;transform:translateX(-50%)}
-.agw-mvp-portrait{width:120px;height:180px;overflow:hidden;padding:0;border:0;border-bottom:3px solid var(--gold);border-radius:var(--radius-md) var(--radius-md) var(--radius-sm) var(--radius-sm);background:var(--stage-panel);cursor:pointer}
+.agw-mvp-portrait{width:108px;height:162px;overflow:hidden;padding:0;border:0;border-bottom:3px solid var(--gold);border-radius:var(--radius-md) var(--radius-md) var(--radius-sm) var(--radius-sm);background:var(--stage-panel);cursor:pointer}
 .agw-mvp-portrait img{width:100%;height:100%;object-fit:cover;object-position:top;filter:drop-shadow(0 6px 16px var(--stage-bg-deep))}
 .agw-mvp-name{display:block;padding:0;border:0;background:transparent;color:inherit;text-align:center;cursor:pointer}
 .agw-mvp-name h2{font-size:18px;margin:var(--space-sm) 0 0}

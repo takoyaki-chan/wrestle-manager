@@ -16364,17 +16364,19 @@ function renderSpringTagLeagueChampion() {
       <div class="ch-meta">第${season}回大会 ・ 総合ベストタッグ</div>
     </div>
     ${_chTeamlineHtml(champTeam.orgId, champTeam.orgName)}
-    <div class="ch-role-line"><div class="ch-role">優 勝</div></div>
+    <div class="ch-role-line"><span class="ch-role-crown">🏆</span><div class="ch-role">優 勝</div></div>
     <div class="ch-duo">
-      <div class="ch-mem">
-        ${_chBubbleSlot(line1)}
-        <div class="ch-por-wrap"><span class="ch-glow"></span><span class="ch-crown">🏆</span><div class="ch-por">${_chPortraitImg(f1 || { id: null, name: '?' })}</div></div>
-        <div class="ch-name">${escHtml(f1 ? f1.name : '?')}</div>
+      <div class="ch-lineup-bubs">
+        <div class="ch-mem">${_chBubbleSlot(line1)}</div>
+        <div class="ch-mem">${_chBubbleSlot(line2)}</div>
       </div>
-      <div class="ch-mem">
-        ${_chBubbleSlot(line2)}
-        <div class="ch-por-wrap"><span class="ch-glow"></span><div class="ch-por">${_chPortraitImg(f2 || { id: null, name: '?' })}</div></div>
-        <div class="ch-name">${escHtml(f2 ? f2.name : '?')}</div>
+      <div class="ch-lineup-imgs">
+        <div class="ch-mem"><div class="ch-por-wrap"><div class="ch-por">${_chPortraitImg(f1 || { id: null, name: '?' })}</div></div></div>
+        <div class="ch-mem"><div class="ch-por-wrap"><div class="ch-por">${_chPortraitImg(f2 || { id: null, name: '?' })}</div></div></div>
+      </div>
+      <div class="ch-lineup-names">
+        <div class="ch-mem"><div class="ch-name">${escHtml(f1 ? f1.name : '?')}</div></div>
+        <div class="ch-mem"><div class="ch-name">${escHtml(f2 ? f2.name : '?')}</div></div>
       </div>
     </div>`;
 
@@ -17018,24 +17020,35 @@ function renderAutumnWarResult() {
     .map(id => ({ id, f: _agwFighter(champ.orgId, id), role: _agwRoleLabel(champOrder || champ?.order || champ?.memberIds, id) }))
     .filter(m => m.f)
     .sort((a, b) => (roleRank[a.role] ?? 9) - (roleRank[b.role] ?? 9));
-  const cards = members.map(m => {
+  // U3: 隊列は群の外側を1つの枠で囲む(案C)。吹き出し/画像/名前を3段の行に分け、
+  // 同じ列(先鋒・大将・中堅)が3段すべてで同じ幅を持つことで-18px重なりが揃う
+  const memberRows = members.map(m => {
     const isAce = m.role === '大将';
     const wins = result.fighterWins?.[m.id] || 0;
     const line = speech?.fighter?.id === m.id ? speech.line : '';
-    return `<div class="ch-mem${isAce ? ' is-ace' : ''}">
+    return { m, isAce, wins, line };
+  });
+  const bubsRow = memberRows.map(({ m, isAce, line }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
       <div class="ch-order">${escHtml(m.role)}</div>
       ${_chBubbleSlot(line)}
-      <div class="ch-por-wrap"><span class="ch-glow"></span>${isAce ? '<span class="ch-crown">🏆</span>' : ''}
+    </div>`).join('');
+  const imgsRow = memberRows.map(({ m, isAce }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
+      <div class="ch-por-wrap">
         <div class="ch-por" style="cursor:pointer" onclick="showFighterPopup(${m.id},'autumnWar')">${_chPortraitImg(m.f)}</div></div>
+    </div>`).join('');
+  const namesRow = memberRows.map(({ m, wins, isAce }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
       <div class="ch-name">${escHtml(m.f.name)}</div>
       <div class="ch-mem-rec">通算${wins}人抜き${m.id === result.mvpId ? ' ・ 大会MVP' : ''}</div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
   const html = `<div class="agw-wrap agw-result">${_agwHeaderHtml('Survival War Champion', '全団体戦終了')}
     <div class="champ th-autumn">
       ${_chTeamlineHtml(champ?.orgId, champ?.orgName)}
-      <div class="ch-role-line"><div class="ch-role">優 勝</div></div>
-      <div class="ch-trio">${cards}</div>
+      <div class="ch-role-line"><span class="ch-role-crown">🏆</span><div class="ch-role">優 勝</div></div>
+      <div class="ch-trio">
+        <div class="ch-lineup-bubs">${bubsRow}</div>
+        <div class="ch-lineup-imgs">${imgsRow}</div>
+        <div class="ch-lineup-names">${namesRow}</div>
+      </div>
       <div class="ch-foot"><span class="ch-prize">優勝賞金<b>¥${Engine.autumnWar.PRIZE.champion}万</b></span></div>
     </div>
     <div class="agw-result-score"><span>FINAL</span><b>${scoreW} — ${scoreL}</b><small>${escHtml(_agwTeam(result.runnerUp)?.orgName || '')}</small></div>

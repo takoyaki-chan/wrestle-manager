@@ -34,7 +34,8 @@ function functionSource(source, name) {
   '.ch-hero{', '.ch-bubble-slot{', '.ch-bubble{', '.ch-bubble::after{',
   '.ch-por-wrap{', '.ch-glow{', '.ch-por{', '.ch-crown{', '.ch-name{', '.ch-role{',
   '.ch-org{', '.ch-stat{', '.ch-sub{', '.ch-sub-card{', '.ch-foot{', '.ch-prize{', '.ch-next{',
-  '.ch-teamline{', '.ch-teamname{', '.ch-role-line{', '.ch-duo{', '.ch-trio{', '.ch-order{', '.ch-mem{',
+  '.ch-teamline{', '.ch-teamname{', '.ch-role-line{', '.ch-duo,.ch-trio{', '.ch-order{', '.ch-mem{',
+  '.ch-lineup-bubs,.ch-lineup-imgs,.ch-lineup-names{', '.ch-lineup-imgs{',
 ].forEach(sel => assert.ok(css.includes(sel), `統一デザインの共通CSSが必要: ${sel}`));
 
 assert.ok(css.includes('吹き出し'), 'CSSブロックに縦の並び順を説明する日本語コメントが必要');
@@ -44,15 +45,34 @@ assert.ok(css.includes('.ch-bubble-slot{min-height:52px'), 'ヒーロー/デュ�
 assert.ok(css.includes('.ch-bubble{position:relative;max-width:420px'), '吹き出しは画像に被せない独立ブロックであること');
 assert.ok(!css.includes('.ch-bubble{position:absolute'), '吹き出しをposition:absoluteで浮かせてはいけない(高さがずれる)');
 
-// ---- 複数人が並ぶ大会は狭くても横並びを維持する(nowrap) ----
-assert.ok(css.includes('.ch-duo{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:var(--space-lg);\n  padding:20px 16px 14px;flex-wrap:nowrap;overflow-x:auto}'),
-  '春タッグの2名は狭幅でも折り返して縦積みにしてはいけない');
-assert.ok(css.includes('.ch-trio{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:var(--space-lg);\n  padding:20px 16px 14px;flex-wrap:nowrap;overflow-x:auto}'),
-  '秋4団体対抗戦の3名は狭幅でも折り返して縦積みにしてはいけない');
+// ---- 隊列(案C): 個々の画像に額縁を付けず、群の外側を1つの枠(.ch-lineup-imgs)で囲む ----
+assert.ok(css.includes('.ch-duo,.ch-trio{position:relative;display:flex;flex-direction:column;align-items:center;padding:20px 16px 14px}'),
+  '隊列は縦3段(吹き出し/画像/名前)を1本の群として積む');
+assert.ok(/\.ch-lineup-imgs\{border:1px solid rgba\(var\(--gold-rgb\),\.55\);border-bottom:3px solid var\(--gold\)/.test(css),
+  '画像の行だけを金の枠(群の外側1つだけ)で囲む');
+assert.ok(css.includes('background:radial-gradient(ellipse 80% 60% at 50% 100%,rgba(var(--ev-rgb),.13),transparent 70%)'),
+  '群の背景は大会テーマ色(--ev-rgb)を使う(大会ごとに色が変わる)');
+assert.ok(css.includes('linear-gradient(180deg,var(--stage-card-top),var(--stage-card-bottom))'),
+  '群の背景はハードコード色ではなくstage-cardトークンを使う');
 
-// ---- 秋トリオ: 大将(is-ace)だけ一回り大きい ----
-assert.ok(css.includes('.ch-trio .ch-mem.is-ace .ch-por{width:150px;height:224px}'), '大将は他の2名より大きく表示する');
-assert.ok(css.includes('.ch-trio .ch-por{width:126px;height:188px}'), '先鋒/中堅は小さめの共通サイズ');
+// ---- 個々の画像には背景・枠・box-shadowを付けない。落ち影はdrop-shadow(box-shadowは矩形に付くため誤り) ----
+assert.ok(css.includes('.ch-duo .ch-por,.ch-trio .ch-por{background:transparent;border:0;border-radius:0;box-shadow:none;\n  filter:drop-shadow(0 8px 16px rgba(0,0,0,.55))}'),
+  '隊列の画像は個々の背景・枠・box-shadowを持たず、drop-shadowだけを使う');
+
+// ---- 重なり: 隣どうしを-18px重ねる。画像・吹き出し・名前の3列すべてに掛かる(1つの.ch-memクラスが3行で再利用されるため自動的に揃う) ----
+assert.ok(css.includes('.ch-mem+.ch-mem{margin-left:-18px}'), '隊列は隣どうしを18px重ねる');
+
+// ---- 秋トリオ: 大将(is-ace)だけ一回り大きい。中心はz-indexで手前に出す ----
+assert.ok(css.includes('.ch-mem.is-ace{width:150px;position:relative;z-index:2}'), '大将/主役はz-indexで手前に出す');
+assert.ok(css.includes('.ch-trio .ch-mem.is-ace .ch-por{width:150px;height:224px}'), '大将は他の2名より大きく表示する(L)');
+assert.ok(css.includes('.ch-trio .ch-por{width:132px;height:194px}'), '先鋒/中堅は共通サイズ(M)');
+
+// ---- タッグ2名は両方L(同格) ----
+assert.ok(css.includes('.ch-duo .ch-mem{width:150px}'), 'タッグの2人は両方Lサイズ(同格)');
+assert.ok(css.includes('.ch-duo .ch-por{width:150px;height:224px}'), 'タッグの画像サイズはL');
+
+// ---- 梯子は5段(XL/L/M/S/chip)。M→S 4.5%・S→XS 4.8%の差が読めない2段は統合済み ----
+assert.ok(css.includes('.agw-mvp-portrait{width:108px;height:162px'), 'MVP(おまけ)は5段目のS(108×162)');
 
 // ---- テーマ色: 天頂戦はPPVと同じ深紅を共有する ----
 assert.ok(css.includes('.champ.th-tenchosen{--ev-rgb:214,61,70}'), '天頂戦はPPVと同じ深紅(214,61,70)を使う');
@@ -91,7 +111,10 @@ const stlFn = functionSource(ui, 'renderSpringTagLeagueChampion');
 assert.ok(stlFn.includes('class="champ th-spring"'), '春は桜のテーマ色を使う');
 assert.ok(stlFn.includes('class="ch-duo"'), 'タッグ優勝は2名並びの.ch-duoを使う');
 assert.strictEqual((stlFn.match(/_chBubbleSlot\(/g) || []).length, 2, '春タッグは2名とも吹き出しの予約枠を持つ');
-assert.strictEqual((stlFn.match(/class="ch-mem"/g) || []).length, 2, '春タッグは2名分の.ch-memを描画する');
+// 隊列(案C)は吹き出し/画像/名前の3行に分かれ、各行に2名分の.ch-memが並ぶ(2名 x 3行 = 6)
+assert.strictEqual((stlFn.match(/class="ch-mem"/g) || []).length, 6, '春タッグは2名分の.ch-memを3行(吹き出し/画像/名前)に描画する');
+assert.ok(stlFn.includes('class="ch-lineup-bubs"') && stlFn.includes('class="ch-lineup-imgs"') && stlFn.includes('class="ch-lineup-names"'),
+  '春タッグも隊列の3行構造(吹き出し/画像/名前)を使う');
 assert.ok(stlFn.includes('_chTeamlineHtml(champTeam.orgId, champTeam.orgName)'), '団体優勝は団体名を主役として掲げる');
 assert.ok(!stlFn.includes('stl-champ-') && !stlFn.includes('pb-champion-card') && !stlFn.includes('pb-champion-portrait'),
   '旧pb-champion/stl-champ系の優勝カード表示クラスを残していない(自団体賞金パネルのpb-champion-prizeboxは対象外)');
@@ -139,5 +162,47 @@ assert.ok(css.includes('.pb-champion-prizebox{'), '自団体の獲得賞金パ�
   assert.ok(!mobile.includes(cls), `mobile.cssに旧クラス ${cls} が残っている`);
 });
 assert.ok(mobile.includes('.ch-duo') && mobile.includes('.ch-trio'), '狭幅でも.ch-duo/.ch-trioの横並びを保つモバイル調整が必要');
+
+// ══════════════════════════════════════════════════════════
+//  U3: 隊列(案C) + サイズ梯子5段 の追加検証
+//  spec: docs/ui/mockup-baseline-v0.1.md v0.3 §2, §2-B
+// ══════════════════════════════════════════════════════════
+
+// ---- 隊列の画像に「個々の」枠・背景が無いこと。枠は群の外側(.ch-lineup-imgs)に1つだけ ----
+assert.ok(css.includes('.ch-duo .ch-por,.ch-trio .ch-por{background:transparent;border:0;border-radius:0;box-shadow:none;'),
+  '隊列の画像1枚ごとには背景・枠・box-shadowを付けない');
+assert.ok(css.includes('.ch-lineup-imgs{border:1px solid rgba(var(--gold-rgb),.55);border-bottom:3px solid var(--gold);border-radius:var(--radius-md);'),
+  '枠は群の外側(画像の行=.ch-lineup-imgs)に1つだけ持たせる');
+// .ch-por自体(ヒーロー用の基準ルール)は個別の額縁を持ったままでよい(単独主役.ch-heroでは温存)。
+// 隊列側は.ch-duo/.ch-trioの子孫セレクタで上書きしているので、上のassertで検証済み。
+
+// ---- 重なり(-18px)が画像・吹き出し・名前の3列すべてに掛かっていること ----
+// .ch-mem+.ch-mem{margin-left:-18px} は.ch-duo/.ch-trio共通の1ルールで、
+// レンダー関数側が.ch-lineup-bubs/.ch-lineup-imgs/.ch-lineup-namesの3行すべてで
+// 同じ.ch-memクラスを再利用しているため、CSS側は1箇所の定義で3列すべてに自動的に効く。
+assert.ok(css.includes('.ch-mem+.ch-mem{margin-left:-18px}'), '隣どうしの重なりは18pxで、値は1箇所に集約されている');
+[stlFn, agwFn].forEach((fn, i) => {
+  const label = i === 0 ? '春タッグ' : '秋4団体対抗戦';
+  assert.ok(fn.includes('class="ch-lineup-bubs"'), `${label}: 吹き出しの列(ch-lineup-bubs)が.ch-memを重ねる行として存在する`);
+  assert.ok(fn.includes('class="ch-lineup-imgs"'), `${label}: 画像の列(ch-lineup-imgs)が.ch-memを重ねる行として存在する`);
+  assert.ok(fn.includes('class="ch-lineup-names"'), `${label}: 名前の列(ch-lineup-names)が.ch-memを重ねる行として存在する`);
+});
+
+// ---- 落ち影はfilter:drop-shadow()を使う。box-shadowは矩形に付くため誤り ----
+const chLineupPorRule = css.match(/\.ch-duo \.ch-por,\.ch-trio \.ch-por\{[^}]*\}/);
+assert.ok(chLineupPorRule, '隊列の画像スタイルが見つかること');
+assert.ok(chLineupPorRule[0].includes('filter:drop-shadow('), '隊列の落ち影はfilter:drop-shadow()を使う');
+assert.ok(chLineupPorRule[0].includes('box-shadow:none'), '隊列の画像はbox-shadowを明示的に無効化する(矩形の影になるため誤り)');
+assert.ok(!/box-shadow:(?!none)/.test(chLineupPorRule[0]), '隊列の画像にnone以外のbox-shadow値を持たせない');
+
+// ---- サイズ梯子は5段(XL/L/M/S/chip)。隊列の脇はM(132×194)、MVPはS(108×162) ----
+assert.ok(css.includes('.ch-trio .ch-por{width:132px;height:194px}'), '隊列(秋)の脇はM(132×194)。旧S(126×188)は廃止');
+assert.ok(!css.includes('126px;height:188px'), '廃止した段(126×188)がCSSに残っていない');
+const mvpPortraitRule = css.match(/\.agw-mvp-portrait\{[^}]*\}/);
+assert.ok(mvpPortraitRule, '.agw-mvp-portraitのルールが見つかること');
+assert.ok(mvpPortraitRule[0].includes('width:108px;height:162px'), 'MVPはS(108×162)。旧(120×180)は廃止');
+// 梯子の他の段は変更しない(単独主役XL/2人主役L/emr-upperのM)
+assert.ok(css.includes('.ch-por{position:relative;width:172px;height:258px'), '単独主役(XL)は変更しない');
+assert.ok(css.includes('.emr-upper{width:132px;height:194px'), '2人を対置する画面(emr-upper)のMは既存のまま');
 
 console.log('champion-announcement-unified-design-test: ok');
