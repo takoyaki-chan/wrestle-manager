@@ -256,7 +256,7 @@ foreach ($d in $Manifest.assetDirectories) {
 # ── 生成ファイル ──────────────────────────────────────────────────────────────
 $StartHtml = @'
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=src/index.html"><title>Wrestle Manager</title></head>
+<html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=src/index.html"><title>Wrestle Manager</title><link rel="icon" href="data:,"></head>
 <body style="background:#1a1a2e;color:#eee;font-family:sans-serif;text-align:center;padding-top:100px">
 <p>ゲームを起動中...</p><p><a href="src/index.html" style="color:#e8439f">クリックしても開かない場合はここをクリック</a></p>
 </body></html>
