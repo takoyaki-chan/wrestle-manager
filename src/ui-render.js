@@ -898,7 +898,10 @@ function renderWeekScreen() {
 
   html = '';
 
-  if (G.weekPhase === 'manage') {
+  // showPrep は「manage + 興行準備を開始した」だけの過渡状態。ナビの「今週」タブから
+  // ここへ来ても週ダッシュボードを描けるようにする（描けないと復旧UIに落ちて
+  // 「進行不具合」と誤表示されるため。2026-07-25 再発対応で根本側を修正）。
+  if (G.weekPhase === 'manage' || G.weekPhase === 'showPrep') {
     // ── v0.95: Dashboard Panel ──
     const pRank = G.rankings && G.rankings.length ? Engine.ranking.getPlayerRank(G.rankings) : '-';
     const stats = G.seasonStats || {};
@@ -1100,7 +1103,10 @@ function renderWeekScreen() {
     if (typeof App !== 'undefined' && App.canEnterJuniorTournamentThisWeek && App.canEnterJuniorTournamentThisWeek()) {
       html += '<button class="btn btn-gold" onclick="App.enterJuniorTournamentFromWeek({ processWeekOnCancel: true })" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">JTへ進む</button>';
     } else if (isShow) {
-      html += '<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 興行準備へ →</button>';
+      // showPrep 中に「今週」タブへ戻ってきた場合は準備画面へ復帰する導線にする
+      html += G.weekPhase === 'showPrep'
+        ? '<button class="btn btn-gold" onclick="resumeShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 興行準備に戻る →</button>'
+        : '<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 興行準備へ →</button>';
     } else {
       html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
     }
