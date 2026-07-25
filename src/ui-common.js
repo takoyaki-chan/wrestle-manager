@@ -50,6 +50,72 @@ function orgIconHtml(orgId, size = 40) {
   return `<img src="${path}" width="${size}" height="${size}" style="vertical-align:middle;margin-right:6px;border-radius:4px" alt="" loading="lazy">`;
 }
 
+// ── U3 グループB 共通: 「2人が対置して語る」画面の顔出しブロック生成 ──────────
+// 仕様: docs/ui/mockup-baseline-v0.1.md §2〜§5。縦順は固定:
+//   吹き出し(予約枠) → 画像 → 名前 → 役割ラベル → 団体バッジ → 数値(OVR等)
+// 対象: _rivalryCol(.vd-*) / showFactionF08Modal(.fevt-bubble) /
+//       showFactionF08Pre/AftermathModal・showInternalChallengePre/PostModal(.fevt-arena-bubble) /
+//       _factionF02RenderClash(.fevt-dialogue-bubble) /
+//       showFactionCommon3/Common1Modal・showChallengeRequestModal(.fc1m-bubble-wrap)
+// 色は呼び出し元が祖先要素に .u3b-theme-cream / .u3b-theme-dark / .u3b-theme-stage を
+// 付ける(構造はここで共通化、配色はCSS変数経由でカテゴリごとに切り替える)。
+/**
+ * @param {Object} o
+ *   name, imgUrl, line, role(役割ラベル文字列 or null), isLoser(bool),
+ *   isBig(true で L サイズ 150×224。「1人ずつ見せる」勝者非対称画面のみ使う),
+ *   small(true で吹き出し枠46px。既定は52px),
+ *   statLabel, statValue(nullなら数値行を省く),
+ *   orgBadge: { orgId, orgName, isHome } | null, orgHtml(prebuilt HTML優先),
+ *   bubbleClass / portraitClass / extraSideClass(安全網テスト互換のため既存クラス名を co-class する),
+ *   onClick(画像・名前クリックのonclick属性文字列。選手詳細への導線がある画面のみ),
+ *   extraHtml(数値行の後ろに追加するHTML。fc1mの5項目比較などスクリーン固有の内容),
+ *   roleHtml(役割ラベルを生のHTMLで差し込む。旧 vd-badge-w/l のような既存装飾を保つ場合に role の代わりに使う)
+ */
+function _u3bSideHtml(o) {
+  o = o || {};
+  const name = escHtml(o.name != null ? o.name : '?');
+  const line = (o.line != null && o.line !== '') ? escHtml(o.line) : '';
+  const bubbleCls = ['u3b-bubble', o.bubbleClass].filter(Boolean).join(' ');
+  const bubbleInner = line ? `<div class="${bubbleCls}"><div class="u3b-bubble-text">${line}</div></div>` : '';
+  const slotCls = ['u3b-bubble-slot', o.small ? 'is-s' : ''].filter(Boolean).join(' ');
+  const upperCls = ['u3b-upper', o.isBig ? 'is-l' : '', o.portraitClass].filter(Boolean).join(' ');
+  const clickAttr = o.onClick ? ` style="cursor:pointer" onclick="${o.onClick}"` : '';
+  const imgHtml = o.imgUrl
+    ? `<img src="${escHtml(o.imgUrl)}" alt="" onerror="this.style.display='none'">`
+    : '';
+  const roleHtml = o.roleHtml != null ? o.roleHtml : (o.role ? `<div class="u3b-role">${escHtml(o.role)}</div>` : '');
+  const orgHtml = o.orgHtml != null ? o.orgHtml : (o.orgBadge ? _u3bOrgBadgeHtml(o.orgBadge) : '');
+  const statHtml = (o.statValue != null && o.statValue !== '')
+    ? `<div class="u3b-stat"><small>${escHtml(o.statLabel || 'OVR')}</small>${escHtml(o.statValue)}</div>`
+    : '';
+  const sideCls = ['u3b-side', o.isLoser ? 'is-loser' : '', o.extraSideClass].filter(Boolean).join(' ');
+  return `<div class="${sideCls}">
+    <div class="${slotCls}">${bubbleInner}</div>
+    <div class="${upperCls}"${clickAttr}>${imgHtml}</div>
+    <div class="u3b-copy">
+      <div class="u3b-name"${clickAttr}>${name}</div>
+      ${roleHtml}
+      ${orgHtml}
+      ${statHtml}
+      ${o.extraHtml || ''}
+    </div>
+  </div>`;
+}
+
+/** 団体バッジ(.u3b-org-badge)。実エンブレム画像を使う(mockup-baseline §5)。
+ *  他団体が絡む試合でのみ呼び出し側が渡す(自団体完結の画面は badge=null で省く)。 */
+function _u3bOrgBadgeHtml(badge) {
+  if (!badge || !badge.orgName) return '';
+  const sideCls = badge.isHome === false ? 'u3b-org-away' : 'u3b-org-home';
+  const path = badge.orgId != null && typeof Engine !== 'undefined' && Engine.util
+    ? (badge.orgId === 'player'
+        ? (typeof Engine.util.getPlayerOrgIconPath === 'function' ? Engine.util.getPlayerOrgIconPath(G) : '')
+        : (typeof Engine.util.getOrgIconPath === 'function' ? Engine.util.getOrgIconPath(G, badge.orgId) : ''))
+    : '';
+  const emblem = path ? `<img src="${escHtml(path)}" alt="" loading="lazy">` : '';
+  return `<div class="u3b-org-badge ${sideCls}"><span class="u3b-org-emblem">${emblem}</span><span class="u3b-org-name">${escHtml(badge.orgName)}</span></div>`;
+}
+
 // ── Popup Queue System ──────────────────────────────────────────────────
 // ポップアップの重複表示を防止する。1つのポップアップが表示中は、
 // 新しいポップアップをキューに入れて順番待ちさせる。
@@ -2111,55 +2177,27 @@ function showRivalryPopups(items, onAllDone) {
   _enqueuePopup(() => _renderRivalryPopup());
 }
 
-function _rivalryUpperHtml(id, mirrorClass) {
-  const upper = getUpperUrl(id);
-  if (upper) return `<img src="${upper}" class="rivalry-popup-upper${mirrorClass ? ' ' + mirrorClass : ''}" alt="" onerror="this.parentElement.innerHTML=_rivalryFallbackHtml(${id})">`;
-  return `<div class="rivalry-popup-upper-fallback">${_rivalryFaceInnerHtml(id)}</div>`;
-}
-function _rivalryFaceInnerHtml(id) {
-  const url = getPortraitUrl(id);
-  if (url) return `<img src="${url}" alt="">`;
-  const ch = ALL_CHARS.find(c => c.id === id);
-  return `<div class="emoji-face">${ch ? ch.name.charAt(0) : '?'}</div>`;
-}
-function _rivalryFallbackHtml(id) {
-  return `<div class="rivalry-popup-upper-fallback">${_rivalryFaceInnerHtml(id)}</div>`;
-}
-
+// U3統一(2026-07-25): 因縁ポップアップの顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。
+// 旧 vd-bubble-w/l・vd-img-card・vd-nameband・vd-spk 等の内側構造は廃止(下記CSSも撤去)。
+// vd-col-w/l・vd-badge-w/l は既存テスト(test/u3-group-b-safety-net-test.js)互換のため co-class として残す。
 function _rivalryCol(id, name, line, isWinner, opts) {
   opts = opts || {};
   const fighter = (typeof findFighter === 'function' ? findFighter(id) : null) || ALL_CHARS.find(c => c.id === id);
   const ovr = (fighter && typeof Engine !== 'undefined' && Engine.util && Engine.util.ov) ? Engine.util.ov(fighter) : '—';
   const upperUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
   const colCls = isWinner ? 'vd-col-w' : 'vd-col-l';
-  const bubbleCls = isWinner ? 'vd-bubble-w' : 'vd-bubble-l';
-  const nameCls = isWinner ? 'vd-name-w' : 'vd-name-l';
-  const ovrCls = isWinner ? 'vd-ovr-w' : 'vd-ovr-l';
-  const badgeHtml = opts.hideBadge
+  const badgeCls = isWinner ? 'vd-badge-w' : 'vd-badge-l';
+  // 対峙(hideBadge)フェーズは勝敗未定=対等表示。決着フェーズのみ敗者演出(グレースケール+下辺無彩色)を出す
+  // (mockup-baseline-v0.1 §2「勝敗の格差の付け方」: 2人を並置する画面はサイズを揃え、灰色化だけで表す)
+  const isLoser = !opts.hideBadge && !isWinner;
+  const roleHtml = opts.hideBadge
     ? ''
-    : (isWinner
-      ? '<span class="vd-badge-w">WINNER</span>'
-      : '<span class="vd-badge-l">LOSER</span>');
-  const imgHtml = upperUrl
-    ? `<img src="${upperUrl}" alt="">`
-    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;color:rgba(255,255,255,0.1)">👤</div>`;
-  return `
-    <div class="${colCls}">
-      <div class="${bubbleCls}">
-        <div class="vd-spk">${name}</div>
-        ${line}
-      </div>
-      <div class="vd-img-card">
-        <div class="vd-img-frame">${imgHtml}</div>
-        <div class="vd-nameband">
-          <div class="${nameCls}">${name}</div>
-          <div class="vd-meta">
-            <span class="${ovrCls}">OVR ${ovr}</span>
-            ${badgeHtml}
-          </div>
-        </div>
-      </div>
-    </div>`;
+    : `<div class="u3b-role"><span class="${badgeCls}">${isWinner ? 'WINNER' : 'LOSER'}</span></div>`;
+  return _u3bSideHtml({
+    name, line, imgUrl: upperUrl, isLoser, roleHtml,
+    statLabel: 'OVR', statValue: ovr,
+    extraSideClass: colCls,
+  });
 }
 
 function _renderRivalryPopup() {
@@ -2239,7 +2277,7 @@ function _renderRivalryPopup() {
     audioKey = (o.isFate || isGoodRival || isBitter) ? 'fate_resolution' : 'rivalry_resolution';
   }
 
-  box.className = `notif-modal-box verdict${toneCls ? ' ' + toneCls : ''}`;
+  box.className = `notif-modal-box verdict u3b-theme-dark${toneCls ? ' ' + toneCls : ''}`;
   box.innerHTML = `
     <div class="vd-head">
       <div class="vd-title">${title}</div>
@@ -2259,7 +2297,7 @@ function _renderRivalryPopup() {
     <div class="vd-foot"><button class="vd-btn" id="mdlBRivalryClose">— 見 届 け る —</button></div>
   `;
   overlay.classList.add('active');
-  setTimeout(() => Audio.play(audioKey), 200);
+  setTimeout(() => { if (typeof Audio !== 'undefined' && Audio.play) Audio.play(audioKey); }, 200);
 
   setTimeout(() => {
     const btn = document.getElementById('mdlBRivalryClose');
@@ -8691,9 +8729,14 @@ function _factionF02RenderClash(payload, state, onChoice) {
   const bName = leaderB ? leaderB.name : '???';
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
   const bUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
-  const aLine = Engine.factions.getF02ClashLine(leaderA, 'attack') || '';
-  const bLine = Engine.factions.getF02ClashLine(leaderB, 'defend') || '';
+  const aLine = Engine.factions.getF02ClashLine(leaderA, 'attack') || '……';
+  const bLine = Engine.factions.getF02ClashLine(leaderB, 'defend') || '……';
 
+  // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1 §2-4)。
+  // 吹き出しは画像の上へ(旧実装は下段の別セクションにあり rule1 違反だった)。左右は派閥アイデンティティ
+  // 色(紫/橙、accent-faction-3/1)で区別する。「側で色分け」ではなく「どちらの派閥か」の識別色
+  // (01-foundations.md #9 参照)。.fevt-leader-col は F02の他サブ画面(ignite/peace/resolution/endless、
+  // 対象外)と別クラス体系でこのクラッシュ画面専用のラッパーと確認済みなので、入場アニメ/スポットライトは温存する。
   const html = `
     <div class="fevt-overlay-stage" id="fevtF02Overlay">
       <div class="fevt-title-band">
@@ -8704,10 +8747,11 @@ function _factionF02RenderClash(payload, state, onChoice) {
 
       <div class="fevt-dual-stage">
         <div class="fevt-leader-col">
-          <div class="fevt-faction-flag a">${String(factionAName)}</div>
-          ${aUrl ? `<img class="fevt-leader-upper" src="${aUrl}" alt="">` : `<div class="fevt-leader-upper"></div>`}
-          <div class="fevt-leader-name">${String(aName)}</div>
-          <div class="fevt-leader-org">FACTION LEADER</div>
+          ${_u3bSideHtml({
+            name: aName, line: aLine, imgUrl: aUrl, role: `${factionAName} ・ FACTION LEADER`,
+            bubbleClass: 'fevt-dialogue-bubble a', portraitClass: 'fevt-leader-upper',
+            extraSideClass: 'u3b-theme-stage is-clash-a',
+          })}
         </div>
         <div class="fevt-vs-col">
           <div class="fevt-silent-mark">
@@ -8716,26 +8760,16 @@ function _factionF02RenderClash(payload, state, onChoice) {
           </div>
         </div>
         <div class="fevt-leader-col right">
-          <div class="fevt-faction-flag b">${String(factionBName)}</div>
-          ${bUrl ? `<img class="fevt-leader-upper" src="${bUrl}" alt="">` : `<div class="fevt-leader-upper"></div>`}
-          <div class="fevt-leader-name">${String(bName)}</div>
-          <div class="fevt-leader-org">FACTION LEADER</div>
+          ${_u3bSideHtml({
+            name: bName, line: bLine, imgUrl: bUrl, role: `${factionBName} ・ FACTION LEADER`,
+            bubbleClass: 'fevt-dialogue-bubble b', portraitClass: 'fevt-leader-upper',
+            extraSideClass: 'u3b-theme-stage is-clash-b',
+          })}
         </div>
       </div>
 
       <div class="fevt-clash-atmosphere">
         ロッカールームには、冷たい対立の空気が満ちているようです。
-      </div>
-
-      <div class="fevt-dialogue-row">
-        <div class="fevt-dialogue-bubble a">
-          <div class="fevt-dialogue-speaker">${String(aName)}</div>
-          <div class="fevt-dialogue-text">${String(aLine || '……')}</div>
-        </div>
-        <div class="fevt-dialogue-bubble b">
-          <div class="fevt-dialogue-speaker">${String(bName)}</div>
-          <div class="fevt-dialogue-text">${String(bLine || '……')}</div>
-        </div>
       </div>
 
       <div class="fevt-stage-decision">
@@ -9605,13 +9639,10 @@ function showFactionF08Modal(payload, state, onChoice) {
   const lineB = _factionLine(FACTION_F08_LEADER_LINES, leaderB,
     Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA82));
 
-  const aPortrait = leaderAUrl
-    ? `<div class="fevt-duel-portrait" style="background-image:url('${leaderAUrl}');background-size:cover;background-position:center 20%"></div>`
-    : `<div class="fevt-duel-portrait"></div>`;
-  const bPortrait = leaderBUrl
-    ? `<div class="fevt-duel-portrait" style="background-image:url('${leaderBUrl}');background-size:cover;background-position:center 20%"></div>`
-    : `<div class="fevt-duel-portrait"></div>`;
-
+  // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1 §2-4)。
+  // .col/.col.right は安全網テスト(test/u3-group-b-safety-net-test.js)の厳密一致(class="col">)を
+  // 保つため display:contents の透過ラッパーとして残す。「FACTION・◯◯」と「LEADER・OVR」の2行は
+  // 役割ラベル1行(◯◯・LEADER)へ統合し、OVRは数値行として独立させた(baseline §4の並び順に合わせる)。
   const html = `
     <div class="fevt-overlay-office" id="fevtF08Overlay">
       <div class="fevt-report-card f08">
@@ -9620,28 +9651,22 @@ function showFactionF08Modal(payload, state, onChoice) {
           <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ HOSTILITY ${hostilityPeak} / 100</div>
         </div>
         ${_factionReporterStrip(state, '……もう、止めても無駄だと思います。両方とも、リングで決着つける覚悟です')}
-        <div class="fevt-subject-stage">
+        <div class="fevt-subject-stage u3b-theme-cream">
           <div class="fevt-subject-duel">
             <div class="col">
-              ${aPortrait}
-              <div class="fevt-duel-faction">FACTION ・ ${String(factionAName)}</div>
-              <div class="fevt-duel-name">${String(leaderAName)}</div>
-              <div class="fevt-duel-org">LEADER ・ OVR ${leaderAOvr}</div>
-              <div class="fevt-bubble left">
-                <span class="fevt-bubble-name">${String(leaderAName)}</span>
-                ${String(lineA || '……もう、話し合いでは済まない。あの人とは、リングの上でしか答えが出ない。')}
-              </div>
+              ${_u3bSideHtml({
+                name: leaderAName, line: lineA || '……もう、話し合いでは済まない。あの人とは、リングの上でしか答えが出ない。',
+                imgUrl: leaderAUrl, role: `${factionAName} ・ LEADER`, statLabel: 'OVR', statValue: leaderAOvr,
+                bubbleClass: 'fevt-bubble left', portraitClass: 'fevt-duel-portrait',
+              })}
             </div>
             <div class="fevt-duel-vs">VS</div>
             <div class="col right">
-              ${bPortrait}
-              <div class="fevt-duel-faction">FACTION ・ ${String(factionBName)}</div>
-              <div class="fevt-duel-name">${String(leaderBName)}</div>
-              <div class="fevt-duel-org">LEADER ・ OVR ${leaderBOvr}</div>
-              <div class="fevt-bubble right">
-                <span class="fevt-bubble-name">${String(leaderBName)}</span>
-                ${String(lineB || 'いいでしょう。逃げも隠れもしない。来週、メインで、決着をつけましょう。')}
-              </div>
+              ${_u3bSideHtml({
+                name: leaderBName, line: lineB || 'いいでしょう。逃げも隠れもしない。来週、メインで、決着をつけましょう。',
+                imgUrl: leaderBUrl, role: `${factionBName} ・ LEADER`, statLabel: 'OVR', statValue: leaderBOvr,
+                bubbleClass: 'fevt-bubble right', portraitClass: 'fevt-duel-portrait',
+              })}
             </div>
           </div>
           <div class="fevt-subject-divider" style="margin-top:18px"></div>
@@ -9705,6 +9730,10 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
   const aPortraitUrl = _factionUpperUrl(data.factionA.leaderId);
   const bPortraitUrl = _factionUpperUrl(data.factionB.leaderId);
 
+  // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1 §2-4)。
+  // Stageカテゴリ(.u3b-theme-stage)を使う(このカードは既に純黒の全画面カードで実装済みのため。
+  // 詳細は完了報告の判断点を参照)。「FACTION・◯◯」「LEADER・OVR」は役割ラベル1行へ統合。
+  // .fevt-arena-col は F09(派閥対抗戦、対象外)と共有のため構造は変えず中身だけ差し替える。
   const html = `
     <div class="fevt-overlay-arena" id="fevtF08PreOverlay">
       <div class="fevt-arena-card f08-pre">
@@ -9712,29 +9741,23 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
           <div class="fevt-arena-title">🔥 直接対決</div>
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ DIRECT CONFRONTATION</div>
         </div>
-        <div class="fevt-arena-narration">${String(data.narration)}</div>
-        <div class="fevt-arena-stage">
+        <div class="fevt-arena-narration">${escHtml(data.narration)}</div>
+        <div class="fevt-arena-stage u3b-theme-stage is-hostility">
           <div class="fevt-arena-duel">
             <div class="fevt-arena-col">
-              <div class="fevt-arena-portrait" style="background-image:url('${aPortraitUrl}');background-size:cover;background-position:center 20%"></div>
-              <div class="fevt-arena-faction">${String(data.factionA.name)}</div>
-              <div class="fevt-arena-name">${String(data.factionA.leaderName)}</div>
-              <div class="fevt-arena-org">LEADER ・ OVR ${data.factionA.leaderOvr}</div>
-              <div class="fevt-arena-bubble">
-                <span class="fevt-arena-bubble-name">${String(data.factionA.leaderName)}</span>
-                ${String(data.lineA || '')}
-              </div>
+              ${_u3bSideHtml({
+                name: data.factionA.leaderName, line: data.lineA, imgUrl: aPortraitUrl,
+                role: `${data.factionA.name} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
+                bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
+              })}
             </div>
             <div class="fevt-arena-vs">VS</div>
             <div class="fevt-arena-col">
-              <div class="fevt-arena-portrait" style="background-image:url('${bPortraitUrl}');background-size:cover;background-position:center 20%"></div>
-              <div class="fevt-arena-faction">${String(data.factionB.name)}</div>
-              <div class="fevt-arena-name">${String(data.factionB.leaderName)}</div>
-              <div class="fevt-arena-org">LEADER ・ OVR ${data.factionB.leaderOvr}</div>
-              <div class="fevt-arena-bubble">
-                <span class="fevt-arena-bubble-name">${String(data.factionB.leaderName)}</span>
-                ${String(data.lineB || '')}
-              </div>
+              ${_u3bSideHtml({
+                name: data.factionB.leaderName, line: data.lineB, imgUrl: bPortraitUrl,
+                role: `${data.factionB.name} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
+                bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
+              })}
             </div>
           </div>
         </div>
@@ -9784,7 +9807,10 @@ function showFactionF08AftermathModal(data, state, onContinue) {
 
   const wPortraitUrl = _factionUpperUrl(data.winner.id);
   const lPortraitUrl = _factionUpperUrl(data.loser.id);
+  const roleTag = (faction, role) => (faction ? `${faction} ・ ${role}` : role);
 
+  // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。1人ずつ順に見せる決着画面のため
+  // baseline §2「勝敗の格差の付け方」に従い勝者だけ一段大きいLサイズ(isBig)を許容する。
   const html = `
     <div class="fevt-overlay-arena" id="fevtF08PostOverlay">
       <div class="fevt-arena-card f08-post">
@@ -9792,27 +9818,21 @@ function showFactionF08AftermathModal(data, state, onContinue) {
           <div class="fevt-arena-title">⚔ 決着の夜</div>
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ AFTERMATH</div>
         </div>
-        <div class="fevt-arena-narration">${String(data.narrationOpen)}</div>
-        <div class="fevt-arena-stage">
-          <div class="fevt-arena-portrait winner-big" style="background-image:url('${wPortraitUrl}');background-size:cover;background-position:center 20%;margin:0 auto 10px"></div>
-          <div class="fevt-arena-faction">${String(data.winner.factionName)}</div>
-          <div class="fevt-arena-name">${String(data.winner.name)}</div>
-          <div class="fevt-arena-org">WINNER</div>
-          <div class="fevt-arena-bubble winner-big" style="margin-left:auto;margin-right:auto">
-            <span class="fevt-arena-bubble-name">${String(data.winner.name)}</span>
-            ${String(data.winnerLine || '')}
-          </div>
+        <div class="fevt-arena-narration">${escHtml(data.narrationOpen)}</div>
+        <div class="fevt-arena-stage u3b-theme-stage is-hostility">
+          ${_u3bSideHtml({
+            name: data.winner.name, line: data.winnerLine, imgUrl: wPortraitUrl, isBig: true,
+            role: roleTag(data.winner.factionName, 'WINNER'),
+            bubbleClass: 'fevt-arena-bubble winner-big', portraitClass: 'fevt-arena-portrait winner-big',
+          })}
           <div class="fevt-arena-divider"></div>
-          <div class="fevt-arena-portrait loser" style="background-image:url('${lPortraitUrl}');background-size:cover;background-position:center 20%;margin:0 auto 8px"></div>
-          <div class="fevt-arena-faction" style="opacity:0.75">${String(data.loser.factionName)}</div>
-          <div class="fevt-arena-name" style="font-size:15px;opacity:0.85">${String(data.loser.name)}</div>
-          <div class="fevt-arena-org" style="opacity:0.65">LOSER</div>
-          <div class="fevt-arena-bubble loser" style="margin-left:auto;margin-right:auto">
-            <span class="fevt-arena-bubble-name">${String(data.loser.name)}</span>
-            ${String(data.loserLine || '')}
-          </div>
+          ${_u3bSideHtml({
+            name: data.loser.name, line: data.loserLine, imgUrl: lPortraitUrl, isLoser: true,
+            role: roleTag(data.loser.factionName, 'LOSER'),
+            bubbleClass: 'fevt-arena-bubble loser', portraitClass: 'fevt-arena-portrait loser',
+          })}
         </div>
-        <div class="fevt-arena-narration close">${String(data.narrationClose)}</div>
+        <div class="fevt-arena-narration close">${escHtml(data.narrationClose)}</div>
         <div class="fevt-arena-actions">
           <button class="fevt-arena-btn" id="fevtF08PostBtn">閉じる</button>
         </div>
@@ -9856,6 +9876,7 @@ function showInternalChallengePreModal(data, state, onContinue) {
   const cPortraitUrl = _factionUpperUrl(data.challenger.id);
   const lPortraitUrl = _factionUpperUrl(data.leader.id);
 
+  // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。Stageテーマの派閥内(紫)accent。
   const html = `
     <div class="fevt-overlay-arena" id="fevtICPreOverlay">
       <div class="fevt-arena-card internal-challenge-pre">
@@ -9863,29 +9884,23 @@ function showInternalChallengePreModal(data, state, onContinue) {
           <div class="fevt-arena-title">⚔ 派閥内序列戦</div>
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ INTERNAL CHALLENGE</div>
         </div>
-        <div class="fevt-arena-narration">${String(data.narration)}</div>
-        <div class="fevt-arena-stage">
+        <div class="fevt-arena-narration">${escHtml(data.narration)}</div>
+        <div class="fevt-arena-stage u3b-theme-stage is-internal">
           <div class="fevt-arena-duel">
             <div class="fevt-arena-col">
-              <div class="fevt-arena-portrait" style="background-image:url('${cPortraitUrl}');background-size:cover;background-position:center 20%"></div>
-              <div class="fevt-arena-faction">${String(data.faction.name)}</div>
-              <div class="fevt-arena-name">${String(data.challenger.name)}</div>
-              <div class="fevt-arena-org">CHALLENGER ・ OVR ${data.challenger.ovr}</div>
-              <div class="fevt-arena-bubble">
-                <span class="fevt-arena-bubble-name">${String(data.challenger.name)}</span>
-                ${String(data.lineChallenger || '')}
-              </div>
+              ${_u3bSideHtml({
+                name: data.challenger.name, line: data.lineChallenger, imgUrl: cPortraitUrl,
+                role: `${data.faction.name} ・ CHALLENGER`, statLabel: 'OVR', statValue: data.challenger.ovr,
+                bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
+              })}
             </div>
             <div class="fevt-arena-vs">VS</div>
             <div class="fevt-arena-col">
-              <div class="fevt-arena-portrait" style="background-image:url('${lPortraitUrl}');background-size:cover;background-position:center 20%"></div>
-              <div class="fevt-arena-faction">${String(data.faction.name)}</div>
-              <div class="fevt-arena-name">${String(data.leader.name)}</div>
-              <div class="fevt-arena-org">LEADER ・ OVR ${data.leader.ovr}</div>
-              <div class="fevt-arena-bubble">
-                <span class="fevt-arena-bubble-name">${String(data.leader.name)}</span>
-                ${String(data.lineLeader || '')}
-              </div>
+              ${_u3bSideHtml({
+                name: data.leader.name, line: data.lineLeader, imgUrl: lPortraitUrl,
+                role: `${data.faction.name} ・ LEADER`, statLabel: 'OVR', statValue: data.leader.ovr,
+                bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
+              })}
             </div>
           </div>
         </div>
@@ -9943,9 +9958,12 @@ function showInternalChallengePostModal(data, state, onContinue) {
     AUTHORITY: '権威型',
   });
   const transitionHtml = data.archetypeTransition
-    ? `<div class="fevt-arena-narration close" style="margin-top:8px;color:#e6c8ff">― ${data.faction.name}は《${transitionLabel[data.archetypeTransition.from] || data.archetypeTransition.from}》から《${transitionLabel[data.archetypeTransition.to] || data.archetypeTransition.to}》へ気風を変えた ―</div>`
+    ? `<div class="fevt-arena-narration close" style="margin-top:8px;color:var(--stage-text-main)">― ${escHtml(data.faction.name)}は《${escHtml(transitionLabel[data.archetypeTransition.from] || data.archetypeTransition.from)}》から《${escHtml(transitionLabel[data.archetypeTransition.to] || data.archetypeTransition.to)}》へ気風を変えた ―</div>`
     : '';
 
+  // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。1人ずつ順に見せる決着画面のため
+  // baseline §2に従い勝者だけLサイズ(isBig)。派閥は両者共通なので勝者側にのみ役割ラベルへ載せる
+  // (元実装も敗者側は役割名のみで派閥名を重複表示していなかった)。
   const html = `
     <div class="fevt-overlay-arena" id="fevtICPostOverlay">
       <div class="fevt-arena-card internal-challenge-post">
@@ -9953,26 +9971,21 @@ function showInternalChallengePostModal(data, state, onContinue) {
           <div class="fevt-arena-title">⚔ 序列戦・決着</div>
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ ${data.leaderWon ? 'HOLD' : 'SUCCESSION'}</div>
         </div>
-        <div class="fevt-arena-narration">${String(data.narrationOpen)}</div>
-        <div class="fevt-arena-stage">
-          <div class="fevt-arena-portrait winner-big" style="background-image:url('${wPortraitUrl}');background-size:cover;background-position:center 20%;margin:0 auto 10px"></div>
-          <div class="fevt-arena-faction">${String(data.faction.name)}</div>
-          <div class="fevt-arena-name">${String(data.winner.name)}</div>
-          <div class="fevt-arena-org">${data.leaderWon ? 'LEADER (DEFENDED)' : 'NEW LEADER'}</div>
-          <div class="fevt-arena-bubble winner-big" style="margin-left:auto;margin-right:auto">
-            <span class="fevt-arena-bubble-name">${String(data.winner.name)}</span>
-            ${String(data.winnerLine || '')}
-          </div>
+        <div class="fevt-arena-narration">${escHtml(data.narrationOpen)}</div>
+        <div class="fevt-arena-stage u3b-theme-stage is-internal">
+          ${_u3bSideHtml({
+            name: data.winner.name, line: data.winnerLine, imgUrl: wPortraitUrl, isBig: true,
+            role: `${data.faction.name} ・ ${data.leaderWon ? 'LEADER (DEFENDED)' : 'NEW LEADER'}`,
+            bubbleClass: 'fevt-arena-bubble winner-big', portraitClass: 'fevt-arena-portrait winner-big',
+          })}
           <div class="fevt-arena-divider"></div>
-          <div class="fevt-arena-portrait loser" style="background-image:url('${lPortraitUrl}');background-size:cover;background-position:center 20%;margin:0 auto 8px"></div>
-          <div class="fevt-arena-name" style="font-size:15px;opacity:0.85">${String(data.loser.name)}</div>
-          <div class="fevt-arena-org" style="opacity:0.65">${data.leaderWon ? 'CHALLENGER' : 'FORMER LEADER'}</div>
-          <div class="fevt-arena-bubble loser" style="margin-left:auto;margin-right:auto">
-            <span class="fevt-arena-bubble-name">${String(data.loser.name)}</span>
-            ${String(data.loserLine || '')}
-          </div>
+          ${_u3bSideHtml({
+            name: data.loser.name, line: data.loserLine, imgUrl: lPortraitUrl, isLoser: true,
+            role: data.leaderWon ? 'CHALLENGER' : 'FORMER LEADER',
+            bubbleClass: 'fevt-arena-bubble loser', portraitClass: 'fevt-arena-portrait loser',
+          })}
         </div>
-        <div class="fevt-arena-narration close">${String(data.narrationClose)}</div>
+        <div class="fevt-arena-narration close">${escHtml(data.narrationClose)}</div>
         ${transitionHtml}
         <div class="fevt-arena-actions">
           <button class="fevt-arena-btn" id="fevtICPostBtn">閉じる</button>
@@ -10592,42 +10605,27 @@ function showFactionCommon3Modal(payload, state, onClose) {
     ? Engine.factions.getCommon3Line('reaction', { archetypeId, newcomerFighter: newcomer })
     : 'よろしく。';
 
-  const newcomerStyle = newcomerUrl
-    ? `background-image:url('${newcomerUrl}');background-size:cover;background-position:center 20%`
-    : '';
-  const leaderStyle = leaderUrl
-    ? `background-image:url('${leaderUrl}');background-size:cover;background-position:center 20%`
-    : '';
-
+  // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1 §2-4)。
+  // fc1m-bubble-wrap・fc1m-portraitは安全網テスト(test/u3-group-b-safety-net-test.js)互換のためco-classとして残す。
   const html = `
     <div class="fevt-overlay-office" id="fevtCommon3Overlay">
       <div class="fevt-report-card">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">🤝 ${factionName}へ加入</div>
+          <div class="fevt-report-title">🤝 ${escHtml(factionName)}へ加入</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, `${newcomerName}が${factionName}に加わったみたいです。`)}
+        ${_factionReporterStrip(state, `${escHtml(newcomerName)}が${escHtml(factionName)}に加わったみたいです。`)}
         <div class="fevt-subject-stage">
-          <div class="fc1m-compare">
-            <div class="fc1m-side">
-              <div class="fc1m-bubble-wrap">
-                <div class="fc1m-bubble-speaker">${newcomerName}</div>
-                <div class="fc1m-bubble">${newcomerLine}</div>
-              </div>
-              <div class="fc1m-portrait" style="${newcomerStyle}"></div>
-              <div class="fc1m-name">${newcomerName}</div>
-              <div class="fc1m-faction">新加入</div>
-            </div>
+          <div class="fc1m-compare u3b-theme-cream">
+            ${_u3bSideHtml({
+              name: newcomerName, line: newcomerLine, imgUrl: newcomerUrl, role: '新加入',
+              bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
+            })}
             <div class="fc1m-vs">→</div>
-            <div class="fc1m-side">
-              <div class="fc1m-bubble-wrap">
-                <div class="fc1m-bubble-speaker">${leaderName}</div>
-                <div class="fc1m-bubble">${reactionLine}</div>
-              </div>
-              <div class="fc1m-portrait" style="${leaderStyle}"></div>
-              <div class="fc1m-name">${leaderName}</div>
-              <div class="fc1m-faction">${factionName} · リーダー</div>
-            </div>
+            ${_u3bSideHtml({
+              name: leaderName, line: reactionLine, imgUrl: leaderUrl, role: `${factionName} ・ リーダー`,
+              bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
+            })}
           </div>
         </div>
         <div class="fevt-decision-tray" style="justify-content:center">
@@ -10806,9 +10804,6 @@ function showFactionCommon1Modal(payload, state, onChoice) {
   const archetypeId = payload.archetypeId || null;
   const aName = fA ? fA.name : (payload.fighterAName || '???');
   const bName = fB ? fB.name : (payload.fighterBName || '???');
-  const leaderName = leader ? leader.name : '???';
-  const leftPortrait = fA ? `<div class="fevt-pair-portrait" style="background-image:url('${_factionUpperUrl(fA.id)}');background-size:cover;background-position:center 20%"></div>` : `<div class="fevt-pair-portrait"></div>`;
-  const rightPortrait = fB ? `<div class="fevt-pair-portrait" style="background-image:url('${_factionUpperUrl(fB.id)}');background-size:cover;background-position:center 20%"></div>` : `<div class="fevt-pair-portrait"></div>`;
 
   const vars = { factionName, aName, bName };
   const coachLine = (Engine.factions.getCommon1Line)
@@ -10839,21 +10834,14 @@ function showFactionCommon1Modal(payload, state, onChoice) {
   const isLeaderA = leader && fA && leader.id === fA.id;
   const isLeaderB = leader && fB && leader.id === fB.id;
   const leaderSide = isLeaderA ? 'a' : (isLeaderB ? 'b' : 'a');
-  const bubbleHtml = `
-    <div class="fc1m-bubble-wrap">
-      <div class="fc1m-bubble-speaker">${leaderName}</div>
-      <div class="fc1m-bubble">${leaderLine}</div>
-    </div>`;
-  const aClickHandler = fA ? `onclick="event.stopPropagation();showFighterPopup(${fA.id},'roster')"` : '';
-  const bClickHandler = fB ? `onclick="event.stopPropagation();showFighterPopup(${fB.id},'roster')"` : '';
-  const aPortraitStyle = fA ? `background-image:url('${_factionUpperUrl(fA.id)}');background-size:cover;background-position:center 20%;cursor:pointer` : '';
-  const bPortraitStyle = fB ? `background-image:url('${_factionUpperUrl(fB.id)}');background-size:cover;background-position:center 20%;cursor:pointer` : '';
-  const aNameStyle = fA ? 'cursor:pointer' : '';
-  const bNameStyle = fB ? 'cursor:pointer' : '';
-  const factionTagA = isLeaderA ? `${factionName} · リーダー` : factionName;
-  const factionTagB = isLeaderB ? `${factionName} · リーダー` : factionName;
+  const aClick = fA ? `event.stopPropagation();showFighterPopup(${fA.id},'roster')` : '';
+  const bClick = fB ? `event.stopPropagation();showFighterPopup(${fB.id},'roster')` : '';
+  const factionTagA = isLeaderA ? `${factionName} ・ リーダー` : factionName;
+  const factionTagB = isLeaderB ? `${factionName} ・ リーダー` : factionName;
   const rivalryNum = (payload.currentRivalry != null) ? payload.currentRivalry : 0;
 
+  // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。5項目比較(fc1m-stats)は
+  // 数値行の後ろに追加する画面固有コンテンツとして温存する(構成順は変えず末尾に付く)。
   const html = `
     <div class="fevt-overlay-office" id="fevtCommon1Overlay">
       <div class="fevt-report-card">
@@ -10861,25 +10849,21 @@ function showFactionCommon1Modal(payload, state, onChoice) {
           <div class="fevt-report-title">⚔ 派閥内対決の打診</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, coachLine)}
-        <div class="fc1m-compare">
-          <div class="fc1m-side">
-            ${leaderSide === 'a' ? bubbleHtml : '<div class="fc1m-bubble-spacer"></div>'}
-            <div class="fc1m-portrait" ${aClickHandler} title="クリックで選手詳細" style="${aPortraitStyle}"></div>
-            <div class="fc1m-name" ${aClickHandler} title="クリックで選手詳細" style="${aNameStyle}">${aName}</div>
-            <div class="fc1m-faction">${factionTagA}</div>
-            <div class="fc1m-ovr-badge">OVR ${ovrA}</div>
-            <div class="fc1m-stats">${renderStats('a')}</div>
-          </div>
+        ${_factionReporterStrip(state, escHtml(coachLine))}
+        <div class="fc1m-compare u3b-theme-cream">
+          ${_u3bSideHtml({
+            name: aName, line: leaderSide === 'a' ? leaderLine : '', imgUrl: fA ? _factionUpperUrl(fA.id) : '',
+            role: factionTagA, statLabel: 'OVR', statValue: ovrA, onClick: aClick,
+            bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
+            extraHtml: `<div class="fc1m-stats">${renderStats('a')}</div>`,
+          })}
           <div class="fc1m-vs">VS</div>
-          <div class="fc1m-side">
-            ${leaderSide === 'b' ? bubbleHtml : '<div class="fc1m-bubble-spacer"></div>'}
-            <div class="fc1m-portrait" ${bClickHandler} title="クリックで選手詳細" style="${bPortraitStyle}"></div>
-            <div class="fc1m-name" ${bClickHandler} title="クリックで選手詳細" style="${bNameStyle}">${bName}</div>
-            <div class="fc1m-faction">${factionTagB}</div>
-            <div class="fc1m-ovr-badge">OVR ${ovrB}</div>
-            <div class="fc1m-stats">${renderStats('b')}</div>
-          </div>
+          ${_u3bSideHtml({
+            name: bName, line: leaderSide === 'b' ? leaderLine : '', imgUrl: fB ? _factionUpperUrl(fB.id) : '',
+            role: factionTagB, statLabel: 'OVR', statValue: ovrB, onClick: bClick,
+            bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
+            extraHtml: `<div class="fc1m-stats">${renderStats('b')}</div>`,
+          })}
         </div>
         <div class="fc1m-rivalry">2名間の因縁 <strong>${rivalryNum}</strong> / 100 — 火種は熟している</div>
         <div class="fevt-decision-prompt">この火種、社長としてどう扱いますか？</div>
@@ -11113,7 +11097,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
   const isInverse = !!payload._inverse;
 
   // 打診者・相手の lookup（forward / inverse で参照先を切替）
-  let requester, opponent, requesterOrgName, opponentOrgName, requesterSideLabel, opponentSideLabel;
+  let requester, opponent, requesterOrgName, opponentOrgName;
   if (isInverse) {
     const reqOrg = aiOrgs[payload.requesterOrgId];
     if (!reqOrg || !Array.isArray(reqOrg.roster)) { if (onChoice) onChoice(null); return; }
@@ -11123,8 +11107,6 @@ function showChallengeRequestModal(payload, state, onChoice) {
     requesterOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.requesterOrgId])
       || reqOrg.name || payload.requesterOrgId || '他団体';
     opponentOrgName = state.orgName || 'プレイヤー団体';
-    requesterSideLabel = `${requesterOrgName} · 打診者（古巣に挑む）`;
-    opponentSideLabel = `${opponentOrgName} · 名指しされた側`;
   } else {
     const otherOrg = aiOrgs[payload.otherOrgId];
     requester = roster.find(c => c.id === payload.selfId);
@@ -11133,8 +11115,6 @@ function showChallengeRequestModal(payload, state, onChoice) {
     requesterOrgName = state.orgName || 'プレイヤー団体';
     opponentOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.otherOrgId])
       || (otherOrg && otherOrg.name) || payload.otherOrgId || '他団体';
-    requesterSideLabel = `${requesterOrgName} · 直訴者`;
-    opponentSideLabel = opponentOrgName;
   }
 
   const orgName = state.orgName || 'プレイヤー団体';
@@ -11175,18 +11155,18 @@ function showChallengeRequestModal(payload, state, onChoice) {
     }
   }
 
-  const aPortraitStyle = `background-image:url('${_factionUpperUrl(requester.id)}');background-size:cover;background-position:center 20%;${isInverse ? '' : 'cursor:pointer'}`;
-  const bPortraitStyle = `background-image:url('${_factionUpperUrl(opponent.id)}');background-size:cover;background-position:center 20%;${isInverse ? 'cursor:pointer' : ''}`;
   // クリック対象: forward は requester(自陣)、inverse は opponent(自陣) のみ
-  const aClickHandler = isInverse ? '' : `onclick="event.stopPropagation();showFighterPopup(${requester.id},'roster')"`;
-  const bClickHandler = isInverse ? `onclick="event.stopPropagation();showFighterPopup(${opponent.id},'roster')"` : '';
+  const aClick = isInverse ? '' : `event.stopPropagation();showFighterPopup(${requester.id},'roster')`;
+  const bClick = isInverse ? `event.stopPropagation();showFighterPopup(${opponent.id},'roster')` : '';
+  // 他団体が絡む(cross-org)画面のため団体バッジを出す(mockup-baseline-v0.1 §5)。
+  // orgIdはpayloadの実IDをそのまま使う(名前からの逆引きより確実)
+  const requesterOrgId = isInverse ? payload.requesterOrgId : 'player';
+  const opponentOrgId = isInverse ? 'player' : payload.otherOrgId;
+  const requesterRole = isInverse ? '打診者（古巣に挑む）' : '直訴者';
+  const opponentRole = isInverse ? '名指しされた側' : '対戦相手';
 
-  const bubbleHtml = `
-    <div class="fc1m-bubble-wrap">
-      <div class="fc1m-bubble-speaker">${requester.name}</div>
-      <div class="fc1m-bubble">${requesterLine}</div>
-    </div>`;
-
+  // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。5項目比較(fc1m-stats)は
+  // 数値行の後ろに追加する画面固有コンテンツとして温存する(構成順は変えず末尾に付く)。
   const html = `
     <div class="fevt-overlay-office" id="challengeRequestOverlay">
       <div class="fevt-report-card">
@@ -11194,40 +11174,36 @@ function showChallengeRequestModal(payload, state, onChoice) {
           <div class="fevt-report-title">📜 挑戦試合の直訴</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, coachLine)}
-        <div class="fc1m-compare">
-          <div class="fc1m-side">
-            ${bubbleHtml}
-            <div class="fc1m-org">${_awOrgEmblem(requesterOrgName, !isInverse, 20)}<span class="fc1m-org-name">${requesterOrgName}</span></div>
-            <div class="fc1m-portrait" ${aClickHandler} ${aClickHandler ? 'title="クリックで選手詳細"' : ''} style="${aPortraitStyle}"></div>
-            <div class="fc1m-name" ${aClickHandler} ${aClickHandler ? 'title="クリックで選手詳細" style="cursor:pointer"' : ''}>${requester.name}</div>
-            <div class="fc1m-faction">${requesterSideLabel}</div>
-            <div class="fc1m-ovr-badge">OVR ${ovrA}</div>
-            <div class="fc1m-stats">${renderStats('a')}</div>
-          </div>
+        ${_factionReporterStrip(state, escHtml(coachLine))}
+        <div class="fc1m-compare u3b-theme-cream">
+          ${_u3bSideHtml({
+            name: requester.name, line: requesterLine, imgUrl: _factionUpperUrl(requester.id),
+            role: requesterRole, orgBadge: { orgId: requesterOrgId, orgName: requesterOrgName, isHome: !isInverse },
+            statLabel: 'OVR', statValue: ovrA, onClick: aClick,
+            bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
+            extraHtml: `<div class="fc1m-stats">${renderStats('a')}</div>`,
+          })}
           <div class="fc1m-vs">VS</div>
-          <div class="fc1m-side">
-            <div class="fc1m-bubble-spacer"></div>
-            <div class="fc1m-org">${_awOrgEmblem(opponentOrgName, isInverse, 20)}<span class="fc1m-org-name">${opponentOrgName}</span></div>
-            <div class="fc1m-portrait" ${bClickHandler} ${bClickHandler ? 'title="クリックで選手詳細"' : ''} style="${bPortraitStyle}"></div>
-            <div class="fc1m-name" ${bClickHandler} ${bClickHandler ? 'title="クリックで選手詳細" style="cursor:pointer"' : ''}>${opponent.name}</div>
-            <div class="fc1m-faction">${opponentSideLabel}</div>
-            <div class="fc1m-ovr-badge">OVR ${ovrB}</div>
-            <div class="fc1m-stats">${renderStats('b')}</div>
-          </div>
+          ${_u3bSideHtml({
+            name: opponent.name, line: '', imgUrl: _factionUpperUrl(opponent.id),
+            role: opponentRole, orgBadge: { orgId: opponentOrgId, orgName: opponentOrgName, isHome: isInverse },
+            statLabel: 'OVR', statValue: ovrB, onClick: bClick,
+            bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
+            extraHtml: `<div class="fc1m-stats">${renderStats('b')}</div>`,
+          })}
         </div>
-        <div class="fc1m-rivalry">直近対戦 <strong>${h2hLabel}</strong> — ${flavorLine}</div>
+        <div class="fc1m-rivalry">直近対戦 <strong>${h2hLabel}</strong> — ${escHtml(flavorLine)}</div>
         <div class="fevt-decision-prompt">${isInverse ? 'この越境試合、社長として受けますか？' : 'この直訴、社長としてどう答えますか？'}</div>
         <div class="fevt-decision-tray two">
           <div class="fevt-decision-card" data-choice="YES">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">${isInverse ? '受けて立つ' : 'この舞台、組もう'}</div>
-            <div class="fevt-decision-hint">${isInverse ? `${requesterOrgName}の挑戦を受け、次の自団体興行の上位3試合で迎え撃つ` : `次の通常興行週、自団体興行より先に${opponentOrgName}へ3人で遠征する`}</div>
+            <div class="fevt-decision-hint">${isInverse ? `${escHtml(requesterOrgName)}の挑戦を受け、次の自団体興行の上位3試合で迎え撃つ` : `次の通常興行週、自団体興行より先に${escHtml(opponentOrgName)}へ3人で遠征する`}</div>
           </div>
           <div class="fevt-decision-card" data-choice="NO">
             <div class="fevt-decision-letter">B</div>
             <div class="fevt-decision-label">${isInverse ? 'お引き取り願う' : '今は時期じゃない'}</div>
-            <div class="fevt-decision-hint">${isInverse ? `${requester.name}の挑戦は保留。同じ相手からの再打診は当分先になる` : `${requester.name}の意気込みは保留。同じ相手への再打診は当分先になる`}</div>
+            <div class="fevt-decision-hint">${isInverse ? `${escHtml(requester.name)}の挑戦は保留。同じ相手からの再打診は当分先になる` : `${escHtml(requester.name)}の意気込みは保留。同じ相手への再打診は当分先になる`}</div>
           </div>
         </div>
       </div>

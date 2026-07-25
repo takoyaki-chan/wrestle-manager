@@ -82,6 +82,9 @@ function section(name, fn) {
     'RIVALRY_RESOLUTION_LINES', 'GOODRIVAL_RESOLUTION_LINES', 'BITTER_RESOLUTION_LINES',
     `let _rivalryPopupQueue = [];
      let _rivalryPopupCallback = null;
+     ${functionSource('escHtml')}
+     ${functionSource('_u3bSideHtml')}
+     ${functionSource('_u3bOrgBadgeHtml')}
      ${functionSource('_rivalryCol')}
      ${functionSource('_renderRivalryPopup')}
      return {
@@ -232,6 +235,9 @@ const buildFaction = new Function(
   `let _popupQueue = [];
    let FACTION_F08_LEADER_LINES = {};
    function _isPopupActive() { return false; }
+   ${functionSource('escHtml')}
+   ${functionSource('_u3bSideHtml')}
+   ${functionSource('_u3bOrgBadgeHtml')}
    ${functionSource('_factionUpperUrl')}
    ${functionSource('_factionSeasonLabel')}
    ${functionSource('_factionEnsureOverlayRoot')}
@@ -313,8 +319,12 @@ function fighter(id, name, extra) {
     assert.ok(html.includes('ここで決めてやる。') && html.includes('受けて立つ。'), '渡したセリフ本文が出る(不変条件3)');
     const colCount = (html.match(/fevt-arena-col/g) || []).length;
     assert.strictEqual(colCount, 2, '両サイド分の画像+情報カラムが出る(不変条件2の代替: 顔の器が2つ)');
-    assert.ok(html.includes(`background-image:url('image/upper/1.webp')`), '左リーダーの画像URLが差し込まれる');
-    assert.ok(html.includes(`background-image:url('image/upper/2.webp')`), '右リーダーの画像URLが差し込まれる');
+    // U3統一後は _u3bSideHtml が <img src> でレンダリングする(emr系/_emrSingleSideに合わせた統一)。
+    // 元は background-image インラインstyleを想定した表記だったが、それは「その時点の実装がたまたま
+    // そうだった」というレンダリング手段の話であり、検査したい不変条件は「正しい選手IDの画像URLが
+    // 出力に混ざる」ことそのものなので、手段を問わない形に直す(vd suiteの<img src>検査と同じ考え方)。
+    assert.ok(html.includes('image/upper/1.webp'), '左リーダーの画像URLが差し込まれる');
+    assert.ok(html.includes('image/upper/2.webp'), '右リーダーの画像URLが差し込まれる');
   });
 
   // --- 2b. showFactionF08AftermathModal: 勝敗の区別 ---

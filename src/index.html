@@ -130,6 +130,12 @@
   /* 大会HPバー統一色（左右同色化・原則9） */
   --hp-teal: #2a9d8f;
   --hp-teal-light: #5dd9ca;
+  /* U3 グループB統一: 既存トークンのrgba()用-rgb伴走値(不足分のみ追加。値そのものは新規ではない) */
+  --gold-light-rgb: 240,208,120;      /* --gold-lightのrgba()用 */
+  --c-negative-rgb: 192,82,74;        /* --c-negativeのrgba()用 */
+  --accent-faction-1-rgb: 195,140,84; /* --accent-faction-1のrgba()用 */
+  --accent-faction-2-rgb: 109,148,184;/* --accent-faction-2のrgba()用 */
+  --accent-faction-3-rgb: 138,122,168;/* --accent-faction-3のrgba()用 */
   /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
@@ -2131,41 +2137,120 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .gc-rel .gc-to-name{color:rgba(180,210,255,0.85)}
 .gc-rel .gc-tag{color:rgba(220,180,100,0.8);margin-left:6px;font-size:11px}
 
+/* ============================================================
+   U3 グループB 共通構造 — 「2人が対置して語る」画面の顔出しブロック
+   仕様: docs/ui/mockup-baseline-v0.1.md §2〜§5
+   対象(構造のみ共通化。色はテーマスコープで切替え):
+     .vd-*                因縁の対峙/決着            (Office / Dark Panel)
+     .fevt-bubble          F08 対立ヒートアップ        (Office / Cream Panel)
+     .fc1m-bubble-wrap      直訴・派閥イベント           (Office / Cream Panel)
+     .fevt-arena-bubble     派閥直接対決・序列戦の前後    (Stage — 既存が var(--accent-arena-*) 等
+                                                       黒背景の全画面カードで実装済みのため。
+                                                       Office cream に寄せるとカテゴリ違反になる)
+     .fevt-dialogue-bubble  F02 抗争の勃発             (Stage — 既存が var(--stage-text-*) を
+                                                       使う全画面シネマティックのため)
+   .emr-*(試合結果ポップアップ/Stage)はクラスとして流用しない。
+   構造はこのブロックが担い、色は各呼び出し元が u3b-theme-* を親要素に付けて切り替える。
+   ============================================================ */
+.u3b-side{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0}
+.u3b-side.is-loser .u3b-name,
+.u3b-side.is-loser .u3b-role,
+.u3b-side.is-loser .u3b-stat{opacity:.62}
+.u3b-side.is-loser .u3b-bubble{opacity:.82}
+.u3b-bubble-slot{height:52px;box-sizing:border-box;display:flex;align-items:flex-end;justify-content:center;
+  width:100%;margin-bottom:var(--space-sm)}
+.u3b-bubble-slot.is-s{height:46px}
+.u3b-bubble{position:relative;width:max-content;max-width:230px;background:var(--office-panel-cream-card);
+  color:var(--cream-text-main);border-radius:var(--radius-lg);padding:7px 12px;font-size:13px;line-height:1.5;
+  text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.u3b-bubble-slot.is-s .u3b-bubble{font-size:11px;padding:6px 10px}
+.u3b-bubble-text{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.u3b-bubble::after{content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:-7px;
+  border:7px solid transparent;border-top-color:var(--office-panel-cream-card);border-bottom:0}
+.u3b-upper{width:132px;height:194px;overflow:hidden;flex:0 0 auto;border-radius:6px 6px 5px 5px;
+  border:1px solid rgba(var(--u3b-accent-rgb),.28);border-bottom:3px solid var(--u3b-accent);
+  background:var(--u3b-upper-bg)}
+.u3b-upper.is-l{width:150px;height:224px}
+.u3b-upper img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.u3b-side.is-loser .u3b-upper img{filter:grayscale(.9) brightness(.72)}
+.u3b-side.is-loser .u3b-upper{border-bottom-color:var(--u3b-loser-border)}
+.u3b-copy{text-align:center;margin-top:var(--space-sm);max-width:180px}
+.u3b-name{font-size:15px;font-weight:900;line-height:1.3;color:var(--u3b-name-color)}
+.u3b-role{font-family:var(--font-label);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--u3b-accent);margin-top:2px}
+.u3b-org-badge{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:3px 9px 3px 3px;
+  border-radius:20px;border:1px solid rgba(var(--u3b-org-rgb),.5);background:rgba(var(--u3b-org-rgb),.14)}
+.u3b-org-badge.u3b-org-home{--u3b-org-rgb:var(--c-positive-rgb)}
+.u3b-org-badge.u3b-org-away{--u3b-org-rgb:var(--accent-hostility-rgb)}
+.u3b-org-emblem{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;
+  background:rgb(var(--u3b-org-rgb));overflow:hidden}
+.u3b-org-emblem img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.u3b-org-name{font-family:var(--font-label);font-size:11px;font-weight:700;color:rgb(var(--u3b-org-rgb));
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+.u3b-stat{font-family:var(--font-display);font-size:22px;margin-top:5px;color:var(--u3b-accent)}
+.u3b-stat small{font-family:var(--font-label);font-size:8px;color:var(--u3b-name-color);opacity:.6;
+  letter-spacing:.1em;margin-right:3px}
+
+/* テーマ: Office / Cream Panel（fevt-bubble・fc1m-bubble-wrap） */
+.u3b-theme-cream{--u3b-name-color:var(--cream-text-main);--u3b-accent:var(--cream-gold);
+  --u3b-accent-rgb:var(--gold-rgb);--u3b-upper-bg:var(--office-panel-dark-deep);
+  --u3b-loser-border:var(--cream-text-dim)}
+/* テーマ: Office / Dark Panel（vd-* 因縁ポップアップ。既存の notif-modal-box.verdict の
+   --vd-accent系(既にトークン化済み)をそのまま u3b の変数に橋渡しする） */
+.u3b-theme-dark{--u3b-name-color:var(--text-main);--u3b-accent:var(--vd-accent-bright,var(--gold));
+  --u3b-accent-rgb:var(--gold-rgb);--u3b-upper-bg:var(--office-panel-dark-deep);
+  --u3b-loser-border:var(--text-dim)}
+/* テーマ: Stage（fevt-arena-bubble・fevt-dialogue-bubble。純黒カード上の顔出し）
+   --u3b-upper-bg は画像読み込み前のプレースホルダ色。--stage-card-top(試合結果ポップアップ等と
+   共有する大判カードの面色)を流用し、新規の16進値を持ち込まない */
+.u3b-theme-stage{--u3b-name-color:var(--stage-text-main);--u3b-accent:var(--gold);
+  --u3b-accent-rgb:var(--gold-rgb);--u3b-upper-bg:var(--stage-card-top);--u3b-loser-border:var(--stage-text-dim)}
+.u3b-theme-stage.is-hostility{--u3b-accent:var(--accent-hostility);--u3b-accent-rgb:var(--accent-hostility-rgb)}
+.u3b-theme-stage.is-internal{--u3b-accent:var(--accent-faction-3);--u3b-accent-rgb:var(--accent-faction-3-rgb)}
+.u3b-theme-stage.is-clash-a{--u3b-accent:var(--accent-faction-3);--u3b-accent-rgb:var(--accent-faction-3-rgb)}
+.u3b-theme-stage.is-clash-b{--u3b-accent:var(--accent-faction-1);--u3b-accent-rgb:var(--accent-faction-1-rgb)}
+
 /* ─── 因縁ポップアップ Verdict レイアウト (notif-modal-box を拡張) ─── */
 .notif-modal-box.verdict{
-  --vd-accent:#b08848;--vd-accent-bright:#d0a060;
-  --vd-glow:rgba(200,160,100,0.12);--vd-border:rgba(200,170,120,0.18);
-  --vd-head-tint:rgba(200,160,100,0.10);--vd-tag:#d8a868;
-  --vd-btn-bg:rgba(200,160,100,0.06);--vd-btn-border:rgba(200,170,120,0.25);
+  /* U3統一(2026-07-25): ハードコード16進色を撤去し既存トークンへ置換。
+     -bright は従来と別の明色を持たせず同一トークンへ統一(色の階調は簡素化。報告で明記) */
+  --vd-accent:var(--gold-deep);--vd-accent-bright:var(--gold-deep);--vd-accent-rgb:var(--gold-rgb);
+  --vd-glow:rgba(var(--gold-rgb),0.14);--vd-border:rgba(var(--gold-rgb),0.2);
+  --vd-head-tint:rgba(var(--gold-rgb),0.10);--vd-tag:var(--gold-deep);
+  --vd-btn-bg:rgba(var(--gold-rgb),0.07);--vd-btn-border:rgba(var(--gold-rgb),0.25);
   --vd-btn-text:rgba(230,200,160,0.75);
   width:580px;max-width:94vw;padding:0;text-align:left;
-  background:#11111a;border:1px solid var(--vd-border);
+  background:var(--office-panel-dark-deep);border:1px solid var(--vd-border);
   box-shadow:0 22px 64px rgba(0,0,0,0.7),0 0 28px var(--vd-glow);
   overflow:hidden;animation:retireIn .5s cubic-bezier(0.22,1,0.36,1)}
 .notif-modal-box.verdict.tone-goodrival{
-  --vd-accent:#c8a060;--vd-accent-bright:#e8c880;
-  --vd-glow:rgba(220,180,100,0.16);--vd-border:rgba(220,190,120,0.22);
-  --vd-head-tint:rgba(220,180,100,0.12);--vd-tag:#f0d08a;
-  --vd-btn-bg:rgba(220,180,100,0.08);--vd-btn-border:rgba(220,190,120,0.3);
-  --vd-btn-text:rgba(240,220,170,0.82)}
+  --vd-accent:var(--gold-light);--vd-accent-rgb:var(--gold-light-rgb);
+  --vd-accent-bright:color-mix(in srgb,var(--gold-light) 74%,white);
+  --vd-glow:rgba(var(--gold-light-rgb),0.16);--vd-border:rgba(var(--gold-light-rgb),0.22);
+  --vd-head-tint:rgba(var(--gold-light-rgb),0.12);--vd-tag:color-mix(in srgb,var(--gold-light) 56%,white);
+  --vd-btn-bg:rgba(var(--gold-light-rgb),0.08);--vd-btn-border:rgba(var(--gold-light-rgb),0.3);
+  --vd-btn-text:color-mix(in srgb,var(--gold-light) 45%,white)}
 .notif-modal-box.verdict.tone-bitter{
-  --vd-accent:#c85858;--vd-accent-bright:#e88080;
-  --vd-glow:rgba(220,90,90,0.18);--vd-border:rgba(220,100,100,0.25);
-  --vd-head-tint:rgba(220,80,80,0.12);--vd-tag:#ff9898;
-  --vd-btn-bg:rgba(220,90,90,0.07);--vd-btn-border:rgba(220,100,100,0.28);
-  --vd-btn-text:rgba(255,180,170,0.78)}
+  --vd-accent:var(--c-negative);--vd-accent-rgb:var(--c-negative-rgb);
+  --vd-accent-bright:color-mix(in srgb,var(--c-negative) 70%,white);
+  --vd-glow:rgba(var(--c-negative-rgb),0.18);--vd-border:rgba(var(--c-negative-rgb),0.25);
+  --vd-head-tint:rgba(var(--c-negative-rgb),0.12);--vd-tag:color-mix(in srgb,var(--c-negative) 50%,white);
+  --vd-btn-bg:rgba(var(--c-negative-rgb),0.07);--vd-btn-border:rgba(var(--c-negative-rgb),0.28);
+  --vd-btn-text:color-mix(in srgb,var(--c-negative) 45%,white)}
 .notif-modal-box.verdict.tone-fate{
-  --vd-accent:#a070e0;--vd-accent-bright:#c090ff;
-  --vd-glow:rgba(180,120,240,0.18);--vd-border:rgba(180,130,240,0.25);
-  --vd-head-tint:rgba(180,120,240,0.14);--vd-tag:#d0a0ff;
-  --vd-btn-bg:rgba(180,120,240,0.08);--vd-btn-border:rgba(180,130,240,0.3);
-  --vd-btn-text:rgba(220,190,255,0.82)}
+  --vd-accent:var(--accent-faction-3);--vd-accent-rgb:var(--accent-faction-3-rgb);
+  --vd-accent-bright:color-mix(in srgb,var(--accent-faction-3) 70%,white);
+  --vd-glow:rgba(var(--accent-faction-3-rgb),0.18);--vd-border:rgba(var(--accent-faction-3-rgb),0.25);
+  --vd-head-tint:rgba(var(--accent-faction-3-rgb),0.14);--vd-tag:color-mix(in srgb,var(--accent-faction-3) 52%,white);
+  --vd-btn-bg:rgba(var(--accent-faction-3-rgb),0.08);--vd-btn-border:rgba(var(--accent-faction-3-rgb),0.3);
+  --vd-btn-text:color-mix(in srgb,var(--accent-faction-3) 45%,white)}
 .notif-modal-box.verdict.tone-confront{
-  --vd-accent:#5890e0;--vd-accent-bright:#80b0ff;
-  --vd-glow:rgba(100,160,255,0.18);--vd-border:rgba(100,160,255,0.25);
-  --vd-head-tint:rgba(100,160,255,0.12);--vd-tag:#a0c8ff;
-  --vd-btn-bg:rgba(100,160,255,0.07);--vd-btn-border:rgba(100,160,255,0.28);
-  --vd-btn-text:rgba(180,210,255,0.82)}
+  --vd-accent:var(--c-info);--vd-accent-rgb:var(--accent-faction-2-rgb);
+  --vd-accent-bright:color-mix(in srgb,var(--c-info) 70%,white);
+  --vd-glow:rgba(var(--accent-faction-2-rgb),0.18);--vd-border:rgba(var(--accent-faction-2-rgb),0.25);
+  --vd-head-tint:rgba(var(--accent-faction-2-rgb),0.12);--vd-tag:color-mix(in srgb,var(--c-info) 52%,white);
+  --vd-btn-bg:rgba(var(--accent-faction-2-rgb),0.07);--vd-btn-border:rgba(var(--accent-faction-2-rgb),0.28);
+  --vd-btn-text:color-mix(in srgb,var(--c-info) 45%,white)}
 
 .vd-head{padding:16px 24px 12px;text-align:center;
   background:linear-gradient(180deg,var(--vd-head-tint) 0%,transparent 100%);
@@ -2173,13 +2258,17 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .vd-title{font-size:21px;letter-spacing:0.28em;font-weight:900;color:var(--vd-accent-bright)}
 .vd-sub{font-size:10px;letter-spacing:0.22em;color:var(--vd-accent);opacity:0.55;margin-top:4px}
 
+/* U3統一: 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。vd-col-w/l は
+   安全網テスト(test/u3-group-b-safety-net-test.js)互換のための co-class として残す。
+   旧 vd-bubble-w/l・vd-img-card・vd-img-frame・vd-nameband・vd-name-w/l・vd-meta・vd-ovr-w/l・vd-spk は
+   .u3b-side/.u3b-bubble/.u3b-upper/.u3b-copy/.u3b-name/.u3b-role/.u3b-stat に置き換えたため削除 */
 .vd-stage{display:flex;align-items:flex-end;justify-content:center;
-  padding:18px 20px 14px;gap:8px}
-.vd-col-w{flex:0 0 220px;display:flex;flex-direction:column;z-index:2}
-.vd-col-l{flex:0 0 170px;display:flex;flex-direction:column;z-index:1;opacity:0.82}
+  padding:18px 20px 14px;gap:24px}
+.vd-col-w{z-index:2}
+.vd-col-l{z-index:1}
 
 .vd-vs{flex:0 0 56px;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:4px;padding-bottom:80px;z-index:3}
+  justify-content:center;gap:4px;padding-bottom:64px;z-index:3}
 .vd-vs-icon{font-size:28px;color:var(--vd-accent-bright);line-height:1;
   filter:drop-shadow(0 0 10px var(--vd-glow)) drop-shadow(0 0 20px var(--vd-glow))}
 .vd-vs-label{font-size:9px;letter-spacing:0.22em;color:var(--vd-accent);
@@ -2187,44 +2276,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .vd-vs-line{width:1px;height:36px;
   background:linear-gradient(to bottom,transparent,var(--vd-accent) 50%,transparent);opacity:0.4}
 
-.vd-bubble-w{background:#f6f0e0;color:#1a1208;border-radius:10px;
-  padding:10px 13px;font-size:12.5px;line-height:1.6;position:relative;
-  min-height:64px;margin-bottom:12px;text-align:left}
-.vd-bubble-w::after{content:'';position:absolute;bottom:-9px;left:32px;
-  border:9px solid transparent;border-top-color:#f6f0e0;border-bottom:0}
-.vd-bubble-l{background:#d4d7e0;color:#1a1a28;border-radius:9px;
-  padding:8px 11px;font-size:11.5px;line-height:1.6;position:relative;
-  min-height:54px;opacity:0.92;margin-bottom:10px;text-align:left}
-.vd-bubble-l::after{content:'';position:absolute;bottom:-8px;right:28px;
-  border:8px solid transparent;border-top-color:#d4d7e0;border-bottom:0}
-.vd-spk{font-size:10px;font-weight:700;color:rgba(0,0,0,0.4);margin-bottom:3px}
-
-.vd-img-card{border-radius:10px;overflow:hidden;background:#0a0a10;
-  border:1px solid rgba(255,255,255,0.04);position:relative}
-.vd-col-w .vd-img-card{box-shadow:0 6px 20px rgba(0,0,0,0.5),0 0 16px var(--vd-glow);
-  border-color:var(--vd-border)}
-.vd-img-frame{width:100%;aspect-ratio:2/3;overflow:hidden;position:relative;
-  background:linear-gradient(160deg,#1e1828 0%,#12101a 100%)}
-.vd-img-frame img{width:100%;height:100%;object-fit:cover;
-  object-position:center top;display:block}
-.vd-col-l .vd-img-frame img{filter:grayscale(45%) brightness(0.62) contrast(0.95)}
-.vd-col-l .vd-img-card::after{content:'';position:absolute;bottom:0;left:0;right:0;
-  height:55%;background:linear-gradient(to top,rgba(10,5,10,0.55) 0%,transparent 100%);
-  pointer-events:none}
-
-.vd-nameband{padding:8px 10px;background:rgba(0,0,0,0.5);
-  border-top:1px solid rgba(255,255,255,0.05);display:flex;
-  justify-content:space-between;align-items:center}
-.vd-name-w{font-size:14px;font-weight:800;color:#f0e8dc}
-.vd-name-l{font-size:12px;font-weight:600;color:rgba(210,200,190,0.55)}
-.vd-meta{display:flex;align-items:center;gap:6px}
-.vd-ovr-w{font-size:11px;font-weight:700;color:var(--vd-accent-bright)}
-.vd-ovr-l{font-size:10px;font-weight:700;color:rgba(180,170,160,0.45)}
-.vd-badge-w{font-size:9px;letter-spacing:0.1em;background:var(--vd-accent);
-  color:#1a1010;padding:2px 6px;border-radius:3px;font-weight:800}
-.vd-badge-l{font-size:9px;letter-spacing:0.1em;
-  background:rgba(80,70,70,0.55);color:rgba(200,180,160,0.42);
-  padding:2px 6px;border-radius:3px;font-weight:800}
+/* 役割ラベル内の WINNER/LOSER(vd-badge-w/l)。u3b-role の色をそのまま継承しつつ勝敗だけ強調する */
+.vd-badge-w{color:var(--u3b-accent);font-weight:900}
+.vd-badge-l{opacity:.75}
 
 .vd-result{padding:12px 24px;border-top:1px solid var(--vd-border);
   background:var(--vd-head-tint);display:flex;flex-direction:column;gap:4px;text-align:left}
@@ -2236,17 +2290,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   color:var(--vd-btn-text);padding:10px 40px;font-size:12px;
   letter-spacing:0.2em;border-radius:6px;cursor:pointer;transition:all 0.2s}
 .vd-btn:hover{filter:brightness(1.2)}
-
-/* 勃発バリアント: 対等表示 */
-.notif-modal-box.verdict.tone-confront .vd-col-w,
-.notif-modal-box.verdict.tone-confront .vd-col-l{flex:0 0 220px;opacity:1}
-.notif-modal-box.verdict.tone-confront .vd-col-l .vd-img-frame img{filter:none}
-.notif-modal-box.verdict.tone-confront .vd-col-l .vd-img-card::after{display:none}
-.notif-modal-box.verdict.tone-confront .vd-name-l{font-size:14px;font-weight:800;color:#f0e8dc}
-.notif-modal-box.verdict.tone-confront .vd-ovr-l{font-size:11px;color:var(--vd-accent-bright)}
-.notif-modal-box.verdict.tone-confront .vd-bubble-l{background:#e8eef8;color:#0a1528;
-  font-size:12.5px;opacity:1;padding:10px 13px;min-height:64px}
-.notif-modal-box.verdict.tone-confront .vd-bubble-l::after{border-top-color:#e8eef8;border-width:9px}
 
 /* v2.0: ケアアクション モーダル */
 .care-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;
@@ -5354,6 +5397,27 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   box-shadow: 0 6px 18px rgba(120,60,180,0.4);
 }
 
+/* U3統一(2026-07-25): F08前後・派閥内序列戦前後(4関数)の顔出しブロックは _u3bSideHtml(.u3b-*)へ
+   移行した。.fevt-arena-portrait/.fevt-arena-bubble は F09 派閥対抗戦(対象外)と共有のクラスなので
+   元のルールには手を入れず、.u3b-upper/.u3b-bubble と co-class されたときだけ複合セレクタで
+   上書きする(F09側の要素は u3b-*クラスを持たないため影響を受けない)。
+   internal-challenge の紫テーマ上書き(.fevt-arena-card.internal-challenge-*)より詳細度を高くするため
+   .fevt-arena-card を前置し、かつこのブロックより後ろに置いている。 */
+.fevt-arena-card .u3b-upper.fevt-arena-portrait {
+  width: 132px; height: 194px; margin: 0; box-shadow: none;
+  border: 1px solid rgba(var(--u3b-accent-rgb),.28); border-bottom: 3px solid var(--u3b-accent);
+  border-radius: 6px 6px 5px 5px; background: var(--u3b-upper-bg);
+}
+.fevt-arena-card .u3b-upper.fevt-arena-portrait.winner-big { width: 150px; height: 224px; box-shadow: none; }
+.fevt-arena-card .u3b-upper.fevt-arena-portrait.loser { opacity: 1; filter: none; border-bottom-color: var(--u3b-loser-border); }
+.fevt-arena-card .u3b-bubble.fevt-arena-bubble {
+  margin: 0; padding: 7px 12px; border-left: 0; border-radius: var(--radius-lg);
+  text-align: center; font-size: 13px; line-height: 1.5; max-width: 230px;
+  background: var(--office-panel-cream-card); color: var(--cream-text-main);
+}
+.fevt-arena-card .u3b-bubble.fevt-arena-bubble.winner-big { max-width: 230px; font-size: 13px; padding: 7px 12px; border-left: 0; }
+.fevt-arena-card .u3b-bubble.fevt-arena-bubble.loser { max-width: 230px; color: var(--cream-text-main); font-style: normal; border-left: 0; }
+
 /* marker バリアント（hostile/peace） */
 .fevt-observation-note .marker.hostile { color: #8a3a1a; border-bottom-color: rgba(196,98,58,0.5); }
 .fevt-observation-note .marker.peace { color: #2f5c40; border-bottom-color: rgba(90,138,106,0.5); }
@@ -5406,30 +5470,25 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .fevt-leader-bubble::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #f0f0f0}
 
 /* Common-1 派閥内対決打診: 比較レイアウト + 頭上吹き出し */
+/* U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。旧 fc1m-side(position:absoluteの
+   吹き出し予約)・fc1m-bubble-spacer・fc1m-bubble-speaker・fc1m-bubble(箱)・fc1m-name・fc1m-faction・
+   fc1m-org(-name)・fc1m-ovr-badgeは .u3b-side/.u3b-bubble-slot/.u3b-bubble/.u3b-name/.u3b-role/
+   .u3b-org-badge/.u3b-stat に置き換えたため削除(いずれもfc1m系3関数だけの専用クラスと確認済み)。
+   fc1m-bubble-wrap・fc1m-portraitは安全網テスト(test/u3-group-b-safety-net-test.js)互換のため
+   co-classとして残すが、位置指定(position:absolute)とサイズ指定は撤去し.u3bのflow配置に委ねる。
+   fc1m-stats(5項目比較)は画面固有の追加コンテンツとして構造そのまま残し、色だけトークン化した。 */
 .fc1m-compare{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:start;padding:8px 4px 10px;max-width:660px;margin:0 auto}
-.fc1m-side{display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;padding-top:90px}
-.fc1m-bubble-wrap{position:absolute;top:0;left:50%;transform:translateX(-50%);width:240px;display:flex;flex-direction:column;align-items:center;pointer-events:none}
-.fc1m-bubble-spacer{position:absolute;top:0;height:90px}
-.fc1m-bubble-speaker{font-size:10px;color:#9c6b1a;font-weight:700;letter-spacing:1px;margin-bottom:2px}
-.fc1m-bubble{position:relative;background:#f0f0f0;color:#1a1208;padding:9px 13px;border-radius:8px;font-size:12px;line-height:1.55;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15);min-height:42px;display:flex;align-items:center;justify-content:center;max-width:240px}
-.fc1m-bubble::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #f0f0f0}
-.fc1m-portrait{width:120px;height:144px;border-radius:4px;background:#c8b888 center/cover no-repeat;border:2px solid transparent;transition:transform .15s,box-shadow .15s,border-color .15s;box-shadow:0 6px 18px rgba(0,0,0,0.18)}
+.fc1m-bubble-wrap{pointer-events:none}
+.fc1m-portrait{transition:transform .15s,box-shadow .15s,border-color .15s}
 .fc1m-portrait:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.25);border-color:var(--gold)}
-.fc1m-name{font-size:16px;font-weight:700;color:#3b2f15;text-decoration:underline;text-decoration-color:rgba(122,83,32,0.3);text-underline-offset:3px;transition:color .15s}
-.fc1m-name:hover{color:#7a5320;text-decoration-color:#7a5320}
-.fc1m-faction{font-size:11px;color:#8a7549}
-.fc1m-org{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px}
-.fc1m-org .aw-org-emblem{margin-bottom:0}
-.fc1m-org-name{font-size:12px;font-weight:700;color:var(--ink-soft, #8a7549)}
-.fc1m-ovr-badge{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;padding:3px 12px;border-radius:3px;background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.4);color:#7a5320;margin-top:2px}
 .fc1m-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px;width:100%;max-width:220px}
 .fc1m-stat{text-align:center}
-.fc1m-stat-label{color:#8a7549;font-family:'Oswald',sans-serif;letter-spacing:1px;font-size:9px}
-.fc1m-stat-val{font-family:'Oswald',sans-serif;font-weight:600;color:#3b2f15;font-size:13px}
-.fc1m-stat-val.fc1m-higher{color:#9c6b1a}
-.fc1m-vs{display:flex;flex-direction:column;align-items:center;justify-content:center;height:144px;margin-top:90px;font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;color:#8a7549;letter-spacing:2px}
-.fc1m-rivalry{text-align:center;font-size:12px;color:#5d4a30;padding:8px 0 4px;border-top:1px dashed #d8c89a;margin:6px auto 6px;max-width:660px}
-.fc1m-rivalry strong{color:#9c6b1a;font-family:'Oswald',sans-serif;font-size:14px}
+.fc1m-stat-label{color:var(--cream-gold);font-family:var(--font-label);letter-spacing:1px;font-size:9px}
+.fc1m-stat-val{font-family:var(--font-label);font-weight:600;color:var(--cream-text-main);font-size:13px}
+.fc1m-stat-val.fc1m-higher{color:var(--cream-gold-dark)}
+.fc1m-vs{display:flex;flex-direction:column;align-items:center;justify-content:center;height:194px;margin-top:60px;font-family:var(--font-label);font-size:30px;font-weight:700;color:var(--cream-text-dim);letter-spacing:2px}
+.fc1m-rivalry{text-align:center;font-size:12px;color:var(--cream-text-sub);padding:8px 0 4px;border-top:1px dashed var(--cream-border-hover);margin:6px auto 6px;max-width:660px}
+.fc1m-rivalry strong{color:var(--cream-gold-dark);font-family:var(--font-label);font-size:14px}
 
 /* Common-1 派閥内対決 試合後結果モーダル */
 /* U1: 派閥内対決結果は「試合結果表示」系統として.emr-*(1試合結果ポップアップ)の配置バランス・部品を流用する。
@@ -5456,85 +5515,30 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .c1r-btn:hover{background:rgba(212,168,67,0.25)}
 @media(max-width:700px){.c1r-card .emr-bout{grid-template-columns:1fr 82px 1fr;padding:10px 12px 8px}.c1r-card .emr-upper{width:72px;height:114px}.c1r-card .emr-bubble-slot{height:40px;margin-bottom:5px}.c1r-card .emr-name{font-size:11px}.c1r-card .emr-winner{font-size:21px}.c1r-card .emr-finish{font-size:8px}}
 
-/* F08 subject-duel（2リーダー並置＋VS＋吹き出し） */
+/* F08 subject-duel（2リーダー並置＋VS＋吹き出し）
+   U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。
+   .col/.col.right は安全網テスト(class="col">の厳密一致)を保つため display:contents の
+   透過ラッパーとして残す(実レイアウトは中の .u3b-side が担う)。
+   旧 fevt-duel-portrait(サイズ/枠)・fevt-duel-faction・fevt-duel-name・fevt-duel-org・
+   fevt-bubble-name は .u3b-upper/.u3b-role/.u3b-name/.u3b-bubble に置き換えたため削除
+   (showFactionF08Modal 専用のクラスと確認済み)。fevt-duel-portrait・fevt-bubble(.left/.right)は
+   安全網テスト互換のco-classとして残す。 */
 .fevt-subject-duel {
   display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px;
   align-items: start; margin-bottom: 6px; max-width: 660px; margin-left: auto; margin-right: auto;
 }
-.fevt-subject-duel .col { text-align: center; display: flex; flex-direction: column; align-items: center; }
-.fevt-subject-duel .col.right { align-items: center; }
+.fevt-subject-duel .col { display: contents; }
 .fevt-duel-vs {
-  font-family: 'Bebas Neue', sans-serif; font-size: 36px;
-  color: var(--cream-red, #8b1a1a); letter-spacing: 2px; padding-top: 50px;
+  font-family: var(--font-display); font-size: 36px;
+  color: var(--cream-red, #8b1a1a); letter-spacing: 2px;
   text-shadow: 0 2px 6px rgba(139,26,26,0.3);
-  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  height: 194px; margin-top: 60px; line-height: 1;
 }
-.fevt-duel-portrait {
-  width: 120px; height: 140px;
-  border: 2px solid rgba(139,26,26,0.5); border-radius: 4px;
-  background: #888 center/cover no-repeat;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-}
-.fevt-duel-faction {
-  margin-top: 8px;
-  font-family: 'Oswald', sans-serif; font-size: 10px;
-  letter-spacing: 1.5px; color: #7a1414;
-}
-.fevt-duel-name { font-size: 16px; font-weight: 700; color: var(--cream-text-main); margin-top: 2px; }
-.fevt-duel-org { font-family: 'Oswald', sans-serif; font-size: 9px; color: var(--cream-text-dim); letter-spacing: 1.5px; margin-top: 2px; }
 
-/* 吹き出し（肖像直下に上向き尻尾） */
+/* 吹き出し本体は .u3b-bubble が担う。.fevt-bubble は安全網テスト互換のco-classとして残す */
 .fevt-bubble {
-  position: relative;
-  margin-top: 12px;
-  background: rgba(255,255,255,0.85);
-  border: 1.5px solid rgba(139,26,26,0.45);
-  border-radius: 14px;
-  padding: 10px 14px;
-  font-size: 13px; line-height: 1.55;
-  color: var(--cream-text-main);
-  text-align: left;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-  max-width: 220px;
-}
-.fevt-bubble.left { margin-left: 14px; }
-.fevt-bubble.right { margin-right: 14px; }
-.fevt-bubble.left::before {
-  content: ''; position: absolute;
-  top: -10px; left: 24px;
-  width: 0; height: 0;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-bottom: 11px solid rgba(139,26,26,0.45);
-}
-.fevt-bubble.left::after {
-  content: ''; position: absolute;
-  top: -8px; left: 26px;
-  width: 0; height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 9px solid rgba(255,255,255,0.85);
-}
-.fevt-bubble.right::before {
-  content: ''; position: absolute;
-  top: -10px; right: 24px;
-  width: 0; height: 0;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-bottom: 11px solid rgba(139,26,26,0.45);
-}
-.fevt-bubble.right::after {
-  content: ''; position: absolute;
-  top: -8px; right: 26px;
-  width: 0; height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 9px solid rgba(255,255,255,0.85);
-}
-.fevt-bubble-name {
-  font-family: 'Oswald', sans-serif; font-size: 10px;
-  color: #7a1414; letter-spacing: 1.5px; text-transform: uppercase;
-  margin-bottom: 4px; display: block;
+  pointer-events: none;
 }
 
 /* decision-card disabled 状態 */
@@ -5730,16 +5734,25 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   color: rgba(220,210,200,0.78);
   animation: fevtFadeIn 800ms ease 2100ms both;
 }
-.fevt-dialogue-row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; max-width: 1000px; padding: 0 60px; margin-bottom: 32px; animation: fevtFadeIn 800ms ease 2500ms both; }
-.fevt-dialogue-bubble { background: rgba(20,18,16,0.85); border-radius: 8px; padding: 14px 18px; font-size: 14px; line-height: 1.8; font-style: italic; }
-.fevt-dialogue-bubble.a { border: 1px solid rgba(138,122,168,0.4); }
-.fevt-dialogue-bubble.b { border: 1px solid rgba(195,140,84,0.5); }
-.fevt-dialogue-speaker { font-family: 'Oswald',sans-serif; font-size: 10px; color: var(--stage-text-sub); letter-spacing: 2px; margin-bottom: 6px; text-transform: uppercase; }
-.fevt-dialogue-bubble.a .fevt-dialogue-speaker { color: #a898c8; }
-.fevt-dialogue-bubble.b .fevt-dialogue-speaker { color: #d4a070; }
-.fevt-dialogue-text { color: var(--stage-text-main); }
-.fevt-dialogue-text::before { content: '「'; color: rgba(200,190,170,0.4); }
-.fevt-dialogue-text::after { content: '」'; color: rgba(200,190,170,0.4); }
+/* U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。旧 fevt-dialogue-row(下段の
+   別セクション吹き出し)・fevt-dialogue-speaker・fevt-dialogue-textは.u3b-bubbleに統合したため削除
+   (_factionF02RenderClash 専用のクラスと確認済み)。fevt-dialogue-bubble(.a/.b)は安全網テスト互換の
+   co-classとして残すが、吹き出しの箱そのものは.u3b-bubble(常にクリーム紙・.emr-bubble踏襲)が担うため
+   複合セレクタで上書きする。左右は派閥アイデンティティ色(紫=accent-faction-3/橙=accent-faction-1)。 */
+.fevt-dialogue-bubble.u3b-bubble {
+  background: var(--office-panel-cream-card); color: var(--cream-text-main);
+  font-style: normal; border-radius: var(--radius-lg); padding: 7px 12px; font-size: 13px; line-height: 1.5;
+}
+.fevt-dialogue-bubble.u3b-bubble::after { border-top-color: var(--office-panel-cream-card); }
+
+/* .fevt-leader-upper は F02 の他サブ画面(ignite/peace/resolution/endless、対象外)と共有のクラスなので
+   元のルールは変更しない。.fevt-leader-col(このクラッシュ画面専用)配下で .u3b-upper と co-class
+   されたときだけ複合セレクタで上書きする */
+.fevt-leader-col .u3b-upper.fevt-leader-upper {
+  width: 132px; height: 194px; margin: 0; filter: none;
+  border: 1px solid rgba(var(--u3b-accent-rgb),.28); border-bottom: 3px solid var(--u3b-accent);
+  border-radius: 6px 6px 5px 5px; background: var(--u3b-upper-bg);
+}
 .fevt-stage-decision { display: flex; gap: 14px; margin-bottom: 40px; animation: fevtFadeIn 600ms ease 3000ms both; }
 .fevt-stage-btn {
   background: rgba(200,190,170,0.06);
