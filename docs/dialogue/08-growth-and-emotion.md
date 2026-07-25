@@ -1,0 +1,553 @@
+# 成長・スランプ・モチベーション
+
+docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。手直しはこのファイルではなく `src/*.js` 側の該当テーブルに対して行い、再抽出すること。
+
+## `BT_HINT_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: v1.8: 成長イベントシステム セリフ & テンプレート / §2.6a ブレイクスルー兆し — 試合中のモノローグ（personality別）
+- 本数: 36
+
+- `BT_HINT_LINES.normal._default[1]`: （…体が軽い。いつもと、何かが違う——）
+- `BT_HINT_LINES.normal._default[2]`: （…動ける。まだ、動ける——）
+- `BT_HINT_LINES.normal.ojousama[1]`: （…体が軽いわ。何かが変わったかしら——）
+- `BT_HINT_LINES.normal.delinquent[1]`: （…なんだ、この感覚。体が勝手に動きやがる——）
+- `BT_HINT_LINES.normal.cool[1]`: ……何かが、変わり始めている
+- `BT_HINT_LINES.normal.polite[1]`: 何かが掴めそうな気がします。もう少しで…
+- `BT_HINT_LINES.normal.seductive[1]`: 何かが変わり始めてる…自分でもわかるわ
+- `BT_HINT_LINES.normal.composed[1]`: （…ふぅん。…いつもと違う。悪くないね——）
+- `BT_HINT_LINES.bold._default[1]`: （…体が勝手に動く。これが、あたしの限界の先——）
+- `BT_HINT_LINES.bold._default[2]`: （…見えた。次やるべきことが、はっきりと——）
+- `BT_HINT_LINES.bold.cool[1]`: （…限界の、その先——）
+- `BT_HINT_LINES.bold.delinquent[1]`: （…体が勝手に動きやがる。これが限界の先かよ——）
+- `BT_HINT_LINES.bold.polite[1]`: もう少しで掴めそうです。あと一歩です
+- `BT_HINT_LINES.bold.ojousama[1]`: もう少しでなにかが掴めそうな。……あと一歩ね。
+- `BT_HINT_LINES.bold.seductive[1]`: もう少し…あと少しで何かが掴めそうなの
+- `BT_HINT_LINES.bold.composed[1]`: （…なるほど。…これが、その先か——）
+- `BT_HINT_LINES.quiet._default[1]`: （…見える。次の一手が、はっきりと）
+- `BT_HINT_LINES.quiet._default[2]`: （…体が、勝手に動いている——）
+- `BT_HINT_LINES.quiet.cool[1]`: （——見えた）
+- `BT_HINT_LINES.quiet.polite[1]`: ………もう少しで…掴めそう…です
+- `BT_HINT_LINES.quiet.seductive[1]`: ………もう少し…あと少し…
+- `BT_HINT_LINES.quiet.composed[1]`: （……見えた。…次の一手——）
+- `BT_HINT_LINES.easygoing._default[1]`: （…あれ？ なんか今日、すっごく調子いいかも——）
+- `BT_HINT_LINES.easygoing._default[2]`: （…体が軽い。いつもと全然違う——）
+- `BT_HINT_LINES.easygoing.composed[1]`: （…あれ、なんか今日いいね。…いつもと違う——）
+- `BT_HINT_LINES.earnest._default[1]`: （…あの練習が、今、実を結ぼうとしている——）
+- `BT_HINT_LINES.earnest._default[2]`: （…わかる。体が覚えている。次の一手——）
+- `BT_HINT_LINES.earnest.polite[1]`: （…あのお稽古が、今、実を結ぼうとしている——）
+- `BT_HINT_LINES.earnest.seductive[1]`: 積み重ねてきたものが…形になりそうなの
+- `BT_HINT_LINES.earnest.ojousama[1]`: 積み重ねてまいりましたものが、形になりそうですわ
+- `BT_HINT_LINES.earnest.composed[1]`: （…あの練習が…ここで繋がった——）
+- `BT_HINT_LINES.emotional._default[1]`: （…わたしの体、こんなに動けたんだ——！）
+- `BT_HINT_LINES.emotional._default[2]`: （…すごい。体が勝手に。止まらない——）
+- `BT_HINT_LINES.emotional.seductive[1]`: ……っ……何か、来そうな予感がするの……ふふ、楽しみだわ……
+- `BT_HINT_LINES.emotional.composed[1]`: （…っ…体が、勝手に——…悪くない——）
+- `BT_HINT_LINES.shy.polite[1]`: 最近…なにかが、掴めそうな…そんな気がするんです…
+
+## `BREAKTHROUGH_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: §2.6b ブレークスルーセリフ（personality×archetype）
+- 本数: 39
+
+- `BREAKTHROUGH_LINES.normal._default[1]`: あの試合で、何かが変わった気がする…
+- `BREAKTHROUGH_LINES.normal._default[2]`: 限界だと思っていた壁を越えられた！
+- `BREAKTHROUGH_LINES.normal.ojousama[1]`: 何かが変わった気がいたします…壁を越えたのね
+- `BREAKTHROUGH_LINES.normal.delinquent[1]`: おっしゃ！ なんか壁越えた気がするぜ！
+- `BREAKTHROUGH_LINES.normal.seductive[1]`: あら…何かが変わった気がするわ
+- `BREAKTHROUGH_LINES.normal.cool[1]`: ……成長を、実感している
+- `BREAKTHROUGH_LINES.normal.polite[1]`: 何かが変わった気がします。…成長できている実感があります
+- `BREAKTHROUGH_LINES.normal.composed[1]`: …なるほど。壁を越えたみたいだね
+- `BREAKTHROUGH_LINES.bold._default[1]`: 当然、まだまだこんなもんじゃない！
+- `BREAKTHROUGH_LINES.bold._default[2]`: やっと体が追いついてきた。ここからでしょ！
+- `BREAKTHROUGH_LINES.bold.ojousama[1]`: 当然ね。まだまだこんなものでは無くてよ
+- `BREAKTHROUGH_LINES.bold.delinquent[1]`: 当然だろ！ まだまだこんなもんじゃねーぜ！
+- `BREAKTHROUGH_LINES.bold.cool[1]`: …まだ上がある
+- `BREAKTHROUGH_LINES.bold.seductive[1]`: 当然よ。まだまだこんなものじゃないわ
+- `BREAKTHROUGH_LINES.bold.polite[1]`: 手応えがあります。まだまだ伸びます
+- `BREAKTHROUGH_LINES.bold.composed[1]`: …ま、まだ先がある。ここからだよ
+- `BREAKTHROUGH_LINES.quiet._default[1]`: ……何かが、変わった
+- `BREAKTHROUGH_LINES.quiet.cool[1]`: …変わった
+- `BREAKTHROUGH_LINES.quiet.polite[1]`: …何かが変わった気がします
+- `BREAKTHROUGH_LINES.quiet.seductive[1]`: ………（静かに拳を見つめ）…変わってきたわ
+- `BREAKTHROUGH_LINES.quiet.composed[1]`: ……変わった、かな
+- `BREAKTHROUGH_LINES.shy._default[1]`: え…わたし、こんなに動けたんですか…？
+- `BREAKTHROUGH_LINES.shy.polite[1]`: あ、あの…何かが、変わった気がします…壁を、越えられたかも…しれません…
+- `BREAKTHROUGH_LINES.easygoing._default[1]`: おっ、なんかいつもと違う！ いい感じ！
+- `BREAKTHROUGH_LINES.easygoing.delinquent[1]`: おお！ なんかいつもと違うぜ！ いい感じ！
+- `BREAKTHROUGH_LINES.easygoing.seductive[1]`: あら、いつもと違う感じ。いいわね
+- `BREAKTHROUGH_LINES.easygoing.polite[1]`: なんか最近調子いいんです！ もっと上に行けそうです！
+- `BREAKTHROUGH_LINES.easygoing.ojousama[1]`: 最近絶好調ですわ！ もっと上に行けそうですの
+- `BREAKTHROUGH_LINES.easygoing.composed[1]`: あれ、なんかいい感じ。…悪くないね
+- `BREAKTHROUGH_LINES.earnest._default[1]`: 練習が実を結んだ…！ まだ上を目指す
+- `BREAKTHROUGH_LINES.earnest._default[2]`: あの敗北が…私を強くしてくれた
+- `BREAKTHROUGH_LINES.earnest.polite[1]`: 練習が実を結びました…！ まだ上を目指します
+- `BREAKTHROUGH_LINES.earnest.ojousama[1]`: お稽古の成果ですわ…！ まだまだ上を目指しますわ
+- `BREAKTHROUGH_LINES.earnest.seductive[1]`: 練習が実を結んだわ…まだ上を目指すわよ
+- `BREAKTHROUGH_LINES.earnest.composed[1]`: …積み重ねてきたものが、ようやく。…まだ上がある
+- `BREAKTHROUGH_LINES.emotional._default[1]`: うわぁ…！ 体が軽い！ すごい、すごい…！
+- `BREAKTHROUGH_LINES.emotional._default[2]`: 限界なんてなかった…！ まだ上があった…！
+- `BREAKTHROUGH_LINES.emotional.seductive[1]`: ……っ……変わったの、わたし……ふふ、自分でも信じられないくらい……
+- `BREAKTHROUGH_LINES.emotional.composed[1]`: なんだか壁を超えてみたいな。…へぇ、イイ感じじゃん♪
+
+## `MILESTONE_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: 成長マイルストーン通知セリフ（personality×archetype）
+- 本数: 186
+
+- `MILESTONE_LINES.ovr_growth.normal._default[1]`: 少しずつだけど…強くなれてる気がする
+- `MILESTONE_LINES.ovr_growth.normal._default[2]`: 前より体が動くようになった
+- `MILESTONE_LINES.ovr_growth.normal.ojousama[1]`: 確かに成長を感じますわ。…まだまだですけれど
+- `MILESTONE_LINES.ovr_growth.normal.delinquent[1]`: おっ、ちょっとは強くなったじゃん
+- `MILESTONE_LINES.ovr_growth.normal.cool[1]`: ……手応えは、ある
+- `MILESTONE_LINES.ovr_growth.normal.seductive[1]`: ふふ、ちょっとは良くなったかしら
+- `MILESTONE_LINES.ovr_growth.normal.polite[1]`: 少しずつですが、成長を実感しています
+- `MILESTONE_LINES.ovr_growth.normal.composed[1]`: …悪くないペースだね
+- `MILESTONE_LINES.ovr_growth.bold._default[1]`: まだまだ足りない。でも、近づいてる
+- `MILESTONE_LINES.ovr_growth.bold._default[2]`: ここからが本番だよ
+- `MILESTONE_LINES.ovr_growth.bold.ojousama[1]`: ここからが本番ですわ。見ていてくださいませ
+- `MILESTONE_LINES.ovr_growth.bold.delinquent[1]`: ここからだっつーの！ まだ全然足りねえ
+- `MILESTONE_LINES.ovr_growth.bold.cool[1]`: …通過点だ
+- `MILESTONE_LINES.ovr_growth.bold.polite[1]`: まだまだですが、確実に前に進んでいます
+- `MILESTONE_LINES.ovr_growth.bold.composed[1]`: …通過点、だね。まだ先がある
+- `MILESTONE_LINES.ovr_growth.quiet._default[1]`: ……少し、強くなれた
+- `MILESTONE_LINES.ovr_growth.quiet.cool[1]`: …実感はある
+- `MILESTONE_LINES.ovr_growth.quiet.polite[1]`: …少しだけ、自信がつきました
+- `MILESTONE_LINES.ovr_growth.quiet.composed[1]`: …少しは、ね
+- `MILESTONE_LINES.ovr_growth.easygoing._default[1]`: おっ、なんかいい感じになってきた！
+- `MILESTONE_LINES.ovr_growth.easygoing._default[2]`: ちょっとずつ強くなってるっぽい？
+- `MILESTONE_LINES.ovr_growth.easygoing.delinquent[1]`: おー、いい感じに仕上がってきたぜ
+- `MILESTONE_LINES.ovr_growth.easygoing.ojousama[1]`: 順調に成長してますわ♪
+- `MILESTONE_LINES.ovr_growth.easygoing.composed[1]`: あれ、なかなかいいんじゃない？
+- `MILESTONE_LINES.ovr_growth.earnest._default[1]`: 練習してきた甲斐があった…！
+- `MILESTONE_LINES.ovr_growth.earnest._default[2]`: 一歩一歩、確実に前に進んでる
+- `MILESTONE_LINES.ovr_growth.earnest.polite[1]`: 日々の積み重ねが実を結んできました
+- `MILESTONE_LINES.ovr_growth.earnest.ojousama[1]`: お稽古の成果が出てきましたわ
+- `MILESTONE_LINES.ovr_growth.earnest.composed[1]`: …コツコツやってきた成果が、ちゃんと出てるね
+- `MILESTONE_LINES.ovr_growth.emotional._default[1]`: っ…！ 強くなってる…！ 嬉しい…！
+- `MILESTONE_LINES.ovr_growth.emotional._default[2]`: やった…ちゃんと成長できてる…！
+- `MILESTONE_LINES.ovr_growth.emotional.seductive[1]`: …ふふっ、強くなっちゃった。嬉しいわ
+- `MILESTONE_LINES.ovr_growth.emotional.composed[1]`: わ、ちょっと嬉しいかも…へへ
+- `MILESTONE_LINES.ovr_elite.normal._default[1]`: ここまで来れたんだ…
+- `MILESTONE_LINES.ovr_elite.normal._default[2]`: 見える景色が変わってきた気がする
+- `MILESTONE_LINES.ovr_elite.normal.ojousama[1]`: ここまで来れたのですね…感慨深いですわ
+- `MILESTONE_LINES.ovr_elite.normal.delinquent[1]`: ここまで来たら、もう誰にも止められねえ
+- `MILESTONE_LINES.ovr_elite.normal.cool[1]`: ……一つの壁を、越えた
+- `MILESTONE_LINES.ovr_elite.normal.seductive[1]`: ここまで来ちゃったのね…ふふ
+- `MILESTONE_LINES.ovr_elite.normal.polite[1]`: ここまで来られたのは、皆さんのおかげです
+- `MILESTONE_LINES.ovr_elite.normal.composed[1]`: …ここまで来たか。…悪くないね
+- `MILESTONE_LINES.ovr_elite.bold._default[1]`: 見えてきた。頂がすぐそこにある
+- `MILESTONE_LINES.ovr_elite.bold._default[2]`: ここからが本当の勝負
+- `MILESTONE_LINES.ovr_elite.bold.ojousama[1]`: 頂が見えてきましたわ。手を伸ばせば届く距離に
+- `MILESTONE_LINES.ovr_elite.bold.delinquent[1]`: 見えてきたぜ、てっぺんが！
+- `MILESTONE_LINES.ovr_elite.bold.cool[1]`: …この景色から、さらに上へ
+- `MILESTONE_LINES.ovr_elite.bold.polite[1]`: まだ上があります。ここからが本当の戦いです
+- `MILESTONE_LINES.ovr_elite.bold.composed[1]`: …頂が見えてきた。もうひと踏ん張り、かな
+- `MILESTONE_LINES.ovr_elite.quiet._default[1]`: ………ここまで来た
+- `MILESTONE_LINES.ovr_elite.quiet.cool[1]`: …まだ、止まらない
+- `MILESTONE_LINES.ovr_elite.quiet.polite[1]`: …ここまで来られました
+- `MILESTONE_LINES.ovr_elite.quiet.composed[1]`: ……うん。…ここまで来たんだね
+- `MILESTONE_LINES.ovr_elite.easygoing._default[1]`: いやー、ここまで来ちゃった！ すごくない？
+- `MILESTONE_LINES.ovr_elite.easygoing.delinquent[1]`: マジか、ここまで来ちゃったぜ！
+- `MILESTONE_LINES.ovr_elite.easygoing.ojousama[1]`: ここまで来れるとは思いませんでしたわ！
+- `MILESTONE_LINES.ovr_elite.easygoing.composed[1]`: え、もうこんなとこまで来たの？ へー
+- `MILESTONE_LINES.ovr_elite.earnest._default[1]`: ここまで来た…でも、まだ足りない。もっと上へ
+- `MILESTONE_LINES.ovr_elite.earnest._default[2]`: 全ての敗北が、ここに繋がっていた
+- `MILESTONE_LINES.ovr_elite.earnest.polite[1]`: ここまで来ました。でもまだ、上を目指します
+- `MILESTONE_LINES.ovr_elite.earnest.composed[1]`: …ここまで来たけど、まだ終わりじゃない。…いや、始まりだよ
+- `MILESTONE_LINES.ovr_elite.emotional._default[1]`: ここまで来れた…！ 泣きそう…いや、泣かない…！
+- `MILESTONE_LINES.ovr_elite.emotional._default[2]`: みんなが支えてくれたから…ここに立ってる…！
+- `MILESTONE_LINES.ovr_elite.emotional.seductive[1]`: …ここまで来ちゃったの…嬉しくて…ちょっと泣きそう
+- `MILESTONE_LINES.ovr_elite.emotional.composed[1]`: ここまで来れた…ちょっとだけ、ジーンと来ちゃった
+- `MILESTONE_LINES.ovr_legend.normal._default[1]`: まだ上があるなんて…自分でも信じられない
+- `MILESTONE_LINES.ovr_legend.normal._default[2]`: …ここに立っていること自体が、夢みたいだ
+- `MILESTONE_LINES.ovr_legend.normal.ojousama[1]`: この領域に立てたのは…光栄ですわ
+- `MILESTONE_LINES.ovr_legend.normal.delinquent[1]`: はは…マジかよ、こんなとこまで来ちまった
+- `MILESTONE_LINES.ovr_legend.normal.cool[1]`: ……この先に何があるのか。…見てみたい
+- `MILESTONE_LINES.ovr_legend.normal.seductive[1]`: ここまで来たら…もう怖いものなんてないわ
+- `MILESTONE_LINES.ovr_legend.normal.polite[1]`: この場所に立たせていただけるなんて…身に余る光栄です
+- `MILESTONE_LINES.ovr_legend.normal.composed[1]`: …ここまで来ると、逆に静かな気持ちになるね
+- `MILESTONE_LINES.ovr_legend.bold._default[1]`: 頂点はすぐそこだ。…いや、もう立ってるのかもしれない
+- `MILESTONE_LINES.ovr_legend.bold._default[2]`: ここから先は、私が道を作る
+- `MILESTONE_LINES.ovr_legend.bold.ojousama[1]`: 頂の景色…悪くありませんわね
+- `MILESTONE_LINES.ovr_legend.bold.delinquent[1]`: てっぺんだ！ 文句あるやつは掛かってこい！
+- `MILESTONE_LINES.ovr_legend.bold.cool[1]`: ……誰も、追いつけない場所にいる
+- `MILESTONE_LINES.ovr_legend.bold.polite[1]`: ここまで来ました。…でもまだ、挑戦し続けます
+- `MILESTONE_LINES.ovr_legend.bold.composed[1]`: …ふぅん。なかなかの景色じゃない
+- `MILESTONE_LINES.ovr_legend.quiet._default[1]`: …………（静かに拳を握る）
+- `MILESTONE_LINES.ovr_legend.quiet.cool[1]`: …この静けさが、答えだ
+- `MILESTONE_LINES.ovr_legend.quiet.polite[1]`: …ここまで来られたのですね…
+- `MILESTONE_LINES.ovr_legend.quiet.composed[1]`: ……うん。…ここか
+- `MILESTONE_LINES.ovr_legend.easygoing._default[1]`: えっ、マジで？ ここまで来ちゃった？ あはは！
+- `MILESTONE_LINES.ovr_legend.easygoing.delinquent[1]`: うっひょー！ 最強じゃね？
+- `MILESTONE_LINES.ovr_legend.easygoing.ojousama[1]`: あらまあ…とんでもないところまで来てしまいましたわ
+- `MILESTONE_LINES.ovr_legend.easygoing.composed[1]`: へぇ〜、やるじゃん自分。…ちょっと笑っちゃうね
+- `MILESTONE_LINES.ovr_legend.earnest._default[1]`: 全ての日々が、ここに繋がっていた
+- `MILESTONE_LINES.ovr_legend.earnest._default[2]`: これが私の全て…いや、まだ終わらない
+- `MILESTONE_LINES.ovr_legend.earnest.polite[1]`: 全てを懸けてきた日々が…報われました
+- `MILESTONE_LINES.ovr_legend.earnest.composed[1]`: …やれるだけのことは、やった。…でも、まだやれる
+- `MILESTONE_LINES.ovr_legend.emotional._default[1]`: …っ、…ここまで…本当に…ありがとう…！
+- `MILESTONE_LINES.ovr_legend.emotional._default[2]`: 信じられない…こんな場所に…私が…！
+- `MILESTONE_LINES.ovr_legend.emotional.seductive[1]`: ここまで来ちゃった…もう…涙が止まらないわ…
+- `MILESTONE_LINES.ovr_legend.emotional.composed[1]`: …あはは、ダメだ。嬉しすぎて言葉にならない
+- `MILESTONE_LINES.pop_growth.normal._default[1]`: 知ってくれる人が増えてきた気がする
+- `MILESTONE_LINES.pop_growth.normal._default[2]`: 声を掛けてもらえるようになった
+- `MILESTONE_LINES.pop_growth.normal.ojousama[1]`: わたくしのことを知ってくださる方が増えましたわ
+- `MILESTONE_LINES.pop_growth.normal.delinquent[1]`: おっ、知名度上がってんじゃん
+- `MILESTONE_LINES.pop_growth.normal.cool[1]`: ……認知されてきた、か
+- `MILESTONE_LINES.pop_growth.normal.seductive[1]`: ふふ、注目されるのは悪くないわね
+- `MILESTONE_LINES.pop_growth.normal.polite[1]`: 応援してくださる方が増えて、嬉しいです
+- `MILESTONE_LINES.pop_growth.normal.composed[1]`: …知ってもらえるのは、素直に嬉しいね
+- `MILESTONE_LINES.pop_growth.bold._default[1]`: 当然だ。私の実力なら、もっと知られてもいい
+- `MILESTONE_LINES.pop_growth.bold._default[2]`: やっとみんなが気づき始めた
+- `MILESTONE_LINES.pop_growth.bold.delinquent[1]`: やっと気づいたか！ もっと見とけよ！
+- `MILESTONE_LINES.pop_growth.bold.cool[1]`: …当然の結果だ
+- `MILESTONE_LINES.pop_growth.bold.polite[1]`: 注目していただけるのは光栄です。期待に応えます
+- `MILESTONE_LINES.pop_growth.bold.composed[1]`: …ま、当然っちゃ当然かな
+- `MILESTONE_LINES.pop_growth.quiet._default[1]`: ……見てくれてる人が、いるんだ
+- `MILESTONE_LINES.pop_growth.quiet.polite[1]`: …見ていてくださる方がいるのですね
+- `MILESTONE_LINES.pop_growth.quiet.composed[1]`: …見てくれてる人が増えた、のかな
+- `MILESTONE_LINES.pop_growth.easygoing._default[1]`: ファンが増えてきた！ 嬉しいな〜
+- `MILESTONE_LINES.pop_growth.easygoing._default[2]`: 声援もらえるの、テンション上がるね！
+- `MILESTONE_LINES.pop_growth.easygoing.ojousama[1]`: ファンの方が増えて嬉しいですわ！
+- `MILESTONE_LINES.pop_growth.easygoing.composed[1]`: お、ファン増えてきた？ いいじゃんいいじゃん
+- `MILESTONE_LINES.pop_growth.earnest._default[1]`: 頑張りを見てくれている人がいる…もっと応えたい
+- `MILESTONE_LINES.pop_growth.earnest._default[2]`: 応援してくれる声が、力になる
+- `MILESTONE_LINES.pop_growth.earnest.polite[1]`: 応援を力に変えて、もっと頑張ります
+- `MILESTONE_LINES.pop_growth.earnest.composed[1]`: …見てくれてる人がいるなら、もっと頑張らないと
+- `MILESTONE_LINES.pop_growth.emotional._default[1]`: え…応援してくれてるの…？ 嬉しい…！
+- `MILESTONE_LINES.pop_growth.emotional._default[2]`: 声援が聞こえる…もう一人じゃないんだ…！
+- `MILESTONE_LINES.pop_growth.emotional.seductive[1]`: 応援してくれる人が…嬉しいわ…ふふ
+- `MILESTONE_LINES.pop_growth.emotional.composed[1]`: わ、こんなに見てくれてるんだ…ちょっと照れちゃうね
+- `MILESTONE_LINES.pop_star.normal._default[1]`: こんなにたくさんの人が応援してくれてる…
+- `MILESTONE_LINES.pop_star.normal._default[2]`: 期待に応えなきゃ
+- `MILESTONE_LINES.pop_star.normal.ojousama[1]`: これだけの方に応援いただけるなんて…身が引き締まりますわ
+- `MILESTONE_LINES.pop_star.normal.delinquent[1]`: すっげえ声援だな…やべえ、ちょっと鳥肌立った
+- `MILESTONE_LINES.pop_star.normal.cool[1]`: ……背負うものが増えた。…それでいい
+- `MILESTONE_LINES.pop_star.normal.seductive[1]`: こんなにたくさん…みんなの視線が気持ちいいわ
+- `MILESTONE_LINES.pop_star.normal.polite[1]`: こんなに多くの方に応援いただいて…感謝の気持ちでいっぱいです
+- `MILESTONE_LINES.pop_star.normal.composed[1]`: …こんなに応援してくれる人がいるんだ。…頑張らないとね
+- `MILESTONE_LINES.pop_star.bold._default[1]`: この声援に恥じない試合を見せてやる
+- `MILESTONE_LINES.pop_star.bold._default[2]`: 期待してろ。最高の舞台を見せてやるから
+- `MILESTONE_LINES.pop_star.bold.delinquent[1]`: 全員まとめて最高の試合見せてやるぜ！
+- `MILESTONE_LINES.pop_star.bold.ojousama[1]`: この声援に恥じぬ試合をお見せしますわ
+- `MILESTONE_LINES.pop_star.bold.cool[1]`: …この歓声。…全てに応える
+- `MILESTONE_LINES.pop_star.bold.polite[1]`: 全ての応援に、試合で応えてみせます
+- `MILESTONE_LINES.pop_star.bold.composed[1]`: …ま、みんなが見てるなら、格好つけないとね
+- `MILESTONE_LINES.pop_star.quiet._default[1]`: ……こんなに……ありがとう
+- `MILESTONE_LINES.pop_star.quiet.cool[1]`: …背負っていく。この声を
+- `MILESTONE_LINES.pop_star.quiet.polite[1]`: …こんなにたくさん…ありがとうございます
+- `MILESTONE_LINES.pop_star.quiet.composed[1]`: ……ん。…ありがたいね
+- `MILESTONE_LINES.pop_star.easygoing._default[1]`: うわー、すごい人気！ もっと盛り上げていくよ！
+- `MILESTONE_LINES.pop_star.easygoing.delinquent[1]`: 最高だぜ！ もっと声出せ〜！
+- `MILESTONE_LINES.pop_star.easygoing.ojousama[1]`: まあ、こんなに！ もっともっと楽しんでまいりましょう！
+- `MILESTONE_LINES.pop_star.easygoing.composed[1]`: あはは、すごいね。…嬉しいなぁ
+- `MILESTONE_LINES.pop_star.earnest._default[1]`: この声援が、私の全て。…絶対に裏切らない
+- `MILESTONE_LINES.pop_star.earnest._default[2]`: ここまで来れたのは、応援してくれた人たちのおかげ
+- `MILESTONE_LINES.pop_star.earnest.polite[1]`: この声援を力に、必ず期待に応えてみせます
+- `MILESTONE_LINES.pop_star.earnest.composed[1]`: …ここまで来れたのは、見てくれた人がいたから。…恩返ししないと
+- `MILESTONE_LINES.pop_star.emotional._default[1]`: こんなにたくさん…！ 泣いちゃう…ありがとう…！
+- `MILESTONE_LINES.pop_star.emotional._default[2]`: みんなの声が…力になる…もっと頑張る…！
+- `MILESTONE_LINES.pop_star.emotional.seductive[1]`: こんなに…嬉しくて…もう言葉にならないの…
+- `MILESTONE_LINES.pop_star.emotional.composed[1]`: あぁ…ダメだ、こんなに応援されたら…泣いちゃう
+- `MILESTONE_LINES.cap_reached.normal._default[1]`: ここが私の限界…でも、後悔はない
+- `MILESTONE_LINES.cap_reached.normal._default[2]`: …もう、これ以上は伸びない。でも充分だ
+- `MILESTONE_LINES.cap_reached.normal.ojousama[1]`: ここが限界…でも、ここまで来られたことに感謝ですわ
+- `MILESTONE_LINES.cap_reached.normal.delinquent[1]`: …ちっ、ここが天井か。でも悪くねえ
+- `MILESTONE_LINES.cap_reached.normal.cool[1]`: ……ここが、天井か
+- `MILESTONE_LINES.cap_reached.normal.seductive[1]`: これ以上は…ね。でも、十分よ
+- `MILESTONE_LINES.cap_reached.normal.polite[1]`: ここまで来られただけで、幸せです
+- `MILESTONE_LINES.cap_reached.normal.composed[1]`: …ここが限界か。…まあ、上出来じゃない？
+- `MILESTONE_LINES.cap_reached.bold._default[1]`: ここが限界？ …認めたくないけど、そうなのかもしれない
+- `MILESTONE_LINES.cap_reached.bold._default[2]`: …天井を感じる。でも、他の部分で勝負する
+- `MILESTONE_LINES.cap_reached.bold.delinquent[1]`: クソ、ここが限界かよ…でも、まだ他で勝負できる
+- `MILESTONE_LINES.cap_reached.bold.ojousama[1]`: この壁だけは…超えられないのかしら
+- `MILESTONE_LINES.cap_reached.bold.cool[1]`: …認めよう。この先はない。だが、強さは数字だけじゃない
+- `MILESTONE_LINES.cap_reached.bold.polite[1]`: 限界を感じますが…まだやれることはあります
+- `MILESTONE_LINES.cap_reached.bold.composed[1]`: …天井か。…でもまあ、ここまで来たんだし上出来だよ
+- `MILESTONE_LINES.cap_reached.quiet._default[1]`: ………（静かに息をつく）…ここまで、か
+- `MILESTONE_LINES.cap_reached.quiet.cool[1]`: …ここまでだ
+- `MILESTONE_LINES.cap_reached.quiet.polite[1]`: …ここまで、でした
+- `MILESTONE_LINES.cap_reached.quiet.composed[1]`: ……うん。…ここまでだね
+- `MILESTONE_LINES.cap_reached.easygoing._default[1]`: あ、もう伸びない感じ？ まあいっか、十分十分！
+- `MILESTONE_LINES.cap_reached.easygoing.delinquent[1]`: まあいいや、ここまで来れただけでも上等だぜ
+- `MILESTONE_LINES.cap_reached.easygoing.ojousama[1]`: あら、もうこれ以上は？ まあ、十分ですわ
+- `MILESTONE_LINES.cap_reached.easygoing.composed[1]`: へー、もう限界なんだ。…まあいいんじゃない？
+- `MILESTONE_LINES.cap_reached.earnest._default[1]`: ここが限界…悔しい。でも、ここまで鍛えてきた日々は嘘じゃない
+- `MILESTONE_LINES.cap_reached.earnest._default[2]`: …まだ他の部分を磨ける。立ち止まるつもりはない
+- `MILESTONE_LINES.cap_reached.earnest.polite[1]`: 限界に達しましたが…この道のりに誇りを持っています
+- `MILESTONE_LINES.cap_reached.earnest.composed[1]`: …限界か。…でもここまでの道のりは、全部本物だよ
+- `MILESTONE_LINES.cap_reached.emotional._default[1]`: もう…伸びないの…？ …でも、ここまで来れた。それだけで…！
+- `MILESTONE_LINES.cap_reached.emotional._default[2]`: …悔しい…でも、頑張ってきたのは本当だから…！
+- `MILESTONE_LINES.cap_reached.emotional.seductive[1]`: ここまでなのね…少し寂しいけど…胸を張れるわ
+- `MILESTONE_LINES.cap_reached.emotional.composed[1]`: …もう伸びないんだ。…ちょっと寂しいけど、悪くない
+
+## `SLUMP_START_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: §4.5 スランプ発生セリフ（personality×archetype, トリガー別）
+- 本数: 129
+
+- `SLUMP_START_LINES.defeat.normal._default[1]`: あの負けから…何かがおかしい
+- `SLUMP_START_LINES.defeat.normal._default[2]`: 自分の何が悪かったのか、わからない
+- `SLUMP_START_LINES.defeat.normal.ojousama[1]`: あの敗北から…何かがおかしい気がする
+- `SLUMP_START_LINES.defeat.normal.delinquent[1]`: あの負けから…何かおかしいんだよ
+- `SLUMP_START_LINES.defeat.normal.seductive[1]`: あの負けから…何かがおかしいの
+- `SLUMP_START_LINES.defeat.normal.cool[1]`: ……最近、噛み合わない
+- `SLUMP_START_LINES.defeat.normal.polite[1]`: 最近、何をやってもうまくいかなくて…
+- `SLUMP_START_LINES.defeat.normal.composed[1]`: …あの負けから、どこか噛み合わない
+- `SLUMP_START_LINES.defeat.bold._default[1]`: …何やってんだわたし
+- `SLUMP_START_LINES.defeat.bold._default[2]`: 負けた？ わたしが？ …嘘でしょ
+- `SLUMP_START_LINES.defeat.bold.ojousama[1]`: …何をしてるの？私ほどの者が……
+- `SLUMP_START_LINES.defeat.bold.delinquent[1]`: …チッ、何やってんだよあたし
+- `SLUMP_START_LINES.defeat.bold.cool[1]`: ……何をやっている
+- `SLUMP_START_LINES.defeat.bold.seductive[1]`: あら…おかしいわね、こんなはずじゃ
+- `SLUMP_START_LINES.defeat.bold.polite[1]`: 正直、調子が上がりません。…でも、立て直します
+- `SLUMP_START_LINES.defeat.bold.composed[1]`: …こんなはずじゃないんだけど。…焦ってはいないよ
+- `SLUMP_START_LINES.defeat.quiet._default[1]`: ……あの負けから、動けない
+- `SLUMP_START_LINES.defeat.quiet.cool[1]`: …動けない
+- `SLUMP_START_LINES.defeat.quiet.polite[1]`: …あの試合から、うまく動けなくて
+- `SLUMP_START_LINES.defeat.quiet.seductive[1]`: ………何も…うまくいかないわ
+- `SLUMP_START_LINES.defeat.quiet.composed[1]`: ……あの負けから、少し…鈍い
+- `SLUMP_START_LINES.defeat.shy._default[1]`: やっぱり…私なんかじゃ、ダメなんでしょうか…
+- `SLUMP_START_LINES.defeat.shy.polite[1]`: ま、負けが続いて…自信が、なくなりそうです…
+- `SLUMP_START_LINES.defeat.easygoing._default[1]`: あはは…なんだろうね、体が動かないや
+- `SLUMP_START_LINES.defeat.easygoing.delinquent[1]`: なんだろうな…いつもみたいに動かねーよ
+- `SLUMP_START_LINES.defeat.easygoing.seductive[1]`: ふふ…なんでかしら、いつもみたいに動けないの
+- `SLUMP_START_LINES.defeat.easygoing.polite[1]`: 最近ちょっと調子悪くて…でも大丈夫です！
+- `SLUMP_START_LINES.defeat.easygoing.ojousama[1]`: 最近少し不調ですの…でもすぐ立て直しますわ
+- `SLUMP_START_LINES.defeat.easygoing.composed[1]`: …あれ、おかしいな。…いつもの感覚が戻らない
+- `SLUMP_START_LINES.defeat.earnest._default[1]`: あの負け…自分の何がダメだったんだろう
+- `SLUMP_START_LINES.defeat.earnest._default[2]`: 負けた理由がわかるまで…前に進めない
+- `SLUMP_START_LINES.defeat.earnest.polite[1]`: あの試合から…自分の何が足りないのか、ずっと考えています
+- `SLUMP_START_LINES.defeat.earnest.ojousama[1]`: あの敗北…わたくしの何がいけませんでしたの
+- `SLUMP_START_LINES.defeat.earnest.seductive[1]`: あの負けから…ずっと考えてるの、何がいけなかったのかって
+- `SLUMP_START_LINES.defeat.earnest.composed[1]`: …何が足りなかったのか。…まだ答えが出ない
+- `SLUMP_START_LINES.defeat.emotional._default[1]`: 負けた…もう何も考えられない…っ
+- `SLUMP_START_LINES.defeat.emotional._default[2]`: …悔しい、悔しくて頭がぐちゃぐちゃになる…！
+- `SLUMP_START_LINES.defeat.emotional.seductive[1]`: 負けが続いて……っ……ふふ、自分が分からなくなりそう……
+- `SLUMP_START_LINES.defeat.emotional.composed[1]`: …っ…あの負けが…まだ、引っかかってる
+- `SLUMP_START_LINES.injury_moderate_recovery.normal._default[1]`: 体は治ったはずなのに…動けない
+- `SLUMP_START_LINES.injury_moderate_recovery.normal._default[2]`: 復帰したのに、何かが噛み合わない
+- `SLUMP_START_LINES.injury_moderate_recovery.normal.ojousama[1]`: 体は治りったのに…動けない……なぜ？
+- `SLUMP_START_LINES.injury_moderate_recovery.normal.delinquent[1]`: 体は治ったはずだろ…なんで動けねーんだ
+- `SLUMP_START_LINES.injury_moderate_recovery.normal.seductive[1]`: 体は治ったはずなのに…ね、動けないの
+- `SLUMP_START_LINES.injury_moderate_recovery.normal.composed[1]`: …治ったはずなのに。…まあ、焦らないよ
+- `SLUMP_START_LINES.injury_moderate_recovery.bold._default[1]`: 治ったはずなのに、何でこんなにもたつくのよ！
+- `SLUMP_START_LINES.injury_moderate_recovery.bold.ojousama[1]`: もう治ったのに…なぜこんなにもたつくの？
+- `SLUMP_START_LINES.injury_moderate_recovery.bold.delinquent[1]`: 治ったっつーのに…何でもたついてんだ
+- `SLUMP_START_LINES.injury_moderate_recovery.bold.cool[1]`: …体が、鈍い
+- `SLUMP_START_LINES.injury_moderate_recovery.bold.seductive[1]`: 治ったはずなのに…おかしいわね
+- `SLUMP_START_LINES.injury_moderate_recovery.bold.composed[1]`: …治ったはず、なんだけどね。…もたついてる
+- `SLUMP_START_LINES.injury_moderate_recovery.quiet._default[1]`: ……体は治った。でも、何か違う
+- `SLUMP_START_LINES.injury_moderate_recovery.quiet.cool[1]`: ……鈍い
+- `SLUMP_START_LINES.injury_moderate_recovery.quiet.polite[1]`: 体は治ったんですけど…何か、違うんです
+- `SLUMP_START_LINES.injury_moderate_recovery.quiet.composed[1]`: ……体は治った。…でも、まだ
+- `SLUMP_START_LINES.injury_moderate_recovery.shy._default[1]`: 体は治ったのに…また迷惑かけちゃうかも…
+- `SLUMP_START_LINES.injury_moderate_recovery.shy.polite[1]`: け、怪我が治って…でも、まだ感覚が戻りません…
+- `SLUMP_START_LINES.injury_moderate_recovery.easygoing._default[1]`: あれー、治ったはずなのに調子出ないなぁ
+- `SLUMP_START_LINES.injury_moderate_recovery.easygoing.delinquent[1]`: あれ、治ったはずなのに調子でねーな
+- `SLUMP_START_LINES.injury_moderate_recovery.easygoing.seductive[1]`: あら、治ったはずなのに…調子出ないわ
+- `SLUMP_START_LINES.injury_moderate_recovery.easygoing.composed[1]`: …あれ、治ったはずなのに。…まあ、そのうち戻るか
+- `SLUMP_START_LINES.injury_moderate_recovery.earnest._default[1]`: 復帰できたのに…まだ全然足りない
+- `SLUMP_START_LINES.injury_moderate_recovery.earnest.polite[1]`: 復帰できたのですが…まだ全然、足りていません
+- `SLUMP_START_LINES.injury_moderate_recovery.earnest.ojousama[1]`: 復帰できましたのに…まだまだ足りませんわ
+- `SLUMP_START_LINES.injury_moderate_recovery.earnest.seductive[1]`: 復帰できたのに…まだ足りないの
+- `SLUMP_START_LINES.injury_moderate_recovery.earnest.composed[1]`: …復帰はできた。…でもまだ、足りない
+- `SLUMP_START_LINES.injury_moderate_recovery.emotional._default[1]`: せっかく治ったのに…なんで、なんで動けないの…！
+- `SLUMP_START_LINES.injury_moderate_recovery.emotional.seductive[1]`: 怪我は治ったけど……っ……ふふ、感覚が戻らないの……
+- `SLUMP_START_LINES.injury_moderate_recovery.emotional.composed[1]`: …っ…治ったのに。…なんで動けないんだ
+- `SLUMP_START_LINES.injury_severe_recovery.normal._default[1]`: またリングに立てた…のに、怖い
+- `SLUMP_START_LINES.injury_severe_recovery.normal._default[2]`: 重傷から帰ってきたけど…自信がない
+- `SLUMP_START_LINES.injury_severe_recovery.normal.ojousama[1]`: リングに戻れたというのに…怖いわ
+- `SLUMP_START_LINES.injury_severe_recovery.normal.delinquent[1]`: 戻ってきたのに…ビビってんのかよ、あたし
+- `SLUMP_START_LINES.injury_severe_recovery.normal.seductive[1]`: 戻ってこれたのに…怖いの
+- `SLUMP_START_LINES.injury_severe_recovery.normal.composed[1]`: …戻ってきた。…のに、少し怖いかな
+- `SLUMP_START_LINES.injury_severe_recovery.bold._default[1]`: あたしが…怯えてる？ そんなはずない！
+- `SLUMP_START_LINES.injury_severe_recovery.bold.ojousama[1]`: わたくしが…怯える？ そんなはずは
+- `SLUMP_START_LINES.injury_severe_recovery.bold.delinquent[1]`: あたしがビビってる？ ふざけんな
+- `SLUMP_START_LINES.injury_severe_recovery.bold.cool[1]`: …怯えている。この私が
+- `SLUMP_START_LINES.injury_severe_recovery.bold.seductive[1]`: 私が…怯えてる？ 嘘でしょう
+- `SLUMP_START_LINES.injury_severe_recovery.bold.composed[1]`: …怯えてる？ …まさかね。…まさか
+- `SLUMP_START_LINES.injury_severe_recovery.quiet._default[1]`: ……リングが、遠い
+- `SLUMP_START_LINES.injury_severe_recovery.quiet.cool[1]`: …遠い
+- `SLUMP_START_LINES.injury_severe_recovery.quiet.polite[1]`: リングに戻れたのですが…遠く感じます
+- `SLUMP_START_LINES.injury_severe_recovery.quiet.composed[1]`: ……リングが、少し遠い
+- `SLUMP_START_LINES.injury_severe_recovery.shy._default[1]`: 戻ってこれたけど…また壊れたらって思うと…怖いです
+- `SLUMP_START_LINES.injury_severe_recovery.shy.polite[1]`: お、大きな怪我から復帰しました…でも、不安です…
+- `SLUMP_START_LINES.injury_severe_recovery.easygoing._default[1]`: あはは…参ったな、リングがちょっと怖いや
+- `SLUMP_START_LINES.injury_severe_recovery.easygoing.delinquent[1]`: まいったな…リングがちょっと怖ぇーよ
+- `SLUMP_START_LINES.injury_severe_recovery.easygoing.seductive[1]`: 参ったわ…リングが少し怖いの
+- `SLUMP_START_LINES.injury_severe_recovery.easygoing.composed[1]`: …参ったな。…リングがちょっと遠く感じる
+- `SLUMP_START_LINES.injury_severe_recovery.earnest._default[1]`: 復帰できた…でも体が覚えてる、あの痛みを
+- `SLUMP_START_LINES.injury_severe_recovery.earnest.polite[1]`: 復帰できました…でも体が覚えているんです、あの痛みを
+- `SLUMP_START_LINES.injury_severe_recovery.earnest.ojousama[1]`: 復帰できましたわ…でもお体が覚えていますの、あの痛みを
+- `SLUMP_START_LINES.injury_severe_recovery.earnest.seductive[1]`: 復帰できた…でもね、体が覚えてるの、あの痛みを
+- `SLUMP_START_LINES.injury_severe_recovery.earnest.composed[1]`: …復帰できた。…でも体は覚えてるね、あの痛みを
+- `SLUMP_START_LINES.injury_severe_recovery.emotional._default[1]`: 帰ってこれた…のに…っ、怖くて体が震える…！
+- `SLUMP_START_LINES.injury_severe_recovery.emotional.seductive[1]`: 大怪我から戻ったわ……っ……でも、まだ怖いの……
+- `SLUMP_START_LINES.injury_severe_recovery.emotional.composed[1]`: …っ…戻ってきた。…けど、体が少し…震える
+- `SLUMP_START_LINES.penalty_end.normal._default[1]`: 怪我は治ったのに…気力が戻らない
+- `SLUMP_START_LINES.penalty_end.normal._default[2]`: 体が癒えても、心の傷は残るんだな
+- `SLUMP_START_LINES.penalty_end.normal.ojousama[1]`: 怪我は癒えましたのに…気力が戻ないわね
+- `SLUMP_START_LINES.penalty_end.normal.delinquent[1]`: 怪我は治ったっつーのに…気力が戻んねー
+- `SLUMP_START_LINES.penalty_end.normal.seductive[1]`: 怪我は治ったのに…気力が戻らないの
+- `SLUMP_START_LINES.penalty_end.normal.composed[1]`: …怪我は治った。…でも気力が、まだ
+- `SLUMP_START_LINES.penalty_end.bold._default[1]`: 体は万全なのに…気持ちがついてこない
+- `SLUMP_START_LINES.penalty_end.bold.ojousama[1]`: 体は万全ですのに…気持ちがついてきませんわね
+- `SLUMP_START_LINES.penalty_end.bold.delinquent[1]`: 体は万全なのに…気持ちがついてこねー
+- `SLUMP_START_LINES.penalty_end.bold.cool[1]`: …気持ちが、ついてこない
+- `SLUMP_START_LINES.penalty_end.bold.seductive[1]`: 体は万全なのに…気持ちがついてこないの
+- `SLUMP_START_LINES.penalty_end.bold.composed[1]`: …体は大丈夫。…気持ちだけが、まだ追いつかない
+- `SLUMP_START_LINES.penalty_end.quiet._default[1]`: ……治った。でも、心は
+- `SLUMP_START_LINES.penalty_end.quiet.cool[1]`: …心が、まだ
+- `SLUMP_START_LINES.penalty_end.quiet.polite[1]`: 体は治ったんですけど…心が、まだ
+- `SLUMP_START_LINES.penalty_end.quiet.composed[1]`: ……体は治った。…心が、まだ
+- `SLUMP_START_LINES.penalty_end.shy._default[1]`: 怪我は治ったんですけど…また怪我したらって思うと…
+- `SLUMP_START_LINES.penalty_end.shy.polite[1]`: け、謹慎が明けました…ま、また頑張ります…
+- `SLUMP_START_LINES.penalty_end.easygoing._default[1]`: 怪我は治ったんだけどなぁ…なんか気分が乗らない
+- `SLUMP_START_LINES.penalty_end.easygoing.delinquent[1]`: 怪我は治ったんだけどな…なんか乗んねーわ
+- `SLUMP_START_LINES.penalty_end.easygoing.seductive[1]`: 怪我は治ったんだけど…なんだか気分が乗らないの
+- `SLUMP_START_LINES.penalty_end.easygoing.composed[1]`: …治ったんだけどね。…気分が乗らないなぁ
+- `SLUMP_START_LINES.penalty_end.earnest._default[1]`: 怪我は治った。でも離れていた時間が…重い
+- `SLUMP_START_LINES.penalty_end.earnest.polite[1]`: 怪我は治りました。でも離れていた時間が…重いです
+- `SLUMP_START_LINES.penalty_end.earnest.ojousama[1]`: お怪我は癒えましたわ。でも離れていた時間が…重いですの
+- `SLUMP_START_LINES.penalty_end.earnest.seductive[1]`: 怪我は治ったわ。でもね、離れていた時間が…重いの
+- `SLUMP_START_LINES.penalty_end.earnest.composed[1]`: …怪我は治った。でも離れていた時間が…少し重い
+- `SLUMP_START_LINES.penalty_end.emotional._default[1]`: 治ったはずなのに…なんでこんなに不安なの…！
+- `SLUMP_START_LINES.penalty_end.emotional.seductive[1]`: 謹慎が明けたわ……っ……ふふ、戻ってきたわよ……
+- `SLUMP_START_LINES.penalty_end.emotional.composed[1]`: …っ…治ったのに。…この不安は何だろう
+
+## `SLUMP_END_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: §4.5 スランプ回復セリフ（personality×archetype）
+- 本数: 37
+
+- `SLUMP_END_LINES.normal._default[1]`: やっと…やっと戻ってこれた
+- `SLUMP_END_LINES.normal._default[2]`: あの暗いトンネルをようやく抜けた
+- `SLUMP_END_LINES.normal.ojousama[1]`: ようやく…戻ってこれましたわ
+- `SLUMP_END_LINES.normal.delinquent[1]`: やっと…やっと戻ってこれたぜ
+- `SLUMP_END_LINES.normal.seductive[1]`: やっと…戻ってこれたわ
+- `SLUMP_END_LINES.normal.cool[1]`: ……戻ってきた。この感覚だ
+- `SLUMP_END_LINES.normal.polite[1]`: ようやく…調子が戻ってきた気がします
+- `SLUMP_END_LINES.normal.composed[1]`: …やっと、戻ってこれたかな
+- `SLUMP_END_LINES.bold._default[1]`: 待たせたわね。ここからが本番よ
+- `SLUMP_END_LINES.bold.ojousama[1]`: 少し待たせたかしら？ここからよ
+- `SLUMP_END_LINES.bold.delinquent[1]`: 待たせたな！ ここからだぜ！
+- `SLUMP_END_LINES.bold.cool[1]`: …戻った。ここからだ
+- `SLUMP_END_LINES.bold.seductive[1]`: お待たせ。ここからが本番よ
+- `SLUMP_END_LINES.bold.polite[1]`: 復調しました。もう大丈夫です
+- `SLUMP_END_LINES.bold.composed[1]`: …待たせたね。…ここからだよ
+- `SLUMP_END_LINES.quiet._default[1]`: ……戻ってきた
+- `SLUMP_END_LINES.quiet.cool[1]`: ……戻った
+- `SLUMP_END_LINES.quiet.polite[1]`: …戻ってこれました
+- `SLUMP_END_LINES.quiet.seductive[1]`: ………戻ってきた…わ
+- `SLUMP_END_LINES.quiet.composed[1]`: ……戻った、かな
+- `SLUMP_END_LINES.shy._default[1]`: まだ不安ですけど…頑張りたいです
+- `SLUMP_END_LINES.shy.polite[1]`: やっと…調子が、戻ってきました…
+- `SLUMP_END_LINES.easygoing._default[1]`: いやー長かった！ でもまた楽しくなってきたよ
+- `SLUMP_END_LINES.easygoing.delinquent[1]`: いやー長かったな！ でもまた楽しくなってきたぜ
+- `SLUMP_END_LINES.easygoing.seductive[1]`: 長かったわ。でもまた楽しくなってきたの
+- `SLUMP_END_LINES.easygoing.polite[1]`: 調子戻ってきました！ もう大丈夫です！
+- `SLUMP_END_LINES.easygoing.ojousama[1]`: 調子が戻ってまいりましたわ！ もう大丈夫ですの
+- `SLUMP_END_LINES.easygoing.composed[1]`: …長かったな。…まあ、また楽しくなってきた
+- `SLUMP_END_LINES.earnest._default[1]`: 迷惑かけた分…倍にして返す
+- `SLUMP_END_LINES.earnest._default[2]`: 待ってくれていたリングに、恩返しする
+- `SLUMP_END_LINES.earnest.polite[1]`: ご迷惑をおかけしました…必ず、倍にしてお返しします
+- `SLUMP_END_LINES.earnest.ojousama[1]`: ご迷惑をおかけしましたわ…必ずお返しいたします
+- `SLUMP_END_LINES.earnest.seductive[1]`: 迷惑かけた分…返すわ、倍にしてね
+- `SLUMP_END_LINES.earnest.composed[1]`: …待たせた分、返していくよ。…焦らずにね
+- `SLUMP_END_LINES.emotional._default[1]`: うっ…やっと、やっと抜け出せた…！ もう負けない…！
+- `SLUMP_END_LINES.emotional.seductive[1]`: 調子が戻ってきたわ……っ……ふふ、ようやくね……
+- `SLUMP_END_LINES.emotional.composed[1]`: …っ…やっと…抜け出せた。…もう大丈夫
+
+## `MOTIVATION_LOSS_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: §5.6 モチベ喪失セリフ（personality×archetype）
+- 本数: 38
+
+- `MOTIVATION_LOSS_LINES.normal._default[1]`: もう…何のために闘ってるのかわからない
+- `MOTIVATION_LOSS_LINES.normal._default[2]`: プロレスが楽しいって感覚、どこへ行った？
+- `MOTIVATION_LOSS_LINES.normal.ojousama[1]`: 何のために…闘っているのかしら、わたし
+- `MOTIVATION_LOSS_LINES.normal.delinquent[1]`: 何のために闘ってんだよ…もうわかんねー
+- `MOTIVATION_LOSS_LINES.normal.seductive[1]`: 何のために闘ってるのかしら…わからなくなったわ
+- `MOTIVATION_LOSS_LINES.normal.cool[1]`: ……何のために戦っているのか、見えなくなった
+- `MOTIVATION_LOSS_LINES.normal.polite[1]`: 最近…何のために戦っているのか、わからなくなってきました
+- `MOTIVATION_LOSS_LINES.normal.composed[1]`: …何のために闘ってるのか。…わからなくなった
+- `MOTIVATION_LOSS_LINES.bold._default[1]`: …燃えない。何をやっても、燃えてこない
+- `MOTIVATION_LOSS_LINES.bold.ojousama[1]`: …燃えないわね。…何をしても、火がつかないのよ
+- `MOTIVATION_LOSS_LINES.bold.delinquent[1]`: …燃えねーんだよ。何やっても、火がつかねー
+- `MOTIVATION_LOSS_LINES.bold.cool[1]`: …燃えない
+- `MOTIVATION_LOSS_LINES.bold.seductive[1]`: 燃えないの…何をしても、火がつかないわ
+- `MOTIVATION_LOSS_LINES.bold.polite[1]`: 正直…目標を見失いかけています
+- `MOTIVATION_LOSS_LINES.bold.composed[1]`: …燃えない。…こういうこともあるか
+- `MOTIVATION_LOSS_LINES.quiet._default[1]`: ……闘う理由が、見えない
+- `MOTIVATION_LOSS_LINES.quiet.cool[1]`: ……見えない
+- `MOTIVATION_LOSS_LINES.quiet.polite[1]`: …闘う理由が、見えなくなってしまって
+- `MOTIVATION_LOSS_LINES.quiet.seductive[1]`: ………何のために…戦ってるの…
+- `MOTIVATION_LOSS_LINES.quiet.composed[1]`: ……闘う理由が、見えなくなった
+- `MOTIVATION_LOSS_LINES.shy._default[1]`: 私がリングに立つ意味…あるんでしょうか…
+- `MOTIVATION_LOSS_LINES.shy.polite[1]`: な、なんだか…やる気が、出ません…ご、ごめんなさい…
+- `MOTIVATION_LOSS_LINES.easygoing._default[1]`: なんだろうね…プロレス楽しいって感覚、どこ行っちゃったんだろ
+- `MOTIVATION_LOSS_LINES.easygoing.delinquent[1]`: なんだろうな…楽しいって感覚、どこ行っちまったんだ
+- `MOTIVATION_LOSS_LINES.easygoing.seductive[1]`: どうしたのかしら…楽しいって感覚、どこかに行っちゃったわ
+- `MOTIVATION_LOSS_LINES.easygoing.polite[1]`: 最近ちょっとモチベーションが…でも頑張ります
+- `MOTIVATION_LOSS_LINES.easygoing.ojousama[1]`: 少しやる気が出ませんの…でも頑張りますわ
+- `MOTIVATION_LOSS_LINES.easygoing.composed[1]`: …楽しいって感覚、どこ行ったかな。…困ったね
+- `MOTIVATION_LOSS_LINES.earnest._default[1]`: 毎日道場に来るのが…こんなに辛いなんて
+- `MOTIVATION_LOSS_LINES.earnest._default[2]`: 自分を追い込んでも…何も返ってこない
+- `MOTIVATION_LOSS_LINES.earnest.polite[1]`: 毎日道場に来るのが…こんなに辛いとは思いませんでした
+- `MOTIVATION_LOSS_LINES.earnest.ojousama[1]`: 毎日お稽古に通うのが…こんなに辛いとは
+- `MOTIVATION_LOSS_LINES.earnest.seductive[1]`: 毎日道場に来るのが…こんなに辛いなんてね
+- `MOTIVATION_LOSS_LINES.earnest.composed[1]`: …道場に来ても、何も返ってこない。…そういう時期か
+- `MOTIVATION_LOSS_LINES.emotional._default[1]`: やだ…もう嫌…何もしたくない…！
+- `MOTIVATION_LOSS_LINES.emotional._default[2]`: …なんで泣いてるんだろ、あたし…
+- `MOTIVATION_LOSS_LINES.emotional.seductive[1]`: ……っ……どうしてかしら、力が湧かないの……
+- `MOTIVATION_LOSS_LINES.emotional.composed[1]`: …っ…もう、いいかな。…何もしたくない
+
+## `MOTIVATION_RECOVERY_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: §5.6 モチベ喪失回復セリフ（personality×archetype）
+- 本数: 36
+
+- `MOTIVATION_RECOVERY_LINES.normal._default[1]`: まだ…やれる。やってみせる
+- `MOTIVATION_RECOVERY_LINES.normal._default[2]`: また闘いたいと思えた。この気持ちを大切に
+- `MOTIVATION_RECOVERY_LINES.normal.ojousama[1]`: まだ…やれるわ。やって見せる
+- `MOTIVATION_RECOVERY_LINES.normal.delinquent[1]`: まだやれる…やってやるよ
+- `MOTIVATION_RECOVERY_LINES.normal.seductive[1]`: まだやれるわ…やってみせる
+- `MOTIVATION_RECOVERY_LINES.normal.cool[1]`: ……思い出した。戦う理由を
+- `MOTIVATION_RECOVERY_LINES.normal.polite[1]`: ようやく…戦う理由を思い出しました
+- `MOTIVATION_RECOVERY_LINES.normal.composed[1]`: …まだやれる。…うん、やってみよう
+- `MOTIVATION_RECOVERY_LINES.bold._default[1]`: やっと目が覚めた。ここで終わるわけにはいかない！
+- `MOTIVATION_RECOVERY_LINES.bold.ojousama[1]`: 目が覚めたわ。ここで終わるわけにはかないもの
+- `MOTIVATION_RECOVERY_LINES.bold.delinquent[1]`: 目ぇ覚めたぜ。ここで終わるかよ
+- `MOTIVATION_RECOVERY_LINES.bold.cool[1]`: …目が覚めた。まだ終わらない
+- `MOTIVATION_RECOVERY_LINES.bold.seductive[1]`: 目が覚めたわ。ここで終わるなんて、つまらないもの
+- `MOTIVATION_RECOVERY_LINES.bold.polite[1]`: 目標が見えてきました。もう迷いません
+- `MOTIVATION_RECOVERY_LINES.bold.composed[1]`: …目が覚めた。…ここで終わるのは、つまらないね
+- `MOTIVATION_RECOVERY_LINES.quiet._default[1]`: ……もう一度、闘える
+- `MOTIVATION_RECOVERY_LINES.quiet.cool[1]`: …闘える
+- `MOTIVATION_RECOVERY_LINES.quiet.polite[1]`: …もう一度、闘えそうです
+- `MOTIVATION_RECOVERY_LINES.quiet.seductive[1]`: ………思い出した…わ。戦う理由
+- `MOTIVATION_RECOVERY_LINES.quiet.composed[1]`: ……もう一度、やれそうだ
+- `MOTIVATION_RECOVERY_LINES.shy._default[1]`: まだ自信はないですけど…もう少しだけ、頑張ってみます
+- `MOTIVATION_RECOVERY_LINES.shy.polite[1]`: あ、あの…また、頑張ろうって思えてきました…
+- `MOTIVATION_RECOVERY_LINES.easygoing._default[1]`: よーし、またやる気出てきたぞ！ 楽しまなきゃね
+- `MOTIVATION_RECOVERY_LINES.easygoing.delinquent[1]`: おっし、やる気出てきたぜ！ 楽しまねーとな
+- `MOTIVATION_RECOVERY_LINES.easygoing.seductive[1]`: あら、やる気が戻ってきたわ。楽しまなくちゃね
+- `MOTIVATION_RECOVERY_LINES.easygoing.polite[1]`: やる気出てきました！ もう大丈夫です！
+- `MOTIVATION_RECOVERY_LINES.easygoing.ojousama[1]`: やる気が戻ってまいりましたわ！ もう大丈夫ですの
+- `MOTIVATION_RECOVERY_LINES.easygoing.composed[1]`: …やる気、戻ってきたかな。…楽しまないとね
+- `MOTIVATION_RECOVERY_LINES.earnest._default[1]`: 闘うことを忘れていた…でも、もう迷わない
+- `MOTIVATION_RECOVERY_LINES.earnest.polite[1]`: 闘う気持ちを忘れていました…でも、もう迷いません
+- `MOTIVATION_RECOVERY_LINES.earnest.ojousama[1]`: 闘う心を忘れていましたわ…でも、もう迷いませんの
+- `MOTIVATION_RECOVERY_LINES.earnest.seductive[1]`: 闘う気持ちを忘れてたわ…でもね、もう迷わない
+- `MOTIVATION_RECOVERY_LINES.earnest.composed[1]`: …闘う理由、思い出した。…もう迷わないよ
+- `MOTIVATION_RECOVERY_LINES.emotional._default[1]`: うっ…また闘いたいって…思えたよ…！ 大丈夫、もう大丈夫…！
+- `MOTIVATION_RECOVERY_LINES.emotional.seductive[1]`: ……っ……ふふ、また燃えてきたの……
+- `MOTIVATION_RECOVERY_LINES.emotional.composed[1]`: …っ…また闘いたい。…大丈夫、もう大丈夫だ
