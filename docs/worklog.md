@@ -1561,6 +1561,19 @@ Keisuke の実際の編集手順が「**その属性×性格の一人を想像�
 - **`dev-tools-static-test.js` を拡張**: 「配布に含めない」「`devOnlyFiles` に宣言済み」「梱包・検証スクリプトが除去/検査を持つ」を静的アサートに追加し、将来この 404 が再発しないよう固定した(テストファイル数は増やしていない)。
 - 残: 配布版 index.html には開発者パネル用のインライン `<style>#wmDevPanel{...}` が残っている(約1KB)。**インライン CSS のため 404 にはならず**今回は未対応。気になるなら別途。
 - 対象: `release/manifest.json`、`release/package-release.ps1`、`release/verify-package.ps1`、`test/dev-tools-static-test.js`。
+## 2026-07-25 CARE_REACTION_DIALOGUES の重複キー `special_treatment` を解消(死んでいたセリフ40行超を救出)
+
+`src/data.js` の `CARE_REACTION_DIALOGUES` 直下に `special_treatment:` が2回書かれており、JSのオブジェクトリテラルは後勝ちのため先行ブロック(約97行)が**まるごと実行されない死にコード**になっていた。セリフ編集Excelツール(`tools/dialogue-workbook.js`)の作業中に発覚。構文エラーにならないため誰も気づけない類のバグ。
+
+- **経緯**: 先行ブロックは 2026-03-04 `caa648a` で旧ケア団体アクション用に追加され、2026-04-12 `d12bb24`(Tier3B shy/polite 補完)で加筆されていた。後続ブロックは 2026-04-23 `0fb97d2`(特別治療を怪我ポップアップ→社長室指示書へ移管)が「新規追加」のつもりで書いたもの。結果、11日前に補完したばかりの shy 系セリフが無言で失われていた。
+- **裁定**: 文面が現行文脈(専門医招聘)に沿う**後続ブロックを正**とし、先行ブロックにしか無いスロットだけを移植。既存スロットの文面は一切変更していないため、実行時の挙動は**従来の厳密な上位互換**。
+  - 移植: `shy`(personality まるごと・`_default`/`polite`)、`normal.delinquent`、`normal.seductive`、`bold.ojousama`、`bold.seductive`、`earnest.seductive`
+  - 破棄: 両ブロックに存在するスロットの旧文面(19スロット分)。後続ブロックの文面が「専門の先生」を受けた内容で指示書の文脈に合うため。
+- **効果**: これまで shy の選手は `pickDialogueLine` のフォールバック(`lineObj[p] || lineObj._default || lineObj.normal`)で `normal` の文面を喋っていた。7性格すべてが揃い、shy 固有の言葉が出るようになる。
+- **横展開調査**: 波括弧インスタンス単位で重複キーを検出するスクリプトを書いて `src/` `tools/` `test/` の全JSを走査。テンプレートリテラル内のCSSや同一関数内の別オブジェクトを誤検出しないことを自己テストで確認済み。**重複キーは本件1件のみ**で、他の大型手書きテーブルは健全だった。
+- 検証: `node test/run-all.js` 84/84 PASS。`node --check src/data.js` OK。実行時の `special_treatment` 全スロットを列挙して7性格×archetype の解決を確認。セリフ本文の追加・改変は無く試合数値にも触れないため auto-sim は不要と判断。
+- 対象: `src/data.js` のみ(+97行の死にコード削除、-9行の移植)。
+- 確認してほしい点: 社長室「🏥 特別治療指示書」を **shy 性格の負傷選手**に発行したときのリアクション(専用セリフが出るか)。ほか delinquent/seductive アーキタイプの選手でも文面が性格に合っているか。
 
 ## 2026-07-25 挑戦試合セリフを全面刷新(CHALLENGE_LINES 34セル・sendoff新設)
 
