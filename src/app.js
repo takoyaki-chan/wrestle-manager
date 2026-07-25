@@ -1604,7 +1604,7 @@ const Storage = {
         }
       });
     }
-    state._saveVersion = '1.21';
+    state._saveVersion = '1.22';
     state._saveDate = new Date().toISOString();
     const sanitizedName = Storage._sanitizeSaveNameLabel(saveNameOverride);
     if (sanitizedName) state._saveName = sanitizedName; else delete state._saveName;
@@ -9031,8 +9031,8 @@ const App = {
       to: { label: destOrgName, emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml(destOrgId, 22) : ''), accent: 'var(--accent-hostility)' },
       party: partyFighters.map(f => ({ id: f.id, name: f.name })),
       lines: [
-        `${partyCountLabel}を乗せた車が、他団体の会場へ向かう。`,
-        `迎えるのは、名指しされた${namedOpponentName}。ここから先は敵地だ。`,
+        `${partyCountLabel}を乗せた車が、他団体の会場へ向かっています。`,
+        `迎えるのは、名指しされた${namedOpponentName}。ここから先は敵地です。`,
       ],
       vehicleIcon: '🚌',
       durationMs: 5800,

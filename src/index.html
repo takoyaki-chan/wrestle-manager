@@ -5036,9 +5036,16 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .awpick-slot { flex: 1; background: var(--cream-bg-card); border: 1px solid rgba(100,85,50,0.22); border-radius: 8px; padding: 10px; text-align: center; position: relative; }
 .awpick-slot.fixed { border-color: rgba(111,162,140,0.5); background: linear-gradient(180deg,var(--cream-bg-card),rgba(111,162,140,0.08)); }
 .awpick-slot.empty { border-style: dashed; border-color: rgba(160,96,48,0.5); background: rgba(212,168,67,0.07); }
+.awpick-slot[role="button"] { cursor: pointer; transition: box-shadow 120ms ease, border-color 120ms ease, background 120ms ease; }
+.awpick-slot[role="button"]:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.10); }
+.awpick-slot[role="button"]:focus-visible { outline: 2px solid var(--cream-gold-dark); outline-offset: 2px; }
 .awpick-slot .awpick-tag { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); font-family: 'Oswald',sans-serif; font-size: 9px; letter-spacing: 1px; padding: 2px 9px; border-radius: 8px; font-weight: 700; white-space: nowrap; color: var(--office-panel-cream-card); background: var(--cream-gold-dark); }
 .awpick-slot.fixed .awpick-tag { background: var(--c-positive); }
 .awpick-slot.empty .awpick-tag { background: var(--accent-hostility); }
+/* 枠フォーカス方式(2026-07-25): フォーカス中の同行者枠を金色リングで強調。
+   empty/fixed のタグ色より後に置き、同スペシフィシティでも確実に上書きする。 */
+.awpick-slot.focused { border-color: var(--cream-gold-dark); border-style: solid; box-shadow: 0 0 0 2px var(--cream-gold-dark), 0 6px 14px rgba(122,101,48,0.22); background: linear-gradient(180deg,var(--cream-bg-card),rgba(212,168,67,0.12)); }
+.awpick-slot.focused .awpick-tag { background: var(--cream-gold-dark); color: var(--office-panel-cream-card); }
 .awpick-face { width: 72px; height: 86px; border-radius: 4px; margin: 8px auto 6px; position: relative; overflow: hidden; }
 .awpick-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .awpick-face .awpick-ini { position: absolute; inset: 0; display: grid; place-items: center; font-size: 26px; font-weight: 800; color: rgba(255,255,255,0.92); }
@@ -9897,7 +9904,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
       <button class="title-btn" id="titleContinueBtn" onclick="App.titleContinue()" style="display:none">CONTINUE</button>
       <button class="title-btn" id="titleLoadBtn" onclick="App.titleLoadGame()">LOAD GAME</button>
     </div>
-    <div class="title-ver">VERSION 1.21</div>
+    <div class="title-ver">VERSION 1.22</div>
     <div class="title-credits-link" onclick="App.showCredits()">Credits</div>
     <div class="title-sns">
       <a href="https://x.com/tkykchan" target="_blank" rel="noopener">𝕏</a>

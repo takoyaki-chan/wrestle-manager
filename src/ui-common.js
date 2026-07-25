@@ -11301,6 +11301,10 @@ function showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm) {
   if (healthyOnly.length < 2) { if (onConfirm) onConfirm(null); return; }
 
   let selected = [healthyOnly[0].fighter.id, healthyOnly[1].fighter.id];
+  // 枠フォーカス方式(2026-07-25): 初期状態は両枠とも埋まっているが、
+  // 「1枠目」にフォーカスを当てておき、候補をいきなりクリックしても
+  // そこへ上書きされるようにする(ユーザー指摘: 解除→選択の2手を要求しない)。
+  let focusedSlot = 0;
 
   const root = _factionEnsureOverlayRoot();
 
@@ -11314,19 +11318,24 @@ function showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm) {
   const slotHtml = (idx) => {
     const id = selected[idx];
     const c = id ? candidates.find(x => x.fighter.id === id) : null;
+    const isFocused = focusedSlot === idx;
+    const cls = ['awpick-slot', !c ? 'empty' : '', isFocused ? 'focused' : ''].filter(Boolean).join(' ');
+    const commonAttrs = `data-idx="${idx}" role="button" tabindex="0" aria-pressed="${isFocused ? 'true' : 'false'}"`;
     if (!c) {
-      return `<div class="awpick-slot empty">
+      const ariaLabel = `同行者${idx + 1}、未選択。タップして候補を選ぶ`;
+      return `<div class="${cls}" ${commonAttrs} aria-label="${escHtml(ariaLabel)}">
         <span class="awpick-tag">同行者 ${idx + 1}</span>
         <div class="awpick-face blank">＋</div>
         <div class="awpick-nm awpick-empty">未選択</div>
-        <div class="awpick-sub">あと1名</div>
+        <div class="awpick-sub">${isFocused ? '候補を選んでください' : 'タップして選ぶ'}</div>
       </div>`;
     }
-    return `<div class="awpick-slot">
+    const ariaLabel = `同行者${idx + 1}、${c.fighter.name}。タップで入れ替え`;
+    return `<div class="${cls}" ${commonAttrs} aria-label="${escHtml(ariaLabel)}">
       <span class="awpick-tag">同行者 ${idx + 1}</span>
       ${_awpickFaceHtml(c.fighter, 'awpick-face')}
       <div class="awpick-nm">${escHtml(c.fighter.name)}</div>
-      <div class="awpick-sub">選択中</div>
+      <div class="awpick-sub">${isFocused ? '候補を選ぶと入れ替わります' : 'タップで入れ替え'}</div>
       <div class="awpick-ov">OVR ${c.ovr}</div>
     </div>`;
   };
@@ -11350,11 +11359,15 @@ function showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm) {
     setTimeout(() => { if (overlay && root.contains(overlay)) root.innerHTML = ''; _drainPopupQueue(); }, 500);
     if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
     root.removeEventListener('click', handleClick);
+    root.removeEventListener('keydown', handleKeydown);
     if (onConfirm) onConfirm(selected.filter(Boolean));
   }
 
   function paint() {
     const selCount = selected.filter(Boolean).length;
+    const candHeadText = focusedSlot != null
+      ? `出せる選手 — 「同行者${focusedSlot + 1}」に入れる候補を選んでください`
+      : '出せる選手（体調・負傷を考慮）';
     const html = `
       <div class="fevt-overlay-office" id="awayTeamPickOverlay">
         <div class="fevt-report-card">
@@ -11375,7 +11388,7 @@ function showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm) {
               ${slotHtml(0)}
               ${slotHtml(1)}
             </div>
-            <div class="awpick-cand-head">出せる選手（体調・負傷を考慮）</div>
+            <div class="awpick-cand-head">${escHtml(candHeadText)}</div>
             <div class="awpick-cands">${candidates.map(candHtml).join('')}</div>
             <div class="awpick-foot">
               <div class="awpick-sum">選択 <strong>${selCount}</strong> / 2 名${selCount < 2 ? `　—　残り${2 - selCount}名を選んでください` : ''}</div>
@@ -11392,29 +11405,73 @@ function showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm) {
     if (overlay) { void overlay.offsetWidth; overlay.classList.add('active'); }
   }
 
-  function handleClick(e) {
-    const cand = e.target.closest('.awpick-cand');
-    if (cand) {
-      if (cand.dataset.healthy !== '1') return;
-      const id = Number(cand.dataset.id);
-      const pos = selected.indexOf(id);
-      if (pos >= 0) {
-        selected[pos] = null;
+  // 枠フォーカス方式(2026-07-25、Keisuke指摘対応):
+  // 同行者スロットをクリックすると「フォーカス」される。フォーカス中の枠がある状態で
+  // 候補をクリックすると、既に誰か入っていてもその枠へ即座に上書きされる
+  // (旧: 満枠時は候補クリックを拒否し、先に解除させる2手UIだった)。
+  function slotClicked(idx) {
+    if (idx === focusedSlot) {
+      if (selected[idx] != null) {
+        // フォーカス中の枠をもう一度押す = その枠から選手を外す(枠側の解除手段)。
+        // フォーカスはそのまま保持し、続けて候補を選べば即座に埋まる。
+        selected[idx] = null;
       } else {
+        // 既に空＆フォーカス中の枠をもう一度押す = フォーカス解除。
+        focusedSlot = null;
+      }
+    } else {
+      focusedSlot = idx;
+    }
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    paint();
+  }
+
+  function candClicked(cand) {
+    if (cand.dataset.healthy !== '1') return;
+    const id = Number(cand.dataset.id);
+    const pos = selected.indexOf(id);
+    if (pos >= 0) {
+      // 既に選ばれている選手をもう一度押す=解除(既存の逃げ道、維持)。
+      // 空いた枠にそのままフォーカスを移し、続けて別候補を選べば埋められるようにする。
+      selected[pos] = null;
+      focusedSlot = pos;
+    } else {
+      let target = focusedSlot;
+      if (target == null) {
         const emptyIdx = selected.indexOf(null);
         if (emptyIdx >= 0) {
-          selected[emptyIdx] = id;
+          target = emptyIdx;
         } else {
-          if (typeof showToast === 'function') showToast('すでに2名選択済みです。先に1名を外してください', 2200);
+          // フォーカス無し＋2枠とも埋まっている: 誤操作で意図しない枠を
+          // 書き換えないよう、ここでは何もせず「枠を選んでください」と促す。
+          if (typeof showToast === 'function') showToast('入れ替えたい同行者の枠を選んでください', 2200);
           return;
         }
       }
-      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-      paint();
+      selected[target] = id;
+      // 埋めたら次の空き枠へフォーカスを移す。両方埋まったらフォーカス解除
+      // (次の変更は必ず枠を明示的に選び直させ、連続クリックでの誤上書きを防ぐ)。
+      const nextEmpty = selected.indexOf(null);
+      focusedSlot = nextEmpty >= 0 ? nextEmpty : null;
+    }
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    paint();
+  }
+
+  function handleClick(e) {
+    const slotEl = e.target.closest('.awpick-slot');
+    if (slotEl && !slotEl.classList.contains('fixed')) {
+      slotClicked(Number(slotEl.dataset.idx));
+      return;
+    }
+    const cand = e.target.closest('.awpick-cand');
+    if (cand) {
+      candClicked(cand);
       return;
     }
     if (e.target.closest('#awpickAuto')) {
       selected = [healthyOnly[0].fighter.id, healthyOnly[1].fighter.id];
+      focusedSlot = null;
       confirmAndClose();
       return;
     }
@@ -11424,7 +11481,17 @@ function showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm) {
     }
   }
 
+  function handleKeydown(e) {
+    if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+    const slotEl = e.target.closest && e.target.closest('.awpick-slot');
+    if (slotEl && !slotEl.classList.contains('fixed')) {
+      e.preventDefault();
+      slotClicked(Number(slotEl.dataset.idx));
+    }
+  }
+
   root.addEventListener('click', handleClick);
+  root.addEventListener('keydown', handleKeydown);
   paint();
 }
 if (typeof window !== 'undefined') {
