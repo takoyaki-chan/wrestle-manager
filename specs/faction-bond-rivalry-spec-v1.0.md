@@ -2,7 +2,7 @@
 
 実装完了: 2026-05-04
 対象: F03/F04/F05/F07 の選択結果における選手間 bond/rivalry 連動
-根拠ドキュメント: `docs/faction-bond-rivalry-rebalance-spec-v0.1.md` (DRAFT 起案)
+根拠ドキュメント: `docs/archive/faction-bond-rivalry-rebalance-spec-v0.1.md` (DRAFT 起案、完了によりarchive移動)
 
 ## 1. 設計原則
 

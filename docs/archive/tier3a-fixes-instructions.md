@@ -9,7 +9,7 @@
 
 ## 入力ファイル
 
-- `docs/tier3a-fixes.xlsx` — 穴埋めセリフ 124行
+- `docs/archive/xlsx-old/tier3a-fixes.xlsx`(旧パス: `docs/tier3a-fixes.xlsx`) — 穴埋めセリフ 124行
 
 ## 作業1: RETIREMENT_CHAMPION_WORRY_LINES の設計変更(重要)
 

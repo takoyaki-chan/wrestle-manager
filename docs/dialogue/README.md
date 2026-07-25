@@ -273,6 +273,8 @@ node tools/extract-dialogue.js
 `tools/dialogue-workbook.js` で Excel ブックに書き出し→「改訂」列に書き込み→ソースへ書き戻す、という往復編集ができる。
 この Markdown と同じ `TABLE_MANIFEST` / カテゴリ分類を再利用しているため、対象テーブルとカテゴリ番号はここに載っている表と一致する。
 
+コマンドを直接叩く代わりに、`セリフ編集/` 直下の `1_エクセルに書き出し.bat` / `2_変更内容を確認.bat` / `3_ゲームに反映.bat` をダブルクリックしても同じ操作ができる(詳細は同フォルダの `README.txt`)。
+
 ### 使い方
 
 ```
@@ -280,14 +282,14 @@ node tools/extract-dialogue.js
 node tools/dialogue-workbook.js export 04-challenge-request
 node tools/dialogue-workbook.js export        # 全カテゴリ
 
-# 2. docs/dialogue/xlsx/<カテゴリ名>.xlsx を Excel で開き、「改訂」列にだけ書き込む
+# 2. セリフ編集/<カテゴリ名>.xlsx を Excel で開き、「改訂」列にだけ書き込む
 #    (他の列は書き戻しに使う参照情報なので触らない。ID列は特に編集不可)
 
 # 3. 差分プレビュー(何も書き込まない)
-node tools/dialogue-workbook.js apply docs/dialogue/xlsx/04-challenge-request.xlsx --dry-run
+node tools/dialogue-workbook.js apply セリフ編集/04-challenge-request.xlsx --dry-run
 
-# 4. 実際に src/*.js へ書き戻す(引数省略で docs/dialogue/xlsx/ 配下の全 .xlsx が対象)
-node tools/dialogue-workbook.js apply docs/dialogue/xlsx/04-challenge-request.xlsx
+# 4. 実際に src/*.js へ書き戻す(引数省略で セリフ編集/ 配下の全 .xlsx が対象)
+node tools/dialogue-workbook.js apply セリフ編集/04-challenge-request.xlsx
 node tools/dialogue-workbook.js apply
 ```
 

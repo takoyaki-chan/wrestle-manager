@@ -9,7 +9,7 @@ Session F + TIER2 + バトル系穴埋め + Tier3A は Claude Code で実装完�
 
 ## やること
 
-最新の `dialogue-all-main.xlsx`(Claude Code 反映後の版)に存在する
+最新の `docs/archive/xlsx-old/dialogue-all-main.xlsx`(旧パス: `dialogue-all-main.xlsx`、Claude Code 反映後の版)に存在する
 **シャイ/丁寧** と **感情的/蠱惑** の組合せ欠落を全て埋める。
 
 **総計 634 行**(調査済み、確定数値)
@@ -92,13 +92,13 @@ Session F + TIER2 + バトル系穴埋め + Tier3A は Claude Code で実装完�
 ## 入力ファイル
 
 次セッションでアップロードする必要があるもの:
-- `dialogue-all-main.xlsx` (最新版、Claude Code 反映後)
-- `dialogue-all-battle.xlsx` (バトル系最新版、Tier3B はメイン系のみだが念のため)
+- `docs/archive/xlsx-old/dialogue-all-main.xlsx`(旧パス: `dialogue-all-main.xlsx`)(最新版、Claude Code 反映後)
+- `docs/archive/xlsx-old/dialogue-all-battle.xlsx`(旧パス: `dialogue-all-battle.xlsx`)(バトル系最新版、Tier3B はメイン系のみだが念のため)
 - `dialogue-expansion-tone-guide.md` (トーン原則、参考)
 
 ## 出力ファイル
 
-- `tier3b-fixes.xlsx` (634行、1シートまたはソース別シート)
+- `docs/archive/xlsx-old/tier3b-fixes.xlsx`(旧パス: `tier3b-fixes.xlsx`) (634行、1シートまたはソース別シート)
 - `tier3b-fixes-instructions.md` (Claude Code への指示書)
 
 ## ファイル構造案

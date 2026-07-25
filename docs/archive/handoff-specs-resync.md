@@ -1,7 +1,7 @@
 # specs/ 再同期 引き継ぎ書
 
 **作成日**: 2026-04-05
-**指示書**: `docs/specs-resync-instruction.md`
+**指示書**: `docs/archive/specs-resync-instruction.md`
 **差分レポート**: `docs/specs-drift-report.md`
 
 ---

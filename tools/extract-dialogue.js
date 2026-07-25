@@ -747,6 +747,8 @@ function main() {
   readme.push('`tools/dialogue-workbook.js` で Excel ブックに書き出し→「改訂」列に書き込み→ソースへ書き戻す、という往復編集ができる。');
   readme.push('この Markdown と同じ `TABLE_MANIFEST` / カテゴリ分類を再利用しているため、対象テーブルとカテゴリ番号はここに載っている表と一致する。');
   readme.push('');
+  readme.push('コマンドを直接叩く代わりに、`セリフ編集/` 直下の `1_エクセルに書き出し.bat` / `2_変更内容を確認.bat` / `3_ゲームに反映.bat` をダブルクリックしても同じ操作ができる(詳細は同フォルダの `README.txt`)。');
+  readme.push('');
   readme.push('### 使い方');
   readme.push('');
   readme.push('```');
@@ -754,14 +756,14 @@ function main() {
   readme.push('node tools/dialogue-workbook.js export 04-challenge-request');
   readme.push('node tools/dialogue-workbook.js export        # 全カテゴリ');
   readme.push('');
-  readme.push('# 2. docs/dialogue/xlsx/<カテゴリ名>.xlsx を Excel で開き、「改訂」列にだけ書き込む');
+  readme.push('# 2. セリフ編集/<カテゴリ名>.xlsx を Excel で開き、「改訂」列にだけ書き込む');
   readme.push('#    (他の列は書き戻しに使う参照情報なので触らない。ID列は特に編集不可)');
   readme.push('');
   readme.push('# 3. 差分プレビュー(何も書き込まない)');
-  readme.push('node tools/dialogue-workbook.js apply docs/dialogue/xlsx/04-challenge-request.xlsx --dry-run');
+  readme.push('node tools/dialogue-workbook.js apply セリフ編集/04-challenge-request.xlsx --dry-run');
   readme.push('');
-  readme.push('# 4. 実際に src/*.js へ書き戻す(引数省略で docs/dialogue/xlsx/ 配下の全 .xlsx が対象)');
-  readme.push('node tools/dialogue-workbook.js apply docs/dialogue/xlsx/04-challenge-request.xlsx');
+  readme.push('# 4. 実際に src/*.js へ書き戻す(引数省略で セリフ編集/ 配下の全 .xlsx が対象)');
+  readme.push('node tools/dialogue-workbook.js apply セリフ編集/04-challenge-request.xlsx');
   readme.push('node tools/dialogue-workbook.js apply');
   readme.push('```');
   readme.push('');

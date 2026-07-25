@@ -10,8 +10,8 @@
 
 ## 入力ファイル
 
-- `docs/battle-fixes.xlsx` — 穴埋めセリフ 91 行
-- `docs/dialogue-all-battle.xlsx` — 既存のバトル系セリフ全量(参考、変更しない)
+- `docs/archive/xlsx-old/battle-fixes.xlsx`(旧パス: `docs/battle-fixes.xlsx`) — 穴埋めセリフ 91 行
+- `docs/archive/xlsx-old/dialogue-all-battle.xlsx`(旧パス: `docs/dialogue-all-battle.xlsx`) — 既存のバトル系セリフ全量(参考、変更しない)
 
 ## 作業内容
 

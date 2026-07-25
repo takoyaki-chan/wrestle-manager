@@ -10,7 +10,7 @@
  *
  * export: docs/dialogue/ の抽出基盤(tools/extract-dialogue.js の
  *   TABLE_MANIFEST / CATEGORIES / パース評価パイプライン)を再利用し、
- *   docs/dialogue/xlsx/<カテゴリ名>.xlsx を生成する。「改訂」列は空欄。
+ *   セリフ編集/<カテゴリ名>.xlsx を生成する。「改訂」列は空欄。
  *
  * apply: 生成済み .xlsx を読み、「改訂」列が「現在」列と異なる行だけを
  *   対象に、ID(=ソース上のプロパティパス)で src/*.js の該当リテラルを
@@ -30,7 +30,7 @@ const zlib = require('zlib');
 const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const XLSX_DIR = path.join(ROOT, 'docs', 'dialogue', 'xlsx');
+const XLSX_DIR = path.join(ROOT, 'セリフ編集');
 const EX = require('./extract-dialogue.js');
 const { scanExpr } = require('./extract-dialogue-parser.js');
 

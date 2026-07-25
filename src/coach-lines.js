@@ -148,7 +148,7 @@ const INVITE_AWAKENING_LINES = {
 
 // ─────────────────────────────────────────────────────────────
 // E-8 Phase A/B: voice別セリフ展開（本実装）
-// docs/dialogue-all-coach.xlsx「voice展開草案」248行（Keisuke承認済み）を
+// docs/archive/xlsx-old/dialogue-all-coach.xlsx「voice展開草案」248行（Keisuke承認済み、旧パス移動済み）を
 // スクリプトで機械変換。手打ち転記なし・元台帳と一字一句照合済み。
 // 観察レポート/引退アドバイス/雇用/解雇/PPV称賛の5箇所をvoiceKey別に出し分ける。
 // ─────────────────────────────────────────────────────────────

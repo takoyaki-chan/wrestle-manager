@@ -2,7 +2,7 @@
 
 ## 概要
 
-`tier3b-fixes.xlsx` に基づいて、`シャイ/丁寧` と `感情的/蠱惑` の組合せ欠落セリフ **370 行** をコードベースに反映する。
+`docs/archive/xlsx-old/tier3b-fixes.xlsx`(旧パス: `tier3b-fixes.xlsx`)に基づいて、`シャイ/丁寧` と `感情的/蠱惑` の組合せ欠落セリフ **370 行** をコードベースに反映する。
 
 ## 背景
 
@@ -17,7 +17,7 @@
 
 ## ファイル
 
-- 入力: `tier3b-fixes.xlsx`(Tier3B_fixes シート)
+- 入力: `docs/archive/xlsx-old/tier3b-fixes.xlsx`(旧パス: `tier3b-fixes.xlsx`、Tier3B_fixes シート)
 - 列構成: `No. / source / path / personality / archetype / dialogue_text / scene_text / notes`
   - `scene_text` は今回未使用(全行 voice/dialogue 系のため)
   - `notes` も未使用
