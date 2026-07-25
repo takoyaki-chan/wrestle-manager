@@ -7081,8 +7081,15 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   from { opacity: 0; transform: translateY(-20px); letter-spacing: 20px; }
   to   { opacity: 1; transform: translateY(0); letter-spacing: 8px; }
 }
+/* 書体は --font-ceremony トークン経由へ(見た目は不変。'Noto Serif JP' は
+   Shippori Mincho が読めない環境向けのフォールバックとして残す)。
+   なお .mdl-b-overlay の背景は var(--stage-bg) = Stage カテゴリなのに、
+   ここだけ式典用のセリフ書体を使っている。01-foundations 1-7 は
+   「Stage 画面でもセリフ書体は使わない」と定めているため形式上は違反だが、
+   引退・節目という場面の重さを出すために意図的に選ばれた可能性がある。
+   カテゴリをどちらに寄せるかは Keisuke 判断待ち(2026-07-26)。 */
 .mdl-b-title-main {
-  font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
+  font-family: var(--font-ceremony), 'Noto Serif JP', serif;
   font-size: 36px; font-weight: 700; color: var(--stage-text-main);
   letter-spacing: 8px; margin-bottom: 10px;
   text-shadow: 0 0 30px rgba(255,255,255,0.15);
