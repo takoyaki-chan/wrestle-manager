@@ -11277,7 +11277,8 @@ const App = {
     const finalizeCRAudio = () => _factionAudioClose('CHALLENGE_REQUEST');
     showChallengeRequestModal(payload, G, (choice) => {
       if (choice === 'YES') {
-        const reqName = _findRequester().name || '';
+        const requesterFighter = _findRequester();
+        const reqName = requesterFighter.name || '';
         // 試合カード生成（味方/相手陣が足りなければ却下扱い）
         const card = Engine.challengeRequest.buildMatchCard(G);
         if (!card) {
@@ -11307,19 +11308,35 @@ const App = {
           ? { ...G, _pendingIncomingChallengeMatch: booking }
           : { ...G, _pendingAwayChallengeMatch: booking };
         Storage.autoSave();
-        Audio.play('event');
-        showEventPopup({
-          type: 'fighter', id: payload.selfId,
-          name: reqName, tone: 'positive',
-          message: isInverse
-            ? `⚔ 挑戦状を受理。次の自団体興行で迎え撃つ`
-            : `⚔ 直訴を受理。次の通常興行週、まず敵地へ向かう`,
-          detail: isInverse
-            ? `${reqName} らの挑戦試合は、自団体興行の上位3試合に固定される。`
-            : `${reqName} らは次の自団体興行を組む前に、${card.opponentOrgName}の興行へ遠征する。`,
-        });
-        renderWeekScreen && renderWeekScreen();
-        finalizeCRAudio();
+
+        const finishAccept = () => {
+          Audio.play('event');
+          showEventPopup({
+            type: 'fighter', id: payload.selfId,
+            name: reqName, tone: 'positive',
+            message: isInverse
+              ? `⚔ 挑戦状を受理。次の自団体興行で迎え撃つ`
+              : `⚔ 直訴を受理。次の通常興行週、まず敵地へ向かう`,
+            detail: isInverse
+              ? `${reqName} らの挑戦試合は、自団体興行の上位3試合に固定される。`
+              : `${reqName} らは次の自団体興行を組む前に、${card.opponentOrgName}の興行へ遠征する。`,
+          });
+          renderWeekScreen && renderWeekScreen();
+          finalizeCRAudio();
+        };
+
+        // challenge-request-spec-v0.1 追加: YES 直後、直訴した本人の返事を頭上吹き出しで見せる
+        if (typeof showChallengeSendoffModal === 'function' && Engine.challengeRequest.pickLine) {
+          const sendoffRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC4A4, payload.selfId, payload.otherId));
+          const sendoffLine = Engine.challengeRequest.pickLine(requesterFighter, 'sendoff', sendoffRng, card.opponentOrgName);
+          if (sendoffLine) {
+            showChallengeSendoffModal(requesterFighter, sendoffLine, G, finishAccept);
+          } else {
+            finishAccept();
+          }
+        } else {
+          finishAccept();
+        }
       } else if (choice === 'NO') {
         G = Engine.challengeRequest.rejectPending(G);
         // 打診者の condition 一時悪化（次戦のパフォーマンスとセリフに反映）

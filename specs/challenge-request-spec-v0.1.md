@@ -1,11 +1,12 @@
 # 選手発信 挑戦試合打診イベント 仕様 v0.1
 
 **ファイル**：`specs/challenge-request-spec-v0.1.md`
-**最終更新**：2026-07-22
+**最終更新**：2026-07-25
 **実装状況**：全Phase完了。試合は受諾時に即時解決せず、必ず興行に所属する。相手発信は次の通常自団体興行の上位枠、自団体発信は次の通常興行週に相手団体興行へ先に遠征して解決する。固定季節興行・PPVには割り込まない。NOは condition -8 + CD52週。逆方向（AI解雇キャラ→player直訴）も firing-grudge-spec Phase 3b で接続済み。
 **2026-07-17 追加改修**：①Phase 3 を即時解決から「次回自団体興行への挿入解決」に変更 — YES 時は `_pendingReclaim`（タイトル奪還挑戦）と同じ予約パターンで `App.executeShow()` 直前に3シングル分のshowCardスロットへ注入し、通常興行と同じ解決パイプライン（injury/growth/economy含む）を通してから結果を反映。相手陣は一時ゲスト注入で処理し試合後に除去。バッジDOM表示は「打診自体がサプライズイベントで興行準備画面には現れない」ため見送り、事前ポップアップ+事後結果モーダルを「最低限の演出」として採用。②Phase 5 の相手リアクションセリフを archetype(6種)×結果(win/lose/draw)の36本に細分化（`CHALLENGE_REQUEST_OPPONENT_REACTIONS`、旧・受諾スタンス18本は`_accept`として保持）。詳細は `docs/worklog.md` 2026-07-17 該当項参照
 **2026-07-19 追加改修**：Phase 3 の興行組み込み方式を再設計。受諾した3試合は次回興行のメインイベント・セミ・第3試合として、会場の最大試合数の**内数**で先に固定する（7試合会場なら挑戦3+通常4）。出場6名は通常カード候補から除外して二重出場を禁止。各挑戦試合には、団体対抗という話題性を表す集客評価（match appeal）+12を付与する。興行準備画面には固定枠・通常残り枠数・ボーナスを明示する。
 **2026-07-22 追加改修**：開催地を発信方向で分離。AI側から届いた挑戦状（B3を含む）は次の通常自団体興行へ固定し、自団体選手からの直訴は次の通常興行週に、相手団体興行の遠征3試合として専用試合画面で先に行う。遠征を未実行のまま通常興行を実行した場合も、通常興行へ入る前に同じ遠征画面へ自動誘導する。遠征側の出場者は同日の自団体カードから除外し、遠征試合に自団体の会場収入・入場料収入は発生しない。試合結果・消耗・成長・負傷・キャリア・H2H・選手間関係は通常どおり反映する。挑戦試合の方向別関係変化と、団体信頼の非数値表示も確定。一時ゲストは保存対象外とし、例外復旧・ロード時にも自団体ロスターから除去する。
+**2026-07-25 追加改修（打診者セリフ全面刷新）**：§4.1 の性格×heatタイプ設計は不採用となり、Keisuke承認済みの `archetype × personality` 34セル×4場面（petition/直訴・sendoff/YES直後の返事・win/勝利報告・lose/敗戦報告）＝408本（`src/data.js` `CHALLENGE_LINES`）に置き換え。bond閾値によるhostile/respectful分岐と、style軸のフレーバー分岐（`CHALLENGE_REQUEST_LINES_STYLE`、旧・§4.1派生）は両方廃止し、両テーブルとも削除済み。抽選は `Engine.challengeRequest.pickLine(fighter, scene, rng, orgName)` に統一（フォールバック: `${archetype}_${personality}` → `${archetype}_normal` → `normal_normal`、本文中 `{org}` は相手団体名へ実行時置換）。新規で **sendoff場面**（YES直後、直訴した本人の返事を頭上吹き出しで表示。`src/ui-common.js` `showChallengeSendoffModal`、mdl-a型subject-stage+speechを流用）を追加。結果モーダルの自団体勝利セリフも汎用 `VICTORY_LINES` から `CHALLENGE_LINES.win` へ切替（`_challengeRequestResultReaction`）。AI代表のリアクション（§4.2 `CHALLENGE_REQUEST_OPPONENT_REACTIONS`）とNO時のティッカー（§4.3 `CHALLENGE_REQUEST_NO_LINES`）は対象外・変更なし。詳細は `docs/worklog.md` 2026-07-25 該当項参照
 **親仕様**：
 - `specs/relationship-system-spec-v2.0.md`（Bond / Rivalry 非対称2軸）
 - `specs/relationship-system-spec-v2.2.md`（A-1〜A-4 / B-3 / C 奪還挑戦）
@@ -155,7 +156,11 @@ heat = rivalry
 
 ## 4. セリフ設計（最重要）
 
-### 4.1 打診者セリフ（モーダル頭上吹き出し）
+### 4.1 打診者セリフ（モーダル頭上吹き出し）— 2026-07-25 全面刷新、旧設計（性格×heatタイプ）は不採用
+
+**旧設計は廃止**（下記は当時の企画メモとして残置。実装はしていない）。実装は `archetype × personality` の34セル×4場面408本（`CHALLENGE_LINES`）。詳細は本ファイル冒頭の「2026-07-25 追加改修」を参照。
+
+<details><summary>旧設計メモ（不採用・参考のみ）</summary>
 
 **性格 × heat タイプ** のマトリクスで用意。最低 **各性格 × 各タイプ × 3 パターン** = 7性格 × 2タイプ × 3 = 42 パターン。
 
@@ -170,6 +175,8 @@ heat = rivalry
 | competitive | 戦闘モード、勝負宣言 | 純粋な勝負欲 |
 
 鷹揚（composed）は `oyou-style-guide.md` に準拠。
+
+</details>
 
 ### 4.2 相手選手のリアクションセリフ（試合前ポップアップ等）
 
@@ -195,10 +202,11 @@ heat = rivalry
 
 | ファイル | 内容 |
 |---|---|
-| `src/relationships.js` | heat 計算 / 候補抽選 / `processWeeklyStoryEvents` への組み込み（L816 周辺） |
-| `src/ui-common.js` | `showChallengeRequestModal()` 新規（_mdlAOpen 基盤流用） |
+| `src/relationships.js` | heat 計算 / 候補抽選 / `Engine.challengeRequest.pickLine`（場面別セリフ抽選、petition/sendoff/win/lose） |
+| `src/ui-common.js` | `showChallengeRequestModal()`（petitionモーダル）/ `showChallengeSendoffModal()`（sendoffの頭上吹き出し）/ `_challengeRequestResultReaction()`（win/lose接続） |
+| `src/app.js` | `App.handleChallengeRequest()` — YES確定後にsendoffモーダルを挟んでから受理通知へ |
 | `src/management.js` | 興行カード差し込み / 団体戦スロット処理 / 結果反映 |
-| `src/data.js` | セリフテンプレ / 新聞ヘッドライン |
+| `src/data.js` | `CHALLENGE_LINES`（打診者セリフ34セル×4場面）/ `CHALLENGE_REQUEST_OPPONENT_REACTIONS`（相手AIリアクション）/ `CHALLENGE_REQUEST_NO_LINES`（NOティッカー）/ 新聞ヘッドライン |
 | `src/victory-lines.js` | 必要に応じて専用カテゴリ追加 |
 
 GameState 追加フィールド（保存対象）：

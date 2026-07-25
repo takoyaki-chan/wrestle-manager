@@ -26,20 +26,22 @@ function functionSource(name) {
 
 const build = new Function(
   'Engine',
-  'VICTORY_LINES',
   'CHALLENGE_REQUEST_OPPONENT_REACTIONS',
   `${functionSource('_challengeRequestResultReaction')}; return _challengeRequestResultReaction;`
 );
-const reactionFor = build(Engine, VICTORY_LINES, CHALLENGE_REQUEST_OPPONENT_REACTIONS);
+const reactionFor = build(Engine, CHALLENGE_REQUEST_OPPONENT_REACTIONS);
 const state = { rngSeed: 42, season: 3, week: 12 };
 
-const ourRepresentative = { id: 101, name: '自団体代表', archetype: 'normal', voiceLines: ['勝利の喜び'] };
+// challenge-request-lines-redesign: 自団体代表の勝利セリフは汎用 VICTORY_LINES ではなく
+// 挑戦試合専用テーブル CHALLENGE_LINES の archetype_personality.win から引く。
+const ourRepresentative = { id: 101, name: '自団体代表', archetype: 'normal', personality: 'normal' };
 const homeOpponent = { id: 202, name: '迎撃側代表', archetype: 'ojousama' };
-const forwardCard = { isInverse: false, teamA: [ourRepresentative], teamB: [homeOpponent] };
+const forwardCard = { isInverse: false, teamA: [ourRepresentative], teamB: [homeOpponent], otherOrgName: 'テスト団体' };
 const forward = reactionFor(forwardCard, { teamWin: 'A' }, state, true, false);
 assert.strictEqual(forward.fighter, ourRepresentative,
   'when our organization challenges and wins, our representative must speak');
-assert.strictEqual(forward.line, '勝利の喜び', 'forward victory uses the representative victory line');
+assert.ok(CHALLENGE_LINES.normal_normal.win.includes(forward.line),
+  'forward victory uses a CHALLENGE_LINES win line matched to archetype/personality');
 assert.strictEqual(forward.defeated, false, 'the winning representative portrait stays in full color');
 
 const awayChallenger = { id: 303, name: '相手挑戦者', archetype: 'ojousama' };

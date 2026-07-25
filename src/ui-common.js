@@ -10986,7 +10986,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
 
   // セリフ抽選（決定論的 rng）
   const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xC4A1, payload.selfId, payload.otherId));
-  const requesterLine = Engine.challengeRequest.pickRequesterLine(requester, bond, lineRng) || 'あの相手と試合させてください。';
+  const requesterLine = Engine.challengeRequest.pickRequesterLine(requester, lineRng, opponentOrgName) || 'あの相手と試合させてください。';
   const flavorLine = Engine.challengeRequest.pickFlavorLine(rivalry, bond, requester.name, opponent.name);
 
   // 取次コーチセリフ
@@ -11096,6 +11096,38 @@ if (typeof window !== 'undefined') {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// challenge-request-spec-v0.1 追加: YES 直後の返事（sendoff）を頭上吹き出しで見せる。
+// 独自モーダルは新設せず、社長室型(mdl-a)の subject-stage + speech（卒業レポート等と同じ部品）を流用する。
+// ─────────────────────────────────────────────────────────────────────────────
+function showChallengeSendoffModal(fighter, line, state, onDone) {
+  const run = () => {
+    if (!fighter || !line) { if (onDone) onDone(); return; }
+    const subjectHtml = _mdlASubjectStage(fighter, '', { small: true, speech: line });
+    const html = `
+      ${_mdlAHeader('📜 直訴への返事', _mdlASeasonLabel(state))}
+      ${subjectHtml}
+      <div class="mdl-a-prompt" style="padding-bottom:24px">
+        <button class="mdl-a-continue-btn" id="mdlAChallengeSendoffClose">— 送 り 出 す —</button>
+      </div>
+    `;
+    if (!_mdlAOpen(html)) { if (onDone) onDone(); return; }
+    const btn = document.getElementById('mdlAChallengeSendoffClose');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        Audio.play('click');
+        _mdlAClose();
+        if (onDone) onDone();
+      });
+    }
+  };
+  _enqueuePopup(run);
+}
+
+if (typeof window !== 'undefined') {
+  window.showChallengeSendoffModal = showChallengeSendoffModal;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // challenge-request-spec-v0.1 Phase 3: 挑戦試合 結果モーダル
 // 3シングル連戦の結果を「果たし状成就/不発/痛み分け」のクリームOfficeトーンで提示。
 // ─────────────────────────────────────────────────────────────────────────────
@@ -11111,13 +11143,19 @@ function _challengeRequestResultReaction(card, result, state, playerWon, playerL
   };
 
   // 自団体から挑んで勝ったときだけ、挑戦を実らせた自団体代表が喜びを語る。
+  // 汎用の VICTORY_LINES ではなく、挑戦試合専用テーブル(CHALLENGE_LINES)の win 場面を使う。
   if (!isInverse && playerWon) {
     const fighter = card.teamA && card.teamA[0];
-    const lines = fighter && (fighter.voiceLines || fighter.vl
-      || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fighter.id]));
+    const orgName = card.otherOrgName || card.opponentOrgName;
+    const rng = fighter ? Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 0, state.season || 0, state.week || 0, 0xC4A3, Number(fighter.id) || 0, 1
+    )) : null;
+    const line = (fighter && Engine.challengeRequest && Engine.challengeRequest.pickLine)
+      ? Engine.challengeRequest.pickLine(fighter, 'win', rng, orgName)
+      : null;
     return {
       fighter,
-      line: pickLine(lines, fighter, 1) || 'この勝利、みんなでつかみ取りました！',
+      line: line || 'この勝利、みんなでつかみ取りました！',
       label: '挑戦を実らせた代表',
       defeated: false,
     };

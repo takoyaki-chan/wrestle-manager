@@ -30,6 +30,7 @@
 | ~~`docs/shachoshitsu-care-rework-spec-v0.1.md` を specs/ へ昇格~~ | ✅ 完了（2026-07-17 実機確認OK → `specs/shachoshitsu-care-rework-spec-v1.0.md`）。派生宿題4点のうち**費用の給与連動化は完了（2026-07-17）**。残り3点（ペア行顔画像/「平均bond」表記廃止/定性表示）は同日の別UIバッチで先行完了済み |
 | personality 単軸セリフテーブルの archetype 組み替え — **全完了・承認済(2026-07-16)** | 残走査で発見した7本(タッグ6+VS_EX_EMPLOYER)を [personality][archetype] 二軸980本に変換(「俺」2行も解消)。文面980本は Keisuke 全文レビュー承認済み(草案3ファイル=確定版) |
 | ~~CR/B3 挑戦試合の興行所属統一・開催地分離・関係変化強化~~ | ✅ 完了（2026-07-22）。相手発信は次の通常自団体興行、自団体発信は同週の通常興行前に相手団体へ遠征（通常興行実行時も未処理なら先に自動誘導）。固定季節興行には割り込まず、敗者側の逆恨みを強化。所属団体への信頼値はUIから非表示 |
+| ~~挑戦試合セリフ全面刷新（CHALLENGE_LINES 34セル・sendoff新設）~~ | ✅ 完了（2026-07-25）。archetype×personality 34セル×4場面(petition/sendoff/win/lose)408本に置換、bond/style分岐は廃止。YES直後にsendoffを頭上吹き出し新規モーダルで追加、結果モーダルの自団体勝利セリフをVICTORY_LINESからCHALLENGE_LINES.winへ切替。旧CHALLENGE_REQUEST_LINES／_STYLEは削除。実機確認待ち |
 | ビッグマッチ直前の煽りミニイベント（音響刷新連動・2026-07-23 決定） | 王座戦／PPVラストマッチ／天頂戦決勝／JT決勝の直前に必ず挟む演出＋専用曲 WM-M06。要設計（match-flavor-popup-spec v0.1 が下地候補）。曲選定は audio-review ボードで先行（採用済: 王座戦(3)名義） |
 | 通常興行の進行曲(SP00)差し替え — 保留・即応可 | 一度実装→撤回(2026-07-23)。再有効化は `docs/show-progress-bgm-standby.md` の手順で約10分（待機音源・常設加工ツール tools/process-bgm-loop.js 準備済み） |
 

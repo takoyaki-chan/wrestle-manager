@@ -3627,38 +3627,32 @@ Engine.challengeRequest = {
     return { ...s, challengeRequest: cr };
   },
 
-  /** 打診者セリフ抽出（属性(style) × 性格 × タイプ で分岐）
-   *  60% で style-flavored を採用、40% で性格-base にフォールバック。未定義セルも base へ。 */
-  pickRequesterLine(requester, bond, rng) {
-    if (!requester) return null;
-    const archetype = requester.archetype || 'normal';
-    const style = requester.style || null;
-    const type = (bond != null && bond < 50) ? 'hostile' : 'respectful';
+  /** 場面別セリフ抽出（petition/sendoff/win/lose）。
+   *  キー: `${archetype}_${personality}`。未定義セルは `${archetype}_normal` → `normal_normal` の順でフォールバック。
+   *  orgName を渡すと本文中の {org} を相手団体名に置換する（無指定時は「相手団体」で安全に埋める）。 */
+  pickLine(fighter, scene, rng, orgName) {
+    if (!fighter || typeof CHALLENGE_LINES === 'undefined') return null;
+    const archetype = fighter.archetype || 'normal';
+    const personality = fighter.personality || 'normal';
 
-    const _pickFromBase = () => {
-      if (typeof CHALLENGE_REQUEST_LINES === 'undefined') return null;
-      const byArch = CHALLENGE_REQUEST_LINES[archetype] || CHALLENGE_REQUEST_LINES.normal;
-      if (!byArch) return null;
-      const arr = byArch[type] || byArch.respectful || byArch.hostile;
+    const tryCell = (key) => {
+      const cell = CHALLENGE_LINES[key];
+      const arr = cell && cell[scene];
       if (!arr || arr.length === 0) return null;
       const idx = rng ? Engine.rng.int(rng, 0, arr.length - 1) : 0;
       return arr[idx];
     };
 
-    // style-flavored を優先抽選（60%）
-    if (style && typeof CHALLENGE_REQUEST_LINES_STYLE !== 'undefined') {
-      const useStyle = rng ? Engine.rng.int(rng, 0, 99) < 60 : true;
-      if (useStyle) {
-        const byStyle = CHALLENGE_REQUEST_LINES_STYLE[style];
-        const byArch = byStyle && (byStyle[archetype] || byStyle.normal);
-        const arr = byArch && (byArch[type] || byArch.respectful || byArch.hostile);
-        if (arr && arr.length > 0) {
-          const idx = rng ? Engine.rng.int(rng, 0, arr.length - 1) : 0;
-          return arr[idx];
-        }
-      }
-    }
-    return _pickFromBase();
+    const line = tryCell(`${archetype}_${personality}`)
+      || tryCell(`${archetype}_normal`)
+      || tryCell('normal_normal');
+    if (!line) return null;
+    return line.replace(/\{org\}/g, orgName || '相手団体');
+  },
+
+  /** 打診者セリフ抽出（petition 場面のショートハンド）。 */
+  pickRequesterLine(requester, rng, orgName) {
+    return this.pickLine(requester, 'petition', rng, orgName);
   },
 
   /** 社長視点の関係性フレーバー1行（数値を出さない） */

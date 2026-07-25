@@ -14,6 +14,17 @@
 
 <!-- ▼▼ 新しいログはこの行の直後に追記（新しい順） ▼▼ -->
 
+## 2026-07-25 挑戦試合セリフを全面刷新(CHALLENGE_LINES 34セル・sendoff新設)
+
+CH-5実装ログ(下記)で保留していた「Keisuke書き直し方針のセリフ」が確定納品されたため接続。Keisuke承認済み・archetype×personality 34セル×4場面(petition/直訴・sendoff/YES直後の返事・win/勝利報告・lose/敗戦報告)＝408本を `src/data.js` に `CHALLENGE_LINES` として追加し、旧 `CHALLENGE_REQUEST_LINES`(archetype×hostile/respectful・42本)と `CHALLENGE_REQUEST_LINES_STYLE`(style×archetype×hostile/respectful・84本)を削除。bond閾値によるhostile/respectful分岐とstyle分岐は廃止し、archetype×personalityの直接キー(`${archetype}_${personality}`)に統一。未定義セルは `${archetype}_normal` → `normal_normal` の順でフォールバック。
+
+- **抽選ロジック**: `src/relationships.js` の `Engine.challengeRequest` に汎用 `pickLine(fighter, scene, rng, orgName)` を新設(フォールバック探索＋本文中 `{org}` を相手団体名へ置換、未指定時は「相手団体」で安全に埋める)。既存 `pickRequesterLine` はこれの petition 場面ショートハンドに縮小(シグネチャは `(requester, rng, orgName)` に変更、呼び出し元1箇所を追随)。
+- **sendoff新設**: 直訴YES直後、`src/app.js` `handleChallengeRequest` の該当分岐から `showChallengeSendoffModal`(`src/ui-common.js` 新設)を呼び、直訴した本人の返事を頭上吹き出しで見せてから従来の受理通知(showEventPopup)に進む。独自モーダルは作らず、卒業レポート等と同じ `_mdlASubjectStage(fighter, '', {small:true, speech:line})` を流用(mdl-a型・頭上吹き出し・「戻る禁止」原則に準拠)。
+- **win/lose接続**: `_challengeRequestResultReaction`(`src/ui-common.js`)の自団体勝利セリフを、汎用 `VICTORY_LINES`/`fighter.voiceLines` から `CHALLENGE_LINES` の `win` 場面へ切替。AI代表が喋るケース(`CHALLENGE_REQUEST_OPPONENT_REACTIONS`)は既存のまま(対象外)。引き分けの挙動も既存のまま。
+- **検証**: `node test/run-all.js` 84/84 PASS(既存の`challenge-request-result-reaction-test.js`はVICTORY_LINES依存だった箇所をCHALLENGE_LINES期待値に更新)。`node test/stale-lint.js` 陳腐化ゼロ。`node test/auto-sim.js 20 42` ALL CLEAR(0 violations)。追加のNode検証スクリプトで全34セル×4場面=136通りの解決・フォールバック2パターン・`{org}`置換漏れゼロを個別確認。
+- 対象: `src/data.js`(旧テーブル削除+新テーブル追加+export列挙更新)、`src/relationships.js`、`src/ui-common.js`、`src/app.js`、`test/challenge-request-result-reaction-test.js`。
+- 実機確認待ち: petition/sendoff/win/loseの4場面すべて(特にsendoffの頭上吹き出し表示と、forward/inverse両方向での{org}置換)。
+
 ## 2026-07-25 挑戦UI再設計 CH-4(団体エンブレム)/CH-5(勝利代表の拡大) 実装
 
 モックアップ承認(rev.2)を受けて、セリフに依存しないビジュアル2点を先行実装。対象 `src/ui-common.js`＋`src/index.html`。
