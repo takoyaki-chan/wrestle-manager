@@ -44,5 +44,17 @@ assert.ok(
   index.includes('.completion-overlay.show .team-bubble'),
   'team-bubble must be revealed once the completion overlay is shown'
 );
+// 2026-07-25 Keisuke決定: モバイルは吹き出しを画像の下へ反転させず、5人を1人ずつ順番に見せる。
+// 旧・偶数番だけ order:3 で反転させる場当たり対応は撤去済みであること。
+assert.ok(
+  !index.includes("nth-child(even) .team-bubble{order:3"),
+  'team-bubble must no longer flip below the portrait on even members (mobile one-speaker-at-a-time replaces it)'
+);
+assert.ok(
+  /@media\(max-width:900px\)[\s\S]*?teamBubbleSpotlight/.test(index) &&
+    index.includes('var(--greeting-index) * 2.6s') &&
+    index.includes('animation:teamBubbleSpotlight'),
+  'mobile team-bubble must cycle one speaker at a time via a --greeting-index-driven CSS animation instead of showing all 5 at once'
+);
 
 console.log('opening-scene-ui-test: ok');

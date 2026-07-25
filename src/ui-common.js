@@ -237,34 +237,6 @@ function _mdlBSpeech(speaker, text, variant, size) {
   </div>`;
 }
 
-/** B型 選手カラム(対峙構図用)。side: 'left'|'right', speech: {speaker,text,variant} | null, flag: {cls,label} */
-function _mdlBCol(fighter, opts) {
-  opts = opts || {};
-  const upperUrl = fighter && typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
-  const imgHtml = upperUrl
-    ? `<img class="mdl-b-upper" src="${upperUrl}" alt="" onerror="this.style.display='none'">`
-    : '';
-  const speech = opts.speech
-    ? _mdlBSpeech(opts.speech.speaker, opts.speech.text, opts.speech.variant, opts.speech.size)
-    : '';
-  const flag = opts.flag
-    ? `<div class="mdl-b-flag ${opts.flag.cls || 'a'}">${opts.flag.label}</div>`
-    : '';
-  const colCls = 'mdl-b-col' + (opts.side === 'right' ? ' right' : '');
-  const nameMeta = fighter
-    ? `<div class="mdl-b-name">${fighter.name || ''}</div>
-       <div class="mdl-b-org">${opts.meta || `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''}`}</div>`
-    : '';
-  return `<div class="${colCls}">
-    ${flag}
-    <div class="mdl-b-upper-wrap">
-      ${speech}
-      ${imgHtml}
-    </div>
-    ${nameMeta}
-  </div>`;
-}
-
 /** B型 ソロステージ(1選手中央)。opts.sepia で sepia 影 */
 function _mdlBSoloStage(fighter, speech, opts) {
   opts = opts || {};

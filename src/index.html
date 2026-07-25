@@ -596,14 +596,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .dojo-atmosphere.level-5 .dojo-atmosphere-text{color:#e8a87c;font-weight:600}
 .arena-header{margin-bottom:14px}
 .arena-header-img{width:100%;max-height:180px;object-fit:cover;border-radius:8px;opacity:0.85;display:block}
-/* §2 Coach Report Bubble */
-.coach-report-bubble{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;margin-top:8px;
-  background:rgba(212,168,67,0.05);border:1px solid rgba(212,168,67,0.15);border-radius:8px;
-  cursor:pointer;transition:background .2s}
-.coach-report-bubble:hover{background:rgba(212,168,67,0.10)}
-.coach-report-avatar{flex-shrink:0}
-.coach-report-name{font-size:12px;color:var(--gold);font-weight:700;margin-bottom:3px}
-.coach-report-text{font-size:13px;color:var(--text);line-height:1.5;font-style:italic}
 .train-row{display:grid;grid-template-columns:1.4fr 50px 70px 110px 100px 55px;align-items:center;padding:10px 8px;font-size:14px;border-bottom:1px solid rgba(200,190,170,0.04);gap:8px}
 .train-row:hover{background:rgba(212,168,67,0.04)}
 .train-row-header{font-weight:700;color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(200,190,170,0.08)}
@@ -1581,16 +1573,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .rivalry-popup-vs-col{display:flex;align-items:center;justify-content:center;padding-bottom:16px}
 .rivalry-popup-vs-icon{font-family:'Bebas Neue',sans-serif;font-size:42px;font-weight:900;
   color:#c41e3a;text-shadow:0 0 16px rgba(196,30,58,0.7);letter-spacing:2px;line-height:1}
-/* Dialogue bubbles */
-.rivalry-popup-dialogue{display:grid;grid-template-columns:1fr 1fr;gap:10px;
-  padding:10px 14px 16px;border-top:1px solid rgba(200,190,170,0.07)}
-.rivalry-popup-bubble{background:rgba(200,190,170,0.05);border:1px solid rgba(200,190,170,0.1);
-  border-radius:12px;padding:10px 12px;position:relative}
-.rivalry-popup-bubble-speaker{font-size:10px;color:var(--text-dim);font-weight:700;
-  margin-bottom:5px;letter-spacing:0.5px}
-.rivalry-popup-bubble-text{font-size:13px;line-height:1.75;color:var(--text);font-style:italic}
-.rivalry-popup-bubble-text::before{content:'「';color:rgba(255,255,255,0.4)}
-.rivalry-popup-bubble-text::after{content:'」';color:rgba(255,255,255,0.4)}
 /* Bonus & goodrival */
 .rivalry-popup-bonus{font-size:12px;color:var(--text-sub);margin:0 14px 12px;
   padding:8px 12px;background:rgba(212,168,67,0.08);border-radius:8px;border:1px solid rgba(212,168,67,0.15);text-align:center}
@@ -1995,14 +1977,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .notif-event-toast.notif-warning .notif-detail{color:rgba(229,115,115,0.65)}
 .notif-face{border-radius:50%;object-fit:cover;flex-shrink:0}
 .notif-event-toast .portrait{border-radius:50%;flex-shrink:0}
-/* ケアリアクション 大型トースト */
-.care-reaction-toast{text-align:center;min-width:280px;max-width:360px}
-.care-reaction-toast .notif-inner{flex-direction:column;align-items:center;gap:10px}
-.care-reaction-toast .care-r-name{font-size:14px;font-weight:700;color:var(--text-main);margin-top:2px}
-.care-reaction-toast .care-r-speech{font-size:13px;line-height:1.6;font-style:italic;color:var(--text-main);
-  padding:8px 14px;background:rgba(0,0,0,0.25);border-radius:8px;border-left:3px solid rgba(232,67,147,0.5);text-align:left}
-.care-reaction-toast.care-premium{min-width:320px;max-width:400px;
-  border:1px solid rgba(232,67,147,0.3);box-shadow:0 8px 32px rgba(232,67,147,0.15)}
 .care-r-changes{display:flex;flex-direction:column;gap:6px;margin-top:8px;width:100%;
   padding:10px 12px;background:rgba(0,0,0,0.2);border-radius:8px}
 .care-r-change{display:flex;justify-content:space-between;align-items:center;font-size:12px}
@@ -4366,10 +4340,26 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   .draft-roster-grid{grid-template-columns:1fr}
   .team-photo{gap:2px}
   .team-member{width:18%;min-width:60px}
-  /* スマホ: 吹き出しを上下交互に振り分けて横の重なりを避ける(偶数番は脚元側・尻尾は上向き) */
-  .team-bubble{font-size:9.5px;padding:5px 6px;margin:0 1px 9px}
-  .team-member:nth-child(even) .team-bubble{order:3;margin:9px 1px 0}
-  .team-member:nth-child(even) .team-bubble::after{bottom:auto;top:-7px;border-top:none;border-bottom:7px solid var(--cream-bg-card)}
+  /* スマホ: 吹き出しは画像の上に固定したまま、5人を同時表示せず1人ずつ自動で話者を切り替える
+     (2026-07-25 Keisuke決定。横の重なり回避を上下反転ではなく「一人ずつ喋らせる」で解決する)。
+     --greeting-index はapp.js側で各team-bubbleに設定済み(旧: 入場時の順次フェードイン用)。
+     これをそのままCSSアニメーションの開始オフセットに転用し、JSタイマー無しで1人ずつスポットライトする。 */
+  .team-bubble{font-size:9.5px;padding:5px 6px;margin:0 1px 9px;transition:none}
+  .completion-overlay.show .team-bubble{
+    opacity:0;
+    animation:teamBubbleSpotlight 13s ease-in-out infinite;
+    animation-delay:calc(1.4s + var(--greeting-index) * 2.6s);
+  }
+  @keyframes teamBubbleSpotlight{
+    0%{opacity:0;transform:translateY(6px)}
+    4%,16%{opacity:1;transform:translateY(0)}
+    20%,100%{opacity:0;transform:translateY(6px)}
+  }
+  /* 動きを減らす設定では、無限ループでセリフが出たり消えたりし続けるのを避ける。
+     横に重なる可能性は残るが、内容が隠れ続けるよりは良いと判断して全員を出したままにする。 */
+  @media(prefers-reduced-motion:reduce){
+    .completion-overlay.show .team-bubble{animation:none;opacity:1;transform:none}
+  }
   .opening-portraits{gap:30px}
   .opening-portrait{width:130px}
   .draft-paper{margin:20px 12px 40px}
@@ -7096,23 +7086,10 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   width: 100%; max-width: 1100px; align-items: end;
   padding: 0 40px; margin-bottom: 30px;
 }
-.mdl-b-col {
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-  animation: mdlBColSlamIn 900ms cubic-bezier(0.22,1,0.36,1) 400ms both;
-  position: relative;
-}
-.mdl-b-col.right { animation-delay: 700ms; }
 @keyframes mdlBColSlamIn {
   0%   { opacity: 0; transform: translateY(40px) scale(0.92); }
   70%  { opacity: 1; transform: translateY(-4px) scale(1.02); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-.mdl-b-col::before {
-  content: ''; position: absolute; left: 50%; bottom: -6%;
-  width: 260px; height: 300px; transform: translateX(-50%);
-  background: radial-gradient(ellipse 60% 80% at 50% 100%,
-    rgba(255,200,160,0.22) 0%, rgba(200,80,80,0.08) 40%, transparent 75%);
-  pointer-events: none; z-index: -1;
 }
 .mdl-b-upper {
   width: 260px; height: 320px; object-fit: cover; object-position: top center;
@@ -7123,13 +7100,6 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   position: relative; display: inline-block; margin-top: 110px;
 }
 .mdl-b-upper-wrap.small { margin-top: 96px; }
-.mdl-b-flag {
-  font-family: var(--font-label); font-size: 12px;
-  letter-spacing: 4px; padding: 4px 16px; margin-bottom: 10px;
-  border: 1px solid; border-radius: 2px;
-}
-.mdl-b-flag.a { color: #ffb090; border-color: rgba(255,150,120,0.6); }
-.mdl-b-flag.b { color: #ffc4a0; border-color: rgba(255,180,140,0.6); }
 .mdl-b-name {
   font-size: 20px; font-weight: 700; color: var(--stage-text-main);
   letter-spacing: 2px; margin-top: 12px;
@@ -7181,27 +7151,6 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
   text-align: center; margin-bottom: 30px; line-height: 1.8; max-width: 680px;
   animation: mdlBFadeIn 800ms ease 1400ms both;
 }
-.mdl-b-dialogue-row {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 30px;
-  width: 100%; max-width: 900px; padding: 0 40px; margin-bottom: 30px;
-  animation: mdlBFadeIn 800ms ease 1600ms both;
-}
-.mdl-b-dialogue-bubble {
-  padding: 14px 18px; border-radius: 4px;
-  background: rgba(20,15,15,0.6); border: 1px solid rgba(212,168,67,0.2); position: relative;
-}
-.mdl-b-dialogue-bubble.a { border-left: 3px solid #c38c54; }
-.mdl-b-dialogue-bubble.b { border-right: 3px solid #c38c54; text-align: right; }
-.mdl-b-dialogue-speaker {
-  font-family: var(--font-label); font-size: 10px;
-  color: var(--gold); letter-spacing: 2px; margin-bottom: 6px;
-}
-.mdl-b-dialogue-text {
-  font-size: 14px; color: var(--stage-text-main); line-height: 1.6; font-style: italic;
-}
-.mdl-b-dialogue-text::before { content: '「'; color: rgba(200,180,160,0.5); }
-.mdl-b-dialogue-text::after  { content: '」'; color: rgba(200,180,160,0.5); }
-
 .mdl-b-solo-line {
   max-width: 680px; text-align: center; margin-bottom: 30px;
   font-family: 'Shippori Mincho', serif; font-size: 17px;
