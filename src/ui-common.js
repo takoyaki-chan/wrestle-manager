@@ -4934,16 +4934,10 @@ function _pbPortraitImg(fighter) {
 function _pbFighterBlock(side, fighter, stateCls, metaText, dialogueLine) {
   const nameLink = fLink(fighter, { source: 'roster', skipQueue: true });
   const ovr = Engine.util.ov(fighter);
-  const isWinnerForSpeaker = stateCls === 'is-winner';
-  const isDrawForSpeaker = stateCls === 'is-draw';
+  // U1: 吹き出しの中身はセリフ本文のみ(話者名は画像下の.pb-fighter-nameが既に示している)
   let bubbleHtml = '';
   if (dialogueLine) {
-    const speakerCls = isDrawForSpeaker ? 'is-draw' : (isWinnerForSpeaker ? 'is-winner' : 'is-loser');
-    const prefix = isWinnerForSpeaker ? '🏆 ' : '';
-    bubbleHtml = `<div class="pb-dialogue">
-      <div class="pb-dialogue-speaker ${speakerCls}">${prefix}${escHtml(fighter.name)}</div>
-      「${escHtml(dialogueLine)}」
-    </div>`;
+    bubbleHtml = `<div class="pb-dialogue"><span class="pb-dialogue-line">「${escHtml(dialogueLine)}」</span></div>`;
   }
   const ovrHtml = side === 'left'
     ? `<span class="val">${ovr}</span><span class="lbl">OVR</span>`
@@ -11665,18 +11659,18 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
         ? `社長、挑戦試合 ${playerScore}-${aiScore}。${reqName}選手の直訴…結果が伴いませんでした。`
         : `社長、挑戦試合 ${playerScore}-${aiScore}の痛み分け。${reqName}選手と${oppName}選手の決着は持ち越しです。`);
 
+  // U1: 顔出し+セリフの縦順序(吹き出し→画像→名前→役割ラベル)をmockup-baseline v0.2に揃える。
+  // 吹き出しの中身はセリフ本文のみ(話者名・所属は入れない。話者は画像下の名前表示で示す)。
   const renderReactionScene = (rx) => {
     if (!rx || !rx.line || !rx.fighter) return '';
     const url = _factionUpperUrl(rx.fighter.id);
     const nm = escHtml(rx.fighter.name || '');
     return `<div class="crrm-reaction-scene${rx.defeated ? ' is-defeated' : ' is-victorious'}">
-        <div class="crrm-reaction-bubble">
-          <div class="crrm-reaction-speaker">${nm}<span>${escHtml(rx.label)}</span></div>
-          <div class="crrm-reaction-text">「${escHtml(rx.line)}」</div>
-        </div>
-        <div class="crrm-reaction-figure">
-          <div class="crrm-reaction-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((rx.fighter.name || '?').slice(0, 1))}</div>
+        <div class="crrm-reaction-bubble-slot"><div class="crrm-reaction-bubble"><span class="crrm-reaction-line">「${escHtml(rx.line)}」</span></div></div>
+        <div class="crrm-reaction-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((rx.fighter.name || '?').slice(0, 1))}</div>
+        <div class="crrm-reaction-copy">
           <div class="crrm-reaction-name">${nm}</div>
+          <div class="crrm-reaction-role">${escHtml(rx.label)}</div>
         </div>
       </div>`;
   };
@@ -11751,35 +11745,34 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
       .crrm-close-tray { display:flex; justify-content:center; margin-top:12px; }
       .crrm-close-btn { padding:10px 28px; background:var(--accent, #8b5a2b); color:#fff8e8; border:none; border-radius:4px; font-weight:600; cursor:pointer; font-size:13px; }
       .crrm-close-btn:hover { background:var(--accent-strong, #6b4520); }
-      .crrm-reaction-scene { display:flex; flex-direction:column; align-items:flex-start; margin:8px 0 14px; padding:0 14px; }
-      .crrm-reaction-bubble { position:relative; z-index:2; min-width:260px; max-width:520px; padding:10px 14px; background:#fffdf6; border:1px solid rgba(122,101,48,.3); border-radius:10px; box-shadow:0 5px 14px rgba(70,48,20,.12); }
-      .crrm-reaction-bubble::after { content:''; position:absolute; bottom:-11px; left:48px; border:6px solid transparent; border-top-color:#fffdf6; }
-      .crrm-reaction-speaker { display:flex; align-items:baseline; gap:8px; font-size:12px; font-weight:700; color:var(--ink, #2a1a08); margin-bottom:4px; }
-      .crrm-reaction-speaker span { font-size:9px; font-weight:500; color:var(--ink-soft, #5a4a3a); }
-      .crrm-reaction-text { font-size:13px; line-height:1.65; color:var(--ink, #2a1a08); font-style:italic; }
-      .crrm-reaction-figure { width:116px; margin:8px 0 0 8px; text-align:center; }
-      .crrm-reaction-portrait { display:grid; place-items:center; width:116px; height:132px; overflow:hidden; border-bottom:3px solid var(--accent-warm, #a06030); background:rgba(60,48,36,.12) center bottom/contain no-repeat; color:rgba(90,70,50,.45); font-size:36px; font-weight:800; filter:drop-shadow(0 6px 8px rgba(60,40,20,.18)); }
-      .crrm-reaction-name { margin-top:3px; font-size:10px; font-weight:700; color:var(--ink-soft, #5a4a3a); }
-      .crrm-reaction-scene.is-defeated .crrm-reaction-portrait { filter:grayscale(.9) saturate(.2) brightness(.76); opacity:.82; border-bottom-color:rgba(100,92,82,.55); }
+      /* U1: 試合結果表示の配置バランスを.emr-*(1試合結果ポップアップ)に統一。勝者・敗者で画像サイズは変えず
+         (段M=132x194固定)、灰色化と下辺境界の色だけで格差を示す。吹き出しは画像の上の予約枠。 */
+      .crrm-reaction-scene { display:flex; flex-direction:column; align-items:center; text-align:center; margin:8px auto 14px; padding:0 14px; max-width:260px; }
+      .crrm-reaction-bubble-slot { height:52px; display:flex; align-items:flex-end; justify-content:center; width:100%; margin-bottom:8px; }
+      .crrm-reaction-bubble { position:relative; width:max-content; max-width:220px; padding:7px 11px; background:#fffdf6; border:1px solid rgba(122,101,48,.3); border-radius:var(--radius-lg, 10px); box-shadow:0 5px 14px rgba(70,48,20,.12); font-size:13px; line-height:1.5; color:var(--ink, #2a1a08); }
+      .crrm-reaction-line { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+      .crrm-reaction-bubble::after { content:''; position:absolute; left:50%; transform:translateX(-50%); bottom:-7px; border:7px solid transparent; border-top-color:#fffdf6; border-bottom:0; }
+      .crrm-reaction-portrait { display:grid; place-items:center; width:132px; height:194px; overflow:hidden; border-radius:10px 10px 5px 5px; border:1px solid rgba(160,96,48,.25); border-bottom:3px solid var(--accent-warm, #a06030); background:rgba(60,48,36,.12) center top/cover no-repeat; color:rgba(90,70,50,.45); font-size:36px; font-weight:800; }
+      .crrm-reaction-copy { margin-top:8px; }
+      .crrm-reaction-name { font-size:15px; font-weight:700; color:var(--ink, #2a1a08); }
+      .crrm-reaction-role { margin-top:2px; font-size:11px; color:var(--ink-soft, #5a4a3a); }
+      /* この画面は勝者/敗者を1人ずつ別々に見せるため、左右対称性の制約が無い。
+         「勝ったんだから真ん中でもっと大きく」の指示どおり勝者だけ一段上げる(M -> XL)。
+         2人を並置する画面(.emr-*)では従来どおりサイズ差を付けない。 */
+      .crrm-reaction-scene.is-victorious .crrm-reaction-portrait { width:172px; height:258px; }
+      .crrm-reaction-scene.is-victorious .crrm-reaction-name { font-size:18px; }
+      .crrm-reaction-scene.is-defeated .crrm-reaction-portrait { filter:grayscale(.9) brightness(.72); border-bottom-color:rgba(120,112,102,.55); }
       .crrm-reaction-scene.is-defeated .crrm-reaction-bubble { background:#eeeae2; border-color:rgba(100,92,82,.3); }
       .crrm-reaction-scene.is-defeated .crrm-reaction-bubble::after { border-top-color:#eeeae2; }
-      .crrm-reaction-scene.is-victorious { align-items:center; text-align:center; }
-      .crrm-reaction-scene.is-victorious .crrm-reaction-bubble::after { left:50%; transform:translateX(-50%); }
-      .crrm-reaction-scene.is-victorious .crrm-reaction-figure { width:172px; margin:14px 0 0 0; position:relative; }
-      .crrm-reaction-scene.is-victorious .crrm-reaction-figure::before {
-        content:''; position:absolute; inset:-30% -20% auto; height:90%;
-        background:radial-gradient(ellipse at 50% 35%, rgba(212,168,67,.35), transparent 65%);
-        pointer-events:none; z-index:0;
-      }
-      .crrm-reaction-scene.is-victorious .crrm-reaction-portrait { width:172px; height:196px; position:relative; z-index:1; }
+      .crrm-reaction-scene.is-defeated .crrm-reaction-role { color:rgba(90,70,50,.6); }
       @media(max-width:600px) {
         .crrm-card { padding:14px 12px 12px; }
         .crrm-reaction-scene { padding:0 4px; }
-        .crrm-reaction-bubble { min-width:0; width:calc(100% - 30px); }
-        .crrm-reaction-portrait { width:96px; height:110px; }
-        .crrm-reaction-figure { width:96px; }
-        .crrm-reaction-scene.is-victorious .crrm-reaction-figure { width:140px; }
-        .crrm-reaction-scene.is-victorious .crrm-reaction-portrait { width:140px; height:160px; }
+        .crrm-reaction-bubble { max-width:calc(100% - 20px); }
+        .crrm-reaction-bubble-slot { height:40px; margin-bottom:5px; }
+        .crrm-reaction-portrait { width:96px; height:141px; }
+        .crrm-reaction-scene.is-victorious .crrm-reaction-portrait { width:124px; height:186px; }
+        .crrm-reaction-scene.is-victorious .crrm-reaction-name { font-size:15px; }
       }
     </style>
     <div class="fevt-overlay-office" id="challengeRequestResultOverlay">
@@ -12739,18 +12732,10 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
     }
   }
 
-  const ovrA = Engine.util.ov(fA), ovrB = Engine.util.ov(fB);
+  const ovrA = Math.round(Engine.util.ov(fA)), ovrB = Math.round(Engine.util.ov(fB));
   const finText = (typeof Engine.formatFinish === 'function')
     ? Engine.formatFinish(matchResult.finType, matchResult.finMove)
     : `${matchResult.finMove || ''} → ${matchResult.finType || ''}`;
-  const finMoveOnly = matchResult.finMove || '';
-  const finTypeOnly = matchResult.finType || '';
-  const stars = (typeof _pbStars === 'function') ? _pbStars(matchResult.mq || 0) : '';
-
-  const portraitStyle = (f) => {
-    const url = (typeof _factionUpperUrl === 'function') ? _factionUpperUrl(f.id) : '';
-    return url ? ` style="background-image:url('${url}');background-size:cover;background-position:center 20%"` : '';
-  };
 
   // 影響行を方向で色分け
   const impactRows = (applyResult.impactSummary || []).map(item => {
@@ -12772,41 +12757,33 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
   // バナー右側
   const weekLabel = `S${G.season} · W${G.week}`;
 
-  // スコアボード WINNER セル
-  const winnerCellHtml = isDraw
-    ? `<div class="c1r-score-val">⚖ DRAW</div>`
-    : `<div class="c1r-score-val win">🏆 ${escHtmlSafe(winChar.name)}</div>`;
-
-  // FINISH セル
-  const finishCellHtml = finMoveOnly
-    ? `<div class="c1r-score-val fin"><span class="move">${escHtmlSafe(finMoveOnly)}</span><br>→ ${escHtmlSafe(finTypeOnly)}</div>`
-    : `<div class="c1r-score-val fin">${escHtmlSafe(finTypeOnly || '—')}</div>`;
-
-  // バブル(セリフ)
-  const bubbleA = (!isDraw && fA === winChar && winnerLine)
-    ? `<div class="c1r-bubble-wrap"><div class="c1r-bubble-spk">${escHtmlSafe(fA.name)}</div><div class="c1r-bubble">${escHtmlSafe(winnerLine)}</div></div>`
-    : (!isDraw && fA === loseChar && loserLine)
-      ? `<div class="c1r-bubble-wrap"><div class="c1r-bubble-spk">${escHtmlSafe(fA.name)}</div><div class="c1r-bubble">${escHtmlSafe(loserLine)}</div></div>`
-      : '';
-  const bubbleB = (!isDraw && fB === winChar && winnerLine)
-    ? `<div class="c1r-bubble-wrap"><div class="c1r-bubble-spk">${escHtmlSafe(fB.name)}</div><div class="c1r-bubble">${escHtmlSafe(winnerLine)}</div></div>`
-    : (!isDraw && fB === loseChar && loserLine)
-      ? `<div class="c1r-bubble-wrap"><div class="c1r-bubble-spk">${escHtmlSafe(fB.name)}</div><div class="c1r-bubble">${escHtmlSafe(loserLine)}</div></div>`
-      : '';
-
-  const sideClass = (f) => isDraw ? '' : (f === winChar ? 'winner' : 'loser');
-  const verdictHtml = (f) => {
-    if (isDraw) return '';
-    return f === winChar
-      ? `<div class="c1r-verdict win">WIN</div>`
-      : `<div class="c1r-verdict lose">LOSE</div>`;
+  // U1: 試合結果表示は.emr-*(1試合結果ポップアップ)と同じ配置バランスに揃える(共通ヘルパー流用)。
+  // 派閥内対決=自団体内の試合なのでcrossOrgは常にfalse(団体バッジは出さない)。
+  const winnerSideForEmr = isDraw ? 'draw' : (won ? 'left' : 'right');
+  const bubbleFor = (f) => {
+    const line = isDraw ? '' : (f === winChar ? winnerLine : (f === loseChar ? loserLine : ''));
+    return line ? `<div class="emr-bubble"><span class="emr-bubble-line">「${escHtmlSafe(line)}」</span></div>` : '';
   };
+  const bout = `<div class="emr-bout">
+      ${_emrSingleSide(fA, 'left', winnerSideForEmr, factionTagA, 'OVR', ovrA, bubbleFor(fA), false, { profileContext: 'roster' })}
+      <div class="emr-center">
+        <div class="emr-winner">${isDraw ? 'DRAW' : 'WIN'}</div>
+        <div class="emr-finish">${escHtmlSafe(finText)}</div>
+        <div class="emr-turn">${matchResult.turns || 0} TURN</div>
+        <div class="emr-mq">MQ <b>${matchResult.mq || 0}</b></div>
+      </div>
+      ${_emrSingleSide(fB, 'right', winnerSideForEmr, factionTagB, 'OVR', ovrB, bubbleFor(fB), false, { profileContext: 'roster' })}
+    </div>`;
 
   const hpA = matchResult.hpLeft  || { final: 0, max: 100 };
   const hpB = matchResult.hpRight || { final: 0, max: 100 };
   const pctA = Math.max(0, Math.min(100, Math.round((hpA.final / Math.max(1, hpA.max)) * 100)));
   const pctB = Math.max(0, Math.min(100, Math.round((hpB.final / Math.max(1, hpB.max)) * 100)));
-  const hpFillCls = (f) => isDraw ? '' : (f === loseChar ? ' lose' : '');
+  const hpBlock = `<div class="emr-hp">
+      <div class="emr-hp-half"><span class="emr-hp-val">${hpA.final} / ${hpA.max}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${pctA}%"></div></div></div>
+      <span class="emr-hp-label">HP REMAINING</span>
+      <div class="emr-hp-half is-right"><span class="emr-hp-val">${hpB.final} / ${hpB.max}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${pctB}%"></div></div></div>
+    </div>`;
 
   const html = `
     <div class="c1r-card">
@@ -12814,56 +12791,8 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
         <div class="c1r-title">⚔ 派閥内対決 — 結果</div>
         <div class="c1r-meta">${escHtmlSafe(weekLabel)} · ${escHtmlSafe(factionName)}</div>
       </div>
-      <div class="c1r-score">
-        <div class="c1r-score-cell">
-          ${winnerCellHtml}
-          <div class="c1r-score-lbl">WINNER</div>
-        </div>
-        <div class="c1r-score-cell">
-          <div class="c1r-stars">${stars}</div>
-          <div class="c1r-score-val" style="font-size:16px;margin-top:2px">${matchResult.mq || 0}</div>
-          <div class="c1r-score-lbl">MQ</div>
-        </div>
-        <div class="c1r-score-cell">
-          ${finishCellHtml}
-          <div class="c1r-score-lbl">FINISH</div>
-        </div>
-        <div class="c1r-score-cell">
-          <div class="c1r-score-val">${matchResult.turns || 0}</div>
-          <div class="c1r-score-lbl">TURNS</div>
-        </div>
-      </div>
-      <div class="c1r-stage">
-        <div class="c1r-side ${sideClass(fA)}">
-          ${bubbleA}
-          <div class="c1r-portrait" onclick="event.stopPropagation();showFighterPopup(${fA.id},'roster')" title="クリックで選手詳細"${portraitStyle(fA)}></div>
-          <div class="c1r-name" onclick="event.stopPropagation();showFighterPopup(${fA.id},'roster')" title="クリックで選手詳細">${escHtmlSafe(fA.name)}</div>
-          <div class="c1r-faction">${escHtmlSafe(factionTagA)} · OVR ${ovrA}</div>
-          ${verdictHtml(fA)}
-        </div>
-        <div class="c1r-vs-col">
-          <div class="c1r-vs-mark">VS</div>
-        </div>
-        <div class="c1r-side ${sideClass(fB)}">
-          ${bubbleB}
-          <div class="c1r-portrait" onclick="event.stopPropagation();showFighterPopup(${fB.id},'roster')" title="クリックで選手詳細"${portraitStyle(fB)}></div>
-          <div class="c1r-name" onclick="event.stopPropagation();showFighterPopup(${fB.id},'roster')" title="クリックで選手詳細">${escHtmlSafe(fB.name)}</div>
-          <div class="c1r-faction">${escHtmlSafe(factionTagB)} · OVR ${ovrB}</div>
-          ${verdictHtml(fB)}
-        </div>
-      </div>
-      <div class="c1r-hp">
-        <div class="c1r-hp-row">
-          <div>
-            <div class="c1r-hp-label"><span>HP REMAINING</span><span class="v">${hpA.final} / ${hpA.max}</span></div>
-            <div class="c1r-hp-bar"><div class="c1r-hp-fill${hpFillCls(fA)}" style="width:${pctA}%"></div></div>
-          </div>
-          <div>
-            <div class="c1r-hp-label"><span>HP REMAINING</span><span class="v">${hpB.final} / ${hpB.max}</span></div>
-            <div class="c1r-hp-bar"><div class="c1r-hp-fill${hpFillCls(fB)}" style="width:${pctB}%"></div></div>
-          </div>
-        </div>
-      </div>
+      ${bout}
+      ${hpBlock}
       <div class="c1r-narr">${escHtmlSafe(applyResult.resultText || '')}</div>
       ${impactRows ? `<div class="c1r-impact"><div class="c1r-impact-h">影響</div>${impactRows}</div>` : ''}
       <div class="c1r-actions">
@@ -15584,16 +15513,22 @@ function _emrOrgBadgeHtml(orgId, orgName, side) {
   return `<div class="emr-org-badge ${sideCls}"><span class="emr-org-emblem">${emblem}</span><span class="emr-org-name">${escHtml(orgName)}</span></div>`;
 }
 
-function _emrSingleSide(fighter, side, winnerSide, role, statLabel, statValue, bubbleHtml, crossOrg) {
+/** opts.profileContext を渡すと画像と名前が選手プロフィールへの導線になる。
+ *  結果画面から選手を掘れる動線は画面ごとに有無が違うため、呼び出し側で明示する。 */
+function _emrSingleSide(fighter, side, winnerSide, role, statLabel, statValue, bubbleHtml, crossOrg, opts) {
   const isWinner = winnerSide === side;
   const stateClass = winnerSide === 'draw' ? 'is-draw' : isWinner ? 'is-winner' : 'is-loser';
   const displayRole = winnerSide === 'draw' ? 'Draw' : (role || (isWinner ? 'Winner' : 'Challenger'));
   const upper = _emrUpper(fighter);
   const orgName = fighter?.org || fighter?._orgName || fighter?._ppvOrgName || '';
+  const ctx = opts && opts.profileContext ? String(opts.profileContext).replace(/[^a-zA-Z0-9_]/g, '') : '';
+  const fid = Number(fighter?.id);
+  const openProfile = ctx && Number.isFinite(fid)
+    ? ` style="cursor:pointer" onclick="showFighterPopup(${fid},'${ctx}')"` : '';
   return `<div class="emr-side ${side === 'right' ? 'is-right ' : ''}${stateClass}">
     <div class="emr-bubble-slot">${bubbleHtml || ''}</div>
-    <div class="emr-upper">${upper ? `<img src="${upper}" alt="" onerror="this.style.display='none'">` : ''}</div>
-    <div class="emr-side-copy"><div class="emr-name">${escHtml(fighter?.name || '?')}</div>
+    <div class="emr-upper"${openProfile}>${upper ? `<img src="${upper}" alt="" onerror="this.style.display='none'">` : ''}</div>
+    <div class="emr-side-copy"><div class="emr-name"${openProfile}>${escHtml(fighter?.name || '?')}</div>
       <div class="emr-role">${escHtml(displayRole)}</div>${crossOrg ? _emrOrgBadgeHtml(fighter?.orgId, orgName, side) : ''}
       <div class="emr-stat"><small>${escHtml(statLabel || 'OVR')}</small>${escHtml(statValue != null ? statValue : _emrOvr(fighter))}</div>
     </div></div>`;

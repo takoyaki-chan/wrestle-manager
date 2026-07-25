@@ -706,6 +706,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   position:fixed;inset:0;z-index:290;display:flex;align-items:center;justify-content:center;padding:22px;
   background:rgba(104,108,116,.36);backdrop-filter:grayscale(.72) saturate(.28) brightness(.68) blur(2px);
   -webkit-backdrop-filter:grayscale(.72) saturate(.28) brightness(.68) blur(2px);animation:emrVeilIn .2s ease both}
+/* 通常興行=自団体の金(案A確定 2026-07-25)。HPバー/次へボタンは元々金だったため、ヘッダーや縁取りも
+   同じ--emr-accent系統に揃え、冬大会色(--ev-winter)との混同(ちぐはぐ)を解消する。 */
+.emr-layer.is-normal{--emr-accent:var(--gold);--emr-accent-rgb:var(--gold-rgb);--emr-metal:var(--gold-light)}
 .emr-layer.is-spring{--emr-accent:var(--ev-spring);--emr-accent-rgb:224,122,154;--emr-metal:#f5bfd0}
 .emr-layer.is-summer{--emr-accent:var(--ev-summer);--emr-accent-rgb:86,177,216;--emr-metal:#bdeeff}
 .emr-layer.is-autumn{--emr-accent:var(--ev-autumn);--emr-accent-rgb:193,80,60;--emr-metal:var(--gold-light)}
@@ -753,8 +756,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .emr-hp-half{display:flex;align-items:center;gap:7px}.emr-hp-half.is-right{flex-direction:row-reverse}.emr-hp-track{height:5px;background:#292d34;border-radius:4px;overflow:hidden;flex:1}.emr-hp-fill{height:100%;background:var(--emr-accent);border-radius:4px}.emr-hp-half.is-right .emr-hp-fill{margin-left:auto}.emr-hp-val{font-family:var(--font-display);font-size:13px;color:var(--stage-text-sub)}.emr-hp-label{font-family:var(--font-label);font-size:7px;letter-spacing:.12em;color:var(--stage-text-dim)}
 .emr-foot{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px) minmax(0,1fr);align-items:center;gap:12px;padding:13px 16px 15px;border-top:1px solid rgba(200,190,170,.1);background:rgba(0,0,0,.22)}.emr-foot-note{grid-column:1;grid-row:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:var(--stage-text-sub)}
 .emr-next{grid-column:2;grid-row:1;width:100%;border:1px solid rgba(var(--emr-accent-rgb),.46);border-radius:8px;background:rgba(var(--emr-accent-rgb),.1);color:var(--emr-metal);padding:12px 18px;font-family:var(--font-label);font-size:13px;font-weight:900;letter-spacing:.12em;cursor:pointer}
-.emr-layer.is-normal .emr-hp-fill{background:linear-gradient(90deg,#bd8b18,#f0c75e);box-shadow:0 0 7px rgba(215,170,50,.28)}.emr-layer.is-normal .emr-hp-val{color:#f0c75e}
-.emr-layer.is-normal .emr-next{border-color:#f0c75e;background:linear-gradient(135deg,#bd8b18,#f0c75e);color:#17130a;box-shadow:0 5px 18px rgba(215,170,50,.18)}
 .emr-bout.is-tag{grid-template-columns:1fr 128px 1fr}.emr-team{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0}.emr-team.is-loser{opacity:.62}.emr-pair{display:flex;align-items:flex-end;justify-content:center}.emr-pair .emr-upper{width:104px;height:152px}.emr-pair .emr-upper+.emr-upper{margin-left:-17px}.emr-team-name{font-size:13px;font-weight:900;line-height:1.4;text-align:center;margin-top:8px}
 @keyframes emrVeilIn{from{opacity:0}to{opacity:1}}@keyframes emrPopupIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
 @media(max-width:700px){.emr-layer{padding:9px}.emr-popup{max-height:calc(100vh - 18px)}.emr-head{grid-template-columns:52px 1fr auto;padding:10px}.emr-emblem{width:46px;height:46px}.emr-emblem img{width:39px;height:39px}.emr-title{font-size:14px}.emr-bout{grid-template-columns:1fr 82px 1fr;padding:10px 12px 8px;min-height:225px}.emr-bout.is-tag{grid-template-columns:1fr 72px 1fr}.emr-upper{width:72px;height:114px}.emr-bubble-slot{height:40px;margin-bottom:5px}.emr-side-copy{margin-top:5px}.emr-name{font-size:11px}.emr-org-badge{display:none}.emr-winner{font-size:21px}.emr-finish{font-size:8px}.emr-pair .emr-upper{width:54px;height:88px}.emr-team-name{font-size:10px;margin-top:5px}.emr-foot-note{display:none}.emr-foot{display:flex;justify-content:center}.emr-next{width:min(300px,100%)}.emr-bubble{max-width:170px;font-size:9px}}
@@ -2901,6 +2902,9 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .pb-event-summary.pb-theme-summer{--pb-event-accent:var(--ev-summer);--pb-event-accent-rgb:86,177,216;--pb-event-metal:#bdeeff}
 .pb-event-summary.pb-theme-autumn{--pb-event-accent:var(--ev-autumn);--pb-event-accent-rgb:193,80,60;--pb-event-metal:#f0d078}
 .pb-event-summary.pb-theme-ppv{--pb-event-accent:#d63d46;--pb-event-accent-rgb:214,61,70;--pb-event-metal:#f0d078}
+/* 通常興行=自団体の金(.emr-layer.is-normalと同じ案A)。--goldは直上でこのブロック自身に再定義されているため
+   var(--gold)を参照すると循環参照になる(→無効値)。同じ理由で他テーマも既にリテラル値で定義している。 */
+.pb-event-summary.pb-theme-normal{--pb-event-accent:#d4a843;--pb-event-accent-rgb:212,168,67;--pb-event-metal:#f0d078}
 .pb-event-summary .pb-banner{background:linear-gradient(180deg,rgba(var(--pb-event-accent-rgb),.13),rgba(var(--pb-event-accent-rgb),.025) 58%,transparent);border-bottom-color:rgba(var(--pb-event-accent-rgb),.22)}
 .pb-event-summary .pb-banner::before{background:linear-gradient(90deg,transparent,var(--pb-event-metal),transparent)}
 .pb-summary-emblem{width:58px;height:58px;margin:0 auto 9px;border:1px solid rgba(var(--pb-event-accent-rgb),.34);border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.22);color:var(--pb-event-metal);font-family:var(--font-display);font-size:28px;box-shadow:0 0 22px rgba(var(--pb-event-accent-rgb),.1)}
@@ -2916,6 +2920,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .show-result-overlay:has(.pb-theme-summer){background:radial-gradient(ellipse 80% 48% at 50% 8%,rgba(86,177,216,.14),transparent 62%),#08090c}
 .show-result-overlay:has(.pb-theme-autumn){background:radial-gradient(ellipse 80% 48% at 50% 8%,rgba(193,80,60,.14),transparent 62%),#08090c}
 .show-result-overlay:has(.pb-theme-ppv){background:radial-gradient(ellipse 80% 48% at 50% 8%,rgba(214,61,70,.16),transparent 62%),#08090c}
+.show-result-overlay:has(.pb-theme-normal){background:radial-gradient(ellipse 80% 48% at 50% 8%,rgba(212,168,67,.12),transparent 62%),#08090c}
 @media(max-width:600px){.pb-event-summary{padding-left:8px;padding-right:8px}.pb-event-summary .pb-banner{padding-left:10px;padding-right:10px}.pb-event-summary .pb-attend-hero{margin:9px;padding-left:9px;padding-right:9px}.pb-event-summary .pb-attend-hero-val{font-size:48px}.pb-event-summary .pb-attend-hero-cap{font-size:22px}.pb-event-summary .pb-attend-hero-pct{font-size:20px;margin-left:5px}.pb-summary-emblem{width:50px;height:50px}.pb-summary-emblem img{width:43px;height:43px}}
 .pb-banner{position:relative;margin-top:16px;padding:24px 24px 20px;text-align:center;background:linear-gradient(180deg,rgba(212,168,67,0.08) 0%,rgba(0,0,0,0) 100%);border-bottom:1px solid rgba(212,168,67,0.15)}
 .pb-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
@@ -3003,7 +3008,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .pb-portrait-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:28px;color:var(--stage-text-dim);letter-spacing:2px}
 .pb-mrow.is-main .pb-portrait{width:108px;height:162px}
 .pb-fighter.is-winner .pb-portrait{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,168,67,0.15),0 0 20px rgba(212,168,67,0.3)}
-.pb-fighter.is-loser .pb-portrait{opacity:0.78}
+.pb-fighter.is-loser .pb-portrait img{filter:grayscale(.9) brightness(.72)}
 .pb-fighter.is-draw .pb-portrait{border-color:rgba(208,122,62,0.4);box-shadow:0 0 18px rgba(208,122,62,0.15)}
 
 .pb-fighter-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
@@ -3061,10 +3066,8 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 
 .pb-dialogue{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:rgba(245,240,230,0.96);color:#1a1713;padding:8px 13px 10px;border-radius:8px;font-size:12px;line-height:1.55;box-shadow:0 3px 12px rgba(0,0,0,0.5);min-width:150px;max-width:220px;white-space:normal;text-align:center;z-index:3}
 .pb-dialogue::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);width:0;height:0;border:7px solid transparent;border-top-color:rgba(245,240,230,0.96);border-bottom:0}
-.pb-dialogue-speaker{font-family:var(--font-label);font-size:9px;letter-spacing:1.5px;font-weight:700;text-transform:uppercase;margin-bottom:3px;text-align:center}
-.pb-dialogue-speaker.is-winner{color:var(--gold-deep)}
-.pb-dialogue-speaker.is-loser{color:var(--c-rivalry)}
-.pb-dialogue-speaker.is-draw{color:var(--c-warning)}
+/* U1: 吹き出しの中身はセリフ本文のみ(話者名は画像下の.pb-fighter-nameが担う)。行数は2行で打ち切る */
+.pb-dialogue-line{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pb-mrow.has-dialogue{padding-top:92px}
 .pb-mrow.has-dialogue.is-main{padding-top:104px}
 
@@ -3161,8 +3164,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
    is-main.is-jt のみへの追加 = JT/天頂戦の単試合結果画面のみに影響、他のpb-mrow画面(通常興行/PPV等)は変化なし */
 .pb-mrow.is-main.is-jt .pb-portrait{width:150px;height:225px}
 .pb-mrow.is-jt .pb-fighter.is-winner .pb-portrait{border-color:var(--pb-tourney-color,var(--ev-summer));box-shadow:0 0 0 1px var(--pb-tourney-color,var(--ev-summer)),0 0 28px var(--pb-tourney-color,var(--ev-summer))}
-.pb-mrow.is-jt .pb-fighter.is-loser .pb-portrait{opacity:1}
-.pb-mrow.is-jt .pb-fighter.is-loser .pb-portrait img{filter:grayscale(0.85) brightness(0.6)}
+/* 敗者のグレースケールは共通ルール(.pb-fighter.is-loser .pb-portrait img)に統一済み(U1)。JT専用の上書きは撤去 */
 .pb-mrow.is-jt .pb-fighter.is-winner .pb-fighter-name{color:var(--pb-tourney-color,var(--ev-summer))}
 .pb-mrow.is-jt .pb-fighter.is-winner .pb-fighter-ovr .val{color:var(--pb-tourney-color,var(--ev-summer))}
 .pb-mrow.is-jt.is-tenchosen{--pb-tourney-color:var(--gold);--pb-tourney-tag:'👑 天頂戦'}
@@ -5432,46 +5434,16 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .fc1m-rivalry strong{color:#9c6b1a;font-family:'Oswald',sans-serif;font-size:14px}
 
 /* Common-1 派閥内対決 試合後結果モーダル */
-.c1r-card{background:#0f0a06;border:1px solid #2a1f10;border-radius:6px;padding:0;width:100%;max-width:760px;margin:0 auto;color:#d8c89a;overflow:hidden}
+/* U1: 派閥内対決結果は「試合結果表示」系統として.emr-*(1試合結果ポップアップ)の配置バランス・部品を流用する。
+   自団体内の試合なので常にis-normal相当の金テーマ。--emr-accent系だけこのカードにローカル定義して.emr-bout/.emr-hp等の
+   共有クラスをそのまま差し込める形にする(新しい同型CSSを増やさない)。 */
+.c1r-card{--emr-accent:var(--gold);--emr-accent-rgb:var(--gold-rgb);--emr-metal:var(--gold-light);
+  background:#0f0a06;border:1px solid #2a1f10;border-radius:6px;padding:0;width:100%;max-width:760px;margin:0 auto;color:#d8c89a;overflow:hidden}
 .c1r-banner{padding:12px 22px;border-bottom:1px solid #2a1f10;display:flex;justify-content:space-between;align-items:center}
 .c1r-title{font-size:15px;font-weight:700;color:#e8e0d0;letter-spacing:1px}
 .c1r-meta{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1.5px;color:#8a7549}
-.c1r-score{display:grid;grid-template-columns:1fr 1fr 1.4fr 1fr;gap:1px;background:#2a1f10;border-bottom:1px solid #2a1f10}
-.c1r-score-cell{background:#0f0a06;text-align:center;padding:14px 8px}
-.c1r-score-val{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;color:#e8e0d0;letter-spacing:1px}
-.c1r-score-val.win{color:var(--gold);font-size:18px}
-.c1r-score-val.fin{font-size:13px;color:#bfa97a;letter-spacing:0;line-height:1.4}
-.c1r-score-val.fin .move{color:var(--gold);font-weight:700}
-.c1r-score-lbl{font-family:'Oswald',sans-serif;font-size:9px;color:#8a7549;letter-spacing:2px;margin-top:4px}
-.c1r-stars{color:var(--gold);font-size:13px;letter-spacing:1px}
-.c1r-stage{display:grid;grid-template-columns:1fr 70px 1fr;gap:0;padding:24px 22px 14px;align-items:start}
-.c1r-side{position:relative;text-align:center;padding-top:90px}
-.c1r-bubble-wrap{position:absolute;top:0;left:50%;transform:translateX(-50%);width:240px;display:flex;flex-direction:column;align-items:center;pointer-events:none}
-.c1r-bubble-spk{font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:2px}
-.c1r-side.winner .c1r-bubble-spk{color:var(--gold)}
-.c1r-side.loser .c1r-bubble-spk{color:#8a6a52}
-.c1r-bubble{position:relative;background:#f0f0f0;color:#1a1208;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.55;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.25);min-height:46px;display:flex;align-items:center;justify-content:center;max-width:240px}
-.c1r-bubble::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #f0f0f0}
-.c1r-portrait{width:140px;height:170px;background:linear-gradient(135deg,#3a2a18,#1a0f04) center/cover no-repeat;border-radius:4px;border:2px solid #4a3520;margin:0 auto 8px;cursor:pointer;transition:border-color .15s,transform .15s}
-.c1r-side.winner .c1r-portrait{border-color:var(--gold);box-shadow:0 0 24px rgba(212,168,67,0.35)}
-.c1r-side.loser .c1r-portrait{filter:saturate(0.55) opacity(0.78)}
-.c1r-portrait:hover{transform:translateY(-2px)}
-.c1r-name{font-size:16px;font-weight:700;color:#f0d890;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(212,168,67,0.3);text-underline-offset:3px}
-.c1r-name:hover{color:var(--gold)}
-.c1r-side.loser .c1r-name{color:#bfa080}
-.c1r-faction{font-size:11px;color:#8a7549;margin-top:2px}
-.c1r-verdict{display:inline-block;font-family:'Bebas Neue','Oswald',sans-serif;letter-spacing:4px;font-size:13px;padding:3px 14px;border-radius:3px;margin-top:8px}
-.c1r-verdict.win{background:rgba(212,168,67,0.18);color:var(--gold);border:1px solid rgba(212,168,67,0.5)}
-.c1r-verdict.lose{background:rgba(120,80,60,0.15);color:#8a6a52;border:1px solid rgba(120,80,60,0.4)}
-.c1r-vs-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:130px}
-.c1r-vs-mark{font-family:'Bebas Neue','Oswald',sans-serif;font-size:30px;color:#5a4520;letter-spacing:2px}
-.c1r-hp{padding:0 22px 14px}
-.c1r-hp-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;font-family:'Oswald',sans-serif;font-size:11px;color:#8a7549;letter-spacing:1px}
-.c1r-hp-label{display:flex;justify-content:space-between;margin-bottom:3px}
-.c1r-hp-label .v{color:#bfa97a;font-weight:700}
-.c1r-hp-bar{height:6px;background:#2a1f10;border-radius:3px;overflow:hidden;border:1px solid #1a1208}
-.c1r-hp-fill{height:100%;background:linear-gradient(90deg,#d4a843,#a07832)}
-.c1r-hp-fill.lose{background:linear-gradient(90deg,#7a5340,#3a2418)}
+.c1r-card .emr-bout{padding:20px 22px 12px;min-height:0}
+.c1r-card .emr-hp{margin:0 22px 12px;border-top-color:rgba(200,190,170,0.1)}
 .c1r-narr{margin:0 22px 14px;padding:12px 14px;background:rgba(212,168,67,0.06);border-left:3px solid var(--gold);font-size:13px;line-height:1.7;color:#d8c89a}
 .c1r-impact{margin:0 22px 14px;padding:12px 14px;background:rgba(0,0,0,0.25);border-radius:4px}
 .c1r-impact-h{color:#8a7549;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;margin-bottom:6px}
@@ -5484,6 +5456,7 @@ color:var(--text);font-size:14px;cursor:pointer;text-align:left;transition:backg
 .c1r-actions{display:flex;justify-content:center;padding:0 22px 22px}
 .c1r-btn{padding:10px 28px;font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:13px;border-radius:3px;cursor:pointer;border:1px solid var(--gold);background:rgba(212,168,67,0.15);color:var(--gold)}
 .c1r-btn:hover{background:rgba(212,168,67,0.25)}
+@media(max-width:700px){.c1r-card .emr-bout{grid-template-columns:1fr 82px 1fr;padding:10px 12px 8px}.c1r-card .emr-upper{width:72px;height:114px}.c1r-card .emr-bubble-slot{height:40px;margin-bottom:5px}.c1r-card .emr-name{font-size:11px}.c1r-card .emr-winner{font-size:21px}.c1r-card .emr-finish{font-size:8px}}
 
 /* F08 subject-duel（2リーダー並置＋VS＋吹き出し） */
 .fevt-subject-duel {

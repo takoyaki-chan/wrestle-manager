@@ -15,7 +15,7 @@ assert(css.includes('.emr-layer.is-tenchosen,.emr-layer.is-ppv{--emr-accent:#d63
 assert(css.includes('--emr-accent:var(--ev-winter)'), '通常興行は旧冬色の白金を標準色にする');
 assert(css.includes('grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr)') && css.includes('padding:16px 26px 16px'), '選手画像はモックアップどおり中央寄りに配置する(縦積み・画像を内側へ)');
 assert(css.includes('.emr-foot{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px) minmax(0,1fr)') && css.includes('.emr-next{grid-column:2;grid-row:1;width:100%') && css.includes('padding:12px 18px'), '進行ボタンは試合前ボタン相当の大きさで下中央へ配置する');
-assert(css.includes('.emr-layer.is-normal .emr-hp-fill{background:linear-gradient(90deg,#bd8b18,#f0c75e)') && css.includes('.emr-layer.is-normal .emr-next{border-color:#f0c75e'), '通常興行のHPと進行ボタンは試合前画面と同じ黄色系にする');
+assert(css.includes('.emr-layer.is-normal{--emr-accent:var(--gold);--emr-accent-rgb:var(--gold-rgb);--emr-metal:var(--gold-light)}'), '通常興行は自団体の金(--gold系統)を標準色にし、冬色との混同(ちぐはぐ)を解消する');
 
 assert(ui.includes('function showEventMatchResultPopup(opts)'), '共通ポップアップレンダラーが必要');
 assert(ui.includes('function closeEventMatchResultPopup()'), '背面画面を維持したまま閉じる処理が必要');
