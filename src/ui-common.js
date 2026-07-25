@@ -11142,26 +11142,38 @@ function _challengeRequestResultReaction(card, result, state, playerWon, playerL
     return lines[Engine.rng.int(rng, 0, lines.length - 1)];
   };
 
-  // 自団体から挑んで勝ったときだけ、挑戦を実らせた自団体代表が喜びを語る。
-  // 汎用の VICTORY_LINES ではなく、挑戦試合専用テーブル(CHALLENGE_LINES)の win 場面を使う。
-  if (!isInverse && playerWon) {
-    const fighter = card.teamA && card.teamA[0];
-    const orgName = card.otherOrgName || card.opponentOrgName;
-    const rng = fighter ? Engine.rng.create(Engine.rng.derive(
-      state.rngSeed || 0, state.season || 0, state.week || 0, 0xC4A3, Number(fighter.id) || 0, 1
-    )) : null;
-    const line = (fighter && Engine.challengeRequest && Engine.challengeRequest.pickLine)
-      ? Engine.challengeRequest.pickLine(fighter, 'win', rng, orgName)
-      : null;
-    return {
-      fighter,
-      line: line || 'この勝利、みんなでつかみ取りました！',
-      label: '挑戦を実らせた代表',
-      defeated: false,
-    };
+  // 勝っても負けても、映すのは「自団体の代表」。この画面は社長への報告であり、
+  // 自団体が敗れた回で相手が勝ち名乗りを上げる構図にはしない（2026-07-25 Keisuke裁定）。
+  // 自団体側は forward なら teamA（挑んだ側）、inverse なら teamB（迎え撃った側）。
+  // 引き分けだけは従来どおりAI側リアクション（CHALLENGE_LINES に draw を持たないため）。
+  const selfSideFighter = isInverse ? (card.teamB && card.teamB[0]) : (card.teamA && card.teamA[0]);
+  if ((playerWon || playerLost) && selfSideFighter
+      && Engine.challengeRequest && Engine.challengeRequest.pickLine) {
+    const scene = playerWon ? 'win' : 'lose';
+    const selfOrgName = isInverse
+      ? (card.requesterOrgName || card.otherOrgName)
+      : (card.otherOrgName || card.opponentOrgName);
+    const selfRng = Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 0, state.season || 0, state.week || 0, 0xC4A3,
+      Number(selfSideFighter.id) || 0, playerWon ? 1 : 3
+    ));
+    const selfLine = Engine.challengeRequest.pickLine(selfSideFighter, scene, selfRng, selfOrgName);
+    if (selfLine) {
+      const selfLabel = playerWon
+        ? (isInverse ? '挑戦を退けた代表' : '挑戦を実らせた代表')
+        : (isInverse ? '受けて、敗れた代表' : '挑んで、敗れた代表');
+      return { fighter: selfSideFighter, line: selfLine, label: selfLabel, defeated: !playerWon };
+    }
   }
 
-  // それ以外はAI側代表。ただし inverse で敗れた場合だけは、迎え撃って敗れた「自団体」代表を映す。
+  // 上記で拾えない場合（主に引き分け、またはセリフ欠落時）はAI側代表を映す。
+  return _challengeRequestOpponentReaction(card, result, state, playerWon, playerLost);
+}
+
+/** 相手団体（AI側）代表のリアクション。勝敗は teamB＝相手陣視点で解釈する。
+ *  自団体が勝った回では、報告の前に映す「敗れた相手の顔」としても使う。 */
+function _challengeRequestOpponentReaction(card, result, state, playerWon, playerLost) {
+  const isInverse = !!card.isInverse;
   const fighter = isInverse ? (card.teamA && card.teamA[0]) : (card.teamB && card.teamB[0]);
   const outcome = playerWon ? 'lose' : (playerLost ? 'win' : 'draw');
   const label = outcome === 'lose'
@@ -11170,31 +11182,18 @@ function _challengeRequestResultReaction(card, result, state, playerWon, playerL
     ? (isInverse ? '挑戦を実らせた代表' : '受けて、勝った代表')
     : (isInverse ? '挑んだ代表・決着つかず' : '受けた代表・決着つかず');
 
-  // 映るのが自団体の選手なら、AI用テーブルではなく挑戦試合専用テーブル(CHALLENGE_LINES)を使う。
-  // inverse かつプレイヤー敗北 = 迎え撃った自団体代表が teamB 側に立つケース。
-  const selfSideFighter = (isInverse && playerLost) ? (card.teamB && card.teamB[0]) : null;
-  if (selfSideFighter && Engine.challengeRequest && Engine.challengeRequest.pickLine) {
-    const orgName = card.requesterOrgName || card.otherOrgName;
-    const selfRng = Engine.rng.create(Engine.rng.derive(
-      state.rngSeed || 0, state.season || 0, state.week || 0, 0xC4A3, Number(selfSideFighter.id) || 0, 3
-    ));
-    const selfLine = Engine.challengeRequest.pickLine(selfSideFighter, 'lose', selfRng, orgName);
-    if (selfLine) {
-      return { fighter: selfSideFighter, line: selfLine, label: '受けて、敗れた代表', defeated: true };
-    }
-  }
-
   const arch = (fighter && fighter.archetype) || 'normal';
   const pool = typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined'
     ? (CHALLENGE_REQUEST_OPPONENT_REACTIONS[arch] || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal)
     : null;
   const lines = pool && ((pool[outcome] && pool[outcome].length > 0) ? pool[outcome] : pool._accept);
-  return {
-    fighter,
-    line: pickLine(lines, fighter, 2),
-    label,
-    defeated: outcome === 'lose',
-  };
+  const rng = fighter ? Engine.rng.create(Engine.rng.derive(
+    state.rngSeed || 0, state.season || 0, state.week || 0, 0xC4A3, Number(fighter.id) || 0, 2
+  )) : null;
+  const line = (Array.isArray(lines) && lines.length > 0 && rng)
+    ? lines[Engine.rng.int(rng, 0, lines.length - 1)]
+    : '';
+  return { fighter, line, label, defeated: outcome === 'lose' };
 }
 
 function showChallengeRequestResultModal(card, result, state, onClose) {
@@ -11243,22 +11242,32 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
         ? `社長、挑戦試合 ${playerScore}-${aiScore}。${reqName}選手の直訴…結果が伴いませんでした。`
         : `社長、挑戦試合 ${playerScore}-${aiScore}の痛み分け。${reqName}選手と${oppName}選手の決着は持ち越しです。`);
 
-  const reaction = _challengeRequestResultReaction(card, result, state, playerWon, playerLost);
-  const reactionFighter = reaction.fighter;
-  const reactionPortraitUrl = reactionFighter ? _factionUpperUrl(reactionFighter.id) : '';
-  const reactionName = reactionFighter ? escHtml(reactionFighter.name || '') : '';
-  const reactionHtml = reaction.line && reactionFighter
-    ? `<div class="crrm-reaction-scene${reaction.defeated ? ' is-defeated' : ' is-victorious'}">
+  const renderReactionScene = (rx) => {
+    if (!rx || !rx.line || !rx.fighter) return '';
+    const url = _factionUpperUrl(rx.fighter.id);
+    const nm = escHtml(rx.fighter.name || '');
+    return `<div class="crrm-reaction-scene${rx.defeated ? ' is-defeated' : ' is-victorious'}">
         <div class="crrm-reaction-bubble">
-          <div class="crrm-reaction-speaker">${reactionName}<span>${escHtml(reaction.label)}</span></div>
-          <div class="crrm-reaction-text">「${escHtml(reaction.line)}」</div>
+          <div class="crrm-reaction-speaker">${nm}<span>${escHtml(rx.label)}</span></div>
+          <div class="crrm-reaction-text">「${escHtml(rx.line)}」</div>
         </div>
         <div class="crrm-reaction-figure">
-          <div class="crrm-reaction-portrait"${reactionPortraitUrl ? ` style="background-image:url('${reactionPortraitUrl}')"` : ''}>${reactionPortraitUrl ? '' : escHtml((reactionFighter.name || '?').slice(0, 1))}</div>
-          <div class="crrm-reaction-name">${reactionName}</div>
+          <div class="crrm-reaction-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((rx.fighter.name || '?').slice(0, 1))}</div>
+          <div class="crrm-reaction-name">${nm}</div>
         </div>
-      </div>`
-    : '';
+      </div>`;
+  };
+
+  const reaction = _challengeRequestResultReaction(card, result, state, playerWon, playerLost);
+  // 自団体が勝った回は、報告の前に「敗れた相手団体の代表」の顔を挟む（2026-07-25 Keisuke要望）。
+  // 相手側リアクションが主役になっている引き分け等では二重に出さない。
+  const foeReaction = (playerWon && Engine.rng)
+    ? _challengeRequestOpponentReaction(card, result, state, playerWon, playerLost)
+    : null;
+  const showFoeFirst = !!(foeReaction && foeReaction.fighter && foeReaction.line
+    && reaction && reaction.fighter && foeReaction.fighter !== reaction.fighter);
+  const reactionHtml = (showFoeFirst ? renderReactionScene(foeReaction) : '')
+    + renderReactionScene(reaction);
 
   const matchRows = result.matches.map((m, i) => {
     const winSide = m.winner === 'left' ? 'A' : (m.winner === 'right' ? 'B' : 'draw');

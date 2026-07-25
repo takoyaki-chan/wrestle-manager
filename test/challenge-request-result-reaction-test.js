@@ -27,9 +27,13 @@ function functionSource(name) {
 const build = new Function(
   'Engine',
   'CHALLENGE_REQUEST_OPPONENT_REACTIONS',
-  `${functionSource('_challengeRequestResultReaction')}; return _challengeRequestResultReaction;`
+  `${functionSource('_challengeRequestResultReaction')};
+   ${functionSource('_challengeRequestOpponentReaction')};
+   return { self: _challengeRequestResultReaction, foe: _challengeRequestOpponentReaction };`
 );
-const reactionFor = build(Engine, CHALLENGE_REQUEST_OPPONENT_REACTIONS);
+const built = build(Engine, CHALLENGE_REQUEST_OPPONENT_REACTIONS);
+const reactionFor = built.self;
+const foeReactionFor = built.foe;
 const state = { rngSeed: 42, season: 3, week: 12 };
 
 // challenge-request-lines-redesign: 自団体代表の勝利セリフは汎用 VICTORY_LINES ではなく
@@ -44,15 +48,33 @@ assert.ok(CHALLENGE_LINES.normal_normal.win.includes(forward.line),
   'forward victory uses a CHALLENGE_LINES win line matched to archetype/personality');
 assert.strictEqual(forward.defeated, false, 'the winning representative portrait stays in full color');
 
+// 敗戦回も「社長への報告」は自団体代表が行う（2026-07-25 Keisuke裁定）。
+// 自団体が挑んで敗れた場合、勝った相手ではなく敗れた自陣代表が lose セリフを話す。
+const forwardLost = reactionFor(forwardCard, { teamWin: 'B' }, state, false, true);
+assert.strictEqual(forwardLost.fighter, ourRepresentative,
+  'when our organization challenges and loses, our representative still reports');
+assert.ok(CHALLENGE_LINES.normal_normal.lose.includes(forwardLost.line),
+  'forward defeat uses a CHALLENGE_LINES lose line');
+assert.strictEqual(forwardLost.defeated, true, 'the defeated representative portrait is marked for grayscale styling');
+
 const awayChallenger = { id: 303, name: '相手挑戦者', archetype: 'ojousama' };
-const ourDefender = { id: 404, name: '自団体迎撃者', archetype: 'normal' };
+const ourDefender = { id: 404, name: '自団体迎撃者', archetype: 'normal', personality: 'normal' };
 const inverseCard = { isInverse: true, teamA: [awayChallenger], teamB: [ourDefender] };
 const inverse = reactionFor(inverseCard, { teamWin: 'B' }, state, true, false);
-assert.strictEqual(inverse.fighter, awayChallenger,
-  'when the opponent challenges and loses, the opponent challenger must speak');
-assert.ok(CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama.lose.includes(inverse.line),
+assert.strictEqual(inverse.fighter, ourDefender,
+  'when the opponent challenges and is repelled, our defender reports the win');
+assert.ok(CHALLENGE_LINES.normal_normal.win.includes(inverse.line),
+  'a repelled challenge uses a CHALLENGE_LINES win line for our defender');
+assert.strictEqual(inverse.defeated, false, 'the winning defender portrait stays in full color');
+
+// 勝った回は、報告の前に「敗れた相手団体の代表」の顔を挟む（Keisuke 要望）。
+const foe = foeReactionFor(inverseCard, { teamWin: 'B' }, state, true, false);
+assert.strictEqual(foe.fighter, awayChallenger, 'the beaten opposing representative is the one shown');
+assert.ok(CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama.lose.includes(foe.line),
   'the defeated challenger uses an archetype-specific loss line');
-assert.strictEqual(inverse.defeated, true, 'the defeated challenger portrait is marked for grayscale styling');
+assert.strictEqual(foe.defeated, true, 'the defeated challenger portrait is marked for grayscale styling');
+assert.ok(ui.includes('const showFoeFirst'),
+  'the result modal renders the beaten opponent scene before our representative report');
 
 assert.ok(ui.includes('crrm-reaction-bubble'), 'the reaction line is rendered as a speech bubble');
 assert.ok(ui.includes('crrm-reaction-portrait'), 'the speaker upper-body portrait is rendered below the bubble');
