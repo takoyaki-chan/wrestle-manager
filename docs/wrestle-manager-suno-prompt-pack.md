@@ -260,6 +260,22 @@ Instrumental NES/Famicom 2A03 generational-change loop, old noble motif answered
 Instrumental grand symphonic RPG ending performed only with NES/Famicom 2A03 sounds, royal overture, broad heroic melody, pulse-wave brass and strings, triangle timpani, monumental, emotional, seamless loop, not pop.
 ```
 
+### WM-H06 ゲームオーバー（団体解散） — 45秒 / Music
+
+破産によるゲームオーバー画面と、解散セレモニー5スライドで鳴らす。H04 エンディングの暗い対になる曲。
+恐怖や罰ではなく「別れ」。灯の落ちた会場に社長ひとりが残っている情景（bankruptcy-redesign-spec v1.1「予兆→抵抗→別れ」の着地点）。
+
+```text
+Instrumental NES/Famicom 2A03 game-over loop, slow minor lament for a promotion closing its doors, hollow pulse-wave melody over sparse triangle bass, long rests, quiet dignity in defeat, tender and resigned rather than frightening, no sting or jump-scare, seamless loop.
+```
+
+同一プロンプトで数回生成し、H04 と続けて聴いて「同じ団体の終わり方」に聴こえるものを採る。
+明るく解決するコード進行になったら次を末尾へ足す。
+
+```text
+Stay unresolved, do not land on a major cadence.
+```
+
 ---
 
 ## I. 将来機能

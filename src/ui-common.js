@@ -14109,7 +14109,8 @@ function showEndingCeremony(data, onDone) {
   function nextSlide() {
     // BGM開始（最初の「次へ」クリック時、ユーザー操作内で）
     if (!bgmStarted) {
-      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) { Audio.fileBgm.play('../bgm/8bit-jo-jokyoku.mp3', { loop: true, volume: 0.10 }); } } catch(e) {}
+      // WM-H04 エンディング
+      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) { Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_h04_v01.ogg', { loop: true, volume: 0.15 }); } } catch(e) {}
       bgmStarted = true;
     }
 

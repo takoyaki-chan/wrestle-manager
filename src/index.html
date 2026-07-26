@@ -214,13 +214,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .app{max-width:1200px;margin:0 auto;padding:12px}
 
 /* Header */
-.top-bar{display:grid;grid-template-columns:minmax(max-content,1.35fr) minmax(0,2fr) auto;align-items:center;padding:10px 16px;
+/* 日付列は内容ぶんだけ取り、余白は情報列に回す（王座が埋まった状態でも1行に収めるため）。 */
+.top-bar{display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr) auto;align-items:center;padding:10px 16px;
   background:var(--panel-bg);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:12px;gap:18px}
 .top-bar-clock{display:flex;align-items:center;gap:8px;min-width:0}
 .top-bar-date{min-width:0;color:var(--gold-light);font-family:var(--font-display);font-size:30px;font-weight:700;line-height:1;
   letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.top-bar-info{display:grid;grid-template-columns:repeat(5,minmax(max-content,1fr));align-items:center;gap:14px;min-width:0}
-.info-item{display:flex;align-items:center;gap:5px;min-width:0}
+/* 王座が埋まると「王座」項目がポートレート＋選手名＋防衛数まで伸びる。等幅グリッドだと
+   列からはみ出して音声ボタンに重なるため、収まらないときは折り返す flex にしている。 */
+.top-bar-info{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 14px;min-width:0}
+.info-item{display:flex;align-items:center;gap:5px;min-width:0;flex:0 0 auto}
 .info-label{color:var(--text-sub);font-size:10px;font-family:var(--font-label);letter-spacing:1px;text-transform:uppercase}
 .info-val{font-weight:700;font-size:16px;white-space:nowrap}
 .info-val.positive{color:var(--green)}
@@ -228,6 +231,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .info-val.gold{color:var(--gold-light)}
 .top-bar-audio{display:flex;align-items:center;border-left:1px solid var(--border);padding-left:8px}
 .top-bar-audio button{min-width:36px;min-height:36px;background:none;border:0;color:var(--text-sub);cursor:pointer;opacity:.62}
+/* 中間幅（タブレット〜小さめのPCウィンドウ）: 1行に日付＋5項目＋音声ボタンが収まらないので、
+   スマホ版と同じく「日付｜音声ボタン」／「情報行」の2段に折る。 */
+@media(max-width:1100px){
+  .top-bar{grid-template-columns:minmax(0,1fr) auto;gap:6px 12px}
+  .top-bar-clock{grid-column:1;grid-row:1}
+  .top-bar-audio{grid-column:2;grid-row:1;border-left:0;padding-left:0}
+  .top-bar-info{grid-column:1 / -1;grid-row:2;justify-content:flex-start}
+}
 
 /* Week dashboard season track */
 .week-overview-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:12px}

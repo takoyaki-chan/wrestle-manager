@@ -29597,43 +29597,10 @@ const EVENT_LINES_BY_KEY = {
 // ─────────────────────────────────────────────────────────────────────────────
 // v2.1: クレジット情報 — ending-gameover-spec-v1.0.md §4.4
 // ─────────────────────────────────────────────────────────────────────────────
+// 音響刷新 Phase 2 (2026-07-26): 自作音源への差し替えが完了したフリー素材は掲載を終了した。
+// 掲載を残すのは「いまゲームが実際に鳴らしている」曲だけ。ゲームオーバー曲は後継曲が未制作のため継続使用中。
 const CREDITS = {
   music: [
-    {
-      title:   '8bit/RPG/オープニング「序・序曲」',
-      artist:  'MOMIZizm MUSiC（もみじば）',
-      source:  'フリーBGM MOMIZizm MUSiC',
-      url:     'https://music.storyinvention.com/',
-      license: 'フリー音楽素材',
-    },
-    {
-      title:   'RPG/感動のフィナーレ「エンディング・テーマ」',
-      artist:  'MOMIZizm MUSiC（もみじば）',
-      source:  'フリーBGM MOMIZizm MUSiC',
-      url:     'https://music.storyinvention.com/',
-      license: 'フリー音楽素材',
-    },
-    {
-      title:   'MusMus-BGM-052',
-      artist:  'watson',
-      source:  'フリーBGM・音楽素材 MusMus',
-      url:     'https://musmus.main.jp/',
-      license: 'フリー音楽素材',
-    },
-    {
-      title:   'MusMus-BGM-125',
-      artist:  'watson',
-      source:  'フリーBGM・音楽素材 MusMus',
-      url:     'https://musmus.main.jp/',
-      license: 'フリー音楽素材',
-    },
-    {
-      title:   'elevate_perfect',
-      artist:  '岩城こん。',
-      source:  'イワシロ音楽素材',
-      url:     'https://iwashiro-sounds.work/',
-      license: 'フリー音楽素材',
-    },
     {
       title:   'gameover001',
       artist:  '岩城こん。',
