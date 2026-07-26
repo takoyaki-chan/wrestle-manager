@@ -28,7 +28,12 @@ assert(ui.includes('function _emrCrossOrg(opts)'), '対外試合(左右の所属
 assert(ui.includes('function _emrTeamHp(result, fighterIds)'), '通常タッグ結果はperFighterからチームHPを集計する');
 assert(ui.includes('theme: \'normal\''), '通常興行テーマを接続する');
 assert(ui.includes("normal:    { cls: 'is-normal'"), '通常興行だけの黄色系アクセントを適用できるテーマクラスが必要');
-assert((ui.match(/nextLabel: '進む →'/g) || []).length >= 2, '通常興行の結果ボタンは試合途中・興行終了を問わず「進む」に統一する');
+// 2026-07-26 決定を差し替え: 旧「試合途中・興行終了を問わず『進む』」→
+// **「次の試合へ / 結果へ」の二択**（Keisuke 裁定）。
+// 「進む」はいちばん多く見る画面なのに、いちばん何も言っていない言葉だった。
+// 文言そのものの検査は test/match-next-label-test.js が持つ。ここでは**接続**だけ見る。
+assert((ui.match(/nextLabel: _matchNextLabel\(idx >= total - 1\)/g) || []).length >= 2,
+  '通常興行の結果ボタンは、最終試合かどうかで「次の試合へ / 結果へ」を出し分ける');
 assert(ui.includes('theme: \'spring\''), '春タッグテーマを接続する');
 assert(ui.includes('theme: \'summer\''), '夏ジュニアテーマを接続する');
 assert(ui.includes('theme: \'autumn\''), '秋団体戦テーマを接続する');

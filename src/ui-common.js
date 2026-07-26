@@ -6203,7 +6203,7 @@ function renderPPVMatchResultPopup(idx, onContinue) {
     finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine,
     chips: [match.isSummit ? 'PPV MAIN EVENT' : `PPV 第${idx + 1}試合`, result.mq === bestMq ? '大会ベストMQ' : '', match.isRivalry ? '因縁対決' : ''],
     hpLeft: result.hpLeft, hpRight: result.hpRight, hpLabel: 'FINAL HP', footNote: winnerSide === 'draw' ? 'PPV ・ 決着つかず' : `PPV ・ ${winner?.name || ''} 勝利`,
-    nextLabel: pp.results.every(Boolean) ? '大会結果へ →' : '次のカードへ →', onContinue,
+    nextLabel: _matchNextLabel(pp.results.every(Boolean)), onContinue,
   });
 }
 
@@ -15238,6 +15238,16 @@ function closeEventMatchResultPopup() {
   if (typeof next === 'function') next();
 }
 
+/** 試合が終わったあとの「次へ」ボタンの文言。**行き先の名前で呼ばない。**
+ *  2026-07-26 統一: 以前は `進む` `戦況ボードへ` `次のカードへ` `リーグ表へ戻る`
+ *  `大会結果へ` `優勝発表へ` の6通りが並立し、**同じ動作に8つの言い方**があった。
+ *  行き先の名前(戦況ボード/リーグ表)は、その画面を知っている人にしか通じない。
+ *  **「次の試合が続くのか、終わったのか」の二択**だけで書く。
+ *  大会が増えても崩れないので、新しい画面もこの2語から選ぶこと。 */
+function _matchNextLabel(isLast) {
+  return isLast ? '結果へ →' : '次の試合へ →';
+}
+
 function showEventMatchResultPopup(opts) {
   if (!opts) return;
   const old = document.querySelector('.emr-layer');
@@ -15275,7 +15285,7 @@ function showEventMatchResultPopup(opts) {
     <div class="emr-bout ${isTag ? 'is-tag' : ''}">${sides}</div>
     ${chips ? `<div class="emr-chips">${chips}</div>` : ''}
     <div class="emr-hp"><div class="emr-hp-half"><span class="emr-hp-val">${hpL.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpL.pct}%"></div></div></div><span class="emr-hp-label">${escHtml(opts.hpLabel || 'FINAL HP')}</span><div class="emr-hp-half is-right"><span class="emr-hp-val">${hpR.text}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${hpR.pct}%"></div></div></div></div>
-    <footer class="emr-foot"><span class="emr-foot-note">${escHtml(opts.footNote || '')}</span><button type="button" class="emr-next" onclick="closeEventMatchResultPopup()">${escHtml(opts.nextLabel || '進む →')}</button></footer>
+    <footer class="emr-foot"><span class="emr-foot-note">${escHtml(opts.footNote || '')}</span><button type="button" class="emr-next" onclick="closeEventMatchResultPopup()">${escHtml(opts.nextLabel || _matchNextLabel(false))}</button></footer>
   </article>`;
   _eventMatchResultContinue = typeof opts.onContinue === 'function' ? opts.onContinue : null;
   document.body.appendChild(layer);
@@ -15312,7 +15322,7 @@ function renderRegularMatchResultPopup(idx, onContinue) {
       progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', 'TAG MATCH'], ['MQ', String(result.mq ?? '—')]],
       isTag: true, teamLeft: { members: membersA, org: leftOrg, orgId: leftOrgId }, teamRight: { members: membersB, org: rightOrg, orgId: rightOrgId }, winnerSide, winnerFighter,
       finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, chips: ['通常興行', 'タッグマッチ'], hpLeft: _emrTeamHp(result, idsA), hpRight: _emrTeamHp(result, idsB),
-      footNote: '通常興行 ・ 試合結果', nextLabel: '進む →', onContinue,
+      footNote: '通常興行 ・ 試合結果', nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
     });
     return;
   }
@@ -15331,7 +15341,7 @@ function renderRegularMatchResultPopup(idx, onContinue) {
     left: { ...left, org: leftOrg, orgId: leftOrgId }, right: { ...right, org: rightOrg, orgId: rightOrgId }, winnerSide, winnerFighter: winner,
     leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'NO CONTEST' : match.isTitle ? 'TITLE WIN' : 'WIN',
     finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine, chips: [isChallenge ? '挑戦試合' : match.isTitle ? 'タイトルマッチ' : '通常興行', `MQ ${result.mq}`], hpLeft: result.hpLeft, hpRight: result.hpRight,
-    footNote: isChallenge ? `${leftOrg} vs ${rightOrg}` : '通常興行 ・ 試合結果', nextLabel: '進む →', onContinue,
+    footNote: isChallenge ? `${leftOrg} vs ${rightOrg}` : '通常興行 ・ 試合結果', nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
   });
 }
 
@@ -15365,7 +15375,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
       leftRole: leftWins ? 'Finalist' : 'Eliminated', rightRole: leftWins ? 'Eliminated' : 'Finalist', resultLabel: isFinal ? 'CHAMPION' : 'ADVANCE',
       finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq, victoryLine: winLine,
       chips: [isFinal ? 'ジュニア王者' : '次戦進出', `${roundLabel}`, `MQ ${match.mq}`], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : '回復後HP',
-      footNote: `夏季ジュニア ・ ${winner.name} ${isFinal ? '優勝' : '勝ち上がり'}`, nextLabel: isFinal ? '優勝発表へ →' : '次の試合へ →',
+      footNote: `夏季ジュニア ・ ${winner.name} ${isFinal ? '優勝' : '勝ち上がり'}`, nextLabel: _matchNextLabel(isFinal),
       onContinue: () => App.jtAdvanceAfterResult(ri, mi),
     });
     return;
@@ -15463,7 +15473,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   html += `</div>`; // .pb-matches
 
   // Footer
-  const nextLabel = isFinal ? '優勝発表へ →' : '次の試合へ →';
+  const nextLabel = _matchNextLabel(isFinal);
   html += `<div class="pb-footer">
     <button type="button" class="pb-close-btn" onclick="App.jtAdvanceAfterResult(${ri},${mi})">${nextLabel}</button>
   </div>`;
@@ -15866,7 +15876,7 @@ function renderSpringTagLeagueMatchResultPopup(match, isFinal, onContinue) {
     resultLabel: match.isDraw ? 'NO CONTEST' : isFinal ? 'CHAMPION' : 'TEAM WIN', finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
     chips: [match.isDraw ? '勝点 +1' : 'リーグ勝点 +3', closeBonus ? '接戦ボーナス +1' : '', isFinal ? '春の王者' : 'リーグ戦'],
     hpLeft: match.conditionAfter?.[match.orgA], hpRight: match.conditionAfter?.[match.orgB], hpLabel: 'TEAM WEAR', footNote: `春タッグ ・ ${_stlOrgTeam(winnerOrg)?.orgName || '決着つかず'}`,
-    nextLabel: isFinal ? '優勝発表へ →' : 'リーグ表へ戻る →', onContinue,
+    nextLabel: _matchNextLabel(isFinal), onContinue,
   });
 }
 
@@ -16553,7 +16563,7 @@ function renderAutumnWarBoutResultPopup(match, bout, onContinue) {
     leftStatLabel: 'COND', leftStat: Math.round(bout.conditionAfter?.[left.id] || 0), rightStatLabel: 'COND', rightStat: Math.round(bout.conditionAfter?.[right.id] || 0),
     resultLabel: bout.draw ? 'NO CONTEST' : 'SURVIVE', finish: Engine.formatFinish(bout.finType, bout.finMove), turns: bout.turns || 0, mq: bout.mq,
     chips: [`団体スコア ${score[displayOrgIds.left] || 0}–${score[displayOrgIds.right] || 0}`, match.winnerOrg ? '団体戦決着' : '勝ち残り', roundLabel], hpLeft: bout.conditionAfter?.[left.id], hpRight: bout.conditionAfter?.[right.id], hpLabel: 'CONDITION',
-    footNote: `秋団体戦 ・ ${bout.draw ? '決着つかず' : `${winner.name} 生存`}`, nextLabel: '戦況ボードへ →', onContinue,
+    footNote: `秋団体戦 ・ ${bout.draw ? '決着つかず' : `${winner.name} 生存`}`, nextLabel: _matchNextLabel(false), onContinue,
   });
 }
 
@@ -17093,7 +17103,7 @@ function renderTenchosenMatchResult(ri, mi) {
       leftRole: leftWins ? 'Finalist' : 'Eliminated', rightRole: leftWins ? 'Eliminated' : 'Finalist', resultLabel: isFinal ? 'CHAMPION' : 'ADVANCE',
       finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
       chips: [`第${_tcEditionNo()}回天頂戦`, isFinal ? '最強王者' : '次戦進出', `MQ ${match.mq}`], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : '回復後HP',
-      footNote: `天頂戦 ・ ${winner.name} ${isFinal ? '優勝' : '勝ち上がり'}`, nextLabel: isFinal ? '優勝発表へ →' : '次の試合へ →',
+      footNote: `天頂戦 ・ ${winner.name} ${isFinal ? '優勝' : '勝ち上がり'}`, nextLabel: _matchNextLabel(isFinal),
       onContinue: () => App.tcAdvanceAfterResult(ri, mi),
     });
     return;
@@ -17178,7 +17188,7 @@ function renderTenchosenMatchResult(ri, mi) {
   html += `<div class="jtc-result-minfo">${_jtcMinfo(match)}</div>`;
   html += `</div>`;
 
-  const nextLabel = isFinal ? '優勝発表へ →' : '次の試合へ →';
+  const nextLabel = _matchNextLabel(isFinal);
   html += `<div class="pb-footer">
     <button type="button" class="pb-close-btn" onclick="App.tcAdvanceAfterResult(${ri},${mi})">${nextLabel}</button>
   </div>`;
