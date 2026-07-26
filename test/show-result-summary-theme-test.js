@@ -14,7 +14,9 @@ function section(start, end) {
 }
 
 const showSummary = section('function renderShowResult(results, injuryResults)', '// ── Pattern B ヘルパー');
-const ppvSummary = section('function renderPPVResult(card, results, summitPair, heatChange, mqBonuses)', '/** HP対比バー');
+// 終端マーカーは 2026-07-26 の死にコード掃除で _hpComparisonBar('/** HP対比バー') が
+// 消えたため、次に必ず来る PPV テレビ中継の見出しへ差し替えた。
+const ppvSummary = section('function renderPPVResult(card, results, summitPair, heatChange, mqBonuses)', '// ── PPV GRAND FINAL テレビ中継');
 const ppvTvSummary = section('function renderPPVTvBroadcast(card, results, ppvName)', '// ── Phase D');
 const warSummary = section('function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon)', 'let _warVictoryWinners');
 

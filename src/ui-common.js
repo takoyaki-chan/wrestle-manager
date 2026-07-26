@@ -672,7 +672,6 @@ function _scale6Style(sc) {
 }
 function _mqColor(v)      { return _scale6(v, [80,70,60,50,40]); }
 function _ovrColor(v)     { return _scale6(v, [85,75,65,55,45]); }
-function _trustColor(v)   { return _scale6(v, [80,65,50,35,20]); }
 function _condColor(v)    { return _scale6(v, [90,75,60,45,30]); }
 function _popColor(v)     { return _scale6(v, [70,55,40,28,15]); }
 function _bondColor(v)    { return _scale6(v, [80,65,50,35,20]); }
@@ -3212,13 +3211,6 @@ function getRentalQuote(char) {
   return pickDialogueLine(pool, char);
 }
 
-// v1.0: Get a draft "interest" line (when focused, before picking)
-function getDraftInterestLine(char) {
-  const pool = EVENT_DRAFT_INTEREST_LINES;
-  if (!pool) return getTraitQuote('draftJoin', char);
-  return pickDialogueLine(pool, char);
-}
-
 // ── Fighter Detail Popup ──
 // source: 'roster' | 'free' | 'ai:{orgId}' | 'draft'
 function findFighter(fighterId, source) {
@@ -3945,107 +3937,6 @@ function openFactionPanel(factionId) {
   renderDatabase();
 }
 
-/** PPV VS比較ポップアップ — 両選手のステータスを並べて表示 */
-function showPPVVSDetail(matchIdx) {
-  const pp = App._ppvPreview;
-  if (!pp || !pp.card[matchIdx]) return;
-  const match = pp.card[matchIdx];
-  const left = match.left, right = match.right;
-  Audio.play('hover');
-
-  // U6団体バッジ統一: 他団体が絡む対戦(orgIdが無ければorgName比較にフォールバック)のときだけ
-  // 実エンブレムを出す(mockup-baseline-v0.1 §5「出す条件: 他団体が絡む試合のみ」)
-  const crossOrg = (left._ppvOrgId != null && right._ppvOrgId != null)
-    ? String(left._ppvOrgId) !== String(right._ppvOrgId)
-    : (left._ppvOrgName || '') !== (right._ppvOrgName || '');
-
-  const STYLE_META = {
-    Grappler:{color:'#bb8fce',icon:'GRP'}, Striker:{color:'#e74c3c',icon:'STK'},
-    Submission:{color:'#e67e22',icon:'SUB'}, Aerial:{color:'#2ecc71',icon:'AER'},
-    Allround:{color:'#f1c40f',icon:'ALL'}, Brawler:{color:'#e88a82',icon:'BRW'}
-  };
-  const STATS = [
-    {key:'pw',label:'PW',name:'パワー',color:'#e74c3c'},
-    {key:'sp',label:'SP',name:'スピード',color:'#2ecc71'},
-    {key:'te',label:'TE',name:'テクニック',color:'#3498db'},
-    {key:'st',label:'ST',name:'スタミナ',color:'#f39c12'},
-    {key:'mn',label:'MN',name:'マインド',color:'#9b59b6'}
-  ];
-
-  function renderSide(f) {
-    const sm = STYLE_META[f.style] || STYLE_META.Allround;
-    const ovr = Engine.util.ov(f);
-    const orgColor = f._ppvOrgId === 'player' ? 'var(--blue)' : (RIVAL_ORGS.find(o => o.id === f._ppvOrgId)?.color || 'var(--text-main)');
-    const url = getPortraitUrl(f.id);
-    const imgHtml = url
-      ? `<img src="${url}" style="width:72px;height:72px;border-radius:50%;border:2px solid ${orgColor}66;object-fit:cover" alt="">`
-      : portraitImg(f.id, 72);
-
-    let html = `<div style="text-align:center;flex:1;min-width:130px">`;
-    html += imgHtml;
-    html += `<div style="font-size:14px;font-weight:700;color:${orgColor};margin-top:6px">${f.name}</div>`;
-    const orgEmblemHtml = crossOrg && typeof orgIconHtml === 'function' ? orgIconHtml(f._ppvOrgId, 14) : '';
-    html += `<div style="font-size:10px;color:var(--text-dim);margin-bottom:6px">${orgEmblemHtml}${escHtml(f._ppvOrgName || '')}</div>`;
-    html += `<div style="font-size:11px;margin-bottom:2px"><span class="badge badge-${f.style}" style="font-size:10px;padding:1px 6px">${f.style}</span>`;
-    if (f.role) html += ` <span class="badge badge-${f.role==='Babyface'?'bf':f.role==='Heel'?'heel':'neutral'}" style="font-size:10px;padding:1px 6px">${f.role}</span>`;
-    html += `</div>`;
-    html += `<div style="font-size:28px;font-weight:900;color:var(--gold);margin:4px 0">${ovr}</div>`;
-    // 各ステータスバー
-    STATS.forEach(s => {
-      const val = f[s.key] || 0;
-      html += `<div style="display:flex;align-items:center;gap:4px;margin:2px 0;font-size:10px">`;
-      html += `<span style="width:20px;text-align:right;color:var(--text-dim)">${s.label}</span>`;
-      html += `<div style="flex:1;height:6px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden">`;
-      html += `<div style="width:${val}%;height:100%;background:${s.color};border-radius:3px"></div>`;
-      html += `</div>`;
-      html += `<span style="width:22px;color:var(--text-sub);font-weight:600">${val}</span>`;
-      html += `</div>`;
-    });
-    // 特性
-    const traits = (f.traits || []).filter(t => t);
-    if (traits.length > 0) {
-      html += `<div style="margin-top:6px;font-size:10px;color:var(--text-sub)">`;
-      html += traits.map(t => {
-        const td = typeof TRAIT_DATA !== 'undefined' ? TRAIT_DATA[t] : null;
-        return `<span style="background:rgba(200,190,170,0.08);padding:1px 5px;border-radius:3px;margin:1px">${td?.label || t}</span>`;
-      }).join(' ');
-      html += `</div>`;
-    }
-    // 人気
-    html += `<div style="margin-top:4px;font-size:10px;color:var(--text-dim)">人気 ${Engine.util.dispPop(f.popularity)}</div>`;
-    html += `</div>`;
-    return html;
-  }
-
-  const matchNum = matchIdx + 1;
-  const matchLabel = match.isSummit ? '🏆 メインイベント — 頂上決戦' : `第${matchNum}試合`;
-
-  let html = `<div style="padding:16px">`;
-  html += `<div style="text-align:center;font-size:14px;color:var(--gold);font-weight:700;margin-bottom:12px">${matchLabel}</div>`;
-  html += `<div style="display:flex;align-items:flex-start;gap:12px;justify-content:center">`;
-  html += renderSide(left);
-  html += `<div style="font-size:18px;font-weight:900;color:var(--text-dim);padding-top:60px">VS</div>`;
-  html += renderSide(right);
-  html += `</div>`;
-  // 因縁情報
-  if (match.isRivalry) {
-    const level = Engine.title.getRivalryLevel(G, left.id, right.id);
-    if (level) {
-      const pairKey = `${Math.min(left.id, right.id)}-${Math.max(left.id, right.id)}`;
-      const entry = (G.rivalries || {})[pairKey] || {};
-      html += `<div style="text-align:center;margin-top:10px;font-size:12px;color:${level.color}">${level.emoji} ${level.label} (riv ${Math.round(level.rivalry || 0)} / ${entry.matches || 0}戦)</div>`;
-    }
-  }
-  html += `<div style="text-align:center;margin-top:14px">`;
-  html += `<button class="btn" style="padding:8px 24px;font-size:13px;background:var(--bg-mid);color:var(--text-sub)" onclick="closeFighterPopup()">閉じる</button>`;
-  html += `</div>`;
-  html += `</div>`;
-
-  const box = document.getElementById('fighterPopupBox');
-  box.innerHTML = html;
-  document.getElementById('fighterPopupOverlay').classList.add('active');
-}
-
 // ── Name link helper ──
 // Returns clickable HTML for a fighter name. Use everywhere.
 function fLink(c, opts = {}) {
@@ -4263,10 +4154,6 @@ function _applyAutoTitleMatch(card) {
   }
 }
 
-function onCardSelect(slotIndex, side, newId) {
-  App.setShowCardSlot(slotIndex, side, newId);
-}
-
 function toggleTitle(slotIndex) {
   if (!G.titleEstablished) { alert('団体王座はまだ設立されていません（興行3回・人気15・ロスター5人で設立）'); return; }
   const m = G.showCard[slotIndex];
@@ -4297,19 +4184,6 @@ function toggleTitle(slotIndex) {
     }
   }
   App.toggleTitleMatch(slotIndex);
-}
-
-// MQ star rating display
-function mqStars(mq) {
-  const stars = mq >= 90 ? 5 : mq >= 75 ? 4.5 : mq >= 60 ? 4 : mq >= 50 ? 3.5 :
-    mq >= 40 ? 3 : mq >= 30 ? 2.5 : mq >= 20 ? 2 : mq >= 10 ? 1.5 : 1;
-  const full = Math.floor(stars);
-  const half = stars % 1 >= 0.5;
-  let s = '';
-  for (let i = 0; i < full; i++) s += '★';
-  if (half) s += '☆';
-  const color = stars >= 4.5 ? '#f0d078' : stars >= 3.5 ? '#2ecc71' : stars >= 2.5 ? '#e8e6e0' : '#999';
-  return `<span style="color:${color};font-size:13px;letter-spacing:1px">${s}</span>`;
 }
 
 // (applyMQPopularity / applyShowPopularity moved to Engine — no longer needed here)
@@ -4477,7 +4351,7 @@ function renderMatchPreview() {
   // 試合行の選手名下に出す所属団体ラベル（自陣=緑ドット／敵地=赤茶ドット）
   // 他団体が絡む試合でだけ所属を出す(mockup-baseline-v0.1 §5)。
   // 敵地遠征に加え、2026-07-21 から通常興行のカードに混ざるようになった挑戦試合の
-  // ゲスト選手も対象にする。U6 はこれを死んだ _renderB3MatchPreview 側に入れていた。
+  // ゲスト選手も対象にする（挑戦試合の専用プレビュー画面は 2026-07-26 に削除済み）。
   const _matchOrgLabel = (fighter, opponent) => {
     if (isAway) {
       const isHome = (sp.awayPlayerRosterIds || []).includes(fighter.id);
@@ -6196,8 +6070,8 @@ function renderPPVMatchPreview() {
     const orgL = L._ppvOrgName || '';
     const orgR = R._ppvOrgName || '';
     // U6団体バッジ統一: 他団体が絡む対戦のときだけ実エンブレムを出す
-    // (mockup-baseline-v0.1 §5)。2026-07-26 の U6 は同じ処理を死んだ showPPVVSDetail に
-    // 入れてしまっていたため、プレイヤーが実際に見るこの画面へ入れ直した。
+    // (mockup-baseline-v0.1 §5)。旧 VS比較ポップアップは 2026-07-26 に削除したため、
+    // PPV 中に必ず通るこの対戦紹介が正となる。
     const ppvCrossOrg = (L._ppvOrgId != null && R._ppvOrgId != null)
       ? String(L._ppvOrgId) !== String(R._ppvOrgId)
       : orgL !== orgR;
@@ -6444,63 +6318,6 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
 
   box.innerHTML = html;
   overlay.classList.add('active');
-}
-
-/** HP対比バー — 中央基準の左右対称表示（UI共通ルール①） */
-function _hpComparisonBar(leftName, leftHP, rightName, rightHP) {
-  const lPct = leftHP.max > 0 ? Math.round(leftHP.final / leftHP.max * 100) : 0;
-  const rPct = rightHP.max > 0 ? Math.round(rightHP.final / rightHP.max * 100) : 0;
-  const lColor = lPct > 30 ? '#2ecc71' : lPct > 10 ? '#f39c12' : '#e74c3c';
-  const rColor = rPct > 30 ? '#2ecc71' : rPct > 10 ? '#f39c12' : '#e74c3c';
-  return `<div class="hp-cmp">
-    <div class="hp-cmp-half left">
-      <div class="hp-cmp-track"><div class="hp-cmp-fill" style="width:${lPct}%;background:${lColor}"></div></div>
-      <span class="hp-cmp-val">${leftHP.final}/${leftHP.max}</span>
-      <span class="hp-cmp-name">${leftName}</span>
-    </div>
-    <div class="hp-cmp-center">HP</div>
-    <div class="hp-cmp-half right">
-      <div class="hp-cmp-track"><div class="hp-cmp-fill" style="width:${rPct}%;background:${rColor}"></div></div>
-      <span class="hp-cmp-val">${rightHP.final}/${rightHP.max}</span>
-      <span class="hp-cmp-name">${rightName}</span>
-    </div>
-  </div>`;
-}
-
-/** PPV結果画面: 吹き出しHTML生成 */
-function _ppvBubble(name, line, isWinner) {
-  const nameColor = isWinner ? 'color:var(--gold)' : 'color:#e17055';
-  const namePrefix = isWinner ? '🏆 ' : '';
-  return `<div style="margin-bottom:8px;width:100%">
-    <div style="font-size:9px;font-weight:600;${nameColor};text-align:center;margin-bottom:3px">${namePrefix}${name}</div>
-    <div style="background:#f0f0f0;color:#222;padding:7px 10px;border-radius:8px;font-size:11px;text-align:center;line-height:1.5;position:relative">
-      ${line}
-      <div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid #f0f0f0"></div>
-    </div>
-  </div>`;
-}
-
-/** PPV結果画面: コーチ称賛吹き出しHTML生成 */
-function _ppvCoachBubble(coachName, line) {
-  return `<div style="margin-bottom:8px;width:100%">
-    <div style="font-size:9px;font-weight:600;color:#7ec8e3;text-align:center;margin-bottom:3px">🎓 ${coachName}コーチ</div>
-    <div style="background:rgba(126,200,227,0.12);color:#c8dce4;padding:7px 10px;border:1px solid rgba(126,200,227,0.2);border-radius:8px;font-size:11px;text-align:center;line-height:1.5;position:relative">
-      「${line}」
-      <div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid rgba(126,200,227,0.12)"></div>
-    </div>
-  </div>`;
-}
-
-/** PPV結果画面: MQボーナスタグ群生成 */
-function _ppvBonusTags(r, mqBonuses, di) {
-  let tags = '';
-  if (r.isTitleMatch) tags += ' <span style="color:var(--gold)">(王座+5)</span>';
-  // titleGapPenalty — MQ外部ボーナス整理で廃止
-  if (r.rivalryBonus) tags += ` <span style="color:${r.rivalryBonus.color}">(${r.rivalryBonus.label}+${r.rivalryBonus.mqBonus})</span>`;
-  // coachMQBonus — MQ外部ボーナス整理で廃止
-  if (r.freshnessBonus) tags += ` <span style="color:${r.freshnessBonus > 0 ? '#74b9ff' : '#e17055'}">(${r.freshnessLabel}${r.freshnessBonus > 0 ? '+' : ''}${r.freshnessBonus})</span>`;
-  if (r.friendshipBonus) tags += ` <span style="color:#74b9ff">(相性+${r.friendshipBonus})</span>`;
-  return tags;
 }
 
 // ── PPV GRAND FINAL テレビ中継（5場面構成・docs/ui/mockups/ppv-tv-broadcast-mockup.html v1 準拠）──
@@ -6766,17 +6583,6 @@ function updateRentalFee(fighterId) {
   if (btnEl) btnEl.disabled = G.funds < fee;
 }
 
-/** Sort rental table by column key */
-function sortRentalTable(key) {
-  if (window._rentalSortKey === key) {
-    window._rentalSortAsc = !window._rentalSortAsc;
-  } else {
-    window._rentalSortKey = key;
-    window._rentalSortAsc = key === 'name'; // name: A→Z default, ovr/fee: ascending default
-  }
-  renderShachoshitsu();
-}
-
 // Legacy aliases for Engine functions used in UI rendering
 function getCoachSalaryTotal() { return Engine.coach.getSalaryTotal(G); }
 function unassignFromCoach(charId) { G = { ...G, coachAssign: Engine.coach.unassignFromCoach(G, charId) }; }
@@ -6789,7 +6595,6 @@ function assignToCoach(coachId, charId) {
 function getCoachAssignees(coachId) { return Engine.coach.getCoachAssignees(G, coachId); }
 function calcWeeklySalary() { return Engine.economy.calcWeeklySalary(G.roster, G.titles); }
 function calcFixedCosts() { return Engine.economy.calcFixedCosts(); }
-function getWeeklyMediaRev() { return Engine.economy.calcWeeklyMediaRev(G.orgPop); }
 function calcAttendance(venueIdx, mainPop, hasTitleMatch, hasChampOnCard) { return Engine.economy.calcAttendance(G, venueIdx, mainPop, hasTitleMatch, hasChampOnCard, null); }
 function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(venueIdx, attendance); }
 // 全ポップアップ・トースト・キューを強制クリア（タブ切替・週送り時に使用）
@@ -6892,18 +6697,6 @@ function showScreen(id, evt) {
   }
   if (id === 'shachoshitsu') renderShachoshitsu();
   if (id === 'week') renderWeekScreen();
-}
-
-// v0.96: Navigate to a screen and highlight the correct nav button
-function gotoScreen(id) {
-  const navBtns = document.querySelectorAll('.nav-btn');
-  for (const b of navBtns) {
-    if (b.getAttribute('onclick')?.includes(`'${id}'`)) {
-      b.click();
-      return;
-    }
-  }
-  showScreen(id);
 }
 
 // v1.0: Help accordion toggle
@@ -8571,34 +8364,6 @@ function showChoiceEventResult(event, resultTexts, state, opts) {
 // careOverlay/careBox を再利用。シーン切替は HTML 差し替えで実現
 // spec: faction-system-spec-v0.1 §9.1〜§9.3
 // ─────────────────────────────────────────────────────────────────────────────
-function _factionModalOverlay() {
-  return {
-    overlay: document.getElementById('careOverlay'),
-    box: document.getElementById('careBox'),
-  };
-}
-
-function _factionModalBox(html) {
-  const { overlay, box } = _factionModalOverlay();
-  if (!overlay || !box) return null;
-  box.innerHTML = `<div class="faction-event-modal">${html}</div>`;
-  overlay.classList.add('active');
-  return box;
-}
-
-function _factionCloseModal() {
-  const { overlay } = _factionModalOverlay();
-  if (overlay) overlay.classList.remove('active');
-}
-
-function _factionPortrait(fighter, size) {
-  if (!fighter) return '';
-  if (typeof portraitImg === 'function') {
-    return portraitImg(fighter.id, size || 72, 'faction-portrait');
-  }
-  return `<div class="faction-portrait-placeholder" style="width:${size||72}px;height:${size||72}px;background:rgba(200,190,170,0.1);border-radius:50%"></div>`;
-}
-
 function _factionLine(table, fighter, seed) {
   if (typeof Engine !== 'undefined' && Engine.factions && typeof Engine.factions.getFactionLine === 'function') {
     const rng = Engine.rng.create(seed || 0xFA99);
@@ -12652,88 +12417,6 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
   Audio.play('notify');
 }
 
-function _renderB3MatchPreview(event, playerFighter, challenger) {
-  const overlay = document.getElementById('showResultOverlay');
-  const box = document.getElementById('showResultBox');
-  const orgName = event.orgName || '他団体';
-  const orgCfg = RIVAL_ORGS.find(o => o.id === event.orgId) || { color: '#e74c3c', emoji: '' };
-  const eColor = orgCfg.color;
-  const eLight = _lightenColor(eColor);
-  const pColor = '#74b9ff';
-  const ovrL = Engine.util.ov(playerFighter), ovrR = Engine.util.ov(challenger);
-  const standL = getStandUrl(playerFighter.id, ovrL), standR = getStandUrl(challenger.id, ovrR);
-  const lineL = pickDialogueLine(PPV_OPPONENT_LINES, playerFighter);
-  const lineR = pickDialogueLine(PPV_OPPONENT_LINES, challenger);
-
-  let html = `<div style="text-align:center;padding:8px 0 4px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:6px;color:#aaa">Challenge Match</div>
-    <div style="font-size:20px;font-weight:700;letter-spacing:4px;color:#e8e0d0">⚔️ 挑 戦 状</div>
-    <div style="font-size:12px;color:var(--text-sub);margin-top:4px">${escHtml(orgName)}からの挑戦を受けて立つ</div>
-  </div>`;
-
-  // セリフ吹き出し
-  if (lineL || lineR) {
-    html += `<div class="mc-dl">`;
-    if (lineL) html += `<div class="mc-dlc left"><div class="mc-dlb"><div class="mc-dlsp" style="color:#3498db">${playerFighter.name}</div>「${lineL}」</div></div>`;
-    if (lineR) html += `<div class="mc-dlc right"><div class="mc-dlb"><div class="mc-dlsp" style="color:${eColor}">${challenger.name}</div>「${lineR}」</div></div>`;
-    html += `</div>`;
-  }
-
-  // スタンド画像対峙
-  html += `<div class="mc-va">
-    <div class="mc-fc left">
-      <div class="mc-fi">
-        <div class="mc-fn">${playerFighter.name}</div>
-        <div class="mc-fo" style="color:${pColor}">${typeof orgIconHtml === 'function' ? orgIconHtml('player', 16) : ''}${escHtml(G.orgName || 'プレイヤー団体')}</div>
-        <div class="mc-fol">OVR</div>
-        <div class="mc-fov" style="background:linear-gradient(180deg,${pColor},#3498db);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrL}</div>
-      </div>
-      <div class="mc-fp">${standL ? `<img src="${standL}" alt="" onerror="this.style.display='none'">` : ''}</div>
-    </div>
-    <div class="mc-vsf">
-      <div class="mc-vst" style="background:linear-gradient(180deg,#fff,#aaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(200,190,170,0.15))">VS</div>
-    </div>
-    <div class="mc-fc right">
-      <div class="mc-fp">${standR ? `<img src="${standR}" alt="" onerror="this.style.display='none'">` : ''}</div>
-      <div class="mc-fi">
-        <div class="mc-fn">${challenger.name}</div>
-        <div class="mc-fo" style="color:${eLight}">${typeof orgIconHtml === 'function' ? orgIconHtml(event.orgId, 16) : ''}${orgCfg.emoji || ''} ${escHtml(orgName)}</div>
-        <div class="mc-fol">OVR</div>
-        <div class="mc-fov" style="background:linear-gradient(180deg,${eLight},${eColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrR}</div>
-      </div>
-    </div>
-  </div>`;
-
-  // 能力値対比バー
-  html += `<div class="mc-stats">`;
-  html += _warStatRow('PW', playerFighter.pw||0, challenger.pw||0, 'pw', pColor, eLight);
-  html += _warStatRow('SP', playerFighter.sp||0, challenger.sp||0, 'sp', pColor, eLight);
-  html += _warStatRow('TE', playerFighter.te||0, challenger.te||0, 'te', pColor, eLight);
-  html += _warStatRow('ST', playerFighter.st||0, challenger.st||0, 'st', pColor, eLight);
-  html += _warStatRow('MN', playerFighter.mn||0, challenger.mn||0, 'mn', pColor, eLight);
-
-  // トレイト
-  const pTraits = (playerFighter.traits || []).slice(0, 3);
-  const cTraits = (challenger.traits || []).slice(0, 3);
-  if (pTraits.length || cTraits.length) {
-    html += `<div class="mc-traits" style="padding-left:0;padding-right:0;margin-top:4px">
-      <div class="mc-ts left">${pTraits.map(t => `<span class="mc-tt">${typeof t === 'string' ? t : t.name || t}</span>`).join('')}</div>
-      <div class="mc-tdiv"></div>
-      <div class="mc-ts right">${cTraits.map(t => `<span class="mc-tt">${typeof t === 'string' ? t : t.name || t}</span>`).join('')}</div>
-    </div>`;
-  }
-  html += `</div>`;
-
-  // ボタン
-  html += `<div class="mc-act">
-    <button class="mc-bw" style="border:2px solid ${eColor};background:linear-gradient(135deg,${_rgba(eColor,0.15)},${_rgba(eColor,0.03)})" onclick="App.b3WatchMatch()">🎬 試合を観る</button>
-    <button class="mc-bs" onclick="App.b3SkipMatch()">≫ スキップ</button>
-  </div>`;
-
-  box.innerHTML = html;
-  overlay.classList.add('active');
-}
-
 // ── Common-1 派閥内対決 試合後結果モーダル ──────────────────────────────────
 // payload: COMMON_1 イベント payload
 // matchResult: Engine.battle.simulateMatch の戻り値
@@ -13340,47 +13023,6 @@ function _buildB4Modal(event, state, roster) {
 // ─────────────────────────────────────────────────────────────────────────────
 // v2.0: ケアリアクション ポップアップ — 選手顔+セリフをトーストで表示
 // ─────────────────────────────────────────────────────────────────────────────
-function _showCareReaction(fighter, text, changes = [], cost = 0, remainingFunds = 0) {
-  if (!fighter || !text) return;
-  const overlay = document.getElementById('careModalOverlay');
-  const box = document.getElementById('careModalBox');
-  if (!overlay || !box) { showToast(text); return; }
-
-  const isPremium = cost >= 100;
-  const face = portraitImg(fighter.id, 120, 'care-modal-face');
-
-  let changesHtml = '';
-  if (changes && changes.length > 0) {
-    changesHtml = '<div class="care-modal-changes">';
-    changes.forEach(c => {
-      if (c.text !== undefined) {
-        changesHtml += `<div class="care-modal-change"><span class="care-modal-change-label">${c.emoji || ''} ${c.label}</span><span class="care-modal-change-value care-modal-change-up">${c.text}</span></div>`;
-      } else {
-        const bef = _fmtStat(c.before), aft = _fmtStat(c.after);
-        const diff = aft - bef;
-        const cls = diff >= 0 ? 'care-modal-change-up' : 'care-modal-change-down';
-        changesHtml += `<div class="care-modal-change"><span class="care-modal-change-label">${c.emoji || ''} ${c.label}</span><span class="care-modal-change-value ${cls}">${bef} → ${aft}</span></div>`;
-      }
-    });
-    changesHtml += '</div>';
-  }
-
-  const costHtml = cost > 0 ? `<div class="care-modal-cost">-${cost}万（残金: ${Math.round(remainingFunds).toLocaleString()}万）</div>` : '';
-
-  box.className = `care-modal-box${isPremium ? ' care-premium' : ''}`;
-  box.innerHTML = `
-    ${face}
-    <div class="care-modal-name">${fighter.name}</div>
-    <div class="care-modal-speech">「${text}」</div>
-    ${changesHtml}
-    ${costHtml}
-    <button class="care-modal-btn" onclick="closeCareModal()">OK</button>
-  `;
-  overlay.classList.add('active');
-  clearTimeout(window._careModalTimer);
-  window._careModalTimer = setTimeout(closeCareModal, 60000);
-}
-
 function closeCareModal() {
   const overlay = document.getElementById('careModalOverlay');
   if (overlay) overlay.classList.remove('active');
@@ -13527,13 +13169,6 @@ function _isGlimpseTier1(glimpse) {
 
 function showGlimpseAModal(glimpse, opts) {
   _glimpseQueue.push({ ...glimpse, _renderer: 'A' });
-  if (_glimpseQueue.length === 1) {
-    _enqueuePopup(() => _renderNextGlimpse(), opts && opts.allowWhileShowResult ? { ignoreShowResultOverlay: true } : undefined);
-  }
-}
-
-function showGlimpseBModal(glimpse, opts) {
-  _glimpseQueue.push({ ...glimpse, _renderer: 'B' });
   if (_glimpseQueue.length === 1) {
     _enqueuePopup(() => _renderNextGlimpse(), opts && opts.allowWhileShowResult ? { ignoreShowResultOverlay: true } : undefined);
   }
@@ -15786,19 +15421,6 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   if (!isFinal) setTimeout(_jtAnimateHpRecoveryBars, 350);
 }
 
-// HP バーカウンターアニメーション
-function _jtAnimateCounter(from, to, dur, el, colorFn) {
-  const st = performance.now();
-  function tick(now) {
-    const p = Math.min(1, (now - st) / dur);
-    const v = Math.round(from + (to - from) * p);
-    el.textContent = v + '%';
-    el.style.color = colorFn(v);
-    if (p < 1) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-}
-
 function _jtAnimateHpRecoveryBars() {
   const fills = Array.from(document.querySelectorAll('.pb-hp-mini.is-jt-recovery .pb-hp-mini-fill[data-jt-recover-pct]'));
   fills.forEach(fill => {
@@ -16300,45 +15922,6 @@ function renderSpringTagLeagueBoard() {
       }
     });
   });
-}
-
-/** 決勝の結果画面（対峙プレビューの次のクリックで表示） */
-function renderSpringTagLeagueFinal() {
-  const p = App._stlPreview;
-  if (!p) return;
-  const stl = G.springTagLeague;
-  const overlay = document.getElementById('showResultOverlay');
-  const box = document.getElementById('showResultBox');
-  if (!overlay || !box) return;
-  box.style.maxWidth = '100%';
-  box.style.padding = '0';
-  box.style.background = 'transparent';
-  box.style.border = 'none';
-
-  const m = stl.finalMatch;
-  const teamA = _stlOrgTeam(m.orgA), teamB = _stlOrgTeam(m.orgB);
-  const fA1 = _stlFighterOf(m.orgA, m.teamA.f1Id), fA2 = _stlFighterOf(m.orgA, m.teamA.f2Id);
-  const fB1 = _stlFighterOf(m.orgB, m.teamB.f1Id), fB2 = _stlFighterOf(m.orgB, m.teamB.f2Id);
-  const aWin = m.winner === 'teamA';
-  const timeStr = (typeof _npTurnsToTime === 'function') ? _npTurnsToTime(m.turns) : '';
-  const winnerOrgName = aWin ? (teamA ? teamA.orgName : '') : (teamB ? teamB.orgName : '');
-
-  let html = `<div class="stl-wrap">`;
-  html += _stlHeaderHtml('決勝');
-  html += `<div class="stl-final-banner">
-    <div class="stl-final-label">FINAL RESULT</div>
-    <div class="stl-final-faceoff">
-      <div class="stl-final-side ${aWin ? 'is-winner' : 'is-loser'}"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
-      <div class="stl-final-vs">VS</div>
-      <div class="stl-final-side ${!aWin ? 'is-winner' : 'is-loser'}"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
-    </div>
-    <div class="stl-final-result">🏆 ${escHtml(winnerOrgName)} 勝利 — MQ ${m.mq} ・ ${escHtml(timeStr || '')}</div>
-  </div>`;
-  html += `<div class="stl-progress-btn-row"><button class="btn btn-gold" style="padding:10px 26px;font-size:14px" onclick="App.stlAdvance()">優勝発表へ ▶</button></div>`;
-  html += `</div>`;
-
-  box.innerHTML = html;
-  overlay.classList.add('active');
 }
 
 /** 優勝発表（Ceremony寄り、JT優勝発表の構成を流用。タッグなので2名対応） */

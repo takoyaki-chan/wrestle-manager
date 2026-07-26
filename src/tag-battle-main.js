@@ -187,13 +187,6 @@ function _hudHtml(fr){
   </div>`;
 }
 
-function _teamHpSum(team){
-  const hp = team.reduce((a,c)=>a + Math.max(0,c.hp), 0);
-  const mhp = team.reduce((a,c)=>a + c.mhp, 0);
-  const ratio = mhp > 0 ? hp/mhp : 0;
-  return { pct: Math.round(ratio * 100), ratio };
-}
-
 function _chemBarHtml(){
   return `<div class="chem-bar">
     <span class="chem-label">連携 A</span>

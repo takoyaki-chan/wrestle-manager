@@ -260,21 +260,32 @@ Instrumental NES/Famicom 2A03 generational-change loop, old noble motif answered
 Instrumental grand symphonic RPG ending performed only with NES/Famicom 2A03 sounds, royal overture, broad heroic melody, pulse-wave brass and strings, triangle timpani, monumental, emotional, seamless loop, not pop.
 ```
 
-### WM-H06 ゲームオーバー（団体解散） — 45秒 / Music
+### WM-H06 ゲームオーバー（団体解散） — 8秒 / Sounds（One Shot・ループしない）
 
-破産によるゲームオーバー画面と、解散セレモニー5スライドで鳴らす。H04 エンディングの暗い対になる曲。
-恐怖や罰ではなく「別れ」。灯の落ちた会場に社長ひとりが残っている情景（bankruptcy-redesign-spec v1.1「予兆→抵抗→別れ」の着地点）。
+破産によるゲームオーバー画面と、解散セレモニーで鳴らす。**ループBGMではなく短いジングル。**
 
-```text
-Instrumental NES/Famicom 2A03 game-over loop, slow minor lament for a promotion closing its doors, hollow pulse-wave melody over sparse triangle bass, long rests, quiet dignity in defeat, tender and resigned rather than frightening, no sting or jump-scare, seamless loop.
-```
-
-同一プロンプトで数回生成し、H04 と続けて聴いて「同じ団体の終わり方」に聴こえるものを採る。
-明るく解決するコード進行になったら次を末尾へ足す。
+狙いは「悲しい別れ」ではなく、**ドラクエの冒険の書が消えたときのあの感覚** — 積み上げたものが
+一瞬で無くなり、取り返しがつかないと分かった瞬間の絶望。しんみりした情緒ではなく、
+突き落とされて呆然とする短い落下。鳴り終わったら音は戻ってこない。
 
 ```text
-Stay unresolved, do not land on a major cadence.
+Short NES/Famicom 2A03 game-over jingle, 8 seconds, one shot, no loop. A stark descending pulse-wave figure collapsing into a low hollow tone, everything built is gone in an instant, irreversible loss, stunned emptiness, cold and abrupt, ends on an unresolved dissonance then silence. Not sentimental, not a farewell, no melody development, no fade-out.
 ```
+
+生成のコツ:
+
+- `Create: Sounds` / `Type: One Shot` で作る（BGMの Music ではない）。ループ加工もしない
+- 長い旋律になったら「no melody development」を強め、短い動機だけにする
+- 温かい・優しい響きになったら失敗。**冷たく、突き放す**方向へ振る
+- 最後が明るく解決したら次を末尾へ足す
+
+```text
+End on an unresolved dissonance, never a major cadence.
+```
+
+**実装側の宿題**: 現行のゲームオーバー曲はループ前提で鳴らしている箇所がある
+（解散セレモニーの `Audio.fileBgm.play(..., { loop: true })`）。H06 を入れる際は
+`loop: false` へ変更し、鳴り終わったあと無音のままにすること。
 
 ---
 

@@ -88,11 +88,3 @@ function _flashRedOverlay(ovEl){
   setTimeout(function(){ ovEl.classList.remove('flash', 'red'); }, 300);
 }
 
-// ビッグムーブ スプラッシュ: 1200ms で fade、1600ms で消去。baseCls は CSS クラス名。
-function _fadeSplash(el, baseCls, moveName){
-  if (!el) return;
-  el.textContent = '— ' + moveName + ' —';
-  el.className = baseCls + ' show';
-  setTimeout(function(){ el.classList.add('fade'); }, 1200);
-  setTimeout(function(){ el.className = baseCls; el.textContent = ''; }, 1600);
-}

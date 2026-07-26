@@ -74,12 +74,6 @@ function mkNoiseLP(dur,g,lpFreq){try{const c=ctx(),b=c.createBuffer(1,c.sampleRa
   gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
   const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=lpFreq;
   s.connect(lp).connect(gn).connect(getSfxGain());s.start();s.stop(c.currentTime+dur)}catch(e){}}
-function mkNoiseBP(dur,g,freq,q){try{const c=ctx(),b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate),
-  ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;
-  const s=c.createBufferSource();s.buffer=b;const gn=c.createGain();
-  gn.gain.setValueAtTime(g,c.currentTime);gn.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
-  const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=freq;bp.Q.value=q||1;
-  s.connect(bp).connect(gn).connect(getSfxGain());s.start();s.stop(c.currentTime+dur)}catch(e){}}
 function osc(type,freq,freqEnd,dur,gain){try{const c=ctx(),o=c.createOscillator(),g=c.createGain();
   o.type=type;o.frequency.setValueAtTime(freq,c.currentTime);
   if(freqEnd)o.frequency.exponentialRampToValueAtTime(freqEnd,c.currentTime+dur);
