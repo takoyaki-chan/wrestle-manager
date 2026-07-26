@@ -6855,8 +6855,14 @@ const Engine = {
       // 観察眼の誤認(isInaccurate)は適用しない。消耗は隠れステータスの推測ではなく
       // 目の前で見えている疲労なので、ここで嘘をつくと理不尽になるだけ。
       const strainInjured = !!(fighter.injury && fighter.injury.type === '練習負傷');
-      // 8週 = 「たまに使う」を超えて常用している水準。連続上限2週なので最短でも4クール分
-      const strained = strainInjured || (fighter.seasonIntensiveWeeks || 0) >= 8;
+      // **累積**で見る。今シーズン少し使っただけの選手に先々の話をすると、
+      // まだ何も溜まっていない段階で警告が飛び、言葉が安くなる。
+      //   生涯の追い込み週数が閾値を超えている  かつ
+      //   今もまだ追い込み続けている（または、いま追い込みで怪我している）
+      // 追い込みをやめれば言われなくなる。
+      const totalIw = fighter.intensiveWeeksTotal || 0;
+      const strained = totalIw >= GROWTH_CONFIG.strainRemarkTotalWeeks
+        && (strainInjured || (fighter.seasonIntensiveWeeks || 0) >= GROWTH_CONFIG.strainRemarkRecentWeeks);
       if (strained && Engine.rng.float(rng) < 0.35) {
         const strainKey = (obsRank === 'E' || obsRank === 'D') ? 'strain_vague'
           : strainInjured ? 'strain_injured' : 'strain_named';
@@ -10745,6 +10751,9 @@ const Engine = {
           // growth-rebalance v1.0: 連続週数カウンタ(intensiveWeeks、UI上限2で毎シーズン頭打ち)とは別に、
           // シーズン内の追い込み週数を非連続で積算する。applySeasonEndのwear/strainDebt計算で使う。
           nc.seasonIntensiveWeeks = (nc.seasonIntensiveWeeks || 0) + 1;
+          // 生涯の追い込み週数。シーズンをまたいでもリセットしない。
+          // コーチの匂わせセリフの発火条件**専用**で、成長・消耗の計算には使わない
+          nc.intensiveWeeksTotal = (nc.intensiveWeeksTotal || 0) + 1;
           nc._weekAction = 'intensive';
           nc.intensive = false;
           { const _d = {}; if (actualGrowth > 0) _d[growStat] = actualGrowth; nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'practice', detail: '追い込み', deltas: _d }]; }
@@ -16073,6 +16082,7 @@ const Engine = {
       durability: Engine.career.generateDurability(rng), // v1.3-1: 個人耐久値 N(0,2) -4..+4
       wear: 0,                                           // v1.3-1: 累積摩耗
       strainDebt: 0,          // growth-rebalance v1.0: decayStartAge未到達の追い込みが溜める隠れた負債
+      intensiveWeeksTotal: 0, // growth-rebalance v1.0: 生涯の追い込み週数（コーチの匂わせセリフ専用）
       seasonIntensiveWeeks: 0, // growth-rebalance v1.0: シーズン内の追い込み週数（非連続累積、季末リセット）
       seasonInjuries: 0,   // v1.3-2: 今シーズンの怪我回数
       careerHistory: [],   // v1.3-2: 経歴記録 [{type,week,season,detail}]

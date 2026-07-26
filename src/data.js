@@ -7595,7 +7595,12 @@ const GROWTH_CONFIG = {
   // 立った瞬間に引退している)。効きの天井に張り付いた値は調整の余地を失うので採らない。
   // 採用値はキャリア長を約22%縮める(9.0シーズン → 7.0シーズン)。
   intensiveWearPerWeek: 0.15,      // decayStartAge到達後: シーズン内の追い込み週数1週あたりwear加算
-  strainDebtPerIntensiveWeek: 0.25 // decayStartAge到達前: 追い込み週数1週あたりに溜まる「ツケ」(strainDebt)。到達初年度にwearへ一括変換
+  strainDebtPerIntensiveWeek: 0.25, // decayStartAge到達前: 追い込み週数1週あたりに溜まる「ツケ」(strainDebt)。到達初年度にwearへ一括変換
+  // コーチの匂わせセリフの発火条件(演出専用。成長・消耗の計算には一切使わない)。
+  // **累積**で見る。「今シーズン少し使った」だけで先々の話をされると、
+  // まだ何も溜まっていない段階で言われることになり、警告が安くなる(2026-07-26 Keisuke)。
+  strainRemarkTotalWeeks: 24,  // 生涯の追い込み週数がこれ以上(≒重い使い方の1シーズン超)
+  strainRemarkRecentWeeks: 4   // かつ今シーズンもこれ以上続けている(やめれば言われなくなる)
 };
 
 // ╔══════════════════════════════════════════════════════════╗

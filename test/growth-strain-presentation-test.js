@@ -195,6 +195,31 @@ section('13. _buildReportText に strain 差し替えが配線されている', 
   assert.ok(/練習負傷/.test(body), '練習負傷中かどうかを見ていない');
 });
 
+section('13b. 発火条件が**累積**を見ている（今シーズンだけで判断しない）', () => {
+  const at = management.indexOf('_buildReportText(rng, obsRank, fighter, isInaccurate, coach)');
+  const body = management.slice(at, at + 3000);
+  assert.ok(/intensiveWeeksTotal/.test(body),
+    '生涯の追い込み週数を見ていない。今シーズン少し使っただけで先々の警告が飛ぶ');
+  assert.ok(/strainRemarkTotalWeeks/.test(body) && /strainRemarkRecentWeeks/.test(body),
+    '閾値がGROWTH_CONFIGから来ていない（ベタ書きは調整できない）');
+});
+
+section('13c. 生涯カウンタが実際に加算され、シーズンでリセットされない', () => {
+  assert.ok(/nc\.intensiveWeeksTotal\s*=\s*\(nc\.intensiveWeeksTotal\s*\|\|\s*0\)\s*\+\s*1/.test(management),
+    '追い込み週に intensiveWeeksTotal の加算が無い');
+  assert.ok(!/intensiveWeeksTotal\s*=\s*0\s*;/.test(management.replace(/intensiveWeeksTotal: 0/g, '')),
+    'intensiveWeeksTotal をどこかで 0 に戻している（生涯カウンタでなくなる）');
+});
+
+section('13d. 追い込みをやめれば言われなくなる（直近条件が AND で入っている）', () => {
+  const at = management.indexOf('_buildReportText(rng, obsRank, fighter, isInaccurate, coach)');
+  const body = management.slice(at, at + 3000);
+  const m = body.match(/const strained =([\s\S]{0,400}?);/);
+  assert.ok(m, 'strained の定義が取れない');
+  assert.ok(/&&/.test(m[1]),
+    '累積と直近が AND になっていない。追い込みをやめても言われ続ける');
+});
+
 section('14. 差し替えは E/D で漠然・C以上で名指しに分かれる', () => {
   const at = management.indexOf('_buildReportText(rng, obsRank, fighter, isInaccurate, coach)');
   const body = management.slice(at, at + 3000);
@@ -258,6 +283,15 @@ section('20. ヘルプ「峠と引退」が追込のツケを説明している'
 // ─────────────────────────────────────────────────────────────
 // 5. 係数の存在（値は固定しない）
 // ─────────────────────────────────────────────────────────────
+
+section('20b. 匂わせの発火閾値が GROWTH_CONFIG に定義されている', () => {
+  const t = dataJs.match(/strainRemarkTotalWeeks:\s*(\d+)/);
+  const r = dataJs.match(/strainRemarkRecentWeeks:\s*(\d+)/);
+  assert.ok(t && r, '匂わせの閾値が GROWTH_CONFIG に無い');
+  assert.ok(parseInt(t[1], 10) >= 12,
+    `累積閾値 ${t[1]}週 が低すぎる。まだ何も溜まっていない段階で警告が飛ぶ`);
+  assert.ok(parseInt(r[1], 10) >= 1, '直近閾値が 0 だと、やめても言われ続ける');
+});
 
 section('21. 較正定数が2つとも存在し、正の値である', () => {
   const a = dataJs.match(/intensiveWearPerWeek:\s*([0-9.]+)/);
