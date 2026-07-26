@@ -243,6 +243,15 @@ section('19c. 押したときは必ず開く（ポップアップのキューに
   });
 });
 
+section('19c-2. showFighterPopup がクリックを握り潰さない', () => {
+  const at = uiCommon.indexOf('function showFighterPopup(');
+  assert.ok(at > 0, 'showFighterPopup が見つからない');
+  const head = uiCommon.slice(at, at + 1400);
+  assert.ok(!/_popupQueue\.push/.test(head),
+    'showFighterPopup がまだキューに積んで return する。オーバーレイの中(新聞・トーナメント表・' +
+    '式典)から押したクリックが黙って捨てられる。呼び出し元は全部ユーザー操作なのでキューは要らない');
+});
+
 section('19d. 選手詳細は最前面に出る', () => {
   const html = read('src/index.html');
   const m = html.match(/\.fighter-popup-overlay\{[^}]*z-index:\s*(\d+)/);

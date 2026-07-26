@@ -3250,19 +3250,20 @@ function canOpenFighterPopup(fighterId) {
   return !!findFighter(Number(fighterId));
 }
 
+// 第3引数 _skipQueueCheck は歴史的な残り。**押したら必ず開く**ようになったので効果は無い。
+// 既存の呼び出しを壊さないために受け取るだけにしてある。
 function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const c = findFighter(fighterId, source);
   if (!c) return;
-  // 他のポップアップが表示中ならキューに入れる（自分自身のタブ切り替え時はスキップ）
-  if (!_skipQueueCheck && _isPopupActive()) {
-    // 選手詳細が開いている場合は閉じて即差し替え
-    const fpOverlay = document.getElementById('fighterPopupOverlay');
-    if (fpOverlay && fpOverlay.classList.contains('active')) {
-      fpOverlay.classList.remove('active');
-    } else {
-      _popupQueue.push(() => showFighterPopup(fighterId, source));
-      return;
-    }
+  // 以前は「他のポップアップが開いていたらキューに積んで return」していたが、
+  // showFighterPopup の呼び出し元は**全部ユーザーの操作**（onclick / タップ）であり、
+  // システムが勝手に開くことは無い。そのためこの判定は、新聞・トーナメント表・式典など
+  // **オーバーレイの中から押したクリックを黙って捨てるだけ**の存在になっていた
+  // （2026-07-26、天頂戦と新聞で発覚）。押したら必ず開く。
+  // 選手詳細が既に開いている場合だけ、一度閉じて中身を差し替える。
+  const fpOverlay = document.getElementById('fighterPopupOverlay');
+  if (fpOverlay && fpOverlay.classList.contains('active')) {
+    fpOverlay.classList.remove('active');
   }
   Audio.play('hover');
 
