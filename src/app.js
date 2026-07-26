@@ -219,8 +219,13 @@ const Audio = (() => {
     }
   }
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
+  //
+  // 2026-07-27 Keisuke: クリック音を少し下げた(.50→.36)。92箇所で鳴るので、
+  // 他の音と同じ大きさだと操作のたびに耳につく。
+  // ホバー(.40)はクリックより小さくないとおかしいので合わせて下げた。
+  // select(.50)は「おまかせ・確定」で、同じ音源でも一段大きいままにしてある。
   const SE_MIX = {
-    click:.50, hover:.40, select:.50, deselect:.40, error:.50, save:.40, notify:.50, switch:.44, venue:.46,
+    click:.36, hover:.26, select:.50, deselect:.40, error:.50, save:.40, notify:.50, switch:.44, venue:.46,
     tick:.50, event:.50, reveal:.50, paper:.50, bignews:.58,
     fanfare:.74, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
     war:.60, transfer:.52, award:.72, tension_hit:.66,
