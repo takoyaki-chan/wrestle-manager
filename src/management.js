@@ -15352,12 +15352,39 @@ const Engine = {
         // Player retirement check (skip rental fighters — they return to their org)
         // 検出フェーズのみ: roster 削除・タイトル没収・HoF 反映・関係値凍結等は
         // 引き留めダイアログ後に Engine.retirement.commitRetirements で行う
-        const retirees = [];
+        let retirees = [];
         s.roster.forEach(c => {
           if (!c.isRental && Engine.rival.checkRetirement(rng, c)) {
             retirees.push(c);
           }
         });
+
+        // B「燃え尽きるまで」(retirement-drama-spec v0.2 §3-B)
+        // 今季で引退と決まった選手のうち、**看板級だけ**を花道へ回す。
+        // ラストランの仕組み自体は既にあるが、これまでは**プレイヤーの引退勧告からしか
+        // 発動しなかった**ので、エンジン側の入口をここに作る。
+        // 静かに去るのが多数派であるべきなので、**年に1〜2名まで**（全員には配らない）。
+        {
+          const ft = RETIRE_CFG.farewellTour;
+          const eligible = retirees
+            .filter(c => !c.lastRun && (c.age || 0) >= ft.minAge && (c.wear || 0) < 80)
+            .filter(c => (c.popularity || 0) >= ft.minPopularity
+              || ((c.careerRecord && c.careerRecord.totalTitleWins) || 0) >= ft.orTitleWins)
+            // 人気の高い順＝いちばん惜しまれる選手から花道に送る
+            .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+            .slice(0, ft.maxPerSeason);
+          if (eligible.length > 0) {
+            const sentIds = new Set(eligible.map(c => c.id));
+            retirees = retirees.filter(c => !sentIds.has(c.id));
+            // 翌シーズンの week1 を起点にする（オフ中に4週経過して不発になるのを防ぐ）
+            const startAbs = Engine.util.absWeekTotal(s.season + 1, 1, false, 0);
+            s = { ...s, roster: s.roster.map(c => sentIds.has(c.id)
+              ? Engine.career.ensure({ ...c, lastRun: true, lastRunWeek: startAbs })
+              : c) };
+            events.push(...eligible.map(c => `🌅 ${c.name}が今季限りでの引退を表明。最後の花道へ`));
+          }
+        }
+
         // ラストラン期限切れ選手をretirees扱いで統合
         const allRetirees = [...retirees, ...lastRunExpiredList];
 
