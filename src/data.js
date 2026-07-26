@@ -7890,7 +7890,7 @@ const SPECIAL_EVENT_INTRO = {
   },
   juniorTournament: {
     title: '🏟️ U-20 ジュニアトーナメント',
-    historyType: 'junior',
+    historyType: 'juniorTournament',
     venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
     travelLine: '出場は20歳まで。この大会に出られる回数は、決まっています。',
     nextLabel: '— 出 場 者 を 呼 ぶ —',   // 2枚目のボタン。**次に実際に起きること**を書く

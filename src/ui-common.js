@@ -11369,9 +11369,17 @@ if (typeof window !== 'undefined') {
 
 /** 2枚目に出す選手を選ぶ。**語れる文脈がある人**から順に。
  *  誰も当てはまらなければ null を返し、**2枚目を出さない**。
- *  無理に喋らせると、言うことのない選手が薄いセリフを言うことになる。 */
-function _specialIntroPickSpeaker(state, cfg) {
-  const roster = (state && state.roster || []).filter(f => f && !f.isRental && !f.injury);
+ *  無理に喋らせると、言うことのない選手が薄いセリフを言うことになる。
+ *
+ *  pool は「その大会に実際に出る選手」。**出場者が決まっている大会では必ず渡すこと。**
+ *  2026-07-26: 渡していなかったため、U-20 のジュニアトーナメントで
+ *  **出場すらしないベテランが「出ます」と喋っていた**(Keisuke 指摘)。 */
+function _specialIntroPickSpeaker(state, cfg, pool) {
+  const all = (state && state.roster || []);
+  const base = pool
+    ? pool.map(x => all.find(f => f && f.id === (x && x.id != null ? x.id : x)) || x)
+    : all;
+  const roster = base.filter(f => f && !f.isRental && !f.injury);
   if (!roster.length || !cfg) return null;
   // 1. 去年この大会に出た選手
   const lastSeason = (state.season || 1) - 1;
@@ -11382,26 +11390,36 @@ function _specialIntroPickSpeaker(state, cfg) {
   const champId = state.titles && state.titles.world ? state.titles.world.championId : null;
   const champ = champId != null ? roster.find(f => f.id === champId) : null;
   if (champ) return { fighter: champ, kind: 'champion' };
-  // 3. いちばん人気の選手
+  // 3. いちばん人気の選手。
+  //    pool 指定時(=出場が確定している大会)は足切りしない。ジュニアの U-20 は
+  //    そもそも人気が低いので、40 で切ると2枚目が永遠に出なくなる。
+  //    出場が決まっている時点で、その子には語る資格がある。
   const popular = [...roster].sort((a, b) => (b.popularity || 0) - (a.popularity || 0))[0];
-  if (popular && (popular.popularity || 0) >= 40) return { fighter: popular, kind: 'popular' };
+  if (popular && (pool || (popular.popularity || 0) >= 40)) return { fighter: popular, kind: 'popular' };
   // 4. 該当なし → 2枚目は出さない
   return null;
 }
 
 /** コーチ→選手の2枚を順に見せ、終わったら onDone。
- *  eventKey は SPECIAL_EVENT_INTRO のキー(autumnWar / springTagLeague / juniorTournament / tenchosen) */
-function showSpecialEventIntro(eventKey, state, onDone) {
+ *  eventKey は SPECIAL_EVENT_INTRO のキー
+ *  (autumnWar / springTagLeague / juniorTournament / tenchosen / ppvGrandFinal)
+ *
+ *  opts.pool … その大会に実際に出る自団体の選手。出場者が既に決まっている大会
+ *              (ジュニア/天頂戦/PPV)では必ず渡す。**空なら導入そのものを出さない** —
+ *              自団体から誰も出ない大会で「送り出しましょう」と言われても白ける。 */
+function showSpecialEventIntro(eventKey, state, onDone, opts) {
   const done = () => { if (onDone) onDone(); };
   const cfg = (typeof SPECIAL_EVENT_INTRO !== 'undefined') ? SPECIAL_EVENT_INTRO[eventKey] : null;
   if (!cfg || typeof _mdlAOpen !== 'function') { done(); return; }
+  const pool = opts && opts.pool;
+  if (pool && !pool.length) { done(); return; }
   const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0x5E1C));
   const pickLine = arr => (arr && arr.length) ? arr[Engine.rng.int(rng, 0, arr.length - 1)] : '';
 
   // 取次ぎコーチ。雇っていなければコーチ枚は飛ばす
   const coaches = (typeof getHiredCoaches === 'function') ? getHiredCoaches() : [];
   const coach = coaches.length ? coaches[Engine.rng.int(rng, 0, coaches.length - 1)] : null;
-  const speaker = _specialIntroPickSpeaker(state, cfg);
+  const speaker = _specialIntroPickSpeaker(state, cfg, pool);
 
   const showFighterScene = () => {
     if (!speaker) { done(); return; }

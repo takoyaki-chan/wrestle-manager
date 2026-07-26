@@ -13835,9 +13835,10 @@ App.initPPVShow = function() {
  *  従来のカード紹介へ渡す。天頂戦の無い年の Week48 はこちらが年間の締めくくりになる。 */
 function _ppvOpenWithIntro() {
   const toCard = () => showPPVMatchCardIntro(() => renderPPVMatchPreview());
+  // 自団体のエントリー。喋るのもバスに乗るのもこの人たち
+  const party = ((G.ppvEntries && G.ppvEntries.player) || [])
+    .map(e => (G.roster || []).find(f => f && f.id === e.id) || e).filter(Boolean);
   const toTravel = () => {
-    const party = ((G.ppvEntries && G.ppvEntries.player) || [])
-      .map(e => (G.roster || []).find(f => f && f.id === e.id) || e).filter(Boolean);
     if (typeof showSpecialEventTravel === 'function' && party.length) {
       showSpecialEventTravel('ppvGrandFinal', G, party, toCard);
     } else {
@@ -13845,7 +13846,7 @@ function _ppvOpenWithIntro() {
     }
   };
   if (typeof showSpecialEventIntro === 'function') {
-    showSpecialEventIntro('ppvGrandFinal', G, toTravel);
+    showSpecialEventIntro('ppvGrandFinal', G, toTravel, { pool: party });
   } else {
     toTravel();
   }
@@ -14486,7 +14487,9 @@ App.initJuniorTournament = function() {
     }
   };
   if (typeof showSpecialEventIntro === 'function') {
-    showSpecialEventIntro('juniorTournament', G, afterIntro);
+    // pool を渡さないと、**U-20 の大会に出ないベテラン**が「出ます」と喋る(2026-07-26)。
+    // 自団体から出場者ゼロの年は導入ごと省く
+    showSpecialEventIntro('juniorTournament', G, afterIntro, { pool: myParticipants });
   } else {
     afterIntro();
   }
@@ -14947,9 +14950,10 @@ App.initTenchosenReplay = function() {
   Audio.play('notify');
   // 導入(コーチ→選手) → 会場入り → トーナメント表
   const toBracket = () => renderTenchosenBracket();
+  // 自団体の出場者。喋るのもバスに乗るのもこの人たち
+  const mine = (G.roster || []).filter(f => f && !f.isRental
+    && (t.rounds[0]?.matches || []).some(m => m.left?.id === f.id || m.right?.id === f.id));
   const toTravel = () => {
-    const mine = (G.roster || []).filter(f => f && !f.isRental
-      && (t.rounds[0]?.matches || []).some(m => m.left?.id === f.id || m.right?.id === f.id));
     if (typeof showSpecialEventTravel === 'function' && mine.length) {
       showSpecialEventTravel('tenchosen', G, mine, toBracket);
     } else {
@@ -14957,7 +14961,7 @@ App.initTenchosenReplay = function() {
     }
   };
   if (typeof showSpecialEventIntro === 'function') {
-    showSpecialEventIntro('tenchosen', G, toTravel);
+    showSpecialEventIntro('tenchosen', G, toTravel, { pool: mine });
   } else {
     toTravel();
   }

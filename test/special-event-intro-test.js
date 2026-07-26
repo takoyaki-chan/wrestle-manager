@@ -74,12 +74,28 @@ section('3. 会場名を二重管理していない', () => {
 });
 
 section('4. 去年の出場者は、実在する history.type で探している', () => {
-  // ここが実際の記録と食い違うと、去年出た選手が永遠に見つからない
+  // ここが実際の記録と食い違うと、去年出た選手が永遠に見つからない。
+  //
+  // **どこかに同じ文字列があるだけでは足りない。**
+  // 2026-07-26: ジュニアを 'junior' と書いていたが、それは実績(achievement)の id で、
+  // 経歴に積まれるのは 'juniorTournament' だった。単純検索では素通りしてしまった。
+  // **careerRecord.history に積む行だけ**を見る。
+  const mgmt = read('src/management.js');
+  const historyWriters = [
+    ...mgmt.matchAll(/history[^\n]*\.push\(\{ *type: '([^']+)'/g),
+    ...mgmt.matchAll(/const (?:hist|history|histEntry|ev) *= *[^\n]*\{ *type: '([^']+)'/g),
+    ...mgmt.matchAll(/Engine\.career\.addEvent\([^,]+, *\{[\s\S]{0,40}?type: '([^']+)'/g),
+    ...app.matchAll(/Engine\.career\.addEvent\([^,]+, *\{[\s\S]{0,40}?type: '([^']+)'/g),
+  ].map(m => m[1]);
+  const known = new Set(historyWriters);
+  assert.ok(known.size > 5, '経歴に積む type を1つも拾えていない。検出側の壊れ');
+
   const types = [...tableSrc.matchAll(/historyType: '([^']+)'/g)].map(m => m[1]);
   assert.strictEqual(types.length, EVENTS.length, `historyType が${EVENTS.length}件そろっていない`);
   types.forEach(t => {
-    assert.ok(new RegExp(`type: '${t}'`).test(app) || new RegExp(`type: '${t}'`).test(read('src/management.js')),
-      `history.type '${t}' はどこにも記録されていない。去年の出場者が見つからなくなる`);
+    assert.ok(known.has(t),
+      `history.type '${t}' は careerRecord.history に積まれていない。` +
+      `去年の出場者が永遠に見つからない（実績の id と取り違えていないか）`);
   });
 });
 
@@ -207,7 +223,7 @@ section('18. 冬は天頂戦と PPV の両方が入っている', () => {
   const body = app.slice(at, at + 1000);
   assert.ok(/const toCard = \(\) => showPPVMatchCardIntro\(/.test(body),
     'カード紹介が続きとして畳まれていない');
-  assert.ok(/showSpecialEventIntro\('ppvGrandFinal', G, toTravel\)/.test(body),
+  assert.ok(/showSpecialEventIntro\('ppvGrandFinal', G, toTravel[,)]/.test(body),
     '導入のあとに会場入りへ渡していない');
   assert.ok(/showSpecialEventTravel\('ppvGrandFinal', G, party, toCard\)/.test(body),
     '会場入りのあとにカード紹介へ渡していない');
@@ -232,6 +248,37 @@ section('19. 2枚目のボタンは大会ごとに、次に起きることを書
   });
 });
 
+section('20. 出場者が決まっている大会は、その中からしか喋らせない', () => {
+  // 2026-07-26 Keisuke 報告:
+  //   ・U-20 のジュニアトーナメントで、**出場すらしないベテラン**が「出ます」と喋っていた
+  //   ・自団体から出場者ゼロの年でも導入が発火していた
+  // どちらも「実際に出る人」を渡していなかったせい。
+  assert.ok(/function _specialIntroPickSpeaker\(state, cfg, pool\)/.test(ui),
+    '話者の候補を絞れるようになっていない');
+  assert.ok(/if \(pool && !pool\.length\) \{ done\(\); return; \}/.test(introSrc),
+    '自団体から誰も出ない大会でも導入が出てしまう');
+  // 出場者が既に決まっている3大会は必ず pool を渡す
+  ['juniorTournament', 'tenchosen', 'ppvGrandFinal'].forEach(k => {
+    const m = app.match(new RegExp(`showSpecialEventIntro\\('${k}'[^;]*`));
+    assert.ok(m, `${k} の呼び出しが見つからない`);
+    assert.ok(/pool:/.test(m[0]),
+      `${k}: 出場者が決まっているのに pool を渡していない。出ない選手が喋る`);
+  });
+  // 逆に、選定がこれからの2大会は pool を渡してはいけない(まだ誰が出るか決まっていない)
+  ['autumnWar', 'springTagLeague'].forEach(k => {
+    const m = app.match(new RegExp(`showSpecialEventIntro\\('${k}'[^;]*`));
+    assert.ok(m, `${k} の呼び出しが見つからない`);
+    assert.ok(!/pool:/.test(m[0]),
+      `${k}: この時点ではまだ出場者が決まっていない。pool を渡すと候補が偏る`);
+  });
+});
+
+section('21. 人気の足切りは、出場が決まっていない大会だけ', () => {
+  // U-20 は元々人気が低い。40 で切ると2枚目が永遠に出なくなる
+  assert.ok(/\(pool \|\| \(popular\.popularity \|\| 0\) >= 40\)/.test(pickSrc),
+    'pool 指定時も人気で足切りしている。ジュニアで2枚目が出なくなる');
+});
+
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (19 sections)');
+console.log('ALL PASS (21 sections)');
