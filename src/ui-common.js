@@ -50,6 +50,25 @@ function orgIconHtml(orgId, size = 40) {
   return `<img src="${path}" width="${size}" height="${size}" style="vertical-align:middle;margin-right:6px;border-radius:4px" alt="" loading="lazy">`;
 }
 
+/** 挑戦試合で他団体から来ているゲスト選手の所属orgId。自団体所属なら null。
+ *  挑戦試合は 2026-07-21(2e1092b)から通常興行のカードに混ざって出るようになったため、
+ *  「どちらが他団体の選手か」はこのフラグでしか分からない。 */
+function guestOrgIdOf(fighter) {
+  if (!fighter) return null;
+  if (fighter.isCRGuest) return fighter._crGuestOrgId || null;
+  if (fighter.isB3ChallengeGuest) return fighter._b3GuestOrgId || null;
+  return null;
+}
+
+/** 対戦カードに他団体の選手が絡むときだけ、その選手の団体エンブレムを返す
+ *  (mockup-baseline-v0.1 §5「出す条件: 他団体が絡む試合のみ」)。 */
+function crossOrgEmblemHtml(fighter, opponent, size = 16) {
+  const own = guestOrgIdOf(fighter);
+  const other = guestOrgIdOf(opponent);
+  if (String(own || 'player') === String(other || 'player')) return '';
+  return typeof orgIconHtml === 'function' ? orgIconHtml(own || 'player', size) : '';
+}
+
 // ── U3 グループB 共通: 「2人が対置して語る」画面の顔出しブロック生成 ──────────
 // 仕様: docs/ui/mockup-baseline-v0.1.md §2〜§5。縦順は固定:
 //   吹き出し(予約枠) → 画像 → 名前 → 役割ラベル → 団体バッジ → 数値(OVR等)
@@ -4437,11 +4456,24 @@ function renderMatchPreview() {
     ? `<div class="awaybar">${typeof orgIconHtml === 'function' ? orgIconHtml('player', 20) : ''}${escHtml(awaySelfOrgName)}<span class="awaybar-sep">が</span>${typeof orgIconHtml === 'function' ? orgIconHtml(awayOpponentOrgId, 20) : ''}${escHtml(awayOpponentOrgName)}のリングへ乗り込む</div>`
     : '';
   // 試合行の選手名下に出す所属団体ラベル（自陣=緑ドット／敵地=赤茶ドット）
-  const _awayOrgLabel = (fighterId) => {
-    if (!isAway) return '';
-    const isHome = (sp.awayPlayerRosterIds || []).includes(fighterId);
-    const name = isHome ? awaySelfOrgName : awayOpponentOrgName;
-    return `<div class="forg"><span class="dot ${isHome ? 'home' : 'away'}"></span>${escHtml(name)}</div>`;
+  // 他団体が絡む試合でだけ所属を出す(mockup-baseline-v0.1 §5)。
+  // 敵地遠征に加え、2026-07-21 から通常興行のカードに混ざるようになった挑戦試合の
+  // ゲスト選手も対象にする。U6 はこれを死んだ _renderB3MatchPreview 側に入れていた。
+  const _matchOrgLabel = (fighter, opponent) => {
+    if (isAway) {
+      const isHome = (sp.awayPlayerRosterIds || []).includes(fighter.id);
+      const name = isHome ? awaySelfOrgName : awayOpponentOrgName;
+      const orgId = isHome ? 'player' : awayOpponentOrgId;
+      const emblem = typeof orgIconHtml === 'function' ? orgIconHtml(orgId, 14) : '';
+      return `<div class="forg">${emblem}<span class="dot ${isHome ? 'home' : 'away'}"></span>${escHtml(name)}</div>`;
+    }
+    const emblem = crossOrgEmblemHtml(fighter, opponent, 14);
+    if (!emblem) return '';
+    const guestOrgId = guestOrgIdOf(fighter);
+    const name = guestOrgId
+      ? ((RIVAL_ORGS.find(o => o.id === guestOrgId) || {}).name || '他団体')
+      : (G.orgName || '自団体');
+    return `<div class="forg">${emblem}<span class="dot ${guestOrgId ? 'away' : 'home'}"></span>${escHtml(name)}</div>`;
   };
 
   // ヘッダー
@@ -4599,7 +4631,7 @@ function renderMatchPreview() {
       </button>
       <div class="fname">${charL.name}</div>
       <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrL))}">${ovrL}</span></div>
-      ${_awayOrgLabel(charL.id)}
+      ${_matchOrgLabel(charL, charR)}
     </div>`;
 
     // VS
@@ -4614,7 +4646,7 @@ function renderMatchPreview() {
       </button>
       <div class="fname">${charR.name}</div>
       <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrR))}">${ovrR}</span></div>
-      ${_awayOrgLabel(charR.id)}
+      ${_matchOrgLabel(charR, charL)}
     </div>`;
 
     // 右ステータス
@@ -6144,6 +6176,14 @@ function renderPPVMatchPreview() {
     const upperR = getUpperUrl(R.id);
     const orgL = L._ppvOrgName || '';
     const orgR = R._ppvOrgName || '';
+    // U6団体バッジ統一: 他団体が絡む対戦のときだけ実エンブレムを出す
+    // (mockup-baseline-v0.1 §5)。2026-07-26 の U6 は同じ処理を死んだ showPPVVSDetail に
+    // 入れてしまっていたため、プレイヤーが実際に見るこの画面へ入れ直した。
+    const ppvCrossOrg = (L._ppvOrgId != null && R._ppvOrgId != null)
+      ? String(L._ppvOrgId) !== String(R._ppvOrgId)
+      : orgL !== orgR;
+    const ppvEmblem = (f) => (ppvCrossOrg && typeof orgIconHtml === 'function')
+      ? orgIconHtml(f._ppvOrgId, 14) : '';
     const traitsL = (L.traits || []).slice(0, 3);
     const traitsR = (R.traits || []).slice(0, 3);
     const lineL = _getPPVPreMatchLine(L);
@@ -6162,7 +6202,7 @@ function renderPPVMatchPreview() {
         <div class="ppvprog-fc left">
           <div class="ppvprog-fi">
             <div class="ppvprog-fn">${L.name}</div>
-            <div class="ppvprog-fo">${orgL}</div>
+            <div class="ppvprog-fo">${ppvEmblem(L)}${orgL}</div>
             <div class="ppvprog-fol">OVR</div>
             <div class="ppvprog-fov">${ovrL}</div>
           </div>
@@ -6176,7 +6216,7 @@ function renderPPVMatchPreview() {
           <div class="ppvprog-fp">${upperR ? `<img src="${upperR}" alt="${R.name}" onerror="this.style.display='none'">` : ''}</div>
           <div class="ppvprog-fi">
             <div class="ppvprog-fn">${R.name}</div>
-            <div class="ppvprog-fo">${orgR}</div>
+            <div class="ppvprog-fo">${ppvEmblem(R)}${orgR}</div>
             <div class="ppvprog-fol">OVR</div>
             <div class="ppvprog-fov">${ovrR}</div>
           </div>
