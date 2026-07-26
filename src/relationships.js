@@ -1118,6 +1118,16 @@ Engine.relationships = {
         const friendName = (activeRoster.find(f => f.id === friendId) || {}).name || '';
         if (enemyName && friendName) {
           events.push(`[contagion] ${carrier.name}は${friendName}が${enemyName}を嫌うのを見て、自分も心が冷えていくのを感じた`);
+          // 2026-07-27: 見出しは書かれていたのに**新聞へ繋がっていなかった**。
+          // 派閥と同じ「団体の中の諍い」なので、ゴシップ枠として載せる
+          state._industryNewsEvents = [...(state._industryNewsEvents || []), {
+            type: 'hatredContagion',
+            characterId: carrier.id,
+            data: {
+              org: state.orgName || 'あなたの団体',
+              carrier: carrier.name, friend: friendName, enemy: enemyName,
+            },
+          }];
         }
       });
     }

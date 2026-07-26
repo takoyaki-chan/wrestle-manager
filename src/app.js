@@ -7078,6 +7078,8 @@ const App = {
         const winnerId = r.winner === 'left' ? m.left : m.right;
         if (!champId || winnerId !== champId) {
           const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
+          // 王座移動を新聞へ(2026-07-27)。crownChampion が記事を組んで返す
+          if (crown.newsEvent) App._pushIndustryNews(crown.newsEvent);
           titleMatchOutcomes.push({ outcome: 'change', newChampId: winnerId, prevChampId: champId, challengerId });
         } else {
           const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg);

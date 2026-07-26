@@ -1869,7 +1869,16 @@ const Engine = {
       const msg = prev
         ? `🏆 王座交代！ ${c?.name} が新チャンピオンに！（前王者: ${prev.name}）`
         : `🏆 ${c?.name} が初代団体王者に戴冠！`;
-      return { titles: newTitles, roster: newRoster, msg };
+      // 2026-07-27: **自団体の王座が動いても新聞に載っていなかった**。
+      // playerTitleChange は優先度180・大ニュース指定まであるのに、記事を作る場所が
+      // どこにも無かった(Keisuke「タイトルマッチならまだしも」の指摘で発覚)。
+      // 呼び出し元で積み忘れないよう、**記事そのものをここで組んで返す**。
+      const newsEvent = prev ? {
+        type: 'titleChange',
+        characterId: fighterId,
+        data: { org: G.orgName || 'あなたの団体', name: c?.name || '新王者', prevChamp: prev.name },
+      } : null;
+      return { titles: newTitles, roster: newRoster, msg, newsEvent };
     },
     // Returns { titles, roster, msg }. opts={ challengerName }
     recordDefense(G, opts = {}) {
@@ -12333,6 +12342,7 @@ const Engine = {
         const winnerId = r.winner === 'left' ? m.left : m.right;
         if (!champId || winnerId !== champId) {
           const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
+          if (crown.newsEvent) s = Engine.industryNews.push(s, crown.newsEvent);
         } else {
           const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg);
         }
@@ -27072,8 +27082,8 @@ Engine.newspaper = {
     playerShowTitle:     120,
     npcHallOfFame:       170,
     aiTeamConflict:      110,
-    aiShowHighlight:      80,
-    playerShowNormal:     90,
+    aiShowHighlight:      45,
+    playerShowNormal:     50,
     aiRetirement:        100,
     aiContractDeparture:  95,
     aiMediaSpotlight:     65,
@@ -27096,34 +27106,50 @@ Engine.newspaper = {
     reclaimChallenge:     108,
     reclaimFailure:       102,
     factionFormed:         90,
-    factionSplit:          88,
-    factionDissolution:    85,
+    factionSplit:          102,
+    factionDissolution:    98,
     // ── C-1 派閥イベント新聞掲載: Tier A 大ネタ ──
     factionCoup:          118,
     factionWarSettled:    115,
     factionEndless:       112,
     factionDefection:     105,
-    factionShowdown:       95,
-    factionSuccession:     87,
-    factionPeace:          84,
-    factionReconcile:      82,
-    factionHiatus:         78,
+    factionShowdown:       108,
+    factionSuccession:     100,
+    factionPeace:          86,
+    factionReconcile:      84,
+    factionHiatus:         80,
     // ── C-1 派閥イベント新聞掲載: Tier B 日常ネタ（閑散週の埋め草）──
-    factionInternalBout:   58,
-    factionMediaFeature:   52,
-    factionJointProject:   50,
-    factionCamp:           48,
+    factionInternalBout:   100,
+    factionMediaFeature:   64,
+    factionJointProject:   62,
+    factionCamp:           60,
     lockerRoomCrisis:      75,
     firstMeetSinceDeparture: 72,
     relationshipRepair:    68,
     relationshipRepairFail:55,
-    hatredContagion:       50,
+    hatredContagion:       70,
   },
 
   /** 毎週の新聞を生成する。tickWeek末尾で呼ばれる */
   generate(state, rng) {
     const P = Engine.newspaper.PRIORITY;
     const stories = [];
+
+    // === 自団体の王座移動（2026-07-27） ===
+    // 見出しは NEWS_HEADLINE_TEMPLATES.titleChange を使う(3本書かれていたが未使用だった)
+    (state._industryNewsEvents || []).filter(ev => ev && ev.type === 'titleChange').forEach(ev => {
+      const tmplList = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') ? NEWS_HEADLINE_TEMPLATES.titleChange : null;
+      if (!tmplList || !tmplList.length) return;
+      const t = Engine.rng.pick(rng, tmplList);
+      const fill = str => String(str).replace(/\{(\w+)\}/g, (m, k) => (ev.data && ev.data[k] != null) ? ev.data[k] : m);
+      stories.push({
+        type: 'playerTitleChange',
+        priority: P.playerTitleChange,
+        headline: fill(t.headline),
+        body: fill(t.body),
+        characterId: ev.characterId || null,
+      });
+    });
 
     // === 業界底上げ記事（発動シーズンの最初の2週のみ）===
     if (state.leagueElevated && state.endingClearedSeason != null &&
