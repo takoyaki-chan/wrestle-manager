@@ -1,5 +1,28 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## タイトル曲 WM-C01 が1画面ぶん後ろへズレていた不具合の修正（2026-07-26）
+
+Keisuke 報告「タイトルオープニングに設定してある曲がタイトル画面で鳴らず、ニューゲームを始めた後に鳴り始める」。
+
+**原因は2つ重なっていた**。(1) タイトル画面は BGM を一切鳴らしておらず、`confirmDifficulty()`（難易度確定＝ゲーム開始）で初めて `play('kaimaku')` していた。(2) `G` は読み込み時に `let G = Engine.createInitialState()` で **`weekPhase:'draft'` として初期化される**ため、`playForState()` の `if (!G) return` は事実上一度も効かず、index.html の初回クリックフックが走ると**タイトル画面でドラフト曲 WM-C08 が鳴りうる**状態だった。さらに `_finishOpening()` は `refreshAll()` しか呼ばず、`refreshAll()` は BGM に触れないため、**初回ドラフト画面は C01 が鳴りっぱなしで C08 が一度も鳴らなかった**。
+
+**確定した進行**（Keisuke 裁定: 設定画面までは鳴らし続ける）:
+
+| 区間 | BGM |
+|---|---|
+| タイトル / 団体名入力 / 難易度選択 | WM-C01 タイトル・オープニング（通しで継続） |
+| 「ゲーム開始」→ オープニング4幕 | **無音**（1.2秒フェードアウトで幕を下ろす） |
+| ドラフト（旗揚げメンバー選択） | WM-C08 ドラフト選択 |
+| 集合写真から本編へ | WM-S00 メインメニュー（従来どおり） |
+
+**実装**: `_isTitleFlowVisible()`（titleScreen / orgSetupScreen / difficultyScreen のいずれかが表示中か）を新設し、`playForState()` の**先頭**——`weekPhase` を見るより前、`!G` ガードより前——に置いた。この3枚を「ゲーム開始前の同一シーケンス」として扱う。`weekPhase === 'opening'` の分岐は `play('kaimaku')` から `BGM.stop()` へ。`showTitleScreen()` に C01 の開始、`confirmDifficulty()` に `fadeOutStop(1200)`、`_finishOpening()` に `playForState()` を追加した。
+
+**自動再生ポリシーへの対処**: タイトル画面はページ読み込み直後に出るのでユーザー操作が一度も無く、環境によっては `play()` が蹴られる。しかも `FileBGM._audio` は蹴られても残るため、`BGM.play()` の重複ガード（`trackName === _current && _playing && _audio`）に阻まれて**二度と鳴らせなくなる**経路があった。`FileBGM.play()` の `catch` で `_armGestureRetry()` を張り、最初の pointerdown / keydown で鳴らし直す（ミュート設定は尊重）。既存の index.html 初回クリックフックより手前で効く。
+
+**検証**: ブラウザ実機（`localhost:3002/src/`）で全区間を通し、`Audio.bgm._current` と `FileBGM._audio.paused/currentTime` を実測。タイトル=c01 再生中（本環境では自動再生が通り、フェッチも 206 で確認）→ 団体設定・難易度=c01 継続 → ゲーム開始1.2秒後に `_current:null` / `_audio:null`＝完全無音・オープニング overlay 表示 → ドラフト遷移で c08 再生開始。コンソールエラーなし。安全網 `test/title-opening-bgm-test.js` を新規追加（判定順序・無音区間・3画面の網羅・gesture retry の存在を機械的に検査）。`npm test` 94/94 緑。
+
+**Keisuke に確認してほしい点**: (1) 起動直後のタイトル画面で C01 が鳴るか（鳴らなければ最初のクリックで鳴り出すか）、(2) 「ゲーム開始」でのフェードの長さ（1.2秒）が自然か、(3) オープニング4幕の無音が意図どおりの間か、(4) ドラフト画面に入った瞬間に C08 が立ち上がるか。
+
 ## 「中途半端に終わっていたもの」の一斉監査と是正 4件（2026-07-26）
 
 Keisuke の「急に中途半端に終わっているものが他にも無いか心配」を受けた全数監査と、見つかった分の是正。
