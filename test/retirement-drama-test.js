@@ -168,6 +168,73 @@ section('C-7. 舞台の格が試合から渡っている', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
+// C の5種類 — 発生条件は「破ってはいけない門」
+// ─────────────────────────────────────────────────────────────
+
+const pick = Engine.retirement.pickFarewellKind;
+const mr = (win, title) => ({ left: { id: 1 }, right: { id: 2 }, winner: win, isTitleMatch: !!title });
+const F = o => ({ id: 1, careerRecord: { totalTitleWins: 0 }, ...o });
+
+section('C-8. 負けた選手に「勝って終わる」型は絶対に出ない', () => {
+  // 相討ち(pyrrhic) も 最後の一勝(lastWin) も、勝っていることが条件
+  for (let i = 0; i < 20; i++) {
+    const k1 = pick(F({}), mr('right', false), {});
+    const k2 = pick(F({ lastRun: true }), mr('right', false), {});
+    [k1, k2].forEach(k => assert.ok(k !== 'pyrrhic' && k !== 'lastWin',
+      `負けたのに「${k}」が選ばれた`));
+  }
+});
+
+section('C-9. 王者でない選手に「王座を守って」は絶対に出ない', () => {
+  // 王座戦に勝っていても、本人が王者でなければ defended にしてはいけない
+  const k = pick(F({}), mr('left', true), { titleChampionId: 2 });
+  assert.notStrictEqual(k, 'defended', 'ベルトを持っていないのに「王座を守って」が出た');
+  // 王座戦ですらない場合も同じ
+  assert.notStrictEqual(pick(F({}), mr('left', false), { titleChampionId: 1 }), 'defended',
+    '王座戦でないのに「王座を守って」が出た');
+});
+
+section('C-10. 戴冠歴がある選手に「届かなかった挑戦」は出ない', () => {
+  const k = pick(F({ careerRecord: { totalTitleWins: 2 } }), mr('right', true), { titleChampionId: 2 });
+  assert.notStrictEqual(k, 'neverCrowned', '一度は獲っているのに「無冠のまま」が出た');
+});
+
+section('C-11. どの型の条件も満たさなければ、幕切れにしない', () => {
+  // 通常戦に負け、ラストランでもなく、追い込みも少ない
+  const k = pick(F({}), mr('right', false), {});
+  assert.strictEqual(k, null, '条件を満たさないのに型が選ばれた。無理に当てはめている');
+});
+
+section('C-12. 条件を満たす型は正しく選ばれる', () => {
+  assert.strictEqual(pick(F({}), mr('left', true), { titleChampionId: 1 }), 'defended');
+  assert.strictEqual(pick(F({}), mr('right', true), { titleChampionId: 2 }), 'neverCrowned');
+  assert.strictEqual(pick(F({}), mr('left', false), {}), 'pyrrhic');
+  assert.strictEqual(pick(F({ lastRun: true }), mr('left', false), {}), 'lastWin');
+  assert.strictEqual(pick(F({ intensiveWeeksTotal: 999 }), mr('right', false), {}), 'burntOut');
+});
+
+section('C-13. 同じ型を二度見せない（未使用を優先）', () => {
+  // ラストラン中に勝った → lastWin と pyrrhic の両方が候補
+  const f = F({ lastRun: true });
+  const first = pick(f, mr('left', false), {});
+  const second = pick(f, mr('left', false), { usedKinds: [first] });
+  assert.notStrictEqual(second, first, '使用済みの型がまた選ばれた');
+  assert.ok(second, '未使用が無くなると null になってしまう');
+});
+
+section('C-14. 全部使い切っても幕切れは起きる（使い回す）', () => {
+  const all = ['pyrrhic', 'defended', 'neverCrowned', 'burntOut', 'lastWin'];
+  const k = pick(F({ lastRun: true }), mr('left', false), { usedKinds: all });
+  assert.ok(k, '全部使い切ると幕切れが起きなくなる。使い回すこと');
+});
+
+section('C-15. 壊れた入力で落ちない', () => {
+  assert.strictEqual(pick(null, mr('left', false), {}), null);
+  assert.strictEqual(pick(F({}), null, {}), null);
+  assert.doesNotThrow(() => pick(F({}), mr('left', false), null));
+});
+
+// ─────────────────────────────────────────────────────────────
 // D-1. 力が尽きた（ピーク基準）
 // ─────────────────────────────────────────────────────────────
 
@@ -223,4 +290,4 @@ section('全-2. 確定引退(消耗80)は残っている', () => {
 
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (18 sections)');
+console.log('ALL PASS (26 sections)');

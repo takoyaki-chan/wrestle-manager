@@ -1455,6 +1455,7 @@ const Engine = {
       }
       // v1.3-1: 重傷時の引退チェック §4.2/§4.3 (独立した判定)
       let retireType = null;
+      let farewellKind = null;
       if (injury.type === '重傷') {
         const wear = fighter.wear || 0;
         // §4.2: wear + 重傷ボーナス(25) > 80 → 引退確定
@@ -1469,7 +1470,15 @@ const Engine = {
         if (!retireType) {
           const careerEndChance = careerEndingChance(fighter, flavorOpts.stage || 'main');
           const ceRng = Engine.rng.create(Engine.rng.derive(rng.state || 42, fighter.id, 777));
-          if (careerEndChance > 0 && Engine.rng.float(ceRng) < careerEndChance) retireType = 'careerEnding';
+          if (careerEndChance > 0 && Engine.rng.float(ceRng) < careerEndChance) {
+            // 幕切れの型を決める。**どの型の条件も満たさなければ幕切れにしない**
+            // (無理に当てはめない。通常の重傷として処理する)
+            const kind = Engine.retirement.pickFarewellKind(fighter, matchResult, {
+              titleChampionId: flavorOpts.titleChampionId,
+              usedKinds: flavorOpts.usedFarewellKinds,
+            });
+            if (kind) { retireType = 'careerEnding'; farewellKind = kind; }
+          }
         }
       }
       // v1.3-2: §5.2 怪我回数カウント
@@ -1506,7 +1515,8 @@ const Engine = {
       return {
         newFighter: updatedFighter,
         injuryInfo: { injury, weeks },
-        retireType  // null | 'wearInjury' | 'careerEnding'
+        retireType, // null | 'wearInjury' | 'careerEnding'
+        farewellKind // C の型（pyrrhic/defended/neverCrowned/burntOut/lastWin）
       };
     },
     tick(roster, freeAgents) {
@@ -6281,6 +6291,40 @@ const Engine = {
       const peakOvr = Math.max(currentOvr, fighter.careerRecord?.peakOVR || 0);
       if (!peakOvr) return 0;
       return Math.max(0, (peakOvr - currentOvr) / peakOvr);
+    },
+
+    /** C「壮絶な幕切れ」の型を決める（retirement-drama-spec v0.2 §3-C）。
+     *  **発生条件は破ってはいけない門。** 状況から型を選ぶのであって、
+     *  型を選んでから状況を作らない。負けたのに「勝って終わる」型、
+     *  ベルトを持っていないのに「王座を守って」型が出るのは論外。
+     *  どの型の条件も満たさなければ null を返す（＝幕切れにしない）。 */
+    pickFarewellKind(fighter, matchResult, opts) {
+      if (!fighter || !matchResult) return null;
+      const o = opts || {};
+      const isLeft = matchResult.left && matchResult.left.id === fighter.id;
+      const won = matchResult.winner === (isLeft ? 'left' : 'right');
+      const lost = matchResult.winner === (isLeft ? 'right' : 'left');
+      const isTitle = !!matchResult.isTitleMatch;
+      const isChampion = o.titleChampionId != null && o.titleChampionId === fighter.id;
+      const titleWins = (fighter.careerRecord && fighter.careerRecord.totalTitleWins) || 0;
+      const cands = [];
+      // C-5 最後の一勝: ラストラン中に勝った
+      if (fighter.lastRun && won) cands.push('lastWin');
+      // C-2 王座を守って: 王座戦・本人が王者・防衛成功
+      if (isTitle && isChampion && won) cands.push('defended');
+      // C-3 届かなかった挑戦: 王座戦・挑戦者・敗れた・生涯戴冠0
+      if (isTitle && !isChampion && lost && titleWins === 0) cands.push('neverCrowned');
+      // C-1 相討ち: 王座戦ではない試合に勝った
+      if (!isTitle && won) cands.push('pyrrhic');
+      // C-4 積み重ねた無理: 生涯の追い込み週数が多い
+      if ((fighter.intensiveWeeksTotal || 0) >= (RETIRE_CFG.careerEnding.strainRefWeeks || 60)) {
+        cands.push('burntOut');
+      }
+      if (cands.length === 0) return null;
+      // 同じ幕切れを二度見せない。未使用を優先する
+      const used = new Set(o.usedKinds || []);
+      const fresh = cands.filter(k => !used.has(k));
+      return (fresh.length > 0 ? fresh : cands)[0];
     },
 
     getDeclinePresentation(fighter) {
@@ -12641,12 +12685,13 @@ const Engine = {
       return (maxRiv >= 60 && avgBond <= 30) ? 2.0 : 1.0;
     };
     const _mergeFlavorOpts = (base, extraMult, stage) => {
-      const withStage = stage ? { ...(base || {}), stage } : base;
+      const withStage = stage ? { ...(base || {}), stage, titleChampionId: _titleChampId } : base;
       if (extraMult === 1.0) return withStage;
       return { ...(withStage || {}), injuryMult: ((withStage && withStage.injuryMult) || 1.0) * extraMult };
     };
     // C「壮絶な幕切れ」の舞台の格。前座 < メイン < 王座戦 の順に重い
     // (特別興行・天頂戦は別経路で処理されるため、ここは通常興行のみ)
+    const _titleChampId = (s.titles && s.titles.world) ? s.titles.world.championId : null;
     const _stageOf = (r, idx) => {
       if (r.isTitleMatch) return 'title';
       return idx === 0 ? 'main' : 'undercard';

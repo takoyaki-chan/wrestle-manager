@@ -102,6 +102,23 @@ section('5. ピークから大きく落ちた顔は、保護を外れる', () =>
     'ピークから落ちきっても保護されたまま。永久に居座る選手ができる');
 });
 
+section('5-b. 上位3名から落ちたら保護は外れる（毎年取り直す）', () => {
+  // 若手が伸びて上位3名を押し出したら、元トップは保護されない
+  const roster = [];
+  // id 1..3 は元トップだが今は OVR 60 / id 4..6 が伸びて 90
+  for (let i = 1; i <= 14; i++) {
+    const ovr = i <= 3 ? 60 : (i <= 6 ? 90 : 50);
+    roster.push(mk(i, ovr, i <= 3 ? 10 : 90, ovr)); // ピーク=現在なので「落ちた」わけではない
+  }
+  let everReleased = false;
+  for (let seed = 1; seed <= 30; seed++) {
+    const r = Engine.rival.applyExtraTurnover(Engine.rng.create(seed), roster, 'org_s', 'S', baseState());
+    if (r.released.some(f => f.id <= 3)) { everReleased = true; break; }
+  }
+  assert.ok(everReleased,
+    '上位3名から落ちても保護されたまま。順位は毎年取り直すこと');
+});
+
 section('6. trainCap が高い選手は放出候補に入らない', () => {
   const roster = [];
   // id 1..7 は cap 高、id 8..14 は cap 低
