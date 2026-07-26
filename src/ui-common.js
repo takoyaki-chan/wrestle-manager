@@ -539,10 +539,20 @@ document.addEventListener('mouseout', (e) => {
   // 子要素間の移動では消さない(relatedTarget がまだ el 内なら維持)
   if (el && !(e.relatedTarget && el.contains(e.relatedTarget))) hideCustomTooltip();
 });
-// タップ表示: capture 段階で拾い、親要素の onclick(列ソート等)より先に伝播を止める
+// タップ表示: capture 段階で拾い、親要素の onclick(列ソート等)より先に伝播を止める。
+//
+// **押せる部品には手を出さないこと。**
+// 2026-07-26: ⚡追い込みボタンに説明文(data-tip)を足した瞬間、ここで click が
+// 食い止められて **ボタンが完全に無反応**になった。説明を足しただけで機能が死ぬ。
+// 止めてよいのは「ℹ️ や見出しの ? のように、押しても何も起きない印」だけ。
 document.addEventListener('click', (e) => {
   const el = e.target && e.target.closest ? e.target.closest('[data-tip]') : null;
-  if (el) { e.stopPropagation(); showCustomTooltip(el, el.getAttribute('data-tip')); }
+  if (!el) return;
+  showCustomTooltip(el, el.getAttribute('data-tip'));
+  // data-tip の**内側**に押せる部品があるなら、その click は本人のもの。通す
+  const ctrl = e.target.closest('button,a,input,select,textarea,[onclick]');
+  if (ctrl && (ctrl === el || el.contains(ctrl))) return;
+  e.stopPropagation();
 }, true);
 
 // ── War Challenge Dialogue Generator (personality×archetype) ──
