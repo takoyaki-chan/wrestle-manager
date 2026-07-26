@@ -277,6 +277,27 @@ section('19c-4. 次戦カードの選手は名前も画像も押せる', () => {
   assert.ok(/showFighterPopup\(/.test(body), '既定のクリックが詳細を開いていない');
 });
 
+section('19e-0. 開催の確認関数が、外から呼んでも落ちない（v1.22 のバグ）', () => {
+  // 2026-07-26: confirmExecuteShow が renderShowPrep のローカル変数 _isValidSlot を
+  // 参照していたため、ボタンを押すと ReferenceError で無反応になっていた。
+  // 「関数が定義されているか」ではなく「外から呼んで動くか」を検査する。
+  const at = uiRender.indexOf('function confirmExecuteShow');
+  assert.ok(at > 0, 'confirmExecuteShow が見つからない');
+  const end = uiRender.indexOf('\nfunction renderShowPrep');
+  const body = uiRender.slice(at, end > at ? end : at + 2500);
+  // 本体が参照する _xxx が、トップレベルか本体内で宣言されているか
+  const ids = [...new Set(body.match(/_[a-zA-Z][a-zA-Z0-9_]*/g) || [])];
+  ids.forEach(n => {
+    const top = new RegExp('^(function|const|let|var)\\s+' + n + '\\b', 'm').test(uiRender);
+    const local = new RegExp('(const|let|var)\\s+' + n + '\\b').test(body);
+    assert.ok(top || local,
+      'confirmExecuteShow が ' + n + ' を参照しているが、トップレベルにも本体にも宣言が無い。'
+      + '別関数のローカル変数を掴んでいる＝押しても無反応になる');
+  });
+  assert.ok(/^function _spIsValidSlot\(/m.test(uiRender),
+    '_spIsValidSlot がトップレベルの関数宣言でない');
+});
+
 section('19e. 興行の開催は最後に一度だけ確認する（U7 ◆2）', () => {
   assert.ok(/function confirmExecuteShow/.test(uiRender), 'confirmExecuteShow が無い');
   assert.ok(/onclick="confirmExecuteShow\(\)"/.test(uiRender),

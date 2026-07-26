@@ -2561,11 +2561,21 @@ function _agwBlockedShowPrepHtml() {
   </div>`;
 }
 
+/** カードの枠が埋まっているか。**confirmExecuteShow と renderShowPrep で共有する。**
+    2026-07-26: renderShowPrep のローカル変数だったため、外から呼ぶ confirmExecuteShow が
+    ReferenceError で落ち、**興行開催ボタンが無反応になっていた**（v1.22 のバグ報告）。 */
+function _spIsValidSlot(m) {
+  if (!m) return false;
+  return m.matchType === 'tag'
+    ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
+    : (m.left > 0 && m.right > 0);
+}
+
 /** 興行開催の最終確認（U7 ◆2）。
  *  カードを1枠いじるたびに確認されるのは煩わしいので確認は挟まないが、
  *  **開催は取り消せない**ので最後に一度だけ確かめる（2026-07-26 Keisuke）。 */
 function confirmExecuteShow() {
-  const valid = (G.showCard || []).filter(m => _isValidSlot(m));
+  const valid = (G.showCard || []).filter(m => _spIsValidSlot(m));
   if (valid.length === 0) { Audio.play('error'); return; }
   const nameOf = id => {
     const f = (typeof findFighter === 'function') ? findFighter(Number(id)) : null;
@@ -3052,12 +3062,10 @@ function renderShowPrep() {
   // App.startAwayChallengeFromPrep() 自体は安全弁として executeShow() 側に残置している。
 
   const fanExpects = Engine.fanExpect.generate(G);
-  const _isValidSlot = m => m.matchType === 'tag'
-    ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
-    : (m.left > 0 && m.right > 0);
+  // 判定は confirmExecuteShow と共有するためファイル先頭の _spIsValidSlot に移した
   const validCurrent = G.showCard.filter(m => !m.matchType && m.left > 0 && m.right > 0);
   const matchedCount = Engine.fanExpect.countMatched(validCurrent, fanExpects);
-  const validMatches = G.showCard.filter(m => _isValidSlot(m));
+  const validMatches = G.showCard.filter(m => _spIsValidSlot(m));
   const hasTitlePreview = validMatches.some(m => m.isTitle);
   const previewMatchAppeals = validMatches.map(m => {
     if (m.matchType === 'tag') {
