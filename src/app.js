@@ -14108,6 +14108,11 @@ App.closePPVResult = function() {
   Audio.play('coin');
   Audio.bgm.play('management');
 
+  // 試合後コメントポップアップ（因縁マッチ）— 通常興行の閉じ方と揃える
+  const ppvMatchDialogues = [..._pendingMatchDialogues];
+  _pendingMatchDialogues = [];
+  if (ppvMatchDialogues.length > 0) showPostMatchDialogues(ppvMatchDialogues);
+
   // Step 5-6: ポップアップ用データ取得 + Gからクリア
   const pendingGrowthEventsShow = G._pendingGrowthEvents || [];
   if (G._pendingGrowthEvents) {

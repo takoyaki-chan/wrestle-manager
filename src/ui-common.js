@@ -4679,6 +4679,36 @@ function renderMatchPreview() {
 // ── Show Result Renderer ────────────────────────────────
 let _pendingMatchDialogues = [];
 
+/** 因縁マッチ(相互 rivalry 30+)の試合後コメントを1件予約する。
+ *  格下が OVR差9以上をひっくり返したときだけ UPSET_RIVALRY_LINES(番狂わせ専用)を引く。
+ *  2026-07-26: e03804b(興行結果画面の作り直し)でこの予約が丸ごと落ち、因縁の勝敗セリフが
+ *  通常興行・PPVのどちらからも出なくなっていたため復旧。判定は削除前と同じ式を使う。 */
+function _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel) {
+  if (isDraw || !r || !r.rivalryBonus) return;
+  if ((r.rivalryBonus.rivalry || 0) < 30) return;
+  const winF = leftIsWinner ? r.left : r.right;
+  const loseF = leftIsWinner ? r.right : r.left;
+  if (!winF || !loseF) return;
+  const winChar = ALL_CHARS.find(c => c.id === winF.id);
+  const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
+  if (!winChar || !loseChar) return;
+  const ovrW = Engine.util.ov(winF);
+  const ovrLose = Engine.util.ov(loseF);
+  const isUpset = ovrW < ovrLose - 8;
+  const upset = (typeof UPSET_RIVALRY_LINES !== 'undefined') ? UPSET_RIVALRY_LINES : null;
+  const winPool = (isUpset && upset) ? upset.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
+  const losePool = (isUpset && upset?.loserLines) ? upset.loserLines : RIVALRY_MATCH_REACTION.loserLines;
+  const winLine = pickDialogueLine(winPool, winChar);
+  const loseLine = pickDialogueLine(losePool, loseChar);
+  if (!winLine && !loseLine) return;
+  _pendingMatchDialogues.push({
+    matchLabel, rivalryBonus: r.rivalryBonus, isUpset,
+    winnerId: winF.id, loserId: loseF.id,
+    winnerName: winF.name, loserName: loseF.name,
+    winLine, loseLine,
+  });
+}
+
 function _pbShowSummaryTheme(week) {
   const normalizedWeek = ((((Number(week) || 1) - 1) % 48) + 48) % 48 + 1;
   if (normalizedWeek === 12) return { key: 'spring', emblem: '../image/emblem-spring.png', liveText: '🌸 SPRING SPECIAL' };
@@ -4851,6 +4881,10 @@ function renderShowResult(results, injuryResults) {
 
     const metaLeft = isMain ? (leftIsWinner ? 'Winner' : isDraw ? 'Draw' : 'Challenger') : `Match ${results.length - i}`;
     const metaRight = isMain ? (rightIsWinner ? 'Winner' : isDraw ? 'Draw' : 'Challenger') : `Match ${results.length - i}`;
+
+    // 因縁マッチ(rivalry 30+)の試合後コメントを予約する。結果一覧を閉じた直後に
+    // showPostMatchDialogues() が順番に出す。
+    _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, `Match ${results.length - i}`);
 
     let winnerLabel;
     if (isDraw) winnerLabel = 'DRAW';
@@ -6212,6 +6246,7 @@ function _getPPVPreMatchLine(fighter) {
 }
 
 function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
+  _pendingMatchDialogues = [];
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const ppvName = G.ppvName || 'GRAND FINAL';
@@ -6296,6 +6331,9 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     // Meta: org name for PPV
     const metaLeft = r.left._ppvOrgName || (isMain ? 'Summit' : `Match ${matchNum}`);
     const metaRight = r.right._ppvOrgName || (isMain ? 'Summit' : `Match ${matchNum}`);
+
+    // 通常興行と同じく因縁マッチの試合後コメントを予約する（App.closePPVResult で消化）
+    _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, isMain ? '頂上決戦' : `Match ${matchNum}`);
 
     let winnerLabel;
     if (isDraw) winnerLabel = 'DRAW';
@@ -13371,21 +13409,31 @@ function _renderNextMatchDialogue() {
   const d = _matchDialogueQueue[0];
 
   const rb = d.rivalryBonus || {};
-  const rivalryColor = rb.color || '#e17055';
 
-  box.className = 'notif-modal-box';
+  // U3グループB(2人が対置する画面)の共通コンポーネントで描く。_renderRivalryPopup と同じ外枠。
+  // セリフは頭上の吹き出しに入れ、名前は画像の下（吹き出しの中に名前は書かない）。
+  // 番狂わせは「宿命がひっくり返った」瞬間なので tone-fate、順当な決着は tone-confront。
+  // (verdict 用のトーンは .notif-modal-box.verdict.tone-* に定義があるものだけ使う)
+  box.className = `notif-modal-box verdict u3b-theme-dark ${d.isUpset ? 'tone-fate' : 'tone-confront'}`;
   box.innerHTML = `
-    <div class="notif-modal-text" style="color:${rivalryColor}">${d.matchLabel || ''} ${rb.emoji || '🔥'}${rb.label || '因縁'}</div>
-    <div class="notif-modal-portraits">
-      <div class="notif-modal-face dual">${portraitImg(d.winnerId, 100)}</div>
-      <div class="notif-modal-face dual">${portraitImg(d.loserId, 100)}</div>
+    <div class="vd-head">
+      <div class="vd-title">${d.isUpset ? '番 狂 わ せ' : '因 縁 決 着'}</div>
+      <div class="vd-sub">${escHtml(d.matchLabel || '')} ・ ${rb.emoji || '🔥'}${escHtml(rb.label || '因縁')}</div>
     </div>
-    <div class="notif-modal-text">${d.winnerName}「${d.winLine}」</div>
-    <div class="notif-modal-detail">${d.loserName}「${d.loseLine}」</div>
-    <button class="notif-modal-btn" onclick="closeMatchDialogue()">OK</button>
+    <div class="vd-stage">
+      ${_rivalryCol(d.winnerId, d.winnerName, d.winLine, true)}
+      <div class="vd-vs">
+        <div class="vd-vs-line"></div>
+        <div class="vd-vs-icon">${d.isUpset ? '⚡' : '🔥'}</div>
+        <div class="vd-vs-label">${d.isUpset ? '下 剋 上' : '決 着'}</div>
+        <div class="vd-vs-line"></div>
+      </div>
+      ${_rivalryCol(d.loserId, d.loserName, d.loseLine, false)}
+    </div>
+    <div class="vd-foot"><button class="vd-btn" onclick="closeMatchDialogue()">— 見 届 け る —</button></div>
   `;
   overlay.classList.add('active');
-  Audio.play('event');
+  if (typeof Audio !== 'undefined' && Audio.play) Audio.play(d.isUpset ? 'rivalry_resolution' : 'event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeMatchDialogue, 60000);
 }
