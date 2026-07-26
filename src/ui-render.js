@@ -881,11 +881,14 @@ function renderWeekScreen() {
   const stlBlocked = _stlIsLeagueWeek();
   const agwBlocked = _agwIsEventWeek();
   const jtBlocked = _jtIsEventWeek();
-  const specialEventBlocked = stlBlocked || agwBlocked || jtBlocked;
+  const tcBlocked = _tcIsEventWeek();
+  const specialEventBlocked = stlBlocked || agwBlocked || jtBlocked || tcBlocked;
   const isShow = isShowWeek(G.week) && !specialEventBlocked;
   const special = isSpecialShow(G.week) && !specialEventBlocked;
-  const ppv = isPPV(G.week);
-  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : agwBlocked ? '⚔️ 4団体勝ち残り対抗戦' : jtBlocked ? '🏟️ ジュニアトーナメント' : isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
+  // isPPV は週番号だけを見るので、天頂戦の年でも Week48 で true になる。
+  // その年の Week48 は PPV ではないため、表記から外す
+  const ppv = isPPV(G.week) && !tcBlocked;
+  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : agwBlocked ? '⚔️ 4団体勝ち残り対抗戦' : jtBlocked ? '🏟️ ジュニアトーナメント' : tcBlocked ? '👑 天頂戦' : isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
   document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4` : typeLabel;
 
   html = '';
@@ -2475,6 +2478,16 @@ function _agwIsEventWeek() {
   return !!(aw && !aw.cancelled && G.week === Engine.autumnWar.EVENT_WEEK);
 }
 
+/** 天頂戦開催週(4年に一度の Week48)。**この週は通常興行を行わない。**
+ *  2026-07-27: これが無かったため、天頂戦の年だけ Week48 が通常の興行週として残り、
+ *  大会のあとに通常興行がもう一度発火していた。さらに週番号だけを見る isPPV(48) が
+ *  true になるので、その通常興行の見出しが「🏆 PPV」になっていた(Keisuke 報告)。 */
+function _tcIsEventWeek() {
+  return !!(!G.offSeason && G.week === Engine.ppvTournament.SHOW_WEEK
+    && Engine.ppvTournament.isTournamentSeason(G.season)
+    && G.ppvTournament && !G.ppvTournament.cancelled);
+}
+
 /** ジュニアトーナメント開催週(Week24=夏の最終興行週)。開催成立時は通常興行をブロックする。
  *  不開催年(選手不足キャンセル)は従来どおり通常の特別興行にフォールバック */
 function _jtIsEventWeek() {
@@ -2553,6 +2566,14 @@ function _jtBlockedShowPrepHtml() {
   </div>`;
 }
 
+function _tcBlockedShowPrepHtml() {
+  return `<div class="stl-block-banner">
+    <div class="stl-block-banner-icon">👑</div>
+    <div class="stl-block-banner-title">今週は天頂戦</div>
+    <div class="stl-block-banner-sub">第${Engine.ppvTournament.SHOW_WEEK}週は通常興行の代わりに、4年に一度の天頂戦が開催されます。今週のカード編成はありません。</div>
+  </div>`;
+}
+
 function _agwBlockedShowPrepHtml() {
   return `<div class="stl-block-banner agw-block-banner">
     <div class="stl-block-banner-icon">⚔️</div>
@@ -2619,6 +2640,11 @@ function renderShowPrep() {
 
   if (_jtIsEventWeek()) {
     el.innerHTML = _jtBlockedShowPrepHtml();
+    return;
+  }
+
+  if (_tcIsEventWeek()) {
+    el.innerHTML = _tcBlockedShowPrepHtml();
     return;
   }
 
