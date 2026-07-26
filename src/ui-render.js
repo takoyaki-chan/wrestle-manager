@@ -713,8 +713,9 @@ function renderWeekScreen() {
       const rm = ROLE_META[c.role] || ROLE_META.Neutral;
       const {strengths, weaknesses} = analyzeStrengths(c);
       const upperUrl = getUpperUrl(c.id);
+      // U7 §2-C: 顔が出ているなら押せば選手詳細が開く（旗揚げの固定メンバー）
       html += `<div class="draft-fc fixed">
-        <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${c.name}">` : ''}</div>
+        <div class="draft-fc-portrait" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(c.id)},'draft')">${upperUrl ? `<img src="${upperUrl}" alt="${c.name}">` : ''}</div>
         <div class="draft-fc-info">
           <div class="draft-fc-name-row">
             <span class="draft-fc-name">${c.name}</span>
@@ -1431,7 +1432,7 @@ function renderWeekScreen() {
         const isChampion = G.titles?.world?.championId === f.id;
         html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:8px">
           <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:8px">
-            ${portraitImg(f.id, 80)}
+            ${portraitImg(f.id, 40, '', 'roster')}
             <div style="flex:1">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
                 <div>
@@ -1517,7 +1518,7 @@ function renderWeekScreen() {
     // チャンピオン自動エントリー
     if (champAutoEntry) {
       html += `<div style="padding:10px 14px;background:rgba(241,196,15,0.08);border:1px solid rgba(241,196,15,0.25);border-radius:6px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
-        ${portraitImg(champ.id, 40)}
+        ${portraitImg(champ.id, 40, '', 'roster')}
         <span style="font-size:13px;color:var(--text-main)">👑 <strong>${champ.name}</strong> — チャンピオンとして自動エントリー</span>
       </div>`;
     }
@@ -1541,7 +1542,7 @@ function renderWeekScreen() {
       const bg = picked ? 'background:rgba(241,196,15,0.12);border-color:rgba(241,196,15,0.4);' : '';
       html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;cursor:pointer;${bg}${disabled}" onclick="togglePPVPick(${c.id})">
         <span style="font-size:18px;width:24px;text-align:center">${picked ? '✅' : '⬜'}</span>
-        ${portraitImg(c.id, 36)}
+        ${portraitImg(c.id, 40, '', 'roster')}
         <span style="flex:1;font-size:13px;color:var(--text-main)">${c.name}</span>
         <span style="font-size:11px;color:var(--text-sub)">OVR ${ovr}</span>
         <span style="font-size:11px;color:var(--text-dim)">人気 ${Math.round(c.popularity || 0)}</span>
@@ -2093,7 +2094,7 @@ function renderRoster() {
           assignedChars.forEach(ch => {
             const sm = getCoachStyleMatch(c, ch);
             const matchIcon = sm.icon ? `<span style="font-weight:700;color:${sm.cls==='specialist'?'#1a8a4a':'#a07010'}">${sm.icon}</span>` : '';
-            staffHtml += `<span class="coach-match-chip" style="background:rgba(122,101,48,0.06);border:1px solid rgba(122,101,48,0.15);border-radius:4px;padding:3px 6px;display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#4a4638">${portraitImg(ch.id, 18, '', false)} ${ch.name.substring(0,4)}${matchIcon}<span onclick="event.stopPropagation();changeCoachAssign(${ch.id},0)" style="cursor:pointer;color:#a03030;font-size:9px;margin-left:2px" title="担当解除">✕</span></span>`;
+            staffHtml += `<span class="coach-match-chip" style="background:rgba(122,101,48,0.06);border:1px solid rgba(122,101,48,0.15);border-radius:4px;padding:3px 6px;display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#4a4638">${portraitImg(ch.id, 24, '', false)} ${ch.name.substring(0,4)}${matchIcon}<span onclick="event.stopPropagation();changeCoachAssign(${ch.id},0)" style="cursor:pointer;color:#a03030;font-size:9px;margin-left:2px" title="担当解除">✕</span></span>`;
           });
         } else {
           staffHtml += `<span style="font-size:12px;color:#7a7466;font-style:italic">担当なし</span>`;
@@ -2224,7 +2225,7 @@ function renderRoster() {
     html += `<div class="rd-card${_rosterDetailOpenIds.has(c.id)?' expanded':''}" onclick="toggleRosterDetail(${c.id})">
       <div class="rd-card-inner">
         <div onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')" style="cursor:pointer;flex-shrink:0">
-          ${portraitImg(c.id, 52, '', true)}
+          ${portraitImg(c.id, 40, '', true)}
         </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
@@ -2275,7 +2276,7 @@ function renderRoster() {
         : 'FA') : '?';
       html += `<div style="background:#ede8dc;border:1px solid rgba(180,120,30,0.3);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
         <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
-          ${portraitImg(c.id, 52, '', true)}
+          ${portraitImg(c.id, 40, '', true)}
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
               <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')">${c.name}</span><span style="color:#a06000;font-size:12px"> 🤝</span>
@@ -3169,7 +3170,7 @@ function renderShowPrep() {
         const drawPow = Math.round(Engine.attendanceV2.calcDrawPower(f, G));
         const isChamp = G.titles?.world?.championId === f.id;
         return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">
-          ${portraitImg(f.id, 72)}
+          ${portraitImg(f.id, 40, '', 'roster')}
           <div class="sp-tag-fighter-info">
             ${isChamp ? '<div style="font-size:9px;color:var(--gold)">👑 王者</div>' : ''}
             <div class="sp-tag-fighter-name">${f.name}</div>
@@ -5017,7 +5018,7 @@ function _renderShachoshitsuRentalDesk() {
       <div class="shachoshitsu-rental-mini" style="animation-delay:${idx * 0.04}s">
         <div class="shachoshitsu-rental-mini-tag">${srcLabel}</div>
         <div class="shachoshitsu-rental-mini-row">
-          ${portraitImg(f.id, 32, '', true)}
+          ${portraitImg(f.id, 40, '', 'rental')}
           <div>
             <div class="shachoshitsu-rental-mini-name">${f.name}</div>
             <div style="font-size:10px;color:rgba(42,35,24,0.55)">${f.style}</div>
@@ -5047,7 +5048,9 @@ function _renderShachoshitsuWallRentals() {
     const fromLabel = contract.fromSource === 'rival'
       ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || contract.fromOrgId)
       : 'FA';
-    html += `<div class="shachoshitsu-wall-rental-card">
+    // U7 §2-C: 選手名が出ている一覧は押せば詳細が開く
+    const open = rentalF ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(rentalF.id)},'rental')"` : '';
+    html += `<div class="shachoshitsu-wall-rental-card"${open}>
       <div class="name">${rentalF ? rentalF.name : '不明'} ← ${fromLabel}</div>
       <div class="meta">残り${contract.weeksLeft}週</div>
     </div>`;
@@ -5874,7 +5877,7 @@ function renderScoutEvent() {
     const estAvg = Math.round((est.pw + est.sp + est.te + est.st + est.mn) / 5);
 
     html += `<div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:var(--bg-card);border:1px solid ${canNeg ? 'var(--border)' : 'rgba(231,76,60,0.3)'};border-radius:8px;margin-bottom:8px;${!canNeg?'opacity:0.5;':''}cursor:pointer" onclick="showFighterPopup(${c.id},'scout')">
-      ${portraitImg(c.id, 80)}
+      ${portraitImg(c.id, 40)}
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
           <span class="flink" style="font-size:17px;font-weight:700">${c.name}</span>
@@ -5994,7 +5997,7 @@ function renderCoach() {
         assignedChars.forEach(ch => {
           const sm = getCoachStyleMatch(c, ch);
           const matchIcon = sm.icon ? `<span style="font-weight:700;color:${sm.cls==='specialist'?'#2ecc71':'#f1c40f'};margin-left:2px">${sm.icon}</span>` : '';
-          html += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 22, '', true)} ${fLink(ch, {source:'roster', size:'12px'})} <strong style="color:var(--gold)">${ov(ch)}</strong>${matchIcon}</span>`;
+          html += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 24, '', true)} ${fLink(ch, {source:'roster', size:'12px'})} <strong style="color:var(--gold)">${ov(ch)}</strong>${matchIcon}</span>`;
         });
         html += `</div>`;
       } else {
@@ -8948,7 +8951,7 @@ function _renderDbFighters() {
       : '';
     const source = f._orgTier === 'player' ? 'roster' : f._orgTier === 'fa' ? 'free' : `ai:${f._orgId}`;
     html += `<tr class="clickable" onclick="showFighterPopup(${f.id},'${source}')">
-      <td>${portraitImg(f.id, 36, '', false)}</td>
+      <td>${portraitImg(f.id, 40, '', false)}</td>
       <td style="font-weight:600">${f.name}${champBadge}${bestTagBadge}</td>
       <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
       <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
@@ -10219,7 +10222,8 @@ function _renderPrologueBlock(prologue, chapters) {
     const portraitInner = portraitUrl
       ? `<img src="${portraitUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover">`
       : `<span>${f.surname}</span>`;
-    html += `<div class="${cardCls}">
+    // U7 §2-C: 顔が出ているなら押せば選手詳細が開く（引退・退団した選手も含む）
+    html += `<div class="${cardCls}" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'chronicle')">
       <div class="chron-prologue-portrait">${portraitInner}</div>
       <div class="chron-prologue-name">${f.name}</div>
       <div class="chron-prologue-style">${styleLabel} / ${roleLabel}</div>
@@ -10480,16 +10484,18 @@ function _renderDbChronicle() {
   const _buildAcePortrait = (a, isDualPortrait) => {
     const pUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(a.id || 0, a.peakOVR || 0) : '';
     const letter = Engine.chronicle._getSurname(a.name).charAt(0);
+    // U7 §2-C: 顔が出ているなら押せば選手詳細が開く
+    const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(a.id) || 0},'chronicle')"`;
     if (isDualPortrait) {
       const img = pUrl
         ? `<img src="${pUrl}" onerror="this.remove()" alt=""><span class="chron-dual-portrait-letter" style="display:none">${letter}</span>`
         : `<span class="chron-dual-portrait-letter">${letter}</span>`;
-      return `<div class="chron-dual-portrait">${img}</div>`;
+      return `<div class="chron-dual-portrait"${open}>${img}</div>`;
     }
     const img = pUrl
       ? `<img src="${pUrl}" onerror="this.remove()" alt=""><span class="chron-ace-portrait-letter" style="display:none">${letter}</span>`
       : `<span class="chron-ace-portrait-letter">${letter}</span>`;
-    return `<div class="chron-ace-portrait">${img}</div>`;
+    return `<div class="chron-ace-portrait"${open}>${img}</div>`;
   };
 
   html += `<div class="chron-section">
@@ -10682,8 +10688,9 @@ function _renderDbChronicle() {
       else if (isVeteran) roleTag = `<div class="chron-gen-role-tag chron-gen-role-veteran">◇ ベテラン</div>`;
       else roleTag = `<div class="chron-gen-role-tag chron-gen-role-strength">◆ 実力副官</div>`;
       const memberClass = `chron-gen-member${isIdol ? ' idol' : ''}${isRising ? ' rising' : ''}${isVeteran ? ' veteran' : ''}`;
+      // U7 §2-C: 顔を押せば選手詳細。名前は殿堂リンクが載ることがあるので顔に付ける
       html += `<li class="${memberClass}">
-        <div class="chron-gen-portrait">${imgHtml}</div>
+        <div class="chron-gen-portrait" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(p.id)},'chronicle')">${imgHtml}</div>
         <div class="chron-gen-info">
           ${roleTag}
           <div class="chron-gen-name">${pNameHtml}</div>

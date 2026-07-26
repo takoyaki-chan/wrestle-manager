@@ -1618,7 +1618,7 @@ function showCoachTooltip(coachId) {
       assignedChars.forEach(ch => {
         const sm = getCoachStyleMatch(c, ch);
         const matchIcon = sm.icon ? `<span style="font-weight:700;color:${sm.cls==='specialist'?'#2ecc71':'#f1c40f'};margin-left:2px">${sm.icon}</span>` : '';
-        html += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 20, '', true)} ${fLink(ch, {source:'roster', size:'11px'})} <strong style="color:var(--gold)">${ov(ch)}</strong>${matchIcon}</span>`;
+        html += `<span class="coach-match-chip ${sm.cls}">${portraitImg(ch.id, 24, '', true)} ${fLink(ch, {source:'roster', size:'11px'})} <strong style="color:var(--gold)">${ov(ch)}</strong>${matchIcon}</span>`;
       });
       html += '</div>';
     } else {
@@ -12982,7 +12982,7 @@ function _buildB4Modal(event, state, roster) {
     available.forEach(f => {
       const ovr = Engine.util.ov(f);
       const pop = Math.round(f.popularity || 0);
-      const face = portraitImg(f.id, 72, '');
+      const face = portraitImg(f.id, 40, '', 'roster');
       const mult = Engine.eventSystem.calcTalentMultiplier(f, activityType);
       const compatTag = mult >= 1.4 ? '<span style="color:#f1c40f;font-size:9px"> ★適性◎</span>'
         : mult <= 0.6 ? '<span style="color:#e74c3c;font-size:9px"> △苦手</span>' : '';
@@ -13014,7 +13014,7 @@ function _buildB4Modal(event, state, roster) {
   available.forEach(f => {
     const ovr = Engine.util.ov(f);
     const pop = Math.round(f.popularity || 0);
-    const face = portraitImg(f.id, 72, '');
+    const face = portraitImg(f.id, 40, '', 'roster');
     html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
       ${face}
       <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}</div>
@@ -14604,7 +14604,7 @@ function showContractResultModal(results, salaryChanges, onDone) {
         else                                         dest = '→ フリーエージェント';
       }
       deskHtml += `<div class="neg-result-row">
-        ${portraitImg(r.fighterId, 32)}
+        ${portraitImg(r.fighterId, 40, '', 'roster')}
         <span style="font-size:13px;color:#2a2318">${r.fighterName}</span>
         <span style="font-size:11px;color:rgba(42,35,24,0.55);margin-left:auto">${dest}</span>
       </div>`;
@@ -14623,7 +14623,7 @@ function showContractResultModal(results, salaryChanges, onDone) {
       if (r.negotiatedDelta !== 0) breakdown.push(`交渉 ${negotiatedText}`);
       if (r.baselineDelta !== 0) breakdown.push(`契約基準 ${baselineText}`);
       deskHtml += `<div class="neg-result-row">
-        ${portraitImg(r.fighterId, 32)}
+        ${portraitImg(r.fighterId, 40, '', 'roster')}
         <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
           <span style="font-size:13px;color:#2a2318">${r.fighterName}</span>
           ${breakdown.length > 0
@@ -14764,7 +14764,9 @@ function _jtcFx(f, isWin, isLose) {
   const img = upperUrl
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
     : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
-  return `<div class="jtc-fx${isLose ? ' is-lose' : ''}">
+  // U7 §2-C: ブラケットも顔が出ている以上、押せば選手詳細が開く
+  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'juniorTournament')"`;
+  return `<div class="jtc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="jtc-up ${cls}">${img}</div>
     <div class="jtc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}</div>
   </div>`;
@@ -15686,7 +15688,9 @@ function _stlFighterOf(orgId, fighterId) {
 function _stlFaceImg(f) {
   if (!f) return '';
   const u = getPortraitUrl(f.id);
-  return u ? `<img src="${u}" alt="${escHtml(f.name || '')}" onerror="this.style.display='none'">` : '';
+  // U7 §2-C: 顔が出ているなら押せば選手詳細が開く
+  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'springTagLeague')"`;
+  return u ? `<img src="${u}" alt="${escHtml(f.name || '')}"${open} onerror="this.style.display='none'">` : '';
 }
 
 /** condition(40-80)を定性3段に変換。数値は表に出さない */
@@ -16798,7 +16802,8 @@ function _tcCircleFx(f, isWin, isLose, withOrg) {
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
     : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
   const org = withOrg ? `<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span>` : '';
-  return `<div class="tc-fx${isLose ? ' is-lose' : ''}">
+  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen')"`;
+  return `<div class="tc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="tc-cir ${cls}">${img}</div>
     <div class="tc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}${org}</div>
   </div>`;
@@ -16811,7 +16816,8 @@ function _tcRectFx(f, isWin, isLose) {
   const img = upperUrl
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
     : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
-  return `<div class="tc-rc-fx${isLose ? ' is-lose' : ''}">
+  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen')"`;
+  return `<div class="tc-rc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="jtc-up ${cls}">${img}</div>
     <div class="tc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span></div>
   </div>`;
@@ -17402,7 +17408,7 @@ function _tcEntryModalHtml() {
       ? Engine.ppvTournament._orgName(G, inv.orgId) : '';
     const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
     const kindLabel = inv.kind === 'ranking' ? '個人ランキング 1位' : '人気 1位';
-    html += `<div class="tc-invite-card">
+    html += `<div class="tc-invite-card" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen')">
       <div class="tc-invite-kind">${kindLabel}</div>
       <div class="tc-invite-up">${upperUrl ? `<img src="${upperUrl}" alt="">` : ''}</div>
       <div class="tc-invite-name">${escHtml(f.name)}</div>
@@ -17423,7 +17429,7 @@ function _tcEntryModalHtml() {
     const click = isChamp ? '' : ` onclick="App.tcTogglePick(${f.id})"`;
     html += `<div class="${cls}" style="border:1px solid var(--stage-border-lit);border-radius:6px;cursor:${isChamp ? 'default' : 'pointer'}"${click}>
       <span style="font-size:18px;width:24px;text-align:center">${picked ? (isChamp ? '👑' : '✅') : '⬜'}</span>
-      ${portraitImg(f.id, 36)}
+      ${portraitImg(f.id, 40, '', 'roster')}
       <span style="flex:1;font-size:13px;color:var(--stage-text-main)">${escHtml(f.name)}${isChamp ? ' <span style="font-size:10px;color:var(--gold)">王者・出場必須</span>' : ''}</span>
       <span style="font-size:11px;color:var(--stage-text-sub)">OVR ${ovr}</span>
       <span style="font-size:11px;color:var(--stage-text-dim)">人気 ${Math.round(f.popularity || 0)}</span>

@@ -440,7 +440,10 @@ function logGap(msg) {
     // 2026-07-26でタグの文言を「△ DRAW」から「NO CONTEST」へ変更(引き分け表記の撤去)。
     const stripStart = html.indexOf('stl-lastmatch-label');
     assert.ok(stripStart >= 0, '直近試合ストリップが出る');
-    const strip = html.slice(stripStart - 40, stripStart + 800);
+    // 固定幅で切ると、顔に onclick を足した(U7)だけで窓から溢れて落ちる。
+    // ストリップは「直近試合ラベル」から「次戦プレビュー」までと定義して切り出す
+    const stripEnd = html.indexOf('NEXT MATCH', stripStart);
+    const strip = html.slice(Math.max(0, stripStart - 40), stripEnd > 0 ? stripEnd : html.length);
     assert.ok(!strip.includes('win-tag'), '引き分け行にはWINタグが付かない');
     assert.strictEqual((strip.match(/draw-tag/g) || []).length, 2, '引き分け行は両陣営にdraw-tagクラスが明示される(不変条件2)');
     assert.ok(strip.includes('NO CONTEST'), '引き分け行のタグ文言は「NO CONTEST」(2026-07-26、旧: △ DRAW)');
