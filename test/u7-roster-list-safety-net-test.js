@@ -1,8 +1,8 @@
 // u7-roster-list-safety-net-test.js
 //
-// U7「選手カード／一覧」の安全網。物差しは docs/ui/ui/mockup-baseline §2-C。
+// U7「選手カード／一覧」の安全網。物差しは docs/ui/mockup-baseline-v0.1.md §2-C。
 //
-//   (1) 一覧に差し込む正方形の顔は row=40 / row-sm=24 の2段だけ
+//   (1) 一覧に差し込む正方形の顔は card=52 / row=40 / row-sm=24 の3段だけ
 //       （U7調査では 18/20/22/24/32/34/36/40/52/72/80 の11通りが併存していた）
 //   (2) 顔が出ている一覧は、押せば選手詳細が開く
 //       （調査では顔があるのに押せない一覧が12箇所あった）
@@ -38,6 +38,7 @@ console.log('=== U7 選手カード／一覧 ===\n');
 
 section('0. ベースラインに §2-C（一覧の顔）が書かれている', () => {
   assert.ok(/## 2-C\./.test(baseline), '§2-C が無い。実装より先に物差しを決めること');
+  assert.ok(/`card`[^\n]*52×52/.test(baseline), 'card 52 の定義が無い');
   assert.ok(/`row`[^\n]*40×40/.test(baseline), 'row 40 の定義が無い');
   assert.ok(/`row-sm`[^\n]*24×24/.test(baseline), 'row-sm 24 の定義が無い');
   assert.ok(/顔が出ているなら、押せば選手詳細が開く/.test(baseline), 'クリックの規則が無い');
@@ -62,9 +63,10 @@ const SOLO_CALLS = [
   'portraitImg(n.fighterId, 64)',       // 交渉の相手（単独）
   'portraitImg(champ.id, 28)',          // ヘッダーの王者バッジ
   'portraitImg(g.speakerId, 34)',       // 道場バナー 休憩中（§2-B の例外）
-  'portraitImg(f.id, size)',            // タッグ枠（呼び出し側で段を渡す）
+  "portraitImg(f.id, size, '', 'roster')", // 興行準備の枠（呼び出し側で段を渡す）
 ];
-const ALLOWED_SQUARE = new Set([24, 40]);
+// card 52 / row 40 / row-sm 24 の3段（2026-07-26 実機で card を追加）
+const ALLOWED_SQUARE = new Set([24, 40, 52]);
 
 function collectPortraitCalls() {
   const out = [];
@@ -86,7 +88,7 @@ function collectPortraitCalls() {
 
 const isSolo = c => SOLO_CALLS.some(s => c.line.includes(s));
 
-section('1. 一覧の正方形の顔は 24 か 40 だけ', () => {
+section('1. 一覧の正方形の顔は 24 / 40 / 52 だけ', () => {
   const bad = collectPortraitCalls()
     .filter(c => !isSolo(c))
     .filter(c => c.size !== null && !ALLOWED_SQUARE.has(c.size));
@@ -101,8 +103,9 @@ section('2. 除外リストが古びていない（単独表示が消えたり�
     'この呼び出しがもう存在しない。除外リストを更新すること:\n        ' + stale.join('\n        '));
 });
 
-section('3. 梯子の2段が実際に両方使われている', () => {
+section('3. 梯子の3段が実際に全部使われている', () => {
   const sizes = new Set(collectPortraitCalls().filter(c => !isSolo(c)).map(c => c.size));
+  assert.ok(sizes.has(52), 'card 52 がどこにも使われていない');
   assert.ok(sizes.has(40), 'row 40 がどこにも使われていない');
   assert.ok(sizes.has(24), 'row-sm 24 がどこにも使われていない');
 });
@@ -150,7 +153,7 @@ function around(src, anchor, back = 600, fwd = 900) {
 }
 
 const MUST_OPEN = [
-  ['引き抜きオファー一覧', () => around(uiRender, '💰 移籍金:', 1400)],
+  ['引き抜きオファー一覧', () => around(uiRender, '💰 移籍金:', 1800)],
   ['契約更改 結果サマリー', () => fnBody(uiCommon, 'function showContractResultModal')],
   ['春タッグ リーグ順位表', () => fnBody(uiCommon, 'function _stlFaceImg')],
   ['天頂戦 特別招待カード', () => around(uiCommon, 'tc-invite-up')],
@@ -208,6 +211,44 @@ section('18. 旗揚げドラフトの設立メンバーにはクリックを付�
   assert.ok(!/showFighterPopup\(/.test(body),
     '旗揚げ時点の選手は G のどこにも居ないので開けない。' +
     'カード自体が全ステータス＋寸評を載せた詳細表示なので、そもそも要らない');
+});
+
+section('19b. 興行準備は「ピッカーを開く前の顔」も押せる', () => {
+  // 誰を組むか決める画面なので、選ぶ前にその選手を確かめられないと判断できない
+  // (2026-07-26 Keisuke)。枠の顔＝詳細／枠のそれ以外＝ピッカーを開く
+  const single = around(uiRender, 'const _spPortrait = (f, size)', 0, 400);
+  assert.ok(single, '_spPortrait が見つからない');
+  assert.ok(opensDetail(single), 'シングル枠の顔が押せない');
+  const tag = around(uiRender, 'const _tagFighterHtml = (f, team, pos, side)', 0, 1400);
+  assert.ok(tag, '_tagFighterHtml が見つからない');
+  assert.ok(opensDetail(tag), 'タッグ枠の顔が押せない');
+});
+
+section('19c. 押したときは必ず開く（ポップアップのキューに積まれて消えない）', () => {
+  // トーナメント表や試合前カードは showResultOverlay/mdl* の**中**に描かれる。
+  // showFighterPopup は「他のポップアップが開いている」と見なすとキューに積んで
+  // return するので、クリックしても**何も起きない**（2026-07-26 天頂戦で発覚）。
+  // ユーザーの操作から来た呼び出しは _skipQueueCheck=true で必ず開く。
+  const at = dataJs.indexOf('function portraitImg(');
+  const body = dataJs.slice(at, at + 2200);
+  assert.ok(/showFighterPopup\([^)]*,true\)/.test(body),
+    'portraitImg の onclick がキュー回避を渡していない');
+  [['ジュニアT ブラケット', fnBody(uiCommon, 'function _jtcFx')],
+   ['天頂戦 ブラケット(丸)', fnBody(uiCommon, 'function _tcCircleFx')],
+   ['天頂戦 ブラケット(矩形)', fnBody(uiCommon, 'function _tcRectFx')]].forEach(([label, b]) => {
+    assert.ok(b, `${label} が見つからない`);
+    // ${Number(f.id)} のように中に ) が入るので [^)] では届かない
+    assert.ok(/showFighterPopup\([\s\S]{0,120}?,\s*true\)/.test(b),
+      `${label} がキュー回避を渡していない。オーバーレイの中なので押しても無反応になる`);
+  });
+});
+
+section('19d. 選手詳細は最前面に出る', () => {
+  const html = read('src/index.html');
+  const m = html.match(/\.fighter-popup-overlay\{[^}]*z-index:\s*(\d+)/);
+  assert.ok(m, '.fighter-popup-overlay の z-index が読めない');
+  assert.ok(parseInt(m[1], 10) >= 400,
+    `z-index ${m[1]} では式典(400)やトーナメント表の下に隠れる。最上位に置くこと`);
 });
 
 section('19. 契約更改の結果は roster 決め打ちで引かない', () => {

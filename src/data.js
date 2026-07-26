@@ -592,7 +592,7 @@ function portraitImg(id, size = 80, cls = '', clickable = false) {
   // clickable は true か「呼び出し元の画面名」。source を渡さないと詳細ポップアップの
   // 戻り先が roster 固定になり、別画面から開いたときに戻れなくなる(U7 §2-C)
   const src = typeof clickable === 'string' && clickable ? clickable.replace(/[^a-zA-Z0-9_]/g, '') : 'roster';
-  const clickAttr = clickable ? ` onclick="event.stopPropagation();showFighterPopup(${id},'${src}')" style="width:${size}px;height:${size}px;cursor:pointer"` : ` style="width:${size}px;height:${size}px"`;
+  const clickAttr = clickable ? ` onclick="event.stopPropagation();showFighterPopup(${id},'${src}',true)" style="width:${size}px;height:${size}px;cursor:pointer"` : ` style="width:${size}px;height:${size}px"`;
   if (url) {
     return `<img src="${url}" class="portrait${statusCls} ${cls}"${clickAttr} alt="" loading="lazy">`;
   }
@@ -602,7 +602,7 @@ function portraitImg(id, size = 80, cls = '', clickable = false) {
   const STYLE_COLORS = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Aerial:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
   const col = ch ? (STYLE_COLORS[ch.style] || '#888') : '#888';
   const clickStyle = clickable ? 'cursor:pointer;' : '';
-  const clickEv = clickable ? ` onclick="event.stopPropagation();showFighterPopup(${id},'${src}')"` : '';
+  const clickEv = clickable ? ` onclick="event.stopPropagation();showFighterPopup(${id},'${src}',true)"` : '';
   return `<div class="portrait${statusCls} ${cls}" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${col}33,${col}11);font-size:${Math.round(size*0.35)}px;font-weight:900;color:${col};flex-shrink:0;${clickStyle}"${clickEv}>${initial}</div>`;
 }
 

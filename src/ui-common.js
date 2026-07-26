@@ -10691,8 +10691,8 @@ function showFactionCommon1Modal(payload, state, onChoice) {
   const isLeaderA = leader && fA && leader.id === fA.id;
   const isLeaderB = leader && fB && leader.id === fB.id;
   const leaderSide = isLeaderA ? 'a' : (isLeaderB ? 'b' : 'a');
-  const aClick = fA ? `event.stopPropagation();showFighterPopup(${fA.id},'roster')` : '';
-  const bClick = fB ? `event.stopPropagation();showFighterPopup(${fB.id},'roster')` : '';
+  const aClick = fA ? `event.stopPropagation();showFighterPopup(${fA.id},'roster',true)` : '';
+  const bClick = fB ? `event.stopPropagation();showFighterPopup(${fB.id},'roster',true)` : '';
   const factionTagA = isLeaderA ? `${factionName} ・ リーダー` : factionName;
   const factionTagB = isLeaderB ? `${factionName} ・ リーダー` : factionName;
   const rivalryNum = (payload.currentRivalry != null) ? payload.currentRivalry : 0;
@@ -11014,8 +11014,8 @@ function showChallengeRequestModal(payload, state, onChoice) {
   }
 
   // クリック対象: forward は requester(自陣)、inverse は opponent(自陣) のみ
-  const aClick = isInverse ? '' : `event.stopPropagation();showFighterPopup(${requester.id},'roster')`;
-  const bClick = isInverse ? `event.stopPropagation();showFighterPopup(${opponent.id},'roster')` : '';
+  const aClick = isInverse ? '' : `event.stopPropagation();showFighterPopup(${requester.id},'roster',true)`;
+  const bClick = isInverse ? `event.stopPropagation();showFighterPopup(${opponent.id},'roster',true)` : '';
   // 他団体が絡む(cross-org)画面のため団体バッジを出す(mockup-baseline-v0.1 §5)。
   // orgIdはpayloadの実IDをそのまま使う(名前からの逆引きより確実)
   const requesterOrgId = isInverse ? payload.requesterOrgId : 'player';
@@ -14776,7 +14776,7 @@ function _jtcFx(f, isWin, isLose) {
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
     : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
   // U7 §2-C: ブラケットも顔が出ている以上、押せば選手詳細が開く
-  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'juniorTournament')"`;
+  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'juniorTournament',true)"`;
   return `<div class="jtc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="jtc-up ${cls}">${img}</div>
     <div class="jtc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}</div>
@@ -15700,7 +15700,7 @@ function _stlFaceImg(f) {
   if (!f) return '';
   const u = getPortraitUrl(f.id);
   // U7 §2-C: 顔が出ているなら押せば選手詳細が開く
-  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'springTagLeague')"`;
+  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'springTagLeague',true)"`;
   return u ? `<img src="${u}" alt="${escHtml(f.name || '')}"${open} onerror="this.style.display='none'">` : '';
 }
 
@@ -16309,7 +16309,7 @@ function _agwLiveTeamHtml(result, matchIndex, boutIndex, match, orgId, side) {
     const fighter = _agwFighter(orgId, id);
     if (!fighter) return '';
     const stateLabel = state === 'out' ? 'OUT' : state === 'ring' ? 'RING' : 'WAIT';
-    return `<button type="button" class="agw-live-name is-${state} agw-live-slot-${index}" onclick="event.stopPropagation();showFighterPopup(${id},'autumnWar')">
+    return `<button type="button" class="agw-live-name is-${state} agw-live-slot-${index}" onclick="event.stopPropagation();showFighterPopup(${id},'autumnWar',true)">
       <small>${_agwRoleLabel(order, id)} / ${stateLabel}</small><b>${escHtml(fighter.name)}</b>
     </button>`;
   }).join('');
@@ -16454,7 +16454,7 @@ function _agwFocusHtml(match, boutIndex, displayOrgIds) {
   const dialogueHtml = _agwPreBoutDialogueHtml(match, next, engineLeft, engineRight, displayOrgIds);
   const sideHtml = (current, orgId, order, side) => `<div class="agw-bout-side is-${side}">
     <small>第${next.index}フォール・${escHtml(_agwTeam(orgId)?.orgName || '')} / ${_agwRoleLabel(order, current.id)}</small>
-    <button type="button" onclick="event.stopPropagation();showFighterPopup(${current.id},'autumnWar')">${escHtml(current.fighter?.name || '')}</button>
+    <button type="button" onclick="event.stopPropagation();showFighterPopup(${current.id},'autumnWar',true)">${escHtml(current.fighter?.name || '')}</button>
     ${_agwConditionBar(current.condition, side === 'right')}
   </div>`;
   return `<div class="agw-live-current">
@@ -16581,8 +16581,8 @@ function renderAutumnWarReorder() {
   const mobileCards = selected.map((fighter, index) => {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, Engine.util.ov(fighter)) : '';
     return `<article class="agw-entry-mobile-card${index === activeRole ? ' is-active' : ''}">
-      <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${stand ? `<img src="${stand}" alt="${escHtml(fighter.name)}">` : ''}</button>
-      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${escHtml(fighter.name)}</button><div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>CONDITION ${conditionValue(fighter.id)}</small></div>${_agwConditionBar(conditionValue(fighter.id), false)}<em>${roleNotes[index]}</em></div>
+      <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${stand ? `<img src="${stand}" alt="${escHtml(fighter.name)}">` : ''}</button>
+      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(fighter.name)}</button><div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>CONDITION ${conditionValue(fighter.id)}</small></div>${_agwConditionBar(conditionValue(fighter.id), false)}<em>${roleNotes[index]}</em></div>
       <div class="agw-entry-mobile-actions"><button type="button" onclick="App.awSelectFinalRole(${index})">交代</button><button type="button" ${index === 0 ? 'disabled' : ''} onclick="App.awMoveFinal(${index},-1)">↑</button><button type="button" ${index === 2 ? 'disabled' : ''} onclick="App.awMoveFinal(${index},1)">↓</button></div>
     </article>`;
   }).join('');
@@ -16591,7 +16591,7 @@ function renderAutumnWarReorder() {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, Engine.util.ov(fighter)) : '';
     return `<article class="agw-entry-candidate is-selected">
       <button type="button" class="agw-entry-candidate-pick" onclick="App.awPickFinalFighter(${fighter.id})">${stand ? `<img src="${stand}" alt="">` : ''}<em>${roles[selectedIndex]}</em></button>
-      <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${escHtml(fighter.name)}</button>
+      <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(fighter.name)}</button>
       <div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>COND ${conditionValue(fighter.id)} / ${escHtml(fighter.style || '')}</small></div>
       ${_agwConditionBar(conditionValue(fighter.id), false)}
     </article>`;
@@ -16733,8 +16733,8 @@ function _awEntryScreenHtml() {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, fighter.ovr) : '';
     const cond = Math.round(fighter.condition == null ? Engine.autumnWar.INITIAL_CONDITION : fighter.condition);
     return `<article class="agw-entry-mobile-card${index === activeRole ? ' is-active' : ''}">
-      <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${stand ? `<img src="${stand}" alt="${escHtml(fighter.name)}">` : ''}</button>
-      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${escHtml(fighter.name)}</button><div>${_agwOvrHtml(fighter.ovr)}<small>CONDITION ${cond}</small></div><em>${roleNotes[index]}</em></div>
+      <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${stand ? `<img src="${stand}" alt="${escHtml(fighter.name)}">` : ''}</button>
+      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(fighter.name)}</button><div>${_agwOvrHtml(fighter.ovr)}<small>CONDITION ${cond}</small></div><em>${roleNotes[index]}</em></div>
       <div class="agw-entry-mobile-actions"><button type="button" onclick="App.awSelectEntryRole(${index})">交代</button><button type="button" ${index === 0 ? 'disabled' : ''} onclick="App.awMoveEntry(${index},-1)">↑</button><button type="button" ${index === 2 ? 'disabled' : ''} onclick="App.awMoveEntry(${index},1)">↓</button></div>
     </article>`;
   }).join('');
@@ -16747,7 +16747,7 @@ function _awEntryScreenHtml() {
     const cond = Math.round(fighter.condition == null ? Engine.autumnWar.INITIAL_CONDITION : fighter.condition);
     return `<article class="agw-entry-candidate${selectedIndex >= 0 ? ' is-selected' : ''}">
       <button type="button" class="agw-entry-candidate-pick" onclick="App.awPickFighter(${fighter.id})">${stand ? `<img src="${stand}" alt="">` : ''}${selectedIndex >= 0 ? `<em>${roles[selectedIndex]}</em>` : '<em>選出</em>'}</button>
-      <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar')">${escHtml(fighter.name)}</button>
+      <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(fighter.name)}</button>
       <div>${_agwOvrHtml(fighter.ovr)}<small>COND ${cond} / ${escHtml(fighter.style || '')}</small></div>
     </article>`;
   }).join('');
@@ -16813,7 +16813,7 @@ function _tcCircleFx(f, isWin, isLose, withOrg) {
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
     : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
   const org = withOrg ? `<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span>` : '';
-  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen')"`;
+  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)"`;
   return `<div class="tc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="tc-cir ${cls}">${img}</div>
     <div class="tc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}${org}</div>
@@ -16827,7 +16827,7 @@ function _tcRectFx(f, isWin, isLose) {
   const img = upperUrl
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
     : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
-  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen')"`;
+  const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)"`;
   return `<div class="tc-rc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="jtc-up ${cls}">${img}</div>
     <div class="tc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span></div>
@@ -17419,7 +17419,7 @@ function _tcEntryModalHtml() {
       ? Engine.ppvTournament._orgName(G, inv.orgId) : '';
     const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
     const kindLabel = inv.kind === 'ranking' ? '個人ランキング 1位' : '人気 1位';
-    html += `<div class="tc-invite-card" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen')">
+    html += `<div class="tc-invite-card" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)">
       <div class="tc-invite-kind">${kindLabel}</div>
       <div class="tc-invite-up">${upperUrl ? `<img src="${upperUrl}" alt="">` : ''}</div>
       <div class="tc-invite-name">${escHtml(f.name)}</div>
