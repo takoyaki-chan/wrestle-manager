@@ -7797,6 +7797,32 @@ const RETIRE_CFG = {
     orTitleWins: 1,    // 人気が届かなくても、王座経験があれば花道に値する
     minAge: 24,        // 若すぎる選手の花道は成立しない（まだ復帰が期待される）
   },
+  // ── C「壮絶な幕切れ」(retirement-drama-spec v0.2 §3-C) ──
+  // 大舞台で重傷を負い、二度とリングに上がれなくなる。**死ぬわけではない。**
+  // 旧実装は wear 40未満 2.5% / 40以上 6.5% の2段で、**舞台を見ていなかった**
+  // (公民館の前座も天頂戦の決勝も同じ確率)。
+  //
+  // 門は wear 40（⬇衰退期の入口）。実測で wear 25 は「⚠衰えが出た、その年のうち」で
+  // 「体に無理が溜まっている」とは言えなかったため。
+  // 確率は 40 で生まれて、そこから**ごく緩やかに**上がる。急峻にすると
+  // 「消耗が深いから壊れて当然」になり、事故ではなく必然になって驚きが消える。
+  careerEnding: {
+    minWear: 40,        // これ未満では起きない
+    baseProb: 0.10,     // wear 40 での基礎確率（重傷を負ったとき）
+    perWear: 0.0020,    // wear が1上がるごとの上乗せ（40→79 で +7.8%）
+    // 若い頃の無理を上乗せ: 生涯の追い込み週数 (intensiveWeeksTotal)
+    strainRefWeeks: 60, // この週数で最大倍率に届く
+    strainMaxMult: 1.5, // 追い込み漬けだった選手は最大1.5倍
+    maxProb: 0.25,      // 上限。大舞台でも4回に1回は超えない
+    // 舞台の重み。**総量を増やさない**ため、前座を下げて大舞台へ寄せる
+    stageMult: {
+      undercard: 0.3,   // 通常興行の前座
+      main: 0.8,        // 通常興行のメイン
+      title: 1.5,       // 王座戦
+      special: 2.0,     // 春タッグ / 夏JT / 秋4団体戦 / PPV
+      summit: 3.0,      // 天頂戦の準決勝以上
+    },
+  },
   quietExit: {
     startWear: 40,   // ここから確率が生まれる。40未満は0
     startProb: 0.07, // wear 40 での確率
@@ -7848,6 +7874,24 @@ const WEAR_TABLE = [
   // wear 80+: 確定引退
   { min: 80, max: Infinity, label: null,  decayMin: 0, decayMax: 0, retireChance: 1.0  },
 ];
+/** C「壮絶な幕切れ」の発生確率（重傷を負ったときにだけ問う）。
+ *  門(minWear)を下回ると 0。以降は消耗に応じて**ごく緩やかに**上がり、
+ *  若い頃の追い込みと舞台の格で重みが掛かる。
+ *  @param stage - 'undercard' | 'main' | 'title' | 'special' | 'summit'
+ */
+function careerEndingChance(fighter, stage) {
+  const c = RETIRE_CFG.careerEnding;
+  const wear = (fighter && fighter.wear) || 0;
+  if (wear < c.minWear) return 0;
+  let p = c.baseProb + (wear - c.minWear) * c.perWear;
+  // 若い頃から無理をさせた選手ほど壊れやすい体になっている
+  const iw = (fighter && fighter.intensiveWeeksTotal) || 0;
+  p *= 1 + Math.min(1, iw / c.strainRefWeeks) * (c.strainMaxMult - 1);
+  // 舞台の格。未知の舞台は通常興行のメイン扱い
+  p *= (c.stageMult[stage] != null) ? c.stageMult[stage] : c.stageMult.main;
+  return Math.max(0, Math.min(c.maxProb, p));
+}
+
 /** A「静かに去る」の引退確率。消耗に対する連続曲線（段ではない）。
  *  startWear 未満は 0。endWear 以上は endProb で頭打ち（80+ は別途 確定引退）。 */
 function quietExitChance(wear) {
@@ -29652,7 +29696,7 @@ if (typeof module !== 'undefined' && module.exports) {
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, ACHIEVEMENT_CONFIG, SHIELD_VARIANTS,
-    SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, WEAR_TABLE, getWearBand, quietExitChance, AI_TURNOVER_CFG,
+    SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, WEAR_TABLE, getWearBand, quietExitChance, careerEndingChance, AI_TURNOVER_CFG,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,

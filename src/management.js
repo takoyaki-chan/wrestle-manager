@@ -1461,11 +1461,15 @@ const Engine = {
         if (wear + 25 > 80) {
           retireType = 'wearInjury';
         }
-        // §4.3: 壊滅的怪我 — 4.2とは独立した判定、年齢・wear問わず発生
+        // C「壮絶な幕切れ」(retirement-drama-spec v0.2 §3-C)
+        // 旧: wear 40未満2.5% / 40以上6.5% の2段で、**舞台を見ていなかった**
+        // (公民館の前座も天頂戦の決勝も同じ確率だった)。
+        // 新: 門は wear 40。以降ごく緩やかに上がり、若い頃の追い込みと舞台の格で重みが掛かる。
+        // **総量は増やさない** — 前座を下げて大舞台へ寄せるだけ。
         if (!retireType) {
-          const careerEndChance = wear >= 40 ? 0.065 : 0.025; // 5-8% or 2-3%
+          const careerEndChance = careerEndingChance(fighter, flavorOpts.stage || 'main');
           const ceRng = Engine.rng.create(Engine.rng.derive(rng.state || 42, fighter.id, 777));
-          if (Engine.rng.float(ceRng) < careerEndChance) retireType = 'careerEnding';
+          if (careerEndChance > 0 && Engine.rng.float(ceRng) < careerEndChance) retireType = 'careerEnding';
         }
       }
       // v1.3-2: §5.2 怪我回数カウント
@@ -9003,9 +9007,10 @@ const Engine = {
                   retireType = 'wearInjury';
                 }
                 if (!retireType) {
-                  const ceChance = wear >= 40 ? 0.065 : 0.025;
+                  // C「壮絶な幕切れ」: 自団体と同じ規則(AI団体の試合は通常興行扱い)
+                  const ceChance = careerEndingChance(nc, 'main');
                   const ceRng = Engine.rng.create(Engine.rng.derive(matchRng.state || 42, nc.id, 777));
-                  if (Engine.rng.float(ceRng) < ceChance) retireType = 'careerEnding';
+                  if (ceChance > 0 && Engine.rng.float(ceRng) < ceChance) retireType = 'careerEnding';
                 }
                 if (retireType && roster.filter(f => !f._pendingInjuryRetire).length > 4) {
                   nc._pendingInjuryRetire = retireType;
@@ -12635,16 +12640,23 @@ const Engine = {
       const maxRiv = Math.max(relAB.rivalry || 0, relBA.rivalry || 0);
       return (maxRiv >= 60 && avgBond <= 30) ? 2.0 : 1.0;
     };
-    const _mergeFlavorOpts = (base, extraMult) => {
-      if (extraMult === 1.0) return base;
-      return { ...(base || {}), injuryMult: ((base && base.injuryMult) || 1.0) * extraMult };
+    const _mergeFlavorOpts = (base, extraMult, stage) => {
+      const withStage = stage ? { ...(base || {}), stage } : base;
+      if (extraMult === 1.0) return withStage;
+      return { ...(withStage || {}), injuryMult: ((withStage && withStage.injuryMult) || 1.0) * extraMult };
+    };
+    // C「壮絶な幕切れ」の舞台の格。前座 < メイン < 王座戦 の順に重い
+    // (特別興行・天頂戦は別経路で処理されるため、ここは通常興行のみ)
+    const _stageOf = (r, idx) => {
+      if (r.isTitleMatch) return 'title';
+      return idx === 0 ? 'main' : 'undercard';
     };
     results.forEach((r, idx) => {
       if (r.matchType === 'tag') return; // タッグ試合の怪我はPhase 5で対応
       const hostileMult = _hostileMatchMult(r.left.id, r.right.id);
       const lc = roster.find(c => c.id === r.left.id);
       const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-      const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.left.id), hostileMult));
+      const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.left.id), hostileMult, _stageOf(r, idx)));
       if (li) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -12672,7 +12684,7 @@ const Engine = {
       }
       const rc = roster.find(c => c.id === r.right.id);
       const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-      const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.right.id), hostileMult));
+      const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.right.id), hostileMult, _stageOf(r, idx)));
       if (ri) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
