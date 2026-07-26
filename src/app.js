@@ -13825,11 +13825,31 @@ App.initPPVShow = function() {
         setTimeout(resolve, 1500);
       }));
     });
-    popupChain.then(() => showPPVMatchCardIntro(() => renderPPVMatchPreview()));
+    popupChain.then(() => _ppvOpenWithIntro());
   } else {
-    showPPVMatchCardIntro(() => renderPPVMatchPreview());
+    _ppvOpenWithIntro();
   }
 };
+
+/** PPV GRAND FINAL の入り口。他の特別興行と同じく **導入(コーチ→選手) → 会場入り** を挟んでから、
+ *  従来のカード紹介へ渡す。天頂戦の無い年の Week48 はこちらが年間の締めくくりになる。 */
+function _ppvOpenWithIntro() {
+  const toCard = () => showPPVMatchCardIntro(() => renderPPVMatchPreview());
+  const toTravel = () => {
+    const party = ((G.ppvEntries && G.ppvEntries.player) || [])
+      .map(e => (G.roster || []).find(f => f && f.id === e.id) || e).filter(Boolean);
+    if (typeof showSpecialEventTravel === 'function' && party.length) {
+      showSpecialEventTravel('ppvGrandFinal', G, party, toCard);
+    } else {
+      toCard();
+    }
+  };
+  if (typeof showSpecialEventIntro === 'function') {
+    showSpecialEventIntro('ppvGrandFinal', G, toTravel);
+  } else {
+    toTravel();
+  }
+}
 
 // MQ再設計P3b: 因縁のリング内化(§3.3)。PPVは「プレイヤー選手が関与する試合のみ」という
 // 既存の因縁判定条件を変えず、シム前に解決してopts化する(applyPPVResultsの判定条件と対称)。

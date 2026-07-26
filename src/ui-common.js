@@ -11411,7 +11411,7 @@ function showSpecialEventIntro(eventKey, state, onDone) {
       ${_mdlAHeader(cfg.title, _mdlASeasonLabel(state))}
       ${_mdlASubjectStage(speaker.fighter, '', { small: true, speech: escHtml(line) })}
       <div class="mdl-a-prompt" style="padding-bottom:24px">
-        <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext2">— 代 表 を 選 ぶ —</button>
+        <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext2">${escHtml(cfg.nextLabel || '— 続 け る —')}</button>
       </div>`;
     if (!_mdlAOpen(html)) { done(); return; }
     const btn = document.getElementById('mdlASpecialIntroNext2');

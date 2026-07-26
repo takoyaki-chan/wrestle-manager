@@ -32,7 +32,9 @@ function section(name, fn) {
   catch (e) { failed++; console.log('  FAIL  ' + name + '\n        ' + e.message); }
 }
 
-const EVENTS = ['autumnWar', 'springTagLeague', 'juniorTournament', 'tenchosen'];
+// 特別興行は5つ。**冬は2種類ある** — 4年に一度は天頂戦、それ以外の年は PPV GRAND FINAL。
+// 天頂戦だけ入れて PPV を忘れると、4年のうち3年は導入が出ない。
+const EVENTS = ['autumnWar', 'springTagLeague', 'juniorTournament', 'tenchosen', 'ppvGrandFinal'];
 
 console.log('=== 特別興行の導入シーンと会場入り ===\n');
 
@@ -66,15 +68,15 @@ section('3. 会場名を二重管理していない', () => {
   // 会場は Engine.specialEventFinance.VENUE_INDEX(=8, 大会場)。
   // data.js に「大会場」と書き写すと、興行側だけ変えたときに嘘になる
   assert.ok(!/venueLabel:/.test(tableSrc), '会場名を文字列で持っている。VENUES から引くこと');
-  assert.strictEqual((tableSrc.match(/venueIndex: 8,/g) || []).length, 4,
-    '4大会すべてが venueIndex を持っていない');
+  assert.strictEqual((tableSrc.match(/venueIndex: 8,/g) || []).length, EVENTS.length,
+    '全大会が venueIndex を持っていない');
   assert.ok(/VENUES\[cfg\.venueIndex\]/.test(ui), 'バスの行き先を VENUES から引いていない');
 });
 
 section('4. 去年の出場者は、実在する history.type で探している', () => {
   // ここが実際の記録と食い違うと、去年出た選手が永遠に見つからない
   const types = [...tableSrc.matchAll(/historyType: '([^']+)'/g)].map(m => m[1]);
-  assert.strictEqual(types.length, 4, 'historyType が4件そろっていない');
+  assert.strictEqual(types.length, EVENTS.length, `historyType が${EVENTS.length}件そろっていない`);
   types.forEach(t => {
     assert.ok(new RegExp(`type: '${t}'`).test(app) || new RegExp(`type: '${t}'`).test(read('src/management.js')),
       `history.type '${t}' はどこにも記録されていない。去年の出場者が見つからなくなる`);
@@ -173,9 +175,9 @@ section('14. 4大会すべてで会場入りのカットが入る', () => {
 section('15. 導入が出せないときも本編に進める', () => {
   // 関数が無い・コーチ未雇用・語れる選手が居ない — どれでも止まってはいけない
   const guards = app.match(/typeof showSpecialEventIntro === 'function'/g) || [];
-  assert.strictEqual(guards.length, 4, '4大会すべてで存在チェックしていない');
+  assert.strictEqual(guards.length, EVENTS.length, '全大会で存在チェックしていない');
   const tGuards = app.match(/typeof showSpecialEventTravel === 'function'/g) || [];
-  assert.strictEqual(tGuards.length, 4, '会場入り側の存在チェックが足りない');
+  assert.strictEqual(tGuards.length, EVENTS.length, '会場入り側の存在チェックが足りない');
   assert.ok(/if \(!coach\) \{ showFighterScene\(\); return; \}/.test(introSrc),
     'コーチを雇っていない団体で導入が止まる');
 });
@@ -193,6 +195,43 @@ section('17. 毎回同じ人・同じ台詞にならない', () => {
     '乱数がシーズン・週に紐付いていない');
 });
 
+section('18. 冬は天頂戦と PPV の両方が入っている', () => {
+  // Week48 は 4年に一度が天頂戦、それ以外の年は PPV GRAND FINAL。
+  // 天頂戦だけ入れると、4年のうち3年は導入が出ない
+  assert.ok(app.includes("showSpecialEventIntro('tenchosen'"), '天頂戦が入っていない');
+  assert.ok(app.includes("showSpecialEventIntro('ppvGrandFinal'"), 'PPV GRAND FINAL が入っていない');
+  // 順番は「導入 → 会場入り → 既存のカード紹介」。
+  // 書かれている位置ではなく**渡している続き**で見る(クロージャなので位置は当てにならない)
+  const at = app.indexOf('function _ppvOpenWithIntro');
+  assert.ok(at > 0, '_ppvOpenWithIntro が無い');
+  const body = app.slice(at, at + 1000);
+  assert.ok(/const toCard = \(\) => showPPVMatchCardIntro\(/.test(body),
+    'カード紹介が続きとして畳まれていない');
+  assert.ok(/showSpecialEventIntro\('ppvGrandFinal', G, toTravel\)/.test(body),
+    '導入のあとに会場入りへ渡していない');
+  assert.ok(/showSpecialEventTravel\('ppvGrandFinal', G, party, toCard\)/.test(body),
+    '会場入りのあとにカード紹介へ渡していない');
+  // カード紹介を導入より先に直接呼んでいないこと
+  assert.strictEqual((body.match(/showPPVMatchCardIntro\(/g) || []).length, 1,
+    'カード紹介を複数箇所から呼んでいる。導入を飛ばす経路ができる');
+});
+
+section('19. 2枚目のボタンは大会ごとに、次に起きることを書く', () => {
+  // PPV や天頂戦には選定が無い。全部「代表を選ぶ」にすると嘘になる
+  assert.strictEqual((tableSrc.match(/nextLabel: '/g) || []).length, EVENTS.length,
+    '全大会が nextLabel を持っていない');
+  assert.ok(/cfg\.nextLabel \|\|/.test(introSrc), 'ボタン文言を直書きしている');
+  // 選定が無い大会が「選ぶ」と言っていないこと
+  ['tenchosen', 'ppvGrandFinal'].forEach(k => {
+    const at = tableSrc.indexOf(`\n  ${k}: {`);
+    const body = tableSrc.slice(at, tableSrc.indexOf('\n  },', at));
+    const m = body.match(/nextLabel: '([^']+)'/);
+    assert.ok(m, `${k}: nextLabel が無い`);
+    assert.ok(!/選 ぶ|組 む/.test(m[1]),
+      `${k}: 「${m[1]}」— この大会に選定は無い。押した先で起きることを書くこと`);
+  });
+});
+
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (17 sections)');
+console.log('ALL PASS (19 sections)');

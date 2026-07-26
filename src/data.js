@@ -7850,6 +7850,7 @@ const SPECIAL_EVENT_INTRO = {
     historyType: 'autumnWar',
     venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
     travelLine: '4団体の代表が、同じ日に同じリングへ集まります。',
+    nextLabel: '— 代 表 を 選 ぶ —',   // 2枚目のボタン。**次に実際に起きること**を書く
     coach: [
       '社長、今週は勝ち残り対抗戦です。道場、朝から空気が違いますよ。',
       '社長。4団体が一日で決着をつける日です。……代表を選びましょう。',
@@ -7876,6 +7877,7 @@ const SPECIAL_EVENT_INTRO = {
     historyType: 'springTagLeague',
     venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
     travelLine: '4チームの総当たり。勝ち上がれば、その日のうちに決勝です。',
+    nextLabel: '— チ ー ム を 組 む —',   // 2枚目のボタン。**次に実際に起きること**を書く
     coach: [
       '社長、春のタッグリーグです。二人一組、相性の良い組を選びましょう。',
       '今週からタッグリーグです。……誰と誰を組ませるか、腕の見せどころですよ。',
@@ -7891,6 +7893,7 @@ const SPECIAL_EVENT_INTRO = {
     historyType: 'junior',
     venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
     travelLine: '出場は20歳まで。この大会に出られる回数は、決まっています。',
+    nextLabel: '— 出 場 者 を 呼 ぶ —',   // 2枚目のボタン。**次に実際に起きること**を書く
     coach: [
       '社長、ジュニアの大会です。若い子たちにとっては、初めての大舞台になります。',
       '今週はU-20です。……あの子たちの顔、見てやってください。緊張してますよ。',
@@ -7906,14 +7909,42 @@ const SPECIAL_EVENT_INTRO = {
     historyType: 'ppvTournament',
     venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
     travelLine: '4年に一度の大会です。次に開かれるのは、4年後になります。',
+    nextLabel: '— 会 場 へ 向 か う —',   // 2枚目のボタン。**次に実際に起きること**を書く
     coach: [
       '社長、四年に一度の天頂戦です。……この日のために鍛えてきました。',
       '天頂戦の朝です。16名の枠に、誰を送りますか。',
     ],
     fighter: {
-      lastYear: ['四年前は届きませんでした。……次は、四年後じゃない。今です。'],
+      lastYear: ['四年前は届きませんでした。……今年こそは！'],
       champion: ['この大会だけは、獲りたい。ベルトより上にあるものだと思っています。'],
       popular: ['四年に一度。……出られるのは、運がいいことです。'],
+    },
+  },
+  // 天頂戦の無い年の Week48。年間の締めくくりで、出場は各団体の代表格に限られる
+  ppvGrandFinal: {
+    title: '🏆 PPV GRAND FINAL',
+    historyType: 'ppvMainEvent',
+    venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
+    travelLine: '各団体の代表が出そろいます。今年のリングは、今日で最後です。',
+    nextLabel: '— 会 場 へ 向 か う —',   // 2枚目のボタン。**次に実際に起きること**を書く
+    coach: [
+      '社長、今年最後の興行です。……一年の答え合わせですよ。',
+      'グランドファイナルの朝です。ここに出られること自体が、もう実績なんですけどね。',
+      '社長。今日で今年は終わりです。送り出す顔ぶれ、いい面構えをしています。',
+    ],
+    fighter: {
+      lastYear: [
+        '去年もこの日に立ちました。同じ場所で終わるつもりはありません。',
+        '去年は、メインで負けました。一年ぶんの返事をしてきます。',
+      ],
+      champion: [
+        'ベルトを持って一年を締めます。それが王者の仕事だと思っています。',
+        '今年最後の試合です。……巻いたまま、来年へ持っていきます。',
+      ],
+      popular: [
+        '一年の締めくくりです。いちばんいいところを見せます。',
+        'ここに呼ばれたからには、置いていく試合をします。',
+      ],
     },
   },
 };
