@@ -1175,7 +1175,9 @@ function renderWeekScreen() {
         intBtnHtml = c.intensive ? '<span style="font-size:12px;color:#ffa500">⚡ON</span>' : '';
       } else {
         const warnTitle = c.intensiveWeeks >= GROWTH_CONFIG.intensiveMaxConsec ? '連続上限' : c.condition < GROWTH_CONFIG.intensiveMinCond ? '体調不足' : '';
-        intBtnHtml = `<button class="btn-intensive${c.intensive?' active':''}" onclick="toggleIntensive(${c.id})" ${canInt || c.intensive ? '' : `disabled title="${warnTitle}"`}>⚡</button>`;
+        // growth-rebalance v1.0: 押す前に代償が分かるようにする。数値は出さない
+        const intTip = _tipAttr('⚡追い込み — 成長が大きく伸びます。そのぶん体調を削り、稀に怪我をします。重ねた無理は消えず、峠にさしかかった年にまとめて返ってきます。');
+        intBtnHtml = `<button class="btn-intensive${c.intensive?' active':''}" onclick="toggleIntensive(${c.id})" ${canInt || c.intensive ? intTip : `disabled title="${warnTitle}"`}>⚡</button>`;
       }
       // v1.0: Compute predicted action for initial display
       // ※ _weekAction は前週の記録なので参照しない。常に現在のスケジュールから算出する

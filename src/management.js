@@ -6846,6 +6846,23 @@ const Engine = {
       const statLabel = STAT_LABELS_JP[randomStat] || randomStat;
       const voiceKey = getCoachVoiceKey(coach && coach.id);
       const voicePool = COACH_VOICE_REPORT_LINES[voiceKey] || COACH_VOICE_REPORT_LINES.theorist;
+      // growth-rebalance v1.0: 追い込みのツケを匂わせる差し替え。
+      // decayStartAge に届くまで消耗は数値としてどこにも出ないので、**若い選手について
+      // 社長が受け取れる唯一の兆候**がこの一言になる。
+      // 頻度は意図的に低い。報告自体が「非興行週×25%×コーチ1人×担当選手1人」なので、
+      // 該当時35%を掛けても実効はシーズン1〜2回程度。毎週小言を言われる状態にはしない
+      // (2026-07-26 Keisuke「忘れた頃に一回くらいでいい」)。
+      // 観察眼の誤認(isInaccurate)は適用しない。消耗は隠れステータスの推測ではなく
+      // 目の前で見えている疲労なので、ここで嘘をつくと理不尽になるだけ。
+      const strainInjured = !!(fighter.injury && fighter.injury.type === '練習負傷');
+      // 8週 = 「たまに使う」を超えて常用している水準。連続上限2週なので最短でも4クール分
+      const strained = strainInjured || (fighter.seasonIntensiveWeeks || 0) >= 8;
+      if (strained && Engine.rng.float(rng) < 0.35) {
+        const strainKey = (obsRank === 'E' || obsRank === 'D') ? 'strain_vague'
+          : strainInjured ? 'strain_injured' : 'strain_named';
+        const sp = voicePool[strainKey];
+        if (sp && sp.length) return sp[Engine.rng.int(rng, 0, sp.length - 1)].replace('{name}', name);
+      }
       // E-D: 漠然（名前なし）
       if (obsRank === 'E' || obsRank === 'D') {
         const pool = voicePool.vague;
@@ -10717,6 +10734,11 @@ const Engine = {
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id) * (nc._relationshipInjuryMult || 1.0)) {
             const weeks = 1 + Engine.rng.int(rng, 0, 1);
             nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+            // 自団体だけ seasonInjuries を数え落としていた(AI団体パスは数えていた)。
+            // applySeasonEnd の wearBonus は seasonInjuries*2 を見るので、この漏れがあると
+            // **自団体の追い込みでの怪我だけが先々に響かない**。追い込みの代償の主軸が
+            // 「怪我は治っても体に残る」ことなので、ここが抜けていると設計が成立しない。
+            nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
             events.push(`⚠️ ${nc.name}が強化練習中に負傷！（${weeks}週離脱）`);
           }
           nc.intensiveWeeks = (nc.intensiveWeeks || 0) + 1;
