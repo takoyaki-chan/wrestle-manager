@@ -7776,6 +7776,30 @@ const RETIRE_CFG = {
   decayFloor: 0.70,          // 衰退下限 = Notion × 0.70
 };
 
+// ╔══════════════════════════════════════════════════════════╗
+// ║  世代交代 (retirement-drama-spec v0.2 §6)                 ║
+// ╚══════════════════════════════════════════════════════════╝
+// 実測(40シーズン)で、AI団体のロスターは 1年に 12〜17% しか入れ替わらなかった
+// (全員が一巡するのに 6〜9年)。年齢構成は崩れていないので引退は効いているが、
+// **引退したぶんしか入ってこない閉じた釣り合い**になっていて、世界が動いて見えない。
+//
+// そこで既存の引退・契約退団に**上乗せ**して、毎年少しだけ余分に放出する。
+// 「1人か2人余分に出すだけでも世代交代は加速する」(2026-07-26 Keisuke)。
+const AI_TURNOVER_CFG = {
+  // 団体ティア別の、1シーズンの余分な放出数 [最小, 最大]
+  // 上位団体ほど入れ替えが激しい＝競争が厳しい、という格付けにもなる
+  extraReleaseByTier: { S: [1, 2], A: [1, 1], B: [0, 1] },
+  // 上位何名を「団体の顔」として保護するか
+  protectTopN: 3,
+  // 保護される条件: 現在OVR > ピークOVR - protectPeakDrop
+  // 衰えが見え始めただけでは切らない。**実際に力が落ちるまで置く**
+  protectPeakDrop: 3,
+  // trainCap 順で何位以下を放出候補にするか(1始まり。8なら8位以下)
+  releaseFromRank: 8,
+  // これを下回るロスターからは放出しない(団体が痩せ細るのを防ぐ)
+  minRosterAfter: 9,
+};
+
 // Wear system: wear threshold effects (v1.3-1-decay-retirement-spec §3)
 // 消耗(wear)の帯。**この表が唯一の定義元**（2026-07-26 一本化）。
 // それまでは applyDecay / checkRetirement / getDeclinePresentation が同じ数字を
@@ -29588,7 +29612,7 @@ if (typeof module !== 'undefined' && module.exports) {
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, ACHIEVEMENT_CONFIG, SHIELD_VARIANTS,
-    SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, WEAR_TABLE, getWearBand,
+    SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, WEAR_TABLE, getWearBand, AI_TURNOVER_CFG,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,

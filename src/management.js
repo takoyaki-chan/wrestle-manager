@@ -9469,6 +9469,17 @@ const Engine = {
         const contractRetirees = contractResult.departures.filter(d => d.destination === 'retire').map(d => d._fighter).filter(Boolean);
         if (contractRetirees.length > 0) aiRetirees.push(...contractRetirees);
 
+        // Step 5c: 世代交代の余分な放出（retirement-drama-spec v0.2 §6）
+        // 引退・契約退団に**上乗せ**して毎年少しだけ出す。上位3名は保護されるので
+        // 団体の顔は残る。出したぶんは FA へ回り、他団体やプレイヤーが拾える
+        {
+          const turn = Engine.rival.applyExtraTurnover(rng, roster, org.id, org.tier, state);
+          roster = turn.roster;
+          if (turn.released.length > 0) {
+            retiredNames.push(...turn.released.map(f => `${f.name}(${f.age}歳・契約満了)`));
+          }
+        }
+
         // Step 6: AIスカウト — handled separately in offseason week 2
         // Step 7: AI移籍 — handled separately
         // Step 8: org-rating — recalculated after all processing
@@ -9631,6 +9642,84 @@ const Engine = {
       }
 
       return { roster, departures };
+    },
+
+    /** 世代交代の余分な放出（retirement-drama-spec v0.2 §6）
+     *
+     *  実測で AI団体のロスターは 1年に 12〜17% しか入れ替わらず、全員が一巡するのに
+     *  6〜9年かかっていた。引退は効いている（年齢構成は崩れていない）が、
+     *  **引退したぶんしか入ってこない閉じた釣り合い**なので世界が動いて見えない。
+     *
+     *  そこで既存の引退・契約退団に**上乗せ**して、毎年少しだけ余分に出す。
+     *  - **上位 protectTopN 名は保護**。ただし「ピークOVR − protectPeakDrop」を
+     *    下回ったら保護を外す。⚠衰えが出ただけでは切らず、**実際に力が落ちるまで置く**
+     *    → 団体の顔が残り、長く君臨する選手が生まれる
+     *  - 放出候補は **trainCap 順で releaseFromRank 位以下**（伸びしろが乏しい層）
+     *  - 出したぶんは FA へ。他団体やプレイヤーが拾える
+     */
+    applyExtraTurnover(rng, roster, orgId, tier, state) {
+      const cfg = AI_TURNOVER_CFG;
+      const released = [];
+      const range = cfg.extraReleaseByTier[tier] || cfg.extraReleaseByTier.B;
+      let want = Engine.rng.int(rng, range[0], range[1]);
+      if (want <= 0) return { roster, released };
+      // 痩せ細らせない
+      if (roster.length - want < cfg.minRosterAfter) {
+        want = Math.max(0, roster.length - cfg.minRosterAfter);
+        if (want <= 0) return { roster, released };
+      }
+
+      const ovrOf = f => Engine.util.ov(f);
+      const peakOf = f => Math.max(ovrOf(f), (f.careerRecord && f.careerRecord.peakOVR) || 0);
+      // trainCap は5stat の平均で順位付け（無い選手は現在値で代用）
+      const capOf = f => {
+        const tc = f.trainCap;
+        if (!tc) return ovrOf(f);
+        const ks = ['pw', 'sp', 'te', 'st'];
+        return ks.reduce((s, k) => s + (tc[k] != null ? tc[k] : (f[k] || 0)), 0) / ks.length;
+      };
+
+      // 団体の顔: OVR上位 protectTopN 名。ただしピークから protectPeakDrop 以上落ちたら外す
+      const byOvr = [...roster].sort((a, b) => ovrOf(b) - ovrOf(a));
+      const protectedIds = new Set(
+        byOvr.slice(0, cfg.protectTopN)
+          .filter(f => ovrOf(f) > peakOf(f) - cfg.protectPeakDrop)
+          .map(f => f.id)
+      );
+
+      // 放出候補: trainCap の低い順。releaseFromRank 位以下だけが対象
+      const byCapDesc = [...roster].sort((a, b) => capOf(b) - capOf(a));
+      const candidates = byCapDesc
+        .slice(cfg.releaseFromRank - 1)          // 8位以下
+        .filter(f => !protectedIds.has(f.id) && !f.isRental)
+        .reverse();                              // 最も伸びしろが乏しい順
+
+      let next = [...roster];
+      for (const f of candidates) {
+        if (released.length >= want) break;
+        next = next.filter(x => x.id !== f.id);
+        released.push(f);
+      }
+      if (released.length === 0) return { roster, released };
+
+      // 出したぶんは FA へ（上限を超えたら休眠プールへ退避。既存の契約退団と同じ扱い）
+      released.forEach(f => {
+        if (f.orgTimeline) {
+          const last = f.orgTimeline[f.orgTimeline.length - 1];
+          if (last && !last.toSeason) { last.toSeason = state.season; last.toWeek = 48; }
+        }
+        if (Engine.util.canAddToFA(state)) {
+          if (!state.freeAgents) state.freeAgents = [];
+          const ft = { ...f, trust: 50 };
+          if (ft.orgTimeline) ft.orgTimeline = [...ft.orgTimeline, { orgId: 'fa', fromSeason: state.season + 1, fromWeek: 1 }];
+          state.freeAgents.push(ft);
+        } else {
+          state.dormantPool = [...(state.dormantPool || []), { id: f.id, age: f.age || 19 }];
+        }
+        next = Engine.trust.applyDepartureTrustImpact(next, f.id, state.relationships,
+          { name: f.name, reason: 'AI世代交代' });
+      });
+      return { roster: next, released };
     },
 
     /** AI団体間対抗戦: AI同士の対抗戦を処理（tickWeekから呼び出し） */
