@@ -383,6 +383,8 @@ function _finishOpening() {
   // draft フェーズに遷移
   G.weekPhase = 'draft';
   refreshAll();
+  // 無音のオープニングを抜けて WM-C08 ドラフト選択へ（refreshAll はBGMに触れない）
+  try { Audio.bgm.playForState(); } catch (e) {}
 }
 
 // ══════════════════════════════════════════════════════════

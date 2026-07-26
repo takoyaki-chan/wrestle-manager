@@ -692,6 +692,17 @@ const Audio = (() => {
     src.connect(hp); hp.connect(g); g.connect(bgmGain); src.start(t); src.stop(t + dur + 0.01); bgmNodes.push(src);
   }
 
+  // タイトル画面・団体設定・難易度選択のいずれかが表示中か。
+  // この3枚はゲーム開始前の同一シーケンスとして扱い、WM-C01 を通しで流す。
+  function _isTitleFlowVisible() {
+    try {
+      return ['titleScreen', 'orgSetupScreen', 'difficultyScreen'].some(id => {
+        const el = document.getElementById(id);
+        return el && el.style.display !== 'none';
+      });
+    } catch (e) { return false; }
+  }
+
   const BGM = {
     _playing: false,
     _interval: null,
@@ -779,6 +790,17 @@ const Audio = (() => {
       const fn = BGM._jingles[name];
       if (bgmGain) bgmGain.gain.value = JINGLE_MIX[name] ?? _bgmVol;
       if (fn) fn();
+    },
+
+    // 曲を消して無音にする（ファイルBGMは余韻を残してフェード）。
+    // オープニング4幕のようにBGMを持たない区間へ入るときに使う。
+    fadeOutStop(durationMs = 900) {
+      if (BGM._interval) { clearInterval(BGM._interval); BGM._interval = null; }
+      BGM._playing = false;
+      BGM._current = null;
+      if (FileBGM._audio) return FileBGM.fadeOut(durationMs);
+      BGM.stop();
+      return Promise.resolve();
     },
 
     stop() {
@@ -1042,12 +1064,16 @@ const Audio = (() => {
 
     // ── Smart BGM selector based on game state ──
     playForState() {
+      // タイトル〜団体設定〜難易度選択は WM-C01 タイトル・オープニング。
+      // この区間は G が無い(または gameover 後の残骸)ので weekPhase より先に判定する。
+      if (_isTitleFlowVisible()) { BGM.play('kaimaku'); return; }
       if (!G) return;
       const stageBgm = resolveActiveStageBgm(App);
       if (stageBgm === 'preserve') return;
       if (stageBgm === 'battle') { BGM.play('battle'); return; }
       if (stageBgm) { BGM.playStage(stageBgm); return; }
-      if (G.weekPhase === 'opening') { BGM.play('kaimaku'); return; }
+      // オープニング4幕は無音。タイトル曲を引きずらせず、ドラフトのWM-C08で音が戻る
+      if (G.weekPhase === 'opening') { BGM.stop(); return; }
       if (G.weekPhase === 'draft') { BGM.play('draftPick'); return; }        // WM-C08 ドラフト選択
       if (G.weekPhase === 'contractNegotiation') { BGM.play('contract'); return; } // WM-C07 契約交渉
       if ((G.offSeason && G.offWeek >= 2) || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
@@ -1077,6 +1103,23 @@ const Audio = (() => {
     _fadeTimer: null,
     _mix: 1,
     _vol: null, // 明示的volume保持（updateVolumeで使用）
+    _gestureArmed: false,
+    // ブラウザの自動再生ポリシーで play() が蹴られたとき用。
+    // タイトル画面はページ読み込み直後に出るのでユーザー操作が一度も無く、
+    // 最初のクリック/キー入力を拾って鳴らし直す。
+    _armGestureRetry() {
+      if (FileBGM._gestureArmed) return;
+      FileBGM._gestureArmed = true;
+      const retry = () => {
+        FileBGM._gestureArmed = false;
+        document.removeEventListener('pointerdown', retry);
+        document.removeEventListener('keydown', retry);
+        const a = FileBGM._audio;
+        if (a && a.paused && !_bgmMuted && !_muted) a.play().catch(() => {});
+      };
+      document.addEventListener('pointerdown', retry, { once: true });
+      document.addEventListener('keydown', retry, { once: true });
+    },
     _resolveVolume(volume = null, mix = 1) {
       if (volume !== null) return Math.min(1.0, _bgmMasterVol * volume);
       return Math.min(1.0, _bgmMasterVol * _bgmVol * 8 * mix);
@@ -1090,7 +1133,7 @@ const Audio = (() => {
       FileBGM._mix = mix;
       FileBGM._vol = volume;
       a.volume = FileBGM._resolveVolume(volume, mix);
-      a.play().catch(() => {});
+      a.play().catch(() => { if (FileBGM._audio === a) FileBGM._armGestureRetry(); });
       FileBGM._audio = a;
     },
     stop() {
@@ -4327,6 +4370,10 @@ const App = {
       loadBtn.disabled = !hasAnySave;
       loadBtn.style.opacity = hasAnySave ? '' : '0.3';
     }
+
+    // タイトル画面のBGM: WM-C01 タイトル・オープニング。
+    // 初回表示は自動再生ポリシーで蹴られるが、FileBGM が最初の操作で拾い直す
+    try { Audio.bgm.play('kaimaku'); } catch (e) {}
   },
 
   // "NEW GAME" button from title
@@ -4425,7 +4472,9 @@ const App = {
     G = Engine.createInitialState();
     sessionRng = Engine.rng.create(G.rngSeed);
     G = { ...G, orgName: _pendingOrgName, playerOrgIcon: _pendingOrgIcon, difficultyMode: _selectedDifficulty, weekPhase: 'opening', _draftPicks: [], _draftFocus: null, gameLog: [] };
-    Audio.bgm.play('kaimaku');
+    // タイトル曲(WM-C01)はここで幕を下ろす。オープニング4幕は無音で読ませ、
+    // ドラフト画面に入った瞬間に WM-C08 で音を戻す（_finishOpening）
+    try { Audio.bgm.fadeOutStop(1200); } catch (e) {}
     refreshAll();
   },
 
