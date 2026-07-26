@@ -42,6 +42,11 @@ section('0. ベースラインに §2-C（一覧の顔）が書かれている',
   assert.ok(/`row`[^\n]*40×40/.test(baseline), 'row 40 の定義が無い');
   assert.ok(/`row-sm`[^\n]*24×24/.test(baseline), 'row-sm 24 の定義が無い');
   assert.ok(/顔が出ているなら、押せば選手詳細が開く/.test(baseline), 'クリックの規則が無い');
+  // 素材は4系統（2026-07-26 Keisuke 指摘で 2→4 へ訂正）。face だけ 1:1 で梯子が分かれる
+  ['face', 'upper', 'stand', 'full'].forEach(k =>
+    assert.ok(baseline.includes('**' + k + '**'), `素材 ${k} の記載が無い`));
+  assert.ok(/PORTRAIT_OVR_VARIANT/.test(baseline),
+    'stand/full が OVR で差し替わることが書かれていない（成長の見せ方に効く）');
 });
 
 // ─────────────────────────────────────────────────────────────
