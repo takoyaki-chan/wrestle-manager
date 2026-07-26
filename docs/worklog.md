@@ -1,5 +1,37 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 「秋の4団体対抗戦で画面が止まる」の原因2件（2026-07-26）
+
+Keisuke 報告のスクリーンショット（ヘッダーは**冬第4週=Week40**なのに、興行準備タブには**第36週の対抗戦ブロック表示**が出ていてボタンが無い）を再現し、独立した2つの欠陥を特定した。
+
+### 原因1: `showScreen()` が興行準備タブだけ再描画しない（本体のバグ）
+
+`showScreen()` は ranking / roster / coach / scoutEvent / database / newspaper / shachoshitsu / week を再描画するが、**`show`（興行準備）だけ対象外**だった。`#showPrepContent` は `App.startShowPrep` 等が呼ばれたときにしか書き換わらないため、**週が進んでも前の週の内容が残り続ける**。
+
+通常週なら次の興行準備で上書きされるので目立たないが、**特別興行週のブロック表示（春タッグ / 秋4団体戦 / ジュニア）はボタンを一切持たない**ため、これが残ると「操作先が無い＝進めなくなった」ように見える。
+
+ブラウザで完全再現（Week40 に進めたあと `showScreen('show')` を呼んでも中身が Week36 のまま）。`renderShowPrep()` を直接呼べば正しい会場選択に変わることも確認。
+
+**修正**: `showScreen` に `id === 'show'` の分岐を追加。ただし `weekPhase` が `manage` / `showPrep` のときだけ。showExec 中に `#showPrepContent` を上書きすると興行進行のUIを壊すため。
+
+### 原因2: 開発ツールの早送りが対抗戦を実行せずに捨てる
+
+`src/dev-tools.js` の `resolveDefaultBlockingPhase` に
+
+```js
+if (next._pendingAutumnWarReplay) { delete next._pendingAutumnWarReplay; next = { ...next, autumnWarPhase: 'result', ... }; }
+```
+
+があった。**秋4団体対抗戦は `tickWeek`/`advanceWeek` の中では実行されない** — エンジンは `_pendingAutumnWarReplay` を立てて処理をUIに委ねるだけ。したがってフラグを捨てると**大会が丸ごと行われないまま週だけ進み**、`champion` も `results` も空のまま `autumnWarPhase` だけ `'result'` になる。ジュニアトーナメント（すぐ上の分岐）は正しく `run()`→`apply()` していたのに、対抗戦だけ「捨てるだけ」だった。
+
+ブラウザで確認: 修正前は Week36 を越えると `champion: null / results: 0`。修正後は `champion: 'org_s' / results: 3` で battlePoints も反映される。
+
+**修正**: auto-sim と同じ手順（`confirmPlayerTeam` → `startSession` → `simulateNextBout`/`reorderForFinal` を complete まで → `apply`）を `resolveAutumnWarHeadless()` として実装し、`advanceWeek` の直後に呼ぶ。**目標週の停止判定より前**に消化しないと、目標週で止まったときフラグが残る。
+
+**検証**: 新規テスト `test/stuck-screen-regression-test.js`（10セクション。エンジンを実際に Week36 まで回して champion 確定まで完走することも確認）。95/95 緑。
+
+**未検証**: 原因1の修正のブラウザ実機確認は、プレビューが `ui-common.js` を強くキャッシュしていて反映できなかった（`const` 再宣言のため再注入も不可）。再現とパッチ後の期待動作（`renderShowPrep()` 直接呼び出し）は個別に確認済み。**Keisuke の実機で最終確認をお願いしたい**。
+
 ## 成長リバランス: 係数の較正確定 + 「見せ方の層」（2026-07-26）
 
 追い込みの代償を「選手の消耗」で払わせる実装（先行コミット 278cff5、係数は未確定のまま）に、**較正した数値**と**プレイヤーへ伝わる経路**を入れて完成させた。

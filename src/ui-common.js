@@ -6695,6 +6695,13 @@ function showScreen(id, evt) {
     if (typeof refreshTopBar === 'function') refreshTopBar();
   }
   if (id === 'shachoshitsu') renderShachoshitsu();
+  // 興行準備だけ再描画対象から漏れていた。#showPrepContent は開幕時などに一度書かれると
+  // 誰も上書きしないので、**週が進んでも前の週の内容が残り続ける**。
+  // 特別興行週のブロック表示(春タッグ/秋4団体戦/ジュニア)はボタンを持たないため、
+  // 古いまま残ると「進めなくなった」ように見える(2026-07-26 Keisuke 報告の再現原因)。
+  // showExec 中は興行進行のUIを壊さないよう触らない。
+  if (id === 'show' && typeof renderShowPrep === 'function'
+      && ['manage', 'showPrep'].includes(G.weekPhase)) renderShowPrep();
   if (id === 'week') renderWeekScreen();
 }
 

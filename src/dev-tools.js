@@ -89,9 +89,45 @@
       // finishUp内で明示的に戻している）。ここで戻さないとtickWeek()がこの週スキップされてしまう。
       next = { ...next, weekPhase: 'manage' };
     }
-    if (next._pendingAutumnWarReplay) { delete next._pendingAutumnWarReplay; next = { ...next, autumnWarPhase: 'result', weekPhase: 'manage' }; }
+    next = resolveAutumnWarHeadless(next);
     if (next.weekPhase === 'ppvShow' || next.weekPhase === 'ppvTV') next = { ...next, weekPhase: 'manage', ppvPhase: null };
     return clearTransient(next);
+  }
+  // 秋4団体勝ち残り対抗戦は tickWeek/advanceWeek の中では**実行されない**。エンジンは
+  // _pendingAutumnWarReplay を立てて処理をUIに委ねるだけなので、早送りがこのフラグを
+  // 捨てると **大会が丸ごと行われないまま週だけ進む**（champion も results も空のまま
+  // autumnWarPhase だけ 'result' になり、以降その年の対抗戦は永久に開かれない）。
+  // ジュニアトーナメント(上)と同じく、ここで実際に完走させる。手順は auto-sim と同一。
+  function resolveAutumnWarHeadless(state) {
+    let next = state;
+    if (!next._pendingAutumnWarReplay) return next;
+    if (next.autumnWar && !next.autumnWar.session) {
+      const memberIds = Engine.autumnWar._selectMembers(next, 'player');
+      if (memberIds.length === Engine.autumnWar.TEAM_SIZE) {
+        next = Engine.autumnWar.confirmPlayerTeam(next, memberIds, Engine.autumnWar._defaultOrder(next, 'player', memberIds));
+      }
+      next = { ...next, autumnWar: { ...next.autumnWar, autoReorderFinal: true } };
+      next = Engine.autumnWar.startSession(next);
+      if (next.autumnWar && next.autumnWar.cancelled && !next.autumnWar.session) {
+        next = Engine.autumnWar.apply(next, next.autumnWar).state;
+      }
+    }
+    if (next.autumnWar && next.autumnWar.session) {
+      let guard = 0;
+      while (next.autumnWar && next.autumnWar.session && next.autumnWar.session.phase !== 'complete' && guard++ < 20) {
+        next = next.autumnWar.session.phase === 'finalOrder'
+          ? Engine.autumnWar.reorderForFinal(next, Engine.autumnWar.suggestFinalOrder(next, 'player'))
+          : Engine.autumnWar.simulateNextBout(next).state;
+      }
+      if (!next.autumnWar || !next.autumnWar.session || next.autumnWar.session.phase !== 'complete') {
+        throw new Error('秋4団体勝ち残り対抗戦を自動進行できませんでした。');
+      }
+      next = Engine.autumnWar.apply(next, Engine.autumnWar.getProgress(next)).state;
+      const { session: _awSession, ...warClean } = next.autumnWar || {};
+      next = { ...next, autumnWar: warClean };
+    }
+    const { _pendingAutumnWarReplay: _awPending, ...clean } = next;
+    return { ...clean, autumnWarPhase: 'result', weekPhase: 'manage' };
   }
   function advanceOneDefault(state) {
     let next = resolveDefaultBlockingPhase(state);
@@ -115,7 +151,8 @@
       }
       next = { ...Engine.tickWeek(next).state, gameLog: [] };
     }
-    return clearTransient({ ...Engine.advanceWeek(next).state, gameLog: [] });
+    // advanceWeek が Week36 で _pendingAutumnWarReplay を立てるので、目標週の判定より前に消化する
+    return clearTransient(resolveAutumnWarHeadless({ ...Engine.advanceWeek(next).state, gameLog: [] }));
   }
   function targetReached(state, season, week) { return !state.offSeason && state.season === season && state.week === week; }
   function fastForward(season, week, label) {
