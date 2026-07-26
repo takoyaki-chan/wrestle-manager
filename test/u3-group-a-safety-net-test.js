@@ -654,6 +654,8 @@ function section(name, fn) {
     'document', 'Engine', 'getUpperUrl', 'Audio', 'wmDiag',
     `let _retirementPopupQueue = [];
      let _retirementPopupCallback = null;
+     // 2026-07-26: 引退セレモニーに WM-D03 のBGMを繋いだため、その番人フラグも注入する
+     let _retirementBgmOn = false;
      ${uiFn('escHtml')}
      ${uiFn('_u3bInitialFallback')}
      ${uiFn('_u3bSideHtml')}

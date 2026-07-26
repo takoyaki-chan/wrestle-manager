@@ -1985,6 +1985,8 @@ function _chainEventPopupQueueEmpty(cb) {
 
 // ── v1.3-3: Retirement Popup ────────────────
 let _retirementPopupQueue = [];
+// WM-D03「引退」BGM が鳴っている間だけ true。連続引退で鳴らし直さないための番人。
+let _retirementBgmOn = false;
 let _retirementPopupCallback = null;
 
 /**
@@ -2066,6 +2068,11 @@ function _renderRetirementPopup() {
   `;
 
   _mdlBOpen(html, 'sepia');
+  // WM-D03「引退」。連続で複数人の引退が出るときは鳴らし直さず1本を通す。
+  if (!_retirementBgmOn) {
+    _retirementBgmOn = true;
+    try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_d03_v01.ogg', { loop: true, volume: 0.15 }); } catch (_e) {}
+  }
   Audio.play(isInjury ? 'error' : 'event');
 
   setTimeout(() => {
@@ -2088,9 +2095,11 @@ function closeRetirementPopup() {
       if (_retirementPopupQueue.length > 0) {
         setTimeout(_renderRetirementPopup, 300);
       } else if (_retirementPopupCallback) {
+        _stopRetirementBgm();
         const cb = _retirementPopupCallback; _retirementPopupCallback = null; cb();
         _drainPopupQueue();
       } else {
+        _stopRetirementBgm();
         _drainPopupQueue();
       }
     });
@@ -2100,11 +2109,21 @@ function closeRetirementPopup() {
   if (_retirementPopupQueue.length > 0) {
     setTimeout(_renderRetirementPopup, 300);
   } else if (_retirementPopupCallback) {
+    _stopRetirementBgm();
     const cb = _retirementPopupCallback; _retirementPopupCallback = null; cb();
     _drainPopupQueue();
   } else {
+    _stopRetirementBgm();
     _drainPopupQueue();
   }
+}
+
+/** WM-D03 を落として通常BGMへ戻す。引退が全員分終わったときだけ呼ぶ。 */
+function _stopRetirementBgm() {
+  if (!_retirementBgmOn) return;
+  _retirementBgmOn = false;
+  try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.fadeOut(1200); } catch (_e) {}
+  setTimeout(() => { try { if (typeof Audio !== 'undefined' && Audio.bgm) Audio.bgm.playForState(); } catch (_e) {} }, 1300);
 }
 
 // B4タレント活動§13: チャンピオン怪我引退時の社長への一言（Glimpse B形式吹き出し）
