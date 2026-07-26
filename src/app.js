@@ -11036,6 +11036,13 @@ const App = {
     // v1.4w: ティッカー更新
     App._refreshTicker();
 
+    // シーズン末の演出が終わるまでシーズン総括(レポート)を伏せる。
+    // **無条件にここで立てる**(2026-07-27 Keisuke 再報告)。
+    // 以前は「引退者がいる年」の分岐の中でしか立てていなかったため、
+    // 引退ゼロの年は表彰式より先に総括が見えていた。
+    // 最後に出すものは、最後に出てこなければならない。
+    App._seasonEndChainActive = true;
+
     // v1.3-3: Extract pending retirements before save (transient field)
     const pendingRetirements = G.pendingRetirements || null;
     if (pendingRetirements) {
@@ -11050,18 +11057,16 @@ const App = {
     // 引退は引き留めダイアログで決断後に commit する（ダイアログ前は roster/titles/HoF を変更しない）
     if (pendingRetirements && pendingRetirements.length > 0) {
       App._retainedIds = new Set();
-      // シーズンレポートは**表彰式の後**に見せる。一連の演出が終わるまで伏せておく
-      App._seasonEndChainActive = true;
       refreshAll();
-      // 第1段: 引退の**判断**(見送る/引き留める)。表彰式より前でなければならない —
-      // 殿堂入りは retiredFighters だけを見るので、確定前に表彰式を作ると殿堂が空になる
+      // 引退は**確定とあいさつを続けて**、表彰式の前に済ませる(2026-07-27 Keisuke)。
+      // 一度は「あいさつだけ表彰式の後」に分けたが、分ける必要はなかった。
+      // ただし**表彰式より前**であることは動かせない —
+      // 殿堂入りは retiredFighters だけを見るので、確定前に表彰式を作ると殿堂が空になる。
       showRetirementPopups(pendingRetirements, () => {
         const retained = App._retainedIds || new Set();
         const confirmed = pendingRetirements
           .filter(r => !retained.has(r.fighter.id))
           .map(r => r.fighter);
-        // 第2段(あいさつ)は表彰式の後。**実際に引退した人だけ**
-        App._pendingFarewells = pendingRetirements.filter(r => !retained.has(r.fighter.id));
         if (confirmed.length > 0) {
           const result = Engine.retirement.commitRetirements(G, confirmed);
           G = result.state;
@@ -11075,7 +11080,7 @@ const App = {
         }
         App._retainedIds = null;
         App._safeAwardsChain();
-      }, { phase: 'decision' });
+      });
       return;
     }
 
@@ -11187,17 +11192,11 @@ const App = {
     }
   },
 
-  /** 一連の締めくくり。**表彰式が終わってから**、引退のあいさつ → シーズンレポートの順で見せる。
-   *  引退の判断(見送る/引き留める)は表彰式より前に済ませてある。 */
+  /** 一連の締めくくり。**表彰式が終わってから**シーズン総括(レポート)を見せる。
+   *  引退(確定＋あいさつ)は表彰式より前に済ませてある。 */
   _showFarewellsThenReport() {
-    const finish = () => {
-      App._seasonEndChainActive = false;   // ここで初めてシーズンレポートが出る
-      refreshAll();
-    };
-    const farewells = App._pendingFarewells || [];
-    App._pendingFarewells = null;
-    if (!farewells.length || typeof showRetirementPopups !== 'function') { finish(); return; }
-    showRetirementPopups(farewells, finish, { phase: 'farewell' });
+    App._seasonEndChainActive = false;   // ここで初めてシーズン総括が出る
+    refreshAll();
   },
 
   // v1.4: 年末表彰式チェック＆表示

@@ -2040,21 +2040,16 @@ let _retirementPopupCallback = null;
  * @param {Array} retirements - Array of { fighter, route, line, summary, injuryType?, wasChampion? }
  * @param {Function} onAllDone - Called after all popups are dismissed
  */
-// 引退の見せ方は**2段**に分かれる(2026-07-27 Keisuke)。
+// 引退の一枚。**確定(見送る/引き留める)とあいさつを続けて**見せる。
 //
-//   'decision' … 表彰式の**前**。誰が引退するかを告げ、見送る/引き留めるを決める。
-//                **ここで決めないと殿堂入りが空になる** — 殿堂の判定は
-//                retiredFighters(引退が確定した選手)だけを見ており、
-//                引退を確定しないまま表彰式を作ると殿堂入りが静かに0件になる(実測)。
-//   'farewell'  … 表彰式の**後**。旅立ちの一枚。セリフ・型別の地の文・キャリアの軌跡。
-//
-// 枠はどちらも同じ mdl-b。**新しい画面は作らない。**
-let _retirementPopupPhase = 'farewell';
-function showRetirementPopups(retirements, onAllDone, opts) {
+// 一度「あいさつだけ表彰式の後」に分けたが、分ける必要はなかった(2026-07-27 Keisuke)。
+// ただし**表彰式より前**であることは動かせない — 殿堂入りの判定は
+// retiredFighters(引退が確定した選手)だけを見ており、確定前に表彰式を作ると
+// 殿堂入りが静かに0件になる(実測: 36ポイントの選手で 0人 / 1人)。
+function showRetirementPopups(retirements, onAllDone) {
   if (!retirements || retirements.length === 0) { if (onAllDone) onAllDone(); return; }
   _retirementPopupQueue = [...retirements];
   _retirementPopupCallback = onAllDone || null;
-  _retirementPopupPhase = (opts && opts.phase === 'decision') ? 'decision' : 'farewell';
   _enqueuePopup(() => _renderRetirementPopup());
 }
 
@@ -2119,12 +2114,8 @@ function _renderRetirementPopup() {
   ].filter(Boolean).join('　');
   const noteHtml = notes ? `<div style="text-align:center;color:rgba(200,180,150,0.85);font-size:13px;margin-bottom:10px">${notes}</div>` : '';
 
-  // 判断の段は「受け入れる/引き留める」、あいさつの段は「見送る」
-  const btnLabel = (_retirementPopupPhase === 'decision')
-    ? (isInjury ? '— 受 け 入 れ る —' : '— 引 退 を 認 め る —')
-    : (isInjury ? '— …… —' : '— 見 送 る —');
-  // 引き留められるのは**判断の段だけ**。あいさつの段でひっくり返せてはいけない
-  const canRetain = r.canRetain && !isInjury && _retirementPopupPhase === 'decision';
+  const btnLabel = isInjury ? '— …… —' : '— 見 送 る —';
+  const canRetain = r.canRetain && !isInjury;
   const retainCount = f.retainCount || 0;
   const retainBtn = canRetain
     ? { label: `🤝 引き留める（あと${2 - retainCount}回）`, id: 'mdlBRetainBtn' }
@@ -2132,23 +2123,7 @@ function _renderRetirementPopup() {
   const buttons = [{ label: btnLabel, primary: true, id: 'mdlBRetireClose' }];
   if (retainBtn) buttons.push(retainBtn);
 
-  const isDecision = _retirementPopupPhase === 'decision';
-  // 判断の段では**セリフを出さない**。あいさつは表彰式の後にとっておく
-  const html = isDecision
-    ? `
-    ${_mdlBTitleBand(isInjury ? '無 念 の 引 退' : '引 退 の 申 し 出', 'dissolve',
-        isInjury ? '今 季 限 り ・ INJURY' : '今 季 限 り ・ DECISION')}
-    ${_mdlBSoloStage(f, null, { sepia: true, meta })}
-    ${noteHtml}
-    ${statsRow}
-    <div style="max-width:560px;margin:0 auto 14px;text-align:center;font-size:13px;color:rgba(200,190,175,0.82);line-height:1.9">
-      ${isInjury
-        ? 'これ以上、リングに上げるわけにはいかない。'
-        : '本人から、今季限りという申し出があった。'}
-    </div>
-    ${_mdlBActions(buttons)}
-  `
-    : `
+  const html = `
     ${_mdlBTitleBand(title, 'dissolve', sub)}
     ${_mdlBSoloStage(f, { speaker: f.name, text: r.line, variant: 'soft', size: 'large' }, { sepia: true, meta })}
     ${noteHtml}
