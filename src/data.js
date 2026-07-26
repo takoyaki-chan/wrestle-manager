@@ -7771,9 +7771,29 @@ function ageMultiplier(age, traits) {
 // Retirement config (scout-spec §7)
 const RETIRE_CFG = {
   chances: { 30:0.15, 31:0.40, 32:0.75, 33:1.00 }, // 33+ = guaranteed
-  voluntaryThreshold: 0.60,  // OVR < Notion * 0.60
-  voluntarySeasons: 2,       // 2シーズン連続で自主引退
+  // ── D-1「力が尽きた」(retirement-drama-spec v0.2 §3-D) ──
+  // 2026-07-26 まで `OVR < 持ち味 × 0.60` を見ていたが、**衰退の下限が 0.70** なので
+  // どれだけ衰えても条件を満たせず、**一度も発動していなかった**（実測 n=426 で0件）。
+  // 基準を「持ち味(入団時の素の値)」から「**ピークOVR**」へ移す。
+  // 「一番伸びたところから4割も下がってまで選手を残してはおかない」(Keisuke)
+  peakDropThreshold: 0.82,   // 現在OVR < ピークOVR × これ が続いたら引退を考える
+  voluntarySeasons: 2,       // 2シーズン続いたら引退
   decayFloor: 0.70,          // 衰退下限 = Notion × 0.70
+  // ── A「静かに去る」の連続曲線 (retirement-drama-spec v0.2 §3-A) ──
+  // 旧実装は wear 40-59→20% / 60-79→50% の**2段**で、段の中では何も変わらず
+  // 59→60 で急に跳ねた。実測で引退の50〜59%がこの抽選で、しかも引退時の消耗は
+  // 中央値64〜70（上限80まで10〜16残したまま）。「まだ戦えたのに抽選で消えた」が
+  // 最多の終わり方になっていた。消耗に対する連続曲線へ置き換える。
+  //
+  // **プレイヤーが引導を渡す余地を残すこと**(型E)。⚠衰え(wear20)が出た年に
+  // engine が先回りして引退させると、いちばん社長らしい終わり方を奪う。
+  quietExit: {
+    startWear: 40,   // ここから確率が生まれる。40未満は0
+    startProb: 0.07, // wear 40 での確率
+    endWear: 79,     // 80 は確定引退なので、その手前
+    endProb: 0.70,   // wear 79 での確率
+    curve: 1.5,      // 1.0=直線 / 大きいほど後半で急に上がる
+  },
 };
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -7818,6 +7838,16 @@ const WEAR_TABLE = [
   // wear 80+: 確定引退
   { min: 80, max: Infinity, label: null,  decayMin: 0, decayMax: 0, retireChance: 1.0  },
 ];
+/** A「静かに去る」の引退確率。消耗に対する連続曲線（段ではない）。
+ *  startWear 未満は 0。endWear 以上は endProb で頭打ち（80+ は別途 確定引退）。 */
+function quietExitChance(wear) {
+  const c = RETIRE_CFG.quietExit;
+  const w = Number(wear) || 0;
+  if (w < c.startWear) return 0;
+  const t = Math.min(1, (w - c.startWear) / (c.endWear - c.startWear));
+  return c.startProb + (c.endProb - c.startProb) * Math.pow(t, c.curve);
+}
+
 /** wear が属する帯を返す。範囲外(負値・NaN)は先頭の全盛期帯に丸める */
 function getWearBand(wear) {
   const w = Number(wear) || 0;
@@ -29612,7 +29642,7 @@ if (typeof module !== 'undefined' && module.exports) {
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, ACHIEVEMENT_CONFIG, SHIELD_VARIANTS,
-    SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, WEAR_TABLE, getWearBand, AI_TURNOVER_CFG,
+    SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, WEAR_TABLE, getWearBand, quietExitChance, AI_TURNOVER_CFG,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,

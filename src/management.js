@@ -10237,24 +10237,24 @@ const Engine = {
       // wear 80+: 確定引退（§3）。閾値は WEAR_TABLE の最終帯が定義元
       if (getWearBand(wear).retireChance >= 1.0) return true;
 
-      // ????: OVR < Notion * 0.60 ?2?????? (?4.4 - ???????)
-      const notion = fighter.notionValue || {pw:fighter.pw,sp:fighter.sp,te:fighter.te,st:fighter.st,mn:fighter.mn};
-      const notionOvr = Math.round((notion.pw+notion.sp+notion.te+notion.st+notion.mn)/5);
+      // D-1「力が尽きた」: **ピークOVR**からの落ち幅で見る。
+      // 2026-07-26 まで「持ち味 × 0.60」を見ていたが、衰退の下限が 0.70 なので
+      // **一度も発動していなかった**（実測 n=426 で0件）。基準をピークへ移した。
       const currentOvr = Engine.util.ov(fighter);
-      if (currentOvr < notionOvr * RETIRE_CFG.voluntaryThreshold) {
+      const peakOvr = Math.max(currentOvr, (fighter.careerRecord && fighter.careerRecord.peakOVR) || 0);
+      if (peakOvr > 0 && currentOvr < peakOvr * RETIRE_CFG.peakDropThreshold) {
         fighter.lowPerformanceSeasons = (fighter.lowPerformanceSeasons || 0) + 1;
         if (fighter.lowPerformanceSeasons >= RETIRE_CFG.voluntarySeasons) return true;
       } else {
         fighter.lowPerformanceSeasons = 0;
       }
 
-      // wear?????????? (?4.1)
-      // 消耗による引退確率も WEAR_TABLE が定義元（wear 40未満の帯は 0）
-      let retireChance = getWearBand(wear).retireChance;
-      if (retireChance >= 1.0) retireChance = 0; // 80+ は上で処理済み。ここで二重に効かせない
+      // A「静かに去る」: 消耗に対する**連続曲線**（旧: 40-59→20% / 60-79→50% の2段）。
+      // 段の中で何も変わらず境目で跳ねる不自然さと、「まだ戦えたのに抽選で消えた」を消す。
+      let retireChance = quietExitChance(wear);
+      // D-3「年齢の限界」は据え置き。年齢の方が高ければそちらを採る
       if (RETIRE_CFG.chances[age] != null) retireChance = Math.max(retireChance, RETIRE_CFG.chances[age]);
       else if (age >= 33) retireChance = 1.0;
-      // wear < 40: ??????
       if (retireChance > 0 && Engine.rng.float(rng) < retireChance) return true;
 
       return false;

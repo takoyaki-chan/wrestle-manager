@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WRESTLE MANAGER 開発レポート — 2026.07.17 → 07.26</title>
+<meta name="description" content="レッスルマネージャー 開発レポート。この10日間のアップデート全記録と、これからの予定。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Shippori+Mincho:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFF8E7; --paper:#FFFDF5; --paper-alt:#FBF4E2;
+  --ink:#2C2416; --ink-sub:#5C4D3C; --ink-faint:#8B7D6B;
+  --gold:#C8971B; --gold-deep:#8A6410; --gold-bg:#FFF6DC;
+  --red:#C0392B; --red-bg:#FDF0EE;
+  --blue:#2E6BA4; --blue-bg:#EDF4FB;
+  --green:#1E8449; --green-bg:#EDF9F1;
+  --purple:#7D4E9E; --purple-bg:#F6EFFA;
+  --border:#DCCBA6; --border-dark:#B6A177;
+  --night:#14110E; --night-2:#211B14;
+  --spring:#5AA469; --summer:#3D8FC7; --autumn:#C4702A; --winter:#7A6FAE;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--cream); color:var(--ink);
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
+  font-size:15.5px; line-height:1.85; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+.mono{font-family:'DotGothic16',monospace;letter-spacing:.06em}
+.mincho{font-family:'Shippori Mincho',serif}
+
+/* ============ COVER ============ */
+.cover{
+  position:relative; background:var(--night); color:#fff;
+  padding:0 0 44px; overflow:hidden; isolation:isolate;
+}
+.cover-bg{
+  position:absolute; inset:0; z-index:-2;
+  background-image:url('assets/venue_9_dome.webp');
+  background-size:cover; background-position:center 38%;
+  opacity:.42; filter:saturate(.6) contrast(1.05);
+}
+.cover::after{
+  content:''; position:absolute; inset:0; z-index:-1;
+  background:
+    radial-gradient(ellipse at 50% 22%, rgba(200,151,27,.28), transparent 62%),
+    linear-gradient(180deg, rgba(20,17,14,.55) 0%, rgba(20,17,14,.72) 45%, var(--night) 100%);
+}
+.cover-inner{max-width:820px;margin:0 auto;padding:52px 20px 0;text-align:center;position:relative}
+.cover-kicker{
+  display:inline-block; border:1px solid rgba(200,151,27,.6); color:#EFC65B;
+  font-size:11px; padding:5px 18px; border-radius:2px; margin-bottom:26px;
+}
+.cover h1{
+  font-family:'Shippori Mincho',serif; font-weight:800;
+  font-size:clamp(30px,7.2vw,58px); line-height:1.18; letter-spacing:.02em;
+  text-shadow:0 2px 30px rgba(0,0,0,.6);
+}
+.cover h1 .en{
+  display:block; font-family:'DotGothic16',monospace; font-weight:400;
+  font-size:clamp(11px,2.4vw,15px); letter-spacing:.42em; color:#EFC65B;
+  margin-bottom:14px; text-shadow:none;
+}
+.cover-lead{
+  margin:22px auto 0; max-width:560px; font-size:15px;
+  color:rgba(255,255,255,.82); line-height:2;
+}
+.cover-date{
+  margin-top:30px; display:inline-flex; align-items:center; gap:14px;
+  padding:10px 22px; border-top:1px solid rgba(255,255,255,.16);
+  border-bottom:1px solid rgba(255,255,255,.16);
+  font-size:13px; color:rgba(255,255,255,.72);
+}
+.cover-date b{color:#EFC65B;font-weight:700}
+.cover-cast{
+  display:flex; justify-content:center; align-items:flex-end; gap:0;
+  margin-top:30px; margin-bottom:-44px; min-height:150px;
+}
+.cover-cast img{
+  width:clamp(74px,15vw,118px); height:auto;
+  filter:drop-shadow(0 10px 22px rgba(0,0,0,.65));
+  margin-left:-16px; transition:transform .3s ease;
+}
+.cover-cast img:first-child{margin-left:0}
+.cover-cast img:hover{transform:translateY(-8px)}
+.cover-cast img.dim{opacity:.5;filter:drop-shadow(0 8px 18px rgba(0,0,0,.6)) grayscale(.35)}
+
+/* ============ STAT BAND ============ */
+.statband{background:var(--night-2);color:#fff;padding:30px 0 34px;border-top:2px solid var(--gold-deep)}
+.stat-grid{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+  max-width:820px;margin:0 auto;padding:0 20px;
+}
+.stat{text-align:center;padding:8px 4px;border-right:1px solid rgba(255,255,255,.1)}
+.stat:last-child{border-right:none}
+.stat b{
+  display:block; font-family:'DotGothic16',monospace; font-size:clamp(24px,5.5vw,36px);
+  color:#EFC65B; line-height:1.2;
+}
+.stat b small{font-size:.5em;color:rgba(255,255,255,.6);margin-left:2px}
+.stat span{display:block;font-size:11.5px;color:rgba(255,255,255,.62);margin-top:4px;letter-spacing:.04em}
+
+/* ============ NAV ============ */
+.toc{background:var(--paper-alt);border-bottom:1px solid var(--border);padding:18px 0}
+.toc-inner{max-width:820px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:7px}
+.toc a{
+  font-size:12.5px; text-decoration:none; color:var(--ink-sub);
+  background:var(--paper); border:1px solid var(--border);
+  padding:5px 12px; border-radius:20px; transition:.15s;
+}
+.toc a:hover{background:var(--gold);color:#fff;border-color:var(--gold)}
+.toc a.hot{border-color:var(--red);color:var(--red)}
+.toc a.hot:hover{background:var(--red);color:#fff}
+
+/* ============ SECTION ============ */
+.chapter{padding:54px 0 10px;text-align:center}
+.chapter .en{font-family:'DotGothic16',monospace;font-size:11px;letter-spacing:.4em;color:var(--gold-deep)}
+.chapter h2{
+  font-family:'Shippori Mincho',serif;font-weight:800;
+  font-size:clamp(23px,5vw,34px);line-height:1.4;margin-top:6px;
+}
+.chapter .rule{width:56px;height:3px;background:var(--gold);margin:16px auto 0;border-radius:2px}
+.chapter p{max-width:600px;margin:16px auto 0;color:var(--ink-sub);font-size:14.5px}
+
+section{padding:8px 0}
+.sec{margin:34px 0}
+.sec-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+.sec-num{
+  flex:0 0 auto;width:42px;height:42px;border-radius:50%;
+  background:var(--ink);color:var(--gold);
+  font-family:'DotGothic16',monospace;font-size:16px;
+  display:flex;align-items:center;justify-content:center;margin-top:2px;
+}
+.sec-title h3{font-size:20px;font-weight:900;line-height:1.45}
+.sec-title p{font-size:13.5px;color:var(--ink-faint);margin-top:2px}
+
+.card{
+  background:var(--paper);border:1px solid var(--border);border-radius:10px;
+  padding:22px 22px;margin:14px 0;
+  box-shadow:0 1px 0 rgba(0,0,0,.03);
+}
+.card.tint-red{background:var(--red-bg);border-color:#E8C4BD}
+.card.tint-gold{background:var(--gold-bg);border-color:#E6D08C}
+.card.tint-blue{background:var(--blue-bg);border-color:#C3D8ED}
+.card.tint-green{background:var(--green-bg);border-color:#BFE3CD}
+.card h4{font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card p+p{margin-top:10px}
+.card p{font-size:14.5px}
+
+.lead{font-size:15px;color:var(--ink-sub);margin-bottom:6px}
+
+ul.tick{list-style:none;margin:10px 0 0}
+ul.tick li{position:relative;padding-left:22px;margin-bottom:8px;font-size:14.5px}
+ul.tick li::before{
+  content:'';position:absolute;left:4px;top:.72em;width:7px;height:7px;
+  background:var(--gold);border-radius:50%;
+}
+ul.tick li b{color:var(--ink);font-weight:700}
+
+.note{
+  font-size:13px;color:var(--ink-faint);border-left:3px solid var(--border-dark);
+  padding-left:12px;margin-top:14px;line-height:1.8;
+}
+
+/* ============ BEFORE / AFTER ============ */
+.ba{display:grid;grid-template-columns:1fr 34px 1fr;gap:0;align-items:stretch;margin:12px 0}
+.ba-side{padding:15px 16px;border-radius:9px;font-size:14px}
+.ba-b{background:#F2EDE2;border:1px solid #DCD2BC;color:var(--ink-sub)}
+.ba-a{background:#FFF6DC;border:1.5px solid var(--gold);color:var(--ink)}
+.ba-lab{
+  font-family:'DotGothic16',monospace;font-size:10.5px;letter-spacing:.16em;
+  display:block;margin-bottom:6px;
+}
+.ba-b .ba-lab{color:#A0937C}
+.ba-a .ba-lab{color:var(--gold-deep)}
+.ba-arrow{display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:18px;font-weight:900}
+.ba strong{font-weight:900}
+
+/* ============ CALENDAR ============ */
+.cal{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 6px;
+}
+.cal-item{
+  background:var(--paper);border:1px solid var(--border);border-top:5px solid var(--c);
+  border-radius:10px;padding:18px 12px 16px;text-align:center;position:relative;
+}
+.cal-item .wk{font-family:'DotGothic16',monospace;font-size:11px;color:var(--c);letter-spacing:.1em}
+.cal-item img{width:52px;height:52px;object-fit:contain;margin:8px auto 6px}
+.cal-item h5{font-size:14.5px;font-weight:900;line-height:1.4;margin-bottom:6px}
+.cal-item p{font-size:12px;color:var(--ink-sub);line-height:1.7}
+.cal-item .flag{
+  position:absolute;top:-10px;right:-6px;background:var(--red);color:#fff;
+  font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;
+}
+.cal-item.is-new{box-shadow:0 0 0 2px rgba(192,57,43,.15)}
+
+.tencho{
+  margin-top:14px;background:linear-gradient(135deg,#1B1410,#2E1D16);
+  color:#fff;border-radius:12px;padding:22px;display:flex;gap:20px;align-items:center;
+  border:1px solid #5C3A1E;
+}
+.tencho img{width:78px;flex:0 0 auto;filter:drop-shadow(0 4px 14px rgba(239,198,91,.35))}
+.tencho h5{font-family:'Shippori Mincho',serif;font-size:19px;color:#EFC65B;margin-bottom:6px;font-weight:800}
+.tencho p{font-size:13.5px;color:rgba(255,255,255,.82);line-height:1.85}
+.tencho .mono{font-size:11px;color:rgba(255,255,255,.5);display:block;margin-top:8px}
+
+/* ============ BAR CHART ============ */
+.bars{margin:16px 0 4px}
+.bar-row{display:grid;grid-template-columns:150px 1fr 62px;gap:10px;align-items:center;margin-bottom:9px;font-size:13px}
+.bar-row .lb{text-align:right;color:var(--ink-sub);line-height:1.4}
+.bar-track{background:#EFE7D3;border-radius:4px;height:20px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--gold-deep),var(--gold));border-radius:4px}
+.bar-fill.alt{background:linear-gradient(90deg,#2E6BA4,#5B9BD5)}
+.bar-row .vl{font-family:'DotGothic16',monospace;font-size:13px;color:var(--ink)}
+
+/* ============ TABLE ============ */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin:12px 0;background:var(--paper)}
+.tbl th{
+  background:var(--ink);color:var(--gold);font-size:12px;font-weight:700;
+  padding:9px 10px;text-align:left;letter-spacing:.04em;
+}
+.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl tr:last-child td{border-bottom:none}
+.tbl .k{font-weight:900;white-space:nowrap}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:9px}
+
+/* frequency meter inside table */
+.freq{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.freq-track{width:70px;height:8px;background:#EFE7D3;border-radius:4px;overflow:hidden;flex:0 0 auto}
+.freq-fill{height:100%;background:var(--gold)}
+.freq-fill.down{background:var(--blue)}
+.freq b{font-family:'DotGothic16',monospace;font-size:12px}
+
+/* ============ SPEECH SAMPLE ============ */
+.speech{display:flex;gap:16px;align-items:flex-end;margin:18px 0 6px;flex-wrap:wrap}
+.speech-fig{flex:0 0 auto;width:104px;text-align:center}
+.speech-fig img{width:104px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.18))}
+.speech-fig span{font-size:11px;color:var(--ink-faint);display:block;margin-top:2px}
+.bubbles{flex:1 1 300px;min-width:260px}
+.bub{
+  background:#fff;border:1.5px solid var(--border-dark);border-radius:14px;
+  padding:11px 15px;font-size:14px;position:relative;margin-bottom:12px;color:#241D12;
+}
+.bub:last-child{margin-bottom:0}
+.bub::before{
+  content:'';position:absolute;left:-9px;bottom:13px;width:0;height:0;
+  border:8px solid transparent;border-right-color:var(--border-dark);border-left:0;
+}
+.bub::after{
+  content:'';position:absolute;left:-7px;bottom:13px;width:0;height:0;
+  border:8px solid transparent;border-right-color:#fff;border-left:0;
+}
+.bub .tag{
+  display:inline-block;font-size:10.5px;font-family:'DotGothic16',monospace;
+  background:var(--ink);color:var(--gold);padding:1px 8px;border-radius:9px;margin-right:7px;
+}
+
+/* ============ AUDIO GRID ============ */
+.audio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin:14px 0}
+.audio-chip{
+  background:var(--paper);border:1px solid var(--border);border-radius:8px;
+  padding:11px 12px;font-size:12.5px;line-height:1.55;
+}
+.audio-chip b{display:block;font-size:13px;margin-bottom:2px}
+.audio-chip.done{border-left:4px solid var(--green)}
+.audio-chip.todo{border-left:4px solid var(--ink-faint);opacity:.72}
+
+/* ============ ORG ROW ============ */
+.orgrow{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.orgrow figure{text-align:center;width:96px}
+.orgrow img{width:76px;height:76px;object-fit:contain;margin:0 auto 6px;
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.15))}
+.orgrow figcaption{font-size:11.5px;color:var(--ink-faint);line-height:1.5}
+
+/* ============ ROADMAP ============ */
+.rm-group{margin:26px 0}
+.rm-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.rm-badge{
+  font-family:'DotGothic16',monospace;font-size:11px;color:#fff;
+  padding:4px 12px;border-radius:3px;letter-spacing:.08em;
+}
+.rm-1 .rm-badge{background:var(--red)}
+.rm-2 .rm-badge{background:var(--blue)}
+.rm-3 .rm-badge{background:var(--purple)}
+.rm-head h4{font-size:17px;font-weight:900}
+.rm-head small{color:var(--ink-faint);font-size:12.5px;font-weight:400}
+.rm-list{display:grid;gap:9px}
+.rm-item{
+  background:var(--paper);border:1px solid var(--border);border-radius:9px;
+  padding:13px 16px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;
+}
+.rm-item h5{font-size:14.5px;font-weight:900;margin-bottom:3px}
+.rm-item p{font-size:13px;color:var(--ink-sub);line-height:1.7}
+.pill{
+  font-size:10.5px;font-family:'DotGothic16',monospace;padding:3px 9px;border-radius:11px;
+  white-space:nowrap;align-self:start;
+}
+.pill.s1{background:#FDE8E4;color:var(--red);border:1px solid #EEC0B7}
+.pill.s2{background:#E9F1FA;color:var(--blue);border:1px solid #C0D6EC}
+.pill.s3{background:#F3EBF9;color:var(--purple);border:1px solid #DCC8EA}
+.pill.s4{background:#EFEADF;color:var(--ink-faint);border:1px solid var(--border)}
+
+/* ============ HIGHLIGHT PANEL ============ */
+.spotlight{
+  background:linear-gradient(160deg,#1B1712,#2A211A);color:#fff;border-radius:14px;
+  padding:30px 26px;margin:26px 0;border:1px solid #4A3624;position:relative;overflow:hidden;
+}
+.spotlight::before{
+  content:'';position:absolute;right:-40px;top:-40px;width:220px;height:220px;
+  background:radial-gradient(circle,rgba(200,151,27,.22),transparent 70%);
+}
+.spotlight .en{font-family:'DotGothic16',monospace;font-size:10.5px;letter-spacing:.32em;color:#EFC65B}
+.spotlight h4{font-family:'Shippori Mincho',serif;font-size:22px;font-weight:800;margin:8px 0 12px;position:relative}
+.spotlight p{font-size:14px;color:rgba(255,255,255,.84);line-height:1.9;position:relative}
+.spotlight .tbl{background:transparent;margin-top:16px;position:relative}
+.spotlight .tbl th{background:rgba(255,255,255,.08);color:#EFC65B}
+.spotlight .tbl td{border-bottom:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.88)}
+.spotlight .freq-track{background:rgba(255,255,255,.14)}
+.spotlight .tbl-wrap{border-color:rgba(255,255,255,.14)}
+
+/* ============ QUOTE ============ */
+.philo{
+  background:var(--paper-alt);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:34px 0;margin:44px 0;
+}
+.philo .wrap{text-align:center}
+.philo blockquote{
+  font-family:'Shippori Mincho',serif;font-size:clamp(16px,3.4vw,21px);
+  line-height:2;color:var(--ink);max-width:640px;margin:0 auto;font-weight:600;
+}
+.philo cite{display:block;font-style:normal;font-size:12px;color:var(--ink-faint);margin-top:16px}
+
+/* ============ FOOTER ============ */
+footer{background:var(--night);color:rgba(255,255,255,.7);padding:44px 0 40px;margin-top:56px;text-align:center}
+footer .wrap{position:relative}
+footer h4{font-family:'Shippori Mincho',serif;color:#EFC65B;font-size:19px;margin-bottom:14px;font-weight:800}
+footer p{font-size:13.5px;line-height:2;max-width:560px;margin:0 auto}
+footer .fine{margin-top:26px;font-size:11px;color:rgba(255,255,255,.35);line-height:1.9}
+footer .cast{display:flex;justify-content:center;margin:26px 0 0}
+footer .cast img{width:60px;margin-left:-12px;opacity:.65;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+footer .cast img:first-child{margin-left:0}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:720px){
+  body{font-size:15px}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:14px 6px}
+  .stat:nth-child(2){border-right:none}
+  .cal{grid-template-columns:repeat(2,1fr)}
+  .ba{grid-template-columns:1fr;gap:8px}
+  .ba-arrow{transform:rotate(90deg);height:22px}
+  .bar-row{grid-template-columns:112px 1fr 52px;font-size:12px}
+  .tencho{flex-direction:column;text-align:center}
+  .rm-item{grid-template-columns:1fr}
+  .pill{justify-self:start}
+  .sec-num{width:36px;height:36px;font-size:14px}
+  .cover-cast img{margin-left:-20px}
+}
+@media(max-width:400px){
+  .bar-row{grid-template-columns:92px 1fr 46px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ COVER -->
+<header class="cover">
+  <div class="cover-bg" aria-hidden="true"></div>
+  <div class="cover-inner">
+    <div class="cover-kicker mono">FOR OUR SUPPORTERS</div>
+    <h1>
+      <span class="en">WRESTLE MANAGER / DEV REPORT</span>
+      この10日間で、<br>リングは何が変わったか
+    </h1>
+    <p class="cover-lead">
+      年間カレンダーが四季で埋まり、試合の採点が作り直され、鳴っている音がほぼ全部入れ替わりました。
+      その全記録と、これから手をつける予定を一枚にまとめています。
+    </p>
+    <div class="cover-date mono">
+      <span>2026.07.17 → 07.26</span><b>|</b><span>v1.20 → <b>v1.22</b></span>
+    </div>
+    <div class="cover-cast" aria-hidden="true">
+      <img class="dim" src="assets/upper_okochi_s.webp" alt="">
+      <img src="assets/upper_tomioka_k.webp" alt="">
+      <img src="assets/upper_abukuma_t.webp" alt="">
+      <img src="assets/upper_tachibana_r.webp" alt="">
+      <img src="assets/upper_hayakawa_m.webp" alt="">
+      <img class="dim" src="assets/upper_fukamachi_m.webp" alt="">
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ STATS -->
+<div class="statband">
+  <div class="stat-grid">
+    <div class="stat"><b>341</b><span>この10日の更新回数</span></div>
+    <div class="stat"><b>521</b><span>手を入れたファイル</span></div>
+    <div class="stat"><b>16,682</b><span>ゲーム内セリフ総数</span></div>
+    <div class="stat"><b>32<small>枠</small></b><span>作り直したBGM</span></div>
+  </div>
+</div>
+
+<!-- ============================================================ TOC -->
+<nav class="toc">
+  <div class="toc-inner">
+    <a href="#s01">① 年間カレンダー完成</a>
+    <a href="#s02">② 試合の中身</a>
+    <a href="#s03" class="hot">③ 試合評価の再設計</a>
+    <a href="#s04">④ 大ニュース新聞</a>
+    <a href="#s05">⑤ 音が全部変わった</a>
+    <a href="#s06">⑥ 画面の統一</a>
+    <a href="#s07">⑦ セリフの作り分け</a>
+    <a href="#s08">⑧ 成長のリバランス</a>
+    <a href="#s09">⑨ 不具合修正</a>
+    <a href="#road" class="hot">これからの予定</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- ============================================================ INTRO -->
+<div class="chapter">
+  <div class="en">PART 1</div>
+  <h2>この10日で入ったもの</h2>
+  <div class="rule"></div>
+  <p>細かい修正まで並べると読むのが大変なので、<br>「遊んでいて気づく変化」だけを9つに絞りました。</p>
+</div>
+
+<!-- ---------------------------------------------------------- 01 -->
+<section class="sec" id="s01">
+  <div class="sec-head">
+    <div class="sec-num mono">01</div>
+    <div class="sec-title">
+      <h3>一年のカレンダーが、四季ぶんそろいました</h3>
+      <p>春・夏・秋・冬。それぞれの季節末に「その季節にしかない大会」が入りました</p>
+    </div>
+  </div>
+
+  <p class="lead">
+    これまで空いていた春と秋の枠が埋まり、1年を通してリズムができました。
+    どの大会も「誰の物語か」で性格を分けてあります。
+  </p>
+
+  <div class="cal">
+    <div class="cal-item is-new" style="--c:var(--spring)">
+      <span class="flag">NEW</span>
+      <div class="wk">WEEK 12 — 春</div>
+      <img src="assets/emblem-spring.png" alt="春のタッグリーグ">
+      <h5>春のタッグリーグ</h5>
+      <p>4チームの総当たり＋決勝。<br>主役は<b>「組んだ二人」</b></p>
+    </div>
+    <div class="cal-item" style="--c:var(--summer)">
+      <div class="wk">WEEK 24 — 夏</div>
+      <img src="assets/emblem-summer.png" alt="ジュニアトーナメント">
+      <h5>ジュニアトーナメント</h5>
+      <p>若手の登竜門。<br>開催週のズレを直しました</p>
+    </div>
+    <div class="cal-item is-new" style="--c:var(--autumn)">
+      <span class="flag">NEW</span>
+      <div class="wk">WEEK 36 — 秋</div>
+      <img src="assets/emblem-autumn.png" alt="4団体勝ち残り対抗戦">
+      <h5>4団体勝ち残り対抗戦</h5>
+      <p>各団体3名の勝ち抜き戦。<br>主役は<b>「団体そのもの」</b></p>
+    </div>
+    <div class="cal-item" style="--c:var(--winter)">
+      <div class="wk">WEEK 48 — 冬</div>
+      <img src="assets/emblem-winter.png" alt="PPV GRAND FINAL">
+      <h5>PPV GRAND FINAL</h5>
+      <p>一年の総決算。<br>主役は<b>「その年の頂点」</b></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h4>🍁 秋の対抗戦は、社長の采配がそのまま勝敗になります</h4>
+    <p>
+      先鋒・中堅・大将の3名による勝ち抜き戦です。<b>勝ち残った選手は消耗を持ち越したまま次の相手と戦います</b>。
+      連戦で削られていく様子を見ながら、決勝前に並び順を組み替える——そこが采配のしどころになります。
+      専用のライブ進行画面と、MVPの受け答え315本を新しく用意しました。
+    </p>
+  </div>
+
+  <div class="tencho">
+    <img src="assets/emblem-tenchosen.png" alt="天頂戦">
+    <div>
+      <h5>4年に一度だけ、冬のPPVが「天頂戦」に化けます</h5>
+      <p>
+        オリンピックのように4年周期でやってくる、全団体16名によるシングル勝ち抜きトーナメント。
+        全15試合が大一番ルールで、消耗は持ち越し。優勝しても数値的な得はありません。残るのは<b>記録と称号だけ</b>です。
+        山を登っていく形の専用ブラケット画面と、対戦カードごとに変わる関係性のドラマを用意しています。
+      </p>
+      <span class="mono">※ 仮エンブレムです。本番の作画は今後差し替えます</span>
+    </div>
+  </div>
+</section>
+
+<!-- ---------------------------------------------------------- 02 -->
+<section class="sec" id="s02">
+  <div class="sec-head">
+    <div class="sec-num mono">02</div>
+    <div class="sec-title">
+      <h3>試合の中身に、手を入れました</h3>
+      <p>「なんでその技で終わったの?」をなくす作業です</p>
+    </div>
+  </div>
+
+  <p class="lead">
+    クライマックスまで持ち込んだのに、最後の一撃が軽い技だった——という試合がありました。原因は技の抽選の仕組みにあったので、根本から作り直しています。
+  </p>
+
+  <div class="ba">
+    <div class="ba-side ba-b">
+      <span class="ba-lab">BEFORE</span>
+      クライマックスの約<strong>14%</strong>が軽い技で、そのまま決着技になっていた。
+      「盛り上がったのに、締まらない」
+    </div>
+    <div class="ba-arrow">▶</div>
+    <div class="ba-side ba-a">
+      <span class="ba-lab">AFTER</span>
+      威力で3段階に分けて抽選するよう作り直し。
+      <strong>軽い技でのフォール・ギブアップは0件</strong>になりました
+    </div>
+  </div>
+
+  <ul class="tick">
+    <li><b>開幕の一撃を追加しました。</b>実力差が大きく開いている場合だけ、格上が試合開始直後に大技を仕掛けます。決まれば一方的に、透かされれば手痛い反撃を食らいます</li>
+    <li><b>試合の長さとHPを同時に調整しました。</b>通常の試合は平均14.3ターン、大一番は21.9ターン。大一番の94%がクライマックスまでもつれます</li>
+    <li><b>強さの序列は壊していません。</b>格上が勝つ確率は、全ての実力帯で調整前と±0.3%以内に収まっていることを確認済みです</li>
+  </ul>
+  <p class="note">
+    この手の調整でいちばん怖いのは「演出を良くしたら、強い選手が勝たなくなった」という副作用です。
+    数千試合ぶんの自動シミュレーションで、勝率が動いていないことを確かめてから入れています。
+  </p>
+</section>
+
+<!-- ---------------------------------------------------------- 03 -->
+<section class="sec" id="s03">
+  <div class="sec-head">
+    <div class="sec-num mono">03</div>
+    <div class="sec-title">
+      <h3>試合評価の点数を、全面的に作り直しました</h3>
+      <p>今回いちばん大きな仕事です</p>
+    </div>
+  </div>
+
+  <p class="lead">
+    試合が終わったあとに出る<b>試合評価</b>の点数。あれの計算方法を、根っこから設計し直しました。
+    これまでは「王座戦だから＋◯点」「因縁があるから＋◯点」というふうに、リングの外から点数を足していました。
+    足し算で盛るのはわかりやすい反面、<b>試合の中身を見ていない点数</b>になってしまいます。
+  </p>
+
+  <div class="ba">
+    <div class="ba-side ba-b">
+      <span class="ba-lab">BEFORE — 外から足す</span>
+      王座戦だから加点。因縁があるから加点。<br>
+      → <strong>同じ内容の試合でも、看板次第で点が変わる</strong>
+    </div>
+    <div class="ba-arrow">▶</div>
+    <div class="ba-side ba-a">
+      <span class="ba-lab">AFTER — 中で燃える</span>
+      王座戦も因縁も信頼も、<strong>選手の気迫としてリングの中に入れます</strong>。<br>
+      → 熱くなった結果、いい試合になり、点が出る
+    </div>
+  </div>
+
+  <div class="card tint-gold">
+    <h4>🏆 上限100を撤廃しました。「歴代最高記録」が生まれます</h4>
+    <p>
+      これまで点数は100で頭打ちでした。つまり<b>「歴史に残る一戦」と「すごく良かった試合」が同じ点数</b>になってしまう。
+      上限を外し、代わりに<b>業界の歴代最高記録</b>を持たせました。
+      あなたの団体のリングでそれが更新された夜は、新聞の一面がその試合で埋まります。
+    </p>
+    <p>
+      シングルとタッグは<b>別々の記録</b>として積み上がります。四人が織りなす攻防と、一対一の攻防は、同じ物差しでは測れないためです。
+    </p>
+  </div>
+
+  <ul class="tick">
+    <li><b>観客の熱と、その試合への注目度を掛け合わせるようにしました。</b>満員の会場で組まれた大一番は、それだけで空気が違う</li>
+    <li><b>会場の大きさが点数の器になります。</b>公民館の名勝負と、ドームの名勝負は、届く範囲が違う</li>
+    <li><b>ドームのメインイベントには特別枠を置きました。</b>あそこは特別な場所であってほしいので</li>
+  </ul>
+</section>
+
+<!-- ---------------------------------------------------------- 04 -->
+<section class="sec" id="s04">
+  <div class="sec-head">
+    <div class="sec-num mono">04</div>
+    <div class="sec-title">
+      <h3>「大ニュース」が新聞の一面を乗っ取ります</h3>
+      <p>業界が揺れた週は、週明けの通知から違います</p>
+    </div>
+  </div>
+
+  <p class="lead">
+    ふだんの新聞とは別に、業界全体が動いた出来事だけを扱う枠を作りました。
+    発生した週の頭に通知が飛び、開くと一面がその記事で埋まっています。読むまで未読バッジが消えません。
+  </p>
+
+  <div class="audio-grid">
+    <div class="audio-chip done"><b>📈 歴代最高記録の更新</b>シングル／タッグそれぞれ別の記録として</div>
+    <div class="audio-chip done"><b>🌟 大物ルーキーの登場</b>とんでもない伸びしろを持った新人のデビュー</div>
+    <div class="audio-chip done"><b>⚔ 期待のライバル</b>同学年の逸材が二人、同じ年に揃ったとき</div>
+    <div class="audio-chip done"><b>🩹 トップ王者の重傷</b>ベルトを巻いたまま長期離脱するとき</div>
+  </div>
+
+  <p class="note">
+    記事の文面は毎回すべて書き下ろしています。数字を並べるだけの記事にはしていません。
+    タッグの記録更新の記事では、勝った二人が組んだ当初のぎこちなさを知っている記者が、その成熟に驚くという書き方をしています。
+  </p>
+</section>
+
+<!-- ---------------------------------------------------------- 05 -->
+<section class="sec" id="s05">
+  <div class="sec-head">
+    <div class="sec-num mono">05</div>
+    <div class="sec-title">
+      <h3>鳴っている音が、ほぼ全部入れ替わりました</h3>
+      <p>BGMを32枠に整理し直し、全部作り直しました</p>
+    </div>
+  </div>
+
+  <p class="lead">
+    まず「このゲームには何種類の場面があるのか」を実際の画面から数え直し、BGMの枠を32に整理しました。
+    そのうえで83枠ぶんの候補を聴き比べ、採用した74本を製品版として仕上げています。
+  </p>
+
+  <div class="audio-grid">
+    <div class="audio-chip done"><b>🌸 大会ごとの進行曲</b>春・夏・秋・冬・天頂戦で別。決勝からは曲が切り替わります</div>
+    <div class="audio-chip done"><b>🔥 因縁の一戦</b>宿敵以上の相手と当たったときだけ鳴ります</div>
+    <div class="audio-chip done"><b>🏅 表彰式・エンディング</b>年間表彰と、シーズンの締めに</div>
+    <div class="audio-chip done"><b>📝 契約交渉／ドラフト</b>ドラフトは「選ぶ場面」と「競り合う場面」で別の曲に</div>
+    <div class="audio-chip done"><b>🎗 引退</b>引退セレモニーへ。連続して引退が出ても鳴らし直しません</div>
+    <div class="audio-chip done"><b>🕯 ゲームオーバー</b>団体の解散にも同じ曲を。ループさせず一度だけ流します</div>
+  </div>
+
+  <div class="card tint-green">
+    <h4>🎼 フリー素材の使用が、ゼロになりました</h4>
+    <p>
+      最後まで残っていたゲームオーバー曲を差し替えたことで、<b>このゲームで鳴る音楽はすべてこの作品のために用意したもの</b>になりました。
+      クレジット表記の音楽欄が空になっています。
+    </p>
+  </div>
+
+  <p class="note">
+    効果音のほうはまだこれからです。加工済みの46本のうち、実際に鳴っているのは最高栄誉のジングル1本だけ。
+    ここが次の大仕事になります（後述のロードマップ参照）。
+  </p>
+</section>
+
+<!-- ---------------------------------------------------------- 06 -->
+<section class="sec" id="s06">
+  <div class="sec-head">
+    <div class="sec-num mono">06</div>
+    <div class="sec-title">
+      <h3>画面ごとにバラバラだった見た目を、用途ごとに統一しました</h3>
+      <p>「触ったときに直す」方式では、触られない画面が永遠に取り残されるので</p>
+    </div>
+  </div>
+
+  <p class="lead">
+    同じ意味のものが画面ごとに違う見た目をしている、という状態を潰しました。
+    用途ごとにデザインを決め直してから、その用途に当てはまる画面を一気に書き換える、という進め方です。
+  </p>
+
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th style="width:24%">用途</th><th style="width:38%">これまで</th><th>これから</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="k">セリフの吹き出し<br><small style="color:var(--ink-faint)">27系統</small></td>
+          <td>8つの画面で吹き出しが<b>画像の下</b>に付いていた。色も背景もバラバラ</td>
+          <td><b>顔の上に、白い吹き出しで、黒い文字。例外なし。</b>逆に地の文やナレーションは白くしないことで、セリフと見分けがつくようにしました</td>
+        </tr>
+        <tr>
+          <td class="k">勝敗の表示<br><small style="color:var(--ink-faint)">31か所</small></td>
+          <td>「LOSE」「敗」「×」が混在。引き分けの表記もあった</td>
+          <td><b>○＝勝ち／×＝負け</b>に統一。<b>引き分けの表記は撤去</b>しました（このゲームでは引き分けが起きないため、あると誤解を生みます）</td>
+        </tr>
+        <tr>
+          <td class="k">選手画像の大きさ</td>
+          <td>画面ごとにその場で決めていたので、同じ立場の選手が画面によって大きさが違った</td>
+          <td><b>主役度に応じた5段階の梯子</b>を決め、そこから選ぶだけにしました。一覧に並ぶ丸い顔アイコンも3段階に整理</td>
+        </tr>
+        <tr>
+          <td class="k">団体の見分け</td>
+          <td>頭文字の色付き丸で代用していた画面があった</td>
+          <td><b>実際のエンブレム画像</b>を使うように統一。他団体との絡みで「どっちの選手か」が一目でわかります</td>
+        </tr>
+        <tr>
+          <td class="k">ポップアップの枠<br><small style="color:var(--ink-faint)">42種</small></td>
+          <td>重なり順が25通りあり、閉じ方も画面によって違った</td>
+          <td>重なりを<b>5階層</b>に整理。<b>背景クリックとESCで閉じる</b>を全部に通しました</td>
+        </tr>
+        <tr>
+          <td class="k">選手カード・一覧</td>
+          <td>顔が出ているのに押しても何も起きない画面があった</td>
+          <td><b>顔が出ているなら、押せば詳細が開く。</b>同じ症状で原因が5種類あり、全部潰しました</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="orgrow">
+    <figure><img src="assets/org-player-0.png" alt=""><figcaption>あなたの団体</figcaption></figure>
+    <figure><img src="assets/org-s-0.png" alt=""><figcaption>S級<br>絶対王者</figcaption></figure>
+    <figure><img src="assets/org-a-0.png" alt=""><figcaption>A級<br>若手主体</figcaption></figure>
+    <figure><img src="assets/org-b-0.png" alt=""><figcaption>B級<br>堅実経営</figcaption></figure>
+  </div>
+  <p class="note">左端があなたの団体のエンブレム。10種類の候補から選べます。右の3つは他団体のものです。</p>
+</section>
+
+<!-- ---------------------------------------------------------- 07 -->
+<section class="sec" id="s07">
+  <div class="sec-head">
+    <div class="sec-num mono">07</div>
+    <div class="sec-title">
+      <h3>セリフが、キャラクターごとに分かれるようになりました</h3>
+      <p>「真面目なお嬢様」と「真面目なヤンキー」が同じことを喋っていた問題</p>
+    </div>
+  </div>
+
+  <p class="lead">
+    これまでセリフの多くは<b>性格</b>だけで枝分かれしていました。ところが実際に喋ってみると、
+    口調を決めているのは性格ではなく<b>属性</b>のほうだったんです。
+    結果、「真面目」でくくられた選手が、お嬢様でもヤンキーでも同じ台詞を喋っていました。
+  </p>
+
+  <div class="speech">
+    <div class="speech-fig">
+      <img src="assets/upper_tomioka_k.webp" alt="">
+      <span>お嬢様タイプ</span>
+    </div>
+    <div class="bubbles">
+      <div class="bub"><span class="tag mono">BEFORE</span>よろしくお願いします！</div>
+      <div class="bub"><span class="tag mono">AFTER</span>お引き立てに恥じぬよう、力を尽くします</div>
+    </div>
+  </div>
+  <div class="speech">
+    <div class="speech-fig">
+      <img src="assets/upper_okochi_s.webp" alt="">
+      <span>ぶっきらぼうタイプ</span>
+    </div>
+    <div class="bubbles">
+      <div class="bub"><span class="tag mono">BEFORE</span>よろしくお願いします！</div>
+      <div class="bub"><span class="tag mono">AFTER</span>……世話になります。仕事はします</div>
+    </div>
+  </div>
+  <p class="note">※ 上は仕組みを説明するための例です。実際の文面は場面ごとに書き分けています。</p>
+
+  <div class="card tint-gold" style="margin-top:22px">
+    <h4>🧩 <b>属性7種 × 性格7種</b>の二軸に組み替え、空いていたマス目を全部埋めました</h4>
+    <p>
+      埋めたマス目は<b>1,516</b>。既存のセリフは1文字も書き換えず、足すだけの作業です。
+      これで<b>「口調が指定されていないセリフ」がゼロ</b>になりました。
+    </p>
+  </div>
+
+  <p class="lead" style="margin-top:20px">
+    穴埋めとは別に、新しく書き下ろしたセリフもあります。こちらは本数です。
+  </p>
+
+  <div class="bars">
+    <div class="bar-row">
+      <div class="lb">挑戦試合<br><small style="color:var(--ink-faint)">直訴・見送り・勝敗</small></div>
+      <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+      <div class="vl">408</div>
+    </div>
+    <div class="bar-row">
+      <div class="lb">秋の対抗戦<br><small style="color:var(--ink-faint)">MVPの受け答え</small></div>
+      <div class="bar-track"><div class="bar-fill" style="width:77.2%"></div></div>
+      <div class="vl">315</div>
+    </div>
+    <div class="bar-row">
+      <div class="lb">天頂戦のドラマ<br><small style="color:var(--ink-faint)">対戦カード別</small></div>
+      <div class="bar-track"><div class="bar-fill" style="width:22.3%"></div></div>
+      <div class="vl">91</div>
+    </div>
+    <div class="bar-row">
+      <div class="lb">番狂わせ<br><small style="color:var(--ink-faint)">休眠していたぶん</small></div>
+      <div class="bar-track"><div class="bar-fill alt" style="width:17.4%"></div></div>
+      <div class="vl">71</div>
+    </div>
+    <div class="bar-row">
+      <div class="lb">コーチの気づき<br><small style="color:var(--ink-faint)">追い込みの匂わせ</small></div>
+      <div class="bar-track"><div class="bar-fill" style="width:11.8%"></div></div>
+      <div class="vl">48</div>
+    </div>
+    <div class="bar-row">
+      <div class="lb">天頂戦のミニイベント</div>
+      <div class="bar-track"><div class="bar-fill" style="width:7.6%"></div></div>
+      <div class="vl">31</div>
+    </div>
+  </div>
+
+  <div class="card tint-red">
+    <h4>🔍 見つかっていなかった「鳴らないセリフ」がありました</h4>
+    <p>
+      因縁のある相手との試合後コメント<b>71本</b>が、7月21日以降まったく出ていませんでした。復活させています。
+      宿敵以上の相手を組んだ興行の結果を閉じた直後に出るはずのものです。
+    </p>
+  </div>
+</section>
+
+<!-- ---------------------------------------------------------- 08 -->
+<section class="sec" id="s08">
+  <div class="sec-head">
+    <div class="sec-num mono">08</div>
+    <div class="sec-title">
+      <h3>「追い込む」ことに、ちゃんと代償を持たせました</h3>
+      <p>得しかしない選択は、選択ではないので</p>
+    </div>
+  </div>
+
+  <p class="lead">
+    練習で追い込めば伸びる。けれどその負荷は選手の身体に積もっていく——という当たり前を、数字の上でも成立させました。
+    測ってみると、平均的な選手生命は<b>9.0シーズンから7.0シーズン</b>に縮みました。
+  </p>
+
+  <ul class="tick">
+    <li><b>数字は見せません。</b>代わりに、追い込みを続けている選手について<b>コーチが道場でぽつりと漏らす</b>ようにしました。忘れた頃に一度だけ</li>
+    <li><b>調整の値は実測で決めました。</b>4つの候補を、それぞれ40シーズン×2通りの世界線で走らせて比較しています</li>
+  </ul>
+
+  <p class="note">
+    このリバランスの過程で、もっと根の深い問題が見つかりました。
+    <b>「完成して、君臨して、翳る」の“君臨”が、今のゲームには存在しません</b>。
+    伸びきった直後に衰えが始まってしまう。これは後述のロードマップで扱います。
+  </p>
+</section>
+
+<!-- ---------------------------------------------------------- 09 -->
+<section class="sec" id="s09">
+  <div class="sec-head">
+    <div class="sec-num mono">09</div>
+    <div class="sec-title">
+      <h3>不具合の修正と、遠征まわりの作り直し</h3>
+      <p>進行が止まる・戻れない系を優先して潰しました</p>
+    </div>
+  </div>
+
+  <div class="audio-grid">
+    <div class="audio-chip done"><b>秋の対抗戦で画面が止まる</b>原因が2つ重なっていました。両方修正済み</div>
+    <div class="audio-chip done"><b>遠征後に興行が中止に見える</b>画面が復旧しきらず、消えたように見えていました</div>
+    <div class="audio-chip done"><b>興行後の演出が二重に出る</b>試合後の「興行のあとで…」が重複していました</div>
+    <div class="audio-chip done"><b>遠征に出た選手が戻らない</b>予約が失効したときの後始末が抜けていました</div>
+    <div class="audio-chip done"><b>タイトル挑戦の条件表示</b>表示と実際の判定が食い違っていました</div>
+    <div class="audio-chip done"><b>相関図が開かない</b>古いセーブデータとの互換で止まっていた件を解消</div>
+  </div>
+
+  <div class="card tint-blue">
+    <h4>🚌 遠征のフローを作り直しました</h4>
+    <p>
+      他団体へ乗り込むとき、<b>同行する2名を自分で選べる</b>ようになりました。
+      会場へ向かう移動シーンを挟み、試合前には画面が敵地の色に染まります。
+      あちらのホームで戦っているという感触を出したかった部分です。
+    </p>
+  </div>
+
+  <div class="card tint-blue">
+    <h4>📱 スマートフォンで遊べるように整えました</h4>
+    <p>
+      画面幅に合わせたレイアウトを全面的に入れています。相関図はスマホでは図ではなく一覧表示に切り替わります
+      （小さい画面で線をたどるのは無理があったので）。
+    </p>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<!-- ============================================================ PHILOSOPHY -->
+<div class="philo">
+  <div class="wrap">
+    <blockquote>
+      数値を捻じ曲げてドラマチックにはしない。<br>
+      だから、本当に奇跡が起きたときの感動は本物になる。
+    </blockquote>
+    <cite>— このゲームを作るときの、決めごとのひとつ</cite>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ============================================================ ROADMAP -->
+<div class="chapter" id="road">
+  <div class="en">PART 2</div>
+  <h2>これから手をつけること</h2>
+  <div class="rule"></div>
+  <p>予定なので、順番も内容も変わることがあります。<br>いま机の上に乗っているものを、優先度の順に並べました。</p>
+</div>
+
+<!-- SPOTLIGHT: 幕引き -->
+<div class="spotlight">
+  <div class="en">NEXT BIG ONE</div>
+  <h4>選手の「終わり方」を、作り直します</h4>
+  <p>
+    引退のタイミングを実際に測ってみたところ、困ったことがわかりました。
+    <b>半分以上の選手が、毎年の抽選に引っかかって消えている</b>んです。
+    身体はまだ余力を残しているのに、理由が語れないまま去っていく。これがいちばん多い終わり方になっていました。
+  </p>
+  <p style="margin-top:14px">
+    そこで、<b>終わり方を5つの型に分けて、それぞれの起きる頻度を設計します。</b>
+    いちばん大事なのは「不意の終わり」を削ることです。これが半分を占めているせいで、他のすべての終わり方が埋もれていました。
+  </p>
+
+  <div class="tbl-wrap" style="margin-top:18px">
+    <table class="tbl">
+      <thead><tr><th style="width:22%">型</th><th style="width:44%">どんな終わり方か</th><th>頻度の目安</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="k">A. 静かに去る</td>
+          <td>消耗が満ちて、オフシーズンに自分で決める。誰も騒がない</td>
+          <td><div class="freq"><div class="freq-track"><div class="freq-fill" style="width:60%"></div></div><b>6割</b></div></td>
+        </tr>
+        <tr>
+          <td class="k">B. 燃え尽きるまで</td>
+          <td>衰えが見えてから踏ん張り、最後の大舞台で活躍して終わる</td>
+          <td><div class="freq"><div class="freq-track"><div class="freq-fill" style="width:25%"></div></div><b>2〜3割</b></div></td>
+        </tr>
+        <tr>
+          <td class="k">C. 壮絶な幕切れ</td>
+          <td>大舞台で重傷を負い、二度とリングに上がれなくなる</td>
+          <td><div class="freq"><div class="freq-track"><div class="freq-fill" style="width:4%"></div></div><b>10年に1度級</b></div></td>
+        </tr>
+        <tr>
+          <td class="k">D. 不意の終わり</td>
+          <td>理由が語りにくい終わり方。<b>これを削るのが目的です</b></td>
+          <td><div class="freq"><div class="freq-track"><div class="freq-fill down" style="width:10%"></div></div><b>5割超 → 1割以下</b></div></td>
+        </tr>
+        <tr>
+          <td class="k">E. 社長が決める</td>
+          <td>衰えの印を見て、あなたが先に引導を渡す。<b>今あるものを、そのまま残します</b></td>
+          <td><div class="freq"><b>変更なし</b></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:16px;font-size:13px;color:rgba(255,255,255,.6)">
+    Eを残すのは意図的です。「衰え」の表示を見て社長が決める——これがいちばんこのゲームらしい終わり方なので、
+    エンジンが先回りして奪ってしまわないように設計します。
+  </p>
+</div>
+
+<!-- ROADMAP GROUP 1 -->
+<div class="rm-group rm-1">
+  <div class="rm-head">
+    <span class="rm-badge">NEXT</span>
+    <h4>すぐ次にやること <small>／ 設計が済んでいて、着手できる状態</small></h4>
+  </div>
+  <div class="rm-list">
+    <div class="rm-item">
+      <div>
+        <h5>🔊 効果音を全面的に載せ替える</h5>
+        <p>加工済みの効果音46本のうち、いま鳴っているのは1本だけです。BGMと同じ規模の仕事になります。画面の整理が終わったので着手できます</p>
+      </div><span class="pill s1">着手可</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>🔥 大一番の直前に、煽りを挟む</h5>
+        <p>王座戦・PPVのラストマッチ・天頂戦の決勝・ジュニアの決勝。この4つの直前には必ず何かを挟みます。専用曲も用意済み</p>
+      </div><span class="pill s1">設計中</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>🚪 特別興行の「会場入り」演出</h5>
+        <p>遠征で作った移動シーンを、年4回の特別興行にも使います。遠征が敵地へ向かう緊張なら、こちらは晴れ舞台へ向かう高揚として、別のトーンで</p>
+      </div><span class="pill s1">アイデア</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>🎚 団体の状況で、流れる曲が変わる</h5>
+        <p>好調・資金難・不穏・危機。曲はもう出来ています。「どこからが資金難か」の線引きを決める必要があり、そこが残っています</p>
+      </div><span class="pill s1">曲は完成</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>⏳ 全盛期の「窓」を作る</h5>
+        <p>いまは伸びきった直後に衰えが始まってしまい、<b>君臨する時間がありません</b>。成長カーブか衰え始めの年齢か、どこを触るかの設計から相談します</p>
+      </div><span class="pill s1">要設計</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>💬 長いセリフ605本を、属性ごとに書き分ける</h5>
+        <p>今回埋めたのは穴の部分です。本丸である「性格でしか分かれていない長文」の展開はこれから</p>
+      </div><span class="pill s1">次の大仕事</span>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP GROUP 2 -->
+<div class="rm-group rm-2">
+  <div class="rm-head">
+    <span class="rm-badge">PLANNED</span>
+    <h4>そのあとに控えているもの <small>／ 構想はある、順番待ち</small></h4>
+  </div>
+  <div class="rm-list">
+    <div class="rm-item">
+      <div>
+        <h5>🎭 キャラクター固有のイベント</h5>
+        <p>その選手にしか起きない出来事。信頼が深まった選手から順に。数値の効果はなく、味わいだけのイベントにする予定です</p>
+      </div><span class="pill s2">未着手</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>👋 引退した選手との、その後のつきあい</h5>
+        <p>年代記に残った選手たちと、引退後も関わりが続くように</p>
+      </div><span class="pill s2">未着手</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>💥 単発の大事件</h5>
+        <p>スキャンダル発覚／派閥抗争／大一番での惨敗／裏切りの退団／ファンの離反。それぞれ選択を迫られます</p>
+      </div><span class="pill s2">設計済み</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>🥊 他団体への殴り込み</h5>
+        <p>選手からの直訴を受けて、こちらから乗り込んでいく形。挑戦試合の仕組みとつなげます</p>
+      </div><span class="pill s2">未着手</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>🏗 トレーニング設備の拡充</h5>
+        <p>資金が余ったときの投資先として。老朽化と維持費まで含めて設計する予定</p>
+      </div><span class="pill s2">未着手</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>⛓ 特殊な試合形式</h5>
+        <p>アイアンマンマッチ／ハードコア＋ケージ／6人タッグのエリミネーション。3形式を検討中</p>
+      </div><span class="pill s4">後回し</span>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP GROUP 3 -->
+<div class="rm-group rm-3">
+  <div class="rm-head">
+    <span class="rm-badge">DREAM</span>
+    <h4>いつかやりたい大物 <small>／ 独立プロジェクト級</small></h4>
+  </div>
+  <div class="rm-list">
+    <div class="rm-item">
+      <div>
+        <h5>✏️ オリジナルキャラクターの作成</h5>
+        <p>自分の選手を作ってリングに上げる機能。立ち絵の扱いも含めて、これ単体で一つのプロジェクトになります</p>
+      </div><span class="pill s3">最後に</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>📖 数か月にわたる抗争の管理</h5>
+        <p>一晩の因縁ではなく、季節をまたいで転がっていくストーリー。自動生成のライバル物語とセットで考えています</p>
+      </div><span class="pill s3">未設計</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>👑 統一王座と、その挑戦権争い</h5>
+        <p>全団体をまたぐ一本のベルト。影響範囲が大きすぎるので、いまは保留にしています</p>
+      </div><span class="pill s4">保留</span>
+    </div>
+    <div class="rm-item">
+      <div>
+        <h5>🎯 必殺技（フィニッシャー）</h5>
+        <p>いったん優先度を下げました。固有技にすると決め技が一つに固定され、技名を設定した選手だけが特別扱いになってしまうため。まずは全選手共通の「決着の見せ方」を強くします</p>
+      </div><span class="pill s4">温存</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- ============================================================ FOOTER -->
+<footer>
+  <div class="wrap">
+    <h4>いつも支えていただき、ありがとうございます</h4>
+    <p>
+      この10日は、外から見えにくい土台の作り直しが多い期間でした。
+      試合の採点、音、画面の言葉づかい。どれも「入れた瞬間に楽しくなる」種類のものではありませんが、
+      ここが揃っていないと、この先に足すものが全部ちぐはぐになってしまいます。
+    </p>
+    <p style="margin-top:14px">
+      次は、選手たちの<b>終わり方</b>に手をつけます。<br>
+      彼女たちが去っていく理由を、ちゃんと語れるようにするために。
+    </p>
+    <div class="cast" aria-hidden="true">
+      <img src="assets/upper_takatsu_k.webp" alt="">
+      <img src="assets/upper_ikoma_e.webp" alt="">
+      <img src="assets/upper_takatsuki_c.webp" alt="">
+      <img src="assets/upper_shirogane_r.webp" alt="">
+      <img src="assets/upper_morgan_r.webp" alt="">
+      <img src="assets/upper_kuroiwa_c.webp" alt="">
+    </div>
+    <p class="fine mono">
+      WRESTLE MANAGER — DEVELOPMENT REPORT<br>
+      対象期間 2026.07.17 – 07.26 ／ v1.20 → v1.22<br>
+      掲載している数値・仕様は執筆時点のものです。予定は変更になる場合があります。
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
