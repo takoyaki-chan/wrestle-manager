@@ -1687,7 +1687,9 @@ function renderWeekScreen() {
 // G.weekLogFeed のデータ自体は残す(このセクションが素材として使う)。
 const DOJO_REST_B_TYPES = new Set(['GL-02', 'GL-03', 'GL-04', 'GL-05', 'GL-06', 'GL-07', 'GL-10', 'GL-11', 'GL-12']);
 const DOJO_REST_A_AXES = new Set(['bond', 'rivalry', 'trust']);
-const DOJO_REST_PROB = 0.18; // 控えめ: 対象1件につき18%抽選、最大2人。該当ゼロなら何も出さない
+const DOJO_REST_PROB = 0.18; // 控えめ: 対象1件につき18%抽選。該当ゼロなら何も出さない
+// 出すのは1人だけ。2人だと縦に並んでしまい、セリフも合わせると窮屈になるため(2026-07-26 Keisuke)
+const DOJO_REST_MAX = 1;
 /** 休憩中の選手候補として使える Glimpse か判定する。
  *  心の状態・人間関係を映すものだけに絞り、成績・数値・試合結果の報告は除外する:
  *  - layer A: axis が bond/rivalry/trust の閾値通過(tier2側。tone=gold/dangerの濃いものは
@@ -1786,7 +1788,7 @@ function _renderRosterDojoHeader() {
     const restCandidates = eligibleRest.filter(g => availableIds.has(g.speakerId) && !practicingIds.has(g.speakerId));
     const restPicked = [];
     restCandidates.forEach(g => {
-      if (restPicked.length >= 2) return;
+      if (restPicked.length >= DOJO_REST_MAX) return;
       if (Engine.rng.float(restRng) < DOJO_REST_PROB) restPicked.push(g);
     });
 

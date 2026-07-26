@@ -3194,14 +3194,19 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ch-duo .ch-por{width:150px;height:224px}
 .ch-duo .ch-por .ini{font-size:54px}
 .ch-duo .ch-name{font-size:15px}
-.ch-duo .ch-bubble-slot{min-height:50px;margin-bottom:var(--space-sm)}
-.ch-duo .ch-bubble{font-size:11px;max-width:100%;padding:8px 12px}
+/* タッグは2人とも喋るため、隣と衝突するので幅を広げられない(画像の中心が132px間隔)。
+   代わりに行数を3行に増やして文字数を稼ぐ(約36文字。中央値29文字は収まる)。 */
+.ch-duo .ch-bubble-slot{min-height:68px;margin-bottom:var(--space-sm)}
+.ch-duo .ch-bubble{font-size:11px;max-width:132px;padding:8px 10px;-webkit-line-clamp:3}
 /* 団体優勝(秋): 3人を横一列で全員主役。大将を中央に一回り大きく */
 .ch-trio .ch-por{width:132px;height:194px}
 .ch-trio .ch-por .ini{font-size:46px}
 .ch-trio .ch-name{font-size:13px}
-.ch-trio .ch-bubble-slot{min-height:46px;margin-bottom:var(--space-sm)}
-.ch-trio .ch-bubble{font-size:11px;max-width:100%;padding:8px 12px}
+/* 隊列で発言するのは1人だけなので、吹き出しは列幅(132px)を超えて広げてよい。
+   セリフは中央値29文字・最長43文字あり、132pxの2行(約19文字)では大半が切れる。
+   260pxなら11pxで2行=約44文字入る。隣の列と重なっても相手は喋らないので衝突しない。 */
+.ch-trio .ch-bubble-slot{min-height:52px;margin-bottom:var(--space-sm)}
+.ch-trio .ch-bubble{font-size:11px;max-width:260px;padding:8px 12px}
 .ch-trio .ch-mem.is-ace .ch-por{width:150px;height:224px}
 .ch-trio .ch-mem.is-ace .ch-por .ini{font-size:52px}
 .ch-trio .ch-mem.is-ace .ch-name{font-size:15px}
