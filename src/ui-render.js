@@ -713,9 +713,12 @@ function renderWeekScreen() {
       const rm = ROLE_META[c.role] || ROLE_META.Neutral;
       const {strengths, weaknesses} = analyzeStrengths(c);
       const upperUrl = getUpperUrl(c.id);
-      // U7 §2-C: 顔が出ているなら押せば選手詳細が開く（旗揚げの固定メンバー）
+      // U7 §2-C の例外: 旗揚げ時点の選手はまだ G のどこにも居ない（ALL_CHARS から
+      // その場で組み立てている）ので選手詳細は開けない。そもそもこのカード自体が
+      // OVR・全ステータス・強み課題・コーチ寸評まで載せた**詳細表示そのもの**なので、
+      // 押せるようにする必要がない
       html += `<div class="draft-fc fixed">
-        <div class="draft-fc-portrait" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(c.id)},'draft')">${upperUrl ? `<img src="${upperUrl}" alt="${c.name}">` : ''}</div>
+        <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${c.name}">` : ''}</div>
         <div class="draft-fc-info">
           <div class="draft-fc-name-row">
             <span class="draft-fc-name">${c.name}</span>
@@ -3205,7 +3208,7 @@ function renderShowPrep() {
         const rows = pickerFighters.map(c => {
           const isAssigned = usedInOther.has(c.id);
           const cls = isAssigned ? 'sp-picker-row assigned' : 'sp-picker-row';
-          return `<div class="${cls}" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',${c.id});_spActivePicker=null">${portraitImg(c.id, 24)}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
+          return `<div class="${cls}" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',${c.id});_spActivePicker=null">${portraitImg(c.id, 24, '', 'roster')}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
         }).join('');
         const removeRow = curInPos > 0 ? `<div class="sp-picker-row" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',0);_spActivePicker=null" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">✕ この選手を外す</div>` : '';
         const teamLabel = tagTeam === 'teamA' ? 'チームA' : 'チームB';
@@ -3374,7 +3377,7 @@ function renderShowPrep() {
         const champBadge = G.titles?.world?.championId === c.id ? ' <span style="color:var(--gold);font-size:9px">👑</span>' : '';
         const hoverEvts = isAssigned
           ? ` onmouseenter="_spHighlightSwap(${c.id})" onmouseleave="_spClearHighlight()"` : '';
-        return `<div class="${cls}" onclick="_spSelectFighter(${i},'${pickerSide}',${c.id})"${hoverEvts}>${portraitImg(c.id, 24)}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span>${champBadge}<span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
+        return `<div class="${cls}" onclick="_spSelectFighter(${i},'${pickerSide}',${c.id})"${hoverEvts}>${portraitImg(c.id, 24, '', 'roster')}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span>${champBadge}<span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
       }).join('');
       const removeRow = curInSide > 0 ? `<div class="sp-picker-row" onclick="_spSelectFighter(${i},'${pickerSide}',0)" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">✕ この選手を外す</div>` : '';
       pickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${pickerSide === 'left' ? '赤コーナー' : '青コーナー'}選手を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">閉じる</span></div><div class="sp-picker-list">${removeRow}${rows}</div>`;
@@ -10222,8 +10225,12 @@ function _renderPrologueBlock(prologue, chapters) {
     const portraitInner = portraitUrl
       ? `<img src="${portraitUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover">`
       : `<span>${f.surname}</span>`;
-    // U7 §2-C: 顔が出ているなら押せば選手詳細が開く（引退・退団した選手も含む）
-    html += `<div class="${cardCls}" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'chronicle')">
+    // U7 §2-C: 開けるデータがある選手だけ押せるようにする。
+    // 旗揚げ世代は退団・引退で roster から消えると chronicle.fighterArchive にしか
+    // 残らず、その中身は年代記用の抜粋なので選手詳細は出せない
+    const open = (typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(f.id))
+      ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)})"` : '';
+    html += `<div class="${cardCls}"${open}>
       <div class="chron-prologue-portrait">${portraitInner}</div>
       <div class="chron-prologue-name">${f.name}</div>
       <div class="chron-prologue-style">${styleLabel} / ${roleLabel}</div>
@@ -10484,8 +10491,9 @@ function _renderDbChronicle() {
   const _buildAcePortrait = (a, isDualPortrait) => {
     const pUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(a.id || 0, a.peakOVR || 0) : '';
     const letter = Engine.chronicle._getSurname(a.name).charAt(0);
-    // U7 §2-C: 顔が出ているなら押せば選手詳細が開く
-    const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(a.id) || 0},'chronicle')"`;
+    // U7 §2-C: 開けるデータがある選手だけ押せるようにする（過去のエースは居ないことがある）
+    const open = (typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(a.id))
+      ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(a.id) || 0})"` : '';
     if (isDualPortrait) {
       const img = pUrl
         ? `<img src="${pUrl}" onerror="this.remove()" alt=""><span class="chron-dual-portrait-letter" style="display:none">${letter}</span>`
@@ -10688,9 +10696,12 @@ function _renderDbChronicle() {
       else if (isVeteran) roleTag = `<div class="chron-gen-role-tag chron-gen-role-veteran">◇ ベテラン</div>`;
       else roleTag = `<div class="chron-gen-role-tag chron-gen-role-strength">◆ 実力副官</div>`;
       const memberClass = `chron-gen-member${isIdol ? ' idol' : ''}${isRising ? ' rising' : ''}${isVeteran ? ' veteran' : ''}`;
-      // U7 §2-C: 顔を押せば選手詳細。名前は殿堂リンクが載ることがあるので顔に付ける
+      // U7 §2-C: 顔を押せば選手詳細。名前は殿堂リンクが載ることがあるので顔に付ける。
+      // 既に居なくなった選手は開けるデータが無いので手を付けない（無反応を作らない）
+      const pOpen = (typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(p.id))
+        ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(p.id)})"` : '';
       html += `<li class="${memberClass}">
-        <div class="chron-gen-portrait" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(p.id)},'chronicle')">${imgHtml}</div>
+        <div class="chron-gen-portrait"${pOpen}>${imgHtml}</div>
         <div class="chron-gen-info">
           ${roleTag}
           <div class="chron-gen-name">${pNameHtml}</div>

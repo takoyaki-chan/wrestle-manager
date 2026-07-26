@@ -157,7 +157,6 @@ const MUST_OPEN = [
   ['社長室 レンタル中ストリップ', () => fnBody(uiRender, 'function _renderShachoshitsuWallRentals')],
   ['年代記 序章「旗揚げ世代」', () => fnBody(uiRender, 'function _renderPrologueBlock')],
   ['年代記 この時代の同期', () => around(uiRender, 'const memberClass = `chron-gen-member', 200, 1200)],
-  ['旗揚げドラフト 設立メンバー', () => around(uiRender, 'draft-fc fixed', 400, 1400)],
   ['ジュニアT ブラケット', () => fnBody(uiCommon, 'function _jtcFx')],
   ['天頂戦 ブラケット', () => fnBody(uiCommon, 'function _tcCircleFx')],
 ];
@@ -179,6 +178,45 @@ MUST_OPEN.forEach(([label, get], idx) => {
 });
 
 // ─────────────────────────────────────────────────────────────
+// 3-B. 開けない相手には手を付けない（無反応を作らない）
+//      findFighter は roster/FA/スカウト/AI団体/引退直後 しか引かない。
+//      年代記の退団者(fighterArchive だけ)や旗揚げの候補(ALL_CHARS からその場生成)は
+//      引けないので、クリックを付けると「押せそうなのに無反応」になる。
+// ─────────────────────────────────────────────────────────────
+
+section('16. canOpenFighterPopup がある', () => {
+  assert.ok(/function canOpenFighterPopup/.test(uiCommon), 'canOpenFighterPopup が無い');
+  const body = around(uiCommon, 'function canOpenFighterPopup', 0, 500);
+  assert.ok(/findFighter\(/.test(body), 'findFighter で実在を確かめていない');
+});
+
+section('17. 年代記のクリックは canOpenFighterPopup で守られている', () => {
+  // CSS 定義と同名なので、描画側だけを指す文字列で拾う
+  [['序章', 'const cardCls = `chron-prologue-card'],
+   ['同期', 'const memberClass = `chron-gen-member'],
+   ['エース', 'const _buildAcePortrait']].forEach(([label, anchor]) => {
+    const body = around(uiRender, anchor, 100, 1400);
+    assert.ok(body, `${label} の描画箇所が見つからない (${anchor})`);
+    assert.ok(/canOpenFighterPopup\(/.test(body),
+      `${label} が無条件にクリックを付けている。既に居ない選手で無反応になる`);
+  });
+});
+
+section('18. 旗揚げドラフトの設立メンバーにはクリックを付けない', () => {
+  const body = around(uiRender, 'draft-fc fixed', 400, 900);
+  assert.ok(body, 'draft-fc fixed が見つからない');
+  assert.ok(!/showFighterPopup\(/.test(body),
+    '旗揚げ時点の選手は G のどこにも居ないので開けない。' +
+    'カード自体が全ステータス＋寸評を載せた詳細表示なので、そもそも要らない');
+});
+
+section('19. 契約更改の結果は roster 決め打ちで引かない', () => {
+  const body = fnBody(uiCommon, 'function showContractResultModal');
+  assert.ok(!/portraitImg\([^)]*'roster'\)/.test(body),
+    "引退・退団した選手が並ぶので 'roster' では引けない。自動探索にすること");
+});
+
+// ─────────────────────────────────────────────────────────────
 // 4. 既にあるものを壊さない（回帰）
 // ─────────────────────────────────────────────────────────────
 
@@ -191,7 +229,7 @@ const KEEP_OPEN = [
 ];
 
 KEEP_OPEN.forEach(([label, src, marker], idx) => {
-  section(`${6 + MUST_OPEN.length + idx}. ${label} の選手詳細が消えていない`, () => {
+  section(`${20 + idx}. ${label} の選手詳細が消えていない`, () => {
     const body = fnBody(src, marker);
     assert.ok(body, `${marker} が見つからない`);
     assert.ok(/showFighterPopup\(/.test(body), '統一の巻き添えで詳細リンクが消えている');

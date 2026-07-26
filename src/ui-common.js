@@ -3239,6 +3239,17 @@ function findFighter(fighterId, source) {
   return null;
 }
 
+/** 選手詳細を開けるだけのデータが今あるか。
+ *  年代記や旗揚げドラフトには「もうゲームに存在しない選手」が並ぶ。
+ *  findFighter は roster/FA/スカウト/AI団体/引退直後 しか見ないので、
+ *  chronicle.fighterArchive しか残っていない選手や、ALL_CHARS から
+ *  その場で組み立てているドラフト候補は引けず、押しても**無反応**になる。
+ *  「押せそうなのに何も起きない」を作らないために、開ける相手にだけ手を付ける。 */
+function canOpenFighterPopup(fighterId) {
+  if (fighterId == null || typeof G === 'undefined') return false;
+  return !!findFighter(Number(fighterId));
+}
+
 function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const c = findFighter(fighterId, source);
   if (!c) return;
@@ -14604,7 +14615,7 @@ function showContractResultModal(results, salaryChanges, onDone) {
         else                                         dest = '→ フリーエージェント';
       }
       deskHtml += `<div class="neg-result-row">
-        ${portraitImg(r.fighterId, 40, '', 'roster')}
+        ${portraitImg(r.fighterId, 40, '', 'contractResult')}
         <span style="font-size:13px;color:#2a2318">${r.fighterName}</span>
         <span style="font-size:11px;color:rgba(42,35,24,0.55);margin-left:auto">${dest}</span>
       </div>`;
@@ -14623,7 +14634,7 @@ function showContractResultModal(results, salaryChanges, onDone) {
       if (r.negotiatedDelta !== 0) breakdown.push(`交渉 ${negotiatedText}`);
       if (r.baselineDelta !== 0) breakdown.push(`契約基準 ${baselineText}`);
       deskHtml += `<div class="neg-result-row">
-        ${portraitImg(r.fighterId, 40, '', 'roster')}
+        ${portraitImg(r.fighterId, 40, '', 'contractResult')}
         <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
           <span style="font-size:13px;color:#2a2318">${r.fighterName}</span>
           ${breakdown.length > 0
