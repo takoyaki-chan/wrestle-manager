@@ -160,6 +160,38 @@ section('10. 秋4団体戦がヘッドレスで champion まで完走する', ()
   assert.ok((G.autumnWar.results || []).length >= 3, `results が少なすぎる (${(G.autumnWar.results || []).length})`);
 });
 
+// ─────────────────────────────────────────────────────────────
+// (4) 開発ツールが localStorage を使い切らない
+//     チェックポイントは早送りのたびに1件増え、1件がセーブ1個ぶんの大きさ。
+//     無制限に貯めると quota を使い切り、保存も早送りも出来なくなる（実機で発生）。
+// ─────────────────────────────────────────────────────────────
+
+section('11. チェックポイントの保持上限がある', () => {
+  const m = devTools.match(/const DEV_CHECKPOINT_MAX = (\d+)/);
+  assert.ok(m, 'DEV_CHECKPOINT_MAX が無い＝無制限に貯まる');
+  const max = parseInt(m[1], 10);
+  assert.ok(max >= 1 && max <= 20, `保持上限 ${max} が現実的でない`);
+  assert.ok(/function pruneCheckpoints/.test(devTools), 'pruneCheckpoints が無い');
+});
+
+section('12. 保存が上限に当たったら消して再試行する', () => {
+  const at = devTools.indexOf('function saveCheckpoint');
+  assert.ok(at > 0, 'saveCheckpoint が見つからない');
+  const body = devTools.slice(at, at + 1200);
+  assert.ok(/pruneCheckpoints\(/.test(body), '保存前に古い分を消していない');
+  assert.ok(/try \{[\s\S]{0,120}setItem[\s\S]{0,120}catch/.test(body),
+    'setItem を裸で呼んでいる。上限に当たると例外がそのまま出る');
+  assert.ok(/for \(let keep/.test(body), '残す件数を減らしながら再試行していない');
+});
+
+section('13. 保存領域を空ける手段がUIにある', () => {
+  assert.ok(/data-dev-clear/.test(devTools), '「保存を全部消す」ボタンが無い');
+  assert.ok(/\[data-dev-clear\]'\)\.addEventListener/.test(devTools), 'ボタンのハンドラが無い');
+  const saveHandler = devTools.match(/\[data-dev-save\]'\)\.addEventListener\([\s\S]{0,300}?\);\n/);
+  assert.ok(saveHandler && /catch/.test(saveHandler[0]),
+    '「現在地を保存」が失敗を握っていない。上限時に画面へ理由が出ない');
+});
+
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (10 sections)');
+console.log('ALL PASS (13 sections)');

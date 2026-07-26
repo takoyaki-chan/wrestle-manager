@@ -19,12 +19,40 @@
     for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key && key.startsWith(DEV_CHECKPOINT_PREFIX)) keys.push(key); }
     return keys.sort().reverse();
   }
-  function saveDevAuto() { try { localStorage.setItem(DEV_AUTOSAVE_KEY, Storage.serialize(G, '開発用オートセーブ')); } catch (e) { console.warn('[WM Dev] autosave failed', e); } }
+  // チェックポイントは1件でセーブ1個ぶんの大きさがある。早送りするたびに1件増えるので、
+  // 無制限に貯めると localStorage の上限を使い切り、**保存も早送りも出来なくなる**
+  // (2026-07-26 実機で発生: setItem quota exceeded)。新しい方から一定数だけ残す。
+  const DEV_CHECKPOINT_MAX = 8;
+  /** 新しい方から keep 件だけ残して古いチェックポイントを消す。消した件数を返す */
+  function pruneCheckpoints(keep) {
+    const limit = Math.max(0, keep == null ? DEV_CHECKPOINT_MAX : keep);
+    const stale = checkpointKeys().slice(limit); // checkpointKeys() は新しい順
+    stale.forEach(key => { try { localStorage.removeItem(key); } catch (_e) {} });
+    return stale.length;
+  }
+  function saveDevAuto() {
+    const write = () => localStorage.setItem(DEV_AUTOSAVE_KEY, Storage.serialize(G, '開発用オートセーブ'));
+    try { write(); return; } catch (e) {
+      // 上限に当たったら古いチェックポイントを捨てて1度だけやり直す
+      if (pruneCheckpoints(2) > 0) { try { write(); return; } catch (_e2) {} }
+      console.warn('[WM Dev] autosave failed', e);
+    }
+  }
   // Redirect every existing auto-save call only while the hidden mode is active.
   Storage.autoSave = function () { return active ? saveDevAuto() : originalAutoSave(); };
   function saveCheckpoint(label) {
     const safeLabel = String(label || '確認用').trim().slice(0, 32) || '確認用';
-    localStorage.setItem(`${DEV_CHECKPOINT_PREFIX}${String(Date.now())}_${safeLabel}`, Storage.serialize(G, safeLabel));
+    const key = `${DEV_CHECKPOINT_PREFIX}${String(Date.now())}_${safeLabel}`;
+    const payload = Storage.serialize(G, safeLabel);
+    // 入るまで残す件数を減らしながら試す。0件でも入らなければ諦めて理由を伝える
+    let saved = false;
+    for (let keep = DEV_CHECKPOINT_MAX - 1; keep >= 0 && !saved; keep--) {
+      pruneCheckpoints(keep);
+      try { localStorage.setItem(key, payload); saved = true; } catch (_e) { /* 次はもっと消す */ }
+    }
+    if (!saved) {
+      throw new Error('チェックポイントを保存できませんでした（ブラウザの保存領域が上限です）。古い保存を全部消しても足りないので、ブラウザのサイトデータを削除してください。早送り自体は完了しています。');
+    }
     saveDevAuto();
     return safeLabel;
   }
@@ -238,12 +266,13 @@
     const checkpoints = checkpointKeys().map(key => { try { const s = Storage._parseRaw(localStorage.getItem(key)); return { key, label: s._saveName || key.slice(DEV_CHECKPOINT_PREFIX.length), phase: phaseLabel(s) }; } catch (_) { return null; } }).filter(Boolean);
     const presets = presetRows().map(([name, season, week]) => `<button data-dev-preset="${season}:${week}:${esc(name)}">${esc(name)}<small>S${season} W${week}</small></button>`).join('');
     const restores = checkpoints.length ? checkpoints.map(c => `<button data-dev-restore="${esc(c.key)}">${esc(c.label)}<small>${esc(c.phase)}</small></button>`).join('') : '<div class="wm-dev-empty">まだ開発用チェックポイントはありません。</div>';
-    panel.innerHTML = `<div class="wm-dev-backdrop" data-dev-close></div><section class="wm-dev-card" role="dialog" aria-modal="true" aria-label="開発者モード"><header><div><b>DEVELOPER MODE</b><span>通常オートセーブは保護されています</span></div><button data-dev-close aria-label="閉じる">×</button></header><p class="wm-dev-status">${esc(message || `${phaseLabel(G)} — すべての自動選択は既定値で処理します。`)}</p><div class="wm-dev-grid"><label>シーズン<input id="wmDevSeason" type="number" min="1" value="${G.season || 1}"></label><label>週<input id="wmDevWeek" type="number" min="1" max="48" value="${G.week || 1}"></label></div><button class="wm-dev-primary" data-dev-go>指定週まで高速進行して保存</button><div class="wm-dev-section"><b>大会プリセット</b><div class="wm-dev-buttons">${presets}</div></div><div class="wm-dev-section"><b>イベント即時発火</b><div class="wm-dev-buttons"><button data-dev-fire="forward">挑戦の直訴（自団体→他団体）<small>条件を無視して即表示</small></button><button data-dev-fire="inverse">挑戦の直訴（他団体→自団体）<small>条件を無視して即表示</small></button></div></div><div class="wm-dev-section"><b>検証用チェックポイント</b><div class="wm-dev-buttons"><button data-dev-base>開発開始地点へ戻す</button><button data-dev-save>現在地を保存</button>${restores}</div></div><p class="wm-dev-note">開く: Ctrl + Shift + D ／ 高速進行中は興行・選択イベントを既定値で自動処理します。通常のオートセーブと手動セーブには書き込みません。</p></section>`;
+    panel.innerHTML = `<div class="wm-dev-backdrop" data-dev-close></div><section class="wm-dev-card" role="dialog" aria-modal="true" aria-label="開発者モード"><header><div><b>DEVELOPER MODE</b><span>通常オートセーブは保護されています</span></div><button data-dev-close aria-label="閉じる">×</button></header><p class="wm-dev-status">${esc(message || `${phaseLabel(G)} — すべての自動選択は既定値で処理します。`)}</p><div class="wm-dev-grid"><label>シーズン<input id="wmDevSeason" type="number" min="1" value="${G.season || 1}"></label><label>週<input id="wmDevWeek" type="number" min="1" max="48" value="${G.week || 1}"></label></div><button class="wm-dev-primary" data-dev-go>指定週まで高速進行して保存</button><div class="wm-dev-section"><b>大会プリセット</b><div class="wm-dev-buttons">${presets}</div></div><div class="wm-dev-section"><b>イベント即時発火</b><div class="wm-dev-buttons"><button data-dev-fire="forward">挑戦の直訴（自団体→他団体）<small>条件を無視して即表示</small></button><button data-dev-fire="inverse">挑戦の直訴（他団体→自団体）<small>条件を無視して即表示</small></button></div></div><div class="wm-dev-section"><b>検証用チェックポイント</b><div class="wm-dev-buttons"><button data-dev-base>開発開始地点へ戻す</button><button data-dev-save>現在地を保存</button><button data-dev-clear>保存を全部消す<small>保存領域が足りないとき</small></button>${restores}</div></div><p class="wm-dev-note">開く: Ctrl + Shift + D ／ 高速進行中は興行・選択イベントを既定値で自動処理します。通常のオートセーブと手動セーブには書き込みません。</p></section>`;
     panel.querySelectorAll('[data-dev-close]').forEach(el => el.addEventListener('click', close));
     panel.querySelector('[data-dev-go]').addEventListener('click', () => { try { fastForward(panel.querySelector('#wmDevSeason').value, panel.querySelector('#wmDevWeek').value); } catch (e) { renderPanel(e.message); } });
     panel.querySelectorAll('[data-dev-preset]').forEach(el => el.addEventListener('click', () => { const [season, week, label] = el.dataset.devPreset.split(':'); try { fastForward(season, week, label); } catch (e) { renderPanel(e.message); } }));
     panel.querySelectorAll('[data-dev-fire]').forEach(el => el.addEventListener('click', () => { try { fireChallengeRequest(el.dataset.devFire === 'inverse'); } catch (e) { open(); renderPanel(e.message); } }));
-    panel.querySelector('[data-dev-save]').addEventListener('click', () => renderPanel(`「${saveCheckpoint(phaseLabel(G))}」を保存しました。`));
+    panel.querySelector('[data-dev-save]').addEventListener('click', () => { try { renderPanel(`「${saveCheckpoint(phaseLabel(G))}」を保存しました。`); } catch (e) { renderPanel(e.message); } });
+    panel.querySelector('[data-dev-clear]').addEventListener('click', () => { const n = pruneCheckpoints(0); renderPanel(`チェックポイントを${n}件消しました。開発開始地点と開発用オートセーブは残しています。`); });
     panel.querySelector('[data-dev-base]').addEventListener('click', () => { try { restore(localStorage.getItem(DEV_SESSION_BASE_KEY)); renderPanel('開発開始地点へ戻しました。'); } catch (e) { renderPanel(e.message); } });
     panel.querySelectorAll('[data-dev-restore]').forEach(el => el.addEventListener('click', () => { try { restore(localStorage.getItem(el.dataset.devRestore)); renderPanel('チェックポイントを復元しました。'); } catch (e) { renderPanel(e.message); } }));
   }
