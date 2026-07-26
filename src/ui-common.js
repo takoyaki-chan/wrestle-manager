@@ -2027,7 +2027,9 @@ function _renderRetirementPopup() {
   const fk = (r.farewellKind && typeof FAREWELL_KIND_TEXT !== 'undefined')
     ? FAREWELL_KIND_TEXT[r.farewellKind] : null;
   const title = fk ? fk.title : (isInjury ? '無 念 の 引 退' : '旅 　 立 ち');
-  const sub = isInjury ? `FAREWELL ・ INJURY` : `FAREWELL ・ ${careerYears} YEARS`;
+  // 型の見出しには「引退」の語が入らないので、**副題で必ず引退だと分かるようにする**
+  const sub = fk ? '現 役 引 退 ・ FAREWELL'
+    : (isInjury ? `FAREWELL ・ INJURY` : `FAREWELL ・ ${careerYears} YEARS`);
   const meta = `年齢 ${f.age || '—'} ・ 現役期間 ${careerYears}年間`;
 
   // 引退選手のキャリアハイライトをB型ステージ下に挟む
