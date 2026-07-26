@@ -52,7 +52,9 @@ function _newsStoryClickable(story) {
 
 // v1.9: Roster sort state
 let _rosterSortKey = 'ovr';
-let _rosterDetailOpenId = null; // 現在展開中のカードID
+// 展開中のカードID(複数可)。**選手を見比べるための画面**なので、1枚しか開けないと
+// 「この子とこの子どちらを追い込むか」を並べて確認できない(2026-07-26 Keisuke)。
+const _rosterDetailOpenIds = new Set();
 function setRosterSort(key) { _rosterSortKey = key; renderRoster(); }
 
 // v2.1: Week screen sort state
@@ -2013,7 +2015,7 @@ function _renderRosterDetailPanel(c, hired) {
   tab3 += '</div>';
 
   // === Assemble ===
-  const _isOpen = _rosterDetailOpenId === c.id;
+  const _isOpen = _rosterDetailOpenIds.has(c.id);
   let html = `<div class="rd-detail${_isOpen?' open':''}" id="roster-detail-${c.id}" onclick="event.stopPropagation()"><div class="rd-layout">
     ${leftCol}
     <div class="rd-info">
@@ -2217,7 +2219,7 @@ function renderRoster() {
       });
       coachInlineHtml = `<select class="rd-coach-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();changeCoachAssign(${c.id}, Number(this.value))"${c.injury?' disabled':''}>${miniOpts}</select>`;
     }
-    html += `<div class="rd-card${_rosterDetailOpenId===c.id?' expanded':''}" onclick="toggleRosterDetail(${c.id})">
+    html += `<div class="rd-card${_rosterDetailOpenIds.has(c.id)?' expanded':''}" onclick="toggleRosterDetail(${c.id})">
       <div class="rd-card-inner">
         <div onclick="event.stopPropagation();showFighterPopup(${c.id},'roster')" style="cursor:pointer;flex-shrink:0">
           ${portraitImg(c.id, 52, '', true)}
@@ -6237,17 +6239,15 @@ function changeCoachAssign(charId, newCoachId) {
 function toggleRosterDetail(charId) {
   const panel = document.getElementById(`roster-detail-${charId}`);
   if (!panel) return;
-  const isOpen = _rosterDetailOpenId === charId;
-  // Close currently open panel
-  if (_rosterDetailOpenId !== null) {
-    const prev = document.getElementById(`roster-detail-${_rosterDetailOpenId}`);
-    if (prev) { prev.classList.remove('open'); const pc = prev.closest('.rd-card'); if (pc) pc.classList.remove('expanded'); }
-    _rosterDetailOpenId = null;
-  }
-  if (!isOpen) {
-    _rosterDetailOpenId = charId;
+  // 複数同時に開ける。押したカードだけを開閉し、他は閉じない
+  const card = panel.closest('.rd-card');
+  if (_rosterDetailOpenIds.has(charId)) {
+    _rosterDetailOpenIds.delete(charId);
+    panel.classList.remove('open');
+    if (card) card.classList.remove('expanded');
+  } else {
+    _rosterDetailOpenIds.add(charId);
     panel.classList.add('open');
-    const card = panel.closest('.rd-card');
     if (card) card.classList.add('expanded');
   }
 }

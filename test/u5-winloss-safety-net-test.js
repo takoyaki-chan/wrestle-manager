@@ -1289,7 +1289,7 @@ console.log('  [skip] fighter popup overall record / last-5 (embedded in showFig
   const build = new Function(
     'Engine', 'G', 'ALL_CHARS', 'getFullUrl', 'getCharCoach', 'getSalary', 'getGrowthTendency',
     'getPotentialPct', 'getPotentialLabel', 'getCoachAssignees', 'COACH_MAX_ASSIGN',
-    `let _rosterDetailOpenId = null;
+    `const _rosterDetailOpenIds = new Set();
      let _rosterDetailTab = {};
      const STAT_TIPS = {};
      ${uiFn('escHtml')}
@@ -1299,7 +1299,7 @@ console.log('  [skip] fighter popup overall record / last-5 (embedded in showFig
      function _popColor() { return '#000'; }
      function _condColor() { return '#000'; }
      ${uiRenderFn('_renderRosterDetailPanel')}
-     return { _renderRosterDetailPanel, setOpenId(id) { _rosterDetailOpenId = id; } };`
+     return { _renderRosterDetailPanel, setOpenId(id) { _rosterDetailOpenIds.clear(); if (id != null) _rosterDetailOpenIds.add(id); } };`
   );
 
   function makeBundle(opts) {
