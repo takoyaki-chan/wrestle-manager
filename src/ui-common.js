@@ -1323,9 +1323,13 @@ function showNegotiatePopup(orgId, fighterId) {
   html += `</div>`;
 
   // Fighter portrait + info
+  // U7: 1人の去就をここで決める場面なので、丸い小アイコンではなく 2:3 のアッパーを
+  // S(108×162) で見せる(§2 の梯子)。押せば選手詳細に戻れる
+  const fUpper = (typeof getUpperUrl === 'function') ? getUpperUrl(fighter.id) : '';
   const fUrl = getPortraitUrl(fighter.id);
   html += `<div style="display:flex;align-items:center;gap:12px;margin:16px 8px 12px;padding:12px;background:var(--bg-card);border:1px solid ${rc}33;border-radius:8px">`;
-  if (fUrl) html += `<img src="${fUrl}" style="width:80px;height:80px;border-radius:50%;border:3px solid ${rc};object-fit:cover" alt="">`;
+  if (fUpper) html += `<img src="${fUpper}" class="u7-poach-upper" style="border-color:${rc}" onclick="event.stopPropagation();showFighterPopup(${Number(fighter.id)})" onerror="this.style.display='none'" alt="">`;
+  else if (fUrl) html += `<img src="${fUrl}" style="width:80px;height:80px;border-radius:50%;border:3px solid ${rc};object-fit:cover" alt="">`;
   else html += `<div style="width:80px;height:80px;border-radius:50%;border:3px solid ${rc};display:flex;align-items:center;justify-content:center;background:${rc}11;font-size:30px;font-weight:900;color:${rc}">${fighter.name.charAt(0)}</div>`;
   html += `<div style="flex:1"><div style="font-size:16px;font-weight:700;color:var(--text-main)">${fighter.name}</div>`;
   html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">OVR ${fOvr} ・ ${fighter.style || '?'}</div></div></div>`;
@@ -3214,12 +3218,17 @@ function getRentalQuote(char) {
 // ── Fighter Detail Popup ──
 // source: 'roster' | 'free' | 'ai:{orgId}' | 'draft'
 function findFighter(fighterId, source) {
-  if (source === 'roster') return G.roster.find(c => c.id === fighterId);
-  if (source === 'free') return G.freeAgents.find(c => c.id === fighterId);
-  if (source === 'scout') return (G.scoutCandidates || []).find(c => c.id === fighterId);
-  if (source && source.startsWith('ai:')) {
+  // source は「まずここを見ろ」というヒントであって、**そこに居なければ諦める**という
+  // 意味ではない。決め打ちで return していたため、'roster' を渡した画面に他団体の選手が
+  // 並ぶと(試合カードのメイン、対抗戦、ゲスト参戦など)引けずに **押しても無反応**になっていた。
+  // 見つからなければ下の自動探索へ落とす(2026-07-26)。
+  if (source === 'roster') { const f = G.roster.find(c => c.id === fighterId); if (f) return f; }
+  else if (source === 'free') { const f = G.freeAgents.find(c => c.id === fighterId); if (f) return f; }
+  else if (source === 'scout') { const f = (G.scoutCandidates || []).find(c => c.id === fighterId); if (f) return f; }
+  else if (source && source.startsWith('ai:')) {
     const orgId = source.slice(3);
-    return G.aiOrgs?.[orgId]?.roster?.find(f => f.id === fighterId);
+    const f = G.aiOrgs?.[orgId]?.roster?.find(x => x.id === fighterId);
+    if (f) return f;
   }
   // Auto-detect: search roster → free → scout → all AI orgs
   let f = G.roster.find(c => c.id === fighterId);
@@ -4417,7 +4426,7 @@ function renderMatchPreview() {
         const pw = f.pw||0, sp2 = f.sp||0, te = f.te||0, st = f.st||0;
         const isChamp = G.titles?.world?.championId === f.id;
         return `<div class="smc-tag-fighter">
-          <div class="upper-wrap">${upper ? `<img src="${upper}" alt="${f.name}" onerror="this.style.display='none'">` : portraitImg(f.id, 72)}</div>
+          <div class="upper-wrap" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)})">${upper ? `<img src="${upper}" alt="${f.name}" onerror="this.style.display='none'">` : portraitImg(f.id, 40)}</div>
           <div class="smc-tag-info">
             ${isChamp ? '<span class="smc-tag-champ-mark">👑</span>' : ''}
             <div class="fname">${f.name}</div>
@@ -14980,8 +14989,16 @@ function _jtcFcHpBlock(side, final, max, pct) {
 /** フォーカスカード本体(アッパー画像対面・左右とも非反転+開始HPバー+観戦/スキップ)。
  * extraHtml があれば names 行の直後（大会固有のセリフ・案内）に挿入する。 */
 function _jtcFcCore({ label, f1, f2, own1, own2, upperL, upperR, hpLeftBlock, hpRightBlock, hpMidLabel, extraHtml, onWatch, onSkip, onLeftDetail, onRightDetail, skipLabel }) {
-  const leftDetail = onLeftDetail ? ` role="button" tabindex="0" onclick="${onLeftDetail}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onLeftDetail}}"` : '';
-  const rightDetail = onRightDetail ? ` role="button" tabindex="0" onclick="${onRightDetail}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onRightDetail}}"` : '';
+  // U7 §2-C: 顔と名前が出ているなら押せば詳細が開く。
+  // onLeftDetail/onRightDetail は引数として用意されていたが**どの呼び出し元も渡しておらず**、
+  // ジュニアT も天頂戦も次戦カードが一切押せなかった(2026-07-26 Keisuke 指摘)。
+  // 渡されなければ id から自前で組む。以後どの大会から呼んでも付け忘れが起きない。
+  const _fallbackDetail = f => (f && f.id != null)
+    ? `event.stopPropagation();showFighterPopup(${Number(f.id)})` : '';
+  const _l = onLeftDetail || _fallbackDetail(f1);
+  const _r = onRightDetail || _fallbackDetail(f2);
+  const leftDetail = _l ? ` role="button" tabindex="0" style="cursor:pointer" onclick="${_l}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${_l}}"` : '';
+  const rightDetail = _r ? ` role="button" tabindex="0" style="cursor:pointer" onclick="${_r}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${_r}}"` : '';
   const ovr1Cls = typeof valueClassOvr === 'function' ? valueClassOvr(f1.ovr) : '';
   const ovr2Cls = typeof valueClassOvr === 'function' ? valueClassOvr(f2.ovr) : '';
   let h = `<div class="jtc-fc jt-su">`;

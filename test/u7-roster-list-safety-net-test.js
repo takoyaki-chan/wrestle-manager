@@ -51,7 +51,7 @@ section('0. ベースラインに §2-C（一覧の顔）が書かれている',
 // 1人だけを見せる場面。§2-C の管轄外なので梯子から除外する。
 // **行番号ではなく呼び出しの字面**で持つ（行番号は編集のたびにずれて、除外が別の行に掛かる）
 const SOLO_CALLS = [
-  'portraitImg(f.id, 72)',              // 試合前フレーバー（単独）
+  'portraitImg(f.id, 40)', // タッグ試合カードの顔（アッパーが無いときの代替）
   'portraitImg(charL.id, imgW)',        // 対置（U3-B が段を決める）
   'portraitImg(charR.id, imgW)',
   'portraitImg(f.id, 96)',              // 単独の話し手
@@ -250,6 +250,26 @@ section('19c-2. showFighterPopup がクリックを握り潰さない', () => {
   assert.ok(!/_popupQueue\.push/.test(head),
     'showFighterPopup がまだキューに積んで return する。オーバーレイの中(新聞・トーナメント表・' +
     '式典)から押したクリックが黙って捨てられる。呼び出し元は全部ユーザー操作なのでキューは要らない');
+});
+
+section('19c-3. source が外れても諦めずに探す', () => {
+  const at = uiCommon.indexOf('function findFighter(');
+  assert.ok(at > 0, 'findFighter が見つからない');
+  const body = uiCommon.slice(at, at + 1200);
+  assert.ok(!/if \(source === 'roster'\) return G\.roster\.find/.test(body),
+    "source='roster' で決め打ち return している。他団体の選手が並ぶ画面(試合カードの" +
+    'メイン・対抗戦・ゲスト参戦)で押しても無反応になる。見つからなければ自動探索へ落とすこと');
+  assert.ok(/const f = G\.roster\.find/.test(body), 'roster ヒントの優先探索が消えている');
+});
+
+section('19c-4. 次戦カードの選手は名前も画像も押せる', () => {
+  const at = uiCommon.indexOf('function _jtcFcCore(');
+  assert.ok(at > 0, '_jtcFcCore が見つからない');
+  const body = uiCommon.slice(at, at + 2200);
+  assert.ok(/_fallbackDetail/.test(body),
+    'onLeftDetail/onRightDetail が渡されなかったときの既定が無い。' +
+    '引数の口はあるのに誰も渡さず、ジュニアTも天頂戦も次戦カードが押せなかった');
+  assert.ok(/showFighterPopup\(/.test(body), '既定のクリックが詳細を開いていない');
 });
 
 section('19d. 選手詳細は最前面に出る', () => {
