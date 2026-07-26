@@ -10436,6 +10436,51 @@ const CHALLENGE_REQUEST_NO_LINES = {
 };
 
 // v1.3-3: 引退セリフテンプレート（引退ルート×キャリア×性格で分岐）
+// ╔══════════════════════════════════════════════════════════╗
+// ║  幕切れの型 (retirement-drama-spec v0.2 §3-C)             ║
+// ╚══════════════════════════════════════════════════════════╝
+// 大舞台での重傷で選手生命が絶たれたときの、**状況を語る地の文**。
+// セリフ本体は RETIREMENT_LINES の性格別テーブルに任せる（地の文は性格で分けない）。
+//
+// **引退であって、死ではない。** 本人は生きていて、年代記にも殿堂にも残る。
+// 「あの日を最後に、彼女は上がらなくなった」という書き方にする。
+// 命に関わる表現は使わない。
+const FAREWELL_KIND_TEXT = {
+  pyrrhic: {
+    title: '勝 者 の 代 償',
+    lead: 'その試合に、彼女は勝った。',
+    body: '勝ち名乗りを受けることは、なかった。担架が運び込まれ、歓声が戸惑いに変わっていく。'
+        + '後日、医師の所見が団体に届く。もうリングには上がれない、と。',
+  },
+  defended: {
+    title: '守 り 抜 い て',
+    lead: 'ベルトは、守った。',
+    body: '防衛を告げるゴングの直後、王者はマットに崩れ落ちた。'
+        + '巻いたまま運ばれていく背中を、会場の誰もが見送るしかなかった。'
+        + '王座を返上する日が来ることを、このときはまだ誰も知らない。',
+  },
+  neverCrowned: {
+    title: '届 か な か っ た',
+    lead: 'あと一歩が、遠かった。',
+    body: '挑戦は実らず、そしてそれが最後の試合になった。'
+        + '結局、彼女は一度もベルトを腰に巻かないまま去ることになる。'
+        + '記録に残るのは、挑戦者としての名前だけだ。',
+  },
+  burntOut: {
+    title: '積 み 重 ね た 無 理',
+    lead: 'その体は、とうに限界を過ぎていた。',
+    body: '若い頃から追い込みを重ねた体だった。踏ん張りが効かず、崩れるように倒れた。'
+        + '請求書は、忘れた頃に届く。今日がその日だった。',
+  },
+  lastWin: {
+    title: '花 道 の 途 中 で',
+    lead: '引退を表明していた。最後の一勝だった。',
+    body: '勝った直後に、彼女は動けなくなった。'
+        + '予定されていた引退試合は、もう組めない。'
+        + '花道は、その途中で終わった。',
+  },
+};
+
 const RETIREMENT_LINES = {
   A1_champion: {
     normal: {
@@ -29701,7 +29746,7 @@ if (typeof module !== 'undefined' && module.exports) {
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
     CONTRACT_NEGOTIATION_LINES, RELEASE_INTERVIEW_LINES, CHALLENGE_LINES,
-    NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
+    NEGOTIATE_LINES, RETIREMENT_LINES, FAREWELL_KIND_TEXT, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES,
     AWARD_LINES, AUTUMN_WAR_MATCH_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, MILESTONE_LINES, FIRST_MEET_LINES, POST_MATCH_FLAVOR_LINES, getDialoguePool, pickDialogueLine,
     SLUMP_START_LINES, SLUMP_END_LINES,

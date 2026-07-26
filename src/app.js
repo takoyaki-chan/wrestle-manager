@@ -7285,13 +7285,13 @@ const App = {
       if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
         const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), Engine.coach.buildInjuryFlavorOpts(s, r.left.id));
-        if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury, retireType: li.retireType || null }); }
+        if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury, retireType: li.retireType || null, farewellKind: li.farewellKind || null }); }
       }
       const rc = roster.find(c => c.id === r.right.id);
       if (rc && !rc.isIntrusion) { // 乱入選手は怪我判定スキップ
         const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
         const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), Engine.coach.buildInjuryFlavorOpts(s, r.right.id));
-        if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType || null }); }
+        if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType || null, farewellKind: ri.farewellKind || null }); }
       }
     });
 

@@ -2022,11 +2022,22 @@ function _renderRetirementPopup() {
   const careerYears = f.careerSeasons || Math.max(1, (f.age || 17) - (f.debutAge || 17));
   const wins = f.wins || 0, losses = f.losses || 0, draws = f.draws || 0;
   const summary = r.summary || [];
-  const title = isInjury ? '無 念 の 引 退' : '旅 　 立 ち';
+  // C「壮絶な幕切れ」の型があれば見出しと地の文を差し替える。
+  // **引退であって死ではない**ので、命に関わる書き方はしない(spec v0.2 §3-C)
+  const fk = (r.farewellKind && typeof FAREWELL_KIND_TEXT !== 'undefined')
+    ? FAREWELL_KIND_TEXT[r.farewellKind] : null;
+  const title = fk ? fk.title : (isInjury ? '無 念 の 引 退' : '旅 　 立 ち');
   const sub = isInjury ? `FAREWELL ・ INJURY` : `FAREWELL ・ ${careerYears} YEARS`;
   const meta = `年齢 ${f.age || '—'} ・ 現役期間 ${careerYears}年間`;
 
   // 引退選手のキャリアハイライトをB型ステージ下に挟む
+  // 型ごとの地の文。セリフではないので白い吹き出しには入れない(ベースライン §3)
+  const farewellNarration = fk
+    ? `<div style="max-width:560px;margin:0 auto 14px;padding:12px 16px;border-left:2px solid rgba(200,180,150,0.25)">
+         <div style="font-size:14px;color:rgba(232,220,200,0.95);line-height:1.8;margin-bottom:6px">${escHtml(fk.lead)}</div>
+         <div style="font-size:13px;color:rgba(200,190,175,0.78);line-height:1.9">${escHtml(fk.body)}</div>
+       </div>`
+    : '';
   const careerHtml = summary.length > 0
     ? `<div style="max-width:560px;margin:0 auto 18px;background:rgba(20,18,15,0.55);border:1px solid rgba(200,180,150,0.12);border-radius:6px;padding:12px 16px">
          <div style="font-family:var(--font-label);font-size:10px;color:rgba(200,180,150,0.7);letter-spacing:2px;text-align:center;margin-bottom:8px">━━ ${careerYears}年間の軌跡 ━━</div>
@@ -2066,6 +2077,7 @@ function _renderRetirementPopup() {
     ${_mdlBSoloStage(f, { speaker: f.name, text: r.line, variant: 'soft', size: 'large' }, { sepia: true, meta })}
     ${noteHtml}
     ${statsRow}
+    ${farewellNarration}
     ${careerHtml}
     ${_mdlBActions(buttons)}
   `;

@@ -13169,6 +13169,7 @@ const Engine = {
       const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFAD2));
       const pendingInjuryRetirements = injuryRetirees.map(ir => {
         const route = ir.retireType === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
+        // C の型（あれば）。演出で見出しと地の文を差し替えるために持ち回る
         const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
         if (!retiredF) {
           console.warn('[WM] retired fighter lookup failed for injury popup', ir);
@@ -13188,7 +13189,7 @@ const Engine = {
             championWorryLine = worryPool[Engine.rng.int(lineRng, 0, worryPool.length - 1)];
           }
         }
-        return { fighter: retiredF, route, line, category, summary, injuryType: ir.injury?.type, wasChampion, championWorryLine };
+        return { fighter: retiredF, route, line, category, summary, injuryType: ir.injury?.type, wasChampion, championWorryLine, farewellKind: ir.farewellKind || null };
       }).filter(Boolean);
       if (pendingInjuryRetirements.length > 0) {
         s = { ...s, _pendingInjuryRetirements: pendingInjuryRetirements };
