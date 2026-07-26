@@ -192,6 +192,20 @@ section('14. 飾りが盤面を落とせない', () => {
   });
 });
 
+section('15. 相互の因縁は「強いほうの向き」で出す', () => {
+  // getRivalryLevel は相互の因縁を **弱いほうの向き** で評価する。
+  // そのままだと 80/45 のペアが 45 扱いで沈黙し、しかも相手が 10 まで下がると
+  // 「片側因縁」に分類されて強いほうが使われる —
+  // **相手が少し因縁を持っているほうが出にくい**という逆転が起きていた(2026-07-27)。
+  assert.ok(/const rivalry = Math\.max\(/.test(coreSrc),
+    '弱いほうの向きで判定している。片方が本気でも黙る');
+  assert.ok(/rel\[`\$\{leftId\}>\$\{rightId\}`\]/.test(coreSrc)
+    && /rel\[`\$\{rightId\}>\$\{leftId\}`\]/.test(coreSrc),
+    '両方向を見ていない');
+  // 数値(MQ等)の評価は従来のまま。セリフだけの話であること
+  assert.ok(!/mqBonus/.test(coreSrc), 'セリフの都合で数値評価に触れている');
+});
+
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (14 sections)');
+console.log('ALL PASS (15 sections)');

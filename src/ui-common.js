@@ -15291,8 +15291,21 @@ function _jtcFcHpBlock(side, final, max, pct) {
 function _rivalryPreMatchLines(leftId, rightId) {
   if (typeof Engine === 'undefined' || !Engine.title || typeof G === 'undefined') return null;
   const lvl = Engine.title.getRivalryLevel(G, leftId, rightId);
+  // 好敵手・宿怨は決着済みの関係。宣戦布告の場面ではない。
+  // (宿怨には専用のセリフを別途書く予定 — 2026-07-27 Keisuke)
   if (!lvl || lvl.isGoodRival || lvl.isBitterRival) return null;
-  const rivalry = lvl.rivalry || 0;
+
+  // **セリフは「強いほうの向き」で出す。**(2026-07-27 Keisuke 裁定)
+  // getRivalryLevel は相互の因縁を **弱いほうの向き** で評価するため、
+  // 片方が 80 でも相手が 45 なら 45 扱いになり、宣戦布告が出なかった。
+  // しかも相手が 10 まで下がると「片側因縁」に分類されて強いほうが使われるので、
+  // **相手が少し因縁を持っているほうが出にくい**という逆転まで起きていた。
+  // 誰か一人が本気なら、その人は宣戦布告する。数値(MQ等)の評価は従来のまま。
+  const rel = (G && G.relationships) || {};
+  const rivalry = Math.max(
+    (rel[`${leftId}>${rightId}`] || {}).rivalry || 0,
+    (rel[`${rightId}>${leftId}`] || {}).rivalry || 0,
+    lvl.rivalry || 0);
   if (rivalry < 50) return null;
 
   let attackerPool, defenderPool;
