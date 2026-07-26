@@ -10820,12 +10820,15 @@ const App = {
         const orgName = alert.org ? alert.org.name : '他団体';
         // 記事の {detail} は3本の本文すべてに嵌る形にする。
         // 「{name}が{detail}」に入る本文があるので、主語を含まない述語で書く。
-        // 小数は新聞に出さない（内部の刻みが表に出るとスプレッドシートに見える）
+        // **数字は新聞に出さない**（内部の刻みが表に出るとスプレッドシートに見える。
+        // 2026-07-26 Keisuke）。ブレークスルーの伸びは2〜4なので3段の定性表現に写す。
         const _stat = STAT_LABELS_JP[alert.stat] || (alert.stat || '').toUpperCase();
-        const _gain = Math.max(1, Math.round(+(alert.gain || 0)));
+        const _gain = Math.round(+(alert.gain || 0));
+        const _detail = _gain >= 4 ? `${_stat}を大きく伸ばした`
+          : _gain === 3 ? `${_stat}をはっきりと伸ばした`
+          : `${_stat}に確かな伸びを見せた`;
         App._pushNewsEvent({ type: 'breakthrough', characterId: alert.fighter?.id,
-          data: { name: alert.fighter?.name || '???', org: orgName,
-            detail: `${_stat}を${_gain}伸ばした` } });
+          data: { name: alert.fighter?.name || '???', org: orgName, detail: _detail } });
       } else if (alert.type === 'slump') {
         const orgName = alert.org ? alert.org.name : '他団体';
         App._pushNewsEvent({ type: 'slump', characterId: alert.fighter?.id,
