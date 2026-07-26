@@ -7217,12 +7217,25 @@ const Engine = {
       if (decayMax <= 0) return fighter;
       let f = { ...fighter };
       const notion = f.notionValue || { pw: f.pw, sp: f.sp, te: f.te, st: f.st, mn: f.mn };
+      // 天井(trainCap)も削る。**一度落ちた天井は戻らない**(2026-07-27 Keisuke)。
+      // 元の天井は「初めて衰退したとき」に控える。既存セーブでは衰えの履歴を捏造せず、
+      // その時点の天井を元の高さとして扱う。
+      const capRatio = GROWTH_CONFIG.wearCapDecayRatio || 0;
+      const hasCap = !!f.trainCap;
+      if (hasCap && capRatio > 0 && !f.trainCapOrigin) f.trainCapOrigin = { ...f.trainCap };
+      const cap = hasCap ? { ...f.trainCap } : null;
       ['pw', 'sp', 'te', 'st', 'mn'].forEach(s => {
         const rawLoss = decayMin + Math.round(Engine.rng.float(rng) * (decayMax - decayMin));
         const loss = Math.max(0, rawLoss - decayReduction);
         const floor = Math.round((notion[s] || 30) * RETIRE_CFG.decayFloor);
         f[s] = Math.max(floor, f[s] - loss);
+        if (cap && capRatio > 0) {
+          const capLoss = Math.round(loss * capRatio);
+          // 天井は現在値を下回らせない。下回ると伸びしろの表示が壊れる
+          cap[s] = Math.max(f[s], (cap[s] || f[s]) - capLoss);
+        }
       });
+      if (cap) f.trainCap = cap;
       return f;
     },
 

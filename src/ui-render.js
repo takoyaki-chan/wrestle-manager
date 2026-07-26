@@ -1919,11 +1919,17 @@ function _renderRosterDetailPanel(c, hired) {
       : pct >= 60 ? '<span style="color:#a07010">成長中</span>'
       : '<span style="color:#1a8a4a">伸びしろ大</span>';
     const col = STAT_COLORS[s];
+    // 消耗で失われた天井を、バーの右端から食い込ませる(2026-07-27 Keisuke)
+    const dv = (typeof statDecayView === 'function') ? statDecayView(c, s, 150) : { lostPts: 0 };
+    const lostBar = dv.lostPts > 0
+      ? `<div class="rd-stat-bar-lost" title="消耗で失われた伸びしろ ${dv.lostPts}" style="width:${dv.lostPct}%;right:${dv.lostFromRightPct}%"></div>`
+      : '';
+    const lostTag = dv.lostPts > 0 ? `<span class="rd-stat-lost">▼${dv.lostPts}</span>` : '';
     tab1 += `<div class="rd-stat-row">
       <span class="rd-stat-label" style="color:${col};cursor:help" ${_tipAttr(STAT_TIPS[s])}>${STAT_LABELS[s]}</span>
-      <div class="rd-stat-bar-outer"><div class="rd-stat-bar-current" style="width:${Math.min(100, current/1.5)}%;background:${col}"></div></div>
+      <div class="rd-stat-bar-outer">${lostBar}<div class="rd-stat-bar-current" style="width:${Math.min(100, current/1.5)}%;background:${col}"></div></div>
       <span class="rd-stat-val" style="color:${col}">${current}</span>
-      <span class="rd-stat-growth" style="color:${sg > 0 ? '#1a8a4a' : '#7a7466'}">${sg > 0 ? '+' + sg : '—'}</span>
+      <span class="rd-stat-growth" style="color:${sg > 0 ? '#1a8a4a' : '#7a7466'}">${sg > 0 ? '+' + sg : lostTag || '—'}</span>
       <span class="rd-stat-room">${roomLabel}</span>
     </div>`;
   });

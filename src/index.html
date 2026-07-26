@@ -12,6 +12,10 @@
   --panel-bg: #181614;
   --gold: #d4a843;
   --gold-light: #f0d078;
+  /* 消耗で失われた天井。MN の紫(#7040a0)とは別の、くすんだ藤色。
+     彩度を落とすことで「生きている色」ではなく「抜け殻」に見せる（2026-07-27 Keisuke） */
+  --stat-decayed: #8a7f9c;
+  --stat-decayed-dim: rgba(138,127,156,0.45);
   --gold-rgb: 212,168,67; /* jtc-*共通コンポーネント(フォーカスカード/自団体ピル/頂上CTA)のrgba()用 */
   --blue: #4a8fd4;
   --red: #c41e3a;
@@ -686,6 +690,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .rd-stat-label{width:26px;font-size:12px;font-weight:900;font-family:'Oswald',sans-serif;letter-spacing:1px}
 .rd-stat-bar-outer{flex:1;height:12px;background:rgba(0,0,0,0.08);border-radius:6px;overflow:hidden;position:relative}
 .rd-stat-bar-current{height:100%;border-radius:6px;position:relative;z-index:1}
+/* 消耗で失われた天井。バーの右端から内側へ食い込む形で置き、
+   **バーの満タンが年々縮んでいく**のを見せる */
+.rd-stat-bar-lost{position:absolute;top:0;right:0;height:100%;
+  background:repeating-linear-gradient(135deg,var(--stat-decayed) 0 4px,var(--stat-decayed-dim) 4px 8px);
+  border-radius:0 6px 6px 0;z-index:0}
+.rd-stat-lost{font-size:11px;font-weight:700;color:var(--stat-decayed)}
 .rd-stat-val{width:32px;text-align:right;font-size:15px;font-weight:900;font-family:'Oswald',sans-serif}
 .rd-stat-growth{width:36px;text-align:left;font-size:12px;font-weight:700}
 .rd-stat-room{font-size:10px;width:56px;text-align:right}
@@ -966,7 +976,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .fighter-popup-body{padding:0 16px 16px;background:#181614}
 .fighter-popup-stat-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .fighter-popup-stat-label{font-size:13px;color:var(--text-dim);width:28px;text-align:right;flex-shrink:0}
-.fighter-popup-stat-bar{flex:1;height:8px;background:rgba(200,190,170,0.08);border-radius:4px;overflow:hidden}
+.fighter-popup-stat-bar{flex:1;height:8px;background:rgba(200,190,170,0.08);border-radius:4px;overflow:hidden;position:relative}
+.fighter-popup-stat-lost{position:absolute;top:0;right:0;height:100%;
+  background:repeating-linear-gradient(135deg,var(--stat-decayed) 0 4px,var(--stat-decayed-dim) 4px 8px);
+  border-radius:0 4px 4px 0;z-index:0}
 .fighter-popup-stat-fill{height:100%;border-radius:4px;transition:width 0.3s}
 .fighter-popup-stat-val{font-size:14px;width:36px;text-align:right;flex-shrink:0}
 .fighter-popup-section{margin-bottom:10px}

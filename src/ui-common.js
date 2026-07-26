@@ -32,6 +32,33 @@ function escHtml(s) {
 }
 
 /** 画像+イニシャルフォールバック付きimgタグ生成。onerror時にイニシャル円を表示 */
+/** 消耗で失われた天井の幅。**バーの満タンが年々縮んでいく**のを見せるための計算。
+ *
+ *  返す割合はどちらもバー全体(0〜barMax)に対する%。
+ *    cur  … 現在値
+ *    lost … 失われた天井(今の天井 → 元の天井)
+ *
+ *  trainCapOrigin は**初めて衰退したとき**に控える。持っていない選手
+ *  (まだ衰えていない / 既存セーブ)は lost=0 で、色は一切出ない。
+ *  衰えの履歴を捏造しない。 */
+function statDecayView(fighter, stat, barMax) {
+  const max = barMax || 150;
+  const cur = Math.max(0, Math.round((fighter && fighter[stat]) || 0));
+  const cap = fighter && fighter.trainCap ? fighter.trainCap[stat] : null;
+  const origin = fighter && fighter.trainCapOrigin ? fighter.trainCapOrigin[stat] : null;
+  const lostPts = (origin != null && cap != null) ? Math.max(0, Math.round(origin - cap)) : 0;
+  const pct = v => Math.max(0, Math.min(100, (v / max) * 100));
+  return {
+    curPct: pct(cur),
+    lostPts,
+    // 失われた天井はバーの右端から内側へ。元の天井を超えては描かない
+    lostPct: lostPts > 0 ? Math.min(100, pct(origin) - pct(cap)) : 0,
+    lostFromRightPct: lostPts > 0 ? Math.max(0, 100 - pct(origin)) : 0,
+  };
+}
+
+if (typeof window !== 'undefined') window.statDecayView = statDecayView;
+
 function _imgOrInitial(url, charId, size, extraStyle = '') {
   const ch = ALL_CHARS.find(c => c.id === charId);
   const initial = ch ? ch.name.charAt(0) : '?';
@@ -3552,10 +3579,17 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         const sg = Math.round(c.seasonGrowth?.[s.key] || 0);
         const w = Math.min(100, val);
         const valColor = val >= 75 ? s.color : val >= 50 ? 'var(--text)' : 'var(--text-sub)';
+        // 消耗で失われた天井(2026-07-27 Keisuke)。ここのバーは 0〜100 目盛り
+        const dv = statDecayView(c, s.key, 100);
+        const lostBar = dv.lostPts > 0
+          ? `<div class="fighter-popup-stat-lost" title="消耗で失われた伸びしろ ${dv.lostPts}" style="width:${dv.lostPct}%;right:${dv.lostFromRightPct}%"></div>`
+          : '';
+        const lostTag = dv.lostPts > 0
+          ? `<span style="color:var(--stat-decayed);font-size:11px">▼${dv.lostPts}</span>` : '';
         html += `<div class="fighter-popup-stat-row">
           <span class="fighter-popup-stat-label" style="cursor:help" ${_tipAttr(STAT_TIPS[s.key])}>${s.label}</span>
-          <div class="fighter-popup-stat-bar"><div class="fighter-popup-stat-fill" style="width:${w}%;background:${s.color}"></div></div>
-          <span class="fighter-popup-stat-val" style="color:${valColor};font-weight:${val>=75?700:400}">${val}${sg > 0 ? `<span style="color:#2ecc71;font-size:11px">+${sg}</span>` : ''}</span>
+          <div class="fighter-popup-stat-bar">${lostBar}<div class="fighter-popup-stat-fill" style="width:${w}%;background:${s.color};position:relative;z-index:1"></div></div>
+          <span class="fighter-popup-stat-val" style="color:${valColor};font-weight:${val>=75?700:400}">${val}${sg > 0 ? `<span style="color:#2ecc71;font-size:11px">+${sg}</span>` : lostTag}</span>
         </div>`;
       });
       html += `</div></div>`; // end flex row
