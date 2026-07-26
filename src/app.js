@@ -10812,11 +10812,20 @@ const App = {
 
     // v1.4w: AI成長イベントの新聞イベント収集
     aiAlerts.forEach(alert => {
-      if (alert.type === 'breakthrough') {
+      // エンジンが積む type は 'threat'（ui-common の脅威ポップアップがこの名前を見ている）。
+      // ここが 'breakthrough' しか見ていなかったため、**AI団体のブレークスルーは一度も
+      // 記事にならなかった**（NEWS_HEADLINE_TEMPLATES.breakthrough の3本が丸ごと死に文）。
+      // ポップアップ側の名前は変えられないので、受け取り側で両方を拾う（2026-07-26）。
+      if (alert.type === 'breakthrough' || alert.type === 'threat') {
         const orgName = alert.org ? alert.org.name : '他団体';
+        // 記事の {detail} は3本の本文すべてに嵌る形にする。
+        // 「{name}が{detail}」に入る本文があるので、主語を含まない述語で書く。
+        // 小数は新聞に出さない（内部の刻みが表に出るとスプレッドシートに見える）
+        const _stat = STAT_LABELS_JP[alert.stat] || (alert.stat || '').toUpperCase();
+        const _gain = Math.max(1, Math.round(+(alert.gain || 0)));
         App._pushNewsEvent({ type: 'breakthrough', characterId: alert.fighter?.id,
           data: { name: alert.fighter?.name || '???', org: orgName,
-            detail: `${(alert.stat || '').toUpperCase()} +${parseFloat((+(alert.gain||0)).toFixed(1))}` } });
+            detail: `${_stat}を${_gain}伸ばした` } });
       } else if (alert.type === 'slump') {
         const orgName = alert.org ? alert.org.name : '他団体';
         App._pushNewsEvent({ type: 'slump', characterId: alert.fighter?.id,

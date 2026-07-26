@@ -7706,25 +7706,10 @@ let ORG_ASSIGN = {
   free:     [],  // Populated by initRandomRoster (FA pool)
 };
 
-// Style-based growth allocation (training-spec §3.1)
-const STYLE_GROWTH = {
-  Grappler:   {pw:1.0,sp:0.4,te:0.8,st:0.8},
-  Striker:    {pw:0.8,sp:0.8,te:0.4,st:1.0},
-  Submission: {pw:0.3,sp:0.4,te:1.0,st:0.8},
-  Aerial:     {pw:0.3,sp:1.0,te:0.7,st:0.5},
-  Allround:   {pw:0.7,sp:0.7,te:0.7,st:0.7},
-  Brawler:    {pw:1.0,sp:0.5,te:0.2,st:1.0}
-};
 
 // Transfer system config (v1.0 §7 modified: quarterly windows)
 // Transfer config: see TRANSFER_CONFIG in Section 4H for active constants
 
-// org-rating star power thresholds (org-ranking-spec §1.3)
-const STAR_POWER = [
-  {minPop:50, points:15, label:'トップスター'},
-  {minPop:35, points:8,  label:'スター'},
-  {minPop:20, points:3,  label:'中堅'}
-];
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 4G: PHASE B — SEASON CYCLE CONSTANTS (v0.9)      ║
@@ -9814,16 +9799,6 @@ const CONTRACT_NEGOTIATION_LINES = {
   }
 };
 
-const CONTRACT_NEGOTIATION_CONFIG = {
-  // v2.0: trust×ギャップ2軸マトリクス対応
-  trustThresholds: { highTrust: 75, stable: 40, discontent: 30, danger: 15 },
-  gapThresholds: { mid: 1.1, large: 1.3 },
-  maxNegotiations: 4,
-  minSeason: 1,
-  raiseLimits: { min: 2, max: 50 },
-  counterOfferRatio: 0.5,
-  retentionWeeksBase: 8,
-};
 
 // 社長室統合 Phase B: 解雇面談の別れセリフ (性格×2〜3パターン)
 // 解雇通告時の選手コメント
@@ -15185,31 +15160,8 @@ const MOTIVATION_RECOVERY_LINES = {
   }
 };
 
-// §9.4 AI成長イベント業界ニューステンプレート（ブレークスルー）
-const AI_BREAKTHROUGH_NEWS = [
-  '📰 週刊女子プロレス — 「{org}の{name}、覚醒！ {stat}が急成長」',
-  '📰 月刊プロレスマガジン — 「衝撃！ {name}のブレークスルーに業界騒然」',
-  '📰 スポーツ報知 — 「{org}の{name}、別人のような成長を見せる」',
-  '📰 プロレス通信 — 「{name}に転機。このまま上位へ食い込むか」',
-  '📰 格闘技WEEKLY — 「{org}の新星{name}、急激な進化で注目を集める」',
-  '📰 プロレス新聞 — 「{org}・{name}が急成長。ライバル団体に激震」',
-];
 
-// §9.4 AI成長イベント業界ニュース（スランプ）
-const AI_SLUMP_NEWS = [
-  '📰 週刊女子プロレス — 「{org}の{name}、不調が深刻化。今シーズンは精彩を欠く」',
-  '📰 月刊プロレスマガジン — 「{name}にスランプの影。{org}に暗雲」',
-  '📰 スポーツ報知 — 「{name}の低迷が続く。{org}の影響は？」',
-  '📰 プロレス通信 — 「波乱のシーズン。{org}の{name}が精彩を欠く」',
-];
 
-// §9.4 AI成長イベント業界ニュース（モチベ喪失）
-const AI_MOTIVATION_LOSS_NEWS = [
-  '📰 週刊女子プロレス — 「{org}の{name}、モチベーション喪失か。練習にも姿を見せず」',
-  '📰 スポーツ報知 — 「{name}の引退危機？ {org}関係者が明かす深刻な状況」',
-  '📰 月刊プロレスマガジン — 「{name}の去就に注目。{org}の今後は」',
-  '📰 格闘技WEEKLY — 「まさかの失速。{org}の{name}に何が？」',
-];
 
 // §2.6 ブレークスルーSEノート（Audio.playで使用）
 // 'breakthrough' キーを Audio に追加する（app.js側で対応）
@@ -16277,23 +16229,6 @@ const BIG_NEWS_LEAD_LINES = {
   ],
 };
 
-// v1.4: ベストマッチ フレーバーテキスト（MQ帯別）
-const BESTMATCH_FLAVOR = {
-  high: [
-    '歴史に残る名勝負',
-    '会場が震えた一戦',
-    'すべてを出し尽くした激闘'
-  ],
-  mid: [
-    '観客を沸かせた好勝負',
-    '互いの意地がぶつかり合った一戦',
-    '技と力が交錯する見応えある試合'
-  ],
-  low: [
-    '光るものを見せた一戦',
-    '荒削りだが熱い闘い'
-  ]
-};
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  SECTION 9: MILESTONE EVENTS (v1.5s25b)                  ║
@@ -29653,19 +29588,17 @@ if (typeof module !== 'undefined' && module.exports) {
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, ACHIEVEMENT_CONFIG, SHIELD_VARIANTS,
-    SCOUT_EVENT_CFG, DORMANT_POOL_CFG,
-    STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE, getWearBand,
+    SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, WEAR_TABLE, getWearBand,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
-    CONTRACT_NEGOTIATION_LINES, CONTRACT_NEGOTIATION_CONFIG, RELEASE_INTERVIEW_LINES, CHALLENGE_LINES,
+    CONTRACT_NEGOTIATION_LINES, RELEASE_INTERVIEW_LINES, CHALLENGE_LINES,
     NEGOTIATE_LINES, RETIREMENT_LINES, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES,
     AWARD_LINES, AUTUMN_WAR_MATCH_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, MILESTONE_LINES, FIRST_MEET_LINES, POST_MATCH_FLAVOR_LINES, getDialoguePool, pickDialogueLine,
     SLUMP_START_LINES, SLUMP_END_LINES,
     MOTIVATION_LOSS_LINES, MOTIVATION_RECOVERY_LINES,
-    AI_BREAKTHROUGH_NEWS, AI_SLUMP_NEWS, AI_MOTIVATION_LOSS_NEWS,
-    NEWS_TICKER_TEMPLATES, NEWS_HEADLINE_TEMPLATES, BESTMATCH_FLAVOR, SEASON_REVIEW_LINES,
+    NEWS_TICKER_TEMPLATES, NEWS_HEADLINE_TEMPLATES, SEASON_REVIEW_LINES,
     MILESTONE_EVENTS, NOTIF_EVENT_TEXTS, NOTIF_DIALOGUES,
     DOME_FIRSTSHOW_LINES, DOME_SELLOUT_LINES,
     CAMP_FLAVOR_TEXTS, CARE_REACTION_DIALOGUES,
