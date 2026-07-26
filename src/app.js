@@ -135,18 +135,57 @@ const Audio = (() => {
   // ファイルが読めなければ黙って合成音へ落ちる(音は演出であり、無ければ困るものではない)。
   // 名前と用途の対応は bgm/audio-mixer.html の台帳が正。
   const SE_DIR = '../bgm/production-ogg/';
+  //
+  // 秒数は実測値(2026-07-27)。**押した瞬間に返る音は 0.5秒以内**でないと操作が重くなるので、
+  // 高頻度のキーには短い音だけを当てている。
   const SE_FILES = {
-    // 試合結果(A-3b)。**あらゆる試合の試合後**で鳴る
-    boutWin:  'wm_se_rs01_v01.ogg',   // RS01 通常勝利 — 自団体の勝ち
-    boutLose: 'wm_se_rs02_v01.ogg',   // RS02 敗北     — 自団体の負け・引き分け
-    boutOther:'wm_se_cr03_v01.ogg',   // CR03 歓声     — 自団体が絡まない試合
+    // ── 操作に即返る音(0.25〜0.51秒) ──────────────────────────
+    click:    'wm_se_ui01_v01.ogg',   // UI01 決定        0.49s  ※92箇所。全体の印象を決める
+    select:   'wm_se_ui03_v01.ogg',   // UI03 移動        0.39s
+    deselect: 'wm_se_ui02_v01.ogg',   // UI02 取消        0.50s
+    error:    'wm_se_ui07_v01.ogg',   // UI07 軽いエラー  0.50s  ※59箇所
+    notify:   'wm_se_ui06_v01.ogg',   // UI06 通常通知    0.49s
+    tick:     'wm_se_sh05_v01.ogg',   // SH05 入替・並替  0.25s  進行の刻み
+    save:     'wm_se_ui04_v01.ogg',   // UI04 設定切替    0.25s
+    paper:    'wm_se_ui09_v01.ogg',   // UI09 紙          0.51s
+    spend:    'wm_se_mg04_v01.ogg',   // MG04 支出        0.36s
+    // ── 情報が出る・お金が動く(1〜1.4秒) ──────────────────────
+    reveal:   'wm_se_ui05_v01.ogg',   // UI05 パネル表示  1.35s
+    event:    'wm_se_ui05_v01.ogg',   // UI05 パネル表示  1.35s  汎用イベント。reveal と同じ意味
+    coin:     'wm_se_mg03_v01.ogg',   // MG03 収入        1.14s
+    transfer: 'wm_se_hr08_v01.ogg',   // HR08 到着・出発  1.36s
+    // ── 決着・区切り(2.6〜8.6秒。重ねない) ────────────────────
+    defeat:   'wm_se_rs06_v01.ogg',   // RS06 失敗        2.68s  イベント敗北
+    fanfare:  'wm_se_rs05_v01.ogg',   // RS05 達成        3.08s
+    matchVictoryFanfare: 'wm_se_rs05_v01.ogg', // RS05 達成 3.08s
+    crowd:    'wm_se_cr03_v01.ogg',   // CR03 歓声        3.32s
+    bignews:  'wm_se_ev05_v01.ogg',   // EV05 新時代      8.60s  大ニュース(年に数回)
+    // ── 試合結果(A-3b)。**あらゆる試合の試合後**で鳴る ────────
+    boutWin:  'wm_se_rs01_v01.ogg',   // RS01 通常勝利    4.64s  自団体の勝ち
+    boutLose: 'wm_se_rs02_v01.ogg',   // RS02 敗北        4.70s  自団体の負け・引き分け
+    boutOther:'wm_se_cr03_v01.ogg',   // CR03 歓声        3.32s  自団体が絡まない試合
   };
+  // **意図的に合成音のまま残しているキー**(消し忘れではない):
+  //   hover        ホバーのたびにファイルを鳴らすのは重い。台帳にも相当する音が無い
+  //   bell/bellx3  台帳にゴングが無い。BTA01「実音カウント」は3カウントで別物
+  //   war          該当なし。EV04「裏切り」EV05「新時代」はどちらも文脈が違う
+  //   tension_hit  CR06「驚き」4.80s は試合中の一撃には長すぎる
+  //   award        0.6秒の朱印アニメに合わせた短いバーストを意図して使っている
+  //   victory      Audio.bgm.playJingle('victory') と紛らわしいので保留
+  //   stamp        **呼び出し元がばらばら**(セーブ名変更 / 契約成立 / 団体名決定)。
+  //                1つの音で全部を賄えないので、先に呼び分けを整理する必要がある
   // 同じ音が連続で鳴る場面(フォール連発など)があるので、キーごとに数枚持つ。
   // ただし**結果音は重ねない** — RS01/RS02/CR03 は3〜5秒あり、秋のフォール連発だと
   // 前の音が鳴り終わる前に次が始まって濁る。同じキーの前の音は止めてから鳴らす。
   const _seFilePool = {};
   const _SE_POOL_SIZE = 3;
-  const _SE_SOLO = new Set(['boutWin', 'boutLose', 'boutOther']);
+  // 2.6秒以上の音は、前のが鳴り終わる前に次が始まると濁る。同じキーは止めてから鳴らす。
+  // 0.5秒前後の操作音は重なってよい(連打しても詰まらない)
+  const _SE_SOLO = new Set([
+    'boutWin', 'boutLose', 'boutOther',        // 4.64 / 4.70 / 3.32s
+    'defeat', 'fanfare', 'matchVictoryFanfare', // 2.68 / 3.08 / 3.08s
+    'crowd', 'bignews',                         // 3.32 / 8.60s
+  ]);
   function _playFileSe(name, vol) {
     const file = SE_FILES[name];
     if (!file) return false;

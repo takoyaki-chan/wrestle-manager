@@ -66,11 +66,11 @@ section('3. 音源が読めなくても止まらない', () => {
     'ファイル再生に失敗しても合成音へ落ちない');
 });
 
-section('4. 結果音は重ねない', () => {
-  assert.ok(/const _SE_SOLO = new Set\(\['boutWin', 'boutLose', 'boutOther'\]\)/.test(app),
-    '重ねない対象が指定されていない');
+section('4. 長い音を重ねない仕組みがある', () => {
+  // どのキーを対象にするかは項目14が**秒数から**検査する。ここは仕組みの有無だけ
+  assert.ok(/const _SE_SOLO = new Set\(\[/.test(app), '重ねない対象の指定が無い');
   assert.ok(/if \(_SE_SOLO\.has\(name\)\) \{[\s\S]{0,140}?e\.pause\(\)/.test(playerSrc),
-    '前の結果音を止めずに次を鳴らしている。秋のフォール連発で濁る');
+    '前の音を止めずに次を鳴らしている。秋のフォール連発で濁る');
 });
 
 section('5. 音量はミキサーとマスターの両方を通す', () => {
@@ -156,19 +156,59 @@ section('13. 全大会が所属を渡している', () => {
     '所属を渡していない大会がある');
 });
 
-section('14. 音源の長さを把握している（重ならない理由）', () => {
-  // RS01 4.64秒 / RS02 4.70秒 / CR03 3.32秒（実測 2026-07-27）。
-  // 1試合ごとに鳴るには長いので、同じキーは重ねない扱いにしてある。
-  // 短い音に差し替えたら _SE_SOLO から外してよい
-  assert.ok(/_SE_SOLO/.test(app), '重ねない扱いが消えている');
-  const solo = (app.match(/const _SE_SOLO = new Set\(\[([^\]]*)\]\)/) || [])[1] || '';
-  const files = [...filesTable.matchAll(/^\s{4}([a-zA-Z0-9_]+):/gm)].map(m => m[1]);
-  files.forEach(k => {
-    assert.ok(solo.includes(`'${k}'`),
-      `${k}: 結果音なのに重ねない扱いになっていない。フォール連発で濁る`);
+section('14. 長い音だけ重ねない扱いにする', () => {
+  // 秒数は ogg のヘッダから実測できる。**音源を差し替えたらこの検査が追随する**ので、
+  // 短い音に替えたのに重ねない扱いが残っている、という取り残しに気づける。
+  const ogg = f => {
+    const b = fs.readFileSync(path.join(root, 'bgm', 'production-ogg', f));
+    const vi = b.indexOf(Buffer.from([0x01,0x76,0x6f,0x72,0x62,0x69,0x73]));
+    if (vi < 0) return 0;
+    const rate = b.readUInt32LE(vi + 12);
+    for (let k = b.length - 27; k >= 0; k--) {
+      if (b[k] === 0x4f && b[k+1] === 0x67 && b[k+2] === 0x67 && b[k+3] === 0x53 && b[k+4] === 0x00) {
+        return Number(b.readBigUInt64LE(k + 6)) / rate;
+      }
+    }
+    return 0;
+  };
+  const solo = (app.match(/const _SE_SOLO = new Set\(\[([\s\S]*?)\]\)/) || [])[1] || '';
+  const pairs = [...filesTable.matchAll(/^\s{4}([a-zA-Z0-9_]+): *'(wm_se_[a-z0-9_]+\.ogg)'/gm)];
+  assert.ok(pairs.length >= 15, `割り当てが ${pairs.length} 件。少なすぎる`);
+  const LONG = 2.0;   // これを超えたら重ねない
+  const wrong = [];
+  pairs.forEach(m => {
+    const [, key, file] = m;
+    const sec = ogg(file);
+    assert.ok(sec > 0, `${file}: 長さを読めない`);
+    const isSolo = solo.includes(`'${key}'`);
+    if (sec > LONG && !isSolo) wrong.push(`${key} (${sec.toFixed(2)}s) は重ねない扱いが要る`);
+    if (sec <= 0.8 && isSolo) wrong.push(`${key} (${sec.toFixed(2)}s) は短いので重ねてよい`);
   });
+  assert.deepStrictEqual(wrong, [], wrong.join(' / '));
 });
 
+section('15. 高頻度のキーには短い音を当てる', () => {
+  // click は92箇所、error は59箇所で鳴る。1秒を超える音を当てると操作が重くなる
+  const ogg = f => {
+    const b = fs.readFileSync(path.join(root, 'bgm', 'production-ogg', f));
+    const vi = b.indexOf(Buffer.from([0x01,0x76,0x6f,0x72,0x62,0x69,0x73]));
+    const rate = b.readUInt32LE(vi + 12);
+    for (let k = b.length - 27; k >= 0; k--) {
+      if (b[k] === 0x4f && b[k+1] === 0x67 && b[k+2] === 0x67 && b[k+3] === 0x53 && b[k+4] === 0x00) {
+        return Number(b.readBigUInt64LE(k + 6)) / rate;
+      }
+    }
+    return 0;
+  };
+  const table = Object.fromEntries(
+    [...filesTable.matchAll(/^\s{4}([a-zA-Z0-9_]+): *'(wm_se_[a-z0-9_]+\.ogg)'/gm)].map(m => [m[1], m[2]]));
+  ['click', 'select', 'deselect', 'error', 'notify', 'tick', 'save'].forEach(k => {
+    if (!table[k]) return;   // まだ載せていないキーは対象外
+    const sec = ogg(table[k]);
+    assert.ok(sec <= 0.6,
+      `${k}: ${sec.toFixed(2)}s は押した瞬間に返る音として長い（0.6秒以内に）`);
+  });
+});
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (14 sections)');
+console.log('ALL PASS (15 sections)');
