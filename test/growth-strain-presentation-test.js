@@ -69,6 +69,17 @@ section('2. AI団体の追い込み負傷も seasonInjuries を加算する（�
   assert.ok(/seasonInjuries/.test(window), 'AI団体側の seasonInjuries 加算が消えている');
 });
 
+section('2b. AI団体は追い込みの消耗を払わない（意図的・直さないこと）', () => {
+  // 2026-07-26 Keisuke 裁定: 対称にするとリーグ全体の年齢構成が変わるため、あえて非対称のまま。
+  // 「バグに見えるので直しました」で勝手に対称化されるのを防ぐための固定。
+  // 変えるならリーグ全体の再計測とセットで、この検査ごと更新すること。
+  const at = management.indexOf("type: 'training injury'");
+  const window = management.slice(Math.max(0, at - 1200), at + 600);
+  assert.ok(!/seasonIntensiveWeeks/.test(window),
+    'AI団体の練習処理に seasonIntensiveWeeks が入った。' +
+    '意図的な非対称なので、変えるならリーグ全体の年齢構成を測り直すこと');
+});
+
 section('3. seasonInjuries が実際に wear へ流れている', () => {
   assert.ok(/wearBonus\s*\+=\s*\(nc\.seasonInjuries\s*\|\|\s*0\)\s*\*/.test(management),
     'seasonInjuries が wearBonus に加算されていない。' +
