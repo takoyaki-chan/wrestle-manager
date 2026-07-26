@@ -3713,13 +3713,20 @@ const App = {
   awConfirmEntry() {
     const order = App._awEntrySelection;
     if (!Array.isArray(order) || order.length !== Engine.autumnWar.TEAM_SIZE) return;
+    // バスに乗せる顔は、GがEngineで作り替わる前に取っておく
+    const party = order.map(id => (G.roster || []).find(f => f && f.id === id)).filter(Boolean);
     G = Engine.autumnWar.confirmPlayerTeam(G, [...order], [...order]);
     G = Engine.autumnWar.startSession(G);
     App._awEntrySelection = null;
     App._awEntryActiveRole = null;
     Audio.play('coin');
     try { Storage.autoSave(); } catch (_e) {}
-    App.initAutumnWarReplay();
+    // 代表を決めたら、そのまま会場入りのカットを挟んで本編へ
+    if (typeof showSpecialEventTravel === 'function') {
+      showSpecialEventTravel('autumnWar', G, party, () => App.initAutumnWarReplay());
+    } else {
+      App.initAutumnWarReplay();
+    }
   },
 
   // 週36 大会ライブ進行（Stage / P7）
@@ -3742,7 +3749,14 @@ const App = {
       App._awPreview = { phase: 'intro', committed: false };
       try { Audio.bgm.playStage('autumnA'); } catch (_e) {}
       Audio.play('notify');
-      renderAutumnWarIntro();
+      // 特別興行の導入シーン: いきなりルール説明へ飛ばさず、
+      // **コーチ1人 → 選手1人**を挟んでから本編へ入る(2026-07-26 Keisuke)。
+      // どちらもクリックで即スキップできる。導入が出せない場合はそのまま従来どおり。
+      if (typeof showSpecialEventIntro === 'function') {
+        showSpecialEventIntro('autumnWar', G, () => renderAutumnWarIntro());
+      } else {
+        renderAutumnWarIntro();
+      }
       return;
     }
     const result = Engine.autumnWar.getProgress(G) || (G.autumnWar?.champion ? G.autumnWar : null);
@@ -4092,7 +4106,14 @@ const App = {
       f2Id: myTeam && myTeam.confirmed ? myTeam.f2Id : null,
     };
     Audio.play('select');
-    _mdlAOpen(_stlEntryModalHtml());
+    // 編成に入る前に導入シーン(コーチ→選手)。出せないときはそのまま編成へ
+    const openEntry = () => _mdlAOpen(_stlEntryModalHtml());
+    if (typeof showSpecialEventIntro === 'function' && App._stlIntroSeason !== G.season) {
+      App._stlIntroSeason = G.season;
+      showSpecialEventIntro('springTagLeague', G, openEntry);
+    } else {
+      openEntry();
+    }
   },
 
   stlPickFighter(id) {
@@ -4154,7 +4175,16 @@ const App = {
     }
     App._stlPreview = { idx: 0, phase: 'table' };
     try { Audio.bgm.playStage('springA'); } catch (e) {}
-    renderSpringTagLeagueBoard();
+    // 編成は週11、本編は週12。週をまたぐので会場入りはここで挟む
+    const myTeam = (stl.teams || []).find(t => t && t.orgId === 'player');
+    const party = myTeam
+      ? [myTeam.f1Id, myTeam.f2Id].map(id => (G.roster || []).find(f => f && f.id === id)).filter(Boolean)
+      : [];
+    if (typeof showSpecialEventTravel === 'function' && party.length) {
+      showSpecialEventTravel('springTagLeague', G, party, () => renderSpringTagLeagueBoard());
+    } else {
+      renderSpringTagLeagueBoard();
+    }
   },
 
   stlAdvance() {
@@ -14426,11 +14456,19 @@ App.initJuniorTournament = function() {
     myParticipants,
   };
   Audio.bgm.playStage('juniorA');
-  if (myParticipants.length > 0) {
-    Audio.play('notify');
-    renderJuniorTournamentSummon();
+  // 導入(コーチ→選手) → 招集 → 会場入り → トーナメント表
+  const afterIntro = () => {
+    if (myParticipants.length > 0) {
+      Audio.play('notify');
+      renderJuniorTournamentSummon();
+    } else {
+      renderJuniorTournamentBracket();
+    }
+  };
+  if (typeof showSpecialEventIntro === 'function') {
+    showSpecialEventIntro('juniorTournament', G, afterIntro);
   } else {
-    renderJuniorTournamentBracket();
+    afterIntro();
   }
 };
 
@@ -14441,7 +14479,12 @@ App.jtNextSummon = function() {
   if (jt.summonIndex >= jt.myParticipants.length) {
     jt.phase = 'bracket';
     Audio.play('tick');
-    renderJuniorTournamentBracket();
+    // 招集が済んだら会場入りのカットを挟む
+    if (typeof showSpecialEventTravel === 'function') {
+      showSpecialEventTravel('juniorTournament', G, jt.myParticipants, () => renderJuniorTournamentBracket());
+    } else {
+      renderJuniorTournamentBracket();
+    }
   } else {
     Audio.play('notify');
     renderJuniorTournamentSummon();
@@ -14882,7 +14925,22 @@ App.initTenchosenReplay = function() {
   };
   Audio.bgm.playStage('tencho');
   Audio.play('notify');
-  renderTenchosenBracket();
+  // 導入(コーチ→選手) → 会場入り → トーナメント表
+  const toBracket = () => renderTenchosenBracket();
+  const toTravel = () => {
+    const mine = (G.roster || []).filter(f => f && !f.isRental
+      && (t.rounds[0]?.matches || []).some(m => m.left?.id === f.id || m.right?.id === f.id));
+    if (typeof showSpecialEventTravel === 'function' && mine.length) {
+      showSpecialEventTravel('tenchosen', G, mine, toBracket);
+    } else {
+      toBracket();
+    }
+  };
+  if (typeof showSpecialEventIntro === 'function') {
+    showSpecialEventIntro('tenchosen', G, toTravel);
+  } else {
+    toTravel();
+  }
 };
 
 App.tcWatchMatch = function(roundIdx, matchIdx) {

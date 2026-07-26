@@ -7833,6 +7833,92 @@ const RETIRE_CFG = {
 };
 
 // ╔══════════════════════════════════════════════════════════╗
+// ║  特別興行の導入シーン (2026-07-26 Keisuke 承認)            ║
+// ╚══════════════════════════════════════════════════════════╝
+// いきなり興行画面へ飛ばさず、**コーチ1人 → 選手1人 → 選手選定 → バス移動 → 本編**の順で入る。
+// 画面は新規に作らず、直訴のYES直後で使っている _mdlASubjectStage
+// (1人がアッパー画像で立ち、頭上に吹き出し) を2回続けるだけ。
+//
+// **2人並べない**(Keisuke)。選ばれなかった側の扱いが要らなくなる。
+// 2枚目に出す選手は「語れる文脈がある人」から順に選び、
+// 誰も当てはまらなければ**2枚目を出さない**(無理に喋らせると薄いセリフになる)。
+//
+// history の type は careerRecord.history に実際に積まれている値と合わせること。
+const SPECIAL_EVENT_INTRO = {
+  autumnWar: {
+    title: '⚔️ 4団体勝ち残り対抗戦',
+    historyType: 'autumnWar',
+    venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
+    travelLine: '4団体の代表が、同じ日に同じリングへ集まります。',
+    coach: [
+      '社長、今週は勝ち残り対抗戦です。道場、朝から空気が違いますよ。',
+      '社長。4団体が一日で決着をつける日です。……代表を選びましょう。',
+      '対抗戦の朝です。誰を出すか、もう決まっていますか。',
+    ],
+    fighter: {
+      lastYear: [
+        '去年は途中で倒れました。今年は、最後まで残ります。',
+        '去年のあの負けを、まだ覚えています。',
+        '一年待ちました。今年こそ、勝ち残ってみせます。',
+      ],
+      champion: [
+        'ベルトを持って出ます。負けたら、意味がないので。',
+        '王者として出る以上、途中で倒れるわけにはいきません。',
+      ],
+      popular: [
+        '今年は私が引っ張ります。見ていてください。',
+        '大きい舞台ほど、燃えます。出してください。',
+      ],
+    },
+  },
+  springTagLeague: {
+    title: '🌸 春のタッグリーグ',
+    historyType: 'springTagLeague',
+    venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
+    travelLine: '4チームの総当たり。勝ち上がれば、その日のうちに決勝です。',
+    coach: [
+      '社長、春のタッグリーグです。二人一組、相性の良い組を選びましょう。',
+      '今週からタッグリーグです。……誰と誰を組ませるか、腕の見せどころですよ。',
+    ],
+    fighter: {
+      lastYear: ['去年のタッグ、途中で噛み合わなくなって。……今年は違います。'],
+      champion: ['タッグでも、負けるつもりはありません。'],
+      popular: ['誰と組んでも合わせます。任せてください。'],
+    },
+  },
+  juniorTournament: {
+    title: '🏟️ U-20 ジュニアトーナメント',
+    historyType: 'junior',
+    venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
+    travelLine: '出場は20歳まで。この大会に出られる回数は、決まっています。',
+    coach: [
+      '社長、ジュニアの大会です。若い子たちにとっては、初めての大舞台になります。',
+      '今週はU-20です。……あの子たちの顔、見てやってください。緊張してますよ。',
+    ],
+    fighter: {
+      lastYear: ['去年は一回戦で終わりました。今年は、もっと先へ行きます。'],
+      champion: ['若手の大会でも、手は抜きません。'],
+      popular: ['名前を覚えてもらう機会です。全部出します。'],
+    },
+  },
+  tenchosen: {
+    title: '👑 天頂戦',
+    historyType: 'ppvTournament',
+    venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
+    travelLine: '4年に一度の大会です。次に開かれるのは、4年後になります。',
+    coach: [
+      '社長、四年に一度の天頂戦です。……この日のために鍛えてきました。',
+      '天頂戦の朝です。16名の枠に、誰を送りますか。',
+    ],
+    fighter: {
+      lastYear: ['四年前は届きませんでした。……次は、四年後じゃない。今です。'],
+      champion: ['この大会だけは、獲りたい。ベルトより上にあるものだと思っています。'],
+      popular: ['四年に一度。……出られるのは、運がいいことです。'],
+    },
+  },
+};
+
+// ╔══════════════════════════════════════════════════════════╗
 // ║  世代交代 (retirement-drama-spec v0.2 §6)                 ║
 // ╚══════════════════════════════════════════════════════════╝
 // 実測(40シーズン)で、AI団体のロスターは 1年に 12〜17% しか入れ替わらなかった
@@ -29747,7 +29833,7 @@ if (typeof module !== 'undefined' && module.exports) {
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
     GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, ACHIEVEMENT_CONFIG, SHIELD_VARIANTS,
-    SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, WEAR_TABLE, getWearBand, quietExitChance, careerEndingChance, AI_TURNOVER_CFG,
+    SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, SPECIAL_EVENT_INTRO, WEAR_TABLE, getWearBand, quietExitChance, careerEndingChance, AI_TURNOVER_CFG,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,

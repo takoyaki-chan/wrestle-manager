@@ -433,12 +433,17 @@ function _mdlDClose() {
  *  opts.small: 120x160 (default 140x184)
  *  opts.speech: 頭上吹き出しに表示するセリフ(文字列)
  */
+// opts.portraitUrl / opts.name / opts.meta を渡すと、選手以外(コーチなど)も
+// **同じ見た目で**立たせられる。見た目を2箇所に書くと必ず片方だけ古くなるので、
+// コーチ枚もこの関数を通すこと。
 function _mdlASubjectStage(fighter, bodyHtml, opts) {
   const size = (opts && opts.small) ? { w: 120, h: 160 } : { w: 140, h: 184 };
+  const override = (opts && opts.portraitUrl !== undefined);
   let portraitHtml = '';
-  if (fighter) {
-    const upperUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(fighter.id) : '';
-    const faceUrl  = (typeof getPortraitUrl === 'function') ? getPortraitUrl(fighter.id) : '';
+  if (fighter || override) {
+    const upperUrl = override ? opts.portraitUrl
+      : ((typeof getUpperUrl === 'function') ? getUpperUrl(fighter.id) : '');
+    const faceUrl  = (!override && typeof getPortraitUrl === 'function') ? getPortraitUrl(fighter.id) : '';
     const bg = upperUrl
       ? `background-image:url('${upperUrl}')`
       : (faceUrl ? `background-image:url('${faceUrl}')` : '');
@@ -451,13 +456,14 @@ function _mdlASubjectStage(fighter, bodyHtml, opts) {
       <div class="mdl-a-subject-portrait-wrap" style="width:${size.w}px;height:${size.h}px;${bg}"></div>
     </div>`;
   }
-  const meta = fighter
+  const name = (opts && opts.name !== undefined) ? opts.name : (fighter ? (fighter.name || '') : '');
+  const meta = (opts && opts.meta !== undefined) ? opts.meta : (fighter
     ? `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''} ・ ${String(fighter.style || '').toUpperCase() || 'FIGHTER'}`
-    : '';
+    : '');
   return `<div class="mdl-a-subject-stage">
     ${portraitHtml}
-    ${fighter ? `<div class="mdl-a-subject-name">${fighter.name || ''}</div>` : ''}
-    ${fighter ? `<div class="mdl-a-subject-org">${meta}</div>` : ''}
+    ${name ? `<div class="mdl-a-subject-name">${name}</div>` : ''}
+    ${meta ? `<div class="mdl-a-subject-org">${meta}</div>` : ''}
     <div class="mdl-a-subject-divider"></div>
     ${bodyHtml || ''}
   </div>`;
@@ -11353,6 +11359,121 @@ if (typeof window !== 'undefined') {
 // challenge-request-spec-v0.1 追加: YES 直後の返事（sendoff）を頭上吹き出しで見せる。
 // 独自モーダルは新設せず、社長室型(mdl-a)の subject-stage + speech（卒業レポート等と同じ部品）を流用する。
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 特別興行の導入シーン (2026-07-26 Keisuke 承認)
+//   コーチ1人 → 選手1人 → (呼び出し元が選手選定へ)
+// **新しい画面は作らない。** 直訴のYES直後と同じ _mdlASubjectStage を2回続けるだけ。
+// **2人並べない。** 選ばれなかった側の扱いが要らなくなる。
+// どちらの枚もクリックで飛ばせる(年4回×何十年ぶん見るので、B案=毎回出すが即スキップ可)。
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** 2枚目に出す選手を選ぶ。**語れる文脈がある人**から順に。
+ *  誰も当てはまらなければ null を返し、**2枚目を出さない**。
+ *  無理に喋らせると、言うことのない選手が薄いセリフを言うことになる。 */
+function _specialIntroPickSpeaker(state, cfg) {
+  const roster = (state && state.roster || []).filter(f => f && !f.isRental && !f.injury);
+  if (!roster.length || !cfg) return null;
+  // 1. 去年この大会に出た選手
+  const lastSeason = (state.season || 1) - 1;
+  const veteran = roster.find(f => ((f.careerRecord && f.careerRecord.history) || [])
+    .some(h => h && h.type === cfg.historyType && h.season === lastSeason));
+  if (veteran) return { fighter: veteran, kind: 'lastYear' };
+  // 2. 現王者
+  const champId = state.titles && state.titles.world ? state.titles.world.championId : null;
+  const champ = champId != null ? roster.find(f => f.id === champId) : null;
+  if (champ) return { fighter: champ, kind: 'champion' };
+  // 3. いちばん人気の選手
+  const popular = [...roster].sort((a, b) => (b.popularity || 0) - (a.popularity || 0))[0];
+  if (popular && (popular.popularity || 0) >= 40) return { fighter: popular, kind: 'popular' };
+  // 4. 該当なし → 2枚目は出さない
+  return null;
+}
+
+/** コーチ→選手の2枚を順に見せ、終わったら onDone。
+ *  eventKey は SPECIAL_EVENT_INTRO のキー(autumnWar / springTagLeague / juniorTournament / tenchosen) */
+function showSpecialEventIntro(eventKey, state, onDone) {
+  const done = () => { if (onDone) onDone(); };
+  const cfg = (typeof SPECIAL_EVENT_INTRO !== 'undefined') ? SPECIAL_EVENT_INTRO[eventKey] : null;
+  if (!cfg || typeof _mdlAOpen !== 'function') { done(); return; }
+  const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0x5E1C));
+  const pickLine = arr => (arr && arr.length) ? arr[Engine.rng.int(rng, 0, arr.length - 1)] : '';
+
+  // 取次ぎコーチ。雇っていなければコーチ枚は飛ばす
+  const coaches = (typeof getHiredCoaches === 'function') ? getHiredCoaches() : [];
+  const coach = coaches.length ? coaches[Engine.rng.int(rng, 0, coaches.length - 1)] : null;
+  const speaker = _specialIntroPickSpeaker(state, cfg);
+
+  const showFighterScene = () => {
+    if (!speaker) { done(); return; }
+    const line = pickLine(cfg.fighter[speaker.kind]) || pickLine(cfg.fighter.popular);
+    if (!line) { done(); return; }
+    const html = `
+      ${_mdlAHeader(cfg.title, _mdlASeasonLabel(state))}
+      ${_mdlASubjectStage(speaker.fighter, '', { small: true, speech: escHtml(line) })}
+      <div class="mdl-a-prompt" style="padding-bottom:24px">
+        <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext2">— 代 表 を 選 ぶ —</button>
+      </div>`;
+    if (!_mdlAOpen(html)) { done(); return; }
+    const btn = document.getElementById('mdlASpecialIntroNext2');
+    if (btn) btn.addEventListener('click', () => { Audio.play('click'); _mdlAClose(); done(); });
+  };
+
+  if (!coach) { showFighterScene(); return; }
+  // コーチはアッパー画像で立たせる。_mdlASubjectStage は選手用なので、
+  // 同じ見た目になるよう coach を fighter 形に寄せて渡す(画像URLだけ差し替え)
+  const coachUrl = (typeof getCoachUpperUrl === 'function') ? getCoachUpperUrl(coach.id) : '';
+  const coachSubject = _mdlASubjectStage(null, '', {
+    small: true,
+    speech: escHtml(pickLine(cfg.coach)),
+    portraitUrl: coachUrl,
+    name: escHtml(coach.name || ''),
+    meta: 'COACH',
+  });
+  const html = `
+    ${_mdlAHeader(cfg.title, _mdlASeasonLabel(state))}
+    ${coachSubject}
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext1">— 続 け る —</button>
+    </div>`;
+  if (!_mdlAOpen(html)) { done(); return; }
+  const btn = document.getElementById('mdlASpecialIntroNext1');
+  if (btn) btn.addEventListener('click', () => { Audio.play('click'); _mdlAClose(); showFighterScene(); });
+}
+
+/** 選手を決めたあとの「会場入り」。既存の遠征カット(showTravelScene)をそのまま使う。
+ *  行き先は会場名(大会場)。道場から出るので from は自団体。 */
+function showSpecialEventTravel(eventKey, state, party, onDone) {
+  const done = () => { if (onDone) onDone(); };
+  const cfg = (typeof SPECIAL_EVENT_INTRO !== 'undefined') ? SPECIAL_EVENT_INTRO[eventKey] : null;
+  if (!cfg || typeof showTravelScene !== 'function') { done(); return; }
+  const venueName = (typeof VENUES !== 'undefined' && VENUES[cfg.venueIndex])
+    ? VENUES[cfg.venueIndex].name : '会場';
+  const members = (Array.isArray(party) ? party : []).filter(Boolean)
+    .map(f => ({ id: f.id, name: f.name }));
+  const countLabel = ['', '一人', '二人', '三人', '四人'][members.length] || `${members.length}人`;
+  showTravelScene({
+    heading: '— 会 場 入 り —',
+    from: {
+      label: state.orgName || 'プレイヤー団体',
+      emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''),
+      accent: 'var(--c-positive)',
+    },
+    to: { label: venueName, accent: 'var(--gold)' },
+    party: members,
+    lines: [
+      `${countLabel}を乗せたバスが、${venueName}へ向かっています。`,
+      cfg.travelLine || '',
+    ].filter(Boolean),
+    vehicleIcon: '🚌',
+    durationMs: 5200,
+  }, done);
+}
+
+if (typeof window !== 'undefined') {
+  window.showSpecialEventIntro = showSpecialEventIntro;
+  window.showSpecialEventTravel = showSpecialEventTravel;
+}
+
 function showChallengeSendoffModal(fighter, line, state, onDone) {
   const run = () => {
     if (!fighter || !line) { if (onDone) onDone(); return; }
