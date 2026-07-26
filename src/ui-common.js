@@ -6129,8 +6129,11 @@ function renderPPVMatchPreview() {
       ? orgIconHtml(f._ppvOrgId, 14) : '';
     const traitsL = (L.traits || []).slice(0, 3);
     const traitsR = (R.traits || []).slice(0, 3);
-    const lineL = _getPPVPreMatchLine(L);
-    const lineR = _getPPVPreMatchLine(R);
+    // 因縁があれば宣戦布告に差し替える(吹き出しの見た目はPPVのものをそのまま使う)
+    const ppvRiv = (typeof _rivalryPreMatchLines === 'function')
+      ? _rivalryPreMatchLines(L.id, R.id) : null;
+    const lineL = (ppvRiv && ppvRiv.leftLine) || _getPPVPreMatchLine(L);
+    const lineR = (ppvRiv && ppvRiv.rightLine) || _getPPVPreMatchLine(R);
     const badge = match.isRivalry ? `<div class="ppvprog-vsb">🔥 因縁対決</div>` : '';
     const mainClass = isMain ? ' is-main' : '';
 
@@ -15151,6 +15154,78 @@ function _jtcFcHpBlock(side, final, max, pct) {
 
 /** フォーカスカード本体(アッパー画像対面・左右とも非反転+開始HPバー+観戦/スキップ)。
  * extraHtml があれば names 行の直後（大会固有のセリフ・案内）に挿入する。 */
+// ─────────────────────────────────────────────────────────────────────────────
+// 因縁の宣戦布告 (2026-07-26)
+//
+// セリフ資産(RIVALRY_CONFRONTATION_LINES 系)は前からあったが、**通常興行の
+// 自団体どうしの試合でしか出ていなかった**。しかも通常興行ですら
+//   const cl = G.roster.find(...); const cr = G.roster.find(...); if (cl && cr)
+// という条件だったため、**対外戦では一度も出たことがなかった**(2026-07-26 Keisuke)。
+//
+// 因縁データ自体は選手IDで引くので他団体でも問題なく引ける。眠っていただけ。
+// ここに判定を1本化し、特別興行・対外戦のどこからでも同じ基準で出せるようにする。
+//
+// 基準は通常興行と同じ **rivalry 50以上**。好敵手・宿怨は従来どおり対象外
+// (あちらは決着済みの関係で、宣戦布告の場面ではない)。
+// 大会の格では出し分けない — 準々決勝の名勝負を取りこぼしたくない(Keisuke 裁定)。
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** 因縁のある2人なら宣戦布告のセリフ組を返す。無ければ null。
+ *  同じ対戦なら何度描き直しても同じセリフになるよう、ペアと日付から種を作る。 */
+function _rivalryPreMatchLines(leftId, rightId) {
+  if (typeof Engine === 'undefined' || !Engine.title || typeof G === 'undefined') return null;
+  const lvl = Engine.title.getRivalryLevel(G, leftId, rightId);
+  if (!lvl || lvl.isGoodRival || lvl.isBitterRival) return null;
+  const rivalry = lvl.rivalry || 0;
+  if (rivalry < 50) return null;
+
+  let attackerPool, defenderPool;
+  if (rivalry >= 90) {
+    attackerPool = RIVALRY_CONFRONTATION_LINES_90.attacker;
+    defenderPool = RIVALRY_CONFRONTATION_LINES_90.defender;
+  } else if (rivalry >= 70) {
+    attackerPool = RIVALRY_CONFRONTATION_LINES_70.attacker;
+    defenderPool = RIVALRY_CONFRONTATION_LINES_70.defender;
+  } else {
+    attackerPool = RIVALRY_CONFRONTATION_LINES.attacker;
+    defenderPool = RIVALRY_CONFRONTATION_LINES.defender;
+  }
+  // 性格・アーキタイプは静的定義から引く(他団体の選手も同じ口で引ける)
+  const charOf = id => (typeof ALL_CHARS !== 'undefined')
+    ? ALL_CHARS.find(c => c.id === id) : null;
+  const l = charOf(leftId), r = charOf(rightId);
+  if (!l || !r) return null;
+
+  const rng = Engine.rng.create(Engine.rng.derive(
+    G.rngSeed || 0, G.season || 0, G.week || 0, Number(leftId) * 1000 + Number(rightId)));
+  const pick = (obj, f) => {
+    const pool = (typeof getDialoguePool === 'function') ? getDialoguePool(obj, f) : [];
+    return pool.length ? pool[Engine.rng.int(rng, 0, pool.length - 1)] : '';
+  };
+  const leftLine = pick(attackerPool, l);
+  const rightLine = pick(defenderPool, r);
+  if (!leftLine && !rightLine) return null;
+  return { leftLine, rightLine, rivalry, isFate: rivalry >= 70 };
+}
+
+/** 上を既存の吹き出し対(jt-bub-pair)の形にして返す。無ければ ''。
+ *  **新しい見た目は作らない** — ジュニアも秋も同じ部品を使っている。
+ *
+ *  これは**飾り**なので、何があっても盤面を落としてはいけない。
+ *  中で投げたら黙って '' を返す(セリフが1つ出ないだけで済ませる)。 */
+function _rivalryBubblePairHtml(leftId, rightId, leftName, rightName, extraCls) {
+  let r = null;
+  try { r = _rivalryPreMatchLines(leftId, rightId); } catch (_e) { return ''; }
+  if (!r) return '';
+  // 吹き出しの中身は**話者名とセリフだけ**。既存の jt-bub と同じ形を崩さない。
+  // 因縁であることはセリフ自体が言っている(「今日こそ、決着をつける」)ので、
+  // バッジのような飾りは足さない
+  return `<div class="jt-bub-pair${extraCls ? ' ' + extraCls : ''}" data-rivalry="${r.rivalry}">
+    ${r.leftLine ? `<div class="jt-bub"><div class="sp bl">${escHtml(leftName || '')}</div>「${escHtml(r.leftLine)}」</div>` : ''}
+    ${r.rightLine ? `<div class="jt-bub"><div class="sp gd">${escHtml(rightName || '')}</div>「${escHtml(r.rightLine)}」</div>` : ''}
+  </div>`;
+}
+
 function _jtcFcCore({ label, f1, f2, own1, own2, upperL, upperR, hpLeftBlock, hpRightBlock, hpMidLabel, extraHtml, onWatch, onSkip, onLeftDetail, onRightDetail, skipLabel }) {
   // U7 §2-C: 顔と名前が出ているなら押せば詳細が開く。
   // onLeftDetail/onRightDetail は引数として用意されていたが**どの呼び出し元も渡しておらず**、
@@ -15211,12 +15286,14 @@ function _jtFocusCard(match, roundName, ri, mi) {
   const upperL = typeof getUpperUrl === 'function' ? getUpperUrl(f1.id) : '';
   const upperR = typeof getUpperUrl === 'function' ? getUpperUrl(f2.id) : '';
 
+  // 因縁があれば宣戦布告を優先。汎用セリフより語ることがある
+  let bubbleHtml = (typeof _rivalryBubblePairHtml === 'function')
+    ? _rivalryBubblePairHtml(f1.id, f2.id, f1.name, f2.name) : '';
   // セリフ(JTのみ・天頂戦にはない)
   const timing = isFinal ? 'preFinal' : 'preMatch';
   const lineL = getJuniorTournamentLine(timing, f1.personality || 'normal', f1.archetype || '_default');
   const lineR = getJuniorTournamentLine(timing, f2.personality || 'normal', f2.archetype || '_default');
-  let bubbleHtml = '';
-  if (lineL || lineR) {
+  if (!bubbleHtml && (lineL || lineR)) {
     bubbleHtml = `<div class="jt-bub-pair">`;
     if (lineL) bubbleHtml += `<div class="jt-bub"><div class="sp bl">${escHtml(f1.name)}</div>「${escHtml(lineL)}」</div>`;
     if (lineR) bubbleHtml += `<div class="jt-bub"><div class="sp bl">${escHtml(f2.name)}</div>「${escHtml(lineR)}」</div>`;
@@ -16539,6 +16616,10 @@ function _agwDialogueRng(kind, parts, chance) {
 }
 
 function _agwPreBoutDialogueHtml(match, next, left, right, displayOrgIds) {
+  // 因縁は抽選を通さない。年1回の対抗戦で当たった宿敵が黙っているほうが不自然
+  const rivalryHtml = (typeof _rivalryBubblePairHtml === 'function')
+    ? _rivalryBubblePairHtml(left.id, right.id, left.name, right.name, 'agw-bout-dialogue') : '';
+  if (rivalryHtml) return rivalryHtml;
   const rng = _agwDialogueRng('preBout', [match.round, match.orgA, match.orgB, next.index, left.id, right.id], _AGW_DIALOGUE_CHANCE.preBout);
   if (!rng || typeof getAutumnWarMatchLine !== 'function') return '';
   const timing = match.round === 'final' ? 'preFinal' : 'preMatch';
@@ -17127,7 +17208,9 @@ function _tcFocusCard(match, roundName, ri, mi) {
     own1: _tcOwnPill(f1.orgId),
     own2: _tcOwnPill(f2.orgId),
     upperL, upperR,
-    extraHtml: '',
+    // 天頂戦に汎用セリフは無い。**因縁のときだけ**口を開く
+    extraHtml: (typeof _rivalryBubblePairHtml === 'function')
+      ? _rivalryBubblePairHtml(f1.id, f2.id, f1.name, f2.name) : '',
     hpLeftBlock: _jtcFcHpBlock('left', pctL, 100, pctL),
     hpRightBlock: _jtcFcHpBlock('right', pctR, 100, pctR),
     hpMidLabel: `開始HP${carryNote}`,

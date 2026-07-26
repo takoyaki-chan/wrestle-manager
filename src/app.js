@@ -6196,8 +6196,13 @@ const App = {
       if (m._f08Locked) return;
       const rivalLvl = Engine.title.getRivalryLevel(G, m.left, m.right);
       if (rivalLvl && !rivalLvl.isGoodRival && !rivalLvl.isBitterRival && (rivalLvl.rivalry || 0) >= 50) {
-        const cl = G.roster.find(c => c.id === m.left);
-        const cr = G.roster.find(c => c.id === m.right);
+        // 2026-07-26: **両方が自団体のときだけ**という条件だったため、
+        // 挑戦試合・遠征・ゲスト参戦などの対外戦では宣戦布告が一度も出たことがなかった。
+        // 因縁は選手IDで引けるので、所属を問わず名前が引ければ出す
+        const _findAny = id => G.roster.find(c => c.id === id)
+          || (typeof findFighter === 'function' ? findFighter(id) : null);
+        const cl = _findAny(m.left);
+        const cr = _findAny(m.right);
         if (cl && cr) {
           confrontations.push({
             phase: 'confrontation', idx: i,
