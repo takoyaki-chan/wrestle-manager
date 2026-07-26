@@ -15260,6 +15260,11 @@ function showEventMatchResultPopup(opts) {
   const hpL = _emrHp(opts.hpLeft), hpR = _emrHp(opts.hpRight);
   const emblem = theme.emblem ? `<img src="${theme.emblem}" alt="" onerror="this.style.display='none'">` : escHtml(theme.mark);
   const showVictoryLine = winnerSide !== 'draw' && opts.showVictoryLine !== false;
+  // 試合が決まった音。**どの大会の結果でも無音だった**(2026-07-26 Keisuke 指摘は
+  // 秋4団体戦の1フォール目だったが、調べたら通常興行もPPVも全部鳴っていなかった)。
+  // 共通の入口で鳴らすので、大会を足しても付け忘れが起きない。
+  // 大会の優勝ファンファーレとは別物。1試合ごとに何度も鳴るので控えめに。
+  try { Audio.play(winnerSide === 'draw' ? 'boutDraw' : 'boutWin'); } catch (_e) {}
   const line = showVictoryLine ? _emrVictoryLine(winnerFighter, opts.victoryLine) : '';
   // 顔出しイベント共通ルール(docs/ui/02-layouts.md 2-D-X)準拠: 吹き出しは画像の「上」の予約枠に入れ、
   // 中身はセリフ本文だけ(話者名・所属は書かない。話者は画像下の表示で示す)。発言が無い側は空枠のままにして

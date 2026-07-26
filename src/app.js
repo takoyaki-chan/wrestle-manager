@@ -135,7 +135,7 @@ const Audio = (() => {
     fanfare:.74, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
     war:.60, transfer:.52, award:.72, tension_hit:.66,
     rivalry_confrontation:.64, fate_confrontation:.63, rivalry_resolution:.50, fate_resolution:.57,
-    coin:.40, spend:.40, stamp:.40, matchVictoryFanfare:.50,
+    coin:.40, spend:.40, stamp:.40, matchVictoryFanfare:.50, boutWin:.34, boutDraw:.30,
   };
 
   // Lazy-init AudioContext (must be triggered by user gesture)
@@ -465,6 +465,26 @@ const Audio = (() => {
       osc(1047, 'triangle', t + 0.28, 0.6, 0.08);
       osc(2094, 'sine', t + 0.28, 0.4, 0.04);
       noiseHP(t + 0.28, 0.15, 0.03, 6000);
+    },
+    // 1試合ぶんの決着音。**小さくても勝利らしい音**(2026-07-26 Keisuke)。
+    // matchVictoryFanfare は2秒級の大会用ファンファーレで、1フォールごとに鳴らすには重い。
+    // 短い上昇3音＋軽い拍手のにじみ。1試合ごとに何度も鳴るので**控えめに**。
+    boutWin() {
+      const c = ensure();
+      const t = c.currentTime;
+      [659, 784, 1047].forEach((freq, i) => {
+        const at = t + i * 0.07;
+        osc(freq, 'sine', at, 0.22, 0.09);
+        osc(freq * 2, 'sine', at, 0.14, 0.025);
+      });
+      noiseHP(t + 0.14, 0.22, 0.02, 4200);
+    },
+    // 引き分け・決着つかず。勝利音を鳴らすと嘘になるので、短く止める音
+    boutDraw() {
+      const c = ensure();
+      const t = c.currentTime;
+      osc(392, 'sine', t, 0.28, 0.08);
+      osc(330, 'sine', t + 0.1, 0.3, 0.06);
     },
     // オーディオミキサー ff04 / battle f10 と同じ試合勝利ファンファーレ
     matchVictoryFanfare() {

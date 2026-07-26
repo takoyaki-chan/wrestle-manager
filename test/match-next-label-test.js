@@ -86,6 +86,41 @@ section('7. 勝ち残り戦は常に「次の試合へ」（大会結果は別�
     '勝ち残り戦の途中で「結果へ」が出ている。まだ試合は続く');
 });
 
+
+
+// ─────────────────────────────────────────────────────────────
+// 試合が決まった音（2026-07-26）
+//   Keisuke「1試合目を勝ったときの音が無い」→ 調べたら**どの大会の結果も無音**だった。
+//   共通の入口で鳴らすので、大会を足しても付け忘れない。
+// ─────────────────────────────────────────────────────────────
+
+const appJs = read('src/app.js');
+
+section('8. 試合結果で音が鳴る（共通の入口で）', () => {
+  const at = uiCommon.indexOf('function showEventMatchResultPopup(opts)');
+  assert.ok(at > 0, 'showEventMatchResultPopup が見つからない');
+  const body = uiCommon.slice(at, at + 1400);
+  assert.ok(/Audio\.play\(/.test(body),
+    '試合結果が無音のまま。個別の大会ではなく**共通の入口**で鳴らすこと');
+  assert.ok(/boutWin/.test(body), '勝利音が鳴っていない');
+});
+
+section('9. 引き分けでは勝利音を鳴らさない', () => {
+  const at = uiCommon.indexOf('function showEventMatchResultPopup(opts)');
+  const body = uiCommon.slice(at, at + 1400);
+  assert.ok(/winnerSide === 'draw' \? 'boutDraw' : 'boutWin'/.test(body),
+    '引き分けでも勝利音が鳴る。嘘になる');
+});
+
+section('10. 1試合ごとの音は、大会の優勝ファンファーレより控えめ', () => {
+  assert.ok(/boutWin\(\)/.test(appJs), 'boutWin が定義されていない');
+  const m = appJs.match(/boutWin:\s*\.?([0-9.]+)/);
+  const f = appJs.match(/matchVictoryFanfare:\s*\.?([0-9.]+)/);
+  assert.ok(m && f, 'ミキサー音量が読めない');
+  assert.ok(parseFloat('0.' + m[1].replace('.', '')) < parseFloat('0.' + f[1].replace('.', '')),
+    `1試合ごとの音(${m[1]})が大会ファンファーレ(${f[1]})以上。何度も鳴るので控えめにすること`);
+});
+
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (7 sections)');
+console.log('ALL PASS (10 sections)');
