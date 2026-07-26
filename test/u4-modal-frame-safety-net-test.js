@@ -39,6 +39,19 @@
 //    内容を渡したとき、openを経由しても壊れず・二重エスケープもされずそのまま出力に残る」ことを
 //    検査する(open自体がエスケープする、という意味ではない)。
 //
+// ── 2026-07-26 追記: 上記a/bの死骸はU4「モーダルの外枠」統一作業で実際に削除した ──────
+// - `_renderEventPopup()` と `_closeShachoshitsuDecisionModal()` は関数定義ごと削除。
+// - `.milestone-overlay` / `.rivalry-popup-overlay` / `.retirement-popup-overlay` /
+//   `.shachoshitsu-decision-overlay` / `.mdl-shacho-bg` / `.event-popup-overlay`(本体。
+//   `_renderEventPopupAsC3` が今も使う `.event-popup-action`/`.event-popup-action-hint` は残す) /
+//   `.r3-modal-overlay` の CSS・DOM要素も index.html から削除した。
+// - `_POPUP_OVERLAY_IDS` から4件のID(eventPopupOverlay/retirementPopupOverlay/
+//   rivalryPopupOverlay/milestoneOverlay)を外し、`_isPopupActive()`・`dismissAllPopups()`・
+//   `closeRetirementPopup()` に残っていた `.r3-modal-overlay`/`retirementPopupOverlay` への
+//   防御的参照も削除した。
+// - D節はこれに合わせて「死んでいることの検証」から「跡形もなく消え、再び湧いていないことの検証」
+//   へ更新している(CSS/DOM不在の直接assertを追加)。B節の r3-modal-overlay 検出テストも
+//   war-victory-overlayのみへ更新した。
 // ─────────────────────────────────────────────────────────────────────────
 
 const assert = require('assert');
@@ -89,15 +102,6 @@ function occurrences(src, needle) {
   let idx = 0;
   while ((idx = src.indexOf(needle, idx)) !== -1) { count++; idx += needle.length; }
   return count;
-}
-
-/** name(...) という「呼び出し」が、自分自身の function 定義行以外から一度も現れないことを確認する */
-function assertFunctionNeverCalled(src, fnName, message) {
-  const defPattern = `function ${fnName}(`;
-  const defCount = occurrences(src, defPattern);
-  const totalCount = occurrences(src, `${fnName}(`);
-  assert.strictEqual(totalCount - defCount, 0,
-    `${message}(定義${defCount}件 / 呼び出し含む出現${totalCount}件。差が0でなければどこかから呼ばれている)`);
 }
 
 // ---------------------------------------------------------------------------
@@ -291,10 +295,13 @@ section('_POPUP_OVERLAY_IDS: is a non-empty array of id strings (sanity check on
   POPUP_OVERLAY_IDS.forEach(id => assert.strictEqual(typeof id, 'string', `${id}は文字列`));
 });
 
-section('_POPUP_OVERLAY_IDS: every listed id actually exists as an element in src/index.html (unvariant 6)', () => {
-  const missing = POPUP_OVERLAY_IDS.filter(id => !cssIndex.includes(`id="${id}"`));
+section('_POPUP_OVERLAY_IDS: every listed id actually exists as an element, either statically in index.html or dynamically generated via a JS template string (unvariant 6)', () => {
+  // U4(2026-07-26): relmapPopupOverlay/travelSceneOverlayのように、id="..."が
+  // index.htmlの静的マークアップではなくJSのテンプレート文字列側で生成される動的オーバーレイもあるため、
+  // combinedSrc(JS全体)側もあわせて見る(index.htmlだけに限定すると掃除漏れ検出が動的枠を誤検出する)。
+  const missing = POPUP_OVERLAY_IDS.filter(id => !cssIndex.includes(`id="${id}"`) && !combinedSrc.includes(`id="${id}"`));
   assert.deepStrictEqual(missing, [],
-    `リストに載っているが index.html に無いID: [${missing.join(', ')}]。死んだ枠を削除したときの掃除漏れが無いか、ここで検出する`);
+    `リストに載っているが index.html にもJSのどこにも無いID: [${missing.join(', ')}]。死んだ枠を削除したときの掃除漏れが無いか、ここで検出する`);
 });
 
 const buildActive = new Function(
@@ -348,11 +355,13 @@ section('_isPopupActive: also detects an active faction-event overlay layer (dyn
   assert.strictEqual(_isPopupActive(), true, 'factionEventRoot配下にactiveな演出レイヤーがあればtrue');
 });
 
-section('_isPopupActive: also detects the dynamically-appended r3-modal-overlay / war-victory-overlay', () => {
-  const { _isPopupActive: isActiveR3 } = buildActive(makeActiveDom({ activeIds: [], noFactionRoot: true, r3Active: true }));
-  assert.strictEqual(isActiveR3(), true, '.r3-modal-overlayが存在すればtrue(動的追加DOM)');
+section('_isPopupActive: detects the dynamically-appended war-victory-overlay (the r3-modal-overlay check was removed in U4 along with the dead class itself)', () => {
   const { _isPopupActive: isActiveWar } = buildActive(makeActiveDom({ activeIds: [], noFactionRoot: true, warActive: true }));
   assert.strictEqual(isActiveWar(), true, '.war-victory-overlayが存在すればtrue(動的追加DOM)');
+  // r3Active:true でダミーDOMに .r3-modal-overlay を生やしても、_isPopupActive はもう見ない
+  // (showR3Modalはmdl-dへ移行済みでこのクラス自体が死んでいたため、U4で防御的参照ごと削除した)
+  const { _isPopupActive: isActiveR3Ignored } = buildActive(makeActiveDom({ activeIds: [], noFactionRoot: true, r3Active: true }));
+  assert.strictEqual(isActiveR3Ignored(), false, '.r3-modal-overlayが存在してもfalse(U4でチェックごと削除済み)');
 });
 
 section('_isPopupActive: opts.ignoreShowResultOverlay lets showResultOverlay be excluded from the check', () => {
@@ -364,11 +373,12 @@ section('_isPopupActive: opts.ignoreShowResultOverlay lets showResultOverlay be 
 });
 
 // ===========================================================================
-// C. 重なり順(z-index)の現状値サーベイ — ログ出力のみ。assertでは落とさない。
-//    docs/ui/mockup-baseline-v0.1.md v0.6 §5-C: 統一後は100/200/300/400/500の5階層に固定予定。
-//    今はまだ混在しているので、ここでは「今何がどの値か」を記録するだけに留める。
+// C. 重なり順(z-index)が5階層(100/200/300/400/500)のいずれかであることを検査する
+//    (U4 2026-07-26で統一実施。docs/ui/mockup-baseline-v0.1.md v0.6 §5-C)。
+//    元はログ出力のみの下調べだったが、統一が完了したため実assertへ格上げした。
+//    「同じ階層内での前後」は基準値+1〜+9の小さな加算まで許容する(指示書どおり)。
 // ===========================================================================
-(function zIndexSurveySuite() {
+(function zIndexTierSuite() {
   function firstRuleBlock(selector) {
     const idx = cssIndex.indexOf(selector + '{');
     const searchIdx = idx >= 0 ? idx : cssIndex.indexOf(selector);
@@ -383,72 +393,108 @@ section('_isPopupActive: opts.ignoreShowResultOverlay lets showResultOverlay be 
     const block = firstRuleBlock(selector);
     if (!block) return null;
     const m = block.match(/z-index:\s*(-?\d+)/);
-    return m ? m[1] : null;
+    return m ? Number(m[1]) : null;
   }
 
-  // 画面を覆うオーバーレイ/モーダル系セレクタ(現状の主なもの。網羅は目的ではなく、
-  // 「どのセレクタが今どの値を使っているか」を統一作業の着手前に見えるようにするのが目的)
-  const targets = [
-    '.show-result-overlay', '.emr-layer', '.title-screen', '.org-setup',
-    '.coach-tooltip-overlay', '.fighter-popup-overlay', '.db-hof-detail-overlay',
-    '.confirm-overlay', '.awards-overlay', '.growth-event-overlay', '.gameover-overlay',
-    '.credits-overlay', '.rm-popup-overlay', '.jt-so', '.agw-overlay',
-    '.care-modal-overlay', '.notif-modal-overlay', '.season-fanfare-overlay',
-    '.milestone-overlay', '.glimpse-cascade-overlay', '.care-overlay',
-    '.event-popup-overlay', '.retirement-popup-overlay', '.rivalry-popup-overlay',
-    '.newspaper-overlay', '.shachoshitsu-decision-overlay', '.mdl-shacho-bg',
+  const TIERS = [100, 200, 300, 400, 500];
+  /** 5階層のいずれかの基準値、またはその+1〜+9の同一階層内オフセットであればtrue */
+  function isValidTierValue(z) {
+    if (z === null) return false;
+    const base = Math.floor(z / 100) * 100;
+    const offset = z - base;
+    return TIERS.includes(base) && offset >= 0 && offset <= 9;
+  }
+
+  // 画面を覆うオーバーレイ/モーダル系セレクタ全数(U4で実際に値を揃えた対象)。
+  // 死んだ7系統(.milestone-overlay等)はD節で削除済みのためここには含めない。
+  const TIER_100_SCREEN = [
+    '.show-result-overlay', '.title-screen', '.org-setup', '.agw-overlay', '.jt-so', '.ppvmc-overlay',
+  ];
+  const TIER_200_MODAL = [
     '.mdl-a-overlay', '.mdl-b-overlay', '.mdl-c-overlay', '.mdl-d-overlay',
-    '.r3-modal-overlay',
+    '.coach-tooltip-overlay', '.fighter-popup-overlay', '.confirm-overlay',
+    '.db-hof-detail-overlay', '.rm-popup-overlay', '.credits-overlay',
+    '.care-modal-overlay', '.notif-modal-overlay', '.glimpse-cascade-overlay',
+    '.care-overlay', '.growth-event-overlay', '.newspaper-overlay',
+  ];
+  const TIER_300_EFFECT = [
+    '.emr-layer', '.war-victory-overlay', '.fevt-overlay-office', '.fevt-overlay-stage',
+    '.fevt-overlay-arena', '.fevt-narration-act', '.travel-overlay',
+  ];
+  const TIER_400_CEREMONY = [
+    '.opening-overlay', '.opening-skip', '.completion-overlay', '.awards-overlay', '.season-fanfare-overlay',
+  ];
+  const TIER_500_TOP = [
+    '.gameover-overlay',
+  ];
+  const targets = [
+    ...TIER_100_SCREEN, ...TIER_200_MODAL, ...TIER_300_EFFECT, ...TIER_400_CEREMONY, ...TIER_500_TOP,
   ];
 
-  section('z-index survey: dumps the current value for every screen-covering overlay/modal selector (informational only — see console output; not asserted, U4 will deliberately change these)', () => {
+  section('z-index tiers: every screen-covering overlay/modal CSS rule uses one of the 5 unified tiers (100/200/300/400/500), optionally +1..+9 within its own tier', () => {
     const rows = targets.map(sel => ({ sel, z: zIndexOf(sel) }));
-    console.log('  [z-index survey] U4着手前の現状値(統一後は 100/200/300/400/500 の5階層に固定予定):');
-    rows.forEach(r => {
-      const label = r.z === null ? '(見つからず)' : String(r.z).padStart(5, ' ');
-      console.log(`    ${label}  ${r.sel}`);
-    });
-    const distinctValues = Array.from(new Set(rows.filter(r => r.z !== null).map(r => Number(r.z)))).sort((a, b) => a - b);
-    console.log(`  [z-index survey] 現状の値の種類: ${distinctValues.length}種 → [${distinctValues.join(', ')}]`);
-    const notFound = rows.filter(r => r.z === null).map(r => r.sel);
-    if (notFound.length > 0) console.log(`  [z-index survey] z-indexが見つからなかったセレクタ(親要素の値を継承している可能性): ${notFound.join(', ')}`);
-    // このセクションはログ出力が目的。実行できたこと自体だけを確認する(指示書:「assertでは落とさない」)。
-    assert.ok(true);
+    const bad = rows.filter(r => !isValidTierValue(r.z));
+    assert.deepStrictEqual(bad, [],
+      `5階層のいずれでもないセレクタ: ${JSON.stringify(bad)}`);
+  });
+
+  // #battleOverlay(観戦モードiframe)と showCeremonyEvent の cerem-overlay はCSSクラスルールではなく
+  // インラインstyle/JS側でz-indexを設定しているため、CSSルール解析ではなくソース文字列で確認する。
+  section('z-index tiers: #battleOverlay (inline style, top-tier — the spec\'s explicit "観戦モードのiframe" example) is 500', () => {
+    assert.ok(cssIndex.includes('id="battleOverlay" style="display:none;position:fixed;inset:0;z-index:500;'),
+      '#battleOverlay のインラインz-indexは500(最上位)であるはず');
+  });
+
+  section('z-index tiers: showCeremonyEvent\'s dynamically-created .cerem-overlay (inline JS style, milestone ceremony) is 400', () => {
+    assert.ok(appSrc.includes("overlay.style.zIndex = '400';"),
+      'showCeremonyEvent内のoverlay.style.zIndexは400(式典)であるはず');
   });
 })();
 
 // ===========================================================================
-// D. 死んだ枠が復活しないこと — 削除予定の7系統
-//    CSSは(今は)存在してよいが、それを生成するコードがJSのどこにも無いことを固定する。
-//    削除後もこのテストが通り続けるよう、CSSクラスの存在は確認しない(D節冒頭コメント参照)。
+// D. 死んだ枠7系統が跡形もなく削除され、再び湧いていないこと
+//    (U4 2026-07-26で実削除。元は「CSSはあるがJSから開かれていない」ことだけを検査する
+//    節だったが、実際にCSS・DOM・死んだ関数を削除したため、ここでは
+//    「CSS/DOMが存在しないこと」+「JS側の参照が説明コメント以外に残っていないこと」を検査する)
 // ===========================================================================
 (function deadFrameSuite() {
-  section('dead frame 1/7 — .milestone-overlay: referenced only once in the whole JS codebase (inside the popup-queue id list); nothing opens it', () => {
+  section('dead frame 1/7 — .milestone-overlay: CSS/DOM removed from index.html; the only remaining trace in JS is the explanatory comment in _POPUP_OVERLAY_IDS', () => {
+    assert.ok(!cssIndex.includes('.milestone-overlay'), '.milestone-overlay系CSSはindex.htmlに存在しない');
+    assert.ok(!cssIndex.includes('id="milestoneOverlay"'), 'id="milestoneOverlay" のDOMはindex.htmlに存在しない');
     const count = occurrences(combinedSrc, 'milestoneOverlay');
     assert.strictEqual(count, 1,
-      `milestoneOverlay の出現回数は1(_POPUP_OVERLAY_IDS内の1件のみ)のはず。現在値: ${count}件。増えていたら誰かが新たに開こうとしている`);
+      `milestoneOverlay の出現回数は1(_POPUP_OVERLAY_IDS直前の削除理由コメントのみ)のはず。現在値: ${count}件。増えていたら誰かが新たに開こうとしている`);
+    assert.ok(!ui.includes("'milestoneOverlay'"), '_POPUP_OVERLAY_IDS配列には文字列リテラルとしてもう含まれていない');
   });
 
-  section('dead frame 2/7 — .rivalry-popup-overlay: referenced only once in the whole JS codebase (inside the popup-queue id list); nothing opens it', () => {
+  section('dead frame 2/7 — .rivalry-popup-overlay: CSS/DOM removed from index.html; only the explanatory comment remains in JS', () => {
+    assert.ok(!cssIndex.includes('.rivalry-popup-overlay'), '.rivalry-popup-overlay系CSSはindex.htmlに存在しない');
+    assert.ok(!cssIndex.includes('id="rivalryPopupOverlay"'), 'id="rivalryPopupOverlay" のDOMはindex.htmlに存在しない');
     const count = occurrences(combinedSrc, 'rivalryPopupOverlay');
     assert.strictEqual(count, 1,
-      `rivalryPopupOverlay の出現回数は1(_POPUP_OVERLAY_IDS内の1件のみ)のはず。現在値: ${count}件`);
+      `rivalryPopupOverlay の出現回数は1(削除理由コメントのみ)のはず。現在値: ${count}件`);
+    assert.ok(!ui.includes("'rivalryPopupOverlay'"), '_POPUP_OVERLAY_IDS配列にはもう含まれていない');
   });
 
-  section('dead frame 3/7 — .retirement-popup-overlay: the only other reference is a defensive classList.remove, never an add', () => {
+  section('dead frame 3/7 — .retirement-popup-overlay: CSS/DOM removed; the legacy classList.remove compat cleanup in closeRetirementPopup is also gone', () => {
+    assert.ok(!cssIndex.includes('.retirement-popup-overlay'), '.retirement-popup-overlay系CSSはindex.htmlに存在しない');
+    assert.ok(!cssIndex.includes('id="retirementPopupOverlay"'), 'id="retirementPopupOverlay" のDOMはindex.htmlに存在しない');
     const count = occurrences(combinedSrc, 'retirementPopupOverlay');
-    assert.strictEqual(count, 2,
-      `retirementPopupOverlay の出現回数は2(_POPUP_OVERLAY_IDS内の1件 + closeRetirementPopupの互換クリーンアップ1件)のはず。現在値: ${count}件`);
-    assert.ok(!combinedSrc.includes("getElementById('retirementPopupOverlay').classList.add"),
-      'retirementPopupOverlay に対して classList.add(...) するコードは無い(あるのはclassList.removeの互換処理のみ)');
+    assert.strictEqual(count, 1,
+      `retirementPopupOverlay の出現回数は1(削除理由コメントのみ。互換クリーンアップは削除済み)のはず。現在値: ${count}件`);
+    const closeBody = uiFn('closeRetirementPopup');
+    assert.ok(!closeBody.includes('retirementPopupOverlay'),
+      'closeRetirementPopup() はもう retirementPopupOverlay(旧オーバーレイの互換classList.remove)を参照しない');
   });
 
-  section('dead frame 4/7 — .shachoshitsu-decision-overlay: the only function referencing it (_closeShachoshitsuDecisionModal) is itself unreachable; the live decision modals all use mdl-a', () => {
-    const idCount = occurrences(combinedSrc, 'shachoshitsuDecisionOverlay');
-    assert.strictEqual(idCount, 1,
-      `shachoshitsuDecisionOverlay の出現回数は1(_closeShachoshitsuDecisionModal内のgetElementById呼び出しのみ)のはず。現在値: ${idCount}件`);
-    assertFunctionNeverCalled(combinedSrc, '_closeShachoshitsuDecisionModal',
-      '_closeShachoshitsuDecisionModal自体、どこからも呼ばれていない(定義のみで孤立した関数)');
+  section('dead frame 4/7 — .shachoshitsu-decision-overlay: CSS/DOM removed; _closeShachoshitsuDecisionModal itself no longer exists; the live decision modals all use mdl-a', () => {
+    assert.ok(!cssIndex.includes('.shachoshitsu-decision-overlay') && !cssIndex.includes('.shachoshitsu-decision-modal'),
+      '.shachoshitsu-decision-* 系CSSはindex.htmlに存在しない');
+    assert.ok(!cssIndex.includes('id="shachoshitsuDecisionOverlay"'), 'id="shachoshitsuDecisionOverlay" のDOMはindex.htmlに存在しない');
+    assert.strictEqual(occurrences(combinedSrc, 'shachoshitsuDecisionOverlay'), 0,
+      'shachoshitsuDecisionOverlay はJSのどこにも残っていない');
+    assert.strictEqual(occurrences(ui, 'function _closeShachoshitsuDecisionModal('), 0,
+      '_closeShachoshitsuDecisionModal 自体が関数定義ごと削除されている');
 
     ['showDecisionTargetModal', 'showDecisionConfirmModal', 'showDecisionResultModal', 'showDecisionPairModal'].forEach(fnName => {
       const body = uiFn(fnName);
@@ -458,17 +504,24 @@ section('_isPopupActive: opts.ignoreShowResultOverlay lets showResultOverlay be 
     });
   });
 
-  section('dead frame 5/7 — .mdl-shacho-bg: zero references anywhere in the JS source', () => {
+  section('dead frame 5/7 — .mdl-shacho-bg: zero references anywhere in JS; CSS/DOM removed from index.html', () => {
+    assert.ok(!cssIndex.includes('.mdl-shacho-bg'), '.mdl-shacho-bg系CSSはindex.htmlに存在しない');
+    assert.ok(!cssIndex.includes('id="mdlShachoBg"'), 'id="mdlShachoBg" のDOMはindex.htmlに存在しない');
     const count = occurrences(combinedSrc, 'mdl-shacho-bg');
     assert.strictEqual(count, 0, `mdl-shacho-bg はJS側から一切参照されていないはず。現在値: ${count}件`);
   });
 
-  section('dead frame 6/7 — .event-popup-overlay: the only function that activates it (_renderEventPopup) is unreachable from the live entry point showEventPopup()', () => {
+  section('dead frame 6/7 — .event-popup-overlay: CSS/DOM removed; _renderEventPopup itself no longer exists; the action-button styles it shared with the still-live _renderEventPopupAsC3 remain', () => {
+    assert.ok(!cssIndex.includes('.event-popup-overlay'), '.event-popup-overlay(枠本体)のCSSはindex.htmlに存在しない');
+    assert.ok(!cssIndex.includes('id="eventPopupOverlay"'), 'id="eventPopupOverlay" のDOMはindex.htmlに存在しない');
     const idCount = occurrences(combinedSrc, 'eventPopupOverlay');
-    assert.strictEqual(idCount, 2,
-      `eventPopupOverlay の出現回数は2(_POPUP_OVERLAY_IDS内の1件 + 孤立した関数_renderEventPopup内のactivate呼び出し1件)のはず。現在値: ${idCount}件`);
-    assertFunctionNeverCalled(combinedSrc, '_renderEventPopup',
-      '_renderEventPopup自体、どこからも呼ばれていない(定義のみで孤立。完成したactivateコードを持つが到達不能)');
+    assert.strictEqual(idCount, 1,
+      `eventPopupOverlay の出現回数は1(_POPUP_OVERLAY_IDS直前の削除理由コメントのみ)のはず。現在値: ${idCount}件`);
+    assert.strictEqual(occurrences(ui, 'function _renderEventPopup('), 0,
+      '_renderEventPopup 自体が関数定義ごと削除されている');
+    // _renderEventPopupAsC3(生きている経路)が今も使う二次アクションボタンのCSSは残っている
+    assert.ok(cssIndex.includes('.event-popup-action{'), '.event-popup-action(二次アクションボタン)のCSSは残っている(_renderEventPopupAsC3が使用中)');
+    assert.ok(cssIndex.includes('.event-popup-action-hint'), '.event-popup-action-hint のCSSも同様に残っている');
 
     const showEventPopupBody = uiFn('showEventPopup');
     assert.ok(!showEventPopupBody.includes('_renderEventPopup('),
@@ -477,15 +530,22 @@ section('_isPopupActive: opts.ignoreShowResultOverlay lets showResultOverlay be 
       'showEventPopup() の実際の分岐先はmdl-a(_showEventPopupAsChoice)/mdl-c相当(_renderEventPopupAsC3)のみ(生きている経路であることの確認)');
   });
 
-  section('dead frame 7/7 — .r3-modal-overlay: showR3Modal has already migrated to mdl-d; the remaining references are read-only cleanup/detection checks', () => {
+  section('dead frame 7/7 — .r3-modal-overlay: CSS removed from index.html; showR3Modal has already migrated to mdl-d; the defensive references in _isPopupActive/dismissAllPopups are also gone', () => {
+    assert.ok(!cssIndex.includes('.r3-modal-overlay') && !cssIndex.includes('.r3-modal{'),
+      '.r3-modal* 系CSSはindex.htmlに存在しない');
     const count = occurrences(combinedSrc, 'r3-modal-overlay');
-    assert.strictEqual(count, 2,
-      `r3-modal-overlay の出現回数は2(_isPopupActiveの動的オーバーレイ検出1件 + dismissAllPopupsのクリーンアップ1件)のはず。現在値: ${count}件`);
+    assert.strictEqual(count, 0, `r3-modal-overlay の出現回数は0(CSSもJSの防御的参照も削除済み)のはず。現在値: ${count}件`);
     const showR3ModalBody = uiFn('showR3Modal');
     assert.ok(!showR3ModalBody.includes('r3-modal-overlay'),
       'showR3Modal() はもう r3-modal-overlay クラスの要素を生成していない(すでにmdl-dへ移行済み)');
     assert.ok(showR3ModalBody.includes('_mdlDOpen('),
       'showR3Modal() の実体は _mdlDOpen 経由(生きている経路であることの確認)');
+    const isPopupActiveBody = uiFn('_isPopupActive');
+    assert.ok(!isPopupActiveBody.includes('r3-modal-overlay'),
+      '_isPopupActive() はもう .r3-modal-overlay を検出しない(防御的参照を削除済み)');
+    const dismissAllPopupsBody = uiFn('dismissAllPopups');
+    assert.ok(!dismissAllPopupsBody.includes('r3-modal-overlay'),
+      'dismissAllPopups() はもう .r3-modal-overlay を掃除しない(防御的参照を削除済み)');
   });
 })();
 

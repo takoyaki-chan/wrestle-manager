@@ -135,13 +135,22 @@ function _u3bOrgBadgeHtml(badge) {
 // ポップアップの重複表示を防止する。1つのポップアップが表示中は、
 // 新しいポップアップをキューに入れて順番待ちさせる。
 const _POPUP_OVERLAY_IDS = [
-  'growthEventOverlay', 'eventPopupOverlay', 'retirementPopupOverlay',
-  'rivalryPopupOverlay', 'newspaperOverlay', 'seasonFanfareOverlay',
-  'milestoneOverlay', 'awardsOverlay', 'careModalOverlay', 'notifModalOverlay',
+  // U4(2026-07-26): eventPopupOverlay/retirementPopupOverlay/rivalryPopupOverlay/milestoneOverlay は
+  // 開く側のコードが無い死んだ枠だったため、CSS/DOM削除と合わせてここからも外した。
+  'growthEventOverlay', 'newspaperOverlay', 'seasonFanfareOverlay',
+  'awardsOverlay', 'careModalOverlay', 'notifModalOverlay',
   'careOverlay', 'fighterPopupOverlay', 'coachTooltipOverlay', 'showResultOverlay',
   // 統一モーダル(Phase 0以降)
   'mdlAOverlay', 'mdlBOverlay', 'mdlCOverlay', 'mdlDOverlay',
-  'glimpseCascadeOverlay'
+  'glimpseCascadeOverlay',
+  // U4(2026-07-26): 登録漏れを1件ずつ追加(都度npm testで確認)。ppvMatchCardOverlayは
+  // 週送り中に他のポップアップと重なると二重表示や操作不能になりうる懸念が最も強かったもの
+  'ppvMatchCardOverlay',
+  // relmapPopupOverlay(相関図の比較)はid="relmapPopupOverlay"がui-render.jsのテンプレート文字列側で
+  // 生成される動的オーバーレイ(相関図タブ表示中のみDOMに存在)。idは固定文字列なのでgetElementById方式で登録できる
+  'relmapPopupOverlay',
+  // travelSceneOverlay(移動演出)も同様にid固定の動的オーバーレイ(showTravelScene実行中のみDOMに存在)
+  'travelSceneOverlay'
 ];
 let _popupQueue = [];
 
@@ -158,8 +167,13 @@ function _isPopupActive(opts) {
   if (factionRoot && factionRoot.querySelector('.fevt-overlay-stage.active, .fevt-overlay-office.active, .fevt-overlay-arena.active, .fevt-narration-act.active')) {
     return true;
   }
-  // 動的オーバーレイ（R3Modalなど、DOMに直接追加されるもの）
-  return !!document.querySelector('.r3-modal-overlay') || !!document.querySelector('.war-victory-overlay');
+  // 動的オーバーレイ（war-victory-overlayなど、DOMに直接追加されるもの）
+  if (document.querySelector('.war-victory-overlay')) return true;
+  // U4(2026-07-26): db-hof-detail-overlay/cerem-overlayはid無しでdocument.createElementされる
+  // 動的モーダルのため(毎回新規生成・id不定)、_POPUP_OVERLAY_IDSのid方式ではなくクラスで検出する。
+  // cerem-overlay(ドーム到達などの節目セレモニー)はshowCeremonyEvent実行中のみDOMに存在する
+  if (document.querySelector('.db-hof-detail-overlay')) return true;
+  return !!document.querySelector('.cerem-overlay');
 }
 
 function _enqueuePopup(fn, opts) {
@@ -179,6 +193,31 @@ function _drainPopupQueue() {
     }
   }, 200);
 }
+
+// U4(2026-07-26): 「情報を見るだけ」系オーバーレイの共通ESCハンドラ
+// (docs/ui/mockup-baseline-v0.1.md v0.6 §5-C: 情報を見るだけ=背景クリックとESCの両方で閉じられる)。
+// 対象は選手ポップアップ・コーチ情報・殿堂入り詳細・新聞・成長イベント報告。
+// 画面ごとにキーハンドラを書かず、ここに集約する(1つだけ・スクリプト読み込み時に一度だけ登録)。
+// 相関図の比較(relmapPopupOverlay)は既存の専用ハンドラ(ui-render.js、右クリックメニューの
+// ESC閉じも兼ねる)が既に正しく動作しているため、ここでは重複登録しない。
+// 選択を迫るもの・演出(mdl-a/b、gameover等)はここに含めない(誤ってESCで進行が壊れるのを防ぐため)。
+function _handleInfoOverlayEscClose(e) {
+  if (e.key !== 'Escape') return;
+  const fighterPopup = document.getElementById('fighterPopupOverlay');
+  if (fighterPopup && fighterPopup.classList.contains('active')) { closeFighterPopup(); return; }
+  const coachTooltip = document.getElementById('coachTooltipOverlay');
+  if (coachTooltip && coachTooltip.classList.contains('active')) { closeCoachTooltip(); return; }
+  const hofDetail = document.querySelector('.db-hof-detail-overlay');
+  if (hofDetail) { hofDetail.remove(); return; }
+  const newspaper = document.getElementById('newspaperOverlay');
+  if (newspaper && newspaper.classList.contains('active') && typeof window._newsClose === 'function') {
+    window._newsClose();
+    return;
+  }
+  const growthEvent = document.getElementById('growthEventOverlay');
+  if (growthEvent && growthEvent.classList.contains('active')) { closeGrowthEventPopup(); return; }
+}
+document.addEventListener('keydown', _handleInfoOverlayEscClose);
 
 // ─────────────────────────────────────────────────────────────
 // 統一モーダル mdl-a-* ヘルパー (Phase 1)
@@ -1839,68 +1878,6 @@ function _showEventPopupAsChoice(opts) {
   _enqueuePopup(run);
 }
 
-function _renderEventPopup() {
-  if (_eventPopupQueue.length === 0) return;
-  const o = _eventPopupQueue[0];
-  const box = document.getElementById('eventPopupBox');
-  const toneClass = o.tone || '';
-
-  // Face image
-  let faceHtml = '';
-  if (o.type === 'fighter' && o.id) {
-    const url = getPortraitUrl(o.id);
-    if (url) faceHtml = `<img src="${url}" alt="">`;
-    else {
-      const ch = ALL_CHARS.find(c => c.id === o.id);
-      faceHtml = `<div class="emoji-face">${ch ? ch.name.charAt(0) : '?'}</div>`;
-    }
-  } else if (o.type === 'coach' && o.id) {
-    const coach = ALL_COACHES.find(c => c.id === o.id);
-    const url = getCoachPortraitUrl(o.id);
-    if (url) faceHtml = `<img src="${url}" alt="" onerror="this.outerHTML='<div class=\\'emoji-face\\'>${coach?.emoji||'👤'}</div>'">`;
-    else faceHtml = `<div class="emoji-face">${coach?.emoji || '👤'}</div>`;
-  } else {
-    faceHtml = `<div class="emoji-face">${o.emoji || '💬'}</div>`;
-  }
-
-  // 社長室 Phase 5: 二次アクションボタン(怪我→特別治療など)
-  //   opts.action = { label, disabled?, disabledHint?, onClick: () => void }
-  let actionHtml = '';
-  if (o.action && typeof o.action === 'object' && o.action.label) {
-    const isDisabled = !!o.action.disabled;
-    const hint = isDisabled && o.action.disabledHint ? `<div class="event-popup-action-hint">${o.action.disabledHint}</div>` : '';
-    actionHtml = `
-      ${hint}
-      <button class="event-popup-action${isDisabled ? ' is-disabled' : ''}" id="eventPopupActionBtn"${isDisabled ? ' disabled' : ''}>${o.action.label}</button>
-    `;
-  }
-
-  box.className = `event-popup ${toneClass}`;
-  box.innerHTML = `
-    <div class="event-popup-face">${faceHtml}</div>
-    <div class="event-popup-name">${o.name || ''}</div>
-    <div class="event-popup-msg">${o.message}</div>
-    ${o.detail ? `<div class="event-popup-detail">${o.detail}</div>` : ''}
-    ${actionHtml}
-    <button class="event-popup-ok" onclick="closeEventPopup()">${o.action ? '閉じる' : 'OK'}</button>
-  `;
-
-  // 二次アクションのハンドラ束縛
-  if (o.action && !o.action.disabled && typeof o.action.onClick === 'function') {
-    const btn = document.getElementById('eventPopupActionBtn');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        // onClick内でポップアップを閉じる責任はハンドラ側に(closeEventPopupを呼ぶ)
-        o.action.onClick();
-      });
-    }
-  }
-
-  document.getElementById('eventPopupOverlay').classList.add('active');
-  Audio.play(o.sound || (o.tone === 'negative' ? 'error' : o.tone === 'gold' ? 'award' : 'event'));
-  if (o.autoCloseMs) _autoCloseTimer = setTimeout(closeEventPopup, o.autoCloseMs);
-}
-
 /** C-3: choices なし eventPopup を mdlCOverlay で描画 */
 function _renderEventPopupAsC3() {
   if (_eventPopupQueue.length === 0) return;
@@ -2084,9 +2061,6 @@ function closeRetirementPopup() {
   // B4タレント活動§13: チャンピオン怪我引退後の社長への一言
   const justClosed = _retirementPopupQueue[0];
   _mdlBClose();
-  // 互換: 旧オーバーレイのactiveも解除
-  const legacy = document.getElementById('retirementPopupOverlay');
-  if (legacy) legacy.classList.remove('active');
   _retirementPopupQueue.shift();
 
   if (justClosed && justClosed.championWorryLine) {
@@ -6727,12 +6701,17 @@ function dismissAllPopups() {
     const el = document.getElementById(oid);
     if (el) { el.classList.remove('active'); el.classList.remove('show'); }
   });
-  // confirmOverlayは_POPUP_OVERLAY_IDSに含まれないため個別処理
+  // confirmOverlayは_POPUP_OVERLAY_IDSに含まれないため個別処理。
+  // U4(2026-07-26)調査: 汎用の確認ダイアログはすでにshowConfirm()経由でmdl-d(_mdlDOpen)へ移行済みで、
+  // confirmOverlay自体は体験版限定(showTrialLimitMessage/showTrialEndMessage)専用の
+  // ニッチな旧系統として残っている。統一モーダルの popup queue(_enqueuePopup/_isPopupActive)には
+  // 元々組み込まれておらず、意図的に対象外(この関数でのクリーンアップだけ個別に行う)。
   const confirmEl = document.getElementById('confirmOverlay');
   if (confirmEl) { confirmEl.classList.remove('active'); confirmEl.classList.remove('show'); }
-  // 動的R3Modalがあれば除去
-  document.querySelectorAll('.r3-modal-overlay').forEach(el => el.remove());
+  // 動的war-victory-overlay/db-hof-detail-overlay/cerem-overlayがあれば除去
   document.querySelectorAll('.war-victory-overlay').forEach(el => el.remove());
+  document.querySelectorAll('.db-hof-detail-overlay').forEach(el => el.remove());
+  document.querySelectorAll('.cerem-overlay').forEach(el => el.remove());
   const battleOverlay = document.getElementById('battleOverlay');
   if (battleOverlay) battleOverlay.style.display = 'none';
   _popupQueue = [];
@@ -7303,11 +7282,6 @@ function showMilestoneEvent(evt, onChoice) {
 // - showDecisionConfirmModal: 団体書類の実行確認
 // - showDecisionResultToast:   決裁完了後の1行トースト
 // ─────────────────────────────────────────────────────────────────────────────
-function _closeShachoshitsuDecisionModal() {
-  const overlay = document.getElementById('shachoshitsuDecisionOverlay');
-  if (overlay) overlay.classList.remove('active');
-}
-
 // 個人書類用: 対象選手選択モーダル (A-2型)
 function showDecisionTargetModal(docId, state) {
   const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS[docId] : null;
@@ -8200,7 +8174,7 @@ function showDecisionResultToast(displayData) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 社長室 Phase 5: 決裁結果モーダル(個人書類 / 団体書類 両対応)
-// 既存の shachoshitsu-decision-overlay/Modal DOM を再利用。
+// 統一モーダル mdl-a(_mdlAOpen)経由で描画する(shachoshitsu-decision-overlay系DOMは廃止済み、U4で削除)。
 // 全パターン共通で「話者の顔(大)+名前+セリフ」をヒーロー表示し、
 // 誰が反応しているのかを一目で分かるようにする(CLAUDE.md「キャラの人生を覗き見る」)。
 //

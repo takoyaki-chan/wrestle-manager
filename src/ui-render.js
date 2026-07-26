@@ -13329,8 +13329,8 @@ function _renderDbRelmap() {
   html += `<div class="rm-ctx-item" id="rmCtxCompare"><span class="rm-ctx-icon">\u2696</span>比較に追加</div>`;
   html += `</div>`;
 
-  // Compare popup overlay
-  html += `<div class="rm-popup-overlay" id="relmapPopupOverlay"><div class="rm-popup-card" id="relmapPopupCard"></div></div>`;
+  // Compare popup overlay。U4: 情報を見るだけ(相関図の比較) → 背景クリックでも閉じる
+  html += `<div class="rm-popup-overlay" id="relmapPopupOverlay" onclick="if(event.target===this)_relmapClosePopup()"><div class="rm-popup-card" id="relmapPopupCard" onclick="event.stopPropagation()"></div></div>`;
 
   html += `</div>`; // end relmap-root
 

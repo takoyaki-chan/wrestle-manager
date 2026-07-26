@@ -1200,7 +1200,9 @@ function showCeremonyEvent(evt, speakers, onContinue) {
 
   const overlay = document.createElement('div');
   overlay.className = 'cerem-overlay ' + (evt.visualVariant || '');
-  overlay.style.zIndex = '920';
+  // U4(2026-07-26): 画面を覆う枠の重なり順を5階層(100/200/300/400/500)に統一。
+  // ドーム到達などの節目セレモニーは式典 → 400(旧920から統一)
+  overlay.style.zIndex = '400';
   overlay.style.position = 'fixed';
   overlay.style.inset = '0';
 
