@@ -3722,10 +3722,19 @@ const App = {
     Audio.play('coin');
     try { Storage.autoSave(); } catch (_e) {}
     // 代表を決めたら、そのまま会場入りのカットを挟んで本編へ
+    // 会場入り → 開幕カード紹介(4団体の顔ぶれ) → 本編
+    const toBoard = () => {
+      const res = Engine.autumnWar.getProgress(G) || G.autumnWar;
+      if (typeof _showAutumnWarCardIntro === 'function' && res) {
+        _showAutumnWarCardIntro(res, () => App.initAutumnWarReplay());
+      } else {
+        App.initAutumnWarReplay();
+      }
+    };
     if (typeof showSpecialEventTravel === 'function') {
-      showSpecialEventTravel('autumnWar', G, party, () => App.initAutumnWarReplay());
+      showSpecialEventTravel('autumnWar', G, party, toBoard);
     } else {
-      App.initAutumnWarReplay();
+      toBoard();
     }
   },
 
@@ -4180,10 +4189,17 @@ const App = {
     const party = myTeam
       ? [myTeam.f1Id, myTeam.f2Id].map(id => (G.roster || []).find(f => f && f.id === id)).filter(Boolean)
       : [];
+    const toBoard = () => {
+      if (typeof _showSpringTagCardIntro === 'function') {
+        _showSpringTagCardIntro(stl, () => renderSpringTagLeagueBoard());
+      } else {
+        renderSpringTagLeagueBoard();
+      }
+    };
     if (typeof showSpecialEventTravel === 'function' && party.length) {
-      showSpecialEventTravel('springTagLeague', G, party, () => renderSpringTagLeagueBoard());
+      showSpecialEventTravel('springTagLeague', G, party, toBoard);
     } else {
-      renderSpringTagLeagueBoard();
+      toBoard();
     }
   },
 
@@ -14488,7 +14504,8 @@ App.initJuniorTournament = function() {
       Audio.play('notify');
       renderJuniorTournamentSummon();
     } else {
-      renderJuniorTournamentBracket();
+      // 自団体の出場者ゼロでも、大会の全体像は見せる
+      App._jtOpenBracketWithCardIntro();
     }
   };
   if (typeof showSpecialEventIntro === 'function') {
@@ -14500,6 +14517,22 @@ App.initJuniorTournament = function() {
   }
 };
 
+/** ジュニアの対戦表を開く共通入口。**開幕カード紹介を必ず1回挟む。**
+ *  招集がある年と無い年で経路が分かれるので、ここに寄せないと片方だけ紹介が出なくなる。 */
+App._jtOpenBracketWithCardIntro = function() {
+  const jt = App._jtPreview;
+  if (!jt) return;
+  if (jt._cardIntroShown || typeof _showBracketCardIntro !== 'function') {
+    renderJuniorTournamentBracket();
+    return;
+  }
+  jt._cardIntroShown = true;
+  _showBracketCardIntro(jt.result.rounds, {
+    label: 'Special Event', bigName: 'U-20 JUNIOR TOURNAMENT',
+    sub: `Season ${G.season || 1} ─ 8名 単発トーナメント`, roundLabel: '準々決勝',
+  }, () => renderJuniorTournamentBracket());
+};
+
 App.jtNextSummon = function() {
   const jt = App._jtPreview;
   if (!jt) return;
@@ -14507,11 +14540,12 @@ App.jtNextSummon = function() {
   if (jt.summonIndex >= jt.myParticipants.length) {
     jt.phase = 'bracket';
     Audio.play('tick');
-    // 招集が済んだら会場入りのカットを挟む
+    // 招集が済んだら会場入り → 開幕カード紹介 → 対戦表
+    const toBoard = () => App._jtOpenBracketWithCardIntro();
     if (typeof showSpecialEventTravel === 'function') {
-      showSpecialEventTravel('juniorTournament', G, jt.myParticipants, () => renderJuniorTournamentBracket());
+      showSpecialEventTravel('juniorTournament', G, jt.myParticipants, toBoard);
     } else {
-      renderJuniorTournamentBracket();
+      toBoard();
     }
   } else {
     Audio.play('notify');
@@ -14954,7 +14988,16 @@ App.initTenchosenReplay = function() {
   Audio.bgm.playStage('tencho');
   Audio.play('notify');
   // 導入(コーチ→選手) → 会場入り → トーナメント表
-  const toBracket = () => renderTenchosenBracket();
+  const toBracket = () => {
+    if (typeof _showBracketCardIntro === 'function') {
+      _showBracketCardIntro(t.rounds, {
+        label: 'Special Event', bigName: '天 頂 戦',
+        sub: `Season ${G.season || 1} ─ 16名 単発トーナメント`, roundLabel: '1回戦',
+      }, () => renderTenchosenBracket());
+    } else {
+      renderTenchosenBracket();
+    }
+  };
   // 自団体の出場者。喋るのもバスに乗るのもこの人たち
   const mine = (G.roster || []).filter(f => f && !f.isRental
     && (t.rounds[0]?.matches || []).some(m => m.left?.id === f.id || m.right?.id === f.id));
