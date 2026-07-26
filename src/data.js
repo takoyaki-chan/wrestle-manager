@@ -7792,6 +7792,11 @@ const RETIRE_CFG = {
 };
 
 // Wear system: wear threshold effects (v1.3-1-decay-retirement-spec §3)
+// 消耗(wear)の帯。**この表が唯一の定義元**（2026-07-26 一本化）。
+// それまでは applyDecay / checkRetirement / getDeclinePresentation が同じ数字を
+// 各自ベタ書きしており、この表は誰にも読まれない飾りだった。
+// 「表を書き換えたのにゲームが変わらない」事故を防ぐため、実装がここを読むようにした。
+// 帯を触るときはこの表だけを直せばよい。
 const WEAR_TABLE = [
   // wear 0-19: 全盛期 — no effect
   { min:  0, max: 19, label: null,        decayMin: 0, decayMax: 0, retireChance: 0    },
@@ -7804,6 +7809,11 @@ const WEAR_TABLE = [
   // wear 80+: 確定引退
   { min: 80, max: Infinity, label: null,  decayMin: 0, decayMax: 0, retireChance: 1.0  },
 ];
+/** wear が属する帯を返す。範囲外(負値・NaN)は先頭の全盛期帯に丸める */
+function getWearBand(wear) {
+  const w = Number(wear) || 0;
+  return WEAR_TABLE.find(b => w >= b.min && w <= b.max) || WEAR_TABLE[0];
+}
 
 // AI scout config (rival-spec §5)
 // draft-negotiation-spec §1.3: AI_SCOUT_CFG 廃止。idealRoster のみ残す（aiInterTransfer/aiFAAcquire 用）
@@ -29644,7 +29654,7 @@ if (typeof module !== 'undefined' && module.exports) {
     GROWTH_CONFIG,
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, ACHIEVEMENT_CONFIG, SHIELD_VARIANTS,
     SCOUT_EVENT_CFG, DORMANT_POOL_CFG,
-    STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE,
+    STYLE_GROWTH, STAR_POWER, RETIRE_CFG, WEAR_TABLE, getWearBand,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,

@@ -6286,9 +6286,13 @@ const Engine = {
       const currentOVR = Engine.util.ov(fighter);
       const peakOVR = Math.max(currentOVR, fighter.careerRecord?.peakOVR || 0);
       const dropRatio = Engine.retirement.getPeakDropRatio(fighter);
+      // 段階の境目も WEAR_TABLE が定義元。ラベルから段階へ写す
+      // （'early' だけは wear ではなく**ピークからの落ち幅**で出す。消耗が溜まる前でも
+      //   実際に数値が落ちていれば見せる、という別の意図なのでそのまま残す）
+      const band = getWearBand(fighter.wear || 0);
       let stage = 'none';
-      if ((fighter.wear || 0) >= 60) stage = 'terminal';
-      else if ((fighter.wear || 0) >= 40) stage = 'major';
+      if (band.min >= 60) stage = 'terminal';   // 末期帯と確定引退帯（80+）はどちらも terminal
+      else if (band.min >= 40) stage = 'major';
       else if (dropRatio >= 0.05) stage = 'early';
       return { visible: stage !== 'none', stage, dropRatio, peakOVR, currentOVR };
     },
@@ -7157,12 +7161,12 @@ const Engine = {
     // Apply wear-based stat decay (v1.3-1 §3) + §1.5 ベテラン調整トレイト
     applyDecay(rng, fighter, decayReduction = 0) {
       const wear = fighter.wear || 0;
-      // wear 0-19: 全盛期（減少なし）  wear 80+: 確定引退（stat変更なし、checkRetirementで処理）
-      if (wear < 20 || wear >= 80) return fighter;
-      let decayMin, decayMax;
-      if (wear < 40)      { decayMin = 1; decayMax = 2; } // 軽度衰退
-      else if (wear < 60) { decayMin = 2; decayMax = 4; } // 本格衰退
-      else                { decayMin = 3; decayMax = 5; } // 末期
+      // 減少量は WEAR_TABLE が唯一の定義元（2026-07-26 一本化。以前はここで同じ数字を
+      // ベタ書きしていたため、表を書き換えてもゲームが変わらなかった）。
+      // 全盛期(0)と確定引退(80+)は decayMin/Max が 0 なので、そのまま返す。
+      const band = getWearBand(wear);
+      const { decayMin, decayMax } = band;
+      if (decayMax <= 0) return fighter;
       let f = { ...fighter };
       const notion = f.notionValue || { pw: f.pw, sp: f.sp, te: f.te, st: f.st, mn: f.mn };
       ['pw', 'sp', 'te', 'st', 'mn'].forEach(s => {
@@ -10141,8 +10145,8 @@ const Engine = {
       const wear = fighter.wear || 0;
       const age = fighter.age || 17;
 
-      // wear 80+: ???? (?3)
-      if (wear >= 80) return true;
+      // wear 80+: 確定引退（§3）。閾値は WEAR_TABLE の最終帯が定義元
+      if (getWearBand(wear).retireChance >= 1.0) return true;
 
       // ????: OVR < Notion * 0.60 ?2?????? (?4.4 - ???????)
       const notion = fighter.notionValue || {pw:fighter.pw,sp:fighter.sp,te:fighter.te,st:fighter.st,mn:fighter.mn};
@@ -10156,9 +10160,9 @@ const Engine = {
       }
 
       // wear?????????? (?4.1)
-      let retireChance = 0;
-      if (wear >= 60)      retireChance = 0.50; // ??
-      else if (wear >= 40) retireChance = 0.20; // ????
+      // 消耗による引退確率も WEAR_TABLE が定義元（wear 40未満の帯は 0）
+      let retireChance = getWearBand(wear).retireChance;
+      if (retireChance >= 1.0) retireChance = 0; // 80+ は上で処理済み。ここで二重に効かせない
       if (RETIRE_CFG.chances[age] != null) retireChance = Math.max(retireChance, RETIRE_CFG.chances[age]);
       else if (age >= 33) retireChance = 1.0;
       // wear < 40: ??????
