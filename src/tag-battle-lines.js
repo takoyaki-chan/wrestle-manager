@@ -782,10 +782,6 @@ function pickHotTagLine(fighter) {
   const lines = _tagLineArrFor(HOT_TAG_LINES, fighter);
   return lines[Math.floor(Math.random() * lines.length)];
 }
-function pickDoubleTeamLine(fighter) {
-  const lines = _tagLineArrFor(DOUBLE_TEAM_LINES, fighter);
-  return lines[Math.floor(Math.random() * lines.length)];
-}
 // T1: 技カテゴリに応じて実況文を返す。isFinish=true の場合は決め台詞プールから選択。
 function pickDoubleTeamCommentary(moveCat, isFinish) {
   if (isFinish) {

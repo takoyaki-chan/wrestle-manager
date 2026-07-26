@@ -535,7 +535,6 @@ const OVR_TIER_THRESHOLDS = {
 };
 const NPC_PORTRAIT = { reporter: 'kuroda_s' };
 function getNpcPortraitUrl(key) { return NPC_PORTRAIT[key] ? `../image/npc/face_${NPC_PORTRAIT[key]}.png` : ''; }
-function getNpcUpperUrl(key) { return NPC_PORTRAIT[key] ? `../image/npc/upper_${NPC_PORTRAIT[key]}.webp` : ''; }
 function getPortraitUrl(id) { return PORTRAIT[id] ? `../image/face_${PORTRAIT[id]}.png` : ''; }
 function getStandUrl(id, ovr) {
   if (!PORTRAIT[id]) return '';
@@ -1315,8 +1314,6 @@ const MEDIA_AWARD_CONFIG = {
 };
 // 会場規模別メディア補正（インデックス0-9: 公民館→ドーム）
 const VENUE_MEDIA_MULT = [0.3, 0.5, 0.6, 0.8, 0.9, 1.0, 1.2, 1.5, 1.8, 2.5];
-// PPV/JTカード位置別メディア倍率
-const PPV_CARD_MULT = { main: 8.0, semi: 4.0, mid: 3.0, under: 2.0 };
 // 昇給要求のtrust減額
 const TRUST_RAISE_DISCOUNT = { threshold: 40, maxDiscount: 0.08 };
 const FIXED_COSTS = {admin:30};
@@ -4365,8 +4362,6 @@ const RIVALRY_RESOLUTION_LINES = {
   }
 };
 
-// MQ外部ボーナス合計の上限（因縁+タイトル+観客の合計キャップ。外部ボーナス整理で15→12）
-const MQ_EXTERNAL_CAP = 12;
 
 // 好敵手（決着2回完了後の永続ステータス）
 const GOODRIVAL_MQ_BONUS = 2;
@@ -29604,43 +29599,10 @@ const EVENT_LINES_BY_KEY = {
 // ─────────────────────────────────────────────────────────────────────────────
 // v2.1: クレジット情報 — ending-gameover-spec-v1.0.md §4.4
 // ─────────────────────────────────────────────────────────────────────────────
+// 音響刷新 Phase 2 (2026-07-26): 自作音源への差し替えが完了したフリー素材は掲載を終了した。
+// 掲載を残すのは「いまゲームが実際に鳴らしている」曲だけ。ゲームオーバー曲は後継曲が未制作のため継続使用中。
 const CREDITS = {
   music: [
-    {
-      title:   '8bit/RPG/オープニング「序・序曲」',
-      artist:  'MOMIZizm MUSiC（もみじば）',
-      source:  'フリーBGM MOMIZizm MUSiC',
-      url:     'https://music.storyinvention.com/',
-      license: 'フリー音楽素材',
-    },
-    {
-      title:   'RPG/感動のフィナーレ「エンディング・テーマ」',
-      artist:  'MOMIZizm MUSiC（もみじば）',
-      source:  'フリーBGM MOMIZizm MUSiC',
-      url:     'https://music.storyinvention.com/',
-      license: 'フリー音楽素材',
-    },
-    {
-      title:   'MusMus-BGM-052',
-      artist:  'watson',
-      source:  'フリーBGM・音楽素材 MusMus',
-      url:     'https://musmus.main.jp/',
-      license: 'フリー音楽素材',
-    },
-    {
-      title:   'MusMus-BGM-125',
-      artist:  'watson',
-      source:  'フリーBGM・音楽素材 MusMus',
-      url:     'https://musmus.main.jp/',
-      license: 'フリー音楽素材',
-    },
-    {
-      title:   'elevate_perfect',
-      artist:  '岩城こん。',
-      source:  'イワシロ音楽素材',
-      url:     'https://iwashiro-sounds.work/',
-      license: 'フリー音楽素材',
-    },
     {
       title:   'gameover001',
       artist:  '岩城こん。',
@@ -29660,11 +29622,11 @@ if (typeof module !== 'undefined' && module.exports) {
     MOMENTUM_CONFIG, ATTENDANCE_PREDICTION,
     CARD_POP_CONFIG, CARD_DEPTH_MULT, VENUE_HEAT_TIER_AMP, FILL_PRESSURE_BANDS,
     SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_EVENT_INCOME_CURVE, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
-    MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, MEDIA_AWARD_CONFIG, VENUE_MEDIA_MULT, PPV_CARD_MULT, TRUST_RAISE_DISCOUNT,
+    MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, MEDIA_AWARD_CONFIG, VENUE_MEDIA_MULT, TRUST_RAISE_DISCOUNT,
     FIXED_COSTS, SUBSIDY_TABLE,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, INJURY_DEBUFF_TABLE,
     TITLES, RIVALRY_THRESHOLDS, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
-    MQ_EXTERNAL_CAP, GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
+    GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
     GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES,
     RIVALRY_CONFRONTATION_LINES_70, RIVALRY_CONFRONTATION_LINES_90,
     WEEKLY_STORY_TICKER, RIVALRY_MATCH_REACTION, UPSET_RIVALRY_LINES,

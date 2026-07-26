@@ -1177,14 +1177,6 @@ function _clearRollupHighlight(){
   });
 }
 
-// Grit (単体でフレームから更新する形なのでビジュアル処理のみ)
-function applyGritBuff(side){
-  const panel = document.getElementById(`panel-${side}`);
-  if (panel) panel.classList.add('grit-active');
-  const gi = document.getElementById(`grit-${side}`);
-  if (gi) gi.classList.add('active');
-}
-
 // ─── AUTO / SPEED ─────────────────────────────────────────────────────────
 function toggleAuto(){
   S.autoAdvance = !S.autoAdvance;
@@ -1391,15 +1383,6 @@ document.addEventListener('keydown', e => {
 
 // スピーチバブル タイマー管理
 const _spTimers = {};
-function showSp(side, text, cls){
-  const el = document.getElementById(`sp-${side}`);
-  if (!el) return;
-  if (_spTimers[side]) clearTimeout(_spTimers[side]);
-  el.textContent = text;
-  el.className = `speech-bubble ${cls} visible`;
-  _spTimers[side] = setTimeout(() => { el.classList.remove('visible'); _spTimers[side] = null; }, 1800);
-}
-
 function _narrationHtml(nar){
   if (!nar || !nar.text) {
     return '<div class="nar-empty">\u8a66\u5408\u958b\u59cb \u2014 NEXT TURN\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044</div>';
