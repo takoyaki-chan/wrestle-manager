@@ -13914,7 +13914,9 @@ function showGameOverScreen(summary) {
     ">タイトルに戻る</button>
   `;
   overlay.classList.add('active');
-  try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.play('../bgm/iwa_gameover001.mp3', { volume: 0.13 }); } catch(e) {}
+  // WM-H06「ゲームオーバー(団体解散)」。8秒 One Shot・ループなし(台帳の仕様どおり)。
+  // 冒頭に不穏な一撃が来る作りなので、他のBGM(0.13〜0.20)より強めの音量で置く。
+  try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_h06_v01.ogg', { volume: 0.30 }); } catch(e) {}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -14127,7 +14129,9 @@ function showGameOverCeremony(data, onDone) {
 
   function nextSlide() {
     if (!bgmStarted) {
-      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) { Audio.fileBgm.play('../bgm/iwa_gameover001.mp3', { loop: true, volume: 0.13 }); } } catch(e) {}
+      // WM-H06。**ループしない**(台帳の仕様: 8秒 One Shot)。冒頭の一撃が鳴り切ったあとは無音のまま
+      // スライドを送らせる。「積み上げたものが一瞬で消える」瞬間なので、鳴り続けないほうが効く。
+      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) { Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_h06_v01.ogg', { volume: 0.30 }); } } catch(e) {}
       bgmStarted = true;
     }
     if (current >= TOTAL - 1) {

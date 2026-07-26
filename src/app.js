@@ -15081,6 +15081,10 @@ App.tcConfirmEntries = function() {
 App.showCredits = function() {
   // 楽曲クレジットを動的にレンダリング
   const el = document.getElementById('creditsMusicList');
+  // 使用楽曲が0件のときは見出しごと隠す。全曲が自作になったため通常は0件
+  // (「使用楽曲」の見出しだけ残って中身が空、という見え方を避ける)。
+  const sec = document.getElementById('creditsMusicSection');
+  if (sec) sec.style.display = (typeof CREDITS !== 'undefined' && CREDITS.music && CREDITS.music.length) ? '' : 'none';
   if (el && typeof CREDITS !== 'undefined' && CREDITS.music) {
     el.innerHTML = CREDITS.music.map(m => `
       <div class="credits-music-item">
