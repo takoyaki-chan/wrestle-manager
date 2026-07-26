@@ -709,7 +709,10 @@ function section(name, fn) {
     assert.ok(html.includes('長い間、応援ありがとうございました。'), 'セリフ本文が出る(不変条件3)');
     assert.ok(html.includes('白鳥レイ'), '選手名が出る(不変条件4)');
     assert.ok(html.includes('現役期間') && html.includes('>6<'), '現役期間が出る(不変条件5)');
-    assert.ok(html.includes('40勝 12敗 1引き分け'), '戦績が出る(不変条件5)');
+    // 2026-07-26: 引き分け表記の撤去(実測0件のため)に伴い、戦績表示は勝敗の2状態のみになった。
+    // draws フィールド自体はセーブ互換のため残すが、表示には出ない(消えたことを回帰対象にする)。
+    assert.ok(html.includes('40勝 12敗'), '戦績が出る(不変条件5)');
+    assert.ok(!html.includes('引き分け'), '引き分け表記は出ない(2026-07-26 撤去)');
     assert.ok(html.includes('王座返上'), 'チャンピオンの引退では王座返上の注記が出る(不変条件5)');
   });
 

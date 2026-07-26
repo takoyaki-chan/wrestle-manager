@@ -111,7 +111,7 @@ const uiRenderFn = makeFnReader(uiRender, 'ui-render.js');
 // CSS存在確認(この回で扱うクラスが実際に定義されていること)
 // ---------------------------------------------------------------------------
 [
-  'crrm-win', 'crrm-loss', 'crrm-draw', 'stl-league-table', 'agw-focus-score',
+  'crrm-win', 'crrm-loss', 'stl-league-table', 'agw-focus-score',
   'pb-result-winner', 'mdl-a-result-verdict', 'np-digest-mark', 'np-winner-mark',
 ].forEach(cls => {
   const found = cssIndex.includes(`.${cls}`) || ui.includes(`.${cls}`) || uiRender.includes(`.${cls}`);
@@ -247,8 +247,8 @@ function logGap(msg) {
       'inverseでも自陣(プレイヤー)勝ち数が左に出る。isInverseでplayerScore/aiScoreの取り違えが無い(不変条件3)');
   });
 
-  // --- 1c. 各試合行で勝ち・負け・引き分けの3状態がクラスで判別できる(不変条件2) ---
-  section('crrm: win/loss/draw are distinguishable per match row via crrm-win/crrm-loss/crrm-draw classes', () => {
+  // --- 1c. 各試合行で勝ち・負けの2状態がクラスで判別できる(不変条件2)。引き分け行は無印(2026-07-26) ---
+  section('crrm: win/loss are distinguishable per match row via crrm-win/crrm-loss classes; a draw row carries neither', () => {
     const { built, getRoot } = makeBundle({});
     const card = baseCard({});
     const result = { teamWin: 'A', winsA: 2, winsB: 0, matches: baseMatches() };
@@ -260,13 +260,12 @@ function logGap(msg) {
     // m0: winner:'left' → ハルカ(fighterA)側にcrrm-win、ソラ(fighterB)側にcrrm-loss
     assert.ok(/crrm-win[\s\S]*?ハルカ/.test(rows[0]) , '第1試合: 左勝ちのときハルカ側にcrrm-winが付く(不変条件2, 3左右一致)');
     assert.ok(/ソラ[\s\S]*?crrm-loss/.test(rows[0]), '第1試合: 右側(ソラ)にcrrm-lossが付く');
-    assert.ok(!rows[0].includes('crrm-draw'), '第1試合は引き分けクラスを含まない');
     // m1: winner:'right' → ツキノ側にcrrm-loss、アカリ側にcrrm-win
     assert.ok(/crrm-loss[\s\S]*?ツキノ/.test(rows[1]), '第2試合: 右勝ちのとき左側(ツキノ)にcrrm-lossが付く(左右取り違え無し)');
     assert.ok(/アカリ[\s\S]*?crrm-win/.test(rows[1]), '第2試合: 右側(アカリ)にcrrm-winが付く');
-    // m2: draw → 両者crrm-draw
-    assert.strictEqual((rows[2].match(/crrm-draw/g) || []).length, 2, '第3試合(引き分け)は両陣営ともcrrm-drawになる(不変条件2)');
-    assert.ok(!rows[2].includes('crrm-win') && !rows[2].includes('crrm-loss'), '引き分け行にはcrrm-win/crrm-lossが付かない');
+    // m2: draw(2026-07-26: 実測0件のため引き分け表記を撤去。crrm-win/crrm-lossどちらも付かない無印行になる)
+    assert.ok(!rows[2].includes('crrm-win') && !rows[2].includes('crrm-loss'), '引き分け行にはcrrm-win/crrm-lossどちらも付かない(不変条件2, 2026-07-26仕様)');
+    assert.ok(!rows[2].includes('△'), '引き分け行に△記号は出ない(2026-07-26 撤去)');
   });
 
   // --- 1d. 0試合・全勝・全敗などの端のケースで落ちない(不変条件5) ---
@@ -431,16 +430,21 @@ function logGap(msg) {
     const { built, box } = makeBundle({});
     assert.doesNotThrow(() => built.renderSpringTagLeagueBoard(), '例外を投げない(不変条件1)');
     const html = box.innerHTML;
-    assert.ok(html.includes('1勝') && html.includes('1分'), 'playerの戦績「1勝」「1分」がテキストで出る(不変条件2)');
+    // 2026-07-26: 実測0件のため戦績テキストから「N分」表記を撤去(playerの戦績は「1勝」のみになる)。
+    // 勝ち点(points)計算自体は draw を含めて集計され続ける(不変条件4は _stlComputeStandingsThrough で別途検証)。
+    assert.ok(html.includes('1勝'), 'playerの戦績「1勝」がテキストで出る(不変条件2)');
+    assert.ok(!html.includes('1分'), '「N分」表記は出ない(2026-07-26 撤去)');
     assert.ok(html.includes('1敗'), '敗北チームの「1敗」がテキストで出る(不変条件2)');
     assert.ok(html.includes('5<small>pt</small>') || /5<small>pt/.test(html), 'player(5pt)の勝ち点数値が出る(不変条件3)');
-    // 直近試合ストリップ(m2=引き分け)。U5で△DRAWタグを明示するようになったため、
-    // 「両陣営ともWINタグが無いことでしか判別できない」という旧既知の欠落は解消(fixed, not a known gap)。
+    // 直近試合ストリップ(m2=引き分け)。U5で明示するようになったdraw-tagクラス自体は維持しつつ、
+    // 2026-07-26でタグの文言を「△ DRAW」から「NO CONTEST」へ変更(引き分け表記の撤去)。
     const stripStart = html.indexOf('stl-lastmatch-label');
     assert.ok(stripStart >= 0, '直近試合ストリップが出る');
     const strip = html.slice(stripStart - 40, stripStart + 800);
     assert.ok(!strip.includes('win-tag'), '引き分け行にはWINタグが付かない');
-    assert.strictEqual((strip.match(/draw-tag/g) || []).length, 2, '引き分け行は両陣営に△DRAWタグ相当(draw-tag)が明示される(不変条件2)');
+    assert.strictEqual((strip.match(/draw-tag/g) || []).length, 2, '引き分け行は両陣営にdraw-tagクラスが明示される(不変条件2)');
+    assert.ok(strip.includes('NO CONTEST'), '引き分け行のタグ文言は「NO CONTEST」(2026-07-26、旧: △ DRAW)');
+    assert.ok(!strip.includes('△'), '引き分け行に△記号は出ない(2026-07-26 撤去)');
     // 次戦プレビュー(matches[3]、未消化)も出る
     assert.ok(html.includes('NEXT MATCH'), '次戦プレビューが出る');
   });
@@ -558,8 +562,8 @@ function logGap(msg) {
     assert.ok(!html.includes('>プレイヤー団体<'), '敗者(player)の団体名を勝者として出さない');
   });
 
-  // --- 3c. 次フォール(未決着)+直前フォールの引き分け表示(3状態目: 両者脱落) ---
-  section('_agwFocusHtml: next-bout branch shows "両者脱落" text for a drawn fall (3rd state)', () => {
+  // --- 3c. 次フォール(未決着)+直前フォールの引き分け表示(3状態目、2026-07-26で文言変更) ---
+  section('_agwFocusHtml: next-bout branch shows "決着つかず" text for a drawn fall (3rd state, was "両者脱落")', () => {
     const built = makeFocusBundle({});
     const match = {
       orgA: 'player', orgB: 'org_a', winnerOrg: null, round: 'semiFinal',
@@ -568,7 +572,9 @@ function logGap(msg) {
     };
     let html;
     assert.doesNotThrow(() => { html = built._agwFocusHtml(match, 1, built._agwDisplayOrgIds(match)); }, '例外を投げない(不変条件1)');
-    assert.ok(html.includes('両者脱落'), '直前フォールが引き分けのとき「両者脱落」の文言で3つ目の状態が判別できる(不変条件2)');
+    // 2026-07-26: 実測0件のため「両者脱落」→「決着つかず」に文言変更(進行ロジック=両者ともに次の選手へ進む、は不変)
+    assert.ok(html.includes('決着つかず'), '直前フォールが引き分けのとき「決着つかず」の文言で3つ目の状態が判別できる(不変条件2)');
+    assert.ok(!html.includes('両者脱落'), '旧文言「両者脱落」は出ない(2026-07-26 撤去)');
   });
 
   // --- 3d. 0-0(未消化)で落ちない(不変条件5) ---
@@ -739,12 +745,14 @@ function logGap(msg) {
     ];
   }
 
-  // --- 4a. 3状態(勝ち越し/引き分け/負け越し)がverdictLabelで判別できる(不変条件2) ---
-  section('renderWarFinalResult: series verdict distinguishes win/draw/loss via label text and score digits', () => {
+  // --- 4a. 3状態(勝ち越し/決着つかず/負け越し)がverdictLabelで判別できる(不変条件2)。
+  // 2026-07-26: warMatchCountは奇数のみ(3 or 5)かつ個々の試合は実測上drawにならないため、
+  // playerWins===aiWinsのシリーズ引き分け自体が構造上ほぼ起こり得ないが、文言だけは「引き分け」→「決着つかず」に変更。 ---
+  section('renderWarFinalResult: series verdict distinguishes win/no-contest/loss via label text and score digits', () => {
     const ev = { opponentOrgId: 'org_a', opponentName: '鬼道場' };
     [
       { playerWins: 2, aiWins: 1, expect: '勝ち越し', won: true },
-      { playerWins: 1, aiWins: 1, expect: '引き分け', won: false },
+      { playerWins: 1, aiWins: 1, expect: '決着つかず', won: false },
       { playerWins: 1, aiWins: 2, expect: '負け越し', won: false },
     ].forEach(({ playerWins, aiWins, expect, won }) => {
       const { built, box } = makeBundle({});
@@ -845,7 +853,9 @@ function logGap(msg) {
       const html = box.innerHTML;
       if (expectDraw) {
         assert.ok(html.includes('is-draw'), 'draw時はis-drawクラスが両者に付く(不変条件2)');
-        assert.ok(html.includes('DRAW'), 'DRAW表記が出る');
+        // 2026-07-26: 実測0件のため「DRAW」→「NO CONTEST」に文言変更
+        assert.ok(html.includes('NO CONTEST'), 'NO CONTEST表記が出る(旧: DRAW)');
+        assert.ok(!html.includes('DRAW'), '旧文言「DRAW」は出ない(2026-07-26 撤去)');
       } else {
         assert.ok(html.includes('is-winner') && html.includes('is-loser'), 'win/lose時はis-winner/is-loserが付く(不変条件2)');
         assert.ok(html.includes(expectWin ? 'WIN' : 'WIN'), '勝者ラベルにWINが出る'); // winnerLabelは常にWIN表記(勝者名+WIN)
@@ -865,7 +875,9 @@ function logGap(msg) {
       assert.doesNotThrow(() => built._renderB2MatchResult({}, matchResult, f1, f2, 2), `winner=${winner}で例外を投げない`);
       const html = box.innerHTML;
       if (winner === 'draw') {
-        assert.ok(html.includes('is-draw') && html.includes('DRAW'), '引き分けが判別できる(不変条件2)');
+        // 2026-07-26: 実測0件のため「DRAW」→「NO CONTEST」に文言変更
+        assert.ok(html.includes('is-draw') && html.includes('NO CONTEST'), '引き分け(決着つかず)が判別できる(不変条件2)');
+        assert.ok(!html.includes('DRAW'), '旧文言「DRAW」は出ない(2026-07-26 撤去)');
       } else {
         assert.ok(html.includes('is-winner') && html.includes('is-loser'), '勝敗が判別できる(不変条件2)');
       }
@@ -926,9 +938,10 @@ function logGap(msg) {
     // fighter2勝ち
     const html2 = built._buildB2Step3({ fighter1: 1, fighter2: 2, matchResult: { winner: 'fighter2' } }, {}, roster);
     assert.ok(html2.includes('選手B'), '勝者(選手B)の名前が出る。fighter1/fighter2の取り違えが無い');
-    // draw
+    // draw(2026-07-26: 文言を「引き分け」/「DRAW」→「決着つかず」/「NO CONTEST」に変更。draw クラス自体は維持)
     const html3 = built._buildB2Step3({ fighter1: 1, fighter2: 2, matchResult: { winner: 'draw' } }, {}, roster);
-    assert.ok(html3.includes('draw') && html3.includes('引き分け') && html3.includes('DRAW'), '引き分けが3つ目の状態として判別できる(不変条件2)');
+    assert.ok(html3.includes('draw') && html3.includes('決着つかず') && html3.includes('NO CONTEST'), '引き分け(決着つかず)が3つ目の状態として判別できる(不変条件2)');
+    assert.ok(!html3.includes('引き分け') && !html3.includes('DRAW'), '旧文言「引き分け」「DRAW」は出ない(2026-07-26 撤去)');
   });
 
   // --- 6b. B3Step3: 勝ち・負け・引き分けの3状態(社長視点=挑戦を受けた選手の勝敗)(不変条件2) ---
@@ -939,8 +952,10 @@ function logGap(msg) {
     assert.ok(htmlWin.includes('victory') && htmlWin.includes('VICTORY'), '勝利が判別できる(不変条件2)');
     const htmlLose = built._buildB3Step3({ ...base, matchResult: { winner: 'right', mq: 60 } }, {}, roster);
     assert.ok(htmlLose.includes('defeat') && htmlLose.includes('DEFEAT'), '敗北が判別できる(不変条件2)');
+    // 2026-07-26: 文言を「引き分け」/「DRAW」→「決着つかず」/「NO CONTEST」に変更。draw クラス自体は維持
     const htmlDraw = built._buildB3Step3({ ...base, matchResult: { winner: 'other', mq: 60 } }, {}, roster);
-    assert.ok(htmlDraw.includes('draw') && htmlDraw.includes('DRAW') && htmlDraw.includes('引き分け'), '引き分けが判別できる(不変条件2)');
+    assert.ok(htmlDraw.includes('draw') && htmlDraw.includes('NO CONTEST') && htmlDraw.includes('決着つかず'), '引き分け(決着つかず)が判別できる(不変条件2)');
+    assert.ok(!htmlDraw.includes('DRAW') && !htmlDraw.includes('引き分け'), '旧文言「DRAW」「引き分け」は出ない(2026-07-26 撤去)');
   });
 
   // --- 6c. matchResultが無いとき閉じるボタンのみで落ちない(不変条件5) ---
@@ -993,8 +1008,10 @@ function logGap(msg) {
     }, overrides || {});
   }
 
-  // --- 7a. 勝ち・負け・引き分けの3状態が○/×/DRAWで判別できる(不変条件2) ---
-  section('_npRenderDigest: win/loss/draw are distinguishable via ○/× marks and DRAW text', () => {
+  // --- 7a. 勝ち・負け・引き分けの3状態が○/×/決着つかずテキストで判別できる(不変条件2)。
+  // 2026-07-26: 実測0件のため vs欄の「DRAW」表記は撤去し常に「vs」表示。引き分けは
+  // finishLine の「決着つかず」テキスト(旧: 時間切れ引き分け)と、勝敗マークが両者とも無いことで判別する ---
+  section('_npRenderDigest: win/loss are distinguishable via ○/× marks; a draw row shows neither mark and reads "決着つかず"', () => {
     const built = makeBundle({});
     const d = { allMatches: [
       m({ winner: 'left', left: { id: 1, name: 'ハルカ' }, right: { id: 2, name: 'ソラ' } }),
@@ -1006,7 +1023,8 @@ function logGap(msg) {
     assert.ok(/ハルカ<span class="np-digest-mark win">○/.test(html), '左勝ちのとき勝者(ハルカ)側に○マークが付く(不変条件2, 3)');
     assert.ok(/<span class="np-digest-mark lose">×<\/span>ツキノ/.test(html), '右勝ちのとき敗者(ツキノ)側に×マークが付く(左右取り違え無し)');
     assert.ok(html.includes('アカリ<span class="np-digest-mark win">○'), '右勝ちのとき勝者(アカリ)側に○が付く');
-    assert.ok(html.includes('DRAW'), '引き分けはDRAWテキストで判別できる(不変条件2)');
+    assert.ok(html.includes('決着つかず'), '引き分けは「決着つかず」テキストで判別できる(不変条件2, 2026-07-26)');
+    assert.ok(!html.includes('DRAW'), '旧文言「DRAW」は出ない(2026-07-26 撤去)');
     // 引き分け行には○/×マークが付かない
     const drawRowIdx = html.indexOf('レンカ');
     const drawRow = html.slice(Math.max(0, drawRowIdx - 300), drawRowIdx + 300);
@@ -1080,9 +1098,12 @@ function logGap(msg) {
     assert.ok(/ソラ<span class="np-winner-mark">○/.test(rightWinHtml), '右勝ちのとき右(ソラ)側に○が付く(不変条件3)');
     assert.ok(/ハルカ<span class="np-loser-mark">×/.test(rightWinHtml), '右勝ちのとき左(ハルカ)側に×が付く');
 
+    // 2026-07-26: 実測0件のため vs欄は常に「VS」表示(旧: 引き分け時のみ「DRAW」)。
+    // 引き分けは np-show-decision 内の「決着つかず」テキスト(旧: 時間切れ引き分け)で判別する。
     const drawHtml = built._npRenderPlayerShow(baseD({ isDraw: true, winner: null }), 1, 1);
     assert.ok(!drawHtml.includes('np-winner-mark') && !drawHtml.includes('np-loser-mark'), '引き分け時はどちらにも勝敗マークが付かない');
-    assert.ok(drawHtml.includes('DRAW') && drawHtml.includes('時間切れ引き分け'), '引き分けはDRAW表記+decision文で判別できる(不変条件2)');
+    assert.ok(drawHtml.includes('決着つかず'), '引き分けは「決着つかず」のdecision文で判別できる(不変条件2, 2026-07-26)');
+    assert.ok(!drawHtml.includes('DRAW') && !drawHtml.includes('時間切れ引き分け'), '旧文言「DRAW」「時間切れ引き分け」は出ない(2026-07-26 撤去)');
   });
 
   // --- 8b. allMatchesが無い・空でも落ちない(不変条件5) ---
@@ -1217,12 +1238,14 @@ function logGap(msg) {
     };
     let html;
     assert.doesNotThrow(() => { html = built._npRenderPage2(); }, '例外を投げない(不変条件1)');
-    // U5で通算成績の書式を「N勝N敗N分」に統一(旧: overallが「N勝-N敗-N分」、breakdownが「N-N-N分」で
-    // 同じウィジェット内でも不統一だった)。数値そのものが正しく出ることが本質の不変条件。
-    assert.ok(html.includes('3勝1敗1分'), '通算「3勝1敗1分」が数値どおりに出る(不変条件3, 4)');
+    // U5で通算成績の書式を「N勝N敗N分」に統一したが、2026-07-26で実測0件のため「N分」表記自体を撤去。
+    // 内部の draws 集計(_npComputeWarRecord)は残るが、表示は「N勝N敗」のみになる。数値そのものが
+    // 正しく出ることが本質の不変条件(draws=1でも表示には出ない)。
+    assert.ok(html.includes('3勝1敗'), '通算「3勝1敗」が数値どおりに出る(不変条件3, 4)');
     assert.ok(html.includes('3勝0敗'), '対抗戦(war)内訳「3勝0敗」が出る');
     assert.ok(html.includes('0勝1敗'), 'PPV内訳「0勝1敗」が出る');
-    assert.ok(html.includes('0勝0敗1分'), '挑戦状(b3)内訳「0勝0敗1分」が出る');
+    assert.ok(html.includes('0勝0敗'), '挑戦状(b3)内訳「0勝0敗」が出る');
+    assert.ok(!/\d分/.test(html), '戦績に「N分」表記は出ない(2026-07-26 撤去)');
     assert.ok(html.includes('2連勝中'), '連勝ラベルが出る(不変条件2)');
   });
 
@@ -1307,22 +1330,23 @@ console.log('  [skip] fighter popup overall record / last-5 (embedded in showFig
     }, overrides || {});
   }
 
-  // --- 11a. 通算戦績が○×△の3記号+数値で判別できる(不変条件2, 3) ---
-  section('_renderRosterDetailPanel: overall record shows wins/losses/draws distinguishably via ○/×/△ with correct numbers', () => {
+  // --- 11a. 通算戦績が○×の2記号+数値で判別できる(不変条件2, 3)。2026-07-26で△(分け数)表示は撤去 ---
+  section('_renderRosterDetailPanel: overall record shows wins/losses distinguishably via ○/× with correct numbers; draws no longer shown', () => {
     const built = makeBundle({});
     let html;
     assert.doesNotThrow(() => { html = built._renderRosterDetailPanel(baseChar({}), []); }, '例外を投げない(不変条件1)');
     assert.ok(/10○/.test(html), '勝ち数10が○付きで出る(不変条件2, 3)');
     assert.ok(/3×/.test(html), '負け数3が×付きで出る');
-    assert.ok(/1△/.test(html), '分け数1が△付きで出る');
+    assert.ok(!html.includes('1△'), '分け数(draws=1)は△付きで出ない(2026-07-26 撤去。draws自体はデータとして残る)');
   });
 
-  // --- 11b. 0勝0敗0分・王者バッジで落ちない(不変条件5) ---
-  section('_renderRosterDetailPanel: does not throw at 0-0-0, and shows the champion badge when applicable', () => {
+  // --- 11b. 0勝0敗・王者バッジで落ちない(不変条件5) ---
+  section('_renderRosterDetailPanel: does not throw at 0-0, and shows the champion badge when applicable', () => {
     const built = makeBundle({ G: { season: 3, week: 5, weekPhase: 'manage', titles: { world: { championId: 1 } } } });
     let html;
     assert.doesNotThrow(() => { html = built._renderRosterDetailPanel(baseChar({ wins: 0, losses: 0, draws: 0 }), []); });
-    assert.ok(/0○/.test(html) && /0×/.test(html) && /0△/.test(html), '0勝0敗0分でも数値がそのまま出る(端のケース, 不変条件5)');
+    assert.ok(/0○/.test(html) && /0×/.test(html), '0勝0敗でも数値がそのまま出る(端のケース, 不変条件5)');
+    assert.ok(!html.includes('0△'), '0△(分け表示)は出ない(2026-07-26 撤去)');
     assert.ok(html.includes('王者'), 'タイトル保持者のとき王者バッジが出る');
   });
 

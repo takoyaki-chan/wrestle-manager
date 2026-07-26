@@ -3099,6 +3099,26 @@ const Storage = {
         G = { ...G, newspaperArchive: archive, weeklyNewspaper, _migrated_summit_news_v1: true };
       }
 
+      // growth-rebalance v1.0 migration: strainDebt/seasonIntensiveWeeksを全キャラに付与
+      // （旧セーブはundefined→各所で`|| 0`フォールバックするため実害はないが、
+      // 明示的に0初期化して他のwear系フィールドと同じマイグレーション規約に揃える）
+      if (!G._migrated_strainDebt_v1) {
+        const migStrainDebt = (fighters) => (fighters || []).map(c => {
+          if (c.strainDebt !== undefined && c.seasonIntensiveWeeks !== undefined) return c;
+          return { ...c, strainDebt: c.strainDebt || 0, seasonIntensiveWeeks: c.seasonIntensiveWeeks || 0 };
+        });
+        G = { ...G, roster: migStrainDebt(G.roster), freeAgents: migStrainDebt(G.freeAgents) };
+        if (G.aiOrgs) {
+          const migAi = {};
+          Object.keys(G.aiOrgs).forEach(orgId => {
+            const od = G.aiOrgs[orgId];
+            migAi[orgId] = { ...od, roster: migStrainDebt(od.roster) };
+          });
+          G = { ...G, aiOrgs: migAi };
+        }
+        G = { ...G, _migrated_strainDebt_v1: true };
+      }
+
       {
         const repair = Engine.saveDoctor.repairOnLoad(G);
         if (repair.changed) {
@@ -8493,8 +8513,8 @@ const App = {
     // ドロー
     draw: [
       d => `${d.left.name}と${d.right.name}、決着つかず`,
-      d => `譲らぬ二人——メインはドローに終わる`,
-      d => `痛み分け。${d.left.name}も${d.right.name}も一歩も退かず`,
+      d => `譲らぬ二人——メインは決着つかずに終わる`,
+      d => `決着つかず。${d.left.name}も${d.right.name}も一歩も退かず`,
     ],
     // 通常
     normal: [
@@ -8542,8 +8562,8 @@ const App = {
     ],
     // ドロー
     draw: [
-      d => `${d.left.name}と${d.right.name}、${d.turns}ターンの攻防は決着を見なかった。互いにフォールを返し合い、極めを切り合い、最後まで膝を折らなかった二人。${d.venue.name}の${d.attendance.toLocaleString()}人は、引き分けという結果にもかかわらず惜しみない拍手を送った。再戦を望む声が、すでにあちこちから聞こえている。`,
-      d => `決着つかず。${d.left.name}も${d.right.name}も己の全てを出し尽くした結果がこのドローだ。MQ ${d.mq}が示す通り、試合内容に不満を持つ者はいないだろう。次はどちらが先に決着をつけるのか——${d.attendance.toLocaleString()}人のファンが次の邂逅を待っている。`,
+      d => `${d.left.name}と${d.right.name}、${d.turns}ターンの攻防は決着を見なかった。互いにフォールを返し合い、極めを切り合い、最後まで膝を折らなかった二人。${d.venue.name}の${d.attendance.toLocaleString()}人は、決着つかずの結果にもかかわらず惜しみない拍手を送った。再戦を望む声が、すでにあちこちから聞こえている。`,
+      d => `決着つかず。${d.left.name}も${d.right.name}も己の全てを出し尽くした結果がこれだ。MQ ${d.mq}が示す通り、試合内容に不満を持つ者はいないだろう。次はどちらが先に決着をつけるのか——${d.attendance.toLocaleString()}人のファンが次の邂逅を待っている。`,
     ],
     // 通常
     normal: [

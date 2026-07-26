@@ -1888,7 +1888,7 @@ function _renderRosterDetailPanel(c, hired) {
         <span class="badge badge-${roleCls}" style="font-size:10px">${c.role}</span>
       </div>
       <div class="rd-portrait-record">
-        <span style="color:#1a7a3a">${c.wins||0}○</span> <span style="color:#b03030">${c.losses||0}×</span> <span style="color:#7a7468">${c.draws||0}△</span>
+        <span style="color:#1a7a3a">${c.wins||0}○</span> <span style="color:#b03030">${c.losses||0}×</span>
         ${isChamp ? '<span style="margin-left:8px;color:#7a6530">👑王者</span>' : ''}
       </div>
       ${statusBadges.length > 0 ? `<div class="rd-portrait-status">${statusBadges.join('')}</div>` : ''}
@@ -7225,7 +7225,7 @@ function _npSwapMainToSecondCard(d, seasonNum, weekNum) {
   if (!promotedArticle) {
     // フォールバックも長めに
     if (m.isDraw) {
-      promotedArticle = `${m.left.name}と${m.right.name}、${m.turns || '?'}ターンの攻防は決着を見なかった。互いに譲らず${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を最後まで沸かせ、リング上には引き分けに納得しきれない両者の表情が残った。MQ${m.mq || '?'}——再戦を望む声は早くも上がっている。`;
+      promotedArticle = `${m.left.name}と${m.right.name}、${m.turns || '?'}ターンの攻防は決着を見なかった。互いに譲らず${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を最後まで沸かせ、リング上には決着がつかなかったことに納得しきれない両者の表情が残った。MQ${m.mq || '?'}——再戦を望む声は早くも上がっている。`;
     } else if (winnerName) {
       promotedArticle = `${winnerName}が${loserName}を${m.finishLabel || '決着技'}で仕留めた${m.turns || '?'}ターンの一戦。${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を前にMQ${m.mq || '?'}を記録し、メインに次ぐ好カードとして紙面に残った。${m.isTitleMatch ? '王座戦としての重みも感じさせる勝利だった。' : `${loserName}も意地を見せたが、${winnerName}の地力が最後にものを言った形だ。`}`;
     } else {
@@ -7291,7 +7291,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
         ${d.left.role ? `<div class="np-frole">${d.left.role}</div>` : ''}
       </div>
       <div class="np-vs-block">
-        <div class="np-vs-text">${d.isDraw ? 'DRAW' : 'VS'}</div>
+        <div class="np-vs-text">VS</div>
         ${d.finishLabel ? `<div class="np-vs-finish">${d.finishLabel}</div>` : ''}
       </div>
       <div class="${rightCls}">
@@ -7306,7 +7306,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
       const turnsTail = timeStr ? (d.turns ? `<span class="dec-turns">（${d.turns}ターン）</span>` : '') : (d.turns ? `<span class="dec-time">${d.turns}ターン</span>` : '');
       const timeMain = timeStr ? `<span class="dec-time">決着時間 ${timeStr}</span>` : '';
       if (d.isDraw) {
-        return `<div class="np-show-decision draw"><span class="dec-text">時間切れ引き分け</span></div>`;
+        return `<div class="np-show-decision"><span class="dec-text">決着つかず</span></div>`;
       }
       const winName = leftWin ? escHtml(d.left.name) : (rightWin ? escHtml(d.right.name) : null);
       if (!winName) return '';
@@ -7418,7 +7418,7 @@ function _npRenderDigest(d, seasonNum, weekNum) {
       : (m.turns ? `<span class="np-digest-time">${m.turns}ターン</span>` : '');
     let finishLine = '';
     if (m.isDraw) {
-      finishLine = `<span class="np-digest-finish-text">時間切れ引き分け</span>`;
+      finishLine = `<span class="np-digest-finish-text">決着つかず</span>`;
     } else if (wName) {
       const finBit = m.finishLabel ? `<strong>${m.finishLabel}</strong>で勝利` : '勝利';
       finishLine = `<span class="np-digest-finish-text"><strong>${wName}</strong>が${finBit}</span>${dTimeMain}${dTurnsSub}`;
@@ -7439,13 +7439,13 @@ function _npRenderDigest(d, seasonNum, weekNum) {
         ${m.isTag ? `<div class="np-digest-card">
           ${digestTagThumbs(m.teamA, leftWon)}
           <span class="np-digest-name${leftWon ? ' win' : ''}">${escHtml(m.left.name)}${leftWon ? '<span class="np-digest-mark win">○</span>' : ''}</span>
-          <span class="np-digest-vs">${m.isDraw ? 'DRAW' : 'vs'}</span>
+          <span class="np-digest-vs">vs</span>
           <span class="np-digest-name${rightWon ? ' win' : ' lose'}">${!m.isDraw && rightWon ? '<span class="np-digest-mark win">○</span>' : (!m.isDraw ? '<span class="np-digest-mark lose">×</span>' : '')}${escHtml(m.right.name)}</span>
           ${digestTagThumbs(m.teamB, rightWon)}
         </div>` : `<div class="np-digest-card">
           <div class="np-digest-thumb" style="${_npThumbBg(wId)}" onclick="showFighterPopup(${wId})"></div>
           <span class="np-digest-name">${wName}${!m.isDraw && wName ? '<span class="np-digest-mark win">○</span>' : ''}</span>
-          <span class="np-digest-vs">${m.isDraw ? 'DRAW' : 'vs'}</span>
+          <span class="np-digest-vs">vs</span>
           <span class="np-digest-name lose">${!m.isDraw && lName ? '<span class="np-digest-mark lose">×</span>' : ''}${lName}</span>
           <div class="np-digest-thumb" style="${_npThumbBg(lId)}" onclick="showFighterPopup(${lId})"></div>
         </div>`}
@@ -7613,12 +7613,12 @@ function _npRenderPage2() {
       <div class="np-war-grid">
         <div class="np-war-overall">
           <span class="lbl">通算（団体間ガチンコのみ）</span>
-          <span class="wl">${warStats.wins}勝${warStats.losses}敗${warStats.draws ? `${warStats.draws}分` : ''}</span>
+          <span class="wl">${warStats.wins}勝${warStats.losses}敗</span>
         </div>
         <div class="np-war-breakdown">
-          <div class="item"><label>対抗戦</label><span>${warStats.byWar.w}勝${warStats.byWar.l}敗${warStats.byWar.d ? `${warStats.byWar.d}分` : ''}</span></div>
-          <div class="item"><label>PPV</label><span>${warStats.byPpv.w}勝${warStats.byPpv.l}敗${warStats.byPpv.d ? `${warStats.byPpv.d}分` : ''}</span></div>
-          <div class="item"><label>挑戦状</label><span>${warStats.byB3.w}勝${warStats.byB3.l}敗${warStats.byB3.d ? `${warStats.byB3.d}分` : ''}</span></div>
+          <div class="item"><label>対抗戦</label><span>${warStats.byWar.w}勝${warStats.byWar.l}敗</span></div>
+          <div class="item"><label>PPV</label><span>${warStats.byPpv.w}勝${warStats.byPpv.l}敗</span></div>
+          <div class="item"><label>挑戦状</label><span>${warStats.byB3.w}勝${warStats.byB3.l}敗</span></div>
         </div>
         ${streakLabel ? `<div class="np-war-streak ${streakCls}">${streakLabel}</div>` : ''}
       </div>
@@ -7980,15 +7980,15 @@ function _npRenderPage3() {
   }
   if (narrativeParas.length === 0) {
     narrativeParas.push(`${aName}と${bName}。${matches}度のぶつかり合いが、二人の関係を形づくってきた。`);
-    narrativeParas.push(`通算${wA}勝${wB}敗${dr ? dr + '分' : ''}。本紙はこの関係を、業界を象徴する一組として注視している。`);
+    narrativeParas.push(`通算${wA}勝${wB}敗。本紙はこの関係を、業界を象徴する一組として注視している。`);
   } else if (narrativeParas.length === 1) {
-    narrativeParas.push(`通算${wA}勝${wB}敗${dr ? dr + '分' : ''}。数字は嘘をつかない。`);
+    narrativeParas.push(`通算${wA}勝${wB}敗。数字は嘘をつかない。`);
   }
 
   // 事実段落: h2h データを最大限盛り込む
   const facts = [];
   facts.push(`<span class="fact-item">通算<strong>${matches}</strong>戦</span>`);
-  facts.push(`<span class="fact-item">${aName}<strong>${wA}</strong>勝 / ${bName}<strong>${wB}</strong>勝${dr ? ` / ${dr}分` : ''}</span>`);
+  facts.push(`<span class="fact-item">${aName}<strong>${wA}</strong>勝 / ${bName}<strong>${wB}</strong>勝</span>`);
   facts.push(`<span class="fact-item">ベスト試合 MQ<strong>${h2h.bestMQ || '?'}</strong></span>`);
   if (h2h.hadTitleMatch) facts.push(`<span class="fact-item">タイトル戦経験<strong>あり</strong></span>`);
   if (h2h.hadPPV) facts.push(`<span class="fact-item">PPV対決<strong>あり</strong></span>`);
@@ -8015,7 +8015,7 @@ function _npRenderPage3() {
       <div class="np-rivalry-stand"><div class="img" style="${_npPhotoBg(a.id)}"></div></div>
       <div class="np-rivalry-vs">
         <div class="vs">VS</div>
-        <div class="h2h">${wA}勝-${wB}勝${dr ? ` (${dr}分)` : ''}</div>
+        <div class="h2h">${wA}勝-${wB}勝</div>
         <div class="h2h-lbl">通算${matches}戦</div>
       </div>
       <div class="np-rivalry-stand"><div class="img flip" style="${_npPhotoBg(b.id)}"></div></div>
@@ -8061,7 +8061,7 @@ function _npRenderPage3() {
       const cls = playerWin === true ? 'win-player' : playerWin === false ? 'win-rival' : 'draw';
       const stageBadge = h.st === 'ppv' ? 'PPV' : h.st === 'war' ? '対抗戦' : '興行';
       const winnerName = h.win === 'A' ? aName : (h.win === 'B' ? bName : '——');
-      const resultText = h.win === 'd' ? 'ドロー' : `${winnerName} 勝`;
+      const resultText = h.win === 'd' ? '決着つかず' : `${winnerName} 勝`;
       html += `<div class="np-history-row ${cls}">
         <div class="np-history-when">S${h.s}<span class="week-num">W${h.w}</span></div>
         <div>
@@ -8076,7 +8076,7 @@ function _npRenderPage3() {
     // 個別履歴は無いが、サマリが残っている場合に概要を1行に集約して見せる
     const summaryBits = [];
     summaryBits.push(`通算<strong>${matches}</strong>戦`);
-    if (wA || wB || dr) summaryBits.push(`${aName} <strong>${wA}</strong>勝 / ${bName} <strong>${wB}</strong>勝${dr ? ` / ${dr}分` : ''}`);
+    if (wA || wB || dr) summaryBits.push(`${aName} <strong>${wA}</strong>勝 / ${bName} <strong>${wB}</strong>勝`);
     if (h2h.bestMQ) summaryBits.push(`ベスト試合 MQ<strong>${h2h.bestMQ}</strong>`);
     if (h2h.lastMatch && h2h.lastMatch.season) summaryBits.push(`直近 S${h2h.lastMatch.season} W${h2h.lastMatch.week || '?'}`);
     if (h2h.hadTitleMatch) summaryBits.push(`タイトル戦経験<strong>あり</strong>`);
@@ -8145,7 +8145,7 @@ function _npRenderPage3() {
         <div class="np-relation-tag-desc">「${td.label}」: ${td.desc}</div>
         <div class="np-relation-stats">
           <span>通算<strong>${r.h2h.matches || 0}</strong>戦</span>
-          <span>${wAR}勝-${wBR}勝${drR ? ` (${drR}分)` : ''}</span>
+          <span>${wAR}勝-${wBR}勝</span>
           <span>最高MQ<strong>${r.h2h.bestMQ || '?'}</strong></span>
         </div>
       </div>`;
@@ -8263,7 +8263,7 @@ function _npMvpRaceRank1Card(entry) {
     ? `奪取${m.titleWins}+防衛${m.titleDefenses}${m.isCurrentChamp ? '+保持' : ''}` : '王座なし';
   const ppvDetail = m.ppvChampion > 0 ? `優勝${m.ppvChampion}回` : (m.ppvRunnerUp > 0 ? `準V${m.ppvRunnerUp}回` : (m.ppvParticipation > 0 ? `出場${m.ppvParticipation}回` : '未開催'));
   const warDetail = (m.warWins + m.warLosses + m.warDraws) > 0
-    ? `${m.warWins}勝${m.warLosses}敗${m.warDraws}分` : '出場なし';
+    ? `${m.warWins}勝${m.warLosses}敗` : '出場なし';
   const domeDetail = m.domeAppearances > 0 ? `メイン${m.domeAppearances}回出場` : 'なし';
   const titleZero = bd.title === 0 ? ' zero' : '';
   const ppvZero = bd.ppv === 0 ? ' zero' : '';
@@ -8670,8 +8670,8 @@ function _renderNewspaperPlayerShow(d) {
         ${d.isTag && d.teamA ? `<div style="font-size:10px;line-height:1.35;color:#5b4b34;text-align:center;">${tagMembers(d.teamA)}</div>` : ''}
       </div>
       <div style="text-align:center;">
-        <div style="font-size:24px;font-weight:1000;color:#9b1212;">${d.isDraw ? 'DRAW' : 'VS'}</div>
-        <div style="font-size:9px;font-weight:900;color:#b9892a;letter-spacing:0.1em;margin-top:2px;">${d.isDraw ? 'TIME LIMIT' : 'WINNER'}</div>
+        <div style="font-size:24px;font-weight:1000;color:#9b1212;">VS</div>
+        <div style="font-size:9px;font-weight:900;color:#b9892a;letter-spacing:0.1em;margin-top:2px;">WINNER</div>
       </div>
       <div style="display:grid;justify-items:center;gap:4px;">
         ${d.isTag && d.teamB ? tagPortraits(d.teamB, rightWin, 'right') : portrait(pRight, d.right, rightWin ? 'outline:3px solid rgba(240,212,139,0.75);background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#ff8396,#9f213f);')}
@@ -8680,7 +8680,7 @@ function _renderNewspaperPlayerShow(d) {
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 8px;border:1px solid rgba(125,95,50,0.20);border-radius:8px;background:rgba(200,190,170,0.18);font-size:12px;">
-      <div style="font-weight:900;">${d.isDraw ? 'Time-limit draw' : `${winnerLink} wins`}</div>
+      <div style="font-weight:900;">${d.winner ? `${winnerLink} wins` : '決着つかず'}</div>
       <div style="color:#5b4b34;">${d.finishLabel}${d.turns ? ` / ${d.turns}T` : ''}</div>
       <div style="color:#5b4b34;">MQ <strong style="font-size:16px;color:#15120d;">${d.mq}</strong></div>
     </div>
@@ -8734,8 +8734,8 @@ function _renderDbNewspaperLegacy(d) {
           <div style="font-size:15px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.4);">${d.left.name}</div>
         </div>
         <div style="display:grid;justify-items:center;gap:6px;padding-bottom:10px;">
-          <div style="font-size:36px;letter-spacing:0.08em;font-weight:1000;color:#9b1212;">${d.isDraw ? 'DRAW' : 'VS'}</div>
-          <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:linear-gradient(135deg,#d9ab45,#b9892a);color:#16120b;font-size:10px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;">${d.isDraw ? 'Time Limit' : 'Winner'}</div>
+          <div style="font-size:36px;letter-spacing:0.08em;font-weight:1000;color:#9b1212;">VS</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:linear-gradient(135deg,#d9ab45,#b9892a);color:#16120b;font-size:10px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;">Winner</div>
         </div>
         <div style="display:grid;justify-items:center;gap:5px;">
           ${portrait(pRight, d.right, rightWin ? 'outline:4px solid rgba(240,212,139,0.75);transform:scale(1.04);background:linear-gradient(180deg,#ff8396,#9f213f);' : 'background:linear-gradient(180deg,#ff8396,#9f213f);')}
@@ -8743,7 +8743,7 @@ function _renderDbNewspaperLegacy(d) {
         </div>
       </div>
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid rgba(125,95,50,0.24);border-radius:10px;background:rgba(200,190,170,0.22);">
-        <div style="font-size:14px;font-weight:900;">${d.isDraw ? 'Time-limit draw' : `${d.winner.name} wins`}</div>
+        <div style="font-size:14px;font-weight:900;">${d.winner ? `${d.winner.name} wins` : '決着つかず'}</div>
         <div style="font-size:12px;color:#5b4b34;">${d.finishLabel}${d.turns ? ` / ${d.turns}T` : ''}</div>
         <div style="font-size:13px;color:#5b4b34;">MQ <strong style="font-size:20px;color:#15120d;">${d.mq}</strong></div>
       </div>
@@ -8916,7 +8916,7 @@ function _renderNewspaperDigest(d) {
       html += `<div class="ndt-ff">
         ${ndtTagPorts(m.teamA, winLeft)}
         <span class="ndt-name${winLeft ? ' w' : ''}">${m.left.name}</span>
-        <span class="ndt-vs">${m.isDraw ? 'DRAW' : 'vs'}</span>
+        <span class="ndt-vs">vs</span>
         <span class="ndt-name${winRight ? ' w' : ''}">${m.right.name}</span>
         ${ndtTagPorts(m.teamB, winRight)}
       </div>`;
@@ -8924,7 +8924,7 @@ function _renderNewspaperDigest(d) {
       html += `<div class="ndt-ff">
         ${ndtPort(m.left.id, false)}
         <span class="ndt-name">${m.left.name}</span>
-        <span class="ndt-vs">DRAW</span>
+        <span class="ndt-vs">vs</span>
         <span class="ndt-name">${m.right.name}</span>
         ${ndtPort(m.right.id, false)}
       </div>`;
@@ -10868,7 +10868,6 @@ function _renderDbChronicle() {
       const recordParts = [];
       if (r.wins > 0) recordParts.push(`${r.wins}勝`);
       if (r.losses > 0) recordParts.push(`${r.losses}敗`);
-      if (r.draws > 0) recordParts.push(`${r.draws}分`);
       const record = recordParts.join('') || `${r.total}戦`;
       const oppFrag = (r.mainOpponents && r.mainOpponents.length > 0)
         ? `<span class="chron-rival-opp">主な相手: ${r.mainOpponents.join('・')}</span>`
@@ -12370,7 +12369,7 @@ function _renderRivalryFeatured(featured, pickText) {
   // 戦績(A視点)
   const winsA = h2h.winsA || 0, winsB = h2h.winsB || 0, draws = h2h.draws || 0;
   const recordText = (winsA || winsB || draws)
-    ? `${winsA}勝${winsB}敗${draws ? draws + '分' : ''}`
+    ? `${winsA}勝${winsB}敗`
     : '未対戦';
 
   const standA = (typeof getStandUrl === 'function') ? getStandUrl(idA, Engine.util?.ov?.(charA) || 70) : '';
@@ -12463,7 +12462,7 @@ function _renderRivalryHistory(featured) {
   const rows = history.map((rec, idx) => {
     // win: 'A' (idA winner), 'B' (idB winner), 'd' (draw)
     let cls, resultText, mqText;
-    if (rec.win === 'd') { cls = 'draw'; resultText = '引き分け'; }
+    if (rec.win === 'd') { cls = 'draw'; resultText = '決着つかず'; }
     else if (rec.win === 'A') {
       const isPlayerA = _isPlayerSide(G, idA);
       cls = isPlayerA ? 'win-player' : 'win-rival';
@@ -12515,7 +12514,7 @@ function _renderRivalryRelations(relations, pickText) {
 
     const winsA = h2h.winsA || 0, winsB = h2h.winsB || 0, draws = h2h.draws || 0;
     const recordText = (winsA || winsB || draws)
-      ? `通算 ${winsA}勝${winsB}敗${draws ? draws + '分' : ''}`
+      ? `通算 ${winsA}勝${winsB}敗`
       : '対戦履歴なし';
     const factParts = [recordText];
     if (h2h.bestMQ) factParts.push(`最高 MQ${h2h.bestMQ}`);
@@ -12878,11 +12877,16 @@ function _dfcRenderFeudTimeline(state, factionAId, factionBId, feudEntry) {
     return `<div class="feud-timeline"><span style="color:var(--office-text-on-dark-dim,#7a7466)">タイムラインに記録された抗争イベントはまだありません</span></div>`;
   }
   const parts = recent.map((ev, i) => {
-    let cls = 'match', label = ev.type || 'EVENT';
+    // 未定義の種別は内部定数名(ev.type)をそのまま出さず、汎用の日本語ラベルへフォールバックする
+    // (2026-07-26: INTERNAL_CHALLENGE_* 系がここに来ると素通りしていたバグの修正)
+    let cls = 'match', label = '抗争イベント';
     if (/F02/.test(ev.type)) { cls = 'f02'; label = ev.type.replace('F02_', 'F02 ・ '); }
     else if (/F08/.test(ev.type)) { cls = 'f08'; label = 'F08'; }
     else if (/F09/.test(ev.type)) { cls = 'f09'; label = 'F09'; }
     else if (ev.type === 'RIVALRY_CLOSED') { cls = 'f09'; label = `決着 ・ ${ev.reason || ''}`; }
+    else if (ev.type === 'INTERNAL_CHALLENGE_REGISTERED') { cls = 'match'; label = '序列戦 ・ 受理'; }
+    else if (ev.type === 'INTERNAL_CHALLENGE_RESOLVED') { cls = 'match'; label = ev.challengerWon ? '序列戦 ・ 下克上' : '序列戦 ・ 防衛'; }
+    else if (ev.type === 'INTERNAL_CHALLENGE_DRAWN') { cls = 'match'; label = '序列戦 ・ 決着つかず'; }
     const w = `第${ev.season}年 W${String(ev.week).padStart(2, '0')}`;
     return `<span class="feud-timeline-marker ${cls}" title="${w}">${label}</span>`;
   });

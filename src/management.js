@@ -7168,6 +7168,14 @@ const Engine = {
         // 早熟/晩成/鉄人 等の trait は durability に合算した実効値で扱う
         const effDura = Engine.growth.getEffectiveDurability(nc);
         const decayStartAge = 23 + effDura;
+        // growth-rebalance v1.0 (2026-07-26): 「追い込み」の代償を選手の消耗として払わせる。
+        // - decayStartAge到達後: シーズン内の追い込み週数(seasonIntensiveWeeks)に比例してwearが積む(累積式)。
+        //   旧実装は intensiveWeeks(連続カウンタ、UI上限2で頭打ち) >= 12 の閾値式で実質発火しない死んだ分岐だった。
+        // - decayStartAge到達前: wearは溜めず、代わりに strainDebt(隠れた負債)として溜める。
+        //   24歳前後で急に衰え始める不自然さを避けるため。到達した最初のシーズンにまとめてwearへ変換する
+        //   （＝追い込んでいる最中は快調のまま、衰えの入口に立った時点で既に消耗している）。
+        const prevAge = c.age || 17; // 今シーズン開始時点（加齢前）の年齢。decayStartAge初到達の判定に使う
+        const seasonIntWeeks = nc.seasonIntensiveWeeks || 0;
         if (nc.age >= decayStartAge) {
           const baseWear = 10 + Engine.rng.int(rng, -3, 3); // 7〜13
           let wearBonus = 0;
@@ -7176,16 +7184,22 @@ const Engine = {
           if (avgMatches >= 40) wearBonus += 3;
           // v1.3-2: §5.3 シーズン中の怪我回数 × 2
           wearBonus += (nc.seasonInjuries || 0) * 2;
-          // intensive多用（12週以上）
-          if ((nc.intensiveWeeks || 0) >= 12) wearBonus += 2;
+          // growth-rebalance v1.0: 追い込み週数に比例した消耗（閾値式→累積式）
+          wearBonus += Math.round(seasonIntWeeks * GROWTH_CONFIG.intensiveWearPerWeek);
           // TODO: rest週 24週以上 → -3 (要: restWeeks フィールド追加)
           // durability補正（耐久値が高いほどwear増加が遅い） — trait 合算済み
           wearBonus -= effDura;
-          let finalWear = Math.max(1, baseWear + wearBonus);
-          // v0.2: 延命術 — wear蓄積 ×0.50
+          // growth-rebalance v1.0: decayStartAge初到達シーズンなら、若い頃に溜めたstrainDebtを一括清算
+          const debtPayoff = (prevAge < decayStartAge) ? (nc.strainDebt || 0) : 0;
+          let finalWear = Math.max(1, baseWear + wearBonus + debtPayoff);
+          // v0.2: 延命術 — wear蓄積 ×0.50（strainDebt清算分も含めて軽減される）
           finalWear = Math.max(1, Math.round(finalWear * Engine.coach.getWearMult(G, nc.id)));
-          nc = { ...nc, wear: (nc.wear || 0) + finalWear };
+          nc = { ...nc, wear: (nc.wear || 0) + finalWear, strainDebt: 0 };
+        } else {
+          // decayStartAge未到達: wearには触れず、strainDebtとして積み立てる
+          nc.strainDebt = (nc.strainDebt || 0) + seasonIntWeeks * GROWTH_CONFIG.strainDebtPerIntensiveWeek;
         }
+        nc.seasonIntensiveWeeks = 0; // シーズンリセット（intensiveWeeksは連続カウンタなので既存のまま週次で管理）
         const beforeDecay = { pw:nc.pw, sp:nc.sp, te:nc.te, st:nc.st, mn:nc.mn };
         nc = Engine.growth.applyDecay(rng, nc, Engine.coach.getDecayReduction(G, nc.id));
         const changes = {};
@@ -10706,6 +10720,9 @@ const Engine = {
             events.push(`⚠️ ${nc.name}が強化練習中に負傷！（${weeks}週離脱）`);
           }
           nc.intensiveWeeks = (nc.intensiveWeeks || 0) + 1;
+          // growth-rebalance v1.0: 連続週数カウンタ(intensiveWeeks、UI上限2で毎シーズン頭打ち)とは別に、
+          // シーズン内の追い込み週数を非連続で積算する。applySeasonEndのwear/strainDebt計算で使う。
+          nc.seasonIntensiveWeeks = (nc.seasonIntensiveWeeks || 0) + 1;
           nc._weekAction = 'intensive';
           nc.intensive = false;
           { const _d = {}; if (actualGrowth > 0) _d[growStat] = actualGrowth; nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'practice', detail: '追い込み', deltas: _d }]; }
@@ -15015,7 +15032,7 @@ const Engine = {
       else if (playerWins === aiWins) popDelta = 2;
       else popDelta = EVENT_CONFIG.warPopPenalty;
       const events = [];
-      const winLabel = playerWins > aiWins ? '勝ち越し！' : playerWins === aiWins ? '引き分け' : '負け越し…';
+      const winLabel = playerWins > aiWins ? '勝ち越し！' : playerWins === aiWins ? '決着つかず' : '負け越し…';
       // 対戦ポイント移動
       const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
       let bpMsg = '';
@@ -16033,6 +16050,8 @@ const Engine = {
       careerRecord: Engine.career.createRecord(),
       durability: Engine.career.generateDurability(rng), // v1.3-1: 個人耐久値 N(0,2) -4..+4
       wear: 0,                                           // v1.3-1: 累積摩耗
+      strainDebt: 0,          // growth-rebalance v1.0: decayStartAge未到達の追い込みが溜める隠れた負債
+      seasonIntensiveWeeks: 0, // growth-rebalance v1.0: シーズン内の追い込み週数（非連続累積、季末リセット）
       seasonInjuries: 0,   // v1.3-2: 今シーズンの怪我回数
       careerHistory: [],   // v1.3-2: 経歴記録 [{type,week,season,detail}]
       growthPenalty: null, // v1.3-2: 成長デバフ {remainingWeeks,multiplier,source} | null
@@ -17441,7 +17460,6 @@ Engine.mvpRace = {
     const warTotal = (m.warWins || 0) + (m.warLosses || 0) + (m.warDraws || 0);
     if (warTotal > 0) {
       const seg = [`${m.warWins}勝`, `${m.warLosses}敗`];
-      if (m.warDraws > 0) seg.push(`${m.warDraws}分`);
       chips.push({ icon: '⚔', text: `対抗戦${seg.join('')}` });
     }
     if (m.domeAppearances > 0) chips.push({ icon: '🏟', text: `ドーム${m.domeAppearances}戦` });
@@ -17523,8 +17541,8 @@ Engine.mvpRace = {
         `${opName}との${tag}は惜敗、それでもMQ${sig.mq}は今期屈指の試合の一つだった。`,
       ]);
       return pick([
-        `${opName}との${tag}はMQ${sig.mq}の引き分け。決着は次戦に持ち越された。`,
-        `${opName}との${tag}はMQ${sig.mq}で痛み分け、決着は別の機会へ。`,
+        `${opName}との${tag}はMQ${sig.mq}で決着つかず。次戦へ持ち越された。`,
+        `${opName}との${tag}はMQ${sig.mq}を記録するも、決着は別の機会へ。`,
       ]);
     }
     // 2. 宿敵
@@ -17606,7 +17624,7 @@ Engine.mvpRace = {
       const seedH = (state.rngSeed || 42) ^ (entry.fighterId * 73 + sig.week * 11);
       const rngH = Engine.rng.create(seedH);
       const pickH = arr => arr[Engine.rng.int(rngH, 0, arr.length - 1)];
-      const resultPhrase = sig.won === 'win' ? '勝利' : (sig.won === 'lose' ? '惜敗' : '引き分け');
+      const resultPhrase = sig.won === 'win' ? '勝利' : (sig.won === 'lose' ? '惜敗' : '決着つかず');
       headlineLine = pickH([
         `第${sig.week}週 ${opName} との${tag}でMQ${sig.mq}を記録（${resultPhrase}）。`,
         `${sig.week}週、${opName}との${tag}——MQ${sig.mq}、結果は${resultPhrase}。`,
@@ -22178,7 +22196,7 @@ Engine.eventSystem = {
             applyTrust(event.fighter1, 3);
             applyTrust(event.fighter2, 3);
             lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 2, 0, 100);
-            events.push(`🤼 ${event.name1}と${event.name2}は引き分け。互いの実力を認め合った`);
+            events.push(`🤼 ${event.name1}と${event.name2}は決着つかず。互いの実力を認め合った`);
           } else {
             const winnerId = winner === 'fighter1' ? event.fighter1 : event.fighter2;
             const loserId = winner === 'fighter1' ? event.fighter2 : event.fighter1;
@@ -22279,7 +22297,7 @@ Engine.eventSystem = {
           } else {
             orgPopDelta = Engine.orgPop.applyOrgPopChange(1, state.orgPop, rng);
             applyTrust(fighterId, 2);
-            events.push(`🤼 挑戦状は引き分け。互角の戦いを見せた（人気+${Math.round(orgPopDelta * 10) / 10}）`);
+            events.push(`🤼 挑戦状は決着つかず。互角の戦いを見せた（人気+${Math.round(orgPopDelta * 10) / 10}）`);
           }
           // MVPレース v2: 代表選手に b3Challenge 履歴
           {
@@ -26934,7 +26952,7 @@ Engine.newspaper = {
     // === 対抗戦結果 ===
     if (state._newsWarResult) {
       const wr = state._newsWarResult;
-      const resultLabel = wr.won ? '勝ち越し' : wr.draw ? '引き分け' : '敗北';
+      const resultLabel = wr.won ? '勝ち越し' : wr.draw ? '決着つかず' : '敗北';
       const bestMatch = wr.matches.reduce((best, m) => m.mq > (best?.mq || 0) ? m : best, null);
       const stamp = `第${state.season}年度・第${state.week}週 対抗戦`;
       stories.push({
@@ -27202,8 +27220,8 @@ Engine.newspaper = {
               stories.push({
                 type: 'aiWarResult',
                 priority: finalPriority,
-                headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦は痛み分け`,
-                body: `${stamp}。${ev.challengerName}と${ev.defenderName}の代表対決は引き分けに終わった。MQ${ev.mq}。${mqTone}`,
+                headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦は決着つかず`,
+                body: `${stamp}。${ev.challengerName}と${ev.defenderName}の代表対決は決着つかずに終わった。MQ${ev.mq}。${mqTone}`,
                 characterId: ev.challengerId || null,
                 situation: stamp,
               });
@@ -27238,8 +27256,8 @@ Engine.newspaper = {
               stories.push({
                 type: 'aiB3Result',
                 priority: finalPriority,
-                headline: `📜 ${ev.challengerOrg} vs ${ev.defenderOrg} 挑戦状一騎討ちは引き分け`,
-                body: `${stamp}。${ev.challengerName}と${ev.defenderName}による挑戦状の一騎討ちは引き分け。MQ${ev.mq}。`,
+                headline: `📜 ${ev.challengerOrg} vs ${ev.defenderOrg} 挑戦状一騎討ちは決着つかず`,
+                body: `${stamp}。${ev.challengerName}と${ev.defenderName}による挑戦状の一騎討ちは決着つかず。MQ${ev.mq}。`,
                 characterId: ev.challengerId || null,
                 situation: stamp,
               });

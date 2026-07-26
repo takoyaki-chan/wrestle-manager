@@ -1400,7 +1400,7 @@ function showResult(fr){
     names.style.background = 'linear-gradient(180deg, #ffd700, #daa520)';
     names.style.webkitBackgroundClip = 'text';
   } else {
-    names.textContent = 'DRAW';
+    names.textContent = 'NO CONTEST';
     names.style.background = 'linear-gradient(180deg, #ccc, #888)';
     names.style.webkitBackgroundClip = 'text';
   }

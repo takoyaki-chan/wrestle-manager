@@ -678,7 +678,7 @@ Engine.battle = {
           finType = 'HP判定';
         }
         finishPhase = 'Timeout';
-        log.push(`⏰ 時間切れ！ ${winner === 'draw' ? 'ドロー' : (winner === 'left' ? L.name : R.name) + 'のHP判定勝ち'}`);
+        log.push(`⏰ 時間切れ！ ${winner === 'draw' ? '決着つかず' : (winner === 'left' ? L.name : R.name) + 'のHP判定勝ち'}`);
         // 最終フレームに winner を刻む。最後に push された直前のフレームを上書きしても良いが、
         // 追加フレーム (turnSub 無し、turn は維持) で timeout 表示を分離した方が演出しやすい
         if (recordFrames && frames.length > 0) {
