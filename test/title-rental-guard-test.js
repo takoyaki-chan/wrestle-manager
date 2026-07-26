@@ -23,7 +23,12 @@ const sanitizeBody = extractBlock(managementSource, 'sanitizeShowCardTitles(stat
 const setShowCardSlotBody = extractBlock(appSource, 'setShowCardSlot(slotIndex, side, newId)');
 
 const runSanitize = new Function('Engine', 'state', 'showCard', `${sanitizeBody}`);
-const runSetShowCardSlot = new Function('Engine', 'renderShowPrep', 'G', 'slotIndex', 'side', 'newId', `${setShowCardSlotBody}; return G;`);
+// 2026-07-27: setShowCardSlot が操作音を鳴らすようになったため、切り出し実行に Audio が要る
+//（音は演出なので、ここでは呼ばれたことだけ受け止める）
+const runSetShowCardSlotRaw = new Function('Engine', 'renderShowPrep', 'Audio', 'G', 'slotIndex', 'side', 'newId', `${setShowCardSlotBody}; return G;`);
+const audioStub = { play() {} };
+const runSetShowCardSlot = (Engine, renderShowPrep, G, slotIndex, side, newId) =>
+  runSetShowCardSlotRaw(Engine, renderShowPrep, audioStub, G, slotIndex, side, newId);
 
 (function testSanitizeClearsRentalTitleSlot() {
   const Engine = {

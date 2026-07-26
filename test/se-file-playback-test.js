@@ -209,6 +209,50 @@ section('15. 高頻度のキーには短い音を当てる', () => {
       `${k}: ${sec.toFixed(2)}s は押した瞬間に返る音として長い（0.6秒以内に）`);
   });
 });
+section('16. 同じ団体どうしの試合は、どちらが勝っても勝ち', () => {
+  // 通常興行はほとんどこれ。左が勝つと勝利音・右が勝つと敗北音、では嘘になる
+  //（2026-07-27 Keisuke 報告）
+  assert.ok(/if \(lo === 'player' && ro === 'player'\)/.test(keySrc),
+    '同団体どうしを区別していない。右の選手が勝つと敗北音が鳴る');
+  assert.ok(/winnerSide === 'draw' \? 'boutOther' : 'boutWin'/.test(keySrc),
+    '同団体どうしで敗北音が鳴る経路が残っている');
+});
+
+section('17. 興行準備の操作に音がある', () => {
+  // 「反応のあるボタンと反応のないボタンがあるのは気持ちが悪い」（2026-07-27 Keisuke）。
+  // 失敗時の error だけ鳴って**成功時が無音**、という手当が各所に残っていた。
+  const uiRender = read('src/ui-render.js');
+  const handlers = ['removeTagSlot', 'setShowVenue', 'clearShowCard',
+                    'mergeToTagSlot', 'setTagSlotFighter', 'setShowCardSlot'];
+  handlers.forEach(fn => {
+    const at = app.indexOf(`\n  ${fn}(`);
+    assert.ok(at > 0, `${fn} が見つからない`);
+    const end = app.indexOf('\n  },', at);
+    const body = app.slice(at, end);
+    const sounds = (body.match(/Audio\.play\('([a-z]+)'\)/g) || []);
+    assert.ok(sounds.some(x => !/'error'/.test(x)),
+      `${fn}: 失敗時の error しか鳴っていない。成功したのに無音`);
+  });
+  // 枠を開く・閉じる操作
+  ['_spOpenPicker', '_spOpenTagPicker', '_spClosePicker'].forEach(fn => {
+    const at = uiRender.indexOf(`function ${fn}(`);
+    assert.ok(at > 0, `${fn} が見つからない`);
+    const body = uiRender.slice(at, uiRender.indexOf('\n}', at));
+    assert.ok(/Audio\.play\(/.test(body), `${fn}: 無音`);
+  });
+  // おまかせ編成3種
+  ['autoFillCard', 'autoFillCardByAppeal', 'autoFillCardByDraw'].forEach(fn => {
+    assert.ok(uiRender.includes(`Audio.play('select');${fn}()`),
+      `${fn}: おまかせボタンが無音`);
+  });
+});
+
+section('18. おまかせ・確定は「決定」の音（「移動」ではない）', () => {
+  // select は おまかせ／確定／タイトル操作 に使われる。UI03「移動」は合わない
+  assert.ok(/select: *'wm_se_ui01_v01\.ogg'/.test(app),
+    'おまかせ・確定が「移動」の音のまま');
+});
+
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (15 sections)');
+console.log('ALL PASS (18 sections)');
