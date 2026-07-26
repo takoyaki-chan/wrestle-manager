@@ -15701,6 +15701,23 @@ function _emrResultSeKey(opts, winnerSide) {
   return winnerSide === mine ? 'boutWin' : 'boutLose';
 }
 
+/** 試合が決まった音を、共通の規則で鳴らす。
+ *
+ *  イベント試合(派閥内対決 / B3 元同僚初対戦 / B2 大型イベント)は
+ *  showEventMatchResultPopup を通らない独自の結果画面を持っており、
+ *  **決着音のかわりに coin(お金の音)が鳴っていた**(2026-07-27 Keisuke 報告)。
+ *  規則を2箇所に書くと必ず片方が古くなるので、判定は _emrResultSeKey に寄せる。 */
+function playMatchResultSe(left, right, winnerSide, isTag) {
+  try {
+    const key = _emrResultSeKey(
+      isTag ? { isTag: true, teamLeft: left, teamRight: right } : { left, right },
+      winnerSide);
+    Audio.play(key);
+  } catch (_e) {}
+}
+
+if (typeof window !== 'undefined') window.playMatchResultSe = playMatchResultSe;
+
 function closeEventMatchResultPopup() {
   const layer = document.querySelector('.emr-layer');
   if (layer) layer.remove();

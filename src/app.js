@@ -12670,7 +12670,9 @@ const App = {
     // BGMフェードアウト
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
-    Audio.play('coin');
+    playMatchResultSe(b3.playerFighter, b3.challenger,
+      matchResult.winner === 'right' ? 'right' : matchResult.winner === 'draw' ? 'draw' : 'left');
+    App.restoreBgmForState(1600);
     App._finalizeB3Match(matchResult);
   },
 
@@ -12854,9 +12856,14 @@ const App = {
       log: data.log || []
     };
     c1.matchResult = matchResult;
+    // 2026-07-27 Keisuke 報告: イベント試合は決着音のかわりに coin(お金の音)が鳴り、
+    // BGM もフェードアウトするだけで**元に戻っていなかった**。
+    // 音の規則は playMatchResultSe(=共通ポップアップと同じ判定)に寄せる。
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
-    Audio.play('coin');
+    playMatchResultSe(c1.fighterA, c1.fighterB,
+      matchResult.winner === 'right' ? 'right' : matchResult.winner === 'draw' ? 'draw' : 'left');
+    App.restoreBgmForState(1600);
     App._finalizeCommon1Match(matchResult);
   },
 
@@ -13027,7 +13034,9 @@ const App = {
     b2.matchResult = matchResult;
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
-    Audio.play('coin');
+    playMatchResultSe(b2.f1, b2.f2,
+      matchResult.winner === 'right' ? 'right' : matchResult.winner === 'draw' ? 'draw' : 'left');
+    App.restoreBgmForState(1600);
     App._finalizeB2Match(matchResult);
   },
 
