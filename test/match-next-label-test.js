@@ -102,14 +102,18 @@ section('8. 試合結果で音が鳴る（共通の入口で）', () => {
   const body = uiCommon.slice(at, at + 1400);
   assert.ok(/Audio\.play\(/.test(body),
     '試合結果が無音のまま。個別の大会ではなく**共通の入口**で鳴らすこと');
-  assert.ok(/boutWin/.test(body), '勝利音が鳴っていない');
 });
 
-section('9. 引き分けでは勝利音を鳴らさない', () => {
+section('9. 音は「自団体から見て」決まる（2026-07-27 U8で変更）', () => {
+  // 旧: 勝者が誰であれ勝利音 → **自団体が負けても勝利音**が鳴っていた。
+  // 新: 自団体の勝ち / 負け・引き分け / 自団体が絡まない試合 の3通り。
+  // 中身の検査は test/se-file-playback-test.js が持つ。ここでは**接続**だけ見る。
   const at = uiCommon.indexOf('function showEventMatchResultPopup(opts)');
   const body = uiCommon.slice(at, at + 1400);
-  assert.ok(/winnerSide === 'draw' \? 'boutDraw' : 'boutWin'/.test(body),
-    '引き分けでも勝利音が鳴る。嘘になる');
+  assert.ok(/Audio\.play\(_emrResultSeKey\(opts, winnerSide\)\)/.test(body),
+    '自団体から見た判定を通していない');
+  assert.ok(!/winnerSide === 'draw' \? 'boutDraw' : 'boutWin'/.test(body),
+    '勝者が誰であれ勝利音、の実装に戻っている');
 });
 
 section('10. 1試合ごとの音は、大会の優勝ファンファーレより控えめ', () => {

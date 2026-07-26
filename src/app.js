@@ -128,6 +128,55 @@ const Audio = (() => {
     grandFinalMain:     { file: '../bgm/production-ogg/wm_bgm_m05_v01.ogg', vol: 0.13 }, // WM-M05 ビッグマッチ2(頂上決戦・TV中継)
   };
   const JINGLE_MIX = { victory:0.38, championship:0.29 };
+
+  // ── U8: 効果音を本番音源へ ────────────────────────────────────────────────
+  // ここに載せたキーだけ**ファイル音源**で鳴る。載っていないキーは従来の合成音のまま。
+  // **1本ずつ移せる**ので、載せ替えの途中で音が消える事故が起きない。
+  // ファイルが読めなければ黙って合成音へ落ちる(音は演出であり、無ければ困るものではない)。
+  // 名前と用途の対応は bgm/audio-mixer.html の台帳が正。
+  const SE_DIR = '../bgm/production-ogg/';
+  const SE_FILES = {
+    // 試合結果(A-3b)。**あらゆる試合の試合後**で鳴る
+    boutWin:  'wm_se_rs01_v01.ogg',   // RS01 通常勝利 — 自団体の勝ち
+    boutLose: 'wm_se_rs02_v01.ogg',   // RS02 敗北     — 自団体の負け・引き分け
+    boutOther:'wm_se_cr03_v01.ogg',   // CR03 歓声     — 自団体が絡まない試合
+  };
+  // 同じ音が連続で鳴る場面(フォール連発など)があるので、キーごとに数枚持つ。
+  // ただし**結果音は重ねない** — RS01/RS02/CR03 は3〜5秒あり、秋のフォール連発だと
+  // 前の音が鳴り終わる前に次が始まって濁る。同じキーの前の音は止めてから鳴らす。
+  const _seFilePool = {};
+  const _SE_POOL_SIZE = 3;
+  const _SE_SOLO = new Set(['boutWin', 'boutLose', 'boutOther']);
+  function _playFileSe(name, vol) {
+    const file = SE_FILES[name];
+    if (!file) return false;
+    let pool = _seFilePool[name];
+    if (!pool) {
+      pool = _seFilePool[name] = { els: [], idx: 0, broken: false };
+      for (let i = 0; i < _SE_POOL_SIZE; i++) {
+        const a = new window.Audio(SE_DIR + file);
+        a.preload = 'auto';
+        a.addEventListener('error', () => { pool.broken = true; }, { once: true });
+        pool.els.push(a);
+      }
+    }
+    if (pool.broken) return false;
+    if (_SE_SOLO.has(name)) {
+      pool.els.forEach(e => { try { e.pause(); e.currentTime = 0; } catch (_e) {} });
+    }
+    const el = pool.els[pool.idx];
+    pool.idx = (pool.idx + 1) % pool.els.length;
+    try {
+      el.currentTime = 0;
+      el.volume = Math.max(0, Math.min(1, _sfxMasterVol * _sfxVol * (vol != null ? vol : 0.5)));
+      const pr = el.play();
+      if (pr && pr.catch) pr.catch(() => { pool.broken = true; });
+      return true;
+    } catch (_e) {
+      pool.broken = true;
+      return false;
+    }
+  }
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
   const SE_MIX = {
     click:.50, hover:.40, select:.50, deselect:.40, error:.50, save:.40, notify:.50,
@@ -135,7 +184,9 @@ const Audio = (() => {
     fanfare:.74, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
     war:.60, transfer:.52, award:.72, tension_hit:.66,
     rivalry_confrontation:.64, fate_confrontation:.63, rivalry_resolution:.50, fate_resolution:.57,
-    coin:.40, spend:.40, stamp:.40, matchVictoryFanfare:.50, boutWin:.34, boutDraw:.30,
+    coin:.40, spend:.40, stamp:.40, matchVictoryFanfare:.50,
+    // 試合結果。1試合ごとに何度も鳴るので、大会ファンファーレより控えめに保つ
+    boutWin:.34, boutLose:.32, boutOther:.22, boutDraw:.30,
   };
 
   // Lazy-init AudioContext (must be triggered by user gesture)
@@ -488,6 +539,18 @@ const Audio = (() => {
       const t = c.currentTime;
       osc(392, 'sine', t, 0.28, 0.08);
       osc(330, 'sine', t + 0.1, 0.3, 0.06);
+    },
+    // 以下2つは本番音源(RS02 / CR03)の**保険**。音源が読めなかったときだけ鳴る
+    boutLose() {
+      const c = ensure();
+      const t = c.currentTime;
+      osc(392, 'sine', t, 0.34, 0.08);
+      osc(294, 'sine', t + 0.12, 0.4, 0.07);
+    },
+    boutOther() {
+      const c = ensure();
+      const t = c.currentTime;
+      noiseHP(t, 0.5, 0.03, 1800);
     },
     // オーディオミキサー ff04 / battle f10 と同じ試合勝利ファンファーレ
     matchVictoryFanfare() {
@@ -1194,7 +1257,17 @@ const Audio = (() => {
   // ║  PUBLIC API                                      ║
   // ╚══════════════════════════════════════════════════╝
   return {
-    play(name) { if (!_muted && SFX[name]) { try { ensure(); if (SE_MIX[name] !== undefined) sfxGain.gain.value = SE_MIX[name]; SFX[name](); } catch(e) {} } },
+    play(name) {
+      if (_muted) return;
+      // 本番音源が割り当てられているキーはそちらを優先。読めなければ合成音へ落ちる
+      if (SE_FILES[name] && _playFileSe(name, SE_MIX[name])) return;
+      if (!SFX[name]) return;
+      try {
+        ensure();
+        if (SE_MIX[name] !== undefined) sfxGain.gain.value = SE_MIX[name];
+        SFX[name]();
+      } catch (e) {}
+    },
     bgm: BGM,
     fileBgm: FileBGM,
     get muted() { return _muted; },

@@ -15585,6 +15585,36 @@ function _emrCrossOrg(opts) {
   return !!(lo && ro && lo !== ro);
 }
 
+/** 試合結果の音を選ぶ。**自団体から見てどうだったか**で決める(2026-07-27 Keisuke)。
+ *
+ *  それまでは「勝者が誰であれ勝利音」だったので、**自団体が負けても勝利音**が鳴り、
+ *  他団体どうしの試合(ジュニア・天頂戦・PPVでは大半)でも勝利音が鳴っていた。
+ *
+ *    自団体の勝ち          → RS01「通常勝利」
+ *    自団体の負け・引き分け → RS02「敗北」
+ *    自団体が絡まない試合   → CR03「歓声」(勝ち負けを名乗らない)
+ */
+function _emrResultSeKey(opts, winnerSide) {
+  const orgOf = side => {
+    if (opts.isTag) {
+      const t = side === 'left' ? opts.teamLeft : opts.teamRight;
+      return t && t.orgId != null ? String(t.orgId) : null;
+    }
+    const direct = side === 'left' ? opts.leftOrgId : opts.rightOrgId;
+    if (direct != null) return String(direct);
+    const f = side === 'left' ? opts.left : opts.right;
+    const id = f && (f.orgId != null ? f.orgId : f._orgId);
+    return id != null ? String(id) : null;
+  };
+  const lo = orgOf('left'), ro = orgOf('right');
+  // 所属が分からない画面は、従来どおり「決着した」音にしておく(嘘をつかない側へ倒す)
+  if (lo == null && ro == null) return winnerSide === 'draw' ? 'boutLose' : 'boutWin';
+  const mine = lo === 'player' ? 'left' : ro === 'player' ? 'right' : null;
+  if (!mine) return 'boutOther';
+  if (winnerSide === 'draw') return 'boutLose';
+  return winnerSide === mine ? 'boutWin' : 'boutLose';
+}
+
 function closeEventMatchResultPopup() {
   const layer = document.querySelector('.emr-layer');
   if (layer) layer.remove();
@@ -15619,7 +15649,7 @@ function showEventMatchResultPopup(opts) {
   // 秋4団体戦の1フォール目だったが、調べたら通常興行もPPVも全部鳴っていなかった)。
   // 共通の入口で鳴らすので、大会を足しても付け忘れが起きない。
   // 大会の優勝ファンファーレとは別物。1試合ごとに何度も鳴るので控えめに。
-  try { Audio.play(winnerSide === 'draw' ? 'boutDraw' : 'boutWin'); } catch (_e) {}
+  try { Audio.play(_emrResultSeKey(opts, winnerSide)); } catch (_e) {}
   const line = showVictoryLine ? _emrVictoryLine(winnerFighter, opts.victoryLine) : '';
   // 顔出しイベント共通ルール(docs/ui/02-layouts.md 2-D-X)準拠: 吹き出しは画像の「上」の予約枠に入れ、
   // 中身はセリフ本文だけ(話者名・所属は書かない。話者は画像下の表示で示す)。発言が無い側は空枠のままにして
