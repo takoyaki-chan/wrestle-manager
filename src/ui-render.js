@@ -2559,6 +2559,30 @@ function _agwBlockedShowPrepHtml() {
   </div>`;
 }
 
+/** 興行開催の最終確認（U7 ◆2）。
+ *  カードを1枠いじるたびに確認されるのは煩わしいので確認は挟まないが、
+ *  **開催は取り消せない**ので最後に一度だけ確かめる（2026-07-26 Keisuke）。 */
+function confirmExecuteShow() {
+  const valid = (G.showCard || []).filter(m => _isValidSlot(m));
+  if (valid.length === 0) { Audio.play('error'); return; }
+  const nameOf = id => {
+    const f = (typeof findFighter === 'function') ? findFighter(Number(id)) : null;
+    return f ? f.name : '?';
+  };
+  const main = valid[0];
+  const mainText = main.matchType === 'tag'
+    ? `${nameOf(main.teamA.fighter1)}＆${nameOf(main.teamA.fighter2)} vs ${nameOf(main.teamB.fighter1)}＆${nameOf(main.teamB.fighter2)}`
+    : `${nameOf(main.left)} vs ${nameOf(main.right)}`;
+  const v = (typeof VENUES !== 'undefined') ? VENUES[G.showVenue] : null;
+  const venueText = v ? `${v.name}（キャパ ${v.cap.toLocaleString()}人 ／ 費用 ${v.cost}万）` : '';
+  const titleCount = valid.filter(m => m.isTitle).length;
+  const msg = `${venueText ? `<div style="margin-bottom:8px">${escHtml(venueText)}</div>` : ''}`
+    + `<div style="margin-bottom:8px"><strong>全${valid.length}試合</strong>${titleCount ? ` ／ 王座戦 ${titleCount}` : ''}</div>`
+    + `<div style="margin-bottom:10px;color:var(--gold)">メインイベント<br>${escHtml(mainText)}</div>`
+    + `<div style="font-size:12px;color:var(--text-sub)">この編成で開催します。開催後はカードを変更できません。</div>`;
+  showConfirm(msg, '開催する', () => executeShow());
+}
+
 function renderShowPrep() {
   if (typeof App !== 'undefined' && App.repairProgressionState && App.repairProgressionState('renderShowPrep')) {
     try { Storage.autoSave(); } catch (_e) {}
@@ -3431,7 +3455,7 @@ function renderShowPrep() {
 
   // 開催ボタン v7
   html += `<div class="sp-action-row">
-    <button class="btn btn-gold" onclick="executeShow()" ${validMatches.length === 0 ? 'disabled' : ''}>興行開催！（${validMatches.length}試合）</button>
+    <button class="btn btn-gold" onclick="confirmExecuteShow()" ${validMatches.length === 0 ? 'disabled' : ''}>興行開催！（${validMatches.length}試合）</button>
     <button class="btn btn-blue" onclick="G={...G,weekPhase:'manage'};showScreen('week');refreshAll()">← 戻る</button>
   </div>`;
 

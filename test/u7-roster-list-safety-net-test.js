@@ -272,6 +272,18 @@ section('19c-4. 次戦カードの選手は名前も画像も押せる', () => {
   assert.ok(/showFighterPopup\(/.test(body), '既定のクリックが詳細を開いていない');
 });
 
+section('19e. 興行の開催は最後に一度だけ確認する（U7 ◆2）', () => {
+  assert.ok(/function confirmExecuteShow/.test(uiRender), 'confirmExecuteShow が無い');
+  assert.ok(/onclick="confirmExecuteShow\(\)"/.test(uiRender),
+    '開催ボタンが executeShow() を直接呼んでいる。取り消せない操作なので確認を挟むこと');
+  const body = around(uiRender, 'function confirmExecuteShow', 0, 1600);
+  assert.ok(/showConfirm\(/.test(body), '共通の確認モーダルを使っていない');
+  assert.ok(/メインイベント/.test(body), '何を開催するのかが確認文に出ていない');
+  // 枠を1つ触るたびの確認は入れない（だるいので最後に一度だけ）
+  assert.ok(!/showConfirm\(/.test(fnBody(uiRender, 'function toggleIntensive') || ''),
+    'カード編集の途中で確認を挟んでいる');
+});
+
 section('19d. 選手詳細は最前面に出る', () => {
   const html = read('src/index.html');
   const m = html.match(/\.fighter-popup-overlay\{[^}]*z-index:\s*(\d+)/);
