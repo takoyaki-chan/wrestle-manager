@@ -141,12 +141,14 @@ const Audio = (() => {
   const SE_FILES = {
     // ── 操作に即返る音(0.25〜0.51秒) ──────────────────────────
     click:    'wm_se_ui01_v01.ogg',   // UI01 決定        0.49s  ※92箇所。全体の印象を決める
-    select:   'wm_se_ui03_v01.ogg',   // UI03 移動        0.39s
+    select:   'wm_se_ui01_v01.ogg',   // UI01 決定        0.49s  おまかせ・確定。「移動」は合わない(Keisuke)
     deselect: 'wm_se_ui02_v01.ogg',   // UI02 取消        0.50s
     error:    'wm_se_ui07_v01.ogg',   // UI07 軽いエラー  0.50s  ※59箇所
     notify:   'wm_se_ui06_v01.ogg',   // UI06 通常通知    0.49s
     tick:     'wm_se_sh05_v01.ogg',   // SH05 入替・並替  0.25s  進行の刻み
     save:     'wm_se_ui04_v01.ogg',   // UI04 設定切替    0.25s
+    switch:   'wm_se_ui04_v01.ogg',   // UI04 設定切替    0.25s  枠を開く・選手を差し替える(カキッ)
+    venue:    'wm_se_sh02_v01.ogg',   // SH02 会場決定    0.38s
     paper:    'wm_se_ui09_v01.ogg',   // UI09 紙          0.51s
     spend:    'wm_se_mg04_v01.ogg',   // MG04 支出        0.36s
     // ── 情報が出る・お金が動く(1〜1.4秒) ──────────────────────
@@ -218,7 +220,7 @@ const Audio = (() => {
   }
   // Per-SE volume mix (sets sfxGain.gain.value before each SE plays)
   const SE_MIX = {
-    click:.50, hover:.40, select:.50, deselect:.40, error:.50, save:.40, notify:.50,
+    click:.50, hover:.40, select:.50, deselect:.40, error:.50, save:.40, notify:.50, switch:.44, venue:.46,
     tick:.50, event:.50, reveal:.50, paper:.50, bignews:.58,
     fanfare:.74, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
     war:.60, transfer:.52, award:.72, tension_hit:.66,
@@ -578,6 +580,20 @@ const Audio = (() => {
       const t = c.currentTime;
       osc(392, 'sine', t, 0.28, 0.08);
       osc(330, 'sine', t + 0.1, 0.3, 0.06);
+    },
+    // 会場決定。本番音源 SH02 の保険
+    venue() {
+      const c = ensure();
+      const t = c.currentTime;
+      osc(523, 'sine', t, 0.18, 0.06);
+      osc(784, 'sine', t + 0.05, 0.2, 0.045);
+    },
+    // 枠・選手の切り替え(カキッ)。本番音源 UI04 の保険
+    switch() {
+      const c = ensure();
+      const t = c.currentTime;
+      osc(880, 'square', t, 0.05, 0.035);
+      noiseHP(t, 0.05, 0.02, 5200);
     },
     // 以下2つは本番音源(RS02 / CR03)の**保険**。音源が読めなかったときだけ鳴る
     boutLose() {
@@ -5877,8 +5893,9 @@ const App = {
   // Set show venue
   setShowVenue(venueIdx) {
     // orgPop リバランス v1.1 §5: ドーム年1回制限
-    if (venueIdx === 9 && (G.domeShowsThisSeason || 0) >= 1) return;
+    if (venueIdx === 9 && (G.domeShowsThisSeason || 0) >= 1) { Audio.play('error'); return; }
     G = { ...G, showVenue: venueIdx, showCard: Engine.util.normalizeShowCardForVenue(G.showCard, G.week, venueIdx) };
+    Audio.play('venue');
     renderShowPrep();
   },
 
@@ -5929,6 +5946,7 @@ const App = {
     }
     const sanitizedCard = Engine.title.sanitizeShowCardTitles({ ...G, showCard: newCard }, newCard);
     G = { ...G, showCard: sanitizedCard };
+    Audio.play('switch');
     renderShowPrep();
   },
 
@@ -5938,6 +5956,7 @@ const App = {
     const emptyCard = [];
     for (let i = 0; i < maxMatches; i++) emptyCard.push({left: 0, right: 0, isTitle: false});
     G = { ...G, showCard: emptyCard };
+    Audio.play('deselect');
     renderShowPrep();
   },
 
@@ -5981,6 +6000,7 @@ const App = {
     };
     card.splice(idx, 2, tagSlot);
     G = { ...G, showCard: card };
+    Audio.play('switch');
     renderShowPrep();
   },
 
@@ -5993,6 +6013,7 @@ const App = {
     const s2 = { left: tag.teamA.fighter2 || 0, right: tag.teamB.fighter2 || 0, isTitle: false };
     card.splice(idx, 1, s1, s2);
     G = { ...G, showCard: card };
+    Audio.play('switch');
     renderShowPrep();
   },
 
@@ -6036,6 +6057,7 @@ const App = {
     }
     tagSlot[team][pos] = fighterId;
     G = { ...G, showCard: newCard };
+    Audio.play('switch');
     renderShowPrep();
   },
 
@@ -9281,7 +9303,13 @@ const App = {
       left: teamA[i].id, right: teamB[i].id, isTitle: false,
       isCRMatch: true, _awayChallengeMatch: true, _crGroupId: groupId, _crSlot: i,
     }));
-    G = { ...G, roster: [...G.roster, ...guests] };
+    // **遠征に出た選手は、その週それ以上出られない。**
+    // 予約(_pendingAwayChallengeMatch)は試合が終わると消えるので、それだけを見ていると
+    // 遠征のあとの通常興行におまかせ編成で呼び戻され、**同じ週に二重出場**していた
+    // (2026-07-27 Keisuke 報告)。出た事実は週が変わるまで残す。
+    const ownAwayIds = (booking.requesterOrgId === 'player' ? booking.teamAIds : booking.teamBIds) || [];
+    G = { ...G, roster: [...G.roster, ...guests],
+      _awayChallengeUsedIds: { season: G.season, week: G.week, ids: [...ownAwayIds] } };
     App._awayChallengeInProgress = true;
     App._showPreview = {
       validMatches, results: new Array(3).fill(null), currentWatching: -1,

@@ -4006,14 +4006,29 @@ function getScheduledChallengeCard() {
     : null;
 }
 
+/** その週、通常興行のカードに入れてはいけない自団体の選手。
+ *
+ *  2026-07-27 Keisuke 報告の修正:
+ *   ・遠征の予約は **isEligibleHomeShow で絞ってはいけない**。あれは「この興行が挑戦試合を
+ *     開催できるか」の判定で、選手が空いているかとは別。特別興行週・PPV週で false になり、
+ *     おすすめ編成が遠征メンバーを呼び戻して**挑戦試合が中止**になっていた。
+ *   ・予約は試合が終わると消えるので、**出た事実**(_awayChallengeUsedIds)も見る。
+ *     見ないと、遠征のあとの通常興行に同じ選手が並び**同じ週に二重出場**する。
+ */
 function getChallengeUnavailableIds() {
   const ids = new Set(getScheduledChallengeCard()?.reservedIds || []);
   const single = Engine.challengeRequest?.getScheduledSingleChallenge?.(G);
   (single?.reservedIds || []).forEach(id => ids.add(id));
+  // これから遠征に出る(週の種類を問わない)
   const away = G && G._pendingAwayChallengeMatch;
-  if (away && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
+  if (away) {
     const playerIds = away.requesterOrgId === 'player' ? away.teamAIds : away.teamBIds;
     (playerIds || []).forEach(id => ids.add(id));
+  }
+  // 今週すでに遠征に出た
+  const used = G && G._awayChallengeUsedIds;
+  if (used && used.season === G.season && used.week === G.week) {
+    (used.ids || []).forEach(id => ids.add(id));
   }
   return ids;
 }
@@ -15609,6 +15624,12 @@ function _emrResultSeKey(opts, winnerSide) {
   const lo = orgOf('left'), ro = orgOf('right');
   // 所属が分からない画面は、従来どおり「決着した」音にしておく(嘘をつかない側へ倒す)
   if (lo == null && ro == null) return winnerSide === 'draw' ? 'boutLose' : 'boutWin';
+  // **両方とも自団体なら、どちらが勝っても勝ち**(2026-07-27 Keisuke)。
+  // 通常興行はほとんどこれ。左が勝つと勝利音・右が勝つと敗北音、では嘘になる。
+  // 引き分けだけは勝利音を鳴らさない(どちらの選手も勝っていない)。
+  if (lo === 'player' && ro === 'player') {
+    return winnerSide === 'draw' ? 'boutOther' : 'boutWin';
+  }
   const mine = lo === 'player' ? 'left' : ro === 'player' ? 'right' : null;
   if (!mine) return 'boutOther';
   if (winnerSide === 'draw') return 'boutLose';
