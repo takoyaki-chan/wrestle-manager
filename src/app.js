@@ -11043,12 +11043,18 @@ const App = {
     // 引退は引き留めダイアログで決断後に commit する（ダイアログ前は roster/titles/HoF を変更しない）
     if (pendingRetirements && pendingRetirements.length > 0) {
       App._retainedIds = new Set();
+      // シーズンレポートは**表彰式の後**に見せる。一連の演出が終わるまで伏せておく
+      App._seasonEndChainActive = true;
       refreshAll();
+      // 第1段: 引退の**判断**(見送る/引き留める)。表彰式より前でなければならない —
+      // 殿堂入りは retiredFighters だけを見るので、確定前に表彰式を作ると殿堂が空になる
       showRetirementPopups(pendingRetirements, () => {
         const retained = App._retainedIds || new Set();
         const confirmed = pendingRetirements
           .filter(r => !retained.has(r.fighter.id))
           .map(r => r.fighter);
+        // 第2段(あいさつ)は表彰式の後。**実際に引退した人だけ**
+        App._pendingFarewells = pendingRetirements.filter(r => !retained.has(r.fighter.id));
         if (confirmed.length > 0) {
           const result = Engine.retirement.commitRetirements(G, confirmed);
           G = result.state;
@@ -11062,7 +11068,7 @@ const App = {
         }
         App._retainedIds = null;
         App._safeAwardsChain();
-      });
+      }, { phase: 'decision' });
       return;
     }
 
@@ -11174,10 +11180,26 @@ const App = {
     }
   },
 
+  /** 一連の締めくくり。**表彰式が終わってから**、引退のあいさつ → シーズンレポートの順で見せる。
+   *  引退の判断(見送る/引き留める)は表彰式より前に済ませてある。 */
+  _showFarewellsThenReport() {
+    const finish = () => {
+      App._seasonEndChainActive = false;   // ここで初めてシーズンレポートが出る
+      refreshAll();
+    };
+    const farewells = App._pendingFarewells || [];
+    App._pendingFarewells = null;
+    if (!farewells.length || typeof showRetirementPopups !== 'function') { finish(); return; }
+    showRetirementPopups(farewells, finish, { phase: 'farewell' });
+  },
+
   // v1.4: 年末表彰式チェック＆表示
   _checkAndShowAwards() {
     const pendingAwards = G.pendingAwards;
-    if (!pendingAwards) { App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => refreshAll())); return; }
+    if (!pendingAwards) {
+      App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => App._showFarewellsThenReport()));
+      return;
+    }
     // pendingAwards は transient field — 保存前にクリーン
     const { pendingAwards: _, ...cleanG } = G;
     G = cleanG;
@@ -11326,7 +11348,8 @@ const App = {
       }
       G = { ...G, lastAwards: pendingAwards };
       Storage.autoSave();
-      App._showNewsPanelIfNeeded(() => App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => refreshAll())));
+      App._showNewsPanelIfNeeded(() => App._checkAndShowMilestone(
+        () => App._maybeShowSeasonFanfare(() => App._showFarewellsThenReport())));
     });
   },
 

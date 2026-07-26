@@ -834,8 +834,11 @@ function renderWeekScreen() {
       </div>
     </div>`;
 
-    // season-retrospective-spec: シーズン総括(ANNUAL RECORD)。offWeek 0〜1 の一枚レポート
-    if (offW <= 1) {
+    // season-retrospective-spec: シーズン総括(ANNUAL RECORD)。offWeek 0〜1 の一枚レポート。
+    // **表彰式が終わるまでは出さない**(2026-07-27 Keisuke)。
+    // シーズン末の演出は 引退の判断 → 新聞 → 表彰式 → 引退のあいさつ → レポート の順。
+    const seasonEndBusy = (typeof App !== 'undefined' && App._seasonEndChainActive);
+    if (offW <= 1 && !seasonEndBusy) {
       const review = Engine.seasonReview.build(G);
       html += _renderSeasonReview(review, G);
     } else {

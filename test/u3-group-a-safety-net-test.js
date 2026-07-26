@@ -652,7 +652,10 @@ function section(name, fn) {
   // サンドボックスへの注入も削除(uiFn()はソースに存在しない関数を渡すとthrowする)
   const build = new Function(
     'document', 'Engine', 'getUpperUrl', 'Audio', 'wmDiag',
-    `let _retirementPopupQueue = [];
+    // 2026-07-27: 引退は 判断(表彰式の前) / あいさつ(表彰式の後) の2段になった。
+    // ここで検証しているのは**あいさつの段**(顔+セリフ+軌跡)なので既定はそちら。
+    `let _retirementPopupPhase = 'farewell';
+     let _retirementPopupQueue = [];
      let _retirementPopupCallback = null;
      // 2026-07-26: 引退セレモニーに WM-D03 のBGMを繋いだため、その番人フラグも注入する
      let _retirementBgmOn = false;
@@ -668,7 +671,8 @@ function section(name, fn) {
      ${uiFn('showRetireAdviseResultPopup')}
      return {
        _renderRetirementPopup, showRetireAdviseResultPopup,
-       setQueue(q, cb) { _retirementPopupQueue = q; _retirementPopupCallback = cb || null; },
+       setQueue(q, cb, phase) { _retirementPopupQueue = q; _retirementPopupCallback = cb || null;
+         _retirementPopupPhase = phase || 'farewell'; },
      };`
   );
 
