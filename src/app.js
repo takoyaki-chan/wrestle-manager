@@ -1881,7 +1881,7 @@ const Storage = {
         }
       });
     }
-    state._saveVersion = '1.22';
+    state._saveVersion = '1.23';
     state._saveDate = new Date().toISOString();
     const sanitizedName = Storage._sanitizeSaveNameLabel(saveNameOverride);
     if (sanitizedName) state._saveName = sanitizedName; else delete state._saveName;
@@ -3719,6 +3719,12 @@ let _pendingOrgIcon = 0;
 let _selectedDifficulty = 'normal';
 const App = {
   resumeLoadedSpecialPhase() {
+    // A completed Tenchosen save can still carry Week48's ppvShow phase.
+    // Resume the tournament before considering the ordinary GRAND FINAL flow.
+    if (App._shouldStartTenchosenReplay?.()) {
+      App.initTenchosenReplay();
+      return true;
+    }
     if (G.weekPhase === 'ppvShow') {
       App.initPPVShow();
       return true;
@@ -10443,6 +10449,11 @@ const App = {
       App.handleContractNegotiations();
       return;
     }
+    if (App._shouldStartTenchosenReplay?.()) {
+      Storage.autoSave();
+      App.initTenchosenReplay();
+      return;
+    }
     // PPVフェーズ
     if (G.weekPhase === 'ppvShow') {
       Storage.autoSave();
@@ -11039,6 +11050,11 @@ const App = {
     if (G.weekPhase === 'contractNegotiation') {
       Storage.autoSave();
       App.handleContractNegotiations();
+      return;
+    }
+    if (App._shouldStartTenchosenReplay?.()) {
+      Storage.autoSave();
+      App.initTenchosenReplay();
       return;
     }
     // PPV Week 48: PPVフェーズに入った場合は専用フローへ

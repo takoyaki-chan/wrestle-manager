@@ -3050,3 +3050,9 @@ docs/shachoshitsu-care-rework-spec-v0.1.md(承認済)の §1・§2 を実装。�
 | v2.0 イベントシステム Phase 1-7 | 02-28 | `specs/archive/event-system-spec-v2.md` |
 | v2.1 エンディング/ゲームオーバー/BGM | 03-02 | `specs/archive/ending-gameover-spec-v1.0.md` |
 | データベースタブ + 選手ポップアップ刷新 | 03-02 | — |
+## 2026-07-27 v1.23 天頂戦PPVオープニング混入修正
+
+- 天頂戦の結果確定後に `weekPhase: ppvShow` が残る経路で、通常PPVの `GRAND FINAL` カード紹介が先に開いていた。ロード復帰・週サマリー送り・通常週送りの3経路すべてで、天頂戦リプレイ判定を通常PPV判定より前へ移した。
+- レンタル消失はセーブ書き込み側を実コード抽出テストで確認。レンタル選手、`rentals` 契約、レンタル選手を含む `showCard` はすべて保存されており、書き込み側に消失経路はなかった。
+- バージョン表記、セーブメタデータ、配布manifestを1.23へ統一。
+- 検証: `node test/run-all.js` 115/115 PASS、version consistency PASS。
