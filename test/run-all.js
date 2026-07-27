@@ -57,6 +57,7 @@ const QUICK = new Set([
   'challenge-show-orchestration-test.js',
   'challenge-show-relationship-test.js',
   'chronicle-rebuild-test.js',
+  'confirm-sound-not-money-test.js',
   'coach-poach-assignment-test.js',
   'departed-star-claim-test.js',
   'dev-tools-static-test.js',
