@@ -281,11 +281,14 @@ function section(name, fn) {
 //    3箇所から呼ぶ共有画面。関数自体を直接叩けば3箇所すべてをカバーできる。
 // ===========================================================================
 (function ceremSuite() {
+  const yearEndAwardsBgmDecl = appSrc.match(/^const YEAR_END_AWARDS_BGM = .+;$/m);
+  assert.ok(yearEndAwardsBgmDecl, 'YEAR_END_AWARDS_BGM not found in app.js');
   const build = new Function(
     'document', 'G', 'App', 'getUpperUrl', 'Audio',
     `${uiFn('escHtml')}
      ${uiFn('_u3bInitialFallback')}
      ${uiFn('_u3bSideHtml')}
+     ${yearEndAwardsBgmDecl[0]}
      ${appFn('_ceremAudioOpen')}
      ${appFn('_ceremAudioClose')}
      ${appFn('showCeremonyEvent')}
