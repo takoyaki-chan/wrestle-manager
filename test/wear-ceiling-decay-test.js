@@ -92,23 +92,31 @@ const viewSrc = (ui.match(/function statDecayView[\s\S]*?\n\}/) || [])[0];
 section('6. 失われた幅の計算は1本', () => {
   // 2画面で別々に計算すると、片方だけずれる
   assert.ok(viewSrc, 'statDecayView が無い');
-  assert.ok(/origin - cap/.test(viewSrc), '元の天井と今の天井の差を取っていない');
+  // 2026-07-27: 基準を trainCapOrigin(伸ばせる上限) から statPeak(実際に到達した最高値) へ
+  // 変えた。上限は一度も届いていない高さなので、そこまで帯を伸ばすと
+  // 「そんなに高かったはずがない」表示になる（MN で顕著）。幾何は stat-decay-bar-test.js。
+  assert.ok(/statPeak/.test(viewSrc), '自己最高値(statPeak)を基準にしていない');
+  assert.ok(/peak - cur/.test(viewSrc), '「自己最高値 − 現在値」を取っていない');
+  assert.ok(!/trainCapOrigin/.test(viewSrc),
+    '伸ばせる上限(trainCapOrigin)を見ている。到達していない高さまで帯が伸びる');
 });
 
-section('7. 元の天井を持たない選手には何も出さない', () => {
-  // 既存セーブ・まだ衰えていない選手。衰えの履歴を捏造しない。
-  // 2026-07-27: 帯の起点を trainCap から現在値へ移した際に式の形が変わったため、
-  // 字面ではなく**実際に呼んで**確かめる（帯の幾何は stat-decay-bar-test.js が持つ）
-  assert.ok(/origin != null && cap != null/.test(viewSrc),
-    '元の天井が無い選手でも差を出そうとしている');
+section('7. まだ落ちていない選手・既存セーブには何も出さない', () => {
+  // 衰えの履歴を捏造しない。字面ではなく**実際に呼んで**確かめる
   // eslint-disable-next-line no-eval
   const view = eval('(' + viewSrc + ')');
-  assert.strictEqual(view({ S: 100, trainCap: { S: 110 } }, 'S', 150).lostPct, 0,
-    '元の天井が無い選手に帯を描いている');
-  assert.strictEqual(view({ S: 90, trainCap: { S: 100 }, trainCapOrigin: { S: 100 } }, 'S', 150).lostPct, 0,
-    '削られていないのに帯を描いている');
-  assert.strictEqual(view({ S: 80 }, 'S', 150).lostPct, 0,
-    'trainCap を持たない選手に帯を描いている');
+  assert.strictEqual(view({ S: 100, statPeak: { S: 100 } }, 'S', 150).lostPct, 0,
+    '落ちていないのに帯を描いている');
+  assert.strictEqual(view({ S: 80, trainCap: { S: 140 }, trainCapOrigin: { S: 148 } }, 'S', 150).lostPct, 0,
+    'statPeak が無いのに帯を描いている（天井を見て履歴を捏造している）');
+  assert.strictEqual(view({ S: 80 }, 'S', 150).lostPct, 0, '素の選手で帯を描いている');
+});
+
+section('7-b. 自己最高値は毎週控える（年をまたがなくても出る）', () => {
+  // trainCapOrigin は初回衰退時にしか記録されず、年をまたぐまで表示が出なかった
+  assert.ok(/trackStatPeaks\(state\)/.test(mgmt), 'trackStatPeaks が無い');
+  assert.ok(mgmt.indexOf('Engine.growth.trackStatPeaks(s)') > 0,
+    'tickWeek から毎週呼んでいない');
 });
 
 section('8. 色はトークンで持つ', () => {

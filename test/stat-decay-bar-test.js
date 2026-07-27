@@ -1,21 +1,28 @@
 // stat-decay-bar-test.js
 //
-// 2026-07-27: 能力バーの「消耗で失われた伸びしろ」帯について。
+// 2026-07-27: 能力バーの「自己最高値からどれだけ落ちたか」の帯について。
 //
 // Keisuke「トレインキャップの部分から色を入れてるので、それだと結構下隠しにしている
 //          トレインキャップの数値が諸バレになってしまうので、それはやめてほしい。
 //          あくまで今まで一番高くまで行った能力値の上限のところから始まる感じで。
 //          もう今の能力値のところまで全部染め上げて、繋がるようにしてほしい」
 //
-// 元の実装は帯を [trainCap, trainCapOrigin] に置いていた。そのため
-//   ・帯の左端がそのまま trainCap の位置になり、**伏せてある天井の値が読めた**
-//   ・現在値と帯のあいだに「現在値→trainCap」の隙間が空き、バーが分断されて見えた
+// 2度直している。
+//   1度目: 帯を [trainCap, trainCapOrigin] に置いていた。帯の左端がそのまま trainCap の
+//          位置になり、**伏せてある天井の値が読めた**。現在値との間に隙間も空いていた。
+//   2度目: 起点を現在値へ寄せただけでは足りなかった。
+//          **trainCapOrigin は「伸ばせる上限」で、実際に到達した値ではない**。
+//          MN のように上限まで伸びにくいステータスでは、一度も届いていない高さまで
+//          帯が伸びて「そんなに高かったはずがない」表示になっていた（Keisuke 指摘）。
+//          さらに初回衰退時にしか記録されないので**年をまたぐまで出なかった**。
+//          → 実際に到達した最高値(statPeak)を毎週控え、そこを基準にする。
 //
 // 守るもの:
 //   1. 帯は現在値のすぐ右から始まる（隙間ゼロ＝色が繋がる）
-//   2. 帯の左端が trainCap と一致しない（＝天井の位置が読めない）
-//   3. 帯の右端は trainCapOrigin（自己最高の天井）を超えない
-//   4. まだ衰えていない選手・既存セーブには帯を出さない（履歴を捏造しない）
+//   2. 基準は statPeak。trainCap / trainCapOrigin を見ない（天井が読めない・届かない高さに伸びない）
+//   3. 帯の右端は自己最高値で止まる
+//   4. まだ落ちていない選手・既存セーブには帯を出さない（履歴を捏造しない）
+//   5. 自己最高値は毎週控えられる（年をまたがなくても出る）
 
 'use strict';
 const assert = require('assert');
@@ -51,16 +58,18 @@ function band(f, stat, max) {
 }
 const pctOf = (v, max) => (v / max) * 100;
 
+// cap/origin は「基準に使ってはいけない値」としてわざと大きく入れてある。
+// これらを見てしまう実装に戻ると、帯が届いていない高さまで伸びて項目2が落ちる。
 const CASES = [
-  { label: '現在値115 / 今の天井120 / 元の天井126', cur: 115, cap: 120, origin: 126, max: 150 },
-  { label: '現在値が今の天井に到達済み 120/120/126', cur: 120, cap: 120, origin: 126, max: 150 },
-  { label: '大きく削られた 70/75/100',              cur: 70,  cap: 75,  origin: 100, max: 150 },
-  { label: '100スケール(選手詳細) 60/64/72',        cur: 60,  cap: 64,  origin: 72,  max: 100 },
+  { label: '現在値115 / 自己最高120', cur: 115, peak: 120, cap: 140, origin: 148, max: 150 },
+  { label: '現在値70 / 自己最高100',  cur: 70,  peak: 100, cap: 130, origin: 145, max: 150 },
+  { label: 'MN型: 上限は高いが到達は僅か 71/73', cur: 71, peak: 73, cap: 127, origin: 127, max: 150 },
+  { label: '100スケール(選手詳細) 60/72', cur: 60, peak: 72, cap: 90, origin: 96, max: 100 },
 ];
 
 section('1. 帯は現在値のすぐ右から始まる（色が途切れない）', () => {
   for (const c of CASES) {
-    const f = { S: c.cur, trainCap: { S: c.cap }, trainCapOrigin: { S: c.origin } };
+    const f = { S: c.cur, statPeak: { S: c.peak }, trainCap: { S: c.cap }, trainCapOrigin: { S: c.origin } };
     const b = band(f, 'S', c.max);
     assert.ok(b.width > 0, `${c.label}: 帯が出ていない`);
     assert.ok(Math.abs(b.left - b.cur) < 0.01,
@@ -68,47 +77,53 @@ section('1. 帯は現在値のすぐ右から始まる（色が途切れない�
   }
 });
 
-section('2. 帯の左端が trainCap と一致しない（天井の位置が読めない）', () => {
+section('2. 基準は自己最高値。天井(trainCap/trainCapOrigin)を見ていない', () => {
   for (const c of CASES) {
-    if (c.cur === c.cap) continue; // 現在値＝天井のときは一致して当然（そこは現在値の情報）
-    const f = { S: c.cur, trainCap: { S: c.cap }, trainCapOrigin: { S: c.origin } };
+    const f = { S: c.cur, statPeak: { S: c.peak }, trainCap: { S: c.cap }, trainCapOrigin: { S: c.origin } };
     const b = band(f, 'S', c.max);
-    const capPct = pctOf(c.cap, c.max);
-    assert.ok(Math.abs(b.left - capPct) > 0.01,
-      `${c.label}: 帯の左端(${b.left.toFixed(2)}%)が今の天井(${capPct.toFixed(2)}%)と同じ。伏せている天井が読めてしまう`);
+    assert.ok(Math.abs(b.right - pctOf(c.peak, c.max)) < 0.01,
+      `${c.label}: 帯の右端(${b.right.toFixed(2)}%)が自己最高値(${pctOf(c.peak, c.max).toFixed(2)}%)と違う`);
+    assert.ok(Math.abs(b.right - pctOf(c.origin, c.max)) > 0.01,
+      `${c.label}: 帯が trainCapOrigin(${pctOf(c.origin, c.max).toFixed(2)}%)まで伸びている。`
+      + '到達していない高さまで塗ってしまう');
+    assert.ok(Math.abs(b.left - pctOf(c.cap, c.max)) > 0.01,
+      `${c.label}: 帯の左端が今の天井と同じ。伏せている天井が読めてしまう`);
+    assert.strictEqual(b.lostPts, c.peak - c.cur,
+      `${c.label}: ▼の数字が「自己最高値 − 現在値」になっていない`);
   }
 });
 
-section('3. 帯の右端は自己最高の天井で止まる', () => {
+section('3. 帯がバーからはみ出さない', () => {
   for (const c of CASES) {
-    const f = { S: c.cur, trainCap: { S: c.cap }, trainCapOrigin: { S: c.origin } };
-    const b = band(f, 'S', c.max);
-    const originPct = pctOf(c.origin, c.max);
-    assert.ok(Math.abs(b.right - originPct) < 0.01,
-      `${c.label}: 帯の右端(${b.right.toFixed(2)}%)が自己最高の天井(${originPct.toFixed(2)}%)と違う`);
-    assert.ok(b.right <= 100.01, `${c.label}: 帯がバーからはみ出している`);
+    const f = { S: c.cur, statPeak: { S: c.peak }, trainCap: { S: c.cap }, trainCapOrigin: { S: c.origin } };
+    assert.ok(band(f, 'S', c.max).right <= 100.01, `${c.label}: 帯がバーからはみ出している`);
   }
 });
 
-section('4. ▼の数字は「失った天井の量」のまま', () => {
-  for (const c of CASES) {
-    const f = { S: c.cur, trainCap: { S: c.cap }, trainCapOrigin: { S: c.origin } };
-    assert.strictEqual(band(f, 'S', c.max).lostPts, c.origin - c.cap,
-      `${c.label}: ▼の数字が origin-cap になっていない`);
-  }
+section('4. まだ落ちていない選手・既存セーブには帯を出さない', () => {
+  // 自己最高値＝現在値（落ちていない）
+  const f1 = { S: 100, statPeak: { S: 100 }, trainCap: { S: 130 } };
+  assert.strictEqual(statDecayView(f1, 'S', 150).lostPct, 0, '落ちていないのに帯が出ている');
+  assert.strictEqual(statDecayView(f1, 'S', 150).lostPts, 0, '落ちていないのに▼が出ている');
+  // statPeak をまだ持たない（既存セーブの初回ロード前）。天井だけ高くても出さない
+  const f2 = { S: 80, trainCap: { S: 140 }, trainCapOrigin: { S: 148 } };
+  assert.strictEqual(statDecayView(f2, 'S', 150).lostPct, 0,
+    'statPeak が無いのに帯が出ている。天井を見て履歴を捏造している');
+  assert.strictEqual(statDecayView(f2, 'S', 150).lostPts, 0, 'statPeak が無いのに▼が出ている');
+  // 何も持たない選手でも落ちない
+  assert.strictEqual(statDecayView({ S: 80 }, 'S', 150).lostPct, 0, '素の選手で帯が出ている');
 });
 
-section('5. まだ衰えていない選手には帯を出さない', () => {
-  // trainCapOrigin を持たない（一度も衰退していない / 既存セーブ）
-  const f1 = { S: 100, trainCap: { S: 110 } };
-  assert.strictEqual(statDecayView(f1, 'S', 150).lostPct, 0, '衰えていないのに帯が出ている');
-  assert.strictEqual(statDecayView(f1, 'S', 150).lostPts, 0, '衰えていないのに▼が出ている');
-  // trainCap をまったく持たない選手でも落ちない
-  const f2 = { S: 80 };
-  assert.strictEqual(statDecayView(f2, 'S', 150).lostPct, 0, 'trainCap 無しで帯が出ている');
-  // origin と cap が同じ（削られていない）
-  const f3 = { S: 90, trainCap: { S: 100 }, trainCapOrigin: { S: 100 } };
-  assert.strictEqual(statDecayView(f3, 'S', 150).lostPct, 0, '削られていないのに帯が出ている');
+section('5. 自己最高値は毎週控えられる（年をまたがなくても出る）', () => {
+  const mgmt = fs.readFileSync(path.join(root, 'src/management.js'), 'utf8');
+  assert.ok(/trackStatPeaks\(state\)/.test(mgmt), 'trackStatPeaks が無い');
+  // tickWeek(毎週)から呼ばれていること。シーズン末処理からだけだと年をまたぐまで出ない
+  const at = mgmt.indexOf('Engine.growth.trackStatPeaks(s)');
+  assert.ok(at > 0, 'tickWeek から trackStatPeaks を呼んでいない');
+  const tickAt = mgmt.indexOf('tickWeek(state) {');
+  const tickEnd = mgmt.indexOf('\n  // ══', tickAt);
+  assert.ok(tickAt > 0 && at > tickAt && at < tickEnd,
+    'trackStatPeaks の呼び出しが tickWeek の外にある。年をまたぐまで表示が出なくなる');
 });
 
 section('6. 両方の描画箇所が同じヘルパーを通っている', () => {

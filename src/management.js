@@ -7235,6 +7235,39 @@ const Engine = {
       return Math.max(-3, Math.min(3, base + bias));
     },
 
+    /** 自己最高値(statPeak)を控える。**毎週** tickWeek の末尾から呼ばれる。
+     *
+     *  衰えの表示（バーの薄い帯 / ▼N）はここを基準にする。以前は trainCapOrigin を
+     *  使っていたが、あれは2つの意味で違うものだった:
+     *    ・記録されるのが「初めて衰退したとき」なので、年をまたぐまで表示が出なかった
+     *    ・値が trainCap(伸ばせる上限)であって、**実際に到達した値ではない**。
+     *      MN のように上限まで伸びにくいステータスでは、一度も届いていない高さまで
+     *      帯が伸びて「そんなに高かったはずがない」表示になっていた（2026-07-27 Keisuke）
+     *
+     *  下がることはない（最高値なので）。既存セーブは初回呼び出し時の現在値から始まるため、
+     *  それ以前の衰えは表示されない。**衰えの履歴を捏造しない**という従来の方針どおり。 */
+    trackStatPeaks(state) {
+      const roster = state && state.roster;
+      if (!Array.isArray(roster) || !roster.length) return state;
+      const STATS = ['pw', 'sp', 'te', 'st', 'mn'];
+      let touched = false;
+      const next = roster.map(c => {
+        if (!c || c.isRental) return c;   // レンタルは元所属先が管理する
+        const peak = c.statPeak ? { ...c.statPeak } : {};
+        let changed = false;
+        for (const s of STATS) {
+          const v = Math.round(c[s] || 0);
+          if (!(peak[s] > v)) {           // 未設定 or 現在値のほうが高い
+            if (peak[s] !== v) { peak[s] = v; changed = true; }
+          }
+        }
+        if (!changed) return c;
+        touched = true;
+        return { ...c, statPeak: peak };
+      });
+      return touched ? { ...state, roster: next } : state;
+    },
+
     // Apply wear-based stat decay (v1.3-1 §3) + §1.5 ベテラン調整トレイト
     applyDecay(rng, fighter, decayReduction = 0) {
       const wear = fighter.wear || 0;
@@ -12268,6 +12301,16 @@ const Engine = {
         };
       }
     }
+
+    // 自己最高値の更新（2026-07-27 Keisuke）。
+    // 「今まで一番高くまで行った能力値」を**毎週**控える。衰えの表示はここを基準にする。
+    // 週次にしたのは、以前の基準(trainCapOrigin)が
+    //   ・シーズン末の初回衰退のときにしか記録されず、年をまたぐまで表示が出なかった
+    //   ・そもそも trainCap(伸ばせる上限)であって、実際に到達した値ではなかった
+    //     → MN のように上限まで伸びにくいステータスで、到達していない高さまで
+    //       帯が伸びて「そんなに高かったはずがない」表示になっていた
+    // という2つの問題を抱えていたため。
+    s = Engine.growth.trackStatPeaks(s);
 
     // 浮動小数点サニタイズ: 蓄積する計算誤差を除去（tickWeek統合パイプライン末尾）
     s = Engine.sanitizeFloats(s);

@@ -32,39 +32,44 @@ function escHtml(s) {
 }
 
 /** 画像+イニシャルフォールバック付きimgタグ生成。onerror時にイニシャル円を表示 */
-/** 消耗で失われた天井の幅。**バーの満タンが年々縮んでいく**のを見せるための計算。
+/** 「自己最高値からどれだけ落ちたか」を見せるための計算。
  *
  *  返す割合はどれもバー全体(0〜barMax)に対する%。
  *    cur  … 現在値
- *    lost … 現在値 → 自己最高の天井(trainCapOrigin)まで、途切れず続く帯
+ *    lost … 現在値 → **自己最高値(statPeak)** まで、途切れず続く帯
+ *    lostPts … 落ちた量（peak − cur）。バーの▼N と同じ数字
  *
- *  **trainCap(今の天井)の位置は絶対に描かない**(2026-07-27 Keisuke)。
- *  以前は帯を [trainCap, trainCapOrigin] に置いていたため、
- *    ・帯の左端がそのまま trainCap の位置になり、**伏せてある天井の値が読めてしまった**
- *    ・現在値と帯の間に「現在値→trainCap」の隙間が空き、バーが分断されて見えた
- *  いまは現在値の右隣から始めて自己最高の天井で終える。色は現在値から途切れずに繋がり、
- *  途中に境目が出ないので天井の位置も割り出せない。
+ *  基準は `fighter.statPeak`。Engine.growth.trackStatPeaks が**毎週**控えている。
  *
- *  数字(▼N)は従来どおり **失われた天井の量(origin - cap)**。帯の長さとは別物で、
- *  帯は「どこまで伸ばせたはずか」、数字は「どれだけ失ったか」を見せている。
+ *  2026-07-27 に基準を2度直している。経緯を残す:
+ *    1度目: 帯を [trainCap, trainCapOrigin] に置いていた。
+ *           帯の左端がそのまま trainCap の位置になり、**伏せてある天井の値が読めた**。
+ *           現在値との間に隙間も空き、バーが分断されて見えた。
+ *    2度目(現在): 起点を現在値へ寄せただけでは足りなかった。
+ *           **trainCapOrigin は「伸ばせる上限」であって、実際に到達した値ではない**。
+ *           MN のように上限まで伸びにくいステータスでは、一度も届いていない高さまで
+ *           帯が伸び、「そんなに高かったはずがない」表示になっていた（Keisuke 指摘）。
+ *           さらに trainCapOrigin は初回衰退時にしか記録されないため、
+ *           **年をまたぐまで表示が出なかった**。
+ *           → 実際に到達した最高値を毎週控え、そこを基準にする。
  *
- *  trainCapOrigin は**初めて衰退したとき**に控える。持っていない選手
- *  (まだ衰えていない / 既存セーブ)は lost=0 で、色は一切出ない。
- *  衰えの履歴を捏造しない。 */
+ *  statPeak を持たない選手（既存セーブの初回ロード前）は lost=0 で色は一切出ない。
+ *  **衰えの履歴を捏造しない**という方針は据え置き。 */
 function statDecayView(fighter, stat, barMax) {
   const max = barMax || 150;
   const cur = Math.max(0, Math.round((fighter && fighter[stat]) || 0));
-  const cap = fighter && fighter.trainCap ? fighter.trainCap[stat] : null;
-  const origin = fighter && fighter.trainCapOrigin ? fighter.trainCapOrigin[stat] : null;
-  const lostPts = (origin != null && cap != null) ? Math.max(0, Math.round(origin - cap)) : 0;
+  // 基準は**自己最高値**(statPeak)。毎週 Engine.growth.trackStatPeaks が控えている。
+  const peak = (fighter && fighter.statPeak && fighter.statPeak[stat] != null)
+    ? Math.round(fighter.statPeak[stat]) : null;
+  const lostPts = peak != null ? Math.max(0, peak - cur) : 0;
   const pct = v => Math.max(0, Math.min(100, (v / max) * 100));
-  // 帯は現在値から自己最高の天井まで。現在値が天井に並んでいれば帯は出ない
-  const spanPct = (lostPts > 0 && origin != null) ? Math.max(0, pct(origin) - pct(cur)) : 0;
+  // 帯は現在値から自己最高値まで。落ちていなければ帯は出ない
+  const spanPct = lostPts > 0 ? Math.max(0, pct(peak) - pct(cur)) : 0;
   return {
     curPct: pct(cur),
     lostPts,
     lostPct: spanPct,
-    lostFromRightPct: spanPct > 0 ? Math.max(0, 100 - pct(origin)) : 0,
+    lostFromRightPct: spanPct > 0 ? Math.max(0, 100 - pct(peak)) : 0,
   };
 }
 
