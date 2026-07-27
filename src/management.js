@@ -1616,6 +1616,9 @@ const Engine = {
         aggressor,
         matches: entry?.matches || 0,
         isCrossOrg,
+        // 決着に必要な対戦回数をペアごとに散らすために使う（checkResolution）
+        idA: id1,
+        idB: id2,
       };
     },
     getRivalryLevel(G, id1, id2) {
@@ -1675,6 +1678,16 @@ const Engine = {
         emoji: pair.band.emoji,
       };
     },
+    /** 決着に必要な対戦回数へ足す、ペアごとの個体差（0〜2）。
+     *  同じ組なら常に同じ値を返す（IDから決まる）。乱数を使わないのは、
+     *  評価するたびに基準が動くと「あと1回」で足踏みしていた組が突然通ってしまうため。 */
+    _resolutionSpread(idA, idB) {
+      const a = Number(idA) || 0;
+      const b = Number(idB) || 0;
+      const lo = Math.min(a, b), hi = Math.max(a, b);   // 順序で変わらないように揃える
+      return ((lo * 31 + hi * 17) % 3 + 3) % 3;          // 0 / 1 / 2
+    },
+
     checkResolution(pairState, mq, avgOV, resolutionCount) {
       resolutionCount = resolutionCount || 0;
       if (!pairState || pairState.resolvedType) return null;
@@ -1707,7 +1720,14 @@ const Engine = {
       if (resolutionCount === 0) {
         if (pairState.minRivalry < 60) return null;
         // v2.1: matches閾値 同団体4+、クロスOrg3+
-        const matchesThreshold = pairState.isCrossOrg ? 3 : 4;
+        // 2026-07-27: そこに**ペアごとの個体差**を足す。
+        // 閾値が全ペア同じだと、おまかせ編成のように同じ組が繰り返し当たる組み方では
+        // 全ペアが同時に条件を満たし、ひとつの興行で6件まとめて決着していた（実測で再現）。
+        // しかも決着は matches を全ペア同時に 0 へ戻すので、また揃って溜まり周期的に爆発する。
+        // ばらつきはペアID から決まるので、同じ組なら毎回同じ値。
+        // 「あと1回」で足踏みしていた組の基準が checkのたびに動く、ということは起きない。
+        const matchesThreshold = (pairState.isCrossOrg ? 3 : 4)
+          + Engine.title._resolutionSpread(pairState.idA, pairState.idB);
         if ((pairState.matches || 0) < matchesThreshold) return null;
         return {
           type: 'first',
@@ -12566,6 +12586,11 @@ const Engine = {
     });
 
     // Phase 5: Pass 2完了後に因縁更新+決着判定（MQ確定値を渡す）
+    // **1興行に出す決着は1件まで**(2026-07-27)。同じ組が繰り返し当たる編成だと全ペアが
+    // 同時に条件を満たし、ひとつの興行で6件まとめて決着していた（実測で再現）。
+    // 溢れた分は決着させず、対戦回数が積み上がったまま次の興行へ持ち越す。
+    // UI 側(app.js の executeShow)にも同じ上限を入れてある。
+    const MAX_RESOLUTIONS_PER_SHOW = 1;
     const showRivalryResolutions = [];
     validMatches.forEach((m, i) => {
       const r = results[i];
@@ -12578,7 +12603,9 @@ const Engine = {
         const key = Engine.title.getRivalryKey(m.left, m.right);
         const currentEntry = rivalries[key] || {};
         const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
-        const resolution = Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0);
+        const resolution = showRivalryResolutions.length >= MAX_RESOLUTIONS_PER_SHOW
+          ? null   // 今夜はもう1件出している。この組は持ち越し
+          : Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0);
         if (resolution) {
           const isFinalResolution = resolution.newResolutionCount >= 2;
           const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right, 0xBE77)), 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);
@@ -14594,6 +14621,11 @@ const Engine = {
       });
 
       // Step 5-6: 因縁決着判定（全MQボーナス適用後）
+      // **1興行に出す決着は1件まで**(2026-07-27)。同じ組が繰り返し当たる編成だと全ペアが
+      // 同時に条件を満たし、ひとつの興行で6件まとめて決着していた（実測で再現）。
+      // 溢れた分は決着させず、対戦回数が積み上がったまま次の興行へ持ち越す。
+      // UI 側(app.js の executeShow)にも同じ上限を入れてある。
+      const MAX_RESOLUTIONS_PER_SHOW = 1;
       const rivalryResolutions = [];
       deferredRivalryIdxs.forEach(idx => {
         const r = results[idx];
@@ -14602,7 +14634,9 @@ const Engine = {
         const key = Engine.title.getRivalryKey(match.left.id, match.right.id);
         const currentEntry = rivalries[key] || {};
         const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, match.left.id, match.right.id);
-        const resolution = Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0);
+        const resolution = rivalryResolutions.length >= MAX_RESOLUTIONS_PER_SHOW
+          ? null   // 今夜はもう1件出している。この組は持ち越し
+          : Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0);
         if (resolution) {
           const isFinalResolution = resolution.newResolutionCount >= 2;
           const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, match.left.id, match.right.id, 0xBE77)), 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);

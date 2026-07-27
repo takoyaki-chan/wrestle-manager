@@ -7419,7 +7419,13 @@ const App = {
     });
 
     // 因縁決着判定（MQ確定後、保留ペアのみ）
+    // **1興行に出す決着は1件まで**(2026-07-27 Keisuke)。
+    // おまかせ編成のように同じ組が繰り返し当たる組み方だと全ペアが同時に条件を満たし、
+    // ひとつの興行で6件まとめて決着していた（実測で再現）。6件並ぶと1件の重みが消える。
+    // 溢れた分は決着させず recordRivalry に回す＝対戦回数が積み上がったまま次の興行へ持ち越す。
+    // 閾値そのもののばらつきは Engine.title._resolutionSpread が担当（同期を崩す側の手当）。
     const rivalryResolutions = [];
+    const MAX_RESOLUTIONS_PER_SHOW = 1;
     deferredRivalryIdxs.forEach(idx => {
       const r = results[idx];
       const m = validMatches[idx];
@@ -7431,7 +7437,9 @@ const App = {
       const key = Engine.title.getRivalryKey(m.left, m.right);
       const currentEntry = rivalries[key] || {};
       const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
-      const resolution = Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0);
+      const resolution = rivalryResolutions.length >= MAX_RESOLUTIONS_PER_SHOW
+        ? null   // 今夜はもう1件出している。この組は持ち越し
+        : Engine.title.checkResolution(pairState, r.mq, avgOV, currentEntry.resolutionCount || 0);
       if (resolution) {
         const isFinalResolution = resolution.newResolutionCount >= 2;
         const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right, 0xBE77));
@@ -11010,6 +11018,13 @@ const App = {
     dismissAllPopups(); // 残存ポップアップを強制クリア
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    // 週が進んだ時点でヘッダーの日付を直す(2026-07-27)。
+    // この下には特別興行(PPV/天頂戦/秋4団体/ジュニア)や交渉フェーズへ**そのまま return する**
+    // 分岐が並んでおり、そこへ入ると refreshAll が回らない。結果、週は48(冬第12週)になって
+    // いるのに**ヘッダーだけ前の週(冬第11週)のまま**特別興行の画面が開いていた
+    // （Keisuke「天頂戦が発火するタイミングが冬の第11週になってる」。定数は 12/24/36/48 で
+    //  正しく、ズレていたのは表示だけ）。
+    try { refreshTopBar(); } catch (_e) {}
     // ── 体験版シーズンゲート ──
     if (G._trialEnd) {
       const { _trialEnd: _, ...cleanG } = G;
