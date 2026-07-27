@@ -3,8 +3,10 @@
 #   .\release\package-release.ps1
 #   .\release\package-release.ps1 -Version 1.08
 #   .\release\package-release.ps1 -Version 1.08 -Force
+#   .\release\package-release.ps1 -Version 1.08 -Trial -Force
 #
 # -Version : バージョン番号（省略時は manifest.json の version を使用）
+# -Trial   : 3シーズンまでプレイできる体験版として梱包
 # -Force   : 既存 zip を確認なしに上書き
 #
 # 要件: Windows PowerShell 5.1 以降
@@ -12,6 +14,7 @@
 [CmdletBinding()]
 param(
     [string]$Version = "",
+    [switch]$Trial,
     [switch]$Force
 )
 
@@ -52,10 +55,18 @@ if (-not $Version) {
     $Version = $Manifest.version
 }
 
+$EditionName = "製品版"
+$FileSuffix  = ""
+if ($Trial) {
+    $EditionName = "体験版（3シーズン）"
+    $FileSuffix  = "_Trial"
+}
+
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "  WRESTLE MANAGER — 配布パッケージ作成" -ForegroundColor Cyan
 Write-Host "  Version: $Version" -ForegroundColor Cyan
+Write-Host "  Mode: $EditionName" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -132,7 +143,7 @@ if ($StaleDevOnly) {
 
 # ── 出力先チェック ────────────────────────────────────────────────────────────
 $DistDir = Join-Path $ScriptDir "dist"
-$ZipName = "WrestleManager_$Version.zip"
+$ZipName = "WrestleManager_$Version$FileSuffix.zip"
 $ZipPath = Join-Path $DistDir $ZipName
 
 if (-not (Test-Path $DistDir)) {
@@ -149,7 +160,7 @@ if ((Test-Path $ZipPath) -and (-not $Force)) {
 }
 
 # ── ステージング ──────────────────────────────────────────────────────────────
-$PackageName = "WrestleManager_$Version"
+$PackageName = "WrestleManager_$Version$FileSuffix"
 $StagingRoot = Join-Path $ScriptDir "staging"
 $StagingDir  = Join-Path $StagingRoot $PackageName
 
@@ -236,6 +247,37 @@ if ($DevOnlyFiles.Count -gt 0) {
     }
 }
 
+# ── 体験版フラグ設定（ステージングのみ。開発元・製品版ソースは変更しない） ────────
+if ($Trial) {
+    $TrialIndexPath = Join-Path $StagingDir "src/index.html"
+    if (-not (Test-Path $TrialIndexPath)) {
+        Write-Host "ERROR: 体験版フラグを書き換える src/index.html がありません。" -ForegroundColor Red
+        Remove-Item -Recurse -Force $StagingRoot
+        exit 1
+    }
+
+    $TrialHtml = [System.IO.File]::ReadAllText($TrialIndexPath, [System.Text.Encoding]::UTF8)
+    $TrialFlagRegex = New-Object System.Text.RegularExpressions.Regex(
+        '(?m)^[^\S\r\n]*window\.IS_TRIAL\s*=\s*false;[^\S\r\n]*\r?$'
+    )
+    $TrialFlagCount = $TrialFlagRegex.Matches($TrialHtml).Count
+    if ($TrialFlagCount -ne 1) {
+        Write-Host "ERROR: window.IS_TRIAL=false が1件ではありません（検出: $TrialFlagCount 件）。" -ForegroundColor Red
+        Remove-Item -Recurse -Force $StagingRoot
+        exit 1
+    }
+    if (-not [regex]::IsMatch($TrialHtml, '(?m)^[^\S\r\n]*window\.TRIAL_MAX_SEASON\s*=\s*3;[^\S\r\n]*\r?$')) {
+        Write-Host "ERROR: 3シーズン制限（TRIAL_MAX_SEASON=3）が見つかりません。" -ForegroundColor Red
+        Remove-Item -Recurse -Force $StagingRoot
+        exit 1
+    }
+
+    $TrialHtml = $TrialFlagRegex.Replace($TrialHtml, '  window.IS_TRIAL = true;', 1)
+    $TrialUtf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($TrialIndexPath, $TrialHtml, $TrialUtf8NoBom)
+    Write-Host "  ✓ 体験版フラグを有効化（3シーズン終了で進行停止）" -ForegroundColor Green
+}
+
 # ── アセットディレクトリをコピー ──────────────────────────────────────────────
 Write-Host ""
 Write-Host "[3/5] アセットをコピー中（image/, bgm/ — 数分かかる場合があります）..." -ForegroundColor Yellow
@@ -262,8 +304,21 @@ $StartHtml = @'
 </body></html>
 '@
 
+$TrialReadme = ""
+if ($Trial) {
+    $TrialReadme = @"
+【体験版について】
+この体験版はシーズン3終了までプレイできます。
+シーズン3終了後は週送りが停止しますが、団体や選手データの閲覧は可能です。
+手動セーブデータは製品版へそのまま引き継げます。
+
+"@
+}
+
 $ReadmeTxt = @"
-Wrestle Manager v$Version
+Wrestle Manager v$Version $EditionName
+
+$TrialReadme
 
 【遊び方】
 START.html をブラウザ（Chrome/Edge推奨）でダブルクリックしてください。

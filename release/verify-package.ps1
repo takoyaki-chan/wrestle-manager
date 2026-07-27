@@ -1,6 +1,7 @@
 ﻿# WRESTLE MANAGER — 配布パッケージ検証スクリプト
 # 使い方:
 #   .\release\verify-package.ps1 -ZipPath .\release\dist\WrestleManager_1.07.zip
+#   .\release\verify-package.ps1 -ZipPath .\release\dist\WrestleManager_1.07_Trial.zip -ExpectedTrial
 #
 # 処理内容:
 #   1. zip を release\verify-tmp\ に解凍
@@ -12,6 +13,7 @@
 # -CheckOnly : 1〜2 だけ実行して終了（サーバー起動・ブラウザ・手動チェックリストを省略）。
 #              自動検証だけ回したいとき用。DLsite/BOOTH 差し替え前の確認は
 #              -CheckOnly を付けずに実行し、手動チェックリストまで通すこと。
+# -ExpectedTrial : 体験版フラグと3シーズン制限を検証。省略時は製品版フラグを検証。
 #
 # 要件: Windows PowerShell 5.1 以降
 
@@ -19,6 +21,7 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$ZipPath,
+    [switch]$ExpectedTrial,
     [switch]$CheckOnly
 )
 
@@ -36,6 +39,11 @@ Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "  WRESTLE MANAGER — パッケージ検証" -ForegroundColor Cyan
 Write-Host "  対象: $(Split-Path -Leaf $ZipPath)" -ForegroundColor Cyan
+if ($ExpectedTrial) {
+    Write-Host "  想定: 体験版（3シーズン）" -ForegroundColor Cyan
+} else {
+    Write-Host "  想定: 製品版" -ForegroundColor Cyan
+}
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -125,6 +133,27 @@ foreach ($dev in $DevOnlyFiles) {
         if ([regex]::IsMatch($Content, $RefPattern)) {
             $Errors += "DANGLING REF (404 の原因): $html が $dev を参照しています"
         }
+    }
+}
+
+# ビルド種別: 製品版と体験版の取り違えを防ぐ
+$IndexPath = Join-Path $PackageRoot "src/index.html"
+if (Test-Path $IndexPath) {
+    $IndexContent = [System.IO.File]::ReadAllText($IndexPath, [System.Text.Encoding]::UTF8)
+    if ($ExpectedTrial) {
+        if (-not [regex]::IsMatch($IndexContent, '(?m)^[^\S\r\n]*window\.IS_TRIAL\s*=\s*true;[^\S\r\n]*\r?$')) {
+            $Errors += "BUILD MODE: 体験版なのに window.IS_TRIAL=true ではありません"
+        }
+        if (-not [regex]::IsMatch($IndexContent, '(?m)^[^\S\r\n]*window\.TRIAL_MAX_SEASON\s*=\s*3;[^\S\r\n]*\r?$')) {
+            $Errors += "TRIAL LIMIT: TRIAL_MAX_SEASON=3 がありません"
+        }
+        $ReadmePath = Join-Path $PackageRoot "README.txt"
+        if ((-not (Test-Path $ReadmePath)) -or
+            (-not ([System.IO.File]::ReadAllText($ReadmePath, [System.Text.Encoding]::UTF8).Contains("シーズン3終了まで")))) {
+            $Errors += "TRIAL README: 3シーズン制限の説明がありません"
+        }
+    } elseif (-not [regex]::IsMatch($IndexContent, '(?m)^[^\S\r\n]*window\.IS_TRIAL\s*=\s*false;[^\S\r\n]*\r?$')) {
+        $Errors += "BUILD MODE: 製品版なのに window.IS_TRIAL=false ではありません"
     }
 }
 
