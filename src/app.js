@@ -103,7 +103,10 @@ const Audio = (() => {
     kaimaku:    { file: '../bgm/production-ogg/wm_bgm_c01_v01.ogg', vol: 0.30 }, // WM-C01 タイトル・オープニング
     management: { file: '../bgm/production-ogg/wm_bgm_s00_v01.ogg', vol: 0.26 }, // WM-S00 メインメニュー
     battle:     { file: '../bgm/production-ogg/wm_bgm_m01_v01.ogg', vol: 0.32 }, // WM-M01 通常試合
-    contract:   { file: '../bgm/production-ogg/wm_bgm_c07_v01.ogg', vol: 0.16 }, // WM-C07 契約交渉
+    // WM-C07 契約交渉。差し替え曲「Static on the Desk」(2026-07-27 Keisuke 指定)。
+    // 元 mp3(48kHz/stereo/約187kbps・アルバムアート付き) を、他の production-ogg と同じ
+    // vorbis q6/48kHz/stereo へ変換して収めた（アートは除去）。旧 v01 はファイルだけ残してある。
+    contract:   { file: '../bgm/production-ogg/wm_bgm_c07_v02.ogg', vol: 0.16 }, // WM-C07 契約交渉
     draftPick:  { file: '../bgm/production-ogg/wm_bgm_c08_v01.ogg', vol: 0.20 }, // WM-C08 ドラフト選択
     draftBid:   { file: '../bgm/production-ogg/wm_bgm_c09_v01.ogg', vol: 0.16 }, // WM-C09 ドラフト入札
     season_end: { file: '../bgm/bgm_season_end_v1.mp3',  vol: 0.17 },
