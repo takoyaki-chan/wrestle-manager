@@ -3826,7 +3826,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .tcpe-head-jp{font-size:17px;font-weight:900;letter-spacing:2px;color:var(--gold-light);margin-bottom:24px}
 .tcpe-coach{position:relative;margin-bottom:28px}
 .tcpe-coach-face{font-size:24px}
-.tcpe-fighters{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 4px}
+/* 語り手はひとり(2026-07-27)。3列固定だと1人のとき左に寄って余白が残るので、
+   中央寄せの並びにする。人数が増えても崩れない */
+.tcpe-fighters{display:flex;justify-content:center;gap:12px;padding:0 4px}
+.tcpe-fighters .tcdr-actor{flex:0 1 300px;max-width:300px}
 .tcpe-bt{margin-top:26px}
 
 /* ---- 優勝演出 ---- */

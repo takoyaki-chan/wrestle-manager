@@ -3526,9 +3526,15 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
     }
 
     // ── 相関図ボタン(全キャラ共通) ──
-    html += `<div style="padding:6px 16px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(200,190,170,0.08);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <button onclick="openRelationshipMap(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(74,143,212,0.12);color:#74b9ff;border:1px solid rgba(74,143,212,0.3);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(74,143,212,0.6)'" onmouseout="this.style.borderColor='rgba(74,143,212,0.3)'">🔗 相関図</button>
-    </div>`;
+    // 契約更新交渉中・解雇面談中は社長室から動けない(showScreen がブロックする)。
+    // そのまま出すと**押しても何も起きないボタン**になるので、その間は出さない。
+    const _navLocked = (typeof G !== 'undefined')
+      && (G.weekPhase === 'contractNegotiation' || !!G._releaseInterviewTarget);
+    if (!_navLocked) {
+      html += `<div style="padding:6px 16px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(200,190,170,0.08);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button onclick="openRelationshipMap(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(74,143,212,0.12);color:#74b9ff;border:1px solid rgba(74,143,212,0.3);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(74,143,212,0.6)'" onmouseout="this.style.borderColor='rgba(74,143,212,0.3)'">🔗 相関図</button>
+      </div>`;
+    }
 
     // ── Tab bar（NPC記録統一: 全選手に戦績・経歴タブ表示）──
     const tabs = ['📊 能力'];
@@ -14839,12 +14845,15 @@ function showTrialEndMessage() {
 // _u3bSideHtml(.u3b-*)へ移行したため、意匠の異なるこちら(契約更新交渉)は
 // .negotiation-* とのクラス名衝突を避けて .negc-* に改名した(見た目・挙動は変更なし)。
 function _negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel) {
-  const face = portraitImg(neg.fighterId, 96, 'negc-speaker-portrait');
+  // 顔と名前から選手詳細を開けるようにする(2026-07-27 Keisuke)。
+  // 交渉相手の成績・能力を確かめないまま判断することになっていたため。
+  const face = portraitImg(neg.fighterId, 96, 'negc-speaker-portrait', 'roster');
   return `
     <div class="negc-speaker">
       ${face}
       <div class="negc-bubble">
-        <strong style="font-size:12px;color:rgba(255,255,255,0.55)">${neg.fighterName}</strong>
+        <strong style="font-size:12px;color:rgba(255,255,255,0.55);cursor:pointer;text-decoration:underline dotted rgba(255,255,255,0.3);text-underline-offset:3px"
+          onclick="event.stopPropagation();showFighterPopup(${neg.fighterId},'roster',true)">${neg.fighterName}</strong>
         <span class="neg-badge ${badgeCls}">${badgeLabel}</span><br>
         「${dialogue}」
       </div>
@@ -14862,9 +14871,11 @@ function showContractSummaryModal(negotiations, autoCount, season, onStart) {
       : n.attitude === 'raise'
         ? ['neg-badge-raise', '💰 昇給要求']
         : ['neg-badge-transfer', '🚪 移籍志願'];
+    // 顔と名前から選手詳細を開ける(2026-07-27 Keisuke)
     return `<div class="neg-card-face-item">
-      <div style="border-radius:10px;overflow:hidden">${portraitImg(n.fighterId, 64)}</div>
-      <span style="font-size:11px;color:#2a2318">${n.fighterName}</span>
+      <div style="border-radius:10px;overflow:hidden">${portraitImg(n.fighterId, 64, '', 'roster')}</div>
+      <span style="font-size:11px;color:#2a2318;cursor:pointer;text-decoration:underline dotted rgba(42,35,24,0.35);text-underline-offset:3px"
+        onclick="event.stopPropagation();showFighterPopup(${n.fighterId},'roster',true)">${n.fighterName}</span>
       <span class="neg-badge ${badgeCls}">${badgeLabel}</span>
     </div>`;
   }).join('');
@@ -17975,7 +17986,9 @@ function renderTenchosenTVResult() {
   overlay.classList.add('active');
 }
 
-/** 開催前ミニイベント(Week42・数値効果なし・純演出)。コーチ+自団体上位3名のセリフを見せる */
+/** 開催前ミニイベント(Week42・数値効果なし・純演出)。コーチ+自団体から1名のセリフを見せる。
+ *  語り手は出場圏内から毎回ランダム(Engine.ppvTournament.buildPreEvent)。
+ *  以前は上位3名固定で、開催のたびに同じ顔ぶれが並んでいた(2026-07-27 Keisuke)。 */
 function renderTenchosenPreEvent() {
   const tp = G.tenchosenPreEvent;
   if (!tp) return;

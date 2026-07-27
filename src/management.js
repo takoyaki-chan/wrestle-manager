@@ -25612,10 +25612,19 @@ Engine.ppvTournament = {
     }
 
     const priorSeason = state.season - 4;
-    const topFighters = this._eligible(state.roster)
-      .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a) || String(a.id).localeCompare(String(b.id)))
-      .slice(0, 3);
-    const fighters = topFighters.map(f => {
+    // 語らせるのは**ひとりだけ**(2026-07-27 Keisuke)。
+    // 以前は OVR 上位3人を固定で並べていたため、開催のたびに**同じ顔ぶれが同じ並びで**出た。
+    // セリフ側には条件分岐(veteran / notPriorEntrant)があるのに、話し手が動かないので
+    // その違いも見えにくかった。
+    //
+    // 選び方: 出場を狙える圏内(OVR順の上半分、最低3人・最大8人)から**毎回ランダムに1人**。
+    // 全員から等確率にしないのは、セリフが「あの狭き門をくぐれるか」という
+    // 出場を意識した内容で、圏外の選手が言うと言葉が浮くため。
+    const pool = this._eligible(state.roster)
+      .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a) || String(a.id).localeCompare(String(b.id)));
+    const contenders = pool.slice(0, Math.max(3, Math.min(8, Math.ceil(pool.length / 2))));
+    const speaker = contenders.length ? Engine.rng.pick(rng, contenders) : null;
+    const fighters = (speaker ? [speaker] : []).map(f => {
       const archetype = f.archetype || 'normal';
       const pool = TENCHOSEN_PREEVENT_LINES.fighter[archetype] || TENCHOSEN_PREEVENT_LINES.fighter.normal;
       const isVeteran = (f.age || 0) > 30;

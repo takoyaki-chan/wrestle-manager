@@ -111,6 +111,7 @@ const QUICK = new Set([
   'spring-tag-league-watch-test.js',
   'spring-tag-newspaper-team-photo-test.js',
   'tag-match-test.js',
+  'tenchosen-preevent-speaker-test.js',
   'tenchosen-result-flow-guard-test.js',
   'title-challenger-eligibility-test.js',
   'title-defense-count-test.js',
