@@ -53,6 +53,7 @@ const QUICK = new Set([
   'challenge-request-card-reservation-test.js',
   'challenge-request-result-reaction-test.js',
   'challenge-request-show-flow-guard-test.js',
+  'challenge-result-layout-test.js',
   'challenge-show-orchestration-test.js',
   'challenge-show-relationship-test.js',
   'chronicle-rebuild-test.js',

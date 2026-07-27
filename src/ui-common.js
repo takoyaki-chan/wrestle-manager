@@ -11966,8 +11966,12 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
     : null;
   const showFoeFirst = !!(foeReaction && foeReaction.fighter && foeReaction.line
     && reaction && reaction.fighter && foeReaction.fighter !== reaction.fighter);
-  const reactionHtml = (showFoeFirst ? renderReactionScene(foeReaction) : '')
+  // 敗れた側と勝った側は**横に並べる**(2026-07-27 Keisuke)。
+  // ラッパー無しで2つ置いていたため、それぞれが margin:auto の独立ブロックとして
+  // 縦に積まれ、対戦の結果なのに2画面ぶんの高さを食っていた。
+  const scenes = (showFoeFirst ? renderReactionScene(foeReaction) : '')
     + renderReactionScene(reaction);
+  const reactionHtml = `<div class="crrm-reactions${showFoeFirst ? ' is-pair' : ''}">${scenes}</div>`;
 
   const matchRows = result.matches.map((m, i) => {
     const winSide = m.winner === 'left' ? 'A' : (m.winner === 'right' ? 'B' : 'draw');
@@ -12029,7 +12033,13 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
       .crrm-close-btn:hover { background:var(--accent-strong, #6b4520); }
       /* U1: 試合結果表示の配置バランスを.emr-*(1試合結果ポップアップ)に統一。勝者・敗者で画像サイズは変えず
          (段M=132x194固定)、灰色化と下辺境界の色だけで格差を示す。吹き出しは画像の上の予約枠。 */
-      .crrm-reaction-scene { display:flex; flex-direction:column; align-items:center; text-align:center; margin:8px auto 14px; padding:0 14px; max-width:260px; }
+      /* 敗れた側と勝った側は**横に並べる**(2026-07-27 Keisuke)。
+         ラッパー無しで2つ置いていたため、それぞれが margin:auto の独立ブロックとして
+         縦に積まれ、対戦の結果なのに2画面ぶんの高さを食っていた。
+         下端(名前・役割)で揃えるので、勝者だけ画像が大きくても土台が揃って見える。 */
+      .crrm-reactions { display:flex; justify-content:center; align-items:flex-end; gap:10px; flex-wrap:nowrap; }
+      .crrm-reaction-scene { display:flex; flex-direction:column; align-items:center; text-align:center; margin:8px 0 14px; padding:0 6px; max-width:260px; }
+      .crrm-reactions.is-pair .crrm-reaction-scene { flex:0 1 auto; min-width:0; }
       .crrm-reaction-bubble-slot { height:52px; display:flex; align-items:flex-end; justify-content:center; width:100%; margin-bottom:8px; }
       .crrm-reaction-bubble { position:relative; width:max-content; max-width:220px; padding:7px 11px; background:#fffdf6; border:1px solid rgba(122,101,48,.3); border-radius:var(--radius-lg, 10px); box-shadow:0 5px 14px rgba(70,48,20,.12); font-size:13px; line-height:1.5; color:var(--ink, #2a1a08); }
       .crrm-reaction-line { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -12049,12 +12059,17 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
       .crrm-reaction-scene.is-defeated .crrm-reaction-role { color:rgba(90,70,50,.6); }
       @media(max-width:600px) {
         .crrm-card { padding:14px 12px 12px; }
-        .crrm-reaction-scene { padding:0 4px; }
-        .crrm-reaction-bubble { max-width:calc(100% - 20px); }
-        .crrm-reaction-bubble-slot { height:40px; margin-bottom:5px; }
-        .crrm-reaction-portrait { width:96px; height:141px; }
-        .crrm-reaction-scene.is-victorious .crrm-reaction-portrait { width:124px; height:186px; }
-        .crrm-reaction-scene.is-victorious .crrm-reaction-name { font-size:15px; }
+        /* 狭い画面でも横並びは崩さない（縦積みに戻すと結局2画面ぶんの高さになる）。
+           そのぶん画像と吹き出しを一段小さくして2人を収める */
+        .crrm-reactions { gap:6px; }
+        .crrm-reaction-scene { padding:0 2px; }
+        .crrm-reaction-bubble { max-width:100%; font-size:11px; padding:5px 8px; }
+        .crrm-reaction-bubble-slot { height:46px; margin-bottom:5px; }
+        .crrm-reaction-portrait { width:84px; height:123px; }
+        .crrm-reaction-scene.is-victorious .crrm-reaction-portrait { width:104px; height:156px; }
+        .crrm-reaction-scene.is-victorious .crrm-reaction-name { font-size:14px; }
+        .crrm-reaction-name { font-size:12px; }
+        .crrm-reaction-role { font-size:10px; }
       }
     </style>
     <div class="fevt-overlay-office" id="challengeRequestResultOverlay">
