@@ -1443,11 +1443,13 @@ function _factionAudioClose(eventId) {
 
 
 // ── D層セレモニーイベント BGM制御 ──
+// 同じ v01 ファイル名のままミックスを更新したため、旧音源のブラウザキャッシュを避ける。
+const YEAR_END_AWARDS_BGM = '../bgm/production-ogg/wm_bgm_h05_v01.ogg?mix=20260727';
 function _ceremAudioOpen(visualVariant) {
   // triumph(到達・栄誉)は表彰式枠 WM-H05 を共用する。arrival は開幕曲を継続。
   const src = visualVariant === 'arrival'
     ? '../bgm/bgm_kaimaku_v1.mp3'
-    : '../bgm/production-ogg/wm_bgm_h05_v01.ogg';
+    : YEAR_END_AWARDS_BGM;
   // triumph は WM-H05 表彰式のミキサー実聴値（2026-07-27）。
   // arrival は旧 mp3(bgm_kaimaku_v1)を開幕曲として継続再生する枠で、台帳に載っていないため据え置き。
   try { Audio.fileBgm.play(src, { loop: true, volume: visualVariant === 'arrival' ? 0.10 : 0.40 }); } catch(e) {}
@@ -11419,7 +11421,7 @@ const App = {
     // 表彰式ポップアップ開始
     // WM-H05 表彰式（-17 LUFS 正規化済みのため vol は新音源基準へ）
     // WM-H05 表彰式。音量はミキサー実聴値（2026-07-27）
-    try { Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_h05_v01.ogg', { loop: true, volume: 0.40 }); } catch(e) {}
+    try { Audio.fileBgm.play(YEAR_END_AWARDS_BGM, { loop: true, volume: 0.40 }); } catch(e) {}
     showAwardsCeremony(pendingAwards, () => {
       try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
       // 表彰式BGMフェードアウト後に通常BGMを再開

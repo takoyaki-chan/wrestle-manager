@@ -3068,3 +3068,4 @@ docs/shachoshitsu-care-rework-spec-v0.1.md(承認済)の §1・§2 を実装。�
 - 天頂戦開催年は天頂戦覇者、通常年は PPV GRAND FINAL 最終戦勝者を表彰。
 - 個別スライドだけでなく「全受賞者一覧」にも同じ結果を掲載。
 - `year-end-event-awards-test.js` を追加し、全122テスト成功。
+- 表彰式BGMは最新版 WM-H05（volume 0.40）が本体・商品ZIPとも同一ハッシュであることを確認。同名差し替えによる旧キャッシュを避ける `?mix=20260727` を追加。

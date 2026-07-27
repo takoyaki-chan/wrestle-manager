@@ -80,6 +80,18 @@ section('4. ゲームが鳴らす production-ogg はすべて実在する', () =
   assert.strictEqual(missing.length, 0, '存在しない音源を鳴らそうとしている: ' + missing.join(', '));
 });
 
+section('5. 年末表彰式は最新版H05をキャッシュ回避付きで鳴らす', () => {
+  const app = read('src/app.js');
+  assert.ok(
+    app.includes("const YEAR_END_AWARDS_BGM = '../bgm/production-ogg/wm_bgm_h05_v01.ogg?mix=20260727';"),
+    '年末表彰式H05に最新版ミックスのキャッシュ識別子がない'
+  );
+  assert.ok(
+    /Audio\.fileBgm\.play\(YEAR_END_AWARDS_BGM,\s*\{\s*loop:\s*true,\s*volume:\s*0\.40\s*\}\)/.test(app),
+    '年末表彰式が最新版H05を実聴値0.40で再生していない'
+  );
+});
+
 console.log('');
 console.log(failed === 0 ? 'Result: ALL PASS ✓' : `Result: ${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);
