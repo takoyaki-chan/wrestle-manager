@@ -5479,6 +5479,13 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
   // 業界紙まとめ記事をnewspaperに挿入
   const draftNewsPage = _buildDraftSummaryPage(summary, acquired, empressNames, s);
 
+  // ドラフトの顛末を**業界ニュースへも積む**(2026-07-27)。
+  // このページは直後の「ドラフト結果」画面で見せるものだが、オフシーズン中は新聞が
+  // 発行されないため、そのままだと W48 の号にぶら下がったまま本紙には出てこない。
+  // 積んでおくと翌シーズン第1週の号（新年号）に記事として載る。
+  // 新年号が去年末の引退記事ばかりになるのを避ける狙いもある（Keisuke 2026-07-27）。
+  s = _queueDraftIndustryNews(s, draftNewsPage, summary);
+
   // weeklyNewspaper にページ追加（存在しない場合は新規作成）
   let newspaper = s.weeklyNewspaper ? { ...s.weeklyNewspaper } : {
     season: s.season, week: s.offWeek || 0,
@@ -5504,6 +5511,50 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
     _draftResultPages: [getPage, draftNewsPage],
     _draftResultIdx: 0,
   };
+}
+
+// ドラフト結果を業界ニュース(_industryNewsEvents)へ積む。
+// 記事の中身は「ドラフト結果」画面と同じ材料（draftNewsPage.stories）を使い、
+// 見出し・本文だけ NEWS_HEADLINE_TEMPLATES 側の紙面用に組み直す。
+// 2箇所で別々に文章を作ると必ず片方だけ古くなるので、材料は1つに保つ。
+function _queueDraftIndustryNews(state, draftNewsPage, summary) {
+  if (!Engine.industryNews || !draftNewsPage || !Array.isArray(draftNewsPage.stories)) return state;
+  let s = state;
+  const push = (type, names, extra) => {
+    if (!names || names.length === 0) return;
+    s = Engine.industryNews.push(s, {
+      type,
+      characterId: (extra && extra.characterId) != null ? extra.characterId : null,
+      characterIds: (extra && extra.characterIds) || null,
+      data: {
+        org: (extra && extra.org) || '',
+        count: names.length,
+        names: names.join('、'),
+      },
+    });
+  };
+  for (const st of draftNewsPage.stories) {
+    if (st.type === 'draftPlayerResult') {
+      const ports = st.portraits || [];
+      push('draftPlayerResult', ports.map(p => p.name), {
+        org: state.orgName || 'プレイヤー団体',
+        characterId: ports[0] ? ports[0].id : null,
+        characterIds: ports.slice(0, 2).map(p => p.id),
+      });
+    } else if (st.type === 'draftAiResult') {
+      // 見出しから団体名を復元せず、本文(氏名の羅列)と見出しの団体名部分を分けて渡す
+      const org = String(st.headline || '').split('、')[0];
+      push('draftAiResult', String(st.body || '').split('、').filter(Boolean), { org });
+    } else if (st.type === 'draftFlowThrough') {
+      const names = String(st.body || '').split(' — ')[0].split('、').filter(Boolean);
+      push('draftFlowThrough', names, {});
+    }
+  }
+  // 指名漏れゼロは「何も起きなかった」ではなく、それ自体が一行の記事になる
+  if (summary && Array.isArray(summary.flowThrough) && summary.flowThrough.length === 0) {
+    s = Engine.industryNews.push(s, { type: 'draftEmpty', data: {} });
+  }
+  return s;
 }
 
 // 業界紙まとめ記事ページを構築

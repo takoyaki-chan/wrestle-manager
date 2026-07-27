@@ -136,9 +136,11 @@ section('3-c. テンプレートの無い type は持ち越さない（キュー
 
 section('3-d. tickWeek が持ち越しを次週へ渡し、上限を超えたら古い方から捨てる', () => {
   const mgmt = read('src/management.js');
-  const at = mgmt.indexOf('const _carryOver = weeklyNewspaper.unpublishedIndustryEvents');
+  const at = mgmt.indexOf('const INDUSTRY_CARRY_MAX = 12;');
   assert.ok(at > 0, 'tickWeek が持ち越しを受け取っていない');
-  const body = mgmt.slice(at, at + 900);
+  assert.ok(/const _carryOver = \(weeklyNewspaper\.unpublishedIndustryEvents \|\| \[\]\)/.test(mgmt),
+    'tickWeek が generate の持ち越しを受け取っていない');
+  const body = mgmt.slice(at, at + 1500);
   assert.ok(!/_industryNewsEvents:\s*\[\]/.test(body),
     'キューをまるごと空にする実装に戻っている。溢れた記事がまた消える');
   assert.ok(/INDUSTRY_CARRY_MAX/.test(body),
@@ -148,6 +150,19 @@ section('3-d. tickWeek が持ち越しを次週へ渡し、上限を超えたら
   // バックナンバー24号ぶんに持ち越しリストが複製されないこと
   assert.ok(/unpublishedIndustryEvents: _unpub, \.\.\.weeklyNewspaperClean/.test(body),
     '持ち越しリストを weeklyNewspaper から外していない。セーブに同じイベントが何十本も複製される');
+});
+
+section('3-e. 持ち越しには期限がある（時限性のある記事が後の号に出ない）', () => {
+  const mgmt = read('src/management.js');
+  const at = mgmt.indexOf('const INDUSTRY_CARRY_MAX = 12;');
+  assert.ok(at > 0, '持ち越しの上限が見つからない');
+  const body = mgmt.slice(at, at + 1200);
+  assert.ok(/INDUSTRY_CARRY_MAX_AGE/.test(body),
+    '持ち越しに期限が無い。「第12週に激突する」のような時限性のある告知が何週も後の号に載り、'
+    + '開催済みの大会をこれから開催すると報じてしまう');
+  assert.ok(/_carryFromAbsWeek/.test(body), '記事がいつのものか刻んでいない');
+  assert.ok(/\.filter\(ev => \(_nowAbs - ev\._carryFromAbsWeek\) < INDUSTRY_CARRY_MAX_AGE\)/.test(body),
+    '期限切れを捨てていない');
 });
 
 // ─────────────────────────────────────────────────────────────

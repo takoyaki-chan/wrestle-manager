@@ -12206,8 +12206,18 @@ const Engine = {
       // シーズン境界のようにまとめて積まれる週は溢れた記事が黙って消えていた。
       // 上限を設けるのは、持ち越しが延々と溜まって新しいニュースを押しのけないため。
       // 捨てるときは古い方から（新しい出来事のほうが紙面価値が高い）。
-      const _carryOver = weeklyNewspaper.unpublishedIndustryEvents || [];
       const INDUSTRY_CARRY_MAX = 12;
+      // **持ち越しには期限を付ける**(2026-07-27 追加)。
+      // 記事には時限性のあるものがある。たとえば春のタッグリーグの告知は
+      // 「第12週に激突する」と本文に書いてあるので、これが何週も持ち越されて後の号に載ると
+      // 紙面が事実と食い違う（開催済みの大会をこれから開催すると報じてしまう）。
+      // 何週ぶんまで粘るかは INDUSTRY_CARRY_MAX_AGE。過ぎたものは載せずに捨てる。
+      const INDUSTRY_CARRY_MAX_AGE = 3;
+      const _nowAbs = Engine.util.absWeek(s.season, s.week);
+      const _carryOver = (weeklyNewspaper.unpublishedIndustryEvents || [])
+        // 初めて溢れたときに「いつの記事か」を刻む（既存キューの分もここで刻まれる）
+        .map(ev => (ev._carryFromAbsWeek != null ? ev : { ...ev, _carryFromAbsWeek: _nowAbs }))
+        .filter(ev => (_nowAbs - ev._carryFromAbsWeek) < INDUSTRY_CARRY_MAX_AGE);
       // 持ち越しリストは受け渡し用。weeklyNewspaper はバックナンバー24号ぶん保存されるので、
       // ここで外さないと同じイベントがセーブに何十本も複製される。
       const { unpublishedIndustryEvents: _unpub, ...weeklyNewspaperClean } = weeklyNewspaper;
@@ -27196,6 +27206,13 @@ Engine.newspaper = {
     aiPracticeInjury:     55,
     aiMediaStart:         45,
     transfer:             50,
+    // ドラフト結果（2026-07-27）。オフに新聞が出ないので新年号にまとめて載る。
+    // 自団体の獲得は引退記事(aiAceRetirement 160)と並んで一面を争える高さに置く
+    // ——新年号が去年末の引退ばかりになるのを避けるため。
+    draftPlayerResult:   165,
+    draftAiResult:       100,
+    draftFlowThrough:     70,
+    draftEmpty:           40,
     leagueElevation:     300,
     general:              30,
     // MQ再設計P4/P5 §5.2: 大ニュース(BIG_NEWS_TYPES)。leagueElevation(300)より上で一面を保証

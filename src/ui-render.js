@@ -834,11 +834,20 @@ function renderWeekScreen() {
       </div>
     </div>`;
 
-    // season-retrospective-spec: シーズン総括(ANNUAL RECORD)。offWeek 0〜1 の一枚レポート。
-    // **表彰式が終わるまでは出さない**(2026-07-27 Keisuke)。
-    // シーズン末の演出は 引退の判断 → 新聞 → 表彰式 → 引退のあいさつ → レポート の順。
-    const seasonEndBusy = (typeof App !== 'undefined' && App._seasonEndChainActive);
-    if (offW <= 1 && !seasonEndBusy) {
+    // season-retrospective-spec: シーズン総括(ANNUAL RECORD)。
+    //
+    // **offWeek 1 =「レポート」の週にだけ出す**(2026-07-27 Keisuke 再々報告)。
+    // 年度末ブリッジのステッパーが レポート→ドラフト→移籍→開幕 と名前を付けているとおり、
+    // 総括はレポートの週のもの。offWeek 0 は引退の判断・新聞・エンディング・年末表彰式が
+    // 走りきる週で、総括の居場所ではない。
+    //
+    // 以前は `offW <= 1` で **offWeek 0 にも描いていた**ため、表彰式が終わった直後の
+    // offWeek 0 に総括が出てしまい、しかもボタンは「シーズンレポートへ →」と
+    // これから見せると言っていた（同じものが翌週もう一度出る）。
+    // App._seasonEndChainActive で伏せる方式も併用していたが、このフラグは
+    // advanceWeek のたびに立って演出チェーンが完走しないと下りないため、
+    // 逆に**レポートの週で総括が消える**事故を起こしていた。週で決め打つ方が壊れない。
+    if (offW === 1) {
       const review = Engine.seasonReview.build(G);
       html += _renderSeasonReview(review, G);
     } else {

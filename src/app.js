@@ -11062,12 +11062,11 @@ const App = {
     // v1.4w: ティッカー更新
     App._refreshTicker();
 
-    // シーズン末の演出が終わるまでシーズン総括(レポート)を伏せる。
-    // **無条件にここで立てる**(2026-07-27 Keisuke 再報告)。
-    // 以前は「引退者がいる年」の分岐の中でしか立てていなかったため、
-    // 引退ゼロの年は表彰式より先に総括が見えていた。
-    // 最後に出すものは、最後に出てこなければならない。
-    App._seasonEndChainActive = true;
+    // 2026-07-27: ここにあった App._seasonEndChainActive（総括を伏せるフラグ）は廃止した。
+    // advanceWeek のたびに立ち、演出チェーンが完走したときにしか下りない作りだったため、
+    // チェーンがどこかで待ちに入ると**レポートの週で総括が出てこなくなる**。
+    // 総括の出しどころは offWeek 1（レポートの週）で決め打つ方が壊れない。
+    // → src/ui-render.js の `if (offW === 1)`
 
     // v1.3-3: Extract pending retirements before save (transient field)
     const pendingRetirements = G.pendingRetirements || null;
@@ -11147,6 +11146,14 @@ const App = {
       }
     });
 
+    // 週が進んだことを先に画面へ反映する(2026-07-27)。
+    // ここまで来ると G は次の週になっているのに、描き直しは演出チェーンが完走したときの
+    // refreshAll しか無かった。チェーンがどこかで待ちに入ると**前の週の画面が残り**、
+    // 年度末ブリッジのステッパーもボタンの文言も1つ前のままになる
+    // （実機で offWeek 1 なのに「0/4」「シーズンレポートへ →」が出たままだった）。
+    // 演出はこの後オーバーレイで重なるので、先に描き直しても手順は変わらない。
+    refreshAll();
+
     if (aiAlerts.length > 0) {
       showAIGrowthAlerts(aiAlerts, () => App._safeAwardsChain());
     } else {
@@ -11218,10 +11225,10 @@ const App = {
     }
   },
 
-  /** 一連の締めくくり。**表彰式が終わってから**シーズン総括(レポート)を見せる。
-   *  引退(確定＋あいさつ)は表彰式より前に済ませてある。 */
+  /** 一連の締めくくり。演出が終わったら画面を描き直す。
+   *  総括そのものは offWeek 1（レポートの週）で出るので、ここでは伏せ札を下ろす必要はない。
+   *  引退(確定＋あいさつ)・年末表彰式は offWeek 0 で済ませてある。 */
   _showFarewellsThenReport() {
-    App._seasonEndChainActive = false;   // ここで初めてシーズン総括が出る
     refreshAll();
   },
 

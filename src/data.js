@@ -16127,6 +16127,31 @@ const NEWS_HEADLINE_TEMPLATES = {
     { headline: '春のタッグリーグ開幕迫る、参加団体出揃う',
       body: '第{season}回春のタッグリーグに{org1}・{org2}・{org3}・{org4}の4団体が名乗りを上げた。第12週、4団体総当たりのリーグ戦と優勝決定戦が1日で行われる。' },
   ],
+  // ドラフト結果（2026-07-27）。オフシーズン中は新聞が発行されないため、
+  // ドラフトの顛末は翌シーズン第1週の号（新年号）に載る。
+  // 新年号が去年末の引退記事ばかりになるのを避ける狙いもある（Keisuke）。
+  draftPlayerResult: [
+    { headline: '{org}、新人{count}名を獲得',
+      body: '{names}。新シーズンの陣容がひとつ厚くなった。' },
+    { headline: '{org}が{count}名を指名、新体制へ',
+      body: '{names}が加入。どこまで伸びるかは、これからの一年が決める。' },
+  ],
+  draftAiResult: [
+    { headline: '{org}、新人{count}名を確保',
+      body: '{names}。来季の顔ぶれが動く。' },
+    { headline: '{org}が{count}名を指名',
+      body: '{names}が新たに名を連ねた。' },
+  ],
+  draftFlowThrough: [
+    { headline: '指名漏れ{count}名、フリー市場へ',
+      body: '{names}。どこにも呼ばれなかった選手たちが、市場に残った。' },
+    { headline: '{count}名がどの団体からも指名されず',
+      body: '{names}が指名を受けられなかった。拾う団体が出るかどうか。' },
+  ],
+  draftEmpty: [
+    { headline: '今年のドラフト、全指名が成立',
+      body: '指名漏れは出なかった。候補は残らず、それぞれの団体へ散った。' },
+  ],
   springTagResult: [
     { headline: '{championOrg}『{champ1}&{champ2}』組、春のタッグリーグ制覇',
       body: '第{season}回春のタッグリーグは{championOrg}の{champ1}・{champ2}組が優勝。決勝で{runnerUpOrg}の{runner1}・{runner2}組を下した。' },
