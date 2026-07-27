@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WM Audio Mixer v4 — 新音源セット試聴</title>
+<style>
+:root{color-scheme:dark;--bg:#0e1117;--panel:#181d27;--line:#30394a;--gold:#e8bd58;--text:#edf1f7;--muted:#9da9bb;--blue:#76aef4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Yu Gothic UI",sans-serif;line-height:1.5;padding-bottom:80px}
+header{position:sticky;top:0;z-index:10;background:#0e1117f2;border-bottom:1px solid var(--line);padding:12px 18px;backdrop-filter:blur(8px)}
+h1{font-size:17px;margin:0}
+.sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+main{max-width:1000px;margin:auto;padding:14px}
+h2{font-size:14px;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:4px;margin:22px 0 8px}
+.row{display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:7px;border:1px solid transparent}
+.row:hover{background:#1c2330}
+.row.playing{background:#20304a;border-color:#3d5b8a}
+button{border:1px solid var(--line);background:#252c39;color:var(--text);padding:6px 10px;border-radius:7px;cursor:pointer;font-weight:700;font-size:12.5px}
+button:hover{filter:brightness(1.16)}
+.p{width:38px;text-align:center;padding:5px 0}
+.rid{font-weight:900;color:var(--gold);font-size:12px;width:88px;white-space:nowrap}
+.rname{flex:1;font-size:13px;min-width:0}
+.rfile{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.warn{font-size:10px;background:#5a3424;color:#ffd2ab;border-radius:4px;padding:1px 6px;margin-left:6px;white-space:nowrap}
+.share{font-size:10px;background:#283142;color:#cbd4e2;border-radius:4px;padding:1px 6px;margin-left:6px;white-space:nowrap}
+footer{position:fixed;left:0;right:0;bottom:0;background:#0b0e14f6;border-top:1px solid var(--line);padding:9px 16px;display:flex;gap:14px;align-items:center;z-index:20;backdrop-filter:blur(8px)}
+#now{font-size:12.5px;min-width:200px;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#now b{color:var(--gold)}
+#seek{flex:1;accent-color:var(--gold)}
+#time{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ctl{display:flex;gap:10px;align-items:center;font-size:11.5px;color:var(--muted);white-space:nowrap}
+#vol{width:100px;accent-color:var(--gold)}
+.rv{width:110px;accent-color:var(--gold);flex:none}
+.rvnum{width:34px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px;color:#9a9384;flex:none}
+.rvnum.edited{color:var(--gold);font-weight:700}
+.gkey{font-size:11px;color:#7fb3d5;min-width:110px;flex:none}
+.gkey.none{color:#6a6458}
+#exportBox{position:fixed;inset:8% 10%;background:#14120f;border:1px solid var(--gold);border-radius:8px;
+  padding:14px;display:none;flex-direction:column;gap:8px;z-index:50}
+#exportBox textarea{flex:1;width:100%;background:#0d0c0a;color:#e8e0d0;border:1px solid #3a3630;
+  border-radius:4px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;line-height:1.6}
+#exportBox .x{display:flex;gap:8px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<header>
+  <h1>WM Audio Mixer v4 — 新音源セット試聴（bgm/production-ogg・75本）</h1>
+  <div class="sub">音量 -17 LUFS(BGM) / -14 LUFS(SE) 正規化済み。BGMは自動でループ再生 — <b>継ぎ目</b>を確認してください。⚠付きはループ相関が弱く要重点チェック。スペースキーで再生/停止。</div>
+</header>
+<main id="root"></main>
+<footer>
+  <div id="now"><b>–</b> 未再生</div>
+  <input id="seek" type="range" min="0" max="1000" value="0">
+  <span id="time">0:00 / 0:00</span>
+  <div class="ctl">
+    <button id="stopAll">■ 停止</button>
+    <button id="exportBtn">📋 設定を書き出す</button>
+    <button id="resetBtn">↺ ゲームの値へ戻す</button>
+    <label><input id="loop" type="checkbox"> ループ</label>
+    <label>音量 <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8"></label>
+  </div>
+</footer>
+<div id="exportBox">
+  <div style="font-size:12px;color:#9a9384">
+    決めた音量です。<b>src/app.js</b> の該当箇所に貼り替えてください（値だけ差し替えれば動きます）。
+  </div>
+  <textarea id="exportText" readonly></textarea>
+  <div class="x">
+    <button id="copyBtn">コピー</button>
+    <button id="closeExport">閉じる</button>
+  </div>
+</div>
+<script>
+'use strict';
+const DIR='production-ogg/';
+// [ID, 役割, ファイル, 種別, ⚠継ぎ目要確認, 注記]
+const SECTIONS=[
+['コア・経営(BGM)',[
+ ['WM-C01','タイトル・オープニング','wm_bgm_c01_v01.ogg','bgm',1],
+ ['WM-C07','契約交渉','wm_bgm_c07_v02.ogg','bgm',1,'差し替え曲 Static on the Desk (2026-07-27)'],
+ ['WM-C07旧','契約交渉(旧曲・未使用)','wm_bgm_c07_v01.ogg','bgm',1,'v02 へ差し替え済み。聴き比べ用に残す'],
+ ['WM-C08','ドラフト選択','wm_bgm_c08_v01.ogg','bgm',1],
+ ['WM-C09','ドラフト入札','wm_bgm_c09_v01.ogg','bgm',1],
+]],
+['メインメニュー・団体状況(BGM)',[
+ ['WM-S00','メインメニュー(平常時)','wm_bgm_s00_v01.ogg','bgm',0],
+ ['WM-S01','好調時','wm_bgm_s01_v01.ogg','bgm',1,'元曲約22秒'],
+ ['WM-S02','資金難','wm_bgm_s02_v01.ogg','bgm',0,'S03と同音'],
+ ['WM-S03','不穏','wm_bgm_s03_v01.ogg','bgm',0,'S02と同音'],
+ ['WM-S05','団体危機','wm_bgm_s05_v01.ogg','bgm',1],
+]],
+['試合中(BGM)',[
+ ['WM-M01','通常試合','wm_bgm_m01_v01.ogg','bgm',1],
+ ['WM-M03','因縁戦','wm_bgm_m03_v01.ogg','bgm',0],
+ ['WM-M04','ビッグマッチ','wm_bgm_m04_v01.ogg','bgm',0],
+ ['WM-M05','ビッグマッチ2(PPV・天頂戦決着戦)','wm_bgm_m05_v01.ogg','bgm',0],
+ ['WM-M06','ビッグマッチ直前(煽りミニイベント)','wm_bgm_m06_v01.ogg','bgm',0],
+]],
+['特別興行(BGM)',[
+ ['WM-SP01','春A・タッグリーグ','wm_bgm_sp01_v01.ogg','bgm',0,'SP02と同音'],
+ ['WM-SP02','春B・タッグリーグ決勝','wm_bgm_sp02_v01.ogg','bgm',0,'SP01と同音'],
+ ['WM-SP03','夏A・ジュニアトーナメント','wm_bgm_sp03_v01.ogg','bgm',0,'SP04と同音'],
+ ['WM-SP04','夏B・ジュニア決勝','wm_bgm_sp04_v01.ogg','bgm',0,'SP03と同音'],
+ ['WM-SP05','秋A・4団体対抗戦','wm_bgm_sp05_v01.ogg','bgm',0,'SP06と同音'],
+ ['WM-SP06','秋B・対抗戦大将戦','wm_bgm_sp06_v01.ogg','bgm',0,'SP05と同音'],
+ ['WM-SP07','冬A・GRAND FINAL','wm_bgm_sp07_v01.ogg','bgm',0,'SP08と同音'],
+ ['WM-SP08','冬B・GRAND FINALメイン','wm_bgm_sp08_v01.ogg','bgm',0,'SP07と同音'],
+ ['WM-SP09','天頂戦','wm_bgm_sp09_v01.ogg','bgm',1,'元曲約22秒'],
+]],
+['人物ドラマ・セレモニー(BGM)',[
+ ['WM-D02','復帰','wm_bgm_d02_v01.ogg','bgm',1],
+ ['WM-D03','引退','wm_bgm_d03_v01.ogg','bgm',1],
+ ['WM-D04','世代交代','wm_bgm_d04_v01.ogg','bgm',1],
+ ['WM-H04','エンディング','wm_bgm_h04_v01.ogg','bgm',0],
+ ['WM-H05','表彰式','wm_bgm_h05_v01.ogg','bgm',0],
+]],
+['共通UI(SE)',[
+ ['UI01','決定','wm_se_ui01_v01.ogg','se',0,'UI06・HR04と同音'],
+ ['UI02','取消','wm_se_ui02_v01.ogg','se',0,'UI07と同音'],
+ ['UI03','移動','wm_se_ui03_v01.ogg','se',0],
+ ['UI04','設定切替','wm_se_ui04_v01.ogg','se',0],
+ ['UI05','パネル表示','wm_se_ui05_v01.ogg','se',0],
+ ['UI06','通常通知','wm_se_ui06_v01.ogg','se',0,'UI01と同音'],
+ ['UI07','軽いエラー','wm_se_ui07_v01.ogg','se',0,'UI02と同音'],
+ ['UI08','重大エラー','wm_se_ui08_v01.ogg','se',0],
+ ['UI09','紙','wm_se_ui09_v01.ogg','se',0],
+]],
+['経営・数値(SE)',[
+ ['MG01','方針選択','wm_se_mg01_v01.ogg','se',0,'HR05と同音'],
+ ['MG03','収入','wm_se_mg03_v01.ogg','se',0],
+ ['MG04','支出','wm_se_mg04_v01.ogg','se',0],
+ ['MG05','上昇','wm_se_mg05_v01.ogg','se',0,'RS05と同音'],
+ ['MG06','低下','wm_se_mg06_v01.ogg','se',0,'MG07と同音'],
+ ['MG07','危機(軽度)','wm_se_mg07_v01.ogg','se',0,'MG06と同音'],
+ ['MG08','回復','wm_se_mg08_v01.ogg','se',0],
+ ['MG09','危機2(重度)','wm_se_mg09_v01.ogg','se',0],
+]],
+['人事・契約(SE)',[
+ ['HR01','接続','wm_se_hr01_v01.ogg','se',0],
+ ['HR02','解除','wm_se_hr02_v01.ogg','se',0,'SH06と同音'],
+ ['HR04','発見','wm_se_hr04_v01.ogg','se',0,'UI01と同音'],
+ ['HR05','提示','wm_se_hr05_v01.ogg','se',0,'MG01と同音'],
+ ['HR06','成立','wm_se_hr06_v01.ogg','se',0],
+ ['HR07','拒否・決裂','wm_se_hr07_v01.ogg','se',0],
+ ['HR08','到着・出発','wm_se_hr08_v01.ogg','se',0],
+]],
+['興行編成(SE)',[
+ ['SH02','会場決定','wm_se_sh02_v01.ogg','se',0],
+ ['SH03','カード配置','wm_se_sh03_v01.ogg','se',0,'SH08と同音'],
+ ['SH04','カード解除','wm_se_sh04_v01.ogg','se',0],
+ ['SH05','入替・並替','wm_se_sh05_v01.ogg','se',0],
+ ['SH06','統合(タッグ化)','wm_se_sh06_v01.ogg','se',0,'HR02と同音'],
+ ['SH07','特別条件','wm_se_sh07_v01.ogg','se',0],
+ ['SH08','カード完成','wm_se_sh08_v01.ogg','se',0,'SH03と同音'],
+ ['SH09','興行開始','wm_se_sh09_v01.ogg','se',0],
+]],
+['試合・観客(SE)',[
+ ['BTA01','実音カウント','wm_se_bta01_v01.ogg','se',0],
+ ['BTA02','タップ','wm_se_bta02_v01.ogg','se',0],
+ ['CR03','歓声','wm_se_cr03_v01.ogg','se',0],
+ ['CR05','ブーイング','wm_se_cr05_v01.ogg','se',0],
+ ['CR06','驚き','wm_se_cr06_v01.ogg','se',0],
+]],
+['結果・達成(SE)',[
+ ['RS01','通常勝利','wm_se_rs01_v01.ogg','se',0],
+ ['RS02','敗北','wm_se_rs02_v01.ogg','se',0],
+ ['RS04','最高栄誉','wm_se_rs04_v01.ogg','se',0],
+ ['RS05','達成','wm_se_rs05_v01.ogg','se',0,'MG05と同音'],
+ ['RS06','失敗','wm_se_rs06_v01.ogg','se',0],
+]],
+['物語イベント(SE)',[
+ ['EV01','好転','wm_se_ev01_v01.ogg','se',0],
+ ['EV02','悪化','wm_se_ev02_v01.ogg','se',0],
+ ['EV04','裏切り','wm_se_ev04_v01.ogg','se',0],
+ ['EV05','新時代','wm_se_ev05_v01.ogg','se',0],
+]],
+];
+
+// ── ゲームで今使っている音量(2026-07-27 時点。src/app.js の SE_MIX / SUNO_BGM から抽出) ──
+// つまみの初期値。ここを起点に耳で決め直し、下の「設定を書き出す」で貼り付け用の表を作る。
+const GAME_VOL = {
+ "wm_bgm_m03_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "rivalry"
+  ],
+  "vol": 0.3
+ },
+ "wm_bgm_m04_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "bigMatch"
+  ],
+  "vol": 0.33
+ },
+ "wm_bgm_m05_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "grandFinalMain"
+  ],
+  "vol": 0.33
+ },
+ "wm_bgm_sp01_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "springA"
+  ],
+  "vol": 0.28
+ },
+ "wm_bgm_sp02_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "springB"
+  ],
+  "vol": 0.28
+ },
+ "wm_bgm_sp03_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "juniorA"
+  ],
+  "vol": 0.28
+ },
+ "wm_bgm_sp04_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "juniorB"
+  ],
+  "vol": 0.28
+ },
+ "wm_bgm_sp05_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "autumnA",
+   "war"
+  ],
+  "vol": 0.22
+ },
+ "wm_bgm_sp06_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "autumnB"
+  ],
+  "vol": 0.27
+ },
+ "wm_bgm_sp07_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "ppvA",
+   "grandFinalProgress"
+  ],
+  "vol": 0.34
+ },
+ "wm_bgm_sp08_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "ppvB"
+  ],
+  "vol": 0.34
+ },
+ "wm_bgm_sp09_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "tencho"
+  ],
+  "vol": 0.41
+ },
+ "wm_bgm_d03_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "引退演出"
+  ],
+  "vol": 0.41
+ },
+ "wm_bgm_h04_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "エンディング"
+  ],
+  "vol": 0.45
+ },
+ "wm_bgm_h05_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "年末表彰式",
+   "セレモニー(triumph)"
+  ],
+  "vol": 0.4
+ },
+ "wm_bgm_h06_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "殿堂入り"
+  ],
+  "vol": 0.3
+ },
+ "wm_se_rs04_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "championship(最高栄誉ジングル)"
+  ],
+  "vol": 0.39
+ },
+ "wm_se_ui01_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "click",
+   "select"
+  ],
+  "vol": 0.13
+ },
+ "wm_se_ui02_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "deselect"
+  ],
+  "vol": 0.12
+ },
+ "wm_se_ui07_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "error"
+  ],
+  "vol": 0.11
+ },
+ "wm_se_ui06_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "notify"
+  ],
+  "vol": 0.14
+ },
+ "wm_se_sh05_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "tick"
+  ],
+  "vol": 0.18
+ },
+ "wm_se_ui04_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "save",
+   "switch"
+  ],
+  "vol": 0.14
+ },
+ "wm_se_sh02_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "venue"
+  ],
+  "vol": 0.46
+ },
+ "wm_se_ui09_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "paper"
+  ],
+  "vol": 0.06
+ },
+ "wm_se_mg04_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "spend"
+  ],
+  "vol": 0.05
+ },
+ "wm_se_ui05_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "reveal",
+   "event"
+  ],
+  "vol": 0.04
+ },
+ "wm_se_mg03_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "coin"
+  ],
+  "vol": 0.25
+ },
+ "wm_se_hr08_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "transfer"
+  ],
+  "vol": 0.24
+ },
+ "wm_se_rs06_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "defeat"
+  ],
+  "vol": 0.25
+ },
+ "wm_se_rs05_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "fanfare",
+   "matchVictoryFanfare"
+  ],
+  "vol": 0.33
+ },
+ "wm_se_cr03_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "crowd",
+   "boutOther"
+  ],
+  "vol": 0.18
+ },
+ "wm_se_ev05_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "bignews"
+  ],
+  "vol": 0.41
+ },
+ "wm_se_rs01_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "boutWin"
+  ],
+  "vol": 0.34
+ },
+ "wm_se_rs02_v01.ogg": {
+  "kind": "se",
+  "keys": [
+   "boutLose"
+  ],
+  "vol": 0.32
+ },
+ "wm_bgm_c01_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "kaimaku"
+  ],
+  "vol": 0.3
+ },
+ "wm_bgm_s00_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "management"
+  ],
+  "vol": 0.26
+ },
+ "wm_bgm_m01_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "battle"
+  ],
+  "vol": 0.32
+ },
+ "wm_bgm_c07_v02.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "contract"
+  ],
+  "vol": 0.16
+ },
+ "wm_bgm_c07_v01.ogg": {
+  "kind": "bgm",
+  "keys": [],
+  "vol": 0.15
+ },
+ "wm_bgm_c08_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "draftPick"
+  ],
+  "vol": 0.2
+ },
+ "wm_bgm_c09_v01.ogg": {
+  "kind": "bgm",
+  "keys": [
+   "draftBid"
+  ],
+  "vol": 0.16
+ },
+ "bgm_season_end_v1.mp3": {
+  "kind": "bgm",
+  "keys": [
+   "season_end"
+  ],
+  "vol": 0.17
+ },
+ "bgm_tension_v1.mp3": {
+  "kind": "bgm",
+  "keys": [
+   "tension"
+  ],
+  "vol": 0.17
+ }
+};
+// 決めた値の保存先(ブラウザに残るので、閉じても続きから調整できる)
+const STORE='wmMixerVols';
+let userVol = {};
+try { userVol = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch(e) { userVol = {}; }
+function volOf(file){
+  if (userVol[file] != null) return userVol[file];
+  if (GAME_VOL[file]) return GAME_VOL[file].vol;
+  return 0.5;   // まだゲームに割り当てていない音
+}
+function setVol(file, v){ userVol[file]=v; try{ localStorage.setItem(STORE, JSON.stringify(userVol)); }catch(e){} }
+
+const audio=new Audio();let nowFile=null;
+const $=s=>document.querySelector(s);
+const flat=SECTIONS.flatMap(([,items])=>items);
+function fmt(t){if(!isFinite(t))return'–:––';t=Math.max(0,t|0);return `${(t/60)|0}:${String(t%60).padStart(2,'0')}`}
+function render(){
+  $('#root').innerHTML=SECTIONS.map(([title,items])=>`<h2>${title}</h2>`+items.map(it=>{
+    const [id,name,file,kind,warnFlag,note]=it;
+    const g=GAME_VOL[file];
+    const v=volOf(file);
+    // ゲームのどのキーに割り当て済みか。未割当は一目で分かるようにする
+    const keyTag = g ? `<span class="gkey">${g.keys.join(' / ')}</span>`
+                     : `<span class="gkey none">未割当</span>`;
+    const changed = g && Math.abs(v - g.vol) > 0.001;
+    return `<div class="row ${nowFile===file?'playing':''}">
+      <button class="p" data-file="${file}">${nowFile===file&&!audio.paused?'❚❚':'▶'}</button>
+      <span class="rid">${id}</span>
+      <span class="rname">${name}${warnFlag?'<span class="warn">⚠ 継ぎ目要確認</span>':''}${note?`<span class="share">${note}</span>`:''}</span>
+      ${keyTag}
+      <input class="rv" type="range" min="0" max="1" step="0.01" value="${v}" data-file="${file}" title="この音の音量">
+      <span class="rvnum ${changed?'edited':''}">${v.toFixed(2)}</span>
+      <span class="rfile">${file}</span>
+    </div>`;}).join('')).join('');
+  document.querySelectorAll('.p').forEach(b=>b.onclick=()=>toggle(b.dataset.file));
+  document.querySelectorAll('.rv').forEach(r=>{
+    // つまみを動かしたら即その音で鳴らす。耳で決める道具なので、聴かずに決めさせない
+    r.oninput=()=>{
+      const f=r.dataset.file, v=+r.value;
+      setVol(f, v);
+      r.nextElementSibling.textContent=v.toFixed(2);
+      r.nextElementSibling.classList.toggle('edited', !GAME_VOL[f] || Math.abs(v-GAME_VOL[f].vol)>0.001);
+      if (nowFile===f) { audio.volume=v*masterVol(); }
+      else { audio.src=DIR+f; nowFile=f; audio.loop=false; audio.volume=v*masterVol(); audio.play().catch(()=>{}); }
+    };
+  });
+}
+function toggle(file){
+  if(nowFile===file){if(audio.paused)audio.play();else audio.pause();render();return}
+  const it=flat.find(x=>x[2]===file);if(!it)return;
+  audio.src=DIR+file;
+  audio.loop=$('#loop').checked=it[3]==='bgm';
+  nowFile=file;
+  audio.volume=volOf(file)*masterVol();   // その音に決めた音量で鳴らす
+  audio.play().catch(()=>{$('#now').innerHTML=`<b>${it[0]}</b> 再生失敗`});
+  $('#now').innerHTML=`<b>${it[0]}</b> ${it[1]}`;
+  render();
+}
+$('#stopAll').onclick=()=>{audio.pause();audio.currentTime=0;nowFile=null;render();$('#now').innerHTML='<b>–</b> 未再生'};
+audio.addEventListener('timeupdate',()=>{
+  if(isFinite(audio.duration)&&audio.duration>0)$('#seek').value=Math.round(audio.currentTime/audio.duration*1000);
+  $('#time').textContent=`${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+});
+audio.addEventListener('play',render);audio.addEventListener('pause',render);
+audio.addEventListener('ended',render);
+$('#seek').oninput=e=>{if(isFinite(audio.duration))audio.currentTime=audio.duration*e.target.value/1000};
+$('#loop').onchange=e=>audio.loop=e.target.checked;
+// マスターは「全体を上げ下げする倍率」。各音のつまみに掛かる
+function masterVol(){ return +($('#vol').value); }
+$('#vol').oninput=()=>{ if(nowFile) audio.volume=volOf(nowFile)*masterVol(); };
+// 決めた値を「貼り替えられる形」で出す。ここまで出さないと、耳で決めた結果がゲームに届かない
+function buildExport(){
+  const seLines=[], bgmLines=[], unassigned=[];
+  flat.forEach(([id,name,file])=>{
+    const g=GAME_VOL[file];
+    const v=volOf(file);
+    if(!g){ if(Math.abs(v-0.5)>0.001) unassigned.push(`  ${id} ${name} (${file}) → ${v.toFixed(2)}`); return; }
+    const mark = Math.abs(v-g.vol)>0.001 ? '  ← 変更' : '';
+    g.keys.forEach(k=>{
+      const line=`    ${k}: ${v.toFixed(2)},`.padEnd(28)+`// ${id} ${name}${mark}`;
+      (g.kind==='bgm'?bgmLines:seLines).push(line);
+    });
+  });
+  const out=[];
+  out.push('// ── SE_MIX（src/app.js）──────────────────────');
+  out.push('// 同じ音源を複数のキーが使っている場合、同じ値が並びます。');
+  out.push('// 別々にしたいときは、そのキーだけ手で変えてください。');
+  out.push(...seLines, '');
+  out.push('// ── SUNO_BGM の vol（src/app.js）─────────────');
+  out.push(...bgmLines);
+  if(unassigned.length){
+    out.push('', '// ── まだゲームに割り当てていない音（参考）─────', ...unassigned);
+  }
+  return out.join('\n');
+}
+$('#exportBtn').onclick=()=>{ $('#exportText').value=buildExport(); $('#exportBox').style.display='flex'; };
+$('#closeExport').onclick=()=>{ $('#exportBox').style.display='none'; };
+$('#copyBtn').onclick=()=>{
+  const t=$('#exportText'); t.select();
+  try{ document.execCommand('copy'); $('#copyBtn').textContent='コピーした'; setTimeout(()=>$('#copyBtn').textContent='コピー',1200); }catch(e){}
+};
+$('#resetBtn').onclick=()=>{
+  if(!confirm('つまみを、ゲームで今使っている値へ戻します。よろしいですか。'))return;
+  userVol={}; try{ localStorage.removeItem(STORE); }catch(e){}
+  render();
+};
+
+document.addEventListener('keydown',e=>{
+  if(e.code!=='Space'||/INPUT|TEXTAREA/.test(e.target.tagName))return;
+  e.preventDefault();if(!nowFile)return;if(audio.paused)audio.play();else audio.pause();render();
+});
+render();
+</script>
+</body>
+</html>

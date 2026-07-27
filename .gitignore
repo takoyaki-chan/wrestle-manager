@@ -2,7 +2,10 @@ node_modules/
 notion_characters.csv
 notion_db.html
 tools/tmp_xlsx/
-audio-mixer.html
+# bgm/audio-mixer.html は 2026-07-27 に追跡対象へ変更した。
+# 音量はこのツールで耳で決めており、その決定がそのままゲームの正になる。
+# 履歴が残らないと「いつ・何を・なぜその値にしたか」を後から辿れないため。
+# 配布物には入らない（release/package-release.ps1 の $DevPatterns が除外する）。
 .claude/worktrees/
 .claude/scheduled_tasks.lock
 .codex-temp/
