@@ -257,6 +257,33 @@ section('3. 封印中は、結成条件を満たしても派閥が1つも生ま�
   assert.ok(!sealedEnd._pendingFactionEvent, '封印中なのに派閥イベントが立った');
 });
 
+// ─────────────────────────────────────────────────────────────
+// (4) 封印中の見え方（2026-07-27 実機で「タブごと消える」が発覚したため追加）
+// ─────────────────────────────────────────────────────────────
+
+section('4. 封印中はデータベースの派閥タブが残り、理由と解除導線が出る', () => {
+  const fs = require('fs');
+  const uiRender = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-render.js'), 'utf8');
+
+  // タブの出し分けが factions.length だけを見ていると、封印中はタブごと消えて
+  // 「なぜ派閥が出ないのか」を確かめる場所が無くなる（社長室への導線にも辿り着けない）
+  const m = uiRender.match(/const hasFactions = [^\n]*/);
+  assert.ok(m, 'データベースの派閥タブ出し分けが見つからない');
+  assert.ok(
+    /factionsSealed/.test(m[0]),
+    '派閥タブの出し分けが factionsSealed を見ていない。' +
+    '封印すると派閥が0になるので、タブごと消えて封印中の説明に辿り着けなくなる'
+  );
+
+  // 封印中の文面（「まだ生まれていない」ではなく「作らせていない」と書き分ける）
+  const at = uiRender.indexOf('function _renderDbFactions()');
+  assert.ok(at > 0, '_renderDbFactions が見つからない');
+  const body = uiRender.slice(at, at + 1800);
+  assert.ok(/G\.factionsSealed/.test(body), '封印中の分岐が無い');
+  assert.ok(/認めていません/.test(body), '封印中であることが書かれていない');
+  assert.ok(/派閥解散命令/.test(body), '解除導線（社長室）が案内されていない');
+});
+
 console.log('');
 console.log(failed === 0 ? 'Result: ALL PASS ✓' : `Result: ${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);

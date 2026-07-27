@@ -6452,7 +6452,9 @@ function renderDatabase() {
   const panel = el.closest('.panel') || el.parentElement;
   if (panel) panel.classList.toggle('relmap-active', _dbSubTab === 4);
 
-  const hasFactions = !!(G.factions && G.factions.length > 0);
+  // 封印中もタブを残す。派閥が0だからとタブごと消すと「なぜ出ないのか」を確かめる場所が無くなり、
+  // 社長室からの解除導線にも辿り着けない（2026-07-27 実機で発覚）。
+  const hasFactions = !!(G.factions && G.factions.length > 0) || !!G.factionsSealed;
   const subTabs = [
     { label: '👤 全選手', idx: 0 },
     { label: '🏋️ 全コーチ', idx: 1 },
