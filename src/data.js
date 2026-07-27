@@ -16109,6 +16109,20 @@ const NEWS_HEADLINE_TEMPLATES = {
     { headline: '「天頂戦」決着、{championName}が16人制トーナメントを制す',
       body: '全国女子プロレス最強王者決定戦「天頂戦」は第48週に全15試合を実施。決勝で{runnerUpName}（{runnerUpOrg}）に勝利した{championName}（{championOrg}）が優勝者となった。決勝の試合評価は{mq}点。' },
   ],
+  // 天頂戦の下段記事（2026-07-27）。4年に一度・全15試合の大会が一面1枠だけでは寂しいので、
+  // 準決勝と大会ベストバウトを業界ニュース欄に載せて紙面を厚くする（Keisuke）。
+  tenchosenSemiFinal: [
+    { headline: '「天頂戦」準決勝 — 決勝への椅子は二つ',
+      body: '{a1}（{a1org}）が{a2}（{a2org}）を、{b1}（{b1org}）が{b2}（{b2org}）を下し、それぞれ決勝へ進んだ。試合評価は{mqA}点と{mqB}点。' },
+    { headline: '準決勝で分かれた明暗 — 「天頂戦」',
+      body: '準決勝は{a1}（{a1org}）対{a2}（{a2org}）、{b1}（{b1org}）対{b2}（{b2org}）の2試合。勝ち上がったのは{a1}と{b1}だった。試合評価は{mqA}点と{mqB}点。' },
+  ],
+  tenchosenBestBout: [
+    { headline: '大会ベストバウト — {winner} vs {loser}',
+      body: '{round}で組まれた{winner}（{winnerOrg}）と{loser}（{loserOrg}）の一戦が、大会最高の{mq}点を記録した。{closing}' },
+    { headline: '「天頂戦」最高評価は{mq}点 — {winner} vs {loser}',
+      body: '{round}の{winner}（{winnerOrg}）対{loser}（{loserOrg}）が、全15試合を通して最も高い評価を集めた。{closing}' },
+  ],
   autumnWarAnnounce: [
     { headline: '4団体勝ち残り対抗戦、組み合わせ決定',
       body: '第{season}回4団体勝ち残り対抗戦は第36週に開催される。準決勝は第1シード{seed1}対第4シード{seed4}、第2シード{seed2}対第3シード{seed3}。各団体3名が先鋒・中堅・大将の順に立ち、最後の一人になるまでリングを譲らない。' },

@@ -106,6 +106,7 @@ const QUICK = new Set([
   'show-preview-stale-guard-test.js',
   'show-preview-tag-skip-test.js',
   'showcard-release-cleanup-test.js',
+  'stat-decay-bar-test.js',
   'special-event-finance-test.js',
   'spring-tag-league-result-placement-test.js',
   'spring-tag-league-watch-test.js',

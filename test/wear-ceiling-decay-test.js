@@ -96,10 +96,19 @@ section('6. 失われた幅の計算は1本', () => {
 });
 
 section('7. 元の天井を持たない選手には何も出さない', () => {
-  // 既存セーブ・まだ衰えていない選手。衰えの履歴を捏造しない
+  // 既存セーブ・まだ衰えていない選手。衰えの履歴を捏造しない。
+  // 2026-07-27: 帯の起点を trainCap から現在値へ移した際に式の形が変わったため、
+  // 字面ではなく**実際に呼んで**確かめる（帯の幾何は stat-decay-bar-test.js が持つ）
   assert.ok(/origin != null && cap != null/.test(viewSrc),
     '元の天井が無い選手でも差を出そうとしている');
-  assert.ok(/lostPts > 0 \?/.test(viewSrc), '失われた分が0でも帯を描いている');
+  // eslint-disable-next-line no-eval
+  const view = eval('(' + viewSrc + ')');
+  assert.strictEqual(view({ S: 100, trainCap: { S: 110 } }, 'S', 150).lostPct, 0,
+    '元の天井が無い選手に帯を描いている');
+  assert.strictEqual(view({ S: 90, trainCap: { S: 100 }, trainCapOrigin: { S: 100 } }, 'S', 150).lostPct, 0,
+    '削られていないのに帯を描いている');
+  assert.strictEqual(view({ S: 80 }, 'S', 150).lostPct, 0,
+    'trainCap を持たない選手に帯を描いている');
 });
 
 section('8. 色はトークンで持つ', () => {

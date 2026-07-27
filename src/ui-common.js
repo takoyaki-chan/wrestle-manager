@@ -34,9 +34,19 @@ function escHtml(s) {
 /** 画像+イニシャルフォールバック付きimgタグ生成。onerror時にイニシャル円を表示 */
 /** 消耗で失われた天井の幅。**バーの満タンが年々縮んでいく**のを見せるための計算。
  *
- *  返す割合はどちらもバー全体(0〜barMax)に対する%。
+ *  返す割合はどれもバー全体(0〜barMax)に対する%。
  *    cur  … 現在値
- *    lost … 失われた天井(今の天井 → 元の天井)
+ *    lost … 現在値 → 自己最高の天井(trainCapOrigin)まで、途切れず続く帯
+ *
+ *  **trainCap(今の天井)の位置は絶対に描かない**(2026-07-27 Keisuke)。
+ *  以前は帯を [trainCap, trainCapOrigin] に置いていたため、
+ *    ・帯の左端がそのまま trainCap の位置になり、**伏せてある天井の値が読めてしまった**
+ *    ・現在値と帯の間に「現在値→trainCap」の隙間が空き、バーが分断されて見えた
+ *  いまは現在値の右隣から始めて自己最高の天井で終える。色は現在値から途切れずに繋がり、
+ *  途中に境目が出ないので天井の位置も割り出せない。
+ *
+ *  数字(▼N)は従来どおり **失われた天井の量(origin - cap)**。帯の長さとは別物で、
+ *  帯は「どこまで伸ばせたはずか」、数字は「どれだけ失ったか」を見せている。
  *
  *  trainCapOrigin は**初めて衰退したとき**に控える。持っていない選手
  *  (まだ衰えていない / 既存セーブ)は lost=0 で、色は一切出ない。
@@ -48,12 +58,13 @@ function statDecayView(fighter, stat, barMax) {
   const origin = fighter && fighter.trainCapOrigin ? fighter.trainCapOrigin[stat] : null;
   const lostPts = (origin != null && cap != null) ? Math.max(0, Math.round(origin - cap)) : 0;
   const pct = v => Math.max(0, Math.min(100, (v / max) * 100));
+  // 帯は現在値から自己最高の天井まで。現在値が天井に並んでいれば帯は出ない
+  const spanPct = (lostPts > 0 && origin != null) ? Math.max(0, pct(origin) - pct(cur)) : 0;
   return {
     curPct: pct(cur),
     lostPts,
-    // 失われた天井はバーの右端から内側へ。元の天井を超えては描かない
-    lostPct: lostPts > 0 ? Math.min(100, pct(origin) - pct(cap)) : 0,
-    lostFromRightPct: lostPts > 0 ? Math.max(0, 100 - pct(origin)) : 0,
+    lostPct: spanPct,
+    lostFromRightPct: spanPct > 0 ? Math.max(0, 100 - pct(origin)) : 0,
   };
 }
 

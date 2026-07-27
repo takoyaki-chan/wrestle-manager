@@ -25579,6 +25579,54 @@ Engine.ppvTournament = {
         mq: finalMatch?.mq ?? '',
       },
     });
+    // 下段記事（2026-07-27）。4年に一度・全15試合の大会が一面1枠だけでは寂しいので、
+    // 準決勝と大会ベストバウトも紙面へ積んで業界ニュース欄を埋める（Keisuke）。
+    // 一面は優勝記事(tenchosenResult 270)が取り、この2本はサブ枠に回る。
+    {
+      const ROUND_JP = { firstRound: '1回戦', quarterFinal: '準々決勝', semiFinal: '準決勝', final: '決勝' };
+      const flat = [];
+      (tournamentResult.rounds || []).forEach(round => {
+        (round.matches || []).forEach(m => {
+          if (!m || !m.left || !m.right) return;
+          const w = m.winnerId === m.left.id ? m.left : m.right;
+          const l = m.winnerId === m.left.id ? m.right : m.left;
+          flat.push({ roundKey: round.name, round: ROUND_JP[round.name] || round.name, w, l, mq: m.mq });
+        });
+      });
+
+      const semis = flat.filter(x => x.roundKey === 'semiFinal');
+      if (semis.length >= 2) {
+        s = Engine.industryNews.push(s, {
+          type: 'tenchosenSemiFinal',
+          characterId: semis[0].w.id,
+          characterIds: [semis[0].w.id, semis[1].w.id],
+          data: {
+            a1: semis[0].w.name, a1org: semis[0].w._orgName, a2: semis[0].l.name, a2org: semis[0].l._orgName,
+            b1: semis[1].w.name, b1org: semis[1].w._orgName, b2: semis[1].l.name, b2org: semis[1].l._orgName,
+            mqA: semis[0].mq, mqB: semis[1].mq,
+          },
+        });
+      }
+
+      // 大会ベストバウトは決勝とは限らない。むしろ違う年のほうが読み物になる
+      if (flat.length) {
+        const best = flat.reduce((a, b) => (b.mq > a.mq ? b : a), flat[0]);
+        const closing = best.roundKey === 'final'
+          ? '頂点を決める一番が、そのまま大会の白眉となった。'
+          : '決勝より前に、この大会の頂は一度現れていた。';
+        s = Engine.industryNews.push(s, {
+          type: 'tenchosenBestBout',
+          characterId: best.w.id,
+          characterIds: [best.w.id, best.l.id],
+          data: {
+            round: best.round, mq: best.mq, closing,
+            winner: best.w.name, winnerOrg: best.w._orgName,
+            loser: best.l.name, loserOrg: best.l._orgName,
+          },
+        });
+      }
+    }
+
     events.push(`🏆 ${champion?.name || '優勝者'}が全国女子プロレス最強王者決定戦「天頂戦」優勝！`);
     s = {
       ...s,
@@ -27184,6 +27232,10 @@ function _buildPpvSummitStory(sr, season, week, P) {
 Engine.newspaper = {
   PRIORITY: {
     tenchosenResult:         270,
+    // 天頂戦の下段記事（2026-07-27）。一面は優勝記事が取るので、この2本は
+    // 業界ニュース欄(サブ3枠)で上位に来る高さに置く。一面(270)は超えない
+    tenchosenBestBout:       205,
+    tenchosenSemiFinal:      202,
     tenchosenAnnounce:       150,
     juniorTournamentResult: 260,
     juniorTournamentPreview: 250,
