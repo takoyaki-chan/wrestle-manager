@@ -2788,6 +2788,28 @@ function _buildJTChampionAward(d) {
   </div></div>`;
 }
 
+function _buildSeasonEventChampionAward(d, kind) {
+  if (!d) return null;
+  const cfg = {
+    springTag: { icon: '🌸', label: '春のタッグリーグ 優勝' },
+    tenchosen: { icon: '👑', label: '天頂戦 覇者' },
+    ppvFinal: { icon: '🏆', label: 'PPV GRAND FINAL 最終戦勝者' },
+  }[kind];
+  if (!cfg) return null;
+  const fighters = d.fighters || [d];
+  const portraits = fighters.map(f =>
+    `<div><div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(f.id)}</div>
+      <div class="winner-name" style="font-size:${fighters.length > 1 ? '20px' : '28px'}">${f.name}</div></div>`
+  ).join('');
+  const orgName = d.orgName || fighters[0]?.orgName || '';
+  const isPlayerOrg = d.isPlayerOrg != null ? d.isPlayerOrg : fighters[0]?.isPlayerOrg;
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">${cfg.icon}</span><span class="badge-jp">${cfg.label}</span></div>
+    <div style="text-align:center">${_awOrgEmblem(orgName, isPlayerOrg)}
+      <div style="display:flex;justify-content:center;gap:28px;align-items:end">${portraits}</div>
+      <div class="winner-sub" style="margin-top:10px">${orgName}</div>
+    </div></div>`;
+}
+
 function _buildBestMatchAward(d) {
   const f1 = typeof d.fighter1 === 'object' ? d.fighter1 : { id: null, name: d.fighter1, ovr: 0, style: 'Allround' };
   const f2 = typeof d.fighter2 === 'object' ? d.fighter2 : { id: null, name: d.fighter2, ovr: 0, style: 'Allround' };
@@ -2952,6 +2974,12 @@ function _buildAwardsSummary(a) {
     html += item('🌟', '新人王', a.rookieOfYear.name, a.rookieOfYear.orgName);
   if (a.jtChampion)
     html += item('🏟️', 'JT優勝', a.jtChampion.name, a.jtChampion.orgName);
+  if (a.springTagChampion)
+    html += item('🌸', '春のタッグリーグ優勝', a.springTagChampion.fighters.map(f => f.name).join(' & '), a.springTagChampion.orgName);
+  if (a.tenchosenChampion)
+    html += item('👑', '天頂戦 覇者', a.tenchosenChampion.name, a.tenchosenChampion.orgName);
+  if (a.ppvFinalWinner)
+    html += item('🏆', 'PPV最終戦勝者', a.ppvFinalWinner.name, a.ppvFinalWinner.orgName);
   if (a.bestMatch) {
     const bm1 = typeof a.bestMatch.fighter1 === 'object' ? a.bestMatch.fighter1.name : a.bestMatch.fighter1;
     const bm2 = typeof a.bestMatch.fighter2 === 'object' ? a.bestMatch.fighter2.name : a.bestMatch.fighter2;
@@ -2998,6 +3026,12 @@ function showAwardsCeremony(awards, onDone) {
     slideInfo.push({ html: rookieHtml, label: '新人王', se: 'normal' });
   if (awards.jtChampion)
     slideInfo.push({ html: _buildJTChampionAward(awards.jtChampion), label: 'JT優勝', se: 'normal' });
+  if (awards.springTagChampion)
+    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.springTagChampion, 'springTag'), label: '春タッグ優勝', se: 'normal' });
+  if (awards.tenchosenChampion)
+    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.tenchosenChampion, 'tenchosen'), label: '天頂戦 覇者', se: 'normal' });
+  if (awards.ppvFinalWinner)
+    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.ppvFinalWinner, 'ppvFinal'), label: 'PPV最終戦勝者', se: 'normal' });
   if (awards.bestMatch)
     slideInfo.push({ html: _buildBestMatchAward(awards.bestMatch), label: 'ベストマッチ', se: 'normal' });
   const champHtml = _buildChampionsAward(awards.champions);

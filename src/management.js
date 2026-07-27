@@ -18031,6 +18031,48 @@ Engine.awards = {
         orgName: jtResult.runnerUp._orgName || '' } : null,
     } : null;
 
+    // 年末表彰式の大会振り返り。新聞用の一時データではなく、シーズン中ずっと
+    // state に残る大会結果・careerRecord から組み立て、ロード後も欠けないようにする。
+    const allFighters = [];
+    (state.roster || []).forEach(f => allFighters.push({ fighter: f, orgId: 'player' }));
+    Object.entries(state.aiOrgs || {}).forEach(([orgId, org]) => {
+      (org.roster || []).forEach(f => allFighters.push({ fighter: f, orgId }));
+    });
+    const awardFighter = id => {
+      const row = allFighters.find(x => x.fighter.id === id);
+      if (!row) return null;
+      return {
+        id: row.fighter.id, name: row.fighter.name, portrait: row.fighter.portrait,
+        style: row.fighter.style || 'Allround', ovr: Engine.util.ov(row.fighter),
+        orgId: row.orgId, orgName: Engine.awards._orgName(state, row.orgId),
+        isPlayerOrg: row.orgId === 'player',
+      };
+    };
+    let springTagChampion = null;
+    const bestTag = state.bestTagTeam;
+    if (bestTag && bestTag.awardedSeason === state.season) {
+      const f1 = awardFighter(bestTag.f1Id);
+      const f2 = awardFighter(bestTag.f2Id);
+      if (f1 && f2) springTagChampion = {
+        season: state.season, orgId: bestTag.orgId,
+        orgName: Engine.awards._orgName(state, bestTag.orgId),
+        isPlayerOrg: bestTag.orgId === 'player', fighters: [f1, f2],
+      };
+    }
+    let tenchosenChampion = null;
+    let ppvFinalWinner = null;
+    allFighters.forEach(({ fighter }) => {
+      const history = (fighter.careerRecord && fighter.careerRecord.history) || [];
+      if (!tenchosenChampion && history.some(e =>
+        e.type === 'ppvTournament' && e.season === state.season && e.result === 'champion')) {
+        tenchosenChampion = awardFighter(fighter.id);
+      }
+      if (!ppvFinalWinner && history.some(e =>
+        e.type === 'ppvMainEvent' && e.season === state.season && e.isSummit && e.won)) {
+        ppvFinalWinner = awardFighter(fighter.id);
+      }
+    });
+
     // NPC団体ごとの内部表彰（プレイヤー視点では暗黙の事実として履歴にだけ残る）
     const npcAwards = {};
     if (state.aiOrgs) {
@@ -18050,6 +18092,9 @@ Engine.awards = {
       season: state.season,
       rookieOfYear: Engine.awards.selectRookie(state),
       jtChampion:   jtChampion,
+      springTagChampion,
+      tenchosenChampion,
+      ppvFinalWinner,
       bestMatch:    Engine.awards.selectBestMatch(rng, state),
       mvp:          Engine.awards.selectMVP(rng, state),
       mediaAward:   Engine.awards.selectMediaAward(state),
@@ -18143,23 +18188,36 @@ Engine.awards = {
   selectRookie(state) {
     const ov = Engine.util.ov;
     const candidates = [];
+    const rookieTier = f => {
+      if ((f.careerSeasons || 0) === 0) return 1;
+      // 旧セーブやオフシーズン加入経路では、初年度開始時点で careerSeasons が
+      // 1へ進んでいる場合がある。加入タイムラインが今季開始なら新人として救済する。
+      return ((f.careerSeasons || 0) === 1
+        && (f.orgTimeline || []).some(t => t.fromSeason === state.season))
+        ? 2 : 0;
+    };
     state.roster.forEach(f => {
-      if (f.careerSeasons === 0)
-        candidates.push({ fighter: f, orgId: 'player', orgName: Engine.awards._orgName(state, 'player') });
+      const tier = rookieTier(f);
+      if (tier)
+        candidates.push({ fighter: f, orgId: 'player', orgName: Engine.awards._orgName(state, 'player'), tier });
     });
     if (state.aiOrgs) {
       Object.keys(state.aiOrgs).forEach(orgId => {
         const orgData = state.aiOrgs[orgId];
         if (!orgData || !orgData.roster) return;
         orgData.roster.forEach(f => {
-          if (f.careerSeasons === 0)
-            candidates.push({ fighter: f, orgId, orgName: Engine.awards._orgName(state, orgId) });
+          const tier = rookieTier(f);
+          if (tier)
+            candidates.push({ fighter: f, orgId, orgName: Engine.awards._orgName(state, orgId), tier });
         });
       });
     }
     if (candidates.length === 0) return null;
-    candidates.sort((a, b) => ov(b.fighter) - ov(a.fighter));
-    const best = candidates[0];
+    candidates.sort((a, b) => a.tier - b.tier || ov(b.fighter) - ov(a.fighter));
+    const bestTier = candidates[0].tier;
+    const eligible = candidates.filter(c => c.tier === bestTier);
+    eligible.sort((a, b) => ov(b.fighter) - ov(a.fighter));
+    const best = eligible[0];
     return {
       id: best.fighter.id, name: best.fighter.name, portrait: best.fighter.portrait,
       orgId: best.orgId,
