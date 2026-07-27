@@ -126,6 +126,36 @@ section('5. 自己最高値は毎週控えられる（年をまたがなくて�
     'trackStatPeaks の呼び出しが tickWeek の外にある。年をまたぐまで表示が出なくなる');
 });
 
+section('5-b. 既存セーブは記録済みの天井の落ち幅から自己最高値を復元する', () => {
+  // statPeak 方式へ切り替えた直後、既に衰えている選手の▼が全部消えた（Keisuke 報告）。
+  // applyDecay は現在値を loss、天井を round(loss × wearCapDecayRatio) 削るので、
+  // 天井の落ち幅を ratio で割れば、それまでに現在値が落ちた量が戻せる。
+  // 推測ではなく trainCapOrigin/trainCap という**実際に記録されている値**から戻している。
+  const { loadGame } = require(path.join(__dirname, 'helpers', 'load-game.js'));
+  if (typeof Engine === 'undefined') loadGame({ full: true });
+  const ratio = GROWTH_CONFIG.wearCapDecayRatio;
+  assert.ok(ratio > 0, 'wearCapDecayRatio が 0。復元式が成り立たない');
+
+  const G = {
+    roster: [{
+      id: 1, pw: 110, sp: 100, te: 100, st: 100, mn: 71,
+      trainCap:       { pw: 115, sp: 120, te: 118, st: 112, mn: 120 },
+      trainCapOrigin: { pw: 118, sp: 121, te: 119, st: 114, mn: 121 },
+    }],
+  };
+  const out = Engine.growth.trackStatPeaks(G).roster[0];
+  assert.ok(out.statPeak, '自己最高値が復元されていない');
+  assert.strictEqual(out.statPeak.pw, 110 + (118 - 115) / ratio,
+    'PW の復元値が「現在値 + 天井の落ち幅 ÷ ratio」になっていない');
+  assert.strictEqual(out.statPeak.mn, 71 + (121 - 120) / ratio,
+    'MN の復元値が合っていない');
+  // 復元値は天井そのものではない（そこまで伸ばすと届いていない高さになる）
+  assert.ok(out.statPeak.mn < G.roster[0].trainCap.mn,
+    'MN の自己最高値が天井まで伸びている。到達していない高さを塗ってしまう');
+  // ▼が出ること（消えたままにしない）
+  assert.ok(statDecayView(out, 'pw', 150).lostPts > 0, '復元しても▼が出ていない');
+});
+
 section('6. 両方の描画箇所が同じヘルパーを通っている', () => {
   const uiRender = fs.readFileSync(path.join(root, 'src/ui-render.js'), 'utf8');
   assert.ok(/statDecayView\(c, s\.key, 100\)/.test(src),

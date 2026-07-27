@@ -7250,11 +7250,28 @@ const Engine = {
       const roster = state && state.roster;
       if (!Array.isArray(roster) || !roster.length) return state;
       const STATS = ['pw', 'sp', 'te', 'st', 'mn'];
+      const capRatio = (typeof GROWTH_CONFIG !== 'undefined' && GROWTH_CONFIG.wearCapDecayRatio) || 0;
       let touched = false;
       const next = roster.map(c => {
         if (!c || c.isRental) return c;   // レンタルは元所属先が管理する
-        const peak = c.statPeak ? { ...c.statPeak } : {};
-        let changed = false;
+
+        // 既存セーブの初回だけ、**記録済みの天井の落ち幅から**過去の最高値を復元する。
+        // applyDecay は現在値を loss、天井を round(loss × wearCapDecayRatio) 削るので、
+        // 天井が落ちた分を ratio で割れば、それまでに現在値が落ちた量になる。
+        // これを入れないと、既に衰えている選手の▼が全部消えてしまう
+        // （2026-07-27: statPeak 方式へ切り替えた直後にその状態になった）。
+        // 推測ではなく trainCapOrigin/trainCap という**実際に記録されている値**から戻している。
+        let seed = null;
+        if (!c.statPeak && c.trainCapOrigin && c.trainCap && capRatio > 0) {
+          seed = {};
+          for (const s of STATS) {
+            const capLost = Math.max(0, Math.round((c.trainCapOrigin[s] || 0) - (c.trainCap[s] || 0)));
+            seed[s] = Math.round((c[s] || 0) + capLost / capRatio);
+          }
+        }
+
+        const peak = c.statPeak ? { ...c.statPeak } : (seed || {});
+        let changed = !c.statPeak;        // 初回は必ず書き込む（seed の有無に関わらず）
         for (const s of STATS) {
           const v = Math.round(c[s] || 0);
           if (!(peak[s] > v)) {           // 未設定 or 現在値のほうが高い
