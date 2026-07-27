@@ -2137,7 +2137,8 @@ function _renderRetirementPopup() {
   // WM-D03「引退」。連続で複数人の引退が出るときは鳴らし直さず1本を通す。
   if (!_retirementBgmOn) {
     _retirementBgmOn = true;
-    try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_d03_v01.ogg', { loop: true, volume: 0.15 }); } catch (_e) {}
+    // WM-D03 引退。音量はミキサー実聴値（2026-07-27）
+    try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_d03_v01.ogg', { loop: true, volume: 0.41 }); } catch (_e) {}
   }
   Audio.play(isInjury ? 'error' : 'event');
 
@@ -6755,7 +6756,9 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     if (sc.se === 'rs04' && !Audio.muted) {
       try {
         const a = new window.Audio('../bgm/production-ogg/wm_se_rs04_v01.ogg');
-        a.volume = Math.min(1, 0.14 * (Audio.sfxMasterVol != null ? Audio.sfxMasterVol : 1));
+        // PPV TV中継の画面なので、表彰枠(JINGLE_MIX.championship)より一段低く鳴らす。
+        // 台帳に TV中継用の値が無いため、元の下げ幅(0.14/0.29 = 約0.48倍)を新しい実聴値 0.39 に掛けた。
+        a.volume = Math.min(1, 0.19 * (Audio.sfxMasterVol != null ? Audio.sfxMasterVol : 1));
         a.play().catch(() => {});
       } catch (e) {}
     }
@@ -14319,7 +14322,8 @@ function showEndingCeremony(data, onDone) {
     // BGM開始（最初の「次へ」クリック時、ユーザー操作内で）
     if (!bgmStarted) {
       // WM-H04 エンディング
-      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) { Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_h04_v01.ogg', { loop: true, volume: 0.15 }); } } catch(e) {}
+      // WM-H04 エンディング。音量はミキサー実聴値（2026-07-27）
+      try { if (typeof Audio !== 'undefined' && Audio.fileBgm) { Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_h04_v01.ogg', { loop: true, volume: 0.45 }); } } catch(e) {}
       bgmStarted = true;
     }
 

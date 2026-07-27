@@ -114,25 +114,32 @@ const Audio = (() => {
   };
   // WM Audio Mixer file-BGM assignments used by match and tournament screens.
   // 特別興行の進行曲は台帳どおり大会別。A=前半 / B=決勝・大将戦・ラストマッチ以降。
+  // vol は bgm/audio-mixer.html で Keisuke が実聴して決めた値（2026-07-27 書き出し）。
+  // 書き出しでは「まだ割り当てていない音」として並んでいたが、**実際はここで全部使われていた**
+  // ため仮の 0.15 のまま残っていた（2026-07-27 に全ファイルを走査して発覚）。
   const STAGE_BGM = {
-    bigMatch:   { file: '../bgm/production-ogg/wm_bgm_m04_v01.ogg', vol: 0.15 }, // WM-M04 ビッグマッチ
-    rivalry:    { file: '../bgm/production-ogg/wm_bgm_m03_v01.ogg', vol: 0.15 }, // WM-M03 因縁戦
-    springA:    { file: '../bgm/production-ogg/wm_bgm_sp01_v01.ogg', vol: 0.15 }, // WM-SP01 春A・タッグリーグ
-    springB:    { file: '../bgm/production-ogg/wm_bgm_sp02_v01.ogg', vol: 0.15 }, // WM-SP02 春B・決勝
-    juniorA:    { file: '../bgm/production-ogg/wm_bgm_sp03_v01.ogg', vol: 0.15 }, // WM-SP03 夏A・ジュニアトーナメント
-    juniorB:    { file: '../bgm/production-ogg/wm_bgm_sp04_v01.ogg', vol: 0.15 }, // WM-SP04 夏B・ジュニア決勝
-    autumnA:    { file: '../bgm/production-ogg/wm_bgm_sp05_v01.ogg', vol: 0.15 }, // WM-SP05 秋A・4団体対抗戦
-    autumnB:    { file: '../bgm/production-ogg/wm_bgm_sp06_v01.ogg', vol: 0.15 }, // WM-SP06 秋B・大将戦
-    ppvA:       { file: '../bgm/production-ogg/wm_bgm_sp07_v01.ogg', vol: 0.15 }, // WM-SP07 冬A・GRAND FINAL
-    ppvB:       { file: '../bgm/production-ogg/wm_bgm_sp08_v01.ogg', vol: 0.15 }, // WM-SP08 冬B・GRAND FINALメイン
-    tencho:     { file: '../bgm/production-ogg/wm_bgm_sp09_v01.ogg', vol: 0.15 }, // WM-SP09 天頂戦(A/B分割なし)
+    bigMatch:   { file: '../bgm/production-ogg/wm_bgm_m04_v01.ogg', vol: 0.33 }, // WM-M04 ビッグマッチ
+    rivalry:    { file: '../bgm/production-ogg/wm_bgm_m03_v01.ogg', vol: 0.30 }, // WM-M03 因縁戦
+    springA:    { file: '../bgm/production-ogg/wm_bgm_sp01_v01.ogg', vol: 0.28 }, // WM-SP01 春A・タッグリーグ
+    springB:    { file: '../bgm/production-ogg/wm_bgm_sp02_v01.ogg', vol: 0.28 }, // WM-SP02 春B・決勝
+    juniorA:    { file: '../bgm/production-ogg/wm_bgm_sp03_v01.ogg', vol: 0.28 }, // WM-SP03 夏A・ジュニアトーナメント
+    juniorB:    { file: '../bgm/production-ogg/wm_bgm_sp04_v01.ogg', vol: 0.28 }, // WM-SP04 夏B・ジュニア決勝
+    autumnA:    { file: '../bgm/production-ogg/wm_bgm_sp05_v01.ogg', vol: 0.22 }, // WM-SP05 秋A・4団体対抗戦
+    autumnB:    { file: '../bgm/production-ogg/wm_bgm_sp06_v01.ogg', vol: 0.27 }, // WM-SP06 秋B・大将戦
+    ppvA:       { file: '../bgm/production-ogg/wm_bgm_sp07_v01.ogg', vol: 0.34 }, // WM-SP07 冬A・GRAND FINAL
+    ppvB:       { file: '../bgm/production-ogg/wm_bgm_sp08_v01.ogg', vol: 0.34 }, // WM-SP08 冬B・GRAND FINALメイン
+    tencho:     { file: '../bgm/production-ogg/wm_bgm_sp09_v01.ogg', vol: 0.41 }, // WM-SP09 天頂戦(A/B分割なし)
     // 他団体抗争イベントは台帳に専用枠がないため、同じ「団体 vs 団体」の秋A(SP05)を共用する
-    war:        { file: '../bgm/production-ogg/wm_bgm_sp05_v01.ogg', vol: 0.15 },
-    // PPV TV中継(ppvTV)は演出上テレビ音量で鳴らすため、意図的に一段低い vol を維持する
-    grandFinalProgress: { file: '../bgm/production-ogg/wm_bgm_sp07_v01.ogg', vol: 0.13 }, // WM-SP07 冬・GRAND FINAL進行(TV中継)
-    grandFinalMain:     { file: '../bgm/production-ogg/wm_bgm_m05_v01.ogg', vol: 0.13 }, // WM-M05 ビッグマッチ2(頂上決戦・TV中継)
+    war:        { file: '../bgm/production-ogg/wm_bgm_sp05_v01.ogg', vol: 0.22 },
+    // PPV TV中継(ppvTV)は演出上テレビ音量で鳴らすため、意図的に一段低い vol を維持する。
+    // 台帳には「TV中継用の一段低い値」が無いので、**元の下げ幅(0.13/0.15 = 約0.87倍)を
+    // そのまま新しい実聴値に掛けて**据え置いた。耳で決め直したい場合はここを直接いじる。
+    grandFinalProgress: { file: '../bgm/production-ogg/wm_bgm_sp07_v01.ogg', vol: 0.29 }, // WM-SP07 冬・GRAND FINAL進行(TV中継) 0.34×0.87
+    grandFinalMain:     { file: '../bgm/production-ogg/wm_bgm_m05_v01.ogg', vol: 0.33 }, // WM-M05 ビッグマッチ2(頂上決戦・TV中継) 0.38×0.87
   };
-  const JINGLE_MIX = { victory:0.38, championship:0.29 };
+  // championship は WM-SE-RS04「最高栄誉」の音源を鳴らす枠。0.29→0.39 はミキサー実聴値（2026-07-27）。
+  // victory は台帳に載っていない旧ジングルなので据え置き。
+  const JINGLE_MIX = { victory:0.38, championship:0.39 };
 
   // ── U8: 効果音を本番音源へ ────────────────────────────────────────────────
   // ここに載せたキーだけ**ファイル音源**で鳴る。載っていないキーは従来の合成音のまま。
@@ -1441,7 +1448,9 @@ function _ceremAudioOpen(visualVariant) {
   const src = visualVariant === 'arrival'
     ? '../bgm/bgm_kaimaku_v1.mp3'
     : '../bgm/production-ogg/wm_bgm_h05_v01.ogg';
-  try { Audio.fileBgm.play(src, { loop: true, volume: visualVariant === 'arrival' ? 0.10 : 0.15 }); } catch(e) {}
+  // triumph は WM-H05 表彰式のミキサー実聴値（2026-07-27）。
+  // arrival は旧 mp3(bgm_kaimaku_v1)を開幕曲として継続再生する枠で、台帳に載っていないため据え置き。
+  try { Audio.fileBgm.play(src, { loop: true, volume: visualVariant === 'arrival' ? 0.10 : 0.40 }); } catch(e) {}
 }
 function _ceremAudioClose() {
   try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
@@ -11377,7 +11386,8 @@ const App = {
     }
     // 表彰式ポップアップ開始
     // WM-H05 表彰式（-17 LUFS 正規化済みのため vol は新音源基準へ）
-    try { Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_h05_v01.ogg', { loop: true, volume: 0.15 }); } catch(e) {}
+    // WM-H05 表彰式。音量はミキサー実聴値（2026-07-27）
+    try { Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_h05_v01.ogg', { loop: true, volume: 0.40 }); } catch(e) {}
     showAwardsCeremony(pendingAwards, () => {
       try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
       // 表彰式BGMフェードアウト後に通常BGMを再開
