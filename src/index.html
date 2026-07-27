@@ -2283,30 +2283,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   animation:tickerScroll 40s linear infinite;white-space:nowrap}
 @keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-/* v1.4w: 新聞パネル。U4: 情報パネル → 200 */
-.newspaper-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;
-  align-items:center;justify-content:center}
-.newspaper-overlay.active{display:flex}
-.newspaper-box{background:linear-gradient(180deg,#f5ecd7 0%,#ede2c6 40%,#e8d9b7 100%);
-  border-radius:8px;max-width:480px;width:92%;padding:24px 22px 20px;position:relative;
-  color:#2a1a0a;box-shadow:0 8px 40px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.3);
-  animation:retireIn .5s cubic-bezier(0.22,1,0.36,1);
-  border:1px solid rgba(139,90,43,0.3)}
-.newspaper-header{text-align:center;font-size:11px;letter-spacing:3px;color:rgba(80,50,20,0.5);
-  font-family:'Oswald',sans-serif;text-transform:uppercase;margin-bottom:12px;
-  padding-bottom:8px;border-bottom:1px solid rgba(139,90,43,0.2)}
-.newspaper-headline{font-size:17px;font-weight:900;color:#1a0a00;text-align:center;
-  line-height:1.5;margin-bottom:12px;letter-spacing:0.5px}
-.newspaper-body{font-size:13px;color:#3a2a1a;line-height:1.8;text-align:justify;
-  margin-bottom:16px;padding:0 4px}
-.newspaper-close{display:block;margin:0 auto;font-size:12px;padding:8px 28px;border-radius:6px;
-  cursor:pointer;background:rgba(80,50,20,0.08);border:1px solid rgba(139,90,43,0.25);
-  color:#5a3a1a;transition:all .2s;letter-spacing:1px;font-family:'Noto Sans JP',sans-serif}
-.newspaper-close:hover{background:rgba(80,50,20,0.15);color:#2a1a0a}
-.newspaper-nav{font-size:11px;padding:4px 14px;border-radius:4px;cursor:pointer;
-  background:rgba(80,50,20,0.06);border:1px solid rgba(139,90,43,0.2);color:#5a3a1a;
-  font-family:'Noto Sans JP',sans-serif;transition:all .2s}
-.newspaper-nav:hover:not(:disabled){background:rgba(80,50,20,0.12)}
+/* v1.4w の新聞パネル(.newspaper-overlay/-box/-header/-headline/-body/-close/-nav)は
+   2026-07-27 に撤去。業界ニュースは📰新聞へ一本化した(開く側のコードごと削除済み)。 */
 /* ── 興行総合評価 ── */
 .news-show-rating{padding:14px;border-top:2px double rgba(95,69,35,0.35);border-bottom:1px solid rgba(95,69,35,0.15);margin:4px 0}
 .news-rating-stars{font-size:24px;letter-spacing:4px;color:#b8892a;text-align:center;margin-bottom:10px}
@@ -9826,9 +9804,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <!-- v1.4w: Newspaper panel (業界ニュース) -->
 <!-- U4: 情報を見るだけ(新聞を読むだけ) → 背景クリックで閉じる。子側のstopPropagationはあったが
      親側のハンドラを書き忘れていたバグを修正(mockup-baseline-v0.1 §5-C) -->
-<div class="newspaper-overlay" id="newspaperOverlay" onclick="if(event.target===this && window._newsClose)window._newsClose()">
-  <div class="newspaper-box" id="newspaperBox" onclick="event.stopPropagation()"></div>
-</div>
 
 <!-- v2: Awards ceremony (mockup-final-v2 準拠) -->
 <div class="awards-overlay" id="awardsOverlay">

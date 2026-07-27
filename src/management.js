@@ -12201,8 +12201,18 @@ const Engine = {
       }
       const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
       const weeklyNewspaper = Engine.newspaper.generate(s, newsRng);
-      // 業界ニュースキューも消化（newspaper.generate が読み終わったので clear）
-      s = { ...s, weeklyNewspaper, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsPpvUndercards: null, _newsWarMilestone: null, _industryNewsEvents: [] };
+      // 業界ニュースキューを消化。ただし**載らなかった分は翌号へ持ち越す**（2026-07-27）。
+      // 掲載枠は一面1+サブ3の4本しかなく、以前はキューをまるごと空にしていたため、
+      // シーズン境界のようにまとめて積まれる週は溢れた記事が黙って消えていた。
+      // 上限を設けるのは、持ち越しが延々と溜まって新しいニュースを押しのけないため。
+      // 捨てるときは古い方から（新しい出来事のほうが紙面価値が高い）。
+      const _carryOver = weeklyNewspaper.unpublishedIndustryEvents || [];
+      const INDUSTRY_CARRY_MAX = 12;
+      // 持ち越しリストは受け渡し用。weeklyNewspaper はバックナンバー24号ぶん保存されるので、
+      // ここで外さないと同じイベントがセーブに何十本も複製される。
+      const { unpublishedIndustryEvents: _unpub, ...weeklyNewspaperClean } = weeklyNewspaper;
+      s = { ...s, weeklyNewspaper: weeklyNewspaperClean, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsPpvUndercards: null, _newsWarMilestone: null,
+        _industryNewsEvents: _carryOver.length > INDUSTRY_CARRY_MAX ? _carryOver.slice(_carryOver.length - INDUSTRY_CARRY_MAX) : _carryOver };
       // AIニュース一時フィールドをクリア
       if (s.aiOrgs) {
         s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
@@ -27640,7 +27650,7 @@ Engine.newspaper = {
     // bond/rivalry イベント、派閥動向、奪還挑戦、関係修復などをここで stories に変換
     const industryEvents = state._industryNewsEvents || [];
     if (industryEvents.length > 0) {
-      industryEvents.forEach(ev => {
+      industryEvents.forEach((ev, _evIdx) => {
         const templates = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') ? NEWS_HEADLINE_TEMPLATES[ev.type] : null;
         if (!templates || templates.length === 0) return;
         const tpl = templates[Engine.rng.int(rng, 0, templates.length - 1)];
@@ -27662,6 +27672,10 @@ Engine.newspaper = {
           characterIds: Array.isArray(ev.characterIds) ? ev.characterIds.slice(0, 2) : null,
           // MQ再設計P4: 週頭ポップアップの号外リード文言展開など、テンプレ変数の生値を残す
           newsData: data,
+          // 2026-07-27: 紙面に載らなかった業界ニュースを翌号へ持ち越すための元イベント位置。
+          // 掲載枠は一面1+サブ3の計4本しかなく、シーズン境界のようにまとめて積まれる週は
+          // 溢れた分がそのまま消えていた（_industryNewsEvents を毎週まるごと空にしていたため）。
+          _industryIdx: _evIdx,
         });
       });
     }
@@ -27669,6 +27683,7 @@ Engine.newspaper = {
     // 内部フィールド掃除（重複抑止は廃止: 同一選手が複数試合に出るのは正常なので
     // 矛盾に見えないよう「いつ・どんな試合か」を見出しと本文に明示する方針）
     stories.forEach(s => { delete s._warFighterIds; delete s._warOrgIds; delete s._loserId; });
+    // _industryIdx は掲載本数を確定させたあとで使うので、ここではまだ消さない
 
     // priority でソート
     stories.sort((a, b) => b.priority - a.priority);
@@ -27703,12 +27718,27 @@ Engine.newspaper = {
       }
     }
 
+    // 2026-07-27: 今号に載らなかった業界ニュースを拾い出して呼び出し元へ返す。
+    // 掲載枠は一面1+サブ3の4本しかないため、シーズン境界のように大量に積まれた週は
+    // 溢れた分を翌号へ持ち越す（従来は毎週キューを空にしていたので黙って消えていた）。
+    const _publishedIdx = new Set(
+      [topStory, ...subStories].filter(s => s && s._industryIdx != null).map(s => s._industryIdx)
+    );
+    const unpublishedIndustryEvents = industryEvents.filter((_ev, i) => {
+      if (_publishedIdx.has(i)) return false;
+      // そもそもテンプレートが無い type は紙面にできないので持ち越さない（永久に居座る）
+      const t = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') ? NEWS_HEADLINE_TEMPLATES[_ev && _ev.type] : null;
+      return !!(t && t.length);
+    });
+    stories.forEach(s => { delete s._industryIdx; });
+
     // 次回展望
     const preview = Engine.newspaper.buildPreview(state);
 
     const result = {
       season: state.season, week: state.week,
       topStory, subStories,
+      unpublishedIndustryEvents,
       playerShowData: state.currentNewspaper || null,
       preview,
       pages: null, // 複数ページ時のみ設定

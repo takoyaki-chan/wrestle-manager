@@ -415,7 +415,9 @@ section('_isPopupActive: opts.ignoreShowResultOverlay lets showResultOverlay be 
     '.coach-tooltip-overlay', '.fighter-popup-overlay', '.confirm-overlay',
     '.db-hof-detail-overlay', '.rm-popup-overlay', '.credits-overlay',
     '.care-modal-overlay', '.notif-modal-overlay', '.glimpse-cascade-overlay',
-    '.care-overlay', '.growth-event-overlay', '.newspaper-overlay',
+    // .newspaper-overlay(旧 v1.4w 新聞パネル)は 2026-07-27 に撤去。業界ニュースは📰新聞へ一本化した
+    // （撤去の検査は test/industry-news-to-newspaper-test.js が持つ）
+    '.care-overlay', '.growth-event-overlay',
   ];
   const TIER_300_EFFECT = [
     '.emr-layer', '.war-victory-overlay', '.fevt-overlay-office', '.fevt-overlay-stage',

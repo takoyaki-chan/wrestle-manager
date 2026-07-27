@@ -183,7 +183,8 @@ function _u3bOrgBadgeHtml(badge) {
 const _POPUP_OVERLAY_IDS = [
   // U4(2026-07-26): eventPopupOverlay/retirementPopupOverlay/rivalryPopupOverlay/milestoneOverlay は
   // 開く側のコードが無い死んだ枠だったため、CSS/DOM削除と合わせてここからも外した。
-  'growthEventOverlay', 'newspaperOverlay', 'seasonFanfareOverlay',
+  // newspaperOverlay(旧 v1.4w 新聞パネル)は 2026-07-27 に撤去。業界ニュースは📰新聞へ一本化
+  'growthEventOverlay', 'seasonFanfareOverlay',
   'awardsOverlay', 'careModalOverlay', 'notifModalOverlay',
   'careOverlay', 'fighterPopupOverlay', 'coachTooltipOverlay', 'showResultOverlay',
   // 統一モーダル(Phase 0以降)
@@ -255,11 +256,6 @@ function _handleInfoOverlayEscClose(e) {
   if (coachTooltip && coachTooltip.classList.contains('active')) { closeCoachTooltip(); return; }
   const hofDetail = document.querySelector('.db-hof-detail-overlay');
   if (hofDetail) { hofDetail.remove(); return; }
-  const newspaper = document.getElementById('newspaperOverlay');
-  if (newspaper && newspaper.classList.contains('active') && typeof window._newsClose === 'function') {
-    window._newsClose();
-    return;
-  }
   const growthEvent = document.getElementById('growthEventOverlay');
   if (growthEvent && growthEvent.classList.contains('active')) { closeGrowthEventPopup(); return; }
 }
@@ -1185,10 +1181,14 @@ function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
 
 // ── MQ再設計P4 §5.3: 大ニュース週頭通知モーダル ──
 // weeklyNewspaper.isBigNews の週に1回だけ表示。号外リード1行+「紙面を読む」/「あとで」。
-function showBigNewsPopup(topStory) {
-  if (_isPopupActive()) { _popupQueue.push(() => showBigNewsPopup(topStory)); return; }
+// variant: 'seasonOpening' を渡すと、大ニュースではない**シーズン開幕号**の文言になる
+// （枠・音・導線は大ニュースと同じものを使う）。
+function showBigNewsPopup(topStory, variant) {
+  if (_isPopupActive()) { _popupQueue.push(() => showBigNewsPopup(topStory, variant)); return; }
   if (!topStory) { _drainPopupQueue(); return; }
-  const leadPool = (typeof BIG_NEWS_LEAD_LINES !== 'undefined') ? (BIG_NEWS_LEAD_LINES[topStory.type] || []) : [];
+  const leadPool = (variant === 'seasonOpening')
+    ? ((typeof SEASON_OPENING_NEWS_LEAD_LINES !== 'undefined') ? SEASON_OPENING_NEWS_LEAD_LINES : [])
+    : ((typeof BIG_NEWS_LEAD_LINES !== 'undefined') ? (BIG_NEWS_LEAD_LINES[topStory.type] || []) : []);
   const pickIdx = leadPool.length > 0 ? ((G.season || 0) * 7 + (G.week || 0)) % leadPool.length : 0;
   let lead = leadPool.length > 0 ? leadPool[pickIdx] : '号外――大ニュースが届いた';
   const mqVal = topStory.newsData && topStory.newsData.mq;
@@ -7283,60 +7283,15 @@ function showSeasonFanfare(season, onDone) {
   window._sfTimer = setTimeout(() => { if (window._sfDismiss) window._sfDismiss(); }, 60000);
 }
 
-// ══════════════════════════════════════════════
-//  v1.4w: 新聞パネル（業界ニュース）
-// ══════════════════════════════════════════════
-function showNewspaperPanel(articles, onDone) {
-  if (_isPopupActive()) { _popupQueue.push(() => showNewspaperPanel(articles, onDone)); return; }
-  const overlay = document.getElementById('newspaperOverlay');
-  const box = document.getElementById('newspaperBox');
-  if (!overlay || !box || articles.length === 0) { if (onDone) onDone(); return; }
-
-  let idx = 0;
-
-  function renderArticle(i) {
-    const a = articles[i];
-    const pUrl = a.characterId ? getPortraitUrl(a.characterId) : null;
-    const faceHtml = pUrl
-      ? `<img src="${pUrl}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(139,90,43,0.4);margin:10px auto" alt="">`
-      : '';
-    const navHtml = articles.length > 1
-      ? `<div style="display:flex;justify-content:center;gap:12px;margin-bottom:10px">
-          <button class="newspaper-nav" onclick="window._newsNav(-1)" ${i===0?'disabled':''} style="${i===0?'opacity:0.3':''}">&lt; 前</button>
-          <span style="font-size:11px;color:rgba(80,50,20,0.5)">${i+1} / ${articles.length}</span>
-          <button class="newspaper-nav" onclick="window._newsNav(1)" ${i===articles.length-1?'disabled':''} style="${i===articles.length-1?'opacity:0.3':''}">次 &gt;</button>
-        </div>`
-      : '';
-
-    box.innerHTML = `
-      <div class="newspaper-header">📰 業界ニュース</div>
-      ${navHtml}
-      <div class="newspaper-headline">${a.headline}</div>
-      ${faceHtml}
-      <div class="newspaper-body">${a.body}</div>
-      <button class="newspaper-close" onclick="window._newsClose()">閉じる</button>
-    `;
-  }
-
-  window._newsNav = (dir) => {
-    idx = Math.max(0, Math.min(articles.length - 1, idx + dir));
-    Audio.play('click');
-    renderArticle(idx);
-  };
-
-  window._newsClose = () => {
-    Audio.play('click');
-    overlay.classList.remove('active');
-    window._newsNav = null;
-    window._newsClose = null;
-    if (onDone) setTimeout(onDone, 100);
-    _drainPopupQueue();
-  };
-
-  Audio.play('reveal');
-  renderArticle(0);
-  overlay.classList.add('active');
-}
+// 2026-07-27: 旧「v1.4w 新聞パネル」(showNewspaperPanel) を撤去した。
+// 業界ニュースは 📰新聞（weeklyNewspaper / newspaperArchive）に一本化されている。
+// 撤去の理由:
+//   ・大ニュースも普段の記事も同じ小箱で、見分けがつかなかった
+//   ・オーバーレイの外側を1回押すと _newsClose() がパネルごと閉じるため、
+//     前/次で送る作りなのに**何枚積まれていても1クリックで全部消えた**
+//   ・表示時に state からイベントを削除していたので、閉じた記事はどこにも残らなかった
+//     （バックナンバー24号を調べても、この経路の記事は1本も入っていなかった）
+// 積み先は App._pushNewsEvent → Engine.industryNews.push に変更済み。
 
 // showShowResultNewspaper removed — newspaper is now in database sub-tab
 

@@ -129,3 +129,37 @@
 - **v3.0 (2026-04-26): 新聞タブ独立化 + 780px 統一 + v8 mockup 準拠で全面書き直し + バーレーダー単色化 + 3面 stand 320px・OVR/年齢中央寄せ**
 - **v3.2 (2026-05-03): ダイジェスト寸評の期待MQ式を見直し。**`EXPECTED_MQ_BY_VENUE` (`src/ui-render.js:7951`) を base 18→30〜60→65・popCoef 0.30→0.15〜0.80→0.40 に圧縮し、cap を95→80に引き下げ。原因: 旧テーブルではドーム×高人気で expectedMQ が95に張り付き、`bad` 閾値 (diff<-15) 換算で MQ ≦79 がすべて `bad` プールに落ち、ショー4★の興行で undercard 全試合が「退屈な試合」「興行のテンポを完全に殺した」と書かれる自己矛盾が発生していた。ショー評価系 `expectedMQTotal[6]=220` (per-match 平均≒37) と整合する水準まで下げ、新値ではドーム×orgPop50 で expectedMQ≒80、MQ77 → diff -3 → `average` として再判定される。`bad` プールは MQ50台以下 + 高期待会場の極端な駄試合に限定。黒田の辛辣トーン自体 (プール文言) は据え置き。
 - **v3.1 (2026-04-29): 4面「年間MVPレース」を追加。タブ表記=「📊 4面 MVPレース」、紙面内見出し=「📊 4面 ・ 年間MVPレース」(タブは短く、紙面は正式名称)。1〜3位カードに `Engine.mvpRace.generateRichBlocks` の補強行(直近名勝負ファクト)、2/3位ミニカードに事績チップ + フレーバー文、4位以下は3段リッチ行(順位ヘッダ + 事績チップ + フレーバー1行)に再構築。英字ラベル `RANK / POINTS / PT / NEW / TOP3` を「順位 / ポイント / 初登場 / 三傑」など日本語/カタカナへ統一（`OVR / MQ / PPV / pt` は業界略号として維持）。データ源: `careerRecord.history` / `state.h2h` / `state.relationships` / `G.snapshots` / `fighter.traits`。実装: [src/management.js](../src/management.js) `Engine.mvpRace.generateRichBlocks` + 補助関数群、[src/ui-render.js](../src/ui-render.js) `_npRenderPage4 / _npMvpRaceRank1Card / _npMvpRaceMinorCard / _npMvpRaceListRow`、[src/index.html](../src/index.html) `np-mvprace-list-row--rich / np-mvprace-fact-chip / np-mvprace-flavor / np-mvprace-rich-line` CSS。
+- **v3.3 (2026-07-27): 業界ニュースを新聞へ一本化 + 掲載枠あふれの持ち越し + シーズン開幕号の知らせ。**
+
+  **旧「v1.4w 新聞パネル」(`showNewspaperPanel`) を撤去した。** 業界ニュースは `_newsEvents` という
+  独立キューに溜まり、小さなオーバーレイで1回だけ表示され、表示時に **state から削除**されていた。
+  そのため (1) 大ニュースも普段の記事も同じ小箱で見分けがつかない、(2) 背景クリック1回で
+  何枚積まれていてもパネルごと閉じる、(3) 閉じた記事はバックナンバーにも残らない、という状態だった。
+  実測でシーズン境界に4本がこの経路を通り、その4本は最新号にも24号ぶんのバックナンバーにも
+  1本も入っていなかった。撤去範囲は関数・`newspaperOverlay` の DOM・`.newspaper-*` CSS・
+  `_POPUP_OVERLAY_IDS` 登録・Esc ハンドラ分岐（U4 で死んだ枠を消したときと同じ手順）。
+
+  **積み先の変更**: `App._pushNewsEvent` → `Engine.industryNews.push`（`_industryNewsEvents`）。
+  イベント形状もテンプレート（`NEWS_HEADLINE_TEMPLATES`）も両者共通なので、積み先を替えるだけで
+  紙面に載りバックナンバーにも残る。旧セーブに残った `_newsEvents` は
+  `_showNewsPanelIfNeeded` が新聞側キューへ移してから捨てる。
+
+  **掲載あふれの持ち越し**: 掲載枠は一面1+サブ3の**4本**。従来は毎週 `_industryNewsEvents: []` で
+  キューをまるごと空にしていたため、シーズン境界のようにまとめて積まれる週は溢れた記事が黙って
+  消えていた。`Engine.newspaper.generate` が `unpublishedIndustryEvents` を返し、`tickWeek` が
+  次週へ引き継ぐ。
+  - 上限 `INDUSTRY_CARRY_MAX = 12`。超過分は**古い方から捨てる**（持ち越しが溜まって
+    新しいニュースを押しのけないため）
+  - テンプレートの無い type は持ち越さない（記事にできず永久にキューへ居座るため）
+  - **持ち越しリストは `weeklyNewspaper` から外してから state へ入れる。**
+    外さないとバックナンバー24号ぶんに同じイベントが複製されてセーブが膨らむ
+
+  **シーズン開幕号の知らせ**: 新聞は `if (!s.offSeason)` でオフシーズン中は発行されないため、
+  引退・殿堂入り・他団体の動きは溜まったまま**翌シーズン第1週の号**にまとめて載る。
+  その1枚があることを既存の号外フレーム（`mdl-d bignews` / `showBigNewsPopup`）で知らせる。
+  新規UIは作らず、文言だけ `SEASON_OPENING_NEWS_LEAD_LINES`（data.js）に分けて
+  `showBigNewsPopup(topStory, 'seasonOpening')` で切り替える。発火条件は
+  `!offSeason && week === 1 && season > 1`、`_bigNewsNotifiedWeek` で週内1回に制限。
+
+  安全網: `test/industry-news-to-newspaper-test.js`（9項目、6通りの故意の破壊を検出することを確認済み）。
+  `test/u4-modal-frame-safety-net-test.js` の z-index 階層リストからは `.newspaper-overlay` を除外。

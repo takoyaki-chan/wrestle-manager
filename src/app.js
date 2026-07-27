@@ -10055,10 +10055,20 @@ const App = {
     G = { ...G, _tickerItems: Engine.news.generateTicker(tickerRng, G) };
   },
 
-  // v1.4w: 新聞パネルイベントキューに追加
+  // 業界ニュースを新聞へ積む（2026-07-27 に旧「新聞パネル」から移管）。
+  //
+  // もとは _newsEvents という独立キューに溜め、小さなポップアップ(showNewspaperPanel)で
+  // 1回だけ見せて **state から消していた**。そのため
+  //   ・大ニュースも普段の記事も同じ「📰 業界ニュース」の小箱で、見分けがつかない
+  //   ・オーバーレイの外側を1回押すと、何枚積まれていても全部まとめて閉じる
+  //   ・閉じた記事はどこにも残らない（新聞のバックナンバーにも入らない）
+  // という状態だった。実測でシーズン境界に4本がこの経路で消えていた。
+  //
+  // 新聞側のキュー(_industryNewsEvents)はイベント形状もテンプレート(NEWS_HEADLINE_TEMPLATES)も
+  // 同じなので、積み先を替えるだけで紙面に載り、バックナンバーにも残る。
   _pushNewsEvent(ev) {
-    const queue = [...(G._newsEvents || []), ev];
-    G = { ...G, _newsEvents: queue };
+    if (!ev || !ev.type) return;
+    G = Engine.industryNews.push(G, ev);
   },
 
   // MQ再設計P4 §5.3: 大ニュース週頭通知（号外PU+ピロりん）。
@@ -10067,13 +10077,22 @@ const App = {
   // 順序調整を担うため、ここでは「その週にもう鳴らしたか」だけを見る。
   _maybeShowBigNewsPopup(delay) {
     const wp = G && G.weeklyNewspaper;
-    if (!wp || !wp.isBigNews || !wp.topStory) return;
+    if (!wp || !wp.topStory) return;
+    // シーズン開幕号（2026-07-27）。オフシーズン中は新聞が出ないので、引退・殿堂入り・
+    // 他団体の動きは溜まったまま翌シーズン第1週の号にまとめて載る。以前はこれを
+    // 小さな「業界ニュース」パネルで1回だけ見せて捨てていたため、外側を1回押すだけで
+    // 全部消えていた。いまは紙面に載るので、ここでは**1枚あることだけ**を知らせる。
+    const isSeasonOpening = !G.offSeason && G.week === 1 && (G.season || 1) > 1;
+    if (!wp.isBigNews && !isSeasonOpening) return;
     const weekKey = `${G.season}:${G.week}`;
     if (G._bigNewsNotifiedWeek === weekKey) return;
     G = { ...G, _bigNewsNotifiedWeek: weekKey, _bigNewsUnread: true };
     setTimeout(() => {
       Audio.play('bignews');
-      if (typeof showBigNewsPopup === 'function') showBigNewsPopup(wp.topStory);
+      if (typeof showBigNewsPopup !== 'function') return;
+      // 大ニュースの週は従来どおりその記事のリードを出す。大ニュースでない開幕号は
+      // 開幕号専用の文言にする（同じ号外フレームを使い、見た目は揃える）。
+      showBigNewsPopup(wp.topStory, (!wp.isBigNews && isSeasonOpening) ? 'seasonOpening' : null);
     }, delay != null ? delay : 200);
   },
 
@@ -10339,17 +10358,18 @@ const App = {
     return meta;
   },
 
-  // v1.4w: 新聞パネル表示→完了後にcallback
+  // 業界ニュースはポップアップで見せずに新聞へ流す（2026-07-27）。
+  // ここでは何も表示しない。溜まった記事は次に発行される号（オフシーズン中は新聞が
+  // 出ないので、翌シーズン第1週の号）に載り、バックナンバーにも残る。
+  // 旧セーブに残っている _newsEvents は新聞側のキューへ移してから捨てる。
   _showNewsPanelIfNeeded(callback) {
-    const events = G._newsEvents || [];
-    if (events.length === 0) { callback(); return; }
-    // キュー消化
-    const { _newsEvents: _, ...cleanG } = G;
-    G = cleanG;
-    const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBE57));
-    const articles = Engine.news.generateHeadlines(newsRng, events);
-    if (articles.length === 0) { callback(); return; }
-    showNewspaperPanel(articles, callback);
+    const legacy = G._newsEvents || [];
+    if (legacy.length > 0) {
+      const { _newsEvents: _, ...cleanG } = G;
+      G = cleanG;
+      legacy.forEach(ev => { if (ev && ev.type) G = Engine.industryNews.push(G, ev); });
+    }
+    callback();
   },
 
   // v2.0-C3: Always stop — no auto-advance. Accumulate financeHistory and set weekSummary or settled phase.
