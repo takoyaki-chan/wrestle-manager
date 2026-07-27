@@ -24,7 +24,10 @@ function section(source, startMarker, endMarker) {
 })();
 
 (function testAutumnChampionAndMvpHaveSeparateCues() {
-  assert.ok(app.includes('matchVictoryFanfare:.50'), 'f10 synth must have an explicit parent SFX mix');
+  // 音量そのものは bgm/audio-mixer.html で耳で決める値なので、数値を焼き付けない
+  // （2026-07-27 の書き出しで .50 → .33 になり、この行だけで suite が落ちた）。
+  // ここで守りたいのは「SE_MIX に明示の枠があること」であって、いくつであるかではない。
+  assert.ok(/matchVictoryFanfare:\s*\.?\d/.test(app), 'f10 synth must have an explicit parent SFX mix');
   assert.ok(app.includes('matchVictoryFanfare() {'), 'parent audio system must implement the f10 synth sequence');
   assert.ok(app.includes('rawNoise(t + 0.9, 0.3, 0.03)'), 'f10 synth must retain its unfiltered noise hit');
   const autumnAudio = section(app, '_playAutumnWarChampionFanfare() {', 'finalizeAutumnWarReplay() {');

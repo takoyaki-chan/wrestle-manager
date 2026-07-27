@@ -1589,7 +1589,9 @@ const FACTION_CONFIG = {
   commonEventTeamCooldown: 6,
   commonEventFactionCooldown: 24,
   commonEventIndividualCooldowns: {
-    COMMON_1: 16,
+    // COMMON_1 は 16→48（2026-07-27）。commonEventFactionCooldown(24) 以下の値では
+    // 枠 CD に飲まれて効かない。48 にすることで「枠が開いたら次は別の共通イベント」になる。
+    COMMON_1: 48,
     COMMON_4: 24,
     COMMON_5: 32,
     COMMON_7: 32,
@@ -17426,7 +17428,7 @@ const NOTIF_DIALOGUES = {
 // DECISION_DOCS.encourage の定義自体は Engine.shachoshitsu.execute で再利用される。
 const DECISION_DOC_ORDER = [
   'bonus', 'refresh_leave', 'special_treatment', 'party',
-  'trainer', 'camp', 'media', 'relationship_repair',
+  'trainer', 'camp', 'media', 'relationship_repair', 'faction_decree',
 ];
 
 const DECISION_DOCS = {
@@ -17597,6 +17599,28 @@ const DECISION_DOCS = {
     effectSummary: '成功時、双方向 bond +5〜+10。失敗時は据え置き。',
     recommendation: 'W-1（憎い敵ゾーン）が累計4回以上発火したペアに対して使用できる。慢性化する前に手を打てば、亀裂が修復可能になることもある。',
     effect: { target: 'pair', bondDelta: [5, 10], successRate: 0.70 },
+  },
+  // 派閥解散命令（2026-07-27）。派閥が煩わしいプレイヤーが「解散させる」「今後つくらせない」を
+  // 選べるようにするための書類。設定画面ではなく決裁書にしているのは、社長の権限行使という
+  // このゲームの既存の語彙にそのまま乗るため。
+  // 費用0/枠2 — 金では買えない、社長の判断そのものを費やす決裁という位置づけ。
+  // 実費は解散させられた選手たちの信頼度で払う（Engine.factions.dissolveAllByDecree）。
+  faction_decree: {
+    id: 'faction_decree',
+    label: '派閥解散命令',
+    category: 'hr',
+    categoryLabel: '人事',
+    icon: '⚖️',
+    cost: 0,
+    decisionCost: 2,
+    activationCondition: 'faction_exists_or_sealed',
+    minOrgPop: 0,
+    cooldown: 0,
+    body: '団体内の派閥を社長命令で解散させ、以後の結成を認めるかどうかを決める',
+    detailText: '選手たちが自然に作った群れを、上から畳む。畳まれた側は当然おもしろくない。とくに束ねていた本人には深く残る。勢いに乗っていた派閥ほど、その傷は深い。',
+    effectSummary: '選択した内容によって、解散のみ／解散して以後禁止／禁止の解除 が実行される',
+    recommendation: '派閥の揉め事を団体から切り離したいときに。まだ派閥が生まれていないうちに禁止しておけば、誰の信頼も損なわずに済む。',
+    effect: { target: 'faction' },
   },
   // hireCoach は机に並ばず、コーチ画面からの実行時に決裁枠だけをチェック/消費する特殊書類。
   // Phase 5 でコーチ画面と統合予定。
@@ -18714,6 +18738,200 @@ const CARE_REACTION_DIALOGUES = {
       seductive: [
         '合宿……っ……ふふ、みんなと一緒に過ごせるのね、楽しみ……'
       ],
+    }
+  },
+
+  // ── 派閥解散命令（2026-07-27）──────────────────────────────────────────────
+  // faction_decree            : 畳まれた派閥のリーダー本人。自分が束ねた場所を上から潰された
+  // faction_decree_seal_quiet : まだ派閥が無いうちに先回りで禁じられた。当事者はいない
+  // faction_decree_unseal     : 禁止を解いた
+  faction_decree: {
+    _default: {
+      _default: [
+        '……わかりました。社長がそう言うなら',
+        'あれは、ただ集まっていただけなのに',
+        '……解散、ですか。……はい'
+      ],
+      composed: [
+        '……そう。決めたのなら、それでいいよ',
+        'ま、いつかこうなる気はしてた。従うよ'
+      ],
+      ojousama: [
+        '……承知いたしました。異は申しません',
+        'わたくしの一存で始めたこと。畳むのも同じでしょう'
+      ],
+      polite: [
+        '……はい。皆には、わたしから伝えます'
+      ],
+      seductive: [
+        '……ふぅん。ずいぶん急なお話ね',
+        'あら。目障りだったのかしら'
+      ],
+      delinquent: [
+        '……はぁ？ なんだよ、それ',
+        'ちっ……好きにしろよ'
+      ],
+      cool: [
+        '……了解',
+        '……理由くらい、聞きたかった'
+      ]
+    },
+    bold: {
+      _default: [
+        'あれは徒党じゃない。私が呼んで、集まってくれた仲間です',
+        '納得はしていません。それでも、従います'
+      ],
+      composed: [
+        '……納得はしていない。それだけは言っておくよ'
+      ],
+      ojousama: [
+        '納得はしておりません。そこだけは、申し上げておきます'
+      ],
+      polite: [
+        '従います。ですが、間違っているとは思っていません'
+      ],
+      delinquent: [
+        'ふざけんな。あそこは、あたしらの場所だっただろ'
+      ],
+      cool: [
+        '……従う。納得はしない'
+      ],
+      seductive: [
+        'いいわ、畳みましょう。……でも、覚えておいて'
+      ]
+    },
+    emotional: {
+      _default: [
+        'どうして…！ わたし、何か間違えましたか…！',
+        'みんな、わたしを信じてついてきてくれたのに…'
+      ],
+      ojousama: [
+        'なぜですの……。あの子たちに、何と言えばよいのです'
+      ],
+      polite: [
+        'どうして……。皆に、なんてお伝えすれば'
+      ],
+      delinquent: [
+        'なんでだよ……！ 誰にも迷惑かけてねぇだろ！'
+      ],
+      cool: [
+        '……勝手にしろ'
+      ],
+      composed: [
+        '……参ったな。これは、こたえるよ'
+      ]
+    },
+    quiet: {
+      _default: [
+        '……そう、ですか',
+        '……はい。わかりました'
+      ],
+      composed: [
+        '……そうか'
+      ],
+      cool: [
+        '……'
+      ],
+      ojousama: [
+        '…………承知しました'
+      ]
+    },
+    earnest: {
+      _default: [
+        'わたしのやり方が、間違っていたということでしょうか',
+        '……もっと、うまくやれたはずでした'
+      ],
+      polite: [
+        'わたしの至らなさです。申し訳ありませんでした'
+      ],
+      ojousama: [
+        'わたくしの不徳の致すところ、ということですわね'
+      ],
+      composed: [
+        '……どこで間違えたのかは、自分で考えるよ'
+      ]
+    },
+    easygoing: {
+      _default: [
+        '……まあ、決まったなら仕方ないですね',
+        'あーあ。楽しかったんですけどね'
+      ],
+      delinquent: [
+        'えー。せっかく楽しくやってたのに'
+      ],
+      seductive: [
+        'あら残念。いい集まりだったのに'
+      ],
+      composed: [
+        'ま、そういうこともあるさ。またどこかで'
+      ]
+    },
+    shy: {
+      _default: [
+        '……あの、わたし……はい、わかりました',
+        '……ごめんなさい。うまく、言えなくて'
+      ],
+      polite: [
+        '……あの。皆には、わたしから……'
+      ],
+      cool: [
+        '……別に'
+      ]
+    }
+  },
+
+  faction_decree_seal_quiet: {
+    _default: {
+      _default: [
+        'えっと……つまり、徒党を組むなということですか？',
+        'そういう話、別に出ていなかったですけど……',
+        '……はい。心得ておきます'
+      ],
+      composed: [
+        '……了解。そういう決まりなら、それで'
+      ],
+      ojousama: [
+        'まあ。そのようなお達しが出るとは思いませんでした'
+      ],
+      polite: [
+        '承知しました。皆にも伝えておきます'
+      ],
+      seductive: [
+        'あら。ずいぶん用心深いのね'
+      ],
+      delinquent: [
+        'つるむなってこと？ 別にいいけどさ'
+      ],
+      cool: [
+        '……わかった'
+      ]
+    }
+  },
+
+  faction_decree_unseal: {
+    _default: {
+      _default: [
+        'え、いいんですか？ ……はい、ありがとうございます',
+        '……そうですか。元通り、ということですね'
+      ],
+      composed: [
+        '……そう。好きにしていい、ということか'
+      ],
+      ojousama: [
+        'あら。お心変わりですの'
+      ],
+      polite: [
+        'かしこまりました。皆に伝えます'
+      ],
+      seductive: [
+        'ふふ。気が変わったのね'
+      ],
+      delinquent: [
+        'へえ。急にどうしたんだよ'
+      ],
+      cool: [
+        '……了解'
+      ]
     }
   }
 };

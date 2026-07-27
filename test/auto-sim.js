@@ -611,9 +611,28 @@ console.log(`Source: ${sourceRef || 'working-tree'}`);
 console.log('--------------------------------------');
 
 // ── Step 3: ゲーム初期化 ──
+//
+// ■ 派閥計測モード (WM_FACTION_FIXTURE=1)
+//   通常の auto-sim では自団体ロスターが平均7.5人までしか育たず、FACTION_CONFIG.minRosterSize(10)
+//   に届かない。そのため 40 シーズン回しても派閥イベントは 1 件も発生せず、
+//   「factions.js を編集すると auto-sim が走る」というフックは派閥のコードを一行も踏んでいない
+//   （2026-07-27 実測）。派閥まわりの発生率を測るときだけ、この環境変数でロスターを積む。
+//   ※ロスターが rosterCap を超えるため validateGameState の「キャップ超過」違反が出る。
+//     これは fixture の副作用であって派閥側の不具合ではない。整合性チェック目的では使わないこと。
 function initGame(seed) {
   let G = Engine.createInitialState(seed, true); // skipDraft=true（ドラフトスキップ）
   G = { ...G, debugLog: G.debugLog || [] };
+  if (process.env.WM_FACTION_FIXTURE === '1') {
+    const rngP = Engine.rng.create((seed ^ 0x1234) >>> 0);
+    const existingIds = new Set(G.roster.map(x => x.id));
+    const cands = (typeof ALL_CHARS !== 'undefined' ? ALL_CHARS : [])
+      .filter(x => !existingIds.has(x.id)).slice(0, 12);
+    const extra = cands.map(t => {
+      const f = Engine.makeChar(t, rngP, G.orgId);
+      return { ...f, orgJoinWeek: 1, contractOVR: Engine.util.ov(f), contractPop: f.popularity || 0 };
+    });
+    G = { ...G, roster: [...G.roster, ...extra], funds: 5000, rosterCap: 16, orgPop: 30 };
+  }
   return G;
 }
 
@@ -729,10 +748,18 @@ function autoHandleLargeEvent(G, simRng) {
   return clean;
 }
 
+// 派閥イベントの発生内訳（WM_FACTION_FIXTURE=1 のとき末尾に出力する）
+const factionEventCensus = { byEvent: {}, byF07Incident: {} };
+
 // Phase 3a: 派閥イベント自動処理（F01/F02/F03 をランダムに応答）
 function autoHandleFactionEvent(G, simRng) {
   if (!G._pendingFactionEvent) return G;
   const fe = G._pendingFactionEvent;
+  factionEventCensus.byEvent[fe.eventId] = (factionEventCensus.byEvent[fe.eventId] || 0) + 1;
+  if (fe.eventId === 'F07') {
+    const it = (fe.payload && fe.payload.incidentType) || '(none)';
+    factionEventCensus.byF07Incident[it] = (factionEventCensus.byF07Incident[it] || 0) + 1;
+  }
   const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA90));
   let s = G;
   try {
@@ -2204,6 +2231,31 @@ console.log('MQ P3d Baseline Compare Probe (mq-p3d-baseline-compare-v0.1) — �
   })()}`);
   console.log(`  [mqRecord更新回数(既存計測の再掲・合算)] updates=${mqRecordProbe.updates.length} / ${targetSeasons} seasons (${(mqRecordProbe.updates.length / Math.max(1, targetSeasons) * 10).toFixed(2)}/10seasons)`);
   console.log(`  [mqRecord更新回数 シングル/タッグ内訳] singles=${mqRecordProbe.updatesSingle.length} tag=${mqRecordProbe.updatesTag.length}`);
+}
+if (process.env.WM_FACTION_FIXTURE === '1') {
+  console.log('--------------------------------------');
+  console.log('[派閥イベント発生内訳] (WM_FACTION_FIXTURE=1)');
+  const evEntries = Object.entries(factionEventCensus.byEvent).sort((a, b) => b[1] - a[1]);
+  const evTotal = evEntries.reduce((s, [, v]) => s + v, 0);
+  if (!evTotal) {
+    console.log('  発生なし');
+  } else {
+    for (const [k, v] of evEntries) {
+      console.log(`  ${k.padEnd(16)} ${String(v).padStart(5)}  ${(v / targetSeasons).toFixed(2)}/season  ${(v / evTotal * 100).toFixed(1)}%`);
+    }
+    console.log(`  ${'TOTAL'.padEnd(16)} ${String(evTotal).padStart(5)}  ${(evTotal / targetSeasons).toFixed(2)}/season`);
+    const commonKeys = evEntries.filter(([k]) => k.startsWith('COMMON_'));
+    const commonTotal = commonKeys.reduce((s, [, v]) => s + v, 0);
+    if (commonTotal) {
+      const c1 = factionEventCensus.byEvent.COMMON_1 || 0;
+      console.log(`  共通イベント ${commonTotal} 件中 COMMON_1 は ${c1} 件 (${(c1 / commonTotal * 100).toFixed(1)}%)`);
+    }
+    const f07 = Object.entries(factionEventCensus.byF07Incident).sort((a, b) => b[1] - a[1]);
+    if (f07.length) {
+      console.log('  [F07 incidentType 内訳]');
+      for (const [k, v] of f07) console.log(`    ${k.padEnd(24)} ${v}`);
+    }
+  }
 }
 console.log('--------------------------------------');
 console.log(`Total violations: ${result.violations.length} (${uniqueViolations.length} unique)`);

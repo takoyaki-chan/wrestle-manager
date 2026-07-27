@@ -12167,6 +12167,21 @@ function _dfcRenderFeudDuel(state, factionA, factionB, feudEntry) {
 
 function _renderDbFactions() {
   const factions = G.factions || [];
+  // 社長命令で封印中: 「まだ生まれていない」のではなく「作らせていない」と書き分ける。
+  // 解除は社長室の派閥解散命令から。
+  if (G.factionsSealed) {
+    return `
+      <div style="padding:48px 24px;text-align:center;color:var(--office-text-on-dark-sub,#b8b1a3)">
+        <div style="font-size:48px;margin-bottom:12px;opacity:0.35">⚖️</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--office-text-on-dark-main,#e8e6e0)">派閥の結成を認めていません</div>
+        <div style="font-size:12px;line-height:1.7;max-width:440px;margin:0 auto">
+          社長命令により、選手が徒党を組むことを禁じています。<br>
+          この通達が続くかぎり、新たな派閥は生まれません。<br>
+          社長室の「派閥解散命令」から、いつでも解くことができます。
+        </div>
+      </div>
+    `;
+  }
   if (!factions.length) {
     return `
       <div style="padding:48px 24px;text-align:center;color:var(--office-text-on-dark-sub,#b8b1a3)">

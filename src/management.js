@@ -12003,6 +12003,13 @@ const Engine = {
         s = Engine.factions._ensureInternalPointsInit(s);
       }
 
+      // 社長命令で封印中（社長室「派閥解散命令」）: 派閥パイプラインを丸ごと止める。
+      // Engine.factions.dissolveAllByDecree が factions を空にして進行中の予約も畳んでいるので、
+      // 週次処理を回さないだけで系全体が静止する。試合appeal・F02 ignite・抗争ポイント等の
+      // 派閥フックは例外なく factions.length > 0 で守られているため、個別の分岐は要らない。
+      if (s.factionsSealed) {
+        // 何もしない（解除は社長室から）
+      } else
       // 既に pending 派閥イベントが残っている場合は、プレイヤーが解決するまで派閥パイプライン全体をスキップ
       if (s._pendingFactionEvent) {
         // 何もしない（前週から持ち越しのモーダルが解決されるまで待つ）
@@ -20427,6 +20434,16 @@ Engine.shachoshitsu = {
       });
     }
 
+    // faction_exists_or_sealed: 解散させる派閥があるか、または既に封印中(解除したい)
+    // どちらでもない = 派閥が無く封印もしていない状態でも、「先回りして禁止しておく」ために机に出す。
+    // ただしロスターが派閥発生規模に届いていないうちは、存在しないものを禁じる書類になるので伏せる。
+    if (cond === 'faction_exists_or_sealed') {
+      if (state.factionsSealed) return true;
+      if ((state.factions || []).length > 0) return true;
+      const minSize = (typeof FACTION_CONFIG !== 'undefined' ? FACTION_CONFIG.minRosterSize : 10) || 10;
+      return roster.filter(f => !f.isRental).length >= minSize;
+    }
+
     // 未知の条件IDは「発動不可」として安全側に倒す
     return false;
   },
@@ -21253,6 +21270,9 @@ Engine.shachoshitsu = {
 
     // ── ペア書類(target: 'pair') ── bond-rivalry plan P-6: 関係修復斡旋 ──
     let pairRepairResult = null;
+    // 派閥書類は state ツリー全体（factions / 各種CD / 進行中予約の削除）を差し替えるため、
+    // 個別フィールドではなく新しい state をそのまま呼び出し元へ返す。
+    let factionState = null;
     if (doc.effect && doc.effect.target === 'pair') {
       // fighterId は "A_B" 形式（A < B）。ペアキー。
       if (typeof fighterId !== 'string' || !fighterId.includes('_')) {
@@ -21316,6 +21336,78 @@ Engine.shachoshitsu = {
       reactionFighterId = idA;
     }
 
+    // ── 派閥書類(target: 'faction') ── 派閥解散命令 ──
+    // options.mode: 'dissolve'（解散のみ）/ 'seal'（解散して以後禁止）/ 'unseal'（禁止を解く）
+    let factionDecreeResult = null;
+    if (doc.effect && doc.effect.target === 'faction') {
+      const mode = (options && options.mode) || null;
+      if (!['dissolve', 'seal', 'unseal'].includes(mode)) return { error: 'mode_required' };
+      if (!Engine.factions) return { error: 'unsupported_doc', docId };
+
+      // 当事者がいない通達（先回りの禁止・禁止の解除）は、ロスターの誰かが受け取った形で見せる。
+      // 団体書類の「参加者◯名」レイアウトに流すと合宿や慰労会と同じ見た目になり、
+      // 通達が催しのように見えてしまうため、必ず1人を立てる。
+      const pickBystander = () => {
+        const pool = roster.filter(f => !f.isRental && !f.injury && !f.onLeave);
+        if (!pool.length) return null;
+        const pr = Engine.rng.create(Engine.rng.derive(
+          state.rngSeed || 0, state.season || 0, state.week || 0, 0xFAD2
+        ));
+        return pool[Math.floor(Engine.rng.float(pr) * pool.length)].id;
+      };
+
+      if (mode === 'unseal') {
+        if (!state.factionsSealed) return { error: 'not_sealed' };
+        const un = Engine.factions.unsealFactions({ ...state, roster });
+        factionState = un.state;
+        roster = factionState.roster;
+        events.push('⚖️ 派閥の結成禁止を解いた');
+        changes.push({ label: '派閥', emoji: '⚖️', text: '選手たちが群れを作ることを再び認めた' });
+        factionDecreeResult = { mode, dissolved: [] };
+        reactionKey = 'faction_decree_unseal';
+        reactionFighterId = pickBystander();
+      } else {
+        const seal = mode === 'seal';
+        if (!seal && (state.factions || []).length === 0) return { error: 'no_faction' };
+        const dec = Engine.factions.dissolveAllByDecree({ ...state, roster }, { seal });
+        factionState = dec.state;
+        roster = factionState.roster;
+
+        // 解散を見ていた側にも波及する。全員が「社長は群れを許さない」という空気を吸う。
+        // 幅は「ロスターのどれだけが畳まれた側だったか」で決まる — 3人の派閥ひとつと、
+        // ロスターの半分を巻き込む解散が同じ重さになるのはおかしいため。
+        const dissolvedMembers = dec.dissolved.reduce((s2, d) => s2 + d.memberCount, 0);
+        if (dissolvedMembers > 0) {
+          const activeCount = Math.max(1, roster.filter(f => !f.isRental).length);
+          const share = Math.min(1, dissolvedMembers / activeCount);
+          lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - (2 + 5 * share), 0, 100);
+          changes.push({ label: 'ロッカーの空気', emoji: '🌫️', text: '解散を見ていた選手たちにも重く残った' });
+        }
+        const names = dec.dissolved.map(d => d.name).join('・');
+        if (dec.dissolved.length > 0) {
+          events.push(`⚖️ 社長命令により ${names} を解散させた`);
+          changes.push({ label: '派閥解散', emoji: '⚖️', text: `${names}（${dec.dissolved.length}組）が畳まれた` });
+        }
+        if (seal) {
+          events.push('⚖️ 以後、派閥の結成を認めないと通達した');
+          changes.push({ label: '派閥', emoji: '🚫', text: '今後、新たな派閥は生まれない' });
+        }
+        factionDecreeResult = { mode, dissolved: dec.dissolved };
+
+        // 語らせるのは「畳まれた側の頭」。一番大きな派閥のリーダーが引き受ける。
+        // 誰も畳まれていない（派閥が無いうちに先回りして禁じた）ときは、傷ついた当事者がいないので
+        // ロスターの誰かが受け取った通達として見せる。
+        const biggest = dec.dissolved.slice().sort((a, b) => b.memberCount - a.memberCount)[0];
+        if (biggest && biggest.leaderId != null && roster.some(f => f.id === biggest.leaderId)) {
+          reactionKey = 'faction_decree';
+          reactionFighterId = biggest.leaderId;
+        } else {
+          reactionKey = 'faction_decree_seal_quiet';
+          reactionFighterId = pickBystander();
+        }
+      }
+    }
+
     // ── 人間関係反映(既存 careActions と同じロジックを移植) ──
     let updatedRelationships = null;
     if (state.relationships) {
@@ -21353,6 +21445,9 @@ Engine.shachoshitsu = {
       if (pairRepairResult.h2h) result.h2h = pairRepairResult.h2h;
     }
     if (pairRepairResult) result.pairRepairResult = pairRepairResult;
+    // 派閥解散命令: 差し替え後の state 全体と、結果表示用の内訳
+    if (factionState) result.factionState = factionState;
+    if (factionDecreeResult) result.factionDecreeResult = factionDecreeResult;
     // 業界ニュース: 修復イベントを caller に渡す
     if (state._industryNewsEvents) result._industryNewsEvents = state._industryNewsEvents;
     // Phase 8: 個人書類のみトーン情報を返す (team書類は選手ごとに finalMult が異なるため無視)

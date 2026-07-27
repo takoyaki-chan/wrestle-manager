@@ -116,13 +116,17 @@ section('9. 音は「自団体から見て」決まる（2026-07-27 U8で変更�
     '勝者が誰であれ勝利音、の実装に戻っている');
 });
 
-section('10. 1試合ごとの音は、大会の優勝ファンファーレより控えめ', () => {
+section('10. 1試合ごとの音と大会ファンファーレは別枠で持つ', () => {
+  // 元は SE_MIX の数値そのものを比較して boutWin < matchVictoryFanfare を強制していた。
+  // その比較は両方が合成音で振幅が揃っていた頃には成立したが、U8 で別々の .ogg に移った今は
+  // **音源ごとに素の音量が違う**ため、SE_MIX の数字を並べてもどちらが大きく聞こえるかは決まらない。
+  // 実際 2026-07-27 のミキサー書き出し（Keisuke が実聴して決めた値）で
+  // boutWin .34 / matchVictoryFanfare .33 となり、耳では意図どおりなのにここだけが落ちた。
+  // 大小関係の判断はミキサー（bgm/audio-mixer.html）に委ね、ここはコード側で確かめられること
+  // ——「両方が独立した枠を持ち、片方が消えていない」——だけを見る。
   assert.ok(/boutWin\(\)/.test(appJs), 'boutWin が定義されていない');
-  const m = appJs.match(/boutWin:\s*\.?([0-9.]+)/);
-  const f = appJs.match(/matchVictoryFanfare:\s*\.?([0-9.]+)/);
-  assert.ok(m && f, 'ミキサー音量が読めない');
-  assert.ok(parseFloat('0.' + m[1].replace('.', '')) < parseFloat('0.' + f[1].replace('.', '')),
-    `1試合ごとの音(${m[1]})が大会ファンファーレ(${f[1]})以上。何度も鳴るので控えめにすること`);
+  assert.ok(/boutWin:\s*\.?\d/.test(appJs), 'boutWin の音量枠が SE_MIX にない');
+  assert.ok(/matchVictoryFanfare:\s*\.?\d/.test(appJs), 'matchVictoryFanfare の音量枠が SE_MIX にない');
 });
 
 console.log('');

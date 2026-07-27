@@ -7603,6 +7603,104 @@ function showBonusProposalModal(fighterId, state) {
   });
 }
 
+// 派閥解散命令の処置選択モーダル(2026-07-27)
+// 新しい枠は作らず、ボーナス起案4案と同じ mdl-a-decision-card グリッドをそのまま使う。
+// 出す案は状況で変わる: 封印中なら「解除」だけ / 派閥がいるなら「解散」と「解散して禁止」/
+// 派閥がまだ無いなら「禁止だけ」。
+function showFactionDecreeModal(docId, state) {
+  const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS[docId] : null;
+  if (!doc) return;
+  const factions = state.factions || [];
+  const sealed = !!state.factionsSealed;
+
+  let options;
+  if (sealed) {
+    options = [{
+      mode: 'unseal', title: '禁 止 を 解 く',
+      note: '選手たちが再び群れを作ることを認める。畳んだ派閥は戻らない',
+    }];
+  } else if (factions.length > 0) {
+    const names = factions.map(f => f.name).join('・');
+    const heads = factions.reduce((s, f) => s + (f.memberIds || []).length, 0);
+    options = [
+      {
+        mode: 'dissolve', title: '解 散 さ せ る',
+        note: `${names}（${heads}名）を畳む。時が経てば、また新しい群れが生まれる`,
+      },
+      {
+        mode: 'seal', title: '解 散 し 、 以 後 認 め な い',
+        note: `${names}（${heads}名）を畳み、今後いっさい派閥を作らせない`,
+      },
+    ];
+  } else {
+    options = [{
+      mode: 'seal', title: '以 後 認 め な い',
+      note: '今はまだ誰も群れていない。生まれる前に禁じておけば、誰の信頼も損なわない',
+    }];
+  }
+
+  const cards = options.map((o, i) => `
+    <div class="mdl-a-decision-card${i === 0 ? ' is-selected' : ''}" data-mode="${o.mode}" style="text-align:center">
+      <div class="mdl-a-decision-label" style="font-size:15px;margin-bottom:10px">${o.title}</div>
+      <div style="font-size:11px;line-height:1.7;color:var(--cream-text-sub);min-height:3.4em">${o.note}</div>
+    </div>`).join('');
+
+  const warning = (!sealed && factions.length > 0)
+    ? '<div style="font-size:12px;color:var(--accent-negative);text-align:center;margin-top:14px;line-height:1.7">畳まれた選手たちの信頼は下がる。とくに束ねていた本人には深く残る</div>'
+    : '';
+
+  const stageBody = `
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="display:flex;justify-content:center;gap:18px;align-items:baseline;font-size:13px;color:var(--cream-text-main);margin-bottom:16px">
+      <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">COST</span><strong style="color:var(--cream-gold-dark)">無料</strong></span>
+      <span style="color:rgba(122,101,48,0.3)">|</span>
+      <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">DP</span><strong>⚡${doc.decisionCost}</strong></span>
+    </div>
+    <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">DECREE ・ 処 置</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px" id="mdlAFactionGrid">
+      ${cards}
+    </div>
+    ${warning}
+  `;
+
+  const html = `
+    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAReporterStrip(state, '処置を選んでください')}
+    <div class="mdl-a-subject-stage">${stageBody}</div>
+    <div class="mdl-a-prompt" style="padding-top:14px">選択後、決裁ボタンを押してください</div>
+    <div style="padding:0 40px 22px;background:var(--office-panel-cream);text-align:center;display:flex;gap:12px;justify-content:center">
+      <button class="mdl-a-continue-btn" id="mdlAFactionCancel">— 取 消 —</button>
+      <button class="mdl-a-continue-btn" id="mdlAFactionConfirm" style="background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)">— 決 裁 す る —</button>
+    </div>
+  `;
+
+  if (!_mdlAOpen(html)) return;
+
+  let selectedMode = options[0].mode;
+  const grid = document.getElementById('mdlAFactionGrid');
+  if (grid) {
+    grid.addEventListener('click', e => {
+      const el = e.target.closest('.mdl-a-decision-card');
+      if (!el) return;
+      Audio.play('switch');
+      selectedMode = el.dataset.mode;
+      grid.querySelectorAll('.mdl-a-decision-card').forEach(c => c.classList.remove('is-selected'));
+      el.classList.add('is-selected');
+    });
+  }
+  document.getElementById('mdlAFactionCancel').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+  });
+  document.getElementById('mdlAFactionConfirm').addEventListener('click', () => {
+    Audio.play('click');
+    _mdlAClose();
+    if (typeof App !== 'undefined' && App.executeDecision) {
+      App.executeDecision(docId, null, { mode: selectedMode });
+    }
+  });
+}
+
 // care-rework v0.1 §2.1: 休暇辞令の週数選択モーダル(対象選手決定後の第2ステップ)
 // 費用 = 週給×週数 + 手配費50万。「休暇中の試合には欠場します」は確定文言(Keisuke 指定)。
 function showLeaveWeeksModal(fighterId, state) {

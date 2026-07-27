@@ -1069,6 +1069,82 @@ Engine.factions = {
     return { ...s, factions: newFactions, factionHostility: newHost };
   },
 
+  // ── 社長命令による解散／封印（社長室「派閥解散命令」からのみ呼ばれる）──
+  //
+  // 「解散させる」と「今後つくらせない(封印)」を分けている。封印は state.factionsSealed の1フラグで、
+  // tickWeek の派閥ブロック全体をスキップさせる。派閥を読む箇所は例外なく factions.length > 0 か
+  // (state.factions || []) で守られているので、factions を空にするだけで系全体が静かに止まる。
+  //
+  // 代償の考え方:
+  //   - 封印そのものは無料。派閥を煩わしいと感じるプレイヤーが、まだ何も起きていないうちに
+  //     先回りして封じるのを罰しない。
+  //   - 代償が生まれるのは「今ある派閥を潰すとき」だけ。_dissolveFaction が既に持っている
+  //     元メンバーの trust -6 / 相互 bond -5〜-10 がその実費になる。
+  //   - リーダーだけは追加で刺さる。自分が束ねた場所を上から畳まれるため。深さは momentum に比例
+  //     させる（勢いに乗っていた派閥を潰されたリーダーほど恨みが残り、既に空中分解しかけていた
+  //     派閥のリーダーはむしろ痛手が浅い）。固定値を置かないのはここに説得力を持たせるため。
+  //
+  // 履歴（factionTimeline）は消さない。起きたことは残す。
+  dissolveAllByDecree(state, options = {}) {
+    const seal = !!options.seal;
+    let s = state;
+    const targets = [...(s.factions || [])];
+    const dissolved = [];
+
+    for (const f of targets) {
+      const leaderId = f.leaderId;
+      const momentum = f.momentum || 0;
+      dissolved.push({
+        id: f.id,
+        name: f.name,
+        leaderId,
+        leaderName: (s.roster || []).find(c => c.id === leaderId)?.name || '',
+        memberCount: (f.memberIds || []).length,
+        momentum,
+      });
+      s = this._dissolveFaction(s, f.id, seal ? 'shacho_decree_seal' : 'shacho_decree');
+      // リーダーへの追い打ち: 勢いがあった派閥ほど深い（-2 〜 -8 を base -6 に上乗せ）
+      if (leaderId != null) {
+        const extra = momentum > 0 ? -(2 + 6 * Math.min(momentum, 100) / 100) : -2;
+        s = this._applyTrustToMembers(s, [leaderId], extra);
+      }
+    }
+
+    // 進行中の派閥イベント・予約をすべて畳む（残すと解散後にモーダルだけ出る）
+    const drop = [
+      '_pendingFactionEvent', '_pendingF09', '_pendingInternalChallenge',
+      '_pendingF08Directive', '_pendingF08Aftermath', '_pendingF07Directive',
+      '_pendingForceCloseRivalry', '_pendingFactionJoinNotices',
+    ];
+    const cleaned = { ...s };
+    for (const k of drop) delete cleaned[k];
+    s = {
+      ...cleaned,
+      factionHostility: {},
+      factionRivalryPoints: {},
+      factionInternalPoints: {},
+      factionReconciliationStreak: {},
+      factionEndlessStreak: {},
+      factionEventCooldowns: {},
+      f02MediationWatches: [],
+      factionPendingIgnite: null,
+      _commonEvent7PairCooldowns: {},
+      _commonEventTeamCooldownUntil: 0,
+    };
+    if (seal) s = { ...s, factionsSealed: true };
+
+    wmDiag(`[WM Faction] decree: dissolved ${dissolved.length} faction(s)${seal ? ' + sealed' : ''}`);
+    return { state: s, dissolved };
+  },
+
+  // 封印解除。過去に解散させた派閥は戻らない（結成条件が再び満たされれば新しく生まれる）。
+  unsealFactions(state) {
+    if (!state.factionsSealed) return { state, changed: false };
+    const { factionsSealed: _, ...rest } = state;
+    wmDiag('[WM Faction] decree: unsealed');
+    return { state: rest, changed: true };
+  },
+
   _applyTrustToMembers(state, memberIds, rawDelta) {
     if (!Array.isArray(state.roster) || !memberIds.length) return state;
     const idSet = new Set(memberIds);
@@ -2741,7 +2817,13 @@ Engine.factions = {
     const candidates = [];
     for (const f of factions) {
       if (this._isCommonFactionCooldownActive(state, f.id)) continue;
-      // Common-1 個別 CD は無効（spec デフォルト 16週も導入したいが今は不要）
+      // Common-1 個別 CD（2026-07-27）。
+      // 派閥ごとの共通イベント枠(commonEventFactionCooldown:24週)が開くたびに、抽選順の先頭にいる
+      // Common-1 がその枠を毎回取っていた。実測では共通イベント67件中65件(97%)が Common-1 で、
+      // Common-5(取材)/Common-7(合同企画) は条件を満たしても順番が来ず0件だった。
+      // 個別 CD を枠 CD より長くすることで、次に開く枠が他の共通イベントに回る。
+      // ※16週など枠 CD 以下の値では枠 CD に飲まれて何も変わらない。
+      if (this._isCommonIndividualCooldownActive(state, f.id, 'COMMON_1')) continue;
       const archId = f.archetypeId || this._archetypeFromFlavor(f.flavor);
       if (!archId) continue;
       const memberIds = (f.memberIds || []).filter(id => roster.find(c => c.id === id));

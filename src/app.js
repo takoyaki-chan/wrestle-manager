@@ -97,13 +97,15 @@ const Audio = (() => {
   // 音響刷新 Phase 2 (2026-07-26): 選定ボード(audio-review)の割当どおりに全枠を配線。
   // 新BGMは -17 LUFS 正規化済みのため vol は一律 0.15 を基準にする。
   // tension / season_end は台帳上1:1後継がない(S01〜S05の団体状況分岐は数値設計待ち)ため旧ファイル継続。
+  // vol は bgm/audio-mixer.html で Keisuke が実聴して決めた値(2026-07-27 書き出し)。
+  // season_end / tension は旧 mp3 でミキサー台帳に載っていないため従来値のまま。
   const SUNO_BGM = {
-    kaimaku:    { file: '../bgm/production-ogg/wm_bgm_c01_v01.ogg', vol: 0.15 }, // WM-C01 タイトル・オープニング
-    management: { file: '../bgm/production-ogg/wm_bgm_s00_v01.ogg', vol: 0.15 }, // WM-S00 メインメニュー
-    battle:     { file: '../bgm/production-ogg/wm_bgm_m01_v01.ogg', vol: 0.15 }, // WM-M01 通常試合
-    contract:   { file: '../bgm/production-ogg/wm_bgm_c07_v01.ogg', vol: 0.15 }, // WM-C07 契約交渉
-    draftPick:  { file: '../bgm/production-ogg/wm_bgm_c08_v01.ogg', vol: 0.15 }, // WM-C08 ドラフト選択
-    draftBid:   { file: '../bgm/production-ogg/wm_bgm_c09_v01.ogg', vol: 0.15 }, // WM-C09 ドラフト入札
+    kaimaku:    { file: '../bgm/production-ogg/wm_bgm_c01_v01.ogg', vol: 0.30 }, // WM-C01 タイトル・オープニング
+    management: { file: '../bgm/production-ogg/wm_bgm_s00_v01.ogg', vol: 0.26 }, // WM-S00 メインメニュー
+    battle:     { file: '../bgm/production-ogg/wm_bgm_m01_v01.ogg', vol: 0.32 }, // WM-M01 通常試合
+    contract:   { file: '../bgm/production-ogg/wm_bgm_c07_v01.ogg', vol: 0.16 }, // WM-C07 契約交渉
+    draftPick:  { file: '../bgm/production-ogg/wm_bgm_c08_v01.ogg', vol: 0.20 }, // WM-C08 ドラフト選択
+    draftBid:   { file: '../bgm/production-ogg/wm_bgm_c09_v01.ogg', vol: 0.16 }, // WM-C09 ドラフト入札
     season_end: { file: '../bgm/bgm_season_end_v1.mp3',  vol: 0.17 },
     tension:    { file: '../bgm/bgm_tension_v1.mp3',     vol: 0.17 },
   };
@@ -224,15 +226,19 @@ const Audio = (() => {
   // 他の音と同じ大きさだと操作のたびに耳につく。
   // ホバー(.40)はクリックより小さくないとおかしいので合わせて下げた。
   // select(.50)は「おまかせ・確定」で、同じ音源でも一段大きいままにしてある。
+  // 音量は bgm/audio-mixer.html で Keisuke が実聴して決めた値(2026-07-27 書き出し)。
+  // 同じ音源を共有するキーは同じ値が並ぶ(click/select、save/switch、reveal/event、crowd/boutOther、
+  // fanfare/matchVictoryFanfare)。片方だけ変えたいときは台帳ではなくここで分ける。
+  // ミキサーで未指定のキー(hover/bell/impact/victory/award/因縁系/stamp/boutDraw 等)は従来値のまま。
   const SE_MIX = {
-    click:.36, hover:.26, select:.50, deselect:.40, error:.50, save:.40, notify:.50, switch:.44, venue:.46,
-    tick:.50, event:.50, reveal:.50, paper:.50, bignews:.58,
-    fanfare:.74, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.58,
-    war:.60, transfer:.52, award:.72, tension_hit:.66,
+    click:.13, hover:.26, select:.13, deselect:.12, error:.11, save:.14, notify:.14, switch:.14, venue:.46,
+    tick:.18, event:.04, reveal:.04, paper:.06, bignews:.41,
+    fanfare:.33, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.25,
+    war:.60, transfer:.24, award:.72, tension_hit:.66,
     rivalry_confrontation:.64, fate_confrontation:.63, rivalry_resolution:.50, fate_resolution:.57,
-    coin:.40, spend:.40, stamp:.40, matchVictoryFanfare:.50,
+    coin:.25, spend:.05, stamp:.40, matchVictoryFanfare:.33,
     // 試合結果。1試合ごとに何度も鳴るので、大会ファンファーレより控えめに保つ
-    boutWin:.34, boutLose:.32, boutOther:.22, boutDraw:.30,
+    boutWin:.34, boutLose:.32, boutOther:.18, boutDraw:.30,
   };
 
   // Lazy-init AudioContext (must be triggered by user gesture)
@@ -13242,6 +13248,8 @@ const App = {
       showDecisionConfirmModal(docId, G);
     } else if (doc.effect && doc.effect.target === 'pair') {
       showDecisionPairModal(docId, G);
+    } else if (doc.effect && doc.effect.target === 'faction') {
+      showFactionDecreeModal(docId, G);
     } else {
       showDecisionTargetModal(docId, G);
     }
@@ -13270,6 +13278,14 @@ const App = {
     if (result.error === 'invite_active') { showToast('すでに招聘中のコーチがいます'); return { ok: false }; }
     if (result.error === 'invalid_coach') { showToast('今期の候補にいないコーチです'); return { ok: false }; }
     if (result.error === 'unsupported_doc') { showToast(`未対応の書類です: ${result.docId}`); return { ok: false }; }
+    // 派閥解散命令の専用エラー
+    if (result.error === 'mode_required') { showToast('処置が選ばれていません'); return { ok: false }; }
+    if (result.error === 'no_faction') { showToast('解散させる派閥がありません'); return { ok: false }; }
+    if (result.error === 'not_sealed') { showToast('派閥は禁止されていません'); return { ok: false }; }
+
+    // 派閥解散命令: factions / 各種CD / 進行中予約の削除を含む state ツリーごと差し替える。
+    // 個別フィールドのマージでは「消したキー」を消せないため、下の {...G, ...} より先に置く。
+    if (result.factionState) G = result.factionState;
 
     // state 更新
     G = { ...G,
