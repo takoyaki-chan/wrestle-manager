@@ -78,13 +78,12 @@ section('4. カードが1枚も無ければ、黙って先へ進む', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// B. 5大会すべてに入っているか
+// B. 対象4大会に入っているか（天頂戦は専用導入から対戦表へ直行）
 // ─────────────────────────────────────────────────────────────
 
-section('5. 5大会すべてで開幕カード紹介が出る', () => {
+section('5. 天頂戦を除く4大会で開幕カード紹介が出る', () => {
   const wired = {
     '夏ジュニア': /_showBracketCardIntro\(jt\.result\.rounds/,
-    '冬天頂戦':   /_showBracketCardIntro\(t\.rounds/,
     '秋4団体戦':  /_showAutumnWarCardIntro\(res/,
     '春タッグ':   /_showSpringTagCardIntro\(stl/,
     '冬PPV':      /showPPVMatchCardIntro\(/,
@@ -120,15 +119,13 @@ section('7. 会場入り(バス)の後に出る', () => {
   Object.entries(blocks).forEach(([name, re]) => {
     assert.ok(re.test(app), `${name}: バスの続きが開幕紹介になっていない`);
   });
-  // 天頂戦は バス → toBracket、その toBracket が紹介を挟む
-  const tc = (app.match(/const toBracket = \(\) => \{[\s\S]*?\n  \};/) || [])[0];
-  assert.ok(tc && /_showBracketCardIntro\(/.test(tc), '天頂戦: バスの後に紹介が入っていない');
+  // 天頂戦はこの共通カード紹介を使わず、専用導入から対戦表へ直接進む。
+  assert.ok(/const toBracket = \(\) => renderTenchosenBracket\(\)/.test(app),
+    '天頂戦: 専用導入の後に対戦表へ直接進んでいない');
 });
 
 section('8. 本編は紹介を閉じた後に始まる', () => {
   // onStart に本編を渡す。先に本編を描くと紹介の裏で試合が進む
-  assert.ok(/_showBracketCardIntro\(t\.rounds, \{[\s\S]{0,220}?\}, \(\) => renderTenchosenBracket\(\)\)/.test(app),
-    '天頂戦: 対戦表が紹介の続きになっていない');
   assert.ok(/_showAutumnWarCardIntro\(res, \(\) => App\.initAutumnWarReplay\(\)\)/.test(app),
     '秋: 本編が紹介の続きになっていない');
   assert.ok(/_showSpringTagCardIntro\(stl, \(\) => renderSpringTagLeagueBoard\(\)\)/.test(app),

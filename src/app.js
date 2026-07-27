@@ -15254,16 +15254,9 @@ App.initTenchosenReplay = function() {
   Audio.bgm.playStage('tencho');
   Audio.play('notify');
   // 導入(コーチ→選手) → 会場入り → トーナメント表
-  const toBracket = () => {
-    if (typeof _showBracketCardIntro === 'function') {
-      _showBracketCardIntro(t.rounds, {
-        label: 'Special Event', bigName: '天 頂 戦',
-        sub: `Season ${G.season || 1} ─ 16名 単発トーナメント`, roundLabel: '1回戦',
-      }, () => renderTenchosenBracket());
-    } else {
-      renderTenchosenBracket();
-    }
-  };
+  // 天頂戦は専用導入の直後にトーナメント表へ進む。
+  // 全身画像が左右に並ぶ全試合カード紹介は通常年末PPVだけで使う。
+  const toBracket = () => renderTenchosenBracket();
   // 自団体の出場者。喋るのもバスに乗るのもこの人たち
   const mine = (G.roster || []).filter(f => f && !f.isRental
     && (t.rounds[0]?.matches || []).some(m => m.left?.id === f.id || m.right?.id === f.id));

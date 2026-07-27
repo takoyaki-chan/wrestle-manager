@@ -54,4 +54,11 @@ function extractObjectMethodBody(signature) {
   });
 })();
 
+(function testTenchosenSkipsFullCardIntro() {
+  assert.ok(/const toBracket = \(\) => renderTenchosenBracket\(\)/.test(source),
+    'Tenchosen must proceed directly to its bracket after the dedicated intro');
+  assert.ok(/showSpecialEventTravel\('tenchosen', G, mine, toBracket\)/.test(source),
+    'Tenchosen travel must continue into the direct bracket callback');
+})();
+
 console.log('tenchosen-ppv-opening-guard-test: ok');
