@@ -2443,6 +2443,7 @@ function _spAfterRender() {
 function _stlIsLeagueWeek() {
   const stl = G.springTagLeague;
   return !!(stl && !stl.cancelled && stl.announcedSeason === G.season
+    && !(Engine.springTagLeague && Engine.springTagLeague.isCompletedThisSeason && Engine.springTagLeague.isCompletedThisSeason(G))
     && G.week === Engine.springTagLeague.LEAGUE_WEEK);
 }
 
@@ -2456,7 +2457,8 @@ function _stlFindFighterAnywhere(id) {
 /** 週10(出場4団体決定)/週11(編成期間・編成済み) の今週バナー。存在しないセーブでは何も出さない */
 function renderSpringTagLeagueWeekBanner() {
   const stl = G.springTagLeague;
-  if (!stl || stl.cancelled || stl.announcedSeason !== G.season) return '';
+  if (!stl || stl.cancelled || stl.announcedSeason !== G.season
+      || (Engine.springTagLeague && Engine.springTagLeague.isCompletedThisSeason && Engine.springTagLeague.isCompletedThisSeason(G))) return '';
   if (G.week === Engine.springTagLeague.ANNOUNCE_WEEK) {
     const names = (stl.teams || []).map(t => t.orgName).filter(Boolean).join(' / ');
     return `<div class="stl-week-banner">

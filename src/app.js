@@ -96,9 +96,8 @@ const Audio = (() => {
   // ── SUNO BGM file mapping ──
   // 音響刷新 Phase 2 (2026-07-26): 選定ボード(audio-review)の割当どおりに全枠を配線。
   // 新BGMは -17 LUFS 正規化済みのため vol は一律 0.15 を基準にする。
-  // tension / season_end は台帳上1:1後継がない(S01〜S05の団体状況分岐は数値設計待ち)ため旧ファイル継続。
-  // vol は bgm/audio-mixer.html で Keisuke が実聴して決めた値(2026-07-27 書き出し)。
-  // season_end / tension は旧 mp3 でミキサー台帳に載っていないため従来値のまま。
+  // 音響刷新前の tension / season_end は廃止し、台帳の S03「不穏」/ D04「世代交代」へ統一。
+  // vol は bgm/audio-mixer.html と同じ値を使う。
   const SUNO_BGM = {
     kaimaku:    { file: '../bgm/production-ogg/wm_bgm_c01_v01.ogg', vol: 0.30 }, // WM-C01 タイトル・オープニング
     management: { file: '../bgm/production-ogg/wm_bgm_s00_v01.ogg', vol: 0.26 }, // WM-S00 メインメニュー
@@ -109,8 +108,8 @@ const Audio = (() => {
     contract:   { file: '../bgm/production-ogg/wm_bgm_c07_v02.ogg', vol: 0.16 }, // WM-C07 契約交渉
     draftPick:  { file: '../bgm/production-ogg/wm_bgm_c08_v01.ogg', vol: 0.20 }, // WM-C08 ドラフト選択
     draftBid:   { file: '../bgm/production-ogg/wm_bgm_c09_v01.ogg', vol: 0.16 }, // WM-C09 ドラフト入札
-    season_end: { file: '../bgm/bgm_season_end_v1.mp3',  vol: 0.17 },
-    tension:    { file: '../bgm/bgm_tension_v1.mp3',     vol: 0.17 },
+    season_end: { file: '../bgm/production-ogg/wm_bgm_d04_v01.ogg', vol: 0.20 }, // WM-D04 世代交代
+    tension:    { file: '../bgm/production-ogg/wm_bgm_s03_v01.ogg', vol: 0.20 }, // WM-S03 不穏
   };
   // WM Audio Mixer file-BGM assignments used by match and tournament screens.
   // 特別興行の進行曲は台帳どおり大会別。A=前半 / B=決勝・大将戦・ラストマッチ以降。
@@ -1389,7 +1388,7 @@ const Audio = (() => {
 // ╚══════════════════════════════════════════════════════════╝
 const FACTION_AUDIO = {
   SOFT:    '../bgm/Soft Bids, Sharp Minds.mp3',
-  TENSION: '../bgm/bgm_tension_v1.mp3',
+  TENSION: '../bgm/production-ogg/wm_bgm_s03_v01.ogg',
   GONG:    '../bgm/f07_gong_v1.mp3',
   CHIME:   '../bgm/f06_fin_chime_v1.mp3',
 };
@@ -3743,10 +3742,11 @@ const App = {
       return App.enterJuniorTournamentFromWeek();
     }
     // S8 春のタッグリーグ: 結果確定済みでリプレイ未表示のまま保存/リロードされた場合、再開する
-    if (G._pendingSpringTagLeagueReplay) {
+    if (G._pendingSpringTagLeagueReplay && App._shouldStartSpringTagLeagueReplay()) {
       App.initSpringTagLeagueReplay();
       return true;
     }
+    App._discardStaleSpringTagLeagueReplay();
     if (G._pendingAutumnWarReplay) {
       App.initAutumnWarReplay();
       return true;
@@ -3762,6 +3762,22 @@ const App = {
       && G.week === Engine.juniorTournament.WEEK
       && !G._juniorTournamentResult
     );
+  },
+
+  _shouldStartSpringTagLeagueReplay() {
+    return !!(G && G._pendingSpringTagLeagueReplay
+      && Engine.springTagLeague && Engine.springTagLeague.isReplayReady
+      && Engine.springTagLeague.isReplayReady(G));
+  },
+
+  _discardStaleSpringTagLeagueReplay() {
+    if (!G || !G._pendingSpringTagLeagueReplay || App._shouldStartSpringTagLeagueReplay()) return false;
+    const { _pendingSpringTagLeagueReplay: _, ...cleanG } = G;
+    G = cleanG;
+    App._stlPreview = null;
+    wmDiag('[WM SpringTag] discarded stale replay outside its scheduled event week');
+    try { Storage.autoSave(); } catch (_e) {}
+    return true;
   },
 
   enterJuniorTournamentFromWeek(options = null) {
@@ -4332,6 +4348,14 @@ const App = {
         G = cleanG;
       }
     };
+    if (!App._shouldStartSpringTagLeagueReplay()) {
+      // 開催週を越えた予約や欠員チームの予約は再生しない。結果履歴は保持する。
+      App._discardStaleSpringTagLeagueReplay();
+      App._stlPreview = null;
+      if (typeof showScreen === 'function') showScreen('week');
+      if (typeof refreshAll === 'function') refreshAll();
+      return;
+    }
     if (!stl || stl.cancelled || !Array.isArray(stl.matches) || stl.matches.length === 0 || !stl.champion) {
       // 不開催 or 異常系: 専用画面なしで静かにスキップ（ニュース・ログのみ）
       clearFlag();
@@ -4348,13 +4372,8 @@ const App = {
     const party = myTeam
       ? [myTeam.f1Id, myTeam.f2Id].map(id => (G.roster || []).find(f => f && f.id === id)).filter(Boolean)
       : [];
-    const toBoard = () => {
-      if (typeof _showSpringTagCardIntro === 'function') {
-        _showSpringTagCardIntro(stl, () => renderSpringTagLeagueBoard());
-      } else {
-        renderSpringTagLeagueBoard();
-      }
-    };
+    // 春タッグはリーグ表から開始する。PPV型の縦カード紹介は使わない。
+    const toBoard = () => renderSpringTagLeagueBoard();
     if (typeof showSpecialEventTravel === 'function' && party.length) {
       showSpecialEventTravel('springTagLeague', G, party, toBoard);
     } else {
@@ -5477,7 +5496,7 @@ const App = {
         G = subResult.state;
         App._consumeBetrayalNews(neg);
         results.push(subResult.result);
-        if (subResult.result.type === 'stay') Audio.play('fanfare');
+        if (subResult.result.type === 'stay') Audio.play('notify');
         else if (subResult.result.type === 'depart') Audio.play('defeat');
         showContractReactionModal(neg, subResult.reactionDialogue, onDone);
       });
@@ -5487,7 +5506,7 @@ const App = {
     results.push(result.result);
 
     // 結果に応じたSE
-    if (result.result.type === 'stay') Audio.play('fanfare');
+    if (result.result.type === 'stay') Audio.play('notify');
     else if (result.result.type === 'depart') Audio.play('defeat');
 
     // 移籍志願に発展した場合 → 移籍志願として再交渉
@@ -10480,11 +10499,12 @@ const App = {
       return;
     }
     // S8 春のタッグリーグ Week12: 結果はEngine.advanceWeek内で確定済み。リプレイ演出を自動起動
-    if (G._pendingSpringTagLeagueReplay) {
+    if (G._pendingSpringTagLeagueReplay && App._shouldStartSpringTagLeagueReplay()) {
       Storage.autoSave();
       App.initSpringTagLeagueReplay();
       return;
     }
+    App._discardStaleSpringTagLeagueReplay();
     App.checkSurvivalUpdate();
     App.checkCrisisEnteredPopup();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
@@ -11421,7 +11441,6 @@ const App = {
     // 表彰式ポップアップ開始
     // WM-H05 表彰式（-17 LUFS 正規化済みのため vol は新音源基準へ）
     // WM-H05 表彰式。音量はミキサー実聴値（2026-07-27）
-    try { Audio.fileBgm.play(YEAR_END_AWARDS_BGM, { loop: true, volume: 0.40 }); } catch(e) {}
     showAwardsCeremony(pendingAwards, () => {
       try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
       // 表彰式BGMフェードアウト後に通常BGMを再開
@@ -11436,6 +11455,9 @@ const App = {
       Storage.autoSave();
       App._showNewsPanelIfNeeded(() => App._checkAndShowMilestone(
         () => App._maybeShowSeasonFanfare(() => App._showFarewellsThenReport())));
+    }, () => {
+      // 別ポップアップ待機中には鳴らさず、表彰式が実際に開く瞬間から開始する。
+      try { Audio.fileBgm.play(YEAR_END_AWARDS_BGM, { loop: true, volume: 0.40 }); } catch(e) {}
     });
   },
 
@@ -12427,6 +12449,23 @@ const App = {
         }, finalizeAudio);
       });
     } else if (eventId === 'COMMON_1') {
+      // 発火後に年替わり・退団などで対象がいなくなった保留イベントは、
+      // 名前だけ残った空カードにせず取り消す。
+      const common1Fighters = (Engine.factions && Engine.factions.resolveCommon1Fighters)
+        ? Engine.factions.resolveCommon1Fighters(G, payload)
+        : (() => {
+          const roster = G.roster || [];
+          const find = id => roster.find(c => c && String(c.id) === String(id)) || null;
+          const fighterA = find(payload.fighterAId);
+          const fighterB = find(payload.fighterBId);
+          return { fighterA, fighterB, valid: !!(fighterA && fighterB) };
+        })();
+      if (!common1Fighters.valid) {
+        wmDiag('[WM Faction] Common-1 cancelled: a deferred opponent is no longer in the roster');
+        showToast('派閥内対決は、対象選手の在籍状況が変わったため取り消されました');
+        finalizeAudio();
+        return;
+      }
       _factionAudioOpen(eventId);
       showFactionCommon1Modal(payload, G, (choiceId) => {
         if (!choiceId) return;
@@ -12438,8 +12477,11 @@ const App = {
         renderWeekScreen();
         if (result.pendingMatch && choiceId === 'A') {
           // ビッグマッチとして実試合へ遷移
-          const fA = (G.roster || []).find(c => c.id === payload.fighterAId);
-          const fB = (G.roster || []).find(c => c.id === payload.fighterBId);
+          const currentFighters = (Engine.factions && Engine.factions.resolveCommon1Fighters)
+            ? Engine.factions.resolveCommon1Fighters(G, payload)
+            : common1Fighters;
+          const fA = currentFighters.fighterA;
+          const fB = currentFighters.fighterB;
           if (!fA || !fB) { finalizeAudio && finalizeAudio(); return; }
           // 業界ニュース: 同門対決の実現
           App._pushIndustryNews({
@@ -13432,7 +13474,7 @@ const App = {
     // 合成音の短いバーストなので、後続のコスト別サウンドとぶつからない
     Audio.play('stamp');
     const soundCost = result.cost || 0;
-    if (docId === 'camp') Audio.play('fanfare');
+    if (docId === 'camp') { /* 承認印の音だけで十分。RS05達成音は鳴らさない */ }
     else if (soundCost >= 160) Audio.play('award');
     else if (soundCost >= 80) Audio.play('event');
     else Audio.play('notify');

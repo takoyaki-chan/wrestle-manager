@@ -31,6 +31,7 @@ assert.ok(source.includes("const DEV_CHECKPOINT_PREFIX = 'wm_dev_checkpoint_'"),
 assert.ok(source.includes('return active ? saveDevAuto() : originalAutoSave();'), '開発中だけ通常オートセーブを保護する');
 assert.ok(source.includes("next.weekPhase === 'draft'"), '初期ドラフト画面からも既定編成で高速進行できる');
 assert.ok(source.includes('Engine.springTagLeague.ENTRY_WEEK'), '春大会のプリセットを用意する');
+assert.ok(source.includes("'_pendingSpringTagLeagueReplay'"), '年送り中に春タッグのリプレイ予約を持ち越さない');
 assert.ok(source.includes('Engine.juniorTournament.WEEK'), '夏大会のプリセットを用意する');
 assert.ok(source.includes('Engine.autumnWar.EVENT_WEEK'), '秋大会のプリセットを用意する');
 assert.ok(source.includes('Engine.ppvTournament.SHOW_WEEK'), '冬大会のプリセットを用意する');

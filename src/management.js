@@ -16180,7 +16180,8 @@ const Engine = {
 
     // 春のタッグリーグ Week10: 出場4団体発表（対抗戦チェックより先に実行し、
     // 対抗戦が発火しても今週の告知が飛ばないようにする）
-    if (s.week === Engine.springTagLeague.ANNOUNCE_WEEK && !s.offSeason) {
+    if (s.week === Engine.springTagLeague.ANNOUNCE_WEEK && !s.offSeason
+        && !Engine.springTagLeague.isCompletedThisSeason(s)) {
       const announcement = Engine.springTagLeague.announce(s);
       if (!announcement.cancelled) {
         s = { ...s, springTagLeague: { ...announcement, announcedSeason: s.season }, springTagPhase: null };
@@ -16211,14 +16212,16 @@ const Engine = {
     // UI は springTagPhase==='entry' を見て編成導線を出す（後続フェーズで実装）。
     // 未編成のまま Week12 に入っても run() が自動編成で自己修復する
     if (s.week === Engine.springTagLeague.ENTRY_WEEK && !s.offSeason
-        && s.springTagLeague && !s.springTagLeague.cancelled) {
+        && s.springTagLeague && !s.springTagLeague.cancelled
+        && !Engine.springTagLeague.isCompletedThisSeason(s)) {
       s = { ...s, springTagPhase: 'entry' };
       events.push('🎽 春のタッグリーグ: 出場チームの編成期間が始まった');
     }
 
     // 春のタッグリーグ Week12: リーグ戦6試合+決勝を実行
     if (s.week === Engine.springTagLeague.LEAGUE_WEEK && !s.offSeason
-        && s.springTagLeague && !s.springTagLeague.cancelled) {
+        && s.springTagLeague && !s.springTagLeague.cancelled
+        && !Engine.springTagLeague.isCompletedThisSeason(s)) {
       const leagueRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xC7A5));
       const leagueResult = Engine.springTagLeague.run(s, leagueRng);
       const applied = Engine.springTagLeague.apply(s, leagueResult);
@@ -25924,6 +25927,14 @@ Engine.springTagLeague = {
     return pairs.slice(0, n || 3).map(p => ({ f1Id: p.f1Id, f2Id: p.f2Id, avgOvr: p.avgOvr, chemistry: p.chemistry }));
   },
 
+  isCompletedThisSeason(state) {
+    if (!state) return false;
+    if (state.springTagLeagueCompletedSeason === state.season) return true;
+    const stl = state.springTagLeague;
+    return !!(stl && stl.replaySeason === state.season
+      && stl.replayWeek != null && stl.replayWeek !== Engine.springTagLeague.LEAGUE_WEEK);
+  },
+
   /** Week10: 出場4団体の枠を確定する。AI3団体は自動選出（OVR+ケミストリー上位）、
    * プレイヤーはWeek11の編成待ち（f1Id/f2Idはnull） */
   announce(state) {
@@ -25954,6 +25965,25 @@ Engine.springTagLeague = {
   },
 
   /** Week11: プレイヤーのチームを確定する（純粋関数、新しいstateを返す） */
+  // リプレイは開催週にだけ許可する。開発者モードで週・年を飛ばした場合、
+  // _pendingSpringTagLeagueReplay を翌シーズンへ持ち越すと、当時の選手IDを
+  // 現在のロスターで描こうとして「? & ?」の壊れた大会画面になる。
+  isReplayReady(state) {
+    const stl = state && state.springTagLeague;
+    if (!state || !stl || stl.cancelled || state.offSeason) return false;
+    const replaySeason = stl.replaySeason != null ? stl.replaySeason : stl.announcedSeason;
+    if (replaySeason !== state.season || state.week !== Engine.springTagLeague.LEAGUE_WEEK) return false;
+    if (!Array.isArray(stl.teams) || stl.teams.length !== Engine.springTagLeague.ORG_ORDER.length) return false;
+    if (!Array.isArray(stl.matches) || !stl.matches.length || !stl.finalMatch || !stl.champion) return false;
+    const sameId = (left, right) => String(left) === String(right);
+    return stl.teams.every(team => {
+      if (!team || team.f1Id == null || team.f2Id == null || sameId(team.f1Id, team.f2Id)) return false;
+      const roster = Engine.springTagLeague._orgRoster(state, team.orgId);
+      return roster.some(f => f && sameId(f.id, team.f1Id))
+        && roster.some(f => f && sameId(f.id, team.f2Id));
+    });
+  },
+
   confirmPlayerTeam(state, f1Id, f2Id) {
     if (!state.springTagLeague || !Array.isArray(state.springTagLeague.teams)) return state;
     if (f1Id == null || f2Id == null || f1Id === f2Id) return state;
@@ -26388,7 +26418,8 @@ Engine.springTagLeague = {
 
     s = {
       ...s,
-      springTagLeague: { ...s.springTagLeague, teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, replayContext, revenueDistribution, cancelled: false },
+      springTagLeague: { ...s.springTagLeague, teams, matches, standings, finalMatch, champion, runnerUp, third, fourth, replayContext, revenueDistribution, cancelled: false, replaySeason: s.season, replayWeek: s.week },
+      springTagLeagueCompletedSeason: s.season,
       springTagPhase: 'result',
       // UI: 週送り直後にリプレイ演出を自動起動するためのtransientフラグ（他の_pending*系と同じ規約）。
       // UI側がリプレイ表示後にstateから取り除く。

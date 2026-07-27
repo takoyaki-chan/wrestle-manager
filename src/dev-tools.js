@@ -76,7 +76,7 @@
     return { ...state, showCard: card, showVenue: state.showVenue || 0 };
   }
   function clearTransient(state) {
-    const keys = ['_pendingChoiceEvent','_pendingNotifEvent','_pendingLargeEvent','_pendingTeamSpirit','_pendingGrowthEvents','_pendingMotivationRetirements','_pendingCoachReport','_flavorEvents','_pendingEliteTicket','_pendingFactionEvent','_pendingGlimpseA','_pendingGlimpseB','_pendingHotStreakEnds','_pendingMilestone','_pendingTrustReveals','_pendingR3Modal','_pendingPreWindowWarning','_pendingEmptyVenue','_pendingAIGrowthAlerts','tenchosenPreEvent'];
+    const keys = ['_pendingChoiceEvent','_pendingNotifEvent','_pendingLargeEvent','_pendingTeamSpirit','_pendingGrowthEvents','_pendingMotivationRetirements','_pendingCoachReport','_flavorEvents','_pendingEliteTicket','_pendingFactionEvent','_pendingGlimpseA','_pendingGlimpseB','_pendingHotStreakEnds','_pendingMilestone','_pendingTrustReveals','_pendingR3Modal','_pendingPreWindowWarning','_pendingEmptyVenue','_pendingAIGrowthAlerts','_pendingSpringTagLeagueReplay','tenchosenPreEvent'];
     const next = { ...state, gameLog: [], debugLog: [], weekLogFeed: [] }; keys.forEach(key => { delete next[key]; }); return next;
   }
   function resolveDefaultBlockingPhase(state) {
@@ -169,7 +169,8 @@
       const isTenchosenShowWeek = next.week === Engine.ppvTournament.SHOW_WEEK
         && Engine.ppvTournament.isTournamentSeason(next.season);
       const isSpringTagWeek = next.week === Engine.springTagLeague.LEAGUE_WEEK
-        && next.springTagLeague && !next.springTagLeague.cancelled;
+        && next.springTagLeague && !next.springTagLeague.cancelled
+        && !Engine.springTagLeague.isCompletedThisSeason(next);
       const isAutumnWarWeek = next.week === Engine.autumnWar.EVENT_WEEK
         && next.autumnWar && !next.autumnWar.cancelled;
       const isJuniorTournamentWeek = next.week === Engine.juniorTournament.WEEK

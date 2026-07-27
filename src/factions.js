@@ -2865,6 +2865,23 @@ Engine.factions = {
     };
   },
 
+  // Common-1 は週送り中に保留されることがある。表示・試合開始の直前に、
+  // 現在のロスターから対決対象を再解決する（旧セーブの ID 型揺れも吸収）。
+  resolveCommon1Fighters(state, payload) {
+    const roster = (state && state.roster) || [];
+    const sameId = (left, right) => String(left) === String(right);
+    const find = id => roster.find(c => c && sameId(c.id, id)) || null;
+    const fighterA = find(payload && payload.fighterAId);
+    const fighterB = find(payload && payload.fighterBId);
+    const leader = find(payload && payload.leaderId);
+    return {
+      fighterA,
+      fighterB,
+      leader,
+      valid: !!(fighterA && fighterB),
+    };
+  },
+
   applyCommon1Choice(state, payload, choiceId, rng) {
     const { factionId, factionName } = payload;
     let s = state;

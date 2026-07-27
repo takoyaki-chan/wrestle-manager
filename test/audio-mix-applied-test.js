@@ -90,6 +90,22 @@ section('5. 年末表彰式は最新版H05をキャッシュ回避付きで鳴�
     /Audio\.fileBgm\.play\(YEAR_END_AWARDS_BGM,\s*\{\s*loop:\s*true,\s*volume:\s*0\.40\s*\}\)/.test(app),
     '年末表彰式が最新版H05を実聴値0.40で再生していない'
   );
+  const awardsCall = app.slice(app.indexOf('showAwardsCeremony(pendingAwards'), app.indexOf('\n  },', app.indexOf('showAwardsCeremony(pendingAwards')));
+  assert.ok(/,\s*\(\)\s*=>\s*\{[\s\S]*Audio\.fileBgm\.play\(YEAR_END_AWARDS_BGM/.test(awardsCall),
+    '表彰式BGMが表彰式オーバーレイの実表示より前に鳴る');
+});
+
+section('6. 音響刷新前の旧BGMを参照しない', () => {
+  for (const file of SRC) {
+    const source = read(file);
+    assert.ok(!/bgm_(?:tension|season_end)_v1\.mp3/.test(source),
+      `${file} に旧 tension / season_end BGM が残っている`);
+  }
+  const app = read('src/app.js');
+  assert.ok(/season_end:\s*\{\s*file:\s*'\.\.\/bgm\/production-ogg\/wm_bgm_d04_v01\.ogg'/.test(app),
+    'season_end が WM-D04 世代交代へ移行していない');
+  assert.ok(/tension:\s*\{\s*file:\s*'\.\.\/bgm\/production-ogg\/wm_bgm_s03_v01\.ogg'/.test(app),
+    'tension が WM-S03 不穏へ移行していない');
 });
 
 console.log('');

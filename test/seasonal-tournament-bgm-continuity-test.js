@@ -60,6 +60,7 @@ for (const [label, watch, result, advance, championshipTransition] of [
 
 assert.ok(tagFinishCue.includes('S.matchInfo.preserveParentFileBgm'), 'tag battle finish cue must propagate the Spring preservation flag');
 assert.ok(finishListener.includes('if (!e.data.preserveParentFileBgm)') && finishListener.includes('Audio.fileBgm.stop()'), 'the parent listener must preserve flagged tournaments while retaining ordinary-match stop behavior');
+assert.ok(finishListener.includes('if (!e.data.preserveParentFileBgm)') && finishListener.includes('Audio.bgm.stop()'), 'the parent listener must not stop the active tournament stage track after a flagged match');
 assert.ok(escapeBattle.includes('const preserveTournamentFileBgm') && escapeBattle.includes('if (!preserveTournamentFileBgm)'), 'escape must keep the active Spring/Summer/Autumn/Winter tournament track');
 
 console.log('seasonal-tournament-bgm-continuity-test: ok');

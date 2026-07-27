@@ -106,6 +106,20 @@ section('5. 台帳の対応が壊れていない（coin=収入 / spend=支出）
   assert.ok(/select:\s*'wm_se_ui01_v01\.ogg'/.test(se), 'select が UI01(決定) を指していない');
 });
 
+section('6. RS05達成音を通常の契約成立・キャンプ承認で鳴らさない', () => {
+  const contractStart = app.indexOf('_resolveContractChoice(');
+  const contractEnd = app.indexOf('\n  },', contractStart);
+  const contract = app.slice(contractStart, contractEnd);
+  assert.ok(!/Audio\.play\('fanfare'\)/.test(contract),
+    '通常の契約残留でRS05達成音が鳴る');
+
+  const approvalStart = app.indexOf('approveShachoshitsuDocument(');
+  const approvalEnd = app.indexOf('\n  },', approvalStart);
+  const approval = app.slice(approvalStart, approvalEnd);
+  assert.ok(!/docId === 'camp'[\s\S]{0,80}Audio\.play\('fanfare'\)/.test(approval),
+    'キャンプ承認のクリックでRS05達成音が鳴る');
+});
+
 console.log('');
 console.log(failed === 0 ? 'Result: ALL PASS ✓' : `Result: ${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);

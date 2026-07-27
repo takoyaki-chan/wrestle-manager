@@ -3012,9 +3012,9 @@ function _buildAwardsSummary(a) {
 
 // ── メインフロー (TASK-4) ────────────────────────────────────────
 
-function showAwardsCeremony(awards, onDone) {
+function showAwardsCeremony(awards, onDone, onOpen) {
   if (!awards) { if (onDone) onDone(); return; }
-  if (_isPopupActive()) { _popupQueue.push(() => showAwardsCeremony(awards, onDone)); return; }
+  if (_isPopupActive()) { _popupQueue.push(() => showAwardsCeremony(awards, onDone, onOpen)); return; }
 
   // スライド構築（動的: 該当なしスキップ）
   const slideInfo = []; // { html, label, se, isChampions, isMvp, isHof, hofData }
@@ -3188,6 +3188,7 @@ function showAwardsCeremony(awards, onDone) {
   });
 
   // 表示開始
+  if (onOpen) onOpen();
   overlay.classList.add('active');
   headerLabel.textContent = 'シーズン ' + awards.season + ' — ' + slideInfo[0].label;
 
@@ -3211,7 +3212,7 @@ function showAwardsCeremony(awards, onDone) {
     }
   }, 3200);
 
-  // BGMはapp.js側で管理（_checkAndShowAwards内で再生開始済み）
+  // BGMはapp.js側で管理（表彰式が実際に開く瞬間に onOpen から開始）
 }
 
 // ── コーチFG演出 (TASK-5) ────────────────────────────────────────
@@ -4431,8 +4432,8 @@ window.addEventListener('message', function(e) {
   if (e.data && e.data.type === 'BATTLE_FINISH_CUE') {
     if (!e.data.preserveParentFileBgm) {
       try { if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.stop(); } catch(err) {}
+      try { if (typeof Audio !== 'undefined' && Audio.bgm) Audio.bgm.stop(); } catch(err) {}
     }
-    try { if (typeof Audio !== 'undefined' && Audio.bgm) Audio.bgm.stop(); } catch(err) {}
     try { if (typeof Audio !== 'undefined' && Audio.play) Audio.play('bellx3'); } catch(err) {}
     return;
   }
@@ -6151,7 +6152,7 @@ function showSpecialEventCardIntro(opts) {
   const total = cards.length;
   const cardsHtml = cards.map((c, i) => {
     // z-index: 下の段ほど高い（下のカードの画像が上のカードの背景の前に出る）
-    const zIdx = total - i;
+    const zIdx = i + 1;
     const sideHtml = (id, ovr) => (typeof _imgOrInitial === 'function')
       ? _imgOrInitial(typeof getFullUrl === 'function' ? getFullUrl(id, ovr) : '', id, 160) : '';
     return `
@@ -10024,7 +10025,7 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
   // BGM/SFX: tension ループ + 150ms 遅延の gong 1打
   try {
     if (typeof Audio !== 'undefined' && Audio.fileBgm && Audio.fileBgm.play) {
-      Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: true, volume: 0.20 });
+      Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_s03_v01.ogg', { loop: true, volume: 0.20 });
     }
     if (typeof Audio !== 'undefined' && Audio.stinger) {
       setTimeout(() => { try { Audio.stinger('../bgm/f07_gong_v1.mp3', 0.18); } catch(e) {} }, 150);
@@ -10166,7 +10167,7 @@ function showInternalChallengePreModal(data, state, onContinue) {
 
   try {
     if (typeof Audio !== 'undefined' && Audio.fileBgm && Audio.fileBgm.play) {
-      Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: true, volume: 0.18 });
+      Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_s03_v01.ogg', { loop: true, volume: 0.18 });
     }
     if (typeof Audio !== 'undefined' && Audio.stinger) {
       setTimeout(() => { try { Audio.stinger('../bgm/f07_gong_v1.mp3', 0.18); } catch(e) {} }, 150);
@@ -10277,7 +10278,7 @@ if (typeof window !== 'undefined') {
 function _f09BgmStart(volume) {
   try {
     if (typeof Audio !== 'undefined' && Audio.fileBgm && Audio.fileBgm.play) {
-      Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: true, volume: volume || 0.20 });
+      Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_s03_v01.ogg', { loop: true, volume: volume || 0.20 });
     }
   } catch (e) {}
 }
@@ -11031,9 +11032,14 @@ function showFactionCommon4Modal(payload, state, onClose) {
 function showFactionCommon1Modal(payload, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionCommon1Modal(payload, state, onChoice)); return; }
   const roster = state ? (state.roster || []) : [];
-  const fA = roster.find(c => c.id === payload.fighterAId);
-  const fB = roster.find(c => c.id === payload.fighterBId);
-  const leader = roster.find(c => c.id === payload.leaderId);
+  const sameId = (left, right) => String(left) === String(right);
+  const findRosterFighter = id => roster.find(c => c && sameId(c.id, id)) || null;
+  const resolved = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.resolveCommon1Fighters)
+    ? Engine.factions.resolveCommon1Fighters(state, payload)
+    : null;
+  const fA = (resolved && resolved.fighterA) || findRosterFighter(payload.fighterAId);
+  const fB = (resolved && resolved.fighterB) || findRosterFighter(payload.fighterBId);
+  const leader = (resolved && resolved.leader) || findRosterFighter(payload.leaderId);
   const factionName = String(payload.factionName || '派閥');
   const archetypeId = payload.archetypeId || null;
   const aName = fA ? fA.name : (payload.fighterAName || '???');
@@ -14152,7 +14158,7 @@ function showLeagueElevationCeremony(state, onDone) {
   // ── 「次へ」ボタン（スライド1→2） ──
   document.getElementById('leNextBtn').addEventListener('click', () => {
     if (typeof Audio !== 'undefined' && Audio.fileBgm) {
-      Audio.fileBgm.play('../bgm/bgm_tension_v1.mp3', { loop: false, volume: 0.10 });
+      Audio.fileBgm.play('../bgm/production-ogg/wm_bgm_s03_v01.ogg', { loop: false, volume: 0.10 });
     }
     _playFileSE('../bgm/e02_crowd_v2.mp3', 0.10);
     fireFlash();
@@ -16385,9 +16391,10 @@ function _stlOrgTeam(orgId) {
 
 function _stlFighterOf(orgId, fighterId) {
   if (fighterId == null) return null;
-  if (orgId === 'player') return (G.roster || []).find(f => f.id === fighterId) || null;
+  const sameId = (left, right) => String(left) === String(right);
+  if (orgId === 'player') return (G.roster || []).find(f => f && sameId(f.id, fighterId)) || null;
   const org = G.aiOrgs && G.aiOrgs[orgId];
-  return (org && org.roster ? org.roster : []).find(f => f.id === fighterId) || null;
+  return (org && org.roster ? org.roster : []).find(f => f && sameId(f.id, fighterId)) || null;
 }
 
 function _stlFaceImg(f) {
@@ -17342,7 +17349,7 @@ function renderAutumnWarResult() {
   });
   const bubsRow = memberRows.map(({ m, isAce, line }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
       <div class="ch-order">${escHtml(m.role)}</div>
-      ${_chBubbleSlot(line)}
+      ${_chBubbleSlot(line).replace('class="ch-bubble"', 'class="ch-bubble is-autumn-speech"')}
     </div>`).join('');
   const imgsRow = memberRows.map(({ m, isAce }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
       <div class="ch-por-wrap">

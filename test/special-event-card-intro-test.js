@@ -85,7 +85,6 @@ section('5. 天頂戦を除く4大会で開幕カード紹介が出る', () => {
   const wired = {
     '夏ジュニア': /_showBracketCardIntro\(jt\.result\.rounds/,
     '秋4団体戦':  /_showAutumnWarCardIntro\(res/,
-    '春タッグ':   /_showSpringTagCardIntro\(stl/,
     '冬PPV':      /showPPVMatchCardIntro\(/,
   };
   Object.entries(wired).forEach(([name, re]) => {
@@ -128,8 +127,10 @@ section('8. 本編は紹介を閉じた後に始まる', () => {
   // onStart に本編を渡す。先に本編を描くと紹介の裏で試合が進む
   assert.ok(/_showAutumnWarCardIntro\(res, \(\) => App\.initAutumnWarReplay\(\)\)/.test(app),
     '秋: 本編が紹介の続きになっていない');
-  assert.ok(/_showSpringTagCardIntro\(stl, \(\) => renderSpringTagLeagueBoard\(\)\)/.test(app),
-    '春: 本編が紹介の続きになっていない');
+  assert.ok(/const toBoard = \(\) => renderSpringTagLeagueBoard\(\)/.test(app),
+    '春: リーグ表への導線がない');
+  assert.ok(!/_showSpringTagCardIntro\(stl/.test(app),
+    '春タッグにPPV型の縦カード紹介が混入している');
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -158,6 +159,14 @@ section('11. PPV の見え方は変わっていない', () => {
   assert.ok(/FIRST MEETING/.test(src), '初顔合わせ表記が消えている');
 });
 
+section('12. 下段カードほど手前に重なる', () => {
+  // 全身画像はカード枠より背が高い。下段の画像が上段カードの背景に隠れると頭が切れる。
+  assert.ok(/const zIdx = i \+ 1;/.test(coreSrc),
+    '下段ほど大きい z-index になっていない');
+  assert.ok(!/const zIdx = total - i;/.test(coreSrc),
+    '上段ほど手前になる逆順へ戻っている');
+});
+
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (11 sections)');
+console.log('ALL PASS (12 sections)');

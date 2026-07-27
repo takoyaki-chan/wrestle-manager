@@ -3208,6 +3208,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
    260pxなら11pxで2行=約44文字入る。隣の列と重なっても相手は喋らないので衝突しない。 */
 .ch-trio .ch-bubble-slot{min-height:52px;margin-bottom:var(--space-sm)}
 .ch-trio .ch-bubble{font-size:11px;max-width:260px;padding:8px 12px}
+/* 4団体勝ち残り対抗戦は優勝コメントが長くなるため、省略せず予約枠ごと伸ばす。 */
+.ch-trio .ch-bubble.is-autumn-speech{display:block;-webkit-line-clamp:unset;overflow:visible}
 .ch-trio .ch-mem.is-ace .ch-por{width:150px;height:224px}
 .ch-trio .ch-mem.is-ace .ch-por .ini{font-size:52px}
 .ch-trio .ch-mem.is-ace .ch-name{font-size:15px}

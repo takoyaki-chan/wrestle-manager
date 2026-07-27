@@ -117,6 +117,21 @@ section('1-c. 個別CDが明ければ Common-1 は再び選ばれる', () => {
   assert.strictEqual(r.eligible, true, 'CD が明けたのに Common-1 が選ばれない（条件を締めすぎ）');
 });
 
+section('1-d. Common-1 の保留イベントは ID 型揺れを吸収し、退団済みの相手は無効にする', () => {
+  const s = makeStateWithOneFaction();
+  const resolved = Engine.factions.resolveCommon1Fighters(s, {
+    fighterAId: '2', fighterBId: '3', leaderId: '1',
+  });
+  assert.strictEqual(resolved.valid, true, '数値と文字列の ID が混在すると対戦者を見失う');
+  assert.strictEqual(resolved.fighterA.id, 2, 'A側を誤って解決した');
+  assert.strictEqual(resolved.fighterB.id, 3, 'B側を誤って解決した');
+
+  const stale = Engine.factions.resolveCommon1Fighters(s, {
+    fighterAId: 2, fighterBId: 999, leaderId: 1,
+  });
+  assert.strictEqual(stale.valid, false, '退団済みの相手を含む保留イベントが有効になっている');
+});
+
 // ─────────────────────────────────────────────────────────────
 // (2) 社長命令による解散・封印
 // ─────────────────────────────────────────────────────────────
