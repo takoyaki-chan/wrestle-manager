@@ -1438,6 +1438,40 @@ Engine.factions = {
     s = this.applyHostilityChange(s, facW.id, facL.id, -40);
     s = this.applyHostilityChange(s, facL.id, facW.id, -40);
 
+    // 決着したペアは、この時点で抗争状態を終了する。残る対立度は関係の余熱であり、
+    // 抗争中表示や抗争中のみの週次効果には使わない。
+    const resolvedPairKey = this._sortedPairKey(facW.id, facL.id);
+    s = {
+      ...s,
+      factions: (s.factions || []).map(f => {
+        if (f.id !== facW.id && f.id !== facL.id) return f;
+        return {
+          ...f,
+          // 旧セーブの rivalrous 型も、決着後は通常派閥として扱う。
+          ...(f.type === 'rivalrous' ? { type: 'loyal' } : {}),
+          inHostility: false,
+          momentum: 0,
+        };
+      }),
+    };
+
+    // 同ペアの進行予約・監視・連続カウンタは、決着後に持ち越さない。
+    const isResolvedPair = entry => entry
+      && this._sortedPairKey(entry.factionAId, entry.factionBId) === resolvedPairKey;
+    if (isResolvedPair(s.factionPendingIgnite)) {
+      const { factionPendingIgnite: _, ...rest } = s;
+      s = rest;
+    }
+    if (Array.isArray(s.f02MediationWatches)) {
+      s = { ...s, f02MediationWatches: s.f02MediationWatches.filter(w => !isResolvedPair(w)) };
+    }
+    for (const key of ['factionReconciliationStreak', 'factionEndlessStreak']) {
+      if (!s[key] || !(resolvedPairKey in s[key])) continue;
+      const updated = { ...s[key] };
+      delete updated[resolvedPairKey];
+      s = { ...s, [key]: updated };
+    }
+
     // 敗者派閥の下位 2〜3 名に trust ペナルティ (離脱リスク = trust 下押し)
     const roster = s.roster || [];
     const ovrMap = new Map();

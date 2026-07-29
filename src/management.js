@@ -13982,8 +13982,15 @@ const Engine = {
       const rentalOrgName = fromSource === 'rival'
         ? (state.rivalOrgNames?.[fromOrgId] || orgCfg?.name || '他団体')
         : 'フリーエージェント';
+      // 挑戦試合用の一時ゲスト印は保存時にロスターから除外するため、
+      // 元団体側に残っていてもレンタル契約へ持ち込まない。
+      const {
+        isAwayChallengeGuest, isCRGuest, isB3ChallengeGuest,
+        _crGuestOrgId, _b3GuestOrgId,
+        ...rentalBase
+      } = fighter;
       let rentalFighter = {
-        ...fighter,
+        ...rentalBase,
         isRental: true, rentalFromOrg: fromOrgId || null, rentalSource: fromSource,
         rentalWeeksLeft: weeksLeft,
         condition: 80, seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },

@@ -1812,7 +1812,7 @@ const Storage = {
     // battle UI is open.  Never persist them, even if an autosave is triggered
     // by an unrelated recovery path before the normal result cleanup runs.
     state.roster = (state.roster || []).filter(c =>
-      !c?.isAwayChallengeGuest && !c?.isCRGuest && !c?.isB3ChallengeGuest
+      c?.isRental || (!c?.isAwayChallengeGuest && !c?.isCRGuest && !c?.isB3ChallengeGuest)
     );
     state.roster.forEach(c => {
       delete c._weekAction; c.intensive = false;
@@ -2541,7 +2541,7 @@ const Storage = {
       // only records the roster-cap recalculation; it must not disable future
       // cleanup if an interrupted battle polluted a newer save.
       const cleanedRoster = (G.roster || []).filter(f =>
-        !f?.isAwayChallengeGuest && !f?.isCRGuest && !f?.isB3ChallengeGuest
+        f?.isRental || (!f?.isAwayChallengeGuest && !f?.isCRGuest && !f?.isB3ChallengeGuest)
       );
       const removedChallengeGuests = cleanedRoster.length !== (G.roster || []).length;
       if (removedChallengeGuests) {

@@ -41,12 +41,14 @@ serialize({
     { id: 101, name: 'Away guest', isAwayChallengeGuest: true },
     { id: 102, name: 'Incoming guest', isCRGuest: true },
     { id: 103, name: 'B3 guest', isB3ChallengeGuest: true },
+    // レンタル元の一時フラグが紛れ込んでいても、契約済み選手は保存対象。
+    { id: 104, name: 'Rental', isRental: true, isAwayChallengeGuest: true },
   ],
   gameLog: [],
   debugLog: [],
 }, undefined);
 
 const saved = JSON.parse(serializedJson);
-assert.deepStrictEqual(saved.roster.map(f => f.id), [1], 'temporary challenge opponents must never enter a save payload');
+assert.deepStrictEqual(saved.roster.map(f => f.id), [1, 104], 'temporary challenge opponentsだけを除外し、契約中レンタルは保持する');
 
 console.log('challenge-guest-save-sanitize-test: ok');

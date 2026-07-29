@@ -9,7 +9,7 @@ const app = fs.readFileSync(path.join(root, 'src', 'app.js'), 'utf8');
 const management = fs.readFileSync(path.join(root, 'src', 'management.js'), 'utf8');
 
 assert(app.includes('_migrated_roster_cap_away_guest_repair_v1'), 'affected saves must receive a one-time roster-cap repair');
-assert(app.includes('!f?.isAwayChallengeGuest && !f?.isCRGuest'), 'save repair must remove stale away and incoming-challenge guests');
+assert(app.includes('f?.isRental || (!f?.isAwayChallengeGuest && !f?.isCRGuest'), 'save repair must remove stale guests without deleting active rentals');
 assert(!app.includes('ownCount > 12'), 'temporary roster size must never unlock the 16-person cap');
 assert(!app.includes('(state.rosterCap || 0) >= 16'), 'a previously corrupted cap must not self-perpetuate');
 assert(management.includes('!f.isRental && !f.isAwayChallengeGuest'), 'away guests must be excluded from organization rankings');
