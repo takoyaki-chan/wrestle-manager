@@ -2167,6 +2167,8 @@ const Engine = {
     // MQ再設計P3b(mq-redesign-proposal-v0.4 §3.3〜§3.6): 因縁/タイトル/trust/バフの
     // 固定加算を撤廃し、simulateMatch への入力(リング内効果)へ変換する定数群。
     TITLE_RING_ESCAPE: 0.10,
+    // 通常興行の防衛戦だけ、王者は土壇場でわずかに粘る。初代決定戦・PPV・大会戦は対象外。
+    CHAMPION_DEFENSE_ESCAPE_BONUS: 0.02,
     TRUST_RING_OV_PENALTY: -3,
     BUFF_RING_OV_BONUS: 2,
     RIVALRY_RING_TABLE: {
@@ -2222,6 +2224,13 @@ const Engine = {
       const rivalryRing = Engine.mq.rivalryRingEffect(rivalryLevel);
 
       const titleMatch = !!options.isTitle;
+      const championId = state?.titles?.world?.championId;
+      const championDefenseEscape = (options.normalShowRingExtras && titleMatch && championId != null)
+        ? [
+            leftId === championId ? Engine.mq.CHAMPION_DEFENSE_ESCAPE_BONUS : 0,
+            rightId === championId ? Engine.mq.CHAMPION_DEFENSE_ESCAPE_BONUS : 0,
+          ]
+        : [0, 0];
 
       const trustDebuff = [
         (fighterL && (fighterL.trust ?? 50) < 35) ? Engine.mq.TRUST_RING_OV_PENALTY : 0,
@@ -2252,7 +2261,7 @@ const Engine = {
       }
 
       return {
-        simOpts: { rivalryRing, titleMatch, trustDebuff, ovBuff },
+        simOpts: { rivalryRing, titleMatch, championDefenseEscape, trustDebuff, ovBuff },
         rivalryLevel,
         nextMatchMqApplied,
       };

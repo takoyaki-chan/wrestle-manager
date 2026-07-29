@@ -313,6 +313,9 @@ Engine.battle = {
         + (titleRingMatch ? TITLE_RING_COUNTER_BONUS : 0);
       const ringEscapeBonus = (rivalryRing ? (Number(rivalryRing.escape) || 0) : 0)
         + (titleRingMatch ? TITLE_RING_ESCAPE_BONUS : 0);
+      // 通常興行の防衛戦でのみ渡される、王者個人のごく小さな土壇場補正。
+      const championDefenseEscape = Array.isArray(ringOpts.championDefenseEscape)
+        ? ringOpts.championDefenseEscape : [0, 0];
       const trustRingDebuff = Array.isArray(ringOpts.trustDebuff) ? ringOpts.trustDebuff : [0, 0];
       const buffRingBonus = Array.isArray(ringOpts.ovBuff) ? ringOpts.ovBuff : [0, 0];
       const ringOvAdjustL = (Number(trustRingDebuff[0]) || 0) + (Number(buffRingBonus[0]) || 0);
@@ -568,7 +571,9 @@ Engine.battle = {
                 const _popAdvKo = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
                 const _popMultKo = (tier >= 2 ? 2.0 : 1.0);
                 let koChance = B.calcKickoutChance(def, ph, eng, _popAdvKo, _popMultKo);
-                const koFlatBonus = (hasMeishoubu ? 0.15 : 0) + ringEscapeBonus;
+                const defenderChampionBonus = fType === 'fall'
+                  ? (Number(championDefenseEscape[isLeftAtk ? 1 : 0]) || 0) : 0;
+                const koFlatBonus = (hasMeishoubu ? 0.15 : 0) + ringEscapeBonus + defenderChampionBonus;
                 if (koFlatBonus > 0) koChance = Math.min(koChance + koFlatBonus, 0.45);
                 if (Engine.rng.float(rng) < koChance) {
                   escaped = true;
@@ -584,7 +589,8 @@ Engine.battle = {
                 const _popAdvGu = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
                 const _popMultGu = (tier >= 2 ? 2.0 : 1.0);
                 let escChance = B.calcGuEscapeChance(def, ph, eng, _popAdvGu, _popMultGu);
-                const guFlatBonus = (hasMeishoubu ? 0.15 : 0) + ringEscapeBonus;
+                const defenderChampionBonus = Number(championDefenseEscape[isLeftAtk ? 1 : 0]) || 0;
+                const guFlatBonus = (hasMeishoubu ? 0.15 : 0) + ringEscapeBonus + defenderChampionBonus;
                 if (guFlatBonus > 0) escChance = Math.min(escChance + guFlatBonus, 0.40);
                 if (Engine.rng.float(rng) < escChance) {
                   escaped = true;
@@ -776,6 +782,7 @@ Engine.battle = {
         // MQ再設計P3b: リング内化の適用メタデータ(観測・新聞演出用。存在する場合のみ付与)
         ...(rivalryRing ? { rivalryRing: { tier: rivalryRing.tier, counterPt: rivalryRing.counterPt, escape: rivalryRing.escape } } : {}),
         ...(titleRingMatch ? { titleRing: { escape: TITLE_RING_ESCAPE_BONUS, counterPt: TITLE_RING_COUNTER_BONUS } } : {}),
+        ...((championDefenseEscape[0] || championDefenseEscape[1]) ? { championDefenseEscape: [championDefenseEscape[0] || 0, championDefenseEscape[1] || 0] } : {}),
         ...((trustRingDebuff[0] || trustRingDebuff[1]) ? { trustDebuff: [trustRingDebuff[0] || 0, trustRingDebuff[1] || 0] } : {}),
         ...((buffRingBonus[0] || buffRingBonus[1]) ? { ovBuff: [buffRingBonus[0] || 0, buffRingBonus[1] || 0] } : {}),
         ...((ringOvAdjustL || ringOvAdjustR) ? { ovAdjust: [ringOvAdjustL, ringOvAdjustR] } : {}),
