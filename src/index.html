@@ -42,6 +42,7 @@
   --cream-text-dim: #7a7466;
   --cream-gold: #7a6530;
   --cream-gold-dark: #5c4a1e;
+  --ppv-accent: #9b59b6;
   --cream-border: rgba(100,85,50,0.14);
   --cream-border-hover: rgba(122,101,48,0.35);
   --cream-red: #8b1a1a;
@@ -1095,6 +1096,48 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .db-hof-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:12px;color:var(--text-sub)}
 .db-hof-stats-grid strong{color:var(--text-main);font-size:14px}
 .db-hof-detail-btn{background:rgba(200,190,170,0.08);border:1px solid rgba(200,190,170,0.15);border-radius:6px;padding:8px 24px;color:var(--text-sub);cursor:pointer;font-size:13px}
+/* ── 記録 v1.0 ── */
+.db-record-new-tab{display:inline-block;margin-left:4px;padding:1px 4px;border-radius:3px;background:var(--accent-rival);color:var(--text-main);font-size:8px;font-weight:900;line-height:1;vertical-align:middle;animation:db-record-pulse 1.4s infinite}
+.db-record-seg{display:inline-flex;overflow:hidden;margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius-md)}
+.db-record-seg-btn{padding:6px 18px;border:0;background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer}
+.db-record-seg-btn.active{background:color-mix(in srgb,var(--gold) 14%,transparent);color:var(--gold-light);font-weight:700}
+.db-record-book{min-width:0}
+.db-record-strips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.db-record-strip{display:flex;align-items:center;gap:10px;min-width:0;padding:8px 12px;border:1px solid color-mix(in srgb,var(--gold) 28%,transparent);border-radius:var(--radius-md);background:color-mix(in srgb,var(--gold) 5%,transparent)}
+.db-record-strip.tag{border-color:color-mix(in srgb,var(--ppv-accent) 36%,transparent);background:color-mix(in srgb,var(--ppv-accent) 5%,transparent)}
+.db-record-strip-label{flex-shrink:0;color:var(--gold);font-size:9px;letter-spacing:2px;line-height:1;writing-mode:vertical-rl}
+.db-record-strip.tag .db-record-strip-label{color:var(--ppv-accent)}
+.db-record-strip-value{flex-shrink:0;width:48px;color:var(--gold-light);font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;text-align:center;text-shadow:0 0 10px color-mix(in srgb,var(--gold) 30%,transparent)}
+.db-record-strip.tag .db-record-strip-value{color:var(--ppv-accent);text-shadow:0 0 10px color-mix(in srgb,var(--ppv-accent) 30%,transparent)}
+.db-record-strip-value.is-dim{color:var(--text-dim);text-shadow:none}
+.db-record-strip-detail{flex:1;min-width:0}
+.db-record-strip-match{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;font-weight:700;line-height:1.3}
+.db-record-vs{color:var(--text-dim);font-family:'Bebas Neue',sans-serif;font-size:9px}
+.db-record-faces{display:flex;align-items:center}
+.db-record-face{position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:-6px;overflow:hidden;border:1.5px solid color-mix(in srgb,var(--gold) 55%,transparent);border-radius:50%;background:color-mix(in srgb,var(--gold) 14%,transparent);color:var(--gold-light);font-size:10px;font-weight:900}
+.db-record-face:first-child{margin-left:0}.tag .db-record-face{border-color:color-mix(in srgb,var(--ppv-accent) 55%,transparent);background:color-mix(in srgb,var(--ppv-accent) 14%,transparent);color:var(--ppv-accent)}
+.db-record-face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.db-record-strip-when{margin-top:3px;color:var(--text-sub);font-size:9px}
+.db-record-new{flex-shrink:0;padding:1px 6px;border-radius:3px;background:var(--accent-rival);color:var(--text-main);font-size:9px;font-weight:900;animation:db-record-pulse 1.4s infinite}
+@keyframes db-record-pulse{0%,100%{opacity:1}50%{opacity:.55}}
+.db-record-hall{margin-bottom:14px;padding:16px;border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:8px;background:radial-gradient(ellipse 60% 70% at 50% -20%,color-mix(in srgb,var(--gold) 14%,transparent),transparent 60%),var(--bg-card)}
+.db-record-cere-head{display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0 4px;color:color-mix(in srgb,var(--gold) 40%,transparent);font-size:12px}
+.db-record-cere-head h3{margin:0;color:var(--gold);font-family:'Shippori Mincho',serif;font-size:16px;font-weight:700;letter-spacing:8px}
+.db-record-cere-lead{margin:0 0 14px;color:var(--text-dim);font-size:10px;letter-spacing:2px;text-align:center}
+.db-record-glory-row{display:flex;align-items:flex-end;justify-content:center;gap:22px;min-width:max-content;overflow-x:auto;padding-bottom:4px}
+.db-record-glory-card{display:flex;flex-direction:column;align-items:center;min-width:0;text-align:center}.db-record-glory-card[role=button],.db-record-defense-band[role=button]{cursor:pointer}
+.db-record-upper{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid color-mix(in srgb,var(--gold) 65%,transparent);border-radius:8px;background:color-mix(in srgb,var(--gold) 10%,transparent);box-shadow:0 0 22px color-mix(in srgb,var(--gold) 22%,transparent);color:var(--gold-light);font-size:52px;font-weight:900}
+.db-record-upper.is-tenchosen{width:132px;height:198px}.db-record-upper.is-ppv{width:96px;height:144px}.db-record-upper.is-defense{width:88px;height:132px;border-radius:6px;font-size:36px}
+.db-record-upper img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}.db-record-upper-initial{position:relative;z-index:0}
+.db-record-nameband{box-sizing:border-box;min-height:37px;width:100%;margin-top:-37px;padding:18px 7px 5px;position:relative;z-index:1;background:linear-gradient(transparent,color-mix(in srgb,var(--bg) 88%,transparent));color:var(--text-main);font-size:13px;font-weight:700;text-shadow:0 1px 3px var(--bg)}
+.db-record-nameband small{display:block;color:var(--text-sub);font-size:9px;font-weight:400}.db-record-ppv-card .db-record-nameband{min-height:33px;margin-top:-33px;padding-top:16px;font-size:11px}
+.db-record-glory-plate{margin-top:9px;color:var(--gold-light);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px}.db-record-glory-sub{margin-top:2px;color:var(--text-dim);font-size:9px;letter-spacing:1px}
+.db-record-glory-card.is-empty .db-record-upper{flex-direction:column;gap:6px;border-style:dashed;border-color:var(--border);background:transparent;box-shadow:none;color:var(--text-dim);font-size:22px;font-weight:400}.db-record-glory-card.is-empty .db-record-upper small{font-size:12px;line-height:1.35}.db-record-glory-card.is-empty .db-record-glory-plate{color:var(--text-dim)}
+.db-record-ppv-hall{border-color:color-mix(in srgb,var(--ppv-accent) 35%,transparent);background:radial-gradient(ellipse 60% 70% at 50% -20%,color-mix(in srgb,var(--ppv-accent) 10%,transparent),transparent 60%),var(--bg-card)}
+.db-record-cere-head.is-ppv{color:color-mix(in srgb,var(--ppv-accent) 40%,transparent)}.db-record-cere-head.is-ppv h3{color:var(--ppv-accent);font-size:14px;letter-spacing:5px}
+.db-record-ppv-row{display:flex;align-items:flex-end;gap:14px;overflow-x:auto;padding-bottom:4px}.db-record-ppv-card .db-record-upper{border-color:color-mix(in srgb,var(--ppv-accent) 55%,transparent);background:color-mix(in srgb,var(--ppv-accent) 10%,transparent);box-shadow:0 0 16px color-mix(in srgb,var(--ppv-accent) 18%,transparent);color:var(--ppv-accent)}.db-record-ppv-card .db-record-glory-plate{margin-top:7px;color:var(--ppv-accent);font-size:13px}
+.db-record-defense-band{display:flex;align-items:center;gap:20px;padding:14px 20px;border:1px solid color-mix(in srgb,var(--gold) 30%,transparent);border-radius:8px;background:radial-gradient(ellipse 50% 90% at 20% 0%,color-mix(in srgb,var(--gold) 12%,transparent),transparent 60%),var(--bg-card)}
+.db-record-defense-portrait{position:relative;flex-shrink:0}.db-record-defense-portrait>span{position:absolute;z-index:1;top:-13px;left:50%;transform:translateX(-50%);font-size:19px;filter:drop-shadow(0 2px 4px var(--bg))}.db-record-defense-info>div{margin-bottom:6px;color:var(--gold);font-family:'Shippori Mincho',serif;font-size:12px;letter-spacing:4px}.db-record-defense-info p{display:flex;align-items:baseline;gap:5px;margin:0}.db-record-defense-info p strong{color:var(--gold-light);font-family:'Bebas Neue',sans-serif;font-size:46px;font-weight:400;line-height:1;text-shadow:0 0 16px color-mix(in srgb,var(--gold) 35%,transparent)}.db-record-defense-info p span,.db-record-defense-info small{color:var(--text-sub);font-size:12px}.db-record-defense-info h3{margin:4px 0 0;font-size:15px}.db-record-defense-info small{display:block;margin-top:3px;font-size:11px;line-height:1.6}
 /* 勢力図（SVGコンテナ — 描画はインラインSVG） */
 #pmapContainer{background:rgba(0,0,0,0.2);border-radius:8px;margin:8px 0}
 /* ── 団体比較 v2 ── */
@@ -9707,7 +9750,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
             <p>・<strong>📜 団体年代記</strong> — 数シーズンごとに「章」が編まれ、時代の主役が刻まれます。旗揚げ世代の物語は「序章」として永久保存</p>
             <p>・<strong>⚔ 因縁列伝</strong> — 宿命のライバル関係を特集する紙面</p>
             <p>・<strong>👤 選手経歴</strong> — 選手詳細から見られる、一人ひとりの年表</p>
-            <p>・<strong>🏆 殿堂</strong> — 引退した名選手たちの記憶</p>
+            <p>・<strong>📜 記録</strong> — 殿堂入りした名選手たちの記憶と、歴代の栄冠</p>
             <p>・<strong>📅 シーズン総括</strong> — 年度末の総決算（ANNUAL RECORD）</p>
             <p>攻略情報ではありません。でも、このゲームの主役は数字ではなく彼女たちです。ときどき、読み返してあげてください。</p>
           </div>
