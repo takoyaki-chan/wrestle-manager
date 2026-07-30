@@ -4437,7 +4437,7 @@ function renderRanking() {
   const _buildAchievementTooltip = (r, currentSeason) => {
     const items = (r && r.achievementItems) || [];
     if (items.length === 0) {
-      return 'このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/新人賞/メディア厚労賞などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。';
+      return 'このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/メディア功労賞などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。';
     }
     // age (シーズン跨ぎ回数) でグルーピング: 0=当シーズン, 1=1年前, ...
     const buckets = {};
@@ -5002,9 +5002,7 @@ function _renderShachoshitsuScoutDesk() {
     // disabledボタンはマウスイベントを発火しないため、data-tipはラッパーspanに付け
     // ボタン側をpointer-events:noneにして理由説明をPCホバー+スマホタップ両対応にする
     const _disBtn = (label, tip) => `<span ${_tipAttr(tip)} style="display:inline-block;cursor:help"><button disabled style="pointer-events:none">${label}</button></span>`;
-    if (G.offSeason) {
-      btnHtml = _disBtn('⛔ オフシーズン', 'オフシーズン中は契約できません');
-    } else if (!canNeg) {
+    if (!canNeg) {
       const tierReq = Engine.scout.getTierConfig(c.assessedTier || 'material');
       btnHtml = _disBtn('⛔ 知名度不足', `団体人気${Engine.util.dispOrgPop(tierReq.reqPop)}以上で交渉可能`);
     } else if (_capFull) {

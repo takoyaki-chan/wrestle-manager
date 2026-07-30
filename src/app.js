@@ -11333,31 +11333,40 @@ const App = {
         }
       };
 
-      // ── プレイヤー団体ぶんのグローバル受賞 ──
+      // 業界の賞と所属団体内の賞で同じ選手が選ばれることがある（団体内MVPは業界MVPと
+      // 必然的に一致する）。同一年の同じ賞を二重に記録すると年表が「MVP 2度受賞」になり
+      // 殿堂ポイントも二重に乗るため、賞の種類ごとに記録済みIDを覚えて弾く。
+      const _awardedIds = {};
+      const recordAwardOnce = (ids, ev) => {
+        const seen = _awardedIds[ev.type] || (_awardedIds[ev.type] = new Set());
+        const fresh = ids.filter(id => id != null && !seen.has(id));
+        if (fresh.length === 0) return;
+        fresh.forEach(id => seen.add(id));
+        const target = new Set(fresh);
+        recordOnAllOrgs(f => target.has(f.id), ev);
+      };
+
+      // ── 業界全体の受賞 ──
+      // 新人王はジュニアトーナメント優勝者と同一人物（rookieOfYear が jtChampion を指す）。
       if (pendingAwards.rookieOfYear) {
         const w = pendingAwards.rookieOfYear;
-        recordOnAllOrgs(f => f.id === w.id,
+        recordAwardOnce([w.id],
           { type: 'awardRookie', season: aSeason, week: aWeek, orgName: w.orgName });
       }
       if (pendingAwards.mvp) {
         const w = pendingAwards.mvp;
-        recordOnAllOrgs(f => f.id === w.id,
+        recordAwardOnce([w.id],
           { type: 'awardMVP', season: aSeason, week: aWeek, orgName: w.orgName });
       }
       if (pendingAwards.mediaAward) {
         const w = pendingAwards.mediaAward;
-        recordOnAllOrgs(f => f.id === w.id,
+        recordAwardOnce([w.id],
           { type: 'awardMedia', season: aSeason, week: aWeek, orgName: w.orgName });
       }
       if (pendingAwards.bestMatch) {
         const bm = pendingAwards.bestMatch;
-        const bmIds = new Set();
-        if (bm.fighter1 && bm.fighter1.id) bmIds.add(bm.fighter1.id);
-        if (bm.fighter2 && bm.fighter2.id) bmIds.add(bm.fighter2.id);
-        if (bmIds.size > 0) {
-          recordOnAllOrgs(f => bmIds.has(f.id),
-            { type: 'awardBestMatch', season: aSeason, week: aWeek, mq: bm.mq, orgName: bm.orgName });
-        }
+        recordAwardOnce([bm.fighter1 && bm.fighter1.id, bm.fighter2 && bm.fighter2.id],
+          { type: 'awardBestMatch', season: aSeason, week: aWeek, mq: bm.mq, orgName: bm.orgName });
       }
 
       // ── NPC団体ごとの内部表彰（プレイヤーには表示されないが履歴には残る） ──
@@ -11366,21 +11375,17 @@ const App = {
         const a = npcAwards[orgId];
         if (!a) return;
         if (a.rookie && a.rookie.id) {
-          recordOnAllOrgs(f => f.id === a.rookie.id,
+          recordAwardOnce([a.rookie.id],
             { type: 'awardRookie', season: aSeason, week: aWeek, orgName: a.orgName });
         }
         if (a.mvp && a.mvp.id) {
-          recordOnAllOrgs(f => f.id === a.mvp.id,
+          recordAwardOnce([a.mvp.id],
             { type: 'awardMVP', season: aSeason, week: aWeek, orgName: a.orgName });
         }
         if (a.bestMatch) {
-          const bmIds = new Set();
-          if (a.bestMatch.fighter1 && a.bestMatch.fighter1.id) bmIds.add(a.bestMatch.fighter1.id);
-          if (a.bestMatch.fighter2 && a.bestMatch.fighter2.id) bmIds.add(a.bestMatch.fighter2.id);
-          if (bmIds.size > 0) {
-            recordOnAllOrgs(f => bmIds.has(f.id),
-              { type: 'awardBestMatch', season: aSeason, week: aWeek, mq: a.bestMatch.mq, orgName: a.orgName });
-          }
+          recordAwardOnce(
+            [a.bestMatch.fighter1 && a.bestMatch.fighter1.id, a.bestMatch.fighter2 && a.bestMatch.fighter2.id],
+            { type: 'awardBestMatch', season: aSeason, week: aWeek, mq: a.bestMatch.mq, orgName: a.orgName });
         }
       });
 
@@ -12123,6 +12128,21 @@ const App = {
           resultText: result.resultText,
           factionName: payload.factionAName || payload.factionBName || '派閥',
           factionTone: 'hostile',
+          factionPair: [
+            {
+              factionName: payload.factionAName,
+              leaderId: payload.leaderAId,
+              leaderName: payload.leaderAName,
+              sideLabel: '抗争側',
+            },
+            {
+              factionName: payload.factionBName,
+              leaderId: payload.leaderBId,
+              leaderName: payload.leaderBName,
+              sideLabel: '対抗側',
+            },
+          ],
+          reporterText: `${payload.factionAName || '派閥'}と${payload.factionBName || '派閥'}のリーダー対決を、今週のメインイベントとして公式戦に組みました`,
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
           state: G,

@@ -73,8 +73,10 @@ assert.strictEqual(foe.fighter, awayChallenger, 'the beaten opposing representat
 assert.ok(CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_normal.lose.includes(foe.line),
   'the defeated challenger uses an archetype-specific loss line');
 assert.strictEqual(foe.defeated, true, 'the defeated challenger portrait is marked for grayscale styling');
-assert.ok(ui.includes('const showFoeFirst'),
-  'the result modal renders the beaten opponent scene before our representative report');
+assert.ok(ui.includes('const scenes = renderReactionScene(reaction)')
+  && ui.indexOf('renderReactionScene(foeReaction)', ui.indexOf('const scenes = renderReactionScene(reaction)'))
+    > ui.indexOf('const scenes = renderReactionScene(reaction)'),
+  'the result modal renders our winning representative before the beaten opponent');
 
 assert.ok(ui.includes('crrm-reaction-bubble'), 'the reaction line is rendered as a speech bubble');
 assert.ok(ui.includes('crrm-reaction-portrait'), 'the speaker upper-body portrait is rendered below the bubble');

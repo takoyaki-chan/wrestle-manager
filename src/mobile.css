@@ -1191,16 +1191,16 @@
     padding-top: 88px;
   }
   .pb-container .pb-fighter.is-tag .pb-tag-members {
-    width: 100%;
+    width: min(100%, 98px);
     justify-content: center;
-    gap: 3px;
+    gap: 0;
   }
   .pb-container .pb-fighter.is-tag .pb-tag-member {
-    max-width: calc(50% - 2px);
+    max-width: none;
   }
   .pb-container .pb-fighter.is-tag .pb-portrait,
   .pb-container .pb-mrow.is-main .pb-fighter.is-tag .pb-portrait {
-    width: 48px;
+    width: 100%;
     height: 72px;
   }
   .pb-container .pb-tag-member-name {
@@ -1375,7 +1375,8 @@
   .stl-match-preview { width: 100%; padding: 12px 6px 4px; box-sizing: border-box; }
   .stl-match-preview .stl-final-faceoff { gap: 8px; }
   .stl-match-preview .stl-final-side { flex: 1 1 0; width: auto; min-width: 0; }
-  .stl-match-preview .stl-final-side .faces img { width: 48px; height: 48px; }
+  .stl-match-preview .stl-final-side .faces { width: 96px; height: 48px; }
+  .stl-match-preview .stl-final-side .faces img { width: 100%; height: 100%; }
   .stl-match-preview .stl-final-side .nm { font-size: 11px; overflow-wrap: anywhere; }
   .stl-progress-btn-row { gap: 8px; padding: 0 6px; }
   .stl-progress-btn-row .btn { flex: 1 1 130px; min-height: 44px; padding-left: 10px !important; padding-right: 10px !important; }

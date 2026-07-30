@@ -32,7 +32,7 @@ function section(name, fn) {
 console.log('=== 挑戦試合の結果画面 敗者と勝者の並び ===\n');
 
 section('1. 2つのシーンを横並びのラッパーで囲んでいる', () => {
-  assert.ok(/const reactionHtml = `<div class="crrm-reactions\$\{showFoeFirst \? ' is-pair' : ''\}">/.test(ui),
+  assert.ok(/const reactionHtml = `<div class="crrm-reactions\$\{showFoeAlongside \? ' is-pair' : ''\}">/.test(ui),
     'リアクションをラッパーで囲んでいない。ラッパー無しだと独立ブロックとして縦に積まれる');
 });
 
@@ -46,6 +46,12 @@ section('2. ラッパーは flex の横並び・下端揃い', () => {
   assert.ok(/justify-content:\s*center/.test(decl), '中央寄せになっていない');
   assert.ok(/flex-wrap:\s*nowrap/.test(decl),
     '折り返しを許している。折り返すと結局縦積みになる');
+  const pairAt = ui.indexOf('.crrm-reactions.is-pair {');
+  assert.ok(pairAt > 0, '2人表示用のCSSが無い');
+  const pairDecl = ui.slice(pairAt, ui.indexOf('}', pairAt));
+  assert.ok(/display:\s*grid/.test(pairDecl), '2人表示が明示的な2列グリッドではない');
+  assert.ok(/grid-template-columns:\s*minmax\(0,260px\)\s+minmax\(0,260px\)/.test(pairDecl),
+    '2人表示の列数が固定されていない');
 });
 
 section('3. シーン側が縦積みに戻る指定を持っていない', () => {
@@ -69,10 +75,17 @@ section('4. 狭い画面でも横並びを崩さない', () => {
 
 section('5. 1人だけのときもラッパーを通る（中央に出る）', () => {
   // is-pair が付くのは2人のときだけ。ラッパー自体は常に出す
-  assert.ok(/<div class="crrm-reactions\$\{showFoeFirst \? ' is-pair' : ''\}">/.test(ui),
+  assert.ok(/<div class="crrm-reactions\$\{showFoeAlongside \? ' is-pair' : ''\}">/.test(ui),
     '1人のときにラッパーを外していると、中央寄せの規則が二重管理になる');
   const at = ui.indexOf('.crrm-reactions.is-pair');
   assert.ok(at > 0, 'is-pair 用の指定が無い');
+});
+
+section('6. 2人表示は左が勝者、右が敗者', () => {
+  const winnerAt = ui.indexOf('const scenes = renderReactionScene(reaction)');
+  const loserAt = ui.indexOf('renderReactionScene(foeReaction)', winnerAt);
+  assert.ok(winnerAt > 0 && loserAt > winnerAt,
+    '生成順が「勝者→敗者」になっていない');
 });
 
 console.log('');

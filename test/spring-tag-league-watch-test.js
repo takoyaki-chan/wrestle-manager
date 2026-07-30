@@ -26,6 +26,13 @@ for (const seed of [42, 12345, 98765]) {
   assert.ok(leagueResult.replayContext, 'league must preserve its compact replay context');
   assert.ok(!leagueResult.matches.some(match => Object.prototype.hasOwnProperty.call(match, 'frames')),
     'canonical league results should not bloat saves with replay frames');
+  [...leagueResult.matches, leagueResult.finalMatch].forEach((match, matchIndex) => {
+    assert.ok(Object.prototype.hasOwnProperty.call(match, 'finType')
+      && Object.prototype.hasOwnProperty.call(match, 'finMove'),
+    `match ${matchIndex + 1} must preserve its finish`);
+    assert.ok(Object.prototype.hasOwnProperty.call(match, 'winAttribution'),
+      `match ${matchIndex + 1} must preserve who finished whom`);
+  });
 
   const applied = Engine.springTagLeague.apply(state, leagueResult).state;
   assert.strictEqual(applied.springTagLeagueCompletedSeason, applied.season,

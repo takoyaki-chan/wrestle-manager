@@ -7676,9 +7676,10 @@ const ACHIEVEMENT_CONFIG = {
     unified: 10,        // 統一トーナメント優勝者所属団体
     junior: 8,          // ジュニアトーナメント優勝者所属団体
     mvp: 10,            // 年末MVP受賞者所属団体
-    rookie: 5,          // 新人賞 受賞者所属団体
+    // 新人賞は JT 優勝者と同一人物になったため加点を廃止 (junior 8pt に一本化)。
+    // 既存セーブに残る rookie_${season} アイテムは originalPt を自前で持つのでそのまま減衰する。
     bestMatch: 5,       // ベストマッチ賞 受賞試合の所属団体 (両団体に各5pt)
-    mediaAward: 4,      // メディア厚労賞 受賞者所属団体
+    mediaAward: 4,      // メディア功労賞 受賞者所属団体
     bestAttend: 3,      // シーズン最大動員興行 開催団体
     springTag: 8,       // 春のタッグリーグ 優勝団体 (spring-tag-league-spec-v0.1 §12.2)
     autumnWar: 10,      // 4団体勝ち残り対抗戦 優勝団体 (autumn-gauntlet-war-spec-v0.1 §5.2)
@@ -13367,7 +13368,7 @@ const AWARD_LINES = {
         'くっ…泣くかよこんなとこで…。ちくしょう…嬉しいじゃねえか…！'
       ],
       seductive: [
-        '新人賞……っ……一年目、無我夢中だったの……認めてもらえて嬉しいわ……'
+        '新人王……っ……無我夢中だったの……認めてもらえて嬉しいわ……'
       ],
       composed: [
         '…っ…そうか。…ありがとう。…次、行くよ'

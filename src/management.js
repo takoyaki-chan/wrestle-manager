@@ -15508,7 +15508,7 @@ const Engine = {
             winnerName: `${pendingAwards.bestMatch.fighter1.name} vs ${pendingAwards.bestMatch.fighter2.name}`,
           });
         }
-        // ジュニアトーナメント優勝
+        // ジュニアトーナメント優勝（= 新人王。同一功績なので新人賞ぶんの加点は行わない）
         if (pendingAwards.jtChampion && pendingAwards.jtChampion.orgId) {
           Engine.achievement.add(s, pendingAwards.jtChampion.orgId, {
             id: `junior_${s.season}`, type: 'junior',
@@ -15517,21 +15517,12 @@ const Engine = {
             winnerName: pendingAwards.jtChampion.name,
           });
         }
-        // 新人賞
-        if (pendingAwards.rookieOfYear && pendingAwards.rookieOfYear.orgId) {
-          Engine.achievement.add(s, pendingAwards.rookieOfYear.orgId, {
-            id: `rookie_${s.season}`, type: 'rookie',
-            originalPt: ACFG.pt.rookie || 5,
-            label: '新人賞',
-            winnerName: pendingAwards.rookieOfYear.name,
-          });
-        }
-        // メディア厚労賞
+        // メディア功労賞
         if (pendingAwards.mediaAward && pendingAwards.mediaAward.orgId) {
           Engine.achievement.add(s, pendingAwards.mediaAward.orgId, {
             id: `media_${s.season}`, type: 'mediaAward',
             originalPt: ACFG.pt.mediaAward || 4,
-            label: 'メディア厚労賞',
+            label: 'メディア功労賞',
             winnerName: pendingAwards.mediaAward.name,
           });
         }
@@ -18042,6 +18033,7 @@ Engine.awards = {
       id: jtResult.champion.id, name: jtResult.champion.name,
       portrait: jtResult.champion.portrait,
       ovr: Engine.util.ov(jtResult.champion),
+      age: jtResult.champion.age != null ? jtResult.champion.age : null,
       style: jtResult.champion.style || 'Allround',
       orgId: jtResult.champion._orgId || 'player',
       orgName: jtResult.champion._orgName || Engine.awards._orgName(state, jtResult.champion._orgId || 'player'),
@@ -18080,6 +18072,9 @@ Engine.awards = {
     }
     let tenchosenChampion = null;
     let ppvFinalWinner = null;
+    // 秋の4団体勝ち残り対抗戦は団体表彰。優勝チームの出場3名を careerRecord から拾う
+    // (中止年は出場履歴自体が付かないため、自然に該当なしとなる)。
+    const autumnWarMembers = [];
     allFighters.forEach(({ fighter }) => {
       const history = (fighter.careerRecord && fighter.careerRecord.history) || [];
       if (!tenchosenChampion && history.some(e =>
@@ -18090,7 +18085,18 @@ Engine.awards = {
         e.type === 'ppvMainEvent' && e.season === state.season && e.isSummit && e.won)) {
         ppvFinalWinner = awardFighter(fighter.id);
       }
+      if (history.some(e =>
+        e.type === 'autumnWar' && e.season === state.season && e.result === 'champion')) {
+        const row = awardFighter(fighter.id);
+        if (row) autumnWarMembers.push(row);
+      }
     });
+    const autumnWarChampion = autumnWarMembers.length > 0 ? {
+      season: state.season, orgId: autumnWarMembers[0].orgId,
+      orgName: autumnWarMembers[0].orgName,
+      isPlayerOrg: autumnWarMembers[0].isPlayerOrg,
+      fighters: autumnWarMembers,
+    } : null;
 
     // NPC団体ごとの内部表彰（プレイヤー視点では暗黙の事実として履歴にだけ残る）
     const npcAwards = {};
@@ -18109,9 +18115,12 @@ Engine.awards = {
 
     return {
       season: state.season,
-      rookieOfYear: Engine.awards.selectRookie(state),
+      // 新人王 = ジュニアトーナメント優勝者。OVR 最高を機械的に選ぶ旧方式は廃止した
+      // (JT 優勝者と母集団がほぼ重なり、表彰式で同じ顔が2枚続いていた)。
+      rookieOfYear: jtChampion,
       jtChampion:   jtChampion,
       springTagChampion,
+      autumnWarChampion,
       tenchosenChampion,
       ppvFinalWinner,
       bestMatch:    Engine.awards.selectBestMatch(rng, state),
@@ -18200,49 +18209,6 @@ Engine.awards = {
       orgName: Engine.awards._orgName(state, orgId),
       mq,
       isPlayerOrg: false,
-    };
-  },
-
-  /** ① 新人王: 全団体の今季デビュー組(careerSeasons===0、表彰生成時点でインクリメント前)から OVR 最高 */
-  selectRookie(state) {
-    const ov = Engine.util.ov;
-    const candidates = [];
-    const rookieTier = f => {
-      if ((f.careerSeasons || 0) === 0) return 1;
-      // 旧セーブやオフシーズン加入経路では、初年度開始時点で careerSeasons が
-      // 1へ進んでいる場合がある。加入タイムラインが今季開始なら新人として救済する。
-      return ((f.careerSeasons || 0) === 1
-        && (f.orgTimeline || []).some(t => t.fromSeason === state.season))
-        ? 2 : 0;
-    };
-    state.roster.forEach(f => {
-      const tier = rookieTier(f);
-      if (tier)
-        candidates.push({ fighter: f, orgId: 'player', orgName: Engine.awards._orgName(state, 'player'), tier });
-    });
-    if (state.aiOrgs) {
-      Object.keys(state.aiOrgs).forEach(orgId => {
-        const orgData = state.aiOrgs[orgId];
-        if (!orgData || !orgData.roster) return;
-        orgData.roster.forEach(f => {
-          const tier = rookieTier(f);
-          if (tier)
-            candidates.push({ fighter: f, orgId, orgName: Engine.awards._orgName(state, orgId), tier });
-        });
-      });
-    }
-    if (candidates.length === 0) return null;
-    candidates.sort((a, b) => a.tier - b.tier || ov(b.fighter) - ov(a.fighter));
-    const bestTier = candidates[0].tier;
-    const eligible = candidates.filter(c => c.tier === bestTier);
-    eligible.sort((a, b) => ov(b.fighter) - ov(a.fighter));
-    const best = eligible[0];
-    return {
-      id: best.fighter.id, name: best.fighter.name, portrait: best.fighter.portrait,
-      orgId: best.orgId,
-      orgName: best.orgName, ovr: ov(best.fighter), age: best.fighter.age,
-      style: best.fighter.style || 'Allround',
-      isPlayerOrg: best.orgId === 'player'
     };
   },
 
@@ -19414,20 +19380,14 @@ Engine.seasonReview = {
 
     // ── §I 今季を彩った記録(自団体該当分のみ・ベストマッチ/勝敗記録は含めない) ──
     const records = [];
-    if (awards && awards.rookieOfYear && awards.rookieOfYear.isPlayerOrg) {
-      const r = awards.rookieOfYear;
-      records.push({
-        tag: '新人王', id: r.id, name: r.name,
-        meta: `${r.age != null ? r.age : '?'} / OVR ${r.ovr}`,
-        narr: (_lines && _pickLine(_lines.records.rookie, _nseed + 1)) || 'デビュー年でこの実績を残した。',
-      });
-    }
     if (champRecord) records.push(champRecord);
+    // 新人王はジュニアトーナメント優勝者に授与されるため、1件にまとめる
+    // (rookieOfYear と jtChampion は同じ選手を指す)。
     if (awards && awards.jtChampion && awards.jtChampion.isPlayerOrg) {
       const j = awards.jtChampion;
       records.push({
-        tag: 'JT優勝', id: j.id, name: j.name,
-        meta: `OVR ${j.ovr}`,
+        tag: 'JT優勝・新人王', id: j.id, name: j.name,
+        meta: `${j.age != null ? `${j.age}歳 / ` : ''}OVR ${j.ovr}`,
         narr: (_lines && _pickLine(_lines.records.jt, _nseed + 21)) || 'ジュニアトーナメントを制した。',
       });
     }
@@ -19499,7 +19459,7 @@ Engine.seasonReview = {
     let awardsCount = 0;
     if (awards) {
       if (awards.mvp && awards.mvp.isPlayerOrg) awardsCount++;
-      if (awards.rookieOfYear && awards.rookieOfYear.isPlayerOrg) awardsCount++;
+      // JT優勝と新人王は同一功績なので1つとして数える
       if (awards.jtChampion && awards.jtChampion.isPlayerOrg) awardsCount++;
       if (awards.mediaAward && awards.mediaAward.isPlayerOrg) awardsCount++;
     }
@@ -26134,6 +26094,7 @@ Engine.springTagLeague = {
         teamA: { orgId: orgA, f1Id: teamA.f1Id, f2Id: teamA.f2Id },
         teamB: { orgId: orgB, f1Id: teamB.f1Id, f2Id: teamB.f2Id },
         winner: result.winner, mq, isDraw, turns: result.turns,
+        finType: result.finType, finMove: result.finMove, winAttribution: result.winAttribution,
         conditionBefore,
         conditionAfter: { [orgA]: Math.round(condState[orgA]), [orgB]: Math.round(condState[orgB]) },
         wear: { [orgA]: Math.round(wearA * 10) / 10, [orgB]: Math.round(wearB * 10) / 10 },
@@ -26180,6 +26141,7 @@ Engine.springTagLeague = {
       finalMatch: {
         orgA: finalA, orgB: finalB, teamA: finalTeamA, teamB: finalTeamB,
         winner: finalResult.winner, mq: finalResult.mq, turns: finalResult.turns,
+        finType: finalResult.finType, finMove: finalResult.finMove, winAttribution: finalResult.winAttribution,
         conditionBefore: finalConditionBefore,
       },
       champion: champOrg, runnerUp: runnerUpOrg,

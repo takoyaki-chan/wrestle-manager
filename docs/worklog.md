@@ -1,5 +1,100 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 年末表彰の項目を整理した（2026-07-30）
+
+Keisuke「年末表彰の項目を検討。今あるものの掘り起こしと、特別興行などから考える」から始まり、
+棚卸しの結果を受けて4点を確定・実装した。
+
+### 棚卸しで分かったこと
+
+現行11スライドのうち**純粋な「賞」は4つだけ**（メディア功労賞・新人王・ベストマッチ・MVP）で、
+残りは大会結果と状態の再掲だった。四半期末の特別興行は4つあるのに、
+**Q3末（Week36）の秋の4団体勝ち残り対抗戦だけが表彰式に一切出ていなかった**。
+Q1（春タッグ）・Q2（JT）・Q4（PPV/天頂戦）は全部出ているのにQ3だけ空席という穴。
+
+さらに Keisuke 指摘の「JT優勝と新人王はほぼ同じ」を実装で確認したところ、
+**JT** は年齢20歳以下・全団体からOVR上位8名（`Engine.juniorTournament.select`）、
+**新人王** は在籍1年目からOVR最高を機械的に選ぶだけ（試合結果を一切見ていない）。
+軸は年齢 vs 在籍年数で別だが母集団がほぼ重なり、しかも新人王は無条件のOVR1位なので
+JT優勝者と一致しやすい。**旧スライド順では 新人王(2枚目) → JT優勝(3枚目) で隣接**しており、
+同じ顔が2連続で出る状態だった。
+
+### 確定した方針（Keisuke 裁定）
+
+1. **新人王＝ジュニアトーナメント優勝者**に統合。OVRだけで選ぶ旧方式は廃止
+2. **春のタッグリーグ優勝＝タッグ王者**。独立賞は作らず優勝スライドが称号を兼ねる
+3. **秋の4団体勝ち残り対抗戦の優勝団体**を新規追加。個人賞（勝ち抜き賞）は**作らない**
+4. **今年の大会 / 個人表彰の2部構成**にする。仕切りスライドは挟まない（枚数を増やさない）
+5. 新人賞の実績ポイント加点は**廃止**（JT優勝 8pt に一本化）
+6. 天頂戦覇者とPPV最終戦勝者は**既に排他**（`management.js` の Week48 早期 return を確認）。変更不要
+
+### 実装
+
+**① メディア「厚労」賞の誤字修正**: プレイヤーに見える2箇所（`management.js` の
+`Engine.achievement.add` ラベル、`ui-render.js` の実績ツールチップ空状態）と
+`data.js`・`specs/org-ranking-spec-v2.0.md` のコメント/表。worklog は過去記録なので不変。
+
+**② 秋の対抗戦 優勝団体スライド**: `Engine.awards.generate` に `autumnWarChampion` を追加。
+データ源は **careerRecord の `autumnWar` 履歴**（`{result:'champion', season}`）で、
+天頂戦・PPV最終戦と同じ導出パターンに揃えた。`state.autumnWar` を読まないので
+ロード後も欠けず、中止年は出場履歴自体が付かないため自然に該当なしとなる。
+UIは `_buildSeasonEventChampionAward` に `autumnWar` バリアント（🍁）を追加。
+3名並ぶため gap 28px→14px・名前17px・`flex-wrap` を条件付きで適用。
+
+**③ 新人王のJT統合**: `Engine.awards.selectRookie`（OVR方式・約40行）を削除し、
+`rookieOfYear: jtChampion` へ。`jtChampion` に `age` を追加（スライド表示用）。
+`rookieOfYear` フィールドを残したので `awardRookie` 履歴・年表・殿堂ポイント・称号・
+DBカード表示の**下流はすべて無改修で動く**。UIは `_buildRookieAward` を削除し、
+JTスライドに `新人王` タグと年齢を追加。受賞セリフは従来どおり rookie プール（これが正になった）。
+
+**④ 2部構成**: `slideInfo` に `section` を持たせ、`index.html` にヘッダー行
+`.aw-header-section` を新設（`:empty{display:none}` で締めの一覧スライドでは非表示）。
+順序は 第1部＝開催週順（春タッグ→JT→秋対抗戦→天頂戦/PPV）、
+第2部＝メディア功労賞→ベストマッチ→タイトル王者→MVP→殿堂入り と重みを上げる。
+新人王が1枚消えて秋対抗戦が1枚入るので**正味 ±0 枚**。
+
+**⑤ 新人賞加点の廃止**: `offWeek1` の `rookie_${season}` add ブロックを削除し、
+`ACHIEVEMENT_CONFIG.pt.rookie` も削除。既存セーブの `rookie_${season}` アイテムは
+自前の `originalPt` を持つので通常の減衰でそのまま消滅する。
+
+### ついでに直した既存バグ2件
+
+**シーズン総括の二重計上**: `Engine.seasonReview.build` が `rookieOfYear` と `jtChampion` で
+`records[]` に**同じ選手を2行**push し、`awardsCount` も2重に数えていた。1件に統合。
+
+**受賞履歴の二重記録**: `app.js` の表彰履歴書き込みで、業界の賞とNPC団体内の賞に
+同じ選手が選ばれると `awardMVP`/`awardRookie` が**同一年に2件**入っていた。
+団体内MVPは業界MVPと必然的に一致するため、NPC団体所属の選手がMVPを取ると
+年表が「MVP 2度受賞」になり殿堂ポイント（`count * 2`）も二重に乗る状態だった。
+賞の種類ごとに記録済みIDを覚える `recordAwardOnce` を挟んで解消。
+
+### セリフ1本修正
+
+`AWARD_LINES.rookie` の seductive 系に `'新人賞……っ……一年目、無我夢中だったの……'` があり、
+受賞者がU-20の2〜3年目でも起こりうるようになったため「一年目」を外し、
+賞の名称も `新人賞`→`新人王` に揃えた（他のセリフはすべて「新人王」表記）。
+
+### 検証
+
+- `node test/auto-sim.js 40 12345` → violations 0 / errors 0 / weeks 2120 / **ALL CLEAR ✓**
+- `test/year-end-event-awards-test.js` を改訂（新人王＝JT優勝／`_buildRookieAward` 撤去／
+  kind文字列と設定キーの一致／2部構成／新人賞加点の消滅を検査）
+- **`test/year-end-awards-generate-test.js` を新規追加**。`Engine.awards.generate` を実際に呼び、
+  優勝チーム3名の復元・準優勝と不出場の除外・前シーズン履歴を拾わない・中止年の該当なし・
+  新人王＝JT優勝者・JT未開催年は新人王なし の6点を検証
+
+### 実機で見てほしいところ
+
+シーズン末（offWeek1）の年間表彰式を通しで送り、①ヘッダーに「今年の大会 / 個人表彰」が
+切り替わって出るか、②秋の対抗戦スライドで3名が横に収まるか（スマホ幅も）、
+③JTスライドに「新人王」タグと年齢が出るか、④春タッグスライドに「タッグ王者」タグが出るか、
+⑤全受賞者一覧の並びと文言、⑥シーズン総括（ANNUAL RECORD）の記録欄が
+「JT優勝・新人王」1行になっているか。
+
+変更: src/management.js / src/app.js / src/ui-common.js / src/ui-render.js / src/index.html /
+src/data.js / specs/org-ranking-spec-v2.0.md / test/year-end-event-awards-test.js /
+test/year-end-awards-generate-test.js(新規)
+
 ## 挑戦試合の結果を横並びにした（2026-07-27）
 
 Keisuke「対抗戦関係で敗北と勝者の横並びになるはずなのに、縦並びになっている」
