@@ -2,15 +2,19 @@
 
 **対象リポジトリ**: `C:\Users\nkmrk\Downloads\wrestle-manager`
 
-**作業ブランチ**: `codex/records-tab-and-peak-ovr`(`main` から切る。worktree は作らない)
+**作業場所(準備済み)**: `C:\Users\nkmrk\Downloads\wm-task26`
+(ブランチ `codex/records-tab-and-peak-ovr` をチェックアウト済みの git worktree)
+
+このフォルダでそのまま作業する。**新たにブランチ・worktree を作らない。
+`main` に直接コミットしない。** 着手前に確認:
 
 ```bash
-git switch -c codex/records-tab-and-peak-ovr main
+git status                 # clean であること
+git branch --show-current  # codex/records-tab-and-peak-ovr であること
 ```
 
-ブランチ運用(2026-07-30 Keisuke指定): **Codex はタスク用ブランチを作ってそこで進める。**
-`main` に直接コミットしないこと。task-25 と同時に走らせる場合も**同一ブランチに混ぜない**
-(1タスク=1ブランチ)。着手前に `git status` が clean であることを確認する。
+(万一このフォルダが使えない別環境で作業する場合のみ、
+`git switch -c codex/records-tab-and-peak-ovr main` で自前のブランチを切る)
 
 **変更してよいファイル**: `src/ui-render.js`、`src/ui-common.js`、
 `src/index.html`(CSS追加とヘルプ文言のみ)、`src/mobile.css`(必要な場合のみ)。
