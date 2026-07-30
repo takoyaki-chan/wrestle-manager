@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const assert = require('assert');
 const fs = require('fs');
@@ -7,9 +7,9 @@ const vm = require('vm');
 const data = require('../src/data.js');
 
 const root = path.join(__dirname, '..');
-const commonSource = fs.readFileSync(path.join(root, 'src', 'ui-common.js'), 'utf8');
-const appSource = fs.readFileSync(path.join(root, 'src', 'app.js'), 'utf8');
-const renderSource = fs.readFileSync(path.join(root, 'src', 'ui-render.js'), 'utf8');
+const commonSource = fs.readFileSync(path.join(root, 'src', 'ui-common.js'), 'utf8').replace(/\r\n/g, '\n');
+const appSource = fs.readFileSync(path.join(root, 'src', 'app.js'), 'utf8').replace(/\r\n/g, '\n');
+const renderSource = fs.readFileSync(path.join(root, 'src', 'ui-render.js'), 'utf8').replace(/\r\n/g, '\n');
 
 function extractFunction(source, name) {
   const start = source.indexOf(`function ${name}(`);
@@ -32,26 +32,26 @@ function flattenLines(pool) {
 const approvedSamples = [
   '見つけてもらった以上、期待には応えるつもり',
   '…評価は、リングで確かめて',
-  'わたくしを見つけたご慧眼、称えて差し上げますわ',
-  '見初めた責任は取ってもらうわよ。頂点でね',
+  'わたくしを見つけたご慧眼、称えて差し上げます',
+  'わたしに声をかけた責任は、取ってちょうだいね',
   '……見込まれた。…なら、やる',
   'み、見つかっちゃった…隠れてたのに…',
-  '見出されるって、なんだか気分がよろしいこと',
-  '見つけやがって…！その目、正しかったと言わせる',
-  '行き場のない身を拾ってくれた。忘れないよ',
-  '…流れ着いた先がここだ。…腰を据える',
-  '捨て置かれた者の逆襲、ご覧に入れましょう',
-  '…行く当てが、なかったので。…助かりました',
+  'うふふ♪見出されるって、とても気分がよいことですね',
+  'ふん！まぁ、アンタの目が正しいのは、証明してやるよ',
+  '所属のなかった身に声をかけてくれた。忘れないよ',
+  '…次のリングを探してた。…ここに腰を据える',
+  'チャンスをありがとう。私を侮ったあいつらに、ほえ面かかせてやりますわ',
+  '…次が、決まっていなかったので。…助かりました',
   '…もう、独りじゃないの…？　…よかった…',
-  '宿無し生活、今日で終わりです！助かりました',
+  'フリー生活、今日で終わりです！助かりました',
   '頂いた二度目の機会、決して粗末にしません',
   '畜生…！拾いやがって…！泣かせるじゃねえか…！',
   '声をかけてくれてありがとうございます。やります！',
   '腕試しの場をもらいました。全力でいきます！',
   'もう一度リングに立てます。無駄にしません！',
   '拾っていただいた恩、必ず返します！',
-  '行き場を失っていました。ここで、やり直します！',
-  '…根無し草はやめにするよ。落ち着くとこだ',
+  '所属を失っていました。ここで、やり直します！',
+  '…フリーはここまでにするよ。落ち着くとこだ',
   '一度は失った場所です。今度こそ守り抜きます',
   '…っ…終わってなかったんだな。…やるよ',
 ];
@@ -73,7 +73,7 @@ assert.deepStrictEqual(data.SCOUT_GREETING_GENERIC_LINES, [
 assert.deepStrictEqual(data.FA_GREETING_GENERIC_LINES, [
   'もう一度リングに立てます。無駄にしません！',
   '拾っていただいた恩、必ず返します！',
-  '行き場を失っていました。ここで、やり直します！',
+  '所属を失っていました。ここで、やり直します！',
 ]);
 assert.strictEqual(data.EVENT_LINES_BY_KEY.scoutGreeting, data.SCOUT_GREETING_LINES);
 assert.strictEqual(data.EVENT_LINES_BY_KEY.scoutGreetingGeneric, data.SCOUT_GREETING_GENERIC_LINES);
