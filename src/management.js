@@ -2398,7 +2398,7 @@ const Engine = {
 
       const external = Object.values(contributions).reduce((sum, value) => sum + value, 0);
       const preLowerClampMq = baseEngineMq + external;
-      const finalMq = Math.max(5, preLowerClampMq);
+      const finalMq = preLowerClampMq;
       const positiveExternal = Math.max(0, external);
       const negativeExternal = Math.min(0, external);
       const mqInventory = {
@@ -2426,7 +2426,7 @@ const Engine = {
         capLoss: 0,
         capReached: false,
         preLowerClampMq,
-        lowerClampHit: preLowerClampMq < 5,
+        lowerClampHit: false,
         upperClampApplied: false,
         finalMq,
       };

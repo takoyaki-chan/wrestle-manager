@@ -99,7 +99,7 @@ for (let i = 0; i < totalMatches; i++) {
       stats.errors.push(`Match ${i}: turns out of range: ${result.turns}`);
     }
     // mq
-    if (typeof result.mq !== 'number' || isNaN(result.mq) || result.mq < 5 || result.mq > 100) {
+    if (typeof result.mq !== 'number' || isNaN(result.mq) || result.mq < 0 || result.mq > 100) {
       stats.errors.push(`Match ${i}: invalid MQ: ${result.mq}`);
     }
     // segments

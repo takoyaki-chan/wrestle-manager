@@ -138,10 +138,10 @@ const low = assertNormalParity(
   { left: 11, right: 12 },
   { matchIndex: 1, rivalryLevel: null, venueHeat: -3 },
   'normal-single');
-assert.strictEqual(low.mq, 5);
+assert.strictEqual(low.mq, 4);
 assert.strictEqual(low.mqInventory.engagement, 0.5);
 assert.strictEqual(low.mqInventory.crowd, -1);
-assert.strictEqual(low.mqInventory.lowerClampHit, true);
+assert.strictEqual(low.mqInventory.lowerClampHit, false);
 
 // ── シナリオ4: タッグprofile(メイン・タイトルはタッグでは常に0扱い) ──
 // 4名平均popularity=90 → normPop=1.0。isTitleはisTagで常にfalse、lastRunFighterIdは
