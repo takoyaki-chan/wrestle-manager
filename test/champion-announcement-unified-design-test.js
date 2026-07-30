@@ -123,7 +123,21 @@ assert.ok(!stlFn.includes('stl-champ-') && !stlFn.includes('pb-champion-card') &
 const agwFn = functionSource(ui, 'renderAutumnWarResult');
 assert.ok(agwFn.includes('class="champ th-autumn"'), '秋は朱のテーマ色を使う');
 assert.ok(agwFn.includes('class="ch-trio"'), '団体優勝は3名並びの.ch-trioを使う');
-assert.ok(agwFn.includes('_chBubbleSlot(line)'), '3名それぞれに吹き出しの予約枠を置く(発言が無くても空枠を出す)');
+// 呼び出しの字面ではなく「各メンバーの line を _chBubbleSlot に渡している」ことを見る。
+// 第2引数(修飾クラス)が増えても壊れないようにする — 2026-07-30 に秋専用の
+// is-autumn-speech 修飾が追加され、`_chBubbleSlot(line)` 決め打ちで落ちた。
+assert.ok(/_chBubbleSlot\(line\b/.test(agwFn), '3名それぞれに吹き出しの予約枠を置く');
+// 「発言が無くても空枠を出す」は _chBubbleSlot 自体の不変条件なので振る舞いで確認する。
+const bubbleSlot = new Function(
+  'escHtml',
+  `${functionSource(ui, '_chBubbleSlot')}; return _chBubbleSlot;`
+)(s => String(s));
+assert.ok(bubbleSlot('').includes('class="ch-bubble-slot"'),
+  '発言が無くても予約枠(.ch-bubble-slot)は出す。出さないと3名の高さが揃わない');
+assert.ok(!bubbleSlot('').includes('class="ch-bubble"'),
+  '発言が無いときに空の吹き出し本体は描かない');
+assert.ok(bubbleSlot('やった', 'is-autumn-speech').includes('ch-bubble is-autumn-speech'),
+  '修飾クラスを渡せば吹き出し本体に付く');
 assert.ok(agwFn.indexOf('_chBubbleSlot(line)') < agwFn.indexOf('class="ch-por"'), '秋トリオも吹き出しは画像より前');
 assert.ok(agwFn.includes("isAce ? ' is-ace' : ''"), '大将だけ一回り大きい表示(is-ace)にする');
 assert.ok(agwFn.includes('_chTeamlineHtml(champ?.orgId, champ?.orgName)'), '団体優勝は団体名を主役として掲げる');
