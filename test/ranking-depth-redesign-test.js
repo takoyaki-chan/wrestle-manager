@@ -37,7 +37,7 @@ function fighter(id, ovr, extra = {}) {
 })();
 
 (function testRankingUiReplacesAverageOvrWithDepth() {
-  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-render.js'), 'utf8');
+  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-render.js'), 'utf8').replace(/\r\n/g, '\n');
   const start = source.indexOf('function renderRanking()');
   const end = source.indexOf('\n// ', start + 1);
   const body = source.slice(start, end);
@@ -47,7 +47,7 @@ function fighter(id, ovr, extra = {}) {
 })();
 
 (function testRankingV13BaselineSizes() {
-  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'index.html'), 'utf8');
+  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'index.html'), 'utf8').replace(/\r\n/g, '\n');
   const start = source.indexOf('#screen-ranking');
   const end = source.indexOf('/* ═════════', start + 1);
   const css = source.slice(start, end);
