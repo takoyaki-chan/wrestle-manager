@@ -28,53 +28,33 @@ function flattenLines(pool) {
   return Object.values(pool).flatMap(personality => Object.values(personality).flat());
 }
 
-// Approved draft v0.1 representative lines (24 samples) plus every generic line.
-const approvedSamples = [
-  '見つけてもらった以上、期待には応えるつもり',
-  '…評価は、リングで確かめて',
-  'わたくしを見つけたご慧眼、称えて差し上げます',
-  'わたしに声をかけた責任は、取ってちょうだいね',
-  '……見込まれた。…なら、やる',
-  'み、見つかっちゃった…隠れてたのに…',
-  'うふふ♪見出されるって、とても気分がよいことですね',
-  'ふん！まぁ、アンタの目が正しいのは、証明してやるよ',
-  '所属のなかった身に声をかけてくれた。忘れないよ',
-  '…次のリングを探してた。…ここに腰を据える',
-  'チャンスをありがとう。私を侮ったあいつらに、ほえ面かかせてやりますわ',
-  '…次が、決まっていなかったので。…助かりました',
-  '…もう、独りじゃないの…？　…よかった…',
-  'フリー生活、今日で終わりです！助かりました',
-  '頂いた二度目の機会、決して粗末にしません',
-  '畜生…！拾いやがって…！泣かせるじゃねえか…！',
-  '声をかけてくれてありがとうございます。やります！',
-  '腕試しの場をもらいました。全力でいきます！',
-  'もう一度リングに立てます。無駄にしません！',
-  '拾っていただいた恩、必ず返します！',
-  '所属を失っていました。ここで、やり直します！',
-  '…フリーはここまでにするよ。落ち着くとこだ',
-  '一度は失った場所です。今度こそ守り抜きます',
-  '…っ…終わってなかったんだな。…やるよ',
-];
+// 承認草案 v0.2 (docs/dialogue/signing-greeting-draft-v0.2.md) を直接パースし、
+// data.js の4定数と一字一句の完全一致を検査する(代表サンプル方式 v0.1 から置換)。
+{
+  const draftSource = fs.readFileSync(
+    path.join(root, 'docs', 'dialogue', 'signing-greeting-draft-v0.2.md'), 'utf8').replace(/\r\n/g, '\n');
+  const draftSandbox = {};
+  const draftCode = draftSource.match(/```js\n([\s\S]*?)```/g)
+    .map(b => b.replace(/```js\n/, '').replace(/```/, '')).join('\n')
+    + '\n;this.__out = { SCOUT_GREETING_LINES, SCOUT_GREETING_GENERIC_LINES, FA_GREETING_LINES, FA_GREETING_GENERIC_LINES };';
+  vm.runInNewContext(draftCode, draftSandbox);
+  // VM別レルムのプロトタイプ差を避けるため JSON 往復で正規化して比較する
+  const norm = v => JSON.parse(JSON.stringify(v));
+  assert.deepStrictEqual(norm(data.SCOUT_GREETING_LINES), norm(draftSandbox.__out.SCOUT_GREETING_LINES), 'scout pool matches approved draft v0.2');
+  assert.deepStrictEqual(norm(data.FA_GREETING_LINES), norm(draftSandbox.__out.FA_GREETING_LINES), 'FA pool matches approved draft v0.2');
+  assert.deepStrictEqual(norm(data.SCOUT_GREETING_GENERIC_LINES), norm(draftSandbox.__out.SCOUT_GREETING_GENERIC_LINES), 'scout generic matches draft');
+  assert.deepStrictEqual(norm(data.FA_GREETING_GENERIC_LINES), norm(draftSandbox.__out.FA_GREETING_GENERIC_LINES), 'FA generic matches draft');
+  const allDraftLines = [
+    ...flattenLines(draftSandbox.__out.SCOUT_GREETING_LINES),
+    ...flattenLines(draftSandbox.__out.FA_GREETING_LINES),
+    ...draftSandbox.__out.SCOUT_GREETING_GENERIC_LINES,
+    ...draftSandbox.__out.FA_GREETING_GENERIC_LINES,
+  ];
+  assert.ok(allDraftLines.every(l => l.length <= 43), 'all lines fit the 43-char bubble limit');
+}
 
-const allGreetingLines = [
-  ...flattenLines(data.SCOUT_GREETING_LINES),
-  ...flattenLines(data.FA_GREETING_LINES),
-  ...data.SCOUT_GREETING_GENERIC_LINES,
-  ...data.FA_GREETING_GENERIC_LINES,
-];
-assert.strictEqual(flattenLines(data.SCOUT_GREETING_LINES).length, 58, 'scout draft line count');
-assert.strictEqual(flattenLines(data.FA_GREETING_LINES).length, 57, 'FA draft line count');
-approvedSamples.forEach(line => assert.ok(allGreetingLines.includes(line), `approved draft text missing: ${line}`));
-assert.deepStrictEqual(data.SCOUT_GREETING_GENERIC_LINES, [
-  '見つけてもらった分、リングで返します！',
-  '声をかけてくれてありがとうございます。やります！',
-  '腕試しの場をもらいました。全力でいきます！',
-]);
-assert.deepStrictEqual(data.FA_GREETING_GENERIC_LINES, [
-  'もう一度リングに立てます。無駄にしません！',
-  '拾っていただいた恩、必ず返します！',
-  '所属を失っていました。ここで、やり直します！',
-]);
+const legacySamplesRemoved = true; // v0.1の内蔵サンプル方式は撤去(上のmd照合が正)
+void legacySamplesRemoved;
 assert.strictEqual(data.EVENT_LINES_BY_KEY.scoutGreeting, data.SCOUT_GREETING_LINES);
 assert.strictEqual(data.EVENT_LINES_BY_KEY.scoutGreetingGeneric, data.SCOUT_GREETING_GENERIC_LINES);
 assert.strictEqual(data.EVENT_LINES_BY_KEY.faGreeting, data.FA_GREETING_LINES);
