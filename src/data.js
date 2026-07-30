@@ -7598,6 +7598,9 @@ const GROWTH_CONFIG = {
   declineChance: 0.25,    // chance per stat per season-end
   // v0.8: Intensive training
   intensiveMult: 1.8,     // growth multiplier for intensive training (v0.2b: 1.5→1.8)
+  brakeGamma: 1.0,        // 収束ブレーキ指数。1.0 = 現行(線形)と同一
+  intensiveHeatTable: null, // 追い込み熱量逓減テーブル。null = 現行(×intensiveMult固定)
+  aiMatchWearCoef: 0,     // AI活動wear係数(試合数×これ)。0 = 現行と同一
   intensiveCondDrain: 2.0, // condition drain multiplier (legacy, actual drain is hardcoded)
   intensiveInjuryChance: 0.03, // 3% chance of minor injury (v0.2b: 5%→3%)
   intensiveMaxConsec: 2,   // max consecutive intensive weeks

@@ -1,5 +1,25 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 成長リバランス3レバー・プローブとグリッド計測（task-27・2026-07-30・実装完了）
+
+`GROWTH_CONFIG` に、既定値で現行演算を保つ `brakeGamma: 1.0`、
+`intensiveHeatTable: null`、`aiMatchWearCoef: 0` を追加。`brakeGamma===1.0` は
+`Math.pow` を呼ばず既存の除算式を通し、heat table が `null` のときは `_heat` を
+生成・参照・更新しないゲートにした。AI活動wearは係数が正のときだけ当季試合数由来の
+丸め加算を行う。
+
+成長projectionは N / I / I2（2週追い込み→2週通常）、γ 4水準、heat off/A/B の
+全36セルを追加測定。auto-simは src と `test/auto-sim.js` を改変せず、メモリ上注入の
+新規測定ラッパーで指定6本（各40年）のAI OVR・引退年齢・wear分布を採取した。
+詳細は `docs/growth-lever-probe-report-v0.1.md`。
+
+### 検証
+
+- `node test/auto-sim.js 40 7919`: 実装前/後の Semantic fingerprint はともに
+  `aa225fc9`。`Total violations: 0`、`ALL CLEAR`。
+- `npm test`: **138 / 138 PASS**。
+- `git diff --check`: 成功。
+
 ## 年間MVPレース: 近年実装大会・MQ歴代記録を反映（2026-07-30・実装完了）
 
 `Engine.mvpRace` の読み取り側だけを拡張し、天頂戦・4団体勝ち残り対抗戦・春のタッグリーグ・
