@@ -18027,55 +18027,48 @@ Engine.awards = {
         if (h.inductionSeason === state.season) npcInductees.push(h);
       });
     });
-    // JT優勝者データ
-    const jtResult = state._juniorTournamentResult || null;
-    const jtChampion = jtResult && jtResult.champion ? {
-      id: jtResult.champion.id, name: jtResult.champion.name,
-      portrait: jtResult.champion.portrait,
-      ovr: Engine.util.ov(jtResult.champion),
-      age: jtResult.champion.age != null ? jtResult.champion.age : null,
-      style: jtResult.champion.style || 'Allround',
-      orgId: jtResult.champion._orgId || 'player',
-      orgName: jtResult.champion._orgName || Engine.awards._orgName(state, jtResult.champion._orgId || 'player'),
-      isPlayerOrg: (jtResult.champion._orgId || 'player') === 'player',
-      runnerUp: jtResult.runnerUp ? { id: jtResult.runnerUp.id, name: jtResult.runnerUp.name,
-        orgName: jtResult.runnerUp._orgName || '' } : null,
-    } : null;
-
-    // 年末表彰式の大会振り返り。新聞用の一時データではなく、シーズン中ずっと
-    // state に残る大会結果・careerRecord から組み立て、ロード後も欠けないようにする。
+    // 年末表彰式の大会振り返りは **すべて careerRecord.history から導出する**。
+    // state 側の一時データに頼ると offWeek1 の表彰式時点で欠ける:
+    //   ・`_juniorTournamentResult` は新聞生成後に null 化される(本ファイル「週次の新聞クリーンアップ」)
+    //     ため、W24 の翌週以降は常に空。JT優勝スライドが構造的に出ていなかった
+    //   ・`bestTagTeam` は両選手を現ロスターから引けないと丸ごと捨てられる
+    // history は永続なので、ロード後も中止年も同じ経路で正しく扱える。
     const allFighters = [];
     (state.roster || []).forEach(f => allFighters.push({ fighter: f, orgId: 'player' }));
     Object.entries(state.aiOrgs || {}).forEach(([orgId, org]) => {
       (org.roster || []).forEach(f => allFighters.push({ fighter: f, orgId }));
     });
+    // 大会結果の走査対象は在籍中に加えて FA・引退者まで含める。長期プレイでは
+    // 春に優勝したペアの片方が年末までに解雇・移籍・引退していることがあり、
+    // 在籍者だけ見ていると「優勝チームごと表彰から消える」ため(所属は空欄で載せる)。
+    const resultScanPool = allFighters.concat(
+      (state.freeAgents || []).map(f => ({ fighter: f, orgId: null })),
+      (state.retiredFighters || []).map(f => ({ fighter: f, orgId: null }))
+    );
     const awardFighter = id => {
-      const row = allFighters.find(x => x.fighter.id === id);
+      const row = resultScanPool.find(x => x.fighter && x.fighter.id === id);
       if (!row) return null;
+      const f = row.fighter;
       return {
-        id: row.fighter.id, name: row.fighter.name, portrait: row.fighter.portrait,
-        style: row.fighter.style || 'Allround', ovr: Engine.util.ov(row.fighter),
-        orgId: row.orgId, orgName: Engine.awards._orgName(state, row.orgId),
+        id: f.id, name: f.name, portrait: f.portrait,
+        style: f.style || 'Allround', ovr: Engine.util.ov(f),
+        age: f.age != null ? f.age : null,
+        orgId: row.orgId, orgName: row.orgId ? Engine.awards._orgName(state, row.orgId) : '',
         isPlayerOrg: row.orgId === 'player',
       };
     };
-    let springTagChampion = null;
-    const bestTag = state.bestTagTeam;
-    if (bestTag && bestTag.awardedSeason === state.season) {
-      const f1 = awardFighter(bestTag.f1Id);
-      const f2 = awardFighter(bestTag.f2Id);
-      if (f1 && f2) springTagChampion = {
-        season: state.season, orgId: bestTag.orgId,
-        orgName: Engine.awards._orgName(state, bestTag.orgId),
-        isPlayerOrg: bestTag.orgId === 'player', fighters: [f1, f2],
-      };
-    }
+    const wonThisSeason = (history, type) => history.find(e =>
+      e && e.type === type && e.season === state.season && e.result === 'champion');
+
+    let jtChampion = null;
     let tenchosenChampion = null;
     let ppvFinalWinner = null;
-    // 秋の4団体勝ち残り対抗戦は団体表彰。優勝チームの出場3名を careerRecord から拾う
-    // (中止年は出場履歴自体が付かないため、自然に該当なしとなる)。
+    // 春のタッグリーグ(2名)・秋の4団体勝ち残り対抗戦(3名)はチーム表彰なので配列で集める。
+    // 中止年は出場履歴自体が付かないため、自然に該当なしとなる。
+    const springTagMembers = [];
     const autumnWarMembers = [];
-    allFighters.forEach(({ fighter }) => {
+    resultScanPool.forEach(({ fighter }) => {
+      if (!fighter) return;
       const history = (fighter.careerRecord && fighter.careerRecord.history) || [];
       if (!tenchosenChampion && history.some(e =>
         e.type === 'ppvTournament' && e.season === state.season && e.result === 'champion')) {
@@ -18085,18 +18078,37 @@ Engine.awards = {
         e.type === 'ppvMainEvent' && e.season === state.season && e.isSummit && e.won)) {
         ppvFinalWinner = awardFighter(fighter.id);
       }
-      if (history.some(e =>
-        e.type === 'autumnWar' && e.season === state.season && e.result === 'champion')) {
+      const jtEv = wonThisSeason(history, 'juniorTournament');
+      if (!jtChampion && jtEv) {
+        jtChampion = awardFighter(fighter.id);
+        // 決勝の相手は履歴が名前で持っている(相手を別途探す必要がない)
+        if (jtChampion && jtEv.finalOpponentName) {
+          jtChampion.runnerUp = { id: null, name: jtEv.finalOpponentName, orgName: '' };
+        }
+      }
+      if (wonThisSeason(history, 'springTagLeague')) {
+        const row = awardFighter(fighter.id);
+        if (row) springTagMembers.push(row);
+      }
+      if (wonThisSeason(history, 'autumnWar')) {
         const row = awardFighter(fighter.id);
         if (row) autumnWarMembers.push(row);
       }
     });
-    const autumnWarChampion = autumnWarMembers.length > 0 ? {
-      season: state.season, orgId: autumnWarMembers[0].orgId,
-      orgName: autumnWarMembers[0].orgName,
-      isPlayerOrg: autumnWarMembers[0].isPlayerOrg,
-      fighters: autumnWarMembers,
-    } : null;
+    // 団体表彰の所属は「所属が引ける最初のメンバー」から取る。退団・引退したメンバーが
+    // 先頭に来ると団体名が空になるため、members[0] 決め打ちにはしない。
+    const teamAward = members => {
+      if (members.length === 0) return null;
+      const anchor = members.find(m => m.orgId) || members[0];
+      return {
+        season: state.season, orgId: anchor.orgId,
+        orgName: anchor.orgName,
+        isPlayerOrg: anchor.orgId === 'player',
+        fighters: members,
+      };
+    };
+    const springTagChampion = teamAward(springTagMembers);
+    const autumnWarChampion = teamAward(autumnWarMembers);
 
     // NPC団体ごとの内部表彰（プレイヤー視点では暗黙の事実として履歴にだけ残る）
     const npcAwards = {};

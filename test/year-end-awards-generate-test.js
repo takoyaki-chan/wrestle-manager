@@ -32,6 +32,8 @@ function fighter(id, name, history) {
   };
 }
 const awEv = (season, result, wins) => ({ type: 'autumnWar', season, result, wins });
+const stEv = (season, result, partnerId) => ({ type: 'springTagLeague', season, result, partnerId });
+const jtEv = (season, result, finalOpponentName) => ({ type: 'juniorTournament', season, result, finalOpponentName });
 
 function buildState(opts) {
   const o = opts || {};
@@ -46,7 +48,7 @@ function buildState(opts) {
     mvpRace: { rankings: [] },
     seasonStats: { bestMQ: 0, bestMQMatch: '' },
     allHallOfFame: {}, hallOfFame: [], retiredFighters: [], freeAgents: [],
-    bestTagTeam: null, chronicle: null,
+    bestTagTeam: o.bestTagTeam || null, chronicle: null,
     _juniorTournamentResult: o.jt || null,
   };
 }
@@ -89,17 +91,20 @@ const rng = Engine.rng.create(1234);
   assert.strictEqual(a.autumnWarChampion, null, '中止年は静かに該当なしとなること');
 }
 
-// ── ケース4: 新人王＝ジュニアトーナメント優勝者 ──
+// ── ケース4: 新人王＝ジュニアトーナメント優勝者。**careerRecord から導出する** ──
+// `_juniorTournamentResult` は新聞生成後に null 化されるため、offWeek1 時点では常に空。
+// state 側を渡さなくても履歴だけで復元できることを保証する（2026-07-30 の回帰修正）。
 {
-  const rookie = fighter(7, '若手', []);
+  const rookie = fighter(7, '若手', [jtEv(SEASON, 'champion', '決勝の相手')]);
   rookie.age = 18;
-  const a = Engine.awards.generate(rng, buildState({
-    roster: [rookie],
-    jt: { champion: Object.assign({}, rookie, { _orgId: 'player', _orgName: 'PLAYER' }), runnerUp: null },
-  }));
-  assert.ok(a.jtChampion, 'JT優勝者が生成されること');
+  const alsoRan = fighter(9, '準優勝', [jtEv(SEASON, 'runnerUp', '若手')]);
+  const a = Engine.awards.generate(rng, buildState({ roster: [rookie, alsoRan], jt: null }));
+
+  assert.ok(a.jtChampion, '_juniorTournamentResult が無くてもJT優勝者が復元されること');
+  assert.strictEqual(a.jtChampion.name, '若手');
   assert.strictEqual(a.rookieOfYear, a.jtChampion, '新人王はJT優勝者と同一であること');
   assert.strictEqual(a.rookieOfYear.age, 18, '年齢が引き継がれること（スライド表示用）');
+  assert.strictEqual(a.jtChampion.runnerUp.name, '決勝の相手', '決勝の相手が履歴から引けること');
 }
 
 // ── ケース5: JT未開催なら新人王も出ない ──
@@ -107,6 +112,50 @@ const rng = Engine.rng.create(1234);
   const a = Engine.awards.generate(rng, buildState({ roster: [fighter(8, '誰か', [])] }));
   assert.strictEqual(a.jtChampion, null);
   assert.strictEqual(a.rookieOfYear, null, 'JT未開催年は新人王なし');
+}
+
+// ── ケース6: 春のタッグリーグ優勝も careerRecord から導出する ──
+// 旧実装は state.bestTagTeam の2名を現ロスターから引けないと丸ごと捨てていた。
+{
+  const pair = [
+    fighter(21, 'タッグ上', [stEv(SEASON, 'champion', 22)]),
+    fighter(22, 'タッグ下', [stEv(SEASON, 'champion', 21)]),
+  ];
+  const losers = [fighter(23, '準優勝組', [stEv(SEASON, 'runnerUp', 24)])];
+  const a = Engine.awards.generate(rng, buildState({ roster: pair.concat(losers), bestTagTeam: null }));
+
+  assert.ok(a.springTagChampion, 'bestTagTeam が無くても優勝ペアが復元されること');
+  assert.deepStrictEqual(
+    a.springTagChampion.fighters.map(f => f.name), ['タッグ上', 'タッグ下'],
+    '優勝ペアの2名だけが載ること（準優勝は除外）'
+  );
+  assert.strictEqual(a.springTagChampion.orgName, 'PLAYER');
+}
+
+// ── ケース7: 前シーズンの春タッグ／JT履歴は拾わない ──
+{
+  const stale = [
+    fighter(31, '去年のタッグ', [stEv(SEASON - 1, 'champion', 32)]),
+    fighter(32, '去年の相棒', [stEv(SEASON - 1, 'champion', 31)]),
+    fighter(33, '去年のJT王者', [jtEv(SEASON - 1, 'champion', '誰か')]),
+  ];
+  const a = Engine.awards.generate(rng, buildState({ roster: stale }));
+  assert.strictEqual(a.springTagChampion, null, '前年のタッグ優勝は出ないこと');
+  assert.strictEqual(a.jtChampion, null, '前年のJT優勝は出ないこと');
+  assert.strictEqual(a.rookieOfYear, null, '前年のJT優勝者が新人王にならないこと');
+}
+
+// ── ケース8: 現ロスターから消えた選手も FA / 引退者から引ける ──
+{
+  const state = buildState({ roster: [fighter(41, '在籍組', [awEv(SEASON, 'champion', 2)])] });
+  state.freeAgents = [fighter(42, '解雇組', [awEv(SEASON, 'champion', 1)])];
+  state.retiredFighters = [fighter(43, '引退組', [awEv(SEASON, 'champion', 0)])];
+  const a = Engine.awards.generate(rng, state);
+  assert.ok(a.autumnWarChampion, '優勝チームが生成されること');
+  assert.deepStrictEqual(
+    a.autumnWarChampion.fighters.map(f => f.name), ['在籍組', '解雇組', '引退組'],
+    'ロスター外の出場者も欠けずに載ること'
+  );
 }
 
 console.log('year-end-awards-generate-test: ok');

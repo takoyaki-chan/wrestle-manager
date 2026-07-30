@@ -19,21 +19,16 @@ const ui = fs.readFileSync(path.join(root, 'src', 'ui-common.js'), 'utf8');
   assert.ok(ui.includes(`a.${key}`), `${key} must appear in the ceremony summary`);
 });
 
+// 大会結果の導出そのものは振る舞いで検証する（year-end-awards-generate-test.js）。
+// ここでソース文字列を照合するとリファクタで陳腐化するため置かない（test/stale-lint.js 参照）。
+// 一時フィールド依存への逆戻りだけは、静的に見張る価値があるので残す。
 assert.ok(
-  management.includes("e.type === 'ppvTournament' && e.season === state.season && e.result === 'champion'"),
-  'Tenchosen champion must come from the current-season career result'
+  !management.includes('state._juniorTournamentResult || null'),
+  'JT優勝は careerRecord から導出する（_juniorTournamentResult は新聞生成後に null 化されるため使えない）'
 );
 assert.ok(
-  management.includes("e.type === 'ppvMainEvent' && e.season === state.season && e.isSummit && e.won"),
-  'PPV award must identify the current-season final-match winner'
-);
-assert.ok(
-  management.includes("e.type === 'autumnWar' && e.season === state.season && e.result === 'champion'"),
-  'Autumn war champion team must come from the current-season career result'
-);
-assert.ok(
-  management.includes('bestTag.awardedSeason === state.season'),
-  'spring tag champions must be limited to the current season'
+  !management.includes('bestTag.awardedSeason === state.season'),
+  '春タッグ優勝は careerRecord から導出する（bestTagTeam は両選手が在籍していないと引けない）'
 );
 
 // 新人王はジュニアトーナメント優勝者に授与される。OVR だけで選ぶ旧方式は廃止済み。

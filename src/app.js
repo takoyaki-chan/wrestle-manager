@@ -10421,6 +10421,24 @@ const App = {
   },
 
   // v2.0-C3: Always stop — no auto-advance. Accumulate financeHistory and set weekSummary or settled phase.
+  /** その週に専用大会（春タッグW12 / 夏JT W24 / 秋対抗戦W36 / 冬PPV・天頂戦W48）が走るか。
+   *  専用大会は会場入り演出と結果画面を自前で持っているので、「今週は〜です」という
+   *  予告トーストを出してはいけない。出すと**大会が全部終わったあとに予告が流れる**
+   *  （2026-07-30 Keisuke 報告。全大会で発生していた）。さらに週番号だけを見る
+   *  isPPV(48) は天頂戦の年も true になるため、天頂戦なのに「PPV GRAND FINAL」と
+   *  誤った大会名を出していた（同じ型の不具合は 2026-07-27 に興行見出しで一度直している）。
+   *  予告の役割は週ダッシュボードのバナーが担っているので、そちらに任せる。
+   *  大会が中止された年（U-20不足など）は通常興行にフォールバックするため、
+   *  各 *IsEventWeek() が false になり従来どおりトーストが出る。 */
+  _isDedicatedEventWeek() {
+    if (!G || G.offSeason) return false;
+    if (G.week === PPV_SHOW_WEEK) return true;
+    if (typeof _stlIsLeagueWeek === 'function' && _stlIsLeagueWeek()) return true;
+    if (typeof _jtIsEventWeek === 'function' && _jtIsEventWeek()) return true;
+    if (typeof _agwIsEventWeek === 'function' && _agwIsEventWeek()) return true;
+    return false;
+  },
+
   _tryAutoAdvance() {
     // 財務タブリデザイン: financeHistory に週次決算を永続蓄積
     const newHistory = [...(G.financeHistory || [])];
@@ -10517,7 +10535,7 @@ const App = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
-    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week))) {
+    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week)) && !App._isDedicatedEventWeek()) {
       const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
       setTimeout(() => showToast(msg, 7000), 300);
     }
@@ -11002,7 +11020,7 @@ const App = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
-    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week))) {
+    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week)) && !App._isDedicatedEventWeek()) {
       const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
       setTimeout(() => showToast(msg, 7000), 300);
     }
