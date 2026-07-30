@@ -7210,7 +7210,9 @@ const Engine = {
       if (current >= trainCap) return 0;
 
       const remaining = trainCap - current;
-      const ratio = remaining / trainCap; // 距離比率: 天井から遠いほど1.0に近い
+      const ratio = GROWTH_CONFIG.brakeGamma !== 1.0
+        ? Math.pow(remaining / trainCap, GROWTH_CONFIG.brakeGamma)
+        : remaining / trainCap; // 1.0時はpowを通さず現行の浮動小数演算を維持
 
       const age = char.age || (17 + (char.careerSeasons || 0));
       let ageMul = ageMultiplier(age, char.traits);
@@ -7247,7 +7249,11 @@ const Engine = {
       if (Traits.has(char, '破天荒')) weeklyVariance = Engine.rng.float(rng) * 2.5;
 
       const rawGain = baseGain * bonus * weeklyVariance;
-      const intensiveMul = char.intensive ? GROWTH_CONFIG.intensiveMult : 1.0;
+      const intensiveMul = char.intensive
+        ? (GROWTH_CONFIG.intensiveHeatTable !== null
+          ? GROWTH_CONFIG.intensiveHeatTable[char._heat ?? 0]
+          : GROWTH_CONFIG.intensiveMult)
+        : 1.0;
 
       const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * 10) / 10);
       return Math.min(Math.ceil(finalGain), trainCap - current);
@@ -9592,7 +9598,10 @@ const Engine = {
           const aiDecayStart = 23 + aiEffDura;
           if (f.age >= aiDecayStart) {
             const aiBaseWear = 10 + Engine.rng.int(rng, -3, 3);
-            f.wear = (f.wear || 0) + Math.max(1, aiBaseWear - aiEffDura);
+            const aiMatchWear = GROWTH_CONFIG.aiMatchWearCoef > 0
+              ? Math.round((f.wins + f.losses + f.draws) * GROWTH_CONFIG.aiMatchWearCoef)
+              : 0;
+            f.wear = (f.wear || 0) + Math.max(1, aiBaseWear - aiEffDura) + aiMatchWear;
           }
         });
 
@@ -11029,6 +11038,9 @@ const Engine = {
           // growth-rebalance v1.0: 連続週数カウンタ(intensiveWeeks、UI上限2で毎シーズン頭打ち)とは別に、
           // シーズン内の追い込み週数を非連続で積算する。applySeasonEndのwear/strainDebt計算で使う。
           nc.seasonIntensiveWeeks = (nc.seasonIntensiveWeeks || 0) + 1;
+          if (GROWTH_CONFIG.intensiveHeatTable !== null) {
+            nc._heat = Math.min((nc._heat ?? 0) + 1, GROWTH_CONFIG.intensiveHeatTable.length - 1);
+          }
           // 生涯の追い込み週数。シーズンをまたいでもリセットしない。
           // コーチの匂わせセリフの発火条件**専用**で、成長・消耗の計算には使わない
           nc.intensiveWeeksTotal = (nc.intensiveWeeksTotal || 0) + 1;
@@ -11091,6 +11103,7 @@ const Engine = {
           const hardWorkerBonus = Traits.has(nc, '努力家') ? 1 : 0;
           nc.condition = Math.max(0, nc.condition - (3 + Engine.rng.int(rng, 0, 3)) + mentalBonus + ironBonus + hardWorkerBonus);
           nc.intensiveWeeks = 0;
+          if (GROWTH_CONFIG.intensiveHeatTable !== null) nc._heat = Math.max(0, (nc._heat ?? 0) - 1);
         } else if (action === 'promo') {
           // promo-system-redesign v2.5: 基礎値微強化（1.8→2.0）+ 連続キャンペーンボーナス
           const mnVal = nc.mn || 50;
@@ -11129,6 +11142,7 @@ const Engine = {
           const restIronBonus = Traits.has(nc, '鉄人') ? 3 : 0;
           nc.condition = Math.min(100, nc.condition + (8 + Engine.rng.int(rng, 0, 7)) + mentalBonus + restIronBonus);
           nc.intensiveWeeks = 0;
+          if (GROWTH_CONFIG.intensiveHeatTable !== null) nc._heat = Math.max(0, (nc._heat ?? 0) - 2);
         }
         nc._weekAction = autoRested ? 'auto_rest' : action;
         // v2.5: 連続プロモキャンペーン — プロモ以外の行動でストリークリセット

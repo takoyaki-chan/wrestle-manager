@@ -16,7 +16,7 @@
 //    という単純な意思決定ループを自前で回す（全シーズンauto-simより軽量・
 //    「追い込み変数」だけを isolatte できる）。
 //
-//  ■ 2レジーム
+//  ■ 3レジーム
 //    (I) 追い込みレジーム: condition>=50 かつ 直近連続intensive週数<2 の間は
 //        毎週 intensive。条件を満たさない週は rest（次のintensive適格に最速で
 //        戻るための唯一の回復手段。practiceはconditionをさらに消耗するため
@@ -25,6 +25,8 @@
 //    (N) 通常練習レジーム: 常にpracticeを選択（条件が本番の自動休養ライン
 //        condition<60を割った週のみrest — 本番のschedule='practice'固定運用と
 //        同じ automatic safety net）。intensiveは一切使わない。
+//    (I2) 間欠追い込みレジーム: 2週 intensive → 2週 practice を繰り返す。
+//        intensive適格でない週と通常練習のcondition<60は、本番と同じくrestへ置換する。
 //    両レジームとも同一の初期キャラクター（同じtrainCap/初期ステ/特性、
 //    Engine.makeCharで1回だけ生成し複製）から出発する。週次rngストリームは
 //    レジームごとに独立（同一キャラの中でI/Nを揃えるcontrolled comparisonは
@@ -48,7 +50,8 @@
 //    - 週数=48/season固定（オフシーズン中の特殊イベント週は考慮しない）。
 //
 //  Usage:
-//    node test/growth-intensive-projection.js [seed] [outFile.json]
+//    node test/growth-intensive-projection.js [seed] [outFile.json] [--gamma 1.6] [--heat A|B|off]
+//    node test/growth-intensive-projection.js --grid --json
 // ══════════════════════════════════════════════════════════════════════════════
 
 'use strict';
@@ -58,11 +61,30 @@ const fs = require('fs');
 const vm = require('vm');
 
 const argv = process.argv.slice(2);
-const userSeed = argv[0] ? parseInt(argv[0], 10) : 20260721;
-const outFile = argv[1] || null;
+const positional = [];
+for (let index = 0; index < argv.length; index++) {
+  if (argv[index] === '--gamma' || argv[index] === '--heat') { index++; continue; }
+  if (!argv[index].startsWith('--')) positional.push(argv[index]);
+}
+const optionValue = (name, fallback = null) => {
+  const idx = argv.indexOf(name);
+  return idx >= 0 && argv[idx + 1] != null ? argv[idx + 1] : fallback;
+};
+const outputJson = argv.includes('--json');
+const gridMode = argv.includes('--grid');
+const userSeed = positional[0] ? parseInt(positional[0], 10) : 20260721;
+const outFile = positional[1] || null;
+const requestedGamma = Number(optionValue('--gamma', process.env.WM_BRAKE_GAMMA || '1.0'));
+const requestedHeat = optionValue('--heat', process.env.WM_INTENSIVE_HEAT || 'off');
+const HEAT_TABLES = { off: null, A: [1.8, 1.5, 1.25, 1.0], B: [1.8, 1.6, 1.4, 1.2, 1.0] };
 
-console.log('=== Growth Intensive-Grinder Regime Projection ===');
-console.log(`seed=${userSeed}`);
+if (!HEAT_TABLES.hasOwnProperty(requestedHeat)) throw new Error(`Unknown heat table: ${requestedHeat}`);
+if (!Number.isFinite(requestedGamma) || requestedGamma <= 0) throw new Error(`Invalid brake gamma: ${requestedGamma}`);
+
+if (!outputJson) {
+  console.log('=== Growth Intensive-Grinder Regime Projection ===');
+  console.log(`seed=${userSeed}`);
+}
 
 global.window = { IS_TRIAL: false };
 
@@ -90,6 +112,11 @@ loadAsGlobal('relationships.js');
 loadAsGlobal('flag-dialogue.js');
 loadAsGlobal('factions.js');
 loadAsGlobal('draft-negotiation.js');
+
+function injectGrowthConfig(brakeGamma, heatName) {
+  GROWTH_CONFIG.brakeGamma = brakeGamma;
+  GROWTH_CONFIG.intensiveHeatTable = HEAT_TABLES[heatName];
+}
 
 // ══════════════════════════════════════════════════════════════════════════
 //  仮定（すべてレポートに明記する数値）
@@ -156,6 +183,7 @@ function simulateRegime(baseChar, regime, seed) {
   const trainCapOvr5 = ovr5(c.trainCap);
   const trainCapOvr4 = ovr4(c.trainCap);
   const initOvr5 = ovr5(c);
+  const initOvr4 = ovr4(c);
 
   const rng = Engine.rng.create(Engine.rng.derive(seed, regime === 'I' ? 0x1171 : 0x0EEE, baseChar.id));
   const miniG = { roster: [c], coaches: [], lockerRoomMorale: ASSUMPTIONS.lockerRoomMorale, season: 1, week: 1 };
@@ -188,6 +216,14 @@ function simulateRegime(baseChar, regime, seed) {
       if (regime === 'I') {
         const eligible = c.condition >= GROWTH_CONFIG.intensiveMinCond && (c.intensiveWeeks || 0) < GROWTH_CONFIG.intensiveMaxConsec;
         action = eligible ? 'intensive' : 'rest';
+      } else if (regime === 'I2') {
+        const intensivePhase = (w - 1) % 4 < 2;
+        if (intensivePhase) {
+          const eligible = c.condition >= GROWTH_CONFIG.intensiveMinCond && (c.intensiveWeeks || 0) < GROWTH_CONFIG.intensiveMaxConsec;
+          action = eligible ? 'intensive' : 'rest';
+        } else {
+          action = c.condition < 60 ? 'rest' : 'practice';
+        }
       } else {
         action = c.condition < 60 ? 'rest' : 'practice'; // 本番の自動休養ライン（condition<60）をそのまま反映
       }
@@ -210,6 +246,9 @@ function simulateRegime(baseChar, regime, seed) {
           injuryEventsTotal++;
         }
         c.intensiveWeeks = (c.intensiveWeeks || 0) + 1;
+        if (GROWTH_CONFIG.intensiveHeatTable !== null) {
+          c._heat = Math.min((c._heat ?? 0) + 1, GROWTH_CONFIG.intensiveHeatTable.length - 1);
+        }
         c.intensive = false;
         intensiveWeeksTotal++;
       } else if (action === 'practice') {
@@ -225,12 +264,14 @@ function simulateRegime(baseChar, regime, seed) {
         const hardWorkerBonus = Traits.has(c, '努力家') ? 1 : 0;
         c.condition = Math.max(0, c.condition - (3 + Engine.rng.int(rng, 0, 3)) + ironBonus + hardWorkerBonus);
         c.intensiveWeeks = 0;
+        if (GROWTH_CONFIG.intensiveHeatTable !== null) c._heat = Math.max(0, (c._heat ?? 0) - 1);
         practiceWeeksTotal++;
       } else { // rest
         c.intensive = false;
         const restIronBonus = Traits.has(c, '鉄人') ? 3 : 0;
         c.condition = Math.min(100, c.condition + (8 + Engine.rng.int(rng, 0, 7)) + restIronBonus);
         c.intensiveWeeks = 0;
+        if (GROWTH_CONFIG.intensiveHeatTable !== null) c._heat = Math.max(0, (c._heat ?? 0) - 2);
         restWeeksTotal++;
       }
 
@@ -259,7 +300,7 @@ function simulateRegime(baseChar, regime, seed) {
   return {
     id: c.id, name: c.name, style: c.style, traits: c.traits,
     startAge, finalAge: c.age,
-    trainCapOvr5, trainCapOvr4, initOvr5,
+    trainCapOvr5, trainCapOvr4, initOvr5, initOvr4,
     finalOvr5: ovr5(c), finalOvr4: ovr4(c),
     finalStats: { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn },
     seasonSnapshots,
@@ -271,34 +312,77 @@ function simulateRegime(baseChar, regime, seed) {
 // ══════════════════════════════════════════════════════════════════════════
 //  実行
 // ══════════════════════════════════════════════════════════════════════════
+function summarizeRegime(recs) {
+  const s3 = recs.map(r => seasonNSnapshot(r, 3));
+  const ace = recs.filter(r => tierFor(r.trainCapOvr5).label === 'エース');
+  const annual4 = recs.flatMap(r => r.seasonSnapshots.map((snapshot, idx) => {
+    const previous = idx === 0 ? r.initOvr4 : r.seasonSnapshots[idx - 1].ovr4;
+    return snapshot.ovr4 - previous;
+  }));
+  const at = (rows, predicate) => rows.filter(predicate).length;
+  return {
+    n: recs.length,
+    final4MedianPct: median(recs.map(r => r.finalOvr4 / r.trainCapOvr4)) * 100,
+    final4At98Pct: pct(at(recs, r => r.finalOvr4 / r.trainCapOvr4 >= 0.98), recs.length),
+    finalOvr100Pct: pct(at(recs, r => r.finalOvr5 >= 100), recs.length),
+    aceOvr100Pct: pct(at(ace, r => r.finalOvr5 >= 100), ace.length),
+    year3TrainCap4MedianPct: median(s3.map(s => s.ratio4)) * 100,
+    year3At90Pct: pct(at(s3, s => s.ratio4 >= 0.90), s3.length),
+    annualGrowth4Mean: mean(annual4),
+  };
+}
+
+function runConfiguration(brakeGamma, heatName, initChars) {
+  injectGrowthConfig(brakeGamma, heatName);
+  const results = { N: [], I: [], I2: [] };
+  initChars.forEach(base => {
+    results.N.push(simulateRegime(base, 'N', userSeed));
+    results.I.push(simulateRegime(base, 'I', userSeed));
+    results.I2.push(simulateRegime(base, 'I2', userSeed));
+  });
+  const summary = {
+    N: summarizeRegime(results.N),
+    I: summarizeRegime(results.I),
+    I2: summarizeRegime(results.I2),
+  };
+  return {
+    brakeGamma,
+    heat: heatName,
+    summary,
+    annualGrowth4_I_minus_I2: summary.I.annualGrowth4Mean - summary.I2.annualGrowth4Mean,
+    results,
+  };
+}
+
 function main() {
   const started = Date.now();
   const initChars = buildInitialCharacters(userSeed);
-  console.log(`初期キャラ生成: ${initChars.length}名（ALL_CHARS全員、デビュー年齢17-19からランダム抽選）`);
-
-  const resultsI = [];
-  const resultsN = [];
-  initChars.forEach(base => {
-    resultsI.push(simulateRegime(base, 'I', userSeed));
-    resultsN.push(simulateRegime(base, 'N', userSeed));
-  });
-
+  if (!outputJson) console.log(`初期キャラ生成: ${initChars.length}名（ALL_CHARS全員、デビュー年齢17-19からランダム抽選）`);
+  const configs = gridMode
+    ? [1.0, 1.3, 1.6, 2.0].flatMap(brakeGamma => ['off', 'A', 'B'].map(heat => ({ brakeGamma, heat })))
+    : [{ brakeGamma: requestedGamma, heat: requestedHeat }];
+  const runs = configs.map(config => runConfiguration(config.brakeGamma, config.heat, initChars));
   const elapsed = ((Date.now() - started) / 1000).toFixed(1);
-  console.log(`done. characters=${initChars.length} elapsed=${elapsed}s`);
-
   const output = {
     seed: userSeed,
     assumptions: ASSUMPTIONS,
-    growthConfig: GROWTH_CONFIG,
     characterCount: initChars.length,
-    resultsI, resultsN,
+    runs: runs.map(({ results, ...run }) => run),
   };
 
   if (outFile) {
     fs.writeFileSync(outFile, JSON.stringify(output));
-    console.log(`written: ${outFile}`);
+    if (!outputJson) console.log(`written: ${outFile}`);
   }
-  printReport(resultsI, resultsN);
+  if (outputJson) {
+    console.log(JSON.stringify(output));
+    return;
+  }
+  console.log(`done. characters=${initChars.length} elapsed=${elapsed}s`);
+  const first = runs[0];
+  console.log(`[lever] gamma=${first.brakeGamma} heat=${first.heat} I-I2 annual4=${first.annualGrowth4_I_minus_I2.toFixed(3)}`);
+  printReport(first.results.I, first.results.N);
+  console.log(`  (I2) 4stat最終中央値=${first.summary.I2.final4MedianPct.toFixed(1)}% / 98%到達=${first.summary.I2.final4At98Pct.toFixed(1)}% / 年間4stat成長=${first.summary.I2.annualGrowth4Mean.toFixed(3)}`);
 }
 
 function seasonNSnapshot(rec, seasonIdx) {
