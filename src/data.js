@@ -7598,9 +7598,15 @@ const GROWTH_CONFIG = {
   declineChance: 0.25,    // chance per stat per season-end
   // v0.8: Intensive training
   intensiveMult: 1.8,     // growth multiplier for intensive training (v0.2b: 1.5→1.8)
-  brakeGamma: 1.0,        // 収束ブレーキ指数。1.0 = 現行(線形)と同一
-  intensiveHeatTable: null, // 追い込み熱量逓減テーブル。null = 現行(×intensiveMult固定)
-  aiMatchWearCoef: 0,     // AI活動wear係数(試合数×これ)。0 = 現行と同一
+  // 成長リバランス v2.0 (2026-07-30 Keisuke承認・業界一律):
+  // 上限に近づくほど1ptが重くなる。放置層より能動プレイの上振れを狙い撃つ設計。
+  // 較正の根拠: docs/growth-rebalance-baseline-measurement-v0.1.md +
+  // docs/growth-lever-probe-report-v0.1.md (γ1.3でカンスト92%→22%、エースOVR100+ 48%→17%)
+  brakeGamma: 1.3,        // 収束ブレーキ指数(remaining/trainCap)^γ。1.0=旧線形
+  // 追い込みの熱量逓減: 連用するほど効きが落ち(1.8→1.6→…→1.0)、通常練習-1/休養-2で回復。
+  // 「毎週押すのが正解」を壊し、ここぞの数週間に使う切り札へ。負傷・wearの代償は満額のまま
+  intensiveHeatTable: [1.8, 1.6, 1.4, 1.2, 1.0],
+  aiMatchWearCoef: 0.05,  // AI活動wear(試合数×係数)。プレイヤーの活動由来wearの3〜6割相当
   intensiveCondDrain: 2.0, // condition drain multiplier (legacy, actual drain is hardcoded)
   intensiveInjuryChance: 0.03, // 3% chance of minor injury (v0.2b: 5%→3%)
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
