@@ -1,18 +1,22 @@
-# Codexタスク23: 個別バグ3件の修正（D / E / H）
+# Codexタスク23: 個別バグ2件の修正（E / H）
+
+> **2026-07-30 更新**: バグD（天頂戦のエントリー再抽選）は **Keisuke 裁定により修正不要**となった。
+> 「再抽選は面倒なので、当日か直前選定で良い」＝現在の当日再選定の挙動を正とする。
+> 本書から削除済み。経緯は末尾の「バグD: 対応しないことにした経緯」を参照。
 
 **対象リポジトリ**: `C:\Users\nkmrk\Downloads\wrestle-manager`
 
 **作業ブランチ（必ず worktree を切って作業すること）**:
 
 ```bash
-git worktree add ../wm-codex-deh -b codex/bug-deh main
-cd ../wm-codex-deh
+git worktree add ../wm-codex-eh -b codex/bug-eh main
+cd ../wm-codex-eh
 ```
 
 同一ディレクトリで `git checkout -b` しても `.git` と作業ツリーは共有なので分離されない。
 **必ず `git worktree` で別ディレクトリを作ること。** 2026-07-30 に同一ツリーで別セッションと
 並行作業して、同じファイルに変更が混在しコミットを分離できない事態が起きている。
-片付けは作業完了・マージ後に `git worktree remove ../wm-codex-deh`。
+片付けは作業完了・マージ後に `git worktree remove ../wm-codex-eh`。
 
 **変更してよいファイル**: `src/management.js`、`src/factions.js`、`test/` 配下の新規テスト。
 **変更禁止**: 上記以外の `src/`、`specs/`、`docs/`（`docs/worklog.md` 先頭への完了ログ追記は例外）。
@@ -20,7 +24,7 @@ cd ../wm-codex-deh
 **コミットはOK**（日本語の明確なメッセージ、CLAUDE.md の手順に従う）。**push は禁止。**
 配布（`release/package-release.ps1` 等）は絶対に実行しないこと。
 
-**3件は互換性のない独立した修正なので、1件ずつ別コミットにすること。**
+**2件は独立した修正なので、1件ずつ別コミットにすること。**
 
 ---
 
@@ -32,7 +36,7 @@ cd ../wm-codex-deh
 
 ---
 
-## 受け入れ条件（3件共通）
+## 受け入れ条件（2件共通）
 
 1. `npm test` が **全 PASS**（2026-07-30 時点で 132/132）
 2. `node test/auto-sim.js 20 12345` が **ALL CLEAR**（violations 0 / errors 0）
@@ -43,78 +47,6 @@ cd ../wm-codex-deh
      実際に渡る引数を検査する）、`test/year-end-awards-generate-test.js`（エンジン関数を
      直接呼んで返り値を検査する）
 4. 修正前のコードで**そのテストが確実に落ちること**を確認して、報告に書くこと
-
----
-
-# バグD: 天頂戦のエントリー1名無効化で全ブラケットが再抽選される
-
-## 現象
-
-`src/management.js:25333` `Engine.ppvTournament.ensureReady(state)`。
-
-Week48 の開催直前に出場16名を再検証し、1名でも無効（不在／怪我／レンタル／他団体からの
-乱入）だと `this.startEntry(s, ...)` を呼んで**エントリー全体を組み直している**。
-
-```js
-const hasInvalidEntry = currentEntries.some(entry => {
-  const fighter = this._resolveFighter(s, entry.id);
-  return !fighter || fighter.injury || fighter.isRental || fighter.isIntrusion;
-});
-if (hasInvalidEntry) {
-  const previousPlayerIds = /* プレイヤーの有効な選択だけ控える */;
-  s = this.startEntry(s, { tvMode: !s.ppvUnlocked });   // ← ここで全部引き直し
-  ...
-}
-```
-
-プレイヤーが選んだ選手は `previousPlayerIds` で拾い直そうとしているが、
-**特別招待2名とAI団体の枠（5/4/3/2）は丸ごと再抽選**され、シード配置も変わる。
-
-Week43 のエントリー発表から Week48 までに誰か1人怪我しただけで、
-**プレイヤーが Week43 に見た組み合わせが別物に差し替わる**。
-
-## 期待する挙動
-
-`specs/quadrennial-ppv-tournament-spec-v0.1.md`：
-
-- 45行目: 「2枠が同一人物の場合: 人気側を次点（人気2位）に繰り下げ」
-- 46行目: **「怪我・レンタル等の除外条件に該当する場合は次点繰り上げ」**
-
-つまり**無効になったエントリーだけを、その枠の次点候補で置き換える**。
-他のエントリーとシード配置は保持する。
-
-## 実装方針
-
-1. `ensureReady` の全体再抽選をやめ、**無効エントリーだけを差し替える**経路にする
-2. 差し替え候補は**その枠の出自に応じて**選ぶ
-   - プレイヤー枠 → `getPlayerEntryCandidates(s)` のうち未エントリーの最上位
-   - AI団体枠 → その団体のロスターから、有効かつ未エントリーの OVR 最上位
-   - 特別招待枠 → 特別招待の選定ロジックの次点
-3. 差し替え候補が尽きた枠は、**spec 63行目**「ロスター不足団体は枠を繰り上げて上位団体に
-   再配分」に従い、上位団体から補う
-4. **`seed` は元のエントリーの値を引き継ぐ**（ブラケット位置を変えない）
-5. どうしても16名を満たせないときだけ、従来どおり `cancelled` にフォールバックする
-
-## 注意
-
-- `_bracketOrder(entries)` は `seed` 1〜16 で引くので、seed の連番性が崩れると
-  ブラケットが壊れる。差し替え時に seed を必ず維持すること
-- 同じ団体どうしが1回戦で当たらないよう `_bracketOrder` が入れ替えを行っている。
-  差し替えで所属が変わると1回戦の組み合わせが変わりうる。これは許容範囲
-- **プレイヤーが Week43 に確定したエントリーは絶対に触らないこと**（無効になった本人を除く）
-
-## テスト
-
-`test/tenchosen-entry-replacement-test.js`（新規）。
-
-- 16名を用意し `ppvTournament.phase='ready'` にする
-- **1名だけ** `injury` を立てて `ensureReady` を呼ぶ
-- 検査:
-  - 無効だった1名が**別の選手に置き換わっている**
-  - **残り15名のエントリーが同一**（id と seed の両方）であること ← 本体
-  - `seed` の集合が 1〜16 のままであること
-  - `run()` が `cancelled` にならず 15 試合成立すること
-- 候補が尽きるケース（その団体に代わりがいない）で `cancelled` になることも1件見る
 
 ---
 
@@ -251,11 +183,36 @@ const filtered = f.memberIds.filter(id => id === f.leaderId || rosterIds.has(id)
 
 ## 完了報告に書いてほしいこと
 
-1. 3件それぞれの**修正前にテストが落ちること**を確認した結果
+1. 2件それぞれの**修正前にテストが落ちること**を確認した結果
 2. `npm test` の集計行と `auto-sim 20 12345` の Result 行
 3. バグE の「他の移籍経路にも同じスナップショット構造があるか」の調査結果
-4. バグD で**プレイヤーの Week43 エントリーが保持されること**をどう担保したか
-5. 判断に迷って別の解釈を採った箇所（あれば）
+4. 判断に迷って別の解釈を採った箇所（あれば）
 
 `docs/worklog.md` の**先頭**に詳細ログを追記すること。
 `docs/game-system-roadmap.md` は触らない（こちらで1行更新する）。
+
+---
+
+# 付録: バグD「天頂戦のエントリー再抽選」を対応しないことにした経緯
+
+**2026-07-30 Keisuke 裁定: 「天頂戦の再抽選は面倒なので、当日か直前選定で良い」**
+
+`src/management.js` `Engine.ppvTournament.ensureReady(state)` は Week48 の開催直前に
+出場16名を再検証し、1名でも無効（不在／怪我／レンタル／乱入）だと `startEntry` を
+呼んでエントリー全体を組み直す。プレイヤーが選んだ有効な選手は `previousPlayerIds` で
+拾い直すが、特別招待2名とAI団体枠は再抽選され、シード配置も変わる。
+
+`specs/quadrennial-ppv-tournament-spec-v0.1.md` 46行目は
+「怪我・レンタル等の除外条件に該当する場合は次点繰り上げ」と書いており、
+**実装は仕様と食い違っている**。
+
+当初は「無効エントリーだけを seed 維持で差し替える」実装を指示する予定だったが、
+**その複雑さに見合わないという判断で、当日再選定を正とする裁定になった。**
+出場者は当日（または直前）に確定するもの、という扱いにする。
+
+したがって:
+
+- **コード変更なし**（現在の挙動が正）
+- 仕様書側を実装に合わせて更新済み
+
+**この件を再度タスク化しないこと。**
