@@ -1,5 +1,35 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 年間MVPレース: 近年実装大会・MQ歴代記録を反映（2026-07-30・実装完了）
+
+`Engine.mvpRace` の読み取り側だけを拡張し、天頂戦・4団体勝ち残り対抗戦・春のタッグリーグ・
+MQ歴代記録更新を年度ポイントへ反映した。各大会の history 記録側と
+`Engine.mq.updateRecord` は変更していない。
+
+### 実装
+
+- `POINTS` に承認済みの定数を追加。天頂戦は最終順位から 34 / 19 / 8 / 3 / 0pt、
+  4団体勝ち残り対抗戦は個人勝利 +3pt とチーム順位ボーナス、春のタッグリーグは
+  優勝 +8pt・準優勝 +4pt とした。
+- `calcSeasonPoints` は既存の `ev.season !== season` フィルタを通して新しい history を読み、
+  `breakdown.tenchosen` / `autumnWar` / `springTag` と表示用 meta を返す。
+- MQ歴代記録は `state.mqRecord` と `state.mqRecordTag` を直接参照し、当年の
+  `holderIds` に含まれる選手へ各 +5pt（単複スタック可）を既存 `mq` 内訳へ合算する。
+- `_topElements`、ナラティブ、タグライン、4面の既存リッチ・ファクトチップ経路に、
+  「天頂戦」「4団体勝ち残り対抗戦」「春のタッグリーグ」「歴代最高の試合評価」の
+  プレイヤー向け文言を追加。`src/ui-render.js` は meta から同リッチ表示を描画する既存経路で
+  追随するため変更なし。
+- 新規 `test/mvp-race-new-events-test.js` を追加。天頂戦の全結果、非開催年、対抗戦、春タッグ、
+  MQ記録（敗者側・単複スタック・過去年）、ジュニア不加点、当年引退選手のランキング経路、
+  既存合計回帰、表示ラベルを振る舞いで検査した。
+
+### 検証
+
+- 新規テストは実装前に天頂戦優勝の期待値で `0 !== 34` となり失敗することを確認後、実装後に PASS。
+- `npm test`: 138 / 138 PASS。
+- auto-sim（5シード × 20シーズン）: 全シードで `Total violations: 0 (0 unique)`、
+  `Total errors: 0`、`Result: ALL CLEAR ✓`。
+
 ## 記録タブ+ピークOVR+MVPレース拡張: 設計確定・指示書化（2026-07-30・実装はCodexへ委譲）
 
 Keisuke起案3件をセットで設計。(1)歴代記録を殿堂タブ側に見せる (2)ピークOVRを
