@@ -928,9 +928,9 @@ const Engine = {
       return MOMENTUM_CONFIG.EMPTY_DELTA;
     },
     // 集客v2: ざっくり集客予測（3段階テキスト）— showDraw使用
-    getAttendancePrediction(G, venueIdx, showDraw) {
+    getAttendancePrediction(G, venueIdx, showDraw, showCard) {
       const v = VENUES[venueIdx];
-      const v2Result = Engine.attendanceV2.calcAttendanceV2(G, venueIdx, showDraw || 0, null);
+      const v2Result = Engine.attendanceV2.calcAttendanceV2(G, venueIdx, showDraw || 0, showCard, null);
       const estOccRate = v2Result.attendance / v.cap;
       const pred = ATTENDANCE_PREDICTION.find(p => estOccRate >= p.min) || ATTENDANCE_PREDICTION[ATTENDANCE_PREDICTION.length - 1];
       return { text: pred.text, color: pred.color, estOccRate };
@@ -1212,17 +1212,39 @@ const Engine = {
       // 非出場選手のpromoStack合計 → 全体に微量加算
       showDraw += (nonMatchPromoStacks || 0) * cfg.promoStackGlobal;
 
-      // 試合数不足ペナルティ
-      const minMatches = cfg.minMatchesByVenue[venueIdx] || 2;
-      const shortage = minMatches - sorted.length;
-      if (shortage >= 2) showDraw *= cfg.shortPenalty2;
-      else if (shortage === 1) showDraw *= cfg.shortPenalty1;
-
       return showDraw;
     },
 
     // ── D系: 最終集客数 ──
-    calcAttendanceV2(G, venueIdx, showDraw, rng) {
+    // 有効なカードの消費枠数。シングル=1、タッグ=2で、未成立の表示枠は数えない。
+    calcCardSlots(showCard) {
+      return (Array.isArray(showCard) ? showCard : []).reduce((slots, match) => {
+        if (!match) return slots;
+        if (match.matchType === 'tag') {
+          const ids = [
+            match.teamA?.fighter1, match.teamA?.fighter2,
+            match.teamB?.fighter1, match.teamB?.fighter2,
+          ];
+          return ids.every(id => id > 0) ? slots + 2 : slots;
+        }
+        return match.left > 0 && match.right > 0 ? slots + 1 : slots;
+      }, 0);
+    },
+
+    calcVolumeFactor(venueIdx, cardSlots) {
+      const cfg = ATTENDANCE_V2_CONFIG;
+      const minMatches = SHOW_DRAW_CONFIG.minMatchesByVenue[venueIdx] || 2;
+      const venue = VENUES[venueIdx];
+      const band = venueIdx <= 2 ? 0 : venueIdx <= 5 ? 1 : venueIdx <= 7 ? 2 : venueIdx === 8 ? 3 : 4;
+      const shortage = minMatches - cardSlots;
+      if (shortage > 0) {
+        return cfg.volumeShortageByVenueBand[band][Math.min(shortage, 4) - 1];
+      }
+      const excessSlots = Math.min(cardSlots - minMatches, Math.max(0, venue.maxMatches - minMatches));
+      return 1.0 + excessSlots * cfg.volumeExcessPerSlotByVenueBand[band];
+    },
+
+    calcAttendanceV2(G, venueIdx, showDraw, showCard, rng) {
       const v = VENUES[venueIdx];
       const cfg = ATTENDANCE_V2_CONFIG;
 
@@ -1238,6 +1260,11 @@ const Engine = {
 
       // rawAttendance = reach × draw
       let rawAttendance = reach * draw;
+
+      // 興行ボリュームは需要へ直接掛ける。rawDemand（会場の熱）にも同じ影響を反映する。
+      const cardSlots = this.calcCardSlots(showCard);
+      const volumeFactor = this.calcVolumeFactor(venueIdx, cardSlots);
+      rawAttendance *= volumeFactor;
 
       // heat補正
       const heatMult = Engine.heat.getMult(G);
@@ -1269,6 +1296,8 @@ const Engine = {
         rawAttendance: Math.round(rawAttendance),
         heatMult,
         showDraw: Math.round(showDraw * 10) / 10,
+        cardSlots,
+        volumeFactor,
       };
     },
 
@@ -1392,7 +1421,7 @@ const Engine = {
       const showDraw = this.calcShowDraw(matchAppeals, nonMatchPromo, venueIdx);
 
       // 新集客数
-      const attendResult = this.calcAttendanceV2(G, venueIdx, showDraw, null); // rng=null(確定値)
+      const attendResult = this.calcAttendanceV2(G, venueIdx, showDraw, showCard, null); // rng=null(確定値)
 
       // ショーレーティング
       const hasRivalryResolution = matchResults.some(r => r.rivalryResolved);
@@ -11522,7 +11551,7 @@ const Engine = {
           // フォールバック: lastShowAttendance 未設定時のみ再計算
           const settleShowDraw = Engine.attendanceV2.calcShowDraw(settleMatchAppeals, settleNonMatchPromo, G.showVenue);
           const attendRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xA77E));
-          const settleV2 = Engine.attendanceV2.calcAttendanceV2(G, G.showVenue, settleShowDraw, attendRng);
+          const settleV2 = Engine.attendanceV2.calcAttendanceV2(G, G.showVenue, settleShowDraw, settleValidMatches, attendRng);
           attendance = settleV2.attendance;
           const attendBoostBuff = (G.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
           if (attendBoostBuff) attendance = Math.min(VENUES[G.showVenue].cap, Math.round(attendance * attendBoostBuff.multiplier));
@@ -12548,7 +12577,7 @@ const Engine = {
       .reduce((sum, c) => sum + (c.promoStack || 0), 0);
     const v2ShowDraw = Engine.attendanceV2.calcShowDraw(v2MatchAppeals, nonMatchPromo, s.showVenue);
     const attendRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xA77E));
-    const v2Result = Engine.attendanceV2.calcAttendanceV2(s, s.showVenue, v2ShowDraw, attendRng);
+    const v2Result = Engine.attendanceV2.calcAttendanceV2(s, s.showVenue, v2ShowDraw, validMatches, attendRng);
     let preAttendance = v2Result.attendance;
     // MQ再設計P3c(§3.2): fp(fill pressure)算出用の「キャパでクランプする前の需要」。
     // 動員系バフはこちらにもクランプなしで反映し、fpが実際の需要超過を反映するようにする。

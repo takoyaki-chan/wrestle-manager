@@ -43,7 +43,7 @@ function makeState(showVenue = 8) {
 }
 
 (function reservesTopThreeInsideVenueLimitAndRemovesDuplicates() {
-  const state = makeState(8); // 7-match venue
+  const state = makeState(8); // 8-match venue
   const original = [
     { left: 1, right: 4 },
     { left: 2, right: 5 },
@@ -56,8 +56,8 @@ function makeState(showVenue = 8) {
   const reserved = Engine.challengeRequest.reserveScheduledMatches(state, original);
 
   assert.ok(reserved, 'healthy accepted challenge should be reservable');
-  assert.strictEqual(Engine.util.getCardWeight(reserved.card), 7, 'challenge matches must stay inside the venue cap');
-  assert.strictEqual(reserved.card.length, 7);
+  assert.strictEqual(Engine.util.getCardWeight(reserved.card), VENUES[8].maxMatches, 'challenge matches must stay inside the venue cap');
+  assert.strictEqual(reserved.card.length, VENUES[8].maxMatches);
   assert.deepStrictEqual(
     reserved.card.slice(0, 3).map(m => [m.left, m.right]),
     [[101, 1], [102, 2], [103, 3]],
