@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ランキング — 層の厚みリデザイン フルサイズ（実画像）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   層の厚みリデザイン フルサイズ v1.1
+   ベース: ranking-restyle-A-office.html（v1.0 採用正本）の様式を完全踏襲
+   変更点: 平均OVR全廃 → 層の厚み(/30) + 戦列ゲージ(案A)
+   末尾に 03カードの案B/案C 差し替え比較を併記
+   ============================================================ */
+:root {
+  --bg-dark: #24221e;
+  --panel-bg: #181614;
+  --card-bg: #12110e;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --red: #c41e3a;
+  --green: #2ecc71;
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
+  --border: rgba(200,190,170,0.08);
+  --v-mythic:    #ffd700;
+  --v-elite-mid: #ffc640;
+  --v-elite:     #ffd870;
+  --v-elite-low: #ffe898;
+  --v-high:      #fff0c0;
+  --v-mid:       #f0eee8;
+  --v-low:       #b8b5a8;
+  --v-poor:      #7a766b;
+  --font-body:  "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-num:   "Bebas Neue", "Noto Sans JP", sans-serif;
+  --font-label: "Oswald", "Noto Sans JP", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; background:var(--bg-dark); color:var(--text-main); font-family:var(--font-body); line-height:1.5; }
+body { padding: 24px 0 80px; }
+.shell { width: min(1280px, calc(100vw - 24px)); margin: 0 auto; }
+.intro { background:var(--panel-bg); border:1px solid var(--border); border-radius:6px; padding:16px 20px; margin-bottom:16px; }
+.intro .eyebrow { font-family:var(--font-label); color:var(--gold); font-size:12px; letter-spacing:3px; text-transform:uppercase; margin-bottom:6px; }
+.intro h1 { font-size:18px; margin:0 0 6px; font-weight:700; }
+.intro p { margin:0; color:var(--text-sub); font-size:13px; }
+.popup { background:var(--bg-dark); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+.popup-header { padding:12px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:var(--panel-bg); }
+.popup-header h2 { margin:0; font-size:15px; font-weight:700; display:flex; align-items:center; gap:10px; color:var(--text-main); }
+.popup-header h2 .dot { width:8px; height:8px; border-radius:50%; background:var(--gold); }
+.close-btn { font-family:var(--font-label); font-size:12px; letter-spacing:2px; text-transform:uppercase; padding:6px 14px; background:var(--panel-bg); border:1px solid var(--border); border-radius:4px; color:var(--text-sub); cursor:pointer; }
+.popup-mast { display:flex; justify-content:space-between; align-items:center; padding:12px 20px; background:var(--panel-bg); border-bottom:1px solid var(--border); }
+.popup-mast-title { font-family:var(--font-num); font-size:22px; letter-spacing:3px; line-height:1; background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.popup-mast-meta { text-align:right; font-size:11px; color:var(--text-sub); }
+.popup-mast-meta .issue { font-family:var(--font-label); font-size:10px; letter-spacing:1.5px; text-transform:uppercase; }
+.popup-mast-meta .date { font-family:var(--font-num); font-size:15px; color:var(--text-main); letter-spacing:1px; }
+.victory-bar { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px; padding:10px 20px; background:var(--card-bg); border-bottom:1px solid var(--border); }
+.vb-side { display:flex; align-items:baseline; gap:10px; font-size:12px; }
+.vb-side.vb-target { justify-content:flex-start; }
+.vb-side.vb-player { justify-content:flex-end; }
+.vb-label { font-family:var(--font-label); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); }
+.vb-side.vb-player .vb-label { color:var(--text-sub); }
+.vb-org { font-weight:700; color:var(--text-main); }
+.vb-pt { font-family:var(--font-num); font-size:20px; letter-spacing:1px; line-height:1; color:var(--text-main); }
+.vb-pt .unit { font-family:var(--font-label); font-size:10px; color:var(--text-sub); letter-spacing:1px; margin-left:2px; }
+.vb-middle { display:flex; flex-direction:column; align-items:center; padding:0 16px; border-left:1px solid var(--border); border-right:1px solid var(--border); }
+.vb-gap-num { font-family:var(--font-num); font-size:26px; letter-spacing:1px; line-height:1; background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.vb-gap-label { font-family:var(--font-label); font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text-sub); margin-top:2px; }
+.section { padding:20px; border-bottom:1px solid var(--border); }
+.section:last-child { border-bottom:none; }
+.section-marker { font-family:var(--font-label); font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:baseline; gap:10px; }
+.section-marker .kicker { color:var(--text-dim); font-size:11px; letter-spacing:2px; }
+.v-mythic { color:var(--v-mythic); text-shadow:0 0 10px rgba(255,215,0,0.7), 0 0 22px rgba(255,215,0,0.4); }
+.v-elite-mid { color:var(--v-elite-mid); }
+.v-elite { color:var(--v-elite); }
+.v-elite-low { color:var(--v-elite-low); }
+.v-high { color:var(--v-high); }
+.v-mid { color:var(--v-mid); }
+.v-low { color:var(--v-low); }
+.badge { display:inline-block; font-family:var(--font-label); font-size:8px; letter-spacing:1px; padding:1px 5px; border-radius:3px; line-height:1.3; vertical-align:2px; }
+.badge.champ { background:rgba(212,168,67,0.15); border:1px solid rgba(212,168,67,0.6); color:var(--gold-light); }
+.badge.board { background:rgba(196,30,58,0.15); border:1px solid rgba(196,30,58,0.6); color:#ff8a8a; }
+.badge.core { background:rgba(232,230,224,0.06); border:1px solid rgba(232,230,224,0.3); color:var(--text-sub); }
+
+/* ── 02 全団体ロースター ── */
+.orgs-grid { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:12px; align-items:stretch; }
+.orgcell { background:var(--panel-bg); border:1px solid var(--border); border-radius:6px; position:relative; overflow:hidden; display:flex; flex-direction:column; min-height:360px; }
+.orgcell.is-rank-1 { min-height:420px; border-color:rgba(212,168,67,0.35); }
+.orgcell.is-player { border-color:rgba(212,168,67,0.5); background:linear-gradient(180deg, rgba(212,168,67,0.05), transparent 30%), var(--panel-bg); }
+.orgcell-head { display:flex; align-items:center; gap:10px; padding:12px; }
+.orgcell-head .rank { font-family:var(--font-num); font-size:36px; line-height:0.9; letter-spacing:1px; color:var(--text-dim); }
+.orgcell.is-rank-1 .orgcell-head .rank { font-size:46px; background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.orgcell-head .name-block { flex:1; min-width:0; }
+.orgcell-head .name-block .nm { font-size:14px; font-weight:700; line-height:1.2; color:var(--text-main); }
+.orgcell.is-rank-1 .name-block .nm { font-size:16px; }
+.orgcell-head .name-block .meta { font-size:10px; color:var(--text-sub); margin-top:3px; display:flex; gap:6px; align-items:center; }
+.tier-pill { display:inline-block; font-family:var(--font-label); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:2px 8px; border-radius:3px; border:1px solid rgba(212,168,67,0.4); color:var(--gold); background:rgba(212,168,67,0.06); }
+.orgcell.is-player .tier-pill { border-color:var(--gold); color:var(--gold-light); background:rgba(212,168,67,0.12); }
+.orgcell-formation { position:relative; height:180px; margin:0 8px; margin-top:auto; flex-shrink:0; }
+.orgcell.is-rank-1 .orgcell-formation { height:220px; }
+.orgcell-formation::after { content:""; position:absolute; left:10%; right:10%; bottom:12px; height:1px; z-index:0; background:radial-gradient(ellipse, rgba(212,168,67,0.3), transparent); }
+.orgcell-fcell { position:absolute; bottom:12px; cursor:pointer; }
+.orgcell-fcell .img-wrap { width:100%; height:100%; display:flex; align-items:end; justify-content:center; }
+.orgcell-fcell.pos-1 { left:50%; transform:translateX(-50%); width:130px; height:165px; z-index:30; }
+.orgcell.is-rank-1 .orgcell-fcell.pos-1 { width:150px; height:195px; }
+.orgcell-fcell.pos-1 img { height:100%; filter:drop-shadow(0 6px 12px rgba(0,0,0,0.55)); }
+.orgcell-fcell.pos-1.is-champ::before { content:""; position:absolute; bottom:-2px; left:50%; transform:translateX(-50%); width:110px; height:18px; z-index:-1; border-radius:50%; opacity:0.5; background:radial-gradient(ellipse, var(--gold), transparent 70%); }
+.orgcell-fcell.pos-2 { left:8px; width:90px; height:130px; z-index:20; bottom:22px; }
+.orgcell.is-rank-1 .orgcell-fcell.pos-2 { width:100px; height:145px; }
+.orgcell-fcell.pos-2 img, .orgcell-fcell.pos-3 img { height:100%; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5)); opacity:0.92; }
+.orgcell-fcell.pos-3 { right:8px; width:90px; height:130px; z-index:20; bottom:22px; }
+.orgcell.is-rank-1 .orgcell-fcell.pos-3 { width:100px; height:145px; }
+.orgcell-fcell .nm-tag { position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); font-size:10px; font-weight:700; white-space:nowrap; color:#fff; text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+.orgcell-fcell.pos-1 .nm-tag { font-size:11px; }
+.orgcell-fcell .nm-tag .ovr { font-family:var(--font-num); margin-left:4px; letter-spacing:1px; }
+.orgcell-fcell .nm-tag .badge { margin-right:3px; }
+.orgcell-foot { padding:12px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:end; }
+.orgcell-foot .pt-block .label { font-family:var(--font-label); font-size:9px; letter-spacing:1.5px; color:var(--text-dim); text-transform:uppercase; }
+.orgcell-foot .pt-block .v { font-family:var(--font-num); font-size:26px; letter-spacing:1px; line-height:1; color:var(--text-main); }
+.orgcell.is-rank-1 .orgcell-foot .pt-block .v { font-size:32px; background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.orgcell-foot .pt-block .v .unit { font-size:11px; color:var(--text-sub); font-family:var(--font-label); letter-spacing:1px; margin-left:2px; -webkit-text-fill-color:currentColor; }
+.orgcell-foot .meta-block { text-align:right; font-size:10px; color:var(--text-sub); line-height:1.5; }
+.battle-pos { color:var(--green); }
+.battle-neg { color:#e74c3c; }
+
+/* ★ 02用: 層の厚みミニゲージ(平均OVR行の置換) */
+.depth-line { display:flex; align-items:baseline; gap:6px; justify-content:flex-end; }
+.depth-line .k { font-family:var(--font-label); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-dim); }
+.depth-line .n { font-family:var(--font-num); font-size:14px; letter-spacing:1px; color:var(--text-main); }
+.mini-gauge { display:flex; gap:2px; align-items:flex-end; justify-content:flex-end; margin-top:3px; }
+.mini-gauge i { display:block; width:9px; height:8px; border-radius:1px; background:rgba(200,190,170,0.09); }
+.mini-gauge i.f { background:rgba(212,168,67,0.75); }
+.mini-gauge i.h { background:rgba(212,168,67,0.35); }
+.mini-gauge i.r { width:7px; height:6px; }
+.mini-gauge i.r.f { background:rgba(212,168,67,0.45); }
+.mini-gauge i.r.h { background:rgba(212,168,67,0.22); }
+
+/* ── 03 団体プロファイル ── */
+.sec-profile { background:var(--card-bg); }
+.rp-profiles { display:flex; flex-direction:column; gap:10px; }
+.rp-card { min-height:150px; display:grid; grid-template-columns:70px minmax(210px,1.05fr) minmax(190px,0.9fr) minmax(330px,1.35fr) minmax(150px,0.65fr); gap:10px; align-items:stretch; padding:14px; background:var(--panel-bg); border:1px solid var(--border); border-radius:6px; border-left:3px solid rgba(232,230,224,0.18); }
+.rp-card.is-rank-1 { border-left-color:var(--gold); background:linear-gradient(90deg, rgba(212,168,67,0.08), transparent 38%), var(--panel-bg); }
+.rp-card.is-player { border-color:rgba(212,168,67,0.4); border-left-color:var(--gold); }
+.rp-rank { display:flex; align-items:center; justify-content:center; }
+.rp-rank img { width:64px; height:64px; object-fit:contain; border-radius:6px; background:rgba(0,0,0,0.25); padding:4px; border:1px solid var(--border); }
+.rp-card.is-rank-1 .rp-rank img { border-color:rgba(212,168,67,0.5); }
+.rp-info { min-width:0; padding-top:2px; }
+.rp-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
+.rp-tags span { border:1px solid rgba(212,168,67,0.35); color:var(--gold); background:rgba(212,168,67,0.05); padding:2px 7px; border-radius:3px; font-family:var(--font-label); font-size:9px; letter-spacing:1px; text-transform:uppercase; }
+.rp-info h3 { margin:0 0 6px; color:var(--text-main); font-size:22px; line-height:1.05; font-weight:900; }
+.rp-info p, .rp-ace p, .rp-depth-note { margin:0; color:var(--text-sub); font-size:11px; line-height:1.55; }
+.rp-ace { display:grid; grid-template-columns:1fr 82px; gap:8px; padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--card-bg); cursor:pointer; min-width:0; }
+.rp-ace-text { min-width:0; }
+.rp-ace-role { min-height:14px; margin-bottom:2px; font-family:var(--font-label); font-size:9px; letter-spacing:1.5px; line-height:1.2; }
+.rp-ace-role-champ { color:var(--gold); }
+.rp-ace-role-board { color:#ff8a8a; }
+.rp-ace-role-sep { color:var(--text-dim); padding:0 3px; }
+.rp-ace strong { display:block; color:var(--text-main); font-size:13px; line-height:1.25; margin-bottom:5px; }
+.rp-ace-img { width:82px; height:106px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; border:1px solid var(--border); border-radius:4px; background:rgba(0,0,0,0.25); }
+.rp-ace-img img { width:100%; height:100%; object-fit:cover; object-position:top center; }
+.rp-depth { min-width:0; padding-top:2px; }
+.rp-depth-head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:6px; }
+.rp-depth-head strong { color:var(--text-main); font-size:11px; }
+.rp-depth-head span { color:var(--text-sub); font-size:10px; white-space:nowrap; }
+.rp-faces { display:flex; gap:6px; flex-wrap:nowrap; overflow:hidden; }
+.rp-face { position:relative; width:42px; height:42px; flex:0 0 42px; border:1px solid var(--border); border-radius:4px; background:rgba(0,0,0,0.25); cursor:pointer; overflow:hidden; }
+.rp-face.is-core { border-color:rgba(232,230,224,0.4); }
+.rp-face.is-champ { border-color:var(--gold); }
+.rp-face.is-board { border-color:var(--red); }
+.rp-face img { width:100%; height:100%; object-fit:cover; object-position:top center; }
+.rp-face .role-badges { position:absolute; left:1px; top:1px; display:flex; gap:2px; z-index:2; }
+.rp-face .role-badges .badge { font-size:7px; padding:1px 3px; line-height:1.1; letter-spacing:0.5px; background:rgba(18,17,14,0.85); }
+.rp-face b { position:absolute; right:1px; bottom:0; color:#fff; font-family:var(--font-num); font-size:13px; text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+.rp-depth-note { margin-top:8px; padding-top:7px; border-top:1px solid var(--border); }
+.rp-metrics { display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; border-left:1px solid var(--border); padding-left:10px; min-width:0; }
+.rp-metrics div { min-width:0; }
+.rp-metrics span { display:block; color:var(--text-dim); font-family:var(--font-label); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; }
+.rp-metrics b { color:var(--text-main); font-family:var(--font-num); font-size:24px; line-height:1.1; letter-spacing:1px; }
+.rp-metrics b small { font-size:12px; color:var(--text-dim); letter-spacing:0; }
+.rp-metrics div:first-child b { background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+/* ★ 03用: 戦列ゲージ(案A) */
+.bench-gauge { display:flex; align-items:flex-end; gap:3px; margin-top:8px; }
+.bg-cell { position:relative; height:14px; border:1px solid rgba(212,168,67,0.35); border-radius:2px; background:rgba(200,190,170,0.04); overflow:hidden; }
+.bg-cell.core { width:24px; }
+.bg-cell.reserve { width:17px; height:11px; border-color:rgba(200,190,170,0.22); }
+.bg-cell .fill { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg, rgba(212,168,67,0.5), rgba(212,168,67,0.8)); }
+.bg-cell.ready { border-color:rgba(212,168,67,0.7); }
+.bg-cell.ready .fill { background:linear-gradient(90deg, var(--gold), var(--gold-light)); box-shadow:0 0 6px rgba(212,168,67,0.5); }
+.bg-cell.reserve .fill { background:rgba(200,190,170,0.32); }
+.bg-cell.reserve.ready .fill { background:rgba(212,168,67,0.65); }
+.bg-gap { width:6px; }
+.bench-score-line { display:flex; align-items:baseline; gap:8px; margin-top:5px; }
+.bench-score-line .n { font-family:var(--font-num); font-size:18px; letter-spacing:1px; background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.bench-score-line .n small { font-size:10px; -webkit-text-fill-color:var(--text-dim); }
+.bench-score-line .split { font-size:9px; color:var(--text-sub); }
+.bench-score-line .alert { font-size:9px; color:#e08585; margin-left:auto; }
+
+/* ★ 案B: チップ */
+.chip-row { display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; }
+.depth-chip { font-size:9.5px; padding:2px 8px; border-radius:3px; border:1px solid rgba(212,168,67,0.3); color:var(--gold); background:rgba(212,168,67,0.07); }
+.depth-chip.dim { border-color:var(--border); color:var(--text-sub); background:transparent; }
+.depth-chip.alert { border-color:rgba(196,30,58,0.4); color:#e08585; background:rgba(196,30,58,0.08); }
+
+/* ★ 案C: 1軍・2軍ベンチ */
+.bench-rows { display:flex; flex-direction:column; gap:14px; }
+.bench-row { display:flex; align-items:center; gap:8px; }
+.bench-row .lbl { font-family:var(--font-label); font-size:8px; letter-spacing:1.5px; color:var(--text-dim); width:46px; flex-shrink:0; text-transform:uppercase; line-height:1.4; }
+.bench-faces { display:flex; gap:6px; }
+.bf { position:relative; display:inline-block; }
+.bf .face-img { display:block; width:42px; height:42px; border-radius:4px; border:2px solid rgba(212,168,67,0.7); overflow:hidden; background:rgba(0,0,0,0.25); }
+.bf .face-img img { width:100%; height:100%; object-fit:cover; object-position:top center; }
+.bf.mid .face-img { border-color:rgba(212,168,67,0.35); }
+.bf.low .face-img { border-color:rgba(200,190,170,0.2); }
+.bf.out .face-img { border-color:rgba(196,30,58,0.45); }
+.bf.out .face-img img { filter:grayscale(0.9) brightness(0.5); }
+.bf.out::after { content:'✚'; position:absolute; right:-4px; top:-5px; font-size:10px; color:#e08585; }
+.bf.empty .face-img { border:1.5px dashed rgba(200,190,170,0.18); background:transparent; display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:9px; }
+.bf b { position:absolute; right:1px; bottom:0; color:#fff; font-family:var(--font-num); font-size:12px; text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+.bench-row.r2 .face-img { width:34px; height:34px; }
+.compare-label { font-family:var(--font-label); font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin:26px 0 8px; padding-left:10px; border-left:3px solid var(--gold); }
+.compare-sub { font-size:11px; color:var(--text-sub); margin:0 0 10px 13px; }
+
+/* ── 04 履歴 ── */
+.history-wrap table { width:100%; border-collapse:collapse; font-size:13px; }
+.history-wrap th { font-family:var(--font-label); font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); padding:6px 8px; text-align:right; border-bottom:1px solid var(--border); }
+.history-wrap th:first-child, .history-wrap td:first-child { text-align:left; }
+.history-wrap td { padding:8px 10px; border-bottom:1px solid rgba(200,190,170,0.04); text-align:right; }
+.h-rank-1 { color:var(--gold-light); font-weight:700; }
+.h-rank-2, .h-rank-3, .h-rank-4 { color:var(--text-main); }
+.profit-pos { color:var(--green); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <section class="intro">
+    <div class="eyebrow">Ranking — Bench Strength Redesign / Fullsize</div>
+    <h1>層の厚みリデザイン フルサイズ（実画像・案A適用）</h1>
+    <p>v1.0採用様式(Office標準・金一元)のフル画面に、平均OVR全廃+「層の厚み(/30)」+戦列ゲージ(案A)を適用した実寸。ページ末尾に03カードの案B(チップ)/案C(1軍・2軍ベンチ)差し替え比較あり。厚みの数値・紹介文は状況出し分けの例。</p>
+  </section>
+
+  <div class="popup">
+
+    <div class="popup-header">
+      <h2><span class="dot"></span>🏆 団体ランキング</h2>
+      <button class="close-btn">✕ 閉じる</button>
+    </div>
+
+    <div class="popup-mast">
+      <div class="popup-mast-title">INDUSTRY STANDINGS</div>
+      <div class="popup-mast-meta">
+        <div class="issue">第3シーズン・全4団体</div>
+        <div class="date">Y3 W28</div>
+      </div>
+    </div>
+
+    <div class="victory-bar">
+      <div class="vb-side vb-target"><span class="vb-label">▲ 1位</span><span class="vb-org">皇武館</span><span class="vb-pt">842<span class="unit">pt</span></span></div>
+      <div class="vb-middle"><span class="vb-gap-num">−134</span><span class="vb-gap-label">pt で頂点</span></div>
+      <div class="vb-side vb-player"><span class="vb-label">▼ 自団体</span><span class="vb-org">ファイヤーガールズ</span><span class="vb-pt">708<span class="unit">pt</span></span></div>
+    </div>
+
+    <!-- ── 02 全団体ロースター ── -->
+    <section class="section sec-roster">
+      <div class="section-marker"><span class="kicker">02 — Roster</span><span class="title">全団体ロースター</span></div>
+      <div class="orgs-grid">
+
+        <div class="orgcell is-rank-1">
+          <div class="orgcell-head">
+            <span class="rank">1</span>
+            <div class="name-block"><div class="nm">皇武館</div><div class="meta"><span class="tier-pill">S級</span><span>21名</span></div></div>
+          </div>
+          <div class="orgcell-formation">
+            <div class="orgcell-fcell pos-2"><div class="img-wrap"><img src="../../../image/upper/upper_abe_m.webp" alt=""></div><div class="nm-tag"><span class="badge board">看板</span>高城<span class="ovr v-elite-mid">95</span></div></div>
+            <div class="orgcell-fcell pos-3"><div class="img-wrap"><img src="../../../image/upper/upper_akabane_a.webp" alt=""></div><div class="nm-tag"><span class="badge core">主力</span>月村<span class="ovr v-elite">92</span></div></div>
+            <div class="orgcell-fcell pos-1 is-champ"><div class="img-wrap"><img src="../../../image/upper/upper_aida_m.webp" alt=""></div><div class="nm-tag"><span class="badge champ">王者</span>朝倉 美鈴<span class="ovr v-mythic">100</span></div></div>
+          </div>
+          <div class="orgcell-foot">
+            <div class="pt-block"><div class="label">評価</div><div class="v">842<span class="unit">pt</span></div></div>
+            <div class="meta-block">
+              <div class="depth-line"><span class="k">層の厚み</span><span class="n">27</span></div>
+              <div class="mini-gauge"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="h"></i><i class="r f"></i><i class="r f"></i><i class="r h"></i><i class="r h"></i></div>
+              <div class="battle-pos">対戦PT +12</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="orgcell is-rank-2 is-player">
+          <div class="orgcell-head">
+            <span class="rank">2</span>
+            <div class="name-block"><div class="nm">ファイヤーガールズ</div><div class="meta"><span class="tier-pill">自団体</span><span>17名</span></div></div>
+          </div>
+          <div class="orgcell-formation">
+            <div class="orgcell-fcell pos-2"><div class="img-wrap"><img src="../../../image/upper/upper_hiramatsu_k.webp" alt=""></div><div class="nm-tag"><span class="badge core">主力</span>鈴木<span class="ovr v-high">82</span></div></div>
+            <div class="orgcell-fcell pos-3"><div class="img-wrap"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""></div><div class="nm-tag"><span class="badge core">主力</span>石川<span class="ovr v-mid">79</span></div></div>
+            <div class="orgcell-fcell pos-1"><div class="img-wrap"><img src="../../../image/upper/upper_yaegashi_m.webp" alt=""></div><div class="nm-tag"><span class="badge board">看板</span>花村 桜子<span class="ovr v-elite-low">85</span></div></div>
+          </div>
+          <div class="orgcell-foot">
+            <div class="pt-block"><div class="label">評価</div><div class="v">708<span class="unit">pt</span></div></div>
+            <div class="meta-block">
+              <div class="depth-line"><span class="k">層の厚み</span><span class="n">24</span></div>
+              <div class="mini-gauge"><i class="f"></i><i class="f"></i><i class="f"></i><i class="h"></i><i class="h"></i><i class="r f"></i><i class="r h"></i><i class="r h"></i><i class="r"></i></div>
+              <div class="battle-pos">対戦PT +8</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="orgcell is-rank-3">
+          <div class="orgcell-head">
+            <span class="rank">3</span>
+            <div class="name-block"><div class="nm">ノヴァインパクト</div><div class="meta"><span class="tier-pill">A級</span><span>15名</span></div></div>
+          </div>
+          <div class="orgcell-formation">
+            <div class="orgcell-fcell pos-2"><div class="img-wrap"><img src="../../../image/upper/upper_matsushita_m.webp" alt=""></div><div class="nm-tag"><span class="badge board">看板</span>大谷<span class="ovr v-high">81</span></div></div>
+            <div class="orgcell-fcell pos-3"><div class="img-wrap"><img src="../../../image/upper/upper_umegaoka_m.webp" alt=""></div><div class="nm-tag"><span class="badge core">主力</span>天城<span class="ovr v-mid">78</span></div></div>
+            <div class="orgcell-fcell pos-1 is-champ"><div class="img-wrap"><img src="../../../image/upper/upper_isehara_f.webp" alt=""></div><div class="nm-tag"><span class="badge champ">王者</span>猪瀬 凛<span class="ovr v-elite-low">86</span></div></div>
+          </div>
+          <div class="orgcell-foot">
+            <div class="pt-block"><div class="label">評価</div><div class="v">654<span class="unit">pt</span></div></div>
+            <div class="meta-block">
+              <div class="depth-line"><span class="k">層の厚み</span><span class="n">14</span></div>
+              <div class="mini-gauge"><i class="f"></i><i class="h"></i><i class="h"></i><i class="h"></i><i></i><i class="r h"></i><i class="r h"></i><i class="r"></i><i class="r"></i></div>
+              <div class="battle-neg">対戦PT −4</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="orgcell is-rank-4">
+          <div class="orgcell-head">
+            <span class="rank">4</span>
+            <div class="name-block"><div class="nm">なでしこプロレス</div><div class="meta"><span class="tier-pill">B級</span><span>12名</span></div></div>
+          </div>
+          <div class="orgcell-formation">
+            <div class="orgcell-fcell pos-2"><div class="img-wrap"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div><div class="nm-tag"><span class="badge core">主力</span>海老名<span class="ovr v-mid">71</span></div></div>
+            <div class="orgcell-fcell pos-1"><div class="img-wrap"><img src="../../../image/upper/upper_yoshino_m.webp" alt=""></div><div class="nm-tag"><span class="badge board">看板</span>桐野 葵<span class="ovr v-mid">76</span></div></div>
+          </div>
+          <div class="orgcell-foot">
+            <div class="pt-block"><div class="label">評価</div><div class="v">521<span class="unit">pt</span></div></div>
+            <div class="meta-block">
+              <div class="depth-line"><span class="k">層の厚み</span><span class="n">7</span></div>
+              <div class="mini-gauge"><i class="f"></i><i class="h"></i><i></i><i></i><i></i><i class="r h"></i><i class="r"></i><i class="r"></i><i class="r"></i></div>
+              <div class="battle-pos">対戦PT +8</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── 03 団体プロファイル(案A適用) ── -->
+    <section class="section sec-profile">
+      <div class="section-marker"><span class="kicker">03 — 団体詳細</span><span class="title">団体プロフィール</span></div>
+      <div class="rp-profiles">
+
+        <div class="rp-card is-rank-1">
+          <div class="rp-rank"><img src="../../../image/org/org-s-0.png" alt=""></div>
+          <div class="rp-info">
+            <div class="rp-tags"><span>S級</span><span>21名</span><span>王者保持</span></div>
+            <h3>皇武館</h3>
+            <p>業界の頂点に座り続けている。主力の層は業界屈指で、誰が一人欠けても興行の格が落ちない。この分厚さこそが王朝の正体だ。</p>
+          </div>
+          <div class="rp-ace">
+            <div class="rp-ace-text">
+              <div class="rp-ace-role"><span class="rp-ace-role-champ">王者</span><span class="rp-ace-role-sep"> / </span><span class="rp-ace-role-board">看板</span></div>
+              <strong>朝倉 美鈴 / OVR100</strong>
+              <p>5防衛中。エースだけでなく2番手、3番手も強く、層の厚さで首位を守る。</p>
+            </div>
+            <div class="rp-ace-img"><img src="../../../image/upper/upper_aida_m.webp" alt=""></div>
+          </div>
+          <div class="rp-depth">
+            <div class="rp-depth-head"><strong>層の厚み</strong><span>主力4〜8番手 / 控え9〜12番手</span></div>
+            <div class="rp-faces">
+              <span class="rp-face is-board"><span class="role-badges"><span class="badge board">看板</span></span><img src="../../../image/upper/upper_abe_m.webp" alt=""><b>95</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_akabane_a.webp" alt=""><b>92</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_oba_a.webp" alt=""><b>84</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_kondo_y.webp" alt=""><b>83</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_hongo_m.webp" alt=""><b>81</b></span>
+              <span class="rp-face"><img src="../../../image/upper/upper_iijima_s.webp" alt=""><b>79</b></span>
+              <span class="rp-face"><img src="../../../image/upper/upper_serizawa_a.webp" alt=""><b>78</b></span>
+            </div>
+            <div class="bench-gauge">
+              <span class="bg-cell core ready"><span class="fill" style="width:100%"></span></span>
+              <span class="bg-cell core ready"><span class="fill" style="width:100%"></span></span>
+              <span class="bg-cell core ready"><span class="fill" style="width:100%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:90%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:70%"></span></span>
+              <span class="bg-gap"></span>
+              <span class="bg-cell reserve ready"><span class="fill" style="width:100%"></span></span>
+              <span class="bg-cell reserve ready"><span class="fill" style="width:100%"></span></span>
+              <span class="bg-cell reserve"><span class="fill" style="width:60%"></span></span>
+              <span class="bg-cell reserve"><span class="fill" style="width:45%"></span></span>
+            </div>
+            <div class="bench-score-line"><span class="n">27<small>/30</small></span><span class="split">主力 19.2 ・ 控え 7.8</span></div>
+          </div>
+          <div class="rp-metrics">
+            <div><span>評価</span><b>842</b></div>
+            <div><span>基礎力</span><b>681</b></div>
+            <div><span>層の厚み</span><b>27<small>/30</small></b></div>
+            <div><span>対戦PT</span><b class="battle-pos">+12</b></div>
+            <div><span>レガシー</span><b>50</b></div>
+            <div><span>実績</span><b>50</b></div>
+          </div>
+        </div>
+
+        <div class="rp-card is-rank-2 is-player">
+          <div class="rp-rank"><img src="../../../image/org/org-player-0.png" alt=""></div>
+          <div class="rp-info">
+            <div class="rp-tags"><span>自団体</span><span>17名</span><span>追走中</span></div>
+            <h3>ファイヤーガールズ</h3>
+            <p>首位を追う挑戦者。4番手以降にも実戦級が並び、連戦に耐える構えはできてきた。首位との差は最上位の怪物級と、控えの最後のひと押しだ。</p>
+          </div>
+          <div class="rp-ace">
+            <div class="rp-ace-text">
+              <div class="rp-ace-role"><span class="rp-ace-role-board">看板</span></div>
+              <strong>花村 桜子 / OVR85</strong>
+              <p>突出した怪物はいないが、主力が横に並ぶ。看板の一段上げが上積みの鍵。</p>
+            </div>
+            <div class="rp-ace-img"><img src="../../../image/upper/upper_yaegashi_m.webp" alt=""></div>
+          </div>
+          <div class="rp-depth">
+            <div class="rp-depth-head"><strong>層の厚み</strong><span>主力4〜8番手 / 控え9〜12番手</span></div>
+            <div class="rp-faces">
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_hiramatsu_k.webp" alt=""><b>82</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""><b>79</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_kawanobe_n.webp" alt=""><b>77</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_akanuma_s.webp" alt=""><b>74</b></span>
+              <span class="rp-face"><img src="../../../image/upper/upper_asahina_h.webp" alt=""><b>73</b></span>
+            </div>
+            <div class="bench-gauge">
+              <span class="bg-cell core ready"><span class="fill" style="width:100%"></span></span>
+              <span class="bg-cell core ready"><span class="fill" style="width:100%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:85%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:70%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:45%"></span></span>
+              <span class="bg-gap"></span>
+              <span class="bg-cell reserve ready"><span class="fill" style="width:100%"></span></span>
+              <span class="bg-cell reserve"><span class="fill" style="width:70%"></span></span>
+              <span class="bg-cell reserve"><span class="fill" style="width:50%"></span></span>
+              <span class="bg-cell reserve"><span class="fill" style="width:20%"></span></span>
+            </div>
+            <div class="bench-score-line"><span class="n">24<small>/30</small></span><span class="split">主力 18.4 ・ 控え 5.6</span></div>
+          </div>
+          <div class="rp-metrics">
+            <div><span>評価</span><b>708</b></div>
+            <div><span>基礎力</span><b>632</b></div>
+            <div><span>層の厚み</span><b>24<small>/30</small></b></div>
+            <div><span>対戦PT</span><b class="battle-pos">+8</b></div>
+            <div><span>レガシー</span><b>28</b></div>
+            <div><span>実績</span><b>28</b></div>
+          </div>
+        </div>
+
+        <div class="rp-card is-rank-3">
+          <div class="rp-rank"><img src="../../../image/org/org-a-0.png" alt=""></div>
+          <div class="rp-info">
+            <div class="rp-tags"><span>A級</span><span>15名</span><span>王者保持</span></div>
+            <h3>ノヴァインパクト</h3>
+            <p>王者は強い。だがその後ろに続く者が薄く、猪瀬が倒れた瞬間に興行の格が一段落ちる。王者依存の綱渡りが続いている。</p>
+          </div>
+          <div class="rp-ace">
+            <div class="rp-ace-text">
+              <div class="rp-ace-role"><span class="rp-ace-role-champ">王者</span><span class="rp-ace-role-sep"> / </span><span class="rp-ace-role-board">看板</span></div>
+              <strong>猪瀬 凛 / OVR86</strong>
+              <p>戴冠したばかりの若き王者。王座の重みをまだ測りかねている。</p>
+            </div>
+            <div class="rp-ace-img"><img src="../../../image/upper/upper_isehara_f.webp" alt=""></div>
+          </div>
+          <div class="rp-depth">
+            <div class="rp-depth-head"><strong>層の厚み</strong><span>主力4〜8番手 / 控え9〜12番手</span></div>
+            <div class="rp-faces">
+              <span class="rp-face is-board"><span class="role-badges"><span class="badge board">看板</span></span><img src="../../../image/upper/upper_matsushita_m.webp" alt=""><b>81</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_umegaoka_m.webp" alt=""><b>78</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_minamitani_a.webp" alt=""><b>75</b></span>
+              <span class="rp-face"><img src="../../../image/upper/upper_sudo_m.webp" alt=""><b>72</b></span>
+            </div>
+            <div class="bench-gauge">
+              <span class="bg-cell core ready"><span class="fill" style="width:100%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:55%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:45%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:25%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:10%"></span></span>
+              <span class="bg-gap"></span>
+              <span class="bg-cell reserve"><span class="fill" style="width:40%"></span></span>
+              <span class="bg-cell reserve"><span class="fill" style="width:25%"></span></span>
+              <span class="bg-cell reserve"></span>
+              <span class="bg-cell reserve"></span>
+            </div>
+            <div class="bench-score-line"><span class="n">14<small>/30</small></span><span class="split">主力 11.6 ・ 控え 2.4</span></div>
+          </div>
+          <div class="rp-metrics">
+            <div><span>評価</span><b>654</b></div>
+            <div><span>基礎力</span><b>594</b></div>
+            <div><span>層の厚み</span><b>14<small>/30</small></b></div>
+            <div><span>対戦PT</span><b class="battle-neg">−4</b></div>
+            <div><span>レガシー</span><b>30</b></div>
+            <div><span>実績</span><b>18</b></div>
+          </div>
+        </div>
+
+        <div class="rp-card is-rank-4">
+          <div class="rp-rank"><img src="../../../image/org/org-b-0.png" alt=""></div>
+          <div class="rp-info">
+            <div class="rp-tags"><span>B級</span><span>12名</span><span>欠場1名</span></div>
+            <h3>なでしこプロレス</h3>
+            <p>欠場者が出て、ベンチは見た目より薄い。主力の後ろに座る者のいないベンチが広がる。補強か育成か、決断の時が近い。</p>
+          </div>
+          <div class="rp-ace">
+            <div class="rp-ace-text">
+              <div class="rp-ace-role"><span class="rp-ace-role-board">看板</span></div>
+              <strong>桐野 葵 / OVR76</strong>
+              <p>看板の孤軍奮闘が続く。彼女が休んだ週の興行をどう組むかが毎回の悩みだ。</p>
+            </div>
+            <div class="rp-ace-img"><img src="../../../image/upper/upper_yoshino_m.webp" alt=""></div>
+          </div>
+          <div class="rp-depth">
+            <div class="rp-depth-head"><strong>層の厚み</strong><span>欠場1名を除く</span></div>
+            <div class="rp-faces">
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""><b>71</b></span>
+              <span class="rp-face is-core"><img src="../../../image/upper/upper_niwa_h.webp" alt=""><b>69</b></span>
+              <span class="rp-face"><img src="../../../image/upper/upper_komori_s.webp" alt=""><b>66</b></span>
+            </div>
+            <div class="bench-gauge">
+              <span class="bg-cell core"><span class="fill" style="width:85%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:40%"></span></span>
+              <span class="bg-cell core"><span class="fill" style="width:20%"></span></span>
+              <span class="bg-cell core"></span>
+              <span class="bg-cell core"></span>
+              <span class="bg-gap"></span>
+              <span class="bg-cell reserve"><span class="fill" style="width:30%"></span></span>
+              <span class="bg-cell reserve"><span class="fill" style="width:10%"></span></span>
+              <span class="bg-cell reserve"></span>
+              <span class="bg-cell reserve"></span>
+            </div>
+            <div class="bench-score-line"><span class="n">7<small>/30</small></span><span class="split">主力 5.8 ・ 控え 1.2</span><span class="alert">✚ 欠場1名で戦列が細い</span></div>
+          </div>
+          <div class="rp-metrics">
+            <div><span>評価</span><b>521</b></div>
+            <div><span>基礎力</span><b>488</b></div>
+            <div><span>層の厚み</span><b>7<small>/30</small></b></div>
+            <div><span>対戦PT</span><b class="battle-pos">+8</b></div>
+            <div><span>レガシー</span><b>12</b></div>
+            <div><span>実績</span><b>10</b></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── 04 シーズン履歴(参考・変更なし) ── -->
+    <section class="section history-wrap">
+      <div class="section-marker"><span class="kicker">04 — History</span><span class="title">シーズン履歴</span></div>
+      <table>
+        <tr><th>シーズン</th><th>順位</th><th>評価</th><th>収支</th></tr>
+        <tr><td>第3シーズン(進行中)</td><td class="h-rank-2">2位</td><td>708pt</td><td class="profit-pos">+2,140万</td></tr>
+        <tr><td>第2シーズン</td><td class="h-rank-3">3位</td><td>612pt</td><td class="profit-pos">+860万</td></tr>
+        <tr><td>第1シーズン</td><td class="h-rank-4">4位</td><td>488pt</td><td>−320万</td></tr>
+      </table>
+    </section>
+
+  </div>
+
+  <!-- ══ 03カードの差し替え比較(自団体カードのみ) ══ -->
+  <div class="compare-label">比較 — 案B「数値+内訳チップ」(同じ自団体カード)</div>
+  <p class="compare-sub">ゲージを置かず、既存の顔リスト+チップの言葉で内訳を伝える最小変更版。</p>
+  <div class="rp-card is-rank-2 is-player">
+    <div class="rp-rank"><img src="../../../image/org/org-player-0.png" alt=""></div>
+    <div class="rp-info">
+      <div class="rp-tags"><span>自団体</span><span>17名</span><span>追走中</span></div>
+      <h3>ファイヤーガールズ</h3>
+      <p>首位を追う挑戦者。4番手以降にも実戦級が並び、連戦に耐える構えはできてきた。首位との差は最上位の怪物級と、控えの最後のひと押しだ。</p>
+    </div>
+    <div class="rp-ace">
+      <div class="rp-ace-text">
+        <div class="rp-ace-role"><span class="rp-ace-role-board">看板</span></div>
+        <strong>花村 桜子 / OVR85</strong>
+        <p>突出した怪物はいないが、主力が横に並ぶ。看板の一段上げが上積みの鍵。</p>
+      </div>
+      <div class="rp-ace-img"><img src="../../../image/upper/upper_yaegashi_m.webp" alt=""></div>
+    </div>
+    <div class="rp-depth">
+      <div class="rp-depth-head"><strong>層の厚み 24/30</strong><span>主力 18.4 ・ 控え 5.6</span></div>
+      <div class="rp-faces">
+        <span class="rp-face is-core"><img src="../../../image/upper/upper_hiramatsu_k.webp" alt=""><b>82</b></span>
+        <span class="rp-face is-core"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""><b>79</b></span>
+        <span class="rp-face is-core"><img src="../../../image/upper/upper_kawanobe_n.webp" alt=""><b>77</b></span>
+        <span class="rp-face is-core"><img src="../../../image/upper/upper_akanuma_s.webp" alt=""><b>74</b></span>
+        <span class="rp-face"><img src="../../../image/upper/upper_asahina_h.webp" alt=""><b>73</b></span>
+      </div>
+      <div class="chip-row">
+        <span class="depth-chip">主力枠 4/5 が実戦級</span>
+        <span class="depth-chip">控えに一線級 1名</span>
+        <span class="depth-chip dim">欠場なし</span>
+      </div>
+    </div>
+    <div class="rp-metrics">
+      <div><span>評価</span><b>708</b></div>
+      <div><span>基礎力</span><b>632</b></div>
+      <div><span>層の厚み</span><b>24<small>/30</small></b></div>
+      <div><span>対戦PT</span><b class="battle-pos">+8</b></div>
+      <div><span>レガシー</span><b>28</b></div>
+      <div><span>実績</span><b>28</b></div>
+    </div>
+  </div>
+
+  <div class="compare-label" style="margin-top:22px">比較 — 案C「1軍・2軍ベンチ」(同じ自団体カード)</div>
+  <p class="compare-sub">顔リストを主力/控えの2段に組み替え、枠線の光り方=到達度で見せる。欠場は暗転+✚、空席は破線。</p>
+  <div class="rp-card is-rank-2 is-player">
+    <div class="rp-rank"><img src="../../../image/org/org-player-0.png" alt=""></div>
+    <div class="rp-info">
+      <div class="rp-tags"><span>自団体</span><span>17名</span><span>追走中</span></div>
+      <h3>ファイヤーガールズ</h3>
+      <p>首位を追う挑戦者。4番手以降にも実戦級が並び、連戦に耐える構えはできてきた。首位との差は最上位の怪物級と、控えの最後のひと押しだ。</p>
+    </div>
+    <div class="rp-ace">
+      <div class="rp-ace-text">
+        <div class="rp-ace-role"><span class="rp-ace-role-board">看板</span></div>
+        <strong>花村 桜子 / OVR85</strong>
+        <p>突出した怪物はいないが、主力が横に並ぶ。看板の一段上げが上積みの鍵。</p>
+      </div>
+      <div class="rp-ace-img"><img src="../../../image/upper/upper_yaegashi_m.webp" alt=""></div>
+    </div>
+    <div class="rp-depth">
+      <div class="rp-depth-head"><strong>層の厚み 24/30</strong><span>主力4〜8番手 / 控え9〜12番手</span></div>
+      <div class="bench-rows">
+        <div class="bench-row">
+          <span class="lbl">主力<br>4-8番手</span>
+          <div class="bench-faces">
+            <span class="bf"><span class="face-img"><img src="../../../image/upper/upper_hiramatsu_k.webp" alt=""></span><b>82</b></span>
+            <span class="bf"><span class="face-img"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""></span><b>79</b></span>
+            <span class="bf mid"><span class="face-img"><img src="../../../image/upper/upper_kawanobe_n.webp" alt=""></span><b>77</b></span>
+            <span class="bf mid"><span class="face-img"><img src="../../../image/upper/upper_akanuma_s.webp" alt=""></span><b>74</b></span>
+            <span class="bf low"><span class="face-img"><img src="../../../image/upper/upper_asahina_h.webp" alt=""></span><b>73</b></span>
+          </div>
+        </div>
+        <div class="bench-row r2">
+          <span class="lbl">控え<br>9-12番手</span>
+          <div class="bench-faces">
+            <span class="bf"><span class="face-img"><img src="../../../image/upper/upper_totsuka_y.webp" alt=""></span><b>70</b></span>
+            <span class="bf mid"><span class="face-img"><img src="../../../image/upper/upper_kimura_r.webp" alt=""></span><b>64</b></span>
+            <span class="bf out"><span class="face-img"><img src="../../../image/upper/upper_kinouchi_y.webp" alt=""></span><b>—</b></span>
+            <span class="bf empty"><span class="face-img">空</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="rp-metrics">
+      <div><span>評価</span><b>708</b></div>
+      <div><span>基礎力</span><b>632</b></div>
+      <div><span>層の厚み</span><b>24<small>/30</small></b></div>
+      <div><span>対戦PT</span><b class="battle-pos">+8</b></div>
+      <div><span>レガシー</span><b>28</b></div>
+      <div><span>実績</span><b>28</b></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

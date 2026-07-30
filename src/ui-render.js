@@ -4129,7 +4129,6 @@ function renderRanking() {
     const { top3, sorted, boardId } = buildOrgTopThree(roster, championId);
     const coreIds = coreIdsForRank(sorted, r.rank, championId, boardId);
 
-    const avgOvr = sorted.length ? Math.round(sorted.reduce((s, c) => s + Engine.util.ov(c), 0) / sorted.length) : 0;
     const battleSign = r.battlePt > 0 ? '+' : '';
     const battleClass = r.battlePt > 0 ? 'battle-pos' : (r.battlePt < 0 ? 'battle-neg' : '');
 
@@ -4153,8 +4152,8 @@ function renderRanking() {
           <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT ＋ 実績 の合計。<br>このポイントで業界順位が決まる。</div></div>
         </div>
         <div class="meta-block">
-          <div class="ovr-line rank-metric">平均OVR ${avgOvr}
-            <div class="rank-metric-tooltip"><div class="rmt-label">平均OVR</div><div class="rmt-text">ロスター全員のOVR単純平均。</div></div>
+          <div class="ovr-line rank-metric">層の厚み ${Math.round(r.depth || 0)}<span class="unit">/30</span>
+            <div class="rank-metric-tooltip"><div class="rmt-label">層の厚み — 実戦を支える選手層</div><div class="rmt-text">4〜8番手の主力層と、9〜12番手の控え層を別々に評価。怪我人・レンタルは含みません。</div></div>
           </div>
           <div class="${battleClass} rank-metric">対戦PT ${battleSign}${Math.round(r.battlePt)}
             <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>シーズンを跨いで保持される。</div></div>
@@ -4216,15 +4215,15 @@ function renderRanking() {
     const top3Avg = _avgOvrOf(sortedAll.slice(0, 3));
     const over80 = _countOvrAtLeast(sortedAll, 80);
     const over70 = _countOvrAtLeast(sortedAll, 70);
-    const avgOvr = sortedAll.length ? Math.round(sortedAll.reduce((s, c) => s + Engine.util.ov(c), 0) / sortedAll.length) : 0;
-    if (over80 >= 3 || top3Avg >= 82) tags.add('layerSuper');
-    else if (over80 >= 1 || top3Avg >= 76) tags.add('layerSolid');
-    else if (over70 >= 3 || avgOvr >= 62) tags.add('layerMid');
+    const depthScore = Number(r.depth) || 0;
+    if (depthScore >= 23 && top3Avg >= 78) tags.add('layerSuper');
+    else if (depthScore >= 16 || top3Avg >= 76) tags.add('layerSolid');
+    else if (depthScore >= 9 || over70 >= 3) tags.add('layerMid');
     else tags.add('layerRaw');
     // 規模
     if (sortedAll.length <= 8) tags.add('compact');
     else if (sortedAll.length >= 16) tags.add('wide');
-    return { tags, gapTop, gapAbove, top3Avg, over80, over70, avgOvr };
+    return { tags, gapTop, gapAbove, top3Avg, over80, over70, depthScore };
   };
 
   // 団体の周辺コンテキスト (実績アイテム、過去年間王者歴、battlePT動向 など) を語に変換
@@ -4483,7 +4482,7 @@ function renderRanking() {
     return lines.join('<br>');
   };
 
-  const _buildDepthNoteV2 = ({ sortedAll, featured }) => {
+  const _buildDepthNoteV2 = ({ sortedAll, featured, depth = 0, depthCoreReady = 0, depthReserveReady = 0 }) => {
     if (!sortedAll.length) return '主力と呼べる顔触れがまだ揃っていない。';
     const aceOvr = featured ? Engine.util.ov(featured) : 0;
     const next = sortedAll.find(f => !featured || f.id !== featured.id);
@@ -4540,12 +4539,21 @@ function renderRanking() {
     if (injured >= 2) tags.add('injuryShadow');
     if (over70 >= 5) tags.add('thickCore');
     else if (over70 <= 1) tags.add('thinCore');
+    if (depthCoreReady >= 4 && depthReserveReady >= 2) tags.add('readyAcrossCard');
+    if (depthCoreReady <= 1 && depth < 10) tags.add('supportThin');
+    if (depthReserveReady >= 3) tags.add('deepBench');
 
     const seed = _seedBase + _strHash((featured?.name || '') + 'depth');
     const has = (t) => tags.has(t);
     let pool = [];
     // 主軸タグ優先順
-    if (has('aceDependent') && has('injuryShadow')) {
+    if (has('readyAcrossCard') && has('deepBench')) {
+      pool = ['メイン級の下にも任せられる選手が並び、急なカード変更にも崩れにくい編成', '主力5人の厚みに控えまで続く。長いシリーズを走り切るための土台がある', '前半戦から中盤戦まで戦力を落とさず組める、興行運営に強い選手層'];
+    } else if (has('supportThin') && has('injuryShadow')) {
+      pool = ['主力の代役が限られるうえに欠場者も抱える。今はカードを欲張らない判断が必要', '看板の背後が薄く、休場の影響をまともに受ける編成。補強の優先度は高い', '一人の離脱が興行全体を揺らしかねない。次の戦力を育てる余裕が欲しい'];
+    } else if (has('supportThin')) {
+      pool = ['4〜8番手にもう一段の伸びがほしい。看板に頼らない勝ち筋を作れるか', '上位の顔ぶれは見えるが、連戦を回す主力層はこれから。育成か補強が分かれ目', '一枚看板の次を任せる選手が不足気味。カード編成の自由度に課題が残る'];
+    } else if (has('aceDependent') && has('injuryShadow')) {
       pool = [`${featured.name}への依存が強く、離脱者が出ると一気に苦しくなる構図`, `看板一枚に支えられている状態で、戦線離脱の影が濃い`];
     } else if (has('aceDependent')) {
       pool = [`${featured.name}と次点の差が大きく、看板頼みの色が濃い`, '上が突出していて、下との段差が興行設計の悩みどころ', '看板への一極集中で、二番手の育成が急務'];
@@ -4622,15 +4630,14 @@ function renderRanking() {
     const coreIds = coreIdsForRank(sortedAll, r.rank, championId, boardId);
     const visibleTotal = DEPTH_TOTAL[r.rank] || 4;
     const depthFaces = sortedAll.filter(f => !featured || f.id !== featured.id).slice(0, Math.max(0, visibleTotal - 1));
-    const avgOvr = sortedAll.length ? Math.round(sortedAll.reduce((s, c) => s + Engine.util.ov(c), 0) / sortedAll.length) : 0;
     const rankAbove = rankings.find(x => x.rank === r.rank - 1);
 
     const battleSign = r.battlePt > 0 ? '+' : '';
     const battleClass = r.battlePt > 0 ? 'battle-pos' : (r.battlePt < 0 ? 'battle-neg' : '');
     const popDisplay = Engine.util.dispOrgPop(orgPop);
     const popColor = _orgPopColor(popDisplay).color;
-    const baseDepth = sortedAll.length >= 18 ? '厚' : (sortedAll.length >= 14 ? '中' : '薄');
-    const topDepth = _avgOvrOf(sortedAll.slice(0, 3)) >= 78 ? '厚' : (_avgOvrOf(sortedAll.slice(0, 3)) >= 68 ? '中' : '薄');
+    const coreDepth = `${Math.round(r.depthCore || 0)}/20`;
+    const reserveDepth = `${Math.round(r.depthReserve || 0)}/10`;
     const tierLabel = isPlayer ? '自団体' : (org ? org.tier : (RANK_TIER[r.rank] || ''));
     const tierMeta = isPlayer ? `${rosterAll.length}名` : `${rosterAll.length}名`;
     const aceOvr = featured ? Engine.util.ov(featured) : 0;
@@ -4651,7 +4658,13 @@ function renderRanking() {
       ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + '台多数'
       : `${aceOvr}`;
     const dynamicLead = _buildLeadSentences({ tags: _tagInfo.tags, featured, champion, gapTop: _tagInfo.gapTop, gapAbove: _tagInfo.gapAbove, seed: _orgSeed, r });
-    const dynamicDepthNote = _buildDepthNoteV2({ sortedAll, featured });
+    const dynamicDepthNote = _buildDepthNoteV2({
+      sortedAll,
+      featured,
+      depth: r.depth || 0,
+      depthCoreReady: r.depthCoreReady || 0,
+      depthReserveReady: r.depthReserveReady || 0,
+    });
 
     const depthFacesHtml = depthFaces.map(f => {
       if (!f) return '';
@@ -4683,7 +4696,7 @@ function renderRanking() {
           <div class="rp-ace-role">${aceRoles}</div>
           <strong>${featured ? escHtml(featured.name) : '不在'} / OVR${aceOvr}</strong>
           <p>${escHtml(aceCopy)}</p>
-          <dl><dt>上位層</dt><dd>${topDepth}</dd><dt>控え層</dt><dd>${baseDepth}</dd></dl>
+          <dl><dt>主力層</dt><dd>${coreDepth}</dd><dt>控え層</dt><dd>${reserveDepth}</dd></dl>
         </div>
         <div class="rp-ace-img">${aceImg}</div>
       </div>
@@ -4696,9 +4709,9 @@ function renderRanking() {
         <div class="rank-metric"><span>評価</span><b>${Math.round(r.rating)}</b>
           <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT ＋ 実績 の合計。<br>このポイントで業界順位が決まる。</div></div></div>
         <div class="rank-metric"><span>基礎力</span><b>${Math.round(r.baseScore)}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">基礎力 — 今そこにある戦力</div><div class="rmt-text">3軸の合算:<br>・コア戦力 ${Math.round((r.force||0))}　TOP8加重OVR×1.2 ＋ 加重人気×0.6<br>・層の厚み ${Math.round((r.depth||0))}　11位以下のOVR70+/75+を加点（上限30）<br>・看板スター ${Math.round((r.marquee||0))}　TOP3人気の突出加重×0.45<br>引退・レンタル選手は除外。</div></div></div>
-        <div class="rank-metric"><span>平均OVR</span><b>${avgOvr}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">平均OVR</div><div class="rmt-text">ロスター全員のOVR単純平均。<br>厚みの目安。</div></div></div>
+          <div class="rank-metric-tooltip"><div class="rmt-label">基礎力 — 今そこにある戦力</div><div class="rmt-text">3軸の合算:<br>・コア戦力 ${Math.round((r.force||0))}　TOP8加重OVR×1.2 ＋ 加重人気×0.6<br>・層の厚み ${Math.round((r.depth||0))}　主力層 ${Math.round(r.depthCore || 0)}/20 ＋ 控え層 ${Math.round(r.depthReserve || 0)}/10<br>・看板スター ${Math.round((r.marquee||0))}　TOP3人気の突出加重×0.45<br>怪我人・引退・レンタル選手は除外。</div></div></div>
+        <div class="rank-metric"><span>層の厚み</span><b>${Math.round(r.depth || 0)}<small>/30</small></b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">層の厚み — 興行を回す戦力</div><div class="rmt-text">主力層: 4〜8番手をOVR45〜75で段階評価（最大20点）。<br>控え層: 9〜12番手をOVR50〜70で段階評価（最大10点）。<br>怪我人・レンタルは含みません。</div></div></div>
         <div class="rank-metric"><span>対戦PT</span><b class="${battleClass}">${battleSign}${Math.round(r.battlePt)}</b>
           <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>勝つと積み上がり、負けると目減りする。</div></div></div>
         <div class="rank-metric"><span>レガシー</span><b>${Math.round(r.legacyScore)}</b>

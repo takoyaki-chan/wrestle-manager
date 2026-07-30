@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ランキング画面・層の厚みリデザイン モックアップ 3案</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #24221e;
+  --panel-bg: #181614;
+  --card-bg: #12110e;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
+  --border: rgba(200,190,170,0.08);
+  --green: #2ecc71;
+  --red: #c41e3a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg-dark); color:var(--text-main); font-family:'Noto Sans JP',sans-serif; padding:24px; max-width:980px; margin:0 auto; }
+h1 { font-size:18px; color:var(--gold); margin-bottom:4px; }
+.mock-note { font-size:12px; color:var(--text-sub); margin-bottom:26px; line-height:1.7; }
+.case-label { font-size:14px; font-weight:700; color:var(--gold-light); margin:38px 0 4px; padding-left:10px; border-left:3px solid var(--gold); }
+.case-sub { font-size:11px; color:var(--text-sub); margin-bottom:12px; padding-left:13px; }
+.design-note { font-size:11px; color:var(--text-sub); line-height:1.8; margin-top:10px; padding:10px 12px; background:rgba(200,190,170,0.03); border:1px dashed var(--border); border-radius:6px; }
+.design-note b { color:var(--gold); }
+
+/* ══ 共通: rp-card(v1.0 A案様式の再現) ══ */
+.rp-wrap { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.rp-card { background:var(--card-bg); border:1px solid var(--border); border-left:3px solid rgba(232,230,224,0.18); border-radius:6px; padding:14px 16px; }
+.rp-card.is-player { border-left-color:var(--gold); background:linear-gradient(90deg, rgba(212,168,67,0.06), var(--card-bg) 40%); }
+.rp-head { display:flex; align-items:baseline; gap:10px; margin-bottom:2px; }
+.rp-rank { font-family:'Bebas Neue',sans-serif; font-size:30px; line-height:1; color:var(--text-dim); }
+.rp-card.is-player .rp-rank { background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.rp-name { font-size:16px; font-weight:900; }
+.rp-tag { font-size:9px; letter-spacing:1.5px; color:var(--gold); border:1px solid rgba(212,168,67,0.4); background:rgba(212,168,67,0.08); padding:1px 7px; border-radius:3px; }
+.rp-lead { font-size:11.5px; color:var(--text-sub); line-height:1.75; margin:7px 0 12px; }
+.rp-lead b { color:var(--text-main); font-weight:700; }
+
+.sec-title { font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; border-bottom:1px solid var(--border); padding-bottom:3px; margin-bottom:8px; display:flex; align-items:baseline; justify-content:space-between; }
+.sec-title small { font-family:'Noto Sans JP',sans-serif; font-size:9px; letter-spacing:0; color:var(--text-dim); }
+
+.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:12px; }
+.metric { background:var(--panel-bg); border:1px solid var(--border); border-radius:5px; padding:6px 8px; }
+.metric .k { font-family:'Oswald',sans-serif; font-size:9px; letter-spacing:1.5px; color:var(--text-dim); text-transform:uppercase; }
+.metric .v { font-family:'Bebas Neue',sans-serif; font-size:20px; line-height:1.15; background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.metric .v small { font-size:11px; -webkit-text-fill-color:var(--text-dim); }
+
+.face { border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:900; flex-shrink:0; }
+
+/* ══ 案A: 戦列ゲージ ══ */
+.bench-gauge { display:flex; align-items:flex-end; gap:3px; }
+.bg-cell { position:relative; height:16px; border:1px solid rgba(212,168,67,0.35); border-radius:2px; background:rgba(200,190,170,0.04); overflow:hidden; }
+.bg-cell.core { width:26px; }
+.bg-cell.reserve { width:18px; height:12px; border-color:rgba(200,190,170,0.25); }
+.bg-cell .fill { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg, rgba(212,168,67,0.55), rgba(212,168,67,0.85)); }
+.bg-cell.ready .fill { background:linear-gradient(90deg, var(--gold), var(--gold-light)); box-shadow:0 0 6px rgba(212,168,67,0.5); }
+.bg-cell.reserve .fill { background:rgba(200,190,170,0.35); }
+.bg-cell.reserve.ready .fill { background:rgba(212,168,67,0.7); }
+.bg-gap { width:7px; }
+.bench-line { display:flex; align-items:center; gap:10px; margin-top:4px; }
+.bench-score { font-family:'Bebas Neue',sans-serif; font-size:22px; background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.bench-score small { font-size:11px; -webkit-text-fill-color:var(--text-dim); }
+.bench-caption { display:flex; gap:12px; font-size:9px; color:var(--text-dim); margin-top:3px; }
+.bench-alert { font-size:10px; color:#e08585; margin-left:auto; }
+
+/* orgcell foot ミニ版 */
+.orgcell-demo { display:flex; gap:10px; margin-bottom:14px; }
+.orgcell { flex:1; background:var(--panel-bg); border:1px solid var(--border); border-radius:6px; padding:10px 12px; }
+.orgcell.is-player { border-color:rgba(212,168,67,0.4); }
+.oc-head { display:flex; align-items:baseline; gap:8px; margin-bottom:8px; }
+.oc-rank { font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--text-dim); line-height:1; }
+.orgcell.is-player .oc-rank { background:linear-gradient(180deg,#fff 20%,var(--gold-light)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.oc-name { font-weight:900; font-size:13px; }
+.oc-foot { display:flex; gap:14px; align-items:flex-end; border-top:1px solid var(--border); padding-top:8px; }
+.oc-metric .k { font-family:'Oswald',sans-serif; font-size:8px; letter-spacing:1.5px; color:var(--text-dim); text-transform:uppercase; }
+.oc-metric .v { font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--text-main); }
+.oc-mini-gauge { display:flex; gap:2px; align-items:flex-end; margin-top:3px; }
+.oc-mini-gauge i { display:block; width:9px; height:8px; border-radius:1px; background:rgba(200,190,170,0.1); }
+.oc-mini-gauge i.f { background:rgba(212,168,67,0.7); }
+.oc-mini-gauge i.r { width:7px; height:6px; }
+.oc-mini-gauge i.r.f { background:rgba(212,168,67,0.45); }
+
+/* ══ 案B: 数値+内訳チップ ══ */
+.chip-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.depth-chip { font-size:10px; padding:2px 8px; border-radius:3px; border:1px solid rgba(212,168,67,0.3); color:var(--gold); background:rgba(212,168,67,0.07); }
+.depth-chip.dim { border-color:var(--border); color:var(--text-sub); background:transparent; }
+.depth-chip.alert { border-color:rgba(196,30,58,0.4); color:#e08585; background:rgba(196,30,58,0.08); }
+
+/* ══ 案C: 1軍・2軍ベンチ ══ */
+.bench-rows { display:flex; flex-direction:column; gap:8px; }
+.bench-row { display:flex; align-items:center; gap:8px; }
+.bench-row .lbl { font-family:'Oswald',sans-serif; font-size:9px; letter-spacing:2px; color:var(--text-dim); width:52px; flex-shrink:0; text-transform:uppercase; }
+.bench-faces { display:flex; gap:6px; }
+.bf { position:relative; }
+.bf .face { width:34px; height:34px; font-size:14px; border:2px solid rgba(212,168,67,0.65); }
+.bf.mid .face { border-color:rgba(212,168,67,0.35); }
+.bf.low .face { border-color:rgba(200,190,170,0.2); }
+.bf.out .face { border-color:rgba(196,30,58,0.4); filter:grayscale(0.9) brightness(0.55); }
+.bf.out::after { content:'✚'; position:absolute; right:-3px; top:-3px; font-size:9px; color:#e08585; }
+.bf.empty .face { border:1.5px dashed rgba(200,190,170,0.18); background:transparent !important; color:var(--text-dim); font-size:10px; font-weight:400; }
+.bf .ov { position:absolute; left:50%; transform:translateX(-50%); bottom:-13px; font-family:'Bebas Neue',sans-serif; font-size:10px; color:var(--text-dim); }
+.bench-row.r2 .face { width:28px; height:28px; font-size:12px; }
+</style>
+</head>
+<body>
+
+<h1>ランキング画面 — 「層の厚み」表示リデザイン 3案</h1>
+<div class="mock-note">
+  前提: 平均OVRは全廃し「層の厚み(/30)」へ置換。計算は 主力枠(4〜8番手・到達度×4pt・最大20)+
+  控え枠(9〜12番手・×2.5pt・最大10)、怪我・レンタル除外。v1.0画面仕様(Office標準・金一元・Oswald/Bebas)に準拠。
+  選手名・数値はダミー。各案とも <b style="color:var(--gold)">紹介文のパターン例</b>を複数入れてあります。
+</div>
+
+<!-- ═══════════ 案A ═══════════ -->
+<div class="case-label">案A 「戦列ゲージ」 — 9つの枠がどれだけ埋まっているかを一目で(推し)</div>
+<div class="case-sub">主力5マス+控え4マスのゲージ。マスの埋まり=その枠の選手の到達度。光っているマス=一線級。02ロスター欄には縮小版。</div>
+
+<div class="orgcell-demo">
+  <div class="orgcell is-player">
+    <div class="oc-head"><span class="oc-rank">1</span><span class="oc-name">自団体</span></div>
+    <div class="oc-foot">
+      <div class="oc-metric"><div class="k">評価</div><div class="v">128<small style="font-size:10px">pt</small></div></div>
+      <div class="oc-metric"><div class="k">層の厚み</div><div class="v">24</div>
+        <div class="oc-mini-gauge"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i class="r f"></i><i class="r f"></i><i class="r"></i><i class="r"></i></div>
+      </div>
+      <div class="oc-metric"><div class="k">対戦PT</div><div class="v">+18</div></div>
+    </div>
+  </div>
+  <div class="orgcell">
+    <div class="oc-head"><span class="oc-rank">2</span><span class="oc-name">GLOW</span></div>
+    <div class="oc-foot">
+      <div class="oc-metric"><div class="k">評価</div><div class="v">121<small style="font-size:10px">pt</small></div></div>
+      <div class="oc-metric"><div class="k">層の厚み</div><div class="v">17</div>
+        <div class="oc-mini-gauge"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i class="r f"></i><i class="r"></i><i class="r"></i><i class="r"></i></div>
+      </div>
+      <div class="oc-metric"><div class="k">対戦PT</div><div class="v">-6</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="rp-wrap">
+  <div class="rp-card is-player">
+    <div class="rp-head"><span class="rp-rank">1</span><span class="rp-name">自団体</span><span class="rp-tag">盟主</span></div>
+    <div class="rp-lead">主力の層は業界屈指。<b>誰が一人欠けても興行の格が落ちない</b>構えで、他団体の追随を許さない。</div>
+    <div class="sec-title">Bench Strength <small>層の厚み — 主力4〜8番手 / 控え9〜12番手</small></div>
+    <div class="bench-gauge">
+      <span class="bg-cell core ready"><span class="fill" style="width:100%"></span></span>
+      <span class="bg-cell core ready"><span class="fill" style="width:100%"></span></span>
+      <span class="bg-cell core"><span class="fill" style="width:85%"></span></span>
+      <span class="bg-cell core"><span class="fill" style="width:70%"></span></span>
+      <span class="bg-cell core"><span class="fill" style="width:40%"></span></span>
+      <span class="bg-gap"></span>
+      <span class="bg-cell reserve ready"><span class="fill" style="width:100%"></span></span>
+      <span class="bg-cell reserve"><span class="fill" style="width:75%"></span></span>
+      <span class="bg-cell reserve"><span class="fill" style="width:50%"></span></span>
+      <span class="bg-cell reserve"><span class="fill" style="width:20%"></span></span>
+    </div>
+    <div class="bench-line"><span class="bench-score">24<small>/30</small></span><span style="font-size:10px;color:var(--text-sub)">主力 18.4 ・ 控え 5.6</span></div>
+    <div class="bench-caption"><span>◼ 主力枠(4〜8番手)</span><span>▪ 控え枠(9〜12番手)</span><span>発光=一線級</span></div>
+    <div class="metrics">
+      <div class="metric"><div class="k">評価</div><div class="v">128<small>pt</small></div></div>
+      <div class="metric"><div class="k">基礎力</div><div class="v">86</div></div>
+      <div class="metric"><div class="k">層の厚み</div><div class="v">24<small>/30</small></div></div>
+    </div>
+  </div>
+
+  <div class="rp-card">
+    <div class="rp-head"><span class="rp-rank">3</span><span class="rp-name">BLITZ</span><span class="rp-tag">武闘派</span></div>
+    <div class="rp-lead">二枚看板の火力は本物だが、<b>4番手から先が続かない</b>。エースが倒れた瞬間に崩れる綱渡りの陣容だ。</div>
+    <div class="sec-title">Bench Strength <small>層の厚み — 欠場2名を除く</small></div>
+    <div class="bench-gauge">
+      <span class="bg-cell core ready"><span class="fill" style="width:100%"></span></span>
+      <span class="bg-cell core"><span class="fill" style="width:55%"></span></span>
+      <span class="bg-cell core"><span class="fill" style="width:30%"></span></span>
+      <span class="bg-cell core"></span>
+      <span class="bg-cell core"></span>
+      <span class="bg-gap"></span>
+      <span class="bg-cell reserve"><span class="fill" style="width:45%"></span></span>
+      <span class="bg-cell reserve"><span class="fill" style="width:25%"></span></span>
+      <span class="bg-cell reserve"></span>
+      <span class="bg-cell reserve"></span>
+    </div>
+    <div class="bench-line"><span class="bench-score">9<small>/30</small></span><span style="font-size:10px;color:var(--text-sub)">主力 7.4 ・ 控え 1.8</span><span class="bench-alert">✚ 欠場2名で戦列が細っている</span></div>
+    <div class="metrics">
+      <div class="metric"><div class="k">評価</div><div class="v">97<small>pt</small></div></div>
+      <div class="metric"><div class="k">基礎力</div><div class="v">61</div></div>
+      <div class="metric"><div class="k">層の厚み</div><div class="v">9<small>/30</small></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="design-note">
+  <b>案Aの狙い</b>: 「ベンチの並びが見える」。マスの埋まり方で厚さが直感で分かり、数字は添え物。
+  怪我離脱は右端の警告一文で示す(マス自体は「今出せる選手」だけで構成=計算と表示が一致)。
+  orgcell(02ロスター欄)には9マスの縮小版だけ置き、詳細は03のカードで。実装は既存 .rank-metric 系の置換+ゲージCSS追加のみ。
+</div>
+
+<!-- ═══════════ 案B ═══════════ -->
+<div class="case-label">案B 「数値+内訳チップ」 — 最小変更・情報はツールチップとチップで</div>
+<div class="case-sub">平均OVRのあった場所に「層の厚み 24/30」。内訳は下のチップ列で言葉として見せる。レイアウト変更ほぼゼロ。</div>
+
+<div class="rp-wrap">
+  <div class="rp-card is-player">
+    <div class="rp-head"><span class="rp-rank">1</span><span class="rp-name">自団体</span><span class="rp-tag">盟主</span></div>
+    <div class="rp-lead">主力から控えまで隙がない。<b>連戦にも怪我にも揺らがない</b>、経営の分厚さがそのまま戦力になっている。</div>
+    <div class="metrics">
+      <div class="metric"><div class="k">評価</div><div class="v">128<small>pt</small></div></div>
+      <div class="metric"><div class="k">基礎力</div><div class="v">86</div></div>
+      <div class="metric"><div class="k">層の厚み</div><div class="v">24<small>/30</small></div></div>
+    </div>
+    <div class="chip-row">
+      <span class="depth-chip">主力枠 4/5 が一線級</span>
+      <span class="depth-chip">控えに実戦級 2名</span>
+      <span class="depth-chip dim">欠場なし</span>
+    </div>
+  </div>
+
+  <div class="rp-card">
+    <div class="rp-head"><span class="rp-rank">3</span><span class="rp-name">BLITZ</span><span class="rp-tag">武闘派</span></div>
+    <div class="rp-lead">看板の輝きに対して<b>ベンチは見た目より薄い</b>。欠場が重なった今、代役の質が興行の質を決めてしまう。</div>
+    <div class="metrics">
+      <div class="metric"><div class="k">評価</div><div class="v">97<small>pt</small></div></div>
+      <div class="metric"><div class="k">基礎力</div><div class="v">61</div></div>
+      <div class="metric"><div class="k">層の厚み</div><div class="v">9<small>/30</small></div></div>
+    </div>
+    <div class="chip-row">
+      <span class="depth-chip alert">✚ 欠場2名 — 戦列が細い</span>
+      <span class="depth-chip dim">主力枠 1/5 のみ一線級</span>
+      <span class="depth-chip dim">控えは育成途上</span>
+    </div>
+  </div>
+</div>
+
+<div class="design-note">
+  <b>案Bの狙い</b>: 工事最小。数値+言葉チップで内訳を伝える(数字の羅列を避け、チップは状況があるときだけ出す)。
+  ビジュアルの面白みは3案中もっとも控えめだが、既存metricsグリッドと完全に馴染む。
+</div>
+
+<!-- ═══════════ 案C ═══════════ -->
+<div class="case-label">案C 「1軍・2軍ベンチ」 — 顔で見せる(キャラを覗き見る哲学に最も寄せた案)</div>
+<div class="case-sub">rp-depth(主力層サムネイル)を拡張し、主力/控えの2段ベンチに。枠線の光り方=到達度、欠場は暗転+✚。空席は破線。</div>
+
+<div class="rp-wrap">
+  <div class="rp-card is-player">
+    <div class="rp-head"><span class="rp-rank">1</span><span class="rp-name">自団体</span><span class="rp-tag">盟主</span></div>
+    <div class="rp-lead">4番手以降に<b>他団体ならエースを張れる顔</b>が並ぶ。この層の厚さこそ、10年かけて作った財産だ。</div>
+    <div class="sec-title">Bench <small>層の厚み 24/30</small></div>
+    <div class="bench-rows">
+      <div class="bench-row">
+        <span class="lbl">主力<br>4-8番手</span>
+        <div class="bench-faces">
+          <span class="bf"><span class="face" style="background:linear-gradient(135deg,#e74c3c33,#e74c3c11);color:#e74c3c">如</span><span class="ov">78</span></span>
+          <span class="bf"><span class="face" style="background:linear-gradient(135deg,#2ecc7133,#2ecc7111);color:#2ecc71">桐</span><span class="ov">76</span></span>
+          <span class="bf mid"><span class="face" style="background:linear-gradient(135deg,#3498db33,#3498db11);color:#3498db">東</span><span class="ov">71</span></span>
+          <span class="bf mid"><span class="face" style="background:linear-gradient(135deg,#bb8fce33,#bb8fce11);color:#bb8fce">白</span><span class="ov">66</span></span>
+          <span class="bf low"><span class="face" style="background:linear-gradient(135deg,#f1c40f33,#f1c40f11);color:#f1c40f">春</span><span class="ov">57</span></span>
+        </div>
+      </div>
+      <div class="bench-row r2" style="margin-top:10px">
+        <span class="lbl">控え<br>9-12番手</span>
+        <div class="bench-faces">
+          <span class="bf"><span class="face" style="background:linear-gradient(135deg,#e67e2233,#e67e2211);color:#e67e22">霧</span><span class="ov">70</span></span>
+          <span class="bf mid"><span class="face" style="background:linear-gradient(135deg,#1abc9c33,#1abc9c11);color:#1abc9c">綾</span><span class="ov">64</span></span>
+          <span class="bf low"><span class="face" style="background:linear-gradient(135deg,#95a5a633,#95a5a611);color:#95a5a6">小</span><span class="ov">58</span></span>
+          <span class="bf low"><span class="face" style="background:linear-gradient(135deg,#d3546e33,#d3546e11);color:#d3546e">柚</span><span class="ov">54</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="metrics" style="margin-top:18px">
+      <div class="metric"><div class="k">評価</div><div class="v">128<small>pt</small></div></div>
+      <div class="metric"><div class="k">基礎力</div><div class="v">86</div></div>
+      <div class="metric"><div class="k">層の厚み</div><div class="v">24<small>/30</small></div></div>
+    </div>
+  </div>
+
+  <div class="rp-card">
+    <div class="rp-head"><span class="rp-rank">3</span><span class="rp-name">BLITZ</span><span class="rp-tag">武闘派</span></div>
+    <div class="rp-lead">主力の後ろに<b>座る者のいないベンチ</b>が広がる。欠場明けの2人が戻るまで、薄氷の興行が続く。</div>
+    <div class="sec-title">Bench <small>層の厚み 9/30 — 欠場2名除く</small></div>
+    <div class="bench-rows">
+      <div class="bench-row">
+        <span class="lbl">主力<br>4-8番手</span>
+        <div class="bench-faces">
+          <span class="bf"><span class="face" style="background:linear-gradient(135deg,#e74c3c33,#e74c3c11);color:#e74c3c">牙</span><span class="ov">75</span></span>
+          <span class="bf mid"><span class="face" style="background:linear-gradient(135deg,#9b59b633,#9b59b611);color:#9b59b6">吠</span><span class="ov">62</span></span>
+          <span class="bf low"><span class="face" style="background:linear-gradient(135deg,#34495e33,#34495e11);color:#7f8c8d">鉄</span><span class="ov">54</span></span>
+          <span class="bf out"><span class="face" style="background:linear-gradient(135deg,#e74c3c22,#e74c3c08);color:#e74c3c">嵐</span><span class="ov">—</span></span>
+          <span class="bf empty"><span class="face">空</span></span>
+        </div>
+      </div>
+      <div class="bench-row r2" style="margin-top:10px">
+        <span class="lbl">控え<br>9-12番手</span>
+        <div class="bench-faces">
+          <span class="bf low"><span class="face" style="background:linear-gradient(135deg,#16a08533,#16a08511);color:#16a085">波</span><span class="ov">59</span></span>
+          <span class="bf low"><span class="face" style="background:linear-gradient(135deg,#c0392b33,#c0392b11);color:#c0392b">燕</span><span class="ov">55</span></span>
+          <span class="bf out"><span class="face" style="background:linear-gradient(135deg,#8e44ad22,#8e44ad08);color:#8e44ad">雫</span><span class="ov">—</span></span>
+          <span class="bf empty"><span class="face">空</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="metrics" style="margin-top:18px">
+      <div class="metric"><div class="k">評価</div><div class="v">97<small>pt</small></div></div>
+      <div class="metric"><div class="k">基礎力</div><div class="v">61</div></div>
+      <div class="metric"><div class="k">層の厚み</div><div class="v">9<small>/30</small></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="design-note">
+  <b>案Cの狙い</b>: 厚みを「数字」ではなく「並んでいる顔」で見せる — 誰がベンチを支えているかが主役。
+  枠線の光り方(金→薄金→灰)=その枠の到達度、欠場は暗転+✚、空席は破線。既存 rp-depth の顔リストを2段に組み替える形で、
+  縦幅は+40px程度。タップで選手詳細へ飛べる(既存挙動維持)。
+</div>
+
+<!-- ═══════════ 紹介文パターン集 ═══════════ -->
+<div class="case-label">紹介文のパターン増補(全案共通)</div>
+<div class="case-sub">現行は評価軸の定型が少なく同じ文が続きやすい。厚み計算の内訳(主力/控え/欠場/一線級数)から状況を判定して出し分ける。</div>
+<div class="design-note" style="margin-top:0">
+  <b>状況→文例のマトリクス(叩き台・採用案決定後にフルセットを起案)</b><br>
+  ・厚み高+主力充実: 「主力の層は業界屈指。誰が一人欠けても興行の格が落ちない」<br>
+  ・厚み高+控え充実: 「控えに実戦級が並び、連戦にも怪我にも揺らがない構え」<br>
+  ・看板強+層薄: 「二枚看板の火力は本物だが、4番手から先が続かない。エースが倒れれば一気に崩れる」<br>
+  ・欠場で急落: 「欠場者が相次ぎ、ベンチは見た目より薄い。代役の質が興行の質を決めてしまう」<br>
+  ・控え成長中: 「若い控えが育ちつつある。来季、このベンチの景色は変わる」<br>
+  ・主力空席: 「主力の後ろに座る者のいないベンチ。補強か育成か、決断の時が近い」<br>
+  ・厚み中+均質: 「突出はないが穴もない。手堅い陣容が安定した興行を支える」<br>
+  ・レンタル依存: 「借り物の力で保っている厚み。契約が切れる日のことを、フロントは考えているだろうか」
+</div>
+
+</body>
+</html>

@@ -7694,11 +7694,18 @@ const RANKING_CONFIG = {
   forceWeights: [1.6, 1.4, 1.25, 1.1, 1.0, 0.9, 0.8, 0.7],
   forceOvrMult: 1.2,
   forcePopMult: 0.6,
-  // (B) Depth 層の厚み: 11位以下の OVR70+ / OVR75+ を加点
-  depthOvrThreshold: 70,
-  depthOvrBonusThreshold: 75,
-  depthPerFighter: 3,
-  depthBonusPerFighter: 2,
+  // (B) Depth 層の厚み: 興行を任せる4〜8番手と、代役に出せる9〜12番手を別々に評価
+  // 怪我・レンタルは除外。各枠は基準OVRから目標OVRまでを段階評価する。
+  depthCoreStartIndex: 3,      // 4番手から
+  depthCoreSlots: 5,           // 4〜8番手
+  depthCoreBaseline: 45,
+  depthCoreTarget: 75,
+  depthCorePerSlot: 4,         // 最大20点
+  depthReserveStartIndex: 8,   // 9番手から
+  depthReserveSlots: 4,        // 9〜12番手
+  depthReserveBaseline: 50,
+  depthReserveTarget: 70,
+  depthReservePerSlot: 2.5,    // 最大10点
   depthCap: 30,
   // (C) Marquee 看板スター: TOP3 popularity の突出加重
   marqueeWeights: [0.6, 0.25, 0.15],

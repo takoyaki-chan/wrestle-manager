@@ -7530,11 +7530,57 @@ const Engine = {
       return Math.min(cap, base + hofPt + battlePt);
     },
     /**
+     * 層の厚み: 主力を支える4〜8番手と、急な欠場を埋める9〜12番手を評価する。
+     * 人数だけでなく各枠の到達度を見るため、選手を増やすだけでは上がりにくい。
+     */
+    getDepthProfile(roster) {
+      const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
+      const active = (roster || []).filter(f => !f.retired && !f.isRental && !f.injury && !f.forcedRest)
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const scoreSlots = (start, slots, baseline, target, perSlot) => {
+        let score = 0;
+        let ready = 0;
+        for (let i = start; i < start + slots; i++) {
+          const ovr = active[i] ? Engine.util.ov(active[i]) : 0;
+          const readiness = Math.max(0, Math.min(1, (ovr - baseline) / Math.max(1, target - baseline)));
+          score += readiness * perSlot;
+          if (ovr >= target) ready++;
+        }
+        return { score, ready };
+      };
+      const core = scoreSlots(
+        cfg.depthCoreStartIndex != null ? cfg.depthCoreStartIndex : 3,
+        cfg.depthCoreSlots != null ? cfg.depthCoreSlots : 5,
+        cfg.depthCoreBaseline != null ? cfg.depthCoreBaseline : 45,
+        cfg.depthCoreTarget != null ? cfg.depthCoreTarget : 75,
+        cfg.depthCorePerSlot != null ? cfg.depthCorePerSlot : 4
+      );
+      const reserve = scoreSlots(
+        cfg.depthReserveStartIndex != null ? cfg.depthReserveStartIndex : 8,
+        cfg.depthReserveSlots != null ? cfg.depthReserveSlots : 4,
+        cfg.depthReserveBaseline != null ? cfg.depthReserveBaseline : 50,
+        cfg.depthReserveTarget != null ? cfg.depthReserveTarget : 70,
+        cfg.depthReservePerSlot != null ? cfg.depthReservePerSlot : 2.5
+      );
+      const cap = cfg.depthCap != null ? cfg.depthCap : 30;
+      return {
+        score: Math.min(cap, core.score + reserve.score),
+        coreScore: core.score,
+        reserveScore: reserve.score,
+        coreReady: core.ready,
+        reserveReady: reserve.ready,
+        active,
+      };
+    },
+    /**
      * 基礎力 v2.0: 3軸合算 (Force コア戦力 + Depth 層の厚み + Marquee 看板スター)
      * 引退済 (f.retired === true) は除外。レンタル選手は団体戦力として含める。
      */
     calcRosterPower(roster) {
       const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
+      // Force/Marquee は在籍ベース(怪我人も団体の戦力として数える)。
+      // 「実戦可能度」で怪我を除外するのは Depth だけ(getDepthProfile が内部で除外する)。
+      // 怪我のたびに団体評価が週次で上下すると格の表現として不安定になるため(2026-07-30 Fable判断)
       const active = (roster || []).filter(f => !f.retired && !f.isRental);
 
       // ── (A) Force コア戦力: TOP8 加重 OVR + 加重 人気 ──
@@ -7545,20 +7591,9 @@ const Engine = {
       const weightedPop = Engine.ranking._weightedTopAvg(active, f => f.popularity || 0, forceWeights);
       const force = weightedOVR * forceOvrMult + weightedPop * forcePopMult;
 
-      // ── (B) Depth 層の厚み: 11位以下の OVR70+ / OVR75+ を加点 ──
-      const depthOvrTh   = cfg.depthOvrThreshold      != null ? cfg.depthOvrThreshold      : 70;
-      const depthBonusTh = cfg.depthOvrBonusThreshold != null ? cfg.depthOvrBonusThreshold : 75;
-      const depthPer     = cfg.depthPerFighter        != null ? cfg.depthPerFighter        : 3;
-      const depthBonus   = cfg.depthBonusPerFighter   != null ? cfg.depthBonusPerFighter   : 2;
-      const depthCap     = cfg.depthCap               != null ? cfg.depthCap               : 30;
-      const sortedByOvr = active.map(f => Engine.util.ov(f)).sort((a, b) => b - a);
-      const tail = sortedByOvr.slice(10); // 11位以下
-      let depthRaw = 0;
-      tail.forEach(o => {
-        if (o >= depthOvrTh)   depthRaw += depthPer;
-        if (o >= depthBonusTh) depthRaw += depthBonus;
-      });
-      const depth = Math.min(depthCap, depthRaw);
+      // ── (B) Depth 層の厚み: 4〜8番手 + 9〜12番手の実戦可能度 ──
+      const depthProfile = Engine.ranking.getDepthProfile(active);
+      const depth = depthProfile.score;
 
       // ── (C) Marquee 看板スター: TOP3 popularity の突出加重 ──
       const marqueeWeights = cfg.marqueeWeights || [0.6, 0.25, 0.15];
@@ -7575,6 +7610,10 @@ const Engine = {
         baseScore,
         force: Math.round(force * 10) / 10,
         depth: Math.round(depth * 10) / 10,
+        depthCore: Math.round(depthProfile.coreScore * 10) / 10,
+        depthReserve: Math.round(depthProfile.reserveScore * 10) / 10,
+        depthCoreReady: depthProfile.coreReady,
+        depthReserveReady: depthProfile.reserveReady,
         marquee: Math.round(marquee * 10) / 10,
         weightedOVR: Math.round(weightedOVR * 10) / 10,
         weightedPop: Math.round(weightedPop * 10) / 10,
@@ -7592,6 +7631,10 @@ const Engine = {
         baseScore: power.baseScore,
         force: power.force,
         depth: power.depth,
+        depthCore: power.depthCore,
+        depthReserve: power.depthReserve,
+        depthCoreReady: power.depthCoreReady,
+        depthReserveReady: power.depthReserveReady,
         marquee: power.marquee,
         legacyScore,
         achievementScore,
@@ -7613,6 +7656,10 @@ const Engine = {
         baseScore: Math.round(playerBreakdown.baseScore),
         force: playerBreakdown.force,
         depth: playerBreakdown.depth,
+        depthCore: playerBreakdown.depthCore,
+        depthReserve: playerBreakdown.depthReserve,
+        depthCoreReady: playerBreakdown.depthCoreReady,
+        depthReserveReady: playerBreakdown.depthReserveReady,
         marquee: playerBreakdown.marquee,
         legacyScore: Math.round(playerBreakdown.legacyScore),
         achievementScore: Math.round(playerBreakdown.achievementScore || 0),
@@ -7632,6 +7679,10 @@ const Engine = {
           baseScore: Math.round(breakdown.baseScore),
           force: breakdown.force,
           depth: breakdown.depth,
+          depthCore: breakdown.depthCore,
+          depthReserve: breakdown.depthReserve,
+          depthCoreReady: breakdown.depthCoreReady,
+          depthReserveReady: breakdown.depthReserveReady,
           marquee: breakdown.marquee,
           legacyScore: Math.round(breakdown.legacyScore),
           achievementScore: Math.round(breakdown.achievementScore || 0),
