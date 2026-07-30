@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>殿堂・歴代記録 + ピークOVR表示 モックアップ v0.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #24221e;
+  --card-bg: #12110e;
+  --panel-bg: #181614;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
+  --border: rgba(200,190,170,0.08);
+  --cream-bg-card: #ede8dc;
+  --cream-panel-bg: #d4ccb8;
+  --cream-text-main: #1e1c16;
+  --cream-text-sub: #4a4638;
+  --cream-text-dim: #7a7466;
+  --cream-gold: #7a6530;
+  --cream-gold-dark: #5c4a1e;
+  --cream-border: rgba(100,85,50,0.14);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0c0b09; color:var(--text-main); font-family:'Noto Sans JP',sans-serif; padding:24px; max-width:960px; margin:0 auto; }
+h1 { font-size:18px; color:var(--gold); margin-bottom:4px; }
+.mock-note { font-size:12px; color:var(--text-sub); margin-bottom:28px; line-height:1.7; }
+.sec-label { font-size:13px; font-weight:700; color:var(--gold-light); margin:36px 0 10px; padding-left:10px; border-left:3px solid var(--gold); }
+.design-note { font-size:11px; color:var(--text-sub); line-height:1.8; margin-top:10px; padding:10px 12px; background:rgba(200,190,170,0.03); border:1px dashed var(--border); border-radius:6px; }
+.design-note b { color:var(--gold); }
+
+/* ═══ ① 殿堂タブ 歴代記録パネル ═══ */
+.db-frame { background:var(--panel-bg); border:1px solid var(--border); border-radius:10px; padding:16px; }
+.db-context { font-size:11px; color:var(--text-dim); margin-bottom:10px; }
+.rec-header { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; }
+.rec-header .t { font-size:15px; font-weight:700; color:var(--gold); letter-spacing:2px; }
+.rec-header .s { font-size:11px; color:var(--text-dim); }
+
+.rec-hero-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.rec-hero { position:relative; background:linear-gradient(160deg, rgba(212,168,67,0.10), rgba(212,168,67,0.02) 60%); border:1px solid rgba(212,168,67,0.35); border-radius:8px; padding:14px 16px 12px; overflow:hidden; }
+.rec-hero.tag { background:linear-gradient(160deg, rgba(74,143,212,0.10), rgba(74,143,212,0.02) 60%); border-color:rgba(74,143,212,0.35); }
+.rec-hero .kind { font-size:10px; letter-spacing:2.5px; color:var(--text-sub); text-transform:uppercase; }
+.rec-hero .val-row { display:flex; align-items:baseline; gap:8px; margin:2px 0 8px; }
+.rec-hero .val { font-family:'Bebas Neue',sans-serif; font-size:52px; line-height:1; color:var(--gold-light); text-shadow:0 0 18px rgba(212,168,67,0.35); }
+.rec-hero.tag .val { color:#9cc4ee; text-shadow:0 0 18px rgba(74,143,212,0.35); }
+.rec-hero .unit { font-size:12px; color:var(--text-sub); }
+.rec-hero .names { font-size:14px; font-weight:700; line-height:1.5; }
+.rec-hero .names .vs { color:var(--text-dim); font-size:11px; margin:0 6px; }
+.rec-hero .meta { display:flex; gap:8px; align-items:center; margin-top:7px; flex-wrap:wrap; }
+.rec-hero .chip { font-size:10px; padding:2px 8px; border-radius:3px; background:rgba(212,168,67,0.14); color:var(--gold); border:1px solid rgba(212,168,67,0.3); }
+.rec-hero.tag .chip { background:rgba(74,143,212,0.14); color:#7fb0e4; border-color:rgba(74,143,212,0.3); }
+.rec-hero .when { font-size:11px; color:var(--text-sub); }
+.rec-hero .laurel { position:absolute; right:-8px; top:-14px; font-size:84px; opacity:0.06; pointer-events:none; }
+
+.rec-sub-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.rec-card { background:rgba(200,190,170,0.03); border:1px solid var(--border); border-radius:8px; padding:12px 14px; }
+.rec-card .kind { font-size:10px; letter-spacing:2px; color:var(--text-sub); margin-bottom:8px; }
+.rec-card .main { font-size:14px; font-weight:700; }
+.rec-card .big { font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--gold); margin-right:4px; }
+.rec-card .sub { font-size:11px; color:var(--text-sub); margin-top:4px; line-height:1.6; }
+.rec-roll { list-style:none; }
+.rec-roll li { display:flex; gap:8px; align-items:baseline; font-size:12px; padding:3px 0; border-bottom:1px dashed rgba(200,190,170,0.06); }
+.rec-roll li:last-child { border-bottom:none; }
+.rec-roll .sn { font-family:'Bebas Neue',sans-serif; font-size:13px; color:var(--text-sub); width:30px; flex-shrink:0; }
+.rec-roll .nm { font-weight:700; }
+.rec-roll .og { font-size:10px; color:var(--text-dim); margin-left:auto; }
+
+.rec-opt { margin-top:12px; background:rgba(200,190,170,0.02); border:1px dashed rgba(200,190,170,0.12); border-radius:8px; padding:10px 14px; }
+.rec-opt .kind { font-size:10px; letter-spacing:2px; color:var(--text-dim); margin-bottom:6px; }
+.rec-opt table { width:100%; border-collapse:collapse; font-size:12px; }
+.rec-opt td { padding:3px 4px; border-bottom:1px dashed rgba(200,190,170,0.05); }
+.rec-opt .rk { color:var(--text-dim); width:24px; }
+.rec-opt .mq { font-family:'Bebas Neue',sans-serif; font-size:15px; color:var(--gold); text-align:right; width:40px; }
+.rec-opt .og { color:var(--text-dim); font-size:10px; text-align:right; }
+
+/* DBタブバー + 殿堂内セグメント切替(案A) */
+.dbtab-bar { display:flex; gap:4px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px; flex-wrap:wrap; }
+.dbtab { font-size:12px; padding:5px 12px; border-radius:5px; color:var(--text-sub); background:rgba(200,190,170,0.03); border:1px solid transparent; }
+.dbtab.active { color:var(--gold); background:rgba(212,168,67,0.12); border-color:rgba(212,168,67,0.35); font-weight:700; }
+.seg-row { display:inline-flex; margin-bottom:14px; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+.seg-btn { font-size:12px; padding:6px 18px; color:var(--text-sub); background:transparent; }
+.seg-btn.active { color:var(--gold-light); background:rgba(212,168,67,0.14); font-weight:700; }
+
+/* 案B: 縦積みの縮小スキーマ */
+.schema-b { display:flex; flex-direction:column; gap:6px; background:var(--panel-bg); border:1px solid var(--border); border-radius:10px; padding:12px; max-width:420px; }
+.schema-b .blk { border-radius:5px; padding:8px 10px; font-size:11px; }
+.schema-b .rec { background:rgba(212,168,67,0.08); border:1px solid rgba(212,168,67,0.3); color:var(--gold); }
+.schema-b .grid { background:rgba(200,190,170,0.04); border:1px solid var(--border); color:var(--text-sub); height:72px; display:flex; align-items:center; justify-content:center; }
+
+/* 既存の殿堂グリッドの気配(下に続くことを示すだけ) */
+.hof-ghost { display:flex; gap:10px; margin-top:16px; opacity:0.35; }
+.hof-ghost .c { width:110px; height:120px; background:rgba(200,190,170,0.04); border:1px solid var(--border); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; font-size:10px; color:var(--text-sub); }
+.hof-ghost .shield { font-size:28px; }
+
+/* ═══ ②-A 選手詳細ポップアップ(ダーク) ═══ */
+.fp-frame { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.fp-head { background:rgba(231,76,60,0.04); border-bottom:1px solid var(--border); padding:20px; display:flex; gap:20px; }
+.fp-img { width:120px; height:180px; border-radius:14px; background:linear-gradient(135deg,#e74c3c22,#e74c3c08); border:3px solid rgba(200,190,170,0.15); display:flex; align-items:center; justify-content:center; font-size:56px; font-weight:900; color:#e74c3c; flex-shrink:0; }
+.fp-name-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+.fp-name { font-weight:700; font-size:24px; }
+.fp-ovr { font-size:36px; font-weight:900; color:var(--gold); }
+.fp-peak-a1 { font-size:13px; color:var(--text-sub); align-self:flex-end; padding-bottom:6px; }
+.fp-peak-a1 b { color:var(--text-sub); font-weight:700; }
+.fp-badges { display:flex; gap:6px; margin-bottom:10px; }
+.fp-badge { font-size:12px; padding:3px 10px; border-radius:4px; background:rgba(231,76,60,0.15); color:#e88a82; border:1px solid rgba(231,76,60,0.3); }
+.fp-badge.role { background:rgba(46,204,113,0.12); color:#7fd6a4; border-color:rgba(46,204,113,0.3); }
+.fp-meta { display:flex; gap:12px; flex-wrap:wrap; font-size:14px; color:var(--text-sub); }
+.fp-peak-a2 { color:var(--text-sub); }
+.fp-peak-a2 .dim { color:var(--text-dim); font-size:12px; }
+.variant-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:3px; background:rgba(74,143,212,0.18); color:#7fb0e4; border:1px solid rgba(74,143,212,0.4); margin-bottom:8px; }
+
+/* ═══ ②-B 団体タブ ロスター詳細(クリーム) ═══ */
+.rd-frame { background:var(--cream-bg-card); border-radius:10px; padding:18px 20px; color:var(--cream-text-main); }
+.rd-ovr-row { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
+.rd-ovr { font-family:'Bebas Neue',sans-serif; font-size:40px; color:var(--cream-gold-dark); line-height:1; }
+.rd-ovr-label { font-size:12px; color:var(--cream-text-dim); }
+.rd-peak { font-size:12px; color:var(--cream-text-dim); }
+.rd-peak b { color:var(--cream-text-sub); font-weight:700; }
+.rd-traits { margin-left:auto; font-size:11px; color:var(--cream-text-dim); }
+.rd-stat-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:12px; }
+.rd-stat-label { width:26px; font-weight:700; }
+.rd-stat-bar { flex:1; height:8px; background:rgba(100,85,50,0.1); border-radius:4px; overflow:hidden; }
+.rd-stat-fill { height:100%; border-radius:4px; }
+.rd-stat-val { width:30px; text-align:right; font-weight:700; }
+</style>
+</head>
+<body>
+
+<h1>殿堂・歴代記録 + ピークOVR表示 モックアップ v0.1</h1>
+<div class="mock-note">
+  選手名・数値はすべてダミー。①は殿堂タブ(データベース)上部に挿入する「歴代記録」パネル、
+  ②はピークOVRの表示位置2箇所(選手詳細ポップアップ / 団体タブのロスター詳細)。
+</div>
+
+<!-- ═══════════ ① 殿堂タブ 歴代記録 ═══════════ -->
+<div class="sec-label">① 置き場所・案A(推奨) — タブは増やさず、殿堂タブ内をセグメントで切り替え</div>
+
+<div class="db-frame">
+  <div class="dbtab-bar">
+    <span class="dbtab">👤 全選手</span>
+    <span class="dbtab">🎓 全コーチ</span>
+    <span class="dbtab">🕸 相関図</span>
+    <span class="dbtab active">🏅 殿堂</span>
+    <span class="dbtab">📖 年代記</span>
+  </div>
+  <div class="seg-row">
+    <span class="seg-btn">🏅 殿堂入り</span>
+    <span class="seg-btn active">📜 歴代記録</span>
+  </div>
+
+  <div class="rec-header">
+    <span class="t">📜 歴代記録</span>
+    <span class="s">RECORD BOOK ─ 業界に刻まれた金字塔</span>
+  </div>
+
+  <!-- MQ記録 2枚看板 -->
+  <div class="rec-hero-row">
+    <div class="rec-hero">
+      <div class="laurel">🏆</div>
+      <div class="kind">歴代最高評価 ─ シングル</div>
+      <div class="val-row"><span class="val">96</span><span class="unit">試合評価</span></div>
+      <div class="names">如月 澪<span class="vs">vs</span>橘 千歳</div>
+      <div class="meta">
+        <span class="chip">PPV GRAND FINAL</span>
+        <span class="when">S7・W48 ─ GLOW</span>
+      </div>
+    </div>
+    <div class="rec-hero tag">
+      <div class="laurel">🏆</div>
+      <div class="kind">歴代最高評価 ─ タッグ</div>
+      <div class="val-row"><span class="val">98</span><span class="unit">試合評価</span></div>
+      <div class="names" style="font-size:13px">如月 澪 &amp; 桐生 楓<span class="vs">vs</span>神楽 いろは &amp; 東雲 かなで</div>
+      <div class="meta">
+        <span class="chip">春のタッグリーグ</span>
+        <span class="when">S9・W12 ─ 自団体</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 記録3枚 -->
+  <div class="rec-sub-row">
+    <div class="rec-card">
+      <div class="kind">最多連続防衛(1政権)</div>
+      <div class="main"><span class="big">12</span>度防衛 ─ 橘 千歳</div>
+      <div class="sub">GLOW王座 ─ S5〜S7<br>2年に渡り頂点に君臨</div>
+    </div>
+    <div class="rec-card">
+      <div class="kind">天頂戦 歴代優勝</div>
+      <ul class="rec-roll">
+        <li><span class="sn">S4</span><span class="nm">神楽 いろは</span><span class="og">TOKYO</span></li>
+        <li><span class="sn">S8</span><span class="nm">如月 澪</span><span class="og">自団体</span></li>
+        <li><span class="sn">S12</span><span class="nm" style="color:var(--text-dim)">─ 開催前 ─</span></li>
+      </ul>
+    </div>
+    <div class="rec-card">
+      <div class="kind">PPV GRAND FINAL 歴代優勝</div>
+      <ul class="rec-roll">
+        <li><span class="sn">S9</span><span class="nm">如月 澪</span><span class="og">自団体</span></li>
+        <li><span class="sn">S8</span><span class="nm">橘 千歳</span><span class="og">GLOW</span></li>
+        <li><span class="sn">S7</span><span class="nm">橘 千歳</span><span class="og">GLOW</span></li>
+        <li><span class="sn">S6</span><span class="nm">神楽 いろは</span><span class="og">TOKYO</span></li>
+        <li><span class="sn">S5</span><span class="nm">東雲 かなで</span><span class="og">BLITZ</span></li>
+      </ul>
+      <div class="sub" style="text-align:right;color:var(--text-dim)">▼ さらに表示</div>
+    </div>
+  </div>
+
+  <!-- 任意: 個人ベストMQ TOP5 -->
+  <div class="rec-opt">
+    <div class="kind">(任意案) 個人キャリア最高評価 TOP5 ─ 採用するか要判断</div>
+    <table>
+      <tr><td class="rk">1</td><td>如月 澪</td><td class="mq">96</td><td class="og">自団体</td></tr>
+      <tr><td class="rk">2</td><td>橘 千歳</td><td class="mq">96</td><td class="og">GLOW</td></tr>
+      <tr><td class="rk">3</td><td>神楽 いろは</td><td class="mq">93</td><td class="og">TOKYO</td></tr>
+    </table>
+  </div>
+
+  <div style="font-size:11px;color:var(--text-dim);margin-top:12px">※ 既存の盾グリッド(フィルタ・ソート含む)は「🏅 殿堂入り」セグメント側にそのまま。デフォルト表示は殿堂入り側</div>
+</div>
+
+<div style="height:20px"></div>
+<div class="sec-label" style="border-left-color:rgba(200,190,170,0.3);color:var(--text-sub)">① 置き場所・案B(参考) — 殿堂グリッドの上に縦積み(切替なし・常に見える)</div>
+<div class="schema-b">
+  <div class="blk rec">📜 歴代記録パネル(上のレイアウトと同内容)</div>
+  <div class="blk grid">🛡️ 既存の殿堂盾グリッド(下へ一段下がる)</div>
+</div>
+
+<div class="design-note">
+  <b>置き場所の比較</b><br>
+  ・<b>案A(推奨)</b>: タブ列は現状のまま。記録が1画面として綺麗に収まり、盾グリッドの視界も奪わない。将来記録が増えても記録ページ内で拡張できる。難点はワンタップ奥に入ること(記録更新週は🏅殿堂タブ自体にNEWバッジを出して誘導)<br>
+  ・<b>案B</b>: 常に見えるが、記録は頻繁に変わらないため毎回スクロールの上に乗るのはやや邪魔。殿堂入りが増えるほど窮屈になる<br>
+  ・タブを7つに増やす案は、モバイル幅でタブ列が折り返すため<b>非推奨</b>
+</div>
+
+<div class="design-note">
+  <b>設計メモ</b><br>
+  ・MQ2枚看板は <b>G.mqRecord / G.mqRecordTag</b> をそのまま表示(保持者・団体・S/W・舞台まで既に記録済み)。舞台名はエンジンの STAGE_LABELS を流用<br>
+  ・「最多連続防衛」「天頂戦歴代優勝」「PPV歴代優勝」は全選手の careerRecord.history 走査で算出(過去データにも遡って効く。新規トラッキング不要)<br>
+  ・「試合評価」表記は内部変数名(MQ)をプレイヤーに見せないための日本語化。既存UIの表記に合わせて調整可<br>
+  ・記録更新週は該当カードに 🔥NEW バッジを点灯させる(新聞記事とリンク)<br>
+  ・個人ベストMQ TOP5 は数字丸見せ感があるため<b>任意</b>。不採用なら破線枠ごと落とす
+</div>
+
+<!-- ═══════════ ②-A 選手詳細ポップアップ ═══════════ -->
+<div class="sec-label">②-A 選手詳細ポップアップ — ピークOVRの置き場所(2案)</div>
+
+<span class="variant-tag">A-1案: OVRの真横(ベースライン揃え)</span>
+<div class="fp-frame">
+  <div class="fp-head">
+    <div class="fp-img">如</div>
+    <div style="flex:1;text-align:left">
+      <div class="fp-name-row">
+        <span class="fp-name">如月 澪</span>
+        <span class="fp-ovr">83</span>
+        <span class="fp-peak-a1">ピーク <b>91</b> <span style="color:var(--text-dim);font-size:11px">(S8)</span></span>
+      </div>
+      <div class="fp-badges">
+        <span class="fp-badge">Striker</span>
+        <span class="fp-badge role">Babyface</span>
+      </div>
+      <div class="fp-meta">
+        <span>📅 31歳</span><span>📏 168cm</span>
+        <span style="color:#f1c40f">⚠ 衰え</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="height:14px"></div>
+
+<span class="variant-tag">A-2案: メタ行(年齢・身長の並び)に置く</span>
+<div class="fp-frame">
+  <div class="fp-head">
+    <div class="fp-img">如</div>
+    <div style="flex:1;text-align:left">
+      <div class="fp-name-row">
+        <span class="fp-name">如月 澪</span>
+        <span class="fp-ovr">83</span>
+      </div>
+      <div class="fp-badges">
+        <span class="fp-badge">Striker</span>
+        <span class="fp-badge role">Babyface</span>
+      </div>
+      <div class="fp-meta">
+        <span>📅 31歳</span><span>📏 168cm</span>
+        <span class="fp-peak-a2">⛰ ピーク 91 <span class="dim">(S8)</span></span>
+        <span style="color:#f1c40f">⚠ 衰え</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="design-note">
+  <b>表示条件の提案</b><br>
+  ・<b>現在OVR &lt; ピークOVR のときだけ表示</b>(成長途上の選手は現在値=ピークなので出さない。全盛期を過ぎた選手にだけ「あの頃」が滲む)<br>
+  ・戦績タブに既にある「ピーク OVR(Sn)」の<b>王者非表示条件は撤廃</b>して常時表示に揃える<br>
+  ・色は text-sub / text-dim 系で現OVR(金・36px)より2段落とす
+</div>
+
+<!-- ═══════════ ②-B 団体タブ ロスター詳細 ═══════════ -->
+<div class="sec-label">②-B 団体タブ(ロスター詳細パネル・能力タブ) — クリーム面</div>
+
+<div class="rd-frame">
+  <div class="rd-ovr-row">
+    <span class="rd-ovr">83</span>
+    <span class="rd-ovr-label">OVR</span>
+    <span class="rd-peak">ピーク <b>91</b>(S8)</span>
+    <span class="rd-traits">底力 / 職人肌</span>
+  </div>
+  <div class="rd-stat-row"><span class="rd-stat-label" style="color:#c03030">PW</span><div class="rd-stat-bar"><div class="rd-stat-fill" style="width:78%;background:#c03030"></div></div><span class="rd-stat-val">78</span></div>
+  <div class="rd-stat-row"><span class="rd-stat-label" style="color:#1a8a4a">SP</span><div class="rd-stat-bar"><div class="rd-stat-fill" style="width:84%;background:#1a8a4a"></div></div><span class="rd-stat-val">84</span></div>
+  <div class="rd-stat-row"><span class="rd-stat-label" style="color:#2060a0">TE</span><div class="rd-stat-bar"><div class="rd-stat-fill" style="width:88%;background:#2060a0"></div></div><span class="rd-stat-val">88</span></div>
+  <div class="rd-stat-row"><span class="rd-stat-label" style="color:#b06010">ST</span><div class="rd-stat-bar"><div class="rd-stat-fill" style="width:75%;background:#b06010"></div></div><span class="rd-stat-val">75</span></div>
+  <div class="rd-stat-row"><span class="rd-stat-label" style="color:#7040a0">MN</span><div class="rd-stat-bar"><div class="rd-stat-fill" style="width:90%;background:#7040a0"></div></div><span class="rd-stat-val">90</span></div>
+</div>
+
+<div class="design-note">
+  <b>設計メモ</b><br>
+  ・40px の現OVR(Bebas・cream-gold-dark)の直後に、cream-text-dim でひと回り小さく「ピーク 91(S8)」<br>
+  ・こちらも表示条件は「現在 &lt; ピーク」のときのみ。特性表示(右端)とは共存できる幅
+</div>
+
+</body>
+</html>

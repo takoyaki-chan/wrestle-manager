@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>記録タブ・歴代記録(ビジュアル強化) モックアップ v0.2</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Shippori+Mincho:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #24221e;
+  --card-bg: #12110e;
+  --panel-bg: #181614;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --text-main: #e8e6e0;
+  --text-sub: rgba(232,230,224,0.5);
+  --text-dim: rgba(232,230,224,0.25);
+  --border: rgba(200,190,170,0.08);
+  --cream-bg-card: #ede8dc;
+  --cream-text-sub: #4a4638;
+  --cream-text-dim: #7a7466;
+  --cream-gold-dark: #5c4a1e;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0c0b09; color:var(--text-main); font-family:'Noto Sans JP',sans-serif; padding:24px; max-width:960px; margin:0 auto; }
+h1 { font-size:18px; color:var(--gold); margin-bottom:4px; }
+.mock-note { font-size:12px; color:var(--text-sub); margin-bottom:28px; line-height:1.7; }
+.sec-label { font-size:13px; font-weight:700; color:var(--gold-light); margin:36px 0 10px; padding-left:10px; border-left:3px solid var(--gold); }
+.design-note { font-size:11px; color:var(--text-sub); line-height:1.8; margin-top:12px; padding:10px 12px; background:rgba(200,190,170,0.03); border:1px dashed var(--border); border-radius:6px; }
+.design-note b { color:var(--gold); }
+
+.db-frame { background:var(--panel-bg); border:1px solid var(--border); border-radius:10px; padding:16px; }
+.dbtab-bar { display:flex; gap:4px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px; flex-wrap:wrap; }
+.dbtab { font-size:12px; padding:5px 12px; border-radius:5px; color:var(--text-sub); background:rgba(200,190,170,0.03); }
+.dbtab.active { color:var(--gold); background:rgba(212,168,67,0.12); border:1px solid rgba(212,168,67,0.35); font-weight:700; }
+.seg-row { display:inline-flex; margin-bottom:16px; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+.seg-btn { font-size:12px; padding:6px 18px; color:var(--text-sub); }
+.seg-btn.active { color:var(--gold-light); background:rgba(212,168,67,0.14); font-weight:700; }
+
+/* ══ 顔プレースホルダ(実装では getPortraitUrl。ダミーはイニシャル円) ══ */
+.face { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; flex-shrink:0; }
+
+/* ══ 名勝負額(MQ記録ヒーロー) ══ */
+.match-frame {
+  position:relative; border-radius:6px; padding:22px 26px 16px; margin-bottom:14px;
+  background:
+    radial-gradient(ellipse 70% 90% at 50% -30%, rgba(212,168,67,0.16), transparent 60%),
+    linear-gradient(180deg, #14120d, #0d0c0a);
+  border:1px solid rgba(212,168,67,0.4);
+  box-shadow: inset 0 0 0 4px #0d0c0a, inset 0 0 0 5px rgba(212,168,67,0.22), 0 6px 24px rgba(0,0,0,0.5);
+}
+.match-frame.tag {
+  background:
+    radial-gradient(ellipse 70% 90% at 50% -30%, rgba(74,143,212,0.14), transparent 60%),
+    linear-gradient(180deg, #101318, #0b0d10);
+  border-color:rgba(74,143,212,0.4);
+  box-shadow: inset 0 0 0 4px #0b0d10, inset 0 0 0 5px rgba(74,143,212,0.2), 0 6px 24px rgba(0,0,0,0.5);
+}
+.fcorner { position:absolute; width:14px; height:14px; border-color:rgba(212,168,67,0.6); border-style:solid; border-width:0; }
+.match-frame.tag .fcorner { border-color:rgba(120,170,220,0.55); }
+.fcorner.tl { top:6px; left:6px; border-top-width:2px; border-left-width:2px; }
+.fcorner.tr { top:6px; right:6px; border-top-width:2px; border-right-width:2px; }
+.fcorner.bl { bottom:6px; left:6px; border-bottom-width:2px; border-left-width:2px; }
+.fcorner.br { bottom:6px; right:6px; border-bottom-width:2px; border-right-width:2px; }
+
+.mf-kind { text-align:center; font-family:'Shippori Mincho',serif; font-size:13px; letter-spacing:6px; color:var(--gold); margin-bottom:2px; }
+.match-frame.tag .mf-kind { color:#8fb8e4; }
+.mf-kind-en { text-align:center; font-size:9px; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase; margin-bottom:14px; }
+
+.mf-stage { display:flex; align-items:center; justify-content:center; gap:0; }
+.mf-side { display:flex; flex-direction:column; align-items:center; gap:7px; width:180px; }
+.mf-faces { display:flex; }
+.mf-faces .face { width:76px; height:76px; font-size:30px; border:2.5px solid rgba(212,168,67,0.55); box-shadow:0 0 14px rgba(212,168,67,0.18), 0 4px 10px rgba(0,0,0,0.5); }
+.match-frame.tag .mf-faces .face { width:62px; height:62px; font-size:24px; border-color:rgba(120,170,220,0.5); box-shadow:0 0 14px rgba(74,143,212,0.15), 0 4px 10px rgba(0,0,0,0.5); }
+.match-frame.tag .mf-faces .face + .face { margin-left:-14px; }
+.mf-name { font-size:13px; font-weight:700; text-align:center; line-height:1.4; }
+.mf-org { font-size:10px; color:var(--text-sub); }
+
+.mf-center { display:flex; flex-direction:column; align-items:center; width:200px; }
+.mf-vs { font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:2px; color:var(--text-dim); margin-bottom:2px; }
+.mf-val { font-family:'Bebas Neue',sans-serif; font-size:74px; line-height:0.9; color:var(--gold-light); text-shadow:0 0 26px rgba(212,168,67,0.45); }
+.match-frame.tag .mf-val { font-size:64px; color:#a8cdf2; text-shadow:0 0 26px rgba(74,143,212,0.4); }
+.mf-unit { font-size:10px; letter-spacing:3px; color:var(--text-sub); margin-top:4px; }
+
+.mf-foot { display:flex; justify-content:center; gap:10px; align-items:center; margin-top:14px; padding-top:10px; border-top:1px solid rgba(212,168,67,0.12); }
+.match-frame.tag .mf-foot { border-top-color:rgba(74,143,212,0.12); }
+.mf-chip { font-size:10px; padding:2px 9px; border-radius:3px; background:rgba(212,168,67,0.13); color:var(--gold); border:1px solid rgba(212,168,67,0.3); }
+.match-frame.tag .mf-chip { background:rgba(74,143,212,0.13); color:#7fb0e4; border-color:rgba(74,143,212,0.3); }
+.mf-when { font-size:11px; color:var(--text-sub); letter-spacing:1px; }
+.mf-new { font-size:10px; font-weight:900; padding:2px 8px; border-radius:3px; background:#c41e3a; color:#fff; letter-spacing:1px; animation:pulse 1.4s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.55} }
+
+/* ══ 下段: 王座記録 + 歴代優勝 ══ */
+.rec-lower { display:grid; grid-template-columns:280px 1fr; gap:14px; margin-top:2px; }
+
+/* 最多防衛 = 王者の肖像 */
+.champ-card { position:relative; border-radius:6px; padding:16px; text-align:center;
+  background: radial-gradient(ellipse 80% 70% at 50% -10%, rgba(212,168,67,0.12), transparent 60%), #12100c;
+  border:1px solid rgba(212,168,67,0.3); }
+.champ-card .kind { font-family:'Shippori Mincho',serif; font-size:12px; letter-spacing:4px; color:var(--gold); margin-bottom:12px; }
+.champ-wrap { position:relative; display:inline-block; margin-bottom:8px; }
+.champ-wrap .face { width:84px; height:84px; font-size:34px; border:3px solid rgba(212,168,67,0.7); box-shadow:0 0 18px rgba(212,168,67,0.3); }
+.champ-wrap .crown { position:absolute; top:-14px; left:50%; transform:translateX(-50%); font-size:20px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+.champ-card .big-row { display:flex; align-items:baseline; justify-content:center; gap:4px; }
+.champ-card .big { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:1; color:var(--gold-light); text-shadow:0 0 16px rgba(212,168,67,0.35); }
+.champ-card .big-unit { font-size:12px; color:var(--text-sub); }
+.champ-card .nm { font-size:14px; font-weight:700; margin-top:4px; }
+.champ-card .sub { font-size:11px; color:var(--text-sub); margin-top:3px; line-height:1.6; }
+
+/* 歴代優勝 = 月桂樹メダリオン列 */
+.laurel-block { border-radius:6px; padding:14px 16px; background:#100f0c; border:1px solid var(--border); margin-bottom:14px; }
+.laurel-block .kind { font-family:'Shippori Mincho',serif; font-size:12px; letter-spacing:4px; color:var(--gold); margin-bottom:12px; display:flex; align-items:baseline; gap:8px; }
+.laurel-block .kind small { font-size:9px; letter-spacing:2px; color:var(--text-dim); font-family:'Noto Sans JP',sans-serif; }
+.medal-row { display:flex; gap:18px; align-items:flex-start; }
+.medal { display:flex; flex-direction:column; align-items:center; gap:5px; width:76px; }
+.medal-face-wrap { position:relative; }
+.medal .face { width:56px; height:56px; font-size:22px; border:2px solid rgba(212,168,67,0.55); box-shadow:0 0 10px rgba(212,168,67,0.18); }
+.medal .wreath { position:absolute; bottom:-7px; left:50%; transform:translateX(-50%); font-size:14px; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.8)); }
+.medal .sn { font-family:'Bebas Neue',sans-serif; font-size:13px; color:var(--gold); letter-spacing:1px; margin-top:4px; }
+.medal .nm { font-size:11px; font-weight:700; text-align:center; line-height:1.3; }
+.medal .og { font-size:9px; color:var(--text-dim); }
+.medal.empty .face { border-style:dashed; border-color:rgba(200,190,170,0.2); background:transparent !important; color:var(--text-dim); font-size:11px; font-weight:400; box-shadow:none; }
+.medal-scroll-hint { align-self:center; color:var(--text-dim); font-size:18px; }
+
+/* PPV honor roll: 横スクロールのメダリオン列(直近が左) */
+.laurel-block.ppv .medal .face { border-color:rgba(155,89,182,0.55); box-shadow:0 0 10px rgba(155,89,182,0.15); }
+.laurel-block.ppv .medal .sn { color:#b48cc8; }
+.laurel-block.ppv .kind { color:#b48cc8; }
+
+/* ══ ② 確定済み(参考再掲) ══ */
+.fixed-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:3px; background:rgba(46,204,113,0.15); color:#7fd6a4; border:1px solid rgba(46,204,113,0.35); margin-bottom:8px; }
+.fp-frame { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.fp-head { background:rgba(231,76,60,0.04); border-bottom:1px solid var(--border); padding:16px 20px; display:flex; gap:16px; }
+.fp-name-row { display:flex; align-items:center; gap:10px; }
+.fp-name { font-weight:700; font-size:22px; }
+.fp-ovr { font-size:34px; font-weight:900; color:var(--gold); }
+.fp-peak { font-size:13px; color:var(--text-sub); align-self:flex-end; padding-bottom:5px; }
+.fp-peak b { font-weight:700; }
+.rd-frame { background:var(--cream-bg-card); border-radius:10px; padding:14px 18px; color:#1e1c16; }
+.rd-ovr-row { display:flex; align-items:baseline; gap:8px; }
+.rd-ovr { font-family:'Bebas Neue',sans-serif; font-size:38px; color:var(--cream-gold-dark); line-height:1; }
+.rd-ovr-label { font-size:12px; color:var(--cream-text-dim); }
+.rd-peak { font-size:12px; color:var(--cream-text-dim); }
+.rd-peak b { color:var(--cream-text-sub); font-weight:700; }
+</style>
+</head>
+<body>
+
+<h1>「📜 記録」タブ — 歴代記録ページ モックアップ v0.2</h1>
+<div class="mock-note">
+  v0.1からの変更: タブ名を「🏅 殿堂」→「📜 記録」に変更(中は「殿堂入り／歴代記録」のセグメント切替)。
+  歴代記録の見せ方を刷新 — 数字カードの羅列ではなく<b style="color:var(--gold)">「名勝負の額」「王者の肖像」「月桂樹の歴代優勝列」</b>の3モチーフ。
+  個人キャリアTOP5案は削除。顔はダミー(実装では選手の顔画像)。
+</div>
+
+<div class="sec-label">① 記録タブ — 歴代記録セグメント(ビジュアル強化版)</div>
+
+<div class="db-frame">
+  <div class="dbtab-bar">
+    <span class="dbtab">👤 全選手</span>
+    <span class="dbtab">🎓 全コーチ</span>
+    <span class="dbtab">🕸 相関図</span>
+    <span class="dbtab active">📜 記録</span>
+    <span class="dbtab">📖 年代記</span>
+  </div>
+  <div class="seg-row">
+    <span class="seg-btn">🏅 殿堂入り</span>
+    <span class="seg-btn active">📜 歴代記録</span>
+  </div>
+
+  <!-- ═══ 名勝負の額: シングル ═══ -->
+  <div class="match-frame">
+    <div class="fcorner tl"></div><div class="fcorner tr"></div><div class="fcorner bl"></div><div class="fcorner br"></div>
+    <div class="mf-kind">歴代最高の一戦</div>
+    <div class="mf-kind-en">All-Time Best Match ── Singles</div>
+    <div class="mf-stage">
+      <div class="mf-side">
+        <div class="mf-faces"><div class="face" style="background:linear-gradient(135deg,#e74c3c33,#e74c3c11);color:#e74c3c">如</div></div>
+        <div><div class="mf-name">如月 澪</div><div class="mf-org" style="text-align:center">自団体</div></div>
+      </div>
+      <div class="mf-center">
+        <div class="mf-vs">VS</div>
+        <div class="mf-val">96</div>
+        <div class="mf-unit">試合評価</div>
+      </div>
+      <div class="mf-side">
+        <div class="mf-faces"><div class="face" style="background:linear-gradient(135deg,#bb8fce33,#bb8fce11);color:#bb8fce">橘</div></div>
+        <div><div class="mf-name">橘 千歳</div><div class="mf-org" style="text-align:center">GLOW</div></div>
+      </div>
+    </div>
+    <div class="mf-foot">
+      <span class="mf-chip">PPV GRAND FINAL</span>
+      <span class="mf-when">S7・第48週</span>
+    </div>
+  </div>
+
+  <!-- ═══ 名勝負の額: タッグ(記録更新週のNEW点灯例) ═══ -->
+  <div class="match-frame tag">
+    <div class="fcorner tl"></div><div class="fcorner tr"></div><div class="fcorner bl"></div><div class="fcorner br"></div>
+    <div class="mf-kind">歴代最高の一戦</div>
+    <div class="mf-kind-en">All-Time Best Match ── Tag Team</div>
+    <div class="mf-stage">
+      <div class="mf-side">
+        <div class="mf-faces">
+          <div class="face" style="background:linear-gradient(135deg,#e74c3c33,#e74c3c11);color:#e74c3c">如</div>
+          <div class="face" style="background:linear-gradient(135deg,#2ecc7133,#2ecc7111);color:#2ecc71">桐</div>
+        </div>
+        <div><div class="mf-name">如月 澪 &amp; 桐生 楓</div><div class="mf-org" style="text-align:center">自団体</div></div>
+      </div>
+      <div class="mf-center">
+        <div class="mf-vs">VS</div>
+        <div class="mf-val">98</div>
+        <div class="mf-unit">試合評価</div>
+      </div>
+      <div class="mf-side">
+        <div class="mf-faces">
+          <div class="face" style="background:linear-gradient(135deg,#f1c40f33,#f1c40f11);color:#f1c40f">神</div>
+          <div class="face" style="background:linear-gradient(135deg,#3498db33,#3498db11);color:#3498db">東</div>
+        </div>
+        <div><div class="mf-name">神楽 いろは &amp; 東雲 かなで</div><div class="mf-org" style="text-align:center">TOKYO</div></div>
+      </div>
+    </div>
+    <div class="mf-foot">
+      <span class="mf-chip">春のタッグリーグ</span>
+      <span class="mf-when">S9・第12週</span>
+      <span class="mf-new">記録更新!</span>
+    </div>
+  </div>
+
+  <!-- ═══ 下段: 王者の肖像 + 歴代優勝列 ═══ -->
+  <div class="rec-lower">
+    <div class="champ-card">
+      <div class="kind">最多連続防衛</div>
+      <div class="champ-wrap">
+        <span class="crown">👑</span>
+        <div class="face" style="background:linear-gradient(135deg,#bb8fce33,#bb8fce11);color:#bb8fce">橘</div>
+      </div>
+      <div class="big-row"><span class="big">12</span><span class="big-unit">度防衛</span></div>
+      <div class="nm">橘 千歳</div>
+      <div class="sub">GLOW王座 ─ S5〜S7<br>2年に渡り頂点に君臨</div>
+    </div>
+
+    <div>
+      <!-- 天頂戦 -->
+      <div class="laurel-block">
+        <div class="kind">天頂戦 歴代優勝 <small>4年に一度の頂</small></div>
+        <div class="medal-row">
+          <div class="medal">
+            <div class="medal-face-wrap">
+              <div class="face" style="background:linear-gradient(135deg,#f1c40f33,#f1c40f11);color:#f1c40f">神</div>
+              <span class="wreath">🌿</span>
+            </div>
+            <span class="sn">S4</span>
+            <div class="nm">神楽 いろは</div>
+            <div class="og">TOKYO</div>
+          </div>
+          <div class="medal">
+            <div class="medal-face-wrap">
+              <div class="face" style="background:linear-gradient(135deg,#e74c3c33,#e74c3c11);color:#e74c3c">如</div>
+              <span class="wreath">🌿</span>
+            </div>
+            <span class="sn">S8</span>
+            <div class="nm">如月 澪</div>
+            <div class="og">自団体</div>
+          </div>
+          <div class="medal empty">
+            <div class="medal-face-wrap"><div class="face">S12</div></div>
+            <span class="sn" style="color:var(--text-dim)">─</span>
+            <div class="nm" style="color:var(--text-dim)">開催前</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PPV -->
+      <div class="laurel-block ppv" style="margin-bottom:0">
+        <div class="kind">PPV GRAND FINAL 歴代優勝 <small>毎年の頂点・直近から</small></div>
+        <div class="medal-row">
+          <div class="medal">
+            <div class="medal-face-wrap">
+              <div class="face" style="background:linear-gradient(135deg,#e74c3c33,#e74c3c11);color:#e74c3c">如</div>
+              <span class="wreath">🌿</span>
+            </div>
+            <span class="sn">S9</span>
+            <div class="nm">如月 澪</div>
+            <div class="og">自団体</div>
+          </div>
+          <div class="medal">
+            <div class="medal-face-wrap">
+              <div class="face" style="background:linear-gradient(135deg,#bb8fce33,#bb8fce11);color:#bb8fce">橘</div>
+              <span class="wreath">🌿</span>
+            </div>
+            <span class="sn">S8</span>
+            <div class="nm">橘 千歳</div>
+            <div class="og">GLOW</div>
+          </div>
+          <div class="medal">
+            <div class="medal-face-wrap">
+              <div class="face" style="background:linear-gradient(135deg,#bb8fce33,#bb8fce11);color:#bb8fce">橘</div>
+              <span class="wreath">🌿</span>
+            </div>
+            <span class="sn">S7</span>
+            <div class="nm">橘 千歳</div>
+            <div class="og">GLOW</div>
+          </div>
+          <div class="medal">
+            <div class="medal-face-wrap">
+              <div class="face" style="background:linear-gradient(135deg,#f1c40f33,#f1c40f11);color:#f1c40f">神</div>
+              <span class="wreath">🌿</span>
+            </div>
+            <span class="sn">S6</span>
+            <div class="nm">神楽 いろは</div>
+            <div class="og">TOKYO</div>
+          </div>
+          <div class="medal">
+            <div class="medal-face-wrap">
+              <div class="face" style="background:linear-gradient(135deg,#3498db33,#3498db11);color:#3498db">東</div>
+              <span class="wreath">🌿</span>
+            </div>
+            <span class="sn">S5</span>
+            <div class="nm">東雲 かなで</div>
+            <div class="og">BLITZ</div>
+          </div>
+          <span class="medal-scroll-hint">›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="design-note">
+  <b>ビジュアルの狙い</b><br>
+  ・<b>名勝負の額</b> — MQ記録は「数字」ではなく「一戦」として飾る。両者の顔が対峙し、中央にスポットライトを浴びた評価点。額縁(四隅の金飾り+二重ボーダー)で「会館に飾られた記念額」の趣。シングル=金、タッグ=青の照明で書き分け<br>
+  ・<b>王者の肖像</b> — 最多連続防衛は王冠を頂く顔写真+大きな防衛数。在位期間を添えて「時代」を感じさせる<br>
+  ・<b>月桂樹の歴代優勝列</b> — 天頂戦(金)とPPV(紫)は顔メダリオン+🌿+シーズン番号の横列。直近から並べ、増えたら横スクロール。天頂戦の次回開催枠は破線の空席で「4年に一度」を予感させる<br>
+  ・記録更新週は該当額に「記録更新!」バッジが点滅(新聞の大ニュース記事とリンク)<br>
+  ・同一選手が複数箇所に登場するのは意図どおり(時代の主役が壁面を占拠していく)。顔タップで選手詳細へ
+</div>
+
+<!-- ═══════════ ② 確定済み(参考再掲) ═══════════ -->
+<div class="sec-label">② ピークOVR — 確定済みの再掲(A-1案 + 団体タブ)</div>
+
+<span class="fixed-tag">✔ 確定: A-1案(OVRの真横)</span>
+<div class="fp-frame">
+  <div class="fp-head">
+    <div class="face" style="width:72px;height:72px;font-size:30px;background:linear-gradient(135deg,#e74c3c22,#e74c3c08);color:#e74c3c;border-radius:14px">如</div>
+    <div>
+      <div class="fp-name-row">
+        <span class="fp-name">如月 澪</span>
+        <span class="fp-ovr">83</span>
+        <span class="fp-peak">ピーク <b>91</b> <span style="color:var(--text-dim);font-size:11px">(S8)</span></span>
+      </div>
+      <div style="font-size:12px;color:var(--text-sub);margin-top:6px">📅 31歳 ・ 📏 168cm ・ ⚠ 衰え</div>
+    </div>
+  </div>
+</div>
+
+<div style="height:12px"></div>
+
+<span class="fixed-tag">✔ 確定: 団体タブ(ロスター詳細・能力タブ)</span>
+<div class="rd-frame">
+  <div class="rd-ovr-row">
+    <span class="rd-ovr">83</span>
+    <span class="rd-ovr-label">OVR</span>
+    <span class="rd-peak">ピーク <b>91</b>(S8)</span>
+  </div>
+</div>
+
+<div class="design-note">
+  表示条件: <b>現在OVR &lt; ピークOVR のときのみ</b>(成長途上の選手には出さない)。
+  戦績タブ既存表示の王者非表示条件は撤廃。
+</div>
+
+</body>
+</html>
