@@ -151,6 +151,7 @@ function logGap(msg) {
      ${uiFn('_awOrgEmblem')}
      ${uiFn('_challengeRequestOpponentReaction')}
      ${uiFn('_challengeRequestResultReaction')}
+     ${uiFn('_challengeRequestReactionOrder')}
      ${uiFn('showChallengeRequestResultModal')}
      return { showChallengeRequestResultModal };`
   );

@@ -1,5 +1,63 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 挑戦試合: 自団体が敗れた回も相手の勝ち名乗りを出す（2026-07-30・裁定撤回）
+
+Keisuke「挑戦試合が全部終わった後、勝ったら喜んだり、負けたら悔しがったり、相手から
+挑戦してきた場合は相手が勝ち誇ったり、相手を返り討ちにしたらすごい悔しそうなことを
+言ったりとか、それを実装してって話だったと思うんだけど、されてないようだな」
+
+### 調べたこと
+
+**機能自体は実装済み**だった。`_challengeRequestOpponentReaction` があり、
+`CHALLENGE_REQUEST_OPPONENT_REACTIONS` の `win`（勝ち誇り）プールもラベル
+（「挑戦を実らせた代表」「受けて、勝った代表」）も揃っていた。
+
+出ていなかったのは**自団体が負けた回だけ**で、理由がコードに残っていた。
+
+> 勝っても負けても、映すのは「自団体の代表」。この画面は社長への報告であり、
+> 自団体が敗れた回で相手が勝ち名乗りを上げる構図にはしない（2026-07-25 Keisuke裁定）
+
+つまり意図的に外されていて、根拠が5日前の裁定として記録されていた。
+**過去の判断を黙って上書きしないため確認を取り、A（撤回して出す）の裁定を得た。**
+
+### 実装
+
+`foeReaction` のガードを `playerWon` → `playerWon || playerLost` に変更。
+セリフ・ラベルは既存のものがそのまま使える（`outcome = playerWon ? 'lose' :
+(playerLost ? 'win' : 'draw')` で既に3分岐していた）。
+
+**併記の並び順のバグも同時に直した。** 「2人出す場合は勝者を左、敗者を右に固定する」
+という規則がコメントに書かれていたが、実装は `reaction`（＝常に自団体）を先に描いていた。
+敗戦時を出せるようにすると**自団体（敗者）が左に来て規則が破れる**。
+並び順を純粋関数 `_challengeRequestReactionOrder(reaction, foeReaction, playerLost)` に
+切り出し、敗戦時は相手（勝者）を先に置くようにした。
+
+### テストの陳腐化を3件解消
+
+並び順を検査していた既存アサーションが**ソース文字列の照合**（`ui.includes('const scenes =
+renderReactionScene(reaction)')` と `indexOf` の前後比較）だったため、リファクタで落ちた。
+`npm run test:stale` が警告している型の負債そのもの。
+
+- `test/challenge-request-result-reaction-test.js` — 字面照合を撤去し、
+  `_challengeRequestReactionOrder` の返り値で並び順を検査する形へ。
+  併せて**敗戦時に相手が勝ち名乗りを上げること**（fighter/セリフプール/label/defeated）を新規検査
+- `test/challenge-result-layout-test.js` — 同じ字面照合を同様に置換。
+  この file には `functionSource` ヘルパーが無かったので追加
+- `test/u5-winloss-safety-net-test.js` — `showChallengeRequestResultModal` を単体評価する
+  `new Function` の注入リストに新ヘルパーを追加（未注入で ReferenceError になっていた）
+
+npm test 132/132 PASS。
+
+### 実機で見てほしいところ
+
+開発者モードの「イベント即時発火 → 挑戦の直訴（他団体→自団体）」で inverse を出し、
+**自団体が負ける回**を引く。①相手（勝者）が左・自団体（敗者）が右に並ぶか、
+②相手のセリフが勝ち誇りになっているか、③ラベルが「挑戦を実らせた代表」か、
+④敗者のポートレートだけグレースケールになっているか。
+
+変更: src/ui-common.js / test/challenge-request-result-reaction-test.js /
+test/challenge-result-layout-test.js / test/u5-winloss-safety-net-test.js
+
 ## バグB: 天頂戦とPPVのTV放送で因縁が試合内容に効いていなかった（2026-07-30）
 
 全体バグ監査で「天頂戦が`buildRingInOpts`未呼出」と記録されていた項目（バグB）を調査・修復した。

@@ -23,6 +23,22 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const ui = fs.readFileSync(path.join(root, 'src/ui-common.js'), 'utf8').replace(/\r\n/g, '\n');
 
+/** ui-common.js から関数1つのソースを切り出す（純粋関数を単体で評価するため） */
+function functionSource(name) {
+  const start = ui.indexOf(`function ${name}`);
+  assert.ok(start >= 0, `${name} not found`);
+  const brace = ui.indexOf('{', start);
+  let depth = 0;
+  for (let i = brace; i < ui.length; i++) {
+    if (ui[i] === '{') depth++;
+    if (ui[i] === '}') {
+      depth--;
+      if (depth === 0) return ui.slice(start, i + 1);
+    }
+  }
+  throw new Error(`${name} end not found`);
+}
+
 let failed = 0;
 function section(name, fn) {
   try { fn(); console.log('  PASS  ' + name); }
@@ -82,10 +98,16 @@ section('5. 1人だけのときもラッパーを通る（中央に出る）', (
 });
 
 section('6. 2人表示は左が勝者、右が敗者', () => {
-  const winnerAt = ui.indexOf('const scenes = renderReactionScene(reaction)');
-  const loserAt = ui.indexOf('renderReactionScene(foeReaction)', winnerAt);
-  assert.ok(winnerAt > 0 && loserAt > winnerAt,
-    '生成順が「勝者→敗者」になっていない');
+  // 並び順は _challengeRequestReactionOrder に切り出してある。生成コードの字面ではなく
+  // 関数の返り値で検査する（字面照合はリファクタで陳腐化する。test/stale-lint.js 参照）。
+  const src = functionSource('_challengeRequestReactionOrder');
+  const orderOf = new Function(`${src}; return _challengeRequestReactionOrder;`)();
+  const self = { fighter: { id: 1 }, line: 'a' };
+  const foe = { fighter: { id: 2 }, line: 'b' };
+  assert.deepStrictEqual(orderOf(self, foe, false), [self, foe],
+    '自団体が勝った回に自団体が左に来ていない');
+  assert.deepStrictEqual(orderOf(self, foe, true), [foe, self],
+    '自団体が負けた回に勝った相手が左に来ていない');
 });
 
 console.log('');

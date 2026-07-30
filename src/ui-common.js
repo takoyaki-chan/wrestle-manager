@@ -11906,10 +11906,12 @@ function _challengeRequestResultReaction(card, result, state, playerWon, playerL
     return lines[Engine.rng.int(rng, 0, lines.length - 1)];
   };
 
-  // 勝っても負けても、映すのは「自団体の代表」。この画面は社長への報告であり、
-  // 自団体が敗れた回で相手が勝ち名乗りを上げる構図にはしない（2026-07-25 Keisuke裁定）。
-  // 自団体側は forward なら teamA（挑んだ側）、inverse なら teamB（迎え撃った側）。
+  // 勝っても負けても、まず映すのは「自団体の代表」。この画面は社長への報告なので、
+  // 自団体側の言葉を主役に置く。自団体側は forward なら teamA（挑んだ側）、
+  // inverse なら teamB（迎え撃った側）。
   // 引き分けだけは従来どおりAI側リアクション（CHALLENGE_LINES に draw を持たないため）。
+  // なお「自団体が敗れた回に相手の勝ち名乗りを出さない」という 2026-07-25 の裁定は
+  // 2026-07-30 に撤回された。敗戦時も相手側を併記する（呼び出し側の showFoeAlongside 参照）。
   const selfSideFighter = isInverse ? (card.teamB && card.teamB[0]) : (card.teamA && card.teamA[0]);
   if ((playerWon || playerLost) && selfSideFighter
       && Engine.challengeRequest && Engine.challengeRequest.pickLine) {
@@ -11961,6 +11963,15 @@ function _challengeRequestOpponentReaction(card, result, state, playerWon, playe
     ? lines[Engine.rng.int(rng, 0, lines.length - 1)]
     : '';
   return { fighter, line, label, defeated: outcome === 'lose' };
+}
+
+/** 併記する2人の描画順を決める（純粋関数）。**勝者を左、敗者を右**に固定する。
+ *  自団体が負けた回は自団体側が敗者なので、相手（勝者）を先に置く。
+ *  この並べ替えが無いと敗戦時だけ左右が逆になる。foeReaction が null なら1人だけ返す。 */
+function _challengeRequestReactionOrder(reaction, foeReaction, playerLost) {
+  if (!reaction) return foeReaction ? [foeReaction] : [];
+  if (!foeReaction) return [reaction];
+  return playerLost ? [foeReaction, reaction] : [reaction, foeReaction];
 }
 
 function showChallengeRequestResultModal(card, result, state, onClose) {
@@ -12032,16 +12043,17 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
   };
 
   const reaction = _challengeRequestResultReaction(card, result, state, playerWon, playerLost);
-  // 自団体が勝った回は、報告の前に「敗れた相手団体の代表」の顔を挟む（2026-07-25 Keisuke要望）。
-  // 相手側リアクションが主役になっている引き分け等では二重に出さない。
-  const foeReaction = (playerWon && Engine.rng)
+  // 決着した回は自団体と相手の両方を映す。勝った回は敗れた相手の顔を、
+  // 負けた回は相手の勝ち名乗りを併記する（2026-07-30 Keisuke裁定。当初は
+  // 「敗れた回に相手の勝ち名乗りを出さない」としていたが撤回された）。
+  // 引き分けは reaction 自体がAI側になるため二重に出さない。
+  const foeReaction = ((playerWon || playerLost) && Engine.rng)
     ? _challengeRequestOpponentReaction(card, result, state, playerWon, playerLost)
     : null;
   const showFoeAlongside = !!(foeReaction && foeReaction.fighter && foeReaction.line
     && reaction && reaction.fighter && foeReaction.fighter !== reaction.fighter);
-  // 2人出す場合は、勝者を左、敗者を右に固定する。
-  const scenes = renderReactionScene(reaction)
-    + (showFoeAlongside ? renderReactionScene(foeReaction) : '');
+  const scenes = _challengeRequestReactionOrder(reaction, showFoeAlongside ? foeReaction : null, playerLost)
+    .map(renderReactionScene).join('');
   const reactionHtml = `<div class="crrm-reactions${showFoeAlongside ? ' is-pair' : ''}">${scenes}</div>`;
 
   const matchRows = result.matches.map((m, i) => {

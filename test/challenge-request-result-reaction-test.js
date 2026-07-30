@@ -73,10 +73,31 @@ assert.strictEqual(foe.fighter, awayChallenger, 'the beaten opposing representat
 assert.ok(CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_normal.lose.includes(foe.line),
   'the defeated challenger uses an archetype-specific loss line');
 assert.strictEqual(foe.defeated, true, 'the defeated challenger portrait is marked for grayscale styling');
-assert.ok(ui.includes('const scenes = renderReactionScene(reaction)')
-  && ui.indexOf('renderReactionScene(foeReaction)', ui.indexOf('const scenes = renderReactionScene(reaction)'))
-    > ui.indexOf('const scenes = renderReactionScene(reaction)'),
-  'the result modal renders our winning representative before the beaten opponent');
+// 併記の並び順は「勝者を左、敗者を右」。純粋関数へ切り出したので振る舞いで検査する
+// （ソース文字列の照合はリファクタで陳腐化するため置かない。test/stale-lint.js 参照）。
+const orderOf = new Function(
+  `${functionSource('_challengeRequestReactionOrder')}; return _challengeRequestReactionOrder;`
+)();
+
+const selfRx = { fighter: ourDefender, line: 'x', label: 'self' };
+const foeRx = { fighter: awayChallenger, line: 'y', label: 'foe' };
+
+assert.deepStrictEqual(orderOf(selfRx, foeRx, false), [selfRx, foeRx],
+  '自団体が勝った回は自団体（勝者）が左');
+assert.deepStrictEqual(orderOf(selfRx, foeRx, true), [foeRx, selfRx],
+  '自団体が負けた回は相手（勝者）が左 — 敗戦時だけ左右が逆にならないこと');
+assert.deepStrictEqual(orderOf(selfRx, null, false), [selfRx], '相手側が無いときは1人だけ');
+assert.deepStrictEqual(orderOf(selfRx, null, true), [selfRx], '敗戦で相手側が無いときも1人だけ');
+
+// 2026-07-30 裁定: 自団体が敗れた回も相手の勝ち名乗りを併記する（当初は出さない裁定だった）。
+const foeWhenWeLost = foeReactionFor(inverseCard, { teamWin: 'A' }, state, false, true);
+assert.strictEqual(foeWhenWeLost.fighter, awayChallenger,
+  '自団体が敗れた回は、勝った相手団体の代表が話す');
+assert.ok(CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_normal.win.includes(foeWhenWeLost.line),
+  '勝った挑戦者は archetype 別の勝利セリフを使う');
+assert.strictEqual(foeWhenWeLost.defeated, false, '勝者のポートレートはグレースケールにしない');
+assert.strictEqual(foeWhenWeLost.label, '挑戦を実らせた代表',
+  'inverse で相手が勝った場合のラベルは「挑戦を実らせた代表」');
 
 assert.ok(ui.includes('crrm-reaction-bubble'), 'the reaction line is rendered as a speech bubble');
 assert.ok(ui.includes('crrm-reaction-portrait'), 'the speaker upper-body portrait is rendered below the bubble');
