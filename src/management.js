@@ -6555,6 +6555,13 @@ const Engine = {
       retiredWithRecords.forEach(f => { _newRetiredSeasons[f.id] = s.season; });
       s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, retiredSeasons: _newRetiredSeasons };
 
+      // Keep faction membership consistent immediately; waiting for the next weekly
+      // reconciliation lets retired members survive in a saved faction state.
+      if (Engine.factions?.reconcileRoster) {
+        const factionRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xFA47, s.season));
+        s = Engine.factions.reconcileRoster(s, factionRng);
+      }
+
       // 3. O-04 関係値 (bond60+ → 引退者 bond -10〜-5)
       const retRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3B, s.season));
       const allCharIds = (s.roster || []).map(c => c.id);
@@ -13542,6 +13549,7 @@ const Engine = {
         // Phase 3 R3: 仲の良い選手を失ったtrust影響
         const impactedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, fighterIdToRelease, s.relationships, { name: poach.fighter.name, reason: '引き抜き' });
         s = { ...s, roster: impactedRoster, coachAssign: Engine.coach.unassignFromCoach(s, fighterIdToRelease) };
+        const liveFighter = (s.roster || []).find(c => c.id === fighterIdToRelease) || poach.fighter;
         // Fighter leaves — player gets transfer fee
         s = { ...s,
           roster: s.roster.filter(c => c.id !== fighterIdToRelease),
@@ -13555,7 +13563,7 @@ const Engine = {
         const targetData = s.aiOrgs[targetId];
         if (targetData) {
           // v1.0b: Transfer popularity reset
-          let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+          let resetFighter = Engine.popularity.applyTransferReset({ ...liveFighter, orgId: targetId });
           // Phase 3: orgJoinWeek設定
           resetFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
           // orgTimeline: 所属変更記録
@@ -13601,13 +13609,14 @@ const Engine = {
           // Defense failed — forced transfer
           const targetId = poach.org.id;
           const targetData = s.aiOrgs[targetId];
+          const liveFighter = (s.roster || []).find(c => c.id === fighterIdToRelease) || poach.fighter;
           s = { ...s,
             roster: s.roster.filter(c => c.id !== fighterIdToRelease),
             funds: s.funds + poach.fee
           };
           if (targetData) {
             // v1.0b: Transfer popularity reset
-            let resetFighter = Engine.popularity.applyTransferReset({ ...poach.fighter, orgId: targetId });
+            let resetFighter = Engine.popularity.applyTransferReset({ ...liveFighter, orgId: targetId });
             // Phase 3: orgJoinWeek設定
             resetFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
             // orgTimeline: 所属変更記録
