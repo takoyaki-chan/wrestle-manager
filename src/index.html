@@ -7443,7 +7443,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 }
 .ranking-popup .popup-mast-title {
   font-family: var(--font-num);
-  font-size: 22px;
+  font-size: 28px;
   letter-spacing: 0.12em;
   line-height: 1;
   background: linear-gradient(180deg, #fff 20%, var(--gold-light));
@@ -7528,7 +7528,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 }
 .ranking-popup .vb-gap-label {
   font-family: var(--font-label);
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-sub);
@@ -7560,7 +7560,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 }
 .ranking-popup .section-marker .text .kicker {
   font-family: var(--font-label);
-  font-size: 11px;
+  font-size: 8px;
   letter-spacing: 0.2em;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -7617,11 +7617,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 360px;
+  min-height: 400px;
 }
-.ranking-popup .orgcell.is-rank-1 { min-height: 420px; } /* 金枠廃止(2026-07-17 Keisuke指摘: ランキングの枠色分けは全廃) */
-/* is-player の金枠・グラデは廃止(2026-07-17 Keisuke指摘)。金枠=1位の意味に一本化し、
-   自団体はティアピル「自」で識別する(原則9: 色は意味にのみ) */
+.ranking-popup .orgcell.is-rank-1 { min-height: 465px; border-color: rgba(212,168,67,0.35); }
+.ranking-popup .orgcell.is-player { border-color: rgba(212,168,67,0.5); }
 
 .ranking-popup .orgcell-head {
   display: flex; align-items: center; gap: 10px;
@@ -7643,10 +7642,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 }
 .ranking-popup .orgcell-head .name-block { flex: 1; min-width: 0; }
 .ranking-popup .orgcell-head .name-block .nm {
-  font-size: 14px; font-weight: 700; line-height: 1.2;
+  font-size: 13px; font-weight: 700; line-height: 1.2;
   color: var(--text-main);
 }
-.ranking-popup .orgcell.is-rank-1 .name-block .nm { font-size: 16px; }
+.ranking-popup .orgcell.is-rank-1 .name-block .nm { font-size: 15px; }
 .ranking-popup .orgcell-head .name-block .meta {
   font-size: 10px; color: var(--text-sub);
   margin-top: 2px; display: flex; gap: 6px; align-items: center;
@@ -7654,7 +7653,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ranking-popup .tier-pill {
   display: inline-block;
   font-family: var(--font-label);
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   padding: 2px 8px;
@@ -7671,12 +7670,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 
 .ranking-popup .orgcell-formation {
   position: relative;
-  height: 180px;
+  height: 222px;
   margin: 0 var(--space-sm);
   margin-top: auto;
   flex-shrink: 0;
 }
-.ranking-popup .orgcell.is-rank-1 .orgcell-formation { height: 220px; }
+.ranking-popup .orgcell.is-rank-1 .orgcell-formation { height: 252px; }
 .ranking-popup .orgcell-formation::after {
   content: ""; position: absolute;
   left: 10%; right: 10%; bottom: 12px;
@@ -7688,10 +7687,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ranking-popup .orgcell-fcell { position: absolute; bottom: 12px; cursor: pointer; }
 .ranking-popup .orgcell-fcell.pos-1 {
   left: 50%; transform: translateX(-50%);
-  width: 130px; height: 165px;
+  width: 132px; height: 194px;
   z-index: 30;
 }
-.ranking-popup .orgcell.is-rank-1 .orgcell-fcell.pos-1 { width: 150px; height: 195px; }
+.ranking-popup .orgcell.is-rank-1 .orgcell-fcell.pos-1 { width: 150px; height: 224px; }
 .ranking-popup .orgcell-fcell.pos-1 .img-wrap { width: 100%; height: 100%; display: flex; align-items: end; justify-content: center; }
 .ranking-popup .orgcell-fcell.pos-1 img { height: 100%; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.55)); }
 .ranking-popup .orgcell-fcell.pos-1.is-champ::before {
@@ -7702,16 +7701,16 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 }
 
 .ranking-popup .orgcell-fcell.pos-2 {
-  left: 8px; width: 90px; height: 130px; z-index: 20; bottom: 22px;
+  left: 6px; width: 108px; height: 162px; z-index: 20; bottom: 20px;
 }
-.ranking-popup .orgcell.is-rank-1 .orgcell-fcell.pos-2 { width: 100px; height: 145px; }
+.ranking-popup .orgcell.is-rank-1 .orgcell-fcell.pos-2 { width: 132px; height: 194px; }
 .ranking-popup .orgcell-fcell.pos-2 .img-wrap { width: 100%; height: 100%; display: flex; align-items: end; justify-content: center; }
 .ranking-popup .orgcell-fcell.pos-2 img { height: 100%; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); opacity: 0.92; }
 
 .ranking-popup .orgcell-fcell.pos-3 {
-  right: 8px; width: 90px; height: 130px; z-index: 20; bottom: 22px;
+  right: 6px; width: 108px; height: 162px; z-index: 20; bottom: 20px;
 }
-.ranking-popup .orgcell.is-rank-1 .orgcell-fcell.pos-3 { width: 100px; height: 145px; }
+.ranking-popup .orgcell.is-rank-1 .orgcell-fcell.pos-3 { width: 132px; height: 194px; }
 .ranking-popup .orgcell-fcell.pos-3 .img-wrap { width: 100%; height: 100%; display: flex; align-items: end; justify-content: center; }
 .ranking-popup .orgcell-fcell.pos-3 img { height: 100%; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); opacity: 0.92; }
 
@@ -7770,20 +7769,19 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 }
 .ranking-popup .orgcell-foot .pt-block .label {
   font-family: var(--font-label);
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   color: var(--text-dim);
   text-transform: uppercase;
 }
 .ranking-popup .orgcell-foot .pt-block .v {
   font-family: var(--font-num);
-  font-size: 26px;
+  font-size: 28px;
   letter-spacing: 0.04em;
   line-height: 1;
   color: var(--text-main);
 }
 .ranking-popup .orgcell.is-rank-1 .orgcell-foot .pt-block .v {
-  font-size: 32px;
   background: linear-gradient(180deg, #fff 20%, var(--gold-light));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
@@ -7801,12 +7799,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   color: var(--text-sub);
   line-height: 1.5;
 }
-.ranking-popup .orgcell-foot .meta-block .ovr-line {
+.ranking-popup .orgcell-foot .meta-block .depth-line {
   font-family: var(--font-num);
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-main);
 }
-.ranking-popup .orgcell-foot .meta-block .ovr-line .unit,
+.ranking-popup .orgcell-foot .meta-block .depth-line .unit,
 .ranking-popup .rp-metrics b small {
   font-family: var(--font-label);
   font-size: 9px;
@@ -7834,7 +7832,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 /* rp-card の is-rank-1/is-player 金枠・金ヘリ・グラデは全廃(2026-07-17 Keisuke指摘) */
 .ranking-popup .rp-rank { display: flex; align-items: center; justify-content: center; }
 .ranking-popup .rp-rank img {
-  width: 64px; height: 64px;
+  width: 62px; height: 62px;
   object-fit: contain;
   border-radius: var(--radius-md);
   background: rgba(0,0,0,0.25);
@@ -7842,7 +7840,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   border: 1px solid var(--border);
 }
 .ranking-popup .rp-rank-fallback {
-  width: 64px; height: 64px;
+  width: 62px; height: 62px;
   display: grid; place-items: center;
   font-family: var(--font-num);
   font-size: 32px;
@@ -7861,14 +7859,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   padding: 2px 7px;
   border-radius: var(--radius-sm);
   font-family: var(--font-label);
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .ranking-popup .rp-info h3 {
   margin: 0 0 6px;
   color: var(--text-main);
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.05;
   font-weight: 900;
 }
@@ -7878,12 +7876,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   margin: 0;
   color: var(--text-sub);
   font-size: 11px;
-  line-height: 1.55;
+  line-height: 1.7;
 }
 .ranking-popup .rp-ace {
   display: grid;
-  grid-template-columns: 1fr 82px;
-  gap: 8px;
+  grid-template-columns: 1fr 108px;
+  gap: var(--space-sm);
   padding: 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -7896,7 +7894,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   min-height: 14px;
   margin-bottom: 2px;
   font-family: var(--font-label);
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   line-height: 1.2;
 }
@@ -7906,13 +7904,13 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ranking-popup .rp-ace strong {
   display: block;
   color: var(--text-main);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.25;
   margin-bottom: 5px;
 }
 .ranking-popup .rp-ace-img {
-  width: 82px;
-  height: 106px;
+  width: 108px;
+  height: 162px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -7949,9 +7947,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ranking-popup .rp-faces { display: flex; gap: 6px; flex-wrap: nowrap; overflow: hidden; }
 .ranking-popup .rp-face {
   position: relative;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: rgba(0,0,0,0.25);
@@ -8008,14 +8006,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   display: block;
   color: var(--text-dim);
   font-family: var(--font-label);
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .ranking-popup .rp-metrics b {
   color: var(--text-main);
   font-family: var(--font-num);
-  font-size: 24px;
+  font-size: 28px;
   line-height: 1.1;
   letter-spacing: 0.04em;
 }

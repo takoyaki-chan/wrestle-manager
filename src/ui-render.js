@@ -4152,7 +4152,7 @@ function renderRanking() {
           <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT ＋ 実績 の合計。<br>このポイントで業界順位が決まる。</div></div>
         </div>
         <div class="meta-block">
-          <div class="ovr-line rank-metric">層の厚み ${Math.round(r.depth || 0)}<span class="unit">/30</span>
+          <div class="depth-line rank-metric">層の厚み ${Math.round(r.depth || 0)}<span class="unit">/30</span>
             <div class="rank-metric-tooltip"><div class="rmt-label">層の厚み — 実戦を支える選手層</div><div class="rmt-text">4〜8番手の主力層と、9〜12番手の控え層を別々に評価。怪我人・レンタルは含みません。</div></div>
           </div>
           <div class="${battleClass} rank-metric">対戦PT ${battleSign}${Math.round(r.battlePt)}
@@ -4172,7 +4172,8 @@ function renderRanking() {
   const _avgOvrOf = (list) => list.length ? Math.round(list.reduce((s, f) => s + Engine.util.ov(f), 0) / list.length) : 0;
   // ── 動的フレーバーテキスト生成 ──
   const _strHash = (s) => { let h = 0; for (let i = 0; i < (s||'').length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; } return Math.abs(h); };
-  const _seedBase = ((G.season || 1) * 100 + (G.week || 1)) | 0;
+  // 同一シーズン中は団体ごとの講評を固定する。週次の揺れで文面だけが変わらないようにする。
+  const _seedBase = ((G.season || 1) * 100) | 0;
   const _pickSeed = (arr, seed) => arr.length ? arr[seed % arr.length] : '';
   const _hasTrait = (f, t) => Array.isArray(f?.traits) && f.traits.includes(t);
 
@@ -4344,98 +4345,37 @@ function renderRanking() {
     return Engine.career.filterPostJoin(fighter.careerRecord.history || [], _js).filter(e => e.type === 'titleWin').length;
   };
 
-  const _buildAceCopy = ({ featured, champion, defenses, isChampion, seed }) => {
+  // エース欄は個人だけを語る。数値は必ず featured / titles の実データから差し込む。
+  const _buildAceCopy = ({ featured, defenses, isChampion, isBoard, nextOvr, seed }) => {
     if (!featured) return '看板を担う選手がまだ定まっていない。';
     const ovr = Engine.util.ov(featured);
-    const peak = featured.peakOVR || ovr;
-    const age = featured.age || 0;
-    const pop = Number(featured.popularity) || 0;
-    // 強シグナル選定
-    let primary = '';
-    if (isChampion && defenses >= 5) {
-      primary = _pickSeed([
-        `王座を${defenses}度防衛し、団体の中心線そのものになっている`,
-        `防衛記録を伸ばし続け、もはや交代が想像しにくい`,
-        `長期政権を敷き、団体の歴史と一体化している`,
-        `${defenses}度の防衛は王座そのものに重みを与え続けている`,
-        `揺るぎない王者として、対抗馬を寄せ付けない`,
-      ], seed);
-    } else if (isChampion && defenses === 4) {
-      primary = _pickSeed([
-        `4度の防衛を重ね、盤石と呼べる体制を築き上げた`,
-        `防衛戦のたびに王者像が研ぎ澄まされていく`,
-        `4連続防衛で、団体の顔として完全に定着した`,
-      ], seed);
-    } else if (isChampion && defenses === 3) {
-      primary = _pickSeed([
-        `3度の防衛で、もはや盤石の体制と言っていい`,
-        `防衛を3つ重ね、王者の格が形になってきた`,
-        `挑戦者を退け続け、王座が安定圏に入った`,
-        `3連続防衛は団体に静かな安心感をもたらしている`,
-      ], seed);
-    } else if (isChampion && defenses === 2) {
-      primary = _pickSeed([
-        `2度の防衛で、王者としての軸が定まりつつある`,
-        `防衛を重ねるたびに王者像がはっきりしてきた`,
-        `2連続防衛で、団体の中心が見えてきた`,
-      ], seed);
-    } else if (isChampion && defenses === 1) {
-      primary = _pickSeed([
-        `初防衛を成功させ、王者としての足場を固め始めた`,
-        `1度の防衛をクリアし、戴冠時の不安はひとまず払拭された`,
-        `最初の防衛戦を乗り越え、王者像を作り始めている`,
-        `初防衛の手応えを掴み、ここからが王座固めの本番`,
-      ], seed);
-    } else if (isChampion && defenses === 0) {
-      const contested = _isContestedBelt(champion);
-      const winCount = _titleWinCount(champion);
-      if (contested && winCount >= 3) {
-        primary = _pickSeed([
-          `防衛戦を経ずに王座が動き続けており、団体は抗争の渦中にある`,
-          `奪い合いの最中で戴冠したばかり、白熱した王座争いが続いている`,
-          `${champion.name}と前王者の取り合いになっており、王座がまだ落ち着く気配を見せない`,
-          `王座が短期間で行き来しており、抗争の只中での即位`,
-        ], seed);
-      } else if (contested) {
-        primary = _pickSeed([
-          `直近で王座が動いたばかりで、防衛戦に向けた緊張感が漂う`,
-          `奪取からまだ間がなく、王座を巡る空気はまだ熱い`,
-          `戴冠したばかりだが、奪取と奪還が続く流れの一コマ`,
-        ], seed);
-      } else if (winCount >= 2) {
-        primary = _pickSeed([
-          `再び王座を巡って戻ってきた挑戦者でもある王者`,
-          `王座経験者として、改めて頂点に座り直した格`,
-          `過去の戴冠経験を糧に、再び王座を獲り戻した`,
-        ], seed);
-      } else {
-        primary = _pickSeed([
-          `戴冠したばかりで、王者としての色をこれから作っていく`,
-          `新王者として、最初の防衛戦が試金石になる`,
-          `王座を獲って間もなく、団体全体が新章に入った`,
-        ], seed);
-      }
-    } else if (age >= 33 && ovr >= peak - 2) {
-      primary = _pickSeed([`${age}歳になっても全盛期を維持し続けるベテラン`, `年齢を重ねても衰えを見せず、まだ第一線に立つ`, '老練という言葉が似合うが、力の落ち方を感じさせない'], seed);
-    } else if (age <= 20 && ovr >= 75) {
-      primary = _pickSeed([`若くして団体の顔に押し上げられた逸材`, `${age}歳とは思えない試合運びで看板を任されている`, '世代交代を一人で先取りしてしまった存在'], seed);
-    } else if (pop >= ovr + 8) {
-      primary = _pickSeed(['実力以上に客を呼べる人気先行型', '数字より華で勝負できる稀有なタイプ', '人気が先に立つことで興行の柱になっている'], seed);
-    } else if (_hasTrait(featured, '威圧感')) {
-      primary = _pickSeed(['リング上の圧で対戦相手を呑む', '威圧感ひとつで会場の空気を変える'], seed);
-    } else if (_hasTrait(featured, 'ガラスの身体')) {
-      primary = _pickSeed(['才能はあるが身体が悲鳴を上げやすく、起用には常に怖さがつきまとう', '欠場リスクと隣り合わせで看板を張っている'], seed);
-    } else if (_hasTrait(featured, '反骨心')) {
-      primary = _pickSeed(['逆境で燃えるタイプで、追い込まれるほど強い', '反骨を糧に這い上がってきた選手'], seed);
-    } else if (_hasTrait(featured, '努力家')) {
-      primary = _pickSeed(['地道な積み上げで看板まで上ってきたタイプ', '才能より努力で位置を勝ち取った選手'], seed);
-    } else if (isChampion) {
-      primary = _pickSeed([`王座を保持し、団体の軸として機能している`, '中堅クラスの王者として、防衛戦を一つずつ積む段階'], seed);
-    } else {
-      primary = _pickSeed(['団体最高のOVRを誇り、看板を背負う立場', 'タイトルこそないが、団体の顔として認知されている'], seed);
-    }
-    const flavor = _aceFlavorByPersona(featured, seed >> 4);
-    return flavor ? `${primary}。${flavor}。` : `${primary}。`;
+    const age = Number(featured.age) || 0;
+    const defenseCount = Math.max(0, Number(defenses) || 0);
+    const outlier = ovr - (Number(nextOvr) || 0) >= 8;
+    if (isChampion && age > 0 && age <= 22) return _pickSeed([
+      `${age}歳の若き王者。${defenseCount}度の防衛は、まだ通過点に見える。`
+    ], seed);
+    if (isChampion && defenseCount >= 3) return _pickSeed([
+      `${defenseCount}度の防衛を重ねる王者。完成された試合運びは衰えを知らず、挑戦者に世代交代を許さない。`,
+      `ベルトと共に${defenseCount}度の夜を守り抜いた。彼女の王座は、もう団体の格そのものだ。`
+    ], seed);
+    if (isChampion && isBoard) return _pickSeed([
+      '王座も看板も一人で背負う。彼女が立っている限り、この団体の興行は格を失わない。'
+    ], seed);
+    if (isChampion && defenseCount <= 1) return _pickSeed([
+      '戴冠したばかりの新王者。王座の重みをまだ測りかねている。'
+    ], seed);
+    if (isChampion) return `王座を${defenseCount}度防衛し、王者としての輪郭を固めつつある。`;
+    if (isBoard && age >= 30) return _pickSeed([
+      `${age}歳、なお看板。衰えの影を経験で塗り替えながら先頭に立ち続ける。`
+    ], seed);
+    if (isBoard) return _pickSeed([
+      '王座はないが、この団体の顔は間違いなく彼女だ。大一番の勝負強さが看板を支えている。'
+    ], seed);
+    if (outlier) return _pickSeed([
+      'ベルトはまだ巻いていない。それでも実力が頭ひとつ抜けていることは、誰の目にも明らかだ。'
+    ], seed);
+    return '王座はないが、実力で団体の中心に立とうとしている。';
   };
 
   // ── 実績ツールチップ: アイテム時系列一覧 (org-ranking-spec-v2.0) ──
@@ -4482,118 +4422,47 @@ function renderRanking() {
     return lines.join('<br>');
   };
 
-  const _buildDepthNoteV2 = ({ sortedAll, featured, depth = 0, depthCoreReady = 0, depthReserveReady = 0 }) => {
-    if (!sortedAll.length) return '主力と呼べる顔触れがまだ揃っていない。';
-    const aceOvr = featured ? Engine.util.ov(featured) : 0;
-    const next = sortedAll.find(f => !featured || f.id !== featured.id);
-    const nextOvr = next ? Engine.util.ov(next) : 0;
-    const third = sortedAll.filter(f => f !== featured && f !== next)[0];
-    const thirdOvr = third ? Engine.util.ov(third) : 0;
-    const top3Avg = _avgOvrOf(sortedAll.slice(0, 3));
-    const avgOvr = sortedAll.length ? Math.round(sortedAll.reduce((s, c) => s + Engine.util.ov(c), 0) / sortedAll.length) : 0;
-    const over70 = _countOvrAtLeast(sortedAll, 70);
-    const aceGap = next ? aceOvr - nextOvr : 99;
-    const secondGap = third ? nextOvr - thirdOvr : 99;
-    const youthCount = sortedAll.slice(0, 8).filter(f => (f.age || 99) <= 20).length;
-    const veteranCount = sortedAll.slice(0, 8).filter(f => (f.age || 0) >= 26).length;
+  // 主力欄は看板以外の面々だけを語る。名前・OVR帯・人数はすべて当該団体の実データで決める。
+  const _buildDepthNoteV2 = ({ sortedAll, featured, depth = 0, depthCoreReady = 0, depthReserveReady = 0, rentalRoster = [] }) => {
+    const support = sortedAll.filter(f => !featured || f.id !== featured.id);
+    const coreReady = Math.max(0, Number(depthCoreReady) || 0);
+    const reserveReady = Math.max(0, Number(depthReserveReady) || 0);
     const injured = sortedAll.filter(f => f.injury || f.forcedRest).length;
-    // 上位2-3人の踏み込み描写ヘルパ — role: 'second' | 'third'
-    const _personDesc = (f, role) => {
-      if (!f) return '';
-      const a = f.age || 0;
-      const o = Engine.util.ov(f);
-      const p = Number(f.popularity) || 0;
-      const peak = f.peakOVR || o;
-      const traits = Array.isArray(f.traits) ? f.traits : [];
-      const roleLabel = role === 'second' ? '二番手' : (role === 'third' ? '三番手' : '');
-      const prefix = roleLabel ? `${roleLabel}は` : '';
-      if (traits.includes('威圧感'))      return `${prefix}${f.name}(${o})、押し出しの強さで場を作る`;
-      if (traits.includes('反骨心'))      return `${prefix}${f.name}(${o})、反骨で場を引き締める存在`;
-      if (traits.includes('ガラスの身体')) return `${prefix}${f.name}(${o})、試合数を選ぶ難しさを抱える`;
-      if (a <= 20 && o >= 70)             return `${prefix}${f.name}(${a}歳/${o})、伸び盛りが頼もしい`;
-      if (a >= 30 && o >= peak - 2)       return `${prefix}${f.name}(${a}歳/${o})、衰えを見せないベテラン`;
-      if (a >= 30)                        return `${prefix}${f.name}(${o})、ベテランの間合いで凌ぐタイプ`;
-      if (p >= o + 8)                     return `${prefix}${f.name}(${o})、人気先行で客を呼べる`;
-      // OVR 帯の表現は role で言葉を変えて重複を避ける
-      if (o >= 80) {
-        return role === 'second'
-          ? `${prefix}${f.name}(${o})、エース級の格を持つ`
-          : `${prefix}${f.name}(${o})、上位陣に並ぶ実力者`;
-      }
-      if (o >= 70) {
-        return role === 'second'
-          ? `${prefix}${f.name}(${o})、看板を支える働き手`
-          : `${prefix}${f.name}(${o})、中軸を担える位置`;
-      }
-      return role === 'second'
-        ? `${prefix}${f.name}(${o})、次の主力候補として育成中`
-        : `${prefix}${f.name}(${o})、控えから上を窺う立ち位置`;
-    };
+    const rental = (rentalRoster || []).find(f => f && f.isRental) || null;
+    const nameOf = (f) => (f && (f.surname || f.name)) || '';
+    const name2 = nameOf(support[0]);
+    const name3 = nameOf(support[1]);
+    const bandSource = support.slice(0, 2);
+    const bandOvr = bandSource.length
+      ? Math.min(...bandSource.map(f => Engine.util.ov(f)))
+      : 0;
+    const band = bandOvr > 0 ? `${Math.floor(bandOvr / 10) * 10}` : '';
+    const youngCore = support.filter(f => (Number(f.age) || Infinity) <= 22).length;
 
-    const tags = new Set();
-    if (top3Avg - avgOvr >= 10) tags.add('topHeavy');
-    if (sortedAll.length >= 5 && (aceOvr - Engine.util.ov(sortedAll[sortedAll.length - 1])) <= 12) tags.add('flat');
-    if (aceGap >= 10) tags.add('aceDependent');
-    if (youthCount >= 3) tags.add('youthRising');
-    if (veteranCount >= 4) tags.add('aging');
-    if (injured >= 2) tags.add('injuryShadow');
-    if (over70 >= 5) tags.add('thickCore');
-    else if (over70 <= 1) tags.add('thinCore');
-    if (depthCoreReady >= 4 && depthReserveReady >= 2) tags.add('readyAcrossCard');
-    if (depthCoreReady <= 1 && depth < 10) tags.add('supportThin');
-    if (depthReserveReady >= 3) tags.add('deepBench');
+    if (sortedAll.length < 4 || support.length < 2) {
+      return '主力と呼べる顔ぶれ自体が足りていない。補強か育成か、決断の時が近い。';
+    }
 
-    const seed = _seedBase + _strHash((featured?.name || '') + 'depth');
-    const has = (t) => tags.has(t);
-    let pool = [];
-    // 主軸タグ優先順
-    if (has('readyAcrossCard') && has('deepBench')) {
-      pool = ['メイン級の下にも任せられる選手が並び、急なカード変更にも崩れにくい編成', '主力5人の厚みに控えまで続く。長いシリーズを走り切るための土台がある', '前半戦から中盤戦まで戦力を落とさず組める、興行運営に強い選手層'];
-    } else if (has('supportThin') && has('injuryShadow')) {
-      pool = ['主力の代役が限られるうえに欠場者も抱える。今はカードを欲張らない判断が必要', '看板の背後が薄く、休場の影響をまともに受ける編成。補強の優先度は高い', '一人の離脱が興行全体を揺らしかねない。次の戦力を育てる余裕が欲しい'];
-    } else if (has('supportThin')) {
-      pool = ['4〜8番手にもう一段の伸びがほしい。看板に頼らない勝ち筋を作れるか', '上位の顔ぶれは見えるが、連戦を回す主力層はこれから。育成か補強が分かれ目', '一枚看板の次を任せる選手が不足気味。カード編成の自由度に課題が残る'];
-    } else if (has('aceDependent') && has('injuryShadow')) {
-      pool = [`${featured.name}への依存が強く、離脱者が出ると一気に苦しくなる構図`, `看板一枚に支えられている状態で、戦線離脱の影が濃い`];
-    } else if (has('aceDependent')) {
-      pool = [`${featured.name}と次点の差が大きく、看板頼みの色が濃い`, '上が突出していて、下との段差が興行設計の悩みどころ', '看板への一極集中で、二番手の育成が急務'];
-    } else if (has('topHeavy') && has('aging')) {
-      pool = ['上位はベテランが固める。世代交代をどう仕掛けるかが課題', '主力がベテラン揃いで安定するが、その先が見えない', '上位陣の経験値で持っているが、次の世代が控えていない'];
-    } else if (has('flat') && has('youthRising')) {
-      pool = ['主力の差が小さく、伸び盛りの若手が突き上げる構図', '横並びの中で若手の台頭が秩序を揺らし始めている', '実力差が薄い分、下剋上が起きやすい層構成'];
-    } else if (has('flat')) {
-      pool = ['上から下まで実力差が小さく、誰がメインを張ってもおかしくない', '突出は無いが横の厚みでカードを回せる', '主力の階層がフラットで、序列を崩しやすい'];
-    } else if (has('youthRising') && has('thickCore')) {
-      pool = ['若手が押し上げ、主力層も厚いという理想形に近づきつつある', '伸び盛りが並び、向こう数シーズンの伸びしろが大きい'];
-    } else if (has('youthRising')) {
-      pool = ['若手の台頭が目立ち、世代交代の波が見え始めている', '伸び盛りが主力に食い込んできて層の景色が変わりつつある'];
-    } else if (has('aging')) {
-      pool = ['ベテラン中心で安定するが、後継者の不在が中長期の影', '熟練の試合運びで持っている層構成。引退リスクと隣り合わせ'];
-    } else if (has('injuryShadow')) {
-      pool = ['離脱者が嵩んで主力編成が苦しい', '怪我人が複数おり、フル戦力が揃わない週が続く'];
-    } else if (has('thickCore')) {
-      pool = ['主力候補が広く並び、控えにも試合を任せやすい厚さ', '中堅層がしっかり機能していて、カード編成の自由度が高い'];
-    } else if (has('thinCore')) {
-      pool = ['主力と呼べる顔触れが乏しく、毎週の編成に苦労する', '層が薄く、看板頼みのカードが続く'];
+    let first;
+    let second;
+    if (coreReady >= 4) {
+      first = `${name2}・${name3}ら${band}台の主力が続く。`;
+      second = `主力枠は${coreReady}人が実戦級で、誰が欠けても興行の格が落ちない。`;
+    } else if (coreReady <= 1 || Number(depth) < 10) {
+      first = `${name2}の後ろが続かない。`;
+      second = `主力枠で実戦級は${coreReady}人だけで、軸が倒れれば一気に崩れる。`;
     } else {
-      pool = ['可もなく不可もない層構成で、突き抜けるには一押し足りない', '平均的な厚みに留まり、次の一歩を模索する段階'];
+      first = `${name2}・${name3}が主力の軸。`;
+      second = '層は形になりつつあるが、上位と分けるのは控えの最後のひと押しだ。';
     }
-    const main = _pickSeed(pool, seed);
-    // 上位2-3人の踏み込み: 看板の次2人を取り上げて1〜2文足す
-    const personLines = [];
-    if (next) personLines.push(_personDesc(next, 'second'));
-    if (third) personLines.push(_personDesc(third, 'third'));
-    // 二番手と三番手の差で締めの一言を選ぶ
-    let closing = '';
-    if (secondGap <= 2 && third) {
-      closing = _pickSeed(['二番手と三番手の力差はわずかで、序列がいつ入れ替わってもおかしくない', '次点の二人がほぼ並んでいるのは、カード編成の自由度を生んでいる', '上位の真ん中が拮抗しており、興行ごとに序列が動いている'], seed >> 5);
-    } else if (secondGap >= 8 && third) {
-      closing = _pickSeed(['二番手と三番手の段差が大きく、控え陣の底上げが課題', '上位3人目との差が開いており、看板二枚に頼る色が濃い'], seed >> 5);
-    } else if (aceGap >= 8 && next) {
-      closing = _pickSeed(['看板と二番手の差は埋めきれていないが、その下は実直に積み上がっている', 'エースの突出は変わらないが、追走勢が静かに地力を伸ばしている'], seed >> 5);
-    }
-    const sentences = [main, ...personLines.filter(Boolean), closing].filter(Boolean);
-    return sentences.join('。') + '。';
+
+    let third = '';
+    if (injured > 0) third = `${injured}人が欠場中で、ベンチは見た目より薄い。`;
+    else if (rental) third = `レンタルの${nameOf(rental)}が戦列を支える。頼もしくもあり、借り物の厚みでもある。`;
+    else if (reserveReady > 0) third = `控えにも一線級が${reserveReady}人おり、連戦でも戦列が細らない。`;
+    else if (youngCore >= 2) third = '主力層は若い。数字はまだ並だが、来季このベンチの景色は変わっているかもしれない。';
+
+    return [first, second, third].filter(Boolean).join('');
   };
   html += '<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">03 — 団体詳細</div><div class="title">団体プロフィール</div></div></div><div class="rp-profiles">';
 
@@ -4604,9 +4473,10 @@ function renderRanking() {
     const rankClass = `is-rank-${r.rank}`;
     const playerClass = isPlayer ? ' is-player' : '';
 
-    let roster, championId, defenses, orgPop, deck;
+    let roster, championId, defenses, orgPop, deck, rentalRoster;
     if (isPlayer) {
       roster = (G.roster || []).filter(c => !c.isRental && !c.injury && !c.forcedRest);
+      rentalRoster = (G.roster || []).filter(c => c.isRental);
       championId = G.titles?.world?.championId || null;
       defenses = G.titles?.world?.defenses || 0;
       orgPop = G.orgPop;
@@ -4615,6 +4485,7 @@ function renderRanking() {
       const aiData = G.aiOrgs && G.aiOrgs[r.orgId];
       if (!aiData) return;
       roster = Engine.rival.dedupeRoster(aiData.roster || []).filter(f => !f.isRental);
+      rentalRoster = Engine.rival.dedupeRoster(aiData.roster || []).filter(f => f.isRental);
       championId = aiData.titles?.world?.championId || null;
       defenses = aiData.titles?.world?.defenses || 0;
       orgPop = aiData.orgPop;
@@ -4640,7 +4511,7 @@ function renderRanking() {
     const reserveDepth = `${Math.round(r.depthReserve || 0)}/10`;
     const tierLabel = isPlayer ? '自団体' : (org ? org.tier : (RANK_TIER[r.rank] || ''));
     const tierMeta = isPlayer ? `${rosterAll.length}名` : `${rosterAll.length}名`;
-    const aceOvr = featured ? Engine.util.ov(featured) : 0;
+    const aceOvr = featured ? Engine.util.ov(featured) : null;
     const aceImgUrl = featured ? getUpperUrl(featured.id) : '';
     const aceImg = aceImgUrl ? `<img src="${aceImgUrl}" alt="" onerror="this.style.display='none'">` : '';
     const aceRoles = featured ? [
@@ -4653,10 +4524,18 @@ function renderRanking() {
     const thirdName = sortedAll[2]?.name || '';
     const _orgSeed = _seedBase + _strHash(r.orgId || orgName);
     const _tagInfo = _collectOrgTags({ r, sortedAll, featured, champion, defenses, orgPop, isPlayer, rank1Entry, rankAbove });
-    const aceCopy = _buildAceCopy({ featured, champion, defenses, isChampion: championId === featured?.id, seed: _orgSeed });
+    const nextFeatured = sortedAll.find(f => f.id !== featured?.id);
+    const aceCopy = _buildAceCopy({
+      featured,
+      defenses,
+      isChampion: championId === featured?.id,
+      isBoard: boardId === featured?.id,
+      nextOvr: nextFeatured ? Engine.util.ov(nextFeatured) : 0,
+      seed: _orgSeed,
+    });
     const scoreLine = depthFaces.length
       ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + '台多数'
-      : `${aceOvr}`;
+      : (aceOvr == null ? '—' : `${aceOvr}`);
     const dynamicLead = _buildLeadSentences({ tags: _tagInfo.tags, featured, champion, gapTop: _tagInfo.gapTop, gapAbove: _tagInfo.gapAbove, seed: _orgSeed, r });
     const dynamicDepthNote = _buildDepthNoteV2({
       sortedAll,
@@ -4664,6 +4543,7 @@ function renderRanking() {
       depth: r.depth || 0,
       depthCoreReady: r.depthCoreReady || 0,
       depthReserveReady: r.depthReserveReady || 0,
+      rentalRoster,
     });
 
     const depthFacesHtml = depthFaces.map(f => {
@@ -4694,7 +4574,7 @@ function renderRanking() {
       <div class="rp-ace" onclick="${featured ? `showFighterPopup(${featured.id},'${popupSource}')` : ''}">
         <div class="rp-ace-text">
           <div class="rp-ace-role">${aceRoles}</div>
-          <strong>${featured ? escHtml(featured.name) : '不在'} / OVR${aceOvr}</strong>
+          <strong>${featured ? `${escHtml(featured.name)} / OVR${aceOvr}` : '不在'}</strong>
           <p>${escHtml(aceCopy)}</p>
           <dl><dt>主力層</dt><dd>${coreDepth}</dd><dt>控え層</dt><dd>${reserveDepth}</dd></dl>
         </div>
