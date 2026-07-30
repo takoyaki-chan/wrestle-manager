@@ -1,5 +1,44 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 加入第一声（キャリア判定式）+ スカウト/FA識別バッジ（task-30・2026-07-30）
+
+### 実装
+
+- 承認済み草案 `signing-greeting-draft-v0.1.md` の `SCOUT_GREETING_LINES` /
+  `SCOUT_GREETING_GENERIC_LINES` / `FA_GREETING_LINES` /
+  `FA_GREETING_GENERIC_LINES` を本文無改変で `data.js` へ追加し、
+  `EVENT_LINES_BY_KEY` と Node export に登録した。既存の
+  `EVENT_FA_SIGNING_LINES` / `EVENT_FA_WELCOME_LINES` は変更していない。
+- `hasCareerHistory(char)` を追加。戦績、`careerRecord.history` の debut 以外の
+  所属歴イベント、`careerSeasons >= 1` のいずれかでキャリアありと判定する。
+  `getJoinGreeting(char)` はキャリアありを FA、なしを発掘の主プールへ振り分け、
+  25%で既存 welcome プールを使う。プール欠損時は各 generic、固定文の順で落とす。
+- FA 契約は契約セレモニー前の `getSigningQuote()` を維持し、契約後の welcome
+  ポップアップだけを `getJoinGreeting()` へ切り替えた。スカウト獲得も既存の
+  ポップアップを加入第一声へ置換し、詳細を「{名前}が加入しました！(スカウト獲得)」へ統一した。
+- 出自バッジは `getJoinSourceBadge()` で共通化。社長室の FA 候補カードと契約セレモニー
+  ヘッダーに青系 `FA`、ドラフト候補カードに緑系 `発掘` を表示する。色は
+  `var(--blue)` / `var(--green)` と `color-mix()` のみで指定し、GameState への書込みは追加していない。
+
+### 検証
+
+- `test/join-greeting-badges-test.js` を追加。草案代表24本+全generic、定数件数、
+  レジストリ、17歳/debutのみの発掘候補、release履歴を持つ FA、戦績/careerSeasons、
+  25% welcome、プール欠損時フォールバック、既存契約/レンタル経路、バッジ色トークンを検証。
+- 作業時に PowerShell `Get-Content -Encoding utf8` で草案を読み、草案の4定数全体と
+  `data.js` 定数の完全一致を別途照合した。
+- `node test/join-greeting-badges-test.js` PASS、`git diff --check` PASS。
+- `npm test`: **140/141 PASS**。失敗は今回未変更の
+  `ranking-depth-redesign-test.js` で、`src/index.html` に既存テストが要求する
+  `width: 108px;` と次行 `height: 162px;` のCSS断片がないため。許可対象外の
+  `src/index.html` は変更していない。
+
+### 補足
+
+- スカウト獲得は1名ごとに既存 `showEventPopup()` へ投入する。既存のイベントポップアップ
+  キューが順番に消化するため、同週に複数名を獲得した場合も各人の加入第一声を順次表示する。
+- 草案のSCOUT本文は実データで58本（FA本文57本）であることを確認した。
+
 ## ランキング画面 v1.3: ベースライン寸法・実データ講評文（task-29・2026-07-30）
 
 ### 実装

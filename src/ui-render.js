@@ -4914,7 +4914,8 @@ function _renderShachoshitsuScoutDesk() {
       <div class="shachoshitsu-resume${unavailCls}" style="animation-delay:${idx * 0.05}s">
         ${!canNeg ? '<div class="shachoshitsu-resume-stamp">契約不可</div>' : ''}
         <div class="shachoshitsu-resume-tags">
-          <span class="shachoshitsu-resume-tag source">${viaTicket ? '🎫 特別枠' : 'フリー'}</span>
+          ${getJoinSourceBadge('fa')}
+          ${viaTicket ? '<span class="shachoshitsu-resume-tag source">🎫 特別枠</span>' : ''}
           <span class="shachoshitsu-resume-tag tier" style="color:${tierCfg.color};border-color:${tierCfg.color}66;background:${tierCfg.color}22">${tierCfg.label}</span>
         </div>
         ${imgTag}
@@ -5874,6 +5875,7 @@ function renderScoutEvent() {
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
           <span class="flink" style="font-size:17px;font-weight:700">${c.name}</span>
           <span style="font-size:14px;color:var(--text-dim)">${c.age}歳</span>
+          ${getJoinSourceBadge('scout')}
           <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
           <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${c.role==='Babyface'?'ベビーフェイス':c.role==='Heel'?'ヒール':'中立'}</span>
         </div>
