@@ -3419,6 +3419,11 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
   const initial = c.name.charAt(0);
   const ovrVal = Engine.util.ov(c);
+  const peakOVR = Number((c.careerRecord || {}).peakOVR) || 0;
+  const peakOVRSeason = (c.careerRecord || {}).peakOVRSeason;
+  const peakHeader = ovrVal < peakOVR
+    ? `<span style="font-size:13px;color:var(--text-sub);align-self:flex-end;padding-bottom:5px">ピーク <b>${peakOVR}</b> <span style="color:var(--text-dim);font-size:11px">(S${peakOVRSeason || '?'})</span></span>`
+    : '';
   // プレイヤー団体 or AI団体の王者判定
   const _playerChamp = G.titles?.world?.championId === c.id;
   const _npcChampOrgData = negotiateOrgId ? G.aiOrgs[negotiateOrgId] : null;
@@ -3471,6 +3476,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
             <span style="font-weight:700;font-size:24px">${c.name}</span>
             <span style="font-size:36px;font-weight:900;color:var(--gold)">${ovrVal}</span>
+            ${peakHeader}
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
             <span class="badge badge-${c.style}" style="font-size:13px;padding:3px 10px">${c.style}</span>
@@ -3817,7 +3823,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
             ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="${_scale6Style(_mqColor(bestMQ))};font-weight:700">${bestMQ}</span>` : ''}
             ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${_champDefenses}防衛）</span>` : ''}
-            ${summary.peakOVR > 0 && !isChamp ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="${_scale6Style(_ovrColor(summary.peakOVR))};font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
+            ${summary.peakOVR > 0 && Engine.util.ov(c) < summary.peakOVR ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="${_scale6Style(_ovrColor(summary.peakOVR))};font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
           </div>
           ${(() => {
             const tbo = summary.titleByOrg || [];
