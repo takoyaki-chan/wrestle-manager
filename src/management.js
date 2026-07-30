@@ -2260,6 +2260,21 @@ const Engine = {
         ];
       }
 
+      // options.rivalryOnly: 因縁のリング内効果だけを渡す(ppvプロファイル用)。
+      // 旧v2.0の finalize は profile==='ppv' に対して外部加算を「因縁のみ」与えていた。
+      // MQ再設計P3b でリング内化したとき PPV GRAND FINAL と天頂戦の経路が
+      // buildRingInOpts を呼び忘れ、因縁の効果がゼロに落ちていた(2026-07-30 修復)。
+      // trust/タイトル/バフまで一緒に効かせると旧スコープを超える設計変更になるため、
+      // ここでは因縁だけを復旧する。state.milestoneBuffs はプレイヤーのバフなので、
+      // 他団体どうしの試合に漏らさない意味でも除外する。
+      if (options.rivalryOnly) {
+        return {
+          simOpts: { rivalryRing, titleMatch: false, championDefenseEscape: [0, 0], trustDebuff: [0, 0], ovBuff: [0, 0] },
+          rivalryLevel,
+          nextMatchMqApplied: false,
+        };
+      }
+
       return {
         simOpts: { rivalryRing, titleMatch, championDefenseEscape, trustDebuff, ovBuff },
         rivalryLevel,
@@ -15143,7 +15158,11 @@ const Engine = {
 
       const results = card.map((match, idx) => {
         const matchRng = Engine.rng.create(Engine.rng.derive(rng, idx, match.left.id, match.right.id));
-        return Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng);
+        // TV放送(プレイヤー団体が出場しないPPV)も因縁のリング内効果を通す。観戦/スキップ経路は
+        // App._ppvRingInOpts が渡していたが、こちらだけ抜けていた(2026-07-30 修復)。
+        const ringIn = Engine.mq.buildRingInOpts(state, match.left.id, match.right.id,
+          { roster: [match.left, match.right], rivalryOnly: true });
+        return Engine.ppv.simulatePPVMatch(match.left, match.right, matchRng, ringIn.simOpts);
       });
 
       // サミットbattlePoints更新 + orgWarRecord
@@ -25446,7 +25465,14 @@ Engine.ppvTournament = {
           leftState.fighter.id, rightState.fighter.id));
         const left = this._withCarryHp(leftState.fighter, leftState.carryPct);
         const right = this._withCarryHp(rightState.fighter, rightState.carryPct);
-        let result = Engine.battle.simulateMatch(left, right, matchRng, 2, { recordFrames: true });
+        // 因縁のリング内効果(mq-system-spec-v1.0 §4.1 / profile 'ppv')。ここを呼んでいなかったため
+        // 天頂戦の全15試合で因縁が試合内容に一切効いていなかった(2026-07-30 修復)。
+        // 出場者は4団体にまたがるので、その試合の2名だけを roster として渡す
+        // (buildRingInOpts は leftId/rightId を引くためにしか roster を使わない)。
+        const ringIn = Engine.mq.buildRingInOpts(state, leftState.fighter.id, rightState.fighter.id,
+          { roster: [leftState.fighter, rightState.fighter], rivalryOnly: true });
+        let result = Engine.battle.simulateMatch(left, right, matchRng, 2,
+          { recordFrames: true, ...ringIn.simOpts });
         result = this._applyMqBonuses(state, result, leftState.fighter, rightState.fighter);
         const winnerIsRight = result.winner === 'right';
         const winnerState = winnerIsRight ? rightState : leftState;

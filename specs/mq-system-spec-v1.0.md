@@ -49,7 +49,7 @@ Engine.mq.finalize(state, matchResult, context = {}, profile = 'raw')
 |---|---|---|
 | `normal-single` | crowd(venueHeat×engagement)のみ | 因縁/タイトル/trust/バフ/メイン/ラストランは全てPass1で**リング内化**済み(§4)。finalizeの責務はcrowdだけ |
 | `normal-tag` | crowd(venueHeat×engagement)のみ | 同上(タッグは因縁/タイトル/trust/バフのリング内化は対象外。既存スコープ通り) |
-| `ppv` | なし(素点=最終) | PPV GRAND FINAL・天頂戦。因縁のリング内化(§4.1)はシム側で自然に効くが、finalizeの外部加算はゼロ |
+| `ppv` | なし(素点=最終) | PPV GRAND FINAL・天頂戦。因縁のリング内化(§4.1)を**呼び出し側が`rivalryOnly`で渡す**。finalizeの外部加算はゼロ |
 | `ai-show` | なし(素点=最終) | AI団体同士の通常興行。同上 |
 | `raw` | なし(素点=最終) | ジュニア/春タッグ/秋勝ち残り/B2団体内紛/B3挑戦状/対抗戦/Common-1等のイベント戦。特殊興行に通常会場補正を持ち込まない |
 
@@ -77,6 +77,9 @@ Engine.mq.finalize(state, matchResult, context = {}, profile = 'raw')
 ### 2.4 補助関数
 
 - `Engine.mq.buildRingInOpts(state, leftId, rightId, options)` — 因縁/タイトル/trust/バフ/(通常興行限定の)メイン・ラストランを`simOpts`へ組み立てる。**simulateMatchを呼ぶ「前」に一度だけ呼ぶ**(`management.js:2165`)
+  - `options.rivalryOnly` — 因縁チャネルだけを返し、タイトル/trust/バフは中立値にする。`ppv`プロファイル(PPV GRAND FINAL・天頂戦)専用。旧v2.0の`profile==='ppv'`が外部加算を「因縁のみ」与えていたスコープに一致させるためのもので、プレイヤーのバフを他団体どうしの試合へ漏らさない役割も持つ
+  - **リング内効果はこの関数を呼ばないと一切効かない**(`match-engine.js`は`ringOpts.rivalryRing`等を読むだけで自前計算しない)。旧v2.0では`finalize`が因縁を自前解決して外部加算していたため呼び出し側の責務ではなかった。P3bのリング内化で責務が移った際、`ppv`プロファイルの2経路(天頂戦`ppvTournament.run` / PPVのTV放送`ppv.applyPPVResults`のheadless側)が呼び忘れており、**因縁の効果がゼロに落ちていた**(2026-07-30 修復。回帰テスト`test/tenchosen-rivalry-ringin-test.js`)
+  - `raw`プロファイル(ジュニア/春タッグ/秋勝ち残り/対抗戦/挑戦状等)は旧v2.0でも外部加算ゼロだったため、リング内効果の対象外という扱いを維持している。ここへ因縁を効かせるかは**設計判断として未決**
 - `Engine.mq.buildNormalContext(state, matchResult, slot, options)` — `finalize`へ渡す`context`(participantFighters/rivalryLevel/isTitle/venueHeat/fp/isMainEvent等)を組み立てる(`management.js:2229`)
 - `Engine.mq.resolveNextMatchMqTargetIndex(validMatches, milestoneBuffs)` — `next_match_mq`バフの対象試合をカード順のみから確定するpure関数。勝敗に依存しないため、シム前の解決とシム後の消費判定が同じ結果になる(`management.js:2221`)
 - 次戦MQバフの消費は`finalize`の返却値(`consumedNextMatchMqBuff`)で一元管理される
