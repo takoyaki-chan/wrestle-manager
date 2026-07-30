@@ -11760,6 +11760,10 @@ function _specialIntroPickSpeaker(state, cfg, pool) {
   if (!roster.length || !cfg) return null;
   // 1. 去年この大会に出た選手
   const lastSeason = (state.season || 1) - 1;
+  // 前年優勝者は「前年に出場した」だけの選手より優先し、初戦敗退用の台詞を避ける。
+  const lastYearChampion = roster.find(f => ((f.careerRecord && f.careerRecord.history) || [])
+    .some(h => h && h.type === cfg.historyType && h.season === lastSeason && h.result === 'champion'));
+  if (lastYearChampion) return { fighter: lastYearChampion, kind: 'champion' };
   const veteran = roster.find(f => ((f.careerRecord && f.careerRecord.history) || [])
     .some(h => h && h.type === cfg.historyType && h.season === lastSeason));
   if (veteran) return { fighter: veteran, kind: 'lastYear' };

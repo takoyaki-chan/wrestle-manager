@@ -145,9 +145,9 @@ section('8. 会場入りは既存の遠征カットを使い回す', () => {
 
 const pickSrc = (ui.match(/function _specialIntroPickSpeaker[\s\S]*?\n\}/) || [])[0];
 
-section('9. 語る順は「去年出た人 → 王者 → 一番人気」', () => {
+section('9. 語る順は「前年優勝者 → 前年出場者 → 王者 → 一番人気」', () => {
   assert.ok(pickSrc, '_specialIntroPickSpeaker が無い');
-  const order = ['lastYear', 'champion', 'popular'].map(k => pickSrc.indexOf(`'${k}'`));
+  const order = ['champion', 'lastYear', 'popular'].map(k => pickSrc.indexOf(`'${k}'`));
   assert.ok(order.every(i => i > 0), '3通りすべてを見ていない');
   assert.ok(order[0] < order[1] && order[1] < order[2],
     '優先順が違う。語れる文脈が濃い人から順に選ぶこと');
@@ -277,6 +277,21 @@ section('21. 人気の足切りは、出場が決まっていない大会だけ'
   // U-20 は元々人気が低い。40 で切ると2枚目が永遠に出なくなる
   assert.ok(/\(pool \|\| \(popular\.popularity \|\| 0\) >= 40\)/.test(pickSrc),
     'pool 指定時も人気で足切りしている。ジュニアで2枚目が出なくなる');
+});
+
+section('前年の大会優勝者には優勝者用の台詞を割り当てる', () => {
+  const pickSpeaker = Function(`${pickSrc}; return _specialIntroPickSpeaker;`)();
+  const lastSeason = 6;
+  const state = {
+    season: lastSeason + 1,
+    roster: [
+      { id: 1, popularity: 50, careerRecord: { history: [{ type: 'juniorTournament', season: lastSeason, result: 'quarterFinal' }] } },
+      { id: 2, popularity: 40, careerRecord: { history: [{ type: 'juniorTournament', season: lastSeason, result: 'champion' }] } },
+    ],
+  };
+  const speaker = pickSpeaker(state, { historyType: 'juniorTournament' });
+  assert.strictEqual(speaker.fighter.id, 2, '前年優勝者を優先して選ぶ');
+  assert.strictEqual(speaker.kind, 'champion', '前年優勝者に初戦敗退用の台詞を割り当てない');
 });
 
 console.log('');
