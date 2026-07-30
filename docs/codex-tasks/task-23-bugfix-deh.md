@@ -6,17 +6,26 @@
 
 **対象リポジトリ**: `C:\Users\nkmrk\Downloads\wrestle-manager`
 
-**作業ブランチ（必ず worktree を切って作業すること）**:
+**作業ブランチ**: `codex/bug-eh`（`main` から切る）
+
+```bash
+git switch -c codex/bug-eh main
+```
+
+**すでに専用の作業ツリー（Codex アプリが用意する `~/.codex/worktrees/...` 等）に居る場合は、
+上のブランチ作成だけを行い、新たに worktree を作らないこと。** 入れ子の worktree ができる。
+
+**メインの作業ディレクトリで作業する場合に限り**、先に隔離すること。同一ディレクトリで
+`git checkout -b` しても `.git` と作業ツリーは共有なので分離されず、2026-07-30 に別セッションと
+変更が混在してコミットを分離できない事態が起きている。
 
 ```bash
 git worktree add ../wm-codex-eh -b codex/bug-eh main
 cd ../wm-codex-eh
 ```
 
-同一ディレクトリで `git checkout -b` しても `.git` と作業ツリーは共有なので分離されない。
-**必ず `git worktree` で別ディレクトリを作ること。** 2026-07-30 に同一ツリーで別セッションと
-並行作業して、同じファイルに変更が混在しコミットを分離できない事態が起きている。
-片付けは作業完了・マージ後に `git worktree remove ../wm-codex-eh`。
+いずれの場合も、**着手前に `git status` が clean であることを確認する。**
+他セッションの未コミット変更が残っていたら、混ざる前に報告して指示を仰ぐこと。
 
 **変更してよいファイル**: `src/management.js`、`src/factions.js`、`test/` 配下の新規テスト。
 **変更禁止**: 上記以外の `src/`、`specs/`、`docs/`（`docs/worklog.md` 先頭への完了ログ追記は例外）。

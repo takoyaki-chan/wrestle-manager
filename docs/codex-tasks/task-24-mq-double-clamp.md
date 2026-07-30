@@ -2,16 +2,23 @@
 
 **対象リポジトリ**: `C:\Users\nkmrk\Downloads\wrestle-manager`
 
-**作業ブランチ（必ず worktree を切って作業すること）**:
+**作業ブランチ**: `codex/bug-a-mq-clamp`（`main` から切る）
+
+```bash
+git switch -c codex/bug-a-mq-clamp main
+```
+
+**すでに専用の作業ツリー（Codex アプリが用意する `~/.codex/worktrees/...` 等）に居る場合は、
+上のブランチ作成だけを行い、新たに worktree を作らないこと。** 入れ子の worktree ができる。
+
+**メインの作業ディレクトリで作業する場合に限り**、先に隔離すること。
 
 ```bash
 git worktree add ../wm-codex-mqclamp -b codex/bug-a-mq-clamp main
 cd ../wm-codex-mqclamp
 ```
 
-同一ディレクトリで `git checkout -b` しても `.git` と作業ツリーは共有なので分離されない。
-**必ず `git worktree` で別ディレクトリを作ること。**
-片付けは作業完了・マージ後に `git worktree remove ../wm-codex-mqclamp`。
+いずれの場合も、**着手前に `git status` が clean であることを確認する。**
 
 **変更してよいファイル**: `src/match-engine.js`、`src/management.js`、`src/app.js`、
 `test/` 配下の新規テスト、`test/auto-sim.js`（計測フックの追加のみ）。
@@ -20,7 +27,7 @@ cd ../wm-codex-mqclamp
 **コミットはOK**（日本語の明確なメッセージ、CLAUDE.md の手順に従う）。**push は禁止。**
 配布（`release/package-release.ps1` 等）は絶対に実行しないこと。
 
-**task-23（バグD/E/H）とは別ブランチ・別 worktree で並行して構わない**が、
+**task-23（バグE/H）とは別ブランチで並行して構わない**が、
 両方とも `src/management.js` を触るのでマージ時に競合しうる。競合は git が検出するので
 潰せばよい（同一ツリーで並行作業しないことのほうが重要）。
 
