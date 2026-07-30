@@ -1457,7 +1457,7 @@ function confirmNegotiation(orgId, fighterId, planIndex) {
     `よろしいですか？</div>`,
     '交渉開始',
     () => {
-      Audio.play('stamp');
+      Audio.play('offer');
       // v1.5s25b: fa_discount 消費（1回限り）
       if (faDiscountBuff) {
         G = { ...G, milestoneBuffs: (G.milestoneBuffs || []).filter(b => b.type !== 'fa_discount') };
@@ -1520,7 +1520,7 @@ function showSigningCeremony(charId) {
   const fighter = G.freeAgents.find(c => c.id === charId);
   if (!fighter) return;
 
-  Audio.play('stamp');
+  Audio.play('contract');
 
   const fOvr = Engine.util.ov(fighter);
   const tierCfg = Engine.scout.getTierConfig(fighter.assessedTier || 'material');
@@ -6093,7 +6093,7 @@ function confirmPPVEntry() {
   const remainingSlots = champAutoEntry ? maxSlots - 1 : maxSlots;
   if (picks.length !== remainingSlots) return;
 
-  Audio.play('stamp');
+  Audio.play('select');
   // チャンピオン + 選択した選手をエントリーに
   const playerEntryIds = champAutoEntry ? [champ.id, ...picks] : [...picks];
   const playerEntries = playerEntryIds.map(id => {
@@ -15240,7 +15240,7 @@ function showContractResultModal(results, salaryChanges, onDone) {
   Audio.play(departed.length > 0 ? 'transfer' : 'save');
 
   document.getElementById('contractResultOk').addEventListener('click', () => {
-    Audio.play('stamp');
+    Audio.play('confirm');
     if (onDone) onDone();
   });
 }

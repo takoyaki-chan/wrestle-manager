@@ -167,7 +167,13 @@ const Audio = (() => {
     event:    'wm_se_ui05_v01.ogg',   // UI05 パネル表示  1.35s  汎用イベント。reveal と同じ意味
     coin:     'wm_se_mg03_v01.ogg',   // MG03 収入        1.14s
     transfer: 'wm_se_hr08_v01.ogg',   // HR08 到着・出発  1.36s
+    // ── 契約(U8: stamp の呼び分け整理 2026-07-30) ──────────────
+    // 台帳の HR05「提示」/ HR06「成立」に素直に割る。契約の入口と成立を別の音にする。
+    offer:    'wm_se_hr05_v01.ogg',   // HR05 提示        0.26s  交渉開始・契約送信
+    confirm:  'wm_se_hr05_v01.ogg',   // HR05 提示        0.26s  モーダルの確定(カチッと短い音・Keisuke聴感)
     // ── 決着・区切り(2.6〜8.6秒。重ねない) ────────────────────
+    contract: 'wm_se_hr06_v01.ogg',   // HR06 成立    実効2.6s  契約成立。ファイルは5.10sだが
+                                      //   後半は無音(Keisuke)。実効長は defeat と同じ帯なので solo 扱い
     defeat:   'wm_se_rs06_v01.ogg',   // RS06 失敗        2.68s  イベント敗北
     fanfare:  'wm_se_rs05_v01.ogg',   // RS05 達成        3.08s
     matchVictoryFanfare: 'wm_se_rs05_v01.ogg', // RS05 達成 3.08s
@@ -185,8 +191,11 @@ const Audio = (() => {
   //   tension_hit  CR06「驚き」4.80s は試合中の一撃には長すぎる
   //   award        0.6秒の朱印アニメに合わせた短いバーストを意図して使っている
   //   victory      Audio.bgm.playJingle('victory') と紛らわしいので保留
-  //   stamp        **呼び出し元がばらばら**(セーブ名変更 / 契約成立 / 団体名決定)。
-  //                1つの音で全部を賄えないので、先に呼び分けを整理する必要がある
+  //   stamp        **社長室の決裁書だけ**が使う。0.6秒の朱印アニメと同時に鳴らす短い
+  //                バーストで、award と同じ理由で合成音のまま。
+  //                2026-07-30(U8): 以前は「セーブ名変更 / 契約成立 / 団体名決定 / モーダル確定」
+  //                まで1つの音で賄っていた。11箇所を contract(HR06 成立) / offer(HR05 提示) /
+  //                confirm(HR05) / save(UI04) / select(UI01) へ割り、朱印が要る場面だけ残した
   // 同じ音が連続で鳴る場面(フォール連発など)があるので、キーごとに数枚持つ。
   // ただし**結果音は重ねない** — RS01/RS02/CR03 は3〜5秒あり、秋のフォール連発だと
   // 前の音が鳴り終わる前に次が始まって濁る。同じキーの前の音は止めてから鳴らす。
@@ -197,6 +206,7 @@ const Audio = (() => {
   const _SE_SOLO = new Set([
     'boutWin', 'boutLose', 'boutOther',        // 4.64 / 4.70 / 3.32s
     'defeat', 'fanfare', 'matchVictoryFanfare', // 2.68 / 3.08 / 3.08s
+    'contract',                                 // 実効2.6s(ファイル5.10s・後半無音)
     'crowd', 'bignews',                         // 3.32 / 8.60s
   ]);
   function _playFileSe(name, vol) {
@@ -246,6 +256,8 @@ const Audio = (() => {
     war:.60, transfer:.24, award:.72, tension_hit:.66,
     rivalry_confrontation:.64, fate_confrontation:.63, rivalry_resolution:.50, fate_resolution:.57,
     coin:.25, spend:.05, stamp:.40, matchVictoryFanfare:.33,
+    // 契約(U8)。contract は2.6秒の区切り音なので fanfare より控えめ、offer/confirm は操作音の帯
+    contract:.30, offer:.15, confirm:.15,
     // 試合結果。1試合ごとに何度も鳴るので、大会ファンファーレより控えめに保つ
     boutWin:.34, boutLose:.32, boutOther:.18, boutDraw:.30,
   };
@@ -715,6 +727,28 @@ const Audio = (() => {
       noiseBP(t + 0.03, 0.08, 0.04, 2000, 2);
       osc(800, 'sine', t + 0.12, 0.08, 0.1);
       osc(1000, 'sine', t + 0.17, 0.1, 0.08);
+    },
+
+    // ── 契約(U8: stamp の呼び分け整理 2026-07-30)の合成音保険 ──
+    // 本番はファイル(HR06/HR05)を鳴らす。ここは音源が読めない環境で無音にならないための保険。
+    // contract は「成立」なので朱印+上向きの和音で締める。offer/confirm は短いカチッだけ。
+    contract() {
+      const t = ensure().currentTime;
+      oscSweep(200, 60, 'sine', t, 0.06, 0.15);
+      noiseLP(t, 0.04, 0.12, 500);
+      osc(784, 'sine', t + 0.14, 0.12, 0.09);
+      osc(1047, 'sine', t + 0.24, 0.14, 0.09);
+      osc(1319, 'triangle', t + 0.36, 0.30, 0.07);
+    },
+    offer() {
+      const t = ensure().currentTime;
+      noiseHP(t, 0.02, 0.05, 6000);
+      osc(1175, 'sine', t + 0.02, 0.07, 0.09);
+    },
+    confirm() {
+      const t = ensure().currentTime;
+      noiseHP(t, 0.02, 0.05, 6000);
+      osc(1175, 'sine', t + 0.02, 0.07, 0.09);
     },
 
     // ── Rivalry SFX (NEW) ──
@@ -3597,7 +3631,7 @@ function loadGame(slot) {
 function deleteSave(slot) { Audio.play('click'); Storage.deleteSave(slot); refreshAll(); }
 function renameSaveSlot(slot, name) {
   const ok = Storage.renameSave(slot, name);
-  if (ok) { Audio.play('stamp'); renderSave(); }
+  if (ok) { Audio.play('save'); renderSave(); }
   return ok;
 }
 
@@ -4939,7 +4973,7 @@ const App = {
     const eliteTicketUpdate = usedEliteTicket ? { eliteTicket: false, eliteTicketUsed: true } : {};
     if (usedEliteTicket) log.push('🎫 逸材特別交渉枠を使用しました');
     G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, ...eliteTicketUpdate };
-    Audio.play('stamp');
+    Audio.play('contract');
     const faSigningLine = getSigningLine(fighter, 'fa_signing');
     showEventPopup({ type:'fighter', id: fighter.id, name: fighter.name,
       tone:'positive', message: faSigningLine,
@@ -5158,7 +5192,7 @@ const App = {
     G = { ...G, pendingRosterOverflowSigning: null };
     Storage.autoSave();
     refreshAll();
-    Audio.play('stamp');
+    Audio.play('contract');
     showEventPopup({ type: 'fighter', id: signedFighter.id, name: signedFighter.name, tone: 'positive', message, detail });
   },
 
@@ -5242,7 +5276,7 @@ const App = {
         });
         return;
       }
-      Audio.play('stamp');
+      Audio.play('contract');
       // Clean internal props before adding to roster
       const signed = { ...cand };
       delete signed._notion; delete signed._estimate; delete signed._isSeed;
@@ -10993,7 +11027,6 @@ const App = {
       const etDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 500;
       setTimeout(() => {
         Audio.play('fanfare');
-        setTimeout(() => Audio.play('stamp'), 400);
         showEventPopup({
           type: 'system', emoji: '🏅', tone: 'gold',
           message: '🎊 逸材特別交渉枠を獲得！ 🎊',

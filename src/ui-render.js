@@ -6248,7 +6248,7 @@ function renderSave() {
       <input id="settingsOrgName" type="text" value="${G.orgName || 'プレイヤー団体'}" maxlength="20"
         style="flex:1;max-width:240px;background:rgba(200,190,170,0.08);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:13px;font-weight:700"
         placeholder="団体名を入力">
-      <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('stamp')}">変更</button>
+      <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('save')}">変更</button>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
       <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">🛡️ エンブレム:</label>
