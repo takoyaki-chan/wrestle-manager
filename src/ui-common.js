@@ -17410,7 +17410,7 @@ function renderAutumnWarResult() {
   });
   const bubsRow = memberRows.map(({ m, isAce, line }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
       <div class="ch-order">${escHtml(m.role)}</div>
-      ${_chBubbleSlot(line).replace('class="ch-bubble"', 'class="ch-bubble is-autumn-speech"')}
+      ${_chBubbleSlot(line, 'is-autumn-speech')}
     </div>`).join('');
   const imgsRow = memberRows.map(({ m, isAce }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
       <div class="ch-por-wrap">

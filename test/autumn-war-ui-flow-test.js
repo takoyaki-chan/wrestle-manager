@@ -203,7 +203,7 @@ function section(source, startMarker, endMarker) {
   const boutPopup = section(ui, 'function renderAutumnWarBoutResultPopup', 'function renderAutumnWarBoard');
   assert.ok(boutPopup.includes('showVictoryLine: !!victoryLine'), 'survivor line must be allowed to disappear');
   const resultView = section(ui, 'function renderAutumnWarResult', 'function _agwMvpLine');
-  assert.ok(resultView.includes("_chBubbleSlot(line).replace('class=\"ch-bubble\"', 'class=\"ch-bubble is-autumn-speech\"')"), 'championship speech must use the non-clipped autumn modifier');
+  assert.ok(resultView.includes("_chBubbleSlot(line, 'is-autumn-speech')"), 'championship speech must use the non-clipped autumn modifier');
   assert.ok(resultView.includes('class="ch-mem'), 'championship speech must be attached to its speaker card (U2 unified .ch-mem)');
   assert.ok(resultView.includes('result.revenueDistribution'), 'result view must read the saved dome-event distribution');
   assert.ok(resultView.includes('大会総収入'), 'result view must show the event revenue basis');
