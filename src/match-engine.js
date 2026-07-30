@@ -750,8 +750,6 @@ Engine.battle = {
         }
       }
       mq += transcendOverflow;
-      mq = Math.max(5, mq);
-
       return {
         left: charL, right: charR,
         winner, finType, finMove,
@@ -1808,8 +1806,6 @@ Engine.tagMatch = (() => {
       }
     }
     final += transcendOverflow;
-    final = Math.max(5, final);
-
     return {
       ceiling: Math.round(ceiling), dramaPenalty: Math.round(dramaPenalty * 10) / 10,
       pacingPenalty: Math.round(pacingPenalty * 10) / 10, finishPenalty,
