@@ -55,6 +55,60 @@ task-27 のグリッド計測から採用値を確定し、GROWTH_CONFIG の既�
 - `npm test`: **138 / 138 PASS**。
 - `git diff --check`: 成功。
 
+## 集客ボリューム係数: 消費枠数を通常興行需要へ反映（task-28・2026-07-30・実装完了）
+
+### 実装
+
+- `Engine.attendanceV2.calcCardSlots(showCard)` を新設。成立したシングルを1枠、成立した
+  タッグを2枠として数え、未入力の表示枠は数えない。`calcVolumeFactor` は会場帯ごとの
+  Keisuke確定不足表と超過表を使い、適正ちょうどを `V=1.0`、超過枠は会場の
+  `maxMatches - 適正` 段まで加算する。
+- `calcAttendanceV2` は `rawAttendance = reach × draw` の直後にVを乗算する。従って
+  heat・揺らぎ・momentum・soft capより前、かつ `rawDemand` にも同じVが反映される。
+  旧 `shortPenalty1/2` と `calcShowDraw` 内の旧ペナルティは撤去した。
+- `VENUES[8].maxMatches` を指定どおり 7 から8へ変更。既存の
+  `test/challenge-request-card-reservation-test.js` はこの確定値を固定の7ではなく
+  `VENUES[8].maxMatches` として検証するよう最小限追随した。
+- 呼び出しは `getAttendancePrediction`、`attendanceV2.measureShow`、週次精算フォールバック、
+  `Engine.executeShow`、`App._finalizeShowImpl`、`renderShowPrep` の全経路で、成立カードを
+  `calcAttendanceV2` に渡すよう更新した。
+
+### 枠数・特別興行の確認
+
+- カード編成UIは `App.addTagSlot()` で空シングル2枠をタッグ1件へ置換し、
+  `ui-common.js` の `_preserveTagSlots()` でも `tagWeight = tags.length * 2` としている。
+  エンジン側の `calcCardSlots` はこれと同じタッグ=2の数え方である。
+- `calcAttendanceV2` の全呼び出しは通常興行のプレビュー・確定・精算フォールバックのみ。
+  PPV GRAND FINAL、天頂戦、ジュニア、春タッグ、秋対抗戦は
+  `Engine.specialEventFinance` の固定収益・`calcShowRating` 経路であり、集客v2を呼ばない。
+  特別興行側は変更していない。
+
+### 検証
+
+- 新規 `test/attendance-volume-factor-test.js`: 41件PASS。
+  - 適正ちょうどの動員は旧D系と完全一致: 大ホール4枠 `2731→2731`、
+    大会場5枠 `7129→7129`、ドーム5枠 `12029→12029`。
+  - 超過は意図した変更として大会場8枠 `V=1.12`、ドーム8枠 `V=1.18`。いずれも
+    上限を超えないこと、タッグ2+シングル1が5枠でシングル5と同じVになること、
+    会場帯別不足表(k=1〜4)を検証した。
+  - orgPop80・大ホール・シングル2試合は `1749人 / 49.97%`。orgPop85・会場6〜9の
+    同条件も全て占有率80%未満。公民館1試合は `V=0.85` かつキャパ半分以上を確認した。
+- `npm test`: 139 / 139 PASS（既存138件+本タスク新規1件）。
+- auto-sim 40年・seed `424242` を `WM_SOURCE_REF=4f07d267e450a93da032fbbb9aa9a42b19f0a376`
+  （main）と実装後で比較。両方とも violations/errors/game overs は0、勢い分布は完全一致。
+
+| 指標 | 前 | 後 | 差分 |
+| --- | ---: | ---: | ---: |
+| 倒産 | 0 | 0 | 0 |
+| momentum (n=804) | 平均+0.1380 / 負32・中立3・正769 | 同左 | なし |
+| 平均動員（v2計測帯別平均から集計） | 約1,270.7 | 約1,931.7 | +52.0% |
+| 平均興行収入 | 1,197.5万 | 1,581.7万 | +32.1% |
+| ★分布 | 1/2/3/4/5 = 0.2/2.7/10.6/56.5/30.0% | 0.2/2.7/15.9/60.9/20.1% | ★5 -9.9pt |
+
+通常興行の平均動員・収入には有意な上昇が出た。これはタッグを消費枠どおり評価して
+旧shortPenaltyの二重罰を除いた結果であり、確定済みのV数値は変更していない。採否の
+判断用として報告する。
+
 ## 年間MVPレース: 近年実装大会・MQ歴代記録を反映（2026-07-30・実装完了）
 
 `Engine.mvpRace` の読み取り側だけを拡張し、天頂戦・4団体勝ち残り対抗戦・春のタッグリーグ・

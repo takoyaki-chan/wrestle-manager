@@ -3156,10 +3156,10 @@ function renderShowPrep() {
   });
   const previewNonMatchPromo = G.roster.filter(c => !_allMatchFighterIds.has(c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
   const previewShowDraw = Engine.attendanceV2.calcShowDraw(previewMatchAppeals, previewNonMatchPromo, G.showVenue);
-  const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, previewShowDraw);
+  const prediction = Engine.economy.getAttendancePrediction(G, G.showVenue, previewShowDraw, validMatches);
   // MQ再設計P3c(§3.2/§3.2b): 予想MQタイルは会場の熱(venueHeat)ベースに変更。
   // fp(fill pressure)はrawDemand/capacityで、実際のfinalize計算と同じ経路(calcAttendanceV2)を使う。
-  const previewV2Result = Engine.attendanceV2.calcAttendanceV2(G, G.showVenue, previewShowDraw, null);
+  const previewV2Result = Engine.attendanceV2.calcAttendanceV2(G, G.showVenue, previewShowDraw, validMatches, null);
   const previewFp = previewV2Result.rawDemand / VENUES[G.showVenue].cap;
   const estCrowdMQ = Engine.economy.calcVenueHeat(G.showVenue, previewFp);
   const v = VENUES[G.showVenue];
