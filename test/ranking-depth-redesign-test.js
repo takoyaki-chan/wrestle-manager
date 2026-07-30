@@ -3,7 +3,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { loadGame } = require('./helpers/load-game');
+const { loadGame, loadAsGlobal } = require('./helpers/load-game');
 
 loadGame();
 
@@ -44,6 +44,121 @@ function fighter(id, ovr, extra = {}) {
   assert.ok(!body.includes('平均OVR'), 'ランキング画面に平均OVRを表示しない');
   assert.ok(body.includes('層の厚み'), 'ランキング画面に層の厚みを表示する');
   assert.ok(body.includes('depthCore') && body.includes('depthReserve'), '主力層と控え層を説明する');
+})();
+
+(function testRankingV13BaselineSizes() {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'index.html'), 'utf8');
+  const start = source.indexOf('#screen-ranking');
+  const end = source.indexOf('/* ═════════', start + 1);
+  const css = source.slice(start, end);
+  [
+    'font-size: 28px;', 'min-height: 400px;', 'min-height: 465px;',
+    'height: 222px;', 'height: 252px;', 'width: 132px; height: 194px;',
+    'width: 150px; height: 224px;', 'width: 108px; height: 162px;',
+    'width: 108px;\n  height: 162px;', 'width: 40px;', 'height: 40px;',
+    'width: 62px; height: 62px;', 'grid-template-columns: 1fr 108px;',
+    'font-size: 18px;', 'font-size: 15px;', 'font-size: 28px;', 'line-height: 1.7;',
+  ].forEach(value => assert.ok(css.includes(value), `v1.3 CSSサイズ ${value} を適用する`));
+  assert.ok(!css.includes('.ovr-line'), '平均OVR専用のovr-line CSSを残さない');
+})();
+
+function loadRankingRenderer() {
+  const inert = {
+    appendChild() {}, style: {}, setAttribute() {},
+    classList: { add() {}, remove() {}, toggle() {} },
+    querySelectorAll() { return []; },
+  };
+  global.document = {
+    addEventListener() {}, querySelectorAll() { return []; }, getElementById() { return null; },
+    createElement() { return { ...inert }; }, head: inert, body: inert,
+  };
+  window.addEventListener = () => {};
+  global.valueClassOvr = () => '';
+  global.escHtml = (value) => String(value ?? '');
+  global._orgPopColor = () => ({ color: '' });
+  loadAsGlobal('ui-render.js');
+}
+
+function rankingEntry(orgId, rank, overrides = {}) {
+  return {
+    orgId, name: orgId, rank, rating: 100 - rank, baseScore: 70,
+    depth: 12, depthCore: 8, depthReserve: 4, depthCoreReady: 2, depthReserveReady: 1,
+    battlePt: 0, legacyScore: 0, achievementScore: 0, force: 30, marquee: 20,
+    ...overrides,
+  };
+}
+
+function renderRankingForTest(state, rankingOverrides = {}) {
+  const elements = {};
+  ['rankingContent', 'rankingMast', 'rankingVictoryBar'].forEach(id => {
+    elements[id] = { id, innerHTML: '', outerHTML: '' };
+  });
+  global.document.getElementById = (id) => elements[id] || null;
+  const rankings = [
+    rankingEntry('player', 1, rankingOverrides.player),
+    rankingEntry('org_s', 2, rankingOverrides.org_s),
+    rankingEntry('org_a', 3, rankingOverrides.org_a),
+    rankingEntry('org_b', 4, rankingOverrides.org_b),
+  ];
+  global.G = state;
+  Engine.ranking.updateRankings = () => rankings;
+  renderRanking();
+  return elements.rankingContent.innerHTML;
+}
+
+function rankingState(roster, title = { championId: 1, defenses: 4 }) {
+  const aiRoster = [fighter(21, 84, { name: 'AI王者', surname: 'AI王' }), fighter(22, 74, { name: 'AI次点', surname: 'AI次' }), fighter(23, 70, { name: 'AI三番', surname: 'AI三' }), fighter(24, 66, { name: 'AI四番', surname: 'AI四' })];
+  const aiOrg = () => ({ roster: aiRoster, titles: { world: { championId: 21, defenses: 0 } }, orgPop: 50 });
+  return {
+    season: 3, week: 12, orgName: 'テスト団体', orgPop: 50, roster,
+    titles: { world: title },
+    aiOrgs: { org_s: aiOrg(), org_a: aiOrg(), org_b: aiOrg() },
+  };
+}
+
+loadRankingRenderer();
+
+(function testRankingCopiesBindNumbersAndNamesToGameState() {
+  const roster = [
+    fighter(1, 90, { name: '王者花子', surname: '王者', age: 25 }),
+    fighter(2, 80, { name: '次郎美咲', surname: '次郎' }),
+    fighter(3, 75, { name: '三枝凛', surname: '三枝' }),
+    fighter(4, 70, { name: '四谷葵', surname: '四谷' }),
+  ];
+  const html = renderRankingForTest(rankingState(roster), { player: { depthCoreReady: 2 } });
+  const aceCopy = html.match(/<strong>王者花子[^<]*<\/strong>\s*<p>([^<]+)<\/p>/);
+  assert.ok(aceCopy && aceCopy[1].includes('4'), '防衛数は合成GameStateの値をエース文へ差し込む');
+  assert.ok(html.includes('次郎・三枝'), '主力文は合成GameStateの二番手・三番手の姓を使う');
+  assert.ok(aceCopy && !/主力|控え|戦列/.test(aceCopy[1]), 'エース文はチーム語りを混ぜない');
+})();
+
+(function testRankingCopyFallbacksAndDepthInjury() {
+  const boardRoster = [fighter(1, 90, { name: '看板花子', surname: '看板' }), fighter(2, 74, { name: '次郎美咲', surname: '次郎' }), fighter(3, 70, { name: '三枝凛', surname: '三枝' }), fighter(4, 66, { name: '四谷葵', surname: '四谷' })];
+  const boardHtml = renderRankingForTest(rankingState(boardRoster, { championId: null, defenses: 0 }));
+  assert.ok(boardHtml.includes('この団体の顔は間違いなく彼女だ'), '王者不在では看板系の文へフォールバックする');
+
+  const injuredRoster = [
+    fighter(1, 90, { name: '王者花子', surname: '王者' }),
+    fighter(2, 80, { name: '次郎美咲', surname: '次郎' }),
+    fighter(3, 75, { name: '三枝凛', surname: '三枝' }),
+    fighter(4, 70, { name: '四谷葵', surname: '四谷', injury: { type: 'minor' } }),
+    fighter(5, 68, { name: '五島結', surname: '五島', injury: { type: 'minor' } }),
+  ];
+  const injuryHtml = renderRankingForTest(rankingState(injuredRoster), { player: { depthCoreReady: 2 } });
+  assert.ok(injuryHtml.includes('2人が欠場中'), '欠場数は合成GameStateの値を主力文へ差し込む');
+
+  const vacantHtml = renderRankingForTest(rankingState([], { championId: null, defenses: 0 }));
+  assert.ok(!/undefined|NaN|\{[^}]+\}/.test(vacantHtml), '王者・看板不在でも未展開値を表示しない');
+})();
+
+(function testRankingCopiesStaySafeAcrossRepresentativeSeasons() {
+  const roster = [fighter(1, 90, { name: '王者花子', surname: '王者' }), fighter(2, 80, { name: '次郎美咲', surname: '次郎' }), fighter(3, 75, { name: '三枝凛', surname: '三枝' }), fighter(4, 70, { name: '四谷葵', surname: '四谷' })];
+  [1, 5, 12].forEach(season => {
+    const state = rankingState(roster);
+    state.season = season;
+    const html = renderRankingForTest(state);
+    assert.ok(!/undefined|NaN|\{[^}]+\}/.test(html), `シーズン${season}の全団体講評に未展開値がない`);
+  });
 })();
 
 console.log('ranking-depth-redesign-test: PASS');
