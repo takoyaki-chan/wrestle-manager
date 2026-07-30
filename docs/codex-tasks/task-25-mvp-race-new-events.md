@@ -2,23 +2,15 @@
 
 **対象リポジトリ**: `C:\Users\nkmrk\Downloads\wrestle-manager`
 
-**作業ブランチ**: `codex/mvp-race-new-events`（`main` から切る）
+**作業ブランチ**: `codex/mvp-race-new-events`（`main` から切る。worktree は作らない）
 
 ```bash
 git switch -c codex/mvp-race-new-events main
 ```
 
-**すでに専用の作業ツリー（Codex アプリが用意する `~/.codex/worktrees/...` 等）に居る場合は、
-上のブランチ作成だけを行い、新たに worktree を作らないこと。** 入れ子の worktree ができる。
-
-**メインの作業ディレクトリで作業する場合に限り**、先に隔離すること。
-
-```bash
-git worktree add ../wm-codex-mvprace -b codex/mvp-race-new-events main
-cd ../wm-codex-mvprace
-```
-
-いずれの場合も、**着手前に `git status` が clean であることを確認する。**
+ブランチ運用（2026-07-30 Keisuke指定）: **Codex はタスク用ブランチを作ってそこで進める。**
+`main` に直接コミットしないこと。task-26 と同時に走らせる場合も**同一ブランチに混ぜない**
+（1タスク=1ブランチ）。着手前に `git status` が clean であることを確認する。
 
 **変更してよいファイル**: `src/management.js`（`Engine.mvpRace` 一帯のみ）、
 `src/ui-render.js`（4面表示で新カテゴリのラベルが必要になった場合のみ・最小限）、
