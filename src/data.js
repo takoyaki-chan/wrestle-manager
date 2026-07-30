@@ -30042,6 +30042,194 @@ const EVENT_RENTAL_GREETING_GENERIC_LINES = [
   'レンタルでも全力です。よろしくお願いします！',
 ];
 
+const SCOUT_GREETING_LINES = {
+  normal: {
+    _default: [
+      '見つけてもらった以上、期待には応えるつもり',
+      '声をかけてくれた目、確かめさせてもらうね',
+      '腕試しの場が欲しかった。ちょうどいい',
+    ],
+    cool: ['…見込まれた分は、返す', '…評価は、リングで確かめて'],
+    polite: ['見出していただいた御恩、試合でお返しします'],
+    ojousama: ['わたくしを見つけたご慧眼、称えて差し上げますわ'],
+    delinquent: ['よく見つけたな。損はさせねーよ'],
+    seductive: ['目をつけたのはそっち。…責任、取ってね'],
+    composed: ['…見込まれたなら、応えるだけだよ'],
+  },
+  bold: {
+    _default: [
+      '見る目はあるみたいね。すぐ証明してみせる',
+      '買われた実力、安売りするつもりはない',
+    ],
+    cool: ['…値踏みは終わり？　なら、リングを用意して'],
+    polite: ['見込まれた以上、頂点まで行きます。必ず'],
+    ojousama: ['お目が高い。頂は、わたくしが預かります'],
+    delinquent: ['見つけたのが運の尽きか、当たりか。見てな'],
+    seductive: ['見初めた責任は取ってもらうわよ。頂点でね'],
+    composed: ['…目は確かだね。上まで連れていくよ'],
+  },
+  quiet: {
+    _default: [
+      '…見ていた人が、いたんですね',
+      '…声をかけられるとは、思ってなくて',
+    ],
+    cool: ['…見込みは、外させない'],
+    polite: ['…見出していただいて…精一杯やります'],
+    ojousama: ['…見つけてくださった方がいた。…光栄です'],
+    delinquent: ['…目、つけてくれたんだろ。…応える'],
+    seductive: ['……見つかっちゃった。…嬉しい、かも'],
+    composed: ['……見込まれた。…なら、やる'],
+  },
+  shy: {
+    _default: [
+      'わ、わたしなんかを…見つけてくれて…！',
+      'あの…期待、外さないように…頑張ります…！',
+    ],
+    cool: ['…見つけられた。…がっかりさせない'],
+    polite: ['あ、あの…見出していただいて…光栄です…！'],
+    ojousama: ['あ、あの…見つけていただけるなんて…！'],
+    delinquent: ['え、えっと…目、つけてくれたって…本当…？'],
+    seductive: ['み、見つかっちゃった…隠れてたのに…'],
+    composed: ['…見つけてくれたんだね。…応えるよ'],
+  },
+  easygoing: {
+    _default: [
+      'よく見つけたねー。掘り出し物だよ、あたし',
+      '暴れる場所探してたんだ。ちょうどよかった',
+    ],
+    cool: ['…掘り当てたね。そのうち分かるよ'],
+    polite: ['見つけてくださって助かりました！暴れますね'],
+    ojousama: ['見出されるって、なんだか気分がよろしいこと'],
+    delinquent: ['目つけられんの、悪い気しねーな。やるよ'],
+    seductive: ['見つかっちゃった。…隠れてたわけじゃないけど'],
+    composed: ['…見つけてくれたんだ。じゃ、応えようか'],
+  },
+  earnest: {
+    _default: [
+      '見ていてくれた人がいた。それだけで走れます',
+      '買っていただいた分、毎日積み上げていきます',
+    ],
+    cool: ['…評価された理由を、練習で裏づける'],
+    polite: ['見出していただき光栄です。裏切りません'],
+    ojousama: ['見込まれた期待、一つずつ形にしてまいります'],
+    delinquent: ['見つけてくれてありがとな。死ぬ気でやる'],
+    seductive: ['評価してくれたのね。…ちゃんと応えるわ'],
+    composed: ['…見込みってやつ、証明していこうか'],
+  },
+  emotional: {
+    _default: [
+      '見つけてくれた…！その目、絶対に正解にする…！',
+      '誰かが見ていた…それだけで、こんなに熱い…！',
+    ],
+    cool: ['…っ…見ていた奴がいた。…それで十分だ'],
+    polite: ['見つけてくださって…！必ず正解にしてみせます！'],
+    ojousama: ['見出された…！この昂り、抑えようがありませんの'],
+    delinquent: ['見つけやがって…！その目、正しかったと言わせる'],
+    seductive: ['見つけられた…っ…胸が、うるさいくらい'],
+    composed: ['…っ…見ていた奴がいたのか。…応える'],
+  },
+};
+
+const SCOUT_GREETING_GENERIC_LINES = [
+  '見つけてもらった分、リングで返します！',
+  '声をかけてくれてありがとうございます。やります！',
+  '腕試しの場をもらいました。全力でいきます！',
+];
+
+const FA_GREETING_LINES = {
+  normal: {
+    _default: [
+      '行き場のない身を拾ってくれた。忘れないよ',
+      'もう一度リングに立てる。それが全部だね',
+      '所属が付くって、こんなに落ち着くんだ',
+    ],
+    cool: ['…流れ着いた先がここだ。…腰を据える'],
+    polite: ['行き場のない私を…この御恩は返させてください'],
+    ojousama: ['宿無しの身を招いてくださった。恩は必ず返します'],
+    delinquent: ['拾われた借りは、リングで返す。それだけだ'],
+    seductive: ['はぐれ者を拾うなんて。…物好きね、嫌いじゃない'],
+    composed: ['…帰る場所ができた。…悪くないよ'],
+  },
+  bold: {
+    _default: [
+      '無所属のままで終わる女じゃない。証明する',
+      '切られた分は、全部利子つけて返してやる',
+    ],
+    cool: ['…遊ばせておいた連中に、後悔させる'],
+    polite: ['私を要らないと言った人たちに、答えを出します'],
+    ojousama: ['捨て置かれた者の逆襲、ご覧に入れましょう'],
+    delinquent: ['干されてた女がどこまで行くか、見てろよ'],
+    seductive: ['拾った目利きは正解よ。…すぐに分かるわ'],
+    composed: ['…空白は、結果で埋める。それだけだよ'],
+  },
+  quiet: {
+    _default: [
+      '…もう一度、立てるんですね',
+      '…行く当てが、なかったので。…助かりました',
+    ],
+    cool: ['…拾われた。…なら、返す'],
+    polite: ['…行き場のない私を…お世話になります'],
+    ojousama: ['…流れ着いた身です。…置いてくださるのですね'],
+    delinquent: ['…拾ってくれた借りは、でかい'],
+    seductive: ['……居場所ができた。…久しぶり'],
+    composed: ['……帰る場所ができた。それでいい'],
+  },
+  shy: {
+    _default: [
+      'わ、わたしでも…いていいんですか…？',
+      'もう…どこにも行かなくて、いいんですね…！',
+    ],
+    cool: ['…もう、流れなくていい。…ありがとう'],
+    polite: ['あ、あの…拾っていただいて…感謝しています…！'],
+    ojousama: ['あ、あの…行き場のない身でしたのに…！'],
+    delinquent: ['あ、あの…あたしみたいなのでも…いいんすか…？'],
+    seductive: ['…もう、独りじゃないの…？　…よかった…'],
+    composed: ['…もう流れ歩かなくていいんだね。…嬉しい'],
+  },
+  easygoing: {
+    _default: [
+      'ふらふらしてたけど、ここらで腰を落ち着けるか',
+      '行き場なくてさー。拾ってくれて助かったよ',
+    ],
+    cool: ['…放浪はここまでだ。…そろそろ疲れた'],
+    polite: ['宿無し生活、今日で終わりです！助かりました'],
+    ojousama: ['流れ流れて、良い場所に行き着きましたこと'],
+    delinquent: ['野良もそろそろ限界でな。世話になるぜ'],
+    seductive: ['拾ってくれるなんて。…優しいのね、ここ'],
+    composed: ['…根無し草はやめにするよ。落ち着くとこだ'],
+  },
+  earnest: {
+    _default: [
+      'もう一度チャンスをもらえた。無駄にしません',
+      '拾ってくれた恩、練習の量でお返しします',
+    ],
+    cool: ['…もらった二度目だ。…潰さない'],
+    polite: ['一度は失った場所です。今度こそ守り抜きます'],
+    ojousama: ['頂いた二度目の機会、決して粗末にしません'],
+    delinquent: ['拾ってもらった以上、腐った真似はしねえ'],
+    seductive: ['二度目をくれた人は少ないの。…大事にするわ'],
+    composed: ['…二度目はもうない。…だから丁寧にやる'],
+  },
+  emotional: {
+    _default: [
+      'もう終わりだと思ってた…！終わってなかった…！',
+      '拾ってくれた…！この恩、絶対に返す…！',
+    ],
+    cool: ['…っ…終わりだと思っていた。…違ったな'],
+    polite: ['行き場を失っていた私に…！ありがとうございます…！'],
+    ojousama: ['もう終わりだと…！涙も枯れたと思っておりました…！'],
+    delinquent: ['畜生…！拾いやがって…！泣かせるじゃねえか…！'],
+    seductive: ['拾われる側になるなんて…っ…参ったわ'],
+    composed: ['…っ…終わってなかったんだな。…やるよ'],
+  },
+};
+
+const FA_GREETING_GENERIC_LINES = [
+  'もう一度リングに立てます。無駄にしません！',
+  '拾っていただいた恩、必ず返します！',
+  '行き場を失っていました。ここで、やり直します！',
+];
+
 // 動的アクセス用ルックアップ（pickQuote/getTraitQuote の引数 category→定数）
 // コーチ雇用/解雇/PPV称賛は E-8 Phase A/B で pickCoachVoiceQuote() 経由(voiceKey別)に移行済み。
 // このマップには含まれない（coach-lines.js の COACH_VOICE_HIRE/FIRE/PRAISE_LINES を参照）。
@@ -30060,6 +30248,10 @@ const EVENT_LINES_BY_KEY = {
   faWelcomeGeneric: EVENT_FA_WELCOME_GENERIC_LINES,
   rentalGreeting: EVENT_RENTAL_GREETING_LINES,
   rentalGreetingGeneric: EVENT_RENTAL_GREETING_GENERIC_LINES,
+  scoutGreeting: SCOUT_GREETING_LINES,
+  scoutGreetingGeneric: SCOUT_GREETING_GENERIC_LINES,
+  faGreeting: FA_GREETING_LINES,
+  faGreetingGeneric: FA_GREETING_GENERIC_LINES,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -30128,6 +30320,8 @@ if (typeof module !== 'undefined' && module.exports) {
     EVENT_FA_SIGNING_LINES, EVENT_FA_SIGNING_GENERIC_LINES,
     EVENT_FA_WELCOME_LINES, EVENT_FA_WELCOME_GENERIC_LINES,
     EVENT_RENTAL_GREETING_LINES, EVENT_RENTAL_GREETING_GENERIC_LINES,
+    SCOUT_GREETING_LINES, SCOUT_GREETING_GENERIC_LINES,
+    FA_GREETING_LINES, FA_GREETING_GENERIC_LINES,
     EVENT_LINES_BY_KEY,
     DRAFT_CONFIG, ORG_ASSIGN, generateDraftConfig, seededShuffle,
     SALARY_PARAMS, LOSING_STREAK_PENALTIES,

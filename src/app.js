@@ -5299,11 +5299,10 @@ const App = {
       const signingContext = (choice === 'direct') ? 'direct'
         : (choice === 'pay' || choice === 'gamble') ? 'competition_won'
         : 'direct';
-      const signingLine = getSigningLine(cand, signingContext);
       // ポップアップは showScreen 後に表示（showScreen が dismissAllPopups を呼ぶため）
       var _scoutSigningPopup = { type:'fighter', id: cand.id, name: cand.name,
-        tone:'positive', message: signingLine,
-        detail:`📝 契約金: ${result.cost}万 [${tierCfg.label}]` };
+        tone:'positive', message: `「${getJoinGreeting(normalizedSigned)}」`,
+        detail:`${cand.name}が加入しました！(スカウト獲得)` };
       var _scoutSigningFanfare = (signingContext === 'competition_won');
     } else if (result.result === 'lost') {
       Audio.play('error');

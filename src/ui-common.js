@@ -1536,7 +1536,7 @@ function showSigningCeremony(charId) {
 
   // Header
   html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:16px 20px 12px;background:linear-gradient(180deg,${color}20,transparent);border-radius:12px 12px 0 0">`;
-  html += `<div style="font-size:13px;letter-spacing:2px;color:${color};font-weight:700">✍ 契約セレモニー</div>`;
+  html += `<div style="font-size:13px;letter-spacing:2px;color:${color};font-weight:700">✍ 契約セレモニー ${getJoinSourceBadge('fa')}</div>`;
   html += `</div>`;
 
   // Fighter portrait + info
@@ -1583,7 +1583,7 @@ function confirmSigning(charId) {
   const fighter = G.freeAgents.find(c => c.id === charId);
   const name = fighter ? fighter.name : '???';
   const fighterId = fighter ? fighter.id : charId;
-  const welcomeQuote = fighter ? getWelcomeQuote(fighter) : 'よろしくお願いします！';
+  const welcomeQuote = fighter ? getJoinGreeting(fighter) : 'よろしくお願いします！';
   // Execute the actual signing logic
   App.signFighter(charId);
   // Show welcome event popup
@@ -3319,6 +3319,38 @@ function getWelcomeQuote(char) {
     return generic[Math.floor(Math.random() * generic.length)];
   }
   return pickDialogueLine(pool, char);
+}
+
+function hasCareerHistory(char) {
+  if (!char) return false;
+  if ((char.wins || 0) + (char.losses || 0) + (char.draws || 0) > 0) return true;
+  const history = Array.isArray(char.careerRecord?.history) ? char.careerRecord.history : [];
+  if (history.some(event => ['transfer', 'release', 'contractEnd', 'suddenDeparture', 'retire'].includes(event?.type))) return true;
+  return (char.careerSeasons || 0) >= 1;
+}
+
+function getJoinGreeting(char) {
+  // 少量の「よろしく」系を混ぜ、加入経路ではなく本人のキャリアで主文脈を決める。
+  if (Math.random() < 0.25 && EVENT_FA_WELCOME_LINES) {
+    const welcome = pickDialogueLine(EVENT_FA_WELCOME_LINES, char);
+    if (welcome) return welcome;
+  }
+  const isCareer = hasCareerHistory(char);
+  const pool = isCareer ? FA_GREETING_LINES : SCOUT_GREETING_LINES;
+  const generic = isCareer ? FA_GREETING_GENERIC_LINES : SCOUT_GREETING_GENERIC_LINES;
+  const line = pool && pickDialogueLine(pool, char);
+  if (line) return line;
+  if (Array.isArray(generic) && generic.length > 0) {
+    return generic[Math.floor(Math.random() * generic.length)];
+  }
+  return 'よろしくお願いします！';
+}
+
+function getJoinSourceBadge(source) {
+  const isFA = source === 'fa';
+  const color = isFA ? 'var(--blue)' : 'var(--green)';
+  const label = isFA ? 'FA' : '発掘';
+  return `<span style="display:inline-block;padding:2px 6px;border:1px solid ${color};border-radius:3px;background:color-mix(in srgb,${color} 14%,transparent);color:${color};font-family:Oswald,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;line-height:1">${label}</span>`;
 }
 
 // v1.0c: Get rental greeting quote (personality×archetype)
