@@ -2398,7 +2398,11 @@ const Engine = {
 
       const external = Object.values(contributions).reduce((sum, value) => sum + value, 0);
       const preLowerClampMq = baseEngineMq + external;
-      const finalMq = preLowerClampMq;
+      // 下限クランプは**ここだけ**にある(2026-07-30 バグA)。エンジン内部(match-engine.js の
+      // シングル/タッグ)の Math.max(5,...) を外したのは、床上げされた生スコアに crowd が
+      // 乗って凡戦が水増しされていたため(生スコア -8 → 床5 → crowd+8 → 13)。
+      // 正しくは -8+8=0 → ここで 5。**プレイヤーに見える最終MQが5未満になってはならない**。
+      const finalMq = Math.max(5, preLowerClampMq);
       const positiveExternal = Math.max(0, external);
       const negativeExternal = Math.min(0, external);
       const mqInventory = {
@@ -2426,7 +2430,7 @@ const Engine = {
         capLoss: 0,
         capReached: false,
         preLowerClampMq,
-        lowerClampHit: false,
+        lowerClampHit: preLowerClampMq < 5,
         upperClampApplied: false,
         finalMq,
       };
