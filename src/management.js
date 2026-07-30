@@ -14193,6 +14193,71 @@ const Engine = {
       if (age <= 26) return 0.85;
       return 1.0; // 27以降はreassessが処理
     },
+    // ── 見立て評価(prospect assessment) ──────────────────────────────
+    // 2026-07-30 Keisuke裁定。対象は「これからの選手」を見る3系統のみ
+    // (毎年のドラフト級=generateScoutReport / 社長室・シーズン中スカウト / 初期ドラフト)。
+    // FA・所属選手の評価は calcAssessedValue(現行)のまま — 経済を動かさないため。
+    //
+    //   見立てscore = 今の実力 + 伸びしろ × 実現見込み(年齢) × (1 + ブレ)
+    //
+    // ・従来は潜在値だけでティアが決まり、初期値が異様に低い子(高島さや: cur109/pot760)が
+    //   毎回『逸材』と表示されて育成先の強さがネタバレしていた
+    // ・実現見込み: 若いほど伸びしろを大きく見込む(完成品は今の姿がすべて)
+    // ・ブレ: 若いほど大きく、**伸びしろ項のみ**に掛ける(今の実力は試合を見れば分かる情報)。
+    //   (rngSeed, キャラid) から導出するので同一プレイ内では固定・別プレイでは別の顔
+    // ・しきい値は本番経路150シードの分布からの採寸値。目標: 年次ドラフト級で
+    //   超逸材~2%(≒10年に1人の事件)/逸材~33%/有望~51% — 従来の感触を維持
+    PROSPECT_EVAL: {
+      REALIZE: [[18, 0.85], [21, 0.70], [24, 0.50], [27, 0.30], [99, 0.15]],
+      JITTER:  [[18, 0.20], [21, 0.12], [24, 0.08], [99, 0.05]],
+      SCORE_TIERS: { superElite: 770, elite: 690, promising: 600, raw: 570 },
+    },
+    _prospectAgeBand(table, age) {
+      for (const [max, v] of table) if (age <= max) return v;
+      return table[table.length - 1][1];
+    },
+    /** 見立て評価。fighter は id/age/現在値/pot(またはtrainCap) を持つこと。
+     *  rootSeed はプレイのシード(state.rngSeed)。ブレはここと id から導出する。
+     *  rng は価格の市場ブレ(0.85〜1.15)専用 — ティアには影響しない。 */
+    calcProspectAssessment(fighter, rootSeed, rng, currentSeason) {
+      const P = Engine.scout.PROSPECT_EVAL;
+      const pot = fighter.pot || fighter.trainCap || fighter.notionValue || fighter;
+      const potTotal = (pot.pw||0) + (pot.sp||0) + (pot.te||0) + (pot.st||0) + (pot.mn||0);
+      const curTotal = (fighter.pw||0) + (fighter.sp||0) + (fighter.te||0) + (fighter.st||0) + (fighter.mn||0);
+      const age = fighter.age || 17;
+      const realize = Engine.scout._prospectAgeBand(P.REALIZE, age);
+      const jitterW = Engine.scout._prospectAgeBand(P.JITTER, age);
+      const jitterRng = Engine.rng.create(Engine.rng.derive(rootSeed || 1, 0x5EED, fighter.id || 0));
+      const jitter = (Engine.rng.float(jitterRng) * 2 - 1) * jitterW;
+      const score = curTotal + (potTotal - curTotal) * realize * (1 + jitter);
+
+      const S = P.SCORE_TIERS;
+      const tierId = score >= S.superElite ? 'superElite'
+        : score >= S.elite ? 'elite'
+        : score >= S.promising ? 'promising'
+        : score >= S.raw ? 'raw' : 'material';
+      const tier = Engine.scout.TIERS.find(t => t.id === tierId);
+
+      // 価格も同じ見立てから引く(ラベルと値段で情報が割れないように)。
+      // 帯内位置→べき乗カーブ→市場ブレ→年齢補正 の流れは calcAssessedValue と同じ。
+      const floor = tierId === 'material' ? S.raw - 150 : S[tierId];
+      const ceil = tierId === 'superElite' ? S.superElite + 150
+        : tierId === 'elite' ? S.superElite
+        : tierId === 'promising' ? S.elite
+        : tierId === 'raw' ? S.promising : S.raw;
+      const position = Math.min(1.0, Math.max(0, (score - floor) / (ceil - floor)));
+      const curved = Math.pow(position, 2.0);
+      const baseValue = tier.baseMin + Math.round(curved * (tier.baseMax - tier.baseMin));
+      const variance = 0.85 + Engine.rng.float(rng) * 0.30;
+      const ageMul = Engine.scout.ageMarketMultiplier(age, fighter, rng);
+      return {
+        assessedValue: Math.round(baseValue * variance * ageMul),
+        assessedTier: tierId,
+        assessedVariance: variance,
+        assessedSeason: currentSeason || 1,
+        assessedScore: Math.round(score),
+      };
+    },
     /** Calculate assessedValue for a fighter. Returns { assessedValue, assessedTier, assessedVariance, assessedSeason } */
     calcAssessedValue(fighter, rng, currentSeason) {
       const pot = fighter.pot || fighter.trainCap || fighter.notionValue || fighter;
@@ -14339,6 +14404,18 @@ const Engine = {
         candidates.push(fighter);
         usedFromPool.push(cid);
         reservedDefIds.add(cid); // 同一バッチ内の仮予約
+      }
+
+      // 見立て評価で上書き(prospect assessment 2026-07-30)。makeAIFighter が付けた
+      // calcAssessedValue の結果は潜在値主導でネタバレするため、ドラフト級/スカウト候補は
+      // 年齢ブレンド+ブレの見立てへ差し替える。ブレは (rngSeed, id) 固定なので
+      // 同じ子が翌年も残っていても見立てはプレイ内で一貫する(年齢が進むぶんだけ動く)。
+      for (const c of candidates) {
+        const pa = Engine.scout.calcProspectAssessment(c, state.rngSeed, rng, state.season);
+        c.assessedValue = pa.assessedValue;
+        c.assessedTier = pa.assessedTier;
+        c.assessedVariance = pa.assessedVariance;
+        c.assessedSeason = pa.assessedSeason;
       }
 
       // §4.2 Scout estimates (noisy display values)
@@ -16515,10 +16592,11 @@ const Engine = {
         const ovr = Math.round((entryPw + entrySp + entryTe + entrySt + entryMn) / 5);
         const potOvr = Math.round((t.pot.pw + t.pot.sp + t.pot.te + t.pot.st + t.pot.mn) / 5);
         const coachEval = Engine.draft.getEvalComment(potOvr, id, seed, coachMult || 0);
-        // §3.1: 契約金算出
-        const charForAssess = { pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, pot: t.pot, age };
+        // §3.1: 契約金算出 — 見立て評価(2026-07-30)。generateDraftConfig 側と同じ
+        // (seed, 0xC057, id) の rng・同じ式なので、プール選定時の価格と画面の価格が一致する
+        const charForAssess = { pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, pot: t.pot, age, id };
         const avRng = Engine.rng.create(Engine.rng.derive(seed || 42, 0xC057, id));
-        const av = Engine.scout.calcAssessedValue(charForAssess, avRng, 1);
+        const av = Engine.scout.calcProspectAssessment(charForAssess, seed || 42, avRng, 1);
         return { ...t, pw: entryPw, sp: entrySp, te: entryTe, st: entrySt, mn: entryMn, ovr, age, coachEval, assessedValue: av.assessedValue, assessedTier: av.assessedTier };
       });
     },

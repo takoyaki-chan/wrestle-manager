@@ -420,10 +420,12 @@ function generateDraftConfig(seed) {
     const charForAssess = {
       pw: Math.round(c.pw * ratio), sp: Math.round(c.sp * ratio),
       te: Math.round(c.te * ratio), st: Math.round(c.st * ratio), mn: c.mn,
-      pot: c.pot, age
+      pot: c.pot, age, id
     };
     const avRng = Engine.rng.create(Engine.rng.derive(seed, 0xC057, id));
-    return Engine.scout.calcAssessedValue(charForAssess, avRng, 1).assessedValue;
+    // 見立て評価(2026-07-30): 初期ドラフトも年次ドラフト/スカウトと同じ式で値付けする。
+    // ブレの導出元は (seed, id) なので、同じ子は年次ドラフト側と同じ見立てになる
+    return Engine.scout.calcProspectAssessment(charForAssess, seed, avRng, 1).assessedValue;
   }
 
   // Compute OVR + potTotal + assessedValue for each FA
@@ -444,9 +446,11 @@ function generateDraftConfig(seed) {
   const weakShuffled = seededShuffle(weakPool.map(x => x.id), rng);
   const fixed = weakShuffled.slice(0, ROSTER_CFG.draftFixed);
 
-  // Candidates: mid tier (OVR 40-70), excluding fixed
+  // Candidates: OVR 70以下、fixedを除く。
+  // 下限40は撤廃(2026-07-30 Keisuke裁定)。初期値が異様に低い原石(高島さや等)も
+  // 候補に並びうる。見立て評価が低く出るので「安くて謎の子」として現れる
   const fixedSet = new Set(fixed);
-  const midPool = withOvr.filter(x => !fixedSet.has(x.id) && x.ovr >= 40 && x.ovr <= 70);
+  const midPool = withOvr.filter(x => !fixedSet.has(x.id) && x.ovr <= 70);
   const candidatePool = midPool.length >= ROSTER_CFG.draftCandidates
     ? midPool : [...midPool, ...withOvr.filter(x => !fixedSet.has(x.id) && !midPool.some(m => m.id === x.id))];
 
@@ -469,7 +473,18 @@ function generateDraftConfig(seed) {
   }).length;
   const cheapPool = candidatePool.filter(x => !guaranteedSet.has(x.id) && x.assessedValue <= cheapMax);
   const cheapShuffled = seededShuffle(cheapPool.map(x => x.id), rng);
-  const cheapGuaranteed = cheapShuffled.slice(0, Math.max(0, cheapGuarantee - cheapAlready));
+  let cheapGuaranteed = cheapShuffled.slice(0, Math.max(0, cheapGuarantee - cheapAlready));
+  // 見立て評価(2026-07-30)で価格の下限が上がり、120万以下が1人もいないシードがある。
+  // 「絶対額<=cheapMax」で足りないぶんは「安い順」で埋め、資金が乏しい開幕でも
+  // 必ず2名は安い候補が並ぶという §3.6 の意図を保つ
+  const cheapShort = Math.max(0, cheapGuarantee - cheapAlready - cheapGuaranteed.length);
+  if (cheapShort > 0) {
+    const cheapestRest = candidatePool
+      .filter(x => !guaranteedSet.has(x.id) && !cheapGuaranteed.includes(x.id))
+      .sort((a, b) => a.assessedValue - b.assessedValue)
+      .slice(0, cheapShort).map(x => x.id);
+    cheapGuaranteed = [...cheapGuaranteed, ...cheapestRest];
+  }
   guaranteed = [...guaranteed, ...cheapGuaranteed];
 
   // 残りをcandidatePoolからランダム補充

@@ -80,7 +80,12 @@ section('3. 語り手は出場を狙える圏内から選ばれる', () => {
     .filter(f => f && !f.injury && !f.isRental && !f.isIntrusion)
     .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
   const limit = Math.max(3, Math.min(8, Math.ceil(ordered.length / 2)));
-  const eligibleNames = new Set(ordered.slice(0, limit).map(f => f.name));
+  // 境界のOVR同点は「圏内」に含める。実装は同点を id の安定ソートで切るため、
+  // ここで同点処理なしに上位N名だけを集合にすると、境界に同点者が並んだとき
+  // 実装が選んだ正当な語り手を「圏外」と誤判定する(2026-07-30 に露出)
+  const cutOv = Engine.util.ov(ordered[limit - 1]);
+  const eligibleNames = new Set(
+    ordered.filter((f, i) => i < limit || Engine.util.ov(f) === cutOv).map(f => f.name));
   for (let s = 4; s <= 80; s += 4) {
     const f = (build(s).fighters || [])[0];
     if (!f) continue;
