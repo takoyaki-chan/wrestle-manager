@@ -1192,7 +1192,7 @@ const VENUES = [
   {name:'中ホールB', cap:2000,  cost:400,  maxMatches:5, img:'../image/venue_5_mid_hall_b.webp'},   // 5
   {name:'大ホール',  cap:3500,  cost:800,  maxMatches:5, img:'../image/venue_6_large_hall.webp'},   // 6
   {name:'アリーナ',  cap:6000,  cost:1600, maxMatches:6, img:'../image/venue_7_arena.webp'},        // 7
-  {name:'大会場',    cap:12000, cost:3200, maxMatches:7, img:'../image/venue_8_grand_venue.webp'},  // 8
+  {name:'大会場',    cap:12000, cost:3200, maxMatches:8, img:'../image/venue_8_grand_venue.webp'},  // 8 (集客ボリューム係数 v1.0: 7→8、2026-07-30 Keisuke指定)
   {name:'ドーム',    cap:22500, cost:7000, maxMatches:8, img:'../image/venue_9_dome.webp'},         // 9 (orgPop-rebalance v1.1: cap 30000→22500, cost 12000→11000→7000)
 ];
 // L1: orgPop→基礎集客力の区間線形補間テーブル（キャパ非依存）
@@ -3364,8 +3364,8 @@ const SHOW_DRAW_CONFIG = {
   promoStackGlobal: 2,        // 非出場選手promoStack→全体加算
   // 会場規模別の適正試合数
   minMatchesByVenue: [2, 2, 2, 3, 3, 3, 4, 4, 5, 5],
-  shortPenalty1: 0.85,         // 適正-1試合
-  shortPenalty2: 0.70,         // 適正-2試合以上
+  // shortPenalty1/2 は集客ボリューム係数 v1.0 (2026-07-30) で撤去。役割は
+  // ATTENDANCE_V2_CONFIG.volumeShortageByVenueBand(需要への直接乗算)へ一本化
 };
 
 // D系: reach（orgPopベース）+ コンバージョン
@@ -3388,6 +3388,18 @@ const ATTENDANCE_V2_CONFIG = {
   drawFloor: 0.3,             // draw下限（惰性で来る層）
   drawScale: 0.7,             // draw = floor + (ratio × scale)
   drawCap: 2.0,               // draw上限
+  // 集客ボリューム係数 v1.0 (2026-07-30 Keisuke確定): 消費枠数(シングル1/タッグ2)を
+  // 需要に直接反映。不足は累進(1試合不足は軽く、増えるほど加速)、会場帯で厳しさが違う。
+  // indexは会場帯(0-2小 / 3-5中 / 6-7大 / 8大会場 / 9ドーム)、列は不足1/2/3/4以上
+  volumeShortageByVenueBand: [
+    [0.85, 0.65, 0.50, 0.50],
+    [0.85, 0.60, 0.40, 0.40],
+    [0.80, 0.50, 0.30, 0.20],
+    [0.75, 0.45, 0.25, 0.15],
+    [0.70, 0.40, 0.20, 0.10],
+  ],
+  // 適正超え1枠ごとの需要ボーナス(上限 maxMatches−適正 段)。ドームは特別な場所として最厚
+  volumeExcessPerSlotByVenueBand: [0.00, 0.02, 0.03, 0.04, 0.06],
   // ソフトキャップ: reach超過分の減衰
   softCapBands: [
     { threshold: 1.0, efficiency: 0.7 },   // reach×1.0〜1.5: 超過分×0.7
