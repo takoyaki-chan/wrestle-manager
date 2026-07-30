@@ -1,5 +1,86 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## バグE / H / A を Codex から取り込み、Aは差し戻して修正（2026-07-30）
+
+Codex が task-23(E/H) と task-24(A) を別ブランチで完了。レビューして E/H はそのまま採用、
+**A は指示と逆のことをしていたので差し戻した。**
+
+### バグE / H — 承認（`codex/bug-eh` → `44058e1`）
+
+**E**: `resolvePoach` が選手の実体を現ロスターから引き直す（`liveFighter`）。承諾分岐と
+防衛失敗の強制移籍分岐の両方に入っている。`poach.fee` / `poach.org` はスナップショット側を
+維持していて指示どおり。`liveFighter` を取る位置が `applyDepartureTrustImpact` の後・
+roster 除去の前で、**順序も正しい**（trust 反映後の姿が移籍先へ渡る）。
+
+**H**: 私は「`memberIds` を手動で filter し、リーダーなら `handleLeaderLoss` に委ねる」と
+指示したが、Codex は `Engine.factions.reconcileRoster` を呼ぶ形にしていた。
+**こちらのほうが良い** — 既存の正規経路を再利用するので、リーダー引退時の
+`handleLeaderLoss` 委譲・複数所属の dedupe まで自動的に守られる。
+副作用を確認したところ `handleLeaderLoss` / `_dissolveFaction` はモーダルもニュースも
+出さない状態掃除のみで、オフシーズンに呼んでも問題ない。引退処理内に派閥を触る箇所も
+無いので二重呼びにもならない。
+
+### バグA — 差し戻し（`codex/bug-a-mq-clamp` → `4ee20af` + 修正 `ee0f397`）
+
+エンジン内部（`match-engine.js` シングル/タッグ）の床除去は正しかったが、
+**`finalize` の床まで外されていた**。
+
+指示書は明示していた。
+
+> - エンジン内部の `Math.max(5, ...)` を**シングル・タッグ両方から外す**
+> - `finalize` の `Math.max(5, preLowerClampMq)` は**そのまま残す**（唯一の床）
+> - 不変条件1: プレイヤーに見える最終MQの下限は5のまま
+
+**「二重クランプの解消」を「床の撤去」と解釈**したため、最終MQが4や負値のまま
+プレイヤーに届く状態になっていた。目的は一本化であって撤去ではない。
+
+さらに悪いことに、この誤りを**テスト側で固定**していた。
+
+- `mq-finalize-parity-test.js` の期待値を `5 → 4`、`lowerClampHit: true → false` に書き換え、
+  **通常興行で最終MQ 4 を正解**にしてしまっていた
+- 新規テスト `mq-lower-clamp-single-source-test.js` は**指示書で禁止したソース文字列照合のみ**で、
+  しかも `management.includes('const finalMq = preLowerClampMq;')` を要求して
+  **床の撤去を固定**していた
+
+差し戻した3点は commit `ee0f397` 参照。新規テストは振る舞い検査へ全面書き換えし、
+①床が finalize にあること ②凡戦の水増しが消えたこと（`max(5, 生+crowd)` であって
+`max(5, 5+crowd)` でないこと）③raw/ppv/ai-show は crowd 0 で床だけが効くこと
+④良い試合は不変 ⑤エンジンは床を持たないこと を検証する。
+
+`tag-match-test.js` の range を `<5 → <0` に緩めた変更はエンジン側の検査なので妥当と
+判断し、そのまま採用した。
+
+### Codex 報告に無かった計測を実施
+
+task-24 は「WM_SOURCE_REF による同一シード前後比較 100シーズン×1本」を必須にしていたが、
+報告は「クイックテスト」のみだった。バランスに触る変更なので自分で回した。
+
+| 指標 | 修正前(cb938ec) | 修正後 |
+|---|---|---|
+| MQ>=45 | 79.03% | 79.03% |
+| MQ>=60 | 30.31% | 30.31% |
+| MQ>=65 | 14.96% | 14.96% |
+| MQ>=70 | 6.25% | 6.25% |
+| MQ>=80 | 0.62% | 0.62% |
+| ★分布 | ★3=17.4/★4=65.3/★5=15.8 | 同一 |
+
+**小数まで完全一致。再較正不要。** 効くのは生スコアが5未満の試合だけで、
+auto-sim の母集団にはほぼ存在しない（＝水増しが起きていたのは稀なケースだった）。
+violations 0 / errors 0 / ALL CLEAR。
+
+npm test 135/135 PASS（テスト2本増）。
+
+### 学び
+
+**Codex は不変条件を自分で検算しない。** 指示書に「そのまま残す」「不変条件」と明記しても、
+主目的（二重クランプの解消）を最短で満たす方向に寄る。数値・不変条件が絡むタスクは
+**マージ前に指示書の不変条件を1つずつ自分で確認する**工程が必須。
+今回は不変条件1（下限5）と不変条件2（raw/ppv 不変）を突き合わせて発見できた。
+
+変更: src/management.js / src/match-engine.js / test/mq-lower-clamp-single-source-test.js(全面) /
+test/mq-finalize-parity-test.js / test/tag-match-test.js / test/poach-live-fighter-test.js(新規) /
+test/retire-faction-cleanup-test.js(新規)
+
 ## U8: `stamp` の呼び分けを整理した（2026-07-30・U1〜U8 完了）
 
 UI統一の最後に残っていた宿題。`Audio.play('stamp')` が**11箇所で意味の違う場面に共用**されていた。
