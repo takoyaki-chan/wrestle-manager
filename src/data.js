@@ -1192,7 +1192,7 @@ const VENUES = [
   {name:'中ホールB', cap:2000,  cost:400,  maxMatches:5, img:'../image/venue_5_mid_hall_b.webp'},   // 5
   {name:'大ホール',  cap:3500,  cost:800,  maxMatches:5, img:'../image/venue_6_large_hall.webp'},   // 6
   {name:'アリーナ',  cap:6000,  cost:1600, maxMatches:6, img:'../image/venue_7_arena.webp'},        // 7
-  {name:'大会場',    cap:12000, cost:3200, maxMatches:8, img:'../image/venue_8_grand_venue.webp'},  // 8 (集客ボリューム係数 v1.0: 7→8、2026-07-30 Keisuke指定)
+  {name:'大会場',    cap:12000, cost:3200, maxMatches:7, img:'../image/venue_8_grand_venue.webp'},  // 8
   {name:'ドーム',    cap:22500, cost:7000, maxMatches:8, img:'../image/venue_9_dome.webp'},         // 9 (orgPop-rebalance v1.1: cap 30000→22500, cost 12000→11000→7000)
 ];
 // L1: orgPop→基礎集客力の区間線形補間テーブル（キャパ非依存）
@@ -3362,8 +3362,10 @@ const SHOW_DRAW_CONFIG = {
   junkWeightMult: 0.5,        // ゴミ試合の重み倍率
   promoStackPerMatch: 8,      // 出場選手promoStack→試合appeal加算
   promoStackGlobal: 2,        // 非出場選手promoStack→全体加算
-  // 会場規模別の適正試合数
-  minMatchesByVenue: [2, 2, 2, 3, 3, 3, 4, 4, 5, 5],
+  // 会場規模別の適正試合数(V=1.0の基準)。集客ボリューム係数 v1.1 (2026-07-30 Keisuke):
+  // 適正は会場の試合枠数(VENUES.maxMatches=上限)から導く。**適正 = 枠数 − 1**。
+  // 枠数フル(=上限)で1段のボーナス、それ以上は組めない。
+  minMatchesByVenue: [2, 2, 2, 3, 3, 4, 4, 5, 6, 7],
   // shortPenalty1/2 は集客ボリューム係数 v1.0 (2026-07-30) で撤去。役割は
   // ATTENDANCE_V2_CONFIG.volumeShortageByVenueBand(需要への直接乗算)へ一本化
 };
@@ -3398,7 +3400,8 @@ const ATTENDANCE_V2_CONFIG = {
     [0.75, 0.45, 0.25, 0.15],
     [0.70, 0.40, 0.20, 0.10],
   ],
-  // 適正超え1枠ごとの需要ボーナス(上限 maxMatches−適正 段)。ドームは特別な場所として最厚
+  // 枠数フル(=上限、適正+1)時の需要ボーナス。上限は maxMatches−適正=1段なので
+  // 実質フル時の一発のみ。ドームは特別な場所として最厚(v1.1: 適正=枠数−1 に再定義)
   volumeExcessPerSlotByVenueBand: [0.00, 0.02, 0.03, 0.04, 0.06],
   // ソフトキャップ: reach超過分の減衰
   softCapBands: [

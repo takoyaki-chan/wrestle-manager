@@ -58,11 +58,11 @@ function legacyAttendance(G, venueIdx, showDraw) {
   return Engine.util.clamp(Math.round(capped), minAttendance, venue.cap);
 }
 
-// 1a. 適正ちょうどはV=1.0で旧D系と完全一致。
+// 1a. 適正ちょうど(=枠数-1)はV=1.0で旧D系と完全一致。
 for (const sample of [
   { venueIdx: 6, slots: 4, draw: 260, pop: 65 },
-  { venueIdx: 8, slots: 5, draw: 480, pop: 82 },
-  { venueIdx: 9, slots: 5, draw: 540, pop: 95 },
+  { venueIdx: 8, slots: 6, draw: 480, pop: 82 },
+  { venueIdx: 9, slots: 7, draw: 540, pop: 95 },
 ]) {
   const G = state(sample.pop);
   const current = Engine.attendanceV2.calcAttendanceV2(G, sample.venueIdx, sample.draw, singles(sample.slots), null);
@@ -71,13 +71,13 @@ for (const sample of [
   close(`venue ${sample.venueIdx}, ${sample.slots}枠のV`, current.volumeFactor, 1.0);
 }
 
-// 1b. 超過枠はボーナス表どおりV>1.0となり、旧D系より動員を押し上げる。
+// 1b. 枠数フル(=適正+1)は微弱ボーナスでV>1.0となり、旧D系より動員を押し上げる。
 {
   const G = state(82);
-  const current = Engine.attendanceV2.calcAttendanceV2(G, 8, 480, singles(8), null);
+  const current = Engine.attendanceV2.calcAttendanceV2(G, 8, 480, singles(7), null);
   const legacy = legacyAttendance(G, 8, 480);
-  close('大会場8枠の超過V', current.volumeFactor, 1.12);
-  assert.ok(current.attendance > legacy, `大会場8枠: ${current.attendance} <= ${legacy}`);
+  close('大会場7枠フルのV', current.volumeFactor, 1.04);
+  assert.ok(current.attendance > legacy, `大会場7枠フル: ${current.attendance} <= ${legacy}`);
   checks++;
 }
 
@@ -103,11 +103,11 @@ for (const venueIdx of [6, 7, 8, 9]) {
   checks++;
 }
 
-// 4. 大会場/ドームのフルカード上乗せは指定値で頭打ち。
-close('大会場8枠のV', Engine.attendanceV2.calcVolumeFactor(8, 8), 1.12);
-close('ドーム8枠のV', Engine.attendanceV2.calcVolumeFactor(9, 8), 1.18);
-close('大会場の上乗せ上限', Engine.attendanceV2.calcVolumeFactor(8, 12), 1.12);
-close('ドームの上乗せ上限', Engine.attendanceV2.calcVolumeFactor(9, 12), 1.18);
+// 4. フルカード(=枠数上限)の上乗せは1段のみで頭打ち。枠数を超える入力でも増えない。
+close('大会場7枠フルのV', Engine.attendanceV2.calcVolumeFactor(8, 7), 1.04);
+close('ドーム8枠フルのV', Engine.attendanceV2.calcVolumeFactor(9, 8), 1.06);
+close('大会場の上乗せ上限', Engine.attendanceV2.calcVolumeFactor(8, 12), 1.04);
+close('ドームの上乗せ上限', Engine.attendanceV2.calcVolumeFactor(9, 12), 1.06);
 
 // 5. タッグは2枠。タッグ2+シングル1はシングル5と同じV。
 {
