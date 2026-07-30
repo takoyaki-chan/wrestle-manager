@@ -79,7 +79,8 @@ Engine.mq.finalize(state, matchResult, context = {}, profile = 'raw')
 - `Engine.mq.buildRingInOpts(state, leftId, rightId, options)` — 因縁/タイトル/trust/バフ/(通常興行限定の)メイン・ラストランを`simOpts`へ組み立てる。**simulateMatchを呼ぶ「前」に一度だけ呼ぶ**(`management.js:2165`)
   - `options.rivalryOnly` — 因縁チャネルだけを返し、タイトル/trust/バフは中立値にする。`ppv`プロファイル(PPV GRAND FINAL・天頂戦)専用。旧v2.0の`profile==='ppv'`が外部加算を「因縁のみ」与えていたスコープに一致させるためのもので、プレイヤーのバフを他団体どうしの試合へ漏らさない役割も持つ
   - **リング内効果はこの関数を呼ばないと一切効かない**(`match-engine.js`は`ringOpts.rivalryRing`等を読むだけで自前計算しない)。旧v2.0では`finalize`が因縁を自前解決して外部加算していたため呼び出し側の責務ではなかった。P3bのリング内化で責務が移った際、`ppv`プロファイルの2経路(天頂戦`ppvTournament.run` / PPVのTV放送`ppv.applyPPVResults`のheadless側)が呼び忘れており、**因縁の効果がゼロに落ちていた**(2026-07-30 修復。回帰テスト`test/tenchosen-rivalry-ringin-test.js`)
-  - `raw`プロファイル(ジュニア/春タッグ/秋勝ち残り/対抗戦/挑戦状等)は旧v2.0でも外部加算ゼロだったため、リング内効果の対象外という扱いを維持している。ここへ因縁を効かせるかは**設計判断として未決**
+  - `raw`プロファイルにも**因縁を効かせる(2026-07-30 Keisuke裁定「当然因縁を効かせます」)**。旧v2.0では外部加算ゼロだったので回帰ではないが、「大舞台ほど因縁が試合内容に出ない」という逆転を解消するため、ジュニア/秋勝ち残り/対抗戦/挑戦状/団体内紛の各経路に `rivalryOnly` で通した。**タッグ(春タッグリーグ)は §4 のスコープどおり対象外**
+  - **シングルの全経路が `buildRingInOpts` を通ること**は `test/ringin-coverage-test.js` が守る(simulateMatch をスパイして opts に `rivalryRing` があることを検査)。呼び忘れは症状が出ないままMQだけ静かに下がるため、テストで縛る
 - `Engine.mq.buildNormalContext(state, matchResult, slot, options)` — `finalize`へ渡す`context`(participantFighters/rivalryLevel/isTitle/venueHeat/fp/isMainEvent等)を組み立てる(`management.js:2229`)
 - `Engine.mq.resolveNextMatchMqTargetIndex(validMatches, milestoneBuffs)` — `next_match_mq`バフの対象試合をカード順のみから確定するpure関数。勝敗に依存しないため、シム前の解決とシム後の消費判定が同じ結果になる(`management.js:2221`)
 - 次戦MQバフの消費は`finalize`の返却値(`consumedNextMatchMqBuff`)で一元管理される

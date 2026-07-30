@@ -174,7 +174,12 @@ function stable(value) {
     assert.strictEqual(finalCall.left.condition, 80);
     assert.strictEqual(finalCall.left._hpOverride, Math.round(expectedFullHp * 0.45));
     assert.ok(finalCall.left._hpOverride < expectedFullHp, 'carried condition should reduce starting HP');
-    assert.deepStrictEqual(finalCall.options, { recordFrames: true });
+    // opts の完全一致は避ける。2026-07-30 に因縁のリング内効果(rivalryRing 等)が
+    // raw プロファイルにも通るようになり、チャネルが増えた。見るべきは
+    // 「フレーム記録を要求している」ことと「リング内効果の口が繋がっている」こと。
+    assert.strictEqual(finalCall.options.recordFrames, true, 'フレーム記録を要求する');
+    assert.ok('rivalryRing' in finalCall.options,
+      '因縁のリング内効果が渡されている(呼び忘れの再発防止)');
   } finally {
     Engine.battle.simulateMatch = originalSim;
   }

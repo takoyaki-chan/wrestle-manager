@@ -8653,7 +8653,10 @@ const Engine = {
 
           // 試合シミュレーション
           const matchRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xB2A1, event.fighter1 ^ event.fighter2));
-          let matchResult = Engine.battle.simulateMatch(matchF1, matchF2, matchRng, 1);
+          // 因縁のリング内効果(§4.1)。rawプロファイルにも通す(2026-07-30 裁定)。
+          const b2RingIn = Engine.mq.buildRingInOpts(state, matchF1.id, matchF2.id,
+            { roster: [matchF1, matchF2], rivalryOnly: true });
+          let matchResult = Engine.battle.simulateMatch(matchF1, matchF2, matchRng, 1, b2RingIn.simOpts);
           const finalized = Engine.mq.finalize(state, matchResult, {
             path: 'Engine.rival.processAIWeeklyEvent.B2',
             matchType: 'singles',
@@ -9986,7 +9989,10 @@ const Engine = {
 
         // 試合実行
         const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB3A1, orgId.charCodeAt(0) || 0));
-        let matchResult = Engine.battle.simulateMatch(rep1, rep2, matchRng, 2);
+        // 因縁のリング内効果(§4.1)。rawプロファイルにも通す(2026-07-30 裁定)。
+        const warRingIn = Engine.mq.buildRingInOpts(s, rep1.id, rep2.id,
+          { roster: [rep1, rep2], rivalryOnly: true });
+        let matchResult = Engine.battle.simulateMatch(rep1, rep2, matchRng, 2, warRingIn.simOpts);
         const finalized = Engine.mq.finalize(s, matchResult, {
           path: 'Engine.rival.aiWar',
           matchType: 'singles',
@@ -10251,7 +10257,10 @@ const Engine = {
 
         // 受諾→試合実行（matchTier=2、ビッグマッチ）
         const matchRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB3B1, orgId.charCodeAt(0) || 0));
-        let matchResult = Engine.battle.simulateMatch(challenger, defender, matchRng, 2);
+        // 因縁のリング内効果(§4.1)。rawプロファイルにも通す(2026-07-30 裁定)。
+        const b3RingIn = Engine.mq.buildRingInOpts(s, challenger.id, defender.id,
+          { roster: [challenger, defender], rivalryOnly: true });
+        let matchResult = Engine.battle.simulateMatch(challenger, defender, matchRng, 2, b3RingIn.simOpts);
         const finalized = Engine.mq.finalize(s, matchResult, {
           path: 'Engine.rival.aiB3Challenge',
           matchType: 'singles',
@@ -24894,8 +24903,11 @@ Engine.juniorTournament = {
           state.rngSeed, state.season, 0xBB00 + r * 10 + i));
         const pf = Engine.juniorTournament._withTournamentHp(left, matchTier);
         const af = Engine.juniorTournament._withTournamentHp(right, matchTier);
+        // 因縁のリング内効果(§4.1)。rawプロファイルにも通す(2026-07-30 裁定)。
+        const jtRingIn = Engine.mq.buildRingInOpts(state, left.id, right.id,
+          { roster: [left, right], rivalryOnly: true });
         let result = Engine.battle.simulateMatch(
-          pf, af, matchRng, matchTier, { recordFrames: true });
+          pf, af, matchRng, matchTier, { recordFrames: true, ...jtRingIn.simOpts });
         const finalized = Engine.mq.finalize(state, result, {
           path: 'Engine.juniorTournament.run',
           matchType: 'singles',
@@ -26917,11 +26929,14 @@ Engine.autumnWar = {
     const preparedLeft = { ...left, condition: beforeLeft, _hpOverride: Engine.wear.toHpOverride(beforeLeft, fullHpLeft) };
     const preparedRight = { ...right, condition: beforeRight, _hpOverride: Engine.wear.toHpOverride(beforeRight, fullHpRight) };
     const recordFrames = !!options?.recordFrames;
+    // 因縁のリング内効果(§4.1)。rawプロファイルにも通す(2026-07-30 裁定)。
+    const awRingIn = Engine.mq.buildRingInOpts(state, left.id, right.id,
+      { roster: [left, right], rivalryOnly: true });
     let matchResult = Engine.battle.simulateMatch(
       preparedLeft,
       preparedRight,
       rng, Engine.autumnWar.MATCH_TIER,
-      recordFrames ? { recordFrames: true } : undefined
+      recordFrames ? { recordFrames: true, ...awRingIn.simOpts } : { ...awRingIn.simOpts }
     );
     const finalized = Engine.mq.finalize(state, matchResult, {
       path: 'Engine.autumnWar.simulateNextBout',
@@ -27061,10 +27076,13 @@ Engine.autumnWar = {
         const beforeLeft = conditions[left.id], beforeRight = conditions[right.id];
         const fullHpLeft = Engine.autumnWar._fullHp(left);
         const fullHpRight = Engine.autumnWar._fullHp(right);
+        // 因縁のリング内効果(§4.1)。rawプロファイルにも通す(2026-07-30 裁定)。
+        const awLegacyRingIn = Engine.mq.buildRingInOpts(state, left.id, right.id,
+          { roster: [left, right], rivalryOnly: true });
         let matchResult = Engine.battle.simulateMatch(
           { ...left, condition: beforeLeft, _hpOverride: Engine.wear.toHpOverride(beforeLeft, fullHpLeft) },
           { ...right, condition: beforeRight, _hpOverride: Engine.wear.toHpOverride(beforeRight, fullHpRight) },
-          eventRng, Engine.autumnWar.MATCH_TIER
+          eventRng, Engine.autumnWar.MATCH_TIER, awLegacyRingIn.simOpts
         );
         const finalized = Engine.mq.finalize(state, matchResult, {
           path: 'Engine.autumnWar.legacyRun',
