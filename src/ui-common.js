@@ -16196,8 +16196,9 @@ function _chSubImg(fighter) {
 }
 
 /** 吹き出しの予約枠。発言が無くても同じ高さの空枠を返し、左右/複数人の画像上端を揃える */
-function _chBubbleSlot(text) {
-  return `<div class="ch-bubble-slot">${text ? `<div class="ch-bubble">「${escHtml(text)}」</div>` : ''}</div>`;
+function _chBubbleSlot(text, bubbleClass = '') {
+  const modifier = bubbleClass ? ` ${escHtml(bubbleClass)}` : '';
+  return `<div class="ch-bubble-slot">${text ? `<div class="ch-bubble${modifier}">「${escHtml(text)}」</div>` : ''}</div>`;
 }
 
 /** 団体エンブレム(実画像)。orgIdが取れないときだけ頭文字色丸へフォールバック(mockup-baseline-v0.1 §5) */
@@ -17342,7 +17343,7 @@ function renderAutumnWarResult() {
   });
   const bubsRow = memberRows.map(({ m, isAce, line }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
       <div class="ch-order">${escHtml(m.role)}</div>
-      ${_chBubbleSlot(line)}
+      ${_chBubbleSlot(line).replace('class="ch-bubble"', 'class="ch-bubble is-autumn-speech"')}
     </div>`).join('');
   const imgsRow = memberRows.map(({ m, isAce }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
       <div class="ch-por-wrap">

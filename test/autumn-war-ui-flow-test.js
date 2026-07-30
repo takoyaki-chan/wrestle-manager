@@ -203,7 +203,7 @@ function section(source, startMarker, endMarker) {
   const boutPopup = section(ui, 'function renderAutumnWarBoutResultPopup', 'function renderAutumnWarBoard');
   assert.ok(boutPopup.includes('showVictoryLine: !!victoryLine'), 'survivor line must be allowed to disappear');
   const resultView = section(ui, 'function renderAutumnWarResult', 'function _agwMvpLine');
-  assert.ok(resultView.includes('_chBubbleSlot(line)'), 'optional championship speech is missing');
+  assert.ok(resultView.includes("_chBubbleSlot(line).replace('class=\"ch-bubble\"', 'class=\"ch-bubble is-autumn-speech\"')"), 'championship speech must use the non-clipped autumn modifier');
   assert.ok(resultView.includes('class="ch-mem'), 'championship speech must be attached to its speaker card (U2 unified .ch-mem)');
   assert.ok(resultView.includes('result.revenueDistribution'), 'result view must read the saved dome-event distribution');
   assert.ok(resultView.includes('大会総収入'), 'result view must show the event revenue basis');
@@ -214,6 +214,7 @@ function section(source, startMarker, endMarker) {
   assert.ok(resultView.includes('結果ボーナス +${Math.round(playerShare.brandBonusRate * 100)}%'), 'brand payout must expose the tournament-result percentage bonus');
   assert.ok(resultView.includes('${playerShare.brandBonusAmount}'), 'brand payout must expose the bonus amount');
   assert.ok(html.includes('.ch-bubble-slot'), 'U2 unified champion bubble slot CSS must exist');
+  assert.ok(html.includes('.ch-trio .ch-bubble.is-autumn-speech{display:block;-webkit-line-clamp:unset;overflow:visible}'), 'autumn champion speech must grow instead of being line-clamped');
   assert.ok(html.includes('.agw-result-finance'));
 })();
 
