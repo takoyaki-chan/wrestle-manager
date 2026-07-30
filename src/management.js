@@ -17267,6 +17267,18 @@ Engine.mvpRace = {
     POP_MULT: 0.4,
     DRAW_THRESHOLD: 30,
     DRAW_MULT: 0.3,
+    TENCHOSEN_WIN_R1: 3,
+    TENCHOSEN_WIN_QF: 5,
+    TENCHOSEN_WIN_SF: 8,
+    TENCHOSEN_WIN_FINAL: 12,
+    TENCHOSEN_CHAMPION_BONUS: 6,
+    TENCHOSEN_RUNNER_UP_BONUS: 3,
+    AUTUMN_WAR_PER_WIN: 3,
+    AUTUMN_WAR_TEAM_CHAMPION: 7,
+    AUTUMN_WAR_TEAM_RUNNER_UP: 3,
+    SPRING_TAG_CHAMPION: 8,
+    SPRING_TAG_RUNNER_UP: 4,
+    MQ_RECORD_BREAK: 5,
   },
 
   /** orgId が S/A/B どのランキングか取得 */
@@ -17300,6 +17312,9 @@ Engine.mvpRace = {
     let bigMatch85 = 0, bigMatch90 = 0, bigMatch95 = 0;
     let warWins = 0, warLosses = 0, warDraws = 0;
     let b3Decline = 0, b3Rejected = 0;
+    let tenchosenResult = null;
+    let autumnWarResult = null, autumnWarWins = 0;
+    let springTagResult = null;
 
     hist.forEach(ev => {
       if (!ev || ev.season !== season) return;
@@ -17326,7 +17341,31 @@ Engine.mvpRace = {
         else warDraws++;
       } else if (ev.type === 'b3Decline') b3Decline++;
       else if (ev.type === 'b3Rejected') b3Rejected++;
+      else if (ev.type === 'ppvTournament') tenchosenResult = ev.result || null;
+      else if (ev.type === 'autumnWar') {
+        autumnWarResult = ev.result || null;
+        autumnWarWins += Math.max(0, Number(ev.wins) || 0);
+      } else if (ev.type === 'springTagLeague') springTagResult = ev.result || null;
     });
+
+    const tenchosenPoints = {
+      champion: P.TENCHOSEN_WIN_R1 + P.TENCHOSEN_WIN_QF + P.TENCHOSEN_WIN_SF + P.TENCHOSEN_WIN_FINAL + P.TENCHOSEN_CHAMPION_BONUS,
+      runnerUp: P.TENCHOSEN_WIN_R1 + P.TENCHOSEN_WIN_QF + P.TENCHOSEN_WIN_SF + P.TENCHOSEN_RUNNER_UP_BONUS,
+      semiFinal: P.TENCHOSEN_WIN_R1 + P.TENCHOSEN_WIN_QF,
+      quarterFinal: P.TENCHOSEN_WIN_R1,
+      firstRound: 0,
+    };
+    const tenchosen = tenchosenPoints[tenchosenResult] || 0;
+    const autumnWar = autumnWarWins * P.AUTUMN_WAR_PER_WIN
+      + (autumnWarResult === 'champion' ? P.AUTUMN_WAR_TEAM_CHAMPION
+        : autumnWarResult === 'runnerUp' ? P.AUTUMN_WAR_TEAM_RUNNER_UP : 0);
+    const springTag = springTagResult === 'champion' ? P.SPRING_TAG_CHAMPION
+      : springTagResult === 'runnerUp' ? P.SPRING_TAG_RUNNER_UP : 0;
+    const mqRecordBroken = ['mqRecord', 'mqRecordTag'].reduce((count, key) => {
+      const record = state[key];
+      return count + (record && record.season === state.season
+        && Array.isArray(record.holderIds) && record.holderIds.includes(fighter.id) ? 1 : 0);
+    }, 0);
 
     // 王座保持判定
     let isCurrentChamp = false;
@@ -17353,18 +17392,18 @@ Engine.mvpRace = {
               + ppvOtherWin * P.PPV_OTHER_WIN + ppvOtherLoss * P.PPV_OTHER_LOSS;
     const title = titleWins * P.TITLE_WIN + titleDefenses * P.TITLE_DEFENSE_PER + (isCurrentChamp ? P.TITLE_HOLD_AT_END : 0);
     const dome = domeAppearances * P.DOME_MAIN_APPEARANCE;
-    const mq = bigMatchPoints + seasonBestMQBonus;
+    const mq = bigMatchPoints + seasonBestMQBonus + mqRecordBroken * P.MQ_RECORD_BREAK;
     const war = warWins * P.WAR_WIN + warLosses * P.WAR_LOSS;
     const b3 = b3Decline * P.B3_DECLINE + b3Rejected * P.B3_REJECTED;
     const orgRank = Engine.mvpRace._orgRankPoints(state, orgId);
     const draw = popBonus + drawBonus;
 
-    const points = ovr + ppv + title + dome + mq + war + b3 + orgRank + draw;
+    const points = ovr + ppv + title + dome + mq + war + b3 + orgRank + draw + tenchosen + autumnWar + springTag;
 
     return {
       points,
       breakdown: {
-        ovr, ppv, title, dome, mq, war, b3, orgRank, draw,
+        ovr, ppv, title, dome, mq, war, b3, orgRank, draw, tenchosen, autumnWar, springTag,
         meta: {
           titleWins, titleDefenses, isCurrentChamp,
           ppvChampion, ppvRunnerUp, ppvOtherWin, ppvOtherLoss,
@@ -17378,6 +17417,10 @@ Engine.mvpRace = {
           role: fighter.role || '',
           age: fighter.age || 0,
           b3Decline, b3Rejected,
+          tenchosenResult,
+          autumnWarResult, autumnWarWins,
+          springTagResult,
+          mqRecordBroken,
         }
       }
     };
@@ -17483,8 +17526,16 @@ Engine.mvpRace = {
     const elems = [];
     if (meta.titleDefenses > 0) elems.push(`王座${meta.titleDefenses}度防衛`);
     else if (meta.isCurrentChamp) elems.push('王座を保持中');
+    if (meta.tenchosenResult === 'champion') elems.push('天頂戦優勝');
+    else if (meta.tenchosenResult === 'runnerUp') elems.push('天頂戦準優勝');
     if (meta.ppvChampion > 0) elems.push('PPV優勝');
     else if (meta.ppvRunnerUp > 0) elems.push('PPV準優勝');
+    if (meta.autumnWarWins >= 1) elems.push(`4団体勝ち残り対抗戦${meta.autumnWarWins}勝`);
+    else if (meta.autumnWarResult === 'champion') elems.push('4団体勝ち残り対抗戦優勝');
+    else if (meta.autumnWarResult === 'runnerUp') elems.push('4団体勝ち残り対抗戦準優勝');
+    if (meta.springTagResult === 'champion') elems.push('春のタッグリーグ優勝');
+    else if (meta.springTagResult === 'runnerUp') elems.push('春のタッグリーグ準優勝');
+    if (meta.mqRecordBroken > 0) elems.push('歴代最高の試合評価を更新');
     if (meta.warWins >= 3) elems.push(`対抗戦${meta.warWins}勝`);
     if (meta.bigMatches >= 2) elems.push(`名勝負${meta.bigMatches}本`);
     if (meta.domeAppearances >= 2) elems.push(`ドーム${meta.domeAppearances}戦`);
@@ -17580,6 +17631,31 @@ Engine.mvpRace = {
         `現王者の座を維持しながら、シーズンを戦う${m.age}歳。`,
         `ベルトを腰に巻いてリングに上がる${m.age}歳——挑戦者の影は近いか、まだ遠いか。`,
         `現王者の肩書きが、今期の戦いに重みを加えている${m.age}歳。`,
+      ]);
+    } else if (m.tenchosenResult === 'champion') {
+      main = pick([
+        `天頂戦を制した${m.age}歳。4年に一度の頂点で積み上げた勝ち星が、年間レースを大きく動かしている。`,
+        `天頂戦優勝。全国の強豪を越えた一夜の連続が、${m.age}歳を上位戦線の中心へ押し上げた。`,
+      ]);
+    } else if (m.tenchosenResult === 'runnerUp') {
+      main = pick([
+        `天頂戦で決勝まで進んだ${m.age}歳。あと一歩届かなかった悔しさも、年間レースでは大きな存在感になっている。`,
+        `天頂戦準優勝。4年に一度の大舞台で重ねた勝利が、${m.age}歳を上位へ運んできた。`,
+      ]);
+    } else if (m.autumnWarWins >= 3) {
+      main = pick([
+        `4団体勝ち残り対抗戦で${m.autumnWarWins}勝。勝ち抜き戦で見せた働きが、${m.age}歳の評価を押し上げている。`,
+        `4団体勝ち残り対抗戦の${m.autumnWarWins}勝が、${m.age}歳を上位戦線へ引き上げた。チームの結果以上に、その勝ち星が雄弁だ。`,
+      ]);
+    } else if (m.springTagResult === 'champion') {
+      main = pick([
+        `春のタッグリーグを制した${m.age}歳。相棒と掴んだ頂点が、個人としての年間レースにも確かな重みを与えている。`,
+        `春のタッグリーグ優勝。二人で積み上げた信頼が、${m.age}歳を上位へ押し上げた。`,
+      ]);
+    } else if (m.mqRecordBroken > 0) {
+      main = pick([
+        `歴代最高の試合評価を更新した${m.age}歳。勝敗を越えて刻まれた一戦が、今期の存在感を決定づけている。`,
+        `歴代最高の試合評価を塗り替えた${m.age}歳。その一夜の熱量が、年間レースにも残り続けている。`,
       ]);
     } else if (m.ppvChampion >= 1) {
       main = pick([
@@ -17769,6 +17845,26 @@ Engine.mvpRace = {
         `${m.age}歳でベルトを腰に。新時代の足音。`,
       ]);
     }
+    if (m.tenchosenResult === 'champion') return pick([
+      '天頂戦優勝。4年に一度の頂点が、レースを動かした。',
+      '天頂戦を制覇。積み上げた勝ち星は重い。',
+    ]);
+    if (m.tenchosenResult === 'runnerUp') return pick([
+      '天頂戦準優勝。決勝までの道のりが上位へ導いた。',
+      '天頂戦で決勝進出。悔しさを次の勝利へ。',
+    ]);
+    if (m.autumnWarWins >= 3) return pick([
+      `4団体勝ち残り対抗戦${m.autumnWarWins}勝。勝ち抜き戦の主役。`,
+      `対抗戦で${m.autumnWarWins}人抜き。団体を越えて名を上げた。`,
+    ]);
+    if (m.springTagResult === 'champion') return pick([
+      '春のタッグリーグ優勝。相棒と掴んだ頂点。',
+      '春のタッグリーグ制覇。二人の信頼が点になった。',
+    ]);
+    if (m.mqRecordBroken > 0) return pick([
+      '歴代最高の試合評価を更新。あの一戦が残り続ける。',
+      '記録に残る名勝負。勝敗を越えた夜だった。',
+    ]);
     if (m.ppvChampion >= 1) return pick([
       `PPV優勝で+${Engine.mvpRace.POINTS.PPV_CHAMPION}pt獲得。次戦で更なる飛躍を。`,
       `PPV制覇——あの一夜が点数を塗り替えた。`,
@@ -17940,6 +18036,15 @@ Engine.mvpRace = {
     if (m.ppvChampion > 0) chips.push({ icon: '🏆', text: `PPV優勝${m.ppvChampion > 1 ? m.ppvChampion + '回' : ''}`.trim() });
     else if (m.ppvRunnerUp > 0) chips.push({ icon: '🥈', text: `PPV準優勝${m.ppvRunnerUp > 1 ? m.ppvRunnerUp + '回' : ''}`.trim() });
     else if (m.ppvParticipation > 0) chips.push({ icon: '🎤', text: `PPV出場${m.ppvParticipation}回` });
+    if (m.tenchosenResult === 'champion') chips.push({ icon: '👑', text: '天頂戦優勝' });
+    else if (m.tenchosenResult === 'runnerUp') chips.push({ icon: '🥈', text: '天頂戦準優勝' });
+    if (m.autumnWarResult) {
+      const rank = m.autumnWarResult === 'champion' ? '優勝' : m.autumnWarResult === 'runnerUp' ? '準優勝' : '出場';
+      chips.push({ icon: '⚔', text: `4団体勝ち残り対抗戦 ${rank}${m.autumnWarWins > 0 ? `・${m.autumnWarWins}勝` : ''}` });
+    }
+    if (m.springTagResult === 'champion') chips.push({ icon: '🌸', text: '春のタッグリーグ優勝' });
+    else if (m.springTagResult === 'runnerUp') chips.push({ icon: '🌸', text: '春のタッグリーグ準優勝' });
+    if (m.mqRecordBroken > 0) chips.push({ icon: '🥊', text: m.mqRecordBroken > 1 ? '歴代最高の試合評価を2件更新' : '歴代最高の試合評価を更新' });
     const warTotal = (m.warWins || 0) + (m.warLosses || 0) + (m.warDraws || 0);
     if (warTotal > 0) {
       const seg = [`${m.warWins}勝`, `${m.warLosses}敗`];
