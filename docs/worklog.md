@@ -1,5 +1,56 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## juniorTournament weekPhase ライフサイクル修正（task-31・2026-07-31）
+
+### 根本原因
+
+- 結論は**仮説B（16人化以前からの既存バグ）**。`git blame` により、
+  `weekPhase = 'juniorTournament'` を設定する `App.enterJuniorTournamentFromWeek`
+  (app.js:3847、導入は `ab1da86` / 2026-05-12)、ロード復帰の
+  `resumeLoadedSpecialPhase` (同:3786)、結果確定を `manage` に戻す
+  `finalizeJuniorTournament` (同:15332) は全て43dbcad以前から存在することを確認した。
+  復旧UIも ui-render.js:1680-1691 の `9646007` (2026-05-09) から既存。
+- 問題は、開催中の正規状態である `juniorTournament` を `showScreen('week')` が
+  `renderWeekScreen()` へ渡す一方、同描画関数にそのphaseの正規分岐が無かったこと。
+  そのため今週タブ・他タブから戻るだけで汎用の「進行不具合」UIに落ち、旧ボタンが
+  phase を `manage` に強制変更していた。
+- 43dbcadのジュニア変更は16人選出、`firstRound`、ブラケット表示、履歴記録の拡張であり、
+  weekPhaseの設定・解除経路を変更していない。したがって16人化は大量露出の契機にはなり得ても、
+  原因ではない。
+
+### 実装
+
+- `Engine.juniorTournament.apply()` を大会結果の原子的コミット境界にした。結果・賞金・
+  careerRecordを反映する同じstate更新で `weekPhase: 'manage'` へ遷移し、
+  `_juniorTournamentSelection` を削除する。これにより「結果反映済みなのに
+  juniorTournament phaseのまま」という状態を新たに保存しない。
+- `App.resumeJuniorTournament()` を追加。大会途中に今週タブへ移動しても選出と事前計算済みの
+  勝敗を再作成せず、召集／対戦表／試合結果／優勝結果の現在地点を再描画する。観戦iframeだけは
+  タブ移動で閉じられるため、安全に対戦表へ戻す。
+- `renderWeekScreen()` に `juniorTournament` の正規表示を追加し、復旧UIではなく
+  「U-20ジュニアトーナメント進行中」+「大会へ戻る」導線を表示する。
+- 汎用復旧ボタンは直接stateを壊さず `App.recoverWeekPhase()` を呼ぶ。ジュニア未確定なら
+  大会へ戻し、旧セーブなどで結果が既に反映済みなら結果を保持して `manage` へ完了させる。
+
+### 復旧ボタンの副作用調査
+
+- 修正前は大会途中で `weekPhase='manage'` にするだけだった。選出・結果反映前の
+  `_jtPreview` は永続化されないため、そのまま週送りすると大会結果、careerRecord、賞金、
+  出場記録を確定しないまま開催週を越えられる二次被害があった。
+- 修正後は未確定データを `manage` に偽装しない。反映済みの旧セーブは再計算せず、既存の
+  result／careerRecord／賞金を残したまま完了させる。
+
+### 検証
+
+- 新規 `test/junior-weekphase-lifecycle-test.js`:
+  - Week23→24の開始phase、進行→確定→manageの遷移列。
+  - 4人／8人／16人の全選手について、`champion` / `runnerUp` / `semiFinal` /
+    `quarterFinal` / `firstRound` の履歴と賞金を検証。
+  - 今週タブの正規再開導線、旧セーブの確定結果保全、汎用復旧ボタンの委譲を検証。
+- `npm test`: **144/144 PASS**。
+- `node test/auto-sim.js 40`: **ALL CLEAR**、violations 0、errors 0、40年・2120週。
+- `git diff --check`: PASS。
+
 ## 加入第一声（キャリア判定式）+ スカウト/FA識別バッジ（task-30・2026-07-30）
 
 ### 実装

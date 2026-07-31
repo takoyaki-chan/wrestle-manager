@@ -3784,7 +3784,7 @@ const App = {
       return true;
     }
     if (G.weekPhase === 'juniorTournament') {
-      App.initJuniorTournament();
+      (App.resumeJuniorTournament || App.initJuniorTournament)();
       return true;
     }
     if (App.canEnterJuniorTournamentThisWeek()) {
@@ -3850,6 +3850,40 @@ const App = {
     return true;
   },
 
+  // 今週タブなどへ一度移動しても、進行中の大会を初期化し直さずに戻す。
+  // 大会の勝敗は _jtPreview.result の事前計算値が正史なので、観戦中だけは
+  // iframe を再開せず対戦表へ戻す。これで途中の phase を manage に偽装しない。
+  resumeJuniorTournament() {
+    if (!G || G.weekPhase !== 'juniorTournament') return false;
+    // 旧バージョンでは apply 後の感想チェーン中も juniorTournament のままだった。
+    // そのセーブを読み直した場合は再計算せず、確定済みの結果を保ったまま完了させる。
+    if (G._juniorTournamentResult && !G._juniorTournamentResult.cancelled) {
+      return App.recoverWeekPhase();
+    }
+    const selection = G._juniorTournamentSelection;
+    if (!selection || selection.cancelled || !Array.isArray(selection.participants) || selection.participants.length < 4) {
+      App.cancelJuniorTournamentForInsufficientParticipants();
+      return false;
+    }
+
+    const jt = App._jtPreview;
+    if (!jt || jt.selection !== selection || !jt.result) {
+      App.initJuniorTournament();
+      return true;
+    }
+
+    if (jt.phase === 'watching') {
+      // タブ移動時にbattle iframeは閉じられるため、同じ試合を安全に選び直せる対戦表へ戻す。
+      jt.phase = 'bracket';
+      jt.bgmTrack = _jtBoardTrack(jt);
+    }
+    if (jt.phase === 'summon') renderJuniorTournamentSummon();
+    else if (jt.phase === 'matchResult') renderJuniorTournamentMatchResult(jt.currentRound, jt.currentMatch);
+    else if (jt.phase === 'finalResult') renderJuniorTournamentResult();
+    else renderJuniorTournamentBracket();
+    return true;
+  },
+
   cancelJuniorTournamentForInsufficientParticipants() {
     if (!G) return;
     const next = {
@@ -3870,6 +3904,32 @@ const App = {
     if (typeof showScreen === 'function') showScreen('week');
     if (typeof renderWeekScreen === 'function') renderWeekScreen();
     if (typeof refreshAll === 'function') refreshAll();
+  },
+
+  // 汎用の進行復旧口。ジュニア中は manage への強制変更ではなく、
+  // 未確定なら大会へ戻し、既に反映済みなら結果を保ったまま完了状態へ着地させる。
+  recoverWeekPhase() {
+    if (!G) return false;
+    if (G.weekPhase === 'juniorTournament') {
+      if (!(G._juniorTournamentResult && !G._juniorTournamentResult.cancelled)) {
+        return App.resumeJuniorTournament();
+      }
+      const clean = { ...G, weekPhase: 'manage' };
+      delete clean._juniorTournamentSelection;
+      G = clean;
+      App._jtPreview = null;
+    } else {
+      G = {
+        ...G,
+        weekPhase: 'manage',
+        lastShowResults: G.lastShowResults || [],
+        weeklyFinance: G.weeklyFinance || { income: 0, expense: 0, details: [] },
+      };
+    }
+    try { Storage.autoSave(); } catch (_e) {}
+    if (typeof showScreen === 'function') showScreen('week');
+    if (typeof refreshAll === 'function') refreshAll();
+    return true;
   },
 
   // ═══ 秋 4団体勝ち残り対抗戦 (autumn-gauntlet-war-spec-v0.1) ═══

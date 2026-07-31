@@ -25440,8 +25440,14 @@ Engine.juniorTournament = {
       });
     });
 
-    // トーナメント結果をstateに保存（UI表示用）
-    s = { ...s, _juniorTournamentResult: { ...tournamentResult, revenueDistribution } };
+    // トーナメント結果を保存すると同時に、大会phaseを完了させる。
+    // UI演出はこの確定済み結果を読むだけなので、ここを原子的なコミット境界にする。
+    s = {
+      ...s,
+      weekPhase: 'manage',
+      _juniorTournamentResult: { ...tournamentResult, revenueDistribution },
+    };
+    delete s._juniorTournamentSelection;
 
     return { state: s, events };
   },

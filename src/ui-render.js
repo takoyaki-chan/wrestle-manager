@@ -623,6 +623,23 @@ function renderWeekScreen() {
     return;
   }
 
+  // U-20開催中に今週タブへ戻ることは正規の操作。phaseをmanageへ書き換えず、
+  // 大会画面へ安全に復帰する導線を出す（結果確定前の選出・勝敗を保持する）。
+  if (G.weekPhase === 'juniorTournament') {
+    const selection = G._juniorTournamentSelection;
+    const bracketSize = selection?.bracketSize || selection?.participants?.length || 0;
+    html = `<div class="stl-week-banner is-urgent" style="margin-top:12px">
+      <div class="stl-week-banner-icon">🏟️</div>
+      <div class="stl-week-banner-body">
+        <div class="stl-week-banner-title">U-20ジュニアトーナメント進行中</div>
+        <div class="stl-week-banner-sub">${bracketSize ? `${bracketSize}名トーナメント` : '大会'}の進行データを保持しています。大会画面に戻って進行を続けてください。</div>
+      </div>
+      <button class="btn btn-gold" onclick="App.resumeJuniorTournament()">大会へ戻る</button>
+    </div>`;
+    el.innerHTML = html;
+    return;
+  }
+
   // ── DRAFT PHASE (CREAM THEME) ──
   if (G.weekPhase === 'draft') {
     document.getElementById('weekTitle').textContent = '';
@@ -1685,7 +1702,7 @@ function renderWeekScreen() {
       <div style="font-size:15px;color:var(--text-main);margin-bottom:8px;font-weight:700">⚠️ 進行不具合が発生しました</div>
       <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px">想定外の状態(${G.weekPhase || '不明'})で停止しました。下のボタンで復旧できます。</div>
       <button class="btn btn-gold" style="font-size:14px;padding:10px 24px"
-        onclick="if(typeof G!=='undefined'){G={...G,weekPhase:'manage',lastShowResults:G.lastShowResults||[],weeklyFinance:G.weeklyFinance||{income:0,expense:0,details:[]}};try{Storage.autoSave()}catch(e){}refreshAll();}">
+        onclick="if(typeof App!=='undefined'&&App.recoverWeekPhase){App.recoverWeekPhase()}">
         🔧 状態を復元して今週へ
       </button>
     </div>`;
