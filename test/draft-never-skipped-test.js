@@ -36,19 +36,24 @@ function extractMethod(source, name) {
   throw new Error(`could not extract ${name}`);
 }
 
-function runNet(state, opts = {}) {
+function runMethod(name, state) {
   const ctx = {
     G: state,
     console: { warn() {}, error() {} },
-    startDraftNegotiation: opts.startDraftNegotiation || (() => { ctx.__started = true; }),
+    startDraftNegotiation: () => { ctx.__started = true; },
   };
-  const code = 'var App = { ' + extractMethod(app, '_ensureDraftResolvedBeforeAdvance') + ' };'
-    + '\n;this.__run = () => App._ensureDraftResolvedBeforeAdvance();'
+  const code = 'var App = { ' + extractMethod(app, name) + ' };'
+    + '\n;this.__run = () => App.' + name + '();'
     + '\n;this.__getG = () => G;';
   vm.runInNewContext(code, ctx);
   const ret = ctx.__run();
   return { ret, G: ctx.__getG(), started: !!ctx.__started };
 }
+
+// 週送りの入口に置いた保険
+const runNet = state => runMethod('_ensureDraftResolvedBeforeAdvance', state);
+// スカウト終了処理の入口に置いた保険
+const runFinishNet = state => runMethod('_resolveDraftBeforeFinish', state);
 
 const base = {
   offSeason: true, season: 3, offWeek: 3, weekPhase: 'offseason',
@@ -118,6 +123,42 @@ const base = {
   const block = src.slice(at, at + 900);
   assert.ok(/App\.scoutEventFinish\(\)/.test(block),
     '逃げ道のボタンが先へ進む処理を呼んでいない');
+}
+
+// ── 8. 週画面の「辞退する →」がドラフトを飛ばさないこと ──
+// 2026-07-31 実機: この経路が scoutEventFinish を直接呼んでいたため、
+// ドラフトへ行かない年は**他団体も1人も獲得していなかった**。
+{
+  const src = stripComments(render);
+  assert.ok(/onclick="declineDraft\(\)">辞退する/.test(src),
+    '週画面の「辞退する」が declineDraft を通っていない。'
+    + '直接 scoutEventFinish を呼ぶと他団体の指名ごと飛ぶ');
+  assert.ok(!/onclick="scoutFinish\(\)">辞退する/.test(src),
+    '「辞退する」が scoutFinish を直接呼んでいる');
+}
+
+// ── 9. scoutEventFinish 自体が未消化のドラフトを決着させること ──
+// 呼び出し元は複数ある(週画面の辞退 / 旧スカウト画面の「ドラフト終了」など)。
+// ボタンごとに気をつけるのではなく、終了処理の入口で必ず見る。
+{
+  const netted = runFinishNet({ ...base, weekPhase: 'scoutEvent' });
+  assert.strictEqual(netted.ret, true, '未消化のドラフトを畳んで先へ進めている');
+  assert.strictEqual(netted.started, true, '他団体の指名を決着させていない');
+
+  // ドラフト終了後の呼び出し(候補は _finalizeDraft が畳み済み)では発火しない = 再帰しない
+  assert.strictEqual(runFinishNet({ ...base, scoutCandidates: null }).ret, false,
+    'ドラフト終了後の通常呼び出しにも割り込んでいる(無限再帰する)');
+  assert.strictEqual(runFinishNet({ ...base, _draftResultPages: [{}] }).ret, false,
+    '結果表示中に割り込んでいる');
+  assert.strictEqual(runFinishNet({ ...base, _draftNegotiation: { x: 1 } }).ret, false,
+    '交渉中に割り込んでいる');
+
+  const src = stripComments(app);
+  const at = src.indexOf('  scoutEventFinish() {');
+  assert.ok(at > 0, 'scoutEventFinish が無い');
+  const head = src.slice(at, at + 260);
+  assert.ok(/App\._resolveDraftBeforeFinish\(\)/.test(head),
+    'scoutEventFinish の入口で未消化ドラフトを見ていない');
 }
 
 console.log('draft-never-skipped-test: ok');

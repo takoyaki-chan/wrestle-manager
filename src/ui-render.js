@@ -1715,7 +1715,7 @@ function renderWeekScreen() {
       <div class="a1-stats" style="grid-template-columns:repeat(${statCells.length},1fr);">${statsHtml}</div>
       <div class="a1-footer">
         <button class="btn btn-gold a1-btn-go" onclick="showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">⚖ ドラフトへ</button>
-        <button class="btn btn-ghost" onclick="scoutFinish()">辞退する →</button>
+        <button class="btn btn-ghost" onclick="declineDraft()">辞退する →</button>
       </div>
     </div>`;
   }

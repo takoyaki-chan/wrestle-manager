@@ -5514,8 +5514,32 @@ const App = {
     } catch (_e) {}
   },
 
+  /** ドラフトが未消化のまま終了処理へ入ろうとしていないか。
+   *
+   *  他団体の指名は startDraftNegotiation の中の「非選択候補のバックグラウンド処理」
+   *  ループにしか無い。scoutEventFinish は候補(scoutCandidates)を捨てて次へ進むので、
+   *  **ここを素通りされるとその年は業界全体が新人ゼロ**になる。
+   *  実際、週画面の「辞退する →」がこの関数を直接呼んでいたため、
+   *  ドラフトへ行かない年は他団体も1人も獲得していなかった(2026-07-31 Keisuke 実機)。
+   *
+   *  ドラフト終了後の呼び出しでは _finalizeDraft が既に scoutCandidates を畳んでいるので、
+   *  この判定には入らない(再帰しない)。
+   *  @returns {boolean} 決着処理へ入ったら true(呼び出し側はそこで戻る) */
+  _resolveDraftBeforeFinish() {
+    if (!G) return false;
+    const pending = Array.isArray(G.scoutCandidates) && G.scoutCandidates.length > 0;
+    if (!pending) return false;
+    if (G._draftNegotiation || G._draftResultPages) return false; // 進行中
+    if (!G._draftInterests || typeof startDraftNegotiation !== 'function') return false;
+    G = { ...G, _draftSelections: [] };
+    startDraftNegotiation();
+    return true;
+  },
+
   /** Finish scout event and continue game flow */
   scoutEventFinish() {
+    // 自団体が指名しなくても、他団体の指名は行われる。先に決着させてから終了処理へ。
+    if (App._resolveDraftBeforeFinish()) return;
     Audio.play('click');
     // ドラフト結果の「▶ 経営画面へ」は onclick から直接呼ばれるので、精算が済んだ後でも
     // もう一度押せてしまう。二度目は scoutsThisSeason を余計に加算し、候補返却を
