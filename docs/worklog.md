@@ -1,5 +1,31 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## PPVテレビ中継の勝敗明瞭化・年末表彰式順序保証（task-50・2026-07-31）
+
+### A. アンダーカード速報
+
+- `renderPPVTvBroadcast` の関数内に結果用 `_resultSide` を追加し、速報を勝者のみの表示から両者並置へ変更した。勝者は `ptv-result-upper--m`（M: 132×194）と `○`・`WIN`、敗者は `ptv-result-upper--s`（S: 108×162）と `×`・`grayscale(.9) brightness(.72)` で表示する。両者の名前・団体・upper画像を必ず出す。
+- 引き分けは両者とも M サイズ、`△`、`DRAW` とし、グレースケールを適用しない。ベースライン §2 の「並置は同段」から勝者を一段上げる逸脱は、PPV速報で勝敗を瞬時に読ませる Keisuke 指示によるものとして `_resultSide` の利用箇所にコードコメントを残した。
+
+### B. 頂上決戦の決着
+
+- 対峙シーン専用の `vsBlock` を決着では再利用せず、`summitResultBlock` を新設した。勝者は XL（172×258）・`○`・`WIN`、敗者は M（132×194）・`×`・グレースケール。引き分けは双方 XL・`△`・`DRAW` で対等に表示する。
+
+### C. ファンファーレ
+
+- 決着シーンは `stopBgmBeforeSe: true` とし、`rs04` 再生の直前に `Audio.bgm.stop()` を実行する。決着後は余韻のBGMを再開せず、既存どおり放送終了まで無音とした。OP／カード／速報の `grandFinalProgress` と、対峙シーンの `grandFinalMain` は維持した。
+
+### D. 表彰式と総括の順序
+
+- オフシーズン第1週だけは、AI成長ポップアップ待機前の `refreshAll()` を抑止した。これにより、背面に総括を先描画せず、ポップアップ → 表彰式 → `_showFarewellsThenReport()`（今週画面へ復帰して総括描画）の順に固定する。
+- AI成長ポップアップ完了コールバックには、`Math.max(8000, aiAlerts.length * 4000)` の時限保険と一度だけ起動するガードを追加した。コールバック喪失時も表彰式チェーンの予約へ進み、PPVの「準備中…」停止と同型の永久待機を防ぐ。
+
+### 検証
+
+- 新規 `test/ppv-tv-result-clarity-test.js`: 敗者のupper表示・グレースケール・M/S/XLサイズ、決着ブロックの分離、`LOSE` 不使用、引き分け対等表示、ファンファーレ前のBGM停止を確認。
+- 新規 `test/awards-before-report-order-test.js`: オフシーズン第1週の先行総括抑止、ポップアップ→表彰式→総括、待機コールバックの時限保険と二重起動防止を確認。
+- 対象テスト: `ppv-tv-result-clarity-test`、`awards-before-report-order-test`、`ppv-tv-start-test`、`season-end-order-test` はすべてPASS。全体 `npm test`: **160/160 PASS**。
+
 ## 顔出し画面ベースライン監査（task-47・2026-07-31）
 
 - 調査専用。`src/` は変更せず、`docs/ui/faceout-audit-v0.1.md` に顔・upper・stand・full を出す46箇所の実測監査を記録した。

@@ -9384,10 +9384,18 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ptv-flash{padding:60px 22px 82px;display:flex;flex-direction:column;justify-content:center;min-height:430px}
 .ptv-flash-band{background:linear-gradient(90deg,rgba(0,0,0,0) 0%,#1a1408 18%,#1a1408 82%,rgba(0,0,0,0) 100%);border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);padding:16px 18px;text-align:center}
 .ptv-flash-kicker{font-size:11px;font-weight:900;letter-spacing:.34em;color:var(--gold)}
-.ptv-flash-win{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
-.ptv-flash-win .ptv-upper{width:62px;height:90px;border:2px solid var(--gold)}
-.ptv-flash-name{font-size:24px;font-weight:900;text-align:left}
-.ptv-flash-name small{display:block;font-size:11px;color:var(--stage-text-sub);font-weight:700;letter-spacing:.1em}
+.ptv-result-fighters{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-top:12px}
+.ptv-result-fighter{position:relative;min-width:108px;text-align:center}
+.ptv-result-fighter .ptv-upper{margin:0 auto;border:2px solid var(--stage-line)}
+.ptv-result-fighter.is-winner .ptv-upper{border-color:var(--gold);box-shadow:0 0 30px rgba(232,189,88,.13)}
+.ptv-result-fighter.is-loser .ptv-upper{filter:grayscale(.9) brightness(.72)}
+.ptv-result-upper--s{width:108px;height:162px}.ptv-result-upper--m{width:132px;height:194px}.ptv-result-upper--xl{width:172px;height:258px}
+.ptv-result-mark{position:absolute;top:-8px;left:50%;transform:translateX(-50%);z-index:1;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--stage-panel);border:1px solid var(--stage-line);font-size:18px;font-weight:900}
+.ptv-result-fighter.is-winner .ptv-result-mark{color:var(--gold);border-color:var(--gold)}
+.ptv-result-fighter.is-loser .ptv-result-mark{color:var(--stage-text-sub)}
+.ptv-result-name{font-size:18px;font-weight:900;margin-top:7px;white-space:nowrap}.ptv-result-fighter.is-winner .ptv-result-name{font-size:22px}
+.ptv-result-org{font-size:10px;color:var(--stage-text-sub);margin-top:2px}.ptv-result-win{display:block;font-size:10px;letter-spacing:.18em;color:var(--gold);margin-top:2px}
+.ptv-result-divider{align-self:center;font-size:10px;font-weight:900;letter-spacing:.12em;color:var(--stage-text-sub)}
 .ptv-flash-detail{font-size:12.5px;color:var(--stage-text-sub);margin-top:9px}
 .ptv-flash-detail b{color:var(--gold-light,#f5d98d)}
 .ptv-commentary{margin-top:22px;background:var(--stage-panel);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px}
@@ -9405,6 +9413,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ptv-vs-big{font-size:22px;font-weight:900;color:var(--gold);align-self:center}
 .ptv-summit-result{margin-top:16px;font-size:13px;color:var(--stage-text-sub)}
 .ptv-win-line{font-size:19px;font-weight:900;color:var(--gold-light,#f5d98d);margin-top:4px}
+.ptv-summit-result-fighters{margin:18px 0 8px}.ptv-summit-result-fighters .ptv-result-name{font-size:20px}.ptv-summit-result-fighters .ptv-result-fighter.is-winner .ptv-result-name{font-size:25px}
+@media(max-width:600px){.ptv-result-fighters{gap:9px}.ptv-result-upper--xl{width:132px;height:194px}.ptv-result-upper--m{width:108px;height:162px}.ptv-result-upper--s{width:92px;height:138px}.ptv-result-name,.ptv-result-fighter.is-winner .ptv-result-name{font-size:15px}.ptv-summit-result-fighters .ptv-result-name,.ptv-summit-result-fighters .ptv-result-fighter.is-winner .ptv-result-name{font-size:17px}}
 /* 場面5 放送終了 */
 .ptv-ending{padding:70px 22px 86px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px}
 .ptv-end-msg{font-size:15px;max-width:430px;line-height:1.9}
