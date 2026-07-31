@@ -8849,12 +8849,80 @@ function _statCell(val, color) {
   return `<td class="num" style="font-size:12px;color:${c}">${v}</td>`;
 }
 
+// DB全選手一覧用: 各大会の「直近の優勝者」だけを履歴から集計する。
+// 描画対象ごとではなく、一覧描画の前に1回だけ呼ぶ。最新シーズンの優勝者Setを
+// 丸ごと置き換えるため、次回大会の確定後に過去優勝者が残ることはない。
+function _dbBuildTournamentTitleChampions(fighters) {
+  const champions = {
+    summit: { season: null, ids: new Set() },
+    ppv: { season: null, ids: new Set() },
+    junior: { season: null, ids: new Set() },
+    autumn: { season: null, ids: new Set() },
+  };
+  const eventKey = event => {
+    if (event.type === 'juniorTournament' && event.result === 'champion') return 'junior';
+    if (event.type === 'autumnWar' && event.result === 'champion') return 'autumn';
+    if (event.type === 'ppvMainEvent' && event.isSummit && event.won === true) return 'ppv';
+    if (event.type === 'ppvTournament' && event.result === 'champion') return 'summit';
+    return null;
+  };
+
+  (fighters || []).forEach(fighter => {
+    if (fighter?.id == null) return;
+    const history = fighter.careerRecord?.history;
+    if (!Array.isArray(history)) return;
+    history.forEach(event => {
+      const key = eventKey(event || {});
+      const season = Number(event?.season);
+      if (!key || !Number.isFinite(season)) return;
+      const current = champions[key];
+      if (current.season === null || season > current.season) {
+        current.season = season;
+        current.ids = new Set([fighter.id]);
+      } else if (season === current.season) {
+        current.ids.add(fighter.id);
+      }
+    });
+  });
+  return champions;
+}
+
+function _dbBuildFighterTitleBadges(fighterId, championIds, tournamentChampions, bestTagIds, bestTagSeason) {
+  const badge = (emoji, colorToken, title) =>
+    '<span class="db-title-badge" title="' + title + '" style="--db-title-color:var(' + colorToken + ')">' + emoji + '</span>';
+  const tournamentBadge = (key, emoji, colorToken, label) => {
+    const title = tournamentChampions[key];
+    if (!title || !title.ids.has(fighterId) || !Number.isFinite(title.season)) return '';
+    return badge(emoji, colorToken, label + '(第' + title.season + '回)');
+  };
+  const bestTagRound = Number(bestTagSeason);
+  const badges = [];
+  if (championIds.has(fighterId)) badges.push(badge('👑', '--gold', '王座保持者'));
+  badges.push(tournamentBadge('summit', '⛰️', '--ev-winter', '天頂戦優勝'));
+  badges.push(tournamentBadge('ppv', '🏆', '--ppv-accent', 'PPV GRAND FINAL優勝'));
+  badges.push(tournamentBadge('junior', '🏟️', '--ev-summer', 'ジュニアトーナメント優勝'));
+  badges.push(tournamentBadge('autumn', '⚔️', '--ev-autumn', '秋の4団体勝ち残り対抗戦優勝'));
+  if (bestTagIds.has(fighterId)) {
+    badges.push(badge('🌸', '--db-title-spring', Number.isFinite(bestTagRound)
+      ? '春のタッグリーグ優勝(第' + bestTagRound + '回)'
+      : '春のタッグリーグ優勝'));
+  }
+  return badges.filter(Boolean).join('');
+}
+
 // ── 全選手一覧 ─────────────────────────────────────────────
 function _renderDbFighters() {
   const RANK_COLORS = { S: '#d63031', A: '#6c5ce7', B: '#00b894', player: '#d4a843', fa: '#8bc4f0' };
 
   // 全選手収集
-  const all = Engine.database.getAllFighters(G);
+  const activeFighters = Engine.database.getAllFighters(G);
+  const activeIds = new Set(activeFighters.map(f => f.id));
+  const all = [
+    ...activeFighters,
+    ...(G.retiredFighters || [])
+      .filter(f => f?.id != null && !activeIds.has(f.id))
+      .map(f => ({ ...f, _orgId: 'retired', _orgName: '引退', _orgTier: 'retired' })),
+  ];
 
   // フィルタ
   let filtered = all;
@@ -8943,12 +9011,14 @@ function _renderDbFighters() {
   const _bestTagIds = new Set();
   const _dbActiveBestTag = Engine.springTagLeague.getActiveBestTagTeam(G);
   if (_dbActiveBestTag) { _bestTagIds.add(_dbActiveBestTag.f1Id); _bestTagIds.add(_dbActiveBestTag.f2Id); }
+  // 大会優勝は各大会の直近シーズンだけを表示する（履歴型の称号を歴代化しない）。
+  const _dbTournamentChampions = _dbBuildTournamentTitleChampions(all);
 
   filtered.forEach(f => {
     const ovr = Engine.util.ov(f);
     const _ovrSc = _ovrColor(ovr);
     const rc = RANK_COLORS[f._orgTier] || '#888';
-    const tierBadge = f._orgTier !== 'player' && f._orgTier !== 'fa'
+    const tierBadge = f._orgTier !== 'player' && f._orgTier !== 'fa' && f._orgTier !== 'retired'
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:${rc}22;color:${rc};border:1px solid ${rc}44;margin-left:4px">${f._orgTier}</span>`
       : '';
     const faBadge = f._orgTier === 'fa'
@@ -8957,16 +9027,13 @@ function _renderDbFighters() {
     const playerBadge = f._orgTier === 'player'
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.3)">自</span>`
       : '';
-    const champBadge = _champIds.has(f.id)
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.2);color:var(--gold);border:1px solid rgba(212,168,67,0.4);margin-left:4px">👑</span>`
-      : '';
-    const bestTagBadge = _bestTagIds.has(f.id)
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(255,111,156,0.2);color:#ff6f9c;border:1px solid rgba(255,111,156,0.4);margin-left:4px">🌸</span>`
-      : '';
+    const titleBadges = _dbBuildFighterTitleBadges(
+      f.id, _champIds, _dbTournamentChampions, _bestTagIds, _dbActiveBestTag?.awardedSeason
+    );
     const source = f._orgTier === 'player' ? 'roster' : f._orgTier === 'fa' ? 'free' : `ai:${f._orgId}`;
     html += `<tr class="clickable" onclick="showFighterPopup(${f.id},'${source}')">
       <td>${portraitImg(f.id, 40, '', false)}</td>
-      <td style="font-weight:600">${f.name}${champBadge}${bestTagBadge}</td>
+      <td style="font-weight:600">${f.name}<span class="db-title-badges">${titleBadges}</span></td>
       <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
       <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
       <td class="num" style="${_scale6Style(_ovrSc)};font-weight:700;font-size:15px">${ovr}</td>
