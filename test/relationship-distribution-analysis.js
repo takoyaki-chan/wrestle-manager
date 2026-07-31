@@ -335,12 +335,13 @@ function takeSnapshot(G, stats) {
   }
   // 所属マップ・h2h・引退情報も保存（最終集計で使う）
   const charOrg = {};
-  for (const f of G.roster || []) charOrg[f.id] = 'player';
+  const rentalIds = {};
+  for (const f of G.roster || []) { charOrg[f.id] = 'player'; if (f.isRental) rentalIds[f.id] = true; }
   for (const orgId of Object.keys(G.aiOrgs || {})) {
     for (const f of G.aiOrgs[orgId].roster || []) charOrg[f.id] = orgId;
   }
   // h2h は最終週時点のものだけ保存（軌跡には不要）
-  stats.snapshots[season] = { pairs, charOrg };
+  stats.snapshots[season] = { pairs, charOrg, rentalIds };
 }
 
 // ── 集計ロジック ──
@@ -413,19 +414,36 @@ function hasRecentMatch(G, idA, idB, currentWeek, currentSeason) {
   return false;
 }
 
+/** これまでに一度でも対戦したことがあるか(h2h に記録があるか)。
+ *  hasRecentMatch は「直近4週」しか見ないので、スナップショットを取った瞬間に
+ *  他団体戦が無ければ他団体ペアが1件も拾えない(2026-07-31 実測で n=0 になった)。
+ *  「他団体との因縁が育つか」を見たいときに欲しいのは**通算で当たったことがあるか**なので、
+ *  こちらを別建てで用意する。 */
+function hasEverFought(G, idA, idB) {
+  const k1 = `${Math.min(idA, idB)}>${Math.max(idA, idB)}`;
+  const entry = G.h2h && G.h2h[k1];
+  if (!entry) return false;
+  const n = (entry.aWins || 0) + (entry.bWins || 0) + (entry.draws || 0);
+  return n > 0 || !!entry.lastMatch;
+}
+
 function classifyPairs(snapshot, G) {
   const sameOrgPairs = [];
-  const crossOrgContactPairs = [];
+  const crossOrgContactPairs = [];   // 直近4週に対戦(従来の定義。瞬間値)
+  const crossOrgEverPairs = [];      // 通算で一度でも対戦(2026-07-31 追加)
+  const rentalPairs = [];            // レンタル選手が絡むペア(2026-07-31 追加)
   const otherPairs = [];
   for (const p of snapshot.pairs) {
     const orgA = snapshot.charOrg[p.idA];
     const orgB = snapshot.charOrg[p.idB];
+    if (snapshot.rentalIds && (snapshot.rentalIds[p.idA] || snapshot.rentalIds[p.idB])) rentalPairs.push(p);
     if (!orgA || !orgB) { otherPairs.push(p); continue; }
-    if (orgA === orgB) sameOrgPairs.push(p);
-    else if (hasRecentMatch(G, p.idA, p.idB, G.week, G.season)) crossOrgContactPairs.push(p);
+    if (orgA === orgB) { sameOrgPairs.push(p); continue; }
+    if (hasEverFought(G, p.idA, p.idB)) crossOrgEverPairs.push(p);
+    if (hasRecentMatch(G, p.idA, p.idB, G.week, G.season)) crossOrgContactPairs.push(p);
     else otherPairs.push(p);
   }
-  return { sameOrgPairs, crossOrgContactPairs, otherPairs };
+  return { sameOrgPairs, crossOrgContactPairs, crossOrgEverPairs, rentalPairs, otherPairs };
 }
 
 // 軌跡サンプル選定（最終 snapshot から）
@@ -664,6 +682,9 @@ console.log('');
 const rivSame = renderHistogram(cls.sameOrgPairs.map(p => p.rivalry), RIVALRY_BANDS, 'Rivalry分布 — 同団体ペア');
 console.log('');
 const rivCross = renderHistogram(cls.crossOrgContactPairs.map(p => p.rivalry), RIVALRY_BANDS, 'Rivalry分布 — 他団体・接触ありペア');
+const rivCrossEver = renderHistogram(cls.crossOrgEverPairs.map(p => p.rivalry), RIVALRY_BANDS, 'Rivalry分布 — 他団体・通算で対戦ありペア');
+const rivRental = renderHistogram(cls.rentalPairs.map(p => p.rivalry), RIVALRY_BANDS, 'Rivalry分布 — レンタル選手が絡むペア');
+const bondCrossEver = renderHistogram(cls.crossOrgEverPairs.map(p => p.bond), BOND_BANDS, 'Bond分布 — 他団体・通算で対戦ありペア');
 
 console.log('\n========== 因縁称号分布 ==========');
 const titleDistResult = rivalryTitleDistribution(finalSnap, finalState);
