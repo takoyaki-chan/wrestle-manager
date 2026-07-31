@@ -1,5 +1,9 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 成長システム仕様 v2.1 同期（task-34・2026-07-31）
+
+- `GROWTH_CONFIG` と `management.js` を正として、成長リバランス v2.0 の指数ブレーキ、追い込み熱量逓減、AI活動wearを `specs/growth-system-spec-v2.1.md` に同期。`src/` は未変更。
+
 ## DB全選手一覧の大会称号バッジ拡張（task-33・2026-07-31）
 
 ### 実装
