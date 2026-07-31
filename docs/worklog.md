@@ -1,5 +1,23 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 追い込み練習の熱量可視化（task-38・2026-07-31）
+
+### 実装
+
+- `src/ui-render.js` に表示専用の純粋関数 `getTrainingState(fighter)` を追加。内部の蓄積値を `fresh` / `warm` / `heavy` の3段階へ畳み、未設定は `fresh` とする。GameStateへの書き込みは追加していない。
+- ロスター／道場の選手行は、最も重い状態だけに控えめな `😮‍💨` サインを既存バッジ列と同じ小ささで表示する。レンタル行も安全に処理する。
+- 今週画面では、追い込みを選べる列に同じサインを先出しし、選択を禁止せずに休ませどきを伝える。
+- 選手詳細ポップアップには状態別の一文を置く枠を追加。`src/ui-common.js` の `HEAT_STATE_LINES` が、Opus起案のセリフへ差し替える参照点である。
+- ツールチップ全文: 「追い込みを続けると体が重くなり、同じ練習でも身につきにくくなる。休ませると戻る。」
+- `src/index.html` に上記サインと詳細枠のCSSを追加。プレイヤー向け表示には内部変数名・数値・倍率を出していない。
+
+### 検証
+
+- 新規 `test/heat-visibility-test.js`: 段階変換（未設定を含む）、出力HTMLの内部名・数値・倍率非表示、レンタル／怪我中／新加入の例外なし、仮テキスト参照点を検証。
+- `npm test`: **147/147 PASS**。
+- `node test/auto-sim.js 20`: **ALL CLEAR**。引数なしのseedは日時由来なので比較には不適切なため、比較可能な固定seedで `node test/auto-sim.js 20 42` を実施。変更前（`WM_SOURCE_REF=HEAD`）と変更後はいずれも fingerprint **`8ee8bfa0`**、ALL CLEAR。
+- `GROWTH_CONFIG` と `Engine.growth.calcGrowth` を含む `src/data.js` / `src/management.js` は差分なし。GameState書き込みも追加なし。
+
 ## 成長システム仕様 v2.1 同期（task-34・2026-07-31）
 
 - `GROWTH_CONFIG` と `management.js` を正として、成長リバランス v2.0 の指数ブレーキ、追い込み熱量逓減、AI活動wearを `specs/growth-system-spec-v2.1.md` に同期。`src/` は未変更。

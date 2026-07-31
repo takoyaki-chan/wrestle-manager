@@ -50,6 +50,23 @@ function _newsStoryClickable(story) {
   return { headline, body };
 }
 
+// 育成の蓄積状況を、表示用の定性的な状態へ畳む。GameStateには書き込まない。
+function getTrainingState(fighter) {
+  const load = Number(fighter?._heat);
+  if (!Number.isFinite(load) || load <= 0) return 'fresh';
+  if (load <= 2) return 'warm';
+  return 'heavy';
+}
+
+const TRAINING_FATIGUE_TOOLTIP = '追い込みを続けると体が重くなり、同じ練習でも身につきにくくなる。休ませると戻る。';
+
+// 数値や内部状態を見せず、選手の様子として控えめに伝える表示専用のサイン。
+function renderTrainingFatigueSignal(fighter, placement) {
+  if (getTrainingState(fighter) !== 'heavy') return '';
+  const label = placement === 'week' ? '今は休ませどき' : '体が重そうです';
+  return `<span class="training-fatigue-sign${placement === 'week' ? ' is-week' : ''}" title="${TRAINING_FATIGUE_TOOLTIP}" aria-label="${label}">😮‍💨</span>`;
+}
+
 // v1.9: Roster sort state
 let _rosterSortKey = 'ovr';
 // 展開中のカードID(複数可)。**選手を見比べるための画面**なので、1枚しか開けないと
@@ -1270,7 +1287,7 @@ function renderWeekScreen() {
             <option value="rest" ${c.schedule==='rest'?'selected':''} title="強制的に休養させます。体調管理よりも確実に休ませたい時に">休養重視</option>
           </select>
         </td>
-        <td style="text-align:center">${intBtnHtml}</td>
+        <td style="text-align:center">${renderTrainingFatigueSignal(c, 'week')}${intBtnHtml}</td>
         <td id="action-${c.id}"><span class="sched-tag ${previewAction}">${previewLabel}</span></td>
         <td></td>
       </tr>`;
@@ -2294,7 +2311,7 @@ function renderRoster() {
               const invCoach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null;
               return `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(`${invCoach ? invCoach.name + 'コーチ招聘中' : 'コーチ招聘中'} — 練習効果アップ(残${c._inviteBuff.weeksLeft}週)`)}>🏋️${c._inviteBuff.weeksLeft}w</span>`;
             })() : ''}
-            ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}${lowTrustBadge}
+            ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}${lowTrustBadge}${renderTrainingFatigueSignal(c)}
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">
             <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
@@ -2337,7 +2354,7 @@ function renderRoster() {
               <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster',true)">${c.name}</span><span style="color:#a06000;font-size:12px"> 🤝</span>
               <span style="font-size:11px;color:#7a6530;font-weight:600">${c.age}歳</span>
               <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
-              ${injuryBadge}
+              ${injuryBadge}${renderTrainingFatigueSignal(c)}
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">
               <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>

@@ -3414,6 +3414,13 @@ function canOpenFighterPopup(fighterId) {
   return !!findFighter(Number(fighterId));
 }
 
+// ※Opus起案のセリフに差し替え予定: 選手詳細に置く、状態ごとの仮テキスト参照点。
+const HEAT_STATE_LINES = {
+  fresh: '今は、まだ体が軽そうだ。',
+  warm: '少し息が上がっている。',
+  heavy: '今は体が重そうだ。',
+};
+
 // 第3引数 _skipQueueCheck は歴史的な残り。**押したら必ず開く**ようになったので効果は無い。
 // 既存の呼び出しを壊さないために受け取るだけにしてある。
 function showFighterPopup(fighterId, source, _skipQueueCheck) {
@@ -3443,6 +3450,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const isRoster = G.roster.some(r => r.id === c.id);
   const isFree = G.freeAgents.some(r => r.id === c.id);
   const isScoutCandidate = (G.scoutCandidates || []).some(r => r.id === c.id);
+  const trainingState = typeof getTrainingState === 'function' ? getTrainingState(c) : 'fresh';
+  const trainingStateLine = HEAT_STATE_LINES[trainingState] || HEAT_STATE_LINES.fresh;
   let orgLabel = '';
   let negotiateOrgId = null;
   if (!isRoster && !isFree && G.aiOrgs) {
@@ -3566,6 +3575,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${isScoutCandidate && c._hasCompetition ? '<span style="color:#e74c3c">⚔ 他団体注目</span>' : ''}
             ${orgLabel ? `<span>${orgLabel} 所属</span>` : ''}
           </div>
+          <div class="training-state-line">💬 ${trainingStateLine}</div>
         </div>
         <button onclick="closeFighterPopup()" style="background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;padding:4px;line-height:1;flex-shrink:0">✕</button>
       </div>
