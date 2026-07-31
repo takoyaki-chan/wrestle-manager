@@ -1,5 +1,97 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## F09派閥対抗戦: 空き枠にロックが残りカードが組めないバグ修正（task-70・2026-07-31）
+
+出典: `docs/codex-tasks/task-70-f09-empty-slot-lock.md`。作業は `wm-task70`
+（ブランチ `fix/f09-empty-slot-lock`）で実施、mainは未変更。**未コミット（指示によりコミットなし）**。
+
+### Keisuke実機報告
+
+興行準備で空いた試合スロットに選手を組もうとしたら「⚔ F09 派閥対抗戦のため、この試合の選手は
+変更できません」が出て組めない。スクリーンショットでは第1・第2試合が埋まっており、その下の
+空き枠が押せない。
+
+### 1. 仮説検証
+
+指示書の仮説は「`buildF09MatchPairs` が返したペアに選手が揃っていない場合、枠は空のままロック
+だけ立つ」。**この仮説は方向として正しいが、原因の中身は「0/undefined」ではなく「ロスターから
+消えた選手idの取りこぼし」だった。** 確認手順:
+
+- `src/factions.js:5470` の `buildF09MatchPairs` を読むと、両派閥の `memberIds` をそのまま
+  OVR順にソートしてペアにしているだけで、`!c.injury && !c.forcedRest` や「ロスターに実在するか」
+  のチェックが一切ない（`ovr(id)` は未ヒット時に黙って0を返すだけで、idそのものは弾かない）。
+- 対して `src/ui-render.js` 内の兄弟ロジック（F08ディレクティブ注入 3083-3086行付近、派閥内
+  序列戦注入 2979-2980行付近）は、いずれも注入直前に
+  `G.roster.find(c => c.id === xxx && !c.injury && !c.forcedRest)` で実在・出場可能性を検証してから
+  ロックしている。F09だけこの検証が抜けていた。
+- `src/ui-common.js:4299` の `getShowCardFighter(id)` は `id>0` でもロスターに見つからなければ
+  `null` を返す。単発試合の描画（`ui-render.js` の `_spFighterInfo`）は `f` が `null` なら
+  「— 選手選択 —」という**空きスロット表示**にフォールバックする。
+- つまり `left`/`right` に「もういないキャラのid」が入ると、UI上は完全に空きスロットに見えるが、
+  そのスロットオブジェクトには旧コードが無条件で立てた `_f09Locked: true` が残り、
+  `_spOpenPicker`（2447行付近）はスロットの中身を見ずに `_f09Locked` の有無だけでガードしていた
+  ため「空いているのに押せない」状態になっていた。
+- 発生経路: `_pendingF09` セット時点（`management.js` の週次tick、`reconcileRoster` 後）では
+  ペアは有効。しかしその後、同じ週のうちにプレイヤーが社長室から該当選手を解雇/引退承認したり、
+  休養辞令（forcedRest）を出したりすると、`reconcileRoster` の次回実行（翌週）を待たずに
+  `buildF09MatchPairs` が古い/無効なidを拾い続ける。この仮説はテストの `forcedRest` ケースと
+  `roster` から意図的に除外した「退団済みid」ケースの両方で再現・確認した
+  （`test/f09-empty-slot-lock-test.js` 参照）。
+
+### 2. 直した箇所
+
+`src/ui-render.js` のみ変更（指示どおり `factions.js`/`match-engine.js`/`management.js` は不変）。
+
+1. **F09注入（3041行付近）**: 各ペアについて `_f09FighterOk(id)`
+   （`G.roster.find` で実在確認 + `!c.injury && !c.forcedRest`）を両者に適用し、
+   **両者そろって出場可能なペアだけ** `_f09Locked: true` で書き込む。不成立のペアは
+   `{ left: 0, right: 0, isTitle: false }` にリセットしてロックを立てず、通常の空きスロットとして
+   開放する。同時に `console.warn('[WM F09] incomplete pair — leaving slot unlocked/open', {season, week, slotIdx, pairCount, showCardLength, fighterIdA, fighterIdB})` で状況を残す。
+   ロック済み選手を他枠から除去する後段ロジックの `lockedIds` も、実際にロックした（＝有効な）
+   ペアの id だけを積むように変更（無効ペアのidは無関係な枠に影響しない）。
+2. **ピッカーのガード（最後の砦・2446行付近）**: `slot._f09Locked` が立っていても、
+   `left>0 && right>0`（両者とも埋まっている）の場合だけ従来どおりブロックする。
+   どちらか一方でも0（＝実質空き枠）なら、`console.warn('[WM F09] _f09Locked slot has an empty side — allowing picker to open', {...})` を出したうえでガードを素通りさせ、ピッカーを開く。
+   F08ロック・派閥内序列戦ロックの分岐はこの変更の対象外（絶対ロックのまま、意図的に不変）。
+
+### 3. 空き枠が必ず操作できることの確認方法
+
+新規テスト `test/f09-empty-slot-lock-test.js` で、`src/ui-render.js` から
+「F09注入ブロック」と `_spOpenPicker` 関数をソース文字列として切り出し（`faction-f09-show-flow-guard-test.js` / `rivalry-resolution-match-guard-test.js` と同じ手法）、`new Function` で単体実行して検証:
+
+1. forced-rest / 退団id を含む3ペア中2ペアが不成立 → 該当2枠は `left:0,right:0` かつ
+   `_f09Locked` 無し、他枠の選手除去(strip)ロジックは有効ペアのみ機能、`_pendingF09` は
+   （1ペアでも成立しているため）維持されることを確認
+2. `_f09Locked:true` かつ `left:0,right:0` の空き枠に対して `_spOpenPicker` を呼ぶと、
+   トースト無しでピッカーが開く（`_spActivePicker` がセットされ `renderShowPrep` が呼ばれる）ことを確認
+3. 全ペア成立時は従来どおり全枠ロック（回帰確認）
+4. `_f08Locked` / `_internalChallengeLocked` は空き枠でも従来どおり絶対ロックのまま
+   （F09専用の抜け道が波及していないこと）を確認
+
+`node test/f09-empty-slot-lock-test.js` 単体PASS、`node test/run-all.js` フルスイート
+175 tests **全PASS**（既存174 + 新規1）。engine系（`match-engine.js`/`management.js`）は
+無変更のためauto-simは対象外（CLAUDE.md「app.js やUIのみの変更→不要」に該当）。
+
+### 4. 不変条件確認
+
+1. F09が正常に成立した枠は従来どおりロック → 確認（テスト2件目・regression）
+2. 空き枠は必ず操作できる → 確認（ピッカーガードのfailsafeで担保、テスト4件目）
+3. F08・派閥内序列戦のロックを壊さない → 確認（テスト6・7件目、当該分岐は無変更）
+4. GameStateへの書き込みを増やさない → 確認。新規state項目は追加していない。
+   `console.warn` はログのみでstateに書き込まない。ロック解除時に `_f09Locked` を書かない
+   （元々書いていなかったキーを書かないだけ）ため、書き込み量はむしろ減る方向
+5. `node test/run-all.js` 全PASS → 確認（175/175）
+
+### 迷った点（未実装・要判断）
+
+- 「出場可能」の判定基準を `!c.injury && !c.forcedRest`（F08/派閥内序列戦と同じ基準）にしたが、
+  `onLeave` は含めていない（既存の兄弟ロジックがどれも見ていないため踏襲）。もし `onLeave` も
+  F09の出場不可条件に含めるべきなら別途指示がほしい。
+- 根本的には `factions.js` の `buildF09MatchPairs` 自身が実在・出場可能な選手だけで
+  ペアを組む（かつ可能なら代役で埋め直す）のが理想だが、今回のスコープ外（`ui-render.js`のみ）
+  のため見送り。空きが出ても最大5→3まで自動で詰め直す、といった改善は別タスク向けの提案として
+  残す。
+
 ## AI団体の王座 挑戦者に幅を持たせる（task-62・2026-07-31）
 
 出典: `docs/codex-tasks/task-62-ai-title-challenger-variety.md`、前段調査

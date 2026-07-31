@@ -2443,10 +2443,17 @@ function _spOpenPicker(slotIdx, side) {
     if (typeof showToast === 'function') showToast('⚔ 派閥内序列戦は固定です', 3000);
     return;
   }
-  // F09 ロック
+  // F09 ロック(最後の砦: ロックが立っていても両者揃っていない空き枠は必ず操作できる。
+  // 行き止まりを作らない — mockup-baseline-v0.1.md §5-D)
   if (slot && slot._f09Locked) {
-    if (typeof showToast === 'function') showToast('⚔ F09 派閥対抗戦のため、この試合の選手は変更できません', 3000);
-    return;
+    const bothFilled = slot.left > 0 && slot.right > 0;
+    if (bothFilled) {
+      if (typeof showToast === 'function') showToast('⚔ F09 派閥対抗戦のため、この試合の選手は変更できません', 3000);
+      return;
+    }
+    console.warn('[WM F09] _f09Locked slot has an empty side — allowing picker to open', {
+      season: G.season, week: G.week, slotIdx, side, left: slot.left, right: slot.right,
+    });
   }
   if (_spActivePicker && _spActivePicker.slotIdx === slotIdx && _spActivePicker.side === side) {
     _spActivePicker = null;
@@ -3039,10 +3046,29 @@ function renderShowPrep() {
     if (pairCount === 0) {
       const { _pendingF09: _, ...rest } = G; G = rest;
     } else {
+      // buildF09MatchPairs は退団・解雇等でロスターを離れたメンバーの id も
+      // memberIds に残っていれば拾ってしまう(このファイルからは factions.js 側を
+      // 直せないため、注入側で検証する)。両者がロスターに実在し出場可能な
+      // ペアだけをロック対象にする。欠けたペアは「空いているのに押せない」枠を
+      // 作らないよう、ロックせず通常の空きスロットとして開放する。
+      const _f09FighterOk = (id) => {
+        const c = G.roster.find(r => r.id === id);
+        return !!c && !c.injury && !c.forcedRest;
+      };
       const slots = Math.min(pairCount, G.showCard.length);
       const newCard = [...G.showCard];
+      const lockedIds = new Set();
       for (let i = 0; i < slots; i++) {
         const p = pairs[i];
+        const bothOk = _f09FighterOk(p.fighterIdA) && _f09FighterOk(p.fighterIdB);
+        if (!bothOk) {
+          console.warn('[WM F09] incomplete pair — leaving slot unlocked/open', {
+            season: G.season, week: G.week, slotIdx: i, pairCount, showCardLength: G.showCard.length,
+            fighterIdA: p.fighterIdA, fighterIdB: p.fighterIdB,
+          });
+          newCard[i] = { left: 0, right: 0, isTitle: false };
+          continue;
+        }
         if (newCard[i] && newCard[i].matchType === 'tag') {
           newCard[i] = { left: 0, right: 0, isTitle: false };
         }
@@ -3054,10 +3080,10 @@ function renderShowPrep() {
           isTitle: !!(newCard[i] && newCard[i].isTitle),
           _f09Locked: true,
         };
+        lockedIds.add(p.fighterIdA);
+        lockedIds.add(p.fighterIdB);
       }
       // F09 ロックされた選手は他枠から除去
-      const lockedIds = new Set();
-      pairs.forEach(p => { lockedIds.add(p.fighterIdA); lockedIds.add(p.fighterIdB); });
       for (let i = slots; i < newCard.length; i++) {
         const m = newCard[i];
         if (!m) continue;
