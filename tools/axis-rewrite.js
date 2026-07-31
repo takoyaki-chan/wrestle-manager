@@ -199,12 +199,25 @@ function findKeyOffsets(text) {
 // ───────────────────────────────────────────────────────────────────────
 // 2.5. 軸入れ替え: [性格][アーキタイプ] → [アーキタイプ][性格]
 // ───────────────────────────────────────────────────────────────────────
+// アーキタイプ位置の既定キーはテーブルによって 'standard' だったり '_default' だったり
+// する(SCOUT_SIGNING_LINES / WAR_VICTORY_LINES / AUTUMN_WAR_MATCH_LINES は '_default')。
+// どちらもアーキタイプ軸のキーとして数える。
+const isArchKey = (k) => ARCHETYPE_PURE.has(k) || k === 'standard' || k === '_default';
 const isArchDict = (o) => {
   if (!isDict(o)) return false;
   const ks = Object.keys(o);
-  const a = ks.filter(k => ARCHETYPE_PURE.has(k) || k === 'standard').length;
+  const a = ks.filter(isArchKey).length;
   const p = ks.filter(k => PERSONALITY.has(k) && k !== 'normal').length;
   return a >= 2 && a > p;
+};
+// 疎なアーキタイプ辞書(例: FACTION_F01_LEADER_LINES.easygoing = { standard: [...] } のように
+// 1アーキタイプしか用意されていないもの)も入れ替え対象に含めるための緩い判定。
+// 「キーが全部アーキタイプ軸のもの」であればアーキタイプ位置と見なす。
+// 親が性格辞書であることは呼び出し側で保証されている。
+const isArchDictLoose = (o) => {
+  if (!isDict(o)) return false;
+  const ks = Object.keys(o);
+  return ks.length > 0 && ks.every(isArchKey);
 };
 const isPersDict = (o) => {
   if (!isDict(o)) return false;
@@ -216,25 +229,31 @@ const isPersDict = (o) => {
 
 // 入れ替え対象の辞書を集める。子がすべてアーキタイプ辞書になっている
 // 「きれいな」ものだけを対象とし、そうでないものは dirty として報告する。
+// 中身が他テーブルへの参照だけで構成された別名テーブル。ソース上に動かすべき
+// リテラルが存在しないので入れ替えの対象外(実体側を直せば自動的に追従する)。
+// dialogue-workbook.js の apply も同じ理由でこのテーブルをスキップしている。
+const ALIAS_TABLES = new Set(['EVENT_LINES_BY_KEY']);
+
 function collectSwapTargets(sandbox) {
   const clean = [], dirty = [];
   for (const entry of TABLE_MANIFEST) {
     const root = resolvePath(sandbox, entry.path);
     if (root === undefined || entry.path.includes('.')) continue;
+    if (ALIAS_TABLES.has(entry.path)) continue;
     const seen = new Set();
     (function scan(node, segs) {
       if (!node || typeof node !== 'object' || seen.has(node)) return;
       seen.add(node);
       if (isPersDict(node)) {
         const kids = Object.entries(node);
-        const archKids = kids.filter(([, v]) => isArchDict(v));
+        const archKids = kids.filter(([, v]) => isArchDictLoose(v));
         if (archKids.length) {
           const rec = {
             table: entry.path, file: entry.file, cat: entry.cat,
             path: pathKey(segs), segs: segs.slice(),
             persKeys: kids.map(([k]) => k),
             archKeys: [...new Set(archKids.flatMap(([, v]) => Object.keys(v)))],
-            oddKeys: kids.filter(([, v]) => !isArchDict(v)).map(([k]) => k),
+            oddKeys: kids.filter(([, v]) => !isArchDictLoose(v)).map(([k]) => k),
           };
           (rec.oddKeys.length ? dirty : clean).push(rec);
           return; // 入れ替え対象の内側はこれ以上降りない

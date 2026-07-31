@@ -10471,7 +10471,7 @@ const App = {
     return true;
   },
 
-  // 通常の VICTORY_LINES の前段に VS_EX_EMPLOYER_LINES[personality].win を prepend して引きやすくする。
+  // 通常の VICTORY_LINES の前段に VS_EX_EMPLOYER_LINES[archetype][personality].win を prepend して引きやすくする。
   _buildVlVsPlayerForExEmployee(fighter, season, week, opponentOrgId) {
     const baseVl = (fighter && (fighter.voiceLines || fighter.vl))
       || (typeof VICTORY_LINES !== 'undefined' && fighter && VICTORY_LINES[fighter.id])
@@ -10479,9 +10479,9 @@ const App = {
     if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return baseVl;
     const pers = fighter.personality || 'normal';
     const arch = fighter.archetype || 'standard';
-    const byP = VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {};
-    const byA = byP[arch] || byP.standard || {};
-    const winArr = byA.win || [];
+    const byA = VS_EX_EMPLOYER_LINES[arch] || VS_EX_EMPLOYER_LINES.standard || {};
+    const byP = byA[pers] || byA.normal || {};
+    const winArr = byP.win || [];
     if (winArr.length === 0) return baseVl;
     return [...winArr, ...baseVl];
   },
@@ -10491,9 +10491,9 @@ const App = {
     if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return null;
     const pers = fighter.personality || 'normal';
     const arch = fighter.archetype || 'standard';
-    const byP = VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {};
-    const byA = byP[arch] || byP.standard || {};
-    const hitArr = byA.hit || [];
+    const byA = VS_EX_EMPLOYER_LINES[arch] || VS_EX_EMPLOYER_LINES.standard || {};
+    const byP = byA[pers] || byA.normal || {};
+    const hitArr = byP.hit || [];
     return hitArr.length > 0 ? hitArr : null;
   },
 
