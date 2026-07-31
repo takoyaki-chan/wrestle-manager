@@ -4834,17 +4834,51 @@ function renderMatchPreview() {
 // ── Show Result Renderer ────────────────────────────────
 let _pendingMatchDialogues = [];
 
-/** 因縁マッチ(相互 rivalry 30+)の試合後コメントを1件予約する。
+function _rivalryPopupPairKey(idA, idB) {
+  return [String(idA), String(idB)].sort().join('-');
+}
+
+function _getRivalryPopupSeen() {
+  const currentWeek = Engine.util.absWeek(G.season, G.week);
+  const cooldownWeeks = RIVALRY_POPUP_CONFIG.normalPairCooldownWeeks;
+  const previous = (G._rivalryPopupSeen && !Array.isArray(G._rivalryPopupSeen))
+    ? G._rivalryPopupSeen
+    : {};
+  const seen = { ...previous };
+  Object.keys(seen).forEach(pairKey => {
+    const seenWeek = seen[pairKey];
+    if (!Number.isFinite(seenWeek) || seenWeek > currentWeek || currentWeek - seenWeek >= cooldownWeeks) {
+      delete seen[pairKey];
+    }
+  });
+  G._rivalryPopupSeen = seen;
+  return { seen, currentWeek };
+}
+
+function _markRivalryMatchDialoguesSeen(dialogues) {
+  if (!dialogues || dialogues.length === 0) return;
+  const { seen, currentWeek } = _getRivalryPopupSeen();
+  dialogues.forEach(dialogue => {
+    if (dialogue._rivalryPopupPairKey) seen[dialogue._rivalryPopupPairKey] = currentWeek;
+  });
+}
+
+/** 通常の因縁マッチの試合後コメントを、興行あたりの上限内で予約する。
  *  格下が OVR差9以上をひっくり返したときだけ UPSET_RIVALRY_LINES(番狂わせ専用)を引く。
- *  2026-07-26: e03804b(興行結果画面の作り直し)でこの予約が丸ごと落ち、因縁の勝敗セリフが
- *  通常興行・PPVのどちらからも出なくなっていたため復旧。判定は削除前と同じ式を使う。 */
+ *  因縁決着は showRivalryPopups() の専用キューで必ず表示し、ここでは抑制しない。 */
 function _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel, sourceMatch) {
   if (isDraw || !r || !r.rivalryBonus) return;
   if (typeof _sameSinglesPair === 'function' && !_sameSinglesPair(sourceMatch, r)) return;
-  if ((r.rivalryBonus.rivalry || 0) < 30) return;
+  if (r.rivalryResolved) return; // 決着演出は専用キューに任せ、通常演出を重ねない。
+  const rivalry = r.rivalryBonus.rivalry || 0;
+  const hasRivalTitle = r.rivalryBonus.isGoodRival || r.rivalryBonus.isBitterRival;
+  if (!hasRivalTitle && rivalry < RIVALRY_POPUP_CONFIG.normalMinRivalry) return;
   const winF = leftIsWinner ? r.left : r.right;
   const loseF = leftIsWinner ? r.right : r.left;
   if (!winF || !loseF) return;
+  const { seen, currentWeek } = _getRivalryPopupSeen();
+  const pairKey = _rivalryPopupPairKey(winF.id, loseF.id);
+  if (Number.isFinite(seen[pairKey]) && currentWeek - seen[pairKey] < RIVALRY_POPUP_CONFIG.normalPairCooldownWeeks) return;
   const winChar = ALL_CHARS.find(c => c.id === winF.id);
   const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
   if (!winChar || !loseChar) return;
@@ -4862,7 +4896,11 @@ function _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel, sourceM
     winnerId: winF.id, loserId: loseF.id,
     winnerName: winF.name, loserName: loseF.name,
     winLine, loseLine,
+    _rivalryPopupPairKey: pairKey,
+    _rivalryPopupRivalry: rivalry,
   });
+  _pendingMatchDialogues.sort((a, b) => b._rivalryPopupRivalry - a._rivalryPopupRivalry);
+  _pendingMatchDialogues.splice(RIVALRY_POPUP_CONFIG.maxNormalPerShow);
 }
 
 function _pbShowSummaryTheme(week) {
@@ -4876,6 +4914,7 @@ function _pbShowSummaryTheme(week) {
 
 function renderShowResult(results, injuryResults) {
   _pendingMatchDialogues = [];
+  _getRivalryPopupSeen();
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
 
@@ -6581,6 +6620,7 @@ function _getPPVPreMatchLine(fighter) {
 
 function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
   _pendingMatchDialogues = [];
+  _getRivalryPopupSeen();
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   const ppvName = G.ppvName || 'GRAND FINAL';
@@ -13812,6 +13852,7 @@ const _matchDialogueQueue = [];
 
 function showPostMatchDialogues(dialogues) {
   if (!dialogues || dialogues.length === 0) return;
+  _markRivalryMatchDialoguesSeen(dialogues);
   dialogues.forEach(d => _matchDialogueQueue.push(d));
   if (_matchDialogueQueue.length === dialogues.length) {
     _enqueuePopup(() => _renderNextMatchDialogue());

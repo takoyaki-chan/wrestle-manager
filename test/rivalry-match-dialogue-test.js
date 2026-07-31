@@ -10,6 +10,7 @@ const { readSource } = require('./helpers/source');
 
 const ui = readSource('src', 'ui-common.js');
 const app = readSource('src', 'app.js');
+const data = readSource('src', 'data.js');
 
 function extractFunction(source, signature) {
   const start = source.indexOf(signature);
@@ -60,8 +61,10 @@ assert.ok(queueFn.includes('UPSET_RIVALRY_LINES'),
   '番狂わせ専用セリフ(UPSET_RIVALRY_LINES)が参照されていない');
 assert.ok(/ovrW\s*<\s*ovrLose\s*-\s*8/.test(queueFn),
   '番狂わせ判定(OVR差9以上の格下勝ち)が削除前と同じ式で残っていること');
-assert.ok(/rivalry\s*\|\|\s*0\)\s*<\s*30/.test(queueFn),
-  '因縁コメントの発動ライン rivalry 30 が残っていること');
+assert.ok(queueFn.includes('RIVALRY_POPUP_CONFIG.normalMinRivalry'),
+  '因縁コメントの発動ラインを data.js の設定から読んでいない');
+assert.ok(/normalMinRivalry:\s*60/.test(data),
+  '通常の因縁コメントの発動ライン rivalry 60 が data.js に設定されていない');
 
 // ── 5) 描画は U3グループB の共通コンポーネントを使うこと ──
 const renderFn = extractFunction(ui, 'function _renderNextMatchDialogue(');
