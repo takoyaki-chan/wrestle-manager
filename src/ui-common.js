@@ -15903,7 +15903,16 @@ function _emrVictoryLine(fighter, preferred) {
   if (!fighter) return 'この勝利を、次につなげる。';
   const own = fighter.voiceLines || fighter.vl;
   const byId = typeof VICTORY_LINES !== 'undefined' ? VICTORY_LINES[fighter.id] : null;
-  const pool = Array.isArray(own) && own.length ? own : (Array.isArray(byId) ? byId : []);
+  // 優先順は **キャラ固有セリフが最上位**(その子だけの言葉を見せるのが本作の芯。
+  // 汎用プールで固有セリフを上書きしない — 2026-07-31 Keisuke裁定)。
+  // 固有セリフを持たないキャラだけ、性格×アーキタイプの汎用プールへ落とす
+  // (従来はここで定型1文に落ちていたため、全員が同じ台詞を話していた)。
+  const archetypePool = typeof POST_MATCH_FLAVOR_LINES !== 'undefined' && typeof getDialoguePool === 'function'
+    ? getDialoguePool(POST_MATCH_FLAVOR_LINES.winner, fighter)
+    : null;
+  const pool = Array.isArray(own) && own.length ? own
+    : (Array.isArray(byId) && byId.length ? byId
+      : (Array.isArray(archetypePool) ? archetypePool : []));
   if (!pool.length) return 'この勝利を、次につなげる。';
   const seed = `${fighter.id || ''}${G?.season || 0}${G?.week || 0}`.split('').reduce((n, ch) => n + ch.charCodeAt(0), 0);
   return String(pool[seed % pool.length]).replace(/^[「『]|[」』]$/g, '');
