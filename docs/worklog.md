@@ -1,5 +1,47 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## PPVテレビ中継の4不具合修正（task-46・2026-07-31）
+
+### D. 時系列（最優先）— 仮説の検証と修正
+
+- 指示書の仮説を `Engine.advanceWeek()` で第47週から実測した。通常年・TV観戦・seed `46001` の遷移列は次のとおり。
+
+  ```text
+  S1 W47:manage
+  → S1 W48:ppvTV
+  → S1 W48:settled
+  → S1 W49/OFF0:offseason
+  → S1 W49/OFF1:awards
+  → S1 W49/OFF2:contract
+  ```
+
+- 結論として、`ppvPhase === 'tv' / 'locked'` の実発火分岐に `!s.offSeason` がなかったことは事実だが、**現行コード単体ではこの仮説どおりの再発はしなかった**。`advanceWeek()` 冒頭のオフシーズン処理が先に return するため、`offSeason: true, week: 48, ppvPhase: 'tv'` を与えた実測でも `OFF1:offseason` のまま、`ppvTV` には入らない。
+- それでも壊れた復旧データや将来の分岐順変更で不変条件が崩れないよう、`locked` と `tv` の両発火分岐へ `!s.offSeason` を追加した。第48週の正規化ブロックと条件を揃えた防御であり、正規の第48週の PPV は消化される。
+- `App.initPPVTV()` は中継結果を `_ppvTvBroadcast` としてその第48週に保存する。保存からの再開・重複呼び出しではこの結果を再利用し、シミュレーション、戦績、ニュース、視聴回数、ログを二重に反映しない。終了時にキャッシュと `ppvPhase` を消して次週へ進む。
+- 新規 `test/ppv-season-flow-test.js` は上の第47週→オフシーズン第2週をヘッドレスで通し、PPVが `S1 W48:ppvTV` の一度だけ、表彰データが契約更改週より前、オフシーズン中の `ppvTV` / `ppvShow` 不発火を検証する。
+
+### A. 選手画像
+
+- 原因は ID の取り違えや画像取得失敗ではなく、`portraitImg(..., 96)` が生成する **96×96 の inline サイズ**を、38×38・丸・`overflow:hidden` の親へ入れていたこと。inline サイズが `.ptv-face img` の CSS を上書きし、画像の左上だけが円形に切り取られて、色の塊／別人のように見えていた。
+- PPVカードの選手画像を `getUpperUrl(id)` の upper 素材へ変更し、2:3 の `chip` **46×66**、`--radius-md` の矩形枠にした。左右のセルは既存の対称レイアウトを維持し、画像を左右反転していない。速報は62×90、頂上決戦は92×138の同じ2:3系統で表示する。
+
+### B. BGM
+
+- 放送OP・カード一覧・試合速報は `grandFinalProgress`（WM-SP07）、頂上決戦の対峙・決着は `grandFinalMain`（WM-M05）。放送終了は無音であり、終幕場面への遷移時に `Audio.bgm.fadeOutStop(350)` を実行する。
+- 「事務所へ戻る」でも `Audio.bgm.stop()` と `Audio.fileBgm.stop()` を先に実行するため、最終試合曲は確実に停止する。週を進めた後は既存の `Audio.bgm.playForState()` がオフシーズン曲、表彰式では既存の表彰式曲へ切り替える。
+
+### C. PPV直前の背面ちらつき
+
+- 原因は `ppvTV` へ遷移後、イベントポップアップキューが空になるのを待ってから初めて中継オーバーレイを描画していたこと。待機中には `refreshAll()` 済みの総括など背面画面が一瞬見え得た。
+- `App.initPPVTV()` の最初に不透明な「WRESTLE TV / GRAND FINAL を準備中…」枠を表示してからキューを待つようにした。よって `weekPhase: 'ppvTV'` になった時点で背面ではなくPPV中継が先に表示され、task-43 の総括表示経路とも競合しない。
+
+### 検証
+
+- `node test/ppv-season-flow-test.js`: PASS（上記の実測遷移列を出力）。
+- `npm test`: **156/156 PASS**。
+- `node test/auto-sim.js 40`: **ALL CLEAR**（violations 0、errors 0、40シーズン中の通常年PPV 30/30 実行、天頂戦 10/10 完走）。
+- `git diff --check`: PASS。
+
 ## 年末表彰式レイアウト是正・総括表示修正（task-43・2026-07-31）
 
 ### 実装

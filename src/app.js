@@ -14869,23 +14869,44 @@ App.closePPVResult = function() {
 };
 
 App.initPPVTV = function() {
-  const tvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF5));
-  const tvResult = Engine.ppv.simulateTVResults(G, tvRng);
+  // 先に不透明な中継枠を出す。イベントキューの解消を待つ間も、背面の総括等は見せない。
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  if (overlay && box) {
+    box.innerHTML = '<div class="ptv-tv ptv-loading"><div class="ptv-screen"><div class="ptv-loading-label">WRESTLE TV<br><small>GRAND FINAL を準備中…</small></div></div></div>';
+    overlay.classList.add('active');
+  }
 
-  // 実績反映: battlePoints + orgWarRecord + h2h + サミット戦績(AIロスター) + 新聞素材
-  G = {
-    ...G,
-    battlePoints: tvResult.battlePoints,
-    orgWarRecord: tvResult.orgWarRecord || G.orgWarRecord,
-    h2h: tvResult.h2h || G.h2h,
-    aiOrgs: tvResult.aiOrgs || G.aiOrgs,
-    _newsSummitResult: tvResult.newsSummitResult || G._newsSummitResult,
-    _newsPpvUndercards: (tvResult.newsPpvUndercards && tvResult.newsPpvUndercards.length > 0)
-      ? tvResult.newsPpvUndercards : G._newsPpvUndercards,
-    ppvTvWatchCount: (G.ppvTvWatchCount || 0) + 1,
-    gameLog: [...G.gameLog, ...tvResult.events],
-  };
-  Storage.autoSave();
+  // 保存→再開や経路の重複呼び出しでも、同じ第48週を再シミュレート／二重記録しない。
+  const cached = G._ppvTvBroadcast;
+  const isCurrentBroadcast = cached
+    && cached.season === G.season
+    && cached.week === G.week
+    && Array.isArray(cached.card)
+    && Array.isArray(cached.results);
+  let tvResult;
+  if (isCurrentBroadcast) {
+    tvResult = cached;
+  } else {
+    const tvRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBBF5));
+    tvResult = Engine.ppv.simulateTVResults(G, tvRng);
+
+    // 実績反映: battlePoints + orgWarRecord + h2h + サミット戦績(AIロスター) + 新聞素材
+    G = {
+      ...G,
+      battlePoints: tvResult.battlePoints,
+      orgWarRecord: tvResult.orgWarRecord || G.orgWarRecord,
+      h2h: tvResult.h2h || G.h2h,
+      aiOrgs: tvResult.aiOrgs || G.aiOrgs,
+      _newsSummitResult: tvResult.newsSummitResult || G._newsSummitResult,
+      _newsPpvUndercards: (tvResult.newsPpvUndercards && tvResult.newsPpvUndercards.length > 0)
+        ? tvResult.newsPpvUndercards : G._newsPpvUndercards,
+      ppvTvWatchCount: (G.ppvTvWatchCount || 0) + 1,
+      _ppvTvBroadcast: { season: G.season, week: G.week, card: tvResult.card, results: tvResult.results },
+      gameLog: [...G.gameLog, ...tvResult.events],
+    };
+    Storage.autoSave();
+  }
 
   // テレビ中継5場面(放送OP→カード→速報→頂上決戦→放送終了)
   _chainEventPopupQueueEmpty(() => {
@@ -14896,6 +14917,9 @@ App.initPPVTV = function() {
 App.closePPVTV = function() {
   const overlay = document.getElementById('showResultOverlay');
   overlay.classList.remove('active');
+  // 放送終了後も頂上決戦曲を残さない。画面遷移・直接の「事務所へ戻る」の両方で止める。
+  try { Audio.bgm.stop(); } catch (e) {}
+  try { Audio.fileBgm.stop(); } catch (e) {}
   Audio.play('click');
 
   // tickWeek: PPV TV観戦中でも週次処理（訓練・給与・関係値）は実行する
@@ -14934,7 +14958,7 @@ App.closePPVTV = function() {
   }
 
   // ppvPhaseクリア→advanceWeek→オフシーズンへ
-  G = { ...G, ppvPhase: null };
+  G = { ...G, ppvPhase: null, _ppvTvBroadcast: undefined };
   Storage.autoSave();
   App.advanceWeek();
 };

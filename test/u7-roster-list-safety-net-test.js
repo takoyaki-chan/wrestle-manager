@@ -59,7 +59,6 @@ const SOLO_CALLS = [
   'portraitImg(f.id, 40)', // タッグ試合カードの顔（アッパーが無いときの代替）
   'portraitImg(charL.id, imgW)',        // 対置（U3-B が段を決める）
   'portraitImg(charR.id, imgW)',
-  'portraitImg(f.id, 96)',              // 単独の話し手
   'portraitImg(fighterId, 64)',         // 単独
   'portraitImg(glimpse.speakerId, 100)', // Glimpse Cascade（U3-D 確定済み）
   'portraitImg(glimpse.targetId, 100)',
