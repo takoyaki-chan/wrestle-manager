@@ -1,5 +1,27 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 年末表彰式レイアウト是正・総括表示修正（task-43・2026-07-31）
+
+### 実装
+
+- モックアップ共通ベースライン v0.8 の §2 / §2-B / §3 / §4 と Ceremony カテゴリを確認してから、`src/ui-common.js` と `src/index.html` の年末表彰式を修正した。
+- 単独主役（メディア功労賞、JT優勝、新人王相当、MVP、殿堂入り、天頂戦、PPV最終戦）は `XL` **172×258**、ベストマッチの対置2名は `M` **132×194**、春タッグの同格2名は `L` **150×224** に統一した。タイトル王者の順位表示も 2:3 比率へ移行した。
+- `aw-speech-slot`（52px の通常予約枠）を追加し、全ての顔出しブロックを「吹き出し予約枠 → 画像 → 名前 → 役割/補助情報 → 団体バッジ」の順へ統一した。吹き出しはクリーム地・本文13px・2行クランプで、下向きの尻尾が画像中心を指す。`_awSpeech()` から話者名の出力を除去した。
+- 春タッグおよび複数人の大会優勝は `aw-team-group` の外枠1つに変更した。個人の矩形枠は置かず、2名はL、3名以上は中央L・両脇M、隣接者を **18px** 重ね、`filter: drop-shadow()` を画像シルエットへ適用した。団体名・タッグ王者の称号は群の頭に置いた。
+- 春タッグ、秋4団体勝ち残り対抗戦、天頂戦、PPV GRAND FINAL の大会優勝スライドでは、既存の **`AWARD_LINES.champion`** を `_awardLine('champion', fighter.id)` で参照した。セリフ定数・文言の追加や変更はしていない。
+
+### 総括が出なかった原因と修正
+
+- `Engine.advanceWeek()` は offWeek 1 に `pendingAwards` を生成し、表彰式の完了コールバックも `_showFarewellsThenReport()` へ接続済みだった。総括の描画も `renderWeekScreen()` の offWeek 1 条件で正しかった。
+- しかし `_showFarewellsThenReport()` は `refreshAll()` だけで、年末表彰式の背面にしていた別タブを「今週」へ切り替えなかった。そのため総括は再描画されてもアクティブでない画面内にあり、式典後に見えない状態になり得た。task-42 の初年度用 `pendingAwards` 復旧は原因ではなく、復旧条件を戻していない。
+- offWeek 1 に限り `showScreen('week')` を実行してから描き直すようにし、表彰式終了後は必ずレポート週のシーズン総括を表示する。
+
+### 検証
+
+- 新規 `test/awards-ceremony-layout-test.js` で、吹き出し→画像の出力順、予約枠、下向き尻尾、XL/L/Mサイズ、タッグ群枠・18px重なり・drop-shadow、大会優勝4種の既存プール参照、総括への画面遷移を検証した。
+- 既存 `test/awards-champions-layout-test.js` のタイトル王者の等幅列チェックも維持した。
+- 個別実行: `node test/awards-ceremony-layout-test.js`、`node test/awards-champions-layout-test.js`、`node test/season-end-order-test.js`、`node test/year1-season-events-test.js` は全てPASS。`npm test`: **153/153 PASS**。`git diff --check` もPASS。
+
 ## 因縁の一戦ポップアップ頻度の抑制（task-41・2026-07-31）
 
 ### 実装
