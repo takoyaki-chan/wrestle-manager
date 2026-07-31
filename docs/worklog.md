@@ -22,6 +22,21 @@
 - 既存 `test/awards-champions-layout-test.js` のタイトル王者の等幅列チェックも維持した。
 - 個別実行: `node test/awards-ceremony-layout-test.js`、`node test/awards-champions-layout-test.js`、`node test/season-end-order-test.js`、`node test/year1-season-events-test.js` は全てPASS。`npm test`: **153/153 PASS**。`git diff --check` もPASS。
 
+## 追い込みの熱量逓減・本番セリフ統合（task-44・2026-07-31）
+
+### 実装
+
+- `docs/dialogue/heat-visibility-lines-draft-v0.1.md` の承認済み本文を、`src/data.js` の `HEAT_STATE_SELF_LINES`（75本）と `HEAT_STATE_COACH_LINES`（21本）へ一字一句そのまま登録した。`EVENT_LINES_BY_KEY` には `heatSelf` / `heatCoach` を追加し、Node エクスポートにも両定数を追加した。
+- 選手詳細の仮 `HEAT_STATE_LINES` を撤去し、`getHeatStateQuote()` から `pickDialogueLine(HEAT_STATE_SELF_LINES[state], fighter)` で personality → archetype → `_default` の既存フォールバックに従って選ぶようにした。未設定のプールでも `…` に安全にフォールバックする。
+- 道場画面左下の既存コーチ吹き出しを熱量観察の表示枠として配線した。heavy の選手がいれば常時その選手を優先し、warm/fresh は既存コーチ報告が表示される週に限って表示する。既存 `COACH_VOICE_REPORT_LINES`（strain系を含む）と同じ吹き出し本文を差し替えるため、同じ週に将来のstrain報告と今週のheat観察を重ねない。表示選択は `Engine.rng.derive()` のローカルRNGで固定し、GameState・成長計算には書き込まない。
+- 新規 `test/heat-lines-test.js` は草案の2つのJavaScriptブロックを直接パースし、実装定数との完全一致、43文字上限、全状態×全personalityのフォールバック、heavyの回復明示2本、数値・倍率・内部変数名の非露出、レジストリとUI配線を検査する。既存 `test/heat-visibility-test.js` は仮テキスト参照の検査を本番プール参照へ更新した。
+
+### 検証
+
+- fingerprint 比較は同一seed `492879082` で実施した。変更前ソース（`WM_SOURCE_REF=HEAD`）と変更後ワーキングツリーはいずれも `268bd395`、violations 0 / errors 0 / ALL CLEAR。`node test/auto-sim.js 20` のseed省略時は日時由来のため、比較には用いない。
+- 個別: `node test/heat-lines-test.js` / `node test/heat-visibility-test.js`: PASS。`npm test`: **153/153 PASS**。`git diff --check`: PASS。
+- 成長計算（`GROWTH_CONFIG` / `Engine.growth`）は未変更。
+
 ## 因縁の一戦ポップアップ頻度の抑制（task-41・2026-07-31）
 
 ### 実装
