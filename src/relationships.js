@@ -1024,6 +1024,105 @@ Engine.relationships = {
       }
     }
 
+    // ══════════════════════════════════════════════════════════
+    //  task-63 (2026-07-31): 因縁系イベントに限りレンタル選手も対象に含める
+    //
+    //  判定根拠（何が「因縁系」か）:
+    //  上のメインループ内のイベントのうち relationships[key].rivalry を直接
+    //  加算/減算するのは以下の2つだけ:
+    //    - 「一方的な敵意」ゾーンの3.5%escalationロール（keyBA/keyABのrivalry+=2）
+    //    - 「クロス非対称 覚醒」イベント（rivalry+15〜20, bond-10〜15）
+    //  他の枝（親友ゾーンのcondition回復/好敵手ゾーンのmarkGrowthPressure/
+    //  片思い・完全断絶・嫌悪伝染のtrust・bond変動/ロッカー荒廃のorgPop・morale）は
+    //  いずれも bond・trust・condition・団体全体の空気を動かすだけで、rivalry軸
+    //  そのものは動かさない「絆系」と判定し、従来どおり activeRoster（非レンタル）
+    //  のみを対象とする（このブロックの対象外）。
+    //  「憎い敵ゾーン」の5%clashロールは rivalries[].pendingClashBonus という別の
+    //  因縁称号システムを書き換えるだけで relationships[key].rivalry は動かさない
+    //  ため、今回は厳密な定義から除外した（迷ったら質問、の項目として完了報告に記載）。
+    //
+    //  なぜ確率・増加量を高めにするか:
+    //  レンタル選手の在籍期間はRENTAL_CONFIG.minSeasons〜maxSeasons=1〜4期
+    //  (12〜48週)と短く、契約選手のように無期限に同じ顔ぶれと接触し続けられない。
+    //  同じ発生密度のままだと、因縁が育つ前に帰ってしまう。そのため
+    //  RENTAL_RIVALRY_CONFIG(data.js)の倍率で発火確率とrivalry増加量を底上げする。
+    //  bondの増減量（覚醒イベントのbond-10〜15）には倍率を掛けない
+    //  （不変条件「bondの分布を動かさない」を守るため）。
+    //
+    //  上のメインループとはRNGストリームを分離し（0x8ED2で導出）、既存の
+    //  activeRoster側イベントのRNG消費順序・結果に一切影響しないようにしている。
+    // ══════════════════════════════════════════════════════════
+    const rentalFighters = roster.filter(f => !f.injury && f.isRental);
+    if (rentalFighters.length > 0) {
+      const eligibleForRentalRivalry = roster.filter(f => !f.injury);
+      const rentalRivalryRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 42, state.season, state.week, 0x8ED2));
+      const probMult = (RENTAL_RIVALRY_CONFIG && RENTAL_RIVALRY_CONFIG.probMult) || 1;
+      const magMult = (RENTAL_RIVALRY_CONFIG && RENTAL_RIVALRY_CONFIG.magnitudeMult) || 1;
+      const processedRentalPairs = new Set();
+
+      for (const rf of rentalFighters) {
+        for (const other of eligibleForRentalRivalry) {
+          if (other.id === rf.id) continue;
+          const canon = rf.id < other.id ? `${rf.id}_${other.id}` : `${other.id}_${rf.id}`;
+          if (processedRentalPairs.has(canon)) continue;
+          processedRentalPairs.add(canon);
+
+          const left = rf;
+          const right = other;
+          const keyAB = `${left.id}>${right.id}`;
+          const keyBA = `${right.id}>${left.id}`;
+          const relAB = relationships[keyAB] || { bond: 50, rivalry: 0 };
+          const relBA = relationships[keyBA] || { bond: 50, rivalry: 0 };
+
+          // ── 一方的な敵意（レンタル版、確率×probMult・増加量×magMult） ──
+          if (relAB.rivalry >= 50 && relAB.bond <= 30 && relBA.rivalry < 20) {
+            if (Engine.rng.float(rentalRivalryRng) < 0.035 * probMult) {
+              const boosted = { ...(relationships[keyBA] || { bond: 50, rivalry: 0 }) };
+              boosted.rivalry = this._clampAxisValue((boosted.rivalry || 0) + 2 * magMult, 'rivalry');
+              relationships[keyBA] = boosted;
+            }
+          }
+          if (relBA.rivalry >= 50 && relBA.bond <= 30 && relAB.rivalry < 20) {
+            if (Engine.rng.float(rentalRivalryRng) < 0.035 * probMult) {
+              const boosted = { ...(relationships[keyAB] || { bond: 50, rivalry: 0 }) };
+              boosted.rivalry = this._clampAxisValue((boosted.rivalry || 0) + 2 * magMult, 'rivalry');
+              relationships[keyAB] = boosted;
+            }
+          }
+
+          // ── クロス非対称 覚醒イベント（レンタル版、確率×probMult・rivalry増加量×magMult） ──
+          if (relAB.rivalry >= 50 && relAB.bond <= 30 && relBA.rivalry < 20 && relBA.bond >= 60 && !right._awakened) {
+            if (Engine.rng.float(rentalRivalryRng) < 0.015 * probMult) {
+              const awakeRiv = (15 + Engine.rng.int(rentalRivalryRng, 0, 5)) * magMult;
+              const awakeBondDrop = -(10 + Engine.rng.int(rentalRivalryRng, 0, 5));
+              const boostedBA = { ...(relationships[keyBA] || { bond: 50, rivalry: 0 }) };
+              boostedBA.rivalry = this._clampAxisValue((boostedBA.rivalry || 0) + awakeRiv, 'rivalry');
+              boostedBA.bond = this._clampAxisValue((boostedBA.bond || 50) + awakeBondDrop, 'bond');
+              relationships[keyBA] = boostedBA;
+              updateFighter(right.id, fighter => ({ ...fighter, _awakened: true }));
+              const awPool1 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, right);
+              const awTpl1 = awPool1[Engine.rng.int(rentalRivalryRng, 0, awPool1.length - 1)];
+              events.push(`[awakening] ${awTpl1.replace(/\{nameA\}/g, left.name).replace(/\{nameB\}/g, right.name)}`);
+            }
+          }
+          if (relBA.rivalry >= 50 && relBA.bond <= 30 && relAB.rivalry < 20 && relAB.bond >= 60 && !left._awakened) {
+            if (Engine.rng.float(rentalRivalryRng) < 0.015 * probMult) {
+              const awakeRiv = (15 + Engine.rng.int(rentalRivalryRng, 0, 5)) * magMult;
+              const awakeBondDrop = -(10 + Engine.rng.int(rentalRivalryRng, 0, 5));
+              const boostedAB = { ...(relationships[keyAB] || { bond: 50, rivalry: 0 }) };
+              boostedAB.rivalry = this._clampAxisValue((boostedAB.rivalry || 0) + awakeRiv, 'rivalry');
+              boostedAB.bond = this._clampAxisValue((boostedAB.bond || 50) + awakeBondDrop, 'bond');
+              relationships[keyAB] = boostedAB;
+              updateFighter(left.id, fighter => ({ ...fighter, _awakened: true }));
+              const awPool2 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, left);
+              const awTpl2 = awPool2[Engine.rng.int(rentalRivalryRng, 0, awPool2.length - 1)];
+              events.push(`[awakening] ${awTpl2.replace(/\{nameA\}/g, right.name).replace(/\{nameB\}/g, left.name)}`);
+            }
+          }
+        }
+      }
+    }
+
     // ── trust警告帯ティッカー（trust 40-49）──
     roster = roster.map(f => {
       const trust = f.trust != null ? f.trust : 50;
@@ -3985,6 +4084,15 @@ Engine.snapshot = {
     return { snapshots, state: newState };
   },
 
+  // task-63 (2026-07-31): 対象キャラが自団体ロスターに居ない=他団体所属かどうかを判定。
+  // Engine.snapshotの候補は必ずfighterId側が自団体選手(roster.forEach起点)なので、
+  // これはfighter2Id側だけを見れば足りる。
+  _isCrossOrg(state, targetId) {
+    if (targetId == null) return false;
+    if ((state.roster || []).some(f => f.id === targetId)) return false;
+    return Engine.glimpse._getAllAIChars(state).some(f => f.id === targetId);
+  },
+
   // ═══ 候補収集 ═══
   _collectCandidates(rng, state) {
     const candidates = [];
@@ -4020,10 +4128,16 @@ Engine.snapshot = {
           candidates.push({ source: 'R2', weight: 4, fighterId: f.id, type: 'slot' });
         }
         if (rf.R4 && Engine.rng.float(rng) < 0.12) {
-          candidates.push({ source: 'R4', weight: 3, fighterId: f.id, fighter2Id: rf.R4, type: 'slot' });
+          candidates.push({
+            source: 'R4', weight: 3, fighterId: f.id, fighter2Id: rf.R4, type: 'slot',
+            crossOrg: this._isCrossOrg(state, rf.R4), // task-63
+          });
         }
         if (rf.R5 && Engine.rng.float(rng) < 0.12) {
-          candidates.push({ source: 'R5', weight: 3, fighterId: f.id, fighter2Id: rf.R5, type: 'slot' });
+          candidates.push({
+            source: 'R5', weight: 3, fighterId: f.id, fighter2Id: rf.R5, type: 'slot',
+            crossOrg: this._isCrossOrg(state, rf.R5), // task-63
+          });
         }
         if (rf.R1) {
           rf.R1.forEach(oppId => {
@@ -4099,6 +4213,7 @@ Engine.snapshot = {
             source: 'rivalryResolved', weight: 5,
             fighterId: pair.fighterId, fighter2Id: pair.fighter2Id,
             type: 'slot',
+            crossOrg: this._isCrossOrg(state, pair.fighter2Id), // task-63
           });
         }
       });
@@ -4114,7 +4229,13 @@ Engine.snapshot = {
     const lastWeek = cooldowns[key];
     if (lastWeek == null) return false;
     const currentAbsWeek = Engine.util.absWeek(state.season, state.week);
-    return (currentAbsWeek - lastWeek) < 6;
+    // task-63: 他団体の相手が絡む候補(crossOrg=true)は既定より長いクールダウンを掛け、
+    // 同じ相手が毎週のように出てノイズになるのを防ぐ。値はdata.jsのCROSS_ORG_SNAPSHOT_COOLDOWN_WEEKS
+    // / SNAPSHOT_PAIR_COOLDOWN_WEEKS（既存の6週間を定数化したもの、値は変更していない）。
+    const windowWeeks = candidate.crossOrg
+      ? (typeof CROSS_ORG_SNAPSHOT_COOLDOWN_WEEKS === 'number' ? CROSS_ORG_SNAPSHOT_COOLDOWN_WEEKS : 10)
+      : (typeof SNAPSHOT_PAIR_COOLDOWN_WEEKS === 'number' ? SNAPSHOT_PAIR_COOLDOWN_WEEKS : 6);
+    return (currentAbsWeek - lastWeek) < windowWeeks;
   },
 
   _cooldownKey(candidate) {
@@ -4188,7 +4309,10 @@ Engine.snapshot = {
 
     let name2 = null;
     if (fighter2Id != null) {
-      const f2 = state.roster.find(f => f.id === fighter2Id);
+      // task-63: fighter2Idが他団体所属だとstate.rosterには居ないため、
+      // 見つからなければAI団体ロスターもフォールバックで探す（見つからないと"???"表示になっていた）
+      const f2 = state.roster.find(f => f.id === fighter2Id)
+        || Engine.glimpse._getAllAIChars(state).find(f => f.id === fighter2Id);
       name2 = f2 ? f2.name : (candidate.departedName || '???');
     }
 
