@@ -2247,7 +2247,9 @@ const Engine = {
       const rivalryRing = Engine.mq.rivalryRingEffect(rivalryLevel);
 
       const titleMatch = !!options.isTitle;
-      const championId = state?.titles?.world?.championId;
+      // task-61: 呼び出し元が王者IDを明示できるようにする(AI団体の内部王座は
+      // state.titles.world とは別の場所にあるため)。未指定時は従来どおりstateから引く。
+      const championId = options.championId !== undefined ? options.championId : state?.titles?.world?.championId;
       const championDefenseEscape = (options.normalShowRingExtras && titleMatch && championId != null)
         ? [
             leftId === championId ? Engine.mq.CHAMPION_DEFENSE_ESCAPE_BONUS : 0,
@@ -9115,18 +9117,22 @@ const Engine = {
         const aiLastTMW = nextOrgData.titles?.world?.lastTitleMatchWeek;
         const aiAbsWeek = Engine.title.getAbsWeek(state);
         const aiCdOk = aiLastTMW == null ? true : (aiAbsWeek - aiLastTMW) >= 12;
+        // task-61: Fix3の差し替え判定と、王座戦リング内効果の判定(下のmatch loop)で
+        // 同じ資格者集合を使うため、if の外に出す。挙動は従来のeligibleIdsと同一。
+        const aiEligibleIds = (aiChampId && aiCdOk)
+          ? new Set(Engine.title.getEligibleChallengers(roster, aiChampId, 'ai'))
+          : new Set();
         if (aiChampId && aiCdOk && matchCard.length > 0) {
-          const eligibleIds = new Set(Engine.title.getEligibleChallengers(roster, aiChampId, 'ai'));
           // 王者がカードにいるか確認
           const champCardIdx = matchCard.findIndex(m => m.left.id === aiChampId || m.right.id === aiChampId);
-          if (champCardIdx >= 0 && eligibleIds.size > 0) {
+          if (champCardIdx >= 0 && aiEligibleIds.size > 0) {
             const champCard = matchCard[champCardIdx];
             const champOppId = champCard.left.id === aiChampId ? champCard.right.id : champCard.left.id;
             // 対戦相手がeligibleでない場合、eligible中の最高OVRと差し替え
-            if (!eligibleIds.has(champOppId)) {
+            if (!aiEligibleIds.has(champOppId)) {
               const usedIds = new Set(matchCard.flatMap(m => [m.left.id, m.right.id]));
               const topChallenger = roster
-                .filter(f => eligibleIds.has(f.id) && f.id !== aiChampId)
+                .filter(f => aiEligibleIds.has(f.id) && f.id !== aiChampId)
                 .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
               if (topChallenger) {
                 // カード内で使われている場合はスワップ
@@ -9165,7 +9171,18 @@ const Engine = {
 
           const matchRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, card.left.id ^ card.right.id));
           // MQ再設計P3b: 因縁のリング内化はシム前に解決して opts で渡す(ai-showプロファイル)。
-          const ringIn = Engine.mq.buildRingInOpts(state, card.left.id, card.right.id, { roster });
+          // task-61: このカードがAI内部王座の防衛戦かどうかを判定し、タイトル戦のリング内効果
+          // (脱出率+カウンター率+王者専用の逃げ切りボーナス)をプレイヤー側と同様に発火させる。
+          // 判定は上のFix3ブロックと同じ条件(王者出場 + 12週クールダウン明け + 相手が挑戦資格者)。
+          const aiCardChampOppId = card.left.id === aiChampId ? card.right.id
+            : (card.right.id === aiChampId ? card.left.id : null);
+          const isAiTitleCard = !!(aiChampId && aiCdOk && aiCardChampOppId != null && aiEligibleIds.has(aiCardChampOppId));
+          const ringIn = Engine.mq.buildRingInOpts(state, card.left.id, card.right.id, {
+            roster,
+            isTitle: isAiTitleCard,
+            normalShowRingExtras: isAiTitleCard,
+            championId: aiChampId,
+          });
           let result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng, 1, ringIn.simOpts);
           // coachMQBonus は MQ外部ボーナス整理で廃止
           // AI vs AI match MQ uses the shared ai-show profile.
