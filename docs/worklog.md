@@ -1,5 +1,13 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 会場・集客仕様書 v2.1（task-35・2026-07-31）
+
+- `specs/venue-attendance-spec-v2.1.md` を新設し、`ATTENDANCE_V2_CONFIG`、
+  `SHOW_DRAW_CONFIG`、`VENUES`、`Engine.attendanceV2` の実装値を基準に、消費枠数
+  （シングル1・タッグ2）、不足累進V、フル枠ボーナス、適用順、特別興行の対象外を記録した。
+- 会場表は実装値に同期し、ドームを収容22,500・コスト7,000・最大8枠、適正7枠とした。
+- 既存v2.0には移行済みの1行のみを追記し、CLAUDE.mdのspecs索引へv2.1を追加した。`src/` は変更していない。
+
 ## DB全選手一覧の大会称号バッジ拡張（task-33・2026-07-31）
 
 ### 実装
