@@ -17,7 +17,7 @@
 - `npm test`: **147/147 PASS**。
 - `node test/auto-sim.js 20`: **ALL CLEAR**。引数なしのseedは日時由来なので比較には不適切なため、比較可能な固定seedで `node test/auto-sim.js 20 42` を実施。変更前（`WM_SOURCE_REF=HEAD`）と変更後はいずれも fingerprint **`8ee8bfa0`**、ALL CLEAR。
 - `GROWTH_CONFIG` と `Engine.growth.calcGrowth` を含む `src/data.js` / `src/management.js` は差分なし。GameState書き込みも追加なし。
-=======
+
 ## SE配線棚卸し・載せ替え（task-39・2026-07-31）
 
 音響台帳 `docs/wrestle-manager-audio-role-map.md` を正として、`bgm/production-ogg` のSE 46本と `src/app.js` の実参照を全数照合した。着手時点の既存配線は21本、未配線は25本だった。未配線のうち、再生時点が一意に定まる12本だけを配線し、試合中・汎用イベント・週次結果へ無理に重ねることになる13本は保留とした。
