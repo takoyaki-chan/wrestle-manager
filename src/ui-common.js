@@ -1478,7 +1478,7 @@ function showNegotiationResult() {
   const fighter = nr.fighter;
   if (!fighter) { G = { ...G, negotiationResult: null }; return; }
 
-  Audio.play(nr.success ? 'victory' : 'defeat');
+  Audio.play(nr.success ? 'victory' : 'reject');
 
   const phase = nr.success ? 'success' : 'fail';
   const dialogue = Engine.negotiate.getDialogue(fighter, phase);
@@ -4457,6 +4457,7 @@ function updateSchedulePreview(fighterId, newSchedule) {
   const c = G.roster.find(r => r.id === fighterId);
   if (!c) return;
   c.schedule = newSchedule;
+  Audio.play('policy');
   // Predict action (mirrors Engine processManage logic)
   let action = newSchedule;
   if (c.injury) action = '療養';

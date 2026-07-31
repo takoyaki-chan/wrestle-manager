@@ -229,7 +229,7 @@ section('17. 興行準備の操作に音がある', () => {
     assert.ok(at > 0, `${fn} が見つからない`);
     const end = app.indexOf('\n  },', at);
     const body = app.slice(at, end);
-    const sounds = (body.match(/Audio\.play\('([a-z]+)'\)/g) || []);
+    const sounds = (body.match(/Audio\.play\('([a-zA-Z]+)'\)/g) || []);
     assert.ok(sounds.some(x => !/'error'/.test(x)),
       `${fn}: 失敗時の error しか鳴っていない。成功したのに無音`);
   });
@@ -242,7 +242,7 @@ section('17. 興行準備の操作に音がある', () => {
   });
   // おまかせ編成3種
   ['autoFillCard', 'autoFillCardByAppeal', 'autoFillCardByDraw'].forEach(fn => {
-    assert.ok(uiRender.includes(`Audio.play('select');${fn}()`),
+    assert.ok(uiRender.includes(`Audio.play('cardComplete');${fn}()`),
       `${fn}: おまかせボタンが無音`);
   });
 });
