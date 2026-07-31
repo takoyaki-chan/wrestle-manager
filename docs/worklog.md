@@ -1,5 +1,157 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 他団体の因縁を「見えるように」する + レンタル選手を因縁の経路だけ開ける（task-63・2026-07-31）
+
+出典: `docs/relationship-rivalry-survey-v0.1.md`（前段調査）+
+`docs/codex-tasks/task-63-rivalry-visibility-rental.md`。作業は `wm-task63`
+（ブランチ `feat/rivalry-visibility-rental`）で実施、main / `wm-task62`
+（`src/management.js` を別タスクが同時編集中）は無関係・未変更。`src/management.js`には触れていない。
+**未コミット（指示によりコミットなし）**。
+
+前提: 実測（survey調査）で「他団体戦にはrivalry×2.0が既に掛かっており、1ペアあたりの育ち方は
+自団体とほぼ同じ」ことが判明済み。**したがって本タスクではrivalryの増加量(倍率・式)は一切変更せず、
+走査対象と表示だけを広げた。**
+
+### A. 週次ドラマの因縁系イベントにレンタルを対象追加
+
+`processWeeklyStoryEvents`（relationships.js、`activeRoster = roster.filter(f => !f.injury && !f.isRental)`）
+の中身を全ブロック読み、`relationships[key].rivalry`を直接加算/減算するイベントを洗い出した。
+
+**因縁系と判定した2つ**（レンタルを対象に追加）:
+- 「一方的な敵意」ゾーンの3.5%escalationロール（`rivalry+=2`）
+- 「クロス非対称 覚醒」イベント（`rivalry+15〜20`, `bond-10〜15`）
+
+**絆系と判定し従来どおり除外した枝**（bond/trust/condition/orgPop/moraleを動かすだけで
+rivalry軸そのものは動かさない）: 親友ゾーンのcondition回復、好敵手ゾーンのmarkGrowthPressure、
+片思い・完全断絶・嫌悪伝染のtrust/bond変動、ロッカー荒廃モーダル(bond≤30カウント)。
+「憎い敵ゾーン」の5%clashロールは`rivalries[].pendingClashBonus`という別の因縁称号系オブジェクトを
+書き換えるだけで`relationships[key].rivalry`は動かさないため、厳密な定義からは除外した
+（質問として残す、後述）。
+
+実装は既存2イベントのロジックをそのまま**独立RNGストリーム**
+（`Engine.rng.derive(state.rngSeed, state.season, state.week, 0x8ED2)`）でレンタル絡みペアに
+複製し、確率・rivalry増加量にだけ`RENTAL_RIVALRY_CONFIG`（新規, data.js）の倍率を掛けた。
+bondの増減量（覚醒イベントの-10〜15）には倍率を掛けていない（bond分布不変条件のため）。
+既存の`activeRoster`側ループには一切触れておらず、レンタルが1人も居ない週はこの新ブロックが
+まるごと実行されない（`rentalFighters.length > 0`ガード）。
+
+**倍率**: `probMult: 1.4`, `magnitudeMult: 1.4`（指示書の推奨レンジ1.3〜1.6の中央よりやや低め）。
+根拠: レンタル在籍は`RENTAL_CONFIG.minSeasons〜maxSeasons`=1〜4期(12〜48週)で、契約選手のように
+無期限に同じ顔ぶれと接触し続けられない。確率・増加量の両方に掛かるため体感の伸びは複合で
+約2倍相当になる点は自覚した上で、「短期滞在の埋め合わせ」として意図的に採用した。
+
+### B. 他団体の因縁を通知・演出に載せる
+
+`_collectCandidates`/`_isOnCooldown`/`_buildSnapshotText`（`Engine.snapshot`）と
+`checkALayer`/`checkBLayer`（`Engine.glimpse`）を全部読んだ。
+
+**発見1（既に開いていた）**: `checkALayer`（bond/rivalry閾値跨ぎGlimpse）は
+`allTargetIds`に`_getAllAIChars(state)`を含めており、他団体キャラを最初からtarget候補に
+入れている。`checkBLayer`のGL-05「ライバルへの意識」も`_findBestRelPair`が
+org無関係に全relationshipsキーを検索するため、既に他団体の相手を拾える作りだった。
+**この2つは変更していない**（既存の値を変えない、のため）。
+
+**発見2（バグ）**: `Engine.snapshot._buildSnapshotText`のname2解決が`state.roster`
+（自団体ロスター）しか見ておらず、`fighter2Id`が他団体キャラだと解決できず`"???"`表示に
+なっていた。R4/R5（rivalry40+の相手との勝敗）候補は元々`fighter2Id`を正しく渡していたので、
+このname解決だけが閉じていた実質的なボトルネック。`Engine.glimpse._getAllAIChars(state)`への
+フォールバックを1行追加して直した。
+
+**追加した仕組み**:
+- `Engine.snapshot._isCrossOrg(state, targetId)`（新規ヘルパー）: fighter2Idが自団体ロスターに
+  居なければ他団体ロスターを検索してtrue/falseを返す。R4/R5/rivalryResolved候補生成時に
+  `crossOrg`フラグとして付与
+- `_isOnCooldown`が`crossOrg`フラグを見て、他団体絡み候補には通常(6週, `SNAPSHOT_PAIR_COOLDOWN_WEEKS`
+  として定数化。**値は変更していない**)より長い`CROSS_ORG_SNAPSHOT_COOLDOWN_WEEKS=10週`の
+  クールダウンを掛ける（同じ他団体の相手が毎週のように出るノイズを防止）
+
+**守った制約**:
+- 自団体の選手が必ず一方に居ること: `_collectCandidates`は`roster.forEach`（自団体ロスター）
+  起点でしか候補を作らないため構造的に保証される。他団体同士(AI対AI)の候補は生成されない
+- レンタルを通知の主体にはしない: R4/R5候補の起点`roster.forEach(f => {if (f.injury || f.isRental) return; ...})`
+  は元々レンタルを除外済み（変更なし）。相手役(fighter2Id)としては元々レンタルも入りうる
+  （同団体内でレンタル選手と対戦した場合など）ので、その経路は塞いでいない
+
+### 計測
+
+**手法上の注意（重要な副産物）**: `test/relationship-distribution-analysis.js`をシード固定で
+2回連続実行しただけで、同一seed・同一コードにもかかわらず結果が毎回変わることを発見した
+（同団体ペア数435→420→468、他団体ペアrivalry平均20.1→15.1等、実行のたびに変動）。
+原因を追跡し、`relationships.js:2016`付近`checkRecontact`（再接触/vendetta/grudgeイベント、
+本タスクでは未変更・pre-existing）が`Engine.rng`ではなく素の`Math.random()`を使っていることを
+特定した（`git blame`で2026-03-30の既存コードと確認、本タスク由来ではない）。
+`test/auto-sim.js`は45-51行目でこれを回避するために`Math.random`をシード化する互換パッチを
+既に持っているが、`test/relationship-distribution-analysis.js`にはこのパッチが無い。
+このファイルは「test/新規」の対象外（既存ファイル）なので変更せず、代わりに
+auto-sim.jsと同じパッチを当てた**スクラッチ版**（リポジトリ外、報告用に一時作成し破棄）を用意して
+同一シードでの前後比較を行った。
+
+- **同一シード12345・40シーズン・レンタルなしの通常オートプレイ**: 修正前後で
+  同団体ペア(n=485, meanRivalry=17.94)・他団体通算対戦ありペア(n=348, meanRivalry=18.90)・
+  rivalry60+比率(58/485, 38/348)が**すべて完全一致（byte-identical）**。
+  このシナリオではレンタルが1人も生成されないため`rentalFighters.length>0`ガードが常にfalseで
+  Aブロックが1回も実行されず、B節の変更も候補のメタデータ(crossOrgフラグ・クールダウン窓)にしか
+  触れないため、rivalry軸の数値には一切影響しないことを実測で確認した
+- **同一シード・強制レンタル版**（毎週空き枠があればAI団体上位以外からOVR50+を1体レンタル）:
+  修正前 rentalPairs n=296 meanRivalry=14.03 / 修正後 n=260 meanRivalry=11.14、
+  同団体・他団体分布も前後で乖離した。**これは信頼できる比較ではない** —
+  レンタルの重み付き抽選が実際に回った時点でrivalryの値がその週の試合結果(MQ計算経由)に
+  波及し得るため、40シーズンという長い時間軸では初週の分岐がその後の全試合結果・ドラフト・
+  引退等に連鎖して別の歴史になる（task-61のworklogで既に報告済みの「単一seed長期比較は
+  原理的に成立しない」問題と同種）。数値の大小自体に意味を見出さず、
+  「レンタルペアが実在し、値が壊れていない(NaN等なし)」という健全性確認にとどめた
+- **レンタルの因縁増加そのものの一次証拠**は`test/rivalry-visibility-rental-test.js`の
+  直接関数呼び出し(400試行)による決定的テストを一次情報として扱う
+  （後述「テスト」節。escalation/awakeningともに発火を確認済み）
+
+### 不変条件・検証結果
+
+1. 試合起因のrivalry増加量(`applyMatchResult`)を変えない: **PASS（コード差分で確認、1行も
+   変更していない）**。かつ上記のレンタルなしシナリオでrivalry分布が完全一致したことでも裏付け
+2. bondの分布を動かさない: **PASS**。Aブロックの新規イベントはbond変動を一切追加していない
+   （覚醒イベントの`bond-10〜15`は既存ロジックの値をそのまま流用、倍率は掛けていない）
+3. 他団体同士(AI対AI)の因縁を通知に出さない: **PASS**。`_collectCandidates`が自団体ロスター
+   起点でしか候補を作らない構造で保証
+4. 乱数はシードから導出: **PASS**（Aブロックは`Engine.rng.derive(state.rngSeed, ...)`由来の
+   独立ストリーム。新規追加コードに`Math.random()`/`Date.now()`は無い。ただし前述の通り
+   pre-existingな`checkRecontact`のMath.random()使用を副産物として発見した — 別問題として報告のみ）
+5. 調整値は`src/data.js`の新規定数、既存の値は変えない: **PASS**。
+   `RENTAL_RIVALRY_CONFIG`/`CROSS_ORG_SNAPSHOT_COOLDOWN_WEEKS`は新規、
+   `SNAPSHOT_PAIR_COOLDOWN_WEEKS=6`は既存のハードコード値をそのまま定数化（値は不変）
+6. `Engine.validateGameState`が新しい違反を出さない: **PASS**（`auto-sim.js 40`で
+   violations 0, errors 0）
+7. `node test/run-all.js`: **174/174 PASS**（既存173 + 新規1、`rivalry-visibility-rental-test.js`）
+8. `node test/auto-sim.js 40`（フォアグラウンド実行）: **ALL CLEAR**、
+   Total violations: 0, Total errors: 0, Freq warnings: 0, 40シーズン・2120週完走、Elapsed 139.7s
+
+### テスト
+
+新規 `test/rivalry-visibility-rental-test.js`（5ブロック）:
+1. レンタル絡みペアで「一方的な敵意」escalation・「クロス非対称 覚醒」が発火すること
+   （400試行、直接`processWeeklyStoryEvents`呼び出し）
+2. 親友ゾーン(絆系)のcondition回復がレンタル選手には適用されないこと(従来どおり除外)
+3. `RENTAL_RIVALRY_CONFIG`がdata.jsのトップレベル定数であり、確率式に直書きの倍率
+   （`0.035 * 1.4`等）が無いこと
+4. `_isCrossOrg`判定・R4候補生成時の`crossOrg`フラグ・自団体選手が必ずfighterId側に
+   居ること・他団体の相手名が`_buildSnapshotText`で正しく解決される(???にならない)こと・
+   同団体ペアでは`crossOrg:false`のままであること
+5. `_isOnCooldown`が`crossOrg`候補により長いクールダウン(10週)を、通常候補には従来の
+   クールダウン(6週)を適用すること
+
+### 質問として残すこと（実装はしていない）
+
+- 「憎い敵ゾーン」の5%clashロール（`rivalries[].pendingClashBonus`書き換え、`[rivalry-clash]`
+  ティッカー）を「因縁系」に含めてレンタルにも開けるべきか判断が割れる。rivalry軸の数値を
+  直接動かさないので今回は対象外としたが、因縁ドラマの体感としては近い枝なので、
+  含めるべきか要判断
+- 「好敵手ゾーン」のmarkGrowthPressure（rivalry40+bond50+ペアの育成負荷ボーナス）も同様に
+  rivalry軸を動かさないため対象外としたが、レンタルにも「好敵手との切磋琢磨」を与えるべきかは
+  デザイン判断が要る
+- `checkRecontact`（relationships.js:2016）のMath.random()直呼びは今回のタスクの因縁可視化とは
+  無関係のpre-existingな問題だが、シミュレーション計測全般の再現性を損なうため、
+  別タスクとしての修正を推奨（`test/auto-sim.js`は既にワークアラウンド済みだが、
+  `test/relationship-distribution-analysis.js`を含む他の計測ツールは未対応）
+
 ## AI団体の王座戦にタイトル戦リング内効果を発火させる（task-61・2026-07-31）
 
 出典: `docs/ai-title-defense-survey-v0.1.md`（前段調査）。作業は `wm-task61`

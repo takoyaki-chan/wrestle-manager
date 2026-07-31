@@ -8394,6 +8394,30 @@ const RENTAL_CONFIG = {
   getMaxConcurrent(rosterSize) { return rosterSize >= 8 ? 3 : 2; },
 };
 
+// task-63 (2026-07-31): レンタル選手が絡む「因縁系」週次イベント
+// （一方的な敵意のescalationロール／クロス非対称覚醒）専用の確率・増加量倍率。
+// 根拠: レンタル在籍はRENTAL_CONFIG.minSeasons〜maxSeasons=1〜4期(12〜48週)で、
+// 契約選手のように無期限に顔を合わせ続けられない。同じ発生密度では因縁が育つ前に
+// 帰ってしまうため、発火確率・増加量それぞれを底上げする。
+// 個々の倍率は指示書の推奨レンジ(1.3〜1.6倍)の中央よりやや低い1.4倍を採用。
+// 確率と増加量の両方に掛かるため体感の伸びは複合でおよそ2倍程度になる — この点は
+// 「短期滞在の埋め合わせ」として意図的。rivalryの絶対量そのもの（増加式の係数）は
+// 変更していない。
+const RENTAL_RIVALRY_CONFIG = {
+  probMult: 1.4,       // 発火確率(一方的な敵意/覚醒の抽選)の倍率
+  magnitudeMult: 1.4,  // rivalry増加量の倍率（bondの増減量には掛けない）
+};
+
+// task-63 (2026-07-31): スナップショット通知の同一ペア再掲までのクールダウン(週)。
+// Engine.snapshot._isOnCooldown に直書きされていた「6週間」を定数として明示化した
+// もの。値そのものは変更していない（既存の値を変えない、の原則を守るため）。
+const SNAPSHOT_PAIR_COOLDOWN_WEEKS = 6;
+
+// task-63: 他団体の相手が絡むスナップショット通知(R4/R5/rivalryResolvedでcrossOrg
+// 判定がtrueの候補)は、同じ相手が毎週のように出るとノイズになるため、通常より
+// 長いクールダウンを掛ける。SNAPSHOT_PAIR_COOLDOWN_WEEKS(6週)より長い10週とした。
+const CROSS_ORG_SNAPSHOT_COOLDOWN_WEEKS = 10;
+
 const EVENT_CONFIG = {
   // D-2: 対抗戦
   warChancePerSeason: 0.55,             // 各チェックポイント55%
