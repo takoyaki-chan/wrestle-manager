@@ -7151,7 +7151,11 @@ const App = {
     } else if (wp && wp.currentWatching >= 0) {
       const idx = wp.currentWatching;
       wp.currentWatching = -1;
-      if (!wp.results[idx]) App._skipWarMatch(idx);
+      // App._skipWarMatch は**存在しない**(改名の取り残し)。正しくは warSkipMatch。
+      // いまは warWatchMatch が結果を先に埋めるのでこの枝に入らないが、
+      // 結果を後回しにする変更を入れた瞬間に TypeError で escapeBattle ごと落ちる
+      // (2026-07-31 監査で検出)。
+      if (!wp.results[idx]) App.warSkipMatch(idx);
       // 対抗戦BGM復帰
       if (!wp.results.every(r => r !== null)) {
         setTimeout(() => { if (App._warPreview) { try { Audio.bgm.playStage('war'); } catch(e) {} } }, 300);
