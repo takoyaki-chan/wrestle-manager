@@ -100,6 +100,37 @@
   優先度・要否の判断をお願いしたい。
 - 375pxでの実機確認（スクリーンショット）ができていない。計算上は問題ないはずだが、
   実際のポートレート画像（透過PNG/webp）での見え方はKeisukeの実機確認をお願いしたい。
+## 年間表彰式の是正3件（吹き出しのはみ出し / 団体名 / 選手詳細）（task-53・2026-07-31）
+
+### A. 複数人受賞の吹き出し破綻
+
+- 原因は2つ。(1) `.speech-text{-webkit-line-clamp:2;overflow:hidden}` が文の途中でぶつ切りにしていた。(2) `.aw-team-member + .aw-team-member{margin-left:-18px}` は画像の隊列用の重なりだが、吹き出しは `width:100%` で列いっぱいのため吹き出しまで重なり、隣同士が1つの白い箱に見えていた。
+- `_buildSeasonEventChampionAward`（`fighters.length >= 2` の経路。春タッグ/4団体勝ち残り対抗戦/天頂戦/PPV GRAND FINALが共通で通る）のスコープに絞って、`.aw-team-member` 配下だけを上書きする3行を追加した（他画面の吹き出し規約 `-webkit-line-clamp:2` / `.aw-speech-slot{height:52px}` はそのまま残し、既存テストを壊さない）。
+  - `.aw-team-member .aw-speech-slot{height:auto;min-height:52px}` — 固定枠をやめ、内容に応じて縦に伸ばす。
+  - `.aw-team-member .speech-text{display:block;-webkit-line-clamp:none;overflow:visible}` — 切り捨てを解除。
+  - `.aw-team-lineup .aw-team-member .speech-bubble{width:calc(100% - 2 * var(--space-lg))}` — 吹き出しを画像より左右16px(`--space-lg`)ずつ狭め、18pxの重なり分を打ち消して隣と約14px離す。画像自体は§2-Bどおり18px重ねたまま。
+- 画像上端の揃え方は「列の下端で揃える」方式に作り直した。実装は変更していない — `.aw-team-lineup{align-items:flex-end}` は既存のまま。吹き出しの高さがメンバーごとに変わっても、吹き出しから下（画像＋名前）の高さは全員共通なので、下端基準の揃えなら自動的に画像の上端も揃う（旧方式は固定52px枠による上端合わせだったが、吹き出しが伸びる新方式ではこちらのほうが壊れない）。
+- 3人以上（`is-many`、4団体勝ち残り対抗戦の3名制）でも専用分岐は作らず、同じ3行がそのまま効く。中心（`is-center`、L 150×224）と脇（132×194）でポートレート高さが違うぶん画像上端はズレるが、これは§2-Bの「ひな壇」仕様どおりで新規の破綻ではない。
+
+### B. タイトル王者に団体名を大きく入れる
+
+- `_buildChampionsAward` の `buildCol` で、エンブレムだけだった `.aw-winner-emblem` を `.champ-org`（エンブレム＋団体名テキストを横並び）に置き換えた。エンブレムは削除していない。
+- サイズは選手名 `.champ-name`（15px）を基準に、2位・3位は同格の15px、1位はタイプスケールで1段上の18px（`.rank-1 .champ-orgname`）。既にエンブレムを36px/24pxで差を付けているのと同じ考え方。
+- 自団体は既存の `champ-defense` の isPlayer 着色と同じ `var(--gold)` で強調する。新しい16進カラーは追加していない。`.champ-orgname` の既定色 `#f0ead8` は新規の色ではなく、同じ枠内の `.champ-name` / `.aw-team-name` / `.fighter-name` 等が既に使っている値をそのまま再利用した。
+
+### C. 表彰式でも選手名・選手画像から詳細を開ける
+
+- 共有ヘルパー `_awOpenAttr(id)` を新設（`_awPortrait` の直後）。`canOpenFighterPopup(id)` で実在を確認できたときだけ `onclick="event.stopPropagation();showFighterPopup(id,'',true)" data-fp-open` を返す。`source` は空文字で渡し、roster/FA/スカウト/AI団体/引退直後を自動探索させる（決め打ちにしない）。cursor は `style=""` の二重付与を避けるため `#awardsOverlay [data-fp-open]{cursor:pointer}` という属性セレクタで示した。
+- 対象は `_awPortrait` を使っている6箇所全部: `_awWinnerBlock`（メディア功労賞/新人王/大会優勝1名/MVPが共通で通る）、`_buildSeasonEventChampionAward` の隊列（複数人）、`_buildBestMatchAward` の両サイド、`_buildChampionsAward` の `buildCol`、`_buildHallOfFame`。いずれも既存の `class="..."` 属性文字列は変更せず、その直後に属性を追記するだけに留めた（既存テストの部分一致アサーションを壊さないため）。
+- リンクにしなかったケース: `_buildJTChampionAward` の決勝相手（`d.runnerUp = {id:null, name, orgName}`）。もともと `_awPortrait` を使わない名前だけのテキスト表示で、`id` も無いため何も付けていない。
+- 進行への影響: `showFighterPopup` 自体は「押したら必ず開く」実装（キュー判定なし）で、表彰式のスライド送り（`goToSlide`/`nextSlide`/`window._awardsNext`）には手を入れていない。全 onclick に `event.stopPropagation()` を付け、殿堂入りスライドの `slideWrap.addEventListener('click', ...)`（コーチFG切り替え）へクリックが抜けないようにした。z-index は選手詳細 `.fighter-popup-overlay{z-index:500}` が式典 `.awards-overlay{z-index:400}` より上で確認済み。
+
+### 検証
+
+- 新規 `test/awards-ceremony-polish-test.js`（18 sections）: A(line-clamp解除の上書き/吹き出しの非重なり/吹き出し→画像の順序/名前や所属を吹き出しに入れない/is-many専用分岐が無いこと)、B(団体名テキストの有無/1位が2位・3位より大きいこと/自団体が--goldであること)、C(6ブロック全部で名前・画像双方にリンクがあること/`_awOpenAttr`がcanOpenFighterPopupとstopPropagationを持つこと/idが無い相手にリンクを付けないこと)、不変条件(進行ロジック無改修/z-index順序)を静的ソース検査で確認した。
+- `node test/run-all.js`: **166/166 PASS**（既存165 + 新規1）。既存 `test/awards-ceremony-layout-test.js`（`-webkit-line-clamp:2` や `.aw-speech-slot{height:52px` などの基準ルール文字列を検査）は無改修でPASS — 今回の変更は `.aw-team-member` にスコープした追加ルールのみで、基準ルール自体は書き換えていないため。
+- `src/data.js` は無変更。GameStateへの書き込みは追加していない（表示専用の文字列生成のみ）。アッパー画像の左右反転・2:3ラダーの既存枠サイズは変更していない。
+- 未検証: 375px幅での実機レイアウト確認（横スクロールの有無）。静的なソース検査では実際のブラウザ計算後の折り返し・オーバーフローまでは確認できないため、目視確認をお願いしたい。
 
 ## 王座防衛の演出を派閥イベント級に落とす（task-51・2026-07-31）
 
