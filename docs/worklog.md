@@ -14,7 +14,7 @@
 - 新規 `test/rivalry-popup-frequency-test.js` で閾値、称号例外、興行上限、同一ペアのクールダウンと期限後再表示、決着専用キューを検証した。
 - 既存 `test/rivalry-match-dialogue-test.js` は旧仕様のrivalry 30固定値チェックを、`RIVALRY_POPUP_CONFIG.normalMinRivalry` を読む60設定のチェックへ更新した。
 - `npm test`: **150/150 PASS**。
-=======
+
 ## 1年目イベント・引き留め待遇（task-42・2026-07-31）
 
 ### A. 1年目イベントの実データ調査と修正
