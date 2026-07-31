@@ -456,11 +456,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 /* ── Tag Match Preview (試合プレビュー) ── */
 .smc-tag-badge{font-size:10px;font-weight:900;letter-spacing:2px;color:rgba(155,89,182,.7);margin-bottom:2px}
 .smc-tag-arena{display:flex;align-items:flex-start;justify-content:center;padding:10px 14px 12px;gap:12px}
-.smc-tag-team{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1;max-width:230px}
-.smc-tag-fighter{display:flex;align-items:flex-start;gap:8px}
-.smc-tag-fighter .upper-wrap{overflow:hidden;border-radius:5px;border:2px solid rgba(200,190,170,.12);width:72px;height:90px;flex-shrink:0}
-.smc-tag-fighter .upper-wrap img{width:100%;height:100%;object-fit:cover;object-position:top center}
-.smc-tag-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.smc-tag-team{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;flex:1;max-width:282px}
+.smc-tag-lineup{display:flex;width:282px;align-items:flex-start;border:2px solid var(--stage-border);border-radius:var(--radius-md);background:var(--stage-panel-deep)}
+.smc-tag-fighter{display:flex;flex:0 0 150px;width:150px;min-width:150px;flex-direction:column;align-items:center;gap:4px}
+.smc-tag-fighter+.smc-tag-fighter{margin-left:-18px}
+.smc-tag-portrait{display:block;width:150px;height:224px;padding:0;border:0;background:transparent;cursor:pointer;filter:drop-shadow(0 4px 6px rgba(0,0,0,.38))}
+.smc-tag-portrait img{display:block;width:150px;height:224px;object-fit:contain;object-position:top center}
+.smc-tag-portrait-placeholder{display:flex;width:150px;height:224px;align-items:center;justify-content:center;font-family:var(--font-display);font-size:28px;color:var(--stage-text-dim)}
+.smc-tag-info{width:150px;min-width:150px;display:flex;flex-direction:column;gap:1px}
 .smc-tag-info .fname{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .smc-tag-champ-mark{font-size:9px;color:var(--gold)}
 .smc-tag-ovr-row{display:flex;align-items:baseline;gap:4px;margin-top:1px;flex-wrap:wrap}
@@ -476,7 +479,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .smc-tag-sfill.st{background:linear-gradient(90deg,#ff9800,#ffb74d)}
 .smc-tag-chem{font-size:11px;color:var(--text-dim);margin-top:4px;padding:3px 8px;background:rgba(0,0,0,.2);border-radius:4px;text-align:center}
 /* 左チームは右チームと鏡像配置: 画像を右側、情報を左側に */
-.smc-tag-team.left .smc-tag-fighter{flex-direction:row-reverse}
+.smc-tag-team.left .smc-tag-lineup{flex-direction:row-reverse}
 .smc-tag-team.left .smc-tag-info{text-align:right;align-items:flex-end}
 .smc-tag-team.left .smc-tag-ovr-row{flex-direction:row-reverse;justify-content:flex-start}
 .smc-tag-team.left .smc-tag-srow{flex-direction:row-reverse}
@@ -2791,12 +2794,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .smc-char .ovr-line{display:flex;align-items:baseline;gap:3px;margin-top:2px;justify-content:center}
 .smc-char .ovr-label{font-size:9px;color:var(--text-dim);letter-spacing:1px}
 .smc-char .ovr-num{font-family:'Bebas Neue',sans-serif;line-height:1}
-.card-main .smc-char .upper-wrap{width:120px;height:150px}
+.card-main .smc-char .upper-wrap{width:132px;height:194px}
 .card-main .smc-char .fname{font-size:14px}
 .card-main .smc-char .ovr-num{font-size:26px}
 .card-main .smc-stat-col{width:130px}
 .card-main .smc-stat-bar{height:8px}
-.card-sub .smc-char .upper-wrap{width:100px;height:125px}
+.card-sub .smc-char .upper-wrap{width:132px;height:194px}
 .card-sub .smc-char .fname{font-size:12px}
 .card-sub .smc-char .ovr-num{font-size:20px}
 .card-sub .smc-stat-col{width:110px}
@@ -2857,6 +2860,18 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .show-pregame-a .smc-btn-skip{color:var(--stage-text-dim)}
 .show-pregame-a .smc-skip-all button{border-color:rgba(207,196,162,.22);background:rgba(207,196,162,.035);color:var(--stage-text-dim)}
 @media(max-width:700px){.show-pregame-a{padding-left:7px;padding-right:7px}.show-pregame-a .match-list{padding-left:3px;padding-right:3px}.show-result-overlay:has(.show-pregame-a) .show-title{font-size:24px;letter-spacing:4px}.show-pregame-a .smc-stat-col{width:82px}.show-pregame-a .card-main .smc-stat-col{width:88px}.show-pregame-a .smc-char{min-width:100px}.show-pregame-a .card-main .smc-char .upper-wrap{width:88px;height:112px}.show-pregame-a .card-sub .smc-char .upper-wrap{width:76px;height:96px}.show-pregame-a .smc-stat-label{font-size:9px}.show-pregame-a .smc-stat-val{font-size:11px}}
+@media(max-width:700px){
+  .show-pregame-a .smc-arena{display:grid;grid-template-columns:132px 44px 132px;justify-content:center;align-items:start;padding-left:0;padding-right:0}
+  .show-pregame-a .smc-stat-col,.show-pregame-a .card-main .smc-stat-col{width:132px;margin-top:8px}
+  .show-pregame-a .smc-stat-col.left{grid-column:1;grid-row:2}
+  .show-pregame-a .smc-stat-col.right{grid-column:3;grid-row:2}
+  .show-pregame-a .smc-char{min-width:0}
+  .show-pregame-a .smc-char:first-of-type{grid-column:1;grid-row:1}
+  .show-pregame-a .smc-vs{grid-column:2;grid-row:1}
+  .show-pregame-a .smc-char:last-of-type{grid-column:3;grid-row:1}
+  .show-pregame-a .card-main .smc-char .upper-wrap,.show-pregame-a .card-sub .smc-char .upper-wrap{width:132px;height:194px}
+  .show-pregame-a .smc-tag-arena{flex-direction:column;align-items:center}
+}
 
 /* ============================================================
    away-flow-redesign 実装C: 試合前画面「敵地仕様」
@@ -2993,7 +3008,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .pb-fighter{display:flex;align-items:center;gap:14px}
 .pb-fighter.is-left{flex-direction:row-reverse;text-align:right}
 .pb-portrait-wrap{position:relative;flex-shrink:0}
-.pb-portrait{width:86px;height:129px;border-radius:6px;overflow:hidden;border:2px solid var(--stage-border);background:linear-gradient(180deg,#1a1816,#0a0907);flex-shrink:0;transition:box-shadow .2s}
+.pb-portrait{width:108px;height:162px;border-radius:6px;overflow:hidden;border:2px solid var(--stage-border);background:linear-gradient(180deg,#1a1816,#0a0907);flex-shrink:0;transition:box-shadow .2s}
 .pb-portrait img{width:100%;height:100%;object-fit:cover;object-position:center top}
 .pb-portrait-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:28px;color:var(--stage-text-dim);letter-spacing:2px}
 .pb-mrow.is-main .pb-portrait{width:108px;height:162px}
@@ -3076,15 +3091,27 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .pb-close-btn:hover{box-shadow:0 4px 20px rgba(212,168,67,0.4)}
 
 /* Tag match: 2人をチーム単位の1フレームに収める。 */
-.pb-fighter.is-tag{gap:10px}
-.pb-fighter.is-tag .pb-tag-members{display:flex;align-items:stretch;justify-content:center;width:min(178px,100%);overflow:hidden;border:2px solid var(--stage-border);border-radius:7px 7px 4px 4px;background:linear-gradient(180deg,#1a1816,#0a0907)}
-.pb-fighter.is-left.is-tag .pb-tag-members{flex-direction:row-reverse}
-.pb-tag-member{display:flex;flex:1 1 50%;flex-direction:column;align-items:center;gap:4px;min-width:0;max-width:none;padding-bottom:5px}
-.pb-tag-member+.pb-tag-member{border-left:1px solid var(--stage-border-lit)}
-.pb-fighter.is-tag .pb-portrait-wrap{width:100%}
-.pb-fighter.is-tag .pb-portrait{box-sizing:border-box;width:100%;height:129px;border:0;border-radius:0;box-shadow:none}
-.pb-fighter.is-tag.is-winner .pb-tag-members{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,168,67,0.15),0 0 20px rgba(212,168,67,0.3)}
-.pb-fighter.is-tag.is-winner .pb-portrait{border-color:transparent;box-shadow:none}
+.pb-mrow:has(.pb-fighter.is-tag){grid-template-columns:282px minmax(90px,1fr) 282px;column-gap:12px;align-items:center}
+.pb-fighter.is-tag,.pb-fighter.is-left.is-tag{flex-direction:column;align-items:center;gap:8px;min-width:0;text-align:center}
+.pb-tag-lineup{display:flex;width:282px;align-items:flex-start;border:2px solid var(--stage-border);border-radius:var(--radius-md);background:var(--stage-panel-deep)}
+/* Legacy selector retained for saved markup; current renderer uses .pb-tag-lineup above. */
+.pb-fighter.is-tag .pb-tag-members{display:flex;align-items:stretch;justify-content:center;width:min(178px,100%);overflow:hidden;border:2px solid var(--stage-border)}
+.pb-tag-member{display:flex;flex:0 0 150px;width:150px;min-width:150px;flex-direction:column;align-items:center;gap:4px}
+.pb-tag-member+.pb-tag-member{margin-left:-18px}
+.pb-tag-portrait{width:150px;height:224px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.38))}
+.pb-tag-portrait img{display:block;width:150px;height:224px;object-fit:contain;object-position:top center}
+.pb-fighter.is-left.is-tag .pb-tag-lineup{flex-direction:row-reverse}
+.pb-fighter.is-tag.is-winner .pb-tag-lineup{border-color:var(--gold)}
+.pb-fighter.is-tag.is-loser .pb-tag-portrait img{filter:grayscale(.9) brightness(.72)}
+@media(max-width:720px){
+  .pb-mrow:has(.pb-fighter.is-tag){grid-template-columns:1fr;justify-items:center;padding-left:8px;padding-right:8px;row-gap:14px}
+  .pb-mrow:has(.pb-fighter.is-tag) .pb-result{grid-column:1;border-left:0;border-right:0;border-top:1px solid rgba(200,190,170,0.06);border-bottom:1px solid rgba(200,190,170,0.06);padding:12px 16px;width:100%;box-sizing:border-box}
+}
+@media(max-width:600px){
+  .pb-mrow{grid-template-columns:1fr;justify-items:center;padding-left:8px;padding-right:8px;row-gap:14px}
+  .pb-mrow .pb-result{border-left:0;border-right:0;border-top:1px solid rgba(200,190,170,0.06);border-bottom:1px solid rgba(200,190,170,0.06);padding:12px 16px;width:100%;box-sizing:border-box}
+  .pb-mrow.is-main,.pb-mrow.is-upcoming,.pb-mrow.is-resolved{padding-left:8px;padding-right:8px}
+}
 .pb-tag-member-name{font-size:11px;font-weight:700;color:var(--stage-text-sub);letter-spacing:0.3px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-align:center}
 .pb-tag-member-name a{color:inherit;text-decoration:none}
 .pb-tag-member-name a:hover{text-decoration:underline}
@@ -3111,7 +3138,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .pb-fighter.is-player-side .pb-fighter-meta{color:var(--c-info)}
 .pb-fighter.is-enemy-side .pb-fighter-meta{color:var(--pb-enemy-color,#e74c3c)}
 .pb-mrow.is-resolved{padding:12px 20px;border-bottom:1px solid rgba(200,190,170,0.05)}
-.pb-mrow.is-resolved .pb-portrait{width:56px;height:84px}
+.pb-mrow.is-resolved .pb-portrait{width:46px;height:66px}
 .pb-mrow.is-resolved .pb-fighter-ovr .val{font-size:24px}
 .pb-mrow.is-resolved .pb-fighter-name{font-size:14px}
 .pb-mrow.is-resolved.has-dialogue{padding-top:72px}
