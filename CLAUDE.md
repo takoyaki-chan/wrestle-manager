@@ -145,7 +145,8 @@ for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "R
 | coach-system-spec-v3.0.md | コーチ35名/枠/能力/観察レポート |
 | contract-negotiation-spec-v2.0.md | シーズン開幕の契約交渉イベント |
 | economy-spec-v2.0.md | 収支バランス(グッズ/メディア/給与/精算) |
-| growth-system-spec-v2.0.md | trainCap距離ベース成長/年齢/追い込み |
+| growth-system-spec-v2.0.md | trainCap距離ベース成長/年齢/追い込み → v2.1 |
+| growth-system-spec-v2.1.md | 成長リバランス v2.0反映（指数ブレーキ/追い込み熱量/AI活動wear） |
 | large-event-spec-v1.0.md | 大型イベントB1-B4(怪我/対立/挑戦状/メディア) |
 | personality-archetype-spec-v1.0.md | 性格6種×アーキタイプ6種の相性マトリクス |
 | ppv-grand-final-spec-v2.0.md | PPV GRAND FINAL(エントリー/頂上決戦/報酬) |
