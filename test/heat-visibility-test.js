@@ -58,9 +58,9 @@ assert.doesNotThrow(() => signalFor({ isRental: true, injury: null, _heat: 3 }))
 assert.doesNotThrow(() => signalFor({ injury: { type: '捻挫' }, _heat: 4 }));
 assert.doesNotThrow(() => signalFor({ isRental: false }));
 
-// Opusが差し替える仮テキストの参照点と、詳細表示への接続を保つ。
-assert.match(commonSource, /Opus起案のセリフに差し替え予定/);
-assert.match(commonSource, /const HEAT_STATE_LINES\s*=/);
-assert.match(commonSource, /HEAT_STATE_LINES\[trainingState\]/);
+// 選手詳細は承認済みの personality×archetype プールを参照する。
+assert.match(commonSource, /function getHeatStateQuote\(state, fighter\)/);
+assert.match(commonSource, /pickDialogueLine\(HEAT_STATE_SELF_LINES\[state\], fighter\)/);
+assert.match(commonSource, /getHeatStateQuote\(trainingState, c\)/);
 
 console.log('heat-visibility-test: PASS');

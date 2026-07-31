@@ -1782,7 +1782,24 @@ function _renderRosterDojoHeader() {
         ${coachPortraitImg(coachForBubble, 48)}
       </div>`;
       const speakerName = (report && report.coachName) ? report.coachName : coachForBubble.name;
-      const speechText = (report && report.reportText) ? report.reportText : atmo.text;
+      let speechText = (report && report.reportText) ? report.reportText : atmo.text;
+      // コーチ報告の表示枠では、対象選手の今週の熱量を優先して伝える。
+      // 既存の strain 報告も同じ枠を使うため、同じ週に2種類の警告を重ねない。
+      const roster = G.roster || [];
+      const heavyFighters = roster.filter(f => f && getTrainingState(f) === 'heavy');
+      const reportFighter = report && roster.find(f => f && f.id === report.fighterId);
+      // heavy は常時優先。warm/fresh は既存の報告が出る週だけ載せる。
+      const heatFighter = heavyFighters[0] || reportFighter;
+      const heatState = heatFighter && getTrainingState(heatFighter);
+      const heatPool = heatState && typeof HEAT_STATE_COACH_LINES !== 'undefined'
+        ? HEAT_STATE_COACH_LINES[heatState] : null;
+      if (heatFighter && (heatState === 'heavy' || report) && Array.isArray(heatPool) && heatPool.length) {
+        const heatRng = Engine.rng.create(Engine.rng.derive(
+          G.rngSeed || 0, G.season || 1, G.week || 1, heatFighter.id || 0, 0x48454154
+        ));
+        speechText = heatPool[Engine.rng.int(heatRng, 0, heatPool.length - 1)]
+          .replace('{name}', heatFighter.name || 'この子');
+      }
       html += `<div class="dojo-scene-coach-text">
         <div class="dojo-scene-coach-name">${speakerName}</div>
         <div class="dojo-scene-bubble">「${speechText}」</div>

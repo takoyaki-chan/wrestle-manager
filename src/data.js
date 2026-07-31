@@ -29999,6 +29999,74 @@ const EVENT_FA_WELCOME_GENERIC_LINES = [
   '新しい仲間として、全力で頑張ります！',
 ];
 
+// 追い込みの熱量(_heat)を選手の様子として見せる一言。
+// 数値・倍率・内部語は一切出さない。fresh=軽い / warm=薄い / heavy=重い で3段を作る。
+// 参照: LINES[state][personality][archetype]
+//    || LINES[state][personality]._default
+//    || LINES[state].normal._default
+const HEAT_STATE_SELF_LINES = {
+  fresh: {
+    normal: { _default: ['今日は体が軽い。なんでもできそうな気がする'], cool: ['…調子はいい。今なら、何をやっても身につく'], polite: ['体が軽いんです。今なら、いくらでもやれます'], composed: ['…体は軽いね。こういう日は、伸びるんだよ'] },
+    bold: { _default: ['体が動きたがってる。もっとやらせてくれない?'], delinquent: ['力が余ってる感じだ。もっと来い、まだまだ行ける！'], ojousama: ['今日は調子がいいの。手加減は無用ですわね'], cool: ['…万全だ。遠慮はいらない。もっと来て'] },
+    easygoing: { _default: ['なんか今日、体が軽いんだよねー。いけるいける'], delinquent: ['お、今日は体が軽ぃな。もう一本いこうぜ'], seductive: ['今日の体、いい感じ。…もっと動きたい気分なの'] },
+    earnest: { _default: ['体が素直に動きます。やった分だけ返ってきます'], polite: ['今日は身体が素直に動きます。学んだ分だけ、身につきます'], cool: ['…体が応えてくれる。…今のうちに色々試したい'], composed: ['…今日はなんだか感覚が良い。こういう日を、無駄にしたくない'] },
+    emotional: { _default: ['体が軽い…!今ならなんでもできる気がする…!'], delinquent: ['体が軽ぃ…!今日はいくらでもやれるぞ…!'], ojousama: ['体が軽くて…!うずうずしてしまいます…!'], composed: ['…体は軽い。…こういう日は、黙って積むよ'] },
+    quiet: { _default: ['…体が、軽いです。…今日は、いけます'], cool: ['…体は軽い。…今日は、かなり…やれる'], composed: ['……体が軽い。…こういう日は、大事にしたいね'] },
+    shy: { _default: ['な、なんだか今日、体が軽くて…!やれそうです…!'], polite: ['あ、あの…今日は体が軽くて…もっと、やれます…!'], seductive: ['今日は…体が軽いの。…もう少し、やってみたいな'] },
+  },
+  warm: {
+    normal: { _default: ['同じだけやってるのに、手応えが薄い気がする'], cool: ['…昨日と同じ動きだ。…なのに、入りが浅い'], polite: ['動けてはいます。ただ、手応えが少し薄くて'], composed: ['…悪くはないよ。…ただ、切れが一つ落ちたかな'] },
+    bold: { _default: ['まだやれる。…切れが鈍った? 気のせいだって'], delinquent: ['まだいけるって。…ちょい鈍ってるだけだ、これは'], ojousama: ['まだ動けます。…少し、体が言うことを聞きませんが'], cool: ['…問題ない。…動きが半歩遅いだけだ'] },
+    easygoing: { _default: ['んー、なんか乗り切らないなー。動けてはいるけど'], delinquent: ['なんか今日、乗んねーな。ま、動けてるからいっか'], seductive: ['今日はちょっと乗らないの。…なんでかしらね'] },
+    earnest: { _default: ['同じだけやってるのに、身についてる感じがしません'], polite: ['回数はこなせています。ただ、残る実感が薄くて'], cool: ['…数はこなした。…だが、残った気がしない'], composed: ['…積めてはいる。…厚みが出ないのが引っかかるね'] },
+    emotional: { _default: ['あれ…なんか入ってこない…!?もっとやれるはずなのに'], delinquent: ['なんだこれ…体が乗らねぇ…!ちくしょう、なんでだ'], ojousama: ['あら…?思ったように動けません…どうしてなの…!'], composed: ['…おかしいな。…同じことをして、同じに戻らない'] },
+    quiet: { _default: ['…同じことを、しているのに。…返るものが、少ない'], cool: ['…動けている。…ただ、深さがない'], composed: ['……手応えが、少し遠いかな。…気のせいだといいけど'] },
+    shy: { _default: ['あの…同じようにやってるはずなんですけど…なんだか…'], polite: ['あの…できてはいるんです。ただ、残らなくて…'], seductive: ['…なんだか、届かないの。…わたし、鈍ってるのかな'] },
+  },
+  heavy: {
+    normal: { _default: ['体が重い。動いてはいるけど、何も残らないな'], cool: ['…体が重い。今日は、何をやっても素通りだ'], polite: ['正直、体が重いです。汗をかいた実感しかなくて'], composed: ['…体が重いね。今日やっても、たぶん流れるだけ'] },
+    bold: { _default: ['重い。…でも止まらない。止まったら負けた気がする'], delinquent: ['重ぇ。…けど休まねぇ。休むって言葉が嫌ぇなんだよ'], ojousama: ['体は重いですけれど。…認めるつもりはありません'], cool: ['…鉛みたいだ。…だが、止まるとは言っていない'] },
+    easygoing: { _default: ['あー、体が重い。今日は何やっても身にならないねー'], delinquent: ['体がだりぃわ。今日やっても、ザルに水だろ'], seductive: ['体が重いの。…今日は、やるだけ損な気がするわ'] },
+    earnest: { _default: ['動きが同じところで止まる。私の集中が足りないのかな'], polite: ['同じ量をこなしても、何も積み上がりません。情けないです'], cool: ['…体が重い。…こなしただけで、何も残らなかった'], composed: ['…今日は流れるだけだね。…私の頑張り方が雑なのかな'] },
+    emotional: { _default: ['体が重い…!やる気はあるのに、体がついてこない…!'], delinquent: ['くそっ…体が石みてぇだ…!やってんのに進まねぇ…!'], ojousama: ['体が重くて…!やっても、やっても、進みません…!'], composed: ['…体が重い。…今日は、腹が立つほど何も入らない'] },
+    quiet: { _default: ['…体が、重いです。…今日は、たぶん、残りません'], cool: ['…重い。…やっても、抜けていくだけだ'], composed: ['……体が重い。…今日はやっても、こぼれるだけだね'] },
+    shy: { _default: ['あ、あの…体が重いです…今日は、身になってない気がして…'], polite: ['すみません…動けてはいるんですけど…空回りしてしまって'], seductive: ['…体が重いの。…今日は、なぞってるだけみたい'] },
+  },
+};
+
+// 道場でコーチが漏らす、熱量についての観察。全voice共通の中立形。
+// growth-rebalance v1.0 の strain_*（将来のツケ）とは役割が別:
+// こちらは「今週この子に追い込みを入れる価値があるか」だけを語る。
+const HEAT_STATE_COACH_LINES = {
+  fresh: [
+    '{name}、今日はよく動いてる。仕込むなら今だ',
+    '{name}の体が、新しい動きを素直に飲み込んでいる',
+    '今の{name}なら、多少きつくしても全部持っていく',
+    '{name}の足が軽い。こういう週こそ厚く積ませたい',
+    '{name}、伸びる顔をしている。今日の一本は残るぞ',
+    '{name}は休み明けの体だ。一番よく入る時期に来ている',
+    '{name}、今週は当たり週だ。使うなら、ここで使え',
+  ],
+  warm: [
+    '{name}、悪くはない。ただ、先週ほどは入っていかない',
+    '{name}の伸びが少し鈍ってきた。詰めすぎたか',
+    '{name}、同じメニューなのに返りが薄い。そろそろ一息か',
+    '{name}、動けてはいる。だが、切れがひとつ落ちている',
+    '{name}の体が慣れてきた。効きが落ちる頃合いだ',
+    '{name}、今週も同じ調子で行くなら、得は薄いぞ',
+    '{name}にきついのを続けるか。…見極めどきだな',
+  ],
+  heavy: [
+    '{name}、今日は体が重い。何をやらせても素通りだ',
+    '今の{name}に課しても、削るだけで何も積まれない',
+    '{name}は追い込みすぎだ。一度、外してやってくれ',
+    '{name}、汗はかいている。だが、身についてはいない',
+    '{name}の体はもう受け付けていない。休ませれば戻る',
+    '今の{name}にやらせるのは、怪我を買うようなものだ',
+    '{name}、一週抜けばまた入るようになる。それだけの話だ',
+  ],
+};
+
 const EVENT_RENTAL_GREETING_LINES = {
   normal: {
     cool: ['…レンタルだが、手は抜かない。よろしく', '…短い間だ。よろしく'],
@@ -30277,6 +30345,8 @@ const EVENT_LINES_BY_KEY = {
   faWelcomeGeneric: EVENT_FA_WELCOME_GENERIC_LINES,
   rentalGreeting: EVENT_RENTAL_GREETING_LINES,
   rentalGreetingGeneric: EVENT_RENTAL_GREETING_GENERIC_LINES,
+  heatSelf: HEAT_STATE_SELF_LINES,
+  heatCoach: HEAT_STATE_COACH_LINES,
   scoutGreeting: SCOUT_GREETING_LINES,
   scoutGreetingGeneric: SCOUT_GREETING_GENERIC_LINES,
   faGreeting: FA_GREETING_LINES,
@@ -30349,6 +30419,7 @@ if (typeof module !== 'undefined' && module.exports) {
     EVENT_FA_SIGNING_LINES, EVENT_FA_SIGNING_GENERIC_LINES,
     EVENT_FA_WELCOME_LINES, EVENT_FA_WELCOME_GENERIC_LINES,
     EVENT_RENTAL_GREETING_LINES, EVENT_RENTAL_GREETING_GENERIC_LINES,
+    HEAT_STATE_SELF_LINES, HEAT_STATE_COACH_LINES,
     SCOUT_GREETING_LINES, SCOUT_GREETING_GENERIC_LINES,
     FA_GREETING_LINES, FA_GREETING_GENERIC_LINES,
     EVENT_LINES_BY_KEY,

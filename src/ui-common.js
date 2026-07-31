@@ -3422,12 +3422,12 @@ function canOpenFighterPopup(fighterId) {
   return !!findFighter(Number(fighterId));
 }
 
-// ※Opus起案のセリフに差し替え予定: 選手詳細に置く、状態ごとの仮テキスト参照点。
-const HEAT_STATE_LINES = {
-  fresh: '今は、まだ体が軽そうだ。',
-  warm: '少し息が上がっている。',
-  heavy: '今は体が重そうだ。',
-};
+// 選手詳細に置く、状態ごとの熱量セリフ。性格・アーキタイプで引き分ける。
+function getHeatStateQuote(state, fighter) {
+  const pool = typeof HEAT_STATE_SELF_LINES !== 'undefined' && HEAT_STATE_SELF_LINES[state];
+  if (!pool || typeof pickDialogueLine !== 'function') return '…';
+  return pickDialogueLine(HEAT_STATE_SELF_LINES[state], fighter);
+}
 
 // 第3引数 _skipQueueCheck は歴史的な残り。**押したら必ず開く**ようになったので効果は無い。
 // 既存の呼び出しを壊さないために受け取るだけにしてある。
@@ -3459,7 +3459,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const isFree = G.freeAgents.some(r => r.id === c.id);
   const isScoutCandidate = (G.scoutCandidates || []).some(r => r.id === c.id);
   const trainingState = typeof getTrainingState === 'function' ? getTrainingState(c) : 'fresh';
-  const trainingStateLine = HEAT_STATE_LINES[trainingState] || HEAT_STATE_LINES.fresh;
+  const trainingStateLine = getHeatStateQuote(trainingState, c);
   let orgLabel = '';
   let negotiateOrgId = null;
   let isAiFighter = false;
