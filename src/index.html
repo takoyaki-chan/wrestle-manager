@@ -6424,7 +6424,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   .mdl-a-faction-clash-faction { font-size: 12px; }
 }
 .mdl-a-subject-portrait-wrap {
-  width: 120px; height: 160px; margin: 0 auto 6px;
+  /* M 132×194(2:3)。JS側でも同じ値をインラインで入れるが、こちらが既定値。
+     2026-07-31: 120×160(3:4) から変更。2:3素材を3:4に入れて下端を切っていた */
+  width: 132px; height: 194px; margin: 0 auto 6px;
   border: 2px solid var(--cream-gold-dark); border-radius: 4px;
   background-size: cover; background-position: top center; background-color: #2a2520;
 }
