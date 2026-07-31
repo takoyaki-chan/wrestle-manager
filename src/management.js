@@ -12428,43 +12428,13 @@ const Engine = {
       s = Engine.mq.checkTopChampionInjury(s, _championInjurySnapshot);
     }
 
-    // 新聞v2: 毎週の新聞生成（オフシーズン以外）
+    // 新聞v2: 毎週の新聞生成（オフシーズン以外）。
+    // 手順(バックナンバー退避→generate→業界ニュース持ち越し→AIニュース一時フラグのクリア)は
+    // Engine.newspaper.publish に共通化。シーズン開幕時の新年号発行(task-52、
+    // Engine.advanceWeek のシーズン移行部)も同じ手順を使う — 二重管理を避けるため。
     if (!s.offSeason) {
-      // バックナンバー蓄積（最大24週分）
-      if (s.weeklyNewspaper) {
-        const archive = [...(s.newspaperArchive || [])];
-        archive.unshift(s.weeklyNewspaper);
-        if (archive.length > 24) archive.length = 24;
-        s = { ...s, newspaperArchive: archive };
-      }
       const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
-      const weeklyNewspaper = Engine.newspaper.generate(s, newsRng);
-      // 業界ニュースキューを消化。ただし**載らなかった分は翌号へ持ち越す**（2026-07-27）。
-      // 掲載枠は一面1+サブ3の4本しかなく、以前はキューをまるごと空にしていたため、
-      // シーズン境界のようにまとめて積まれる週は溢れた記事が黙って消えていた。
-      // 上限を設けるのは、持ち越しが延々と溜まって新しいニュースを押しのけないため。
-      // 捨てるときは古い方から（新しい出来事のほうが紙面価値が高い）。
-      const INDUSTRY_CARRY_MAX = 12;
-      // **持ち越しには期限を付ける**(2026-07-27 追加)。
-      // 記事には時限性のあるものがある。たとえば春のタッグリーグの告知は
-      // 「第12週に激突する」と本文に書いてあるので、これが何週も持ち越されて後の号に載ると
-      // 紙面が事実と食い違う（開催済みの大会をこれから開催すると報じてしまう）。
-      // 何週ぶんまで粘るかは INDUSTRY_CARRY_MAX_AGE。過ぎたものは載せずに捨てる。
-      const INDUSTRY_CARRY_MAX_AGE = 3;
-      const _nowAbs = Engine.util.absWeek(s.season, s.week);
-      const _carryOver = (weeklyNewspaper.unpublishedIndustryEvents || [])
-        // 初めて溢れたときに「いつの記事か」を刻む（既存キューの分もここで刻まれる）
-        .map(ev => (ev._carryFromAbsWeek != null ? ev : { ...ev, _carryFromAbsWeek: _nowAbs }))
-        .filter(ev => (_nowAbs - ev._carryFromAbsWeek) < INDUSTRY_CARRY_MAX_AGE);
-      // 持ち越しリストは受け渡し用。weeklyNewspaper はバックナンバー24号ぶん保存されるので、
-      // ここで外さないと同じイベントがセーブに何十本も複製される。
-      const { unpublishedIndustryEvents: _unpub, ...weeklyNewspaperClean } = weeklyNewspaper;
-      s = { ...s, weeklyNewspaper: weeklyNewspaperClean, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsPpvUndercards: null, _newsWarMilestone: null,
-        _industryNewsEvents: _carryOver.length > INDUSTRY_CARRY_MAX ? _carryOver.slice(_carryOver.length - INDUSTRY_CARRY_MAX) : _carryOver };
-      // AIニュース一時フィールドをクリア
-      if (s.aiOrgs) {
-        s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
-      }
+      s = Engine.newspaper.publish(s, newsRng);
     }
 
     // ★ 成長マイルストーン検出（sanitizeFloats前、全処理完了後）
@@ -16258,6 +16228,20 @@ const Engine = {
         }
         // MVPレース v2: オフシーズン明けの新シーズン開幕時、前年の最終ランキングは保持しつつ新シーズンで再集計
         s = { ...s, mvpRace: Engine.mvpRace.recalcRanking(s) };
+
+        // task-52: 新年号を「第1週に入った時点」で発行する。
+        // ここまでで s.season/s.week は既に新シーズン第1週。オフシーズン中に溜まった
+        // _industryNewsEvents（引退・殿堂入り・他団体の動き・上のtenchosenAnnounce等）を
+        // ここで一度消化する。tickWeek 側は変更しない — 第1週を処理し終えた時点で
+        // 通常どおり第1週の号が別途生成され、この新年号はその時点でアーカイブへ落ちる
+        // （同じ週に2号出るのは Keisuke 承認済み:「1面、2面と同じ週に出ても重ねて増やして結構」）。
+        // season 1 は前シーズンが無いので新年号を出さない。
+        if (s.season > 1) {
+          // 週次の号(0xEE57)とは別の乱数系列にする（アーキテクチャ原則4: 種を使い回さない）
+          const newYearRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x0A1A));
+          s = Engine.newspaper.publish(s, newYearRng, { isSeasonOpening: true, forcePlayerShowDataNull: true });
+        }
+
         return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
       }
 
@@ -28558,6 +28542,55 @@ Engine.newspaper = {
       cleaned[orgId] = org;
     });
     return cleaned;
+  },
+
+  /** 新聞を1号発行する共通手順(task-52)。
+   *  バックナンバー退避 → generate → 業界ニュース持ち越し → AIニュース一時フラグのクリア。
+   *  tickWeek 末尾の毎週生成と、シーズン開幕時の新年号発行(Engine.advanceWeek のシーズン
+   *  移行部)の両方がこの手順を使う——同じ処理を2箇所に書き写して片方だけ古くなるのを防ぐ。
+   *  extra.isSeasonOpening: 立てると発行号に isSeasonOpening:true を付与する
+   *  extra.forcePlayerShowDataNull: 立てると playerShowData を必ず null にする
+   *    (新年号の時点ではまだ今シーズンの興行が無いため、前シーズン末の
+   *     state.currentNewspaper が紛れ込んではいけない) */
+  publish(state, rng, extra) {
+    let s = state;
+    // バックナンバー蓄積（最大24週分）
+    if (s.weeklyNewspaper) {
+      const archive = [...(s.newspaperArchive || [])];
+      archive.unshift(s.weeklyNewspaper);
+      if (archive.length > 24) archive.length = 24;
+      s = { ...s, newspaperArchive: archive };
+    }
+    let weeklyNewspaper = Engine.newspaper.generate(s, rng);
+    if (extra && extra.isSeasonOpening) weeklyNewspaper = { ...weeklyNewspaper, isSeasonOpening: true };
+    if (extra && extra.forcePlayerShowDataNull) weeklyNewspaper = { ...weeklyNewspaper, playerShowData: null };
+    // 業界ニュースキューを消化。ただし**載らなかった分は翌号へ持ち越す**（2026-07-27）。
+    // 掲載枠は一面1+サブ3の4本しかなく、以前はキューをまるごと空にしていたため、
+    // シーズン境界のようにまとめて積まれる週は溢れた記事が黙って消えていた。
+    // 上限を設けるのは、持ち越しが延々と溜まって新しいニュースを押しのけないため。
+    // 捨てるときは古い方から（新しい出来事のほうが紙面価値が高い）。
+    const INDUSTRY_CARRY_MAX = 12;
+    // **持ち越しには期限を付ける**(2026-07-27 追加)。
+    // 記事には時限性のあるものがある。たとえば春のタッグリーグの告知は
+    // 「第12週に激突する」と本文に書いてあるので、これが何週も持ち越されて後の号に載ると
+    // 紙面が事実と食い違う（開催済みの大会をこれから開催すると報じてしまう）。
+    // 何週ぶんまで粘るかは INDUSTRY_CARRY_MAX_AGE。過ぎたものは載せずに捨てる。
+    const INDUSTRY_CARRY_MAX_AGE = 3;
+    const _nowAbs = Engine.util.absWeek(s.season, s.week);
+    const _carryOver = (weeklyNewspaper.unpublishedIndustryEvents || [])
+      // 初めて溢れたときに「いつの記事か」を刻む（既存キューの分もここで刻まれる）
+      .map(ev => (ev._carryFromAbsWeek != null ? ev : { ...ev, _carryFromAbsWeek: _nowAbs }))
+      .filter(ev => (_nowAbs - ev._carryFromAbsWeek) < INDUSTRY_CARRY_MAX_AGE);
+    // 持ち越しリストは受け渡し用。weeklyNewspaper はバックナンバー24号ぶん保存されるので、
+    // ここで外さないと同じイベントがセーブに何十本も複製される。
+    const { unpublishedIndustryEvents: _unpub, ...weeklyNewspaperClean } = weeklyNewspaper;
+    s = { ...s, weeklyNewspaper: weeklyNewspaperClean, _juniorTournamentResult: null, _juniorTournamentPreview: null, _newsWarResult: null, _newsSummitResult: null, _newsPpvUndercards: null, _newsWarMilestone: null,
+      _industryNewsEvents: _carryOver.length > INDUSTRY_CARRY_MAX ? _carryOver.slice(_carryOver.length - INDUSTRY_CARRY_MAX) : _carryOver };
+    // AIニュース一時フィールドをクリア
+    if (s.aiOrgs) {
+      s = { ...s, aiOrgs: Engine.newspaper.clearAINewsFlags(s.aiOrgs) };
+    }
+    return s;
   },
 };
 

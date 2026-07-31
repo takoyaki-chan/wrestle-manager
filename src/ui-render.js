@@ -6576,11 +6576,16 @@ function setNewspaperSubPage(n) {
 }
 
 // ── 共通ヘルパー ────────────────────────────────────
-function _npPaperHeader(seasonNum, weekNum) {
+function _npPaperHeader(seasonNum, weekNum, isSeasonOpening) {
   const today = G.today || `Y${seasonNum} W${weekNum}`;
+  // task-52: 新年号(シーズン開幕時に1週早く発行される号)は同じ「シーズンX 第1週」表記の
+  // 号が2つ並ぶため、【新年号】を前置して区別する。新しい色は増やさず既存の .issue に載せる
+  const issueLabel = isSeasonOpening
+    ? `【新年号】シーズン${seasonNum} 第${weekNum}週`
+    : `シーズン${seasonNum} 第${weekNum}週`;
   return `<div class="np-paper-header">
     <div class="logo">週刊グラップル</div>
-    <div class="issue">シーズン${seasonNum} 第${weekNum}週<small>${today}</small></div>
+    <div class="issue">${issueLabel}<small>${today}</small></div>
   </div>`;
 }
 function _npPhotoBg(id) {
@@ -6860,7 +6865,7 @@ function _npRenderPage1() {
     </div>`;
   }
 
-  let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum)}${archiveNav}<div class="np-content">`;
+  let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum, !!wp.isSeasonOpening)}${archiveNav}<div class="np-content">`;
 
   // bankruptcy-redesign v1.1: 危機コラム（最新号のみ・editorial 優先掲載）
   if (isLatest && typeof KURODA_CRISIS !== 'undefined') {
@@ -8365,7 +8370,7 @@ function _renderDbNewspaper() {
   let html = `<div style="max-width:560px;margin:12px auto;display:grid;gap:0;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
   html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;">
     <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
-    <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;">シーズン${wp.season || '?'} 第${wp.week || '?'}週</div>
+    <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;">${wp.isSeasonOpening ? '【新年号】' : ''}シーズン${wp.season || '?'} 第${wp.week || '?'}週</div>
   </div>`;
 
   // ── 一面記事 ──
@@ -8877,7 +8882,7 @@ function _renderNewspaperExtraPage(wp, pageData) {
   let html = `<div style="max-width:560px;margin:0 auto 12px;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
   html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;">
     <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;">S${wp.season || '?'} W${wp.week || '?'} — ${pageData.title || '特集'}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;">${wp.isSeasonOpening ? '新年号 ' : ''}S${wp.season || '?'} W${wp.week || '?'} — ${pageData.title || '特集'}</div>
   </div>`;
 
   pageData.stories.forEach(story => {

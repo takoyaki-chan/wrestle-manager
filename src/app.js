@@ -11411,6 +11411,16 @@ const App = {
     Storage.autoSave();
     Audio.bgm.playForState(); // BGM: switch on season transitions
 
+    // task-52: 新年号の大ニュース通知は「第1週に到着した時点」で鳴らす。
+    // ここは特別興行(PPV/天頂戦/秋4団体/ジュニア)・契約更新交渉フェーズへ return する
+    // 分岐(このメソッド冒頭)より後、かつ引退演出チェーン(このすぐ下)より前 —
+    // 引退がある年でも毎年確実に届く位置。isSeasonOpening 条件(既存の
+    // App._maybeShowBigNewsPopup 内の判定と同じ)で絞っているので、オフシーズン中の
+    // 通常ティック(offWeek 1〜4)では何も起きない(通常週の大ニュース通知の挙動は変えない)。
+    if (!G.offSeason && G.week === 1 && (G.season || 1) > 1) {
+      App._maybeShowBigNewsPopup(600);
+    }
+
     // v1.3-3: Show retirement popups (season-end)
     // 引退は引き留めダイアログで決断後に commit する（ダイアログ前は roster/titles/HoF を変更しない）
     if (pendingRetirements && pendingRetirements.length > 0) {
