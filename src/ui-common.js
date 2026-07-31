@@ -55,12 +55,19 @@ function escHtml(s) {
  *
  *  statPeak を持たない選手（既存セーブの初回ロード前）は lost=0 で色は一切出ない。
  *  **衰えの履歴を捏造しない**という方針は据え置き。 */
-function statDecayView(fighter, stat, barMax) {
+function statDecayView(fighter, stat, barMax, recoverKnownCapLoss = false) {
   const max = barMax || 150;
   const cur = Math.max(0, Math.round((fighter && fighter[stat]) || 0));
   // 基準は**自己最高値**(statPeak)。毎週 Engine.growth.trackStatPeaks が控えている。
-  const peak = (fighter && fighter.statPeak && fighter.statPeak[stat] != null)
+  const recordedPeak = (fighter && fighter.statPeak && fighter.statPeak[stat] != null)
     ? Math.round(fighter.statPeak[stat]) : null;
+  // AI団体は statPeak を保存していないため、消耗時に実際に記録された天井差だけから
+  // 最高値を復元する。既存セーブ一般には適用せず、履歴の捏造はしない。
+  const capRatio = (typeof GROWTH_CONFIG !== 'undefined' && GROWTH_CONFIG.wearCapDecayRatio) || 0;
+  const capLost = recoverKnownCapLoss && fighter && fighter.trainCapOrigin && fighter.trainCap && capRatio > 0
+    ? Math.max(0, Math.round((fighter.trainCapOrigin[stat] || 0) - (fighter.trainCap[stat] || 0))) : 0;
+  const recoveredPeak = capLost > 0 ? Math.round(cur + capLost / capRatio) : null;
+  const peak = recordedPeak != null ? recordedPeak : recoveredPeak;
   const lostPts = peak != null ? Math.max(0, peak - cur) : 0;
   const pct = v => Math.max(0, Math.min(100, (v / max) * 100));
   // 帯は現在値から自己最高値まで。落ちていなければ帯は出ない
@@ -3454,12 +3461,14 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const trainingStateLine = HEAT_STATE_LINES[trainingState] || HEAT_STATE_LINES.fresh;
   let orgLabel = '';
   let negotiateOrgId = null;
+  let isAiFighter = false;
   if (!isRoster && !isFree && G.aiOrgs) {
     for (const [oId, oData] of Object.entries(G.aiOrgs)) {
       if (oData.roster?.some(f => f.id === c.id)) {
         const org = RIVAL_ORGS.find(o => o.id === oId);
         orgLabel = org ? `${org.emoji} ${org.name}` : oId;
         negotiateOrgId = oId;
+        isAiFighter = true;
         break;
       }
     }
@@ -3666,10 +3675,11 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       STATS.forEach(s => {
         const val = Math.round(c[s.key] || 0);
         const sg = Math.round(c.seasonGrowth?.[s.key] || 0);
-        const w = Math.min(100, val);
+        const w = Math.min(100, (val / 150) * 100);
         const valColor = val >= 75 ? s.color : val >= 50 ? 'var(--text)' : 'var(--text-sub)';
-        // 消耗で失われた天井(2026-07-27 Keisuke)。ここのバーは 0〜100 目盛り
-        const dv = statDecayView(c, s.key, 100);
+        // 消耗で失われた天井。団体タブと同じ 0〜150 目盛りに揃える。
+        // AI選手は、保存済みの実天井差からのみ最高値を復元する。
+        const dv = statDecayView(c, s.key, 150, isAiFighter);
         const lostBar = dv.lostPts > 0
           ? `<div class="fighter-popup-stat-lost" title="消耗で失われた伸びしろ ${dv.lostPts}" style="width:${dv.lostPct}%;right:${dv.lostFromRightPct}%"></div>`
           : '';

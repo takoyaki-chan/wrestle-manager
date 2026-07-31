@@ -4498,10 +4498,10 @@ function renderRanking() {
     }
 
     let third = '';
-    if (injured > 0) third = `${injured}人が欠場中で、ベンチは見た目より薄い。`;
+    if (injured > 0) third = `${injured}人が欠場中で、選手層は見た目より薄い。`;
     else if (rental) third = `レンタルの${nameOf(rental)}が戦列を支える。頼もしくもあり、借り物の厚みでもある。`;
     else if (ready >= 6) third = '控えを含めても駒が余るほどで、連戦でも戦列が細らない。';
-    else if (youngCore >= 2) third = '主力層は若い。数字はまだ並だが、来季このベンチの景色は変わっているかもしれない。';
+    else if (youngCore >= 2) third = '主力層は若い。数字はまだ並だが、来季この陣容の景色は変わっているかもしれない。';
 
     return [first, second, third].filter(Boolean).join('');
   };
@@ -9166,12 +9166,12 @@ function _renderDbRecordsTab() {
 
 function _recordBookSources() {
   const sources = [];
-  const add = (fighters, orgName) => (fighters || []).forEach(fighter => {
-    if (fighter && fighter.id != null) sources.push({ fighter, orgName: fighter.orgName || orgName || '' });
+  const add = (fighters, orgName, active = false) => (fighters || []).forEach(fighter => {
+    if (fighter && fighter.id != null) sources.push({ fighter, orgName: fighter.orgName || orgName || '', active });
   });
-  add(G.roster, G.orgName || 'あなたの団体');
-  Object.entries(G.aiOrgs || {}).forEach(([orgId, org]) => add(org.roster, org.orgName || org.name || _getHofOrgName(orgId)));
-  add(G.freeAgents, 'フリー');
+  add(G.roster, G.orgName || 'あなたの団体', true);
+  Object.entries(G.aiOrgs || {}).forEach(([orgId, org]) => add(org.roster, org.orgName || org.name || _getHofOrgName(orgId), true));
+  add(G.freeAgents, 'フリー', true);
   add(G.retiredFighters, '引退');
   add((G.chronicle || {}).fighterArchive, G.orgName || 'あなたの団体');
   Object.values(G.allHallOfFame || {}).forEach(entries => add(entries, ''));
@@ -9209,7 +9209,8 @@ function _recordBookUpper(source, sizeClass) {
   const id = fighter && fighter.id;
   const name = (fighter && fighter.name) || '記録保持者';
   const url = id != null ? getUpperUrl(id, _recordBookPeak(source)) : '';
-  return `<div class="db-record-upper ${sizeClass}"><span class="db-record-upper-initial">${escHtml(name.charAt(0))}</span>${url ? `<img src="${url}" alt="${escHtml(name)}" onerror="this.remove()">` : ''}</div>`;
+  const initial = escHtml(name.charAt(0));
+  return `<div class="db-record-upper ${sizeClass}"${url ? ` data-initial="${initial}"` : ''}>${url ? `<img src="${url}" alt="${escHtml(name)}" onerror="this.remove();this.parentElement.classList.add('is-image-missing')">` : `<span class="db-record-upper-initial">${initial}</span>`}</div>`;
 }
 
 function _recordBookWinnerCards(sources, matcher) {
@@ -9248,16 +9249,26 @@ function _recordBookName(source) {
   return (fighter && fighter.name) || (fighter && Engine.career.resolveFighterName(G, fighter.id)) || '記録保持者';
 }
 
+function _recordBookDisplayOvr(source) {
+  const fighter = source && source.fighter;
+  if (!fighter) return 0;
+  if (source.active) return Math.round(Engine.util.ov(fighter));
+  const record = fighter.careerRecord || {};
+  return Math.round(Number(record.peakOVR) || Number(fighter.peakOVR) || Engine.util.ov(fighter));
+}
+
 function _renderDbRecordWinnerCard(item, index, kind) {
   const source = item.source;
   const season = item.event.season || '?';
   const name = _recordBookName(source);
+  const ovr = _recordBookDisplayOvr(source);
+  const ovrClass = typeof valueClassOvr === 'function' ? valueClassOvr(ovr) : '';
   const orgName = (source && source.orgName) || '';
   const className = kind === 'tenchosen' ? 'db-record-glory-card' : 'db-record-glory-card db-record-ppv-card';
   const cardNumber = kind === 'tenchosen' ? `<div class="db-record-glory-sub">第${index + 1}回 王者</div>` : '';
   return `<div class="${className}"${_recordBookOpen(source && source.fighter)}>
     ${_recordBookUpper(source, kind === 'tenchosen' ? 'is-tenchosen' : 'is-ppv')}
-    <div class="db-record-nameband"><div>${escHtml(name)}</div>${orgName ? `<small>${escHtml(orgName)}</small>` : ''}</div>
+    <div class="db-record-nameband"><div><span>${escHtml(name)}</span><b class="db-record-ovr ${ovrClass}">OVR ${ovr}</b></div>${orgName ? `<small>${escHtml(orgName)}</small>` : ''}</div>
     <div class="db-record-glory-plate">${kind === 'tenchosen' ? '🌿' : ''}S${season}${kind === 'tenchosen' ? '🌿' : ''}</div>
     ${cardNumber}
   </div>`;

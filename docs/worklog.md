@@ -1,5 +1,27 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 実機フィードバック修正6件（task-40・2026-07-31）
+
+### 実装
+
+- サッカー用語をプロレス文脈へ修正した。ランキング講評の「欠場中で、ベンチは見た目より薄い。」を「欠場中で、選手層は見た目より薄い。」へ、「来季このベンチの景色は…」を「来季この陣容の景色は…」へ変更。練習イベントの「目を引くプレー」を「目を引く動き」へ変更した。
+- 記録タブの天頂戦・PPV GRAND FINAL歴代優勝カードは、現役選手に現在OVR、引退者等に `careerRecord.peakOVR`（なければ `peakOVR`、最終的に保持ステータスからのOVR）を表示する。数字は既存の `valueClassOvr()` と Bebas Neue を使用し、名前帯内の横並びにして既存レイアウトを保った。
+- 栄冠カードのアッパー画像では、画像成功時にイニシャル要素をHTML出力しない。画像エラー時のみ `data-initial` と `.is-image-missing::before` でイニシャルを描く。天頂戦・PPV・最多連続防衛は同じ `_recordBookUpper()` を通るため、全て同時に修正された。
+- 選手詳細ポップアップの能力バーと消耗帯を0〜150目盛りへ統一し、能力120は幅80%になるよう変更した。
+
+### AI消耗の調査と修正
+
+- 実データ確認: `Engine.createInitialState(20260731, true)` のAI団体 `org_s` を `Engine.rival.processSeasonEnd()` で8回処理した。初期は `statPeak` 0/16名、8回後も `statPeak` 0/2名。一方で消耗済みの生駒エリカ（28歳、wear 48）と高津小春（25歳、wear 45）はいずれも `trainCapOrigin` と減少済み `trainCap` を持っていた。
+- 原因は (a): `Engine.growth.applyDecay()` はAIにも実行されて天井差を記録するが、`statPeak` を毎週控える `Engine.growth.trackStatPeaks()` は `state.roster`（プレイヤー団体）だけを対象にする。`statDecayView()` が `statPeak` のみを読んでいたため、AI選手の `▼` は常に0だった。消耗量が閾値未満なのではない（cではない）。
+- `src/management.js` は変更許可範囲外のため、表示側だけを修正した。AI選手詳細に限り、`trainCapOrigin - trainCap` という実際に保存された天井差を既存と同じ `wearCapDecayRatio` の式で復元して描画する。通常選手・既存セーブにはこの経路を使わないため、履歴を捏造せず、GameStateへの書き込みもない。数値設定・バランスは変更していない。
+
+### 検証
+
+- 新規 `test/feedback-fixes-test.js`: 禁止語の全`src/`走査、歴代優勝OVR（現役・引退者フォールバック）、画像成功時のイニシャル非出力、150目盛り、AIの実天井差復元と通常選手の非捏造を検証。
+- 既存 `test/stat-decay-bar-test.js` と `test/wear-ceiling-decay-test.js` を150目盛り・AI限定の実記録復元に合わせて更新し、個別実行で全PASS。
+- `npm test`: **149/149 PASS**。
+- `rg -P 'ベンチ(?!マーク)|プレー(?!スホルダ|ヤー|ト)' src` は0件。`GROWTH_CONFIG` / `ATTENDANCE_V2_CONFIG` / `RANKING_CONFIG` の設定値変更なし。
+
 ## 追い込み練習の熱量可視化（task-38・2026-07-31）
 
 ### 実装
