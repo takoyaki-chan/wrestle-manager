@@ -186,6 +186,56 @@ const safe = label.replace(/[\/\\:*?"<>|]/g, '_').trim();
 
 ---
 
+## 3.5. 進捗（2026-08-01 深夜）
+
+| 段 | 内容 | 状態 |
+|---|---|---|
+| — | ツール土台（正規表現リテラル対応 / 削除済み定数4件） | 完了 `71aea14` |
+| — | 旧キー `normal` → `standard`（31テーブル / 258ヶ所） | 完了 `638f247` |
+| S1 | タッグ6テーブル（6ヶ所 / 784本） | 完了 `8a5e805` |
+| S2 | ダメージセリフ・カットイン（4ヶ所 / 567本） | 完了 `916a261` |
+| S3 | 元雇用団体戦（1ヶ所 / 196本） | 完了 `0593d8a` |
+| S4 | 派閥セリフ24テーブル（24ヶ所 / 314セル） | 完了 `f0be764` |
+| **S5** | **残り 211ヶ所 / 65テーブル** | **未着手（判断待ち）** |
+
+### S5 を分割できない理由
+
+読み手を数え直したところ、**`getDialoguePool`（`src/data.js:14879`）が中心にいた**。
+`data.js` / `management.js` / `relationships.js` / `ui-common.js` / `app.js` の23ヶ所以上が
+この1関数を通っており、残り65テーブルの大半がここに集まる。
+
+この関数を反転させた瞬間、それが serve している全テーブルが同時に切り替わる。
+つまり「テーブル1つずつ確認しながら」は物理的にできない。S1〜S4 のように
+系統ごとに切れたのは、それぞれ専用の読み手を持っていたから。
+
+### S5 で反転が必要な読み手（全数）
+
+| # | 読み手 | 場所 | 対象 |
+|---|---|---|---|
+| 1 | `getDialoguePool` | `data.js:14879` | 大半のテーブル（23ヶ所以上から呼ばれる中心） |
+| 2 | `getJuniorTournamentLine` | `data.js:16221` | `JUNIOR_TOURNAMENT_LINES` |
+| 3 | `getAutumnWarMatchLine` | `data.js:16233` | `AUTUMN_WAR_MATCH_LINES` |
+| 4 | `App.resolveDomeLine` | `app.js:11964` | `DOME_FIRSTSHOW_LINES` / `DOME_SELLOUT_LINES` |
+| 5 | `_warVictoryLine` | `ui-common.js:1069` | `WAR_VICTORY_LINES` |
+| 6 | `Engine.relationships._resolveVoice` | `relationships.js:4401` | 汎用（Glimpse 等） |
+
+`factions.js` の `getCommon1Line` / `getCommon5Line` / `getF02Line`（3189 / 3354 / 5528 行）は
+旧語彙（`fiery` / `grudging` / `flippant` / `introverted` / `carefree`）で分岐しており、
+性格7種・アーキタイプ7種のどちらの体系にも乗っていない。**S5 の対象外**とし、
+別途「語彙を現行体系に寄せるか」を決める必要がある。
+`F07_LINES` は既に `[archetype][personality]`（新形式）なので対象外。
+
+### S5 の検証計画（S1〜S4 と同じ）
+
+1. 入れ替え前に、全 swap 対象辞書 × 全（性格8 × アーキタイプ8）で読み手の出力を記録
+2. データ組み替え（`tools/axis-rewrite.js swap --write`）+ 上表6ヶ所の反転
+3. 同じ probe を回し、差分を1件ずつ確認する
+
+S1〜S4 ではこの手順で 2,112 エントリ中 12件の差分に絞り込め、その12件が
+すべて意図した方向であることを確認できた。
+
+---
+
 ## 4. 実測の再現方法
 
 本ドキュメントの数値を出したスクリプトは

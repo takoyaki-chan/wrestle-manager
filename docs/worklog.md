@@ -1,5 +1,125 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## セリフ軸入れ替え S1〜S4 + 旧キー改名 + 抽出ツール修正（2026-08-01）
+
+指示: 「性格が第一分岐だと、お嬢様もヤンキーも同じ行を引いて口調が揃ってしまう」の解消。
+着手前に全数棚卸しを作り、系統ごとに分けて進める方針。棚卸しは
+`docs/dialogue-axis-swap-inventory.md`、確認事項は `docs/dialogue-axis-swap-questions.md`。
+
+### 引き継ぎの前提が2つ外れていた
+
+1. **「書き出せない4テーブル」は `app.js:1884` のパースエラーとは無関係だった。**
+   `BESTMATCH_FLAVOR` / `AI_BREAKTHROUGH_NEWS` / `AI_SLUMP_NEWS` / `AI_MOTIVATION_LOSS_NEWS`
+   の4件とも `c79a3ba`(2026-07-26「役目を終えた定数7件を削除」)で src から消えており、
+   `TABLE_MANIFEST` に登録行だけが残っていた。4行削除で解決。
+
+2. **未改名は「factions.js の14テーブル」ではなく 31テーブル・6ファイルだった。**
+   派閥はその一部。`data.js` 側に `F07_LINES`(37ヶ所) / `FACTION_F02_LINES` /
+   `COMMON3_LINES` / `FACTION_TRANSITION_LINES`、さらに派閥でもタッグでもない
+   `AUTUMN_WAR_MATCH_LINES` があり、`tag-battle-lines.js` 6テーブル・`CUTIN_LINES`・
+   `DAMAGE_SERIF_LINES`・`FLAG_DIALOGUE` も同じ状態。計258ヶ所・758本。
+
+`app.js:1884` は別件の実バグだった。`scanExpr` が正規表現リテラルを理解せず、
+`src/app.js:1902` の正規表現（Windows禁止文字の置換）に含まれる `"` を文字列開始と誤認して
+`const Storage = {` を丸ごと取りこぼしていた。実害は無かったが、将来のセリフテーブルが
+同じ形の正規表現をまたげば黙って消える性質のものなので潰した。宣言 423 → 424 件。
+
+### 「254箇所」の内訳が判明
+
+`tools/axis-rewrite.js swap` の全体集計で **236ヶ所（実体）+ 18ヶ所（別名テーブル
+`EVENT_LINES_BY_KEY` の重複）= 254**。別名テーブルは参照だけで構成されており
+ソース上に動かすリテラルが無いため対象外（実体を直せば自動追従）。
+
+### 改名（258ヶ所・1対1）
+
+`normal` は性格キーでもアーキタイプキーでもあるため、テキスト置換では壊れる。
+値の型で見分ける案も検証したが**反例が75件**あり使えなかった
+（`FACTION_TRANSITION_LINES` / `F07_LINES` / `FACTION_F02_LINES` はアーキタイプ位置なのに
+値が dict や string）。
+
+そこで `tools/axis-rewrite.js` を新設し、(1) テーブルを評価してアーキタイプ位置の
+`normal` 辞書のパスを確定 → (2) 同じテーブルのソースをキーパス付きで走査し、
+そのパスの `normal:` トークンだけを置換、とした。評価側とソース側の件数が一致しなければ
+書き込まずに異常終了する。31テーブルすべてで 258/258 が一致。
+
+**ゲームは壊れていなかった。壊れていたのは Excel 側。** 引く側が全て
+`byP[archetype] || byP.normal` のフォールバックを持っていたため、最大勢力の
+archetype='standard' 33名も正しい内容を引けていた。実害は `detectMeta` が
+`normal` を性格としか見ないことで、**同じテーブルの中で標準アーキタイプの行だけが
+`キャラタイプ別/` に振り分けられず落ちる**という形で出ていた。
+
+### 入れ替え S1〜S4（35ヶ所 / 895セル）
+
+| 段 | 対象 | 読み手 |
+|---|---|---|
+| S1 `8a5e805` | タッグ6テーブル（784本） | `_tagLineArrFor` 1個 |
+| S2 `916a261` | `DAMAGE_SERIF_LINES` / `CUTIN_LINES`（567本） | `_pickSerif` / `_getCutinLines` |
+| S3 `0593d8a` | `VS_EX_EMPLOYER_LINES`（196本） | `getVsExEmployerLine` + app.js 2ヶ所 |
+| S4 `f0be764` | 派閥24テーブル（314セル） | `getFactionLine` / `_getF08LineByBand` / app.js 2ヶ所 |
+
+`swap` は**セリフ配列のテキストを1文字も触らず、キー2段の入れ子だけを組み替える**
+（値をソースからそのまま切り出して再配置）。そのため diff の文字列はすべて移動であって
+書き換えではない。
+
+### フォールバックの向きを一度間違えた
+
+最初 `(a,p) → (a,normal)` の2段にしたところ、入れ替え前と**140ヶ所で挙動が変わった**。
+原因はアーキタイプ束が疎なこと。`FACTION_F01_LEADER_LINES.ojousama` は `emotional` しか
+持たないので、bold のお嬢様が `(ojousama,bold)` を外した瞬間に `(standard,normal)` まで落ち、
+性格まで失っていた。
+
+正しくは4段: **`(a,p) → (a,normal) → (standard,p) → (standard,normal)`**。
+「同じ口調の normal」を先に試し、それも無ければ「標準の口調で同じ性格」。
+S1〜S3 の読み手も同じ4段に揃えた。
+
+### 検証
+
+全 swap 対象 × 全（性格8 × アーキタイプ8、未知値2種を含む）で読み手9系統を叩き、
+入れ替え直前と突き合わせ（**2,112エントリ**）。差分は **12件のみ**、すべて
+`FACTION_F05_DISSIDENT_LINES`、すべて意図した方向:
+
+```
+[お嬢様 × 強気] 前「あの人のやり方、もう付き合いきれねえわ。」
+                後「率直に申し上げます。このままでは、わたくしたちは朽ちますわ。」
+```
+
+残り2,100エントリは完全一致（タッグ / ダメージ / カットイン / 元雇用団体は差分ゼロ）。
+セル単位の無損失検証（正規化キーで前後比較）も各段で不一致0。
+`test/run-all.js` 178 passed / 0 failed。auto-sim 30シーズン(seed 2026) と
+25シーズン(seed 777) いずれも violations 0 / ALL CLEAR。
+
+### ついでに解消した既存バグ
+
+- **派閥セリフ9テーブルが条件次第で空文字を返していた**（364ヶ所）。
+  `FACTION_F02_LEADER` / `F03_SURVIVOR` / `F04_TARGET` / `F05` / `F07_LEADER` /
+  `F09_OPENING_A` / `F09_OPENING_B` / `F09_MATCH_POST_WIN` / `F09_ENDING_WIN` は
+  task-68 の時点で既に standard キーに改名されていたのに、`getFactionLine` 側は
+  `byPersona.normal` を見たままだった。例: 鷹揚×ノーマルの生き残りコメントが出ない。
+- `CRISIS_DIALOGUE.enter.normal`（app.js）— このテーブルは改名済みで standard しか持たず、
+  未知アーキタイプのキャラは空配列になっていた。
+- `archMap.normal`（ui-render.js `_aceFlavorByPersona`）— 同種の死んだ参照。
+
+### S5（残り211ヶ所 / 65テーブル）は未着手
+
+**分割できないため判断待ち。** 読み手を数え直したところ
+`getDialoguePool`（`data.js:14879`）が中心にいて、`data.js` / `management.js` /
+`relationships.js` / `ui-common.js` / `app.js` の23ヶ所以上がこの1関数を通っている。
+反転した瞬間に serve している全テーブルが同時に切り替わるため、
+「テーブル1つずつ確認しながら」は物理的にできない。
+反転が必要な読み手6ヶ所の一覧は棚卸し文書の §3.5 に記載。
+
+あわせて `docs/dialogue-axis-swap-questions.md` に確認事項6件（最優先は
+疎な束での口調 vs 性格の優先順位）。
+
+### 注意
+
+- **Excel の書き出し（`1_エクセルに書き出し.bat`）は破壊的**なので一度も実行していない。
+  未反映16件（`KURODA_HEADLINES`）は今回触ったテーブルと重ならず、
+  `apply --dry-run` で「16 resolved, 0 skipped」を維持している。
+  順序は `3_ゲームに反映.bat` → `1_エクセルに書き出し.bat`。逆にすると16件が消える。
+- 読み手のいないセリフが6テーブル・約104本ある（`FACTION_F01`〜`F04` / `F07`）。
+  配線するか削るかは未判断。
+
 ## F09派閥対抗戦: 空き枠にロックが残りカードが組めないバグ修正（task-70・2026-07-31）
 
 出典: `docs/codex-tasks/task-70-f09-empty-slot-lock.md`。作業は `wm-task70`
