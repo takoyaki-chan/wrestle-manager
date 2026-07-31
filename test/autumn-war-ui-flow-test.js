@@ -273,8 +273,8 @@ function section(source, startMarker, endMarker) {
   assert.deepStrictEqual(Object.keys(matrix), contexts);
   // 2026-08-01 の軸入れ替えで [アーキタイプ][性格] に。標準の口調は '_default'。
   contexts.forEach(context => personalities.forEach(personality => {
-    const lines = matrix[context]?._default?.[personality];
-    assert.ok(Array.isArray(lines) && lines.length >= 1, `${context}._default.${personality} needs a base line`);
+    const lines = matrix[context]?.standard?.[personality];
+    assert.ok(Array.isArray(lines) && lines.length >= 1, `.standard. needs a base line`);
     lines.forEach(line => assert.ok(line.length >= 8 && line.length <= 90, `${context}.${personality} line length is unsafe`));
   }));
 })();

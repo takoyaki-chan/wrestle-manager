@@ -391,6 +391,115 @@ function runSwap(argv) {
 }
 
 // ───────────────────────────────────────────────────────────────────────
+// 2.6. defkey — アーキタイプ位置の `_default` を `standard` に寄せる
+//
+// 標準アーキタイプの綴りがテーブルによって `standard` と `_default` に割れていた。
+// `_default` は detectMeta がアーキタイプとして認識しないため、そのブロックの行は
+// **Excel でアーキタイプ列が空になり、キャラタイプ別/ に振り分けられず落ちる**。
+// 実測 2,350行がこれに当たっていた(2026-08-01)。
+//
+// 「アーキタイプ位置の `_default`」の判定:
+//   兄弟に本物のアーキタイプキーがある、または直下が性格辞書になっている。
+// `standard` が既にある辞書は自動では触らない(併存＝手当てが要る)。
+// ───────────────────────────────────────────────────────────────────────
+function collectDefaultKeyTargets(sandbox) {
+  const rename = [];   // { table, file, path }
+  const conflict = []; // standard と併存していて自動処理できないもの
+  for (const entry of TABLE_MANIFEST) {
+    if (entry.path.includes('.')) continue;
+    const root = resolvePath(sandbox, entry.path);
+    if (root === undefined) continue;
+    const seen = new Set();
+    (function scan(node, segs) {
+      if (!node || typeof node !== 'object' || seen.has(node)) return;
+      seen.add(node);
+      if (isDict(node) && Object.prototype.hasOwnProperty.call(node, '_default')) {
+        const ks = Object.keys(node);
+        const siblingArch = ks.some(k => ARCHETYPE_PURE.has(k) || k === 'standard');
+        const child = node._default;
+        const childIsPers = isDict(child)
+          && Object.keys(child).filter(k => PERSONALITY.has(k)).length >= 2;
+        if (siblingArch || childIsPers) {
+          const rec = { table: entry.path, file: entry.file, path: pathKey(segs) };
+          if (ks.includes('standard')) conflict.push(rec); else rename.push(rec);
+        }
+      }
+      if (Array.isArray(node)) node.forEach((v, i) => scan(v, segs.concat([i])));
+      else for (const k of Object.keys(node)) scan(node[k], segs.concat([k]));
+    })(root, []);
+  }
+  return { rename, conflict };
+}
+
+function runDefKey(argv) {
+  const write = argv.includes('--write');
+  const { allDecls, fileSrc } = loadAllDecls();
+  const sandbox = evalAll(allDecls);
+  const { rename, conflict } = collectDefaultKeyTargets(sandbox);
+
+  console.log(`[defkey] アーキタイプ位置の _default: 改名対象 ${rename.length}ヶ所 / 併存(手当て要) ${conflict.length}ヶ所`);
+  for (const c of conflict) console.log(`  [併存] ${c.table}${c.path}`);
+
+  const byTable = new Map();
+  for (const r of rename) {
+    if (ALIAS_TABLES.has(r.table)) continue; // 参照だけの別名テーブルは実体を直せば追従する
+    if (!byTable.has(r.table)) byTable.set(r.table, []);
+    byTable.get(r.table).push(r);
+  }
+
+  const edits = new Map();
+  let ok = 0;
+  const fails = [];
+  for (const [table, recs] of byTable) {
+    const file = recs[0].file;
+    const src = fileSrc.get(file);
+    // 宣言本体だけでなく、後付け拡張(`GLIMPSE_A_LINES.bond_60_up = {...}`)も走査する。
+    // GLIMPSE_A_LINES のように中身の大半が拡張側にあるテーブルがある。
+    const spans = allDecls.filter(d =>
+      !d.error && d.file === file && (d.name === table || d.name.startsWith(table + '.')));
+    if (!spans.length) { fails.push(`${table}: 宣言が拾えない`); continue; }
+    const want = new Set(recs.map(r => r.path));
+    let hit = 0;
+    for (const d of spans) {
+      const base = d.endIndex - d.exprText.length;
+      const text = src.slice(base, d.endIndex);
+      // 後付け拡張は `TABLE.sub` なので、その分をパスの接頭辞にする
+      const prefix = d.name === table ? '' : d.name.slice(table.length);
+      for (const k of findKeyOffsets(text)) {
+        if (k.key !== '_default') continue;
+        if (!want.has(prefix + k.parentPath)) continue;
+        if (!edits.has(file)) edits.set(file, []);
+        edits.get(file).push({ start: base + k.start, end: base + k.end });
+        hit++;
+      }
+    }
+    if (hit !== recs.length) fails.push(`${table}: 評価${recs.length} / ソース${hit}`);
+    ok += hit;
+  }
+  if (fails.length) {
+    console.error('[defkey] 件数が合わない。書き込みは行わない:');
+    for (const f of fails) console.error('  - ' + f);
+    process.exit(1);
+  }
+  console.log(`[defkey] ソース側で特定: ${ok}ヶ所`);
+  if (!write) { console.log('[defkey] --write が無いので書き込みはしていない。'); return; }
+
+  for (const [file, list] of edits) {
+    const full = path.join(SRC, file);
+    const src = fs.readFileSync(full, 'utf8');
+    fs.writeFileSync(full + '.bak', src, 'utf8');
+    list.sort((a, b) => b.start - a.start);
+    let out = src;
+    for (const e of list) {
+      if (out.slice(e.start, e.end) !== '_default') { console.error(`[defkey] 想定外: ${file} @${e.start}`); process.exit(1); }
+      out = out.slice(0, e.start) + 'standard' + out.slice(e.end);
+    }
+    fs.writeFileSync(full, out, 'utf8');
+    console.log(`[defkey] 書き込み: src/${file} (${list.length}ヶ所)`);
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────────
 // 2.7. vocab — 旧語彙の性格キーを現行7種に寄せる
 //
 // 派閥まわりのテーブルだけ、性格が独自語彙で書かれていた:
@@ -494,8 +603,9 @@ function main() {
   const write = process.argv.includes('--write');
   if (cmd === 'swap') return runSwap(process.argv.slice(3));
   if (cmd === 'vocab') return runVocab(process.argv.slice(3));
+  if (cmd === 'defkey') return runDefKey(process.argv.slice(3));
   if (cmd !== 'rename') {
-    console.error('usage: node tools/axis-rewrite.js rename|swap|vocab [--file=X.js] [--table=NAME] [--write]');
+    console.error('usage: node tools/axis-rewrite.js rename|swap|vocab|defkey [--file=X.js] [--table=NAME] [--write]');
     process.exit(2);
   }
 

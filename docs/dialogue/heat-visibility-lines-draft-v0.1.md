@@ -99,7 +99,7 @@ heavy は**プロが疲れているだけ**。故障でも挫折でもない。
 const HEAT_STATE_SELF_LINES = {
   // ── fresh (_heat 0) 体が軽い。追い込みが最も効く ──
   fresh: {
-    _default: {
+    standard: {
       normal: ['今日は体が軽い。なんでもできそうな気がする'],
       bold: ['体が動きたがってる。もっとやらせてくれない?'],
       easygoing: ['なんか今日、体が軽いんだよねー。いけるいける'],
@@ -142,7 +142,7 @@ const HEAT_STATE_SELF_LINES = {
 
   // ── warm (_heat 1〜2) 効きが鈍り始めている。本人もまだ確信がない ──
   warm: {
-    _default: {
+    standard: {
       normal: ['同じだけやってるのに、手応えが薄い気がする'],
       bold: ['まだやれる。…切れが鈍った? 気のせいだって'],
       easygoing: ['んー、なんか乗り切らないなー。動けてはいるけど'],
@@ -185,7 +185,7 @@ const HEAT_STATE_SELF_LINES = {
 
   // ── heavy (_heat 3以上) ほぼ効かない。消耗だけ払っている ──
   heavy: {
-    _default: {
+    standard: {
       normal: ['体が重い。動いてはいるけど、何も残らないな'],
       bold: ['重い。…でも止まらない。止まったら負けた気がする'],
       easygoing: ['あー、体が重い。今日は何やっても身にならないねー'],

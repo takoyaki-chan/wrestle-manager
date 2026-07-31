@@ -1067,9 +1067,8 @@ function _getWarVictoryLine(fighter, state) {
     }
   }
   const p = fighter.personality || 'normal';
-  // 第一分岐はアーキタイプ。標準は '_default' に格納されている(2026-08-01 に軸を入れ替え)。
-  // 探索順は getDialoguePool と同じ
-  const a = (!fighter.archetype || fighter.archetype === 'standard') ? '_default' : fighter.archetype;
+  // 第一分岐はアーキタイプ(2026-08-01 に軸を入れ替え)。探索順は getDialoguePool と同じ
+  const a = fighter.archetype || 'standard';
   const lines = getDialoguePool(WAR_VICTORY_LINES, { personality: p, archetype: a });
   return lines[Math.floor(Math.random() * lines.length)];
 }
@@ -12203,7 +12202,7 @@ function _specialIntroFighterLine(eventKey, cfg, speaker, rng) {
   const fighter = speaker && speaker.fighter;
   if (eventKey === 'juniorTournament' && fighter && typeof getJuniorTournamentLine === 'function') {
     const line = getJuniorTournamentLine(
-      'summon', fighter.personality || 'normal', fighter.archetype || '_default', rng
+      'summon', fighter.personality || 'normal', fighter.archetype || 'standard', rng
     );
     if (line) return line;
   }
@@ -15644,7 +15643,7 @@ function renderJuniorTournamentSummon() {
   const p = myParticipants[summonIndex];
   const season = G.season;
   const faceUrl = getPortraitUrl(p.id);
-  const line = getJuniorTournamentLine('summon', p.personality || 'normal', p.archetype || '_default');
+  const line = getJuniorTournamentLine('summon', p.personality || 'normal', p.archetype || 'standard');
 
   let html = `<div class="jt-phase">召集通知</div>`;
   html += `<div class="jt-so" onclick="App.jtNextSummon()">`;
@@ -15677,7 +15676,7 @@ function _showJTImpressionChain(list, idx, onDone) {
   if (idx >= list.length) { if (onDone) onDone(); return; }
   const f = list[idx];
   const timing = f._jtTiming || 'postLose';
-  const line = getJuniorTournamentLine(timing, f.personality || 'normal', f.archetype || '_default');
+  const line = getJuniorTournamentLine(timing, f.personality || 'normal', f.archetype || 'standard');
   if (!line) { _showJTImpressionChain(list, idx + 1, onDone); return; }
 
   // コメント画面は縦長の .u3b-upper を使う。正方形の顔アイコンを入れると
@@ -16104,8 +16103,8 @@ function _jtFocusCard(match, roundName, ri, mi) {
     ? _rivalryBubblePairHtml(f1.id, f2.id, f1.name, f2.name) : '';
   // セリフ(JTのみ・天頂戦にはない)
   const timing = isFinal ? 'preFinal' : 'preMatch';
-  const lineL = getJuniorTournamentLine(timing, f1.personality || 'normal', f1.archetype || '_default');
-  const lineR = getJuniorTournamentLine(timing, f2.personality || 'normal', f2.archetype || '_default');
+  const lineL = getJuniorTournamentLine(timing, f1.personality || 'normal', f1.archetype || 'standard');
+  const lineR = getJuniorTournamentLine(timing, f2.personality || 'normal', f2.archetype || 'standard');
   if (!bubbleHtml && (lineL || lineR)) {
     bubbleHtml = `<div class="jt-bub-pair">`;
     if (lineL) bubbleHtml += `<div class="jt-bub"><div class="sp bl">${escHtml(f1.name)}</div>「${escHtml(lineL)}」</div>`;
@@ -16486,7 +16485,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
       const target = _jtRecoveredHpTarget(match, side, false);
       return target && target['jt-recover-pct'] != null ? target['jt-recover-pct'] : (side === 'left' ? match.hpLeft : match.hpRight);
     };
-    const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default');
+    const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || 'standard');
     showEventMatchResultPopup({
       theme: 'summer', title: `${roundLabel} 第${mi + 1}試合　結果`, meta: `第${G.season}回大会 ・ 第${position}試合 / 全${total}試合`,
       progress: `${position} / ${total}`, progressLabel: isFinal ? 'FINAL' : round.name === 'semiFinal' ? 'SEMI FINAL' : 'TOURNAMENT',
@@ -16522,7 +16521,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   const leftF = _jtFighterShim(match.left);
   const rightF = _jtFighterShim(match.right);
 
-  const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || '_default');
+  const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || 'standard');
   const leftCls = lWin ? 'is-winner' : 'is-loser';
   const rightCls = lWin ? 'is-loser' : 'is-winner';
   const leftLine = lWin ? (winLine || '') : '';
@@ -16734,7 +16733,7 @@ function renderJuniorTournamentResult() {
   const champOvr = champion.ovr != null ? champion.ovr : Engine.util.ov(_jtFighterShim(champion));
 
   // 優勝スピーチ
-  const champLine = getJuniorTournamentLine('champion', champion.personality || 'normal', champion.archetype || '_default');
+  const champLine = getJuniorTournamentLine('champion', champion.personality || 'normal', champion.archetype || 'standard');
 
   let html = `<div class="pb-container">`;
 
@@ -17130,8 +17129,8 @@ function renderSpringTagLeagueChampion() {
   const season = G.season;
   const PRIZE = Engine.springTagLeague.PRIZE;
   // タッグ優勝は2名とも主役 → 2名とも吹き出しを持つ(既存の勝利セリフ機構=JT champion timingを流用)
-  const line1 = f1 ? getJuniorTournamentLine('champion', f1.personality || 'normal', f1.archetype || '_default') : '';
-  const line2 = f2 ? getJuniorTournamentLine('champion', f2.personality || 'normal', f2.archetype || '_default') : '';
+  const line1 = f1 ? getJuniorTournamentLine('champion', f1.personality || 'normal', f1.archetype || 'standard') : '';
+  const line2 = f2 ? getJuniorTournamentLine('champion', f2.personality || 'normal', f2.archetype || 'standard') : '';
 
   let html = `<div class="pb-container">`;
   html += `<div class="champ th-spring">
@@ -17514,8 +17513,8 @@ function _agwPreBoutDialogueHtml(match, next, left, right, displayOrgIds) {
   const rng = _agwDialogueRng('preBout', [match.round, match.orgA, match.orgB, next.index, left.id, right.id], _AGW_DIALOGUE_CHANCE.preBout);
   if (!rng || typeof getAutumnWarMatchLine !== 'function') return '';
   const timing = match.round === 'final' ? 'preFinal' : 'preMatch';
-  const leftLine = getAutumnWarMatchLine(timing, left.personality || 'normal', left.archetype || '_default', rng);
-  const rightLine = getAutumnWarMatchLine(timing, right.personality || 'normal', right.archetype || '_default', rng);
+  const leftLine = getAutumnWarMatchLine(timing, left.personality || 'normal', left.archetype || 'standard', rng);
+  const rightLine = getAutumnWarMatchLine(timing, right.personality || 'normal', right.archetype || 'standard', rng);
   if (!leftLine && !rightLine) return '';
   const dialogueByOrg = {
     [next.left.orgId]: { fighter: left, line: leftLine },
@@ -17541,7 +17540,7 @@ function _agwSurvivorLine(match, bout, winner) {
   if (typeof getAutumnWarMatchLine !== 'function') return '';
   const rng = _agwDialogueRng('survivor', [match.round, match.orgA, match.orgB, bout.index || match.bouts.length, winner.id], _AGW_DIALOGUE_CHANCE.survivor);
   if (!rng) return '';
-  return getAutumnWarMatchLine('survivor', winner.personality || 'normal', winner.archetype || '_default', rng);
+  return getAutumnWarMatchLine('survivor', winner.personality || 'normal', winner.archetype || 'standard', rng);
 }
 
 function _agwChampionSpeech(result, championTeam) {
@@ -17556,7 +17555,7 @@ function _agwChampionSpeech(result, championTeam) {
   let pool = [];
   if (lineSet && typeof getDialoguePool === 'function') pool = getDialoguePool(lineSet, fighter);
   let line = pool.length ? pool[Engine.rng.int(rng, 0, pool.length - 1)] : '';
-  if (!line && typeof getJuniorTournamentLine === 'function') line = getJuniorTournamentLine('champion', fighter.personality || 'normal', fighter.archetype || '_default', rng);
+  if (!line && typeof getJuniorTournamentLine === 'function') line = getJuniorTournamentLine('champion', fighter.personality || 'normal', fighter.archetype || 'standard', rng);
   if (!line) return null;
   return {
     fighter,
@@ -18344,7 +18343,7 @@ function renderTenchosenResult() {
   const prize = (Engine.ppvTournament.PRIZE && Engine.ppvTournament.PRIZE.champion) || 3000;
   const winCount = tc.rounds.length;
   // 天頂戦には専用の優勝セリフ機構が無いため、JT/秋対抗戦と同じ「優勝タイミング」テーブルを流用する
-  const champLine = getJuniorTournamentLine('champion', champion.personality || 'normal', champion.archetype || '_default');
+  const champLine = getJuniorTournamentLine('champion', champion.personality || 'normal', champion.archetype || 'standard');
 
   // U2統一デザイン: 全画面の回転レイズ演出(.tcwn-wrap/.tcwn-rays)は温存し、内側の優勝カードだけ統一デザインへ
   let html = `<div class="tcwn-wrap" onclick="App.tcAfterWinner()">

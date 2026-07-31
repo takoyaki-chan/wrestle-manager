@@ -1094,7 +1094,7 @@ const FAN_EXPECT_REACTIONS = {
     'カードは最高だったのに…内容が追いつかなかった',
   ],
   goodWinner: {
-    _default: {
+    standard: {
       normal: ['みんなの声が聞こえてたよ', '期待に応えられたなら…嬉しい', '最高の相手に最高の舞台。感謝しかない'],
       bold: ['この試合、絶対に負けられなかった', 'あの歓声が力になった。最高だ！'],
       quiet: ['………（観客に向かって静かに頭を下げる）'],
@@ -1144,7 +1144,7 @@ const FAN_EXPECT_REACTIONS = {
     },
   },
   badWinner: {
-    _default: {
+    standard: {
       normal: ['…まだやれたはず', 'この結果じゃ満足できない', '応援してくれたのに…悔しい'],
       bold: ['次はもっといい試合にする。約束する', 'こんなんじゃ足りない。もっとやれる'],
       quiet: ['………（悔しそうに俯く）'],
@@ -3531,7 +3531,7 @@ const ONESIDED_RIVALRY_COLOR = '#ffeaa7';
 // 因縁決着システム — 試合前の宣戦布告セリフ（ペア台詞）
 const RIVALRY_CONFRONTATION_LINES = {
   attacker: {
-    _default: {
+    standard: {
       normal: [
         '今日こそ、決着をつける',
         'この因縁、今夜終わりにしよう',
@@ -3660,7 +3660,7 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
     }},
   defender: {
-    _default: {
+    standard: {
       normal: [
         '……望むところよ',
         'それは終わってから言いなさい',
@@ -3780,7 +3780,7 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
     }},
   fateAttacker: {
-    _default: {
+    standard: {
       normal: [
         '長かった……今日で終わりにするよ',
         'あなたがいなければ、今の私はいなかったかもね。でも今日で終わりにするよ'
@@ -3878,7 +3878,7 @@ const RIVALRY_CONFRONTATION_LINES = {
       ],
     }},
   fateDefender: {
-    _default: {
+    standard: {
       normal: [
         'うん……最高の終わりにするよ',
         'それはお互い様よ。……全力で行くよ！'
@@ -3980,7 +3980,7 @@ const RIVALRY_CONFRONTATION_LINES = {
 // 因縁決着システム — 試合後の決着セリフ（personality×archetype）
 const RIVALRY_RESOLUTION_LINES = {
   winner: {
-    _default: {
+    standard: {
       normal: [
         '一つ、決着がついた…でもまだ終わりじゃない気がする',
         '勝てた…けど、ここからだと思う'
@@ -4103,7 +4103,7 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
     }},
   loser: {
-    _default: {
+    standard: {
       normal: [
         '負けた…悔しい。でも、これで終わりなんかじゃない',
         '悔しい。今日は負けた。…でも、次がある。絶対に'
@@ -4226,7 +4226,7 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
     }},
   fateWinner: {
-    _default: {
+    standard: {
       normal: [
         'ずっと追いかけてきた答えが…一つ、出た。…でもまだ、終わらない'
       ],
@@ -4317,7 +4317,7 @@ const RIVALRY_RESOLUTION_LINES = {
       ],
     }},
   fateLoser: {
-    _default: {
+    standard: {
       normal: [
         '今日は…敵わなかった。でも、この悔しさを……次へ！'
       ],
@@ -4427,7 +4427,7 @@ const BITTER_RIVAL_COLOR = '#636e72';
 // ── 好敵手ルート決着セリフ（personality×archetype）──
 const GOODRIVAL_RESOLUTION_LINES = {
   winner: {
-    _default: {
+    standard: {
       normal: [
         'アイツがいたから、ここまで来られた。……ありがとう',
         '最高のライバルだよ。これからも、よろしく'
@@ -4550,7 +4550,7 @@ const GOODRIVAL_RESOLUTION_LINES = {
       ],
     }},
   loser: {
-    _default: {
+    standard: {
       normal: [
         '負けた。でも……しょうがないか。悪くない…かな？',
         '悔しいなぁ！……でも、悪くない'
@@ -4665,7 +4665,7 @@ const GOODRIVAL_RESOLUTION_LINES = {
 // ── 宿怨ルート決着セリフ（personality×archetype）──
 const BITTER_RESOLUTION_LINES = {
   winner: {
-    _default: {
+    standard: {
       normal: [
         '……終わった。もう二度と、あんたの顔は見たくない',
         '決着はついた。これで終わりよ'
@@ -4787,7 +4787,7 @@ const BITTER_RESOLUTION_LINES = {
       ],
     }},
   loser: {
-    _default: {
+    standard: {
       normal: [
         '……認めない。こんなの認めない',
         '負けた？ ……まだ終わりじゃない！'
@@ -4910,7 +4910,7 @@ const BITTER_RESOLUTION_LINES = {
 // 「終わったはずのものが、また目の前にある」ことへの反応を書く。
 const BITTER_PREMATCH_LINES = {
   ahead: {
-    _default: {
+    standard: {
       normal: [
         '終わったはずなのに、まだ胃の底が重い',
         'もう一度勝てば消えるのかな。……多分、消えない',
@@ -4962,7 +4962,7 @@ const BITTER_PREMATCH_LINES = {
     },
   },
   behind: {
-    _default: {
+    standard: {
       normal: [
         '終わったことにされた。私だけ、置いていかれたまま',
         '忘れられたら楽だったのに。……よく覚えてるんだ、これが',
@@ -5018,7 +5018,7 @@ const BITTER_PREMATCH_LINES = {
 // ── カード編成時 宣戦布告テキスト（rivalry帯別）──
 const RIVALRY_CONFRONTATION_LINES_70 = {
   attacker: {
-    _default: {
+    standard: {
       normal: [
         '逃げ場はないよ。ここで終わらせるから',
         'あなたの存在が、邪魔だった。今夜それを終わらせる',
@@ -5143,7 +5143,7 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
       ],
     }},
   defender: {
-    _default: {
+    standard: {
       normal: [
         '……来なよ。相手してあげる',
         '出来るものならやってみなよ！',
@@ -5269,7 +5269,7 @@ const RIVALRY_CONFRONTATION_LINES_70 = {
 };
 const RIVALRY_CONFRONTATION_LINES_90 = {
   attacker: {
-    _default: {
+    standard: {
       normal: [
         '……この日を待ちに待った。',
         'あんたを超えなければ、終わらせられない'
@@ -5391,7 +5391,7 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
       ],
     }},
   defender: {
-    _default: {
+    standard: {
       normal: [
         '……私もよ。',
         '……なら、超えてみせなさいよ'
@@ -5595,7 +5595,7 @@ const WEEKLY_STORY_TICKER = {
   // 覚醒イベント（クロス非対称: A高riv低bond / B低riv高bond → Bがキレる）
   // nameBのpersonality×archetypeで選出する
   awakening: {
-    _default: {
+    standard: {
       normal: [
         '{nameB}が{nameA}に向かって叫んだ。「もう我慢の限界よ！ あなたがそうなら、私も本気で行く！」',
         '{nameB}の目の色が変わった。「……もういい。あなたがそう思うなら、私も覚悟を決める」',
@@ -5645,7 +5645,7 @@ const WEEKLY_STORY_TICKER = {
 // ── 試合後リアクション（高rivalryペア用、personality×archetype）──
 const RIVALRY_MATCH_REACTION = {
   winnerLines: {
-    _default: {
+    standard: {
       normal: [
         'まだ終わってないんだろうけど。……でも次も私が勝つよ',
         'これで終わり……というわけには行かないよね'
@@ -5760,7 +5760,7 @@ const RIVALRY_MATCH_REACTION = {
       ],
     }},
   loserLines: {
-    _default: {
+    standard: {
       normal: [
         '次は負けない。絶対に',
         '……覚えてて。この借りは必ず返すから'
@@ -5876,7 +5876,7 @@ const RIVALRY_MATCH_REACTION = {
 // ── 番狂わせ × 高rivalry 専用テキスト ──
 const UPSET_RIVALRY_LINES = {
   winnerLines: {
-    _default: {
+    standard: {
       normal: [
         '見たか！ 私が格下だなんて、もう言わせない……！'
       ],
@@ -5990,7 +5990,7 @@ const UPSET_RIVALRY_LINES = {
       ],
     }},
   loserLines: {
-    _default: {
+    standard: {
       normal: [
         '噓でしょ？……こんなはずじゃ……',
         'なんで……なんで負けたの……？'
@@ -6119,7 +6119,7 @@ const UPSET_RIVALRY_LINES = {
 // 全147セル（3 context × 7 personality × 7 archetype）315本実装済み。
 const AUTUMN_WAR_MVP_LINES = {
   gauntlet: {
-    _default: {
+    standard: {
       normal: [
         '脚がもう動かない。でも、最後までリングを譲らなかった。それだけは誇っていいと思う',
         '何人倒したか、もう数えてない。ただ、一度も膝をつかなかった。それだけ覚えてる',
@@ -6338,7 +6338,7 @@ const AUTUMN_WAR_MVP_LINES = {
     },
   },
   champion: {
-    _default: {
+    standard: {
       normal: [
         '私一人の勝利じゃない。先鋒から大将まで、三人でつないだ勝利です',
         '三人の力を合わせて、ここまで来ました。一人じゃ絶対にたどり着けなかった',
@@ -6557,7 +6557,7 @@ const AUTUMN_WAR_MVP_LINES = {
     },
   },
   defiant: {
-    _default: {
+    standard: {
       normal: [
         'MVPでも、団体が負けた事実は消えない。次は、最後の一人まで残ります',
         'この賞は嬉しい。でも、それだけじゃ足りない。次は団体ごと勝つ',
@@ -6782,7 +6782,7 @@ const AUTUMN_WAR_MVP_LINES = {
 const AUTUMN_WAR_MATCH_LINES = {
 // preMatch — 各フォール開始前に両選手へ。"既に倒した"前提は持たせない中立の集中/闘志/覚悟
 preMatch: {
-  _default: {
+  standard: {
     normal: [
       'どんな相手が来ても、やることは一つ。真っ向から受けて、次に繋ぐ',
       'このリングは譲らない。目の前の一人に、全部ぶつけるだけ',
@@ -6812,6 +6812,9 @@ preMatch: {
     emotional: [
       '来い…! この一戦、絶対に退かねえ…!',
       '心臓がうるさい…! でも、ここで引いたら仲間に顔向けできねえ…!',
+    
+      '来い…! 目の前の一人から、全部倒して繋いでやる…!',
+      '止まりたくない…! この一戦から、全力でいく…!',
     ],
   },
   composed: {
@@ -6938,16 +6941,10 @@ preMatch: {
       '……倒す。残る',
     ],
   },
-  standard: {
-    emotional: [
-      '来い…! 目の前の一人から、全部倒して繋いでやる…!',
-      '止まりたくない…! この一戦から、全力でいく…!',
-    ],
   },
-},
 // preFinal — 準決勝を勝ち上がり、消耗を抱えて決勝を待つ
 preFinal: {
-  _default: {
+  standard: {
     normal: [
       'あちこち痛むけど、ここまで残った。最後まで、リングは渡さない',
       '身体は重い。でも、あと一つ。繋いできたものを、無駄にはしない',
@@ -6977,6 +6974,9 @@ preFinal: {
     emotional: [
       '身体中が痛い…! でも、ここで泣くのは終わってからだ…!',
       'ここまで来たんだ…! 最後の一戦、絶対に退かねえ…!',
+    
+      'ここまで来た…! 身体は痛いけど、最後まで絶対立ってやる…!',
+      'あと一つ…! 繋いでくれた分、私が締める…! 泣くのは後だ…!',
     ],
   },
   composed: {
@@ -7103,16 +7103,10 @@ preFinal: {
       '……傷は数えない。ただ、いく',
     ],
   },
-  standard: {
-    emotional: [
-      'ここまで来た…! 身体は痛いけど、最後まで絶対立ってやる…!',
-      'あと一つ…! 繋いでくれた分、私が締める…! 泣くのは後だ…!',
-    ],
   },
-},
 // survivor — フォールを奪い、リングに残り次の挑戦者を待つ
 survivor: {
-  _default: {
+  standard: {
     normal: [
       '一人、落とした。…息が上がってる。でも、リングは渡さない。次、来い',
       'まだ立ってる。次の挑戦者、早く出てきて。ここは動かないから',
@@ -7142,6 +7136,9 @@ survivor: {
     emotional: [
       '一人ぶっ倒した…! はぁ、はぁ…! まだ立ってんだよ…! 次、出てこい…!',
       'まだ終わってねえ…! 息が上がろうが関係あるか…! 次、早く来い…!',
+    
+      '一人倒した…! はぁ…まだ立ってる…! 次、来い…! ここは渡さねえ…!',
+      'まだ終わらない…! この勢いのまま、次も倒す…! 出てこい…!',
     ],
   },
   composed: {
@@ -7268,18 +7265,12 @@ survivor: {
       '……退かない。出せ',
     ],
   },
-  standard: {
-    emotional: [
-      '一人倒した…! はぁ…まだ立ってる…! 次、来い…! ここは渡さねえ…!',
-      'まだ終わらない…! この勢いのまま、次も倒す…! 出てこい…!',
-    ],
   },
-},
 };
 
 // ── PPVメインイベント勝利セリフ（自団体選手が頂上決戦に勝利時） ──
 const PPV_SUMMIT_VICTORY_LINES = {
-  _default: {
+  standard: {
     normal: [
       '……やった。本当に、やったんだ……！',
       'みんなのおかげです。この舞台で勝てて、本当に嬉しい',
@@ -8490,7 +8481,7 @@ const NEGOTIATION_CONFIG = {
 
 const NEGOTIATE_LINES = {
   start: {
-    _default: {
+    standard: {
       normal: [
         '…私に来いって？\n条件次第かな'
       ],
@@ -8611,7 +8602,7 @@ const NEGOTIATE_LINES = {
       ],
     }},
   success: {
-    _default: {
+    standard: {
       normal: [
         '…分かった、行くわ。\n実力で居場所を作ってみせる'
       ],
@@ -8714,7 +8705,7 @@ const NEGOTIATE_LINES = {
       ],
     }},
   blocked: {
-    _default: {
+    standard: {
       normal: [
         '団体を移る気はないわ。\n今の仲間のことを考えたら、話を聞く気にもなれない',
         '…そういう話は受けられない。\n今のここが好きだから'
@@ -8821,7 +8812,7 @@ const NEGOTIATE_LINES = {
       ],
     }},
   fail: {
-    _default: {
+    standard: {
       normal: [
         '…悪いけど、今回はパス。\n縁があればまたね'
       ],
@@ -8930,7 +8921,7 @@ const NEGOTIATE_LINES = {
 // テンプレ変数: {tenure} {record} {rivalry} {tenure_farewell} {wins} {losses} {n} {rivalName}
 const CONTRACT_NEGOTIATION_LINES = {
   raise_open: {
-    _default: {
+    standard: {
       normal: [
         '社長、少し相談があるんですけど。{tenure}{record}もう少し待遇を見直してもらえませんか。',
         '社長、契約のことなんですけど。{record}正直、もうちょっと欲しいなって思ってて。'
@@ -9099,7 +9090,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       emotional: ['社長……もう無理なんです……！ {tenure}ここにいては……どんどんだめになる気がして……！', '……{tenure}もう、限界でして……。{record}自分でも分かっているんです……このままではいけないと……。'],
     },
-    _default: {
+    standard: {
       normal: [
         '社長、話があります。{tenure}ここを離れようと思ってるんです。',
         '社長。{tenure}色々考えたんですけど…他の環境でやってみたくて。'
@@ -9228,7 +9219,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       emotional: ['社長……！ ありがとうございます……！ 必ず結果でお返しいたします……！'],
     },
-    _default: {
+    standard: {
       normal: [
         'ありがとうございます。これからもよろしくお願いしますね。'
       ],
@@ -9350,7 +9341,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       emotional: ['……正直、足りません……。ですが、お考えいただいたことは伝わりました。'],
     },
-    _default: {
+    standard: {
       normal: [
         'まあ、上がるならありがたいです。頑張りますね。'
       ],
@@ -9470,7 +9461,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       emotional: ['……やはり……だめなんですね……。……分かりました。'],
     },
-    _default: {
+    standard: {
       normal: [
         '……そうですか。分かりました。'
       ],
@@ -9590,7 +9581,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       emotional: ['……っ！ ……もう結構です。分かりました。……悔しいです……。'],
     },
-    _default: {
+    standard: {
       normal: [
         '……そうですか。分かりました。……ちょっと残念ですけど。'
       ],
@@ -9710,7 +9701,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       emotional: ['社長……！ ……申し訳ありません、こんなわたしのために……。……この御恩、必ずお返しいたします……！'],
     },
-    _default: {
+    standard: {
       normal: [
         '……そこまでしてくれるんですね。…分かりました。もう少し頑張ってみます。'
       ],
@@ -9830,7 +9821,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       ],
       emotional: ['社長……ありがとうございます……。でも……もう戻れないんです……申し訳ありません……！'],
     },
-    _default: {
+    standard: {
       normal: [
         '……ありがたいんですけど…もう、決めたんです。すみません。'
       ],
@@ -9953,7 +9944,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       earnest: ['…承知しました。{tenure_farewell}ここで過ごした日々は…忘れないよ。{rivalry}'],
       emotional: ['{tenure_farewell}…ここでの時間は、忘れないよ。{rivalry}…じゃあ、さよなら。'],
     },
-    _default: {
+    standard: {
       normal: [
         '……分かりました。{tenure_farewell}{rivalry}お世話になりました。'
       ],
@@ -10061,7 +10052,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       earnest: ['…ありがとう。{record}自分なりに考えた結論でね。ここでの経験には感謝してる。…ただ、新しい場所で試したいんだ。'],
       emotional: ['…聞いてくれるんだ。{record}…自分でも、どうしたいのか分からない。…ただ、このままじゃダメだって、それだけは。'],
     },
-    _default: {
+    standard: {
       normal: [
         '聞いてくれるんですね。{record}正直、新しい場所で挑戦してみたいんです。'
       ],
@@ -10199,7 +10190,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       shy: ['……あの。…辞めさせてください。…もう、無理なんだ。', '…ごめんね。…もう、ここにはいられない。'],
       normal: ['社長。手短に言うね。…辞めます。もう決めたことだから。', '…世話になったよ。…でも、もうここでは続けられない。'],
     },
-    _default: {
+    standard: {
       bold: [
         '社長、もう無理です。お世話になりました、と言いたいところですけど正直そうも思えない。',
         'もう決めました。これ以上ここにいる理由がない。',
@@ -10843,7 +10834,7 @@ const FAREWELL_CLOSING = '{name}は、この日を最後に現役を引退した
 
 const RETIREMENT_LINES = {
   A1_champion: {
-    _default: {
+    standard: {
       normal: [
         '頂点からの景色は、忘れないよ',
         '最高の舞台で闘えた。それだけで十分だよ'
@@ -11006,7 +10997,7 @@ const RETIREMENT_LINES = {
       ],
       emotional: ['ベルト…欲しかったです…でも…ここにいられて、よかった…っ'],
     },
-    _default: {
+    standard: {
       normal: [
         'ベルトには届かなかった。でも、後悔はないよ',
         '夢は叶わなかったけど…この道を選んでよかった'
@@ -11129,7 +11120,7 @@ const RETIREMENT_LINES = {
       ],
       emotional: ['…っ、やめてください…泣かないで…わたしまで…っ'],
     },
-    _default: {
+    standard: {
       normal: [
         'フン…勝手に泣いてんじゃないわよ',
         'わたしがいなくなって寂しくなるね'
@@ -11252,7 +11243,7 @@ const RETIREMENT_LINES = {
       ],
       emotional: ['ここが…全部でした…ありがとうございます…ありがとうございます…っ'],
     },
-    _default: {
+    standard: {
       normal: [
         'ここが、あたしの全部だった',
         'この団体で過ごした時間は、無駄じゃない'
@@ -11375,7 +11366,7 @@ const RETIREMENT_LINES = {
       ],
       emotional: ['いやです…いやです…まだ始まったばかりなのに…っ'],
     },
-    _default: {
+    standard: {
       normal: [
         'まだ何も成し遂げてないのに…',
         'あたしの物語、こんなところで終わりなの…？'
@@ -11498,7 +11489,7 @@ const RETIREMENT_LINES = {
       ],
       emotional: ['悔しいです…悔しい…これからだったのに…っ'],
     },
-    _default: {
+    standard: {
       normal: [
         '体がね…もう言うことを聞かないの',
         'これからだったのに…悔しい、悔しいよ…'
@@ -11621,7 +11612,7 @@ const RETIREMENT_LINES = {
       ],
       emotional: ['わかっていました…いつか来ると…でも…寂しいです…っ'],
     },
-    _default: {
+    standard: {
       normal: [
         'わかってた。いつか来るって',
         '十分やったよ。自分を褒めてやりたい'
@@ -11744,7 +11735,7 @@ const RETIREMENT_LINES = {
       ],
       emotional: ['いやです…このベルト…まだ返したくありません…っ'],
     },
-    _default: {
+    standard: {
       normal: [
         'このベルト…まだ返したくなかった',
         '最後の防衛戦、やりたかったな…'
@@ -11842,7 +11833,7 @@ const RETIREMENT_LINES = {
 
 // B4タレント活動: 怪我引退チャンピオンの社長への一言（§13）— archetype単位に統合
 const RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE = {
-  _default:  ['…社長に、迷惑かけちゃうな。ごめんなさい', '…社長、ベルトのこと、ごめんなさい。迷惑かけて'],
+  standard:  ['…社長に、迷惑かけちゃうな。ごめんなさい', '…社長、ベルトのこと、ごめんなさい。迷惑かけて'],
   ojousama:  ['…社長に、ご迷惑をおかけしますわね', '…社長に、ご迷惑をおかけしてしまいますわね。本当に、申し訳なく…'],
   delinquent:['…社長、悪りぃな。迷惑かけちまって', '…社長、悪りぃな。ベルト空けちまって'],
   cool:      ['…社長には、申し訳ない', '…社長には、申し訳ない。ベルトを空けることになる'],
@@ -11888,7 +11879,7 @@ const POACH_REACTION_DIALOGUES = {
       earnest: ['ここで学んだこと、必ず活かすわ。本当にお世話になりました', '感謝しかないの。新しい場所で、必ず結果を出すから'],
       emotional: ['……ごめんね。……新しい舞台で、もっと光ってみせる'],
     },
-    _default: {
+    standard: {
       normal: ['…色々、ありがとうございました。新しい場所でも、戦い続けます', 'ここで過ごした日々は、忘れません'],
       bold: ['もっと大きい舞台で証明する。…見ててよ', '行かせてもらう。世話になったわね'],
       quiet: ['…さよなら…', '…ありがとう…ございました'],
@@ -11953,7 +11944,7 @@ const POACH_REACTION_DIALOGUES = {
       earnest: ['…社長の気持ち、伝わったわ。ここで闘い続ける', '残らせてもらうわ。必ず恩返しをするから'],
       emotional: ['……必要としてくれるんだ。…うん、残る'],
     },
-    _default: {
+    standard: {
       normal: ['…ここに残れて、ほっとしました', '社長…ありがとうございます。期待には応えます'],
       bold: ['そこまで言うなら、残ってあげる', 'ふん、簡単に手放さないってことね。…悪い気はしないわ'],
       quiet: ['…残ります', '…ありがとう…ございます'],
@@ -12018,7 +12009,7 @@ const POACH_REACTION_DIALOGUES = {
       earnest: ['ご恩を返せなくて、ごめんなさい…新天地で必ず結果を出すわ', '…ごめんなさい。でも、行かなきゃいけないの'],
       emotional: ['……ごめん。……でも、決めたから'],
     },
-    _default: {
+    standard: {
       normal: ['…申し訳ありません。新しい場所で、答えを出します', 'お世話になりました。…またどこかで'],
       bold: ['…ごめんなさいね。でも、私の決意は固いから', '止められても止まらないよ。じゃあね'],
       quiet: ['…ごめんなさい…', '…さよなら'],
@@ -12060,7 +12051,7 @@ const POACH_REACTION_DIALOGUES = {
 // ── 引退勧告・引き留めシステム セリフデータ (retirement-advisory-spec-v1_1) ──
 const RETIRE_ACCEPT_LINES = {
   accept_terminal: {
-    _default: {
+    standard: {
       normal: [
         '…わかった。もう限界なの、自分でもわかってる',
         '…正直、ほっとしてる。ありがとう'
@@ -12181,7 +12172,7 @@ const RETIRE_ACCEPT_LINES = {
       ],
     }},
   accept_winless: {
-    _default: {
+    standard: {
       normal: [
         '自分でもわかってた。もう追いつけないって',
         '…そうだね。最近、勝てない試合が多すぎた'
@@ -12284,7 +12275,7 @@ const RETIRE_ACCEPT_LINES = {
       ],
     }},
   accept_heel: {
-    _default: {
+    standard: {
       normal: [
         '…別にアンタに言われなくても辞めるつもりだったよ',
         '…まぁ、潮時ってやつかもね'
@@ -12387,7 +12378,7 @@ const RETIRE_ACCEPT_LINES = {
       ],
     }},
   accept_former_champ: {
-    _default: {
+    standard: {
       normal: [
         '最後にいい試合がしたい。それだけお願いできる？',
         '…わかった。ベルトを持てた分、十分だよ'
@@ -12490,7 +12481,7 @@ const RETIRE_ACCEPT_LINES = {
       ],
     }},
   accept_no_title: {
-    _default: {
+    standard: {
       normal: [
         '…わかった。潮時だよね',
         '…そうだね。ありがとう、言ってくれて'
@@ -12596,7 +12587,7 @@ const RETIRE_ACCEPT_LINES = {
 
 const RETIRE_REFUSE_LINES = {
   refuse_champ: {
-    _default: {
+    standard: {
       normal: [
         'チャンピオンに引退しろって？ 冗談はやめて',
         'このベルトがある限り、わたしは終わらない'
@@ -12717,7 +12708,7 @@ const RETIRE_REFUSE_LINES = {
       ],
     }},
   refuse_distrust: {
-    _default: {
+    standard: {
       normal: [
         'わたしを追い出す気？ そう簡単にはいかないわよ',
         'この団体に何年貢献してきたと思ってるの'
@@ -12820,7 +12811,7 @@ const RETIRE_REFUSE_LINES = {
       ],
     }},
   refuse_heel: {
-    _default: {
+    standard: {
       normal: [
         '引退？ 次の興行を見てなさい。後悔させてあげる',
         'まだまだ引退なんてしてやらないよ'
@@ -12923,7 +12914,7 @@ const RETIRE_REFUSE_LINES = {
       ],
     }},
   refuse_fighting: {
-    _default: {
+    standard: {
       normal: [
         'まだ終わらない。わたしはまだ闘える',
         '体がある限り、わたしはリングに立つ'
@@ -13029,7 +13020,7 @@ const RETIRE_REFUSE_LINES = {
 
 const RETAIN_LINES = {
   former_champ: {
-    _default: {
+    standard: {
       normal: [
         '…もう少しだけ。最後にもう一度、あのベルトに手を伸ばしたい'
       ],
@@ -13149,7 +13140,7 @@ const RETAIN_LINES = {
       ],
     }},
   high_trust: {
-    _default: {
+    standard: {
       normal: [
         'アンタがそう言うなら…もう少しだけ頑張ってみるよ'
       ],
@@ -13251,7 +13242,7 @@ const RETAIN_LINES = {
       ],
     }},
   heel: {
-    _default: {
+    standard: {
       normal: [
         'フン…まだ使い道があるってことね。いいわ、付き合ってあげる'
       ],
@@ -13353,7 +13344,7 @@ const RETAIN_LINES = {
       ],
     }},
   default: {
-    _default: {
+    standard: {
       normal: [
         '…うん、もう少しだけやってみる',
         'わかった。もう少しだけ、続けてみる'
@@ -13460,7 +13451,7 @@ const RETAIN_LINES = {
 // v1.4: 年末表彰式 セリフデータ（personality×archetype）
 const AWARD_LINES = {
   rookie: {
-    _default: {
+    standard: {
       normal: [
         '控室で泣きました。うれしくて。…来年はもっと上で泣きます',
         'この賞の重さ、まだわかりません。でもリングに上がるたび、きっとわかっていくと思います'
@@ -13583,7 +13574,7 @@ const AWARD_LINES = {
       ],
     }},
   bestMatch: {
-    _default: {
+    standard: {
       normal: [
         'あの試合の最後の5分間は特別でした。全力を出せた気がします',
         '終わった瞬間、全部出し切ったのがわかる。そんな試合でした'
@@ -13716,7 +13707,7 @@ const AWARD_LINES = {
       ],
     }},
   mvp: {
-    _default: {
+    standard: {
       normal: [
         '一年間、逃げなかった。それだけは胸を張れます',
         '苦しい試合もあった。でも全部、今のわたしを作ってくれた'
@@ -13849,7 +13840,7 @@ const AWARD_LINES = {
       ],
     }},
   mediaAward: {
-    _default: {
+    standard: {
       normal: [
         'こんな賞をいただけるなんて、びっくりです',
         'リング外でも頑張った甲斐がありました',
@@ -13899,7 +13890,7 @@ const AWARD_LINES = {
     },
 },
   champion: {
-    _default: {
+    standard: {
       normal: [
         'このベルトの重さを、毎日感じています。だから強くなれると思ってる',
         'チャンピオンであることは誇りです。逃げずに守り抜くよ'
@@ -14031,7 +14022,7 @@ const AWARD_LINES = {
       ],
     }},
   hallOfFame: {
-    _default: {
+    standard: {
       normal: [
         '後悔はない。一試合も。…本当に良い現役生活でした',
         'このリングで過ごした時間が、わたしの全て'
@@ -14182,7 +14173,7 @@ const AWARD_LINES = {
 
 // §2.6a ブレイクスルー兆し — 試合中のモノローグ（personality別）
 const BT_HINT_LINES = {
-  _default: {
+  standard: {
     normal: [
       '（…体が軽い。いつもと、何かが違う——）',
       '（…動ける。まだ、動ける——）'
@@ -14296,7 +14287,7 @@ const BT_HINT_LINES = {
 
 // §2.6b ブレークスルーセリフ（personality×archetype）
 const BREAKTHROUGH_LINES = {
-  _default: {
+  standard: {
     normal: [
       'あの試合で、何かが変わった気がする…',
       '限界だと思っていた壁を越えられた！'
@@ -14424,7 +14415,7 @@ const BREAKTHROUGH_LINES = {
 const MILESTONE_LINES = {
   // OVR 65-75: 素朴な手応え、まだ道半ば
   ovr_growth: {
-    _default: {
+    standard: {
       normal: ['少しずつだけど…強くなれてる気がする', '前より体が動くようになった'],
       bold: ['まだまだ足りない。でも、近づいてる', 'ここからが本番だよ'],
       quiet: ['……少し、強くなれた'],
@@ -14470,7 +14461,7 @@ const MILESTONE_LINES = {
 
   // OVR 80-90: 確信と覚悟、一流の入口
   ovr_elite: {
-    _default: {
+    standard: {
       normal: ['ここまで来れたんだ…', '見える景色が変わってきた気がする'],
       bold: ['見えてきた。頂がすぐそこにある', 'ここからが本当の勝負'],
       quiet: ['………ここまで来た'],
@@ -14515,7 +14506,7 @@ const MILESTONE_LINES = {
 
   // OVR 95-115: 超越の境地、伝説の領域
   ovr_legend: {
-    _default: {
+    standard: {
       normal: ['まだ上があるなんて…自分でも信じられない', '…ここに立っていること自体が、夢みたいだ'],
       bold: ['頂点はすぐそこだ。…いや、もう立ってるのかもしれない', 'ここから先は、私が道を作る'],
       quiet: ['…………（静かに拳を握る）'],
@@ -14560,7 +14551,7 @@ const MILESTONE_LINES = {
 
   // 人気 50-60: 認知の喜び
   pop_growth: {
-    _default: {
+    standard: {
       normal: ['知ってくれる人が増えてきた気がする', '声を掛けてもらえるようになった'],
       bold: ['当然だ。私の実力なら、もっと知られてもいい', 'やっとみんなが気づき始めた'],
       quiet: ['……見てくれてる人が、いるんだ'],
@@ -14602,7 +14593,7 @@ const MILESTONE_LINES = {
 
   // 人気 70-95: スターの自覚
   pop_star: {
-    _default: {
+    standard: {
       normal: ['こんなにたくさんの人が応援してくれてる…', '期待に応えなきゃ'],
       bold: ['この声援に恥じない試合を見せてやる', '期待してろ。最高の舞台を見せてやるから'],
       quiet: ['……こんなに……ありがとう'],
@@ -14647,7 +14638,7 @@ const MILESTONE_LINES = {
 
   // trainCap到達: 限界の感慨
   cap_reached: {
-    _default: {
+    standard: {
       normal: ['ここが私の限界…でも、後悔はない', '…もう、これ以上は伸びない。でも充分だ'],
       bold: ['ここが限界？ …認めたくないけど、そうなのかもしれない', '…天井を感じる。でも、他の部分で勝負する'],
       quiet: ['………（静かに息をつく）…ここまで、か'],
@@ -14694,7 +14685,7 @@ const MILESTONE_LINES = {
 // 初顔合わせ試合前ポップアップセリフ（personality×archetype）
 // 仕様: specs/match-flavor-popup-spec-v0.1.md §3.2
 const FIRST_MEET_LINES = {
-  _default: {
+  standard: {
     normal: [
       '噂は聞いていたわ',
       '初めまして…よろしく',
@@ -14744,7 +14735,7 @@ const FIRST_MEET_LINES = {
 // 勝敗は確定したばかり、リング上で発する一言。長台詞は避ける(autoClose 1.8s)
 const POST_MATCH_FLAVOR_LINES = {
   winner: {
-    _default: {
+    standard: {
       normal: ['…取った', '勝ったわ', 'これで一勝', 'ふぅ…決まったわね'],
       bold: ['当然よ！', 'こんなもんよ！', 'わたしの勝ち！'],
       quiet: ['…勝った', '……（小さく頷く）'],
@@ -14789,7 +14780,7 @@ const POST_MATCH_FLAVOR_LINES = {
     },
   },
   loser: {
-    _default: {
+    standard: {
       normal: ['…悔しい', '…まだまだね', '…次は勝つわ', '…完敗ね'],
       bold: ['…嘘でしょ？', 'こんなはずじゃ…', '…次は絶対に！'],
       quiet: ['…負けた', '……（俯く）'],
@@ -14867,7 +14858,7 @@ function pickDialogueLine(lineObj, fighter) {
 // §4.5 スランプ発生セリフ（personality×archetype, トリガー別）
 const SLUMP_START_LINES = {
   defeat: {
-    _default: {
+    standard: {
       normal: [
         'あの負けから…何かがおかしい',
         '自分の何が悪かったのか、わからない'
@@ -14991,7 +14982,7 @@ const SLUMP_START_LINES = {
       ],
     }},
   injury_moderate_recovery: {
-    _default: {
+    standard: {
       normal: [
         '体は治ったはずなのに…動けない',
         '復帰したのに、何かが噛み合わない'
@@ -15094,7 +15085,7 @@ const SLUMP_START_LINES = {
       ],
     }},
   injury_severe_recovery: {
-    _default: {
+    standard: {
       normal: [
         'またリングに立てた…のに、怖い',
         '重傷から帰ってきたけど…自信がない'
@@ -15197,7 +15188,7 @@ const SLUMP_START_LINES = {
       ],
     }},
   penalty_end: {
-    _default: {
+    standard: {
       normal: [
         '怪我は治ったのに…気力が戻らない',
         '体が癒えても、心の傷は残るんだな'
@@ -15303,7 +15294,7 @@ const SLUMP_START_LINES = {
 
 // §4.5 スランプ回復セリフ（personality×archetype）
 const SLUMP_END_LINES = {
-  _default: {
+  standard: {
     normal: [
       'やっと…やっと戻ってこれた',
       'あの暗いトンネルをようやく抜けた'
@@ -15427,7 +15418,7 @@ const SLUMP_END_LINES = {
 
 // §5.6 モチベ喪失セリフ（personality×archetype）
 const MOTIVATION_LOSS_LINES = {
-  _default: {
+  standard: {
     normal: [
       'もう…何のために闘ってるのかわからない',
       'プロレスが楽しいって感覚、どこへ行った？'
@@ -15552,7 +15543,7 @@ const MOTIVATION_LOSS_LINES = {
 
 // §5.6 モチベ喪失回復セリフ（personality×archetype）
 const MOTIVATION_RECOVERY_LINES = {
-  _default: {
+  standard: {
     normal: [
       'まだ…やれる。やってみせる',
       'また闘いたいと思えた。この気持ちを大切に'
@@ -15799,7 +15790,7 @@ const NEWS_TICKER_TEMPLATES = {
 // ══════════════════════════════════════════════════════════
 const JUNIOR_TOURNAMENT_LINES = {
   summon: {
-    _default: {
+    standard: {
       normal: ['選ばれたからには、全力で戦う', 'この舞台に立てることを誇りに思う'],
       bold: ['当然。呼ばれなかったら怒ってたわ', 'ふん、やっと正当な評価をしてくれたわけね'],
       earnest: ['精一杯、やらせていただきます…！', '選ばれたからには…絶対に恥ずかしくない試合を'],
@@ -15854,7 +15845,7 @@ const JUNIOR_TOURNAMENT_LINES = {
     },
   },
   preMatch: {
-    _default: {
+    standard: {
       normal: ['相手がどうとかじゃない。自分の試合をする', '集中。一つずつ勝っていく'],
       bold: ['目の前の相手を叩き潰す。それだけよ', '勝つのは私。最初から決まってることよ'],
       earnest: ['どんな相手でも、やることは変わりません', '一戦一戦を大切に…全力で行きます'],
@@ -15909,7 +15900,7 @@ const JUNIOR_TOURNAMENT_LINES = {
     },
   },
   postMatchWin: {
-    _default: {
+    standard: {
       normal: ['一つクリア。次に集中する', '勝った。でも気を抜かない'],
       bold: ['当然の結果よ。次も同じ', 'ふん。この程度じゃ止まらないわよ'],
       earnest: ['勝てた…！ でもまだ終わりじゃない', '一歩ずつ…次も全力で'],
@@ -15964,7 +15955,7 @@ const JUNIOR_TOURNAMENT_LINES = {
     },
   },
   preFinal: {
-    _default: {
+    standard: {
       normal: ['あと一つ。勝てば優勝。それだけ考える', '決勝。全てを懸ける'],
       bold: ['ここまで来て負けるわけないでしょ。最後も私が獲る', 'さあ、最後の獲物ね。楽しませてもらうわ'],
       earnest: ['この舞台に立てることが…嬉しい。だから全部出し切ります', '決勝…夢みたいです。でも、勝ちたい…！'],
@@ -16019,7 +16010,7 @@ const JUNIOR_TOURNAMENT_LINES = {
     },
   },
   champion: {
-    _default: {
+    standard: {
       normal: ['この優勝を、次のステップにする', '優勝。嬉しい。でも、これで終わりじゃない'],
       bold: ['言ったでしょ？ 私が最強だって', 'はい優勝。当然の結果ね'],
       earnest: ['支えてくれたみんなのおかげです…！', '優勝…できた…。ありがとうございます…！'],
@@ -16075,7 +16066,7 @@ const JUNIOR_TOURNAMENT_LINES = {
   },
   // 大会後の感想（結果別: postWin=勝ち越し/postLose=初戦敗退/postMid=途中敗退）
   postWin: {
-    _default: {
+    standard: {
       normal: ['いい経験になった。もっと強くなりたい', '大会を通して、自分の成長を感じられた'],
       bold: ['当然の結果ね。次は優勝よ', 'この程度で満足するわけないでしょ'],
       earnest: ['精一杯やれました…！ この経験を活かしたい', '悔いのない大会でした。支えてくれた皆さんに感謝です'],
@@ -16128,7 +16119,7 @@ const JUNIOR_TOURNAMENT_LINES = {
     },
   },
   postLose: {
-    _default: {
+    standard: {
       normal: ['悔しい…。でも、次に繋げる', '力不足を痛感した。もっと強くならないと'],
       bold: ['こんなはずじゃ…！ 次は絶対に見返す！', '認めない。次は絶対に勝つ'],
       earnest: ['申し訳ないです…。もっと頑張ります…', '悔しい…けど、この悔しさを忘れない'],
@@ -17000,7 +16991,7 @@ const NOTIF_EVENT_TEXTS = {
 // N1/N2/N3/N4/N5_warning/N5_low 全タイプ対応
 const NOTIF_DIALOGUES = {
   N1: {
-    _default: {
+    standard: {
       normal: [
         '練習が楽しくなってきた気がします',
         'やっと体が動くようになってきた気がします'
@@ -17120,7 +17111,7 @@ const NOTIF_DIALOGUES = {
       emotional: ['ああ…っ、練習が楽しいんです…！もっとやりたい…！', '体が動くようになってきて…嬉しいです…っ'],
     }},
   N2: {
-    _default: {
+    standard: {
       normal: [
         'いい仲間ができた気がします',
         '一緒に頑張れる人がいると心強いですね'
@@ -17233,7 +17224,7 @@ const NOTIF_DIALOGUES = {
       emotional: ['みんなのことが大好きです…っ、一緒にいられて幸せです…っ'],
     }},
   N3: {
-    _default: {
+    standard: {
       normal: [
         'ちょっと疲れてるだけです。次の試合までには戻ります',
         '少し休めば大丈夫です'
@@ -17347,7 +17338,7 @@ const NOTIF_DIALOGUES = {
       emotional: ['う…体がしんどいです…でも、でも頑張りたいのに…っ'],
     }},
   N4: {
-    _default: {
+    standard: {
       normal: [
         'こんなにたくさんの応援をいただけるなんて、びっくりしています',
         'ファンの声が力になってます'
@@ -17461,7 +17452,7 @@ const NOTIF_DIALOGUES = {
       emotional: ['みんなが応援してくださって…っ、嬉しくて泣きそうです…っ'],
     }},
   N5_warning: {
-    _default: {
+    standard: {
       normal: [
         '（どこか上の空で、視線が泳いでいる）',
         '……すみません、ちょっと考え事を'
@@ -17574,7 +17565,7 @@ const NOTIF_DIALOGUES = {
       emotional: ['…なんだか、最近ずっとモヤモヤして…うまく言えないんですけど…'],
     }},
   N5_low: {
-    _default: {
+    standard: {
       normal: [
         '…別に、何でもないです',
         'もういいです。分かりました'
@@ -17978,7 +17969,7 @@ const CAMP_FLAVOR_TEXTS = [
 
 const CARE_REACTION_DIALOGUES = {
   bonus: {
-    _default: {
+    standard: {
       normal: [
         'ありがとうございます！',
         'いただきます…！',
@@ -18079,7 +18070,7 @@ const CARE_REACTION_DIALOGUES = {
       ],
     }},
   bonus_repeat: {
-    _default: {
+    standard: {
       normal: [
         '…また？',
         'えっと…ありがとうございます',
@@ -18116,7 +18107,7 @@ const CARE_REACTION_DIALOGUES = {
     }},
   // care-rework v0.1 §1.3: 侮辱帯(r<0.4、プライド高い選手はr<0.8)専用リアクション
   bonus_insult: {
-    _default: {
+    standard: {
       normal: [
         '……これが、私の値段ですか',
         '……お気持ちだけ、受け取っておきます'
@@ -18167,7 +18158,7 @@ const CARE_REACTION_DIALOGUES = {
       ],
     }},
   trainer: {
-    _default: {
+    standard: {
       normal: [
         '頑張ります！',
         '全力で取り組みます！',
@@ -18264,7 +18255,7 @@ const CARE_REACTION_DIALOGUES = {
       ],
     }},
   media: {
-    _default: {
+    standard: {
       normal: [
         'よろしくお願いします！',
         'ありがとうございます！',
@@ -18361,7 +18352,7 @@ const CARE_REACTION_DIALOGUES = {
       ],
     }},
   encourage: {
-    _default: {
+    standard: {
       normal: [
         'ありがとうございます…',
         'もう少し、頑張ってみます',
@@ -18459,7 +18450,7 @@ const CARE_REACTION_DIALOGUES = {
       ],
     }},
   encourage_high_trust: {
-    _default: {
+    standard: {
       normal: [
         'ずっと見てくれてたんですね…頑張ります！',
         'あなたに言われると、本当に力が出ます！'
@@ -18555,7 +18546,7 @@ const CARE_REACTION_DIALOGUES = {
       ],
     }},
   refresh_leave: {
-    _default: {
+    standard: {
       normal: [
         'ありがとうございます！行ってきます！',
         'ゆっくり休んで戻ってきます！',
@@ -18652,7 +18643,7 @@ const CARE_REACTION_DIALOGUES = {
       ],
     }},
   special_treatment: {
-    _default: {
+    standard: {
       normal: [
         '専門の先生まで…ありがとうございます。早く戻ります',
         'こんなに気にかけていただけるなんて…必ず復帰します',
@@ -18706,7 +18697,7 @@ const CARE_REACTION_DIALOGUES = {
     },
   },
   party: {
-    _default: {
+    standard: {
       normal: [
         'お疲れ様でした〜！',
         'みんなで楽しく過ごせました！',
@@ -18806,7 +18797,7 @@ const CARE_REACTION_DIALOGUES = {
       ],
     }},
   camp: {
-    _default: {
+    standard: {
       normal: [
         'しっかり鍛えてきます！',
         '頑張ります！',
@@ -18911,7 +18902,7 @@ const CARE_REACTION_DIALOGUES = {
   // faction_decree_seal_quiet : まだ派閥が無いうちに先回りで禁じられた。当事者はいない
   // faction_decree_unseal     : 禁止を解いた
   faction_decree: {
-    _default: {
+    standard: {
       _default: [
         '……わかりました。社長がそう言うなら',
         'あれは、ただ集まっていただけなのに',
@@ -19046,7 +19037,7 @@ const CARE_REACTION_DIALOGUES = {
 
   faction_decree_seal_quiet: {
     _default: {
-      _default: [
+      standard: [
         'えっと……つまり、徒党を組むなということですか？',
         'そういう話、別に出ていなかったですけど……',
         '……はい。心得ておきます'
@@ -19074,7 +19065,7 @@ const CARE_REACTION_DIALOGUES = {
 
   faction_decree_unseal: {
     _default: {
-      _default: [
+      standard: [
         'え、いいんですか？ ……はい、ありがとうございます',
         '……そうですか。元通り、ということですね'
       ],
@@ -19107,7 +19098,7 @@ const CARE_REACTION_DIALOGUES = {
 //   archetype:   7種 (_default=normal / ojousama / delinquent / cool / seductive / polite / composed)
 // ============================================================================
 const DOME_FIRSTSHOW_LINES = {
-  _default: {
+  standard: {
     normal: [
       'ここまで来られたのは、社長のおかげです',
       'やっと、この景色を見れますね',
@@ -19368,7 +19359,7 @@ const DOME_FIRSTSHOW_LINES = {
   }};
 
 const DOME_SELLOUT_LINES = {
-  _default: {
+  standard: {
     normal: [
       '満員…ですか。…信じられません',
       '社長…ありがとうございます。こんな景色、見せてもらって',
@@ -19644,7 +19635,7 @@ const CHOICE_EVENT_DIALOGUES = {
       earnest: ['…準備はできてる。機会をくれ', '…タイトル戦に、挑ませてほしい'],
       emotional: ['…頼む。ベルトに、挑ませてくれ'],
     },
-    _default: {
+    standard: {
       normal: [
         'タイトルマッチの機会をいただけませんか？'
       ],
@@ -19758,7 +19749,7 @@ const CHOICE_EVENT_DIALOGUES = {
       earnest: ['…あの人を越えたい。組んでくれ'],
       emotional: ['…あの人と、やりたい。頼む'],
     },
-    _default: {
+    standard: {
       normal: [
         '因縁のある相手と試合を組んでいただけませんか'
       ],
@@ -19870,7 +19861,7 @@ const CHOICE_EVENT_DIALOGUES = {
       earnest: ['…迷惑をかける。それでも、休ませてくれ', '…みんなに悪いが、体が限界だ'],
       emotional: ['…すまない。体が、もう…休ませてくれ'],
     },
-    _default: {
+    standard: {
       normal: [
         '少し休養をいただけますか？'
       ],
@@ -19982,7 +19973,7 @@ const CHOICE_EVENT_DIALOGUES = {
       earnest: ['…ずっと黙ってた。だが、もう限界だ', '…目標に届く環境がいる。考え直してくれ'],
       emotional: ['…もう、無理だ。…このままなら、続けられない'],
     },
-    _default: {
+    standard: {
       normal: [
         'このままでは限界です。待遇を改善していただけませんか'
       ],
@@ -20129,7 +20120,7 @@ const CHOICE_EVENT_DIALOGUES = {
       earnest: ['…………（言いかけて、ひとつ息をつき、そのまま黙った）'],
       emotional: ['……っ（込み上げたものを飲み下し、静かに目を閉じた）'],
     },
-    _default: {
+    standard: {
       normal: [
         '（沈黙）…いえ、何でもないです'
       ],
@@ -20176,7 +20167,7 @@ const CHOICE_EVENT_DIALOGUES = {
       earnest: ['…もっと強くなりたい。特訓を許可してくれ'],
       emotional: ['…頼む。特訓させてくれ。…もっと、強くなりたい'],
     },
-    _default: {
+    standard: {
       normal: [
         '特訓する時間をいただけませんか？'
       ],
@@ -20288,7 +20279,7 @@ const CHOICE_EVENT_DIALOGUES = {
       earnest: ['…培ったものを、後輩に渡したい', '…後輩の指導を。機会をくれ'],
       emotional: ['…後輩のために、できることがあるなら。…やらせてくれ'],
     },
-    _default: {
+    standard: {
       normal: [
         '後輩の指導を担当させてもらえませんか？'
       ],
@@ -20415,7 +20406,7 @@ const CHOICE_EVENT_DIALOGUES = {
       ],
       emotional: ['テレビ、ですか…！？ 嬉しいです…！精一杯やります…！'],
     },
-    _default: {
+    standard: {
       normal: [
         'メディアへの出演、ご検討いただけますか？',
         '出演のお話をいただきました。やってみたいです'
@@ -20526,7 +20517,7 @@ const CHOICE_EVENT_DIALOGUES = {
       normal: ['…スカウトから、新しい話が来てるみたいだよ'],
       shy: ['…えっと。…その件は、私からはなんとも言えないな'],
     },
-    _default: {
+    standard: {
       normal: [
         '新たなスカウト情報が届きました'
       ],
@@ -20551,7 +20542,7 @@ const CHOICE_EVENT_DIALOGUES = {
       earnest: ['…義理がある。断った。報告まで', '…離れたくはない。だが、迷ってる'],
       emotional: ['…他所から話が来た。…迷ってる'],
     },
-    _default: {
+    standard: {
       normal: [
         '他の団体からオファーが来ています'
       ],
@@ -20651,7 +20642,7 @@ const CHOICE_EVENT_DIALOGUES = {
       emotional: ['他の団体からオファーが…どうしたらいいか…迷っています…'],
     }},
   S_boycott: {
-    _default: {
+    standard: {
       normal: [
         '……今日は練習する気分じゃないです',
         '……すみません、今日は帰ります'
@@ -20748,7 +20739,7 @@ const CHOICE_EVENT_DIALOGUES = {
     },
 },
   S_grumble: {
-    _default: {
+    standard: {
       normal: [
         '（ロッカールームで不満を漏らしている…周囲に伝播し始めた）'
       ],
@@ -20833,7 +20824,7 @@ const CHOICE_EVENT_DIALOGUES = {
     },
 },
   S_sns: {
-    _default: {
+    standard: {
       normal: [
         '（SNSに「自分の居場所はどこなんだろう」と意味深な投稿）'
       ],
@@ -20921,7 +20912,7 @@ const CHOICE_EVENT_DIALOGUES = {
 
 // §13.5: P-自発的残留セリフ（trust 75+で契約交渉スキップ）
 const VOLUNTARY_STAY_LINES = {
-  _default: {
+  standard: {
     normal: ['残ります。ここが自分の居場所ですから'],
     bold: ['他の所に行く理由もないし……ここで頂点を目指すよ！'],
     quiet: ['………（静かにうなずいている）'],
@@ -21049,7 +21040,7 @@ const LARGE_EVENT_TEXTS = {
 
 const LARGE_EVENT_DIALOGUES = {
   B1: {
-    _default: {
+    standard: {
       normal: [
         '…痛みが引くまで少し時間がかかりそうです'
       ],
@@ -21160,7 +21151,7 @@ const LARGE_EVENT_DIALOGUES = {
       emotional: ['ごめんなさい…！早く…早く治します…戻りたいんです…！'],
     }},
   B2_fighter1: {
-    _default: {
+    standard: {
       normal: [
         'このままじゃチームがもたない。何とかしてほしい'
       ],
@@ -21272,7 +21263,7 @@ const LARGE_EVENT_DIALOGUES = {
       emotional: ['もう…もう無理です…！あの方と一緒にいると…辛くて…！'],
     }},
   B2_fighter2: {
-    _default: {
+    standard: {
       normal: [
         '向こうにも非があるのに、私だけ悪いみたいに…'
       ],
@@ -21385,7 +21376,7 @@ const LARGE_EVENT_DIALOGUES = {
     }},
   // B3 セリフは WAR_CHALLENGER_DIALOGUE / WAR_DECLINE_DIALOGUE / WAR_POST_DIALOGUE に移行済み
   B4: {
-    _default: {
+    standard: {
       normal: [
         '取材…緊張しますが、いい試合を見せられるよう頑張ります'
       ],
@@ -21498,7 +21489,7 @@ const LARGE_EVENT_DIALOGUES = {
     }},
   // B4タレント活動: activityType別セリフ
   B4_cm: {
-    _default: {
+    standard: {
       normal: ['CMか…ちゃんとできるかな。頑張ってみます'],
       bold: ['CMで私の顔を全国に売り込む。完璧にやってみせる', 'このチャンス、最大限に使ってやる'],
       quiet: ['…やります'],
@@ -21561,7 +21552,7 @@ const LARGE_EVENT_DIALOGUES = {
     },
   },
   B4_gravure: {
-    _default: {
+    standard: {
       normal: ['グラビアか…ちょっと恥ずかしいけど、頑張ります'],
       bold: ['私の強さと魅力、カメラに焼き付けてやる', 'これで一気に知名度上げてやる'],
       quiet: ['…撮るだけですよね。わかりました'],
@@ -21624,7 +21615,7 @@ const LARGE_EVENT_DIALOGUES = {
     },
   },
   B4_variety: {
-    _default: {
+    standard: {
       normal: ['バラエティか…うまく喋れるかな。頑張ります'],
       bold: ['番組ジャックしてやる。全部持っていく', 'トーク番組だろうと、私が主役に決まってる'],
       quiet: ['…喋るんですか。少し、緊張します'],
@@ -21687,7 +21678,7 @@ const LARGE_EVENT_DIALOGUES = {
     },
   },
   B4_brand: {
-    _default: {
+    standard: {
       normal: ['ブランドとのコラボか。ちゃんとイメージに合わせられるかな'],
       bold: ['そのブランドのイメージ、私が底上げしてやる', '私が使ったら絶対売れる。任せて'],
       quiet: ['…わかりました。やります'],
@@ -21759,7 +21750,7 @@ const LARGE_EVENT_DIALOGUES = {
       earnest: ['…練習しておくよ。ちゃんと歩けるようにね'],
       emotional: ['…っ…ランウェイか。…これは、緊張するやつだね'],
     },
-    _default: {
+    standard: {
       normal: ['ファッションショーか…歩けるかな。頑張ります'],
       bold: ['ランウェイも私のステージ。全部持っていく', 'プロレスもファッションも、どっちも私のもの'],
       quiet: ['…歩けばいいんですね。やります'],
@@ -21822,7 +21813,7 @@ const LARGE_EVENT_DIALOGUES = {
       earnest: ['…一人ひとりと、ちゃんと向き合うよ'],
       emotional: ['…っ…みんなに会えるんだ。…全員、笑顔にして帰すよ'],
     },
-    _default: {
+    standard: {
       normal: ['ファンの皆さんと直接話せるのか。楽しみです'],
       bold: ['ファンに最高の思い出を作らせてやる', '全員を笑顔にして帰らせる。それが私の仕事'],
       quiet: ['…ファンの人たちと話す。ちゃんとやります'],
@@ -22077,7 +22068,7 @@ const GAMEOVER_LINES = {
 // ─────────────────────────────────────────────────────────────────────────────
 const ENDING_LINES = {
   fighter: {
-    _default: {
+    standard: {
       normal: [
         'この団体で戦えて、本当に良かった',
         '入団した時は、まさかここまで来れるなんて思わなかった',
@@ -22311,7 +22302,7 @@ const SNAPSHOT_TEXTS = {
       '{name}がロッカールームで、誰かの契約書をちらりと見ていた'
     ],
     voice: {
-      _default: {
+      standard: {
         normal: [
           '…まあ、こんなもんか',
           '…頑張ってるのにな'
@@ -22391,7 +22382,7 @@ const SNAPSHOT_TEXTS = {
       '{name}が{name2}に技を教えている。だが、その目にどこか翳りがある'
     ],
     voice: {
-      _default: {
+      standard: {
         normal: [
           '…あの子、伸びたな',
           '…先輩としてちゃんと見てるよ。…でもね'
@@ -22454,7 +22445,7 @@ const SNAPSHOT_TEXTS = {
       'タイトル戦の話題が出た時、{name}だけが黙っていた'
     ],
     voice: {
-      _default: {
+      standard: {
         normal: [
           '…いつになったら'
         ],
@@ -22522,7 +22513,7 @@ const SNAPSHOT_TEXTS = {
       '{name}が自主練の後、一人でリングを見つめていた'
     ],
     voice: {
-      _default: {
+      standard: {
         normal: [
           '…出番、来ないかな'
         ],
@@ -22583,7 +22574,7 @@ const SNAPSHOT_TEXTS = {
       '練習後の更衣室。{name}のロッカーの周りだけ、少し空間が空いている'
     ],
     voice: {
-      _default: {
+      standard: {
         normal: [
           '…まあ、一人のほうが気楽だし'
         ],
@@ -22651,7 +22642,7 @@ const SNAPSHOT_TEXTS = {
       '{name2}がいなくなったロッカーの前で、{name}が立ち止まっていた'
     ],
     modal: {
-      _default: {
+      standard: {
         normal: [
           '…いなくなっちゃうんだ',
           '…{name2}がいない控え室なんて想像できない'
@@ -22717,7 +22708,7 @@ const SNAPSHOT_TEXTS = {
       '{name}がリングを降りる時、一瞬だけ{name2}のほうを振り返った。満足げに'
     ],
     voice: {
-      _default: {
+      standard: {
         normal: [
           '…やっと、追いついた'
         ],
@@ -22779,7 +22770,7 @@ const SNAPSHOT_TEXTS = {
       '試合後の通路で、{name}が壁を叩く音がした'
     ],
     voice: {
-      _default: {
+      standard: {
         normal: [
           '…まだ、足りないのか',
           '…くやしい'
@@ -22873,7 +22864,7 @@ const SNAPSHOT_TEXTS = {
   },
   breakthrough: {
     voice: {
-      _default: {
+      standard: {
         normal: [
           '…ここで頑張ってきてよかった'
         ],
@@ -22926,7 +22917,7 @@ const SNAPSHOT_TEXTS = {
       '{name}はチームの勝利に拳を握りしめた。この団体の看板を背負う覚悟が見えた'
     ],
     voice: {
-      _default: {
+      standard: {
         bold: [
           '…わたしが勝つに決まってるでしょ。この団体を背負ってるんだから！'
         ],
@@ -22988,7 +22979,7 @@ const PPV_NAMES = [
 
 // ── 対抗戦後・勝利選手セリフ（personality×archetype） ──
 const WAR_VICTORY_LINES = {
-  _default: {
+  standard: {
     normal: ['うちの団体の強さ、見せられたと思います', '勝てて良かった。団体の看板は守れた', '一つ勝てた。みんなの期待に応えられたかな'],
     bold: ['当然でしょ！ うちの団体を甘く見ないでよね！', 'この勝利は団体のみんなの勝利よ！', 'はっ、他所の団体なんてこんなもんよ！'],
     earnest: ['勝てた…！ みんなのために、絶対に負けたくなかったから…！', '団体の名前を背負って戦えて…嬉しい。勝ててもっと嬉しい…！', '全力で戦いました…！ 団体のみんなに恥じない試合ができたなら…'],
@@ -23058,7 +23049,7 @@ const WAR_VICTORY_LINES = {
 
 // ── 対抗戦・挑戦セリフ（personality×archetype） ──
 const WAR_CHALLENGER_DIALOGUE = {
-  _default: {
+  standard: {
     normal: ['あんたたちの実力、確かめさせてもらうよ', 'こっちは本気だよ。受けて立つ気はあるの？'],
     bold: ['聞いてあきれる。そんな団体に負けるわけないでしょ', 'あんたたちの看板選手？ 笑わせないで'],
     earnest: ['そちらの団体の実力、確かめさせてもらいます', '正々堂々、全力でぶつかります。逃げないでくださいね'],
@@ -23115,7 +23106,7 @@ const WAR_CHALLENGER_DIALOGUE = {
 
 // ── 対抗戦・辞退セリフ（personality×archetype） ──
 const WAR_DECLINE_DIALOGUE = {
-  _default: {
+  standard: {
     normal: ['やっぱりな。逃げると思ってたよ', '…逃げ足だけは一流だね'],
     bold: ['はっ、やっぱりね。戦う前から結果は見えてたわ', '逃げるの？ まあ、賢い判断よね'],
     earnest: ['残念です。正々堂々の勝負がしたかった', '次こそは受けてください。待っています'],
@@ -23173,7 +23164,7 @@ const WAR_DECLINE_DIALOGUE = {
 // ── 対抗戦・結果セリフ（personality×archetype） ──
 const WAR_POST_DIALOGUE = {
   result_lose: {
-    _default: {
+    standard: {
       normal: ['悔しいけど…結果は結果。次は絶対に負けない', 'この借りは…必ず返す'],
       bold: ['こんなの認めない…！ 絶対にリベンジしてやる', 'たまたまよ、たまたま。次は潰す'],
       earnest: ['力が足りませんでした…。もっと練習して、必ず強くなります', '悔しい…でも、この経験を無駄にしない'],
@@ -23228,7 +23219,7 @@ const WAR_POST_DIALOGUE = {
     },
   },
   result_win: {
-    _default: {
+    standard: {
       normal: ['勝てた。うちの団体の強さを見せられたと思う', 'いい対抗戦だった。この経験を次に活かそう'],
       bold: ['当然の結果でしょ。格が違うのよ', 'もう二度と歯向かわないことね'],
       earnest: ['勝てました…！ みんなの頑張りが実った結果です', 'いい対抗戦でした。相手にも感謝です'],
@@ -23524,7 +23515,7 @@ const TENCHOSEN_PREEVENT_LINES = {
 };
 
 const PPV_OPPONENT_LINES = {
-  _default: {
+  standard: {
     normal: [
       '悪いけど、今日は負けるわけにはいかないの',
       'この大舞台、最高の気分ね',
@@ -24585,7 +24576,7 @@ const GLIMPSE_A_LINES = {
 
 GLIMPSE_A_LINES.bond_60_up = {
   normal: {
-    _default: ['最近、一緒にいるとなんだか居心地がいい気がする', '不思議と気が合う。一緒にいて楽なのよね'],
+    standard: ['最近、一緒にいるとなんだか居心地がいい気がする', '不思議と気が合う。一緒にいて楽なのよね'],
     ojousama: ['不思議と波長が合いますの。心地よい距離感ですわ'],
     delinquent: ['一緒にいると肩の力が抜けるっつーか', 'まぁ…悪くないやつだよ'],
     seductive: ['なかなか面白い人ね。もっと近くで見ていたい'],
@@ -24594,7 +24585,7 @@ GLIMPSE_A_LINES.bond_60_up = {
     composed: ['…悪くない距離感だね。一緒にいて楽だ'],
   },
   bold: {
-    _default: ['いい空気ね。背中を預けられそう', 'なかなかやるじゃない。認めてあげてもいいかな'],
+    standard: ['いい空気ね。背中を預けられそう', 'なかなかやるじゃない。認めてあげてもいいかな'],
     ojousama: ['良き仲間になれそうですわ。認めてあげます'],
     delinquent: ['見込みあるよ。面倒見てやるか', 'フン、気に入ったぜ'],
     seductive: ['気に入ったわ。なかなか味のある人ね'],
@@ -24603,7 +24594,7 @@ GLIMPSE_A_LINES.bond_60_up = {
     composed: ['…なかなかやるね。認めてあげてもいいかな'],
   },
   quiet: {
-    _default: ['……最近、隣にいると落ち着く', '……この距離が、静かで心地いい'],
+    standard: ['……最近、隣にいると落ち着く', '……この距離が、静かで心地いい'],
     ojousama: ['おそばにいると……不思議と落ち着きますわ'],
     delinquent: ['…うるさいけど…嫌いじゃない'],
     seductive: ['一緒にいると……なんだか温かいの'],
@@ -24613,7 +24604,7 @@ GLIMPSE_A_LINES.bond_60_up = {
   },
   shy: {
     composed: ['…この人のそばだと、少し自分でいられる。…不思議だね', '…最近、この人とだけは普通に話せる。…かもしれない'],
-    _default: ['この人のそばだと…少しだけ自分でいられる気がする…', '最近…この人とだけは…普通に話せるようになってきた…かも'],
+    standard: ['この人のそばだと…少しだけ自分でいられる気がする…', '最近…この人とだけは…普通に話せるようになってきた…かも'],
     ojousama: ['おそばですと…少し安心できますの…'],
     delinquent: ['あ、うん…悪いやつじゃない…と思う'],
     seductive: ['一緒だと…ドキドキするけど…安心もする…'],
@@ -24621,7 +24612,7 @@ GLIMPSE_A_LINES.bond_60_up = {
     cool: ['そばにいると…なんだか…落ち着く…'],
   },
   easygoing: {
-    _default: ['ノリが合うんだよね〜。一緒にいると楽しいわ', 'あはは、一緒にいると時間忘れちゃう'],
+    standard: ['ノリが合うんだよね〜。一緒にいると楽しいわ', 'あはは、一緒にいると時間忘れちゃう'],
     ojousama: ['楽しくお過ごしできますの〜'],
     delinquent: ['つるんでると楽しいんだわ、まじで'],
     seductive: ['一緒にいて飽きないわ〜'],
@@ -24630,7 +24621,7 @@ GLIMPSE_A_LINES.bond_60_up = {
     composed: ['…一緒にいると楽でいいね'],
   },
   emotional: {
-    _default: ['…考えると胸が温かくなるんです…！', '一緒にいると元気が出る…！ 大好き…！'],
+    standard: ['…考えると胸が温かくなるんです…！', '一緒にいると元気が出る…！ 大好き…！'],
     ojousama: ['大切に思っておりますの…！'],
     delinquent: ['こいつのことはよ…大事にしてやりてぇんだ…！'],
     seductive: ['放っておけないの…もう'],
@@ -24639,7 +24630,7 @@ GLIMPSE_A_LINES.bond_60_up = {
     composed: ['…っ…大事な存在だ。…うん'],
   },
   earnest: {
-    _default: ['一緒に練習してて楽しいんです。もっと強くなれる気がして', '背中を見てると、自分も頑張ろうって思える'],
+    standard: ['一緒に練習してて楽しいんです。もっと強くなれる気がして', '背中を見てると、自分も頑張ろうって思える'],
     ojousama: ['切磋琢磨できること、光栄ですわ'],
     delinquent: ['一緒にやってると気合入るんだよな。いい練習相手だ'],
     seductive: ['一緒のトレーニング、刺激があっていいわ'],
@@ -24651,7 +24642,7 @@ GLIMPSE_A_LINES.bond_60_up = {
 
 GLIMPSE_A_LINES.bond_80_up = {
   normal: {
-    _default: ['もう仲間とかそういう言葉じゃ足りない。大事な存在。', 'この人がいるから、ここにいる意味がある'],
+    standard: ['もう仲間とかそういう言葉じゃ足りない。大事な存在。', 'この人がいるから、ここにいる意味がある'],
     ojousama: ['かけがえのない方ですわ。何物にも代えられません'],
     delinquent: ['ダチだ。何があっても守ってやる'],
     seductive: ['特別な存在。他の誰とも違うの'],
@@ -24660,7 +24651,7 @@ GLIMPSE_A_LINES.bond_80_up = {
     composed: ['…大事な存在。…それだけで十分'],
   },
   bold: {
-    _default: ['最高のコンビね。誰にも負けない', '二人なら怖いものなんてない'],
+    standard: ['最高のコンビね。誰にも負けない', '二人なら怖いものなんてない'],
     ojousama: ['わたくしたち、最強のペアですわ'],
     delinquent: ['相棒だ。文句あるか'],
     seductive: ['最高のコンビネーションよ、私たち'],
@@ -24672,7 +24663,7 @@ GLIMPSE_A_LINES.bond_80_up = {
     ojousama: ['……わたくしの灯り。それだけは確かです', '……おそばにいてくださるなら、他には何も'],
     delinquent: ['……あいつが、あたしの光だ', '……隣にいてくれりゃ、それでいい'],
     seductive: ['……私の光。それだけなの', '……そばにいてくれるなら、それだけでいいわ'],
-    _default: ['……私の光だ', '……そばにいてくれれば、それでいい'],
+    standard: ['……私の光だ', '……そばにいてくれれば、それでいい'],
     polite: ['……太陽のような存在です'],
     cool: ['……この人だけは、信じられる'],
     composed: ['……そばにいてくれるだけで、十分だ'],
@@ -24684,14 +24675,14 @@ GLIMPSE_A_LINES.bond_80_up = {
     seductive: ['あの人がいなかったら…私、とっくに壊れてたの…', '隣にいてくれるだけで…なんだって頑張れちゃう…'],
     polite: ['あの方がいなければ…私、とっくに駄目になっていたと思います…', '隣にいてくださるだけで…なんでも頑張れる気がするんです…'],
     composed: ['…あの人がいなかったら、私はとうに折れてた。…そう思う', '…隣にいてくれるだけでいい。…それで、なんとかなる'],
-    _default: ['この人がいなかったら…私、とっくにダメになってたと思う…', 'あの人が隣にいるだけで…なんでも頑張れる気がするんです…'],
+    standard: ['この人がいなかったら…私、とっくにダメになってたと思う…', 'あの人が隣にいるだけで…なんでも頑張れる気がするんです…'],
   },
   easygoing: {
     ojousama: ['最高の相方。ずっとこのままでいたいものです', '一緒にいると、何もかも上手く回る気がして'],
     cool: ['最高の相棒。…ずっとこのままでいい', '一緒だと全部うまくいく。楽だ'],
     seductive: ['最高の相棒よ〜。ずっと一緒にいたいわ', '一緒にいると、なんでも上手くいっちゃうの'],
     polite: ['最高の相棒です〜。ずっと一緒にいたいですね', '一緒だと、何もかも上手くいく気がするんです'],
-    _default: ['最高の相棒だよ〜。ずっと一緒にいたいな', '一緒にいると全部うまくいく気がするんだよね'],
+    standard: ['最高の相棒だよ〜。ずっと一緒にいたいな', '一緒にいると全部うまくいく気がするんだよね'],
     delinquent: ['一生の仲間だぜ。間違いない'],
     composed: ['…最高の相棒だよ。ずっとこの距離がいいね'],
   },
@@ -24701,7 +24692,7 @@ GLIMPSE_A_LINES.bond_80_up = {
     cool: ['…この人のためなら、何でも', '…出会えてよかった。…本当に'],
     seductive: ['この人のためなら何でもできるの…！ 絶対に守るわ…！', '巡り合えたこと、心から幸せなの…！'],
     polite: ['この方のためなら何でもできます…！ 必ずお守りします…！', '出会えて本当によかったです…！ 心から…！'],
-    _default: ['この人のためなら何でもできる…！ 絶対に守る…！', '出会えてよかった…本当に…！'],
+    standard: ['この人のためなら何でもできる…！ 絶対に守る…！', '出会えてよかった…本当に…！'],
     composed: ['…っ…出会えてよかった。…本当に'],
   },
   earnest: {
@@ -24709,7 +24700,7 @@ GLIMPSE_A_LINES.bond_80_up = {
     delinquent: ['一緒にてっぺん獲りてぇ。二人なら行けるだろ', '最高の相方だ。出会えたことに感謝してる'],
     cool: ['共に頂点へ。二人なら行ける', '最高の相棒だ。…感謝してる'],
     seductive: ['一緒に頂点まで行きたいの。二人ならきっと届くわ', '最高の相棒ね。この出会いに感謝してる'],
-    _default: ['一緒に頂点を目指したい。二人ならきっと行ける', '最高のパートナー。この出会いに感謝してます'],
+    standard: ['一緒に頂点を目指したい。二人ならきっと行ける', '最高のパートナー。この出会いに感謝してます'],
     polite: ['共に歩めること、何よりの幸せです'],
     composed: ['…一緒に上を目指せる。…いい関係だ'],
   },
@@ -24717,7 +24708,7 @@ GLIMPSE_A_LINES.bond_80_up = {
 
 GLIMPSE_A_LINES.bond_59_down = {
   normal: {
-    _default: ['最近、目が合わなくなった気がする', '距離…少し開いたかも'],
+    standard: ['最近、目が合わなくなった気がする', '距離…少し開いたかも'],
     ojousama: ['少し距離ができたように感じますわ'],
     delinquent: ['最近よそよそしくねぇか…'],
     seductive: ['最近どこか冷たいわ…気のせいかしら'],
@@ -24729,7 +24720,7 @@ GLIMPSE_A_LINES.bond_59_down = {
     ojousama: ['壁を作られている気がします。愉快ではありませんね', '以前はもっと言葉を交わしていたはず。…何なのかしら'],
     seductive: ['壁を作ってない？ 気に入らないわ', '前はもっと話してくれたのに。…どうしたのかしら'],
     polite: ['壁を作られている気がします。少し面白くありません', '以前はもっとお話ししていたのに。…どうしてでしょう'],
-    _default: ['なんか壁作ってない？ 気に入らないな', '前はもっと話してたのに。…何なの'],
+    standard: ['なんか壁作ってない？ 気に入らないな', '前はもっと話してたのに。…何なの'],
     delinquent: ['おい、最近態度おかしくね？ ムカつくな'],
     cool: ['空気が変わった。…面倒だな'],
     composed: ['…壁作ってない？ …まあ、いいけど'],
@@ -24741,7 +24732,7 @@ GLIMPSE_A_LINES.bond_59_down = {
     seductive: ['……遠くなったわ', '……気づけば、隣にいないの'],
     polite: ['……遠くなってしまいました', '……気づけば、隣にいらっしゃらないんです'],
     composed: ['…遠くなったね', '…気づけば、隣にいない。…そういうものか'],
-    _default: ['……遠くなった', '……気づけば、隣にいない'],
+    standard: ['……遠くなった', '……気づけば、隣にいない'],
   },
   shy: {
     ojousama: ['目を合わせるのが怖くて…わたくし、何かしてしまったのでしょうか…', 'あの方の様子が…以前と違う…わたくしのせい…ですよね…'],
@@ -24750,7 +24741,7 @@ GLIMPSE_A_LINES.bond_59_down = {
     seductive: ['最近…目を合わせるのが怖いの…私、何かしちゃったのかな…', 'あの人の態度が…前と違う…私のせい…よね…'],
     polite: ['最近…目を合わせるのが怖くて…私、何かしてしまったんでしょうか…', 'あの方の態度が…前と違うんです…私のせい…ですよね…'],
     composed: ['…目を合わせるのが怖い。…何かしたかな、私', '…前と態度が違う。…私のせいだろうね'],
-    _default: ['最近…目を合わせるのが怖い…私、何かしちゃったのかな…', 'あの人の態度が…前と違う…私のせい…だよね…'],
+    standard: ['最近…目を合わせるのが怖い…私、何かしちゃったのかな…', 'あの人の態度が…前と違う…私のせい…だよね…'],
   },
   easygoing: {
     ojousama: ['あら、近ごろ少し素っ気ないような', 'はて…空気が微かに変わりましたかしら'],
@@ -24758,7 +24749,7 @@ GLIMPSE_A_LINES.bond_59_down = {
     cool: ['…あれ、素っ気ないな', '…空気、変わった？'],
     seductive: ['あら〜、最近ちょっと素っ気ないわね', 'ん〜、なんとなく空気が変わった感じ？'],
     polite: ['あれ〜、最近ちょっと素っ気ないような…', 'ん〜、なんだか少し空気が変わりましたかね〜'],
-    _default: ['あれ〜、最近ちょっと素っ気ないなぁ', 'ん〜なんだろ、微妙に空気変わった？'],
+    standard: ['あれ〜、最近ちょっと素っ気ないなぁ', 'ん〜なんだろ、微妙に空気変わった？'],
     composed: ['…あれ、なんか距離感変わった？'],
   },
   emotional: {
@@ -24767,7 +24758,7 @@ GLIMPSE_A_LINES.bond_59_down = {
     cool: ['…離れていく。…嫌だ', '…どうして、話してくれない'],
     seductive: ['離れていく…嫌よ…こんなの…', 'どうして…以前のように言葉をくれないの…'],
     polite: ['離れていってしまう…嫌です…こんなのは…', 'どうして…以前のように話してくださらないんですか…'],
-    _default: ['離れていく…嫌だ…こんなの…', 'どうして…前みたいに話してくれないの…'],
+    standard: ['離れていく…嫌だ…こんなの…', 'どうして…前みたいに話してくれないの…'],
     composed: ['…っ…まあ、仕方ないか'],
   },
   earnest: {
@@ -24775,7 +24766,7 @@ GLIMPSE_A_LINES.bond_59_down = {
     delinquent: ['この距離…あたしの何が悪かったんだろうな', 'もういっぺん分かり合えるように、やるしかねぇ'],
     cool: ['この距離。…私の何が悪かった', '…もう一度、歩み寄る'],
     seductive: ['この距離…私の何がいけなかったのかしら', 'もう一度分かり合えるよう、努力しないとね'],
-    _default: ['この距離…自分の何がいけなかったんだろう', 'もう一度、分かり合えるように努力しなきゃ'],
+    standard: ['この距離…自分の何がいけなかったんだろう', 'もう一度、分かり合えるように努力しなきゃ'],
     polite: ['関係を修復したいです…何とかしなければ'],
     composed: ['…この距離感。…直す方法を考えないとね'],
   },
@@ -24783,7 +24774,7 @@ GLIMPSE_A_LINES.bond_59_down = {
 
 GLIMPSE_A_LINES.bond_39_down = {
   normal: {
-    _default: ['…もうダメかもしれない', '顔を合わせるだけで気まずい'],
+    standard: ['…もうダメかもしれない', '顔を合わせるだけで気まずい'],
     ojousama: ['もう以前のようには戻れませんわ'],
     delinquent: ['顔見るとイラつくんだよ'],
     seductive: ['もう…合わないみたいね'],
@@ -24796,7 +24787,7 @@ GLIMPSE_A_LINES.bond_39_down = {
     cool: ['合わない。それだけだ', '…これ以上は無理だ'],
     seductive: ['合わないわ。どうしても合わないの', 'これ以上は無理ね。それだけよ'],
     polite: ['合いません。どうしても合わないんです', 'これ以上は難しいです。それだけのことです'],
-    _default: ['合わない。どうしても合わない', 'これ以上は無理ね。それだけ'],
+    standard: ['合わない。どうしても合わない', 'これ以上は無理ね。それだけ'],
     delinquent: ['虫が好かねぇんだよ'],
     composed: ['…無理なものは無理。…それだけ'],
   },
@@ -24807,7 +24798,7 @@ GLIMPSE_A_LINES.bond_39_down = {
     seductive: ['……もう、終わりね'],
     polite: ['……もう、終わりです'],
     composed: ['…もう終わり。…それだけ'],
-    _default: ['……もう、終わりだ'],
+    standard: ['……もう、終わりだ'],
   },
   shy: {
     ojousama: ['…もう…同じ部屋にいるだけで…息が詰まって…'],
@@ -24816,7 +24807,7 @@ GLIMPSE_A_LINES.bond_39_down = {
     seductive: ['…もう…同じ部屋にいるだけで…苦しいの…'],
     polite: ['…もう…同じ部屋にいるだけで…苦しいんです…'],
     composed: ['…同じ部屋にいるだけで苦しい。…もう、無理かな'],
-    _default: ['…もう…同じ部屋にいるだけで…苦しい…'],
+    standard: ['…もう…同じ部屋にいるだけで…苦しい…'],
   },
   easygoing: {
     ojousama: ['う〜ん…少々、合いませんかしら…'],
@@ -24824,7 +24815,7 @@ GLIMPSE_A_LINES.bond_39_down = {
     cool: ['…ちょっと合わないかも'],
     seductive: ['う〜ん、ちょっと合わないかもねぇ…'],
     polite: ['う〜ん、ちょっと合わないかもしれません…'],
-    _default: ['う〜ん、ちょっと合わないかもなぁ…'],
+    standard: ['う〜ん、ちょっと合わないかもなぁ…'],
     composed: ['…合わないなぁ。…まあ、そういうこともある'],
   },
   emotional: {
@@ -24833,7 +24824,7 @@ GLIMPSE_A_LINES.bond_39_down = {
     cool: ['…考えると苦しい。…もう無理だ'],
     seductive: ['考えると苦しいの…もう無理…'],
     polite: ['考えると苦しくて…もう無理です…'],
-    _default: ['考えると苦しい…もう無理…'],
+    standard: ['考えると苦しい…もう無理…'],
     composed: ['…っ…もう、いい'],
   },
   earnest: {
@@ -24842,14 +24833,14 @@ GLIMPSE_A_LINES.bond_39_down = {
     cool: ['…この関係は、戻せない', '…どこで間違えた'],
     seductive: ['この関係…直せる自信がないの…', 'どこで間違えたのかしら…'],
     polite: ['この関係…修復できる自信がありません…', 'どこで間違えてしまったんでしょう…'],
-    _default: ['この関係…修復できる自信がない…', 'どこで間違えたんだろう…'],
+    standard: ['この関係…修復できる自信がない…', 'どこで間違えたんだろう…'],
     composed: ['…この関係は…もう戻らないかもね'],
   },
 };
 
 GLIMPSE_A_LINES.rivalry_30_up = {
   normal: {
-    _default: ['…最近やたら気になる。負けたくない', 'どうしても…意識してしまう'],
+    standard: ['…最近やたら気になる。負けたくない', 'どうしても…意識してしまう'],
     ojousama: ['負けたくありませんわ…こんな気持ちは初めて'],
     delinquent: ['目障りなんだよ…ぶっ潰してやる'],
     seductive: ['気になるわ…潰しがいがありそうね'],
@@ -24859,7 +24850,7 @@ GLIMPSE_A_LINES.rivalry_30_up = {
   },
   bold: {
     polite: ['面白い方です。必ず超えてみせます', 'ようやく手応えのある相手が現れました'],
-    _default: ['面白いじゃない。超えてみせるわ', 'ようやく面白い相手が出てきた'],
+    standard: ['面白いじゃない。超えてみせるわ', 'ようやく面白い相手が出てきた'],
     delinquent: ['面ぁ見ると血が騒ぐんだよ'],
     cool: ['…倒すべき相手だ'],
     ojousama: ['打ち負かすこと、楽しみにしておりますわ'],
@@ -24872,7 +24863,7 @@ GLIMPSE_A_LINES.rivalry_30_up = {
     seductive: ['……考えてしまうの。どうしても', '……燃えているわ。私の中の何かが'],
     polite: ['……考えてしまうんです。どうしても', '……燃えています。自分の中の何かが'],
     composed: ['…どうしても考えてしまうね', '…燃えてる。…自分の中の何かが'],
-    _default: ['……考えてしまう。どうしても', '……燃えている。自分の中の何かが'],
+    standard: ['……考えてしまう。どうしても', '……燃えている。自分の中の何かが'],
     cool: ['……気になる。ただ、それだけだが'],
   },
   shy: {
@@ -24882,14 +24873,14 @@ GLIMPSE_A_LINES.rivalry_30_up = {
     seductive: ['あの人のこと考えると…胸がきゅってなるの…負けたくない…', '練習してるのを見かけると…私も走り出したくなっちゃう…'],
     polite: ['あの方のことを考えると…胸が締めつけられて…負けたくないんです…', '練習しているのを見かけると…私も走り出したくなります…'],
     composed: ['…考えると胸が締めつけられる。…負けたくないな', '…あの人が走ってるのを見ると、私も動きたくなる'],
-    _default: ['あの人のこと…考えると胸がきゅってなる…負けたくない…', '練習してるのを見かけると…自分も走り出したくなる…'],
+    standard: ['あの人のこと…考えると胸がきゅってなる…負けたくない…', '練習してるのを見かけると…自分も走り出したくなる…'],
   },
   easygoing: {
     ojousama: ['良い勝負になりそうです〜。少し燃えてきました', 'うふふ、負けたくありませんね'],
     cool: ['…いい勝負になりそう。燃えるな', '…負けたくないなぁ'],
     seductive: ['いい勝負になりそうね〜。燃えてきちゃった', 'ふふ、負けたくないわ〜'],
     polite: ['いい勝負になりそうですね〜。燃えてきました', 'あはは、負けたくないです〜'],
-    _default: ['いい勝負になりそうだね〜。燃えてきた', 'あはは、負けたくないなぁ'],
+    standard: ['いい勝負になりそうだね〜。燃えてきた', 'あはは、負けたくないなぁ'],
     delinquent: ['やり合うの、ワクワクすんだよな'],
     composed: ['…いい相手だね。…負けたくないな'],
   },
@@ -24899,7 +24890,7 @@ GLIMPSE_A_LINES.rivalry_30_up = {
     cool: ['…負けない。絶対に', '…考えると、熱くなる'],
     seductive: ['絶対に負けないわ…！ 絶対に…！', '考えるだけで胸が熱くなるの…！'],
     polite: ['絶対に負けません…！ 絶対に…！', '考えると胸が熱くなるんです…！'],
-    _default: ['絶対に負けない…！ 絶対に…！', '考えると胸が熱くなる…！'],
+    standard: ['絶対に負けない…！ 絶対に…！', '考えると胸が熱くなる…！'],
     composed: ['…っ…負けるわけにはいかない'],
   },
   earnest: {
@@ -24907,7 +24898,7 @@ GLIMPSE_A_LINES.rivalry_30_up = {
     delinquent: ['ライバルとして意識してる自分がいるんだよな', '超えることが、今の一番の目標だ'],
     cool: ['…意識している。ライバルとして', '超える。それが今の目標だ'],
     seductive: ['好敵手として意識し始めてるみたい', '超えることが、今の一番の目標なの'],
-    _default: ['ライバルとして意識し始めている自分がいる', '超えることが、今の一番の目標だ'],
+    standard: ['ライバルとして意識し始めている自分がいる', '超えることが、今の一番の目標だ'],
     polite: ['勝つために、もっと努力しなければなりません'],
     composed: ['…超えるべき相手が見えた。…やるしかない'],
   },
@@ -24915,7 +24906,7 @@ GLIMPSE_A_LINES.rivalry_30_up = {
 
 GLIMPSE_A_LINES.rivalry_50_up = {
   normal: {
-    _default: ['絶対に負けられない。絶対に', '名前を聞くだけで拳が握りしまる'],
+    standard: ['絶対に負けられない。絶対に', '名前を聞くだけで拳が握りしまる'],
     ojousama: ['何としてでも超えてみせますわ'],
     delinquent: ['絶対ぶっ倒す。覚悟しろ'],
     seductive: ['どうしても許せない。必ず私が勝つわ'],
@@ -24926,7 +24917,7 @@ GLIMPSE_A_LINES.rivalry_50_up = {
   bold: {
     seductive: ['全力を出せる相手。最高の敵ね、ふふ', '超える。それが今の私の全てよ'],
     polite: ['全力を出せる相手です。最高の敵ですね', '超えること。それが今の私の全てです'],
-    _default: ['全力を出せる相手。最高の敵ね', '超える。それが今の私の全て'],
+    standard: ['全力を出せる相手。最高の敵ね', '超える。それが今の私の全て'],
     delinquent: ['這いつくばらせてやる…！'],
     cool: ['認めたくないが…最高の敵だ'],
     ojousama: ['打ち破ることが、わたくしの使命ですわ'],
@@ -24938,7 +24929,7 @@ GLIMPSE_A_LINES.rivalry_50_up = {
     seductive: ['……認めたくないけど、意識してるの', '……そのことばかり考えているわ'],
     polite: ['……認めたくありませんが、意識しています', '……そのことばかり考えてしまうんです'],
     composed: ['…認めたくないけど、意識してるね', '…そのことばかり考えてる'],
-    _default: ['……認めたくないけど、意識してる', '……そのことばかり考えている'],
+    standard: ['……認めたくないけど、意識してる', '……そのことばかり考えている'],
     cool: ['……超えなければ、先へ進めない'],
   },
   shy: {
@@ -24948,7 +24939,7 @@ GLIMPSE_A_LINES.rivalry_50_up = {
     seductive: ['あの人にだけは…絶対に負けたくないの…今はそれだけ…', '怖い…でも、背を向けたらもっと悔やむもの…だから…'],
     polite: ['あの方にだけは…絶対に負けたくありません…今はそれだけです…', '怖いです…けれど、逃げたらもっと後悔します…だから…'],
     composed: ['…あの人にだけは負けたくない。…今はそれだけ', '…怖い。でも逃げたら、もっと悔やむだろうね'],
-    _default: ['あの人にだけは…絶対に負けたくない…今はそれだけ…', '怖い…けど、逃げたらもっと後悔する…だから…'],
+    standard: ['あの人にだけは…絶対に負けたくない…今はそれだけ…', '怖い…けど、逃げたらもっと後悔する…だから…'],
   },
   easygoing: {
     ojousama: ['本気でやり合いたい相手など、そういません', 'うふふ、思い浮かべるだけで力が入ります'],
@@ -24956,7 +24947,7 @@ GLIMPSE_A_LINES.rivalry_50_up = {
     cool: ['…本気でやれる相手は、そういない', '…考えると、気合が入る'],
     seductive: ['本気でやり合いたい相手なんて、そうはいないわ', 'ふふ、考えるだけで自然と気合が入っちゃう'],
     polite: ['本気でやり合いたい相手なんて、そういませんよ〜', 'ふふ、考えると自然と気合が入ります'],
-    _default: ['本気でやり合いたい相手って、そうはいないよ', 'ふふ、考えると自然と気合入るわ'],
+    standard: ['本気でやり合いたい相手って、そうはいないよ', 'ふふ、考えると自然と気合入るわ'],
     composed: ['…本気でやれる相手。…楽しみだね'],
   },
   emotional: {
@@ -24965,7 +24956,7 @@ GLIMPSE_A_LINES.rivalry_50_up = {
     cool: ['…っ…熱くなる', '…超える。必ず'],
     seductive: ['くっ…考えると熱くなるの…！', '絶対に…超えてみせるわ…！！'],
     polite: ['くっ…考えると熱くなります…！', '絶対に…超えてみせます…！！'],
-    _default: ['くっ…考えると熱くなる…！', '絶対に…超えてみせる…！！'],
+    standard: ['くっ…考えると熱くなる…！', '絶対に…超えてみせる…！！'],
     composed: ['…っ…超える。…必ず'],
   },
   earnest: {
@@ -24973,7 +24964,7 @@ GLIMPSE_A_LINES.rivalry_50_up = {
     delinquent: ['この壁越えねぇ限り、あたしに先はねぇ', '最大の壁だ。だからこそ、越えなきゃならねぇ'],
     cool: ['この壁を越えなければ、先はない', '最大の壁だ。…だから越える'],
     seductive: ['この壁を越えない限り、私に先はないわ', '最大の壁。だからこそ、越えなきゃいけないの'],
-    _default: ['この壁を超えない限り、自分の成長はない', '最大の壁。だからこそ、越えなきゃいけない'],
+    standard: ['この壁を超えない限り、自分の成長はない', '最大の壁。だからこそ、越えなきゃいけない'],
     polite: ['超えることが、私の覚悟です'],
     composed: ['…この壁を越えないと先がない。…やるよ'],
   },
@@ -24981,7 +24972,7 @@ GLIMPSE_A_LINES.rivalry_50_up = {
 
 GLIMPSE_A_LINES.rivalry_70_up = {
   normal: {
-    _default: ['もう運命みたいなものだと思ってる', 'この存在がなかったら、今の自分はいない'],
+    standard: ['もう運命みたいなものだと思ってる', 'この存在がなかったら、今の自分はいない'],
     ojousama: ['わたくしの宿命ですわ…それ以外に言葉がない'],
     delinquent: ['この勝負が全てだ。他はどうでもいい'],
     seductive: ['私の全て…最高の獲物よ'],
@@ -24993,7 +24984,7 @@ GLIMPSE_A_LINES.rivalry_70_up = {
     ojousama: ['あの方がいたから強くなれました。感謝を…けれど負けません', 'この戦いは生涯続きます。望むところ'],
     seductive: ['あの人がいたから強くなれたの。感謝してる…でも負けないわ', 'この戦いに終わりはない。…望むところね'],
     polite: ['あの方がいたから強くなれました。感謝しています…でも負けません', 'この戦いは生涯続くでしょう。望むところです'],
-    _default: ['この人がいるから強くなれた。感謝してる…でも負けない', 'この戦いは一生続く。望むところよ'],
+    standard: ['この人がいるから強くなれた。感謝してる…でも負けない', 'この戦いは一生続く。望むところよ'],
     delinquent: ['生涯の敵だ。最後まで殴り合ってやる'],
     cool: ['生涯をかけた勝負になる'],
     composed: ['…生涯の勝負だ。…望むところ'],
@@ -25005,7 +24996,7 @@ GLIMPSE_A_LINES.rivalry_70_up = {
     seductive: ['……あの人がいる限り、リングに立ち続けるわ', '……言葉はいらないの。リングの上で語り合いましょう'],
     polite: ['……あの方がいる限り、リングに立ち続けます', '……言葉はいりません。リングの上で語り合いましょう'],
     composed: ['…あの人がいる限り、リングに立ち続けるよ', '…言葉はいらない。…リングで話そうか'],
-    _default: ['……この相手がいる限り、リングに立ち続ける', '……言葉はいらない。リングの上で語り合おう'],
+    standard: ['……この相手がいる限り、リングに立ち続ける', '……言葉はいらない。リングの上で語り合おう'],
   },
   shy: {
     ojousama: ['あの方がいなければ…今のわたくしはいません。それだけは…', '逃げ出したい…けれど…あの方からだけは、背を向けられない…'],
@@ -25014,7 +25005,7 @@ GLIMPSE_A_LINES.rivalry_70_up = {
     seductive: ['あの人がいなかったら…今の私はいないの。それだけは…わかる…', '逃げたい…でも…あの人からだけは逃げちゃダメ…'],
     polite: ['あの方がいなければ…今の私はいません。それだけは…わかるんです…', '逃げたい…でも…あの方からだけは逃げてはいけない…'],
     composed: ['…あの人がいなかったら、今の私はいない。…それだけは分かる', '…逃げたい。でも、あの人からだけは逃げられないな'],
-    _default: ['この人がいなかったら…今の私はいない。それだけは…わかる', '逃げたい…でも…この人からだけは逃げちゃダメ…'],
+    standard: ['この人がいなかったら…今の私はいない。それだけは…わかる', '逃げたい…でも…この人からだけは逃げちゃダメ…'],
   },
   easygoing: {
     ojousama: ['この試合が一番楽しい。ずっとこのままであればよいのに', '運命の好敵手…そう呼びたくなります'],
@@ -25022,7 +25013,7 @@ GLIMPSE_A_LINES.rivalry_70_up = {
     cool: ['…この試合が一番楽しい。ずっと続けばいい', '運命のライバル。…最高だ'],
     seductive: ['この試合が一番楽しいの。ずっとこの関係が続けばいいのに', '運命のライバルね〜。最高だわ'],
     polite: ['この試合が一番楽しいんです。ずっとこの関係が続けばいいのに', '運命のライバルですね〜。最高です'],
-    _default: ['この試合が一番楽しい。ずっとこの関係が続けばいいのに', '運命のライバルだね〜。最高だよ'],
+    standard: ['この試合が一番楽しい。ずっとこの関係が続けばいいのに', '運命のライバルだね〜。最高だよ'],
     composed: ['…ずっとやり合っていたいね。…最高の相手だ'],
   },
   emotional: {
@@ -25031,7 +25022,7 @@ GLIMPSE_A_LINES.rivalry_70_up = {
     cool: ['…あの出会いがなければ、今の私はいない', '…終わりはない。永遠に戦う'],
     seductive: ['あの出会いがなければ今の私はいなかった…！', 'この因縁に終わりなんてないわ…！ 永遠に戦い続けるの…！'],
     polite: ['あの出会いがなければ今の私はありませんでした…！', 'この因縁に終わりなどありません…！ 永遠に戦い続けます…！'],
-    _default: ['この出会いがなければ今の私はなかった…！', 'この因縁に終わりなんてない…！ 永遠に戦い続ける…！'],
+    standard: ['この出会いがなければ今の私はなかった…！', 'この因縁に終わりなんてない…！ 永遠に戦い続ける…！'],
     composed: ['…っ…この人がいなければ今の私はいない'],
   },
   earnest: {
@@ -25039,7 +25030,7 @@ GLIMPSE_A_LINES.rivalry_70_up = {
     delinquent: ['あいつがいるからあたしは高まる。これが宿命ってやつか', '戦えることに感謝してる。でも次は絶対勝つ'],
     cool: ['この存在が私を高める。…宿命か', '感謝している。…でも次は勝つ'],
     seductive: ['あの存在が私を高めてくれる。これが宿命というものかしら', '戦えることに感謝してる。でも次は絶対に勝つわ'],
-    _default: ['この存在が自分を高めてくれる。これが宿命というものか', '戦えることに感謝してる。でも次は絶対に勝つ'],
+    standard: ['この存在が自分を高めてくれる。これが宿命というものか', '戦えることに感謝してる。でも次は絶対に勝つ'],
     polite: ['この切磋琢磨こそが、私の原動力です'],
     composed: ['…この人が自分を高めてくれる。…感謝、でも負けない'],
   },
@@ -25047,7 +25038,7 @@ GLIMPSE_A_LINES.rivalry_70_up = {
 
 GLIMPSE_A_LINES.rivalry_29_down = {
   normal: {
-    _default: ['前ほど意識しなくなったかもしれない', 'あの因縁も…もう終わったのかな'],
+    standard: ['前ほど意識しなくなったかもしれない', 'あの因縁も…もう終わったのかな'],
     ojousama: ['もう過去のことですわ'],
     delinquent: ['…もう興味ねーよ'],
     seductive: ['もういいかしら。次を探さなきゃ'],
@@ -25060,7 +25051,7 @@ GLIMPSE_A_LINES.rivalry_29_down = {
     cool: ['……終わったことだ', '決着はついた。次へ行く'],
     seductive: ['……もう終わったことよ', '決着はついたわ。次に進むの'],
     polite: ['……もう終わったことです', '決着はつきました。次に進みます'],
-    _default: ['……もう終わったこと', '決着はついた。次に進む'],
+    standard: ['……もう終わったこと', '決着はついた。次に進む'],
     delinquent: ['時代は終わりだ。もう眼中にねぇ'],
     composed: ['…終わった。…次に行くよ'],
   },
@@ -25071,7 +25062,7 @@ GLIMPSE_A_LINES.rivalry_29_down = {
     seductive: ['……もう、考えないわ', '……風が止んだ。そんな感じなの'],
     polite: ['……もう、考えません', '……風が止みました。そんな感覚です'],
     composed: ['…もう考えない', '…風が止んだ。…そんな感じだね'],
-    _default: ['……もう、考えない', '……風が止んだ。そんな感覚だ'],
+    standard: ['……もう、考えない', '……風が止んだ。そんな感覚だ'],
   },
   shy: {
     ojousama: ['近ごろ…あの方のこと、以前ほど気にならなくなった…かも…', 'あの頃の張りつめた感じ…もうないような…'],
@@ -25080,7 +25071,7 @@ GLIMPSE_A_LINES.rivalry_29_down = {
     seductive: ['最近…あの人のこと、前ほど気にならなくなった…かも…', 'あの頃のピリピリした感じ…もうないのかな…'],
     polite: ['最近…あの方のこと、前ほど気にならなくなった…かもしれません…', 'あの頃の張りつめた感じ…もうないんでしょうか…'],
     composed: ['…最近、前ほど気にならないな', '…あの張りつめた感じは、もうないみたいだね'],
-    _default: ['最近…あの人のこと、前ほど気にならなくなった…かも', 'あの頃のピリピリした感じ…もうないかな…'],
+    standard: ['最近…あの人のこと、前ほど気にならなくなった…かも', 'あの頃のピリピリした感じ…もうないかな…'],
   },
   easygoing: {
     ojousama: ['熱い間柄も一区切り。少し寂しいものです', 'まぁ、因縁とて永遠ではありませんもの〜'],
@@ -25088,7 +25079,7 @@ GLIMPSE_A_LINES.rivalry_29_down = {
     cool: ['…一段落か。少し寂しい', '因縁も永遠じゃない。…そういうものだ'],
     seductive: ['熱い関係も一段落ね。ちょっと寂しいわ', 'まぁ因縁も永遠じゃないものね〜'],
     polite: ['熱い関係も一段落ですね。ちょっと寂しいです', 'まぁ因縁も永遠じゃありませんよね〜'],
-    _default: ['熱い関係も一段落かぁ。ちょっと寂しいね', 'まぁ因縁も永遠じゃないよね〜'],
+    standard: ['熱い関係も一段落かぁ。ちょっと寂しいね', 'まぁ因縁も永遠じゃないよね〜'],
     composed: ['…一段落かぁ。…まあ、そういうもんだね'],
   },
   emotional: {
@@ -25097,7 +25088,7 @@ GLIMPSE_A_LINES.rivalry_29_down = {
     cool: ['…終わったのか。…少し寂しい', '……熱が消えていく'],
     seductive: ['因縁…終わっちゃったのね…少し寂しい…', '……あの熱さが消えていくわ。これでいいのかしら…'],
     polite: ['因縁…終わってしまったんですね…少し寂しいです…', '……あの熱さが消えていきます。これでいいんでしょうか…'],
-    _default: ['因縁…終わっちゃったんだ…少し寂しい…', '……あの熱さが消えていく。これでいいのかな…'],
+    standard: ['因縁…終わっちゃったんだ…少し寂しい…', '……あの熱さが消えていく。これでいいのかな…'],
     composed: ['…っ…終わったか。…少し寂しいな'],
   },
   earnest: {
@@ -25106,14 +25097,14 @@ GLIMPSE_A_LINES.rivalry_29_down = {
     cool: ['関係が変わった。…前に進む', '学びは多かった。…次を探す'],
     seductive: ['関係も変わったわね。前に進みましょう', 'あの因縁から学んだことは多いの。次の目標を見つけなきゃ'],
     polite: ['関係も変わりました。前に進みましょう', 'あの因縁から学んだことは多いです。次の目標を見つけなければ'],
-    _default: ['関係も変わった。前に進もう', 'あの因縁から学んだことは多い。次の目標を見つけなきゃ'],
+    standard: ['関係も変わった。前に進もう', 'あの因縁から学んだことは多い。次の目標を見つけなきゃ'],
     composed: ['…学ぶことは多かった。…前に進もう'],
   },
 };
 
 GLIMPSE_A_LINES.trust_below_35 = {
   normal: {
-    _default: ['この団体で…本当にやっていけるのかな', '自分のこと、ちゃんと見てくれてるのかな…'],
+    standard: ['この団体で…本当にやっていけるのかな', '自分のこと、ちゃんと見てくれてるのかな…'],
     ojousama: ['この団体の運営方針に…疑問を感じますわ'],
     delinquent: ['ここ、ちゃんとしてんのかよ…不安になるぜ'],
     seductive: ['ここにいる意味…本当にあるのかしら'],
@@ -25125,7 +25116,7 @@ GLIMPSE_A_LINES.trust_below_35 = {
     cool: ['この扱いは何だ。…実力を見ていない', '…ここにいる意味を、考え直す時期か'],
     seductive: ['この扱いは何かしら。私の実力、わかってるの？', 'ここにいていいのか…考え直す時期かもね'],
     polite: ['この扱いは何でしょう。私の実力、ご存じないんですか', 'ここにいていいのか…考え直す時期かもしれません'],
-    _default: ['この扱いは何？ 私の実力、わかってるの', 'ここにいていいのか…考え直す時期かもしれない'],
+    standard: ['この扱いは何？ 私の実力、わかってるの', 'ここにいていいのか…考え直す時期かもしれない'],
     delinquent: ['なめんじゃねぇぞ。あたしをもっと使え'],
     ojousama: ['わたくしの価値をご理解いただけていませんわね'],
     composed: ['…この扱いは、ちょっとどうかと思うけど'],
@@ -25136,7 +25127,7 @@ GLIMPSE_A_LINES.trust_below_35 = {
     seductive: ['……ここにいていいのか、分からなくなってきたわ'],
     polite: ['……ここにいていいのか、分からなくなってきました'],
     composed: ['…ここにいていいのか。…分からなくなってきたね'],
-    _default: ['……ここにいていいのか、分からなくなってきた'],
+    standard: ['……ここにいていいのか、分からなくなってきた'],
     cool: ['……この場所に、未来はあるのか'],
   },
   shy: {
@@ -25146,7 +25137,7 @@ GLIMPSE_A_LINES.trust_below_35 = {
     seductive: ['…ここに私の居場所なんて…あるのかしら……'],
     polite: ['…ここに私の居場所なんて…あるんでしょうか……'],
     composed: ['…私の居場所、ここにあるのかな。…分からないね'],
-    _default: ['…ここに私の居場所なんて…あるのかな……'],
+    standard: ['…ここに私の居場所なんて…あるのかな……'],
   },
   easygoing: {
     ojousama: ['う〜ん…近ごろ少し胸がすっきりしません…', 'まぁ大丈夫…ですよね？ 少し不安ですけれど'],
@@ -25154,7 +25145,7 @@ GLIMPSE_A_LINES.trust_below_35 = {
     cool: ['…最近、モヤモヤする', '…大丈夫、だよな。…少し不安だ'],
     seductive: ['う〜ん、最近ちょっとモヤモヤするのよね…', 'まぁ大丈夫…よね？ ちょっと不安だけど'],
     polite: ['う〜ん、最近ちょっとモヤモヤします…', 'まぁ大丈夫…ですよね？ ちょっと不安ですけど'],
-    _default: ['う〜ん、最近ちょっとモヤモヤするなぁ…', 'まぁ大丈夫…だよね？ ちょっと不安だけど'],
+    standard: ['う〜ん、最近ちょっとモヤモヤするなぁ…', 'まぁ大丈夫…だよね？ ちょっと不安だけど'],
     composed: ['…最近ちょっとモヤモヤするなぁ'],
   },
   emotional: {
@@ -25163,7 +25154,7 @@ GLIMPSE_A_LINES.trust_below_35 = {
     cool: ['…不安だ。…忘れられてないか'],
     seductive: ['不安なの…これでいいのかしら…？ 私、忘れられてない…？'],
     polite: ['不安です…これでいいんですか…？ 私のこと、忘れていませんか…？'],
-    _default: ['不安…こんなんでいいの…？ 私のこと忘れてない…？'],
+    standard: ['不安…こんなんでいいの…？ 私のこと忘れてない…？'],
     composed: ['…っ…大丈夫、かな'],
   },
   earnest: {
@@ -25171,7 +25162,7 @@ GLIMPSE_A_LINES.trust_below_35 = {
     delinquent: ['この団体の方針に…ちっと不安があんだよ', 'あたしの居場所がここにあんのか…考えちまう'],
     cool: ['…この方針には、不安がある', '…自分の居場所が、ここにあるのか'],
     seductive: ['この団体の方針に…少し不安を感じてるの', '自分の居場所がここにあるのか…考えてしまうわ'],
-    _default: ['この団体の方針に…少し不安を感じています', '自分の居場所がここにあるのか…考えてしまう'],
+    standard: ['この団体の方針に…少し不安を感じています', '自分の居場所がここにあるのか…考えてしまう'],
     polite: ['恐縮ですが…少し運営に対して不安があります…'],
     composed: ['…少し不安を感じ始めてる。…気のせいだといいけど'],
   },
@@ -25179,7 +25170,7 @@ GLIMPSE_A_LINES.trust_below_35 = {
 
 GLIMPSE_A_LINES.trust_below_20 = {
   normal: {
-    _default: ['もう限界かもしれない。ここにいる理由が見つからない', '…他の団体のことを、考え始めてしまっている'],
+    standard: ['もう限界かもしれない。ここにいる理由が見つからない', '…他の団体のことを、考え始めてしまっている'],
     ojousama: ['このような扱いを受ける覚えはございませんわ'],
     delinquent: ['こんなとこ、もういられるか。出て行ってやる'],
     seductive: ['ここにはもう何も残ってないわ'],
@@ -25192,7 +25183,7 @@ GLIMPSE_A_LINES.trust_below_20 = {
     cool: ['…ふざけるな。価値が分からないなら、もういい', 'この扱いは許さない。…覚えておけ'],
     seductive: ['ふざけないで。私の価値がわからないなら、もう付き合いきれないわ', 'この扱い、許すつもりはないの。忘れないことね'],
     polite: ['ふざけないでください。私の価値がわからないなら、もう付き合いきれません', 'この扱いは許せません。覚えておいてください'],
-    _default: ['ふざけないで。私の価値がわからないなら、もう付き合いきれない', 'この扱いは許せない。覚えておいて'],
+    standard: ['ふざけないで。私の価値がわからないなら、もう付き合いきれない', 'この扱いは許せない。覚えておいて'],
     delinquent: ['あたしを舐めてんなら出てってやるよ。後悔するなよ'],
     composed: ['…もう付き合いきれないかな。…覚えておいて'],
   },
@@ -25203,7 +25194,7 @@ GLIMPSE_A_LINES.trust_below_20 = {
     seductive: ['……（無言で荷物をまとめている）', '……もう、何も感じないわ'],
     polite: ['……（そっと荷物をまとめ始めている）', '……もう、何も感じません'],
     composed: ['…（荷物をまとめている）', '…もう、何も感じないな'],
-    _default: ['……（荷物をまとめ始めている）', '……もう、何も感じない'],
+    standard: ['……（荷物をまとめ始めている）', '……もう、何も感じない'],
   },
   shy: {
     ojousama: ['…もう…無理です…ここにいてはいけない気がして……'],
@@ -25212,7 +25203,7 @@ GLIMPSE_A_LINES.trust_below_20 = {
     seductive: ['…もう…無理…ここにいちゃいけない気がするの……'],
     polite: ['…もう…無理です…ここにいてはいけない気がするんです……'],
     composed: ['…もう無理かな。…ここにいちゃいけない気がする'],
-    _default: ['…もう…無理…ここにいちゃいけない気がする……'],
+    standard: ['…もう…無理…ここにいちゃいけない気がする……'],
   },
   easygoing: {
     ojousama: ['さすがにこれは…笑えません', 'うふふ…と笑っている場合ではありませんね、これは'],
@@ -25220,7 +25211,7 @@ GLIMPSE_A_LINES.trust_below_20 = {
     cool: ['…さすがに笑えない', '…笑ってる場合じゃないな、これ'],
     seductive: ['さすがにこれは…笑えないわね', 'ふふ…なんて笑ってる場合じゃないわ、これ'],
     polite: ['さすがにこれは…笑えないですね', 'あはは…なんて笑っている場合じゃないですよね、これ'],
-    _default: ['さすがにこれは…笑えないかも', 'あはは…って笑ってる場合じゃないよね、これ'],
+    standard: ['さすがにこれは…笑えないかも', 'あはは…って笑ってる場合じゃないよね、これ'],
     composed: ['…さすがに、これは笑えない'],
   },
   emotional: {
@@ -25229,7 +25220,7 @@ GLIMPSE_A_LINES.trust_below_20 = {
     cool: ['…もう、信じられない', '…全部、嘘だったのか'],
     seductive: ['もう…信じられないわ…！ どうして…！', '裏切られたのね…全部…偽りだったの…？'],
     polite: ['もう…信じられません…！ どうしてですか…！', '裏切られました…全部…嘘だったんですか…？'],
-    _default: ['もう…信じられない…！ どうして…！', '裏切られた…全部…嘘だったの…？'],
+    standard: ['もう…信じられない…！ どうして…！', '裏切られた…全部…嘘だったの…？'],
     composed: ['…っ…もう、いいかな'],
   },
   earnest: {
@@ -25237,7 +25228,7 @@ GLIMPSE_A_LINES.trust_below_20 = {
     delinquent: ['信じてたのに…もうここじゃ頑張れねぇかもしんねぇ', '全力でやってきたつもりだ。でも、もう…'],
     cool: ['信頼していた。…もう、ここでは無理だ', '全力は尽くした。…でも、もう'],
     seductive: ['信じてたのに…もうここでは頑張れないかもしれないわ', '全力を尽くしてきたつもりよ。でも、もう…'],
-    _default: ['信頼してたのに…もうここでは頑張れないかもしれない', '自分の全力を尽くしてきたつもりです。でも、もう…'],
+    standard: ['信頼してたのに…もうここでは頑張れないかもしれない', '自分の全力を尽くしてきたつもりです。でも、もう…'],
     polite: ['大変申し訳ありませんが…退団を検討させていただきます'],
     composed: ['…全力を尽くしてきたつもりだ。…でも、もう'],
   },
@@ -25245,7 +25236,7 @@ GLIMPSE_A_LINES.trust_below_20 = {
 
 GLIMPSE_A_LINES.trust_above_75 = {
   normal: {
-    _default: ['この団体に来てよかった。ここが自分の居場所だ', 'みんなと一緒にもっと上を目指したい'],
+    standard: ['この団体に来てよかった。ここが自分の居場所だ', 'みんなと一緒にもっと上を目指したい'],
     ojousama: ['ここがわたくしの居場所ですわ。誇りに思います'],
     delinquent: ['ここはあたしの場所だ。誰にも渡さねぇ'],
     seductive: ['ここでなら…私らしくいられるわ'],
@@ -25257,7 +25248,7 @@ GLIMPSE_A_LINES.trust_above_75 = {
     cool: ['ここが最高の場所だ。…もっと強くする', '背負う覚悟はできている'],
     seductive: ['ここが最高の場所。私がもっと強くしてみせるわ', 'この団体を背負っていく覚悟はできてるの'],
     polite: ['ここが最高の場所です。私がもっと強くしてみせます', 'この団体を背負っていく覚悟はできています'],
-    _default: ['ここが最高の場所。私がもっと強くしてみせる', 'この団体を背負っていく覚悟はできてるよ'],
+    standard: ['ここが最高の場所。私がもっと強くしてみせる', 'この団体を背負っていく覚悟はできてるよ'],
     delinquent: ['ここは最高だ。あたしがてっぺんまで連れてってやるよ'],
     ojousama: ['この団体の看板、わたくしが背負って差し上げますわ'],
     composed: ['…ここが最高の場所だ。…もっと強くしてみせる'],
@@ -25269,7 +25260,7 @@ GLIMPSE_A_LINES.trust_above_75 = {
     seductive: ['……ここにいたいの。ずっと', '……この場所を、守りたいわ'],
     polite: ['……ここにいたいです。ずっと', '……この場所を、守りたいんです'],
     composed: ['…ここにいたいね。ずっと', '…この場所は、守りたい'],
-    _default: ['……ここにいたい。ずっと', '……この場所を、守りたい'],
+    standard: ['……ここにいたい。ずっと', '……この場所を、守りたい'],
   },
   shy: {
     ojousama: ['ここにいてよいのだと…近ごろやっと思えるようになりました…', 'この団体に来られて…よかった…心からそう思います…'],
@@ -25278,7 +25269,7 @@ GLIMPSE_A_LINES.trust_above_75 = {
     seductive: ['ここにいていいんだ…って…最近やっと思えるようになったの…', 'この団体に来られて…よかった…心からそう思うわ…'],
     polite: ['ここにいてもいいんだと…最近ようやく思えるようになったんです…', 'この団体に来られて…本当によかったです…心からそう思います…'],
     composed: ['…ここにいていいんだと、最近やっと思えるようになった', '…ここに来てよかった。…心からそう思う'],
-    _default: ['ここにいていいんだ…って…最近やっと思えるようになりました…', 'この団体に来れて…よかった…心からそう思います…'],
+    standard: ['ここにいていいんだ…って…最近やっと思えるようになりました…', 'この団体に来れて…よかった…心からそう思います…'],
   },
   easygoing: {
     ojousama: ['ここは素晴らしい〜。皆さんとやるのが楽しくて', 'この団体、とても居心地がよいのです〜'],
@@ -25286,7 +25277,7 @@ GLIMPSE_A_LINES.trust_above_75 = {
     cool: ['…ここは最高だ。みんなとやるのは楽しい', 'この団体、居心地がいい'],
     seductive: ['ここ最高〜！ みんなとやるの楽しいわ！', 'この団体、すっごく居心地いいのよね〜'],
     polite: ['ここ最高です〜！ みんなとやるの楽しいです！', 'この団体、すっごく居心地いいんですよね〜'],
-    _default: ['ここ最高〜！ みんなとやるの楽しいよ！', 'この団体、すっごく居心地いいんだよね〜'],
+    standard: ['ここ最高〜！ みんなとやるの楽しいよ！', 'この団体、すっごく居心地いいんだよね〜'],
     composed: ['…居心地いいね。…最高だ'],
   },
   emotional: {
@@ -25295,7 +25286,7 @@ GLIMPSE_A_LINES.trust_above_75 = {
     cool: ['…みんなが好きだ。…この団体に全部捧げる', '…ここで出会えた仲間は宝だ。裏切らない'],
     seductive: ['みんなのこと…大好きよ…！ この団体のために全力を尽くすわ…！', 'ここで出会えた仲間は宝物なの…絶対に裏切らないわ…！'],
     polite: ['みんなのこと…大好きです…！ この団体のために全力を尽くします…！', 'ここで出会えた仲間は宝物です…絶対に裏切りません…！'],
-    _default: ['みんなのこと…大好き…！ この団体のために全力を尽くす…！', 'ここで出会えた仲間は宝物…絶対に裏切らない…！'],
+    standard: ['みんなのこと…大好き…！ この団体のために全力を尽くす…！', 'ここで出会えた仲間は宝物…絶対に裏切らない…！'],
     composed: ['…っ…ここにいてよかった。…みんな、ありがとう'],
   },
   earnest: {
@@ -25303,7 +25294,7 @@ GLIMPSE_A_LINES.trust_above_75 = {
     delinquent: ['この団体に返せるよう、これからも全力でやる', 'ここでプロレスできる幸せ、噛みしめてるよ'],
     cool: ['この団体に貢献する。…全力で', 'ここで戦える幸せを、噛みしめている'],
     seductive: ['この団体に貢献できるよう、これからも全力で努めるわ', 'ここでプロレスができる幸せを噛みしめてるの'],
-    _default: ['この団体に貢献できるよう、これからも全力で努力します', 'ここでプロレスができる幸せを噛みしめています'],
+    standard: ['この団体に貢献できるよう、これからも全力で努力します', 'ここでプロレスができる幸せを噛みしめています'],
     polite: ['ご期待に添えるよう、精一杯頑張らせていただきます'],
     composed: ['…ここで頑張れることに感謝してる'],
   },
@@ -25313,7 +25304,7 @@ GLIMPSE_A_LINES.trust_above_75 = {
 // P5: 絶好調終了 セリフデータ
 // ─────────────────────────────────────────────────────────────────────────────
 const GLIMPSE_HOTSTREAK_END_LINES = {
-  _default: {
+  standard: {
     normal: [
       '絶好調は終わったけど…あの期間は無駄じゃなかった',
       '体が落ち着いてきた。でも前より強くなってる気がする'
@@ -25431,7 +25422,7 @@ const GLIMPSE_HOTSTREAK_END_LINES = {
 const GLIMPSE_B_LINES = {
   'GL-01': {
     win: {
-      _default: {
+      standard: {
         normal: [
           'よし、勝てた。この調子で頑張ろう',
           '今日はいい試合ができた'
@@ -25503,7 +25494,7 @@ const GLIMPSE_B_LINES = {
         ],
       }},
     loss: {
-      _default: {
+      standard: {
         normal: [
           '負けた…。悔しい',
           '今日は相手が上だった。次は負けない'
@@ -25572,7 +25563,7 @@ const GLIMPSE_B_LINES = {
         ],
       }},
     goodLoss: {
-      _default: {
+      standard: {
         normal: [
           '負けたけど…いい試合だった。得るものはあった',
           '悔しいけど、あの人は強かった。認めるしかない'
@@ -25634,7 +25625,7 @@ const GLIMPSE_B_LINES = {
         ],
       }},
     greatWin: {
-      _default: {
+      standard: {
         normal: [
           '最高の試合で勝てた…！ この感覚を忘れない',
           '今日は自分でも驚くくらいいい試合ができた'
@@ -25698,7 +25689,7 @@ const GLIMPSE_B_LINES = {
       }}
   },
   'GL-02': {
-    _default: {
+    standard: {
       normal: [
         '今日の練習はいい感じだ',
         'もう少しスタミナつけないとな…'
@@ -25768,7 +25759,7 @@ const GLIMPSE_B_LINES = {
     }},
   'GL-03': {
     up: {
-      _default: {
+      standard: {
         normal: [
           '最近いい感じだ。この団体で頑張ろうって思える',
           'ちゃんと見てくれてるんだな。嬉しいよ'
@@ -25824,7 +25815,7 @@ const GLIMPSE_B_LINES = {
         ],
       }},
     down: {
-      _default: {
+      standard: {
         normal: [
           '最近…なんだか扱いが雑じゃないか…？',
           'ちょっと不安になってきた…大丈夫かな'
@@ -25881,7 +25872,7 @@ const GLIMPSE_B_LINES = {
       }}
   },
   'GL-04': {
-    _default: {
+    standard: {
       normal: [
         '一緒にいると練習も楽しいんだよな',
         '最近調子良さそうだな。嬉しいな'
@@ -25944,7 +25935,7 @@ const GLIMPSE_B_LINES = {
       ],
     }},
   'GL-05': {
-    _default: {
+    standard: {
       normal: [
         '今何してるかな…気になる',
         '勝ったって聞くと…悔しいな'
@@ -26007,7 +25998,7 @@ const GLIMPSE_B_LINES = {
       ],
     }},
   'GL-06': {
-    _default: {
+    standard: {
       normal: [
         '今週は出番なしか…リングが恋しい',
         '試合に出たい。見てるだけはつらい'
@@ -26079,7 +26070,7 @@ const GLIMPSE_B_LINES = {
       ],
     }},
   'GL-07': {
-    _default: {
+    standard: {
       normal: [
         '体が重い…コンディションが上がらない',
         '調子悪いな…少し休んだ方がいいかも'
@@ -26142,7 +26133,7 @@ const GLIMPSE_B_LINES = {
       ],
     }},
   'GL-08': {
-    _default: {
+    standard: {
       normal: [
         'また負けた…どうすればいいんだ',
         '連敗が止まらない…自信がなくなってきた'
@@ -26211,7 +26202,7 @@ const GLIMPSE_B_LINES = {
       ],
     }},
   'GL-09': {
-    _default: {
+    standard: {
       normal: [
         'いい流れが来てる。この調子を維持したい',
         '連勝中…自信がついてきた'
@@ -26275,7 +26266,7 @@ const GLIMPSE_B_LINES = {
       ],
     }},
   'GL-10': {
-    _default: {
+    standard: {
       normal: [
         '早くリングに戻りたい…体が疼く',
         '怪我…早く治してくれ…'
@@ -26346,7 +26337,7 @@ const GLIMPSE_B_LINES = {
   // bond-rivalry plan 2026-04-29: P-2 中間嫌悪帯（coldness）
   // 発火: bond ≤ 25 ∧ rivalry < 30（無関心寄りの冷たさ、敵意ではない）
   'GL-11': {
-    _default: {
+    standard: {
       normal: [
         'あの子のこと？……特に何も。視界に入れてないだけ',
         '同じ場にいても、話すことは何もないかな'
@@ -27414,7 +27405,7 @@ CHOICE_EVENT_DIALOGUES['S6'].easygoing.ojousama.push('あの方とタッグを�
 const CHOICE_EVENT_RESULT_DIALOGUES = {
   E1: {
     accept: {
-      _default: {
+      standard: {
         normal: ['出演のお話、ありがたくお受けします'],
         bold: ['任せてよ、ばっちり爪痕残してくる!'],
         quiet: ['……出る。頑張る'],
@@ -27436,7 +27427,7 @@ const CHOICE_EVENT_RESULT_DIALOGUES = {
       },
     },
     recommend: {
-      _default: {
+      standard: {
         normal: ['えっ、わたしですか？ ……はい、頑張ります!'],
         bold: ['お、わたしに来た!? いいよ、任せて!'],
         quiet: ['……わたしで、いいんですか。……やります'],
@@ -28441,569 +28432,569 @@ SNAPSHOT_TEXTS.breakthrough.scene.push('練習後、鏡に映る自分を見た�
 if (!SNAPSHOT_TEXTS.warVictory.scene) SNAPSHOT_TEXTS.warVictory.scene = [];
 SNAPSHOT_TEXTS.warVictory.scene.push('対抗戦を制した夜。リングの上で、旗を掲げる');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.normal) SNAPSHOT_TEXTS.G1.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G1.voice.normal.polite) SNAPSHOT_TEXTS.G1.voice.normal.polite = [];
-SNAPSHOT_TEXTS.G1.voice.normal.polite.push('……これで、いいんでしょうか。納得、できません');
+if (!SNAPSHOT_TEXTS.G1.voice.polite) SNAPSHOT_TEXTS.G1.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G1.voice.polite.normal) SNAPSHOT_TEXTS.G1.voice.polite.normal = [];
+SNAPSHOT_TEXTS.G1.voice.polite.normal.push('……これで、いいんでしょうか。納得、できません');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.normal) SNAPSHOT_TEXTS.G1.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G1.voice.normal.cool) SNAPSHOT_TEXTS.G1.voice.normal.cool = [];
-SNAPSHOT_TEXTS.G1.voice.normal.cool.push('……足りない');
+if (!SNAPSHOT_TEXTS.G1.voice.cool) SNAPSHOT_TEXTS.G1.voice.cool = {};
+if (!SNAPSHOT_TEXTS.G1.voice.cool.normal) SNAPSHOT_TEXTS.G1.voice.cool.normal = [];
+SNAPSHOT_TEXTS.G1.voice.cool.normal.push('……足りない');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.normal) SNAPSHOT_TEXTS.G1.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G1.voice.normal.seductive) SNAPSHOT_TEXTS.G1.voice.normal.seductive = [];
-SNAPSHOT_TEXTS.G1.voice.normal.seductive.push('ふふ……わたしの値段、これっぽっち?');
+if (!SNAPSHOT_TEXTS.G1.voice.seductive) SNAPSHOT_TEXTS.G1.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G1.voice.seductive.normal) SNAPSHOT_TEXTS.G1.voice.seductive.normal = [];
+SNAPSHOT_TEXTS.G1.voice.seductive.normal.push('ふふ……わたしの値段、これっぽっち?');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.bold) SNAPSHOT_TEXTS.G1.voice.bold = {};
-if (!SNAPSHOT_TEXTS.G1.voice.bold.polite) SNAPSHOT_TEXTS.G1.voice.bold.polite = [];
-SNAPSHOT_TEXTS.G1.voice.bold.polite.push('こんな額じゃ納得できません……!わたし、こんなもんじゃないですよ!');
+if (!SNAPSHOT_TEXTS.G1.voice.polite) SNAPSHOT_TEXTS.G1.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G1.voice.polite.bold) SNAPSHOT_TEXTS.G1.voice.polite.bold = [];
+SNAPSHOT_TEXTS.G1.voice.polite.bold.push('こんな額じゃ納得できません……!わたし、こんなもんじゃないですよ!');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.bold) SNAPSHOT_TEXTS.G1.voice.bold = {};
-if (!SNAPSHOT_TEXTS.G1.voice.bold.seductive) SNAPSHOT_TEXTS.G1.voice.bold.seductive = [];
-SNAPSHOT_TEXTS.G1.voice.bold.seductive.push('ふ……舐められたものね');
+if (!SNAPSHOT_TEXTS.G1.voice.seductive) SNAPSHOT_TEXTS.G1.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G1.voice.seductive.bold) SNAPSHOT_TEXTS.G1.voice.seductive.bold = [];
+SNAPSHOT_TEXTS.G1.voice.seductive.bold.push('ふ……舐められたものね');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.quiet) SNAPSHOT_TEXTS.G1.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.G1.voice.quiet.polite) SNAPSHOT_TEXTS.G1.voice.quiet.polite = [];
-SNAPSHOT_TEXTS.G1.voice.quiet.polite.push('……少ない、です');
+if (!SNAPSHOT_TEXTS.G1.voice.polite) SNAPSHOT_TEXTS.G1.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G1.voice.polite.quiet) SNAPSHOT_TEXTS.G1.voice.polite.quiet = [];
+SNAPSHOT_TEXTS.G1.voice.polite.quiet.push('……少ない、です');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.quiet) SNAPSHOT_TEXTS.G1.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.G1.voice.quiet.seductive) SNAPSHOT_TEXTS.G1.voice.quiet.seductive = [];
-SNAPSHOT_TEXTS.G1.voice.quiet.seductive.push('……ふふ、これだけ?');
+if (!SNAPSHOT_TEXTS.G1.voice.seductive) SNAPSHOT_TEXTS.G1.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G1.voice.seductive.quiet) SNAPSHOT_TEXTS.G1.voice.seductive.quiet = [];
+SNAPSHOT_TEXTS.G1.voice.seductive.quiet.push('……ふふ、これだけ?');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.earnest) SNAPSHOT_TEXTS.G1.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.G1.voice.earnest.seductive) SNAPSHOT_TEXTS.G1.voice.earnest.seductive = [];
-SNAPSHOT_TEXTS.G1.voice.earnest.seductive.push('わたくしの努力、これで済まされるのかしら……');
+if (!SNAPSHOT_TEXTS.G1.voice.seductive) SNAPSHOT_TEXTS.G1.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G1.voice.seductive.earnest) SNAPSHOT_TEXTS.G1.voice.seductive.earnest = [];
+SNAPSHOT_TEXTS.G1.voice.seductive.earnest.push('わたくしの努力、これで済まされるのかしら……');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.earnest) SNAPSHOT_TEXTS.G1.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.G1.voice.earnest.ojousama) SNAPSHOT_TEXTS.G1.voice.earnest.ojousama = [];
-SNAPSHOT_TEXTS.G1.voice.earnest.ojousama.push('まあ……わたくし、こんなはした金で働いておりますのね');
+if (!SNAPSHOT_TEXTS.G1.voice.ojousama) SNAPSHOT_TEXTS.G1.voice.ojousama = {};
+if (!SNAPSHOT_TEXTS.G1.voice.ojousama.earnest) SNAPSHOT_TEXTS.G1.voice.ojousama.earnest = [];
+SNAPSHOT_TEXTS.G1.voice.ojousama.earnest.push('まあ……わたくし、こんなはした金で働いておりますのね');
 if (!SNAPSHOT_TEXTS.G1.voice) SNAPSHOT_TEXTS.G1.voice = {};
-if (!SNAPSHOT_TEXTS.G1.voice.emotional) SNAPSHOT_TEXTS.G1.voice.emotional = {};
-if (!SNAPSHOT_TEXTS.G1.voice.emotional.composed) SNAPSHOT_TEXTS.G1.voice.emotional.composed = [];
-SNAPSHOT_TEXTS.G1.voice.emotional.composed.push('ひどい、ひどいよ!わたしこんなに頑張ってるのに!');
+if (!SNAPSHOT_TEXTS.G1.voice.composed) SNAPSHOT_TEXTS.G1.voice.composed = {};
+if (!SNAPSHOT_TEXTS.G1.voice.composed.emotional) SNAPSHOT_TEXTS.G1.voice.composed.emotional = [];
+SNAPSHOT_TEXTS.G1.voice.composed.emotional.push('ひどい、ひどいよ!わたしこんなに頑張ってるのに!');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.normal) SNAPSHOT_TEXTS.G2.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G2.voice.normal.polite) SNAPSHOT_TEXTS.G2.voice.normal.polite = [];
-SNAPSHOT_TEXTS.G2.voice.normal.polite.push('……別に、平気ですから');
+if (!SNAPSHOT_TEXTS.G2.voice.polite) SNAPSHOT_TEXTS.G2.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G2.voice.polite.normal) SNAPSHOT_TEXTS.G2.voice.polite.normal = [];
+SNAPSHOT_TEXTS.G2.voice.polite.normal.push('……別に、平気ですから');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.normal) SNAPSHOT_TEXTS.G2.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G2.voice.normal.cool) SNAPSHOT_TEXTS.G2.voice.normal.cool = [];
-SNAPSHOT_TEXTS.G2.voice.normal.cool.push('……一人のほうが、楽');
+if (!SNAPSHOT_TEXTS.G2.voice.cool) SNAPSHOT_TEXTS.G2.voice.cool = {};
+if (!SNAPSHOT_TEXTS.G2.voice.cool.normal) SNAPSHOT_TEXTS.G2.voice.cool.normal = [];
+SNAPSHOT_TEXTS.G2.voice.cool.normal.push('……一人のほうが、楽');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.normal) SNAPSHOT_TEXTS.G2.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G2.voice.normal.seductive) SNAPSHOT_TEXTS.G2.voice.normal.seductive = [];
-SNAPSHOT_TEXTS.G2.voice.normal.seductive.push('ふふ……一人は、嫌いじゃないわ');
+if (!SNAPSHOT_TEXTS.G2.voice.seductive) SNAPSHOT_TEXTS.G2.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G2.voice.seductive.normal) SNAPSHOT_TEXTS.G2.voice.seductive.normal = [];
+SNAPSHOT_TEXTS.G2.voice.seductive.normal.push('ふふ……一人は、嫌いじゃないわ');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.bold) SNAPSHOT_TEXTS.G2.voice.bold = {};
-if (!SNAPSHOT_TEXTS.G2.voice.bold.polite) SNAPSHOT_TEXTS.G2.voice.bold.polite = [];
-SNAPSHOT_TEXTS.G2.voice.bold.polite.push('……っ、わたしは平気です、ひとりでも全然平気です!');
+if (!SNAPSHOT_TEXTS.G2.voice.polite) SNAPSHOT_TEXTS.G2.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G2.voice.polite.bold) SNAPSHOT_TEXTS.G2.voice.polite.bold = [];
+SNAPSHOT_TEXTS.G2.voice.polite.bold.push('……っ、わたしは平気です、ひとりでも全然平気です!');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.bold) SNAPSHOT_TEXTS.G2.voice.bold = {};
-if (!SNAPSHOT_TEXTS.G2.voice.bold.seductive) SNAPSHOT_TEXTS.G2.voice.bold.seductive = [];
-SNAPSHOT_TEXTS.G2.voice.bold.seductive.push('ふ……ひとりのほうが、静かで好きよ');
+if (!SNAPSHOT_TEXTS.G2.voice.seductive) SNAPSHOT_TEXTS.G2.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G2.voice.seductive.bold) SNAPSHOT_TEXTS.G2.voice.seductive.bold = [];
+SNAPSHOT_TEXTS.G2.voice.seductive.bold.push('ふ……ひとりのほうが、静かで好きよ');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.quiet) SNAPSHOT_TEXTS.G2.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.G2.voice.quiet.polite) SNAPSHOT_TEXTS.G2.voice.quiet.polite = [];
-SNAPSHOT_TEXTS.G2.voice.quiet.polite.push('……誰もいない');
+if (!SNAPSHOT_TEXTS.G2.voice.polite) SNAPSHOT_TEXTS.G2.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G2.voice.polite.quiet) SNAPSHOT_TEXTS.G2.voice.polite.quiet = [];
+SNAPSHOT_TEXTS.G2.voice.polite.quiet.push('……誰もいない');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.quiet) SNAPSHOT_TEXTS.G2.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.G2.voice.quiet.seductive) SNAPSHOT_TEXTS.G2.voice.quiet.seductive = [];
-SNAPSHOT_TEXTS.G2.voice.quiet.seductive.push('……静か、ね');
+if (!SNAPSHOT_TEXTS.G2.voice.seductive) SNAPSHOT_TEXTS.G2.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G2.voice.seductive.quiet) SNAPSHOT_TEXTS.G2.voice.seductive.quiet = [];
+SNAPSHOT_TEXTS.G2.voice.seductive.quiet.push('……静か、ね');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.earnest) SNAPSHOT_TEXTS.G2.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.G2.voice.earnest.seductive) SNAPSHOT_TEXTS.G2.voice.earnest.seductive = [];
-SNAPSHOT_TEXTS.G2.voice.earnest.seductive.push('……わたし、ここにいていいのかしら');
+if (!SNAPSHOT_TEXTS.G2.voice.seductive) SNAPSHOT_TEXTS.G2.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G2.voice.seductive.earnest) SNAPSHOT_TEXTS.G2.voice.seductive.earnest = [];
+SNAPSHOT_TEXTS.G2.voice.seductive.earnest.push('……わたし、ここにいていいのかしら');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.earnest) SNAPSHOT_TEXTS.G2.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.G2.voice.earnest.ojousama) SNAPSHOT_TEXTS.G2.voice.earnest.ojousama = [];
-SNAPSHOT_TEXTS.G2.voice.earnest.ojousama.push('わたくし、ひとりでも平気ですの……平気、ですわ……');
+if (!SNAPSHOT_TEXTS.G2.voice.ojousama) SNAPSHOT_TEXTS.G2.voice.ojousama = {};
+if (!SNAPSHOT_TEXTS.G2.voice.ojousama.earnest) SNAPSHOT_TEXTS.G2.voice.ojousama.earnest = [];
+SNAPSHOT_TEXTS.G2.voice.ojousama.earnest.push('わたくし、ひとりでも平気ですの……平気、ですわ……');
 if (!SNAPSHOT_TEXTS.G2.voice) SNAPSHOT_TEXTS.G2.voice = {};
-if (!SNAPSHOT_TEXTS.G2.voice.emotional) SNAPSHOT_TEXTS.G2.voice.emotional = {};
-if (!SNAPSHOT_TEXTS.G2.voice.emotional.composed) SNAPSHOT_TEXTS.G2.voice.emotional.composed = [];
-SNAPSHOT_TEXTS.G2.voice.emotional.composed.push('ねえ……みんな、どこ行っちゃったの……?');
+if (!SNAPSHOT_TEXTS.G2.voice.composed) SNAPSHOT_TEXTS.G2.voice.composed = {};
+if (!SNAPSHOT_TEXTS.G2.voice.composed.emotional) SNAPSHOT_TEXTS.G2.voice.composed.emotional = [];
+SNAPSHOT_TEXTS.G2.voice.composed.emotional.push('ねえ……みんな、どこ行っちゃったの……?');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.normal) SNAPSHOT_TEXTS.G3.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G3.voice.normal.polite) SNAPSHOT_TEXTS.G3.voice.normal.polite = [];
-SNAPSHOT_TEXTS.G3.voice.normal.polite.push('……また、ないんですね。仕方ないです');
+if (!SNAPSHOT_TEXTS.G3.voice.polite) SNAPSHOT_TEXTS.G3.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G3.voice.polite.normal) SNAPSHOT_TEXTS.G3.voice.polite.normal = [];
+SNAPSHOT_TEXTS.G3.voice.polite.normal.push('……また、ないんですね。仕方ないです');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.normal) SNAPSHOT_TEXTS.G3.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G3.voice.normal.cool) SNAPSHOT_TEXTS.G3.voice.normal.cool = [];
-SNAPSHOT_TEXTS.G3.voice.normal.cool.push('……今回も、外された');
+if (!SNAPSHOT_TEXTS.G3.voice.cool) SNAPSHOT_TEXTS.G3.voice.cool = {};
+if (!SNAPSHOT_TEXTS.G3.voice.cool.normal) SNAPSHOT_TEXTS.G3.voice.cool.normal = [];
+SNAPSHOT_TEXTS.G3.voice.cool.normal.push('……今回も、外された');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.normal) SNAPSHOT_TEXTS.G3.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G3.voice.normal.seductive) SNAPSHOT_TEXTS.G3.voice.normal.seductive = [];
-SNAPSHOT_TEXTS.G3.voice.normal.seductive.push('ふ……わたしじゃ、ダメってこと?');
+if (!SNAPSHOT_TEXTS.G3.voice.seductive) SNAPSHOT_TEXTS.G3.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G3.voice.seductive.normal) SNAPSHOT_TEXTS.G3.voice.seductive.normal = [];
+SNAPSHOT_TEXTS.G3.voice.seductive.normal.push('ふ……わたしじゃ、ダメってこと?');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.bold) SNAPSHOT_TEXTS.G3.voice.bold = {};
-if (!SNAPSHOT_TEXTS.G3.voice.bold.polite) SNAPSHOT_TEXTS.G3.voice.bold.polite = [];
-SNAPSHOT_TEXTS.G3.voice.bold.polite.push('……!なんでわたしじゃないんですか!納得できません!');
+if (!SNAPSHOT_TEXTS.G3.voice.polite) SNAPSHOT_TEXTS.G3.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G3.voice.polite.bold) SNAPSHOT_TEXTS.G3.voice.polite.bold = [];
+SNAPSHOT_TEXTS.G3.voice.polite.bold.push('……!なんでわたしじゃないんですか!納得できません!');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.bold) SNAPSHOT_TEXTS.G3.voice.bold = {};
-if (!SNAPSHOT_TEXTS.G3.voice.bold.seductive) SNAPSHOT_TEXTS.G3.voice.bold.seductive = [];
-SNAPSHOT_TEXTS.G3.voice.bold.seductive.push('ふふ……わたしを出さないなんて、もったいないわね');
+if (!SNAPSHOT_TEXTS.G3.voice.seductive) SNAPSHOT_TEXTS.G3.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G3.voice.seductive.bold) SNAPSHOT_TEXTS.G3.voice.seductive.bold = [];
+SNAPSHOT_TEXTS.G3.voice.seductive.bold.push('ふふ……わたしを出さないなんて、もったいないわね');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.quiet) SNAPSHOT_TEXTS.G3.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.G3.voice.quiet.polite) SNAPSHOT_TEXTS.G3.voice.quiet.polite = [];
-SNAPSHOT_TEXTS.G3.voice.quiet.polite.push('……呼ばれてない');
+if (!SNAPSHOT_TEXTS.G3.voice.polite) SNAPSHOT_TEXTS.G3.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G3.voice.polite.quiet) SNAPSHOT_TEXTS.G3.voice.polite.quiet = [];
+SNAPSHOT_TEXTS.G3.voice.polite.quiet.push('……呼ばれてない');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.quiet) SNAPSHOT_TEXTS.G3.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.G3.voice.quiet.seductive) SNAPSHOT_TEXTS.G3.voice.quiet.seductive = [];
-SNAPSHOT_TEXTS.G3.voice.quiet.seductive.push('……そう、ね');
+if (!SNAPSHOT_TEXTS.G3.voice.seductive) SNAPSHOT_TEXTS.G3.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G3.voice.seductive.quiet) SNAPSHOT_TEXTS.G3.voice.seductive.quiet = [];
+SNAPSHOT_TEXTS.G3.voice.seductive.quiet.push('……そう、ね');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.earnest) SNAPSHOT_TEXTS.G3.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.G3.voice.earnest.seductive) SNAPSHOT_TEXTS.G3.voice.earnest.seductive = [];
-SNAPSHOT_TEXTS.G3.voice.earnest.seductive.push('わたし、まだ足りないのね……もっと、頑張らないと');
+if (!SNAPSHOT_TEXTS.G3.voice.seductive) SNAPSHOT_TEXTS.G3.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G3.voice.seductive.earnest) SNAPSHOT_TEXTS.G3.voice.seductive.earnest = [];
+SNAPSHOT_TEXTS.G3.voice.seductive.earnest.push('わたし、まだ足りないのね……もっと、頑張らないと');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.earnest) SNAPSHOT_TEXTS.G3.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.G3.voice.earnest.ojousama) SNAPSHOT_TEXTS.G3.voice.earnest.ojousama = [];
-SNAPSHOT_TEXTS.G3.voice.earnest.ojousama.push('わたくし、呼ばれておりませんのね……悲しいですわ');
+if (!SNAPSHOT_TEXTS.G3.voice.ojousama) SNAPSHOT_TEXTS.G3.voice.ojousama = {};
+if (!SNAPSHOT_TEXTS.G3.voice.ojousama.earnest) SNAPSHOT_TEXTS.G3.voice.ojousama.earnest = [];
+SNAPSHOT_TEXTS.G3.voice.ojousama.earnest.push('わたくし、呼ばれておりませんのね……悲しいですわ');
 if (!SNAPSHOT_TEXTS.G3.voice) SNAPSHOT_TEXTS.G3.voice = {};
-if (!SNAPSHOT_TEXTS.G3.voice.emotional) SNAPSHOT_TEXTS.G3.voice.emotional = {};
-if (!SNAPSHOT_TEXTS.G3.voice.emotional.composed) SNAPSHOT_TEXTS.G3.voice.emotional.composed = [];
-SNAPSHOT_TEXTS.G3.voice.emotional.composed.push('なんで!?なんでわたしじゃないの!悔しい!');
+if (!SNAPSHOT_TEXTS.G3.voice.composed) SNAPSHOT_TEXTS.G3.voice.composed = {};
+if (!SNAPSHOT_TEXTS.G3.voice.composed.emotional) SNAPSHOT_TEXTS.G3.voice.composed.emotional = [];
+SNAPSHOT_TEXTS.G3.voice.composed.emotional.push('なんで!?なんでわたしじゃないの!悔しい!');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.normal) SNAPSHOT_TEXTS.G4.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G4.voice.normal.polite) SNAPSHOT_TEXTS.G4.voice.normal.polite = [];
-SNAPSHOT_TEXTS.G4.voice.normal.polite.push('……誰も、見ていなくても。わたしは、練習します');
+if (!SNAPSHOT_TEXTS.G4.voice.polite) SNAPSHOT_TEXTS.G4.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G4.voice.polite.normal) SNAPSHOT_TEXTS.G4.voice.polite.normal = [];
+SNAPSHOT_TEXTS.G4.voice.polite.normal.push('……誰も、見ていなくても。わたしは、練習します');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.normal) SNAPSHOT_TEXTS.G4.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G4.voice.normal.cool) SNAPSHOT_TEXTS.G4.voice.normal.cool = [];
-SNAPSHOT_TEXTS.G4.voice.normal.cool.push('……やるしかない');
+if (!SNAPSHOT_TEXTS.G4.voice.cool) SNAPSHOT_TEXTS.G4.voice.cool = {};
+if (!SNAPSHOT_TEXTS.G4.voice.cool.normal) SNAPSHOT_TEXTS.G4.voice.cool.normal = [];
+SNAPSHOT_TEXTS.G4.voice.cool.normal.push('……やるしかない');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.normal) SNAPSHOT_TEXTS.G4.voice.normal = {};
-if (!SNAPSHOT_TEXTS.G4.voice.normal.seductive) SNAPSHOT_TEXTS.G4.voice.normal.seductive = [];
-SNAPSHOT_TEXTS.G4.voice.normal.seductive.push('ふふ……誰にも見られず、磨かれていくのも、悪くないわ');
+if (!SNAPSHOT_TEXTS.G4.voice.seductive) SNAPSHOT_TEXTS.G4.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G4.voice.seductive.normal) SNAPSHOT_TEXTS.G4.voice.seductive.normal = [];
+SNAPSHOT_TEXTS.G4.voice.seductive.normal.push('ふふ……誰にも見られず、磨かれていくのも、悪くないわ');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.bold) SNAPSHOT_TEXTS.G4.voice.bold = {};
-if (!SNAPSHOT_TEXTS.G4.voice.bold.polite) SNAPSHOT_TEXTS.G4.voice.bold.polite = [];
-SNAPSHOT_TEXTS.G4.voice.bold.polite.push('見ててくれる人なんていなくても関係ない!わたしは強くなる!');
+if (!SNAPSHOT_TEXTS.G4.voice.polite) SNAPSHOT_TEXTS.G4.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G4.voice.polite.bold) SNAPSHOT_TEXTS.G4.voice.polite.bold = [];
+SNAPSHOT_TEXTS.G4.voice.polite.bold.push('見ててくれる人なんていなくても関係ない!わたしは強くなる!');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.bold) SNAPSHOT_TEXTS.G4.voice.bold = {};
-if (!SNAPSHOT_TEXTS.G4.voice.bold.seductive) SNAPSHOT_TEXTS.G4.voice.bold.seductive = [];
-SNAPSHOT_TEXTS.G4.voice.bold.seductive.push('ふ……ひとりの時間が、わたしを作るの');
+if (!SNAPSHOT_TEXTS.G4.voice.seductive) SNAPSHOT_TEXTS.G4.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G4.voice.seductive.bold) SNAPSHOT_TEXTS.G4.voice.seductive.bold = [];
+SNAPSHOT_TEXTS.G4.voice.seductive.bold.push('ふ……ひとりの時間が、わたしを作るの');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.quiet) SNAPSHOT_TEXTS.G4.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.G4.voice.quiet.polite) SNAPSHOT_TEXTS.G4.voice.quiet.polite = [];
-SNAPSHOT_TEXTS.G4.voice.quiet.polite.push('……続ける');
+if (!SNAPSHOT_TEXTS.G4.voice.polite) SNAPSHOT_TEXTS.G4.voice.polite = {};
+if (!SNAPSHOT_TEXTS.G4.voice.polite.quiet) SNAPSHOT_TEXTS.G4.voice.polite.quiet = [];
+SNAPSHOT_TEXTS.G4.voice.polite.quiet.push('……続ける');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.quiet) SNAPSHOT_TEXTS.G4.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.G4.voice.quiet.seductive) SNAPSHOT_TEXTS.G4.voice.quiet.seductive = [];
-SNAPSHOT_TEXTS.G4.voice.quiet.seductive.push('……もくもくと');
+if (!SNAPSHOT_TEXTS.G4.voice.seductive) SNAPSHOT_TEXTS.G4.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G4.voice.seductive.quiet) SNAPSHOT_TEXTS.G4.voice.seductive.quiet = [];
+SNAPSHOT_TEXTS.G4.voice.seductive.quiet.push('……もくもくと');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.earnest) SNAPSHOT_TEXTS.G4.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.G4.voice.earnest.seductive) SNAPSHOT_TEXTS.G4.voice.earnest.seductive = [];
-SNAPSHOT_TEXTS.G4.voice.earnest.seductive.push('わたしには、練習しかないもの。やるしかないの');
+if (!SNAPSHOT_TEXTS.G4.voice.seductive) SNAPSHOT_TEXTS.G4.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.G4.voice.seductive.earnest) SNAPSHOT_TEXTS.G4.voice.seductive.earnest = [];
+SNAPSHOT_TEXTS.G4.voice.seductive.earnest.push('わたしには、練習しかないもの。やるしかないの');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.earnest) SNAPSHOT_TEXTS.G4.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.G4.voice.earnest.ojousama) SNAPSHOT_TEXTS.G4.voice.earnest.ojousama = [];
-SNAPSHOT_TEXTS.G4.voice.earnest.ojousama.push('わたくしの努力、いつか誰かが気づいてくれますかしら……');
+if (!SNAPSHOT_TEXTS.G4.voice.ojousama) SNAPSHOT_TEXTS.G4.voice.ojousama = {};
+if (!SNAPSHOT_TEXTS.G4.voice.ojousama.earnest) SNAPSHOT_TEXTS.G4.voice.ojousama.earnest = [];
+SNAPSHOT_TEXTS.G4.voice.ojousama.earnest.push('わたくしの努力、いつか誰かが気づいてくれますかしら……');
 if (!SNAPSHOT_TEXTS.G4.voice) SNAPSHOT_TEXTS.G4.voice = {};
-if (!SNAPSHOT_TEXTS.G4.voice.emotional) SNAPSHOT_TEXTS.G4.voice.emotional = {};
-if (!SNAPSHOT_TEXTS.G4.voice.emotional.composed) SNAPSHOT_TEXTS.G4.voice.emotional.composed = [];
-SNAPSHOT_TEXTS.G4.voice.emotional.composed.push('うう……寂しい、寂しいけど、やるよ、わたしやるからね!');
+if (!SNAPSHOT_TEXTS.G4.voice.composed) SNAPSHOT_TEXTS.G4.voice.composed = {};
+if (!SNAPSHOT_TEXTS.G4.voice.composed.emotional) SNAPSHOT_TEXTS.G4.voice.composed.emotional = [];
+SNAPSHOT_TEXTS.G4.voice.composed.emotional.push('うう……寂しい、寂しいけど、やるよ、わたしやるからね!');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.normal) SNAPSHOT_TEXTS.R2.voice.normal = {};
-if (!SNAPSHOT_TEXTS.R2.voice.normal.polite) SNAPSHOT_TEXTS.R2.voice.normal.polite = [];
-SNAPSHOT_TEXTS.R2.voice.normal.polite.push('……わたしも、あの輪に、入りたかったな');
+if (!SNAPSHOT_TEXTS.R2.voice.polite) SNAPSHOT_TEXTS.R2.voice.polite = {};
+if (!SNAPSHOT_TEXTS.R2.voice.polite.normal) SNAPSHOT_TEXTS.R2.voice.polite.normal = [];
+SNAPSHOT_TEXTS.R2.voice.polite.normal.push('……わたしも、あの輪に、入りたかったな');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.normal) SNAPSHOT_TEXTS.R2.voice.normal = {};
-if (!SNAPSHOT_TEXTS.R2.voice.normal.cool) SNAPSHOT_TEXTS.R2.voice.normal.cool = [];
-SNAPSHOT_TEXTS.R2.voice.normal.cool.push('……別に、いい');
+if (!SNAPSHOT_TEXTS.R2.voice.cool) SNAPSHOT_TEXTS.R2.voice.cool = {};
+if (!SNAPSHOT_TEXTS.R2.voice.cool.normal) SNAPSHOT_TEXTS.R2.voice.cool.normal = [];
+SNAPSHOT_TEXTS.R2.voice.cool.normal.push('……別に、いい');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.normal) SNAPSHOT_TEXTS.R2.voice.normal = {};
-if (!SNAPSHOT_TEXTS.R2.voice.normal.seductive) SNAPSHOT_TEXTS.R2.voice.normal.seductive = [];
-SNAPSHOT_TEXTS.R2.voice.normal.seductive.push('ふふ……ひとりも、悪くないわ');
+if (!SNAPSHOT_TEXTS.R2.voice.seductive) SNAPSHOT_TEXTS.R2.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R2.voice.seductive.normal) SNAPSHOT_TEXTS.R2.voice.seductive.normal = [];
+SNAPSHOT_TEXTS.R2.voice.seductive.normal.push('ふふ……ひとりも、悪くないわ');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.bold) SNAPSHOT_TEXTS.R2.voice.bold = {};
-if (!SNAPSHOT_TEXTS.R2.voice.bold.polite) SNAPSHOT_TEXTS.R2.voice.bold.polite = [];
-SNAPSHOT_TEXTS.R2.voice.bold.polite.push('……別に、仲間はずれでもいいです!ひとりで上がります!');
+if (!SNAPSHOT_TEXTS.R2.voice.polite) SNAPSHOT_TEXTS.R2.voice.polite = {};
+if (!SNAPSHOT_TEXTS.R2.voice.polite.bold) SNAPSHOT_TEXTS.R2.voice.polite.bold = [];
+SNAPSHOT_TEXTS.R2.voice.polite.bold.push('……別に、仲間はずれでもいいです!ひとりで上がります!');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.bold) SNAPSHOT_TEXTS.R2.voice.bold = {};
-if (!SNAPSHOT_TEXTS.R2.voice.bold.seductive) SNAPSHOT_TEXTS.R2.voice.bold.seductive = [];
-SNAPSHOT_TEXTS.R2.voice.bold.seductive.push('ふ……群れない、それだけ');
+if (!SNAPSHOT_TEXTS.R2.voice.seductive) SNAPSHOT_TEXTS.R2.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R2.voice.seductive.bold) SNAPSHOT_TEXTS.R2.voice.seductive.bold = [];
+SNAPSHOT_TEXTS.R2.voice.seductive.bold.push('ふ……群れない、それだけ');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.quiet) SNAPSHOT_TEXTS.R2.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.R2.voice.quiet.polite) SNAPSHOT_TEXTS.R2.voice.quiet.polite = [];
-SNAPSHOT_TEXTS.R2.voice.quiet.polite.push('……入れない');
+if (!SNAPSHOT_TEXTS.R2.voice.polite) SNAPSHOT_TEXTS.R2.voice.polite = {};
+if (!SNAPSHOT_TEXTS.R2.voice.polite.quiet) SNAPSHOT_TEXTS.R2.voice.polite.quiet = [];
+SNAPSHOT_TEXTS.R2.voice.polite.quiet.push('……入れない');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.quiet) SNAPSHOT_TEXTS.R2.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.R2.voice.quiet.seductive) SNAPSHOT_TEXTS.R2.voice.quiet.seductive = [];
-SNAPSHOT_TEXTS.R2.voice.quiet.seductive.push('……遠い、わね');
+if (!SNAPSHOT_TEXTS.R2.voice.seductive) SNAPSHOT_TEXTS.R2.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R2.voice.seductive.quiet) SNAPSHOT_TEXTS.R2.voice.seductive.quiet = [];
+SNAPSHOT_TEXTS.R2.voice.seductive.quiet.push('……遠い、わね');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.earnest) SNAPSHOT_TEXTS.R2.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.R2.voice.earnest.seductive) SNAPSHOT_TEXTS.R2.voice.earnest.seductive = [];
-SNAPSHOT_TEXTS.R2.voice.earnest.seductive.push('わたし、何か悪いことしたのかしら……');
+if (!SNAPSHOT_TEXTS.R2.voice.seductive) SNAPSHOT_TEXTS.R2.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R2.voice.seductive.earnest) SNAPSHOT_TEXTS.R2.voice.seductive.earnest = [];
+SNAPSHOT_TEXTS.R2.voice.seductive.earnest.push('わたし、何か悪いことしたのかしら……');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.earnest) SNAPSHOT_TEXTS.R2.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.R2.voice.earnest.ojousama) SNAPSHOT_TEXTS.R2.voice.earnest.ojousama = [];
-SNAPSHOT_TEXTS.R2.voice.earnest.ojousama.push('……わたくし、浮いておりますのね。らしくないですわ');
+if (!SNAPSHOT_TEXTS.R2.voice.ojousama) SNAPSHOT_TEXTS.R2.voice.ojousama = {};
+if (!SNAPSHOT_TEXTS.R2.voice.ojousama.earnest) SNAPSHOT_TEXTS.R2.voice.ojousama.earnest = [];
+SNAPSHOT_TEXTS.R2.voice.ojousama.earnest.push('……わたくし、浮いておりますのね。らしくないですわ');
 if (!SNAPSHOT_TEXTS.R2.voice) SNAPSHOT_TEXTS.R2.voice = {};
-if (!SNAPSHOT_TEXTS.R2.voice.emotional) SNAPSHOT_TEXTS.R2.voice.emotional = {};
-if (!SNAPSHOT_TEXTS.R2.voice.emotional.composed) SNAPSHOT_TEXTS.R2.voice.emotional.composed = [];
-SNAPSHOT_TEXTS.R2.voice.emotional.composed.push('ねえ、仲間に入れてよー!って言えたら、いいのに……');
+if (!SNAPSHOT_TEXTS.R2.voice.composed) SNAPSHOT_TEXTS.R2.voice.composed = {};
+if (!SNAPSHOT_TEXTS.R2.voice.composed.emotional) SNAPSHOT_TEXTS.R2.voice.composed.emotional = [];
+SNAPSHOT_TEXTS.R2.voice.composed.emotional.push('ねえ、仲間に入れてよー!って言えたら、いいのに……');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.normal) SNAPSHOT_TEXTS.R4.voice.normal = {};
-if (!SNAPSHOT_TEXTS.R4.voice.normal.polite) SNAPSHOT_TEXTS.R4.voice.normal.polite = [];
-SNAPSHOT_TEXTS.R4.voice.normal.polite.push('……もう、あの人とは目も合わせられないんですね');
+if (!SNAPSHOT_TEXTS.R4.voice.polite) SNAPSHOT_TEXTS.R4.voice.polite = {};
+if (!SNAPSHOT_TEXTS.R4.voice.polite.normal) SNAPSHOT_TEXTS.R4.voice.polite.normal = [];
+SNAPSHOT_TEXTS.R4.voice.polite.normal.push('……もう、あの人とは目も合わせられないんですね');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.normal) SNAPSHOT_TEXTS.R4.voice.normal = {};
-if (!SNAPSHOT_TEXTS.R4.voice.normal.cool) SNAPSHOT_TEXTS.R4.voice.normal.cool = [];
-SNAPSHOT_TEXTS.R4.voice.normal.cool.push('……もう、終わった');
+if (!SNAPSHOT_TEXTS.R4.voice.cool) SNAPSHOT_TEXTS.R4.voice.cool = {};
+if (!SNAPSHOT_TEXTS.R4.voice.cool.normal) SNAPSHOT_TEXTS.R4.voice.cool.normal = [];
+SNAPSHOT_TEXTS.R4.voice.cool.normal.push('……もう、終わった');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.normal) SNAPSHOT_TEXTS.R4.voice.normal = {};
-if (!SNAPSHOT_TEXTS.R4.voice.normal.seductive) SNAPSHOT_TEXTS.R4.voice.normal.seductive = [];
-SNAPSHOT_TEXTS.R4.voice.normal.seductive.push('ふ……あの日から、何も変わってないわね');
+if (!SNAPSHOT_TEXTS.R4.voice.seductive) SNAPSHOT_TEXTS.R4.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R4.voice.seductive.normal) SNAPSHOT_TEXTS.R4.voice.seductive.normal = [];
+SNAPSHOT_TEXTS.R4.voice.seductive.normal.push('ふ……あの日から、何も変わってないわね');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.bold) SNAPSHOT_TEXTS.R4.voice.bold = {};
-if (!SNAPSHOT_TEXTS.R4.voice.bold.polite) SNAPSHOT_TEXTS.R4.voice.bold.polite = [];
-SNAPSHOT_TEXTS.R4.voice.bold.polite.push('あの人とは、もう絶対に口きかない!絶対に!');
+if (!SNAPSHOT_TEXTS.R4.voice.polite) SNAPSHOT_TEXTS.R4.voice.polite = {};
+if (!SNAPSHOT_TEXTS.R4.voice.polite.bold) SNAPSHOT_TEXTS.R4.voice.polite.bold = [];
+SNAPSHOT_TEXTS.R4.voice.polite.bold.push('あの人とは、もう絶対に口きかない!絶対に!');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.bold) SNAPSHOT_TEXTS.R4.voice.bold = {};
-if (!SNAPSHOT_TEXTS.R4.voice.bold.seductive) SNAPSHOT_TEXTS.R4.voice.bold.seductive = [];
-SNAPSHOT_TEXTS.R4.voice.bold.seductive.push('ふふ……遠ざかっていくのが、わかるわ');
+if (!SNAPSHOT_TEXTS.R4.voice.seductive) SNAPSHOT_TEXTS.R4.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R4.voice.seductive.bold) SNAPSHOT_TEXTS.R4.voice.seductive.bold = [];
+SNAPSHOT_TEXTS.R4.voice.seductive.bold.push('ふふ……遠ざかっていくのが、わかるわ');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.quiet) SNAPSHOT_TEXTS.R4.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.R4.voice.quiet.polite) SNAPSHOT_TEXTS.R4.voice.quiet.polite = [];
-SNAPSHOT_TEXTS.R4.voice.quiet.polite.push('……離れた');
+if (!SNAPSHOT_TEXTS.R4.voice.polite) SNAPSHOT_TEXTS.R4.voice.polite = {};
+if (!SNAPSHOT_TEXTS.R4.voice.polite.quiet) SNAPSHOT_TEXTS.R4.voice.polite.quiet = [];
+SNAPSHOT_TEXTS.R4.voice.polite.quiet.push('……離れた');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.quiet) SNAPSHOT_TEXTS.R4.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.R4.voice.quiet.seductive) SNAPSHOT_TEXTS.R4.voice.quiet.seductive = [];
-SNAPSHOT_TEXTS.R4.voice.quiet.seductive.push('……さよなら、ね');
+if (!SNAPSHOT_TEXTS.R4.voice.seductive) SNAPSHOT_TEXTS.R4.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R4.voice.seductive.quiet) SNAPSHOT_TEXTS.R4.voice.seductive.quiet = [];
+SNAPSHOT_TEXTS.R4.voice.seductive.quiet.push('……さよなら、ね');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.earnest) SNAPSHOT_TEXTS.R4.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.R4.voice.earnest.seductive) SNAPSHOT_TEXTS.R4.voice.earnest.seductive = [];
-SNAPSHOT_TEXTS.R4.voice.earnest.seductive.push('わたしたち、どこで間違えてしまったのかしら……');
+if (!SNAPSHOT_TEXTS.R4.voice.seductive) SNAPSHOT_TEXTS.R4.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R4.voice.seductive.earnest) SNAPSHOT_TEXTS.R4.voice.seductive.earnest = [];
+SNAPSHOT_TEXTS.R4.voice.seductive.earnest.push('わたしたち、どこで間違えてしまったのかしら……');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.earnest) SNAPSHOT_TEXTS.R4.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.R4.voice.earnest.ojousama) SNAPSHOT_TEXTS.R4.voice.earnest.ojousama = [];
-SNAPSHOT_TEXTS.R4.voice.earnest.ojousama.push('あの方とは、もう距離ができてしまいましたのね……');
+if (!SNAPSHOT_TEXTS.R4.voice.ojousama) SNAPSHOT_TEXTS.R4.voice.ojousama = {};
+if (!SNAPSHOT_TEXTS.R4.voice.ojousama.earnest) SNAPSHOT_TEXTS.R4.voice.ojousama.earnest = [];
+SNAPSHOT_TEXTS.R4.voice.ojousama.earnest.push('あの方とは、もう距離ができてしまいましたのね……');
 if (!SNAPSHOT_TEXTS.R4.voice) SNAPSHOT_TEXTS.R4.voice = {};
-if (!SNAPSHOT_TEXTS.R4.voice.emotional) SNAPSHOT_TEXTS.R4.voice.emotional = {};
-if (!SNAPSHOT_TEXTS.R4.voice.emotional.composed) SNAPSHOT_TEXTS.R4.voice.emotional.composed = [];
-SNAPSHOT_TEXTS.R4.voice.emotional.composed.push('ひどい、ひどいよ、わたしあの人のこと信じてたのに!');
+if (!SNAPSHOT_TEXTS.R4.voice.composed) SNAPSHOT_TEXTS.R4.voice.composed = {};
+if (!SNAPSHOT_TEXTS.R4.voice.composed.emotional) SNAPSHOT_TEXTS.R4.voice.composed.emotional = [];
+SNAPSHOT_TEXTS.R4.voice.composed.emotional.push('ひどい、ひどいよ、わたしあの人のこと信じてたのに!');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.normal) SNAPSHOT_TEXTS.R5.voice.normal = {};
-if (!SNAPSHOT_TEXTS.R5.voice.normal.polite) SNAPSHOT_TEXTS.R5.voice.normal.polite = [];
-SNAPSHOT_TEXTS.R5.voice.normal.polite.push('……信じてたのに。わたし、馬鹿みたいです');
+if (!SNAPSHOT_TEXTS.R5.voice.polite) SNAPSHOT_TEXTS.R5.voice.polite = {};
+if (!SNAPSHOT_TEXTS.R5.voice.polite.normal) SNAPSHOT_TEXTS.R5.voice.polite.normal = [];
+SNAPSHOT_TEXTS.R5.voice.polite.normal.push('……信じてたのに。わたし、馬鹿みたいです');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.normal) SNAPSHOT_TEXTS.R5.voice.normal = {};
-if (!SNAPSHOT_TEXTS.R5.voice.normal.cool) SNAPSHOT_TEXTS.R5.voice.normal.cool = [];
-SNAPSHOT_TEXTS.R5.voice.normal.cool.push('……裏切られた');
+if (!SNAPSHOT_TEXTS.R5.voice.cool) SNAPSHOT_TEXTS.R5.voice.cool = {};
+if (!SNAPSHOT_TEXTS.R5.voice.cool.normal) SNAPSHOT_TEXTS.R5.voice.cool.normal = [];
+SNAPSHOT_TEXTS.R5.voice.cool.normal.push('……裏切られた');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.normal) SNAPSHOT_TEXTS.R5.voice.normal = {};
-if (!SNAPSHOT_TEXTS.R5.voice.normal.seductive) SNAPSHOT_TEXTS.R5.voice.normal.seductive = [];
-SNAPSHOT_TEXTS.R5.voice.normal.seductive.push('ふふ……騙されたわたしも、悪かった、のかしら');
+if (!SNAPSHOT_TEXTS.R5.voice.seductive) SNAPSHOT_TEXTS.R5.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R5.voice.seductive.normal) SNAPSHOT_TEXTS.R5.voice.seductive.normal = [];
+SNAPSHOT_TEXTS.R5.voice.seductive.normal.push('ふふ……騙されたわたしも、悪かった、のかしら');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.bold) SNAPSHOT_TEXTS.R5.voice.bold = {};
-if (!SNAPSHOT_TEXTS.R5.voice.bold.polite) SNAPSHOT_TEXTS.R5.voice.bold.polite = [];
-SNAPSHOT_TEXTS.R5.voice.bold.polite.push('あの人……っ、あの人のこと、絶対に許さない!');
+if (!SNAPSHOT_TEXTS.R5.voice.polite) SNAPSHOT_TEXTS.R5.voice.polite = {};
+if (!SNAPSHOT_TEXTS.R5.voice.polite.bold) SNAPSHOT_TEXTS.R5.voice.polite.bold = [];
+SNAPSHOT_TEXTS.R5.voice.polite.bold.push('あの人……っ、あの人のこと、絶対に許さない!');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.bold) SNAPSHOT_TEXTS.R5.voice.bold = {};
-if (!SNAPSHOT_TEXTS.R5.voice.bold.seductive) SNAPSHOT_TEXTS.R5.voice.bold.seductive = [];
-SNAPSHOT_TEXTS.R5.voice.bold.seductive.push('ふ……嘘、だったのね');
+if (!SNAPSHOT_TEXTS.R5.voice.seductive) SNAPSHOT_TEXTS.R5.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R5.voice.seductive.bold) SNAPSHOT_TEXTS.R5.voice.seductive.bold = [];
+SNAPSHOT_TEXTS.R5.voice.seductive.bold.push('ふ……嘘、だったのね');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.quiet) SNAPSHOT_TEXTS.R5.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.R5.voice.quiet.polite) SNAPSHOT_TEXTS.R5.voice.quiet.polite = [];
-SNAPSHOT_TEXTS.R5.voice.quiet.polite.push('……嘘');
+if (!SNAPSHOT_TEXTS.R5.voice.polite) SNAPSHOT_TEXTS.R5.voice.polite = {};
+if (!SNAPSHOT_TEXTS.R5.voice.polite.quiet) SNAPSHOT_TEXTS.R5.voice.polite.quiet = [];
+SNAPSHOT_TEXTS.R5.voice.polite.quiet.push('……嘘');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.quiet) SNAPSHOT_TEXTS.R5.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.R5.voice.quiet.seductive) SNAPSHOT_TEXTS.R5.voice.quiet.seductive = [];
-SNAPSHOT_TEXTS.R5.voice.quiet.seductive.push('……ふ、そう');
+if (!SNAPSHOT_TEXTS.R5.voice.seductive) SNAPSHOT_TEXTS.R5.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R5.voice.seductive.quiet) SNAPSHOT_TEXTS.R5.voice.seductive.quiet = [];
+SNAPSHOT_TEXTS.R5.voice.seductive.quiet.push('……ふ、そう');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.earnest) SNAPSHOT_TEXTS.R5.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.R5.voice.earnest.seductive) SNAPSHOT_TEXTS.R5.voice.earnest.seductive = [];
-SNAPSHOT_TEXTS.R5.voice.earnest.seductive.push('わたし、人を見る目がなかったんだわ……情けない');
+if (!SNAPSHOT_TEXTS.R5.voice.seductive) SNAPSHOT_TEXTS.R5.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.R5.voice.seductive.earnest) SNAPSHOT_TEXTS.R5.voice.seductive.earnest = [];
+SNAPSHOT_TEXTS.R5.voice.seductive.earnest.push('わたし、人を見る目がなかったんだわ……情けない');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.earnest) SNAPSHOT_TEXTS.R5.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.R5.voice.earnest.ojousama) SNAPSHOT_TEXTS.R5.voice.earnest.ojousama = [];
-SNAPSHOT_TEXTS.R5.voice.earnest.ojousama.push('まあ……わたくし、騙されておりましたの……?');
+if (!SNAPSHOT_TEXTS.R5.voice.ojousama) SNAPSHOT_TEXTS.R5.voice.ojousama = {};
+if (!SNAPSHOT_TEXTS.R5.voice.ojousama.earnest) SNAPSHOT_TEXTS.R5.voice.ojousama.earnest = [];
+SNAPSHOT_TEXTS.R5.voice.ojousama.earnest.push('まあ……わたくし、騙されておりましたの……?');
 if (!SNAPSHOT_TEXTS.R5.voice) SNAPSHOT_TEXTS.R5.voice = {};
-if (!SNAPSHOT_TEXTS.R5.voice.emotional) SNAPSHOT_TEXTS.R5.voice.emotional = {};
-if (!SNAPSHOT_TEXTS.R5.voice.emotional.composed) SNAPSHOT_TEXTS.R5.voice.emotional.composed = [];
-SNAPSHOT_TEXTS.R5.voice.emotional.composed.push('うそっ、うそ、うそでしょ!?ねえ、うそって言ってよ!');
+if (!SNAPSHOT_TEXTS.R5.voice.composed) SNAPSHOT_TEXTS.R5.voice.composed = {};
+if (!SNAPSHOT_TEXTS.R5.voice.composed.emotional) SNAPSHOT_TEXTS.R5.voice.composed.emotional = [];
+SNAPSHOT_TEXTS.R5.voice.composed.emotional.push('うそっ、うそ、うそでしょ!?ねえ、うそって言ってよ!');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.normal) SNAPSHOT_TEXTS.breakthrough.voice.normal = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.normal.polite) SNAPSHOT_TEXTS.breakthrough.voice.normal.polite = [];
-SNAPSHOT_TEXTS.breakthrough.voice.normal.polite.push('……何か、変わった気がします。体が、軽い');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.polite) SNAPSHOT_TEXTS.breakthrough.voice.polite = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.polite.normal) SNAPSHOT_TEXTS.breakthrough.voice.polite.normal = [];
+SNAPSHOT_TEXTS.breakthrough.voice.polite.normal.push('……何か、変わった気がします。体が、軽い');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.normal) SNAPSHOT_TEXTS.breakthrough.voice.normal = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.normal.cool) SNAPSHOT_TEXTS.breakthrough.voice.normal.cool = [];
-SNAPSHOT_TEXTS.breakthrough.voice.normal.cool.push('……変わった');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.cool) SNAPSHOT_TEXTS.breakthrough.voice.cool = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.cool.normal) SNAPSHOT_TEXTS.breakthrough.voice.cool.normal = [];
+SNAPSHOT_TEXTS.breakthrough.voice.cool.normal.push('……変わった');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.normal) SNAPSHOT_TEXTS.breakthrough.voice.normal = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.normal.seductive) SNAPSHOT_TEXTS.breakthrough.voice.normal.seductive = [];
-SNAPSHOT_TEXTS.breakthrough.voice.normal.seductive.push('ふふ……わたし、何か手に入れた?');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.seductive) SNAPSHOT_TEXTS.breakthrough.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.seductive.normal) SNAPSHOT_TEXTS.breakthrough.voice.seductive.normal = [];
+SNAPSHOT_TEXTS.breakthrough.voice.seductive.normal.push('ふふ……わたし、何か手に入れた?');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.bold) SNAPSHOT_TEXTS.breakthrough.voice.bold = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.bold.polite) SNAPSHOT_TEXTS.breakthrough.voice.bold.polite = [];
-SNAPSHOT_TEXTS.breakthrough.voice.bold.polite.push('来た……!これだ、これが欲しかった感覚!');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.polite) SNAPSHOT_TEXTS.breakthrough.voice.polite = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.polite.bold) SNAPSHOT_TEXTS.breakthrough.voice.polite.bold = [];
+SNAPSHOT_TEXTS.breakthrough.voice.polite.bold.push('来た……!これだ、これが欲しかった感覚!');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.bold) SNAPSHOT_TEXTS.breakthrough.voice.bold = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.bold.seductive) SNAPSHOT_TEXTS.breakthrough.voice.bold.seductive = [];
-SNAPSHOT_TEXTS.breakthrough.voice.bold.seductive.push('ふ……覚醒、というやつ、かしら');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.seductive) SNAPSHOT_TEXTS.breakthrough.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.seductive.bold) SNAPSHOT_TEXTS.breakthrough.voice.seductive.bold = [];
+SNAPSHOT_TEXTS.breakthrough.voice.seductive.bold.push('ふ……覚醒、というやつ、かしら');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.quiet) SNAPSHOT_TEXTS.breakthrough.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.quiet.polite) SNAPSHOT_TEXTS.breakthrough.voice.quiet.polite = [];
-SNAPSHOT_TEXTS.breakthrough.voice.quiet.polite.push('……掴んだ');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.polite) SNAPSHOT_TEXTS.breakthrough.voice.polite = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.polite.quiet) SNAPSHOT_TEXTS.breakthrough.voice.polite.quiet = [];
+SNAPSHOT_TEXTS.breakthrough.voice.polite.quiet.push('……掴んだ');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.quiet) SNAPSHOT_TEXTS.breakthrough.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.quiet.seductive) SNAPSHOT_TEXTS.breakthrough.voice.quiet.seductive = [];
-SNAPSHOT_TEXTS.breakthrough.voice.quiet.seductive.push('……ふ、見えた');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.seductive) SNAPSHOT_TEXTS.breakthrough.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.seductive.quiet) SNAPSHOT_TEXTS.breakthrough.voice.seductive.quiet = [];
+SNAPSHOT_TEXTS.breakthrough.voice.seductive.quiet.push('……ふ、見えた');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.earnest) SNAPSHOT_TEXTS.breakthrough.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.earnest.seductive) SNAPSHOT_TEXTS.breakthrough.voice.earnest.seductive = [];
-SNAPSHOT_TEXTS.breakthrough.voice.earnest.seductive.push('これなんだわ……ずっと探していたものは……!');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.seductive) SNAPSHOT_TEXTS.breakthrough.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.seductive.earnest) SNAPSHOT_TEXTS.breakthrough.voice.seductive.earnest = [];
+SNAPSHOT_TEXTS.breakthrough.voice.seductive.earnest.push('これなんだわ……ずっと探していたものは……!');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.earnest) SNAPSHOT_TEXTS.breakthrough.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.earnest.ojousama) SNAPSHOT_TEXTS.breakthrough.voice.earnest.ojousama = [];
-SNAPSHOT_TEXTS.breakthrough.voice.earnest.ojousama.push('まあ、わたくしに何かが宿りましたの!素敵ですわ!');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.ojousama) SNAPSHOT_TEXTS.breakthrough.voice.ojousama = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.ojousama.earnest) SNAPSHOT_TEXTS.breakthrough.voice.ojousama.earnest = [];
+SNAPSHOT_TEXTS.breakthrough.voice.ojousama.earnest.push('まあ、わたくしに何かが宿りましたの!素敵ですわ!');
 if (!SNAPSHOT_TEXTS.breakthrough.voice) SNAPSHOT_TEXTS.breakthrough.voice = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.emotional) SNAPSHOT_TEXTS.breakthrough.voice.emotional = {};
-if (!SNAPSHOT_TEXTS.breakthrough.voice.emotional.composed) SNAPSHOT_TEXTS.breakthrough.voice.emotional.composed = [];
-SNAPSHOT_TEXTS.breakthrough.voice.emotional.composed.push('すごい、すごいよ!なんか、なんかわかんないけどすごい!');
+if (!SNAPSHOT_TEXTS.breakthrough.voice.composed) SNAPSHOT_TEXTS.breakthrough.voice.composed = {};
+if (!SNAPSHOT_TEXTS.breakthrough.voice.composed.emotional) SNAPSHOT_TEXTS.breakthrough.voice.composed.emotional = [];
+SNAPSHOT_TEXTS.breakthrough.voice.composed.emotional.push('すごい、すごいよ!なんか、なんかわかんないけどすごい!');
 if (!SNAPSHOT_TEXTS.warVictory.voice) SNAPSHOT_TEXTS.warVictory.voice = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.bold) SNAPSHOT_TEXTS.warVictory.voice.bold = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.bold.polite) SNAPSHOT_TEXTS.warVictory.voice.bold.polite = [];
-SNAPSHOT_TEXTS.warVictory.voice.bold.polite.push('やった……!わたしたちで、守り抜きました!');
+if (!SNAPSHOT_TEXTS.warVictory.voice.polite) SNAPSHOT_TEXTS.warVictory.voice.polite = {};
+if (!SNAPSHOT_TEXTS.warVictory.voice.polite.bold) SNAPSHOT_TEXTS.warVictory.voice.polite.bold = [];
+SNAPSHOT_TEXTS.warVictory.voice.polite.bold.push('やった……!わたしたちで、守り抜きました!');
 if (!SNAPSHOT_TEXTS.warVictory.voice) SNAPSHOT_TEXTS.warVictory.voice = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.bold) SNAPSHOT_TEXTS.warVictory.voice.bold = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.bold.seductive) SNAPSHOT_TEXTS.warVictory.voice.bold.seductive = [];
-SNAPSHOT_TEXTS.warVictory.voice.bold.seductive.push('ふふ……これが、わたしたちの答えよ');
+if (!SNAPSHOT_TEXTS.warVictory.voice.seductive) SNAPSHOT_TEXTS.warVictory.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.warVictory.voice.seductive.bold) SNAPSHOT_TEXTS.warVictory.voice.seductive.bold = [];
+SNAPSHOT_TEXTS.warVictory.voice.seductive.bold.push('ふふ……これが、わたしたちの答えよ');
 if (!SNAPSHOT_TEXTS.warVictory.voice) SNAPSHOT_TEXTS.warVictory.voice = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.quiet) SNAPSHOT_TEXTS.warVictory.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.quiet.polite) SNAPSHOT_TEXTS.warVictory.voice.quiet.polite = [];
-SNAPSHOT_TEXTS.warVictory.voice.quiet.polite.push('……勝った。守れた');
+if (!SNAPSHOT_TEXTS.warVictory.voice.polite) SNAPSHOT_TEXTS.warVictory.voice.polite = {};
+if (!SNAPSHOT_TEXTS.warVictory.voice.polite.quiet) SNAPSHOT_TEXTS.warVictory.voice.polite.quiet = [];
+SNAPSHOT_TEXTS.warVictory.voice.polite.quiet.push('……勝った。守れた');
 if (!SNAPSHOT_TEXTS.warVictory.voice) SNAPSHOT_TEXTS.warVictory.voice = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.quiet) SNAPSHOT_TEXTS.warVictory.voice.quiet = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.quiet.seductive) SNAPSHOT_TEXTS.warVictory.voice.quiet.seductive = [];
-SNAPSHOT_TEXTS.warVictory.voice.quiet.seductive.push('……ふ、勝利');
+if (!SNAPSHOT_TEXTS.warVictory.voice.seductive) SNAPSHOT_TEXTS.warVictory.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.warVictory.voice.seductive.quiet) SNAPSHOT_TEXTS.warVictory.voice.seductive.quiet = [];
+SNAPSHOT_TEXTS.warVictory.voice.seductive.quiet.push('……ふ、勝利');
 if (!SNAPSHOT_TEXTS.warVictory.voice) SNAPSHOT_TEXTS.warVictory.voice = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.earnest) SNAPSHOT_TEXTS.warVictory.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.earnest.seductive) SNAPSHOT_TEXTS.warVictory.voice.earnest.seductive = [];
-SNAPSHOT_TEXTS.warVictory.voice.earnest.seductive.push('仲間と掴んだ、この勝利……!忘れません');
+if (!SNAPSHOT_TEXTS.warVictory.voice.seductive) SNAPSHOT_TEXTS.warVictory.voice.seductive = {};
+if (!SNAPSHOT_TEXTS.warVictory.voice.seductive.earnest) SNAPSHOT_TEXTS.warVictory.voice.seductive.earnest = [];
+SNAPSHOT_TEXTS.warVictory.voice.seductive.earnest.push('仲間と掴んだ、この勝利……!忘れません');
 if (!SNAPSHOT_TEXTS.warVictory.voice) SNAPSHOT_TEXTS.warVictory.voice = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.earnest) SNAPSHOT_TEXTS.warVictory.voice.earnest = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.earnest.ojousama) SNAPSHOT_TEXTS.warVictory.voice.earnest.ojousama = [];
-SNAPSHOT_TEXTS.warVictory.voice.earnest.ojousama.push('まあ、勝ちましたわ!皆様のおかげですの!');
+if (!SNAPSHOT_TEXTS.warVictory.voice.ojousama) SNAPSHOT_TEXTS.warVictory.voice.ojousama = {};
+if (!SNAPSHOT_TEXTS.warVictory.voice.ojousama.earnest) SNAPSHOT_TEXTS.warVictory.voice.ojousama.earnest = [];
+SNAPSHOT_TEXTS.warVictory.voice.ojousama.earnest.push('まあ、勝ちましたわ!皆様のおかげですの!');
 if (!SNAPSHOT_TEXTS.warVictory.voice) SNAPSHOT_TEXTS.warVictory.voice = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.emotional) SNAPSHOT_TEXTS.warVictory.voice.emotional = {};
-if (!SNAPSHOT_TEXTS.warVictory.voice.emotional.composed) SNAPSHOT_TEXTS.warVictory.voice.emotional.composed = [];
-SNAPSHOT_TEXTS.warVictory.voice.emotional.composed.push('うわああああ勝った勝った!!みんなありがとー!!');
+if (!SNAPSHOT_TEXTS.warVictory.voice.composed) SNAPSHOT_TEXTS.warVictory.voice.composed = {};
+if (!SNAPSHOT_TEXTS.warVictory.voice.composed.emotional) SNAPSHOT_TEXTS.warVictory.voice.composed.emotional = [];
+SNAPSHOT_TEXTS.warVictory.voice.composed.emotional.push('うわああああ勝った勝った!!みんなありがとー!!');
 
 // ── RIVALRY_MATCH_REACTION 穴埋め拡張 ──
-if (!RIVALRY_MATCH_REACTION.winnerLines.shy) RIVALRY_MATCH_REACTION.winnerLines.shy = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.shy.polite) RIVALRY_MATCH_REACTION.winnerLines.shy.polite = [];
-RIVALRY_MATCH_REACTION.winnerLines.shy.polite.push('か、勝てました…でも…次も頑張らないと…');
-if (!RIVALRY_MATCH_REACTION.winnerLines.emotional) RIVALRY_MATCH_REACTION.winnerLines.emotional = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.emotional.seductive) RIVALRY_MATCH_REACTION.winnerLines.emotional.seductive = [];
-RIVALRY_MATCH_REACTION.winnerLines.emotional.seductive.push('勝ったわ…!でもまだ…まだ終わらないのよ…っ');
-if (!RIVALRY_MATCH_REACTION.loserLines.shy) RIVALRY_MATCH_REACTION.loserLines.shy = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.shy.polite) RIVALRY_MATCH_REACTION.loserLines.shy.polite = [];
-RIVALRY_MATCH_REACTION.loserLines.shy.polite.push('…負けてしまいました……悔しい…です…');
-if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.bold.ojousama) RIVALRY_MATCH_REACTION.loserLines.bold.ojousama = [];
-RIVALRY_MATCH_REACTION.loserLines.bold.ojousama.push('この負けは忘れない。……必ず借りは返す');
-if (!RIVALRY_MATCH_REACTION.loserLines.emotional) RIVALRY_MATCH_REACTION.loserLines.emotional = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.emotional.seductive) RIVALRY_MATCH_REACTION.loserLines.emotional.seductive = [];
-RIVALRY_MATCH_REACTION.loserLines.emotional.seductive.push('負けた…っ…でも、この気持ち…絶対に忘れないわ…');
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal) RIVALRY_MATCH_REACTION.winnerLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal.polite) RIVALRY_MATCH_REACTION.winnerLines.normal.polite = [];
-RIVALRY_MATCH_REACTION.winnerLines.normal.polite.push('今日のところは、わたしの勝ちです。次も…お待ちしています');
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal) RIVALRY_MATCH_REACTION.winnerLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal.cool) RIVALRY_MATCH_REACTION.winnerLines.normal.cool = [];
-RIVALRY_MATCH_REACTION.winnerLines.normal.cool.push('……今日は、わたしの勝ち');
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal) RIVALRY_MATCH_REACTION.winnerLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal.ojousama) RIVALRY_MATCH_REACTION.winnerLines.normal.ojousama = [];
-RIVALRY_MATCH_REACTION.winnerLines.normal.ojousama.push('本日はわたくしの勝利ですわね。次の機会もお待ちしてますわね');
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal) RIVALRY_MATCH_REACTION.winnerLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal.seductive) RIVALRY_MATCH_REACTION.winnerLines.normal.seductive = [];
-RIVALRY_MATCH_REACTION.winnerLines.normal.seductive.push('今日はわたしの勝ちね。…次はどうなるかしら');
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal) RIVALRY_MATCH_REACTION.winnerLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal.delinquent) RIVALRY_MATCH_REACTION.winnerLines.normal.delinquent = [];
-RIVALRY_MATCH_REACTION.winnerLines.normal.delinquent.push('今日はこっちの勝ちだ。次もよろしくな');
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal) RIVALRY_MATCH_REACTION.winnerLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.normal.composed) RIVALRY_MATCH_REACTION.winnerLines.normal.composed = [];
-RIVALRY_MATCH_REACTION.winnerLines.normal.composed.push('…今日はわたしの勝ちだね。また次もよろしく');
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold._default) RIVALRY_MATCH_REACTION.winnerLines.bold._default = [];
-RIVALRY_MATCH_REACTION.winnerLines.bold._default.push('今のあなたじゃ、わたしは倒せない。鍛え直してきなさい。');
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold.polite) RIVALRY_MATCH_REACTION.winnerLines.bold.polite = [];
-RIVALRY_MATCH_REACTION.winnerLines.bold.polite.push('今のあなたでは、わたしは倒せません。鍛え直してきてください');
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold.ojousama) RIVALRY_MATCH_REACTION.winnerLines.bold.ojousama = [];
-RIVALRY_MATCH_REACTION.winnerLines.bold.ojousama.push('わたくしを倒すなど百年早いですわね');
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold.seductive) RIVALRY_MATCH_REACTION.winnerLines.bold.seductive = [];
-RIVALRY_MATCH_REACTION.winnerLines.bold.seductive.push('今のあなたじゃ、わたしに届かないわ。…鍛え直してらっしゃい');
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold.delinquent) RIVALRY_MATCH_REACTION.winnerLines.bold.delinquent = [];
-RIVALRY_MATCH_REACTION.winnerLines.bold.delinquent.push('今のテメェじゃ、あたしには勝てねえ。出直してこい');
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold) RIVALRY_MATCH_REACTION.winnerLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.bold.composed) RIVALRY_MATCH_REACTION.winnerLines.bold.composed = [];
-RIVALRY_MATCH_REACTION.winnerLines.bold.composed.push('…今のあなたじゃ、わたしには届かない。また来なよ');
-if (!RIVALRY_MATCH_REACTION.winnerLines.quiet) RIVALRY_MATCH_REACTION.winnerLines.quiet = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.quiet._default) RIVALRY_MATCH_REACTION.winnerLines.quiet._default = [];
-RIVALRY_MATCH_REACTION.winnerLines.quiet._default.push('………(そっと去っていく)');
-if (!RIVALRY_MATCH_REACTION.winnerLines.quiet) RIVALRY_MATCH_REACTION.winnerLines.quiet = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.quiet.polite) RIVALRY_MATCH_REACTION.winnerLines.quiet.polite = [];
-RIVALRY_MATCH_REACTION.winnerLines.quiet.polite.push('………今日は、ここまでです');
-if (!RIVALRY_MATCH_REACTION.winnerLines.quiet) RIVALRY_MATCH_REACTION.winnerLines.quiet = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.quiet.cool) RIVALRY_MATCH_REACTION.winnerLines.quiet.cool = [];
-RIVALRY_MATCH_REACTION.winnerLines.quiet.cool.push('……終わり');
-if (!RIVALRY_MATCH_REACTION.winnerLines.quiet) RIVALRY_MATCH_REACTION.winnerLines.quiet = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.quiet.seductive) RIVALRY_MATCH_REACTION.winnerLines.quiet.seductive = [];
-RIVALRY_MATCH_REACTION.winnerLines.quiet.seductive.push('………今日のところは、ね');
-if (!RIVALRY_MATCH_REACTION.winnerLines.shy) RIVALRY_MATCH_REACTION.winnerLines.shy = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.shy._default) RIVALRY_MATCH_REACTION.winnerLines.shy._default = [];
-RIVALRY_MATCH_REACTION.winnerLines.shy._default.push('…あ、あの…ありがとう…ございました…');
-if (!RIVALRY_MATCH_REACTION.winnerLines.shy) RIVALRY_MATCH_REACTION.winnerLines.shy = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.shy.polite) RIVALRY_MATCH_REACTION.winnerLines.shy.polite = [];
-RIVALRY_MATCH_REACTION.winnerLines.shy.polite.push('…あ、あの…ありがとうございました…');
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing) RIVALRY_MATCH_REACTION.winnerLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing._default) RIVALRY_MATCH_REACTION.winnerLines.easygoing._default = [];
-RIVALRY_MATCH_REACTION.winnerLines.easygoing._default.push('一勝一勝、積み重ねていくよ!次もよろしくね!');
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing) RIVALRY_MATCH_REACTION.winnerLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing.polite) RIVALRY_MATCH_REACTION.winnerLines.easygoing.polite = [];
-RIVALRY_MATCH_REACTION.winnerLines.easygoing.polite.push('一勝ずつ、積み重ねていきます!次もよろしくお願いします!');
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing) RIVALRY_MATCH_REACTION.winnerLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing.ojousama) RIVALRY_MATCH_REACTION.winnerLines.easygoing.ojousama = [];
-RIVALRY_MATCH_REACTION.winnerLines.easygoing.ojousama.push('一勝ずつ、積み重ねますわ!次もよろしくお願いいたします!');
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing) RIVALRY_MATCH_REACTION.winnerLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing.seductive) RIVALRY_MATCH_REACTION.winnerLines.easygoing.seductive = [];
-RIVALRY_MATCH_REACTION.winnerLines.easygoing.seductive.push('一勝、積み重ねたわ。…次も楽しみにしてて');
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing) RIVALRY_MATCH_REACTION.winnerLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing.delinquent) RIVALRY_MATCH_REACTION.winnerLines.easygoing.delinquent = [];
-RIVALRY_MATCH_REACTION.winnerLines.easygoing.delinquent.push('よし、一勝!次もガンガン行くぜ!');
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing) RIVALRY_MATCH_REACTION.winnerLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.easygoing.composed) RIVALRY_MATCH_REACTION.winnerLines.easygoing.composed = [];
-RIVALRY_MATCH_REACTION.winnerLines.easygoing.composed.push('…一勝、積み重ねたよ。次もよろしくね');
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest) RIVALRY_MATCH_REACTION.winnerLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest._default) RIVALRY_MATCH_REACTION.winnerLines.earnest._default = [];
-RIVALRY_MATCH_REACTION.winnerLines.earnest._default.push('なんとか勝利できました。でも油断はせずに次に備えないと……');
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest) RIVALRY_MATCH_REACTION.winnerLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest.polite) RIVALRY_MATCH_REACTION.winnerLines.earnest.polite = [];
-RIVALRY_MATCH_REACTION.winnerLines.earnest.polite.push('勝たせていただきました。次に向けて、また鍛錬を積みます');
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest) RIVALRY_MATCH_REACTION.winnerLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest.ojousama) RIVALRY_MATCH_REACTION.winnerLines.earnest.ojousama = [];
-RIVALRY_MATCH_REACTION.winnerLines.earnest.ojousama.push('ふぅ…。勝たせていただきましたわ。次に向け、鍛錬を続けます');
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest) RIVALRY_MATCH_REACTION.winnerLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest.seductive) RIVALRY_MATCH_REACTION.winnerLines.earnest.seductive = [];
-RIVALRY_MATCH_REACTION.winnerLines.earnest.seductive.push('勝ったわ。でも油断はしない。…次に備えるの');
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest) RIVALRY_MATCH_REACTION.winnerLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.earnest.composed) RIVALRY_MATCH_REACTION.winnerLines.earnest.composed = [];
-RIVALRY_MATCH_REACTION.winnerLines.earnest.composed.push('…勝てました。次に向けて、また鍛錬します');
-if (!RIVALRY_MATCH_REACTION.winnerLines.emotional) RIVALRY_MATCH_REACTION.winnerLines.emotional = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.emotional._default) RIVALRY_MATCH_REACTION.winnerLines.emotional._default = [];
-RIVALRY_MATCH_REACTION.winnerLines.emotional._default.push('勝てた…っ!嬉しい…でも、次も…次も頑張らなきゃ…!');
-if (!RIVALRY_MATCH_REACTION.winnerLines.emotional) RIVALRY_MATCH_REACTION.winnerLines.emotional = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.emotional.seductive) RIVALRY_MATCH_REACTION.winnerLines.emotional.seductive = [];
-RIVALRY_MATCH_REACTION.winnerLines.emotional.seductive.push('勝ったわ…っ!この喜び…でも、次も負けないんだから…!');
-if (!RIVALRY_MATCH_REACTION.winnerLines.emotional) RIVALRY_MATCH_REACTION.winnerLines.emotional = {};
-if (!RIVALRY_MATCH_REACTION.winnerLines.emotional.composed) RIVALRY_MATCH_REACTION.winnerLines.emotional.composed = [];
-RIVALRY_MATCH_REACTION.winnerLines.emotional.composed.push('…勝てた。…嬉しい…次も頑張る');
-if (!RIVALRY_MATCH_REACTION.loserLines.normal) RIVALRY_MATCH_REACTION.loserLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.normal.polite) RIVALRY_MATCH_REACTION.loserLines.normal.polite = [];
-RIVALRY_MATCH_REACTION.loserLines.normal.polite.push('…この悔しさ、忘れません。次は必ず勝ちます');
-if (!RIVALRY_MATCH_REACTION.loserLines.normal) RIVALRY_MATCH_REACTION.loserLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.normal.cool) RIVALRY_MATCH_REACTION.loserLines.normal.cool = [];
-RIVALRY_MATCH_REACTION.loserLines.normal.cool.push('……次は、こうはいかない');
-if (!RIVALRY_MATCH_REACTION.loserLines.normal) RIVALRY_MATCH_REACTION.loserLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.normal.ojousama) RIVALRY_MATCH_REACTION.loserLines.normal.ojousama = [];
-RIVALRY_MATCH_REACTION.loserLines.normal.ojousama.push('この悔しさ、忘れませんわ。次は必ず');
-if (!RIVALRY_MATCH_REACTION.loserLines.normal) RIVALRY_MATCH_REACTION.loserLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.normal.seductive) RIVALRY_MATCH_REACTION.loserLines.normal.seductive = [];
-RIVALRY_MATCH_REACTION.loserLines.normal.seductive.push('…この悔しさ、忘れないわ。次は必ずね');
-if (!RIVALRY_MATCH_REACTION.loserLines.normal) RIVALRY_MATCH_REACTION.loserLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.normal.delinquent) RIVALRY_MATCH_REACTION.loserLines.normal.delinquent = [];
-RIVALRY_MATCH_REACTION.loserLines.normal.delinquent.push('くそっ…この借りは必ず返す。覚えとけよ');
-if (!RIVALRY_MATCH_REACTION.loserLines.normal) RIVALRY_MATCH_REACTION.loserLines.normal = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.normal.composed) RIVALRY_MATCH_REACTION.loserLines.normal.composed = [];
-RIVALRY_MATCH_REACTION.loserLines.normal.composed.push('…この悔しさ、忘れない。次は必ず');
-if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.bold._default) RIVALRY_MATCH_REACTION.loserLines.bold._default = [];
-RIVALRY_MATCH_REACTION.loserLines.bold._default.push('まだ本当の実力じゃない。次は絶対に勝ってみせる');
-if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.bold.polite) RIVALRY_MATCH_REACTION.loserLines.bold.polite = [];
-RIVALRY_MATCH_REACTION.loserLines.bold.polite.push('まだ本気ではありません。次は必ず、勝たせていただきます');
-if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.bold.ojousama) RIVALRY_MATCH_REACTION.loserLines.bold.ojousama = [];
-RIVALRY_MATCH_REACTION.loserLines.bold.ojousama.push('私の真の実力なら、負けるはずはないのに！');
-if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.bold.seductive) RIVALRY_MATCH_REACTION.loserLines.bold.seductive = [];
-RIVALRY_MATCH_REACTION.loserLines.bold.seductive.push('まだ本気じゃないのよ。次は必ず倒すわ');
-if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.bold.delinquent) RIVALRY_MATCH_REACTION.loserLines.bold.delinquent = [];
-RIVALRY_MATCH_REACTION.loserLines.bold.delinquent.push('まだ本気じゃねえ。次はぶっ潰す。覚えとけよ');
-if (!RIVALRY_MATCH_REACTION.loserLines.bold) RIVALRY_MATCH_REACTION.loserLines.bold = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.bold.composed) RIVALRY_MATCH_REACTION.loserLines.bold.composed = [];
-RIVALRY_MATCH_REACTION.loserLines.bold.composed.push('…まだ本気じゃない。次は勝つよ');
-if (!RIVALRY_MATCH_REACTION.loserLines.quiet) RIVALRY_MATCH_REACTION.loserLines.quiet = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.quiet._default) RIVALRY_MATCH_REACTION.loserLines.quiet._default = [];
-RIVALRY_MATCH_REACTION.loserLines.quiet._default.push('………(拳を握り、リングを見つめる)');
-if (!RIVALRY_MATCH_REACTION.loserLines.quiet) RIVALRY_MATCH_REACTION.loserLines.quiet = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.quiet.polite) RIVALRY_MATCH_REACTION.loserLines.quiet.polite = [];
-RIVALRY_MATCH_REACTION.loserLines.quiet.polite.push('………次は、負けません');
-if (!RIVALRY_MATCH_REACTION.loserLines.quiet) RIVALRY_MATCH_REACTION.loserLines.quiet = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.quiet.cool) RIVALRY_MATCH_REACTION.loserLines.quiet.cool = [];
-RIVALRY_MATCH_REACTION.loserLines.quiet.cool.push('……次だ');
-if (!RIVALRY_MATCH_REACTION.loserLines.quiet) RIVALRY_MATCH_REACTION.loserLines.quiet = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.quiet.seductive) RIVALRY_MATCH_REACTION.loserLines.quiet.seductive = [];
-RIVALRY_MATCH_REACTION.loserLines.quiet.seductive.push('………次は、逃がさないわよ');
-if (!RIVALRY_MATCH_REACTION.loserLines.shy) RIVALRY_MATCH_REACTION.loserLines.shy = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.shy._default) RIVALRY_MATCH_REACTION.loserLines.shy._default = [];
-RIVALRY_MATCH_REACTION.loserLines.shy._default.push('…ご、ごめんなさい……次は…頑張ります…');
-if (!RIVALRY_MATCH_REACTION.loserLines.shy) RIVALRY_MATCH_REACTION.loserLines.shy = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.shy.polite) RIVALRY_MATCH_REACTION.loserLines.shy.polite = [];
-RIVALRY_MATCH_REACTION.loserLines.shy.polite.push('…も、申し訳ございません……次は必ず…');
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing) RIVALRY_MATCH_REACTION.loserLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing._default) RIVALRY_MATCH_REACTION.loserLines.easygoing._default = [];
-RIVALRY_MATCH_REACTION.loserLines.easygoing._default.push('あー、悔しい!でも、次こそは絶対やり返す!');
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing) RIVALRY_MATCH_REACTION.loserLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing.polite) RIVALRY_MATCH_REACTION.loserLines.easygoing.polite = [];
-RIVALRY_MATCH_REACTION.loserLines.easygoing.polite.push('悔しいです!でも次こそは、必ずやり返します!');
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing) RIVALRY_MATCH_REACTION.loserLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing.ojousama) RIVALRY_MATCH_REACTION.loserLines.easygoing.ojousama = [];
-RIVALRY_MATCH_REACTION.loserLines.easygoing.ojousama.push('悔しいですわ!でも次こそは、必ずやり返します!');
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing) RIVALRY_MATCH_REACTION.loserLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing.seductive) RIVALRY_MATCH_REACTION.loserLines.easygoing.seductive = [];
-RIVALRY_MATCH_REACTION.loserLines.easygoing.seductive.push('悔しい…でも次こそは、必ずやり返すわ');
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing) RIVALRY_MATCH_REACTION.loserLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing.delinquent) RIVALRY_MATCH_REACTION.loserLines.easygoing.delinquent = [];
-RIVALRY_MATCH_REACTION.loserLines.easygoing.delinquent.push('くっそー悔しい!次こそは絶対やり返すからな!');
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing) RIVALRY_MATCH_REACTION.loserLines.easygoing = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.easygoing.composed) RIVALRY_MATCH_REACTION.loserLines.easygoing.composed = [];
-RIVALRY_MATCH_REACTION.loserLines.easygoing.composed.push('…悔しいね。でも次こそは、やり返すよ');
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest) RIVALRY_MATCH_REACTION.loserLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest._default) RIVALRY_MATCH_REACTION.loserLines.earnest._default = [];
-RIVALRY_MATCH_REACTION.loserLines.earnest._default.push('この敗北を糧にします。次は必ず、勝ってみせます');
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest) RIVALRY_MATCH_REACTION.loserLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest.polite) RIVALRY_MATCH_REACTION.loserLines.earnest.polite = [];
-RIVALRY_MATCH_REACTION.loserLines.earnest.polite.push('この敗北を糧にいたします。次は必ず、勝たせていただきます');
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest) RIVALRY_MATCH_REACTION.loserLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest.ojousama) RIVALRY_MATCH_REACTION.loserLines.earnest.ojousama = [];
-RIVALRY_MATCH_REACTION.loserLines.earnest.ojousama.push('この敗北を糧にしなくては。次は必ず勝たせていただきます！');
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest) RIVALRY_MATCH_REACTION.loserLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest.seductive) RIVALRY_MATCH_REACTION.loserLines.earnest.seductive = [];
-RIVALRY_MATCH_REACTION.loserLines.earnest.seductive.push('この敗北を糧にするわ。次は必ず勝つの');
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest) RIVALRY_MATCH_REACTION.loserLines.earnest = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.earnest.composed) RIVALRY_MATCH_REACTION.loserLines.earnest.composed = [];
-RIVALRY_MATCH_REACTION.loserLines.earnest.composed.push('…この敗北を糧にします。次は必ず');
-if (!RIVALRY_MATCH_REACTION.loserLines.emotional) RIVALRY_MATCH_REACTION.loserLines.emotional = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.emotional._default) RIVALRY_MATCH_REACTION.loserLines.emotional._default = [];
-RIVALRY_MATCH_REACTION.loserLines.emotional._default.push('うぅっ…悔しいっ…次は絶対に…絶対に勝つから…っ!');
-if (!RIVALRY_MATCH_REACTION.loserLines.emotional) RIVALRY_MATCH_REACTION.loserLines.emotional = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.emotional.seductive) RIVALRY_MATCH_REACTION.loserLines.emotional.seductive = [];
-RIVALRY_MATCH_REACTION.loserLines.emotional.seductive.push('悔しい…っ…次は絶対に…絶対に負けないわ…っ!');
-if (!RIVALRY_MATCH_REACTION.loserLines.emotional) RIVALRY_MATCH_REACTION.loserLines.emotional = {};
-if (!RIVALRY_MATCH_REACTION.loserLines.emotional.composed) RIVALRY_MATCH_REACTION.loserLines.emotional.composed = [];
-RIVALRY_MATCH_REACTION.loserLines.emotional.composed.push('…っ…悔しい…次は、必ず');
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite) RIVALRY_MATCH_REACTION.winnerLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite.shy) RIVALRY_MATCH_REACTION.winnerLines.polite.shy = [];
+RIVALRY_MATCH_REACTION.winnerLines.polite.shy.push('か、勝てました…でも…次も頑張らないと…');
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive) RIVALRY_MATCH_REACTION.winnerLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive.emotional) RIVALRY_MATCH_REACTION.winnerLines.seductive.emotional = [];
+RIVALRY_MATCH_REACTION.winnerLines.seductive.emotional.push('勝ったわ…!でもまだ…まだ終わらないのよ…っ');
+if (!RIVALRY_MATCH_REACTION.loserLines.polite) RIVALRY_MATCH_REACTION.loserLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.polite.shy) RIVALRY_MATCH_REACTION.loserLines.polite.shy = [];
+RIVALRY_MATCH_REACTION.loserLines.polite.shy.push('…負けてしまいました……悔しい…です…');
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama) RIVALRY_MATCH_REACTION.loserLines.ojousama = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama.bold) RIVALRY_MATCH_REACTION.loserLines.ojousama.bold = [];
+RIVALRY_MATCH_REACTION.loserLines.ojousama.bold.push('この負けは忘れない。……必ず借りは返す');
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive) RIVALRY_MATCH_REACTION.loserLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive.emotional) RIVALRY_MATCH_REACTION.loserLines.seductive.emotional = [];
+RIVALRY_MATCH_REACTION.loserLines.seductive.emotional.push('負けた…っ…でも、この気持ち…絶対に忘れないわ…');
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite) RIVALRY_MATCH_REACTION.winnerLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite.normal) RIVALRY_MATCH_REACTION.winnerLines.polite.normal = [];
+RIVALRY_MATCH_REACTION.winnerLines.polite.normal.push('今日のところは、わたしの勝ちです。次も…お待ちしています');
+if (!RIVALRY_MATCH_REACTION.winnerLines.cool) RIVALRY_MATCH_REACTION.winnerLines.cool = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.cool.normal) RIVALRY_MATCH_REACTION.winnerLines.cool.normal = [];
+RIVALRY_MATCH_REACTION.winnerLines.cool.normal.push('……今日は、わたしの勝ち');
+if (!RIVALRY_MATCH_REACTION.winnerLines.ojousama) RIVALRY_MATCH_REACTION.winnerLines.ojousama = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.ojousama.normal) RIVALRY_MATCH_REACTION.winnerLines.ojousama.normal = [];
+RIVALRY_MATCH_REACTION.winnerLines.ojousama.normal.push('本日はわたくしの勝利ですわね。次の機会もお待ちしてますわね');
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive) RIVALRY_MATCH_REACTION.winnerLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive.normal) RIVALRY_MATCH_REACTION.winnerLines.seductive.normal = [];
+RIVALRY_MATCH_REACTION.winnerLines.seductive.normal.push('今日はわたしの勝ちね。…次はどうなるかしら');
+if (!RIVALRY_MATCH_REACTION.winnerLines.delinquent) RIVALRY_MATCH_REACTION.winnerLines.delinquent = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.delinquent.normal) RIVALRY_MATCH_REACTION.winnerLines.delinquent.normal = [];
+RIVALRY_MATCH_REACTION.winnerLines.delinquent.normal.push('今日はこっちの勝ちだ。次もよろしくな');
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed) RIVALRY_MATCH_REACTION.winnerLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed.normal) RIVALRY_MATCH_REACTION.winnerLines.composed.normal = [];
+RIVALRY_MATCH_REACTION.winnerLines.composed.normal.push('…今日はわたしの勝ちだね。また次もよろしく');
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard) RIVALRY_MATCH_REACTION.winnerLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard.bold) RIVALRY_MATCH_REACTION.winnerLines.standard.bold = [];
+RIVALRY_MATCH_REACTION.winnerLines.standard.bold.push('今のあなたじゃ、わたしは倒せない。鍛え直してきなさい。');
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite) RIVALRY_MATCH_REACTION.winnerLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite.bold) RIVALRY_MATCH_REACTION.winnerLines.polite.bold = [];
+RIVALRY_MATCH_REACTION.winnerLines.polite.bold.push('今のあなたでは、わたしは倒せません。鍛え直してきてください');
+if (!RIVALRY_MATCH_REACTION.winnerLines.ojousama) RIVALRY_MATCH_REACTION.winnerLines.ojousama = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.ojousama.bold) RIVALRY_MATCH_REACTION.winnerLines.ojousama.bold = [];
+RIVALRY_MATCH_REACTION.winnerLines.ojousama.bold.push('わたくしを倒すなど百年早いですわね');
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive) RIVALRY_MATCH_REACTION.winnerLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive.bold) RIVALRY_MATCH_REACTION.winnerLines.seductive.bold = [];
+RIVALRY_MATCH_REACTION.winnerLines.seductive.bold.push('今のあなたじゃ、わたしに届かないわ。…鍛え直してらっしゃい');
+if (!RIVALRY_MATCH_REACTION.winnerLines.delinquent) RIVALRY_MATCH_REACTION.winnerLines.delinquent = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.delinquent.bold) RIVALRY_MATCH_REACTION.winnerLines.delinquent.bold = [];
+RIVALRY_MATCH_REACTION.winnerLines.delinquent.bold.push('今のテメェじゃ、あたしには勝てねえ。出直してこい');
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed) RIVALRY_MATCH_REACTION.winnerLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed.bold) RIVALRY_MATCH_REACTION.winnerLines.composed.bold = [];
+RIVALRY_MATCH_REACTION.winnerLines.composed.bold.push('…今のあなたじゃ、わたしには届かない。また来なよ');
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard) RIVALRY_MATCH_REACTION.winnerLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard.quiet) RIVALRY_MATCH_REACTION.winnerLines.standard.quiet = [];
+RIVALRY_MATCH_REACTION.winnerLines.standard.quiet.push('………(そっと去っていく)');
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite) RIVALRY_MATCH_REACTION.winnerLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite.quiet) RIVALRY_MATCH_REACTION.winnerLines.polite.quiet = [];
+RIVALRY_MATCH_REACTION.winnerLines.polite.quiet.push('………今日は、ここまでです');
+if (!RIVALRY_MATCH_REACTION.winnerLines.cool) RIVALRY_MATCH_REACTION.winnerLines.cool = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.cool.quiet) RIVALRY_MATCH_REACTION.winnerLines.cool.quiet = [];
+RIVALRY_MATCH_REACTION.winnerLines.cool.quiet.push('……終わり');
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive) RIVALRY_MATCH_REACTION.winnerLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive.quiet) RIVALRY_MATCH_REACTION.winnerLines.seductive.quiet = [];
+RIVALRY_MATCH_REACTION.winnerLines.seductive.quiet.push('………今日のところは、ね');
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard) RIVALRY_MATCH_REACTION.winnerLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard.shy) RIVALRY_MATCH_REACTION.winnerLines.standard.shy = [];
+RIVALRY_MATCH_REACTION.winnerLines.standard.shy.push('…あ、あの…ありがとう…ございました…');
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite) RIVALRY_MATCH_REACTION.winnerLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite.shy) RIVALRY_MATCH_REACTION.winnerLines.polite.shy = [];
+RIVALRY_MATCH_REACTION.winnerLines.polite.shy.push('…あ、あの…ありがとうございました…');
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard) RIVALRY_MATCH_REACTION.winnerLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard.easygoing) RIVALRY_MATCH_REACTION.winnerLines.standard.easygoing = [];
+RIVALRY_MATCH_REACTION.winnerLines.standard.easygoing.push('一勝一勝、積み重ねていくよ!次もよろしくね!');
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite) RIVALRY_MATCH_REACTION.winnerLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite.easygoing) RIVALRY_MATCH_REACTION.winnerLines.polite.easygoing = [];
+RIVALRY_MATCH_REACTION.winnerLines.polite.easygoing.push('一勝ずつ、積み重ねていきます!次もよろしくお願いします!');
+if (!RIVALRY_MATCH_REACTION.winnerLines.ojousama) RIVALRY_MATCH_REACTION.winnerLines.ojousama = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.ojousama.easygoing) RIVALRY_MATCH_REACTION.winnerLines.ojousama.easygoing = [];
+RIVALRY_MATCH_REACTION.winnerLines.ojousama.easygoing.push('一勝ずつ、積み重ねますわ!次もよろしくお願いいたします!');
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive) RIVALRY_MATCH_REACTION.winnerLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive.easygoing) RIVALRY_MATCH_REACTION.winnerLines.seductive.easygoing = [];
+RIVALRY_MATCH_REACTION.winnerLines.seductive.easygoing.push('一勝、積み重ねたわ。…次も楽しみにしてて');
+if (!RIVALRY_MATCH_REACTION.winnerLines.delinquent) RIVALRY_MATCH_REACTION.winnerLines.delinquent = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.delinquent.easygoing) RIVALRY_MATCH_REACTION.winnerLines.delinquent.easygoing = [];
+RIVALRY_MATCH_REACTION.winnerLines.delinquent.easygoing.push('よし、一勝!次もガンガン行くぜ!');
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed) RIVALRY_MATCH_REACTION.winnerLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed.easygoing) RIVALRY_MATCH_REACTION.winnerLines.composed.easygoing = [];
+RIVALRY_MATCH_REACTION.winnerLines.composed.easygoing.push('…一勝、積み重ねたよ。次もよろしくね');
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard) RIVALRY_MATCH_REACTION.winnerLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard.earnest) RIVALRY_MATCH_REACTION.winnerLines.standard.earnest = [];
+RIVALRY_MATCH_REACTION.winnerLines.standard.earnest.push('なんとか勝利できました。でも油断はせずに次に備えないと……');
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite) RIVALRY_MATCH_REACTION.winnerLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.polite.earnest) RIVALRY_MATCH_REACTION.winnerLines.polite.earnest = [];
+RIVALRY_MATCH_REACTION.winnerLines.polite.earnest.push('勝たせていただきました。次に向けて、また鍛錬を積みます');
+if (!RIVALRY_MATCH_REACTION.winnerLines.ojousama) RIVALRY_MATCH_REACTION.winnerLines.ojousama = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.ojousama.earnest) RIVALRY_MATCH_REACTION.winnerLines.ojousama.earnest = [];
+RIVALRY_MATCH_REACTION.winnerLines.ojousama.earnest.push('ふぅ…。勝たせていただきましたわ。次に向け、鍛錬を続けます');
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive) RIVALRY_MATCH_REACTION.winnerLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive.earnest) RIVALRY_MATCH_REACTION.winnerLines.seductive.earnest = [];
+RIVALRY_MATCH_REACTION.winnerLines.seductive.earnest.push('勝ったわ。でも油断はしない。…次に備えるの');
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed) RIVALRY_MATCH_REACTION.winnerLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed.earnest) RIVALRY_MATCH_REACTION.winnerLines.composed.earnest = [];
+RIVALRY_MATCH_REACTION.winnerLines.composed.earnest.push('…勝てました。次に向けて、また鍛錬します');
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard) RIVALRY_MATCH_REACTION.winnerLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.standard.emotional) RIVALRY_MATCH_REACTION.winnerLines.standard.emotional = [];
+RIVALRY_MATCH_REACTION.winnerLines.standard.emotional.push('勝てた…っ!嬉しい…でも、次も…次も頑張らなきゃ…!');
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive) RIVALRY_MATCH_REACTION.winnerLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.seductive.emotional) RIVALRY_MATCH_REACTION.winnerLines.seductive.emotional = [];
+RIVALRY_MATCH_REACTION.winnerLines.seductive.emotional.push('勝ったわ…っ!この喜び…でも、次も負けないんだから…!');
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed) RIVALRY_MATCH_REACTION.winnerLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.winnerLines.composed.emotional) RIVALRY_MATCH_REACTION.winnerLines.composed.emotional = [];
+RIVALRY_MATCH_REACTION.winnerLines.composed.emotional.push('…勝てた。…嬉しい…次も頑張る');
+if (!RIVALRY_MATCH_REACTION.loserLines.polite) RIVALRY_MATCH_REACTION.loserLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.polite.normal) RIVALRY_MATCH_REACTION.loserLines.polite.normal = [];
+RIVALRY_MATCH_REACTION.loserLines.polite.normal.push('…この悔しさ、忘れません。次は必ず勝ちます');
+if (!RIVALRY_MATCH_REACTION.loserLines.cool) RIVALRY_MATCH_REACTION.loserLines.cool = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.cool.normal) RIVALRY_MATCH_REACTION.loserLines.cool.normal = [];
+RIVALRY_MATCH_REACTION.loserLines.cool.normal.push('……次は、こうはいかない');
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama) RIVALRY_MATCH_REACTION.loserLines.ojousama = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama.normal) RIVALRY_MATCH_REACTION.loserLines.ojousama.normal = [];
+RIVALRY_MATCH_REACTION.loserLines.ojousama.normal.push('この悔しさ、忘れませんわ。次は必ず');
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive) RIVALRY_MATCH_REACTION.loserLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive.normal) RIVALRY_MATCH_REACTION.loserLines.seductive.normal = [];
+RIVALRY_MATCH_REACTION.loserLines.seductive.normal.push('…この悔しさ、忘れないわ。次は必ずね');
+if (!RIVALRY_MATCH_REACTION.loserLines.delinquent) RIVALRY_MATCH_REACTION.loserLines.delinquent = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.delinquent.normal) RIVALRY_MATCH_REACTION.loserLines.delinquent.normal = [];
+RIVALRY_MATCH_REACTION.loserLines.delinquent.normal.push('くそっ…この借りは必ず返す。覚えとけよ');
+if (!RIVALRY_MATCH_REACTION.loserLines.composed) RIVALRY_MATCH_REACTION.loserLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.composed.normal) RIVALRY_MATCH_REACTION.loserLines.composed.normal = [];
+RIVALRY_MATCH_REACTION.loserLines.composed.normal.push('…この悔しさ、忘れない。次は必ず');
+if (!RIVALRY_MATCH_REACTION.loserLines.standard) RIVALRY_MATCH_REACTION.loserLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.standard.bold) RIVALRY_MATCH_REACTION.loserLines.standard.bold = [];
+RIVALRY_MATCH_REACTION.loserLines.standard.bold.push('まだ本当の実力じゃない。次は絶対に勝ってみせる');
+if (!RIVALRY_MATCH_REACTION.loserLines.polite) RIVALRY_MATCH_REACTION.loserLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.polite.bold) RIVALRY_MATCH_REACTION.loserLines.polite.bold = [];
+RIVALRY_MATCH_REACTION.loserLines.polite.bold.push('まだ本気ではありません。次は必ず、勝たせていただきます');
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama) RIVALRY_MATCH_REACTION.loserLines.ojousama = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama.bold) RIVALRY_MATCH_REACTION.loserLines.ojousama.bold = [];
+RIVALRY_MATCH_REACTION.loserLines.ojousama.bold.push('私の真の実力なら、負けるはずはないのに！');
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive) RIVALRY_MATCH_REACTION.loserLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive.bold) RIVALRY_MATCH_REACTION.loserLines.seductive.bold = [];
+RIVALRY_MATCH_REACTION.loserLines.seductive.bold.push('まだ本気じゃないのよ。次は必ず倒すわ');
+if (!RIVALRY_MATCH_REACTION.loserLines.delinquent) RIVALRY_MATCH_REACTION.loserLines.delinquent = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.delinquent.bold) RIVALRY_MATCH_REACTION.loserLines.delinquent.bold = [];
+RIVALRY_MATCH_REACTION.loserLines.delinquent.bold.push('まだ本気じゃねえ。次はぶっ潰す。覚えとけよ');
+if (!RIVALRY_MATCH_REACTION.loserLines.composed) RIVALRY_MATCH_REACTION.loserLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.composed.bold) RIVALRY_MATCH_REACTION.loserLines.composed.bold = [];
+RIVALRY_MATCH_REACTION.loserLines.composed.bold.push('…まだ本気じゃない。次は勝つよ');
+if (!RIVALRY_MATCH_REACTION.loserLines.standard) RIVALRY_MATCH_REACTION.loserLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.standard.quiet) RIVALRY_MATCH_REACTION.loserLines.standard.quiet = [];
+RIVALRY_MATCH_REACTION.loserLines.standard.quiet.push('………(拳を握り、リングを見つめる)');
+if (!RIVALRY_MATCH_REACTION.loserLines.polite) RIVALRY_MATCH_REACTION.loserLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.polite.quiet) RIVALRY_MATCH_REACTION.loserLines.polite.quiet = [];
+RIVALRY_MATCH_REACTION.loserLines.polite.quiet.push('………次は、負けません');
+if (!RIVALRY_MATCH_REACTION.loserLines.cool) RIVALRY_MATCH_REACTION.loserLines.cool = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.cool.quiet) RIVALRY_MATCH_REACTION.loserLines.cool.quiet = [];
+RIVALRY_MATCH_REACTION.loserLines.cool.quiet.push('……次だ');
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive) RIVALRY_MATCH_REACTION.loserLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive.quiet) RIVALRY_MATCH_REACTION.loserLines.seductive.quiet = [];
+RIVALRY_MATCH_REACTION.loserLines.seductive.quiet.push('………次は、逃がさないわよ');
+if (!RIVALRY_MATCH_REACTION.loserLines.standard) RIVALRY_MATCH_REACTION.loserLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.standard.shy) RIVALRY_MATCH_REACTION.loserLines.standard.shy = [];
+RIVALRY_MATCH_REACTION.loserLines.standard.shy.push('…ご、ごめんなさい……次は…頑張ります…');
+if (!RIVALRY_MATCH_REACTION.loserLines.polite) RIVALRY_MATCH_REACTION.loserLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.polite.shy) RIVALRY_MATCH_REACTION.loserLines.polite.shy = [];
+RIVALRY_MATCH_REACTION.loserLines.polite.shy.push('…も、申し訳ございません……次は必ず…');
+if (!RIVALRY_MATCH_REACTION.loserLines.standard) RIVALRY_MATCH_REACTION.loserLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.standard.easygoing) RIVALRY_MATCH_REACTION.loserLines.standard.easygoing = [];
+RIVALRY_MATCH_REACTION.loserLines.standard.easygoing.push('あー、悔しい!でも、次こそは絶対やり返す!');
+if (!RIVALRY_MATCH_REACTION.loserLines.polite) RIVALRY_MATCH_REACTION.loserLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.polite.easygoing) RIVALRY_MATCH_REACTION.loserLines.polite.easygoing = [];
+RIVALRY_MATCH_REACTION.loserLines.polite.easygoing.push('悔しいです!でも次こそは、必ずやり返します!');
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama) RIVALRY_MATCH_REACTION.loserLines.ojousama = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama.easygoing) RIVALRY_MATCH_REACTION.loserLines.ojousama.easygoing = [];
+RIVALRY_MATCH_REACTION.loserLines.ojousama.easygoing.push('悔しいですわ!でも次こそは、必ずやり返します!');
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive) RIVALRY_MATCH_REACTION.loserLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive.easygoing) RIVALRY_MATCH_REACTION.loserLines.seductive.easygoing = [];
+RIVALRY_MATCH_REACTION.loserLines.seductive.easygoing.push('悔しい…でも次こそは、必ずやり返すわ');
+if (!RIVALRY_MATCH_REACTION.loserLines.delinquent) RIVALRY_MATCH_REACTION.loserLines.delinquent = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.delinquent.easygoing) RIVALRY_MATCH_REACTION.loserLines.delinquent.easygoing = [];
+RIVALRY_MATCH_REACTION.loserLines.delinquent.easygoing.push('くっそー悔しい!次こそは絶対やり返すからな!');
+if (!RIVALRY_MATCH_REACTION.loserLines.composed) RIVALRY_MATCH_REACTION.loserLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.composed.easygoing) RIVALRY_MATCH_REACTION.loserLines.composed.easygoing = [];
+RIVALRY_MATCH_REACTION.loserLines.composed.easygoing.push('…悔しいね。でも次こそは、やり返すよ');
+if (!RIVALRY_MATCH_REACTION.loserLines.standard) RIVALRY_MATCH_REACTION.loserLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.standard.earnest) RIVALRY_MATCH_REACTION.loserLines.standard.earnest = [];
+RIVALRY_MATCH_REACTION.loserLines.standard.earnest.push('この敗北を糧にします。次は必ず、勝ってみせます');
+if (!RIVALRY_MATCH_REACTION.loserLines.polite) RIVALRY_MATCH_REACTION.loserLines.polite = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.polite.earnest) RIVALRY_MATCH_REACTION.loserLines.polite.earnest = [];
+RIVALRY_MATCH_REACTION.loserLines.polite.earnest.push('この敗北を糧にいたします。次は必ず、勝たせていただきます');
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama) RIVALRY_MATCH_REACTION.loserLines.ojousama = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.ojousama.earnest) RIVALRY_MATCH_REACTION.loserLines.ojousama.earnest = [];
+RIVALRY_MATCH_REACTION.loserLines.ojousama.earnest.push('この敗北を糧にしなくては。次は必ず勝たせていただきます！');
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive) RIVALRY_MATCH_REACTION.loserLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive.earnest) RIVALRY_MATCH_REACTION.loserLines.seductive.earnest = [];
+RIVALRY_MATCH_REACTION.loserLines.seductive.earnest.push('この敗北を糧にするわ。次は必ず勝つの');
+if (!RIVALRY_MATCH_REACTION.loserLines.composed) RIVALRY_MATCH_REACTION.loserLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.composed.earnest) RIVALRY_MATCH_REACTION.loserLines.composed.earnest = [];
+RIVALRY_MATCH_REACTION.loserLines.composed.earnest.push('…この敗北を糧にします。次は必ず');
+if (!RIVALRY_MATCH_REACTION.loserLines.standard) RIVALRY_MATCH_REACTION.loserLines.standard = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.standard.emotional) RIVALRY_MATCH_REACTION.loserLines.standard.emotional = [];
+RIVALRY_MATCH_REACTION.loserLines.standard.emotional.push('うぅっ…悔しいっ…次は絶対に…絶対に勝つから…っ!');
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive) RIVALRY_MATCH_REACTION.loserLines.seductive = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.seductive.emotional) RIVALRY_MATCH_REACTION.loserLines.seductive.emotional = [];
+RIVALRY_MATCH_REACTION.loserLines.seductive.emotional.push('悔しい…っ…次は絶対に…絶対に負けないわ…っ!');
+if (!RIVALRY_MATCH_REACTION.loserLines.composed) RIVALRY_MATCH_REACTION.loserLines.composed = {};
+if (!RIVALRY_MATCH_REACTION.loserLines.composed.emotional) RIVALRY_MATCH_REACTION.loserLines.composed.emotional = [];
+RIVALRY_MATCH_REACTION.loserLines.composed.emotional.push('…っ…悔しい…次は、必ず');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // イベントセリフ定数群（旧 ui-common.js の EVENT_QUOTES から分解 / 2026-04-19）
 // pickQuote / getTraitQuote / getDraftQuote 等から参照
 // ─────────────────────────────────────────────────────────────────────────────
 const EVENT_DRAFT_JOIN_LINES = {
-  _default: {
+  standard: {
     normal: [
       '\u3088\u308d\u3057\u304f\u304a\u9858\u3044\u3057\u307e\u3059\u3002\u7cbe\u4e00\u676f\u9811\u5f35\u308a\u307e\u3059',
       '\u9078\u3093\u3067\u304f\u3060\u3055\u3063\u3066\u3001\u3042\u308a\u304c\u3068\u3046\u3054\u3056\u3044\u307e\u3059',
@@ -29215,7 +29206,7 @@ const EVENT_DRAFT_INTEREST_LINES = {
     earnest: ['地道に努力するのが取り柄です。信じていただけますか'],
     emotional: ['選んでいただけましたら…わたし、全力で…全力で頑張ります…！'],
   },
-  _default: {
+  standard: {
     normal: ['よろしくお願いします。精一杯やります', '選んでいただけたら、全力で頑張ります'],
     bold: ['てっぺんを獲る。それ以外に興味はない', '私を選んでくれるなら、絶対に後悔はさせない！'],
     quiet: ['………よろしくお願いします'],
@@ -29263,7 +29254,7 @@ const EVENT_DRAFT_INTEREST_LINES = {
 };
 
 const EVENT_INJURY_LINES = {
-  _default: {
+  standard: {
     normal: [
       '\u3046\u3045\u2026\u75db\u3044\u2026\u3002\u3067\u3082\u3001\u3059\u3050\u623b\u308a\u307e\u3059',
       '\u3057\u3070\u3089\u304f\u304a\u4f11\u307f\u3092\u3044\u305f\u3060\u304d\u307e\u3059',
@@ -29474,7 +29465,7 @@ const EVENT_TITLE_WIN_LINES = {
     earnest: ['積み重ねが報われました…本当に、ありがとうございます'],
     emotional: ['ああ…！チャンピオンです…！嬉しい…涙が…！'],
   },
-  _default: {
+  standard: {
     normal: ['やった…！チャンピオンになれた…！夢みたい！', 'このベルト、絶対に手放しません！', '最高の気分です！応援ありがとうございます！'],
     bold: ['てっぺんに立った。でもまだ足りない…もっと上へ', 'この炎は消えない。ベルトを懸けて、もっと熱い闘いを！'],
     quiet: ['………（ベルトを抱きしめている）'],
@@ -29540,7 +29531,7 @@ const EVENT_TITLE_DEFENSE_LINES = {
     earnest: ['防衛できました。でも、まだまだ精進いたします'],
     emotional: ['守れました…！嬉しい…！次も絶対に守ります…！'],
   },
-  _default: {
+  standard: {
     normal: ['防衛成功…！ほっとした…。でも、もっと強くならないと。', 'このベルトの重さ、守るたびに感じます。'],
     bold: ['まだ誰にもこの座は譲れない。もっと来い！', '防衛は通過点。私が目指すのはもっと先だ'],
     quiet: ['………（静かにベルトを見つめている）'],
@@ -29606,7 +29597,7 @@ const EVENT_TITLE_CHALLENGE_LOSS_LINES = {
     earnest: ['実力が足りませんでした。もっと精進いたします'],
     emotional: ['悔しい…！悔しいです…！でも…絶対に諦めません…！'],
   },
-  _default: {
+  standard: {
     normal: ['悔しい…。でも、いい経験になりました。次こそは…！', 'まだ実力が足りなかった…。もっと強くなって帰ってきます。'],
     bold: ['くっ…！こんなの認めない！もう一回やらせてくれ！', '…今日は認める。でもこの借りは必ず返す'],
     quiet: ['………（唇を噛んでいる）'],
@@ -29672,7 +29663,7 @@ const EVENT_TITLE_LOSS_LINES = {
     earnest: ['努力が足りませんでした。一から出直します'],
     emotional: ['嘘…嘘です…ベルトが…！でも…でも諦めません…！'],
   },
-  _default: {
+  standard: {
     normal: ['ベルトを失ってしまった…。でも、この団体で戦い続けます。', '…悔しい。チャンピオンとしてもっとやれたはずなのに。'],
     bold: ['嘘だろ…！私のベルトが…！絶対に取り返す！', 'ベルトを失った…でもこの悔しさが次の炎になる'],
     quiet: ['……今は…一人にしてください'],
@@ -29720,7 +29711,7 @@ const EVENT_TITLE_LOSS_LINES = {
 };
 
 const EVENT_RELEASE_LINES = {
-  _default: {
+  standard: {
     normal: [
       '\u305d\u3046\u2026\u3067\u3059\u304b\u3002\u3053\u3053\u3067\u306e\u601d\u3044\u51fa\u3001\u5fd8\u308c\u307e\u305b\u3093',
       '\u304a\u4e16\u8a71\u306b\u306a\u308a\u307e\u3057\u305f\u2026',
@@ -29930,7 +29921,7 @@ const EVENT_FA_SIGNING_LINES = {
     earnest: ['ありがとうございます。期待にお応えいたします'],
     emotional: ['ありがとうございます…！嬉しいです…！全力で頑張ります…！'],
   },
-  _default: {
+  standard: {
     normal: ['よろしくお願いします。力になれるよう頑張ります', '新しい環境…悪くないですね。頑張ります'],
     bold: ['てっぺんを獲るために来た。わかってるよな？', '新しい闘いの場…！燃えてきた！'],
     quiet: ['…よろしくお願いします'],
@@ -30002,7 +29993,7 @@ const EVENT_FA_WELCOME_LINES = {
     earnest: ['毎日精進いたします。見ていてください'],
     emotional: ['嬉しいです…！よろしくお願いします…！頑張ります…！'],
   },
-  _default: {
+  standard: {
     normal: ['よろしくお願いします。頑張ります', '力になれるよう、精一杯やります'],
     bold: ['頂点まで一直線だ。邪魔はさせない', '燃えてきた…！早く試合がしたい！'],
     quiet: ['…よろしくお願いします'],
@@ -30062,7 +30053,7 @@ const EVENT_FA_WELCOME_GENERIC_LINES = [
 //    || LINES[state].normal._default
 const HEAT_STATE_SELF_LINES = {
   fresh: {
-    _default: {
+    standard: {
       normal: ['今日は体が軽い。なんでもできそうな気がする'],
       bold: ['体が動きたがってる。もっとやらせてくれない?'],
       easygoing: ['なんか今日、体が軽いんだよねー。いけるいける'],
@@ -30103,7 +30094,7 @@ const HEAT_STATE_SELF_LINES = {
     },
   },
   warm: {
-    _default: {
+    standard: {
       normal: ['同じだけやってるのに、手応えが薄い気がする'],
       bold: ['まだやれる。…切れが鈍った? 気のせいだって'],
       easygoing: ['んー、なんか乗り切らないなー。動けてはいるけど'],
@@ -30144,7 +30135,7 @@ const HEAT_STATE_SELF_LINES = {
     },
   },
   heavy: {
-    _default: {
+    standard: {
       normal: ['体が重い。動いてはいるけど、何も残らないな'],
       bold: ['重い。…でも止まらない。止まったら負けた気がする'],
       easygoing: ['あー、体が重い。今日は何やっても身にならないねー'],
@@ -30238,7 +30229,7 @@ const EVENT_RENTAL_GREETING_LINES = {
     earnest: ['短い間ですが、精一杯務めさせていただきます'],
     emotional: ['よろしくお願いします…！短い間ですが…全力で…！'],
   },
-  _default: {
+  standard: {
     normal: ['レンタルですが、手は抜きませんので。よろしく', '短い間ですがよろしくお願いします'],
     bold: ['レンタルだからって舐めるなよ！全試合全力だ！', 'よその団体でも闘志は変わらない！燃えるぞ！'],
     quiet: ['…短い間ですが、よろしくお願いします'],
@@ -30292,7 +30283,7 @@ const EVENT_RENTAL_GREETING_GENERIC_LINES = [
 ];
 
 const SCOUT_GREETING_LINES = {
-  _default: {
+  standard: {
     normal: [
       '声をかけてくれた目を信じて、頑張ってみるね',
       'まさか自分に声がかかるとはね。よろしく',
@@ -30386,7 +30377,7 @@ const SCOUT_GREETING_GENERIC_LINES = [
 ];
 
 const FA_GREETING_LINES = {
-  _default: {
+  standard: {
     normal: [
       '所属が決まるって、やっぱり落ち着くね',
       'また声がかかって嬉しいよ。今度は長くいたいね',

@@ -84,7 +84,7 @@ section('2b. ジュニアの導入は性格 × 属性のセリフを使う', () 
   const summonEnd = juniorLines.indexOf('\n  },\n  preMatch:', summonAt);
   const summon = juniorLines.slice(summonAt, summonEnd);
   // 2026-08-01 の軸入れ替えで第一分岐がアーキタイプ、第二分岐が性格になった
-  ['_default', 'ojousama', 'delinquent', 'seductive', 'cool', 'composed', 'polite'].forEach(archetype => {
+  ['standard', 'ojousama', 'delinquent', 'seductive', 'cool', 'composed', 'polite'].forEach(archetype => {
     assert.ok(new RegExp(`\\n    ${archetype}: \\{`).test(summon),
       `summon: ${archetype} の属性別セリフが無い`);
   });

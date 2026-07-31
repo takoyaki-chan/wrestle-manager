@@ -12,7 +12,7 @@
 
 ```js
 const SCOUT_GREETING_LINES = {
-  _default: {
+  standard: {
     normal: [
       '声をかけてくれた目を信じて、頑張ってみるね',
       'まさか自分に声がかかるとはね。よろしく',
@@ -110,7 +110,7 @@ const SCOUT_GREETING_GENERIC_LINES = [
 
 ```js
 const FA_GREETING_LINES = {
-  _default: {
+  standard: {
     normal: [
       '所属が決まるって、やっぱり落ち着くね',
       'また声がかかって嬉しいよ。今度は長くいたいね',

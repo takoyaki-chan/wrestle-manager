@@ -33,7 +33,7 @@ const matrix = Function(`"use strict"; return (${literal});`)();
 
 const CONTEXTS = ['gauntlet', 'champion', 'defiant'];
 const PERSONALITIES = ['normal', 'bold', 'quiet', 'shy', 'easygoing', 'earnest', 'emotional'];
-const ARCHETYPES = ['_default', 'composed', 'ojousama', 'polite', 'seductive', 'delinquent', 'cool'];
+const ARCHETYPES = ['standard', 'composed', 'ojousama', 'polite', 'seductive', 'delinquent', 'cool'];
 const ALLOWED_PLACEHOLDERS = ['{wins}', '{org}'];
 
 let totalLines = 0;

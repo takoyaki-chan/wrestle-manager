@@ -651,7 +651,7 @@ const VICTORY_LINES = {
 // context → personality → archetype → [lines]
 const SCOUT_SIGNING_LINES = {
   direct: {
-    _default: {
+    standard: {
       normal: [
         'よろしくね。早く実戦で試したいな',
         'やるからには全力でやるつもり。よろしくね',
@@ -793,7 +793,7 @@ const SCOUT_SIGNING_LINES = {
       ],
     }},
   competition_won: {
-    _default: {
+    standard: {
       normal: [
         '競り合いを制してまで…。その熱意、嫌いじゃないよ',
         '取り合いになるほどの評価…ってことでいいのかな？ 頑張るね',
@@ -942,7 +942,7 @@ const SCOUT_SIGNING_LINES = {
       ],
     }},
   fa_signing: {
-    _default: {
+    standard: {
       normal: [
         'フリーも悪くなかったけど、安定した環境で戦いたくなって',
         '声をかけてくれてありがと。実力は見てもらえばわかるよ',

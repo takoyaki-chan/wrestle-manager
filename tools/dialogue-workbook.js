@@ -110,7 +110,17 @@ const PERSONALITY_FILL = {
 // 判定順(性格を先に見るか、アーキタイプを先に見るか)に依存しない — どちらの
 // セットにキーが属するかで一意に決まる。旧版はこの重複のせいで性格を先に
 // 判定する特別扱いが必要だったが、重複が解消された今は素直な判定で足りる。
+// 軸キーと同じ綴りのキーを持つが、実際には軸ではないテーブル。
+// 例: App._NEWSPAPER_HEADLINES は試合の性質で分類しており(titleWin / rivalry /
+// upset / ... / normal)、この `normal` は「特筆すべき点がない試合」であって
+// 性格「ノーマル」ではない。素直に判定すると性格列に嘘が入る。
+const NON_AXIS_TABLES = new Set([
+  'App._NEWSPAPER_HEADLINES',
+  'App._NEWSPAPER_ARTICLES',
+]);
+
 function detectMeta(idPath, tableRoot) {
+  if (NON_AXIS_TABLES.has(tableRoot)) return { archetype: '', personality: '' };
   let remainder = idPath.slice(tableRoot.length);
   if (remainder.startsWith('.')) remainder = remainder.slice(1);
   const segRe = /([A-Za-z_$][A-Za-z0-9_$]*)|\[(\d+)\]/g;
@@ -420,7 +430,12 @@ const STYLES = {
   idLock: 15,
 };
 
+// export の後始末で「今回書いたか」を判定するための記録。
+// runExport の外からも writeWorkbook は呼ばれうるので、モジュール変数に持つ。
+const writtenPaths = new Set();
+
 function writeWorkbook(filePath, sheets) {
+  writtenPaths.add(path.resolve(filePath));
   const sheetNames = sheets.map(sheet => sheet.name);
   const files = [
     { name: '[Content_Types].xml', data: contentTypesXml(sheetNames.length) },
@@ -987,6 +1002,7 @@ function runExport(args) {
 
   let totalWritten = 0;
   const summary = [];
+  writtenPaths.clear();
 
   // --- キャラタイプ別/ (34ファイル) ---
   const realCombos = getRealCombos(sandbox);
@@ -1080,6 +1096,33 @@ function runExport(args) {
     const outPath = path.join(XLSX_DIR, '_キャラ対応表.xlsx');
     writeWorkbook(outPath, sheets);
     summary.push(`  _キャラ対応表.xlsx`);
+  }
+
+  // ── 後始末: 今回書かなかった .xlsx を消す ──
+  //
+  // 行が1本も無くなったブックは書き出されない。放置すると**古いIDのファイルが
+  // 残り続ける**。2026-08-01 の軸入れ替えで実際にこれが起き、「02-タッグマッチ.xlsx が
+  // 入れ替え前のIDのまま残っている」＝棚卸しの数字が狂う、という形で表面化した。
+  // 開いたままの Excel(.~lock) がある場合は消さずに警告する。
+  {
+    const wrote = new Set();
+    (function collect(dir) {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) collect(full);
+        else if (e.name.endsWith('.xlsx') && !e.name.startsWith('~$')) wrote.add(full);
+      }
+    })(XLSX_DIR);
+    const stale = [...wrote].filter(f => !writtenPaths.has(path.resolve(f)));
+    for (const f of stale) {
+      const lock = path.join(path.dirname(f), '.~lock.' + path.basename(f) + '#');
+      if (fs.existsSync(lock)) {
+        console.warn(`[dialogue-workbook] ⚠ 空になったが Excel で開かれているため消せない: ${path.relative(XLSX_DIR, f)}`);
+        continue;
+      }
+      fs.unlinkSync(f);
+      console.log(`[dialogue-workbook] 削除(行が無くなったため): ${path.relative(XLSX_DIR, f)}`);
+    }
   }
 
   console.log('[dialogue-workbook] export summary:');

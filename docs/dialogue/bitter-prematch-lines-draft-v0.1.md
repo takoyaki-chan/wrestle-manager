@@ -139,7 +139,7 @@
 //   同数のときは直近対戦の勝者を 'ahead'、それも引けなければ 'behind'
 const BITTER_PREMATCH_LINES = {
   ahead: {
-    _default: {
+    standard: {
       normal: [
         '終わったはずなのに、まだ胃の底が重い',
         'もう一度勝てば消えるのかな。……多分、消えない',
@@ -191,7 +191,7 @@ const BITTER_PREMATCH_LINES = {
     },
   },
   behind: {
-    _default: {
+    standard: {
       normal: [
         '終わったことにされた。私だけ、置いていかれたまま',
         '忘れられたら楽だったのに。……よく覚えてるんだ、これが',
