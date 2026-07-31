@@ -94,8 +94,10 @@ function pickDamageLine(fighter, dmg, hpRatio, rng) {
 }
 function _pickSerif(personality, archetype) {
   // 第一分岐はアーキタイプ(口調)。性格を先に引くと口調が揃ってしまう(2026-08-01 入れ替え)
-  const byA = DAMAGE_SERIF_LINES[archetype] || DAMAGE_SERIF_LINES.standard;
-  const lines = byA[personality] || byA.normal || ["……くっ"];
+  // フォールバックは4段: (a,p) → (a,normal) → (standard,p) → (standard,normal)
+  const byA = DAMAGE_SERIF_LINES[archetype] || {};
+  const byStd = DAMAGE_SERIF_LINES.standard || {};
+  const lines = byA[personality] || byA.normal || byStd[personality] || byStd.normal || ["……くっ"];
   return lines[Math.floor(Math.random() * lines.length)];
 }
 function _pickVoice(archetype) {

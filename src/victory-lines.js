@@ -1606,8 +1606,10 @@ function getVsExEmployerLine(fighter, mode, opponentOrgId) {
   if (opponentOrgId != null && fighter.grudge.vsOrgId !== opponentOrgId) return null;
   const pers = fighter.personality || 'normal';
   const arch = fighter.archetype || 'standard';
-  const byA = VS_EX_EMPLOYER_LINES[arch] || VS_EX_EMPLOYER_LINES.standard;
-  const obj = byA[pers] || byA.normal;
+  // (a,p) → (a,normal) → (standard,p) → (standard,normal) の4段フォールバック
+  const byA = VS_EX_EMPLOYER_LINES[arch] || {};
+  const byStd = VS_EX_EMPLOYER_LINES.standard || {};
+  const obj = byA[pers] || byA.normal || byStd[pers] || byStd.normal;
   const arr = obj && obj[mode];
   if (!arr || arr.length === 0) return null;
   return arr[Math.floor(Math.random() * arr.length)];

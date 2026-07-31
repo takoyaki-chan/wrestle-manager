@@ -8112,9 +8112,12 @@ const App = {
             if (!table || !fighter) return '';
             const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
             const arch = fighter.archetype || 'standard';
-            const byP = table[p] || table.normal || {};
-            const byA = byP[arch] || byP.standard || {};
-            const lines = byA.high || byA.mid || byA.low || [];
+            // 第一分岐はアーキタイプ(口調)。2026-08-01 に軸を入れ替え
+            // (a,p) → (a,normal) → (standard,p) → (standard,normal) の4段
+            const byA = table[arch] || {};
+            const byStd = table.standard || {};
+            const byP = byA[p] || byA.normal || byStd[p] || byStd.normal || {};
+            const lines = byP.high || byP.mid || byP.low || [];
             return lines.length ? lines[Math.floor(Math.random() * lines.length)] : '';
           };
           const winTable = (typeof FACTION_F09_ENDING_WIN_LINES !== 'undefined') ? FACTION_F09_ENDING_WIN_LINES : null;
@@ -9056,9 +9059,12 @@ const App = {
     if (!table || !fighter) return '';
     const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
     const arch = fighter.archetype || 'standard';
-    const byP = table[p] || table.normal || {};
-    const byA = byP[arch] || byP.standard || {};
-    const lines = byA.high || byA.mid || byA.low || [];
+    // 第一分岐はアーキタイプ(口調)。2026-08-01 に軸を入れ替え
+    // (a,p) → (a,normal) → (standard,p) → (standard,normal) の4段
+    const byA = table[arch] || {};
+    const byStd = table.standard || {};
+    const byP = byA[p] || byA.normal || byStd[p] || byStd.normal || {};
+    const lines = byP.high || byP.mid || byP.low || [];
     return lines.length ? lines[Math.floor(Math.random() * lines.length)] : '';
   },
   _buildF09OpeningData(m) {
@@ -10479,8 +10485,9 @@ const App = {
     if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return baseVl;
     const pers = fighter.personality || 'normal';
     const arch = fighter.archetype || 'standard';
-    const byA = VS_EX_EMPLOYER_LINES[arch] || VS_EX_EMPLOYER_LINES.standard || {};
-    const byP = byA[pers] || byA.normal || {};
+    const byA = VS_EX_EMPLOYER_LINES[arch] || {};
+    const byStd = VS_EX_EMPLOYER_LINES.standard || {};
+    const byP = byA[pers] || byA.normal || byStd[pers] || byStd.normal || {};
     const winArr = byP.win || [];
     if (winArr.length === 0) return baseVl;
     return [...winArr, ...baseVl];
@@ -10491,8 +10498,9 @@ const App = {
     if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return null;
     const pers = fighter.personality || 'normal';
     const arch = fighter.archetype || 'standard';
-    const byA = VS_EX_EMPLOYER_LINES[arch] || VS_EX_EMPLOYER_LINES.standard || {};
-    const byP = byA[pers] || byA.normal || {};
+    const byA = VS_EX_EMPLOYER_LINES[arch] || {};
+    const byStd = VS_EX_EMPLOYER_LINES.standard || {};
+    const byP = byA[pers] || byA.normal || byStd[pers] || byStd.normal || {};
     const hitArr = byP.hit || [];
     return hitArr.length > 0 ? hitArr : null;
   },

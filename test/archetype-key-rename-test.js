@@ -108,11 +108,12 @@ function countLines(obj) {
   return 0;
 }
 
+// 2026-08-01 の軸入れ替え後は [アーキタイプ][性格]。standard バケツに全性格が入る。
 ['bold', 'earnest', 'quiet', 'easygoing', 'emotional', 'normal'].forEach(p => {
-  check(!!(FACTION_F02_LEADER_LINES[p] && FACTION_F02_LEADER_LINES[p].standard),
-    `FACTION_F02_LEADER_LINES.${p}.standard が存在する(normal から改名)`);
-  check(!(FACTION_F02_LEADER_LINES[p] && FACTION_F02_LEADER_LINES[p].normal),
-    `FACTION_F02_LEADER_LINES.${p}.normal はもう存在しない`);
+  check(!!(FACTION_F02_LEADER_LINES.standard && FACTION_F02_LEADER_LINES.standard[p]),
+    `FACTION_F02_LEADER_LINES.standard.${p} が存在する(軸入れ替え後)`);
+  check(!FACTION_F02_LEADER_LINES[p],
+    `FACTION_F02_LEADER_LINES.${p} は第一階層にもう存在しない(性格は第二階層へ移った)`);
 });
 check(countLines(FACTION_F02_LEADER_LINES) === 12, 'FACTION_F02_LEADER_LINES の総セリフ本数は12本のまま(改名で減っていない)');
 check(countLines(FACTION_F03_SURVIVOR_LINES) === 15, 'FACTION_F03_SURVIVOR_LINES の総セリフ本数は15本のまま(改名で減っていない)');
@@ -134,8 +135,8 @@ check(typeof compoundLine === 'string' && compoundLine.length > 0,
 //    旧 archetype='normal' の**セーブデータ**は management.js の移行処理で
 //    'standard' に直されるが、万一素通りしても同じプールに落ちること。
 // ─────────────────────────────────────────────────────────────────────────
-check(!!FACTION_F01_LEADER_LINES.bold.standard, 'FACTION_F01_LEADER_LINES.bold.standard が存在する(normal から改名)');
-check(!FACTION_F01_LEADER_LINES.bold.normal, 'FACTION_F01_LEADER_LINES.bold.normal はもう存在しない');
+check(!!FACTION_F01_LEADER_LINES.standard.bold, 'FACTION_F01_LEADER_LINES.standard.bold が存在する(改名+軸入れ替え後)');
+check(!FACTION_F01_LEADER_LINES.bold, 'FACTION_F01_LEADER_LINES.bold は第一階層にもう存在しない');
 const standardFighter = { id: 90001, personality: 'bold', archetype: 'standard' };
 const legacyNormalFighter = { id: 90002, personality: 'bold', archetype: 'normal' };
 const lineForStandard = Engine.factions.getFactionLine(FACTION_F01_LEADER_LINES, standardFighter, null);
@@ -163,18 +164,18 @@ check(leftover.length === 0,
 // ─────────────────────────────────────────────────────────────────────────
 const DW = require(path.join(__dirname, '..', 'tools', 'dialogue-workbook.js'));
 
-const metaArch = DW.detectMeta('FACTION_F02_LEADER_LINES.bold.standard[1]', 'FACTION_F02_LEADER_LINES');
+const metaArch = DW.detectMeta('FACTION_F02_LEADER_LINES.standard.bold[1]', 'FACTION_F02_LEADER_LINES');
 check(metaArch.archetype === '標準', `改名後の standard キーはアーキタイプ「標準」と判定される(実際: "${metaArch.archetype}")`);
 check(metaArch.personality === '強気', `同じパスの bold は性格「強気」と判定される(実際: "${metaArch.personality}")`);
 
-const metaPersonalityNormal = DW.detectMeta('FACTION_F02_LEADER_LINES.normal.standard[1]', 'FACTION_F02_LEADER_LINES');
-check(metaPersonalityNormal.personality === 'ノーマル', `第一階層の normal は性格「ノーマル」と判定される(実際: "${metaPersonalityNormal.personality}")`);
-check(metaPersonalityNormal.archetype === '標準', `第二階層の standard はアーキタイプ「標準」と判定される(実際: "${metaPersonalityNormal.archetype}")`);
+const metaPersonalityNormal = DW.detectMeta('FACTION_F02_LEADER_LINES.standard.normal[1]', 'FACTION_F02_LEADER_LINES');
+check(metaPersonalityNormal.personality === 'ノーマル', `第二階層の normal は性格「ノーマル」と判定される(実際: "${metaPersonalityNormal.personality}")`);
+check(metaPersonalityNormal.archetype === '標準', `第一階層の standard はアーキタイプ「標準」と判定される(実際: "${metaPersonalityNormal.archetype}")`);
 
 // 2026-08-01 の改名で、派閥系テーブルもアーキタイプ列が埋まるようになった。
 // (以前はここが空欄になり、標準アーキタイプの行だけ キャラタイプ別/ に
 //  振り分けられず落ちていた)
-const metaFaction = DW.detectMeta('FACTION_F01_LEADER_LINES.bold.standard[1]', 'FACTION_F01_LEADER_LINES');
+const metaFaction = DW.detectMeta('FACTION_F01_LEADER_LINES.standard.bold[1]', 'FACTION_F01_LEADER_LINES');
 check(metaFaction.personality === '強気' && metaFaction.archetype === '標準',
   `派閥テーブルもアーキタイプ列が埋まる(実際: personality="${metaFaction.personality}" archetype="${metaFaction.archetype}")`);
 

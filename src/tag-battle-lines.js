@@ -758,11 +758,13 @@ function _tplTagLine(str, vars) {
 // **第一分岐はアーキタイプ**(口調)、第二分岐が性格。性格を先に引くと
 // お嬢様もヤンキーも同じ行に落ちて口調が揃ってしまうため、2026-08-01 に入れ替えた。
 // 性格の既定は 'normal'、アーキタイプの既定は 'standard'。同名の別物なので注意。
+// フォールバックは4段: (a,p) → (a,normal) → (standard,p) → (standard,normal)
 function _tagLineArrFor(table, fighter) {
   const a = (fighter && fighter.archetype) || 'standard';
   const p = (fighter && fighter.personality) || 'normal';
-  const byA = table[a] || table.standard;
-  return byA[p] || byA.normal;
+  const byA = table[a] || {};
+  const byStd = table.standard || {};
+  return byA[p] || byA.normal || byStd[p] || byStd.normal;
 }
 function pickTagWinLine(fighter, partnerName) {
   const arr = _tagLineArrFor(TAG_MATCH_WIN_LINES, fighter);

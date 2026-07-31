@@ -4441,15 +4441,22 @@ Engine.factions = {
   },
 
   // ── §11 セリフ fallback ヘルパー ──
-  // table: { personality: { archetype: [lines...] } }
+  // table: { archetype: { personality: [lines...] } }
   // fighter: { personality, archetype } を受け取り、fallback で最低1行を返す。
-  // 性格の既定は 'normal'、アーキタイプの既定は 'standard'(旧 'normal')。同名の別物。
+  // **第一分岐はアーキタイプ**(口調)。性格を先に引くとお嬢様もヤンキーも同じ行に
+  // 落ちて口調が揃ってしまうため 2026-08-01 に入れ替えた。
+  // 性格の既定は 'normal'、アーキタイプの既定は 'standard'。同名の別物なので注意。
   getFactionLine(table, fighter, rng) {
     if (!table || !fighter) return '';
     const p = fighter.personality || 'normal';
     const a = fighter.archetype || 'standard';
-    const byPersona = table[p] || table.normal || {};
-    const byArch = byPersona[a] || byPersona.standard || table.normal?.standard || [];
+    // フォールバックは4段: (a,p) → (a,normal) → (standard,p) → (standard,normal)。
+    // アーキタイプ束が疎な場合(例 ojousama に emotional しか無い)、いきなり
+    // (standard,normal) に落とすと性格まで失う。先に「同じ口調の normal」、
+    // それも無ければ「標準の口調で同じ性格」を試す。
+    const byA = table[a] || {};
+    const byStd = table.standard || {};
+    const byArch = byA[p] || byA.normal || byStd[p] || byStd.normal || [];
     if (!byArch.length) return '';
     const idx = rng ? Math.floor(Engine.rng.float(rng) * byArch.length) : 0;
     return byArch[idx];
@@ -4537,20 +4544,19 @@ Engine.factions = {
   },
 
   // ── §9.8.1 Phase 3e セリフ抽選（hostility帯/HP帯分岐版） ──
-  // table 構造: { personality: { archetype: { high/mid/low or hp_high/hp_mid/hp_low: [...] } } }
+  // table 構造: { archetype: { personality: { high/mid/low or hp_high/hp_mid/hp_low: [...] } } }
+  // 2026-08-01 に第一分岐をアーキタイプへ入れ替え。フォールバックの向きも合わせて反転。
   _getF08LineByBand(table, fighter, band, rng) {
     if (!table || !fighter || !band) return '';
     const p = fighter.personality || 'normal';
     const a = fighter.archetype || 'standard';
-    const byPersona = table[p] || table.normal || {};
-    let byArch = byPersona[a];
-    if (!byArch || !byArch[band] || !byArch[band].length) {
-      byArch = byPersona.standard;
-    }
-    if (!byArch) {
-      const np = table.normal || {};
-      byArch = np[a] || np.standard;
-    }
+    // (a,p) → (a,normal) → (standard,p) → (standard,normal) の4段フォールバック
+    const byA = table[a] || {};
+    const byStd = table.standard || {};
+    let byArch = byA[p];
+    if (!byArch || !byArch[band] || !byArch[band].length) byArch = byA.normal || byArch;
+    if (!byArch || !byArch[band] || !byArch[band].length) byArch = byStd[p] || byArch;
+    if (!byArch || !byArch[band] || !byArch[band].length) byArch = byStd.normal || byArch;
     if (!byArch) return '';
     let lines = byArch[band];
     if (!lines || !lines.length) {

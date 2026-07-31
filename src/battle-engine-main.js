@@ -882,10 +882,12 @@ function _getCutinLines(lineType, personality, archetype){
   const section = CUTIN_LINES[lineType];
   if (!section) return null;
   // 第一分岐はアーキタイプ(口調)。性格を先に引くと口調が揃ってしまう(2026-08-01 入れ替え)
-  const byA = section[archetype] || section['standard'];
-  if (!byA) return null;
+  // フォールバックは4段: (a,p) → (a,normal) → (standard,p) → (standard,normal)
+  const byA = section[archetype] || {};
+  const byStd = section['standard'] || {};
   if (Array.isArray(byA)) return byA;
-  return byA[personality] || byA['normal'] || null;
+  if (Array.isArray(byStd) && !section[archetype]) return byStd;
+  return byA[personality] || byA['normal'] || byStd[personality] || byStd['normal'] || null;
 }
 
 function showCutin(fighter, side, text, cssCls){

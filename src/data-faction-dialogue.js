@@ -13,59 +13,57 @@
 // F01: 忠誠型結成時、リーダーのセリフ
 // ─────────────────────────────────────────────────────────────
 const FACTION_F01_LEADER_LINES = {
-  bold: {
-    standard: [
+  standard: {
+    bold: [
       "あんたらのことは、あたしが見てる。だから安心しな。",
       "何かあったら、あたしんとこに来い。悪いようにはしない。",
       "ついてこいよ。あんたら守るのは、あたしの役目だろ。",
     ],
-    delinquent: [
-      "チッ……仕方ねえな。あんたらのケツ、あたしが持ってやるよ。",
-      "誰に文句言われても、あたしが前で受ける。引っ込んでな。",
-    ],
-    cool: [
-      "別に特別なことはしない。ただ、あたしの背中を見てりゃいい。",
-    ],
-  },
-  earnest: {
-    standard: [
+    earnest: [
       "みんなで一緒に強くなろうね。私たち、やれるよ。",
       "一人じゃ辛いこともあるでしょ。だから、私がそばにいるから。",
       "信じてついてきてほしい。絶対に見捨てないから。",
     ],
-    polite: [
-      "みなさんのこと、必ず守ります。私、この団体で誰よりも本気ですから。",
-    ],
-  },
-  quiet: {
-    standard: [
+    quiet: [
       "……みんな、いてくれるなら。一緒に、やってみようか。",
       "……あたしで、いいの？　じゃあ……いいよ。",
     ],
-    cool: [
+    easygoing: [
+      "んー、みんなで楽しくやろうよ。難しく考えないで。",
+      "まあ、困ったらあたしに言って。なんとかするから。",
+    ],
+    emotional: [
+      "あたし、みんなのこと、大好きだから！　ずっと一緒にいたい！",
+    ],
+    normal: [
+      "これからは、私についてきて。何とかするから。",
+      "みんなで一つになって、この団体を盛り上げていこう。",
+    ],
+  },
+  delinquent: {
+    bold: [
+      "チッ……仕方ねえな。あんたらのケツ、あたしが持ってやるよ。",
+      "誰に文句言われても、あたしが前で受ける。引っ込んでな。",
+    ],
+  },
+  cool: {
+    bold: [
+      "別に特別なことはしない。ただ、あたしの背中を見てりゃいい。",
+    ],
+    quiet: [
       "……別にいいよ、ついてきたいなら。",
       "……邪魔はしない。勝手についてくればいい。",
     ],
   },
-  easygoing: {
-    standard: [
-      "んー、みんなで楽しくやろうよ。難しく考えないで。",
-      "まあ、困ったらあたしに言って。なんとかするから。",
+  polite: {
+    earnest: [
+      "みなさんのこと、必ず守ります。私、この団体で誰よりも本気ですから。",
     ],
   },
-  emotional: {
-    standard: [
-      "あたし、みんなのこと、大好きだから！　ずっと一緒にいたい！",
-    ],
-    ojousama: [
+  ojousama: {
+    emotional: [
       "わたくしがついていますわ。ご心配なく。",
       "あなた方のこと、このわたくしが最後まで面倒を見ますわ。",
-    ],
-  },
-  normal: {
-    standard: [
-      "これからは、私についてきて。何とかするから。",
-      "みんなで一つになって、この団体を盛り上げていこう。",
     ],
   },
 };
@@ -74,43 +72,37 @@ const FACTION_F01_LEADER_LINES = {
 // F01: フォロワー（メンバー）側のセリフ（追従・決意）
 // ─────────────────────────────────────────────────────────────
 const FACTION_F01_FOLLOWER_LINES = {
-  bold: {
-    standard: [
+  standard: {
+    bold: [
       "アンタの後ろなら、どこでもついていけるよ。",
       "あたしは決めたんだ。アンタの組に入る。",
     ],
-    delinquent: [
-      "へっ、別に頼まれたわけじゃねーけど。ま、付き合ってやるよ。",
-    ],
-  },
-  earnest: {
-    standard: [
+    earnest: [
       "……ありがとうございます。ついていかせてください。",
       "一緒に頑張りたいんです。お願いします。",
     ],
-  },
-  quiet: {
-    standard: [
+    quiet: [
       "……うん。お願い、します。",
     ],
-  },
-  easygoing: {
-    standard: [
+    easygoing: [
       "まー、面白そうだし、付き合うよ。",
     ],
-  },
-  emotional: {
-    standard: [
+    emotional: [
       "嬉しい……！　あたし、本当に嬉しいです……！",
     ],
-    ojousama: [
-      "光栄ですわ。お言葉、決して忘れません。",
-    ],
-  },
-  normal: {
-    standard: [
+    normal: [
       "じゃあ、私も。よろしくお願いします。",
       "あなたがそう言ってくれるなら、私も力になります。",
+    ],
+  },
+  delinquent: {
+    bold: [
+      "へっ、別に頼まれたわけじゃねーけど。ま、付き合ってやるよ。",
+    ],
+  },
+  ojousama: {
+    emotional: [
+      "光栄ですわ。お言葉、決して忘れません。",
     ],
   },
 };
@@ -119,50 +111,48 @@ const FACTION_F01_FOLLOWER_LINES = {
 // F02: 派閥抗争勃発時、両リーダーのセリフ（派閥A/派閥B 共用）
 // ─────────────────────────────────────────────────────────────
 const FACTION_F02_LEADER_LINES = {
-  bold: {
-    standard: [
+  standard: {
+    bold: [
       "あいつらと一緒にやってく気はないね。団体の中に、もう一本の筋が必要だ。",
       "あっち側にいるのがあたしの道じゃない。ここに集まった連中と、別でやる。",
     ],
-    delinquent: [
-      "あいつらと馴れ合う気なんかねえよ。道を分けるだけだ。",
-    ],
-    cool: [
-      "居場所が違う、ただそれだけのこと。",
-    ],
-  },
-  earnest: {
-    standard: [
+    earnest: [
       "本当は、一つにまとまりたかった。でも……私たちには、譲れないものがある。",
     ],
-    polite: [
-      "団体のため、あえて分かれる道を選びます。中途半端には、しません。",
-    ],
-  },
-  quiet: {
-    standard: [
+    quiet: [
       "……あっち側とは、違う。それだけ。",
     ],
-    cool: [
+    easygoing: [
+      "あー、まあ、一緒にやるのはちょっと無理かな。向こうとは、別で。",
+    ],
+    emotional: [
+      "嫌だ……あの子たちと同じ方向は向けない……！",
+    ],
+    normal: [
+      "あちら側とは、方針が違う。私たちは私たちの道を行く。",
+    ],
+  },
+  delinquent: {
+    bold: [
+      "あいつらと馴れ合う気なんかねえよ。道を分けるだけだ。",
+    ],
+  },
+  cool: {
+    bold: [
+      "居場所が違う、ただそれだけのこと。",
+    ],
+    quiet: [
       "……交わる気はない。",
     ],
   },
-  easygoing: {
-    standard: [
-      "あー、まあ、一緒にやるのはちょっと無理かな。向こうとは、別で。",
+  polite: {
+    earnest: [
+      "団体のため、あえて分かれる道を選びます。中途半端には、しません。",
     ],
   },
-  emotional: {
-    standard: [
-      "嫌だ……あの子たちと同じ方向は向けない……！",
-    ],
-    ojousama: [
+  ojousama: {
+    emotional: [
       "あちらの方々とは、わたくし、相容れませんの。悪しからず。",
-    ],
-  },
-  normal: {
-    standard: [
-      "あちら側とは、方針が違う。私たちは私たちの道を行く。",
     ],
   },
 };
@@ -171,51 +161,49 @@ const FACTION_F02_LEADER_LINES = {
 // F03: リーダー喪失後、残メンバーのセリフ（branch 非依存の一般反応）
 // ─────────────────────────────────────────────────────────────
 const FACTION_F03_SURVIVOR_LINES = {
-  bold: {
-    standard: [
+  standard: {
+    bold: [
       "……信じられない。あの人が、もういない。",
       "ふざけんな……あたしら、どうすりゃいいんだよ。",
     ],
-    delinquent: [
-      "……チッ。あの人がいねえリングなんて、想像つかねえよ。",
-    ],
-  },
-  earnest: {
-    standard: [
+    earnest: [
       "嘘ですよね……？　まだ、教わりたいことがたくさんあったのに……。",
       "私たちは、どうしたらいいんでしょうか。",
     ],
-    polite: [
-      "あの方がいらっしゃらない団体は、わたくしには想像もできません……。",
-    ],
-  },
-  quiet: {
-    standard: [
+    quiet: [
       "……え。……そんな……。",
       "……いやだ。",
     ],
-    cool: [
-      "……何も言葉が出てこない。",
-    ],
-  },
-  easygoing: {
-    standard: [
+    easygoing: [
       "……えっ。……ちょっと、待って。頭、追いつかない……。",
     ],
-  },
-  emotional: {
-    standard: [
+    emotional: [
       "うそ……うそだよ……あの人が……！",
       "あたし、どうすれば……あたし、あの人のために頑張ってたのに……！",
     ],
-    ojousama: [
-      "そんな……そんなことって……。わたくし、認めませんわ。",
-    ],
-  },
-  normal: {
-    standard: [
+    normal: [
       "……実感が湧かない。あの人がいない団体なんて。",
       "これから、どうなるんだろう。",
+    ],
+  },
+  delinquent: {
+    bold: [
+      "……チッ。あの人がいねえリングなんて、想像つかねえよ。",
+    ],
+  },
+  polite: {
+    earnest: [
+      "あの方がいらっしゃらない団体は、わたくしには想像もできません……。",
+    ],
+  },
+  cool: {
+    quiet: [
+      "……何も言葉が出てこない。",
+    ],
+  },
+  ojousama: {
+    emotional: [
+      "そんな……そんなことって……。わたくし、認めませんわ。",
     ],
   },
 };
@@ -224,78 +212,78 @@ const FACTION_F03_SURVIVOR_LINES = {
 // F04: 寝返り対象のセリフ（敵対派閥メンバーと親しげに話す場面）
 // ─────────────────────────────────────────────────────────────
 const FACTION_F04_TARGET_LINES = {
-  bold: {
-    standard: [
+  standard: {
+    bold: [
       "……悪いね。でも、あっち側のほうが、今のあたしには合ってる気がする。",
       "ここにいる理由、もう見つからないんだ。",
     ],
-    delinquent: [
-      "チッ……義理とか、もう重てえんだよ。",
-    ],
-    cool: [
-      "居場所って、自分で決めるもんだろ。",
-    ],
-    ojousama: [
-      "筋を通して、あちらへ参りますわ。悪しからず。",
-    ],
-    polite: [
-      "……申し訳ありません。けれど、心は固まっております。",
-    ],
-    seductive: [
-      "ふふ……今、一番息ができるのは、あの人たちの隣なの。",
-    ],
-  },
-  earnest: {
-    standard: [
+    earnest: [
       "ごめんなさい……私、どうしてもあの人たちの側にいたいんです。",
       "信じていたのに、気づいたら距離ができてて……。",
     ],
-    polite: [
-      "筋違いは承知の上で申し上げます。わたくし、あちらへ移らせていただきたく存じます。",
-    ],
-    ojousama: [
-      "心苦しいけれど……わたくし、向こう側で咲きたいのです。",
-    ],
-    cool: [
-      "理屈じゃない。ただ、合わないと気づいた。",
-    ],
-  },
-  quiet: {
-    standard: [
+    quiet: [
       "……ごめん。もう、ここにはいられない。",
       "……あたし、あっち側に……行きたい。",
     ],
-    cool: [
-      "……もう、決めたから。",
-    ],
-    delinquent: [
-      "……うるせえ。余計な詮索すんな。",
-    ],
-  },
-  easygoing: {
-    standard: [
+    easygoing: [
       "んー、なんかさ、流れでこっちの方が楽しいんだよね。悪く思わないでよ。",
     ],
-    ojousama: [
-      "あら、向こうのお茶会のほうが、わたくしの性に合っておりますの。",
-    ],
-  },
-  emotional: {
-    standard: [
+    emotional: [
       "だってあの子たちの前だと……素でいられるんだもん！",
       "ごめんなさい、ごめんなさい……でも、止められない……！",
     ],
-    ojousama: [
-      "わたくし、もう我慢できませんの。あちらにお邪魔いたしますわ。",
-    ],
-    seductive: [
-      "……引き止めないで。わたし、もう向こうへ傾いてるの。",
-    ],
-  },
-  normal: {
-    standard: [
+    normal: [
       "……悪いけど、あたし、あっちに行くことにした。",
       "色々、考えた結果です。どうかご理解を。",
+    ],
+  },
+  delinquent: {
+    bold: [
+      "チッ……義理とか、もう重てえんだよ。",
+    ],
+    quiet: [
+      "……うるせえ。余計な詮索すんな。",
+    ],
+  },
+  cool: {
+    bold: [
+      "居場所って、自分で決めるもんだろ。",
+    ],
+    earnest: [
+      "理屈じゃない。ただ、合わないと気づいた。",
+    ],
+    quiet: [
+      "……もう、決めたから。",
+    ],
+  },
+  ojousama: {
+    bold: [
+      "筋を通して、あちらへ参りますわ。悪しからず。",
+    ],
+    earnest: [
+      "心苦しいけれど……わたくし、向こう側で咲きたいのです。",
+    ],
+    easygoing: [
+      "あら、向こうのお茶会のほうが、わたくしの性に合っておりますの。",
+    ],
+    emotional: [
+      "わたくし、もう我慢できませんの。あちらにお邪魔いたしますわ。",
+    ],
+  },
+  polite: {
+    bold: [
+      "……申し訳ありません。けれど、心は固まっております。",
+    ],
+    earnest: [
+      "筋違いは承知の上で申し上げます。わたくし、あちらへ移らせていただきたく存じます。",
+    ],
+  },
+  seductive: {
+    bold: [
+      "ふふ……今、一番息ができるのは、あの人たちの隣なの。",
+    ],
+    emotional: [
+      "……引き止めないで。わたし、もう向こうへ傾いてるの。",
     ],
   },
 };
@@ -304,67 +292,67 @@ const FACTION_F04_TARGET_LINES = {
 // F05: 派閥内不満分子（ringleader）のセリフ（陰口・リーダーへの不満）
 // ─────────────────────────────────────────────────────────────
 const FACTION_F05_DISSIDENT_LINES = {
-  bold: {
-    standard: [
+  standard: {
+    bold: [
       "あの人のやり方、もう付き合いきれねえわ。",
       "あたしらの声なんて、届いてないんだよ。上は。",
     ],
-    delinquent: [
-      "舐めてんじゃねーぞって話だよ。毎回毎回、同じパターンで。",
-    ],
-    cool: [
-      "別に文句はない。ただ、道が違うだけ。",
-    ],
-  },
-  earnest: {
-    standard: [
+    earnest: [
       "みんなで一つのはずだったのに……こんなの、違う。",
       "本当に変わってほしい。だから、声を上げなきゃ。",
     ],
-    polite: [
-      "申し上げにくいのですが……今のままでは、わたくしたち、息が詰まります。",
-    ],
-  },
-  quiet: {
-    standard: [
+    quiet: [
       "……もう、ついていけない。",
       "……息が、できない。",
     ],
-    cool: [
-      "……静かに、離れたい。",
-    ],
-  },
-  easygoing: {
-    standard: [
+    easygoing: [
       "まー、なんていうか、ちょっと合わないんだよね、もう。",
     ],
-  },
-  emotional: {
-    standard: [
+    emotional: [
       "あたし、あの人のこと信じてたのに……ひどい！",
       "もう、無理だよ……泣きたい……！",
     ],
-    ojousama: [
-      "わたくし、もう耐えかねますの。このままでは、心が削れてしまいますわ。",
-    ],
-    seductive: [
-      "冷めちゃったのよ、すっかりね……。",
-    ],
-  },
-  bold_delinquent: { standard: [] }, // 予約
-  normal: {
-    standard: [
+    bold_delinquent: [],
+    normal: [
       "今のままじゃ、立ち行かない。誰かが、声を上げないと。",
       "上の人には、もう期待できない。",
     ],
-    ojousama: [
-      "率直に申し上げます。このままでは、わたくしたちは朽ちますわ。",
+  },
+  delinquent: {
+    bold: [
+      "舐めてんじゃねーぞって話だよ。毎回毎回、同じパターンで。",
     ],
-    delinquent: [
+    normal: [
       "黙ってたけど、もう限界だっつーの。",
     ],
-    polite: [
+  },
+  cool: {
+    bold: [
+      "別に文句はない。ただ、道が違うだけ。",
+    ],
+    quiet: [
+      "……静かに、離れたい。",
+    ],
+  },
+  polite: {
+    earnest: [
+      "申し上げにくいのですが……今のままでは、わたくしたち、息が詰まります。",
+    ],
+    normal: [
       "失礼ながら、意見を申し上げさせてください。",
+    ],
+  },
+  ojousama: {
+    emotional: [
+      "わたくし、もう耐えかねますの。このままでは、心が削れてしまいますわ。",
+    ],
+    normal: [
+      "率直に申し上げます。このままでは、わたくしたちは朽ちますわ。",
+    ],
+  },
+  seductive: {
+    emotional: [
+      "冷めちゃったのよ、すっかりね……。",
     ],
   },
 };
@@ -373,55 +361,55 @@ const FACTION_F05_DISSIDENT_LINES = {
 // F06: 和解の兆し — 両派閥メンバーの何気ない雑談（1人分のセリフで十分）
 // ─────────────────────────────────────────────────────────────
 const FACTION_F06_AMBIENT_LINES = {
-  bold: {
-    standard: [
+  standard: {
+    bold: [
       "あんた、意外と悪くないじゃん。ちょっと見直したわ。",
       "まあ、あの日のことは、忘れてやるよ。",
     ],
-    delinquent: [
-      "……ったく、気まずいっての。",
-    ],
-  },
-  earnest: {
-    standard: [
+    earnest: [
       "ずっと、こうして話せたらって思ってたんです。",
       "あの頃のこと、お互いに少しずつ……手放せたらいいですね。",
     ],
-    polite: [
+    quiet: [
+      "……意外と、普通に、話せるね。",
+    ],
+    easygoing: [
+      "あはは、もう何で揉めてたんだっけ、あたしたち。",
+    ],
+    emotional: [
+      "ずっと、気まずかったの……嬉しい……！",
+    ],
+    normal: [
+      "……気づけば、睨み合う理由がどこかに消えてたね。",
+      "まあ、お互い、大人になったってことかな。",
+    ],
+  },
+  delinquent: {
+    bold: [
+      "……ったく、気まずいっての。",
+    ],
+  },
+  polite: {
+    earnest: [
       "きっかけがあれば、と思っておりました。今日がその日かもしれません。",
     ],
   },
-  quiet: {
-    standard: [
-      "……意外と、普通に、話せるね。",
-    ],
-    cool: [
+  cool: {
+    quiet: [
       "……まあ、別にいいよ。",
     ],
   },
-  easygoing: {
-    standard: [
-      "あはは、もう何で揉めてたんだっけ、あたしたち。",
-    ],
-    ojousama: [
+  ojousama: {
+    easygoing: [
       "あら、そんな昔のこと、もう忘れていますわよ。",
     ],
-  },
-  emotional: {
-    standard: [
-      "ずっと、気まずかったの……嬉しい……！",
-    ],
-    ojousama: [
+    emotional: [
       "わたくし、あの頃のわだかまりは、もう水に流そうかと存じますの。",
     ],
-    seductive: [
-      "ふふ、仲直り……いいものね。",
-    ],
   },
-  normal: {
-    standard: [
-      "……気づけば、睨み合う理由がどこかに消えてたね。",
-      "まあ、お互い、大人になったってことかな。",
+  seductive: {
+    emotional: [
+      "ふふ、仲直り……いいものね。",
     ],
   },
 };
@@ -430,57 +418,57 @@ const FACTION_F06_AMBIENT_LINES = {
 // F07: 横暴リーダーのセリフ（社長への要求・威圧）
 // ─────────────────────────────────────────────────────────────
 const FACTION_F07_LEADER_LINES = {
-  bold: {
-    standard: [
+  standard: {
+    bold: [
       "社長、うちの連中の扱い、いいかげん見直してもらいたい。",
       "あたしが言う以上、話は通しておけよ。",
     ],
-    delinquent: [
-      "おい社長、あんた誰のおかげで食えてると思ってんだ？",
-    ],
-    cool: [
-      "結論だけ言う。うちの連中を軽く扱うな。",
-    ],
-  },
-  earnest: {
-    standard: [
+    earnest: [
       "社長。私たちのこと、もっと見ていただきたいんです。",
     ],
-    polite: [
-      "畏れながら、わたくしたちの処遇について、再考いただきたく存じます。",
-    ],
-  },
-  quiet: {
-    standard: [
+    quiet: [
       "……この扱い、納得してない。",
     ],
-    cool: [
+    easygoing: [
+      "えー社長、ちょっと、うちの子らに甘くしてくんない？",
+    ],
+    emotional: [
+      "社長！　あたしの子たちが、どんな思いしてるか、わかってます？",
+    ],
+    normal: [
+      "社長、うちの派閥には、それなりの配慮が必要だと思いますが。",
+      "話しておきたいことがあります。時間を取ってほしい。",
+    ],
+  },
+  delinquent: {
+    bold: [
+      "おい社長、あんた誰のおかげで食えてると思ってんだ？",
+    ],
+  },
+  cool: {
+    bold: [
+      "結論だけ言う。うちの連中を軽く扱うな。",
+    ],
+    quiet: [
       "……ちゃんと見てほしい。それだけ。",
     ],
   },
-  easygoing: {
-    standard: [
-      "えー社長、ちょっと、うちの子らに甘くしてくんない？",
+  polite: {
+    earnest: [
+      "畏れながら、わたくしたちの処遇について、再考いただきたく存じます。",
     ],
-    ojousama: [
+  },
+  ojousama: {
+    easygoing: [
       "社長、気安いところで申し上げますけれど、待遇、もう少しどうにか。",
     ],
-  },
-  emotional: {
-    standard: [
-      "社長！　あたしの子たちが、どんな思いしてるか、わかってます？",
-    ],
-    ojousama: [
+    emotional: [
       "社長。このわたくしの派閥、粗略に扱われては困りますわ。",
     ],
-    seductive: [
-      "社長さん、うちの子たちに、もうちょっと優しくしてくださらない？",
-    ],
   },
-  normal: {
-    standard: [
-      "社長、うちの派閥には、それなりの配慮が必要だと思いますが。",
-      "話しておきたいことがあります。時間を取ってほしい。",
+  seductive: {
+    emotional: [
+      "社長さん、うちの子たちに、もうちょっと優しくしてくださらない？",
     ],
   },
 };
@@ -489,57 +477,57 @@ const FACTION_F07_LEADER_LINES = {
 // F08: 対立ヒートアップ — 両リーダー対峙のセリフ（A側/B側 共用）
 // ─────────────────────────────────────────────────────────────
 const FACTION_F08_LEADER_LINES = {
-  bold: {
-    standard: [
+  standard: {
+    bold: [
       "もう言葉はいらない。リングで片をつけるだけだ。",
       "あたしが勝つ。それだけの話。",
     ],
-    delinquent: [
-      "上等じゃねーか。来いよ、いつでも。",
-    ],
-    cool: [
-      "決着をつける。それ以外の選択肢はない。",
-    ],
-  },
-  earnest: {
-    standard: [
+    earnest: [
       "これ以上は、話し合いでは済まない。わかってるはず。",
     ],
-    polite: [
-      "言葉ではもう届きません。リングで、決着をつけましょう。",
-    ],
-    ojousama: [
-      "ここまで来て、退く理由がございませんわ。",
-    ],
-  },
-  quiet: {
-    standard: [
+    quiet: [
       "……もう、逃げない。",
     ],
-    cool: [
+    easygoing: [
+      "はぁ〜あ、こうなると、もうやるしかないよね。",
+    ],
+    emotional: [
+      "もう、我慢できない！　あの子とは、決着をつける！",
+    ],
+    normal: [
+      "話はもう済んだ。後は、リングで示すだけ。",
+      "引き下がる理由は、もう、どこにもない。",
+    ],
+  },
+  delinquent: {
+    bold: [
+      "上等じゃねーか。来いよ、いつでも。",
+    ],
+  },
+  cool: {
+    bold: [
+      "決着をつける。それ以外の選択肢はない。",
+    ],
+    quiet: [
       "……リングで、会う。",
     ],
   },
-  easygoing: {
-    standard: [
-      "はぁ〜あ、こうなると、もうやるしかないよね。",
+  polite: {
+    earnest: [
+      "言葉ではもう届きません。リングで、決着をつけましょう。",
     ],
   },
-  emotional: {
-    standard: [
-      "もう、我慢できない！　あの子とは、決着をつける！",
+  ojousama: {
+    earnest: [
+      "ここまで来て、退く理由がございませんわ。",
     ],
-    ojousama: [
+    emotional: [
       "あの御方とわたくし、このまま並び立つことはできませんの。",
     ],
-    seductive: [
-      "……リングでなら、本音で話せるでしょ？",
-    ],
   },
-  normal: {
-    standard: [
-      "話はもう済んだ。後は、リングで示すだけ。",
-      "引き下がる理由は、もう、どこにもない。",
+  seductive: {
+    emotional: [
+      "……リングでなら、本音で話せるでしょ？",
     ],
   },
 };
@@ -552,8 +540,8 @@ const FACTION_F08_LEADER_LINES = {
 
 // ── 試合前 リーダー A 側（宣戦） ──
 const FACTION_F08_PRE_MATCH_LINES_A = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: [
         "あんたんとこの組、今夜で終わりだ。覚悟しときな",
         "あたしの背中にいる連中のためにも、今日は退かない",
@@ -567,25 +555,7 @@ const FACTION_F08_PRE_MATCH_LINES_A = {
         "……来なよ。最後まで付き合ってやる",
       ],
     },
-    delinquent: {
-      high: [
-        "今夜、あんたの組は終わる。しっかり見とけよ",
-        "ヘラヘラしてられんのも今のうちだぜ",
-        "舐めた口きいてた連中、ぜんぶ纏めてあたしが叩く",
-      ],
-      mid: [
-        "黙って来な。話すことなんかねえだろ",
-      ],
-    },
-    cool: {
-      high: [
-        "リングに上がれば、あとは結果がすべてだ",
-        "あんたの組の名前、今夜から軽くなる",
-      ],
-    },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       high: [
         "あなたたちのやり方は……許せない。今日で決着をつける",
         "私、あなたを倒さないと、後ろのみんなに顔向けできない",
@@ -599,15 +569,7 @@ const FACTION_F08_PRE_MATCH_LINES_A = {
         "リングの上で、答えを出しましょう",
       ],
     },
-    polite: {
-      high: [
-        "今日という日のために、私、ここまで来たんです",
-        "御免なさい。今日は手加減できません",
-      ],
-    },
-  },
-  quiet: {
-    standard: {
+    quiet: {
       high: [
         "……話すことは、もうない",
         "……行こう。リングが、待ってる",
@@ -620,15 +582,7 @@ const FACTION_F08_PRE_MATCH_LINES_A = {
         "……うん。受けて立つ",
       ],
     },
-    cool: {
-      high: [
-        "……話すことは、もうない",
-        "……決着、つけよう",
-      ],
-    },
-  },
-  easygoing: {
-    standard: {
+    easygoing: {
       high: [
         "んー、こうなっちゃったら、もう仕方ないよね。やろっか",
         "あたしも嫌なんだけど、組のみんなが黙ってないから",
@@ -640,9 +594,7 @@ const FACTION_F08_PRE_MATCH_LINES_A = {
         "やれやれ……一回、ぶつかっとくか",
       ],
     },
-  },
-  emotional: {
-    standard: {
+    emotional: {
       high: [
         "もう、我慢できない！　あんたんとこの組、今夜で終わりにする！",
         "うちのみんなが泣いた分、ぜんぶ返してもらうから",
@@ -654,18 +606,7 @@ const FACTION_F08_PRE_MATCH_LINES_A = {
         "もう、泣いてる暇なんか、ない",
       ],
     },
-    ojousama: {
-      high: [
-        "ええ、わたくしも引きませんわ。これは戦争です",
-        "あなたの組の方々が、わたくしの妹分にしたこと――今夜、お返ししますわ",
-      ],
-      mid: [
-        "わたくし、本気でいきますわよ",
-      ],
-    },
-  },
-  normal: {
-    standard: {
+    normal: {
       high: [
         "今日のリングは、あんたとあたしのためにある",
         "言葉ではもう、何も伝わらない。だからリングで",
@@ -678,12 +619,57 @@ const FACTION_F08_PRE_MATCH_LINES_A = {
       ],
     },
   },
+  delinquent: {
+    bold: {
+      high: [
+        "今夜、あんたの組は終わる。しっかり見とけよ",
+        "ヘラヘラしてられんのも今のうちだぜ",
+        "舐めた口きいてた連中、ぜんぶ纏めてあたしが叩く",
+      ],
+      mid: [
+        "黙って来な。話すことなんかねえだろ",
+      ],
+    },
+  },
+  cool: {
+    bold: {
+      high: [
+        "リングに上がれば、あとは結果がすべてだ",
+        "あんたの組の名前、今夜から軽くなる",
+      ],
+    },
+    quiet: {
+      high: [
+        "……話すことは、もうない",
+        "……決着、つけよう",
+      ],
+    },
+  },
+  polite: {
+    earnest: {
+      high: [
+        "今日という日のために、私、ここまで来たんです",
+        "御免なさい。今日は手加減できません",
+      ],
+    },
+  },
+  ojousama: {
+    emotional: {
+      high: [
+        "ええ、わたくしも引きませんわ。これは戦争です",
+        "あなたの組の方々が、わたくしの妹分にしたこと――今夜、お返ししますわ",
+      ],
+      mid: [
+        "わたくし、本気でいきますわよ",
+      ],
+    },
+  },
 };
 
 // ── 試合前 リーダー B 側（応戦） ──
 const FACTION_F08_PRE_MATCH_LINES_B = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: [
         "上等だ。やってもらおうじゃねえか",
         "受けて立つ。あたしんとこの組も、舐められっぱなしじゃ終われねえ",
@@ -697,18 +683,7 @@ const FACTION_F08_PRE_MATCH_LINES_B = {
         "……分かった。受けるよ",
       ],
     },
-    delinquent: {
-      high: [
-        "おう、待ってたぞ。逃がさねえからな",
-        "あたしんとこも、舐められたまま終わる気はねえ",
-      ],
-      mid: [
-        "ったく。来るなら来いよ",
-      ],
-    },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       high: [
         "……分かりました。今日、あなたの全てを受け止めます",
         "私のうしろの子たちも、もう泣かせない。受けて立ちます",
@@ -720,14 +695,7 @@ const FACTION_F08_PRE_MATCH_LINES_B = {
         "受けます。リングで、お会いしましょう",
       ],
     },
-    polite: {
-      high: [
-        "ご丁寧に、ありがとうございます。お受けいたします",
-      ],
-    },
-  },
-  quiet: {
-    standard: {
+    quiet: {
       high: [
         "……分かった。リングで",
         "……うん。逃げない",
@@ -739,14 +707,7 @@ const FACTION_F08_PRE_MATCH_LINES_B = {
         "……分かった",
       ],
     },
-    cool: {
-      high: [
-        "……いいだろう。受けて立つ",
-      ],
-    },
-  },
-  easygoing: {
-    standard: {
+    easygoing: {
       high: [
         "あ〜あ、こうなっちゃったか。仕方ない、付き合うよ",
         "断りたいけど、断れる空気じゃないもんね、これ",
@@ -758,9 +719,7 @@ const FACTION_F08_PRE_MATCH_LINES_B = {
         "んー、付き合います",
       ],
     },
-  },
-  emotional: {
-    standard: {
+    emotional: {
       high: [
         "あんたが本気なら、あたしも本気で受ける！",
         "うちの子たちのこと、もう傷つけさせない！",
@@ -772,15 +731,7 @@ const FACTION_F08_PRE_MATCH_LINES_B = {
         "……分かった。ぶつかろう",
       ],
     },
-    ojousama: {
-      high: [
-        "結構ですわ。お相手いたしましょう",
-        "わたくしの組も、あなたに膝を屈する気はございません",
-      ],
-    },
-  },
-  normal: {
-    standard: {
+    normal: {
       high: [
         "受けます。リングで会いましょう",
         "退きません。今日は、決着のときだ",
@@ -793,12 +744,45 @@ const FACTION_F08_PRE_MATCH_LINES_B = {
       ],
     },
   },
+  delinquent: {
+    bold: {
+      high: [
+        "おう、待ってたぞ。逃がさねえからな",
+        "あたしんとこも、舐められたまま終わる気はねえ",
+      ],
+      mid: [
+        "ったく。来るなら来いよ",
+      ],
+    },
+  },
+  polite: {
+    earnest: {
+      high: [
+        "ご丁寧に、ありがとうございます。お受けいたします",
+      ],
+    },
+  },
+  cool: {
+    quiet: {
+      high: [
+        "……いいだろう。受けて立つ",
+      ],
+    },
+  },
+  ojousama: {
+    emotional: {
+      high: [
+        "結構ですわ。お相手いたしましょう",
+        "わたくしの組も、あなたに膝を屈する気はございません",
+      ],
+    },
+  },
 };
 
 // ── 試合後 勝者セリフ（敗者派閥への一撃） ──
 const FACTION_F08_POST_MATCH_WINNER_LINES = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: [
         "これがあんたの組の限界か？　次は誰だ",
         "見たかよ。これが格の違いってやつだ",
@@ -812,18 +796,7 @@ const FACTION_F08_POST_MATCH_WINNER_LINES = {
         "……勝った。それだけだ",
       ],
     },
-    delinquent: {
-      high: [
-        "口ほどにもねえな、あんたの組",
-        "次の番、誰だよ？　全員かかってこい",
-      ],
-      mid: [
-        "ふん。あたしの勝ちだ",
-      ],
-    },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       high: [
         "……あなたの組のやり方が、間違ってたって、これで証明された",
         "私、勝ちました。みんなのために",
@@ -836,14 +809,7 @@ const FACTION_F08_POST_MATCH_WINNER_LINES = {
         "……勝てた。みんなのおかげです",
       ],
     },
-    polite: {
-      high: [
-        "失礼いたしました。今日は、私が勝たせてもらいます",
-      ],
-    },
-  },
-  quiet: {
-    standard: {
+    quiet: {
       high: [
         "……勝った",
         "……これで、終わり。じゃない",
@@ -855,14 +821,7 @@ const FACTION_F08_POST_MATCH_WINNER_LINES = {
         "……（深く息をつく）",
       ],
     },
-    cool: {
-      high: [
-        "……結果がすべて、だろ",
-      ],
-    },
-  },
-  easygoing: {
-    standard: {
+    easygoing: {
       high: [
         "あ〜あ、勝っちゃった。次は仲良くやろうよ、本気で",
         "勝つには勝ったけど、あんたんとこも、もう静かにしとこ？",
@@ -874,9 +833,7 @@ const FACTION_F08_POST_MATCH_WINNER_LINES = {
         "勝てたみたい。ふぅ",
       ],
     },
-  },
-  emotional: {
-    standard: {
+    emotional: {
       high: [
         "勝った！　うちのみんなのために、勝った！",
         "あんたら、もう泣かせないからね、絶対！",
@@ -888,14 +845,7 @@ const FACTION_F08_POST_MATCH_WINNER_LINES = {
         "……勝った……",
       ],
     },
-    ojousama: {
-      high: [
-        "ご覧の通りですわ。わたくしの組に、刃向うものではありませんの",
-      ],
-    },
-  },
-  normal: {
-    standard: {
+    normal: {
       high: [
         "今夜の決着は、これで充分だろう",
         "あんたの組とは、もう距離を置かせてもらう",
@@ -908,12 +858,44 @@ const FACTION_F08_POST_MATCH_WINNER_LINES = {
       ],
     },
   },
+  delinquent: {
+    bold: {
+      high: [
+        "口ほどにもねえな、あんたの組",
+        "次の番、誰だよ？　全員かかってこい",
+      ],
+      mid: [
+        "ふん。あたしの勝ちだ",
+      ],
+    },
+  },
+  polite: {
+    earnest: {
+      high: [
+        "失礼いたしました。今日は、私が勝たせてもらいます",
+      ],
+    },
+  },
+  cool: {
+    quiet: {
+      high: [
+        "……結果がすべて、だろ",
+      ],
+    },
+  },
+  ojousama: {
+    emotional: {
+      high: [
+        "ご覧の通りですわ。わたくしの組に、刃向うものではありませんの",
+      ],
+    },
+  },
 };
 
 // ── 試合後 敗者セリフ（HP帯分岐） ──
 const FACTION_F08_POST_MATCH_LOSER_LINES = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       hp_high: [
         "……次は、こうはいかねえ。覚えとけよ",
         "今日のとこは、あたしの負けだ。だが、組は潰れねえ",
@@ -927,20 +909,7 @@ const FACTION_F08_POST_MATCH_LOSER_LINES = {
         "（呻き声）",
       ],
     },
-    delinquent: {
-      hp_high: [
-        "チッ……負けた。今日のとこはな",
-      ],
-      hp_mid: [
-        "……うるせえ……",
-      ],
-      hp_low: [
-        "（息も荒い）",
-      ],
-    },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       hp_high: [
         "……ごめんなさい。私、勝てなかった……",
         "……みんな、ごめん。次は、絶対に",
@@ -952,14 +921,7 @@ const FACTION_F08_POST_MATCH_LOSER_LINES = {
         "……（声にならない）",
       ],
     },
-    polite: {
-      hp_high: [
-        "……お見事でした。次は、こうはいきません",
-      ],
-    },
-  },
-  quiet: {
-    standard: {
+    quiet: {
       hp_high: [
         "……負けた、けど……組は、潰れない",
         "……次は、ない、なんて……思ってない",
@@ -971,17 +933,7 @@ const FACTION_F08_POST_MATCH_LOSER_LINES = {
         "（沈黙）",
       ],
     },
-    cool: {
-      hp_high: [
-        "……負け。それだけ",
-      ],
-      hp_mid: [
-        "……っ……",
-      ],
-    },
-  },
-  easygoing: {
-    standard: {
+    easygoing: {
       hp_high: [
         "あ〜あ、負けちゃった。ま、こんな日もあるよ",
         "うん、負け。次はもうちょっと頑張る",
@@ -993,9 +945,7 @@ const FACTION_F08_POST_MATCH_LOSER_LINES = {
         "（うつぶせのまま動かない）",
       ],
     },
-  },
-  emotional: {
-    standard: {
+    emotional: {
       hp_high: [
         "……悔しい……ぜんぜん、納得いかない……！",
         "……ごめん、みんな……次は、絶対勝つから……",
@@ -1007,17 +957,7 @@ const FACTION_F08_POST_MATCH_LOSER_LINES = {
         "（嗚咽だけが漏れる）",
       ],
     },
-    ojousama: {
-      hp_high: [
-        "……今日は、お先にどうぞ。次は、こうはいかせませんわ",
-      ],
-      hp_mid: [
-        "……っ……まだ、わたくし……",
-      ],
-    },
-  },
-  normal: {
-    standard: {
+    normal: {
       hp_high: [
         "……今日は、負け。だけど、組は終わらない",
         "……次は、こうはいかせない",
@@ -1030,6 +970,46 @@ const FACTION_F08_POST_MATCH_LOSER_LINES = {
       ],
     },
   },
+  delinquent: {
+    bold: {
+      hp_high: [
+        "チッ……負けた。今日のとこはな",
+      ],
+      hp_mid: [
+        "……うるせえ……",
+      ],
+      hp_low: [
+        "（息も荒い）",
+      ],
+    },
+  },
+  polite: {
+    earnest: {
+      hp_high: [
+        "……お見事でした。次は、こうはいきません",
+      ],
+    },
+  },
+  cool: {
+    quiet: {
+      hp_high: [
+        "……負け。それだけ",
+      ],
+      hp_mid: [
+        "……っ……",
+      ],
+    },
+  },
+  ojousama: {
+    emotional: {
+      hp_high: [
+        "……今日は、お先にどうぞ。次は、こうはいかせませんわ",
+      ],
+      hp_mid: [
+        "……っ……まだ、わたくし……",
+      ],
+    },
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1039,133 +1019,119 @@ const FACTION_F08_POST_MATCH_LOSER_LINES = {
 
 // オープニング宣戦：A 派閥リーダーの宣言
 const FACTION_F09_OPENING_LINES_A = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: [
         "今夜、あんたの組ごと踏み潰す。覚悟しときな",
         "選手全員、リングに上げな。一人残らず叩く",
       ],
       mid: ["今日が、あんたんとこの分水嶺だ"],
     },
-    delinquent: {
-      high: ["全員揃ってるな？ じゃあ、今夜が最後だ"],
-    },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       high: [
         "派閥同士の決着、今夜つけさせていただきます",
         "うちの組のみんなのためにも、今日は引きません",
       ],
       mid: ["この夜が、わたしたちの答えになります"],
     },
-    polite: {
-      high: ["今夜の興行で、すべてを決めさせてください"],
-    },
-  },
-  quiet: {
-    standard: {
+    quiet: {
       high: ["……今夜で、終わらせる"],
     },
-    cool: {
-      high: ["……話すことは、もう何もない"],
-    },
-  },
-  easygoing: {
-    standard: {
+    easygoing: {
       high: ["まあ、ここまで来ちゃったしね。今夜決めようよ"],
     },
-  },
-  emotional: {
-    standard: {
+    emotional: {
       high: [
         "わたしたち、今日で全部背負って戦います",
         "うちの組の名前、今夜傷つけさせない",
       ],
     },
-    ojousama: {
-      high: ["わたくしたち、今夜こそ決着をつけますわ"],
+    shy: {
+      high: ["……今夜、組の全員で受けて立ちます"],
     },
   },
-  shy: {
-    standard: {
-      high: ["……今夜、組の全員で受けて立ちます"],
+  delinquent: {
+    bold: {
+      high: ["全員揃ってるな？ じゃあ、今夜が最後だ"],
+    },
+  },
+  polite: {
+    earnest: {
+      high: ["今夜の興行で、すべてを決めさせてください"],
+    },
+  },
+  cool: {
+    quiet: {
+      high: ["……話すことは、もう何もない"],
+    },
+  },
+  ojousama: {
+    emotional: {
+      high: ["わたくしたち、今夜こそ決着をつけますわ"],
     },
   },
 };
 
 // オープニング宣戦：B 派閥リーダーの応答
 const FACTION_F09_OPENING_LINES_B = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: ["上等だ。組ごと潰し合おうじゃねえか"],
     },
-    delinquent: {
-      high: ["来なよ。全員でかかってこい"],
-    },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       high: [
         "わかりました。受けて立たせていただきます",
         "うちの組も、引きません",
       ],
     },
-    polite: { high: ["お受けいたします。今夜、決着を"] },
-  },
-  quiet: {
-    standard: {
+    quiet: {
       high: ["……いいよ。来な"],
     },
-    cool: { high: ["……受ける"] },
-  },
-  easygoing: {
-    standard: {
+    easygoing: {
       high: ["やれやれ……じゃあ、行こうか"],
     },
-  },
-  emotional: {
-    standard: {
+    emotional: {
       high: ["わたしたちも、今夜は退きません"],
     },
-    ojousama: { high: ["わたくしも、引きませんわよ"] },
+    shy: { high: ["……はい。受けて、立ちます"] },
   },
-  shy: {
-    standard: { high: ["……はい。受けて、立ちます"] },
+  delinquent: {
+    bold: {
+      high: ["来なよ。全員でかかってこい"],
+    },
+  },
+  polite: {
+    earnest: { high: ["お受けいたします。今夜、決着を"] },
+  },
+  cool: {
+    quiet: { high: ["……受ける"] },
+  },
+  ojousama: {
+    emotional: { high: ["わたくしも、引きませんわよ"] },
   },
 };
 
 // 各試合前 簡略 confrontation（軽量版・F08 PRE_MATCH より短め）
 const FACTION_F09_MATCH_PRE_LINES = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: ["順番が来たね"],
       mid: ["先に来な"],
     },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       high: ["お願いします"],
       mid: ["全力で行きます"],
     },
-  },
-  quiet: {
-    standard: {
+    quiet: {
       high: ["……行く"],
     },
-  },
-  easygoing: {
-    standard: {
+    easygoing: {
       high: ["やろっか"],
     },
-  },
-  emotional: {
-    standard: {
+    emotional: {
       high: ["背負ってるもの、見せます"],
     },
-  },
-  shy: {
-    standard: {
+    shy: {
       high: ["……はい"],
     },
   },
@@ -1173,90 +1139,88 @@ const FACTION_F09_MATCH_PRE_LINES = {
 
 // 各試合後 勝者の一言（軽量）
 const FACTION_F09_MATCH_POST_WIN_LINES = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: ["1勝。あと何回続くかな"],
       mid: ["まだ序章だぜ"],
     },
-    delinquent: { high: ["次。次出てこい"] },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       high: ["……ありがとうございました。次の人に繋ぎます"],
     },
+    quiet: { high: ["……次"] },
+    easygoing: { high: ["とりあえず1つ、もらった"] },
+    emotional: { high: ["みんな、見ててね"] },
+    shy: { high: ["……勝てて、よかった"] },
   },
-  quiet: { standard: { high: ["……次"] } },
-  easygoing: { standard: { high: ["とりあえず1つ、もらった"] } },
-  emotional: { standard: { high: ["みんな、見ててね"] } },
-  shy: { standard: { high: ["……勝てて、よかった"] } },
+  delinquent: {
+    bold: { high: ["次。次出てこい"] },
+  },
 };
 
 // 各試合後 敗者の一言（軽量・呻き寄り）
 const FACTION_F09_MATCH_POST_LOSE_LINES = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: ["……ちっ。次の奴で取り返してくれ"],
     },
+    earnest: { high: ["……ごめんなさい、次に繋いでください"] },
+    quiet: { high: ["……すまない"] },
+    easygoing: { high: ["……うわ、負けた。次よろしく"] },
+    emotional: { high: ["……ごめん、ごめんね"] },
+    shy: { high: ["……ごめんなさい"] },
   },
-  earnest: { standard: { high: ["……ごめんなさい、次に繋いでください"] } },
-  quiet: { standard: { high: ["……すまない"] } },
-  easygoing: { standard: { high: ["……うわ、負けた。次よろしく"] } },
-  emotional: { standard: { high: ["……ごめん、ごめんね"] } },
-  shy: { standard: { high: ["……ごめんなさい"] } },
 };
 
 // エンディング 勝ち越し派閥リーダー
 const FACTION_F09_ENDING_WIN_LINES = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: [
         "勝ち越した。今夜は、うちの組の夜だ",
         "見たか。これがうちの組の力だ",
       ],
     },
-    delinquent: { high: ["完全勝利だ。文句あるか？"] },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       high: [
         "……勝てて、よかった。みんなのおかげです",
         "うちの組、今日のために積み上げてきたんです",
       ],
     },
-  },
-  quiet: { standard: { high: ["……勝った"] } },
-  easygoing: { standard: { high: ["なんとかなったね、よかった"] } },
-  emotional: {
-    standard: {
+    quiet: { high: ["……勝った"] },
+    easygoing: { high: ["なんとかなったね、よかった"] },
+    emotional: {
       high: ["みんな、ありがとう……ありがとう"],
     },
-    ojousama: { high: ["わたくしたち、勝ち越しましたわよ"] },
+    shy: { high: ["……勝ち越せて、嬉しいです"] },
   },
-  shy: { standard: { high: ["……勝ち越せて、嬉しいです"] } },
+  delinquent: {
+    bold: { high: ["完全勝利だ。文句あるか？"] },
+  },
+  ojousama: {
+    emotional: { high: ["わたくしたち、勝ち越しましたわよ"] },
+  },
 };
 
 // エンディング 負け越し派閥リーダー
 const FACTION_F09_ENDING_LOSE_LINES = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       high: [
         "……負けた。受け止める。次は必ず取り返す",
         "今夜のは、覚えとく。次に返すから",
       ],
     },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       high: [
         "……ごめんなさい、みんな。わたしの責任です",
         "今夜は、わたしたちが弱かった。立て直します",
       ],
     },
+    quiet: { high: ["……負けた。それだけ"] },
+    easygoing: { high: ["はー、やられたなあ。組み立て直しだね"] },
+    emotional: { high: ["……うちの組、今夜は弱かった。みんな、ごめん"] },
+    shy: { high: ["……ごめんなさい、わたしのせいです"] },
   },
-  quiet: { standard: { high: ["……負けた。それだけ"] } },
-  easygoing: { standard: { high: ["はー、やられたなあ。組み立て直しだね"] } },
-  emotional: { standard: { high: ["……うちの組、今夜は弱かった。みんな、ごめん"] } },
-  shy: { standard: { high: ["……ごめんなさい、わたしのせいです"] } },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1265,149 +1229,123 @@ const FACTION_F09_ENDING_LOSE_LINES = {
 // band は 'high' のみ使用（同派閥内対立なので hostility 帯は単一）。loser のみ HP帯。
 // ─────────────────────────────────────────────────────────────────────────────
 const INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES = {
-  bold: {
-    standard: { high: [
+  standard: {
+    bold: { high: [
       "今夜、あんたの座は降ろさせてもらう",
       "ずっと、あんたの背中ばっか見てきた。今日で終わりにする",
       "リーダー――その肩書、重そうだな。譲ってもらうぜ",
     ] },
-    delinquent: { high: [
-      "黙って退け、なんて言わねえ。リングで証明してやる",
-      "あたしが上に立つ。それだけだ",
-    ] },
-    cool: { high: [
-      "順番が回ってきただけだ。受けてもらう",
-    ] },
-  },
-  earnest: {
-    standard: { high: [
+    earnest: { high: [
       "……失礼を承知で言います。私が、上に立ちます",
       "あなたを尊敬しています。だからこそ、今日、超える",
       "後ろの子たちに、もう待ってと言えない",
     ] },
-    polite: { high: [
-      "御免なさい。今日だけは、譲れません",
-    ] },
-  },
-  quiet: {
-    standard: { high: [
+    quiet: { high: [
       "……時間だ",
       "……席を、もらいに来た",
     ] },
-  },
-  emotional: {
-    standard: { high: [
+    emotional: { high: [
       "怖いよ。でも、行かなきゃ",
       "ごめん、ごめんね……それでも、譲れないんだ",
     ] },
-  },
-  easygoing: {
-    standard: { high: [
+    easygoing: { high: [
       "やー、こういう日も来るよね。じゃ、行こうか",
     ] },
-  },
-  shy: {
-    standard: { high: [
+    shy: { high: [
       "……わたし、勝ちます",
     ] },
-  },
-  normal: {
-    standard: { high: [
+    normal: { high: [
       "今日、あなたの座を奪いに来た",
       "ずっとこの日を待っていた",
+    ] },
+  },
+  delinquent: {
+    bold: { high: [
+      "黙って退け、なんて言わねえ。リングで証明してやる",
+      "あたしが上に立つ。それだけだ",
+    ] },
+  },
+  cool: {
+    bold: { high: [
+      "順番が回ってきただけだ。受けてもらう",
+    ] },
+  },
+  polite: {
+    earnest: { high: [
+      "御免なさい。今日だけは、譲れません",
     ] },
   },
 };
 
 const INTERNAL_CHALLENGE_PRE_LEADER_LINES = {
-  bold: {
-    standard: { high: [
+  standard: {
+    bold: { high: [
       "上等。叩き潰してやる",
       "若いの、その意気だけは買ってやる。リングは別だがな",
     ] },
-    cool: { high: [
-      "受けてやる。それだけのことだ",
-    ] },
-  },
-  earnest: {
-    standard: { high: [
+    earnest: { high: [
       "……来なさい。それが、あなたの覚悟なら",
       "わかった。今日は、本気で迎え撃つ",
     ] },
-    polite: { high: [
-      "光栄です。全力で、お相手します",
-    ] },
-  },
-  quiet: {
-    standard: { high: [
+    quiet: { high: [
       "……いいだろう",
     ] },
-  },
-  emotional: {
-    standard: { high: [
+    emotional: { high: [
       "そんな顔で来られたら――退けないじゃない",
     ] },
-  },
-  easygoing: {
-    standard: { high: [
+    easygoing: { high: [
       "おう、来るかい。じゃあ行こう",
     ] },
-  },
-  shy: {
-    standard: { high: [
+    shy: { high: [
       "……負けません。今日は",
     ] },
-  },
-  normal: {
-    standard: { high: [
+    normal: { high: [
       "受けて立つ。リングで会おう",
+    ] },
+  },
+  cool: {
+    bold: { high: [
+      "受けてやる。それだけのことだ",
+    ] },
+  },
+  polite: {
+    earnest: { high: [
+      "光栄です。全力で、お相手します",
     ] },
   },
 };
 
 const INTERNAL_CHALLENGE_POST_WINNER_LINES = {
-  bold: {
-    standard: { high: [
+  standard: {
+    bold: { high: [
       "これで、あたしが先頭に立つ。文句あるか",
       "後ろのみんな、ついて来な。ここからだ",
     ] },
-  },
-  earnest: {
-    standard: { high: [
+    earnest: { high: [
       "……ありがとうございました。この座、必ず守ります",
       "重い……でも、引き受けます",
     ] },
-  },
-  quiet: {
-    standard: { high: [
+    quiet: { high: [
       "……勝った。それだけ",
     ] },
-  },
-  emotional: {
-    standard: { high: [
+    emotional: { high: [
       "勝った……勝っちゃった……",
     ] },
-  },
-  easygoing: {
-    standard: { high: [
+    easygoing: { high: [
       "あー、勝っちゃったか。じゃ、頑張りますわ",
     ] },
-  },
-  shy: {
-    standard: { high: [
+    shy: { high: [
       "……ほんとうに、勝てるなんて",
     ] },
-  },
-  normal: {
-    standard: { high: [
+    normal: { high: [
       "勝った。これからはわたしが先頭に立つ",
     ] },
   },
 };
 
 const INTERNAL_CHALLENGE_POST_LOSER_LINES = {
-  bold: {
-    standard: {
+  standard: {
+    bold: {
       hp_high: [
         "……次はねえぞ。覚えとけ",
         "ふん、今日は譲ってやる。それだけだ",
@@ -1419,9 +1357,7 @@ const INTERNAL_CHALLENGE_POST_LOSER_LINES = {
         "……強かった",
       ],
     },
-  },
-  earnest: {
-    standard: {
+    earnest: {
       hp_high: [
         "……あなたの方が、上でした。素直に認めます",
         "あとは、お任せします。立派に、組を率いてください",
@@ -1433,37 +1369,27 @@ const INTERNAL_CHALLENGE_POST_LOSER_LINES = {
         "……託します",
       ],
     },
-  },
-  quiet: {
-    standard: {
+    quiet: {
       hp_high: ["……負けた"],
       hp_mid: ["……うむ"],
       hp_low: ["……"],
     },
-  },
-  emotional: {
-    standard: {
+    emotional: {
       hp_high: ["……ごめんね、みんな。守れなかった"],
       hp_mid: ["……うちの背中、もう、頼りにならないかな"],
       hp_low: ["……ごめん"],
     },
-  },
-  easygoing: {
-    standard: {
+    easygoing: {
       hp_high: ["はー、抜かれちゃったか。次の子、頑張れよ"],
       hp_mid: ["やられたなあ、参った参った"],
       hp_low: ["……参った"],
     },
-  },
-  shy: {
-    standard: {
+    shy: {
       hp_high: ["……ごめんなさい、わたしのせいで"],
       hp_mid: ["……すみません"],
       hp_low: ["……"],
     },
-  },
-  normal: {
-    standard: {
+    normal: {
       hp_high: ["負けた。あとは任せる"],
       hp_mid: ["やられた。次は支える側に回る"],
       hp_low: ["……託す"],
