@@ -10581,7 +10581,9 @@ const App = {
     callback();
   },
 
-  // v2.0-C3: Always stop — no auto-advance. Accumulate financeHistory and set weekSummary or settled phase.
+  // 週次精算を記録して、同じクリック内で次週へ遷移するための準備をする。
+  // `weekSummary` は advanceFromWeekSummary の入力契約としてだけ使う。一度画面に
+  // 描画してから次のクリックを要求すると、1週に2クリック必要になってしまう。
   /** その週に専用大会（春タッグW12 / 夏JT W24 / 秋対抗戦W36 / 冬PPV・天頂戦W48）が走るか。
    *  専用大会は会場入り演出と結果画面を自前で持っているので、「今週は〜です」という
    *  予告トーストを出してはいけない。出すと**大会が全部終わったあとに予告が流れる**
@@ -10611,22 +10613,24 @@ const App = {
       details: [...(G.weeklyFinance.details || [])],
       funds: G.funds,
     });
-    const isMonthEnd = G.week % 4 === 0;
-    if (!isMonthEnd) {
-      // Non-month-end: show brief weekly summary instead of auto-advancing
-      G = { ...G, financeHistory: newHistory, weekPhase: 'weekSummary' };
-      Storage.autoSave();
-      showScreen('week');
-      refreshAll();
-      return true; // signal: handled (caller should return)
-    }
-    // Month-end: accumulate and stop at settled (existing behavior)
-    G = { ...G, financeHistory: newHistory };
-    return false;
+    // 月末を含め、tickWeek が完了した週は必ず同じ経路で一度だけ次週へ進める。
+    // 決算そのものは tickWeek 内で完了しており、ここで止めるとクリック回数だけが
+    // 増えていた。weekSummary は既存セーブ/ボタンとの後方互換のため維持する。
+    G = { ...G, financeHistory: newHistory, weekPhase: 'weekSummary' };
+    return true;
   },
 
-  // v2.0-C3: Manual advance from weekly summary
+  // tickWeek 完了後の次週遷移。旧セーブの weekSummary ボタンからもここへ入る。
   advanceFromWeekSummary() {
+    // この関数はサマリー完了状態だけを消費する。インライン onclick の重複発火や
+    // 二重クリックで、第48週の PPV 専用 phase をもう一度 advanceWeek へ渡さない。
+    if (G.weekPhase !== 'weekSummary') {
+      console.warn('[WM][week-advance] ignored stale summary handler', {
+        season: G.season, week: G.week, weekPhase: G.weekPhase,
+      });
+      return false;
+    }
+    const before = { season: G.season, week: G.week, weekPhase: G.weekPhase };
     Audio.play('tick');
     dismissAllPopups(); // 残存ポップアップを強制クリア
     if (App.repairProgressionState('advanceFromWeekSummary')) {
@@ -10634,6 +10638,10 @@ const App = {
     }
     const result = Engine.advanceWeek(G);
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
+    console.info('[WM][week-advance] summary handler advanced exactly once', {
+      from: before,
+      to: { season: G.season, week: G.week, weekPhase: G.weekPhase, offSeason: !!G.offSeason },
+    });
     // ── 体験版シーズンゲート ──
     if (G._trialEnd) {
       const { _trialEnd: _, ...cleanG } = G;
@@ -10641,47 +10649,47 @@ const App = {
       Storage.autoSave();
       showTrialEndMessage();
       refreshAll();
-      return;
+      return true;
     }
     // 契約更新交渉フェーズ
     if (G.weekPhase === 'contractNegotiation') {
       Storage.autoSave();
       App.handleContractNegotiations();
-      return;
+      return true;
     }
     if (App._shouldStartTenchosenReplay?.()) {
       Storage.autoSave();
       App.initTenchosenReplay();
-      return;
+      return true;
     }
     // PPVフェーズ
     if (G.weekPhase === 'ppvShow') {
       Storage.autoSave();
       App.initPPVShow();
-      return;
+      return true;
     }
     if (G.weekPhase === 'ppvTV') {
       Storage.autoSave();
       App.initPPVTV();
-      return;
+      return true;
     }
     // 秋4団体戦 Week36: 結果確定前のリプレイを自動起動
     if (G._pendingAutumnWarReplay) {
       Storage.autoSave();
       App.initAutumnWarReplay();
-      return;
+      return true;
     }
     // C-6 天頂戦 Week48: 結果はEngine.advanceWeek内で確定済み。リプレイ演出を自動起動
     if (App._shouldStartTenchosenReplay()) {
       Storage.autoSave();
       App.initTenchosenReplay();
-      return;
+      return true;
     }
     // S8 春のタッグリーグ Week12: 結果はEngine.advanceWeek内で確定済み。リプレイ演出を自動起動
     if (G._pendingSpringTagLeagueReplay && App._shouldStartSpringTagLeagueReplay()) {
       Storage.autoSave();
       App.initSpringTagLeagueReplay();
-      return;
+      return true;
     }
     App._discardStaleSpringTagLeagueReplay();
     App.checkSurvivalUpdate();
@@ -10710,6 +10718,7 @@ const App = {
         setTimeout(() => showToast(`📣 オフシーズンで団体人気が -${notif.decay} 減衰しました（現在: ${nowPop}）`, 6000), 800);
       }
     }
+    return true;
   },
 
   // Process a week (manage + settle) via tickWeek
@@ -11174,8 +11183,12 @@ const App = {
     // MQ再設計P4 §5.3: 大ニュース週頭通知（他のポップアップの後に鳴らす）
     App._maybeShowBigNewsPopup((newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 1300);
 
-    // v1.0: Auto-advance on non-monthly weeks
-    if (App._tryAutoAdvance()) return;
+    // 週次処理と次週遷移は1クリック内で完結させる。_tryAutoAdvance が
+    // weekSummary をセットし、既存の専用大会分岐も持つ入口へ渡す。
+    if (App._tryAutoAdvance()) {
+      App.advanceFromWeekSummary();
+      return;
+    }
     showScreen('week');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');

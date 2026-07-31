@@ -1,5 +1,56 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 第48週PPVが飛ぶ週進行バグ修正（task-48・2026-07-31）
+
+### 原因（UIイベント経路）
+
+- 今週画面の通常ボタンは `ui-common.js` の `advanceWeek()` → `App.advanceCurrentFlow()` → `App.processWeek()` を呼ぶ。一方、`ui-render.js` が週次サマリー用に生成するボタンは、インライン `onclick="App.advanceFromWeekSummary()"` を直接呼ぶ別入口だった。
+- 修正前の `App.processWeek()` は `tickWeek()` で当週を処理した後、非月末なら `_tryAutoAdvance()` が `weekPhase: 'weekSummary'` を設定して return していた。つまり第47週は**1クリック目が第47週の精算だけ、2クリック目が第48週への遷移**であり、UI設計そのものが「2回押す必要」を作っていた。
+- さらに `advanceFromWeekSummary()` は呼出前の `weekPhase` を検証せず、常に `Engine.advanceWeek(G)` を実行していた。第47週サマリーのハンドラが重複発火／再入すると、1回目で `W47 → W48:ppvShow/ppvTV`、2回目でPPV専用phaseのまま `W48 → W49:offseason` となる。これが「第48週が丸ごと飛ぶ」根であり、Engine単体が正常でもUI入口で再現する。
+
+### 修正
+
+- `_tryAutoAdvance()` は月末・非月末を分けず、`tickWeek()` 完了後に財務履歴を1件だけ追加して `weekSummary` を入力契約として設定する。
+- `processWeek()` はその同一クリック内で `advanceFromWeekSummary()` を1回だけ呼ぶ。これにより、週次処理と翌週遷移が必ず1クリックで完結する。月末決算は既に `tickWeek()` 内で一度だけ実施済みなので、止めることによる二重操作をなくしても決算計算・履歴は飛ばない。
+- `advanceFromWeekSummary()` は `weekPhase === 'weekSummary'` の時だけ `Engine.advanceWeek()` を呼ぶ。PPV専用phaseなどで到着した古い／重複onclickは `false` を返して無視するため、どの大会週でも二重進行できない。
+- 実機コンソールに残るUI経路ログを追加した。
+
+  ```text
+  [WM][week-advance] summary handler advanced exactly once
+  [WM][week-advance] ignored stale summary handler
+  ```
+
+### 実測ログと新規回帰テスト
+
+- 新規 `test/week-advance-single-step-test.js` は app.js の実際の `advanceFromWeekSummary` 関数本体をVMで実行し、`Engine.advanceWeek` の呼出回数とUIハンドラログを取得する。修正前 `HEAD` に対しては、`processWeek` が同一クリック中に遷移を行わないため失敗することを先に確認した。
+
+  ```text
+  修正前HEAD: AssertionError: processWeek は週次処理後に同一クリック内で advanceFromWeekSummary を1回呼ぶこと
+
+  修正後UI handler log:
+  [WM][week-advance] summary handler advanced exactly once
+  | initPPVTV
+  | [WM][week-advance] ignored stale summary handler
+
+  W44:weekSummary -> W45:manage
+  W45:weekSummary -> W46:manage
+  W46:weekSummary -> W47:manage
+  W47:weekSummary -> W48:ppvTV
+  W48:PPV-settle -> W49:offseason
+  ```
+
+- 第48週は必ずPPV専用phaseを通過し、PPV終了時の第48週確定後にだけオフシーズンへ入る。新規テストは春タッグ（12）・ジュニア（24）・秋4団体戦（36）・PPV（48）の各開始も、同じUIハンドラが Engine を1回だけ呼んで正規の大会週へ到達することを確認している。
+
+### 不変条件・検証結果
+
+1. 1クリックで `tickWeek` 後の `Engine.advanceWeek` は1回だけ: PASS。
+2. 大会週12/24/36/48は各々1回だけ正規開始、第48週もPPV専用phaseを正規通過: PASS。
+3. 順序は `W48 PPV → W48 settle → W49/offseason`。既存のオフシーズン処理（表彰式→総括→契約更改）に変更なし: PASS。
+4. 月末を含む全週で財務履歴は1件だけ追加、決算は `tickWeek` 内で一度だけ: PASS。
+5. 数値バランス・試合結果のロジックは未変更: PASS。
+6. `npm test`: **157/157 PASS**。
+7. `node test/auto-sim.js 40`: **ALL CLEAR**（violations 0、errors 0、通常年PPV 30/30、天頂戦 10/10）。
+
 ## PPVテレビ中継の4不具合修正（task-46・2026-07-31）
 
 ### D. 時系列（最優先）— 仮説の検証と修正
