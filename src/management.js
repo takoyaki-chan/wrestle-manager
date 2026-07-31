@@ -8929,7 +8929,7 @@ const Engine = {
       }
 
       const choiceIdx = this._pickAIChoice(rng, event, org.tier, aiState);
-      const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, aiState);
+      const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, aiState, rng);
       let orgPopDelta = 0;
       (result.events || []).forEach(entry => {
         if (typeof entry === 'string' && entry.indexOf('__orgPop:') === 0) {
@@ -13817,7 +13817,7 @@ const Engine = {
         const ppRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE40, s.season, fighterId));
         const existingIds = state.roster.map(c => c.id);
         s = Engine.relationships.applyFromRoster(s, existingIds, fighterId, { min: -3, max: 3 }, { min: 0, max: 0 }, ppRelRng);
-        const recontactEvents = Engine.relationships.checkRecontact(s, fighterId, existingIds, state);
+        const recontactEvents = Engine.relationships.checkRecontact(s, fighterId, existingIds, state, ppRelRng);
         if (recontactEvents.length > 0) {
           s = Engine.relationships.applyRecontactEvents(s, recontactEvents);
         }
@@ -14169,7 +14169,7 @@ const Engine = {
         const existingIds = state.roster.map(c => c.id);
         s = Engine.relationships.applyFromRoster(s, existingIds, fighterId, { min: -2, max: 2 }, { min: 0, max: 0 }, rentalRelRng);
         // 再接触チェック
-        const recontactEvents = Engine.relationships.checkRecontact(s, fighterId, existingIds, state);
+        const recontactEvents = Engine.relationships.checkRecontact(s, fighterId, existingIds, state, rentalRelRng);
         if (recontactEvents.length > 0) {
           s = Engine.relationships.applyRecontactEvents(s, recontactEvents);
         }
@@ -22448,10 +22448,15 @@ Engine.eventSystem = {
 
   // ── 選択型イベントの効果適用（純粋関数） ─────────────────────────────────
   // 返り値: { roster, funds, lockerRoomMorale, events, log }
-  applyChoiceEffect(event, choiceIdx, state) {
+  applyChoiceEffect(event, choiceIdx, state, rng = null) {
     let roster = state.roster.map(f => ({ ...f }));
     let funds = state.funds || 0;
     let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
+    // E1の代役抽選・E6の説得判定はロスターを動かす。Math.random() だと同一シードで
+    // 再現しないため、渡された rng（無ければ state から導出）を使う(2026-07-31)。
+    const evRng = rng || Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 42, state.season || 1, state.week || 1,
+      event && event.fighter || 0, 0xE0C1));
     const events = [];
     // 放出された選手を追跡（呼び出し元でFA/dormantに振り分け）
     const departedFighters = [];
@@ -22571,7 +22576,7 @@ Engine.eventSystem = {
         } else if (choiceIdx === 2) {
           const others = roster.filter(f => f.id !== event.fighter && !f.injury);
           if (others.length > 0) {
-            const alt = others[Math.floor(Math.random() * others.length)];
+            const alt = others[Engine.rng.int(evRng, 0, others.length - 1)];
             roster = roster.map(f => f.id === alt.id
               ? { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) }
               : f);
@@ -22613,7 +22618,7 @@ Engine.eventSystem = {
           if (trust >= 35) successRate = 0.60;
           else if (trust >= 25) successRate = 0.30;
           else successRate = 0.10;
-          if (Math.random() < successRate) {
+          if (Engine.rng.float(evRng) < successRate) {
             events.push(`🤝 ${event.name}の説得に成功`);
           } else {
             const e6Departed1 = roster.find(f => f.id === event.fighter);
@@ -22659,7 +22664,7 @@ Engine.eventSystem = {
         lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 2.30, 0, 100);
         const others = roster.filter(f => f.id !== event.fighter && !f.injury);
         if (others.length > 0) {
-          const victim = others[Math.floor(Math.random() * others.length)];
+          const victim = others[Engine.rng.int(evRng, 0, others.length - 1)];
           applyTrust(victim.id, -0.77);
         }
         if (choiceIdx === 0) {

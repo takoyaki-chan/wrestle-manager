@@ -1894,9 +1894,14 @@ Engine.relationships = {
   //  Phase 3: 再接触イベント (spec §2.2)
   //  凍結されていた関係が再接触時に発火
   // ══════════════════════════════════════════════════════════
-  checkRecontact(state, newCharId, rosterIds, previousState = state) {
+  checkRecontact(state, newCharId, rosterIds, previousState = state, rng = null) {
     if (!state.relationships) return [];
     const events = [];
+    // 効果量もシード管理下に置く。Math.random() だと同一シードでも結果が変わり、
+    // 分布計測の before/after 比較が成立しない(2026-07-31)。
+    // 呼び出し側が rng を渡さない場合は state から導出する。
+    const evRng = rng || Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 42, state.season || 1, state.week || 1, newCharId, 0xBE7C));
     const previousRelationships = previousState.relationships || {};
     for (const rid of rosterIds) {
       if (rid === newCharId) continue;
@@ -1914,7 +1919,7 @@ Engine.relationships = {
       const rivalryMax = rivalryValues.length > 0 ? Math.max(...rivalryValues) : 0;
 
       if (this.getBondBand(bondMax) === 'devoted') {
-        events.push({ type: 'reunion', charA: newCharId, charB: rid, effect: { conditionBonus: 5 + Math.floor(Math.random() * 6) } });
+        events.push({ type: 'reunion', charA: newCharId, charB: rid, effect: { conditionBonus: 5 + Engine.rng.int(evRng, 0, 5) } });
       }
       if (bondMin <= 10) {
         events.push({
@@ -1922,13 +1927,13 @@ Engine.relationships = {
           charA: newCharId,
           charB: rid,
           effect: {
-            moralePenalty: -(5 + Math.floor(Math.random() * 4)),
-            rivalryBonus: 4 + Math.floor(Math.random() * 3),
-            bondPenalty: -(2 + Math.floor(Math.random() * 2)),
+            moralePenalty: -(5 + Engine.rng.int(evRng, 0, 3)),
+            rivalryBonus: 4 + Engine.rng.int(evRng, 0, 2),
+            bondPenalty: -(2 + Engine.rng.int(evRng, 0, 1)),
           },
         });
       } else if (bondMin < 50) {
-        events.push({ type: 'grudge', charA: newCharId, charB: rid, effect: { moralePenalty: -(2 + Math.floor(Math.random() * 4)) } });
+        events.push({ type: 'grudge', charA: newCharId, charB: rid, effect: { moralePenalty: -(2 + Engine.rng.int(evRng, 0, 3)) } });
       }
       if (rivalryMax >= 60) {
         events.push({ type: 'unfinished', charA: newCharId, charB: rid, effect: {} });

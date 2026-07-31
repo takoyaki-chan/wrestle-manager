@@ -1,5 +1,67 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 計測ツールの再現性を壊していた Math.random() をシード化（2026-07-31）
+
+### 発端
+
+task-63 の分布計測中、`node test/relationship-distribution-analysis.js 40 12345` を
+**同じコード・同じシードで2回走らせると毎回違う結果が出る**ことに気づいた
+（同団体ペア数 435 / 420 / 468）。before/after 比較が成立しない状態だった。
+
+`test/auto-sim.js` は冒頭（45-51行）で `Math.random` をシード付き実装に差し替える
+モンキーパッチを持っているため影響を受けていなかった。**パッチを当てていない計測ツールだけが
+非再現になる**という、気づきにくい形で残っていた。
+
+### 犯人の特定
+
+推測で潰さず、`Math.random` を差し替えて呼び出し元スタックを記録する計測ラッパを書き、
+8シーズン走らせて**実際に発火する箇所だけ**を列挙した。結果は3箇所：
+
+| 呼び出し回数 | 箇所 | 状態を動かすか |
+|---|---|---|
+| 1029 | `pickDialogueLine` (`data.js:14814`) | いいえ（セリフ選択のみ） |
+| 1 | `Engine.eventSystem.applyChoiceEffect` (`management.js:22616`) | **はい** |
+| 1 | `Engine.eventSystem.applyChoiceEffect` (`management.js:22574`) | **はい** |
+
+指示書が名指ししていた `checkRecontact` は 8シーズンでは発火しなかったが、
+呼ばれれば同じく状態（condition / 士気 / bond / rivalry）を動かす。
+逆に `applyChoiceEffect` の2件は回数こそ各1回でも、E6 の説得判定が外れると選手が
+**退団してロスターごと分岐する**ため、影響は最大級だった。
+
+### 直したもの
+
+いずれも `rng` を省略可能な引数として追加し、渡されなければ `state` から導出する形にした。
+分布は変えていない（`5 + Math.floor(Math.random()*6)` → `5 + Engine.rng.int(rng, 0, 5)` は同一レンジ）。
+
+1. **`Engine.relationships.checkRecontact`**（`relationships.js:1897`）
+   第5引数 `rng` を追加。フォールバックは
+   `Engine.rng.derive(rngSeed, season, week, newCharId, 0xBE7C)`。
+   reunion の condition ボーナス / vendetta の 士気・rivalry・bond / grudge の士気、計5箇所を置換。
+   呼び出し元3箇所（`management.js` 引き抜き・レンタル、`app.js` スカウト）は、
+   直前で既に `ppRelRng` / `rentalRelRng` / `scoutRelRng` を作っていたので**それをそのまま渡した**。
+2. **`Engine.eventSystem.applyChoiceEffect`**（`management.js:22451`）
+   第4引数 `rng` を追加。フォールバックは
+   `Engine.rng.derive(rngSeed, season, week, event.fighter, 0xE0C1)`。
+   E1 の代役抽選 / E6 の説得判定 / S_grumble の巻き添え抽選の3箇所を置換
+   （S_grumble は計測では発火しなかったが同一関数・同一欠陥のため同時に対処）。
+   呼び出し元は AI 側（`management.js:8932`、スコープに `rng` があるので直接渡す）と
+   プレイヤー側（`app.js:12029`、`choiceRng` を新規に導出）。
+
+### 検証
+
+- `node test/relationship-distribution-analysis.js 40 12345` ×2 → **完全一致**
+  （差分は `Elapsed:` の実測秒のみ。これは実行時間そのものなので当然）
+- `node test/auto-sim.js 40` → ALL CLEAR ✓（violations 0 / errors 0 / game overs 0）
+- `node test/run-all.js` → **173/173 PASS**
+
+### 残していい Math.random()
+
+`pickDialogueLine` 系のセリフ・記事テンプレ抽選は今回対象外。文字列を選ぶだけで
+数値に戻らないため、修正後に出力が完全一致したことで実害がないと確認できている
+（`management.js:7051` にも「UI表示専用 — rng不要」と明記済みの前例がある）。
+
+---
+
 ## AI団体の王座戦にタイトル戦リング内効果を発火させる（task-61・2026-07-31）
 
 出典: `docs/ai-title-defense-survey-v0.1.md`（前段調査）。作業は `wm-task61`
