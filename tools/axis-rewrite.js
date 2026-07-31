@@ -390,12 +390,112 @@ function runSwap(argv) {
   }
 }
 
+// ───────────────────────────────────────────────────────────────────────
+// 2.7. vocab — 旧語彙の性格キーを現行7種に寄せる
+//
+// 派閥まわりのテーブルだけ、性格が独自語彙で書かれていた:
+//   fiery / grudging / airy / flippant / composed(=寡黙) / introverted / carefree
+// このうち composed はアーキタイプ「鷹揚」と綴りが衝突しており、
+// Excel の軸判定(detectMeta)が解決できない原因になっていた。
+//
+// 対象テーブルと変換表は下記に固定で持つ(誤爆を避けるため全文検索はしない)。
+// COMMON1/COMMON5 の composed は深度2の旧語彙性格のみに現れ、
+// アーキタイプ位置には存在しないことを確認済み。
+// ───────────────────────────────────────────────────────────────────────
+const VOCAB_MIGRATIONS = [
+  { tables: ['CONTRACT_NEGOTIATION_LINES', 'FACTION_F02_LINES', 'F07_LINES'],
+    map: { introverted: 'quiet', carefree: 'easygoing' } },
+  { tables: ['COMMON1_LINES', 'COMMON5_LINES'],
+    map: { fiery: 'bold', grudging: 'emotional', airy: 'easygoing', flippant: 'shy', composed: 'quiet' } },
+];
+
+function runVocab(argv) {
+  const write = argv.includes('--write');
+  const { allDecls, fileSrc } = loadAllDecls();
+  const sandbox = evalAll(allDecls);
+
+  const edits = new Map();
+  let total = 0;
+  for (const mig of VOCAB_MIGRATIONS) {
+    for (const table of mig.tables) {
+      const val = resolvePath(sandbox, table);
+      if (val === undefined) { console.error(`[vocab] 見つからない: ${table}`); process.exit(1); }
+
+      // 評価側: 変換対象キーを持つ辞書のパスを確定する
+      const wanted = new Set();
+      const seen = new Set();
+      (function scan(node, segs) {
+        if (!node || typeof node !== 'object' || seen.has(node)) return;
+        seen.add(node);
+        if (isDict(node) && Object.keys(node).some(k => k in mig.map)) wanted.add(pathKey(segs));
+        if (Array.isArray(node)) node.forEach((v, i) => scan(v, segs.concat([i])));
+        else for (const k of Object.keys(node)) scan(node[k], segs.concat([k]));
+      })(val, []);
+
+      const expected = [...new Set(
+        (function count(node, segs, acc) {
+          const s2 = new Set();
+          (function w(n, sg) {
+            if (!n || typeof n !== 'object' || s2.has(n)) return;
+            s2.add(n);
+            if (isDict(n)) for (const k of Object.keys(n)) if (k in mig.map) acc.push(pathKey(sg) + '|' + k);
+            if (Array.isArray(n)) n.forEach((v, i) => w(v, sg.concat([i])));
+            else for (const k of Object.keys(n)) w(n[k], sg.concat([k]));
+          })(node, segs);
+          return acc;
+        })(val, [], [])
+      )];
+
+      // ソース側
+      const declMeta = allDecls.find(d => d.name === table && !d.error && !d.isAssignment);
+      if (!declMeta) { console.error(`[vocab] 宣言が拾えない: ${table}`); process.exit(1); }
+      const file = declMeta.file;
+      const src = fileSrc.get(file);
+      const m = new RegExp(`^const\\s+${table}\\s*=\\s*`, 'm').exec(src);
+      const base = m.index + m[0].length;
+      const text = src.slice(base, base + declMeta.exprText.length);
+
+      let hit = 0;
+      for (const k of findKeyOffsets(text)) {
+        if (!(k.key in mig.map)) continue;
+        if (!wanted.has(k.parentPath)) continue;
+        if (!edits.has(file)) edits.set(file, []);
+        edits.get(file).push({ start: base + k.start, end: base + k.end, from: k.key, to: mig.map[k.key] });
+        hit++;
+      }
+      if (hit !== expected.length) {
+        console.error(`[vocab] ${table}: 評価${expected.length} / ソース${hit} — 一致しないので中止`);
+        process.exit(1);
+      }
+      console.log(`  ${table.padEnd(30)} ${String(hit).padStart(4)}ヶ所`);
+      total += hit;
+    }
+  }
+  console.log(`[vocab] 合計 ${total}ヶ所`);
+  if (!write) { console.log('[vocab] --write が無いので書き込みはしていない。'); return; }
+
+  for (const [file, list] of edits) {
+    const full = path.join(SRC, file);
+    const src = fs.readFileSync(full, 'utf8');
+    fs.writeFileSync(full + '.bak', src, 'utf8');
+    list.sort((a, b) => b.start - a.start);
+    let out = src;
+    for (const e of list) {
+      if (out.slice(e.start, e.end) !== e.from) { console.error(`[vocab] 想定外: ${file} @${e.start}`); process.exit(1); }
+      out = out.slice(0, e.start) + e.to + out.slice(e.end);
+    }
+    fs.writeFileSync(full, out, 'utf8');
+    console.log(`[vocab] 書き込み: src/${file} (${list.length}ヶ所)`);
+  }
+}
+
 function main() {
   const cmd = process.argv[2];
   const write = process.argv.includes('--write');
   if (cmd === 'swap') return runSwap(process.argv.slice(3));
+  if (cmd === 'vocab') return runVocab(process.argv.slice(3));
   if (cmd !== 'rename') {
-    console.error('usage: node tools/axis-rewrite.js rename|swap [--file=X.js] [--table=NAME] [--write]');
+    console.error('usage: node tools/axis-rewrite.js rename|swap|vocab [--file=X.js] [--table=NAME] [--write]');
     process.exit(2);
   }
 

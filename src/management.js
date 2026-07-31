@@ -24341,24 +24341,25 @@ Engine.validateGameState = function(G) {
 // ─────────────────────────────────────────────────────────────────────────────
 Engine.contract = {
   // ── 性格タイプマッピング: 明示的personality優先 → 特性推論フォールバック ──
+  // 戻り値は**現行の性格キー**(normal/bold/quiet/shy/easygoing/earnest/emotional)。
+  // 2026-08-01 以前は introverted / carefree という独自語彙を返しており、
+  // 派閥まわりのセリフ表だけがその語彙で書かれていた(さらに composed が
+  // アーキタイプ「鷹揚」と綴りで衝突していた)。語彙を現行体系に統一した。
+  //
+  // personality が 'normal'(または未設定)のときだけ、特性から性格を推し量る。
+  // 「素の子」に何も色を付けないと全員が同じ行を喋るため、この推論は残す。
   getPersonalityType(fighter) {
-    // 明示的personality (quiet→introverted, easygoing→carefree にマッピング)
     const p = fighter.personality;
-    if (p && p !== 'normal') {
-      if (p === 'quiet') return 'introverted';
-      if (p === 'easygoing') return 'carefree';
-      return p; // bold, earnest, emotional, shy はそのまま
-    }
-    // personality未設定 or 'normal': 特性ベース推論にフォールバック
+    if (p && p !== 'normal') return p; // bold/quiet/shy/easygoing/earnest/emotional
     const traits = fighter.traits || [];
     if (traits.some(t => ['威圧感', '野心', '闘志', '反骨心'].includes(t))) return 'bold';
-    if (traits.some(t => ['破天荒', 'ムードメーカー', '華'].includes(t))) return 'carefree';
+    if (traits.some(t => ['破天荒', 'ムードメーカー', '華'].includes(t))) return 'easygoing';
     if (traits.some(t => ['負けず嫌い', 'ライバル体質', 'ガラスの身体'].includes(t))) return 'emotional';
     if (traits.some(t => ['努力家', '忠誠心', 'リーダー気質', '人望', '適応力'].includes(t))) return 'earnest';
-    if (traits.some(t => ['晩成', '遅咲き', '不屈', '番狂わせ体質'].includes(t))) return 'introverted';
+    if (traits.some(t => ['晩成', '遅咲き', '不屈', '番狂わせ体質'].includes(t))) return 'quiet';
     if (fighter.role === 'Heel') return 'bold';
     if (fighter.role === 'Babyface') return 'earnest';
-    return 'introverted';
+    return 'quiet';
   },
 
   // ── コンテキスト変数抽出 ──────────────────────────────────────────────────

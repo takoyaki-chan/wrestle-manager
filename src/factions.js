@@ -237,7 +237,13 @@ Engine.factions = {
     const heelRatio = heelCount / sample.length;
     const faceRatio = faceCount / sample.length;
 
-    // 性格 archetype 集計（COMBAT バイアス: fiery/flippant/bold が多いと闘争志向）
+    // 性格 archetype 集計（COMBAT バイアス: 闘争志向の性格が多いか）
+    // NOTE: 下の `a === 'fiery'` / `a === 'flippant'` は **一度も成立しない**。
+    // archetype の取りうる値は standard/composed/ojousama/delinquent/cool/seductive/polite で、
+    // fiery / flippant は旧セリフ語彙(性格側)の綴りであり archetype には存在しない。
+    // つまり実質 `p === 'bold'` だけで判定されている。
+    // 直すと派閥アーキタイプの決まり方＝バランスが変わるため、2026-08-01 の語彙統一では
+    // 意図的に手を付けていない（要判断）。
     let combatPersonalityCount = 0;
     for (const f of sample) {
       const a = f.archetype || '';
@@ -299,7 +305,7 @@ Engine.factions = {
     if (p === 'bold') v += 5;
     else if (p === 'emotional') v += 3;
     else if (p === 'earnest') v -= 5;
-    else if (p === 'introverted') v -= 3;
+    else if (p === 'quiet') v -= 3;
     // traits の影響
     const traits = Array.isArray(fighter.traits) ? fighter.traits : [];
     if (traits.includes('ヒール適性')) v += 15;
@@ -483,8 +489,8 @@ Engine.factions = {
     let composedEarnestCount = 0;
     for (const m of members) {
       const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(m) : null;
-      if (p === 'fiery' || p === 'grudging' || p === 'bold' || p === 'emotional') fieryGrudgingCount++;
-      else if (p === 'composed' || p === 'earnest' || p === 'introverted') composedEarnestCount++;
+      if (p === 'bold' || p === 'emotional') fieryGrudgingCount++;
+      else if (p === 'earnest' || p === 'quiet') composedEarnestCount++;
     }
     if (fieryGrudgingCount > composedEarnestCount) return 'MERIT';
     return 'BOND';
@@ -3146,21 +3152,13 @@ Engine.factions = {
     return { ...state, factions };
   },
 
-  // getPersonalityType (bold/earnest/emotional/carefree/introverted/shy) を
-  // セリフテーブルのキー (fiery/composed/grudging/airy/earnest/flippant) に橋渡しする
+  // 2026-08-01: セリフ表のキーを現行の性格7種に統一したので、橋渡しは不要になった
+  // (旧: fiery/composed/grudging/airy/earnest/flippant という独自語彙。composed が
+  //  アーキタイプ「鷹揚」と綴りで衝突し、Excel の軸判定を壊していた)。
   _personalityLineKey(fighter) {
-    if (!fighter) return 'composed';
-    const p = (Engine.contract && Engine.contract.getPersonalityType)
-      ? Engine.contract.getPersonalityType(fighter) : 'composed';
-    const map = {
-      bold: 'fiery',
-      earnest: 'earnest',
-      emotional: 'grudging',
-      carefree: 'airy',
-      introverted: 'composed',
-      shy: 'flippant', // 含みを残した軽口=口ごもり混じりの言い回しに割り当て
-    };
-    return map[p] || 'composed';
+    if (!fighter) return 'quiet';
+    return (Engine.contract && Engine.contract.getPersonalityType)
+      ? Engine.contract.getPersonalityType(fighter) : 'quiet';
   },
 
   getCommon1Line(category, ctx) {
@@ -3186,7 +3184,7 @@ Engine.factions = {
       if (!t) return '';
       // 旧形式（配列）後方互換 + 新形式（personality マップ）
       if (Array.isArray(t)) return subst(pickArr(t));
-      return subst(pickArr(t[personality] || t.composed || t._any || []));
+      return subst(pickArr(t[personality] || t.quiet || t._any || []));
     }
     if (category === 'resultLeader') {
       const choice = (ctx && ctx.choice) || 'A';
@@ -3351,7 +3349,7 @@ Engine.factions = {
       const personality = this._personalityLineKey(fighter);
       const t = table.leaderQuoteA[arch];
       if (!t) return '';
-      return subst(pickArr(t[personality] || t.composed));
+      return subst(pickArr(t[personality] || t.quiet));
     }
     if (category === 'headlineA') {
       return subst(pickArr(table.headlineA[arch] || []));
@@ -5517,7 +5515,7 @@ Engine.factions = {
   },
 
   // ── §9.9 F02 対峙セリフ引き（personality × archetype × side）──
-  // FACTION_F02_LINES は data.js 定義。引けなければ normal / introverted にフォールバック。
+  // FACTION_F02_LINES は data.js 定義。引けなければ normal / quiet にフォールバック。
   getF02ClashLine(fighter, side) {
     if (!fighter) return '';
     const sideKey = (side === 'defend') ? 'defend' : 'attack';
@@ -5525,7 +5523,7 @@ Engine.factions = {
     const archetype = fighter.archetype || 'standard';
     const table = (typeof FACTION_F02_LINES !== 'undefined' ? FACTION_F02_LINES : null);
     if (!table) return '';
-    const pTable = table[personality] || table.introverted;
+    const pTable = table[personality] || table.quiet;
     const sTable = pTable[sideKey] || pTable.attack;
     return sTable[archetype] || sTable.standard || '';
   },
@@ -5587,7 +5585,7 @@ Engine.factions = {
     const itype = ctx && ctx.incidentType;
     if (!itype) return '';
     const fighter = ctx && ctx.fighter;
-    const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'introverted';
+    const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'quiet';
     const subst = (s) => {
       if (!s || !ctx || !ctx.vars) return s || '';
       let out = String(s);
@@ -5607,9 +5605,9 @@ Engine.factions = {
       const branch = t[archetype];
       let arr;
       if (branch && typeof branch === 'object' && !Array.isArray(branch)) {
-        arr = branch[personality] || branch.introverted;
+        arr = branch[personality] || branch.quiet;
       } else {
-        arr = t[personality] || t.introverted || t._any;
+        arr = t[personality] || t.quiet || t._any;
       }
       return subst(pickArr(arr));
     }
@@ -5628,9 +5626,9 @@ Engine.factions = {
       const branch = ct[archetype];
       let arr;
       if (branch && typeof branch === 'object' && !Array.isArray(branch)) {
-        arr = branch[personality] || branch.introverted;
+        arr = branch[personality] || branch.quiet;
       } else {
-        arr = ct[personality] || ct.introverted || ct._any;
+        arr = ct[personality] || ct.quiet || ct._any;
       }
       return subst(pickArr(arr));
     }
