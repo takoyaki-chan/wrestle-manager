@@ -1,5 +1,29 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 王座防衛の演出を派閥イベント級に落とす（task-51・2026-07-31）
+
+### 対応内容
+
+- `showTitleMatchCeremony(outcome, onDone)`（`src/ui-common.js`）を3分岐に分けた。
+  - **戴冠**（`outcome !== 'defense'`）… 従来どおり `showCeremonyEvent` の大判式典（`visualVariant: 'triumph'`）。変更なし。
+  - **節目の防衛**（`Engine.news.checkDefenseMilestone(defenses)` が 5/10/15 を返す）… 従来どおり同じ大判式典。新しい閾値は作らず、既存関数をそのまま呼んでいる。
+  - **通常の防衛**（上記以外）… 新設した `showTitleDefenseResultModal(champion, champLine, defenses, done)` を呼ぶ。`showFactionEventResult` と同じ部品（`_mdlAHeader` / `_mdlASubjectStage` / `_mdlAOpen`）だけで組んだA型モーダル1枚で、全画面式典オーバーレイは使わない。
+- 通常防衛モーダルの中身: 見出し1行「🛡 王座防衛」、メタ行に「N度目の防衛 ・ WEEK xx ・ xY」、地の文1行（`mdl-a-observation`）、王者の顔（`_mdlASubjectStage` の `small` 段）+ 頭上吹き出し1つ（`getTraitQuote('titleDefense', champion)` をそのまま使用）、ボタンは「閉じる」のみ。挑戦者の顔・吹き出しは出さない。
+- セリフ取得ロジックは既存のまま流用（`getTraitQuote('titleDefense'|'titleWin', champion)` / `getTraitQuote('titleChallengeLoss'|'titleLoss', opponent)`）。`src/data.js` は一切変更していない。
+- 併せて、`showTitleMatchCeremony` 冒頭の早期return条件を整理した。旧実装は「王者が見つからない or showCeremonyEvent が無い」を1つのif文で判定しており、通常防衛の軽量モーダル経路まで無関係な `showCeremonyEvent` の有無に引きずられていた。`showCeremonyEvent` のtypeofチェックは、実際にそれを呼ぶ式典分岐の直前だけに移した（王者不在の判定は引き続き最上部）。
+
+### 判断が要った点（実装しつつ判断したもの）
+
+- **挑戦者の扱い**: 指示書は「挑戦者は出しても1枚まで」としていたが、王者の頭上吹き出しを「セリフ1つ」に絞る方針と両立させるため、通常防衛では挑戦者の顔・セリフを出さない（0枚）判断にした。`getTraitQuote('titleChallengeLoss', opponent)` の呼び出し自体は関数内に残しているが、通常防衛の表示には使っていない（節目防衛・戴冠の式典側では従来どおり使用）。
+- **選手画像サイズ（2:3ラダー）**: `_mdlASubjectStage` の `small: true` は既存実装のまま 120×160（3:4）で、`docs/ui/mockup-baseline-v0.1.md` §2 の2:3ラダー（S 108×162 等）とは厳密には一致しない。ただし本タスクは `showFactionEventResult` と「同じ部品」を使うことが明示指示であり、`showFactionEventResult` 自身もこの同じ `_mdlASubjectStage(…, { small: true })` を使っている。`_mdlASubjectStage` は他の多数の画面が共有する部品で、今回の変更許可ファイル（`showTitleMatchCeremony` 一帯のみ）の範囲外のため、サイズそのものは変更していない。§2ラダーとの不一致は本タスク固有の新規逸脱ではなく既存の共有部品の仕様であることを明記しておく。
+
+### 検証
+
+- 新規 `test/title-defense-scale-test.js`（11 sections）: 通常防衛（0〜16度目のうち非節目値）で `showCeremonyEvent` を呼ばないこと、節目防衛（5/10/15）と戴冠で呼ぶこと、王者不在・DOM未整備・`showCeremonyEvent`不在・onDone未指定を含む全分岐で `onDone` が必ず1回だけ呼ばれること、通常防衛モーダルの出力HTML構造（見出し1行/メタ行/地の文1行/吹き出し1つ/顔1つ/ボタン文言「閉じる」/`margin-top`不使用/吹き出しに選手名・団体名が入らないこと）を、実関数を `vm.runInNewContext` で実行して検証する。
+- 既存 `test/title-match-ceremony-test.js` は無改修でPASS（戴冠側の式典コード・文言・`showCeremonyEvent(evt, speakers` 呼び出しを変更していないため）。
+- `npm test`: **164/164 PASS**（既存163 + 新規1）。
+- `src/data.js` は無変更。GameStateへの書き込みは追加していない（この関数群は表示専用のまま）。新規16進カラー・新規CSSクラスは追加していない（既存の `mdl-a-*` トークン/クラスのみを再利用）。
+
 ## 興行準備・興行結果の画像規格是正（task-49・2026-07-31）
 
 ### 対応内容

@@ -12006,15 +12006,17 @@ function _specialIntroPickSpeaker(state, cfg, pool) {
 // ── Title match ceremony ─────────────────────────────────────────────────
 // 節目イベントと同じ showCeremonyEvent の2フェーズ式典へ、王座結果だけを
 // データとして渡す。画面構造・スキップ・音響の復帰を独自実装しない。
+// タスク51(2026-07-31): 防衛は年に何度も起きるため、通常の防衛(節目でない)は
+// showFactionEventResult と同じ密度のA型モーダル1枚に落とす。
+// 戴冠と、5/10/15度目の節目防衛だけ従来の大判式典(showCeremonyEvent)を使う。
+// 判定は Engine.news.checkDefenseMilestone(management.js) をそのまま使う(新しい閾値を作らない)。
 function showTitleMatchCeremony(outcome, onDone) {
+  const done = () => { if (typeof onDone === 'function') onDone(); };
   const isDefense = outcome?.outcome === 'defense';
   const championId = isDefense ? outcome?.champId : outcome?.newChampId;
   const champion = (G?.roster || []).find(f => f.id === championId)
     || (typeof ALL_CHARS !== 'undefined' ? ALL_CHARS.find(f => f.id === championId) : null);
-  if (!champion || typeof showCeremonyEvent !== 'function') {
-    if (typeof onDone === 'function') onDone();
-    return;
-  }
+  if (!champion) { done(); return; }
   const opponentId = isDefense ? outcome?.challengerId : outcome?.prevChampId;
   const opponent = (G?.roster || []).find(f => f.id === opponentId)
     || (typeof ALL_CHARS !== 'undefined' ? ALL_CHARS.find(f => f.id === opponentId) : null);
@@ -12025,6 +12027,16 @@ function showTitleMatchCeremony(outcome, onDone) {
   const opponentLine = opponent && typeof getTraitQuote === 'function'
     ? getTraitQuote(isDefense ? 'titleChallengeLoss' : 'titleLoss', opponent)
     : '';
+
+  const milestone = isDefense && typeof Engine !== 'undefined' && Engine.news
+    && typeof Engine.news.checkDefenseMilestone === 'function'
+    ? Engine.news.checkDefenseMilestone(defenses) : 0;
+  if (isDefense && !milestone) {
+    showTitleDefenseResultModal(champion, champLine, defenses, done);
+    return;
+  }
+
+  if (typeof showCeremonyEvent !== 'function') { done(); return; }
   const evt = {
     titleMain: isDefense ? '防 衛' : '戴 冠',
     titleSub: isDefense ? `TITLE DEFENSE · ${defenses}` : 'NEW WORLD CHAMPION',
@@ -12042,7 +12054,42 @@ function showTitleMatchCeremony(outcome, onDone) {
     { fighter: champion, roleLabel: isDefense ? 'WORLD CHAMPION · DEFENSE SUCCESS' : 'NEW WORLD CHAMPION' },
     ...(opponent ? [{ fighter: opponent, roleLabel: isDefense ? 'CHALLENGER' : 'FORMER CHAMPION' }] : []),
   ];
-  showCeremonyEvent(evt, speakers, () => { if (typeof onDone === 'function') onDone(); });
+  showCeremonyEvent(evt, speakers, done);
+}
+
+// 通常防衛(節目でない防衛)専用: showFactionEventResult(ui-common.js内)と同じ部品
+// (_mdlAHeader / _mdlASubjectStage / _mdlAOpen)で組む、派閥イベント級の軽量A型モーダル。
+// 全画面式典は使わない。挑戦者の顔は出さない(王者の頭上吹き出し1つだけに絞る)。
+function showTitleDefenseResultModal(champion, champLine, defenses, done) {
+  if (typeof _mdlAOpen !== 'function') { done(); return; }
+  const metaParts = [];
+  if (defenses > 0) metaParts.push(`${defenses}度目の防衛`);
+  metaParts.push(typeof _mdlASeasonLabel === 'function' ? _mdlASeasonLabel(G) : '');
+  const metaHtml = metaParts.filter(Boolean).join(' ・ ');
+
+  const narrationText = `${escHtml(champion.name || '')}が王座防衛に成功した。`;
+  const narrationHtml = `<div class="mdl-a-observation centered" style="text-align:left;padding-top:6px">${narrationText}</div>`;
+
+  const subjectHtml = _mdlASubjectStage(champion, narrationHtml, {
+    small: true,
+    speech: champLine ? escHtml(champLine) : '',
+  });
+
+  const html = `
+    ${_mdlAHeader('🛡 王座防衛', metaHtml)}
+    ${subjectHtml}
+    <div class="mdl-a-prompt" style="padding-bottom:24px">
+      <button class="mdl-a-continue-btn" id="mdlATitleDefenseClose">閉じる</button>
+    </div>
+  `;
+  if (!_mdlAOpen(html, { narrow: true })) { done(); return; }
+  const btn = document.getElementById('mdlATitleDefenseClose');
+  if (!btn) { done(); return; }
+  btn.addEventListener('click', () => {
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    _mdlAClose();
+    done();
+  });
 }
 
 // U-20 は召集された選手自身が話すため、特別興行の共通文ではなく
