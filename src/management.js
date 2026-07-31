@@ -2111,13 +2111,15 @@ const Engine = {
 
     // タイトルマッチ挑戦資格判定
     // player: OVR上位5位以内 or ロスター最高OVRとの差8以内
-    // ai: OVR上位3位以内 or ロスター最高OVRとの差5以内
+    // ai: OVR上位4位以内(task-67 §3/task-65 §2で3→4に緩和。値はAI_TITLE_ELIGIBILITY_CFG)
+    //     or ロスター最高OVRとの差5以内(maxOvrGapは変更なし。「明らかに格下の王者を
+    //     生まない」ための歯止めのため据え置き、Keisuke明示)
     getEligibleChallengers(roster, champId, policy = 'player') {
       const available = roster.filter(f => f.id !== champId && !f.injury && !f.isRental);
       if (available.length === 0) return [];
       const sorted = [...available].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-      const rankingLimit = policy === 'ai' ? 3 : 5;
-      const maxOvrGap = policy === 'ai' ? 5 : 8;
+      const rankingLimit = policy === 'ai' ? AI_TITLE_ELIGIBILITY_CFG.rankingLimit : 5;
+      const maxOvrGap = policy === 'ai' ? AI_TITLE_ELIGIBILITY_CFG.maxOvrGap : 8;
       const topRankedIds = new Set(sorted.slice(0, rankingLimit).map(f => f.id));
       const maxOvr = Math.max(...roster.filter(f => !f.injury && !f.isRental).map(f => Engine.util.ov(f)));
       return available.filter(f => topRankedIds.has(f.id) || maxOvr - Engine.util.ov(f) <= maxOvrGap).map(f => f.id);
@@ -9218,7 +9220,15 @@ const Engine = {
             normalShowRingExtras: isAiTitleCard,
             championId: aiChampId,
           });
-          let result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng, 1, ringIn.simOpts);
+          // task-67 §2(task-65 §1): AI王座戦だけ tier2(ビッグマッチ)にする。AIの通常興行は
+          // tier1のまま(Keisuke明示)。プレイヤーの通常興行は App._normalShowMatchTier が
+          // 王座戦に必ず2を返しており(app.js)、AI側だけ常に1決め打ちだった非対称を正す。
+          // 短い試合はターン数が少なく運のブレが均される前に決着するため、いまのAI王座戦
+          // (上位4人・OVR差5以内のほぼ同格同士)は実質コイントスになりやすい。tier2で
+          // ターン数を伸ばすことでブレが平均化され、実力差が結果に出やすくなる。
+          // 恣意的な下駄ではなく、王座戦を(プレイヤー側と同じく)王座戦として扱うだけ。
+          const aiMatchTier = isAiTitleCard ? 2 : 1;
+          let result = Engine.battle.simulateMatch(roster[leftIdx], roster[rightIdx], matchRng, aiMatchTier, ringIn.simOpts);
           // coachMQBonus は MQ外部ボーナス整理で廃止
           // AI vs AI match MQ uses the shared ai-show profile.
           {
@@ -9457,7 +9467,18 @@ const Engine = {
 
         const oldChampId = aiTitles.world?.championId; // 新聞v2: 王者交代検出用
         const champId = oldChampId;
-        const champAlive = champId && roster.find(f => f.id === champId && !f.injury);
+        // task-67 §1: 負傷だけではベルトを剥奪しない。プレイヤー側の
+        // Engine.title.validateChampion と同じ規則(ロスターに居るかどうかのみを見る)に揃える。
+        // 旧実装は `!f.injury` も条件に含めていたため、軽傷1週間でも champAlive が false になり、
+        // 試合をせずにベルトが移っていた(防衛回数0リセット・王者が復帰しても戻らない)。
+        // 負傷中の王者はどのみち generateAIMatchCard の available フィルタ(!f.injury)で
+        // カードに乗らないため試合は組まれず、下のcdOk分岐は champResult が見つからず
+        // 素通りする(defenses・lastTitleMatchWeekは変化しない = 次週以降に持ち越されるだけ)。
+        // 引退・移籍・解雇でロスターから消えた場合は従来どおりここで空位化する。
+        // (a)期間によらず保持 を採用。理由はdocs/worklog.md参照(プレイヤー側も
+        // 負傷期間に関係なく同じ規則を使っており、既存の負傷テーブルの最大値は
+        // 有限(重傷でも最大8週程度)で、無期限に持ち越されるケースが元々存在しないため。
+        const champAlive = champId && roster.find(f => f.id === champId);
         const beltId = `${org.id}_world`;
         if (!champAlive) {
           // 王者不在: トップOVR選手を新王者に
