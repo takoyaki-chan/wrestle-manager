@@ -4410,15 +4410,11 @@ Engine.snapshot = {
     const personality = (fighter && fighter.personality) || 'normal';
     const archetype = (fighter && fighter.archetype) || 'standard';
 
-    const personalityBlock = voiceData[personality] || voiceData.normal;
-    if (!personalityBlock) return '…';
+    // 第一分岐はアーキタイプ(口調)。探索順は getDialoguePool と同じ
+    // (アーキタイプを保ったまま性格を落とす → 標準の口調へ落ちる)。2026-08-01 に軸を入れ替え
+    const candidates = getDialoguePool(voiceData, { personality, archetype });
 
-    const candidates =
-      personalityBlock[archetype] ||
-      personalityBlock._default ||
-      (voiceData.normal && voiceData.normal._default);
-
-    if (!candidates || candidates.length === 0) return '…';
+    if (!candidates || candidates.length === 0 || candidates[0] === '…') return '…';
 
     return candidates[Engine.rng.int(rng, 0, candidates.length - 1)];
   },

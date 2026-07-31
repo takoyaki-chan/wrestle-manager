@@ -77,11 +77,11 @@ assert.strictEqual(context.hasCareerHistory(prospect), false, '17-year-old prosp
 assert.strictEqual(context.hasCareerHistory(veteran), true, 'released FA has career history');
 assert.strictEqual(context.hasCareerHistory({ wins: 1 }), true, 'recorded match creates career history');
 assert.strictEqual(context.hasCareerHistory({ careerSeasons: 1 }), true, 'career season creates career history');
-assert.ok(data.SCOUT_GREETING_LINES.normal.cool.includes(context.getJoinGreeting(prospect)), 'prospect selects scout greeting');
-assert.ok(data.FA_GREETING_LINES.normal.cool.includes(context.getJoinGreeting(veteran)), 'veteran selects FA greeting');
+assert.ok(data.SCOUT_GREETING_LINES.cool.normal.includes(context.getJoinGreeting(prospect)), 'prospect selects scout greeting');
+assert.ok(data.FA_GREETING_LINES.cool.normal.includes(context.getJoinGreeting(veteran)), 'veteran selects FA greeting');
 
 context.Math.random = () => 0.1;
-assert.ok(data.EVENT_FA_WELCOME_LINES.normal.cool.includes(context.getJoinGreeting(prospect)), '25% welcome pool is available to all join sources');
+assert.ok(data.EVENT_FA_WELCOME_LINES.cool.normal.includes(context.getJoinGreeting(prospect)), '25% welcome pool is available to all join sources');
 
 const fallbackContext = {
   Math: { random: () => 0.9, floor: Math.floor },

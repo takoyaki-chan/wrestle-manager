@@ -11965,9 +11965,10 @@ const App = {
     const dict = dialogueKey === 'dome_firstshow' ? DOME_FIRSTSHOW_LINES : DOME_SELLOUT_LINES;
     const p = fighter.personality || 'normal';
     const a = fighter.archetype || 'standard';
-    const personaDict = dict[p] || dict['normal'];
+    // 第一分岐はアーキタイプ。標準は '_default' に格納されている(2026-08-01 に軸を入れ替え)。
+    // 探索順は getDialoguePool と同じ(アーキタイプを保ったまま性格を落とす → 標準へ)
     const archetypeKey = (a === 'standard') ? '_default' : a;
-    const lines = personaDict?.[archetypeKey] || personaDict?.['_default'] || dict['normal']['_default'];
+    const lines = getDialoguePool(dict, { personality: p, archetype: archetypeKey });
     const seed = Engine.rng.derive(G.rngSeed, G.season, G.week, 0xD03E, fighter.id);
     const rng = Engine.rng.create(seed);
     const idx = Math.floor(Engine.rng.float(rng) * lines.length);

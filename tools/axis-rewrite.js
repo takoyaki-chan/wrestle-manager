@@ -485,4 +485,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { findKeyOffsets, collectTargets };
+module.exports = { findKeyOffsets, collectTargets, collectSwapTargets, buildSwappedText };

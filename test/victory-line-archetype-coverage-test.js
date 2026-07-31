@@ -42,7 +42,7 @@ assert.ok(victoryContext.__victoryLines['45'].includes(ownSelected),
   '固有セリフを持つキャラは汎用プールに奪われず本人のセリフを話す');
 
 // 固有セリフを持たない quiet×seductive は _default(素の寡黙)ではなく専用セルへ落ちる
-const quietSeductivePool = data.POST_MATCH_FLAVOR_LINES.winner.quiet.seductive;
+const quietSeductivePool = data.POST_MATCH_FLAVOR_LINES.winner.seductive.quiet;
 const noOwn = { id: 999999, personality: 'quiet', archetype: 'seductive' };
 const pooled = lineContext.pickVictoryLine(noOwn);
 assert.ok(quietSeductivePool.includes(pooled),

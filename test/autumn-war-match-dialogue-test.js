@@ -53,7 +53,9 @@ assert.deepStrictEqual(
 assert.deepStrictEqual(Object.keys(actual), ['preMatch', 'preFinal', 'survivor']);
 
 const getter = section(data, 'function getAutumnWarMatchLine', '// §6.1.5 シーズン総括');
-assert.ok(getter.includes('pData[archetype] || pData._default || []'), 'getter must retain the specified archetype fallback');
+// 2026-08-01 の軸入れ替えで、独自のフォールバックをやめて getDialoguePool に寄せた
+// (アーキタイプを保ったまま性格を落とす → 標準の口調へ、の共通探索順)。
+assert.ok(getter.includes('getDialoguePool(contextData'), 'getter must resolve via the shared getDialoguePool');
 assert.ok(data.includes('AWARD_LINES, AUTUMN_WAR_MATCH_LINES,'), 'Node export must include the Autumn War match table');
 
 const preBout = section(ui, 'function _agwPreBoutDialogueHtml', 'function _agwSurvivorLine');

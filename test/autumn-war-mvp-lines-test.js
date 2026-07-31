@@ -46,26 +46,26 @@ const allLines = [];
   console.log('  [1] 3 contexts present: OK');
 })();
 
-// 2. 各contextに7 personalityが揃っている
-(function test2_personalitiesComplete() {
+// 2. 各contextに7 archetypeが揃っている（2026-08-01 の軸入れ替えで第一分岐がアーキタイプに）
+(function test2_archetypesComplete() {
   CONTEXTS.forEach(c => {
     const keys = Object.keys(matrix[c]).sort();
-    assert.deepStrictEqual(keys, [...PERSONALITIES].sort(),
-      `${c}: must have all 7 personalities, got: ${keys}`);
+    assert.deepStrictEqual(keys, [...ARCHETYPES].sort(),
+      `${c}: must have all 7 archetypes, got: ${keys}`);
   });
-  console.log('  [2] 7 personalities per context: OK');
+  console.log('  [2] 7 archetypes per context: OK');
 })();
 
-// 3. 各personalityに7 archetypeKeyが揃っている
-(function test3_archetypesComplete() {
+// 3. 各archetypeに7 personalityが揃っている
+(function test3_personalitiesComplete() {
   CONTEXTS.forEach(c => {
-    PERSONALITIES.forEach(p => {
-      const keys = Object.keys(matrix[c][p]).sort();
-      assert.deepStrictEqual(keys, [...ARCHETYPES].sort(),
-        `${c}.${p}: must have all 7 archetypes, got: ${keys}`);
+    ARCHETYPES.forEach(a => {
+      const keys = Object.keys(matrix[c][a]).sort();
+      assert.deepStrictEqual(keys, [...PERSONALITIES].sort(),
+        `${c}.${a}: must have all 7 personalities, got: ${keys}`);
     });
   });
-  console.log('  [3] 7 archetypes per personality: OK');
+  console.log('  [3] 7 personalities per archetype: OK');
 })();
 
 // 4. 全147セルが配列で、各2本以上ある
@@ -74,9 +74,9 @@ const allLines = [];
   CONTEXTS.forEach(c => {
     PERSONALITIES.forEach(p => {
       ARCHETYPES.forEach(a => {
-        const arr = matrix[c][p][a];
-        assert.ok(Array.isArray(arr), `${c}.${p}.${a} must be an array`);
-        assert.ok(arr.length >= 2, `${c}.${p}.${a} must have >= 2 lines, got ${arr.length}`);
+        const arr = matrix[c][a][p];
+        assert.ok(Array.isArray(arr), `${c}.${a}.${p} must be an array`);
+        assert.ok(arr.length >= 2, `${c}.${a}.${p} must have >= 2 lines, got ${arr.length}`);
         cells++;
       });
     });
@@ -90,7 +90,7 @@ const allLines = [];
   CONTEXTS.forEach(c => {
     PERSONALITIES.forEach(p => {
       ARCHETYPES.forEach(a => {
-        matrix[c][p][a].forEach((line, i) => {
+        matrix[c][a][p].forEach((line, i) => {
           assert.strictEqual(typeof line, 'string', `${c}.${p}.${a}[${i}] must be string`);
           assert.ok(line.trim().length > 0, `${c}.${p}.${a}[${i}] must not be empty after trim`);
           totalLines++;

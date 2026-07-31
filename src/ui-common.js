@@ -1067,9 +1067,10 @@ function _getWarVictoryLine(fighter, state) {
     }
   }
   const p = fighter.personality || 'normal';
-  const a = fighter.archetype || '_default';
-  const table = WAR_VICTORY_LINES[p] || WAR_VICTORY_LINES.normal;
-  const lines = table[a] || table._default || WAR_VICTORY_LINES.normal._default;
+  // 第一分岐はアーキタイプ。標準は '_default' に格納されている(2026-08-01 に軸を入れ替え)。
+  // 探索順は getDialoguePool と同じ
+  const a = (!fighter.archetype || fighter.archetype === 'standard') ? '_default' : fighter.archetype;
+  const lines = getDialoguePool(WAR_VICTORY_LINES, { personality: p, archetype: a });
   return lines[Math.floor(Math.random() * lines.length)];
 }
 
