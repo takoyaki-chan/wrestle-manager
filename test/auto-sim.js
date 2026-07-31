@@ -259,6 +259,34 @@ Engine.rival.processAIWeek = function(rng, state, org) {
   return result;
 };
 
+// タスク69 §1: OVR差バンドを 0(独立) / 1-2 / 3-4 / 5-9 / 10-14 / 15-19 / 20-24 / 25-29 / 30+
+// に細分化する測定ヘルパー。差0は「格上」が存在しないため zero.leftWins で別扱いする。
+function createOvrBandSet() {
+  return {
+    zero: { matches: 0, leftWins: 0 },
+    bands: {
+      '1-2': { matches: 0, strongerWins: 0 },
+      '3-4': { matches: 0, strongerWins: 0 },
+      '5-9': { matches: 0, strongerWins: 0 },
+      '10-14': { matches: 0, strongerWins: 0 },
+      '15-19': { matches: 0, strongerWins: 0 },
+      '20-24': { matches: 0, strongerWins: 0 },
+      '25-29': { matches: 0, strongerWins: 0 },
+      '30+': { matches: 0, strongerWins: 0 },
+    },
+  };
+}
+function ovrGapBandKey(gap) {
+  if (gap <= 2) return '1-2';
+  if (gap <= 4) return '3-4';
+  if (gap <= 9) return '5-9';
+  if (gap <= 14) return '10-14';
+  if (gap <= 19) return '15-19';
+  if (gap <= 24) return '20-24';
+  if (gap <= 29) return '25-29';
+  return '30+';
+}
+
 // Task 05-07 balance probe: aggregate real single-match results produced by the
 // engine-integrity run.  Keeping this beside auto-sim makes before/after runs
 // directly comparable under the same seed without changing production logic.
@@ -292,12 +320,12 @@ const matchBalanceProbe = {
     '30+': { eligible: 0, checked: 0, fired: 0, hit: 0, finishes: 0, misses: 0, underdogWinsAfterMiss: 0, damageBands: { shallow: 0, medium: 0, deep: 0, fatal: 0 } },
   },
   openingFinishMq: [],
-  ovrBands: {
-    '0-4': { matches: 0, strongerWins: 0 },
-    '5-9': { matches: 0, strongerWins: 0 },
-    '10-14': { matches: 0, strongerWins: 0 },
-    '15-19': { matches: 0, strongerWins: 0 },
-    '20+': { matches: 0, strongerWins: 0 },
+  // タスク69 §1: OVR差バンドを細分化 + tier1/tier2/carried(消耗持ち越し大会)を分離。
+  // 差0は「格上」概念が無いので strongerWins ではなく leftWins で追う(理論値50%)。
+  ovrBandGroups: {
+    tier1: createOvrBandSet(),
+    tier2: createOvrBandSet(),
+    carried: createOvrBandSet(),
   },
 };
 
@@ -394,8 +422,25 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
   const leftOvr = Engine.util.ov(charL);
   const rightOvr = Engine.util.ov(charR);
   const gap = Math.abs(leftOvr - rightOvr);
-  const band = gap < 5 ? '0-4' : gap < 10 ? '5-9' : gap < 15 ? '10-14' : gap < 20 ? '15-19' : '20+';
   const strongerSide = leftOvr === rightOvr ? null : leftOvr > rightOvr ? 'left' : 'right';
+  // タスク69 §1: 消耗持ち越し(初期HPが最大HPより低い)かどうかで集計を分ける。
+  // 天頂戦/対抗戦の勝ち残りなど、_hpOverride が付くビッグマッチはここで carried 扱いにする。
+  const _maxLeftHp = result.hpLeft && result.hpLeft.max;
+  const _maxRightHp = result.hpRight && result.hpRight.max;
+  const _startLeftHp = charL._hpOverride != null ? charL._hpOverride : _maxLeftHp;
+  const _startRightHp = charR._hpOverride != null ? charR._hpOverride : _maxRightHp;
+  const isCarriedMatch = (_maxLeftHp != null && _startLeftHp < _maxLeftHp)
+    || (_maxRightHp != null && _startRightHp < _maxRightHp);
+  const ovrGroupKey = isCarriedMatch ? 'carried' : (resolvedTier >= 2 ? 'tier2' : 'tier1');
+  const ovrGroup = matchBalanceProbe.ovrBandGroups[ovrGroupKey];
+  if (gap === 0) {
+    ovrGroup.zero.matches++;
+    if (result.winner === 'left') ovrGroup.zero.leftWins++;
+  } else {
+    const ovrBandEntry = ovrGroup.bands[ovrGapBandKey(gap)];
+    ovrBandEntry.matches++;
+    if (strongerSide && result.winner === strongerSide) ovrBandEntry.strongerWins++;
+  }
   matchBalanceProbe.matches++;
   matchBalanceProbe.turns += result.turns || 0;
   matchBalanceProbe.timeouts += result.finishPhase === 'Timeout' ? 1 : 0;
@@ -509,8 +554,6 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
       }
     }
   }
-  matchBalanceProbe.ovrBands[band].matches++;
-  if (strongerSide && result.winner === strongerSide) matchBalanceProbe.ovrBands[band].strongerWins++;
   return result;
 };
 
@@ -1861,9 +1904,16 @@ if (matchBalanceProbe.matches > 0) {
       }
     }
   }
-  for (const [label, band] of Object.entries(matchBalanceProbe.ovrBands)) {
-    const winRate = band.matches > 0 ? band.strongerWins / band.matches * 100 : 0;
-    console.log(`  OVR差${label}: 格上勝利 ${band.strongerWins}/${band.matches} (${winRate.toFixed(2)}%)`);
+  const ovrGroupLabels = { tier1: '通常(tier1)', tier2: 'ビッグマッチ(tier2)', carried: '消耗持ち越し大会(carried)' };
+  for (const [groupKey, groupLabel] of Object.entries(ovrGroupLabels)) {
+    const group = matchBalanceProbe.ovrBandGroups[groupKey];
+    const zeroRate = group.zero.matches > 0 ? group.zero.leftWins / group.zero.matches * 100 : 0;
+    console.log(`  [OVR差 ${groupLabel}]`);
+    console.log(`    OVR差0: left勝利 ${group.zero.leftWins}/${group.zero.matches} (${zeroRate.toFixed(2)}%) ※理論値50%`);
+    for (const [label, band] of Object.entries(group.bands)) {
+      const winRate = band.matches > 0 ? band.strongerWins / band.matches * 100 : 0;
+      console.log(`    OVR差${label}: 格上勝利 ${band.strongerWins}/${band.matches} (${winRate.toFixed(2)}%)`);
+    }
   }
 }
 
