@@ -96,7 +96,9 @@ function collectTargets(sandbox) {
 const REGEX_PREV_KEYWORDS = new Set(['return', 'typeof', 'instanceof', 'in', 'of', 'case', 'do', 'else', 'new', 'delete', 'void', 'throw', 'yield', 'await']);
 
 function findKeyOffsets(text) {
-  // 返り値: [{ key, start, end, parentPath }] — parentPath は pathKey 形式
+  // 返り値: [{ key, start, end, parentPath, valueStart, valueEnd }]
+  //   start..end     = キー名トークンの範囲(クォート付きキーはクォートを含む)
+  //   valueStart/End = `:` の直後から、同じ階層のカンマ or 親の閉じ括弧まで
   const out = [];
   const frames = [];
   let i = 0, prevChar = '', prevWord = '';
@@ -139,7 +141,9 @@ function findKeyOffsets(text) {
       const after = skipWs(i);
       if (cur() && cur().type === 'obj' && text[after] === ':') {
         cur().pendingKey = name;
-        out.push({ key: name, start, end: i, parentPath: pathKey(cur().segs) });
+        const entry = { key: name, start, end: i, parentPath: pathKey(cur().segs), valueStart: skipWs(after + 1), valueEnd: -1 };
+        cur().pendingEntry = entry;
+        out.push(entry);
       }
       prevChar = q; prevWord = ''; continue;
     }
@@ -164,29 +168,215 @@ function findKeyOffsets(text) {
       const after = skipWs(j);
       if (cur() && cur().type === 'obj' && text[after] === ':') {
         cur().pendingKey = name;
-        out.push({ key: name, start: i, end: j, parentPath: pathKey(cur().segs) });
+        const entry = { key: name, start: i, end: j, parentPath: pathKey(cur().segs), valueStart: skipWs(after + 1), valueEnd: -1 };
+        cur().pendingEntry = entry;
+        out.push(entry);
       }
       prevWord = name; prevChar = text[j - 1]; i = j; continue;
     }
     prevWord = '';
     if (!/\s/.test(c)) prevChar = c;
-    if (c === '{') { frames.push({ type: 'obj', segs: childSegs(), pendingKey: null, idx: 0 }); i++; continue; }
-    if (c === '[') { frames.push({ type: 'arr', segs: childSegs(), pendingKey: null, idx: 0 }); i++; continue; }
-    if (c === '}' || c === ']') { frames.pop(); i++; continue; }
-    if (c === ',') { const f = cur(); if (f) { if (f.type === 'arr') f.idx++; else f.pendingKey = null; } i++; continue; }
+    if (c === '{') { frames.push({ type: 'obj', segs: childSegs(), pendingKey: null, pendingEntry: null, idx: 0 }); i++; continue; }
+    if (c === '[') { frames.push({ type: 'arr', segs: childSegs(), pendingKey: null, pendingEntry: null, idx: 0 }); i++; continue; }
+    if (c === '}' || c === ']') {
+      const f = frames.pop();
+      if (f && f.pendingEntry) { f.pendingEntry.valueEnd = i; f.pendingEntry = null; }
+      i++; continue;
+    }
+    if (c === ',') {
+      const f = cur();
+      if (f) {
+        if (f.type === 'arr') f.idx++;
+        else { f.pendingKey = null; if (f.pendingEntry) { f.pendingEntry.valueEnd = i; f.pendingEntry = null; } }
+      }
+      i++; continue;
+    }
     i++;
   }
   return out;
 }
 
 // ───────────────────────────────────────────────────────────────────────
+// 2.5. 軸入れ替え: [性格][アーキタイプ] → [アーキタイプ][性格]
+// ───────────────────────────────────────────────────────────────────────
+const isArchDict = (o) => {
+  if (!isDict(o)) return false;
+  const ks = Object.keys(o);
+  const a = ks.filter(k => ARCHETYPE_PURE.has(k) || k === 'standard').length;
+  const p = ks.filter(k => PERSONALITY.has(k) && k !== 'normal').length;
+  return a >= 2 && a > p;
+};
+const isPersDict = (o) => {
+  if (!isDict(o)) return false;
+  const ks = Object.keys(o);
+  const p = ks.filter(k => PERSONALITY.has(k)).length;
+  const a = ks.filter(k => ARCHETYPE_PURE.has(k) || k === 'standard').length;
+  return p >= 2 && p > a;
+};
+
+// 入れ替え対象の辞書を集める。子がすべてアーキタイプ辞書になっている
+// 「きれいな」ものだけを対象とし、そうでないものは dirty として報告する。
+function collectSwapTargets(sandbox) {
+  const clean = [], dirty = [];
+  for (const entry of TABLE_MANIFEST) {
+    const root = resolvePath(sandbox, entry.path);
+    if (root === undefined || entry.path.includes('.')) continue;
+    const seen = new Set();
+    (function scan(node, segs) {
+      if (!node || typeof node !== 'object' || seen.has(node)) return;
+      seen.add(node);
+      if (isPersDict(node)) {
+        const kids = Object.entries(node);
+        const archKids = kids.filter(([, v]) => isArchDict(v));
+        if (archKids.length) {
+          const rec = {
+            table: entry.path, file: entry.file, cat: entry.cat,
+            path: pathKey(segs), segs: segs.slice(),
+            persKeys: kids.map(([k]) => k),
+            archKeys: [...new Set(archKids.flatMap(([, v]) => Object.keys(v)))],
+            oddKeys: kids.filter(([, v]) => !isArchDict(v)).map(([k]) => k),
+          };
+          (rec.oddKeys.length ? dirty : clean).push(rec);
+          return; // 入れ替え対象の内側はこれ以上降りない
+        }
+      }
+      if (Array.isArray(node)) node.forEach((v, i) => scan(v, segs.concat([i])));
+      else for (const k of Object.keys(node)) scan(node[k], segs.concat([k]));
+    })(root, []);
+  }
+  return { clean, dirty };
+}
+
+// 元テキストの [性格][アーキ] ブロックを [アーキ][性格] に組み替える。
+// **セリフ本体(値のテキスト)は1文字も変えず、そのまま移動させる。**
+function buildSwappedText(text, rec, keys) {
+  // keys: findKeyOffsets の結果
+  const persEntries = keys.filter(k => k.parentPath === rec.path && rec.persKeys.includes(k.key));
+  if (persEntries.length !== rec.persKeys.length) return null;
+
+  // (性格, アーキタイプ) -> 値のソーステキスト
+  const cell = new Map();
+  const archOrder = [];
+  for (const pe of persEntries) {
+    const inner = keys.filter(k => k.parentPath === `${rec.path}.${pe.key}`);
+    for (const ie of inner) {
+      if (ie.valueEnd < 0) return null;
+      cell.set(`${pe.key} ${ie.key}`, text.slice(ie.valueStart, ie.valueEnd).replace(/\s+$/, ''));
+      if (!archOrder.includes(ie.key)) archOrder.push(ie.key);
+    }
+  }
+
+  // 元の字下げを踏襲する(性格キー行の行頭からのインデント)
+  const lineStart = text.lastIndexOf('\n', persEntries[0].start) + 1;
+  const indent = text.slice(lineStart, persEntries[0].start);
+  const inner = indent + '  ';
+
+  const parts = [];
+  for (const a of archOrder) {
+    const rows = [];
+    for (const p of rec.persKeys) {
+      const v = cell.get(`${p} ${a}`);
+      if (v === undefined) continue; // その組み合わせは元から無い
+      rows.push(`${inner}${p}: ${v},`);
+    }
+    if (!rows.length) continue;
+    parts.push(`${indent}${a}: {\n${rows.join('\n')}\n${indent}},`);
+  }
+  return parts.join('\n');
+}
+
+// ───────────────────────────────────────────────────────────────────────
 // 3. メイン
 // ───────────────────────────────────────────────────────────────────────
+function runSwap(argv) {
+  const write = argv.includes('--write');
+  const fileArg = (argv.find(a => a.startsWith('--file=')) || '').slice(7);
+  const tableArg = (argv.find(a => a.startsWith('--table=')) || '').slice(8);
+
+  const { allDecls, fileSrc } = loadAllDecls();
+  const sandbox = evalAll(allDecls);
+  const { clean, dirty } = collectSwapTargets(sandbox);
+
+  const scoped = clean.filter(r => (!fileArg || r.file === fileArg) && (!tableArg || r.table === tableArg));
+  const scopedDirty = dirty.filter(r => (!fileArg || r.file === fileArg) && (!tableArg || r.table === tableArg));
+
+  console.log(`[axis-rewrite swap] 対象: ${scoped.length}ヶ所 / ${new Set(scoped.map(r => r.table)).size}テーブル` +
+              (scopedDirty.length ? `  (要手動 ${scopedDirty.length}ヶ所)` : ''));
+  for (const d of scopedDirty) {
+    console.log(`  [手動] ${d.table}${d.path.slice(0, 60)} — アーキタイプ辞書でない子: ${d.oddKeys.join(',')}`);
+  }
+  if (!scoped.length) { console.log('  (該当なし)'); return; }
+
+  // テーブル -> ソース上の宣言位置
+  const byTable = new Map();
+  for (const r of scoped) {
+    if (!byTable.has(r.table)) byTable.set(r.table, []);
+    byTable.get(r.table).push(r);
+  }
+
+  const edits = new Map(); // file -> [{start,end,text}]
+  let ok = 0;
+  const fails = [];
+  for (const [table, recs] of byTable) {
+    const file = recs[0].file;
+    const src = fileSrc.get(file);
+    const m = new RegExp(`^const\\s+${table}\\s*=\\s*`, 'm').exec(src);
+    if (!m) { fails.push(`${table}: 宣言行が見つからない`); continue; }
+    const decl = findTopLevelDeclarations(src).find(d => d.name === table && !d.error);
+    if (!decl) { fails.push(`${table}: 宣言のパースに失敗`); continue; }
+    const base = m.index + m[0].length;
+    const text = src.slice(base, base + decl.exprText.length);
+    const keys = findKeyOffsets(text);
+
+    for (const rec of recs) {
+      const swapped = buildSwappedText(text, rec, keys);
+      if (swapped == null) { fails.push(`${table}${rec.path}: 値の範囲を特定できない`); continue; }
+      // 置換範囲 = 最初の性格キーの先頭 〜 最後の性格キーの値の終端
+      const pes = keys.filter(k => k.parentPath === rec.path && rec.persKeys.includes(k.key));
+      const start = Math.min(...pes.map(k => k.start));
+      const end = Math.max(...pes.map(k => k.valueEnd));
+      if (!isFinite(start) || end < 0) { fails.push(`${table}${rec.path}: 範囲計算に失敗`); continue; }
+      if (!edits.has(file)) edits.set(file, []);
+      edits.get(file).push({ start: base + start, end: base + end, text: swapped.replace(/^\s+/, '').replace(/,$/, '') });
+      ok++;
+    }
+  }
+
+  if (fails.length) {
+    console.error('\n[axis-rewrite swap] 組み替えできなかった箇所がある。書き込みは行わない:');
+    for (const f of fails) console.error('  - ' + f);
+    process.exit(1);
+  }
+  console.log(`[axis-rewrite swap] 組み替え可能: ${ok}ヶ所`);
+
+  if (!write) {
+    // 先頭1件をプレビュー
+    const [file, list] = [...edits][0];
+    const one = list.slice().sort((a, b) => a.start - b.start)[0];
+    const src = fileSrc.get(file);
+    console.log(`\n--- プレビュー src/${file} ---\n【前】\n${src.slice(one.start, Math.min(one.end, one.start + 400))}\n\n【後】\n${one.text.slice(0, 400)}`);
+    console.log('\n[axis-rewrite swap] --write が無いので書き込みはしていない。');
+    return;
+  }
+
+  for (const [file, list] of edits) {
+    const full = path.join(SRC, file);
+    const src = fs.readFileSync(full, 'utf8');
+    fs.writeFileSync(full + '.bak', src, 'utf8');
+    list.sort((a, b) => b.start - a.start);
+    let out = src;
+    for (const e of list) out = out.slice(0, e.start) + e.text + out.slice(e.end);
+    fs.writeFileSync(full, out, 'utf8');
+    console.log(`[axis-rewrite swap] 書き込み: src/${file} (${list.length}ヶ所)`);
+  }
+}
+
 function main() {
   const cmd = process.argv[2];
   const write = process.argv.includes('--write');
+  if (cmd === 'swap') return runSwap(process.argv.slice(3));
   if (cmd !== 'rename') {
-    console.error('usage: node tools/axis-rewrite.js rename [--write]');
+    console.error('usage: node tools/axis-rewrite.js rename|swap [--file=X.js] [--table=NAME] [--write]');
     process.exit(2);
   }
 
