@@ -9128,35 +9128,57 @@ const Engine = {
           if (champCardIdx >= 0 && aiEligibleIds.size > 0) {
             const champCard = matchCard[champCardIdx];
             const champOppId = champCard.left.id === aiChampId ? champCard.right.id : champCard.left.id;
-            // 対戦相手がeligibleでない場合、eligible中の最高OVRと差し替え
-            if (!aiEligibleIds.has(champOppId)) {
-              const usedIds = new Set(matchCard.flatMap(m => [m.left.id, m.right.id]));
-              const topChallenger = roster
-                .filter(f => aiEligibleIds.has(f.id) && f.id !== aiChampId)
-                .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
-              if (topChallenger) {
-                // カード内で使われている場合はスワップ
-                const challCardIdx = matchCard.findIndex(m => m.left.id === topChallenger.id || m.right.id === topChallenger.id);
-                if (challCardIdx >= 0 && challCardIdx !== champCardIdx) {
-                  // スワップ: 挑戦者を王者カードに、元対戦相手を挑戦者カードに
-                  const challCard = matchCard[challCardIdx];
-                  const challOppId = challCard.left.id === topChallenger.id ? challCard.right.id : challCard.left.id;
-                  const challOpp = roster.find(f => f.id === challOppId);
-                  const champOpp = roster.find(f => f.id === champOppId);
-                  if (challOpp && champOpp) {
-                    // 王者カード: 王者 vs トップ挑戦者
-                    matchCard[champCardIdx] = champCard.left.id === aiChampId
-                      ? { left: champCard.left, right: topChallenger }
-                      : { left: topChallenger, right: champCard.right };
-                    // 挑戦者カード: 元対戦相手同士
-                    matchCard[challCardIdx] = { left: champOpp, right: challOpp };
-                  }
-                } else if (challCardIdx < 0) {
-                  // 挑戦者がカードにいない場合、直接差し替え
+            // task-62: 挑戦者を「資格者中の最高OVR1人」に固定するのをやめ、上位候補からの重み付き抽選にする。
+            // 素のカード生成(generateAIMatchCard)はOVR差最小で貪欲マッチングするため、放置しても王者は
+            // 自然と資格者中の最上位(≒2番手)と組まれやすい。そのため「対戦相手が資格者でない場合だけ
+            // 差し替える」という旧Fix3のガードを外し、資格者がいる週は毎回この抽選で挑戦者を決め直す
+            // (抽選結果が現在の対戦相手と同じならカードは変更しない)。挑戦資格判定(aiEligibleIds)
+            // そのものは変えない。
+            const challengerPool = roster
+              .filter(f => aiEligibleIds.has(f.id) && f.id !== aiChampId)
+              .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
+              .slice(0, AI_TITLE_CHALLENGER_CFG.poolSize);
+            let topChallenger = null;
+            if (challengerPool.length === 1) {
+              topChallenger = challengerPool[0];
+            } else if (challengerPool.length > 1) {
+              const challengerPickRng = Engine.rng.create(
+                Engine.rng.derive(state.rngSeed, state.season, state.week, aiChampId, 0x6341)
+              );
+              const weights = {};
+              challengerPool.forEach((f, rank) => {
+                let w = Math.pow(AI_TITLE_CHALLENGER_CFG.weightDecay, rank);
+                const rivLvl = Engine.title.getRivalryLevel(state, aiChampId, f.id);
+                if (rivLvl && rivLvl.rivalry > 0) {
+                  w *= (1 + (rivLvl.rivalry / 100) * AI_TITLE_CHALLENGER_CFG.rivalryWeightBonus);
+                }
+                weights[f.id] = w;
+              });
+              const pickedId = Engine.rng.weighted(challengerPickRng, weights);
+              topChallenger = challengerPool.find(f => String(f.id) === String(pickedId)) || challengerPool[0];
+            }
+            if (topChallenger && topChallenger.id !== champOppId) {
+              // カード内で使われている場合はスワップ
+              const challCardIdx = matchCard.findIndex(m => m.left.id === topChallenger.id || m.right.id === topChallenger.id);
+              if (challCardIdx >= 0 && challCardIdx !== champCardIdx) {
+                // スワップ: 挑戦者を王者カードに、元対戦相手を挑戦者カードに
+                const challCard = matchCard[challCardIdx];
+                const challOppId = challCard.left.id === topChallenger.id ? challCard.right.id : challCard.left.id;
+                const challOpp = roster.find(f => f.id === challOppId);
+                const champOpp = roster.find(f => f.id === champOppId);
+                if (challOpp && champOpp) {
+                  // 王者カード: 王者 vs 抽選で選ばれた挑戦者
                   matchCard[champCardIdx] = champCard.left.id === aiChampId
                     ? { left: champCard.left, right: topChallenger }
                     : { left: topChallenger, right: champCard.right };
+                  // 挑戦者カード: 元対戦相手同士
+                  matchCard[challCardIdx] = { left: champOpp, right: challOpp };
                 }
+              } else if (challCardIdx < 0) {
+                // 挑戦者がカードにいない場合、直接差し替え
+                matchCard[champCardIdx] = champCard.left.id === aiChampId
+                  ? { left: champCard.left, right: topChallenger }
+                  : { left: topChallenger, right: champCard.right };
               }
             }
           }
