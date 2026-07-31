@@ -1344,6 +1344,7 @@ const Audio = (() => {
   const FileBGM = {
     _audio: null,
     _fadeTimer: null,
+    _fadeResolve: null,
     _mix: 1,
     _vol: null, // 明示的volume保持（updateVolumeで使用）
     _gestureArmed: false,
@@ -1381,6 +1382,16 @@ const Audio = (() => {
     },
     stop() {
       if (FileBGM._fadeTimer) { clearInterval(FileBGM._fadeTimer); FileBGM._fadeTimer = null; }
+      // フェード中に止められたときも、待っている側へ必ず知らせる。
+      // 以前は setInterval を clear するだけで resolve を呼ばなかったため、
+      // フェードの2秒の間に BGM ミュートボタンや別のBGM再生が挟まると
+      // fadeOut().then(...) が**永久に来ない**。エンディング/ゲームオーバーは
+      // この then で締めを呼んでいるので、画面が固まったまま先へ進めなくなっていた
+      // (2026-07-31 監査で検出)。resolve は解決点をここ1つに寄せる。
+      if (FileBGM._fadeResolve) {
+        const _r = FileBGM._fadeResolve; FileBGM._fadeResolve = null;
+        try { _r(); } catch (_e) {}
+      }
       if (FileBGM._audio) { FileBGM._audio.pause(); FileBGM._audio.currentTime = 0; FileBGM._audio = null; }
       FileBGM._mix = 1;
       FileBGM._vol = null;
@@ -1393,14 +1404,14 @@ const Audio = (() => {
         const steps = 20;
         const interval = durationMs / steps;
         let step = 0;
+        FileBGM._fadeResolve = resolve;
         FileBGM._fadeTimer = setInterval(() => {
           step++;
           a.volume = Math.max(0, startVol * (1 - step / steps));
           if (step >= steps) {
             clearInterval(FileBGM._fadeTimer);
             FileBGM._fadeTimer = null;
-            FileBGM.stop();
-            resolve();
+            FileBGM.stop(); // stop() 側が resolve を呼ぶ(解決点を1つに保つ)
           }
         }, interval);
       });
@@ -4098,7 +4109,10 @@ const App = {
       matchIndex: activeIndex,
       boutIndex: activeMatch?.bouts?.length || 0,
       phase: livePhase === 'finalOrder' ? 'reorder' : (livePhase === 'complete' || (!livePhase && G.autumnWar?.champion)) ? 'result' : 'board',
-      committed: !!G.autumnWar?.champion,
+      // **セーブに残る印を見る。** G.autumnWar.champion はどこからも書かれておらず
+      // 常に undefined だったため、この値は必ず false になっていた。結果、結果画面の
+      // まま開き直すと精算がもう一度走った(2026-07-31 監査で検出)。
+      committed: !!G.autumnWar?.applied,
       finalOrder: livePhase === 'finalOrder' ? Engine.autumnWar.suggestFinalOrder(G, 'player') : null,
     };
     App._awFinalActiveRole = App._awPreview.phase === 'reorder' ? 0 : null;
@@ -4355,6 +4369,8 @@ const App = {
   _awCommitResult() {
     const p = App._awPreview;
     if (!p || p.committed) return;
+    // 一時オブジェクトの印はリロードで消えるので、GameState 側も必ず見る。
+    if (G.autumnWar?.applied) { p.committed = true; return; }
     const canonical = Engine.autumnWar.getProgress(G);
     if (!canonical || canonical.livePhase !== 'complete') return;
     const applied = Engine.autumnWar.apply(G, canonical);

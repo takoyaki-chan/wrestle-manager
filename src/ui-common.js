@@ -7168,6 +7168,20 @@ function dismissAllPopups() {
   if (battleOverlay) battleOverlay.style.display = 'none';
   _popupQueue = [];
   _growthPopupQueue = [];
+  // **専用キューも必ず空にする(2026-07-31 監査で検出)。**
+  // この3系統は「push した時点で自分が1件目なら描画を予約する」という形で回っている。
+  // ここで取り残しが1件でも残ると、以後 length===1 の条件が二度と成立せず、
+  // **その系統の演出がセッション中まるごと出なくなる**(エラーも出ないので気づけない)。
+  // 実際の筋道: 成長ポップアップ表示中に試合後セリフが積まれる → 閉じる →
+  // _drainPopupQueue が 200ms 後の予約になる → その隙にタブ移動や「次の週へ」を押すと
+  // ここが走り、汎用キュー側の描画予約だけ消えて専用キューに1件残る。
+  _eventPopupQueue = [];
+  _matchDialogueQueue.length = 0;
+  _glimpseQueue.length = 0;
+  // キューの空きを待っていたコールバックは、いま空になったので走らせる。
+  // 捨てると「待ちが永久に解けない」進行不能を作る(§5-D 鉄則1)。
+  const _pendingQueueEmptyCb = _consumeEventPopupQueueEmpty();
+  if (_pendingQueueEmptyCb) setTimeout(_pendingQueueEmptyCb, 0);
   if (typeof App !== 'undefined' && typeof App._beginWarUiTransition === 'function') {
     App._beginWarUiTransition();
     App._warPreview = null;

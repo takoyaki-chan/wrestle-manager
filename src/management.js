@@ -27146,7 +27146,9 @@ Engine.autumnWar = {
     }
     return {
       ...state,
-      autumnWar: { ...aw, teams, bracket, results: [], session, phase: 'live', cancelled: false },
+      // applied は**この大会1回分**の精算済みフラグ。前年の値を引き継ぐと、
+      // 今年の大会が精算されないまま終わるので、開始時に必ず倒す。
+      autumnWar: { ...aw, teams, bracket, results: [], session, phase: 'live', cancelled: false, applied: false },
       autumnWarPhase: 'live',
     };
   },
@@ -27692,7 +27694,13 @@ Engine.autumnWar = {
 
     s = {
       ...s,
-      autumnWar: { ...s.autumnWar, ...result, revenueDistribution, phase: 'result', cancelled: false },
+      // applied: この大会の精算(賞金・人気・経歴・記事・対戦PT)を G へ入れ終えた印。
+      // **セーブに残る場所へ置くこと。** 以前は UI 側の一時オブジェクト(App._awPreview.committed)
+      // だけで二重適用を防いでいたが、この印は再読み込みで消える。session は
+      // finalizeAutumnWarReplay(「大会を終える」を押すまで)残るので、結果画面のまま
+      // 落として開き直すと精算がもう一度走り、資金・人気・経歴・記事・対戦PTが
+      // 二重に入っていた(2026-07-31 監査で検出)。
+      autumnWar: { ...s.autumnWar, ...result, revenueDistribution, phase: 'result', cancelled: false, applied: true },
       autumnWarPhase: 'result',
     };
     return { state: s, events };
