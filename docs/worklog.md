@@ -1,5 +1,20 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 興行準備・興行結果の画像規格是正（task-49・2026-07-31）
+
+### 対応内容
+
+- 興行準備のシングル主試合・通常試合を、ともに upper の M（132×194）へ統一した。`imgW` / `imgH` のfallbackも同じ値に揃え、2:3素材を1:1.25へ切り抜く経路を除去した。
+- 興行準備・興行結果共通のタッグは、2人分を `L 150×224` で横に18px重ねる群表示へ変更した。個人の枠・境界線は持たせず、群コンテナだけが外枠を持つ。各画像の影は矩形に付かない `filter: drop-shadow()` を使用し、各選手ブロック自体を150px幅・`margin-left:-18px`にしたため、画像と名前／OVRの中心も同じ重なりで揃う。
+- 興行結果の共通 `.pb-portrait` を S（108×162）へ変更し、解決済み行だけをより具体的な `chip 46×66` で上書きした。既存の主試合 `.pb-mrow.is-main .pb-portrait{width:108px;height:162px}` は変更していないため、主試合の見た目と吹き出しの画像上配置を維持する。
+- 375px幅では、興行準備のシングルを「画像3列＋能力値行」のgridへ再配置する。興行準備・興行結果のタッグ、興行結果の各行は縦積みに切り替え、規定画像サイズを縮小せず横スクロールを防ぐ。
+
+### 回帰確認
+
+- 新規 `test/showprep-result-image-size-test.js` は、6対象のサイズ、タッグの群外枠・18px重ね・drop-shadow・個人枠なし、および既存の興行結果主試合が108×162のままであることを静的に検証する。
+- 個別確認: `node test/showprep-result-image-size-test.js`、`node test/spring-tag-team-frame-test.js`、`node test/regular-show-pregame-design-test.js` はすべてPASS。`npm test` も **158/158 PASS**。
+- 試合エンジン系ファイル、GameState書き込み、画像の左右反転は変更していない。新規16進カラーも追加していない。
+
 ## 顔出し画面ベースライン監査（task-47・2026-07-31）
 
 - 調査専用。`src/` は変更せず、`docs/ui/faceout-audit-v0.1.md` に顔・upper・stand・full を出す46箇所の実測監査を記録した。

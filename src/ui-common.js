@@ -4702,8 +4702,12 @@ function renderMatchPreview() {
         const ovr = Engine.util.ov(f);
         const pw = f.pw||0, sp2 = f.sp||0, te = f.te||0, st = f.st||0;
         const isChamp = G.titles?.world?.championId === f.id;
+        // portraitImg(f.id, 40) was the former fallback; keep the tag fallback on the L group scale instead.
+        const portraitHtml = upper
+          ? `<img src="${upper}" alt="${f.name}" onerror="this.style.display='none'">`
+          : `<div class="smc-tag-portrait-placeholder">${escHtml((f.name || '?').charAt(0))}</div>`;
         return `<div class="smc-tag-fighter">
-          <div class="upper-wrap" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)})">${upper ? `<img src="${upper}" alt="${f.name}" onerror="this.style.display='none'">` : portraitImg(f.id, 40)}</div>
+          <button type="button" class="smc-tag-portrait" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)})">${portraitHtml}</button>
           <div class="smc-tag-info">
             ${isChamp ? '<span class="smc-tag-champ-mark">👑</span>' : ''}
             <div class="fname">${f.name}</div>
@@ -4735,9 +4739,9 @@ function renderMatchPreview() {
         return `<div class="smc-tag-chem">🤝 ${Math.round(bond)}</div>`;
       };
       html += `<div class="smc-tag-arena">
-        <div class="smc-tag-team left">${_tagFighter(tA1)}${_tagFighter(tA2)}${_chemHtml(bondA)}</div>
+        <div class="smc-tag-team left"><div class="smc-tag-lineup">${_tagFighter(tA1)}${_tagFighter(tA2)}</div>${_chemHtml(bondA)}</div>
         <div class="smc-vs"><div class="smc-vs-text">VS</div></div>
-        <div class="smc-tag-team right">${_tagFighter(tB1)}${_tagFighter(tB2)}${_chemHtml(bondB)}</div>
+        <div class="smc-tag-team right"><div class="smc-tag-lineup">${_tagFighter(tB1)}${_tagFighter(tB2)}</div>${_chemHtml(bondB)}</div>
       </div>`;
       if (isResolved) {
         let wNames = '決着つかず';
@@ -4766,8 +4770,8 @@ function renderMatchPreview() {
 
     const upperL = getUpperUrl(charL.id);
     const upperR = getUpperUrl(charR.id);
-    const imgW = isMain ? 120 : 100;
-    const imgH = isMain ? 150 : 125;
+    const imgW = 132;
+    const imgH = 194;
     const ovrL = Engine.util.ov(charL), ovrR = Engine.util.ov(charR);
 
     // 関係性データ
@@ -5251,15 +5255,13 @@ function _pbTagFighterBlock(side, members, stateCls) {
     const ovr = Engine.util.ov(m);
     const nameLink = fLink(m, { source: 'roster', skipQueue: true });
     return `<div class="pb-tag-member">
-      <div class="pb-portrait-wrap">
-        <div class="pb-portrait">${_pbPortraitImg(m)}</div>
-      </div>
+      <div class="pb-tag-portrait">${_pbPortraitImg(m)}</div>
       <div class="pb-tag-member-name">${nameLink}</div>
       <div class="pb-tag-member-ovr"><span class="val">${ovr}</span><span class="lbl">OVR</span></div>
     </div>`;
   }).join('');
   return `<div class="pb-fighter is-${side} is-tag ${stateCls}">
-    <div class="pb-tag-members">${mems}</div>
+    <div class="pb-tag-lineup">${mems}</div>
   </div>`;
 }
 
