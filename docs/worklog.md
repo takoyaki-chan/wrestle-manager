@@ -17,6 +17,61 @@
 - `npm test`: **147/147 PASS**。
 - `node test/auto-sim.js 20`: **ALL CLEAR**。引数なしのseedは日時由来なので比較には不適切なため、比較可能な固定seedで `node test/auto-sim.js 20 42` を実施。変更前（`WM_SOURCE_REF=HEAD`）と変更後はいずれも fingerprint **`8ee8bfa0`**、ALL CLEAR。
 - `GROWTH_CONFIG` と `Engine.growth.calcGrowth` を含む `src/data.js` / `src/management.js` は差分なし。GameState書き込みも追加なし。
+=======
+## SE配線棚卸し・載せ替え（task-39・2026-07-31）
+
+音響台帳 `docs/wrestle-manager-audio-role-map.md` を正として、`bgm/production-ogg` のSE 46本と `src/app.js` の実参照を全数照合した。着手時点の既存配線は21本、未配線は25本だった。未配線のうち、再生時点が一意に定まる12本だけを配線し、試合中・汎用イベント・週次結果へ無理に重ねることになる13本は保留とした。
+
+| ファイル | 状態 | 用途 |
+|---|---|---|
+| wm_se_bta01_v01.ogg | 保留 | 実音カウント。試合iframeの既存Web Audioカウントを比較試聴せず置換しない。 |
+| wm_se_bta02_v01.ogg | 保留 | タップ。試合iframe側に限定すべきため、このタスクの変更範囲では配線しない。 |
+| wm_se_cr03_v01.ogg | 配線済み | 歓声（crowd / boutOther）。 |
+| wm_se_cr05_v01.ogg | 保留 | ブーイング。反則・裏切りの単発発火点を特定できず、汎用失敗音に転用しない。 |
+| wm_se_cr06_v01.ogg | 保留 | 驚き（4.80秒）。試合中の一撃には長く、既存tension_hitを置換しない。 |
+| wm_se_ev01_v01.ogg | 保留 | 好転。関係イベントの個別結果へ安全に限定できない。 |
+| wm_se_ev02_v01.ogg | 保留 | 悪化（5.70秒）。汎用イベント音と重複するため。 |
+| wm_se_ev04_v01.ogg | 保留 | 裏切り（6.40秒）。試合中は既存betrayalSE優先、画面イベントにも専用発火点がない。 |
+| wm_se_ev05_v01.ogg | 配線済み | 新時代（bignews）。 |
+| wm_se_hr01_v01.ogg | 新規配線 | 接続（コーチ雇用・担当割当）。 |
+| wm_se_hr02_v01.ogg | 新規配線 | 解除（コーチ解雇・担当解除）。 |
+| wm_se_hr04_v01.ogg | 新規配線 | 発見（スカウト候補画面を開く）。 |
+| wm_se_hr05_v01.ogg | 配線済み | 提示（offer / confirm）。 |
+| wm_se_hr06_v01.ogg | 配線済み | 成立（contract）。 |
+| wm_se_hr07_v01.ogg | 新規配線 | 拒否・決裂（引き抜き交渉の不成立）。 |
+| wm_se_hr08_v01.ogg | 配線済み | 到着・出発（transfer）。 |
+| wm_se_mg01_v01.ogg | 新規配線 | 方針選択（選手の週間方針変更）。 |
+| wm_se_mg03_v01.ogg | 配線済み | 収入（coin）。 |
+| wm_se_mg04_v01.ogg | 配線済み | 支出（spend）。 |
+| wm_se_mg05_v01.ogg | 保留 | 上昇（3.08秒）。既存RS05達成音と重なるため、通常成長用の単発表示が得られるまで使わない。 |
+| wm_se_mg06_v01.ogg | 保留 | 低下。数値変動ごとの鳴らしすぎを避け、明確な結果表示まで保留。 |
+| wm_se_mg07_v01.ogg | 保留 | 軽度危機。資金警告・期限接近を一意に扱うUI発火点がない。 |
+| wm_se_mg08_v01.ogg | 保留 | 回復（4.47秒）。復帰発表専用の演出発火点がない。 |
+| wm_se_mg09_v01.ogg | 保留 | 重度危機。重大度を区別したUIエラー発火点がない。 |
+| wm_se_rs01_v01.ogg | 配線済み | 通常勝利（boutWin）。 |
+| wm_se_rs02_v01.ogg | 配線済み | 敗北（boutLose）。 |
+| wm_se_rs04_v01.ogg | 配線済み | 最高栄誉（championship jingle）。 |
+| wm_se_rs05_v01.ogg | 配線済み | 達成（fanfare / matchVictoryFanfare）。 |
+| wm_se_rs06_v01.ogg | 配線済み | 失敗（defeat）。 |
+| wm_se_sh02_v01.ogg | 配線済み | 会場決定（venue）。 |
+| wm_se_sh03_v01.ogg | 新規配線 | カード配置（シングル・タッグの選手配置）。 |
+| wm_se_sh04_v01.ogg | 新規配線 | カード解除（全消去・タッグ解体）。 |
+| wm_se_sh05_v01.ogg | 配線済み | 入替・並替（tick）。 |
+| wm_se_sh06_v01.ogg | 新規配線 | 統合（シングル2枠をタッグ化）。 |
+| wm_se_sh07_v01.ogg | 新規配線 | 特別条件（タイトル戦ON）。解除は既存取消音。 |
+| wm_se_sh08_v01.ogg | 新規配線 | カード完成（おまかせ編成3種）。 |
+| wm_se_sh09_v01.ogg | 新規配線 | 興行開始（興行実行時の開始演出）。 |
+| wm_se_ui01_v01.ogg | 配線済み | 決定（click / select）。 |
+| wm_se_ui02_v01.ogg | 配線済み | 取消（deselect）。 |
+| wm_se_ui03_v01.ogg | 新規配線 | 移動（switch：候補枠を開く・切替）。 |
+| wm_se_ui04_v01.ogg | 配線済み | 設定切替（save）。 |
+| wm_se_ui05_v01.ogg | 配線済み | パネル表示（reveal / event）。 |
+| wm_se_ui06_v01.ogg | 配線済み | 通常通知（notify）。 |
+| wm_se_ui07_v01.ogg | 配線済み | 軽いエラー（error）。 |
+| wm_se_ui08_v01.ogg | 保留 | 重大エラー。現状はUI07の軽い入力エラーしか区別していない。 |
+| wm_se_ui09_v01.ogg | 配線済み | 紙（paper）。 |
+
+追加した `test/se-wiring-test.js` は、`src/app.js` の全SE参照について、実ファイルの存在、`release/manifest.json` の配布対象、`SE_FILES` のキー重複なしを検証する。
 
 ## 成長システム仕様 v2.1 同期（task-34・2026-07-31）
 

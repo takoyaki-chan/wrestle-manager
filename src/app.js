@@ -170,10 +170,14 @@ const Audio = (() => {
     notify:   'wm_se_ui06_v01.ogg',   // UI06 通常通知    0.49s
     tick:     'wm_se_sh05_v01.ogg',   // SH05 入替・並替  0.25s  進行の刻み
     save:     'wm_se_ui04_v01.ogg',   // UI04 設定切替    0.25s
-    switch:   'wm_se_ui04_v01.ogg',   // UI04 設定切替    0.25s  枠を開く・選手を差し替える(カキッ)
+    switch:   'wm_se_ui03_v01.ogg',   // UI03 移動        0.39s  枠を開く・候補を切り替える
     venue:    'wm_se_sh02_v01.ogg',   // SH02 会場決定    0.38s
     paper:    'wm_se_ui09_v01.ogg',   // UI09 紙          0.51s
     spend:    'wm_se_mg04_v01.ogg',   // MG04 支出        0.36s
+    policy:   'wm_se_mg01_v01.ogg',   // MG01 方針選択    0.26s
+    link:     'wm_se_hr01_v01.ogg',   // HR01 接続        0.40s
+    unlink:   'wm_se_hr02_v01.ogg',   // HR02 解除        0.36s
+    discover: 'wm_se_hr04_v01.ogg',   // HR04 発見        0.49s
     // ── 情報が出る・お金が動く(1〜1.4秒) ──────────────────────
     reveal:   'wm_se_ui05_v01.ogg',   // UI05 パネル表示  1.35s
     event:    'wm_se_ui05_v01.ogg',   // UI05 パネル表示  1.35s  汎用イベント。reveal と同じ意味
@@ -183,6 +187,12 @@ const Audio = (() => {
     // 台帳の HR05「提示」/ HR06「成立」に素直に割る。契約の入口と成立を別の音にする。
     offer:    'wm_se_hr05_v01.ogg',   // HR05 提示        0.26s  交渉開始・契約送信
     confirm:  'wm_se_hr05_v01.ogg',   // HR05 提示        0.26s  モーダルの確定(カチッと短い音・Keisuke聴感)
+    reject:   'wm_se_hr07_v01.ogg',   // HR07 拒否・決裂  1.48s  正常な交渉の不成立
+    cardPlace: 'wm_se_sh03_v01.ogg',  // SH03 カード配置  1.04s
+    cardRemove: 'wm_se_sh04_v01.ogg', // SH04 カード解除  0.28s
+    tagMerge: 'wm_se_sh06_v01.ogg',   // SH06 統合        0.36s
+    specialMatch: 'wm_se_sh07_v01.ogg', // SH07 特別条件  0.75s
+    cardComplete: 'wm_se_sh08_v01.ogg', // SH08 カード完成 1.04s
     // ── 決着・区切り(2.6〜8.6秒。重ねない) ────────────────────
     contract: 'wm_se_hr06_v01.ogg',   // HR06 成立    実効2.6s  契約成立。ファイルは5.10sだが
                                       //   後半は無音(Keisuke)。実効長は defeat と同じ帯なので solo 扱い
@@ -191,6 +201,7 @@ const Audio = (() => {
     matchVictoryFanfare: 'wm_se_rs05_v01.ogg', // RS05 達成 3.08s
     crowd:    'wm_se_cr03_v01.ogg',   // CR03 歓声        3.32s
     bignews:  'wm_se_ev05_v01.ogg',   // EV05 新時代      8.60s  大ニュース(年に数回)
+    showStart: 'wm_se_sh09_v01.ogg',  // SH09 興行開始    4.00s
     // ── 試合結果(A-3b)。**あらゆる試合の試合後**で鳴る ────────
     boutWin:  'wm_se_rs01_v01.ogg',   // RS01 通常勝利    4.64s  自団体の勝ち
     boutLose: 'wm_se_rs02_v01.ogg',   // RS02 敗北        4.70s  自団体の負け・引き分け
@@ -219,7 +230,7 @@ const Audio = (() => {
     'boutWin', 'boutLose', 'boutOther',        // 4.64 / 4.70 / 3.32s
     'defeat', 'fanfare', 'matchVictoryFanfare', // 2.68 / 3.08 / 3.08s
     'contract',                                 // 実効2.6s(ファイル5.10s・後半無音)
-    'crowd', 'bignews',                         // 3.32 / 8.60s
+    'crowd', 'bignews', 'showStart',            // 3.32 / 8.60 / 4.00s
   ]);
   function _playFileSe(name, vol) {
     const file = SE_FILES[name];
@@ -263,6 +274,8 @@ const Audio = (() => {
   // ミキサーで未指定のキー(hover/bell/impact/victory/award/因縁系/stamp/boutDraw 等)は従来値のまま。
   const SE_MIX = {
     click:.13, hover:.26, select:.13, deselect:.12, error:.11, save:.14, notify:.14, switch:.14, venue:.46,
+    policy:.15, link:.18, unlink:.16, discover:.14, reject:.18,
+    cardPlace:.20, cardRemove:.14, tagMerge:.16, specialMatch:.20, cardComplete:.20, showStart:.18,
     tick:.18, event:.04, reveal:.04, paper:.06, bignews:.41,
     fanfare:.33, crowd:.18, bell:.56, bellx3:.76, impact:.61, victory:.70, defeat:.25,
     war:.60, transfer:.24, award:.72, tension_hit:.66,
@@ -639,6 +652,17 @@ const Audio = (() => {
       osc(880, 'square', t, 0.05, 0.035);
       noiseHP(t, 0.05, 0.02, 5200);
     },
+    policy() { SFX.switch(); },
+    link() { SFX.select(); },
+    unlink() { SFX.deselect(); },
+    discover() { SFX.notify(); },
+    reject() { SFX.defeat(); },
+    cardPlace() { SFX.select(); },
+    cardRemove() { SFX.deselect(); },
+    tagMerge() { SFX.switch(); },
+    specialMatch() { SFX.reveal(); },
+    cardComplete() { SFX.fanfare(); },
+    showStart() { SFX.crowd(); },
     // 以下2つは本番音源(RS02 / CR03)の**保険**。音源が読めなかったときだけ鳴る
     boutLose() {
       const c = ensure();
@@ -5964,6 +5988,7 @@ const App = {
       coachAssign: { ...G.coachAssign, [coachId]: [] },
       gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${fee}万、決裁枠 -${dpCost}）`]
     };
+    Audio.play('link');
     refreshAll();
     showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
       message: pickCoachVoiceQuote('coachHire', coachId), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万、決裁枠 -${dpCost}）` });
@@ -6005,6 +6030,7 @@ const App = {
       coachAssign: newAssign,
       gameLog: [...G.gameLog, `❌ ${coach?.name}を解雇`]
     };
+    Audio.play('unlink');
     refreshAll();
     if (coach) showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'negative',
       message: pickCoachVoiceQuote('coachFire', coachId), detail:`${coach.name}がチームを去りました` });
@@ -6015,7 +6041,7 @@ const App = {
     const unassigned = Engine.coach.unassignFromCoach(G, charId);
     const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, coachId, charId);
     if (!success) { Audio.play('error'); alert('このコーチのアサイン枠が満員です'); return; }
-    Audio.play('click');
+    Audio.play('link');
     G = { ...G, coachAssign };
     refreshAll();
   },
@@ -6023,6 +6049,7 @@ const App = {
   // Unassign character from coach
   unassignFromCoach(charId) {
     G = { ...G, coachAssign: Engine.coach.unassignFromCoach(G, charId) };
+    Audio.play('unlink');
     refreshAll();
   },
 
@@ -6105,7 +6132,7 @@ const App = {
     }
     const sanitizedCard = Engine.title.sanitizeShowCardTitles({ ...G, showCard: newCard }, newCard);
     G = { ...G, showCard: sanitizedCard };
-    Audio.play('switch');
+    Audio.play('cardPlace');
     renderShowPrep();
   },
 
@@ -6115,7 +6142,7 @@ const App = {
     const emptyCard = [];
     for (let i = 0; i < maxMatches; i++) emptyCard.push({left: 0, right: 0, isTitle: false});
     G = { ...G, showCard: emptyCard };
-    Audio.play('deselect');
+    Audio.play('cardRemove');
     renderShowPrep();
   },
 
@@ -6159,7 +6186,7 @@ const App = {
     };
     card.splice(idx, 2, tagSlot);
     G = { ...G, showCard: card };
-    Audio.play('switch');
+    Audio.play('tagMerge');
     renderShowPrep();
   },
 
@@ -6172,7 +6199,7 @@ const App = {
     const s2 = { left: tag.teamA.fighter2 || 0, right: tag.teamB.fighter2 || 0, isTitle: false };
     card.splice(idx, 1, s1, s2);
     G = { ...G, showCard: card };
-    Audio.play('switch');
+    Audio.play('cardRemove');
     renderShowPrep();
   },
 
@@ -6216,7 +6243,7 @@ const App = {
     }
     tagSlot[team][pos] = fighterId;
     G = { ...G, showCard: newCard };
-    Audio.play('switch');
+    Audio.play('cardPlace');
     renderShowPrep();
   },
 
@@ -6233,6 +6260,7 @@ const App = {
       return slot;
     });
     G = { ...G, showCard: Engine.title.sanitizeShowCardTitles({ ...G, showCard: nextCard }, nextCard) };
+    Audio.play(newVal ? 'specialMatch' : 'deselect');
     renderShowPrep();
   },
 
@@ -6494,7 +6522,7 @@ const App = {
       }
     }
 
-    try { Audio.play('bell'); } catch(e) {}
+    try { Audio.play('showStart'); } catch(e) {}
     try { Audio.bgm.play('battle'); } catch(e) {}
 
     // rivalry50+ ペアの宣戦布告ポップアップを検出（好敵手/宿怨は対象外、タッグはスキップ）
@@ -11133,7 +11161,7 @@ const App = {
       return;
     }
     if (G.weekPhase === 'scoutEvent') {
-      Audio.play('click');
+      Audio.play('discover');
       showScreen('scoutEvent');
       refreshAll();
       return;
@@ -11147,7 +11175,7 @@ const App = {
 
   advanceWeek() {
     if (G.weekPhase === 'scoutEvent') {
-      Audio.play('click');
+      Audio.play('discover');
       showScreen('scoutEvent');
       refreshAll();
       return;

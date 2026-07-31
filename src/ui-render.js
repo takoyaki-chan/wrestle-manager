@@ -3250,9 +3250,9 @@ function renderShowPrep() {
   // カードヘッダー v7
   html += `<div class="sp-card-header">
     <span class="sp-card-header-title">Match Card</span>${_tipIcon('<strong style="color:var(--gold)">おまかせ編成</strong><br>・🔥おすすめ — 因縁・鮮度・話題性を考慮した最適カード<br>・💪OVR順 — 実力上位同士をマッチング<br>・🎤集客力順 — 集客力の高い選手をメインに')}
-    <button class="btn btn-sm" style="background:rgba(255,140,0,0.18);border:1px solid rgba(255,140,0,0.5);color:#ff8c00" onclick="_spActivePicker=null;Audio.play('select');autoFillCardByAppeal();renderShowPrep()" title="因縁・鮮度・話題性を考慮した最適カード">🔥 おすすめ</button>
-    <button class="btn btn-sm" style="background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.4);color:#3498db" onclick="_spActivePicker=null;Audio.play('select');autoFillCard();renderShowPrep()" title="OVR上位同士をマッチング">💪 OVR順</button>
-    <button class="btn btn-sm" style="background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.4);color:#9b59b6" onclick="_spActivePicker=null;Audio.play('select');autoFillCardByDraw();renderShowPrep()" title="個人集客力が高い選手をメインに">🎤 集客力順</button>
+    <button class="btn btn-sm" style="background:rgba(255,140,0,0.18);border:1px solid rgba(255,140,0,0.5);color:#ff8c00" onclick="_spActivePicker=null;Audio.play('cardComplete');autoFillCardByAppeal();renderShowPrep()" title="因縁・鮮度・話題性を考慮した最適カード">🔥 おすすめ</button>
+    <button class="btn btn-sm" style="background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.4);color:#3498db" onclick="_spActivePicker=null;Audio.play('cardComplete');autoFillCard();renderShowPrep()" title="OVR上位同士をマッチング">💪 OVR順</button>
+    <button class="btn btn-sm" style="background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.4);color:#9b59b6" onclick="_spActivePicker=null;Audio.play('cardComplete');autoFillCardByDraw();renderShowPrep()" title="個人集客力が高い選手をメインに">🎤 集客力順</button>
     <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="_spActivePicker=null;App.clearShowCard()">🗑 全クリア</button>
     <span class="sp-venue-info">${v.name}（${v.cap.toLocaleString()}席）</span>
   </div>`;
@@ -6261,10 +6261,11 @@ function changeCoachAssign(charId, newCoachId) {
   if (newCoachId > 0) {
     const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, newCoachId, charId);
     if (!success) { Audio.play('error'); alert('このコーチのアサイン枠が満員です'); return; }
-    Audio.play('click');
+    Audio.play('link');
     G = { ...G, coachAssign };
   } else {
     G = { ...G, coachAssign: unassigned };
+    Audio.play('unlink');
   }
   refreshAll();
 }
