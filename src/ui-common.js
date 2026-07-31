@@ -2481,9 +2481,32 @@ function _awOrgEmblem(orgName, isPlayerOrg, size) {
   return `<div class="aw-org-emblem">${orgIconHtml(orgId, size)}</div>`;
 }
 
-function _awSpeech(name, line) {
+function _awSpeech(line) {
   if (!line) return '';
-  return `<div class="speech-bubble"><div class="speech-speaker">${name}</div><div class="speech-text">「${line}」</div></div>`;
+  // 名前は顔出しブロックの画像下に置く。吹き出しにはセリフ本文だけを入れる。
+  return `<div class="speech-bubble"><div class="speech-text">「${line}」</div></div>`;
+}
+
+function _awSpeechSlot(line) {
+  // 発言がない場合も同じ予約枠を確保し、複数人の画像上端を揃える。
+  return `<div class="aw-speech-slot">${_awSpeech(line)}</div>`;
+}
+
+function _awWinnerBlock(d, opts) {
+  const o = opts || {};
+  const portraitClass = o.portraitClass || 'portrait-main';
+  const role = o.role || '';
+  const orgName = o.orgName != null ? o.orgName : d.orgName;
+  const isPlayerOrg = o.isPlayerOrg != null ? o.isPlayerOrg : d.isPlayerOrg;
+  const nameClass = o.nameClass || 'aw-winner-name';
+  const nameStyle = o.nameStyle ? ` style="${o.nameStyle}"` : '';
+  return `<div class="aw-winner-block ${o.className || ''}">
+    ${_awSpeechSlot(o.line)}
+    <div class="${portraitClass}">${o.glow ? '<div class="portrait-glow"></div>' : ''}${_awPortrait(d.id)}</div>
+    <div class="${nameClass}"${nameStyle}>${d.name}</div>
+    ${role ? `<div class="aw-winner-role">${role}</div>` : ''}
+    ${orgName ? `<div class="aw-winner-emblem">${_awOrgEmblem(orgName, isPlayerOrg)}</div>` : ''}
+  </div>`;
 }
 
 // ── 汎用の顔アイコン背景パレット ────────────────────────────────
@@ -2747,10 +2770,8 @@ function _buildMediaAward(d) {
   const talentRevDisp = Math.round(d.talentRevSeason).toLocaleString();
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">📺</span><span class="badge-jp">メディア功労賞</span></div>
   <div class="media-layout">
-    <div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}<div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div></div>
+    ${_awWinnerBlock(d, { line, glow: true, role: _styleJa(d.style) })}
     <div class="media-stats">
-      <div class="winner-name" style="font-size:28px">${d.name}</div>
-      <div class="winner-sub">${d.orgName || ''} · ${_styleJa(d.style)}</div>
       <div class="media-total">${totalRevDisp}万円</div>
       <div class="media-total-label">年間メディア貢献</div>
       <div class="media-breakdown">
@@ -2759,7 +2780,6 @@ function _buildMediaAward(d) {
       </div>
       ${d.promoCountSeason > 0 ? `<div class="media-activity-count">📢 プロモ活動 ${d.promoCountSeason}週</div>` : ''}
       ${d.talentCountSeason > 0 ? `<div class="media-activity-count">📋 タレント活動 ${d.talentCountSeason}回</div>` : ''}
-      ${_awSpeech(d.name, line)}
     </div>
   </div></div>`;
 }
@@ -2770,17 +2790,14 @@ function _buildJTChampionAward(d) {
   const runnerUpText = d.runnerUp ? `決勝: vs ${d.runnerUp.name}${d.runnerUp.orgName ? ` (${d.runnerUp.orgName})` : ''}` : '';
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏟️</span><span class="badge-jp">ジュニアトーナメント 優勝</span></div>
   <div class="rookie-layout">
-    <div>${_awOrgEmblem(d.orgName, d.isPlayerOrg)}<div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(d.id)}</div></div>
+    ${_awWinnerBlock(d, { line, glow: true, role: d.age != null ? `${d.age}歳` : '' })}
     <div>
-      <div class="winner-name">${d.name}</div>
-      <div class="winner-sub">${d.orgName || ''}${d.age != null ? ` · ${d.age}歳` : ''}</div>
       <div class="winner-tags">
         <span class="aw-tag">新人王</span>
         <span class="aw-tag neutral">${_styleJa(d.style)}</span>
         <span class="aw-tag neutral">OVR ${d.ovr}</span>
       </div>
       ${runnerUpText ? `<div style="font-size:11px;color:#7a7060;letter-spacing:1px;margin-bottom:14px">${runnerUpText}</div>` : ''}
-      ${_awSpeech(d.name, line)}
     </div>
   </div></div>`;
 }
@@ -2798,17 +2815,27 @@ function _buildSeasonEventChampionAward(d, kind) {
   if (!cfg) return null;
   const fighters = d.fighters || [d];
   const many = fighters.length >= 3;
-  const portraits = fighters.map(f =>
-    `<div><div class="portrait-main"><div class="portrait-glow"></div>${_awPortrait(f.id)}</div>
-      <div class="winner-name" style="font-size:${fighters.length > 1 ? (many ? '17px' : '20px') : '28px'}">${f.name}</div></div>`
-  ).join('');
   const orgName = d.orgName || fighters[0]?.orgName || '';
   const isPlayerOrg = d.isPlayerOrg != null ? d.isPlayerOrg : fighters[0]?.isPlayerOrg;
+  const lineFor = f => _awardLine('champion', f.id);
+  if (fighters.length === 1) {
+    return `<div class="award-card"><div class="award-badge"><span class="badge-icon">${cfg.icon}</span><span class="badge-jp">${cfg.label}</span></div>
+      <div class="aw-event-solo">
+        ${_awWinnerBlock(fighters[0], { line: lineFor(fighters[0]), glow: true, role: cfg.title || '' })}
+      </div></div>`;
+  }
+  const teamMembers = fighters.map((f, i) => {
+    const center = many && i === Math.floor(fighters.length / 2);
+    return `<div class="aw-team-member${center ? ' is-center' : ''}">
+      ${_awSpeechSlot(lineFor(f))}
+      <div class="aw-team-portrait">${_awPortrait(f.id)}</div>
+      <div class="aw-team-name">${f.name}</div>
+    </div>`;
+  }).join('');
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">${cfg.icon}</span><span class="badge-jp">${cfg.label}</span></div>
-    <div style="text-align:center">${_awOrgEmblem(orgName, isPlayerOrg)}
-      <div style="display:flex;justify-content:center;gap:${many ? '14px' : '28px'};align-items:end;flex-wrap:wrap">${portraits}</div>
-      <div class="winner-sub" style="margin-top:10px">${orgName}</div>
-      ${cfg.title ? `<div class="winner-tags" style="justify-content:center;margin-top:10px"><span class="aw-tag">${cfg.title}</span></div>` : ''}
+    <div class="aw-team-group">
+      <div class="aw-team-header">${_awOrgEmblem(orgName, isPlayerOrg)}<span>${orgName}</span>${cfg.title ? `<span class="aw-tag">${cfg.title}</span>` : ''}</div>
+      <div class="aw-team-lineup${many ? ' is-many' : ''}">${teamMembers}</div>
     </div></div>`;
 }
 
@@ -2822,9 +2849,10 @@ function _buildBestMatchAward(d) {
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🎬</span><span class="badge-jp">ベストマッチ</span></div>
   <div class="bestmatch-fighters">
     <div class="fighter-side">
-      ${_awOrgEmblem(f1OrgName, d.isPlayerOrg, 22)}<div class="portrait-sm">${_awPortrait(f1.id)}</div>
+      ${_awSpeechSlot(line1)}<div class="portrait-sm">${_awPortrait(f1.id)}</div>
       <div class="fighter-name">${f1.name}</div>
       <div class="fighter-org">${f1OrgName}</div>
+      <div class="aw-winner-emblem">${_awOrgEmblem(f1OrgName, d.isPlayerOrg, 22)}</div>
     </div>
     <div class="vs-center">
       <div class="mq-display">
@@ -2835,14 +2863,11 @@ function _buildBestMatchAward(d) {
       <div class="vs-text">vs</div>
     </div>
     <div class="fighter-side">
-      ${_awOrgEmblem(f2OrgName, false, 22)}<div class="portrait-sm">${_awPortrait(f2.id)}</div>
+      ${_awSpeechSlot(line2)}<div class="portrait-sm">${_awPortrait(f2.id)}</div>
       <div class="fighter-name">${f2.name}</div>
       <div class="fighter-org">${f2OrgName}</div>
+      <div class="aw-winner-emblem">${_awOrgEmblem(f2OrgName, false, 22)}</div>
     </div>
-  </div>
-  <div class="bestmatch-quotes">
-    ${_awSpeech(f1.name, line1)}
-    ${_awSpeech(f2.name, line2)}
   </div></div>`;
 }
 
@@ -2859,12 +2884,11 @@ function _buildChampionsAward(champions) {
     const defText = c.defenses != null ? `防衛 ${c.defenses}回` : '';
     const isPlayer = c.isPlayer;
     return `<div class="champ-col rank-${rank}" id="aw-champ-rank${rank}">
-      ${_awOrgEmblem(c.orgName, c.isPlayer, rank === 1 ? 36 : 24)}
+      <div class="champ-quote">${_awSpeechSlot(line)}</div>
       <div class="champ-portrait"><span class="rank-badge">${rank}位</span>${_awPortrait(c.id)}</div>
       <div class="champ-name">${c.name}</div>
-      <div class="champ-org" ${isPlayer ? 'style="color:var(--gold-light)"' : ''}>${c.orgName}</div>
       ${defText ? `<div class="champ-defense" ${isPlayer ? 'style="color:var(--gold)"' : ''}>${defText}</div>` : ''}
-      <div class="champ-quote">${_awSpeech(c.name, line)}</div>
+      <div class="aw-winner-emblem">${_awOrgEmblem(c.orgName, c.isPlayer, rank === 1 ? 36 : 24)}</div>
     </div>`;
   };
 
@@ -2925,12 +2949,9 @@ function _buildMVPAward(d) {
 
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">👑</span><span class="badge-jp">MVP</span></div>
   <div class="mvp-layout">
-    <div>${_awOrgEmblem(d.orgName, d.isPlayerOrg, 32)}<div class="portrait-mvp">${_awPortrait(d.id)}</div></div>
+    ${_awWinnerBlock(d, { line, portraitClass: 'portrait-mvp', role: _styleJa(d.style) })}
     <div style="flex:1">
-      <div class="winner-name" style="font-size:28px;margin-bottom:4px">${d.name}</div>
-      <div class="winner-sub" style="margin-bottom:12px">${d.orgName || ''} · ${_styleJa(d.style)}</div>
       <div style="margin-bottom:14px">${achHtml}</div>
-      ${_awSpeech(d.name, line)}
     </div>
   </div></div>`;
 }
@@ -2950,12 +2971,15 @@ function _buildHallOfFame(d) {
 
   return `<div class="award-card" style="text-align:center"><div class="award-badge" style="justify-content:center"><span class="badge-icon">🏛️</span><span class="badge-jp">殿堂入り</span></div>
   <div class="hof-layout">
-    ${_awOrgEmblem(d.orgName, d.orgId === 'player', 32)}
-    <div class="hof-portrait"><div class="hof-glow-outer"></div>${_awPortrait(d.id)}</div>
+    <div class="aw-winner-block hof-winner-block">
+      ${_awSpeechSlot(line)}
+      <div class="hof-portrait"><div class="hof-glow-outer"></div>${_awPortrait(d.id)}</div>
+      <div class="hof-name">${d.name}</div>
+      <div class="aw-winner-emblem">${_awOrgEmblem(d.orgName, d.orgId === 'player', 32)}</div>
+    </div>
     <div class="hof-stars">${stars}</div>
-    <div class="hof-name">${d.name}</div>
     <div class="hof-plaque">${plaqueText}</div>
-    <div class="hof-player-speech">${_awSpeech(d.name, line)}<div class="hof-tap-hint">タップして続きを見る</div></div>
+    <div class="hof-player-speech"><div class="hof-tap-hint">タップして続きを見る</div></div>
   </div></div>`;
 }
 

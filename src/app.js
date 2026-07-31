@@ -11428,10 +11428,13 @@ const App = {
     }
   },
 
-  /** 一連の締めくくり。演出が終わったら画面を描き直す。
-   *  総括そのものは offWeek 1（レポートの週）で出るので、ここでは伏せ札を下ろす必要はない。
-   *  引退(確定＋あいさつ)・年末表彰式は offWeek 0 で済ませてある。 */
+  /** 一連の締めくくり。式典終了後、レポート週の総括を表示する。
+   *  `refreshAll()` だけでは背面にしていた別タブを切り替えないため、表彰式を閉じても
+   *  offWeek 1 の総括が見えないことがあった。レポート週だけ今週画面へ戻す。 */
   _showFarewellsThenReport() {
+    if (G.offSeason && G.offWeek === 1 && typeof showScreen === 'function') {
+      showScreen('week');
+    }
     refreshAll();
   },
 
