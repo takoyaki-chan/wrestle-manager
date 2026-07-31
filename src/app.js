@@ -89,6 +89,18 @@ function _sameSinglesPair(match, result) {
     && booked.every((id, index) => Number.isFinite(id) && id === fought[index]);
 }
 
+/** 宿怨の試合前セリフ用。決着戦の勝者を優先し、旧セーブだけH2Hで補う。 */
+function _bitterPrematchSide(state, selfId, opponentId) {
+  const key = Engine.title.getRivalryKey(selfId, opponentId);
+  const winnerId = (state.rivalries || {})[key]?.bitterResolutionWinnerId;
+  if (winnerId === selfId) return 'ahead';
+  if (winnerId === opponentId) return 'behind';
+
+  // 旧セーブには決着戦勝者IDが無い。互換性のためだけに通算H2Hをフォールバックする。
+  const rec = Engine.h2h?.getRecordFor?.(state, selfId, opponentId);
+  return rec && rec.wins > rec.losses ? 'ahead' : 'behind';
+}
+
 const Audio = (() => {
   let ctx = null;
   let masterGain = null;
@@ -6525,14 +6537,37 @@ const App = {
     try { Audio.play('showStart'); } catch(e) {}
     try { Audio.bgm.play('battle'); } catch(e) {}
 
-    // rivalry50+ ペアの宣戦布告ポップアップを検出（好敵手/宿怨は対象外、タッグはスキップ）
+    // rivalry50+ ペアの宣戦布告、および決着済み宿怨の再燃演出を検出（タッグはスキップ）
     // Phase 3e: F08 ロック試合は専用の試合前モーダルが優先するためここでは除外
     const confrontations = [];
     validMatches.forEach((m, i) => {
       if (m.matchType === 'tag') return;
       if (m._f08Locked) return;
       const rivalLvl = Engine.title.getRivalryLevel(G, m.left, m.right);
-      if (rivalLvl && !rivalLvl.isGoodRival && !rivalLvl.isBitterRival && (rivalLvl.rivalry || 0) >= 50) {
+      if (rivalLvl && rivalLvl.isBitterRival) {
+        const bitterPairKey = `bitter:${[String(m.left), String(m.right)].sort().join('-')}`;
+        const bitterSeen = (G._rivalryPopupSeen && !Array.isArray(G._rivalryPopupSeen))
+          ? G._rivalryPopupSeen : {};
+        const seenWeek = bitterSeen[bitterPairKey];
+        const currentWeek = Engine.util.absWeek(G.season, G.week);
+        if (Number.isFinite(seenWeek) && currentWeek - seenWeek < RIVALRY_POPUP_CONFIG.bitterPairCooldownWeeks) return;
+        const _findAny = id => G.roster.find(c => c.id === id)
+          || (typeof findFighter === 'function' ? findFighter(id) : null);
+        const cl = _findAny(m.left);
+        const cr = _findAny(m.right);
+        if (cl && cr) {
+          confrontations.push({
+            phase: 'confrontation', idx: i,
+            leftId: m.left, rightId: m.right,
+            leftName: cl.name, rightName: cr.name,
+            rivalry: rivalLvl.rivalry || 0,
+            isBitter: true,
+            leftSide: _bitterPrematchSide(G, m.left, m.right),
+            rightSide: _bitterPrematchSide(G, m.right, m.left),
+            _rivalryPopupPairKey: bitterPairKey,
+          });
+        }
+      } else if (rivalLvl && !rivalLvl.isGoodRival && (rivalLvl.rivalry || 0) >= 50) {
         // 2026-07-26: **両方が自団体のときだけ**という条件だったため、
         // 挑戦試合・遠征・ゲスト参戦などの対外戦では宣戦布告が一度も出たことがなかった。
         // 因縁は選手IDで引けるので、所属を問わず名前が引ければ出す
@@ -6551,6 +6586,13 @@ const App = {
         }
       }
     });
+
+    // task-41 の興行あたり最大1件ルールに合流させる。宿怨を通常因縁より優先する。
+    confrontations.sort((a, b) => {
+      if (!!a.isBitter !== !!b.isBitter) return a.isBitter ? -1 : 1;
+      return (b.rivalry || 0) - (a.rivalry || 0);
+    });
+    confrontations.splice(RIVALRY_POPUP_CONFIG.maxNormalPerShow);
 
     // Initialize preview state
     App._showPreview = {
@@ -7621,6 +7663,7 @@ const App = {
         const isFinalResolution = resolution.newResolutionCount >= 2;
         const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right, 0xBE77));
         const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(resRng, 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);
+        const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
         const updatedEntry = {
           ...rivalries[key],
           matches: 0,
@@ -7632,6 +7675,7 @@ const App = {
           oneSided: null,
           pendingClashBonus: 0,
           ...(resolution.resolved ? { resolved: resolution.resolved } : {}),
+          ...(resolution.resolved === 'bitter' ? { bitterResolutionWinnerId: winnerId } : {}),
         };
         rivalries = { ...rivalries, [key]: updatedEntry };
         if (s.relationships) {
@@ -7654,7 +7698,6 @@ const App = {
         });
         const rivalOrgPopDelta = Engine.orgPop.applyOrgPopChange(resolution.orgPopBonus, s.orgPop, null);
         s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + rivalOrgPopDelta, 0, 100) };
-        const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
         const loserId = winnerId === m.left ? m.right : m.left;
         const winnerName = charL.id === winnerId ? charL.name : charR.name;
         const loserName = charL.id === loserId ? charL.name : charR.name;

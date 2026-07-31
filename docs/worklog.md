@@ -1,5 +1,20 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 宿怨（BITTER）試合前セリフ（task-45・2026-07-31）
+
+### 実装
+
+- `src/data.js` に草案 `bitter-prematch-lines-draft-v0.1.md` の `BITTER_PREMATCH_LINES`（ahead / behind 各28本）をそのまま追加し、`EVENT_LINES_BY_KEY.bitterPrematch` と Node export に登録した。宿怨用の表示クールダウンは `RIVALRY_POPUP_CONFIG.bitterPairCooldownWeeks: 16`。
+- `src/app.js` の通常興行試合前検出に、宿怨専用の独立分岐を追加した。`G._rivalryPopupSeen['bitter:idA-idB']` を task-41 と同じ仕組みで使い、同一ペア16週・1興行1件を適用する。候補が重なった場合は宿怨を通常因縁より先に選ぶ。
+- 通常興行で宿怨が確定したとき、既存の決着値や判定を変えず `G.rivalries[key].bitterResolutionWinnerId` に決着戦の勝者IDだけを追記する。勝者IDのない既存セーブは、コメント付きでH2H通算勝敗へフォールバックする。
+- `src/ui-common.js` は `isBitter` の宣戦布告モーダルだけを分岐し、タイトル「遺 恨 再 燃」・`GRUDGE REKINDLED`・`tone-bitter`・「再 燃」・指定タグを表示する。通常の宣戦布告文言は変更していない。
+
+### 検証
+
+- 新規 `test/bitter-prematch-test.js` は草案を直接評価して実装値との完全一致、56本の内訳、動的マップ登録、決着戦勝者／旧セーブの側判定、16週設定、宿怨優先、宿怨／通常モーダル文言を検証する。
+- `test/rivalry-popup-frequency-test.js` の設定値検証を宿怨用16週設定に更新した。
+- `npm test`: **153/153 PASS**。`node test/auto-sim.js 20`: **ALL CLEAR**（違反0、エラー0）。`git diff --check`: PASS。
+
 ## 因縁の一戦ポップアップ頻度の抑制（task-41・2026-07-31）
 
 ### 実装
