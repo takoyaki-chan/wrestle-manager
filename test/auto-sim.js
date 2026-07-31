@@ -469,6 +469,10 @@ Engine.battle.simulateMatch = function(charL, charR, rng, matchTier, opts) {
       // MQ再設計P3b: リング内化(因縁/タイトル/trust/バフ)の観測。
       winner: result.winner,
       strongerSide,
+      // 2026-08-01: 実力差を持たせる。不変条件6 は「同OV帯」で括っていたが、
+      // 同じOV帯でも**因縁ペアは実力差が非因縁ペアの半分以下**(実測 3.85 vs 7.89)。
+      // 帯だけで括ると母集団の違いを「因縁の偏り」と誤読する。差で括り直すために要る。
+      ovrGap: Math.abs(leftOvr - rightOvr),
       rivalryRingTier: result.rivalryRing ? result.rivalryRing.tier : 0,
       titleRingApplied: !!result.titleRing,
       trustDebuffSum: Array.isArray(result.trustDebuff)
@@ -2032,12 +2036,22 @@ if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqIn
   {
     const singles = mqInventoryProbe.singlesRaw;
     const ovBandOf = value => Math.round(value / 5) * 5;
+    // 不変条件4(MQ優位)は従来どおり「同OV帯」で括る。見応えは実力帯の話なので妥当。
+    // 不変条件6(勝率歪み)だけ **実力差(ovrGap)で括り直す**(2026-08-01)。
+    //   同OV帯で括ると、因縁ペアの実力差が非因縁ペアの半分以下であること自体が
+    //   「格上が負けやすい」として出てしまい、リング内効果の偏りと区別できない。
+    //   実力差を揃えて比べれば、因縁が勝敗を歪めているかだけを見られる。
+    const gapBandOf = gap => (gap <= 2 ? '0-2' : gap <= 5 ? '3-5' : gap <= 9 ? '6-9' : '10+');
     const byBand = new Map();
+    const byGap = new Map();
     for (const sample of singles) {
       const band = ovBandOf(sample.avgOV);
       if (!byBand.has(band)) byBand.set(band, { rivalry: [], none: [] });
-      const bucket = byBand.get(band);
-      (sample.rivalryRingTier > 0 ? bucket.rivalry : bucket.none).push(sample);
+      (sample.rivalryRingTier > 0 ? byBand.get(band).rivalry : byBand.get(band).none).push(sample);
+      if (sample.ovrGap == null) continue;
+      const gb = gapBandOf(sample.ovrGap);
+      if (!byGap.has(gb)) byGap.set(gb, { rivalry: [], none: [] });
+      (sample.rivalryRingTier > 0 ? byGap.get(gb).rivalry : byGap.get(gb).none).push(sample);
     }
     let weightedMqDiffSum = 0, mqDiffWeight = 0;
     let weightedWinDiffSum = 0, winDiffWeight = 0;
@@ -2071,7 +2085,26 @@ if (mqInventoryProbe.singlesRaw.length || mqInventoryProbe.tagRaw.length || mqIn
     const overallMqDiff = mqDiffWeight ? weightedMqDiffSum / mqDiffWeight : null;
     const overallWinDiff = winDiffWeight ? weightedWinDiffSum / winDiffWeight : null;
     console.log(`  [不変条件4] 因縁戦の平均MQ優位(同OV帯±5、加重平均): ${overallMqDiff == null ? 'n/a(サンプル不足)' : overallMqDiff.toFixed(3)} (目標+1.0〜+2.5)`);
-    console.log(`  [不変条件6] 勝率歪み(同OV帯、加重平均): ${overallWinDiff == null ? 'n/a(サンプル不足)' : overallWinDiff.toFixed(3) + 'pt'} (目標±2pt以内)`);
+    console.log(`  (参考)勝率歪み(同OV帯・母集団の実力差を揃えていない): ${overallWinDiff == null ? 'n/a' : overallWinDiff.toFixed(3) + 'pt'}`);
+    // 不変条件6 の本体: 実力差を揃えたうえで、因縁の有無で格上勝率が変わるか
+    {
+      const decided2 = arr => arr.filter(x => x.strongerSide && (x.winner === 'left' || x.winner === 'right'));
+      let wSum = 0, wN = 0;
+      const order = ['0-2', '3-5', '6-9', '10+'];
+      for (const gb of order) {
+        const bucket = byGap.get(gb);
+        if (!bucket) continue;
+        const rv = decided2(bucket.rivalry), nn = decided2(bucket.none);
+        if (rv.length < 5 || nn.length < 5) { console.log(`    OVR差${gb}: n(因縁)=${bucket.rivalry.length} n(非因縁)=${bucket.none.length} 勝率歪み=n/a(サンプル不足)`); continue; }
+        const rw = rv.filter(x => x.winner === x.strongerSide).length / rv.length * 100;
+        const nw = nn.filter(x => x.winner === x.strongerSide).length / nn.length * 100;
+        const d = rw - nw;
+        wSum += d * rv.length; wN += rv.length;
+        console.log(`    OVR差${gb}: n(因縁)=${rv.length} n(非因縁)=${nn.length} 格上勝率 因縁${rw.toFixed(1)}% 非因縁${nw.toFixed(1)}% 歪み=${d.toFixed(2)}pt`);
+      }
+      const overall = wN ? wSum / wN : null;
+      console.log(`  [不変条件6] 勝率歪み(**実力差を揃えた**加重平均): ${overall == null ? 'n/a(サンプル不足)' : overall.toFixed(3) + 'pt'} (目標±2pt以内)`);
+    }
 
     // リング内効果の発動率(母数=シングル全試合)
     const n = singles.length || 1;
