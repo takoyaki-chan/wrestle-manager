@@ -129,19 +129,34 @@ check(typeof compoundLine === 'string' && compoundLine.length > 0,
   'Engine.challengeRequest.pickLine が standard×bold のキャラでセリフを引ける');
 
 // ─────────────────────────────────────────────────────────────────────────
-// 7. 改名しなかったテーブル(factions.js の読み手を直せないため対象外)は
-//    'normal' キーのまま残り、実キャラ(archetype='standard')でも
-//    フォールバック経由で正しく引けること(退行がないことの証明)
+// 7. 2026-08-01: 取り残されていた31テーブル(派閥系・タッグ系・カットイン系ほか)
+//    も standard に改名し、読み手のフォールバックも揃えた。
+//    旧 archetype='normal' の**セーブデータ**は management.js の移行処理で
+//    'standard' に直されるが、万一素通りしても同じプールに落ちること。
 // ─────────────────────────────────────────────────────────────────────────
-check(!!FACTION_F01_LEADER_LINES.bold.normal, 'FACTION_F01_LEADER_LINES(意図的に未改名)は normal キーのまま');
+check(!!FACTION_F01_LEADER_LINES.bold.standard, 'FACTION_F01_LEADER_LINES.bold.standard が存在する(normal から改名)');
+check(!FACTION_F01_LEADER_LINES.bold.normal, 'FACTION_F01_LEADER_LINES.bold.normal はもう存在しない');
 const standardFighter = { id: 90001, personality: 'bold', archetype: 'standard' };
 const legacyNormalFighter = { id: 90002, personality: 'bold', archetype: 'normal' };
 const lineForStandard = Engine.factions.getFactionLine(FACTION_F01_LEADER_LINES, standardFighter, null);
 const lineForLegacy = Engine.factions.getFactionLine(FACTION_F01_LEADER_LINES, legacyNormalFighter, null);
 check(typeof lineForStandard === 'string' && lineForStandard.length > 0,
-  '未改名テーブルでも archetype=standard の実キャラは(normal キーへのフォールバック経由で)セリフを引ける');
+  'archetype=standard の実キャラが FACTION_F01_LEADER_LINES からセリフを引ける');
 check(lineForStandard === lineForLegacy,
-  'archetype=standard の実キャラと、旧 archetype=normal のキャラが同じセリフプールに落ちる(退行なし)');
+  '旧 archetype=normal のキャラも standard フォールバックで同じセリフプールに落ちる(退行なし)');
+
+// 改名し残しがないことの全数チェック。アーキタイプ位置の 'normal' が1つでも
+// 残っていれば、そのテーブルは Excel でアーキタイプ列が空になる。
+const AXIS = require(path.join(__dirname, '..', 'tools', 'axis-rewrite.js'));
+const EXTRACT = require(path.join(__dirname, '..', 'tools', 'extract-dialogue.js'));
+const _origErr = console.error;
+console.error = () => {};
+const _decls = EXTRACT.loadAllDecls();
+console.error = _origErr;
+const _sandbox = EXTRACT.evalAll(_decls.allDecls);
+const leftover = AXIS.collectTargets(_sandbox).report;
+check(leftover.length === 0,
+  `アーキタイプ位置に旧キー normal が残っているテーブルは0件(実際: ${leftover.length}件 ${leftover.map(r => r.table).join(', ')})`);
 
 // ─────────────────────────────────────────────────────────────────────────
 // 8. tools/dialogue-workbook.js の detectMeta
@@ -156,14 +171,12 @@ const metaPersonalityNormal = DW.detectMeta('FACTION_F02_LEADER_LINES.normal.sta
 check(metaPersonalityNormal.personality === 'ノーマル', `第一階層の normal は性格「ノーマル」と判定される(実際: "${metaPersonalityNormal.personality}")`);
 check(metaPersonalityNormal.archetype === '標準', `第二階層の standard はアーキタイプ「標準」と判定される(実際: "${metaPersonalityNormal.archetype}")`);
 
-// 改名しなかったテーブル(normal のまま)は、第一階層(性格)は正しく引けるが
-// 第二階層(アーキタイプ)の normal はもう ARCHETYPE_KEYS に無いため拾えず、
-// アーキタイプ列が空のままになる — これは既知の残課題であり、7 の退行なし
-// テストと合わせて「機能は壊れていないが、Excel上のラベルは直らない」ことの
-// 記録(worklog に明記)。
-const metaExcluded = DW.detectMeta('FACTION_F01_LEADER_LINES.bold.normal[1]', 'FACTION_F01_LEADER_LINES');
-check(metaExcluded.personality === '強気' && metaExcluded.archetype === '',
-  `未改名テーブルは性格(強気)は引けるがアーキタイプ列は空のまま(実際: personality="${metaExcluded.personality}" archetype="${metaExcluded.archetype}")`);
+// 2026-08-01 の改名で、派閥系テーブルもアーキタイプ列が埋まるようになった。
+// (以前はここが空欄になり、標準アーキタイプの行だけ キャラタイプ別/ に
+//  振り分けられず落ちていた)
+const metaFaction = DW.detectMeta('FACTION_F01_LEADER_LINES.bold.standard[1]', 'FACTION_F01_LEADER_LINES');
+check(metaFaction.personality === '強気' && metaFaction.archetype === '標準',
+  `派閥テーブルもアーキタイプ列が埋まる(実際: personality="${metaFaction.personality}" archetype="${metaFaction.archetype}")`);
 
 console.log('');
 if (failures > 0) {

@@ -13,3 +13,6 @@ test/_*.json
 release/dist/
 release/staging/
 release/verify-tmp/
+
+# ツールが作る書き戻し前バックアップ (dialogue-workbook.js / axis-rewrite.js)
+src/*.bak

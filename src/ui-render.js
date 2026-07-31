@@ -4419,7 +4419,7 @@ function renderRanking() {
       cool: ['クールな佇まいで観客を引き寄せる', '冷ややかな眼差しが対戦相手を凍らせる', '感情を見せない戦い方が逆に怖い'],
       delinquent: ['不良性感度の塊で観客を煽り続ける', '荒っぽい振る舞いが団体の毒気を担う', 'ルールの外側で観客を熱狂させる'],
       seductive: ['妖艶な魅せ方で他団体にはない色を添える', '艶のある立ち姿が独自のファン層を呼ぶ'],
-      normal: ['素直な人柄が選手会の核になっている', '飾らない佇まいが逆に絵になる']
+      standard: ['素直な人柄が選手会の核になっている', '飾らない佇まいが逆に絵になる']
     };
     const persMap = {
       bold: ['物怖じしない発言で常に火種を撒く', '気の強さでカードを引っ張る'],
@@ -4429,7 +4429,7 @@ function renderRanking() {
       emotional: ['感情の振れ幅で試合をドラマに変える', '熱が乗ったときの爆発力が桁違い'],
       normal: []
     };
-    const pool = (archMap[arch] || archMap.normal).concat(persMap[pers] || []);
+    const pool = (archMap[arch] || archMap.standard).concat(persMap[pers] || []);
     return _pickSeed(pool, seed);
   };
 

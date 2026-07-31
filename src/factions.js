@@ -4442,13 +4442,14 @@ Engine.factions = {
 
   // ── §11 セリフ fallback ヘルパー ──
   // table: { personality: { archetype: [lines...] } }
-  // fighter: { personality, archetype } を受け取り、normal fallback で最低1行を返す
+  // fighter: { personality, archetype } を受け取り、fallback で最低1行を返す。
+  // 性格の既定は 'normal'、アーキタイプの既定は 'standard'(旧 'normal')。同名の別物。
   getFactionLine(table, fighter, rng) {
     if (!table || !fighter) return '';
     const p = fighter.personality || 'normal';
-    const a = fighter.archetype || 'normal';
+    const a = fighter.archetype || 'standard';
     const byPersona = table[p] || table.normal || {};
-    const byArch = byPersona[a] || byPersona.normal || table.normal?.normal || [];
+    const byArch = byPersona[a] || byPersona.standard || table.normal?.standard || [];
     if (!byArch.length) return '';
     const idx = rng ? Math.floor(Engine.rng.float(rng) * byArch.length) : 0;
     return byArch[idx];
@@ -4540,15 +4541,15 @@ Engine.factions = {
   _getF08LineByBand(table, fighter, band, rng) {
     if (!table || !fighter || !band) return '';
     const p = fighter.personality || 'normal';
-    const a = fighter.archetype || 'normal';
+    const a = fighter.archetype || 'standard';
     const byPersona = table[p] || table.normal || {};
     let byArch = byPersona[a];
     if (!byArch || !byArch[band] || !byArch[band].length) {
-      byArch = byPersona.normal;
+      byArch = byPersona.standard;
     }
     if (!byArch) {
       const np = table.normal || {};
-      byArch = np[a] || np.normal;
+      byArch = np[a] || np.standard;
     }
     if (!byArch) return '';
     let lines = byArch[band];
@@ -5515,12 +5516,12 @@ Engine.factions = {
     if (!fighter) return '';
     const sideKey = (side === 'defend') ? 'defend' : 'attack';
     const personality = Engine.contract.getPersonalityType(fighter);
-    const archetype = fighter.archetype || 'normal';
+    const archetype = fighter.archetype || 'standard';
     const table = (typeof FACTION_F02_LINES !== 'undefined' ? FACTION_F02_LINES : null);
     if (!table) return '';
     const pTable = table[personality] || table.introverted;
     const sTable = pTable[sideKey] || pTable.attack;
-    return sTable[archetype] || sTable.normal || '';
+    return sTable[archetype] || sTable.standard || '';
   },
 
   // ── §6 アーキタイプ遷移ナレーション引き ──
@@ -5534,8 +5535,8 @@ Engine.factions = {
     if (!table || !reasonKey) return { leaderLine: '', narration: '' };
     const block = table[reasonKey];
     if (!block) return { leaderLine: '', narration: '' };
-    const archetype = (leader && leader.archetype) || 'normal';
-    const entry = block[archetype] || block.normal;
+    const archetype = (leader && leader.archetype) || 'standard';
+    const entry = block[archetype] || block.standard;
     if (!entry) return { leaderLine: '', narration: '' };
     const subst = (s) => {
       if (!s || !vars) return s || '';
@@ -5555,16 +5556,16 @@ Engine.factions = {
     const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[Math.floor(Math.random() * arr.length)] : '';
     if (category === 'newcomer') {
       const fighter = ctx && ctx.fighter;
-      const arch = (fighter && fighter.archetype) || 'normal';
-      const arr = table.newcomer[arch] || table.newcomer.normal;
+      const arch = (fighter && fighter.archetype) || 'standard';
+      const arr = table.newcomer[arch] || table.newcomer.standard;
       return pickArr(arr);
     }
     if (category === 'reaction') {
       const factionArch = ctx && ctx.archetypeId;
       const newcomer = ctx && (ctx.newcomerFighter || ctx.fighter);
-      const newcomerArch = (newcomer && newcomer.archetype) || 'normal';
+      const newcomerArch = (newcomer && newcomer.archetype) || 'standard';
       const node = (factionArch && table.reaction[factionArch]) || null;
-      const arr = (node && (node[newcomerArch] || node.normal)) || table.reaction._any;
+      const arr = (node && (node[newcomerArch] || node.standard)) || table.reaction._any;
       return pickArr(arr);
     }
     return '';
@@ -5595,7 +5596,7 @@ Engine.factions = {
     if (category === 'leaderDemand') {
       const t = table.leaderDemand && table.leaderDemand[itype];
       if (!t) return '';
-      const archetype = (fighter && fighter.archetype) || 'normal';
+      const archetype = (fighter && fighter.archetype) || 'standard';
       // 新形式: t[archetype][personality] / 旧形式: t[personality]
       const branch = t[archetype];
       let arr;
@@ -5616,7 +5617,7 @@ Engine.factions = {
       if (!t) return '';
       const ct = t[choice];
       if (!ct) return '';
-      const archetype = (fighter && fighter.archetype) || 'normal';
+      const archetype = (fighter && fighter.archetype) || 'standard';
       // 新形式: ct[archetype][personality] / 旧形式: ct[personality]
       const branch = ct[archetype];
       let arr;

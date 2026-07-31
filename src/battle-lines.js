@@ -6,7 +6,7 @@
 // ダメージセリフ（長文、クリティカルで発動）
 const DAMAGE_SERIF_LINES = {
   normal: {
-    normal:     ["くっ…まだ…まだだ…！","効いた…けど…負けない…！","はぁ…はぁ…立てる…まだ…"],
+    standard:   ["くっ…まだ…まだだ…！","効いた…けど…負けない…！","はぁ…はぁ…立てる…まだ…"],
     polite:     ["くっ…まだ…大丈夫です…！","効きました…でも…まだです…！","はぁ…はぁ…立てます…まだ…"],
     seductive:  ["っ…やるじゃない…","くっ…いい攻撃ね…でもまだよ","はぁ…少し本気になったわ…"],
     delinquent: ["くそっ…足にくるぜ…！","てめえ…やるじゃねえか…","はぁ…はぁ…なめんなよ…"],
@@ -14,7 +14,7 @@ const DAMAGE_SERIF_LINES = {
     cool:       ["…っ…まだ","…効いた…けど","…はぁ…まだ…立てる"]
   },
   earnest: {
-    normal:     ["ぐっ…！ まだ…立てる…！","くぅ…っ！ 効いた…けど…！","はぁ…はぁ…負けるもんか…！"],
+    standard:   ["ぐっ…！ まだ…立てる…！","くぅ…っ！ 効いた…けど…！","はぁ…はぁ…負けるもんか…！"],
     polite:     ["ぐっ…！ まだ…立てます…！","くぅ…っ！ でも…まだです…！","はぁ…はぁ…負けません…！"],
     seductive:  ["んっ…痛い…けど…気持ちいいかも…","くっ…まだまだ…よ？","はぁ…身体が熱くなってきたわ…"],
     delinquent: ["ぐっ…！ やるじゃねえか…！","くそ…効いたぜ…でもな…！","はぁ…はぁ…舐めんなよ…！"],
@@ -22,7 +22,7 @@ const DAMAGE_SERIF_LINES = {
     cool:       ["…っ…まだ、立てる","…効いた…でも","…はぁ…負けない"]
   },
   bold: {
-    normal:     ["はっ…やるじゃん…でもまだだよ！","この程度じゃ…倒れないよ！","あはは…痛い痛い…でもね！"],
+    standard:   ["はっ…やるじゃん…でもまだだよ！","この程度じゃ…倒れないよ！","あはは…痛い痛い…でもね！"],
     polite:     ["はっ…効きますね…でもまだですよ！","この程度では…倒れませんよ！","痛い…ですけど…まだです！"],
     seductive:  ["あら…乱暴ね…でも嫌いじゃないわ","くっ…いいわよ…もっと来なさい","はぁ…痛い…でもまだ足りないわ"],
     delinquent: ["はっ…その程度かよ！","効くじゃねえか…でもまだだ！","痛てぇ…けどな…舐めんな！"],
@@ -30,7 +30,7 @@ const DAMAGE_SERIF_LINES = {
     cool:       ["…ふん…その程度","…まだ…足りない","…効くね…でも"]
   },
   easygoing: {
-    normal:     ["あたた…でもまだ大丈夫！","う〜ん…効いたかも…でもへーきへーき！","いたた…ちょっと休憩…なんてね！"],
+    standard:   ["あたた…でもまだ大丈夫！","う〜ん…効いたかも…でもへーきへーき！","いたた…ちょっと休憩…なんてね！"],
     polite:     ["あたた…でもまだ大丈夫ですよ！","う〜ん…効きましたけど…平気です！","いたた…でもまだいけます！"],
     seductive:  ["あらら…やるじゃない♪ でもまだよ？","くふふ…やるわね…楽しいわ","んー…効いたかも…でもまだよ♪"],
     delinquent: ["おっと…やるなぁ！ でもまだだ！","がはっ…効いた効いた…けどな！","いてて…でもこの程度でっ！"],
@@ -38,7 +38,7 @@ const DAMAGE_SERIF_LINES = {
     cool:       ["…ん…効いた…けど平気","…あー…痛い。でもまだ","…大丈夫…まだいける"]
   },
   quiet: {
-    normal:     ["……まだ","……これくらい","……立てる"],
+    standard:   ["……まだ","……これくらい","……立てる"],
     polite:     ["……まだ、です","……これくらいでは","……立てます"],
     seductive:  ["……ふふ…まだよ","……その程度…？","……もっと…来なさい"],
     delinquent: ["……なめんな","……その程度か","……まだだ"],
@@ -46,7 +46,7 @@ const DAMAGE_SERIF_LINES = {
     cool:       ["……この程度で！","……まだ","……………"]
   },
   shy: {
-    normal:     ["い、痛い…でも…まだ…","う、うぅ…でも…立てる…から…","ひっ…で、でも…負けたくない…"],
+    standard:   ["い、痛い…でも…まだ…","う、うぅ…でも…立てる…から…","ひっ…で、でも…負けたくない…"],
     polite:     ["い、痛いです…でも…まだ…","う、うぅ…でも…立てます…","ひっ…で、でも…負けたくないです…"],
     seductive:  ["あっ…痛い…でも…まだよ…","う、うぅん…負けない…から…","ひっ…で、でも…まだ立てるわ…"],
     delinquent: ["い、痛え…でも…まだだ…","う、うるせえ…まだ立てる…","ひっ…な、なめんな…"],
@@ -54,7 +54,7 @@ const DAMAGE_SERIF_LINES = {
     cool:       ["…っ…ま、まだ…","…い、痛い…けど…","…た、立てる…"]
   },
   emotional: {
-    normal:     ["痛いっ…！ でも…でもっ…！","うぅっ…こんなので…負けないっ…！","泣かない…泣かないよ…まだ…！"],
+    standard:   ["痛いっ…！ でも…でもっ…！","うぅっ…こんなので…負けないっ…！","泣かない…泣かないよ…まだ…！"],
     polite:     ["痛いです…っ！ でも…でもっ…！","うぅっ…こんなでは…負けませんっ…！","泣いてません…まだ…立てます…！"],
     seductive:  ["あぁ…っ…痛い…でも…まだよ…！","くぅ…っ…こんなので…終わらないわ…！","涙…？ 違うわ…汗よ…！"],
     delinquent: ["くそぉ…っ！ 効きやがった…！","うぅっ…てめえ…覚えてろ…！","泣いてねえっ…泣いてねえよ…！"],
@@ -65,7 +65,7 @@ const DAMAGE_SERIF_LINES = {
 
 // 短い悲鳴（archetype別）
 const DAMAGE_VOICE_LINES = {
-  normal:     ["くっ…！","あっ…！","うぅっ…！","はぁっ…！"],
+  standard:   ["くっ…！","あっ…！","うぅっ…！","はぁっ…！"],
   polite:     ["きゃっ…！","あっ…！","うぅっ…！","ひっ…！"],
   seductive:  ["あぁんっ…！","んっ…！","くぅ…っ！","はぁ…っ！"],
   delinquent: ["ぐはっ…！","がっ…！","くそっ…！","うあっ…！"],
@@ -82,7 +82,7 @@ function pickDamageLine(fighter, dmg, hpRatio, rng) {
   if (dmg < 15) return null; // クリティカルヒットのみ
   const r = rng ? rng() : Math.random();
   const personality = fighter.personality || 'normal';
-  const archetype = fighter.archetype || 'normal';
+  const archetype = fighter.archetype || 'standard';
   if (hpRatio > 0.66) {
     if (r < 0.4) return { type: 'serif', text: _pickSerif(personality, archetype) };
     return null;
@@ -97,10 +97,10 @@ function pickDamageLine(fighter, dmg, hpRatio, rng) {
 }
 function _pickSerif(personality, archetype) {
   const byP = DAMAGE_SERIF_LINES[personality] || DAMAGE_SERIF_LINES.normal;
-  const lines = byP[archetype] || byP.normal || ["……くっ"];
+  const lines = byP[archetype] || byP.standard || ["……くっ"];
   return lines[Math.floor(Math.random() * lines.length)];
 }
 function _pickVoice(archetype) {
-  const lines = DAMAGE_VOICE_LINES[archetype] || DAMAGE_VOICE_LINES.normal;
+  const lines = DAMAGE_VOICE_LINES[archetype] || DAMAGE_VOICE_LINES.standard;
   return lines[Math.floor(Math.random() * lines.length)];
 }

@@ -8113,7 +8113,7 @@ const App = {
             const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
             const arch = fighter.archetype || 'standard';
             const byP = table[p] || table.normal || {};
-            const byA = byP[arch] || byP.standard || byP.normal || {};
+            const byA = byP[arch] || byP.standard || {};
             const lines = byA.high || byA.mid || byA.low || [];
             return lines.length ? lines[Math.floor(Math.random() * lines.length)] : '';
           };
@@ -9057,7 +9057,7 @@ const App = {
     const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
     const arch = fighter.archetype || 'standard';
     const byP = table[p] || table.normal || {};
-    const byA = byP[arch] || byP.standard || byP.normal || {};
+    const byA = byP[arch] || byP.standard || {};
     const lines = byA.high || byA.mid || byA.low || [];
     return lines.length ? lines[Math.floor(Math.random() * lines.length)] : '';
   },
@@ -13920,7 +13920,7 @@ const App = {
     const archetype = speaker.archetype || 'standard';
     const pool = (typeof CRISIS_DIALOGUE !== 'undefined'
       && CRISIS_DIALOGUE.enter
-      && (CRISIS_DIALOGUE.enter[archetype] || CRISIS_DIALOGUE.enter.normal)) || [];
+      && (CRISIS_DIALOGUE.enter[archetype] || CRISIS_DIALOGUE.enter.standard)) || [];
     if (pool.length === 0) return;
     const seed = (G.season || 1) * 1000 + (G.week || 1);
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, seed, 0xC715));

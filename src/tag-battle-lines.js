@@ -4,7 +4,7 @@
 // タッグ専用: ホットタグ時のカットイン [personality][archetype][3本]
 const HOT_TAG_LINES = {
   normal: {
-    normal: ["任せて！","交代だよ！","ここからは私が行く！"],
+    standard: ["任せて！","交代だよ！","ここからは私が行く！"],
     polite: ["お任せくださいっ！","交代しますっ！","ここからは私が行きます！"],
     seductive: ["任せて…いいわよ","交代よ","ここからはわたしの番ね"],
     delinquent: ["任せときな！","交代だ！","ここからはあたしが行く！"],
@@ -13,7 +13,7 @@ const HOT_TAG_LINES = {
     composed: ["…任せて、いいよ","…交代、だね","…ここからは私が行くよ"],
   },
   earnest: {
-    normal: ["お疲れ様、あとは任せて！","よく守った、交代だ！","ここからは私が背負う！"],
+    standard: ["お疲れ様、あとは任せて！","よく守った、交代だ！","ここからは私が背負う！"],
     polite: ["お疲れ様です、任せてくださいっ！","よく耐えました、交代です！","ここからは私が引き継ぎます！"],
     seductive: ["お疲れさま…あとは任せて","よく耐えたわね…交代よ","ここからはわたしが背負うわ"],
     delinquent: ["お疲れさん、あとは任せろ！","よく守ったな、交代だ！","ここからはあたしが背負うぜ！"],
@@ -22,7 +22,7 @@ const HOT_TAG_LINES = {
     composed: ["…お疲れさま、あとは任せて","…よく耐えたね、交代だよ","…ここからは私が背負うよ"],
   },
   bold: {
-    normal: ["待ってました！","私の番だ！","ようやく回ってきたな！"],
+    standard: ["待ってました！","私の番だ！","ようやく回ってきたな！"],
     polite: ["待っていましたっ！","わたしの番ですっ！","ようやく回ってきましたね！"],
     seductive: ["待ちくたびれたわ","わたしの番よ","ようやく回ってきたわね"],
     delinquent: ["待ってたぜ！","あたしの番だ！","ようやく回ってきやがった！"],
@@ -31,7 +31,7 @@ const HOT_TAG_LINES = {
     composed: ["…待ってたよ","…私の番だね","…ようやく回ってきた、かな"],
   },
   easygoing: {
-    normal: ["はーい、交代〜！","お疲れさま♪ 私いくね","ここからは私の出番♪"],
+    standard: ["はーい、交代〜！","お疲れさま♪ 私いくね","ここからは私の出番♪"],
     polite: ["はーい、交代しますね〜！","お疲れさまです♪ いきますね","ここからはわたしの出番です♪"],
     seductive: ["はぁい、交代ね♪","お疲れさま…あとは任せて♪","ここからはわたしの時間よ♪"],
     delinquent: ["はいはい、交代な〜！","お疲れさん♪ あたしいくぜ","ここからはあたしの出番だ♪"],
@@ -40,7 +40,7 @@ const HOT_TAG_LINES = {
     composed: ["…はーい、交代〜","…お疲れさま、いくね","…ここからは私の番かな♪"],
   },
   quiet: {
-    normal: ["…交代","…来た、私が","…任せて"],
+    standard: ["…交代","…来た、私が","…任せて"],
     polite: ["…交代します","…来ました","…任せてください"],
     seductive: ["…交代、よ","…来たわ","…任せて、いい"],
     delinquent: ["…交代だ","…来たぜ","…任せときな"],
@@ -49,7 +49,7 @@ const HOT_TAG_LINES = {
     composed: ["…交代、だよ","…来たよ","…任せて、いい"],
   },
   shy: {
-    normal: ["が、頑張ります…！","こ、交代…します…","い、行ってきます…！"],
+    standard: ["が、頑張ります…！","こ、交代…します…","い、行ってきます…！"],
     polite: ["が、頑張りますっ…！","こ、交代します…っ","い、行ってきますっ…！"],
     seductive: ["が、頑張る…から…","こ、交代…ね…?","い、行ってくる…わ…"],
     delinquent: ["が、頑張るし…！","こ、交代…だ…","い、行ってくる…ぜ…"],
@@ -58,7 +58,7 @@ const HOT_TAG_LINES = {
     composed: ["…が、頑張る、よ…","…こ、交代…だね…","…い、行ってくるね…"],
   },
   emotional: {
-    normal: ["絶対…勝つ…！","お疲れ…ここからは私が…！","任せて…絶対に…！"],
+    standard: ["絶対…勝つ…！","お疲れ…ここからは私が…！","任せて…絶対に…！"],
     polite: ["絶対…勝ちますっ…！","お疲れさまっ…あとは私が…！","任せてくださいっ…絶対に…！"],
     seductive: ["絶対…勝つわ…！","お疲れさま…あとはわたしが…！","任せて…絶対に、よ…！"],
     delinquent: ["絶対勝つ…！","お疲れ…あとはあたしが…！","任せろ…絶対だ…！"],
@@ -71,7 +71,7 @@ const HOT_TAG_LINES = {
 // タッグ専用: ダブルチーム時のカットイン [personality][archetype][3本]
 const DOUBLE_TEAM_LINES = {
   normal: {
-    normal: ["合わせて！","いくよ、二人で！","息を合わせよう！"],
+    standard: ["合わせて！","いくよ、二人で！","息を合わせよう！"],
     polite: ["合わせてくださいっ！","いきますよ、二人で！","息を合わせましょう！"],
     seductive: ["合わせて…いくわよ","二人で、いきましょ","息を合わせて…ね"],
     delinquent: ["合わせろ！","いくぞ、二人で！","息合わせな！"],
@@ -80,7 +80,7 @@ const DOUBLE_TEAM_LINES = {
     composed: ["…合わせて、いくよ","…二人でいこうか","…息、合わせようね"],
   },
   earnest: {
-    normal: ["一緒に…！","タイミング合わせて！","二人で決めよう！"],
+    standard: ["一緒に…！","タイミング合わせて！","二人で決めよう！"],
     polite: ["一緒にいきますっ！","タイミング合わせてください！","二人で決めましょう！"],
     seductive: ["一緒に…いくわよ","タイミング、合わせて","二人で決めるわ"],
     delinquent: ["一緒にいくぞ！","タイミング合わせろ！","二人で決めるぜ！"],
@@ -89,7 +89,7 @@ const DOUBLE_TEAM_LINES = {
     composed: ["…一緒にいくよ","…タイミング、合わせて","…二人で決めようね"],
   },
   bold: {
-    normal: ["二人で決める！","合わせろ、いくぞ！","逃がさない、そっち頼む！"],
+    standard: ["二人で決める！","合わせろ、いくぞ！","逃がさない、そっち頼む！"],
     polite: ["二人で決めますっ！","合わせてください、いきますよ！","逃がしません、そちら頼みますっ！"],
     seductive: ["二人で決めるわよ","合わせなさい","逃がさないわ、そっち任せた"],
     delinquent: ["二人で決めるぞ！","合わせろ、相棒！","逃がさねえ、そっち頼むぜ！"],
@@ -98,7 +98,7 @@ const DOUBLE_TEAM_LINES = {
     composed: ["…二人で決めるよ","…合わせて、いこうか","…逃がさない、そっち頼むね"],
   },
   easygoing: {
-    normal: ["一緒にやろ〜！","合わせて合わせて♪","せーのっ♪"],
+    standard: ["一緒にやろ〜！","合わせて合わせて♪","せーのっ♪"],
     polite: ["一緒にやりましょ〜！","合わせてくださいね♪","せーのっ、です♪"],
     seductive: ["一緒にいきましょ♪","合わせて…ね♪","せーの…よ♪"],
     delinquent: ["一緒にやろうぜ〜！","合わせろ合わせろ♪","せーのっ、だ！"],
@@ -107,7 +107,7 @@ const DOUBLE_TEAM_LINES = {
     composed: ["…一緒にやろ〜","…合わせて、ね♪","…せーの、かな"],
   },
   quiet: {
-    normal: ["…合わせる","…せーの","…いこう"],
+    standard: ["…合わせる","…せーの","…いこう"],
     polite: ["…合わせます","…せーの、です","…いきましょう"],
     seductive: ["…合わせて、よ","…せーの…ね","…いくわ"],
     delinquent: ["…合わせろ","…せーの、だ","…いくぜ"],
@@ -116,7 +116,7 @@ const DOUBLE_TEAM_LINES = {
     composed: ["…合わせるよ","…せーの、だね","…いこうか"],
   },
   shy: {
-    normal: ["あ、合わせます…！","に、二人で…！","い、いっしょに…！"],
+    standard: ["あ、合わせます…！","に、二人で…！","い、いっしょに…！"],
     polite: ["あ、合わせますっ…！","に、二人で…お願いします…！","い、いっしょにっ…！"],
     seductive: ["あ、合わせて…ね…?","ふ、二人で…いこ…","い、いっしょに…よ…"],
     delinquent: ["あ、合わせろし…！","ふ、二人で…だ…！","い、いっしょにやるぞ…"],
@@ -125,7 +125,7 @@ const DOUBLE_TEAM_LINES = {
     composed: ["…あ、合わせるね…","…ふ、二人で、ね…","…い、いっしょに、いこ…"],
   },
   emotional: {
-    normal: ["二人でっ…！","合わせるよ…っ！","絶対決めるっ…！"],
+    standard: ["二人でっ…！","合わせるよ…っ！","絶対決めるっ…！"],
     polite: ["二人でっ…いきますっ！","合わせますっ…！","絶対決めますっ…！"],
     seductive: ["二人で…決めるわよっ…！","合わせて…っ！","絶対決めるわ…っ！"],
     delinquent: ["二人でっ…いくぞ！","合わせろっ…！","絶対決めるぜ…っ！"],
@@ -138,7 +138,7 @@ const DOUBLE_TEAM_LINES = {
 // タッグ専用: カットイン救出時のセリフ [personality][archetype][3本]
 const CUTIN_SAVE_LINES = {
   normal: {
-    normal: ["させない！","まだだ！","渡さないよ！"],
+    standard: ["させない！","まだだ！","渡さないよ！"],
     polite: ["させませんっ！","まだですっ！","渡しませんっ！"],
     seductive: ["させないわ","まだよ","渡さない…わ"],
     delinquent: ["させねえ！","まだだ！","渡さねえよ！"],
@@ -147,7 +147,7 @@ const CUTIN_SAVE_LINES = {
     composed: ["…させないよ","…まだだよ","…渡さない、から"],
   },
   earnest: {
-    normal: ["そうはさせない！","まだ諦めてない！","絶対渡さない！"],
+    standard: ["そうはさせない！","まだ諦めてない！","絶対渡さない！"],
     polite: ["そうはさせませんっ！","まだ諦めていませんっ！","絶対渡しませんっ！"],
     seductive: ["そうはさせないわ","まだ諦めてないの","絶対渡さないわ"],
     delinquent: ["そうはさせねえ！","まだ諦めてねえ！","絶対渡さねえ！"],
@@ -156,7 +156,7 @@ const CUTIN_SAVE_LINES = {
     composed: ["…そうはさせないよ","…まだ諦めてないよ","…絶対、渡さないから"],
   },
   bold: {
-    normal: ["そうはさせるか！","まだまだ！","そうはいかない！"],
+    standard: ["そうはさせるか！","まだまだ！","そうはいかない！"],
     polite: ["そうはさせませんよ！","まだまだですっ！","そうはいきませんっ！"],
     seductive: ["そうはさせないわよ","まだまだよ","そうはいかないわ"],
     delinquent: ["そうはさせるかよ！","まだまだだ！","そうはいかねえ！"],
@@ -165,7 +165,7 @@ const CUTIN_SAVE_LINES = {
     composed: ["…させないよ、そう簡単には","…まだまだ、だよ","…そうはいかないかな"],
   },
   easygoing: {
-    normal: ["させないよ〜！","まだまだ〜！","はい、カット！"],
+    standard: ["させないよ〜！","まだまだ〜！","はい、カット！"],
     polite: ["させませんよ〜！","まだまだですよ〜！","はい、カットです！"],
     seductive: ["させないわよ〜♪","まだまだ…よ♪","はぁい、カット♪"],
     delinquent: ["させねえよ〜！","まだまだだ〜！","ほい、カットだ！"],
@@ -174,7 +174,7 @@ const CUTIN_SAVE_LINES = {
     composed: ["…させないよ〜","…まだまだ、かな","…はい、カット"],
   },
   quiet: {
-    normal: ["…させない","…まだ","…駄目"],
+    standard: ["…させない","…まだ","…駄目"],
     polite: ["…させません","…まだです","…駄目です"],
     seductive: ["…させないわ","…まだ、よ","…駄目よ"],
     delinquent: ["…させねえ","…まだだ","…駄目だ"],
@@ -183,7 +183,7 @@ const CUTIN_SAVE_LINES = {
     composed: ["…させないよ","…まだ、だよ","…駄目だよ"],
   },
   shy: {
-    normal: ["さ、させない…！","ま、まだ…です…！","だ、ダメ…！"],
+    standard: ["さ、させない…！","ま、まだ…です…！","だ、ダメ…！"],
     polite: ["さ、させませんっ…！","ま、まだですっ…！","だ、ダメですっ…！"],
     seductive: ["さ、させない…わ…!","ま、まだ…よ…!","だ、ダメ…なの…!"],
     delinquent: ["さ、させねえ…！","ま、まだだ…！","だ、ダメだ…！"],
@@ -192,7 +192,7 @@ const CUTIN_SAVE_LINES = {
     composed: ["…さ、させないよ…","…ま、まだ、だよ…","…だ、ダメ、だよ…"],
   },
   emotional: {
-    normal: ["絶対させないっ…！","まだっ…！","そんなの…駄目っ…！"],
+    standard: ["絶対させないっ…！","まだっ…！","そんなの…駄目っ…！"],
     polite: ["絶対させませんっ…！","まだですっ…！","そんなの駄目ですっ…！"],
     seductive: ["絶対させないわっ…！","まだよっ…！","そんなの…許さないわっ…！"],
     delinquent: ["絶対させねえっ…！","まだだっ…！","そんなの…させるかっ…！"],
@@ -205,7 +205,7 @@ const CUTIN_SAVE_LINES = {
 // タッグ専用: 見殺し時のセリフ（動かないパートナー側） [personality][archetype][3本]
 const BETRAYAL_LINES = {
   normal: {
-    normal: ["……動けない","……間に合わない","……"],
+    standard: ["……動けない","……間に合わない","……"],
     polite: ["……動けません","……間に合いません","……ごめんなさい"],
     seductive: ["……動けないわ","……間に合わない…わ","……ごめんね"],
     delinquent: ["……動けねえ","……間に合わねえ","……くそっ"],
@@ -214,7 +214,7 @@ const BETRAYAL_LINES = {
     composed: ["……動けないよ","……間に合わない、か","……ごめん"],
   },
   earnest: {
-    normal: ["間に合わない…！","動けない…！","……守れなかった"],
+    standard: ["間に合わない…！","動けない…！","……守れなかった"],
     polite: ["間に合いません…！","動けません…！","……守れませんでした"],
     seductive: ["間に合わない…わ","動けない…の","……守れなかった、わね"],
     delinquent: ["間に合わねえ…！","動けねえ…！","……守れなかった"],
@@ -223,7 +223,7 @@ const BETRAYAL_LINES = {
     composed: ["…間に合わないか…","…動けないよ…","……守れなかった、な"],
   },
   bold: {
-    normal: ["くっ…！","ちっ…間に合わない","届かなかった…"],
+    standard: ["くっ…！","ちっ…間に合わない","届かなかった…"],
     polite: ["くっ…！","くぅっ…間に合いません","届きませんでした…"],
     seductive: ["くっ…！","ちっ…間に合わないわ","届かなかった…わね"],
     delinquent: ["くそっ…！","ちっ…間に合わねえ","届かなかった…"],
@@ -232,7 +232,7 @@ const BETRAYAL_LINES = {
     composed: ["…くっ、間に合わないか","…届かないな","届かなかった…よ"],
   },
   easygoing: {
-    normal: ["ありゃ…動けない…","うぅ…遠い…","……"],
+    standard: ["ありゃ…動けない…","うぅ…遠い…","……"],
     polite: ["あちゃ…動けません…","うぅ…遠いです…","……ごめんなさい"],
     seductive: ["あら…動けないわ…","うぅ…遠い…わ","……ごめんね"],
     delinquent: ["あちゃ…動けねえ…","うぅ…遠えな…","……わりぃ"],
@@ -241,7 +241,7 @@ const BETRAYAL_LINES = {
     composed: ["…ありゃ、動けないや","…うぅ、遠いなあ","……ごめんね"],
   },
   quiet: {
-    normal: ["……動けない","……間に合わない","……"],
+    standard: ["……動けない","……間に合わない","……"],
     polite: ["……動けません","……届きません","……ごめんなさい"],
     seductive: ["……動けない、わ","……届かない","……ごめん"],
     delinquent: ["……動けねえ","……届かねえ","……くそ"],
@@ -250,7 +250,7 @@ const BETRAYAL_LINES = {
     composed: ["……動けないよ","……届かないか","……ごめん"],
   },
   shy: {
-    normal: ["う、動けない…","間に合わない…！","…ごめん…"],
+    standard: ["う、動けない…","間に合わない…！","…ごめん…"],
     polite: ["う、動けません…","間に合いません…！","…ごめんなさい…"],
     seductive: ["う、動けない…の…","間に合わない…っ","…ごめんね…"],
     delinquent: ["う、動けねえ…","間に合わねえ…！","…わりぃ…"],
@@ -259,7 +259,7 @@ const BETRAYAL_LINES = {
     composed: ["…う、動けないよ…","…間に合わない、か…","…ごめんね…"],
   },
   emotional: {
-    normal: ["嘘…動けないっ","間に合わないっ…！","ごめん…ごめんっ…！"],
+    standard: ["嘘…動けないっ","間に合わないっ…！","ごめん…ごめんっ…！"],
     polite: ["嘘…動けませんっ","間に合いませんっ…！","ごめんなさいっ…ごめんっ…！"],
     seductive: ["嘘…動けないっ…！","間に合わないっ…！","ごめん…ごめんねっ…！"],
     delinquent: ["嘘だろ…動けねえっ","間に合わねえっ…！","わりぃ…わりぃっ…！"],
@@ -314,7 +314,7 @@ const DOUBLE_TEAM_FINISH_COMMENTARY_LINES = [
 // T2: 試合完了時の勝利者セリフ (パートナー言及必須、{partner} プレースホルダ)。[personality][archetype][2本]
 const TAG_MATCH_WIN_LINES = {
   normal: {
-    normal: [
+    standard: [
       "{partner}、ありがとう。二人だから勝てたよ。",
       "やった…{partner}となら勝てるって、信じてた！",
     ],
@@ -344,7 +344,7 @@ const TAG_MATCH_WIN_LINES = {
     ],
   },
   earnest: {
-    normal: [
+    standard: [
       "{partner}、あなたを信じてよかった。この勝ち、二人のものだよ。",
       "{partner}が繋いでくれたから…最後まで諦めずに済んだ。",
     ],
@@ -374,7 +374,7 @@ const TAG_MATCH_WIN_LINES = {
     ],
   },
   bold: {
-    normal: [
+    standard: [
       "やったな{partner}！ 二人揃えば、負ける気がしないよ！",
       "見たか、これが{partner}と私のタッグの力だ！",
     ],
@@ -404,7 +404,7 @@ const TAG_MATCH_WIN_LINES = {
     ],
   },
   easygoing: {
-    normal: [
+    standard: [
       "{partner}〜お疲れさま！ 私たち、息ぴったりだったね〜",
       "勝っちゃった。{partner}と組むの、やっぱ楽しい〜",
     ],
@@ -434,7 +434,7 @@ const TAG_MATCH_WIN_LINES = {
     ],
   },
   quiet: {
-    normal: [
+    standard: [
       "…{partner}、ありがとう。",
       "…{partner}と、だから勝てた。",
     ],
@@ -464,7 +464,7 @@ const TAG_MATCH_WIN_LINES = {
     ],
   },
   shy: {
-    normal: [
+    standard: [
       "{partner}…ほ、本当に…ありがとう…！",
       "わ、私…頑張れた…{partner}のおかげ…！",
     ],
@@ -494,7 +494,7 @@ const TAG_MATCH_WIN_LINES = {
     ],
   },
   emotional: {
-    normal: [
+    standard: [
       "{partner}っ…！ ありがとう…二人で、勝ったよ…！",
       "絶対勝つって、約束したもんね…{partner}…っ！",
     ],
@@ -528,7 +528,7 @@ const TAG_MATCH_WIN_LINES = {
 // T2: 敗北者セリフ (パートナーへの詫び/責任/次への意欲)。[personality][archetype][2本]
 const TAG_MATCH_LOSS_LINES = {
   normal: {
-    normal: [
+    standard: [
       "{partner}…ごめん。私が決めきれてたら…",
       "{partner}、悔しいね。次は絶対、勝とう。",
     ],
@@ -558,7 +558,7 @@ const TAG_MATCH_LOSS_LINES = {
     ],
   },
   earnest: {
-    normal: [
+    standard: [
       "{partner}…私の力不足だ。あなたを勝たせてあげられなかった…",
       "ここまで繋いでくれたのに…{partner}、ごめん。",
     ],
@@ -588,7 +588,7 @@ const TAG_MATCH_LOSS_LINES = {
     ],
   },
   bold: {
-    normal: [
+    standard: [
       "くそっ…{partner}、悪い。私のミスだ。次は絶対だ。",
       "負けたままでいられるか…{partner}、次は倍返しだ！",
     ],
@@ -618,7 +618,7 @@ const TAG_MATCH_LOSS_LINES = {
     ],
   },
   easygoing: {
-    normal: [
+    standard: [
       "{partner}〜ごめんね…私、決められちゃった…",
       "あちゃ〜負けちゃった…でも{partner}、次は頑張るね。",
     ],
@@ -648,7 +648,7 @@ const TAG_MATCH_LOSS_LINES = {
     ],
   },
   quiet: {
-    normal: [
+    standard: [
       "…{partner}、ごめん。",
       "…悔しい。{partner}にも、申し訳ない。",
     ],
@@ -678,7 +678,7 @@ const TAG_MATCH_LOSS_LINES = {
     ],
   },
   shy: {
-    normal: [
+    standard: [
       "{partner}…ご、ごめん…私のせいで…",
       "つ、次は…絶対、{partner}を勝たせる…！",
     ],
@@ -708,7 +708,7 @@ const TAG_MATCH_LOSS_LINES = {
     ],
   },
   emotional: {
-    normal: [
+    standard: [
       "{partner}っ…ごめんっ…ごめんねっ…！",
       "次は絶対…絶対勝つからっ…！ {partner}…！",
     ],
@@ -755,12 +755,13 @@ function _tplTagLine(str, vars) {
   return String(str).replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null ? vars[k] : m));
 }
 // [personality][archetype] 二軸テーブルからフォールバック連鎖で配列を取り出す。
-// _getCutinLines (battle-engine-main.js) と同じ流儀: (T[personality]||T.normal) → (byP[archetype]||byP.normal)
+// _getCutinLines (battle-engine-main.js) と同じ流儀: (T[personality]||T.normal) → (byP[archetype]||byP.standard)
+// 性格の既定は 'normal'、アーキタイプの既定は 'standard'(旧 'normal')。同名の別物なので注意。
 function _tagLineArrFor(table, fighter) {
   const p = (fighter && fighter.personality) || 'normal';
-  const a = (fighter && fighter.archetype) || 'normal';
+  const a = (fighter && fighter.archetype) || 'standard';
   const byP = table[p] || table.normal;
-  return byP[a] || byP.normal;
+  return byP[a] || byP.standard;
 }
 function pickTagWinLine(fighter, partnerName) {
   const arr = _tagLineArrFor(TAG_MATCH_WIN_LINES, fighter);
