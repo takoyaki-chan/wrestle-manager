@@ -290,7 +290,8 @@ section('19e-0. 開催の確認関数が、外から呼んでも落ちない（v
   const ids = [...new Set(body.match(/_[a-zA-Z][a-zA-Z0-9_]*/g) || [])];
   ids.forEach(n => {
     const top = new RegExp('^(function|const|let|var)\\s+' + n + '\\b', 'm').test(uiRender);
-    const local = new RegExp('(const|let|var)\\s+' + n + '\\b').test(body);
+    // catch (_e) も宣言。ここを見ないと try/catch を書いただけで誤検出する
+    const local = new RegExp('((const|let|var)\\s+|catch\\s*\\(\\s*)' + n + '\\b').test(body);
     assert.ok(top || local,
       'confirmExecuteShow が ' + n + ' を参照しているが、トップレベルにも本体にも宣言が無い。'
       + '別関数のローカル変数を掴んでいる＝押しても無反応になる');
@@ -303,7 +304,7 @@ section('19e. 興行の開催は最後に一度だけ確認する（U7 ◆2）',
   assert.ok(/function confirmExecuteShow/.test(uiRender), 'confirmExecuteShow が無い');
   assert.ok(/onclick="confirmExecuteShow\(\)"/.test(uiRender),
     '開催ボタンが executeShow() を直接呼んでいる。取り消せない操作なので確認を挟むこと');
-  const body = around(uiRender, 'function confirmExecuteShow', 0, 1600);
+  const body = around(uiRender, 'function confirmExecuteShow', 0, 2600);
   assert.ok(/showConfirm\(/.test(body), '共通の確認モーダルを使っていない');
   assert.ok(/メインイベント/.test(body), '何を開催するのかが確認文に出ていない');
   // 枠を1つ触るたびの確認は入れない（だるいので最後に一度だけ）

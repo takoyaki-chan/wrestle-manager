@@ -4438,6 +4438,20 @@ function _applyAutoTitleMatch(card) {
 
 function toggleTitle(slotIndex) {
   if (!G.titleEstablished) { alert('団体王座はまだ設立されていません（興行3回・人気15・ロスター5人で設立）'); return; }
+  // 画面に出ている枠と G.showCard がずれていたら、**例外で落とさず描き直して合わせる**。
+  // ここで throw すると以降のクリックが全部死に、興行開催ボタンまで効かなくなる
+  // (2026-07-31 Keisuke 実機: isTitle の TypeError と「開催ボタンが押せない」が同時発生)。
+  if (!G.showCard || !G.showCard[slotIndex]) {
+    try {
+      console.warn('[WM][showCard] toggleTitle: 画面の枠が G.showCard に無い', {
+        slotIndex, cardLength: (G.showCard || []).length,
+        season: G.season, week: G.week, weekPhase: G.weekPhase, venue: G.showVenue,
+      });
+    } catch (_e) {}
+    Audio.play('error');
+    if (typeof renderShowPrep === 'function') renderShowPrep();
+    return;
+  }
   const m = G.showCard[slotIndex];
   // v1.2: タイトルONにする場合のみクールダウンチェック（OFFにする場合はスキップ）
   if (!m.isTitle) {

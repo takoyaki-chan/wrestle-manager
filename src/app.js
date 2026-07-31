@@ -6294,6 +6294,12 @@ const App = {
 
   // Toggle title match
   toggleTitleMatch(slotIndex) {
+    if (!G.showCard || !G.showCard[slotIndex]) {
+      // 呼び出し元(toggleTitle)でも見ているが、ここが最後の砦。落とさない。
+      Audio.play('error');
+      if (typeof renderShowPrep === 'function') renderShowPrep();
+      return;
+    }
     if (G.showCard?.[slotIndex]?._crMatchLocked) {
       Audio.play('error'); showToast('⚔ 挑戦試合の固定枠はタイトル戦に変更できません', 3000); return;
     }
@@ -7170,6 +7176,16 @@ const App = {
     if (b2 && b2.watching) {
       b2.watching = false;
       App.b2SkipMatch();
+      return;
+    }
+    // 派閥内対決(Common-1)。ここだけ復帰の枝が抜けていた(2026-07-31 監査で検出)。
+    // 抜けていると中断してもwatchingが立ったままで、後から遅れて届いた
+    // iframe の結果がもう一度 _finalizeCommon1Match を走らせ、MQ記録・絆・因縁・
+    // 派閥ポイントが**二重に入る**。数字が黙って狂うので見つけにくい。
+    const c1 = App._common1Preview;
+    if (c1 && c1.watching) {
+      c1.watching = false;
+      App.common1SkipMatch();
       return;
     }
   },
@@ -10255,8 +10271,19 @@ const App = {
     // MQ再設計P4 §5.3: 大ニュース週頭通知（他のポップアップの後に鳴らす）
     App._maybeShowBigNewsPopup(1200);
 
-    // v1.0: Auto-advance on non-monthly weeks (same as processWeek)
-    if (App._tryAutoAdvance()) return;
+    // 週次処理と次週遷移は1クリック内で完結させる(processWeek と同じ形)。
+    //
+    // **task-48(b33519b)の取りこぼし。** あの修正で _tryAutoAdvance は「常に true を返し、
+    // 描画は一切しない」形になり、呼び出し側が続けて advanceFromWeekSummary() を
+    // 呼ぶ契約に変わった。processWeek 側だけ直され、ここは旧来の
+    // `if (App._tryAutoAdvance()) return;` が残っていたため、**毎週の興行結果を
+    // 閉じるたびに状態だけ weekSummary へ進んで画面が前のまま**になっていた。
+    // プレイヤーには「閉じても何も起きない」ように見え、別タブへ移って戻る、
+    // あるいはもう一度押す、で初めて先へ進めた(2026-07-31 Keisuke 報告)。
+    if (App._tryAutoAdvance()) {
+      App.advanceFromWeekSummary();
+      return;
+    }
     showScreen('week');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
@@ -13204,6 +13231,9 @@ const App = {
   common1SkipMatch() {
     const c1 = App._common1Preview;
     if (!c1) return;
+    // ここで観戦フラグを必ず降ろす。降ろさないと、放置された iframe から後で届く
+    // 結果を message ハンドラが拾い、同じ試合の精算が二度走る(B2/B3 と同じ作法)。
+    c1.watching = false;
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0F1));
     const rawResult = Engine.battle.simulateMatch(c1.fighterA, c1.fighterB, rng, 2);
     const finalized = Engine.mq.finalize(G, rawResult, {

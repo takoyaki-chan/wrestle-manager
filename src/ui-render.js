@@ -2687,7 +2687,25 @@ function _spIsValidSlot(m) {
  *  **開催は取り消せない**ので最後に一度だけ確かめる（2026-07-26 Keisuke）。 */
 function confirmExecuteShow() {
   const valid = (G.showCard || []).filter(m => _spIsValidSlot(m));
-  if (valid.length === 0) { Audio.play('error'); return; }
+  if (valid.length === 0) {
+    // 以前はエラー音だけで理由を出さなかったため、画面にカードが見えているのに
+    // 「押しても音が鳴るだけで進まない」状態になった(2026-07-31 Keisuke 実機)。
+    // 画面と G.showCard がずれている場合もここに来るので、描き直して復帰させる。
+    Audio.play('error');
+    try {
+      console.warn('[WM][showCard] confirmExecuteShow: 有効な試合が0', {
+        cardLength: (G.showCard || []).length, season: G.season, week: G.week,
+        weekPhase: G.weekPhase, venue: G.showVenue,
+      });
+    } catch (_e) {}
+    if (typeof showToast === 'function') {
+      showToast((G.showCard || []).length === 0
+        ? '⚠ カードが読み込めていません。画面を作り直しました。もう一度お試しください'
+        : '⚠ 両方の選手が埋まっている試合が1つもありません', 4000);
+    }
+    renderShowPrep();
+    return;
+  }
   const nameOf = id => {
     const f = (typeof findFighter === 'function') ? findFighter(Number(id)) : null;
     return f ? f.name : '?';
