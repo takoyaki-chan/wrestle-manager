@@ -11469,10 +11469,27 @@ const App = {
     // 年度末ブリッジのステッパーもボタンの文言も1つ前のままになる
     // （実機で offWeek 1 なのに「0/4」「シーズンレポートへ →」が出たままだった）。
     // 演出はこの後オーバーレイで重なるので、先に描き直しても手順は変わらない。
+    // 「表彰式より先に総括が背面に見える」問題(2026-07-31)はここを止めて解決しない。
+    // 止めると 2026-07-27 に直した**ヘッダーとステッパーが1つ前のまま**が再発する。
+    // 総括だけを伏せるのが正しく、その判定は renderWeekScreen 側の pendingAwards で行う。
     refreshAll();
 
     if (aiAlerts.length > 0) {
-      showAIGrowthAlerts(aiAlerts, () => App._safeAwardsChain());
+      // ポップアップ解消待ちには時限保険を必ず併設する。キュー側の callback が失われても
+      // 表彰式の予約へ進め、年末進行を永久停止させない。
+      let awardsChainStarted = false;
+      const startAwardsChain = () => {
+        if (awardsChainStarted) return;
+        awardsChainStarted = true;
+        App._safeAwardsChain();
+      };
+      showAIGrowthAlerts(aiAlerts, startAwardsChain);
+      setTimeout(() => {
+        if (!awardsChainStarted) {
+          console.warn('[WM] awards chain safety net fired — continuing without popup callback');
+          startAwardsChain();
+        }
+      }, Math.max(8000, aiAlerts.length * 4000));
     } else {
       // v1.4: 引退者なしでも新聞パネル→エンディングチェック→表彰式チェック
       App._safeAwardsChain();

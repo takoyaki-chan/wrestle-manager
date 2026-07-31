@@ -6886,6 +6886,16 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     ${sub ? `<div class="ptv-telop-sub">${sub}</div>` : ''}
   </div>`;
   const _hint = '<div class="ptv-hint">クリックで進む ▶</div>';
+  const _resultSide = (fighter, otherF, outcome, size, showWinLabel) => {
+    const mark = outcome === 'winner' ? '○' : outcome === 'loser' ? '×' : '△';
+    const role = outcome === 'winner' ? '勝者' : outcome === 'loser' ? '敗者' : '引き分け';
+    return `<div class="ptv-result-fighter is-${outcome}">
+      <div class="ptv-result-mark" aria-label="${role}">${mark}</div>
+      ${_face(fighter, `ptv-result-upper ptv-result-upper--${size}`)}
+      <div class="ptv-result-name ptv-flash-name">${escHtml(fighter.name)}${showWinLabel ? '<span class="ptv-result-win">WIN</span>' : ''}</div>
+      <div class="ptv-result-org">${_ptvOrgTag(fighter, otherF)}${escHtml(fighter._ppvOrgName || '')}</div>
+    </div>`;
+  };
 
   const scenes = [];
 
@@ -6929,6 +6939,12 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     const m = card[di], r = results[di];
     const isDraw = r.winner === 'draw';
     const winF = r.winner === 'left' ? m.left : r.winner === 'right' ? m.right : null;
+    const loseF = winF === m.left ? m.right : m.left;
+    // baseline §2 は並置した2人を同じ段に揃えるが、PPV速報では勝敗を瞬時に読ませるという
+    // Keisuke 指示を優先し、勝者だけを M、敗者を S に一段下げる意図的な逸脱とする。
+    const resultBlock = isDraw
+      ? `<div class="ptv-result-fighters is-draw">${_resultSide(m.left, m.right, 'draw', 'm', false)}<div class="ptv-result-divider">DRAW</div>${_resultSide(m.right, m.left, 'draw', 'm', false)}</div>`
+      : `<div class="ptv-result-fighters">${_resultSide(winF, loseF, 'winner', 'm', true)}<div class="ptv-result-divider">RESULT</div>${_resultSide(loseF, winF, 'loser', 's', false)}</div>`;
     const dots = underIdxs.map((_, j) => `<span class="ptv-dot ${j <= pos ? 'done' : ''}"></span>`).join('')
       + (hasSummit ? '<span class="ptv-dot"></span>' : '');
     scenes.push({
@@ -6936,8 +6952,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       html: _chrome('LIVE') + `<div class="ptv-flash">
         <div class="ptv-flash-band">
           <div class="ptv-flash-kicker">RESULT — 第${pos + 1}試合</div>
-          ${winF ? `<div class="ptv-flash-win">${_face(winF)}<div class="ptv-flash-name">${escHtml(winF.name)}<small>${_ptvOrgTag(winF, winF === m.left ? m.right : m.left)}${escHtml(winF._ppvOrgName || '')}</small></div></div>`
-                 : `<div class="ptv-flash-win"><div class="ptv-flash-name">決着つかず<small>${escHtml(m.left.name)} vs ${escHtml(m.right.name)}</small></div></div>`}
+          ${resultBlock}
           <div class="ptv-flash-detail">${r.turns || 0}ターン ${isDraw ? '' : `<b>${escHtml(Engine.formatFinish(r.finType, r.finMove))}</b>`} ／ MQ <b>${r.mq}</b> ${_pbStars(r.mq)}</div>
         </div>
         <div class="ptv-commentary"><div class="ptv-who">実況</div>「${_liveLine(r)}」</div>
@@ -6952,11 +6967,15 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     const m = card[summitIdx], r = results[summitIdx];
     const isDraw = r.winner === 'draw';
     const winF = r.winner === 'left' ? m.left : r.winner === 'right' ? m.right : null;
+    const loseF = winF === m.left ? m.right : m.left;
     const vsBlock = `<div class="ptv-summit-vs">
         <div>${_face(m.left, 'is-big')}<div class="ptv-sname">${escHtml(m.left.name)}</div><div class="ptv-sorg">${_ptvOrgTag(m.left, m.right)}${escHtml(m.left._ppvOrgName || '')}</div></div>
         <div class="ptv-vs-big">VS</div>
         <div>${_face(m.right, 'is-big')}<div class="ptv-sname">${escHtml(m.right.name)}</div><div class="ptv-sorg">${_ptvOrgTag(m.right, m.left)}${escHtml(m.right._ppvOrgName || '')}</div></div>
       </div>`;
+    const summitResultBlock = isDraw
+      ? `<div class="ptv-result-fighters ptv-summit-result-fighters is-draw">${_resultSide(m.left, m.right, 'draw', 'xl', false)}<div class="ptv-result-divider">DRAW</div>${_resultSide(m.right, m.left, 'draw', 'xl', false)}</div>`
+      : `<div class="ptv-result-fighters ptv-summit-result-fighters">${_resultSide(winF, loseF, 'winner', 'xl', true)}<div class="ptv-result-divider">RESULT</div>${_resultSide(loseF, winF, 'loser', 'm', false)}</div>`;
     scenes.push({
       bgm: 'grandFinalMain',
       html: _chrome('LIVE') + `<div class="ptv-summit">
@@ -6966,13 +6985,14 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       </div>` + _hint + _telop('中継', '頂上決戦 まもなくゴング', '実況席にも、張り詰めた空気。'),
     });
     scenes.push({
-      bgm: 'grandFinalMain',
+      bgm: null,
       se: 'rs04',
+      stopBgmBeforeSe: true,
       html: _chrome('LIVE') + `<div class="ptv-summit">
         <div class="ptv-summit-kicker">MAIN EVENT ─ 頂上決戦</div>
-        ${vsBlock}
+        ${summitResultBlock}
         <div class="ptv-summit-result">${r.turns || 0}ターンの死闘の末に——
-          <div class="ptv-win-line">${isDraw ? '⚖ 両者譲らず、決着つかず' : `🏆 ${escHtml(winF.name)}、業界の頂点へ`}</div>
+          <div class="ptv-win-line">${isDraw ? '△ 両者譲らず、DRAW' : `🏆 ${escHtml(winF.name)}、業界の頂点へ`}</div>
         </div>
       </div>` + _hint + _telop('速報', `頂上決戦 決着 — MQ ${r.mq} ${_pbStars(r.mq)}`, isDraw ? '決着は、来年に持ち越された。' : 'これが、頂点の景色。'),
     });
@@ -6996,7 +7016,10 @@ function renderPPVTvBroadcast(card, results, ppvName) {
   const show = () => {
     const sc = scenes[sceneIdx];
     box.innerHTML = `<div class="ptv-tv"><div class="ptv-screen">${sc.html}</div></div>`;
-    if (sc.bgm) {
+    if (sc.stopBgmBeforeSe) {
+      // 決着のファンファーレを主役にする。以後、放送終了までBGMは再開しない。
+      try { Audio.bgm.stop(); } catch (e) {}
+    } else if (sc.bgm) {
       try { Audio.bgm.playStage(sc.bgm); } catch (e) {}
     } else {
       // 放送終了は無音。直前の頂上決戦曲を次の画面へ持ち越さない。
