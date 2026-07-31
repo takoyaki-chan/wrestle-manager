@@ -8327,7 +8327,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-sub-stories { margin-top: 16px; padding-top: 14px; border-top: 3px double rgba(120,84,39,0.35); }
 .np-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .np-sub { display: flex; gap: 10px; padding-bottom: 12px; border-bottom: 1px dashed rgba(120,84,39,0.25); }
-.np-sub-photo { width: 72px; height: 72px; border-radius: 6px; flex-shrink: 0; background-size: cover; background-position: center top; background-color: #2a1a10; border: 2px solid rgba(120,84,39,0.4); box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
+.np-sub-photo { width: 46px; height: 66px; border-radius: 6px; flex-shrink: 0; background-size: cover; background-position: center top; background-color: #2a1a10; border: 2px solid rgba(120,84,39,0.4); box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
+/* task-54: 複数人サブ記事の隊列（mockup-baseline §2-B 案C）。枠は群の外側に1つだけ、
+   個々の画像には額縁を付けず18px重ねる。落ち影は drop-shadow（box-shadowは矩形に付くため使わない） */
+.np-sub-photo-group { display: flex; align-items: flex-end; flex-shrink: 0; position: relative; border-radius: 6px; background-color: #2a1a10; border: 2px solid rgba(120,84,39,0.4); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+.np-sub-photo-member { width: 46px; height: 66px; flex-shrink: 0; position: relative; cursor: pointer; }
+.np-sub-photo-member + .np-sub-photo-member { margin-left: -18px; }
+.np-sub-photo-member img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2)); }
+.np-sub-photo-more { position: absolute; right: -4px; bottom: -4px; background: rgba(26,13,4,0.85); color: #f0d48b; font-family: 'Bebas Neue', sans-serif; font-size: 11px; line-height: 1; padding: 3px 5px; border-radius: 9px; border: 1px solid rgba(212,168,67,0.5); z-index: 5; }
 .np-empty-substory { padding: 18px 14px; text-align: center; color: #7a5b32; font-style: italic; font-size: 11.5px; line-height: 1.6; background: rgba(248,238,210,0.4); border: 1px dashed rgba(120,84,39,0.25); border-radius: 4px; }
 .np-history-summary-row { padding: 10px 12px; background: rgba(248,238,210,0.5); border: 1px solid rgba(120,84,39,0.2); border-radius: 4px; font-size: 12px; color: #3a2c18; line-height: 1.7; }
 .np-history-summary-row strong { color: #6a4a10; font-weight: 800; }

@@ -5393,8 +5393,11 @@ function startDraftNegotiation() {
   };
 
   // ── 非選択候補を先にバックグラウンド処理 ──
-  const draftSummary = { playerAcquired: [], aiAcquired: {}, flowThrough: [] };
-  for (const orgId of ['org_s', 'org_a', 'org_b']) draftSummary.aiAcquired[orgId] = [];
+  // task-54: 新聞のサブ記事に顔を出すため、氏名と**並行して選手IDも持つ**。
+  // 既存の消費側(見出し・本文の氏名羅列)が文字列配列を前提にしているので、
+  // 要素の型は変えずに ID 用の配列を足す形にする。
+  const draftSummary = { playerAcquired: [], aiAcquired: {}, aiAcquiredIds: {}, flowThrough: [], flowThroughIds: [] };
+  for (const orgId of ['org_s', 'org_a', 'org_b']) { draftSummary.aiAcquired[orgId] = []; draftSummary.aiAcquiredIds[orgId] = []; }
 
   const playerCandidateQueue = []; // 交渉UIに出す候補
   const soloConfirmQueue = [];     // 単独指名確認候補
@@ -5435,17 +5438,21 @@ function startDraftNegotiation() {
           { const reg = Engine.mq.registerBignewsHire(G, bgAiFighter); G = reg.state; bgAiFighter = reg.fighter; }
           Engine.rival.pushUniqueFighter(orgData.roster, bgAiFighter);
           draftSummary.aiAcquired[wOrg].push(clean.name);
+          if (!draftSummary.aiAcquiredIds) draftSummary.aiAcquiredIds = {};
+          (draftSummary.aiAcquiredIds[wOrg] = draftSummary.aiAcquiredIds[wOrg] || []).push(clean.id);
           log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[wOrg] || wOrg}と電撃契約`);
         } else {
           // 流札 → dormantPoolに返却
           returnToPool.push(cand.id);
           draftSummary.flowThrough.push(clean.name);
+          (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
           log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
         }
       } else {
         // 流札 → dormantPoolに返却
         returnToPool.push(cand.id);
         draftSummary.flowThrough.push(clean.name);
+        (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
         log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
       }
     } else if (!isSelected && aiParticipants.length === 1) {
@@ -5458,17 +5465,21 @@ function startDraftNegotiation() {
         { const reg = Engine.mq.registerBignewsHire(G, soloAiFighter); G = reg.state; soloAiFighter = reg.fighter; }
         Engine.rival.pushUniqueFighter(orgData.roster, soloAiFighter);
         draftSummary.aiAcquired[winner].push(clean.name);
+        if (!draftSummary.aiAcquiredIds) draftSummary.aiAcquiredIds = {};
+        (draftSummary.aiAcquiredIds[winner] = draftSummary.aiAcquiredIds[winner] || []).push(clean.id);
         log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
       } else {
         // 流札 → dormantPoolに返却
         returnToPool.push(cand.id);
         draftSummary.flowThrough.push(clean.name);
+        (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
         log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
       }
     } else {
       // → 流札 → dormantPoolに返却
       returnToPool.push(cand.id);
       draftSummary.flowThrough.push(clean.name);
+      (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
       log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
     }
   }
@@ -5775,15 +5786,27 @@ function _queueDraftIndustryNews(state, draftNewsPage, summary) {
       push('draftPlayerResult', ports.map(p => p.name), {
         org: state.orgName || 'プレイヤー団体',
         characterId: ports[0] ? ports[0].id : null,
-        characterIds: ports.slice(0, 2).map(p => p.id),
+        // 切り詰めはここでしない。紙面に何人まで載せるかは Engine.newspaper.generate が
+        // 決め、載り切らなかった人数は「+N」で示す(task-54)。
+        characterIds: ports.map(p => p.id).filter(id => Number.isInteger(id) && id > 0),
       });
     } else if (st.type === 'draftAiResult') {
       // 見出しから団体名を復元せず、本文(氏名の羅列)と見出しの団体名部分を分けて渡す
       const org = String(st.headline || '').split('、')[0];
-      push('draftAiResult', String(st.body || '').split('、').filter(Boolean), { org });
+      // task-54: ID を渡していなかったため、**他団体の新人記事だけ顔が出ていなかった**
+      const aiIds = (st.ids || []).filter(id => Number.isInteger(id) && id > 0);
+      push('draftAiResult', String(st.body || '').split('、').filter(Boolean), {
+        org,
+        characterId: aiIds[0] != null ? aiIds[0] : null,
+        characterIds: aiIds.length ? aiIds : null,
+      });
     } else if (st.type === 'draftFlowThrough') {
       const names = String(st.body || '').split(' — ')[0].split('、').filter(Boolean);
-      push('draftFlowThrough', names, {});
+      const ftIds = (st.ids || []).filter(id => Number.isInteger(id) && id > 0);
+      push('draftFlowThrough', names, {
+        characterId: ftIds[0] != null ? ftIds[0] : null,
+        characterIds: ftIds.length ? ftIds : null,
+      });
     }
   }
   // 指名漏れゼロは「何も起きなかった」ではなく、それ自体が一行の記事になる
@@ -5826,6 +5849,9 @@ function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
         headline: `${ORG_NAMES[orgId]}、${allNames.length}名の新人を確保`,
         body: allNames.join('、'),
         type: 'draftAiResult',
+        // task-54: 新聞のサブ記事に顔を出すためのID。EMPRESS安全網(empExtra)は
+        // 氏名しか持たないので ID 側には入らない。載る顔は実際に取れたぶんだけ。
+        ids: [...(summary.aiAcquiredIds?.[orgId] || [])],
       });
     }
   }
@@ -5836,6 +5862,7 @@ function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
       headline: `指名漏れ${summary.flowThrough.length}名、フリー市場へ`,
       body: summary.flowThrough.join('、') + ' — 今後のFA市場で動きがあるか注目。',
       type: 'draftFlowThrough',
+      ids: [...(summary.flowThroughIds || [])],
     });
   }
 
@@ -5954,7 +5981,15 @@ function draftNextCandidate() {
       org_a: [...(dn.draftSummary?.aiAcquired?.org_a || [])],
       org_b: [...(dn.draftSummary?.aiAcquired?.org_b || [])],
     },
+    // 氏名と並行して持つ選手ID(task-54)。ここで写し忘れると、交渉を1件でも
+    // 挟んだ年だけ新聞の顔が消える。
+    aiAcquiredIds: {
+      org_s: [...(dn.draftSummary?.aiAcquiredIds?.org_s || [])],
+      org_a: [...(dn.draftSummary?.aiAcquiredIds?.org_a || [])],
+      org_b: [...(dn.draftSummary?.aiAcquiredIds?.org_b || [])],
+    },
     flowThrough: [...(dn.draftSummary?.flowThrough || [])],
+    flowThroughIds: [...(dn.draftSummary?.flowThroughIds || [])],
   };
   const log = [...(G.gameLog || [])];
   let newRoster = [...G.roster];
@@ -6043,16 +6078,20 @@ function draftNextCandidate() {
       Engine.rival.pushUniqueFighter(orgData.roster, aiFighter);
       if (!draftSummary.aiAcquired[ns.winner]) draftSummary.aiAcquired[ns.winner] = [];
       draftSummary.aiAcquired[ns.winner].push(clean.name);
+      if (!draftSummary.aiAcquiredIds) draftSummary.aiAcquiredIds = {};
+      (draftSummary.aiAcquiredIds[ns.winner] = draftSummary.aiAcquiredIds[ns.winner] || []).push(clean.id);
       const orgInfo = RIVAL_ORGS.find(o => o.id === ns.winner);
       log.push(`⚖ ドラフト: ${clean.name} [${tierLabel}] → ${orgInfo ? orgInfo.name : ns.winner} (${ns.finalBid}万 R${ns.round})`);
     } else {
       returnToPool = true;
       draftSummary.flowThrough.push(clean.name);
+      (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
       log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（団体枠上限）`);
     }
   } else {
     returnToPool = true;
     draftSummary.flowThrough.push(clean.name);
+    (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
     log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]`);
   }
 

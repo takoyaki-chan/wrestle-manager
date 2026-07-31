@@ -6593,6 +6593,35 @@ function _npPhotoBg(id) {
   const url = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
   return url ? `background-image: url('${url}');` : '';
 }
+// task-54: 業界ニュースのサブ記事写真。1人なら今までどおりの単発チップ、
+// 2人以上なら §2-B の隊列（枠は群の外側に1つだけ・18px重ね・drop-shadow）で見せる。
+// characterIds を持たない旧バックナンバー(characterId 単数のみ/どちらも無し)でも
+// 例外を出さず、従来どおりの単発チップ(または空枠)を描く。
+function _npSubPhotoHtml(ss) {
+  const ids = Array.isArray(ss.characterIds)
+    ? ss.characterIds.filter(id => Number.isInteger(id) && id > 0)
+    : [];
+  if (ids.length >= 2) {
+    const shown = ids.slice(0, 3);
+    const members = shown.map((id, idx) => {
+      const url = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
+      if (!url) return '';
+      const fighter = ALL_CHARS.find(c => c.id === id);
+      const z = shown.length - idx;
+      return `<div class="np-sub-photo-member" style="z-index:${z}" onclick="showFighterPopup(${id})"><img src="${url}" alt="${escHtml(fighter?.name || '')}"></div>`;
+    }).join('');
+    if (members) {
+      const totalCount = (typeof ss.characterCount === 'number' && ss.characterCount > ids.length)
+        ? ss.characterCount : ids.length;
+      const extra = totalCount - shown.length;
+      const moreHtml = extra > 0 ? `<div class="np-sub-photo-more">+${extra}</div>` : '';
+      return `<div class="np-sub-photo-group">${members}${moreHtml}</div>`;
+    }
+  }
+  const singleId = ids[0] || ss.characterId || null;
+  const photoBg = _npPhotoBg(singleId);
+  return `<div class="np-sub-photo" style="${photoBg}" ${singleId ? `onclick="showFighterPopup(${singleId})"` : ''}></div>`;
+}
 // MQ再設計P5補: 一面トップで2名を並び写真にする対象タイプ。
 // springTagResult(優勝ペア)とfatedRivals(同年代の逸材2名)が該当。
 function _npSpringTagStoryIds(state, story, seasonNum) {
@@ -6957,7 +6986,7 @@ function _npRenderPage1() {
   if (wp.subStories && wp.subStories.length > 0) {
     html += `<div class="np-sub-grid">`;
     wp.subStories.forEach((ss, idx) => {
-      const photoBg = _npPhotoBg(ss.characterId);
+      const subPhotoHtml = _npSubPhotoHtml(ss);
       const sitTag = ss.situation
         ? `<div class="np-sub-situation">${ss.situation}</div>`
         : '';
@@ -6968,7 +6997,7 @@ function _npRenderPage1() {
         ? `<div class="np-sub-org-line">${ssOrgEmblem}<span>${ssOrgName || ''}</span></div>`
         : '';
       html += `<div class="np-sub">
-        <div class="np-sub-photo" style="${photoBg}" ${ss.characterId ? `onclick="showFighterPopup(${ss.characterId})"` : ''}></div>
+        ${subPhotoHtml}
         <div style="flex:1;min-width:0">
           ${sitTag}
           ${ssOrgLineHtml}

@@ -1,5 +1,106 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 新聞サブ記事の写真 — 複数人記事の隊列化 + 正方形72pxを2:3チップへ（task-54・2026-07-31）
+
+### 対応内容
+
+- 原因は2つ。(1) サブ記事の写真枠(`.np-sub-photo`)が単数の `characterId` しか見ておらず、
+  ドラフト/新人系記事などが積んでいる `characterIds`（複数）を無視していた。
+  (2) 写真枠が 72×72 の正方形で、素材(upper)は 256×384(2:3) なので体が切れていた。
+- `src/ui-render.js` に `_npSubPhotoHtml(ss)` を新設。`characterIds` が2件以上あれば
+  `mockup-baseline-v0.1.md` §2-B の隊列（枠は外側に1つだけ／18px重ね／`filter:drop-shadow`／
+  個々に額縁なし）で最大3人を chip段(46×66)で並べ、元の人数が3人を超えるぶんは
+  右下に `+N` バッジを添える。1人分の情報しか無い記事（`characterIds` が1件、または旧形式の
+  `characterId` 単数のみ）は今までどおり単発チップ1枚（サイズだけ 72×72→46×66 に変更）。
+  どちらの情報も無い旧バックナンバーは例外を出さず空枠を描く。
+- `_npRenderPage1()` のサブ記事ループを `_npPhotoBg(ss.characterId)` 直書きから
+  `_npSubPhotoHtml(ss)` 呼び出しへ差し替え。
+- `src/index.html`: `.np-sub-photo` を 72×72→46×66(chip段)へ縮小。新規に
+  `.np-sub-photo-group`（群の外枠。既存 `.np-sub-photo` と同じ background/border/box-shadow
+  を再利用）、`.np-sub-photo-member`（46×66、個々には border/box-shadow を持たせない）、
+  `.np-sub-photo-member + .np-sub-photo-member { margin-left: -18px }`、
+  `.np-sub-photo-member img { filter: drop-shadow(...) }`、`.np-sub-photo-more`（+Nバッジ、
+  `.np-mvprace-rank-mini` と同じ配色を再利用）を追加。新規16進カラーは増やしていない
+  （すべて同ファイル内の既存色の再利用）。
+- `src/management.js` の `Engine.newspaper.generate`: `characterIds` の
+  `slice(0, 2)` を `slice(0, 3)` へ拡張し、元の人数を保持する `characterCount` フィールドを
+  story に追加（"+N" 表示に使う）。ただし現行の呼び出し元（`tenchosenSemiFinal` /
+  `tenchosenBestBout` / `fatedRivals` 等の `Engine.industryNews.push` 呼び出し、および
+  `src/ui-common.js` の `_queueDraftIndustryNews`）はどれも `characterIds` を2件までしか積んで
+  いないため、現状のデータでは3人目・"+N" は実際には発火しない（描画側の対応は完了しているが、
+  未検証＝到達不能。下記「質問」参照）。
+
+### 何人まで出すか、その根拠
+
+指示書 §B の「3人まで、超えたら+N」をそのまま採用。幅の実測（CSSの数値からの計算。
+375px実機スクリーンショットは未取得——後述）:
+
+- chip 46px・18px重ねなので、N人の隊列幅 ≈ `46 + (N-1)*28` (+ 群外枠のborder 4px)。
+  1人素材=46px、2人=74px(+border=78px)、3人=102px(+border=106px)。
+- モバイル（`@media (max-width: 820px)`）では既存の仕組みで `.np-sub-grid` が2列→1列に
+  落ちる（`src/index.html:8746` 付近、今回変更していない）ので、375px幅では `.np-sub` が
+  行全体の幅を使える。`.np-content` のモバイル左右パディングは18pxずつ（既存、同じmedia内）
+  なので本文幅 = 375-36 = 339px。3人隊列(106px)+`.np-sub`のgap(10px)=116pxを差し引いても
+  テキスト側に223px残り、11〜13px日本語の折り返しに十分（デスクトップ2列時の1カラム幅
+  357pxでも同様に3人隊列で241px残ることを確認）。横方向にはみ出す計算にはならなかった。
+- ただし上記はCSS値からの計算検証であり、**実機/ブラウザでの375pxスクリーンショットは
+  取得できていない**（本セッションのブラウザプレビューはプロジェクト外のファイルに対して
+  静的スナップショットしか返さず、プロジェクト内に一時ファイルを置いて試したが同様だった。
+  本プロジェクトの既定方針「UI確認はスクリーンショットではなくユーザーに委任する」に従い、
+  計算検証にとどめた）。**Keisuke に実機確認をお願いしたい。**
+
+### `characterIds` の slice を広げたか
+
+広げた（`slice(0, 2)`→`slice(0, 3)`）。元の人数は新設の `characterCount` フィールドに保持し、
+`_npSubPhotoHtml` 側で `characterCount > 表示数` のときだけ `+N` を出す設計にした。
+現行データでは3人以上を積む呼び出し元が無い（上述）ため、"+N" 分岐は現状のプレイでは
+到達しない。将来 `characterIds` を3件以上積む呼び出しが増えたときに描画側の変更なしで
+そのまま "+N" が機能する、という前方互換の実装。
+
+### 古いバックナンバーで壊れないことの確認方法
+
+`test/newspaper-sub-photo-test.js` のセクションD（D1〜D3）で、`_npPhotoBg`/`_npSubPhotoHtml`
+を `src/ui-render.js` から `vm` で実際に抜き出して実行し、(1) `characterIds` はあるが
+`getUpperUrl` が全滅するケース、(2) `characterId`/`characterIds` どちらも無いケース、
+(3) `characterIds` が空配列のケース、のすべてで例外を投げず単発チップの空枠に落ちることを
+検証している。
+
+### テスト
+
+- 新規 `test/newspaper-sub-photo-test.js`（20 sections、A〜F）:
+  1人/2人/3人ちょうど/3人+N/画像URL欠落/情報欠落のHTML出力、隊列の外枠1つ・個々に
+  border/box-shadow が無いこと・z-indexの重なり順、`.np-sub-photo` の46×66化、
+  `.np-sub-photo-group`/`-member`/`-more` のCSS構造（drop-shadow使用・box-shadow不使用・
+  18px負マージン）、375px用media queryに`.np-sub-grid`の1列フォールバックが残っていること、
+  新規16進カラーが既存パレット内の値の再利用であること、`management.js` の
+  slice(0,3)・characterCount 追加、をすべて実関数実行 or ソース正規表現で検証。
+- `node test/run-all.js`: **166/166 PASS**（既存165 + 新規1）。
+- テスト実行の副作用で `docs/stat-contribution-report.md` の実行時間表記だけが更新されたため
+  （`stat-contribution-test.js` が実行時に自身のレポートを書き直す既存の挙動）、
+  タスク対象外のためコミット前に `git checkout` で元に戻した。
+
+### 不変条件チェック（指示書§不変条件1〜8）
+
+1. 既存1人記事: 枠は72×72→46×66に変更(意図通り)、それ以外の構造(background-image/onclick経路)は不変 — 確認済み(テストA1)
+2. 一面トップの2名並び写真(`_npTopTagPhotoHtml`/`_npRenderBignewsTag`)は無変更 — diff確認済み
+3. アッパー画像を左右反転していない(`transform:scaleX`等を追加していない) — diff確認済み
+4. 新規16進カラーを追加していない(すべて同ファイル内の既存値の再利用) — テストE7で機械検証
+5. GameStateへの書き込みを増やしていない(表示関数のみ変更、`management.js`側もstoryオブジェクトの
+   フィールド追加のみでstate自体への新規キー追加ではない) — diff確認済み
+6. 375px幅で横方向にはみ出さない — **CSS値からの計算検証のみ**(上記参照)。実機/スクリーンショットでの確認は未実施
+7. バックナンバー(`characterIds`無し)が例外なく描けること — テストD1〜D3で確認済み
+8. `node test/run-all.js` 全PASS — 166/166 PASS確認済み
+
+### 質問(実装せず残した点)
+
+- 3人以上/`+N`表示は描画側の実装は完了しているが、`characterIds`を3件以上積む呼び出し元が
+  現状どこにも無い（`_queueDraftIndustryNews`が`src/ui-common.js`側で`slice(0, 2)`しており、
+  本タスクでは同ファイルを変更禁止とされていたため触っていない）。実際に3人以上のドラフト
+  記事で"+N"を見せたい場合、`_queueDraftIndustryNews`側のslice上限を広げる別タスクが必要。
+  優先度・要否の判断をお願いしたい。
+- 375pxでの実機確認（スクリーンショット）ができていない。計算上は問題ないはずだが、
+  実際のポートレート画像（透過PNG/webp）での見え方はKeisukeの実機確認をお願いしたい。
+
 ## 王座防衛の演出を派閥イベント級に落とす（task-51・2026-07-31）
 
 ### 対応内容

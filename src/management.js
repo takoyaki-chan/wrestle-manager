@@ -28324,7 +28324,11 @@ Engine.newspaper = {
           headline: rep(tpl.headline),
           body: rep(tpl.body),
           characterId: ev.characterId || null,
-          characterIds: Array.isArray(ev.characterIds) ? ev.characterIds.slice(0, 2) : null,
+          // task-54: サブ記事の隊列写真は最大3人。元の人数を characterCount に残し、
+          // 3人を超えたぶんは「+N」表示に使う(現状の呼び出し元はどれも2人までしか積まないため
+          // 常に extra=0 だが、将来3人以上を積む呼び出しが増えたときに描画側の変更なしで足せるようにする)
+          characterIds: Array.isArray(ev.characterIds) ? ev.characterIds.slice(0, 3) : null,
+          characterCount: Array.isArray(ev.characterIds) ? ev.characterIds.length : 0,
           // MQ再設計P4: 週頭ポップアップの号外リード文言展開など、テンプレ変数の生値を残す
           newsData: data,
           // 2026-07-27: 紙面に載らなかった業界ニュースを翌号へ持ち越すための元イベント位置。
