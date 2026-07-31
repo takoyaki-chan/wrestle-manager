@@ -119,6 +119,8 @@ const TABLE_MANIFEST = [
   T('RIVALRY_RESOLUTION_LINES', 'data.js', '03'),
   T('GOODRIVAL_RESOLUTION_LINES', 'data.js', '03'),
   T('BITTER_RESOLUTION_LINES', 'data.js', '03'),
+  // 2026-07-31 追加。宿怨の試合前セリフ(未登録だったため Excel に出ていなかった)
+  T('BITTER_PREMATCH_LINES', 'data.js', '03'),
   T('RIVALRY_MATCH_REACTION', 'data.js', '03'),
   T('UPSET_RIVALRY_LINES', 'data.js', '03'),
   T('WEEKLY_STORY_TICKER', 'data.js', '03'),
@@ -186,6 +188,8 @@ const TABLE_MANIFEST = [
   T('SLUMP_START_LINES', 'data.js', '08'),
   T('SLUMP_END_LINES', 'data.js', '08'),
   T('MOTIVATION_LOSS_LINES', 'data.js', '08'),
+  // 2026-07-31 追加。熱量の可視化(選手本人の一言)
+  T('HEAT_STATE_SELF_LINES', 'data.js', '08'),
   T('MOTIVATION_RECOVERY_LINES', 'data.js', '08'),
 
   // ---- 09: 表彰式/記録/ドーム到達 ----
@@ -203,6 +207,8 @@ const TABLE_MANIFEST = [
   T('NEWS_TICKER_TEMPLATES', 'data.js', '10'),
   T('NEWS_HEADLINE_TEMPLATES', 'data.js', '10'),
   T('BIG_NEWS_LEAD_LINES', 'data.js', '10'),
+  // 2026-07-31 追加。新年号(シーズン開幕号)のリード文
+  T('SEASON_OPENING_NEWS_LEAD_LINES', 'data.js', '10'),
   T('SEASON_REVIEW_LINES', 'data.js', '10'),
   T('NOTIF_EVENT_TEXTS', 'data.js', '10'),
   T('NOTIF_DIALOGUES', 'data.js', '10'),
@@ -276,6 +282,8 @@ const TABLE_MANIFEST = [
   T('INVITE_AWAKENING_LINES', 'coach-lines.js', '15'),
   T('COACH_VOICE_REPORT_LINES', 'coach-lines.js', '15'),
   T('COACH_VOICE_RETIRE_LINES', 'coach-lines.js', '15'),
+  // 2026-07-31 追加。熱量の可視化(コーチの観察コメント)
+  T('HEAT_STATE_COACH_LINES', 'data.js', '15'),
   T('COACH_VOICE_HIRE_LINES', 'coach-lines.js', '15'),
   T('COACH_VOICE_FIRE_LINES', 'coach-lines.js', '15'),
   T('COACH_VOICE_PRAISE_LINES', 'coach-lines.js', '15'),
@@ -309,9 +317,17 @@ const TABLE_MANIFEST = [
   T('Engine.draftNegotiation.NARRATION', 'draft-negotiation.js', '19'),
   T('Engine.scout.TIERS', 'management.js', '19'),
   T('Engine.draft.EVAL_TIERS', 'management.js', '19'),
+  // 2026-07-31 追加。契約成立時の加入第一声(スカウト/FA)。
+  // 未登録だったため書き出しにも反映にも乗っていなかった。
+  T('SCOUT_GREETING_LINES', 'data.js', '19'),
+  T('SCOUT_GREETING_GENERIC_LINES', 'data.js', '19'),
+  T('FA_GREETING_LINES', 'data.js', '19'),
+  T('FA_GREETING_GENERIC_LINES', 'data.js', '19'),
 
   // ---- 20: その他雰囲気テキスト ----
   T('TEAM_SPIRIT_TEXTS', 'data.js', '20'),
+  // 2026-07-31 追加。別れ(引退・解雇等)の見出し/リード文
+  T('FAREWELL_KIND_TEXT', 'data.js', '20'),
   T('PRE_WINDOW_TEXTS', 'data.js', '20'),
   T('LOCKER_AIR_TEXTS', 'data.js', '20'),
   T('ATMOSPHERE_TEXTS', 'data.js', '20'),
