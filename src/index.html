@@ -1648,6 +1648,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .aw-tag{padding:3px 10px;border:1px solid rgba(212,168,67,0.3);border-radius:2px;
   font-size:11px;color:var(--gold);letter-spacing:1px;background:rgba(212,168,67,0.06)}
 .aw-tag.neutral{border-color:rgba(255,255,255,0.15);color:#f0ead8;background:rgba(255,255,255,0.05)}
+/* -- 選手詳細を開ける名前・画像(task-53 C): style="" の二重付与を避けるため属性セレクタでcursorだけ示す -- */
+#awardsOverlay [data-fp-open]{cursor:pointer}
 /* -- Portrait -- */
 .portrait-main{width:172px;height:258px;background:#0d0d14;border:0;border-bottom:3px solid var(--gold);
   border-radius:var(--radius-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:64px;
@@ -1714,6 +1716,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .aw-team-lineup.is-many .aw-team-member:not(.is-center) .aw-team-portrait{width:132px;height:194px}
 .aw-team-portrait img{width:100%;height:100%;object-fit:cover;filter:drop-shadow(0 5px 8px rgba(0,0,0,.6))}
 .aw-team-name{font-family:'Noto Serif JP',serif;font-size:15px;font-weight:700;color:#f0ead8;letter-spacing:1px;margin-top:6px;white-space:nowrap}
+/* -- task-53 A: 隊列の吹き出しは切り捨てず縦に伸ばす。画像は18px重ねたまま(.aw-team-member + .aw-team-member)、
+   吹き出しだけは重ならないよう左右を空ける。上端は揃えない — .aw-team-lineup の align-items:flex-end による
+   列の下端揃えに任せる(吹き出しの高さが変わっても、画像から下の高さは全員同じなので下端基準なら自動で揃う) -- */
+.aw-team-member .aw-speech-slot{height:auto;min-height:52px}
+.aw-team-member .speech-text{display:block;-webkit-line-clamp:none;overflow:visible}
+.aw-team-lineup .aw-team-member .speech-bubble{width:calc(100% - 2 * var(--space-lg))}
 /* -- Champions -- */
 .champions-layout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:flex-end;gap:12px;margin-bottom:16px}
 .champ-slot{min-width:0;display:flex;align-items:flex-end;justify-content:center}
@@ -1731,6 +1739,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .rank-1 .rank-badge{font-size:12px;padding:3px 8px}
 .champ-name{font-family:'Noto Serif JP',serif;font-size:15px;font-weight:700;text-align:center;color:#f0ead8;margin-top:6px}
 .champ-defense{font-size:11px;color:#7a7060;text-align:center;margin-top:2px}
+/* -- task-53 B: どの団体の王者かをエンブレムだけでなく団体名でも示す。1位は選手名(champ-name 15px)より
+   一段大きい18pxで、2位・3位は選手名と同格の15px(いまエンブレムを36px/24pxで差を付けているのと同じ考え方) -- */
+.champ-org{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 6px;margin-top:4px}
+.champ-orgname{font-family:'Noto Serif JP',serif;font-weight:700;color:#f0ead8;letter-spacing:.5px;font-size:15px;max-width:100%;overflow-wrap:break-word;text-align:center}
+.rank-1 .champ-orgname{font-size:18px}
 .champ-quote{width:100%}
 .champ-quote .speech-bubble{width:100%;}
 /* -- MVP -- */

@@ -2497,6 +2497,16 @@ function _awPortrait(id, cssClass) {
   return ch ? ch.name.charAt(0) : '?';
 }
 
+// 表彰式: 選手名・選手画像から詳細を開けるようにする追加属性。
+// findFighter で引けない相手（id が無い/もうゲームのどこにも居ない）には付けない。
+// 押せそうに見えて無反応になるのが一番悪い（mockup-baseline-v0.1 §2-C）。
+// class="..." の後ろに続けて差し込む前提なので、既存のクラス文字列には触れない。
+// cursor は data-fp-open 属性に掛けたCSS側で示す（style="" の二重付与を避けるため）。
+function _awOpenAttr(id) {
+  if (!canOpenFighterPopup(id)) return '';
+  return ` onclick="event.stopPropagation();showFighterPopup(${Number(id)},'',true)" data-fp-open`;
+}
+
 // 団体エンブレム（ポートレート外、上部に配置）
 function _awOrgEmblem(orgName, isPlayerOrg, size) {
   size = size || 28;
@@ -2528,10 +2538,11 @@ function _awWinnerBlock(d, opts) {
   const isPlayerOrg = o.isPlayerOrg != null ? o.isPlayerOrg : d.isPlayerOrg;
   const nameClass = o.nameClass || 'aw-winner-name';
   const nameStyle = o.nameStyle ? ` style="${o.nameStyle}"` : '';
+  const openAttr = _awOpenAttr(d.id);
   return `<div class="aw-winner-block ${o.className || ''}">
     ${_awSpeechSlot(o.line)}
-    <div class="${portraitClass}">${o.glow ? '<div class="portrait-glow"></div>' : ''}${_awPortrait(d.id)}</div>
-    <div class="${nameClass}"${nameStyle}>${d.name}</div>
+    <div class="${portraitClass}"${openAttr}>${o.glow ? '<div class="portrait-glow"></div>' : ''}${_awPortrait(d.id)}</div>
+    <div class="${nameClass}"${nameStyle}${openAttr}>${d.name}</div>
     ${role ? `<div class="aw-winner-role">${role}</div>` : ''}
     ${orgName ? `<div class="aw-winner-emblem">${_awOrgEmblem(orgName, isPlayerOrg)}</div>` : ''}
   </div>`;
@@ -2854,10 +2865,11 @@ function _buildSeasonEventChampionAward(d, kind) {
   }
   const teamMembers = fighters.map((f, i) => {
     const center = many && i === Math.floor(fighters.length / 2);
+    const openAttr = _awOpenAttr(f.id);
     return `<div class="aw-team-member${center ? ' is-center' : ''}">
       ${_awSpeechSlot(lineFor(f))}
-      <div class="aw-team-portrait">${_awPortrait(f.id)}</div>
-      <div class="aw-team-name">${f.name}</div>
+      <div class="aw-team-portrait"${openAttr}>${_awPortrait(f.id)}</div>
+      <div class="aw-team-name"${openAttr}>${f.name}</div>
     </div>`;
   }).join('');
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">${cfg.icon}</span><span class="badge-jp">${cfg.label}</span></div>
@@ -2874,11 +2886,13 @@ function _buildBestMatchAward(d) {
   const line2 = _awardLine('bestMatch', f2.id);
   const f1OrgName = d.fighter1OrgName || d.orgName || '';
   const f2OrgName = d.fighter2OrgName || d.orgName || '';
+  const open1Attr = _awOpenAttr(f1.id);
+  const open2Attr = _awOpenAttr(f2.id);
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🎬</span><span class="badge-jp">ベストマッチ</span></div>
   <div class="bestmatch-fighters">
     <div class="fighter-side">
-      ${_awSpeechSlot(line1)}<div class="portrait-sm">${_awPortrait(f1.id)}</div>
-      <div class="fighter-name">${f1.name}</div>
+      ${_awSpeechSlot(line1)}<div class="portrait-sm"${open1Attr}>${_awPortrait(f1.id)}</div>
+      <div class="fighter-name"${open1Attr}>${f1.name}</div>
       <div class="fighter-org">${f1OrgName}</div>
       <div class="aw-winner-emblem">${_awOrgEmblem(f1OrgName, d.isPlayerOrg, 22)}</div>
     </div>
@@ -2891,8 +2905,8 @@ function _buildBestMatchAward(d) {
       <div class="vs-text">vs</div>
     </div>
     <div class="fighter-side">
-      ${_awSpeechSlot(line2)}<div class="portrait-sm">${_awPortrait(f2.id)}</div>
-      <div class="fighter-name">${f2.name}</div>
+      ${_awSpeechSlot(line2)}<div class="portrait-sm"${open2Attr}>${_awPortrait(f2.id)}</div>
+      <div class="fighter-name"${open2Attr}>${f2.name}</div>
       <div class="fighter-org">${f2OrgName}</div>
       <div class="aw-winner-emblem">${_awOrgEmblem(f2OrgName, false, 22)}</div>
     </div>
@@ -2911,12 +2925,15 @@ function _buildChampionsAward(champions) {
     const line = _awardLine('champion', c.id);
     const defText = c.defenses != null ? `防衛 ${c.defenses}回` : '';
     const isPlayer = c.isPlayer;
+    const openAttr = _awOpenAttr(c.id);
+    // 団体名はエンブレムと並べて出す。1位は2位・3位より一段大きく（.rank-1 .champ-orgname）、
+    // 自団体は既存の --gold で強調する（champ-defense の isPlayer 着色と同じ考え方）。
     return `<div class="champ-col rank-${rank}" id="aw-champ-rank${rank}">
       <div class="champ-quote">${_awSpeechSlot(line)}</div>
-      <div class="champ-portrait"><span class="rank-badge">${rank}位</span>${_awPortrait(c.id)}</div>
-      <div class="champ-name">${c.name}</div>
+      <div class="champ-portrait"${openAttr}><span class="rank-badge">${rank}位</span>${_awPortrait(c.id)}</div>
+      <div class="champ-name"${openAttr}>${c.name}</div>
       ${defText ? `<div class="champ-defense" ${isPlayer ? 'style="color:var(--gold)"' : ''}>${defText}</div>` : ''}
-      <div class="aw-winner-emblem">${_awOrgEmblem(c.orgName, c.isPlayer, rank === 1 ? 36 : 24)}</div>
+      <div class="champ-org">${_awOrgEmblem(c.orgName, c.isPlayer, rank === 1 ? 36 : 24)}<span class="champ-orgname"${isPlayer ? ' style="color:var(--gold)"' : ''}>${c.orgName}</span></div>
     </div>`;
   };
 
@@ -2996,13 +3013,14 @@ function _buildHallOfFame(d) {
   if (d.juniorTournamentWins > 0) statsLine.push(`JT優勝${d.juniorTournamentWins}回`);
   if (d.ppvMainEventWins > 0) statsLine.push(`PPV優勝${d.ppvMainEventWins}回`);
   const plaqueText = statsLine.join(' · ') || `${d.activeYears || ''}`;
+  const openAttr = _awOpenAttr(d.id);
 
   return `<div class="award-card" style="text-align:center"><div class="award-badge" style="justify-content:center"><span class="badge-icon">🏛️</span><span class="badge-jp">殿堂入り</span></div>
   <div class="hof-layout">
     <div class="aw-winner-block hof-winner-block">
       ${_awSpeechSlot(line)}
-      <div class="hof-portrait"><div class="hof-glow-outer"></div>${_awPortrait(d.id)}</div>
-      <div class="hof-name">${d.name}</div>
+      <div class="hof-portrait"${openAttr}><div class="hof-glow-outer"></div>${_awPortrait(d.id)}</div>
+      <div class="hof-name"${openAttr}>${d.name}</div>
       <div class="aw-winner-emblem">${_awOrgEmblem(d.orgName, d.orgId === 'player', 32)}</div>
     </div>
     <div class="hof-stars">${stars}</div>
