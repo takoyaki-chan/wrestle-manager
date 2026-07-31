@@ -5916,6 +5916,24 @@ function renderScoutEvent() {
   if (screenEl) screenEl.classList.remove('dn-dark-mode');
   if (panelEl) panelEl.classList.remove('dn-dark-panel');
 
+  // 行き止まり防止(2026-07-31)。weekPhase が scoutEvent の間、週送りはこの画面へ
+  // 押し戻され続ける。ここで指名も見送りもできない状態(候補や関心マークが欠けている)に
+  // なると、プレイヤーは**どこも押せないまま先へ進めなくなる**。
+  // 進めるボタンを必ず1つ出して逃げ道を残す。
+  if (G.weekPhase === 'scoutEvent' && !G._draftNegotiationStarted
+      && (candidates.length === 0 || !G._draftInterests)) {
+    const titleEl0 = document.getElementById('scoutEventTitle');
+    if (titleEl0) titleEl0.textContent = '⚖ ドラフト';
+    el.innerHTML = `<div style="max-width:520px;margin:24px auto;text-align:center">
+      <div style="font-size:14px;color:var(--text-main);margin-bottom:8px">今年のドラフトは行われませんでした。</div>
+      <div style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-bottom:20px">
+        指名できる候補の情報が届いていません。<br>このまま新シーズンの準備へ進みます。
+      </div>
+      <button class="btn btn-gold" onclick="App.scoutEventFinish()">▶ 経営画面へ</button>
+    </div>`;
+    return;
+  }
+
   // draft-negotiation-spec: ドラフト速報表示（_draftInterests がある場合）
   if (G._draftInterests && !G._draftNegotiationStarted) {
     const titleEl = document.getElementById('scoutEventTitle');

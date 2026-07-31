@@ -11302,11 +11302,45 @@ const App = {
       refreshAll();
       return;
     }
+    if (App._ensureDraftResolvedBeforeAdvance()) return;
     if (G.offSeason || G.weekPhase === 'offseason' || G.weekPhase === 'settled') {
       App.advanceWeek();
       return;
     }
     Audio.play('error');
+  },
+
+  /** ドラフト週を「行かないまま」通り過ぎさせないための保険(2026-07-31 Keisuke)。
+   *
+   *  他団体の指名処理は startDraftNegotiation(ui-common.js)の中の
+   *  「非選択候補のバックグラウンド処理」ループにしか無い。つまり**そこを通らずに
+   *  週が進むと、その年は業界全体が新人ゼロ**になる。
+   *  通常は weekPhase === 'scoutEvent' の間ずっと画面へ押し戻すので通れないが、
+   *  セーブの修復・phase の取りこぼし・将来の分岐追加で phase だけ外れることはあり得る。
+   *  候補が残ったまま週を進めようとしたら、**指名0名として裏で決着させてから**先へ進む。
+   *  @returns {boolean} 決着処理へ入ったら true(呼び出し側はそこで戻る) */
+  _ensureDraftResolvedBeforeAdvance() {
+    if (!G || !G.offSeason) return false;
+    const pending = Array.isArray(G.scoutCandidates) && G.scoutCandidates.length > 0;
+    if (!pending) return false;
+    if (G.weekPhase === 'scoutEvent') return false;   // 通常経路。画面側で処理する
+    if (G._draftNegotiation || G._draftResultPages) return false; // 進行中
+    try {
+      console.warn('[WM][draft] ドラフト未消化のまま週を進めようとした', {
+        season: G.season, offWeek: G.offWeek, weekPhase: G.weekPhase,
+        candidates: G.scoutCandidates.length,
+      });
+    } catch (_e) {}
+    if (!G._draftInterests || typeof startDraftNegotiation !== 'function') {
+      // 関心マークが無いと誰がどこを狙うか決められない(旧セーブ等)。
+      // 決着させられないので、候補を抱えたまま毎週ここへ来ないよう畳んでおく。
+      G = { ...G, scoutCandidates: null, _draftSelections: null, _draftInterests: null,
+            gameLog: [...(G.gameLog || []), '⚠ ドラフト情報が不完全だったため、今年の指名は行われませんでした'] };
+      return false;
+    }
+    G = { ...G, _draftSelections: [] };
+    startDraftNegotiation();
+    return true;
   },
 
   advanceWeek() {
@@ -11316,6 +11350,7 @@ const App = {
       refreshAll();
       return;
     }
+    if (App._ensureDraftResolvedBeforeAdvance()) return;
     Audio.play('tick');
     if (App.repairProgressionState('advanceWeek')) {
       try { Storage.autoSave(); } catch (_e) {}
