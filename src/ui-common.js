@@ -482,14 +482,18 @@ function _mdlDClose() {
 }
 
 /** A型 subject-stage: 選手の上半身 + 名前 + メタ + 仕切り線
- *  opts.small: 120x160 (default 140x184)
+ *  画像は **M 132×194 の一段だけ**(mockup-baseline §2-0 / §2、2026-07-31 Keisuke 決定)。
+ *  以前は既定 140×184 / small 120×160 の2種類があったが、どちらも 3:4 寄りで
+ *  2:3 素材(256×384)を cover で入れており、**脚側が約1割切れていた**。
+ *  `opts.small` は後方互換のため受け取るだけで**サイズには効かない** —
+ *  画面ごとに大小を選べると「その場で決める」が戻ってくるため、意図的に一本化した。
  *  opts.speech: 頭上吹き出しに表示するセリフ(文字列)
  */
 // opts.portraitUrl / opts.name / opts.meta を渡すと、選手以外(コーチなど)も
 // **同じ見た目で**立たせられる。見た目を2箇所に書くと必ず片方だけ古くなるので、
 // コーチ枚もこの関数を通すこと。
 function _mdlASubjectStage(fighter, bodyHtml, opts) {
-  const size = (opts && opts.small) ? { w: 120, h: 160 } : { w: 140, h: 184 };
+  const size = { w: 132, h: 194 }; // M段。opts.small は受け取るがサイズには効かない(上のコメント)
   const override = (opts && opts.portraitUrl !== undefined);
   let portraitHtml = '';
   if (fighter || override) {
