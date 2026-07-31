@@ -296,11 +296,11 @@ Engine.relationships = {
 
     // 全キャラを収集（プレイヤーロスター + AI団体 + FA + レンタル）
     const allChars = [];
-    (state.roster || []).forEach(c => allChars.push({ id: c.id, orgId: 'player', personality: c.personality || 'normal', archetype: c.archetype || 'normal', ovr: Engine.util.ov(c) }));
+    (state.roster || []).forEach(c => allChars.push({ id: c.id, orgId: 'player', personality: c.personality || 'normal', archetype: c.archetype || 'standard', ovr: Engine.util.ov(c) }));
     Object.entries(state.aiOrgs || {}).forEach(([orgId, org]) => {
-      (org.roster || []).forEach(c => allChars.push({ id: c.id, orgId, personality: c.personality || 'normal', archetype: c.archetype || 'normal', ovr: Engine.util.ov(c) }));
+      (org.roster || []).forEach(c => allChars.push({ id: c.id, orgId, personality: c.personality || 'normal', archetype: c.archetype || 'standard', ovr: Engine.util.ov(c) }));
     });
-    (state.freeAgents || []).forEach(c => allChars.push({ id: c.id, orgId: null, personality: c.personality || 'normal', archetype: c.archetype || 'normal', ovr: Engine.util.ov(c) }));
+    (state.freeAgents || []).forEach(c => allChars.push({ id: c.id, orgId: null, personality: c.personality || 'normal', archetype: c.archetype || 'standard', ovr: Engine.util.ov(c) }));
 
     // Step 1: ベース値 — 全ペア bond=50, rivalry=0
     for (let i = 0; i < allChars.length; i++) {
@@ -536,7 +536,7 @@ Engine.relationships = {
     const charInfoMap = new Map();
     (state.roster || []).forEach(c => charInfoMap.set(c.id, {
       personality: c.personality || 'normal',
-      archetype: c.archetype || 'normal',
+      archetype: c.archetype || 'standard',
       age: c.age || 20,
       style: c.style || 'Allround',
       affinityAxis: c.affinityAxis,
@@ -544,7 +544,7 @@ Engine.relationships = {
     Object.values(state.aiOrgs || {}).forEach(org => {
       (org.roster || []).forEach(c => charInfoMap.set(c.id, {
         personality: c.personality || 'normal',
-        archetype: c.archetype || 'normal',
+        archetype: c.archetype || 'standard',
         age: c.age || 20,
         style: c.style || 'Allround',
       }));
@@ -2607,7 +2607,7 @@ Engine.relationships = {
     // 'emotional'(archetype) も実コードに無く、personality 側 emotional で吸収
     ARCHETYPE_FORGIVENESS_BASE: {
       polite: 2, ojousama: 1, composed: 1, seductive: 0,
-      normal: 0, cool: -2, delinquent: -3,
+      standard: 0, cool: -2, delinquent: -3,
     },
 
     // ── 共通ユーティリティ ──
@@ -3642,7 +3642,7 @@ Engine.challengeRequest = {
    *  orgName を渡すと本文中の {org} を相手団体名に置換する（無指定時は「相手団体」で安全に埋める）。 */
   pickLine(fighter, scene, rng, orgName) {
     if (!fighter || typeof CHALLENGE_LINES === 'undefined') return null;
-    const archetype = fighter.archetype || 'normal';
+    const archetype = fighter.archetype || 'standard';
     const personality = fighter.personality || 'normal';
 
     const tryCell = (key) => {
@@ -3655,7 +3655,7 @@ Engine.challengeRequest = {
 
     const line = tryCell(`${archetype}_${personality}`)
       || tryCell(`${archetype}_normal`)
-      || tryCell('normal_normal');
+      || tryCell('standard_normal');
     if (!line) return null;
     return line.replace(/\{org\}/g, orgName || '相手団体');
   },
@@ -4284,7 +4284,7 @@ Engine.snapshot = {
     }
 
     const personality = (fighter && fighter.personality) || 'normal';
-    const archetype = (fighter && fighter.archetype) || 'normal';
+    const archetype = (fighter && fighter.archetype) || 'standard';
 
     const personalityBlock = voiceData[personality] || voiceData.normal;
     if (!personalityBlock) return '…';
@@ -4320,7 +4320,7 @@ Engine.relationships.personalityCompatibility = function(a, b) {
     a.personality || 'normal', b.personality || 'normal'
   );
   const aAdj = Engine.relationships._getArchetypeBondAdj(
-    a.archetype || 'normal', b.archetype || 'normal'
+    a.archetype || 'standard', b.archetype || 'standard'
   );
   return pAdj + aAdj;
 };

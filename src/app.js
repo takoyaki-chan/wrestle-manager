@@ -2167,7 +2167,7 @@ const Storage = {
         return {
           ...c,
           personality: master.personality || c.personality || 'normal',
-          archetype: master.archetype || c.archetype || 'normal',
+          archetype: master.archetype || c.archetype || 'standard',
         };
       };
 
@@ -4245,9 +4245,9 @@ const App = {
         totalMatches: 5,
         matchTier: Engine.autumnWar.MATCH_TIER,
         leftPersonality: displayReplay.left.personality || 'normal',
-        leftArchetype: displayReplay.left.archetype || 'normal',
+        leftArchetype: displayReplay.left.archetype || 'standard',
         rightPersonality: displayReplay.right.personality || 'normal',
-        rightArchetype: displayReplay.right.archetype || 'normal',
+        rightArchetype: displayReplay.right.archetype || 'standard',
         preserveParentFileBgm: true,
         sfxMasterVol: Audio.sfxMasterVol,
         bgmMasterVol: Audio.bgmMasterVol,
@@ -5817,8 +5817,8 @@ const App = {
 
     // 口調アーキタイプ別セリフ選択（決定論的RNG）
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xF1E2, charId));
-    const archetype = fighter.archetype || 'normal';
-    const lines = RELEASE_INTERVIEW_LINES[archetype] || RELEASE_INTERVIEW_LINES.normal;
+    const archetype = fighter.archetype || 'standard';
+    const lines = RELEASE_INTERVIEW_LINES[archetype] || RELEASE_INTERVIEW_LINES.standard;
     const dialogue = lines[Engine.rng.int(rng, 0, lines.length - 1)];
 
     // 面談中フラグをセット → 社長室画面に遷移
@@ -6919,9 +6919,9 @@ const App = {
         } : null,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, charL.id, charR.id); return rl ? rl.tier : 0; })(),
         leftPersonality: charL.personality || 'normal',
-        leftArchetype: charL.archetype || 'normal',
+        leftArchetype: charL.archetype || 'standard',
         rightPersonality: charR.personality || 'normal',
-        rightArchetype: charR.archetype || 'normal',
+        rightArchetype: charR.archetype || 'standard',
         sfxMasterVol: Audio.sfxMasterVol,
         bgmMasterVol: Audio.bgmMasterVol,
       }
@@ -8111,9 +8111,9 @@ const App = {
           const pickLine = (table, fighter) => {
             if (!table || !fighter) return '';
             const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
-            const arch = fighter.archetype || 'normal';
+            const arch = fighter.archetype || 'standard';
             const byP = table[p] || table.normal || {};
-            const byA = byP[arch] || byP.normal || {};
+            const byA = byP[arch] || byP.standard || byP.normal || {};
             const lines = byA.high || byA.mid || byA.low || [];
             return lines.length ? lines[Math.floor(Math.random() * lines.length)] : '';
           };
@@ -9055,9 +9055,9 @@ const App = {
   _f09PickLine(table, fighter) {
     if (!table || !fighter) return '';
     const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
-    const arch = fighter.archetype || 'normal';
+    const arch = fighter.archetype || 'standard';
     const byP = table[p] || table.normal || {};
-    const byA = byP[arch] || byP.normal || {};
+    const byA = byP[arch] || byP.standard || byP.normal || {};
     const lines = byA.high || byA.mid || byA.low || [];
     return lines.length ? lines[Math.floor(Math.random() * lines.length)] : '';
   },
@@ -10478,9 +10478,9 @@ const App = {
       || ['…！'];
     if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return baseVl;
     const pers = fighter.personality || 'normal';
-    const arch = fighter.archetype || 'normal';
+    const arch = fighter.archetype || 'standard';
     const byP = VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {};
-    const byA = byP[arch] || byP.normal || {};
+    const byA = byP[arch] || byP.standard || {};
     const winArr = byA.win || [];
     if (winArr.length === 0) return baseVl;
     return [...winArr, ...baseVl];
@@ -10490,9 +10490,9 @@ const App = {
   _buildVsExHitLines(fighter, season, week, opponentOrgId) {
     if (!App._vsExEmployeeFires(fighter, season, week, opponentOrgId)) return null;
     const pers = fighter.personality || 'normal';
-    const arch = fighter.archetype || 'normal';
+    const arch = fighter.archetype || 'standard';
     const byP = VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal || {};
-    const byA = byP[arch] || byP.normal || {};
+    const byA = byP[arch] || byP.standard || {};
     const hitArr = byA.hit || [];
     return hitArr.length > 0 ? hitArr : null;
   },
@@ -11956,9 +11956,9 @@ const App = {
   resolveDomeLine(fighter, dialogueKey) {
     const dict = dialogueKey === 'dome_firstshow' ? DOME_FIRSTSHOW_LINES : DOME_SELLOUT_LINES;
     const p = fighter.personality || 'normal';
-    const a = fighter.archetype || 'normal';
+    const a = fighter.archetype || 'standard';
     const personaDict = dict[p] || dict['normal'];
-    const archetypeKey = (a === 'normal') ? '_default' : a;
+    const archetypeKey = (a === 'standard') ? '_default' : a;
     const lines = personaDict?.[archetypeKey] || personaDict?.['_default'] || dict['normal']['_default'];
     const seed = Engine.rng.derive(G.rngSeed, G.season, G.week, 0xD03E, fighter.id);
     const rng = Engine.rng.create(seed);
@@ -12307,8 +12307,8 @@ const App = {
         // archetype 別ティッカーセリフ（CHALLENGE_REQUEST_NO_LINES から1行抽選）
         let noLine = `${reqName} の直訴を見送った。`;
         if (typeof CHALLENGE_REQUEST_NO_LINES !== 'undefined') {
-          const arch = requester.archetype || 'normal';
-          const arr = CHALLENGE_REQUEST_NO_LINES[arch] || CHALLENGE_REQUEST_NO_LINES.normal;
+          const arch = requester.archetype || 'standard';
+          const arr = CHALLENGE_REQUEST_NO_LINES[arch] || CHALLENGE_REQUEST_NO_LINES.standard;
           if (arr && arr.length > 0) {
             const lineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, payload.selfId, 0xC4A2));
             const line = arr[Engine.rng.int(lineRng, 0, arr.length - 1)];
@@ -13136,8 +13136,8 @@ const App = {
         matchNum: 1, totalMatches: 1,
         isTitle: false, isSpecialMatch: true, matchTier: 2,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, pf.id, af.id); return rl ? rl.tier : 0; })(),
-        leftPersonality: pf.personality || 'normal', leftArchetype: pf.archetype || 'normal',
-        rightPersonality: af.personality || 'normal', rightArchetype: af.archetype || 'normal',
+        leftPersonality: pf.personality || 'normal', leftArchetype: pf.archetype || 'standard',
+        rightPersonality: af.personality || 'normal', rightArchetype: af.archetype || 'standard',
         sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
       },
       result: b3Result,
@@ -13330,8 +13330,8 @@ const App = {
         matchNum: 1, totalMatches: 1,
         isTitle: false, isSpecialMatch: true, matchTier: 2,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, fA.id, fB.id); return rl ? rl.tier : 0; })(),
-        leftPersonality: fA.personality || 'normal', leftArchetype: fA.archetype || 'normal',
-        rightPersonality: fB.personality || 'normal', rightArchetype: fB.archetype || 'normal',
+        leftPersonality: fA.personality || 'normal', leftArchetype: fA.archetype || 'standard',
+        rightPersonality: fB.personality || 'normal', rightArchetype: fB.archetype || 'standard',
         sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
       },
       result: c1Result,
@@ -13505,8 +13505,8 @@ const App = {
         matchNum: 1, totalMatches: 1,
         isTitle: false, isSpecialMatch: true, matchTier: 2,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, f1.id, f2.id); return rl ? rl.tier : 0; })(),
-        leftPersonality: f1.personality || 'normal', leftArchetype: f1.archetype || 'normal',
-        rightPersonality: f2.personality || 'normal', rightArchetype: f2.archetype || 'normal',
+        leftPersonality: f1.personality || 'normal', leftArchetype: f1.archetype || 'standard',
+        rightPersonality: f2.personality || 'normal', rightArchetype: f2.archetype || 'standard',
         sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
       },
       result: b2Result,
@@ -13917,7 +13917,7 @@ const App = {
     });
     const speaker = sorted[0];
     if (!speaker) return;
-    const archetype = speaker.archetype || 'normal';
+    const archetype = speaker.archetype || 'standard';
     const pool = (typeof CRISIS_DIALOGUE !== 'undefined'
       && CRISIS_DIALOGUE.enter
       && (CRISIS_DIALOGUE.enter[archetype] || CRISIS_DIALOGUE.enter.normal)) || [];
@@ -14192,9 +14192,9 @@ const App = {
         matchTier: 2,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, pf.id, af.id); return rl ? rl.tier : 0; })(),
         leftPersonality: pf.personality || 'normal',
-        leftArchetype: pf.archetype || 'normal',
+        leftArchetype: pf.archetype || 'standard',
         rightPersonality: af.personality || 'normal',
-        rightArchetype: af.archetype || 'normal',
+        rightArchetype: af.archetype || 'standard',
         sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
       },
       result: warResult,
@@ -14634,9 +14634,9 @@ App.ppvWatchMatch = function(idx) {
       matchTier: 2,
       rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, match.left.id, match.right.id); return rl ? rl.tier : 0; })(),
       leftPersonality: match.left.personality || 'normal',
-      leftArchetype: match.left.archetype || 'normal',
+      leftArchetype: match.left.archetype || 'standard',
       rightPersonality: match.right.personality || 'normal',
-      rightArchetype: match.right.archetype || 'normal',
+      rightArchetype: match.right.archetype || 'standard',
       sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
     },
     result: ppvResult,
@@ -15354,9 +15354,9 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
       isSpecialMatch: !!isFinal,
       matchTier: isFinal ? 2 : 1,
       leftPersonality: leftF.personality || 'normal',
-      leftArchetype: leftF.archetype || 'normal',
+      leftArchetype: leftF.archetype || 'standard',
       rightPersonality: rightF.personality || 'normal',
-      rightArchetype: rightF.archetype || 'normal',
+      rightArchetype: rightF.archetype || 'standard',
       preserveParentFileBgm: true,
       sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
     },
@@ -15804,9 +15804,9 @@ App.tcWatchMatch = function(roundIdx, matchIdx) {
       isSpecialMatch: !!isFinal,
       matchTier: 2,
       leftPersonality: leftF.personality || 'normal',
-      leftArchetype: leftF.archetype || 'normal',
+      leftArchetype: leftF.archetype || 'standard',
       rightPersonality: rightF.personality || 'normal',
-      rightArchetype: rightF.archetype || 'normal',
+      rightArchetype: rightF.archetype || 'standard',
       preserveParentFileBgm: true,
       sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
     },

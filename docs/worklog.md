@@ -1,5 +1,192 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## アーキタイプの `normal` を `standard` に改名（task-68・2026-07-31）
+
+出典: `docs/codex-tasks/task-68-archetype-normal-rename.md`。作業は `wm-task68`
+（ブランチ `feat/archetype-normal-rename`）で実施、mainは未変更。**未コミット
+（指示によりコミットなし）**。
+
+### 背景
+
+`normal` が性格リストとアーキタイプリストの両方に存在するため、書き出しツール
+`tools/dialogue-workbook.js` の `detectMeta` がアーキタイプの `normal` を性格と
+誤ってラベルし、アーキタイプ列が空になる不具合があった（Keisuke指摘）。改名で
+曖昧さを根元から絶つ。新しい綴りは **`standard`**（表示ラベル「標準」はそのまま、
+プレイヤーに見える文言は1文字も変えていない）。
+
+### 判定方法（機械的分類）
+
+`normal:` という同じ綴りが表によって性格を指したりアーキタイプを指したりするため、
+一括置換ではなく **構造解析スクリプト**で判定してから置換した(スクラッチパッドの
+`classify-normal.js`。本体は保存していないため、手法をここに記録する)。
+
+1. `tools/extract-dialogue-parser.js` の `findTopLevelDeclarations`/`scanExpr` を
+   流用し、対象8ファイル（`data.js` / `data-faction-dialogue.js` / `relationships.js`
+   / `ui-common.js` / `ui-render.js` / `app.js` / `coach-lines.js` / `victory-lines.js`。
+   `management.js` はAI王座ブロック行9100〜9250を除外して同様に走査）の**全ての
+   トップレベル宣言**をオブジェクトリテラルとして再帰的に走査し、`normal` という
+   キーが現れる**すべての位置**を収集した。
+2. 各出現位置について、**同じオブジェクトリテラル内の兄弟キー**を見て軸を判定:
+   兄弟に `composed/ojousama/delinquent/cool/seductive/polite` があればアーキタイプ、
+   `bold/quiet/shy/easygoing/earnest/emotional` があれば性格。
+3. 兄弟が `normal` 単独（他のアーキタイプ変種がまだ書かれていない性格バケツ）の
+   場合は、**親オブジェクトの軸を継承**して判定した（[性格][アーキタイプ]の入れ子
+   で、性格バケツ配下に来た `normal` は原則アーキタイプ）。
+4. 3でも判定できない3件（`App._NEWSPAPER_HEADLINES.normal` / `_NEWSPAPER_ARTICLES.normal`
+   =試合種別の「通常興行」区分、`Engine.mq.STAGE_LABELS.normal`=興行ステージ区分の
+   「通常興行」ラベル）は**性格/アーキタイプ軸と無関係と判明**したため対象外。
+
+結果: 495件の `normal:` キー出現のうち、246件がアーキタイプ、246件が性格、3件が
+軸無関係（上記）。さらに `CHALLENGE_LINES` / `CHALLENGE_REQUEST_OPPONENT_REACTIONS`
+（`archetype_personality` 複合キー形式。例 `polite_earnest`）で計14件（`normal_*`
+→ `standard_*`、7性格×2テーブル）を別途特定した。
+
+### 置換したもの
+
+1. **`ALL_CHARS` の `archetype` フィールド**（`src/data.js` 12〜142行）: 33名分
+   `archetype:'normal'` → `archetype:'standard'`。`personality` フィールドは
+   1件も触っていない（37名が `personality:'normal'` のまま）。
+2. **コード側の `normal` フォールバック/比較**（約35箇所、`app.js` / `data.js` /
+   `relationships.js` / `ui-common.js` / `ui-render.js` / `victory-lines.js` /
+   `management.js`）: `fighter.archetype || 'normal'` のようなアーキタイプ用の
+   既定値・比較値のみ `'standard'` に変更。`fighter.personality || 'normal'` は
+   1件も変更していない（同一行に両方あるケースも archetype 側だけ変更）。
+3. **テーブルキー本体**: 上記構造解析で「アーキタイプ」と判定された246件のうち、
+   後述の理由で読み手コードを直せない20件を除いた計83件のキーを `normal:` →
+   `standard:` に改名（該当テーブル19個。内訳は下記）。
+4. **複合キーテーブル**: `CHALLENGE_LINES` / `CHALLENGE_REQUEST_OPPONENT_REACTIONS`
+   の `normal_*`(7種) → `standard_*`(7種)、計14キー。
+
+改名した19テーブル: `AUTUMN_WAR_MATCH_LINES`(→後述の理由で**再度リバート**)、
+`CHALLENGE_REQUEST_NO_LINES`、`CRISIS_DIALOGUE`、`GAMEOVER_LINES`、
+`RELEASE_INTERVIEW_LINES`、`TENCHOSEN_DRAMA_LINES`、`TENCHOSEN_PREEVENT_LINES`、
+`FACTION_F02_LEADER_LINES`、`FACTION_F03_SURVIVOR_LINES`、`FACTION_F04_TARGET_LINES`、
+`FACTION_F07_LEADER_LINES`、`FACTION_F09_OPENING_LINES_A/B`、
+`FACTION_F09_MATCH_POST_WIN_LINES`、`FACTION_F09_ENDING_WIN_LINES`、
+`Engine.relationships.flags.ARCHETYPE_FORGIVENESS_BASE`、`EMOTION_TEXTS`、
+`FIGHTER_INVITE_GRAD_LINES`、`VS_EX_EMPLOYER_LINES`。
+
+`FACTION_F09_MATCH_POST_WIN_LINES` / `FACTION_F09_ENDING_WIN_LINES` /
+`FACTION_F09_OPENING_LINES_A/B` は `app.js` の共通ヘルパー(`_f09PickLine`/
+インライン`pickLine`)を、後述の理由で未改名のまま残る兄弟テーブルと共有して
+いるため、フォールバックを `byP[arch] || byP.standard || byP.normal || {}` の
+二段構えに変更し、どちらのテーブルが渡っても正しく引けるようにした。
+
+### あえて改名しなかったもの（意図的な除外・計20テーブル）
+
+**A. 指示書で名指しされた6テーブル**（「性格だけで分岐している」との前提）:
+`FACTION_F02_LINES`(data.js) / `FACTION_F09_MATCH_PRE_LINES` /
+`FACTION_F09_MATCH_POST_LOSE_LINES` / `FACTION_F09_ENDING_LOSE_LINES` /
+`INTERNAL_CHALLENGE_POST_WINNER_LINES` / `INTERNAL_CHALLENGE_POST_LOSER_LINES`。
+
+**発見した齟齬**: 実際にソースを読むと、この6テーブルは全て
+`[personality][archetype]` の入れ子構造で、読み手コード（`getF02ClashLine` /
+`_f09PickLine` / `_getF08LineByBand`）も `personality×archetype` のフォール
+バックを行っている（例: `FACTION_F02_LINES` は
+`bold: { attack: { normal:'…', ojousama:'…', delinquent:'…', … } }` と7
+アーキタイプ全種が実在し、コード側コメントにも「6 personality × 7 archetype ×
+{attack,defend}」と明記されている）。**指示書の「第一階層は性格」は正しいが、
+「アーキタイプ次元が無い」という前提は誤り**だった可能性が高い。ただし指示書に
+名指しで「触らない」とある以上、**独断で覆さずここに明記した上で従った**
+（機能上のリスクはゼロ — 未改名でも `.normal` フォールバックがそのまま生きている
+ため、実際のプレイには一切影響しない。Excel書き出しのアーキタイプ列だけが
+埋まらないままになる、という書き出しツール側の限定的な既知課題として残る）。
+
+**B. 読み手コードが `factions.js` にあり、このタスクでは編集できないため
+除外した14テーブル**（`FACTION_F01_LEADER_LINES` / `FACTION_F01_FOLLOWER_LINES` /
+`FACTION_F05_DISSIDENT_LINES` / `FACTION_F06_AMBIENT_LINES` /
+`FACTION_F08_LEADER_LINES` / `FACTION_F08_PRE_MATCH_LINES_A/B` /
+`FACTION_F08_POST_MATCH_WINNER_LINES` / `FACTION_F08_POST_MATCH_LOSER_LINES` /
+`INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES` / `INTERNAL_CHALLENGE_PRE_LEADER_LINES` /
+`FACTION_TRANSITION_LINES` / `COMMON3_LINES` / `F07_LINES`）:
+`Engine.factions.getFactionLine` / `_getF08LineByBand` / `getTransitionLine` /
+`getCommon3Line` / `getF07Line` が全て `byPersona.normal` のようなハード
+コードされたフォールバックを持つが、これらの関数は `factions.js`（本タスクの
+編集許可ファイル外）にある。テーブル側だけ改名すると、そのテーブルの
+アーキタイプ未定義セル（実際に大半のセルがそう）が空文字にフォールバックし、
+**セリフが引けなくなる退行**が起きるため見送った。特に
+`INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES`/`PRE_LEADER_LINES`（指示書は
+「254箇所」側＝改名対象と分類）も、`POST_WINNER_LINES`/`POST_LOSER_LINES`と
+**同じ関数を共有**していると判明したため、対象4テーブルすべてを見送った。
+
+**C. 改名後にテスト破綻が発覚し、リバートした1テーブル**（`AUTUMN_WAR_MATCH_LINES`）:
+一度は改名したが、`test/autumn-war-match-dialogue-test.js` が
+`docs/autumn-war-match-dialogue-draft-v0.1.md`（確定済み下書き）とライブコードの
+オブジェクトリテラルを `deepStrictEqual` で厳密比較しており、キー名変更で
+構造不一致になり失敗した。このテーブルの読み手（`getAutumnWarMatchLine`）は
+`pData[archetype] || pData._default || []` と **`_default` ベースの
+フォールバック**で `.normal` 直参照が無く機能的リスクはゼロだったため、
+docs/ 配下の下書きファイルや既存テストへの手出しを避けるためにリバートし、
+除外リストに追加する判断をした。
+
+### 既存テストへの最小限の例外（2件）
+
+上記に反して、以下の2箇所だけは**改名の直接の帰結として不可避**だったため
+既存テストの中身を修正した（データの意味は変えず、リネームに追従しただけ）:
+
+1. `test/challenge-request-result-reaction-test.js`: `CHALLENGE_LINES.normal_normal`
+   を3箇所 `CHALLENGE_LINES.standard_normal` に変更。理由: 複合キー
+   `normal_normal` → `standard_normal` の改名は、`Engine.challengeRequest.pickLine`
+   の中間フォールバック層（`${archetype}_normal`。ここの `archetype` は実際の
+   キャラの値であり `'normal'` 固定ではない）も道連れで意味が変わるため、
+   ここだけは「テーブルを戻す」と「実際のキャラ(archetype='standard')が
+   性格別バリエーションを引けなくなる」という**本物の退行**を招く。テーブルの
+   改名を維持し、テストのハードコードされたキー参照だけを追従させた。
+2. AUTUMN_WAR_MATCH_LINES は前述の通りテーブル側をリバートして解決したため
+   テストへの手出しは不要だった。
+
+### セーブ移行（`Engine.saveDoctor`）
+
+`src/management.js` の `Engine.saveDoctor` に `_normArchetype(c)` を追加
+（`archetype === 'normal'` のときだけ `standard` に読み替え、`personality` は
+一切触らない）。`repairOnLoad` 内で `roster` / `freeAgents` / `scoutCandidates`
+/ `retiredFighters` / `aiOrgs[].roster` の全キャラに適用。`dormantPool` は
+`{id, age}` のみで `archetype` を持たないため対象外。
+
+移行の挙動保存性は `test/archetype-key-rename-test.js` で検証: 移行後の
+`archetype:'standard'` キャラが引く `RELEASE_INTERVIEW_LINES` のプールと、
+最初から `archetype:'standard'` だったキャラが引くプールが **同一配列
+参照（===）** であることを確認済み。
+
+### `tools/dialogue-workbook.js`
+
+`ARCHETYPE_LABELS` のキーを `normal` → `standard` に改名（ラベル文言「標準」は
+不変）。`detectMeta` は ARCHETYPE_KEYS と PERSONALITY_KEYS がもう重複しないため
+判定順に依存しなくなった旨をコメントで明記（ロジック自体は元々どちらの順で
+判定しても壊れない書き方だったため、コードの実質変更はコメントのみ）。
+
+### テスト
+
+新規 `test/archetype-key-rename-test.js`（41チェック、全PASS）。検証内容:
+アーキタイプ/性格のキー集合、`ALL_CHARS` の値、`repairOnLoad` の移行（5リスト
+全部+冪等性+`archetype`欠落オブジェクトの無害化）、移行前後のセリフプール
+同一性、代表テーブル（`FACTION_F02_LEADER_LINES`=12本、`FACTION_F03_SURVIVOR_LINES`
+=15本）の本数保持、複合キーテーブルの改名、**未改名テーブルでも実キャラ
+(archetype='standard')が正しくセリフを引けること**（退行なしの証明）、
+`detectMeta` の判定結果。
+
+`node test/run-all.js`: 175 test files, **全PASS**（新規テスト含む）。
+`node test/auto-sim.js 40`: Total violations: 0, Total errors: 0, Game overs: 0,
+**Result: ALL CLEAR ✓**。
+
+### 変更ファイル
+
+`src/data.js`、`src/data-faction-dialogue.js`、`src/relationships.js`、
+`src/ui-common.js`、`src/ui-render.js`、`src/app.js`、`src/coach-lines.js`、
+`src/victory-lines.js`、`src/management.js`、`tools/dialogue-workbook.js`、
+`test/archetype-key-rename-test.js`（新規）、`test/challenge-request-result-reaction-test.js`
+（複合キー参照の追従のみ）。`セリフ編集/` 配下のxlsxは検証のため
+`node tools/dialogue-workbook.js export` で再生成した（コミットしないため
+実害なし）。
+
+### 残課題
+
+- 上記A・Bの計20テーブルは `normal` キーのまま。読み手コードを直せる別タスク
+  （`factions.js` を編集可能な文脈、または6テーブルの「性格のみ」前提の
+  Keisuke再確認）が来たら改名を検討する。
+- `docs/dialogue/` のMarkdown索引は今回のセッションでは再生成していない
+  （`node tools/extract-dialogue.js` は読み取り専用ツールで別件）。
+
 ## AI団体の王座 挑戦者に幅を持たせる（task-62・2026-07-31）
 
 出典: `docs/codex-tasks/task-62-ai-title-challenger-variety.md`、前段調査

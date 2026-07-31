@@ -4384,7 +4384,7 @@ function renderRanking() {
   };
 
   const _aceFlavorByPersona = (f, seed) => {
-    const arch = f?.archetype || 'normal';
+    const arch = f?.archetype || 'standard';
     const pers = f?.personality || 'normal';
     const archMap = {
       composed: ['鷹揚な物腰で団体を束ねる', '常に落ち着いた佇まいが格を生む', '泰然とした空気で対戦相手を呑む'],
@@ -11214,7 +11214,7 @@ const _RELMAP_STAT_META = [
 // ── 感情テキストシステム ──────────────────────────────
 const EMOTION_TEXTS = {
   trust: {
-    normal:    'そばにいてくれるだけで、なんだか安心する',
+    standard:    'そばにいてくれるだけで、なんだか安心する',
     ojousama:  'お隣にいてくださると、心が穏やかになりますの',
     delinquent:'一緒にいると……なんか、落ち着くんだよな',
     cool:      '信頼できる数少ない人間。それだけで十分',
@@ -11223,7 +11223,7 @@ const EMOTION_TEXTS = {
     composed:  '一緒にいてくれると、不思議と心が落ち着くのよね',
   },
   rival_friend: {
-    normal:    '負けたくない。でも、おかげで強くなれている気がする',
+    standard:    '負けたくない。でも、おかげで強くなれている気がする',
     ojousama:  '負けたくありませんけれど……実力は認めざるを得ませんわ',
     delinquent:'ぜってー負けねえ。でもまあ……いるから燃えんだよ',
     cool:      '互いに高め合える関係。……悪くない',
@@ -11232,7 +11232,7 @@ const EMOTION_TEXTS = {
     composed:  'あの子のおかげで、わたくしも頑張れるの。ありがたい存在ね',
   },
   destined_rival: {
-    normal:    '考えない日はない。絶対に、越えなきゃいけない壁',
+    standard:    '考えない日はない。絶対に、越えなきゃいけない壁',
     ojousama:  '何があっても……わたくしの手で超えてみせますわ',
     delinquent:'四六時中頭ん中にいやがる。絶対ぶっ倒す',
     cool:      '……いなければ、今の自分はいない。だからこそ、倒す',
@@ -11241,7 +11241,7 @@ const EMOTION_TEXTS = {
     composed:  'あの子とはいつか、決着をつけなければね。楽しみでもあるのよ',
   },
   acquaintance: {
-    normal:    'まあ、知ってはいるけど……それだけかな',
+    standard:    'まあ、知ってはいるけど……それだけかな',
     ojousama:  '存じ上げてはおりますけれど、特別な感情はございませんわ',
     delinquent:'あー、いたな。別にどうでもいいけど',
     cool:      '認識はしている。それ以上でもそれ以下でもない',
@@ -11250,7 +11250,7 @@ const EMOTION_TEXTS = {
     composed:  'そうねぇ、お名前くらいは存じているかしら',
   },
   intrigued: {
-    normal:    'なんだろう、目で追ってしまう。気にしてないと言えば嘘になる',
+    standard:    'なんだろう、目で追ってしまう。気にしてないと言えば嘘になる',
     ojousama:  'なぜかしら……気にかかって仕方がありませんの',
     delinquent:'……別に気にしてねーし。してねーけど、目に入んだよ',
     cool:      '気にしていないつもりだった……',
@@ -11259,7 +11259,7 @@ const EMOTION_TEXTS = {
     composed:  'どういうわけか、あの子のことが気になるのよね',
   },
   hostile_competitor: {
-    normal:    '負けたくない。それだけは、はっきりしている',
+    standard:    '負けたくない。それだけは、はっきりしている',
     ojousama:  '絶対に遅れを取りたくありませんの。それだけですわ',
     delinquent:'負けねえ。死んでも負けねえ',
     cool:      '負けるわけにはいかない。理屈じゃない',
@@ -11270,7 +11270,7 @@ const EMOTION_TEXTS = {
   // ── マイナス側 (Bond low / bottom) ──
   // distant: Bond低×Rival低 — 関心の希薄。憎悪ではなく無関心
   distant: {
-    normal:    '名前は知ってるけど、それ以上は別に',
+    standard:    '名前は知ってるけど、それ以上は別に',
     ojousama:  '存じ上げてはおりますけれど、それ以上は……特に',
     delinquent:'あー、いたな。それで?',
     cool:      '認識しているだけ。それ以上はない',
@@ -11280,7 +11280,7 @@ const EMOTION_TEXTS = {
   },
   // contempt: 上書き判定 (selfOvr-targetOvr >= 15) — 格上の侮蔑
   contempt: {
-    normal:    '同じリングに立っていい相手じゃない',
+    standard:    '同じリングに立っていい相手じゃない',
     ojousama:  'わたくしと並ぶには、まだ早うございますわ',
     delinquent:'ハッ、雑魚が視界に入んな。場違いだ',
     cool:      '実力差は数字で出てる。語ることもない',
@@ -11290,7 +11290,7 @@ const EMOTION_TEXTS = {
   },
   // irritation: Bond低×Rival中 — 表面的な不快・そりが合わない
   irritation: {
-    normal:    '視界に入るたび、地味にイラっとくる',
+    standard:    '視界に入るたび、地味にイラっとくる',
     ojousama:  'どうにも、お顔を拝見するだけで気が立ちますの',
     delinquent:'チッ……顔見るだけでイライラすんだよ',
     cool:      '不快。距離を取りたい',
@@ -11300,7 +11300,7 @@ const EMOTION_TEXTS = {
   },
   // dislike: Bond低×Rival高 — 明確な嫌悪・拒絶
   dislike: {
-    normal:    'はっきり言って、好きじゃない。関わりたくもない',
+    standard:    'はっきり言って、好きじゃない。関わりたくもない',
     ojousama:  'あの方とは、お話する気にもなれませんの',
     delinquent:'嫌い。マジで嫌い。それだけ',
     cool:      '受け付けない。理屈じゃない',
@@ -11310,7 +11310,7 @@ const EMOTION_TEXTS = {
   },
   // cold_loathing: Bond底×Rival低 — 冷えた嫌悪・存在無視
   cold_loathing: {
-    normal:    '視線も合わせない。いないものとして扱ってる',
+    standard:    '視線も合わせない。いないものとして扱ってる',
     ojousama:  'わたくしの視界には、入れておりませんの',
     delinquent:'……あいつは、いねえもんとして扱ってる',
     cool:      '存在を認識から外している。話すこともない',
@@ -11320,7 +11320,7 @@ const EMOTION_TEXTS = {
   },
   // dislike_strong: Bond底×Rival中 — 強い嫌悪・蓄積
   dislike_strong: {
-    normal:    '顔も見たくない。同じ空気を吸いたくない',
+    standard:    '顔も見たくない。同じ空気を吸いたくない',
     ojousama:  '同じ空間にいるだけで、息が詰まりますの',
     delinquent:'マジで無理。視界から消えてくれ',
     cool:      '生理的に駄目。これは変わらない',
@@ -11330,7 +11330,7 @@ const EMOTION_TEXTS = {
   },
   // hatred: Bond底×Rival高 — 憎悪・敵意
   hatred: {
-    normal:    '絶対に許さない。叩き潰すまで終わらない',
+    standard:    '絶対に許さない。叩き潰すまで終わらない',
     ojousama:  'あの方だけは、決して許しませんわ。何があっても',
     delinquent:'ぶっ潰す。マジでぶっ潰す。それしかねえ',
     cool:      '消したい。自覚している。そういう感情だ',
@@ -11365,9 +11365,9 @@ function getEmotionCategory(bond, rivalry, selfOvr, targetOvr) {
 
 function getEmotionText(bond, rivalry, selfOvr, targetOvr, archetype) {
   const category = getEmotionCategory(bond, rivalry, selfOvr, targetOvr);
-  const at = archetype || 'normal';
+  const at = archetype || 'standard';
   const texts = EMOTION_TEXTS[category];
-  return texts[at] || texts.normal;
+  return texts[at] || texts.standard;
 }
 
 function _relmapGetAllChars() {
