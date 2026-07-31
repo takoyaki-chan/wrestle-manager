@@ -881,9 +881,18 @@ function renderWeekScreen() {
     // App._seasonEndChainActive で伏せる方式も併用していたが、このフラグは
     // advanceWeek のたびに立って演出チェーンが完走しないと下りないため、
     // 逆に**レポートの週で総括が消える**事故を起こしていた。週で決め打つ方が壊れない。
-    if (offW === 1) {
+    //
+    // ただし週だけでは足りない(2026-07-31 Keisuke 実機)。ブレイクスルー等のポップアップが
+    // 一緒に出ると年末表彰式に入るのが一手遅れ、**その間ずっと背面に総括が見えている**。
+    // そこで「表彰式がまだ済んでいない」ことを pendingAwards の有無で見て、済むまで伏せる。
+    // これは _seasonEndChainActive のような別立てのフラグではなく、**表彰式自身が消費する
+    // データ**なので、チェーンがどこで止まっても伏せっぱなしにはならない
+    // (失われた場合も App._recoverPendingAwards が作り直して表彰式へ回す)。
+    if (offW === 1 && !G.pendingAwards) {
       const review = Engine.seasonReview.build(G);
       html += _renderSeasonReview(review, G);
+    } else if (offW === 1) {
+      // 表彰式待ち。総括の場所は空けておく(ここに何か描くと結局背面に見えてしまう)。
     } else {
       // offWeek 2以降(ドラフト/移籍/開幕準備週)は従来どおりgameLogフィルタ+ランキング要約を表示
       const recentEvents = (G.gameLog || []).filter(e => typeof e === 'string' && (e.includes('オフシーズン') || e.includes('シーズン') || e.includes('引退') || e.includes('獲得') || e.includes('移籍') || e.includes('衰退') || e.includes('成長')));
@@ -5805,8 +5814,16 @@ function _renderDraftNegotiation() {
 // ── Scout Event Rendering ─────────────────────────────────
 function _draftResultNext() {
   try { Audio.play('click'); } catch(e) {}
+  // ページを消費し切った後にもう一度押されたら、精算を二度走らせない。
+  // 画面だけ今週へ戻して抜ける(2026-07-31)。
+  const pages = G._draftResultPages || [];
+  if (pages.length === 0) {
+    if (App && App.returnToWeekScreen) App.returnToWeekScreen();
+    refreshAll();
+    return;
+  }
   const idx = (G._draftResultIdx || 0) + 1;
-  if (idx >= (G._draftResultPages || []).length) {
+  if (idx >= pages.length) {
     G = { ...G, _draftResultPages: null, _draftResultIdx: 0 };
     App.scoutEventFinish();
     return;
@@ -5962,6 +5979,8 @@ function renderScoutCompetitionModal(cand, baseCost, discount) {
   const overlay = document.getElementById('mdlDOverlay');
   if (!box || !overlay) return;
 
+  // 直前のモーダルが残したバリアント(cream 等)を必ず落とす。この中身は暗色地前提。
+  box.className = 'mdl-d-box';
   box.innerHTML = `
     <div class="mdl-d-title urgent">⚔ 他団体との競合発生！</div>
     <div class="mdl-d-speaker">${cand.name} ・ ${tierCfg.label} / ${cand.style} / ${cand.age}歳</div>
@@ -6311,7 +6330,26 @@ function getGrowthTendency(charId) {
   return {text: `${coach.grade}級コーチ`, arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'up1', arrow: '↑'}))};
 }
 
+/** ドラフト専用画面が、進行中の材料をGameStateに持たないまま表示され続けていないか見る。
+ *  出口が増えるたびに「状態だけ次へ進めて画面を戻し忘れる」事故が起き、そのたびに
+ *  プレイヤーは同じボタンを二度押すことになる(2026-07-31 オフシーズン4/4で発生)。
+ *  出口ごとに気をつけるのは無理なので、描き直しのたびに整合を取る。 */
+function _reconcileDedicatedScreen() {
+  const el = document.getElementById('screen-scoutEvent');
+  if (!el || !el.classList.contains('active')) return;
+  if (typeof G === 'undefined' || !G) return;
+  const alive = !!(G.weekPhase === 'scoutEvent' || G.scoutCandidates || G.scoutPendingPick
+    || G._draftResultPages || G._draftNegotiation);
+  if (alive) return;
+  try {
+    console.warn('[WM][screen] scoutEvent screen outlived its flow — returning to week screen',
+      { season: G.season, week: G.week, offWeek: G.offWeek, weekPhase: G.weekPhase });
+  } catch (_e) {}
+  if (typeof App !== 'undefined' && App.returnToWeekScreen) App.returnToWeekScreen();
+}
+
 function refreshAll() {
+  _reconcileDedicatedScreen();
   refreshTopBar();
   renderWeekScreen();
   renderRoster();

@@ -462,10 +462,16 @@ function _mdlCClose() {
 }
 
 /** D型モーダルを開く — html を #mdlDBox に注入して表示 */
-function _mdlDOpen(html) {
+function _mdlDOpen(html, variant) {
   const box = document.getElementById('mdlDBox');
   const overlay = document.getElementById('mdlDOverlay');
   if (!box || !overlay) return;
+  // **クラスは毎回ここでリセットする。**
+  // 以前は呼び出し側が box.className を書き換えっぱなしにできたため、一度クリーム地の
+  // 号外を出すと**その後のD型モーダルが全部クリーム地**になっていた。確認ダイアログは
+  // 本文に暗色地前提の色トークン(--gold / --text-sub)を埋めているので、クリーム地に
+  // 白文字が乗って読めなくなる(2026-07-31 Keisuke 実機: 興行確認が読めない)。
+  box.className = 'mdl-d-box' + (variant ? ' ' + variant : '');
   box.innerHTML = html;
   overlay.classList.add('active');
 }
@@ -1217,8 +1223,6 @@ function showBigNewsPopup(topStory, variant) {
   const mqVal = topStory.newsData && topStory.newsData.mq;
   if (mqVal != null) lead = lead.replace(/\{mq\}/g, mqVal);
 
-  const box = document.getElementById('mdlDBox');
-  if (box) box.className = 'mdl-d-box cream bignews';
   _mdlDOpen(`
     <div class="bignews-icon-dropin">📰</div>
     <div class="mdl-d-title" style="text-align:center">${_escapeHtml(lead)}</div>
@@ -1226,7 +1230,7 @@ function showBigNewsPopup(topStory, variant) {
       <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue();showScreen('newspaper')">紙面を読む</button>
       <button class="mdl-d-btn secondary" onclick="_mdlDClose();_drainPopupQueue()">あとで</button>
     </div>
-  `);
+  `, 'cream bignews');
 }
 
 function showConfirm(msg, yesLabel, onYes) {
@@ -13879,8 +13883,6 @@ function showNotifEventToast(event) {
   const detailHtml  = event.detail   ? `<div class="mdl-d-detail">${event.detail}</div>`     : '';
   const dialogueHtml = event.dialogue ? `<div class="mdl-d-body italic">${event.dialogue}</div>` : '';
 
-  const box = document.getElementById('mdlDBox');
-  if (box) box.className = 'mdl-d-box' + (isWarning ? ' urgent' : '');
   _mdlDOpen(`
     ${portraitsHtml}
     ${textHtml}
@@ -13889,7 +13891,7 @@ function showNotifEventToast(event) {
     <div class="mdl-d-actions">
       <button class="mdl-d-btn primary" onclick="_mdlDClose();clearTimeout(window._notifModalTimer);_drainPopupQueue()">OK</button>
     </div>
-  `);
+  `, isWarning ? 'urgent' : '');
   Audio.play('event');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(() => { _mdlDClose(); _drainPopupQueue(); }, 60000);

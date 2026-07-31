@@ -5479,9 +5479,36 @@ const App = {
     }
   },
 
+  /** 下地(タブ)を今週画面へ戻す。オーバーレイ演出には触れない。
+   *  専用フロー(ドラフト/式典/リプレイ)から抜ける出口では必ずこれを通す。
+   *  戻し忘れると、状態だけ次へ進んで**画面が前のまま残り**、プレイヤーは同じ
+   *  ボタンをもう一度押すことになる(2026-07-31 ドラフト結果で発生)。 */
+  returnToWeekScreen() {
+    try {
+      // showScreen() は使わない。あれは dismissAllPopups() を呼ぶので、
+      // 上に載っている演出オーバーレイ(開幕ファンファーレ等)ごと消えてしまう。
+      // ここでやりたいのは「下地のタブを今週へ戻す」だけ。
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const weekEl = document.getElementById('screen-week');
+      if (weekEl) weekEl.classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const first = document.querySelectorAll('.nav-btn')[0];
+      if (first) first.classList.add('active');
+      if (typeof renderWeekScreen === 'function') renderWeekScreen();
+    } catch (_e) {}
+  },
+
   /** Finish scout event and continue game flow */
   scoutEventFinish() {
     Audio.play('click');
+    // ドラフト結果の「▶ 経営画面へ」は onclick から直接呼ばれるので、精算が済んだ後でも
+    // もう一度押せてしまう。二度目は scoutsThisSeason を余計に加算し、候補返却を
+    // 空振りで回すだけなので、状態には触れず画面だけ戻す(2026-07-31)。
+    if (!G.scoutCandidates && !G.scoutPicks && !G._draftResultPages) {
+      App.returnToWeekScreen();
+      refreshAll();
+      return;
+    }
     const picksCount = (G.scoutPicks || []).length;
     const log = [...G.gameLog, `🔍 スカウト活動完了: ${picksCount}名獲得`];
     // Clean up any remaining candidates
@@ -5508,13 +5535,19 @@ const App = {
       scoutCandidates: null, scoutPicks: null, scoutMaxPicks: null,
       scoutPendingPick: null, scoutEventType: null,
       scoutsThisSeason: (G.scoutsThisSeason || 0) + 1,
+      _draftResultPages: null, _draftResultIdx: 0,
       weekPhase: G.offSeason ? 'offseason' : 'manage',
     };
+    // 下地を**先に**今週画面へ戻す。後から戻すと間に合わない —
+    // この下の advanceWeek は開幕ファンファーレなどのオーバーレイを出してから帰るので、
+    // その後に showScreen を呼ぶと dismissAllPopups が演出ごと消してしまう。
+    // 逆に戻さないままだとドラフト結果の画面が残り、オフシーズン最終週では
+    // 「経営画面へ」を2回押さないと進まなかった(2026-07-31 実機)。
+    App.returnToWeekScreen();
     // If offseason, continue to next offWeek
     if (G.offSeason) {
       App.advanceWeek();
     } else {
-      showScreen('week');
       refreshAll();
     }
   },

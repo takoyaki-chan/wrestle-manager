@@ -155,10 +155,15 @@ section('9. 表彰式が無い年も同じ終わり方をする', () => {
 // 総括はレポートの週(offWeek 1)のもの。週で決め打つ。
 
 section('10. 総括は「レポートの週」だけに描く', () => {
-  assert.ok(/if \(offW === 1\) \{\n\s*const review = Engine\.seasonReview\.build\(G\);/.test(uiRender),
+  assert.ok(/if \(offW === 1 && !G\.pendingAwards\) \{\n\s*const review = Engine\.seasonReview\.build\(G\);/.test(uiRender),
     'シーズン総括の描画がレポートの週(offWeek 1)に固定されていない');
   assert.ok(!/if \(offW <= 1/.test(uiRender),
     'offWeek 0 にも総括を描いている。表彰式の直後に出てしまい、翌週もう一度出る');
+  // 2026-07-31: 週だけでは足りない。ブレイクスルー等のポップアップで表彰式が一手遅れると、
+  // その間ずっと背面に総括が見えていた。表彰式が消費する pendingAwards で伏せる。
+  // これは _seasonEndChainActive のような別立てフラグではないので、伏せっぱなしにならない。
+  assert.ok(/!G\.pendingAwards/.test(uiRender),
+    '年末表彰式が済むまで総括を伏せていない。ポップアップの背面に総括が先に見える');
 });
 
 section('11. 伏せ札方式に戻していない', () => {
