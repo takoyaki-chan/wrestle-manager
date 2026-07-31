@@ -1,5 +1,20 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 因縁の一戦ポップアップ頻度の抑制（task-41・2026-07-31）
+
+### 実装
+
+- `src/data.js` に表示頻度専用の `RIVALRY_POPUP_CONFIG` を追加した。`normalMinRivalry: 60`、`maxNormalPerShow: 1`、`normalPairCooldownWeeks: 8` とし、因縁値の計算・蓄積・決着判定の設定は変更していない。
+- `src/ui-common.js` の通常試合後「因縁の一戦」予約だけを対象に、60以上（好敵手／宿敵の称号持ちは例外）、興行あたり最高rivalryの1件、同一ペア8週クールダウンを適用した。期限切れ・不正・未来週の `_rivalryPopupSeen` エントリは各興行結果描画時に削除する。
+- 表示済み記録はセーブ対象の `G._rivalryPopupSeen` に `{ "idA-idB": absoluteWeek }` として保持する。未設定の既存セーブは空の記録として扱うため、移行不要でクラッシュしない。
+- 決着試合には通常の「因縁の一戦」を重ねず、既存の `showRivalryPopups(pendingResolutions, ...)` 専用キューを変更していない。したがって「因縁決着」「宿敵戦勝利」などの決着演出は頻度抑制の対象外である。
+
+### 検証
+
+- 新規 `test/rivalry-popup-frequency-test.js` で閾値、称号例外、興行上限、同一ペアのクールダウンと期限後再表示、決着専用キューを検証した。
+- 既存 `test/rivalry-match-dialogue-test.js` は旧仕様のrivalry 30固定値チェックを、`RIVALRY_POPUP_CONFIG.normalMinRivalry` を読む60設定のチェックへ更新した。
+- `npm test`: **150/150 PASS**。
+
 ## 実機フィードバック修正6件（task-40・2026-07-31）
 
 ### 実装
