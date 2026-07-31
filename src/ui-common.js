@@ -6832,7 +6832,15 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     return pool[((r.mq || 0) + (r.turns || 0)) % pool.length];
   };
 
-  const _face = (f, cls) => `<div class="ptv-face ${cls || ''}">${portraitImg(f.id, 96)}</div>`;
+  // face(1:1) を親より大きい inline サイズのまま入れていたため、CSS を上書きし、
+  // 左上だけが丸く切り取られていた。カード列は主役を並べるため upper(2:3) の chip を使う。
+  const _face = (f, cls) => {
+    const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+    const fallback = escHtml((f.name || '?').charAt(0));
+    return `<div class="ptv-upper ${cls || ''}">${upperUrl
+      ? `<img src="${upperUrl}" alt="${escHtml(f.name || '')}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      : ''}<span class="ptv-upper-fallback"${upperUrl ? '' : ' style="display:flex"'}>${fallback}</span></div>`;
+  };
   // U6団体バッジ統一: 対戦相手と所属団体が異なるときだけ実エンブレムを出す
   // (mockup-baseline-v0.1 §5「出す条件: 他団体が絡む試合のみ」。GRAND FINALは複数団体混成のため
   // 同一団体の組み合わせも起こり得る)
@@ -6961,7 +6969,12 @@ function renderPPVTvBroadcast(card, results, ppvName) {
   const show = () => {
     const sc = scenes[sceneIdx];
     box.innerHTML = `<div class="ptv-tv"><div class="ptv-screen">${sc.html}</div></div>`;
-    if (sc.bgm) { try { Audio.bgm.playStage(sc.bgm); } catch (e) {} }
+    if (sc.bgm) {
+      try { Audio.bgm.playStage(sc.bgm); } catch (e) {}
+    } else {
+      // 放送終了は無音。直前の頂上決戦曲を次の画面へ持ち越さない。
+      try { Audio.bgm.fadeOutStop(350); } catch (e) {}
+    }
     if (sc.se === 'rs04' && !Audio.muted) {
       try {
         const a = new window.Audio('../bgm/production-ogg/wm_se_rs04_v01.ogg');

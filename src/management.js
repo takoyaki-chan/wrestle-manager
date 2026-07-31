@@ -16322,12 +16322,14 @@ const Engine = {
         s = { ...s, ppvPhase: 'tv' };
       }
     }
-    if (s.week === PPV_SHOW_WEEK && s.ppvPhase === 'locked') {
+    // オフシーズンの復旧データが week 48 / ppvPhase を残していても、PPV を再発火させない。
+    // 現在の advanceWeek はオフシーズン処理を先に return するが、ここでも不変条件を明示する。
+    if (s.week === PPV_SHOW_WEEK && !s.offSeason && s.ppvPhase === 'locked') {
       s = { ...s, ppvPhase: 'show' };
       events.push(`🏟️ PPV GRAND FINAL「${s.ppvName}」開催日！`);
       return { state: { ...s, weekPhase: 'ppvShow' }, events };
     }
-    if (s.week === PPV_SHOW_WEEK && s.ppvPhase === 'tv') {
+    if (s.week === PPV_SHOW_WEEK && !s.offSeason && s.ppvPhase === 'tv') {
       events.push(`📺 PPV GRAND FINAL「${s.ppvName}」テレビ中継`);
       return { state: { ...s, weekPhase: 'ppvTV' }, events };
     }

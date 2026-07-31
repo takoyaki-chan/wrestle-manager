@@ -9356,9 +9356,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ptv-telop-main{font-size:13.5px;font-weight:800}
 .ptv-telop-sub{font-size:11px;color:var(--stage-text-sub);margin-top:1px}
 .ptv-hint{position:absolute;right:14px;bottom:52px;font-size:10.5px;color:var(--stage-text-sub);z-index:5;animation:ptvbl 2.4s infinite}
-.ptv-face{width:38px;height:38px;border-radius:50%;overflow:hidden;border:1px solid #44444e;flex:none;background:var(--stage-panel-2)}
-.ptv-face img{width:100%;height:100%;object-fit:cover;display:block}
-.ptv-face.is-big{width:92px;height:92px;border:2px solid var(--gold);box-shadow:0 0 30px rgba(232,189,88,.13)}
+.ptv-upper{width:46px;height:66px;border-radius:var(--radius-md,8px);overflow:hidden;border:1px solid #44444e;flex:none;background:var(--stage-panel-2);position:relative}
+.ptv-upper img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.ptv-upper-fallback{display:none;width:100%;height:100%;align-items:center;justify-content:center;background:linear-gradient(135deg,#363642,#17171d);color:var(--gold);font-weight:900}
+.ptv-upper.is-big{width:92px;height:138px;border:2px solid var(--gold);box-shadow:0 0 30px rgba(232,189,88,.13)}
+.ptv-loading{cursor:default}.ptv-loading-label{min-height:430px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--gold);font-weight:900;letter-spacing:.14em}.ptv-loading-label small{color:var(--stage-text-sub);font-size:11px;letter-spacing:.08em;margin-top:8px}
 /* 場面1 OP */
 .ptv-op{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px;text-align:center;padding:40px 20px 70px}
 .ptv-op-emblem{font-size:52px;color:var(--gold);text-shadow:0 0 26px rgba(232,189,88,.4)}
@@ -9383,7 +9385,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ptv-flash-band{background:linear-gradient(90deg,rgba(0,0,0,0) 0%,#1a1408 18%,#1a1408 82%,rgba(0,0,0,0) 100%);border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);padding:16px 18px;text-align:center}
 .ptv-flash-kicker{font-size:11px;font-weight:900;letter-spacing:.34em;color:var(--gold)}
 .ptv-flash-win{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
-.ptv-flash-win .ptv-face{width:62px;height:62px;border:2px solid var(--gold)}
+.ptv-flash-win .ptv-upper{width:62px;height:90px;border:2px solid var(--gold)}
 .ptv-flash-name{font-size:24px;font-weight:900;text-align:left}
 .ptv-flash-name small{display:block;font-size:11px;color:var(--stage-text-sub);font-weight:700;letter-spacing:.1em}
 .ptv-flash-detail{font-size:12.5px;color:var(--stage-text-sub);margin-top:9px}
@@ -9397,7 +9399,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ptv-summit{padding:56px 22px 82px;text-align:center;min-height:430px;display:flex;flex-direction:column;justify-content:center}
 .ptv-summit-kicker{font-size:12px;font-weight:900;letter-spacing:.4em;color:var(--gold)}
 .ptv-summit-vs{display:flex;align-items:flex-start;justify-content:center;gap:26px;margin:22px 0 8px}
-.ptv-summit-vs .ptv-face{margin:0 auto}
+.ptv-summit-vs .ptv-upper{margin:0 auto}
 .ptv-sname{font-size:15px;font-weight:900;margin-top:8px}
 .ptv-sorg{font-size:10.5px;color:var(--stage-text-sub)}
 .ptv-vs-big{font-size:22px;font-weight:900;color:var(--gold);align-self:center}
