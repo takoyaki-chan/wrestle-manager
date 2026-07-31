@@ -1,5 +1,34 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## DB全選手一覧の大会称号バッジ拡張（task-33・2026-07-31）
+
+### 実装
+
+- DB一覧の描画前に、全所属・FA・引退者の careerRecord.history を1回だけ走査する
+  _dbBuildTournamentTitleChampions() を追加。ジュニア／秋対抗戦／PPV GRAND FINAL／天頂戦ごとに
+  有効な最大シーズンと優勝者IDのSetを作り、同シーズンより前の優勝者IDを置き換える。
+  これにより次回大会が確定すると、前回優勝者の大会バッジは必ず消える。
+- 名前右のバッジは、王座 → 天頂戦 → PPV → ジュニア → 秋対抗戦 → 春タッグの順で表示。
+  各バッジに日本語のtitle属性を付け、.db-title-badges / .db-title-badge の
+  white-space: nowrap で長い名前でもバッジ内・バッジ列を折り返さないようにした。
+- 王座は既存の_champIds、春タッグは既存のbestTagTeam +
+  getActiveBestTagTeam()を引き続き使用。春タッグは毎年の優勝時に単一の
+  bestTagTeamを上書きする直近優勝チーム方式であり、歴代表示ではなかったため、
+  その判定を変えていない。
+- 春タッグの既存桃色は--db-title-springエイリアス化し、他大会と王座は
+  --ev-summer / --ev-autumn / --ppv-accent / --ev-winter / --gold の
+  既存トークンのみを使用。GameStateへの書き込みは追加していない。
+
+### 検証
+
+- 新規 test/db-title-badges-test.js:
+  - 合成GameStateで各大会の直近優勝者のみを集計することと、前シーズン優勝者が
+    Setから外れることを検証。
+  - 複数称号の規定順、ツールチップ、色トークン、引退者を含む集計、欠損履歴で
+    undefined / NaN を出さないことを検証。
+- npm test: **145/145 PASS**。
+- git diff --check: PASS。
+
 ## juniorTournament weekPhase ライフサイクル修正（task-31・2026-07-31）
 
 ### 根本原因

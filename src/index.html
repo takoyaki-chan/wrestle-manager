@@ -135,6 +135,8 @@
   --accent-arena-frame-loser: rgba(180,40,40,0.4);
   /* 年間カレンダー特別大会 カラーキー（春/夏/秋/冬、special-events-design-v2 B案確定） */
   --ev-spring: #e07a9a;
+  /* DBの既存「春のタッグリーグ優勝」バッジ色をトークン経由で維持する。 */
+  --db-title-spring: #ff6f9c;
   --ev-summer: #56b1d8;
   --ev-summer-rgb: 86,177,216; /* jtc-*共通コンポーネント用(--gold-rgbのJT版) */
   --ev-autumn: #c1503c;
@@ -1071,6 +1073,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .db-table tr.clickable:hover td{background:rgba(200,190,170,0.03);cursor:pointer}
 .db-ovr-gold{color:#d4a843;font-weight:700}
 .db-ovr-white{color:var(--text);font-weight:600}
+.db-title-badges{white-space:nowrap}
+.db-title-badge{display:inline-block;white-space:nowrap;font-size:10px;padding:1px 5px;border-radius:2px;background:color-mix(in srgb,var(--db-title-color) 20%,transparent);color:var(--db-title-color);border:1px solid color-mix(in srgb,var(--db-title-color) 40%,transparent);margin-left:4px}
 /* ── 殿堂 v2.0 ── */
 .db-hof-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .db-hof-filter-btn{background:rgba(200,190,170,0.06);border:1px solid rgba(200,190,170,0.12);border-radius:6px;padding:5px 10px;font-size:12px;color:var(--text-sub);cursor:pointer}
