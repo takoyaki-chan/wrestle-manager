@@ -118,10 +118,10 @@ assert.ok(result.champion && result.finalResult && result.mvpId, '最終フォ�
 const revenue = Engine.autumnWar.calcRevenueDistribution(state, result);
 assert.strictEqual(revenue.venueName, '大会場×2規模', '秋大会は大会場2興行分の特別大会として収益計算する');
 assert.strictEqual(revenue.attendance, 12000, '満員の大会場を基準にする');
-// 5076 は TICKET_PRICE_TIERS(2026-07-31 に単価-10%へ調整)から導かれる値。
+// 5414 は TICKET_PRICE_TIERS(2026-07-31 に単価-4%へ調整)から導かれる値。
 // 秋大会は「大会場×2興行分」を基準にするため calcTieredTicketRevenue(12000) とは一致しない。
 // **単価を調整したらこの期待値も更新する**(検査の主旨は段階制計算を通っていること)。
-assert.strictEqual(revenue.benchmarkTicketRevenue, 5076, '通常興行と同じ段階制チケット計算を基準値に使う');
+assert.strictEqual(revenue.benchmarkTicketRevenue, 5414, '通常興行と同じ段階制チケット計算を基準値に使う');
 assert.strictEqual(revenue.ticketRevenue, 7000, '秋大会の特別興行収入は固定7000万にする');
 assert.strictEqual(revenue.venueCost, 0, '大会主催側負担の会場費を参加団体の分配原資から控除しない');
 assert.strictEqual(revenue.gateNet, 7000, '秋大会の固定興行収入を参加枠へ分配する');

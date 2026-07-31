@@ -1205,10 +1205,10 @@ const BASE_ATTENDANCE_CURVE = [
 ];
 // v3.1: チケット単価逓減 — 集客が増えるほど1人あたり単価が下がる（薄利多売）
 const TICKET_PRICE_TIERS = [
-  { threshold: 0,     price: 0.495 },  // ~2000人: フル単価（中小会場は影響なし）
-  { threshold: 2000,  price: 0.405 },  // 2000-5000: やや割安
-  { threshold: 5000,  price: 0.315 },  // 5000-10000: 割安
-  { threshold: 10000, price: 0.225 },  // 10000+: 薄利多売
+  { threshold: 0,     price: 0.528 },  // ~2000人: フル単価（中小会場は影響なし）
+  { threshold: 2000,  price: 0.432 },  // 2000-5000: やや割安
+  { threshold: 5000,  price: 0.336 },  // 5000-10000: 割安
+  { threshold: 10000, price: 0.24 },  // 10000+: 薄利多売
 ];
 // 金銭バランス改善: グッズ収入を選手個別・週次ベースに再設計
 const GOODS_CONFIG = {
