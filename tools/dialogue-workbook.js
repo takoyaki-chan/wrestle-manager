@@ -1340,7 +1340,24 @@ function findFunctionLiteralSpans(fnText) {
   return out;
 }
 
-// 5-3. 引用符スタイルに合わせたエスケープ。
+// 5-3. ソースへ差し込むリテラル本文を作る。
+//
+// 書き戻しには意味の違う2経路があり、エスケープの扱いが逆になる。
+//
+//  (a) プレーンなリテラル(配列やオブジェクトの値)
+//      抽出側は vm で評価した「デコード済みの値」を Excel に出しており、
+//      照合も vm 評価で行う。よって差し込むときは**エスケープが必要**。
+//      → escapeForQuote()
+//
+//  (b) 関数本体から拾ったリテラル(例 `d => ` + backtick + `...` + backtick)
+//      抽出側は正規表現でソースの**生テキスト**を切り出しており、照合も生テキスト。
+//      よって差し込むときは**エスケープしてはいけない**。
+//      → rawLiteralBody()
+//
+// 2026-08-01、(b) に (a) のエスケープを掛けていたため事故が起きた:
+// `${d.rivalName}` が `\${d.rivalName}` になり、黒田記者の目6本で
+// プレースホルダが展開されなくなっていた(団体名の代わりに
+// 「${d.rivalName}」という文字列がそのまま紙面に出る)。
 function escapeForQuote(value, quoteChar) {
   let s = String(value).replace(/\\/g, '\\\\');
   s = s.replace(/\r\n/g, '\\n').replace(/\n/g, '\\n').replace(/\r/g, '\\n');
@@ -1350,6 +1367,25 @@ function escapeForQuote(value, quoteChar) {
     s = s.split(quoteChar).join(`\\${quoteChar}`);
   }
   return s;
+}
+
+// (b) 用。生テキストのまま差し込む(改行だけは1行リテラルに収める)。
+function rawLiteralBody(value) {
+  return String(value).replace(/\r\n|\r|\n/g, '\\n');
+}
+
+// 差し込んでもリテラルが壊れないか検査する。
+// - エスケープされていない終端文字(` ' ")が本文に含まれていない
+// - 末尾が奇数個のバックスラッシュで終わっていない(閉じ引用符を食う)
+function literalIsSafe(text, quoteChar) {
+  const s = String(text);
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '\\') { i++; continue; }
+    if (s[i] === quoteChar) return false;
+  }
+  let trailing = 0;
+  for (let i = s.length - 1; i >= 0 && s[i] === '\\'; i--) trailing++;
+  return trailing % 2 === 0;
 }
 
 // 5-4. ID -> 宣言(allDecls) の解決。ドット付き後付け拡張
@@ -1484,7 +1520,12 @@ function planEdit(candidate, allDecls, fileSrcMap, sandboxCtx) {
     return { ok: false, reason: `source text has changed since export (function literal #${occurrence} does not match src/${decl.file})` };
   }
   const quoteChar = spanText[target.start];
-  const newLiteral = quoteChar + escapeForQuote(candidate.revised, quoteChar) + quoteChar;
+  // 生テキスト照合の経路。エスケープを掛けると ${...} が壊れるので素で差し込む。
+  const body = rawLiteralBody(candidate.revised);
+  if (!literalIsSafe(body, quoteChar)) {
+    return { ok: false, reason: `revised text would break the ${quoteChar} literal (unescaped ${quoteChar} or trailing backslash)` };
+  }
+  const newLiteral = quoteChar + body + quoteChar;
   return {
     ok: true,
     file: decl.file,
