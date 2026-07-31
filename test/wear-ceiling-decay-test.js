@@ -97,8 +97,17 @@ section('6. 失われた幅の計算は1本', () => {
   // 「そんなに高かったはずがない」表示になる（MN で顕著）。幾何は stat-decay-bar-test.js。
   assert.ok(/statPeak/.test(viewSrc), '自己最高値(statPeak)を基準にしていない');
   assert.ok(/peak - cur/.test(viewSrc), '「自己最高値 − 現在値」を取っていない');
-  assert.ok(!/trainCapOrigin/.test(viewSrc),
-    '伸ばせる上限(trainCapOrigin)を見ている。到達していない高さまで帯が伸びる');
+  // AIに限っては statPeak を保存していないため、実際に削れた天井差を明示指定で復元する。
+  // 通常経路はこの情報を使わず、既存セーブの履歴を捏造しない。
+  assert.ok(/recoverKnownCapLoss/.test(viewSrc), 'AI用の明示的な復元経路が無い');
+  // eslint-disable-next-line no-eval
+  const view = eval('(' + viewSrc + ')');
+  global.GROWTH_CONFIG = { wearCapDecayRatio: 0.5 };
+  const ai = { S: 80, trainCap: { S: 116 }, trainCapOrigin: { S: 120 } };
+  assert.strictEqual(view(ai, 'S', 150).lostPts, 0,
+    '通常経路が天井を見て履歴を捏造している');
+  assert.strictEqual(view(ai, 'S', 150, true).lostPts, 8,
+    'AI用復元が実際に削れた天井差を表示していない');
 });
 
 section('7. まだ落ちていない選手・既存セーブには何も出さない', () => {
@@ -142,7 +151,7 @@ section('9. MN の紫と別の色にする', () => {
 section('10. 団体画面と選手詳細の両方に出す', () => {
   assert.ok(/statDecayView\(c, s, 150\)/.test(uiRender),
     '団体画面(ロスター詳細)に出ていない');
-  assert.ok(/statDecayView\(c, s\.key, 100\)/.test(ui),
+  assert.ok(/statDecayView\(c, s\.key, 150, isAiFighter\)/.test(ui),
     '選手詳細ポップアップに出ていない');
   // どちらもバーの目盛りに合った barMax を渡していること
   assert.ok(!/statDecayView\([^)]*, *undefined\)/.test(uiRender + ui), '目盛りを渡していない');

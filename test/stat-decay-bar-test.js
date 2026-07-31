@@ -158,7 +158,7 @@ section('5-b. 既存セーブは記録済みの天井の落ち幅から自己最
 
 section('6. 両方の描画箇所が同じヘルパーを通っている', () => {
   const uiRender = fs.readFileSync(path.join(root, 'src/ui-render.js'), 'utf8');
-  assert.ok(/statDecayView\(c, s\.key, 100\)/.test(src),
+  assert.ok(/statDecayView\(c, s\.key, 150, isAiFighter\)/.test(src),
     '選手詳細ポップアップがヘルパーを通っていない');
   assert.ok(/statDecayView\(c, s, 150\)/.test(uiRender),
     'ロスター詳細がヘルパーを通っていない');
