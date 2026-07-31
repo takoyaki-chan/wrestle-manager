@@ -44,7 +44,7 @@ const forwardCard = { isInverse: false, teamA: [ourRepresentative], teamB: [home
 const forward = reactionFor(forwardCard, { teamWin: 'A' }, state, true, false);
 assert.strictEqual(forward.fighter, ourRepresentative,
   'when our organization challenges and wins, our representative must speak');
-assert.ok(CHALLENGE_LINES.normal_normal.win.includes(forward.line),
+assert.ok(CHALLENGE_LINES.standard_normal.win.includes(forward.line),
   'forward victory uses a CHALLENGE_LINES win line matched to archetype/personality');
 assert.strictEqual(forward.defeated, false, 'the winning representative portrait stays in full color');
 
@@ -53,7 +53,7 @@ assert.strictEqual(forward.defeated, false, 'the winning representative portrait
 const forwardLost = reactionFor(forwardCard, { teamWin: 'B' }, state, false, true);
 assert.strictEqual(forwardLost.fighter, ourRepresentative,
   'when our organization challenges and loses, our representative still reports');
-assert.ok(CHALLENGE_LINES.normal_normal.lose.includes(forwardLost.line),
+assert.ok(CHALLENGE_LINES.standard_normal.lose.includes(forwardLost.line),
   'forward defeat uses a CHALLENGE_LINES lose line');
 assert.strictEqual(forwardLost.defeated, true, 'the defeated representative portrait is marked for grayscale styling');
 
@@ -63,7 +63,7 @@ const inverseCard = { isInverse: true, teamA: [awayChallenger], teamB: [ourDefen
 const inverse = reactionFor(inverseCard, { teamWin: 'B' }, state, true, false);
 assert.strictEqual(inverse.fighter, ourDefender,
   'when the opponent challenges and is repelled, our defender reports the win');
-assert.ok(CHALLENGE_LINES.normal_normal.win.includes(inverse.line),
+assert.ok(CHALLENGE_LINES.standard_normal.win.includes(inverse.line),
   'a repelled challenge uses a CHALLENGE_LINES win line for our defender');
 assert.strictEqual(inverse.defeated, false, 'the winning defender portrait stays in full color');
 

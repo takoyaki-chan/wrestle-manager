@@ -13,12 +13,12 @@ const ALL_CHARS = [
   {id:1,name:'阿武隈塔子',surname:'阿武隈',h:173,pw:95,sp:73,te:71,st:81,mn:80,style:'Grappler',role:'Babyface',pot:{pw:184,sp:155,te:152,st:165,mn:164},traits:['リーダー気質','人望','威圧感','引き出し上手','ガラスの身体'],personality:'normal',archetype:'composed',affinityAxis:'auto'},
   {id:2,name:'富岡加奈子',surname:'富岡',h:168,pw:90,sp:68,te:70,st:76,mn:83,style:'Grappler',role:'Babyface',pot:{pw:177,sp:148,te:151,st:159,mn:168},traits:['努力家','頑丈さ','闘志','負けず嫌い'],personality:'normal',archetype:'ojousama',affinityAxis:'auto'},
   {id:3,name:'澤出みずき',surname:'澤出',h:158,pw:73,sp:78,te:73,st:73,mn:72,style:'Allround',role:'Neutral',pot:{pw:155,sp:161,te:155,st:155,mn:154},traits:['引き出し上手','早熟','適応力'],personality:'normal',archetype:'polite',affinityAxis:'auto'},
-  {id:4,name:'高津小春',surname:'高津',h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Allround',role:'Babyface',pot:{pw:155,sp:158,te:155,st:163,mn:178},traits:['晩成','番狂わせ体質','負けず嫌い','闘志','反骨心'],personality:'bold',archetype:'normal',affinityAxis:'auto'},
-  {id:5,name:'深町真琴',surname:'深町',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Aerial',role:'Babyface',pot:{pw:135,sp:194,te:141,st:170,mn:142},traits:['努力家','華','鉄人'],personality:'normal',archetype:'normal',affinityAxis:'auto'},
+  {id:4,name:'高津小春',surname:'高津',h:161,pw:73,sp:75,te:47,st:79,mn:91,style:'Allround',role:'Babyface',pot:{pw:155,sp:158,te:155,st:163,mn:178},traits:['晩成','番狂わせ体質','負けず嫌い','闘志','反骨心'],personality:'bold',archetype:'standard',affinityAxis:'auto'},
+  {id:5,name:'深町真琴',surname:'深町',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Aerial',role:'Babyface',pot:{pw:135,sp:194,te:141,st:170,mn:142},traits:['努力家','華','鉄人'],personality:'normal',archetype:'standard',affinityAxis:'auto'},
   {id:6,name:'副沢たまき',surname:'副沢',h:161,pw:58,sp:72,te:74,st:65,mn:80,style:'Allround',role:'Neutral',pot:{pw:135,sp:154,te:156,st:144,mn:164},traits:['ムードメーカー','早熟','破天荒'],personality:'easygoing',archetype:'composed',affinityAxis:'auto'},
   {id:7,name:'高階まさみ',surname:'高階',h:161,pw:58,sp:62,te:73,st:63,mn:66,style:'Submission',role:'Babyface',pot:{pw:135,sp:141,te:155,st:142,mn:146},traits:['引き出し上手','忠誠心'],personality:'earnest',archetype:'polite',affinityAxis:'auto'},
   {id:8,name:'林真尋',surname:'林',h:174,pw:71,sp:73,te:43,st:61,mn:52,style:'Striker',role:'Neutral',pot:{pw:152,sp:155,te:116,st:139,mn:128},traits:['負けず嫌い'],personality:'emotional',archetype:'composed',affinityAxis:'auto'},
-  {id:9,name:'宇田川里奈',surname:'宇田川',h:167,pw:51,sp:62,te:54,st:63,mn:48,style:'Aerial',role:'Neutral',pot:{pw:126,sp:145,te:137,st:142,mn:113},traits:['ファンサービス'],personality:'easygoing',archetype:'normal',affinityAxis:'auto'},
+  {id:9,name:'宇田川里奈',surname:'宇田川',h:167,pw:51,sp:62,te:54,st:63,mn:48,style:'Aerial',role:'Neutral',pot:{pw:126,sp:145,te:137,st:142,mn:113},traits:['ファンサービス'],personality:'easygoing',archetype:'standard',affinityAxis:'auto'},
   {id:11,name:'橘玲美',surname:'橘',h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',pot:{pw:152,sp:155,te:186,st:158,mn:156},traits:['ヒール適性','威圧感','早熟','華'],personality:'normal',archetype:'seductive',affinityAxis:'auto'},
   {id:12,name:'生駒エリカ',surname:'生駒',h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Brawler',role:'Heel',pot:{pw:161,sp:152,te:156,st:167,mn:167},traits:['負けず嫌い','闘志','鉄人','人望','反骨心'],personality:'easygoing',archetype:'delinquent',affinityAxis:{pairedWith:11,maxOffsetDeg:30}},
   {id:13,name:'堂前ユキ',surname:'堂前',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',pot:{pw:165,sp:169,te:128,st:143,mn:155},traits:['破天荒'],personality:'quiet',archetype:'cool',affinityAxis:'auto'},
@@ -31,42 +31,42 @@ const ALL_CHARS = [
   {id:20,name:'岸ゆみえ',surname:'岸',h:155,pw:65,sp:71,te:78,st:68,mn:73,style:'Submission',role:'Babyface',pot:{pw:144,sp:152,te:161,st:148,mn:155},traits:['名勝負製造機','引き出し上手'],personality:'quiet',archetype:'polite',affinityAxis:'auto'},
   {id:21,name:'木ノ内幸音',surname:'木ノ内',h:164,pw:66,sp:53,te:53,st:68,mn:67,style:'Allround',role:'Babyface',pot:{pw:146,sp:129,te:129,st:148,mn:147},traits:['ヒール適性','ムードメーカー','華'],personality:'easygoing',archetype:'polite',affinityAxis:'auto'},
   {id:22,name:'美濃山まりな',surname:'美濃山',h:173,pw:80,sp:38,te:48,st:59,mn:48,style:'Brawler',role:'Neutral',pot:{pw:164,sp:109,te:122,st:137,mn:122},traits:['ヒール適性'],personality:'bold',archetype:'delinquent',affinityAxis:'auto'},
-  {id:23,name:'早見知子',surname:'早見',h:162,pw:51,sp:43,te:42,st:51,mn:41,style:'Striker',role:'Heel',pot:{pw:126,sp:116,te:115,st:126,mn:113},traits:['適応力'],personality:'quiet',archetype:'normal',affinityAxis:'auto'},
-  {id:24,name:'園部梨花',surname:'園部',h:158,pw:46,sp:48,te:41,st:42,mn:43,style:'Allround',role:'Heel',pot:{pw:120,sp:122,te:113,st:115,mn:116},traits:[],personality:'bold',archetype:'normal',affinityAxis:'auto'},
+  {id:23,name:'早見知子',surname:'早見',h:162,pw:51,sp:43,te:42,st:51,mn:41,style:'Striker',role:'Heel',pot:{pw:126,sp:116,te:115,st:126,mn:113},traits:['適応力'],personality:'quiet',archetype:'standard',affinityAxis:'auto'},
+  {id:24,name:'園部梨花',surname:'園部',h:158,pw:46,sp:48,te:41,st:42,mn:43,style:'Allround',role:'Heel',pot:{pw:120,sp:122,te:113,st:115,mn:116},traits:[],personality:'bold',archetype:'standard',affinityAxis:'auto'},
   {id:25,name:'石戸谷なつき',surname:'石戸谷',h:164,pw:61,sp:31,te:34,st:45,mn:38,style:'Brawler',role:'Heel',pot:{pw:139,sp:100,te:104,st:118,mn:109},traits:['早熟'],personality:'normal',archetype:'delinquent',affinityAxis:'auto'},
   {id:26,name:'宮守なつめ',surname:'宮守',h:165,pw:62,sp:72,te:58,st:66,mn:63,style:'Allround',role:'Babyface',pot:{pw:141,sp:154,te:135,st:146,mn:142},traits:['努力家','早熟'],personality:'earnest',archetype:'polite',affinityAxis:'auto'},
   {id:27,name:'八重樫舞',surname:'八重樫',h:167,pw:71,sp:63,te:42,st:66,mn:51,style:'Striker',role:'Babyface',pot:{pw:152,sp:142,te:115,st:146,mn:126},traits:['鉄人'],personality:'normal',archetype:'composed',affinityAxis:'auto'},
   {id:28,name:'岩屋みら',surname:'岩屋',h:169,pw:82,sp:74,te:62,st:55,mn:61,style:'Brawler',role:'Neutral',pot:{pw:167,sp:156,te:141,st:132,mn:139},traits:['ガラスの身体','早熟','鉄人'],personality:'normal',archetype:'delinquent',affinityAxis:'auto'},
-  {id:29,name:'相沢未来',surname:'相沢',h:162,pw:73,sp:74,te:62,st:78,mn:74,style:'Allround',role:'Babyface',pot:{pw:155,sp:156,te:141,st:161,mn:156},traits:['人望','鉄人'],personality:'normal',archetype:'normal',affinityAxis:'auto'},
-  {id:30,name:'松川杏樹',surname:'松川',h:174,pw:70,sp:74,te:68,st:72,mn:71,style:'Grappler',role:'Neutral',pot:{pw:151,sp:156,te:148,st:154,mn:152},traits:['晩成','鉄人'],personality:'easygoing',archetype:'normal',affinityAxis:'auto'},
+  {id:29,name:'相沢未来',surname:'相沢',h:162,pw:73,sp:74,te:62,st:78,mn:74,style:'Allround',role:'Babyface',pot:{pw:155,sp:156,te:141,st:161,mn:156},traits:['人望','鉄人'],personality:'normal',archetype:'standard',affinityAxis:'auto'},
+  {id:30,name:'松川杏樹',surname:'松川',h:174,pw:70,sp:74,te:68,st:72,mn:71,style:'Grappler',role:'Neutral',pot:{pw:151,sp:156,te:148,st:154,mn:152},traits:['晩成','鉄人'],personality:'easygoing',archetype:'standard',affinityAxis:'auto'},
   {id:31,name:'平松かなみ',surname:'平松',h:158,pw:61,sp:67,te:76,st:64,mn:72,style:'Submission',role:'Babyface',pot:{pw:139,sp:147,te:159,st:143,mn:154},traits:['努力家','適応力'],personality:'normal',archetype:'polite',affinityAxis:'auto'},
-  {id:32,name:'双里明日香',surname:'双里',h:161,pw:54,sp:61,te:68,st:67,mn:60,style:'Submission',role:'Babyface',pot:{pw:130,sp:139,te:148,st:147,mn:138},traits:['負けず嫌い'],personality:'earnest',archetype:'normal',affinityAxis:'auto'},
-  {id:33,name:'梅ヶ丘みのり',surname:'梅ヶ丘',h:163,pw:70,sp:68,te:72,st:75,mn:80,style:'Allround',role:'Babyface',pot:{pw:144,sp:148,te:152,st:157,mn:164},traits:['リーダー気質','負けず嫌い'],personality:'earnest',archetype:'normal',affinityAxis:'auto'},
+  {id:32,name:'双里明日香',surname:'双里',h:161,pw:54,sp:61,te:68,st:67,mn:60,style:'Submission',role:'Babyface',pot:{pw:130,sp:139,te:148,st:147,mn:138},traits:['負けず嫌い'],personality:'earnest',archetype:'standard',affinityAxis:'auto'},
+  {id:33,name:'梅ヶ丘みのり',surname:'梅ヶ丘',h:163,pw:70,sp:68,te:72,st:75,mn:80,style:'Allround',role:'Babyface',pot:{pw:144,sp:148,te:152,st:157,mn:164},traits:['リーダー気質','負けず嫌い'],personality:'earnest',archetype:'standard',affinityAxis:'auto'},
   {id:34,name:'北畠吉乃',surname:'北畠',h:162,pw:68,sp:72,te:84,st:72,mn:69,style:'Submission',role:'Neutral',pot:{pw:148,sp:154,te:169,st:154,mn:150},traits:['破天荒','早熟','努力家'],personality:'quiet',archetype:'composed',affinityAxis:'auto'},
-  {id:35,name:'上野原弥生',surname:'上野原',h:179,pw:82,sp:58,te:63,st:68,mn:58,style:'Grappler',role:'Neutral',pot:{pw:177,sp:135,te:142,st:148,mn:135},traits:['頑丈さ'],personality:'bold',archetype:'normal',affinityAxis:'auto'},
+  {id:35,name:'上野原弥生',surname:'上野原',h:179,pw:82,sp:58,te:63,st:68,mn:58,style:'Grappler',role:'Neutral',pot:{pw:177,sp:135,te:142,st:148,mn:135},traits:['頑丈さ'],personality:'bold',archetype:'standard',affinityAxis:'auto'},
   {id:36,name:'真鍋綾乃',surname:'真鍋',h:181,pw:80,sp:54,te:65,st:63,mn:60,style:'Grappler',role:'Neutral',pot:{pw:164,sp:130,te:144,st:142,mn:138},traits:['頑丈さ'],personality:'quiet',archetype:'cool',affinityAxis:'auto'},
   {id:37,name:'白銀麗子',surname:'白銀',h:165,pw:74,sp:81,te:79,st:79,mn:74,style:'Allround',role:'Babyface',pot:{pw:148,sp:158,te:158,st:154,mn:148},traits:['不屈','華','頑丈さ'],personality:'bold',archetype:'polite',affinityAxis:'auto'},
   {id:38,name:'芝彩音',surname:'芝',h:168,pw:88,sp:64,te:67,st:78,mn:76,style:'Grappler',role:'Babyface',pot:{pw:164,sp:132,te:137,st:152,mn:149},traits:['華','闘志'],personality:'earnest',archetype:'ojousama',affinityAxis:'auto'},
   {id:39,name:'神谷沙奈絵',surname:'神谷',h:161,pw:63,sp:76,te:64,st:65,mn:52,style:'Striker',role:'Neutral',pot:{pw:138,sp:159,te:143,st:144,mn:128},traits:['忠誠心'],personality:'quiet',archetype:'cool',affinityAxis:'auto'},
-  {id:40,name:'高輪まみ',surname:'高輪',h:149,pw:51,sp:67,te:54,st:71,mn:71,style:'Allround',role:'Babyface',pot:{pw:126,sp:147,te:130,st:152,mn:152},traits:['頑丈さ'],personality:'earnest',archetype:'normal',affinityAxis:'auto'},
+  {id:40,name:'高輪まみ',surname:'高輪',h:149,pw:51,sp:67,te:54,st:71,mn:71,style:'Allround',role:'Babyface',pot:{pw:126,sp:147,te:130,st:152,mn:152},traits:['頑丈さ'],personality:'earnest',archetype:'standard',affinityAxis:'auto'},
   {id:41,name:'根岸亞里亞',surname:'根岸',h:163,pw:68,sp:73,te:81,st:71,mn:71,style:'Submission',role:'Heel',pot:{pw:148,sp:155,te:165,st:152,mn:152},traits:['ヒール適性','早熟'],personality:'easygoing',archetype:'seductive',affinityAxis:'auto'},
   {id:42,name:'本郷真理子',surname:'本郷',h:170,pw:88,sp:67,te:49,st:66,mn:71,style:'Grappler',role:'Heel',pot:{pw:166,sp:147,te:132,st:146,mn:152},traits:['ヒール適性','威圧感'],personality:'bold',archetype:'delinquent',affinityAxis:'auto'},
   {id:43,name:'金沢文',surname:'金沢',h:181,pw:84,sp:59,te:48,st:58,mn:62,style:'Grappler',role:'Neutral',pot:{pw:169,sp:127,te:112,st:135,mn:141},traits:['頑丈さ'],personality:'normal',archetype:'delinquent',affinityAxis:'auto'},
   {id:44,name:'福浦理乃',surname:'福浦',h:153,pw:46,sp:53,te:49,st:44,mn:43,style:'Allround',role:'Heel',pot:{pw:120,sp:129,te:124,st:117,mn:116},traits:[],personality:'emotional',archetype:'composed',affinityAxis:'auto'},
   {id:45,name:'高槻千歳',surname:'高槻',h:164,pw:71,sp:77,te:79,st:74,mn:74,style:'Allround',role:'Heel',pot:{pw:152,sp:160,te:163,st:156,mn:156},traits:['リーダー気質','華','野心'],personality:'quiet',archetype:'seductive',affinityAxis:'auto'},
-  {id:46,name:'井沢遥',surname:'井沢',h:165,pw:68,sp:73,te:82,st:64,mn:77,style:'Submission',role:'Babyface',pot:{pw:148,sp:155,te:167,st:143,mn:160},traits:['不屈','名勝負製造機','引き出し上手','負けず嫌い'],personality:'earnest',archetype:'normal',affinityAxis:'auto'},
+  {id:46,name:'井沢遥',surname:'井沢',h:165,pw:68,sp:73,te:82,st:64,mn:77,style:'Submission',role:'Babyface',pot:{pw:148,sp:155,te:167,st:143,mn:160},traits:['不屈','名勝負製造機','引き出し上手','負けず嫌い'],personality:'earnest',archetype:'standard',affinityAxis:'auto'},
   {id:47,name:'斎藤麻衣',surname:'斎藤',h:156,pw:64,sp:68,te:76,st:69,mn:73,style:'Striker',role:'Neutral',pot:{pw:143,sp:141,te:146,st:143,mn:155},traits:['早熟'],personality:'bold',archetype:'composed',affinityAxis:'auto'},
   {id:48,name:'菊池璃子',surname:'菊池',h:162,pw:74,sp:76,te:69,st:71,mn:78,style:'Striker',role:'Neutral',pot:{pw:156,sp:159,te:150,st:152,mn:161},traits:['負けず嫌い','適応力','闘志'],personality:'bold',archetype:'composed',affinityAxis:'auto'},
   {id:49,name:'高橋まゆみ',surname:'高橋',h:161,pw:66,sp:70,te:73,st:68,mn:75,style:'Allround',role:'Babyface',pot:{pw:146,sp:151,te:155,st:148,mn:158},traits:['ファンサービス','名���負製造機','華'],personality:'earnest',archetype:'polite',affinityAxis:'auto'},
   {id:50,name:'相田萌',surname:'相田',h:156,pw:64,sp:63,te:63,st:67,mn:55,style:'Allround',role:'Neutral',pot:{pw:143,sp:142,te:142,st:147,mn:132},traits:['ファンサービス','適応力'],personality:'easygoing',archetype:'seductive',affinityAxis:'auto'},
   {id:51,name:'三橋ふみえ',surname:'三橋',h:172,pw:63,sp:59,te:81,st:58,mn:50,style:'Submission',role:'Neutral',pot:{pw:142,sp:137,te:165,st:135,mn:125},traits:['ヒール適性','ファンサービス'],personality:'easygoing',archetype:'seductive',affinityAxis:'auto'},
   {id:52,name:'西川ちあき',surname:'西川',h:171,pw:68,sp:58,te:48,st:58,mn:54,style:'Striker',role:'Heel',pot:{pw:148,sp:135,te:122,st:135,mn:135},traits:[],personality:'normal',archetype:'cool',affinityAxis:'auto'},
-  {id:53,name:'小森さなえ',surname:'小森',h:164,pw:68,sp:48,te:38,st:58,mn:60,style:'Brawler',role:'Neutral',pot:{pw:148,sp:122,te:109,st:135,mn:138},traits:['ムードメーカー'],personality:'normal',archetype:'normal',affinityAxis:'auto'},
+  {id:53,name:'小森さなえ',surname:'小森',h:164,pw:68,sp:48,te:38,st:58,mn:60,style:'Brawler',role:'Neutral',pot:{pw:148,sp:122,te:109,st:135,mn:138},traits:['ムードメーカー'],personality:'normal',archetype:'standard',affinityAxis:'auto'},
   {id:54,name:'阿部みのり',surname:'阿部',h:154,pw:43,sp:40,te:38,st:48,mn:50,style:'Allround',role:'Babyface',pot:{pw:122,sp:135,te:138,st:128,mn:144},traits:[],personality:'shy',archetype:'polite',affinityAxis:'auto'},
   {id:55,name:'大久保桃子',surname:'大久保',h:163,pw:72,sp:73,te:74,st:71,mn:80,style:'Allround',role:'Babyface',pot:{pw:154,sp:155,te:156,st:152,mn:164},traits:['不屈','鉄人','頑丈さ'],personality:'bold',archetype:'polite',affinityAxis:'auto'},
   {id:56,name:'片桐ありさ',surname:'片桐',h:167,pw:69,sp:68,te:85,st:67,mn:76,style:'Submission',role:'Neutral',pot:{pw:152,sp:152,te:171,st:147,mn:159},traits:['ライバル体質','負けず嫌い'],personality:'normal',archetype:'seductive',affinityAxis:'auto'},
   {id:57,name:'浅見里緒菜',surname:'浅見',h:158,pw:60,sp:58,te:74,st:61,mn:68,style:'Submission',role:'Heel',pot:{pw:138,sp:135,te:156,st:139,mn:148},traits:['リーダー気質','早熟','負けず嫌い','野心'],personality:'bold',archetype:'seductive',affinityAxis:'auto'},
-  {id:58,name:'丹羽穂垂',surname:'丹羽',h:169,pw:76,sp:54,te:63,st:64,mn:57,style:'Allround',role:'Neutral',pot:{pw:159,sp:130,te:142,st:143,mn:134},traits:['引き出し上手','負けず嫌い'],personality:'bold',archetype:'normal',affinityAxis:'auto'},
+  {id:58,name:'丹羽穂垂',surname:'丹羽',h:169,pw:76,sp:54,te:63,st:64,mn:57,style:'Allround',role:'Neutral',pot:{pw:159,sp:130,te:142,st:143,mn:134},traits:['引き出し上手','負けず嫌い'],personality:'bold',archetype:'standard',affinityAxis:'auto'},
   {id:59,name:'池辺マリ',surname:'池辺',h:162,pw:70,sp:51,te:40,st:62,mn:53,style:'Brawler',role:'Heel',pot:{pw:141,sp:126,te:112,st:137,mn:129},traits:['負けず嫌い'],personality:'bold',archetype:'delinquent',affinityAxis:'auto'},
   {id:60,name:'馬入橋ほとり',surname:'馬入橋',h:157,pw:82,sp:68,te:59,st:70,mn:78,style:'Grappler',role:'Babyface',pot:{pw:157,sp:138,te:137,st:141,mn:161},traits:['早熟','鉄人','頑丈さ'],personality:'earnest',archetype:'composed',affinityAxis:'auto'},
   {id:61,name:'観音崎せりか',surname:'観音崎',h:169,pw:69,sp:73,te:71,st:72,mn:76,style:'Allround',role:'Heel',pot:{pw:150,sp:155,te:152,st:154,mn:159},traits:['ムードメーカー','人望'],personality:'bold',archetype:'seductive',affinityAxis:'auto'},
@@ -76,45 +76,45 @@ const ALL_CHARS = [
   {id:65,name:'倉見菜々',surname:'倉見',h:161,pw:72,sp:73,te:77,st:79,mn:84,style:'Allround',role:'Neutral',pot:{pw:142,sp:148,te:152,st:163,mn:169},traits:['ファンサービス','名勝負製造機'],personality:'easygoing',archetype:'seductive',affinityAxis:'auto'},
   {id:66,name:'長谷川レオナ',surname:'長谷川',h:164,pw:75,sp:70,te:75,st:69,mn:78,style:'Allround',role:'Neutral',pot:{pw:155,sp:151,te:161,st:150,mn:161},traits:['人望','引き出し上手'],personality:'normal',archetype:'seductive',affinityAxis:'auto'},
   {id:67,name:'柳島みずほ',surname:'柳島',h:165,pw:83,sp:61,te:68,st:73,mn:83,style:'Grappler',role:'Babyface',pot:{pw:161,sp:139,te:148,st:155,mn:168},traits:['ファンサービス','華','野心'],personality:'normal',archetype:'polite',affinityAxis:'auto'},
-  {id:68,name:'大庭愛菜',surname:'大庭',h:155,pw:68,sp:77,te:52,st:70,mn:76,style:'Striker',role:'Neutral',pot:{pw:138,sp:150,te:128,st:146,mn:159},traits:['負けず嫌い'],personality:'bold',archetype:'normal',affinityAxis:'auto'},
-  {id:69,name:'早川モナ',surname:'早川',h:162,pw:63,sp:74,te:63,st:74,mn:64,style:'Aerial',role:'Babyface',pot:{pw:142,sp:156,te:142,st:156,mn:143},traits:['華','負けず嫌い'],personality:'easygoing',archetype:'normal',affinityAxis:'auto'},
-  {id:70,name:'浜竹美咲',surname:'浜竹',h:167,pw:80,sp:57,te:63,st:68,mn:68,style:'Grappler',role:'Neutral',pot:{pw:164,sp:134,te:142,st:148,mn:148},traits:['引き出し上手','忠誠心'],personality:'normal',archetype:'normal',affinityAxis:'auto'},
+  {id:68,name:'大庭愛菜',surname:'大庭',h:155,pw:68,sp:77,te:52,st:70,mn:76,style:'Striker',role:'Neutral',pot:{pw:138,sp:150,te:128,st:146,mn:159},traits:['負けず嫌い'],personality:'bold',archetype:'standard',affinityAxis:'auto'},
+  {id:69,name:'早川モナ',surname:'早川',h:162,pw:63,sp:74,te:63,st:74,mn:64,style:'Aerial',role:'Babyface',pot:{pw:142,sp:156,te:142,st:156,mn:143},traits:['華','負けず嫌い'],personality:'easygoing',archetype:'standard',affinityAxis:'auto'},
+  {id:70,name:'浜竹美咲',surname:'浜竹',h:167,pw:80,sp:57,te:63,st:68,mn:68,style:'Grappler',role:'Neutral',pot:{pw:164,sp:134,te:142,st:148,mn:148},traits:['引き出し上手','忠誠心'],personality:'normal',archetype:'standard',affinityAxis:'auto'},
   {id:71,name:'東金沙織',surname:'東金',h:167,pw:70,sp:62,te:69,st:62,mn:67,style:'Allround',role:'Neutral',pot:{pw:145,sp:134,te:150,st:141,mn:147},traits:['ファンサービス'],personality:'emotional',archetype:'seductive',affinityAxis:'auto'},
   {id:72,name:'穴澤ほのか',surname:'穴澤',h:168,pw:74,sp:58,te:65,st:63,mn:70,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:144,st:142,mn:151},traits:['ファンサービス','引き出し上手','野心'],personality:'normal',archetype:'polite',affinityAxis:'auto'},
   {id:73,name:'大馬越よし子',surname:'大馬越',h:179,pw:84,sp:48,te:56,st:67,mn:68,style:'Grappler',role:'Neutral',pot:{pw:188,sp:122,te:148,st:147,mn:148},traits:['威圧感','頑丈さ'],personality:'bold',archetype:'delinquent',affinityAxis:'auto'},
   {id:74,name:'富士見ヶ丘遥',surname:'富士見ヶ丘',h:164,pw:60,sp:68,te:58,st:66,mn:70,style:'Allround',role:'Babyface',pot:{pw:138,sp:148,te:135,st:146,mn:151},traits:['ファンサービス'],personality:'earnest',archetype:'polite',affinityAxis:'auto'},
-  {id:75,name:'海老名栞',surname:'海老名',h:159,pw:53,sp:58,te:67,st:63,mn:80,style:'Submission',role:'Babyface',pot:{pw:129,sp:135,te:147,st:142,mn:164},traits:['ファンサービス','ライバル体質','野心'],personality:'easygoing',archetype:'normal',affinityAxis:'auto'},
+  {id:75,name:'海老名栞',surname:'海老名',h:159,pw:53,sp:58,te:67,st:63,mn:80,style:'Submission',role:'Babyface',pot:{pw:129,sp:135,te:147,st:142,mn:164},traits:['ファンサービス','ライバル体質','野心'],personality:'easygoing',archetype:'standard',affinityAxis:'auto'},
   {id:76,name:'栗林あかり',surname:'栗林',h:153,pw:68,sp:68,te:40,st:66,mn:58,style:'Striker',role:'Neutral',pot:{pw:148,sp:148,te:112,st:146,mn:135},traits:['ライバル体質','負けず嫌い'],personality:'earnest',archetype:'polite',affinityAxis:'auto'},
   {id:77,name:'新見ゆり',surname:'新見',h:168,pw:66,sp:57,te:63,st:54,mn:53,style:'Allround',role:'Neutral',pot:{pw:146,sp:134,te:142,st:130,mn:129},traits:['引き出し上手'],personality:'earnest',archetype:'seductive',affinityAxis:'auto'},
-  {id:78,name:'椿山みさき',surname:'椿山',h:163,pw:58,sp:54,te:51,st:63,mn:60,style:'Allround',role:'Babyface',pot:{pw:137,sp:130,te:141,st:142,mn:138},traits:['引き出し上手','華','負けず嫌い'],personality:'normal',archetype:'normal',affinityAxis:'auto'},
+  {id:78,name:'椿山みさき',surname:'椿山',h:163,pw:58,sp:54,te:51,st:63,mn:60,style:'Allround',role:'Babyface',pot:{pw:137,sp:130,te:141,st:142,mn:138},traits:['引き出し上手','華','負けず嫌い'],personality:'normal',archetype:'standard',affinityAxis:'auto'},
   {id:79,name:'久堂梨々花',surname:'久堂',h:156,pw:67,sp:63,te:46,st:56,mn:38,style:'Brawler',role:'Heel',pot:{pw:147,sp:142,te:120,st:133,mn:133},traits:['ヒール適性'],personality:'bold',archetype:'delinquent',affinityAxis:'auto'},
   {id:80,name:'高島さや',surname:'高島',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',pot:{pw:146,sp:164,te:153,st:144,mn:153},traits:['ファンサービス','ムードメーカー'],personality:'shy',archetype:'polite',affinityAxis:'auto'},
   // ── 新規キャラクター（v1.4 GameID 81〜99）──
-  {id:81,name:'坂本莉衣奈',surname:'坂本',h:153,pw:68,sp:76,te:65,st:78,mn:77,style:'Aerial',role:'Neutral',pot:{pw:128,sp:146,te:144,st:154,mn:160},traits:['ムードメーカー'],personality:'easygoing',archetype:'normal',affinityAxis:'auto'},
-  {id:82,name:'近藤ゆりか',surname:'近藤',h:166,pw:68,sp:72,te:70,st:71,mn:73,style:'Grappler',role:'Neutral',pot:{pw:148,sp:154,te:151,st:152,mn:155},traits:['不屈','鉄人'],personality:'earnest',archetype:'normal',affinityAxis:'auto'},
-  {id:83,name:'佐久間ひより',surname:'佐久間',h:151,pw:61,sp:58,te:48,st:56,mn:68,style:'Allround',role:'Babyface',pot:{pw:139,sp:135,te:122,st:133,mn:148},traits:['負けず嫌い'],personality:'earnest',archetype:'normal',affinityAxis:'auto'},
-  {id:84,name:'南谷杏',surname:'南谷',h:166,pw:65,sp:56,te:63,st:59,mn:50,style:'Allround',role:'Neutral',pot:{pw:144,sp:133,te:142,st:137,mn:125},traits:['ファンサービス'],personality:'bold',archetype:'normal',affinityAxis:'auto'},
+  {id:81,name:'坂本莉衣奈',surname:'坂本',h:153,pw:68,sp:76,te:65,st:78,mn:77,style:'Aerial',role:'Neutral',pot:{pw:128,sp:146,te:144,st:154,mn:160},traits:['ムードメーカー'],personality:'easygoing',archetype:'standard',affinityAxis:'auto'},
+  {id:82,name:'近藤ゆりか',surname:'近藤',h:166,pw:68,sp:72,te:70,st:71,mn:73,style:'Grappler',role:'Neutral',pot:{pw:148,sp:154,te:151,st:152,mn:155},traits:['不屈','鉄人'],personality:'earnest',archetype:'standard',affinityAxis:'auto'},
+  {id:83,name:'佐久間ひより',surname:'佐久間',h:151,pw:61,sp:58,te:48,st:56,mn:68,style:'Allround',role:'Babyface',pot:{pw:139,sp:135,te:122,st:133,mn:148},traits:['負けず嫌い'],personality:'earnest',archetype:'standard',affinityAxis:'auto'},
+  {id:84,name:'南谷杏',surname:'南谷',h:166,pw:65,sp:56,te:63,st:59,mn:50,style:'Allround',role:'Neutral',pot:{pw:144,sp:133,te:142,st:137,mn:125},traits:['ファンサービス'],personality:'bold',archetype:'standard',affinityAxis:'auto'},
   {id:85,name:'鴨志田ルーシー',surname:'鴨志田',h:172,pw:74,sp:58,te:43,st:69,mn:73,style:'Grappler',role:'Neutral',pot:{pw:156,sp:135,te:116,st:150,mn:155},traits:['頑丈さ'],personality:'earnest',archetype:'composed',affinityAxis:'auto'},
   {id:86,name:'芹沢亜里紗',surname:'芹沢',h:166,pw:70,sp:70,te:53,st:58,mn:61,style:'Allround',role:'Heel',pot:{pw:151,sp:151,te:129,st:135,mn:139},traits:['ファンサービス'],personality:'emotional',archetype:'seductive',affinityAxis:'auto'},
-  {id:87,name:'レオナ・O・シュタインフェルト',surname:'シュタインフェルト',h:152,pw:72,sp:77,te:43,st:65,mn:68,style:'Aerial',role:'Babyface',pot:{pw:154,sp:160,te:116,st:144,mn:148},traits:['華'],personality:'earnest',archetype:'normal',affinityAxis:'auto'},
+  {id:87,name:'レオナ・O・シュタインフェルト',surname:'シュタインフェルト',h:152,pw:72,sp:77,te:43,st:65,mn:68,style:'Aerial',role:'Babyface',pot:{pw:154,sp:160,te:116,st:144,mn:148},traits:['華'],personality:'earnest',archetype:'standard',affinityAxis:'auto'},
   {id:88,name:'愛川明日香',surname:'愛川',h:162,pw:52,sp:54,te:70,st:65,mn:48,style:'Allround',role:'Heel',pot:{pw:128,sp:130,te:151,st:144,mn:122},traits:[],personality:'easygoing',archetype:'seductive',affinityAxis:'auto'},
-  {id:89,name:'赤羽あんな',surname:'赤羽',h:163,pw:73,sp:75,te:64,st:69,mn:68,style:'Aerial',role:'Neutral',pot:{pw:136,sp:148,te:136,st:126,mn:148},traits:['ファンサービス'],personality:'bold',archetype:'normal',affinityAxis:'auto'},
+  {id:89,name:'赤羽あんな',surname:'赤羽',h:163,pw:73,sp:75,te:64,st:69,mn:68,style:'Aerial',role:'Neutral',pot:{pw:136,sp:148,te:136,st:126,mn:148},traits:['ファンサービス'],personality:'bold',archetype:'standard',affinityAxis:'auto'},
   {id:90,name:'玉手すみれ',surname:'玉手',h:161,pw:72,sp:69,te:75,st:74,mn:72,style:'Grappler',role:'Neutral',pot:{pw:156,sp:132,te:141,st:142,mn:154},traits:['ヒール適性','威圧感','華'],personality:'normal',archetype:'polite',affinityAxis:'auto'},
-  {id:91,name:'等々力あかね',surname:'等々力',h:170,pw:71,sp:72,te:68,st:74,mn:68,style:'Allround',role:'Neutral',pot:{pw:142,sp:144,te:138,st:146,mn:128},traits:['負けず嫌い'],personality:'earnest',archetype:'normal',affinityAxis:'auto'},
+  {id:91,name:'等々力あかね',surname:'等々力',h:170,pw:71,sp:72,te:68,st:74,mn:68,style:'Allround',role:'Neutral',pot:{pw:142,sp:144,te:138,st:146,mn:128},traits:['負けず嫌い'],personality:'earnest',archetype:'standard',affinityAxis:'auto'},
   {id:92,name:'飯島冴子',surname:'飯島',h:170,pw:66,sp:58,te:69,st:46,mn:44,style:'Submission',role:'Neutral',pot:{pw:146,sp:135,te:137,st:120,mn:117},traits:['忠誠心'],personality:'earnest',archetype:'seductive',affinityAxis:'auto'},
   {id:93,name:'松久保伊織',surname:'松久保',h:163,pw:61,sp:64,te:69,st:59,mn:54,style:'Grappler',role:'Babyface',pot:{pw:139,sp:143,te:150,st:137,mn:130},traits:['忠誠心','早熟'],personality:'normal',archetype:'polite',affinityAxis:'auto'},
   {id:94,name:'須藤美月',surname:'須藤',h:158,pw:58,sp:58,te:65,st:48,mn:45,style:'Submission',role:'Heel',pot:{pw:135,sp:135,te:144,st:122,mn:118},traits:['ヒール適性'],personality:'bold',archetype:'composed',affinityAxis:'auto'},
   {id:95,name:'小西ゆきえ',surname:'小西',h:165,pw:57,sp:63,te:77,st:61,mn:74,style:'Allround',role:'Neutral',pot:{pw:134,sp:129,te:151,st:139,mn:156},traits:['ガラスの身体','ファンサービス','早熟'],personality:'earnest',archetype:'seductive',affinityAxis:'auto'},
   {id:96,name:'松下真理亜',surname:'松下',h:171,pw:72,sp:71,te:65,st:68,mn:58,style:'Allround',role:'Neutral',pot:{pw:154,sp:152,te:144,st:148,mn:135},traits:['ファンサービス','早熟'],personality:'normal',archetype:'composed',affinityAxis:'auto'},
-  {id:97,name:'岩崎みどり',surname:'岩崎',h:158,pw:70,sp:79,te:48,st:74,mn:62,style:'Allround',role:'Neutral',pot:{pw:144,sp:154,te:134,st:148,mn:141},traits:['努力家','負けず嫌い','頑丈さ'],personality:'earnest',archetype:'normal',affinityAxis:'auto'},
+  {id:97,name:'岩崎みどり',surname:'岩崎',h:158,pw:70,sp:79,te:48,st:74,mn:62,style:'Allround',role:'Neutral',pot:{pw:144,sp:154,te:134,st:148,mn:141},traits:['努力家','負けず嫌い','頑丈さ'],personality:'earnest',archetype:'standard',affinityAxis:'auto'},
   {id:98,name:'米山杏里',surname:'米山',h:169,pw:69,sp:64,te:77,st:68,mn:71,style:'Allround',role:'Babyface',pot:{pw:139,sp:143,te:148,st:140,mn:152},traits:['ガラスの身体','リーダー気質','人望','引き出し上手'],personality:'normal',archetype:'polite',affinityAxis:'auto'},
-  {id:99,name:'三浦早紀',surname:'三浦',h:166,pw:73,sp:73,te:67,st:78,mn:65,style:'Grappler',role:'Babyface',pot:{pw:155,sp:155,te:145,st:161,mn:144},traits:['ファンサービス','ライバル体質','早熟'],personality:'normal',archetype:'normal',affinityAxis:'auto'},
+  {id:99,name:'三浦早紀',surname:'三浦',h:166,pw:73,sp:73,te:67,st:78,mn:65,style:'Grappler',role:'Babyface',pot:{pw:155,sp:155,te:145,st:161,mn:144},traits:['ファンサービス','ライバル体質','早熟'],personality:'normal',archetype:'standard',affinityAxis:'auto'},
   // ── 新規キャラクター（v1.5 GameID 100〜128）──
   {id:100,name:'土岐山乃ノ佳',surname:'土岐山',h:152,pw:48,sp:48,te:60,st:49,mn:43,style:'Aerial',role:'Babyface',pot:{pw:122,sp:122,te:138,st:124,mn:116},traits:['努力家'],personality:'normal',archetype:'polite',affinityAxis:'auto'},
   {id:101,name:'沢登鮎',surname:'沢登',h:168,pw:68,sp:51,te:64,st:69,mn:51,style:'Grappler',role:'Babyface',pot:{pw:148,sp:126,te:143,st:150,mn:126},traits:['引き出し上手'],personality:'easygoing',archetype:'polite',affinityAxis:'auto'},
   {id:102,name:'大山たかみ',surname:'大山',h:179,pw:71,sp:51,te:45,st:52,mn:51,style:'Striker',role:'Heel',pot:{pw:152,sp:126,te:118,st:128,mn:126},traits:[],personality:'normal',archetype:'composed',affinityAxis:'auto'},
   {id:103,name:'財津琴美',surname:'財津',h:154,pw:54,sp:58,te:64,st:67,mn:61,style:'Allround',role:'Babyface',pot:{pw:130,sp:135,te:143,st:147,mn:139},traits:['努力家'],personality:'earnest',archetype:'polite',affinityAxis:'auto'},
-  {id:104,name:'吉野萌子',surname:'吉野',h:149,pw:48,sp:55,te:52,st:52,mn:48,style:'Aerial',role:'Neutral',pot:{pw:122,sp:132,te:128,st:128,mn:122},traits:[],personality:'emotional',archetype:'normal',affinityAxis:'auto'},
+  {id:104,name:'吉野萌子',surname:'吉野',h:149,pw:48,sp:55,te:52,st:52,mn:48,style:'Aerial',role:'Neutral',pot:{pw:122,sp:132,te:128,st:128,mn:122},traits:[],personality:'emotional',archetype:'standard',affinityAxis:'auto'},
   {id:105,name:'黒岩千晶',surname:'黒岩',h:181,pw:81,sp:54,te:52,st:64,mn:56,style:'Grappler',role:'Neutral',pot:{pw:165,sp:130,te:128,st:143,mn:133},traits:['頑丈さ'],personality:'normal',archetype:'composed',affinityAxis:'auto'},
   {id:106,name:'赤沼紗稀',surname:'赤沼',h:166,pw:61,sp:67,te:58,st:48,mn:50,style:'Striker',role:'Neutral',pot:{pw:139,sp:147,te:135,st:122,mn:125},traits:[],personality:'normal',archetype:'cool',affinityAxis:'auto'},
   {id:107,name:'松岡綾乃',surname:'松岡',h:169,pw:47,sp:58,te:71,st:58,mn:57,style:'Submission',role:'Neutral',pot:{pw:121,sp:135,te:152,st:135,mn:134},traits:['引き出し上手'],personality:'normal',archetype:'cool',affinityAxis:'auto'},
@@ -122,17 +122,17 @@ const ALL_CHARS = [
   {id:109,name:'戸塚ゆかり',surname:'戸塚',h:160,pw:66,sp:55,te:53,st:68,mn:62,style:'Aerial',role:'Babyface',pot:{pw:146,sp:132,te:129,st:148,mn:141},traits:['ムードメーカー'],personality:'easygoing',archetype:'polite',affinityAxis:'auto'},
   {id:110,name:'若林美佐子',surname:'若林',h:166,pw:64,sp:57,te:63,st:68,mn:52,style:'Allround',role:'Neutral',pot:{pw:143,sp:134,te:142,st:148,mn:128},traits:['引き出し上手'],personality:'normal',archetype:'composed',affinityAxis:'auto'},
   {id:111,name:'相模あずみ',surname:'相模',h:164,pw:62,sp:66,te:58,st:64,mn:67,style:'Grappler',role:'Neutral',pot:{pw:141,sp:146,te:135,st:143,mn:147},traits:['ライバル体質','負けず嫌い'],personality:'normal',archetype:'composed',affinityAxis:'auto'},
-  {id:112,name:'朝比奈ひかり',surname:'朝比奈',h:162,pw:52,sp:56,te:48,st:63,mn:59,style:'Aerial',role:'Babyface',pot:{pw:128,sp:133,te:122,st:142,mn:137},traits:['ファンサービス','華'],personality:'shy',archetype:'normal',affinityAxis:'auto'},
+  {id:112,name:'朝比奈ひかり',surname:'朝比奈',h:162,pw:52,sp:56,te:48,st:63,mn:59,style:'Aerial',role:'Babyface',pot:{pw:128,sp:133,te:122,st:142,mn:137},traits:['ファンサービス','華'],personality:'shy',archetype:'standard',affinityAxis:'auto'},
   {id:113,name:'綿貫すず',surname:'綿貫',h:159,pw:51,sp:61,te:53,st:52,mn:54,style:'Striker',role:'Neutral',pot:{pw:126,sp:139,te:129,st:128,mn:130},traits:['ファンサービス','華'],personality:'quiet',archetype:'polite',affinityAxis:'auto'},
-  {id:114,name:'木村レイカ',surname:'木村',h:164,pw:58,sp:64,te:62,st:63,mn:69,style:'Grappler',role:'Neutral',pot:{pw:135,sp:143,te:141,st:142,mn:150},traits:['負けず嫌い'],personality:'bold',archetype:'normal',affinityAxis:'auto'},
+  {id:114,name:'木村レイカ',surname:'木村',h:164,pw:58,sp:64,te:62,st:63,mn:69,style:'Grappler',role:'Neutral',pot:{pw:135,sp:143,te:141,st:142,mn:150},traits:['負けず嫌い'],personality:'bold',archetype:'standard',affinityAxis:'auto'},
   {id:115,name:'豊田いすず',surname:'豊田',h:171,pw:69,sp:53,te:63,st:58,mn:63,style:'Grappler',role:'Babyface',pot:{pw:150,sp:129,te:142,st:135,mn:142},traits:['引き出し上手'],personality:'earnest',archetype:'polite',affinityAxis:'auto'},
-  {id:116,name:'リナ・モーガン',surname:'モーガン',h:170,pw:76,sp:77,te:73,st:71,mn:67,style:'Allround',role:'Neutral',pot:{pw:159,sp:151,te:147,st:152,mn:147},traits:['リーダー気質','華'],personality:'easygoing',archetype:'normal',affinityAxis:'auto'},
+  {id:116,name:'リナ・モーガン',surname:'モーガン',h:170,pw:76,sp:77,te:73,st:71,mn:67,style:'Allround',role:'Neutral',pot:{pw:159,sp:151,te:147,st:152,mn:147},traits:['リーダー気質','華'],personality:'easygoing',archetype:'standard',affinityAxis:'auto'},
   {id:117,name:'クラッシャー毒島',surname:'毒島',h:184,pw:88,sp:67,te:58,st:66,mn:55,style:'Brawler',role:'Heel',pot:{pw:174,sp:147,te:135,st:146,mn:132},traits:['ヒール適性','威圧感'],personality:'bold',archetype:'delinquent',affinityAxis:'auto'},
   {id:118,name:'割田久美',surname:'割田',h:181,pw:68,sp:59,te:57,st:58,mn:62,style:'Submission',role:'Heel',pot:{pw:148,sp:137,te:134,st:135,mn:141},traits:['ヒール適性'],personality:'normal',archetype:'delinquent',affinityAxis:'auto'},
   {id:119,name:'岩小路志摩子',surname:'岩小路',h:166,pw:54,sp:73,te:68,st:59,mn:72,style:'Striker',role:'Babyface',pot:{pw:130,sp:155,te:148,st:137,mn:154},traits:['努力家'],personality:'normal',archetype:'ojousama',affinityAxis:'auto'},
   {id:120,name:'蔵前静',surname:'蔵前',h:168,pw:64,sp:56,te:62,st:67,mn:65,style:'Submission',role:'Babyface',pot:{pw:143,sp:133,te:141,st:147,mn:144},traits:['ムードメーカー'],personality:'easygoing',archetype:'ojousama',affinityAxis:'auto'},
   {id:121,name:'山本理香',surname:'山本',h:168,pw:71,sp:68,te:51,st:64,mn:64,style:'Striker',role:'Neutral',pot:{pw:152,sp:148,te:126,st:143,mn:143},traits:['頑丈さ'],personality:'normal',archetype:'seductive',affinityAxis:'auto'},
-  {id:122,name:'宮沢ひかる',surname:'宮沢',h:164,pw:58,sp:74,te:64,st:60,mn:60,style:'Striker',role:'Neutral',pot:{pw:135,sp:156,te:143,st:138,mn:138},traits:['負けず嫌い'],personality:'quiet',archetype:'normal',affinityAxis:'auto'},
+  {id:122,name:'宮沢ひかる',surname:'宮沢',h:164,pw:58,sp:74,te:64,st:60,mn:60,style:'Striker',role:'Neutral',pot:{pw:135,sp:156,te:143,st:138,mn:138},traits:['負けず嫌い'],personality:'quiet',archetype:'standard',affinityAxis:'auto'},
   {id:123,name:'柳沼英子',surname:'柳沼',h:175,pw:65,sp:54,te:53,st:57,mn:55,style:'Striker',role:'Neutral',pot:{pw:144,sp:130,te:129,st:134,mn:132},traits:['適応力'],personality:'normal',archetype:'cool',affinityAxis:'auto'},
   {id:124,name:'清川 怜',surname:'清川',h:175,pw:71,sp:48,te:62,st:56,mn:48,style:'Striker',role:'Neutral',pot:{pw:152,sp:122,te:141,st:133,mn:122},traits:['ライバル体質'],personality:'earnest',archetype:'composed',affinityAxis:'auto'},
   {id:125,name:'藤代絵麻',surname:'藤代',h:171,pw:72,sp:51,te:46,st:74,mn:58,style:'Aerial',role:'Neutral',pot:{pw:154,sp:126,te:120,st:156,mn:135},traits:['ムードメーカー'],personality:'easygoing',archetype:'composed',affinityAxis:'auto'},
@@ -10246,7 +10246,7 @@ const CONTRACT_NEGOTIATION_LINES = {
 // 軸: 口調アーキタイプ（archetype）— composed/ojousama/polite/seductive/delinquent/cool/normal
 //   personality では分けない。性格で分けると同じ archetype のキャラの口調が崩壊するため
 //   （お嬢様キャラがタメ口で別れの挨拶、など）、archetype に揃える。
-// 引き方: RELEASE_INTERVIEW_LINES[fighter.archetype] || RELEASE_INTERVIEW_LINES.normal
+// 引き方: RELEASE_INTERVIEW_LINES[fighter.archetype] || RELEASE_INTERVIEW_LINES.standard
 const RELEASE_INTERVIEW_LINES = {
   composed: [
     '……短い間だったけど、悪くない時間だった。ありがとう。',
@@ -10278,7 +10278,7 @@ const RELEASE_INTERVIEW_LINES = {
     '……世話になった。',
     '……次の場所で、結果を出す。'
   ],
-  normal: [
+  standard: [
     '短い間でしたが、ありがとうございました。',
     '色々と、お世話になりました。……お元気で。',
     'これからも、この団体の活躍、祈ってます。'
@@ -10330,43 +10330,43 @@ const CHALLENGE_LINES = {
   },
 
   // ═══ normal 系 ═══
-  normal_normal: {
+  standard_normal: {
     petition: ['社長、お願いがあります。あの人とやらせてください。','どうしても、あの人とやりたいんです。……お願いします。','わがままだとは分かってます。それでも、組んでほしいんです。'],
     sendoff: ['ありがとうございます! ……行ってきます。','ありがとうございます。必ず、勝ってきます。','……ありがとうございます。やってきます。'],
     win: ['勝ちました。……ありがとうございました。','やりました! ……見ててくれましたか。','勝てました。……無駄にしなくて、よかった。'],
     lose: ['……負けました。すみません。','悔しいです。……本当に、悔しい。','勝てませんでした。……申し訳ないです。'],
   },
-  normal_earnest: {
+  standard_earnest: {
     petition: ['社長、迷惑をかけるのは分かってます。それでも、あの人とやらせてください。','半端な気持ちじゃありません。……あの人と、闘わせてください。','お願いします。この一戦だけは、逃げたくないんです。'],
     sendoff: ['ありがとうございます。……この決断、無駄にしません。','許してもらった分は、結果で返します。行ってきます。','ありがとうございます。……背負って、行ってきます。'],
     win: ['勝ちました。……社長、ありがとうございました。','約束は守れました。……ほっとしています。','勝てました。……送り出してもらった甲斐が、ありました。'],
     lose: ['……負けました。すみませんでした。','言い出したのは私です。……この結果は、全部私の責任です。','悔しいです。……それ以上に、申し訳ないです。'],
   },
-  normal_bold: {
+  standard_bold: {
     petition: ['社長、あの人とやらせてください。勝てます。','あの人とやりたいんです。……今なら、いけると思ってます。','待ってても回ってこないので、言いに来ました。組んでください。'],
     sendoff: ['ありがとうございます! 勝ってきますから。','ありがとうございます。……見ててください。','話が早くて助かります。行ってきます。'],
     win: ['勝ちました! ……言った通りでしょう。','勝ちました。社長、ありがとうございました。','やりました。……次も、任せてください。'],
     lose: ['負けました。……悔しいです。','今日は届きませんでした。……次は勝ちます。','すみません、負けました。でも、やってよかったです。'],
   },
-  normal_easygoing: {
+  standard_easygoing: {
     petition: ['社長、あの人とやってみたいんですけど、どうですか。','だめならいいんです。でも、あの人とやりたくて。','なんとなく、あの人とやりたくなっちゃって。'],
     sendoff: ['ありがとうございます。じゃあ、行ってきますね。','わ、いいんですか。ありがとうございます。','ありがとうございます。楽しんできます。'],
     win: ['勝てました。案外、いけるもんですね。','やった、勝ちました。言ってよかったです。','勝ちましたよ。ちゃんと帰ってきました。'],
     lose: ['負けちゃいました。ごめんなさい。','だめでした。まあ、また誘えばいいですよね。','負けました。でも、後悔はしてないです。'],
   },
-  normal_quiet: {
+  standard_quiet: {
     petition: ['社長。あの人と、やらせてください。','……お願いがあります。あの人です。','一つだけ。あの人と、組んでください。'],
     sendoff: ['……ありがとうございます。行ってきます。','はい。……無駄にはしません。','……もう、迷いはないです。'],
     win: ['……勝ちました。','勝ちです。……以上です。','勝ちました。……それだけ、伝えたくて。'],
     lose: ['……負けです。ごめんなさい。','負けました。……悔しい、とだけ。','……次は、違います。'],
   },
-  normal_shy: {
+  standard_shy: {
     petition: ['あの……社長。ひとつ、お願いが……。','言うか迷ったんですけど……あの人と、やりたいです。','わがままですよね。……でも、どうしても。'],
     sendoff: ['あ……ありがとうございます。行ってきます。','本当に、いいんですか……。嬉しいです。','ありがとうございます。……頑張り、ます。'],
     win: ['あの……勝てました。','勝ちました。……信じてもらえて、嬉しかったです。','勝ちました。……こんなこと、初めてです。'],
     lose: ['……負けました。ごめんなさい。','言い出したの、わたしなのに……すみません。','顔、上げられないです。……ごめんなさい。'],
   },
-  normal_emotional: {
+  standard_emotional: {
     petition: ['社長! あの人とやりたいんです、お願いします!','もう我慢できないんです。あの人と、やらせてください。','ずっと考えてました。……お願いします、どうしても!'],
     sendoff: ['ありがとうございます! 絶対、勝ってきます!','うれしい……ありがとうございます。行ってきます!','泣きそうです。……ありがとうございます!'],
     win: ['勝ちました! 社長、勝ちましたよ!','やった……! 見ててくれましたか!','勝てた……。うれしくて、声が震えてます。'],
@@ -10555,43 +10555,43 @@ const CHALLENGE_REQUEST_OPPONENT_REACTIONS = {
   },
 
   // ═══ normal 系 ═══
-  normal_normal: {
+  standard_normal: {
     _accept: ['受けて立ちます。正面から来てください。','名指しされて、引くわけにはいきません。','わかりました。全力でいきます。'],
     win: ['受けて正解でした。いい試合だった。','今日はわたしが上でしたね。強かったですよ。','勝ちました。いい相手でしたよ、あなた。'],
     lose: ['負けました。あなたのほうが上だった。','悔しい。……でも、受けたことに後悔はないです。','完敗。……この借りは返します。'],
     draw: ['決着つかず、か。すっきりしませんね。','決まらなかったですね。続きは、またいつか。','勝ててないし、負けてもいない。それだけです。'],
   },
-  normal_earnest: {
+  standard_earnest: {
     _accept: ['わたしを選んだ以上、真正面から受けます。','その覚悟、無駄にはしません。必ず応えます。','逃げません。全部、受け止めます。'],
     win: ['受けた以上、負けられませんでした。','勝ちました。……あの目は、忘れません。','勝ちました。……重い一戦でした。'],
     lose: ['受けておいて、この結果です。……情けない。','あなたが上でした。全部、わたしの責任です。','負けました。……この悔しさは、抱えていきます。'],
     draw: ['決着をつけられなかった。……それが一番悔しい。','これで終わりにはできません。もう一度。','宙ぶらりんのままです。……気持ちが収まりません。'],
   },
-  normal_bold: {
+  standard_bold: {
     _accept: ['望むところ。よく言ってくれました。','待ってましたよ、そういうの。受けます。','いいですね。全部まとめて受け止めます。'],
     win: ['ほら、言った通りでしょう。','引く気なんて、最初からなかったので。','勝ちました。……次、いつでもどうぞ。'],
     lose: ['持っていかれました。……大口叩いた分、痛い。','あなたが上でした。認めます、今日は。','負けました。次はこうはいきませんから。'],
     draw: ['決めきれなかった。……つまらない終わり方だ。','決着つかず? そんなの求めてません。','まだ足りない。もう一度、名前を呼んでください。'],
   },
-  normal_easygoing: {
+  standard_easygoing: {
     _accept: ['わたしでいいの? いいよ、やろっか。','ずいぶん熱心だね。まあ、受けるよ。','そんなに力まなくても、ちゃんと相手するって。'],
     win: ['勝っちゃった。……そんな顔しないでよ。','受けてよかったな。楽しかったよ。','案外あっさりだったね。次はもっと粘って。'],
     lose: ['負けちゃった。まあ、そういう日もあるよ。','あなたの勝ち。おめでとう。','やられたなあ。……次はもうちょっと粘る。'],
     draw: ['決着つかずだって。ちょうどいいんじゃない?','決まらなかったね。まあ、またそのうち。','お互い元気だねえ。ちょっと疲れた。'],
   },
-  normal_quiet: {
+  standard_quiet: {
     _accept: ['……受ける。それだけ。','わかった。言葉はいらない。','……逃げない。来て。'],
     win: ['……勝った。以上。','終わり。……強かった、あなた。','勝ち。それだけ伝えておく。'],
     lose: ['……負けた。何も言えない。','あなたの勝ち。……失礼する。','……悔しい。それだけ。'],
     draw: ['……つかなかった。決着は。','……決着つかず。いつか、続きを。','……まだ、終わってない。'],
   },
-  normal_shy: {
+  standard_shy: {
     _accept: ['え、わたし……? ……うん、逃げないよ。','名指しされるなんて、思ってなかった。……でも、受ける。','自信、ないんだけど……。それでも、いいなら。'],
     win: ['あ……勝っちゃった。ごめんなさい。','わたしが勝ったんだよね……。まだ、信じられない。','選んでくれたのに……こんな結果で、よかったのかな。'],
     lose: ['やっぱり、わたしじゃ……だめだったね。','強かった……。何も、できなかった。','……ごめんなさい。がっかり、させちゃったよね。'],
     draw: ['決着つかず……。よかったのか、どうなのか。','決着、つかなかったね……。ちょっと、ほっとしてる。','あの……もう一度、やる? 今度は、ちゃんと。'],
   },
-  normal_emotional: {
+  standard_emotional: {
     _accept: ['上等! そっちが名前を出したんだからね!','わたしを選んだんだ。……絶対、後悔させてやる。','言ったな? もう引っ込みつかないよ、お互い!'],
     win: ['ほら見なさい! わたしを選んだのが間違い!','勝った……! ざまあみろって、言っていい?','これで分かったでしょ! 二度と名前呼ばないで!'],
     lose: ['くっそ……! 認めない、絶対に認めないから!','負けた……。悔しい、悔しいよ……!','なんで……! こんなの、納得できるわけない!'],
@@ -10762,7 +10762,7 @@ const CHALLENGE_REQUEST_NO_LINES = {
     '……分かった。',
     '……そう。'
   ],
-  normal: [
+  standard: [
     '……わかりました。タイミングじゃないってことですね。',
     '社長の判断なら従います。でも、忘れたわけじゃないので。'
   ]
@@ -14831,7 +14831,7 @@ function getDialoguePool(lineObj, fighter) {
   const v = fighter?.voice;
   if (v && lineObj._voice?.[v]) return lineObj._voice[v];
   const p = fighter?.personality || 'normal';
-  const a = fighter?.archetype || 'normal';
+  const a = fighter?.archetype || 'standard';
   const pBucket = lineObj[p] || lineObj._default || lineObj.normal;
   if (!pBucket) return ['…'];
   return pBucket[a] || pBucket._default || ['…'];
@@ -21968,7 +21968,7 @@ const CRISIS_DIALOGUE = {
       '資金が、そのような状態でしたか……。私にできることがあれば、何でもおっしゃってください',
       '諦めずに、最後まで力を尽くしましょう',
     ],
-    normal: [
+    standard: [
       '社長、諦めずに頑張りましょう。何とかなるはずです',
       '私たちにできることを、ひとつずつやっていきましょう',
     ],
@@ -22066,7 +22066,7 @@ const GAMEOVER_LINES = {
         '……失礼いたします',
       ],
     },
-    normal: {
+    standard: {
       high: [
         'お疲れ様でした、社長。ここで戦えたこと、忘れません',
         'いい経験になりました。本当にありがとうございました',
@@ -23318,7 +23318,7 @@ const WAR_POST_DIALOGUE = {
 // 天頂戦の関係性ドラマ台詞。maxAge は話者・相手とも30歳以下の場合だけ選択可能。
 const TENCHOSEN_DRAMA_LINES = {
   A: {
-    normal: [
+    standard: [
       { text: '膝が笑ってる。…でも不思議と、清々しいんです。あなたに負けたなら' },
       { text: '最後の技、返せなかった。…認めます。今日はあなたが上でした' },
       { text: '4年後、同じ舞台でまた。…その時は、こんな顔で終わらせません', maxAge: 30 },
@@ -23355,7 +23355,7 @@ const TENCHOSEN_DRAMA_LINES = {
     ],
   },
   B: {
-    normal: [
+    standard: [
       { text: '勝ったけど…紙一重でした。あなたがいたから、ここまで来れた' },
       { text: 'その拳、まだ痺れが残ってます。…また、こうやって闘いたい' },
       { text: '4年後も、あなたが立ってる場所まで登ります。待っててください', maxAge: 30 },
@@ -23392,7 +23392,7 @@ const TENCHOSEN_DRAMA_LINES = {
     ],
   },
   C: {
-    normal: [
+    standard: [
       { text: '…こんな終わり方、認めない。この借りは、必ず返します' },
       { text: '笑ってればいい。…今の顔、忘れませんから。次で塗り替える' },
       { text: '4年、待てばいい。…あなたを引きずり下ろすためだけに、鍛え直す', maxAge: 30 },
@@ -23429,7 +23429,7 @@ const TENCHOSEN_DRAMA_LINES = {
     ],
   },
   D: {
-    normal: [
+    standard: [
       { text: '…おめでとう。…ごめん、今はうまく笑えそうにないです' },
       { text: 'おめでとうって、ちゃんと言えたかな。…自分の声じゃないみたいだった' },
     ],
@@ -23459,7 +23459,7 @@ const TENCHOSEN_DRAMA_LINES = {
     ],
   },
   E: {
-    normal: [
+    standard: [
       { text: '負けたけど…同じ団体に、こんな強い人がいて嬉しいです' },
       { text: '悔しい。…でも、あなたが上に行くなら、背中は私が守ります' },
     ],
@@ -23516,7 +23516,7 @@ const TENCHOSEN_PREEVENT_LINES = {
     ],
   },
   fighter: {
-    normal: [
+    standard: [
       { text: '四年に一度、なんですよね。前回はただ見てるだけだった。今度は、あの輪の中に立ちたいんです', notPriorEntrant: true },
       { text: 'エントリー発表、もうすぐですね。あの狭き門をくぐれるかどうか。…そう思うと、練習の一本が重くなります' },
       { text: '四年に一度。…次があるかは、わかりません。だからこそ、この一回に全部を置いていきたいんです', veteran: true },

@@ -1807,7 +1807,7 @@ function _findFighterById(id) {
 }
 
 function _flagPickArchetype(fighter) {
-  return (fighter && fighter.archetype) || 'normal';
+  return (fighter && fighter.archetype) || 'standard';
 }
 
 function _flagFormatLine(template, fighter, fighter2) {
@@ -8508,9 +8508,9 @@ function showInviteGraduationModal(payload, state, onDone) {
   const gradPool = payload.gradTier === 'good' ? COACH_INVITE_LINES.gradGood : COACH_INVITE_LINES.gradNormal;
   const coachLine = (gradPool && gradPool[voiceKey]) || '';
 
-  const archetype = fighter.archetype || 'normal';
+  const archetype = fighter.archetype || 'standard';
   const fighterLine = payload.gradTier === 'good'
-    ? (FIGHTER_INVITE_GRAD_LINES[archetype] || FIGHTER_INVITE_GRAD_LINES.normal)
+    ? (FIGHTER_INVITE_GRAD_LINES[archetype] || FIGHTER_INVITE_GRAD_LINES.standard)
     : FIGHTER_INVITE_GRAD_NORMAL_LINES[Math.floor(Math.random() * FIGHTER_INVITE_GRAD_NORMAL_LINES.length)];
 
   // 伸び幅表示: statsAtStart が無い(旧セーブ互換)場合は「不明」表記に切り替え
@@ -12388,12 +12388,12 @@ function _challengeRequestOpponentReaction(card, result, state, playerWon, playe
     ? (isInverse ? '挑戦を実らせた代表' : '受けて、勝った代表')
     : (isInverse ? '挑んだ代表・決着つかず' : '受けた代表・決着つかず');
 
-  const arch = (fighter && fighter.archetype) || 'normal';
+  const arch = (fighter && fighter.archetype) || 'standard';
   const personality = (fighter && fighter.personality) || 'normal';
   const pool = typeof CHALLENGE_REQUEST_OPPONENT_REACTIONS !== 'undefined'
     ? (CHALLENGE_REQUEST_OPPONENT_REACTIONS[`${arch}_${personality}`]
       || CHALLENGE_REQUEST_OPPONENT_REACTIONS[`${arch}_normal`]
-      || CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal)
+      || CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal)
     : null;
   const lines = pool && ((pool[outcome] && pool[outcome].length > 0) ? pool[outcome] : pool._accept);
   const rng = fighter ? Engine.rng.create(Engine.rng.derive(

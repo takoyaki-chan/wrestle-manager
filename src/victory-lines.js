@@ -1097,7 +1097,7 @@ function getSigningLine(fighter, context) {
 // [personality][archetype] × {win, hit} × 2パターン = 196 種（vs-ex-employer-lines-draft-v0.1 準拠）。
 const VS_EX_EMPLOYER_LINES = {
   normal: {
-    normal: {
+    standard: {
       win: [
         '解雇されてから、ここまで来た。あそこに、証明できたと思う。',
         'あの団体で出来なかったことを、ここで完成させる。だから勝つ。',
@@ -1169,7 +1169,7 @@ const VS_EX_EMPLOYER_LINES = {
     }
   },
   earnest: {
-    normal: {
+    standard: {
       win: [
         '切られてから、積み上げてきた。この一勝が、その証明。',
         '拾ってくれた団体に、恥はかかせない。だから、あそこには勝つ。',
@@ -1241,7 +1241,7 @@ const VS_EX_EMPLOYER_LINES = {
     }
   },
   bold: {
-    normal: {
+    standard: {
       win: [
         '切られた側が、あそこの選手を沈めた。これが答えよ。',
         'あの団体で消えるはずだった女が、ここに立ってる。見たでしょ。',
@@ -1313,7 +1313,7 @@ const VS_EX_EMPLOYER_LINES = {
     }
   },
   easygoing: {
-    normal: {
+    standard: {
       win: [
         '要らないって言われた側なんだけどさ、勝っちゃった。いいの?',
         'あそこ、私を切ったの…ちょっと早まったんじゃない?',
@@ -1385,7 +1385,7 @@ const VS_EX_EMPLOYER_LINES = {
     }
   },
   quiet: {
-    normal: {
+    standard: {
       win: [
         '……これが、答え。切られて、終わりじゃなかった。',
         '……あそこを出て、私はまだ戦えてる。それだけ。',
@@ -1457,7 +1457,7 @@ const VS_EX_EMPLOYER_LINES = {
     }
   },
   shy: {
-    normal: {
+    standard: {
       win: [
         '……勝っちゃった……。あの、私を切ったところに……信じられない……。',
         '……ちゃんと、戦えてましたか……? あそこの人に……。',
@@ -1529,7 +1529,7 @@ const VS_EX_EMPLOYER_LINES = {
     }
   },
   emotional: {
-    normal: {
+    standard: {
       win: [
         'あの日、リングを降ろされた私が……今、あそこの選手に勝った……っ!',
         '見てた……? 切られても、私、ちゃんと戦ってるよ……!',
@@ -1606,9 +1606,9 @@ function getVsExEmployerLine(fighter, mode, opponentOrgId) {
   if (!fighter || !fighter.grudge || !fighter.grudge.vsOrgId) return null;
   if (opponentOrgId != null && fighter.grudge.vsOrgId !== opponentOrgId) return null;
   const pers = fighter.personality || 'normal';
-  const arch = fighter.archetype || 'normal';
+  const arch = fighter.archetype || 'standard';
   const byP = VS_EX_EMPLOYER_LINES[pers] || VS_EX_EMPLOYER_LINES.normal;
-  const obj = byP[arch] || byP.normal;
+  const obj = byP[arch] || byP.standard;
   const arr = obj && obj[mode];
   if (!arr || arr.length === 0) return null;
   return arr[Math.floor(Math.random() * arr.length)];

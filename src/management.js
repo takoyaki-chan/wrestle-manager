@@ -86,6 +86,15 @@ const Engine = {
       return { id, age: Engine.util.clamp(Math.round(entry.age || 17), 16, 21) };
     },
 
+    // task-68: 旧セーブの archetype 'normal'(標準アーキタイプの旧綴り) を
+    // 新綴り 'standard' に読み替える。personality の 'normal' は性格側の
+    // 正規の値なので触らない。archetype フィールドを持たないオブジェクト
+    // (dormantPool エントリ等)にはそのまま no-op。
+    _normArchetype(c) {
+      if (!c || c.archetype !== 'normal') return c;
+      return { ...c, archetype: 'standard' };
+    },
+
     _diag(state) {
       const allIds = Engine.saveDoctor._allIds();
       const seen = new Map();
@@ -258,15 +267,19 @@ const Engine = {
     repairOnLoad(rawState) {
       let state = {
         ...rawState,
-        roster: [...(rawState.roster || [])],
+        // task-68: archetype 'normal' → 'standard' 移行(旧セーブ互換)。
+        // roster/freeAgents/scoutCandidates/retiredFighters/aiOrgs[].roster の
+        // 全キャラを対象にする。dormantPool は {id,age} のみで archetype を
+        // 持たないため対象外。
+        roster: (rawState.roster || []).map(Engine.saveDoctor._normArchetype),
         rentals: Array.isArray(rawState.rentals) ? rawState.rentals.map(r => ({ ...r })) : [],
-        freeAgents: [...(rawState.freeAgents || [])],
-        scoutCandidates: [...(rawState.scoutCandidates || [])],
-        retiredFighters: [...(rawState.retiredFighters || [])],
+        freeAgents: (rawState.freeAgents || []).map(Engine.saveDoctor._normArchetype),
+        scoutCandidates: (rawState.scoutCandidates || []).map(Engine.saveDoctor._normArchetype),
+        retiredFighters: (rawState.retiredFighters || []).map(Engine.saveDoctor._normArchetype),
         dormantPool: (rawState.dormantPool || []).map(Engine.saveDoctor._normDormant).filter(Boolean),
         retiredIds: [...new Set((rawState.retiredIds || []).map(Number).filter(Number.isFinite))],
         retiredSeasons: { ...(rawState.retiredSeasons || {}) },
-        aiOrgs: Object.fromEntries(Object.entries(rawState.aiOrgs || {}).map(([orgId, org]) => [orgId, { ...org, roster: [...(org.roster || [])] }])),
+        aiOrgs: Object.fromEntries(Object.entries(rawState.aiOrgs || {}).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(Engine.saveDoctor._normArchetype) }])),
       };
       const changes = [];
       const baselineSeason = Math.max(1, (state.season || 1) - 10);
@@ -5441,7 +5454,7 @@ const Engine = {
       const peakOVR = peer.peakOVR || 0;
       const peakPop = peer.peakPopularity || 0;
       const personality = peer.personality || 'normal';
-      const archetype = peer.archetype || 'normal';
+      const archetype = peer.archetype || 'standard';
       const traits = Array.isArray(peer.traits) ? peer.traits : [];
 
       // ── 関係性: top rival + top bond peer (state.h2h を走査)
@@ -7876,7 +7889,7 @@ const Engine = {
         style: template.style, role: template.role, pot: { ...template.pot },
         traits: template.traits || [],
         personality: template.personality || 'normal',
-        archetype: template.archetype || 'normal',
+        archetype: template.archetype || 'standard',
         affinityAxis,
         notionValue: notion, trainCap,
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
@@ -13497,7 +13510,7 @@ const Engine = {
         if (category === 'B4_champion_injury') {
           const trust = retiredF.trust ?? 50;
           if (trust >= 85 && Engine.rng.float(lineRng) < 0.30) {
-            const a = retiredF.archetype || 'normal';
+            const a = retiredF.archetype || 'standard';
             const archetypeLines = typeof RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE : {};
             const worryPool = archetypeLines[a] || archetypeLines._default || ['…'];
             championWorryLine = worryPool[Engine.rng.int(lineRng, 0, worryPool.length - 1)];
@@ -17362,14 +17375,14 @@ Engine.ending = {
   _pickGameOverLinesForTop3(fighters) {
     const used = new Set();
     return (fighters || []).map(f => {
-      const archetype = f.archetype || 'normal';
+      const archetype = f.archetype || 'standard';
       const trust = f.trust ?? 50;
       const trustLevel = trust >= 70 ? 'high' : trust < 30 ? 'low' : 'mid';
       const fighterPools = (typeof GAMEOVER_LINES !== 'undefined' && GAMEOVER_LINES.fighter) || null;
       if (!fighterPools) return '……';
       const pool = (fighterPools[archetype] && fighterPools[archetype][trustLevel])
-                || fighterPools.normal[trustLevel]
-                || fighterPools.normal.mid;
+                || fighterPools.standard[trustLevel]
+                || fighterPools.standard.mid;
       const candidates = pool.filter(line => !used.has(line));
       const final = candidates.length > 0 ? candidates : pool;
       const chosen = final[Math.floor(Math.random() * final.length)];
@@ -20916,7 +20929,7 @@ Engine.shachoshitsu = {
     if (!fighter || !docId) return 1.0;
     if (typeof DECISION_PERSONALITY_MULT === 'undefined') return 1.0;
     const personality = fighter.personality || 'normal';
-    const archetype = fighter.archetype || 'normal';
+    const archetype = fighter.archetype || 'standard';
     const pRow = DECISION_PERSONALITY_MULT[personality] || DECISION_PERSONALITY_MULT.normal;
     const pMult = pRow && pRow[docId] != null ? pRow[docId] : 1.0;
     const aRow = (typeof DECISION_ARCHETYPE_MULT !== 'undefined' && DECISION_ARCHETYPE_MULT[archetype]) || {};
@@ -22953,7 +22966,7 @@ Engine.eventSystem = {
   },
   calcTalentMultiplier(fighter, activityType) {
     const p = fighter.personality || 'normal';
-    const a = fighter.archetype || 'normal';
+    const a = fighter.archetype || 'standard';
     const baseTable = Engine.eventSystem._TALENT_ACTIVITY_COMPAT[activityType] || {};
     const base = baseTable[p] !== undefined ? baseTable[p] : 1.0;
     const bonusList = Engine.eventSystem._TALENT_ARCHETYPE_BONUS[activityType] || [];
@@ -24492,7 +24505,7 @@ Engine.contract = {
             negotiations.push({
               fighterId: f.id, fighterName: f.name,
               attitude: 'sudden_departure', tone: 'final',
-              personality: f.personality || 'normal', archetype: f.archetype || 'normal',
+              personality: f.personality || 'normal', archetype: f.archetype || 'standard',
               raiseAmount: 0, counterOffer: 0,
               retentionBonus: Engine.contract.calcRetentionBonus(f, state),
               context, trust, gapRatio,
@@ -24523,7 +24536,7 @@ Engine.contract = {
       negotiations.push({
         fighterId: f.id, fighterName: f.name,
         attitude, tone,
-        personality: f.personality || 'normal', archetype: f.archetype || 'normal',
+        personality: f.personality || 'normal', archetype: f.archetype || 'standard',
         raiseAmount,
         counterOffer: Engine.contract.calcCounterOffer(raiseAmount),
         retentionBonus: Engine.contract.calcRetentionBonus(f, state),
@@ -25910,11 +25923,11 @@ Engine.ppvTournament = {
   _pickDramaLine(role, speaker, target, rng) {
     const table = typeof TENCHOSEN_DRAMA_LINES !== 'undefined' ? TENCHOSEN_DRAMA_LINES[role] : null;
     if (!table) return '';
-    const archetype = speaker?.archetype || 'normal';
-    const base = table[archetype] || table.normal || [];
+    const archetype = speaker?.archetype || 'standard';
+    const base = table[archetype] || table.standard || [];
     const eligible = base.filter(line => line.maxAge == null
       || ((speaker?.age || 0) <= line.maxAge && (target?.age || 0) <= line.maxAge));
-    const pool = eligible.length ? eligible : (table.normal || []).filter(line => line.maxAge == null);
+    const pool = eligible.length ? eligible : (table.standard || []).filter(line => line.maxAge == null);
     return pool.length ? pool[Engine.rng.int(rng, 0, pool.length - 1)].text : '';
   },
 
@@ -26245,8 +26258,8 @@ Engine.ppvTournament = {
     const contenders = pool.slice(0, Math.max(3, Math.min(8, Math.ceil(pool.length / 2))));
     const speaker = contenders.length ? Engine.rng.pick(rng, contenders) : null;
     const fighters = (speaker ? [speaker] : []).map(f => {
-      const archetype = f.archetype || 'normal';
-      const pool = TENCHOSEN_PREEVENT_LINES.fighter[archetype] || TENCHOSEN_PREEVENT_LINES.fighter.normal;
+      const archetype = f.archetype || 'standard';
+      const pool = TENCHOSEN_PREEVENT_LINES.fighter[archetype] || TENCHOSEN_PREEVENT_LINES.fighter.standard;
       const isVeteran = (f.age || 0) > 30;
       const hasPriorEntry = ((f.careerRecord && f.careerRecord.history) || [])
         .some(ev => ev.type === 'ppvTournament' && ev.season === priorSeason);

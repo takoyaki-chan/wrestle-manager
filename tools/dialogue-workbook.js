@@ -70,7 +70,7 @@ const PERSONALITY_LABELS = {
 };
 
 const ARCHETYPE_LABELS = {
-  normal: '標準',
+  standard: '標準',
   composed: '鷹揚',
   ojousama: 'お嬢様',
   delinquent: 'ヤンキー',
@@ -103,7 +103,13 @@ const PERSONALITY_FILL = {
 };
 
 // 「archetype_personality」または「personality_personality」のような複合キー
-// (例: CHALLENGE_LINES の polite_earnest / normal_normal)からも推定する。
+// (例: CHALLENGE_LINES の polite_earnest / standard_normal)からも推定する。
+//
+// task-68(2026-07-31)でアーキタイプの 'normal' を 'standard' に改名した結果、
+// ARCHETYPE_KEYS と PERSONALITY_KEYS はもう重複しない。そのため以下のループは
+// 判定順(性格を先に見るか、アーキタイプを先に見るか)に依存しない — どちらの
+// セットにキーが属するかで一意に決まる。旧版はこの重複のせいで性格を先に
+// 判定する特別扱いが必要だったが、重複が解消された今は素直な判定で足りる。
 function detectMeta(idPath, tableRoot) {
   let remainder = idPath.slice(tableRoot.length);
   if (remainder.startsWith('.')) remainder = remainder.slice(1);
