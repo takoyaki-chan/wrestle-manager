@@ -3018,6 +3018,7 @@ function _buildAwardsSummary(a) {
 
 function showAwardsCeremony(awards, onDone, onOpen) {
   if (!awards) { if (onDone) onDone(); return; }
+  if (Engine.awards && !Engine.awards.hasDisplayableAwards(awards)) { if (onDone) onDone(); return; }
   if (_isPopupActive()) { _popupQueue.push(() => showAwardsCeremony(awards, onDone, onOpen)); return; }
 
   // スライド構築（動的: 該当なしスキップ）
@@ -3056,10 +3057,10 @@ function showAwardsCeremony(awards, onDone, onOpen) {
       slideInfo.push({ html: _buildHallOfFame(inductee), label: '殿堂入り', section: SEC_AWARD, se: 'hof', isHof: true, hofData: inductee });
     });
   }
-  // 全受賞者一覧は常に表示（どちらの部にも属さない締めの1枚）
-  slideInfo.push({ html: _buildAwardsSummary(awards), label: '全受賞者一覧', se: 'normal' });
-
+  // 受賞が一つもない年は、該当なしの説明を出さず式典自体を静かに省略する。
   if (slideInfo.length === 0) { if (onDone) onDone(); return; }
+  // 全受賞者一覧は、成立した受賞がある年だけの締めの1枚。
+  slideInfo.push({ html: _buildAwardsSummary(awards), label: '全受賞者一覧', se: 'normal' });
 
   const overlay = document.getElementById('awardsOverlay');
   const slideWrap = document.getElementById('aw-slide-wrap');
@@ -15160,6 +15161,10 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
   const openPhase = isTransfer ? 'transfer_open' : 'raise_open';
   const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, openPhase, neg.context);
+  const retentionRaise = isTransfer && fighter
+    ? Engine.contract.calcRetentionRaiseAmount(neg, fighter, state)
+    : 0;
+  const retentionTerms = `一時金${neg.retentionBonus}万 + 給与+${retentionRaise}万/週`;
 
   // 選択肢の構築
   let choices;
@@ -15171,7 +15176,7 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
     ];
   } else {
     choices = [
-      { label: '引き留める', hint: `${neg.retentionBonus}万 支出`, idx: 0,
+      { label: '引き留める', hint: retentionTerms, idx: 0,
         disabled: (state.funds || 0) < neg.retentionBonus },
       { label: '理由を聞く', hint: '', idx: 1 },
       { label: '送り出す',   hint: '退団', idx: 2 },
@@ -15187,7 +15192,7 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
     </div>`;
   } else {
     infoHtml = `<div class="neg-card-info neg-card-info-transfer" style="font-size:12px">
-      引き留めボーナス: ${neg.retentionBonus}万（一時金）
+      引き留め条件: ${retentionTerms}
     </div>`;
   }
 
@@ -15249,6 +15254,9 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
   if (!el) { if (onSubChoice) onSubChoice('release'); return; }
 
   const canAfford = (state.funds || 0) >= neg.retentionBonus;
+  const fighter = (state.roster || []).find(f => f.id === neg.fighterId);
+  const retentionRaise = fighter ? Engine.contract.calcRetentionRaiseAmount(neg, fighter, state) : 0;
+  const retentionTerms = `一時金${neg.retentionBonus}万 + 給与+${retentionRaise}万/週`;
   const wallHtml = _negSpeakerHtml(neg, listenText, 'neg-badge-transfer', '🚪 移籍志願');
 
   const deskHtml = `
@@ -15256,7 +15264,7 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
     <div class="neg-choices">
       <button class="neg-btn" data-sub="retain"${canAfford ? '' : ' disabled'}>
         <span>引き留める</span>
-        <span class="neg-btn-hint">${neg.retentionBonus}万 支出</span>
+        <span class="neg-btn-hint">${retentionTerms}</span>
       </button>
       <button class="neg-btn" data-sub="release">
         <span>送り出す</span>

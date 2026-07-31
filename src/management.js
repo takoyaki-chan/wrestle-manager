@@ -18353,6 +18353,18 @@ Engine.mvpRace = {
 // v1.4: Awards System (年末表彰式) — ppv-awards-spec.md Part2
 // ─────────────────────────────────────────────────────────────────────────────
 Engine.awards = {
+  /** 表彰式で表示できる受賞が一つでもあるか。受賞なしの説明スライドは作らない。 */
+  hasDisplayableAwards(awards) {
+    if (!awards) return false;
+    return !!(
+      awards.springTagChampion || awards.jtChampion || awards.autumnWarChampion ||
+      awards.tenchosenChampion || awards.ppvFinalWinner || awards.mediaAward ||
+      awards.bestMatch || awards.mvp ||
+      (awards.champions && Object.values(awards.champions).some(Boolean)) ||
+      (awards.hallOfFame && awards.hallOfFame.length > 0)
+    );
+  },
+
   /** Get org display name from state */
   _orgName(state, orgId) {
     if (orgId === 'player') return state.orgName || 'あなたの団体';
@@ -24375,6 +24387,19 @@ Engine.contract = {
     return Math.max(2, Math.round(raiseAmount * 0.5));
   },
 
+  /**
+   * 引き留めで提示する昇給額。交渉で既に算出した本人の要求額をそのまま用い、
+   * 旧セーブで要求額が欠ける場合だけ同じ交渉データの対案、最後に現行の適正給与
+   * 計算へフォールバックする。salaryBonus の既存上限は超えない。
+   */
+  calcRetentionRaiseAmount(neg, fighter, state) {
+    const requested = Number(neg && neg.raiseAmount);
+    const counterOffer = Number(neg && neg.counterOffer);
+    const demand = requested > 0 ? requested
+      : (counterOffer > 0 ? counterOffer : Engine.contract.calcRaiseAmount(fighter, state));
+    return Math.min(Math.max(0, 100 - (fighter.salaryBonus || 0)), demand);
+  },
+
   // §14-A.2: 引き留めボーナスを適正給ベースに
   calcRetentionBonus(fighter, state) {
     const fairSalary = Engine.util.getSalary(
@@ -24662,6 +24687,7 @@ Engine.contract = {
         retainRate = Engine.util.clamp(retainRate, 0.10, 0.80);
 
         if (Engine.rng.float(rng) < retainRate) {
+          salaryDelta = Engine.contract.calcRetentionRaiseAmount(neg, f, s);
           trustDelta = 8;
           // §14-A.3: 残留成功時のモラール上昇
           moraleDelta = ctx.isFounder ? 4 : 2;

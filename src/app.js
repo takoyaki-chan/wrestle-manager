@@ -11367,7 +11367,9 @@ const App = {
   _recoverPendingAwards() {
     if (G.pendingAwards) return true;
     if (!G.offSeason || G.offWeek !== 1) return false;
-    if (!Array.isArray(G.seasonHistory) || G.seasonHistory.length === 0) return false;
+    // 初年度のoffWeek 1ではseasonHistoryはまだ空。ここで復旧を拒むと、保存・演出
+    // 切替などでpendingAwardsだけが失われた初年度に限って表彰式が恒久的に消える。
+    // offSeason/offWeekという生成時点の条件で十分に絞れているため、履歴の有無は見ない。
     try {
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xA11D));
       const pendingAwards = Engine.awards.generate(rng, G);

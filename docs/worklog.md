@@ -1,5 +1,30 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 1年目イベント・引き留め待遇（task-42・2026-07-31）
+
+### A. 1年目イベントの実データ調査と修正
+
+- `Engine.createInitialState(20260731, true)` を開始点に、実際の `tickWeek` / `advanceWeek` で第1シーズンをオフシーズン第1週まで進めた。`Engine.awards.generate()` の出力は `springTagChampion`、`bestMatch`、`mvp`、`mediaAward`、`champions` が成立していた。少なくともエンジンに1年目を表彰から除外する分岐はなく、データ不足で全賞が空になる再現もしなかった。
+- 原因は表示側の復旧ガードだった。`App._recoverPendingAwards()` は `pendingAwards` が失われた際、`seasonHistory.length === 0` なら復旧を拒否していた。初年度のoffWeek 1では履歴アーカイブがまだ行われず `seasonHistory` が空のため、この経路だけ初年度の表彰式が消える。`offSeason && offWeek === 1` を唯一の復旧条件にして、同じ実データから再生成するよう修正した。
+- 同じ実行で初期 `ppvUnlocked: false` のまま第48週に `weekPhase: 'ppvTV'` へ到達した。これは出場資格がない団体を除外する設計ではなく、PPV GRAND FINALをテレビ観戦へ切り替える既存仕様である。`tvMode` は天頂戦用の表示/BGM分岐であり、通常PPVの1年目を弾いていない。
+- 表彰式UIは、表示可能な賞が1件以上ある場合にのみ開くよう `Engine.awards.hasDisplayableAwards()` を明示した。全賞が空のときは「該当者なし」等の説明スライドを作らず、静かに次の演出へ進む。成立した賞がある1年目は従来どおり式典と全受賞者一覧を表示する。
+- 新規 `test/year1-season-events-test.js` は上記の実進行を実行し、表彰データ、表示対象の賞、`ppvTV` 到達を出力・検証する。全賞が空の合成データでは式典対象外になること、および初年度の空の履歴で復旧を拒否しないことも確認する。
+
+### B. 引き留め時の給与反映
+
+- `Engine.contract.calcRetentionRaiseAmount(neg, fighter, state)` を追加。昇給額は `neg.raiseAmount` を優先し、既存セーブでそれが欠ける場合だけ `neg.counterOffer`、最後に既存の `calcRaiseAmount()` を使う。結果は既存の `salaryBonus` 上限100万/週の残余で上限を掛ける。
+- 移籍志願の引き留め成功時に上記額を `salaryDelta` へ設定する。一時金 `neg.retentionBonus`、失敗時の退団・給与据え置きは変更していない。
+- 引き留め選択肢と「理由を聞く」後の再選択の全文を `一時金◯万 + 給与+◯万/週` に変更した。選ぶ前の情報欄も同じ条件を示す。
+- 新規 `test/contract-retention-salary-test.js` は成功時の給与・一時金・上限、失敗時の退団/昇給なし、両条件を含む選択肢文言を検証する。
+
+### 検証
+
+- `node test/year1-season-events-test.js`: PASS（実出力: `springTagChampion, bestMatch, mvp, mediaAward, champions` / `year1 ppvTV: true`）。
+- `node test/contract-retention-salary-test.js`: PASS。
+- `npm test`: **151/151 PASS**。
+- `node test/auto-sim.js 20`: **ALL CLEAR**（違反0、エラー0）。
+- `git diff --check`: PASS。
+
 ## 実機フィードバック修正6件（task-40・2026-07-31）
 
 ### 実装
