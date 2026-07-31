@@ -278,7 +278,7 @@ function _handleInfoOverlayEscClose(e) {
   const coachTooltip = document.getElementById('coachTooltipOverlay');
   if (coachTooltip && coachTooltip.classList.contains('active')) { closeCoachTooltip(); return; }
   const hofDetail = document.querySelector('.db-hof-detail-overlay');
-  if (hofDetail) { hofDetail.remove(); return; }
+  if (hofDetail) { hofDetail.remove(); _drainPopupQueue(); return; }
   const growthEvent = document.getElementById('growthEventOverlay');
   if (growthEvent && growthEvent.classList.contains('active')) { closeGrowthEventPopup(); return; }
 }
@@ -1096,6 +1096,10 @@ function _showWarVictoryChain(list, idx, onDone) {
   `;
   overlay.querySelector('.war-victory-close').addEventListener('click', () => {
     overlay.remove();
+    // 動的オーバーレイのclose経路(2026-07-31監査で検出): _isPopupActive()はこのクラスを見ているため、
+    // 表示中に_enqueuePopupされた分がここで詰まる。次の演出を続けて出す途中でも、
+    // _drainPopupQueue()は「現在何もアクティブでなければ」しか消化しないので無害。
+    _drainPopupQueue();
     _showWarVictoryChain(list, idx + 1, onDone);
   });
   document.body.appendChild(overlay);
@@ -1139,6 +1143,7 @@ function _showWarEnemyAceStatement(onDone) {
   `;
   overlay.querySelector('.war-ace-close').addEventListener('click', () => {
     overlay.remove();
+    _drainPopupQueue();
     if (onDone) onDone();
   });
   document.body.appendChild(overlay);
@@ -2690,6 +2695,17 @@ function showTravelScene(opts, onDone) {
         { duration: dur, easing: 'cubic-bezier(.34,.03,.24,1)', fill: 'forwards' }
       );
       anim.onfinish = finish;
+      // 正常系にも時限の保険を掛ける(mockup-baseline-v0.1.md §5-D 鉄則1)。
+      // タブ非表示時などWeb Animationsがonfinishを発火しない状況があるため。
+      // アニメーション所要時間(dur)+1000msで救済する — durはopts.durationMs/reduced-motion
+      // 補正を経た実際の所要時間なので、シーンの長さが変わっても追従する。
+      // finish()はdoneフラグで二重発火を防いでいるので、正常にonfinishが先に鳴った後に
+      // このタイマーが遅れて発火しても無害。
+      setTimeout(() => {
+        if (done) return;
+        console.warn('[WM] showTravelScene: onfinish safety net fired');
+        finish();
+      }, dur + 1000);
     } catch (e) {
       setTimeout(finish, dur);
     }
@@ -13414,6 +13430,7 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
 
   overlay.querySelector('.war-ace-close').addEventListener('click', () => {
     overlay.remove();
+    _drainPopupQueue();
     if (onDone) onDone();
   });
   document.body.appendChild(overlay);
@@ -15757,6 +15774,7 @@ function _showJTImpressionChain(list, idx, onDone) {
   `;
   overlay.querySelector('.war-victory-close').addEventListener('click', () => {
     overlay.remove();
+    _drainPopupQueue();
     _showJTImpressionChain(list, idx + 1, onDone);
   });
   document.body.appendChild(overlay);
@@ -18574,7 +18592,10 @@ function renderTenchosenTVResult() {
  *  以前は上位3名固定で、開催のたびに同じ顔ぶれが並んでいた(2026-07-27 Keisuke)。 */
 function renderTenchosenPreEvent() {
   const tp = G.tenchosenPreEvent;
-  if (!tp) return;
+  // キューから取り出されて呼ばれた後にデータが無いと分かった場合も、ここで黙って戻ると
+  // オーバーレイが開かないままキューが進まなくなる(2026-07-31監査で検出。到達経路は
+  // 見つかっていないが保険として必ずキューを流す)。
+  if (!tp) { _drainPopupQueue(); return; }
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   box.style.maxWidth = '100%';

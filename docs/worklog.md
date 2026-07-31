@@ -1,5 +1,102 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 二度押し監査「残り」のうち判断の要らない5件を修正（task-58・2026-07-31）
+
+出典: `docs/ui/two-click-audit-v0.1.md` の「残り（未確認・低優先）」。
+Keisuke裁定「判断の要らない安いものだけ今潰す」で対象5件のみに絞って着手。
+作業は `wm-task58`（ブランチ `fix/audit-cheap-items`）で実施、main作業ツリーは未変更。
+
+### 1. `App.skipAllMatches` の到達不能コード → 削除
+
+`if (sp.results.some(r => r === null)) { renderMatchPreview(); if (false) {...} return; }`
+を丸ごと削除（`if(false)`の中身だけでなく外側のガードごと）。
+
+**到達しないことの確認方法**: `sp.results` は初期化時（app.js 2箇所、`App._showPreview = {...}`
+の中）に必ず `new Array(sp.validMatches.length).fill(null)` で作られ、以後
+`sp.results`/`sp.validMatches` の `push`/`splice`/再代入は無い（grepで確認）ので
+`results.length === validMatches.length` が常に成立する。`skipAllMatches` 冒頭の
+`sp.validMatches.forEach((m, idx) => { if (sp.results[idx]) return; ... })` は
+**全indexを走査**し、タッグ/シングルいずれも「不在選手ならstale draw結果」
+「揃っていればsimulateMatch/simulateTagMatchの結果」を必ず代入して返るため、
+ループ完了時点で `sp.results` に `null` は残り得ない。よって直後の
+`sp.results.some(r => r === null)` は常に false で、その中の `if (false)` は二重に到達不能。
+
+### 2. `App.stlAdvance` に想定外phase用の`else`を追加
+
+`'table'`/`'finalReady'`/`'finalResult'` 以外のphaseで呼ばれても無言で何もしなかった。
+`else` 節を追加し、`Audio.play('error')` + `console.warn('[WM] App.stlAdvance: unexpected phase', p.phase)`
+で異常を可視化。phaseは書き換えない（進行不能にしない）。既存3分岐の判定・処理は無変更。
+
+呼ばれる経路は見つけられなかった（`_receiveSpringTagLeagueBattleResult` と
+`escapeBattle` の両方が、`stlAdvance()` を呼ぶ前に必ず `p.phase = p.watchReturnPhase || 'table'`
+で phase を戻している）。「見つからない」は「絶対に来ない」の証明にはならないための保険。
+
+### 3. `showTravelScene` の正常系に時限の保険を追加
+
+`anim.onfinish = finish;` の直後に
+`setTimeout(() => { if (done) return; console.warn(...); finish(); }, dur + 1000)` を追加。
+**時限は `dur + 1000ms`**（`dur` はそのシーンの実際のアニメーション所要時間 = `opts.durationMs`
+に reduced-motion 補正を経た値）。固定の絶対値ではなく実際の所要時間に連動させることで、
+シーン側で `durationMs` を変えても保険が壊れない。1000msはonfinishの通常発火より
+確実に後になる程度の余裕（mockup-baseline-v0.1.md §5-D 鉄則1）。
+既存の `done` フラグで二重発火は防止済み（保険が後から鳴っても無害）。
+
+### 4. `renderTenchosenPreEvent` の早期returnがキューを流すように修正
+
+`if (!tp) return;` → `if (!tp) { _drainPopupQueue(); return; }`。
+`_enqueuePopup` 経由でキューから取り出された後にデータが無いと分かった場合、
+オーバーレイを開かないまま黙って戻ると後続のポップアップが詰まるため。
+（`showBigNewsPopup` 等、既存コードにある同型のフォールバックと同じ形に揃えた。）
+詰まる経路は見つけられなかった（保険として追加）。
+
+### 5. 動的オーバーレイのcloseが`_drainPopupQueue()`を呼んでいなかった
+
+`.war-victory-overlay`（4箇所: `_showWarVictoryChain` / `_showWarEnemyAceStatement` /
+`showB3OpponentAftermath` / `_showJTImpressionChain`）、`.db-hof-detail-overlay`
+（背景クリック / ×ボタン / 閉じるボタン / ESC共通ハンドラ / `openChronicleForFighter`、
+計5経路）、`.cerem-overlay`（`closeCeremony`）の**close経路すべて**に
+`overlay.remove()` の直後で `_drainPopupQueue()` を追加。
+
+- `showB3OpponentAftermath` は同名関数が2回宣言されており（旧mojibake版→クリーン版で
+  上書き、`// Re-declare the B3 aftermath renderers...` のコメントで明記済み）、
+  最初の定義は関数再宣言で完全にシャドウされ絶対に実行されない。**生きている方（後者）だけ**修正
+- `.cerem-overlay` も同じ形の動的オーバーレイ（`_isPopupActive()`の判定対象だが
+  `_POPUP_OVERLAY_IDS`のMutationObserver監視対象には無い＝id無しでDOMContentLoaded後に生成）
+  だったため、指示書の指示どおり同じ扱いにした。詰まる経路はどちらも確認できていない
+  （db-hof/cerem-overlayは指示書側も「見つけられていない」扱い）
+
+### テスト
+
+`test/audit-cheap-items-test.js`（新規・8アサーションブロック）。
+DOM無しでソーステキストを静的検査する既存流儀（`week-advance-contract-test.js`と同じ）。
+1は行コメント（旧コードを引用した説明文）を除いた実コードだけを検査対象にして誤検知を回避。
+5は生きている`showB3OpponentAftermath`をコメントマーカー基準で特定し、シャドウされた方は対象外。
+新規1件を含めて `node test/run-all.js` 全171件PASS（170既存 + 新規1）。
+テストが実際に退行を検知することは、修正箇所を一時的に壊して失敗することを1件確認して確認した
+（確認後は元に戻し、`git diff --stat` で意図した3ファイルの差分のみであることを確認）。
+
+### 不変条件の確認結果
+
+1. 既存の正常系の挙動は変えていない（1は到達不能コードの削除のみ、2/3/4/5はすべて
+   「異常系にだけ効く」追加分岐・追加呼び出し）。全171件PASSで裏取り
+2. 待ちを足した3は`done`フラグとセットで実装。**未検証**: 実機でタブ非表示時に実際に
+   保険が発火するかは確認していない（ソースレベルの静的検証のみ）
+3. GameStateへの書き込みは増やしていない（5件とも DOM操作/フラグ/console.warn/Audio.playのみ）
+4. 新規16進カラーは増やしていない（HTML/CSSは一切変更していない）
+5. `node test/run-all.js` 全PASS確認済み（171/171）
+
+### 質問（実装せず残す）
+
+- 5の `openChronicleForFighter` は直後に `showScreen('database')` を呼んでおり、
+  `showScreen`内の`dismissAllPopups()`が`_popupQueue`を丸ごと空にするため、
+  今回追加した`_drainPopupQueue()`は実質redundant（無害だが効果が無い）。
+  他4経路との統一を優先してそのまま残したが、要らないと判断するなら剥がしてよい
+- `.cerem-overlay`を同じ扱いにする判断が指示書の想定と合っているか（詰まる経路が
+  未確認という点は`db-hof-detail-overlay`と同格に見えたため、指示書の「同じ形なら合わせる」
+  に沿って追加した）を確認してほしい
+
+---
+
 ## ドラフト: 自団体が参加しなくても他団体は指名する（2026-07-31）
 
 Keisuke実機報告「自分の団体がドラフトに参加しないと、他の団体もドラフトに参加せず、人を取らない」。
