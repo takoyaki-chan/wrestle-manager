@@ -1652,6 +1652,11 @@ function showCeremonyEvent(evt, speakers, onContinue) {
   function closeCeremony() {
     overlay.remove();
     _ceremAudioClose();
+    // .cerem-overlay も war-victory-overlay/db-hof-detail-overlay と同じ形の動的オーバーレイ:
+    // _isPopupActive()の判定対象だがMutationObserverの監視対象IDには入っていない(生成がid無し・
+    // DOMContentLoaded後)。表示中に_enqueuePopupされた分がここで詰まりうるため、他と揃えて流す
+    // (2026-07-31監査で検出。詰まる経路は未確認だが同型のため保険として追加)。
+    _drainPopupQueue();
     onContinue();
   }
 
@@ -4572,6 +4577,13 @@ const App = {
         try { Audio.bgm.playJingle('championship'); } catch (e) {}
       }, 900);
       renderSpringTagLeagueChampion();
+    } else {
+      // 想定外のphase(2026-07-31監査で検出。到達経路は見つかっていないが、
+      // 見つからない=絶対に来ない、の証明にはならないための保険)。
+      // 無言で何もしないと「押しても反応しない」バグに見えるため、異常を可視化しつつ
+      // phaseは書き換えずゲームを進行不能にしない。
+      try { Audio.play('error'); } catch (e) {}
+      console.warn('[WM] App.stlAdvance: unexpected phase', p.phase);
     }
   },
 
@@ -7273,14 +7285,12 @@ const App = {
       sp.results[idx] = Engine.battle.simulateMatch(charL, charR, matchRng, App._normalShowMatchTier(idx, m),
         App._normalShowRingInOpts(sp, idx, m));
     });
-    if (sp.results.some(r => r === null)) {
-      renderMatchPreview();
-      if (false) {
-        Audio.play('error');
-        alert('カード内に在籍していない選手の試合があり、全試合スキップを完了できませんでした。');
-      }
-      return;
-    }
+    // 旧: `if (sp.results.some(r => r === null)) { ... if (false) {...} }` は到達不能だったため削除
+    // (2026-07-31 監査で検出)。sp.results は `new Array(sp.validMatches.length).fill(null)` で作られ、
+    // その後 results.length が変わる代入(push/splice)は無い。上のforEachは
+    // sp.validMatches の全indexを走査し、既に埋まっているものだけ`return`でスキップし、
+    // 残り全てに(タッグ/シングルいずれも)stale draw か simulateMatch の結果を必ず代入するため、
+    // ループ完了時点で sp.results に null は残り得ない。
     try { Audio.play('bellx3'); } catch(e) {}
     App.finalizeShow();
   },

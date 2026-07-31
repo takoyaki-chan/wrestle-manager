@@ -9663,9 +9663,9 @@ function showHofDetail(idx) {
 
   const modal = document.createElement('div');
   modal.className = 'db-hof-detail-overlay';
-  modal.onclick = e => { if (e.target === modal) modal.remove(); };
+  modal.onclick = e => { if (e.target === modal) { modal.remove(); _drainPopupQueue(); } };
   modal.innerHTML = `<div class="db-hof-detail-modal" style="text-align:center;${legendGlow}">
-    <button class="db-hof-detail-close" onclick="this.closest('.db-hof-detail-overlay').remove()">×</button>
+    <button class="db-hof-detail-close" onclick="this.closest('.db-hof-detail-overlay').remove();_drainPopupQueue()">×</button>
     <div style="margin-bottom:12px;${shieldGlow}">
       ${_hofShieldImg(level, h.id, 120)}
       <div style="font-size:14px;color:${borderColor};font-weight:700;margin-top:4px">${starText}</div>
@@ -9692,7 +9692,7 @@ function showHofDetail(idx) {
     </div>
     <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
       ${hasChronicleChapter ? `<button class="db-hof-detail-btn" style="background:rgba(154,112,32,0.12);border-color:rgba(184,137,42,0.6);color:#c9a84c" onclick="openChronicleForFighter(${h.id})">📖 年代記で見る</button>` : ''}
-      <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove()">閉じる</button>
+      <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove();_drainPopupQueue()">閉じる</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
@@ -9739,7 +9739,7 @@ function openChronicleForFighter(fighterId) {
   }
   if (targetIdx === null) return;
   const overlay = document.querySelector('.db-hof-detail-overlay');
-  if (overlay) overlay.remove();
+  if (overlay) { overlay.remove(); _drainPopupQueue(); }
   _dbSubTab = 6;
   _dbChronicleIdx = targetIdx;
   showScreen('database');
