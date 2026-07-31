@@ -5378,10 +5378,28 @@ function toggleDraftSelection(candId) {
 }
 
 // draft-negotiation-spec 変更2: 分岐ロジック付きドラフト開始
+/** 今年は誰も指名しない。**他団体の指名はそのまま進む。**
+ *  以前は「指名0名」だと startDraftNegotiation が入口で return していたため、
+ *  プレイヤーが参加しない年は**ドラフトそのものが走らず、他団体も1人も獲得しなかった**
+ *  (2026-07-31 Keisuke 指摘)。他団体の指名はプレイヤーの都合とは無関係に起きる。
+ *  誤操作で1年を捨てないよう、確認を1枚挟む。 */
+function declineDraft() {
+  if (!G._draftInterests || !G.scoutCandidates) return;
+  showConfirm(
+    '<div style="margin-bottom:8px">今年のドラフトで<strong>指名を行いません</strong>。</div>'
+    + '<div style="font-size:12px;color:var(--text-sub)">他団体の指名はこのまま進みます。'
+    + 'どこからも指名されなかった選手はフリー市場へ回ります。</div>',
+    '指名せずに終える',
+    () => startDraftNegotiation()
+  );
+}
+
 function startDraftNegotiation() {
   if (!G._draftInterests || !G.scoutCandidates) return;
   const selections = G._draftSelections || [];
-  if (selections.length === 0) return; // 未選択ガード
+  // **0名でも止めない。** ここで return すると、プレイヤーが指名しない年は
+  // 他団体の指名まで丸ごと止まる(2026-07-31 修正)。非選択候補は下の
+  // バックグラウンドループが全部処理するので、そのまま通してよい。
 
   const candidates = G.scoutCandidates;
   const maxPicks = G.scoutMaxPicks || 4;

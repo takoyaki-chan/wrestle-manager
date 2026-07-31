@@ -5458,7 +5458,12 @@ function _renderDraftCandidateList(candidates, context) {
       <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">選択中<br><strong style="display:block;font-size:22px;color:${selections.length >= maxPicks ? '#c22020' : '#9a7020'};letter-spacing:1px;margin-top:1px;font-weight:400;">${selections.length} / ${maxPicks}名</strong></div>
       <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">残資金<br><strong style="display:block;font-size:22px;color:#9a7020;letter-spacing:1px;margin-top:1px;font-weight:400;">¥ ${Math.round(funds).toLocaleString()}万</strong></div>
     </div>
-    <button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,${selections.length > 0 ? '#8b1a1a,#c22020' : '#555,#666'});color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;${selections.length === 0 ? 'opacity:0.5;' : ''}">${selections.length > 0 ? `交渉開始（${selections.length}名）→` : '★ 候補を選択してください'}</button>
+    ${selections.length > 0
+      ? `<button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,#8b1a1a,#c22020);color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;">交渉開始（${selections.length}名）→</button>`
+      : `<div style="display:flex;align-items:center;gap:14px;">
+          <span style="font-size:11px;color:#7a5b32;letter-spacing:1px;">★ 指名する候補を選んでください</span>
+          <button onclick="declineDraft()" style="font-size:12px;letter-spacing:2px;padding:11px 22px;background:transparent;color:#7a5b32;border:1px solid rgba(95,69,35,0.45);border-radius:4px;cursor:pointer;font-weight:700;">指名を見送る →</button>
+        </div>`}
   </div>`;
 
   // ── Legend ──
