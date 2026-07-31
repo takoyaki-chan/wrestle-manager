@@ -51,10 +51,16 @@ assert.ok(!playerEligible.has(8), 'player policy should reject a challenger outs
 assert.ok(!playerEligible.has(9), 'injured wrestlers should remain ineligible');
 assert.ok(!playerEligible.has(10), 'rental wrestlers should remain ineligible');
 
+// task-67 §3 (task-65 §2, 2026-07-31 Keisuke裁定): AI policy's ranking window widened
+// from top-3 to top-4 challengers (AI_TITLE_ELIGIBILITY_CFG.rankingLimit in src/data.js).
+// maxOvrGap stays at 5 (unchanged; the "no obviously-underpowered champion" guard).
 const aiEligible = new Set(Engine.title.getEligibleChallengers(roster, 1, 'ai'));
+assert.strictEqual(AI_TITLE_ELIGIBILITY_CFG.rankingLimit, 4, 'AI ranking window should be top-4 (task-67 §3)');
+assert.strictEqual(AI_TITLE_ELIGIBILITY_CFG.maxOvrGap, 5, 'AI OVR-gap guard should remain 5 (unchanged)');
 assert.ok(aiEligible.has(4), 'AI policy should allow the third-ranked challenger');
+assert.ok(aiEligible.has(5), 'AI policy should allow the fourth-ranked challenger (widened from top-3 to top-4)');
 assert.ok(aiEligible.has(6), 'AI policy should allow a challenger within an OVR gap of 5');
-assert.ok(!aiEligible.has(7), 'AI policy should reject a challenger outside the stricter limits');
+assert.ok(!aiEligible.has(7), 'AI policy should reject a challenger outside the widened ranking window and the OVR-gap guard');
 
 const reportedCaseRoster = [
   fighter(21, 100),
@@ -68,8 +74,8 @@ assert.ok(
   'the reported overall-rank-5, OVR-gap-6 challenger should be eligible for player booking',
 );
 assert.ok(
-  !Engine.title.getEligibleChallengers(reportedCaseRoster, 21, 'ai').includes(25),
-  'the same challenger should remain outside the stricter AI policy',
+  Engine.title.getEligibleChallengers(reportedCaseRoster, 21, 'ai').includes(25),
+  'with the widened top-4 AI ranking window, the overall-rank-5 (i.e. 4th challenger) case is now eligible',
 );
 
 console.log('title-challenger-eligibility-test: ok');

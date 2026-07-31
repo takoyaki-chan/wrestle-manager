@@ -8372,6 +8372,19 @@ const AI_SEASON_CFG = {
 // 起きていることが分かった(挑戦者選定と無関係)。これが選定ロジックだけでは目標に
 // 届かない主因と見られる(詳細はworklog参照)。この定数は「決め打ち1名→重み付き」という
 // 方向自体は正しい変更のため残すが、数値は妥当な中庸値に置く。
+// task-67 §3(task-65 §2): AI王座の挑戦資格ランキング枠。Keisuke裁定「上位3人だけじゃなくて、
+// 上位4人に緩和しましょう。あくまでもAI王座戦だけに限った話」。maxOvrGapは「明らかに格下の
+// 王者を生まない」ための歯止めなので5のまま変えない(rankingLimitだけ緩和)。
+// プレイヤー側(上位5人/差8以内)はこの定数を参照せず、Engine.title.getEligibleChallengers内に
+// 従来どおり直書きのまま(変更対象外)。
+const AI_TITLE_ELIGIBILITY_CFG = {
+  rankingLimit: 4,  // 旧3。挑戦資格者に入るOVR順位の枠
+  maxOvrGap: 5,      // 変更なし。ロスター最高OVRとの差がこれ以内なら順位枠外でも資格あり
+};
+// task-67 §4は検討したが不採用(理由はdocs/worklog.md参照。CHAMPION_DEFENSE_ESCAPE_BONUSが
+// 効く分岐(フォール/ギブアップの土壇場チェック)は40シーズン・AI3団体で15回しか発火せず、
+// うち4回は既にkoChance/escChanceの上限(0.45/0.40)で飽和していて値を上げても無意味だった)。
+
 const AI_TITLE_CHALLENGER_CFG = {
   // 資格者をOVR降順に並べ、上位何名を抽選候補にするか。
   // 実際の資格者数はほぼ常に3人(上記計測メモ)なので、4名あれば「差5以内」で
@@ -30530,6 +30543,7 @@ if (typeof module !== 'undefined' && module.exports) {
     SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, SPECIAL_EVENT_INTRO, WEAR_TABLE, getWearBand, quietExitChance, careerEndingChance, AI_TURNOVER_CFG,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED, AI_TITLE_CHALLENGER_CFG,
+    AI_TITLE_ELIGIBILITY_CFG,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
     CONTRACT_NEGOTIATION_LINES, RELEASE_INTERVIEW_LINES, CHALLENGE_LINES,
     NEGOTIATE_LINES, RETIREMENT_LINES, FAREWELL_KIND_TEXT, FAREWELL_CLOSING, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
