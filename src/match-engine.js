@@ -515,7 +515,16 @@ Engine.battle = {
           }
           if (Engine.rng.float(rng) * 100 < counterRate) {
             const cMv = B.selMove(rng, def.style, turn, phases, { fighter: def, defender: atk, eng, stats: moveSelectionStats });
-            const cDmg = Math.max(eng.dmgFloor, Math.round(mv.d * eng.counterDmgMult));
+            // タスク69: カウンター成立ダメージは元々OVR差に無反応(mv.d*counterDmgMultのみ)だった。
+            // counterOvrGapMixin(0〜1)で通常打撃と同じOVR比補正をどれだけ混ぜるかを制御する(既定0=旧仕様のまま)。
+            let _counterOvrMult = 1;
+            if (eng.counterOvrGapMixin > 0) {
+              const _cAtkOvr = (def.pw + def.sp + def.te + def.st + def.mn) / 5;
+              const _cDefOvr = (atk.pw + atk.sp + atk.te + atk.st + atk.mn) / 5;
+              const _fullCounterOvrMult = Math.pow(_cAtkOvr / Math.max(1, _cDefOvr), eng.ovrGapDmgExponent);
+              _counterOvrMult = 1 + (_fullCounterOvrMult - 1) * eng.counterOvrGapMixin;
+            }
+            const cDmg = Math.max(eng.dmgFloor, Math.round(mv.d * eng.counterDmgMult * _counterOvrMult));
             atk.hp = B.moveTier(cMv) === 'small' ? Math.max(1, atk.hp - cDmg) : atk.hp - cDmg;
             mom += isLeftAtk ? -eng.counterMomShift : eng.counterMomShift;
             def.consecutiveHits = 0;
@@ -529,7 +538,7 @@ Engine.battle = {
             // v5.0 M1: OVR比ダメージ補正
             const _atkOvr = (atk.pw + atk.sp + atk.te + atk.st + atk.mn) / 5;
             const _defOvr = (def.pw + def.sp + def.te + def.st + def.mn) / 5;
-            const _ovrMult = Math.pow(_atkOvr / Math.max(1, _defOvr), 0.50);
+            const _ovrMult = Math.pow(_atkOvr / Math.max(1, _defOvr), eng.ovrGapDmgExponent);
             // v5.0 popularity: 防御側人気優位で被ダメ軽減
             const _popAdvD = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
             const _popMultD = (tier >= 2 ? 2.0 : 1.0);

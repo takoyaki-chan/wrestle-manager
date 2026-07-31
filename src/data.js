@@ -737,6 +737,18 @@ const ENG = {
   counterDmgMult: 0.6, counterMomShift: 18,
   dmgPwrScale: 0.27, dmgTecScale: 0.115, dmgSpdScale: 0.115,
   defStaScale: 0.025, defMntScale: 0.06, momDmgScale: 0.001,
+  // タスク69: OVR比ダメージ補正の指数(v5.0 M1で導入)。通常打撃(atk側)の与ダメを
+  // (attackerOvr/defenderOvr)^ovrGapDmgExponent で増減させる、実力差の主要な効き所。
+  // 元は match-engine.js に 0.50 と直書きされていた値をここへ名前付き定数として抽出し、
+  // 0.50→1.00 に変更(タスク69: 番狂わせを「奇跡」に戻す実力差強化)。
+  // 固定stats・固定gapでのコントロール実験(N=4000/gap/tier)で 0.50/0.65/0.80/1.00/1.20 を比較し、
+  // 1.00 が目標曲線(tier2)に最も良く一致した。詳細は docs/worklog.md タスク69の項を参照。
+  ovrGapDmgExponent: 1.00,
+  // タスク69: カウンター成立時のダメージにもOVR比補正をどれだけ効かせるか(0=補正なし=旧仕様, 1=通常打撃と同じ強さ)。
+  // 通常打撃と違いカウンターは mv.d * counterDmgMult のみで決まり、実力差に一切反応しなかった。
+  // 単独検証(exponent=0.50固定, mixin=1.0)では40シーズン実測で有意な効果を確認できず(帯ごとの変動が
+  // ノイズ帯(±3pt程度)に収まった)。ovrGapDmgExponent 側の効果が主でこちらは効果が薄いと判断し、既定0のまま残す。
+  counterOvrGapMixin: 0,
   dmgRandMin: 0.90, dmgRandRange: 0.20, dmgFloor: 3,
   gritDuration: 2, gritDmgReduction: 0.20, gritCounterBonus: 8,
   finisherUnlockHpThreshold: 0.50,
