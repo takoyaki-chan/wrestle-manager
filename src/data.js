@@ -8357,6 +8357,35 @@ const AI_SEASON_CFG = {
   tierPopBonus: { S:8, A:4, B:2 }
 };
 
+// task-62: AI王座の挑戦者選定(重み付き抽選)。
+// 従来は「挑戦資格者(getEligibleChallengersの結果)の中で最高OVRの1人」に固定していたため、
+// 王者は毎回その時点の最強と当たり続け、防衛が続かなかった(平均0.7〜0.8回/AI3団体)。
+// ここでは資格者集合はそのまま(判定は変えない)、「その中から誰を当てるか」だけを
+// 重み付き抽選に変える。
+//
+// 計測メモ(2026-07-31, seed42/40season): getEligibleChallengers(policy='ai')の実返却数は
+// 89〜99%が3人(=上位3位以内の枠がそのまま返る。「最高OVRとの差5以内」で4〜6人に広がる
+// ケースは1〜6%程度)。つまりpoolSize/weightDecayをどれだけ広げても、実際にはほぼ常に
+// 3人の中から選ぶだけになる。decay 0.55/0.75/0.9(poolSize 4/5)を振って比較したが
+// 平均防衛回数は0.6〜1.0回のレンジで、どの設定でも目標(1.5〜2.2回)には届かなかった。
+// 追加調査で、AI王座の交代の約45%は敗北ではなく王者の負傷等による空位化(不戦)で
+// 起きていることが分かった(挑戦者選定と無関係)。これが選定ロジックだけでは目標に
+// 届かない主因と見られる(詳細はworklog参照)。この定数は「決め打ち1名→重み付き」という
+// 方向自体は正しい変更のため残すが、数値は妥当な中庸値に置く。
+const AI_TITLE_CHALLENGER_CFG = {
+  // 資格者をOVR降順に並べ、上位何名を抽選候補にするか。
+  // 実際の資格者数はほぼ常に3人(上記計測メモ)なので、4名あれば「差5以内」で
+  // 稀に増える分まで含めてほぼ全資格者を候補にできる。
+  poolSize: 4,
+  // 抽選候補内での順位ごとの重み減衰率(0〜1）。重み = decay^rank(0始まり)。
+  // 0.65なら資格者3人の生重みはおよそ 1 : 0.65 : 0.42 で、最強候補が選ばれる確率は
+  // およそ半分(48%)まで下がる。1.0にすると全員均等、0に近いほど旧仕様(最強固定)に近づく。
+  weightDecay: 0.65,
+  // 因縁(rivalry, 0〜100)がある相手への重み倍率。倍率 = 1 + (rivalry/100) * rivalryWeightBonus。
+  // rivalry=100(理論上限)でも重みは高々 (1+この値) 倍までで、因縁だけで選出が決まらないよう抑える。
+  rivalryWeightBonus: 0.5,
+};
+
 // ── Phase C: Transfer & Ace Constants ──
 const TRANSFER_CONFIG = {
   windows: [12, 24, 36, 48],           // AI移籍処理ウィンドウ（四半期末）
@@ -30500,7 +30529,7 @@ if (typeof module !== 'undefined' && module.exports) {
     RIVAL_ORG_NAME_POOL, RIVAL_ORGS, BATTLE_POINT_CFG, RANKING_CONFIG, ACHIEVEMENT_CONFIG, SHIELD_VARIANTS,
     SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, SPECIAL_EVENT_INTRO, WEAR_TABLE, getWearBand, quietExitChance, careerEndingChance, AI_TURNOVER_CFG,
     AI_SCOUT_CFG, AI_TIER_LIMITS, AI_MIDSEASON_FA_CFG, DRAFT_SIGNING_BONUS, AI_COACH_STAFFING, AI_SEASON_CFG,
-    AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED,
+    AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED, AI_TITLE_CHALLENGER_CFG,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
     CONTRACT_NEGOTIATION_LINES, RELEASE_INTERVIEW_LINES, CHALLENGE_LINES,
     NEGOTIATE_LINES, RETIREMENT_LINES, FAREWELL_KIND_TEXT, FAREWELL_CLOSING, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
