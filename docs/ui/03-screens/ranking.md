@@ -1,136 +1,124 @@
-# 画面：団体ランキング（v1.0 — A案 Office標準）
+# 画面：団体ランキング（v1.1 — Office標準・Depth連動）
 
 **ファイル**：`docs/ui/03-screens/ranking.md`
-**最終更新**：2026-07-16 / v1.0
-**実装状況**：完了（2026-07-16。CSSのみ差し替え、`renderRanking()` ロジック非変更。死にCSS(.org-card系)削除・--th-* トークン撤去済み）
-**モックアップ正本**：`docs/ui/mockups/ranking-restyle-A-office.html`（A案・採用決定 2026-07-16）
-**旧版**：v0.9（`docs/ui/mockups/ranking-redesign-v0.9-for-mockups-dir.html`、金銀銅鋼メタリック様式）
+**最終更新**：2026-07-31 / v1.1
+**実装状況**：完了（`renderRanking()`、`Engine.ranking.updateRankings(G)`、ランキングCSSに実装済み。v2.1のDepth業界水準連動と講評の母集団同期を反映）
+**モックアップ正本**：`docs/ui/mockups/ranking-final-v1.3.html`（Baseline v0.8準拠、逸脱理由を同ファイル末尾に記載）
 
 ---
 
-## 0. スコープと経緯
+## 1. 構成とデータ
 
-団体ランキング画面（`#screen-ranking`）の UI 様式を定義する。
+```text
+#screen-ranking > .ranking-popup
+├─ .popup-header / #rankingMast / #rankingVictoryBar
+└─ #rankingContent
+   ├─ 02 — Roster: .orgs-grid > .orgcell × 4
+   ├─ 03 — 団体詳細: .rp-profiles > .rp-card × 4
+   └─ 04 — History: .history-wrap > table（履歴がある場合のみ）
+```
 
-v0.9 は「TV番組のチャンピオンシップ表」様式（金銀銅鋼のメタリック順位カラー・clip-path切り角・寒色寄り黒 `--th-*`・30px巨大マスト）だったが、**他のOffice画面（データベース・収支等）からの視覚的乖離が大きい**ため、v1.0 で Office 標準様式へ再スタイルする。
+`renderRanking()` は表示時に `Engine.ranking.updateRankings(G)` を呼び、4団体の順位を更新する。
+画像、選手名、OVR、王者、看板、人数、講評の数値はすべてGameStateから取得し、固定の人名・数値は持たない。
+選手画像は `getUpperUrl()`、紋章は `Engine.util.getPlayerOrgIconPath()` / `getOrgIconPath()` を使い、
+取得失敗時は画像を隠す（紋章は団体名先頭文字へフォールバックする）。
 
-- **変えるもの**：色使い・フォント運用・角の処理（デザインのみ）
-- **変えないもの**：セクション構造・文章・画像・データ接続・`Engine.ranking.updateRankings(G)`・`renderRanking()` の出力DOM
+## 2. 02 — 全団体ロースター
 
----
+- 各団体は順位、団体名、tier、上位3人、評価、**層の厚み `round(depth)/30`**、対戦PTを表示する。
+  平均OVRは表示しない。
+- プレイヤー団体の布陣候補は非レンタル・非怪我・非強制休養、AI団体は非レンタルのdedupe済みロスターをOVR降順にする。
+  王者がいれば、その選手を先頭に入れた上位3人を使う。看板はOVR最高者である。
+- `pos-1` は中央、`pos-2` / `pos-3` は左右。王者・看板・主力の役割バッジを表示する。
+  主力は王者・看板を除いたOVR順で、1位5人、2位4人、3〜4位3人を選ぶ。
+- `層の厚み` のツールチップは4〜8番手（主力）と9〜12番手（控え）を別評価し、
+  基準が業界主力水準に連動し、怪我人・レンタルを含まないことを説明する。
 
-## 1. 基本属性
+## 3. 03 — 団体プロフィール
 
-| 項目 | 値 |
+カードは紋章、団体説明、エース欄、主力層欄、6指標（評価 / 基礎力 / **層の厚み** /
+対戦PT / レガシー / 実績）で構成する。ここでも平均OVRは表示しない。
+
+### 3.1 顔数と役割
+
+順位に応じた「大枠込み」の主力層人数は1位8、2位6、3位5、4位4。
+顔リストはfeatured（王者、王者不在ならOVR最高者）を除くため、実表示はその値から1人少ない。
+順位が下がるほど顔数を減らす仕様を維持し、戦力差を一目で示す。
+
+### 3.2 講評の3層構造
+
+| 欄 | 語る対象 | データ原則 |
+|---|---|---|
+| 団体説明（`rp-info`） | 団体全体の順位、勢い、王座、人気、戦力層、実績・対戦PT | `G` とランキングエントリから組み立てる |
+| エース欄（`rp-ace`） | 王者または看板である**個人** | featuredのOVR・年齢・防衛数・役割・次点OVRから組み立てる |
+| 主力層欄（`rp-depth`） | featuredを除く**2番手以下の面々** | 顔リストと同じOVR順の非レンタル母集団から人数・人名・OVRを数える |
+
+主力層講評の母集団は、`sortedAll`（非レンタル、OVR降順）からfeaturedだけを除いた `support` である。
+怪我・強制休養はここに含む。Depth内部の「怪我除外の4〜8番手・9〜12番手」や
+`depthCoreReady` / `depthReserveReady` を文章の人数に使ってはならない。
+
+「実戦級」は `r.depthReadyOvr`、すなわち `getDepthBenchmark(state).reserveTarget` を使う。
+文章では必ず `OVR85以上が3人` のように実数で閾値と人数を出し、顔のOVR表示と照合可能にする。
+欠場者数も同じsupportから数える。レンタルについて触れる場合だけ、別のレンタルロスターから在籍レンタルを取得する。
+
+## 4. サイズ・文字の実装値
+
+Baseline v0.8は、display 28 / title 18 / subtitle 15 / body 13 / label 11 /
+caption 10 / micro 8pxの7段を定める。ランキング実装の主要な文字サイズは次のとおりで、
+順位数字だけは画面固有の意図的逸脱とする。
+
+| 部位 | 実装値 | Baselineとの対応・備考 |
+|---|---|---|
+| マスト `INDUSTRY STANDINGS` | 28px | display |
+| 団体詳細の団体名 `h3` | 18px | title |
+| エース名 | 15px | subtitle |
+| 主力顔のOVR | 13px | body |
+| 団体説明・エース講評・主力講評 | 11px | label |
+| タグ・補助値 | 10px | caption |
+| kicker・tier-pill | 8px | micro |
+| 順位数字 | 2〜4位 36px、1位 46px | 下記の意図的逸脱 |
+
+| 画像・レイアウト部位 | 実装値 |
 |---|---|
-| 所属カテゴリ | **Office**（暖茶背景 `var(--bg-dark)`） |
-| パネル様式 | Dark Panel（`--panel-bg` / `--card-bg`。Cream Panel は使わない） |
-| 角の処理 | **角丸 6px**（clip-path 切り角は廃止） |
-| レイアウトパターン | P1 Catalog 派生（popup フレーム + 3〜4セクション縦積み） |
-| 使用フォント | Noto Sans JP（本文）+ Bebas Neue（数値）+ Oswald（ラベル） |
-| 実装ファイル | `src/index.html`（静的HTML + CSS 6713〜7813行付近 + :root トークン）、`src/ui-render.js renderRanking()`（**非変更**）、`src/data.js OVR_TIER_THRESHOLDS`、`src/ui-common.js valueClassOvr()` |
+| 02布陣・1位中央（L） | 150×224px |
+| 02布陣・1位左右（M） | 132×194px |
+| 02布陣・2〜4位中央（M） | 132×194px |
+| 02布陣・2〜4位左右（S） | 108×162px |
+| 03エース画像（S） | 108×162px |
+| 03主力顔 | 40×40px |
+| 03紋章 | 62×62px |
+| `orgcell` 最小高 | 400px（1位は465px） |
+| 02布陣高 | 222px（1位は252px） |
+| 03プロフィールカード最小高 | 150px |
 
----
+## 5. 意図的な逸脱
 
-## 2. デザイン方針（v1.0 の核）
+1. 順位数字は36px（2〜4位）/46px（1位）。Baselineのdisplay 28pxを超えるが、
+   戦力ヒエラルキーを順位数字の大きさで演出する画面固有の例外として維持する。
+2. 02の布陣はBaselineの隊列規定（18px重ね・群の外枠1つ）を適用しない。
+   既存のスポットライト舞台配置（中央と左右への展開、床光）を維持し、画像サイズだけ2:3梯子へ合わせる。
 
-1. **ゴールド一元アクセント**：金銀銅鋼のメタリック順位カラーを廃止。順位は「数字の大きさ・1位カードの拡大・ゴールドの当て方」で表現する
-2. **Office 標準部品に準拠**：パネルは `.panel` 相当（`--panel-bg` + `--border` + 角丸6px）、セクション見出しは `.panel-title` 相当（Oswald 13px / letter-spacing 3px / uppercase / gold / 下線）、履歴テーブルは `.data-table` 相当
-3. **OVR 階調は維持**：`--v-*` 8階調と `valueClassOvr()` は現行のまま（金系階調なのでゴールド基調と両立）
-4. **役割バッジは維持**：王者（金）/ 看板（赤 `--board-red` 系）/ 主力（中立）。03 主力層サムネイル左上のバッジ表示も維持
-5. **自団体の強調はゴールド枠**：v0.9 の銀枠（rank-2 シルバー）をやめ、`rgba(212,168,67,0.4〜0.5)` のゴールド枠+薄金グラデ背景に統一
+## 6. 視覚スタイルと指標
 
----
+- Officeの `--office-bg`、`--panel-bg`、`--card-bg`、`--border` を使う。カード角丸は
+  `--radius-md`（6px）、画像は `--radius-sm`（4px）。
+- 1位の順位数字と評価値は白→`--gold-light` のグラデーション、他順位の数字は`--text-dim`。
+  1位カードの最小高は465px、通常カードは400px。自団体には金系の枠を付ける。
+- OVRは `valueClassOvr()` が返す8階調（`v-mythic`〜`v-poor`）を使う。役割は王者（金）、
+  看板（`--board-red`）、主力（中立）のバッジで示す。
+- 基礎力ツールチップはForce / Depth（主力 `/20` + 控え `/10`）/ Marqueeを表示する。
+  評価ツールチップは「基礎力＋レガシー＋対戦PT＋実績」、Depthツールチップは動的満点基準と
+  怪我人・レンタル除外を説明する。
 
-## 3. HTML 構造（現行実装の出力、非変更）
+## 7. v1.0からの変更
 
-```
-#screen-ranking
-└─ .ranking-popup
-   ├─ .popup-header        (静的HTML: 団体ランキング)
-   ├─ #rankingMast         → .popup-mast (INDUSTRY STANDINGS / 第N シーズン・全4団体 / 日付)
-   ├─ #rankingVictoryBar   → .victory-bar (▲1位 / 中央 −Npt / ▼自団体 — 1位時は .is-top + .vb-top)
-   └─ #rankingContent
-      ├─ section.section.bg-card  ── 02 — Roster 全団体ロースター
-      │  ├─ .section-marker > .text > .kicker/.title
-      │  └─ .orgs-grid (1.3fr 1fr 1fr 1fr)
-      │     └─ .orgcell × 4 (head[rank/nm/tier-pill] + formation[orgcell-fcell pos-1〜3 + role-badges + nm-tag] + foot[評価pt/平均OVR/対戦PT])
-      ├─ section.section.bg-deep  ── 03 — 団体詳細 団体プロフィール
-      │  └─ .rp-profiles > .rp-card × 4
-      │     (rp-rank紋章 / rp-info[tags+h3+リード文] / rp-ace[役割+名前+コピー+dl+画像] / rp-depth[head+faces+note] / rp-metrics[評価/基礎力/平均OVR/対戦PT/レガシー/実績+tooltip])
-      └─ section.section.bg-card.history-wrap ── 04 — History シーズン履歴
-         └─ table (h-rank-1〜4 / profit-pos/neg)
-```
-
-※ v0.9 spec に記載のあった `.org-card`（03旧レイアウト：バナー+5名フォーメーション）は実装が `.rp-card` に移行済みで **死にCSS**。v1.0 実装時に削除する。
-
----
-
-## 4. デザイントークン
-
-### 4-1 使用する共通トークン（新規定義なし）
-
-```
-背景・パネル: --bg-dark / --panel-bg / --card-bg / --border
-文字:        --text-main / --text-sub / --text-dim
-アクセント:  --gold / --gold-light（白→金グラデ: linear-gradient(180deg,#fff 20%,var(--gold-light)) + background-clip:text）
-状態:        --green / --red（signal-up/down エイリアス経由可）
-看板赤:      --board-red / --board-red-bg / --board-red-border（継続使用）
-OVR階調:     --v-mythic 〜 --v-poor（現行値のまま）
-```
-
-### 4-2 廃止するトークン参照
-
-- `--rank-1〜4`（light/deep 含む）: ランキングCSSからの参照を全廃。**h-rank-1 のみ `--gold-light` に置換**、h-rank-2〜4 は `--text-main`
-- `--th-*`（accent/divider/text/border/section-bg/card-bg）: 参照を全廃し、`--border` / `--text-*` / `--panel-bg` / `--card-bg` に置換。参照ゼロになったら :root の定義ごと削除
-- `--office-bg-deep` / `--office-text-on-dark-*`: ランキング内の参照は `--text-*` 系へ置換（定義は他画面が使うため残置）
-- `--rank-*` の :root 定義自体は残置（将来・他画面用。削除はスコープ外）
-
-### 4-3 ゴールドの当て方（順位表現）
-
-| 要素 | 1位 | 2〜4位 |
+| 項目 | v1.0 | v1.1 |
 |---|---|---|
-| orgcell 枠 | `rgba(212,168,67,0.35)` + 拡大(min-height 420px) | `--border` |
-| orgcell 順位数字 | 白→金グラデ 46px | `--text-dim` 36px |
-| orgcell 評価値 | 白→金グラデ 32px | `--text-main` 26px |
-| rp-card 左ボーダー | `--gold` 3px + 薄金グラデ背景 | `rgba(232,230,224,0.18)` 3px |
-| rp-metrics 評価値 | 白→金グラデ | 白→金グラデ（全団体共通） |
-| 履歴 順位列 | `--gold-light` | `--text-main` |
-| 自団体(is-player) | ─ | ゴールド枠 `rgba(212,168,67,0.4〜0.5)` |
+| 02ロースター指標 | 平均OVR | 層の厚み `n/30` |
+| 03プロフィール指標 | 平均OVR | 層の厚み `n/30`（主力/控えの内訳もエース欄に表示） |
+| Depthの説明 | 11位以下の人数加点 | 4〜8番手/9〜12番手の到達度、業界水準連動 |
+| 講評 | 表示顔と計算用スロットの母集団が混在し得た | 団体・個人・2番手以下を分離し、主力講評は顔と同じ母集団 |
+| 実戦級の表示 | 固定値の前提 | `depthReadyOvr`を実数表示 |
+| サイズ記録 | v1.0の旧値を含む | 実装値、2:3梯子、顔40px、紋章62px、逸脱2点を明記 |
 
----
-
-## 5. 各部の様式（v0.9 → v1.0 差分）
-
-| 部位 | v0.9 | v1.0（A案） |
-|---|---|---|
-| popup フレーム | radius-lg + 黒影 | `--border` 枠 + 角丸6px、ヘッダは `--panel-bg` |
-| マスト | Bebas 30px 金ベタ + 4px二重金罫 | **Bebas 22px 白→金グラデ**（トップバータイトル様式）+ 1px `--border` |
-| 勝利条件バー | 金/銀の rank 色 | 1位ラベル=`--gold`、自団体ラベル=`--text-sub`、中央ギャップ数字=白→金グラデ。`.is-top`（1位時）は金系のまま維持 |
-| セクション見出し | kicker金 + title白 2行 | `.panel-title` 様式1行（`.text` を flex 化、kicker=`--text-dim` 小、title=Oswald 13px gold ls3 uppercase 下線付き） |
-| orgcell | clip-path切り角 + rank色 border-top + rank色団体名 + メタリックピル | 角丸6px + `--panel-bg`、団体名=`--text-main`、ピル=ゴールド枠チップ（`rgba(212,168,67,0.4)`枠 + `--gold`文字 + 薄金背景） |
-| tier-pill | rank色グラデ塗り | 全団体共通のゴールド枠チップ。自団体のみ濃いめ |
-| フォーメーション | rank色の床ライト | 床ライト・王者スポットとも金 `rgba(212,168,67,0.3)` に統一 |
-| rp-card | clip無しだが rank色 border-left + rank色タグ | 角丸6px、border-left は 4-3 の表どおり、rp-tags は全団体ゴールド統一 |
-| rp-face バッジ | ボーダー色のみ（is-champ/board/core） | ボーダー色 + **role-badges（7px、左上）を維持**（実装は既に出力済み。バッジ背景 `rgba(18,17,14,0.85)` で視認性確保） |
-| 履歴テーブル | th 金 2px 下線 + rank色順位列 | `.data-table` 様式（th=Oswald 11px gold、1px `--border` 下線）、順位列は 4-3 の表どおり |
-| 旧 org-card CSS 一式 | 残置（死にコード） | **削除**（`.org-card` / `.org-banner` / `.ace-stand` / `.fcell` / `.formation-*` / `.champ-row` / `.footer-actions` / `.roster-toggle` / `.roster-list` 系。`.orgcell-fcell` は現役なので残す） |
-
-**維持するもの**：`.rank-metric` / `.rank-metric-tooltip`（teleport 型ツールチップ）、`.v-*` 階調クラス、`.orgcell-fcell .role-badges`（top:-16px 配置）、nm-tag の黒縁取り白文字、レスポンシブ規則。
-
----
-
-## 6. データ接続・画像取得・主力選定
-
-**v0.9 から変更なし**（`Engine.ranking.updateRankings(G)` / 王者取得 / ロースター加工 / 順位連動の主力人数 / `getUpperUrl`・`getOrgIconPath`・`onerror` フォールバック）。旧 spec §5〜§8 の記載のうち、03 の描画は `.rp-card`（紋章+リード文+エース+主力層+6指標）が現行の真実。
-
----
-
-## 7. 関連
-
-- モックアップ3案の比較経緯: `docs/ui/mockups/ranking-restyle-A-office.html`（採用）/ `-B-cream.html` / `-C-tuned.html`（worklog 2026-07-16 参照）
-- 旧 v0.9 spec の内容はこのファイルの git 履歴を参照
-
----
-
-*v1.0 / 2026-07-16（A案 Office標準・採用決定）*
+*v1.1 / 2026-07-31（Depth業界水準連動・講評同期・Baseline v0.8実装値反映）*
