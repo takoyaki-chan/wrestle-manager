@@ -2040,6 +2040,13 @@ function _consumeEventPopupQueueEmpty() {
 
 function _chainEventPopupQueueEmpty(cb) {
   if (typeof cb !== 'function') return;
+  // **キューが空なら即座に実行する。** ここを登録だけで済ませると、閉じるポップアップが
+  // 1つも無い場合に closeEventPopup が呼ばれず、コールバックが永久に発火しない
+  // (2026-07-31: PPVテレビ中継が「準備中…」で止まる不具合の原因)。
+  if (_eventPopupQueue.length === 0 && !_onEventPopupQueueEmpty) {
+    setTimeout(cb, 200);
+    return;
+  }
   const prevCb = _consumeEventPopupQueueEmpty();
   _onEventPopupQueueEmpty = () => {
     if (prevCb) {

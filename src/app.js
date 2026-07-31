@@ -14922,9 +14922,21 @@ App.initPPVTV = function() {
   }
 
   // テレビ中継5場面(放送OP→カード→速報→頂上決戦→放送終了)
-  _chainEventPopupQueueEmpty(() => {
+  // 「準備中…」で固まらないよう、キュー解消の待ちには必ず保険の時限を掛ける
+  // (2026-07-31: ポップアップが1つも無いと待ちが解けず進行不能になった)。
+  let _ppvTvStarted = false;
+  const _startBroadcast = () => {
+    if (_ppvTvStarted) return;
+    _ppvTvStarted = true;
     renderPPVTvBroadcast(tvResult.card, tvResult.results, G.ppvName);
-  });
+  };
+  _chainEventPopupQueueEmpty(_startBroadcast);
+  setTimeout(() => {
+    if (!_ppvTvStarted) {
+      console.warn('[WM] ppvTV safety net fired — starting broadcast without queue drain');
+      _startBroadcast();
+    }
+  }, 3000);
 };
 
 App.closePPVTV = function() {
