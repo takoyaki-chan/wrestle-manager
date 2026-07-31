@@ -120,6 +120,18 @@ section('6. RS05達成音を通常の契約成立・キャンプ承認で鳴ら�
     'キャンプ承認のクリックでRS05達成音が鳴る');
 });
 
+section('7. 契約確認画面では成立音を鳴らさない', () => {
+  const common = fs.readFileSync(path.join(root, 'src', 'ui-common.js'), 'utf8');
+  const ceremonyStart = common.indexOf('function showSigningCeremony(');
+  const ceremonyEnd = common.indexOf('\nfunction confirmSigning(', ceremonyStart);
+  const ceremony = common.slice(ceremonyStart, ceremonyEnd);
+
+  assert.ok(/Audio\.play\('offer'\)/.test(ceremony),
+    '契約前の確認画面が提示音を鳴らしていない');
+  assert.ok(!/Audio\.play\('contract'\)/.test(ceremony),
+    '契約前の確認画面で契約成立音が鳴っている');
+});
+
 console.log('');
 console.log(failed === 0 ? 'Result: ALL PASS ✓' : `Result: ${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);

@@ -64,6 +64,43 @@ section('2. どの大会もコーチ・選手3種のセリフが揃っている'
   });
 });
 
+section('2a. ジュニアの導入は出場選手本人の目線で、十分なレパートリーがある', () => {
+  const at = tableSrc.indexOf('\n  juniorTournament: {');
+  const body = tableSrc.slice(at, tableSrc.indexOf('\n  },', at));
+  ['lastYear', 'champion', 'popular'].forEach(kind => {
+    const match = body.match(new RegExp(`${kind}: \\[([\\s\\S]*?)\\]`));
+    assert.ok(match, `juniorTournament: ${kind} のセリフが読めない`);
+    const lines = [...match[1].matchAll(/'([^']+)'/g)].map(m => m[1]);
+    assert.ok(lines.length >= 4, `juniorTournament: ${kind} のセリフが少ない（${lines.length}件）`);
+  });
+  assert.ok(!body.includes('若手の大会でも、手は抜きません。'),
+    'U-20の出場選手が自分を若手の外側から評する旧セリフが残っている');
+});
+
+section('2b. ジュニアの導入は性格 × 属性のセリフを使う', () => {
+  const juniorLines = (data.match(/const JUNIOR_TOURNAMENT_LINES = \{[\s\S]*?\n\};/) || [])[0];
+  assert.ok(juniorLines, 'JUNIOR_TOURNAMENT_LINES が見つからない');
+  const summonAt = juniorLines.indexOf('  summon: {');
+  const summonEnd = juniorLines.indexOf('\n  },\n  preMatch:', summonAt);
+  const summon = juniorLines.slice(summonAt, summonEnd);
+  ['normal', 'bold', 'earnest', 'easygoing', 'quiet', 'shy', 'emotional'].forEach(personality => {
+    assert.ok(new RegExp(`\\n    ${personality}: \\{`).test(summon),
+      `summon: ${personality} の性格別セリフが無い`);
+  });
+  ['ojousama', 'delinquent', 'seductive', 'cool', 'composed', 'polite'].forEach(archetype => {
+    assert.ok(summon.includes(`${archetype}: [`), `summon: ${archetype} の属性別セリフが無い`);
+  });
+});
+
+section('2c. 4団体対抗戦の代表挨拶は王座戦の文脈を持ち込まない', () => {
+  const at = tableSrc.indexOf('\n  autumnWar: {');
+  const body = tableSrc.slice(at, tableSrc.indexOf('\n  },', at));
+  const fighterBody = (body.match(/fighter: \{([\s\S]*?)\n    \},/) || [])[1] || '';
+  assert.ok(fighterBody, 'autumnWar: 選手用セリフが読めない');
+  assert.ok(!/ベルト|王座/.test(fighterBody),
+    '4団体対抗戦は王座戦ではない。代表挨拶にベルト／王座の文脈を入れないこと');
+});
+
 section('3. 会場名を二重管理していない', () => {
   // 会場は Engine.specialEventFinance.VENUE_INDEX(=8, 大会場)。
   // data.js に「大会場」と書き写すと、興行側だけ変えたときに嘘になる
@@ -105,11 +142,22 @@ section('4. 去年の出場者は、実在する history.type で探している
 
 const introSrc = (ui.match(/function showSpecialEventIntro[\s\S]*?\n\}/) || [])[0];
 const travelSrc = (ui.match(/function showSpecialEventTravel[\s\S]*?\n\}/) || [])[0];
+const fighterLineSrc = (ui.match(/function _specialIntroFighterLine[\s\S]*?\n\}/) || [])[0];
 
 section('5. 導入シーンは既存の枠(mdl-a)を使う', () => {
   assert.ok(introSrc, 'showSpecialEventIntro が無い');
   assert.ok(/_mdlAOpen\(/.test(introSrc), '専用のオーバーレイを作っている。既存の mdl-a を使うこと');
   assert.ok(/_mdlAHeader\(/.test(introSrc), 'ヘッダーを手書きしている');
+});
+
+section('5a. ジュニアの導入は話者の性格と属性でセリフを選ぶ', () => {
+  assert.ok(fighterLineSrc, '_specialIntroFighterLine が無い');
+  assert.ok(/eventKey === 'juniorTournament'/.test(fighterLineSrc),
+    'ジュニアだけの話者別レパートリー分岐が無い');
+  assert.ok(/getJuniorTournamentLine\([\s\S]*?'summon'[\s\S]*?fighter\.personality[\s\S]*?fighter\.archetype/.test(fighterLineSrc),
+    'ジュニア導入で personality × archetype のセリフを取得していない');
+  assert.ok(/_specialIntroFighterLine\(eventKey, cfg, speaker, rng\)/.test(introSrc),
+    '特別興行の導入表示が話者別セリフ取得を通っていない');
 });
 
 section('6. コーチも選手も同じ helper で立たせる', () => {

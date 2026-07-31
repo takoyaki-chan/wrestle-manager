@@ -1520,7 +1520,8 @@ function showSigningCeremony(charId) {
   const fighter = G.freeAgents.find(c => c.id === charId);
   if (!fighter) return;
 
-  Audio.play('contract');
+  // これは契約前の確認画面。成立音は confirmSigning → App.signFighter 側だけで鳴らす。
+  Audio.play('offer');
 
   const fOvr = Engine.util.ov(fighter);
   const tierCfg = Engine.scout.getTierConfig(fighter.assessedTier || 'material');
@@ -2345,12 +2346,15 @@ function _renderRivalryPopup() {
     audioKey = o.isFate ? 'fate_confrontation' : 'rivalry_confrontation';
 
   } else {
+    const isFirstWin = o.resolutionType === 'first';
     const isGoodRival = o.resolutionType === 'goodRival';
     const isBitter = o.resolutionType === 'bitter';
-    const winLineObj = isGoodRival ? GOODRIVAL_RESOLUTION_LINES.winner
+    const winLineObj = isFirstWin ? RIVALRY_MATCH_REACTION.winnerLines
+      : isGoodRival ? GOODRIVAL_RESOLUTION_LINES.winner
       : isBitter ? BITTER_RESOLUTION_LINES.winner
       : (o.isFate ? RIVALRY_RESOLUTION_LINES.fateWinner : RIVALRY_RESOLUTION_LINES.winner);
-    const loseLineObj = isGoodRival ? GOODRIVAL_RESOLUTION_LINES.loser
+    const loseLineObj = isFirstWin ? RIVALRY_MATCH_REACTION.loserLines
+      : isGoodRival ? GOODRIVAL_RESOLUTION_LINES.loser
       : isBitter ? BITTER_RESOLUTION_LINES.loser
       : (o.isFate ? RIVALRY_RESOLUTION_LINES.fateLoser : RIVALRY_RESOLUTION_LINES.loser);
     const winFighter = ALL_CHARS.find(c => c.id === o.winnerId);
@@ -2359,9 +2363,11 @@ function _renderRivalryPopup() {
     const loseLine = pickDialogueLine(loseLineObj, loseFighter);
     title = isBitter ? '決 着。し か し、宿 怨 は 消 え ず'
       : isGoodRival ? '好 敵 手 誕 生'
-      : (o.isSecondResolution ? '最 終 決 着' : (o.isFate ? '宿命の相手 決着' : '宿 敵 決 着'));
+      : isFirstWin ? '宿 敵 戦 勝 利'
+      : (o.isSecondResolution ? '最 終 決 着' : (o.isFate ? '宿命の相手 決着' : '因 縁 決 着'));
     sub = isBitter ? 'THE MATCH IS OVER ・ THE GRUDGE REMAINS'
       : isGoodRival ? 'GOOD RIVALS ・ MUTUAL RESPECT'
+      : isFirstWin ? 'RIVALRY MATCH ・ VICTORY'
       : (o.isFate ? 'FATED RIVALRY ・ RESOLVED' : 'RIVALRY RESOLVED');
     toneCls = isGoodRival ? 'tone-goodrival'
       : isBitter ? 'tone-bitter'
@@ -2369,10 +2375,11 @@ function _renderRivalryPopup() {
     leftHtml = _rivalryCol(o.winnerId, o.winnerName, winLine, true);
     rightHtml = _rivalryCol(o.loserId, o.loserName, loseLine, false);
     vsIcon = '⚔';
-    vsLabel = '決 着';
+    vsLabel = isFirstWin ? '勝 利' : '決 着';
     const bonusLine = `📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}`;
     const tagText = isGoodRival ? '🤝 ふたりは「好敵手」になった'
       : isBitter ? '💀 勝敗は決した。しかし、遺恨は消えなかった'
+      : isFirstWin ? '🔥 宿敵との一戦を制した'
       : o.isFate ? '✨ 宿命の相手との決着がついた'
       : '🔥 宿敵の決着';
     resultHtml = `<div class="vd-tag">${tagText}</div><div class="vd-bonus">${bonusLine}</div>`;
@@ -4810,8 +4817,9 @@ let _pendingMatchDialogues = [];
  *  格下が OVR差9以上をひっくり返したときだけ UPSET_RIVALRY_LINES(番狂わせ専用)を引く。
  *  2026-07-26: e03804b(興行結果画面の作り直し)でこの予約が丸ごと落ち、因縁の勝敗セリフが
  *  通常興行・PPVのどちらからも出なくなっていたため復旧。判定は削除前と同じ式を使う。 */
-function _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel) {
+function _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel, sourceMatch) {
   if (isDraw || !r || !r.rivalryBonus) return;
+  if (typeof _sameSinglesPair === 'function' && !_sameSinglesPair(sourceMatch, r)) return;
   if ((r.rivalryBonus.rivalry || 0) < 30) return;
   const winF = leftIsWinner ? r.left : r.right;
   const loseF = leftIsWinner ? r.right : r.left;
@@ -4957,7 +4965,7 @@ function renderShowResult(results, injuryResults) {
     if (r.matchType === 'tag') tags.push(`<span class="pb-tag is-tag">TAG MATCH</span>`);
     if (sourceMatch?.isCRMatch) tags.push(`<span class="pb-tag is-rivalry">⚔ 挑戦試合</span>`);
     if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
-    if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">⚡ 決着！</span>`);
+    if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">${r.rivalryResolutionType === 'first' ? '⚔ 宿敵戦勝利' : '⚡ 決着！'}</span>`);
     else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
     if (r.freshnessBonus) {
       if (r.freshnessBonus > 0) tags.push(`<span class="pb-tag is-first">✨ ${escHtml(r.freshnessLabel || '初顔合わせ')}</span>`);
@@ -5011,7 +5019,7 @@ function renderShowResult(results, injuryResults) {
 
     // 因縁マッチ(rivalry 30+)の試合後コメントを予約する。結果一覧を閉じた直後に
     // showPostMatchDialogues() が順番に出す。
-    _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, `Match ${results.length - i}`);
+    _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, `Match ${results.length - i}`, sourceMatch);
 
     let winnerLabel;
     if (isDraw) winnerLabel = 'NO CONTEST';
@@ -6626,7 +6634,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     // Tags
     const tags = [];
     if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">🏆 タイトルマッチ</span>`);
-    if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">⚡ 決着！</span>`);
+    if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">${r.rivalryResolutionType === 'first' ? '⚔ 宿敵戦勝利' : '⚡ 決着！'}</span>`);
     else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || '因縁')}</span>`);
     if (r.freshnessBonus) {
       if (r.freshnessBonus > 0) tags.push(`<span class="pb-tag is-first">✨ ${escHtml(r.freshnessLabel || '初顔合わせ')}</span>`);
@@ -6638,7 +6646,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     const metaRight = r.right._ppvOrgName || (isMain ? 'Summit' : `Match ${matchNum}`);
 
     // 通常興行と同じく因縁マッチの試合後コメントを予約する（App.closePPVResult で消化）
-    _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, isMain ? '頂上決戦' : `Match ${matchNum}`);
+    _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, isMain ? '頂上決戦' : `Match ${matchNum}`, match);
 
     let winnerLabel;
     if (isDraw) winnerLabel = 'NO CONTEST';
@@ -11813,6 +11821,63 @@ function _specialIntroPickSpeaker(state, cfg, pool) {
   return null;
 }
 
+// ── Title match ceremony ─────────────────────────────────────────────────
+// 節目イベントと同じ showCeremonyEvent の2フェーズ式典へ、王座結果だけを
+// データとして渡す。画面構造・スキップ・音響の復帰を独自実装しない。
+function showTitleMatchCeremony(outcome, onDone) {
+  const isDefense = outcome?.outcome === 'defense';
+  const championId = isDefense ? outcome?.champId : outcome?.newChampId;
+  const champion = (G?.roster || []).find(f => f.id === championId)
+    || (typeof ALL_CHARS !== 'undefined' ? ALL_CHARS.find(f => f.id === championId) : null);
+  if (!champion || typeof showCeremonyEvent !== 'function') {
+    if (typeof onDone === 'function') onDone();
+    return;
+  }
+  const opponentId = isDefense ? outcome?.challengerId : outcome?.prevChampId;
+  const opponent = (G?.roster || []).find(f => f.id === opponentId)
+    || (typeof ALL_CHARS !== 'undefined' ? ALL_CHARS.find(f => f.id === opponentId) : null);
+  const defenses = Number(G?.titles?.world?.defenses) || 0;
+  const champLine = typeof getTraitQuote === 'function'
+    ? getTraitQuote(isDefense ? 'titleDefense' : 'titleWin', champion)
+    : (isDefense ? 'このベルトは、まだ渡さない。' : 'このベルトとともに、頂点へ行く。');
+  const opponentLine = opponent && typeof getTraitQuote === 'function'
+    ? getTraitQuote(isDefense ? 'titleChallengeLoss' : 'titleLoss', opponent)
+    : '';
+  const evt = {
+    titleMain: isDefense ? '防 衛' : '戴 冠',
+    titleSub: isDefense ? `TITLE DEFENSE · ${defenses}` : 'NEW WORLD CHAMPION',
+    narration: isDefense
+      ? ['世界王座戦の幕が下りた。', `${champion.name}は、王者としてベルトを守り抜いた。`, `${defenses}度目の防衛成功。王座は、なおその手にある。`]
+      : ['世界王座戦の幕が下りた。', `${champion.name}が、頂点のベルトを手にした。`, '新たな王者の時代が、ここから始まる。'],
+    narrationGaps: [1],
+    visualVariant: 'triumph',
+    continueLabel: '式典を終える',
+    lineForFighter: fighter => fighter.id === champion.id
+      ? champLine
+      : (opponentLine || '次は、この景色を取り戻す。'),
+  };
+  const speakers = [
+    { fighter: champion, roleLabel: isDefense ? 'WORLD CHAMPION · DEFENSE SUCCESS' : 'NEW WORLD CHAMPION' },
+    ...(opponent ? [{ fighter: opponent, roleLabel: isDefense ? 'CHALLENGER' : 'FORMER CHAMPION' }] : []),
+  ];
+  showCeremonyEvent(evt, speakers, () => { if (typeof onDone === 'function') onDone(); });
+}
+
+// U-20 は召集された選手自身が話すため、特別興行の共通文ではなく
+// personality × archetype のジュニア用レパートリーを使う。
+// 他の特別興行は従来どおり「前年出場者 / 王者 / 人気者」ごとの文脈を優先する。
+function _specialIntroFighterLine(eventKey, cfg, speaker, rng) {
+  const fighter = speaker && speaker.fighter;
+  if (eventKey === 'juniorTournament' && fighter && typeof getJuniorTournamentLine === 'function') {
+    const line = getJuniorTournamentLine(
+      'summon', fighter.personality || 'normal', fighter.archetype || '_default', rng
+    );
+    if (line) return line;
+  }
+  const lines = cfg && cfg.fighter && cfg.fighter[speaker && speaker.kind];
+  return (lines && lines.length) ? lines[Engine.rng.int(rng, 0, lines.length - 1)] : '';
+}
+
 /** コーチ→選手の2枚を順に見せ、終わったら onDone。
  *  eventKey は SPECIAL_EVENT_INTRO のキー
  *  (autumnWar / springTagLeague / juniorTournament / tenchosen / ppvGrandFinal)
@@ -11836,7 +11901,8 @@ function showSpecialEventIntro(eventKey, state, onDone, opts) {
 
   const showFighterScene = () => {
     if (!speaker) { done(); return; }
-    const line = pickLine(cfg.fighter[speaker.kind]) || pickLine(cfg.fighter.popular);
+    const line = _specialIntroFighterLine(eventKey, cfg, speaker, rng)
+      || pickLine(cfg.fighter.popular);
     if (!line) { done(); return; }
     const html = `
       ${_mdlAHeader(cfg.title, _mdlASeasonLabel(state))}
@@ -13747,7 +13813,7 @@ function _renderNextMatchDialogue() {
   box.className = `notif-modal-box verdict u3b-theme-dark ${d.isUpset ? 'tone-fate' : 'tone-confront'}`;
   box.innerHTML = `
     <div class="vd-head">
-      <div class="vd-title">${d.isUpset ? '番 狂 わ せ' : '因 縁 決 着'}</div>
+      <div class="vd-title">${d.isUpset ? '番 狂 わ せ' : '因 縁 の 一 戦'}</div>
       <div class="vd-sub">${escHtml(d.matchLabel || '')} ・ ${rb.emoji || '🔥'}${escHtml(rb.label || '因縁')}</div>
     </div>
     <div class="vd-stage">
@@ -13755,7 +13821,7 @@ function _renderNextMatchDialogue() {
       <div class="vd-vs">
         <div class="vd-vs-line"></div>
         <div class="vd-vs-icon">${d.isUpset ? '⚡' : '🔥'}</div>
-        <div class="vd-vs-label">${d.isUpset ? '下 剋 上' : '決 着'}</div>
+        <div class="vd-vs-label">${d.isUpset ? '下 剋 上' : '試 合 結 果'}</div>
         <div class="vd-vs-line"></div>
       </div>
       ${_rivalryCol(d.loserId, d.loserName, d.loseLine, false)}
@@ -15349,21 +15415,27 @@ function _showJTImpressionChain(list, idx, onDone) {
   const line = getJuniorTournamentLine(timing, f.personality || 'normal', f.archetype || '_default');
   if (!line) { _showJTImpressionChain(list, idx + 1, onDone); return; }
 
-  const portraitUrl = getPortraitUrl(f.id);
+  // コメント画面は縦長の .u3b-upper を使う。正方形の顔アイコンを入れると
+  // 背景ごと引き伸ばされて枠と噛み合わないため、他の試合画面と同じアッパー画像を使う。
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
   const resultLabel = timing === 'champion' ? '優勝' : timing === 'postWin' ? '入賞' : '敗退';
   const resultColor = timing === 'champion' ? 'var(--gold)' : timing === 'postWin' ? 'var(--c-positive)' : 'var(--text-sub)';
+  const ovr = (typeof Engine !== 'undefined' && Engine.util && typeof Engine.util.ov === 'function')
+    ? Engine.util.ov(f) : (f.ovr ?? '—');
 
   // U3グループA統一(2026-07-26): war-victory-line(_showWarVictoryChain)と同じ顔出しブロックへ移行
   // (mockup-baseline-v0.1)。旧#2ecc71(緑のハードコード)はvar(--c-positive)へトークン化。
   // 結果ラベル(優勝/入賞/敗退)は role スロットへ、色は resultColor をそのまま引き継ぐ
   const overlay = document.createElement('div');
-  overlay.className = 'war-victory-overlay u3b-theme-stage is-victory';
+  overlay.className = 'war-victory-overlay u3b-theme-stage is-junior';
   overlay.innerHTML = `
     <div class="war-victory-modal">
+      <div class="jt-impression-kicker">JUNIOR CUP · TOURNAMENT NOTE</div>
       ${_u3bSideHtml({
-        name: f.name, line, imgUrl: portraitUrl,
-        fallback: (f.name || '?').charAt(0), size: 'm',
+        name: f.name, line, imgUrl: upperUrl,
+        fallback: (f.name || '?').charAt(0), size: 'm', isLoser: timing === 'postLose',
         roleHtml: `<div class="u3b-role" style="color:${resultColor}">${escHtml(resultLabel)}</div>`,
+        statLabel: 'OVR', statValue: ovr,
         bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
       })}
       <button class="war-victory-close">▶</button>
@@ -15383,14 +15455,14 @@ function _showJTImpressionChain(list, idx, onDone) {
 // 事前に一括シミュレーション済みのため、ここでは「どこまで見せるか」を currentRound/currentMatch
 // のポインタで制御するのみ（数値の再計算はしない）。
 function _jtcRoundLabel(name) {
-  return name === 'final' ? '決勝' : name === 'semiFinal' ? '準決勝' : '準々決勝';
+  return name === 'final' ? '決勝' : name === 'semiFinal' ? '準決勝' : name === 'quarterFinal' ? '準々決勝' : '1回戦';
 }
 
 function _jtcSizeClass(matchCount) {
-  // mockup-jt-restyle-v0.1 tab1: 準々決勝(4試合)・準決勝(2試合)は常にsm(76px)に統一。
+  // 16名時の1回戦(8試合)だけは横幅内に収める xs。以降はsm(76px)に統一。
   // 決勝(jtc-final-row.jtc-size-lg=132px)・頂上(jtc-up-peak=150x225)との段差を際立たせるため、
   // 旧mdサイズ(112px)分岐は廃止(8名大会でも準々決勝→準決勝は同sizeでよく、決勝への跳躍幅こそが要)。
-  return 'sm';
+  return matchCount >= 8 ? 'xs' : 'sm';
 }
 
 /** アッパー画像フィッター(勝者=大会色リング/敗者=モノクロ落ち) */
@@ -15701,12 +15773,25 @@ function _jtcFcCore({ label, f1, f2, own1, own2, upperL, upperR, hpLeftBlock, hp
   const rightDetail = _r ? ` role="button" tabindex="0" style="cursor:pointer" onclick="${_r}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${_r}}"` : '';
   const ovr1Cls = typeof valueClassOvr === 'function' ? valueClassOvr(f1.ovr) : '';
   const ovr2Cls = typeof valueClassOvr === 'function' ? valueClassOvr(f2.ovr) : '';
+  const fighterInfo = (f, own, ovrCls, detail) => {
+    const style = String(f.style || 'FIGHTER').toUpperCase();
+    const age = f.age != null ? `AGE ${f.age}` : '';
+    return `<div class="jtc-fc-nm"${detail}>
+      <div class="n">${escHtml(f.name)}</div>
+      <div class="jtc-fc-statline">
+        <span class="jtc-fc-style">${escHtml(style)}</span>
+        ${age ? `<span>${escHtml(age)}</span>` : ''}
+        <span class="jtc-fc-ovr"><small>OVR</small><b class="${ovrCls}">${escHtml(f.ovr)}</b></span>
+      </div>
+      <div class="o">${escHtml(f._orgName || '')}${own}</div>
+    </div>`;
+  };
   let h = `<div class="jtc-fc jt-su">`;
   h += `<div class="jtc-fc-lb">${escHtml(label)}</div>`;
   h += `<div class="jtc-fc-names">`;
-  h += `<div class="jtc-fc-nm"${leftDetail}><div class="n">${escHtml(f1.name)}</div><div class="o">${escHtml(f1._orgName || '')}${own1} OVR <span class="${ovr1Cls}">${f1.ovr}</span></div></div>`;
+  h += fighterInfo(f1, own1, ovr1Cls, leftDetail);
   h += `<div class="jtc-fc-vl">VS</div>`;
-  h += `<div class="jtc-fc-nm"${rightDetail}><div class="n">${escHtml(f2.name)}</div><div class="o">${escHtml(f2._orgName || '')}${own2} OVR <span class="${ovr2Cls}">${f2.ovr}</span></div></div>`;
+  h += fighterInfo(f2, own2, ovr2Cls, rightDetail);
   h += `</div>`;
   if (extraHtml) h += extraHtml;
   // アッパー画像対面(反転禁止: 左右とも素の向き)
@@ -15743,7 +15828,7 @@ function _jtRecoveredHpTarget(match, side, isFinal) {
 function _jtFocusCard(match, roundName, ri, mi) {
   const f1 = match.left, f2 = match.right;
   const isFinal = roundName === 'final';
-  const roundLabel = isFinal ? '🏆 決勝' : roundName === 'semiFinal' ? '準決勝' : '準々決勝';
+  const roundLabel = isFinal ? '🏆 決勝' : roundName === 'semiFinal' ? '準決勝' : roundName === 'quarterFinal' ? '準々決勝' : '1回戦';
   const label = isFinal ? roundLabel : `${roundLabel} — 第${mi + 1}試合`;
   const upperL = typeof getUpperUrl === 'function' ? getUpperUrl(f1.id) : '';
   const upperR = typeof getUpperUrl === 'function' ? getUpperUrl(f2.id) : '';
@@ -16117,7 +16202,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
     const total = rounds.reduce((sum, item) => sum + item.matches.length, 0);
     const position = rounds.slice(0, ri).reduce((sum, item) => sum + item.matches.length, 0) + mi + 1;
     const isFinal = ri === rounds.length - 1;
-    const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
+    const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : round.name === 'quarterFinal' ? '準々決勝' : '1回戦';
     const left = _jtFighterShim(match.left), right = _jtFighterShim(match.right);
     const leftWins = match.winnerId === match.left.id;
     const winner = leftWins ? left : right;
@@ -16156,7 +16241,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   matchPos += mi + 1;
 
   const isFinal = ri === rounds.length - 1;
-  const roundLabel = round.name === 'final' ? '🏆 決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
+  const roundLabel = round.name === 'final' ? '🏆 決勝' : round.name === 'semiFinal' ? '準決勝' : round.name === 'quarterFinal' ? '準々決勝' : '1回戦';
   const lWin = match.winnerId === match.left.id;
   const winner = lWin ? match.left : match.right;
   const leftF = _jtFighterShim(match.left);

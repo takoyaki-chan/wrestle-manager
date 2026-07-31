@@ -1748,19 +1748,13 @@ const Engine = {
 
       if (resolutionCount === 0) {
         if (pairState.minRivalry < 60) return null;
-        // v2.1: matches閾値 同団体4+、クロスOrg3+
-        // 2026-07-27: そこに**ペアごとの個体差**を足す。
-        // 閾値が全ペア同じだと、おまかせ編成のように同じ組が繰り返し当たる組み方では
-        // 全ペアが同時に条件を満たし、ひとつの興行で6件まとめて決着していた（実測で再現）。
-        // しかも決着は matches を全ペア同時に 0 へ戻すので、また揃って溜まり周期的に爆発する。
-        // ばらつきはペアID から決まるので、同じ組なら毎回同じ値。
-        // 「あと1回」で足踏みしていた組の基準が checkのたびに動く、ということは起きない。
+        // v2.1: matches閾値 同団体4+、クロスOrg3+。ペアごとの個体差で同時決着を防ぐ。
         const matchesThreshold = (pairState.isCrossOrg ? 3 : 4)
           + Engine.title._resolutionSpread(pairState.idA, pairState.idB);
         if ((pairState.matches || 0) < matchesThreshold) return null;
         return {
           type: 'first',
-          label: '因縁決着',
+          label: '宿敵戦勝利',
           emoji: '⚡',
           popBonus: 4,
           orgPopBonus: 1.5,
@@ -6131,12 +6125,12 @@ const Engine = {
             break;
           }
           case 'juniorTournament': {
-            const jtMap = { champion: '優勝', runnerUp: '準優勝', semiFinal: '準決勝敗退', quarterFinal: '出場（準々決勝敗退）' };
+            const jtMap = { champion: '優勝', runnerUp: '準優勝', semiFinal: '準決勝敗退', quarterFinal: '準々決勝敗退', firstRound: '出場（1回戦敗退）' };
             const jtLabel = jtMap[ev.result] || '出場';
             let jtDetail;
             if ((ev.result === 'champion' || ev.result === 'runnerUp') && ev.finalOpponentName) {
               jtDetail = ev.result === 'champion' ? `決勝で ${ev.finalOpponentName} を破る` : `決勝で ${ev.finalOpponentName} に敗れる`;
-            } else if ((ev.result === 'semiFinal' || ev.result === 'quarterFinal') && ev.eliminatedByName) {
+            } else if ((ev.result === 'semiFinal' || ev.result === 'quarterFinal' || ev.result === 'firstRound') && ev.eliminatedByName) {
               jtDetail = `${ev.eliminatedByName} に敗れて敗退`;
             }
             milestones.push({ season: rel(ev.season), week: ev.week || 24, type: 'jt_round',
@@ -12858,7 +12852,7 @@ const Engine = {
           if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
           s._rivalryResolvedThisWeek.push({ fighterId: m.left, fighter2Id: m.right });
           const emoji = resolution.emoji || '⚡';
-          const label = resolution.label || (isFinalResolution ? '最終決着' : '因縁決着');
+          const label = resolution.label || (isFinalResolution ? '最終決着' : '宿敵戦勝利');
           events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${Math.round(rivalOrgPopDelta * 10) / 10}`);
         } else {
           // 決着不成立: 通常通り recordRivalry
@@ -14975,7 +14969,7 @@ const Engine = {
           if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
           s._rivalryResolvedThisWeek.push({ fighterId: match.left.id, fighter2Id: match.right.id });
           const emoji = resolution.emoji || '⚡';
-          const label = resolution.label || (isFinalResolution ? '最終決着' : '因縁決着');
+          const label = resolution.label || (isFinalResolution ? '最終決着' : '宿敵戦勝利');
           events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${Math.round(rivalOrgPopDelta * 10) / 10}`);
         } else {
           // 不完全燃焼: 通常通り recordRivalry — Phase 5: matchMQ渡し
@@ -25072,6 +25066,7 @@ Engine.specialEventFinance = {
 // ══════════════════════════════════════════════════════════
 Engine.juniorTournament = {
   WEEK: 24,
+  MAX_BRACKET_SIZE: 16,
   CONDITION_RECOVERY: 25, // ラウンド間固定回復
   PRIZE: { champion: 1000, runnerUp: 500, semiFinal: 250 }, // 万円（国庫支出）
   /** 全団体からU-20選手を選出し、トーナメント参加者リストを返す */
@@ -25103,7 +25098,7 @@ Engine.juniorTournament = {
     candidates.sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
     const total = candidates.length;
     if (total < 4) return { participants: [], bracketSize: 0, cancelled: true };
-    const bracketSize = total >= 8 ? 8 : 4;
+    const bracketSize = total >= this.MAX_BRACKET_SIZE ? this.MAX_BRACKET_SIZE : total >= 8 ? 8 : 4;
     const selected = candidates.slice(0, bracketSize);
     // シード配置を適用（上位を分散配置）
     const seeded = Engine.juniorTournament._seedBracket(selected, state);
@@ -25116,6 +25111,16 @@ Engine.juniorTournament = {
    * @returns {Array} シード配置済みの参加者配列 */
   _seedBracket(sorted, state) {
     const n = sorted.length;
+
+    if (n === 16) {
+      // 標準シード: 1v16 / 8v9 / 5v12 / 4v13 / 3v14 / 6v11 / 7v10 / 2v15
+      return [
+        sorted[0], sorted[15], sorted[7], sorted[8],
+        sorted[4], sorted[11], sorted[3], sorted[12],
+        sorted[2], sorted[13], sorted[5], sorted[10],
+        sorted[6], sorted[9], sorted[1], sorted[14],
+      ];
+    }
 
     if (n === 8) {
       // 標準シード方式: 1v8 / 4v5 / 3v6 / 7v2
@@ -25155,17 +25160,19 @@ Engine.juniorTournament = {
   /** トーナメント全試合を実行する（純粋関数）
    * @returns {{ rounds: Array<{matches}>, champion, runnerUp, semiFinalists, allResults }} */
   run(state, participants, rng) {
-    if (!Array.isArray(participants) || participants.length < 4 || participants.length % 2 !== 0) {
+    if (!Array.isArray(participants) || ![4, 8, 16].includes(participants.length)) {
       return { cancelled: true, reason: 'insufficientParticipants', rounds: [], champion: null, runnerUp: null, semiFinalists: [], bracketSize: 0 };
     }
-    const n = participants.length; // 4 or 8
+    const n = participants.length; // 4 / 8 / 16
     const rounds = [];
     let currentBracket = participants.map(p => ({ ...p, jtCarryHpPct: 100 })); // 初期持ち越し体力100%
 
-    const roundCount = n === 8 ? 3 : 2;
-    const roundNames = n === 8
-      ? ['quarterFinal', 'semiFinal', 'final']
-      : ['semiFinal', 'final'];
+    const roundNames = n === 16
+      ? ['firstRound', 'quarterFinal', 'semiFinal', 'final']
+      : n === 8
+        ? ['quarterFinal', 'semiFinal', 'final']
+        : ['semiFinal', 'final'];
+    const roundCount = roundNames.length;
 
     for (let r = 0; r < roundCount; r++) {
       const roundName = roundNames[r];
@@ -25288,7 +25295,10 @@ Engine.juniorTournament = {
     if (champion) placementById.set(champion.id, 'champion');
     if (runnerUp) placementById.set(runnerUp.id, 'runnerUp');
     semiFinalists.filter(Boolean).forEach(f => placementById.set(f.id, 'semiFinal'));
-    allParticipantIds.forEach(id => { if (!placementById.has(id)) placementById.set(id, 'quarterFinal'); });
+    rounds.forEach(round => round.matches.forEach(match => {
+      if (placementById.has(match.loserId)) return;
+      placementById.set(match.loserId, round.name === 'quarterFinal' ? 'quarterFinal' : 'participant');
+    }));
     const appearancesById = Object.fromEntries(allParticipantIds.map(id => [id, 0]));
     const winsById = Object.fromEntries(allParticipantIds.map(id => [id, 0]));
     rounds.forEach(round => round.matches.forEach(match => {
@@ -25318,7 +25328,6 @@ Engine.juniorTournament = {
     // Phase C: 各敗者に対し「誰に敗れたか」を解決するヘルパー
     const finalRoundForOpp = rounds[rounds.length - 1];
     const semiRoundForOpp = rounds.length >= 2 ? rounds[rounds.length - 2] : null;
-    const quarterRoundForOpp = (bracketSize === 8 && rounds.length >= 3) ? rounds[0] : null;
     const findEliminator = (loserId, round) => {
       if (!round) return undefined;
       const m = round.matches.find(mm => mm.loserId === loserId);
@@ -25405,32 +25414,31 @@ Engine.juniorTournament = {
       prizePayout(sf._orgId, PRIZE.semiFinal);
     });
 
-    // 準々決勝敗退（5-8位）— 賞金なし、出場記録のみ
-    if (bracketSize === 8) {
-      const semifinalAndAboveIds = new Set([
-        champion?.id, runnerUp?.id, ...semiFinalists.map(sf => sf?.id)
-      ].filter(Boolean));
-      allParticipantIds.forEach(pid => {
-        if (semifinalAndAboveIds.has(pid)) return;
-        const histEntry = { type: 'juniorTournament', season: s.season, result: 'quarterFinal', prize: 0, eliminatedByName: findEliminator(pid, quarterRoundForOpp) };
+    // 準決勝より前の敗退者 — 16人時は1回戦・準々決勝、8人時は準々決勝。
+    // 賞金はないが、出場記録と敗退ラウンドは正しく残す。
+    rounds.slice(0, -2).forEach(round => {
+      round.matches.forEach(match => {
+        const pid = match.loserId;
+        const result = round.name === 'quarterFinal' ? 'quarterFinal' : 'firstRound';
+        const histEntry = {
+          type: 'juniorTournament', season: s.season, result, prize: 0,
+          eliminatedByName: findEliminator(pid, round),
+        };
         const recUpdate = (rec) => ({ ...rec, juniorTournamentAppearances: (rec.juniorTournamentAppearances || 0) + 1 });
-        // プレイヤー団体の選手か確認
-        const inPlayerRoster = (s.roster || []).some(f => f.id === pid);
-        if (inPlayerRoster) {
+        if ((s.roster || []).some(f => f.id === pid)) {
           s = { ...s, roster: updateFighter(s.roster, pid, histEntry, recUpdate) };
         } else {
-          // AI団体
           const aiOrgs = { ...s.aiOrgs };
           Object.keys(aiOrgs).forEach(orgId => {
             const od = aiOrgs[orgId];
-            if (od && od.roster && od.roster.some(f => f.id === pid)) {
+            if (od?.roster?.some(f => f.id === pid)) {
               aiOrgs[orgId] = { ...od, roster: updateFighter(od.roster, pid, histEntry, recUpdate) };
             }
           });
           s = { ...s, aiOrgs };
         }
       });
-    }
+    });
 
     // トーナメント結果をstateに保存（UI表示用）
     s = { ...s, _juniorTournamentResult: { ...tournamentResult, revenueDistribution } };

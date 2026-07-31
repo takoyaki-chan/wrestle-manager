@@ -29,6 +29,10 @@ assert.ok(focusBody.includes("_jtcFcHpBlock('right', startR.final, startR.max, s
 
 const focusCoreBody = bodyOf('function _jtcFcCore');
 assert.ok(focusCoreBody.includes('jtc-fc-hp-row'), 'shared tournament focus card must render a start HP row under stand portraits');
+assert.ok(focusCoreBody.includes('jtc-fc-statline') && focusCoreBody.includes('jtc-fc-ovr'),
+  'JT pre-match card must present OVR as a dedicated fighter stat line');
+assert.ok(focusCoreBody.includes('f.style') && focusCoreBody.includes('f.age'),
+  'JT pre-match card must present style and age alongside OVR');
 
 const resultBody = bodyOf('function renderJuniorTournamentMatchResult');
 assert.ok(resultBody.includes("className: 'is-jt-recovery'"), 'JT match result HP mini bar must be marked for recovery animation');
@@ -44,7 +48,17 @@ const animBody = bodyOf('function _jtAnimateHpRecoveryBars');
 assert.ok(animBody.includes('data-jt-recover-pct'), 'JT recovery animation must target data-marked HP fills');
 assert.ok(animBody.includes('requestAnimationFrame(tick)'), 'JT recovery animation must animate with requestAnimationFrame');
 
+const impressionBody = bodyOf('function _showJTImpressionChain');
+assert.ok(impressionBody.includes('getUpperUrl(f.id)'),
+  'JT post-tournament comment must use a portrait that fits the shared tall upper frame');
+assert.ok(impressionBody.includes("isLoser: timing === 'postLose'"),
+  'JT defeat comment must visually mark the fighter as a loser');
+assert.ok(impressionBody.includes("statLabel: 'OVR'"),
+  'JT post-tournament comment must retain the fighter OVR');
+
 assert.ok(html.includes('.jtc-fc-hp-row'), 'index CSS must style the shared tournament pre-match HP row');
 assert.ok(html.includes('.jtc-fc-hp-fill'), 'index CSS must style shared tournament HP fills');
+assert.ok(html.includes('.jtc-fc-statline'), 'index CSS must style the JT fighter stat line');
+assert.ok(html.includes('.u3b-theme-stage.is-junior'), 'index CSS must give JT comment popups their tournament theme');
 
 console.log('junior-tournament-hp-ui-test: ok');

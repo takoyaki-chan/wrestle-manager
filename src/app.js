@@ -77,6 +77,18 @@ function resolveActiveStageBgm(app) {
   return null;
 }
 
+// A result must only affect the two fighters who were actually booked together.
+// This also protects rivalry settlement when a stale result array is recovered.
+function _sameSinglesPair(match, result) {
+  if (!match || !result || match.matchType === 'tag' || result.matchType === 'tag') return false;
+  const idOf = value => (value && typeof value === 'object') ? value.id : value;
+  const booked = [idOf(match.left), idOf(match.right)].map(Number).sort((a, b) => a - b);
+  const fought = [idOf(result.left), idOf(result.right)].map(Number).sort((a, b) => a - b);
+  return booked.length === 2
+    && fought.length === 2
+    && booked.every((id, index) => Number.isFinite(id) && id === fought[index]);
+}
+
 const Audio = (() => {
   let ctx = null;
   let masterGain = null;
@@ -1531,7 +1543,9 @@ function showCeremonyEvent(evt, speakers, onContinue) {
   // imgUrlではなくimgHtmlで組み立てるのは、画像URLが空でも<img>タグ自体は出す既存の仕様
   // (onerrorで非表示にするだけ)を維持するため
   const speakerHtml = speakers.map(({ fighter, roleLabel }) => {
-    const line = App.resolveDomeLine(fighter, evt.dialogueKey);
+    const line = typeof evt.lineForFighter === 'function'
+      ? evt.lineForFighter(fighter)
+      : App.resolveDomeLine(fighter, evt.dialogueKey);
     const portraitSrc = getUpperUrl(fighter.id);
     const isTriumph = evt.visualVariant === 'triumph' ? ' triumph-glow' : '';
     const imgHtml = `<img src="${escHtml(portraitSrc || '')}" alt="${escHtml(fighter.name)}"
@@ -1543,6 +1557,7 @@ function showCeremonyEvent(evt, speakers, onContinue) {
       portraitClass: 'cerem-portrait' + isTriumph,
     })}</div>`;
   }).join('');
+  const speakerCountClass = speakers.length === 1 ? ' is-solo' : speakers.length === 2 ? ' is-duo' : '';
 
   overlay.innerHTML = `
     <!-- Phase 1: Narration -->
@@ -1563,7 +1578,7 @@ function showCeremonyEvent(evt, speakers, onContinue) {
     <div class="cerem-phase" data-phase="2">
       <div class="cerem-phase-zone top"></div>
       <div class="cerem-phase-zone mid">
-        <div class="cerem-trio">${speakerHtml}</div>
+        <div class="cerem-trio${speakerCountClass}">${speakerHtml}</div>
       </div>
       <div class="cerem-phase-zone bottom">
         <button class="cerem-continue-btn">${evt.continueLabel || '続ける'}</button>
@@ -7116,7 +7131,11 @@ const App = {
     const deferredRivalryIdxs = []; // 因縁決着候補ペアの recordRivalry を MQ確定後まで保留
     results.forEach((result, i) => {
       const m = validMatches[i];
-      if (m.matchType === 'tag') return; // タッグ試合は因縁・ケミストリーボーナス対象外
+      if (!m || m.matchType === 'tag') return; // タッグ試合は因縁・ケミストリーボーナス対象外
+      if (!_sameSinglesPair(m, result)) {
+        console.warn('[WM] rivalry processing skipped: card/result participants differ', { index: i, match: m, result });
+        return;
+      }
       const pairState = Engine.title.getRivalryPairState({ ...s, rivalries }, m.left, m.right);
       const rivalLvl = Engine.title.getRivalryLevel({ ...s, rivalries }, m.left, m.right);
       if (rivalLvl) result.rivalryBonus = rivalLvl;
@@ -7236,6 +7255,11 @@ const App = {
             ? { ...c, popularity: Math.min(100, (c.popularity || 0) + Engine.popularity.applyDiminishing(5, c.popularity || 0)) }
             : c);
           events.push(`🏆 王座奪還！ ${rd.challengerName} が ${rd.orgName} から世界王座を取り戻した！`);
+          titleMatchOutcomes.push({
+            outcome: 'change', newChampId: rd.challengerId,
+            prevChampId: rd.defenderId, challengerId: rd.challengerId,
+            isReclaim: true,
+          });
           // 業界ニュース: 奪還成功
           s = Engine.industryNews.push(s, {
             type: 'reclaimSuccess',
@@ -7491,6 +7515,10 @@ const App = {
       const r = results[idx];
       const m = validMatches[idx];
       if (!r || !m) return;
+      if (!_sameSinglesPair(m, r)) {
+        console.warn('[WM] rivalry settlement skipped: card/result participants differ', { index: idx, match: m, result: r });
+        return;
+      }
       const charL = roster.find(c => c.id === m.left);
       const charR = roster.find(c => c.id === m.right);
       if (!charL || !charR) return;
@@ -7555,7 +7583,7 @@ const App = {
         if (!s._rivalryResolvedThisWeek) s = { ...s, _rivalryResolvedThisWeek: [] };
         s._rivalryResolvedThisWeek.push({ fighterId: m.left, fighter2Id: m.right });
         const emoji = resolution.emoji || '⚡';
-        const label = resolution.label || (isFinalResolution ? '最終決着' : '因縁決着');
+        const label = resolution.label || (isFinalResolution ? '最終決着' : '宿敵戦勝利');
         events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${Math.round(rivalOrgPopDelta * 10) / 10}`);
       } else {
         // 決着不成立: 通常通り recordRivalry
@@ -9885,47 +9913,7 @@ const App = {
     // タイトルマッチ後リアクション（勝敗問わず）
     const titleOutcomes = App._lastTitleOutcomes || [];
     App._lastTitleOutcomes = [];
-    let titlePopupDelay = injuries.length * 100 + 50;
-    titleOutcomes.forEach(to => {
-      if (to.outcome === 'change') {
-        // 新王者リアクション
-        const newChamp = G.roster.find(c => c.id === to.newChampId) || ALL_CHARS.find(c => c.id === to.newChampId);
-        if (newChamp) {
-          hasEventPopups = true;
-          const d = titlePopupDelay; titlePopupDelay += 100;
-          setTimeout(() => showEventPopup({ type:'fighter', id:newChamp.id, name:newChamp.name, tone:'gold',
-            message: getTraitQuote('titleWin', newChamp), detail:`👑 ${newChamp.name}が新団体王者に！` }), d);
-        }
-        // 前王者リアクション
-        if (to.prevChampId) {
-          const prevChamp = G.roster.find(c => c.id === to.prevChampId) || ALL_CHARS.find(c => c.id === to.prevChampId);
-          if (prevChamp) {
-            hasEventPopups = true;
-            const d = titlePopupDelay; titlePopupDelay += 100;
-            setTimeout(() => showEventPopup({ type:'fighter', id:prevChamp.id, name:prevChamp.name, tone:'negative',
-              message: getTraitQuote('titleLoss', prevChamp), detail:`王座陥落…` }), d);
-          }
-        }
-      } else if (to.outcome === 'defense') {
-        // チャンピオン防衛リアクション
-        const champ = G.roster.find(c => c.id === to.champId) || ALL_CHARS.find(c => c.id === to.champId);
-        if (champ) {
-          hasEventPopups = true;
-          const d = titlePopupDelay; titlePopupDelay += 100;
-          setTimeout(() => showEventPopup({ type:'fighter', id:champ.id, name:champ.name, tone:'gold',
-            message: getTraitQuote('titleDefense', champ), detail:`🛡️ タイトル防衛成功！` }), d);
-        }
-        // 挑戦者リアクション
-        const challenger = G.roster.find(c => c.id === to.challengerId) || ALL_CHARS.find(c => c.id === to.challengerId);
-        if (challenger) {
-          hasEventPopups = true;
-          const d = titlePopupDelay; titlePopupDelay += 100;
-          setTimeout(() => showEventPopup({ type:'fighter', id:challenger.id, name:challenger.name, tone:'negative',
-            message: getTraitQuote('titleChallengeLoss', challenger), detail:`タイトル挑戦失敗…` }), d);
-        }
-      }
-    });
-    // v1.4w: 興行結果から新聞イベントを収集（tickWeek前）
+    // 旧来の簡易通知は残さず、後段で専用セレモニーを表示する。
     const _preDefenses = G.titles?.world?.defenses || 0;
     const _preChampId = G.titles?.world?.championId;
 
@@ -9994,6 +9982,15 @@ const App = {
 
     // チェーンを逆順に組み立て（retirement ← growth ← resolution ← eventPopups）
     const popupActions = [];
+    // 王座結果は通常の通知ではなく、既存の節目イベントと同じ式典シーケンスで見せる。
+    titleOutcomes.forEach(outcome => {
+      const championId = outcome?.outcome === 'defense' ? outcome.champId : outcome?.newChampId;
+      if (championId == null) return;
+      popupActions.push(done => {
+        if (typeof showTitleMatchCeremony === 'function') showTitleMatchCeremony(outcome, done);
+        else if (done) done();
+      });
+    });
     if (pendingLastRunRetirements.length > 0) {
       popupActions.push(done => showRetirementPopups(pendingLastRunRetirements, done));
     }
@@ -14907,9 +14904,11 @@ App._jtOpenBracketWithCardIntro = function() {
     return;
   }
   jt._cardIntroShown = true;
+  const bracketSize = jt.result?.bracketSize || jt.selection?.bracketSize || 8;
+  const firstRoundLabel = bracketSize >= 16 ? '1回戦' : bracketSize >= 8 ? '準々決勝' : '準決勝';
   _showBracketCardIntro(jt.result.rounds, {
     label: 'Special Event', bigName: 'U-20 JUNIOR TOURNAMENT',
-    sub: `Season ${G.season || 1} ─ 8名 単発トーナメント`, roundLabel: '準々決勝',
+    sub: `Season ${G.season || 1} ─ ${bracketSize}名 単発トーナメント`, roundLabel: firstRoundLabel,
   }, () => renderJuniorTournamentBracket());
 };
 
@@ -14963,7 +14962,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
     || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === match.right.id)
     || match.right;
 
-  const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
+  const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : round.name === 'quarterFinal' ? '準々決勝' : '1回戦';
   // Replay: 事前シミュ済みの match から frames+winner 等を result として組み立てる
   const jtResult = {
     winner: match.winner, mq: match.mq, turns: match.turns,

@@ -81,6 +81,29 @@ function stable(value) {
     Engine.juniorTournament._seedBracket(four, state).map(f => f.id),
     [1, 4, 3, 2]
   );
+
+  const sixteen = Array.from({ length: 16 }, (_, i) => fighter(i + 1, 100 - i));
+  assert.deepStrictEqual(
+    Engine.juniorTournament._seedBracket(sixteen, state).map(f => f.id),
+    [1, 16, 8, 9, 5, 12, 4, 13, 3, 14, 6, 11, 7, 10, 2, 15]
+  );
+})();
+
+(function testJuniorTournamentSelectsAndRunsSixteenWhenEligiblePoolIsLarge() {
+  const state = {
+    rngSeed: 2468,
+    season: 3,
+    orgName: 'Test Org',
+    roster: Array.from({ length: 16 }, (_, i) => fighter(i + 1, 100 - i)),
+    aiOrgs: {},
+  };
+  const selection = Engine.juniorTournament.select(state);
+  assert.strictEqual(selection.bracketSize, 16, '16人以上の有資格者では16人トーナメントにする');
+  assert.strictEqual(selection.participants.length, 16, '上位16人を選出する');
+  const result = Engine.juniorTournament.run(state, selection.participants, Engine.rng.create(4));
+  assert.deepStrictEqual(result.rounds.map(round => round.name), ['firstRound', 'quarterFinal', 'semiFinal', 'final']);
+  assert.strictEqual(result.rounds.reduce((sum, round) => sum + round.matches.length, 0), 15,
+    '16人トーナメントは全15試合');
 })();
 
 (function testJuniorTournamentDrawUsesAdvancedWinnerHp() {
