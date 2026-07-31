@@ -40,14 +40,57 @@ function findTopLevelDeclarations(src) {
   return results;
 }
 
+// 正規表現リテラルの直前に来うるトークン(この後の `/` は除算ではなく正規表現)。
+const REGEX_PREV_KEYWORDS = new Set([
+  'return', 'typeof', 'instanceof', 'in', 'of', 'case', 'do', 'else',
+  'new', 'delete', 'void', 'throw', 'yield', 'await',
+]);
+
+// `/` が正規表現リテラルの開始かどうかの判定。直前の意味のあるトークンが
+// 値で終わっていれば除算、そうでなければ正規表現。
+function isRegexStart(prevChar, prevWord) {
+  if (prevWord && REGEX_PREV_KEYWORDS.has(prevWord)) return true;
+  if (!prevChar) return true;
+  return !/[A-Za-z0-9_$)\]]/.test(prevChar);
+}
+
+// `/` を指す位置から正規表現リテラル(+フラグ)を読み飛ばし、直後の index を返す。
+// 文字クラス `[...]` の内側では `/` は区切りにならない点に注意。
+function skipRegex(src, i) {
+  const n = src.length;
+  i++; // 開始の `/`
+  let inClass = false;
+  while (i < n) {
+    const c = src[i];
+    if (c === '\\') { i += 2; continue; }
+    if (c === '\n') return null; // 正規表現リテラルは改行をまたげない
+    if (inClass) {
+      if (c === ']') inClass = false;
+      i++;
+      continue;
+    }
+    if (c === '[') { inClass = true; i++; continue; }
+    if (c === '/') { i++; break; }
+    i++;
+  }
+  while (i < n && /[a-z]/.test(src[i])) i++; // フラグ
+  return i;
+}
+
 // Scans starting at index i (pointing at `{`, `[`, or `(`) and returns the
 // index just past the matching close bracket. Understands single/double
 // quoted strings, template literals (with nested `${...}` expressions),
-// and line/block comments so brace-like characters inside them don't
-// perturb the bracket-depth stack.
+// regex literals, and line/block comments so brace-like characters inside
+// them don't perturb the bracket-depth stack.
+//
+// 正規表現リテラルを理解しないと、`/[\/\\:*?"<>|]/g` のような「クォート文字を
+// 含む正規表現」を文字列の開始と誤認し、そこから括弧の対応が壊れる
+// (2026-08-01: src/app.js の `const Storage = {` がこれで丸ごと拾えていなかった)。
 function scanExpr(src, i) {
   const stack = [];
   const n = src.length;
+  let prevChar = '';
+  let prevWord = '';
   while (i < n) {
     const top = stack.length ? stack[stack.length - 1] : null;
     if (top === 'TEMPLATE') {
@@ -71,6 +114,13 @@ function scanExpr(src, i) {
       i = close + 2;
       continue;
     }
+    if (c === '/' && isRegexStart(prevChar, prevWord)) {
+      const next = skipRegex(src, i);
+      if (next == null) return null;
+      i = next;
+      prevChar = '/'; prevWord = '';
+      continue;
+    }
     if (c === "'" || c === '"') {
       const quote = c;
       i++;
@@ -79,8 +129,19 @@ function scanExpr(src, i) {
         i++;
       }
       i++;
+      prevChar = quote; prevWord = '';
       continue;
     }
+    if (/[A-Za-z_$]/.test(c)) {
+      let j = i;
+      while (j < n && /[A-Za-z0-9_$]/.test(src[j])) j++;
+      prevWord = src.slice(i, j);
+      prevChar = src[j - 1];
+      i = j;
+      continue;
+    }
+    prevWord = '';
+    if (!/\s/.test(c)) prevChar = c;
     if (c === '`') { stack.push('TEMPLATE'); i++; continue; }
     if (c === '{') { stack.push('OBJ'); i++; continue; }
     if (c === '[') { stack.push('ARR'); i++; continue; }

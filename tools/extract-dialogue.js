@@ -96,7 +96,8 @@ const TABLE_MANIFEST = [
   T('FAN_EXPECT_REACTIONS', 'data.js', '01'),
   T('POST_MATCH_FLAVOR_LINES', 'data.js', '01'),
   T('FIRST_MEET_LINES', 'data.js', '01'),
-  T('BESTMATCH_FLAVOR', 'data.js', '01'),
+  // BESTMATCH_FLAVOR は c79a3ba(2026-07-26「役目を終えた定数7件を削除」)で
+  // src から消えている。登録行だけが残って「未解決」を出し続けていたため削除。
 
   // ---- 02: タッグマッチ ----
   T('HOT_TAG_LINES', 'tag-battle-lines.js', '02'),
@@ -201,9 +202,8 @@ const TABLE_MANIFEST = [
   T('CREDITS', 'data.js', '09'),
 
   // ---- 10: ニュース/新聞/黒田記者コラム ----
-  T('AI_BREAKTHROUGH_NEWS', 'data.js', '10'),
-  T('AI_SLUMP_NEWS', 'data.js', '10'),
-  T('AI_MOTIVATION_LOSS_NEWS', 'data.js', '10'),
+  // AI_BREAKTHROUGH_NEWS / AI_SLUMP_NEWS / AI_MOTIVATION_LOSS_NEWS も
+  // 同じく c79a3ba で削除済み。現在の記事文は NEWS_HEADLINE_TEMPLATES 側にある。
   T('NEWS_TICKER_TEMPLATES', 'data.js', '10'),
   T('NEWS_HEADLINE_TEMPLATES', 'data.js', '10'),
   T('BIG_NEWS_LEAD_LINES', 'data.js', '10'),
