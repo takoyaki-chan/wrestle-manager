@@ -7524,10 +7524,43 @@ const Engine = {
       return Math.min(cap, base + hofPt + battlePt);
     },
     /**
+     * 層の厚みの評価基準を業界水準に連動させる(2026-07-31 Keisuke指摘:
+     * 固定基準75/70だと後半は90台がゴロゴロいて全団体が上限に張り付く)。
+     * 業界主力水準 = 各団体トップ8平均OVRの全団体平均。
+     * coreTarget = clamp(業界主力水準, 75, 92) — 序盤は下限に当たるので現行と完全一致。
+     * カーブの幅(主力30/控え20)は固定のまま基準点だけスライドする。
+     */
+    getDepthBenchmark(state) {
+      const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
+      const floor = cfg.depthBenchFloor != null ? cfg.depthBenchFloor : 75;
+      const cap = cfg.depthBenchCap != null ? cfg.depthBenchCap : 92;
+      const reserveOffset = cfg.depthBenchReserveOffset != null ? cfg.depthBenchReserveOffset : 6;
+      const coreWidth = cfg.depthBenchCoreWidth != null ? cfg.depthBenchCoreWidth : 30;
+      const reserveWidth = cfg.depthBenchReserveWidth != null ? cfg.depthBenchReserveWidth : 20;
+      const rosters = [state?.roster || [], ...Object.values(state?.aiOrgs || {}).map(o => o?.roster || [])];
+      const orgAvgs = rosters.map(roster => {
+        const tops = (roster || []).filter(f => f && !f.retired && !f.isRental)
+          .map(f => Engine.util.ov(f)).sort((a, b) => b - a).slice(0, 8);
+        return tops.length ? tops.reduce((s, v) => s + v, 0) / tops.length : 0;
+      }).filter(v => v > 0);
+      const industry = orgAvgs.length ? orgAvgs.reduce((s, v) => s + v, 0) / orgAvgs.length : 0;
+      const coreTarget = Math.max(floor, Math.min(cap, Math.round(industry)));
+      const reserveTarget = Math.max(floor - 5, coreTarget - reserveOffset);
+      return {
+        industry: Math.round(industry * 10) / 10,
+        coreTarget,
+        reserveTarget,
+        coreBaseline: coreTarget - coreWidth,
+        reserveBaseline: reserveTarget - reserveWidth,
+        readyOvr: reserveTarget, // 講評の「実戦級」基準(文中に実数で明示される)
+      };
+    },
+    /**
      * 層の厚み: 主力を支える4〜8番手と、急な欠場を埋める9〜12番手を評価する。
      * 人数だけでなく各枠の到達度を見るため、選手を増やすだけでは上がりにくい。
+     * benchmark(getDepthBenchmark)を渡すと基準点が業界水準に連動する。省略時は固定基準(序盤相当)。
      */
-    getDepthProfile(roster) {
+    getDepthProfile(roster, benchmark) {
       const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
       const active = (roster || []).filter(f => !f.retired && !f.isRental && !f.injury && !f.forcedRest)
         .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
@@ -7545,15 +7578,15 @@ const Engine = {
       const core = scoreSlots(
         cfg.depthCoreStartIndex != null ? cfg.depthCoreStartIndex : 3,
         cfg.depthCoreSlots != null ? cfg.depthCoreSlots : 5,
-        cfg.depthCoreBaseline != null ? cfg.depthCoreBaseline : 45,
-        cfg.depthCoreTarget != null ? cfg.depthCoreTarget : 75,
+        benchmark ? benchmark.coreBaseline : (cfg.depthCoreBaseline != null ? cfg.depthCoreBaseline : 45),
+        benchmark ? benchmark.coreTarget : (cfg.depthCoreTarget != null ? cfg.depthCoreTarget : 75),
         cfg.depthCorePerSlot != null ? cfg.depthCorePerSlot : 4
       );
       const reserve = scoreSlots(
         cfg.depthReserveStartIndex != null ? cfg.depthReserveStartIndex : 8,
         cfg.depthReserveSlots != null ? cfg.depthReserveSlots : 4,
-        cfg.depthReserveBaseline != null ? cfg.depthReserveBaseline : 50,
-        cfg.depthReserveTarget != null ? cfg.depthReserveTarget : 70,
+        benchmark ? benchmark.reserveBaseline : (cfg.depthReserveBaseline != null ? cfg.depthReserveBaseline : 50),
+        benchmark ? benchmark.reserveTarget : (cfg.depthReserveTarget != null ? cfg.depthReserveTarget : 70),
         cfg.depthReservePerSlot != null ? cfg.depthReservePerSlot : 2.5
       );
       const cap = cfg.depthCap != null ? cfg.depthCap : 30;
@@ -7570,7 +7603,7 @@ const Engine = {
      * 基礎力 v2.0: 3軸合算 (Force コア戦力 + Depth 層の厚み + Marquee 看板スター)
      * 引退済 (f.retired === true) は除外。レンタル選手は団体戦力として含める。
      */
-    calcRosterPower(roster) {
+    calcRosterPower(roster, depthBenchmark) {
       const cfg = (typeof RANKING_CONFIG !== 'undefined' && RANKING_CONFIG) || {};
       // Force/Marquee は在籍ベース(怪我人も団体の戦力として数える)。
       // 「実戦可能度」で怪我を除外するのは Depth だけ(getDepthProfile が内部で除外する)。
@@ -7585,8 +7618,8 @@ const Engine = {
       const weightedPop = Engine.ranking._weightedTopAvg(active, f => f.popularity || 0, forceWeights);
       const force = weightedOVR * forceOvrMult + weightedPop * forcePopMult;
 
-      // ── (B) Depth 層の厚み: 4〜8番手 + 9〜12番手の実戦可能度 ──
-      const depthProfile = Engine.ranking.getDepthProfile(active);
+      // ── (B) Depth 層の厚み: 4〜8番手 + 9〜12番手の実戦可能度(基準は業界水準連動) ──
+      const depthProfile = Engine.ranking.getDepthProfile(active, depthBenchmark);
       const depth = depthProfile.score;
 
       // ── (C) Marquee 看板スター: TOP3 popularity の突出加重 ──
@@ -7615,7 +7648,7 @@ const Engine = {
     },
     /** rating = 基礎力 + レガシー + 対戦PT + シーズン実績 */
     calcOrgRating(state, orgId, roster, battlePt) {
-      const power = Engine.ranking.calcRosterPower(roster);
+      const power = Engine.ranking.calcRosterPower(roster, Engine.ranking.getDepthBenchmark(state));
       const legacyScore = Engine.ranking.calcLegacyScore(state, orgId);
       const achievementScore = Engine.achievement
         ? Engine.achievement.totalPt(state, orgId)
@@ -7629,6 +7662,7 @@ const Engine = {
         depthReserve: power.depthReserve,
         depthCoreReady: power.depthCoreReady,
         depthReserveReady: power.depthReserveReady,
+        depthReadyOvr: Engine.ranking.getDepthBenchmark(state).readyOvr,
         marquee: power.marquee,
         legacyScore,
         achievementScore,
@@ -7654,6 +7688,7 @@ const Engine = {
         depthReserve: playerBreakdown.depthReserve,
         depthCoreReady: playerBreakdown.depthCoreReady,
         depthReserveReady: playerBreakdown.depthReserveReady,
+          depthReadyOvr: playerBreakdown.depthReadyOvr,
         marquee: playerBreakdown.marquee,
         legacyScore: Math.round(playerBreakdown.legacyScore),
         achievementScore: Math.round(playerBreakdown.achievementScore || 0),
@@ -7677,6 +7712,7 @@ const Engine = {
           depthReserve: breakdown.depthReserve,
           depthCoreReady: breakdown.depthCoreReady,
           depthReserveReady: breakdown.depthReserveReady,
+          depthReadyOvr: breakdown.depthReadyOvr,
           marquee: breakdown.marquee,
           legacyScore: Math.round(breakdown.legacyScore),
           achievementScore: Math.round(breakdown.achievementScore || 0),

@@ -4170,7 +4170,7 @@ function renderRanking() {
         </div>
         <div class="meta-block">
           <div class="depth-line rank-metric">層の厚み ${Math.round(r.depth || 0)}<span class="unit">/30</span>
-            <div class="rank-metric-tooltip"><div class="rmt-label">層の厚み — 実戦を支える選手層</div><div class="rmt-text">4〜8番手の主力層と、9〜12番手の控え層を別々に評価。怪我人・レンタルは含みません。</div></div>
+            <div class="rank-metric-tooltip"><div class="rmt-label">層の厚み — 実戦を支える選手層</div><div class="rmt-text">4〜8番手の主力層と、9〜12番手の控え層を別々に評価。基準は業界の主力水準に連動します。怪我人・レンタルは含みません。</div></div>
           </div>
           <div class="${battleClass} rank-metric">対戦PT ${battleSign}${Math.round(r.battlePt)}
             <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>シーズンを跨いで保持される。</div></div>
@@ -4443,11 +4443,13 @@ function renderRanking() {
   // 講評は「表示している顔ぶれと同じ母集団」の「検証可能な事実」だけを語る。
   // スコア内部値(coreReady=怪我除外4〜8番手スロット)を文章に使うと、画面の顔リスト
   // (怪我込み・2番手以下)と数が合わず嘘に見える(2026-07-31 Keisuke指摘で全面組み替え)。
-  const _buildDepthNoteV2 = ({ sortedAll, featured, rentalRoster = [] }) => {
+  const _buildDepthNoteV2 = ({ sortedAll, featured, rentalRoster = [], readyOvr = 70 }) => {
     const support = sortedAll.filter(f => !featured || f.id !== featured.id);
     const nameOf = (f) => (f && (f.surname || f.name)) || '';
     const ovOf = (f) => Engine.util.ov(f);
-    const READY_OVR = 70; // 「実戦級」の基準。顔リストのOVR表示とそのまま突き合わせられる絶対値
+    // 「実戦級」の基準は業界水準連動(Engine.ranking.getDepthBenchmark)。文中に実数で出すので
+    // 顔リストのOVR表示とそのまま突き合わせられる。
+    const READY_OVR = Math.round(Number(readyOvr) || 70);
     const ready = support.filter(f => ovOf(f) >= READY_OVR).length;
     const injured = support.filter(f => f.injury || f.forcedRest).length;
     const rental = (rentalRoster || []).find(f => f && f.isRental) || null;
@@ -4466,16 +4468,16 @@ function renderRanking() {
     let second;
     if (ready >= 4) {
       first = `${name2}・${name3}ら${band}台の主力が続く。`;
-      second = `2番手以下にOVR70以上が${ready}人。誰が欠けても興行の格が落ちない。`;
+      second = `2番手以下にOVR${READY_OVR}以上が${ready}人。誰が欠けても興行の格が落ちない。`;
     } else if (ready === 1) {
       first = `${name2}の後ろが続かない。`;
-      second = `2番手以下でOVR70以上は${name2}だけ。軸が倒れれば一気に崩れる。`;
+      second = `2番手以下でOVR${READY_OVR}以上は${name2}だけ。軸が倒れれば一気に崩れる。`;
     } else if (ready === 0) {
       first = `${name2}・${name3}ら${band}台が主力の軸。`;
-      second = 'OVR70の壁を越えた選手はまだいない。上と戦うには、地力の底上げからだ。';
+      second = 'OVRの壁を越えた選手はまだいない。上と戦うには、地力の底上げからだ。';
     } else {
       first = `${name2}・${name3}が主力の軸。`;
-      second = `2番手以下のOVR70以上は${ready}人。層は形になりつつあるが、上位と分けるのは控えの最後のひと押しだ。`;
+      second = `2番手以下のOVR${READY_OVR}以上は${ready}人。層は形になりつつあるが、上位と分けるのは控えの最後のひと押しだ。`;
     }
 
     let third = '';
@@ -4559,7 +4561,7 @@ function renderRanking() {
       ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + '台多数'
       : (aceOvr == null ? '—' : `${aceOvr}`);
     const dynamicLead = _buildLeadSentences({ tags: _tagInfo.tags, featured, champion, gapTop: _tagInfo.gapTop, gapAbove: _tagInfo.gapAbove, seed: _orgSeed, r });
-    const dynamicDepthNote = _buildDepthNoteV2({ sortedAll, featured, rentalRoster });
+    const dynamicDepthNote = _buildDepthNoteV2({ sortedAll, featured, rentalRoster, readyOvr: r.depthReadyOvr });
 
     const depthFacesHtml = depthFaces.map(f => {
       if (!f) return '';
@@ -4606,7 +4608,7 @@ function renderRanking() {
         <div class="rank-metric"><span>基礎力</span><b>${Math.round(r.baseScore)}</b>
           <div class="rank-metric-tooltip"><div class="rmt-label">基礎力 — 今そこにある戦力</div><div class="rmt-text">3軸の合算:<br>・コア戦力 ${Math.round((r.force||0))}　TOP8加重OVR×1.2 ＋ 加重人気×0.6<br>・層の厚み ${Math.round((r.depth||0))}　主力層 ${Math.round(r.depthCore || 0)}/20 ＋ 控え層 ${Math.round(r.depthReserve || 0)}/10<br>・看板スター ${Math.round((r.marquee||0))}　TOP3人気の突出加重×0.45<br>怪我人・引退・レンタル選手は除外。</div></div></div>
         <div class="rank-metric"><span>層の厚み</span><b>${Math.round(r.depth || 0)}<small>/30</small></b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">層の厚み — 興行を回す戦力</div><div class="rmt-text">主力層: 4〜8番手をOVR45〜75で段階評価（最大20点）。<br>控え層: 9〜12番手をOVR50〜70で段階評価（最大10点）。<br>怪我人・レンタルは含みません。</div></div></div>
+          <div class="rank-metric-tooltip"><div class="rmt-label">層の厚み — 興行を回す戦力</div><div class="rmt-text">主力層: 4〜8番手(最大20点)／控え層: 9〜12番手(最大10点)。<br>満点の基準は業界の主力水準に連動し、業界全体が強くなるほど厳しくなります。<br>怪我人・レンタルは含みません。</div></div></div>
         <div class="rank-metric"><span>対戦PT</span><b class="${battleClass}">${battleSign}${Math.round(r.battlePt)}</b>
           <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>勝つと積み上がり、負けると目減りする。</div></div></div>
         <div class="rank-metric"><span>レガシー</span><b>${Math.round(r.legacyScore)}</b>
