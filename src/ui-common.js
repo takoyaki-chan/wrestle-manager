@@ -2282,6 +2282,8 @@ let _rivalryPopupCallback = null;
  */
 function showRivalryPopups(items, onAllDone) {
   if (!items || items.length === 0) { if (onAllDone) onAllDone(); return; }
+  // 宿怨の試合前演出は表示開始時に、task-41 と同じ表示済み記録へ残す。
+  if (typeof _markRivalryMatchDialoguesSeen === 'function') _markRivalryMatchDialoguesSeen(items);
   _rivalryPopupQueue = [...items];
   _rivalryPopupCallback = onAllDone || null;
   _enqueuePopup(() => _renderRivalryPopup());
@@ -2327,7 +2329,19 @@ function _renderRivalryPopup() {
     const leftFighter = ALL_CHARS.find(c => c.id === o.leftId);
     const rightFighter = ALL_CHARS.find(c => c.id === o.rightId);
     let attackerPool, defenderPool;
-    if (rivalryVal >= 90) {
+    if (o.isBitter) {
+      const leftLine = pickDialogueLine(BITTER_PREMATCH_LINES[o.leftSide || 'behind'], leftFighter);
+      const rightLine = pickDialogueLine(BITTER_PREMATCH_LINES[o.rightSide || 'behind'], rightFighter);
+      title = '遺 恨 再 燃';
+      sub = 'GRUDGE REKINDLED';
+      toneCls = 'tone-bitter';
+      leftHtml = _rivalryCol(o.leftId, o.leftName, leftLine, true, { hideBadge: true });
+      rightHtml = _rivalryCol(o.rightId, o.rightName, rightLine, false, { hideBadge: true });
+      vsIcon = '💀';
+      vsLabel = '再 燃';
+      resultHtml = `<div class="vd-tag">💀 消えなかったものが、また火を持った</div>`;
+      audioKey = 'fate_confrontation';
+    } else if (rivalryVal >= 90) {
       attackerPool = RIVALRY_CONFRONTATION_LINES_90.attacker;
       defenderPool = RIVALRY_CONFRONTATION_LINES_90.defender;
     } else if (rivalryVal >= 70) {
@@ -2340,17 +2354,20 @@ function _renderRivalryPopup() {
       attackerPool = RIVALRY_CONFRONTATION_LINES.attacker;
       defenderPool = RIVALRY_CONFRONTATION_LINES.defender;
     }
-    const leftLine = pickDialogueLine(attackerPool, leftFighter);
-    const rightLine = pickDialogueLine(defenderPool, rightFighter);
-    title = rivalryVal >= 70 ? '因 縁 勃 発' : '宿 敵 対 決';
-    sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
-    toneCls = 'tone-confront';
-    leftHtml = _rivalryCol(o.leftId, o.leftName, leftLine, true, { hideBadge: true });
-    rightHtml = _rivalryCol(o.rightId, o.rightName, rightLine, false, { hideBadge: true });
-    vsIcon = '⚡';
-    vsLabel = '勃 発';
-    resultHtml = `<div class="vd-tag">⚡ ふたりの間に火花が散った</div>`;
-    audioKey = o.isFate ? 'fate_confrontation' : 'rivalry_confrontation';
+    if (!o.isBitter) {
+      const leftLine = pickDialogueLine(attackerPool, leftFighter);
+      const rightLine = pickDialogueLine(defenderPool, rightFighter);
+      title = rivalryVal >= 70 ? '因 縁 勃 発' : '宿 敵 対 決';
+      sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
+      toneCls = 'tone-confront';
+      leftHtml = _rivalryCol(o.leftId, o.leftName, leftLine, true, { hideBadge: true });
+      rightHtml = _rivalryCol(o.rightId, o.rightName, rightLine, false, { hideBadge: true });
+      vsIcon = '⚡';
+      vsLabel = '勃 発';
+      resultHtml = `<div class="vd-tag">⚡ ふたりの間に火花が散った</div>`;
+      audioKey = o.isFate ? 'fate_confrontation' : 'rivalry_confrontation';
+
+    }
 
   } else {
     const isFirstWin = o.resolutionType === 'first';
@@ -4865,13 +4882,15 @@ function _rivalryPopupPairKey(idA, idB) {
 
 function _getRivalryPopupSeen() {
   const currentWeek = Engine.util.absWeek(G.season, G.week);
-  const cooldownWeeks = RIVALRY_POPUP_CONFIG.normalPairCooldownWeeks;
   const previous = (G._rivalryPopupSeen && !Array.isArray(G._rivalryPopupSeen))
     ? G._rivalryPopupSeen
     : {};
   const seen = { ...previous };
   Object.keys(seen).forEach(pairKey => {
     const seenWeek = seen[pairKey];
+    const cooldownWeeks = pairKey.startsWith('bitter:')
+      ? RIVALRY_POPUP_CONFIG.bitterPairCooldownWeeks
+      : RIVALRY_POPUP_CONFIG.normalPairCooldownWeeks;
     if (!Number.isFinite(seenWeek) || seenWeek > currentWeek || currentWeek - seenWeek >= cooldownWeeks) {
       delete seen[pairKey];
     }

@@ -3507,6 +3507,7 @@ const RIVALRY_POPUP_CONFIG = {
   normalMinRivalry: 60,
   maxNormalPerShow: 1,
   normalPairCooldownWeeks: 8,
+  bitterPairCooldownWeeks: 16,
 };
 
 // Phase 5: 片側因縁（一方的にライバル視している状態）
@@ -4902,6 +4903,116 @@ const BITTER_RESOLUTION_LINES = {
       ]
     }
   }
+};
+
+// ── 宿怨（BITTER）ペアの試合前セリフ ──
+// 決着を2度経てなお bond が届かなかった関係。宣戦布告ではなく、
+// 「終わったはずのものが、また目の前にある」ことへの反応を書く。
+const BITTER_PREMATCH_LINES = {
+  ahead: {
+    normal: {
+      _default: [
+        '終わったはずなのに、まだ胃の底が重い',
+        'もう一度勝てば消えるのかな。……多分、消えない',
+      ],
+      cool: ['……済んだ話だ。まだ気にする方がどうかしてる'],
+      delinquent: ['片付いた話を蒸し返すな。……いい加減、疲れるんだよ'],
+      composed: ['…決着はついてる。…なのに、まだ喉に引っかかってる'],
+    },
+    bold: {
+      _default: [
+        '勝った側が、いつまで覚えてなきゃいけないの',
+        '終わらせたのは私。付き合ってやるのは、これで最後',
+      ],
+      ojousama: ['倒した相手と同じ列に並ばされる屈辱、分かるかしらね？'],
+      delinquent: ['もう決着はついてんだよ。何度潰されりゃ気が済む'],
+      composed: ['…片付いた相手だよ。…なのに、まだ目で追ってる'],
+    },
+    quiet: {
+      _default: ['………（終わったはずの相手を、じっと見ている）'],
+      cool: ['……終わった。それだけだ。……それだけのはずだ'],
+      polite: ['…もう済んだはず、なんです。…なのに、まだ'],
+      composed: ['……もう済んだ。…なのに、目が探してしまう'],
+    },
+    shy: {
+      _default: ['…もう終わったのに…どうして、また気になるんだろう…'],
+      polite: ['勝たせて…いただきました。…なのに、怖いままです…'],
+    },
+    easygoing: {
+      _default: [
+        'はぁ……また？ もう終わった話でしょ、これ',
+        '勝っても軽くならないもんだね。……不思議',
+      ],
+      seductive: ['片がついた相手なのにね。…目に入るとイラつくわ'],
+      composed: ['…また同じ顔か。…終わったって言ったんだけどな'],
+    },
+    earnest: {
+      _default: [
+        '決着はつきました。……私の中だけ、まだです',
+        '勝った人間が引きずるのは、変な話ですね',
+      ],
+      ojousama: ['下ろしたはずの荷を、また持たされているみたいですわね'],
+      polite: ['済んだことにしたいのです。……できないだけで'],
+      composed: ['…終わった件だよ。…片付けきれてないのは、私の方か'],
+    },
+    emotional: {
+      _default: ['終わったって言っただろ……！ なんでまだ、いるんだ'],
+      seductive: ['済んだ話よ……っ……なのに、まだ手が震えるの'],
+      composed: ['…勝ったのに、まだ腹が煮えてる。…笑えないな'],
+    },
+  },
+  behind: {
+    normal: {
+      _default: [
+        '終わったことにされた。私だけ、置いていかれたまま',
+        '忘れられたら楽だったのに。……よく覚えてるんだ、これが',
+      ],
+      cool: ['……決着はついた。納得したとは、言ってない'],
+      delinquent: ['終わった扱いされんのが、一番腹立つんだよ'],
+      composed: ['…片がついたらしいよ。…誰の中で、って話だけど'],
+    },
+    bold: {
+      _default: [
+        '終わりってことにされてる。でも私はまだ認めない',
+        'もう格付けは済んでいるのかも。それでも・・・',
+      ],
+      ojousama: ['幕を引かれた側の気持ちは、誰も聞きませんのね'],
+      delinquent: ['あの日から一度も、まともに寝てねえんだよ'],
+      composed: ['…終わった話らしいね。…じゃあ、この重さは何なんだろう'],
+    },
+    quiet: {
+      _default: ['………（あの日の敗北の瞬間が、まだ耳から抜けない）'],
+      cool: ['……終わっていない。……私の中では'],
+      polite: ['…終わったと、皆さんは仰います。…私は違います'],
+      composed: ['……もう昔の話だ。…そう言えたら、楽だったな'],
+    },
+    shy: {
+      _default: ['…あの日敗北した屈辱を…まだ、毎晩思い出すんです…'],
+      polite: ['…もう終わったって…言われました。…言われただけです…'],
+    },
+    easygoing: {
+      _default: [
+        'みんな綺麗に忘れてるね。……あたしは忘れないけど',
+        'いつまでやるんだろうね、これ。……やめられないけど',
+      ],
+      seductive: ['終わったって聞いたわ。…誰が決めたのかしらね'],
+      composed: ['…忘れたふりが下手でさ。…まだ引きずってるよ'],
+    },
+    earnest: {
+      _default: [
+        'あの負けを、まだ一度も納得できていません',
+        '終わったと言われるたび、足元が抜けるんです',
+      ],
+      ojousama: ['終わったことにされた分は、まだお返ししていませんの'],
+      polite: ['決着は……ついておりません。私の中では、まだ'],
+      composed: ['…終わったって言われてる。…受け取れてないだけだよ'],
+    },
+    emotional: {
+      _default: ['終わってない……！ 勝手に終わらせるな……！'],
+      seductive: ['終わったの……？ ……嘘よ。まだ、疼いてる'],
+      composed: ['…勝手に幕を下ろすな。…まだ、こっちに残ってる'],
+    },
+  },
 };
 
 // ── カード編成時 宣戦布告テキスト（rivalry帯別）──
@@ -30351,6 +30462,7 @@ const EVENT_LINES_BY_KEY = {
   scoutGreetingGeneric: SCOUT_GREETING_GENERIC_LINES,
   faGreeting: FA_GREETING_LINES,
   faGreetingGeneric: FA_GREETING_GENERIC_LINES,
+  bitterPrematch: BITTER_PREMATCH_LINES,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -30378,7 +30490,7 @@ if (typeof module !== 'undefined' && module.exports) {
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, INJURY_DEBUFF_TABLE,
     TITLES, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
     GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
-    GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES,
+    GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES, BITTER_PREMATCH_LINES,
     RIVALRY_CONFRONTATION_LINES_70, RIVALRY_CONFRONTATION_LINES_90,
     WEEKLY_STORY_TICKER, RIVALRY_MATCH_REACTION, UPSET_RIVALRY_LINES,
     FRESHNESS_CONFIG, COACH_STYLE_MAP, COACH_STYLE_BONUS,

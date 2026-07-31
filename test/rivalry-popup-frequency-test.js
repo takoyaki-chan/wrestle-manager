@@ -78,7 +78,8 @@ assert.deepStrictEqual(RIVALRY_POPUP_CONFIG, {
   normalMinRivalry: 60,
   maxNormalPerShow: 1,
   normalPairCooldownWeeks: 8,
-}, '通常因縁ポップアップの3設定値を data.js に集約する');
+  bitterPairCooldownWeeks: 16,
+}, '因縁ポップアップの設定値を data.js に集約する');
 
 for (const rivalry of [30, 45]) {
   const h = makeHarness({ season: 1, week: 1 });
