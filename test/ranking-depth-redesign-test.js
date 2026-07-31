@@ -151,6 +151,37 @@ loadRankingRenderer();
   assert.ok(!/undefined|NaN|\{[^}]+\}/.test(vacantHtml), '王者・看板不在でも未展開値を表示しない');
 })();
 
+(function testDepthNoteClaimsMatchVisibleRoster() {
+  // 2026-07-31 Keisuke指摘の再発防止: 講評の数字・名指しは「表示と同じ母集団
+  // (2番手以下・怪我込み)」から数える。内部スロット値(4〜8番手・怪我除外)は文章に使わない。
+
+  // 上位偏重: 2・3番手が90台、4番手以降が60台。旧実装は4〜8番手スロットだけを数えて
+  // 「実戦級0人」と顔ぶれ(90台が並ぶ)に反する文を出していた。
+  const topHeavy = [
+    fighter(1, 95, { name: '王者花子', surname: '王者' }),
+    fighter(2, 92, { name: '二戸美咲', surname: '二戸' }),
+    fighter(3, 90, { name: '三枝凛', surname: '三枝' }),
+    fighter(4, 62, { name: '四谷葵', surname: '四谷' }),
+    fighter(5, 60, { name: '五島結', surname: '五島' }),
+  ];
+  const topHtml = renderRankingForTest(rankingState(topHeavy));
+  assert.ok(topHtml.includes('二戸・三枝が主力の軸'), '名指しは2番手・3番手の実名');
+  assert.ok(topHtml.includes('2番手以下のOVR70以上は2人'), '実戦級カウントは顔ぶれ(92/90)と一致する');
+  assert.ok(!topHtml.includes('王者の後ろが続かない') && !topHtml.includes('二戸の後ろが続かない'),
+    '上位が厚い団体を薄い扱いしない');
+
+  // 薄い: 2番手以下でOVR70以上が1人だけ → 名指しで検証可能な形になる
+  const thin = [
+    fighter(1, 88, { name: '王者花子', surname: '王者' }),
+    fighter(2, 76, { name: '次郎美咲', surname: '次郎' }),
+    fighter(3, 64, { name: '三枝凛', surname: '三枝' }),
+    fighter(4, 60, { name: '四谷葵', surname: '四谷' }),
+  ];
+  const thinHtml = renderRankingForTest(rankingState(thin));
+  assert.ok(thinHtml.includes('次郎の後ろが続かない'), '薄い判定はOVR70以上=1人のときだけ');
+  assert.ok(thinHtml.includes('OVR70以上は次郎だけ'), '薄い文は名指しで顔ぶれと突き合わせられる');
+})();
+
 (function testRankingCopiesStaySafeAcrossRepresentativeSeasons() {
   const roster = [fighter(1, 90, { name: '王者花子', surname: '王者' }), fighter(2, 80, { name: '次郎美咲', surname: '次郎' }), fighter(3, 75, { name: '三枝凛', surname: '三枝' }), fighter(4, 70, { name: '四谷葵', surname: '四谷' })];
   [1, 5, 12].forEach(season => {

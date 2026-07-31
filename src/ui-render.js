@@ -4440,19 +4440,21 @@ function renderRanking() {
   };
 
   // 主力欄は看板以外の面々だけを語る。名前・OVR帯・人数はすべて当該団体の実データで決める。
-  const _buildDepthNoteV2 = ({ sortedAll, featured, depth = 0, depthCoreReady = 0, depthReserveReady = 0, rentalRoster = [] }) => {
+  // 講評は「表示している顔ぶれと同じ母集団」の「検証可能な事実」だけを語る。
+  // スコア内部値(coreReady=怪我除外4〜8番手スロット)を文章に使うと、画面の顔リスト
+  // (怪我込み・2番手以下)と数が合わず嘘に見える(2026-07-31 Keisuke指摘で全面組み替え)。
+  const _buildDepthNoteV2 = ({ sortedAll, featured, rentalRoster = [] }) => {
     const support = sortedAll.filter(f => !featured || f.id !== featured.id);
-    const coreReady = Math.max(0, Number(depthCoreReady) || 0);
-    const reserveReady = Math.max(0, Number(depthReserveReady) || 0);
-    const injured = sortedAll.filter(f => f.injury || f.forcedRest).length;
-    const rental = (rentalRoster || []).find(f => f && f.isRental) || null;
     const nameOf = (f) => (f && (f.surname || f.name)) || '';
+    const ovOf = (f) => Engine.util.ov(f);
+    const READY_OVR = 70; // 「実戦級」の基準。顔リストのOVR表示とそのまま突き合わせられる絶対値
+    const ready = support.filter(f => ovOf(f) >= READY_OVR).length;
+    const injured = support.filter(f => f.injury || f.forcedRest).length;
+    const rental = (rentalRoster || []).find(f => f && f.isRental) || null;
     const name2 = nameOf(support[0]);
     const name3 = nameOf(support[1]);
     const bandSource = support.slice(0, 2);
-    const bandOvr = bandSource.length
-      ? Math.min(...bandSource.map(f => Engine.util.ov(f)))
-      : 0;
+    const bandOvr = bandSource.length ? Math.min(...bandSource.map(ovOf)) : 0;
     const band = bandOvr > 0 ? `${Math.floor(bandOvr / 10) * 10}` : '';
     const youngCore = support.filter(f => (Number(f.age) || Infinity) <= 22).length;
 
@@ -4462,21 +4464,24 @@ function renderRanking() {
 
     let first;
     let second;
-    if (coreReady >= 4) {
+    if (ready >= 4) {
       first = `${name2}・${name3}ら${band}台の主力が続く。`;
-      second = `主力枠は${coreReady}人が実戦級で、誰が欠けても興行の格が落ちない。`;
-    } else if (coreReady <= 1 || Number(depth) < 10) {
+      second = `2番手以下にOVR70以上が${ready}人。誰が欠けても興行の格が落ちない。`;
+    } else if (ready === 1) {
       first = `${name2}の後ろが続かない。`;
-      second = `主力枠で実戦級は${coreReady}人だけで、軸が倒れれば一気に崩れる。`;
+      second = `2番手以下でOVR70以上は${name2}だけ。軸が倒れれば一気に崩れる。`;
+    } else if (ready === 0) {
+      first = `${name2}・${name3}ら${band}台が主力の軸。`;
+      second = 'OVR70の壁を越えた選手はまだいない。上と戦うには、地力の底上げからだ。';
     } else {
       first = `${name2}・${name3}が主力の軸。`;
-      second = '層は形になりつつあるが、上位と分けるのは控えの最後のひと押しだ。';
+      second = `2番手以下のOVR70以上は${ready}人。層は形になりつつあるが、上位と分けるのは控えの最後のひと押しだ。`;
     }
 
     let third = '';
     if (injured > 0) third = `${injured}人が欠場中で、ベンチは見た目より薄い。`;
     else if (rental) third = `レンタルの${nameOf(rental)}が戦列を支える。頼もしくもあり、借り物の厚みでもある。`;
-    else if (reserveReady > 0) third = `控えにも一線級が${reserveReady}人おり、連戦でも戦列が細らない。`;
+    else if (ready >= 6) third = '控えを含めても駒が余るほどで、連戦でも戦列が細らない。';
     else if (youngCore >= 2) third = '主力層は若い。数字はまだ並だが、来季このベンチの景色は変わっているかもしれない。';
 
     return [first, second, third].filter(Boolean).join('');
@@ -4554,14 +4559,7 @@ function renderRanking() {
       ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + '台多数'
       : (aceOvr == null ? '—' : `${aceOvr}`);
     const dynamicLead = _buildLeadSentences({ tags: _tagInfo.tags, featured, champion, gapTop: _tagInfo.gapTop, gapAbove: _tagInfo.gapAbove, seed: _orgSeed, r });
-    const dynamicDepthNote = _buildDepthNoteV2({
-      sortedAll,
-      featured,
-      depth: r.depth || 0,
-      depthCoreReady: r.depthCoreReady || 0,
-      depthReserveReady: r.depthReserveReady || 0,
-      rentalRoster,
-    });
+    const dynamicDepthNote = _buildDepthNoteV2({ sortedAll, featured, rentalRoster });
 
     const depthFacesHtml = depthFaces.map(f => {
       if (!f) return '';
