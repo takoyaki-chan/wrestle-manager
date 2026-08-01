@@ -239,10 +239,12 @@ button{font-family:inherit}
    塗り・角丸・余白・文字サイズは src のまま。 */
 .jt-bub{position:relative;width:100%;min-width:0;
   background:var(--bubble-bg);color:var(--bubble-ink);border-radius:11px;padding:9px 14px;font-size:12px;line-height:1.5;
-  text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.2);
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.jt-bub::after{content:'';position:absolute;bottom:-7px;left:calc(50% + var(--tail-dx,0px));transform:translateX(-50%);
-  border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--bubble-bg)}
+  text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+/* 行数制限は内側の span に。本体に掛けると overflow:hidden が尻尾を切る（上の注記参照） */
+.jt-bub>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.jt-bub::after{content:'';position:absolute;bottom:-11px;left:calc(50% + var(--tail-dx,0px));transform:translateX(-50%);
+  border-left:11px solid transparent;border-right:11px solid transparent;border-top:11px solid var(--bubble-bg);
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
 
 /* 共通ボタン（実装の .btn / .btn-gold 相当） */
 .btn{background:transparent;border:1px solid var(--stage-border-main);color:var(--stage-text-sub);
@@ -281,20 +283,33 @@ button{font-family:inherit}
 
 /* 吹き出し：予約枠 52px（§3。発言が無い側は枠だけ置き、箱は描かない） */
 .sfc-bub-slot{width:100%;min-width:0;min-height:52px;display:flex;align-items:flex-end;justify-content:center}
+/* ⚠ 行数制限(§3)の -webkit-line-clamp は **内側の span** に掛ける。
+   吹き出し本体に掛けると overflow:hidden が付き、**尻尾(::after)が丸ごと切り取られる**。
+   位置は正しいのに尻尾が1つも描かれていない状態になっていた（2026-08-01 に発覚）。 */
 .sfc-bub{position:relative;background:var(--bubble-bg);color:var(--bubble-ink);border-radius:var(--radius-lg);
   padding:8px 12px;font-size:13px;line-height:1.45;text-align:left;box-shadow:0 4px 14px rgba(0,0,0,.35);
-  width:100%;min-width:0;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  width:100%;min-width:0}
+.sfc-bub>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 /* 尻尾は**話者の画像の水平中心**を指す（§3）。
    単独の画像なら列の中心＝画像の中心なので 50% でよい。
    隊列のときは「群の中心」から話者の画像中心までの距離だけずらす。
    ずらし量は % ではなく **px**（--tail-dx）で持つ。% だと列幅が変わるたびに
    尻尾がずれる（列幅は 1fr なのでビューポート幅で変わる）が、
    px なら画像サイズが同じ限りどの幅でも正確に刺さる。 */
-.sfc-bub::after{content:'';position:absolute;bottom:-7px;left:calc(50% + var(--tail-dx,0px));transform:translateX(-50%);
-  border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--bubble-bg)}
-/* 2人の隊列で「群の中心 → 各画像の中心」までの距離 = (画像幅 - 重なり18px) / 2。
-   画像幅が段で変わるので、段ごとにこの値を差し替える（下の media query 参照）。 */
+/* 尻尾。隊列は顔が18px重なるので、**どの顔の上に乗っているか**が読める大きさが要る。
+   7px(幅14)では重なりの中で埋もれたため、**幅22px×高さ11px**へ拡大。
+   drop-shadow は吹き出し本体の box-shadow と同系で、明るい顔の上でも輪郭が出る
+   （尻尾だけが浮いて見えないよう、色は本体と同じ --bubble-bg）。 */
+.sfc-bub::after{content:'';position:absolute;bottom:-11px;left:calc(50% + var(--tail-dx,0px));transform:translateX(-50%);
+  border-left:11px solid transparent;border-right:11px solid transparent;border-top:11px solid var(--bubble-bg);
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+/* 「群の中心 → 話者の画像の中心」までの距離。
+     2人隊列 … ±(画像幅 - 18) / 2
+     3人隊列 … 先頭 -(w1+w2)/2 + 18 ／ 中央 0 ／ 末尾 +(w2+w3)/2 - 18
+   画像幅が段で変わるので、段ごとにこの値を差し替える（下の media query 参照）。
+   **話者が隊列のどの位置でも同じ式で出せる** — 2人(先頭/末尾)・3人(先頭/中央/末尾)の
+   全ポジションでずれ 0.0px を実測で確認済み。
+   参考: 秋の3人隊列(M132 + L150 + M132) は 先頭 -123px / 中央 0 / 末尾 +123px */
 .sfc.is-tag{--tag-dx:45px}   /* S 108 → (108-18)/2 = 45 */
 .aft-pair{--aft-dx:66px}     /* L 150 → (150-18)/2 = 66 */
 
@@ -356,6 +371,10 @@ button{font-family:inherit}
 .tro-p img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .tro-p.is-lead{z-index:3}
 .tro-p.is-out img{filter:grayscale(.9) brightness(.72)}
+/* ⚠ 隊列の中で話者を示すのに、**非発話者を沈めたり発話者を縁取ったりはしない**
+   （2026-08-01 Keisuke 裁定：「両方主役だから」）。
+   話者は**吹き出しの尻尾の向きだけ**で示す。ここに .is-speaker / .is-mute の
+   ような状態クラスを足さないこと。grayscale は敗者・脱落専用のまま温存する。 */
 /* 隊列の段。使うのは §2 の梯子から選んだ段だけ */
 .tro.sz-l .tro-p{width:150px}
 .tro.sz-m .tro-p{width:132px}
@@ -788,8 +807,8 @@ button{font-family:inherit}
       <!-- 吹き出しは画像の上・中身はセリフ本文だけ・尻尾は話者の画像の水平中心。
            グリッドの1行目に入れているので、尻尾の 50% がそのまま画像の中心になる -->
       <div class="jtc-fc-uppers">
-        <div class="jt-bub-slot is-l"><div class="jt-bub">「ここまで来たら、もう譲れない」</div></div>
-        <div class="jt-bub-slot is-r"><div class="jt-bub">「わたしの方が、長く待ってた」</div></div>
+        <div class="jt-bub-slot is-l"><div class="jt-bub"><span>「ここまで来たら、もう譲れない」</span></div></div>
+        <div class="jt-bub-slot is-r"><div class="jt-bub"><span>「わたしの方が、長く待ってた」</span></div></div>
 
         <div class="jtc-fc-upper is-l"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
         <div class="vs-mark">VS</div>
@@ -837,7 +856,7 @@ button{font-family:inherit}
       <div class="aft-kicker">After the Cup</div>
       <div class="aft-block">
         <!-- 単独の画像なので尻尾は 50%（画像の中心）でよい -->
-        <div class="aft-bub-slot"><div class="jt-bub">「まだ、この続きがあるって思ってていいですか」</div></div>
+        <div class="aft-bub-slot"><div class="jt-bub"><span>「まだ、この続きがあるって思ってていいですか」</span></div></div>
         <div style="width:108px;aspect-ratio:2/3;border-radius:var(--radius-sm);overflow:hidden;margin:8px auto 0;border-bottom:3px solid var(--ev-summer);background:var(--stage-portrait-bg)">
           <img src="../../../image/upper/upper_kinouchi_y.webp" alt="" style="width:100%;height:100%;object-fit:cover;object-position:top">
         </div>
@@ -986,7 +1005,7 @@ button{font-family:inherit}
         <!-- 左：話しているのは隊列の**手前（左）の1人**。尻尾はその画像の中心へ寄せる。
              群の中心から画像の中心までは (108-18)/2 = 45px なので --tag-dx ぶん左へ -->
         <div class="sfc-bub-slot is-l">
-          <div class="sfc-bub" style="--tail-dx:calc(-1 * var(--tag-dx))">後ろは気にしなくていい。前だけ見て入って。</div>
+          <div class="sfc-bub" style="--tail-dx:calc(-1 * var(--tag-dx))"><span>後ろは気にしなくていい。前だけ見て入って。</span></div>
         </div>
         <div class="sfc-side is-l">
           <span class="tro sz-s">
@@ -1009,7 +1028,7 @@ button{font-family:inherit}
         <!-- 右：話しているのは隊列の**手前（右）の1人**。尻尾はその画像の中心へ寄せる。
              発言しないもう1人ぶんの箱は出さない（§2-B） -->
         <div class="sfc-bub-slot is-r">
-          <div class="sfc-bub" style="--tail-dx:var(--tag-dx)">首位だからって、上から来られるのは好かん。</div>
+          <div class="sfc-bub" style="--tail-dx:var(--tag-dx)"><span>首位だからって、上から来られるのは好かん。</span></div>
         </div>
         <div class="sfc-side is-r">
           <span class="tro sz-s">
@@ -1052,7 +1071,7 @@ button{font-family:inherit}
       <div class="aft-kicker">After the League</div>
       <div class="aft-block aft-pair">
         <!-- 話しているのは隊列の左（阿武隈）。尻尾は L 150 の (150-18)/2 = 66px ぶん左へ -->
-        <div class="aft-bub-slot"><div class="sfc-bub" style="--tail-dx:calc(-1 * var(--aft-dx))">二人で獲ったので、片方だけ名前が残るのは嫌ですね。</div></div>
+        <div class="aft-bub-slot"><div class="sfc-bub" style="--tail-dx:calc(-1 * var(--aft-dx))"><span>二人で獲ったので、片方だけ名前が残るのは嫌ですね。</span></div></div>
         <div style="margin-top:8px">
           <span class="tro sz-l">
             <span class="tro-p is-lead"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></span>
@@ -1328,10 +1347,10 @@ button{font-family:inherit}
 
       <div class="sfc-stage">
         <div class="sfc-bub-slot is-l">
-          <div class="sfc-bub">二人抜いた。あと一人、連れて行かせて。</div>
+          <div class="sfc-bub"><span>二人抜いた。あと一人、連れて行かせて。</span></div>
         </div>
         <div class="sfc-bub-slot is-r">
-          <div class="sfc-bub">そこで止まってもらう。うちの大将までは行かせん。</div>
+          <div class="sfc-bub"><span>そこで止まってもらう。うちの大将までは行かせん。</span></div>
         </div>
 
         <div class="sfc-side is-l"><span class="sfc-up" style="display:block"><img src="../../../image/upper/upper_aikawa_a.webp" alt=""></span></div>
@@ -1381,7 +1400,7 @@ button{font-family:inherit}
         <div class="tro-head">第7回大会 優勝</div>
         <div><span class="orgb is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></span></div>
         <!-- 話しているのは隊列の中心（大将）。群の中心＝話者の画像中心なので尻尾は 50% -->
-        <div class="aft-bub-slot" style="margin-top:8px"><div class="sfc-bub">わたしが抜いたんじゃなくて、前の二人が削ってくれた分です。</div></div>
+        <div class="aft-bub-slot" style="margin-top:8px"><div class="sfc-bub"><span>わたしが抜いたんじゃなくて、前の二人が削ってくれた分です。</span></div></div>
         <div style="margin-top:8px">
           <span class="tro sz-mix">
             <span class="tro-p"><img src="../../../image/upper/upper_togane_s.webp" alt=""></span>
@@ -1438,6 +1457,18 @@ button{font-family:inherit}
     <li><b>所属団体のエンブレムを出す。</b>「OVR から力関係は分かる。でもどの団体に所属しているかが
       非常に重要」。<b>選手を出す全箇所に 26px のエンブレム実画像</b>を添えた（頭文字の代用はしない・§5）。
       縦順は固定のまま（… → 役割ラベル → <b>団体バッジ</b> → OVR）</li>
+    <li><b>隊列の話者は「尻尾の向き」だけで示す。</b>
+      「非発話者を沈めなくてもいい。発話者を縁取る必要もない。<b>両方主役だから</b>」。
+      いったん入れかけた「非話者を減光／話者を縁取る」は<b>全部取り消して元に戻した</b>
+      （<code>.is-speaker</code> / <code>.is-mute</code> / 勝敗マークの残骸は 0件）。
+      <b>隊列の全員が同じ扱い</b>で、画像には一切フィルタを掛けていない
+      （<code>grayscale</code> は脱落・敗者専用のまま温存）</li>
+    <li>⚠ <b>その過程で本物のバグを1つ見つけた。</b>
+      吹き出し本体に行数制限（<code>-webkit-line-clamp</code>）を掛けていたため
+      <code>overflow:hidden</code> が付き、<b>尻尾（<code>::after</code>）が9本とも丸ごと切り取られていた</b>。
+      位置の実測が 0.0px でも<b>画面には1本も描かれていなかった</b>ので、
+      「どっちが喋っているか分からない」のは当然だった。
+      行数制限を<b>内側の <code>&lt;span&gt;</code> へ移して</b>解消済み</li>
   </ul>
 
   <h3>1. 共通部品 <code>.sfc</code> を1つ作る（これがこのモックの本体）</h3>
@@ -1452,6 +1483,12 @@ button{font-family:inherit}
       列幅は <code>1fr</code> なのでビューポート幅で変わり、% だと尻尾が画像からずれていく。
       隊列のときは <code>(画像幅 - 重なり18px) / 2</code> ぶんだけ話者側へずらす
       （S 108 なら 45px、狭幅で 84 に落ちたら 33px）。段を変えたらこの値も一緒に変える</li>
+    <li><b>吹き出しの行数制限は「内側の要素」に掛ける。</b>
+      本体に <code>-webkit-line-clamp</code> を掛けると <code>overflow:hidden</code> が付き、
+      <b>尻尾が丸ごと切り取られて1本も描かれない</b>。実装時にいちばん踏みやすい罠なので、
+      <code>_jtcFcCore</code> を触る人はここを最初に確認すること</li>
+    <li><b>隊列の話者は尻尾だけで示す。</b> 非発話者を沈めない・発話者を縁取らない
+      （2026-08-01 Keisuke「両方主役だから」）。<code>grayscale</code> は敗者・脱落専用に温存する</li>
     <li><b>PPV には入れない。</b> PPV は既存のままなので、この部品の適用先は<b>春・秋（＋既存のジュニア・天頂戦）</b>だけ</li>
   </ul>
 
@@ -1498,8 +1535,13 @@ button{font-family:inherit}
     <tr><td>2</td><td>選手画像は 2:3 / 正方形の顔は 52px 以下</td><td>選手画像は<b>全部 <code>aspect-ratio:2/3</code></b>（実測で比率1.5±0.06 を外れるもの0件）。使った段は L 150 / M 132 / S 108 / chip 46 と、ジュニア実測の 118（判断待ち2）、PPV既存の 108×162・62×93・68×102。<b>正方形・丸の顔は1つも使っていない</b></td></tr>
     <tr><td>3</td><td>アッパーを左右反転しない</td><td><code>transform:scaleX(-1)</code> をどこにも書いていない（<code>matrix(-1…)</code> を持つ要素 0件）</td></tr>
     <tr><td>4</td><td>吹き出しは画像の上 / 尻尾は話者の画像中心 / 名前を入れない</td><td><b>①②④すべて</b>吹き出しは grid の <b>row 1</b>（画像は row 2）。
-      <b>全9吹き出しに尻尾があり（9/9）、尻尾X と話者画像の中心X の差は 375 / 400 / 480 / 520 / 600 / 700 / 701 / 820 / 1280 の全幅で 0.0px</b>。
+      <b>全9吹き出しに尻尾があり（9/9・クリップ0件）、尻尾X と話者画像の中心X の差は 375 / 400 / 480 / 520 / 600 / 700 / 701 / 820 / 1280 の全幅で 0.0px</b>。
+      尻尾は <b>幅22px × 高さ11px</b>、色は本体と同じ <code>--bubble-bg</code>、<code>drop-shadow</code> 付き。
+      <b>尻尾の22pxの足元が話者の画像の内側に完全に収まる</b>ことを全9本で確認（隣の顔にはみ出さない）。
       隊列では話者側へ <code>--tail-dx</code> ぶんずらす。<b>吹き出し内の話者名 span は 0件</b></td></tr>
+    <tr><td>＋</td><td>隊列の話者表示（2026-08-01 裁定）</td><td><b>非発話者を沈めず、発話者も縁取らない。</b>
+      隊列内の画像フィルタは 0件（<code>.is-speaker</code> / <code>.is-mute</code> の残骸も 0件）。
+      話者は<b>尻尾の向きだけ</b>で示す。<code>grayscale</code> は敗者・脱落専用のまま</td></tr>
     <tr><td>＋</td><td>団体エンブレム（2026-08-01 追加指示）</td><td>選手を出す全箇所に実画像を添えた。<b>エンブレム 27枚すべて 26px</b>（§5 既定・実測）。頭文字の代用は0件、画像の読み込み失敗0件</td></tr>
     <tr><td>5</td><td>縦順固定（吹き出し→画像→名前→役割→バッジ→数値）</td><td><code>.sfc-stage</code> が3行グリッドで順序を構造として固定。名前ブロック内も 名前 → 役割 → バッジ → OVR</td></tr>
     <tr><td>6</td><td>複数人は隊列</td><td><code>.tro</code> = 群の外枠1つ・<code>margin-left:-18px</code> の重ね・<code>drop-shadow</code>。<b>個々に額縁を付けていない</b></td></tr>
