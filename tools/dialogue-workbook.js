@@ -1472,7 +1472,7 @@ function resolveDeclarationForId(allDecls, id) {
 // 編集対象ではない参照専用シート(在籍キャラ一覧・注記・_キャラ対応表の
 // マトリクス/内訳/一覧など)は ID/現在/改訂 列を持たないのが仕様。
 // これらは黙ってスキップし、警告で埋もれさせない。
-const REFERENCE_ONLY_SHEET_NAMES = new Set(['在籍キャラ', '説明', '組み合わせ表', '組み合わせ内訳', 'キャラ一覧', '追加のしかた']);
+const REFERENCE_ONLY_SHEET_NAMES = new Set(['在籍キャラ', '説明', '組み合わせ表', '組み合わせ内訳', 'キャラ一覧', '追加のしかた', '使い方']);
 
 // ID 列の見出し。往復コーパス(セリフ編集/)は「ID(編集不可)」、
 // レビュー用の書き出し(tools/review-workbook.js)は「ID」。
