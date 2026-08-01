@@ -91,6 +91,7 @@ const QUICK = new Set([
   'mobile-layout-test.js',
   'mq-finalize-parity-test.js',
   'mq-record-migration-test.js',
+  'newspaper-font-latin-leak-test.js',
   'opening-scene-ui-test.js',
   'org-trust-visibility-guard-test.js',
   'ppv-lines-test.js',

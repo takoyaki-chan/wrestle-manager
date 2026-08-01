@@ -8380,7 +8380,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-digest-finish { font-size: 10.5px; color: #3a2c18; margin-top: 4px; padding-left: 52px; line-height: 1.4; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
 .np-digest-finish strong { color: #6a4a10; }
 .np-digest-finish-text { display: inline; }
-.np-digest-time { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: #6a4a10; letter-spacing: 0.5px; font-weight: 700; }
+.np-digest-time { font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: #6a4a10; letter-spacing: 0.5px; font-weight: 700; } /* 中身は「5分30秒」等の和文混じり時間表記のため和文フォント。1面だが同一バグパターンにつき修正 (2026-08-01) */
 .np-digest-turns-sub { font-size: 10px; color: #8a7858; letter-spacing: 0.3px; }
 .np-digest-mark { display: inline-block; font-size: 11px; margin: 0 3px; vertical-align: 1px; }
 .np-digest-mark.win { color: #1a7a30; font-weight: 900; }
@@ -8591,14 +8591,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-ace-side .name { font-size: 16px; font-weight: 900; font-family: 'Noto Serif JP', serif; }
 .np-ace-side .ovr-line { font-size: 10px; color: #d4b87a; margin-top: 2px; }
 .np-ace-side .ovr-line strong { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: #f0d48b; margin-left: 2px; }
-.np-ace-flavor { margin-top: 10px; font-size: 12px; line-height: 1.7; color: #f0d48b; text-align: justify; font-family: 'Noto Serif JP', serif; background: rgba(0,0,0,0.35); padding: 8px 12px; border-radius: 4px; border-left: 2px solid #d4a82a; }
+.np-ace-flavor { margin-top: 10px; font-size: 12px; line-height: 1.7; color: #f0d48b; text-align: justify; font-family: 'Noto Sans JP', sans-serif; background: rgba(0,0,0,0.35); padding: 8px 12px; border-radius: 4px; border-left: 2px solid #d4a82a; } /* 2面以下の本文。1面のルール(見出し=明朝/本文=ゴシック)に合わせる (2026-08-01) */
 
 .np-matchup-list { display: grid; gap: 7px; margin-bottom: 14px; }
 .np-matchup-row { display: grid; grid-template-columns: 1fr 110px 1fr; gap: 10px; padding: 9px 12px; background: rgba(120,84,39,0.05); border: 1px solid rgba(120,84,39,0.2); border-radius: 6px; align-items: center; }
 .np-matchup-fighter { display: flex; gap: 10px; align-items: center; }
 .np-matchup-fighter.right { flex-direction: row-reverse; text-align: right; }
 .np-matchup-photo { width: 64px; height: 64px; border-radius: 6px; flex-shrink: 0; background-size: cover; background-position: center top; background-color: #2a1a10; border: 2px solid rgba(80,140,255,0.5); box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
-.np-matchup-comment { grid-column: 1 / -1; font-size: 11.5px; color: #4a3825; line-height: 1.7; padding-top: 8px; margin-top: 4px; border-top: 1px dashed rgba(120,84,39,0.25); font-family: 'Noto Serif JP', serif; }
+.np-matchup-comment { grid-column: 1 / -1; font-size: 11.5px; color: #4a3825; line-height: 1.7; padding-top: 8px; margin-top: 4px; border-top: 1px dashed rgba(120,84,39,0.25); font-family: 'Noto Sans JP', sans-serif; } /* 2面以下の本文。1面のルール(見出し=明朝/本文=ゴシック)に合わせる (2026-08-01) */
 .np-matchup-photo.right { border-color: rgba(255,80,120,0.5); }
 .np-matchup-name { font-size: 13px; font-weight: 800; line-height: 1.2; color: #1a0d04; }
 .np-matchup-org-line { display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px; font-weight: 700; color: #5b4b34; letter-spacing: 0.5px; line-height: 1.2; margin-bottom: 2px; }
@@ -8639,7 +8639,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-spotlight { padding: 10px; background: radial-gradient(circle at 0% 100%, rgba(154,112,32,0.12), transparent 55%), rgba(120,84,39,0.05); border: 1px solid rgba(154,112,32,0.3); border-radius: 6px; display: grid; gap: 6px; }
 .np-spotlight-head { display: flex; gap: 8px; align-items: center; }
 .np-spotlight-photo { width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; background-size: cover; background-position: center top; background-color: #2a1a10; border: 2px solid rgba(139,26,26,0.5); box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
-.np-spotlight-comment { font-size: 10.5px; line-height: 1.55; color: #4a3825; font-family: 'Noto Serif JP', serif; padding-top: 5px; border-top: 1px dashed rgba(120,84,39,0.25); }
+.np-spotlight-comment { font-size: 10.5px; line-height: 1.55; color: #4a3825; font-family: 'Noto Sans JP', sans-serif; padding-top: 5px; border-top: 1px dashed rgba(120,84,39,0.25); } /* 2面以下の本文。1面のルール(見出し=明朝/本文=ゴシック)に合わせる (2026-08-01) */
 .np-fan-section { padding: 12px 14px; background: rgba(120,84,39,0.05); border: 1px dashed rgba(120,84,39,0.35); border-radius: 6px; margin-bottom: 14px; }
 .np-fan-list { display: grid; gap: 6px; }
 .np-fan-comment { padding: 7px 10px; background: rgba(248,238,210,0.6); border-radius: 4px; border-left: 2px solid rgba(120,84,39,0.3); }
@@ -8658,22 +8658,22 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-war-grid { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
 .np-war-overall { display: flex; align-items: baseline; gap: 6px; }
 .np-war-overall .lbl { font-size: 10px; color: #6a5e4c; letter-spacing: 2px; }
-.np-war-overall .wl { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #1a0d04; letter-spacing: 1px; line-height: 1; }
+.np-war-overall .wl { font-family: 'Noto Sans JP', sans-serif; font-size: 22px; color: #1a0d04; letter-spacing: 1px; line-height: 1; } /* 「N勝N敗」= 数字+漢字混在のため和文フォント (2026-08-01) */
 .np-war-breakdown { display: grid; grid-template-columns: repeat(3, auto); gap: 6px 14px; font-size: 11px; justify-content: center; padding-left: 12px; border-left: 1px solid rgba(120,84,39,0.2); }
 .np-war-breakdown .item { display: flex; gap: 4px; align-items: baseline; }
 .np-war-breakdown label { color: #6a5e4c; font-size: 10px; }
-.np-war-breakdown span { font-family: 'Bebas Neue', sans-serif; color: #1f1710; font-size: 13px; line-height: 1; }
+.np-war-breakdown span { font-family: 'Noto Sans JP', sans-serif; color: #1f1710; font-size: 13px; line-height: 1; } /* 「N勝N敗」= 数字+漢字混在のため和文フォント (2026-08-01) */
 .np-war-streak { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
 .np-war-streak.win { background: #1a7a30; color: #fff; }
 .np-war-streak.lose { background: #8b1a1a; color: #fff; }
 .np-war-streak.even { background: #5b4b34; color: #fff; }
-.np-war-comment { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(120,84,39,0.25); font-size: 11.5px; line-height: 1.6; color: #4a3825; font-family: 'Noto Serif JP', serif; }
+.np-war-comment { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(120,84,39,0.25); font-size: 11.5px; line-height: 1.6; color: #4a3825; font-family: 'Noto Sans JP', sans-serif; } /* 2面以下の本文。1面のルール(見出し=明朝/本文=ゴシック)に合わせる (2026-08-01) */
 .np-war-comment .np-kuroda-face { width: 28px; height: 28px; }
 
 /* 事実段落 (3面) */
 .np-rivalry-facts { padding: 10px 18px 12px; background: rgba(212,184,122,0.08); border-top: 1px dashed rgba(212,184,122,0.25); display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11px; color: #c8b878; font-family: 'Noto Serif JP', serif; }
 .np-rivalry-facts .fact-item::before { content: '◆'; color: #d4a82a; margin-right: 4px; font-size: 9px; }
-.np-rivalry-facts .fact-item strong { font-family: 'Bebas Neue', sans-serif; color: #f0d48b; font-size: 13px; margin-left: 2px; }
+.np-rivalry-facts .fact-item strong { font-family: 'Noto Sans JP', sans-serif; color: #f0d48b; font-size: 13px; margin-left: 2px; } /* 数値の他に「あり」など和文が入るため和文フォント (2026-08-01) */
 
 /* ── 3面: 因縁列伝 ── */
 .np-rivalry-headline { text-align: center; padding: 4px 0 12px; border-bottom: 3px double rgba(120,84,39,0.4); margin-bottom: 14px; }
@@ -8703,7 +8703,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-rivalry-side .stats { display: flex; justify-content: center; gap: 12px; margin-top: 6px; font-size: 10.5px; color: #c8b878; }
 .np-rivalry-side .stats span { display: inline-flex; align-items: baseline; gap: 3px; }
 .np-rivalry-side .stats strong { font-family: 'Bebas Neue', sans-serif; color: #f0d48b; font-size: 14px; }
-.np-rivalry-narrative { padding: 12px 18px 14px; font-size: 12.5px; line-height: 1.85; color: #f0d48b; font-family: 'Noto Serif JP', serif; text-align: justify; }
+.np-rivalry-narrative { padding: 12px 18px 14px; font-size: 12.5px; line-height: 1.85; color: #f0d48b; font-family: 'Noto Sans JP', sans-serif; text-align: justify; } /* 2面以下の本文。1面のルール(見出し=明朝/本文=ゴシック)に合わせる (2026-08-01) */
 .np-rivalry-narrative p { text-indent: 1em; margin-bottom: 6px; }
 .np-rivalry-narrative strong { color: #d4a82a; }
 
@@ -8741,7 +8741,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-relation-tag.respect { background: #1a4a30; color: #fff; }
 .np-relation-tag.cold { background: #2a3a4a; color: #fff; }
 .np-relation-card-names { font-size: 11.5px; font-weight: 700; color: #1a0d04; margin-bottom: 4px; line-height: 1.3; }
-.np-relation-card-text { font-size: 10.5px; line-height: 1.55; color: #4a3825; font-family: 'Noto Serif JP', serif; }
+.np-relation-card-text { font-size: 10.5px; line-height: 1.55; color: #4a3825; font-family: 'Noto Sans JP', sans-serif; } /* 2面以下の本文。1面のルール(見出し=明朝/本文=ゴシック)に合わせる (2026-08-01) */
 
 .np-empty { padding: 50px 20px; text-align: center; color: #5b4b34; font-style: italic; line-height: 1.8; }
 
@@ -8772,12 +8772,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-mvprace-card-1:hover { transform: translateX(2px); box-shadow: 0 6px 18px rgba(0,0,0,0.22); }
 .np-mvprace-card-1 .np-mvprace-photo { position: relative; aspect-ratio: 3/4; border-radius: 6px; overflow: hidden; border: 3px solid #c8a040; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 .np-mvprace-rank-overlay { position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #d4a82a, #9a7020); color: #1a0d04; font-family: 'Bebas Neue', sans-serif; font-size: 28px; line-height: 1; padding: 4px 14px; border-radius: 4px; border: 1px solid #f0d48b; }
-.np-mvprace-rank-overlay .lbl { font-size: 9px; letter-spacing: 1.5px; display: block; color: rgba(26,13,4,0.7); line-height: 1; }
+.np-mvprace-rank-overlay .lbl { font-family: 'Noto Sans JP', sans-serif; font-size: 9px; letter-spacing: 1.5px; display: block; color: rgba(26,13,4,0.7); line-height: 1; } /* 「順位」= 和文ラベルなので親のBebasを打ち消す (2026-08-01) */
 .np-mvprace-emb-overlay { position: absolute; bottom: 6px; right: 6px; width: 36px; height: 36px; border: 2px solid rgba(248,238,210,0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.5); background-size: cover; background-position: center; background-repeat: no-repeat; border-radius: 50%; flex-shrink: 0; }
 .np-mvprace-info { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .np-mvprace-name-row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .np-mvprace-name { font-size: 24px; font-weight: 900; color: #1a0d04; font-family: 'Noto Serif JP', serif; line-height: 1.15; }
-.np-mvprace-arrow { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 2px; }
+.np-mvprace-arrow { font-family: 'Noto Sans JP', sans-serif; font-size: 11px; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 2px; } /* 「初登場」「前週N位から上昇」等の和文チップのため和文フォント (2026-08-01) */
 .np-mvprace-arrow.up { background: rgba(139,26,26,0.18); color: #8b1a1a; }
 .np-mvprace-arrow.down { background: rgba(44,74,91,0.13); color: #2c4a5b; }
 .np-mvprace-arrow.same { background: rgba(120,84,39,0.12); color: #7a5b32; }
@@ -8796,7 +8796,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-mvprace-stat-box.ovr strong { color: #f0d48b; }
 .np-mvprace-stat-box.pts strong { color: #8b1a1a; }
 .np-mvprace-stat-box.pts .unit { font-family: 'Noto Sans JP', sans-serif; font-size: 10px; color: #6a5e4c; font-weight: 700; margin-left: 2px; }
-.np-mvprace-narrative { font-size: 12.5px; line-height: 1.75; color: #2a2014; font-family: 'Noto Serif JP', serif; border-left: 3px solid #c8a040; padding: 4px 0 4px 10px; background: rgba(212,168,67,0.1); border-radius: 0 4px 4px 0; text-align: justify; }
+.np-mvprace-narrative { font-size: 12.5px; line-height: 1.75; color: #2a2014; font-family: 'Noto Sans JP', sans-serif; border-left: 3px solid #c8a040; padding: 4px 0 4px 10px; background: rgba(212,168,67,0.1); border-radius: 0 4px 4px 0; text-align: justify; } /* 2面以下の本文。1面のルール(見出し=明朝/本文=ゴシック)に合わせる (2026-08-01) */
 .np-mvprace-badges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .np-mvprace-badge { background: rgba(248,238,210,0.7); border: 1px solid rgba(120,84,39,0.3); border-radius: 4px; padding: 5px 7px; text-align: center; }
 .np-mvprace-badge.zero { opacity: 0.45; }
@@ -8829,14 +8829,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-mvprace-minor-mid { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .np-mvprace-minor-name-row { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .np-mvprace-minor-name { font-size: 17px; font-weight: 900; color: #1a0d04; font-family: 'Noto Serif JP', serif; line-height: 1.15; }
-.np-mvprace-minor-arrow { font-family: 'Bebas Neue', sans-serif; font-size: 10px; padding: 2px 6px; border-radius: 2px; }
+.np-mvprace-minor-arrow { font-family: 'Noto Sans JP', sans-serif; font-size: 10px; padding: 2px 6px; border-radius: 2px; } /* 「初登場」を含む和文チップのため和文フォント (2026-08-01) */
 .np-mvprace-minor-arrow.up { background: rgba(139,26,26,0.18); color: #8b1a1a; }
 .np-mvprace-minor-arrow.down { background: rgba(44,74,91,0.13); color: #2c4a5b; }
 .np-mvprace-minor-arrow.same { background: rgba(120,84,39,0.12); color: #7a5b32; }
 .np-mvprace-minor-arrow.new { background: rgba(212,168,67,0.3); color: #6a4a10; }
 .np-mvprace-minor-meta { font-size: 10px; color: #5b4b34; letter-spacing: 0.3px; }
 .np-mvprace-minor-meta .div { color: rgba(120,84,39,0.5); margin: 0 5px; }
-.np-mvprace-minor-narrative { font-size: 11.5px; line-height: 1.65; color: #2a2014; font-family: 'Noto Serif JP', serif; border-left: 2px solid rgba(139,26,26,0.4); padding: 2px 0 2px 9px; text-align: justify; }
+.np-mvprace-minor-narrative { font-size: 11.5px; line-height: 1.65; color: #2a2014; font-family: 'Noto Sans JP', sans-serif; border-left: 2px solid rgba(139,26,26,0.4); padding: 2px 0 2px 9px; text-align: justify; } /* 2面以下の本文。1面のルール(見出し=明朝/本文=ゴシック)に合わせる (2026-08-01) */
 .np-mvprace-minor-pills { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
 .np-mvprace-minor-pill { background: rgba(248,238,210,0.7); border: 1px solid rgba(120,84,39,0.3); border-radius: 9px; padding: 1px 7px; font-size: 9.5px; display: inline-flex; align-items: center; gap: 2px; }
 .np-mvprace-minor-pill strong { font-family: 'Bebas Neue', sans-serif; font-size: 11px; color: #1a0d04; margin-left: 2px; }
@@ -8865,7 +8865,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-mvprace-list-row:hover { background: rgba(248,238,210,0.5); }
 .np-mvprace-list-row.player { background: linear-gradient(90deg, rgba(154,112,32,0.1), transparent 70%); }
 .np-mvprace-list-rank { font-family: 'Bebas Neue', sans-serif; font-size: 18px; text-align: center; color: #5b4b34; line-height: 1; }
-.np-mvprace-list-arrow { text-align: center; font-size: 10px; font-family: 'Bebas Neue', sans-serif; }
+.np-mvprace-list-arrow { text-align: center; font-size: 10px; font-family: 'Noto Sans JP', sans-serif; } /* 「初登場」を含む和文チップのため和文フォント (2026-08-01) */
 .np-mvprace-list-arrow.up { color: #8b1a1a; }
 .np-mvprace-list-arrow.down { color: #2c4a5b; }
 .np-mvprace-list-arrow.same { color: #aa9577; }

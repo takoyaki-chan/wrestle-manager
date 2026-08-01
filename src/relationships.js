@@ -880,6 +880,7 @@ Engine.relationships = {
     let moralePenaltyRaw = 0;
     const pairEventNames = [];
     const hostilePairNames = []; // M1: 敵対ペア名追跡
+    const hostilePairIds = []; // P-4: 記事の写真に出す当事者id（hostilePairCount と同じ条件で拾う）
     let hostilePairCount = 0; // bond-rivalry plan P-4: 同団体内 bond ≤ 30 ペア集計
     // bond-rivalry plan P-6: W-1（憎い敵ゾーン）累計発火カウント
     if (!state.w1FireCount) state.w1FireCount = {};
@@ -918,6 +919,10 @@ Engine.relationships = {
         // bond-rivalry plan P-4: 同団体内 bond ≤ 30 ペア集計
         if (Math.min(relAB.bond, relBA.bond) <= 30) {
           hostilePairCount++;
+          // 記事の写真に出す当事者。**記事の「N組」と同じ条件で拾う**ので、
+          // 見出しの数字と写真の顔が食い違わない。ここを渡していなかったため
+          // ロッカー荒廃の記事は一面に載っても写真枠が空だった(2026-08-01)
+          hostilePairIds.push([left.id, right.id]);
         }
 
         // ── 憎い敵ゾーン（rivalry40+, bond40未満）──
@@ -1165,9 +1170,13 @@ Engine.relationships = {
         events.push(`[locker-crisis] ロッカールームに不穏な空気が広がっている（険悪ペア${hostilePairCount}組）`);
         // 業界ニュース: ロッカー荒廃を新聞に
         if (Engine.industryNews) {
+          // 当事者を渡す。渡していなかったため、一面に載っても写真枠が空だった。
+          // characterCount には**組数ではなく人数**を入れる（描画の「+N」は人数で数える）
+          const crisisIds = [...new Set(hostilePairIds.flat())];
           state = Engine.industryNews.push(state, {
             type: 'lockerRoomCrisis',
-            characterId: null,
+            characterId: crisisIds[0] != null ? crisisIds[0] : null,
+            characterIds: crisisIds,
             data: { org: state.orgName || 'プレイヤー団体', count: hostilePairCount },
           });
         }

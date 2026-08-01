@@ -6974,7 +6974,7 @@ function _npCrisisColumnHtml(seasonNum, weekNum, isLatest) {
   const headline = (pick.headline || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
   const body = (pick.body || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
   return `<section class="np-kuroda-crisis" style="background:linear-gradient(180deg,#1a0808 0%,#2a0f0f 100%);border-left:4px solid #aa2020;border-radius:4px;padding:14px 18px;margin-bottom:16px;color:#f4d8d8;box-shadow:0 0 12px rgba(170,30,30,0.25) inset">
-    <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#ff8888;margin-bottom:6px;text-transform:uppercase">編集記事 — 黒田幸子</div>
+    <div style="font-family:'Noto Sans JP',sans-serif;font-size:11px;letter-spacing:2px;color:#ff8888;margin-bottom:6px;text-transform:uppercase">編集記事 — 黒田幸子</div>
     <h3 style="margin:0 0 8px 0;font-size:18px;color:#ffd6d6;font-weight:700">${headline}</h3>
     <p style="margin:0;font-size:13px;line-height:1.8;white-space:pre-wrap">${body}</p>
     <div style="text-align:right;margin-top:10px;font-size:11px;color:#cc8888">${NP_KURODA_BYLINE.editorial}</div>
