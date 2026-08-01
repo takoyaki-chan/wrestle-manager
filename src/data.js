@@ -3787,6 +3787,32 @@ const INJURY_TABLE = [
   {type:'重傷', minWeeks:6, maxWeeks:8, threshold:0.02, color:'#d63031'}
 ];
 
+// プレイヤーに見せる負傷の呼び名。
+// 内部キーの「中傷」は**誹謗中傷と読めてしまう**ため、表示だけ別に持つ
+// （2026-08-01 Keisuke 指摘「中傷という言葉は意味が違いやすい」）。
+// 内部キーはセーブに載っているので変えない。表示する場所は必ずこれを通す。
+const INJURY_LABEL = {
+  '軽傷': '軽傷',
+  '中傷': '中程度の負傷',
+  '重傷': '重傷',
+  '練習負傷': '練習中の負傷',
+};
+function injuryLabel(type) {
+  if (!type) return '';
+  return INJURY_LABEL[type] || String(type);
+}
+// badge など幅の狭い場所用の短い呼び名（「中程度の負傷」が入らない枠で使う）
+const INJURY_LABEL_SHORT = {
+  '軽傷': '軽傷',
+  '中傷': '中度',
+  '重傷': '重傷',
+  '練習負傷': '練習負傷',
+};
+function injuryLabelShort(type) {
+  if (!type) return '';
+  return INJURY_LABEL_SHORT[type] || String(type);
+}
+
 // v1.3-2: Growth penalty table by injury severity
 const INJURY_DEBUFF_TABLE = {
   '軽傷': { remainingWeeks: 6,  multiplier: 0.7,  source: 'minor'    },

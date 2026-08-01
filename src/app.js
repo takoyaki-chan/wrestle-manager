@@ -10131,7 +10131,7 @@ const App = {
         showEventPopup({
           type: 'fighter', id: ch.id, name: ch.name, tone: 'negative',
           message: getTraitQuote('injury', ch),
-          detail: `🏥 ${ir.injury.type} — 全治${ir.injury.weeksLeft}週間`,
+          detail: `🏥 ${injuryLabel(ir.injury.type)} — 全治${ir.injury.weeksLeft}週間`,
         });
       }, i * 100);
     });
@@ -10913,7 +10913,7 @@ const App = {
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
       setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'negative',
-        message: getTraitQuote('injury', c), detail:`🏥 ${c.injury.type} — 全治${c.injury.weeksLeft}週間` }), i * 100);
+        message: getTraitQuote('injury', c), detail:`🏥 ${injuryLabel(c.injury.type)} — 全治${c.injury.weeksLeft}週間` }), i * 100);
     });
     // v1.2-9: Flavor event popups (雑誌取材・TV出演)
     const flavorEvents = G._flavorEvents || [];

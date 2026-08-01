@@ -1178,7 +1178,7 @@ function renderWeekScreen() {
         : 'cond-low';
       const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',auto_rest:'🔄休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
       const statusHtml = c.injury
-        ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${c.injury.type} ${c.injury.weeksLeft}週</span>`
+        ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${injuryLabelShort(c.injury.type)} ${c.injury.weeksLeft}週</span>`
         : c.forcedRest
           ? '<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">🛌 休養中</span>'
           : '<span style="font-size:12px;color:#2ecc71">健康</span>';
@@ -1934,7 +1934,7 @@ function _renderRosterDetailPanel(c, hired) {
   if (c.hotStreak) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(200,120,0,0.12);color:#a06000;border:1px solid rgba(200,120,0,0.3)">🔥 絶好調</span>');
   if (c.slump) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(52,73,94,0.15);color:#5a6670;border:1px solid rgba(127,140,141,0.3)">📉 スランプ</span>');
   if (c.motivationLoss) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(44,62,80,0.15);color:#6a7880;border:1px solid rgba(149,165,166,0.3)">😞 モチベ喪失</span>');
-  if (c.injury) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">🏥 ${c.injury.type} ${c.injury.weeksLeft}週</span>`);
+  if (c.injury) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">🏥 ${injuryLabelShort(c.injury.type)} ${c.injury.weeksLeft}週</span>`);
   const decline = Engine.retirement.getDeclinePresentation(c);
   if (decline.stage === 'terminal') statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">⬇⬇ 限界</span>');
   else if (decline.stage === 'major') statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,100,20,0.12);color:#a06000;border:1px solid rgba(180,100,20,0.3)">⬇ 衰退期</span>');
@@ -7655,7 +7655,7 @@ function _renderNewspaperInjuries(d) {
   if (!injuries.length) return '';
   const rows = injuries.map(ir => {
     const weeks = ir.weeksLeft != null ? ` / ${ir.weeksLeft}週離脱` : '';
-    return `<div class="news-injury-row" style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid rgba(137,41,41,0.16);"><strong>${ir.name}</strong><span>${ir.type || '負傷'}${weeks}</span></div>`;
+    return `<div class="news-injury-row" style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid rgba(137,41,41,0.16);"><strong>${ir.name}</strong><span>${injuryLabel(ir.type) || '負傷'}${weeks}</span></div>`;
   }).join('');
   return `<div class="news-injury-report" style="margin-top:10px;padding:8px 10px;border:1px solid rgba(137,41,41,0.22);background:rgba(137,41,41,0.06);border-radius:8px;color:#4a241d;"><div class="news-sec-label">負傷者情報</div>${rows}</div>`;
 }

@@ -2161,7 +2161,7 @@ function _renderRetirementPopup() {
     </div>`;
 
   const notes = [
-    isInjury && r.injuryType ? `🏥 ${r.injuryType}` : '',
+    isInjury && r.injuryType ? `🏥 ${injuryLabel(r.injuryType)}` : '',
     r.wasChampion ? '🏆 王座返上' : ''
   ].filter(Boolean).join('　');
   const noteHtml = notes ? `<div style="text-align:center;color:rgba(200,180,150,0.85);font-size:13px;margin-bottom:10px">${notes}</div>` : '';
@@ -3851,7 +3851,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       // Injury
       if (c.injury) {
         html += `<div style="padding:6px 10px;background:rgba(214,48,49,0.1);border:1px solid rgba(214,48,49,0.3);border-radius:4px;font-size:11px;color:#f08b9e;margin-bottom:8px">
-          🏥 ${c.injury.type} — 残り${c.injury.weeksLeft}週
+          🏥 ${injuryLabel(c.injury.type)} — 残り${c.injury.weeksLeft}週
         </div>`;
       }
 
@@ -5350,7 +5350,7 @@ function _pbHpMini(hpL, hpR, opts = {}) {
 }
 
 function _pbInjuryBlock(injuries) {
-  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(ir.injury.type)}</span> <span class="name">${escHtml(ir.name)}</span> 全治 ${ir.injury.weeksLeft}週間</span>`).join('');
+  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(injuryLabel(ir.injury.type))}</span> <span class="name">${escHtml(ir.name)}</span> 全治 ${ir.injury.weeksLeft}週間</span>`).join('');
   return `<div class="pb-injury">
     <span class="pb-injury-label">🏥 Injury</span>
     ${items}
@@ -11874,7 +11874,7 @@ function showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm) {
       fighter: f,
       ovr: ov(f),
       healthy: !f.injury && !f.forcedRest && !f.suspended,
-      reason: f.injury ? `${f.injury.type} ${f.injury.weeksLeft}週`
+      reason: f.injury ? `${injuryLabelShort(f.injury.type)} ${f.injury.weeksLeft}週`
         : f.forcedRest ? '休養中'
         : f.suspended ? '謹慎中'
         : '',

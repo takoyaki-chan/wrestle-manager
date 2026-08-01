@@ -1549,7 +1549,7 @@ const Engine = {
           type: 'injury',
           week,
           season,
-          detail: `${injury.type}（${weeks}週離脱）`,
+          detail: `${injuryLabel(injury.type)}（${weeks}週離脱）`,
         };
         updatedFighter = { ...updatedFighter, careerHistory: [...(updatedFighter.careerHistory || []), histEntry] };
       }
@@ -1567,7 +1567,7 @@ const Engine = {
         if (!c.injury) return c;
         const wl = c.injury.weeksLeft - 1;
         if (wl <= 0) {
-          events.push(`✅ ${c.name}が${c.injury.type}から復帰！`);
+          events.push(`✅ ${c.name}が${injuryLabel(c.injury.type)}から復帰！`);
           let recovered = Engine.popularity.clearPreInjury({ ...c, injury: null });
           // ガラスの身体: 復帰のたびにファンの応援で人気+2
           if (Traits.has(c, 'ガラスの身体')) {
@@ -9399,7 +9399,7 @@ const Engine = {
             // careerHistory記録
             retiree.careerHistory = [...(retiree.careerHistory || []), {
               type: 'injury_retirement', week: state.week, season: state.season,
-              detail: `${retiree.injury?.type || '重傷'}により引退`,
+              detail: `${injuryLabel(retiree.injury?.type) || '重傷'}により引退`,
             }];
 
             // orgTimeline close
@@ -13060,7 +13060,7 @@ const Engine = {
         if (li.retireType) {
           const retiredMsg = li.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
           // v1.3-2: §4.3 壊滅的怪我による引退を careerHistory に記録
-          let retiredF = { ...li.newFighter, careerHistory: [...(li.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${li.injuryInfo.injury.type}により引退` }] };
+          let retiredF = { ...li.newFighter, careerHistory: [...(li.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${injuryLabel(li.injuryInfo.injury.type)}により引退` }] };
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== lc.id);
@@ -13088,7 +13088,7 @@ const Engine = {
         if (ri.retireType) {
           const retiredMsg = ri.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
           // v1.3-2: §4.3 壊滅的怪我による引退を careerHistory に記録
-          let retiredF = { ...ri.newFighter, careerHistory: [...(ri.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${ri.injuryInfo.injury.type}により引退` }] };
+          let retiredF = { ...ri.newFighter, careerHistory: [...(ri.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${injuryLabel(ri.injuryInfo.injury.type)}により引退` }] };
           retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== rc.id);
@@ -28313,7 +28313,7 @@ Engine.newspaper = {
             stories.push({
               type: 'aiPracticeInjury',
               priority: P.aiPracticeInjury + (isAce ? 20 : 0),
-              headline: `${ev.orgName}の${ev.fighterName}、練習中に${ev.injuryType}で${ev.weeksOut}週離脱`,
+              headline: `${ev.orgName}の${ev.fighterName}、練習中に${injuryLabel(ev.injuryType)}で${ev.weeksOut}週離脱`,
               body: `${ev.orgName}の練習中に${ev.fighterName}が負傷。${ev.weeksOut}週間の離脱を余儀なくされる。`,
               characterId: ev.fighterId,
             });
