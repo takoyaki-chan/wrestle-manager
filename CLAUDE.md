@@ -184,7 +184,8 @@ for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "R
 | match-popup-overview-v0.1.md | 試合演出ポップアップ再設計 全体構想(未実装v0.1) |
 | faction-system-spec-v0.1.md | 派閥システム(DRAFT・未実装v0.1) |
 | rivalry-chronicle-spec-v1.0.md | 因縁列伝(3面) — 9象限分類 + H2H.history[] + 黒田叙述紙面 |
-| newspaper-and-orgcompare-spec-v2.0.md | 新聞画面+団体比較画面の確定UI仕様(共通CSS/4軸バー/ダイジェスト/KURODA接続) |
+| newspaper-spec-v1.0.md | **新聞の確定仕様(週刊グラップル)**。面の構成/ニュースバリュー採点(基礎+主役+強度)/資格線/ニュース源/特集の発火条件/静かな週の読み物/写真の優先順/文字のルール。P1〜P6 全実装完了 2026-08-02 |
+| newspaper-and-orgcompare-spec-v2.0.md | (旧)新聞+団体比較のUI仕様。**newspaper-spec-v1.0 へ置き換え済み**。業界ニュースキューの type 一覧など細目の参照用に残置 |
 | career-history-spec-v1.0.md | 選手経歴年表(Phase A〜E 全実装完了/history type カタログ/PPV・JT 結果分岐/退団 6 type) |
 | faction-f07-variation-spec-v0.1.md | F07 派閥動向 共通フレーム化 v0.4(全アーキタイプ共通+チーム全体12週CD+アーキタイプ×incidentTypeマトリクス、DRAFT) |
 | faction-archetype-rework-spec-v0.1.md | 派閥アーキタイプ6種(権威型/結束型/実力主義/ヒール派閥/正統派/武闘派) v0.2、F01アーキタイプ自動判定 + 属性確率バイアス制 + アーキタイプ遷移(DRAFT) |

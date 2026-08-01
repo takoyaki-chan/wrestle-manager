@@ -79,7 +79,18 @@ function makeContext() {
     escHtml: s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
   };
   vm.createContext(ctx);
-  const code = `${extractFunction(renderSrc, '_npPhotoBg')}\n${extractFunction(renderSrc, '_npSubPhotoHtml')}`;
+  // P6(2026-08-02): _npPhotoBg が汎用画像へ落ちる段を持つようになったので、
+  // 対応表と _npGenericPhotoBg も一緒に持ち込む(片方だけだと ReferenceError で落ちる)
+  const tblAt = renderSrc.indexOf('const NP_GENERIC_PHOTO');
+  const genericTable = tblAt >= 0
+    ? renderSrc.slice(tblAt, renderSrc.indexOf('const NP_GENERIC_VARIANTS', tblAt)) + 'const NP_GENERIC_VARIANTS = 3;'
+    : '';
+  const code = [
+    genericTable,
+    tblAt >= 0 ? extractFunction(renderSrc, '_npGenericPhotoBg') : '',
+    extractFunction(renderSrc, '_npPhotoBg'),
+    extractFunction(renderSrc, '_npSubPhotoHtml'),
+  ].filter(Boolean).join(String.fromCharCode(10));
   vm.runInContext(code, ctx);
   return ctx;
 }
