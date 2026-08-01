@@ -219,6 +219,7 @@ for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "R
 | prospect-assessment-spec-v1.0.md | 見立て評価(ドラフト級/スカウト/初期ドラフトのティア再設計。年齢ブレンド+ブレ、超逸材~2%、FA対象外。実装完了 2026-07-30) |
 | tournament-coach-wrapup-spec-v1.0.md | 特別興行後のコーチ総括(5大会共通/言及は最大2名/voice 8系統×成績6段/_tcwGate の fail-open と onDone 1回保証。実装完了 2026-08-01) |
 | mq-system-spec-v1.0.md | MQシステム確定仕様(三層構造/finalize一本化+profile5種/OVシーリング4セグメント+超過レイヤー/固定加算全廃→リング内化/観客熱×注目度/歴代記録シングル90・タッグ94分離/大ニュース新聞5種+週頭通知。P1〜P5全実装完了 2026-07-24。設計経緯は docs/mq-redesign-proposal-v0.5.md) |
+| ai-growth-parity-spec-v0.1.md | AI成長パリティ(成長入力のAI/プレイヤー対称化。興行週練習解禁/体調安全弁/熱量逓減/wear共通化/トレーナー限定付与/AI追い込み節度/leagueElevated再較正。**DRAFT・レビュー待ち 2026-08-01**。growth-spec v2.1 §6.2/§9の裁定を上書き) |
 
 ## UI実装ルール(必読)
 
