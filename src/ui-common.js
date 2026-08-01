@@ -3520,7 +3520,13 @@ function canOpenFighterPopup(fighterId) {
   return !!findFighter(Number(fighterId));
 }
 
-// 選手詳細に置く、状態ごとの熱量セリフ。性格・アーキタイプで引き分ける。
+// 熱量(練習の乗り)を選手本人の口で伝えるセリフ。口調・性格で引き分ける。
+//
+// 2026-08-01: **選手詳細のヘッダーから外した**。あそこは選手の素性を見る場所で、
+// 「今日は体が軽い」のようなその週の状態を常設で置く場所ではない
+// (AI所属選手やスカウト候補にまで出ていた)。
+// 出すなら練習・特訓を実際にやった場面。移設先は未定のため、現在この関数は
+// どこからも呼ばれていない。捨てずに残してあるのは、道場シーンへ移す前提のため。
 function getHeatStateQuote(state, fighter) {
   const pool = typeof HEAT_STATE_SELF_LINES !== 'undefined' && HEAT_STATE_SELF_LINES[state];
   if (!pool || typeof pickDialogueLine !== 'function') return '…';
@@ -3556,8 +3562,6 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const isRoster = G.roster.some(r => r.id === c.id);
   const isFree = G.freeAgents.some(r => r.id === c.id);
   const isScoutCandidate = (G.scoutCandidates || []).some(r => r.id === c.id);
-  const trainingState = typeof getTrainingState === 'function' ? getTrainingState(c) : 'fresh';
-  const trainingStateLine = getHeatStateQuote(trainingState, c);
   let orgLabel = '';
   let negotiateOrgId = null;
   let isAiFighter = false;
@@ -3683,7 +3687,6 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${isScoutCandidate && c._hasCompetition ? '<span style="color:#e74c3c">⚔ 他団体注目</span>' : ''}
             ${orgLabel ? `<span>${orgLabel} 所属</span>` : ''}
           </div>
-          <div class="training-state-line">💬 ${trainingStateLine}</div>
         </div>
         <button onclick="closeFighterPopup()" style="background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;padding:4px;line-height:1;flex-shrink:0">✕</button>
       </div>

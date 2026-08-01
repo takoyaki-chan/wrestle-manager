@@ -58,9 +58,15 @@ assert.doesNotThrow(() => signalFor({ isRental: true, injury: null, _heat: 3 }))
 assert.doesNotThrow(() => signalFor({ injury: { type: '捻挫' }, _heat: 4 }));
 assert.doesNotThrow(() => signalFor({ isRental: false }));
 
-// 選手詳細は承認済みの personality×archetype プールを参照する。
+// 熱量セリフは承認済みの archetype×personality プールを参照する。
 assert.match(commonSource, /function getHeatStateQuote\(state, fighter\)/);
 assert.match(commonSource, /pickDialogueLine\(HEAT_STATE_SELF_LINES\[state\], fighter\)/);
-assert.match(commonSource, /getHeatStateQuote\(trainingState, c\)/);
+
+// 2026-08-01: **選手詳細のヘッダーには置かない**。
+// あそこは選手の素性を見る場所で、その週の状態を常設で出す場所ではない
+// (AI所属選手やスカウト候補にまで「今日は体が軽い」が出ていた)。
+// 出すなら練習・特訓を実際にやった場面。移設先が決まるまでは未接続。
+assert.doesNotMatch(commonSource, /getHeatStateQuote\(trainingState, c\)/);
+assert.doesNotMatch(commonSource, /class="training-state-line"/);
 
 console.log('heat-visibility-test: PASS');
