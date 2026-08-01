@@ -49,6 +49,11 @@ const FILE_ORDER = [
   'victory-lines.js',
   'data.js',
   'coach-lines.js',
+  // セリフ専用の新設ファイル。**ここに載せないと apply が ID を解決できず、
+  // レビュー済みの改訂を1件も書き戻せない**(2026-08-01: 天頂戦53件がこれで詰まった)。
+  // src/ にセリフのテーブルを新設したら、必ずこの一覧へ足すこと
+  'tenchosen-final-lines.js',
+  'ppv-lines.js',
   'data-faction-dialogue.js',
   'management.js',
   'match-engine.js',

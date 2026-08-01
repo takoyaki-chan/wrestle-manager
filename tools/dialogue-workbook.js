@@ -1472,7 +1472,13 @@ function resolveDeclarationForId(allDecls, id) {
 // 編集対象ではない参照専用シート(在籍キャラ一覧・注記・_キャラ対応表の
 // マトリクス/内訳/一覧など)は ID/現在/改訂 列を持たないのが仕様。
 // これらは黙ってスキップし、警告で埋もれさせない。
-const REFERENCE_ONLY_SHEET_NAMES = new Set(['在籍キャラ', '説明', '組み合わせ表', '組み合わせ内訳', 'キャラ一覧']);
+const REFERENCE_ONLY_SHEET_NAMES = new Set(['在籍キャラ', '説明', '組み合わせ表', '組み合わせ内訳', 'キャラ一覧', '追加のしかた']);
+
+// ID 列の見出し。往復コーパス(セリフ編集/)は「ID(編集不可)」、
+// レビュー用の書き出し(tools/review-workbook.js)は「ID」。
+// **同じ apply で両方を読めないと、レビュー済みの改訂を手で写す羽目になる**
+// (2026-08-01: 天頂戦53件がここで詰まった)。
+const ID_HEADER_NAMES = ['ID(編集不可)', 'ID'];
 
 function collectCandidatesFromWorkbook(filePath) {
   const sheets = readWorkbookSheets(filePath);
@@ -1483,7 +1489,7 @@ function collectCandidatesFromWorkbook(filePath) {
     const headerIndex = {};
     for (const [col, label] of header.entries()) headerIndex[String(label).trim()] = col;
 
-    const idCol = headerIndex['ID(編集不可)'];
+    const idCol = ID_HEADER_NAMES.map(n => headerIndex[n]).find(c => c !== undefined);
     const currentCol = headerIndex['現在'];
     const revisedCol = headerIndex['改訂'];
     if (idCol === undefined || currentCol === undefined || revisedCol === undefined) {
