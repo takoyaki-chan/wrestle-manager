@@ -24010,7 +24010,10 @@ Engine.database = {
         trailBig: 'スター性の差が大きく、看板対決を組んでも数字が出ない',
         even: 'スター性は互角' },
     ];
-    const AXIS_BIG = 35; // これ以上開いたら「優勢/劣勢」ではなく「圧倒/完敗」の語で書く
+    // これ以上開いたら「優勢/劣勢」ではなく「圧倒/完敗」の語で書く。
+    // 35 では緩すぎた（2026-08-01 Keisuke 指摘「22以上の差があるのに何を言っているんだ」）。
+    // OVR も人気も 0〜100 の物差しで、20 開けば同じ土俵の話ではなくなる。
+    const AXIS_BIG = 20;
     const fragOf = (ax) => {
       const d = diffs[ax.key];
       if (d >= AXIS_BIG) return ax.leadBig;
@@ -24055,17 +24058,47 @@ Engine.database = {
       popularity: '団体人気の差が集客に直結するため、興行規模で劣る。',
       starPower: 'スター性の差が大きく、看板対決では分が悪い。',
     };
+    // 最大の弱点が AXIS_BIG 以上開いているとき用。上の文は「不利」「分が悪い」で
+    // 止まっており、-50 級の差でも同じ言葉が出ていた
+    const riskBigTexts = {
+      ace: '主力の実力差が隔絶しており、エース対決は組むだけ損になる。',
+      depth: '選手層が桁違いに薄く、カードを埋めるだけで年間を消耗する。',
+      popularity: '団体人気が桁違いで、同じ会場規模に並べても客が付かない。',
+      starPower: 'スター性の差が桁違いで、看板対決を組んでも数字にならない。',
+    };
     const scoutTexts = {
       ace: '即戦力のエース候補を優先的にスカウトしたい。',
       depth: '中堅層の補強が急務。FA市場の中堅選手に注目。',
       popularity: '興行の質を上げて団体人気の底上げが最優先。',
       starPower: '人気のあるサブエース候補を獲得し、TOP5人気を底上げしたい。',
     };
+    // 全軸で負けているときの「せめてどこから」。**差の大きさで3段に割る**。
+    // 以前は1段しかなく、GRADE D「全面劣勢。正面から勝てる要素がない」の直下に
+    // 「主力の差はまだ小さい」「団体人気はまだ追いつける圏内」が出ていた
+    // （2026-08-01 Keisuke 指摘。-25 / -22 でこの文面だった）。
+    // **紙面の中で言っていることが食い違うのが一番まずい。**
     const pivotTexts = {
-      ace: '主力の差はまだ小さい。エース候補の育成が進めば、看板カードで勝負できる。',
-      depth: '選手層の差は限定的。中堅の底上げ次第で年間の安定感は十分作れる。',
-      popularity: '団体人気はまだ追いつける圏内。興行の質と結果で巻き返しを狙いたい。',
-      starPower: 'スター性の差は詰められる余地がある。看板候補のプッシュを急ぎたい。',
+      // near: いちばん傷の浅い軸が僅差（<10）。ここだけ従来の楽観でよい
+      near: {
+        ace: '主力の差はまだ小さい。エース候補の育成が進めば、看板カードで勝負できる。',
+        depth: '選手層の差は限定的。中堅の底上げ次第で年間の安定感は十分作れる。',
+        popularity: '団体人気はまだ追いつける圏内。興行の質と結果で巻き返しを狙いたい。',
+        starPower: 'スター性の差は詰められる余地がある。看板候補のプッシュを急ぎたい。',
+      },
+      // mid: 10〜AXIS_BIG。「勝てる」とは書かない。ここが一番マシ、という事実だけ
+      mid: {
+        ace: '全項目で後れているが、傷が浅いのは主力。詰めるならここからしかない。',
+        depth: '全項目で後れているが、傷が浅いのは選手層。頭数と中堅の底上げが起点になる。',
+        popularity: '全項目で後れているが、傷が浅いのは団体人気。興行の質を積んで削るしかない。',
+        starPower: '全項目で後れているが、傷が浅いのはスター性。看板候補を1人立てるところから。',
+      },
+      // far: AXIS_BIG 以上。**楽観を書かない**。いちばんマシな軸ですら勝負にならない
+      far: {
+        ace: '全項目で後れており、最も差の小さい主力ですら正面から当たれば落とす。年単位の立て直しになる。',
+        depth: '全項目で後れており、最も差の小さい選手層でも見劣りする。まず頭数を揃える段階にある。',
+        popularity: '全項目で後れており、最も差の小さい団体人気でも興行の規模が違う。同じ土俵に立つところからだ。',
+        starPower: '全項目で後れており、最も差の小さいスター性でも看板の格が違う。当面は正面衝突を避けたい。',
+      },
     };
     const guardTexts = {
       ace: '大きな弱点はないが、主力のコンディション次第で一気に差が縮まりやすい。',
@@ -24155,8 +24188,15 @@ Engine.database = {
       band,
       leadAxisLabel: leadAxis.label, chaseAxisLabel: chaseAxis.label,
       summaryText,
-      opportunity: positiveAxes.length > 0 ? opportunityTexts[leadAxis.key] : pivotTexts[leadAxis.key],
-      risk: negativeAxes.length > 0 ? riskTexts[chaseAxis.key] : guardTexts[chaseAxis.key],
+      // 全軸で負けているときは、いちばん傷の浅い軸の**実際の差**で語調を割る。
+      // 「勝てる要素がない」と言った直後に「まだ追いつける」と書かない
+      opportunity: positiveAxes.length > 0
+        ? opportunityTexts[leadAxis.key]
+        : pivotTexts[Math.abs(diffs[leadAxis.key]) >= AXIS_BIG ? 'far'
+          : Math.abs(diffs[leadAxis.key]) >= 10 ? 'mid' : 'near'][leadAxis.key],
+      risk: negativeAxes.length > 0
+        ? (diffs[chaseAxis.key] <= -AXIS_BIG ? riskBigTexts : riskTexts)[chaseAxis.key]
+        : guardTexts[chaseAxis.key],
       scout: negativeAxes.length > 0 ? scoutTexts[chaseAxis.key] : sustainTexts[chaseAxis.key],
       matchups,
       actions,
