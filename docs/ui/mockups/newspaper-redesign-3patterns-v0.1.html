@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>新聞再設計 一面3パターン + 二面 v0.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+/* ────────────────────────────────────────────────
+   新聞再設計モックアップ v0.1
+   ベース: docs/ui/mockup-baseline-v0.1.md v0.8
+   - タイプスケール: display28 / title18 / subtitle15 / body13 / label11 / caption10 / micro8
+   - 一面トップ写真: 紙面トリミング 5:6(新聞一面のみ許される例外)
+   - サブ記事写真: 2:3 chip(46×66) / S(108×162)
+   - 紙の色味は実装 .np-paper (#f8eed2→#f0e0ba / 題字 #8b1a1a) を踏襲
+   ──────────────────────────────────────────────── */
+body { background:#241a12; margin:0; padding:28px 12px 80px; font-family:'Noto Sans JP',sans-serif; color:#1f1710; }
+.mock-note { max-width:780px; margin:0 auto 18px; color:#cbb98c; font-size:13px; line-height:1.8; }
+.mock-note h1 { font-size:18px; color:#f0d48b; margin:0 0 6px; }
+.mock-label { max-width:780px; margin:34px auto 10px; color:#f0d48b; font-size:15px; font-weight:900; letter-spacing:2px; border-left:4px solid #b08530; padding-left:10px; }
+.mock-label small { display:block; color:#cbb98c; font-weight:400; font-size:11px; letter-spacing:0; margin-top:3px; }
+
+.paper { max-width:780px; margin:0 auto; background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%); border:1px solid rgba(120,84,39,.32); border-radius:8px; box-shadow:0 14px 56px rgba(0,0,0,.55); overflow:hidden; }
+.masthead { background:linear-gradient(180deg,rgba(0,0,0,.18),transparent 50%),linear-gradient(90deg,#8b1a1a,#c22020 50%,#8b1a1a); padding:13px 24px; display:flex; align-items:center; justify-content:space-between; border-bottom:3px double rgba(255,255,255,.18); }
+.masthead .logo { font-size:22px; font-weight:900; color:#fff; letter-spacing:6px; font-family:'Noto Serif JP',serif; }
+.masthead .issue { font-size:13px; font-weight:700; color:#fff; text-align:right; line-height:1.4; }
+.masthead .issue small { display:block; font-size:10px; opacity:.85; }
+.inner { padding:18px 22px 22px; }
+
+.kicker { display:inline-block; background:linear-gradient(135deg,#b08530,#9a7020); color:#fff; font-size:10px; font-weight:900; letter-spacing:4px; padding:3px 12px; }
+.kicker.red { background:#8b1a1a; }
+.hl { font-family:'Noto Serif JP',serif; font-weight:900; color:#1a0d04; line-height:1.22; margin:8px 0 6px; }
+.hl-xl { font-size:28px; }   /* display */
+.hl-l  { font-size:18px; }   /* title   */
+.hl-m  { font-size:15px; }   /* subtitle */
+.hl-s  { font-size:13px; font-family:'Noto Sans JP',sans-serif; font-weight:900; }
+.lead { font-size:13px; line-height:1.75; color:#3a2c1c; }
+.lead.sub { font-size:11px; line-height:1.65; color:#54432d; }
+.byline { font-size:10px; color:#7a6544; margin-top:6px; }
+
+.photo { background-color:#2a1a10; background-size:cover; background-position:center top; border:2px solid #d4b87a; box-shadow:0 4px 14px rgba(0,0,0,.35); }
+.photo-main { width:100%; aspect-ratio:5/6; }           /* 一面トップ: 紙面トリミング */
+.photo-wide { width:100%; aspect-ratio:16/7; background-position:center 18%; }  /* 横長ヒーロー(紙面トリミング) */
+.photo-s { width:108px; height:162px; flex:none; }      /* 2:3 S */
+.chip { width:46px; height:66px; flex:none; border:1.5px solid #d4b87a; background-size:cover; background-position:center top; background-color:#2a1a10; }
+.rule { border:0; border-top:1px solid rgba(120,84,39,.35); margin:14px 0; }
+.rule-thick { border:0; border-top:3px double rgba(120,84,39,.5); margin:16px 0; }
+
+.grid { display:grid; gap:16px; }
+.story { min-width:0; }
+.story .lead { margin-top:4px; }
+.substory { display:flex; gap:10px; align-items:flex-start; }
+
+/* MVP 小窓 */
+.mvpbox { background:rgba(139,26,26,.07); border:1px solid rgba(139,26,26,.35); padding:10px 12px; }
+.mvpbox .ttl { font-size:10px; font-weight:900; letter-spacing:3px; color:#8b1a1a; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+.mvpbox .more { font-size:10px; color:#9a7020; font-weight:700; cursor:pointer; }
+.mvprow { display:flex; align-items:center; gap:8px; font-size:11px; padding:3px 0; border-bottom:1px dotted rgba(120,84,39,.3); }
+.mvprow:last-child { border-bottom:0; }
+.mvprow .rank { font-family:'Bebas Neue',sans-serif; font-size:15px; width:14px; color:#8b1a1a; }
+.mvprow .pt { margin-left:auto; font-family:'Bebas Neue',sans-serif; font-size:14px; color:#3a2c1c; }
+
+/* 黒田コメント帯 */
+.kuroda { display:flex; gap:10px; align-items:flex-start; background:rgba(0,0,0,.05); border-left:3px solid #8b1a1a; padding:10px 12px; }
+.kuroda .face { width:34px; height:34px; border-radius:50%; background:#2a1a10 center/cover; flex:none; }
+.kuroda .txt { font-size:11px; line-height:1.6; color:#3a2c1c; }
+.kuroda .who { font-size:10px; color:#7a6544; margin-top:3px; }
+
+/* ベタ記事 */
+.beta { font-size:11px; line-height:1.6; color:#3a2c1c; }
+.beta b { display:block; font-size:13px; font-family:'Noto Serif JP',serif; color:#1a0d04; margin-bottom:2px; }
+
+.pagejump { text-align:center; font-size:10px; color:#7a6544; letter-spacing:2px; padding:10px 0 0; }
+</style>
+</head>
+<body>
+
+<div class="mock-note">
+  <h1>新聞再設計 — 一面3パターン + 二面共通案 v0.1</h1>
+  どのパターンも中身は同じ週(サンプル: 王座移動が特大 / 大怪我とJT開幕が2番手 / MVP小窓 / 黒田の締め)。
+  違いは<b>配置と写真の縦横</b>だけ。二面(最下段)は3案共通で、準特大→中→小→ベタのサイズ差を見るためのもの。
+  写真は実素材(アッパー)。一面トップのみ紙面トリミング(5:6 / 横長は16:7)、サブは2:3。
+</div>
+
+<!-- ══════════════ パターンA: 右柱型(縦長写真) ══════════════ -->
+<div class="mock-label">パターンA 「右柱型」<small>特大が左2/3・縦長写真5:6。右柱に MVP小窓→2番手A→2番手B を縦積み。spec の提案そのまま。安定・読みやすい</small></div>
+<div class="paper">
+  <div class="masthead"><div class="logo">週刊グラップル</div><div class="issue">シーズン6 第14週<small>Y6 W14</small></div></div>
+  <div class="inner">
+    <div class="grid" style="grid-template-columns: 1fr 240px;">
+      <div class="story">
+        <span class="kicker red">一面記事</span>
+        <div class="photo photo-main" style="background-image:url('../../../image/upper/upper_abukuma_t.webp')"></div>
+        <div class="hl hl-xl">阿武隈塔子、ついに王座奪取——3年越しの雪辱</div>
+        <div class="lead">第14週興行のメインで阿武隈塔子(31)が生駒エリカを下し、世界王座を獲得。初挑戦の敗北から3年、7度目の対戦で初めてベルトに手が届いた。場内は割れんばかりの歓声に包まれた。</div>
+        <div class="byline">――黒田幸子(本紙)</div>
+      </div>
+      <div style="display:grid; gap:14px; align-content:start;">
+        <div class="mvpbox">
+          <div class="ttl">MVPレース <span class="more">詳細 ▶</span></div>
+          <div class="mvprow"><span class="rank">1</span>橘玲美<span class="pt">148</span></div>
+          <div class="mvprow"><span class="rank">2</span>阿武隈塔子<span class="pt">141</span></div>
+          <div class="mvprow"><span class="rank">3</span>堂前ユキ<span class="pt">126</span></div>
+        </div>
+        <div class="story substory">
+          <div class="photo photo-s" style="background-image:url('../../../image/upper/upper_takatsu_k.webp')"></div>
+          <div>
+            <span class="kicker">2番手</span>
+            <div class="hl hl-m">高津小春、右膝負傷で長期離脱へ</div>
+            <div class="lead sub">全治14週。連勝中のエース候補に暗雲。</div>
+          </div>
+        </div>
+        <div class="story substory">
+          <div class="photo photo-s" style="background-image:url('../../../image/upper/upper_udagawa_r.webp')"></div>
+          <div>
+            <span class="kicker">2番手</span>
+            <div class="hl hl-m">ジュニアカップ、来週開幕</div>
+            <div class="lead sub">宇田川里奈ら16名がエントリー。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr class="rule">
+    <div class="kuroda">
+      <div class="face" style="background-image:url('../../../image/npc/face_kuroda_s.png')"></div>
+      <div><div class="txt">「7度目でようやく、である。だがこの7度がなければ今日の歓声もなかった」</div><div class="who">――黒田幸子(週刊グラップル)</div></div>
+    </div>
+    <div class="pagejump">▼ 二面へつづく ▼</div>
+  </div>
+</div>
+
+<!-- ══════════════ パターンB: 横長ヒーロー型 ══════════════ -->
+<div class="mock-label">パターンB 「横長ヒーロー型」<small>特大が全幅・横長写真16:7。見出しが写真の下に全幅で走る。下段に2番手2本を横並び。MVP小窓は題字直下の帯。号外っぽい迫力</small></div>
+<div class="paper">
+  <div class="masthead"><div class="logo">週刊グラップル</div><div class="issue">シーズン6 第14週<small>Y6 W14</small></div></div>
+  <div style="background:rgba(139,26,26,.08); border-bottom:1px solid rgba(139,26,26,.3); padding:5px 22px; display:flex; gap:16px; align-items:center; font-size:11px;">
+    <span style="font-weight:900; letter-spacing:3px; color:#8b1a1a; font-size:10px;">MVPレース</span>
+    <span>1 橘玲美 <b style="font-family:'Bebas Neue';font-size:13px">148</b></span>
+    <span>2 阿武隈塔子 <b style="font-family:'Bebas Neue';font-size:13px">141</b></span>
+    <span>3 堂前ユキ <b style="font-family:'Bebas Neue';font-size:13px">126</b></span>
+    <span class="more" style="margin-left:auto; color:#9a7020; font-weight:700; cursor:pointer;">詳細 ▶</span>
+  </div>
+  <div class="inner">
+    <span class="kicker red">一面記事</span>
+    <div class="photo photo-wide" style="background-image:url('../../../image/upper/upper_abukuma_t.webp'); margin-top:8px;"></div>
+    <div class="hl hl-xl" style="font-size:32px; text-align:center; margin-top:12px;">阿武隈塔子、ついに王座奪取</div>
+    <div class="lead" style="text-align:center; max-width:560px; margin:0 auto;">3年越しの雪辱。第14週興行のメインで生駒エリカを下し、7度目の対戦で初めてベルトに手が届いた。</div>
+    <div class="byline" style="text-align:center;">――黒田幸子(本紙)</div>
+    <hr class="rule-thick">
+    <div class="grid" style="grid-template-columns:1fr 1fr;">
+      <div class="story substory">
+        <div class="photo photo-s" style="background-image:url('../../../image/upper/upper_takatsu_k.webp')"></div>
+        <div>
+          <span class="kicker">2番手</span>
+          <div class="hl hl-m">高津小春、右膝負傷で長期離脱へ</div>
+          <div class="lead sub">全治14週。連勝中のエース候補に暗雲。復帰は最終盤か。</div>
+        </div>
+      </div>
+      <div class="story substory">
+        <div class="photo photo-s" style="background-image:url('../../../image/upper/upper_udagawa_r.webp')"></div>
+        <div>
+          <span class="kicker">2番手</span>
+          <div class="hl hl-m">ジュニアカップ、来週開幕</div>
+          <div class="lead sub">宇田川里奈ら16名がエントリー。前年覇者は不在の混戦。</div>
+        </div>
+      </div>
+    </div>
+    <hr class="rule">
+    <div class="kuroda">
+      <div class="face" style="background-image:url('../../../image/npc/face_kuroda_s.png')"></div>
+      <div><div class="txt">「7度目でようやく、である。だがこの7度がなければ今日の歓声もなかった」</div><div class="who">――黒田幸子(週刊グラップル)</div></div>
+    </div>
+    <div class="pagejump">▼ 二面へつづく ▼</div>
+  </div>
+</div>
+
+<!-- ══════════════ パターンC: 段組非対称型 ══════════════ -->
+<div class="mock-label">パターンC 「段組非対称型」<small>特大は見出し先行(写真は右に中サイズ縦長)。2番手Aは左下の横長帯、2番手Bは右柱。MVP小窓は右柱の最下段。文字が主役の「新聞らしい」段組</small></div>
+<div class="paper">
+  <div class="masthead"><div class="logo">週刊グラップル</div><div class="issue">シーズン6 第14週<small>Y6 W14</small></div></div>
+  <div class="inner">
+    <div class="grid" style="grid-template-columns: 1.4fr 1fr;">
+      <div class="story">
+        <span class="kicker red">一面記事</span>
+        <div class="hl hl-xl" style="font-size:30px;">阿武隈塔子、ついに王座奪取</div>
+        <div class="hl hl-m" style="color:#7a6544; font-weight:700;">3年越しの雪辱、7度目の対戦で</div>
+        <div class="lead">第14週興行のメインで阿武隈塔子(31)が生駒エリカを下し、世界王座を獲得。初挑戦の敗北から3年。場内は割れんばかりの歓声に包まれた。</div>
+        <div class="byline">――黒田幸子(本紙)</div>
+        <hr class="rule">
+        <div class="story substory">
+          <div class="photo photo-s" style="background-image:url('../../../image/upper/upper_takatsu_k.webp')"></div>
+          <div>
+            <span class="kicker">2番手</span>
+            <div class="hl hl-m">高津小春、右膝負傷で長期離脱へ</div>
+            <div class="lead sub">全治14週。連勝中のエース候補に暗雲。復帰は最終盤か。</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid; gap:14px; align-content:start;">
+        <div class="photo photo-main" style="background-image:url('../../../image/upper/upper_abukuma_t.webp')"></div>
+        <div class="story">
+          <span class="kicker">2番手</span>
+          <div class="hl hl-m">ジュニアカップ、来週開幕</div>
+          <div class="lead sub">宇田川里奈ら16名がエントリー。</div>
+        </div>
+        <div class="mvpbox">
+          <div class="ttl">MVPレース <span class="more">詳細 ▶</span></div>
+          <div class="mvprow"><span class="rank">1</span>橘玲美<span class="pt">148</span></div>
+          <div class="mvprow"><span class="rank">2</span>阿武隈塔子<span class="pt">141</span></div>
+          <div class="mvprow"><span class="rank">3</span>堂前ユキ<span class="pt">126</span></div>
+        </div>
+      </div>
+    </div>
+    <hr class="rule">
+    <div class="kuroda">
+      <div class="face" style="background-image:url('../../../image/npc/face_kuroda_s.png')"></div>
+      <div><div class="txt">「7度目でようやく、である。だがこの7度がなければ今日の歓声もなかった」</div><div class="who">――黒田幸子(週刊グラップル)</div></div>
+    </div>
+    <div class="pagejump">▼ 二面へつづく ▼</div>
+  </div>
+</div>
+
+<!-- ══════════════ 二面(3案共通) ══════════════ -->
+<div class="mock-label">二面(3案共通) 「サイズ差の見本」<small>準特大(一面級が2本ある週の受け皿)→中記事→小記事→ベタ。同サイズを並べない。この週は「移籍成立」が準特大に落ちてきた想定</small></div>
+<div class="paper">
+  <div class="masthead" style="padding:8px 24px;"><div class="logo" style="font-size:15px;">週刊グラップル <span style="font-size:11px; letter-spacing:1px; opacity:.8;">二面</span></div><div class="issue" style="font-size:11px;">シーズン6 第14週</div></div>
+  <div class="inner">
+    <!-- 準特大 -->
+    <div class="story">
+      <span class="kicker red">準特大</span>
+      <div class="grid" style="grid-template-columns: 200px 1fr; margin-top:8px;">
+        <div class="photo" style="aspect-ratio:5/6; background-image:url('../../../image/upper/upper_tachibana_r.webp')"></div>
+        <div>
+          <div class="hl hl-l" style="font-size:22px;">橘玲美、天頂プロレスへ電撃移籍</div>
+          <div class="lead">MVPレース首位を走る橘玲美(26)が今週、天頂プロレスと契約。古巣との因縁を残したままの移籍に、業界がざわついている。「向こうのリングで証明したいことがある」と本人。</div>
+          <div class="byline">――黒田幸子(本紙)</div>
+        </div>
+      </div>
+    </div>
+    <hr class="rule-thick">
+    <!-- 中記事 -->
+    <div class="story substory">
+      <div class="photo photo-s" style="background-image:url('../../../image/upper/upper_fukamachi_m.webp')"></div>
+      <div>
+        <span class="kicker">中記事</span>
+        <div class="hl hl-m">深町真琴、10連勝で記録更新に王手</div>
+        <div class="lead sub">団体記録まであと2。次週の相手は因縁の富岡加奈子。記録か、意地か。</div>
+      </div>
+    </div>
+    <hr class="rule">
+    <!-- 小記事×2 -->
+    <div class="grid" style="grid-template-columns:1fr 1fr;">
+      <div class="substory">
+        <div class="chip" style="background-image:url('../../../image/upper/upper_hayashi_m.webp')"></div>
+        <div>
+          <div class="hl hl-s">林真尋、スランプ脱出を宣言</div>
+          <div class="lead sub">「もう迷いはない」。6週ぶりの白星に手応え。</div>
+        </div>
+      </div>
+      <div class="substory">
+        <div class="chip" style="background-image:url('../../../image/upper/upper_sawade_m.webp')"></div>
+        <div>
+          <div class="hl hl-s">澤出みずき、ファン感謝イベントに登場</div>
+          <div class="lead sub">握手会に長蛇の列。人気は団体随一。</div>
+        </div>
+      </div>
+    </div>
+    <hr class="rule">
+    <!-- ベタ×3 -->
+    <div class="grid" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="beta"><b>ノヴァインパクト、新体制発表</b>来季のスローガンは「原点回帰」。</div>
+      <div class="beta"><b>会場改修のお知らせ</b>第16週より大会場の座席数が増加。</div>
+      <div class="beta"><b>週間観客動員</b>4団体合計 18,240人(前週比+6%)。</div>
+    </div>
+    <div class="pagejump">■ 週刊グラップル 第14週号 ■</div>
+  </div>
+</div>
+
+</body>
+</html>
