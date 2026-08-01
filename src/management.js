@@ -23746,32 +23746,52 @@ Engine.database = {
 
     // --- グレード ---
     const totalDiff = KEYS.reduce((s, k) => s + diffs[k], 0);
-    let grade, gradeDesc;
-    if (totalDiff <= -60) { grade = 'D'; gradeDesc = '全面劣勢。正面から勝てる要素がない。'; }
-    else if (totalDiff <= -25) { grade = 'C'; gradeDesc = '複数項目で後手。課題が多い。'; }
-    else if (totalDiff <= 10) { grade = 'B'; gradeDesc = '互角。戦略次第で勝てる。'; }
-    else if (totalDiff <= 40) { grade = 'B+'; gradeDesc = '優勢。リードを活かし切れるか。'; }
-    else { grade = 'A'; gradeDesc = '圧倒的優位。死角なし。'; }
+    let grade, gradeDesc, band;
+    if (totalDiff <= -60) { grade = 'D'; gradeDesc = '全面劣勢。正面から勝てる要素がない。'; band = 'devastating'; }
+    else if (totalDiff <= -25) { grade = 'C'; gradeDesc = '複数項目で後手。課題が多い。'; band = 'behind'; }
+    else if (totalDiff <= 10) { grade = 'B'; gradeDesc = '互角。戦略次第で勝てる。'; band = 'even'; }
+    else if (totalDiff <= 40) { grade = 'B+'; gradeDesc = '優勢。リードを活かし切れるか。'; band = 'ahead'; }
+    else { grade = 'A'; gradeDesc = '圧倒的優位。死角なし。'; band = 'dominant'; }
 
     // --- サマリーテキスト ---
+    // 各軸の文面は**差の大きさで段を変える**。以前は ±10 の1段しきい値しか無く、
+    // +12 でも +80 でも同じ一文が出ていた（2026-08-01 Keisuke 指摘「ちゃんと差異をつけて
+    // 比較してほしい」）。圧倒しているならそう書き、歯が立たないならそう書く。
     const AXIS_META = [
       { key: 'ace', label: 'TOP5実力',
+        leadBig: '主力の実力で完全に上回っており、エース対決は組めば取れる',
         lead: '主力戦力で上回っており、正面対決でも十分戦える',
         trail: '主力の実力差があり、エース級の強化が課題',
+        trailBig: '主力の実力差が大きく、エース対決は正面から当たれば落とす',
         even: '主力の実力は互角' },
       { key: 'depth', label: '選手層',
+        leadBig: '選手層が厚く、どの並びで組んでも穴が出ない',
         lead: '選手層の厚さで優勢。年間を通した安定感がある',
         trail: '選手層で劣勢。中堅の底上げか補強が必要',
+        trailBig: '選手層が薄く、カードを埋めるだけで手一杯になる',
         even: '選手層は互角' },
       { key: 'popularity', label: '団体人気',
+        leadBig: '団体人気で大きく引き離しており、興行の規模そのものが違う',
         lead: '団体人気で優勢。興行の集客力を武器にできる',
         trail: '団体人気で後れを取っている。興行の質で巻き返したい',
+        trailBig: '団体人気の差が大きく、同じ規模の会場では勝負にならない',
         even: '団体人気は互角' },
       { key: 'starPower', label: 'TOP5人気',
+        leadBig: 'スター性で突き抜けており、看板を並べるだけで客が動く',
         lead: 'スター性で優位。ビッグマッチの期待値が高い',
         trail: 'スター性で差がつき、看板選手の育成が急務',
+        trailBig: 'スター性の差が大きく、看板対決を組んでも数字が出ない',
         even: 'スター性は互角' },
     ];
+    const AXIS_BIG = 35; // これ以上開いたら「優勢/劣勢」ではなく「圧倒/完敗」の語で書く
+    const fragOf = (ax) => {
+      const d = diffs[ax.key];
+      if (d >= AXIS_BIG) return ax.leadBig;
+      if (d >= 10) return ax.lead;
+      if (d <= -AXIS_BIG) return ax.trailBig;
+      if (d <= -10) return ax.trail;
+      return ax.even;
+    };
     const sorted = [...AXIS_META].sort((a, b) => Math.abs(diffs[b.key]) - Math.abs(diffs[a.key]));
     const positiveAxes = [...AXIS_META].filter(ax => diffs[ax.key] > 0).sort((a, b) => diffs[b.key] - diffs[a.key]);
     const negativeAxes = [...AXIS_META].filter(ax => diffs[ax.key] < 0).sort((a, b) => diffs[a.key] - diffs[b.key]);
@@ -23779,10 +23799,7 @@ Engine.database = {
     const leadAxis = positiveAxes[0] || evenAxes[0];
     const chaseAxis = negativeAxes[0] || evenAxes[0];
     const topAxes = sorted.slice(0, 2);
-    const frags = topAxes.map(ax => {
-      const d = diffs[ax.key];
-      return d >= 10 ? ax.lead : d <= -10 ? ax.trail : ax.even;
-    });
+    const frags = topAxes.map(fragOf);
     const fragDiffs = topAxes.map(ax => diffs[ax.key]);
     const secondConnector = fragDiffs[0] >= 10 && fragDiffs[1] <= -10
       ? '一方で'
@@ -23793,9 +23810,9 @@ Engine.database = {
           : 'また、';
     let summaryText = `${targetName}との比較では、${frags[0]}。${secondConnector}${frags[1]}。`;
     if (positiveAxes.length === 0 && negativeAxes.length > 0) {
-      summaryText = `${targetName}との比較では、明確な優位はまだ少ない。特に${negativeAxes[0].trail}が、${evenAxes[0].label}は構成次第で十分対抗できる。`;
+      summaryText = `${targetName}との比較では、明確な優位はまだ少ない。特に${fragOf(negativeAxes[0])}が、${evenAxes[0].label}は構成次第で十分対抗できる。`;
     } else if (negativeAxes.length === 0 && positiveAxes.length > 0) {
-      summaryText = `${targetName}との比較では、${positiveAxes[0].lead}。大きな弱点は少なく、${evenAxes[0].label}も含めて優位を維持できている。`;
+      summaryText = `${targetName}との比較では、${fragOf(positiveAxes[0])}。大きな弱点は少なく、${evenAxes[0].label}も含めて優位を維持できている。`;
     }
 
     // 勝ち筋・注意点・補強提案
@@ -23906,6 +23923,9 @@ Engine.database = {
       playerTags: computeTags(pRoster, pOrgPop, true),
       rivalTags: computeTags(rRoster, rOrgPop, false),
       grade, gradeDesc, totalDiff,
+      // 黒田の語調帯。KURODA_HEADLINES / KURODA_EDITORIAL のキーと1対1で対応する
+      // (devastating / behind / even / ahead / dominant)
+      band,
       leadAxisLabel: leadAxis.label, chaseAxisLabel: chaseAxis.label,
       summaryText,
       opportunity: positiveAxes.length > 0 ? opportunityTexts[leadAxis.key] : pivotTexts[leadAxis.key],

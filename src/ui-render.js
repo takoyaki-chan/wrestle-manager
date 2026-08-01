@@ -6981,6 +6981,35 @@ function _npCrisisColumnHtml(seasonNum, weekNum, isLatest) {
   </section>`;
 }
 
+/**
+ * 団体比較の語調帯(d.band)に応じた黒田の一文を1本引く。
+ * 対象は kuroda-text.js の KURODA_HEADLINES / KURODA_EDITORIAL で、どちらも
+ * devastating / behind / even / ahead / dominant の5帯を持つ(計158本)。
+ * 帯はグレード(D/C/B/B+/A)と同じ境界なので、見出しと評価が食い違わない。
+ * 同じ号・同じ相手なら同じ文が出るようシード固定。プールが無ければ '' を返す。
+ */
+function _npKurodaBandLine(poolName, d, salt) {
+  // kuroda-text.js は別スクリプトなので、読めていない状況でも紙面を落とさない
+  // (このファイルの KURODA_CRISIS / NEWSPAPER_DIGEST_COMMENTS と同じ作法)
+  const pool = poolName === 'headlines'
+    ? (typeof KURODA_HEADLINES !== 'undefined' ? KURODA_HEADLINES : null)
+    : poolName === 'editorial'
+      ? (typeof KURODA_EDITORIAL !== 'undefined' ? KURODA_EDITORIAL : null)
+      : null;
+  if (!pool || !d) return '';
+  const list = pool[d.band] || [];
+  if (!Array.isArray(list) || list.length === 0) return '';
+  const rng = Engine.rng.create(Engine.rng.derive(
+    G.season || 1, G.week || 1, _hashStr(String(_dbCompareTarget || '')), salt));
+  const fn = Engine.rng.pick(rng, list);
+  try { return typeof fn === 'function' ? (fn(d) || '') : String(fn || ''); } catch (e) { return ''; }
+}
+function _hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
 // 記事 type に対応する黒田寸評を1本引く（無ければ空文字）
 function _npKurodaCommentText(type, headline, seasonNum, weekNum, salt) {
   const pool = (typeof _getKurodaNewsComment === 'function') ? _getKurodaNewsComment(type) : [];
@@ -7772,10 +7801,14 @@ function _npRenderPage2() {
   d.rivalName = escHtml(d.rivalName || '');
 
   // ヘッドラインセクション (黒田顔 + 引用 + グレード)
+  // 引用は黒田の断定(KURODA_HEADLINES)。以前はここも下の記者コラムも同じ summaryText を
+  // 出していたため、同じ一文が1ページに二度並び、しかも劣勢でも助言口調のままだった
+  // (2026-08-01 Keisuke 指摘)。語調帯 d.band はグレードと同じ境界で決まる
+  const headlineQuote = _npKurodaBandLine('headlines', d, 0xC2B1) || d.summaryText || '';
   html += `<div class="np-headline-section">
     <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
     <div>
-      <div class="np-headline-quote">「${d.summaryText || ''}」</div>
+      <div class="np-headline-quote">「${headlineQuote}」</div>
       <div class="np-headline-byline">${NP_KURODA_BYLINE.editorial}</div>
     </div>
     <div class="np-headline-grade">
@@ -8023,12 +8056,14 @@ function _npRenderPage2() {
   </div>`;
 
   // 記者コラム (黒田)
+  // 論説は語調帯つきの本文(KURODA_EDITORIAL) → 軸の分析(summaryText) → 勝ち筋/リスク/補強提案
   if (d.opportunity || d.risk || d.scout) {
+    const editorialLead = _npKurodaBandLine('editorial', d, 0xC2B2);
     html += `<div class="np-editorial">
       <div class="np-editorial-head">
         <div class="np-kuroda-face sm" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
         <div style="flex:1">
-          <div class="np-editorial-text">${d.summaryText || ''}<br>勝ち筋: ${d.opportunity || ''}<br>リスク: ${d.risk || ''}<br>補強提案: ${d.scout || ''}</div>
+          <div class="np-editorial-text">${editorialLead ? `${editorialLead}<br>` : ''}${d.summaryText || ''}<br>勝ち筋: ${d.opportunity || ''}<br>リスク: ${d.risk || ''}<br>補強提案: ${d.scout || ''}</div>
           <div class="np-editorial-byline">${NP_KURODA_BYLINE.editorial}</div>
         </div>
       </div>
