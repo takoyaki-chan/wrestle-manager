@@ -7954,7 +7954,8 @@ function _npRenderPage3() {
         <div class="h2h">${wA}勝-${wB}勝</div>
         <div class="h2h-lbl">通算${matches}戦</div>
       </div>
-      <div class="np-rivalry-stand"><div class="img flip" style="${_npPhotoBg(b.id)}"></div></div>
+      <!-- アッパー画像は左右反転しない(顔が崩れるため。反転してよいのはスタンド画像の対面だけ) -->
+      <div class="np-rivalry-stand"><div class="img" style="${_npPhotoBg(b.id)}"></div></div>
     </div>
     <div class="np-rivalry-info">
       <div class="np-rivalry-side">

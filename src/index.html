@@ -8538,7 +8538,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-rivalry-main-photos { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 8px; align-items: end; padding: 14px 16px 0; }
 .np-rivalry-stand { height: 280px; border-radius: 6px; overflow: hidden; background-color: #2a1a10; border: 2px solid #d4b87a; box-shadow: 0 4px 14px rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; }
 .np-rivalry-stand .img { width: 100%; height: 100%; background-size: contain; background-position: center bottom; background-repeat: no-repeat; }
-.np-rivalry-stand .img.flip { transform: scaleX(-1); }
+/* .np-rivalry-stand は getUpperUrl(アッパー画像)を使う。アッパーは左右反転しない
+   (顔が崩れるため。反転してよいのは getStandUrl のスタンド画像の対面だけ)。
+   2026-08-01: 右側だけ flip が掛かっていたので撤去。再追加しないこと。 */
 .np-rivalry-vs { display: grid; align-content: center; justify-items: center; gap: 4px; }
 .np-rivalry-vs .vs { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: #f0d48b; line-height: 1; text-shadow: 0 0 12px rgba(212,184,122,0.6); }
 .np-rivalry-vs .h2h { background: #8b1a1a; color: #fff; font-family: 'Noto Serif JP', serif; font-size: 13px; font-weight: 800; letter-spacing: 0; padding: 3px 10px; border-radius: 2px; white-space: nowrap; }
