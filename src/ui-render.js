@@ -7010,6 +7010,88 @@ function _hashStr(s) {
   return Math.abs(h);
 }
 
+/**
+ * 主力対決の寸評を、**実際の対戦成績・スタイル・年齢**から組む。
+ *
+ * 2026-08-01 まで、ここは `KURODA_MATCHUP_FLAVOR.h2h.firstMeet` と
+ * `.style.differentStyle` を引いていたが、**どちらも存在しないキー**だった
+ * (正しくは `h2h.firstMeeting` / `style.powerVsTech` などの組み合わせ別)。
+ * さらに中身を `fn(ctx)` で呼んでいたが、実体は**文字列と関数が混在**している。
+ * 結果、120本の寸評が丸ごと死に、常にハードコードの3パターンだけが出ていた。
+ * Keisuke 指摘「主力対決の欄が文章量少ないし、現実に即したものであることを確認して」。
+ *
+ * 軸は4つ。**別々の軸から2文**を採って、量と具体性を確保する。
+ */
+function _npMatchupFlavorAxes(m, state) {
+  const pf = _npFindRuntimeFighter(state, m.player.id);
+  const rf = _npFindRuntimeFighter(state, m.rival.id);
+  const axes = {};
+
+  // ── h2h: 実際の直接対戦成績で選ぶ ──
+  const rec = (typeof Engine !== 'undefined' && Engine.h2h && Engine.h2h.getRecordFor)
+    ? Engine.h2h.getRecordFor(state, m.player.id, m.rival.id) : null;
+  if (!rec || !rec.matches) axes.h2h = 'firstMeeting';
+  else if (rec.wins > rec.losses) axes.h2h = 'winningRecord';
+  else if (rec.wins < rec.losses) axes.h2h = 'losingRecord';
+  else axes.h2h = 'evenRecord';
+
+  // ── style: 打撃 / 空中 / 技巧 の3系統へ畳んで組み合わせる ──
+  const group = f => {
+    const s = String((f && f.style) || '').toLowerCase();
+    if (s === 'striker' || s === 'brawler') return 'power';
+    if (s === 'aerial') return 'speed';
+    if (s === 'grappler' || s === 'submission') return 'tech';
+    return null; // Allround は系統を決めない
+  };
+  const gp = group(pf), gr = group(rf);
+  if (gp && gr) {
+    const pair = gp === gr ? `${gp}Vs${gp[0].toUpperCase()}${gp.slice(1)}`
+      : [gp, gr].includes('power') && [gp, gr].includes('speed') ? 'powerVsSpeed'
+      : [gp, gr].includes('power') && [gp, gr].includes('tech') ? 'powerVsTech'
+      : 'speedVsTech';
+    axes.style = pair;
+  } else {
+    axes.style = 'defaultStyle';
+  }
+
+  // ── age: 30以上をベテラン、23以下を若手として扱う ──
+  const ageOf = f => (f && typeof f.age === 'number') ? f.age : null;
+  const ap = ageOf(pf), ar = ageOf(rf);
+  if (ap != null && ar != null) {
+    const vet = a => a >= 30, yng = a => a <= 23;
+    if (vet(ap) && vet(ar)) axes.age = 'veteranVsVeteran';
+    else if (yng(ap) && yng(ar)) axes.age = 'youngVsYoung';
+    else if ((vet(ap) && yng(ar)) || (yng(ap) && vet(ar))) axes.age = 'veteranVsYoung';
+    else axes.age = 'sameGeneration';
+  }
+  return axes;
+}
+function _npMatchupFlavorText(m, d, seasonNum, weekNum) {
+  if (typeof KURODA_MATCHUP_FLAVOR === 'undefined') return '';
+  const axes = _npMatchupFlavorAxes(m, G);
+  const ctx = {
+    aName: escHtml(m.player.name), bName: escHtml(m.rival.name),
+    aOrg: d.playerName, bOrg: d.rivalName, role: m.role,
+  };
+  // 中身は**文字列と関数が混在**しているので両方受ける
+  const render = (v) => {
+    if (typeof v === 'function') { try { return v(ctx) || ''; } catch (e) { return ''; } }
+    return typeof v === 'string' ? v : '';
+  };
+  const pickFrom = (cat, key, salt) => {
+    const pool = (KURODA_MATCHUP_FLAVOR[cat] || {})[key];
+    if (!Array.isArray(pool) || pool.length === 0) return '';
+    const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, m.player.id, m.rival.id, salt));
+    return render(Engine.rng.pick(rng, pool));
+  };
+  // 対戦成績は必ず1文目（いちばん事実に近い）。2文目は スタイル → 年齢 の順に拾う
+  const first = pickFrom('h2h', axes.h2h, 0xC2A1);
+  const second = pickFrom('style', axes.style, 0xC2A2) || (axes.age ? pickFrom('age', axes.age, 0xC2A3) : '');
+  const parts = [first, second].filter(Boolean);
+  if (parts.length === 0) return '';
+  return parts.map(s => (/[。！？]$/.test(s) ? s : s + '。')).join('');
+}
+
 // 記事 type に対応する黒田寸評を1本引く（無ければ空文字）
 function _npKurodaCommentText(type, headline, seasonNum, weekNum, salt) {
   const pool = (typeof _getKurodaNewsComment === 'function') ? _getKurodaNewsComment(type) : [];
@@ -7954,12 +8036,12 @@ function _npRenderPage2() {
       </div>
       <div class="np-ace-name-bar">
         <div class="np-ace-side">
-          <div class="org">${d.playerName}</div>
+          <div class="org">${_npOrgEmblem(G, 'player', 16)}<span>${d.playerName}</span></div>
           <div class="name">${_npClickName(aceP.name, aceP.id)}</div>
           <div class="ovr-line">OVR<strong>${aceP.ovr}</strong> / 人気<strong>${aceP.pop}</strong></div>
         </div>
         <div class="np-ace-side">
-          <div class="org">${d.rivalName}</div>
+          <div class="org">${_npOrgEmblem(G, _dbCompareTarget, 16)}<span>${d.rivalName}</span></div>
           <div class="name">${_npClickName(aceR.name, aceR.id)}</div>
           <div class="ovr-line">OVR<strong>${aceR.ovr}</strong> / 人気<strong>${aceR.pop}</strong></div>
         </div>
@@ -7977,18 +8059,8 @@ function _npRenderPage2() {
       const verdictCls = diff > 3 ? 'player' : diff < -3 ? 'rival' : 'even';
       const verdictText = diff > 3 ? '優勢' : diff < -3 ? '劣勢' : '互角';
       // 寸評
-      let comment = '';
-      if (typeof KURODA_MATCHUP_FLAVOR !== 'undefined') {
-        // pick from h2h or generic pool
-        const pool = (KURODA_MATCHUP_FLAVOR.h2h && KURODA_MATCHUP_FLAVOR.h2h.firstMeet) || [];
-        const stylePool = (KURODA_MATCHUP_FLAVOR.style && KURODA_MATCHUP_FLAVOR.style.differentStyle) || [];
-        const allPool = [...pool, ...stylePool];
-        if (allPool.length > 0) {
-          const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, m.player.id, m.rival.id, 0xC2A1));
-          const fn = Engine.rng.pick(rng, allPool);
-          try { comment = fn({ aName: m.player.name, bName: m.rival.name, aOrg: d.playerName, bOrg: d.rivalName, role: m.role }); } catch(e) {}
-        }
-      }
+      // 実際の対戦成績・スタイル・年齢から2文を組む(存在しないキーを引いていたのを是正)
+      let comment = _npMatchupFlavorText(m, d, seasonNum, weekNum);
       if (!comment) {
         comment = diff > 5 ? `${escHtml(m.player.name)}にOVR優位がある。${escHtml(m.rival.name)}は地力で押し返したい。`
           : diff < -5 ? `${escHtml(m.rival.name)}が地力で勝る。${escHtml(m.player.name)}は工夫が要る。`
