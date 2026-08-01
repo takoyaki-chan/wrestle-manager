@@ -14916,7 +14916,9 @@ App.finalizePPV = function() {
 
   // 新聞用: PPVアンダーカード結果を蓄積（業界ニュース欄用、サミット以外の上位MQ3件）
   {
-    const orgNameOfU = (orgId) => orgId === 'player' ? (G.orgName || 'プレイヤー団体') : (G.aiOrgs?.[orgId]?.name || '相手団体');
+    // G.aiOrgs[orgId] には .name が無い(実名は rivalOrgNames/RIVAL_ORGS 側)。
+    // 直上の頂上決戦ブロックが使っている orgNameOf と同じ解決順に揃える(2026-08-01 修正)。
+    const orgNameOfU = (orgId) => orgId === 'player' ? (G.orgName || 'プレイヤー団体') : Engine.contract._getOrgName(orgId, G);
     const undercards = [];
     pp.results.forEach((r, idx) => {
       const match = pp.card[idx];

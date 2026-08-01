@@ -95,6 +95,7 @@ const QUICK = new Set([
   'opening-scene-ui-test.js',
   'org-trust-visibility-guard-test.js',
   'ppv-lines-test.js',
+  'ppv-org-name-resolution-test.js',
   'progression-repair-test.js',
   'regular-show-pregame-design-test.js',
   'relationship-balance-test.js',

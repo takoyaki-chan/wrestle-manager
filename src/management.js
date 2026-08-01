@@ -15583,6 +15583,15 @@ const Engine = {
 
     /** TV観戦用全自動シミュレーション */
     simulateTVResults(state, rng) {
+      // 選手の _ppvOrgId から表示用団体名を引く。state.aiOrgs[orgId] には .name が無く
+      // (実名は state.rivalOrgNames / RIVAL_ORGS 側にしかない)、'player' も state.aiOrgs の
+      // キーではないため、素の state.aiOrgs?.[orgId]?.name 参照だけではどの orgId も解決できず、
+      // 新聞記事のテキスト側だけ常に「他団体」に落ちていた(バッジ側は _findFighterOrgName/
+      // ui-render.js が現在のロスター所属から解決していたため無事だった。2026-08-01 修正)。
+      const _ppvOrgNameOf = (orgId) => {
+        if (orgId === 'player') return state.orgName || 'プレイヤー団体';
+        return state.rivalOrgNames?.[orgId] || RIVAL_ORGS.find(o => o.id === orgId)?.name || '';
+      };
       const rankings = state.rankings || [];
       const entries = {};
       RIVAL_ORGS.forEach(org => {
@@ -15694,16 +15703,15 @@ const Engine = {
             (rs) => _addPpvEvent(rs, loserF.id, false, winnerF.name));
 
           // 3. 新聞素材: 頂上決戦結果(TV観戦=playerInvolved:false)
-          const orgNameOf = (orgId) => (state.aiOrgs?.[orgId]?.name) || '他団体';
           const rankings2 = state.rankings || [];
           const winnerSide = sr.winner;
           newsSummitResult = {
             playerInvolved: false,
             playerName: sm.left.name, playerId: sm.left.id,
-            playerOrgName: orgNameOf(sm.left._ppvOrgId),
+            playerOrgName: _ppvOrgNameOf(sm.left._ppvOrgId),
             aiName: sm.right.name, aiId: sm.right.id,
-            aiOrgName: orgNameOf(sm.right._ppvOrgId),
-            opponentName: orgNameOf(sm.right._ppvOrgId),
+            aiOrgName: _ppvOrgNameOf(sm.right._ppvOrgId),
+            opponentName: _ppvOrgNameOf(sm.right._ppvOrgId),
             won: false,
             winnerName: winnerF.name, winnerId: winnerF.id,
             loserName: loserF.name, loserId: loserF.id,
@@ -15722,7 +15730,6 @@ const Engine = {
       }
 
       // 4. 新聞素材: アンダーカード上位3件
-      const orgNameOfU = (orgId) => (state.aiOrgs?.[orgId]?.name) || '他団体';
       const undercards = [];
       results.forEach((r, idx) => {
         const match = card[idx];
@@ -15732,9 +15739,9 @@ const Engine = {
         const loserF = r.winner === 'left' ? match.right : match.left;
         undercards.push({
           winnerName: winnerF.name, winnerId: winnerF.id,
-          winnerOrgName: orgNameOfU(winnerF._ppvOrgId), winnerOrgId: winnerF._ppvOrgId,
+          winnerOrgName: _ppvOrgNameOf(winnerF._ppvOrgId), winnerOrgId: winnerF._ppvOrgId,
           loserName: loserF.name, loserId: loserF.id,
-          loserOrgName: orgNameOfU(loserF._ppvOrgId), loserOrgId: loserF._ppvOrgId,
+          loserOrgName: _ppvOrgNameOf(loserF._ppvOrgId), loserOrgId: loserF._ppvOrgId,
           mq: r.mq || 0, finType: r.finType || '', finMove: r.finMove || '',
           turns: r.turns || 0, isTitleMatch: false,
         });
@@ -28122,9 +28129,13 @@ function _buildPpvSummitStory(sr, season, week, P) {
 
   const winnerName = sr.winnerName || (sr.won ? sr.playerName : sr.aiName);
   const loserName = sr.loserName || (sr.won ? sr.aiName : sr.playerName);
-  const winnerOrgName = sr.playerInvolved
-    ? (sr.won ? sr.playerOrgName : sr.aiOrgName)
-    : sr.playerOrgName;
+  // playerInvolved で分岐すると、TV観戦(playerInvolved:false)側は常に sr.playerOrgName
+  // (=左側の団体)を「勝者の団体」として出してしまい、右側が勝った回だけ団体名を
+  // 取り違えていた。実際に勝った側(winnerId)で判定する(2026-08-01 修正)。
+  const winnerOrgName = sr.winnerId === sr.aiId ? sr.aiOrgName : sr.playerOrgName;
+  // 所属が解決できない(理論上ほぼ発生しない)場合は「他団体」で埋めず、
+  // 所属句そのものを省いた文型に切り替える。
+  const _orgParen = (name) => name ? `（${name}）` : '';
 
   const winnerHpPct = sr.winnerHpMax ? (sr.winnerHpFinal / sr.winnerHpMax) : 0.5;
   const isOverwhelm = winnerHpPct >= 0.55;
@@ -28145,7 +28156,9 @@ function _buildPpvSummitStory(sr, season, week, P) {
   } else if (isMasterpiece) {
     headline = `🏆 ${sr.playerName} vs ${sr.aiName} — 歴史に刻まれる頂上決戦、${winnerName}に軍配`;
   } else if (isOverwhelm) {
-    headline = `🏆 ${winnerName}、${loserName}を完封 — ${winnerOrgName}が頂点に立つ`;
+    headline = winnerOrgName
+      ? `🏆 ${winnerName}、${loserName}を完封 — ${winnerOrgName}が頂点に立つ`
+      : `🏆 ${winnerName}、${loserName}を完封 — 頂点に立つ`;
   } else if (isCloseFight) {
     headline = `🏆 ${sr.playerName} vs ${sr.aiName} — 接戦を制し${winnerName}が勝利`;
   } else if (sr.playerInvolved && !sr.won) {
@@ -28160,9 +28173,19 @@ function _buildPpvSummitStory(sr, season, week, P) {
   if (sr.playerRank && sr.aiRank) {
     const r1 = Math.min(sr.playerRank, sr.aiRank);
     const r2 = Math.max(sr.playerRank, sr.aiRank);
-    stagePart += `ランキング${r1}位の${sr.playerInvolved && sr.playerRank === r1 ? sr.playerName : sr.aiName}（${sr.playerInvolved && sr.playerRank === r1 ? sr.playerOrgName : sr.aiOrgName}）と${r2}位の${sr.playerInvolved && sr.playerRank === r1 ? sr.aiName : sr.playerName}（${sr.playerInvolved && sr.playerRank === r1 ? sr.aiOrgName : sr.playerOrgName}）が、シーズンの頂点を懸けて激突した。`;
+    // sr.playerInvolved を条件に含めると、TV観戦(playerInvolved:false)側は
+    // playerRank が実際には常にランク1(summitPairのfighter1)であるにもかかわらず
+    // 常にaiName側をランク1扱いしてしまい、順位とキャラの対応が入れ替わっていた。
+    // playerRank/aiRank は playerInvolved の真偽に関わらず実際の順位を持つので、
+    // 素直に比較するだけで両ケースとも正しく判定できる(2026-08-01 修正)。
+    const isR1Player = sr.playerRank === r1;
+    const name1 = isR1Player ? sr.playerName : sr.aiName;
+    const org1 = isR1Player ? sr.playerOrgName : sr.aiOrgName;
+    const name2 = isR1Player ? sr.aiName : sr.playerName;
+    const org2 = isR1Player ? sr.aiOrgName : sr.playerOrgName;
+    stagePart += `ランキング${r1}位の${name1}${_orgParen(org1)}と${r2}位の${name2}${_orgParen(org2)}が、シーズンの頂点を懸けて激突した。`;
   } else {
-    stagePart += `${sr.playerName}（${sr.playerOrgName}）と${sr.aiName}（${sr.aiOrgName}）が、シーズンの頂点を懸けて激突した。`;
+    stagePart += `${sr.playerName}${_orgParen(sr.playerOrgName)}と${sr.aiName}${_orgParen(sr.aiOrgName)}が、シーズンの頂点を懸けて激突した。`;
   }
   bodyParts.push(stagePart);
 
@@ -28427,16 +28450,21 @@ Engine.newspaper = {
           ? Engine.formatFinish(uc.finType, uc.finMove, false)
           : (uc.finMove || uc.finType || '激闘決着');
         const tone = uc.mq >= 80 ? '名勝負' : uc.mq >= 65 ? '好勝負' : uc.mq >= 50 ? '熱戦' : (uc.mq <= 30 ? '一方的な展開' : '見応えある一戦');
+        // 所属が解決できない場合(理論上ほぼ発生しない)は「他団体」で埋めず、
+        // 所属を示す語(「の」・丸括弧)ごと省いた文型に切り替える。
+        const winnerOrgOf = uc.winnerOrgName ? `${uc.winnerOrgName}の` : '';
+        const winnerOrgParen = uc.winnerOrgName ? `（${uc.winnerOrgName}）` : '';
+        const loserOrgParen = uc.loserOrgName ? `（${uc.loserOrgName}）` : '';
         let headline;
         if (uc.isTitleMatch) {
           headline = `🏆 PPV — ${uc.winnerOrgName}${uc.winnerName}、${uc.loserOrgName}${uc.loserName}を下しタイトル戦制す`;
         } else if (uc.mq >= 75) {
           headline = `PPV ${tone} — ${uc.winnerOrgName}${uc.winnerName}が${uc.loserOrgName}${uc.loserName}を撃破（MQ ${uc.mq}）`;
         } else {
-          headline = `${uc.winnerOrgName}の${uc.winnerName}、PPVで${uc.loserOrgName}${uc.loserName}を下す`;
+          headline = `${winnerOrgOf}${uc.winnerName}、PPVで${uc.loserOrgName}${uc.loserName}を下す`;
         }
         const turnsPart = uc.turns ? `${uc.turns}ターンに及ぶ${tone}の末、` : `${tone}の末、`;
-        const body = `${stamp}。${turnsPart}${uc.winnerName}（${uc.winnerOrgName}）が${finishStr}で${uc.loserName}（${uc.loserOrgName}）から3カウントを奪取。MQ${uc.mq}の${tone}となった。`;
+        const body = `${stamp}。${turnsPart}${uc.winnerName}${winnerOrgParen}が${finishStr}で${uc.loserName}${loserOrgParen}から3カウントを奪取。MQ${uc.mq}の${tone}となった。`;
         stories.push({
           type: uc.isTitleMatch ? 'ppvUndercardTitle' : 'ppvUndercard',
           priority: (uc.isTitleMatch ? P.ppvUndercardTitle : P.ppvUndercard) + Math.min(20, Math.floor(uc.mq / 5)),
