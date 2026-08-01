@@ -8269,6 +8269,7 @@ function _npRenderPage3() {
     return html;
   }
 
+  let _npRivalryPairIndex = 0; // N-7: 見出しと本文を対にするための共有 index
   // 大見出し — KURODA_RELATION_NARRATIVE.headlines から動的 pick
   const tagPreMap = {
     fated_admiration: '深層リポート', pure_hatred: '対立の深淵', destined_rival: '宿命対決',
@@ -8286,15 +8287,18 @@ function _npRenderPage3() {
   if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[featured.tag] && KURODA_RELATION_NARRATIVE[featured.tag].headlines) {
     const pool = KURODA_RELATION_NARRATIVE[featured.tag].headlines;
     if (pool.length > 0) {
+      // N-7: 見出しと本文が独立に抽選され、片方だけ直すと噛み合わなくなっていた。
+      // **1本の抽選値から両方を引く**ので、headlines[k] と bodies[k] を対にして編集できる
+      // (本数が違うので k はそれぞれの長さで折り返す)。
       const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, featured.idA, featured.idB, 0xC1B1));
-      const fn = Engine.rng.pick(rng, pool);
+      _npRivalryPairIndex = Engine.rng.int(rng, 0, 999);
+      const fn = pool[_npRivalryPairIndex % pool.length];
       try { dynHeadline = fn({ charA: featured.charA.name, charB: featured.charB.name, matches: _hd_h2h.matches || 0, bestMQ: _hd_h2h.bestMQ || 0, years: yearsApprox }); } catch(e) {}
     }
   }
   html += `<div class="np-rivalry-headline">
     <div class="pre">${tagPreMap[featured.tag] || '深層リポート'}</div>
     <div class="title">${dynHeadline || `${featured.charA.name}と${featured.charB.name}——${tagSubMap[featured.tag] || ''}`}</div>
-    <div class="sub">${tagSubMap[featured.tag] || ''}</div>
   </div>`;
 
   // メイン featured
@@ -8313,16 +8317,10 @@ function _npRenderPage3() {
   const wA = h2h.winsA || 0, wB = h2h.winsB || 0, dr = h2h.draws || 0;
   const matches = h2h.matches || 0;
 
-  // narrative pick
-  let narrative = '';
-  if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[featured.tag]) {
-    const pool = KURODA_RELATION_NARRATIVE[featured.tag];
-    if (pool.length > 0) {
-      const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, a.id, b.id, 0xC1A1));
-      const fn = Engine.rng.pick(rng, pool);
-      try { narrative = fn({ aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: h2h.bestMQ || 0 }); } catch(e) {}
-    }
-  }
+  // N-7: 見出しと本文は**同じ抽選から引く**（下の narrativeParas 参照）。
+  // ここには以前 narrative の単独 pick があったが、pool が {headlines,bodies} の
+  // オブジェクトで .length を持たず、条件が常に false ＝ **一度も動いていなかった**。
+  // 実際の本文は下の narrativeParas が作っているので、死んだ分岐として撤去した（2026-08-02）。
 
   // narrative を3本 pick して連結 (情報量増、bodies 配列を使用)
   const narrativeParas = [];
@@ -8340,8 +8338,16 @@ function _npRenderPage3() {
   if (typeof KURODA_RELATION_NARRATIVE !== 'undefined' && KURODA_RELATION_NARRATIVE[featured.tag] && KURODA_RELATION_NARRATIVE[featured.tag].bodies) {
     const pool = _filterPraiseByMQ(KURODA_RELATION_NARRATIVE[featured.tag].bodies);
     if (pool.length > 0) {
+      // N-7: 1本目は見出しと**対**になる本文を使う
+      const paired = pool[_npRivalryPairIndex % pool.length];
+      if (paired) {
+        try {
+          const t = paired({ aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: _bestMQVal, years: yearsApprox, charA: aName, charB: bName });
+          if (t) narrativeParas.push(t);
+        } catch (e) {}
+      }
       const seeds = [0xC1A1, 0xC1A2, 0xC1A3, 0xC1A4, 0xC1A5];
-      const used = new Set();
+      const used = new Set(paired ? [paired] : []);
       seeds.forEach(seed => {
         if (narrativeParas.length >= 3) return;
         const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, a.id, b.id, seed));
