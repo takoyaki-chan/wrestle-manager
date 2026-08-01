@@ -4426,6 +4426,10 @@ const App = {
   },
 
   finalizeAutumnWarReplay() {
+    // task-73: 経営画面へ戻る直前にコーチが1枚だけ締める。
+    // _awPreview.result は下で捨てる前の正(セッション終了時点の集計)なのでここで渡す
+    if (App._tcwGate('autumnWar', { result: (App._awPreview && App._awPreview.result) || G.autumnWar },
+        () => App.finalizeAutumnWarReplay())) return;
     clearTimeout(App._awChampionFanfareTimer);
     App._awChampionFanfareTimer = null;
     const { _pendingAutumnWarReplay: _pending, ...cleanG } = G;
@@ -4691,6 +4695,8 @@ const App = {
   },
 
   finalizeSpringTagLeagueReplay() {
+    // task-73: 経営画面へ戻る直前にコーチが1枚だけ締める。表示したら resume で戻ってくる
+    if (App._tcwGate('springTag', {}, () => App.finalizeSpringTagLeagueReplay())) return;
     if (G._pendingSpringTagLeagueReplay) {
       const { _pendingSpringTagLeagueReplay: _, ...cleanG } = G;
       G = cleanG;
@@ -14989,6 +14995,8 @@ App.finalizePPV = function() {
   const savedSummitPair = pp.summitPair;
   const savedHeatChange = result.heatChange;
   const savedMQBonuses = result.mqBonuses;
+  // task-73: コーチ総括はこの後の closePPVResult で出す。_ppvPreview を捨てる前に材料を預けておく
+  App._tcwPpvArgs = { card: savedCard, results: savedResults };
   App._ppvPreview = null;
 
   try { Audio.fileBgm.stop(); } catch(e) {}
@@ -14997,6 +15005,8 @@ App.finalizePPV = function() {
 };
 
 App.closePPVResult = function() {
+  // task-73: 週次処理へ入る前にコーチが1枚だけ締める。表示したら resume でここへ戻ってくる
+  if (App._tcwGate('ppv', App._tcwPpvArgs || {}, () => App.closePPVResult())) return;
   const resultOverlay = document.getElementById('showResultOverlay');
   resultOverlay.classList.remove('active');
   Audio.play('click');
@@ -15132,6 +15142,8 @@ App.initPPVTV = function() {
 };
 
 App.closePPVTV = function() {
+  // task-73: TV観戦(自団体不出場)の回も、コーチが見ての一言を必ず1枚出す
+  if (App._tcwGate('ppv', {}, () => App.closePPVTV())) return;
   const overlay = document.getElementById('showResultOverlay');
   overlay.classList.remove('active');
   // 放送終了後も頂上決戦曲を残さない。画面遷移・直接の「事務所へ戻る」の両方で止める。
@@ -15178,6 +15190,54 @@ App.closePPVTV = function() {
   G = { ...G, ppvPhase: null, _ppvTvBroadcast: undefined };
   Storage.autoSave();
   App.advanceWeek();
+};
+
+// ══════════════════════════════════════════════════════════
+//  task-73 特別興行後のコーチ総括 — 進行への割り込み(5大会共通)
+//
+//  「大会結果 → コーチ → 経営画面」の連鎖なので、**詰まると週が進まなくなる**。
+//  そのため、この関数は次の3点を必ず守る:
+//    1) 何が起きてもこの大会では二度と入らない(G.coachWrapup.lastKey を先に立てる)
+//    2) 組み立て・描画が失敗したら false を返し、呼び出し元をそのまま通す(fail-open)
+//    3) true を返したときは showCoachTournamentWrapup が onDone を必ず1回呼ぶ
+//       (クリック / 背景タップ / タイムアウト / 内部例外 のどれでも同じ出口)
+//
+//  使い方: 大会終了ハンドラの先頭で
+//      if (App._tcwGate('kind', args, () => App.同じ関数())) return;
+//  と書く。resume は自分自身を呼び直すだけでよい(2回目は lastKey で素通りする)。
+// ══════════════════════════════════════════════════════════
+App._tcwGate = function(kind, args, resume) {
+  let key = String(kind);
+  try { key = `${kind}:${G.season}`; } catch (e) {}
+  const prev = (G && G.coachWrapup) || {};
+  if (prev.lastKey === key) return false; // 二重起動防止(resume の再入・連打)
+  G = { ...G, coachWrapup: { ...prev, lastKey: key } };
+
+  let payload = null;
+  try {
+    if (typeof buildCoachTournamentWrapup === 'function') {
+      payload = buildCoachTournamentWrapup(kind, G, args || {});
+    }
+  } catch (e) {
+    console.warn('[WM] coach wrapup build failed:', e && e.message);
+    payload = null;
+  }
+  if (!payload) return false; // コーチが1人もいない等。無人の吹き出しは作らない
+
+  // スポットライトは巡るもの。次回の同点判定で「直近で触れた選手」を後ろへ回すため、
+  // 実際に名前を出した選手だけを新しい順で覚えておく(セーブに乗る)。
+  try {
+    const ids = Array.isArray(payload.mentionedIds) ? payload.mentionedIds : [];
+    if (ids.length) {
+      const before = Array.isArray(prev.recent) ? prev.recent : [];
+      const recent = [...ids, ...before.filter(id => !ids.includes(id))].slice(0, 8);
+      G = { ...G, coachWrapup: { ...G.coachWrapup, recent } };
+    }
+  } catch (e) {}
+
+  if (typeof showCoachTournamentWrapup !== 'function') return false;
+  showCoachTournamentWrapup(payload, resume);
+  return true;
 };
 
 // ══════════════════════════════════════════════════════════
@@ -15682,6 +15742,9 @@ App.finalizeJuniorTournament = function() {
     return { ...p, _jtTiming: timing };
   });
 
+  // task-73: コーチ総括は _jtPreview を捨てる前に材料だけ取っておく
+  const jtWrapupArgs = { result: jt.result };
+
   // transientクリア（_juniorTournamentResultはtickWeekで新聞が読むので残す）
   delete G._juniorTournamentSelection;
   clearTimeout(App._jtPeakTimer);
@@ -15702,15 +15765,22 @@ App.finalizeJuniorTournament = function() {
     refreshAll();
   };
 
+  // task-73: 選手の感想チェーンの後、経営画面へ戻る直前にコーチが1枚だけ締める。
+  // 自団体が1人も出ていない回(impressions が空)でもコーチは喋る。
+  const afterImpressions = () => {
+    if (!App._tcwGate('junior', jtWrapupArgs, finishUp)) finishUp();
+  };
+
   // 感想チェーン表示（自団体選手がいる場合）
   if (impressions.length > 0) {
     // 結果オーバーレイを閉じる
     document.getElementById('showResultOverlay').classList.remove('active');
     setTimeout(() => {
-      _showJTImpressionChain(impressions, 0, finishUp);
+      _showJTImpressionChain(impressions, 0, afterImpressions);
     }, 500);
   } else {
-    finishUp();
+    document.getElementById('showResultOverlay')?.classList.remove('active');
+    afterImpressions();
   }
 };
 
@@ -16032,6 +16102,9 @@ App.tcNextDrama = function(idx) {
 };
 
 App.finalizeTenchosen = function() {
+  // task-73: 経営画面へ戻る直前にコーチが1枚だけ締める。
+  // TV観戦モード(自団体不出場)でもここを通るので、その回も無言にはならない
+  if (App._tcwGate('tenchosen', { tournament: G.ppvTournament }, () => App.finalizeTenchosen())) return;
   // 状態は advanceWeek 内で適用済み。ここでは演出を畳むだけ
   clearTimeout(App._tcPeakTimer);
   // 決勝の決着後コメント(task-72)の見張り・保険・残骸を必ず片付ける

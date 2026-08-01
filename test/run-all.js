@@ -131,6 +131,7 @@ const QUICK = new Set([
   'title-defense-count-test.js',
   'title-portrait-marquee-test.js',
   'title-rental-guard-test.js',
+  'tournament-coach-wrapup-test.js',
   'version-consistency-test.js',
   'victory-overlay-speaker-test.js',
   'weekly-auto-manage-toast-test.js',

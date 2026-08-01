@@ -15739,6 +15739,398 @@ function _showJTImpressionChain(list, idx, onDone) {
   Audio.play('notify');
 }
 
+// ══════════════════════════════════════════════════════════════════════
+//  task-73 特別興行後のコーチ総括 (5大会共通)
+//
+//  大会結果画面を閉じて経営画面へ戻る直前に、コーチ1人が1枚だけ喋る。
+//  対象: ジュニアトーナメント / 春のタッグリーグ / 秋の4団体勝ち残り対抗戦 /
+//        PPV GRAND FINAL / 天頂戦。
+//
+//  内容は「自団体選手0〜2名への言及」+「大会全体の総括」。**網羅しないのが仕様**で、
+//  3人以上には絶対に触れない。不出場の回も必ず何か出す(無言にしない)。
+//  分岐は voice 8系統 × 成績6段(coach-lines.js の COACH_WRAPUP_* )。
+//
+//  演出は _showJTImpressionChain と同じ .war-victory-overlay(Stage)を借り、
+//  顔出しは共通部品 _u3bSideHtml(吹き出し→画像→名前→役割の固定順)を使う。
+// ══════════════════════════════════════════════════════════════════════
+
+/** 待ちの保険。クリックが一度も来なくても、ここで必ず経営画面へ戻す
+ *  (mockup-baseline-v0.1 §5-D 鉄則1: 待ちにはタイムアウトと二重起動防止をセットで) */
+const TCW_TIMEOUT_MS = 30000;
+/** 「格上」の判定幅。相手OVR - 自分OVR がこれ以上なら格上扱い(指示書の priority 3) */
+const TCW_UPSET_GAP = 8;
+/** 「接戦だった」の判定。負け試合の出来がこの値以上なら競ったと見なす
+ *  (春のタッグリーグの MQ_BONUS_THRESHOLD と同じ基準。プレイヤーには数値を見せない) */
+const TCW_CLOSE_MQ = 60;
+
+const TCW_EVENT_META = {
+  junior:    { kicker: 'JUNIOR CUP · COACH NOTE',      theme: 'is-summer' },
+  springTag: { kicker: 'SPRING TAG LEAGUE · COACH NOTE', theme: 'is-spring' },
+  autumnWar: { kicker: 'SURVIVAL WAR · COACH NOTE',    theme: 'is-autumn' },
+  ppv:       { kicker: 'GRAND FINAL · COACH NOTE',     theme: '' },
+  tenchosen: { kicker: 'TENCHOSEN · COACH NOTE',       theme: '' },
+};
+
+/** 所属を問わず id から OVR を引く(格上判定用)。見つからなければ null */
+function _tcwOvrOf(state, id) {
+  if (!state || id == null || typeof Engine === 'undefined' || !Engine.util) return null;
+  const hit = (state.roster || []).find(f => f && f.id === id);
+  if (hit) return Engine.util.ov(hit);
+  const orgs = state.aiOrgs || {};
+  for (const key in orgs) {
+    const f = ((orgs[key] && orgs[key].roster) || []).find(x => x && x.id === id);
+    if (f) return Engine.util.ov(f);
+  }
+  return null;
+}
+
+function _tcwNameOf(state, id, fallback) {
+  const hit = (state.roster || []).find(f => f && f.id === id);
+  return (hit && hit.name) || fallback || '';
+}
+
+/** 自団体選手1人分の集計 → 言及の優先度(指示書の表)へ変換する。
+ *  4=優勝 / 3=決勝・準決勝まで / 2=格上を食った / 1=散ったが接戦 / 0=該当なし */
+function _tcwRank(stat) {
+  if (stat.crown) return { rank: 4, reason: 'crown' };
+  if (stat.deep) return { rank: 3, reason: 'deep' };
+  if (stat.upset) return { rank: 2, reason: 'upset' };
+  if (!stat.wins && stat.close) return { rank: 1, reason: 'close' };
+  return { rank: 0, reason: null };
+}
+
+function _tcwMakeStat(id, name) {
+  return { id, name, wins: 0, losses: 0, crown: false, deep: false, upset: false, close: false };
+}
+
+/** 勝敗1件を集計へ流し込む共通部品(ジュニア/天頂戦/PPV/秋の対抗戦で共有) */
+function _tcwFeed(stat, won, myOvr, oppOvr, mq) {
+  if (won) {
+    stat.wins += 1;
+    if (myOvr != null && oppOvr != null && oppOvr - myOvr >= TCW_UPSET_GAP) stat.upset = true;
+  } else {
+    stat.losses += 1;
+    if ((mq || 0) >= TCW_CLOSE_MQ) stat.close = true;
+  }
+}
+
+/** シングルエリミ(ジュニア/天頂戦)の共通集計。rounds[].matches[] は
+ *  { left:{id,name,ovr}, right:{...}, winnerId, mq } の形を共有している */
+function _tcwCollectBracket(state, rounds, isMine) {
+  const stats = new Map();
+  (rounds || []).forEach(round => ((round && round.matches) || []).forEach(m => {
+    if (!m || !m.left || !m.right) return;
+    [[m.left, m.right], [m.right, m.left]].forEach(([me, opp]) => {
+      if (!me || !isMine(me)) return;
+      if (!stats.has(me.id)) stats.set(me.id, _tcwMakeStat(me.id, me.name));
+      _tcwFeed(stats.get(me.id), m.winnerId === me.id, me.ovr, opp.ovr, m.mq);
+    });
+  }));
+  return stats;
+}
+
+/** ジュニアトーナメント */
+function _tcwCollectJunior(state, args) {
+  const result = args && args.result;
+  if (!result || !Array.isArray(result.rounds) || !result.rounds.length) return { grade: 'absent', entrants: [] };
+  const mine = new Set((state.roster || []).filter(f => f && !f.isRental).map(f => f.id));
+  const stats = _tcwCollectBracket(state, result.rounds, p => mine.has(p.id));
+  if (!stats.size) return { grade: 'absent', entrants: [] };
+
+  const champ = result.champion, ru = result.runnerUp;
+  const semis = (result.semiFinalists || []).filter(Boolean);
+  let grade;
+  if (champ && stats.has(champ.id)) { grade = 'champion'; stats.get(champ.id).crown = true; }
+  else if (ru && stats.has(ru.id)) { grade = 'finalist'; stats.get(ru.id).deep = true; }
+  else if (semis.some(f => stats.has(f.id))) grade = 'semifinal';
+  else grade = [...stats.values()].some(s => s.wins > 0) ? 'advanced' : 'firstRound';
+  semis.forEach(f => { if (stats.has(f.id)) stats.get(f.id).deep = true; });
+  if (ru && stats.has(ru.id)) stats.get(ru.id).deep = true;
+
+  return { grade, entrants: [...stats.values()] };
+}
+
+/** 天頂戦 (4年に一度・16名シングルエリミ) */
+function _tcwCollectTenchosen(state, args) {
+  const t = (args && args.tournament) || state.ppvTournament;
+  if (!t || !Array.isArray(t.rounds) || !t.rounds.length) return { grade: 'absent', entrants: [] };
+  const stats = _tcwCollectBracket(state, t.rounds, p => (p.orgId || p._orgId) === 'player');
+  if (!stats.size) return { grade: 'absent', entrants: [] };
+
+  const finalMatch = (t.rounds[t.rounds.length - 1] || {}).matches?.[0] || null;
+  const semiRound = t.rounds.length >= 2 ? t.rounds[t.rounds.length - 2] : null;
+  const semiLoserIds = ((semiRound && semiRound.matches) || []).map(m => m && m.loserId).filter(id => id != null);
+
+  let grade;
+  if (t.championId != null && stats.has(t.championId)) { grade = 'champion'; stats.get(t.championId).crown = true; }
+  else if (finalMatch && stats.has(finalMatch.loserId)) { grade = 'finalist'; stats.get(finalMatch.loserId).deep = true; }
+  else if (semiLoserIds.some(id => stats.has(id))) grade = 'semifinal';
+  else grade = [...stats.values()].some(s => s.wins > 0) ? 'advanced' : 'firstRound';
+  semiLoserIds.forEach(id => { if (stats.has(id)) stats.get(id).deep = true; });
+
+  return { grade, entrants: [...stats.values()] };
+}
+
+/** 春のタッグリーグ (4団体総当たり+決勝。自団体の出場者は常にタッグの2名) */
+function _tcwCollectSpringTag(state) {
+  const stl = state.springTagLeague;
+  if (!stl || stl.cancelled) return { grade: 'absent', entrants: [] };
+  const team = (stl.teams || []).find(t => t && t.orgId === 'player');
+  if (!team || team.f1Id == null || team.f2Id == null) return { grade: 'absent', entrants: [] };
+
+  const leagueWins = (stl.matches || []).filter(m => m
+    && ((m.orgA === 'player' && m.winner === 'teamA') || (m.orgB === 'player' && m.winner === 'teamB'))).length;
+  const grade = stl.champion === 'player' ? 'champion'
+    : stl.runnerUp === 'player' ? 'finalist'
+    : stl.third === 'player' ? 'semifinal'
+    : leagueWins > 0 ? 'advanced' : 'firstRound';
+
+  // タッグは2人で1つの結果を分け合う。片方だけを主役にしないので reason は together 固定
+  const entrants = [team.f1Id, team.f2Id].map(id => {
+    const s = _tcwMakeStat(id, _tcwNameOf(state, id, ''));
+    s.wins = leagueWins;
+    return s;
+  }).filter(s => s.name);
+  if (entrants.length < 2) return { grade, entrants: [] };
+  return { grade, entrants, pairReason: 'together' };
+}
+
+/** 秋の4団体勝ち残り対抗戦 (3名制勝ち抜き) */
+function _tcwCollectAutumnWar(state, args) {
+  const res = (args && args.result) || state.autumnWar;
+  if (!res || !Array.isArray(res.teams)) return { grade: 'absent', entrants: [] };
+  const team = res.teams.find(t => t && t.orgId === 'player');
+  if (!team || !Array.isArray(team.memberIds) || !team.memberIds.length) return { grade: 'absent', entrants: [] };
+
+  const fighterWins = res.fighterWins || {};
+  const finalWins = res.finalWins || {};
+  const stats = new Map(team.memberIds.map(id => [id, _tcwMakeStat(id, _tcwNameOf(state, id, ''))]));
+  (res.results || []).forEach(match => ((match && match.bouts) || []).forEach(b => {
+    if (!b || !b.left || !b.right) return;
+    [[b.left, b.right], [b.right, b.left]].forEach(([me, opp]) => {
+      if (!me || me.orgId !== 'player' || !stats.has(me.id)) return;
+      if (b.winnerId == null) return; // 引き分けは勝敗どちらにも数えない
+      _tcwFeed(stats.get(me.id), b.winnerId === me.id, _tcwOvrOf(state, me.id), _tcwOvrOf(state, opp.id), b.mq);
+    });
+  }));
+  // 勝ち抜き数は集計済みの正がある。取りこぼしを避けるためそちらを優先する
+  stats.forEach((s, id) => { if (fighterWins[id] != null) s.wins = fighterWins[id]; });
+
+  const total = [...stats.values()].reduce((n, s) => n + (s.wins || 0), 0);
+  let grade;
+  if (res.champion === 'player') grade = 'champion';
+  else if (res.runnerUp === 'player') grade = 'finalist';
+  else grade = total >= 2 ? 'semifinal' : total >= 1 ? 'advanced' : 'firstRound';
+
+  if (grade === 'champion' || grade === 'finalist') {
+    // 決勝に立った3名は全員「上まで残った」。うち最も勝ち抜いた1人だけを主役に上げる
+    const ranked = [...stats.values()].filter(s => s.wins > 0)
+      .sort((a, b) => (finalWins[b.id] || 0) - (finalWins[a.id] || 0) || b.wins - a.wins);
+    ranked.forEach(s => { s.deep = true; });
+    if (grade === 'champion' && ranked.length) { ranked[0].crown = true; ranked[0].deep = false; }
+  }
+  return { grade, entrants: [...stats.values()].filter(s => s.name) };
+}
+
+/** PPV GRAND FINAL (トーナメントではないので、頂上決戦を「一番上」に読み替える) */
+function _tcwCollectPpv(state, args) {
+  const card = (args && args.card) || [];
+  const results = (args && args.results) || [];
+  const isMine = f => f && (f._ppvOrgId === 'player'
+    || (f._ppvOrgId == null && (state.roster || []).some(r => r && r.id === f.id)));
+  const stats = new Map();
+  let summitCrown = null, summitFinalist = null;
+  card.forEach((m, i) => {
+    const r = results[i];
+    if (!m || !r || !m.left || !m.right) return;
+    [[m.left, m.right], [m.right, m.left]].forEach(([me, opp], side) => {
+      if (!isMine(me)) return;
+      if (!stats.has(me.id)) stats.set(me.id, _tcwMakeStat(me.id, me.name));
+      const won = r.winner === (side === 0 ? 'left' : 'right');
+      const drawn = r.winner !== 'left' && r.winner !== 'right';
+      if (!drawn) _tcwFeed(stats.get(me.id), won, _tcwOvrOf(state, me.id), _tcwOvrOf(state, opp.id), r.mq);
+      if (m.isSummit && !drawn) { if (won) summitCrown = me.id; else summitFinalist = me.id; }
+    });
+  });
+  if (!stats.size) return { grade: 'absent', entrants: [] };
+
+  let grade;
+  if (summitCrown != null) { grade = 'champion'; stats.get(summitCrown).crown = true; }
+  else if (summitFinalist != null) { grade = 'finalist'; stats.get(summitFinalist).deep = true; }
+  else {
+    const total = [...stats.values()].reduce((n, s) => n + s.wins, 0);
+    grade = total >= 2 ? 'semifinal' : total >= 1 ? 'advanced' : 'firstRound';
+  }
+  return { grade, entrants: [...stats.values()] };
+}
+
+const TCW_COLLECTORS = {
+  junior: _tcwCollectJunior,
+  tenchosen: _tcwCollectTenchosen,
+  springTag: (state) => _tcwCollectSpringTag(state),
+  autumnWar: _tcwCollectAutumnWar,
+  ppv: _tcwCollectPpv,
+};
+
+/** 言及する選手を最大2名まで選ぶ。
+ *  優先度は指示書の表(優勝 > 決勝・準決勝 > 格上食い > 接戦負け)。
+ *  **同点なら直近で触れられていない選手を優先する**(スポットライトは巡るもの)。
+ *  recent は「新しい順」の選手ID配列。含まれていないほど古い＝優先される。 */
+function _tcwPickMentions(collected, recent) {
+  const rec = Array.isArray(recent) ? recent : [];
+  const staleness = id => { const i = rec.indexOf(id); return i < 0 ? Infinity : i; };
+  const scored = (collected.entrants || [])
+    .map(s => ({ stat: s, ..._tcwRank(s) }))
+    .filter(x => x.rank > 0);
+  if (collected.pairReason === 'together') {
+    // タッグは2名で1つの結果。片方だけ触れると嘘になるので必ず2名まとめて出す。
+    // 下位で終わった回に「よく噛み合っていた」と言うと嘘になるので語り口を分ける
+    const pair = (collected.entrants || []).slice(0, 2);
+    const good = ['champion', 'finalist', 'semifinal'].indexOf(collected.grade) >= 0;
+    return pair.length === 2
+      ? { reason: good ? 'together' : 'togetherPoor', picks: pair }
+      : { reason: null, picks: [] };
+  }
+  if (!scored.length) return { reason: null, picks: [] };
+  scored.sort((a, b) =>
+    b.rank - a.rank
+    || staleness(b.stat.id) - staleness(a.stat.id)
+    || (b.stat.wins || 0) - (a.stat.wins || 0)
+    || a.stat.id - b.stat.id);
+  // 2人目は「1人目より下の物語」の場合だけ添える。同格を2人並べると、duo の文が
+  // 2人目を実際より低く見せて嘘になる。同格しか居なければ1人だけ触れる(1〜2名の範囲)。
+  const picks = [scored[0].stat];
+  const second = scored.find(x => x.rank < scored[0].rank);
+  if (second) picks.push(second.stat); // 3人以上には絶対に触れない
+  return { reason: scored[0].reason, picks };
+}
+
+function _tcwPickLine(pool) {
+  if (!pool) return '';
+  if (Array.isArray(pool)) return pool.length ? pool[Math.floor(Math.random() * pool.length)] : '';
+  return pool;
+}
+
+function _tcwSentence(text) {
+  if (!text) return '';
+  return /[。！？!?]$/.test(text) ? text : text + '。';
+}
+
+/** 大会1回分のコーチ総括を組み立てる。出せない場合(コーチ0名など)は null。
+ *  @returns {{coachId, coachName, portraitUrl, line, kicker, theme, mentionedIds}|null} */
+function buildCoachTournamentWrapup(kind, state, args) {
+  if (!state) return null;
+  const collector = TCW_COLLECTORS[kind];
+  const collected = (collector ? collector(state, args || {}) : null) || { grade: 'absent', entrants: [] };
+  const grade = collected.grade || 'absent';
+
+  const recent = (state.coachWrapup && Array.isArray(state.coachWrapup.recent)) ? state.coachWrapup.recent : [];
+  const { reason, picks } = grade === 'absent'
+    ? { reason: null, picks: [] }
+    : _tcwPickMentions(collected, recent);
+
+  // 話者(2026-08-01 決定): 1)言及する選手の担当コーチ 2)在籍が最も長いコーチ
+  // 3)コーチが1人もいなければ、この演出自体を出さない(無人の吹き出しを作らない)
+  const hired = (state.coaches || []).filter(id =>
+    typeof ALL_COACHES !== 'undefined' && ALL_COACHES.some(c => c.id === id));
+  if (!hired.length) return null;
+  let coachId = null;
+  const primaryId = picks.length ? picks[0].id : null;
+  if (primaryId != null) {
+    const assign = state.coachAssign || {};
+    for (const key of Object.keys(assign)) {
+      const ids = assign[key];
+      if (Array.isArray(ids) && ids.includes(primaryId)) {
+        const cid = parseInt(key, 10);
+        if (hired.includes(cid)) { coachId = cid; break; }
+      }
+    }
+  }
+  if (coachId == null) coachId = hired[0]; // 雇用は末尾追加・解雇は filter なので先頭＝在籍最長
+  const coach = ALL_COACHES.find(c => c.id === coachId);
+  if (!coach) return null;
+
+  const voice = (typeof getCoachVoiceKey === 'function') ? getCoachVoiceKey(coachId) : 'theorist';
+  const verdictTable = (typeof COACH_WRAPUP_VERDICT_LINES !== 'undefined' && COACH_WRAPUP_VERDICT_LINES[grade]) || null;
+  const verdict = verdictTable ? _tcwPickLine(verdictTable[voice] || verdictTable.theorist) : '';
+
+  let mention = '';
+  let spoken = []; // 実際に名前を出した選手だけを覚える(触れていない選手を記録しない)
+  if (reason && picks.length) {
+    const table = (typeof COACH_WRAPUP_MENTION_LINES !== 'undefined' && COACH_WRAPUP_MENTION_LINES[reason]) || null;
+    const cell = table ? (table[voice] || table.theorist) : null;
+    if (cell) {
+      const wantsDuo = picks.length >= 2 && !!cell.duo;
+      const raw = wantsDuo ? cell.duo : (cell.solo || cell.duo || '');
+      if (raw && raw.indexOf('{n2}') >= 0 && picks.length < 2) {
+        mention = ''; // 2人分の枠しか無い文で1人しか居ない場合は言及ごと落とす
+      } else if (raw) {
+        spoken = raw.indexOf('{n2}') >= 0 ? picks.slice(0, 2) : picks.slice(0, 1);
+        mention = raw
+          .replace('{n1}', (spoken[0] && spoken[0].name) || '')
+          .replace('{n2}', (spoken[1] && spoken[1].name) || '');
+      }
+    }
+  }
+  if (!mention) spoken = [];
+  const line = (_tcwSentence(mention) + _tcwSentence(verdict)).trim();
+  if (!line) return null;
+
+  const meta = TCW_EVENT_META[kind] || { kicker: 'COACH NOTE', theme: '' };
+  return {
+    coachId, coachName: coach.name,
+    portraitUrl: (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(coachId) : '',
+    fallback: coach.emoji || '🎓',
+    line, kicker: meta.kicker, theme: meta.theme,
+    mentionedIds: spoken.map(p => p.id),
+  };
+}
+
+/** コーチ総括を1枚出す。**onDone は必ずちょうど1回だけ呼ばれる**。
+ *  クリック・背景タップ・タイムアウト・組み立て失敗のどれで抜けても同じ出口を通る。 */
+function showCoachTournamentWrapup(payload, onDone) {
+  let settled = false;
+  let timer = null;
+  let overlay = null;
+  const settle = () => {
+    if (settled) return; // 二重起動防止(連打・タイムアウトとクリックの競合)
+    settled = true;
+    if (timer) { clearTimeout(timer); timer = null; }
+    try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+    try { _drainPopupQueue(); } catch (e) {}
+    if (typeof onDone === 'function') {
+      try { onDone(); } catch (e) { console.warn('[WM] coach wrapup resume failed:', e && e.message); }
+    }
+  };
+  try {
+    if (!payload || !payload.line) { settle(); return; }
+    overlay = document.createElement('div');
+    overlay.className = ['war-victory-overlay', 'u3b-theme-stage', 'is-tcw', payload.theme].filter(Boolean).join(' ');
+    overlay.innerHTML = `
+      <div class="war-victory-modal">
+        <div class="tcw-kicker">${escHtml(payload.kicker || 'COACH NOTE')}</div>
+        ${_u3bSideHtml({
+          name: payload.coachName, line: payload.line,
+          imgUrl: payload.portraitUrl, fallback: payload.fallback,
+          role: 'コーチ', size: 'm',
+          bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
+        })}
+        <button class="war-victory-close" type="button">▶</button>
+      </div>
+    `;
+    const btn = overlay.querySelector('.war-victory-close');
+    if (btn) btn.addEventListener('click', settle);
+    overlay.addEventListener('click', e => { if (e.target === overlay) settle(); });
+    document.body.appendChild(overlay);
+    try { Audio.play('notify'); } catch (e) {}
+    // 待ちの保険。クリックが一度も届かなくても週が進まなくなることはない
+    timer = setTimeout(settle, TCW_TIMEOUT_MS);
+  } catch (e) {
+    console.warn('[WM] coach wrapup render failed:', e && e.message);
+    settle();
+  }
+}
+
 // ===== CLIMBLINE BRACKET (P2b: jt-climbline-rework-inventory-v0.1) =====
 // 下段=1回戦、勝ち進むほど上へ。開幕時は下段の枠のみ描画し、勝者確定のたびに
 // 上段の枠がフェード+上昇で出現する。全ラウンドのデータは Engine.juniorTournament.run() で

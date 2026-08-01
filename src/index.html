@@ -141,6 +141,11 @@
   --ev-summer-rgb: 86,177,216; /* jtc-*共通コンポーネント用(--gold-rgbのJT版) */
   --ev-autumn: #c1503c;
   --ev-winter: #cfc4a2;
+  /* task-73: 春/秋/冬のrgba()用伴走値。値は .emr-layer / .pb-event-summary の
+     is-spring/is-autumn 系で既にインラインで使っていたものをトークンへ引き上げただけ */
+  --ev-spring-rgb: 224,122,154;
+  --ev-autumn-rgb: 193,80,60;
+  --ev-winter-rgb: 207,196,162;
   /* 大会HPバー統一色（左右同色化・原則9） */
   --hp-teal: #2a9d8f;
   --hp-teal-light: #5dd9ca;
@@ -3550,6 +3555,22 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   transition:all 0.2s;margin-top:var(--space-md)}
 .war-victory-close:hover{background:rgba(var(--victory-blue-rgb),0.25);border-color:var(--victory-blue)}
 @keyframes warVicFadeIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+
+/* ── task-73 特別興行後のコーチ総括(5大会共通) ──
+   専用の顔出しブロックは作らず、上の .war-victory-overlay(Stage)と _u3bSideHtml を借りる。
+   ここで足すのは大会色の差し替えとキッカー1行だけ。冬(PPV/天頂戦)が既定色。 */
+.war-victory-overlay.is-tcw{--tcw-accent:var(--ev-winter);--tcw-accent-rgb:var(--ev-winter-rgb)}
+.war-victory-overlay.is-tcw.is-spring{--tcw-accent:var(--ev-spring);--tcw-accent-rgb:var(--ev-spring-rgb)}
+.war-victory-overlay.is-tcw.is-summer{--tcw-accent:var(--ev-summer);--tcw-accent-rgb:var(--ev-summer-rgb)}
+.war-victory-overlay.is-tcw.is-autumn{--tcw-accent:var(--ev-autumn);--tcw-accent-rgb:var(--ev-autumn-rgb)}
+.war-victory-overlay.is-tcw .war-victory-modal{border-color:rgba(var(--tcw-accent-rgb),.38);
+  box-shadow:0 0 30px rgba(var(--tcw-accent-rgb),.16)}
+.war-victory-overlay.is-tcw .war-victory-close{background:rgba(var(--tcw-accent-rgb),.15);
+  border-color:rgba(var(--tcw-accent-rgb),.4);color:var(--tcw-accent)}
+.war-victory-overlay.is-tcw .war-victory-close:hover{background:rgba(var(--tcw-accent-rgb),.25);
+  border-color:var(--tcw-accent)}
+.tcw-kicker{margin:-5px 0 12px;font-family:var(--font-label);font-size:9px;letter-spacing:.2em;
+  color:var(--tcw-accent);text-transform:uppercase}
 .war-ace-overlay .war-ace-modal{background:#100c0a;border-radius:12px;padding:20px;max-width:640px;width:92%;border:1px solid rgba(200,74,58,0.15);box-shadow:0 0 40px rgba(0,0,0,0.7)}
 .war-ace-overlay .pb-ace-area{margin-top:0}
 .war-ace-overlay .war-ace-close{margin-top:4px;background:rgba(80,30,25,0.4);border-color:rgba(160,60,50,0.4);color:rgba(220,180,170,0.8)}
