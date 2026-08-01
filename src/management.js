@@ -3101,6 +3101,24 @@ const Engine = {
       }
       return s;
     },
+    /** 引退イベントを1件だけ保証する（冪等）。
+     *  引退の記録経路は player 側だけで4つ（commitRetirements / 興行中の怪我引退 /
+     *  lastrun / モチベ喪失）あり、さらに契約退団(processDeparture)と AI 団体の
+     *  シーズン末引退・怪我引退がある。**どれか1つでも積み忘れると**、殿堂入りの
+     *  在籍年数(activeSeasonsEnd)と称号生成の careerSeasons が壊れて
+     *  「S1〜現在」「1年で引退」の選手が量産される。積む場所を増やさず、
+     *  ここを通す形に寄せること。
+     *  既に retire がある場合は何もしない（二重記録で年表が「2度引退」になるのを防ぐ）。 */
+    ensureRetireEvent(fighter, season, week, reason) {
+      if (!fighter) return fighter;
+      const f = Engine.career.ensure(fighter);
+      const hist = (f.careerRecord && f.careerRecord.history) || [];
+      if (hist.some(e => e && e.type === 'retire')) return f;
+      const ev = { type: 'retire', season, week, age: f.age };
+      if (reason) ev.reason = reason;
+      if (week == null) delete ev.week;
+      return Engine.career.addEvent(f, ev);
+    },
     /** Record title win: push event + update cache. opts={ orgName, defeatedName } */
     recordTitleWin(fighter, beltId, season, week, opts = {}) {
       const ev = { type: 'titleWin', season, week, beltId };
@@ -3372,13 +3390,18 @@ const Engine = {
 
       // §C-3-3 デビュー
       const isFA = orgId === 'fa' || orgId === 'dormant';
+      // rivalOrgNames には 'player' が入っていないため、旗揚げ5人の年表が
+      // 「**player に**ドラフト入団」と内部IDのまま表示されていた。
+      const orgLabel = orgId === 'player'
+        ? (state.orgName || 'あなたの団体')
+        : (rivalOrgNames[orgId] || orgId);
       history.push({ type: 'debut', season: 1, week: 1,
         via: isFA ? 'fa' : 'draft',
         orgId: isFA ? undefined : orgId,
-        orgName: isFA ? undefined : (rivalOrgNames[orgId] || orgId)
+        orgName: isFA ? undefined : orgLabel
       });
       careerHistory.push({ type: 'debut', season: 1, week: 1,
-        detail: isFA ? 'プロデビュー' : `${rivalOrgNames[orgId] || ''}入団` });
+        detail: isFA ? 'プロデビュー' : `${orgId === 'player' ? orgLabel : (rivalOrgNames[orgId] || '')}入団` });
 
       // §C-3-3 ブレークスルー
       let btExpected = careerSeasons * 0.08;
@@ -9460,8 +9483,11 @@ const Engine = {
             roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI怪我引退' });
 
             // midSeasonRetirees蓄積（シーズン末HOF判定用）
+            // シーズン途中の怪我引退は**この週**が引退週。シーズン末にまとめて積むと
+            // 週が失われるので、ここで retire を刻んでから溜める。
             if (!nextOrgData._midSeasonRetirees) nextOrgData._midSeasonRetirees = [];
-            nextOrgData._midSeasonRetirees.push(retiree);
+            nextOrgData._midSeasonRetirees.push(
+              Engine.career.ensureRetireEvent(retiree, state.season, state.week, 'injury'));
             // retiredIds追跡用: 週次で呼び出し元がretiredIds/retiredSeasonsに反映する
             if (!nextOrgData._weekRetiredIds) nextOrgData._weekRetiredIds = [];
             nextOrgData._weekRetiredIds.push(retiree.id);
@@ -9909,7 +9935,12 @@ const Engine = {
 
         // v2.0 HOF拡張: NPC殿堂入り判定（シーズン末引退+シーズン中怪我引退）
         const midSeasonRetirees = aiData._midSeasonRetirees || [];
-        const allRetirees = [...aiRetirees, ...midSeasonRetirees];
+        // AI引退者には retire イベントが1件も積まれていなかった。殿堂入りエントリの
+        // activeSeasonsEnd が常に「現在のシーズン」に落ち、称号生成の careerSeasons が
+        // 常に 1 になっていた（debut と retire の差で年数を出しているため）。
+        // ensureRetireEvent は冪等なので、既に刻まれている怪我引退分は素通りする。
+        const allRetirees = [...aiRetirees, ...midSeasonRetirees]
+          .map(f => Engine.career.ensureRetireEvent(f, state.season, undefined, 'career'));
         allRetirees.forEach(f => { if (f && f.id) allRetiredCharIds.push(f.id); });
         const npcInductees = Engine.awards.checkNpcHallOfFame(allRetirees, org.id, org.name, state);
         if (npcInductees.length > 0) {
@@ -19004,15 +19035,11 @@ Engine.awards = {
    */
   calcHofPoints(rec) {
     const histAll = (rec && rec.history) || [];
-    // joinSeason: rec から推定（Engine.career.joinSeason と同じロジック）
-    const playerJoin = histAll.find(e => e.type === 'transfer' && e.toOrg === 'player');
-    const rentalJoin = histAll.find(e => e.type === 'rentalIn' && (e.toOrg === 'player' || e.toOrg === undefined));
-    const debutEv = histAll.find(e => e.type === 'debut');
-    const joinS = (playerJoin && playerJoin.season != null) ? playerJoin.season
-                : (rentalJoin && rentalJoin.season != null) ? rentalJoin.season
-                : (debutEv && debutEv.season != null) ? debutEv.season
-                : null;
-    const hist = joinS == null ? histAll : histAll.filter(e => (e.season != null ? e.season : 0) >= joinS);
+    // joinSeason の判定は Engine.career.joinSeason に一本化する。
+    // 以前はここと buildCareerHighlights が同じ判定を写経しており、
+    // 片方だけ直すと「殿堂ポイントは付くのに実績リストには出ない」形でズレる。
+    const joinS = Engine.career.joinSeason({ careerRecord: { history: histAll } });
+    const hist = Engine.career.filterPostJoin(histAll, joinS);
     // 実績ポイント（post-join で再カウント）
     const titleStats = Engine.career.countTitleStats(hist);
     const titleWins = titleStats.titleReigns;
@@ -19055,14 +19082,9 @@ Engine.awards = {
    */
   buildCareerHighlights(rec, orgName, state) {
     const histAll = (rec && rec.history) || [];
-    const playerJoin = histAll.find(e => e.type === 'transfer' && e.toOrg === 'player');
-    const rentalJoin = histAll.find(e => e.type === 'rentalIn' && (e.toOrg === 'player' || e.toOrg === undefined));
-    const debutEv = histAll.find(e => e.type === 'debut');
-    const joinS = (playerJoin && playerJoin.season != null) ? playerJoin.season
-                : (rentalJoin && rentalJoin.season != null) ? rentalJoin.season
-                : (debutEv && debutEv.season != null) ? debutEv.season
-                : null;
-    const history = joinS == null ? histAll : histAll.filter(e => (e.season != null ? e.season : 0) >= joinS);
+    // 判定は calcHofPoints と同じ経路（Engine.career.joinSeason）を通す。
+    const joinS = Engine.career.joinSeason({ careerRecord: { history: histAll } });
+    const history = Engine.career.filterPostJoin(histAll, joinS);
     const highlights = [];
     let reignCount = 0;
     history.forEach(ev => {
@@ -19629,6 +19651,60 @@ Engine.awards = {
     entry.epithet = Engine.awards.generateEpithet(recPost, fighter, epithetRng);
     entry.biography = Engine.awards.generateBiography(entry);
     return entry;
+  },
+
+  /** 受賞歴(awardMVP/awardRookie/awardBestMatch/awardMedia)を、その選手が今どのプールに
+   *  いても1回だけ刻む。
+   *
+   *  引退確定(Engine.retirement.commitRetirements)は**表彰式より前**に走る決まりなので、
+   *  ロスターと AI ロスターしか見ていないと**その年に引退した選手の受賞が丸ごと消える**。
+   *  最後のシーズンで MVP を獲って引退した選手ほど記録が欠けるという、いちばん困る形の
+   *  取りこぼしだった。retiredFighters と 年代記アーカイブにも同じイベントを届ける。
+   *
+   *  年代記アーカイブは同一選手の複数エントリ(出戻り)がありうるので、
+   *  今季アーカイブされたエントリ(retiredSeason === ev.season)だけに積む。
+   *
+   *  @param {Object} state
+   *  @param {Array<number>} ids 受賞者ID
+   *  @param {Object} ev history に積むイベント（type/season 必須）
+   *  @returns {Object} 新しい state
+   */
+  recordAwardEvent(state, ids, ev) {
+    const target = new Set((ids || []).filter(id => id != null));
+    if (!state || target.size === 0 || !ev || !ev.type) return state;
+    // 同じ年の同じ賞が二重に乗ると年表が「MVP 2度受賞」になり殿堂ポイントも二重になる。
+    // 表彰式が再実行されても増えないよう、書き込み側でも弾く。
+    const alreadyHas = f => (((f && f.careerRecord) || {}).history || [])
+      .some(e => e && e.type === ev.type && e.season === ev.season);
+    const apply = pool => (pool || []).map(f =>
+      (f && target.has(f.id) && !alreadyHas(f)) ? Engine.career.addEvent(f, ev) : f);
+
+    let s = { ...state, roster: apply(state.roster) };
+    if (s.aiOrgs) {
+      const aiOrgs = { ...s.aiOrgs };
+      Object.keys(aiOrgs).forEach(oid => {
+        const od = aiOrgs[oid];
+        if (od && od.roster) aiOrgs[oid] = { ...od, roster: apply(od.roster) };
+      });
+      s = { ...s, aiOrgs };
+    }
+    if (Array.isArray(s.retiredFighters) && s.retiredFighters.length > 0) {
+      s = { ...s, retiredFighters: apply(s.retiredFighters) };
+    }
+    const archive = (s.chronicle && s.chronicle.fighterArchive) || null;
+    if (Array.isArray(archive) && archive.length > 0) {
+      let touched = false;
+      const nextArchive = archive.map(entry => {
+        if (!entry || !target.has(entry.id)) return entry;
+        if (ev.season != null && entry.retiredSeason !== ev.season) return entry;
+        if (alreadyHas(entry)) return entry;
+        touched = true;
+        const cr = entry.careerRecord || {};
+        return { ...entry, careerRecord: { ...cr, history: [...(cr.history || []), { ...ev }] } };
+      });
+      if (touched) s = { ...s, chronicle: { ...s.chronicle, fighterArchive: nextArchive } };
+    }
+    return s;
   },
 
   checkHallOfFame(state) {
@@ -24920,7 +24996,8 @@ Engine.contract = {
 
     // 行き先決定（先に確定 → 関係値処理を分岐するため）
     const info = Engine.contract.determineDeparture(rng, fighter, s);
-    // Phase E: 退団 history を fighter に先付けする(retire は別途 retire type で記録される)
+    // Phase E: 退団 history を fighter に先付けする
+    // (retire の場合は下の info.type === 'retire' 分岐で ensureRetireEvent が刻む)
     let fighterWithHist = fighter;
     if (info.type !== 'retire') {
       const histType = cause === 'sudden' ? 'suddenDeparture' : 'contractEnd';
@@ -24988,7 +25065,13 @@ Engine.contract = {
     }
 
     if (info.type === 'retire') {
-      const _retF = { ...fighter }; delete _retF.growthLog;
+      // 「retire は別途 retire type で記録される」と書いてあったが、**どの呼び出し元も
+      // 積んでいなかった**（processDeparture の呼び出しは resolveNegotiation の2箇所だけ）。
+      // 契約満了・突発退団からの引退だけ retire イベントが無く、殿堂入りの在籍年数と
+      // シーズン総括の退団リストから漏れていた。ここで刻む。
+      let _retF = Engine.career.ensureRetireEvent(fighter, s.season, s.week,
+        cause === 'sudden' ? 'sudden' : 'contractEnd');
+      _retF = { ..._retF }; delete _retF.growthLog;
       s = { ...s, retiredFighters: [...(s.retiredFighters || []), _retF], retiredIds: [...(s.retiredIds || []).filter(id => id !== fighter.id), fighter.id], retiredSeasons: { ...(s.retiredSeasons || {}), [fighter.id]: s.season } };
       s = Engine.chronicle.archiveFighter(s, _retF);
       s = Engine.chronicle.applySpiritContribution(s, _retF);

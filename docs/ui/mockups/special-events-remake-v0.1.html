@@ -196,14 +196,26 @@ button{font-family:inherit}
 .jtc-fc-ovr{display:inline-flex;align-items:baseline;gap:3px;margin-left:2px;color:var(--stage-text-sub)}
 .jtc-fc-ovr small{font-size:8px;letter-spacing:1.5px;color:var(--stage-text-dim)}
 .jtc-fc-ovr b{font-family:var(--font-display);font-size:23px;line-height:.85;letter-spacing:.5px;color:var(--stage-text-main)}
-.jtc-fc-nm .o{min-height:13px;margin-top:2px;font-size:10px;color:var(--stage-text-sub)}
+.jtc-fc-nm .o{min-height:13px;margin-top:4px;font-size:10px;color:var(--stage-text-sub)}
+.jtc-fc-nm .o .orgb{margin-top:0}
+/* クライムラインのセルに差す団体エンブレム。26px を保ったまま名前の下へ置く */
+.jtc-cell .orgb,.jtc-final-row .orgb{margin-top:3px}
+/* ▼2026-08-01 裁定② で 1行目（吹き出し）を追加し、3段グリッドにした。
+   src では .jt-bub-pair が .jtc-fc-uppers の**外**にある別ブロックで、
+   その列の中心が画像の列中心と一致しないため、尻尾を正確に刺せなかった。
+   同じグリッドに入れれば「尻尾＝列の中心＝画像の中心」が構造として保証される
+   （②④の .sfc-stage と同じ作り）。行 1=吹き出し / 2=画像+VS / 3=名前 */
 .jtc-fc-uppers{display:grid;grid-template-columns:1fr auto 1fr;column-gap:clamp(10px,4vw,24px);row-gap:9px;
   justify-items:center;align-items:center;padding:10px 6px 6px;position:relative}
-.jtc-fc-upper.is-l{grid-area:1/1}
-.jtc-fc-uppers .vs-mark{grid-area:1/2}
-.jtc-fc-upper.is-r{grid-area:1/3}
-.jtc-fc-nm.is-l{grid-area:2/1}
-.jtc-fc-nm.is-r{grid-area:2/3}
+.jt-bub-slot.is-l{grid-area:1/1}
+.jt-bub-slot.is-r{grid-area:1/3}
+.jtc-fc-upper.is-l{grid-area:2/1}
+.jtc-fc-uppers .vs-mark{grid-area:2/2}
+.jtc-fc-upper.is-r{grid-area:2/3}
+.jtc-fc-nm.is-l{grid-area:3/1}
+.jtc-fc-nm.is-r{grid-area:3/3}
+/* 吹き出しの予約枠（§3）。発言が無い側は枠だけ置き、箱は描かない */
+.jt-bub-slot{width:100%;min-width:0;min-height:52px;display:flex;align-items:flex-end;justify-content:center}
 .jtc-fc-upper{width:118px;aspect-ratio:2/3;border-radius:4px;overflow:hidden;border-bottom:3px solid rgba(var(--jtc-color-rgb,var(--gold-rgb)),0.5);
   background:var(--stage-portrait-bg);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
 .jtc-fc-upper img{width:100%;height:100%;object-fit:cover;object-position:top}
@@ -219,15 +231,18 @@ button{font-family:inherit}
 .jtc-fc-hp.right .jtc-fc-hp-track{direction:rtl}
 .jtc-fc-hp-mid{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--stage-text-dim);line-height:1.6}
 .jtc-fc-bt{display:flex;justify-content:center;gap:10px;padding:12px 0 16px;position:relative}
-/* ジュニアの吹き出し。**この1点だけ現行から変えている**（2026-08-01 Keisuke 裁定）:
-   src の .jt-bub は中に話者名 <div class="sp"> を持っているが、
-   mockup-baseline §3「吹き出しの中身はセリフ本文のみ」を全画面に適用する裁定が出たため、
-   .jt-bub .sp の規則ごと削除した。話者は画像の下の名前で示す（左右の並びと対応）。
-   それ以外（塗り・角丸・余白・文字サイズ）は src のまま。 */
-.jt-bub{background:var(--bubble-bg);color:var(--bubble-ink);border-radius:11px;padding:9px 14px;font-size:12px;line-height:1.5;
-  text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.2);margin:6px 0}
-.jt-bub-pair{display:flex;gap:8px;margin:4px 14px 8px}
-.jt-bub-pair .jt-bub{flex:1;min-width:0}
+/* ジュニアの吹き出し。**現行から変えているのはこの2点だけ**（2026-08-01 Keisuke 裁定）:
+   (1) src の .jt-bub は中に話者名 <div class="sp"> を持っていたが、
+       §3「吹き出しの中身はセリフ本文のみ」を全画面に適用する裁定のため規則ごと削除。
+   (2) **尻尾を付けた**（「誰が言っているかがわかる方がいい」）。
+       尻尾は話者の画像の水平中心を指す。単独の画像なので 50% でよい。
+   塗り・角丸・余白・文字サイズは src のまま。 */
+.jt-bub{position:relative;width:100%;min-width:0;
+  background:var(--bubble-bg);color:var(--bubble-ink);border-radius:11px;padding:9px 14px;font-size:12px;line-height:1.5;
+  text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.2);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.jt-bub::after{content:'';position:absolute;bottom:-7px;left:calc(50% + var(--tail-dx,0px));transform:translateX(-50%);
+  border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--bubble-bg)}
 
 /* 共通ボタン（実装の .btn / .btn-gold 相当） */
 .btn{background:transparent;border:1px solid var(--stage-border-main);color:var(--stage-text-sub);
@@ -270,9 +285,18 @@ button{font-family:inherit}
   padding:8px 12px;font-size:13px;line-height:1.45;text-align:left;box-shadow:0 4px 14px rgba(0,0,0,.35);
   width:100%;min-width:0;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-/* 尻尾は画像の水平中心を指す。--tail-x は隊列のとき「話している人の画像の中心」へずらす */
-.sfc-bub::after{content:'';position:absolute;bottom:-7px;left:var(--tail-x,50%);transform:translateX(-50%);
+/* 尻尾は**話者の画像の水平中心**を指す（§3）。
+   単独の画像なら列の中心＝画像の中心なので 50% でよい。
+   隊列のときは「群の中心」から話者の画像中心までの距離だけずらす。
+   ずらし量は % ではなく **px**（--tail-dx）で持つ。% だと列幅が変わるたびに
+   尻尾がずれる（列幅は 1fr なのでビューポート幅で変わる）が、
+   px なら画像サイズが同じ限りどの幅でも正確に刺さる。 */
+.sfc-bub::after{content:'';position:absolute;bottom:-7px;left:calc(50% + var(--tail-dx,0px));transform:translateX(-50%);
   border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--bubble-bg)}
+/* 2人の隊列で「群の中心 → 各画像の中心」までの距離 = (画像幅 - 重なり18px) / 2。
+   画像幅が段で変わるので、段ごとにこの値を差し替える（下の media query 参照）。 */
+.sfc.is-tag{--tag-dx:45px}   /* S 108 → (108-18)/2 = 45 */
+.aft-pair{--aft-dx:66px}     /* L 150 → (150-18)/2 = 66 */
 
 /* 画像：2:3。ジュニアの対戦カード実測 118×177 に合わせる（§2 の梯子に対する唯一の逸脱。末尾リスト参照） */
 .sfc-up{width:118px;aspect-ratio:2/3;border-radius:var(--radius-sm);overflow:hidden;
@@ -288,11 +312,23 @@ button{font-family:inherit}
 .sfc-nm{max-width:180px;min-width:0}
 .sfc-nm .n{font-size:15px;font-weight:700;color:var(--stage-text-main);line-height:1.25}
 .sfc-nm .role{font-size:11px;color:var(--stage-text-sub);margin-top:2px}
-.sfc-badge{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:2px 8px 2px 3px;
-  border-radius:999px;border:1px solid rgba(var(--ev-rgb),.35);background:rgba(var(--ev-rgb),.07)}
-.sfc-badge.is-own{border-color:rgba(111,162,140,.55);background:rgba(111,162,140,.10)}
-.sfc-badge img{width:26px;height:26px;border-radius:var(--radius-sm);object-fit:cover;display:block}
-.sfc-badge span{font-family:var(--font-label);font-size:11px;letter-spacing:1px;color:var(--stage-text-sub)}
+
+/* ── 団体バッジ（§5）。全画面共通の1部品にする ────────────────────────────
+   2026-08-01 Keisuke 追加指示: 「OVR から力関係は分かる。でもどの団体に所属して
+   いるかが非常に重要だから、エンブレム画像のアイコンでそれが分かるようにした方が
+   いい。どの文面でも、どの記事でも」
+   → **選手を出すところには必ずこれを添える**。頭文字の代用は禁止（§5）で、
+     必ず image/org/*.png の実画像を使う。サイズは §5 既定のバッジ内 26px。 */
+.orgb{display:inline-flex;align-items:center;gap:5px;max-width:100%;vertical-align:middle;
+  margin-top:5px;padding:2px 8px 2px 3px;border-radius:999px;
+  border:1px solid rgba(var(--ev-rgb),.35);background:rgba(var(--ev-rgb),.07)}
+.orgb.is-own{border-color:rgba(111,162,140,.55);background:rgba(111,162,140,.10)}
+.orgb img{width:26px;height:26px;border-radius:var(--radius-sm);object-fit:cover;display:block;flex:0 0 auto}
+.orgb span{font-family:var(--font-label);font-size:11px;letter-spacing:1px;color:var(--stage-text-sub);
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 枠なし。一覧の行やブラケットのセルなど、ピルの囲みが重い場所で使う。
+   **エンブレムのサイズ(26px)は変えない** — 小さくすると誰の団体か読めなくなる */
+.orgb.is-bare{border:0;background:none;padding:0;margin-top:4px;gap:4px}
 .sfc-ovr{display:inline-flex;align-items:baseline;gap:4px;margin-top:4px}
 .sfc-ovr small{font-family:var(--font-label);font-size:8px;letter-spacing:1.5px;color:var(--stage-text-dim)}
 .sfc-ovr b{font-family:var(--font-display);font-size:28px;line-height:.85;color:var(--stage-text-main);font-variant-numeric:tabular-nums}
@@ -366,10 +402,12 @@ button{font-family:inherit}
 .stl2-rank{font-family:var(--font-display);font-size:28px;color:var(--stage-text-dim);width:30px;line-height:1;font-variant-numeric:tabular-nums}
 .stl2-row.is-rank1 .stl2-rank{color:var(--ev-c)}
 .stl2-team{display:flex;align-items:center;gap:var(--space-sm);min-width:0}
-.stl2-team .meta{min-width:0}
-.stl2-org{display:flex;align-items:center;gap:4px;font-family:var(--font-label);font-size:11px;
-  letter-spacing:1px;color:var(--stage-text-dim)}
-.stl2-org img{width:16px;height:16px;border-radius:2px;object-fit:cover}
+.stl2-team .meta{display:block;min-width:0}
+/* 順位表の団体表示。エンブレムは §5 の既定どおり 26px（16px では誰の団体か読めない） */
+.stl2-org{display:flex;align-items:center;gap:5px;min-width:0;max-width:100%;font-family:var(--font-label);font-size:11px;
+  letter-spacing:1px;color:var(--stage-text-sub);margin-bottom:2px}
+.stl2-org img{width:26px;height:26px;border-radius:var(--radius-sm);object-fit:cover;flex:0 0 auto}
+.stl2-org b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
 .stl2-pair-nm{font-size:13px;font-weight:700;color:var(--stage-text-main);line-height:1.3}
 .stl2-strip{font-family:var(--font-label);font-size:12px;letter-spacing:3px;margin-top:2px}
 .stl2-rec{font-size:11px;color:var(--stage-text-sub);white-space:nowrap}
@@ -473,7 +511,15 @@ button{font-family:inherit}
 .pb-fighter-name{font-size:16px;font-weight:700;color:var(--stage-text-sub);letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pb-fighter.is-winner .pb-fighter-name{color:var(--gold);font-weight:900}
 .pb-mrow.is-main .pb-fighter.is-winner .pb-fighter-name{font-size:18px}
-.pb-fighter-meta{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-quiet);text-transform:uppercase}
+/* ▼2026-08-01 追加指示②で、ここだけ既存の PPV から変えている。
+   元は団体名の**テキストだけ**だった。「どの団体に所属しているかが非常に重要だから、
+   エンブレム画像のアイコンで分かるようにした方がいい。どの文面でも、どの記事でも」
+   という裁定に従い、§5 既定の 26px エンブレムを添えた。文字側は元のまま。 */
+.pb-fighter-meta{display:flex;align-items:center;gap:5px;min-width:0;
+  font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-quiet);text-transform:uppercase}
+.pb-fighter.is-left .pb-fighter-meta{flex-direction:row-reverse}
+.pb-fighter-meta img{width:26px;height:26px;border-radius:var(--radius-sm);object-fit:cover;flex:0 0 auto}
+.pb-fighter-meta span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pb-fighter-ovr{display:flex;align-items:baseline;gap:6px;margin-top:3px}
 .pb-fighter.is-left .pb-fighter-ovr{justify-content:flex-end}
 .pb-fighter-ovr .lbl{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase}
@@ -560,9 +606,24 @@ button{font-family:inherit}
   .tro.sz-mix .tro-p{width:108px}
   .tro.sz-mix .tro-p.is-lead{width:132px}
   .tro.sz-s .tro-p{width:84px}         /* 2v2 の隊列は 4人ぶん入れる必要があるため縮める */
+  /* 画像幅が変わったら尻尾のずらし量も変える。(画像幅 - 重なり18px) / 2 */
+  .sfc.is-tag{--tag-dx:33px}           /* (84-18)/2 = 33 */
+  .aft-pair{--aft-dx:57px}             /* L→M 132 → (132-18)/2 = 57 */
+  /* 順位表は狭幅で table-layout:fixed にする。
+     auto のままだと「セルの最小内容幅の合計」がテーブル幅を押し広げ、
+     26px エンブレムを入れた途端に container からはみ出した（375pxで実測 +7px）。
+     列幅を先に決めてしまえば、中身は与えられた幅の中で折り返す。 */
+  .stl2-table{table-layout:fixed}
+  .stl2-table th:nth-child(1),.stl2-table td:nth-child(1){width:24px}
+  .stl2-table th:nth-child(3),.stl2-table td:nth-child(3){width:58px}
+  .stl2-table th:nth-child(4),.stl2-table td:nth-child(4){width:42px}
   .stl2-table td,.stl2-table th{padding:7px 3px}
-  .stl2-rank{font-size:23px;width:22px}
+  .stl2-rank{font-size:23px;width:auto}
   .stl2-pts{font-size:23px}
+  .stl2-team{gap:5px}
+  .stl2-pair-nm{font-size:12px;overflow-wrap:anywhere}
+  .stl2-wear{flex-wrap:wrap}
+  .stl2-rec{white-space:normal}
 
   /* ③ PPV は src/mobile.css の @media (max-width:700px) 内の .pb-* 規則をそのまま複製。
      独自に作った狭幅対応ではなく、既存実装が既に持っている挙動 */
@@ -613,6 +674,7 @@ button{font-family:inherit}
   .sfc.is-tag .sfc-hp.right .sfc-hp-top{justify-content:flex-start}
   .sfc.is-tag .sfc-hp.right .sfc-hp-track{direction:ltr}
   .sfc.is-tag .tro.sz-s .tro-p{width:108px}
+  .sfc.is-tag{--tag-dx:45px}           /* 縦積みで 108 に戻るので (108-18)/2 = 45 */
 }
 </style>
 </head>
@@ -683,16 +745,20 @@ button{font-family:inherit}
 
       <div class="jtc-tier-label">準決勝</div>
       <div class="jtc-row jtc-size-sm" style="grid-template-columns:1fr 1fr">
+        <!-- ブラケットのセルにも所属エンブレムを差す（26px・枠なし）。
+             幅76pxのセルに団体名まで入れると潰れるので、ここは**エンブレムだけ**で示す -->
         <div class="jtc-cell">
           <div class="jtc-pair">
             <div class="jtc-fx">
               <div class="jtc-up w"><img src="../../../image/upper/upper_kinouchi_y.webp" alt=""></div>
               <div class="jtc-fn">木ノ内幸音</div>
+              <span class="orgb is-bare"><img src="../../../image/org/org-player-3.png" alt="ブルームハート"></span>
               <div class="jtc-win-tag">○ WIN</div>
             </div>
             <div class="jtc-fx is-lose">
               <div class="jtc-up l"><img src="../../../image/upper/upper_umegaoka_m.webp" alt=""></div>
               <div class="jtc-fn">梅ヶ丘みのり</div>
+              <span class="orgb is-bare"><img src="../../../image/org/org-b-0.png" alt="CRESCENT"></span>
             </div>
           </div>
           <div class="jtc-minfo"><span class="t">12分00秒</span><span>/</span><span class="mq">MQ 71</span></div>
@@ -702,10 +768,12 @@ button{font-family:inherit}
             <div class="jtc-fx">
               <div class="jtc-up"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
               <div class="jtc-fn">阿武隈塔子</div>
+              <span class="orgb is-bare"><img src="../../../image/org/org-player-3.png" alt="ブルームハート"></span>
             </div>
             <div class="jtc-fx">
               <div class="jtc-up"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
               <div class="jtc-fn">出羽鷹子</div>
+              <span class="orgb is-bare"><img src="../../../image/org/org-s-1.png" alt="NOVA"></span>
             </div>
           </div>
           <div class="jtc-minfo"><span class="t">NEXT</span></div>
@@ -717,23 +785,24 @@ button{font-family:inherit}
     <div class="jtc-fc">
       <div class="jtc-fc-lb">準決勝 — 第2試合</div>
 
-      <!-- 話者名は箱の中に書かない。下の名前ブロックと左右で対応する -->
-      <div class="jt-bub-pair">
-        <div class="jt-bub">「ここまで来たら、もう譲れない」</div>
-        <div class="jt-bub">「わたしの方が、長く待ってた」</div>
-      </div>
-
+      <!-- 吹き出しは画像の上・中身はセリフ本文だけ・尻尾は話者の画像の水平中心。
+           グリッドの1行目に入れているので、尻尾の 50% がそのまま画像の中心になる -->
       <div class="jtc-fc-uppers">
+        <div class="jt-bub-slot is-l"><div class="jt-bub">「ここまで来たら、もう譲れない」</div></div>
+        <div class="jt-bub-slot is-r"><div class="jt-bub">「わたしの方が、長く待ってた」</div></div>
+
         <div class="jtc-fc-upper is-l"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
         <div class="vs-mark">VS</div>
         <div class="jtc-fc-upper is-r"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
+
         <div class="jtc-fc-nm is-l">
           <div class="n">阿武隈塔子</div>
           <div class="jtc-fc-statline">
             <span class="jtc-fc-style">TECHNICIAN</span><span>AGE 21</span>
             <span class="jtc-fc-ovr"><small>OVR</small><b>74</b></span>
           </div>
-          <div class="o">ブルームハート<span class="jtc-own-pill">自</span></div>
+          <!-- 所属はエンブレム実画像で示す（頭文字の代用はしない・§5） -->
+          <div class="o"><span class="orgb is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></span></div>
         </div>
         <div class="jtc-fc-nm is-r">
           <div class="n">出羽鷹子</div>
@@ -741,7 +810,7 @@ button{font-family:inherit}
             <span class="jtc-fc-style">POWER</span><span>AGE 22</span>
             <span class="jtc-fc-ovr"><small>OVR</small><b>71</b></span>
           </div>
-          <div class="o">NOVA</div>
+          <div class="o"><span class="orgb"><img src="../../../image/org/org-s-1.png" alt=""><span>NOVA</span></span></div>
         </div>
       </div>
 
@@ -767,12 +836,14 @@ button{font-family:inherit}
     <div class="aft">
       <div class="aft-kicker">After the Cup</div>
       <div class="aft-block">
-        <div class="aft-bub-slot"><div class="jt-bub" style="width:100%">「まだ、この続きがあるって思ってていいですか」</div></div>
-        <div style="width:108px;aspect-ratio:2/3;border-radius:var(--radius-sm);overflow:hidden;margin:8px auto 0;border-bottom:3px solid var(--ev-summer);background:var(--card-bg)">
+        <!-- 単独の画像なので尻尾は 50%（画像の中心）でよい -->
+        <div class="aft-bub-slot"><div class="jt-bub">「まだ、この続きがあるって思ってていいですか」</div></div>
+        <div style="width:108px;aspect-ratio:2/3;border-radius:var(--radius-sm);overflow:hidden;margin:8px auto 0;border-bottom:3px solid var(--ev-summer);background:var(--stage-portrait-bg)">
           <img src="../../../image/upper/upper_kinouchi_y.webp" alt="" style="width:100%;height:100%;object-fit:cover;object-position:top">
         </div>
         <div class="aft-nm">木ノ内幸音</div>
         <div class="aft-role">第7回大会ジュニアチャンピオン</div>
+        <div><span class="orgb is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></span></div>
       </div>
     </div>
   </div>
@@ -786,12 +857,18 @@ button{font-family:inherit}
         <b>②次戦フォーカスカード</b>（2:3 のアッパー・名前・所属・OVR・開始HP・観戦/スキップ） /
         <b>③試合前のセリフ</b> /
         <b>④大会後のコメント</b></li>
-      <li><b>1点だけ現行から変えている（2026-08-01 Keisuke 裁定）</b> —
-        <code>.jt-bub</code> の中にあった<b>話者名 <code>.sp</code> を削除</b>した。
-        「吹き出しの中に話者名・団体名は入れない」を<b>全画面に適用・ジュニアも例外にしない</b>という裁定のため。
-        話者は画像の下の名前で示す（吹き出しの左右と名前の左右が対応する）</li>
-      <li>※ ジュニアの吹き出しには<b>まだ尻尾が無い</b>（<code>.jt-bub-pair</code> は横並びの箱2つ）。
-        裁定は「話者名を外へ出す」1点なので、尻尾は今回<b>足していない</b>。別途の判断事項として末尾に残した</li>
+      <li><b>現行から変えているのは、裁定で明示された3点だけ（2026-08-01 Keisuke）</b>
+        <ol style="margin:4px 0 0 18px;padding:0">
+          <li><b>吹き出しの中の話者名 <code>.sp</code> を削除</b>。「吹き出しの中に話者名・団体名は入れない」を
+            全画面に適用・ジュニアも例外にしないという裁定</li>
+          <li><b>吹き出しに尻尾を付けた</b>（「誰が言っているかがわかる方がいい」）。
+            尻尾を話者の画像中心へ正確に刺すため、<b>吹き出しを <code>.jtc-fc-uppers</code> グリッドの1行目へ移した</b>
+            — 別ブロックのままだと列の中心が画像の列中心と一致しない（実測で確認）</li>
+          <li><b>所属団体のエンブレム実画像を添えた</b>（「どの団体に所属しているかが非常に重要」）。
+            名前ブロックは団体名テキストのみ → <b>26px エンブレム＋団体名のバッジ</b>へ。
+            クライムラインのセルにも 26px エンブレムを差した</li>
+        </ol></li>
+      <li>これ以外（サイズ・色・余白・クライムライン・HP行・ボタン）は <code>src</code> のまま</li>
     </ul>
   </div>
 </section>
@@ -829,7 +906,7 @@ button{font-family:inherit}
               <span class="tro-p"><img src="../../../image/upper/upper_sawade_m.webp" alt=""></span>
             </span>
             <span class="meta">
-              <span class="stl2-org"><img src="../../../image/org/org-player-3.png" alt="">★ 自団体 ブルームハート</span>
+              <span class="stl2-org"><img src="../../../image/org/org-player-3.png" alt=""><b>★ 自団体 ブルームハート</b></span>
               <span class="stl2-pair-nm">阿武隈塔子 &amp; 澤出みずき</span>
               <span class="stl2-strip"><span class="mk-o">○</span><span class="mk-o">○</span><span class="mk-d">△</span></span>
               <span class="stl2-wear is-fresh"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i>元気</span>
@@ -849,7 +926,7 @@ button{font-family:inherit}
               <span class="tro-p"><img src="../../../image/upper/upper_sonobe_r.webp" alt=""></span>
             </span>
             <span class="meta">
-              <span class="stl2-org"><img src="../../../image/org/org-s-1.png" alt="">NOVA</span>
+              <span class="stl2-org"><img src="../../../image/org/org-s-1.png" alt=""><b>NOVA</b></span>
               <span class="stl2-pair-nm">相沢未来 &amp; 園部梨花</span>
               <span class="stl2-strip"><span class="mk-o">○</span><span class="mk-x">×</span><span class="mk-o">○</span></span>
               <span class="stl2-wear is-tired"><i class="on"></i><i class="on"></i><i></i><i></i><i></i>疲れが見える</span>
@@ -869,7 +946,7 @@ button{font-family:inherit}
               <span class="tro-p"><img src="../../../image/upper/upper_asami_r.webp" alt=""></span>
             </span>
             <span class="meta">
-              <span class="stl2-org"><img src="../../../image/org/org-a-2.png" alt="">EMPRESS</span>
+              <span class="stl2-org"><img src="../../../image/org/org-a-2.png" alt=""><b>EMPRESS</b></span>
               <span class="stl2-pair-nm">黒岩千晶 &amp; 浅見里緒菜</span>
               <span class="stl2-strip"><span class="mk-x">×</span><span class="mk-o">○</span><span class="mk-d">△</span></span>
               <span class="stl2-wear is-tired"><i class="on"></i><i class="on"></i><i></i><i></i><i></i>疲れが見える</span>
@@ -889,7 +966,7 @@ button{font-family:inherit}
               <span class="tro-p"><img src="../../../image/upper/upper_ebina_s.webp" alt=""></span>
             </span>
             <span class="meta">
-              <span class="stl2-org"><img src="../../../image/org/org-b-0.png" alt="">CRESCENT</span>
+              <span class="stl2-org"><img src="../../../image/org/org-b-0.png" alt=""><b>CRESCENT</b></span>
               <span class="stl2-pair-nm">伊勢原文奈 &amp; 海老名栞</span>
               <span class="stl2-strip"><span class="mk-x">×</span><span class="mk-x">×</span><span class="mk-x">×</span></span>
               <span class="stl2-wear is-spent"><i class="on"></i><i></i><i></i><i></i><i></i>満身創痍</span>
@@ -906,9 +983,10 @@ button{font-family:inherit}
       <div class="sfc-lb">リーグ 第4試合</div>
 
       <div class="sfc-stage">
-        <!-- 左：吹き出し（尻尾は「話している人の画像の中心」を指す＝隊列の左側 27%） -->
+        <!-- 左：話しているのは隊列の**手前（左）の1人**。尻尾はその画像の中心へ寄せる。
+             群の中心から画像の中心までは (108-18)/2 = 45px なので --tag-dx ぶん左へ -->
         <div class="sfc-bub-slot is-l">
-          <div class="sfc-bub" style="--tail-x:27%">後ろは気にしなくていい。前だけ見て入って。</div>
+          <div class="sfc-bub" style="--tail-dx:calc(-1 * var(--tag-dx))">後ろは気にしなくていい。前だけ見て入って。</div>
         </div>
         <div class="sfc-side is-l">
           <span class="tro sz-s">
@@ -919,7 +997,7 @@ button{font-family:inherit}
         <div class="sfc-nm is-l">
           <div class="n">阿武隈塔子 &amp; 澤出みずき</div>
           <div class="role">リーグ首位 ・ 2人1組</div>
-          <div class="sfc-badge is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></div>
+          <div class="orgb is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></div>
           <div class="sfc-ovr-pair">
             <span class="sfc-ovr"><small>OVR</small><b>84</b></span>
             <span class="sfc-ovr"><small>OVR</small><b>79</b></span>
@@ -928,9 +1006,10 @@ button{font-family:inherit}
 
         <div class="sfc-vs">VS</div>
 
-        <!-- 右：発言は1人。もう1人ぶんの箱は出さない（§2-B 発言しない人は枠だけ） -->
+        <!-- 右：話しているのは隊列の**手前（右）の1人**。尻尾はその画像の中心へ寄せる。
+             発言しないもう1人ぶんの箱は出さない（§2-B） -->
         <div class="sfc-bub-slot is-r">
-          <div class="sfc-bub" style="--tail-x:73%">首位だからって、上から来られるのは好かん。</div>
+          <div class="sfc-bub" style="--tail-dx:var(--tag-dx)">首位だからって、上から来られるのは好かん。</div>
         </div>
         <div class="sfc-side is-r">
           <span class="tro sz-s">
@@ -941,7 +1020,7 @@ button{font-family:inherit}
         <div class="sfc-nm is-r">
           <div class="n">相沢未来 &amp; 園部梨花</div>
           <div class="role">リーグ2位 ・ 2人1組</div>
-          <div class="sfc-badge"><img src="../../../image/org/org-s-1.png" alt=""><span>NOVA</span></div>
+          <div class="orgb"><img src="../../../image/org/org-s-1.png" alt=""><span>NOVA</span></div>
           <div class="sfc-ovr-pair">
             <span class="sfc-ovr"><small>OVR</small><b>81</b></span>
             <span class="sfc-ovr"><small>OVR</small><b>83</b></span>
@@ -971,8 +1050,9 @@ button{font-family:inherit}
     <!-- 【ジュニアから移植】大会後のコメント。優勝は2人1組なので隊列＋発言は1人 -->
     <div class="aft">
       <div class="aft-kicker">After the League</div>
-      <div class="aft-block">
-        <div class="aft-bub-slot"><div class="sfc-bub" style="--tail-x:29%">二人で獲ったので、片方だけ名前が残るのは嫌ですね。</div></div>
+      <div class="aft-block aft-pair">
+        <!-- 話しているのは隊列の左（阿武隈）。尻尾は L 150 の (150-18)/2 = 66px ぶん左へ -->
+        <div class="aft-bub-slot"><div class="sfc-bub" style="--tail-dx:calc(-1 * var(--aft-dx))">二人で獲ったので、片方だけ名前が残るのは嫌ですね。</div></div>
         <div style="margin-top:8px">
           <span class="tro sz-l">
             <span class="tro-p is-lead"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></span>
@@ -981,6 +1061,7 @@ button{font-family:inherit}
         </div>
         <div class="aft-nm">阿武隈塔子 &amp; 澤出みずき</div>
         <div class="aft-role">第7回大会 総合ベストタッグ</div>
+        <div><span class="orgb is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></span></div>
       </div>
     </div>
   </div>
@@ -993,6 +1074,8 @@ button{font-family:inherit}
       <li><b>大会後のコメント</b>：無し <span class="arrow">→</span> 優勝タッグの一言。<b>2人のうち発言するのは1人</b>、もう1人は枠だけ置いて箱は出さない</li>
       <li><b>戦績の見せ方</b>：「2勝1敗」の文字だけ <span class="arrow">→</span> <b>○×△ のストリップ</b>を足して、リーグ表そのものが「進行の俯瞰」になる（ジュニアのブラケットに対応するもの）</li>
       <li><b>リーグ表の顔</b>：42px の<b>丸顔</b>2枚 <span class="arrow">→</span> <b>chip 46×66（2:3）の隊列</b>。丸は通知・トースト専用（§2-B）で、一覧の主役には使わない</li>
+      <li><b>所属団体</b>：順位表は 16px の小さなアイコン <span class="arrow">→</span> <b>§5 既定の 26px エンブレム実画像</b>。
+        次戦カードと大会後にも団体バッジを置き、<b>4チームがどこの団体か常に読める</b>ようにした</li>
     </ul>
     <h4>春の固有として残したもの</h4>
     <ul>
@@ -1069,7 +1152,7 @@ button{font-family:inherit}
             <div class="pb-portrait"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></div>
             <div class="pb-fighter-info">
               <div class="pb-fighter-name">白銀麗子</div>
-              <div class="pb-fighter-meta">ブルームハート</div>
+              <div class="pb-fighter-meta"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></div>
               <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">91</span></div>
             </div>
           </div>
@@ -1087,7 +1170,7 @@ button{font-family:inherit}
             <div class="pb-portrait"><img src="../../../image/upper/upper_morgan_r.webp" alt=""></div>
             <div class="pb-fighter-info">
               <div class="pb-fighter-name">リナ・モーガン</div>
-              <div class="pb-fighter-meta">NOVA</div>
+              <div class="pb-fighter-meta"><img src="../../../image/org/org-s-1.png" alt=""><span>NOVA</span></div>
               <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">93</span></div>
             </div>
           </div>
@@ -1105,7 +1188,7 @@ button{font-family:inherit}
             <div class="pb-portrait"><img src="../../../image/upper/upper_todoroki_a.webp" alt=""></div>
             <div class="pb-fighter-info">
               <div class="pb-fighter-name">等々力あかね</div>
-              <div class="pb-fighter-meta">ブルームハート</div>
+              <div class="pb-fighter-meta"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></div>
               <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">87</span></div>
             </div>
           </div>
@@ -1123,7 +1206,7 @@ button{font-family:inherit}
             <div class="pb-portrait"><img src="../../../image/upper/upper_katagiri_a.webp" alt=""></div>
             <div class="pb-fighter-info">
               <div class="pb-fighter-name">片桐ありさ</div>
-              <div class="pb-fighter-meta">EMPRESS</div>
+              <div class="pb-fighter-meta"><img src="../../../image/org/org-a-2.png" alt=""><span>EMPRESS</span></div>
               <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">85</span></div>
             </div>
           </div>
@@ -1134,7 +1217,7 @@ button{font-family:inherit}
             <div class="pb-portrait"><img src="../../../image/upper/upper_kikuchi_r.webp" alt=""></div>
             <div class="pb-fighter-info">
               <div class="pb-fighter-name">菊池璃子</div>
-              <div class="pb-fighter-meta">CRESCENT</div>
+              <div class="pb-fighter-meta"><img src="../../../image/org/org-b-0.png" alt=""><span>CRESCENT</span></div>
               <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">80</span></div>
             </div>
           </div>
@@ -1152,7 +1235,7 @@ button{font-family:inherit}
             <div class="pb-portrait"><img src="../../../image/upper/upper_negishi_a.webp" alt=""></div>
             <div class="pb-fighter-info">
               <div class="pb-fighter-name">根岸亞里亞</div>
-              <div class="pb-fighter-meta">NOVA</div>
+              <div class="pb-fighter-meta"><img src="../../../image/org/org-s-1.png" alt=""><span>NOVA</span></div>
               <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">82</span></div>
             </div>
           </div>
@@ -1177,6 +1260,11 @@ button{font-family:inherit}
         <code>♛</code> の <code>.pb-summary-emblem</code>。これが元から PPV の識別色で、冬とは無関係</li>
       <li>「動員の 64px を例外として認めるか」という論点は、<b>既存維持なので消滅</b>した</li>
       <li>結果として、<b>このモックで作り直す対象は ② 春タッグ と ④ 秋対抗戦 の2つ</b>になる</li>
+      <li>⚠ <b>1箇所だけ「既存のまま」から外している</b> — 選手名の下の <code>.pb-fighter-meta</code> に
+        <b>26px の団体エンブレムを足した</b>。元は団体名のテキストだけ。
+        「どの団体に所属しているかをエンブレム画像で。<b>どの文面でも、どの記事でも</b>」という
+        2026-08-01 の追加裁定が PPV にも掛かると解釈したため。
+        <b>PPV は既存のままにしたいので戻す</b>という判断なら、この1点だけ差し戻してほしい</li>
     </ul>
   </div>
 </section>
@@ -1212,6 +1300,7 @@ button{font-family:inherit}
     <!-- 【固有・残す】3人勝ち抜きの残り人数と、リングに残っている側 -->
     <div class="agw2-rails">
       <div class="agw2-rail">
+        <div><span class="orgb is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></span></div>
         <div class="cap">残り <span class="left">2<small>人</small></span></div>
         <span class="tro sz-chip">
           <span class="tro-p is-out"><img src="../../../image/upper/upper_togane_s.webp" alt=""><span class="badge">× OUT</span></span>
@@ -1222,6 +1311,7 @@ button{font-family:inherit}
       </div>
 
       <div class="agw2-rail">
+        <div><span class="orgb"><img src="../../../image/org/org-a-2.png" alt=""><span>EMPRESS</span></span></div>
         <div class="cap">残り <span class="left">2<small>人</small></span></div>
         <span class="tro sz-chip">
           <span class="tro-p"><img src="../../../image/upper/upper_asami_r.webp" alt=""><span class="badge">WAIT</span></span>
@@ -1251,13 +1341,13 @@ button{font-family:inherit}
         <div class="sfc-nm is-l">
           <div class="n">愛川明日香</div>
           <div class="role">中堅 ・ 2人抜き中</div>
-          <div class="sfc-badge is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></div>
+          <div class="orgb is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></div>
           <div><span class="sfc-ovr"><small>OVR</small><b>86</b></span></div>
         </div>
         <div class="sfc-nm is-r">
           <div class="n">黒岩千晶</div>
           <div class="role">中堅 ・ 初戦</div>
-          <div class="sfc-badge"><img src="../../../image/org/org-a-2.png" alt=""><span>EMPRESS</span></div>
+          <div class="orgb"><img src="../../../image/org/org-a-2.png" alt=""><span>EMPRESS</span></div>
           <div><span class="sfc-ovr"><small>OVR</small><b>88</b></span></div>
         </div>
       </div>
@@ -1288,8 +1378,10 @@ button{font-family:inherit}
     <div class="aft">
       <div class="aft-kicker">After the War</div>
       <div class="aft-block">
-        <div class="tro-head">第7回大会 優勝 ・ ブルームハート</div>
-        <div class="aft-bub-slot"><div class="sfc-bub">わたしが抜いたんじゃなくて、前の二人が削ってくれた分です。</div></div>
+        <div class="tro-head">第7回大会 優勝</div>
+        <div><span class="orgb is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></span></div>
+        <!-- 話しているのは隊列の中心（大将）。群の中心＝話者の画像中心なので尻尾は 50% -->
+        <div class="aft-bub-slot" style="margin-top:8px"><div class="sfc-bub">わたしが抜いたんじゃなくて、前の二人が削ってくれた分です。</div></div>
         <div style="margin-top:8px">
           <span class="tro sz-mix">
             <span class="tro-p"><img src="../../../image/upper/upper_togane_s.webp" alt=""></span>
@@ -1318,6 +1410,8 @@ button{font-family:inherit}
       <li><b>「N人抜き中」</b>を役割ラベルに置いて、消耗を持ち越していることの理由を出す</li>
       <li><b>3つの操作</b>（観戦する / この試合の結果を見る / まとめてスキップ）。他の大会は2つだが、秋だけは団体戦をまとめて畳める必要がある</li>
       <li><b>団体スコアの em ダッシュ</b> <code>2 — 1</code>（§5-B の書式）</li>
+      <li><b>所属団体</b>：スコアボード・残り人数レール・次戦カード・大会後の<b>全てに 26px エンブレム</b>。
+        4団体が入り乱れる大会なので、<b>どちらの陣営の誰が今リングにいるか</b>がエンブレムで一目で追える</li>
     </ul>
   </div>
 </section>
@@ -1337,6 +1431,13 @@ button{font-family:inherit}
       <code>.jt-bub .sp</code> を規則ごと削除した</li>
     <li><b>春の OVR 2つはこのままで OK</b>（チーム平均に変えない）— 判断待ちから外した</li>
     <li>秋の選手画像・春の次戦カード・進行の俯瞰は<b>そのまま通過</b></li>
+    <li><b>吹き出しに尻尾を付ける（ジュニアも含めて全部）。</b>
+      「誰が言っているかがわかる方がいい」。<b>全9吹き出しに尻尾を付け、話者の画像の水平中心を指す</b>。
+      隊列や左右2人のときは<b>どちらが話しているかで尻尾の位置を変える</b>。
+      ジュニアは尻尾を正確に刺すため吹き出しをグリッドの1行目へ移した（前項の判断待ちは解消）</li>
+    <li><b>所属団体のエンブレムを出す。</b>「OVR から力関係は分かる。でもどの団体に所属しているかが
+      非常に重要」。<b>選手を出す全箇所に 26px のエンブレム実画像</b>を添えた（頭文字の代用はしない・§5）。
+      縦順は固定のまま（… → 役割ラベル → <b>団体バッジ</b> → OVR）</li>
   </ul>
 
   <h3>1. 共通部品 <code>.sfc</code> を1つ作る（これがこのモックの本体）</h3>
@@ -1344,17 +1445,25 @@ button{font-family:inherit}
     <li>ジュニアの <code>_jtcFcCore</code> / <code>.jtc-fc-*</code> を<b>春・秋にも使えるよう一般化</b>したもの。骨格・サイズ・余白はジュニアと同じで、大会色だけ <code>--ev-c</code> / <code>--ev-rgb</code> で差し替える（ジュニアの <code>--jtc-color</code> と同じ仕組み）</li>
     <li>実装時は<b>ジュニアと天頂戦が既に乗っている <code>_jtcFcCore</code> を拡張する</b>のが筋。新しい部品を別に作らない</li>
     <li>拡張が必要なのは3点 —
-      (a) 吹き出しを<b>予約枠＋尻尾＋話者名は箱の外</b>にする、
-      (b) 名前ブロックに<b>役割ラベル</b>と<b>団体バッジ</b>の段を足す、
+      (a) 吹き出しを<b>予約枠＋尻尾＋話者名は箱の外</b>にし、<b>画像と同じグリッドの1行目</b>に置く、
+      (b) 名前ブロックに<b>役割ラベル</b>と<b>団体バッジ（26px エンブレム実画像）</b>の段を足す、
       (c) 左右を<b>隊列</b>にできるようにする（春の2対2用）</li>
+    <li><b>尻尾のずらし量は % ではなく px で持つ</b>（<code>--tail-dx</code>）。
+      列幅は <code>1fr</code> なのでビューポート幅で変わり、% だと尻尾が画像からずれていく。
+      隊列のときは <code>(画像幅 - 重なり18px) / 2</code> ぶんだけ話者側へずらす
+      （S 108 なら 45px、狭幅で 84 に落ちたら 33px）。段を変えたらこの値も一緒に変える</li>
     <li><b>PPV には入れない。</b> PPV は既存のままなので、この部品の適用先は<b>春・秋（＋既存のジュニア・天頂戦）</b>だけ</li>
   </ul>
 
   <h3>2. 判断が要る点</h3>
   <ol>
-    <li><b>ジュニアの吹き出しに尻尾が無い。</b> 話者名は裁定どおり箱の外へ出したが、
-      <code>.jt-bub-pair</code> は今も<b>横並びの箱2つ</b>で、尻尾が無い（②④は尻尾つき）。
-      裁定は「名前を外へ出す」1点だったので<b>今回は足していない</b>。ジュニアにも尻尾を付けて揃えるかどうか</li>
+    <li><b>PPV の <code>.pb-fighter-meta</code> にエンブレムを足した件。</b>
+      「PPV は既存のまま」と「エンブレムはどの文面でも」が正面からぶつかる唯一の箇所で、
+      <b>後から出たエンブレムの裁定を優先</b>して 26px を足してある。
+      PPV を1ドットも動かしたくないなら、ここだけ戻す（§③ の注釈にも同じことを書いた）</li>
+    <li><b>クライムラインのセルはエンブレムだけ</b>にした（団体名テキストなし）。
+      幅76pxのセルに「ブルームハート」まで入れると潰れるため。
+      <b>エンブレムだけで団体が判別できる</b>という前提でよいか（本エンブレム制作後に再確認したい）</li>
     <li><b>次戦カードの画像サイズ 118×177。</b> ジュニアの実測値で、②④もこれに合わせた（並べたとき同じ大きさに見えることを優先した）。
       ただし <code>§2</code> の梯子は <code>S 108</code> と <code>M 132</code> で、<b>118 はその間</b>。
       <b>まとめて M 132 へ上げる</b>か、<b>118 を「対戦カードの段」として梯子に正式登録する</b>かのどちらかに決めたい。
@@ -1385,20 +1494,26 @@ button{font-family:inherit}
   <h3>4. 不変条件の自己点検</h3>
   <table class="mk-tbl">
     <tr><th>#</th><th>不変条件</th><th>このモックでの状態</th></tr>
-    <tr><td>1</td><td>ジュニアは変更しない</td><td>① は <code>src/index.html</code> の <code>.jtc-*</code> / <code>.jt-bub</code> の値をそのまま複製。<b>例外は裁定で認められた1点（<code>.jt-bub .sp</code> の削除）のみ</b></td></tr>
+    <tr><td>1</td><td>ジュニアは変更しない</td><td>① は <code>src/index.html</code> の <code>.jtc-*</code> / <code>.jt-bub</code> の値をそのまま複製。<b>例外は裁定で明示された3点のみ</b>（話者名の削除 / 尻尾の追加＋そのためのグリッド1行目化 / 団体エンブレムの追加）</td></tr>
     <tr><td>2</td><td>選手画像は 2:3 / 正方形の顔は 52px 以下</td><td>選手画像は<b>全部 <code>aspect-ratio:2/3</code></b>（実測で比率1.5±0.06 を外れるもの0件）。使った段は L 150 / M 132 / S 108 / chip 46 と、ジュニア実測の 118（判断待ち2）、PPV既存の 108×162・62×93・68×102。<b>正方形・丸の顔は1つも使っていない</b></td></tr>
     <tr><td>3</td><td>アッパーを左右反転しない</td><td><code>transform:scaleX(-1)</code> をどこにも書いていない（<code>matrix(-1…)</code> を持つ要素 0件）</td></tr>
-    <tr><td>4</td><td>吹き出しは画像の上・名前を入れない</td><td>②④の吹き出しは grid の <b>row 1</b>（画像は row 2）。尻尾は <code>--tail-x</code> で話者の画像中心。<b>中身はセリフ本文だけ</b>。<b>①ジュニアも <code>.sp</code> を削除して同じ規則に揃えた</b></td></tr>
+    <tr><td>4</td><td>吹き出しは画像の上 / 尻尾は話者の画像中心 / 名前を入れない</td><td><b>①②④すべて</b>吹き出しは grid の <b>row 1</b>（画像は row 2）。
+      <b>全9吹き出しに尻尾があり（9/9）、尻尾X と話者画像の中心X の差は 375 / 400 / 480 / 520 / 600 / 700 / 701 / 820 / 1280 の全幅で 0.0px</b>。
+      隊列では話者側へ <code>--tail-dx</code> ぶんずらす。<b>吹き出し内の話者名 span は 0件</b></td></tr>
+    <tr><td>＋</td><td>団体エンブレム（2026-08-01 追加指示）</td><td>選手を出す全箇所に実画像を添えた。<b>エンブレム 27枚すべて 26px</b>（§5 既定・実測）。頭文字の代用は0件、画像の読み込み失敗0件</td></tr>
     <tr><td>5</td><td>縦順固定（吹き出し→画像→名前→役割→バッジ→数値）</td><td><code>.sfc-stage</code> が3行グリッドで順序を構造として固定。名前ブロック内も 名前 → 役割 → バッジ → OVR</td></tr>
     <tr><td>6</td><td>複数人は隊列</td><td><code>.tro</code> = 群の外枠1つ・<code>margin-left:-18px</code> の重ね・<code>drop-shadow</code>。<b>個々に額縁を付けていない</b></td></tr>
     <tr><td>7</td><td>勝敗は画像から読める / ○×△ / LOSE を使わない</td><td>敗者・脱落者は <code>grayscale(.9) brightness(.72)</code>。記号は ○×△ のみ（<code>●</code> 0件）。画面内に <code>LOSE</code> の文字 0件</td></tr>
     <tr><td>8</td><td>カテゴリを混ぜない</td><td>4節すべて Stage（<code>--stage-bg</code> 純黒）。<b>Cream Panel を1つも置いていない</b>（吹き出しの白は §3 が定めるセリフの規則で、Cream Panel ではない）</td></tr>
     <tr><td>9</td><td>ハードコード16進カラー禁止</td><td>16進は <code>:root</code> のトークン定義行と説明文だけ。以降は全部 <code>var(--*)</code></td></tr>
-    <tr><td>10</td><td>375px で横スクロールが出ない</td><td><b>375 / 400 / 480 / 520 / 600 / 700 / 820px の7幅で実測。</b>
+    <tr><td>10</td><td>375px および 380〜820px の帯で崩れない</td><td><b>375 / 400 / 480 / 520 / 600 / 700 / 701 / 820 / 1280px の9幅で実測。</b>
       <code>html/body</code> の <code>overflow-x</code> を <code>visible</code> に戻したうえで、各幅で
-      <b><code>scrollWidth</code> = viewport</b> かつ全DOM要素走査で<b>はみ出し 0件</b>。
+      <b><code>scrollWidth</code> = viewport</b> かつ全DOM要素走査で<b>はみ出し 0件</b>、
+      <b>選手画像の縦横比ずれ 0件</b>、<b>尻尾のずれ 0.0px</b>。
       ②④は 700px で梯子を1段落とし（118→S 108 / L→M / M→S）、560px で2対2カードを縦積みへ。
-      ③PPV は <code>src/mobile.css</code> の 700px 規則をそのまま複製。①ジュニアは 118 / 76 / 132 のまま収まるので触っていない</td></tr>
+      ③PPV は <code>src/mobile.css</code> の 700px 規則をそのまま複製。①ジュニアは 118 / 76 / 132 のまま収まるので触っていない。
+      <b>※ 26px エンブレム追加で春の順位表が 375px で 7px はみ出す回帰が出たため、
+      狭幅の順位表を <code>table-layout:fixed</code> ＋ 列幅指定に変更して解消済み</b></td></tr>
     <tr><td>11</td><td><code>src/</code> を一切変更しない</td><td>成果物はこのファイル1枚のみ。commit / push もしていない</td></tr>
   </table>
 </section>

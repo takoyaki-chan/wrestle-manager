@@ -11702,25 +11702,6 @@ const App = {
       const aSeason = pendingAwards.season || G.season;
       const aWeek = 49; // オフシーズン表彰式
 
-      // 任意の選手プールに対して id 一致で addEvent するヘルパー
-      const applyToPool = (pool, predicate, ev) =>
-        pool.map(f => predicate(f) ? Engine.career.addEvent(f, ev) : f);
-
-      let ar = G.roster;
-      let aiOrgs = G.aiOrgs ? { ...G.aiOrgs } : null;
-
-      const recordOnAllOrgs = (predicate, ev) => {
-        ar = applyToPool(ar, predicate, ev);
-        if (aiOrgs) {
-          Object.keys(aiOrgs).forEach(oid => {
-            const od = aiOrgs[oid];
-            if (od && od.roster) {
-              aiOrgs[oid] = { ...od, roster: applyToPool(od.roster, predicate, ev) };
-            }
-          });
-        }
-      };
-
       // 業界の賞と所属団体内の賞で同じ選手が選ばれることがある（団体内MVPは業界MVPと
       // 必然的に一致する）。同一年の同じ賞を二重に記録すると年表が「MVP 2度受賞」になり
       // 殿堂ポイントも二重に乗るため、賞の種類ごとに記録済みIDを覚えて弾く。
@@ -11730,8 +11711,9 @@ const App = {
         const fresh = ids.filter(id => id != null && !seen.has(id));
         if (fresh.length === 0) return;
         fresh.forEach(id => seen.add(id));
-        const target = new Set(fresh);
-        recordOnAllOrgs(f => target.has(f.id), ev);
+        // 書き込み先はロスター/AIロスターだけではない。**引退確定は表彰式より前に走る**ので、
+        // 引退者(retiredFighters)と年代記アーカイブにも届けないと、その年の受賞が消える。
+        G = Engine.awards.recordAwardEvent(G, fresh, ev);
       };
 
       // ── 業界全体の受賞 ──
@@ -11777,8 +11759,13 @@ const App = {
         }
       });
 
-      G = { ...G, roster: ar };
-      if (aiOrgs) G = { ...G, aiOrgs };
+      // 殿堂入りエントリは commitRetirements 時点（受賞を積む前）のスナップショットなので、
+      // 今季の受賞を刻んだあとに作り直す。作り直さないと retiredFighters 側だけ直っても
+      // 恒久保存される allHallOfFame には届かない（applyHallOfFame はエントリしか見ない）。
+      // 加点そのものは Engine.awards.calcHofPoints のまま — 配点も閾値も触っていない。
+      if (Array.isArray(pendingAwards.hallOfFame)) {
+        pendingAwards.hallOfFame = Engine.awards.checkHallOfFame(G);
+      }
     }
 
     // Phase 4 E-05: 表彰式の関係値反映
