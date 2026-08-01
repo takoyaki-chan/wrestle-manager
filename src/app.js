@@ -5504,7 +5504,7 @@ const App = {
       const scoutRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE44, G.season, candidateId));
       const existingIds = G.roster.filter(c => c.id !== candidateId).map(c => c.id);
       G = Engine.relationships.applyFromRoster(G, existingIds, candidateId, { min: -3, max: 3 }, { min: 0, max: 0 }, scoutRelRng);
-      const recontactEvents = Engine.relationships.checkRecontact(G, candidateId, existingIds, previousRelationshipState);
+      const recontactEvents = Engine.relationships.checkRecontact(G, candidateId, existingIds, previousRelationshipState, scoutRelRng);
       if (recontactEvents.length > 0) {
         G = Engine.relationships.applyRecontactEvents(G, recontactEvents);
       }
@@ -12035,7 +12035,9 @@ const App = {
 
   // v2.0: 選択型イベントの選択結果を適用
   applyChoiceEvent(event, choiceIdx) {
-    const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, G);
+    const choiceRng = Engine.rng.create(Engine.rng.derive(
+      G.rngSeed, G.season, G.week, event && event.fighter || 0, 0xE0C1));
+    const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, G, choiceRng);
     // §13.3: __orgPop: イベントからorgPop変動を抽出して適用
     let orgPopDelta = 0;
     const displayEvents = [];
