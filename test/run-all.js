@@ -66,6 +66,7 @@ const QUICK = new Set([
   'draft-week-render-refresh-test.js',
   'event-match-result-popup-test.js',
   'audio-mix-applied-test.js',
+  'app-startup-scope-test.js',
   'faction-decree-and-common-cd-test.js',
   'faction-f03-modal-flow-test.js',
   'faction-f09-ending-score-order-test.js',

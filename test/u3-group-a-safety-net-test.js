@@ -283,12 +283,18 @@ function section(name, fn) {
 (function ceremSuite() {
   const yearEndAwardsBgmDecl = appSrc.match(/^const YEAR_END_AWARDS_BGM = .+;$/m);
   assert.ok(yearEndAwardsBgmDecl, 'YEAR_END_AWARDS_BGM not found in app.js');
+  // 到達セレモニーのBGMは 2026-08-01 の音源差し替えで _ceremAudioOpen の外へ出た。
+  // ここは app.js から関数だけを切り出して回す形なので、参照する定数も一緒に持ってくる
+  // (持ってこないと ReferenceError でセレモニー全体が落ちる)。
+  const ceremArrivalBgmDecl = appSrc.match(/^const CEREMONY_ARRIVAL_BGM = \{[\s\S]*?^\};$/m);
+  assert.ok(ceremArrivalBgmDecl, 'CEREMONY_ARRIVAL_BGM not found in app.js');
   const build = new Function(
     'document', 'G', 'App', 'getUpperUrl', 'Audio',
     `${uiFn('escHtml')}
      ${uiFn('_u3bInitialFallback')}
      ${uiFn('_u3bSideHtml')}
      ${yearEndAwardsBgmDecl[0]}
+     ${ceremArrivalBgmDecl[0]}
      ${appFn('_ceremAudioOpen')}
      ${appFn('_ceremAudioClose')}
      ${appFn('showCeremonyEvent')}

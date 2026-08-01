@@ -1480,7 +1480,7 @@ const Audio = (() => {
 // ║  handoff-v6 の BGM/stinger 登録表をデータ化              ║
 // ╚══════════════════════════════════════════════════════════╝
 const FACTION_AUDIO = {
-  SOFT:    '../bgm/Soft Bids, Sharp Minds.mp3',
+  SOFT:    '../bgm/production-ogg/wm_bgm_c07_v02.ogg',
   TENSION: '../bgm/production-ogg/wm_bgm_s03_v01.ogg',
   GONG:    '../bgm/f07_gong_v1.mp3',
   CHIME:   '../bgm/f06_fin_chime_v1.mp3',
@@ -1536,15 +1536,20 @@ function _factionAudioClose(eventId) {
 
 // ── D層セレモニーイベント BGM制御 ──
 // 同じ v01 ファイル名のままミックスを更新したため、旧音源のブラウザキャッシュを避ける。
+// Audio's SUNO_BGM map is private to the Audio module, so this independent
+// ceremony setting must remain self-contained at top level.
+const CEREMONY_ARRIVAL_BGM = {
+  file: '../bgm/production-ogg/wm_bgm_c01_v01.ogg',
+  vol: 0.30,
+};
 const YEAR_END_AWARDS_BGM = '../bgm/production-ogg/wm_bgm_h05_v01.ogg?mix=20260727';
 function _ceremAudioOpen(visualVariant) {
   // triumph(到達・栄誉)は表彰式枠 WM-H05 を共用する。arrival は開幕曲を継続。
-  const src = visualVariant === 'arrival'
-    ? '../bgm/bgm_kaimaku_v1.mp3'
-    : YEAR_END_AWARDS_BGM;
-  // triumph は WM-H05 表彰式のミキサー実聴値（2026-07-27）。
-  // arrival は旧 mp3(bgm_kaimaku_v1)を開幕曲として継続再生する枠で、台帳に載っていないため据え置き。
-  try { Audio.fileBgm.play(src, { loop: true, volume: visualVariant === 'arrival' ? 0.10 : 0.40 }); } catch(e) {}
+  const isArrival = visualVariant === 'arrival';
+  const src = isArrival ? CEREMONY_ARRIVAL_BGM.file : YEAR_END_AWARDS_BGM;
+  // triumph uses the awards mix; arrival uses the current title-opening mix.
+  const volume = isArrival ? CEREMONY_ARRIVAL_BGM.vol : 0.40;
+  try { Audio.fileBgm.play(src, { loop: true, volume }); } catch(e) {}
 }
 function _ceremAudioClose() {
   try { Audio.fileBgm.fadeOut(1500); } catch(e) {}

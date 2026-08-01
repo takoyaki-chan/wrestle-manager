@@ -108,6 +108,23 @@ section('6. 音響刷新前の旧BGMを参照しない', () => {
     'tension が WM-S03 不穏へ移行していない');
 });
 
+section('7. すべてのイベントBGMが現行カタログを参照する', () => {
+  const app = read('src/app.js');
+  for (const legacy of ['bgm_kaimaku_v1.mp3', 'Soft Bids, Sharp Minds.mp3']) {
+    assert.ok(!app.includes(legacy), `旧イベントBGMが残っている: ${legacy}`);
+  }
+  assert.ok(/const CEREMONY_ARRIVAL_BGM\s*=\s*\{[\s\S]*?wm_bgm_c01_v01\.ogg/.test(app),
+    '初ドーム到達演出が現行タイトル・オープニングBGMを使っていない');
+  assert.ok(/SOFT:\s*'\.\.\/bgm\/production-ogg\/wm_bgm_c07_v02\.ogg'/.test(app),
+    '団体イベントの穏やかなBGMが現行カタログを参照していない');
+
+  for (const file of SRC) {
+    const source = read(file);
+    assert.ok(!/fileBgm\.play\([^)]*\.mp3/.test(source),
+      `${file} がループBGMとしてMP3を直接再生している`);
+  }
+});
+
 console.log('');
 console.log(failed === 0 ? 'Result: ALL PASS ✓' : `Result: ${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);
