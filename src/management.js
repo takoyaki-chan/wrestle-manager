@@ -16694,6 +16694,9 @@ const Engine = {
             org2: aiTeamLabels[0] || '',
             org3: aiTeamLabels[1] || '',
             org4: aiTeamLabels[2] || '',
+            preview: Engine.newspaper.eventPreviewParagraph(s,
+              (s.springTagLeague && s.springTagLeague.teams || [])
+                .flatMap(t => [t && t.f1Id, t && t.f2Id]).filter(id => id != null)),
           },
         });
         events.push(`📰 第${s.season}回春のタッグリーグ 出場4団体決定`);
@@ -16736,6 +16739,10 @@ const Engine = {
             season: s.season,
             seed1: bySeed(1)?.orgName || '', seed2: bySeed(2)?.orgName || '',
             seed3: bySeed(3)?.orgName || '', seed4: bySeed(4)?.orgName || '',
+            // P3 §2-7: 出場者が未確定でも「出られる面子」から予想は書ける。
+            // 並びは OVR ではなく**見えている実績**(王座/MVP/人気/過去の優勝/連勝)
+            preview: Engine.newspaper.eventPreviewParagraph(s,
+              (announcement.teams || []).flatMap(t => (t && t.memberIds) || [])),
           },
         });
         events.push(`📰 第${s.season}回4団体勝ち残り対抗戦 シード決定`);
@@ -28256,13 +28263,13 @@ Engine.newspaper = {
     // 業界ニュース欄(サブ3枠)で上位に来る高さに置く。一面(270)は超えない
     tenchosenBestBout:       205,
     tenchosenSemiFinal:      202,
-    tenchosenAnnounce:       150,
+    tenchosenAnnounce:       300,
     juniorTournamentResult: 260,
     juniorTournamentPreview: 250,
     autumnWarResult:       240,
     springTagResult:      230,
-    autumnWarAnnounce:     150,
-    springTagAnnounce:    150,
+    autumnWarAnnounce:     230,
+    springTagAnnounce:    220,
     ppvSummitResult:     200,
     playerTitleChange:   180,
     aiAceRetirement:     160,
@@ -28470,6 +28477,101 @@ Engine.newspaper = {
       else if (d.firstReign) n += 30;
     }
     return n;
+  },
+
+  // ── P3 §2-7: 特別興行の事前記事 ────────────────────────────────────
+  //
+  //  「事前の記事は、下手をすると結果の記事以上の注目度があるものです、新聞では」(Keisuke)
+  //
+  //  出場者が未確定でも、**出場条件から出られる面子はほぼ確定している**ので予想は書ける。
+  //  ただし**並びは OVR ではなく「見えている実績」**にする。能力値の降順に並べると
+  //  隠しステが読めて冷める(§7-9 の裁定と同じ理由)。
+  //  ここで使ってよいのは、社長にも記者にも見えているものだけ:
+  //    王座 / MVPレース順位 / 業界人気 / 過去大会の成績 / 今季の連勝
+  //  使わないもの: 生のOVR・各ステータス・trainCap・潜在値・見立ての内部値
+  CONTENDER: { champion: 100, mvpTop: 90, mvpTop3: 60, mvpTop10: 30, popTop3: 55, popTop10: 25, pastTitle: 45, streak: 30 },
+
+  /** 優勝候補を「見えている実績」で並べる。
+   *  @returns [{ id, name, orgName, reason }] — reason は記事本文にそのまま使える一句 */
+  eventContenders(state, ids, limit = 3) {
+    if (!state || !Array.isArray(ids) || !ids.length) return [];
+    const C = Engine.newspaper.CONTENDER;
+    const ctx = Engine.newspaper.buildValueContext(state);
+    // 「業界人気トップN」は母数がある程度ないと意味を持たない。
+    // 8人しかいない世界で「業界屈指の人気」と書くと嘘になるので、下限を切る
+    let pool = (state.roster || []).length;
+    const _orgs = state.aiOrgs || {};
+    for (const k in _orgs) pool += ((_orgs[k] && _orgs[k].roster) || []).length;
+    const popTop10 = new Set(pool >= 25 ? Engine.popularity.getIndustryTopIds(state, 10) : []);
+    const popTop3 = pool >= 10 ? ctx.popTop3 : new Set();
+    const rows = [];
+    ids.forEach(id => {
+      const f = Engine.newspaper._findFighter(state, id);
+      if (!f) return;
+      let score = 0; const reasons = [];
+      if (ctx.champs.has(id)) { score += C.champion; reasons.push('現王者'); }
+      const mv = ctx.mvpRank.get(id);
+      if (mv === 1) { score += C.mvpTop; reasons.push('MVPレース首位'); }
+      else if (mv >= 2 && mv <= 3) { score += C.mvpTop3; reasons.push(`MVPレース${mv}位`); }
+      else if (mv >= 4 && mv <= 10) { score += C.mvpTop10; reasons.push(`MVPレース${mv}位`); }
+      if (popTop3.has(id)) { score += C.popTop3; reasons.push('業界屈指の人気'); }
+      else if (popTop10.has(id)) { score += C.popTop10; reasons.push('人気上位'); }
+      const hist = (f.careerRecord && f.careerRecord.history) || [];
+      const EV = { juniorTournament: 'ジュニアトーナメント', springTagLeague: '春のタッグリーグ', autumnWar: '4団体勝ち残り対抗戦', ppvTournament: '天頂戦' };
+      const wins = hist.filter(e => e && EV[e.type] && e.result === 'champion');
+      if (wins.length) {
+        score += C.pastTitle * Math.min(2, wins.length);
+        const label = EV[wins[wins.length - 1].type];
+        reasons.push(wins.length >= 2 ? `${label}を含む大会${wins.length}度の優勝経験` : `${label}の優勝経験`);
+      }
+      const st = f.streak || 0;
+      if (st >= 5) { score += C.streak + Math.min(20, (st - 5) * 4); reasons.push(`${st}連勝中`); }
+      if (!reasons.length) return; // 語れる実績が無い選手は候補に挙げない
+      rows.push({
+        id, name: f.name, score,
+        orgName: Engine.newspaper._orgNameOfFighter(state, id),
+        reason: reasons.slice(0, 2).join('・'),
+      });
+    });
+    rows.sort((a, b) => b.score - a.score || a.id - b.id);
+    return rows.slice(0, limit);
+  },
+
+  _orgNameOfFighter(state, id) {
+    if ((state.roster || []).some(f => f && f.id === id)) return state.orgName || '';
+    const orgs = state.aiOrgs || {};
+    for (const k in orgs) {
+      if (((orgs[k] && orgs[k].roster) || []).some(f => f && f.id === id)) {
+        return (state.rivalOrgNames && state.rivalOrgNames[k])
+          || (typeof RIVAL_ORGS !== 'undefined' && (RIVAL_ORGS.find(o => o.id === k) || {}).name) || '';
+      }
+    }
+    return '';
+  },
+
+  /** 事前記事に足す「優勝候補」＋「注目カード」の一段落。
+   *  素材が無ければ空文字を返す(無理に埋めない)。*/
+  eventPreviewParagraph(state, ids) {
+    const picks = Engine.newspaper.eventContenders(state, ids, 3);
+    if (!picks.length) return '';
+    const named = picks.map(p => `${p.name}（${p.orgName ? p.orgName + '・' : ''}${p.reason}）`);
+    // **断定しない**。記者の予想であって結果ではない
+    let s = `本紙が挙げる注目は${named.join('、')}。`;
+    // 注目カード: 候補どうしに対戦履歴があれば名指しで書く
+    const h2h = state.h2h || {};
+    for (let i = 0; i < picks.length; i++) {
+      for (let j = i + 1; j < picks.length; j++) {
+        const a = picks[i], b = picks[j];
+        const rec = h2h[`${Math.min(a.id, b.id)}_${Math.max(a.id, b.id)}`]
+          || h2h[`${a.id}_${b.id}`] || h2h[`${b.id}_${a.id}`];
+        const n = rec && (rec.matches || 0);
+        if (n >= 2) {
+          s += `組み合わせ次第では${a.name}と${b.name}の${n + 1}度目が実現する。`;
+          return s;
+        }
+      }
+    }
+    return s;
   },
 
   /** 記事1本の最終点。generate() のソート直前に一括で当てる */

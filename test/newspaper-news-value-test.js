@@ -138,6 +138,46 @@ section('generate() が合成点で並べ、記事に内訳を残している(�
     '資格線の判定結果が記事に残っていない');
 });
 
+// ── P3 §2-7: 特別興行の事前記事 ─────────────────────────────────────
+section('事前記事は結果と同じ帯にある(いまの PRIORITY は逆だった)', () => {
+  const P = NP.PRIORITY;
+  assert.ok(P.tenchosenAnnounce >= 260, `天頂戦の告知が ${P.tenchosenAnnounce} 点で結果の帯に届かない`);
+  assert.ok(P.autumnWarAnnounce >= P.autumnWarResult - 20, '秋4団体戦の告知が結果から離れすぎ');
+  assert.ok(P.springTagAnnounce >= P.springTagResult - 20, '春タッグの告知が結果から離れすぎ');
+});
+
+section('優勝候補は「見えている実績」で並ぶ。OVRの降順にしない', () => {
+  const st = makeState({
+    mvpRace: { rankings: [{ fighterId: 107, rank: 1 }] },
+    h2h: { '101_107': { matches: 3 } },
+  });
+  // 107 は団体で**最もOVRが低い**が、MVP首位。OVR順なら最下位、実績順なら上位に来る
+  const picks = NP.eventContenders(st, [101, 102, 103, 104, 105, 106, 107], 3);
+  assert.ok(picks.length >= 2, '候補が挙がらない');
+  assert.ok(picks.some(p => p.id === 107), 'MVP首位がOVRの低さで落とされている');
+  // 語れる実績が無い選手は候補にしない(無理に埋めない)
+  const none = NP.eventContenders(st, [105, 106], 3);
+  assert.strictEqual(none.length, 0, '実績の無い選手を候補に挙げている');
+});
+
+section('事前記事の段落は断定しない / 素材が無ければ空を返す', () => {
+  const st = makeState({ mvpRace: { rankings: [{ fighterId: 101, rank: 1 }] } });
+  const par = NP.eventPreviewParagraph(st, [101, 102]);
+  assert.ok(par && par.length > 0, '段落が組み立てられない');
+  assert.ok(!/優勝する|必ず|確実/.test(par), `記者の予想が断定になっている: ${par}`);
+  assert.ok(!/OVR|総合値|pw/.test(par), `生の能力値が漏れている: ${par}`);
+  assert.strictEqual(NP.eventPreviewParagraph(st, []), '', '素材が無いのに文を作っている');
+});
+
+section('事前記事のテンプレに差し込み口がある(死蔵にしない)', () => {
+  const t = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') && NEWS_HEADLINE_TEMPLATES;
+  assert.ok(t, 'NEWS_HEADLINE_TEMPLATES が読めない');
+  ['autumnWarAnnounce', 'springTagAnnounce'].forEach(k => {
+    assert.ok((t[k] || []).every(x => x.body.includes('{preview}')),
+      `${k} の本文に {preview} が無い（段落を作っても紙面に出ない）`);
+  });
+});
+
 console.log('');
 if (failed > 0) { console.log(`newspaper-news-value-test: ${failed} FAILED`); process.exit(1); }
 console.log('newspaper-news-value-test: ok');
