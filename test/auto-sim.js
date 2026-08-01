@@ -804,6 +804,37 @@ const hofSeenIds = new Set();
 let lastAllHallOfFame = null;
 const hofPlayerRosterEver = new Set(); // 一度でも自団体に在籍した選手id（引退後は roster から消えるので毎週ためる）
 
+// ── 王座の保持期間 計測 (WM_TITLE_FIXTURE=1) ────────────────────────────
+// Keisuke「平均2.7回防衛なら1年も持たない」。記事文を「N年保持」ではなく「N度防衛」と
+// 書く規約にしたいので、**実データの分布を測ってから語彙を決める**（引き継ぎメモ E）。
+//
+// tickWeek の後に G を覗くだけの**読み取り専用**の横計測。エンジンを1回も呼ばないので、
+// 本編の乱数消費にもシーズン推移にも触れない（fingerprint が動かないこと自体が条件）。
+const titleCensus = { reigns: [], open: new Map() };
+function censusTitleReigns(state) {
+  if (!state) return;
+  const absWeek = (state.season - 1) * 48 + (state.week || 1);
+  const belts = [['player', state.titles]];
+  for (const id in (state.aiOrgs || {})) belts.push([id, (state.aiOrgs[id] || {}).titles]);
+  for (const [orgId, titles] of belts) {
+    const belt = titles && titles.world;
+    const champ = belt ? (belt.championId != null ? belt.championId : null) : null;
+    const prev = titleCensus.open.get(orgId);
+    if (!prev || prev.champ !== champ) {
+      // 王者が代わった/空位になった → 直前の在位を1件として閉じる
+      if (prev && prev.champ != null) {
+        titleCensus.reigns.push({
+          orgId, weeks: Math.max(1, absWeek - prev.start), defenses: prev.defenses || 0,
+        });
+      }
+      titleCensus.open.set(orgId, { champ, start: absWeek, defenses: (belt && belt.defenses) || 0 });
+    } else if (belt) {
+      // 在位中。防衛数は王座陥落時に 0 へ戻るので、毎週の最大値を持っておく
+      prev.defenses = Math.max(prev.defenses || 0, belt.defenses || 0);
+    }
+  }
+}
+
 // Phase 3a: 派閥イベント自動処理（F01/F02/F03 をランダムに応答）
 function autoHandleFactionEvent(G, simRng) {
   if (!G._pendingFactionEvent) return G;
@@ -1415,6 +1446,7 @@ function runSimulation(seed, seasons) {
       // ── tickWeek（週次パイプライン） ── validateGameStateはtickWeek内で実行される
       const tickResult = Engine.tickWeek(G);
       G = { ...tickResult.state, gameLog: [] };
+      if (process.env.WM_TITLE_FIXTURE === '1') censusTitleReigns(G);
       // MQ再設計P4: 大ニュース記事(mqAllTimeRecord/mqTagRecord)の生成回数を計測
       const bigNewsType = G.weeklyNewspaper && G.weeklyNewspaper.topStory && G.weeklyNewspaper.topStory.type;
       if (bigNewsType === 'mqAllTimeRecord') stats.mqAllTimeRecordNewsCount++;
@@ -2447,6 +2479,37 @@ if (process.env.WM_HOF_FIXTURE === '1') {
     console.log('    ↑ 「強かったのに何も獲れなかった」層。多いほど全盛期OVR加点に意味がある');
     const loPeakIn = count(rows, r => r.peak < 70 && r.cur >= 15);
     console.log(`  peak70未満なのに ★以上: ${loPeakIn} (${pct(loPeakIn, N)})  ← 実績だけで入れてしまう層`);
+  }
+}
+
+// ── 王座の保持期間 (WM_TITLE_FIXTURE=1) ────────────────────────────────
+// 記事文の語彙を決めるための材料。「N年保持」と書ける長さの在位が実際にあるのか、
+// それとも「N度防衛」でしか語れないのかを、分布で見る。
+if (process.env.WM_TITLE_FIXTURE === '1') {
+  console.log('--------------------------------------');
+  console.log('[王座の保持期間] (WM_TITLE_FIXTURE=1)  1シーズン=48週');
+  const all = titleCensus.reigns;
+  if (!all.length) {
+    console.log('  在位を1件も観測できなかった');
+  } else {
+    const show = (label, rows) => {
+      if (!rows.length) { console.log(`  ${label}: なし`); return; }
+      const w = rows.map(r => r.weeks).sort((a, b) => a - b);
+      const d = rows.map(r => r.defenses).sort((a, b) => a - b);
+      const q = (arr, p) => arr[Math.min(arr.length - 1, Math.floor(arr.length * p))];
+      const avg = arr => (arr.reduce((s, v) => s + v, 0) / arr.length);
+      const pct = n => `${(n / rows.length * 100).toFixed(1)}%`;
+      console.log(`  ${label}  n=${rows.length}`);
+      console.log(`    保持週数  平均${avg(w).toFixed(1)}週 (${(avg(w) / 48).toFixed(2)}年)  中央${q(w, .5)}週  最長${w[w.length - 1]}週`);
+      console.log(`    分位      p25=${q(w, .25)}週  p75=${q(w, .75)}週  p90=${q(w, .9)}週`);
+      console.log(`    1年(48週)以上: ${pct(w.filter(v => v >= 48).length)}   2年以上: ${pct(w.filter(v => v >= 96).length)}   半年(24週)未満: ${pct(w.filter(v => v < 24).length)}`);
+      console.log(`    防衛回数  平均${avg(d).toFixed(2)}度  中央${q(d, .5)}度  最多${d[d.length - 1]}度  0度で明け渡し: ${pct(d.filter(v => v === 0).length)}`);
+    };
+    show('全団体', all);
+    const mine = all.filter(r => r.orgId === 'player');
+    if (mine.length) show('自団体のみ', mine);
+    else console.log('  自団体: 観測対象外 — 団体王座の解禁(titleEstablished)は app.js にしかなく、'
+      + 'auto-sim は app.js を読まないため自団体の王座は一度も設立されない。上の数字はAI団体のみ');
   }
 }
 
