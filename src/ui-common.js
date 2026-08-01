@@ -16135,7 +16135,12 @@ function buildCoachTournamentWrapup(kind, state, args) {
   const meta = TCW_EVENT_META[kind] || { kicker: 'COACH NOTE', theme: '' };
   return {
     coachId, coachName: coach.name,
-    portraitUrl: (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(coachId) : '',
+    // 顔出しは 2:3 の枠(_u3bSideHtml size:'m' = 132×194)なので、**upper を使う**。
+    // face_* は 256×256 の正方形で、2:3 に入れると顎が切れて余白ができる
+    // (mockup-baseline §4「正方形の顔は52px以下」/ 2026-08-01 Keisuke 指摘)。
+    // upper が無いコーチだけ face へ落とす — 既存の顔出し共通経路と同じ順序
+    portraitUrl: (typeof getCoachUpperUrl === 'function' && getCoachUpperUrl(coachId))
+      || ((typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(coachId) : ''),
     fallback: coach.emoji || '🎓',
     line, kicker: meta.kicker, theme: meta.theme,
     mentionedIds: spoken.map(p => p.id),
