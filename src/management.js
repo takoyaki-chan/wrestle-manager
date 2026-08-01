@@ -18486,7 +18486,47 @@ Engine.mvpRace = {
   },
 
   /** フレーバー1行を優先度付きで生成（バリエーション豊富） */
+  // N-12: **下位の選手に「誰との因縁」を書かない。**
+  //  4位以下は、その順位にどう食らいついているかだけで構成する
+  //  (直近の勝敗 / 点差の詰まり方 / 追う側か逃げる側か / 残り週数)。
+  //  レースの外の話をされても、読み手には「なぜこの人がここにいるか」が伝わらない。
+  MVP_CHASE_FROM_RANK: 4,
+
+  _composeChaseLine(state, entry) {
+    const rows = (state.mvpRace && state.mvpRace.rankings) || [];
+    const me = rows.find(r => r && r.fighterId === entry.fighterId) || entry;
+    const rank = me.rank || entry.rank || 0;
+    const pts = Math.round(me.points || entry.points || 0);
+    const above = rows.find(r => r && r.rank === rank - 1);
+    const below = rows.find(r => r && r.rank === rank + 1);
+    const gapUp = above ? Math.max(0, Math.round((above.points || 0) - pts)) : null;
+    const gapDown = below ? Math.max(0, Math.round(pts - (below.points || 0))) : null;
+    const left = Math.max(0, 48 - (state.week || 1));
+    const prev = me.prevRank;
+
+    const parts = [];
+    // 追う側か、逃げる側か
+    if (prev != null && prev > rank) parts.push(`前週${prev}位から${rank}位へ上げた`);
+    else if (prev != null && prev < rank) parts.push(`前週${prev}位から${rank}位へ下げた`);
+    else parts.push(`${rank}位で足踏みしている`);
+    // 点差の詰まり方
+    if (gapUp != null) {
+      parts.push(gapUp <= 5 ? `上とは${gapUp}点差、射程に入っている`
+        : gapUp <= 15 ? `上とは${gapUp}点差` : `上まで${gapUp}点は開いている`);
+    }
+    if (gapDown != null && gapDown <= 5) parts.push(`下からも${gapDown}点差で詰められている`);
+    // 残り週数
+    parts.push(left <= 4 ? `残りは${left}週、動かせる試合は数えるほどしかない`
+      : left <= 12 ? `残り${left}週で、あと何試合組めるかの勝負になる`
+        : `残り${left}週、まだ順位は動く`);
+    return parts.join('。') + '。';
+  },
+
   _composeFlavorLine(state, entry, fighter) {
+    // N-12: 4位以下は順位争いだけを書く。因縁の話はここでは書かない
+    if ((entry.rank || 0) >= Engine.mvpRace.MVP_CHASE_FROM_RANK) {
+      return Engine.mvpRace._composeChaseLine(state, entry);
+    }
     const m = entry.breakdown.meta;
     const traits = (fighter && fighter.traits) || [];
     const role = Engine.mvpRace._roleLabel(m.role);

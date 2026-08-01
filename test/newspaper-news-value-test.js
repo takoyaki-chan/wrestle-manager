@@ -228,6 +228,39 @@ section('ドラフト総括は見立てティア順。能力値の降順にし�
   assert.ok(/characterIds:/.test(block), '顔付きになっていない');
 });
 
+// ── P4/P5 ───────────────────────────────────────────────────────────
+section('静かな週の読み物は実話だけ。素材が無ければ作らない', () => {
+  // 直近に何も起きていない選手だけの週 → 読み物は作らない
+  const quiet = makeState({ season: 5, week: 20 });
+  assert.strictEqual(NP.buildFollowUp(quiet), null, '素材が無いのに読み物を作っている');
+  // ブレークスルーがあれば拾う
+  const withBt = makeState({ season: 5, week: 20,
+    roster: [f(101, 'A', 60, { careerRecord: { history: [{ type: 'breakthrough', season: 5, week: 18, stat: 'pw' }] } })] });
+  const fu = NP.buildFollowUp(withBt);
+  assert.ok(fu && fu.type === 'followUpBreakthrough', 'ブレークスルーの後追いが出ない');
+  // 一度取り上げた選手は当分外す(連勝が毎週一面を占めた事故の再発防止)
+  const cooled = { ...withBt, newsSeen: { followUp: { '101': Engine.util.absWeek(5, 19) } } };
+  assert.strictEqual(NP.buildFollowUp(cooled), null, 'クールダウン中の選手をまた取り上げている');
+});
+
+section('MVPレース4位以下は順位争いだけを書く(N-12)', () => {
+  const rows = [
+    { fighterId: 101, rank: 1, prevRank: 1, points: 400 },
+    { fighterId: 102, rank: 2, prevRank: 2, points: 380 },
+    { fighterId: 103, rank: 3, prevRank: 3, points: 370 },
+    { fighterId: 104, rank: 4, prevRank: 6, points: 366 },
+  ];
+  const st = { season: 5, week: 38, rngSeed: 42, mvpRace: { rankings: rows }, roster: [], aiOrgs: {} };
+  const line = Engine.mvpRace._composeChaseLine(st, rows[3]);
+  assert.ok(/位/.test(line) && /点差/.test(line), `順位・点差が入っていない: ${line}`);
+  assert.ok(/残り/.test(line), `残り週数が入っていない: ${line}`);
+  assert.ok(!/因縁|宿敵|好敵手/.test(line), `下位に因縁の話を書いている: ${line}`);
+  // 4位以上は chase 側へ回る
+  const src = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'management.js'), 'utf8');
+  assert.ok(/MVP_CHASE_FROM_RANK/.test(src) && /_composeChaseLine\(state, entry\)/.test(src),
+    '4位以下の分岐が _composeFlavorLine に入っていない');
+});
+
 console.log('');
 if (failed > 0) { console.log(`newspaper-news-value-test: ${failed} FAILED`); process.exit(1); }
 console.log('newspaper-news-value-test: ok');

@@ -6615,7 +6615,7 @@ function renderNewspaper() {
     <button class="np-tab${_newspaperSubPage === 1 ? ' active' : ''}" onclick="setNewspaperSubPage(1)">📰 1面 興行</button>
     ${_npFeatureOn(2) ? `<button class="np-tab${_newspaperSubPage === 2 ? ' active' : ''}" onclick="setNewspaperSubPage(2)">⚔ 2面 団体比較</button>` : ''}
     ${_npFeatureOn(3) ? `<button class="np-tab${_newspaperSubPage === 3 ? ' active' : ''}" onclick="setNewspaperSubPage(3)">🔥 3面 因縁列伝</button>` : ''}
-    <button class="np-tab${_newspaperSubPage === 4 ? ' active' : ''}" onclick="setNewspaperSubPage(4)">📊 4面 MVPレース</button>
+    ${_newspaperSubPage === 4 ? `<button class="np-tab active" onclick="setNewspaperSubPage(4)">📊 4面 MVPレース</button>` : ''}
   </div>`;
 
   if (_newspaperSubPage === 1) html += _npRenderPage1();
