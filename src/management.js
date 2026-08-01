@@ -695,8 +695,105 @@ const Engine = {
   },
 
 
+  // ── 連勝の団体記録 (新聞P2 §2-3 強度補正の材料) ─────────────
+  //
+  //  「団体の連勝記録」= **その団体で1人の選手が挙げた連勝の最高記録**。
+  //  記事側は「◯連勝、団体記録に王手」「団体記録を更新」と書くために使う。
+  //
+  //  更新は毎週の全走査で行う。fighter.streak を書いている場所は
+  //  processSettlement / PPV / AI団体 と散っていて、そこへ1つずつ足すと
+  //  必ずどれかを取りこぼす(呼び出し元を全部数えてから直す)。
+  //  走査なら「いま最大の streak」だけ見ればよく、経路が増えても壊れない。
+  streak: {
+    // ここ未満は記録として扱わない。序盤に2連勝が「団体記録」になると
+    // 「更新」が毎週出て言葉が安くなる。主役補正の「5連勝以上」と同じ線に合わせる
+    RECORD_FLOOR: 5,
+
+    create(value) {
+      const v = Number(value);
+      return {
+        value: Math.max(this.RECORD_FLOOR, Number.isFinite(v) ? v : this.RECORD_FLOOR),
+        holderId: null, holderName: null, season: null, week: null,
+      };
+    },
+
+    /** その団体の記録。無ければ床値の空記録を返す(旧セーブでも落ちない) */
+    getRecord(state, orgId = 'player') {
+      const rec = orgId === 'player'
+        ? (state && state.streakRecord)
+        : (state && state.aiOrgs && state.aiOrgs[orgId] && state.aiOrgs[orgId].streakRecord);
+      return (rec && Number.isFinite(rec.value)) ? rec : this.create();
+    },
+
+    /** 記録との距離。'broken'=更新 / 'match'=王手(あと1つで並ぶ) / null=まだ遠い */
+    distanceTo(state, orgId, streak) {
+      const n = Number(streak) || 0;
+      if (n < this.RECORD_FLOOR) return null;
+      const rec = this.getRecord(state, orgId);
+      if (n > rec.value) return 'broken';
+      if (n === rec.value - 1) return 'match';
+      return null;
+    },
+
+    _scan(roster, rec, season, week, floor) {
+      let best = null;
+      (roster || []).forEach(f => {
+        const n = (f && f.streak) || 0;
+        if (n < floor) return;
+        if (!best || n > best.n || (n === best.n && f.id < best.f.id)) best = { n, f };
+      });
+      if (!best) return rec;
+      const cur = (rec && Number.isFinite(rec.value)) ? rec : null;
+      // 同値では更新しない。最初に到達した選手が記録保持者であり続ける
+      if (cur && best.n <= cur.value) return rec;
+      return { value: best.n, holderId: best.f.id, holderName: best.f.name || null, season, week };
+    },
+
+    /** 毎週1回、全団体の記録を更新する。tickWeek から呼ぶ */
+    refresh(state) {
+      if (!state) return state;
+      const season = state.season, week = state.week, floor = this.RECORD_FLOOR;
+      const nextPlayer = this._scan(state.roster, state.streakRecord, season, week, floor);
+      let aiOrgs = state.aiOrgs, aiChanged = false;
+      if (aiOrgs) {
+        const nextAi = {};
+        for (const id in aiOrgs) {
+          const org = aiOrgs[id];
+          const nextRec = this._scan(org && org.roster, org && org.streakRecord, season, week, floor);
+          if (org && nextRec !== org.streakRecord) { nextAi[id] = { ...org, streakRecord: nextRec }; aiChanged = true; }
+          else nextAi[id] = org;
+        }
+        if (aiChanged) aiOrgs = nextAi;
+      }
+      if (nextPlayer === state.streakRecord && !aiChanged) return state;
+      return { ...state, streakRecord: nextPlayer, ...(aiChanged ? { aiOrgs } : {}) };
+    },
+  },
+
   // ── Popularity System (v1.0b) ─────────────────────────────
   popularity: {
+    // 新聞P2 §2-2 主役補正の材料。**業界全体(全団体横断)での人気上位**を返す。
+    // 団体内のソートしか無かったため、「業界人気トップ3」を点にできなかった。
+    //
+    // Engine.database.getAllFighters は全選手をスプレッドで複製するので、
+    // 順位を知りたいだけのここでは使わない(毎週呼ばれる経路にコピーを置かない)。
+    // FA・引退者は「いま業界で見られている選手」ではないので数えない。
+    getIndustryTopIds(state, n = 3) {
+      if (!state) return [];
+      const best = [];
+      const consider = (f) => {
+        if (!f || f.id == null) return;
+        const pop = Number(f.popularity) || 0;
+        best.push({ id: f.id, pop });
+      };
+      (state.roster || []).forEach(consider);
+      const orgs = state.aiOrgs || {};
+      for (const id in orgs) ((orgs[id] && orgs[id].roster) || []).forEach(consider);
+      // 同人気は id 昇順で決める(週ごとに順位が入れ替わって見えないように)
+      best.sort((a, b) => b.pop - a.pop || a.id - b.id);
+      return best.slice(0, Math.max(0, n)).map(x => x.id);
+    },
+
     // §A: Diminishing returns curve (promo-system-redesign v2.0)
     // pop0-19: full / pop20-34: 緩やか / pop50+: 逓減 / pop90+: 試合なしでは微増のみ
     getDiminishingMultiplier(currentPop) {
@@ -12587,6 +12684,12 @@ const Engine = {
       s = Engine.newspaper.publish(s, newsRng);
     }
 
+    // 連勝の団体記録を更新(新聞P2 §2-3 強度補正の材料)。**新聞生成の後**に置く——
+    // 記事が「団体記録を更新」「記録に王手」と書けるのは、今週の連勝が記録へ
+    // 反映される前に比べたときだけ。先に更新すると自分自身と比べることになり、
+    // 何連勝しても常に「更新」判定にならない
+    if (!s.offSeason) s = Engine.streak.refresh(s);
+
     // ★ 成長マイルストーン検出（sanitizeFloats前、全処理完了後）
     if (!s.offSeason) {
       const milestoneRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xCD01));
@@ -17012,6 +17115,7 @@ const Engine = {
       domeShowsThisSeason: 0, // orgPop リバランス v1.1 §5: ドーム年1回制限
       attendanceMomentum: 0, // L1: 勢い補正（-0.15〜+0.15）
       lastShowResults: [],
+      streakRecord: Engine.streak.create(),
       mqRecord: Engine.mq.createRecord(Engine.mq.SINGLE_RECORD_START),
       mqRecordTag: Engine.mq.createRecord(Engine.mq.TAG_RECORD_START),
       _migrated_mq_record_v1: true,
