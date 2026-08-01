@@ -10426,7 +10426,10 @@ const App = {
       if (typeof showBigNewsPopup !== 'function') return;
       // 大ニュースの週は従来どおりその記事のリードを出す。大ニュースでない開幕号は
       // 開幕号専用の文言にする（同じ号外フレームを使い、見た目は揃える）。
-      showBigNewsPopup(wp.topStory, (!wp.isBigNews && isSeasonOpening) ? 'seasonOpening' : null);
+      // 大ニュースは一面トップとは限らない(天頂戦優勝のほうが上に来る週がある)。
+      // 号に載っている大ニュース記事を generate が bigNewsStory で指しているのでそれを使う。
+      // 旧号は持たないので topStory へ落ちる
+      showBigNewsPopup(wp.bigNewsStory || wp.topStory, (!wp.isBigNews && isSeasonOpening) ? 'seasonOpening' : null);
     }, delay != null ? delay : 200);
   },
 

@@ -6675,9 +6675,13 @@ function _npSubPhotoHtml(ss) {
   return `<div class="np-sub-photo" style="${photoBg}" ${singleId ? `onclick="showFighterPopup(${singleId})"` : ''}></div>`;
 }
 // MQ再設計P5補: 一面トップで2名を並び写真にする対象タイプ。
-// springTagResult(優勝ペア)とfatedRivals(同年代の逸材2名)が該当。
+// springTagResult(優勝ペア) / fatedRivals(同年代の逸材2名) /
+// mqAllTimeRecord(歴代最高評価は勝者と相手の2人でひとつの試合。2026-08-01 Keisuke 裁定)。
+// 対象一覧は関数の中に置く。この関数は各テストが本体だけを切り出して回すので、
+// 外の定数に頼ると抽出先で ReferenceError になる
 function _npSpringTagStoryIds(state, story, seasonNum) {
-  if (!story || (story.type !== 'springTagResult' && story.type !== 'fatedRivals')) return [];
+  const PAIR_TYPES = ['springTagResult', 'fatedRivals', 'mqAllTimeRecord'];
+  if (!story || !PAIR_TYPES.includes(story.type)) return [];
   const direct = Array.isArray(story.characterIds)
     ? story.characterIds.filter(id => Number.isInteger(id) && id > 0).slice(0, 2)
     : [];
@@ -7254,7 +7258,9 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
   const isTagPhoto = tagPhotoIds.length >= 2;
   const primaryId = tagPhotoIds[0] || ts.characterId || null;
   const photoIds = isTagPhoto ? tagPhotoIds : (primaryId ? [primaryId] : []);
-  const tsName = photoIds.map(id => ALL_CHARS.find(c => c.id === id)?.name || '').filter(Boolean).join(' / ');
+  // 組んだ2人(タッグ・同期)は「/」、戦った2人(歴代最高評価)は「vs」で繋ぐ
+  const pairJoin = ts.type === 'mqAllTimeRecord' ? ' vs ' : ' / ';
+  const tsName = photoIds.map(id => ALL_CHARS.find(c => c.id === id)?.name || '').filter(Boolean).join(pairJoin);
   const orgKey = primaryId ? _npFindFighterOrgKey(G, primaryId) : null;
   const orgName = primaryId ? _findFighterOrgName(G, primaryId) : '';
   const emblem = orgKey ? _npOrgEmblem(G, orgKey, 18) : '';

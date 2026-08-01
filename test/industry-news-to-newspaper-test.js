@@ -175,7 +175,17 @@ section('4. シーズン開幕号は既存の号外フレームで知らせる',
   const uiCommon = read('src/ui-common.js');
   const at = appJs.indexOf('_maybeShowBigNewsPopup(delay) {');
   assert.ok(at > 0, '_maybeShowBigNewsPopup が見つからない');
-  const body = appJs.slice(at, at + 900);
+  // 固定長で切ると、関数にコメントを足しただけで検査対象が窓から外れる
+  // (2026-08-01 に 900 で外れた)。関数の終わりまでを対象にする
+  const body = (() => {
+    const open = appJs.indexOf('{', at);
+    let depth = 0;
+    for (let i = open; i < appJs.length; i++) {
+      if (appJs[i] === '{') depth++;
+      if (appJs[i] === '}') { depth--; if (depth === 0) return appJs.slice(at, i + 1); }
+    }
+    return appJs.slice(at, at + 2000);
+  })();
   assert.ok(/G\.week === 1/.test(body) && /G\.season \|\| 1\) > 1/.test(body),
     '開幕号の判定が「新シーズンの第1週」になっていない');
   // 変数を作るだけで早期 return に使っていないと、開幕号は誰にも知らされないまま素通りする

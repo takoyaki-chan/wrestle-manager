@@ -2677,7 +2677,11 @@ const Engine = {
           stage: stageLabel,
           orgName: Engine.mq._fighterOrgName(state, winnerId),
         };
-        return Engine.industryNews.push(state, { type: 'mqAllTimeRecord', characterId: winnerId, data });
+        // 歴代最高評価は勝者ひとりの手柄ではない。相手がいて初めて成立した試合なので
+        // 紙面も2人並びの写真にする（2026-08-01 Keisuke 裁定）
+        return Engine.industryNews.push(state, {
+          type: 'mqAllTimeRecord', characterId: winnerId, characterIds: [winnerId, loserId], data,
+        });
       }
       const winnerIds = Array.isArray(metadata.winnerIds) ? metadata.winnerIds.filter(id => id != null) : [];
       if (winnerIds.length < 2 || !Array.isArray(record.holderIds)) return state;
@@ -27895,7 +27899,11 @@ function _buildPpvSummitStory(sr, season, week, P) {
 
 Engine.newspaper = {
   PRIORITY: {
-    tenchosenResult:         270,
+    // 天頂戦の優勝は4年に一度の頂点。歴代最高評価の試合(mqAllTimeRecord 320)より
+    // 大きい扱いにする（2026-08-01 Keisuke 裁定「最高評価の試合が生まれたのは大きな記事だけど、
+    // 天頂戦優勝の方がより大きな記事」）。同じ週に両方が立つのは天頂戦の決勝が
+    // 歴代最高を出したときで、そのとき優勝記事がトップ・記録記事が肩に入る
+    tenchosenResult:         330,
     // 天頂戦の下段記事（2026-07-27）。一面は優勝記事が取るので、この2本は
     // 業界ニュース欄(サブ3枠)で上位に来る高さに置く。一面(270)は超えない
     tenchosenBestBout:       205,
@@ -28489,6 +28497,12 @@ Engine.newspaper = {
     // 次回展望
     const preview = Engine.newspaper.buildPreview(state);
 
+    // 大ニュース記事は一面トップとは限らない（天頂戦優勝のほうが上に来る週がある）。
+    // 号に載っているうちで最も優先度の高い1本を、週頭の号外通知の題材にする
+    const bigNewsStory = (typeof BIG_NEWS_TYPES !== 'undefined')
+      ? [topStory, ...subStories].find(s => s && BIG_NEWS_TYPES.has(s.type)) || null
+      : null;
+
     const result = {
       season: state.season, week: state.week,
       // 新聞再設計P1: 一面レイアウトの版。'v3' = 紙面骨格版(トップ/肩/準トップ/小/短信)。
@@ -28500,8 +28514,12 @@ Engine.newspaper = {
       playerShowData: state.currentNewspaper || null,
       preview,
       pages: null, // 複数ページ時のみ設定
-      // MQ再設計P4 §5.2: BIG_NEWS_TYPES に載ったら大ニュース週。週頭PU+一面ジャックの起点
-      isBigNews: !!(topStory && typeof BIG_NEWS_TYPES !== 'undefined' && BIG_NEWS_TYPES.has(topStory.type)),
+      // MQ再設計P4 §5.2: BIG_NEWS_TYPES に載ったら大ニュース週。週頭PU+一面ジャックの起点。
+      // 2026-08-01: トップだけを見ていたので、天頂戦優勝(330)が大ニュース(320以下)を
+      // 押し下げた週に号外通知が黙って消えていた。トップに限らず**その号に載っていれば**
+      // 鳴らす。どの記事で鳴らすかは bigNewsStory で持つ（旧号は持たないので topStory へ落ちる）
+      isBigNews: !!bigNewsStory,
+      bigNewsStory,
     };
 
     // === 複数ページ: ジュニアトーナメント結果 ===

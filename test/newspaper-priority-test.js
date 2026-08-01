@@ -158,6 +158,40 @@ section('12. 試合系は最大1件の絞りを残す', () => {
     '試合系を1件に絞る仕組みが消えている。新聞が試合結果で埋まる');
 });
 
+// ─────────────────────────────────────────────────────────────
+// E. 一面の順番（2026-08-01 Keisuke 裁定）
+// ─────────────────────────────────────────────────────────────
+
+section('14. 天頂戦優勝は歴代最高評価の試合より大きい', () => {
+  // 「最高評価の試合が生まれたのは大きな記事だけど、天頂戦優勝の方がより大きな記事」
+  assert.ok(P.tenchosenResult > P.mqAllTimeRecord,
+    `天頂戦優勝(${P.tenchosenResult})が歴代最高評価(${P.mqAllTimeRecord})より下。4年に一度の頂点が一面を取れない`);
+  // 4年に一度の頂点なので、他の大ニュース枠より上に置く
+  ['mqTagRecord', 'hotProspectDebut', 'fatedRivals', 'topChampionInjury'].forEach(k => {
+    assert.ok(P.tenchosenResult > P[k], `天頂戦優勝が ${k}(${P[k]}) より下`);
+  });
+});
+
+section('15. 大ニュースがトップから押し出されても号外通知は鳴る', () => {
+  // 天頂戦優勝(330)が大ニュース(320以下)を肩へ落とす週がある。トップだけを見ていると
+  // 記録更新の号外が黙って消える
+  assert.ok(/const bigNewsStory = [\s\S]{0,260}?BIG_NEWS_TYPES\.has\(s\.type\)/.test(mgmt),
+    '号に載っている大ニュース記事を拾っていない（topStory だけを見ている）');
+  assert.ok(/isBigNews: !!bigNewsStory/.test(mgmt),
+    'isBigNews がトップ記事の型だけで決まっている');
+  assert.ok(/showBigNewsPopup\(wp\.bigNewsStory \|\| wp\.topStory/.test(app),
+    '号外ポップアップが bigNewsStory を使っていない。旧号のフォールバックも要る');
+});
+
+section('16. 歴代最高評価は勝者と相手の2人で紙面に出る', () => {
+  // 「勝者だけではなくて、対戦相手も含めて2人を並べた画像にするべき」
+  assert.ok(/type: 'mqAllTimeRecord', characterId: winnerId, characterIds: \[winnerId, loserId\]/.test(mgmt),
+    '記録記事に相手のIDを積んでいない。描画側が2人並びにできない');
+  const render = read('src/ui-render.js');
+  assert.ok(/PAIR_TYPES = \[[^\]]*'mqAllTimeRecord'/.test(render),
+    '一面トップの2人並び写真の対象に mqAllTimeRecord が入っていない');
+});
+
 section('13. 特別興行は最上位のまま', () => {
   ['tenchosenResult', 'juniorTournamentResult', 'autumnWarResult', 'springTagResult'].forEach(k => {
     assert.ok(P[k] >= 230, `${k}(${P[k]}) が下がっている。特別興行は最上位`);
@@ -167,4 +201,4 @@ section('13. 特別興行は最上位のまま', () => {
 
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (13 sections)');
+console.log('ALL PASS (16 sections)');
