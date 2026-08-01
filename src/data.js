@@ -15246,8 +15246,14 @@ const POST_MATCH_FLAVOR_LINES = {
 // (AUTUMN_WAR_MATCH_LINES のように standard と _default を両方持つものもある)ので、
 // 1つに決め打ちせず順に試す。
 function getDialoguePool(lineObj, fighter) {
+  const asPool = value => {
+    if (Array.isArray(value) && value.length) return value;
+    if (typeof value === 'string' && value) return [value];
+    return null;
+  };
   const v = fighter?.voice;
-  if (v && lineObj._voice?.[v]) return lineObj._voice[v];
+  const voicePool = v ? asPool(lineObj?._voice?.[v]) : null;
+  if (voicePool) return voicePool;
   const p = fighter?.personality || 'normal';
   const a = fighter?.archetype || 'standard';
   const archKeys = [a, 'standard', '_default', 'normal'];
@@ -15256,8 +15262,18 @@ function getDialoguePool(lineObj, fighter) {
     const bucket = lineObj[ak];
     if (!bucket || typeof bucket !== 'object' || Array.isArray(bucket)) continue;
     for (const pk of persKeys) {
-      const pool = bucket[pk];
-      if (pool && (!Array.isArray(pool) || pool.length)) return pool;
+      const pool = asPool(bucket[pk]);
+      if (pool) return pool;
+    }
+  }
+  // Glimpse A is authored personality -> archetype, while the established
+  // dialogue tables remain archetype -> personality.  Accept both layouts.
+  for (const pk of persKeys) {
+    const bucket = lineObj[pk];
+    if (!bucket || typeof bucket !== 'object' || Array.isArray(bucket)) continue;
+    for (const ak of archKeys) {
+      const pool = asPool(bucket[ak]);
+      if (pool) return pool;
     }
   }
   return ['…'];

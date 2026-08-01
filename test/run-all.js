@@ -77,6 +77,7 @@ const QUICK = new Set([
   'faction-overlay-close-test.js',
   'faction-size-freeze-test.js',
   'finisher-cooldown-test.js',
+  'glimpse-dialogue-resolution-test.js',
   'flags-returner-detection-test.js',
   'header-season-redesign-test.js',
   'hp-shape-and-pacing-test.js',
