@@ -6696,8 +6696,15 @@ function renderPPVMatchPreview() {
     // 因縁があれば宣戦布告に差し替える(吹き出しの見た目はPPVのものをそのまま使う)
     const ppvRiv = (typeof _rivalryPreMatchLines === 'function')
       ? _rivalryPreMatchLines(L.id, R.id) : null;
-    const lineL = (ppvRiv && ppvRiv.leftLine) || _getPPVPreMatchLine(L);
-    const lineR = (ppvRiv && ppvRiv.rightLine) || _getPPVPreMatchLine(R);
+    // task-75: 頂上決戦の直前だけは専用の一本に差し替える。年間最大の舞台に立つ重みを
+    // 両者が1本ずつ語る枠で、因縁の有無で色が変わる(pickPpvLine が両向きの rivalry を見る)。
+    // 因縁つきの汎用宣戦布告より、こちらが上位(この舞台のための言葉だから)
+    const summitPre = (f, o) => {
+      if (!isMain || typeof pickPpvLine !== 'function') return '';
+      try { return pickPpvLine('summitPre', f, o, G) || ''; } catch (_e) { return ''; }
+    };
+    const lineL = summitPre(L, R) || (ppvRiv && ppvRiv.leftLine) || _getPPVPreMatchLine(L);
+    const lineR = summitPre(R, L) || (ppvRiv && ppvRiv.rightLine) || _getPPVPreMatchLine(R);
     const badge = match.isRivalry ? `<div class="ppvprog-vsb">🔥 因縁対決</div>` : '';
     const mainClass = isMain ? ' is-main' : '';
 
@@ -6763,6 +6770,51 @@ function renderPPVMatchPreview() {
   overlay.classList.add('active');
 }
 
+// ── task-75 PPV で「相手選手が」こちらへ言葉を投げる枠 ─────────────────
+//
+//  自団体の選手が自分の勝敗を語るのではなく、**対戦相手が**こちらへ言葉を投げる。
+//  だから因縁の有無で色が変わる(2026-08-01 Keisuke 指定)。
+//    自団体が勝った → 負けた相手が oppOnLoss(悔しげ / 素直に認める)
+//    自団体が負けた → 勝った相手が oppOnWin(**因縁ありのときだけ侮辱を出す唯一の枠**)
+//  頂上決戦の敗者は専用の summitLose。年間最大の舞台で負けた側が無言なのは演出の穴。
+//
+//  **アンダーカードで毎試合喋らせない**(task-75 不変条件7)。7試合すべてに出すとくどいので、
+//  物語が動いた試合 — 因縁がある / 番狂わせ / 大熱戦 — だけに絞る。出ない試合があってよい。
+const PPV_OPP_GRUDGE = 60;   // 因縁あり(pickPpvLine の grudge 判定と同じ閾値)
+const PPV_OPP_UPSET_GAP = 8; // 番狂わせ: 敗者OVR - 勝者OVR がこれ以上
+const PPV_OPP_HOT_MQ = 75;   // 大熱戦(ppvprog のMQ強調と同じ基準)
+
+function _ppvOpponentLines(match, result, winnerSide) {
+  const none = { winnerLine: '', loserLine: '' };
+  if (!match || !result || winnerSide === 'draw' || typeof pickPpvLine !== 'function') return none;
+  const winner = winnerSide === 'right' ? match.right : match.left;
+  const loser = winnerSide === 'right' ? match.left : match.right;
+  if (!winner || !loser) return none;
+  const pick = (scene, speaker, other) => {
+    try { return pickPpvLine(scene, speaker, other, G) || ''; } catch (_e) { return ''; }
+  };
+
+  if (match.isSummit) return { winnerLine: '', loserLine: pick('summitLose', loser, winner) };
+
+  // ここから先はアンダーカード。合同興行なので他団体同士のカードも組まれる。
+  // 自団体が絡まない試合に「こちらへ投げる言葉」は成立しないので出さない
+  const wMine = String(winner._ppvOrgId) === 'player';
+  const lMine = String(loser._ppvOrgId) === 'player';
+  if (wMine === lMine) return none;
+
+  const rel = (G && G.relationships) || {};
+  const rivalry = Math.max(
+    (rel[`${winner.id}>${loser.id}`] || {}).rivalry || 0,
+    (rel[`${loser.id}>${winner.id}`] || {}).rivalry || 0);
+  const gap = (typeof Engine !== 'undefined' && Engine.util)
+    ? Engine.util.ov(loser) - Engine.util.ov(winner) : 0;
+  if (rivalry < PPV_OPP_GRUDGE && gap < PPV_OPP_UPSET_GAP && (result.mq || 0) < PPV_OPP_HOT_MQ) return none;
+
+  return lMine
+    ? { winnerLine: pick('oppOnWin', winner, loser), loserLine: '' }
+    : { winnerLine: '', loserLine: pick('oppOnLoss', loser, winner) };
+}
+
 function renderPPVMatchResultPopup(idx, onContinue) {
   const pp = App._ppvPreview;
   const match = pp?.card?.[idx];
@@ -6775,6 +6827,9 @@ function renderPPVMatchResultPopup(idx, onContinue) {
   if (match.isSummit && winnerSide !== 'draw' && typeof PPV_SUMMIT_VICTORY_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
     try { victoryLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winner); } catch (_e) {}
   }
+  // 相手選手の言葉。自団体が負けた回は「勝った相手の言葉」が汎用の勝利セリフより強いので差し替える
+  const oppLines = _ppvOpponentLines(match, result, winnerSide);
+  if (oppLines.winnerLine) victoryLine = oppLines.winnerLine;
   const bestMq = Math.max(...pp.results.filter(Boolean).map(r => r.mq || 0));
   const next = pp.results.findIndex((r, i) => i > idx && r === null);
   showEventMatchResultPopup({
@@ -6784,6 +6839,7 @@ function renderPPVMatchResultPopup(idx, onContinue) {
     left: { ...match.left, org: match.left._ppvOrgName || '', orgId: match.left._ppvOrgId }, right: { ...match.right, org: match.right._ppvOrgName || '', orgId: match.right._ppvOrgId }, winnerSide, winnerFighter: winner,
     leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'NO CONTEST' : match.isSummit ? 'SUMMIT WIN' : 'VICTORY',
     finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine,
+    loserLine: oppLines.loserLine,
     chips: [match.isSummit ? 'PPV MAIN EVENT' : `PPV 第${idx + 1}試合`, result.mq === bestMq ? '大会ベストMQ' : '', match.isRivalry ? '因縁対決' : ''],
     hpLeft: result.hpLeft, hpRight: result.hpRight, hpLabel: 'FINAL HP', footNote: winnerSide === 'draw' ? 'PPV ・ 決着つかず' : `PPV ・ ${winner?.name || ''} 勝利`,
     nextLabel: _matchNextLabel(pp.results.every(Boolean)), onContinue,
@@ -16801,10 +16857,14 @@ function showEventMatchResultPopup(opts) {
   // 顔出しイベント共通ルール(docs/ui/02-layouts.md 2-D-X)準拠: 吹き出しは画像の「上」の予約枠に入れ、
   // 中身はセリフ本文だけ(話者名・所属は書かない。話者は画像下の表示で示す)。発言が無い側は空枠のままにして
   // 左右の画像の高さを揃える(画像に被らないこと・左右の高さが揃うことは自動検証済み)。
-  const bubbleHtml = showVictoryLine && line
-    ? `<div class="emr-bubble"><span class="emr-bubble-line">「${escHtml(line)}」</span></div>` : '';
-  const bubbleLeft = winnerSide === 'left' ? bubbleHtml : '';
-  const bubbleRight = winnerSide === 'right' ? bubbleHtml : '';
+  const _emrBubbleHtml = (t) => `<div class="emr-bubble"><span class="emr-bubble-line">「${escHtml(String(t).replace(/^[「『]|[」』]$/g, ''))}」</span></div>`;
+  const bubbleHtml = showVictoryLine && line ? _emrBubbleHtml(line) : '';
+  // task-75: 敗者側の予約枠も埋められるようにした。PPV で「負けた相手がこちらへ投げる言葉」を
+  // 出すために使う。**渡されたときだけ**出す(既定は従来どおり空枠のまま。空枠は左右の画像の
+  // 高さを揃えるために残す必要があるので、枠そのものは消さない)
+  const loserBubble = (winnerSide !== 'draw' && opts.loserLine) ? _emrBubbleHtml(opts.loserLine) : '';
+  const bubbleLeft = winnerSide === 'left' ? bubbleHtml : loserBubble;
+  const bubbleRight = winnerSide === 'right' ? bubbleHtml : loserBubble;
   const isTag = !!opts.isTag;
   // 対外試合(左右の所属団体が実際に異なる)のときだけ、名前の下に団体エンブレム+団体名バッジを出す。
   // 自団体だけの試合(通常興行の通常カード・PPV等)ではバッジそのものを省略する。

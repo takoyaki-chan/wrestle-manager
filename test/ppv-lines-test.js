@@ -134,15 +134,78 @@ section('10. 既存の PPV_SUMMIT_VICTORY_LINES を壊していない', () => {
   assert.strictEqual(n, 47, `既存47本が ${n} 本に変わっている`);
 });
 
-section('11. 死蔵にしない — 実際に配線されている', () => {
+section('11. 死蔵にしない — 4場面すべてが引かれ、引いた先が読まれている', () => {
   const app = read('src/app.js');
-  assert.ok(/pickPpvLine\('summitLose'/.test(app),
-    '頂上決戦の敗者セリフが app.js から引かれていない（テーブルだけあって出ない）');
-  assert.ok(/loserLine,/.test(app), '敗者セリフが _newsSummitResult に載っていない');
+  const ui = read('src/ui-common.js');
+  const mg = read('src/management.js');
+  const both = app + ui;
+  // 引いているか（テーブルだけあって誰も引かない、を防ぐ）。
+  // pickPpvLine を直接呼ぶ形と、ローカルの pick() 経由の両方を許す
+  SCENES.forEach(sc => {
+    assert.ok(new RegExp(`pick(PpvLine)?\\('${sc}'`).test(both), `${sc} がどこからも引かれていない`);
+  });
+  // **引いた値が実際に読まれているか。** 2026-08-01 に summitLose がここで死んでいた:
+  // app.js が _newsSummitResult.loserLine に載せていたが、紙面が読んでいなかった
+  assert.ok(/sr\.loserLine/.test(mg), '頂上決戦の敗者セリフを紙面が読んでいない（載せて終わりになっている）');
+  assert.ok(/loserLine: oppLines\.loserLine/.test(ui), '敗者セリフが試合結果ポップアップへ渡っていない');
+  assert.ok(/opts\.loserLine/.test(ui), '結果ポップアップが loserLine を描画していない');
   const html = read('src/index.html');
   assert.ok(/ppv-lines\.js/.test(html), 'index.html に script タグが無い（本番で読み込まれない）');
   const manifest = read('release/manifest.json');
   assert.ok(/src\/ppv-lines\.js/.test(manifest), 'release/manifest.json に無い（配布に含まれない）');
+});
+
+// ── 12〜14: 相手選手が喋る枠の発火（_ppvOpponentLines）─────────────────
+// ui-common.js からブロックを切り出して最小スタブ上で実行する。
+// ここで守るのは「誰が喋るか」と「毎試合喋らせない」の2点。
+const uiSrc = read('src/ui-common.js');
+const _oppStart = uiSrc.indexOf('const PPV_OPP_GRUDGE');
+const _oppEnd = uiSrc.indexOf('function renderPPVMatchResultPopup', _oppStart);
+assert.ok(_oppStart > 0 && _oppEnd > _oppStart, '_ppvOpponentLines のブロックが見つからない');
+
+function oppLinesWith(state) {
+  return new Function('G', 'Engine', 'pickPpvLine',
+    `${uiSrc.slice(_oppStart, _oppEnd)}\n return _ppvOpponentLines;`
+  )(state, { util: { ov: f => f.ovr || 0 } }, pickPpvLine);
+}
+const F = (id, org, ovr) => ({ id, name: `選手${id}`, ovr, _ppvOrgId: org, archetype: 'standard', personality: 'normal' });
+const S = (rel) => ({ season: 3, relationships: rel || {} });
+
+section('12. 自団体が勝てば負けた相手、負ければ勝った相手が喋る', () => {
+  const mine = F(1, 'player', 60), opp = F(2, 'org_a', 60);
+  const grudge = S({ '1>2': { rivalry: 75 } });
+  const won = oppLinesWith(grudge)({ left: mine, right: opp }, { mq: 50 }, 'left');
+  assert.ok(won.loserLine && !won.winnerLine, '自団体が勝った回に「負けた相手の言葉」が出ていない');
+  assert.ok(PPV_LINES.oppOnLoss.grudge.standard_normal.includes(won.loserLine), 'oppOnLoss から引けていない');
+
+  const lost = oppLinesWith(grudge)({ left: mine, right: opp }, { mq: 50 }, 'right');
+  assert.ok(lost.winnerLine && !lost.loserLine, '自団体が負けた回に「勝った相手の言葉」が出ていない');
+  assert.ok(PPV_LINES.oppOnWin.grudge.standard_normal.includes(lost.winnerLine), 'oppOnWin から引けていない');
+});
+
+section('13. 頂上決戦の敗者は無条件。他団体同士のカードでは喋らない', () => {
+  const a = F(1, 'org_a', 60), b = F(2, 'org_b', 60);
+  const summit = oppLinesWith(S())({ left: a, right: b, isSummit: true }, { mq: 20 }, 'left');
+  assert.ok(summit.loserLine, '頂上決戦の敗者が無言になっている');
+
+  const aiOnly = oppLinesWith(S({ '1>2': { rivalry: 90 } }))({ left: a, right: b }, { mq: 90 }, 'left');
+  assert.deepStrictEqual(aiOnly, { winnerLine: '', loserLine: '' },
+    '自団体が絡まないカードで「こちらへ投げる言葉」が出ている');
+});
+
+section('14. アンダーカードで毎試合は喋らせない（因縁/番狂わせ/大熱戦のみ）', () => {
+  const mine = F(1, 'player', 60);
+  const run = (oppOvr, mq, rel) => oppLinesWith(S(rel))(
+    { left: mine, right: F(2, 'org_a', oppOvr) }, { mq }, 'left');
+  // 平凡な試合 = 出ない
+  assert.strictEqual(run(60, 50).loserLine, '', '条件を満たさない試合まで喋っている');
+  // 因縁 / 番狂わせ(格上を食った) / 大熱戦 = 出る
+  assert.ok(run(60, 50, { '1>2': { rivalry: 60 } }).loserLine, '因縁ありで出ていない');
+  assert.ok(run(68, 50).loserLine, '番狂わせで出ていない');
+  assert.ok(run(60, 75).loserLine, '大熱戦で出ていない');
+  // 引き分けは勝者も敗者もいない
+  assert.deepStrictEqual(oppLinesWith(S())({ left: mine, right: F(2, 'org_a', 60) }, { mq: 90 }, 'draw'),
+    { winnerLine: '', loserLine: '' }, '引き分けで勝敗のセリフが出ている');
 });
 
 console.log(`\n${failed === 0 ? 'ALL PASS' : failed + ' FAILED'}`);

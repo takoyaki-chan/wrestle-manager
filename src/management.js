@@ -28056,6 +28056,11 @@ function _buildPpvSummitStory(sr, season, week, P) {
   if (sr.winnerLine) {
     bodyParts.push(`「${sr.winnerLine}」——${winnerName}は静かにその栄誉を噛み締めた。`);
   }
+  // task-75: 敗者の言葉。app.js が summitLose から引いて渡していたが、
+  // 紙面が読んでいなかったため一度も出ていなかった(2026-08-01 修正)
+  if (sr.loserLine) {
+    bodyParts.push(`引き上げる${loserName}は「${sr.loserLine}」と言葉を残した。`);
+  }
 
   return {
     type: 'ppvSummitResult',
