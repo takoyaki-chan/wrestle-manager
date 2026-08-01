@@ -6607,10 +6607,14 @@ function renderNewspaper() {
   if (!el) return;
   if (![1,2,3,4].includes(_newspaperSubPage)) _newspaperSubPage = 1;
 
+  // P4 §4: 特集が出ない週に、前回開いていた面のまま来ると空の紙面を見せることになる。
+  // **タブを描く前に**戻しておく(後ろでやると、その週に描く面が1つも無くなって真っ白になる)
+  if ((_newspaperSubPage === 2 || _newspaperSubPage === 3) && !_npFeatureOn(_newspaperSubPage)) _newspaperSubPage = 1;
+
   let html = `<div class="np-outer-tabs">
     <button class="np-tab${_newspaperSubPage === 1 ? ' active' : ''}" onclick="setNewspaperSubPage(1)">📰 1面 興行</button>
-    <button class="np-tab${_newspaperSubPage === 2 ? ' active' : ''}" onclick="setNewspaperSubPage(2)">⚔ 2面 団体比較</button>
-    <button class="np-tab${_newspaperSubPage === 3 ? ' active' : ''}" onclick="setNewspaperSubPage(3)">🔥 3面 因縁列伝</button>
+    ${_npFeatureOn(2) ? `<button class="np-tab${_newspaperSubPage === 2 ? ' active' : ''}" onclick="setNewspaperSubPage(2)">⚔ 2面 団体比較</button>` : ''}
+    ${_npFeatureOn(3) ? `<button class="np-tab${_newspaperSubPage === 3 ? ' active' : ''}" onclick="setNewspaperSubPage(3)">🔥 3面 因縁列伝</button>` : ''}
     <button class="np-tab${_newspaperSubPage === 4 ? ' active' : ''}" onclick="setNewspaperSubPage(4)">📊 4面 MVPレース</button>
   </div>`;
 
@@ -7851,6 +7855,34 @@ function _npRenderDigest(d, seasonNum, weekNum) {
 // ══════════════════════════════════════════════════════════════
 // 2面: 団体比較 (v8 mockup §compare)
 // ══════════════════════════════════════════════════════════════
+// ── P4 §4: 特集の発火条件（固定面の降格先）────────────────────────────
+//
+//  2面・3面は**毎週ある固定面ではなく、出る週にだけ出る特集**にする。
+//  中身が無い週にタブだけ並んでいると、開いても薄い紙面が出るだけで
+//  「毎週なにか起きている」という嘘の印象を与える。
+//
+//  2面 団体比較は**節目主義**（§4）。業界順位の入れ替わりは希少なので
+//  主トリガーにしない（起きた週は一面側で加点されて上がってくる）。
+//  3面 因縁列伝は**語れる因縁があるときだけ**。
+function _npFeatureOn(page) {
+  const wk = G.week || 1, np = G.weeklyNewspaper;
+  if (page === 2) {
+    if (np && np.isSeasonOpening) return true;              // シーズン開幕号
+    if (wk >= 47) return true;                              // シーズン総括号 / 冬の大一番の前
+    if (typeof Engine !== 'undefined' && Engine.autumnWar && Engine.springTagLeague) {
+      const aw = Engine.autumnWar.ANNOUNCE_WEEK, sw = 12;
+      // 対抗戦・4団体戦の前後 / 天頂戦・PPV前
+      if (Math.abs(wk - aw) <= 2 || Math.abs(wk - 36) <= 1) return true;
+      if (Math.abs(wk - sw) <= 1) return true;
+    }
+    return false;
+  }
+  if (page === 3) {
+    try { return !!(_pickRivalryFeatured(G) || {}).featured; } catch (e) { return false; }
+  }
+  return true;
+}
+
 function _npRenderPage2() {
   const seasonNum = G.season || 1, weekNum = G.week || 1;
   // ライバル団体選択
