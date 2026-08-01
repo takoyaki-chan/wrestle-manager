@@ -11341,7 +11341,7 @@ function showFactionCommon4Modal(payload, state, onClose) {
     ? Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season || 1, state.week || 1, payload.factionId, 0xC04))
     : null;
   const line = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getCommon4Line)
-    ? Engine.factions.getCommon4Line(archetypeId, lineRng)
+    ? Engine.factions.getCommon4Line(archetypeId, lineRng, leader)
     : { headline: '派閥合宿', narration: '揃って数日を過ごした。', leaderQuote: '' };
 
   // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は頭上の白い吹き出しへ移行(_u3bSideHtml)。
@@ -11588,10 +11588,10 @@ function showFactionCommon7Modal(payload, state, onChoice) {
     ? Engine.factions.getCommon7Line('coachReport', { vars })
     : `${factionAName}と${factionBName}、合同企画の打診が出ています。`;
   const aQuote = (Engine.factions.getCommon7Line)
-    ? Engine.factions.getCommon7Line('leaderAQuote', { archetypeId: archA, vars })
+    ? Engine.factions.getCommon7Line('leaderAQuote', { archetypeId: archA, vars, fighter: lA })
     : '「組んでみるか」';
   const bQuote = (Engine.factions.getCommon7Line)
-    ? Engine.factions.getCommon7Line('leaderBQuote', { archetypeId: archB, vars })
+    ? Engine.factions.getCommon7Line('leaderBQuote', { archetypeId: archB, vars, fighter: lB })
     : '「乗った」';
 
   // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は各リーダー側の頭上吹き出しへ移行。

@@ -2834,13 +2834,21 @@ Engine.factions = {
   },
 
   // Common-4 セリフ引き
-  getCommon4Line(archetypeId, rng) {
+  // leaderQuote はリーダー本人が喋る行なので、口調(archetype)で引き分ける。
+  // 見出し(headline)と地の文(narration)は話者がいないので分岐しない。
+  getCommon4Line(archetypeId, rng, leader) {
     const table = (typeof COMMON4_LINES !== 'undefined' ? COMMON4_LINES : null);
     if (!table) return { headline: '派閥合宿', narration: '', leaderQuote: '' };
     const arr = table[archetypeId] || table._any;
     if (!arr || !arr.length) return { headline: '派閥合宿', narration: '', leaderQuote: '' };
     const idx = rng ? Math.floor(Engine.rng.float(rng) * arr.length) : 0;
-    return arr[idx];
+    const entry = arr[idx];
+    const q = entry.leaderQuote;
+    if (q && typeof q === 'object') {
+      const a = (leader && leader.archetype) || 'standard';
+      return { ...entry, leaderQuote: q[a] || q.standard || '' };
+    }
+    return entry;
   },
 
   // ── Common-1 派閥内試合提案 ──
@@ -3152,15 +3160,6 @@ Engine.factions = {
     return { ...state, factions };
   },
 
-  // 2026-08-01: セリフ表のキーを現行の性格7種に統一したので、橋渡しは不要になった
-  // (旧: fiery/composed/grudging/airy/earnest/flippant という独自語彙。composed が
-  //  アーキタイプ「鷹揚」と綴りで衝突し、Excel の軸判定を壊していた)。
-  _personalityLineKey(fighter) {
-    if (!fighter) return 'quiet';
-    return (Engine.contract && Engine.contract.getPersonalityType)
-      ? Engine.contract.getPersonalityType(fighter) : 'quiet';
-  },
-
   getCommon1Line(category, ctx) {
     const table = (typeof COMMON1_LINES !== 'undefined' ? COMMON1_LINES : null);
     if (!table || !category) return '';
@@ -3177,24 +3176,24 @@ Engine.factions = {
     if (category === 'coachReport') {
       return subst(pickArr(table.coachReport[arch] || table.coachReport._any));
     }
+    // 話者(選手)の口調で引く。派閥アーキタイプが「何を言うか」、
+    // archetype が「どう言うか」(2026-08-01: 選手セリフは口調が絶対)。
+    const byTone = (block) => {
+      if (!block) return '';
+      if (Array.isArray(block)) return pickArr(block); // 旧形式の後方互換
+      const a = (ctx && ctx.fighter && ctx.fighter.archetype) || 'standard';
+      return pickArr(block[a] || block.standard || []);
+    };
     if (category === 'leaderDemand') {
-      const fighter = ctx && ctx.fighter;
-      const personality = this._personalityLineKey(fighter);
-      const t = table.leaderDemand[arch] || table.leaderDemand._any;
-      if (!t) return '';
-      // 旧形式（配列）後方互換 + 新形式（personality マップ）
-      if (Array.isArray(t)) return subst(pickArr(t));
-      return subst(pickArr(t[personality] || t.quiet || t._any || []));
+      return subst(byTone(table.leaderDemand[arch] || table.leaderDemand._any));
     }
     if (category === 'resultLeader') {
       const choice = (ctx && ctx.choice) || 'A';
-      const t = table.resultLeader[choice];
-      if (!t) return '';
-      return subst(pickArr(t._any));
+      return subst(byTone(table.resultLeader[choice]));
     }
     if (category === 'resultLoser') {
       const choice = (ctx && ctx.choice) || 'A';
-      return subst(pickArr(table.resultLoser[choice]));
+      return subst(byTone(table.resultLoser[choice]));
     }
     return '';
   },
@@ -3345,11 +3344,11 @@ Engine.factions = {
       return subst(pickArr(table.coachReport[arch] || table.coachReport._any));
     }
     if (category === 'leaderQuoteA') {
-      const fighter = ctx && ctx.fighter;
-      const personality = this._personalityLineKey(fighter);
+      // 取材で答えるのはリーダー本人。口調(archetype)で引く(2026-08-01)
       const t = table.leaderQuoteA[arch];
       if (!t) return '';
-      return subst(pickArr(t[personality] || t.quiet));
+      const a = (ctx && ctx.fighter && ctx.fighter.archetype) || 'standard';
+      return subst(pickArr(t[a] || t.standard));
     }
     if (category === 'headlineA') {
       return subst(pickArr(table.headlineA[arch] || []));
@@ -3514,11 +3513,18 @@ Engine.factions = {
     if (category === 'coachReport') {
       return subst(pickArr(table.coachReport._any));
     }
+    // リーダー本人の発言。派閥アーキタイプで「何を言うか」、
+    // 話者の archetype で「どう言うか」を決める(2026-08-01 口調軸を追加)。
+    const byTone = (block) => {
+      if (!block) return '';
+      const a = (ctx && ctx.fighter && ctx.fighter.archetype) || 'standard';
+      return pickArr(block[a] || block.standard);
+    };
     if (category === 'leaderAQuote') {
-      return subst(pickArr(table.leaderAQuote[arch] || table.leaderAQuote._any));
+      return subst(byTone(table.leaderAQuote[arch] || table.leaderAQuote._any));
     }
     if (category === 'leaderBQuote') {
-      return subst(pickArr(table.leaderBQuote[arch] || table.leaderBQuote._any));
+      return subst(byTone(table.leaderBQuote[arch] || table.leaderBQuote._any));
     }
     if (category === 'resultLeader') {
       const choice = (ctx && ctx.choice) || 'A';

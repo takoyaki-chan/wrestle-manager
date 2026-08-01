@@ -24588,10 +24588,10 @@ Engine.contract = {
     const lines = getDialoguePool(pool, fighter);
     let text = lines[Engine.rng.int(rng, 0, lines.length - 1)];
     // コンテキスト差し込み
-    text = Engine.contract._insertTenure(text, context);
-    text = Engine.contract._insertRecord(text, context);
-    text = Engine.contract._insertRivalry(text, context);
-    text = Engine.contract._insertTenureFarewell(text, context);
+    text = Engine.contract._insertTenure(text, context, fighter);
+    text = Engine.contract._insertRecord(text, context, fighter);
+    text = Engine.contract._insertRivalry(text, context, fighter);
+    text = Engine.contract._insertTenureFarewell(text, context, fighter);
     text = text.replace(/\{wins\}/g, String(context.wins || 0));
     text = text.replace(/\{losses\}/g, String(context.losses || 0));
     text = text.replace(/\{n\}/g, String(context.tenureSeasons || 1));
@@ -24606,44 +24606,57 @@ Engine.contract = {
     return pool[Engine.rng.int(rng, 0, pool.length - 1)];
   },
 
-  _insertTenure(text, ctx) {
+  // 差し込み断片も選手本人の発言なので、口調(archetype)で引き分ける。
+  // 断片だけ口調が揃っていないと「お嬢様がヤンキー語を挟む」状態になる(2026-08-01)。
+  _toneFragment(block, fighter) {
+    if (block == null) return '';
+    if (typeof block === 'string') return block;
+    const a = (fighter && fighter.archetype) || 'standard';
+    return block[a] || block.standard || '';
+  },
+
+  _insertTenure(text, ctx, fighter) {
     if (!text.includes('{tenure}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{tenure\}/g, '');
     const t = CONTRACT_NEGOTIATION_LINES.tenure;
+    const pick = (b) => Engine.contract._toneFragment(b, fighter);
     const n = ctx.tenureSeasons || 1;
     let insert = '';
-    if (ctx.isFounder && t.founder) insert = t.founder;
-    else if (n <= 1 && t['1']) insert = t['1'];
-    else if (n <= 3 && t.short) insert = t.short.replace(/\{n\}/g, String(n));
-    else if (t.long) insert = t.long.replace(/\{n\}/g, String(n));
+    if (ctx.isFounder && t.founder) insert = pick(t.founder);
+    else if (n <= 1 && t['1']) insert = pick(t['1']);
+    else if (n <= 3 && t.short) insert = pick(t.short).replace(/\{n\}/g, String(n));
+    else if (t.long) insert = pick(t.long).replace(/\{n\}/g, String(n));
     return text.replace(/\{tenure\}/g, insert);
   },
 
-  _insertRecord(text, ctx) {
+  _insertRecord(text, ctx, fighter) {
     if (!text.includes('{record}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{record\}/g, '');
     const r = CONTRACT_NEGOTIATION_LINES.record;
-    let insert = r[ctx.record] || r.developing || r.good || '';
+    const insert = Engine.contract._toneFragment(r[ctx.record] || r.developing || r.good, fighter);
     return text.replace(/\{record\}/g, insert);
   },
 
-  _insertRivalry(text, ctx) {
+  _insertRivalry(text, ctx, fighter) {
     if (!text.includes('{rivalry}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{rivalry\}/g, '');
     const r = CONTRACT_NEGOTIATION_LINES.rivalry;
-    const insert = ctx.rivalName ? (r.has_rival || '').replace(/\{rivalName\}/g, ctx.rivalName) : (r.no_rival || '');
+    const insert = ctx.rivalName
+      ? Engine.contract._toneFragment(r.has_rival, fighter).replace(/\{rivalName\}/g, ctx.rivalName)
+      : Engine.contract._toneFragment(r.no_rival, fighter);
     return text.replace(/\{rivalry\}/g, insert);
   },
 
-  _insertTenureFarewell(text, ctx) {
+  _insertTenureFarewell(text, ctx, fighter) {
     if (!text.includes('{tenure_farewell}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{tenure_farewell\}/g, '');
     const t = CONTRACT_NEGOTIATION_LINES.tenure_farewell;
+    const pick = (b) => Engine.contract._toneFragment(b, fighter);
     const n = ctx.tenureSeasons || 1;
     let insert = '';
-    if (ctx.isFounder && t.founder) insert = t.founder;
-    else if (n >= 4 && t.long) insert = t.long.replace(/\{n\}/g, String(n));
-    else insert = t.short || '';
+    if (ctx.isFounder && t.founder) insert = pick(t.founder);
+    else if (n >= 4 && t.long) insert = pick(t.long).replace(/\{n\}/g, String(n));
+    else insert = pick(t.short);
     return text.replace(/\{tenure_farewell\}/g, insert);
   },
 
