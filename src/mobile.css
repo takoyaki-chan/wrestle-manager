@@ -1487,6 +1487,27 @@
   .rivalry-popup-upper { height: 150px; }
   .rivalry-popup-dialogue { grid-template-columns: 1fr; }
 
+  /* Three speakers stack vertically here.  The ceremony is appended directly
+     to body (outside .app), so it must provide its own touch scroll viewport. */
+  .cerem-overlay {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
+  .cerem-phase.active {
+    position: relative;
+    min-height: 100%;
+    grid-template-rows: minmax(124px, 20dvh) auto minmax(120px, 20dvh);
+  }
+
+  .cerem-trio { padding-bottom: 24px; }
+
   #battleEscapeBtn {
     top: max(8px, env(safe-area-inset-top)) !important;
     right: max(8px, env(safe-area-inset-right)) !important;

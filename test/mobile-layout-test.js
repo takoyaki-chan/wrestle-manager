@@ -152,6 +152,16 @@ assert.ok(
     mobile.includes('grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);'),
   'phone relationship cards must fit the viewport and keep vertical scrolling'
 );
+assert.match(
+  mobile,
+  /\.cerem-overlay\s*\{[^}]*height:\s*100dvh;[^}]*overflow-y:\s*auto;[^}]*touch-action:\s*pan-y;[^}]*\}/s,
+  'the stacked phone ceremony speakers must own a vertical touch scroll viewport'
+);
+assert.match(
+  mobile,
+  /\.cerem-phase\.active\s*\{[^}]*position:\s*relative;[^}]*min-height:\s*100%;[^}]*\}/s,
+  'the visible phone ceremony phase must grow with its stacked speaker cards'
+);
 assert.ok(
   mobile.includes('.db-subtab-bar {') &&
     mobile.includes('position: sticky;') &&
