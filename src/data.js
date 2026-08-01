@@ -16825,6 +16825,22 @@ const NEWS_HEADLINE_TEMPLATES = {
     { headline: '{name}の連敗が{count}に',
       body: '{orgName}の{name}が{count}連敗。連敗の間に組まれた相手の格を見れば、当たりが悪かったのか、それだけではないのかが分かる。' },
   ],
+  transferDone: [
+    { headline: '{name}、{fromOrg}から{toOrg}へ',
+      body: '{name}の{toOrg}移籍が成立した。{fromOrg}での戦績をそのまま持ち込む形になる。新しい並びの中でどの位置に入るかは、次の興行で見えてくる。' },
+    { headline: '{toOrg}が{name}を獲得',
+      body: '{toOrg}が{fromOrg}の{name}を迎え入れた。獲得の効果は上位カードの組み方に直接出る。送り出した{fromOrg}にとっては、空いた枠をどう埋めるかが課題になる。' },
+    { headline: '{name}の移籍が決まる——{fromOrg}を離れ{toOrg}へ',
+      body: '{name}が{fromOrg}を離れ、{toOrg}に加わることが決まった。対戦相手の顔ぶれが変わる以上、これまでの戦い方がそのまま通じるとは限らない。' },
+  ],
+  retirementDeclare: [
+    { headline: '{orgName}の{name}が現役引退',
+      body: '{orgName}の{name}（{age}歳）が現役を退く。{seasons}シーズンにわたってリングに立ち続けた。{careerLine}空いた場所を誰が埋めるかは、これからの話になる。' },
+    { headline: '{name}、{seasons}シーズンで現役に区切り',
+      body: '{name}（{orgName}・{age}歳）が引退を表明した。{careerLine}デビューから{seasons}シーズン。最後まで欠場続きにならずに終えられたかどうかが、そのまま選手生活の質を示している。' },
+    { headline: '{orgName}、{name}が退く',
+      body: '{orgName}の{name}が現役生活に幕を下ろす。{age}歳、通算{seasons}シーズン。{careerLine}団体にとっては、戦力の話であると同時に、並びの意味が変わる出来事でもある。' },
+  ],
   autumnWarAnnounce: [
     { headline: '4団体勝ち残り対抗戦、組み合わせ決定',
       body: '第{season}回4団体勝ち残り対抗戦は第36週に開催される。準決勝は第1シード{seed1}対第4シード{seed4}、第2シード{seed2}対第3シード{seed3}。各団体3名が先鋒・中堅・大将の順に立ち、最後の一人になるまでリングを譲らない。{preview}' },

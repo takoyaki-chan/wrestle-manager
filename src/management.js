@@ -28301,7 +28301,9 @@ Engine.newspaper = {
     longInjury:          140,   // 大怪我(長期離脱)。強度補正で 4×全治週数 が乗る
     winStreakMilestone:  120,   // 連勝の節目。団体記録の更新/王手で +40/+20
     loseStreakMilestone:  95,   // 連敗の節目。連勝より一段低い
-    transfer:             50,
+    transferDone:        150,   // P3 §2-6: 移籍・引き抜き成立。主役補正が乗る
+    retirementDeclare:   180,   // P3 §2-6: 引退。自団体には記事が無かった
+    transfer:             50,   // (旧: テンプレも生成側も無い死んだエントリ。互換のため残置)
     // ドラフト結果（2026-07-27）。オフに新聞が出ないので新年号にまとめて載る。
     // 自団体の獲得は引退記事(aiAceRetirement 160)と並んで一面を争える高さに置く
     // ——新年号が去年末の引退ばかりになるのを避けるため。
@@ -28661,8 +28663,58 @@ Engine.newspaper = {
       });
     });
 
+    // ── 移籍・引き抜き成立 ──
+    // 「誰がどこにいるか」を毎週覚えておき、**所属が変わった週**に記事にする。
+    // 引き抜き/FA/契約切れなど成立の経路は複数あり、成立地点へ push を足すと漏れる。
+    // レンタルは一時的な移動なので数えない(帰団のたびに移籍記事が出てしまう)
+    const prevOrg = seen.org || null;
+    const nextOrg = {};
+    orgsOf().forEach(([orgId, roster]) => {
+      (roster || []).forEach(f => {
+        if (!f || f.id == null || f.isRental) return;
+        nextOrg[String(f.id)] = orgId;
+      });
+    });
+    if (prevOrg) { // 初回は基準づくりだけ。ロード直後に全員ぶん記事が出るのを防ぐ
+      const nameOf = (orgId) => (orgsOf().find(o => o[0] === orgId) || [])[2] || '';
+      Object.keys(nextOrg).forEach(key => {
+        const before = prevOrg[key];
+        if (!before || before === nextOrg[key]) return;
+        const f = Engine.newspaper._findFighter(s, Number(key));
+        if (!f) return;
+        pushes.push({
+          type: 'transferDone', characterId: f.id,
+          data: { name: f.name, fromOrg: nameOf(before), toOrg: nameOf(nextOrg[key]) },
+        });
+      });
+    }
+
+    // ── 引退 ──
+    // オフシーズンに確定するので、記事になるのは翌シーズン開幕号。
+    // AI団体は既に aiRetirement 系を持っているが、**自団体の引退には記事が無かった**
+    const seenRetired = { ...(seen.retired || {}) };
+    (s.retiredFighters || []).forEach(r => {
+      if (!r || r.id == null || seenRetired[String(r.id)]) return;
+      seenRetired[String(r.id)] = 1;
+      const reigns = (r.careerRecord && r.careerRecord.titleReigns) || 0;
+      pushes.push({
+        type: 'retirementDeclare', characterId: r.id,
+        data: {
+          name: r.name, orgName: s.orgName || 'プレイヤー団体',
+          age: r.age || '', seasons: (r.careerSeasons || 0) + 1,
+          careerLine: reigns > 0 ? `通算${reigns}度の戴冠を残した。` : '',
+        },
+      });
+    });
+
     pushes.forEach(ev => { s = Engine.industryNews.push(s, ev); });
-    return { ...s, newsSeen: { ...(s.newsSeen || {}), injury: nextInjury, streak: nextStreak } };
+    return {
+      ...s,
+      newsSeen: {
+        ...(s.newsSeen || {}),
+        injury: nextInjury, streak: nextStreak, org: nextOrg, retired: seenRetired,
+      },
+    };
   },
 
   /** 記事1本の最終点。generate() のソート直前に一括で当てる */
