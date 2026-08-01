@@ -28308,6 +28308,12 @@ Engine.newspaper = {
     // 自団体の獲得は引退記事(aiAceRetirement 160)と並んで一面を争える高さに置く
     // ——新年号が去年末の引退ばかりになるのを避けるため。
     draftRoundup:        150,   // P3 §2-6: 指名全体の総括(N-8 の作り直し)
+    // P4 §4: 静かな週の読み物(後追い記事)。一面トップ資格が無い週にだけ足す。
+    // 250点の記事を押しのけない高さに置く — これは特ダネではなく読み物
+    followUpBreakthrough: 115,
+    followUpRecord:       112,
+    followUpNewcomer:     108,
+    followUpStreak:       105,
     draftPlayerResult:   165,
     draftAiResult:       100,
     draftFlowThrough:     70,
@@ -28715,6 +28721,64 @@ Engine.newspaper = {
         ...(s.newsSeen || {}),
         injury: nextInjury, streak: nextStreak, org: nextOrg, retired: seenRetired,
       },
+    };
+  },
+
+  // ── P4 §4: 静かな週の読み物 = 後追い記事 ─────────────────────────────
+  //
+  //  一面トップ資格(260)を満たす記事が1本も無い週に、**実際に起きた出来事の深掘り**を1本足す。
+  //  **捏造禁止(実話主義・Keisuke 裁定)。** 素材は直近1〜4週の careerRecord.history と
+  //  いまのロスター状態だけ。**対応する出来事が無い週は作らない** — 紙面が薄い号があってよい。
+  FOLLOWUP_WEEKS: 4,
+  // 同じ選手を読み物にする間隔。連勝のような継続状態が毎週記事になるのを防ぐ
+  FOLLOWUP_COOLDOWN: 8,
+
+  buildFollowUp(state) {
+    if (!state) return null;
+    const nowAbs = Engine.util.absWeek(state.season, state.week);
+    const recent = (ev) => {
+      if (!ev || ev.season == null) return false;
+      const d = nowAbs - Engine.util.absWeek(ev.season, ev.week || 1);
+      return d >= 1 && d <= Engine.newspaper.FOLLOWUP_WEEKS;
+    };
+    const cands = [];
+    (state.roster || []).forEach(f => {
+      if (!f || f.id == null || f.isRental) return;
+      const hist = (f.careerRecord && f.careerRecord.history) || [];
+      const last = (types) => {
+        for (let i = hist.length - 1; i >= 0; i--) {
+          if (types.includes(hist[i].type) && recent(hist[i])) return hist[i];
+        }
+        return null;
+      };
+      const bt = last(['breakthrough']);
+      if (bt) cands.push({ type: 'followUpBreakthrough', f, w: 4,
+        data: { name: f.name, stat: (typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[bt.stat]) || 'メンタル' } });
+      const nw = last(['debut', 'transfer']);
+      if (nw) cands.push({ type: 'followUpNewcomer', f, w: 2,
+        data: { name: f.name, how: nw.type === 'debut' ? 'デビュー' : '移籍' } });
+      const rec = last(['mqAllTimeRecord', 'tenchosenBestBout', 'juniorTournamentBestBout', 'titleWin']);
+      if (rec) cands.push({ type: 'followUpRecord', f, w: 3,
+        data: { name: f.name, what: rec.type === 'titleWin' ? '戴冠' : '歴代に残る一戦' } });
+      // 進行中の連勝。節目そのものは winStreakMilestone が既に出しているので、
+      // ここは「まだ続いている」ことを取り上げる特集
+      if ((f.streak || 0) >= 5) cands.push({ type: 'followUpStreak', f, w: 1,
+        data: { name: f.name, count: f.streak } });
+    });
+    if (!cands.length) return null; // **無理に作らない**
+    // 一度取り上げた選手は当分外す。連勝は「継続状態」なので、これが無いと
+    // 同じ選手の同じ連勝記事が毎週出る(実測で一面の40%を占めた)
+    const cool = (state.newsSeen && state.newsSeen.followUp) || {};
+    const fresh = cands.filter(c => nowAbs - (cool[String(c.f.id)] || -999) >= Engine.newspaper.FOLLOWUP_COOLDOWN);
+    const usable = fresh.length ? fresh : [];
+    if (!usable.length) return null; // 全員が最近取り上げ済み → 今週は読み物を作らない
+    // 重み優先 + 同重みなら週で回して同じ顔が続かないようにする(乱数は使わない)
+    usable.sort((a, b) => b.w - a.w || a.f.id - b.f.id);
+    const top = usable.filter(c => c.w === usable[0].w);
+    const pick = top[(state.week || 1) % top.length];
+    return {
+      type: pick.type, priority: Engine.newspaper.PRIORITY[pick.type] || 110,
+      characterId: pick.f.id, newsData: pick.data, _followUp: true,
     };
   },
 
@@ -29201,6 +29265,30 @@ Engine.newspaper = {
         s.newsSlot = Engine.newspaper.slotOf(s.newsValue, hasPhoto);
       });
     }
+    // P4 §4: 一面トップ資格(260)が1本も無い週にだけ、後追い記事を1本足す。
+    // **実際に起きた出来事の深掘りだけ**で、素材が無ければ足さない(紙面が薄い号があってよい)
+    if (!stories.some(s => s && s.newsValue >= Engine.newspaper.SLOT_LINE.top)) {
+      const fu = Engine.newspaper.buildFollowUp(state);
+      if (fu) {
+        const tpl = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') && NEWS_HEADLINE_TEMPLATES[fu.type];
+        if (tpl && tpl.length) {
+          const pick = tpl[(state.week || 1) % tpl.length];
+          const fill = (t) => Object.keys(fu.newsData)
+            .reduce((acc, k) => acc.split('{' + k + '}').join(fu.newsData[k]), String(t || ''));
+          const st2 = {
+            type: fu.type, priority: fu.priority,
+            headline: fill(pick.headline), body: fill(pick.body),
+            characterId: fu.characterId, newsData: fu.newsData,
+          };
+          const ctx2 = Engine.newspaper.buildValueContext(state);
+          st2.newsValue = Engine.newspaper.newsValue(state, st2, ctx2);
+          st2.newsSlot = Engine.newspaper.slotOf(st2.newsValue, st2.characterId != null);
+          st2._followUpOf = fu.characterId; // publish がクールダウンに記録する
+          stories.push(st2);
+        }
+      }
+    }
+
     // 合成点でソート。同点は基礎点で割って、週ごとに順番が揺れないようにする
     stories.sort((a, b) => (b.newsValue - a.newsValue) || (b.priority - a.priority));
 
@@ -29445,6 +29533,17 @@ Engine.newspaper = {
       s = { ...s, newspaperArchive: archive };
     }
     let weeklyNewspaper = Engine.newspaper.generate(s, rng);
+    // P4 §4: 後追い記事を載せた選手はクールダウンに入れる。
+    // generate() は純粋関数のまま(状態を書かない)にしておきたいので、記録はここで行う
+    {
+      const all = [weeklyNewspaper && weeklyNewspaper.topStory, ...((weeklyNewspaper && weeklyNewspaper.subStories) || [])];
+      const fid = (all.find(x => x && x._followUpOf != null) || {})._followUpOf;
+      if (fid != null) {
+        const seen = s.newsSeen || {};
+        s = { ...s, newsSeen: { ...seen,
+          followUp: { ...(seen.followUp || {}), [String(fid)]: Engine.util.absWeek(s.season, s.week) } } };
+      }
+    }
     if (extra && extra.isSeasonOpening) weeklyNewspaper = { ...weeklyNewspaper, isSeasonOpening: true };
     if (extra && extra.forcePlayerShowDataNull) weeklyNewspaper = { ...weeklyNewspaper, playerShowData: null };
     // 業界ニュースキューを消化。ただし**載らなかった分は翌号へ持ち越す**（2026-07-27）。
