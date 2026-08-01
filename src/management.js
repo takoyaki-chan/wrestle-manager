@@ -28301,7 +28301,10 @@ Engine.newspaper = {
     hotProspectDebut:    315,
     mqTagRecord:         310,
     fatedRivals:         308,
-    topChampionInjury:   305,
+    // P2 §2-1: 主役を種別へ焼き込んだ特例を廃止し、**怪我(基礎)+王者(主役補正)**へ分解。
+    // 発火条件が「ランキング1・2位の団体の現王者が新たに重傷」なので、主役補正 +90 と
+    // 全治週数の強度補正が必ず乗る。140 + 90 + 4×週 で、長期離脱ほど上へ行く
+    topChampionInjury:   140,
     // ── 業界ニュース拡充: bond/rivalry/派閥/奪還 ──
     factionEscalation:    125,
     factionResolution:    122,
@@ -28331,6 +28334,153 @@ Engine.newspaper = {
     relationshipRepair:    68,
     relationshipRepairFail:55,
     hatredContagion:       70,
+  },
+
+  // ══════════════════════════════════════════════════════════════════
+  //  新聞P2 §2: ニュースバリュー採点（合成点）
+  //
+  //  固定点では「無名の怪我」と「王者の怪我」が同じ点になる。
+  //  **同じ出来事でも、誰に起きたかで価値が変わる**ように合成する:
+  //
+  //    最終点 = 基礎点(何が起きたか) + 主役補正(誰に起きたか)
+  //           + 強度補正(どれくらい大きい出来事か)
+  //
+  //  基礎点は上の PRIORITY をそのまま使う。ただし topChampionInjury のような
+  //  **主役を種別に焼き込んだ特例は廃止**し、怪我(基礎)+王者(主役補正)へ分解した。
+  // ══════════════════════════════════════════════════════════════════
+
+  // 主役補正は**上位2属性だけ**を数える(1位 + 2位×0.5、上限 +120)。
+  // 全部盛りで無限に跳ねるのを防ぐための上限であり、外すと設計が壊れる
+  PROTAGONIST_CAP: 120,
+  PROTAGONIST: {
+    worldChampion: 90, mvpTop: 80, mvpTop3: 55, mvpTop10: 30,
+    orgAce: 55, orgCore: 35, industryPopTop3: 45,
+    titleChallenger: 45, eventChampion: 40, hotRookie: 35,
+    winStreak: 25, factionLeader: 20,
+  },
+
+  // 枠の資格線(§2-4)。帯は重なってよく、固定するのはここだけ
+  SLOT_LINE: { top: 260, kata: 190, jun: 100, small: 50 },
+
+  slotOf(value, hasPhoto) {
+    const L = Engine.newspaper.SLOT_LINE;
+    const v = Number(value) || 0;
+    // 「一面なのに写真がない」を仕組みで防ぐ(§3)。写真が無い記事はトップ資格を持たない
+    if (v >= L.top && hasPhoto) return 'top';
+    if (v >= L.kata) return 'kata';
+    if (v >= L.jun) return 'jun';
+    if (v >= L.small) return 'small';
+    return 'brief';
+  },
+
+  /** 1週ぶんの採点で使う参照を**1回だけ**作る。
+   *  generate() は stories.push が約25箇所に散っているので、各所で引くと同じ集計を何度も回すことになる */
+  buildValueContext(state) {
+    const s = state || {};
+    // 世界王者(全団体)。state.aiOrgs[x].titles.world も見る
+    const champs = new Set();
+    const pc = s.titles && s.titles.world && s.titles.world.championId;
+    if (pc != null) champs.add(pc);
+    const orgs = s.aiOrgs || {};
+    for (const id in orgs) {
+      const c = orgs[id] && orgs[id].titles && orgs[id].titles.world && orgs[id].titles.world.championId;
+      if (c != null) champs.add(c);
+    }
+    // MVPレース順位。**トップ10しか無く、しかも1週古い**(recalc は advanceWeek 側)。
+    // 順位が無い＝圏外として扱う
+    const mvpRank = new Map();
+    ((s.mvpRace && s.mvpRace.rankings) || []).forEach(r => {
+      if (r && r.fighterId != null) mvpRank.set(r.fighterId, r.rank);
+    });
+    // 団体内OVR順位。団体ごとに1回だけ作る
+    const ovrRank = new Map();
+    const rankRoster = (roster) => {
+      const sorted = [...(roster || [])].filter(f => f && f.id != null)
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a) || a.id - b.id);
+      sorted.forEach((f, i) => ovrRank.set(f.id, i + 1));
+    };
+    rankRoster(s.roster);
+    for (const id in orgs) rankRoster(orgs[id] && orgs[id].roster);
+    const popTop3 = new Set(
+      (typeof Engine.popularity.getIndustryTopIds === 'function')
+        ? Engine.popularity.getIndustryTopIds(s, 3) : []);
+    return { champs, mvpRank, ovrRank, popTop3 };
+  },
+
+  /** 主役補正。上位2属性のみ(1位 + 2位×0.5)、上限 PROTAGONIST_CAP */
+  protagonistBonus(state, fighterId, ctx) {
+    if (fighterId == null || !ctx) return 0;
+    const P = Engine.newspaper.PROTAGONIST;
+    const hits = [];
+    if (ctx.champs.has(fighterId)) hits.push(P.worldChampion);
+    const rank = ctx.mvpRank.get(fighterId);
+    if (rank === 1) hits.push(P.mvpTop);
+    else if (rank >= 2 && rank <= 3) hits.push(P.mvpTop3);
+    else if (rank >= 4 && rank <= 10) hits.push(P.mvpTop10);
+    const ovr = ctx.ovrRank.get(fighterId);
+    if (ovr === 1) hits.push(P.orgAce);
+    else if (ovr >= 2 && ovr <= 3) hits.push(P.orgCore);
+    if (ctx.popTop3.has(fighterId)) hits.push(P.industryPopTop3);
+    const f = Engine.newspaper._findFighter(state, fighterId);
+    if (f) {
+      if ((f.streak || 0) >= 5) hits.push(P.winStreak + Math.min(15, ((f.streak || 0) - 5) * 3));
+      if (f.assessedTier === 'superElite' && (f.careerSeasons || 0) === 0) hits.push(P.hotRookie);
+      if (typeof Engine.factions !== 'undefined' && typeof Engine.factions.isLeader === 'function'
+        && Engine.factions.isLeader(state, fighterId)) hits.push(P.factionLeader);
+      const hist = (f.careerRecord && f.careerRecord.history) || [];
+      const EV = ['juniorTournament', 'springTagLeague', 'autumnWar', 'ppvTournament'];
+      if (hist.some(e => e && EV.includes(e.type) && e.season === state.season && e.result === 'champion')) {
+        hits.push(P.eventChampion);
+      }
+    }
+    if (!hits.length) return 0;
+    hits.sort((a, b) => b - a);
+    return Math.min(Engine.newspaper.PROTAGONIST_CAP,
+      Math.round(hits[0] + (hits[1] ? hits[1] * 0.5 : 0)));
+  },
+
+  _findFighter(state, id) {
+    if (!state || id == null) return null;
+    const hit = (state.roster || []).find(f => f && f.id === id);
+    if (hit) return hit;
+    const orgs = state.aiOrgs || {};
+    for (const k in orgs) {
+      const f = ((orgs[k] && orgs[k].roster) || []).find(x => x && x.id === id);
+      if (f) return f;
+    }
+    return null;
+  },
+
+  /** 強度補正。**イベント内部の実数値**で増減する(§2-3) */
+  intensityBonus(state, story) {
+    if (!story) return 0;
+    const d = story.newsData || {};
+    let n = 0;
+    // 怪我: 全治週数(上限 +60)。長く離脱するほど戦線への影響が大きい
+    const weeks = Number(d.weeksOut != null ? d.weeksOut : d.weeks) || 0;
+    if (weeks > 0 && /[Ii]njury|怪我/.test(story.type)) n += Math.min(60, weeks * 4);
+    // MQ の「記録更新 +80」(§2-3)は**ここでは足さない**。
+    // mqAllTimeRecord / mqTagRecord は基礎点(320/310)自体が「歴代記録の更新」を
+    // 表しているので、重ねると二重計上になる。§2-3 の「肉薄 +30」に当たる
+    // “記録に迫った試合”は、その記事種別自体がまだ無い(P3で足す)。
+    // 王座: 初戴冠 / 長期政権の陥落
+    if (story.type === 'playerTitleChange' || story.type === 'aiChampionChange') {
+      const def = Number(d.prevDefenses) || 0;
+      if (def >= 3) n += 30;
+      else if (d.firstReign) n += 30;
+    }
+    return n;
+  },
+
+  /** 記事1本の最終点。generate() のソート直前に一括で当てる */
+  newsValue(state, story, ctx) {
+    if (!story) return 0;
+    const base = Number(story.priority) || 0;
+    const id = story.characterId != null ? story.characterId
+      : (Array.isArray(story.characterIds) ? story.characterIds[0] : null);
+    return base
+      + Engine.newspaper.protagonistBonus(state, id, ctx)
+      + Engine.newspaper.intensityBonus(state, story);
   },
 
   /** 毎週の新聞を生成する。tickWeek末尾で呼ばれる */
@@ -28792,8 +28942,21 @@ Engine.newspaper = {
     stories.forEach(s => { delete s._warFighterIds; delete s._warOrgIds; delete s._loserId; });
     // _industryIdx は掲載本数を確定させたあとで使うので、ここではまだ消さない
 
-    // priority でソート
-    stories.sort((a, b) => b.priority - a.priority);
+    // P2 §2: 合成点を全記事へ一括で当てる。**stories.push は約25箇所に散っている**ので、
+    // 各所で点を作らず、出揃ってから1箇所で採点する(足し忘れる経路が生まれない)。
+    // priority(基礎点)はそのまま残す — 他所がまだ読んでいるのと、内訳を追えるようにするため
+    {
+      const valueCtx = Engine.newspaper.buildValueContext(state);
+      stories.forEach(s => {
+        if (!s) return;
+        s.newsValue = Engine.newspaper.newsValue(state, s, valueCtx);
+        const hasPhoto = s.characterId != null
+          || (Array.isArray(s.characterIds) && s.characterIds.length > 0);
+        s.newsSlot = Engine.newspaper.slotOf(s.newsValue, hasPhoto);
+      });
+    }
+    // 合成点でソート。同点は基礎点で割って、週ごとに順番が揺れないようにする
+    stories.sort((a, b) => (b.newsValue - a.newsValue) || (b.priority - a.priority));
 
     // 一面 + サブ記事
     // 業界ニュース欄は「試合結果以外の動き」を見せる枠として機能させたいので、

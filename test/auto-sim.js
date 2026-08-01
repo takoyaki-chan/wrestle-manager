@@ -811,6 +811,8 @@ const hofPlayerRosterEver = new Set(); // 一度でも自団体に在籍した�
 // tickWeek の後に G を覗くだけの**読み取り専用**の横計測。エンジンを1回も呼ばないので、
 // 本編の乱数消費にもシーズン推移にも触れない（fingerprint が動かないこと自体が条件）。
 const titleCensus = { reigns: [], open: new Map() };
+// 新聞P2: 一面トップの種別分布 (WM_FRONTPAGE_FIXTURE=1)。読み取り専用
+const frontPageCensus = { total: 0, byType: {}, values: [] };
 function censusTitleReigns(state) {
   if (!state) return;
   const absWeek = (state.season - 1) * 48 + (state.week || 1);
@@ -1447,6 +1449,16 @@ function runSimulation(seed, seasons) {
       const tickResult = Engine.tickWeek(G);
       G = { ...tickResult.state, gameLog: [] };
       if (process.env.WM_TITLE_FIXTURE === '1') censusTitleReigns(G);
+      // 新聞P2: 一面トップに来た記事の種別を数える。G を覗くだけの読み取り専用。
+      // WM_SOURCE_REF と併用して P2 前後を比べるためのもの
+      if (process.env.WM_FRONTPAGE_FIXTURE === '1' && G.weeklyNewspaper) {
+        const ts = G.weeklyNewspaper.topStory;
+        if (ts && ts.type) {
+          frontPageCensus.total++;
+          frontPageCensus.byType[ts.type] = (frontPageCensus.byType[ts.type] || 0) + 1;
+          if (ts.newsValue != null) frontPageCensus.values.push(ts.newsValue);
+        }
+      }
       // MQ再設計P4: 大ニュース記事(mqAllTimeRecord/mqTagRecord)の生成回数を計測
       const bigNewsType = G.weeklyNewspaper && G.weeklyNewspaper.topStory && G.weeklyNewspaper.topStory.type;
       if (bigNewsType === 'mqAllTimeRecord') stats.mqAllTimeRecordNewsCount++;
@@ -2510,6 +2522,28 @@ if (process.env.WM_TITLE_FIXTURE === '1') {
     if (mine.length) show('自団体のみ', mine);
     else console.log('  自団体: 観測対象外 — 団体王座の解禁(titleEstablished)は app.js にしかなく、'
       + 'auto-sim は app.js を読まないため自団体の王座は一度も設立されない。上の数字はAI団体のみ');
+  }
+}
+
+// ── 一面トップの種別分布 (WM_FRONTPAGE_FIXTURE=1) ────────────────────
+// 新聞P2 で「どの記事が一面に来るか」がどう変わったかを見る。
+// WM_SOURCE_REF=<ref> と併用すれば P2 前後を同一シードで比べられる。
+if (process.env.WM_FRONTPAGE_FIXTURE === '1') {
+  console.log('--------------------------------------');
+  console.log('[一面トップの種別] (WM_FRONTPAGE_FIXTURE=1)');
+  const c = frontPageCensus;
+  if (!c.total) console.log('  観測なし');
+  else {
+    Object.entries(c.byType).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => {
+      console.log(`  ${k.padEnd(26)} ${String(v).padStart(4)}  ${(v / c.total * 100).toFixed(1)}%`);
+    });
+    console.log(`  ${'(号数)'.padEnd(26)} ${String(c.total).padStart(4)}`);
+    if (c.values.length) {
+      const v = [...c.values].sort((a, b) => a - b);
+      const avg = v.reduce((s2, x) => s2 + x, 0) / v.length;
+      console.log(`  合成点  平均${avg.toFixed(0)}  中央${v[Math.floor(v.length / 2)]}  最小${v[0]}  最大${v[v.length - 1]}`);
+      console.log(`  資格線260以上の号: ${(v.filter(x => x >= 260).length / v.length * 100).toFixed(1)}%`);
+    }
   }
 }
 
