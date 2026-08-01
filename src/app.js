@@ -15192,8 +15192,15 @@ App.preloadNewspaperImages = function(wp) {
   App._lastPreloadedNewspaperKey = key;
   const ids = new Set();
   const add = (id) => { if (id != null && typeof PORTRAIT !== 'undefined' && PORTRAIT[id]) ids.add(id); };
-  if (wp.topStory) add(wp.topStory.characterId);
-  (wp.subStories || []).forEach(s => add(s.characterId));
+  // 新聞再設計P1: 一面の枠が増え、隊列写真(characterIds)を持つ記事も肩・準トップ・小記事に
+  // 回るようになったので、単数の characterId だけでなく隊列のメンバーもプリロードする
+  const addStory = (s) => {
+    if (!s) return;
+    add(s.characterId);
+    (Array.isArray(s.characterIds) ? s.characterIds : []).forEach(add);
+  };
+  addStory(wp.topStory);
+  (wp.subStories || []).forEach(addStory);
   const psd = wp.playerShowData;
   if (psd) {
     add(psd.left?.id); add(psd.right?.id);

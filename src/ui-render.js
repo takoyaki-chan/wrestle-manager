@@ -6943,29 +6943,52 @@ function _npRenderPage1() {
     </div>`;
   }
 
-  let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum, !!wp.isSeasonOpening)}${archiveNav}<div class="np-content">`;
+  // 新聞再設計P1: layout:'v3' の号だけ新しい一面骨格で描く。
+  // 旧号(このフィールドを持たないバックナンバー)は旧レイアウトのまま表示する
+  // ——マイグレーションはしない、という取り決め（docs/newspaper-redesign-spec-v0.2.md §6）
+  const front = (wp.layout === 'v3')
+    ? _npFrontV3(wp, seasonNum, weekNum, isLatest)
+    : _npFrontLegacy(wp, seasonNum, weekNum, isLatest);
+  return `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum, !!wp.isSeasonOpening)}${archiveNav}${front}</div>`;
+}
 
-  // bankruptcy-redesign v1.1: 危機コラム（最新号のみ・editorial 優先掲載）
-  if (isLatest && typeof KURODA_CRISIS !== 'undefined') {
-    const tag = G._crisisColumnTag;
-    if (tag === 'enter' || tag === 'ongoing' || tag === 'recovered') {
-      const pool = KURODA_CRISIS[tag] || [];
-      if (pool.length > 0) {
-        const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC715));
-        const pick = Engine.rng.pick(rng, pool);
-        const orgName = G.orgName || 'プレイヤー団体';
-        const weeksRem = Math.max(0, G.crisisWeeksRemaining || 0);
-        const headline = (pick.headline || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
-        const body = (pick.body || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
-        html += `<section class="np-kuroda-crisis" style="background:linear-gradient(180deg,#1a0808 0%,#2a0f0f 100%);border-left:4px solid #aa2020;border-radius:4px;padding:14px 18px;margin-bottom:16px;color:#f4d8d8;box-shadow:0 0 12px rgba(170,30,30,0.25) inset">
-          <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#ff8888;margin-bottom:6px;text-transform:uppercase">編集記事 — 黒田幸子</div>
-          <h3 style="margin:0 0 8px 0;font-size:18px;color:#ffd6d6;font-weight:700">${headline}</h3>
-          <p style="margin:0;font-size:13px;line-height:1.8;white-space:pre-wrap">${body}</p>
-          <div style="text-align:right;margin-top:10px;font-size:11px;color:#cc8888">${NP_KURODA_BYLINE.editorial}</div>
-        </section>`;
-      }
-    }
-  }
+// bankruptcy-redesign v1.1: 危機コラム（最新号のみ・editorial 優先掲載）。
+// 新旧どちらの一面レイアウトからも同じ形で出す
+function _npCrisisColumnHtml(seasonNum, weekNum, isLatest) {
+  if (!isLatest || typeof KURODA_CRISIS === 'undefined') return '';
+  const tag = G._crisisColumnTag;
+  if (tag !== 'enter' && tag !== 'ongoing' && tag !== 'recovered') return '';
+  const pool = KURODA_CRISIS[tag] || [];
+  if (pool.length === 0) return '';
+  const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC715));
+  const pick = Engine.rng.pick(rng, pool);
+  const orgName = G.orgName || 'プレイヤー団体';
+  const weeksRem = Math.max(0, G.crisisWeeksRemaining || 0);
+  const headline = (pick.headline || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
+  const body = (pick.body || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
+  return `<section class="np-kuroda-crisis" style="background:linear-gradient(180deg,#1a0808 0%,#2a0f0f 100%);border-left:4px solid #aa2020;border-radius:4px;padding:14px 18px;margin-bottom:16px;color:#f4d8d8;box-shadow:0 0 12px rgba(170,30,30,0.25) inset">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#ff8888;margin-bottom:6px;text-transform:uppercase">編集記事 — 黒田幸子</div>
+    <h3 style="margin:0 0 8px 0;font-size:18px;color:#ffd6d6;font-weight:700">${headline}</h3>
+    <p style="margin:0;font-size:13px;line-height:1.8;white-space:pre-wrap">${body}</p>
+    <div style="text-align:right;margin-top:10px;font-size:11px;color:#cc8888">${NP_KURODA_BYLINE.editorial}</div>
+  </section>`;
+}
+
+// 記事 type に対応する黒田寸評を1本引く（無ければ空文字）
+function _npKurodaCommentText(type, headline, seasonNum, weekNum, salt) {
+  const pool = (typeof _getKurodaNewsComment === 'function') ? _getKurodaNewsComment(type) : [];
+  if (!pool || pool.length === 0) return '';
+  const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, salt));
+  const fn = Engine.rng.pick(rng, pool);
+  try { return fn({ headline: headline || '', orgName: '' }) || ''; } catch (e) { return ''; }
+}
+
+// ── 一面(旧レイアウト) ───────────────────────────────
+// バックナンバー互換用。新規生成号は _npFrontV3 が描く
+function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
+  let html = `<div class="np-content">`;
+
+  html += _npCrisisColumnHtml(seasonNum, weekNum, isLatest);
 
   // 一面記事
   if (wp.topStory && wp.topStory.type === 'mqTagRecord') {
@@ -7076,7 +7099,309 @@ function _npRenderPage1() {
   }
   html += `</section>`;
 
-  html += `</div></div>`;
+  html += `</div>`;
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 一面 v3(紙面骨格) — docs/ui/mockups/newspaper-redesign-best-v0.3.html 準拠
+//
+//   きょうの紙面(目次)
+//   ┌──────────────┬────────┐
+//   │ トップ記事     │ 肩記事   │
+//   │                ├────────┤
+//   │                │ MVP小窓 │
+//   ├──────────────┴────────┤
+//   │ 準トップ(中段の横帯)          │
+//   ├────────┬────────┬──────┤
+//   │ 小記事   │ 小記事   │ 短信  │
+//   ├────────┴────────┴──────┤
+//   │ 黒田コラム(最下段固定)         │
+//   └────────────────────────┘
+//   つづき: 自団体興行 詳報(同じ紙を下へ continue。spec §1「続きの見せ方」)
+//
+// 記事の割り付けは Engine.newspaper.PRIORITY の順位のまま上から流し込む:
+//   topStory → トップ / subStories[0] → 肩 / [1] → 準トップ / [2][3] → 小記事 / [4..] → 短信
+// 採点の作り直し(合成点・資格線)は P2 の仕事なのでここでは触らない
+// ══════════════════════════════════════════════════════════════
+
+// 記事の主役ID(隊列記事は先頭の1人)
+function _npV3PrimaryId(story) {
+  if (!story) return null;
+  const ids = Array.isArray(story.characterIds)
+    ? story.characterIds.filter(id => Number.isInteger(id) && id > 0) : [];
+  return ids[0] || story.characterId || null;
+}
+// 記事に付ける所属バッジ(エンブレム+団体名)
+function _npV3OrgLine(story, size) {
+  const id = _npV3PrimaryId(story);
+  if (!id) return '';
+  const orgKey = _npFindFighterOrgKey(G, id);
+  const orgName = _findFighterOrgName(G, id);
+  const emblem = orgKey ? _npOrgEmblem(G, orgKey, size || 14) : '';
+  if (!emblem && !orgName) return '';
+  return `<div class="np-sub-org-line">${emblem}<span>${orgName || ''}</span></div>`;
+}
+
+/**
+ * 本文を段落に割る。
+ * 記事文そのものを書き換えるのは P3 の仕事なので、ここでは**割り位置を決めるだけ**。
+ * ｜ や改行で区切られている記事はその区切りを尊重し、1本のベタ文だけを
+ * 「。」の位置で段落に均す(閉じ括弧の直前では割らない)。短い文は割らない。
+ */
+function _npV3Paragraphs(body) {
+  const raw = String(body == null ? '' : body).trim();
+  if (!raw) return [];
+  if (raw.includes('｜')) return raw.split('｜').map(s => s.trim()).filter(Boolean);
+  if (raw.includes('\n')) return raw.split('\n').map(s => s.trim()).filter(Boolean);
+  if (raw.length < 150) return [raw];
+
+  const sentences = [];
+  let buf = '';
+  for (let i = 0; i < raw.length; i++) {
+    buf += raw[i];
+    const next = raw[i + 1];
+    // 「……だ。」のような閉じ括弧の直前では割らない(セリフを断ち切らないため)
+    if (raw[i] === '。' && next !== '」' && next !== '』' && next !== '）' && next !== ')') {
+      sentences.push(buf); buf = '';
+    }
+  }
+  if (buf) sentences.push(buf);
+  if (sentences.length < 2) return [raw];
+
+  // 1段あたり130字前後を目安に、最大4段まで。段数が1に落ちるならベタのまま返す
+  const n = Math.max(1, Math.min(4, Math.min(sentences.length, Math.ceil(raw.length / 130))));
+  if (n <= 1) return [raw];
+  const per = raw.length / n;
+  const groups = [];
+  let cur = '';
+  sentences.forEach(s => {
+    cur += s;
+    if (groups.length < n - 1 && cur.length >= per * 0.85) { groups.push(cur); cur = ''; }
+  });
+  if (cur) groups.push(cur);
+  return groups;
+}
+
+// きょうの紙面(面の目次)。この号に実際にあるものだけ並べる
+function _npV3IndexBar(wp, isLatest) {
+  const items = [];
+  if (wp.playerShowData) {
+    items.push(`<span class="pg" onclick="npScrollToShowDetail()"><u>つづき</u> 自団体興行 詳報</span>`);
+  }
+  items.push(`<span class="pg" onclick="setNewspaperSubPage(2)"><u>二面</u> 団体比較</span>`);
+  items.push(`<span class="pg" onclick="setNewspaperSubPage(3)"><u>三面</u> 因縁列伝</span>`);
+  if (isLatest && G.mvpRace && (G.mvpRace.rankings || []).length > 0) {
+    items.push(`<span class="pg np-v3-index-right" onclick="setNewspaperSubPage(4)"><u>MVPレース詳細 ▶</u></span>`);
+  }
+  return `<div class="np-v3-indexbar"><b>きょうの紙面</b>${items.join('')}</div>`;
+}
+function npScrollToShowDetail() {
+  const el = document.getElementById('npShowDetail');
+  if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// MVP小窓(肩記事の下=右カラム下部が定位置)。
+// mvpRace は「いまの順位」なので、過去号に貼ると嘘になる。最新号のときだけ出す
+function _npV3MvpBox(isLatest) {
+  if (!isLatest) return '';
+  const rows = (G.mvpRace && G.mvpRace.rankings) || [];
+  if (rows.length === 0) return '';
+  const top3 = rows.slice(0, 3).map(e => `<div class="np-v3-mvprow" onclick="event.stopPropagation();showFighterPopup(${e.fighterId},null,true)">
+      <span class="rank">${e.rank}</span><span class="who">${escHtml(e.fighterName || '')}</span><span class="pt">${Math.round(e.points || 0)}</span>
+    </div>`).join('');
+  const chase = rows.slice(3, 5)
+    .map(e => `${e.rank}位 ${escHtml(e.fighterName || '')} ${Math.round(e.points || 0)}`)
+    .join(' / ');
+  const chaseHtml = chase ? `<div class="np-v3-mvpchase">${chase}</div>` : '';
+  return `<div class="np-v3-mvpbox">
+    <div class="ttl">MVPレース<span class="more" onclick="setNewspaperSubPage(4)">詳細 ▶</span></div>
+    ${top3}${chaseHtml}
+  </div>`;
+}
+
+// 黒田コラム(最下段固定)。載せる記事から寸評を1本引く。
+// 自団体興行の記事には寸評プールが無いので、次の記事へ順に当たる
+function _npV3KurodaColumn(wp, seasonNum, weekNum) {
+  const candidates = [wp.topStory, ...(wp.subStories || [])].filter(Boolean);
+  for (let i = 0; i < candidates.length; i++) {
+    const txt = _npKurodaCommentText(candidates[i].type, candidates[i].headline, seasonNum, weekNum, 0xC0DA + i);
+    if (txt) {
+      return `<div class="np-v3-kuroda">
+        <div class="np-v3-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
+        <div>
+          <div class="np-v3-kuroda-text">「${txt}」</div>
+          <div class="np-v3-kuroda-byline">${NP_KURODA_BYLINE.editorial}</div>
+        </div>
+      </div>`;
+    }
+  }
+  return '';
+}
+
+// トップ記事(左カラム)。写真は本文に従属する脇役(190×228)
+function _npV3TopStory(wp, seasonNum, weekNum) {
+  const ts = wp.topStory;
+  if (!ts) return '';
+  if (ts.type === 'mqTagRecord') {
+    // MQ再設計P4 §5: タッグ歴代最高評価は専用の大記事レイアウトのまま一面を張る
+    return _npRenderBignewsTag(G, ts, seasonNum, weekNum);
+  }
+  const tagPhotoIds = _npSpringTagStoryIds(G, ts, seasonNum);
+  const isTagPhoto = tagPhotoIds.length >= 2;
+  const primaryId = tagPhotoIds[0] || ts.characterId || null;
+  const photoIds = isTagPhoto ? tagPhotoIds : (primaryId ? [primaryId] : []);
+  const tsName = photoIds.map(id => ALL_CHARS.find(c => c.id === id)?.name || '').filter(Boolean).join(' / ');
+  const orgKey = primaryId ? _npFindFighterOrgKey(G, primaryId) : null;
+  const orgName = primaryId ? _findFighterOrgName(G, primaryId) : '';
+  const emblem = orgKey ? _npOrgEmblem(G, orgKey, 18) : '';
+  const orgLine = (emblem || orgName) ? `<div class="np-top-org-line">${emblem}<span>${orgName || ''}</span></div>` : '';
+
+  const photoHtml = primaryId
+    ? `<figure class="np-v3-topfig">
+        <div class="np-v3-photo-top${isTagPhoto ? ' np-top-photo--tag' : ''}" style="${isTagPhoto ? '' : _npPhotoBg(primaryId)}"
+             ${isTagPhoto ? '' : `onclick="showFighterPopup(${primaryId},null,true)"`}>
+          ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds) : ''}
+          <div class="stamp">EXCLUSIVE</div>
+          <div class="caption">${orgLine}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>
+        </div>
+      </figure>`
+    : '';
+
+  const paras = _npV3Paragraphs(ts.body);
+  const head = paras.slice(0, 2);
+  const tail = paras.slice(2);
+  const headHtml = head.length
+    ? `<div class="np-v3-art">${photoHtml}${head.map(p => `<p>${p}</p>`).join('')}<div class="np-v3-clear"></div></div>`
+    : `<div class="np-v3-art">${photoHtml}<div class="np-v3-clear"></div></div>`;
+  const tailHtml = tail.length
+    ? `<div class="np-v3-art np-v3-cols">${tail.map(p => `<p>${p}</p>`).join('')}</div>`
+    : '';
+
+  return `<article class="np-v3-top">
+    <span class="np-v3-kicker red">一面トップ</span>
+    ${ts.situation ? `<div class="np-top-situation">${ts.situation}</div>` : ''}
+    <h2 class="np-v3-hl-top">${ts.headline || '——'}</h2>
+    ${ts.subhead ? `<div class="np-v3-deck">${ts.subhead}</div>` : ''}
+    ${headHtml}${tailHtml}
+    <div class="np-v3-byline">${NP_KURODA_BYLINE.rating}</div>
+  </article>`;
+}
+
+// 肩記事(右上)。「2番目のニュース」の定位置。写真は 84×126
+function _npV3Shoulder(story) {
+  if (!story) return '';
+  const id = _npV3PrimaryId(story);
+  const photo = id
+    ? `<div class="np-v3-photo-kata" style="${_npPhotoBg(id)}" onclick="showFighterPopup(${id},null,true)"></div>`
+    : '';
+  // 右カラムは 200px しかないので、写真は回り込ませる。
+  // flex で横に並べると本文が9文字幅のリボンになって読めない（実測 2026-08-01）
+  const paras = _npV3Paragraphs(story.body);
+  const bodyHtml = (paras.length ? paras : ['']).map(p => `<p class="np-v3-noindent">${p}</p>`).join('');
+  return `<article class="np-v3-kata">
+    <span class="np-v3-kicker">肩記事</span>
+    ${story.situation ? `<div class="np-sub-situation">${story.situation}</div>` : ''}
+    ${_npV3OrgLine(story, 14)}
+    <h3 class="np-v3-hl-kata">${story.headline || ''}</h3>
+    <div class="np-v3-art np-v3-art-sub">${photo}${bodyHtml}<div class="np-v3-clear"></div></div>
+  </article>`;
+}
+
+// 準トップ(中段の横帯)。予告・特集向きの位置
+function _npV3JunTop(story) {
+  if (!story) return '';
+  const id = _npV3PrimaryId(story);
+  const photo = id ? _npSubPhotoHtml(story) : '';
+  const body = String(story.body || '');
+  const wide = body.length >= 120 ? ' np-v3-cols' : '';
+  return `<article class="np-v3-jun">
+    <span class="np-v3-kicker">準トップ</span>
+    ${story.situation ? `<div class="np-sub-situation">${story.situation}</div>` : ''}
+    ${_npV3OrgLine(story, 14)}
+    <h3 class="np-v3-hl-jun">${story.headline || ''}</h3>
+    <div class="np-v3-junbody">
+      ${photo}
+      <div class="np-v3-art np-v3-art-sub${wide}"><p class="np-v3-noindent">${body}</p></div>
+    </div>
+  </article>`;
+}
+
+// 小記事(下段)。写真は chip 46×66。
+// 人物が特定できない記事は空の額縁を置かず、本文だけで組む
+// （記事用の汎用画像は spec §3 の P6 で入る）
+function _npV3Small(story) {
+  if (!story) return '';
+  return `<article class="np-v3-small">
+    ${_npV3PrimaryId(story) ? _npSubPhotoHtml(story) : ''}
+    <div class="np-v3-small-body">
+      ${story.situation ? `<div class="np-sub-situation">${story.situation}</div>` : ''}
+      ${_npV3OrgLine(story, 12)}
+      <div class="np-v3-hl-s">${story.headline || ''}</div>
+      <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">${story.body || ''}</p></div>
+    </div>
+  </article>`;
+}
+
+// 短信。小ネタは1本ずつ枠を取らず「▼」で連結する。ニュースが多い週はここが伸びる
+function _npV3Briefs(stories) {
+  const items = (stories || []).map(s => (s && s.headline) ? String(s.headline).trim() : '').filter(Boolean);
+  if (items.length === 0) return '';
+  return `<div class="np-v3-beta"><b>短信</b>${items.join('<span class="np-v3-beta-sep">▼</span>')}</div>`;
+}
+
+function _npFrontV3(wp, seasonNum, weekNum, isLatest) {
+  const subs = (wp.subStories || []).filter(Boolean);
+  const shoulder = subs[0] || null;
+  const junTop = subs[1] || null;
+  const smalls = subs.slice(2, 4);
+  const briefs = subs.slice(4);
+
+  let html = _npV3IndexBar(wp, isLatest);
+  html += `<div class="np-content">`;
+  html += _npCrisisColumnHtml(seasonNum, weekNum, isLatest);
+
+  // ── トップ + 肩(+MVP小窓) ──
+  const rightCol = _npV3Shoulder(shoulder) + _npV3MvpBox(isLatest);
+  html += `<div class="np-v3-lead-grid${rightCol ? '' : ' np-v3-lead-grid--single'}">
+    <div>${_npV3TopStory(wp, seasonNum, weekNum)}</div>
+    ${rightCol ? `<div class="np-v3-vr">${rightCol}</div>` : ''}
+  </div>`;
+
+  // ── 準トップ ──
+  if (junTop) {
+    html += `<hr class="np-v3-rule-thick">`;
+    html += _npV3JunTop(junTop);
+  }
+
+  // ── 下段: 小記事 + 短信 ──
+  const betaHtml = _npV3Briefs(briefs);
+  if (smalls.length > 0 || betaHtml) {
+    html += `<hr class="np-v3-rule-thick">`;
+    const cells = smalls.map((s, i) => `<div${i > 0 ? ' class="np-v3-vr"' : ''}>${_npV3Small(s)}</div>`);
+    if (betaHtml) cells.push(`<div${cells.length > 0 ? ' class="np-v3-vr"' : ''}>${betaHtml}</div>`);
+    html += `<div class="np-v3-bottom-grid cols-${cells.length}">${cells.join('')}</div>`;
+  } else if (!shoulder && !junTop) {
+    html += `<div class="np-empty-substory">今週は業界動向の特筆事項なし。<br>業界全体が静かに次の展開を待っている。</div>`;
+  }
+
+  // ── 黒田コラム(最下段固定) ──
+  html += _npV3KurodaColumn(wp, seasonNum, weekNum);
+
+  // ── つづき: 自団体興行 詳報 ──
+  // 面をめくらせず、同じ紙の下へそのまま続ける(spec §1「続きの見せ方」)
+  if (wp.playerShowData) {
+    const ts = wp.topStory;
+    const topIsPlayerShow = ts && (ts.type === 'playerShowTitle' || ts.type === 'playerShowNormal');
+    // 一面トップが自団体興行なら、詳報のメインは第2試合へ繰り上げる(同じ試合を二度語らない)
+    const psd = topIsPlayerShow ? _npSwapMainToSecondCard(wp.playerShowData, seasonNum, weekNum) : wp.playerShowData;
+    if (psd) {
+      html += `<div class="np-v3-fold" id="npShowDetail"><span>本紙つづき</span>自団体興行 詳報</div>`;
+      html += _npRenderPlayerShow(psd, seasonNum, weekNum);
+    }
+  }
+
+  html += `</div>`;
   return html;
 }
 

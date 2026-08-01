@@ -8374,6 +8374,96 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .np-preview-text { font-size: 12px; line-height: 1.8; color: #3a2e1c; margin-top: 6px; font-family: 'Noto Serif JP', serif; }
 .np-preview-text strong { color: #8b1a1a; }
 
+/* ════════════════════════════════════════════════════════════════
+   一面 v3(紙面骨格) — docs/ui/mockups/newspaper-redesign-best-v0.3.html 準拠
+   トップ / 肩記事 / MVP小窓 / 準トップ / 小記事+短信 / 黒田コラム / きょうの紙面
+
+   色は上の .np-* が使っている紙面パレット(#f8eed2 系の紙・#8b1a1a の赤・
+   #9a7020 の金・rgba(120,84,39,*) の罫)をそのまま再利用する。新しい色は足さない。
+   ════════════════════════════════════════════════════════════════ */
+
+/* きょうの紙面(面の目次)。題字の直下・本文の外に置く */
+.np-v3-indexbar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; padding: 6px 26px; background: rgba(120,84,39,0.12); border-bottom: 1px solid rgba(120,84,39,0.3); font-size: 11px; color: #5b4b34; }
+.np-v3-indexbar b { font-weight: 900; color: #8b1a1a; font-size: 10px; letter-spacing: 2px; }
+.np-v3-indexbar .pg { cursor: pointer; }
+.np-v3-indexbar .pg u { text-decoration: none; border-bottom: 1px dotted #9a7020; }
+.np-v3-indexbar .pg:hover u { border-bottom-color: #8b1a1a; color: #8b1a1a; }
+.np-v3-index-right { margin-left: auto; }
+
+/* 見出しの階段 = ニュースバリュー */
+.np-v3-kicker { display: inline-block; background: linear-gradient(135deg, #b08530, #9a7020); color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 4px; padding: 2px 10px; }
+.np-v3-kicker.red { background: #8b1a1a; }
+.np-v3-hl-top { font-size: 27px; line-height: 1.25; font-weight: 900; font-family: 'Noto Serif JP', serif; color: #1a0d04; margin: 6px 0; letter-spacing: -0.01em; }
+.np-v3-hl-kata { font-size: 16px; line-height: 1.3; font-weight: 900; font-family: 'Noto Serif JP', serif; color: #1a0d04; margin: 6px 0; }
+.np-v3-hl-jun { font-size: 18px; line-height: 1.28; font-weight: 900; font-family: 'Noto Serif JP', serif; color: #1a0d04; margin: 6px 0 8px; }
+.np-v3-hl-s { font-size: 13px; line-height: 1.35; font-weight: 900; color: #1a0d04; margin: 0 0 3px; }
+.np-v3-deck { font-size: 13px; font-weight: 700; color: #5b4b34; margin: 0 0 8px; }
+.np-v3-byline { font-size: 10px; color: #7a5b32; text-align: right; margin-top: 2px; }
+
+/* 本文。分量を確保する(「パッと見る」ではなく「読む」) */
+.np-v3-art p { font-size: 13px; line-height: 1.85; color: #2a2014; margin: 0 0 8px; text-indent: 1em; text-align: justify; }
+.np-v3-art.np-v3-art-sub p { font-size: 12px; line-height: 1.75; color: #3a2c18; }
+.np-v3-art.np-v3-art-small p { font-size: 11px; line-height: 1.7; color: #4a3825; margin-bottom: 4px; }
+.np-v3-art p.np-v3-noindent { text-indent: 0; }
+.np-v3-cols { columns: 2; column-gap: 20px; column-rule: 1px solid rgba(120,84,39,0.25); }
+.np-v3-clear { clear: both; }
+.np-v3-rule-thick { border: 0; border-top: 3px double rgba(120,84,39,0.5); margin: 14px 0; }
+.np-v3-vr { border-left: 1px solid rgba(120,84,39,0.35); padding-left: 16px; }
+
+/* トップ + 肩(右カラム) */
+.np-v3-lead-grid { display: grid; grid-template-columns: 1fr 218px; gap: 16px; }
+.np-v3-lead-grid--single { grid-template-columns: 1fr; }
+.np-v3-topfig { float: left; margin: 3px 14px 4px 0; }
+.np-v3-photo-top { position: relative; width: 190px; height: 228px; overflow: hidden; border: 2px solid #d4b87a; outline: 1px solid rgba(120,84,39,0.4); background-size: cover; background-position: center top; background-repeat: no-repeat; background-color: #2a1a10; box-shadow: 0 3px 10px rgba(0,0,0,0.3); cursor: pointer; }
+.np-v3-photo-top .stamp { position: absolute; top: 8px; right: 8px; z-index: 5; background: #8b1a1a; color: #fff; font-size: 8px; font-weight: 900; padding: 2px 6px; letter-spacing: 1px; border-radius: 2px; transform: rotate(3deg); }
+.np-v3-photo-top .caption { position: absolute; bottom: 0; left: 0; right: 0; z-index: 4; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.85)); color: #fff; font-size: 9px; padding: 14px 8px 6px; line-height: 1.4; }
+.np-v3-photo-top .caption strong { font-size: 11px; font-family: 'Noto Serif JP', serif; display: block; margin-bottom: 1px; }
+/* 大ニュースの一面ジャックは専用レイアウトのまま左カラムに嵌める */
+.np-v3-lead-grid .np-bignews-tag { padding-bottom: 0; margin-bottom: 0; border-bottom: 0; }
+.np-v3-lead-grid .np-bignews-photobar { height: 210px; }
+
+/* 肩記事。右カラムが200px弱しかないので写真は回り込ませる
+   (横並びにすると本文が9文字幅のリボンになって読めない) */
+.np-v3-photo-kata { float: left; width: 84px; height: 126px; margin: 2px 10px 2px 0; overflow: hidden; border: 2px solid rgba(120,84,39,0.4); background-size: cover; background-position: center top; background-repeat: no-repeat; background-color: #2a1a10; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
+
+/* MVP小窓(右カラム下部が定位置) */
+.np-v3-mvpbox { margin-top: 10px; padding: 8px 10px; background: rgba(139,26,26,0.07); border: 1px solid rgba(139,26,26,0.35); }
+.np-v3-mvpbox .ttl { display: flex; justify-content: space-between; align-items: baseline; font-size: 10px; font-weight: 900; letter-spacing: 3px; color: #8b1a1a; margin-bottom: 4px; }
+.np-v3-mvpbox .more { font-size: 10px; letter-spacing: 0; color: #9a7020; font-weight: 700; cursor: pointer; }
+.np-v3-mvpbox .more:hover { color: #8b1a1a; }
+.np-v3-mvprow { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; border-bottom: 1px dotted rgba(120,84,39,0.3); cursor: pointer; }
+.np-v3-mvprow:last-child { border-bottom: 0; }
+.np-v3-mvprow .rank { font-family: 'Bebas Neue', sans-serif; font-size: 14px; width: 12px; color: #8b1a1a; }
+.np-v3-mvprow .who { color: #1f1710; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.np-v3-mvprow .pt { margin-left: auto; font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: #3a2c18; }
+.np-v3-mvpchase { border-top: 1px dotted rgba(120,84,39,0.3); margin-top: 3px; padding-top: 3px; font-size: 10px; color: #7a5b32; }
+
+/* 準トップ(中段の横帯) */
+.np-v3-junbody { display: flex; gap: 12px; align-items: flex-start; }
+.np-v3-junbody > .np-v3-art { flex: 1; min-width: 0; }
+
+/* 下段: 小記事 + 短信 */
+.np-v3-bottom-grid { display: grid; gap: 16px; }
+.np-v3-bottom-grid.cols-1 { grid-template-columns: 1fr; }
+.np-v3-bottom-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.np-v3-bottom-grid.cols-3 { grid-template-columns: 1.1fr 1.1fr 1fr; }
+.np-v3-small { display: flex; gap: 10px; align-items: flex-start; }
+.np-v3-small-body { flex: 1; min-width: 0; }
+.np-v3-beta { font-size: 11px; line-height: 1.7; color: #3a2c18; }
+.np-v3-beta b { display: block; font-size: 12px; font-family: 'Noto Serif JP', serif; color: #1a0d04; margin-bottom: 3px; }
+.np-v3-beta-sep { color: #8b1a1a; font-weight: 900; padding: 0 4px; }
+
+/* 黒田コラム(最下段固定。編集手帳のポジション) */
+.np-v3-kuroda { display: flex; gap: 10px; align-items: center; margin-top: 14px; padding: 10px 12px 6px; background: rgba(120,84,39,0.06); border-top: 3px double rgba(139,26,26,0.45); }
+.np-v3-kuroda-face { width: 34px; height: 34px; border-radius: 50%; flex: none; background-size: cover; background-position: center; background-color: #2a1a10; border: 1px solid rgba(139,26,26,0.5); }
+.np-v3-kuroda-text { font-size: 11.5px; line-height: 1.65; color: #3a2c18; font-family: 'Noto Serif JP', serif; }
+.np-v3-kuroda-byline { font-size: 10px; color: #7a5b32; margin-top: 2px; }
+
+/* つづき(一面の下へそのまま続く) */
+.np-v3-fold { display: flex; align-items: center; gap: 10px; margin: 20px 0 4px; font-size: 12px; font-weight: 900; letter-spacing: 2px; color: #5b4b34; font-family: 'Noto Serif JP', serif; }
+.np-v3-fold::after { content: ''; flex: 1; border-top: 3px double rgba(120,84,39,0.5); }
+.np-v3-fold span { background: #8b1a1a; color: #fff; font-size: 9px; font-weight: 900; letter-spacing: 3px; padding: 2px 8px; font-family: 'Noto Sans JP', sans-serif; }
+
 /* ── MQ再設計P4 §5: mqTagRecord 上下ぶち抜き大記事（タッグ歴代最高評価） ── */
 .np-bignews-tag { padding: 0 0 18px; border-bottom: 3px double rgba(120,84,39,0.35); margin-bottom: 16px; }
 .np-bignews-photobar { position: relative; width: 100%; height: 260px; border-radius: 4px; border: 4px solid #d4a82a; outline: 1px solid rgba(154,112,32,0.5); overflow: hidden; background-color: #2a1a10; box-shadow: 0 6px 20px rgba(0,0,0,0.4); margin-bottom: 14px; }
@@ -8777,6 +8867,21 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   .np-rivalry-stand { height: 240px; }
   .np-bignews-photobar { height: 190px; }
   .np-bignews-headline { font-size: 21px; }
+
+  /* 一面 v3: 段組をほどいて1本の縦の流れにする。
+     写真は回り込みをやめ、既存の .np-top-photo と同じ「全幅の横バー」に揃える
+     (190px を float したままだと本文が 150px 幅の柱になって読めない) */
+  .np-v3-indexbar { padding-left: 18px; padding-right: 18px; gap: 10px; }
+  .np-v3-index-right { margin-left: 0; }
+  .np-v3-lead-grid { grid-template-columns: 1fr; }
+  .np-v3-vr { border-left: 0; padding-left: 0; border-top: 1px solid rgba(120,84,39,0.35); padding-top: 12px; }
+  .np-v3-topfig { float: none; margin: 0 0 10px; }
+  .np-v3-photo-top { width: 100%; height: 220px; }
+  .np-v3-lead-grid .np-bignews-photobar { height: 190px; }
+  .np-v3-cols { columns: 1; }
+  .np-v3-bottom-grid.cols-2, .np-v3-bottom-grid.cols-3 { grid-template-columns: 1fr; }
+  .np-v3-hl-top { font-size: 22px; }
+  .np-v3-hl-jun { font-size: 17px; }
 }
 
 /* ════════ 今週画面ロスターテーブル v1.0 ════════ */

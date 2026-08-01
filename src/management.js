@@ -28434,9 +28434,17 @@ Engine.newspaper = {
     // priority でソート
     stories.sort((a, b) => b.priority - a.priority);
 
-    // 一面 + サブ記事（最大3件）
+    // 一面 + サブ記事
     // 業界ニュース欄は「試合結果以外の動き」を見せる枠として機能させたいので、
     // 試合系記事(stage結果系)は最大1件に絞り、残り枠を非試合系で埋める
+    //
+    // 新聞再設計P1(2026-08-01): 一面の枠が「トップ+サブ3」から
+    // 「トップ / 肩 / 準トップ / 小記事2 / 短信」へ増えたので、subStories の上限を
+    // 3 → NP_SUB_MAX へ広げる。並び順は従来と同じ（先頭3件は以前と一致する）ので、
+    // 増えた分はそのまま短信へ流れる。上限を残すのは、溢れた記事を
+    // unpublishedIndustryEvents で翌号へ持ち越す弁を殺さないため
+    // （全部を短信で飲み込むと、来週なら肩に載れた記事が一行で消費される）。
+    const NP_SUB_MAX = 7;
     const topStory = stories[0] || null;
     const MATCH_TYPES = new Set([
       'ppvSummitResult', 'playerTitleChange', 'warMilestone', 'crossWarResult',
@@ -28454,18 +28462,18 @@ Engine.newspaper = {
     const subStories = [];
     if (matchPicks.length > 0) subStories.push(matchPicks[0]); // 試合系は最大1件
     for (const s of otherPicks) {
-      if (subStories.length >= 3) break;
+      if (subStories.length >= NP_SUB_MAX) break;
       subStories.push(s);
     }
     // 非試合系が足りない場合は試合系で残り枠を埋める
-    if (subStories.length < 3) {
-      for (let i = 1; i < matchPicks.length && subStories.length < 3; i++) {
+    if (subStories.length < NP_SUB_MAX) {
+      for (let i = 1; i < matchPicks.length && subStories.length < NP_SUB_MAX; i++) {
         subStories.push(matchPicks[i]);
       }
     }
 
     // 2026-07-27: 今号に載らなかった業界ニュースを拾い出して呼び出し元へ返す。
-    // 掲載枠は一面1+サブ3の4本しかないため、シーズン境界のように大量に積まれた週は
+    // 掲載枠は一面1+サブ NP_SUB_MAX 本しかないため、シーズン境界のように大量に積まれた週は
     // 溢れた分を翌号へ持ち越す（従来は毎週キューを空にしていたので黙って消えていた）。
     const _publishedIdx = new Set(
       [topStory, ...subStories].filter(s => s && s._industryIdx != null).map(s => s._industryIdx)
@@ -28483,6 +28491,10 @@ Engine.newspaper = {
 
     const result = {
       season: state.season, week: state.week,
+      // 新聞再設計P1: 一面レイアウトの版。'v3' = 紙面骨格版(トップ/肩/準トップ/小/短信)。
+      // 既存のバックナンバーはこのフィールドを持たないので旧レイアウトのまま表示される
+      // （マイグレーションはしない。新レイアウトは新規生成号から）。
+      layout: 'v3',
       topStory, subStories,
       unpublishedIndustryEvents,
       playerShowData: state.currentNewspaper || null,

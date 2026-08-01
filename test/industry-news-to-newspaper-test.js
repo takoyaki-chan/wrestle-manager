@@ -12,7 +12,8 @@
 //  (1) 旧パネルが復活していないこと（開く側・DOM・CSSごと撤去した）
 //  (2) 記事が新聞のキューへ積まれること
 //  (3) **紙面に載らなかった分が翌号へ持ち越されること**
-//      掲載枠は一面1+サブ3の4本しかない。以前は毎週キューをまるごと空にしていたので、
+//      掲載枠は限られている(新聞再設計P1で一面1+サブ3 → 一面1+サブ7)。以前は毎週キューを
+//      まるごと空にしていたので、
 //      まとめて積まれた週は溢れた記事が黙って消えていた。
 
 'use strict';
@@ -82,7 +83,7 @@ section('2-b. 旧セーブに残った _newsEvents は捨てずに新聞へ移�
 // (3) 載らなかった記事は翌号へ持ち越す（エンジンを実際に動かして確認）
 // ─────────────────────────────────────────────────────────────
 
-// 掲載枠(一面1+サブ3)を確実に超える本数を、テンプレートのある type で積む
+// 掲載枠(一面1+サブ7 = 8本)を確実に超える本数を、テンプレートのある type で積む
 function stateWithQueuedNews(count) {
   const G = Engine.createInitialState(31337, true);
   const events = [];
@@ -104,7 +105,7 @@ section('3-a. 紙面に載らなかった業界ニュースが unpublishedIndust
   assert.ok(Array.isArray(wp.unpublishedIndustryEvents),
     'unpublishedIndustryEvents が返っていない。持ち越しができず溢れた記事が消える');
   assert.ok(wp.unpublishedIndustryEvents.length > 0,
-    `10本積んだのに持ち越しが0件（掲載は最大4本のはず。published=${published}）`);
+    `10本積んだのに持ち越しが0件（掲載は最大8本のはず。published=${published}）`);
   assert.strictEqual(
     wp.unpublishedIndustryEvents.length + published, 10,
     `載った本数(${published})と持ち越し(${wp.unpublishedIndustryEvents.length})の合計が積んだ10本に合わない`
