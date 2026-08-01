@@ -6644,10 +6644,43 @@ function _npPaperHeader(seasonNum, weekNum, isSeasonOpening) {
     <div class="issue">${issueLabel}<small>${today}</small></div>
   </div>`;
 }
-function _npPhotoBg(id) {
-  if (!id) return '';
-  const url = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
-  return url ? `background-image: url('${url}');` : '';
+// ── P6 §3: 写真の優先順 ────────────────────────────────────────────────
+//   人物写真(アッパー) → 記事用の汎用画像 → それも当たらなければ写真なし
+// 人物が特定できない記事(団体の動き・制度の話)に写真が無く、一面に載ると
+// 枠が黒く空いていた。**「一面なのに写真がない」を仕組みで防ぐ**のがこの段。
+//
+// 素材は Keisuke 制作(指示書 docs/codex-tasks/task-76-news-generic-images.md)。
+// **無い間はここが空を返すだけで、記事側は今までどおり動く**(先に配線だけ通しておく)。
+const NP_GENERIC_PHOTO = {
+  // 記事の種別 → image/news/ の基名。1カテゴリ3枚(_1.._3)から週で選ぶ
+  springTagAnnounce: 'ring_empty', autumnWarAnnounce: 'ring_empty',
+  tenchosenAnnounce: 'arena_ext', juniorTournamentPreview: 'arena_ext',
+  leagueElevation: 'crowd', lockerRoomCrisis: 'dojo',
+  longInjury: 'medical', aiPracticeInjury: 'medical',
+  transferDone: 'contract', retirementDeclare: 'press',
+  draftRoundup: 'press', draftPlayerResult: 'press', draftAiResult: 'press',
+  playerTitleChange: 'belt', aiChampionChange: 'belt',
+  reclaimChallenge: 'belt', reclaimSuccess: 'belt',
+  followUpBreakthrough: 'dojo', followUpStreak: 'dojo',
+  followUpNewcomer: 'dojo', followUpRecord: 'trophy',
+};
+const NP_GENERIC_VARIANTS = 3;
+
+/** 記事用の汎用画像。無ければ空文字（呼び出し元は写真なしとして扱う） */
+function _npGenericPhotoBg(story) {
+  const base = story && NP_GENERIC_PHOTO[story.type];
+  if (!base) return '';
+  const n = ((G.season || 1) * 7 + (G.week || 1)) % NP_GENERIC_VARIANTS + 1;
+  return `background-image: url('../image/news/news_${base}_${n}.webp');`;
+}
+
+function _npPhotoBg(id, story) {
+  if (id) {
+    const url = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
+    if (url) return `background-image: url('${url}');`;
+  }
+  // 人物が取れないときだけ汎用画像へ落とす
+  return _npGenericPhotoBg(story);
 }
 // task-54: 業界ニュースのサブ記事写真。1人なら今までどおりの単発チップ、
 // 2人以上なら §2-B の隊列（枠は群の外側に1つだけ・18px重ね・drop-shadow）で見せる。
@@ -6675,7 +6708,7 @@ function _npSubPhotoHtml(ss) {
     }
   }
   const singleId = ids[0] || ss.characterId || null;
-  const photoBg = _npPhotoBg(singleId);
+  const photoBg = _npPhotoBg(singleId, ss);
   return `<div class="np-sub-photo" style="${photoBg}" ${singleId ? `onclick="showFighterPopup(${singleId})"` : ''}></div>`;
 }
 // MQ再設計P5補: 一面トップで2名を並び写真にする対象タイプ。
@@ -7121,7 +7154,7 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
     const tagPhotoIds = _npSpringTagStoryIds(G, ts, seasonNum);
     const isTagPhoto = tagPhotoIds.length >= 2;
     const primaryId = tagPhotoIds[0] || ts.characterId || null;
-    const photoBg = isTagPhoto ? '' : _npPhotoBg(primaryId);
+    const photoBg = isTagPhoto ? '' : _npPhotoBg(primaryId, ts);
     const photoIds = isTagPhoto ? tagPhotoIds : (primaryId ? [primaryId] : []);
     const tsName = photoIds.map(id => ALL_CHARS.find(c => c.id === id)?.name || '').filter(Boolean).join(' / ');
     const tsOrgKey = primaryId ? _npFindFighterOrgKey(G, primaryId) : null;
@@ -7383,7 +7416,7 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
 
   const photoHtml = primaryId
     ? `<figure class="np-v3-topfig">
-        <div class="np-v3-photo-top${isTagPhoto ? ' np-top-photo--tag' : ''}" style="${isTagPhoto ? '' : _npPhotoBg(primaryId)}"
+        <div class="np-v3-photo-top${isTagPhoto ? ' np-top-photo--tag' : ''}" style="${isTagPhoto ? '' : _npPhotoBg(primaryId, ts)}"
              ${isTagPhoto ? '' : `onclick="showFighterPopup(${primaryId},null,true)"`}>
           ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds) : ''}
           <div class="stamp">EXCLUSIVE</div>
@@ -7416,8 +7449,10 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
 function _npV3Shoulder(story) {
   if (!story) return '';
   const id = _npV3PrimaryId(story);
-  const photo = id
-    ? `<div class="np-v3-photo-kata" style="${_npPhotoBg(id)}" onclick="showFighterPopup(${id},null,true)"></div>`
+  // P6 §3: 人物が取れない記事でも汎用画像で埋める。両方無いときだけ写真なし
+  const bg = _npPhotoBg(id, story);
+  const photo = bg
+    ? `<div class="np-v3-photo-kata" style="${bg}"${id ? ` onclick="showFighterPopup(${id},null,true)"` : ''}></div>`
     : '';
   // 右カラムは 200px しかないので、写真は回り込ませる。
   // flex で横に並べると本文が9文字幅のリボンになって読めない（実測 2026-08-01）
