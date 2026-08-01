@@ -217,6 +217,7 @@ for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "R
 | finisher-system-spec-v1.0.md | フィニッシャー(キャラ固有必殺技の演出レイヤー。設計完了・**優先順位低**・将来の拡張枠) |
 | faction-decree-spec-v1.0.md | 派閥解散命令/封印(社長室 決裁書・effect.target='faction'新設・封印は無料/解散のみ代償・リーダー追撃はmomentum比例・factionsSealed 1フラグでtickWeek派閥ブロック全停止・Common-1個別CD 48週の不変条件・WM_FACTION_FIXTURE計測モード。実装完了 2026-07-27) |
 | prospect-assessment-spec-v1.0.md | 見立て評価(ドラフト級/スカウト/初期ドラフトのティア再設計。年齢ブレンド+ブレ、超逸材~2%、FA対象外。実装完了 2026-07-30) |
+| tournament-coach-wrapup-spec-v1.0.md | 特別興行後のコーチ総括(5大会共通/言及は最大2名/voice 8系統×成績6段/_tcwGate の fail-open と onDone 1回保証。実装完了 2026-08-01) |
 | mq-system-spec-v1.0.md | MQシステム確定仕様(三層構造/finalize一本化+profile5種/OVシーリング4セグメント+超過レイヤー/固定加算全廃→リング内化/観客熱×注目度/歴代記録シングル90・タッグ94分離/大ニュース新聞5種+週頭通知。P1〜P5全実装完了 2026-07-24。設計経緯は docs/mq-redesign-proposal-v0.5.md) |
 
 ## UI実装ルール(必読)
