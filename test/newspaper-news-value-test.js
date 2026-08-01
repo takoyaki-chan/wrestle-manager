@@ -267,8 +267,7 @@ section('P6: 人物が取れない記事は汎用画像へ落ちる(一面の写
   assert.ok(/_npGenericPhotoBg/.test(ui), '汎用画像の解決関数が無い');
   // 人物写真が最優先で、汎用はその後(順番が逆になると顔が出なくなる)
   const at = ui.indexOf('function _npPhotoBg(');
-  const body = ui.slice(at, ui.indexOf('
-}', at));
+  const body = ui.slice(at, at + 400);
   assert.ok(body.indexOf('getUpperUrl') < body.indexOf('_npGenericPhotoBg'),
     '汎用画像が人物写真より先に当たっている');
   // 主要な「人物が特定できない記事」に割り当てがある
