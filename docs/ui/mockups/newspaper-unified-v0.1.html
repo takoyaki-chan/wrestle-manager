@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>新聞 全面統一モックアップ v0.1（task-71）</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   task-71 新聞 全面統一モックアップ v0.1
+
+   目的: 一面（v0.3 モック準拠・実装済み `.np-v3-*`）の作法へ、
+         二面〜四面を寄せる。「一つの新聞のセット」に見せる。
+
+   このファイルの CSS は3つのブロックに分かれている。
+     §A 紙面の器      … src/index.html から【そのままコピー・無改変】
+     §B 一面 v3       … src/index.html の .np-v3-* を【そのままコピー・無改変】
+     §C 二〜四面      … 【今回の提案】.npu-* 。どれが新規かはブロック内のコメント参照
+     §D レスポンシブ   … §A/§B ぶんは実装からコピー、.npu-* ぶんが新規
+
+   色: §C では「§A/§B に既に出ている16進」しか使わない（新規色を足さない）。
+       使用したのは #8b1a1a / #9a7020 / #b08530 / #d4b87a / #1a0d04 / #1f1710 /
+       #2a2014 / #2a1a10 / #3a2c18 / #4a3825 / #5b4b34 / #7a5b32 / #fff と
+       rgba(120,84,39,*) / rgba(139,26,26,*) / rgba(0,0,0,*) のみ。
+   ══════════════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   §0 モックの外側（紙面ではない）
+   色は承認済み v0.3 モック（newspaper-redesign-best-v0.3.html）の
+   外枠と同じものを使う。紙面パレットとは別レイヤー。
+   ══════════════════════════════════════════════════════════════════════ */
+body { background:#241a12; margin:0; padding:26px 12px 90px; font-family:'Noto Sans JP',sans-serif; color:#1f1710; }
+/* 注釈の幅は .np-paper の外寸ぴったりに揃える（中身780px + 1px枠 ×2 = 782px）。
+   注釈のほうが広いと、紙面が実際より小さく見えてしまうため */
+.mock-note { max-width:782px; margin:0 auto 16px; color:#cbb98c; font-size:13px; line-height:1.85; }
+.mock-note h1 { font-size:18px; color:#f0d48b; margin:0 0 8px; }
+.mock-note h2 { font-size:15px; color:#f0d48b; margin:22px 0 6px; }
+.mock-note b { color:#f0d48b; }
+.mock-note code { font-size:12px; color:#cbb98c; }
+.mock-note table { width:100%; border-collapse:collapse; font-size:12px; margin:8px 0 4px; }
+.mock-note th, .mock-note td { border:1px solid rgba(203,185,140,.3); padding:6px 8px; text-align:left; vertical-align:top; line-height:1.7; }
+.mock-note th { color:#f0d48b; background:rgba(203,185,140,.08); font-weight:700; }
+.mock-gap { height:34px; }
+.mock-scroll { overflow-x:auto; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   §A 紙面の器 — src/index.html からそのままコピー（無改変）
+   一面の verbatim 貼り付けが依存するので、2〜4面もこの器に載せる
+   ══════════════════════════════════════════════════════════════════════ */
+.np-paper { max-width: 780px; margin: 0 auto; background: linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%); border: 1px solid rgba(120,84,39,0.32); border-radius: 8px; box-shadow: 0 14px 56px rgba(0,0,0,0.55); overflow: hidden; color: #1f1710; font-family: 'Noto Sans JP', sans-serif;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(120,84,39,0.045), transparent 24%),
+    radial-gradient(circle at 88% 82%, rgba(120,84,39,0.04), transparent 28%),
+    linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);
+}
+.np-paper-header { background: linear-gradient(180deg, rgba(0,0,0,0.18), transparent 50%), linear-gradient(90deg,#8b1a1a,#c22020 50%,#8b1a1a); padding: 13px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double rgba(255,255,255,0.18); }
+.np-paper-header .logo { font-size: 22px; font-weight: 900; color: #fff; letter-spacing: 6px; font-family: 'Noto Serif JP', serif; text-shadow: 0 1px 0 rgba(0,0,0,0.3); }
+.np-paper-header .issue { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 1px; text-align: right; line-height: 1.4; }
+.np-paper-header .issue small { display: block; font-size: 10px; opacity: 0.85; }
+.np-content { padding: 18px 26px 22px; }
+
+/* 一面 verbatim が参照する既存部品（無改変コピー） */
+.np-sec { display: inline-block; width: fit-content; justify-self: start; background: #8b1a1a; color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 4px; padding: 3px 12px; margin-bottom: 10px; }
+.np-show-result { padding: 16px 0; border-bottom: 1px solid rgba(120,84,39,0.25); margin-bottom: 14px; }
+.np-show-headline { font-size: 19px; font-weight: 900; font-family: 'Noto Serif JP', serif; margin-bottom: 12px; color: #1a0d04; line-height: 1.3; }
+.np-sub-photo { width: 46px; height: 66px; border-radius: 6px; flex-shrink: 0; background-size: cover; background-position: center top; background-color: #2a1a10; border: 2px solid rgba(120,84,39,0.4); box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
+.np-sub-org-line { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: #5b4b34; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px; padding: 1px 5px; background: rgba(212,168,67,0.10); border: 1px solid rgba(154,112,32,0.30); border-radius: 2px; line-height: 1.3; }
+.np-sub-org-line img { vertical-align: middle; }
+.np-top-org-line { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: #fff; font-weight: 700; letter-spacing: 0.6px; margin-bottom: 4px; padding: 2px 7px; background: rgba(0,0,0,0.55); border: 1px solid rgba(212,168,67,0.45); border-radius: 2px; line-height: 1.3; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+.np-top-org-line img { vertical-align: middle; }
+.np-top-situation { display: inline-block; font-size: 10.5px; color: #6a4a10; background: rgba(212,168,67,0.18); border: 1px solid rgba(154,112,32,0.45); padding: 2px 8px; border-radius: 2px; letter-spacing: 0.6px; font-weight: 700; margin: 4px 0 8px; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   §B 一面 v3 — src/index.html の .np-v3-* をそのままコピー（無改変）
+   一面はこのモックの「比較の基準」。1文字も変えない。
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* きょうの紙面(面の目次)。題字の直下・本文の外に置く */
+.np-v3-indexbar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; padding: 6px 26px; background: rgba(120,84,39,0.12); border-bottom: 1px solid rgba(120,84,39,0.3); font-size: 11px; color: #5b4b34; }
+.np-v3-indexbar b { font-weight: 900; color: #8b1a1a; font-size: 10px; letter-spacing: 2px; }
+.np-v3-indexbar .pg { cursor: pointer; }
+.np-v3-indexbar .pg u { text-decoration: none; border-bottom: 1px dotted #9a7020; }
+.np-v3-indexbar .pg:hover u { border-bottom-color: #8b1a1a; color: #8b1a1a; }
+.np-v3-index-right { margin-left: auto; }
+
+/* 見出しの階段 = ニュースバリュー */
+.np-v3-kicker { display: inline-block; background: linear-gradient(135deg, #b08530, #9a7020); color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 4px; padding: 2px 10px; }
+.np-v3-kicker.red { background: #8b1a1a; }
+.np-v3-hl-top { font-size: 27px; line-height: 1.25; font-weight: 900; font-family: 'Noto Serif JP', serif; color: #1a0d04; margin: 6px 0; letter-spacing: -0.01em; }
+.np-v3-hl-kata { font-size: 16px; line-height: 1.3; font-weight: 900; font-family: 'Noto Serif JP', serif; color: #1a0d04; margin: 6px 0; }
+.np-v3-hl-jun { font-size: 18px; line-height: 1.28; font-weight: 900; font-family: 'Noto Serif JP', serif; color: #1a0d04; margin: 6px 0 8px; }
+.np-v3-hl-s { font-size: 13px; line-height: 1.35; font-weight: 900; color: #1a0d04; margin: 0 0 3px; }
+.np-v3-deck { font-size: 13px; font-weight: 700; color: #5b4b34; margin: 0 0 8px; }
+.np-v3-byline { font-size: 10px; color: #7a5b32; text-align: right; margin-top: 2px; }
+
+/* 本文。分量を確保する(「パッと見る」ではなく「読む」) */
+.np-v3-art p { font-size: 13px; line-height: 1.85; color: #2a2014; margin: 0 0 8px; text-indent: 1em; text-align: justify; }
+.np-v3-art.np-v3-art-sub p { font-size: 12px; line-height: 1.75; color: #3a2c18; }
+.np-v3-art.np-v3-art-small p { font-size: 11px; line-height: 1.7; color: #4a3825; margin-bottom: 4px; }
+.np-v3-art p.np-v3-noindent { text-indent: 0; }
+.np-v3-cols { columns: 2; column-gap: 20px; column-rule: 1px solid rgba(120,84,39,0.25); }
+.np-v3-clear { clear: both; }
+.np-v3-rule-thick { border: 0; border-top: 3px double rgba(120,84,39,0.5); margin: 14px 0; }
+.np-v3-vr { border-left: 1px solid rgba(120,84,39,0.35); padding-left: 16px; }
+
+/* トップ + 肩(右カラム) */
+.np-v3-lead-grid { display: grid; grid-template-columns: 1fr 218px; gap: 16px; }
+.np-v3-lead-grid--single { grid-template-columns: 1fr; }
+.np-v3-topfig { float: left; margin: 3px 14px 4px 0; }
+.np-v3-photo-top { position: relative; width: 190px; height: 228px; overflow: hidden; border: 2px solid #d4b87a; outline: 1px solid rgba(120,84,39,0.4); background-size: cover; background-position: center top; background-repeat: no-repeat; background-color: #2a1a10; box-shadow: 0 3px 10px rgba(0,0,0,0.3); cursor: pointer; }
+.np-v3-photo-top .stamp { position: absolute; top: 8px; right: 8px; z-index: 5; background: #8b1a1a; color: #fff; font-size: 8px; font-weight: 900; padding: 2px 6px; letter-spacing: 1px; border-radius: 2px; transform: rotate(3deg); }
+.np-v3-photo-top .caption { position: absolute; bottom: 0; left: 0; right: 0; z-index: 4; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.85)); color: #fff; font-size: 9px; padding: 14px 8px 6px; line-height: 1.4; }
+.np-v3-photo-top .caption strong { font-size: 11px; font-family: 'Noto Serif JP', serif; display: block; margin-bottom: 1px; }
+
+/* 肩記事。右カラムが200px弱しかないので写真は回り込ませる
+   (横並びにすると本文が9文字幅のリボンになって読めない) */
+.np-v3-photo-kata { float: left; width: 84px; height: 126px; margin: 2px 10px 2px 0; overflow: hidden; border: 2px solid rgba(120,84,39,0.4); background-size: cover; background-position: center top; background-repeat: no-repeat; background-color: #2a1a10; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
+
+/* MVP小窓(右カラム下部が定位置) */
+.np-v3-mvpbox { margin-top: 10px; padding: 8px 10px; background: rgba(139,26,26,0.07); border: 1px solid rgba(139,26,26,0.35); }
+.np-v3-mvpbox .ttl { display: flex; justify-content: space-between; align-items: baseline; font-size: 10px; font-weight: 900; letter-spacing: 3px; color: #8b1a1a; margin-bottom: 4px; }
+.np-v3-mvpbox .more { font-size: 10px; letter-spacing: 0; color: #9a7020; font-weight: 700; cursor: pointer; }
+.np-v3-mvpbox .more:hover { color: #8b1a1a; }
+.np-v3-mvprow { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; border-bottom: 1px dotted rgba(120,84,39,0.3); cursor: pointer; }
+.np-v3-mvprow:last-child { border-bottom: 0; }
+.np-v3-mvprow .rank { font-family: 'Bebas Neue', sans-serif; font-size: 14px; width: 12px; color: #8b1a1a; }
+.np-v3-mvprow .who { color: #1f1710; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.np-v3-mvprow .pt { margin-left: auto; font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: #3a2c18; }
+.np-v3-mvpchase { border-top: 1px dotted rgba(120,84,39,0.3); margin-top: 3px; padding-top: 3px; font-size: 10px; color: #7a5b32; }
+
+/* 準トップ(中段の横帯) */
+.np-v3-junbody { display: flex; gap: 12px; align-items: flex-start; }
+.np-v3-junbody > .np-v3-art { flex: 1; min-width: 0; }
+
+/* 下段: 小記事 + 短信 */
+.np-v3-bottom-grid { display: grid; gap: 16px; }
+.np-v3-bottom-grid.cols-1 { grid-template-columns: 1fr; }
+.np-v3-bottom-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.np-v3-bottom-grid.cols-3 { grid-template-columns: 1.1fr 1.1fr 1fr; }
+.np-v3-small { display: flex; gap: 10px; align-items: flex-start; }
+.np-v3-small-body { flex: 1; min-width: 0; }
+.np-v3-beta { font-size: 11px; line-height: 1.7; color: #3a2c18; }
+.np-v3-beta b { display: block; font-size: 12px; font-family: 'Noto Serif JP', serif; color: #1a0d04; margin-bottom: 3px; }
+.np-v3-beta-sep { color: #8b1a1a; font-weight: 900; padding: 0 4px; }
+
+/* 黒田コラム(最下段固定。編集手帳のポジション) */
+.np-v3-kuroda { display: flex; gap: 10px; align-items: center; margin-top: 14px; padding: 10px 12px 6px; background: rgba(120,84,39,0.06); border-top: 3px double rgba(139,26,26,0.45); }
+.np-v3-kuroda-face { width: 34px; height: 34px; border-radius: 50%; flex: none; background-size: cover; background-position: center; background-color: #2a1a10; border: 1px solid rgba(139,26,26,0.5); }
+.np-v3-kuroda-text { font-size: 11.5px; line-height: 1.65; color: #3a2c18; font-family: 'Noto Serif JP', serif; }
+.np-v3-kuroda-byline { font-size: 10px; color: #7a5b32; margin-top: 2px; }
+
+/* つづき(一面の下へそのまま続く) */
+.np-v3-fold { display: flex; align-items: center; gap: 10px; margin: 20px 0 4px; font-size: 12px; font-weight: 900; letter-spacing: 2px; color: #5b4b34; font-family: 'Noto Serif JP', serif; }
+.np-v3-fold::after { content: ''; flex: 1; border-top: 3px double rgba(120,84,39,0.5); }
+.np-v3-fold span { background: #8b1a1a; color: #fff; font-size: 9px; font-weight: 900; letter-spacing: 3px; padding: 2px 8px; font-family: 'Noto Sans JP', sans-serif; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   §C 【新規】二面〜四面を一面の作法へ寄せる部品（.npu-*）
+
+   基本方針は「新しい部品をなるべく作らない」こと。
+   2〜4面の骨格（kicker / 見出し / 本文 / 罫 / 段組 / 短信ベタ / 黒田コラム）は
+   §B の .np-v3-* をそのまま流用する。ここに足すのは、一面に存在しない
+   ・面の柱（ノンブル帯）… 実は .np-v3-indexbar をそのまま使うので CSS 追加なし
+   ・囲み記事の器
+   ・対峙（写真2枚を向かい合わせる）
+   ・比較バー
+   ・記録表
+   の4つだけ。
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── C-1. 囲み記事の器 ────────────────────────────────────
+   一面の .np-v3-mvpbox（赤で色を付けた囲み）の兄弟。
+   数値・表・投書など「本文ではないもの」を紙面の中に囲って置く。
+   赤は MVP 小窓の予約色なので、こちらは罫の色で組む */
+.npu-box { margin: 8px 0 0; padding: 10px 12px; background: rgba(120,84,39,0.05); border: 1px solid rgba(120,84,39,0.35); }
+.npu-box-ttl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 10px; font-weight: 900; letter-spacing: 3px; color: #8b1a1a; margin-bottom: 6px; }
+.npu-box-note { font-size: 10px; line-height: 1.6; color: #7a5b32; margin-top: 6px; }
+
+/* ── C-2. 対峙（写真を向かい合わせる） ──────────────────────
+   旧 .np-ace-confront / .np-rivalry-main（純黒パネル）の置き換え。
+   紙の上の写真2枚 + 中央に見出し。写真は一面の「肩 84×126」と同じ段。
+   ★ アッパー画像は左右反転しない（水平反転の transform を一切書かない）。
+     向かい合わせに見せたくても、顔が崩れるので反転しない */
+/* 対峙は「本文に従属する写真ブロック」。一面のトップ写真と同じく左に回り込ませ、
+   本文が右に回る。段幅いっぱいに引き伸ばすと写真だけが浮くため幅に上限を掛ける。
+   列は minmax にして、狭い幅では列だけが縮む（写真は縮まない）ようにする */
+.npu-faceoff { display: grid; grid-template-columns: minmax(88px, 100px) minmax(56px, 92px) minmax(88px, 100px); gap: 10px; align-items: start; width: min(312px, 100%); }
+
+/* ★ 写真は 84×126（＝2:3）で固定。どの幅でも引き伸ばさない。
+   一面のトップ写真 190×228 は「紙面トリミング」の例外（baseline §2-0）で、
+   切れること自体が表現だが、この段は人物を見せる写真なので切ってはいけない。
+   一面の肩記事（.np-v3-photo-kata）が全幅で 84×126 のまま回り込み続けるのと同じ扱い */
+.npu-photo-kata { width: 84px; height: 126px; overflow: hidden; border: 2px solid #d4b87a; outline: 1px solid rgba(120,84,39,0.4); background-size: cover; background-position: center top; background-repeat: no-repeat; background-color: #2a1a10; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; }
+.npu-figl { float: left; margin: 3px 14px 4px 0; max-width: 100%; }
+.npu-cap { font-size: 9px; color: #7a5b32; line-height: 1.4; margin-top: 3px; max-width: 88px; }
+.npu-faceoff-mid { text-align: center; padding-top: 18px; }
+.npu-faceoff-vs { font-family: 'Bebas Neue', sans-serif; font-size: 27px; line-height: 1; color: #8b1a1a; }
+.npu-faceoff-score { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #1a0d04; margin-top: 2px; letter-spacing: 1px; }
+.npu-faceoff-lbl { font-size: 10px; color: #7a5b32; letter-spacing: 1px; margin-top: 2px; }
+.npu-side-name { font-size: 13px; font-weight: 900; font-family: 'Noto Serif JP', serif; color: #1a0d04; line-height: 1.3; margin-top: 4px; }
+.npu-side-meta { font-size: 10px; color: #5b4b34; line-height: 1.5; margin-top: 1px; }
+.npu-side-meta strong { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: #3a2c18; margin: 0 1px; }
+
+/* ── C-3. 比較バー（旧 .np-power-row の紙面版） ───────────────
+   暗色パネルをやめ、罫と紙の地で組む。自陣=赤 / 相手=金 */
+.npu-bars { margin-top: 2px; }
+.npu-bar-row { display: grid; grid-template-columns: 24px 62px 1fr 24px 30px; gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px dotted rgba(120,84,39,0.3); }
+.npu-bar-row:last-child { border-bottom: 0; }
+.npu-bar-num { font-family: 'Bebas Neue', sans-serif; font-size: 14px; line-height: 1; text-align: center; color: #3a2c18; }
+.npu-bar-num.self { color: #8b1a1a; }
+.npu-bar-label { font-size: 11px; font-weight: 700; color: #5b4b34; }
+.npu-bar-track { position: relative; height: 14px; background: rgba(120,84,39,0.10); border: 1px solid rgba(120,84,39,0.25); overflow: hidden; }
+.npu-bar-fill { position: absolute; left: 0; height: 5px; }
+.npu-bar-fill.self { top: 1px; background: #8b1a1a; }
+.npu-bar-fill.rival { bottom: 1px; background: #9a7020; }
+.npu-bar-diff { font-family: 'Bebas Neue', sans-serif; font-size: 13px; text-align: right; color: #7a5b32; }
+.npu-bar-diff.up { color: #8b1a1a; }
+.npu-bar-legend { display: flex; gap: 12px; font-size: 10px; color: #7a5b32; margin-bottom: 4px; }
+.npu-bar-legend i { display: inline-block; width: 14px; height: 5px; vertical-align: 1px; margin-right: 4px; }
+.npu-bar-legend i.self { background: #8b1a1a; }
+.npu-bar-legend i.rival { background: #9a7020; }
+
+/* GRADE の巨大数字。紙面の中の「囲み記事」として枠を与えたうえで残す
+   （36px は一面のタイプスケールには無い値だが、Bebas の数値であって
+     見出しではないため、囲みの中に閉じ込める条件で残す） */
+.npu-grade { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(120,84,39,0.35); }
+.npu-grade-val { font-family: 'Bebas Neue', sans-serif; font-size: 36px; line-height: .85; color: #8b1a1a; letter-spacing: -1px; }
+.npu-grade-lbl { font-size: 10px; letter-spacing: 2px; color: #7a5b32; }
+.npu-grade-desc { font-size: 11px; line-height: 1.6; color: #3a2c18; }
+
+/* ── C-4. 記録表（対戦の軌跡 / 追走集団の下位） ────────────────
+   罫は一面と同じ 1px solid rgba(120,84,39,.35)。数字は tabular-nums。
+   勝敗は ○×△（mockup-baseline §5-B） */
+.npu-scroll { overflow-x: auto; }
+.npu-table { width: 100%; border-collapse: collapse; font-size: 11px; font-variant-numeric: tabular-nums; }
+.npu-table th { font-size: 10px; font-weight: 900; letter-spacing: 1.5px; color: #7a5b32; text-align: left; padding: 5px 6px; border-bottom: 1px solid rgba(120,84,39,0.35); white-space: nowrap; }
+.npu-table td { padding: 5px 6px; border-bottom: 1px dotted rgba(120,84,39,0.3); color: #3a2c18; line-height: 1.5; }
+.npu-table tr:last-child td { border-bottom: 0; }
+.npu-table .n { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: #3a2c18; white-space: nowrap; }
+.npu-mark { font-weight: 900; font-size: 12px; }
+.npu-mark.win { color: #8b1a1a; }
+.npu-mark.lose { color: #7a5b32; }
+.npu-mark.draw { color: #5b4b34; }
+
+/* ── C-5. こまごま ────────────────────────────────────── */
+/* 小記事の中で2人を並べるときのチップ2枚（46×66 = 一面の小記事と同じ段） */
+.npu-pair { display: flex; align-items: center; gap: 4px; flex: none; }
+.npu-pair-x { font-size: 10px; font-weight: 900; color: #8b1a1a; }
+/* 投書（読者の声）。セリフではなく引用なので吹き出しにはしない */
+.npu-voice { font-size: 11px; line-height: 1.7; color: #3a2c18; padding: 5px 0; border-bottom: 1px dotted rgba(120,84,39,0.3); }
+.npu-voice:last-child { border-bottom: 0; }
+.npu-voice-who { display: block; font-size: 10px; color: #7a5b32; text-align: right; }
+/* 追走集団の1行に足す注記（一面の .np-v3-mvprow をそのまま使うための最小追加） */
+.npu-mvp-note { font-size: 10px; color: #7a5b32; white-space: nowrap; }
+.npu-mvp-pt { margin-left: auto; font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: #3a2c18; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   §D レスポンシブ — 820px 以下で段組を1列に落とす。
+   .np-v3-* ぶんは src/index.html からのコピー（無改変）。
+   .npu-* ぶんが新規。375px で横スクロールが出ないことを条件にした。
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 820px) {
+  /* ── ここから src/index.html のコピー（無改変） ── */
+  .np-content { padding-left: 18px; padding-right: 18px; }
+  .np-v3-indexbar { padding-left: 18px; padding-right: 18px; gap: 10px; }
+  .np-v3-index-right { margin-left: 0; }
+  .np-v3-lead-grid { grid-template-columns: 1fr; }
+  .np-v3-vr { border-left: 0; padding-left: 0; border-top: 1px solid rgba(120,84,39,0.35); padding-top: 12px; }
+  .np-v3-topfig { float: none; margin: 0 0 10px; }
+  .np-v3-photo-top { width: 100%; height: 220px; }
+  .np-v3-cols { columns: 1; }
+  .np-v3-bottom-grid.cols-2, .np-v3-bottom-grid.cols-3 { grid-template-columns: 1fr; }
+  .np-v3-hl-top { font-size: 22px; }
+  .np-v3-hl-jun { font-size: 17px; }
+  /* ── ここまでコピー ── */
+
+  /* ── ここから新規（.npu-*） ── */
+  /* ★ ここで写真を引き伸ばしてはいけない（v0.1 初版の不具合）。
+     .npu-photo-kata に width:100%/height:200px を掛けると 2:3 が 2.3:1 になり、
+     520px 前後で顔が拡大トリミングされる。写真は 84×126 のまま据え置く。
+
+     単写真の図版（面のトップ記事）は、一面の肩記事と同じく
+     84×126 のまま回り込ませ続ける。84px なら狭い幅でも本文が柱にならない
+     （375px で本文側 211px＝13pxで約16字。一面の肩記事とほぼ同じ字面） */
+
+  /* 対峙は 312px あるので、回り込みだけ解除して本文の上に置く。
+     幅は 312px のまま（全幅に伸ばすと写真の間が間延びする） */
+  .npu-figl-wide { float: none; margin: 0 0 12px; }
+  .npu-faceoff-mid { padding-top: 10px; }
+  /* 比較バーは左右の固定列を詰める */
+  .npu-bar-row { grid-template-columns: 22px 54px 1fr 22px 26px; gap: 5px; }
+}
+</style>
+</head>
+<body>
+
+<div class="mock-note">
+  <h1>新聞 全面統一モックアップ v0.1 — 二面/三面/四面を一面の作法へ</h1>
+  一面（<b>実装の出力そのまま・無改変</b>）を先頭に置き、その下に二面〜四面の提案を縦に並べた。
+  4面を1枚に並べているのは「一つの新聞のセットに見えるか」を見比べるためで、タブ切り替えにはしていない。<br>
+  記事の中身はダミー、写真は実在ファイルを借用。<b>src/ は1文字も変更していない。</b>
+  <h2>一面から引き継いだ作法（二〜四面に共通で掛けたもの）</h2>
+  <div class="mock-scroll">
+  <table>
+    <tr><th>項目</th><th>一面の規則</th><th>二〜四面での扱い</th></tr>
+    <tr><td>セクションの頭</td><td><code>.np-v3-kicker</code>（金／赤の白抜き・10px・字間4px）</td><td><b>この1系統だけ</b>。<code>.np-sec</code> / <code>.np-sec-gold</code> / <code>.np-page-headline</code> / <code>.np-mvprace-divider</code> を全廃</td></tr>
+    <tr><td>面の柱</td><td><code>.np-v3-indexbar</code>（きょうの紙面）</td><td>同じ帯をノンブル（面数＋面名＋一面へ戻る）に転用。<b>CSSの追加なし</b></td></tr>
+    <tr><td>見出し</td><td>27／18／16／13px Sans</td><td><b>27px は一面トップの予約席</b>。面の頭は 18px、面内の中記事は 16px、小記事は 13px Sans</td></tr>
+    <tr><td>本文</td><td>13px／1.85／justify／1字下げ、従12px、小11px</td><td>同じ3段。長い記事は後半を <code>.np-v3-cols</code> の2段組に</td></tr>
+    <tr><td>罫</td><td>通常1px、境界3px double、縦罫1px+16px</td><td>同じ。独自の角丸カード枠・影は使わない</td></tr>
+    <tr><td>写真</td><td>トップ190×228／肩84×126／chip46×66</td><td><b>84×126 と 46×66 だけ</b>を使う（190×228 は一面トップの例外）。反転なし</td></tr>
+    <tr><td>黒田</td><td>最下段固定（3px double 上罫＋34px 丸顔＋11.5px Serif＋署名）</td><td>三面とも同じ位置・同じ形</td></tr>
+    <tr><td>色</td><td>紙面ローカルのパレット</td><td>同じ。新規16進なし。純黒パネルを廃止</td></tr>
+  </table>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     一面 = 既存実装の出力そのまま（比較の基準・無改変）
+     `node test/_render-newspaper-v3.js` が吐いた
+     docs/ui/mockups/newspaper-v3-render-check.html の .np-paper をそのまま貼付
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="np-paper">
+  <div class="np-paper-header">
+    <div class="logo">週刊グラップル</div>
+    <div class="issue">シーズン6 第14週<small>Y6 W14</small></div>
+  </div>
+  <div class="np-v3-indexbar"><b>きょうの紙面</b><span class="pg" onclick="npScrollToShowDetail()"><u>つづき</u> 自団体興行 詳報</span><span class="pg" onclick="setNewspaperSubPage(2)"><u>二面</u> 団体比較</span><span class="pg" onclick="setNewspaperSubPage(3)"><u>三面</u> 因縁列伝</span><span class="pg np-v3-index-right" onclick="setNewspaperSubPage(4)"><u>MVPレース詳細 ▶</u></span></div><div class="np-content"><div class="np-v3-lead-grid">
+    <div><article class="np-v3-top">
+    <span class="np-v3-kicker red">一面トップ</span>
+    <div class="np-top-situation">第6年度・第14週 タイトル戦</div>
+    <h2 class="np-v3-hl-top">阿武隈塔子、ついに王座奪取</h2>
+    <div class="np-v3-deck">3年越しの雪辱——7度目の対戦で相沢みなみを下す</div>
+    <div class="np-v3-art"><figure class="np-v3-topfig">
+        <div class="np-v3-photo-top" style="background-image: url('../../../image/upper/upper_abukuma_t.webp');"
+             onclick="showFighterPopup(1,null,true)">
+
+          <div class="stamp">EXCLUSIVE</div>
+          <div class="caption"><div class="np-top-org-line"><span>我が団体</span></div><strong>阿武隈塔子</strong>6-14号 紙面より</div>
+        </div>
+      </figure><p>第14週興行のメインイベントで阿武隈塔子が相沢みなみを破り、世界王座を獲得した。試合時間18分42秒、最後は正面からの組み技で3カウント。初挑戦で敗れてから3年、7度目の対戦で初めてベルトが腰に巻かれた。</p><p>序盤は王者のペースだった。相沢の打撃が阿武隈の出足を止め、場内には嫌な沈黙が流れる。だが中盤、阿武隈は被弾を覚悟で距離を詰め、試合の重心を組みに引きずり込んだ。</p><div class="np-v3-clear"></div></div><div class="np-v3-art np-v3-cols"><p>通算成績はなお相沢の4勝3敗。数字の上では王者だった側が上回る。それでも今夜の歓声は、この3年間を見続けた者への報酬だった。防衛戦線は来月から始まる。新王者に休む間はない。</p></div>
+    <div class="np-v3-byline">——黒田幸子(本紙)</div>
+  </article></div>
+    <div class="np-v3-vr"><article class="np-v3-kata">
+    <span class="np-v3-kicker">肩記事</span>
+
+    <div class="np-sub-org-line"><span>我が団体</span></div>
+    <h3 class="np-v3-hl-kata">相川あかね、右膝負傷で全治14週</h3>
+    <div class="np-v3-art np-v3-art-sub"><div class="np-v3-photo-kata" style="background-image: url('../../../image/upper/upper_aikawa_a.webp');" onclick="showFighterPopup(2,null,true)"></div><p class="np-v3-noindent">第13週興行で右膝を負傷、全治14週と診断された。今季9勝2敗、MVPレース4位につけていた絶好調の中での離脱となる。本人は「必ず戻る」と短くコメントした。復帰は最終盤の見込みで、レース戦線への影響は避けられない。</p><div class="np-v3-clear"></div></div>
+  </article><div class="np-v3-mvpbox">
+    <div class="ttl">MVPレース<span class="more" onclick="setNewspaperSubPage(4)">詳細 ▶</span></div>
+    <div class="np-v3-mvprow" onclick="event.stopPropagation();showFighterPopup(6,null,true)">
+      <span class="rank">1</span><span class="who">相沢みなみ</span><span class="pt">148</span>
+    </div><div class="np-v3-mvprow" onclick="event.stopPropagation();showFighterPopup(1,null,true)">
+      <span class="rank">2</span><span class="who">阿武隈塔子</span><span class="pt">141</span>
+    </div><div class="np-v3-mvprow" onclick="event.stopPropagation();showFighterPopup(4,null,true)">
+      <span class="rank">3</span><span class="who">赤羽あすか</span><span class="pt">126</span>
+    </div><div class="np-v3-mvpchase">4位 相川あかね 118 / 5位 安沢ひかり 111</div>
+  </div></div>
+  </div><hr class="np-v3-rule-thick"><article class="np-v3-jun">
+    <span class="np-v3-kicker">準トップ</span>
+
+    <div class="np-sub-org-line"><span>我が団体</span></div>
+    <h3 class="np-v3-hl-jun">ジュニアカップ来週開幕——本命不在、16名の混戦へ</h3>
+    <div class="np-v3-junbody">
+      <div class="np-sub-photo" style="background-image: url('../../../image/upper/upper_aida_m.webp');" onclick="showFighterPopup(3)"></div>
+      <div class="np-v3-art np-v3-art-sub"><p class="np-v3-noindent">若手16名が集う夏の祭典が来週開幕する。前年覇者が卒業した今年は本命不在の混戦模様。トーナメント表は今週末の公開抽選で決まる。注目は初出場の会田美緒。道場での動きには早くもスカウト陣の視線が集まっている。</p></div>
+    </div>
+  </article><hr class="np-v3-rule-thick"><div class="np-v3-bottom-grid cols-3"><div><article class="np-v3-small">
+    <div class="np-sub-photo" style="background-image: url('../../../image/upper/upper_akabane_a.webp');" onclick="showFighterPopup(4)"></div>
+    <div class="np-v3-small-body">
+
+      <div class="np-sub-org-line"><span>我が団体</span></div>
+      <div class="np-v3-hl-s">赤羽あすか、10連勝で記録に王手</div>
+      <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">団体記録まであと2。次週の相手は因縁の相沢みなみで、最も止められる可能性の高い一戦となった。</p></div>
+    </div>
+  </article></div><div class="np-v3-vr"><article class="np-v3-small">
+    <div class="np-sub-photo" style="background-image: url('../../../image/upper/upper_anazawa_h.webp');" onclick="showFighterPopup(5)"></div>
+    <div class="np-v3-small-body">
+
+      <div class="np-sub-org-line"><span>我が団体</span></div>
+      <div class="np-v3-hl-s">安沢ひかり、スランプ脱出を宣言</div>
+      <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">6週ぶりの白星に控室では涙も見えた。次の一戦で真価が問われる。</p></div>
+    </div>
+  </article></div><div class="np-v3-vr"><div class="np-v3-beta"><b>短信</b>ノヴァインパクトが新体制を発表、来季は「原点回帰」<span class="np-v3-beta-sep">▼</span>大会場は第16週から座席を約1割増設<span class="np-v3-beta-sep">▼</span>週間観客動員は4団体合計18,240人（前週比+6%）</div></div></div><div class="np-v3-kuroda">
+        <div class="np-v3-kuroda-face" style="background-image:url('../../../image/npc/face_kuroda_s.png')"></div>
+        <div>
+          <div class="np-v3-kuroda-text">「7度目でようやく、である。だがこの7度がなければ今日の歓声もなかった。近道の無いことが、この商売の唯一の救いだ」</div>
+          <div class="np-v3-kuroda-byline">——黒田幸子(編集部)</div>
+        </div>
+      </div><div class="np-v3-fold" id="npShowDetail"><span>本紙つづき</span>自団体興行 詳報</div><section class="np-show-result">
+      <div class="np-sec">自団体 興行結果</div>
+      <h3 class="np-show-headline">（ここに既存の興行詳報がそのまま入る：VS 対面 / 星取 / 観客満足度 / ダイジェスト表）</h3>
+    </section></div>
+</div>
+
+<div class="mock-gap"></div>
+<div class="mock-note">
+  <b>▲ 一面 = 実装の出力そのまま（無改変）。</b>
+  最下段の「本紙つづき」以降だけは P1 で手を入れていない旧ブロックで、赤い <code>.np-sec</code> が残っている。
+  今回の対象外だが、<b>二〜四面で潰したのと同じ「面ごとにばらばらな見出し部品」</b>なので、
+  いずれ同じ kicker へ寄せる候補として記録しておく。
+  <h2>▼ 二面 — 団体比較</h2>
+  <b>直したこと。</b>
+  ① クリーム紙の中の純黒パネル（<code>.np-ace-confront</code> ＝ Office に Stage を持ち込んでいた）を廃止し、
+  紙の上の「エース対決」記事に組み直した。写真は肩と同じ 84×126、<b>左右反転なし</b>。<br>
+  ② 見出し部品 <code>.np-headline-section</code> / <code>.np-org-card-title</code> / <code>.np-headline-grade</code> /
+  <code>.np-sec-gold</code> をすべて kicker 1系統へ。<br>
+  ③ GRADE の 36px Bebas は<b>残した</b>が、囲み記事（<code>.npu-box</code>）の中に閉じ込め、紙面から飛び出さないようにした。<br>
+  ④ 4軸バーの暗色バーを紙面色（自陣＝赤／相手＝金）に置換。
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     二面 — 団体比較（提案）
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="np-paper">
+  <div class="np-paper-header">
+    <div class="logo">週刊グラップル</div>
+    <div class="issue">シーズン6 第14週<small>Y6 W14</small></div>
+  </div>
+
+  <!-- 面の柱。一面の「きょうの紙面」と同じ帯をそのまま転用（CSS追加なし） -->
+  <div class="np-v3-indexbar">
+    <b>二面</b><span class="pg"><u>特集</u> 団体比較</span>
+    <span class="pg"><u>三面</u> 因縁列伝</span>
+    <span class="pg np-v3-index-right"><u>◀ 一面へ戻る</u></span>
+  </div>
+
+  <div class="np-content">
+
+    <!-- ═══ 面のトップ記事 ═══ -->
+    <article>
+      <span class="np-v3-kicker red">特集</span>
+      <h2 class="np-v3-hl-jun">層の厚みだけが逆転を許している——ノヴァインパクトとの四軸比較</h2>
+      <div class="np-v3-deck">エース力・集客力・タイトル力で先行。四番手から八番手の五人が、そのまま差になっている</div>
+      <div class="np-v3-art">
+        <figure class="npu-figl">
+          <div class="npu-photo-kata" style="background-image:url('../../../image/upper/upper_ikoma_e.webp');"></div>
+          <div class="npu-cap">生駒エリカ</div>
+        </figure>
+        <p>第14週終了時点で、本紙は我が団体とノヴァインパクトの戦力を四つの物差しで測った。総合評価はB＋。エース力・集客力・タイトル力の三軸で我が団体が上回る一方、層の厚みだけが11点の劣勢となった。</p>
+        <p>差が出たのは四番手から八番手の五人だ。ノヴァインパクトはこの帯に七十台を四人並べており、興行の中盤をそのまま任せられる。対して我が団体は同じ帯に二人しか居らず、残る三枠は六十台前半で埋めている。エースが勝っても中盤で貯金を吐き出す——今季ここまでの対抗戦で繰り返されてきた形だ。</p>
+        <div class="np-v3-clear"></div>
+      </div>
+      <div class="np-v3-art np-v3-cols">
+        <p>補強の方向はひとつではない。若手を三人まとめて引き上げるか、中堅を一人買うか。前者は時間が要り、後者は金が要る。どちらを選ぶにしても、次の対抗戦までに残された時間は十二週しかない。</p>
+        <p>もっとも、四軸のうち三軸で先行しているのは事実である。集客力の差は八点あり、同じ会場を押さえたときの動員では我が団体が上回る。数字が示しているのは弱さではなく、偏りだ。</p>
+      </div>
+      <div class="np-v3-byline">——黒田幸子(本紙)</div>
+    </article>
+
+    <hr class="np-v3-rule-thick">
+
+    <!-- ═══ 戦力比較（囲み記事） ═══ -->
+    <span class="np-v3-kicker">戦力比較</span>
+    <div class="npu-box">
+      <div class="npu-grade">
+        <div>
+          <div class="npu-grade-lbl">GRADE</div>
+          <div class="npu-grade-val">B+</div>
+        </div>
+        <div class="npu-grade-desc">四軸合計で <b>+18</b>。三軸で先行し、層の厚みだけが劣勢。<br>看板は通用するが、中盤の五枠が薄い。</div>
+      </div>
+      <div class="npu-bar-legend">
+        <span><i class="self"></i>我が団体</span>
+        <span><i class="rival"></i>ノヴァインパクト</span>
+      </div>
+      <div class="npu-bars">
+        <div class="npu-bar-row">
+          <div class="npu-bar-num self">78</div>
+          <div class="npu-bar-label">エース力</div>
+          <div class="npu-bar-track"><div class="npu-bar-fill self" style="width:78%"></div><div class="npu-bar-fill rival" style="width:71%"></div></div>
+          <div class="npu-bar-num">71</div>
+          <div class="npu-bar-diff up">+7</div>
+        </div>
+        <div class="npu-bar-row">
+          <div class="npu-bar-num self">52</div>
+          <div class="npu-bar-label">層の厚み</div>
+          <div class="npu-bar-track"><div class="npu-bar-fill self" style="width:52%"></div><div class="npu-bar-fill rival" style="width:63%"></div></div>
+          <div class="npu-bar-num">63</div>
+          <div class="npu-bar-diff">−11</div>
+        </div>
+        <div class="npu-bar-row">
+          <div class="npu-bar-num self">74</div>
+          <div class="npu-bar-label">集客力</div>
+          <div class="npu-bar-track"><div class="npu-bar-fill self" style="width:74%"></div><div class="npu-bar-fill rival" style="width:66%"></div></div>
+          <div class="npu-bar-num">66</div>
+          <div class="npu-bar-diff up">+8</div>
+        </div>
+        <div class="npu-bar-row">
+          <div class="npu-bar-num self">69</div>
+          <div class="npu-bar-label">タイトル力</div>
+          <div class="npu-bar-track"><div class="npu-bar-fill self" style="width:69%"></div><div class="npu-bar-fill rival" style="width:61%"></div></div>
+          <div class="npu-bar-num">61</div>
+          <div class="npu-bar-diff up">+8</div>
+        </div>
+      </div>
+      <div class="npu-box-note">エース力＝看板三人の総合値／層の厚み＝四〜八位の五人／集客力＝団体人気／タイトル力＝看板五人の人気。いずれも100点満点。</div>
+    </div>
+
+    <hr class="np-v3-rule-thick">
+
+    <!-- ═══ エース対決（旧・純黒パネルの置き換え） ═══ -->
+    <span class="np-v3-kicker">エース対決</span>
+    <h3 class="np-v3-hl-kata">戴冠したばかりの阿武隈と、七年看板を張る生駒</h3>
+    <div class="np-v3-art np-v3-art-sub">
+      <figure class="npu-figl npu-figl-wide">
+        <div class="npu-faceoff">
+          <div>
+            <div class="npu-photo-kata" style="background-image:url('../../../image/upper/upper_abukuma_t.webp');"></div>
+            <div class="np-sub-org-line"><span>我が団体</span></div>
+            <div class="npu-side-name">阿武隈塔子</div>
+            <div class="npu-side-meta">総合<strong>84</strong>／人気<strong>77</strong></div>
+          </div>
+          <div class="npu-faceoff-mid">
+            <div class="npu-faceoff-vs">VS</div>
+            <div class="npu-faceoff-score">3 — 4</div>
+            <div class="npu-faceoff-lbl">通算7戦</div>
+          </div>
+          <div>
+            <div class="npu-photo-kata" style="background-image:url('../../../image/upper/upper_ikoma_e.webp');"></div>
+            <div class="np-sub-org-line"><span>ノヴァインパクト</span></div>
+            <div class="npu-side-name">生駒エリカ</div>
+            <div class="npu-side-meta">総合<strong>81</strong>／人気<strong>82</strong></div>
+          </div>
+        </div>
+      </figure>
+      <p class="np-v3-noindent">実力では阿武隈が三つ上回るが、人気では生駒が五つ勝る。直接対決は七戦して四勝三敗、いまも生駒が先行している。</p>
+      <p>看板同士の一戦は次の対抗戦で八度目が組まれる見込みで、そこで初めて通算成績が並ぶ可能性がある。今季ここまで、両者はいずれも所属団体で最多の観客動員を記録しており、組めば必ず数字が動く一戦でもある。</p>
+      <div class="np-v3-clear"></div>
+    </div>
+
+    <hr class="np-v3-rule-thick">
+
+    <!-- ═══ 主力対決 ═══ -->
+    <span class="np-v3-kicker">主力対決</span>
+    <div class="np-v3-bottom-grid cols-2" style="margin-top:8px">
+      <article class="np-v3-small">
+        <div class="npu-pair">
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_tomioka_k.webp');"></div>
+          <span class="npu-pair-x">×</span>
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_domae_y.webp');"></div>
+        </div>
+        <div class="np-v3-small-body">
+          <div class="np-v3-hl-s">二番手 — 富岡加奈子 × 堂前ユキ</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">組み技の富岡に対し、堂前は打撃で距離を作る。噛み合わせは悪くないが、長引けば富岡の型に入る。</p></div>
+        </div>
+      </article>
+      <article class="np-v3-small np-v3-vr">
+        <div class="npu-pair">
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_fukamachi_m.webp');"></div>
+          <span class="npu-pair-x">×</span>
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_udagawa_r.webp');"></div>
+        </div>
+        <div class="np-v3-small-body">
+          <div class="np-v3-hl-s">三番手 — 深町真琴 × 宇田川里奈</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">空中戦の二人。速さの質が違い、どちらが先に呼吸を乱すかの勝負になる。</p></div>
+        </div>
+      </article>
+    </div>
+
+    <hr class="np-v3-rule-thick">
+
+    <div class="np-v3-bottom-grid cols-2">
+      <!-- 過去対戦成績 = 一面の「短信」と同じ連結ベタ -->
+      <div>
+        <span class="np-v3-kicker">過去対戦成績</span>
+        <div class="np-v3-beta" style="margin-top:8px">
+          <b>通算 9勝7敗（団体間のガチンコのみ）</b>
+          対抗戦 4勝3敗<span class="np-v3-beta-sep">▼</span>PPV 3勝2敗<span class="np-v3-beta-sep">▼</span>挑戦状 2勝2敗<span class="np-v3-beta-sep">▼</span>直近は2連勝中<span class="np-v3-beta-sep">▼</span>初対戦はシーズン2 第31週
+        </div>
+      </div>
+      <!-- 読者の声（旧「ファンの声」）。セリフではなく投書なので吹き出しにしない -->
+      <div class="np-v3-vr">
+        <span class="np-v3-kicker">読者の声</span>
+        <div class="npu-box">
+          <div class="npu-voice">エースが勝っても中盤で追いつかれる。見ていて分かる。<span class="npu-voice-who">＠熱狂派</span></div>
+          <div class="npu-voice">層の厚みが数字で出たのは良い。あとは誰を獲るかだ。<span class="npu-voice-who">＠分析派</span></div>
+          <div class="npu-voice">十二週で間に合うのか。悠長すぎる。<span class="npu-voice-who">＠辛口派</span></div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="np-v3-rule-thick">
+
+    <!-- ═══ 相手団体の注目選手 ═══ -->
+    <span class="np-v3-kicker">ノヴァインパクト 注目選手</span>
+    <div class="np-v3-bottom-grid cols-3" style="margin-top:8px">
+      <article class="np-v3-small">
+        <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_ikoma_e.webp');"></div>
+        <div class="np-v3-small-body">
+          <div class="np-sub-org-line"><span>エース級</span></div>
+          <div class="np-v3-hl-s">生駒エリカ</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">七年看板を張り続けている。当面の脅威であり続ける。</p></div>
+        </div>
+      </article>
+      <article class="np-v3-small np-v3-vr">
+        <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_domae_y.webp');"></div>
+        <div class="np-v3-small-body">
+          <div class="np-sub-org-line"><span>主力級</span></div>
+          <div class="np-v3-hl-s">堂前ユキ</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">打撃の質で試合の平均値を引き上げる。中盤に置ける。</p></div>
+        </div>
+      </article>
+      <article class="np-v3-small np-v3-vr">
+        <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_udagawa_r.webp');"></div>
+        <div class="np-v3-small-body">
+          <div class="np-sub-org-line"><span>中堅級</span></div>
+          <div class="np-v3-hl-s">宇田川里奈</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">十九歳。道場での動きにスカウト陣の視線が集まっている。</p></div>
+        </div>
+      </article>
+    </div>
+
+    <!-- ═══ 黒田コラム（最下段固定・一面と同じ形） ═══ -->
+    <div class="np-v3-kuroda">
+      <div class="np-v3-kuroda-face" style="background-image:url('../../../image/npc/face_kuroda_s.png')"></div>
+      <div>
+        <div class="np-v3-kuroda-text">「四軸のうち三軸で勝ち、一軸で負ける。それでも興行の記憶に残るのは、負けた一軸のほうである」</div>
+        <div class="np-v3-kuroda-byline">——黒田幸子(編集部)</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="mock-gap"></div>
+<div class="mock-note">
+  <h2>▼ 三面 — 因縁列伝</h2>
+  <b>直したこと。</b>
+  ① <code>.np-rivalry-main</code>（280px スタンド枠＋純黒パネル＋金文字）を廃止。
+  二面と<b>同じ「対峙」の部品</b>（84×126 の写真2枚）で組み直し、紙の上に戻した。
+  写真の梯子から外れた 240px 枠が無くなるので、一面・二面と同じ大きさで人物が出る。<br>
+  ② <code>.np-rivalry-headline</code>（26px・中央寄せ・囲みラベル）を kicker ＋ 18px 見出し ＋ リードへ。
+  中央寄せは一面に存在しないので<b>左寄せに統一</b>。<br>
+  ③ 叙述は一面トップと同じ組み（13px／1.85／1字下げ／後半2段組）。<br>
+  ④ 「対戦の軌跡」の勝敗表記を <b>○×△</b> に統一（mockup-baseline §5-B）。
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     三面 — 因縁列伝（提案）
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="np-paper">
+  <div class="np-paper-header">
+    <div class="logo">週刊グラップル</div>
+    <div class="issue">シーズン6 第14週<small>Y6 W14</small></div>
+  </div>
+
+  <div class="np-v3-indexbar">
+    <b>三面</b><span class="pg"><u>特集</u> 因縁列伝</span>
+    <span class="pg"><u>四面</u> MVPレース詳細</span>
+    <span class="pg np-v3-index-right"><u>◀ 一面へ戻る</u></span>
+  </div>
+
+  <div class="np-content">
+
+    <article>
+      <span class="np-v3-kicker red">因縁列伝</span>
+      <h2 class="np-v3-hl-jun">七度目の交差——阿武隈塔子と生駒エリカ</h2>
+      <div class="np-v3-deck">通算三勝四敗。数字が動くたびに、二人の距離は縮まってきた</div>
+
+      <div class="np-v3-art">
+        <figure class="npu-figl npu-figl-wide">
+          <div class="npu-faceoff">
+            <div>
+              <div class="npu-photo-kata" style="background-image:url('../../../image/upper/upper_abukuma_t.webp');"></div>
+              <div class="np-sub-org-line"><span>我が団体</span></div>
+              <div class="npu-side-name">阿武隈塔子</div>
+              <div class="npu-side-meta">31歳／組み技</div>
+            </div>
+            <div class="npu-faceoff-mid">
+              <div class="npu-faceoff-vs">VS</div>
+              <div class="npu-faceoff-score">3 — 4</div>
+              <div class="npu-faceoff-lbl">通算7戦・4年</div>
+            </div>
+            <div>
+              <div class="npu-photo-kata" style="background-image:url('../../../image/upper/upper_ikoma_e.webp');"></div>
+              <div class="np-sub-org-line"><span>ノヴァインパクト</span></div>
+              <div class="npu-side-name">生駒エリカ</div>
+              <div class="npu-side-meta">29歳／打撃</div>
+            </div>
+          </div>
+        </figure>
+        <p>初めて組まれたのはシーズン2の第31週、どちらもまだ前座だった。二十分を戦って決着がつかず、引き分けの鐘が鳴った時点で場内は総立ちになっていた。二人の名前が並んで語られるようになったのは、この夜からである。</p>
+        <p>以降、七度。四勝三敗で生駒が先行しているが、直近三戦はいずれも十五分を超えており、決着の内容も一度ずつ違う。丸め込み、失神、そして今週の三カウント。同じ相手に同じ勝ち方をしていないことが、二人がまだ更新を続けている証拠になっている。</p>
+        <div class="np-v3-clear"></div>
+      </div>
+      <div class="np-v3-art np-v3-cols">
+        <p>楽屋での接点はほとんどない。挨拶を交わすところを見た記者は少なく、二人とも互いの名前を自分から口にすることはない。それでもリングの上でだけは、他の誰と組んだときよりも長い時間を戦っている。</p>
+        <p>今週、阿武隈がベルトを巻いた。防衛戦線には生駒の名が挙がっている。八度目があるとすれば、初めて王座を懸けた一戦になる。</p>
+      </div>
+      <div class="np-v3-byline">——黒田幸子(本紙)</div>
+
+      <div class="np-v3-beta" style="margin-top:6px">
+        <b>この因縁の記録</b>
+        通算7戦<span class="np-v3-beta-sep">▼</span>阿武隈3勝 ／ 生駒4勝<span class="np-v3-beta-sep">▼</span>ベスト試合 評価88<span class="np-v3-beta-sep">▼</span>タイトル戦経験あり<span class="np-v3-beta-sep">▼</span>PPV対決あり<span class="np-v3-beta-sep">▼</span>直近対戦 シーズン6 第14週
+      </div>
+    </article>
+
+    <hr class="np-v3-rule-thick">
+
+    <!-- ═══ 対戦の軌跡 ═══ -->
+    <span class="np-v3-kicker">対戦の軌跡</span>
+    <div class="npu-box">
+      <div class="npu-scroll">
+        <table class="npu-table">
+          <thead>
+            <tr><th>時期</th><th>舞台</th><th>決着</th><th>阿武隈</th><th>評価</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="n">S6 W14</td><td>興行（王座戦）</td><td>阿武隈 3カウント勝ち</td><td><span class="npu-mark win">○</span></td><td class="n">88</td></tr>
+            <tr><td class="n">S5 W41</td><td>PPV</td><td>生駒 失神勝ち</td><td><span class="npu-mark lose">×</span></td><td class="n">84</td></tr>
+            <tr><td class="n">S5 W12</td><td>対抗戦</td><td>生駒 丸め込み勝ち</td><td><span class="npu-mark lose">×</span></td><td class="n">79</td></tr>
+            <tr><td class="n">S4 W36</td><td>興行</td><td>阿武隈 判定勝ち</td><td><span class="npu-mark win">○</span></td><td class="n">76</td></tr>
+            <tr><td class="n">S3 W22</td><td>興行</td><td>生駒 3カウント勝ち</td><td><span class="npu-mark lose">×</span></td><td class="n">71</td></tr>
+            <tr><td class="n">S3 W07</td><td>挑戦状</td><td>阿武隈 3カウント勝ち</td><td><span class="npu-mark win">○</span></td><td class="n">68</td></tr>
+            <tr><td class="n">S2 W31</td><td>興行</td><td>時間切れ引き分け</td><td><span class="npu-mark draw">△</span></td><td class="n">73</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="npu-box-note">○＝阿武隈の勝ち／×＝負け／△＝引き分け。評価は本紙記者の採点。</div>
+    </div>
+
+    <hr class="np-v3-rule-thick">
+
+    <!-- ═══ 他にも続く因縁 ═══ -->
+    <span class="np-v3-kicker">他にも続く因縁</span>
+    <div class="np-v3-bottom-grid cols-3" style="margin-top:8px">
+      <article class="np-v3-small">
+        <div class="npu-pair">
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_tachibana_r.webp');"></div>
+          <span class="npu-pair-x">×</span>
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_tomioka_k.webp');"></div>
+        </div>
+        <div class="np-v3-small-body">
+          <div class="np-v3-hl-s">橘玲美 × 富岡加奈子</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">通算5戦3勝2敗。楽屋で目を合わせないことで知られる、純粋な敵意。</p></div>
+        </div>
+      </article>
+      <article class="np-v3-small np-v3-vr">
+        <div class="npu-pair">
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_fukamachi_m.webp');"></div>
+          <span class="npu-pair-x">×</span>
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_hayashi_m.webp');"></div>
+        </div>
+        <div class="np-v3-small-body">
+          <div class="np-v3-hl-s">深町真琴 × 林真尋</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">同期入門。通算8戦4勝4敗で、いまだにどちらも先行できていない。</p></div>
+        </div>
+      </article>
+      <article class="np-v3-small np-v3-vr">
+        <div class="npu-pair">
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_domae_y.webp');"></div>
+          <span class="npu-pair-x">×</span>
+          <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_akabane_a.webp');"></div>
+        </div>
+        <div class="np-v3-small-body">
+          <div class="np-v3-hl-s">堂前ユキ × 赤羽あすか</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">通算3戦。今季に入って初めて組まれた、まだ若い因縁。</p></div>
+        </div>
+      </article>
+    </div>
+
+    <div class="np-v3-kuroda">
+      <div class="np-v3-kuroda-face" style="background-image:url('../../../image/npc/face_kuroda_s.png')"></div>
+      <div>
+        <div class="np-v3-kuroda-text">「七度戦って、同じ勝ち方が一度も無い。飽きないというのは、そういうことである」</div>
+        <div class="np-v3-kuroda-byline">——黒田幸子(編集部)</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="mock-gap"></div>
+<div class="mock-note">
+  <h2>▼ 四面 — MVPレース</h2>
+  <b>直したこと。</b>
+  ① <code>.np-mvprace-card-1</code>（3:4 の大写真＋28px の順位オーバーレイ＋32px の OVR ボックス）を廃止し、
+  <b>記事</b>に組み直した。首位は「本文＋写真」で読ませる。<br>
+  ② <code>.np-page-headline</code>(22px) / <code>.np-page-lead</code>(12.5px・左に赤帯) / <code>.np-page-meta</code> を
+  一面のスケール（18px 見出し／13px リード）へ。<br>
+  ③ <code>.np-mvprace-divider</code>（「— 4 位 以 下 —」の字間演出）を kicker へ。<br>
+  ④ <b>四位以下の順位表は一面の MVP 小窓（<code>.np-v3-mvprow</code>）と同じ行の形をそのまま使う。</b>
+  一面の小窓から「詳細 ▶」で来た読者が、同じ形の行の続きを見る格好になる。<br>
+  ⑤ 3:4 の写真枠は 2:3 の梯子から外れていたので廃止（84×126 と 46×66 のみ）。
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     四面 — MVPレース（提案）
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="np-paper">
+  <div class="np-paper-header">
+    <div class="logo">週刊グラップル</div>
+    <div class="issue">シーズン6 第14週<small>Y6 W14</small></div>
+  </div>
+
+  <div class="np-v3-indexbar">
+    <b>四面</b><span class="pg"><u>MVPレース</u> 詳細</span>
+    <span class="pg">第14週時点・全団体合同</span>
+    <span class="pg np-v3-index-right"><u>◀ 一面へ戻る</u></span>
+  </div>
+
+  <div class="np-content">
+
+    <article>
+      <span class="np-v3-kicker red">MVPレース</span>
+      <h2 class="np-v3-hl-jun">首位攻防、点差は七——橘玲美を阿武隈塔子が追う</h2>
+      <div class="np-v3-deck">三週で二十四点を詰めた。残り三十四週、逃げる側に休みはない</div>
+      <div class="np-v3-art">
+        <figure class="npu-figl">
+          <div class="npu-photo-kata" style="background-image:url('../../../image/upper/upper_tachibana_r.webp');"></div>
+          <div class="npu-cap">首位・橘玲美</div>
+        </figure>
+        <p>第14週を終えて、年間MVPレースの首位は橘玲美の148点。二位に阿武隈塔子が141点で続き、点差は七に縮まった。第11週時点では三十一点あった差で、三週で二十四点が詰まったことになる。</p>
+        <p>橘は今季ここまで11勝2敗。数字そのものは落ちていないが、この三週は加点の大きい試合に恵まれなかった。対する阿武隈は今週の王座奪取で一気に上積みし、初めて射程に入れている。</p>
+        <div class="np-v3-clear"></div>
+      </div>
+      <div class="np-v3-art np-v3-cols">
+        <p>残りは三十四週。橘には防衛戦の予定がなく、加点の機会は通常興行に限られる。逃げる側が休めないというのは、この点の付き方によるところが大きい。</p>
+        <p>三位の赤羽あすかは126点。首位とは二十二点差で、連勝が続けば射程は消えていない。</p>
+      </div>
+      <div class="np-v3-byline">——黒田幸子(本紙)</div>
+    </article>
+
+    <hr class="np-v3-rule-thick">
+
+    <!-- ═══ 二位・三位 ═══ -->
+    <span class="np-v3-kicker">二位・三位</span>
+    <div class="np-v3-bottom-grid cols-2" style="margin-top:8px">
+      <article class="np-v3-small">
+        <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_abukuma_t.webp');"></div>
+        <div class="np-v3-small-body">
+          <div class="np-sub-org-line"><span>我が団体</span></div>
+          <div class="np-v3-hl-s">2位 阿武隈塔子 141点（前週4位から上昇）</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">王座奪取で三十四点。三週で二十四点を詰めた。ここからは防衛戦がそのまま加点になる。</p></div>
+        </div>
+      </article>
+      <article class="np-v3-small np-v3-vr">
+        <div class="np-sub-photo" style="background-image:url('../../../image/upper/upper_akabane_a.webp');"></div>
+        <div class="np-v3-small-body">
+          <div class="np-sub-org-line"><span>我が団体</span></div>
+          <div class="np-v3-hl-s">3位 赤羽あすか 126点（前週3位・変動なし）</div>
+          <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">10連勝中。記録更新まであと二。次週の相手が最大の関門になる。</p></div>
+        </div>
+      </article>
+    </div>
+
+    <hr class="np-v3-rule-thick">
+
+    <!-- ═══ 追走集団 — 一面の MVP 小窓と同じ行の形をそのまま使う ═══ -->
+    <span class="np-v3-kicker">追走集団（四位以下）</span>
+    <div class="npu-box">
+      <div class="npu-box-ttl">第14週時点 <span style="letter-spacing:0;font-weight:700;color:#7a5b32">全団体合同</span></div>
+      <div class="np-v3-mvprow"><span class="rank">4</span><span class="who">相川あかね</span><span class="npu-mvp-note">全治14週で離脱</span><span class="npu-mvp-pt">118</span></div>
+      <div class="np-v3-mvprow"><span class="rank">5</span><span class="who">安沢ひかり</span><span class="npu-mvp-note">▲2</span><span class="npu-mvp-pt">111</span></div>
+      <div class="np-v3-mvprow"><span class="rank">6</span><span class="who">富岡加奈子</span><span class="npu-mvp-note">▼1</span><span class="npu-mvp-pt">104</span></div>
+      <div class="np-v3-mvprow"><span class="rank">7</span><span class="who">生駒エリカ</span><span class="npu-mvp-note">▼2</span><span class="npu-mvp-pt">98</span></div>
+      <div class="np-v3-mvprow"><span class="rank">8</span><span class="who">深町真琴</span><span class="npu-mvp-note">▲3</span><span class="npu-mvp-pt">91</span></div>
+      <div class="np-v3-mvprow"><span class="rank">9</span><span class="who">堂前ユキ</span><span class="npu-mvp-note">—</span><span class="npu-mvp-pt">84</span></div>
+      <div class="np-v3-mvprow"><span class="rank">10</span><span class="who">林真尋</span><span class="npu-mvp-note">初登場</span><span class="npu-mvp-pt">77</span></div>
+      <div class="npu-box-note">一面のMVP小窓と同じ行の形。小窓の「詳細 ▶」から続けて読める並びにしている。</div>
+    </div>
+
+    <div class="np-v3-kuroda">
+      <div class="np-v3-kuroda-face" style="background-image:url('../../../image/npc/face_kuroda_s.png')"></div>
+      <div>
+        <div class="np-v3-kuroda-text">「三十一点あった差が七になるのに、三週しか掛からなかった。逃げるほうが不利になる時期が、そろそろ来る」</div>
+        <div class="np-v3-kuroda-byline">——黒田幸子(編集部)</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="mock-gap"></div>
+<div class="mock-note">
+  <h2>一面と揃えるために捨てた表現</h2>
+  <div class="mock-scroll">
+  <table>
+    <tr><th>捨てたもの</th><th>あった場所</th><th>理由</th></tr>
+    <tr><td>純黒パネル（<code>linear-gradient(180deg,#1a0d04,#2a1a10)</code> ＋ 内側の光）</td><td>二面 <code>.np-ace-confront</code>／三面 <code>.np-rivalry-main</code></td><td>クリーム紙（Office）の中に Stage の黒を持ち込んでいた。ここだけ別の画面に見える最大の原因</td></tr>
+    <tr><td>暗色バー <code>.np-result-line</code> の系統</td><td>二面</td><td>同上。紙の上に置く帯は罫と地の色で作る</td></tr>
+    <tr><td>240〜280px のスタンド写真枠</td><td>三面 <code>.np-rivalry-stand</code></td><td>写真の梯子（190×228／84×126／46×66）の外。人物の大きさが面ごとに変わって見える</td></tr>
+    <tr><td>3:4 の写真枠</td><td>四面 <code>.np-mvprace-photo</code>（<code>aspect-ratio:3/4</code>）</td><td>素材は 2:3。3:4 に入れると脚側が切れる（mockup-baseline §2-0）</td></tr>
+    <tr><td>28px／32px／36px の Bebas 数値ブロック</td><td>四面 順位オーバーレイ・OVR ボックス</td><td>ランキング表に見えて記事に見えない。<b>36px の GRADE だけは囲み記事の中に残した</b></td></tr>
+    <tr><td>26px 中央寄せ見出し＋囲みラベル</td><td>三面 <code>.np-rivalry-headline</code></td><td>27px は一面トップの予約席。中央寄せの見出しも一面に無い</td></tr>
+    <tr><td>22px 見出し＋赤帯付きリード</td><td>四面 <code>.np-page-headline</code> / <code>.np-page-lead</code></td><td>一面のスケールに無い中間値。18px 見出し＋13px リードへ</td></tr>
+    <tr><td>字間演出の区切り（「— 4 位 以 下 ・ 追 走 集 団 —」）</td><td>四面 <code>.np-mvprace-divider</code></td><td>見出し部品を面ごとに増やさない。kicker へ</td></tr>
+    <tr><td><code>.np-sec</code> / <code>.np-sec-gold</code>（赤・金のセクションラベル）</td><td>二面・三面</td><td>kicker と役割が重複。kicker 1系統に寄せる</td></tr>
+    <tr><td>📊 などの絵文字見出し</td><td>四面</td><td>紙面に絵文字が出るのは新聞に見えない</td></tr>
+    <tr><td>「◆」区切りの金文字ファクト帯</td><td>三面 <code>.np-rivalry-facts</code></td><td>一面の短信（▼区切りの連結ベタ）と同じ形にまとめた</td></tr>
+    <tr><td>角丸カード＋落ち影の一覧（<code>border-radius:8~10px</code> ＋ <code>box-shadow</code>）</td><td>二面 <code>.np-org-card</code>／<code>.np-spotlight</code>、三面 <code>.np-relation-card</code></td><td>紙面に「カード」は無い。罫と余白で区切る</td></tr>
+  </table>
+  </div>
+
+  <h2>判断が要る点（Keisuke 確認事項）</h2>
+  <div class="mock-scroll">
+  <table>
+    <tr><th>#</th><th>論点</th><th>本モックでの選択</th></tr>
+    <tr><td>1</td><td>面の頭の見出しを 27px にするか 18px にするか</td><td><b>18px</b>。27px を一面トップの専用にしないと、大きさの階段＝ニュースバリューが崩れる。特集面が弱く見えるなら 27px へ上げる余地はある</td></tr>
+    <tr><td>2</td><td>GRADE の 36px Bebas</td><td>指示どおり<b>残した</b>（囲み記事の中）。ただし一面のタイプスケールには無い値なので、消して 27px 相当に落とす選択もある</td></tr>
+    <tr><td>3</td><td>比較バーの色（自陣＝赤／相手＝金）</td><td>紙面パレット内での選択。赤は紙面の主色でもあるため、自陣＝金／相手＝墨 に入れ替える案もある</td></tr>
+    <tr><td>4</td><td>面の柱に「一面へ戻る」を置くか</td><td>置いた。一面の「きょうの紙面」と同じ帯なので追加CSSは無い</td></tr>
+    <tr><td>5</td><td>一面最下段の <code>.np-sec</code>（本紙つづき以降）</td><td>今回は<b>触っていない</b>（一面は無改変が条件）。同じ理由で kicker へ寄せる候補</td></tr>
+    <tr><td>6</td><td>吹き出しの中の話者名（2026-08-01 裁定）</td><td><b>この紙面には吹き出しが1つも無い</b>ため、本モックでは対象箇所ゼロ。該当は <code>src/ui-common.js</code> の <code>.jt-bub .sp</code>（ジュニアT／秋対抗戦の場外セリフ）で、<code>src/</code> 変更が要るため別タスク</td></tr>
+  </table>
+  </div>
+
+  <h2>狭い幅の扱い（v0.1 レビューでの修正点）</h2>
+  初版は 820px 以下で <code>.npu-photo-kata</code> を <code>width:100%; height:200px</code> に引き伸ばしていた。
+  一面のトップ写真（190×228）が全幅バーになるのを真似たものだが、<b>これは誤り</b>だった。
+  一面トップは「紙面トリミング」の例外枠（baseline §2-0）で切れること自体が表現だが、
+  84×126 は<b>人物を見せる 2:3 の段</b>なので、引き伸ばすと 2.3:1 になって顔が拡大トリミングされる。
+  <b>520px 前後で最も目立って破綻していた。</b>
+  <table>
+    <tr><th>直したもの</th><th>直し方</th></tr>
+    <tr><td>写真が横長に伸びる</td><td>引き伸ばす規則を<b>削除</b>。写真は全幅で <b>84×126（2:3）固定</b></td></tr>
+    <tr><td>対峙ブロックが間延びする</td><td>幅 <code>min(312px,100%)</code> ＋ 列を <code>minmax()</code> に。狭いときは列だけ縮み、写真は縮まない</td></tr>
+    <tr><td>本文が細い柱になる</td><td>対峙（312px）は 820px 以下で回り込みだけ解除（<code>.npu-figl-wide</code>）。単写真（84px）は一面の肩記事と同じく回り込ませ続ける</td></tr>
+    <tr><td>注釈が紙面より広い</td><td><code>.mock-note</code> を 800px → <b>782px</b>（＝紙面の外寸）へ。表は <code>.mock-scroll</code> で内側スクロール</td></tr>
+  </table>
+
+  <h2>確認のしかた</h2>
+  ・ブラウザ幅を <b>320〜1280px</b> で動かして、どの面でも<b>横スクロールバーが出ないこと</b>。
+  とくに <b>400 / 480 / 520 / 600 / 700 / 800px</b> で写真が 84×126 のままであること。<br>
+  ・4面を続けて縦にスクロールして、<b>見出しの大きさ・本文の字面・罫の太さ・写真の大きさが面をまたいで変わらないこと</b>。<br>
+  ・黒田コラムが<b>どの面でも最下段の同じ形</b>で出ていること。
+</div>
+
+<script>
+/* 一面は実装の出力をそのまま貼っているので onclick が残っている。
+   モック単体で押しても例外にならないよう、何もしないスタブだけ置く。 */
+function showFighterPopup(){}
+function setNewspaperSubPage(){}
+function npScrollToShowDetail(){}
+</script>
+
+</body>
+</html>

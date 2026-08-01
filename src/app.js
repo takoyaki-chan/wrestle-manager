@@ -15895,28 +15895,79 @@ App.tcAdvanceAfterResult = function(roundIdx, matchIdx) {
     tc.bgmTrack = 'tencho';
     renderTenchosenBracket();
   } else {
-    // 決勝決着 → 頂上せり上がり(0.5s) → 1.6秒で優勝画面へ自動遷移。
+    // 1操作=1進行(docs/ui §5-D 鉄則2)。古いクリック・二重クリックで2回進めない
+    if (tc._finalAdvanced) {
+      try { console.warn('[WM] tcAdvanceAfterResult: final already advanced'); } catch(e) {}
+      return;
+    }
+    tc._finalAdvanced = true;
+    // 決勝決着 → (決勝だけ)勝者・敗者のひとこと → 頂上せり上がり(0.5s) →
+    // 1.6秒で優勝画面へ自動遷移。
     // タップ待ちで止めない(実機フィードバック: 二段構えの待ちがフリーズに見える)。
     // 頂上タップで即時スキップも可。
-    tc.currentRound = roundIdx + 1;
-    tc.currentMatch = 0;
-    tc.phase = 'bracket';
-    tc.bgmTrack = 'preserve';
-    try { Audio.fileBgm.fadeOut(800); } catch(e) {}
-    setTimeout(() => {
-      try { Audio.fileBgm.stop(); } catch(e) {}
-      Audio.bgm.playJingle('championship');
-    }, 900);
-    renderTenchosenBracket();
-    // 頂上ブロックは画面上部にあるためスクロールを先頭へ戻して見せる
-    const tcOverlay = document.getElementById('showResultOverlay');
-    if (tcOverlay) tcOverlay.scrollTop = 0;
-    clearTimeout(App._tcPeakTimer);
-    App._tcPeakTimer = setTimeout(() => {
-      const cur = App._tcPreview;
-      if (cur && cur.phase === 'bracket') App.tcGoToFinalResult();
-    }, 1600);
+    const toPeak = () => {
+      tc.currentRound = roundIdx + 1;
+      tc.currentMatch = 0;
+      tc.phase = 'bracket';
+      tc.bgmTrack = 'preserve';
+      try { Audio.fileBgm.fadeOut(800); } catch(e) {}
+      setTimeout(() => {
+        try { Audio.fileBgm.stop(); } catch(e) {}
+        Audio.bgm.playJingle('championship');
+      }, 900);
+      renderTenchosenBracket();
+      // 頂上ブロックは画面上部にあるためスクロールを先頭へ戻して見せる
+      const tcOverlay = document.getElementById('showResultOverlay');
+      if (tcOverlay) tcOverlay.scrollTop = 0;
+      clearTimeout(App._tcPeakTimer);
+      App._tcPeakTimer = setTimeout(() => {
+        const cur = App._tcPreview;
+        if (cur && cur.phase === 'bracket') App.tcGoToFinalResult();
+      }, 1600);
+    };
+    App._tcRunFinalAftermath(tc, round.matches[matchIdx], round.name, toPeak);
   }
+};
+
+// 天頂戦 決勝の決着後コメント(task-72)。**待ちには必ず時限の保険を掛ける**
+// (docs/ui/mockup-baseline-v0.1.md §5-D 鉄則1)。ここが詰まると週が進まなくなる。
+//   - 二重起動防止: tc._finalTalkShown(この大会で1度だけ) + done フラグ(進行は1回だけ)
+//   - 見張り  : 1秒ごとにオーバーレイがDOMに残っているか確認し、
+//               コールバック無しで消えていたら進める(読んでいる最中は横取りしない)
+//   - 絶対上限: 180秒。読者を遮らない長さにしつつ、永久に止まらないことを保証する
+//   - 保険が作動したら必ず console.warn を残す(黙って救わない)
+App._tcRunFinalAftermath = function(tc, match, roundName, proceed) {
+  let done = false;
+  const once = (reason) => {
+    if (done) return;
+    done = true;
+    clearInterval(App._tcFinalTalkWatch); App._tcFinalTalkWatch = null;
+    clearTimeout(App._tcFinalTalkCap); App._tcFinalTalkCap = null;
+    if (reason) { try { console.warn('[WM] tenchosen final aftermath safety net fired:', reason); } catch(e) {} }
+    proceed();
+  };
+  // 決勝以外では絶対に出さない(不変条件1)。呼び出し元と合わせて二重に判定する
+  if (roundName !== 'final' || !tc || tc._finalTalkShown
+      || typeof _showTcFinalAftermath !== 'function') { once(); return; }
+  tc._finalTalkShown = true;
+
+  let shown = false;
+  try {
+    shown = _showTcFinalAftermath(match, roundName, () => once());
+  } catch (e) {
+    try { console.warn('[WM] tenchosen final aftermath failed', e); } catch(_e) {}
+    shown = false;
+  }
+  if (!shown) { once(); return; }
+
+  clearInterval(App._tcFinalTalkWatch);
+  App._tcFinalTalkWatch = setInterval(() => {
+    if (done) { clearInterval(App._tcFinalTalkWatch); App._tcFinalTalkWatch = null; return; }
+    const el = App._tcFinalTalkEl;
+    if (!el || !document.body.contains(el)) once('overlay vanished without a callback');
+  }, 1000);
+  clearTimeout(App._tcFinalTalkCap);
+  App._tcFinalTalkCap = setTimeout(() => once('absolute cap (180s)'), 180000);
 };
 
 App.tcSkipAll = function() {
@@ -15925,6 +15976,10 @@ App.tcSkipAll = function() {
   if (!tc) return;
   tc.phase = 'bracket';
   tc.bgmTrack = 'tencho';
+  // 全部スキップを選んだ人に決勝の会話(task-72)を差し込まない。
+  // このルートは tcAdvanceAfterResult を通らないが、意図を明示して固定しておく
+  tc._finalTalkShown = true;
+  tc._finalAdvanced = true;
   const rounds = tc.rounds;
   const stageDelay = 500;
 
@@ -15982,6 +16037,13 @@ App.tcNextDrama = function(idx) {
 App.finalizeTenchosen = function() {
   // 状態は advanceWeek 内で適用済み。ここでは演出を畳むだけ
   clearTimeout(App._tcPeakTimer);
+  // 決勝の決着後コメント(task-72)の見張り・保険・残骸を必ず片付ける
+  clearInterval(App._tcFinalTalkWatch); App._tcFinalTalkWatch = null;
+  clearTimeout(App._tcFinalTalkCap); App._tcFinalTalkCap = null;
+  if (App._tcFinalTalkEl) {
+    try { App._tcFinalTalkEl.remove(); } catch(e) {}
+    App._tcFinalTalkEl = null;
+  }
   App._tcPreview = null;
   const overlay = document.getElementById('showResultOverlay');
   if (overlay) overlay.classList.remove('active');

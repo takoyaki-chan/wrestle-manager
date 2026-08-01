@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>特別興行 作り直しモックアップ v0.1 — 春タッグ / 秋対抗戦（ジュニアを基準に）</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════════════
+   task-74 特別興行3大会 作り直しモックアップ v0.1
+   成果物はこの1枚のみ。src/ は一切変更していない。
+
+   ① ジュニアトーナメント = 基準（現行実装のまま。触らない）
+   ② 春のタッグリーグ / ③ PPV GRAND FINAL / ④ 秋の4団体勝ち残り対抗戦 = 提案
+
+   規則の出典:
+     docs/ui/mockup-baseline-v0.1.md（§1 タイプスケール / §2 2:3梯子 / §2-B 隊列 /
+       §2-C 顔の段 / §3 吹き出し / §4 縦の並び順 / §5 団体バッジ / §5-B 勝敗 / §6 余白）
+     docs/ui/01-foundations.md（Stage = 純黒。Cream Panel は置かない）
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── トークン（src/index.html :root からの実値コピー。値は変えていない） ───── */
+:root{
+  --stage-bg:#060606;
+  --stage-bg-deep:#000000;
+  --stage-panel:rgba(20,18,15,0.62);
+  --stage-panel-deep:rgba(10,9,7,0.80);
+  --stage-border:rgba(200,190,170,0.08);
+  --stage-border-lit:rgba(212,168,67,0.22);
+  --stage-border-main:rgba(212,168,67,0.42);
+  --stage-text-main:#e8e6e0;
+  --stage-text-sub:rgba(232,230,224,0.55);
+  --stage-text-dim:rgba(232,230,224,0.28);
+  --stage-text-quiet:rgba(232,230,224,0.16);
+  --panel-bg:#181614;
+  --card-bg:#12110e;
+  --bg-dark:#24221e;
+
+  --gold:#d4a843;
+  --gold-light:#f0d078;
+  --gold-deep:#b8912e;
+  --gold-rgb:212,168,67;
+
+  --ev-spring:#e07a9a;
+  --ev-summer:#56b1d8;
+  --ev-autumn:#c1503c;
+  /* ▼新規: 既存の --ev-spring / --ev-autumn には rgba() 用の伴走値がまだ無い
+     （--ev-summer-rgb / --gold-rgb だけがある）。共通部品を作り直し2大会で
+     色替えするために追加が要る。値は上の16進と同一で、新しい色ではない。 */
+  --ev-summer-rgb:86,177,216;
+  --ev-spring-rgb:224,122,154;
+  --ev-autumn-rgb:193,80,60;
+  /* ⚠ --ev-winter / --ev-winter-rgb は**使わない**。
+     PPV は冬の大会ではないため、冬の色もエンブレムも持ち込まない
+     （2026-08-01 Keisuke 裁定）。この2つはこのモックに定義しない。 */
+
+  /* PPV の既存アクセント。src の .pb-event-summary.pb-theme-ppv が
+     #d63d46 / 214,61,70 を直書きしている。値は変えずトークン化しただけ */
+  --ppv-red:#d63d46;
+  --ppv-red-rgb:214,61,70;
+  /* src の .pb-portrait 下地グラデーション（#1a1816 → #0a0907）*/
+  --pb-portrait-top:#1a1816;
+  --pb-portrait-bottom:#0a0907;
+
+  --c-positive:#6fa28c;
+  --c-warning:#d07a3e;
+  --c-negative:#c0524a;
+  --c-info:#6d94b8;
+  --accent-hostility:#d07a3e;
+
+  --font-display:'Bebas Neue',sans-serif;
+  --font-label:'Oswald',sans-serif;
+  --font-body:'Noto Sans JP',sans-serif;
+
+  --space-xs:4px; --space-sm:8px; --space-md:12px; --space-lg:16px; --space-xl:24px;
+  --radius-sm:4px; --radius-md:6px; --radius-lg:10px; --radius-xl:14px;
+
+  /* ▼新規: セリフ吹き出しの塗りと文字。
+     mockup-baseline §3「セリフの吹き出しは白（クリーム）に黒文字。例外なし」を
+     Stage 上で満たすための専用トークン。現行 .jt-bub / .tcdr-bub は #f0f0f0 /
+     #1a1a1a を直書きしており、ハードコード16進の残骸になっている。値はその
+     直書きと同一なので見た目は変わらない（トークン化のみ）。 */
+  --bubble-bg:#f0f0f0;
+  --bubble-ink:#1a1a1a;
+  /* ▼新規: ジュニア/天頂戦の VS マークと因縁色に使われている緋色。
+     src では .jtc-fc-uppers .vs-mark / .jtc-fc-vl / .tc-vs に #e94560 が直書きされている。
+     ①の見た目を1ドットも変えずに16進直書きを外すためのトークン化（値は同一）。 */
+  --ppv-crimson:#e94560;
+  /* ▼新規: 選手画像の下地。src の .jtc-fc-upper が #121110 を直書きしている */
+  --stage-portrait-bg:#121110;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+body{background:var(--stage-bg);color:var(--stage-text-main);font-family:var(--font-body);line-height:1.6}
+img{max-width:100%;-webkit-user-drag:none;user-select:none}
+button{font-family:inherit}
+
+/* ── モックアップ用クロム（提出用の枠。実装には持ち込まない） ───────────── */
+.mk-nav{position:sticky;top:0;z-index:60;background:var(--stage-bg-deep);border-bottom:1px solid var(--stage-border);
+  padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mk-nav h1{font-family:var(--font-display);font-size:18px;letter-spacing:3px;color:var(--stage-text-main)}
+.mk-nav .st{font-family:var(--font-label);font-size:8px;letter-spacing:2px;color:var(--stage-text-sub);
+  text-transform:uppercase;border:1px solid var(--stage-border);border-radius:2px;padding:3px 7px}
+.mk-jump{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+.mk-jump a{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-sub);
+  text-decoration:none;border:1px solid var(--stage-border);border-radius:2px;padding:4px 9px}
+.mk-jump a:hover{color:var(--stage-text-main);border-color:var(--stage-border-main)}
+
+.mk-sec{border-top:1px solid var(--stage-border);padding-bottom:var(--space-xl)}
+.mk-sechd{display:flex;align-items:baseline;gap:var(--space-md);flex-wrap:wrap;
+  padding:var(--space-lg) var(--space-lg) var(--space-sm);background:var(--stage-bg-deep)}
+.mk-sechd .no{font-family:var(--font-display);font-size:28px;color:var(--ev-c,var(--gold));line-height:1}
+.mk-sechd .ttl{font-size:18px;font-weight:900;letter-spacing:1px}
+.mk-tag{font-family:var(--font-label);font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  border-radius:2px;padding:3px 9px}
+.mk-tag.is-base{color:var(--stage-text-main);border:1px solid var(--stage-text-dim)}
+.mk-tag.is-new{color:var(--ev-c,var(--gold));border:1px solid var(--ev-c,var(--gold))}
+
+/* 画面の見え方そのもの（Stage 純黒） */
+.mk-screen{background:var(--stage-bg);padding:var(--space-sm) var(--space-md) var(--space-xl)}
+
+/* 注釈。画面の外に置く（画面内には注釈を混ぜない） */
+.mk-note{margin:var(--space-lg) var(--space-md) 0;border-left:2px solid var(--ev-c,var(--gold));
+  background:var(--stage-panel);padding:var(--space-md) var(--space-lg);border-radius:0 var(--radius-md) var(--radius-md) 0}
+.mk-note h4{font-family:var(--font-label);font-size:11px;letter-spacing:2px;color:var(--ev-c,var(--gold));
+  text-transform:uppercase;margin-bottom:6px;font-weight:600}
+.mk-note h4+h4{margin-top:var(--space-md)}
+.mk-note ul{list-style:none;font-size:13px;color:var(--stage-text-sub)}
+.mk-note li{padding-left:14px;position:relative;margin-bottom:3px}
+.mk-note li::before{content:'—';position:absolute;left:0;color:var(--stage-text-dim)}
+.mk-note li b{color:var(--stage-text-main);font-weight:700}
+.mk-note .arrow{color:var(--ev-c,var(--gold));font-weight:700}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ① 基準：ジュニアトーナメント（現行実装の写し。1文字も設計変更しない）
+   src/index.html の .jtc-header / .jtc-climb / .jtc-fc / .jt-bub の値をそのまま複製。
+   ══════════════════════════════════════════════════════════════════════ */
+.jtc-header{text-align:center;padding:20px 12px 6px}
+.jtc-header-emblem{width:72px;height:72px;object-fit:contain;margin:0 auto 6px;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.6))}
+.jtc-header-title{font-family:var(--font-display);font-size:28px;letter-spacing:5px;color:var(--stage-text-main)}
+.jtc-header-sub{font-family:var(--font-label);font-size:11px;letter-spacing:3px;color:var(--jtc-color,var(--ev-summer));text-transform:uppercase;margin-top:4px}
+.jtc-header-ed{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);margin-top:5px;text-transform:uppercase}
+.jtc-double-rule{width:280px;margin:12px auto 6px;border-top:1px solid var(--gold);position:relative;opacity:0.75}
+.jtc-double-rule::after{content:'';position:absolute;left:20px;right:20px;top:3px;border-top:1px solid var(--gold);opacity:0.55}
+.jtc-climb-note{font-family:var(--font-label);font-size:9px;letter-spacing:2.5px;color:var(--stage-text-dim);text-transform:uppercase;margin-bottom:6px;text-align:center}
+.jtc-climb{max-width:680px;margin:0 auto;padding:4px 0 12px;text-align:center}
+.jtc-tier-label{font-family:var(--font-label);font-size:10px;letter-spacing:3px;color:var(--jtc-color,var(--ev-summer));text-transform:uppercase;text-align:center;margin:16px 0 8px}
+.jtc-peak{display:inline-flex;flex-direction:column;align-items:center;padding:4px 10px}
+.jtc-peak-empty .crest{width:84px;height:84px;margin:0 auto;border-radius:50%;border:2px dashed rgba(var(--gold-rgb),0.4);
+  display:flex;align-items:center;justify-content:center;font-size:30px;opacity:.75}
+.jtc-peak-empty .cap{font-family:var(--font-label);font-size:9px;letter-spacing:3px;color:var(--stage-text-dim);text-transform:uppercase;margin-top:6px}
+.jtc-row{display:grid;width:100%;align-items:end;margin:0 auto 2px}
+.jtc-cell{display:flex;flex-direction:column;align-items:center;padding:0 4px;min-width:0}
+.jtc-pair{display:flex;gap:2px}
+.jtc-cell.is-current .jtc-pair{outline:2px solid var(--jtc-color,var(--ev-summer));outline-offset:5px;border-radius:2px}
+.jtc-size-sm .jtc-fx{width:76px}
+.jtc-final-row{display:flex;align-items:center;justify-content:center;gap:20px;margin:0 auto 2px}
+.jtc-final-row.jtc-size-lg .jtc-fx{width:132px}
+.jtc-vs{font-family:var(--font-display);font-size:22px;color:var(--stage-text-dim);padding:0 4px}
+.jtc-fx{width:100%}
+.jtc-up{position:relative;overflow:hidden;border-radius:3px;aspect-ratio:2/3;
+  background:linear-gradient(180deg,rgba(232,230,224,0.06),rgba(0,0,0,0.3));border-bottom:3px solid var(--stage-border)}
+.jtc-up img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.jtc-up.w{border-bottom:3px solid var(--jtc-color,var(--ev-summer))}
+.jtc-up.l{border-bottom:3px solid var(--stage-border)}
+.jtc-up.l img{filter:grayscale(0.9) brightness(0.55)}
+.jtc-fn{font-size:11px;font-weight:700;text-align:center;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--stage-text-main)}
+.jtc-fx.is-lose .jtc-fn{color:var(--stage-text-dim);font-weight:400}
+.jtc-win-tag{color:var(--jtc-color,var(--ev-summer));font-size:9px;font-family:var(--font-label);letter-spacing:1px}
+.jtc-minfo{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-family:var(--font-label);font-size:9px;
+  letter-spacing:.5px;color:var(--stage-text-dim);background:var(--panel-bg);border:1px solid var(--stage-border);padding:2px 8px;border-radius:3px}
+.jtc-minfo .t{color:var(--stage-text-main)}
+.jtc-minfo .mq{color:var(--gold)}
+.jtc-merge{display:grid;width:100%;height:24px;margin:2px 0}
+.jtc-chev svg{width:100%;height:100%;display:block}
+.jtc-chev path{fill:none;stroke-width:2;vector-effect:non-scaling-stroke;stroke:var(--stage-border-main)}
+.jtc-chev path.hot{stroke:var(--jtc-color,var(--ev-summer))}
+.jtc-merge-peak{display:flex;justify-content:center;height:26px;margin:2px 0}
+.jtc-merge-peak svg{width:16px;height:100%;display:block}
+.jtc-merge-peak path{fill:none;stroke-width:2;vector-effect:non-scaling-stroke;stroke:var(--jtc-color,var(--gold))}
+.jtc-own-pill{display:inline-block;font-family:var(--font-label);font-size:8px;letter-spacing:1px;color:var(--jtc-color,var(--gold-light));
+  border:1px solid rgba(var(--jtc-color-rgb,var(--gold-rgb)),0.5);border-radius:2px;padding:0 4px;margin-left:3px;vertical-align:1px}
+
+/* 現行フォーカスカード（写し） */
+.jtc-fc{background:rgba(255,255,255,0.03);border:1px solid rgba(var(--jtc-color-rgb,var(--gold-rgb)),0.2);border-radius:12px;max-width:560px;
+  margin:18px auto 0;position:relative;overflow:hidden;text-align:center}
+.jtc-fc::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(var(--jtc-color-rgb,var(--gold-rgb)),0.04),transparent 70%)}
+.jtc-fc-lb{text-align:center;padding:12px 0 4px;font-family:var(--font-display);font-size:14px;letter-spacing:4px;color:var(--jtc-color,var(--gold));position:relative}
+.jtc-fc-nm{max-width:170px}
+.jtc-fc-nm .n{font-size:17px;font-weight:900;color:var(--stage-text-main);line-height:1.2}
+.jtc-fc-statline{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px;
+  font-family:var(--font-label);font-size:8px;letter-spacing:1px;color:var(--stage-text-dim)}
+.jtc-fc-style{color:var(--stage-text-sub)}
+.jtc-fc-ovr{display:inline-flex;align-items:baseline;gap:3px;margin-left:2px;color:var(--stage-text-sub)}
+.jtc-fc-ovr small{font-size:8px;letter-spacing:1.5px;color:var(--stage-text-dim)}
+.jtc-fc-ovr b{font-family:var(--font-display);font-size:23px;line-height:.85;letter-spacing:.5px;color:var(--stage-text-main)}
+.jtc-fc-nm .o{min-height:13px;margin-top:2px;font-size:10px;color:var(--stage-text-sub)}
+.jtc-fc-uppers{display:grid;grid-template-columns:1fr auto 1fr;column-gap:clamp(10px,4vw,24px);row-gap:9px;
+  justify-items:center;align-items:center;padding:10px 6px 6px;position:relative}
+.jtc-fc-upper.is-l{grid-area:1/1}
+.jtc-fc-uppers .vs-mark{grid-area:1/2}
+.jtc-fc-upper.is-r{grid-area:1/3}
+.jtc-fc-nm.is-l{grid-area:2/1}
+.jtc-fc-nm.is-r{grid-area:2/3}
+.jtc-fc-upper{width:118px;aspect-ratio:2/3;border-radius:4px;overflow:hidden;border-bottom:3px solid rgba(var(--jtc-color-rgb,var(--gold-rgb)),0.5);
+  background:var(--stage-portrait-bg);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+.jtc-fc-upper img{width:100%;height:100%;object-fit:cover;object-position:top}
+.jtc-fc-uppers .vs-mark{font-family:var(--font-display);font-size:38px;letter-spacing:3px;
+  background:linear-gradient(180deg,var(--gold-light),var(--ppv-crimson));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.jtc-fc-hp-row{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;padding:6px 26px 2px;position:relative}
+.jtc-fc-hp-top{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-family:var(--font-label);font-size:10px;letter-spacing:1px;color:var(--stage-text-sub)}
+.jtc-fc-hp.right .jtc-fc-hp-top{justify-content:flex-end}
+.jtc-fc-hp-top strong{color:var(--stage-text-main)}
+.jtc-fc-hp-top em{font-style:normal;color:var(--stage-text-dim)}
+.jtc-fc-hp-track{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+.jtc-fc-hp-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,rgba(var(--jtc-color-rgb,var(--gold-rgb)),0.55),var(--jtc-color,var(--gold)))}
+.jtc-fc-hp.right .jtc-fc-hp-track{direction:rtl}
+.jtc-fc-hp-mid{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--stage-text-dim);line-height:1.6}
+.jtc-fc-bt{display:flex;justify-content:center;gap:10px;padding:12px 0 16px;position:relative}
+/* ジュニアの吹き出し。**この1点だけ現行から変えている**（2026-08-01 Keisuke 裁定）:
+   src の .jt-bub は中に話者名 <div class="sp"> を持っているが、
+   mockup-baseline §3「吹き出しの中身はセリフ本文のみ」を全画面に適用する裁定が出たため、
+   .jt-bub .sp の規則ごと削除した。話者は画像の下の名前で示す（左右の並びと対応）。
+   それ以外（塗り・角丸・余白・文字サイズ）は src のまま。 */
+.jt-bub{background:var(--bubble-bg);color:var(--bubble-ink);border-radius:11px;padding:9px 14px;font-size:12px;line-height:1.5;
+  text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.2);margin:6px 0}
+.jt-bub-pair{display:flex;gap:8px;margin:4px 14px 8px}
+.jt-bub-pair .jt-bub{flex:1;min-width:0}
+
+/* 共通ボタン（実装の .btn / .btn-gold 相当） */
+.btn{background:transparent;border:1px solid var(--stage-border-main);color:var(--stage-text-sub);
+  border-radius:var(--radius-md);padding:8px 22px;font-size:13px;cursor:pointer}
+.btn-gold{background:rgba(var(--ev-rgb,var(--gold-rgb)),.14);border-color:var(--ev-c,var(--gold));color:var(--ev-c,var(--gold))}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ▼▼ ここから新規 ▼▼
+   共通部品 .sfc（Special-event Focus Card）
+   = ジュニアの .jtc-fc をそのまま4大会共通に一般化したもの。
+     ・骨格・サイズ・余白はジュニアと同一
+     ・大会色は --ev-c / --ev-rgb（ジュニアの --jtc-color / --jtc-color-rgb と同じ仕組み）
+     ・違いは3点だけ:
+        (1) 吹き出しを「予約枠つき・尻尾つき・話者名は箱の外」に直した（§3）
+        (2) 名前ブロックに「役割ラベル」と「団体バッジ」の段を足した（§4 の固定順を全段そろえる）
+        (3) 文字サイズを §1 タイプスケールへ寄せた（名前17→15 / OVR 23→28）
+   ══════════════════════════════════════════════════════════════════════ */
+.sfc{background:rgba(255,255,255,0.03);border:1px solid rgba(var(--ev-rgb),0.2);border-radius:12px;
+  max-width:560px;margin:18px auto 0;position:relative;overflow:hidden;text-align:center}
+.sfc::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(var(--ev-rgb),0.04),transparent 70%)}
+.sfc-lb{padding:12px 0 4px;font-family:var(--font-display);font-size:14px;letter-spacing:4px;
+  color:var(--ev-c);position:relative}
+
+/* 3行グリッド。列を明示するので、吹き出しの尻尾・画像・名前が必ず同じ中心に乗る。
+   row1=吹き出し（予約枠） / row2=画像+VS / row3=名前ブロック  ← §4 の固定順 */
+.sfc-stage{display:grid;grid-template-columns:1fr auto 1fr;column-gap:clamp(8px,3.5vw,22px);row-gap:9px;
+  justify-items:center;align-items:end;padding:6px 8px;position:relative}
+.sfc-bub-slot.is-l{grid-area:1/1}
+.sfc-bub-slot.is-r{grid-area:1/3}
+.sfc-side.is-l{grid-area:2/1}
+.sfc-vs{grid-area:2/2}
+.sfc-side.is-r{grid-area:2/3}
+.sfc-nm.is-l{grid-area:3/1}
+.sfc-nm.is-r{grid-area:3/3}
+
+/* 吹き出し：予約枠 52px（§3。発言が無い側は枠だけ置き、箱は描かない） */
+.sfc-bub-slot{width:100%;min-width:0;min-height:52px;display:flex;align-items:flex-end;justify-content:center}
+.sfc-bub{position:relative;background:var(--bubble-bg);color:var(--bubble-ink);border-radius:var(--radius-lg);
+  padding:8px 12px;font-size:13px;line-height:1.45;text-align:left;box-shadow:0 4px 14px rgba(0,0,0,.35);
+  width:100%;min-width:0;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* 尻尾は画像の水平中心を指す。--tail-x は隊列のとき「話している人の画像の中心」へずらす */
+.sfc-bub::after{content:'';position:absolute;bottom:-7px;left:var(--tail-x,50%);transform:translateX(-50%);
+  border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--bubble-bg)}
+
+/* 画像：2:3。ジュニアの対戦カード実測 118×177 に合わせる（§2 の梯子に対する唯一の逸脱。末尾リスト参照） */
+.sfc-up{width:118px;aspect-ratio:2/3;border-radius:var(--radius-sm);overflow:hidden;
+  border-bottom:3px solid rgba(var(--ev-rgb),0.5);background:var(--stage-portrait-bg);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+.sfc-up img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.sfc-up.is-lose{border-bottom-color:var(--stage-text-dim)}
+.sfc-up.is-lose img{filter:grayscale(.9) brightness(.72)}
+.sfc-vs{font-family:var(--font-display);font-size:38px;letter-spacing:3px;
+  background:linear-gradient(180deg,var(--gold-light),var(--ppv-crimson));-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;align-self:center}
+
+/* 名前ブロック：§4 の固定順（名前 → 役割ラベル → 団体バッジ → 数値） */
+.sfc-nm{max-width:180px;min-width:0}
+.sfc-nm .n{font-size:15px;font-weight:700;color:var(--stage-text-main);line-height:1.25}
+.sfc-nm .role{font-size:11px;color:var(--stage-text-sub);margin-top:2px}
+.sfc-badge{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:2px 8px 2px 3px;
+  border-radius:999px;border:1px solid rgba(var(--ev-rgb),.35);background:rgba(var(--ev-rgb),.07)}
+.sfc-badge.is-own{border-color:rgba(111,162,140,.55);background:rgba(111,162,140,.10)}
+.sfc-badge img{width:26px;height:26px;border-radius:var(--radius-sm);object-fit:cover;display:block}
+.sfc-badge span{font-family:var(--font-label);font-size:11px;letter-spacing:1px;color:var(--stage-text-sub)}
+.sfc-ovr{display:inline-flex;align-items:baseline;gap:4px;margin-top:4px}
+.sfc-ovr small{font-family:var(--font-label);font-size:8px;letter-spacing:1.5px;color:var(--stage-text-dim)}
+.sfc-ovr b{font-family:var(--font-display);font-size:28px;line-height:.85;color:var(--stage-text-main);font-variant-numeric:tabular-nums}
+.sfc-ovr-pair{display:flex;justify-content:center;gap:var(--space-md);margin-top:4px}
+
+/* 体力・消耗の行（ジュニアの開始HP行と同じ形。ラベル語だけ大会ごとに差し替える） */
+.sfc-hp-row{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;padding:6px 18px 2px}
+.sfc-hp-top{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-family:var(--font-label);
+  font-size:10px;letter-spacing:1px;color:var(--stage-text-sub)}
+.sfc-hp.right .sfc-hp-top{justify-content:flex-end}
+.sfc-hp-top strong{color:var(--stage-text-main)}
+.sfc-hp-top em{font-style:normal;color:var(--stage-text-dim)}
+.sfc-hp-track{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+.sfc-hp-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,rgba(var(--ev-rgb),.55),var(--ev-c))}
+.sfc-hp.right .sfc-hp-track{direction:rtl}
+.sfc-hp-mid{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--stage-text-dim);line-height:1.6}
+.sfc-bt{display:flex;justify-content:center;gap:10px;padding:12px 10px 16px;flex-wrap:wrap}
+
+/* 隊列（§2-B）。群の外枠は1つだけ・18px 重ね・drop-shadow・個々に額縁を付けない */
+.tro{display:inline-flex;align-items:flex-end;padding:8px 10px;border-radius:var(--radius-lg);
+  border:1px solid rgba(var(--ev-rgb),.28);background:rgba(255,255,255,.02);max-width:100%}
+.tro .tro-p{margin-left:-18px;filter:drop-shadow(0 6px 16px rgba(0,0,0,.6))}
+.tro .tro-p:first-child{margin-left:0}
+.tro-p{position:relative;aspect-ratio:2/3;flex:0 0 auto}
+.tro-p img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.tro-p.is-lead{z-index:3}
+.tro-p.is-out img{filter:grayscale(.9) brightness(.72)}
+/* 隊列の段。使うのは §2 の梯子から選んだ段だけ */
+.tro.sz-l .tro-p{width:150px}
+.tro.sz-m .tro-p{width:132px}
+.tro.sz-s .tro-p{width:108px}
+.tro.sz-chip .tro-p{width:46px}
+.tro.sz-mix .tro-p{width:132px}
+.tro.sz-mix .tro-p.is-lead{width:150px}
+/* 隊列の見出し（群の頭に乗せる。個々には付けない） */
+.tro-head{font-family:var(--font-label);font-size:11px;letter-spacing:2px;color:var(--ev-c);
+  text-transform:uppercase;margin-bottom:4px}
+
+/* 大会後の一言（ジュニアの試合後リアクションに相当。task-73 のコーチ総括とは別物） */
+.aft{max-width:560px;margin:var(--space-xl) auto 0;padding:var(--space-lg) var(--space-md);
+  border-top:1px solid var(--stage-border);text-align:center}
+.aft-kicker{font-family:var(--font-label);font-size:9px;letter-spacing:3px;color:var(--ev-c);
+  text-transform:uppercase;margin-bottom:var(--space-md)}
+.aft-bub-slot{min-height:52px;max-width:340px;margin:0 auto;display:flex;align-items:flex-end}
+.aft-block{display:inline-block;max-width:100%}
+.aft-nm{font-size:15px;font-weight:700;margin-top:var(--space-sm)}
+.aft-role{font-size:11px;color:var(--stage-text-sub);margin-top:2px}
+
+/* 共通ヘッダー（4大会で同じ形。エンブレム画像＋金の細二重罫） */
+.evh{text-align:center;padding:20px 12px 6px}
+.evh img{width:72px;height:72px;object-fit:contain;margin:0 auto 6px;filter:drop-shadow(0 2px 10px rgba(0,0,0,.6));display:block}
+.evh .crown{font-size:44px;line-height:72px;color:var(--gold)}
+.evh-title{font-family:var(--font-display);font-size:28px;letter-spacing:5px;color:var(--stage-text-main)}
+.evh-sub{font-family:var(--font-label);font-size:11px;letter-spacing:3px;color:var(--ev-c);text-transform:uppercase;margin-top:4px}
+.evh-ed{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);margin-top:5px;text-transform:uppercase}
+.evh-rule{width:280px;max-width:100%;margin:12px auto 6px;border-top:1px solid var(--gold);position:relative;opacity:.75}
+.evh-rule::after{content:'';position:absolute;left:20px;right:20px;top:3px;border-top:1px solid var(--gold);opacity:.55}
+
+/* 勝敗記号（§5-B。○＝勝ち ×＝負け △＝分け。LOSE の文字は使わない） */
+.mk-o{color:var(--ev-c)}
+.mk-x{color:var(--stage-text-dim)}
+.mk-d{color:var(--stage-text-sub)}
+
+/* ══════════════ ② 春のタッグリーグ 固有 ══════════════ */
+.stl2-table{width:100%;max-width:680px;margin:0 auto var(--space-lg);border-collapse:collapse}
+.stl2-table th{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);
+  text-transform:uppercase;font-weight:400;padding:6px 6px;border-bottom:1px solid var(--stage-border);text-align:left}
+.stl2-table th.r{text-align:right}
+.stl2-table td{padding:8px 6px;border-bottom:1px solid var(--stage-border);vertical-align:middle}
+.stl2-row.is-mine td{background:rgba(var(--gold-rgb),.05)}
+.stl2-rank{font-family:var(--font-display);font-size:28px;color:var(--stage-text-dim);width:30px;line-height:1;font-variant-numeric:tabular-nums}
+.stl2-row.is-rank1 .stl2-rank{color:var(--ev-c)}
+.stl2-team{display:flex;align-items:center;gap:var(--space-sm);min-width:0}
+.stl2-team .meta{min-width:0}
+.stl2-org{display:flex;align-items:center;gap:4px;font-family:var(--font-label);font-size:11px;
+  letter-spacing:1px;color:var(--stage-text-dim)}
+.stl2-org img{width:16px;height:16px;border-radius:2px;object-fit:cover}
+.stl2-pair-nm{font-size:13px;font-weight:700;color:var(--stage-text-main);line-height:1.3}
+.stl2-strip{font-family:var(--font-label);font-size:12px;letter-spacing:3px;margin-top:2px}
+.stl2-rec{font-size:11px;color:var(--stage-text-sub);white-space:nowrap}
+.stl2-bonus{font-size:10px;color:var(--ev-c);display:block}
+.stl2-pts{font-family:var(--font-display);font-size:28px;color:var(--gold-light);text-align:right;
+  line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stl2-pts small{font-family:var(--font-label);font-size:8px;letter-spacing:1.5px;color:var(--stage-text-dim);margin-left:2px}
+.stl2-wear{display:flex;align-items:center;gap:5px;margin-top:4px;font-family:var(--font-label);
+  font-size:9px;letter-spacing:.5px;color:var(--stage-text-dim)}
+.stl2-wear i{width:6px;height:6px;border-radius:50%;background:rgba(200,190,170,.15);display:block}
+.stl2-wear i.on{background:var(--ev-c)}
+.stl2-wear.is-tired i.on{background:var(--c-warning)}
+.stl2-wear.is-spent i.on{background:var(--c-negative)}
+/* リーグ表の中の顔は「2人1組」を示す小さな隊列。1:1 の丸顔をやめて chip 46×66（2:3）に */
+.stl2-team .tro{padding:3px 5px;border-radius:var(--radius-md)}
+.stl2-team .tro .tro-p{margin-left:-14px}
+.stl2-team .tro .tro-p:first-child{margin-left:0}
+
+/* ══════════════ ③ PPV GRAND FINAL ＝ 基準（現行のまま） ══════════════
+   src/index.html の .pb-* をそのまま複製したもの。設計変更はしていない。
+   PPV は冬の大会ではないので、冬エンブレム・冬カラーは持ち込まない。
+   既存のテーマは .pb-theme-ppv（緋 #d63d46 ＋ 金）で、これがそのまま PPV の顔。 */
+.pb-container{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:0 16px 40px}
+.pb-event-summary{--pb-event-accent:var(--ppv-red);--pb-event-accent-rgb:var(--ppv-red-rgb);--pb-event-metal:var(--gold-light);
+  border:1px solid rgba(var(--pb-event-accent-rgb),.2);border-radius:var(--radius-xl);overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.18))}
+.pb-event-summary .pb-banner{background:linear-gradient(180deg,rgba(var(--pb-event-accent-rgb),.13),rgba(var(--pb-event-accent-rgb),.025) 58%,transparent);border-bottom-color:rgba(var(--pb-event-accent-rgb),.22)}
+.pb-event-summary .pb-banner::before{background:linear-gradient(90deg,transparent,var(--pb-event-metal),transparent)}
+.pb-summary-emblem{width:58px;height:58px;margin:0 auto 9px;border:1px solid rgba(var(--pb-event-accent-rgb),.34);border-radius:11px;
+  display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.22);color:var(--pb-event-metal);
+  font-family:var(--font-display);font-size:28px;box-shadow:0 0 22px rgba(var(--pb-event-accent-rgb),.1)}
+.pb-event-summary .pb-attend-hero{position:relative;margin:16px;border:1px solid rgba(var(--pb-event-accent-rgb),.42);border-radius:14px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(var(--pb-event-accent-rgb),.17),rgba(0,0,0,.2) 68%);
+  box-shadow:0 18px 45px rgba(0,0,0,.28),inset 0 1px 0 rgba(var(--pb-event-accent-rgb),.22)}
+.pb-event-summary .pb-attend-hero::before{content:'';position:absolute;left:18%;right:18%;top:-1px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--pb-event-metal),transparent)}
+.pb-event-summary .pb-attend-hero-label{color:var(--pb-event-metal)}
+.pb-event-summary .pb-attend-hero-val{font-size:72px;color:var(--pb-event-metal);text-shadow:0 0 24px rgba(var(--pb-event-accent-rgb),.28)}
+.pb-event-summary .pb-attend-hero-bar{height:9px;background:rgba(0,0,0,.34);border:1px solid rgba(var(--pb-event-accent-rgb),.18)}
+.pb-event-summary .pb-attend-hero-bar-fill{background:linear-gradient(90deg,var(--pb-event-accent),var(--pb-event-metal));box-shadow:0 0 14px rgba(var(--pb-event-accent-rgb),.42)}
+
+.pb-banner{position:relative;margin-top:16px;padding:24px 24px 20px;text-align:center;
+  background:linear-gradient(180deg,rgba(212,168,67,0.08) 0%,rgba(0,0,0,0) 100%);border-bottom:1px solid rgba(212,168,67,0.15)}
+.pb-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.pb-live{display:inline-block;background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3);color:var(--gold);
+  font-family:var(--font-label);font-size:10px;font-weight:800;letter-spacing:3px;padding:3px 12px;border-radius:20px;margin-bottom:10px}
+.pb-live.is-ppv{background:linear-gradient(135deg,rgba(240,208,120,0.22),rgba(212,168,67,0.18));border-color:var(--gold-light);
+  color:var(--stage-text-main);text-shadow:0 0 12px rgba(240,208,120,0.6);letter-spacing:3.5px}
+.pb-banner-title{font-family:var(--font-display);font-size:32px;letter-spacing:4px;color:var(--gold);margin-bottom:6px}
+.pb-banner-title.is-ppv{font-size:40px;background:linear-gradient(180deg,var(--stage-text-main) 0%,var(--gold-light) 50%,var(--gold) 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;letter-spacing:6px}
+.pb-banner-sub{font-family:var(--font-label);font-size:12px;letter-spacing:3px;color:var(--stage-text-sub);text-transform:uppercase}
+.pb-banner-sub .dot{color:var(--stage-text-quiet);margin:0 8px}
+
+.pb-attend-hero{text-align:center;padding:28px 20px 22px;border-bottom:1px solid rgba(200,190,170,0.1);
+  background:linear-gradient(180deg,rgba(212,168,67,0.05),rgba(212,168,67,0.01))}
+.pb-attend-hero-label{font-family:var(--font-label);font-size:11px;letter-spacing:8px;color:var(--stage-text-dim);text-transform:uppercase;margin-bottom:10px}
+.pb-attend-hero-rating{font-family:var(--font-display);font-size:20px;letter-spacing:3px;font-weight:700;margin-bottom:12px}
+.pb-attend-hero-rating.is-sellout{color:var(--gold-light)}
+.pb-attend-hero-num{display:flex;align-items:baseline;justify-content:center;gap:6px;line-height:1;margin-bottom:12px;flex-wrap:wrap}
+.pb-attend-hero-val{font-family:var(--font-display);font-size:64px;letter-spacing:2px;color:var(--gold);line-height:1}
+.pb-attend-hero-sep{font-family:var(--font-display);font-size:32px;color:var(--stage-text-quiet);margin:0 4px}
+.pb-attend-hero-cap{font-family:var(--font-display);font-size:28px;color:var(--stage-text-dim);line-height:1}
+.pb-attend-hero-pct{font-family:var(--font-display);font-size:24px;letter-spacing:1px;margin-left:14px;font-weight:700}
+.pb-attend-hero-pct.is-sellout{color:var(--gold-light)}
+.pb-attend-hero-bar{width:100%;max-width:420px;margin:0 auto 10px;height:6px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden}
+.pb-attend-hero-bar-fill{height:100%;border-radius:3px}
+.pb-attend-hero-venue{font-family:var(--font-label);font-size:10px;letter-spacing:3px;color:var(--stage-text-dim);text-transform:uppercase}
+
+.pb-score-strip{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid rgba(200,190,170,0.08)}
+.pb-score-cell{text-align:center;padding:14px 10px;border-right:1px solid rgba(200,190,170,0.08);min-width:0}
+.pb-score-cell:last-child{border-right:none}
+.pb-score-val{font-family:var(--font-display);font-size:24px;letter-spacing:1.5px;color:var(--gold);line-height:1}
+.pb-score-val.is-neutral{color:var(--stage-text-main)}
+.pb-score-lbl{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase;margin-top:4px}
+.pb-score-stars{display:inline-flex;gap:1px;font-family:serif;font-size:13px;line-height:1}
+.pb-score-stars .star{color:var(--stage-text-quiet)}
+.pb-score-stars .star.on{color:var(--gold)}
+
+.pb-divider{text-align:center;font-family:var(--font-label);font-size:10px;font-weight:800;letter-spacing:4px;color:var(--stage-text-dim);
+  padding:8px 0 6px;background:rgba(200,190,170,0.02);border-bottom:1px solid rgba(200,190,170,0.08);text-transform:uppercase}
+.pb-divider.is-main{color:var(--gold);background:rgba(212,168,67,0.06);border-bottom-color:rgba(212,168,67,0.22);padding:12px 0 10px;font-size:11px;letter-spacing:5px}
+
+.pb-mrow{display:grid;grid-template-columns:1fr 240px 1fr;padding:22px 20px 18px;border-bottom:1px solid rgba(200,190,170,0.06);position:relative}
+.pb-mrow.is-main{background:linear-gradient(180deg,rgba(212,168,67,0.07) 0%,transparent 60%),rgba(255,255,255,0.015);
+  border-left:2px solid var(--gold);padding:32px 20px 24px}
+.pb-mrow.is-main::before{content:'★ MAIN EVENT';position:absolute;top:10px;left:16px;font-family:var(--font-label);
+  font-size:10px;letter-spacing:2.5px;font-weight:700;color:var(--gold);text-transform:uppercase}
+.pb-mrow.is-main.is-ppv{background:linear-gradient(180deg,rgba(212,168,67,0.12) 0%,rgba(212,168,67,0.03) 70%,transparent 100%),rgba(255,255,255,0.02);
+  border-left-width:3px;border-top:1px solid rgba(212,168,67,0.3);box-shadow:inset 0 0 60px rgba(212,168,67,0.06)}
+.pb-mrow.is-main.is-ppv::before{content:'🏆 SUMMIT';color:var(--gold-light);text-shadow:0 0 12px rgba(240,208,120,0.4)}
+
+.pb-fighter{display:flex;align-items:center;gap:14px;min-width:0}
+.pb-fighter.is-left{flex-direction:row-reverse;text-align:right}
+.pb-portrait{width:108px;height:162px;border-radius:6px;overflow:hidden;border:2px solid var(--stage-border);
+  background:linear-gradient(180deg,var(--pb-portrait-top),var(--pb-portrait-bottom));flex-shrink:0}
+.pb-portrait img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.pb-fighter.is-winner .pb-portrait{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,168,67,0.15),0 0 20px rgba(212,168,67,0.3)}
+.pb-fighter.is-loser .pb-portrait img{filter:grayscale(.9) brightness(.72)}
+.pb-fighter-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.pb-fighter-name{font-size:16px;font-weight:700;color:var(--stage-text-sub);letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb-fighter.is-winner .pb-fighter-name{color:var(--gold);font-weight:900}
+.pb-mrow.is-main .pb-fighter.is-winner .pb-fighter-name{font-size:18px}
+.pb-fighter-meta{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-quiet);text-transform:uppercase}
+.pb-fighter-ovr{display:flex;align-items:baseline;gap:6px;margin-top:3px}
+.pb-fighter.is-left .pb-fighter-ovr{justify-content:flex-end}
+.pb-fighter-ovr .lbl{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase}
+.pb-fighter-ovr .val{font-family:var(--font-display);font-size:38px;line-height:1;letter-spacing:1px;color:var(--stage-text-sub)}
+.pb-fighter.is-winner .pb-fighter-ovr .val{color:var(--gold-light)}
+.pb-fighter.is-loser .pb-fighter-ovr .val{color:var(--stage-text-dim)}
+.pb-mrow.is-main .pb-fighter-ovr .val{font-size:46px}
+
+.pb-result{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 16px;
+  border-left:1px solid rgba(200,190,170,0.06);border-right:1px solid rgba(200,190,170,0.06);min-width:0}
+.pb-result-vs{font-family:var(--font-display);font-size:16px;letter-spacing:3px;color:var(--stage-text-quiet)}
+.pb-result-winner{font-family:var(--font-label);font-size:11px;font-weight:700;letter-spacing:2.5px;color:var(--gold);text-transform:uppercase;white-space:nowrap}
+.pb-result-finish{font-size:12px;color:var(--stage-text-main);font-weight:700;line-height:1.4;letter-spacing:.3px;text-align:center}
+.pb-result-turns{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-dim);text-transform:uppercase}
+.pb-result-mq{display:flex;align-items:center;gap:5px;margin-top:3px}
+.pb-result-mq-stars{display:inline-flex;gap:1px;font-family:serif}
+.pb-result-mq-stars .star{color:var(--stage-text-quiet);font-size:13px;line-height:1}
+.pb-result-mq-stars .star.on{color:var(--gold)}
+.pb-result-mq-val{font-family:var(--font-display);font-size:16px;letter-spacing:1px;color:var(--gold)}
+.pb-mrow.is-main .pb-result-mq-val{font-size:20px}
+.pb-mrow-tags{grid-column:1 / -1;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding-top:12px;margin-top:12px;
+  border-top:1px dashed rgba(200,190,170,0.08)}
+.pb-tag{font-family:var(--font-label);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:2px;border:1px solid transparent}
+.pb-tag.is-title{color:var(--gold);background:rgba(212,168,67,0.1);border-color:rgba(212,168,67,0.3)}
+.pb-tag.is-rivalry{color:var(--c-rivalry,var(--c-warning));background:rgba(225,112,85,0.1);border-color:rgba(225,112,85,0.3)}
+.pb-tag.is-spotlight{color:var(--gold-light);background:rgba(240,208,120,0.08);border-color:rgba(240,208,120,0.25)}
+
+/* ══════════════ ④ 秋の4団体勝ち残り対抗戦 固有 ══════════════ */
+.agw2-score{display:flex;align-items:center;justify-content:center;gap:var(--space-lg);flex-wrap:wrap;
+  max-width:680px;margin:0 auto var(--space-md);padding:10px var(--space-sm);
+  border:1px solid rgba(var(--ev-rgb),.22);border-radius:var(--radius-lg);background:rgba(255,255,255,.02)}
+.agw2-score .side{display:flex;align-items:center;gap:6px;min-width:0}
+.agw2-score .side img{width:26px;height:26px;border-radius:var(--radius-sm);object-fit:cover}
+.agw2-score .side span{font-family:var(--font-label);font-size:11px;letter-spacing:1px;color:var(--stage-text-sub)}
+.agw2-score .num{font-family:var(--font-display);font-size:28px;color:var(--stage-text-main);
+  letter-spacing:2px;font-variant-numeric:tabular-nums}
+.agw2-score .round{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--stage-text-dim);
+  text-transform:uppercase;width:100%;text-align:center}
+/* 残り人数レール：3人を1つの隊列で。RING は手前・OUT は灰色化＋× */
+.agw2-rails{display:flex;justify-content:center;gap:var(--space-lg);flex-wrap:wrap;max-width:680px;margin:0 auto}
+.agw2-rail{text-align:center;min-width:0}
+.agw2-rail .cap{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-sub);
+  text-transform:uppercase;margin-bottom:4px}
+.agw2-rail .left{font-family:var(--font-display);font-size:28px;color:var(--ev-c);line-height:1}
+.agw2-rail .left small{font-family:var(--font-label);font-size:8px;letter-spacing:1.5px;color:var(--stage-text-dim);margin-left:3px}
+.agw2-state{display:flex;justify-content:center;gap:6px;margin-top:5px;font-family:var(--font-label);
+  font-size:9px;letter-spacing:1.5px;color:var(--stage-text-dim)}
+.agw2-state b{color:var(--ev-c);font-weight:600}
+.tro-p .badge{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);
+  font-family:var(--font-label);font-size:8px;letter-spacing:1px;line-height:1.4;padding:0 4px;border-radius:2px;
+  background:rgba(0,0,0,.72);color:var(--stage-text-sub)}
+.tro-p.is-lead .badge{color:var(--ev-c);border:1px solid rgba(var(--ev-rgb),.6)}
+
+/* ══════════════ 末尾リスト ══════════════ */
+.mk-changes{padding:var(--space-xl) var(--space-lg) 60px;border-top:2px solid var(--stage-border-main);
+  max-width:900px;margin:0 auto}
+.mk-changes h2{font-family:var(--font-display);font-size:28px;letter-spacing:4px;color:var(--gold);margin-bottom:var(--space-md)}
+.mk-changes h3{font-size:15px;font-weight:700;margin:var(--space-lg) 0 6px;color:var(--stage-text-main)}
+.mk-changes ol,.mk-changes ul{padding-left:20px;font-size:13px;color:var(--stage-text-sub)}
+.mk-changes li{margin-bottom:5px}
+.mk-changes li b{color:var(--stage-text-main)}
+.mk-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:var(--space-sm)}
+.mk-tbl th,.mk-tbl td{border:1px solid var(--stage-border);padding:6px 8px;text-align:left;vertical-align:top}
+.mk-tbl th{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-dim);
+  text-transform:uppercase;font-weight:400;background:rgba(255,255,255,.02)}
+.mk-tbl td{color:var(--stage-text-sub)}
+.mk-tbl td b{color:var(--stage-text-main)}
+
+/* ══════════════ 375px 対応 ══════════════
+   ・横スクロールを作らない。列が入らない場面は「段を1つ下げる」か「縦に積む」
+   ・梯子の外の独自サイズは作らない（L→M / M→S と段で落とす） */
+@media (max-width:700px){
+  .mk-screen{padding:var(--space-sm) var(--space-sm) var(--space-xl)}
+  .sfc-stage{column-gap:6px;padding:6px 4px}
+  .sfc-up{width:108px}                 /* 118 → S 108（梯子の段） */
+  .sfc-vs{font-size:28px}
+  .sfc-bub{font-size:11px;padding:7px 9px}
+  .sfc-nm .n{font-size:13px}
+  .sfc-ovr b{font-size:23px}
+  .sfc-hp-row{padding:6px 10px 2px;gap:8px}
+  .sfc-bt .btn{padding:8px 14px;font-size:12px}
+  .tro.sz-l .tro-p{width:132px}        /* L → M */
+  .tro.sz-m .tro-p{width:108px}        /* M → S */
+  .tro.sz-mix .tro-p{width:108px}
+  .tro.sz-mix .tro-p.is-lead{width:132px}
+  .tro.sz-s .tro-p{width:84px}         /* 2v2 の隊列は 4人ぶん入れる必要があるため縮める */
+  .stl2-table td,.stl2-table th{padding:7px 3px}
+  .stl2-rank{font-size:23px;width:22px}
+  .stl2-pts{font-size:23px}
+
+  /* ③ PPV は src/mobile.css の @media (max-width:700px) 内の .pb-* 規則をそのまま複製。
+     独自に作った狭幅対応ではなく、既存実装が既に持っている挙動 */
+  .pb-container{padding:0 6px 30px}
+  .pb-mrow,.pb-mrow.is-main{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 6px;padding:14px 7px 12px}
+  .pb-mrow.is-main{padding-top:30px}
+  .pb-container .pb-fighter{min-width:0;gap:6px}
+  .pb-container .pb-fighter.is-left{grid-column:1;grid-row:1}
+  .pb-container .pb-fighter.is-right{grid-column:2;grid-row:1}
+  .pb-container .pb-portrait{width:62px;height:93px}
+  .pb-container .pb-mrow.is-main .pb-portrait{width:68px;height:102px}
+  .pb-container .pb-fighter-name,
+  .pb-container .pb-mrow.is-main .pb-fighter.is-winner .pb-fighter-name{max-width:100%;font-size:12px}
+  .pb-container .pb-fighter-meta{font-size:8px;letter-spacing:.7px}
+  .pb-container .pb-fighter-ovr{gap:3px}
+  .pb-container .pb-fighter-ovr .lbl{font-size:8px;letter-spacing:1px}
+  .pb-container .pb-fighter-ovr .val,
+  .pb-container .pb-mrow.is-main .pb-fighter-ovr .val{font-size:27px}
+  .pb-container .pb-result{grid-column:1 / -1;grid-row:2;flex-flow:row wrap;justify-content:center;gap:5px 10px;
+    padding:8px 4px 7px;border:0;border-top:1px solid rgba(200,190,170,0.08);border-bottom:1px solid rgba(200,190,170,0.08)}
+  .pb-container .pb-result-vs{display:none}
+  .pb-container .pb-result-winner{flex-basis:100%;text-align:center}
+  .pb-container .pb-result-finish,.pb-container .pb-result-turns{font-size:10px}
+  .pb-container .pb-result-mq{margin-top:0}
+  .pb-container .pb-result-mq-stars .star{font-size:10px}
+  .pb-container .pb-result-mq-val,
+  .pb-container .pb-mrow.is-main .pb-result-mq-val{font-size:15px}
+  .pb-container .pb-mrow-tags{grid-column:1 / -1}
+  .pb-score-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pb-banner-title.is-ppv{font-size:32px;letter-spacing:4px}
+  .pb-event-summary .pb-attend-hero-val{font-size:52px}
+
+  /* ① ジュニアには一切手を入れない。src/mobile.css にも .jtc-* の狭幅上書きは無く、
+     118 / 76 / 132 のまま 375px に収まることを実測で確認済み。ここに override を書くと
+     「ジュニアは変更しない」を破ることになる */
+}
+/* 2対2は 375px で横に並べきれない（隊列2つ＋VS）。縦に積んで隊列は崩さない */
+@media (max-width:560px){
+  .sfc.is-tag .sfc-stage{grid-template-columns:1fr}
+  .sfc.is-tag .sfc-bub-slot.is-l{grid-area:1/1}
+  .sfc.is-tag .sfc-side.is-l{grid-area:2/1}
+  .sfc.is-tag .sfc-nm.is-l{grid-area:3/1}
+  .sfc.is-tag .sfc-vs{grid-area:4/1;font-size:26px}
+  .sfc.is-tag .sfc-bub-slot.is-r{grid-area:5/1}
+  .sfc.is-tag .sfc-side.is-r{grid-area:6/1}
+  .sfc.is-tag .sfc-nm.is-r{grid-area:7/1}
+  .sfc.is-tag .sfc-hp-row{grid-template-columns:1fr;gap:6px}
+  .sfc.is-tag .sfc-hp.right .sfc-hp-top{justify-content:flex-start}
+  .sfc.is-tag .sfc-hp.right .sfc-hp-track{direction:ltr}
+  .sfc.is-tag .tro.sz-s .tro-p{width:108px}
+}
+</style>
+</head>
+<body>
+
+<div class="mk-nav">
+  <h1>特別興行 作り直し MOCKUP v0.1</h1>
+  <span class="st">src 未変更</span>
+  <span class="st">作り直す対象 = 春 / 秋 の2つ</span>
+  <nav class="mk-jump">
+    <a href="#s1">① ジュニア（基準）</a>
+    <a href="#s2">② 春タッグ（提案）</a>
+    <a href="#s3">③ PPV（基準）</a>
+    <a href="#s4">④ 秋対抗戦（提案）</a>
+    <a href="#s5">判断が要る点</a>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     ① ジュニアトーナメント ＝ 基準。現行実装の写しであり、変更しない
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="mk-sec" id="s1" style="--ev-c:var(--ev-summer);--ev-rgb:var(--ev-summer-rgb)">
+  <div class="mk-sechd">
+    <span class="no">①</span>
+    <span class="ttl">ジュニアトーナメント</span>
+    <span class="mk-tag is-base">基準 — 現行のまま（変更しない）</span>
+  </div>
+
+  <div class="mk-screen" style="--jtc-color:var(--ev-summer);--jtc-color-rgb:var(--ev-summer-rgb)">
+
+    <div class="jtc-header">
+      <img class="jtc-header-emblem" src="../../../image/emblem-summer.png" alt="">
+      <div class="jtc-header-title">ジュニアトーナメント</div>
+      <div class="jtc-header-sub">Junior Cup</div>
+      <div class="jtc-header-ed">第7回大会</div>
+      <div class="jtc-double-rule"></div>
+    </div>
+
+    <!-- 進行の俯瞰：クライムライン（下から上へ勝ち上がる） -->
+    <div class="jtc-climb">
+      <div class="jtc-climb-note">Climb</div>
+
+      <div class="jtc-tier-label">王者</div>
+      <div class="jtc-peak jtc-peak-empty">
+        <div class="crest">👑</div>
+        <div class="cap">Vacant</div>
+      </div>
+      <div class="jtc-merge-peak">
+        <svg viewBox="0 0 16 26" preserveAspectRatio="none"><path d="M8 26 L8 0"></path></svg>
+      </div>
+
+      <div class="jtc-tier-label">決勝</div>
+      <div class="jtc-final-row jtc-size-lg">
+        <div class="jtc-fx">
+          <div class="jtc-up"></div>
+          <div class="jtc-fn">—</div>
+        </div>
+        <div class="jtc-vs">VS</div>
+        <div class="jtc-fx">
+          <div class="jtc-up"></div>
+          <div class="jtc-fn">—</div>
+        </div>
+      </div>
+      <div class="jtc-merge" style="grid-template-columns:1fr 1fr">
+        <div class="jtc-chev"><svg viewBox="0 0 100 24" preserveAspectRatio="none"><path d="M50 24 L50 12 L100 12 L100 0"></path></svg></div>
+        <div class="jtc-chev"><svg viewBox="0 0 100 24" preserveAspectRatio="none"><path d="M50 24 L50 12 L0 12 L0 0"></path></svg></div>
+      </div>
+
+      <div class="jtc-tier-label">準決勝</div>
+      <div class="jtc-row jtc-size-sm" style="grid-template-columns:1fr 1fr">
+        <div class="jtc-cell">
+          <div class="jtc-pair">
+            <div class="jtc-fx">
+              <div class="jtc-up w"><img src="../../../image/upper/upper_kinouchi_y.webp" alt=""></div>
+              <div class="jtc-fn">木ノ内幸音</div>
+              <div class="jtc-win-tag">○ WIN</div>
+            </div>
+            <div class="jtc-fx is-lose">
+              <div class="jtc-up l"><img src="../../../image/upper/upper_umegaoka_m.webp" alt=""></div>
+              <div class="jtc-fn">梅ヶ丘みのり</div>
+            </div>
+          </div>
+          <div class="jtc-minfo"><span class="t">12分00秒</span><span>/</span><span class="mq">MQ 71</span></div>
+        </div>
+        <div class="jtc-cell is-current">
+          <div class="jtc-pair">
+            <div class="jtc-fx">
+              <div class="jtc-up"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
+              <div class="jtc-fn">阿武隈塔子</div>
+            </div>
+            <div class="jtc-fx">
+              <div class="jtc-up"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
+              <div class="jtc-fn">出羽鷹子</div>
+            </div>
+          </div>
+          <div class="jtc-minfo"><span class="t">NEXT</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 次戦フォーカスカード（現行 _jtcFcCore の写し） -->
+    <div class="jtc-fc">
+      <div class="jtc-fc-lb">準決勝 — 第2試合</div>
+
+      <!-- 話者名は箱の中に書かない。下の名前ブロックと左右で対応する -->
+      <div class="jt-bub-pair">
+        <div class="jt-bub">「ここまで来たら、もう譲れない」</div>
+        <div class="jt-bub">「わたしの方が、長く待ってた」</div>
+      </div>
+
+      <div class="jtc-fc-uppers">
+        <div class="jtc-fc-upper is-l"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
+        <div class="vs-mark">VS</div>
+        <div class="jtc-fc-upper is-r"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
+        <div class="jtc-fc-nm is-l">
+          <div class="n">阿武隈塔子</div>
+          <div class="jtc-fc-statline">
+            <span class="jtc-fc-style">TECHNICIAN</span><span>AGE 21</span>
+            <span class="jtc-fc-ovr"><small>OVR</small><b>74</b></span>
+          </div>
+          <div class="o">ブルームハート<span class="jtc-own-pill">自</span></div>
+        </div>
+        <div class="jtc-fc-nm is-r">
+          <div class="n">出羽鷹子</div>
+          <div class="jtc-fc-statline">
+            <span class="jtc-fc-style">POWER</span><span>AGE 22</span>
+            <span class="jtc-fc-ovr"><small>OVR</small><b>71</b></span>
+          </div>
+          <div class="o">NOVA</div>
+        </div>
+      </div>
+
+      <div class="jtc-fc-hp-row">
+        <div class="jtc-fc-hp left">
+          <div class="jtc-fc-hp-top"><span>HP</span><strong>88 / 100</strong><em>88%</em></div>
+          <div class="jtc-fc-hp-track"><div class="jtc-fc-hp-fill" style="width:88%"></div></div>
+        </div>
+        <div class="jtc-fc-hp-mid">開始HP</div>
+        <div class="jtc-fc-hp right">
+          <div class="jtc-fc-hp-top"><em>73%</em><strong>73 / 100</strong><span>HP</span></div>
+          <div class="jtc-fc-hp-track"><div class="jtc-fc-hp-fill" style="width:73%"></div></div>
+        </div>
+      </div>
+
+      <div class="jtc-fc-bt">
+        <button class="btn btn-gold">観戦する</button>
+        <button class="btn">スキップ</button>
+      </div>
+    </div>
+
+    <!-- 大会後のコメント（現行あり） -->
+    <div class="aft">
+      <div class="aft-kicker">After the Cup</div>
+      <div class="aft-block">
+        <div class="aft-bub-slot"><div class="jt-bub" style="width:100%">「まだ、この続きがあるって思ってていいですか」</div></div>
+        <div style="width:108px;aspect-ratio:2/3;border-radius:var(--radius-sm);overflow:hidden;margin:8px auto 0;border-bottom:3px solid var(--ev-summer);background:var(--card-bg)">
+          <img src="../../../image/upper/upper_kinouchi_y.webp" alt="" style="width:100%;height:100%;object-fit:cover;object-position:top">
+        </div>
+        <div class="aft-nm">木ノ内幸音</div>
+        <div class="aft-role">第7回大会ジュニアチャンピオン</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mk-note">
+    <h4>この節の扱い</h4>
+    <ul>
+      <li><b>現行実装の写し</b>（クラス名も <code>.jtc-*</code> / <code>.jt-bub</code> のまま、値は <code>src/index.html</code> からのコピー）</li>
+      <li>② と ④ が持ってくるのはこの4つ ——
+        <b>①進行の俯瞰</b>（クライムライン） /
+        <b>②次戦フォーカスカード</b>（2:3 のアッパー・名前・所属・OVR・開始HP・観戦/スキップ） /
+        <b>③試合前のセリフ</b> /
+        <b>④大会後のコメント</b></li>
+      <li><b>1点だけ現行から変えている（2026-08-01 Keisuke 裁定）</b> —
+        <code>.jt-bub</code> の中にあった<b>話者名 <code>.sp</code> を削除</b>した。
+        「吹き出しの中に話者名・団体名は入れない」を<b>全画面に適用・ジュニアも例外にしない</b>という裁定のため。
+        話者は画像の下の名前で示す（吹き出しの左右と名前の左右が対応する）</li>
+      <li>※ ジュニアの吹き出しには<b>まだ尻尾が無い</b>（<code>.jt-bub-pair</code> は横並びの箱2つ）。
+        裁定は「話者名を外へ出す」1点なので、尻尾は今回<b>足していない</b>。別途の判断事項として末尾に残した</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     ② 春のタッグリーグ（提案）
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="mk-sec" id="s2" style="--ev-c:var(--ev-spring);--ev-rgb:var(--ev-spring-rgb)">
+  <div class="mk-sechd">
+    <span class="no">②</span>
+    <span class="ttl">春のタッグリーグ</span>
+    <span class="mk-tag is-new">提案</span>
+  </div>
+
+  <div class="mk-screen">
+
+    <div class="evh">
+      <img src="../../../image/emblem-spring.png" alt="">
+      <div class="evh-title">春のタッグリーグ</div>
+      <div class="evh-sub">Spring Tag League</div>
+      <div class="evh-ed">第7回大会 ・ リーグ 第3試合まで終了</div>
+      <div class="evh-rule"></div>
+    </div>
+
+    <!-- 【固有・残す】総当たりの順位表と勝ち点。2人1組であること -->
+    <table class="stl2-table">
+      <tr><th style="width:30px"></th><th>チーム</th><th>戦績</th><th class="r">勝ち点</th></tr>
+
+      <tr class="stl2-row is-mine is-rank1">
+        <td class="stl2-rank">1</td>
+        <td>
+          <div class="stl2-team">
+            <span class="tro sz-chip">
+              <span class="tro-p is-lead"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></span>
+              <span class="tro-p"><img src="../../../image/upper/upper_sawade_m.webp" alt=""></span>
+            </span>
+            <span class="meta">
+              <span class="stl2-org"><img src="../../../image/org/org-player-3.png" alt="">★ 自団体 ブルームハート</span>
+              <span class="stl2-pair-nm">阿武隈塔子 &amp; 澤出みずき</span>
+              <span class="stl2-strip"><span class="mk-o">○</span><span class="mk-o">○</span><span class="mk-d">△</span></span>
+              <span class="stl2-wear is-fresh"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i>元気</span>
+            </span>
+          </div>
+        </td>
+        <td class="stl2-rec">2勝0敗1分<span class="stl2-bonus">接戦 +1</span></td>
+        <td class="stl2-pts">8<small>PT</small></td>
+      </tr>
+
+      <tr class="stl2-row">
+        <td class="stl2-rank">2</td>
+        <td>
+          <div class="stl2-team">
+            <span class="tro sz-chip">
+              <span class="tro-p is-lead"><img src="../../../image/upper/upper_aizawa_m.webp" alt=""></span>
+              <span class="tro-p"><img src="../../../image/upper/upper_sonobe_r.webp" alt=""></span>
+            </span>
+            <span class="meta">
+              <span class="stl2-org"><img src="../../../image/org/org-s-1.png" alt="">NOVA</span>
+              <span class="stl2-pair-nm">相沢未来 &amp; 園部梨花</span>
+              <span class="stl2-strip"><span class="mk-o">○</span><span class="mk-x">×</span><span class="mk-o">○</span></span>
+              <span class="stl2-wear is-tired"><i class="on"></i><i class="on"></i><i></i><i></i><i></i>疲れが見える</span>
+            </span>
+          </div>
+        </td>
+        <td class="stl2-rec">2勝1敗</td>
+        <td class="stl2-pts">6<small>PT</small></td>
+      </tr>
+
+      <tr class="stl2-row">
+        <td class="stl2-rank">3</td>
+        <td>
+          <div class="stl2-team">
+            <span class="tro sz-chip">
+              <span class="tro-p is-lead"><img src="../../../image/upper/upper_kuroiwa_c.webp" alt=""></span>
+              <span class="tro-p"><img src="../../../image/upper/upper_asami_r.webp" alt=""></span>
+            </span>
+            <span class="meta">
+              <span class="stl2-org"><img src="../../../image/org/org-a-2.png" alt="">EMPRESS</span>
+              <span class="stl2-pair-nm">黒岩千晶 &amp; 浅見里緒菜</span>
+              <span class="stl2-strip"><span class="mk-x">×</span><span class="mk-o">○</span><span class="mk-d">△</span></span>
+              <span class="stl2-wear is-tired"><i class="on"></i><i class="on"></i><i></i><i></i><i></i>疲れが見える</span>
+            </span>
+          </div>
+        </td>
+        <td class="stl2-rec">1勝1敗1分</td>
+        <td class="stl2-pts">4<small>PT</small></td>
+      </tr>
+
+      <tr class="stl2-row">
+        <td class="stl2-rank">4</td>
+        <td>
+          <div class="stl2-team">
+            <span class="tro sz-chip">
+              <span class="tro-p is-lead"><img src="../../../image/upper/upper_isehara_f.webp" alt=""></span>
+              <span class="tro-p"><img src="../../../image/upper/upper_ebina_s.webp" alt=""></span>
+            </span>
+            <span class="meta">
+              <span class="stl2-org"><img src="../../../image/org/org-b-0.png" alt="">CRESCENT</span>
+              <span class="stl2-pair-nm">伊勢原文奈 &amp; 海老名栞</span>
+              <span class="stl2-strip"><span class="mk-x">×</span><span class="mk-x">×</span><span class="mk-x">×</span></span>
+              <span class="stl2-wear is-spent"><i class="on"></i><i></i><i></i><i></i><i></i>満身創痍</span>
+            </span>
+          </div>
+        </td>
+        <td class="stl2-rec">0勝3敗</td>
+        <td class="stl2-pts">0<small>PT</small></td>
+      </tr>
+    </table>
+
+    <!-- 【ジュニアから移植】次戦フォーカスカード。2人1組なので隊列で組む -->
+    <div class="sfc is-tag">
+      <div class="sfc-lb">リーグ 第4試合</div>
+
+      <div class="sfc-stage">
+        <!-- 左：吹き出し（尻尾は「話している人の画像の中心」を指す＝隊列の左側 27%） -->
+        <div class="sfc-bub-slot is-l">
+          <div class="sfc-bub" style="--tail-x:27%">後ろは気にしなくていい。前だけ見て入って。</div>
+        </div>
+        <div class="sfc-side is-l">
+          <span class="tro sz-s">
+            <span class="tro-p is-lead"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></span>
+            <span class="tro-p"><img src="../../../image/upper/upper_sawade_m.webp" alt=""></span>
+          </span>
+        </div>
+        <div class="sfc-nm is-l">
+          <div class="n">阿武隈塔子 &amp; 澤出みずき</div>
+          <div class="role">リーグ首位 ・ 2人1組</div>
+          <div class="sfc-badge is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></div>
+          <div class="sfc-ovr-pair">
+            <span class="sfc-ovr"><small>OVR</small><b>84</b></span>
+            <span class="sfc-ovr"><small>OVR</small><b>79</b></span>
+          </div>
+        </div>
+
+        <div class="sfc-vs">VS</div>
+
+        <!-- 右：発言は1人。もう1人ぶんの箱は出さない（§2-B 発言しない人は枠だけ） -->
+        <div class="sfc-bub-slot is-r">
+          <div class="sfc-bub" style="--tail-x:73%">首位だからって、上から来られるのは好かん。</div>
+        </div>
+        <div class="sfc-side is-r">
+          <span class="tro sz-s">
+            <span class="tro-p"><img src="../../../image/upper/upper_aizawa_m.webp" alt=""></span>
+            <span class="tro-p is-lead"><img src="../../../image/upper/upper_sonobe_r.webp" alt=""></span>
+          </span>
+        </div>
+        <div class="sfc-nm is-r">
+          <div class="n">相沢未来 &amp; 園部梨花</div>
+          <div class="role">リーグ2位 ・ 2人1組</div>
+          <div class="sfc-badge"><img src="../../../image/org/org-s-1.png" alt=""><span>NOVA</span></div>
+          <div class="sfc-ovr-pair">
+            <span class="sfc-ovr"><small>OVR</small><b>81</b></span>
+            <span class="sfc-ovr"><small>OVR</small><b>83</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 【固有】連戦消耗はチーム単位。数値は出さず定性3段（既存ルール） -->
+      <div class="sfc-hp-row">
+        <div class="sfc-hp left">
+          <div class="sfc-hp-top"><span>チーム消耗</span><strong>元気</strong></div>
+          <div class="sfc-hp-track"><div class="sfc-hp-fill" style="width:86%"></div></div>
+        </div>
+        <div class="sfc-hp-mid">開始コンディション</div>
+        <div class="sfc-hp right">
+          <div class="sfc-hp-top"><strong>疲れが見える</strong><span>チーム消耗</span></div>
+          <div class="sfc-hp-track"><div class="sfc-hp-fill" style="width:58%"></div></div>
+        </div>
+      </div>
+
+      <div class="sfc-bt">
+        <button class="btn btn-gold">観戦する</button>
+        <button class="btn">結果を見る ▶</button>
+      </div>
+    </div>
+
+    <!-- 【ジュニアから移植】大会後のコメント。優勝は2人1組なので隊列＋発言は1人 -->
+    <div class="aft">
+      <div class="aft-kicker">After the League</div>
+      <div class="aft-block">
+        <div class="aft-bub-slot"><div class="sfc-bub" style="--tail-x:29%">二人で獲ったので、片方だけ名前が残るのは嫌ですね。</div></div>
+        <div style="margin-top:8px">
+          <span class="tro sz-l">
+            <span class="tro-p is-lead"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></span>
+            <span class="tro-p"><img src="../../../image/upper/upper_sawade_m.webp" alt=""></span>
+          </span>
+        </div>
+        <div class="aft-nm">阿武隈塔子 &amp; 澤出みずき</div>
+        <div class="aft-role">第7回大会 総合ベストタッグ</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mk-note">
+    <h4>ジュニアから持ってきたもの（現 <span class="arrow">→</span> 変）</h4>
+    <ul>
+      <li><b>次戦カード</b>：小さい丸顔2つ＋名前だけ（<code>.stl-match-preview</code> / 62px 丸顔） <span class="arrow">→</span> ジュニアと同じフォーカスカード。<b>2:3 の隊列・名前・役割・団体バッジ・OVR・開始コンディション・観戦/結果の2ボタン</b></li>
+      <li><b>試合前のセリフ</b>：無し <span class="arrow">→</span> 画像の上に吹き出し（予約枠52px・尻尾は話者の画像中心）</li>
+      <li><b>大会後のコメント</b>：無し <span class="arrow">→</span> 優勝タッグの一言。<b>2人のうち発言するのは1人</b>、もう1人は枠だけ置いて箱は出さない</li>
+      <li><b>戦績の見せ方</b>：「2勝1敗」の文字だけ <span class="arrow">→</span> <b>○×△ のストリップ</b>を足して、リーグ表そのものが「進行の俯瞰」になる（ジュニアのブラケットに対応するもの）</li>
+      <li><b>リーグ表の顔</b>：42px の<b>丸顔</b>2枚 <span class="arrow">→</span> <b>chip 46×66（2:3）の隊列</b>。丸は通知・トースト専用（§2-B）で、一覧の主役には使わない</li>
+    </ul>
+    <h4>春の固有として残したもの</h4>
+    <ul>
+      <li><b>総当たりの順位表と勝ち点</b>（この画面の主役。試合結果より順位の動きが上）</li>
+      <li><b>勝ち点の数字と接戦ボーナス +1</b>（<code>display</code> 28px・金）</li>
+      <li><b>2人1組であること</b>：順位表も次戦カードも大会後も、<b>全部が対（つい）で出る</b>。単独の顔にしない</li>
+      <li><b>連戦消耗</b>：チーム単位の定性3段（元気 / 疲れが見える / 満身創痍）。数値は出さない</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     ③ PPV GRAND FINAL（提案）
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="mk-sec" id="s3" style="--ev-c:var(--ppv-red);--ev-rgb:var(--ppv-red-rgb)">
+  <div class="mk-sechd">
+    <span class="no">③</span>
+    <span class="ttl">PPV GRAND FINAL</span>
+    <span class="mk-tag is-base">基準 — 現行のまま（変更しない）</span>
+  </div>
+
+  <div class="mk-screen">
+
+    <!-- 現行実装の写し。.pb-* のクラス名・値とも src/index.html のまま。
+         PPV は冬の大会ではないので、冬エンブレム（emblem-winter.png）も
+         冬カラー（--ev-winter）も使わない。既存テーマ .pb-theme-ppv は緋＋金。 -->
+    <div class="pb-container">
+      <div class="pb-event-summary">
+
+        <div class="pb-banner">
+          <div class="pb-summary-emblem">♛</div>
+          <div class="pb-live is-ppv">PPV LIVE</div>
+          <div class="pb-banner-title is-ppv">GRAND FINAL</div>
+          <div class="pb-banner-sub">第7回大会<span class="dot">・</span>第48週<span class="dot">・</span>全国生中継</div>
+        </div>
+
+        <div class="pb-attend-hero">
+          <div class="pb-attend-hero-label">本日の動員</div>
+          <div class="pb-attend-hero-rating is-sellout">SELL OUT</div>
+          <div class="pb-attend-hero-num">
+            <span class="pb-attend-hero-val">18,400</span>
+            <span class="pb-attend-hero-sep">/</span>
+            <span class="pb-attend-hero-cap">18,400</span>
+            <span class="pb-attend-hero-pct is-sellout">100%</span>
+          </div>
+          <div class="pb-attend-hero-bar"><div class="pb-attend-hero-bar-fill" style="width:100%"></div></div>
+          <div class="pb-attend-hero-venue">ドーム</div>
+        </div>
+
+        <div class="pb-score-strip">
+          <div class="pb-score-cell">
+            <div class="pb-score-val">4.6</div>
+            <div class="pb-score-stars"><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span></div>
+            <div class="pb-score-lbl">Show Rating</div>
+          </div>
+          <div class="pb-score-cell">
+            <div class="pb-score-val is-neutral">7</div>
+            <div class="pb-score-lbl">Matches</div>
+          </div>
+          <div class="pb-score-cell">
+            <div class="pb-score-val">92</div>
+            <div class="pb-score-lbl">Best MQ</div>
+          </div>
+          <div class="pb-score-cell">
+            <div class="pb-score-val">+2,860</div>
+            <div class="pb-score-lbl">興行収益 万</div>
+          </div>
+        </div>
+
+        <div class="pb-divider is-main">Summit</div>
+
+        <div class="pb-mrow is-main is-ppv">
+          <div class="pb-fighter is-left is-winner">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></div>
+            <div class="pb-fighter-info">
+              <div class="pb-fighter-name">白銀麗子</div>
+              <div class="pb-fighter-meta">ブルームハート</div>
+              <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">91</span></div>
+            </div>
+          </div>
+          <div class="pb-result">
+            <div class="pb-result-vs">VS</div>
+            <div class="pb-result-winner">白銀麗子 WIN</div>
+            <div class="pb-result-finish">片翼の天使</div>
+            <div class="pb-result-turns">21分00秒</div>
+            <div class="pb-result-mq">
+              <span class="pb-result-mq-stars"><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span></span>
+              <span class="pb-result-mq-val">92</span>
+            </div>
+          </div>
+          <div class="pb-fighter is-right is-loser">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_morgan_r.webp" alt=""></div>
+            <div class="pb-fighter-info">
+              <div class="pb-fighter-name">リナ・モーガン</div>
+              <div class="pb-fighter-meta">NOVA</div>
+              <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">93</span></div>
+            </div>
+          </div>
+          <div class="pb-mrow-tags">
+            <span class="pb-tag is-title">王座防衛</span>
+            <span class="pb-tag is-rivalry">因縁決着</span>
+            <span class="pb-tag is-spotlight">歴代最高MQ</span>
+          </div>
+        </div>
+
+        <div class="pb-divider">Undercard</div>
+
+        <div class="pb-mrow">
+          <div class="pb-fighter is-left is-winner">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_todoroki_a.webp" alt=""></div>
+            <div class="pb-fighter-info">
+              <div class="pb-fighter-name">等々力あかね</div>
+              <div class="pb-fighter-meta">ブルームハート</div>
+              <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">87</span></div>
+            </div>
+          </div>
+          <div class="pb-result">
+            <div class="pb-result-vs">VS</div>
+            <div class="pb-result-winner">等々力あかね WIN</div>
+            <div class="pb-result-finish">雷光ドライバー</div>
+            <div class="pb-result-turns">16分30秒</div>
+            <div class="pb-result-mq">
+              <span class="pb-result-mq-stars"><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span></span>
+              <span class="pb-result-mq-val">84</span>
+            </div>
+          </div>
+          <div class="pb-fighter is-right is-loser">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_katagiri_a.webp" alt=""></div>
+            <div class="pb-fighter-info">
+              <div class="pb-fighter-name">片桐ありさ</div>
+              <div class="pb-fighter-meta">EMPRESS</div>
+              <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">85</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-mrow">
+          <div class="pb-fighter is-left is-winner">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_kikuchi_r.webp" alt=""></div>
+            <div class="pb-fighter-info">
+              <div class="pb-fighter-name">菊池璃子</div>
+              <div class="pb-fighter-meta">CRESCENT</div>
+              <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">80</span></div>
+            </div>
+          </div>
+          <div class="pb-result">
+            <div class="pb-result-vs">VS</div>
+            <div class="pb-result-winner">菊池璃子 WIN</div>
+            <div class="pb-result-finish">丸め込み</div>
+            <div class="pb-result-turns">12分00秒</div>
+            <div class="pb-result-mq">
+              <span class="pb-result-mq-stars"><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span></span>
+              <span class="pb-result-mq-val">78</span>
+            </div>
+          </div>
+          <div class="pb-fighter is-right is-loser">
+            <div class="pb-portrait"><img src="../../../image/upper/upper_negishi_a.webp" alt=""></div>
+            <div class="pb-fighter-info">
+              <div class="pb-fighter-name">根岸亞里亞</div>
+              <div class="pb-fighter-meta">NOVA</div>
+              <div class="pb-fighter-ovr"><span class="lbl">OVR</span><span class="val">82</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="mk-note">
+    <h4>この節の扱い（2026-08-01 差し戻し）</h4>
+    <ul>
+      <li><b>PPV は作り直さない。現行の見た目をそのまま置く。</b>
+        Keisuke 裁定「PPV はこの冬っていうのは使わないですし、冬的なイメージカラーも使いません。
+        今までの既存であった PPV のそのままでいいと思っています」</li>
+      <li>前版で置いていた <b>冬の丸エンブレム（<code>emblem-winter.png</code>）を撤去</b>。
+        <b><code>--ev-winter</code> / <code>--ev-winter-rgb</code> も定義ごと削除</b>した。
+        PPV は冬の大会ではないので、季節のカラーキーに乗せない</li>
+      <li>前版の提案（次戦フォーカスカード / 進行の俯瞰 / 試合前セリフ / 大会後コメント）は<b>すべて取り下げ</b>。
+        <code>.ppv2-*</code> の独自CSSも削除し、<b><code>.pb-*</code> をそのまま複製</b>している</li>
+      <li>PPV の顔は既存の <code>.pb-theme-ppv</code>（<b>緋 <code>#d63d46</code> ＋ 金</b>）＋
+        <code>♛</code> の <code>.pb-summary-emblem</code>。これが元から PPV の識別色で、冬とは無関係</li>
+      <li>「動員の 64px を例外として認めるか」という論点は、<b>既存維持なので消滅</b>した</li>
+      <li>結果として、<b>このモックで作り直す対象は ② 春タッグ と ④ 秋対抗戦 の2つ</b>になる</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     ④ 秋の4団体勝ち残り対抗戦（提案）
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="mk-sec" id="s4" style="--ev-c:var(--ev-autumn);--ev-rgb:var(--ev-autumn-rgb)">
+  <div class="mk-sechd">
+    <span class="no">④</span>
+    <span class="ttl">秋の4団体勝ち残り対抗戦</span>
+    <span class="mk-tag is-new">提案</span>
+  </div>
+
+  <div class="mk-screen">
+
+    <div class="evh">
+      <img src="../../../image/emblem-autumn.png" alt="">
+      <div class="evh-title">4団体勝ち残り対抗戦</div>
+      <div class="evh-sub">Autumn Survival War</div>
+      <div class="evh-ed">第7回大会 ・ 第36週</div>
+      <div class="evh-rule"></div>
+    </div>
+
+    <!-- 【固有・残す】団体スコア。em ダッシュ区切り（§5-B） -->
+    <div class="agw2-score">
+      <span class="round">Final</span>
+      <span class="side"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></span>
+      <span class="num">2 — 1</span>
+      <span class="side"><span>EMPRESS</span><img src="../../../image/org/org-a-2.png" alt=""></span>
+    </div>
+
+    <!-- 【固有・残す】3人勝ち抜きの残り人数と、リングに残っている側 -->
+    <div class="agw2-rails">
+      <div class="agw2-rail">
+        <div class="cap">残り <span class="left">2<small>人</small></span></div>
+        <span class="tro sz-chip">
+          <span class="tro-p is-out"><img src="../../../image/upper/upper_togane_s.webp" alt=""><span class="badge">× OUT</span></span>
+          <span class="tro-p is-lead"><img src="../../../image/upper/upper_aikawa_a.webp" alt=""><span class="badge">RING</span></span>
+          <span class="tro-p"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""><span class="badge">WAIT</span></span>
+        </span>
+        <div class="agw2-state">先鋒 × ・ 中堅 <b>RING</b> ・ 大将 WAIT</div>
+      </div>
+
+      <div class="agw2-rail">
+        <div class="cap">残り <span class="left">2<small>人</small></span></div>
+        <span class="tro sz-chip">
+          <span class="tro-p"><img src="../../../image/upper/upper_asami_r.webp" alt=""><span class="badge">WAIT</span></span>
+          <span class="tro-p is-lead"><img src="../../../image/upper/upper_kuroiwa_c.webp" alt=""><span class="badge">RING</span></span>
+          <span class="tro-p is-out"><img src="../../../image/upper/upper_fukuura_r.webp" alt=""><span class="badge">× OUT</span></span>
+        </span>
+        <div class="agw2-state">大将 WAIT ・ 中堅 <b>RING</b> ・ 先鋒 ×</div>
+      </div>
+    </div>
+
+    <!-- 【ジュニアから移植】次戦フォーカスカード。ここが最大の欠落だった（画像が1枚も無かった） -->
+    <div class="sfc">
+      <div class="sfc-lb">決勝 — 第3フォール</div>
+
+      <div class="sfc-stage">
+        <div class="sfc-bub-slot is-l">
+          <div class="sfc-bub">二人抜いた。あと一人、連れて行かせて。</div>
+        </div>
+        <div class="sfc-bub-slot is-r">
+          <div class="sfc-bub">そこで止まってもらう。うちの大将までは行かせん。</div>
+        </div>
+
+        <div class="sfc-side is-l"><span class="sfc-up" style="display:block"><img src="../../../image/upper/upper_aikawa_a.webp" alt=""></span></div>
+        <div class="sfc-vs">VS</div>
+        <div class="sfc-side is-r"><span class="sfc-up" style="display:block"><img src="../../../image/upper/upper_kuroiwa_c.webp" alt=""></span></div>
+
+        <div class="sfc-nm is-l">
+          <div class="n">愛川明日香</div>
+          <div class="role">中堅 ・ 2人抜き中</div>
+          <div class="sfc-badge is-own"><img src="../../../image/org/org-player-3.png" alt=""><span>ブルームハート</span></div>
+          <div><span class="sfc-ovr"><small>OVR</small><b>86</b></span></div>
+        </div>
+        <div class="sfc-nm is-r">
+          <div class="n">黒岩千晶</div>
+          <div class="role">中堅 ・ 初戦</div>
+          <div class="sfc-badge"><img src="../../../image/org/org-a-2.png" alt=""><span>EMPRESS</span></div>
+          <div><span class="sfc-ovr"><small>OVR</small><b>88</b></span></div>
+        </div>
+      </div>
+
+      <!-- 【固有】勝ち抜きなので左は消耗持ち越し・右は上がりたて。上限は大会上限80基準 -->
+      <div class="sfc-hp-row">
+        <div class="sfc-hp left">
+          <div class="sfc-hp-top"><span>COND</span><strong>消耗が大きい</strong></div>
+          <div class="sfc-hp-track"><div class="sfc-hp-fill" style="width:41%"></div></div>
+        </div>
+        <div class="sfc-hp-mid">開始コンディション</div>
+        <div class="sfc-hp right">
+          <div class="sfc-hp-top"><strong>元気</strong><span>COND</span></div>
+          <div class="sfc-hp-track"><div class="sfc-hp-fill" style="width:88%"></div></div>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:var(--stage-text-sub);padding:2px 12px 0">勝者はリングに残り、敗者側の次の選手が登場</div>
+
+      <div class="sfc-bt">
+        <button class="btn btn-gold">観戦する</button>
+        <button class="btn">この試合の結果を見る ▶</button>
+        <button class="btn">まとめてスキップ</button>
+      </div>
+    </div>
+
+    <!-- 【ジュニアから移植】大会後のコメント。優勝は3人の隊列、話すのは1人 -->
+    <div class="aft">
+      <div class="aft-kicker">After the War</div>
+      <div class="aft-block">
+        <div class="tro-head">第7回大会 優勝 ・ ブルームハート</div>
+        <div class="aft-bub-slot"><div class="sfc-bub">わたしが抜いたんじゃなくて、前の二人が削ってくれた分です。</div></div>
+        <div style="margin-top:8px">
+          <span class="tro sz-mix">
+            <span class="tro-p"><img src="../../../image/upper/upper_togane_s.webp" alt=""></span>
+            <span class="tro-p is-lead"><img src="../../../image/upper/upper_aikawa_a.webp" alt=""></span>
+            <span class="tro-p"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></span>
+          </span>
+        </div>
+        <div class="aft-nm">愛川明日香</div>
+        <div class="aft-role">大会MVP ・ 通算4人抜き</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mk-note">
+    <h4>ジュニアから持ってきたもの（現 <span class="arrow">→</span> 変）</h4>
+    <ul>
+      <li><b>次戦カードの選手画像</b>：<b>画像が1枚も無い</b>（名前ボタンと消耗バーだけ） <span class="arrow">→</span> ジュニアと同じ <b>2:3 のアッパー対面</b>。誰が出ているか顔で分かる。<b>左右とも反転しない</b></li>
+      <li><b>名前・所属・OVR</b>：名前だけ <span class="arrow">→</span> 名前 → 役割ラベル → 団体バッジ → OVR の固定順</li>
+      <li><b>試合前のセリフ</b>：あり（<code>.agw-champion-speech</code>系・左揃えで通常フロー） <span class="arrow">→</span> ジュニアと同じ<b>画像の上・尻尾つき・予約枠</b>の吹き出しに寄せる</li>
+      <li><b>大会後のコメント</b>：MVP一言はあるが選手の総括が無い <span class="arrow">→</span> 優勝3名の隊列＋<b>話すのは1人</b>。残り2人は枠だけで箱は出さない</li>
+    </ul>
+    <h4>秋の固有として残したもの</h4>
+    <ul>
+      <li><b>3人勝ち抜きの残り人数</b>：両団体の3名を1つの隊列にして、<b>RING / WAIT / × OUT</b> を画像の上に置く。脱落者は <code>grayscale(.9) brightness(.72)</code> で灰色化（行は消さない）</li>
+      <li><b>リングに残っている side</b>：RING の1人だけ <code>z-index</code> で手前・大会色の縁。「今このリングにいるのはこの子」が図で分かる</li>
+      <li><b>「N人抜き中」</b>を役割ラベルに置いて、消耗を持ち越していることの理由を出す</li>
+      <li><b>3つの操作</b>（観戦する / この試合の結果を見る / まとめてスキップ）。他の大会は2つだが、秋だけは団体戦をまとめて畳める必要がある</li>
+      <li><b>団体スコアの em ダッシュ</b> <code>2 — 1</code>（§5-B の書式）</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     末尾リスト
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="mk-changes" id="s5">
+  <h2>変更点と、判断が要る点</h2>
+
+  <h3>0. 2026-08-01 レビューの反映</h3>
+  <ul>
+    <li><b>PPV は差し戻し。作り直さない。</b> 冬の丸エンブレムと冬カラーを撤去し、<code>--ev-winter</code> /
+      <code>--ev-winter-rgb</code> は<b>定義ごと削除</b>。§③ は <code>.pb-*</code> の写しに置き換えた（①と同じ「基準」扱い）。
+      <b>作り直す対象は ② 春タッグ と ④ 秋対抗戦 の2つ</b></li>
+    <li><b>吹き出しの中に話者名・団体名は入れない</b>を全画面に適用。<b>①ジュニアも例外にしない</b>裁定が出たので、
+      <code>.jt-bub .sp</code> を規則ごと削除した</li>
+    <li><b>春の OVR 2つはこのままで OK</b>（チーム平均に変えない）— 判断待ちから外した</li>
+    <li>秋の選手画像・春の次戦カード・進行の俯瞰は<b>そのまま通過</b></li>
+  </ul>
+
+  <h3>1. 共通部品 <code>.sfc</code> を1つ作る（これがこのモックの本体）</h3>
+  <ul>
+    <li>ジュニアの <code>_jtcFcCore</code> / <code>.jtc-fc-*</code> を<b>春・秋にも使えるよう一般化</b>したもの。骨格・サイズ・余白はジュニアと同じで、大会色だけ <code>--ev-c</code> / <code>--ev-rgb</code> で差し替える（ジュニアの <code>--jtc-color</code> と同じ仕組み）</li>
+    <li>実装時は<b>ジュニアと天頂戦が既に乗っている <code>_jtcFcCore</code> を拡張する</b>のが筋。新しい部品を別に作らない</li>
+    <li>拡張が必要なのは3点 —
+      (a) 吹き出しを<b>予約枠＋尻尾＋話者名は箱の外</b>にする、
+      (b) 名前ブロックに<b>役割ラベル</b>と<b>団体バッジ</b>の段を足す、
+      (c) 左右を<b>隊列</b>にできるようにする（春の2対2用）</li>
+    <li><b>PPV には入れない。</b> PPV は既存のままなので、この部品の適用先は<b>春・秋（＋既存のジュニア・天頂戦）</b>だけ</li>
+  </ul>
+
+  <h3>2. 判断が要る点</h3>
+  <ol>
+    <li><b>ジュニアの吹き出しに尻尾が無い。</b> 話者名は裁定どおり箱の外へ出したが、
+      <code>.jt-bub-pair</code> は今も<b>横並びの箱2つ</b>で、尻尾が無い（②④は尻尾つき）。
+      裁定は「名前を外へ出す」1点だったので<b>今回は足していない</b>。ジュニアにも尻尾を付けて揃えるかどうか</li>
+    <li><b>次戦カードの画像サイズ 118×177。</b> ジュニアの実測値で、②④もこれに合わせた（並べたとき同じ大きさに見えることを優先した）。
+      ただし <code>§2</code> の梯子は <code>S 108</code> と <code>M 132</code> で、<b>118 はその間</b>。
+      <b>まとめて M 132 へ上げる</b>か、<b>118 を「対戦カードの段」として梯子に正式登録する</b>かのどちらかに決めたい。
+      このモックは前者に倒しやすいよう、幅を1箇所（<code>.sfc-up</code>）でしか持っていない</li>
+    <li><b>文字サイズをタイプスケールへ寄せた。</b> ②④の選手名は <code>subtitle 15px</code>、OVR は <code>display 28px</code>。
+      ジュニアは <code>17px</code> / <code>23px</code> で、<code>§1</code>が禁じている中間値。
+      ②④を先に正しくしたので、<b>①も後で 15 / 28 へ寄せる</b>ことになる（別タスク）</li>
+    <li><b><code>--ev-spring-rgb</code> / <code>--ev-autumn-rgb</code> の追加。</b>
+      共通部品を <code>rgba()</code> で色替えするために要る（現状は <code>--ev-summer-rgb</code> と <code>--gold-rgb</code> しか無い）。
+      値は既存の16進と同一で、新色ではない。<b><code>--ev-winter-rgb</code> は作らない</b>（PPV が冬を使わないため）</li>
+    <li><b>16進直書きのトークン化 6件。</b> いずれも<b>値は変えていない</b>ので見た目は1ドットも動かない。
+      <code>--bubble-bg</code> / <code>--bubble-ink</code>（<code>.jt-bub</code> / <code>.tcdr-bub</code> の <code>#f0f0f0</code> / <code>#1a1a1a</code>）、
+      <code>--ppv-crimson</code>（VSマークの <code>#e94560</code>。<code>.jtc-fc-uppers .vs-mark</code> / <code>.jtc-fc-vl</code> / <code>.tc-vs</code> の3箇所）、
+      <code>--stage-portrait-bg</code>（<code>.jtc-fc-upper</code> の下地 <code>#121110</code>）、
+      <code>--ppv-red</code> / <code>--ppv-red-rgb</code>（<code>.pb-theme-ppv</code> の <code>#d63d46</code>）、
+      <code>--pb-portrait-top</code> / <code>--pb-portrait-bottom</code>（<code>.pb-portrait</code> の <code>#1a1816</code> → <code>#0a0907</code>）。
+      実装時に一緒に片付けるかどうか</li>
+  </ol>
+
+  <h3>3. 範囲外（重複させない）</h3>
+  <ul>
+    <li><b>task-73</b>「特別興行の終わりにコーチの総括」＝ <b>コーチ</b>が話す大会後の演出。
+      このモックの「大会後の一言」は<b>選手</b>が話すもので、ジュニアに既にある要素の移植。別物として並立する想定</li>
+    <li><b>task-72</b>「天頂戦 決勝の会話演出」＝ 天頂戦のみ。天頂戦は既に <code>_jtcFcCore</code> に乗っているのでこのモックでは触らない</li>
+    <li><b>task-71</b>「新聞 全面統一モックアップ」＝ 別物</li>
+  </ul>
+
+  <h3>4. 不変条件の自己点検</h3>
+  <table class="mk-tbl">
+    <tr><th>#</th><th>不変条件</th><th>このモックでの状態</th></tr>
+    <tr><td>1</td><td>ジュニアは変更しない</td><td>① は <code>src/index.html</code> の <code>.jtc-*</code> / <code>.jt-bub</code> の値をそのまま複製。<b>例外は裁定で認められた1点（<code>.jt-bub .sp</code> の削除）のみ</b></td></tr>
+    <tr><td>2</td><td>選手画像は 2:3 / 正方形の顔は 52px 以下</td><td>選手画像は<b>全部 <code>aspect-ratio:2/3</code></b>（実測で比率1.5±0.06 を外れるもの0件）。使った段は L 150 / M 132 / S 108 / chip 46 と、ジュニア実測の 118（判断待ち2）、PPV既存の 108×162・62×93・68×102。<b>正方形・丸の顔は1つも使っていない</b></td></tr>
+    <tr><td>3</td><td>アッパーを左右反転しない</td><td><code>transform:scaleX(-1)</code> をどこにも書いていない（<code>matrix(-1…)</code> を持つ要素 0件）</td></tr>
+    <tr><td>4</td><td>吹き出しは画像の上・名前を入れない</td><td>②④の吹き出しは grid の <b>row 1</b>（画像は row 2）。尻尾は <code>--tail-x</code> で話者の画像中心。<b>中身はセリフ本文だけ</b>。<b>①ジュニアも <code>.sp</code> を削除して同じ規則に揃えた</b></td></tr>
+    <tr><td>5</td><td>縦順固定（吹き出し→画像→名前→役割→バッジ→数値）</td><td><code>.sfc-stage</code> が3行グリッドで順序を構造として固定。名前ブロック内も 名前 → 役割 → バッジ → OVR</td></tr>
+    <tr><td>6</td><td>複数人は隊列</td><td><code>.tro</code> = 群の外枠1つ・<code>margin-left:-18px</code> の重ね・<code>drop-shadow</code>。<b>個々に額縁を付けていない</b></td></tr>
+    <tr><td>7</td><td>勝敗は画像から読める / ○×△ / LOSE を使わない</td><td>敗者・脱落者は <code>grayscale(.9) brightness(.72)</code>。記号は ○×△ のみ（<code>●</code> 0件）。画面内に <code>LOSE</code> の文字 0件</td></tr>
+    <tr><td>8</td><td>カテゴリを混ぜない</td><td>4節すべて Stage（<code>--stage-bg</code> 純黒）。<b>Cream Panel を1つも置いていない</b>（吹き出しの白は §3 が定めるセリフの規則で、Cream Panel ではない）</td></tr>
+    <tr><td>9</td><td>ハードコード16進カラー禁止</td><td>16進は <code>:root</code> のトークン定義行と説明文だけ。以降は全部 <code>var(--*)</code></td></tr>
+    <tr><td>10</td><td>375px で横スクロールが出ない</td><td><b>375 / 400 / 480 / 520 / 600 / 700 / 820px の7幅で実測。</b>
+      <code>html/body</code> の <code>overflow-x</code> を <code>visible</code> に戻したうえで、各幅で
+      <b><code>scrollWidth</code> = viewport</b> かつ全DOM要素走査で<b>はみ出し 0件</b>。
+      ②④は 700px で梯子を1段落とし（118→S 108 / L→M / M→S）、560px で2対2カードを縦積みへ。
+      ③PPV は <code>src/mobile.css</code> の 700px 規則をそのまま複製。①ジュニアは 118 / 76 / 132 のまま収まるので触っていない</td></tr>
+    <tr><td>11</td><td><code>src/</code> を一切変更しない</td><td>成果物はこのファイル1枚のみ。commit / push もしていない</td></tr>
+  </table>
+</section>
+
+</body>
+</html>

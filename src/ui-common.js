@@ -18110,6 +18110,236 @@ function _tcPeakEmpty() {
   </div>`;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  天頂戦 決勝の会話 (task-72)
+//
+//  **決勝カード(roundName === 'final')でだけ**発火する。1回戦〜準決勝の
+//  見え方は一切変えない。判定は呼び出し元と各関数の入口の二重で掛ける。
+//
+//  分岐は5軸（対戦歴 / 直近の勝敗 / 因縁 / 力量差 / 消耗）を優先順に畳んで
+//  1つのモチーフへ落とす。セリフ本体は src/tenchosen-final-lines.js。
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** 消耗帯のしきい値。**仕様書の 70/40 という素の帯は使えない** —
+ *  天頂戦の carryPct の下限は Engine.ppvTournament.FLOOR = 55 だが、
+ *  決勝に立つ2名の実測は 72〜86 に収まる(400大会×2名=800サンプル:
+ *  min 72.4 / p10 76.8 / median 79.6 / p75 81.2 / max 85.6)。
+ *  40未満は**永久に発火しない**ので、実測分布へ較正した値を使う。
+ *  battered ≒ 下位1割 / worn ≒ 中位6割 / 余力あり ≒ 上位3割。 */
+const TC_FINAL_WEAR = { battered: 77, worn: 81 };
+/** 力量差の「格上/格下」しきい値。決勝の OVR 差は median 5 / p75 9 で、
+ *  8以上は全体の約3割 = 「明らかに格が違う決勝」だけが拾える。 */
+const TC_FINAL_OVR_GAP = 8;
+const TC_FINAL_RIVALRY = { strong: 80, some: 60 };
+
+/** 対戦歴。matches=通算試合数 / recentDiff=直近3戦の(勝ち-負け) */
+function _tcFinalH2h(selfId, oppId) {
+  const empty = { matches: 0, recentDiff: 0 };
+  try {
+    if (typeof Engine === 'undefined' || !Engine.h2h || typeof G === 'undefined') return empty;
+    const rec = Engine.h2h.getRecord(G, selfId, oppId);
+    if (!rec || !rec.matches) return empty;
+    const selfIsA = Number(selfId) < Number(oppId);
+    let diff = 0;
+    (rec.history || []).slice(-3).forEach(e => {
+      if (!e || e.win === 'd') return;
+      diff += ((e.win === 'A') === selfIsA) ? 1 : -1;
+    });
+    return { matches: rec.matches, recentDiff: diff };
+  } catch (_e) { return empty; }
+}
+
+/** その選手が相手へ向けている因縁(非対称2軸なので**向き**で読む) */
+function _tcFinalRivalry(selfId, oppId) {
+  try {
+    const rel = (typeof G !== 'undefined' && G.relationships) || {};
+    return (rel[`${selfId}>${oppId}`] || {}).rivalry || 0;
+  } catch (_e) { return 0; }
+}
+
+function _tcFinalCarry(match, side) {
+  const raw = side === 'right' ? match.carryRightPct : match.carryLeftPct;
+  return Math.max(1, Math.min(100, Math.round(raw != null ? raw : 100)));
+}
+
+function _tcFinalHpRatio(hp) {
+  if (!hp || !hp.max) return 1;
+  const fin = hp.final != null ? hp.final : hp.current;
+  return Math.max(0, Math.min(1, (Number(fin) || 0) / (Number(hp.max) || 1)));
+}
+
+/** 決勝直前・話者1人ぶんのモチーフを**優先順に**並べて返す。
+ *  満身創痍(天頂戦にしかない持ち越しの素材)を最優先に置き、
+ *  以降 因縁 → 対戦歴+直近の勝敗 → 力量差 → 消耗 → 初対戦 の順で畳む。 */
+function _tcFinalMotifs(match, side) {
+  const self = side === 'right' ? match.right : match.left;
+  const opp = side === 'right' ? match.left : match.right;
+  const pct = _tcFinalCarry(match, side);
+  const riv = _tcFinalRivalry(self.id, opp.id);
+  const gap = (Number(self.ovr) || 0) - (Number(opp.ovr) || 0);
+  const h = _tcFinalH2h(self.id, opp.id);
+  const out = [];
+  if (pct < TC_FINAL_WEAR.battered) out.push('battered');
+  if (riv >= TC_FINAL_RIVALRY.strong) out.push('grudge');
+  if (h.matches > 0) out.push(h.recentDiff < 0 ? 'revenge' : h.recentDiff > 0 ? 'hold' : 'settle');
+  if (riv >= TC_FINAL_RIVALRY.some) out.push('rivalry');
+  if (gap <= -TC_FINAL_OVR_GAP) out.push('underdog');
+  else if (gap >= TC_FINAL_OVR_GAP) out.push('crown');
+  if (pct < TC_FINAL_WEAR.worn) out.push('worn');
+  out.push('firstMeet'); // 初対戦 兼 最終フォールバック
+  return out;
+}
+
+/** 決着直後のモチーフ。勝者は「頂点の重み+相手への言及」、敗者は「受け止め」。 */
+function _tcFinalPostMotif(match, side, isWinner) {
+  const self = side === 'right' ? match.right : match.left;
+  const opp = side === 'right' ? match.left : match.right;
+  const pct = _tcFinalCarry(match, side);
+  const riv = _tcFinalRivalry(self.id, opp.id);
+  const gap = (Number(self.ovr) || 0) - (Number(opp.ovr) || 0);
+  if (isWinner) {
+    const endHp = _tcFinalHpRatio(side === 'right' ? match.hpRight : match.hpLeft);
+    if (pct < TC_FINAL_WEAR.battered || endHp < 0.20) return 'battered';
+    if (riv >= TC_FINAL_RIVALRY.strong) return 'grudge';
+    if (gap <= -TC_FINAL_OVR_GAP) return 'upset';
+    return 'general';
+  }
+  if (pct < TC_FINAL_WEAR.battered) return 'battered';
+  if (riv >= TC_FINAL_RIVALRY.strong) return 'grudge';
+  if (gap >= TC_FINAL_OVR_GAP) return 'fall'; // 格上だったのに落ちた
+  return 'general';
+}
+
+/** セル引き。`${archetype}_${personality}` → `${archetype}_normal` → `standard_normal`
+ *  (CHALLENGE_LINES / Engine.challengeRequest.pickLine と同じ規約)。
+ *  **口調の第一分岐は archetype。personality は第二分岐**。 */
+function _tcFinalPool(cell, fighter) {
+  if (!cell) return [];
+  const a = (fighter && fighter.archetype) || 'standard';
+  const p = (fighter && fighter.personality) || 'normal';
+  const pool = cell[`${a}_${p}`] || cell[`${a}_normal`] || cell.standard_normal;
+  return Array.isArray(pool) ? pool : [];
+}
+
+function _tcFinalPick(cell, fighter, rng) {
+  const pool = _tcFinalPool(cell, fighter);
+  if (!pool.length) return '';
+  const i = rng ? Engine.rng.int(rng, 0, pool.length - 1) : 0;
+  return pool[i] || '';
+}
+
+/** 同じ対戦なら何度描き直しても同じセリフになるよう、ペアと大会から種を作る */
+function _tcFinalRng(match, salt) {
+  return Engine.rng.create(Engine.rng.derive(
+    (typeof G !== 'undefined' && G.rngSeed) || 0,
+    (typeof G !== 'undefined' && G.season) || 0,
+    salt,
+    (Number(match.left.id) || 0) * 1000 + (Number(match.right.id) || 0)));
+}
+
+/** 決勝直前の1往復。決勝以外は必ず null(不変条件1)。往復は1回だけ(不変条件2)。 */
+function _tcFinalPreLines(match, roundName) {
+  if (roundName !== 'final') return null;
+  if (typeof TENCHOSEN_FINAL_LINES === 'undefined' || !TENCHOSEN_FINAL_LINES.pre) return null;
+  if (!match || !match.left || !match.right) return null;
+  const table = TENCHOSEN_FINAL_LINES.pre;
+  const rng = _tcFinalRng(match, 0x7C71);
+  const lm = _tcFinalMotifs(match, 'left');
+  const rm = _tcFinalMotifs(match, 'right');
+  const leftLine = _tcFinalPick(table[lm[0]], match.left, rng);
+  let rightLine = _tcFinalPick(table[rm[0]], match.right, rng);
+  let rightMotif = rm[0];
+  // 同じアーキタイプ×同じモチーフだと二人が同文になる。
+  // まず同じ話題の別の言い回しへ、それでも駄目なら次の話題へ逃がす。
+  // 最終フォールバックの firstMeet は必ず2本以上あるので、必ずどこかで抜ける。
+  if (rightLine && rightLine === leftLine) {
+    outer:
+    for (let i = 0; i < rm.length; i++) {
+      const pool = _tcFinalPool(table[rm[i]], match.right);
+      for (let k = 0; k < pool.length; k++) {
+        if (pool[k] && pool[k] !== leftLine) { rightLine = pool[k]; rightMotif = rm[i]; break outer; }
+      }
+    }
+  }
+  if (!leftLine || !rightLine) return null; // 片側だけの半端は出さない(因縁セリフへ戻す)
+  return { leftLine, rightLine, leftMotif: lm[0], rightMotif };
+}
+
+/** 既存の吹き出し対(.jt-bub-pair / .jt-bub)の形のまま返す。
+ *  **吹き出しの中に名前・所属を書かない** — 話者は真下のアッパー画像で示す
+ *  (feedback_speech_bubble_rules)。
+ *  これは飾りなので、何があっても盤面を落としてはいけない。中で投げたら '' を返す。 */
+function _tcFinalPreBubbleHtml(match, roundName) {
+  let r = null;
+  try { r = _tcFinalPreLines(match, roundName); } catch (_e) { return ''; }
+  if (!r) return '';
+  return `<div class="jt-bub-pair tc-final-bub" data-tc-motif="${escHtml(r.leftMotif)}/${escHtml(r.rightMotif)}">
+    <div class="jt-bub">「${escHtml(r.leftLine)}」</div>
+    <div class="jt-bub">「${escHtml(r.rightLine)}」</div>
+  </div>`;
+}
+
+/** 決着直後のひとことを1枚ずつ送る。_showJTImpressionChain と同じ形(U3グループA)。 */
+function _tcFinalAftermathStep(steps, idx, onDone) {
+  if (idx >= steps.length) { if (onDone) onDone(); return; }
+  const st = steps[idx];
+  const f = st.f;
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+  const ovr = f.ovr != null ? Math.round(f.ovr) : '—';
+  const roleColor = st.isWin ? 'var(--gold)' : 'var(--text-sub)';
+  const overlay = document.createElement('div');
+  overlay.className = 'war-victory-overlay u3b-theme-stage is-tenchosen';
+  overlay.innerHTML = `
+    <div class="war-victory-modal">
+      <div class="tc-final-kicker">Quadrennial Final · After the bell</div>
+      ${_u3bSideHtml({
+        name: f.name, line: st.line, imgUrl: upperUrl,
+        fallback: (f.name || '?').charAt(0), size: 'm', isLoser: !st.isWin,
+        roleHtml: `<div class="u3b-role" style="color:${roleColor}">${escHtml(st.isWin ? '戴冠' : '準優勝')}</div>`,
+        statLabel: 'OVR', statValue: ovr,
+        bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
+      })}
+      <button class="war-victory-close">▶</button>
+    </div>`;
+  // 1操作=1進行(docs/ui §5-D 鉄則2)。連打で2枚飛ばさない
+  let advanced = false;
+  const next = () => {
+    if (advanced) return;
+    advanced = true;
+    overlay.remove();
+    if (typeof App !== 'undefined' && App._tcFinalTalkEl === overlay) App._tcFinalTalkEl = null;
+    _tcFinalAftermathStep(steps, idx + 1, onDone);
+  };
+  overlay.querySelector('.war-victory-close').addEventListener('click', next);
+  document.body.appendChild(overlay);
+  if (typeof App !== 'undefined') App._tcFinalTalkEl = overlay;
+  try { Audio.play('notify'); } catch (_e) {}
+}
+
+/** 決勝の決着直後: 勝者 → 敗者 の順に1本ずつ。**決勝以外では何もしない**。
+ *  返り値 true = 実際に画面を出した / false = 出せなかった(呼び出し元は即座に次へ)。 */
+function _showTcFinalAftermath(match, roundName, onDone) {
+  if (roundName !== 'final') return false;
+  if (typeof TENCHOSEN_FINAL_LINES === 'undefined') return false;
+  if (!match || !match.left || !match.right || match.winnerId == null) return false;
+  const leftWins = match.winnerId === match.left.id;
+  const winner = leftWins ? match.left : match.right;
+  const loser = leftWins ? match.right : match.left;
+  const winSide = leftWins ? 'left' : 'right';
+  const loseSide = leftWins ? 'right' : 'left';
+  const rng = _tcFinalRng(match, 0x7C72);
+  const wLine = _tcFinalPick(
+    (TENCHOSEN_FINAL_LINES.postWin || {})[_tcFinalPostMotif(match, winSide, true)], winner, rng);
+  const lLine = _tcFinalPick(
+    (TENCHOSEN_FINAL_LINES.postLose || {})[_tcFinalPostMotif(match, loseSide, false)], loser, rng);
+  const steps = [];
+  if (wLine) steps.push({ f: winner, line: wLine, isWin: true });
+  if (lLine) steps.push({ f: loser, line: lLine, isWin: false });
+  if (!steps.length) return false;
+  _tcFinalAftermathStep(steps, 0, onDone);
+  return true;
+}
+
 /** フォーカスカード: アッパー画像対面(左右とも非反転)+開始HP(持ち越し)。JT共通部品(_jtcFcCore)を利用 */
 function _tcFocusCard(match, roundName, ri, mi) {
   const f1 = match.left, f2 = match.right;
@@ -18120,15 +18350,18 @@ function _tcFocusCard(match, roundName, ri, mi) {
   const pctL = Math.max(1, Math.min(100, Math.round(match.carryLeftPct != null ? match.carryLeftPct : 100)));
   const pctR = Math.max(1, Math.min(100, Math.round(match.carryRightPct != null ? match.carryRightPct : 100)));
   const carryNote = ri > 0 ? `<br>(${ri}試合分持ち越し)` : '';
+  // 決勝だけは専用の1往復を出す(因縁セリフより優先。因縁の事実はモチーフ側で文脈に使う)。
+  // 決勝以外・組み立てに失敗したときは、従来どおり因縁のときだけ口を開く。
+  const finalPre = (isFinal && typeof _tcFinalPreBubbleHtml === 'function')
+    ? _tcFinalPreBubbleHtml(match, roundName) : '';
 
   return _jtcFcCore({
     label, f1, f2,
     own1: _tcOwnPill(f1.orgId),
     own2: _tcOwnPill(f2.orgId),
     upperL, upperR,
-    // 天頂戦に汎用セリフは無い。**因縁のときだけ**口を開く
-    extraHtml: (typeof _rivalryBubblePairHtml === 'function')
-      ? _rivalryBubblePairHtml(f1.id, f2.id, f1.name, f2.name) : '',
+    extraHtml: finalPre || ((typeof _rivalryBubblePairHtml === 'function')
+      ? _rivalryBubblePairHtml(f1.id, f2.id, f1.name, f2.name) : ''),
     hpLeftBlock: _jtcFcHpBlock('left', pctL, 100, pctL),
     hpRightBlock: _jtcFcHpBlock('right', pctR, 100, pctR),
     hpMidLabel: `開始HP${carryNote}`,

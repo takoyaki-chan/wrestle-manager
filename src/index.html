@@ -2233,6 +2233,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   --u3b-accent-rgb:var(--victory-blue-rgb)}
 .u3b-theme-stage.is-junior{--u3b-name-color:var(--ev-summer);--u3b-accent:var(--ev-summer);
   --u3b-accent-rgb:var(--ev-summer-rgb)}
+/* 天頂戦 決勝の決着後コメント(task-72)。大会色は金 */
+.u3b-theme-stage.is-tenchosen{--u3b-name-color:var(--gold);--u3b-accent:var(--gold);
+  --u3b-accent-rgb:var(--gold-rgb)}
 
 /* ─── 因縁ポップアップ Verdict レイアウト (notif-modal-box を拡張) ─── */
 .notif-modal-box.verdict{
@@ -3530,6 +3533,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   box-shadow:0 0 30px rgba(var(--ev-summer-rgb),.16)}
 .jt-impression-kicker{margin:-5px 0 12px;font-family:var(--font-label);font-size:9px;letter-spacing:.2em;
   color:var(--ev-summer);text-transform:uppercase}
+/* 天頂戦 決勝の決着後コメント(task-72)。JTの .is-junior と同じ構図で、色だけ大会色(金)へ */
+.war-victory-overlay.is-tenchosen .war-victory-modal{border-color:rgba(var(--gold-rgb),.38);
+  box-shadow:0 0 30px rgba(var(--gold-rgb),.16)}
+.war-victory-overlay.is-tenchosen .war-victory-close{background:rgba(var(--gold-rgb),.15);
+  border-color:rgba(var(--gold-rgb),.4);color:var(--gold)}
+.war-victory-overlay.is-tenchosen .war-victory-close:hover{background:rgba(var(--gold-rgb),.25);
+  border-color:var(--gold)}
+.tc-final-kicker{margin:-5px 0 12px;font-family:var(--font-label);font-size:9px;letter-spacing:.2em;
+  color:var(--gold);text-transform:uppercase}
 .war-victory-img-wrap{margin-bottom:12px}
 .war-victory-img{flex-shrink:0}
 .war-victory-line{}
@@ -10265,6 +10277,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <script src="data.js"></script>
 <script src="coach-lines.js"></script>
 <script src="data-faction-dialogue.js"></script>
+<script src="tenchosen-final-lines.js"></script>
 <!-- ② エンジン（Dataに依存） -->
 <script src="management.js"></script>
 <script src="match-engine.js"></script>
