@@ -2625,6 +2625,9 @@ function renderAutumnWarWeekBanner() {
 function renderTenchosenWeekBanner() {
   const t = G.ppvTournament;
   if (!t || t.season !== G.season) return '';
+  // Older saves may still carry the former early-entry phase; keep it dormant
+  // until the new, one-week-before-show entry window opens.
+  if (t.phase === 'entry' && G.week < Engine.ppvTournament.ENTRY_WEEK) return '';
   if (t.phase === 'entry') {
     return `<div class="stl-week-banner is-urgent tc-week-banner">
       <div class="stl-week-banner-icon">👑</div>

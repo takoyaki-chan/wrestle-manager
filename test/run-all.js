@@ -118,6 +118,7 @@ const QUICK = new Set([
   'spring-tag-newspaper-team-photo-test.js',
   'tag-match-test.js',
   'tenchosen-preevent-speaker-test.js',
+  'tenchosen-entry-timing-test.js',
   'tenchosen-result-flow-guard-test.js',
   'tenchosen-ppv-opening-guard-test.js',
   'title-challenger-eligibility-test.js',

@@ -15997,7 +15997,8 @@ App.finalizeTenchosen = function() {
 
 App.tcOpenEntryModal = function() {
   const t = G.ppvTournament;
-  if (!t || t.season !== G.season || t.phase !== 'entry') return;
+  if (!t || t.season !== G.season || t.phase !== 'entry'
+      || G.week < Engine.ppvTournament.ENTRY_WEEK) return;
   // 初期選択はおまかせ(王者含むOVR上位)。プレイヤーが自由に組み替えられる
   App._tcEntryPicks = Engine.ppvTournament.suggestPlayerEntries(G);
   Audio.play('select');

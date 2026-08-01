@@ -25593,7 +25593,7 @@ Engine.juniorTournament = {
 //  Week43で16名を確定し、Week48に15試合を一括実行する。
 // ══════════════════════════════════════════════════════════
 Engine.ppvTournament = {
-  ENTRY_WEEK: 43,
+  ENTRY_WEEK: 47,
   SHOW_WEEK: 48,
   SIZE: 16,
   INITIAL_CONDITION: 80,
