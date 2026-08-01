@@ -16041,10 +16041,10 @@ function _jtcFcCore({ label, f1, f2, own1, own2, upperL, upperR, hpLeftBlock, hp
   const rightDetail = _r ? ` role="button" tabindex="0" style="cursor:pointer" onclick="${_r}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${_r}}"` : '';
   const ovr1Cls = typeof valueClassOvr === 'function' ? valueClassOvr(f1.ovr) : '';
   const ovr2Cls = typeof valueClassOvr === 'function' ? valueClassOvr(f2.ovr) : '';
-  const fighterInfo = (f, own, ovrCls, detail) => {
+  const fighterInfo = (f, own, ovrCls, detail, side) => {
     const style = String(f.style || 'FIGHTER').toUpperCase();
     const age = f.age != null ? `AGE ${f.age}` : '';
-    return `<div class="jtc-fc-nm"${detail}>
+    return `<div class="jtc-fc-nm is-${side}"${detail}>
       <div class="n">${escHtml(f.name)}</div>
       <div class="jtc-fc-statline">
         <span class="jtc-fc-style">${escHtml(style)}</span>
@@ -16056,17 +16056,18 @@ function _jtcFcCore({ label, f1, f2, own1, own2, upperL, upperR, hpLeftBlock, hp
   };
   let h = `<div class="jtc-fc jt-su">`;
   h += `<div class="jtc-fc-lb">${escHtml(label)}</div>`;
-  h += `<div class="jtc-fc-names">`;
-  h += fighterInfo(f1, own1, ovr1Cls, leftDetail);
-  h += `<div class="jtc-fc-vl">VS</div>`;
-  h += fighterInfo(f2, own2, ovr2Cls, rightDetail);
-  h += `</div>`;
   if (extraHtml) h += extraHtml;
-  // アッパー画像対面(反転禁止: 左右とも素の向き)
+  // mockup-baseline-v0.1 §4「縦の並び順(顔出しブロック)」に合わせる。
+  // 吹き出し → 画像 → 名前 → 役割ラベル → 数値(OVR) の順は**固定**で、画面ごとに入れ替えない。
+  // 以前はここだけ名前ブロックが吹き出しより上にあり、他の顔出し画面(_u3bSideHtml を使う
+  // 10画面)と逆になっていた(2026-08-01 Keisuke 指摘)。
+  // アッパー画像対面(反転禁止: 左右とも素の向き)。名前は各画像の真下に来る
   h += `<div class="jtc-fc-uppers">`;
-  h += `<div class="jtc-fc-upper"${leftDetail}>${upperL ? `<img src="${upperL}" alt="" onerror="this.style.opacity=0">` : ''}</div>`;
+  h += `<div class="jtc-fc-upper is-l"${leftDetail}>${upperL ? `<img src="${upperL}" alt="" onerror="this.style.opacity=0">` : ''}</div>`;
   h += `<div class="vs-mark">VS</div>`;
-  h += `<div class="jtc-fc-upper"${rightDetail}>${upperR ? `<img src="${upperR}" alt="" onerror="this.style.opacity=0">` : ''}</div>`;
+  h += `<div class="jtc-fc-upper is-r"${rightDetail}>${upperR ? `<img src="${upperR}" alt="" onerror="this.style.opacity=0">` : ''}</div>`;
+  h += fighterInfo(f1, own1, ovr1Cls, leftDetail, 'l');
+  h += fighterInfo(f2, own2, ovr2Cls, rightDetail, 'r');
   h += `</div>`;
   h += `<div class="jtc-fc-hp-row">${hpLeftBlock}<div class="jtc-fc-hp-mid">${hpMidLabel}</div>${hpRightBlock}</div>`;
   h += `<div class="jtc-fc-bt">`;
@@ -17622,9 +17623,11 @@ function _agwFocusHtml(match, boutIndex, displayOrgIds) {
   const leftOrder = _agwOrderFor(match, displayOrgIds.left);
   const rightOrder = _agwOrderFor(match, displayOrgIds.right);
   const dialogueHtml = _agwPreBoutDialogueHtml(match, next, engineLeft, engineRight, displayOrgIds);
+  // 縦順は mockup-baseline-v0.1 §4 で固定: 名前 → 役割ラベル → 団体。
+  // ここだけ役割ラベルが名前より上に出ていた(2026-08-01 是正)
   const sideHtml = (current, orgId, order, side) => `<div class="agw-bout-side is-${side}">
-    <small>第${next.index}フォール・${escHtml(_agwTeam(orgId)?.orgName || '')} / ${_agwRoleLabel(order, current.id)}</small>
     <button type="button" onclick="event.stopPropagation();showFighterPopup(${current.id},'autumnWar',true)">${escHtml(current.fighter?.name || '')}</button>
+    <small>第${next.index}フォール・${escHtml(_agwTeam(orgId)?.orgName || '')} / ${_agwRoleLabel(order, current.id)}</small>
     ${_agwConditionBar(current.condition, side === 'right')}
   </div>`;
   return `<div class="agw-live-current">

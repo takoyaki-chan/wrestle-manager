@@ -34,6 +34,36 @@ assert.ok(focusCoreBody.includes('jtc-fc-statline') && focusCoreBody.includes('j
 assert.ok(focusCoreBody.includes('f.style') && focusCoreBody.includes('f.age'),
   'JT pre-match card must present style and age alongside OVR');
 
+// mockup-baseline-v0.1 §4「縦の並び順(顔出しブロック)」は固定:
+//   吹き出し → 選手画像 → 名前 → 役割ラベル → 団体バッジ → 数値(OVR等)
+// 以前はここだけ名前ブロックが吹き出しより上にあり、_u3bSideHtml を使う他の顔出し画面と
+// 逆になっていた(2026-08-01 Keisuke 指摘で是正)。JTと天頂戦が共有する部品なので、
+// ここが戻ると2画面まとめて崩れる。
+{
+  const at = s => focusCoreBody.indexOf(s);
+  const bubbleAt = at('if (extraHtml) h += extraHtml');
+  const upperAt = at('jtc-fc-uppers');
+  const nameAt = at('fighterInfo(f1');
+  const hpAt = at('jtc-fc-hp-row');
+  assert.ok(bubbleAt >= 0 && upperAt >= 0 && nameAt >= 0 && hpAt >= 0,
+    '対戦カードの構成要素(吹き出し/画像/名前/HP)が揃っていない');
+  assert.ok(bubbleAt < upperAt,
+    '吹き出しが選手画像より下にある。baseline §4 は 吹き出し → 画像 の順で固定');
+  assert.ok(upperAt < nameAt,
+    '名前ブロックが選手画像より上にある。baseline §4 は 画像 → 名前 の順で固定');
+  assert.ok(nameAt < hpAt, '名前ブロックがHP行より下にある');
+  assert.ok(!focusCoreBody.includes('jtc-fc-names') && !focusCoreBody.includes('jtc-fc-vl'),
+    '画像の上に名前を並べる旧レイアウト(.jtc-fc-names / .jtc-fc-vl)が復活している');
+}
+// 名前は「中央寄せの成り行き」ではなく各画像の真下に来る必要があるので、
+// 左右の別がクラスで付いていること(CSSがグリッドの列を明示できる)
+assert.ok(/jtc-fc-upper is-l/.test(focusCoreBody) && /jtc-fc-upper is-r/.test(focusCoreBody),
+  '画像に左右クラスが無い。名前を画像の真下に置く列指定ができない');
+assert.ok(/jtc-fc-nm is-\$\{side\}/.test(focusCoreBody),
+  '名前ブロックに左右クラスが無い。名前を画像の真下に置く列指定ができない');
+assert.ok(/\.jtc-fc-nm\.is-l\{grid-area:2\/1\}/.test(html) && /\.jtc-fc-nm\.is-r\{grid-area:2\/3\}/.test(html),
+  'index CSS が名前ブロックを画像と同じ列の2行目に置いていない');
+
 const resultBody = bodyOf('function renderJuniorTournamentMatchResult');
 assert.ok(resultBody.includes("className: 'is-jt-recovery'"), 'JT match result HP mini bar must be marked for recovery animation');
 assert.ok(resultBody.includes("_jtRecoveredHpTarget(match, 'left', isFinal)"), 'JT match result must compute left recovery target');
