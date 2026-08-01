@@ -22,6 +22,28 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `TEAM_SPIRIT_TEXTS[3].detail`: 決して恵まれた環境ではない。それでも、誰一人として文句を言わずに練習に打ち込む姿がある。
 - `TEAM_SPIRIT_TEXTS[4].detail`: 苦しい状況を全員で分かち合っている。この経験が、いつかチームの財産になるはずだ。
 
+## `FAREWELL_KIND_TEXT`
+
+- 出典: `src/data.js`
+- コード内コメント: ╚══════════════════════════════════════════════════════════╝ / 大舞台での重傷で選手生命が絶たれたときの、**状況を語る地の文**。 / セリフ本体は RETIREMENT_LINES の性格別テーブルに任せる（地の文は性格で分けない）。 / **引退であって、死ではない。** 本人は生きていて、年代記にも殿堂にも残る。 / 「あの日を最後に、彼女は上がらなくなった」という書き方にする。 / 命に関わる表現は使わない。
+- 本数: 15
+
+- `FAREWELL_KIND_TEXT.pyrrhic.title`: 勝 者 の 代 償
+- `FAREWELL_KIND_TEXT.pyrrhic.lead`: その試合に、彼女は勝った。
+- `FAREWELL_KIND_TEXT.pyrrhic.body`: 勝ち名乗りを受けることは、なかった。担架が運び込まれ、歓声が戸惑いに変わっていく。後日、医師の所見が団体に届いた。もうリングには上がれない、と。
+- `FAREWELL_KIND_TEXT.defended.title`: 王 座 を 守 っ て
+- `FAREWELL_KIND_TEXT.defended.lead`: ベルトは、守った。
+- `FAREWELL_KIND_TEXT.defended.body`: 防衛を告げるゴングの直後、王者はマットに崩れ落ちた。巻いたまま運ばれていく背中を、会場の誰もが見送るしかなかった。数日後、王座は返上されることになる。
+- `FAREWELL_KIND_TEXT.neverCrowned.title`: 冠 に 届 か ず
+- `FAREWELL_KIND_TEXT.neverCrowned.lead`: あと一歩が、遠かった。
+- `FAREWELL_KIND_TEXT.neverCrowned.body`: 挑戦は実らず、そしてそれが最後の試合になった。結局、彼女は一度もベルトを腰に巻かないまま去ることになる。記録に残るのは、挑戦者としての名前だけだ。
+- `FAREWELL_KIND_TEXT.burntOut.title`: 追 い 込 み の ツ ケ
+- `FAREWELL_KIND_TEXT.burntOut.lead`: その体は、とうに限界を過ぎていた。
+- `FAREWELL_KIND_TEXT.burntOut.body`: 若い頃から追い込みを重ねた体だった。踏ん張りが効かず、崩れるように倒れた。請求書は、忘れた頃に届く。今日がその日だった。
+- `FAREWELL_KIND_TEXT.lastWin.title`: 最 後 の 一 勝
+- `FAREWELL_KIND_TEXT.lastWin.lead`: 引退を表明していた。その最後の一勝だった。
+- `FAREWELL_KIND_TEXT.lastWin.body`: 勝った直後に、彼女は動けなくなった。予定されていた引退試合は、もう組めない。花道は、その途中で終わった。
+
 ## `PRE_WINDOW_TEXTS`
 
 - 出典: `src/data.js`
@@ -108,91 +130,91 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 感情テキストシステム
 - 本数: 91
 
-- `EMOTION_TEXTS.trust.normal`: そばにいてくれるだけで、なんだか安心する
+- `EMOTION_TEXTS.trust.standard`: そばにいてくれるだけで、なんだか安心する
 - `EMOTION_TEXTS.trust.ojousama`: お隣にいてくださると、心が穏やかになりますの
 - `EMOTION_TEXTS.trust.delinquent`: 一緒にいると……なんか、落ち着くんだよな
 - `EMOTION_TEXTS.trust.cool`: 信頼できる数少ない人間。それだけで十分
 - `EMOTION_TEXTS.trust.seductive`: 隣にいると、居心地がいいのよね……ふふ
 - `EMOTION_TEXTS.trust.polite`: 本当に感謝しています。大切な存在です
 - `EMOTION_TEXTS.trust.composed`: 一緒にいてくれると、不思議と心が落ち着くのよね
-- `EMOTION_TEXTS.rival_friend.normal`: 負けたくない。でも、おかげで強くなれている気がする
+- `EMOTION_TEXTS.rival_friend.standard`: 負けたくない。でも、おかげで強くなれている気がする
 - `EMOTION_TEXTS.rival_friend.ojousama`: 負けたくありませんけれど……実力は認めざるを得ませんわ
 - `EMOTION_TEXTS.rival_friend.delinquent`: ぜってー負けねえ。でもまあ……いるから燃えんだよ
 - `EMOTION_TEXTS.rival_friend.cool`: 互いに高め合える関係。……悪くない
 - `EMOTION_TEXTS.rival_friend.seductive`: 勝ちたい……でも、追いかけてる時間も嫌いじゃないの
 - `EMOTION_TEXTS.rival_friend.polite`: 競い合えることが、自分の力になっています
 - `EMOTION_TEXTS.rival_friend.composed`: あの子のおかげで、わたくしも頑張れるの。ありがたい存在ね
-- `EMOTION_TEXTS.destined_rival.normal`: 考えない日はない。絶対に、越えなきゃいけない壁
+- `EMOTION_TEXTS.destined_rival.standard`: 考えない日はない。絶対に、越えなきゃいけない壁
 - `EMOTION_TEXTS.destined_rival.ojousama`: 何があっても……わたくしの手で超えてみせますわ
 - `EMOTION_TEXTS.destined_rival.delinquent`: 四六時中頭ん中にいやがる。絶対ぶっ倒す
 - `EMOTION_TEXTS.destined_rival.cool`: ……いなければ、今の自分はいない。だからこそ、倒す
 - `EMOTION_TEXTS.destined_rival.seductive`: 頭から離れない……悔しいけど、そういうことなのよね
 - `EMOTION_TEXTS.destined_rival.polite`: その存在が、私を突き動かしています。必ず、超えてみせます
 - `EMOTION_TEXTS.destined_rival.composed`: あの子とはいつか、決着をつけなければね。楽しみでもあるのよ
-- `EMOTION_TEXTS.acquaintance.normal`: まあ、知ってはいるけど……それだけかな
+- `EMOTION_TEXTS.acquaintance.standard`: まあ、知ってはいるけど……それだけかな
 - `EMOTION_TEXTS.acquaintance.ojousama`: 存じ上げてはおりますけれど、特別な感情はございませんわ
 - `EMOTION_TEXTS.acquaintance.delinquent`: あー、いたな。別にどうでもいいけど
 - `EMOTION_TEXTS.acquaintance.cool`: 認識はしている。それ以上でもそれ以下でもない
 - `EMOTION_TEXTS.acquaintance.seductive`: 知ってるわよ、一応ね。……それだけ
 - `EMOTION_TEXTS.acquaintance.polite`: お名前は存じています。お話する機会は少ないですけれど
 - `EMOTION_TEXTS.acquaintance.composed`: そうねぇ、お名前くらいは存じているかしら
-- `EMOTION_TEXTS.intrigued.normal`: なんだろう、目で追ってしまう。気にしてないと言えば嘘になる
+- `EMOTION_TEXTS.intrigued.standard`: なんだろう、目で追ってしまう。気にしてないと言えば嘘になる
 - `EMOTION_TEXTS.intrigued.ojousama`: なぜかしら……気にかかって仕方がありませんの
 - `EMOTION_TEXTS.intrigued.delinquent`: ……別に気にしてねーし。してねーけど、目に入んだよ
 - `EMOTION_TEXTS.intrigued.cool`: 気にしていないつもりだった……
 - `EMOTION_TEXTS.intrigued.seductive`: ちょっと気になるのよね……何がとは言えないけど
 - `EMOTION_TEXTS.intrigued.polite`: つい気にかけてしまいます。理由はよくわかりませんが
 - `EMOTION_TEXTS.intrigued.composed`: どういうわけか、あの子のことが気になるのよね
-- `EMOTION_TEXTS.hostile_competitor.normal`: 負けたくない。それだけは、はっきりしている
+- `EMOTION_TEXTS.hostile_competitor.standard`: 負けたくない。それだけは、はっきりしている
 - `EMOTION_TEXTS.hostile_competitor.ojousama`: 絶対に遅れを取りたくありませんの。それだけですわ
 - `EMOTION_TEXTS.hostile_competitor.delinquent`: 負けねえ。死んでも負けねえ
 - `EMOTION_TEXTS.hostile_competitor.cool`: 負けるわけにはいかない。理屈じゃない
 - `EMOTION_TEXTS.hostile_competitor.seductive`: 負けたくないの。理由なんて知らないわ
 - `EMOTION_TEXTS.hostile_competitor.polite`: どうしても負けたくないんです。強い気持ちがあります
 - `EMOTION_TEXTS.hostile_competitor.composed`: 負けるわけにはいかないわ。穏やかに、でも譲らない
-- `EMOTION_TEXTS.distant.normal`: 名前は知ってるけど、それ以上は別に
+- `EMOTION_TEXTS.distant.standard`: 名前は知ってるけど、それ以上は別に
 - `EMOTION_TEXTS.distant.ojousama`: 存じ上げてはおりますけれど、それ以上は……特に
 - `EMOTION_TEXTS.distant.delinquent`: あー、いたな。それで?
 - `EMOTION_TEXTS.distant.cool`: 認識しているだけ。それ以上はない
 - `EMOTION_TEXTS.distant.seductive`: いたわね、そういえば。……それだけ
 - `EMOTION_TEXTS.distant.polite`: お見かけはしますけれど、特には……
 - `EMOTION_TEXTS.distant.composed`: お顔は存じているわ。それだけのことね
-- `EMOTION_TEXTS.contempt.normal`: 同じリングに立っていい相手じゃない
+- `EMOTION_TEXTS.contempt.standard`: 同じリングに立っていい相手じゃない
 - `EMOTION_TEXTS.contempt.ojousama`: わたくしと並ぶには、まだ早うございますわ
 - `EMOTION_TEXTS.contempt.delinquent`: ハッ、雑魚が視界に入んな。場違いだ
 - `EMOTION_TEXTS.contempt.cool`: 実力差は数字で出てる。語ることもない
 - `EMOTION_TEXTS.contempt.seductive`: あらあら……まだそのレベルなのね。可愛いこと
 - `EMOTION_TEXTS.contempt.polite`: ……失礼ですが、同じ土俵という気にはなれません
 - `EMOTION_TEXTS.contempt.composed`: 同じ場に立つ相手だとは、思っていないの。ごめんなさいね
-- `EMOTION_TEXTS.irritation.normal`: 視界に入るたび、地味にイラっとくる
+- `EMOTION_TEXTS.irritation.standard`: 視界に入るたび、地味にイラっとくる
 - `EMOTION_TEXTS.irritation.ojousama`: どうにも、お顔を拝見するだけで気が立ちますの
 - `EMOTION_TEXTS.irritation.delinquent`: チッ……顔見るだけでイライラすんだよ
 - `EMOTION_TEXTS.irritation.cool`: 不快。距離を取りたい
 - `EMOTION_TEXTS.irritation.seductive`: なんかね、無性にカチンとくるのよ。理由は知らない
 - `EMOTION_TEXTS.irritation.polite`: ……正直、近くにいられると気が休まりません
 - `EMOTION_TEXTS.irritation.composed`: あの子とは、どうしてもそりが合わないの。困ったことに
-- `EMOTION_TEXTS.dislike.normal`: はっきり言って、好きじゃない。関わりたくもない
+- `EMOTION_TEXTS.dislike.standard`: はっきり言って、好きじゃない。関わりたくもない
 - `EMOTION_TEXTS.dislike.ojousama`: あの方とは、お話する気にもなれませんの
 - `EMOTION_TEXTS.dislike.delinquent`: 嫌い。マジで嫌い。それだけ
 - `EMOTION_TEXTS.dislike.cool`: 受け付けない。理屈じゃない
 - `EMOTION_TEXTS.dislike.seductive`: ごめんなさいね、あの子は無理。生理的に
 - `EMOTION_TEXTS.dislike.polite`: ……申し訳ありませんが、お近づきになりたくはありません
 - `EMOTION_TEXTS.dislike.composed`: あの子のことは、はっきりと苦手ね。隠す気もないわ
-- `EMOTION_TEXTS.cold_loathing.normal`: 視線も合わせない。いないものとして扱ってる
+- `EMOTION_TEXTS.cold_loathing.standard`: 視線も合わせない。いないものとして扱ってる
 - `EMOTION_TEXTS.cold_loathing.ojousama`: わたくしの視界には、入れておりませんの
 - `EMOTION_TEXTS.cold_loathing.delinquent`: ……あいつは、いねえもんとして扱ってる
 - `EMOTION_TEXTS.cold_loathing.cool`: 存在を認識から外している。話すこともない
 - `EMOTION_TEXTS.cold_loathing.seductive`: あら、誰のこと？……ふふ、知らない人だわ
 - `EMOTION_TEXTS.cold_loathing.polite`: お話できることは、何もございません。失礼します
 - `EMOTION_TEXTS.cold_loathing.composed`: あの子のことは、わたくしの中では終わっているの
-- `EMOTION_TEXTS.dislike_strong.normal`: 顔も見たくない。同じ空気を吸いたくない
+- `EMOTION_TEXTS.dislike_strong.standard`: 顔も見たくない。同じ空気を吸いたくない
 - `EMOTION_TEXTS.dislike_strong.ojousama`: 同じ空間にいるだけで、息が詰まりますの
 - `EMOTION_TEXTS.dislike_strong.delinquent`: マジで無理。視界から消えてくれ
 - `EMOTION_TEXTS.dislike_strong.cool`: 生理的に駄目。これは変わらない
 - `EMOTION_TEXTS.dislike_strong.seductive`: ねえ、近寄らないでくれる？……本気で
 - `EMOTION_TEXTS.dislike_strong.polite`: ……同じ場にいるだけで、耐えがたいのです
 - `EMOTION_TEXTS.dislike_strong.composed`: 同じ部屋にいるのも辛いの。本当に、無理なのよ
-- `EMOTION_TEXTS.hatred.normal`: 絶対に許さない。叩き潰すまで終わらない
+- `EMOTION_TEXTS.hatred.standard`: 絶対に許さない。叩き潰すまで終わらない
 - `EMOTION_TEXTS.hatred.ojousama`: あの方だけは、決して許しませんわ。何があっても
 - `EMOTION_TEXTS.hatred.delinquent`: ぶっ潰す。マジでぶっ潰す。それしかねえ
 - `EMOTION_TEXTS.hatred.cool`: 消したい。自覚している。そういう感情だ

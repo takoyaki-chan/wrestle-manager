@@ -55,9 +55,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: §7.4 選手の一言 — 手応えあり(アーキタイプ別)
 - 本数: 7
 
-### normal
+### standard
 
-- `FIGHTER_INVITE_GRAD_LINES.normal`: 「自分の身体が変わっていくのが、毎日わかったんです」
+- `FIGHTER_INVITE_GRAD_LINES.standard`: 「自分の身体が変わっていくのが、毎日わかったんです」
 
 ### ojousama
 
@@ -110,7 +110,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - 出典: `src/coach-lines.js`
 - コード内コメント: E-8 Phase A/B: voice別セリフ展開（本実装） / docs/archive/xlsx-old/dialogue-all-coach.xlsx「voice展開草案」248行（Keisuke承認済み、旧パス移動済み）を / スクリプトで機械変換。手打ち転記なし・元台帳と一字一句照合済み。 / 観察レポート/引退アドバイス/雇用/解雇/PPV称賛の5箇所をvoiceKey別に出し分ける。
-- 本数: 136
+- 本数: 184
 
 ### sparta_roshi.vague[]
 
@@ -153,6 +153,21 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `COACH_VOICE_REPORT_LINES.sparta_roshi.far_from_cap[1]`: {name}の{stat}、まだ底が見えん。追い込めばもっと伸びる
 - `COACH_VOICE_REPORT_LINES.sparta_roshi.far_from_cap[2]`: {name}、{stat}には余力がある。今が仕込み時だ
 
+### sparta_roshi.strain_vague[]
+
+- `COACH_VOICE_REPORT_LINES.sparta_roshi.strain_vague[1]`: 無理を通しとる奴がおる。誰とは言わん。……ああいうのは、後で来る
+- `COACH_VOICE_REPORT_LINES.sparta_roshi.strain_vague[2]`: ひとり、体に借りを作っとるな。今は保っとる。今はな
+
+### sparta_roshi.strain_named[]
+
+- `COACH_VOICE_REPORT_LINES.sparta_roshi.strain_named[1]`: {name}、よう追い込んどるが。……その無理が、いつか祟らんことをねがうばかりだ
+- `COACH_VOICE_REPORT_LINES.sparta_roshi.strain_named[2]`: {name}の体は今、言うことを聞いとる。聞かんようになる日が来る
+
+### sparta_roshi.strain_injured[]
+
+- `COACH_VOICE_REPORT_LINES.sparta_roshi.strain_injured[1]`: {name}のあの怪我、大したことはない。……大したことにならんことを祈っとる
+- `COACH_VOICE_REPORT_LINES.sparta_roshi.strain_injured[2]`: {name}、軽い怪我だ。軽いうちは、な
+
 ### sparta_tosho.vague[]
 
 - `COACH_VOICE_REPORT_LINES.sparta_tosho.vague[1]`: 目の色が変わってきた者が一人いる。名は伏せる
@@ -193,6 +208,21 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `COACH_VOICE_REPORT_LINES.sparta_tosho.far_from_cap[1]`: {name}の{stat}、まだ底が見えない
 - `COACH_VOICE_REPORT_LINES.sparta_tosho.far_from_cap[2]`: {name}、{stat}には余力がある。今が仕込み時
+
+### sparta_tosho.strain_vague[]
+
+- `COACH_VOICE_REPORT_LINES.sparta_tosho.strain_vague[1]`: 無理を通している者がいる。名は伏せる。……ああいうのは、後から来る
+- `COACH_VOICE_REPORT_LINES.sparta_tosho.strain_vague[2]`: ひとり、体に借りを作っている。今は保っている。今は
+
+### sparta_tosho.strain_named[]
+
+- `COACH_VOICE_REPORT_LINES.sparta_tosho.strain_named[1]`: {name}、よく追い込んでいる。……その借り、いつか返すことになる
+- `COACH_VOICE_REPORT_LINES.sparta_tosho.strain_named[2]`: {name}の体は今、言うことを聞いている。聞かなくなる日が来る
+
+### sparta_tosho.strain_injured[]
+
+- `COACH_VOICE_REPORT_LINES.sparta_tosho.strain_injured[1]`: {name}のあの怪我、大したことはない。……大したことにならないことを祈る
+- `COACH_VOICE_REPORT_LINES.sparta_tosho.strain_injured[2]`: {name}、軽い怪我だ。軽いうちは
 
 ### theorist.vague[]
 
@@ -235,6 +265,21 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `COACH_VOICE_REPORT_LINES.theorist.far_from_cap[1]`: {name}選手の{stat}、成長曲線を見る限り、まだ十分な伸び代が残っています
 - `COACH_VOICE_REPORT_LINES.theorist.far_from_cap[2]`: {name}選手の{stat}、上限との差はまだ大きく、投資に見合う数値です
 
+### theorist.strain_vague[]
+
+- `COACH_VOICE_REPORT_LINES.theorist.strain_vague[1]`: 練習負荷の累積が高い水準の選手がいます。今すぐどうという話ではありませんが
+- `COACH_VOICE_REPORT_LINES.theorist.strain_vague[2]`: 一部の選手で、負荷の累積が観測範囲の上の方に来ています。記録には残しておきます
+
+### theorist.strain_named[]
+
+- `COACH_VOICE_REPORT_LINES.theorist.strain_named[1]`: {name}選手、負荷の累積が高い水準です。今の数値には出ていません。ただ、将来どうなる影響が出るかはわかりませんね
+- `COACH_VOICE_REPORT_LINES.theorist.strain_named[2]`: {name}選手、体は今のところ持ちこたえています。この種のものは遅れて現れるものですが
+
+### theorist.strain_injured[]
+
+- `COACH_VOICE_REPORT_LINES.theorist.strain_injured[1]`: {name}選手の今回の負傷、軽微です。ただ、この種のものは記録に残り続けます
+- `COACH_VOICE_REPORT_LINES.theorist.strain_injured[2]`: {name}選手、離脱は短期で済みます。累積としては一件、加算されますが
+
 ### artisan_bukotsu.vague[]
 
 - `COACH_VOICE_REPORT_LINES.artisan_bukotsu.vague[1]`: ……誰かの目つきが、変わった
@@ -275,6 +320,21 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `COACH_VOICE_REPORT_LINES.artisan_bukotsu.far_from_cap[1]`: ……{name}の{stat}、まだ奥がある
 - `COACH_VOICE_REPORT_LINES.artisan_bukotsu.far_from_cap[2]`: ……{name}、{stat}はまだ伸びる。今は仕込み時だ
+
+### artisan_bukotsu.strain_vague[]
+
+- `COACH_VOICE_REPORT_LINES.artisan_bukotsu.strain_vague[1]`: ……ひとり、体を削っとる。誰とは言わん
+- `COACH_VOICE_REPORT_LINES.artisan_bukotsu.strain_vague[2]`: ……無理を通しとる奴がおる。今は、保つ
+
+### artisan_bukotsu.strain_named[]
+
+- `COACH_VOICE_REPORT_LINES.artisan_bukotsu.strain_named[1]`: ……{name}、無理を通しとるな。……今は、な
+- `COACH_VOICE_REPORT_LINES.artisan_bukotsu.strain_named[2]`: ……{name}、体に借りを作っとる。返す日が来る
+
+### artisan_bukotsu.strain_injured[]
+
+- `COACH_VOICE_REPORT_LINES.artisan_bukotsu.strain_injured[1]`: ……{name}のあれ、軽い怪我だが……。まぁ、軽いうちは、大丈夫だろう
+- `COACH_VOICE_REPORT_LINES.artisan_bukotsu.strain_injured[2]`: ……{name}、すぐ戻る。だが、残る
 
 ### artisan_seihitsu.vague[]
 
@@ -317,6 +377,21 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `COACH_VOICE_REPORT_LINES.artisan_seihitsu.far_from_cap[1]`: ……{name}さんの{stat}、まだ奥があります
 - `COACH_VOICE_REPORT_LINES.artisan_seihitsu.far_from_cap[2]`: ……{name}さん、{stat}はまだ伸びます。今は仕込み時ですね
 
+### artisan_seihitsu.strain_vague[]
+
+- `COACH_VOICE_REPORT_LINES.artisan_seihitsu.strain_vague[1]`: ……どなたか、体を削っておられます。お名前は申しません
+- `COACH_VOICE_REPORT_LINES.artisan_seihitsu.strain_vague[2]`: ……無理を通しておられる方がいます。今は、保っています
+
+### artisan_seihitsu.strain_named[]
+
+- `COACH_VOICE_REPORT_LINES.artisan_seihitsu.strain_named[1]`: ……{name}さん、無理を通しておられますね。……今は、まだ
+- `COACH_VOICE_REPORT_LINES.artisan_seihitsu.strain_named[2]`: ……{name}さん、体に借りを作っておられます。返す日が参ります
+
+### artisan_seihitsu.strain_injured[]
+
+- `COACH_VOICE_REPORT_LINES.artisan_seihitsu.strain_injured[1]`: ……{name}さんのお怪我、軽いものです。……軽いうちは
+- `COACH_VOICE_REPORT_LINES.artisan_seihitsu.strain_injured[2]`: ……{name}さん、すぐ戻られます。ですが、残ります
+
 ### mentor.vague[]
 
 - `COACH_VOICE_REPORT_LINES.mentor.vague[1]`: 誰かの表情が、最近柔らかくなってきましたよ
@@ -357,6 +432,21 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `COACH_VOICE_REPORT_LINES.mentor.far_from_cap[1]`: {name}さんの{stat}、まだまだこれからですよ。楽しみです
 - `COACH_VOICE_REPORT_LINES.mentor.far_from_cap[2]`: {name}さん、{stat}には十分な余地が残っています。焦らず育てましょう
+
+### mentor.strain_vague[]
+
+- `COACH_VOICE_REPORT_LINES.mentor.strain_vague[1]`: ひとり、少し無理をしている子がいます。……今は元気なんですけどね
+- `COACH_VOICE_REPORT_LINES.mentor.strain_vague[2]`: 頑張りすぎている子がいる気がします。今はまだ、平気そうにしていますが
+
+### mentor.strain_named[]
+
+- `COACH_VOICE_REPORT_LINES.mentor.strain_named[1]`: {name}さん、よく頑張っています。……頑張りすぎていないといいのですが
+- `COACH_VOICE_REPORT_LINES.mentor.strain_named[2]`: {name}さん、体はまだ持ちこたえています。……今のうちに、休ませてあげたいところです
+
+### mentor.strain_injured[]
+
+- `COACH_VOICE_REPORT_LINES.mentor.strain_injured[1]`: {name}さんの怪我、軽いものですけれど。……これが先々の問題にならなければいいのですが
+- `COACH_VOICE_REPORT_LINES.mentor.strain_injured[2]`: {name}さん、すぐ戻れます。……ただ、こういうものは積み重なりますからね
 
 ### bigheart_oyaji.vague[]
 
@@ -399,6 +489,21 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `COACH_VOICE_REPORT_LINES.bigheart_oyaji.far_from_cap[1]`: {name}の{stat}、まだまだ伸びるよこれ。楽しみだねえ
 - `COACH_VOICE_REPORT_LINES.bigheart_oyaji.far_from_cap[2]`: {name}、{stat}には余裕あるよ。今のうちにしっかり鍛えとこう
 
+### bigheart_oyaji.strain_vague[]
+
+- `COACH_VOICE_REPORT_LINES.bigheart_oyaji.strain_vague[1]`: 誰とは言わねえけどよ、ちょっと無理してる奴がいるんだよなあ
+- `COACH_VOICE_REPORT_LINES.bigheart_oyaji.strain_vague[2]`: 無茶してる奴がいるんだよ。今は平気な顔してるけどなあ
+
+### bigheart_oyaji.strain_named[]
+
+- `COACH_VOICE_REPORT_LINES.bigheart_oyaji.strain_named[1]`: {name}、よく頑張ってるよ。……頑張りすぎてなきゃいいんだけどなあ
+- `COACH_VOICE_REPORT_LINES.bigheart_oyaji.strain_named[2]`: {name}、今は体が持ってるよ。持ってるうちが花なんだよなあ、ああいうのは
+
+### bigheart_oyaji.strain_injured[]
+
+- `COACH_VOICE_REPORT_LINES.bigheart_oyaji.strain_injured[1]`: {name}のあの怪我、大したことねえよ。……大したことにならなきゃいいけどなあ
+- `COACH_VOICE_REPORT_LINES.bigheart_oyaji.strain_injured[2]`: {name}、すぐ戻るさ。……まあ、こういうのは積もるんだけどな
+
 ### bigheart_anego.vague[]
 
 - `COACH_VOICE_REPORT_LINES.bigheart_anego.vague[1]`: 誰とは言わないけどね、目つきが変わった子がいるのよ
@@ -439,6 +544,21 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `COACH_VOICE_REPORT_LINES.bigheart_anego.far_from_cap[1]`: {name}の{stat}、まだまだ伸びるわよこれ。楽しみね
 - `COACH_VOICE_REPORT_LINES.bigheart_anego.far_from_cap[2]`: {name}、{stat}には余裕あるわ。今のうちにしっかり鍛えときましょ
+
+### bigheart_anego.strain_vague[]
+
+- `COACH_VOICE_REPORT_LINES.bigheart_anego.strain_vague[1]`: 誰とは言わないけどね、ちょっと無理してる子がいるのよ
+- `COACH_VOICE_REPORT_LINES.bigheart_anego.strain_vague[2]`: 無茶してる子がいるわ。今は平気な顔してるけどね
+
+### bigheart_anego.strain_named[]
+
+- `COACH_VOICE_REPORT_LINES.bigheart_anego.strain_named[1]`: {name}、よく頑張ってるわ。……頑張りすぎてなきゃいいんだけどね
+- `COACH_VOICE_REPORT_LINES.bigheart_anego.strain_named[2]`: {name}、今は体が持ってるわ。持ってるうちが花なのよ、ああいうのは
+
+### bigheart_anego.strain_injured[]
+
+- `COACH_VOICE_REPORT_LINES.bigheart_anego.strain_injured[1]`: {name}のあの怪我、大したことないわ。……大したことにならなきゃいいけどね
+- `COACH_VOICE_REPORT_LINES.bigheart_anego.strain_injured[2]`: {name}、すぐ戻るわよ。……まあ、こういうのは積もるんだけどね
 
 ## `COACH_VOICE_RETIRE_LINES`
 
@@ -517,6 +637,42 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `COACH_VOICE_RETIRE_LINES.bigheart_anego.A_likely[1]`: 多分通るんじゃないかしら。あの子薄々わかってる顔してるわ
 - `COACH_VOICE_RETIRE_LINES.bigheart_anego.A_iffy[1]`: 読めないのよねえ、これが。闘志はあるけど体がついてこないみたいでね
 - `COACH_VOICE_RETIRE_LINES.bigheart_anego.A_hard[1]`: やめときなさい、今は。あの目はまだ辞める目じゃないわよ、絶対に
+
+## `HEAT_STATE_COACH_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: 道場でコーチが漏らす、熱量についての観察。全voice共通の中立形。 / growth-rebalance v1.0 の strain_*（将来のツケ）とは役割が別: / こちらは「今週この子に追い込みを入れる価値があるか」だけを語る。
+- 本数: 21
+
+### fresh[]
+
+- `HEAT_STATE_COACH_LINES.fresh[1]`: {name}、今日はよく動いてる。仕込むなら今だ
+- `HEAT_STATE_COACH_LINES.fresh[2]`: {name}の体が、新しい動きを素直に飲み込んでいる
+- `HEAT_STATE_COACH_LINES.fresh[3]`: 今の{name}なら、多少きつくしても全部持っていく
+- `HEAT_STATE_COACH_LINES.fresh[4]`: {name}の足が軽い。こういう週こそ厚く積ませたい
+- `HEAT_STATE_COACH_LINES.fresh[5]`: {name}、伸びる顔をしている。今日の一本は残るぞ
+- `HEAT_STATE_COACH_LINES.fresh[6]`: {name}は休み明けの体だ。一番よく入る時期に来ている
+- `HEAT_STATE_COACH_LINES.fresh[7]`: {name}、今週は当たり週だ。使うなら、ここで使え
+
+### warm[]
+
+- `HEAT_STATE_COACH_LINES.warm[1]`: {name}、悪くはない。ただ、先週ほどは入っていかない
+- `HEAT_STATE_COACH_LINES.warm[2]`: {name}の伸びが少し鈍ってきた。詰めすぎたか
+- `HEAT_STATE_COACH_LINES.warm[3]`: {name}、同じメニューなのに返りが薄い。そろそろ一息か
+- `HEAT_STATE_COACH_LINES.warm[4]`: {name}、動けてはいる。だが、切れがひとつ落ちている
+- `HEAT_STATE_COACH_LINES.warm[5]`: {name}の体が慣れてきた。効きが落ちる頃合いだ
+- `HEAT_STATE_COACH_LINES.warm[6]`: {name}、今週も同じ調子で行くなら、得は薄いぞ
+- `HEAT_STATE_COACH_LINES.warm[7]`: {name}にきついのを続けるか。…見極めどきだな
+
+### heavy[]
+
+- `HEAT_STATE_COACH_LINES.heavy[1]`: {name}、今日は体が重い。何をやらせても素通りだ
+- `HEAT_STATE_COACH_LINES.heavy[2]`: 今の{name}に課しても、削るだけで何も積まれない
+- `HEAT_STATE_COACH_LINES.heavy[3]`: {name}は追い込みすぎだ。一度、外してやってくれ
+- `HEAT_STATE_COACH_LINES.heavy[4]`: {name}、汗はかいている。だが、身についてはいない
+- `HEAT_STATE_COACH_LINES.heavy[5]`: {name}の体はもう受け付けていない。休ませれば戻る
+- `HEAT_STATE_COACH_LINES.heavy[6]`: 今の{name}にやらせるのは、怪我を買うようなものだ
+- `HEAT_STATE_COACH_LINES.heavy[7]`: {name}、一週抜けばまた入るようになる。それだけの話だ
 
 ## `COACH_VOICE_HIRE_LINES`
 

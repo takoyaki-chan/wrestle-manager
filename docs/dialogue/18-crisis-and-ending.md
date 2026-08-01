@@ -33,10 +33,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CRISIS_DIALOGUE.enter.polite[1]`: 資金が、そのような状態でしたか……。私にできることがあれば、何でもおっしゃってください
 - `CRISIS_DIALOGUE.enter.polite[2]`: 諦めずに、最後まで力を尽くしましょう
 
-### enter.normal[]
+### enter.standard[]
 
-- `CRISIS_DIALOGUE.enter.normal[1]`: 社長、諦めずに頑張りましょう。何とかなるはずです
-- `CRISIS_DIALOGUE.enter.normal[2]`: 私たちにできることを、ひとつずつやっていきましょう
+- `CRISIS_DIALOGUE.enter.standard[1]`: 社長、諦めずに頑張りましょう。何とかなるはずです
+- `CRISIS_DIALOGUE.enter.standard[2]`: 私たちにできることを、ひとつずつやっていきましょう
 
 ## `GAMEOVER_LINES`
 
@@ -132,23 +132,23 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GAMEOVER_LINES.fighter.polite.low[2]`: いえ、何も申し上げることはございません
 - `GAMEOVER_LINES.fighter.polite.low[3]`: ……失礼いたします
 
-### fighter.normal.high[]
+### fighter.standard.high[]
 
-- `GAMEOVER_LINES.fighter.normal.high[1]`: お疲れ様でした、社長。ここで戦えたこと、忘れません
-- `GAMEOVER_LINES.fighter.normal.high[2]`: いい経験になりました。本当にありがとうございました
-- `GAMEOVER_LINES.fighter.normal.high[3]`: また、どこかのリングで会えますように
+- `GAMEOVER_LINES.fighter.standard.high[1]`: お疲れ様でした、社長。ここで戦えたこと、忘れません
+- `GAMEOVER_LINES.fighter.standard.high[2]`: いい経験になりました。本当にありがとうございました
+- `GAMEOVER_LINES.fighter.standard.high[3]`: また、どこかのリングで会えますように
 
-### fighter.normal.mid[]
+### fighter.standard.mid[]
 
-- `GAMEOVER_LINES.fighter.normal.mid[1]`: 仕方ないですね。次の場所を探します
-- `GAMEOVER_LINES.fighter.normal.mid[2]`: こうなったら、新しい団体に移るしかありません
-- `GAMEOVER_LINES.fighter.normal.mid[3]`: ……無念です
+- `GAMEOVER_LINES.fighter.standard.mid[1]`: 仕方ないですね。次の場所を探します
+- `GAMEOVER_LINES.fighter.standard.mid[2]`: こうなったら、新しい団体に移るしかありません
+- `GAMEOVER_LINES.fighter.standard.mid[3]`: ……無念です
 
-### fighter.normal.low[]
+### fighter.standard.low[]
 
-- `GAMEOVER_LINES.fighter.normal.low[1]`: 結局こうなったか
-- `GAMEOVER_LINES.fighter.normal.low[2]`: 想定の範囲内です
-- `GAMEOVER_LINES.fighter.normal.low[3]`: ……何も言うことはありません
+- `GAMEOVER_LINES.fighter.standard.low[1]`: 結局こうなったか
+- `GAMEOVER_LINES.fighter.standard.low[2]`: 想定の範囲内です
+- `GAMEOVER_LINES.fighter.standard.low[3]`: ……何も言うことはありません
 
 ### coach[]
 
@@ -165,152 +165,152 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: v2.1: エンディング演出セリフ — ending-gameover-spec-v1.0.md §1.4
 - 本数: 52
 
-### fighter.normal._default[]
+### fighter.standard.normal[]
 
-- `ENDING_LINES.fighter.normal._default[1]`: この団体で戦えて、本当に良かった
-- `ENDING_LINES.fighter.normal._default[2]`: 入団した時は、まさかここまで来れるなんて思わなかった
-- `ENDING_LINES.fighter.normal._default[3]`: 最高の仲間と、最高の舞台。感謝しかないよ
+- `ENDING_LINES.fighter.standard.normal[1]`: この団体で戦えて、本当に良かった
+- `ENDING_LINES.fighter.standard.normal[2]`: 入団した時は、まさかここまで来れるなんて思わなかった
+- `ENDING_LINES.fighter.standard.normal[3]`: 最高の仲間と、最高の舞台。感謝しかないよ
 
-### fighter.normal.ojousama[]
+### fighter.standard.bold[]
 
-- `ENDING_LINES.fighter.normal.ojousama[1]`: ここまで来れたのね…感無量だわ
+- `ENDING_LINES.fighter.standard.bold[1]`: ここが頂点？…でもまだ先がある気がする
+- `ENDING_LINES.fighter.standard.bold[2]`: ここで終わりじゃない。もっと強くなって、もっと上を目指す
+- `ENDING_LINES.fighter.standard.bold[3]`: 私たちの戦いが業界を変えたってことね。誇りに思うよ
 
-### fighter.normal.delinquent[]
+### fighter.standard.quiet[]
 
-- `ENDING_LINES.fighter.normal.delinquent[1]`: やってやったぜ！最高だ！
+- `ENDING_LINES.fighter.standard.quiet[1]`: ………ありがとうございました（静かに涙を流している）
 
-### fighter.normal.seductive[]
+### fighter.standard.shy[]
 
-- `ENDING_LINES.fighter.normal.seductive[1]`: ここまで来れたのね…最高の気分だわ
+- `ENDING_LINES.fighter.standard.shy[1]`: こ、こんなに幸せなことがあっていいのかな…
 
-### fighter.normal.cool[]
+### fighter.standard.easygoing[]
 
-- `ENDING_LINES.fighter.normal.cool[1]`: ……終わったか。……悪くない
+- `ENDING_LINES.fighter.standard.easygoing[1]`: みんなで掴んだ頂点だ！最高のチームだよ！
+- `ENDING_LINES.fighter.standard.easygoing[2]`: お金がなかった頃のことを思い出すと…よくここまで来たよね
 
-### fighter.normal.polite[]
+### fighter.standard.earnest[]
 
-- `ENDING_LINES.fighter.normal.polite[1]`: 最後まで走り切れました。…ありがとうございました
+- `ENDING_LINES.fighter.standard.earnest[1]`: 練習してきたことが全部報われた。泣きそう
+- `ENDING_LINES.fighter.standard.earnest[2]`: あの時辞めなくてよかった。この瞬間のために全部あったんだ
 
-### fighter.normal.composed[]
+### fighter.standard.emotional[]
 
-- `ENDING_LINES.fighter.normal.composed[1]`: …ここまで来れたか。…悪くない景色だね
+- `ENDING_LINES.fighter.standard.emotional[1]`: 涙が止まらない…！こんなに幸せなことがあっていいのかな…！
+- `ENDING_LINES.fighter.standard.emotional[2]`: みんなありがとう…！最高だよ…！
 
-### fighter.bold._default[]
+### fighter.ojousama.normal[]
 
-- `ENDING_LINES.fighter.bold._default[1]`: ここが頂点？…でもまだ先がある気がする
-- `ENDING_LINES.fighter.bold._default[2]`: ここで終わりじゃない。もっと強くなって、もっと上を目指す
-- `ENDING_LINES.fighter.bold._default[3]`: 私たちの戦いが業界を変えたってことね。誇りに思うよ
+- `ENDING_LINES.fighter.ojousama.normal[1]`: ここまで来れたのね…感無量だわ
 
-### fighter.bold.ojousama[]
+### fighter.ojousama.bold[]
 
-- `ENDING_LINES.fighter.bold.ojousama[1]`: これが頂点の景色？…馬鹿ね。まだまだ先はあってよ
+- `ENDING_LINES.fighter.ojousama.bold[1]`: これが頂点の景色？…馬鹿ね。まだまだ先はあってよ
 
-### fighter.bold.delinquent[]
+### fighter.ojousama.easygoing[]
 
-- `ENDING_LINES.fighter.bold.delinquent[1]`: てっぺん獲ったぜ！でもまだまだこれからだ！
+- `ENDING_LINES.fighter.ojousama.easygoing[1]`: 最後まで楽しゅうございましたわ。ありがとうございます
 
-### fighter.bold.cool[]
+### fighter.ojousama.earnest[]
 
-- `ENDING_LINES.fighter.bold.cool[1]`: …頂点だ。だが、まだ先がある
+- `ENDING_LINES.fighter.ojousama.earnest[1]`: 努力が報われましたわ…感謝しかありませんの
 
-### fighter.bold.seductive[]
+### fighter.delinquent.normal[]
 
-- `ENDING_LINES.fighter.bold.seductive[1]`: 頂点に立ったわ。でもまだ先があるみたいね
+- `ENDING_LINES.fighter.delinquent.normal[1]`: やってやったぜ！最高だ！
 
-### fighter.bold.polite[]
+### fighter.delinquent.bold[]
 
-- `ENDING_LINES.fighter.bold.polite[1]`: 最後まで戦い抜けました。…悔いはありません
+- `ENDING_LINES.fighter.delinquent.bold[1]`: てっぺん獲ったぜ！でもまだまだこれからだ！
 
-### fighter.bold.composed[]
+### fighter.delinquent.easygoing[]
 
-- `ENDING_LINES.fighter.bold.composed[1]`: …頂点か。…でもまだ先がある気がするね
+- `ENDING_LINES.fighter.delinquent.easygoing[1]`: 最高だぜ！みんなありがとな！
 
-### fighter.quiet._default[]
+### fighter.seductive.normal[]
 
-- `ENDING_LINES.fighter.quiet._default[1]`: ………ありがとうございました（静かに涙を流している）
+- `ENDING_LINES.fighter.seductive.normal[1]`: ここまで来れたのね…最高の気分だわ
 
-### fighter.quiet.cool[]
+### fighter.seductive.bold[]
 
-- `ENDING_LINES.fighter.quiet.cool[1]`: …ここまで来たか
+- `ENDING_LINES.fighter.seductive.bold[1]`: 頂点に立ったわ。でもまだ先があるみたいね
 
-### fighter.quiet.polite[]
+### fighter.seductive.quiet[]
 
-- `ENDING_LINES.fighter.quiet.polite[1]`: …ここまで来れるなんて…社長…ありがとうございます
+- `ENDING_LINES.fighter.seductive.quiet[1]`: ………終わった…わね。…ありがとう
 
-### fighter.quiet.seductive[]
+### fighter.seductive.easygoing[]
 
-- `ENDING_LINES.fighter.quiet.seductive[1]`: ………終わった…わね。…ありがとう
+- `ENDING_LINES.fighter.seductive.easygoing[1]`: 最高の景色ね。みんなのおかげだわ
 
-### fighter.quiet.composed[]
+### fighter.seductive.earnest[]
 
-- `ENDING_LINES.fighter.quiet.composed[1]`: ……ここまで来た。…ありがとう
+- `ENDING_LINES.fighter.seductive.earnest[1]`: 積み重ねてきた全部が報われた…泣きそうだわ
 
-### fighter.shy._default[]
+### fighter.seductive.emotional[]
 
-- `ENDING_LINES.fighter.shy._default[1]`: こ、こんなに幸せなことがあっていいのかな…
+- `ENDING_LINES.fighter.seductive.emotional[1]`: リングを降りるわ……っ……ふふ、ここで戦えた日々、永遠に忘れない……ありがとう……
 
-### fighter.shy.polite[]
+### fighter.cool.normal[]
 
-- `ENDING_LINES.fighter.shy.polite[1]`: こ、これで…リングを降ります…あ、あの、応援してくれた皆さま…本当に、ありがとうございました…
+- `ENDING_LINES.fighter.cool.normal[1]`: ……終わったか。……悪くない
 
-### fighter.easygoing._default[]
+### fighter.cool.bold[]
 
-- `ENDING_LINES.fighter.easygoing._default[1]`: みんなで掴んだ頂点だ！最高のチームだよ！
-- `ENDING_LINES.fighter.easygoing._default[2]`: お金がなかった頃のことを思い出すと…よくここまで来たよね
+- `ENDING_LINES.fighter.cool.bold[1]`: …頂点だ。だが、まだ先がある
 
-### fighter.easygoing.delinquent[]
+### fighter.cool.quiet[]
 
-- `ENDING_LINES.fighter.easygoing.delinquent[1]`: 最高だぜ！みんなありがとな！
+- `ENDING_LINES.fighter.cool.quiet[1]`: …ここまで来たか
 
-### fighter.easygoing.seductive[]
+### fighter.polite.normal[]
 
-- `ENDING_LINES.fighter.easygoing.seductive[1]`: 最高の景色ね。みんなのおかげだわ
+- `ENDING_LINES.fighter.polite.normal[1]`: 最後まで走り切れました。…ありがとうございました
 
-### fighter.easygoing.polite[]
+### fighter.polite.bold[]
 
-- `ENDING_LINES.fighter.easygoing.polite[1]`: 最後まで楽しかったです！ ありがとうございました！
+- `ENDING_LINES.fighter.polite.bold[1]`: 最後まで戦い抜けました。…悔いはありません
 
-### fighter.easygoing.ojousama[]
+### fighter.polite.quiet[]
 
-- `ENDING_LINES.fighter.easygoing.ojousama[1]`: 最後まで楽しゅうございましたわ。ありがとうございます
+- `ENDING_LINES.fighter.polite.quiet[1]`: …ここまで来れるなんて…社長…ありがとうございます
 
-### fighter.easygoing.composed[]
+### fighter.polite.shy[]
 
-- `ENDING_LINES.fighter.easygoing.composed[1]`: …いい景色だね。…みんなのおかげだ
+- `ENDING_LINES.fighter.polite.shy[1]`: こ、これで…リングを降ります…あ、あの、応援してくれた皆さま…本当に、ありがとうございました…
 
-### fighter.earnest._default[]
+### fighter.polite.easygoing[]
 
-- `ENDING_LINES.fighter.earnest._default[1]`: 練習してきたことが全部報われた。泣きそう
-- `ENDING_LINES.fighter.earnest._default[2]`: あの時辞めなくてよかった。この瞬間のために全部あったんだ
+- `ENDING_LINES.fighter.polite.easygoing[1]`: 最後まで楽しかったです！ ありがとうございました！
 
-### fighter.earnest.polite[]
+### fighter.polite.earnest[]
 
-- `ENDING_LINES.fighter.earnest.polite[1]`: 積み重ねてきた全てが報われました…ありがとうございます
+- `ENDING_LINES.fighter.polite.earnest[1]`: 積み重ねてきた全てが報われました…ありがとうございます
 
-### fighter.earnest.ojousama[]
+### fighter.composed.normal[]
 
-- `ENDING_LINES.fighter.earnest.ojousama[1]`: 努力が報われましたわ…感謝しかありませんの
+- `ENDING_LINES.fighter.composed.normal[1]`: …ここまで来れたか。…悪くない景色だね
 
-### fighter.earnest.seductive[]
+### fighter.composed.bold[]
 
-- `ENDING_LINES.fighter.earnest.seductive[1]`: 積み重ねてきた全部が報われた…泣きそうだわ
+- `ENDING_LINES.fighter.composed.bold[1]`: …頂点か。…でもまだ先がある気がするね
 
-### fighter.earnest.composed[]
+### fighter.composed.quiet[]
 
-- `ENDING_LINES.fighter.earnest.composed[1]`: …積み重ねてきたものが、ここに繋がった。…感謝だね
+- `ENDING_LINES.fighter.composed.quiet[1]`: ……ここまで来た。…ありがとう
 
-### fighter.emotional._default[]
+### fighter.composed.easygoing[]
 
-- `ENDING_LINES.fighter.emotional._default[1]`: 涙が止まらない…！こんなに幸せなことがあっていいのかな…！
-- `ENDING_LINES.fighter.emotional._default[2]`: みんなありがとう…！最高だよ…！
+- `ENDING_LINES.fighter.composed.easygoing[1]`: …いい景色だね。…みんなのおかげだ
 
-### fighter.emotional.seductive[]
+### fighter.composed.earnest[]
 
-- `ENDING_LINES.fighter.emotional.seductive[1]`: リングを降りるわ……っ……ふふ、ここで戦えた日々、永遠に忘れない……ありがとう……
+- `ENDING_LINES.fighter.composed.earnest[1]`: …積み重ねてきたものが、ここに繋がった。…感謝だね
 
-### fighter.emotional.composed[]
+### fighter.composed.emotional[]
 
-- `ENDING_LINES.fighter.emotional.composed[1]`: …っ…ここまで来れた。…最高だ
+- `ENDING_LINES.fighter.composed.emotional[1]`: …っ…ここまで来れた。…最高だ
 
 ### coach[]
 

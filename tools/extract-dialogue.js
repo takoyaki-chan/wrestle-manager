@@ -769,8 +769,8 @@ function main() {
   readme.push('| `キャラタイプ別/` | 実在する archetype×personality の組(ALL_CHARS集計で34組)ごとに1ファイル。カテゴリ横断で全セリフを収録し、1枚目シートに在籍キャラ一覧を掲載。`_該当者なし.xlsx` は現在キャラのいない組み合わせの予備セリフ |');
   readme.push('| `キャラ個人別/` | `VICTORY_LINES` / `CHAR_PROFILES` などキャラID鍵のテーブル(キャラ名列つき) |');
   readme.push('| `ナレーション・記事/` | 話者のいないテキスト(新聞見出し・通知・黒田記者コラム・年代記など) |');
-  readme.push('| `コーチ/` | コーチ関連(選手とは別人格系統) |');
-  readme.push('| `その他セリフ/` | 話者はいるが archetype×personality 以外の軸で分岐するもの(派閥イベント・Glimpse Cascade など) |');
+  readme.push('| `コーチ/` | コーチ関連(選手とは別人格系統)。1ファイルに統合済み |');
+  readme.push('| `その他セリフ/` | 話者はいるが archetype×personality 以外の軸で分岐するもの。`派閥` / `関係性フラグ` / `その他` の3ファイルに統合済み(どの分類かは「カテゴリ」列で絞る) |');
   readme.push('| `_キャラ対応表.xlsx` | どの archetype×personality に誰がいるかの一覧(マトリクス表つき) |');
   readme.push('');
   readme.push('行の割り振りは「テーブル単位」ではなく「セリフ1本単位」で行っている: detectMeta が archetype+personality を両方解決でき、かつその組が実在キャラに存在するなら `キャラタイプ別/`、それ以外は由来テーブルごとに割り当てたホームフォルダへ。');
@@ -795,7 +795,7 @@ function main() {
   readme.push('');
   readme.push('### 列構成');
   readme.push('');
-  readme.push('`キャラタイプ別/` は archetype/personality 列の代わりに「カテゴリ」列(場面)を持つ。`キャラ個人別/` は「キャラ名」列を追加で持つ。それ以外(`ナレーション・記事/` `コーチ/` `その他セリフ/`)は以下の標準列。');
+  readme.push('`キャラタイプ別/` は archetype/personality 列の代わりに「カテゴリ」列(場面)を持つ。`キャラ個人別/` は「キャラ名」列を追加で持つ。それ以外(`ナレーション・記事/` `コーチ/` `その他セリフ/`)は以下の標準列(2026-08-01 の統合で「カテゴリ」列を追加)。');
   readme.push('');
   readme.push('| 列 | 内容 |');
   readme.push('|---|---|');

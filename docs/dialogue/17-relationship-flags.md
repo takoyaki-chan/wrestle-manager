@@ -43,11 +43,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-1.cool[1]`: {name}……行ったか。
 - `FLAG_DIALOGUE.M-1.cool[2]`: 次は、敵だ。
 
-### M-1.normal[]
+### M-1.standard[]
 
-- `FLAG_DIALOGUE.M-1.normal[1]`: {name}が抜けた。受け止めるしかないけど、釈然としない。
-- `FLAG_DIALOGUE.M-1.normal[2]`: あの練習場が{name}抜きで回るようになる。当たり前のように。それが寂しい。
-- `FLAG_DIALOGUE.M-1.normal[3]`: 行くなら行くで、こっちはこっちで前に進む。それだけだ。
+- `FLAG_DIALOGUE.M-1.standard[1]`: {name}が抜けた。受け止めるしかないけど、釈然としない。
+- `FLAG_DIALOGUE.M-1.standard[2]`: あの練習場が{name}抜きで回るようになる。当たり前のように。それが寂しい。
+- `FLAG_DIALOGUE.M-1.standard[3]`: 行くなら行くで、こっちはこっちで前に進む。それだけだ。
 
 ### M-2.composed[]
 
@@ -85,11 +85,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-2.cool[2]`: あの背中、追う。
 - `FLAG_DIALOGUE.M-2.cool[3]`: ……目標、決まった。
 
-### M-2.normal[]
+### M-2.standard[]
 
-- `FLAG_DIALOGUE.M-2.normal[1]`: {name2}の試合、本物だった。素直に追いかけたい。
-- `FLAG_DIALOGUE.M-2.normal[2]`: あれを見て動かないなら、選手として終わりだ。私も行く。
-- `FLAG_DIALOGUE.M-2.normal[3]`: 目標ができた。{name2}、見ててほしい。
+- `FLAG_DIALOGUE.M-2.standard[1]`: {name2}の試合、本物だった。素直に追いかけたい。
+- `FLAG_DIALOGUE.M-2.standard[2]`: あれを見て動かないなら、選手として終わりだ。私も行く。
+- `FLAG_DIALOGUE.M-2.standard[3]`: 目標ができた。{name2}、見ててほしい。
 
 ### M-3.composed[]
 
@@ -127,11 +127,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-3.cool[2]`: 隣、貰う。
 - `FLAG_DIALOGUE.M-3.cool[3]`: 次は、超える。
 
-### M-3.normal[]
+### M-3.standard[]
 
-- `FLAG_DIALOGUE.M-3.normal[1]`: {name2}を追いかけてきて、ようやく隣に立てた気がする。
-- `FLAG_DIALOGUE.M-3.normal[2]`: あの背中が目標だった。だから今日は素直に嬉しい。
-- `FLAG_DIALOGUE.M-3.normal[3]`: 追いついた、というよりは、同じ場所に立てた。それで十分だ。
+- `FLAG_DIALOGUE.M-3.standard[1]`: {name2}を追いかけてきて、ようやく隣に立てた気がする。
+- `FLAG_DIALOGUE.M-3.standard[2]`: あの背中が目標だった。だから今日は素直に嬉しい。
+- `FLAG_DIALOGUE.M-3.standard[3]`: 追いついた、というよりは、同じ場所に立てた。それで十分だ。
 
 ### M-4.composed[]
 
@@ -168,11 +168,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-4.cool[2]`: 行くな、と言うのも違う気がする。
 - `FLAG_DIALOGUE.M-4.cool[3]`: ……お疲れさま。
 
-### M-4.normal[]
+### M-4.standard[]
 
-- `FLAG_DIALOGUE.M-4.normal[1]`: {name2}が引退。背中を追っていた人がいなくなるのは、思った以上に重い。
-- `FLAG_DIALOGUE.M-4.normal[2]`: お疲れさまでした。続きは、私たちで。
-- `FLAG_DIALOGUE.M-4.normal[3]`: まだ追いつけていなかったのに、置いていくんですね。
+- `FLAG_DIALOGUE.M-4.standard[1]`: {name2}が引退。背中を追っていた人がいなくなるのは、思った以上に重い。
+- `FLAG_DIALOGUE.M-4.standard[2]`: お疲れさまでした。続きは、私たちで。
+- `FLAG_DIALOGUE.M-4.standard[3]`: まだ追いつけていなかったのに、置いていくんですね。
 
 ### M-5.composed[]
 
@@ -210,11 +210,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-5.cool[2]`: もう、見ない。
 - `FLAG_DIALOGUE.M-5.cool[3]`: ……目標、変える。
 
-### M-5.normal[]
+### M-5.standard[]
 
-- `FLAG_DIALOGUE.M-5.normal[1]`: {name2}も人間だった、ってことか。憧れるのはやめておく。
-- `FLAG_DIALOGUE.M-5.normal[2]`: あの頃の{name2}は格好良かった。今のあなたは、知らない人だ。
-- `FLAG_DIALOGUE.M-5.normal[3]`: 勝手な期待だった。降ろすしかない。
+- `FLAG_DIALOGUE.M-5.standard[1]`: {name2}も人間だった、ってことか。憧れるのはやめておく。
+- `FLAG_DIALOGUE.M-5.standard[2]`: あの頃の{name2}は格好良かった。今のあなたは、知らない人だ。
+- `FLAG_DIALOGUE.M-5.standard[3]`: 勝手な期待だった。降ろすしかない。
 
 ### M-6.composed[]
 
@@ -252,11 +252,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-6.cool[2]`: ……重荷、下ろせる。
 - `FLAG_DIALOGUE.M-6.cool[3]`: 次は、普通の試合をする。
 
-### M-6.normal[]
+### M-6.standard[]
 
-- `FLAG_DIALOGUE.M-6.normal[1]`: {name2}に勝った。長かった。本当に長かった。
-- `FLAG_DIALOGUE.M-6.normal[2]`: 羨んでた相手に勝つと、こうも違うものなんだな。
-- `FLAG_DIALOGUE.M-6.normal[3]`: ようやく、自分の試合に集中できる。
+- `FLAG_DIALOGUE.M-6.standard[1]`: {name2}に勝った。長かった。本当に長かった。
+- `FLAG_DIALOGUE.M-6.standard[2]`: 羨んでた相手に勝つと、こうも違うものなんだな。
+- `FLAG_DIALOGUE.M-6.standard[3]`: ようやく、自分の試合に集中できる。
 
 ### M-7.composed[]
 
@@ -294,11 +294,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-7.cool[2]`: ……決着、なし。
 - `FLAG_DIALOGUE.M-7.cool[3]`: 中で、片付ける。
 
-### M-7.normal[]
+### M-7.standard[]
 
-- `FLAG_DIALOGUE.M-7.normal[1]`: {name2}、引退か。羨んだまま終わるのは、悔しい気もする。
-- `FLAG_DIALOGUE.M-7.normal[2]`: 勝ち越せないまま終わるのも、人生だな。
-- `FLAG_DIALOGUE.M-7.normal[3]`: もう追えない相手になった。それだけのことだ。
+- `FLAG_DIALOGUE.M-7.standard[1]`: {name2}、引退か。羨んだまま終わるのは、悔しい気もする。
+- `FLAG_DIALOGUE.M-7.standard[2]`: 勝ち越せないまま終わるのも、人生だな。
+- `FLAG_DIALOGUE.M-7.standard[3]`: もう追えない相手になった。それだけのことだ。
 
 ### M-8.composed[]
 
@@ -336,11 +336,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-8.cool[2]`: ……色、薄い。
 - `FLAG_DIALOGUE.M-8.cool[3]`: 消えかけ。
 
-### M-8.normal[]
+### M-8.standard[]
 
-- `FLAG_DIALOGUE.M-8.normal[1]`: {name2}への嫉妬、一年経ってだいぶ風化してきた。
-- `FLAG_DIALOGUE.M-8.normal[2]`: 当時はあんなに焦ってたのに、不思議だな。
-- `FLAG_DIALOGUE.M-8.normal[3]`: モヤモヤが、ぼんやりしてきた感じだ。
+- `FLAG_DIALOGUE.M-8.standard[1]`: {name2}への嫉妬、一年経ってだいぶ風化してきた。
+- `FLAG_DIALOGUE.M-8.standard[2]`: 当時はあんなに焦ってたのに、不思議だな。
+- `FLAG_DIALOGUE.M-8.standard[3]`: モヤモヤが、ぼんやりしてきた感じだ。
 
 ### M-9.composed[]
 
@@ -378,11 +378,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-9.cool[2]`: 透明。
 - `FLAG_DIALOGUE.M-9.cool[3]`: ……痛まない。
 
-### M-9.normal[]
+### M-9.standard[]
 
-- `FLAG_DIALOGUE.M-9.normal[1]`: 二年か。あの嫉妬、もうほとんど残ってない。
-- `FLAG_DIALOGUE.M-9.normal[2]`: {name2}を見ても、心が動かなくなった。
-- `FLAG_DIALOGUE.M-9.normal[3]`: 時間が解決した、ってこういうことか。
+- `FLAG_DIALOGUE.M-9.standard[1]`: 二年か。あの嫉妬、もうほとんど残ってない。
+- `FLAG_DIALOGUE.M-9.standard[2]`: {name2}を見ても、心が動かなくなった。
+- `FLAG_DIALOGUE.M-9.standard[3]`: 時間が解決した、ってこういうことか。
 
 ### M-10.composed[]
 
@@ -420,11 +420,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-10.cool[2]`: ……完全に、消えた。
 - `FLAG_DIALOGUE.M-10.cool[3]`: 区切り。
 
-### M-10.normal[]
+### M-10.standard[]
 
-- `FLAG_DIALOGUE.M-10.normal[1]`: 三年か。{name2}への嫉妬、もう完全に過去だ。
-- `FLAG_DIALOGUE.M-10.normal[2]`: あんなに気にしてた相手が、今では風景の一部だ。
-- `FLAG_DIALOGUE.M-10.normal[3]`: 長かった。区切りをつけられて、よかった。
+- `FLAG_DIALOGUE.M-10.standard[1]`: 三年か。{name2}への嫉妬、もう完全に過去だ。
+- `FLAG_DIALOGUE.M-10.standard[2]`: あんなに気にしてた相手が、今では風景の一部だ。
+- `FLAG_DIALOGUE.M-10.standard[3]`: 長かった。区切りをつけられて、よかった。
 
 ### M-11.composed[]
 
@@ -462,11 +462,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-11.cool[2]`: ……ざわつく。
 - `FLAG_DIALOGUE.M-11.cool[3]`: 比べてしまう。
 
-### M-11.normal[]
+### M-11.standard[]
 
-- `FLAG_DIALOGUE.M-11.normal[1]`: {name2}を見ているとモヤモヤする。これが嫉妬か。
-- `FLAG_DIALOGUE.M-11.normal[2]`: 同じスタートだったはずなのに、もう同じ景色を見ていない。
-- `FLAG_DIALOGUE.M-11.normal[3]`: 羨ましい。素直に言えなかったから、こうなる。
+- `FLAG_DIALOGUE.M-11.standard[1]`: {name2}を見ているとモヤモヤする。これが嫉妬か。
+- `FLAG_DIALOGUE.M-11.standard[2]`: 同じスタートだったはずなのに、もう同じ景色を見ていない。
+- `FLAG_DIALOGUE.M-11.standard[3]`: 羨ましい。素直に言えなかったから、こうなる。
 
 ### M-12.returner.composed[]
 
@@ -504,11 +504,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-12.returner.cool[2]`: 戻った。
 - `FLAG_DIALOGUE.M-12.returner.cool[3]`: ……すまない。
 
-### M-12.returner.normal[]
+### M-12.returner.standard[]
 
-- `FLAG_DIALOGUE.M-12.returner.normal[1]`: 戻ってきました。お騒がせしてすみません。
-- `FLAG_DIALOGUE.M-12.returner.normal[2]`: いろいろあったけど、また一緒にやれたら嬉しいです。
-- `FLAG_DIALOGUE.M-12.returner.normal[3]`: ただいま。これから、またよろしく。
+- `FLAG_DIALOGUE.M-12.returner.standard[1]`: 戻ってきました。お騒がせしてすみません。
+- `FLAG_DIALOGUE.M-12.returner.standard[2]`: いろいろあったけど、また一緒にやれたら嬉しいです。
+- `FLAG_DIALOGUE.M-12.returner.standard[3]`: ただいま。これから、またよろしく。
 
 ### M-12.forgiven.composed[]
 
@@ -545,11 +545,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-12.forgiven.cool[2]`: おかえり。
 - `FLAG_DIALOGUE.M-12.forgiven.cool[3]`: ……それでいい。
 
-### M-12.forgiven.normal[]
+### M-12.forgiven.standard[]
 
-- `FLAG_DIALOGUE.M-12.forgiven.normal[1]`: {name2}、おかえり。色々あったけど、もう過ぎた話だ。
-- `FLAG_DIALOGUE.M-12.forgiven.normal[2]`: よく戻ってきたな。歓迎するよ。
-- `FLAG_DIALOGUE.M-12.forgiven.normal[3]`: 一緒にやれるなら、それで十分だ。
+- `FLAG_DIALOGUE.M-12.forgiven.standard[1]`: {name2}、おかえり。色々あったけど、もう過ぎた話だ。
+- `FLAG_DIALOGUE.M-12.forgiven.standard[2]`: よく戻ってきたな。歓迎するよ。
+- `FLAG_DIALOGUE.M-12.forgiven.standard[3]`: 一緒にやれるなら、それで十分だ。
 
 ### M-12.notForgiven.composed[]
 
@@ -586,11 +586,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-12.notForgiven.cool[2]`: ……話さない。
 - `FLAG_DIALOGUE.M-12.notForgiven.cool[3]`: 距離を、置く。
 
-### M-12.notForgiven.normal[]
+### M-12.notForgiven.standard[]
 
-- `FLAG_DIALOGUE.M-12.notForgiven.normal[1]`: {name2}、戻ったか。悪いけど、前と同じには戻れない。
-- `FLAG_DIALOGUE.M-12.notForgiven.normal[2]`: 時間がいる。今は無理だ。
-- `FLAG_DIALOGUE.M-12.notForgiven.normal[3]`: とりあえずは、距離を取らせてもらう。
+- `FLAG_DIALOGUE.M-12.notForgiven.standard[1]`: {name2}、戻ったか。悪いけど、前と同じには戻れない。
+- `FLAG_DIALOGUE.M-12.notForgiven.standard[2]`: 時間がいる。今は無理だ。
+- `FLAG_DIALOGUE.M-12.notForgiven.standard[3]`: とりあえずは、距離を取らせてもらう。
 
 ### M-13.master.composed[]
 
@@ -628,11 +628,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-13.master.cool[2]`: ……ついて、来い。
 - `FLAG_DIALOGUE.M-13.master.cool[3]`: よろしく。
 
-### M-13.master.normal[]
+### M-13.master.standard[]
 
-- `FLAG_DIALOGUE.M-13.master.normal[1]`: {name2}、よろしくな。師匠と呼ばれるのは少しくすぐったいけど。
-- `FLAG_DIALOGUE.M-13.master.normal[2]`: お前の成長、見届けるよ。
-- `FLAG_DIALOGUE.M-13.master.normal[3]`: 一緒に強くなろう、{name2}。
+- `FLAG_DIALOGUE.M-13.master.standard[1]`: {name2}、よろしくな。師匠と呼ばれるのは少しくすぐったいけど。
+- `FLAG_DIALOGUE.M-13.master.standard[2]`: お前の成長、見届けるよ。
+- `FLAG_DIALOGUE.M-13.master.standard[3]`: 一緒に強くなろう、{name2}。
 
 ### M-13.disciple.composed[]
 
@@ -670,11 +670,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-13.disciple.cool[2]`: ……師匠。
 - `FLAG_DIALOGUE.M-13.disciple.cool[3]`: よろしく。
 
-### M-13.disciple.normal[]
+### M-13.disciple.standard[]
 
-- `FLAG_DIALOGUE.M-13.disciple.normal[1]`: {name2}先輩、ありがとうございます。これから本気でついていきます。
-- `FLAG_DIALOGUE.M-13.disciple.normal[2]`: 師匠……ちょっと照れるけど、嬉しいです。
-- `FLAG_DIALOGUE.M-13.disciple.normal[3]`: 弟子として、頑張ります。
+- `FLAG_DIALOGUE.M-13.disciple.standard[1]`: {name2}先輩、ありがとうございます。これから本気でついていきます。
+- `FLAG_DIALOGUE.M-13.disciple.standard[2]`: 師匠……ちょっと照れるけど、嬉しいです。
+- `FLAG_DIALOGUE.M-13.disciple.standard[3]`: 弟子として、頑張ります。
 
 ### M-14.composed[]
 
@@ -712,11 +712,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-14.cool[2]`: 隣から、敵に。
 - `FLAG_DIALOGUE.M-14.cool[3]`: 燃やす。
 
-### M-14.normal[]
+### M-14.standard[]
 
-- `FLAG_DIALOGUE.M-14.normal[1]`: {name2}、同期からライバルへ。いい関係に育ったな。
-- `FLAG_DIALOGUE.M-14.normal[2]`: 長く一緒にいたからこそ、こうしてぶつかれる。
-- `FLAG_DIALOGUE.M-14.normal[3]`: ライバル同期。悪くない響きだ、{name2}。
+- `FLAG_DIALOGUE.M-14.standard[1]`: {name2}、同期からライバルへ。いい関係に育ったな。
+- `FLAG_DIALOGUE.M-14.standard[2]`: 長く一緒にいたからこそ、こうしてぶつかれる。
+- `FLAG_DIALOGUE.M-14.standard[3]`: ライバル同期。悪くない響きだ、{name2}。
 
 ### M-15.composed[]
 
@@ -754,11 +754,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-15.cool[2]`: ……借り、返す。
 - `FLAG_DIALOGUE.M-15.cool[3]`: 言葉は、いらない。
 
-### M-15.normal[]
+### M-15.standard[]
 
-- `FLAG_DIALOGUE.M-15.normal[1]`: {name2}に負けた。実感が湧かないな。
-- `FLAG_DIALOGUE.M-15.normal[2]`: 番狂わせ、される側になるとは。借りはすぐ返す。
-- `FLAG_DIALOGUE.M-15.normal[3]`: やられたな。次までに立て直す。
+- `FLAG_DIALOGUE.M-15.standard[1]`: {name2}に負けた。実感が湧かないな。
+- `FLAG_DIALOGUE.M-15.standard[2]`: 番狂わせ、される側になるとは。借りはすぐ返す。
+- `FLAG_DIALOGUE.M-15.standard[3]`: やられたな。次までに立て直す。
 
 ### M-16.composed[]
 
@@ -795,11 +795,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-16.cool[2]`: 今は、見ないで。
 - `FLAG_DIALOGUE.M-16.cool[3]`: ……お願い。
 
-### M-16.normal[]
+### M-16.standard[]
 
-- `FLAG_DIALOGUE.M-16.normal[1]`: {name2}、悪い。今は、お前のことすら鬱陶しい。一人にさせてくれ。
-- `FLAG_DIALOGUE.M-16.normal[2]`: お前が悪いんじゃない。わかってる。でも、今は無理だ。
-- `FLAG_DIALOGUE.M-16.normal[3]`: ごめんな、{name2}。少し時間をくれ。
+- `FLAG_DIALOGUE.M-16.standard[1]`: {name2}、悪い。今は、お前のことすら鬱陶しい。一人にさせてくれ。
+- `FLAG_DIALOGUE.M-16.standard[2]`: お前が悪いんじゃない。わかってる。でも、今は無理だ。
+- `FLAG_DIALOGUE.M-16.standard[3]`: ごめんな、{name2}。少し時間をくれ。
 
 ### M-17.composed[]
 
@@ -836,11 +836,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-17.cool[2]`: ……おめでとう。
 - `FLAG_DIALOGUE.M-17.cool[3]`: 前座、苦い。
 
-### M-17.normal[]
+### M-17.standard[]
 
-- `FLAG_DIALOGUE.M-17.normal[1]`: {name2}、おめでとう。……正直、複雑だ。
-- `FLAG_DIALOGUE.M-17.normal[2]`: 同じ団体にいるのに、こんなに距離があるとは思わなかった。
-- `FLAG_DIALOGUE.M-17.normal[3]`: 前座と本戦。今日でその差を、はっきり見せつけられた。
+- `FLAG_DIALOGUE.M-17.standard[1]`: {name2}、おめでとう。……正直、複雑だ。
+- `FLAG_DIALOGUE.M-17.standard[2]`: 同じ団体にいるのに、こんなに距離があるとは思わなかった。
+- `FLAG_DIALOGUE.M-17.standard[3]`: 前座と本戦。今日でその差を、はっきり見せつけられた。
 
 ### M-18.composed[]
 
@@ -877,41 +877,41 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FLAG_DIALOGUE.M-18.cool[2]`: 視界に入らないで。
 - `FLAG_DIALOGUE.M-18.cool[3]`: ……言葉は、もう。
 
-### M-18.normal[]
+### M-18.standard[]
 
-- `FLAG_DIALOGUE.M-18.normal[1]`: {name2}とは、もうダメだな。同じ団体にいるけど、それだけだ。
-- `FLAG_DIALOGUE.M-18.normal[2]`: 言葉を交わすたびに削れる関係って、こういうことか。
-- `FLAG_DIALOGUE.M-18.normal[3]`: 修復は、たぶん無理だ。それでいい。
+- `FLAG_DIALOGUE.M-18.standard[1]`: {name2}とは、もうダメだな。同じ団体にいるけど、それだけだ。
+- `FLAG_DIALOGUE.M-18.standard[2]`: 言葉を交わすたびに削れる関係って、こういうことか。
+- `FLAG_DIALOGUE.M-18.standard[3]`: 修復は、たぶん無理だ。それでいい。
 
-### M-19.normal[]
+### M-19.standard[]
 
-- `FLAG_DIALOGUE.M-19.normal[1]`: {name2}とは、どうしても噛み合わない。今週も火花が散った。
-- `FLAG_DIALOGUE.M-19.normal[2]`: {name2}と向き合うたびに、空気が張りつめる。
-- `FLAG_DIALOGUE.M-19.normal[3]`: {name2}との溝は、そう簡単には埋まりそうにない。
+- `FLAG_DIALOGUE.M-19.standard[1]`: {name2}とは、どうしても噛み合わない。今週も火花が散った。
+- `FLAG_DIALOGUE.M-19.standard[2]`: {name2}と向き合うたびに、空気が張りつめる。
+- `FLAG_DIALOGUE.M-19.standard[3]`: {name2}との溝は、そう簡単には埋まりそうにない。
 
-### M-20.normal[]
+### M-20.standard[]
 
-- `FLAG_DIALOGUE.M-20.normal[1]`: {name2}まで引き抜かれたのか。簡単に割り切れる話じゃない。
-- `FLAG_DIALOGUE.M-20.normal[2]`: {name2}の移籍を受け入れるには、まだ時間がかかりそうだ。
-- `FLAG_DIALOGUE.M-20.normal[3]`: {name2}が出ていった事実は、団体の空気を確実に冷やした。
+- `FLAG_DIALOGUE.M-20.standard[1]`: {name2}まで引き抜かれたのか。簡単に割り切れる話じゃない。
+- `FLAG_DIALOGUE.M-20.standard[2]`: {name2}の移籍を受け入れるには、まだ時間がかかりそうだ。
+- `FLAG_DIALOGUE.M-20.standard[3]`: {name2}が出ていった事実は、団体の空気を確実に冷やした。
 
-### M-21.normal[]
+### M-21.standard[]
 
-- `FLAG_DIALOGUE.M-21.normal[1]`: {name2}を引き留めきれなかった。残された側のわだかまりは深い。
-- `FLAG_DIALOGUE.M-21.normal[2]`: {name2}を止めたかった。その気持ちだけが、余計に胸に残る。
-- `FLAG_DIALOGUE.M-21.normal[3]`: {name2}に去られた悔しさは、簡単には消えそうにない。
+- `FLAG_DIALOGUE.M-21.standard[1]`: {name2}を引き留めきれなかった。残された側のわだかまりは深い。
+- `FLAG_DIALOGUE.M-21.standard[2]`: {name2}を止めたかった。その気持ちだけが、余計に胸に残る。
+- `FLAG_DIALOGUE.M-21.standard[3]`: {name2}に去られた悔しさは、簡単には消えそうにない。
 
-### M-22.normal[]
+### M-22.standard[]
 
-- `FLAG_DIALOGUE.M-22.normal[1]`: {name2}の引退は、ただ見送るだけでは済まない喪失だった。
-- `FLAG_DIALOGUE.M-22.normal[2]`: {name2}がいなくなった現実が、静かに重くのしかかる。
-- `FLAG_DIALOGUE.M-22.normal[3]`: {name2}の不在は、リングの外でも大きな穴を残した。
+- `FLAG_DIALOGUE.M-22.standard[1]`: {name2}の引退は、ただ見送るだけでは済まない喪失だった。
+- `FLAG_DIALOGUE.M-22.standard[2]`: {name2}がいなくなった現実が、静かに重くのしかかる。
+- `FLAG_DIALOGUE.M-22.standard[3]`: {name2}の不在は、リングの外でも大きな穴を残した。
 
-### M-23.normal[]
+### M-23.standard[]
 
-- `FLAG_DIALOGUE.M-23.normal[1]`: {name2}の突然の離脱に、まだ気持ちの整理がついていない。
-- `FLAG_DIALOGUE.M-23.normal[2]`: {name2}が何も告げずに去ったことが、強いしこりになって残った。
-- `FLAG_DIALOGUE.M-23.normal[3]`: {name2}の離脱は、団体内に不信と動揺を広げた。
+- `FLAG_DIALOGUE.M-23.standard[1]`: {name2}の突然の離脱に、まだ気持ちの整理がついていない。
+- `FLAG_DIALOGUE.M-23.standard[2]`: {name2}が何も告げずに去ったことが、強いしこりになって残った。
+- `FLAG_DIALOGUE.M-23.standard[3]`: {name2}の離脱は、団体内に不信と動揺を広げた。
 
 ## `FLAG_MODAL_META`
 

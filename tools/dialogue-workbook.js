@@ -23,7 +23,7 @@
  *                                    キャラID鍵のテーブル。
  *     セリフ編集/ナレーション・記事/ 話者のいないテキスト(新聞・通知・
  *                                    黒田記者コラム・年代記など)。
- *     セリフ編集/コーチ/            コーチ関連(選手とは別人格系統)。
+ *     セリフ編集/コーチ/            コーチ関連(選手とは別人格系統)。1ファイル。
  *     セリフ編集/その他セリフ/      話者はいるが archetype×personality
  *                                    以外の軸で分岐するもの。
  *     セリフ編集/_キャラ対応表.xlsx  archetype×personality の人数・
@@ -614,7 +614,7 @@ function uniqueSheetName(name, used) {
 //      キャラ個人別/     VICTORY_LINES / CHAR_PROFILES など、キャラIDが
 //                         鍵になっている「その子固有」のテーブル。
 //      ナレーション・記事/ 話者のいないテキスト(新聞・通知・年代記等)。
-//      コーチ/           コーチ関連(選手とは別人格系統)。
+//      コーチ/           コーチ関連(選手とは別人格系統)。1ファイルに統合。
 //      その他セリフ/     話者はいるが archetype×personality 以外の軸で
 //                         分岐するもの(派閥イベント・Glimpse等)。
 //
@@ -631,14 +631,17 @@ function headerCells(labels) {
 // 4-1. 標準レイアウト(ナレーション・記事 / コーチ / その他セリフ で使用)。
 //      archetype/personality 列は残すが、この束に来る行は定義上どちらも
 //      未解決(または部分解決)なので実質空欄になることが多い。
-const GENERIC_HEADER = ['ID(編集不可)', '出典', 'テーブル', 'パス', 'archetype', 'personality', '現在', '改訂', '備考'];
-const GENERIC_WIDTHS = [30, 16, 22, 26, 10, 10, 50, 50, 20];
+// 2026-08-01: その他セリフ/コーチ を少数のファイルに統合したため、
+// 1シートに複数の分類が混ざる。オートフィルタで絞れるよう「カテゴリ」列を足した。
+const GENERIC_HEADER = ['ID(編集不可)', 'カテゴリ', '出典', 'テーブル', 'パス', 'archetype', 'personality', '現在', '改訂', '備考'];
+const GENERIC_WIDTHS = [30, 24, 16, 22, 26, 10, 10, 50, 50, 20];
 
 function buildGenericRow(row) {
   const personalityStyle = styleForPersonality(row.personality);
   const archetypeStyle = row.personality || row.archetype ? personalityStyle : STYLES.metaCommon;
   return [
     { value: row.id, style: STYLES.idLock },
+    { value: row.category || '', style: STYLES.metaCommon },
     { value: row.source, style: STYLES.metaCommon },
     { value: row.table, style: STYLES.metaCommon },
     { value: row.path, style: STYLES.note },
@@ -788,7 +791,11 @@ function narrationBucket(entry) {
 }
 
 // 4-7. コーチ の3ブック分類。
-function coachBucket(entry) {
+// 2026-08-01: 25行/238行/347行の3ファイルに割れていて開き直しが面倒だったため1本に統合。
+// 中身の区別は「カテゴリ」列で付ける。
+function coachBucket() { return 'コーチ'; }
+
+function coachCategory(entry) {
   if (entry.path === 'ALL_COACHES') return 'コーチ紹介文';
   if (entry.path === 'COACH_ABILITY_CATALOG' || entry.path === 'COACH_FLAVOR_DEFS') return 'コーチ能力名鑑';
   return 'コーチボイス';
@@ -814,7 +821,20 @@ const MISC_CAT_LABEL = {
   '18': '18-経営危機・エンディング',
 };
 
+// 2026-08-01: 5行・14行・17行…という極小ファイルが13本並んでいて
+// 「まとめて直せない」状態だったため3本に統合した。
+//   派閥        … F07動向 + 派閥イベント(cat07)
+//   関係性フラグ … cat17(単独で473行あるので分けたまま)
+//   その他      … 残り全部
+// どの分類の行かは「カテゴリ」列で絞り込む。
 function miscBucket(entry) {
+  if (entry.path === 'F07_LINES' || entry.cat === '07') return '派閥';
+  if (entry.cat === '17') return '関係性フラグ';
+  return 'その他';
+}
+
+// 統合後もどの分類か分かるようにする表示名
+function miscCategory(entry) {
   if (entry.path === 'F07_LINES') return '07a-派閥動向(F07)';
   const key = entry.cat === '07' ? '07b' : entry.cat;
   return MISC_CAT_LABEL[key] || `${entry.cat}-その他`;
@@ -847,13 +867,13 @@ function collectAllRows(sandbox) {
         orphanRows.push({ ...r, category: `${entry.cat} ${EX.CATEGORIES[entry.cat].title}`, combo: `${ARCHETYPE_LABELS[archKey]}×${PERSONALITY_LABELS[persKey]}` });
         continue;
       }
-      let bucketName;
-      if (home === 'coach') bucketName = coachBucket(entry);
-      else if (home === 'narration') bucketName = narrationBucket(entry);
-      else bucketName = miscBucket(entry);
+      let bucketName, category;
+      if (home === 'coach') { bucketName = coachBucket(entry); category = coachCategory(entry); }
+      else if (home === 'narration') { bucketName = narrationBucket(entry); category = bucketName; }
+      else { bucketName = miscBucket(entry); category = miscCategory(entry); }
       const key = `${home}/${bucketName}`;
       if (!bucketRows.has(key)) bucketRows.set(key, []);
-      bucketRows.get(key).push(r);
+      bucketRows.get(key).push({ ...r, category });
     }
   }
 

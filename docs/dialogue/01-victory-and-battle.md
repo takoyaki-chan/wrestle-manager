@@ -776,697 +776,697 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: Scout / FA Signing Lines — v1.0 / スカウト・FA契約時の台詞（role × context × ageGroup） / 契約・加入時セリフ (personality×archetype) / context → personality → archetype → [lines]
 - 本数: 183
 
-### direct.normal._default[]
+### direct.standard.normal[]
 
-- `SCOUT_SIGNING_LINES.direct.normal._default[1]`: よろしくね。早く実戦で試したいな
-- `SCOUT_SIGNING_LINES.direct.normal._default[2]`: やるからには全力でやるつもり。よろしくね
-- `SCOUT_SIGNING_LINES.direct.normal._default[3]`: 悪くない条件だね。よろしく
+- `SCOUT_SIGNING_LINES.direct.standard.normal[1]`: よろしくね。早く実戦で試したいな
+- `SCOUT_SIGNING_LINES.direct.standard.normal[2]`: やるからには全力でやるつもり。よろしくね
+- `SCOUT_SIGNING_LINES.direct.standard.normal[3]`: 悪くない条件だね。よろしく
 
-### direct.normal.ojousama[]
+### direct.standard.bold[]
 
-- `SCOUT_SIGNING_LINES.direct.normal.ojousama[1]`: ご縁がありまして。よろしくお願いいたしますわ
-- `SCOUT_SIGNING_LINES.direct.normal.ojousama[2]`: こちらの団体でお世話になりますわね
+- `SCOUT_SIGNING_LINES.direct.standard.bold[1]`: この団体で一番になるから。覚えておいてよね？
+- `SCOUT_SIGNING_LINES.direct.standard.bold[2]`: ここで一番強いの、誰？ …楽しみだわ
+- `SCOUT_SIGNING_LINES.direct.standard.bold[3]`: まぁ…悪くない待遇ね。実力で黙らせてあげるわ
 
-### direct.normal.delinquent[]
+### direct.standard.quiet[]
 
-- `SCOUT_SIGNING_LINES.direct.normal.delinquent[1]`: おう、よろしくな。で、いつから暴れていいんだ？
-- `SCOUT_SIGNING_LINES.direct.normal.delinquent[2]`: ここか。…まぁ悪くねーじゃん
+- `SCOUT_SIGNING_LINES.direct.standard.quiet[1]`: ……よろしくお願いします。精一杯やります
+- `SCOUT_SIGNING_LINES.direct.standard.quiet[2]`: ……で、練習はいつからですか？
 
-### direct.normal.cool[]
+### direct.standard.shy[]
 
-- `SCOUT_SIGNING_LINES.direct.normal.cool[1]`: ……よろしく
+- `SCOUT_SIGNING_LINES.direct.standard.shy[1]`: よ、よろしくお願いします…！ 精一杯頑張ります…！
+- `SCOUT_SIGNING_LINES.direct.standard.shy[2]`: あの…お世話になります。ご迷惑おかけしないように…
 
-### direct.normal.seductive[]
+### direct.standard.easygoing[]
 
-- `SCOUT_SIGNING_LINES.direct.normal.seductive[1]`: ふふ、よろしくね。…いい出会いになりそう♡
-- `SCOUT_SIGNING_LINES.direct.normal.seductive[2]`: 契約完了っと。…さて、楽しませてもらうわ
+- `SCOUT_SIGNING_LINES.direct.standard.easygoing[1]`: やっほー！ よろしくね～。楽しくやろうよ！
+- `SCOUT_SIGNING_LINES.direct.standard.easygoing[2]`: あはは、なんか面白そうだね。よろしく～
 
-### direct.normal.polite[]
+### direct.standard.earnest[]
 
-- `SCOUT_SIGNING_LINES.direct.normal.polite[1]`: よろしくお願いいたします。早くリングで試したいです
+- `SCOUT_SIGNING_LINES.direct.standard.earnest[1]`: よろしくお願いします！ この団体で強くなりたいです！
+- `SCOUT_SIGNING_LINES.direct.standard.earnest[2]`: 期待に応えて見せます。よろしくお願いしますね！
+- `SCOUT_SIGNING_LINES.direct.standard.earnest[3]`: 嬉しいです…！ 練習、いつから始められますか？
 
-### direct.normal.composed[]
+### direct.standard.emotional[]
 
-- `SCOUT_SIGNING_LINES.direct.normal.composed[1]`: …よろしくね。のんびりだけど、頑張るよ
+- `SCOUT_SIGNING_LINES.direct.standard.emotional[1]`: 入団できて嬉しいです…！ 絶対に強くなって見せます…！
+- `SCOUT_SIGNING_LINES.direct.standard.emotional[2]`: 夢みたい…。本当にここで戦えるんですね…！
+- `SCOUT_SIGNING_LINES.direct.standard.emotional[3]`: お母さんに報告しなきゃ…！ あ、よろしくお願いします！
 
-### direct.bold._default[]
+### direct.ojousama.normal[]
 
-- `SCOUT_SIGNING_LINES.direct.bold._default[1]`: この団体で一番になるから。覚えておいてよね？
-- `SCOUT_SIGNING_LINES.direct.bold._default[2]`: ここで一番強いの、誰？ …楽しみだわ
-- `SCOUT_SIGNING_LINES.direct.bold._default[3]`: まぁ…悪くない待遇ね。実力で黙らせてあげるわ
+- `SCOUT_SIGNING_LINES.direct.ojousama.normal[1]`: ご縁がありまして。よろしくお願いいたしますわ
+- `SCOUT_SIGNING_LINES.direct.ojousama.normal[2]`: こちらの団体でお世話になりますわね
 
-### direct.bold.ojousama[]
+### direct.ojousama.bold[]
 
-- `SCOUT_SIGNING_LINES.direct.bold.ojousama[1]`: わたくしを迎えるだけの器があるか…見定めさせていただきますわ
-- `SCOUT_SIGNING_LINES.direct.bold.ojousama[2]`: ここの頂点、いただきに来ましたわ
+- `SCOUT_SIGNING_LINES.direct.ojousama.bold[1]`: わたくしを迎えるだけの器があるか…見定めさせていただきますわ
+- `SCOUT_SIGNING_LINES.direct.ojousama.bold[2]`: ここの頂点、いただきに来ましたわ
 
-### direct.bold.delinquent[]
+### direct.ojousama.easygoing[]
 
-- `SCOUT_SIGNING_LINES.direct.bold.delinquent[1]`: よろしく…なんて柄じゃねーけど。結果は出すよ
-- `SCOUT_SIGNING_LINES.direct.bold.delinquent[2]`: ここで暴れさせてもらうぜ。覚悟しな
+- `SCOUT_SIGNING_LINES.direct.ojousama.easygoing[1]`: よろしくお願いしますわ!楽しくやりましょうの!
 
-### direct.bold.cool[]
+### direct.ojousama.earnest[]
 
-- `SCOUT_SIGNING_LINES.direct.bold.cool[1]`: …よろしく。早くリングに立たせて
-- `SCOUT_SIGNING_LINES.direct.bold.cool[2]`: …退屈な場所じゃないといいんだけど
+- `SCOUT_SIGNING_LINES.direct.ojousama.earnest[1]`: ご縁に感謝いたしますわ。この団体に恥じぬよう精進いたします
+- `SCOUT_SIGNING_LINES.direct.ojousama.earnest[2]`: よろしくお願いいたしますわ。全身全霊で臨みます
 
-### direct.bold.seductive[]
+### direct.delinquent.normal[]
 
-- `SCOUT_SIGNING_LINES.direct.bold.seductive[1]`: 契約してあげてもいいわよ？ …ふふ、冗談♡
-- `SCOUT_SIGNING_LINES.direct.bold.seductive[2]`: ここの子たち、私についてこれるかしら？
+- `SCOUT_SIGNING_LINES.direct.delinquent.normal[1]`: おう、よろしくな。で、いつから暴れていいんだ？
+- `SCOUT_SIGNING_LINES.direct.delinquent.normal[2]`: ここか。…まぁ悪くねーじゃん
 
-### direct.bold.polite[]
+### direct.delinquent.bold[]
 
-- `SCOUT_SIGNING_LINES.direct.bold.polite[1]`: この団体で一番になります。よろしくお願いいたします
+- `SCOUT_SIGNING_LINES.direct.delinquent.bold[1]`: よろしく…なんて柄じゃねーけど。結果は出すよ
+- `SCOUT_SIGNING_LINES.direct.delinquent.bold[2]`: ここで暴れさせてもらうぜ。覚悟しな
 
-### direct.bold.composed[]
+### direct.delinquent.easygoing[]
 
-- `SCOUT_SIGNING_LINES.direct.bold.composed[1]`: …この団体で一番を目指すよ。よろしく
+- `SCOUT_SIGNING_LINES.direct.delinquent.easygoing[1]`: よっす！ まー気楽にやろうぜ～
+- `SCOUT_SIGNING_LINES.direct.delinquent.easygoing[2]`: おー、ここか。なんか居心地よさそうじゃん
 
-### direct.quiet._default[]
+### direct.cool.normal[]
 
-- `SCOUT_SIGNING_LINES.direct.quiet._default[1]`: ……よろしくお願いします。精一杯やります
-- `SCOUT_SIGNING_LINES.direct.quiet._default[2]`: ……で、練習はいつからですか？
+- `SCOUT_SIGNING_LINES.direct.cool.normal[1]`: ……よろしく
 
-### direct.quiet.cool[]
+### direct.cool.bold[]
 
-- `SCOUT_SIGNING_LINES.direct.quiet.cool[1]`: …よろしく
-- `SCOUT_SIGNING_LINES.direct.quiet.cool[2]`: …どうも。早く試合がしたい
+- `SCOUT_SIGNING_LINES.direct.cool.bold[1]`: …よろしく。早くリングに立たせて
+- `SCOUT_SIGNING_LINES.direct.cool.bold[2]`: …退屈な場所じゃないといいんだけど
 
-### direct.quiet.polite[]
+### direct.cool.quiet[]
 
-- `SCOUT_SIGNING_LINES.direct.quiet.polite[1]`: あの、よろしくお願いします…。頑張りますね
-- `SCOUT_SIGNING_LINES.direct.quiet.polite[2]`: お世話になります…。少しずつ慣れていきますね
+- `SCOUT_SIGNING_LINES.direct.cool.quiet[1]`: …よろしく
+- `SCOUT_SIGNING_LINES.direct.cool.quiet[2]`: …どうも。早く試合がしたい
 
-### direct.quiet.seductive[]
+### direct.seductive.normal[]
 
-- `SCOUT_SIGNING_LINES.direct.quiet.seductive[1]`: ………よろしく。…期待してて
+- `SCOUT_SIGNING_LINES.direct.seductive.normal[1]`: ふふ、よろしくね。…いい出会いになりそう♡
+- `SCOUT_SIGNING_LINES.direct.seductive.normal[2]`: 契約完了っと。…さて、楽しませてもらうわ
 
-### direct.shy._default[]
+### direct.seductive.bold[]
 
-- `SCOUT_SIGNING_LINES.direct.shy._default[1]`: よ、よろしくお願いします…！ 精一杯頑張ります…！
-- `SCOUT_SIGNING_LINES.direct.shy._default[2]`: あの…お世話になります。ご迷惑おかけしないように…
+- `SCOUT_SIGNING_LINES.direct.seductive.bold[1]`: 契約してあげてもいいわよ？ …ふふ、冗談♡
+- `SCOUT_SIGNING_LINES.direct.seductive.bold[2]`: ここの子たち、私についてこれるかしら？
 
-### direct.shy.polite[]
+### direct.seductive.quiet[]
 
-- `SCOUT_SIGNING_LINES.direct.shy.polite[1]`: あ、あの…よろしくお願いいたします…頑張ります…!
+- `SCOUT_SIGNING_LINES.direct.seductive.quiet[1]`: ………よろしく。…期待してて
 
-### direct.easygoing._default[]
+### direct.seductive.easygoing[]
 
-- `SCOUT_SIGNING_LINES.direct.easygoing._default[1]`: やっほー！ よろしくね～。楽しくやろうよ！
-- `SCOUT_SIGNING_LINES.direct.easygoing._default[2]`: あはは、なんか面白そうだね。よろしく～
+- `SCOUT_SIGNING_LINES.direct.seductive.easygoing[1]`: よろしくね～♪ 楽しいことたくさんしよ？
+- `SCOUT_SIGNING_LINES.direct.seductive.easygoing[2]`: ふふ、いい感じの団体じゃん♪
 
-### direct.easygoing.delinquent[]
+### direct.seductive.earnest[]
 
-- `SCOUT_SIGNING_LINES.direct.easygoing.delinquent[1]`: よっす！ まー気楽にやろうぜ～
-- `SCOUT_SIGNING_LINES.direct.easygoing.delinquent[2]`: おー、ここか。なんか居心地よさそうじゃん
+- `SCOUT_SIGNING_LINES.direct.seductive.earnest[1]`: よろしくね。全力で魅せてみせるから
+- `SCOUT_SIGNING_LINES.direct.seductive.earnest[2]`: 期待してて。結果で応えるタイプなの
 
-### direct.easygoing.seductive[]
+### direct.seductive.emotional[]
 
-- `SCOUT_SIGNING_LINES.direct.easygoing.seductive[1]`: よろしくね～♪ 楽しいことたくさんしよ？
-- `SCOUT_SIGNING_LINES.direct.easygoing.seductive[2]`: ふふ、いい感じの団体じゃん♪
+- `SCOUT_SIGNING_LINES.direct.seductive.emotional[1]`: 入団できて嬉しい……っ……絶対強くなってみせるわ……!
 
-### direct.easygoing.polite[]
+### direct.polite.normal[]
 
-- `SCOUT_SIGNING_LINES.direct.easygoing.polite[1]`: よろしくお願いします!楽しくやっていきましょう!
+- `SCOUT_SIGNING_LINES.direct.polite.normal[1]`: よろしくお願いいたします。早くリングで試したいです
 
-### direct.easygoing.ojousama[]
+### direct.polite.bold[]
 
-- `SCOUT_SIGNING_LINES.direct.easygoing.ojousama[1]`: よろしくお願いしますわ!楽しくやりましょうの!
+- `SCOUT_SIGNING_LINES.direct.polite.bold[1]`: この団体で一番になります。よろしくお願いいたします
 
-### direct.easygoing.composed[]
+### direct.polite.quiet[]
 
-- `SCOUT_SIGNING_LINES.direct.easygoing.composed[1]`: …よろしくね。のんびり楽しくやろう
+- `SCOUT_SIGNING_LINES.direct.polite.quiet[1]`: あの、よろしくお願いします…。頑張りますね
+- `SCOUT_SIGNING_LINES.direct.polite.quiet[2]`: お世話になります…。少しずつ慣れていきますね
 
-### direct.earnest._default[]
+### direct.polite.shy[]
 
-- `SCOUT_SIGNING_LINES.direct.earnest._default[1]`: よろしくお願いします！ この団体で強くなりたいです！
-- `SCOUT_SIGNING_LINES.direct.earnest._default[2]`: 期待に応えて見せます。よろしくお願いしますね！
-- `SCOUT_SIGNING_LINES.direct.earnest._default[3]`: 嬉しいです…！ 練習、いつから始められますか？
+- `SCOUT_SIGNING_LINES.direct.polite.shy[1]`: あ、あの…よろしくお願いいたします…頑張ります…!
 
-### direct.earnest.polite[]
+### direct.polite.easygoing[]
 
-- `SCOUT_SIGNING_LINES.direct.earnest.polite[1]`: ご指導よろしくお願いいたします。全力で頑張ります
-- `SCOUT_SIGNING_LINES.direct.earnest.polite[2]`: お世話になります。一日でも早く戦力になれるよう努めます
+- `SCOUT_SIGNING_LINES.direct.polite.easygoing[1]`: よろしくお願いします!楽しくやっていきましょう!
 
-### direct.earnest.ojousama[]
+### direct.polite.earnest[]
 
-- `SCOUT_SIGNING_LINES.direct.earnest.ojousama[1]`: ご縁に感謝いたしますわ。この団体に恥じぬよう精進いたします
-- `SCOUT_SIGNING_LINES.direct.earnest.ojousama[2]`: よろしくお願いいたしますわ。全身全霊で臨みます
+- `SCOUT_SIGNING_LINES.direct.polite.earnest[1]`: ご指導よろしくお願いいたします。全力で頑張ります
+- `SCOUT_SIGNING_LINES.direct.polite.earnest[2]`: お世話になります。一日でも早く戦力になれるよう努めます
 
-### direct.earnest.seductive[]
+### direct.composed.normal[]
 
-- `SCOUT_SIGNING_LINES.direct.earnest.seductive[1]`: よろしくね。全力で魅せてみせるから
-- `SCOUT_SIGNING_LINES.direct.earnest.seductive[2]`: 期待してて。結果で応えるタイプなの
+- `SCOUT_SIGNING_LINES.direct.composed.normal[1]`: …よろしくね。のんびりだけど、頑張るよ
 
-### direct.earnest.composed[]
+### direct.composed.bold[]
 
-- `SCOUT_SIGNING_LINES.direct.earnest.composed[1]`: …よろしくお願いします。ここで強くなりたいです
+- `SCOUT_SIGNING_LINES.direct.composed.bold[1]`: …この団体で一番を目指すよ。よろしく
 
-### direct.emotional._default[]
+### direct.composed.easygoing[]
 
-- `SCOUT_SIGNING_LINES.direct.emotional._default[1]`: 入団できて嬉しいです…！ 絶対に強くなって見せます…！
-- `SCOUT_SIGNING_LINES.direct.emotional._default[2]`: 夢みたい…。本当にここで戦えるんですね…！
-- `SCOUT_SIGNING_LINES.direct.emotional._default[3]`: お母さんに報告しなきゃ…！ あ、よろしくお願いします！
+- `SCOUT_SIGNING_LINES.direct.composed.easygoing[1]`: …よろしくね。のんびり楽しくやろう
 
-### direct.emotional.seductive[]
+### direct.composed.earnest[]
 
-- `SCOUT_SIGNING_LINES.direct.emotional.seductive[1]`: 入団できて嬉しい……っ……絶対強くなってみせるわ……!
+- `SCOUT_SIGNING_LINES.direct.composed.earnest[1]`: …よろしくお願いします。ここで強くなりたいです
 
-### direct.emotional.composed[]
+### direct.composed.emotional[]
 
-- `SCOUT_SIGNING_LINES.direct.emotional.composed[1]`: …よろしく。…この団体で、強くなりたい
+- `SCOUT_SIGNING_LINES.direct.composed.emotional[1]`: …よろしく。…この団体で、強くなりたい
 
-### competition_won.normal._default[]
+### competition_won.standard.normal[]
 
-- `SCOUT_SIGNING_LINES.competition_won.normal._default[1]`: 競り合いを制してまで…。その熱意、嫌いじゃないよ
-- `SCOUT_SIGNING_LINES.competition_won.normal._default[2]`: 取り合いになるほどの評価…ってことでいいのかな？ 頑張るね
-- `SCOUT_SIGNING_LINES.competition_won.normal._default[3]`: わざわざありがとう。…期待には応えるタイプだから
-- `SCOUT_SIGNING_LINES.competition_won.normal._default[4]`: 他の団体を蹴ってここを選んだの、後悔させないでよ。…ありがとうね
-- `SCOUT_SIGNING_LINES.competition_won.normal._default[5]`: 勝ち取ってくれたんだ。…じゃあ、その分は返さなきゃね
+- `SCOUT_SIGNING_LINES.competition_won.standard.normal[1]`: 競り合いを制してまで…。その熱意、嫌いじゃないよ
+- `SCOUT_SIGNING_LINES.competition_won.standard.normal[2]`: 取り合いになるほどの評価…ってことでいいのかな？ 頑張るね
+- `SCOUT_SIGNING_LINES.competition_won.standard.normal[3]`: わざわざありがとう。…期待には応えるタイプだから
+- `SCOUT_SIGNING_LINES.competition_won.standard.normal[4]`: 他の団体を蹴ってここを選んだの、後悔させないでよ。…ありがとうね
+- `SCOUT_SIGNING_LINES.competition_won.standard.normal[5]`: 勝ち取ってくれたんだ。…じゃあ、その分は返さなきゃね
 
-### competition_won.normal.ojousama[]
+### competition_won.standard.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.normal.ojousama[1]`: 争奪戦を勝ち抜いてくださったのね。…感謝いたします
-- `SCOUT_SIGNING_LINES.competition_won.normal.ojousama[2]`: 他にもお話はありましたが、こちらの誠意に惹かれました
+- `SCOUT_SIGNING_LINES.competition_won.standard.bold[1]`: 争ってまで獲ったんだから…当然、エースとして使うわよね？
+- `SCOUT_SIGNING_LINES.competition_won.standard.bold[2]`: 私の価値がわかる団体でよかったわ
+- `SCOUT_SIGNING_LINES.competition_won.standard.bold[3]`: 争奪戦を勝ち抜くなんて…見る目があるじゃない
+- `SCOUT_SIGNING_LINES.competition_won.standard.bold[4]`: …ふん、私を欲しがってくれてありがと。期待には応える女よ
+- `SCOUT_SIGNING_LINES.competition_won.standard.bold[5]`: そこまでして欲しがってくれたんだから、その熱意に応える義務があるわね
 
-### competition_won.normal.delinquent[]
+### competition_won.standard.quiet[]
 
-- `SCOUT_SIGNING_LINES.competition_won.normal.delinquent[1]`: 争ってまで獲ってくれたんだ。…まぁ嬉しいけどよ
-- `SCOUT_SIGNING_LINES.competition_won.normal.delinquent[2]`: 他の団体蹴ってここ来たんだから、使えよ？
+- `SCOUT_SIGNING_LINES.competition_won.standard.quiet[1]`: ……争ってまで獲ってくれたんですね。…頑張ります
+- `SCOUT_SIGNING_LINES.competition_won.standard.quiet[2]`: ……ありがとうございます。期待に応えたい
 
-### competition_won.normal.cool[]
+### competition_won.standard.shy[]
 
-- `SCOUT_SIGNING_LINES.competition_won.normal.cool[1]`: ……見る目はある。結果で返す
+- `SCOUT_SIGNING_LINES.competition_won.standard.shy[1]`: わ、私のために争ってくれたんですか…？ 絶対に恩返しします…！
+- `SCOUT_SIGNING_LINES.competition_won.standard.shy[2]`: 選んでもらえて…本当に嬉しい…頑張りますね…！
 
-### competition_won.normal.seductive[]
+### competition_won.standard.easygoing[]
 
-- `SCOUT_SIGNING_LINES.competition_won.normal.seductive[1]`: 私のために争ってくれたの？ …ちょっと嬉しいかも♡
-- `SCOUT_SIGNING_LINES.competition_won.normal.seductive[2]`: 取り合いなんて…罪な女ね、私♪
+- `SCOUT_SIGNING_LINES.competition_won.standard.easygoing[1]`: え、取り合いになってたの？ やったー！ 頑張るね～
+- `SCOUT_SIGNING_LINES.competition_won.standard.easygoing[2]`: 争奪戦って聞くとテンション上がるね！ よろしく！
+- `SCOUT_SIGNING_LINES.competition_won.standard.easygoing[3]`: 選んでくれてありがとー！ 期待にはちゃんと応えるよ〜
+- `SCOUT_SIGNING_LINES.competition_won.standard.easygoing[4]`: ここに連れてきてくれて嬉しい！ 一緒に強くなろうね〜
 
-### competition_won.normal.polite[]
+### competition_won.standard.earnest[]
 
-- `SCOUT_SIGNING_LINES.competition_won.normal.polite[1]`: 競り合いを制してまで迎えていただいて…この恩は結果で返します
+- `SCOUT_SIGNING_LINES.competition_won.standard.earnest[1]`: 競合を勝ち抜いてまで獲ってくれたんですね…。絶対に期待に応えます！
+- `SCOUT_SIGNING_LINES.competition_won.standard.earnest[2]`: 他の団体じゃなくて、ここで戦いたかった。ありがとうございます！
+- `SCOUT_SIGNING_LINES.competition_won.standard.earnest[3]`: 信じてくれたこと、リングで返しますから！
 
-### competition_won.normal.composed[]
+### competition_won.standard.emotional[]
 
-- `SCOUT_SIGNING_LINES.competition_won.normal.composed[1]`: …競り合ってまで獲ってくれたんだね。…ありがとう
+- `SCOUT_SIGNING_LINES.competition_won.standard.emotional[1]`: 私のために争ってくれたんですか…？ う、嬉しい…！ 絶対恩返しします…！
+- `SCOUT_SIGNING_LINES.competition_won.standard.emotional[2]`: やったぁ…！ ここで戦えるんだ…！ 頑張ります…！
 
-### competition_won.bold._default[]
+### competition_won.ojousama.normal[]
 
-- `SCOUT_SIGNING_LINES.competition_won.bold._default[1]`: 争ってまで獲ったんだから…当然、エースとして使うわよね？
-- `SCOUT_SIGNING_LINES.competition_won.bold._default[2]`: 私の価値がわかる団体でよかったわ
-- `SCOUT_SIGNING_LINES.competition_won.bold._default[3]`: 争奪戦を勝ち抜くなんて…見る目があるじゃない
-- `SCOUT_SIGNING_LINES.competition_won.bold._default[4]`: …ふん、私を欲しがってくれてありがと。期待には応える女よ
-- `SCOUT_SIGNING_LINES.competition_won.bold._default[5]`: そこまでして欲しがってくれたんだから、その熱意に応える義務があるわね
+- `SCOUT_SIGNING_LINES.competition_won.ojousama.normal[1]`: 争奪戦を勝ち抜いてくださったのね。…感謝いたします
+- `SCOUT_SIGNING_LINES.competition_won.ojousama.normal[2]`: 他にもお話はありましたが、こちらの誠意に惹かれました
 
-### competition_won.bold.ojousama[]
+### competition_won.ojousama.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.bold.ojousama[1]`: わたくしを巡って争奪戦とは…光栄ですわね。期待に応えましょう
-- `SCOUT_SIGNING_LINES.competition_won.bold.ojousama[2]`: 見る目がおありのようで。よろしくお願いしますわ
+- `SCOUT_SIGNING_LINES.competition_won.ojousama.bold[1]`: わたくしを巡って争奪戦とは…光栄ですわね。期待に応えましょう
+- `SCOUT_SIGNING_LINES.competition_won.ojousama.bold[2]`: 見る目がおありのようで。よろしくお願いしますわ
 
-### competition_won.bold.delinquent[]
+### competition_won.ojousama.easygoing[]
 
-- `SCOUT_SIGNING_LINES.competition_won.bold.delinquent[1]`: 取り合いになんのは当然だろ？ アタシなんだから
-- `SCOUT_SIGNING_LINES.competition_won.bold.delinquent[2]`: 他の団体に行かなくてよかったな。…感謝しろよ？
+- `SCOUT_SIGNING_LINES.competition_won.ojousama.easygoing[1]`: まあ、争奪戦ですの!?嬉しいですわ、頑張りますの!
 
-### competition_won.bold.cool[]
+### competition_won.ojousama.earnest[]
 
-- `SCOUT_SIGNING_LINES.competition_won.bold.cool[1]`: …見る目はあるみたいね。結果で返す
-- `SCOUT_SIGNING_LINES.competition_won.bold.cool[2]`: …ふん。争奪戦か。悪い気はしない
-- `SCOUT_SIGNING_LINES.competition_won.bold.cool[3]`: …そこまでして欲しがってくれたんだ。…ありがと。応える
+- `SCOUT_SIGNING_LINES.competition_won.ojousama.earnest[1]`: 争奪戦を制してまで…その誠意、しかと受け止めましたわ
+- `SCOUT_SIGNING_LINES.competition_won.ojousama.earnest[2]`: こちらを選んだこと、後悔させませんわ
 
-### competition_won.bold.seductive[]
+### competition_won.delinquent.normal[]
 
-- `SCOUT_SIGNING_LINES.competition_won.bold.seductive[1]`: 高い買い物だったでしょ？ …元は取らせてあげる♡
-- `SCOUT_SIGNING_LINES.competition_won.bold.seductive[2]`: 私をめぐって争奪戦…ふふ、気分いいわ♡
+- `SCOUT_SIGNING_LINES.competition_won.delinquent.normal[1]`: 争ってまで獲ってくれたんだ。…まぁ嬉しいけどよ
+- `SCOUT_SIGNING_LINES.competition_won.delinquent.normal[2]`: 他の団体蹴ってここ来たんだから、使えよ？
 
-### competition_won.bold.polite[]
+### competition_won.delinquent.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.bold.polite[1]`: わたしを巡って争奪戦ですか。期待に応えさせていただきます
+- `SCOUT_SIGNING_LINES.competition_won.delinquent.bold[1]`: 取り合いになんのは当然だろ？ アタシなんだから
+- `SCOUT_SIGNING_LINES.competition_won.delinquent.bold[2]`: 他の団体に行かなくてよかったな。…感謝しろよ？
 
-### competition_won.bold.composed[]
+### competition_won.delinquent.easygoing[]
 
-- `SCOUT_SIGNING_LINES.competition_won.bold.composed[1]`: …わたしを巡って争奪戦か。…期待に応えるよ
+- `SCOUT_SIGNING_LINES.competition_won.delinquent.easygoing[1]`: おー取り合いになってたのかよ。ラッキー！
+- `SCOUT_SIGNING_LINES.competition_won.delinquent.easygoing[2]`: モテモテじゃん、アタシ。まー当然だけど
+- `SCOUT_SIGNING_LINES.competition_won.delinquent.easygoing[3]`: 取り合い勝ち取ってくれたのかよ。…サンキューな、暴れさせてもらうぜ
 
-### competition_won.quiet._default[]
+### competition_won.cool.normal[]
 
-- `SCOUT_SIGNING_LINES.competition_won.quiet._default[1]`: ……争ってまで獲ってくれたんですね。…頑張ります
-- `SCOUT_SIGNING_LINES.competition_won.quiet._default[2]`: ……ありがとうございます。期待に応えたい
+- `SCOUT_SIGNING_LINES.competition_won.cool.normal[1]`: ……見る目はある。結果で返す
 
-### competition_won.quiet.cool[]
+### competition_won.cool.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.quiet.cool[1]`: …そこまでしてくれたなら、応えるだけ
-- `SCOUT_SIGNING_LINES.competition_won.quiet.cool[2]`: …悪くない
+- `SCOUT_SIGNING_LINES.competition_won.cool.bold[1]`: …見る目はあるみたいね。結果で返す
+- `SCOUT_SIGNING_LINES.competition_won.cool.bold[2]`: …ふん。争奪戦か。悪い気はしない
+- `SCOUT_SIGNING_LINES.competition_won.cool.bold[3]`: …そこまでして欲しがってくれたんだ。…ありがと。応える
 
-### competition_won.quiet.polite[]
+### competition_won.cool.quiet[]
 
-- `SCOUT_SIGNING_LINES.competition_won.quiet.polite[1]`: わざわざ競り合ってまで…。この恩は忘れません
-- `SCOUT_SIGNING_LINES.competition_won.quiet.polite[2]`: 争ってくださったんですね…。精一杯お返しします
+- `SCOUT_SIGNING_LINES.competition_won.cool.quiet[1]`: …そこまでしてくれたなら、応えるだけ
+- `SCOUT_SIGNING_LINES.competition_won.cool.quiet[2]`: …悪くない
 
-### competition_won.quiet.seductive[]
+### competition_won.seductive.normal[]
 
-- `SCOUT_SIGNING_LINES.competition_won.quiet.seductive[1]`: ………そこまでしてくれたなら…応えるわ
+- `SCOUT_SIGNING_LINES.competition_won.seductive.normal[1]`: 私のために争ってくれたの？ …ちょっと嬉しいかも♡
+- `SCOUT_SIGNING_LINES.competition_won.seductive.normal[2]`: 取り合いなんて…罪な女ね、私♪
 
-### competition_won.shy._default[]
+### competition_won.seductive.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.shy._default[1]`: わ、私のために争ってくれたんですか…？ 絶対に恩返しします…！
-- `SCOUT_SIGNING_LINES.competition_won.shy._default[2]`: 選んでもらえて…本当に嬉しい…頑張りますね…！
+- `SCOUT_SIGNING_LINES.competition_won.seductive.bold[1]`: 高い買い物だったでしょ？ …元は取らせてあげる♡
+- `SCOUT_SIGNING_LINES.competition_won.seductive.bold[2]`: 私をめぐって争奪戦…ふふ、気分いいわ♡
 
-### competition_won.shy.polite[]
+### competition_won.seductive.quiet[]
 
-- `SCOUT_SIGNING_LINES.competition_won.shy.polite[1]`: あ、あの…わたしのために争ってくださったんですか…?絶対に恩返しします…!
+- `SCOUT_SIGNING_LINES.competition_won.seductive.quiet[1]`: ………そこまでしてくれたなら…応えるわ
 
-### competition_won.easygoing._default[]
+### competition_won.seductive.easygoing[]
 
-- `SCOUT_SIGNING_LINES.competition_won.easygoing._default[1]`: え、取り合いになってたの？ やったー！ 頑張るね～
-- `SCOUT_SIGNING_LINES.competition_won.easygoing._default[2]`: 争奪戦って聞くとテンション上がるね！ よろしく！
-- `SCOUT_SIGNING_LINES.competition_won.easygoing._default[3]`: 選んでくれてありがとー！ 期待にはちゃんと応えるよ〜
-- `SCOUT_SIGNING_LINES.competition_won.easygoing._default[4]`: ここに連れてきてくれて嬉しい！ 一緒に強くなろうね〜
+- `SCOUT_SIGNING_LINES.competition_won.seductive.easygoing[1]`: 私のこと争ってくれたんだ？ …嬉しいな♡
+- `SCOUT_SIGNING_LINES.competition_won.seductive.easygoing[2]`: ふふ、人気者は辛いわね～♪
 
-### competition_won.easygoing.delinquent[]
+### competition_won.seductive.earnest[]
 
-- `SCOUT_SIGNING_LINES.competition_won.easygoing.delinquent[1]`: おー取り合いになってたのかよ。ラッキー！
-- `SCOUT_SIGNING_LINES.competition_won.easygoing.delinquent[2]`: モテモテじゃん、アタシ。まー当然だけど
-- `SCOUT_SIGNING_LINES.competition_won.easygoing.delinquent[3]`: 取り合い勝ち取ってくれたのかよ。…サンキューな、暴れさせてもらうぜ
+- `SCOUT_SIGNING_LINES.competition_won.seductive.earnest[1]`: 争ってまで迎えてくれたの？ …嬉しい。全力で魅せるわ
+- `SCOUT_SIGNING_LINES.competition_won.seductive.earnest[2]`: 取り合いに勝ってくれたんだ。…ちゃんと応えるからね
 
-### competition_won.easygoing.seductive[]
+### competition_won.seductive.emotional[]
 
-- `SCOUT_SIGNING_LINES.competition_won.easygoing.seductive[1]`: 私のこと争ってくれたんだ？ …嬉しいな♡
-- `SCOUT_SIGNING_LINES.competition_won.easygoing.seductive[2]`: ふふ、人気者は辛いわね～♪
+- `SCOUT_SIGNING_LINES.competition_won.seductive.emotional[1]`: わたしのために争ってくれたの……っ……嬉しい、絶対期待に応えるわ……!
 
-### competition_won.easygoing.polite[]
+### competition_won.polite.normal[]
 
-- `SCOUT_SIGNING_LINES.competition_won.easygoing.polite[1]`: え、争奪戦ですか!?嬉しいです、頑張ります!
+- `SCOUT_SIGNING_LINES.competition_won.polite.normal[1]`: 競り合いを制してまで迎えていただいて…この恩は結果で返します
 
-### competition_won.easygoing.ojousama[]
+### competition_won.polite.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.easygoing.ojousama[1]`: まあ、争奪戦ですの!?嬉しいですわ、頑張りますの!
+- `SCOUT_SIGNING_LINES.competition_won.polite.bold[1]`: わたしを巡って争奪戦ですか。期待に応えさせていただきます
 
-### competition_won.easygoing.composed[]
+### competition_won.polite.quiet[]
 
-- `SCOUT_SIGNING_LINES.competition_won.easygoing.composed[1]`: …争奪戦だったの?…ふぅん、ありがとね
+- `SCOUT_SIGNING_LINES.competition_won.polite.quiet[1]`: わざわざ競り合ってまで…。この恩は忘れません
+- `SCOUT_SIGNING_LINES.competition_won.polite.quiet[2]`: 争ってくださったんですね…。精一杯お返しします
 
-### competition_won.earnest._default[]
+### competition_won.polite.shy[]
 
-- `SCOUT_SIGNING_LINES.competition_won.earnest._default[1]`: 競合を勝ち抜いてまで獲ってくれたんですね…。絶対に期待に応えます！
-- `SCOUT_SIGNING_LINES.competition_won.earnest._default[2]`: 他の団体じゃなくて、ここで戦いたかった。ありがとうございます！
-- `SCOUT_SIGNING_LINES.competition_won.earnest._default[3]`: 信じてくれたこと、リングで返しますから！
+- `SCOUT_SIGNING_LINES.competition_won.polite.shy[1]`: あ、あの…わたしのために争ってくださったんですか…?絶対に恩返しします…!
 
-### competition_won.earnest.polite[]
+### competition_won.polite.easygoing[]
 
-- `SCOUT_SIGNING_LINES.competition_won.earnest.polite[1]`: わざわざ競り合ってまで迎えてくださって…。この恩は結果でお返しいたします
-- `SCOUT_SIGNING_LINES.competition_won.earnest.polite[2]`: 他にもお話はありましたが、こちらの熱意に惹かれました。精一杯頑張ります
+- `SCOUT_SIGNING_LINES.competition_won.polite.easygoing[1]`: え、争奪戦ですか!?嬉しいです、頑張ります!
 
-### competition_won.earnest.ojousama[]
+### competition_won.polite.earnest[]
 
-- `SCOUT_SIGNING_LINES.competition_won.earnest.ojousama[1]`: 争奪戦を制してまで…その誠意、しかと受け止めましたわ
-- `SCOUT_SIGNING_LINES.competition_won.earnest.ojousama[2]`: こちらを選んだこと、後悔させませんわ
+- `SCOUT_SIGNING_LINES.competition_won.polite.earnest[1]`: わざわざ競り合ってまで迎えてくださって…。この恩は結果でお返しいたします
+- `SCOUT_SIGNING_LINES.competition_won.polite.earnest[2]`: 他にもお話はありましたが、こちらの熱意に惹かれました。精一杯頑張ります
 
-### competition_won.earnest.seductive[]
+### competition_won.composed.normal[]
 
-- `SCOUT_SIGNING_LINES.competition_won.earnest.seductive[1]`: 争ってまで迎えてくれたの？ …嬉しい。全力で魅せるわ
-- `SCOUT_SIGNING_LINES.competition_won.earnest.seductive[2]`: 取り合いに勝ってくれたんだ。…ちゃんと応えるからね
+- `SCOUT_SIGNING_LINES.competition_won.composed.normal[1]`: …競り合ってまで獲ってくれたんだね。…ありがとう
 
-### competition_won.earnest.composed[]
+### competition_won.composed.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.earnest.composed[1]`: …競り合いを制してまで…。この恩は結果で返します
+- `SCOUT_SIGNING_LINES.competition_won.composed.bold[1]`: …わたしを巡って争奪戦か。…期待に応えるよ
 
-### competition_won.emotional._default[]
+### competition_won.composed.easygoing[]
 
-- `SCOUT_SIGNING_LINES.competition_won.emotional._default[1]`: 私のために争ってくれたんですか…？ う、嬉しい…！ 絶対恩返しします…！
-- `SCOUT_SIGNING_LINES.competition_won.emotional._default[2]`: やったぁ…！ ここで戦えるんだ…！ 頑張ります…！
+- `SCOUT_SIGNING_LINES.competition_won.composed.easygoing[1]`: …争奪戦だったの?…ふぅん、ありがとね
 
-### competition_won.emotional.seductive[]
+### competition_won.composed.earnest[]
 
-- `SCOUT_SIGNING_LINES.competition_won.emotional.seductive[1]`: わたしのために争ってくれたの……っ……嬉しい、絶対期待に応えるわ……!
+- `SCOUT_SIGNING_LINES.competition_won.composed.earnest[1]`: …競り合いを制してまで…。この恩は結果で返します
 
-### competition_won.emotional.composed[]
+### competition_won.composed.emotional[]
 
-- `SCOUT_SIGNING_LINES.competition_won.emotional.composed[1]`: …争奪戦だったんだ。…ありがとう。頑張るよ
+- `SCOUT_SIGNING_LINES.competition_won.composed.emotional[1]`: …争奪戦だったんだ。…ありがとう。頑張るよ
 
-### fa_signing.normal._default[]
+### fa_signing.standard.normal[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.normal._default[1]`: フリーも悪くなかったけど、安定した環境で戦いたくなって
-- `SCOUT_SIGNING_LINES.fa_signing.normal._default[2]`: 声をかけてくれてありがと。実力は見てもらえばわかるよ
-- `SCOUT_SIGNING_LINES.fa_signing.normal._default[3]`: お世話になります。…一人で戦うより、チームの方が面白いかもね
+- `SCOUT_SIGNING_LINES.fa_signing.standard.normal[1]`: フリーも悪くなかったけど、安定した環境で戦いたくなって
+- `SCOUT_SIGNING_LINES.fa_signing.standard.normal[2]`: 声をかけてくれてありがと。実力は見てもらえばわかるよ
+- `SCOUT_SIGNING_LINES.fa_signing.standard.normal[3]`: お世話になります。…一人で戦うより、チームの方が面白いかもね
 
-### fa_signing.normal.ojousama[]
+### fa_signing.standard.bold[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.normal.ojousama[1]`: フリーの身でしたが、こちらにお世話になりますわ
-- `SCOUT_SIGNING_LINES.fa_signing.normal.ojousama[2]`: ご縁があって嬉しゅうございます。よろしくお願いいたします
+- `SCOUT_SIGNING_LINES.fa_signing.standard.bold[1]`: フリーの方が自由だったけど…まぁ、ここで暴れさせてもらうわ
+- `SCOUT_SIGNING_LINES.fa_signing.standard.bold[2]`: ようやく私を見る目がある団体が現れたってわけね
+- `SCOUT_SIGNING_LINES.fa_signing.standard.bold[3]`: 声をかけてきたのはそっちなんだから…後悔させないであげる
 
-### fa_signing.normal.delinquent[]
+### fa_signing.standard.quiet[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.normal.delinquent[1]`: フリーも気楽だったけどさ、団体ってのも悪くねーかもな
-- `SCOUT_SIGNING_LINES.fa_signing.normal.delinquent[2]`: よっ、拾ってくれてサンキュ。暴れさせてもらうぜ
+- `SCOUT_SIGNING_LINES.fa_signing.standard.quiet[1]`: ……フリーの時間が長かったので…。よろしくお願いします
+- `SCOUT_SIGNING_LINES.fa_signing.standard.quiet[2]`: ……居場所ができて、少し安心しています
 
-### fa_signing.normal.cool[]
+### fa_signing.standard.shy[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.normal.cool[1]`: …フリーは終わりだ。ここで戦う
+- `SCOUT_SIGNING_LINES.fa_signing.standard.shy[1]`: フリーで不安だったけど…声をかけてもらえて嬉しいです…！
+- `SCOUT_SIGNING_LINES.fa_signing.standard.shy[2]`: やっと居場所が見つかった…。頑張りますね…！
 
-### fa_signing.normal.seductive[]
+### fa_signing.standard.easygoing[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.normal.seductive[1]`: フリーも自由でよかったけど…ここ、居心地よさそうね♡
-- `SCOUT_SIGNING_LINES.fa_signing.normal.seductive[2]`: 声をかけてくれたの？ ふふ、嬉しいわ
+- `SCOUT_SIGNING_LINES.fa_signing.standard.easygoing[1]`: フリーも気楽だったけど、団体に入るのも悪くないかな！
+- `SCOUT_SIGNING_LINES.fa_signing.standard.easygoing[2]`: 一人より仲間がいた方が楽しいもんね～。よろしく！
 
-### fa_signing.normal.polite[]
+### fa_signing.standard.earnest[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.normal.polite[1]`: フリーでしたが、こちらでお世話になります。よろしくお願いいたします
+- `SCOUT_SIGNING_LINES.fa_signing.standard.earnest[1]`: フリーの身でしたけど…やっと落ち着ける場所が見つかりました
+- `SCOUT_SIGNING_LINES.fa_signing.standard.earnest[2]`: 声をかけてくれてありがとうございます。精一杯やりますね！
+- `SCOUT_SIGNING_LINES.fa_signing.standard.earnest[3]`: 待ってた甲斐がありました。この団体で輝いて見せますね！
 
-### fa_signing.normal.composed[]
+### fa_signing.standard.emotional[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.normal.composed[1]`: …フリーも悪くなかったけど、ここでやってみるよ
+- `SCOUT_SIGNING_LINES.fa_signing.standard.emotional[1]`: 一人で戦い続けるのは寂しかったから…仲��ができるのが嬉しいです…！
+- `SCOUT_SIGNING_LINES.fa_signing.standard.emotional[2]`: やっと居場所が…！ ここで頑張ります…！
 
-### fa_signing.bold._default[]
+### fa_signing.ojousama.normal[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.bold._default[1]`: フリーの方が自由だったけど…まぁ、ここで暴れさせてもらうわ
-- `SCOUT_SIGNING_LINES.fa_signing.bold._default[2]`: ようやく私を見る目がある団体が現れたってわけね
-- `SCOUT_SIGNING_LINES.fa_signing.bold._default[3]`: 声をかけてきたのはそっちなんだから…後悔させないであげる
+- `SCOUT_SIGNING_LINES.fa_signing.ojousama.normal[1]`: フリーの身でしたが、こちらにお世話になりますわ
+- `SCOUT_SIGNING_LINES.fa_signing.ojousama.normal[2]`: ご縁があって嬉しゅうございます。よろしくお願いいたします
 
-### fa_signing.bold.ojousama[]
+### fa_signing.ojousama.bold[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.bold.ojousama[1]`: フリーで磨いた力、こちらでお見せいたしますわ
-- `SCOUT_SIGNING_LINES.fa_signing.bold.ojousama[2]`: わたくしを招くだけの器があると…信じましょう
+- `SCOUT_SIGNING_LINES.fa_signing.ojousama.bold[1]`: フリーで磨いた力、こちらでお見せいたしますわ
+- `SCOUT_SIGNING_LINES.fa_signing.ojousama.bold[2]`: わたくしを招くだけの器があると…信じましょう
 
-### fa_signing.bold.delinquent[]
+### fa_signing.ojousama.easygoing[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.bold.delinquent[1]`: フリーは退屈だったんだよ。…暴れられる場所をくれよ
-- `SCOUT_SIGNING_LINES.fa_signing.bold.delinquent[2]`: 拾ってくれたことには…まぁ少しだけ感謝してやるか
+- `SCOUT_SIGNING_LINES.fa_signing.ojousama.easygoing[1]`: フリーも自由でよろしかったですけれど、こちらも楽しそうですわね!
 
-### fa_signing.bold.cool[]
+### fa_signing.ojousama.earnest[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.bold.cool[1]`: …フリーは飽きた。ここで実力を見せる
-- `SCOUT_SIGNING_LINES.fa_signing.bold.cool[2]`: …居場所ができたのは、悪くない
+- `SCOUT_SIGNING_LINES.fa_signing.ojousama.earnest[1]`: フリーの経験を活かして、こちらで精進いたしますわ
+- `SCOUT_SIGNING_LINES.fa_signing.ojousama.earnest[2]`: お声がけいただき光栄ですわ。全力を尽くします
 
-### fa_signing.bold.seductive[]
+### fa_signing.delinquent.normal[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.bold.seductive[1]`: フリーで磨いた牙…ここで見せてあげる♡
-- `SCOUT_SIGNING_LINES.fa_signing.bold.seductive[2]`: ようやくいい団体が見つかったわ。楽しませてね♡
+- `SCOUT_SIGNING_LINES.fa_signing.delinquent.normal[1]`: フリーも気楽だったけどさ、団体ってのも悪くねーかもな
+- `SCOUT_SIGNING_LINES.fa_signing.delinquent.normal[2]`: よっ、拾ってくれてサンキュ。暴れさせてもらうぜ
 
-### fa_signing.bold.polite[]
+### fa_signing.delinquent.bold[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.bold.polite[1]`: フリーで磨いた力、こちらでお見せいたします
+- `SCOUT_SIGNING_LINES.fa_signing.delinquent.bold[1]`: フリーは退屈だったんだよ。…暴れられる場所をくれよ
+- `SCOUT_SIGNING_LINES.fa_signing.delinquent.bold[2]`: 拾ってくれたことには…まぁ少しだけ感謝してやるか
 
-### fa_signing.bold.composed[]
+### fa_signing.delinquent.easygoing[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.bold.composed[1]`: …フリーで磨いた力、ここで見せるよ
+- `SCOUT_SIGNING_LINES.fa_signing.delinquent.easygoing[1]`: フリーも気楽だったけどよ、仲間いた方が面白えからな
+- `SCOUT_SIGNING_LINES.fa_signing.delinquent.easygoing[2]`: おっ、声かけてくれたの？ ラッキー！ よろしくな！
 
-### fa_signing.quiet._default[]
+### fa_signing.cool.normal[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.quiet._default[1]`: ……フリーの時間が長かったので…。よろしくお願いします
-- `SCOUT_SIGNING_LINES.fa_signing.quiet._default[2]`: ……居場所ができて、少し安心しています
+- `SCOUT_SIGNING_LINES.fa_signing.cool.normal[1]`: …フリーは終わりだ。ここで戦う
 
-### fa_signing.quiet.cool[]
+### fa_signing.cool.bold[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.quiet.cool[1]`: …ここで闘えるなら、それでいい
-- `SCOUT_SIGNING_LINES.fa_signing.quiet.cool[2]`: …フリーは長かった。よろしく
+- `SCOUT_SIGNING_LINES.fa_signing.cool.bold[1]`: …フリーは飽きた。ここで実力を見せる
+- `SCOUT_SIGNING_LINES.fa_signing.cool.bold[2]`: …居場所ができたのは、悪くない
 
-### fa_signing.quiet.polite[]
+### fa_signing.cool.quiet[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.quiet.polite[1]`: フリーで不安でしたけど…声をかけていただけて嬉しいです
-- `SCOUT_SIGNING_LINES.fa_signing.quiet.polite[2]`: ようやく落ち着ける場所が…。お世話になります
+- `SCOUT_SIGNING_LINES.fa_signing.cool.quiet[1]`: …ここで闘えるなら、それでいい
+- `SCOUT_SIGNING_LINES.fa_signing.cool.quiet[2]`: …フリーは長かった。よろしく
 
-### fa_signing.quiet.seductive[]
+### fa_signing.seductive.normal[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.quiet.seductive[1]`: ………ここで、闘えるなら……
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.normal[1]`: フリーも自由でよかったけど…ここ、居心地よさそうね♡
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.normal[2]`: 声をかけてくれたの？ ふふ、嬉しいわ
 
-### fa_signing.shy._default[]
+### fa_signing.seductive.bold[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.shy._default[1]`: フリーで不安だったけど…声をかけてもらえて嬉しいです…！
-- `SCOUT_SIGNING_LINES.fa_signing.shy._default[2]`: やっと居場所が見つかった…。頑張りますね…！
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.bold[1]`: フリーで磨いた牙…ここで見せてあげる♡
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.bold[2]`: ようやくいい団体が見つかったわ。楽しませてね♡
 
-### fa_signing.shy.polite[]
+### fa_signing.seductive.quiet[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.shy.polite[1]`: あ、あの…フリーで不安だったんです…声をかけてくださって、嬉しいです…
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.quiet[1]`: ………ここで、闘えるなら……
 
-### fa_signing.easygoing._default[]
+### fa_signing.seductive.easygoing[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.easygoing._default[1]`: フリーも気楽だったけど、団体に入るのも悪くないかな！
-- `SCOUT_SIGNING_LINES.fa_signing.easygoing._default[2]`: 一人より仲間がいた方が楽しいもんね～。よろしく！
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.easygoing[1]`: 一人も自由でよかったけど…みんなといる方が楽しそう♪
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.easygoing[2]`: ふふ、声かけてくれたんだ？ 嬉しいな♡
 
-### fa_signing.easygoing.delinquent[]
+### fa_signing.seductive.earnest[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.easygoing.delinquent[1]`: フリーも気楽だったけどよ、仲間いた方が面白えからな
-- `SCOUT_SIGNING_LINES.fa_signing.easygoing.delinquent[2]`: おっ、声かけてくれたの？ ラッキー！ よろしくな！
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.earnest[1]`: フリーも悪くなかったけど…ここで輝いて見せるわ
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.earnest[2]`: 待ってた甲斐があったわ。よろしくね
 
-### fa_signing.easygoing.seductive[]
+### fa_signing.seductive.emotional[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.easygoing.seductive[1]`: 一人も自由でよかったけど…みんなといる方が楽しそう♪
-- `SCOUT_SIGNING_LINES.fa_signing.easygoing.seductive[2]`: ふふ、声かけてくれたんだ？ 嬉しいな♡
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.emotional[1]`: ひとりで戦ってきたの……っ……仲間ができて、嬉しい……!
 
-### fa_signing.easygoing.polite[]
+### fa_signing.polite.normal[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.easygoing.polite[1]`: フリーも気楽でしたけど、団体に入るのも楽しそうです!よろしくお願いします!
+- `SCOUT_SIGNING_LINES.fa_signing.polite.normal[1]`: フリーでしたが、こちらでお世話になります。よろしくお願いいたします
 
-### fa_signing.easygoing.ojousama[]
+### fa_signing.polite.bold[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.easygoing.ojousama[1]`: フリーも自由でよろしかったですけれど、こちらも楽しそうですわね!
+- `SCOUT_SIGNING_LINES.fa_signing.polite.bold[1]`: フリーで磨いた力、こちらでお見せいたします
 
-### fa_signing.easygoing.composed[]
+### fa_signing.polite.quiet[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.easygoing.composed[1]`: …フリーも悪くなかったけど、ここでのんびりやるよ
+- `SCOUT_SIGNING_LINES.fa_signing.polite.quiet[1]`: フリーで不安でしたけど…声をかけていただけて嬉しいです
+- `SCOUT_SIGNING_LINES.fa_signing.polite.quiet[2]`: ようやく落ち着ける場所が…。お世話になります
 
-### fa_signing.earnest._default[]
+### fa_signing.polite.shy[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.earnest._default[1]`: フリーの身でしたけど…やっと落ち着ける場所が見つかりました
-- `SCOUT_SIGNING_LINES.fa_signing.earnest._default[2]`: 声をかけてくれてありがとうございます。精一杯やりますね！
-- `SCOUT_SIGNING_LINES.fa_signing.earnest._default[3]`: 待ってた甲斐がありました。この団体で輝いて見せますね！
+- `SCOUT_SIGNING_LINES.fa_signing.polite.shy[1]`: あ、あの…フリーで不安だったんです…声をかけてくださって、嬉しいです…
 
-### fa_signing.earnest.polite[]
+### fa_signing.polite.easygoing[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.earnest.polite[1]`: フリーで色々経験してきました。…ここで花を咲かせます
-- `SCOUT_SIGNING_LINES.fa_signing.earnest.polite[2]`: ようやくお世話になれる場所が。全力で恩返しいたします
+- `SCOUT_SIGNING_LINES.fa_signing.polite.easygoing[1]`: フリーも気楽でしたけど、団体に入るのも楽しそうです!よろしくお願いします!
 
-### fa_signing.earnest.ojousama[]
+### fa_signing.polite.earnest[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.earnest.ojousama[1]`: フリーの経験を活かして、こちらで精進いたしますわ
-- `SCOUT_SIGNING_LINES.fa_signing.earnest.ojousama[2]`: お声がけいただき光栄ですわ。全力を尽くします
+- `SCOUT_SIGNING_LINES.fa_signing.polite.earnest[1]`: フリーで色々経験してきました。…ここで花を咲かせます
+- `SCOUT_SIGNING_LINES.fa_signing.polite.earnest[2]`: ようやくお世話になれる場所が。全力で恩返しいたします
 
-### fa_signing.earnest.seductive[]
+### fa_signing.composed.normal[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.earnest.seductive[1]`: フリーも悪くなかったけど…ここで輝いて見せるわ
-- `SCOUT_SIGNING_LINES.fa_signing.earnest.seductive[2]`: 待ってた甲斐があったわ。よろしくね
+- `SCOUT_SIGNING_LINES.fa_signing.composed.normal[1]`: …フリーも悪くなかったけど、ここでやってみるよ
 
-### fa_signing.earnest.composed[]
+### fa_signing.composed.bold[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.earnest.composed[1]`: …フリーで経験を積みました。ここで花を咲かせたいです
+- `SCOUT_SIGNING_LINES.fa_signing.composed.bold[1]`: …フリーで磨いた力、ここで見せるよ
 
-### fa_signing.emotional._default[]
+### fa_signing.composed.easygoing[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.emotional._default[1]`: 一人で戦い続けるのは寂しかったから…仲��ができるのが嬉しいです…！
-- `SCOUT_SIGNING_LINES.fa_signing.emotional._default[2]`: やっと居場所が…！ ここで頑張ります…！
+- `SCOUT_SIGNING_LINES.fa_signing.composed.easygoing[1]`: …フリーも悪くなかったけど、ここでのんびりやるよ
 
-### fa_signing.emotional.seductive[]
+### fa_signing.composed.earnest[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.emotional.seductive[1]`: ひとりで戦ってきたの……っ……仲間ができて、嬉しい……!
+- `SCOUT_SIGNING_LINES.fa_signing.composed.earnest[1]`: …フリーで経験を積みました。ここで花を咲かせたいです
 
-### fa_signing.emotional.composed[]
+### fa_signing.composed.emotional[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.emotional.composed[1]`: …ひとりは、寂しかった。…仲間ができて、嬉しい
+- `SCOUT_SIGNING_LINES.fa_signing.composed.emotional[1]`: …ひとりは、寂しかった。…仲間ができて、嬉しい
 
 ## `VS_EX_EMPLOYER_LINES`
 
 - 出典: `src/victory-lines.js`
-- コード内コメント: firing-grudge-spec-v0.1 Phase 5: 元雇用団体との対戦専用セリフ（解雇キャラ視点） / fighter.grudge.vsOrgId が試合相手 org と一致 & 解雇から24週以内 で使用。 / [personality][archetype] × {win, hit} × 2パターン = 196 種（vs-ex-employer-lines-draft-v0.1 準拠）。
+- コード内コメント: firing-grudge-spec-v0.1 Phase 5: 元雇用団体との対戦専用セリフ（解雇キャラ視点） / fighter.grudge.vsOrgId が試合相手 org と一致 & 解雇から24週以内 で使用。 / [archetype][personality] × {win, hit} × 2パターン = 196 種（vs-ex-employer-lines-draft-v0.1 準拠）。
 - 本数: 196
 
-- `VS_EX_EMPLOYER_LINES.normal.normal.win[1]`: 解雇されてから、ここまで来た。あそこに、証明できたと思う。
-- `VS_EX_EMPLOYER_LINES.normal.normal.win[2]`: あの団体で出来なかったことを、ここで完成させる。だから勝つ。
-- `VS_EX_EMPLOYER_LINES.normal.normal.hit[1]`: まだ立てる。あなたたち相手に、ここで終われない。
-- `VS_EX_EMPLOYER_LINES.normal.normal.hit[2]`: ……来た意味を、自分で潰すわけにはいかない。
-- `VS_EX_EMPLOYER_LINES.normal.polite.win[1]`: 解雇されてから、ここまで来ました。証明できたと思います。
-- `VS_EX_EMPLOYER_LINES.normal.polite.win[2]`: あそこで出来なかったことを、ここで完成させます。だから勝ちますっ。
-- `VS_EX_EMPLOYER_LINES.normal.polite.hit[1]`: まだ立てます。あなた方相手に、ここで終われません。
-- `VS_EX_EMPLOYER_LINES.normal.polite.hit[2]`: ……歩んできた意味を、自分で潰すわけにはいきません。
-- `VS_EX_EMPLOYER_LINES.normal.seductive.win[1]`: 解雇されてから、ここまで来たの。あそこに、証明できたかしら。
-- `VS_EX_EMPLOYER_LINES.normal.seductive.win[2]`: あそこで出来なかったこと…ここで、完成させるわ。
-- `VS_EX_EMPLOYER_LINES.normal.seductive.hit[1]`: まだよ。あなたたち相手に、ここでは終われないの。
-- `VS_EX_EMPLOYER_LINES.normal.seductive.hit[2]`: ……来た意味を、自分で消すわけにはいかないわ。
-- `VS_EX_EMPLOYER_LINES.normal.delinquent.win[1]`: 解雇されてから、ここまで来た。あそこに証明してやったぜ。
-- `VS_EX_EMPLOYER_LINES.normal.delinquent.win[2]`: あそこで出来なかったこと、ここで完成させる。だから負けらんねえ。
-- `VS_EX_EMPLOYER_LINES.normal.delinquent.hit[1]`: まだ立てる。あんたら相手に、ここで終われるかよ。
-- `VS_EX_EMPLOYER_LINES.normal.delinquent.hit[2]`: ……来た意味を、自分で潰すわけにゃいかねえ。
-- `VS_EX_EMPLOYER_LINES.normal.ojousama.win[1]`: 解雇されてから、ここまで参りましたの。証明できましたわね。
-- `VS_EX_EMPLOYER_LINES.normal.ojousama.win[2]`: あそこで叶わなかったこと…ここで、完成させますわ。
-- `VS_EX_EMPLOYER_LINES.normal.ojousama.hit[1]`: まだ立てますわ。あなた方相手に、ここでは終われませんの。
-- `VS_EX_EMPLOYER_LINES.normal.ojousama.hit[2]`: ……歩んできた意味を、自分で潰すわけには参りませんわ。
-- `VS_EX_EMPLOYER_LINES.normal.cool.win[1]`: ……解雇から、ここまで来た。証明した。
-- `VS_EX_EMPLOYER_LINES.normal.cool.win[2]`: ……あそこで出来なかったことを、ここで終わらせる。
-- `VS_EX_EMPLOYER_LINES.normal.cool.hit[1]`: ……まだ立てる。ここでは終われない。
-- `VS_EX_EMPLOYER_LINES.normal.cool.hit[2]`: ……来た意味を、自分で潰せない。
-- `VS_EX_EMPLOYER_LINES.normal.composed.win[1]`: …解雇されてから、ここまで来たよ。ま、証明にはなったかな。
-- `VS_EX_EMPLOYER_LINES.normal.composed.win[2]`: あそこで出来なかったこと…ここで、完成させる。だから勝っておくよ。
-- `VS_EX_EMPLOYER_LINES.normal.composed.hit[1]`: …効くね。でも、まだ立てるよ。ここでは終われない。
-- `VS_EX_EMPLOYER_LINES.normal.composed.hit[2]`: …来た意味を、自分で潰すわけにはいかないんだ。
-- `VS_EX_EMPLOYER_LINES.earnest.normal.win[1]`: 切られてから、積み上げてきた。この一勝が、その証明。
-- `VS_EX_EMPLOYER_LINES.earnest.normal.win[2]`: 拾ってくれた団体に、恥はかかせない。だから、あそこには勝つ。
-- `VS_EX_EMPLOYER_LINES.earnest.normal.hit[1]`: ここで倒れたら、迎えてくれた団体に顔向けできない。
-- `VS_EX_EMPLOYER_LINES.earnest.normal.hit[2]`: まだ立てる。証明の途中で、終われない。
-- `VS_EX_EMPLOYER_LINES.earnest.polite.win[1]`: 解雇いただいてから、歩んできた結果です。受け止めていただけましたか。
-- `VS_EX_EMPLOYER_LINES.earnest.polite.win[2]`: 今の団体に恥をかかせないため、あそこには勝たせていただきました。
-- `VS_EX_EMPLOYER_LINES.earnest.polite.hit[1]`: ここで負けては、迎えてくださった団体に申し訳が立ちませんっ。
-- `VS_EX_EMPLOYER_LINES.earnest.polite.hit[2]`: 立ちます。証明の途中で、退くわけにはいきません。
-- `VS_EX_EMPLOYER_LINES.earnest.seductive.win[1]`: 切られてから磨いたもの…あそこに、見せられたかしら。
-- `VS_EX_EMPLOYER_LINES.earnest.seductive.win[2]`: 拾ってくれた団体のために。あなたたちには、負けられないの。
-- `VS_EX_EMPLOYER_LINES.earnest.seductive.hit[1]`: 今の仲間に恥はかかせない…ここでは、倒れないわ。
-- `VS_EX_EMPLOYER_LINES.earnest.seductive.hit[2]`: まだよ。証明が、終わっていないもの。
-- `VS_EX_EMPLOYER_LINES.earnest.delinquent.win[1]`: 切られてから鍛え直した。この一勝で、証明してみせたぜ。
-- `VS_EX_EMPLOYER_LINES.earnest.delinquent.win[2]`: 今の団体に恥かかせられねえ。だからあそこには負けらんねえんだよ。
-- `VS_EX_EMPLOYER_LINES.earnest.delinquent.hit[1]`: ここで倒れたら、拾ってくれた連中に顔向けできねえ。
-- `VS_EX_EMPLOYER_LINES.earnest.delinquent.hit[2]`: まだだ。証明の途中で沈むわけにいかねえ。
-- `VS_EX_EMPLOYER_LINES.earnest.ojousama.win[1]`: 解雇の後、積んで参りましたの。その答えですわ。
-- `VS_EX_EMPLOYER_LINES.earnest.ojousama.win[2]`: 今の団体に恥をかかせぬため、あそこには勝たせていただきましたわ。
-- `VS_EX_EMPLOYER_LINES.earnest.ojousama.hit[1]`: 迎えてくださった団体に、申し訳が立ちませんわ…倒れませんの。
-- `VS_EX_EMPLOYER_LINES.earnest.ojousama.hit[2]`: 立ちますわ。証明の途中で退くなど、ありえませんもの。
-- `VS_EX_EMPLOYER_LINES.earnest.cool.win[1]`: …切られてから、積んだ。これが証明。
-- `VS_EX_EMPLOYER_LINES.earnest.cool.win[2]`: …今の団体に、恥はかかせない。だから勝つ。
-- `VS_EX_EMPLOYER_LINES.earnest.cool.hit[1]`: …ここでは倒れない。証明の途中だ。
-- `VS_EX_EMPLOYER_LINES.earnest.cool.hit[2]`: …迎えてくれた側に、顔向けできなくなる。立つ。
-- `VS_EX_EMPLOYER_LINES.earnest.composed.win[1]`: …切られてから、少しずつね。ま、答えにはなったかな。
-- `VS_EX_EMPLOYER_LINES.earnest.composed.win[2]`: 拾ってくれた団体に恥はかかせない…だから、あそこには勝っておくよ。
-- `VS_EX_EMPLOYER_LINES.earnest.composed.hit[1]`: …効くね。でも、迎えてくれた側に顔向けできなくなる。まだ立つよ。
-- `VS_EX_EMPLOYER_LINES.earnest.composed.hit[2]`: …証明の途中だから。ここでは終われないんだ。
-- `VS_EX_EMPLOYER_LINES.bold.normal.win[1]`: 切られた側が、あそこの選手を沈めた。これが答えよ。
-- `VS_EX_EMPLOYER_LINES.bold.normal.win[2]`: あの団体で消えるはずだった女が、ここに立ってる。見たでしょ。
-- `VS_EX_EMPLOYER_LINES.bold.normal.hit[1]`: あんたたち相手に、ここで膝はつかない。
-- `VS_EX_EMPLOYER_LINES.bold.normal.hit[2]`: ここで倒れたら、切った判断が正しかったことになる。冗談じゃない。
-- `VS_EX_EMPLOYER_LINES.bold.polite.win[1]`: 切られた側が、勝たせていただきました。これがお返しです。
-- `VS_EX_EMPLOYER_LINES.bold.polite.win[2]`: あそこで要らないと言われた身で、ちゃんと立っています。ご覧の通り。
-- `VS_EX_EMPLOYER_LINES.bold.polite.hit[1]`: あなた方の前で倒れるわけには、いきませんっ。
-- `VS_EX_EMPLOYER_LINES.bold.polite.hit[2]`: ここで沈んだら、あの判断を認めることになります。お断りします。
-- `VS_EX_EMPLOYER_LINES.bold.seductive.win[1]`: 切った女に負けるなんて…あそこも、見る目がなかったわね。
-- `VS_EX_EMPLOYER_LINES.bold.seductive.win[2]`: 捨てられた側の方が強い。…皮肉なものね。
-- `VS_EX_EMPLOYER_LINES.bold.seductive.hit[1]`: あなたたちの前でだけは、崩れて見せないわ。
-- `VS_EX_EMPLOYER_LINES.bold.seductive.hit[2]`: ここで倒れる姿…あそこには、絶対見せない。
-- `VS_EX_EMPLOYER_LINES.bold.delinquent.win[1]`: 切られたあたしが、あそこの選手を叩き潰した。文句あるか。
-- `VS_EX_EMPLOYER_LINES.bold.delinquent.win[2]`: 要らねえって言った側の面、リングで拝ませてもらったぜ。
-- `VS_EX_EMPLOYER_LINES.bold.delinquent.hit[1]`: あんたら相手に、ここで沈むかよ。
-- `VS_EX_EMPLOYER_LINES.bold.delinquent.hit[2]`: 切った判断が正しかった…なんて、絶対言わせねえ。
-- `VS_EX_EMPLOYER_LINES.bold.ojousama.win[1]`: 解雇なさった側が、負けましたのよ。…とんだ見立て違いですわね。
-- `VS_EX_EMPLOYER_LINES.bold.ojousama.win[2]`: 捨てられた者の方が上でしたわ。ご覧いただけまして?
-- `VS_EX_EMPLOYER_LINES.bold.ojousama.hit[1]`: あなた方の前で崩れるなど、ありえませんわ。
-- `VS_EX_EMPLOYER_LINES.bold.ojousama.hit[2]`: ここで倒れては、あの決定が正しかったことになりますの。お断りですわ。
-- `VS_EX_EMPLOYER_LINES.bold.cool.win[1]`: …切った側が、負けた。それだけ。
-- `VS_EX_EMPLOYER_LINES.bold.cool.win[2]`: …要らないと言われた女が、上にいる。
-- `VS_EX_EMPLOYER_LINES.bold.cool.hit[1]`: …あんたたちにだけは、倒れない。
-- `VS_EX_EMPLOYER_LINES.bold.cool.hit[2]`: …ここで沈む姿は、見せない。
-- `VS_EX_EMPLOYER_LINES.bold.composed.win[1]`: …切った側が、こうなる。悪くない眺めだね。
-- `VS_EX_EMPLOYER_LINES.bold.composed.win[2]`: 要らないって言われた側だけど…ま、こんなもんかな。見えてた?
-- `VS_EX_EMPLOYER_LINES.bold.composed.hit[1]`: …効くね。でも、あんたたちの前じゃ倒れないよ。
-- `VS_EX_EMPLOYER_LINES.bold.composed.hit[2]`: …ここで沈んだら、あの判断が正解になる。それは困るんだ。
-- `VS_EX_EMPLOYER_LINES.easygoing.normal.win[1]`: 要らないって言われた側なんだけどさ、勝っちゃった。いいの?
-- `VS_EX_EMPLOYER_LINES.easygoing.normal.win[2]`: あそこ、私を切ったの…ちょっと早まったんじゃない?
-- `VS_EX_EMPLOYER_LINES.easygoing.normal.hit[1]`: うわ、効く…でも、ここで沈むのは違うんだよね。
-- `VS_EX_EMPLOYER_LINES.easygoing.normal.hit[2]`: もうちょい踏ん張らせて。あそこに見せたい景色があるの。
-- `VS_EX_EMPLOYER_LINES.easygoing.polite.win[1]`: 要らないって言われた身なんですけど、勝っちゃいました。いいんですか?
-- `VS_EX_EMPLOYER_LINES.easygoing.polite.win[2]`: あそこ、私を切ったの…ちょっと早まりましたね?
-- `VS_EX_EMPLOYER_LINES.easygoing.polite.hit[1]`: うわ、効きます…でも、ここで沈むのは違うんですよね。
-- `VS_EX_EMPLOYER_LINES.easygoing.polite.hit[2]`: もう少し踏ん張らせてください。あそこに見せたい景色があるんです。
-- `VS_EX_EMPLOYER_LINES.easygoing.seductive.win[1]`: 要らないって言われた女に負けちゃうなんて…あそこ、可愛いところあるわね。
-- `VS_EX_EMPLOYER_LINES.easygoing.seductive.win[2]`: 切ったこと、ちょっとは後悔してくれてるかしら?
-- `VS_EX_EMPLOYER_LINES.easygoing.seductive.hit[1]`: あら、効いちゃう…でも、ここで沈むのは違うのよ。
-- `VS_EX_EMPLOYER_LINES.easygoing.seductive.hit[2]`: もう少しだけ。あそこに見せたい顔があるの。
-- `VS_EX_EMPLOYER_LINES.easygoing.delinquent.win[1]`: 要らねえって言われた側が勝っちまった。いいのかよ、あそこ。
-- `VS_EX_EMPLOYER_LINES.easygoing.delinquent.win[2]`: あたしを切ったの、ちょっと早まったんじゃねえの?
-- `VS_EX_EMPLOYER_LINES.easygoing.delinquent.hit[1]`: うわ、効くわ…でも、ここで沈むのは違うんだよなあ。
-- `VS_EX_EMPLOYER_LINES.easygoing.delinquent.hit[2]`: もうちょい踏ん張らせろ。あそこに見せてえ景色があんだ。
-- `VS_EX_EMPLOYER_LINES.easygoing.ojousama.win[1]`: 要らないと言われた者が勝ってしまいましたわ。よろしくて?
-- `VS_EX_EMPLOYER_LINES.easygoing.ojousama.win[2]`: わたくしを切ったこと…少々、早まりましたわね?
-- `VS_EX_EMPLOYER_LINES.easygoing.ojousama.hit[1]`: あら、効きますわね…でも、ここで沈むのは違いますのよ。
-- `VS_EX_EMPLOYER_LINES.easygoing.ojousama.hit[2]`: もう少し、粘らせてくださいまし。あそこに見せたい景色がありますの。
-- `VS_EX_EMPLOYER_LINES.easygoing.cool.win[1]`: …要らないって言われた側が、勝った。いいの?
-- `VS_EX_EMPLOYER_LINES.easygoing.cool.win[2]`: …あそこ、切ったの早まったね。
-- `VS_EX_EMPLOYER_LINES.easygoing.cool.hit[1]`: …効く。でも、ここで沈むのは違う。
-- `VS_EX_EMPLOYER_LINES.easygoing.cool.hit[2]`: …もう少し。見せたい景色がある。
-- `VS_EX_EMPLOYER_LINES.easygoing.composed.win[1]`: …要らないって言われた側だけど、勝っちゃった。ま、そういうこともあるよね。
-- `VS_EX_EMPLOYER_LINES.easygoing.composed.win[2]`: あそこ、私を切ったの…ちょっと早まったかもね。
-- `VS_EX_EMPLOYER_LINES.easygoing.composed.hit[1]`: …効くね。でも、ここで沈むのは違うかな。
-- `VS_EX_EMPLOYER_LINES.easygoing.composed.hit[2]`: …もう少しだけ。あそこに見せたい景色があるんだ。
-- `VS_EX_EMPLOYER_LINES.quiet.normal.win[1]`: ……これが、答え。切られて、終わりじゃなかった。
-- `VS_EX_EMPLOYER_LINES.quiet.normal.win[2]`: ……あそこを出て、私はまだ戦えてる。それだけ。
-- `VS_EX_EMPLOYER_LINES.quiet.normal.hit[1]`: ……あなたたち相手に、ここでは終われない。
-- `VS_EX_EMPLOYER_LINES.quiet.normal.hit[2]`: ……まだ、立てる。
-- `VS_EX_EMPLOYER_LINES.quiet.polite.win[1]`: ……これが、答えです。終わりでは、なかった。
-- `VS_EX_EMPLOYER_LINES.quiet.polite.win[2]`: ……あそこを離れても、まだ戦えています。それだけです。
-- `VS_EX_EMPLOYER_LINES.quiet.polite.hit[1]`: ……あなた方の前では、終われません。
-- `VS_EX_EMPLOYER_LINES.quiet.polite.hit[2]`: ……まだ、立てます。
-- `VS_EX_EMPLOYER_LINES.quiet.seductive.win[1]`: ……終わりじゃなかったの。切った側に、見せられたわ。
-- `VS_EX_EMPLOYER_LINES.quiet.seductive.win[2]`: ……あそこを出て、まだ立ってる。それだけよ。
-- `VS_EX_EMPLOYER_LINES.quiet.seductive.hit[1]`: ……あなたたちの前では、終われないの。
-- `VS_EX_EMPLOYER_LINES.quiet.seductive.hit[2]`: ……まだ、立てるわ。
-- `VS_EX_EMPLOYER_LINES.quiet.delinquent.win[1]`: ……これが答えだ。切られて、終わりじゃなかった。
-- `VS_EX_EMPLOYER_LINES.quiet.delinquent.win[2]`: ……あそこ出ても、あたしはまだやれる。それだけ。
-- `VS_EX_EMPLOYER_LINES.quiet.delinquent.hit[1]`: ……あんたら相手に、ここじゃ終われねえ。
-- `VS_EX_EMPLOYER_LINES.quiet.delinquent.hit[2]`: ……まだ、立てる。
-- `VS_EX_EMPLOYER_LINES.quiet.ojousama.win[1]`: ……これが答えですわ。終わりでは、ありませんでしたの。
-- `VS_EX_EMPLOYER_LINES.quiet.ojousama.win[2]`: ……あそこを離れても、まだ戦えておりますの。
-- `VS_EX_EMPLOYER_LINES.quiet.ojousama.hit[1]`: ……あなた方の前では、終われませんわ。
-- `VS_EX_EMPLOYER_LINES.quiet.ojousama.hit[2]`: ……まだ、立てますわ。
-- `VS_EX_EMPLOYER_LINES.quiet.cool.win[1]`: ……答え。切られて、終わりじゃない。
-- `VS_EX_EMPLOYER_LINES.quiet.cool.win[2]`: ……あそこを出て、まだ立ってる。
-- `VS_EX_EMPLOYER_LINES.quiet.cool.hit[1]`: ……ここでは、終われない。
-- `VS_EX_EMPLOYER_LINES.quiet.cool.hit[2]`: ……まだ、立てる。
-- `VS_EX_EMPLOYER_LINES.quiet.composed.win[1]`: ……ま、これが答えかな。終わりじゃなかった。
-- `VS_EX_EMPLOYER_LINES.quiet.composed.win[2]`: ……あそこを出て、まだ立ってる。悪くないよ。
-- `VS_EX_EMPLOYER_LINES.quiet.composed.hit[1]`: ……効くね。でも、ここでは終われない。
-- `VS_EX_EMPLOYER_LINES.quiet.composed.hit[2]`: ……まだ、立てるよ。
-- `VS_EX_EMPLOYER_LINES.shy.normal.win[1]`: ……勝っちゃった……。あの、私を切ったところに……信じられない……。
-- `VS_EX_EMPLOYER_LINES.shy.normal.win[2]`: ……ちゃんと、戦えてましたか……? あそこの人に……。
-- `VS_EX_EMPLOYER_LINES.shy.normal.hit[1]`: ……まだ、立てます……あなたたちには、倒れたくなくて……。
-- `VS_EX_EMPLOYER_LINES.shy.normal.hit[2]`: ……お願い、もう一回だけ……あそこには、負けたくないの……。
-- `VS_EX_EMPLOYER_LINES.shy.polite.win[1]`: ……勝てちゃいました……。私を切ったところに……信じられません……。
-- `VS_EX_EMPLOYER_LINES.shy.polite.win[2]`: ……ちゃんと、戦えていましたか……? あそこの方に……。
-- `VS_EX_EMPLOYER_LINES.shy.polite.hit[1]`: ……まだ、立てます……あなた方には、倒れたくなくて……。
-- `VS_EX_EMPLOYER_LINES.shy.polite.hit[2]`: ……お願いします、もう一度だけ……あそこには、負けたくないんです……。
-- `VS_EX_EMPLOYER_LINES.shy.seductive.win[1]`: ……勝てちゃった……。私を切ったところに、なんて……信じられない……。
-- `VS_EX_EMPLOYER_LINES.shy.seductive.win[2]`: ……見て、くれてました……? あそこの人に、ちゃんと……。
-- `VS_EX_EMPLOYER_LINES.shy.seductive.hit[1]`: ……まだ、立てるの……あなたたちには、倒れたくない……。
-- `VS_EX_EMPLOYER_LINES.shy.seductive.hit[2]`: ……お願い、もう一回だけ……あそこには、見せたくないの……。
-- `VS_EX_EMPLOYER_LINES.shy.delinquent.win[1]`: ……か、勝っちまった……。あたしを切ったとこに……嘘みたいだ……。
-- `VS_EX_EMPLOYER_LINES.shy.delinquent.win[2]`: ……ちゃんと、やれてたか……? あそこの奴に……。
-- `VS_EX_EMPLOYER_LINES.shy.delinquent.hit[1]`: ……ま、まだ立てる……あんたらには、倒れたくねえ……。
-- `VS_EX_EMPLOYER_LINES.shy.delinquent.hit[2]`: ……頼む、もう一回だけ……あそこには、負けたくねえんだ……。
-- `VS_EX_EMPLOYER_LINES.shy.ojousama.win[1]`: ……か、勝ててしまいましたわ……。私を切ったところに……信じられませんの……。
-- `VS_EX_EMPLOYER_LINES.shy.ojousama.win[2]`: ……ちゃんと、戦えていまして……? あそこの方に……。
-- `VS_EX_EMPLOYER_LINES.shy.ojousama.hit[1]`: ……まだ、立てますわ……あなた方には、倒れたくなくて……。
-- `VS_EX_EMPLOYER_LINES.shy.ojousama.hit[2]`: ……お願いですわ、もう一度だけ……あそこには、負けたくないの……。
-- `VS_EX_EMPLOYER_LINES.shy.cool.win[1]`: ……勝った……。私を、切ったところに……。
-- `VS_EX_EMPLOYER_LINES.shy.cool.win[2]`: ……戦えてた……? あそこの人に……。
-- `VS_EX_EMPLOYER_LINES.shy.cool.hit[1]`: ……まだ、立てる……あなたたちには、倒れない……。
-- `VS_EX_EMPLOYER_LINES.shy.cool.hit[2]`: ……もう一回だけ……あそこには、負けない……。
-- `VS_EX_EMPLOYER_LINES.shy.composed.win[1]`: ……勝てた、んだ……。私を切ったところに……ちょっと、信じられないな……。
-- `VS_EX_EMPLOYER_LINES.shy.composed.win[2]`: ……ちゃんと、戦えてたかな……あそこの人に……。
-- `VS_EX_EMPLOYER_LINES.shy.composed.hit[1]`: ……まだ、立てるよ……あなたたちには、倒れたくなくて……。
-- `VS_EX_EMPLOYER_LINES.shy.composed.hit[2]`: ……もう少しだけ……あそこには、負けたくないんだ……。
-- `VS_EX_EMPLOYER_LINES.emotional.normal.win[1]`: あの日、リングを降ろされた私が……今、あそこの選手に勝った……っ!
-- `VS_EX_EMPLOYER_LINES.emotional.normal.win[2]`: 見てた……? 切られても、私、ちゃんと戦ってるよ……!
-- `VS_EX_EMPLOYER_LINES.emotional.normal.hit[1]`: ここで終わったら……また、あの日の景色に戻っちゃう……っ!
-- `VS_EX_EMPLOYER_LINES.emotional.normal.hit[2]`: 立つ……立たなきゃ……あそこに切られた、あの日の私のために……!
-- `VS_EX_EMPLOYER_LINES.emotional.polite.win[1]`: あの日、降ろされた私が……今、あそこの選手に勝ちましたっ……!
-- `VS_EX_EMPLOYER_LINES.emotional.polite.win[2]`: 見ててくれましたか……? 切られても、ちゃんと戦ってますっ……!
-- `VS_EX_EMPLOYER_LINES.emotional.polite.hit[1]`: ここで終わったら……また、あの日に戻ってしまいますっ……!
-- `VS_EX_EMPLOYER_LINES.emotional.polite.hit[2]`: 立ちます……立たなきゃ……あの日の私のためにっ……!
-- `VS_EX_EMPLOYER_LINES.emotional.seductive.win[1]`: あの日、降ろされた私が……あそこの選手を沈めたの……っ!
-- `VS_EX_EMPLOYER_LINES.emotional.seductive.win[2]`: 見てた……? 切った女、こんなに戦えるのよ……!
-- `VS_EX_EMPLOYER_LINES.emotional.seductive.hit[1]`: ここで終わったら……あの日の景色に、戻っちゃう……っ!
-- `VS_EX_EMPLOYER_LINES.emotional.seductive.hit[2]`: 立つの……あそこに切られた、あの日の私のために……!
-- `VS_EX_EMPLOYER_LINES.emotional.delinquent.win[1]`: あの日、リング降ろされたあたしが……今、あそこの奴に勝ったんだ……っ!
-- `VS_EX_EMPLOYER_LINES.emotional.delinquent.win[2]`: 見てたかよ……! 切られても、ちゃんと戦ってんだよ……!
-- `VS_EX_EMPLOYER_LINES.emotional.delinquent.hit[1]`: ここで終わったら……また、あの日に逆戻りだ……っ!
-- `VS_EX_EMPLOYER_LINES.emotional.delinquent.hit[2]`: 立て……立てよ……あそこに切られた、あの日のあたしのために……!
-- `VS_EX_EMPLOYER_LINES.emotional.ojousama.win[1]`: あの日、降ろされたわたくしが……今、あそこの選手に勝ちましたわ……っ!
-- `VS_EX_EMPLOYER_LINES.emotional.ojousama.win[2]`: 見ていまして……? 切られても、ちゃんと戦っておりますのよ……!
-- `VS_EX_EMPLOYER_LINES.emotional.ojousama.hit[1]`: ここで終われば……また、あの日に戻ってしまいますわ……っ!
-- `VS_EX_EMPLOYER_LINES.emotional.ojousama.hit[2]`: 立ちますわ……あの日のわたくしのために……!
-- `VS_EX_EMPLOYER_LINES.emotional.cool.win[1]`: ……あの日、降ろされた私が……あそこに、勝った。
-- `VS_EX_EMPLOYER_LINES.emotional.cool.win[2]`: ……切られても、私は戦えてる。見てた?
-- `VS_EX_EMPLOYER_LINES.emotional.cool.hit[1]`: ……ここで終われば、また、あの日だ。
-- `VS_EX_EMPLOYER_LINES.emotional.cool.hit[2]`: ……立つ。あの日の、私のために。
-- `VS_EX_EMPLOYER_LINES.emotional.composed.win[1]`: ……あの日、降ろされた私が、ね。今あそこに勝った。それだけ言っておく。
-- `VS_EX_EMPLOYER_LINES.emotional.composed.win[2]`: ……切られても、こうして戦ってる。見えてたろ?
-- `VS_EX_EMPLOYER_LINES.emotional.composed.hit[1]`: ……ここで終われば、また、あの日に戻る。…それは、ごめんだ。
-- `VS_EX_EMPLOYER_LINES.emotional.composed.hit[2]`: ……立つよ。あの日の私に、悪いからね。
+- `VS_EX_EMPLOYER_LINES.standard.normal.win[1]`: 解雇されてから、ここまで来た。あそこに、証明できたと思う。
+- `VS_EX_EMPLOYER_LINES.standard.normal.win[2]`: あの団体で出来なかったことを、ここで完成させる。だから勝つ。
+- `VS_EX_EMPLOYER_LINES.standard.normal.hit[1]`: まだ立てる。あなたたち相手に、ここで終われない。
+- `VS_EX_EMPLOYER_LINES.standard.normal.hit[2]`: ……来た意味を、自分で潰すわけにはいかない。
+- `VS_EX_EMPLOYER_LINES.standard.earnest.win[1]`: 切られてから、積み上げてきた。この一勝が、その証明。
+- `VS_EX_EMPLOYER_LINES.standard.earnest.win[2]`: 拾ってくれた団体に、恥はかかせない。だから、あそこには勝つ。
+- `VS_EX_EMPLOYER_LINES.standard.earnest.hit[1]`: ここで倒れたら、迎えてくれた団体に顔向けできない。
+- `VS_EX_EMPLOYER_LINES.standard.earnest.hit[2]`: まだ立てる。証明の途中で、終われない。
+- `VS_EX_EMPLOYER_LINES.standard.bold.win[1]`: 切られた側が、あそこの選手を沈めた。これが答えよ。
+- `VS_EX_EMPLOYER_LINES.standard.bold.win[2]`: あの団体で消えるはずだった女が、ここに立ってる。見たでしょ。
+- `VS_EX_EMPLOYER_LINES.standard.bold.hit[1]`: あんたたち相手に、ここで膝はつかない。
+- `VS_EX_EMPLOYER_LINES.standard.bold.hit[2]`: ここで倒れたら、切った判断が正しかったことになる。冗談じゃない。
+- `VS_EX_EMPLOYER_LINES.standard.easygoing.win[1]`: 要らないって言われた側なんだけどさ、勝っちゃった。いいの?
+- `VS_EX_EMPLOYER_LINES.standard.easygoing.win[2]`: あそこ、私を切ったの…ちょっと早まったんじゃない?
+- `VS_EX_EMPLOYER_LINES.standard.easygoing.hit[1]`: うわ、効く…でも、ここで沈むのは違うんだよね。
+- `VS_EX_EMPLOYER_LINES.standard.easygoing.hit[2]`: もうちょい踏ん張らせて。あそこに見せたい景色があるの。
+- `VS_EX_EMPLOYER_LINES.standard.quiet.win[1]`: ……これが、答え。切られて、終わりじゃなかった。
+- `VS_EX_EMPLOYER_LINES.standard.quiet.win[2]`: ……あそこを出て、私はまだ戦えてる。それだけ。
+- `VS_EX_EMPLOYER_LINES.standard.quiet.hit[1]`: ……あなたたち相手に、ここでは終われない。
+- `VS_EX_EMPLOYER_LINES.standard.quiet.hit[2]`: ……まだ、立てる。
+- `VS_EX_EMPLOYER_LINES.standard.shy.win[1]`: ……勝っちゃった……。あの、私を切ったところに……信じられない……。
+- `VS_EX_EMPLOYER_LINES.standard.shy.win[2]`: ……ちゃんと、戦えてましたか……? あそこの人に……。
+- `VS_EX_EMPLOYER_LINES.standard.shy.hit[1]`: ……まだ、立てます……あなたたちには、倒れたくなくて……。
+- `VS_EX_EMPLOYER_LINES.standard.shy.hit[2]`: ……お願い、もう一回だけ……あそこには、負けたくないの……。
+- `VS_EX_EMPLOYER_LINES.standard.emotional.win[1]`: あの日、リングを降ろされた私が……今、あそこの選手に勝った……っ!
+- `VS_EX_EMPLOYER_LINES.standard.emotional.win[2]`: 見てた……? 切られても、私、ちゃんと戦ってるよ……!
+- `VS_EX_EMPLOYER_LINES.standard.emotional.hit[1]`: ここで終わったら……また、あの日の景色に戻っちゃう……っ!
+- `VS_EX_EMPLOYER_LINES.standard.emotional.hit[2]`: 立つ……立たなきゃ……あそこに切られた、あの日の私のために……!
+- `VS_EX_EMPLOYER_LINES.polite.normal.win[1]`: 解雇されてから、ここまで来ました。証明できたと思います。
+- `VS_EX_EMPLOYER_LINES.polite.normal.win[2]`: あそこで出来なかったことを、ここで完成させます。だから勝ちますっ。
+- `VS_EX_EMPLOYER_LINES.polite.normal.hit[1]`: まだ立てます。あなた方相手に、ここで終われません。
+- `VS_EX_EMPLOYER_LINES.polite.normal.hit[2]`: ……歩んできた意味を、自分で潰すわけにはいきません。
+- `VS_EX_EMPLOYER_LINES.polite.earnest.win[1]`: 解雇いただいてから、歩んできた結果です。受け止めていただけましたか。
+- `VS_EX_EMPLOYER_LINES.polite.earnest.win[2]`: 今の団体に恥をかかせないため、あそこには勝たせていただきました。
+- `VS_EX_EMPLOYER_LINES.polite.earnest.hit[1]`: ここで負けては、迎えてくださった団体に申し訳が立ちませんっ。
+- `VS_EX_EMPLOYER_LINES.polite.earnest.hit[2]`: 立ちます。証明の途中で、退くわけにはいきません。
+- `VS_EX_EMPLOYER_LINES.polite.bold.win[1]`: 切られた側が、勝たせていただきました。これがお返しです。
+- `VS_EX_EMPLOYER_LINES.polite.bold.win[2]`: あそこで要らないと言われた身で、ちゃんと立っています。ご覧の通り。
+- `VS_EX_EMPLOYER_LINES.polite.bold.hit[1]`: あなた方の前で倒れるわけには、いきませんっ。
+- `VS_EX_EMPLOYER_LINES.polite.bold.hit[2]`: ここで沈んだら、あの判断を認めることになります。お断りします。
+- `VS_EX_EMPLOYER_LINES.polite.easygoing.win[1]`: 要らないって言われた身なんですけど、勝っちゃいました。いいんですか?
+- `VS_EX_EMPLOYER_LINES.polite.easygoing.win[2]`: あそこ、私を切ったの…ちょっと早まりましたね?
+- `VS_EX_EMPLOYER_LINES.polite.easygoing.hit[1]`: うわ、効きます…でも、ここで沈むのは違うんですよね。
+- `VS_EX_EMPLOYER_LINES.polite.easygoing.hit[2]`: もう少し踏ん張らせてください。あそこに見せたい景色があるんです。
+- `VS_EX_EMPLOYER_LINES.polite.quiet.win[1]`: ……これが、答えです。終わりでは、なかった。
+- `VS_EX_EMPLOYER_LINES.polite.quiet.win[2]`: ……あそこを離れても、まだ戦えています。それだけです。
+- `VS_EX_EMPLOYER_LINES.polite.quiet.hit[1]`: ……あなた方の前では、終われません。
+- `VS_EX_EMPLOYER_LINES.polite.quiet.hit[2]`: ……まだ、立てます。
+- `VS_EX_EMPLOYER_LINES.polite.shy.win[1]`: ……勝てちゃいました……。私を切ったところに……信じられません……。
+- `VS_EX_EMPLOYER_LINES.polite.shy.win[2]`: ……ちゃんと、戦えていましたか……? あそこの方に……。
+- `VS_EX_EMPLOYER_LINES.polite.shy.hit[1]`: ……まだ、立てます……あなた方には、倒れたくなくて……。
+- `VS_EX_EMPLOYER_LINES.polite.shy.hit[2]`: ……お願いします、もう一度だけ……あそこには、負けたくないんです……。
+- `VS_EX_EMPLOYER_LINES.polite.emotional.win[1]`: あの日、降ろされた私が……今、あそこの選手に勝ちましたっ……!
+- `VS_EX_EMPLOYER_LINES.polite.emotional.win[2]`: 見ててくれましたか……? 切られても、ちゃんと戦ってますっ……!
+- `VS_EX_EMPLOYER_LINES.polite.emotional.hit[1]`: ここで終わったら……また、あの日に戻ってしまいますっ……!
+- `VS_EX_EMPLOYER_LINES.polite.emotional.hit[2]`: 立ちます……立たなきゃ……あの日の私のためにっ……!
+- `VS_EX_EMPLOYER_LINES.seductive.normal.win[1]`: 解雇されてから、ここまで来たの。あそこに、証明できたかしら。
+- `VS_EX_EMPLOYER_LINES.seductive.normal.win[2]`: あそこで出来なかったこと…ここで、完成させるわ。
+- `VS_EX_EMPLOYER_LINES.seductive.normal.hit[1]`: まだよ。あなたたち相手に、ここでは終われないの。
+- `VS_EX_EMPLOYER_LINES.seductive.normal.hit[2]`: ……来た意味を、自分で消すわけにはいかないわ。
+- `VS_EX_EMPLOYER_LINES.seductive.earnest.win[1]`: 切られてから磨いたもの…あそこに、見せられたかしら。
+- `VS_EX_EMPLOYER_LINES.seductive.earnest.win[2]`: 拾ってくれた団体のために。あなたたちには、負けられないの。
+- `VS_EX_EMPLOYER_LINES.seductive.earnest.hit[1]`: 今の仲間に恥はかかせない…ここでは、倒れないわ。
+- `VS_EX_EMPLOYER_LINES.seductive.earnest.hit[2]`: まだよ。証明が、終わっていないもの。
+- `VS_EX_EMPLOYER_LINES.seductive.bold.win[1]`: 切った女に負けるなんて…あそこも、見る目がなかったわね。
+- `VS_EX_EMPLOYER_LINES.seductive.bold.win[2]`: 捨てられた側の方が強い。…皮肉なものね。
+- `VS_EX_EMPLOYER_LINES.seductive.bold.hit[1]`: あなたたちの前でだけは、崩れて見せないわ。
+- `VS_EX_EMPLOYER_LINES.seductive.bold.hit[2]`: ここで倒れる姿…あそこには、絶対見せない。
+- `VS_EX_EMPLOYER_LINES.seductive.easygoing.win[1]`: 要らないって言われた女に負けちゃうなんて…あそこ、可愛いところあるわね。
+- `VS_EX_EMPLOYER_LINES.seductive.easygoing.win[2]`: 切ったこと、ちょっとは後悔してくれてるかしら?
+- `VS_EX_EMPLOYER_LINES.seductive.easygoing.hit[1]`: あら、効いちゃう…でも、ここで沈むのは違うのよ。
+- `VS_EX_EMPLOYER_LINES.seductive.easygoing.hit[2]`: もう少しだけ。あそこに見せたい顔があるの。
+- `VS_EX_EMPLOYER_LINES.seductive.quiet.win[1]`: ……終わりじゃなかったの。切った側に、見せられたわ。
+- `VS_EX_EMPLOYER_LINES.seductive.quiet.win[2]`: ……あそこを出て、まだ立ってる。それだけよ。
+- `VS_EX_EMPLOYER_LINES.seductive.quiet.hit[1]`: ……あなたたちの前では、終われないの。
+- `VS_EX_EMPLOYER_LINES.seductive.quiet.hit[2]`: ……まだ、立てるわ。
+- `VS_EX_EMPLOYER_LINES.seductive.shy.win[1]`: ……勝てちゃった……。私を切ったところに、なんて……信じられない……。
+- `VS_EX_EMPLOYER_LINES.seductive.shy.win[2]`: ……見て、くれてました……? あそこの人に、ちゃんと……。
+- `VS_EX_EMPLOYER_LINES.seductive.shy.hit[1]`: ……まだ、立てるの……あなたたちには、倒れたくない……。
+- `VS_EX_EMPLOYER_LINES.seductive.shy.hit[2]`: ……お願い、もう一回だけ……あそこには、見せたくないの……。
+- `VS_EX_EMPLOYER_LINES.seductive.emotional.win[1]`: あの日、降ろされた私が……あそこの選手を沈めたの……っ!
+- `VS_EX_EMPLOYER_LINES.seductive.emotional.win[2]`: 見てた……? 切った女、こんなに戦えるのよ……!
+- `VS_EX_EMPLOYER_LINES.seductive.emotional.hit[1]`: ここで終わったら……あの日の景色に、戻っちゃう……っ!
+- `VS_EX_EMPLOYER_LINES.seductive.emotional.hit[2]`: 立つの……あそこに切られた、あの日の私のために……!
+- `VS_EX_EMPLOYER_LINES.delinquent.normal.win[1]`: 解雇されてから、ここまで来た。あそこに証明してやったぜ。
+- `VS_EX_EMPLOYER_LINES.delinquent.normal.win[2]`: あそこで出来なかったこと、ここで完成させる。だから負けらんねえ。
+- `VS_EX_EMPLOYER_LINES.delinquent.normal.hit[1]`: まだ立てる。あんたら相手に、ここで終われるかよ。
+- `VS_EX_EMPLOYER_LINES.delinquent.normal.hit[2]`: ……来た意味を、自分で潰すわけにゃいかねえ。
+- `VS_EX_EMPLOYER_LINES.delinquent.earnest.win[1]`: 切られてから鍛え直した。この一勝で、証明してみせたぜ。
+- `VS_EX_EMPLOYER_LINES.delinquent.earnest.win[2]`: 今の団体に恥かかせられねえ。だからあそこには負けらんねえんだよ。
+- `VS_EX_EMPLOYER_LINES.delinquent.earnest.hit[1]`: ここで倒れたら、拾ってくれた連中に顔向けできねえ。
+- `VS_EX_EMPLOYER_LINES.delinquent.earnest.hit[2]`: まだだ。証明の途中で沈むわけにいかねえ。
+- `VS_EX_EMPLOYER_LINES.delinquent.bold.win[1]`: 切られたあたしが、あそこの選手を叩き潰した。文句あるか。
+- `VS_EX_EMPLOYER_LINES.delinquent.bold.win[2]`: 要らねえって言った側の面、リングで拝ませてもらったぜ。
+- `VS_EX_EMPLOYER_LINES.delinquent.bold.hit[1]`: あんたら相手に、ここで沈むかよ。
+- `VS_EX_EMPLOYER_LINES.delinquent.bold.hit[2]`: 切った判断が正しかった…なんて、絶対言わせねえ。
+- `VS_EX_EMPLOYER_LINES.delinquent.easygoing.win[1]`: 要らねえって言われた側が勝っちまった。いいのかよ、あそこ。
+- `VS_EX_EMPLOYER_LINES.delinquent.easygoing.win[2]`: あたしを切ったの、ちょっと早まったんじゃねえの?
+- `VS_EX_EMPLOYER_LINES.delinquent.easygoing.hit[1]`: うわ、効くわ…でも、ここで沈むのは違うんだよなあ。
+- `VS_EX_EMPLOYER_LINES.delinquent.easygoing.hit[2]`: もうちょい踏ん張らせろ。あそこに見せてえ景色があんだ。
+- `VS_EX_EMPLOYER_LINES.delinquent.quiet.win[1]`: ……これが答えだ。切られて、終わりじゃなかった。
+- `VS_EX_EMPLOYER_LINES.delinquent.quiet.win[2]`: ……あそこ出ても、あたしはまだやれる。それだけ。
+- `VS_EX_EMPLOYER_LINES.delinquent.quiet.hit[1]`: ……あんたら相手に、ここじゃ終われねえ。
+- `VS_EX_EMPLOYER_LINES.delinquent.quiet.hit[2]`: ……まだ、立てる。
+- `VS_EX_EMPLOYER_LINES.delinquent.shy.win[1]`: ……か、勝っちまった……。あたしを切ったとこに……嘘みたいだ……。
+- `VS_EX_EMPLOYER_LINES.delinquent.shy.win[2]`: ……ちゃんと、やれてたか……? あそこの奴に……。
+- `VS_EX_EMPLOYER_LINES.delinquent.shy.hit[1]`: ……ま、まだ立てる……あんたらには、倒れたくねえ……。
+- `VS_EX_EMPLOYER_LINES.delinquent.shy.hit[2]`: ……頼む、もう一回だけ……あそこには、負けたくねえんだ……。
+- `VS_EX_EMPLOYER_LINES.delinquent.emotional.win[1]`: あの日、リング降ろされたあたしが……今、あそこの奴に勝ったんだ……っ!
+- `VS_EX_EMPLOYER_LINES.delinquent.emotional.win[2]`: 見てたかよ……! 切られても、ちゃんと戦ってんだよ……!
+- `VS_EX_EMPLOYER_LINES.delinquent.emotional.hit[1]`: ここで終わったら……また、あの日に逆戻りだ……っ!
+- `VS_EX_EMPLOYER_LINES.delinquent.emotional.hit[2]`: 立て……立てよ……あそこに切られた、あの日のあたしのために……!
+- `VS_EX_EMPLOYER_LINES.ojousama.normal.win[1]`: 解雇されてから、ここまで参りましたの。証明できましたわね。
+- `VS_EX_EMPLOYER_LINES.ojousama.normal.win[2]`: あそこで叶わなかったこと…ここで、完成させますわ。
+- `VS_EX_EMPLOYER_LINES.ojousama.normal.hit[1]`: まだ立てますわ。あなた方相手に、ここでは終われませんの。
+- `VS_EX_EMPLOYER_LINES.ojousama.normal.hit[2]`: ……歩んできた意味を、自分で潰すわけには参りませんわ。
+- `VS_EX_EMPLOYER_LINES.ojousama.earnest.win[1]`: 解雇の後、積んで参りましたの。その答えですわ。
+- `VS_EX_EMPLOYER_LINES.ojousama.earnest.win[2]`: 今の団体に恥をかかせぬため、あそこには勝たせていただきましたわ。
+- `VS_EX_EMPLOYER_LINES.ojousama.earnest.hit[1]`: 迎えてくださった団体に、申し訳が立ちませんわ…倒れませんの。
+- `VS_EX_EMPLOYER_LINES.ojousama.earnest.hit[2]`: 立ちますわ。証明の途中で退くなど、ありえませんもの。
+- `VS_EX_EMPLOYER_LINES.ojousama.bold.win[1]`: 解雇なさった側が、負けましたのよ。…とんだ見立て違いですわね。
+- `VS_EX_EMPLOYER_LINES.ojousama.bold.win[2]`: 捨てられた者の方が上でしたわ。ご覧いただけまして?
+- `VS_EX_EMPLOYER_LINES.ojousama.bold.hit[1]`: あなた方の前で崩れるなど、ありえませんわ。
+- `VS_EX_EMPLOYER_LINES.ojousama.bold.hit[2]`: ここで倒れては、あの決定が正しかったことになりますの。お断りですわ。
+- `VS_EX_EMPLOYER_LINES.ojousama.easygoing.win[1]`: 要らないと言われた者が勝ってしまいましたわ。よろしくて?
+- `VS_EX_EMPLOYER_LINES.ojousama.easygoing.win[2]`: わたくしを切ったこと…少々、早まりましたわね?
+- `VS_EX_EMPLOYER_LINES.ojousama.easygoing.hit[1]`: あら、効きますわね…でも、ここで沈むのは違いますのよ。
+- `VS_EX_EMPLOYER_LINES.ojousama.easygoing.hit[2]`: もう少し、粘らせてくださいまし。あそこに見せたい景色がありますの。
+- `VS_EX_EMPLOYER_LINES.ojousama.quiet.win[1]`: ……これが答えですわ。終わりでは、ありませんでしたの。
+- `VS_EX_EMPLOYER_LINES.ojousama.quiet.win[2]`: ……あそこを離れても、まだ戦えておりますの。
+- `VS_EX_EMPLOYER_LINES.ojousama.quiet.hit[1]`: ……あなた方の前では、終われませんわ。
+- `VS_EX_EMPLOYER_LINES.ojousama.quiet.hit[2]`: ……まだ、立てますわ。
+- `VS_EX_EMPLOYER_LINES.ojousama.shy.win[1]`: ……か、勝ててしまいましたわ……。私を切ったところに……信じられませんの……。
+- `VS_EX_EMPLOYER_LINES.ojousama.shy.win[2]`: ……ちゃんと、戦えていまして……? あそこの方に……。
+- `VS_EX_EMPLOYER_LINES.ojousama.shy.hit[1]`: ……まだ、立てますわ……あなた方には、倒れたくなくて……。
+- `VS_EX_EMPLOYER_LINES.ojousama.shy.hit[2]`: ……お願いですわ、もう一度だけ……あそこには、負けたくないの……。
+- `VS_EX_EMPLOYER_LINES.ojousama.emotional.win[1]`: あの日、降ろされたわたくしが……今、あそこの選手に勝ちましたわ……っ!
+- `VS_EX_EMPLOYER_LINES.ojousama.emotional.win[2]`: 見ていまして……? 切られても、ちゃんと戦っておりますのよ……!
+- `VS_EX_EMPLOYER_LINES.ojousama.emotional.hit[1]`: ここで終われば……また、あの日に戻ってしまいますわ……っ!
+- `VS_EX_EMPLOYER_LINES.ojousama.emotional.hit[2]`: 立ちますわ……あの日のわたくしのために……!
+- `VS_EX_EMPLOYER_LINES.cool.normal.win[1]`: ……解雇から、ここまで来た。証明した。
+- `VS_EX_EMPLOYER_LINES.cool.normal.win[2]`: ……あそこで出来なかったことを、ここで終わらせる。
+- `VS_EX_EMPLOYER_LINES.cool.normal.hit[1]`: ……まだ立てる。ここでは終われない。
+- `VS_EX_EMPLOYER_LINES.cool.normal.hit[2]`: ……来た意味を、自分で潰せない。
+- `VS_EX_EMPLOYER_LINES.cool.earnest.win[1]`: …切られてから、積んだ。これが証明。
+- `VS_EX_EMPLOYER_LINES.cool.earnest.win[2]`: …今の団体に、恥はかかせない。だから勝つ。
+- `VS_EX_EMPLOYER_LINES.cool.earnest.hit[1]`: …ここでは倒れない。証明の途中だ。
+- `VS_EX_EMPLOYER_LINES.cool.earnest.hit[2]`: …迎えてくれた側に、顔向けできなくなる。立つ。
+- `VS_EX_EMPLOYER_LINES.cool.bold.win[1]`: …切った側が、負けた。それだけ。
+- `VS_EX_EMPLOYER_LINES.cool.bold.win[2]`: …要らないと言われた女が、上にいる。
+- `VS_EX_EMPLOYER_LINES.cool.bold.hit[1]`: …あんたたちにだけは、倒れない。
+- `VS_EX_EMPLOYER_LINES.cool.bold.hit[2]`: …ここで沈む姿は、見せない。
+- `VS_EX_EMPLOYER_LINES.cool.easygoing.win[1]`: …要らないって言われた側が、勝った。いいの?
+- `VS_EX_EMPLOYER_LINES.cool.easygoing.win[2]`: …あそこ、切ったの早まったね。
+- `VS_EX_EMPLOYER_LINES.cool.easygoing.hit[1]`: …効く。でも、ここで沈むのは違う。
+- `VS_EX_EMPLOYER_LINES.cool.easygoing.hit[2]`: …もう少し。見せたい景色がある。
+- `VS_EX_EMPLOYER_LINES.cool.quiet.win[1]`: ……答え。切られて、終わりじゃない。
+- `VS_EX_EMPLOYER_LINES.cool.quiet.win[2]`: ……あそこを出て、まだ立ってる。
+- `VS_EX_EMPLOYER_LINES.cool.quiet.hit[1]`: ……ここでは、終われない。
+- `VS_EX_EMPLOYER_LINES.cool.quiet.hit[2]`: ……まだ、立てる。
+- `VS_EX_EMPLOYER_LINES.cool.shy.win[1]`: ……勝った……。私を、切ったところに……。
+- `VS_EX_EMPLOYER_LINES.cool.shy.win[2]`: ……戦えてた……? あそこの人に……。
+- `VS_EX_EMPLOYER_LINES.cool.shy.hit[1]`: ……まだ、立てる……あなたたちには、倒れない……。
+- `VS_EX_EMPLOYER_LINES.cool.shy.hit[2]`: ……もう一回だけ……あそこには、負けない……。
+- `VS_EX_EMPLOYER_LINES.cool.emotional.win[1]`: ……あの日、降ろされた私が……あそこに、勝った。
+- `VS_EX_EMPLOYER_LINES.cool.emotional.win[2]`: ……切られても、私は戦えてる。見てた?
+- `VS_EX_EMPLOYER_LINES.cool.emotional.hit[1]`: ……ここで終われば、また、あの日だ。
+- `VS_EX_EMPLOYER_LINES.cool.emotional.hit[2]`: ……立つ。あの日の、私のために。
+- `VS_EX_EMPLOYER_LINES.composed.normal.win[1]`: …解雇されてから、ここまで来たよ。ま、証明にはなったかな。
+- `VS_EX_EMPLOYER_LINES.composed.normal.win[2]`: あそこで出来なかったこと…ここで、完成させる。だから勝っておくよ。
+- `VS_EX_EMPLOYER_LINES.composed.normal.hit[1]`: …効くね。でも、まだ立てるよ。ここでは終われない。
+- `VS_EX_EMPLOYER_LINES.composed.normal.hit[2]`: …来た意味を、自分で潰すわけにはいかないんだ。
+- `VS_EX_EMPLOYER_LINES.composed.earnest.win[1]`: …切られてから、少しずつね。ま、答えにはなったかな。
+- `VS_EX_EMPLOYER_LINES.composed.earnest.win[2]`: 拾ってくれた団体に恥はかかせない…だから、あそこには勝っておくよ。
+- `VS_EX_EMPLOYER_LINES.composed.earnest.hit[1]`: …効くね。でも、迎えてくれた側に顔向けできなくなる。まだ立つよ。
+- `VS_EX_EMPLOYER_LINES.composed.earnest.hit[2]`: …証明の途中だから。ここでは終われないんだ。
+- `VS_EX_EMPLOYER_LINES.composed.bold.win[1]`: …切った側が、こうなる。悪くない眺めだね。
+- `VS_EX_EMPLOYER_LINES.composed.bold.win[2]`: 要らないって言われた側だけど…ま、こんなもんかな。見えてた?
+- `VS_EX_EMPLOYER_LINES.composed.bold.hit[1]`: …効くね。でも、あんたたちの前じゃ倒れないよ。
+- `VS_EX_EMPLOYER_LINES.composed.bold.hit[2]`: …ここで沈んだら、あの判断が正解になる。それは困るんだ。
+- `VS_EX_EMPLOYER_LINES.composed.easygoing.win[1]`: …要らないって言われた側だけど、勝っちゃった。ま、そういうこともあるよね。
+- `VS_EX_EMPLOYER_LINES.composed.easygoing.win[2]`: あそこ、私を切ったの…ちょっと早まったかもね。
+- `VS_EX_EMPLOYER_LINES.composed.easygoing.hit[1]`: …効くね。でも、ここで沈むのは違うかな。
+- `VS_EX_EMPLOYER_LINES.composed.easygoing.hit[2]`: …もう少しだけ。あそこに見せたい景色があるんだ。
+- `VS_EX_EMPLOYER_LINES.composed.quiet.win[1]`: ……ま、これが答えかな。終わりじゃなかった。
+- `VS_EX_EMPLOYER_LINES.composed.quiet.win[2]`: ……あそこを出て、まだ立ってる。悪くないよ。
+- `VS_EX_EMPLOYER_LINES.composed.quiet.hit[1]`: ……効くね。でも、ここでは終われない。
+- `VS_EX_EMPLOYER_LINES.composed.quiet.hit[2]`: ……まだ、立てるよ。
+- `VS_EX_EMPLOYER_LINES.composed.shy.win[1]`: ……勝てた、んだ……。私を切ったところに……ちょっと、信じられないな……。
+- `VS_EX_EMPLOYER_LINES.composed.shy.win[2]`: ……ちゃんと、戦えてたかな……あそこの人に……。
+- `VS_EX_EMPLOYER_LINES.composed.shy.hit[1]`: ……まだ、立てるよ……あなたたちには、倒れたくなくて……。
+- `VS_EX_EMPLOYER_LINES.composed.shy.hit[2]`: ……もう少しだけ……あそこには、負けたくないんだ……。
+- `VS_EX_EMPLOYER_LINES.composed.emotional.win[1]`: ……あの日、降ろされた私が、ね。今あそこに勝った。それだけ言っておく。
+- `VS_EX_EMPLOYER_LINES.composed.emotional.win[2]`: ……切られても、こうして戦ってる。見えてたろ?
+- `VS_EX_EMPLOYER_LINES.composed.emotional.hit[1]`: ……ここで終われば、また、あの日に戻る。…それは、ごめんだ。
+- `VS_EX_EMPLOYER_LINES.composed.emotional.hit[2]`: ……立つよ。あの日の私に、悪いからね。
 
 ## `DAMAGE_SERIF_LINES`
 
@@ -1474,256 +1474,256 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: battle-lines.js — 観戦画面 (single / tag) 共通セリフデータ層 / 単品の battle-engine.html / tag-battle.html の両方から <script src="battle-lines.js"></script> で読み込む。 / top-level const / function として定義し、グローバル参照で解決される。 / タッグ固有のセリフ (HOT_TAG_LINES / CUTIN_SAVE_LINES / BETRAYAL_LINES など) は tag-battle-lines.js に残す。 / ダメージセリフ（長文、クリティカルで発動）
 - 本数: 125
 
-### normal.normal[]
+### standard.normal[]
 
-- `DAMAGE_SERIF_LINES.normal.normal[1]`: くっ…まだ…まだだ…！
-- `DAMAGE_SERIF_LINES.normal.normal[2]`: 効いた…けど…負けない…！
-- `DAMAGE_SERIF_LINES.normal.normal[3]`: はぁ…はぁ…立てる…まだ…
+- `DAMAGE_SERIF_LINES.standard.normal[1]`: くっ…まだ…まだだ…！
+- `DAMAGE_SERIF_LINES.standard.normal[2]`: 効いた…けど…負けない…！
+- `DAMAGE_SERIF_LINES.standard.normal[3]`: はぁ…はぁ…立てる…まだ…
 
-### normal.polite[]
+### standard.earnest[]
 
-- `DAMAGE_SERIF_LINES.normal.polite[1]`: くっ…まだ…大丈夫です…！
-- `DAMAGE_SERIF_LINES.normal.polite[2]`: 効きました…でも…まだです…！
-- `DAMAGE_SERIF_LINES.normal.polite[3]`: はぁ…はぁ…立てます…まだ…
+- `DAMAGE_SERIF_LINES.standard.earnest[1]`: ぐっ…！ まだ…立てる…！
+- `DAMAGE_SERIF_LINES.standard.earnest[2]`: くぅ…っ！ 効いた…けど…！
+- `DAMAGE_SERIF_LINES.standard.earnest[3]`: はぁ…はぁ…負けるもんか…！
 
-### normal.seductive[]
+### standard.bold[]
 
-- `DAMAGE_SERIF_LINES.normal.seductive[1]`: っ…やるじゃない…
-- `DAMAGE_SERIF_LINES.normal.seductive[2]`: くっ…いい攻撃ね…でもまだよ
-- `DAMAGE_SERIF_LINES.normal.seductive[3]`: はぁ…少し本気になったわ…
+- `DAMAGE_SERIF_LINES.standard.bold[1]`: はっ…やるじゃん…でもまだだよ！
+- `DAMAGE_SERIF_LINES.standard.bold[2]`: この程度じゃ…倒れないよ！
+- `DAMAGE_SERIF_LINES.standard.bold[3]`: あはは…痛い痛い…でもね！
 
-### normal.delinquent[]
+### standard.easygoing[]
 
-- `DAMAGE_SERIF_LINES.normal.delinquent[1]`: くそっ…足にくるぜ…！
-- `DAMAGE_SERIF_LINES.normal.delinquent[2]`: てめえ…やるじゃねえか…
-- `DAMAGE_SERIF_LINES.normal.delinquent[3]`: はぁ…はぁ…なめんなよ…
+- `DAMAGE_SERIF_LINES.standard.easygoing[1]`: あたた…でもまだ大丈夫！
+- `DAMAGE_SERIF_LINES.standard.easygoing[2]`: う〜ん…効いたかも…でもへーきへーき！
+- `DAMAGE_SERIF_LINES.standard.easygoing[3]`: いたた…ちょっと休憩…なんてね！
 
-### normal.ojousama[]
+### standard.quiet[]
 
-- `DAMAGE_SERIF_LINES.normal.ojousama[1]`: くっ…なかなかやるわね…
-- `DAMAGE_SERIF_LINES.normal.ojousama[2]`: 効いたわ…でもこの程度で…！
-- `DAMAGE_SERIF_LINES.normal.ojousama[3]`: はぁ…はぁ…まだ立てますわ…
+- `DAMAGE_SERIF_LINES.standard.quiet[1]`: ……まだ
+- `DAMAGE_SERIF_LINES.standard.quiet[2]`: ……これくらい
+- `DAMAGE_SERIF_LINES.standard.quiet[3]`: ……立てる
 
-### normal.cool[]
+### standard.shy[]
 
-- `DAMAGE_SERIF_LINES.normal.cool[1]`: …っ…まだ
-- `DAMAGE_SERIF_LINES.normal.cool[2]`: …効いた…けど
-- `DAMAGE_SERIF_LINES.normal.cool[3]`: …はぁ…まだ…立てる
+- `DAMAGE_SERIF_LINES.standard.shy[1]`: い、痛い…でも…まだ…
+- `DAMAGE_SERIF_LINES.standard.shy[2]`: う、うぅ…でも…立てる…から…
+- `DAMAGE_SERIF_LINES.standard.shy[3]`: ひっ…で、でも…負けたくない…
 
-### earnest.normal[]
+### standard.emotional[]
 
-- `DAMAGE_SERIF_LINES.earnest.normal[1]`: ぐっ…！ まだ…立てる…！
-- `DAMAGE_SERIF_LINES.earnest.normal[2]`: くぅ…っ！ 効いた…けど…！
-- `DAMAGE_SERIF_LINES.earnest.normal[3]`: はぁ…はぁ…負けるもんか…！
+- `DAMAGE_SERIF_LINES.standard.emotional[1]`: 痛いっ…！ でも…でもっ…！
+- `DAMAGE_SERIF_LINES.standard.emotional[2]`: うぅっ…こんなので…負けないっ…！
+- `DAMAGE_SERIF_LINES.standard.emotional[3]`: 泣かない…泣かないよ…まだ…！
 
-### earnest.polite[]
+### polite.normal[]
 
-- `DAMAGE_SERIF_LINES.earnest.polite[1]`: ぐっ…！ まだ…立てます…！
-- `DAMAGE_SERIF_LINES.earnest.polite[2]`: くぅ…っ！ でも…まだです…！
-- `DAMAGE_SERIF_LINES.earnest.polite[3]`: はぁ…はぁ…負けません…！
+- `DAMAGE_SERIF_LINES.polite.normal[1]`: くっ…まだ…大丈夫です…！
+- `DAMAGE_SERIF_LINES.polite.normal[2]`: 効きました…でも…まだです…！
+- `DAMAGE_SERIF_LINES.polite.normal[3]`: はぁ…はぁ…立てます…まだ…
 
-### earnest.seductive[]
+### polite.earnest[]
 
-- `DAMAGE_SERIF_LINES.earnest.seductive[1]`: んっ…痛い…けど…気持ちいいかも…
-- `DAMAGE_SERIF_LINES.earnest.seductive[2]`: くっ…まだまだ…よ？
-- `DAMAGE_SERIF_LINES.earnest.seductive[3]`: はぁ…身体が熱くなってきたわ…
+- `DAMAGE_SERIF_LINES.polite.earnest[1]`: ぐっ…！ まだ…立てます…！
+- `DAMAGE_SERIF_LINES.polite.earnest[2]`: くぅ…っ！ でも…まだです…！
+- `DAMAGE_SERIF_LINES.polite.earnest[3]`: はぁ…はぁ…負けません…！
 
-### earnest.delinquent[]
+### polite.bold[]
 
-- `DAMAGE_SERIF_LINES.earnest.delinquent[1]`: ぐっ…！ やるじゃねえか…！
-- `DAMAGE_SERIF_LINES.earnest.delinquent[2]`: くそ…効いたぜ…でもな…！
-- `DAMAGE_SERIF_LINES.earnest.delinquent[3]`: はぁ…はぁ…舐めんなよ…！
+- `DAMAGE_SERIF_LINES.polite.bold[1]`: はっ…効きますね…でもまだですよ！
+- `DAMAGE_SERIF_LINES.polite.bold[2]`: この程度では…倒れませんよ！
+- `DAMAGE_SERIF_LINES.polite.bold[3]`: 痛い…ですけど…まだです！
 
-### earnest.ojousama[]
+### polite.easygoing[]
 
-- `DAMAGE_SERIF_LINES.earnest.ojousama[1]`: ぐっ…！ やりますわね…！
-- `DAMAGE_SERIF_LINES.earnest.ojousama[2]`: くぅ…っ！ でもまだですわ…！
-- `DAMAGE_SERIF_LINES.earnest.ojousama[3]`: はぁ…はぁ…ここからですわ…！
+- `DAMAGE_SERIF_LINES.polite.easygoing[1]`: あたた…でもまだ大丈夫ですよ！
+- `DAMAGE_SERIF_LINES.polite.easygoing[2]`: う〜ん…効きましたけど…平気です！
+- `DAMAGE_SERIF_LINES.polite.easygoing[3]`: いたた…でもまだいけます！
 
-### earnest.cool[]
+### polite.quiet[]
 
-- `DAMAGE_SERIF_LINES.earnest.cool[1]`: …っ…まだ、立てる
-- `DAMAGE_SERIF_LINES.earnest.cool[2]`: …効いた…でも
-- `DAMAGE_SERIF_LINES.earnest.cool[3]`: …はぁ…負けない
+- `DAMAGE_SERIF_LINES.polite.quiet[1]`: ……まだ、です
+- `DAMAGE_SERIF_LINES.polite.quiet[2]`: ……これくらいでは
+- `DAMAGE_SERIF_LINES.polite.quiet[3]`: ……立てます
 
-### bold.normal[]
+### polite.shy[]
 
-- `DAMAGE_SERIF_LINES.bold.normal[1]`: はっ…やるじゃん…でもまだだよ！
-- `DAMAGE_SERIF_LINES.bold.normal[2]`: この程度じゃ…倒れないよ！
-- `DAMAGE_SERIF_LINES.bold.normal[3]`: あはは…痛い痛い…でもね！
+- `DAMAGE_SERIF_LINES.polite.shy[1]`: い、痛いです…でも…まだ…
+- `DAMAGE_SERIF_LINES.polite.shy[2]`: う、うぅ…でも…立てます…
+- `DAMAGE_SERIF_LINES.polite.shy[3]`: ひっ…で、でも…負けたくないです…
 
-### bold.polite[]
+### polite.emotional[]
 
-- `DAMAGE_SERIF_LINES.bold.polite[1]`: はっ…効きますね…でもまだですよ！
-- `DAMAGE_SERIF_LINES.bold.polite[2]`: この程度では…倒れませんよ！
-- `DAMAGE_SERIF_LINES.bold.polite[3]`: 痛い…ですけど…まだです！
+- `DAMAGE_SERIF_LINES.polite.emotional[1]`: 痛いです…っ！ でも…でもっ…！
+- `DAMAGE_SERIF_LINES.polite.emotional[2]`: うぅっ…こんなでは…負けませんっ…！
+- `DAMAGE_SERIF_LINES.polite.emotional[3]`: 泣いてません…まだ…立てます…！
 
-### bold.seductive[]
+### seductive.normal[]
 
-- `DAMAGE_SERIF_LINES.bold.seductive[1]`: あら…乱暴ね…でも嫌いじゃないわ
-- `DAMAGE_SERIF_LINES.bold.seductive[2]`: くっ…いいわよ…もっと来なさい
-- `DAMAGE_SERIF_LINES.bold.seductive[3]`: はぁ…痛い…でもまだ足りないわ
+- `DAMAGE_SERIF_LINES.seductive.normal[1]`: っ…やるじゃない…
+- `DAMAGE_SERIF_LINES.seductive.normal[2]`: くっ…いい攻撃ね…でもまだよ
+- `DAMAGE_SERIF_LINES.seductive.normal[3]`: はぁ…少し本気になったわ…
 
-### bold.delinquent[]
+### seductive.earnest[]
 
-- `DAMAGE_SERIF_LINES.bold.delinquent[1]`: はっ…その程度かよ！
-- `DAMAGE_SERIF_LINES.bold.delinquent[2]`: 効くじゃねえか…でもまだだ！
-- `DAMAGE_SERIF_LINES.bold.delinquent[3]`: 痛てぇ…けどな…舐めんな！
+- `DAMAGE_SERIF_LINES.seductive.earnest[1]`: んっ…痛い…けど…気持ちいいかも…
+- `DAMAGE_SERIF_LINES.seductive.earnest[2]`: くっ…まだまだ…よ？
+- `DAMAGE_SERIF_LINES.seductive.earnest[3]`: はぁ…身体が熱くなってきたわ…
 
-### bold.ojousama[]
+### seductive.bold[]
 
-- `DAMAGE_SERIF_LINES.bold.ojousama[1]`: っぐ…やりますわね！ でもまだですわ！
-- `DAMAGE_SERIF_LINES.bold.ojousama[2]`: この程度では…倒れませんわよ！
-- `DAMAGE_SERIF_LINES.bold.ojousama[3]`: この痛み…ですけど…まだまだっ！
+- `DAMAGE_SERIF_LINES.seductive.bold[1]`: あら…乱暴ね…でも嫌いじゃないわ
+- `DAMAGE_SERIF_LINES.seductive.bold[2]`: くっ…いいわよ…もっと来なさい
+- `DAMAGE_SERIF_LINES.seductive.bold[3]`: はぁ…痛い…でもまだ足りないわ
 
-### bold.cool[]
+### seductive.easygoing[]
 
-- `DAMAGE_SERIF_LINES.bold.cool[1]`: …ふん…その程度
-- `DAMAGE_SERIF_LINES.bold.cool[2]`: …まだ…足りない
-- `DAMAGE_SERIF_LINES.bold.cool[3]`: …効くね…でも
+- `DAMAGE_SERIF_LINES.seductive.easygoing[1]`: あらら…やるじゃない♪ でもまだよ？
+- `DAMAGE_SERIF_LINES.seductive.easygoing[2]`: くふふ…やるわね…楽しいわ
+- `DAMAGE_SERIF_LINES.seductive.easygoing[3]`: んー…効いたかも…でもまだよ♪
 
-### easygoing.normal[]
+### seductive.quiet[]
 
-- `DAMAGE_SERIF_LINES.easygoing.normal[1]`: あたた…でもまだ大丈夫！
-- `DAMAGE_SERIF_LINES.easygoing.normal[2]`: う〜ん…効いたかも…でもへーきへーき！
-- `DAMAGE_SERIF_LINES.easygoing.normal[3]`: いたた…ちょっと休憩…なんてね！
+- `DAMAGE_SERIF_LINES.seductive.quiet[1]`: ……ふふ…まだよ
+- `DAMAGE_SERIF_LINES.seductive.quiet[2]`: ……その程度…？
+- `DAMAGE_SERIF_LINES.seductive.quiet[3]`: ……もっと…来なさい
 
-### easygoing.polite[]
+### seductive.shy[]
 
-- `DAMAGE_SERIF_LINES.easygoing.polite[1]`: あたた…でもまだ大丈夫ですよ！
-- `DAMAGE_SERIF_LINES.easygoing.polite[2]`: う〜ん…効きましたけど…平気です！
-- `DAMAGE_SERIF_LINES.easygoing.polite[3]`: いたた…でもまだいけます！
+- `DAMAGE_SERIF_LINES.seductive.shy[1]`: あっ…痛い…でも…まだよ…
+- `DAMAGE_SERIF_LINES.seductive.shy[2]`: う、うぅん…負けない…から…
+- `DAMAGE_SERIF_LINES.seductive.shy[3]`: ひっ…で、でも…まだ立てるわ…
 
-### easygoing.seductive[]
+### seductive.emotional[]
 
-- `DAMAGE_SERIF_LINES.easygoing.seductive[1]`: あらら…やるじゃない♪ でもまだよ？
-- `DAMAGE_SERIF_LINES.easygoing.seductive[2]`: くふふ…やるわね…楽しいわ
-- `DAMAGE_SERIF_LINES.easygoing.seductive[3]`: んー…効いたかも…でもまだよ♪
+- `DAMAGE_SERIF_LINES.seductive.emotional[1]`: あぁ…っ…痛い…でも…まだよ…！
+- `DAMAGE_SERIF_LINES.seductive.emotional[2]`: くぅ…っ…こんなので…終わらないわ…！
+- `DAMAGE_SERIF_LINES.seductive.emotional[3]`: 涙…？ 違うわ…汗よ…！
 
-### easygoing.delinquent[]
+### delinquent.normal[]
 
-- `DAMAGE_SERIF_LINES.easygoing.delinquent[1]`: おっと…やるなぁ！ でもまだだ！
-- `DAMAGE_SERIF_LINES.easygoing.delinquent[2]`: がはっ…効いた効いた…けどな！
-- `DAMAGE_SERIF_LINES.easygoing.delinquent[3]`: いてて…でもこの程度でっ！
+- `DAMAGE_SERIF_LINES.delinquent.normal[1]`: くそっ…足にくるぜ…！
+- `DAMAGE_SERIF_LINES.delinquent.normal[2]`: てめえ…やるじゃねえか…
+- `DAMAGE_SERIF_LINES.delinquent.normal[3]`: はぁ…はぁ…なめんなよ…
 
-### easygoing.ojousama[]
+### delinquent.earnest[]
 
-- `DAMAGE_SERIF_LINES.easygoing.ojousama[1]`: あらら…効きますわね〜！ でもまだですわ！
-- `DAMAGE_SERIF_LINES.easygoing.ojousama[2]`: うふふ…やりますわね…でも平気ですわ！
-- `DAMAGE_SERIF_LINES.easygoing.ojousama[3]`: いたた…でもまだまだですわよ〜！
+- `DAMAGE_SERIF_LINES.delinquent.earnest[1]`: ぐっ…！ やるじゃねえか…！
+- `DAMAGE_SERIF_LINES.delinquent.earnest[2]`: くそ…効いたぜ…でもな…！
+- `DAMAGE_SERIF_LINES.delinquent.earnest[3]`: はぁ…はぁ…舐めんなよ…！
 
-### easygoing.cool[]
+### delinquent.bold[]
 
-- `DAMAGE_SERIF_LINES.easygoing.cool[1]`: …ん…効いた…けど平気
-- `DAMAGE_SERIF_LINES.easygoing.cool[2]`: …あー…痛い。でもまだ
-- `DAMAGE_SERIF_LINES.easygoing.cool[3]`: …大丈夫…まだいける
+- `DAMAGE_SERIF_LINES.delinquent.bold[1]`: はっ…その程度かよ！
+- `DAMAGE_SERIF_LINES.delinquent.bold[2]`: 効くじゃねえか…でもまだだ！
+- `DAMAGE_SERIF_LINES.delinquent.bold[3]`: 痛てぇ…けどな…舐めんな！
 
-### quiet.normal[]
+### delinquent.easygoing[]
 
-- `DAMAGE_SERIF_LINES.quiet.normal[1]`: ……まだ
-- `DAMAGE_SERIF_LINES.quiet.normal[2]`: ……これくらい
-- `DAMAGE_SERIF_LINES.quiet.normal[3]`: ……立てる
+- `DAMAGE_SERIF_LINES.delinquent.easygoing[1]`: おっと…やるなぁ！ でもまだだ！
+- `DAMAGE_SERIF_LINES.delinquent.easygoing[2]`: がはっ…効いた効いた…けどな！
+- `DAMAGE_SERIF_LINES.delinquent.easygoing[3]`: いてて…でもこの程度でっ！
 
-### quiet.polite[]
+### delinquent.quiet[]
 
-- `DAMAGE_SERIF_LINES.quiet.polite[1]`: ……まだ、です
-- `DAMAGE_SERIF_LINES.quiet.polite[2]`: ……これくらいでは
-- `DAMAGE_SERIF_LINES.quiet.polite[3]`: ……立てます
+- `DAMAGE_SERIF_LINES.delinquent.quiet[1]`: ……なめんな
+- `DAMAGE_SERIF_LINES.delinquent.quiet[2]`: ……その程度か
+- `DAMAGE_SERIF_LINES.delinquent.quiet[3]`: ……まだだ
 
-### quiet.seductive[]
+### delinquent.shy[]
 
-- `DAMAGE_SERIF_LINES.quiet.seductive[1]`: ……ふふ…まだよ
-- `DAMAGE_SERIF_LINES.quiet.seductive[2]`: ……その程度…？
-- `DAMAGE_SERIF_LINES.quiet.seductive[3]`: ……もっと…来なさい
+- `DAMAGE_SERIF_LINES.delinquent.shy[1]`: い、痛え…でも…まだだ…
+- `DAMAGE_SERIF_LINES.delinquent.shy[2]`: う、うるせえ…まだ立てる…
+- `DAMAGE_SERIF_LINES.delinquent.shy[3]`: ひっ…な、なめんな…
 
-### quiet.delinquent[]
+### delinquent.emotional[]
 
-- `DAMAGE_SERIF_LINES.quiet.delinquent[1]`: ……なめんな
-- `DAMAGE_SERIF_LINES.quiet.delinquent[2]`: ……その程度か
-- `DAMAGE_SERIF_LINES.quiet.delinquent[3]`: ……まだだ
+- `DAMAGE_SERIF_LINES.delinquent.emotional[1]`: くそぉ…っ！ 効きやがった…！
+- `DAMAGE_SERIF_LINES.delinquent.emotional[2]`: うぅっ…てめえ…覚えてろ…！
+- `DAMAGE_SERIF_LINES.delinquent.emotional[3]`: 泣いてねえっ…泣いてねえよ…！
 
-### quiet.ojousama[]
+### ojousama.normal[]
 
-- `DAMAGE_SERIF_LINES.quiet.ojousama[1]`: ……まだですわ
-- `DAMAGE_SERIF_LINES.quiet.ojousama[2]`: ……この程度では
-- `DAMAGE_SERIF_LINES.quiet.ojousama[3]`: ……立てますわ
+- `DAMAGE_SERIF_LINES.ojousama.normal[1]`: くっ…なかなかやるわね…
+- `DAMAGE_SERIF_LINES.ojousama.normal[2]`: 効いたわ…でもこの程度で…！
+- `DAMAGE_SERIF_LINES.ojousama.normal[3]`: はぁ…はぁ…まだ立てますわ…
 
-### quiet.cool[]
+### ojousama.earnest[]
 
-- `DAMAGE_SERIF_LINES.quiet.cool[1]`: ……この程度で！
-- `DAMAGE_SERIF_LINES.quiet.cool[2]`: ……まだ
+- `DAMAGE_SERIF_LINES.ojousama.earnest[1]`: ぐっ…！ やりますわね…！
+- `DAMAGE_SERIF_LINES.ojousama.earnest[2]`: くぅ…っ！ でもまだですわ…！
+- `DAMAGE_SERIF_LINES.ojousama.earnest[3]`: はぁ…はぁ…ここからですわ…！
 
-### shy.normal[]
+### ojousama.bold[]
 
-- `DAMAGE_SERIF_LINES.shy.normal[1]`: い、痛い…でも…まだ…
-- `DAMAGE_SERIF_LINES.shy.normal[2]`: う、うぅ…でも…立てる…から…
-- `DAMAGE_SERIF_LINES.shy.normal[3]`: ひっ…で、でも…負けたくない…
+- `DAMAGE_SERIF_LINES.ojousama.bold[1]`: っぐ…やりますわね！ でもまだですわ！
+- `DAMAGE_SERIF_LINES.ojousama.bold[2]`: この程度では…倒れませんわよ！
+- `DAMAGE_SERIF_LINES.ojousama.bold[3]`: この痛み…ですけど…まだまだっ！
 
-### shy.polite[]
+### ojousama.easygoing[]
 
-- `DAMAGE_SERIF_LINES.shy.polite[1]`: い、痛いです…でも…まだ…
-- `DAMAGE_SERIF_LINES.shy.polite[2]`: う、うぅ…でも…立てます…
-- `DAMAGE_SERIF_LINES.shy.polite[3]`: ひっ…で、でも…負けたくないです…
+- `DAMAGE_SERIF_LINES.ojousama.easygoing[1]`: あらら…効きますわね〜！ でもまだですわ！
+- `DAMAGE_SERIF_LINES.ojousama.easygoing[2]`: うふふ…やりますわね…でも平気ですわ！
+- `DAMAGE_SERIF_LINES.ojousama.easygoing[3]`: いたた…でもまだまだですわよ〜！
 
-### shy.seductive[]
+### ojousama.quiet[]
 
-- `DAMAGE_SERIF_LINES.shy.seductive[1]`: あっ…痛い…でも…まだよ…
-- `DAMAGE_SERIF_LINES.shy.seductive[2]`: う、うぅん…負けない…から…
-- `DAMAGE_SERIF_LINES.shy.seductive[3]`: ひっ…で、でも…まだ立てるわ…
+- `DAMAGE_SERIF_LINES.ojousama.quiet[1]`: ……まだですわ
+- `DAMAGE_SERIF_LINES.ojousama.quiet[2]`: ……この程度では
+- `DAMAGE_SERIF_LINES.ojousama.quiet[3]`: ……立てますわ
 
-### shy.delinquent[]
+### ojousama.shy[]
 
-- `DAMAGE_SERIF_LINES.shy.delinquent[1]`: い、痛え…でも…まだだ…
-- `DAMAGE_SERIF_LINES.shy.delinquent[2]`: う、うるせえ…まだ立てる…
-- `DAMAGE_SERIF_LINES.shy.delinquent[3]`: ひっ…な、なめんな…
+- `DAMAGE_SERIF_LINES.ojousama.shy[1]`: い、痛い…ですけど…まだですわ…
+- `DAMAGE_SERIF_LINES.ojousama.shy[2]`: う、うぅ…でも…立てますわ…
+- `DAMAGE_SERIF_LINES.ojousama.shy[3]`: ひっ…で、でも…負けませんわ…
 
-### shy.ojousama[]
+### ojousama.emotional[]
 
-- `DAMAGE_SERIF_LINES.shy.ojousama[1]`: い、痛い…ですけど…まだですわ…
-- `DAMAGE_SERIF_LINES.shy.ojousama[2]`: う、うぅ…でも…立てますわ…
-- `DAMAGE_SERIF_LINES.shy.ojousama[3]`: ひっ…で、でも…負けませんわ…
+- `DAMAGE_SERIF_LINES.ojousama.emotional[1]`: 痛い…ですわ…っ！ でもっ…！
+- `DAMAGE_SERIF_LINES.ojousama.emotional[2]`: うぅっ…こんなでは…負けませんわっ…！
+- `DAMAGE_SERIF_LINES.ojousama.emotional[3]`: 泣いてなど…まだ立てますわ…！
 
-### shy.cool[]
+### cool.normal[]
 
-- `DAMAGE_SERIF_LINES.shy.cool[1]`: …っ…ま、まだ…
-- `DAMAGE_SERIF_LINES.shy.cool[2]`: …い、痛い…けど…
-- `DAMAGE_SERIF_LINES.shy.cool[3]`: …た、立てる…
+- `DAMAGE_SERIF_LINES.cool.normal[1]`: …っ…まだ
+- `DAMAGE_SERIF_LINES.cool.normal[2]`: …効いた…けど
+- `DAMAGE_SERIF_LINES.cool.normal[3]`: …はぁ…まだ…立てる
 
-### emotional.normal[]
+### cool.earnest[]
 
-- `DAMAGE_SERIF_LINES.emotional.normal[1]`: 痛いっ…！ でも…でもっ…！
-- `DAMAGE_SERIF_LINES.emotional.normal[2]`: うぅっ…こんなので…負けないっ…！
-- `DAMAGE_SERIF_LINES.emotional.normal[3]`: 泣かない…泣かないよ…まだ…！
+- `DAMAGE_SERIF_LINES.cool.earnest[1]`: …っ…まだ、立てる
+- `DAMAGE_SERIF_LINES.cool.earnest[2]`: …効いた…でも
+- `DAMAGE_SERIF_LINES.cool.earnest[3]`: …はぁ…負けない
 
-### emotional.polite[]
+### cool.bold[]
 
-- `DAMAGE_SERIF_LINES.emotional.polite[1]`: 痛いです…っ！ でも…でもっ…！
-- `DAMAGE_SERIF_LINES.emotional.polite[2]`: うぅっ…こんなでは…負けませんっ…！
-- `DAMAGE_SERIF_LINES.emotional.polite[3]`: 泣いてません…まだ…立てます…！
+- `DAMAGE_SERIF_LINES.cool.bold[1]`: …ふん…その程度
+- `DAMAGE_SERIF_LINES.cool.bold[2]`: …まだ…足りない
+- `DAMAGE_SERIF_LINES.cool.bold[3]`: …効くね…でも
 
-### emotional.seductive[]
+### cool.easygoing[]
 
-- `DAMAGE_SERIF_LINES.emotional.seductive[1]`: あぁ…っ…痛い…でも…まだよ…！
-- `DAMAGE_SERIF_LINES.emotional.seductive[2]`: くぅ…っ…こんなので…終わらないわ…！
-- `DAMAGE_SERIF_LINES.emotional.seductive[3]`: 涙…？ 違うわ…汗よ…！
+- `DAMAGE_SERIF_LINES.cool.easygoing[1]`: …ん…効いた…けど平気
+- `DAMAGE_SERIF_LINES.cool.easygoing[2]`: …あー…痛い。でもまだ
+- `DAMAGE_SERIF_LINES.cool.easygoing[3]`: …大丈夫…まだいける
 
-### emotional.delinquent[]
+### cool.quiet[]
 
-- `DAMAGE_SERIF_LINES.emotional.delinquent[1]`: くそぉ…っ！ 効きやがった…！
-- `DAMAGE_SERIF_LINES.emotional.delinquent[2]`: うぅっ…てめえ…覚えてろ…！
-- `DAMAGE_SERIF_LINES.emotional.delinquent[3]`: 泣いてねえっ…泣いてねえよ…！
+- `DAMAGE_SERIF_LINES.cool.quiet[1]`: ……この程度で！
+- `DAMAGE_SERIF_LINES.cool.quiet[2]`: ……まだ
 
-### emotional.ojousama[]
+### cool.shy[]
 
-- `DAMAGE_SERIF_LINES.emotional.ojousama[1]`: 痛い…ですわ…っ！ でもっ…！
-- `DAMAGE_SERIF_LINES.emotional.ojousama[2]`: うぅっ…こんなでは…負けませんわっ…！
-- `DAMAGE_SERIF_LINES.emotional.ojousama[3]`: 泣いてなど…まだ立てますわ…！
+- `DAMAGE_SERIF_LINES.cool.shy[1]`: …っ…ま、まだ…
+- `DAMAGE_SERIF_LINES.cool.shy[2]`: …い、痛い…けど…
+- `DAMAGE_SERIF_LINES.cool.shy[3]`: …た、立てる…
 
-### emotional.cool[]
+### cool.emotional[]
 
-- `DAMAGE_SERIF_LINES.emotional.cool[1]`: …っ…痛い…でも…
-- `DAMAGE_SERIF_LINES.emotional.cool[2]`: …っ…泣かない…
-- `DAMAGE_SERIF_LINES.emotional.cool[3]`: …まだ…立てる…っ
+- `DAMAGE_SERIF_LINES.cool.emotional[1]`: …っ…痛い…でも…
+- `DAMAGE_SERIF_LINES.cool.emotional[2]`: …っ…泣かない…
+- `DAMAGE_SERIF_LINES.cool.emotional[3]`: …まだ…立てる…っ
 
 ## `DAMAGE_VOICE_LINES`
 
@@ -1731,12 +1731,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 短い悲鳴（archetype別）
 - 本数: 28
 
-### normal[]
+### standard[]
 
-- `DAMAGE_VOICE_LINES.normal[1]`: くっ…！
-- `DAMAGE_VOICE_LINES.normal[2]`: あっ…！
-- `DAMAGE_VOICE_LINES.normal[3]`: うぅっ…！
-- `DAMAGE_VOICE_LINES.normal[4]`: はぁっ…！
+- `DAMAGE_VOICE_LINES.standard[1]`: くっ…！
+- `DAMAGE_VOICE_LINES.standard[2]`: あっ…！
+- `DAMAGE_VOICE_LINES.standard[3]`: うぅっ…！
+- `DAMAGE_VOICE_LINES.standard[4]`: はぁっ…！
 
 ### polite[]
 
@@ -1783,889 +1783,889 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ## `CUTIN_LINES`
 
 - 出典: `src/battle-engine-main.js`
-- コード内コメント: SPEED_DELAYS / BIGMOVE_CHARGE_MS / BIGMOVE_ANIM_RATE は battle-replay-core.js で定義 / CUTIN_LINES / battle-engine.html 1690-898 から転記。personality × archetype の2D台詞テーブル。
+- コード内コメント: SPEED_DELAYS / BIGMOVE_CHARGE_MS / BIGMOVE_ANIM_RATE は battle-replay-core.js で定義 / CUTIN_LINES / battle-engine.html 1690-898 から転記。archetype × personality の2D台詞テーブル(2026-08-01 に軸を入れ替え)。
 - 本数: 440
 
-### atk.normal.normal[]
+### atk.standard.normal[]
 
-- `CUTIN_LINES.atk.normal.normal[1]`: いくよ！
-- `CUTIN_LINES.atk.normal.normal[2]`: まだまだ！
-- `CUTIN_LINES.atk.normal.normal[3]`: 負けないから！
-- `CUTIN_LINES.atk.normal.normal[4]`: ここからよ！
+- `CUTIN_LINES.atk.standard.normal[1]`: いくよ！
+- `CUTIN_LINES.atk.standard.normal[2]`: まだまだ！
+- `CUTIN_LINES.atk.standard.normal[3]`: 負けないから！
+- `CUTIN_LINES.atk.standard.normal[4]`: ここからよ！
 
-### atk.normal.polite[]
+### atk.standard.bold[]
 
-- `CUTIN_LINES.atk.normal.polite[1]`: いきますっ！
-- `CUTIN_LINES.atk.normal.polite[2]`: まだまだです!
-- `CUTIN_LINES.atk.normal.polite[3]`: 負けません！
-- `CUTIN_LINES.atk.normal.polite[4]`: ここからですっ！
+- `CUTIN_LINES.atk.standard.bold[1]`: まだまだっ！
+- `CUTIN_LINES.atk.standard.bold[2]`: ここからが本番よっ！
+- `CUTIN_LINES.atk.standard.bold[3]`: 逃がさないわよ！
+- `CUTIN_LINES.atk.standard.bold[4]`: 受けてみなさい！
 
-### atk.normal.seductive[]
+### atk.standard.quiet[]
 
-- `CUTIN_LINES.atk.normal.seductive[1]`: いくわよ…
-- `CUTIN_LINES.atk.normal.seductive[2]`: まだまだよ
-- `CUTIN_LINES.atk.normal.seductive[3]`: 負けないわ
-- `CUTIN_LINES.atk.normal.seductive[4]`: ここからよ…
+- `CUTIN_LINES.atk.standard.quiet[1]`: …まだ、終わらない
+- `CUTIN_LINES.atk.standard.quiet[2]`: …ここからよ
+- `CUTIN_LINES.atk.standard.quiet[3]`: …負けるわけにはいかない
+- `CUTIN_LINES.atk.standard.quiet[4]`: …見ていて
 
-### atk.normal.delinquent[]
+### atk.standard.earnest[]
 
-- `CUTIN_LINES.atk.normal.delinquent[1]`: いくぞ！
-- `CUTIN_LINES.atk.normal.delinquent[2]`: まだまだだ！
-- `CUTIN_LINES.atk.normal.delinquent[3]`: 負けねえからな！
-- `CUTIN_LINES.atk.normal.delinquent[4]`: ここからだっ！
+- `CUTIN_LINES.atk.standard.earnest[1]`: 絶対に…勝つ！
+- `CUTIN_LINES.atk.standard.earnest[2]`: ここで引くわけにはいかない！
+- `CUTIN_LINES.atk.standard.earnest[3]`: 全力で…いく！
+- `CUTIN_LINES.atk.standard.earnest[4]`: 諦めない…！
 
-### atk.normal.ojousama[]
+### atk.standard.emotional[]
 
-- `CUTIN_LINES.atk.normal.ojousama[1]`: 参りますわ！
-- `CUTIN_LINES.atk.normal.ojousama[2]`: まだまだですわ！
-- `CUTIN_LINES.atk.normal.ojousama[3]`: 負けませんわ！
-- `CUTIN_LINES.atk.normal.ojousama[4]`: ここからですの！
+- `CUTIN_LINES.atk.standard.emotional[1]`: 負けたくないっ…！
+- `CUTIN_LINES.atk.standard.emotional[2]`: 絶対に…絶対にっ…！
+- `CUTIN_LINES.atk.standard.emotional[3]`: うぅっ…でも、負けないっ…！
+- `CUTIN_LINES.atk.standard.emotional[4]`: こんなところで…終われないっ！
 
-### atk.normal.cool[]
+### atk.standard.easygoing[]
 
-- `CUTIN_LINES.atk.normal.cool[1]`: …いく
-- `CUTIN_LINES.atk.normal.cool[2]`: …まだ
-- `CUTIN_LINES.atk.normal.cool[3]`: …負けない
-- `CUTIN_LINES.atk.normal.cool[4]`: …ここから
+- `CUTIN_LINES.atk.standard.easygoing[1]`: あはは、楽しくなってきた！
+- `CUTIN_LINES.atk.standard.easygoing[2]`: いい試合にしようよ！
+- `CUTIN_LINES.atk.standard.easygoing[3]`: まだまだいけるよ〜！
+- `CUTIN_LINES.atk.standard.easygoing[4]`: 本気出しちゃうよ？
 
-### atk.normal.composed[]
+### atk.standard.shy[]
 
-- `CUTIN_LINES.atk.normal.composed[1]`: …いくよ
-- `CUTIN_LINES.atk.normal.composed[2]`: …まだまだ、だね
-- `CUTIN_LINES.atk.normal.composed[3]`: …負けないよ
-- `CUTIN_LINES.atk.normal.composed[4]`: …ここから、だよ
+- `CUTIN_LINES.atk.standard.shy[1]`: あ、あの…いきますっ…!
+- `CUTIN_LINES.atk.standard.shy[2]`: わ、わたし…まだまだ…!
+- `CUTIN_LINES.atk.standard.shy[3]`: ま、負けたくないから…!
+- `CUTIN_LINES.atk.standard.shy[4]`: こ、ここから…ですっ…!
 
-### atk.bold.normal[]
+### atk.polite.normal[]
 
-- `CUTIN_LINES.atk.bold.normal[1]`: まだまだっ！
-- `CUTIN_LINES.atk.bold.normal[2]`: ここからが本番よっ！
-- `CUTIN_LINES.atk.bold.normal[3]`: 逃がさないわよ！
-- `CUTIN_LINES.atk.bold.normal[4]`: 受けてみなさい！
+- `CUTIN_LINES.atk.polite.normal[1]`: いきますっ！
+- `CUTIN_LINES.atk.polite.normal[2]`: まだまだです!
+- `CUTIN_LINES.atk.polite.normal[3]`: 負けません！
+- `CUTIN_LINES.atk.polite.normal[4]`: ここからですっ！
 
-### atk.bold.polite[]
+### atk.polite.bold[]
 
-- `CUTIN_LINES.atk.bold.polite[1]`: こんなものじゃありませんよ！
-- `CUTIN_LINES.atk.bold.polite[2]`: ここからが本番です！
-- `CUTIN_LINES.atk.bold.polite[3]`: 逃がしませんよ！
-- `CUTIN_LINES.atk.bold.polite[4]`: わたしの全力、受けてくださいっ！
+- `CUTIN_LINES.atk.polite.bold[1]`: こんなものじゃありませんよ！
+- `CUTIN_LINES.atk.polite.bold[2]`: ここからが本番です！
+- `CUTIN_LINES.atk.polite.bold[3]`: 逃がしませんよ！
+- `CUTIN_LINES.atk.polite.bold[4]`: わたしの全力、受けてくださいっ！
 
-### atk.bold.seductive[]
+### atk.polite.quiet[]
 
-- `CUTIN_LINES.atk.bold.seductive[1]`: ふふ…こんなものじゃないわよ？
-- `CUTIN_LINES.atk.bold.seductive[2]`: ここからが本番…逃がさないわ
-- `CUTIN_LINES.atk.bold.seductive[3]`: たっぷり味わわせてあげる
-- `CUTIN_LINES.atk.bold.seductive[4]`: わたしの全部、受け止めなさい
+- `CUTIN_LINES.atk.polite.quiet[1]`: …まだ、終わりません
+- `CUTIN_LINES.atk.polite.quiet[2]`: …ここからです
+- `CUTIN_LINES.atk.polite.quiet[3]`: …負けるわけには、いきません
+- `CUTIN_LINES.atk.polite.quiet[4]`: …見ていてください
 
-### atk.bold.delinquent[]
+### atk.polite.earnest[]
 
-- `CUTIN_LINES.atk.bold.delinquent[1]`: こんなもんじゃねえぞ！
-- `CUTIN_LINES.atk.bold.delinquent[2]`: ここからが本番だぜ！
-- `CUTIN_LINES.atk.bold.delinquent[3]`: 逃がさねえからな！
-- `CUTIN_LINES.atk.bold.delinquent[4]`: あたしの全部、くらいやがれ！
+- `CUTIN_LINES.atk.polite.earnest[1]`: 絶対に勝ちますっ！
+- `CUTIN_LINES.atk.polite.earnest[2]`: ここで引くわけにはいかないんです！
+- `CUTIN_LINES.atk.polite.earnest[3]`: 全力で…いきますっ！
+- `CUTIN_LINES.atk.polite.earnest[4]`: 諦めません…っ！
 
-### atk.bold.ojousama[]
+### atk.polite.emotional[]
 
-- `CUTIN_LINES.atk.bold.ojousama[1]`: こんなものではございませんわ！
-- `CUTIN_LINES.atk.bold.ojousama[2]`: ここからが本番ですのよ！
-- `CUTIN_LINES.atk.bold.ojousama[3]`: 逃がしませんわよ！
-- `CUTIN_LINES.atk.bold.ojousama[4]`: わたくしの全力、お受けなさいな！
+- `CUTIN_LINES.atk.polite.emotional[1]`: 負けたくないですっ…！
+- `CUTIN_LINES.atk.polite.emotional[2]`: 絶対に…絶対にっ…！
+- `CUTIN_LINES.atk.polite.emotional[3]`: うぅっ…でも、負けませんっ…！
+- `CUTIN_LINES.atk.polite.emotional[4]`: こんなところで終われませんっ…！
 
-### atk.bold.cool[]
+### atk.polite.easygoing[]
 
-- `CUTIN_LINES.atk.bold.cool[1]`: …こんなもんじゃない
-- `CUTIN_LINES.atk.bold.cool[2]`: …ここから
-- `CUTIN_LINES.atk.bold.cool[3]`: …逃がさない
-- `CUTIN_LINES.atk.bold.cool[4]`: …全部、受けな
+- `CUTIN_LINES.atk.polite.easygoing[1]`: えへへ、楽しくなってきました！
+- `CUTIN_LINES.atk.polite.easygoing[2]`: いい試合にしましょう！
+- `CUTIN_LINES.atk.polite.easygoing[3]`: まだまだいけますよ〜！
+- `CUTIN_LINES.atk.polite.easygoing[4]`: 本気出しちゃいますよ？
 
-### atk.bold.composed[]
+### atk.polite.shy[]
 
-- `CUTIN_LINES.atk.bold.composed[1]`: …まだまだ、こんなもんじゃないよ
-- `CUTIN_LINES.atk.bold.composed[2]`: …ここからが本番、かな
-- `CUTIN_LINES.atk.bold.composed[3]`: …逃がさないよ、ゆっくりね
-- `CUTIN_LINES.atk.bold.composed[4]`: …わたしの全部、受け止めて
+- `CUTIN_LINES.atk.polite.shy[1]`: す、すみません…いきますっ…!
+- `CUTIN_LINES.atk.polite.shy[2]`: あ、あの…まだまだです…!
+- `CUTIN_LINES.atk.polite.shy[3]`: ま、負けたくないんです…!
+- `CUTIN_LINES.atk.polite.shy[4]`: こ、ここから…ですっ…!
 
-### atk.quiet.normal[]
+### atk.seductive.normal[]
 
-- `CUTIN_LINES.atk.quiet.normal[1]`: …まだ、終わらない
-- `CUTIN_LINES.atk.quiet.normal[2]`: …ここからよ
-- `CUTIN_LINES.atk.quiet.normal[3]`: …負けるわけにはいかない
-- `CUTIN_LINES.atk.quiet.normal[4]`: …見ていて
+- `CUTIN_LINES.atk.seductive.normal[1]`: いくわよ…
+- `CUTIN_LINES.atk.seductive.normal[2]`: まだまだよ
+- `CUTIN_LINES.atk.seductive.normal[3]`: 負けないわ
+- `CUTIN_LINES.atk.seductive.normal[4]`: ここからよ…
 
-### atk.quiet.polite[]
+### atk.seductive.bold[]
 
-- `CUTIN_LINES.atk.quiet.polite[1]`: …まだ、終わりません
-- `CUTIN_LINES.atk.quiet.polite[2]`: …ここからです
-- `CUTIN_LINES.atk.quiet.polite[3]`: …負けるわけには、いきません
-- `CUTIN_LINES.atk.quiet.polite[4]`: …見ていてください
+- `CUTIN_LINES.atk.seductive.bold[1]`: ふふ…こんなものじゃないわよ？
+- `CUTIN_LINES.atk.seductive.bold[2]`: ここからが本番…逃がさないわ
+- `CUTIN_LINES.atk.seductive.bold[3]`: たっぷり味わわせてあげる
+- `CUTIN_LINES.atk.seductive.bold[4]`: わたしの全部、受け止めなさい
 
-### atk.quiet.seductive[]
+### atk.seductive.quiet[]
 
-- `CUTIN_LINES.atk.quiet.seductive[1]`: …まだ、終わらない…よ
-- `CUTIN_LINES.atk.quiet.seductive[2]`: …ここから…ね
-- `CUTIN_LINES.atk.quiet.seductive[3]`: …負けるわけにはいかないの
-- `CUTIN_LINES.atk.quiet.seductive[4]`: …見ていなさい
+- `CUTIN_LINES.atk.seductive.quiet[1]`: …まだ、終わらない…よ
+- `CUTIN_LINES.atk.seductive.quiet[2]`: …ここから…ね
+- `CUTIN_LINES.atk.seductive.quiet[3]`: …負けるわけにはいかないの
+- `CUTIN_LINES.atk.seductive.quiet[4]`: …見ていなさい
 
-### atk.quiet.delinquent[]
+### atk.seductive.earnest[]
 
-- `CUTIN_LINES.atk.quiet.delinquent[1]`: …まだだ
-- `CUTIN_LINES.atk.quiet.delinquent[2]`: …ここからだぜ
-- `CUTIN_LINES.atk.quiet.delinquent[3]`: …負けらんねえ
-- `CUTIN_LINES.atk.quiet.delinquent[4]`: …見てやがれ
+- `CUTIN_LINES.atk.seductive.earnest[1]`: 絶対に…勝つわ
+- `CUTIN_LINES.atk.seductive.earnest[2]`: ここで引けないの
+- `CUTIN_LINES.atk.seductive.earnest[3]`: 全力で…いくわよ
+- `CUTIN_LINES.atk.seductive.earnest[4]`: 諦めない…から
 
-### atk.quiet.ojousama[]
+### atk.seductive.emotional[]
 
-- `CUTIN_LINES.atk.quiet.ojousama[1]`: …まだですわ
-- `CUTIN_LINES.atk.quiet.ojousama[2]`: …ここから…ですの
-- `CUTIN_LINES.atk.quiet.ojousama[3]`: …負けるわけには参りませんわ
-- `CUTIN_LINES.atk.quiet.ojousama[4]`: …見ていてくださいまし
+- `CUTIN_LINES.atk.seductive.emotional[1]`: 負けたくないっ…！
+- `CUTIN_LINES.atk.seductive.emotional[2]`: あぁ…絶対に、絶対にっ…！
+- `CUTIN_LINES.atk.seductive.emotional[3]`: うぅっ…こんなので終われないわっ…！
+- `CUTIN_LINES.atk.seductive.emotional[4]`: こんなところで…終われないっ…！
 
-### atk.quiet.cool[]
+### atk.seductive.easygoing[]
 
-- `CUTIN_LINES.atk.quiet.cool[1]`: ……まだ
-- `CUTIN_LINES.atk.quiet.cool[2]`: ……ここから
-- `CUTIN_LINES.atk.quiet.cool[3]`: ……負けない
-- `CUTIN_LINES.atk.quiet.cool[4]`: ……見ててて
+- `CUTIN_LINES.atk.seductive.easygoing[1]`: ふふ、楽しくなってきちゃった♪
+- `CUTIN_LINES.atk.seductive.easygoing[2]`: いい試合にしましょ?
+- `CUTIN_LINES.atk.seductive.easygoing[3]`: まだまだいけるわよ〜♪
+- `CUTIN_LINES.atk.seductive.easygoing[4]`: 本気、出しちゃおうかしら？
 
-### atk.quiet.composed[]
+### atk.seductive.shy[]
 
-- `CUTIN_LINES.atk.quiet.composed[1]`: …まだ、終わらないよ
-- `CUTIN_LINES.atk.quiet.composed[2]`: …ここから、だよ
-- `CUTIN_LINES.atk.quiet.composed[3]`: …負けるわけには、いかないね
-- `CUTIN_LINES.atk.quiet.composed[4]`: …見ていて、ね
+- `CUTIN_LINES.atk.seductive.shy[1]`: あ、あの…まだ…よ…?
+- `CUTIN_LINES.atk.seductive.shy[2]`: こ、ここから…なんだから…!
+- `CUTIN_LINES.atk.seductive.shy[3]`: ま、負けないんだから…!
+- `CUTIN_LINES.atk.seductive.shy[4]`: …み、見てて…
 
-### atk.earnest.normal[]
+### atk.delinquent.normal[]
 
-- `CUTIN_LINES.atk.earnest.normal[1]`: 絶対に…勝つ！
-- `CUTIN_LINES.atk.earnest.normal[2]`: ここで引くわけにはいかない！
-- `CUTIN_LINES.atk.earnest.normal[3]`: 全力で…いく！
-- `CUTIN_LINES.atk.earnest.normal[4]`: 諦めない…！
+- `CUTIN_LINES.atk.delinquent.normal[1]`: いくぞ！
+- `CUTIN_LINES.atk.delinquent.normal[2]`: まだまだだ！
+- `CUTIN_LINES.atk.delinquent.normal[3]`: 負けねえからな！
+- `CUTIN_LINES.atk.delinquent.normal[4]`: ここからだっ！
 
-### atk.earnest.polite[]
+### atk.delinquent.bold[]
 
-- `CUTIN_LINES.atk.earnest.polite[1]`: 絶対に勝ちますっ！
-- `CUTIN_LINES.atk.earnest.polite[2]`: ここで引くわけにはいかないんです！
-- `CUTIN_LINES.atk.earnest.polite[3]`: 全力で…いきますっ！
-- `CUTIN_LINES.atk.earnest.polite[4]`: 諦めません…っ！
+- `CUTIN_LINES.atk.delinquent.bold[1]`: こんなもんじゃねえぞ！
+- `CUTIN_LINES.atk.delinquent.bold[2]`: ここからが本番だぜ！
+- `CUTIN_LINES.atk.delinquent.bold[3]`: 逃がさねえからな！
+- `CUTIN_LINES.atk.delinquent.bold[4]`: あたしの全部、くらいやがれ！
 
-### atk.earnest.seductive[]
+### atk.delinquent.quiet[]
 
-- `CUTIN_LINES.atk.earnest.seductive[1]`: 絶対に…勝つわ
-- `CUTIN_LINES.atk.earnest.seductive[2]`: ここで引けないの
-- `CUTIN_LINES.atk.earnest.seductive[3]`: 全力で…いくわよ
-- `CUTIN_LINES.atk.earnest.seductive[4]`: 諦めない…から
+- `CUTIN_LINES.atk.delinquent.quiet[1]`: …まだだ
+- `CUTIN_LINES.atk.delinquent.quiet[2]`: …ここからだぜ
+- `CUTIN_LINES.atk.delinquent.quiet[3]`: …負けらんねえ
+- `CUTIN_LINES.atk.delinquent.quiet[4]`: …見てやがれ
 
-### atk.earnest.delinquent[]
+### atk.delinquent.earnest[]
 
-- `CUTIN_LINES.atk.earnest.delinquent[1]`: 絶対勝つぞ！
-- `CUTIN_LINES.atk.earnest.delinquent[2]`: ここで引けるかよ！
-- `CUTIN_LINES.atk.earnest.delinquent[3]`: 全力でいくぜ！
-- `CUTIN_LINES.atk.earnest.delinquent[4]`: 諦めねえからな…！
+- `CUTIN_LINES.atk.delinquent.earnest[1]`: 絶対勝つぞ！
+- `CUTIN_LINES.atk.delinquent.earnest[2]`: ここで引けるかよ！
+- `CUTIN_LINES.atk.delinquent.earnest[3]`: 全力でいくぜ！
+- `CUTIN_LINES.atk.delinquent.earnest[4]`: 諦めねえからな…！
 
-### atk.earnest.ojousama[]
+### atk.delinquent.emotional[]
 
-- `CUTIN_LINES.atk.earnest.ojousama[1]`: 絶対に勝ちますわっ！
-- `CUTIN_LINES.atk.earnest.ojousama[2]`: ここで引くわけには参りませんの！
-- `CUTIN_LINES.atk.earnest.ojousama[3]`: 全身全霊で…参りますわ！
-- `CUTIN_LINES.atk.earnest.ojousama[4]`: 諦めませんわ…っ！
+- `CUTIN_LINES.atk.delinquent.emotional[1]`: 負けたくねえっ…！
+- `CUTIN_LINES.atk.delinquent.emotional[2]`: 絶対にっ…絶対にだっ…！
+- `CUTIN_LINES.atk.delinquent.emotional[3]`: うぅっ…こんちくしょうっ…！
+- `CUTIN_LINES.atk.delinquent.emotional[4]`: こんなとこで終われるかよっ…！
 
-### atk.earnest.cool[]
+### atk.delinquent.easygoing[]
 
-- `CUTIN_LINES.atk.earnest.cool[1]`: …絶対、勝つ
-- `CUTIN_LINES.atk.earnest.cool[2]`: …引けない
-- `CUTIN_LINES.atk.earnest.cool[3]`: …全力で
-- `CUTIN_LINES.atk.earnest.cool[4]`: …諦めない
+- `CUTIN_LINES.atk.delinquent.easygoing[1]`: へへっ、楽しくなってきたぜ！
+- `CUTIN_LINES.atk.delinquent.easygoing[2]`: いい試合にしようぜ！
+- `CUTIN_LINES.atk.delinquent.easygoing[3]`: まだまだいけらあ〜！
+- `CUTIN_LINES.atk.delinquent.easygoing[4]`: 本気出しちゃうぞ？
 
-### atk.earnest.composed[]
+### atk.delinquent.shy[]
 
-- `CUTIN_LINES.atk.earnest.composed[1]`: …絶対に、勝つよ
-- `CUTIN_LINES.atk.earnest.composed[2]`: …ここで引くわけには、いかないから
-- `CUTIN_LINES.atk.earnest.composed[3]`: …全力で、いくね
-- `CUTIN_LINES.atk.earnest.composed[4]`: …諦めない、よ
+- `CUTIN_LINES.atk.delinquent.shy[1]`: い、いくぞ…まだだ…!
+- `CUTIN_LINES.atk.delinquent.shy[2]`: ま、まだまだだ…!
+- `CUTIN_LINES.atk.delinquent.shy[3]`: ま、負けねえから…!
+- `CUTIN_LINES.atk.delinquent.shy[4]`: こ、ここからだ…!
 
-### atk.emotional.normal[]
+### atk.ojousama.normal[]
 
-- `CUTIN_LINES.atk.emotional.normal[1]`: 負けたくないっ…！
-- `CUTIN_LINES.atk.emotional.normal[2]`: 絶対に…絶対にっ…！
-- `CUTIN_LINES.atk.emotional.normal[3]`: うぅっ…でも、負けないっ…！
-- `CUTIN_LINES.atk.emotional.normal[4]`: こんなところで…終われないっ！
+- `CUTIN_LINES.atk.ojousama.normal[1]`: 参りますわ！
+- `CUTIN_LINES.atk.ojousama.normal[2]`: まだまだですわ！
+- `CUTIN_LINES.atk.ojousama.normal[3]`: 負けませんわ！
+- `CUTIN_LINES.atk.ojousama.normal[4]`: ここからですの！
 
-### atk.emotional.polite[]
+### atk.ojousama.bold[]
 
-- `CUTIN_LINES.atk.emotional.polite[1]`: 負けたくないですっ…！
-- `CUTIN_LINES.atk.emotional.polite[2]`: 絶対に…絶対にっ…！
-- `CUTIN_LINES.atk.emotional.polite[3]`: うぅっ…でも、負けませんっ…！
-- `CUTIN_LINES.atk.emotional.polite[4]`: こんなところで終われませんっ…！
+- `CUTIN_LINES.atk.ojousama.bold[1]`: こんなものではございませんわ！
+- `CUTIN_LINES.atk.ojousama.bold[2]`: ここからが本番ですのよ！
+- `CUTIN_LINES.atk.ojousama.bold[3]`: 逃がしませんわよ！
+- `CUTIN_LINES.atk.ojousama.bold[4]`: わたくしの全力、お受けなさいな！
 
-### atk.emotional.seductive[]
+### atk.ojousama.quiet[]
 
-- `CUTIN_LINES.atk.emotional.seductive[1]`: 負けたくないっ…！
-- `CUTIN_LINES.atk.emotional.seductive[2]`: あぁ…絶対に、絶対にっ…！
-- `CUTIN_LINES.atk.emotional.seductive[3]`: うぅっ…こんなので終われないわっ…！
-- `CUTIN_LINES.atk.emotional.seductive[4]`: こんなところで…終われないっ…！
+- `CUTIN_LINES.atk.ojousama.quiet[1]`: …まだですわ
+- `CUTIN_LINES.atk.ojousama.quiet[2]`: …ここから…ですの
+- `CUTIN_LINES.atk.ojousama.quiet[3]`: …負けるわけには参りませんわ
+- `CUTIN_LINES.atk.ojousama.quiet[4]`: …見ていてくださいまし
 
-### atk.emotional.delinquent[]
+### atk.ojousama.earnest[]
 
-- `CUTIN_LINES.atk.emotional.delinquent[1]`: 負けたくねえっ…！
-- `CUTIN_LINES.atk.emotional.delinquent[2]`: 絶対にっ…絶対にだっ…！
-- `CUTIN_LINES.atk.emotional.delinquent[3]`: うぅっ…こんちくしょうっ…！
-- `CUTIN_LINES.atk.emotional.delinquent[4]`: こんなとこで終われるかよっ…！
+- `CUTIN_LINES.atk.ojousama.earnest[1]`: 絶対に勝ちますわっ！
+- `CUTIN_LINES.atk.ojousama.earnest[2]`: ここで引くわけには参りませんの！
+- `CUTIN_LINES.atk.ojousama.earnest[3]`: 全身全霊で…参りますわ！
+- `CUTIN_LINES.atk.ojousama.earnest[4]`: 諦めませんわ…っ！
 
-### atk.emotional.ojousama[]
+### atk.ojousama.emotional[]
 
-- `CUTIN_LINES.atk.emotional.ojousama[1]`: 負けたくありませんわっ…！
-- `CUTIN_LINES.atk.emotional.ojousama[2]`: 絶対に…絶対にですわっ…！
-- `CUTIN_LINES.atk.emotional.ojousama[3]`: うぅっ…でも負けませんわっ…！
-- `CUTIN_LINES.atk.emotional.ojousama[4]`: こんなところで終われませんわっ…！
+- `CUTIN_LINES.atk.ojousama.emotional[1]`: 負けたくありませんわっ…！
+- `CUTIN_LINES.atk.ojousama.emotional[2]`: 絶対に…絶対にですわっ…！
+- `CUTIN_LINES.atk.ojousama.emotional[3]`: うぅっ…でも負けませんわっ…！
+- `CUTIN_LINES.atk.ojousama.emotional[4]`: こんなところで終われませんわっ…！
 
-### atk.emotional.cool[]
+### atk.ojousama.easygoing[]
 
-- `CUTIN_LINES.atk.emotional.cool[1]`: …っ…負けない
-- `CUTIN_LINES.atk.emotional.cool[2]`: …絶対に…
-- `CUTIN_LINES.atk.emotional.cool[3]`: …うっ…でも…
-- `CUTIN_LINES.atk.emotional.cool[4]`: …終われない
+- `CUTIN_LINES.atk.ojousama.easygoing[1]`: うふふ、楽しくなってまいりましたわ！
+- `CUTIN_LINES.atk.ojousama.easygoing[2]`: 良い試合にいたしましょう！
+- `CUTIN_LINES.atk.ojousama.easygoing[3]`: まだまだいけますわ〜！
+- `CUTIN_LINES.atk.ojousama.easygoing[4]`: 本気を出してしまいますわよ？
 
-### atk.emotional.composed[]
+### atk.ojousama.shy[]
 
-- `CUTIN_LINES.atk.emotional.composed[1]`: …っ…負けたくない、よ…
-- `CUTIN_LINES.atk.emotional.composed[2]`: …絶対に、絶対に、ね…
-- `CUTIN_LINES.atk.emotional.composed[3]`: …うぅ、でも…負けないよ…
-- `CUTIN_LINES.atk.emotional.composed[4]`: …こんなところで、終われないから…
+- `CUTIN_LINES.atk.ojousama.shy[1]`: あ、あの…まだまだですわ…!
+- `CUTIN_LINES.atk.ojousama.shy[2]`: こ、ここから…ですの…!
+- `CUTIN_LINES.atk.ojousama.shy[3]`: ま、負けませんから…!
+- `CUTIN_LINES.atk.ojousama.shy[4]`: い、いきますわ…!
 
-### atk.easygoing.normal[]
+### atk.cool.normal[]
 
-- `CUTIN_LINES.atk.easygoing.normal[1]`: あはは、楽しくなってきた！
-- `CUTIN_LINES.atk.easygoing.normal[2]`: いい試合にしようよ！
-- `CUTIN_LINES.atk.easygoing.normal[3]`: まだまだいけるよ〜！
-- `CUTIN_LINES.atk.easygoing.normal[4]`: 本気出しちゃうよ？
+- `CUTIN_LINES.atk.cool.normal[1]`: …いく
+- `CUTIN_LINES.atk.cool.normal[2]`: …まだ
+- `CUTIN_LINES.atk.cool.normal[3]`: …負けない
+- `CUTIN_LINES.atk.cool.normal[4]`: …ここから
 
-### atk.easygoing.polite[]
+### atk.cool.bold[]
 
-- `CUTIN_LINES.atk.easygoing.polite[1]`: えへへ、楽しくなってきました！
-- `CUTIN_LINES.atk.easygoing.polite[2]`: いい試合にしましょう！
-- `CUTIN_LINES.atk.easygoing.polite[3]`: まだまだいけますよ〜！
-- `CUTIN_LINES.atk.easygoing.polite[4]`: 本気出しちゃいますよ？
+- `CUTIN_LINES.atk.cool.bold[1]`: …こんなもんじゃない
+- `CUTIN_LINES.atk.cool.bold[2]`: …ここから
+- `CUTIN_LINES.atk.cool.bold[3]`: …逃がさない
+- `CUTIN_LINES.atk.cool.bold[4]`: …全部、受けな
 
-### atk.easygoing.seductive[]
+### atk.cool.quiet[]
 
-- `CUTIN_LINES.atk.easygoing.seductive[1]`: ふふ、楽しくなってきちゃった♪
-- `CUTIN_LINES.atk.easygoing.seductive[2]`: いい試合にしましょ?
-- `CUTIN_LINES.atk.easygoing.seductive[3]`: まだまだいけるわよ〜♪
-- `CUTIN_LINES.atk.easygoing.seductive[4]`: 本気、出しちゃおうかしら？
+- `CUTIN_LINES.atk.cool.quiet[1]`: ……まだ
+- `CUTIN_LINES.atk.cool.quiet[2]`: ……ここから
+- `CUTIN_LINES.atk.cool.quiet[3]`: ……負けない
+- `CUTIN_LINES.atk.cool.quiet[4]`: ……見ててて
 
-### atk.easygoing.delinquent[]
+### atk.cool.earnest[]
 
-- `CUTIN_LINES.atk.easygoing.delinquent[1]`: へへっ、楽しくなってきたぜ！
-- `CUTIN_LINES.atk.easygoing.delinquent[2]`: いい試合にしようぜ！
-- `CUTIN_LINES.atk.easygoing.delinquent[3]`: まだまだいけらあ〜！
-- `CUTIN_LINES.atk.easygoing.delinquent[4]`: 本気出しちゃうぞ？
+- `CUTIN_LINES.atk.cool.earnest[1]`: …絶対、勝つ
+- `CUTIN_LINES.atk.cool.earnest[2]`: …引けない
+- `CUTIN_LINES.atk.cool.earnest[3]`: …全力で
+- `CUTIN_LINES.atk.cool.earnest[4]`: …諦めない
 
-### atk.easygoing.ojousama[]
+### atk.cool.emotional[]
 
-- `CUTIN_LINES.atk.easygoing.ojousama[1]`: うふふ、楽しくなってまいりましたわ！
-- `CUTIN_LINES.atk.easygoing.ojousama[2]`: 良い試合にいたしましょう！
-- `CUTIN_LINES.atk.easygoing.ojousama[3]`: まだまだいけますわ〜！
-- `CUTIN_LINES.atk.easygoing.ojousama[4]`: 本気を出してしまいますわよ？
+- `CUTIN_LINES.atk.cool.emotional[1]`: …っ…負けない
+- `CUTIN_LINES.atk.cool.emotional[2]`: …絶対に…
+- `CUTIN_LINES.atk.cool.emotional[3]`: …うっ…でも…
+- `CUTIN_LINES.atk.cool.emotional[4]`: …終われない
 
-### atk.easygoing.cool[]
+### atk.cool.easygoing[]
 
-- `CUTIN_LINES.atk.easygoing.cool[1]`: …楽しい
-- `CUTIN_LINES.atk.easygoing.cool[2]`: …いい試合に
-- `CUTIN_LINES.atk.easygoing.cool[3]`: …まだいける
-- `CUTIN_LINES.atk.easygoing.cool[4]`: …本気、出す
+- `CUTIN_LINES.atk.cool.easygoing[1]`: …楽しい
+- `CUTIN_LINES.atk.cool.easygoing[2]`: …いい試合に
+- `CUTIN_LINES.atk.cool.easygoing[3]`: …まだいける
+- `CUTIN_LINES.atk.cool.easygoing[4]`: …本気、出す
 
-### atk.easygoing.composed[]
+### atk.cool.shy[]
 
-- `CUTIN_LINES.atk.easygoing.composed[1]`: …あはは、楽しくなってきた、ね
-- `CUTIN_LINES.atk.easygoing.composed[2]`: …いい試合にしよう、ね
-- `CUTIN_LINES.atk.easygoing.composed[3]`: …まだまだいけるよ〜
-- `CUTIN_LINES.atk.easygoing.composed[4]`: …本気、出しちゃおうかな？
+- `CUTIN_LINES.atk.cool.shy[1]`: …っ、まだ…
+- `CUTIN_LINES.atk.cool.shy[2]`: …こ、ここから…
+- `CUTIN_LINES.atk.cool.shy[3]`: …負けない…
+- `CUTIN_LINES.atk.cool.shy[4]`: …見ていて…
 
-### atk.shy.normal[]
+### atk.composed.normal[]
 
-- `CUTIN_LINES.atk.shy.normal[1]`: あ、あの…いきますっ…!
-- `CUTIN_LINES.atk.shy.normal[2]`: わ、わたし…まだまだ…!
-- `CUTIN_LINES.atk.shy.normal[3]`: ま、負けたくないから…!
-- `CUTIN_LINES.atk.shy.normal[4]`: こ、ここから…ですっ…!
+- `CUTIN_LINES.atk.composed.normal[1]`: …いくよ
+- `CUTIN_LINES.atk.composed.normal[2]`: …まだまだ、だね
+- `CUTIN_LINES.atk.composed.normal[3]`: …負けないよ
+- `CUTIN_LINES.atk.composed.normal[4]`: …ここから、だよ
 
-### atk.shy.polite[]
+### atk.composed.bold[]
 
-- `CUTIN_LINES.atk.shy.polite[1]`: す、すみません…いきますっ…!
-- `CUTIN_LINES.atk.shy.polite[2]`: あ、あの…まだまだです…!
-- `CUTIN_LINES.atk.shy.polite[3]`: ま、負けたくないんです…!
-- `CUTIN_LINES.atk.shy.polite[4]`: こ、ここから…ですっ…!
+- `CUTIN_LINES.atk.composed.bold[1]`: …まだまだ、こんなもんじゃないよ
+- `CUTIN_LINES.atk.composed.bold[2]`: …ここからが本番、かな
+- `CUTIN_LINES.atk.composed.bold[3]`: …逃がさないよ、ゆっくりね
+- `CUTIN_LINES.atk.composed.bold[4]`: …わたしの全部、受け止めて
 
-### atk.shy.seductive[]
+### atk.composed.quiet[]
 
-- `CUTIN_LINES.atk.shy.seductive[1]`: あ、あの…まだ…よ…?
-- `CUTIN_LINES.atk.shy.seductive[2]`: こ、ここから…なんだから…!
-- `CUTIN_LINES.atk.shy.seductive[3]`: ま、負けないんだから…!
-- `CUTIN_LINES.atk.shy.seductive[4]`: …み、見てて…
+- `CUTIN_LINES.atk.composed.quiet[1]`: …まだ、終わらないよ
+- `CUTIN_LINES.atk.composed.quiet[2]`: …ここから、だよ
+- `CUTIN_LINES.atk.composed.quiet[3]`: …負けるわけには、いかないね
+- `CUTIN_LINES.atk.composed.quiet[4]`: …見ていて、ね
 
-### atk.shy.delinquent[]
+### atk.composed.earnest[]
 
-- `CUTIN_LINES.atk.shy.delinquent[1]`: い、いくぞ…まだだ…!
-- `CUTIN_LINES.atk.shy.delinquent[2]`: ま、まだまだだ…!
-- `CUTIN_LINES.atk.shy.delinquent[3]`: ま、負けねえから…!
-- `CUTIN_LINES.atk.shy.delinquent[4]`: こ、ここからだ…!
+- `CUTIN_LINES.atk.composed.earnest[1]`: …絶対に、勝つよ
+- `CUTIN_LINES.atk.composed.earnest[2]`: …ここで引くわけには、いかないから
+- `CUTIN_LINES.atk.composed.earnest[3]`: …全力で、いくね
+- `CUTIN_LINES.atk.composed.earnest[4]`: …諦めない、よ
 
-### atk.shy.ojousama[]
+### atk.composed.emotional[]
 
-- `CUTIN_LINES.atk.shy.ojousama[1]`: あ、あの…まだまだですわ…!
-- `CUTIN_LINES.atk.shy.ojousama[2]`: こ、ここから…ですの…!
-- `CUTIN_LINES.atk.shy.ojousama[3]`: ま、負けませんから…!
-- `CUTIN_LINES.atk.shy.ojousama[4]`: い、いきますわ…!
+- `CUTIN_LINES.atk.composed.emotional[1]`: …っ…負けたくない、よ…
+- `CUTIN_LINES.atk.composed.emotional[2]`: …絶対に、絶対に、ね…
+- `CUTIN_LINES.atk.composed.emotional[3]`: …うぅ、でも…負けないよ…
+- `CUTIN_LINES.atk.composed.emotional[4]`: …こんなところで、終われないから…
 
-### atk.shy.cool[]
+### atk.composed.easygoing[]
 
-- `CUTIN_LINES.atk.shy.cool[1]`: …っ、まだ…
-- `CUTIN_LINES.atk.shy.cool[2]`: …こ、ここから…
-- `CUTIN_LINES.atk.shy.cool[3]`: …負けない…
-- `CUTIN_LINES.atk.shy.cool[4]`: …見ていて…
+- `CUTIN_LINES.atk.composed.easygoing[1]`: …あはは、楽しくなってきた、ね
+- `CUTIN_LINES.atk.composed.easygoing[2]`: …いい試合にしよう、ね
+- `CUTIN_LINES.atk.composed.easygoing[3]`: …まだまだいけるよ〜
+- `CUTIN_LINES.atk.composed.easygoing[4]`: …本気、出しちゃおうかな？
 
-### atk.shy.composed[]
+### atk.composed.shy[]
 
-- `CUTIN_LINES.atk.shy.composed[1]`: …あ、あの…まだ、いけるよ…
-- `CUTIN_LINES.atk.shy.composed[2]`: …こ、ここから、かな…
-- `CUTIN_LINES.atk.shy.composed[3]`: …ま、負けないよ…
-- `CUTIN_LINES.atk.shy.composed[4]`: …ゆ、ゆっくりだけど…
+- `CUTIN_LINES.atk.composed.shy[1]`: …あ、あの…まだ、いけるよ…
+- `CUTIN_LINES.atk.composed.shy[2]`: …こ、ここから、かな…
+- `CUTIN_LINES.atk.composed.shy[3]`: …ま、負けないよ…
+- `CUTIN_LINES.atk.composed.shy[4]`: …ゆ、ゆっくりだけど…
 
-### climax.normal.normal[]
+### climax.standard.normal[]
 
-- `CUTIN_LINES.climax.normal.normal[1]`: （…ここからだ）
-- `CUTIN_LINES.climax.normal.normal[2]`: （負けない…！）
+- `CUTIN_LINES.climax.standard.normal[1]`: （…ここからだ）
+- `CUTIN_LINES.climax.standard.normal[2]`: （負けない…！）
 
-### climax.normal.polite[]
+### climax.standard.bold[]
 
-- `CUTIN_LINES.climax.normal.polite[1]`: （…ここからです）
-- `CUTIN_LINES.climax.normal.polite[2]`: （負けません…！）
+- `CUTIN_LINES.climax.standard.bold[1]`: （ここからが、あたしの時間！）
+- `CUTIN_LINES.climax.standard.bold[2]`: （さあ…決めにいく）
 
-### climax.normal.seductive[]
+### climax.standard.quiet[]
 
-- `CUTIN_LINES.climax.normal.seductive[1]`: （…ここから、よ）
-- `CUTIN_LINES.climax.normal.seductive[2]`: （負けないわ…）
+- `CUTIN_LINES.climax.standard.quiet[1]`: （…集中。今だけは、何も考えなくていい）
+- `CUTIN_LINES.climax.standard.quiet[2]`: （…身体が軽い。いける）
 
-### climax.normal.delinquent[]
+### climax.standard.earnest[]
 
-- `CUTIN_LINES.climax.normal.delinquent[1]`: （…ここからだぜ）
-- `CUTIN_LINES.climax.normal.delinquent[2]`: （負けねえ…！）
+- `CUTIN_LINES.climax.standard.earnest[1]`: （ここまで来た…あとは、出し切るだけ）
+- `CUTIN_LINES.climax.standard.earnest[2]`: （全部…全部出し切る）
 
-### climax.normal.ojousama[]
+### climax.standard.emotional[]
 
-- `CUTIN_LINES.climax.normal.ojousama[1]`: （…ここからですわ）
-- `CUTIN_LINES.climax.normal.ojousama[2]`: （負けませんわ…！）
+- `CUTIN_LINES.climax.standard.emotional[1]`: （胸が苦しい…でも、この痛みが、生きてる証だから）
+- `CUTIN_LINES.climax.standard.emotional[2]`: （お願い、身体…もう少しだけ動いて）
 
-### climax.normal.cool[]
+### climax.standard.easygoing[]
 
-- `CUTIN_LINES.climax.normal.cool[1]`: （…ここから）
-- `CUTIN_LINES.climax.normal.cool[2]`: （…負けない）
+- `CUTIN_LINES.climax.standard.easygoing[1]`: （わくわくする…この瞬間が一番好き）
+- `CUTIN_LINES.climax.standard.easygoing[2]`: （最高の試合にしよう！）
 
-### climax.normal.composed[]
+### climax.standard.shy[]
 
-- `CUTIN_LINES.climax.normal.composed[1]`: （…ここから、だね）
-- `CUTIN_LINES.climax.normal.composed[2]`: （…負けない、よ）
+- `CUTIN_LINES.climax.standard.shy[1]`: （…ま、まだ…いけるはず…!）
+- `CUTIN_LINES.climax.standard.shy[2]`: （こ、ここで…決めなきゃ…!）
 
-### climax.bold.normal[]
+### climax.polite.normal[]
 
-- `CUTIN_LINES.climax.bold.normal[1]`: （ここからが、あたしの時間！）
-- `CUTIN_LINES.climax.bold.normal[2]`: （さあ…決めにいく）
+- `CUTIN_LINES.climax.polite.normal[1]`: （…ここからです）
+- `CUTIN_LINES.climax.polite.normal[2]`: （負けません…！）
 
-### climax.bold.polite[]
+### climax.polite.bold[]
 
-- `CUTIN_LINES.climax.bold.polite[1]`: （ここからです…ここからが、わたしの時間）
-- `CUTIN_LINES.climax.bold.polite[2]`: （さあ…決めさせていただきます）
+- `CUTIN_LINES.climax.polite.bold[1]`: （ここからです…ここからが、わたしの時間）
+- `CUTIN_LINES.climax.polite.bold[2]`: （さあ…決めさせていただきます）
 
-### climax.bold.seductive[]
+### climax.polite.quiet[]
 
-- `CUTIN_LINES.climax.bold.seductive[1]`: （ここからよ…わたしの時間が、始まるの）
-- `CUTIN_LINES.climax.bold.seductive[2]`: （さあ…決めてあげる）
+- `CUTIN_LINES.climax.polite.quiet[1]`: （…集中。今だけは、何も）
+- `CUTIN_LINES.climax.polite.quiet[2]`: （…身体が軽い。いけます）
 
-### climax.bold.delinquent[]
+### climax.polite.earnest[]
 
-- `CUTIN_LINES.climax.bold.delinquent[1]`: （ここからだ…あたしの時間だぜ）
-- `CUTIN_LINES.climax.bold.delinquent[2]`: （さあ…決めてやる）
+- `CUTIN_LINES.climax.polite.earnest[1]`: （ここまで来ました…あとは、出し切るだけ）
+- `CUTIN_LINES.climax.polite.earnest[2]`: （全部…全部出し切ります）
 
-### climax.bold.ojousama[]
+### climax.polite.emotional[]
 
-- `CUTIN_LINES.climax.bold.ojousama[1]`: （ここからが…わたくしの時間ですわ）
-- `CUTIN_LINES.climax.bold.ojousama[2]`: （さあ…幕引きにしてさしあげますわ）
+- `CUTIN_LINES.climax.polite.emotional[1]`: （胸が苦しい…でも、この痛みが、生きてる証です）
+- `CUTIN_LINES.climax.polite.emotional[2]`: （お願いします、身体…もう少しだけ）
 
-### climax.bold.cool[]
+### climax.polite.easygoing[]
 
-- `CUTIN_LINES.climax.bold.cool[1]`: （…ここから、あたしの時間）
-- `CUTIN_LINES.climax.bold.cool[2]`: （…決めにいく）
+- `CUTIN_LINES.climax.polite.easygoing[1]`: （わくわくします…この瞬間が一番好き）
+- `CUTIN_LINES.climax.polite.easygoing[2]`: （最高の試合にしましょう！）
 
-### climax.bold.composed[]
+### climax.polite.shy[]
 
-- `CUTIN_LINES.climax.bold.composed[1]`: （…ここから、あたしの時間だね）
-- `CUTIN_LINES.climax.bold.composed[2]`: （…さあ、決めにいこうか）
+- `CUTIN_LINES.climax.polite.shy[1]`: （…ま、まだ…いけます…!）
+- `CUTIN_LINES.climax.polite.shy[2]`: （こ、ここで…決めないと…!）
 
-### climax.quiet.normal[]
+### climax.seductive.normal[]
 
-- `CUTIN_LINES.climax.quiet.normal[1]`: （…集中。今だけは、何も考えなくていい）
-- `CUTIN_LINES.climax.quiet.normal[2]`: （…身体が軽い。いける）
+- `CUTIN_LINES.climax.seductive.normal[1]`: （…ここから、よ）
+- `CUTIN_LINES.climax.seductive.normal[2]`: （負けないわ…）
 
-### climax.quiet.polite[]
+### climax.seductive.bold[]
 
-- `CUTIN_LINES.climax.quiet.polite[1]`: （…集中。今だけは、何も）
-- `CUTIN_LINES.climax.quiet.polite[2]`: （…身体が軽い。いけます）
+- `CUTIN_LINES.climax.seductive.bold[1]`: （ここからよ…わたしの時間が、始まるの）
+- `CUTIN_LINES.climax.seductive.bold[2]`: （さあ…決めてあげる）
 
-### climax.quiet.seductive[]
+### climax.seductive.quiet[]
 
-- `CUTIN_LINES.climax.quiet.seductive[1]`: （…集中…今だけは、何も）
-- `CUTIN_LINES.climax.quiet.seductive[2]`: （…身体が軽い…いけるわ）
+- `CUTIN_LINES.climax.seductive.quiet[1]`: （…集中…今だけは、何も）
+- `CUTIN_LINES.climax.seductive.quiet[2]`: （…身体が軽い…いけるわ）
 
-### climax.quiet.delinquent[]
+### climax.seductive.earnest[]
 
-- `CUTIN_LINES.climax.quiet.delinquent[1]`: （…集中。余計なこと考えるな）
-- `CUTIN_LINES.climax.quiet.delinquent[2]`: （…体が軽い。いけるぜ）
+- `CUTIN_LINES.climax.seductive.earnest[1]`: （ここまで来たわ…あとは、出し切るだけ）
+- `CUTIN_LINES.climax.seductive.earnest[2]`: （全部…全部出し切るの）
 
-### climax.quiet.ojousama[]
+### climax.seductive.emotional[]
 
-- `CUTIN_LINES.climax.quiet.ojousama[1]`: （…集中ですわ。今だけは何も）
-- `CUTIN_LINES.climax.quiet.ojousama[2]`: （…身体が軽い…いけますの）
+- `CUTIN_LINES.climax.seductive.emotional[1]`: （胸が苦しい…でも、この痛みが、生きてる証よ）
+- `CUTIN_LINES.climax.seductive.emotional[2]`: （お願い…身体、もう少しだけ、動いて）
 
-### climax.quiet.cool[]
+### climax.seductive.easygoing[]
 
-- `CUTIN_LINES.climax.quiet.cool[1]`: （……集中）
-- `CUTIN_LINES.climax.quiet.cool[2]`: （……いける）
+- `CUTIN_LINES.climax.seductive.easygoing[1]`: （わくわくしちゃう…この瞬間が好き♪）
+- `CUTIN_LINES.climax.seductive.easygoing[2]`: （最高の試合にしましょ？）
 
-### climax.quiet.composed[]
+### climax.seductive.shy[]
 
-- `CUTIN_LINES.climax.quiet.composed[1]`: （…集中、だね。今は何も考えなくていい）
-- `CUTIN_LINES.climax.quiet.composed[2]`: （…身体が軽いな…いける）
+- `CUTIN_LINES.climax.seductive.shy[1]`: （…ま、まだ…これから、だから…）
+- `CUTIN_LINES.climax.seductive.shy[2]`: （…わ、私だって…本気なんだから…）
 
-### climax.earnest.normal[]
+### climax.delinquent.normal[]
 
-- `CUTIN_LINES.climax.earnest.normal[1]`: （ここまで来た…あとは、出し切るだけ）
-- `CUTIN_LINES.climax.earnest.normal[2]`: （全部…全部出し切る）
+- `CUTIN_LINES.climax.delinquent.normal[1]`: （…ここからだぜ）
+- `CUTIN_LINES.climax.delinquent.normal[2]`: （負けねえ…！）
 
-### climax.earnest.polite[]
+### climax.delinquent.bold[]
 
-- `CUTIN_LINES.climax.earnest.polite[1]`: （ここまで来ました…あとは、出し切るだけ）
-- `CUTIN_LINES.climax.earnest.polite[2]`: （全部…全部出し切ります）
+- `CUTIN_LINES.climax.delinquent.bold[1]`: （ここからだ…あたしの時間だぜ）
+- `CUTIN_LINES.climax.delinquent.bold[2]`: （さあ…決めてやる）
 
-### climax.earnest.seductive[]
+### climax.delinquent.quiet[]
 
-- `CUTIN_LINES.climax.earnest.seductive[1]`: （ここまで来たわ…あとは、出し切るだけ）
-- `CUTIN_LINES.climax.earnest.seductive[2]`: （全部…全部出し切るの）
+- `CUTIN_LINES.climax.delinquent.quiet[1]`: （…集中。余計なこと考えるな）
+- `CUTIN_LINES.climax.delinquent.quiet[2]`: （…体が軽い。いけるぜ）
 
-### climax.earnest.delinquent[]
+### climax.delinquent.earnest[]
 
-- `CUTIN_LINES.climax.earnest.delinquent[1]`: （ここまで来たんだ…あとは出し切るだけだ）
-- `CUTIN_LINES.climax.earnest.delinquent[2]`: （全部…全部ぶつけてやる）
+- `CUTIN_LINES.climax.delinquent.earnest[1]`: （ここまで来たんだ…あとは出し切るだけだ）
+- `CUTIN_LINES.climax.delinquent.earnest[2]`: （全部…全部ぶつけてやる）
 
-### climax.earnest.ojousama[]
+### climax.delinquent.emotional[]
 
-- `CUTIN_LINES.climax.earnest.ojousama[1]`: （ここまで参りましたの…あとは出し切るのみ）
-- `CUTIN_LINES.climax.earnest.ojousama[2]`: （全て…全て懸けますわ）
+- `CUTIN_LINES.climax.delinquent.emotional[1]`: （胸が苦しい…けど、これが生きてる証だ）
+- `CUTIN_LINES.climax.delinquent.emotional[2]`: （頼むぞ身体…もうちょい動いてくれ）
 
-### climax.earnest.cool[]
+### climax.delinquent.easygoing[]
 
-- `CUTIN_LINES.climax.earnest.cool[1]`: （…ここまで来た）
-- `CUTIN_LINES.climax.earnest.cool[2]`: （…全部、出す）
+- `CUTIN_LINES.climax.delinquent.easygoing[1]`: （わくわくするぜ…この瞬間が一番好きだ）
+- `CUTIN_LINES.climax.delinquent.easygoing[2]`: （最高の試合にしようぜ！）
 
-### climax.earnest.composed[]
+### climax.delinquent.shy[]
 
-- `CUTIN_LINES.climax.earnest.composed[1]`: （…ここまで来たんだ…あとは出し切るだけ、だね）
-- `CUTIN_LINES.climax.earnest.composed[2]`: （…全部、出し切るよ）
+- `CUTIN_LINES.climax.delinquent.shy[1]`: （…ま、まだだ…ここからだ…!）
+- `CUTIN_LINES.climax.delinquent.shy[2]`: （…こ、ここで…決める…っ!）
 
-### climax.emotional.normal[]
+### climax.ojousama.normal[]
 
-- `CUTIN_LINES.climax.emotional.normal[1]`: （胸が苦しい…でも、この痛みが、生きてる証だから）
-- `CUTIN_LINES.climax.emotional.normal[2]`: （お願い、身体…もう少しだけ動いて）
+- `CUTIN_LINES.climax.ojousama.normal[1]`: （…ここからですわ）
+- `CUTIN_LINES.climax.ojousama.normal[2]`: （負けませんわ…！）
 
-### climax.emotional.polite[]
+### climax.ojousama.bold[]
 
-- `CUTIN_LINES.climax.emotional.polite[1]`: （胸が苦しい…でも、この痛みが、生きてる証です）
-- `CUTIN_LINES.climax.emotional.polite[2]`: （お願いします、身体…もう少しだけ）
+- `CUTIN_LINES.climax.ojousama.bold[1]`: （ここからが…わたくしの時間ですわ）
+- `CUTIN_LINES.climax.ojousama.bold[2]`: （さあ…幕引きにしてさしあげますわ）
 
-### climax.emotional.seductive[]
+### climax.ojousama.quiet[]
 
-- `CUTIN_LINES.climax.emotional.seductive[1]`: （胸が苦しい…でも、この痛みが、生きてる証よ）
-- `CUTIN_LINES.climax.emotional.seductive[2]`: （お願い…身体、もう少しだけ、動いて）
+- `CUTIN_LINES.climax.ojousama.quiet[1]`: （…集中ですわ。今だけは何も）
+- `CUTIN_LINES.climax.ojousama.quiet[2]`: （…身体が軽い…いけますの）
 
-### climax.emotional.delinquent[]
+### climax.ojousama.earnest[]
 
-- `CUTIN_LINES.climax.emotional.delinquent[1]`: （胸が苦しい…けど、これが生きてる証だ）
-- `CUTIN_LINES.climax.emotional.delinquent[2]`: （頼むぞ身体…もうちょい動いてくれ）
+- `CUTIN_LINES.climax.ojousama.earnest[1]`: （ここまで参りましたの…あとは出し切るのみ）
+- `CUTIN_LINES.climax.ojousama.earnest[2]`: （全て…全て懸けますわ）
 
-### climax.emotional.ojousama[]
+### climax.ojousama.emotional[]
 
-- `CUTIN_LINES.climax.emotional.ojousama[1]`: （胸が苦しい…けれど、この痛みが生きてる証ですの）
-- `CUTIN_LINES.climax.emotional.ojousama[2]`: （お願いですわ身体…もう少しだけ）
+- `CUTIN_LINES.climax.ojousama.emotional[1]`: （胸が苦しい…けれど、この痛みが生きてる証ですの）
+- `CUTIN_LINES.climax.ojousama.emotional[2]`: （お願いですわ身体…もう少しだけ）
 
-### climax.emotional.cool[]
+### climax.ojousama.easygoing[]
 
-- `CUTIN_LINES.climax.emotional.cool[1]`: （…胸が苦しい…でも）
-- `CUTIN_LINES.climax.emotional.cool[2]`: （…身体、もう少しだけ）
+- `CUTIN_LINES.climax.ojousama.easygoing[1]`: （わくわくいたしますわ…この瞬間が一番）
+- `CUTIN_LINES.climax.ojousama.easygoing[2]`: （最高の試合にいたしましょう！）
 
-### climax.emotional.composed[]
+### climax.ojousama.shy[]
 
-- `CUTIN_LINES.climax.emotional.composed[1]`: （…胸が苦しいな…でも、この痛みが生きてる証だから）
-- `CUTIN_LINES.climax.emotional.composed[2]`: （…お願い、身体…もう少しだけ、動いてね）
+- `CUTIN_LINES.climax.ojousama.shy[1]`: （…ま、まだですわ…ここからですの…!）
+- `CUTIN_LINES.climax.ojousama.shy[2]`: （…こ、ここで決めなくては…!）
 
-### climax.easygoing.normal[]
+### climax.cool.normal[]
 
-- `CUTIN_LINES.climax.easygoing.normal[1]`: （わくわくする…この瞬間が一番好き）
-- `CUTIN_LINES.climax.easygoing.normal[2]`: （最高の試合にしよう！）
+- `CUTIN_LINES.climax.cool.normal[1]`: （…ここから）
+- `CUTIN_LINES.climax.cool.normal[2]`: （…負けない）
 
-### climax.easygoing.polite[]
+### climax.cool.bold[]
 
-- `CUTIN_LINES.climax.easygoing.polite[1]`: （わくわくします…この瞬間が一番好き）
-- `CUTIN_LINES.climax.easygoing.polite[2]`: （最高の試合にしましょう！）
+- `CUTIN_LINES.climax.cool.bold[1]`: （…ここから、あたしの時間）
+- `CUTIN_LINES.climax.cool.bold[2]`: （…決めにいく）
 
-### climax.easygoing.seductive[]
+### climax.cool.quiet[]
 
-- `CUTIN_LINES.climax.easygoing.seductive[1]`: （わくわくしちゃう…この瞬間が好き♪）
-- `CUTIN_LINES.climax.easygoing.seductive[2]`: （最高の試合にしましょ？）
+- `CUTIN_LINES.climax.cool.quiet[1]`: （……集中）
+- `CUTIN_LINES.climax.cool.quiet[2]`: （……いける）
 
-### climax.easygoing.delinquent[]
+### climax.cool.earnest[]
 
-- `CUTIN_LINES.climax.easygoing.delinquent[1]`: （わくわくするぜ…この瞬間が一番好きだ）
-- `CUTIN_LINES.climax.easygoing.delinquent[2]`: （最高の試合にしようぜ！）
+- `CUTIN_LINES.climax.cool.earnest[1]`: （…ここまで来た）
+- `CUTIN_LINES.climax.cool.earnest[2]`: （…全部、出す）
 
-### climax.easygoing.ojousama[]
+### climax.cool.emotional[]
 
-- `CUTIN_LINES.climax.easygoing.ojousama[1]`: （わくわくいたしますわ…この瞬間が一番）
-- `CUTIN_LINES.climax.easygoing.ojousama[2]`: （最高の試合にいたしましょう！）
+- `CUTIN_LINES.climax.cool.emotional[1]`: （…胸が苦しい…でも）
+- `CUTIN_LINES.climax.cool.emotional[2]`: （…身体、もう少しだけ）
 
-### climax.easygoing.cool[]
+### climax.cool.easygoing[]
 
-- `CUTIN_LINES.climax.easygoing.cool[1]`: （…わくわくする）
-- `CUTIN_LINES.climax.easygoing.cool[2]`: （…最高の試合に）
+- `CUTIN_LINES.climax.cool.easygoing[1]`: （…わくわくする）
+- `CUTIN_LINES.climax.cool.easygoing[2]`: （…最高の試合に）
 
-### climax.easygoing.composed[]
+### climax.cool.shy[]
 
-- `CUTIN_LINES.climax.easygoing.composed[1]`: （…わくわくするな…この瞬間が一番好き）
-- `CUTIN_LINES.climax.easygoing.composed[2]`: （…最高の試合にしよう、ね）
+- `CUTIN_LINES.climax.cool.shy[1]`: （…ま、まだ…）
+- `CUTIN_LINES.climax.cool.shy[2]`: （…こ、ここで…決める…）
 
-### climax.shy.normal[]
+### climax.composed.normal[]
 
-- `CUTIN_LINES.climax.shy.normal[1]`: （…ま、まだ…いけるはず…!）
-- `CUTIN_LINES.climax.shy.normal[2]`: （こ、ここで…決めなきゃ…!）
+- `CUTIN_LINES.climax.composed.normal[1]`: （…ここから、だね）
+- `CUTIN_LINES.climax.composed.normal[2]`: （…負けない、よ）
 
-### climax.shy.polite[]
+### climax.composed.bold[]
 
-- `CUTIN_LINES.climax.shy.polite[1]`: （…ま、まだ…いけます…!）
-- `CUTIN_LINES.climax.shy.polite[2]`: （こ、ここで…決めないと…!）
+- `CUTIN_LINES.climax.composed.bold[1]`: （…ここから、あたしの時間だね）
+- `CUTIN_LINES.climax.composed.bold[2]`: （…さあ、決めにいこうか）
 
-### climax.shy.seductive[]
+### climax.composed.quiet[]
 
-- `CUTIN_LINES.climax.shy.seductive[1]`: （…ま、まだ…これから、だから…）
-- `CUTIN_LINES.climax.shy.seductive[2]`: （…わ、私だって…本気なんだから…）
+- `CUTIN_LINES.climax.composed.quiet[1]`: （…集中、だね。今は何も考えなくていい）
+- `CUTIN_LINES.climax.composed.quiet[2]`: （…身体が軽いな…いける）
 
-### climax.shy.delinquent[]
+### climax.composed.earnest[]
 
-- `CUTIN_LINES.climax.shy.delinquent[1]`: （…ま、まだだ…ここからだ…!）
-- `CUTIN_LINES.climax.shy.delinquent[2]`: （…こ、ここで…決める…っ!）
+- `CUTIN_LINES.climax.composed.earnest[1]`: （…ここまで来たんだ…あとは出し切るだけ、だね）
+- `CUTIN_LINES.climax.composed.earnest[2]`: （…全部、出し切るよ）
 
-### climax.shy.ojousama[]
+### climax.composed.emotional[]
 
-- `CUTIN_LINES.climax.shy.ojousama[1]`: （…ま、まだですわ…ここからですの…!）
-- `CUTIN_LINES.climax.shy.ojousama[2]`: （…こ、ここで決めなくては…!）
+- `CUTIN_LINES.climax.composed.emotional[1]`: （…胸が苦しいな…でも、この痛みが生きてる証だから）
+- `CUTIN_LINES.climax.composed.emotional[2]`: （…お願い、身体…もう少しだけ、動いてね）
 
-### climax.shy.cool[]
+### climax.composed.easygoing[]
 
-- `CUTIN_LINES.climax.shy.cool[1]`: （…ま、まだ…）
-- `CUTIN_LINES.climax.shy.cool[2]`: （…こ、ここで…決める…）
+- `CUTIN_LINES.climax.composed.easygoing[1]`: （…わくわくするな…この瞬間が一番好き）
+- `CUTIN_LINES.climax.composed.easygoing[2]`: （…最高の試合にしよう、ね）
 
-### climax.shy.composed[]
+### climax.composed.shy[]
 
-- `CUTIN_LINES.climax.shy.composed[1]`: （…ま、まだ、いけるよ…）
-- `CUTIN_LINES.climax.shy.composed[2]`: （…こ、ここで、決めなきゃ…）
+- `CUTIN_LINES.climax.composed.shy[1]`: （…ま、まだ、いけるよ…）
+- `CUTIN_LINES.climax.composed.shy[2]`: （…こ、ここで、決めなきゃ…）
 
-### bigmove.normal.normal[]
+### bigmove.standard.normal[]
 
-- `CUTIN_LINES.bigmove.normal.normal[1]`: いくよ…これで決める！
-- `CUTIN_LINES.bigmove.normal.normal[2]`: ここで…終わりだ！
-- `CUTIN_LINES.bigmove.normal.normal[3]`: 全部出し切る…！
+- `CUTIN_LINES.bigmove.standard.normal[1]`: いくよ…これで決める！
+- `CUTIN_LINES.bigmove.standard.normal[2]`: ここで…終わりだ！
+- `CUTIN_LINES.bigmove.standard.normal[3]`: 全部出し切る…！
 
-### bigmove.normal.polite[]
+### bigmove.standard.earnest[]
 
-- `CUTIN_LINES.bigmove.normal.polite[1]`: いきます…これで、決めさせてもらいます！
-- `CUTIN_LINES.bigmove.normal.polite[2]`: ここで…終わらせます！
-- `CUTIN_LINES.bigmove.normal.polite[3]`: 全力で…行きます！
+- `CUTIN_LINES.bigmove.standard.earnest[1]`: 絶対に…ここで決める！
+- `CUTIN_LINES.bigmove.standard.earnest[2]`: 全力で…いきます！
+- `CUTIN_LINES.bigmove.standard.earnest[3]`: 負けたくない…だから…！
 
-### bigmove.normal.seductive[]
+### bigmove.standard.bold[]
 
-- `CUTIN_LINES.bigmove.normal.seductive[1]`: ふふ…もう逃がさないわよ？
-- `CUTIN_LINES.bigmove.normal.seductive[2]`: これで終わりよ…覚悟しなさい
-- `CUTIN_LINES.bigmove.normal.seductive[3]`: さあ…これでフィナーレよ
+- `CUTIN_LINES.bigmove.standard.bold[1]`: さあ…終わらせるわよっ！
+- `CUTIN_LINES.bigmove.standard.bold[2]`: 見せてあげる…わたしの全力！
+- `CUTIN_LINES.bigmove.standard.bold[3]`: 思いっきりいくわよっ！！
 
-### bigmove.normal.delinquent[]
+### bigmove.standard.easygoing[]
 
-- `CUTIN_LINES.bigmove.normal.delinquent[1]`: おらぁっ！ これで終わりだ！
-- `CUTIN_LINES.bigmove.normal.delinquent[2]`: ぶっ飛ばしてやる！
-- `CUTIN_LINES.bigmove.normal.delinquent[3]`: オマエの負けだ…くらえ！
+- `CUTIN_LINES.bigmove.standard.easygoing[1]`: よーし、ここで決めちゃおう！
+- `CUTIN_LINES.bigmove.standard.easygoing[2]`: いっくよー！ 最後の大技！
+- `CUTIN_LINES.bigmove.standard.easygoing[3]`: えへへ…全力いくよー！
 
-### bigmove.normal.ojousama[]
+### bigmove.standard.quiet[]
 
-- `CUTIN_LINES.bigmove.normal.ojousama[1]`: これでお仕舞い…覚悟なさい
-- `CUTIN_LINES.bigmove.normal.ojousama[2]`: …最後の一撃！
-- `CUTIN_LINES.bigmove.normal.ojousama[3]`: これで終幕よ…！
+- `CUTIN_LINES.bigmove.standard.quiet[1]`: ……いく
+- `CUTIN_LINES.bigmove.standard.quiet[2]`: ……これで
+- `CUTIN_LINES.bigmove.standard.quiet[3]`: ……終わりだ
 
-### bigmove.normal.cool[]
+### bigmove.standard.shy[]
 
-- `CUTIN_LINES.bigmove.normal.cool[1]`: …決める
-- `CUTIN_LINES.bigmove.normal.cool[2]`: …これで、終わり
-- `CUTIN_LINES.bigmove.normal.cool[3]`: …いく
+- `CUTIN_LINES.bigmove.standard.shy[1]`: あ、あの…いきます…！
+- `CUTIN_LINES.bigmove.standard.shy[2]`: こ、ここで…決めます…！
+- `CUTIN_LINES.bigmove.standard.shy[3]`: が、頑張ります…！
 
-### bigmove.normal.composed[]
+### bigmove.standard.emotional[]
 
-- `CUTIN_LINES.bigmove.normal.composed[1]`: …いくよ、これで決めるね
-- `CUTIN_LINES.bigmove.normal.composed[2]`: …ここで、終わり、かな
-- `CUTIN_LINES.bigmove.normal.composed[3]`: …全部、出し切るよ
+- `CUTIN_LINES.bigmove.standard.emotional[1]`: うぅっ…絶対に…決めるんだ…！
+- `CUTIN_LINES.bigmove.standard.emotional[2]`: 泣かない…泣かないから…いくよ！
+- `CUTIN_LINES.bigmove.standard.emotional[3]`: ここで…ここでっ…！
 
-### bigmove.earnest.normal[]
+### bigmove.polite.normal[]
 
-- `CUTIN_LINES.bigmove.earnest.normal[1]`: 絶対に…ここで決める！
-- `CUTIN_LINES.bigmove.earnest.normal[2]`: 全力で…いきます！
-- `CUTIN_LINES.bigmove.earnest.normal[3]`: 負けたくない…だから…！
+- `CUTIN_LINES.bigmove.polite.normal[1]`: いきます…これで、決めさせてもらいます！
+- `CUTIN_LINES.bigmove.polite.normal[2]`: ここで…終わらせます！
+- `CUTIN_LINES.bigmove.polite.normal[3]`: 全力で…行きます！
 
-### bigmove.earnest.polite[]
+### bigmove.polite.earnest[]
 
-- `CUTIN_LINES.bigmove.earnest.polite[1]`: お願いします…この一撃に全てを…！
-- `CUTIN_LINES.bigmove.earnest.polite[2]`: ここで…決めさせてください！
-- `CUTIN_LINES.bigmove.earnest.polite[3]`: 全身全霊で…行きますっ！
+- `CUTIN_LINES.bigmove.polite.earnest[1]`: お願いします…この一撃に全てを…！
+- `CUTIN_LINES.bigmove.polite.earnest[2]`: ここで…決めさせてください！
+- `CUTIN_LINES.bigmove.polite.earnest[3]`: 全身全霊で…行きますっ！
 
-### bigmove.earnest.seductive[]
+### bigmove.polite.bold[]
 
-- `CUTIN_LINES.bigmove.earnest.seductive[1]`: ふふ…本気で抱きしめてあげる
-- `CUTIN_LINES.bigmove.earnest.seductive[2]`: 逃さないわ…最後まで
-- `CUTIN_LINES.bigmove.earnest.seductive[3]`: あなたの全部…もらうわよ
+- `CUTIN_LINES.bigmove.polite.bold[1]`: さあ…決めさせていただきます！
+- `CUTIN_LINES.bigmove.polite.bold[2]`: 見ていてください…最高の一撃を！
+- `CUTIN_LINES.bigmove.polite.bold[3]`: 覚悟してくださいね…いきますよ！
 
-### bigmove.earnest.delinquent[]
+### bigmove.polite.easygoing[]
 
-- `CUTIN_LINES.bigmove.earnest.delinquent[1]`: 根性見せてやる…いくぞぉ！
-- `CUTIN_LINES.bigmove.earnest.delinquent[2]`: ここで決めなきゃ意味ねえ！
-- `CUTIN_LINES.bigmove.earnest.delinquent[3]`: 全部ぶつけてやる…！
+- `CUTIN_LINES.bigmove.polite.easygoing[1]`: えへへ…ここで決めちゃいますね！
+- `CUTIN_LINES.bigmove.polite.easygoing[2]`: いきますよー！ 最後です！
+- `CUTIN_LINES.bigmove.polite.easygoing[3]`: 全力でいかせてもらいます！
 
-### bigmove.earnest.ojousama[]
+### bigmove.polite.quiet[]
 
-- `CUTIN_LINES.bigmove.earnest.ojousama[1]`: この一撃に…全てを懸けますわ！
-- `CUTIN_LINES.bigmove.earnest.ojousama[2]`: 真剣勝負ですわ…参りますわよ！
-- `CUTIN_LINES.bigmove.earnest.ojousama[3]`: 覚悟はよろしくて？ いきますわ！
+- `CUTIN_LINES.bigmove.polite.quiet[1]`: ……いきます
+- `CUTIN_LINES.bigmove.polite.quiet[2]`: ……これで、終わりです
+- `CUTIN_LINES.bigmove.polite.quiet[3]`: ……決めます
 
-### bigmove.earnest.cool[]
+### bigmove.polite.shy[]
 
-- `CUTIN_LINES.bigmove.earnest.cool[1]`: …全部、出す
-- `CUTIN_LINES.bigmove.earnest.cool[2]`: …ここで決める。必ず
-- `CUTIN_LINES.bigmove.earnest.cool[3]`: …負けない。絶対に
+- `CUTIN_LINES.bigmove.polite.shy[1]`: す、すみません…全力でいきます…！
+- `CUTIN_LINES.bigmove.polite.shy[2]`: こ、ここで…決めさせてください…！
+- `CUTIN_LINES.bigmove.polite.shy[3]`: お、思いっきり…やります…！
 
-### bigmove.earnest.composed[]
+### bigmove.polite.emotional[]
 
-- `CUTIN_LINES.bigmove.earnest.composed[1]`: …絶対に、ここで決めるよ
-- `CUTIN_LINES.bigmove.earnest.composed[2]`: …全力で、いくね
-- `CUTIN_LINES.bigmove.earnest.composed[3]`: …負けたくない、から…いく
+- `CUTIN_LINES.bigmove.polite.emotional[1]`: うぅ…お願いです…決めさせてください…！
+- `CUTIN_LINES.bigmove.polite.emotional[2]`: ここで…ここで終わらせますっ…！
+- `CUTIN_LINES.bigmove.polite.emotional[3]`: 泣いてる場合じゃ…いきます…！
 
-### bigmove.bold.normal[]
+### bigmove.seductive.normal[]
 
-- `CUTIN_LINES.bigmove.bold.normal[1]`: さあ…終わらせるわよっ！
-- `CUTIN_LINES.bigmove.bold.normal[2]`: 見せてあげる…わたしの全力！
-- `CUTIN_LINES.bigmove.bold.normal[3]`: 思いっきりいくわよっ！！
+- `CUTIN_LINES.bigmove.seductive.normal[1]`: ふふ…もう逃がさないわよ？
+- `CUTIN_LINES.bigmove.seductive.normal[2]`: これで終わりよ…覚悟しなさい
+- `CUTIN_LINES.bigmove.seductive.normal[3]`: さあ…これでフィナーレよ
 
-### bigmove.bold.polite[]
+### bigmove.seductive.earnest[]
 
-- `CUTIN_LINES.bigmove.bold.polite[1]`: さあ…決めさせていただきます！
-- `CUTIN_LINES.bigmove.bold.polite[2]`: 見ていてください…最高の一撃を！
-- `CUTIN_LINES.bigmove.bold.polite[3]`: 覚悟してくださいね…いきますよ！
+- `CUTIN_LINES.bigmove.seductive.earnest[1]`: ふふ…本気で抱きしめてあげる
+- `CUTIN_LINES.bigmove.seductive.earnest[2]`: 逃さないわ…最後まで
+- `CUTIN_LINES.bigmove.seductive.earnest[3]`: あなたの全部…もらうわよ
 
-### bigmove.bold.seductive[]
+### bigmove.seductive.bold[]
 
-- `CUTIN_LINES.bigmove.bold.seductive[1]`: うふ…壊れちゃっても知らないわよ？
-- `CUTIN_LINES.bigmove.bold.seductive[2]`: 最後よ…たっぷり味わいなさい
-- `CUTIN_LINES.bigmove.bold.seductive[3]`: さあ…身体で教えてあげる
+- `CUTIN_LINES.bigmove.seductive.bold[1]`: うふ…壊れちゃっても知らないわよ？
+- `CUTIN_LINES.bigmove.seductive.bold[2]`: 最後よ…たっぷり味わいなさい
+- `CUTIN_LINES.bigmove.seductive.bold[3]`: さあ…身体で教えてあげる
 
-### bigmove.bold.delinquent[]
+### bigmove.seductive.easygoing[]
 
-- `CUTIN_LINES.bigmove.bold.delinquent[1]`: ぶちかます！
-- `CUTIN_LINES.bigmove.bold.delinquent[2]`: もう終わりだ…沈めてやる！
-- `CUTIN_LINES.bigmove.bold.delinquent[3]`: これで最後だ…覚悟しろよ！
+- `CUTIN_LINES.bigmove.seductive.easygoing[1]`: ふふ…そろそろ大詰めよ♪
+- `CUTIN_LINES.bigmove.seductive.easygoing[2]`: 最後のプレゼント…受け取って？
+- `CUTIN_LINES.bigmove.seductive.easygoing[3]`: ねえ…もう諦めちゃいなさい♪
 
-### bigmove.bold.ojousama[]
+### bigmove.seductive.quiet[]
 
-- `CUTIN_LINES.bigmove.bold.ojousama[1]`: フィナーレですわ…！
-- `CUTIN_LINES.bigmove.bold.ojousama[2]`: さあ…ボロ雑巾にしてさしあげますわ！
-- `CUTIN_LINES.bigmove.bold.ojousama[3]`: 潰れなさいっ…！
+- `CUTIN_LINES.bigmove.seductive.quiet[1]`: ……もう、逃げられないわよ
+- `CUTIN_LINES.bigmove.seductive.quiet[2]`: ……最後よ
+- `CUTIN_LINES.bigmove.seductive.quiet[3]`: ……終わりにしてあげる
 
-### bigmove.bold.cool[]
+### bigmove.seductive.shy[]
 
-- `CUTIN_LINES.bigmove.bold.cool[1]`: …終わりだ
-- `CUTIN_LINES.bigmove.bold.cool[2]`: …沈め
-- `CUTIN_LINES.bigmove.bold.cool[3]`: …これが、あたしの全部
+- `CUTIN_LINES.bigmove.seductive.shy[1]`: あの…もう…逃がさない、から…
+- `CUTIN_LINES.bigmove.seductive.shy[2]`: ごめんね…でも…終わりにするね…
+- `CUTIN_LINES.bigmove.seductive.shy[3]`: わ、私だって…本気なんだから…
 
-### bigmove.bold.composed[]
+### bigmove.seductive.emotional[]
 
-- `CUTIN_LINES.bigmove.bold.composed[1]`: …終わらせるよ、ゆっくりね
-- `CUTIN_LINES.bigmove.bold.composed[2]`: …見ていて…わたしの全力
-- `CUTIN_LINES.bigmove.bold.composed[3]`: …覚悟してね…最高の一発
+- `CUTIN_LINES.bigmove.seductive.emotional[1]`: もう…我慢できない…壊しちゃうわよ…！
+- `CUTIN_LINES.bigmove.seductive.emotional[2]`: あぁ…最後よ…感じなさい…！
+- `CUTIN_LINES.bigmove.seductive.emotional[3]`: キャハハッ！…終わらせるわよっ…！
 
-### bigmove.easygoing.normal[]
+### bigmove.delinquent.normal[]
 
-- `CUTIN_LINES.bigmove.easygoing.normal[1]`: よーし、ここで決めちゃおう！
-- `CUTIN_LINES.bigmove.easygoing.normal[2]`: いっくよー！ 最後の大技！
-- `CUTIN_LINES.bigmove.easygoing.normal[3]`: えへへ…全力いくよー！
+- `CUTIN_LINES.bigmove.delinquent.normal[1]`: おらぁっ！ これで終わりだ！
+- `CUTIN_LINES.bigmove.delinquent.normal[2]`: ぶっ飛ばしてやる！
+- `CUTIN_LINES.bigmove.delinquent.normal[3]`: オマエの負けだ…くらえ！
 
-### bigmove.easygoing.polite[]
+### bigmove.delinquent.earnest[]
 
-- `CUTIN_LINES.bigmove.easygoing.polite[1]`: えへへ…ここで決めちゃいますね！
-- `CUTIN_LINES.bigmove.easygoing.polite[2]`: いきますよー！ 最後です！
-- `CUTIN_LINES.bigmove.easygoing.polite[3]`: 全力でいかせてもらいます！
+- `CUTIN_LINES.bigmove.delinquent.earnest[1]`: 根性見せてやる…いくぞぉ！
+- `CUTIN_LINES.bigmove.delinquent.earnest[2]`: ここで決めなきゃ意味ねえ！
+- `CUTIN_LINES.bigmove.delinquent.earnest[3]`: 全部ぶつけてやる…！
 
-### bigmove.easygoing.seductive[]
+### bigmove.delinquent.bold[]
 
-- `CUTIN_LINES.bigmove.easygoing.seductive[1]`: ふふ…そろそろ大詰めよ♪
-- `CUTIN_LINES.bigmove.easygoing.seductive[2]`: 最後のプレゼント…受け取って？
-- `CUTIN_LINES.bigmove.easygoing.seductive[3]`: ねえ…もう諦めちゃいなさい♪
+- `CUTIN_LINES.bigmove.delinquent.bold[1]`: ぶちかます！
+- `CUTIN_LINES.bigmove.delinquent.bold[2]`: もう終わりだ…沈めてやる！
+- `CUTIN_LINES.bigmove.delinquent.bold[3]`: これで最後だ…覚悟しろよ！
 
-### bigmove.easygoing.delinquent[]
+### bigmove.delinquent.easygoing[]
 
-- `CUTIN_LINES.bigmove.easygoing.delinquent[1]`: それじゃ！ トドメってやつだ！
-- `CUTIN_LINES.bigmove.easygoing.delinquent[2]`: っへ！ これでシメだ！
-- `CUTIN_LINES.bigmove.easygoing.delinquent[3]`: 悪いけど…終わりだよっ！
+- `CUTIN_LINES.bigmove.delinquent.easygoing[1]`: それじゃ！ トドメってやつだ！
+- `CUTIN_LINES.bigmove.delinquent.easygoing[2]`: っへ！ これでシメだ！
+- `CUTIN_LINES.bigmove.delinquent.easygoing[3]`: 悪いけど…終わりだよっ！
 
-### bigmove.easygoing.ojousama[]
+### bigmove.delinquent.quiet[]
 
-- `CUTIN_LINES.bigmove.easygoing.ojousama[1]`: さーて！ 仕上げですわ〜！
-- `CUTIN_LINES.bigmove.easygoing.ojousama[2]`: うふふ、締めにいきますわよ！
-- `CUTIN_LINES.bigmove.easygoing.ojousama[3]`: 楽しかったですわ…でもここまでですわ！
+- `CUTIN_LINES.bigmove.delinquent.quiet[1]`: ……沈め
+- `CUTIN_LINES.bigmove.delinquent.quiet[2]`: ……終わりだ
+- `CUTIN_LINES.bigmove.delinquent.quiet[3]`: ……いくぞ
 
-### bigmove.easygoing.cool[]
+### bigmove.delinquent.shy[]
 
-- `CUTIN_LINES.bigmove.easygoing.cool[1]`: …ん、いくよ
-- `CUTIN_LINES.bigmove.easygoing.cool[2]`: …そろそろ終わりかな
-- `CUTIN_LINES.bigmove.easygoing.cool[3]`: …決めちゃう
+- `CUTIN_LINES.bigmove.delinquent.shy[1]`: い、いくぞ…こ、この野郎…！
+- `CUTIN_LINES.bigmove.delinquent.shy[2]`: て、てめえ…覚悟しろ…！
+- `CUTIN_LINES.bigmove.delinquent.shy[3]`: ぶ、ぶっ飛ばしてやる…！
 
-### bigmove.easygoing.composed[]
+### bigmove.delinquent.emotional[]
 
-- `CUTIN_LINES.bigmove.easygoing.composed[1]`: …よーし、ここで決めちゃおうかな
-- `CUTIN_LINES.bigmove.easygoing.composed[2]`: …いっくよ〜、最後の大技
-- `CUTIN_LINES.bigmove.easygoing.composed[3]`: …えへへ、全力いくね
+- `CUTIN_LINES.bigmove.delinquent.emotional[1]`: くそぉ…絶対ぶっ飛ばす…！
+- `CUTIN_LINES.bigmove.delinquent.emotional[2]`: うぅっ…こんちくしょう…いくぞ！
+- `CUTIN_LINES.bigmove.delinquent.emotional[3]`: 泣いてねえ…泣いてねえよ…！
 
-### bigmove.quiet.normal[]
+### bigmove.ojousama.normal[]
 
-- `CUTIN_LINES.bigmove.quiet.normal[1]`: ……いく
-- `CUTIN_LINES.bigmove.quiet.normal[2]`: ……これで
-- `CUTIN_LINES.bigmove.quiet.normal[3]`: ……終わりだ
+- `CUTIN_LINES.bigmove.ojousama.normal[1]`: これでお仕舞い…覚悟なさい
+- `CUTIN_LINES.bigmove.ojousama.normal[2]`: …最後の一撃！
+- `CUTIN_LINES.bigmove.ojousama.normal[3]`: これで終幕よ…！
 
-### bigmove.quiet.polite[]
+### bigmove.ojousama.earnest[]
 
-- `CUTIN_LINES.bigmove.quiet.polite[1]`: ……いきます
-- `CUTIN_LINES.bigmove.quiet.polite[2]`: ……これで、終わりです
-- `CUTIN_LINES.bigmove.quiet.polite[3]`: ……決めます
+- `CUTIN_LINES.bigmove.ojousama.earnest[1]`: この一撃に…全てを懸けますわ！
+- `CUTIN_LINES.bigmove.ojousama.earnest[2]`: 真剣勝負ですわ…参りますわよ！
+- `CUTIN_LINES.bigmove.ojousama.earnest[3]`: 覚悟はよろしくて？ いきますわ！
 
-### bigmove.quiet.seductive[]
+### bigmove.ojousama.bold[]
 
-- `CUTIN_LINES.bigmove.quiet.seductive[1]`: ……もう、逃げられないわよ
-- `CUTIN_LINES.bigmove.quiet.seductive[2]`: ……最後よ
-- `CUTIN_LINES.bigmove.quiet.seductive[3]`: ……終わりにしてあげる
+- `CUTIN_LINES.bigmove.ojousama.bold[1]`: フィナーレですわ…！
+- `CUTIN_LINES.bigmove.ojousama.bold[2]`: さあ…ボロ雑巾にしてさしあげますわ！
+- `CUTIN_LINES.bigmove.ojousama.bold[3]`: 潰れなさいっ…！
 
-### bigmove.quiet.delinquent[]
+### bigmove.ojousama.easygoing[]
 
-- `CUTIN_LINES.bigmove.quiet.delinquent[1]`: ……沈め
-- `CUTIN_LINES.bigmove.quiet.delinquent[2]`: ……終わりだ
-- `CUTIN_LINES.bigmove.quiet.delinquent[3]`: ……いくぞ
+- `CUTIN_LINES.bigmove.ojousama.easygoing[1]`: さーて！ 仕上げですわ〜！
+- `CUTIN_LINES.bigmove.ojousama.easygoing[2]`: うふふ、締めにいきますわよ！
+- `CUTIN_LINES.bigmove.ojousama.easygoing[3]`: 楽しかったですわ…でもここまでですわ！
 
-### bigmove.quiet.ojousama[]
+### bigmove.ojousama.quiet[]
 
-- `CUTIN_LINES.bigmove.quiet.ojousama[1]`: ……参りますわ
-- `CUTIN_LINES.bigmove.quiet.ojousama[2]`: ……終わりですわ
-- `CUTIN_LINES.bigmove.quiet.ojousama[3]`: ……覚悟なさい
+- `CUTIN_LINES.bigmove.ojousama.quiet[1]`: ……参りますわ
+- `CUTIN_LINES.bigmove.ojousama.quiet[2]`: ……終わりですわ
+- `CUTIN_LINES.bigmove.ojousama.quiet[3]`: ……覚悟なさい
 
-### bigmove.quiet.cool[]
+### bigmove.ojousama.shy[]
 
-- `CUTIN_LINES.bigmove.quiet.cool[2]`: …………いく
-- `CUTIN_LINES.bigmove.quiet.cool[3]`: ……終わる
+- `CUTIN_LINES.bigmove.ojousama.shy[1]`: あ、あの…仕舞いにさせていただきますわ…！
+- `CUTIN_LINES.bigmove.ojousama.shy[2]`: し、失礼しますわ…全力で…！
+- `CUTIN_LINES.bigmove.ojousama.shy[3]`: お、お覚悟を…！
 
-### bigmove.quiet.composed[]
+### bigmove.ojousama.emotional[]
 
-- `CUTIN_LINES.bigmove.quiet.composed[1]`: ……いくよ
-- `CUTIN_LINES.bigmove.quiet.composed[2]`: ……これで、ね
-- `CUTIN_LINES.bigmove.quiet.composed[3]`: ……終わり、だよ
+- `CUTIN_LINES.bigmove.ojousama.emotional[1]`: うぅ…ここで…ここで決めますわ…！
+- `CUTIN_LINES.bigmove.ojousama.emotional[2]`: 泣いてなど…いきますわよ…！
+- `CUTIN_LINES.bigmove.ojousama.emotional[3]`: お覚悟を…っ…！
 
-### bigmove.shy.normal[]
+### bigmove.cool.normal[]
 
-- `CUTIN_LINES.bigmove.shy.normal[1]`: あ、あの…いきます…！
-- `CUTIN_LINES.bigmove.shy.normal[2]`: こ、ここで…決めます…！
-- `CUTIN_LINES.bigmove.shy.normal[3]`: が、頑張ります…！
+- `CUTIN_LINES.bigmove.cool.normal[1]`: …決める
+- `CUTIN_LINES.bigmove.cool.normal[2]`: …これで、終わり
+- `CUTIN_LINES.bigmove.cool.normal[3]`: …いく
 
-### bigmove.shy.polite[]
+### bigmove.cool.earnest[]
 
-- `CUTIN_LINES.bigmove.shy.polite[1]`: す、すみません…全力でいきます…！
-- `CUTIN_LINES.bigmove.shy.polite[2]`: こ、ここで…決めさせてください…！
-- `CUTIN_LINES.bigmove.shy.polite[3]`: お、思いっきり…やります…！
+- `CUTIN_LINES.bigmove.cool.earnest[1]`: …全部、出す
+- `CUTIN_LINES.bigmove.cool.earnest[2]`: …ここで決める。必ず
+- `CUTIN_LINES.bigmove.cool.earnest[3]`: …負けない。絶対に
 
-### bigmove.shy.seductive[]
+### bigmove.cool.bold[]
 
-- `CUTIN_LINES.bigmove.shy.seductive[1]`: あの…もう…逃がさない、から…
-- `CUTIN_LINES.bigmove.shy.seductive[2]`: ごめんね…でも…終わりにするね…
-- `CUTIN_LINES.bigmove.shy.seductive[3]`: わ、私だって…本気なんだから…
+- `CUTIN_LINES.bigmove.cool.bold[1]`: …終わりだ
+- `CUTIN_LINES.bigmove.cool.bold[2]`: …沈め
+- `CUTIN_LINES.bigmove.cool.bold[3]`: …これが、あたしの全部
 
-### bigmove.shy.delinquent[]
+### bigmove.cool.easygoing[]
 
-- `CUTIN_LINES.bigmove.shy.delinquent[1]`: い、いくぞ…こ、この野郎…！
-- `CUTIN_LINES.bigmove.shy.delinquent[2]`: て、てめえ…覚悟しろ…！
-- `CUTIN_LINES.bigmove.shy.delinquent[3]`: ぶ、ぶっ飛ばしてやる…！
+- `CUTIN_LINES.bigmove.cool.easygoing[1]`: …ん、いくよ
+- `CUTIN_LINES.bigmove.cool.easygoing[2]`: …そろそろ終わりかな
+- `CUTIN_LINES.bigmove.cool.easygoing[3]`: …決めちゃう
 
-### bigmove.shy.ojousama[]
+### bigmove.cool.quiet[]
 
-- `CUTIN_LINES.bigmove.shy.ojousama[1]`: あ、あの…仕舞いにさせていただきますわ…！
-- `CUTIN_LINES.bigmove.shy.ojousama[2]`: し、失礼しますわ…全力で…！
-- `CUTIN_LINES.bigmove.shy.ojousama[3]`: お、お覚悟を…！
+- `CUTIN_LINES.bigmove.cool.quiet[2]`: …………いく
+- `CUTIN_LINES.bigmove.cool.quiet[3]`: ……終わる
 
-### bigmove.shy.cool[]
+### bigmove.cool.shy[]
 
-- `CUTIN_LINES.bigmove.shy.cool[1]`: …い、いく
-- `CUTIN_LINES.bigmove.shy.cool[2]`: …こ、ここで
-- `CUTIN_LINES.bigmove.shy.cool[3]`: …が、頑張る…
+- `CUTIN_LINES.bigmove.cool.shy[1]`: …い、いく
+- `CUTIN_LINES.bigmove.cool.shy[2]`: …こ、ここで
+- `CUTIN_LINES.bigmove.cool.shy[3]`: …が、頑張る…
 
-### bigmove.shy.composed[]
+### bigmove.cool.emotional[]
 
-- `CUTIN_LINES.bigmove.shy.composed[1]`: …あ、あの…いくよ…
-- `CUTIN_LINES.bigmove.shy.composed[2]`: …こ、ここで…決めるね…
-- `CUTIN_LINES.bigmove.shy.composed[3]`: …が、頑張るよ…
+- `CUTIN_LINES.bigmove.cool.emotional[1]`: …っ…いく
+- `CUTIN_LINES.bigmove.cool.emotional[2]`: …泣かない…決める
+- `CUTIN_LINES.bigmove.cool.emotional[3]`: …っ…これで…終わり
 
-### bigmove.emotional.normal[]
+### bigmove.composed.normal[]
 
-- `CUTIN_LINES.bigmove.emotional.normal[1]`: うぅっ…絶対に…決めるんだ…！
-- `CUTIN_LINES.bigmove.emotional.normal[2]`: 泣かない…泣かないから…いくよ！
-- `CUTIN_LINES.bigmove.emotional.normal[3]`: ここで…ここでっ…！
+- `CUTIN_LINES.bigmove.composed.normal[1]`: …いくよ、これで決めるね
+- `CUTIN_LINES.bigmove.composed.normal[2]`: …ここで、終わり、かな
+- `CUTIN_LINES.bigmove.composed.normal[3]`: …全部、出し切るよ
 
-### bigmove.emotional.polite[]
+### bigmove.composed.earnest[]
 
-- `CUTIN_LINES.bigmove.emotional.polite[1]`: うぅ…お願いです…決めさせてください…！
-- `CUTIN_LINES.bigmove.emotional.polite[2]`: ここで…ここで終わらせますっ…！
-- `CUTIN_LINES.bigmove.emotional.polite[3]`: 泣いてる場合じゃ…いきます…！
+- `CUTIN_LINES.bigmove.composed.earnest[1]`: …絶対に、ここで決めるよ
+- `CUTIN_LINES.bigmove.composed.earnest[2]`: …全力で、いくね
+- `CUTIN_LINES.bigmove.composed.earnest[3]`: …負けたくない、から…いく
 
-### bigmove.emotional.seductive[]
+### bigmove.composed.bold[]
 
-- `CUTIN_LINES.bigmove.emotional.seductive[1]`: もう…我慢できない…壊しちゃうわよ…！
-- `CUTIN_LINES.bigmove.emotional.seductive[2]`: あぁ…最後よ…感じなさい…！
-- `CUTIN_LINES.bigmove.emotional.seductive[3]`: キャハハッ！…終わらせるわよっ…！
+- `CUTIN_LINES.bigmove.composed.bold[1]`: …終わらせるよ、ゆっくりね
+- `CUTIN_LINES.bigmove.composed.bold[2]`: …見ていて…わたしの全力
+- `CUTIN_LINES.bigmove.composed.bold[3]`: …覚悟してね…最高の一発
 
-### bigmove.emotional.delinquent[]
+### bigmove.composed.easygoing[]
 
-- `CUTIN_LINES.bigmove.emotional.delinquent[1]`: くそぉ…絶対ぶっ飛ばす…！
-- `CUTIN_LINES.bigmove.emotional.delinquent[2]`: うぅっ…こんちくしょう…いくぞ！
-- `CUTIN_LINES.bigmove.emotional.delinquent[3]`: 泣いてねえ…泣いてねえよ…！
+- `CUTIN_LINES.bigmove.composed.easygoing[1]`: …よーし、ここで決めちゃおうかな
+- `CUTIN_LINES.bigmove.composed.easygoing[2]`: …いっくよ〜、最後の大技
+- `CUTIN_LINES.bigmove.composed.easygoing[3]`: …えへへ、全力いくね
 
-### bigmove.emotional.ojousama[]
+### bigmove.composed.quiet[]
 
-- `CUTIN_LINES.bigmove.emotional.ojousama[1]`: うぅ…ここで…ここで決めますわ…！
-- `CUTIN_LINES.bigmove.emotional.ojousama[2]`: 泣いてなど…いきますわよ…！
-- `CUTIN_LINES.bigmove.emotional.ojousama[3]`: お覚悟を…っ…！
+- `CUTIN_LINES.bigmove.composed.quiet[1]`: ……いくよ
+- `CUTIN_LINES.bigmove.composed.quiet[2]`: ……これで、ね
+- `CUTIN_LINES.bigmove.composed.quiet[3]`: ……終わり、だよ
 
-### bigmove.emotional.cool[]
+### bigmove.composed.shy[]
 
-- `CUTIN_LINES.bigmove.emotional.cool[1]`: …っ…いく
-- `CUTIN_LINES.bigmove.emotional.cool[2]`: …泣かない…決める
-- `CUTIN_LINES.bigmove.emotional.cool[3]`: …っ…これで…終わり
+- `CUTIN_LINES.bigmove.composed.shy[1]`: …あ、あの…いくよ…
+- `CUTIN_LINES.bigmove.composed.shy[2]`: …こ、ここで…決めるね…
+- `CUTIN_LINES.bigmove.composed.shy[3]`: …が、頑張るよ…
 
-### bigmove.emotional.composed[]
+### bigmove.composed.emotional[]
 
-- `CUTIN_LINES.bigmove.emotional.composed[1]`: …うぅ、絶対に…決めるよ
-- `CUTIN_LINES.bigmove.emotional.composed[2]`: …泣かないよ…いく、ね
-- `CUTIN_LINES.bigmove.emotional.composed[3]`: …ここで、ここでっ…
+- `CUTIN_LINES.bigmove.composed.emotional[1]`: …うぅ、絶対に…決めるよ
+- `CUTIN_LINES.bigmove.composed.emotional[2]`: …泣かないよ…いく、ね
+- `CUTIN_LINES.bigmove.composed.emotional[3]`: …ここで、ここでっ…
 
 ## `FINISH_SUSPENSE`
 
@@ -2725,516 +2725,522 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FAN_EXPECT_REACTIONS.badCrowd[3]`: 次こそ本当の名勝負を見せてほしい
 - `FAN_EXPECT_REACTIONS.badCrowd[4]`: カードは最高だったのに…内容が追いつかなかった
 
-### goodWinner.normal._default[]
+### goodWinner.standard.normal[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.normal._default[1]`: みんなの声が聞こえてたよ
-- `FAN_EXPECT_REACTIONS.goodWinner.normal._default[2]`: 期待に応えられたなら…嬉しい
-- `FAN_EXPECT_REACTIONS.goodWinner.normal._default[3]`: 最高の相手に最高の舞台。感謝しかない
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.normal[1]`: みんなの声が聞こえてたよ
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.normal[2]`: 期待に応えられたなら…嬉しい
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.normal[3]`: 最高の相手に最高の舞台。感謝しかない
 
-### goodWinner.normal.ojousama[]
+### goodWinner.standard.bold[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.ojousama[1]`: 皆様の声援が力になりましたわ
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.ojousama[2]`: 期待にお応えできたなら光栄ですわ
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.bold[1]`: この試合、絶対に負けられなかった
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.bold[2]`: あの歓声が力になった。最高だ！
 
-### goodWinner.normal.delinquent[]
+### goodWinner.standard.quiet[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.delinquent[1]`: 聞こえてたぜ、みんなの声！
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.delinquent[2]`: どうだ、やってやったぞ！
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.quiet[1]`: ………（観客に向かって静かに頭を下げる）
 
-### goodWinner.normal.cool[]
+### goodWinner.standard.shy[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.cool[1]`: ……声が、聞こえていた
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.cool[2]`: ……ありがとう
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.shy[1]`: あ、あの…皆さんの声が…聞こえてて…嬉しかった…です
 
-### goodWinner.normal.seductive[]
+### goodWinner.standard.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.seductive[1]`: あの歓声が私の力になったわ
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.seductive[2]`: 最高の舞台をありがとう
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.easygoing[1]`: みんなありがとー！ 最高の試合だったよ！
 
-### goodWinner.normal.polite[]
+### goodWinner.standard.earnest[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.polite[1]`: 皆さまの声援が、力になりました。本当にありがとうございます
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.earnest[1]`: 期待に応えられたなら嬉しいです
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.earnest[2]`: 声援が力になりました。ありがとうございます
 
-### goodWinner.normal.composed[]
+### goodWinner.standard.emotional[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.normal.composed[1]`: …みんなの声、届いてたよ。ありがとう
+- `FAN_EXPECT_REACTIONS.goodWinner.standard.emotional[1]`: みんなの声が……聞こえてた……ありがとう……！（涙）
 
-### goodWinner.bold._default[]
+### goodWinner.ojousama.normal[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.bold._default[1]`: この試合、絶対に負けられなかった
-- `FAN_EXPECT_REACTIONS.goodWinner.bold._default[2]`: あの歓声が力になった。最高だ！
+- `FAN_EXPECT_REACTIONS.goodWinner.ojousama.normal[1]`: 皆様の声援が力になりましたわ
+- `FAN_EXPECT_REACTIONS.goodWinner.ojousama.normal[2]`: 期待にお応えできたなら光栄ですわ
 
-### goodWinner.bold.ojousama[]
+### goodWinner.ojousama.bold[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.bold.ojousama[1]`: 皆様の期待に応えられて嬉しいわ
+- `FAN_EXPECT_REACTIONS.goodWinner.ojousama.bold[1]`: 皆様の期待に応えられて嬉しいわ
 
-### goodWinner.bold.delinquent[]
+### goodWinner.ojousama.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.bold.delinquent[1]`: 負けられねえ試合だった。やったぜ！
+- `FAN_EXPECT_REACTIONS.goodWinner.ojousama.easygoing[1]`: 皆様の声援、しかと届きましたわ!最高の試合でしたの!
 
-### goodWinner.bold.cool[]
+### goodWinner.ojousama.earnest[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.bold.cool[1]`: ……負けられない試合だった
+- `FAN_EXPECT_REACTIONS.goodWinner.ojousama.earnest[1]`: 期待にお応えできましたわ
 
-### goodWinner.bold.polite[]
+### goodWinner.delinquent.normal[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.bold.polite[1]`: 絶対に負けられない試合でした。応えられて良かったです!
+- `FAN_EXPECT_REACTIONS.goodWinner.delinquent.normal[1]`: 聞こえてたぜ、みんなの声！
+- `FAN_EXPECT_REACTIONS.goodWinner.delinquent.normal[2]`: どうだ、やってやったぞ！
 
-### goodWinner.bold.seductive[]
+### goodWinner.delinquent.bold[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.bold.seductive[1]`: 負けられない試合だったわ。…ふふ、応えられて満足
+- `FAN_EXPECT_REACTIONS.goodWinner.delinquent.bold[1]`: 負けられねえ試合だった。やったぜ！
 
-### goodWinner.bold.composed[]
+### goodWinner.delinquent.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.bold.composed[1]`: …負けられない試合だった。やれて良かった
+- `FAN_EXPECT_REACTIONS.goodWinner.delinquent.easygoing[1]`: サンキュー！ 最高だったぜ！
 
-### goodWinner.quiet._default[]
+### goodWinner.cool.normal[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.quiet._default[1]`: ………（観客に向かって静かに頭を下げる）
+- `FAN_EXPECT_REACTIONS.goodWinner.cool.normal[1]`: ……声が、聞こえていた
+- `FAN_EXPECT_REACTIONS.goodWinner.cool.normal[2]`: ……ありがとう
 
-### goodWinner.quiet.cool[]
+### goodWinner.cool.bold[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.quiet.cool[1]`: ……声が、力になった
+- `FAN_EXPECT_REACTIONS.goodWinner.cool.bold[1]`: ……負けられない試合だった
 
-### goodWinner.quiet.polite[]
+### goodWinner.cool.quiet[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.quiet.polite[1]`: …ありがとうございました…（小さくお辞儀）
+- `FAN_EXPECT_REACTIONS.goodWinner.cool.quiet[1]`: ……声が、力になった
 
-### goodWinner.quiet.seductive[]
+### goodWinner.seductive.normal[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.quiet.seductive[1]`: ………声、聞こえてた
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.normal[1]`: あの歓声が私の力になったわ
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.normal[2]`: 最高の舞台をありがとう
 
-### goodWinner.shy._default[]
+### goodWinner.seductive.bold[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.shy._default[1]`: あ、あの…皆さんの声が…聞こえてて…嬉しかった…です
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.bold[1]`: 負けられない試合だったわ。…ふふ、応えられて満足
 
-### goodWinner.shy.polite[]
+### goodWinner.seductive.quiet[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.shy.polite[1]`: あ、あの…皆さんの声が…聞こえて…本当に嬉しかったです…
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.quiet[1]`: ………声、聞こえてた
 
-### goodWinner.easygoing._default[]
+### goodWinner.seductive.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.easygoing._default[1]`: みんなありがとー！ 最高の試合だったよ！
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.easygoing[1]`: みんなの声援が聞こえてたわ~♪ 最高の試合だったわね
 
-### goodWinner.easygoing.delinquent[]
+### goodWinner.seductive.earnest[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.easygoing.delinquent[1]`: サンキュー！ 最高だったぜ！
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.earnest[1]`: 期待に応えられて、嬉しいわ。ありがとう
 
-### goodWinner.easygoing.polite[]
+### goodWinner.seductive.emotional[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.easygoing.polite[1]`: みんなの声、届いてました!最高の試合でした、ありがとうございます!
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.emotional[1]`: みんなの声が聞こえてた……っ……ありがとう……!
 
-### goodWinner.easygoing.ojousama[]
+### goodWinner.polite.normal[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.easygoing.ojousama[1]`: 皆様の声援、しかと届きましたわ!最高の試合でしたの!
+- `FAN_EXPECT_REACTIONS.goodWinner.polite.normal[1]`: 皆さまの声援が、力になりました。本当にありがとうございます
 
-### goodWinner.easygoing.seductive[]
+### goodWinner.polite.bold[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.easygoing.seductive[1]`: みんなの声援が聞こえてたわ~♪ 最高の試合だったわね
+- `FAN_EXPECT_REACTIONS.goodWinner.polite.bold[1]`: 絶対に負けられない試合でした。応えられて良かったです!
 
-### goodWinner.easygoing.composed[]
+### goodWinner.polite.quiet[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.easygoing.composed[1]`: …みんなの声、届いてたよ。最高の試合だったね
+- `FAN_EXPECT_REACTIONS.goodWinner.polite.quiet[1]`: …ありがとうございました…（小さくお辞儀）
 
-### goodWinner.earnest._default[]
+### goodWinner.polite.shy[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.earnest._default[1]`: 期待に応えられたなら嬉しいです
-- `FAN_EXPECT_REACTIONS.goodWinner.earnest._default[2]`: 声援が力になりました。ありがとうございます
+- `FAN_EXPECT_REACTIONS.goodWinner.polite.shy[1]`: あ、あの…皆さんの声が…聞こえて…本当に嬉しかったです…
 
-### goodWinner.earnest.polite[]
+### goodWinner.polite.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.earnest.polite[1]`: 皆様の期待にお応えできて光栄です
+- `FAN_EXPECT_REACTIONS.goodWinner.polite.easygoing[1]`: みんなの声、届いてました!最高の試合でした、ありがとうございます!
 
-### goodWinner.earnest.ojousama[]
+### goodWinner.polite.earnest[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.earnest.ojousama[1]`: 期待にお応えできましたわ
+- `FAN_EXPECT_REACTIONS.goodWinner.polite.earnest[1]`: 皆様の期待にお応えできて光栄です
 
-### goodWinner.earnest.seductive[]
+### goodWinner.composed.normal[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.earnest.seductive[1]`: 期待に応えられて、嬉しいわ。ありがとう
+- `FAN_EXPECT_REACTIONS.goodWinner.composed.normal[1]`: …みんなの声、届いてたよ。ありがとう
 
-### goodWinner.earnest.composed[]
+### goodWinner.composed.bold[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.earnest.composed[1]`: …期待に応えられたなら、嬉しいです
+- `FAN_EXPECT_REACTIONS.goodWinner.composed.bold[1]`: …負けられない試合だった。やれて良かった
 
-### goodWinner.emotional._default[]
+### goodWinner.composed.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.emotional._default[1]`: みんなの声が……聞こえてた……ありがとう……！（涙）
+- `FAN_EXPECT_REACTIONS.goodWinner.composed.easygoing[1]`: …みんなの声、届いてたよ。最高の試合だったね
 
-### goodWinner.emotional.seductive[]
+### goodWinner.composed.earnest[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.emotional.seductive[1]`: みんなの声が聞こえてた……っ……ありがとう……!
+- `FAN_EXPECT_REACTIONS.goodWinner.composed.earnest[1]`: …期待に応えられたなら、嬉しいです
 
-### goodWinner.emotional.composed[]
+### goodWinner.composed.emotional[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.emotional.composed[1]`: …みんなの声、届いてた。…ありがとう
+- `FAN_EXPECT_REACTIONS.goodWinner.composed.emotional[1]`: …みんなの声、届いてた。…ありがとう
 
-### badWinner.normal._default[]
+### badWinner.standard.normal[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.normal._default[1]`: …まだやれたはず
-- `FAN_EXPECT_REACTIONS.badWinner.normal._default[2]`: この結果じゃ満足できない
-- `FAN_EXPECT_REACTIONS.badWinner.normal._default[3]`: 応援してくれたのに…悔しい
+- `FAN_EXPECT_REACTIONS.badWinner.standard.normal[1]`: …まだやれたはず
+- `FAN_EXPECT_REACTIONS.badWinner.standard.normal[2]`: この結果じゃ満足できない
+- `FAN_EXPECT_REACTIONS.badWinner.standard.normal[3]`: 応援してくれたのに…悔しい
 
-### badWinner.normal.ojousama[]
+### badWinner.standard.bold[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.normal.ojousama[1]`: この内容では……お恥ずかしい限りですわ
+- `FAN_EXPECT_REACTIONS.badWinner.standard.bold[1]`: 次はもっといい試合にする。約束する
+- `FAN_EXPECT_REACTIONS.badWinner.standard.bold[2]`: こんなんじゃ足りない。もっとやれる
 
-### badWinner.normal.delinquent[]
+### badWinner.standard.quiet[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.normal.delinquent[1]`: くそっ…こんなんじゃダメだ…
+- `FAN_EXPECT_REACTIONS.badWinner.standard.quiet[1]`: ………（悔しそうに俯く）
 
-### badWinner.normal.cool[]
+### badWinner.standard.shy[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.normal.cool[1]`: ……不十分だった
+- `FAN_EXPECT_REACTIONS.badWinner.standard.shy[1]`: ごめんなさい…もっと…頑張れたのに…
 
-### badWinner.normal.seductive[]
+### badWinner.standard.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.normal.seductive[1]`: もっとやれたはず……悔しいわ
+- `FAN_EXPECT_REACTIONS.badWinner.standard.easygoing[1]`: うーん…もっとやれたなあ。ごめんね
 
-### badWinner.normal.polite[]
+### badWinner.standard.earnest[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.normal.polite[1]`: この内容では……申し訳ないです。もっとやれたはずなのに
+- `FAN_EXPECT_REACTIONS.badWinner.standard.earnest[1]`: 応援してくださったのに…申し訳ありません
+- `FAN_EXPECT_REACTIONS.badWinner.standard.earnest[2]`: 次こそもっといい試合にします
 
-### badWinner.normal.composed[]
+### badWinner.standard.emotional[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.normal.composed[1]`: …こんな試合で、ごめん。もっとやれたはずなのに
+- `FAN_EXPECT_REACTIONS.badWinner.standard.emotional[1]`: ごめん……もっとやれたのに……悔しい……！
 
-### badWinner.bold._default[]
+### badWinner.ojousama.normal[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.bold._default[1]`: 次はもっといい試合にする。約束する
-- `FAN_EXPECT_REACTIONS.badWinner.bold._default[2]`: こんなんじゃ足りない。もっとやれる
+- `FAN_EXPECT_REACTIONS.badWinner.ojousama.normal[1]`: この内容では……お恥ずかしい限りですわ
 
-### badWinner.bold.ojousama[]
+### badWinner.ojousama.bold[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.bold.ojousama[1]`: ……次は必ず良い試合をお見せしますわ。
+- `FAN_EXPECT_REACTIONS.badWinner.ojousama.bold[1]`: ……次は必ず良い試合をお見せしますわ。
 
-### badWinner.bold.delinquent[]
+### badWinner.ojousama.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.bold.delinquent[1]`: ちくしょう…次は絶対いい試合にする！
+- `FAN_EXPECT_REACTIONS.badWinner.ojousama.easygoing[1]`: 申し訳ございませんわ…次こそ、良い試合をお見せしますの
 
-### badWinner.bold.cool[]
+### badWinner.ojousama.earnest[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.bold.cool[1]`: ……次だ
+- `FAN_EXPECT_REACTIONS.badWinner.ojousama.earnest[1]`: ご期待に添えず、申し訳ございませんでしたわ
 
-### badWinner.bold.polite[]
+### badWinner.delinquent.normal[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.bold.polite[1]`: 次は必ず、もっといい試合にします。約束します
+- `FAN_EXPECT_REACTIONS.badWinner.delinquent.normal[1]`: くそっ…こんなんじゃダメだ…
 
-### badWinner.bold.seductive[]
+### badWinner.delinquent.bold[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.bold.seductive[1]`: 次はもっといい試合にするわ。…約束する
+- `FAN_EXPECT_REACTIONS.badWinner.delinquent.bold[1]`: ちくしょう…次は絶対いい試合にする！
 
-### badWinner.bold.composed[]
+### badWinner.delinquent.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.bold.composed[1]`: …次はもっといい試合にする。約束するよ
+- `FAN_EXPECT_REACTIONS.badWinner.delinquent.easygoing[1]`: ダメだったなあ…次はやるぜ
 
-### badWinner.quiet._default[]
+### badWinner.cool.normal[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.quiet._default[1]`: ………（悔しそうに俯く）
+- `FAN_EXPECT_REACTIONS.badWinner.cool.normal[1]`: ……不十分だった
 
-### badWinner.quiet.cool[]
+### badWinner.cool.bold[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.quiet.cool[1]`: ……まだ、足りなかった
+- `FAN_EXPECT_REACTIONS.badWinner.cool.bold[1]`: ……次だ
 
-### badWinner.quiet.polite[]
+### badWinner.cool.quiet[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.quiet.polite[1]`: ………申し訳…ありません。…次こそ
+- `FAN_EXPECT_REACTIONS.badWinner.cool.quiet[1]`: ……まだ、足りなかった
 
-### badWinner.quiet.seductive[]
+### badWinner.seductive.normal[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.quiet.seductive[1]`: ………ごめんなさい。…次こそ、ね
+- `FAN_EXPECT_REACTIONS.badWinner.seductive.normal[1]`: もっとやれたはず……悔しいわ
 
-### badWinner.shy._default[]
+### badWinner.seductive.bold[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.shy._default[1]`: ごめんなさい…もっと…頑張れたのに…
+- `FAN_EXPECT_REACTIONS.badWinner.seductive.bold[1]`: 次はもっといい試合にするわ。…約束する
 
-### badWinner.shy.polite[]
+### badWinner.seductive.quiet[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.shy.polite[1]`: ご、ごめんなさい……もっと、頑張れたはずなのに……
+- `FAN_EXPECT_REACTIONS.badWinner.seductive.quiet[1]`: ………ごめんなさい。…次こそ、ね
 
-### badWinner.easygoing._default[]
+### badWinner.seductive.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.easygoing._default[1]`: うーん…もっとやれたなあ。ごめんね
+- `FAN_EXPECT_REACTIONS.badWinner.seductive.easygoing[1]`: ごめんね…もっとやれたはずなのに。次こそ期待してて
 
-### badWinner.easygoing.delinquent[]
+### badWinner.seductive.earnest[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.easygoing.delinquent[1]`: ダメだったなあ…次はやるぜ
+- `FAN_EXPECT_REACTIONS.badWinner.seductive.earnest[1]`: 期待に応えられなくて、ごめんなさい。次こそ必ず
 
-### badWinner.easygoing.polite[]
+### badWinner.seductive.emotional[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.easygoing.polite[1]`: ごめんなさい、もっとやれたはずなのに…次こそ、絶対頑張ります!
+- `FAN_EXPECT_REACTIONS.badWinner.seductive.emotional[1]`: ごめんなさい……っ…もっとやれたはずなのに…悔しい……!
 
-### badWinner.easygoing.ojousama[]
+### badWinner.polite.normal[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.easygoing.ojousama[1]`: 申し訳ございませんわ…次こそ、良い試合をお見せしますの
+- `FAN_EXPECT_REACTIONS.badWinner.polite.normal[1]`: この内容では……申し訳ないです。もっとやれたはずなのに
 
-### badWinner.easygoing.seductive[]
+### badWinner.polite.bold[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.easygoing.seductive[1]`: ごめんね…もっとやれたはずなのに。次こそ期待してて
+- `FAN_EXPECT_REACTIONS.badWinner.polite.bold[1]`: 次は必ず、もっといい試合にします。約束します
 
-### badWinner.easygoing.composed[]
+### badWinner.polite.quiet[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.easygoing.composed[1]`: …ごめんね、もっとやれたはずなのに。次こそ頑張るよ
+- `FAN_EXPECT_REACTIONS.badWinner.polite.quiet[1]`: ………申し訳…ありません。…次こそ
 
-### badWinner.earnest._default[]
+### badWinner.polite.shy[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.earnest._default[1]`: 応援してくださったのに…申し訳ありません
-- `FAN_EXPECT_REACTIONS.badWinner.earnest._default[2]`: 次こそもっといい試合にします
+- `FAN_EXPECT_REACTIONS.badWinner.polite.shy[1]`: ご、ごめんなさい……もっと、頑張れたはずなのに……
 
-### badWinner.earnest.polite[]
+### badWinner.polite.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.earnest.polite[1]`: ご期待に添えず申し訳ございません
+- `FAN_EXPECT_REACTIONS.badWinner.polite.easygoing[1]`: ごめんなさい、もっとやれたはずなのに…次こそ、絶対頑張ります!
 
-### badWinner.earnest.ojousama[]
+### badWinner.polite.earnest[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.earnest.ojousama[1]`: ご期待に添えず、申し訳ございませんでしたわ
+- `FAN_EXPECT_REACTIONS.badWinner.polite.earnest[1]`: ご期待に添えず申し訳ございません
 
-### badWinner.earnest.seductive[]
+### badWinner.composed.normal[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.earnest.seductive[1]`: 期待に応えられなくて、ごめんなさい。次こそ必ず
+- `FAN_EXPECT_REACTIONS.badWinner.composed.normal[1]`: …こんな試合で、ごめん。もっとやれたはずなのに
 
-### badWinner.earnest.composed[]
+### badWinner.composed.bold[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.earnest.composed[1]`: …期待に応えられなくて、ごめんなさい。次こそ必ず
+- `FAN_EXPECT_REACTIONS.badWinner.composed.bold[1]`: …次はもっといい試合にする。約束するよ
 
-### badWinner.emotional._default[]
+### badWinner.composed.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.emotional._default[1]`: ごめん……もっとやれたのに……悔しい……！
+- `FAN_EXPECT_REACTIONS.badWinner.composed.easygoing[1]`: …ごめんね、もっとやれたはずなのに。次こそ頑張るよ
 
-### badWinner.emotional.seductive[]
+### badWinner.composed.earnest[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.emotional.seductive[1]`: ごめんなさい……っ…もっとやれたはずなのに…悔しい……!
+- `FAN_EXPECT_REACTIONS.badWinner.composed.earnest[1]`: …期待に応えられなくて、ごめんなさい。次こそ必ず
 
-### badWinner.emotional.composed[]
+### badWinner.composed.emotional[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.emotional.composed[1]`: …ごめんなさい。…もっとやれたはずなのに
+- `FAN_EXPECT_REACTIONS.badWinner.composed.emotional[1]`: …ごめんなさい。…もっとやれたはずなのに
 
 ## `POST_MATCH_FLAVOR_LINES`
 
 - 出典: `src/data.js`
 - コード内コメント: 試合後フレーバーポップアップセリフ（勝者/敗者の余韻） / 仕様: specs/match-flavor-popup-spec-v0.1.md §4.6 / 勝敗は確定したばかり、リング上で発する一言。長台詞は避ける(autoClose 1.8s)
-- 本数: 83
+- 本数: 86
 
-### winner.normal._default[]
+### winner.standard.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.normal._default[1]`: …取った
-- `POST_MATCH_FLAVOR_LINES.winner.normal._default[2]`: 勝ったわ
-- `POST_MATCH_FLAVOR_LINES.winner.normal._default[3]`: これで一勝
-- `POST_MATCH_FLAVOR_LINES.winner.normal._default[4]`: ふぅ…決まったわね
+- `POST_MATCH_FLAVOR_LINES.winner.standard.normal[1]`: …取った
+- `POST_MATCH_FLAVOR_LINES.winner.standard.normal[2]`: 勝ったわ
+- `POST_MATCH_FLAVOR_LINES.winner.standard.normal[3]`: これで一勝
+- `POST_MATCH_FLAVOR_LINES.winner.standard.normal[4]`: ふぅ…決まったわね
 
-### winner.normal.ojousama[]
+### winner.standard.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.normal.ojousama[1]`: 勝たせていただきましたわ
-- `POST_MATCH_FLAVOR_LINES.winner.normal.ojousama[2]`: ふぅ…お見事でしたでしょう？
+- `POST_MATCH_FLAVOR_LINES.winner.standard.bold[1]`: 当然よ！
+- `POST_MATCH_FLAVOR_LINES.winner.standard.bold[2]`: こんなもんよ！
+- `POST_MATCH_FLAVOR_LINES.winner.standard.bold[3]`: わたしの勝ち！
 
-### winner.normal.polite[]
+### winner.standard.quiet[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.normal.polite[1]`: ありがとうございました
-- `POST_MATCH_FLAVOR_LINES.winner.normal.polite[2]`: 勝たせていただきました
+- `POST_MATCH_FLAVOR_LINES.winner.standard.quiet[1]`: …勝った
+- `POST_MATCH_FLAVOR_LINES.winner.standard.quiet[2]`: ……（小さく頷く）
 
-### winner.normal.delinquent[]
+### winner.standard.earnest[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.normal.delinquent[1]`: 勝ったぜ
-- `POST_MATCH_FLAVOR_LINES.winner.normal.delinquent[2]`: ま、こんなもんだろ
+- `POST_MATCH_FLAVOR_LINES.winner.standard.earnest[1]`: 勝てました…！
+- `POST_MATCH_FLAVOR_LINES.winner.standard.earnest[2]`: 本当に…ありがとうございます！
 
-### winner.normal.cool[]
+### winner.standard.emotional[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.normal.cool[2]`: ……決まりだ
+- `POST_MATCH_FLAVOR_LINES.winner.standard.emotional[1]`: やった…やった…！
+- `POST_MATCH_FLAVOR_LINES.winner.standard.emotional[2]`: 勝った…勝ったよ…！
 
-### winner.normal.seductive[]
+### winner.standard.easygoing[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.normal.seductive[1]`: ふふ、いただいたわ
-- `POST_MATCH_FLAVOR_LINES.winner.normal.seductive[2]`: 勝たせてもらったわよ
+- `POST_MATCH_FLAVOR_LINES.winner.standard.easygoing[1]`: いやー、勝てちゃった
+- `POST_MATCH_FLAVOR_LINES.winner.standard.easygoing[2]`: ふふっ、ラッキー♪
+- `POST_MATCH_FLAVOR_LINES.winner.standard.easygoing[3]`: 勝ったよ〜
 
-### winner.normal.composed[]
+### winner.standard.shy[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.normal.composed[1]`: …取れた
-- `POST_MATCH_FLAVOR_LINES.winner.normal.composed[2]`: …ふぅ、勝ったよ
+- `POST_MATCH_FLAVOR_LINES.winner.standard.shy[1]`: …か、勝った…
+- `POST_MATCH_FLAVOR_LINES.winner.standard.shy[2]`: ……（深々とお辞儀）
 
-### winner.bold._default[]
+### winner.ojousama.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.bold._default[1]`: 当然よ！
-- `POST_MATCH_FLAVOR_LINES.winner.bold._default[2]`: こんなもんよ！
-- `POST_MATCH_FLAVOR_LINES.winner.bold._default[3]`: わたしの勝ち！
+- `POST_MATCH_FLAVOR_LINES.winner.ojousama.normal[1]`: 勝たせていただきましたわ
+- `POST_MATCH_FLAVOR_LINES.winner.ojousama.normal[2]`: ふぅ…お見事でしたでしょう？
 
-### winner.bold.delinquent[]
+### winner.ojousama.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.bold.delinquent[1]`: 当ったり前だろうが！
-- `POST_MATCH_FLAVOR_LINES.winner.bold.delinquent[2]`: はっ、こんなもんよ
+- `POST_MATCH_FLAVOR_LINES.winner.ojousama.bold[1]`: 当然の結果ですわ
+- `POST_MATCH_FLAVOR_LINES.winner.ojousama.bold[2]`: わたくしに敵う者はいませんわ
 
-### winner.bold.ojousama[]
+### winner.ojousama.earnest[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.bold.ojousama[1]`: 当然の結果ですわ
-- `POST_MATCH_FLAVOR_LINES.winner.bold.ojousama[2]`: わたくしに敵う者はいませんわ
+- `POST_MATCH_FLAVOR_LINES.winner.ojousama.earnest[1]`: 勝たせていただきました…！
 
-### winner.bold.cool[]
+### winner.ojousama.easygoing[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.bold.cool[1]`: ……当然だ
+- `POST_MATCH_FLAVOR_LINES.winner.ojousama.easygoing[1]`: 勝たせていただきましたわ、うふふ
 
-### winner.bold.polite[]
+### winner.polite.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.bold.polite[1]`: …勝たせていただきました
+- `POST_MATCH_FLAVOR_LINES.winner.polite.normal[1]`: ありがとうございました
+- `POST_MATCH_FLAVOR_LINES.winner.polite.normal[2]`: 勝たせていただきました
 
-### winner.quiet._default[]
+### winner.polite.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.quiet._default[1]`: …勝った
-- `POST_MATCH_FLAVOR_LINES.winner.quiet._default[2]`: ……（小さく頷く）
+- `POST_MATCH_FLAVOR_LINES.winner.polite.bold[1]`: …勝たせていただきました
 
-### winner.quiet.polite[]
+### winner.polite.quiet[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.quiet.polite[1]`: …勝たせていただきました…
+- `POST_MATCH_FLAVOR_LINES.winner.polite.quiet[1]`: …勝たせていただきました…
 
-### winner.earnest._default[]
+### winner.polite.earnest[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.earnest._default[1]`: 勝てました…！
-- `POST_MATCH_FLAVOR_LINES.winner.earnest._default[2]`: 本当に…ありがとうございます！
+- `POST_MATCH_FLAVOR_LINES.winner.polite.earnest[1]`: 勝たせていただきました、ありがとうございます
 
-### winner.earnest.polite[]
+### winner.polite.shy[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.earnest.polite[1]`: 勝たせていただきました、ありがとうございます
+- `POST_MATCH_FLAVOR_LINES.winner.polite.shy[1]`: …か、勝たせていただきました…
 
-### winner.earnest.ojousama[]
+### winner.delinquent.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.earnest.ojousama[1]`: 勝たせていただきました…！
+- `POST_MATCH_FLAVOR_LINES.winner.delinquent.normal[1]`: 勝ったぜ
+- `POST_MATCH_FLAVOR_LINES.winner.delinquent.normal[2]`: ま、こんなもんだろ
 
-### winner.emotional._default[]
+### winner.delinquent.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.emotional._default[1]`: やった…やった…！
-- `POST_MATCH_FLAVOR_LINES.winner.emotional._default[2]`: 勝った…勝ったよ…！
+- `POST_MATCH_FLAVOR_LINES.winner.delinquent.bold[1]`: 当ったり前だろうが！
+- `POST_MATCH_FLAVOR_LINES.winner.delinquent.bold[2]`: はっ、こんなもんよ
 
-### winner.easygoing._default[]
+### winner.delinquent.easygoing[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.easygoing._default[1]`: いやー、勝てちゃった
-- `POST_MATCH_FLAVOR_LINES.winner.easygoing._default[2]`: ふふっ、ラッキー♪
-- `POST_MATCH_FLAVOR_LINES.winner.easygoing._default[3]`: 勝ったよ〜
+- `POST_MATCH_FLAVOR_LINES.winner.delinquent.easygoing[1]`: 勝ったぜ〜
 
-### winner.easygoing.delinquent[]
+### winner.cool.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.easygoing.delinquent[1]`: 勝ったぜ〜
+- `POST_MATCH_FLAVOR_LINES.winner.cool.normal[2]`: ……決まりだ
 
-### winner.easygoing.ojousama[]
+### winner.cool.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.easygoing.ojousama[1]`: 勝たせていただきましたわ、うふふ
+- `POST_MATCH_FLAVOR_LINES.winner.cool.bold[1]`: ……当然だ
 
-### winner.shy._default[]
+### winner.seductive.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.shy._default[1]`: …か、勝った…
-- `POST_MATCH_FLAVOR_LINES.winner.shy._default[2]`: ……（深々とお辞儀）
+- `POST_MATCH_FLAVOR_LINES.winner.seductive.normal[1]`: ふふ、いただいたわ
+- `POST_MATCH_FLAVOR_LINES.winner.seductive.normal[2]`: 勝たせてもらったわよ
 
-### winner.shy.polite[]
+### winner.seductive.quiet[]
 
-- `POST_MATCH_FLAVOR_LINES.winner.shy.polite[1]`: …か、勝たせていただきました…
+- `POST_MATCH_FLAVOR_LINES.winner.seductive.quiet[1]`: …そこまで。あなたの癖、全部見えていたわ
+- `POST_MATCH_FLAVOR_LINES.winner.seductive.quiet[2]`: …もう結末は、最初から決まっていたの
+- `POST_MATCH_FLAVOR_LINES.winner.seductive.quiet[3]`: …惜しかったわね。あと一手、足りなかった
 
-### loser.normal._default[]
+### winner.composed.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.normal._default[1]`: …悔しい
-- `POST_MATCH_FLAVOR_LINES.loser.normal._default[2]`: …まだまだね
-- `POST_MATCH_FLAVOR_LINES.loser.normal._default[3]`: …次は勝つわ
-- `POST_MATCH_FLAVOR_LINES.loser.normal._default[4]`: …完敗ね
+- `POST_MATCH_FLAVOR_LINES.winner.composed.normal[1]`: …取れた
+- `POST_MATCH_FLAVOR_LINES.winner.composed.normal[2]`: …ふぅ、勝ったよ
 
-### loser.normal.ojousama[]
+### loser.standard.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.normal.ojousama[1]`: …無念ですわ
-- `POST_MATCH_FLAVOR_LINES.loser.normal.ojousama[2]`: …次こそは…
+- `POST_MATCH_FLAVOR_LINES.loser.standard.normal[1]`: …悔しい
+- `POST_MATCH_FLAVOR_LINES.loser.standard.normal[2]`: …まだまだね
+- `POST_MATCH_FLAVOR_LINES.loser.standard.normal[3]`: …次は勝つわ
+- `POST_MATCH_FLAVOR_LINES.loser.standard.normal[4]`: …完敗ね
 
-### loser.normal.polite[]
+### loser.standard.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.normal.polite[1]`: …ありがとうございました
-- `POST_MATCH_FLAVOR_LINES.loser.normal.polite[2]`: …申し訳ありません
+- `POST_MATCH_FLAVOR_LINES.loser.standard.bold[1]`: …嘘でしょ？
+- `POST_MATCH_FLAVOR_LINES.loser.standard.bold[2]`: こんなはずじゃ…
+- `POST_MATCH_FLAVOR_LINES.loser.standard.bold[3]`: …次は絶対に！
 
-### loser.normal.delinquent[]
+### loser.standard.quiet[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.normal.delinquent[1]`: …クソッ
-- `POST_MATCH_FLAVOR_LINES.loser.normal.delinquent[2]`: チッ…
-- `POST_MATCH_FLAVOR_LINES.loser.normal.delinquent[3]`: まだ…まだだ
+- `POST_MATCH_FLAVOR_LINES.loser.standard.quiet[1]`: …負けた
+- `POST_MATCH_FLAVOR_LINES.loser.standard.quiet[2]`: ……（俯く）
 
-### loser.normal.cool[]
+### loser.standard.earnest[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.normal.cool[2]`: ……まだだ
+- `POST_MATCH_FLAVOR_LINES.loser.standard.earnest[1]`: …次は必ず勝ちます
+- `POST_MATCH_FLAVOR_LINES.loser.standard.earnest[2]`: …悔しい、もっと強くなる
 
-### loser.normal.seductive[]
+### loser.standard.emotional[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.normal.seductive[1]`: …あら、負けちゃった
-- `POST_MATCH_FLAVOR_LINES.loser.normal.seductive[2]`: …次は逃がさないわ
+- `POST_MATCH_FLAVOR_LINES.loser.standard.emotional[1]`: …悔しい…悔しいよ…
+- `POST_MATCH_FLAVOR_LINES.loser.standard.emotional[2]`: …なんで…なんで負けたの…
 
-### loser.normal.composed[]
+### loser.standard.easygoing[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.normal.composed[1]`: …負けたか
-- `POST_MATCH_FLAVOR_LINES.loser.normal.composed[2]`: …まだ足りないね
+- `POST_MATCH_FLAVOR_LINES.loser.standard.easygoing[1]`: あちゃー、負けちゃった
+- `POST_MATCH_FLAVOR_LINES.loser.standard.easygoing[2]`: …次がんばろ
+- `POST_MATCH_FLAVOR_LINES.loser.standard.easygoing[3]`: むぅ…悔しいなあ
 
-### loser.bold._default[]
+### loser.standard.shy[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.bold._default[1]`: …嘘でしょ？
-- `POST_MATCH_FLAVOR_LINES.loser.bold._default[2]`: こんなはずじゃ…
-- `POST_MATCH_FLAVOR_LINES.loser.bold._default[3]`: …次は絶対に！
+- `POST_MATCH_FLAVOR_LINES.loser.standard.shy[1]`: …ご、ごめんなさい…
+- `POST_MATCH_FLAVOR_LINES.loser.standard.shy[2]`: ……（消え入りそう）
 
-### loser.bold.delinquent[]
+### loser.ojousama.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.bold.delinquent[1]`: …ふざけんな！
-- `POST_MATCH_FLAVOR_LINES.loser.bold.delinquent[2]`: クソッ…まだだ！
+- `POST_MATCH_FLAVOR_LINES.loser.ojousama.normal[1]`: …無念ですわ
+- `POST_MATCH_FLAVOR_LINES.loser.ojousama.normal[2]`: …次こそは…
 
-### loser.bold.ojousama[]
+### loser.ojousama.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.bold.ojousama[1]`: …こんなはずでは…
-- `POST_MATCH_FLAVOR_LINES.loser.bold.ojousama[2]`: …次は許しませんわ
+- `POST_MATCH_FLAVOR_LINES.loser.ojousama.bold[1]`: …こんなはずでは…
+- `POST_MATCH_FLAVOR_LINES.loser.ojousama.bold[2]`: …次は許しませんわ
 
-### loser.bold.cool[]
+### loser.ojousama.earnest[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.bold.cool[1]`: ……不覚
+- `POST_MATCH_FLAVOR_LINES.loser.ojousama.earnest[1]`: …次は必ず雪辱しますわ
 
-### loser.bold.polite[]
+### loser.ojousama.easygoing[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.bold.polite[1]`: …申し訳ありません、不甲斐ないです
+- `POST_MATCH_FLAVOR_LINES.loser.ojousama.easygoing[1]`: …負けてしまいましたわ、てへ
 
-### loser.quiet._default[]
+### loser.polite.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.quiet._default[1]`: …負けた
-- `POST_MATCH_FLAVOR_LINES.loser.quiet._default[2]`: ……（俯く）
+- `POST_MATCH_FLAVOR_LINES.loser.polite.normal[1]`: …ありがとうございました
+- `POST_MATCH_FLAVOR_LINES.loser.polite.normal[2]`: …申し訳ありません
 
-### loser.quiet.polite[]
+### loser.polite.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.quiet.polite[1]`: …申し訳…ありません…
+- `POST_MATCH_FLAVOR_LINES.loser.polite.bold[1]`: …申し訳ありません、不甲斐ないです
 
-### loser.earnest._default[]
+### loser.polite.quiet[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.earnest._default[1]`: …次は必ず勝ちます
-- `POST_MATCH_FLAVOR_LINES.loser.earnest._default[2]`: …悔しい、もっと強くなる
+- `POST_MATCH_FLAVOR_LINES.loser.polite.quiet[1]`: …申し訳…ありません…
 
-### loser.earnest.polite[]
+### loser.polite.earnest[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.earnest.polite[1]`: …申し訳ありません、次こそ
+- `POST_MATCH_FLAVOR_LINES.loser.polite.earnest[1]`: …申し訳ありません、次こそ
 
-### loser.earnest.ojousama[]
+### loser.polite.shy[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.earnest.ojousama[1]`: …次は必ず雪辱しますわ
+- `POST_MATCH_FLAVOR_LINES.loser.polite.shy[1]`: …も、申し訳ありません…
 
-### loser.emotional._default[]
+### loser.delinquent.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.emotional._default[1]`: …悔しい…悔しいよ…
-- `POST_MATCH_FLAVOR_LINES.loser.emotional._default[2]`: …なんで…なんで負けたの…
+- `POST_MATCH_FLAVOR_LINES.loser.delinquent.normal[1]`: …クソッ
+- `POST_MATCH_FLAVOR_LINES.loser.delinquent.normal[2]`: チッ…
+- `POST_MATCH_FLAVOR_LINES.loser.delinquent.normal[3]`: まだ…まだだ
 
-### loser.easygoing._default[]
+### loser.delinquent.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.easygoing._default[1]`: あちゃー、負けちゃった
-- `POST_MATCH_FLAVOR_LINES.loser.easygoing._default[2]`: …次がんばろ
-- `POST_MATCH_FLAVOR_LINES.loser.easygoing._default[3]`: むぅ…悔しいなあ
+- `POST_MATCH_FLAVOR_LINES.loser.delinquent.bold[1]`: …ふざけんな！
+- `POST_MATCH_FLAVOR_LINES.loser.delinquent.bold[2]`: クソッ…まだだ！
 
-### loser.easygoing.delinquent[]
+### loser.delinquent.easygoing[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.easygoing.delinquent[1]`: 負けちまった〜
+- `POST_MATCH_FLAVOR_LINES.loser.delinquent.easygoing[1]`: 負けちまった〜
 
-### loser.easygoing.ojousama[]
+### loser.cool.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.easygoing.ojousama[1]`: …負けてしまいましたわ、てへ
+- `POST_MATCH_FLAVOR_LINES.loser.cool.normal[2]`: ……まだだ
 
-### loser.shy._default[]
+### loser.cool.bold[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.shy._default[1]`: …ご、ごめんなさい…
-- `POST_MATCH_FLAVOR_LINES.loser.shy._default[2]`: ……（消え入りそう）
+- `POST_MATCH_FLAVOR_LINES.loser.cool.bold[1]`: ……不覚
 
-### loser.shy.polite[]
+### loser.seductive.normal[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.shy.polite[1]`: …も、申し訳ありません…
+- `POST_MATCH_FLAVOR_LINES.loser.seductive.normal[1]`: …あら、負けちゃった
+- `POST_MATCH_FLAVOR_LINES.loser.seductive.normal[2]`: …次は逃がさないわ
+
+### loser.composed.normal[]
+
+- `POST_MATCH_FLAVOR_LINES.loser.composed.normal[1]`: …負けたか
+- `POST_MATCH_FLAVOR_LINES.loser.composed.normal[2]`: …まだ足りないね
 
 ## `FIRST_MEET_LINES`
 
@@ -3242,139 +3248,116 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 初顔合わせ試合前ポップアップセリフ（personality×archetype） / 仕様: specs/match-flavor-popup-spec-v0.1.md §3.2
 - 本数: 42
 
-### normal._default[]
+### standard.normal[]
 
-- `FIRST_MEET_LINES.normal._default[1]`: 噂は聞いていたわ
-- `FIRST_MEET_LINES.normal._default[2]`: 初めまして…よろしく
-- `FIRST_MEET_LINES.normal._default[3]`: 一度やってみたかった
-- `FIRST_MEET_LINES.normal._default[4]`: こうして向かい合えるとは
+- `FIRST_MEET_LINES.standard.normal[1]`: 噂は聞いていたわ
+- `FIRST_MEET_LINES.standard.normal[2]`: 初めまして…よろしく
+- `FIRST_MEET_LINES.standard.normal[3]`: 一度やってみたかった
+- `FIRST_MEET_LINES.standard.normal[4]`: こうして向かい合えるとは
 
-### normal.ojousama[]
+### standard.bold[]
 
-- `FIRST_MEET_LINES.normal.ojousama[1]`: お会いできて光栄ですわ
-- `FIRST_MEET_LINES.normal.ojousama[2]`: お手合わせ願いますわ
+- `FIRST_MEET_LINES.standard.bold[1]`: やっと当たれるな！
+- `FIRST_MEET_LINES.standard.bold[2]`: 待ってたぞ、この日を
+- `FIRST_MEET_LINES.standard.bold[3]`: 本気で来いよ
 
-### normal.polite[]
+### standard.quiet[]
 
-- `FIRST_MEET_LINES.normal.polite[1]`: お初にお目にかかります
-- `FIRST_MEET_LINES.normal.polite[2]`: 本日はよろしくお願いします
+- `FIRST_MEET_LINES.standard.quiet[1]`: …よろしく
+- `FIRST_MEET_LINES.standard.quiet[2]`: ……（軽く頭を下げる）
 
-### normal.delinquent[]
+### standard.earnest[]
 
-- `FIRST_MEET_LINES.normal.delinquent[1]`: お前か、噂のヤツ
-- `FIRST_MEET_LINES.normal.delinquent[2]`: ふん、見せてもらおうじゃねえか
+- `FIRST_MEET_LINES.standard.earnest[1]`: よろしくお願いします！
+- `FIRST_MEET_LINES.standard.earnest[2]`: この一戦、全力で挑みます
 
-### normal.cool[]
+### standard.emotional[]
 
-- `FIRST_MEET_LINES.normal.cool[2]`: ……始めようか
+- `FIRST_MEET_LINES.standard.emotional[1]`: ずっと…ずっとやりたかった！
+- `FIRST_MEET_LINES.standard.emotional[2]`: 夢だったの、これ！
 
-### normal.seductive[]
+### standard.easygoing[]
 
-- `FIRST_MEET_LINES.normal.seductive[1]`: ふふ、初めましてね
-- `FIRST_MEET_LINES.normal.seductive[2]`: 楽しみにしてたのよ
+- `FIRST_MEET_LINES.standard.easygoing[1]`: いやー、やっとだね
+- `FIRST_MEET_LINES.standard.easygoing[2]`: よろしくー！
+- `FIRST_MEET_LINES.standard.easygoing[3]`: ふふっ、楽しみだったよ
 
-### normal.composed[]
+### standard.shy[]
 
-- `FIRST_MEET_LINES.normal.composed[1]`: …噂は聞いてるよ。よろしく
+- `FIRST_MEET_LINES.standard.shy[1]`: あ、あの…よ、よろしく…
+- `FIRST_MEET_LINES.standard.shy[2]`: ……よろしくお願いします…
 
-### bold._default[]
+### ojousama.normal[]
 
-- `FIRST_MEET_LINES.bold._default[1]`: やっと当たれるな！
-- `FIRST_MEET_LINES.bold._default[2]`: 待ってたぞ、この日を
-- `FIRST_MEET_LINES.bold._default[3]`: 本気で来いよ
+- `FIRST_MEET_LINES.ojousama.normal[1]`: お会いできて光栄ですわ
+- `FIRST_MEET_LINES.ojousama.normal[2]`: お手合わせ願いますわ
 
-### bold.delinquent[]
+### ojousama.bold[]
 
-- `FIRST_MEET_LINES.bold.delinquent[1]`: 待たせたな！
-- `FIRST_MEET_LINES.bold.delinquent[2]`: やっとかよ、楽しもうぜ
+- `FIRST_MEET_LINES.ojousama.bold[1]`: ようやくお相手いただけますのね
+- `FIRST_MEET_LINES.ojousama.bold[2]`: 楽しみにしておりましたわ
 
-### bold.ojousama[]
+### ojousama.earnest[]
 
-- `FIRST_MEET_LINES.bold.ojousama[1]`: ようやくお相手いただけますのね
-- `FIRST_MEET_LINES.bold.ojousama[2]`: 楽しみにしておりましたわ
+- `FIRST_MEET_LINES.ojousama.earnest[1]`: お相手いただけて光栄ですわ。全力で挑みます
 
-### bold.cool[]
+### ojousama.easygoing[]
 
-- `FIRST_MEET_LINES.bold.cool[1]`: ……ようやくか
+- `FIRST_MEET_LINES.ojousama.easygoing[1]`: ようやくお手合わせできますのね、楽しみですわ
 
-### bold.polite[]
+### polite.normal[]
 
-- `FIRST_MEET_LINES.bold.polite[1]`: お会いできて光栄です。全力で挑みます
+- `FIRST_MEET_LINES.polite.normal[1]`: お初にお目にかかります
+- `FIRST_MEET_LINES.polite.normal[2]`: 本日はよろしくお願いします
 
-### quiet._default[]
+### polite.bold[]
 
-- `FIRST_MEET_LINES.quiet._default[1]`: …よろしく
-- `FIRST_MEET_LINES.quiet._default[2]`: ……（軽く頭を下げる）
+- `FIRST_MEET_LINES.polite.bold[1]`: お会いできて光栄です。全力で挑みます
 
-### quiet.cool[]
+### polite.quiet[]
 
-- `FIRST_MEET_LINES.quiet.cool[2]`: ……始めようか
+- `FIRST_MEET_LINES.polite.quiet[1]`: …よ、よろしくお願いします
 
-### quiet.polite[]
+### polite.earnest[]
 
-- `FIRST_MEET_LINES.quiet.polite[1]`: …よ、よろしくお願いします
+- `FIRST_MEET_LINES.polite.earnest[1]`: お手合わせいただけて光栄です
+- `FIRST_MEET_LINES.polite.earnest[2]`: 本日はよろしくお願いいたします
 
-### earnest._default[]
+### polite.shy[]
 
-- `FIRST_MEET_LINES.earnest._default[1]`: よろしくお願いします！
-- `FIRST_MEET_LINES.earnest._default[2]`: この一戦、全力で挑みます
+- `FIRST_MEET_LINES.polite.shy[1]`: あ、あの…よ、よろしくお願いします…
 
-### earnest.polite[]
+### delinquent.normal[]
 
-- `FIRST_MEET_LINES.earnest.polite[1]`: お手合わせいただけて光栄です
-- `FIRST_MEET_LINES.earnest.polite[2]`: 本日はよろしくお願いいたします
+- `FIRST_MEET_LINES.delinquent.normal[1]`: お前か、噂のヤツ
+- `FIRST_MEET_LINES.delinquent.normal[2]`: ふん、見せてもらおうじゃねえか
 
-### earnest.ojousama[]
+### delinquent.bold[]
 
-- `FIRST_MEET_LINES.earnest.ojousama[1]`: お相手いただけて光栄ですわ。全力で挑みます
+- `FIRST_MEET_LINES.delinquent.bold[1]`: 待たせたな！
+- `FIRST_MEET_LINES.delinquent.bold[2]`: やっとかよ、楽しもうぜ
 
-### emotional._default[]
+### delinquent.easygoing[]
 
-- `FIRST_MEET_LINES.emotional._default[1]`: ずっと…ずっとやりたかった！
-- `FIRST_MEET_LINES.emotional._default[2]`: 夢だったの、これ！
+- `FIRST_MEET_LINES.delinquent.easygoing[1]`: よっ、よろしくな！
 
-### easygoing._default[]
+### cool.normal[]
 
-- `FIRST_MEET_LINES.easygoing._default[1]`: いやー、やっとだね
-- `FIRST_MEET_LINES.easygoing._default[2]`: よろしくー！
-- `FIRST_MEET_LINES.easygoing._default[3]`: ふふっ、楽しみだったよ
+- `FIRST_MEET_LINES.cool.normal[2]`: ……始めようか
 
-### easygoing.delinquent[]
+### cool.bold[]
 
-- `FIRST_MEET_LINES.easygoing.delinquent[1]`: よっ、よろしくな！
+- `FIRST_MEET_LINES.cool.bold[1]`: ……ようやくか
 
-### easygoing.ojousama[]
+### cool.quiet[]
 
-- `FIRST_MEET_LINES.easygoing.ojousama[1]`: ようやくお手合わせできますのね、楽しみですわ
+- `FIRST_MEET_LINES.cool.quiet[2]`: ……始めようか
 
-### shy._default[]
+### seductive.normal[]
 
-- `FIRST_MEET_LINES.shy._default[1]`: あ、あの…よ、よろしく…
-- `FIRST_MEET_LINES.shy._default[2]`: ……よろしくお願いします…
+- `FIRST_MEET_LINES.seductive.normal[1]`: ふふ、初めましてね
+- `FIRST_MEET_LINES.seductive.normal[2]`: 楽しみにしてたのよ
 
-### shy.polite[]
+### composed.normal[]
 
-- `FIRST_MEET_LINES.shy.polite[1]`: あ、あの…よ、よろしくお願いします…
-
-## `BESTMATCH_FLAVOR`
-
-- 出典: `src/data.js`
-- コード内コメント: v1.4: ベストマッチ フレーバーテキスト（MQ帯別）
-- 本数: 8
-
-### high[]
-
-- `BESTMATCH_FLAVOR.high[1]`: 歴史に残る名勝負
-- `BESTMATCH_FLAVOR.high[2]`: 会場が震えた一戦
-- `BESTMATCH_FLAVOR.high[3]`: すべてを出し尽くした激闘
-
-### mid[]
-
-- `BESTMATCH_FLAVOR.mid[1]`: 観客を沸かせた好勝負
-- `BESTMATCH_FLAVOR.mid[2]`: 互いの意地がぶつかり合った一戦
-- `BESTMATCH_FLAVOR.mid[3]`: 技と力が交錯する見応えある試合
-
-### low[]
-
-- `BESTMATCH_FLAVOR.low[1]`: 光るものを見せた一戦
-- `BESTMATCH_FLAVOR.low[2]`: 荒削りだが熱い闘い
+- `FIRST_MEET_LINES.composed.normal[1]`: …噂は聞いてるよ。よろしく

@@ -152,173 +152,173 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHALLENGE_LINES.polite_bold.lose[2]`: 申し訳ありません。今回は、私の力不足です。
 - `CHALLENGE_LINES.polite_bold.lose[3]`: 悔しいです。もう一度、機会をください。
 
-### normal_normal.petition[]
+### standard_normal.petition[]
 
-- `CHALLENGE_LINES.normal_normal.petition[1]`: 社長、お願いがあります。あの人とやらせてください。
-- `CHALLENGE_LINES.normal_normal.petition[2]`: どうしても、あの人とやりたいんです。……お願いします。
-- `CHALLENGE_LINES.normal_normal.petition[3]`: わがままだとは分かってます。それでも、組んでほしいんです。
+- `CHALLENGE_LINES.standard_normal.petition[1]`: 社長、お願いがあります。あの人とやらせてください。
+- `CHALLENGE_LINES.standard_normal.petition[2]`: どうしても、あの人とやりたいんです。……お願いします。
+- `CHALLENGE_LINES.standard_normal.petition[3]`: わがままだとは分かってます。それでも、組んでほしいんです。
 
-### normal_normal.sendoff[]
+### standard_normal.sendoff[]
 
-- `CHALLENGE_LINES.normal_normal.sendoff[1]`: ありがとうございます! ……行ってきます。
-- `CHALLENGE_LINES.normal_normal.sendoff[2]`: ありがとうございます。必ず、勝ってきます。
-- `CHALLENGE_LINES.normal_normal.sendoff[3]`: ……ありがとうございます。やってきます。
+- `CHALLENGE_LINES.standard_normal.sendoff[1]`: ありがとうございます! ……行ってきます。
+- `CHALLENGE_LINES.standard_normal.sendoff[2]`: ありがとうございます。必ず、勝ってきます。
+- `CHALLENGE_LINES.standard_normal.sendoff[3]`: ……ありがとうございます。やってきます。
 
-### normal_normal.win[]
+### standard_normal.win[]
 
-- `CHALLENGE_LINES.normal_normal.win[1]`: 勝ちました。……ありがとうございました。
-- `CHALLENGE_LINES.normal_normal.win[2]`: やりました! ……見ててくれましたか。
-- `CHALLENGE_LINES.normal_normal.win[3]`: 勝てました。……無駄にしなくて、よかった。
+- `CHALLENGE_LINES.standard_normal.win[1]`: 勝ちました。……ありがとうございました。
+- `CHALLENGE_LINES.standard_normal.win[2]`: やりました! ……見ててくれましたか。
+- `CHALLENGE_LINES.standard_normal.win[3]`: 勝てました。……無駄にしなくて、よかった。
 
-### normal_normal.lose[]
+### standard_normal.lose[]
 
-- `CHALLENGE_LINES.normal_normal.lose[1]`: ……負けました。すみません。
-- `CHALLENGE_LINES.normal_normal.lose[2]`: 悔しいです。……本当に、悔しい。
-- `CHALLENGE_LINES.normal_normal.lose[3]`: 勝てませんでした。……申し訳ないです。
+- `CHALLENGE_LINES.standard_normal.lose[1]`: ……負けました。すみません。
+- `CHALLENGE_LINES.standard_normal.lose[2]`: 悔しいです。……本当に、悔しい。
+- `CHALLENGE_LINES.standard_normal.lose[3]`: 勝てませんでした。……申し訳ないです。
 
-### normal_earnest.petition[]
+### standard_earnest.petition[]
 
-- `CHALLENGE_LINES.normal_earnest.petition[1]`: 社長、迷惑をかけるのは分かってます。それでも、あの人とやらせてください。
-- `CHALLENGE_LINES.normal_earnest.petition[2]`: 半端な気持ちじゃありません。……あの人と、闘わせてください。
-- `CHALLENGE_LINES.normal_earnest.petition[3]`: お願いします。この一戦だけは、逃げたくないんです。
+- `CHALLENGE_LINES.standard_earnest.petition[1]`: 社長、迷惑をかけるのは分かってます。それでも、あの人とやらせてください。
+- `CHALLENGE_LINES.standard_earnest.petition[2]`: 半端な気持ちじゃありません。……あの人と、闘わせてください。
+- `CHALLENGE_LINES.standard_earnest.petition[3]`: お願いします。この一戦だけは、逃げたくないんです。
 
-### normal_earnest.sendoff[]
+### standard_earnest.sendoff[]
 
-- `CHALLENGE_LINES.normal_earnest.sendoff[1]`: ありがとうございます。……この決断、無駄にしません。
-- `CHALLENGE_LINES.normal_earnest.sendoff[2]`: 許してもらった分は、結果で返します。行ってきます。
-- `CHALLENGE_LINES.normal_earnest.sendoff[3]`: ありがとうございます。……背負って、行ってきます。
+- `CHALLENGE_LINES.standard_earnest.sendoff[1]`: ありがとうございます。……この決断、無駄にしません。
+- `CHALLENGE_LINES.standard_earnest.sendoff[2]`: 許してもらった分は、結果で返します。行ってきます。
+- `CHALLENGE_LINES.standard_earnest.sendoff[3]`: ありがとうございます。……背負って、行ってきます。
 
-### normal_earnest.win[]
+### standard_earnest.win[]
 
-- `CHALLENGE_LINES.normal_earnest.win[1]`: 勝ちました。……社長、ありがとうございました。
-- `CHALLENGE_LINES.normal_earnest.win[2]`: 約束は守れました。……ほっとしています。
-- `CHALLENGE_LINES.normal_earnest.win[3]`: 勝てました。……送り出してもらった甲斐が、ありました。
+- `CHALLENGE_LINES.standard_earnest.win[1]`: 勝ちました。……社長、ありがとうございました。
+- `CHALLENGE_LINES.standard_earnest.win[2]`: 約束は守れました。……ほっとしています。
+- `CHALLENGE_LINES.standard_earnest.win[3]`: 勝てました。……送り出してもらった甲斐が、ありました。
 
-### normal_earnest.lose[]
+### standard_earnest.lose[]
 
-- `CHALLENGE_LINES.normal_earnest.lose[1]`: ……負けました。すみませんでした。
-- `CHALLENGE_LINES.normal_earnest.lose[2]`: 言い出したのは私です。……この結果は、全部私の責任です。
-- `CHALLENGE_LINES.normal_earnest.lose[3]`: 悔しいです。……それ以上に、申し訳ないです。
+- `CHALLENGE_LINES.standard_earnest.lose[1]`: ……負けました。すみませんでした。
+- `CHALLENGE_LINES.standard_earnest.lose[2]`: 言い出したのは私です。……この結果は、全部私の責任です。
+- `CHALLENGE_LINES.standard_earnest.lose[3]`: 悔しいです。……それ以上に、申し訳ないです。
 
-### normal_bold.petition[]
+### standard_bold.petition[]
 
-- `CHALLENGE_LINES.normal_bold.petition[1]`: 社長、あの人とやらせてください。勝てます。
-- `CHALLENGE_LINES.normal_bold.petition[2]`: あの人とやりたいんです。……今なら、いけると思ってます。
-- `CHALLENGE_LINES.normal_bold.petition[3]`: 待ってても回ってこないので、言いに来ました。組んでください。
+- `CHALLENGE_LINES.standard_bold.petition[1]`: 社長、あの人とやらせてください。勝てます。
+- `CHALLENGE_LINES.standard_bold.petition[2]`: あの人とやりたいんです。……今なら、いけると思ってます。
+- `CHALLENGE_LINES.standard_bold.petition[3]`: 待ってても回ってこないので、言いに来ました。組んでください。
 
-### normal_bold.sendoff[]
+### standard_bold.sendoff[]
 
-- `CHALLENGE_LINES.normal_bold.sendoff[1]`: ありがとうございます! 勝ってきますから。
-- `CHALLENGE_LINES.normal_bold.sendoff[2]`: ありがとうございます。……見ててください。
-- `CHALLENGE_LINES.normal_bold.sendoff[3]`: 話が早くて助かります。行ってきます。
+- `CHALLENGE_LINES.standard_bold.sendoff[1]`: ありがとうございます! 勝ってきますから。
+- `CHALLENGE_LINES.standard_bold.sendoff[2]`: ありがとうございます。……見ててください。
+- `CHALLENGE_LINES.standard_bold.sendoff[3]`: 話が早くて助かります。行ってきます。
 
-### normal_bold.win[]
+### standard_bold.win[]
 
-- `CHALLENGE_LINES.normal_bold.win[1]`: 勝ちました! ……言った通りでしょう。
-- `CHALLENGE_LINES.normal_bold.win[2]`: 勝ちました。社長、ありがとうございました。
-- `CHALLENGE_LINES.normal_bold.win[3]`: やりました。……次も、任せてください。
+- `CHALLENGE_LINES.standard_bold.win[1]`: 勝ちました! ……言った通りでしょう。
+- `CHALLENGE_LINES.standard_bold.win[2]`: 勝ちました。社長、ありがとうございました。
+- `CHALLENGE_LINES.standard_bold.win[3]`: やりました。……次も、任せてください。
 
-### normal_bold.lose[]
+### standard_bold.lose[]
 
-- `CHALLENGE_LINES.normal_bold.lose[1]`: 負けました。……悔しいです。
-- `CHALLENGE_LINES.normal_bold.lose[2]`: 今日は届きませんでした。……次は勝ちます。
-- `CHALLENGE_LINES.normal_bold.lose[3]`: すみません、負けました。でも、やってよかったです。
+- `CHALLENGE_LINES.standard_bold.lose[1]`: 負けました。……悔しいです。
+- `CHALLENGE_LINES.standard_bold.lose[2]`: 今日は届きませんでした。……次は勝ちます。
+- `CHALLENGE_LINES.standard_bold.lose[3]`: すみません、負けました。でも、やってよかったです。
 
-### normal_easygoing.petition[]
+### standard_easygoing.petition[]
 
-- `CHALLENGE_LINES.normal_easygoing.petition[1]`: 社長、あの人とやってみたいんですけど、どうですか。
-- `CHALLENGE_LINES.normal_easygoing.petition[2]`: だめならいいんです。でも、あの人とやりたくて。
-- `CHALLENGE_LINES.normal_easygoing.petition[3]`: なんとなく、あの人とやりたくなっちゃって。
+- `CHALLENGE_LINES.standard_easygoing.petition[1]`: 社長、あの人とやってみたいんですけど、どうですか。
+- `CHALLENGE_LINES.standard_easygoing.petition[2]`: だめならいいんです。でも、あの人とやりたくて。
+- `CHALLENGE_LINES.standard_easygoing.petition[3]`: なんとなく、あの人とやりたくなっちゃって。
 
-### normal_easygoing.sendoff[]
+### standard_easygoing.sendoff[]
 
-- `CHALLENGE_LINES.normal_easygoing.sendoff[1]`: ありがとうございます。じゃあ、行ってきますね。
-- `CHALLENGE_LINES.normal_easygoing.sendoff[2]`: わ、いいんですか。ありがとうございます。
-- `CHALLENGE_LINES.normal_easygoing.sendoff[3]`: ありがとうございます。楽しんできます。
+- `CHALLENGE_LINES.standard_easygoing.sendoff[1]`: ありがとうございます。じゃあ、行ってきますね。
+- `CHALLENGE_LINES.standard_easygoing.sendoff[2]`: わ、いいんですか。ありがとうございます。
+- `CHALLENGE_LINES.standard_easygoing.sendoff[3]`: ありがとうございます。楽しんできます。
 
-### normal_easygoing.win[]
+### standard_easygoing.win[]
 
-- `CHALLENGE_LINES.normal_easygoing.win[1]`: 勝てました。案外、いけるもんですね。
-- `CHALLENGE_LINES.normal_easygoing.win[2]`: やった、勝ちました。言ってよかったです。
-- `CHALLENGE_LINES.normal_easygoing.win[3]`: 勝ちましたよ。ちゃんと帰ってきました。
+- `CHALLENGE_LINES.standard_easygoing.win[1]`: 勝てました。案外、いけるもんですね。
+- `CHALLENGE_LINES.standard_easygoing.win[2]`: やった、勝ちました。言ってよかったです。
+- `CHALLENGE_LINES.standard_easygoing.win[3]`: 勝ちましたよ。ちゃんと帰ってきました。
 
-### normal_easygoing.lose[]
+### standard_easygoing.lose[]
 
-- `CHALLENGE_LINES.normal_easygoing.lose[1]`: 負けちゃいました。ごめんなさい。
-- `CHALLENGE_LINES.normal_easygoing.lose[2]`: だめでした。まあ、また誘えばいいですよね。
-- `CHALLENGE_LINES.normal_easygoing.lose[3]`: 負けました。でも、後悔はしてないです。
+- `CHALLENGE_LINES.standard_easygoing.lose[1]`: 負けちゃいました。ごめんなさい。
+- `CHALLENGE_LINES.standard_easygoing.lose[2]`: だめでした。まあ、また誘えばいいですよね。
+- `CHALLENGE_LINES.standard_easygoing.lose[3]`: 負けました。でも、後悔はしてないです。
 
-### normal_quiet.petition[]
+### standard_quiet.petition[]
 
-- `CHALLENGE_LINES.normal_quiet.petition[1]`: 社長。あの人と、やらせてください。
-- `CHALLENGE_LINES.normal_quiet.petition[2]`: ……お願いがあります。あの人です。
-- `CHALLENGE_LINES.normal_quiet.petition[3]`: 一つだけ。あの人と、組んでください。
+- `CHALLENGE_LINES.standard_quiet.petition[1]`: 社長。あの人と、やらせてください。
+- `CHALLENGE_LINES.standard_quiet.petition[2]`: ……お願いがあります。あの人です。
+- `CHALLENGE_LINES.standard_quiet.petition[3]`: 一つだけ。あの人と、組んでください。
 
-### normal_quiet.sendoff[]
+### standard_quiet.sendoff[]
 
-- `CHALLENGE_LINES.normal_quiet.sendoff[1]`: ……ありがとうございます。行ってきます。
-- `CHALLENGE_LINES.normal_quiet.sendoff[2]`: はい。……無駄にはしません。
-- `CHALLENGE_LINES.normal_quiet.sendoff[3]`: ……もう、迷いはないです。
+- `CHALLENGE_LINES.standard_quiet.sendoff[1]`: ……ありがとうございます。行ってきます。
+- `CHALLENGE_LINES.standard_quiet.sendoff[2]`: はい。……無駄にはしません。
+- `CHALLENGE_LINES.standard_quiet.sendoff[3]`: ……もう、迷いはないです。
 
-### normal_quiet.win[]
+### standard_quiet.win[]
 
-- `CHALLENGE_LINES.normal_quiet.win[1]`: ……勝ちました。
-- `CHALLENGE_LINES.normal_quiet.win[2]`: 勝ちです。……以上です。
-- `CHALLENGE_LINES.normal_quiet.win[3]`: 勝ちました。……それだけ、伝えたくて。
+- `CHALLENGE_LINES.standard_quiet.win[1]`: ……勝ちました。
+- `CHALLENGE_LINES.standard_quiet.win[2]`: 勝ちです。……以上です。
+- `CHALLENGE_LINES.standard_quiet.win[3]`: 勝ちました。……それだけ、伝えたくて。
 
-### normal_quiet.lose[]
+### standard_quiet.lose[]
 
-- `CHALLENGE_LINES.normal_quiet.lose[1]`: ……負けです。ごめんなさい。
-- `CHALLENGE_LINES.normal_quiet.lose[2]`: 負けました。……悔しい、とだけ。
-- `CHALLENGE_LINES.normal_quiet.lose[3]`: ……次は、違います。
+- `CHALLENGE_LINES.standard_quiet.lose[1]`: ……負けです。ごめんなさい。
+- `CHALLENGE_LINES.standard_quiet.lose[2]`: 負けました。……悔しい、とだけ。
+- `CHALLENGE_LINES.standard_quiet.lose[3]`: ……次は、違います。
 
-### normal_shy.petition[]
+### standard_shy.petition[]
 
-- `CHALLENGE_LINES.normal_shy.petition[1]`: あの……社長。ひとつ、お願いが……。
-- `CHALLENGE_LINES.normal_shy.petition[2]`: 言うか迷ったんですけど……あの人と、やりたいです。
-- `CHALLENGE_LINES.normal_shy.petition[3]`: わがままですよね。……でも、どうしても。
+- `CHALLENGE_LINES.standard_shy.petition[1]`: あの……社長。ひとつ、お願いが……。
+- `CHALLENGE_LINES.standard_shy.petition[2]`: 言うか迷ったんですけど……あの人と、やりたいです。
+- `CHALLENGE_LINES.standard_shy.petition[3]`: わがままですよね。……でも、どうしても。
 
-### normal_shy.sendoff[]
+### standard_shy.sendoff[]
 
-- `CHALLENGE_LINES.normal_shy.sendoff[1]`: あ……ありがとうございます。行ってきます。
-- `CHALLENGE_LINES.normal_shy.sendoff[2]`: 本当に、いいんですか……。嬉しいです。
-- `CHALLENGE_LINES.normal_shy.sendoff[3]`: ありがとうございます。……頑張り、ます。
+- `CHALLENGE_LINES.standard_shy.sendoff[1]`: あ……ありがとうございます。行ってきます。
+- `CHALLENGE_LINES.standard_shy.sendoff[2]`: 本当に、いいんですか……。嬉しいです。
+- `CHALLENGE_LINES.standard_shy.sendoff[3]`: ありがとうございます。……頑張り、ます。
 
-### normal_shy.win[]
+### standard_shy.win[]
 
-- `CHALLENGE_LINES.normal_shy.win[1]`: あの……勝てました。
-- `CHALLENGE_LINES.normal_shy.win[2]`: 勝ちました。……信じてもらえて、嬉しかったです。
-- `CHALLENGE_LINES.normal_shy.win[3]`: 勝ちました。……こんなこと、初めてです。
+- `CHALLENGE_LINES.standard_shy.win[1]`: あの……勝てました。
+- `CHALLENGE_LINES.standard_shy.win[2]`: 勝ちました。……信じてもらえて、嬉しかったです。
+- `CHALLENGE_LINES.standard_shy.win[3]`: 勝ちました。……こんなこと、初めてです。
 
-### normal_shy.lose[]
+### standard_shy.lose[]
 
-- `CHALLENGE_LINES.normal_shy.lose[1]`: ……負けました。ごめんなさい。
-- `CHALLENGE_LINES.normal_shy.lose[2]`: 言い出したの、わたしなのに……すみません。
-- `CHALLENGE_LINES.normal_shy.lose[3]`: 顔、上げられないです。……ごめんなさい。
+- `CHALLENGE_LINES.standard_shy.lose[1]`: ……負けました。ごめんなさい。
+- `CHALLENGE_LINES.standard_shy.lose[2]`: 言い出したの、わたしなのに……すみません。
+- `CHALLENGE_LINES.standard_shy.lose[3]`: 顔、上げられないです。……ごめんなさい。
 
-### normal_emotional.petition[]
+### standard_emotional.petition[]
 
-- `CHALLENGE_LINES.normal_emotional.petition[1]`: 社長! あの人とやりたいんです、お願いします!
-- `CHALLENGE_LINES.normal_emotional.petition[2]`: もう我慢できないんです。あの人と、やらせてください。
-- `CHALLENGE_LINES.normal_emotional.petition[3]`: ずっと考えてました。……お願いします、どうしても!
+- `CHALLENGE_LINES.standard_emotional.petition[1]`: 社長! あの人とやりたいんです、お願いします!
+- `CHALLENGE_LINES.standard_emotional.petition[2]`: もう我慢できないんです。あの人と、やらせてください。
+- `CHALLENGE_LINES.standard_emotional.petition[3]`: ずっと考えてました。……お願いします、どうしても!
 
-### normal_emotional.sendoff[]
+### standard_emotional.sendoff[]
 
-- `CHALLENGE_LINES.normal_emotional.sendoff[1]`: ありがとうございます! 絶対、勝ってきます!
-- `CHALLENGE_LINES.normal_emotional.sendoff[2]`: うれしい……ありがとうございます。行ってきます!
-- `CHALLENGE_LINES.normal_emotional.sendoff[3]`: 泣きそうです。……ありがとうございます!
+- `CHALLENGE_LINES.standard_emotional.sendoff[1]`: ありがとうございます! 絶対、勝ってきます!
+- `CHALLENGE_LINES.standard_emotional.sendoff[2]`: うれしい……ありがとうございます。行ってきます!
+- `CHALLENGE_LINES.standard_emotional.sendoff[3]`: 泣きそうです。……ありがとうございます!
 
-### normal_emotional.win[]
+### standard_emotional.win[]
 
-- `CHALLENGE_LINES.normal_emotional.win[1]`: 勝ちました! 社長、勝ちましたよ!
-- `CHALLENGE_LINES.normal_emotional.win[2]`: やった……! 見ててくれましたか!
-- `CHALLENGE_LINES.normal_emotional.win[3]`: 勝てた……。うれしくて、声が震えてます。
+- `CHALLENGE_LINES.standard_emotional.win[1]`: 勝ちました! 社長、勝ちましたよ!
+- `CHALLENGE_LINES.standard_emotional.win[2]`: やった……! 見ててくれましたか!
+- `CHALLENGE_LINES.standard_emotional.win[3]`: 勝てた……。うれしくて、声が震えてます。
 
-### normal_emotional.lose[]
+### standard_emotional.lose[]
 
-- `CHALLENGE_LINES.normal_emotional.lose[1]`: 負けました……。ごめんなさい、悔しいです。
-- `CHALLENGE_LINES.normal_emotional.lose[2]`: くやしい……! ごめんなさい、涙が止まらなくて。
-- `CHALLENGE_LINES.normal_emotional.lose[3]`: 勝てなかった……。あんなに、お願いしたのに。
+- `CHALLENGE_LINES.standard_emotional.lose[1]`: 負けました……。ごめんなさい、悔しいです。
+- `CHALLENGE_LINES.standard_emotional.lose[2]`: くやしい……! ごめんなさい、涙が止まらなくて。
+- `CHALLENGE_LINES.standard_emotional.lose[3]`: 勝てなかった……。あんなに、お願いしたのに。
 
 ### composed_normal.petition[]
 
@@ -875,8 +875,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### polite_normal.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.draw[1]`: 決着つかず、ですか。……心残りです。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.draw[2]`: 引き分けですね。続きは、またの機会に。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.draw[3]`: 引き分けというのは、いちばん困りますね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.draw[2]`: 決着つかずですね。続きは、またの機会に。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.draw[3]`: 決着がつかないというのは、いちばん困りますね。
 
 ### polite_shy._accept[]
 
@@ -898,7 +898,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_shy.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_shy.draw[1]`: 引き分け……。よかったのか、悪かったのか。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_shy.draw[1]`: 決着つかず……。よかったのか、悪かったのか。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_shy.draw[2]`: 決着、つかなかったですね……。少し、ほっとしてます。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_shy.draw[3]`: あの……もう一度、やりますか。今度は、ちゃんと。
 
@@ -922,7 +922,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_easygoing.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_easygoing.draw[1]`: 引き分けですって。ちょうどいいじゃないですか。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_easygoing.draw[1]`: 決着つかずですって。ちょうどいいじゃないですか。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_easygoing.draw[2]`: 決まりませんでしたね。まあ、またそのうちに。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_easygoing.draw[3]`: お互い元気ですねえ。……少し、疲れました。
 
@@ -947,7 +947,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### polite_quiet.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_quiet.draw[1]`: ……決着は、つきませんでした。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_quiet.draw[2]`: 引き分けです。……いつか、続きを。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_quiet.draw[2]`: ……決まりませんでした。いつか、続きを。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_quiet.draw[3]`: ……終わりません。まだ。
 
 ### polite_bold._accept[]
@@ -971,176 +971,176 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### polite_bold.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold.draw[1]`: 決めきれませんでした。……不本意です。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold.draw[2]`: 引き分けは、望んでおりませんでした。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold.draw[2]`: こんな終わり方は、望んでおりませんでした。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold.draw[3]`: まだ足りませんね。またご指名ください。
 
-### normal_normal._accept[]
+### standard_normal._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal._accept[1]`: 受けて立ちます。正面から来てください。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal._accept[2]`: 名指しされて、引くわけにはいきません。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal._accept[3]`: わかりました。全力でいきます。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal._accept[1]`: 受けて立ちます。正面から来てください。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal._accept[2]`: 名指しされて、引くわけにはいきません。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal._accept[3]`: わかりました。全力でいきます。
 
-### normal_normal.win[]
+### standard_normal.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal.win[1]`: 受けて正解でした。いい試合だった。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal.win[2]`: 今日はわたしが上でしたね。強かったですよ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal.win[3]`: 勝ちました。いい相手でしたよ、あなた。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.win[1]`: 受けて正解でした。いい試合だった。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.win[2]`: 今日はわたしが上でしたね。強かったですよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.win[3]`: 勝ちました。いい相手でしたよ、あなた。
 
-### normal_normal.lose[]
+### standard_normal.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal.lose[1]`: 負けました。あなたのほうが上だった。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal.lose[2]`: 悔しい。……でも、受けたことに後悔はないです。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal.lose[3]`: 完敗。……この借りは返します。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.lose[1]`: 負けました。あなたのほうが上だった。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.lose[2]`: 悔しい。……でも、受けたことに後悔はないです。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.lose[3]`: 完敗。……この借りは返します。
 
-### normal_normal.draw[]
+### standard_normal.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal.draw[1]`: 決着つかず、か。すっきりしませんね。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal.draw[2]`: 引き分けですね。続きは、またいつか。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_normal.draw[3]`: 勝ててないし、負けてもいない。それだけです。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.draw[1]`: 決着つかず、か。すっきりしませんね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.draw[2]`: 決まらなかったですね。続きは、またいつか。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.draw[3]`: 勝ててないし、負けてもいない。それだけです。
 
-### normal_earnest._accept[]
+### standard_earnest._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest._accept[1]`: わたしを選んだ以上、真正面から受けます。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest._accept[2]`: その覚悟、無駄にはしません。必ず応えます。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest._accept[3]`: 逃げません。全部、受け止めます。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest._accept[1]`: わたしを選んだ以上、真正面から受けます。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest._accept[2]`: その覚悟、無駄にはしません。必ず応えます。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest._accept[3]`: 逃げません。全部、受け止めます。
 
-### normal_earnest.win[]
+### standard_earnest.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest.win[1]`: 受けた以上、負けられませんでした。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest.win[2]`: 勝ちました。……あの目は、忘れません。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest.win[3]`: 勝ちました。……重い一戦でした。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.win[1]`: 受けた以上、負けられませんでした。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.win[2]`: 勝ちました。……あの目は、忘れません。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.win[3]`: 勝ちました。……重い一戦でした。
 
-### normal_earnest.lose[]
+### standard_earnest.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest.lose[1]`: 受けておいて、この結果です。……情けない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest.lose[2]`: あなたが上でした。全部、わたしの責任です。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest.lose[3]`: 負けました。……この悔しさは、抱えていきます。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.lose[1]`: 受けておいて、この結果です。……情けない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.lose[2]`: あなたが上でした。全部、わたしの責任です。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.lose[3]`: 負けました。……この悔しさは、抱えていきます。
 
-### normal_earnest.draw[]
+### standard_earnest.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest.draw[1]`: 決着をつけられなかった。……それが一番悔しい。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest.draw[2]`: これで終わりにはできません。もう一度。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_earnest.draw[3]`: 宙ぶらりんのままです。……気持ちが収まりません。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.draw[1]`: 決着をつけられなかった。……それが一番悔しい。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.draw[2]`: これで終わりにはできません。もう一度。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.draw[3]`: 宙ぶらりんのままです。……気持ちが収まりません。
 
-### normal_bold._accept[]
+### standard_bold._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold._accept[1]`: 望むところ。よく言ってくれました。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold._accept[2]`: 待ってましたよ、そういうの。受けます。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold._accept[3]`: いいですね。全部まとめて受け止めます。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold._accept[1]`: 望むところ。よく言ってくれました。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold._accept[2]`: 待ってましたよ、そういうの。受けます。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold._accept[3]`: いいですね。全部まとめて受け止めます。
 
-### normal_bold.win[]
+### standard_bold.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold.win[1]`: ほら、言った通りでしょう。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold.win[2]`: 引く気なんて、最初からなかったので。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold.win[3]`: 勝ちました。……次、いつでもどうぞ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.win[1]`: ほら、言った通りでしょう。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.win[2]`: 引く気なんて、最初からなかったので。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.win[3]`: 勝ちました。……次、いつでもどうぞ。
 
-### normal_bold.lose[]
+### standard_bold.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold.lose[1]`: 持っていかれました。……大口叩いた分、痛い。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold.lose[2]`: あなたが上でした。認めます、今日は。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold.lose[3]`: 負けました。次はこうはいきませんから。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.lose[1]`: 持っていかれました。……大口叩いた分、痛い。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.lose[2]`: あなたが上でした。認めます、今日は。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.lose[3]`: 負けました。次はこうはいきませんから。
 
-### normal_bold.draw[]
+### standard_bold.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold.draw[1]`: 決めきれなかった。……つまらない終わり方だ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold.draw[2]`: 引き分け? そんなの求めてません。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_bold.draw[3]`: まだ足りない。もう一度、名前を呼んでください。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.draw[1]`: 決めきれなかった。……つまらない終わり方だ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.draw[2]`: 決着つかず? そんなの求めてません。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.draw[3]`: まだ足りない。もう一度、名前を呼んでください。
 
-### normal_easygoing._accept[]
+### standard_easygoing._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing._accept[1]`: わたしでいいの? いいよ、やろっか。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing._accept[2]`: ずいぶん熱心だね。まあ、受けるよ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing._accept[3]`: そんなに力まなくても、ちゃんと相手するって。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing._accept[1]`: わたしでいいの? いいよ、やろっか。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing._accept[2]`: ずいぶん熱心だね。まあ、受けるよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing._accept[3]`: そんなに力まなくても、ちゃんと相手するって。
 
-### normal_easygoing.win[]
+### standard_easygoing.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing.win[1]`: 勝っちゃった。……そんな顔しないでよ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing.win[2]`: 受けてよかったな。楽しかったよ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing.win[3]`: 案外あっさりだったね。次はもっと粘って。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.win[1]`: 勝っちゃった。……そんな顔しないでよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.win[2]`: 受けてよかったな。楽しかったよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.win[3]`: 案外あっさりだったね。次はもっと粘って。
 
-### normal_easygoing.lose[]
+### standard_easygoing.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing.lose[1]`: 負けちゃった。まあ、そういう日もあるよ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing.lose[2]`: あなたの勝ち。おめでとう。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing.lose[3]`: やられたなあ。……次はもうちょっと粘る。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.lose[1]`: 負けちゃった。まあ、そういう日もあるよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.lose[2]`: あなたの勝ち。おめでとう。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.lose[3]`: やられたなあ。……次はもうちょっと粘る。
 
-### normal_easygoing.draw[]
+### standard_easygoing.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing.draw[1]`: 引き分けだって。ちょうどいいんじゃない?
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing.draw[2]`: 決まらなかったね。まあ、またそのうち。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_easygoing.draw[3]`: お互い元気だねえ。ちょっと疲れた。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.draw[1]`: 決着つかずだって。ちょうどいいんじゃない?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.draw[2]`: 決まらなかったね。まあ、またそのうち。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.draw[3]`: お互い元気だねえ。ちょっと疲れた。
 
-### normal_quiet._accept[]
+### standard_quiet._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet._accept[1]`: ……受ける。それだけ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet._accept[2]`: わかった。言葉はいらない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet._accept[3]`: ……逃げない。来て。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet._accept[1]`: ……受ける。それだけ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet._accept[2]`: わかった。言葉はいらない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet._accept[3]`: ……逃げない。来て。
 
-### normal_quiet.win[]
+### standard_quiet.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet.win[1]`: ……勝った。以上。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet.win[2]`: 終わり。……強かった、あなた。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet.win[3]`: 勝ち。それだけ伝えておく。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet.win[1]`: ……勝った。以上。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet.win[2]`: 終わり。……強かった、あなた。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet.win[3]`: 勝ち。それだけ伝えておく。
 
-### normal_quiet.lose[]
+### standard_quiet.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet.lose[1]`: ……負けた。何も言えない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet.lose[2]`: あなたの勝ち。……失礼する。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet.lose[3]`: ……悔しい。それだけ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet.lose[1]`: ……負けた。何も言えない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet.lose[2]`: あなたの勝ち。……失礼する。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet.lose[3]`: ……悔しい。それだけ。
 
-### normal_quiet.draw[]
+### standard_quiet.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet.draw[1]`: ……つかなかった。決着は。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet.draw[2]`: 引き分け。……いつか、続きを。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_quiet.draw[3]`: ……まだ、終わってない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet.draw[1]`: ……つかなかった。決着は。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet.draw[2]`: ……決着つかず。いつか、続きを。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_quiet.draw[3]`: ……まだ、終わってない。
 
-### normal_shy._accept[]
+### standard_shy._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy._accept[1]`: え、わたし……? ……うん、逃げないよ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy._accept[2]`: 名指しされるなんて、思ってなかった。……でも、受ける。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy._accept[3]`: 自信、ないんだけど……。それでも、いいなら。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy._accept[1]`: え、わたし……? ……うん、逃げないよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy._accept[2]`: 名指しされるなんて、思ってなかった。……でも、受ける。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy._accept[3]`: 自信、ないんだけど……。それでも、いいなら。
 
-### normal_shy.win[]
+### standard_shy.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy.win[1]`: あ……勝っちゃった。ごめんなさい。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy.win[2]`: わたしが勝ったんだよね……。まだ、信じられない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy.win[3]`: 選んでくれたのに……こんな結果で、よかったのかな。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.win[1]`: あ……勝っちゃった。ごめんなさい。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.win[2]`: わたしが勝ったんだよね……。まだ、信じられない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.win[3]`: 選んでくれたのに……こんな結果で、よかったのかな。
 
-### normal_shy.lose[]
+### standard_shy.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy.lose[1]`: やっぱり、わたしじゃ……だめだったね。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy.lose[2]`: 強かった……。何も、できなかった。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy.lose[3]`: ……ごめんなさい。がっかり、させちゃったよね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.lose[1]`: やっぱり、わたしじゃ……だめだったね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.lose[2]`: 強かった……。何も、できなかった。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.lose[3]`: ……ごめんなさい。がっかり、させちゃったよね。
 
-### normal_shy.draw[]
+### standard_shy.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy.draw[1]`: 引き分け……。よかったのか、どうなのか。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy.draw[2]`: 決着、つかなかったね……。ちょっと、ほっとしてる。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_shy.draw[3]`: あの……もう一度、やる? 今度は、ちゃんと。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.draw[1]`: 決着つかず……。よかったのか、どうなのか。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.draw[2]`: 決着、つかなかったね……。ちょっと、ほっとしてる。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.draw[3]`: あの……もう一度、やる? 今度は、ちゃんと。
 
-### normal_emotional._accept[]
+### standard_emotional._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional._accept[1]`: 上等! そっちが名前を出したんだからね!
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional._accept[2]`: わたしを選んだんだ。……絶対、後悔させてやる。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional._accept[3]`: 言ったな? もう引っ込みつかないよ、お互い!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional._accept[1]`: 上等! そっちが名前を出したんだからね!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional._accept[2]`: わたしを選んだんだ。……絶対、後悔させてやる。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional._accept[3]`: 言ったな? もう引っ込みつかないよ、お互い!
 
-### normal_emotional.win[]
+### standard_emotional.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional.win[1]`: ほら見なさい! わたしを選んだのが間違い!
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional.win[2]`: 勝った……! ざまあみろって、言っていい?
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional.win[3]`: これで分かったでしょ! 二度と名前呼ばないで!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.win[1]`: ほら見なさい! わたしを選んだのが間違い!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.win[2]`: 勝った……! ざまあみろって、言っていい?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.win[3]`: これで分かったでしょ! 二度と名前呼ばないで!
 
-### normal_emotional.lose[]
+### standard_emotional.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional.lose[1]`: くっそ……! 認めない、絶対に認めないから!
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional.lose[2]`: 負けた……。悔しい、悔しいよ……!
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional.lose[3]`: なんで……! こんなの、納得できるわけない!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.lose[1]`: くっそ……! 認めない、絶対に認めないから!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.lose[2]`: 負けた……。悔しい、悔しいよ……!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.lose[3]`: なんで……! こんなの、納得できるわけない!
 
-### normal_emotional.draw[]
+### standard_emotional.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional.draw[1]`: 決着つかずって何!? 中途半端すぎるでしょ!
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional.draw[2]`: 終わってない! こんなので終わらせない!
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.normal_emotional.draw[3]`: もう一回! いますぐもう一回やろうよ!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.draw[1]`: 決着つかずって何!? 中途半端すぎるでしょ!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.draw[2]`: 終わってない! こんなので終わらせない!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.draw[3]`: もう一回! いますぐもう一回やろうよ!
 
 ### composed_normal._accept[]
 
@@ -1163,7 +1163,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### composed_normal.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_normal.draw[1]`: ……決まらなかったか。まあ、悪くない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_normal.draw[2]`: 引き分け。……続きは、そのうちにね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_normal.draw[2]`: ……決着つかず。続きは、そのうちにね。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_normal.draw[3]`: ……お互い、まだ何か残してるってことだ。
 
 ### composed_emotional._accept[]
@@ -1211,7 +1211,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### composed_earnest.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_earnest.draw[1]`: ……決着をつけられなかった。それが心残りだ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_earnest.draw[2]`: 引き分けでは、答えたことにならない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_earnest.draw[2]`: これでは、答えたことにならない。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_earnest.draw[3]`: ……まだ途中だ。必ず、続きをやろう。
 
 ### composed_bold._accept[]
@@ -1235,7 +1235,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### composed_bold.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.draw[1]`: ……決めきれなかったか。つまらないね。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.draw[2]`: 引き分けは、わたしの趣味じゃない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.draw[2]`: こういう終わり方は、わたしの趣味じゃない。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.draw[3]`: ……まだ足りない。また名前を呼びなよ。
 
 ### composed_easygoing._accept[]
@@ -1258,7 +1258,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_easygoing.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_easygoing.draw[1]`: …引き分けか。まあ、そういう日もある。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_easygoing.draw[1]`: …決着つかずか。まあ、そういう日もある。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_easygoing.draw[2]`: 決まらなかったね。…また今度でいいよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_easygoing.draw[3]`: お互い、まだ余ってるね。…楽しみだ。
 
@@ -1330,7 +1330,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_easygoing.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.draw[1]`: 引き分けかぁ。…ま、いいんじゃない?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.draw[1]`: 決着つかずかぁ。…ま、いいんじゃない?
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.draw[2]`: 決まらなかったわね。お茶でも飲む?
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.draw[3]`: もう、しつこいんだから。ふふ。
 
@@ -1380,7 +1380,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.draw[1]`: 決めさせてくれないの? 生意気ね。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.draw[2]`: まだ足りないわ。…ぜんぜん、足りない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.draw[3]`: 引き分け? 私は納得してないわよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.draw[3]`: 決着つかず? 私は納得してないわよ。
 
 ### seductive_quiet._accept[]
 
@@ -1452,7 +1452,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_normal.draw[1]`: 決着つかず、ですか。心残りです。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_normal.draw[2]`: またお相手願います。今度こそ決めたい。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_normal.draw[3]`: 引き分け……納得はしておりません。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_normal.draw[3]`: このままでは、納得しておりません。
 
 ### ojousama_easygoing._accept[]
 
@@ -1474,7 +1474,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama_easygoing.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_easygoing.draw[1]`: 引き分けですか。それも悪くありません。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_easygoing.draw[1]`: 決着つかずですか。それも悪くありません。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_easygoing.draw[2]`: 決まりませんでしたね。またの機会に。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_easygoing.draw[3]`: お互い、まだ元気そうです。ふふ。
 
@@ -1523,7 +1523,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### ojousama_bold.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold.draw[1]`: 決めさせないとは、生意気なこと。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold.draw[2]`: 引き分けなど、わたくしには不本意です。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold.draw[2]`: こうした結末など、わたくしには不本意です。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold.draw[3]`: まだ終わっていません。次で片をつけます。
 
 ### delinquent_bold._accept[]
@@ -1548,7 +1548,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold.draw[1]`: 決まらねぇとか、一番むかつくんだよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold.draw[2]`: はぁ? まだ全然終わってねぇだろ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold.draw[3]`: 引き分け? 冗談。続きやるぞ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold.draw[3]`: 決着つかず? 冗談。続きやるぞ。
 
 ### delinquent_normal._accept[]
 
@@ -1570,7 +1570,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent_normal.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_normal.draw[1]`: 引き分けか。すっきりしねぇな。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_normal.draw[1]`: 決まらなかったか。すっきりしねぇな。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_normal.draw[2]`: 決着つかずって、一番モヤるやつだ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_normal.draw[3]`: まあ、悪い試合じゃなかったっす。
 
@@ -1594,7 +1594,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent_easygoing.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing.draw[1]`: 引き分けか。ちょうどいいんじゃね?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing.draw[1]`: 決着つかずか。ちょうどいいんじゃね?
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing.draw[2]`: 決まんなかったな。腹減った。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing.draw[3]`: まだやんの? あたしはもういいよ。
 
@@ -1642,7 +1642,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### cool_quiet.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.cool_quiet.draw[1]`: ……引き分け。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.cool_quiet.draw[1]`: ……決着つかず。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.cool_quiet.draw[2]`: ……また。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.cool_quiet.draw[3]`: ……足りない。
 
@@ -1682,7 +1682,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHALLENGE_REQUEST_NO_LINES.cool[1]`: ……分かった。
 - `CHALLENGE_REQUEST_NO_LINES.cool[2]`: ……そう。
 
-### normal[]
+### standard[]
 
-- `CHALLENGE_REQUEST_NO_LINES.normal[1]`: ……わかりました。タイミングじゃないってことですね。
-- `CHALLENGE_REQUEST_NO_LINES.normal[2]`: 社長の判断なら従います。でも、忘れたわけじゃないので。
+- `CHALLENGE_REQUEST_NO_LINES.standard[1]`: ……わかりました。タイミングじゃないってことですね。
+- `CHALLENGE_REQUEST_NO_LINES.standard[2]`: 社長の判断なら従います。でも、忘れたわけじゃないので。

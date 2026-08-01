@@ -3,8 +3,8 @@
 `node tools/extract-dialogue.js` により `src/*.js` から自動生成。
 セリフを書き直したら、このツールを再実行すれば内容が更新される(下記「再実行方法」参照)。
 
-- 対象テーブル数: 192
-- 抽出できたセリフ総本数: **16682**
+- 対象テーブル数: 191
+- 抽出できたセリフ総本数: **19864**
 
 ## ID の読み方
 
@@ -15,26 +15,26 @@
 
 | # | カテゴリ | ファイル | テーブル数 | 本数 |
 |---|---|---|---|---|
-| 01 | 試合本編・勝利演出・ダメージセリフ | [01-victory-and-battle.md](./01-victory-and-battle.md) | 11 | 1592 |
+| 01 | 試合本編・勝利演出・ダメージセリフ | [01-victory-and-battle.md](./01-victory-and-battle.md) | 10 | 1587 |
 | 02 | タッグマッチ | [02-tag-match.md](./02-tag-match.md) | 12 | 814 |
-| 03 | 因縁・絆(Bond/Rivalry)イベント | [03-rivalry-and-relationship.md](./03-rivalry-and-relationship.md) | 9 | 769 |
+| 03 | 因縁・絆(Bond/Rivalry)イベント | [03-rivalry-and-relationship.md](./03-rivalry-and-relationship.md) | 10 | 825 |
 | 04 | 挑戦試合(直訴・遠征) | [04-challenge-request.md](./04-challenge-request.md) | 3 | 830 |
-| 05 | 引退・引き抜き・引き留め | [05-retirement-and-poach.md](./05-retirement-and-poach.md) | 7 | 777 |
-| 06 | 契約交渉 | [06-negotiation-and-contract.md](./06-negotiation-and-contract.md) | 3 | 480 |
-| 07 | 派閥イベント | [07-faction.md](./07-faction.md) | 34 | 2508 |
-| 08 | 成長・スランプ・モチベーション | [08-growth-and-emotion.md](./08-growth-and-emotion.md) | 7 | 501 |
-| 09 | 表彰式・記録・ドーム到達 | [09-award-and-milestone.md](./09-award-and-milestone.md) | 6 | 698 |
-| 10 | ニュース・新聞・黒田記者コラム | [10-news-and-newspaper.md](./10-news-and-newspaper.md) | 25 | 1709 |
-| 11 | 選択イベント・大型イベント・社長室 | [11-choice-and-large-event.md](./11-choice-and-large-event.md) | 8 | 1036 |
-| 12 | 選手経歴イベント | [12-career-event.md](./12-career-event.md) | 15 | 978 |
-| 13 | Glimpse Cascade(興行後の一言) | [13-glimpse-cascade.md](./13-glimpse-cascade.md) | 3 | 674 |
+| 05 | 引退・引き抜き・引き留め | [05-retirement-and-poach.md](./05-retirement-and-poach.md) | 7 | 1131 |
+| 06 | 契約交渉 | [06-negotiation-and-contract.md](./06-negotiation-and-contract.md) | 3 | 870 |
+| 07 | 派閥イベント | [07-faction.md](./07-faction.md) | 28 | 2626 |
+| 08 | 成長・スランプ・モチベーション | [08-growth-and-emotion.md](./08-growth-and-emotion.md) | 8 | 576 |
+| 09 | 表彰式・記録・ドーム到達 | [09-award-and-milestone.md](./09-award-and-milestone.md) | 6 | 686 |
+| 10 | ニュース・新聞・黒田記者コラム | [10-news-and-newspaper.md](./10-news-and-newspaper.md) | 23 | 1843 |
+| 11 | 選択イベント・大型イベント・社長室 | [11-choice-and-large-event.md](./11-choice-and-large-event.md) | 8 | 1630 |
+| 12 | 選手経歴イベント | [12-career-event.md](./12-career-event.md) | 15 | 1731 |
+| 13 | Glimpse Cascade(興行後の一言) | [13-glimpse-cascade.md](./13-glimpse-cascade.md) | 3 | 1194 |
 | 14 | PPV・対抗戦・天頂戦・トーナメント | [14-ppv-and-war.md](./14-ppv-and-war.md) | 12 | 1520 |
-| 15 | コーチ | [15-coach.md](./15-coach.md) | 12 | 562 |
+| 15 | コーチ | [15-coach.md](./15-coach.md) | 13 | 631 |
 | 16 | キャラクター人物設定・年代記 | [16-character-and-chronicle.md](./16-character-and-chronicle.md) | 8 | 302 |
 | 17 | 関係性フラグ | [17-relationship-flags.md](./17-relationship-flags.md) | 2 | 473 |
 | 18 | 経営危機・エンディング | [18-crisis-and-ending.md](./18-crisis-and-ending.md) | 6 | 258 |
-| 19 | ドラフト・スカウト | [19-draft-and-scout.md](./19-draft-and-scout.md) | 3 | 51 |
-| 20 | その他雰囲気テキスト | [20-misc-atmosphere.md](./20-misc-atmosphere.md) | 6 | 150 |
+| 19 | ドラフト・スカウト | [19-draft-and-scout.md](./19-draft-and-scout.md) | 7 | 172 |
+| 20 | その他雰囲気テキスト | [20-misc-atmosphere.md](./20-misc-atmosphere.md) | 7 | 165 |
 
 ## テーブル別内訳
 
@@ -48,9 +48,8 @@
 | `CUTIN_LINES` | `src/battle-engine-main.js` | 01-victory-and-battle.md | 440 |
 | `FINISH_SUSPENSE` | `src/battle-engine-main.js` | 01-victory-and-battle.md | 17 |
 | `FAN_EXPECT_REACTIONS` | `src/data.js` | 01-victory-and-battle.md | 89 |
-| `POST_MATCH_FLAVOR_LINES` | `src/data.js` | 01-victory-and-battle.md | 83 |
+| `POST_MATCH_FLAVOR_LINES` | `src/data.js` | 01-victory-and-battle.md | 86 |
 | `FIRST_MEET_LINES` | `src/data.js` | 01-victory-and-battle.md | 42 |
-| `BESTMATCH_FLAVOR` | `src/data.js` | 01-victory-and-battle.md | 8 |
 | `HOT_TAG_LINES` | `src/tag-battle-lines.js` | 02-tag-match.md | 147 |
 | `DOUBLE_TEAM_LINES` | `src/tag-battle-lines.js` | 02-tag-match.md | 147 |
 | `CUTIN_SAVE_LINES` | `src/tag-battle-lines.js` | 02-tag-match.md | 147 |
@@ -69,38 +68,33 @@
 | `RIVALRY_RESOLUTION_LINES` | `src/data.js` | 03-rivalry-and-relationship.md | 128 |
 | `GOODRIVAL_RESOLUTION_LINES` | `src/data.js` | 03-rivalry-and-relationship.md | 72 |
 | `BITTER_RESOLUTION_LINES` | `src/data.js` | 03-rivalry-and-relationship.md | 73 |
+| `BITTER_PREMATCH_LINES` | `src/data.js` | 03-rivalry-and-relationship.md | 56 |
 | `RIVALRY_MATCH_REACTION` | `src/data.js` | 03-rivalry-and-relationship.md | 67 |
 | `UPSET_RIVALRY_LINES` | `src/data.js` | 03-rivalry-and-relationship.md | 71 |
 | `WEEKLY_STORY_TICKER` | `src/data.js` | 03-rivalry-and-relationship.md | 65 |
 | `CHALLENGE_LINES` | `src/data.js` | 04-challenge-request.md | 408 |
 | `CHALLENGE_REQUEST_OPPONENT_REACTIONS` | `src/data.js` | 04-challenge-request.md | 408 |
 | `CHALLENGE_REQUEST_NO_LINES` | `src/data.js` | 04-challenge-request.md | 14 |
-| `RETIREMENT_LINES` | `src/data.js` | 05-retirement-and-poach.md | 246 |
+| `RETIREMENT_LINES` | `src/data.js` | 05-retirement-and-poach.md | 414 |
 | `RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE` | `src/data.js` | 05-retirement-and-poach.md | 17 |
-| `POACH_REACTION_DIALOGUES` | `src/data.js` | 05-retirement-and-poach.md | 75 |
+| `POACH_REACTION_DIALOGUES` | `src/data.js` | 05-retirement-and-poach.md | 261 |
 | `RETIRE_ACCEPT_LINES` | `src/data.js` | 05-retirement-and-poach.md | 156 |
 | `RETIRE_REFUSE_LINES` | `src/data.js` | 05-retirement-and-poach.md | 126 |
 | `RETAIN_LINES` | `src/data.js` | 05-retirement-and-poach.md | 123 |
 | `VOLUNTARY_STAY_LINES` | `src/data.js` | 05-retirement-and-poach.md | 34 |
 | `NEGOTIATE_LINES` | `src/data.js` | 06-negotiation-and-contract.md | 130 |
-| `CONTRACT_NEGOTIATION_LINES` | `src/data.js` | 06-negotiation-and-contract.md | 329 |
+| `CONTRACT_NEGOTIATION_LINES` | `src/data.js` | 06-negotiation-and-contract.md | 719 |
 | `RELEASE_INTERVIEW_LINES` | `src/data.js` | 06-negotiation-and-contract.md | 21 |
 | `FACTION_TRANSITION_LINES` | `src/data.js` | 07-faction.md | 84 |
 | `FACTION_F02_LINES` | `src/data.js` | 07-faction.md | 84 |
 | `F07_LINES` | `src/data.js` | 07-faction.md | 1595 |
-| `COMMON1_LINES` | `src/data.js` | 07-faction.md | 50 |
+| `COMMON1_LINES` | `src/data.js` | 07-faction.md | 98 |
 | `COMMON3_LINES` | `src/data.js` | 07-faction.md | 57 |
-| `COMMON4_LINES` | `src/data.js` | 07-faction.md | 39 |
-| `COMMON5_LINES` | `src/data.js` | 07-faction.md | 52 |
-| `COMMON7_LINES` | `src/data.js` | 07-faction.md | 30 |
-| `FACTION_F01_LEADER_LINES` | `src/data-faction-dialogue.js` | 07-faction.md | 21 |
-| `FACTION_F01_FOLLOWER_LINES` | `src/data-faction-dialogue.js` | 07-faction.md | 11 |
-| `FACTION_F02_LEADER_LINES` | `src/data-faction-dialogue.js` | 07-faction.md | 12 |
-| `FACTION_F03_SURVIVOR_LINES` | `src/data-faction-dialogue.js` | 07-faction.md | 15 |
-| `FACTION_F04_TARGET_LINES` | `src/data-faction-dialogue.js` | 07-faction.md | 24 |
+| `COMMON4_LINES` | `src/data.js` | 07-faction.md | 117 |
+| `COMMON5_LINES` | `src/data.js` | 07-faction.md | 58 |
+| `COMMON7_LINES` | `src/data.js` | 07-faction.md | 114 |
 | `FACTION_F05_DISSIDENT_LINES` | `src/data-faction-dialogue.js` | 07-faction.md | 20 |
 | `FACTION_F06_AMBIENT_LINES` | `src/data-faction-dialogue.js` | 07-faction.md | 15 |
-| `FACTION_F07_LEADER_LINES` | `src/data-faction-dialogue.js` | 07-faction.md | 15 |
 | `FACTION_F08_LEADER_LINES` | `src/data-faction-dialogue.js` | 07-faction.md | 15 |
 | `FACTION_F08_PRE_MATCH_LINES_A` | `src/data-faction-dialogue.js` | 07-faction.md | 42 |
 | `FACTION_F08_PRE_MATCH_LINES_B` | `src/data-faction-dialogue.js` | 07-faction.md | 33 |
@@ -125,22 +119,21 @@
 | `SLUMP_START_LINES` | `src/data.js` | 08-growth-and-emotion.md | 129 |
 | `SLUMP_END_LINES` | `src/data.js` | 08-growth-and-emotion.md | 37 |
 | `MOTIVATION_LOSS_LINES` | `src/data.js` | 08-growth-and-emotion.md | 38 |
+| `HEAT_STATE_SELF_LINES` | `src/data.js` | 08-growth-and-emotion.md | 75 |
 | `MOTIVATION_RECOVERY_LINES` | `src/data.js` | 08-growth-and-emotion.md | 36 |
 | `AWARD_LINES` | `src/data.js` | 09-award-and-milestone.md | 232 |
 | `MILESTONE_EVENTS` | `src/data.js` | 09-award-and-milestone.md | 51 |
 | `DOME_FIRSTSHOW_LINES` | `src/data.js` | 09-award-and-milestone.md | 146 |
 | `DOME_SELLOUT_LINES` | `src/data.js` | 09-award-and-milestone.md | 146 |
 | `Engine.awards._EPITHET_TEMPLATES` | `src/management.js` | 09-award-and-milestone.md | 111 |
-| `CREDITS` | `src/data.js` | 09-award-and-milestone.md | 12 |
-| `AI_BREAKTHROUGH_NEWS` | `src/data.js` | 10-news-and-newspaper.md | 6 |
-| `AI_SLUMP_NEWS` | `src/data.js` | 10-news-and-newspaper.md | 4 |
-| `AI_MOTIVATION_LOSS_NEWS` | `src/data.js` | 10-news-and-newspaper.md | 4 |
+| `CREDITS` | `src/data.js` | 09-award-and-milestone.md | 0 |
 | `NEWS_TICKER_TEMPLATES` | `src/data.js` | 10-news-and-newspaper.md | 75 |
-| `NEWS_HEADLINE_TEMPLATES` | `src/data.js` | 10-news-and-newspaper.md | 262 |
+| `NEWS_HEADLINE_TEMPLATES` | `src/data.js` | 10-news-and-newspaper.md | 284 |
 | `BIG_NEWS_LEAD_LINES` | `src/data.js` | 10-news-and-newspaper.md | 10 |
+| `SEASON_OPENING_NEWS_LEAD_LINES` | `src/data.js` | 10-news-and-newspaper.md | 3 |
 | `SEASON_REVIEW_LINES` | `src/data.js` | 10-news-and-newspaper.md | 61 |
 | `NOTIF_EVENT_TEXTS` | `src/data.js` | 10-news-and-newspaper.md | 102 |
-| `NOTIF_DIALOGUES` | `src/data.js` | 10-news-and-newspaper.md | 181 |
+| `NOTIF_DIALOGUES` | `src/data.js` | 10-news-and-newspaper.md | 304 |
 | `SNAPSHOT_TEXTS` | `src/data.js` | 10-news-and-newspaper.md | 184 |
 | `Engine.flavor.MAGAZINE_HEADLINES` | `src/management.js` | 10-news-and-newspaper.md | 6 |
 | `Engine.flavor.TV_HEADLINES` | `src/management.js` | 10-news-and-newspaper.md | 6 |
@@ -157,30 +150,30 @@
 | `FAN_OPINIONS` | `src/kuroda-text.js` | 10-news-and-newspaper.md | 148 |
 | `NEWSPAPER_DIGEST_COMMENTS` | `src/kuroda-text.js` | 10-news-and-newspaper.md | 61 |
 | `NP_KURODA_BYLINE` | `src/ui-render.js` | 10-news-and-newspaper.md | 5 |
-| `DECISION_DOCS` | `src/data.js` | 11-choice-and-large-event.md | 63 |
+| `DECISION_DOCS` | `src/data.js` | 11-choice-and-large-event.md | 69 |
 | `BONUS_PROPOSAL_MEMOS` | `src/data.js` | 11-choice-and-large-event.md | 4 |
 | `CAMP_FLAVOR_TEXTS` | `src/data.js` | 11-choice-and-large-event.md | 12 |
-| `CARE_REACTION_DIALOGUES` | `src/data.js` | 11-choice-and-large-event.md | 297 |
-| `CHOICE_EVENT_DIALOGUES` | `src/data.js` | 11-choice-and-large-event.md | 283 |
+| `CARE_REACTION_DIALOGUES` | `src/data.js` | 11-choice-and-large-event.md | 368 |
+| `CHOICE_EVENT_DIALOGUES` | `src/data.js` | 11-choice-and-large-event.md | 603 |
 | `CHOICE_EVENT_RESULT_DIALOGUES` | `src/data.js` | 11-choice-and-large-event.md | 19 |
 | `LARGE_EVENT_TEXTS` | `src/data.js` | 11-choice-and-large-event.md | 86 |
-| `LARGE_EVENT_DIALOGUES` | `src/data.js` | 11-choice-and-large-event.md | 272 |
+| `LARGE_EVENT_DIALOGUES` | `src/data.js` | 11-choice-and-large-event.md | 469 |
 | `EVENT_DRAFT_JOIN_LINES` | `src/data.js` | 12-career-event.md | 79 |
-| `EVENT_DRAFT_INTEREST_LINES` | `src/data.js` | 12-career-event.md | 31 |
+| `EVENT_DRAFT_INTEREST_LINES` | `src/data.js` | 12-career-event.md | 61 |
 | `EVENT_INJURY_LINES` | `src/data.js` | 12-career-event.md | 76 |
-| `EVENT_TITLE_WIN_LINES` | `src/data.js` | 12-career-event.md | 32 |
-| `EVENT_TITLE_DEFENSE_LINES` | `src/data.js` | 12-career-event.md | 31 |
-| `EVENT_TITLE_CHALLENGE_LOSS_LINES` | `src/data.js` | 12-career-event.md | 31 |
-| `EVENT_TITLE_LOSS_LINES` | `src/data.js` | 12-career-event.md | 31 |
+| `EVENT_TITLE_WIN_LINES` | `src/data.js` | 12-career-event.md | 62 |
+| `EVENT_TITLE_DEFENSE_LINES` | `src/data.js` | 12-career-event.md | 61 |
+| `EVENT_TITLE_CHALLENGE_LOSS_LINES` | `src/data.js` | 12-career-event.md | 61 |
+| `EVENT_TITLE_LOSS_LINES` | `src/data.js` | 12-career-event.md | 61 |
 | `EVENT_RELEASE_LINES` | `src/data.js` | 12-career-event.md | 76 |
-| `EVENT_FA_SIGNING_LINES` | `src/data.js` | 12-career-event.md | 31 |
+| `EVENT_FA_SIGNING_LINES` | `src/data.js` | 12-career-event.md | 61 |
 | `EVENT_FA_SIGNING_GENERIC_LINES` | `src/data.js` | 12-career-event.md | 3 |
-| `EVENT_FA_WELCOME_LINES` | `src/data.js` | 12-career-event.md | 31 |
+| `EVENT_FA_WELCOME_LINES` | `src/data.js` | 12-career-event.md | 61 |
 | `EVENT_FA_WELCOME_GENERIC_LINES` | `src/data.js` | 12-career-event.md | 3 |
-| `EVENT_RENTAL_GREETING_LINES` | `src/data.js` | 12-career-event.md | 31 |
+| `EVENT_RENTAL_GREETING_LINES` | `src/data.js` | 12-career-event.md | 61 |
 | `EVENT_RENTAL_GREETING_GENERIC_LINES` | `src/data.js` | 12-career-event.md | 3 |
-| `EVENT_LINES_BY_KEY` | `src/data.js` | 12-career-event.md | 489 |
-| `GLIMPSE_A_LINES` | `src/data.js` | 13-glimpse-cascade.md | 328 |
+| `EVENT_LINES_BY_KEY` | `src/data.js` | 12-career-event.md | 1002 |
+| `GLIMPSE_A_LINES` | `src/data.js` | 13-glimpse-cascade.md | 848 |
 | `GLIMPSE_HOTSTREAK_END_LINES` | `src/data.js` | 13-glimpse-cascade.md | 41 |
 | `GLIMPSE_B_LINES` | `src/data.js` | 13-glimpse-cascade.md | 305 |
 | `PPV_SUMMIT_VICTORY_LINES` | `src/data.js` | 14-ppv-and-war.md | 47 |
@@ -199,8 +192,9 @@
 | `FIGHTER_INVITE_GRAD_LINES` | `src/coach-lines.js` | 15-coach.md | 7 |
 | `FIGHTER_INVITE_GRAD_NORMAL_LINES` | `src/coach-lines.js` | 15-coach.md | 2 |
 | `INVITE_AWAKENING_LINES` | `src/coach-lines.js` | 15-coach.md | 2 |
-| `COACH_VOICE_REPORT_LINES` | `src/coach-lines.js` | 15-coach.md | 136 |
+| `COACH_VOICE_REPORT_LINES` | `src/coach-lines.js` | 15-coach.md | 184 |
 | `COACH_VOICE_RETIRE_LINES` | `src/coach-lines.js` | 15-coach.md | 72 |
+| `HEAT_STATE_COACH_LINES` | `src/data.js` | 15-coach.md | 21 |
 | `COACH_VOICE_HIRE_LINES` | `src/coach-lines.js` | 15-coach.md | 16 |
 | `COACH_VOICE_FIRE_LINES` | `src/coach-lines.js` | 15-coach.md | 8 |
 | `COACH_VOICE_PRAISE_LINES` | `src/coach-lines.js` | 15-coach.md | 16 |
@@ -226,7 +220,12 @@
 | `Engine.draftNegotiation.NARRATION` | `src/draft-negotiation.js` | 19-draft-and-scout.md | 40 |
 | `Engine.scout.TIERS` | `src/management.js` | 19-draft-and-scout.md | 5 |
 | `Engine.draft.EVAL_TIERS` | `src/management.js` | 19-draft-and-scout.md | 6 |
+| `SCOUT_GREETING_LINES` | `src/data.js` | 19-draft-and-scout.md | 58 |
+| `SCOUT_GREETING_GENERIC_LINES` | `src/data.js` | 19-draft-and-scout.md | 3 |
+| `FA_GREETING_LINES` | `src/data.js` | 19-draft-and-scout.md | 57 |
+| `FA_GREETING_GENERIC_LINES` | `src/data.js` | 19-draft-and-scout.md | 3 |
 | `TEAM_SPIRIT_TEXTS` | `src/data.js` | 20-misc-atmosphere.md | 8 |
+| `FAREWELL_KIND_TEXT` | `src/data.js` | 20-misc-atmosphere.md | 15 |
 | `PRE_WINDOW_TEXTS` | `src/data.js` | 20-misc-atmosphere.md | 9 |
 | `LOCKER_AIR_TEXTS` | `src/data.js` | 20-misc-atmosphere.md | 14 |
 | `ATMOSPHERE_TEXTS` | `src/data.js` | 20-misc-atmosphere.md | 18 |
@@ -285,8 +284,8 @@ node tools/extract-dialogue.js
 | `キャラタイプ別/` | 実在する archetype×personality の組(ALL_CHARS集計で34組)ごとに1ファイル。カテゴリ横断で全セリフを収録し、1枚目シートに在籍キャラ一覧を掲載。`_該当者なし.xlsx` は現在キャラのいない組み合わせの予備セリフ |
 | `キャラ個人別/` | `VICTORY_LINES` / `CHAR_PROFILES` などキャラID鍵のテーブル(キャラ名列つき) |
 | `ナレーション・記事/` | 話者のいないテキスト(新聞見出し・通知・黒田記者コラム・年代記など) |
-| `コーチ/` | コーチ関連(選手とは別人格系統) |
-| `その他セリフ/` | 話者はいるが archetype×personality 以外の軸で分岐するもの(派閥イベント・Glimpse Cascade など) |
+| `コーチ/` | コーチ関連(選手とは別人格系統)。1ファイルに統合済み |
+| `その他セリフ/` | 話者はいるが archetype×personality 以外の軸で分岐するもの。`派閥` / `関係性フラグ` / `その他` の3ファイルに統合済み(どの分類かは「カテゴリ」列で絞る) |
 | `_キャラ対応表.xlsx` | どの archetype×personality に誰がいるかの一覧(マトリクス表つき) |
 
 行の割り振りは「テーブル単位」ではなく「セリフ1本単位」で行っている: detectMeta が archetype+personality を両方解決でき、かつその組が実在キャラに存在するなら `キャラタイプ別/`、それ以外は由来テーブルごとに割り当てたホームフォルダへ。
@@ -311,7 +310,7 @@ node tools/dialogue-workbook.js apply
 
 ### 列構成
 
-`キャラタイプ別/` は archetype/personality 列の代わりに「カテゴリ」列(場面)を持つ。`キャラ個人別/` は「キャラ名」列を追加で持つ。それ以外(`ナレーション・記事/` `コーチ/` `その他セリフ/`)は以下の標準列。
+`キャラタイプ別/` は archetype/personality 列の代わりに「カテゴリ」列(場面)を持つ。`キャラ個人別/` は「キャラ名」列を追加で持つ。それ以外(`ナレーション・記事/` `コーチ/` `その他セリフ/`)は以下の標準列(2026-08-01 の統合で「カテゴリ」列を追加)。
 
 | 列 | 内容 |
 |---|---|

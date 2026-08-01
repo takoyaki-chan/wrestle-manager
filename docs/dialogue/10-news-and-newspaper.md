@@ -2,41 +2,6 @@
 
 docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。手直しはこのファイルではなく `src/*.js` 側の該当テーブルに対して行い、再抽出すること。
 
-## `AI_BREAKTHROUGH_NEWS`
-
-- 出典: `src/data.js`
-- コード内コメント: §9.4 AI成長イベント業界ニューステンプレート（ブレークスルー）
-- 本数: 6
-
-- `AI_BREAKTHROUGH_NEWS[1]`: 📰 週刊女子プロレス — 「{org}の{name}、覚醒！ {stat}が急成長」
-- `AI_BREAKTHROUGH_NEWS[2]`: 📰 月刊プロレスマガジン — 「衝撃！ {name}のブレークスルーに業界騒然」
-- `AI_BREAKTHROUGH_NEWS[3]`: 📰 スポーツ報知 — 「{org}の{name}、別人のような成長を見せる」
-- `AI_BREAKTHROUGH_NEWS[4]`: 📰 プロレス通信 — 「{name}に転機。このまま上位へ食い込むか」
-- `AI_BREAKTHROUGH_NEWS[5]`: 📰 格闘技WEEKLY — 「{org}の新星{name}、急激な進化で注目を集める」
-- `AI_BREAKTHROUGH_NEWS[6]`: 📰 プロレス新聞 — 「{org}・{name}が急成長。ライバル団体に激震」
-
-## `AI_SLUMP_NEWS`
-
-- 出典: `src/data.js`
-- コード内コメント: §9.4 AI成長イベント業界ニュース（スランプ）
-- 本数: 4
-
-- `AI_SLUMP_NEWS[1]`: 📰 週刊女子プロレス — 「{org}の{name}、不調が深刻化。今シーズンは精彩を欠く」
-- `AI_SLUMP_NEWS[2]`: 📰 月刊プロレスマガジン — 「{name}にスランプの影。{org}に暗雲」
-- `AI_SLUMP_NEWS[3]`: 📰 スポーツ報知 — 「{name}の低迷が続く。{org}の影響は？」
-- `AI_SLUMP_NEWS[4]`: 📰 プロレス通信 — 「波乱のシーズン。{org}の{name}が精彩を欠く」
-
-## `AI_MOTIVATION_LOSS_NEWS`
-
-- 出典: `src/data.js`
-- コード内コメント: §9.4 AI成長イベント業界ニュース（モチベ喪失）
-- 本数: 4
-
-- `AI_MOTIVATION_LOSS_NEWS[1]`: 📰 週刊女子プロレス — 「{org}の{name}、モチベーション喪失か。練習にも姿を見せず」
-- `AI_MOTIVATION_LOSS_NEWS[2]`: 📰 スポーツ報知 — 「{name}の引退危機？ {org}関係者が明かす深刻な状況」
-- `AI_MOTIVATION_LOSS_NEWS[3]`: 📰 月刊プロレスマガジン — 「{name}の去就に注目。{org}の今後は」
-- `AI_MOTIVATION_LOSS_NEWS[4]`: 📰 格闘技WEEKLY — 「まさかの失速。{org}の{name}に何が？」
-
 ## `NEWS_TICKER_TEMPLATES`
 
 - 出典: `src/data.js`
@@ -167,7 +132,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - 出典: `src/data.js`
 - コード内コメント: §6.2 新聞パネル用テンプレート（イベント種別ごとに headline + body ペア、各3+パターン）
-- 本数: 262
+- 本数: 284
 
 ### tenchosenAnnounce[].headline
 
@@ -188,6 +153,26 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `NEWS_HEADLINE_TEMPLATES.tenchosenResult[1].body`: 第{season}シーズン第48週の「天頂戦」は、{championName}（{championOrg}）が決勝で{runnerUpName}（{runnerUpOrg}）を下して優勝した。決勝の試合評価は{mq}点。
 - `NEWS_HEADLINE_TEMPLATES.tenchosenResult[2].body`: 全国女子プロレス最強王者決定戦「天頂戦」は第48週に全15試合を実施。決勝で{runnerUpName}（{runnerUpOrg}）に勝利した{championName}（{championOrg}）が優勝者となった。決勝の試合評価は{mq}点。
+
+### tenchosenSemiFinal[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.tenchosenSemiFinal[1].headline`: 「天頂戦」準決勝 — 決勝への椅子は二つ
+- `NEWS_HEADLINE_TEMPLATES.tenchosenSemiFinal[2].headline`: 準決勝で分かれた明暗 — 「天頂戦」
+
+### tenchosenSemiFinal[].body
+
+- `NEWS_HEADLINE_TEMPLATES.tenchosenSemiFinal[1].body`: {a1}（{a1org}）が{a2}（{a2org}）を、{b1}（{b1org}）が{b2}（{b2org}）を下し、それぞれ決勝へ進んだ。試合評価は{mqA}点と{mqB}点。
+- `NEWS_HEADLINE_TEMPLATES.tenchosenSemiFinal[2].body`: 準決勝は{a1}（{a1org}）対{a2}（{a2org}）、{b1}（{b1org}）対{b2}（{b2org}）の2試合。勝ち上がったのは{a1}と{b1}だった。試合評価は{mqA}点と{mqB}点。
+
+### tenchosenBestBout[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.tenchosenBestBout[1].headline`: 大会ベストバウト — {winner} vs {loser}
+- `NEWS_HEADLINE_TEMPLATES.tenchosenBestBout[2].headline`: 「天頂戦」最高評価は{mq}点 — {winner} vs {loser}
+
+### tenchosenBestBout[].body
+
+- `NEWS_HEADLINE_TEMPLATES.tenchosenBestBout[1].body`: {round}で組まれた{winner}（{winnerOrg}）と{loser}（{loserOrg}）の一戦が、大会最高の{mq}点を記録した。{closing}
+- `NEWS_HEADLINE_TEMPLATES.tenchosenBestBout[2].body`: {round}の{winner}（{winnerOrg}）対{loser}（{loserOrg}）が、全15試合を通して最も高い評価を集めた。{closing}
 
 ### autumnWarAnnounce[].headline
 
@@ -218,6 +203,44 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `NEWS_HEADLINE_TEMPLATES.springTagAnnounce[1].body`: 第{season}回春のタッグリーグの出場4団体が出揃った。{org1}・{org2}・{org3}・{org4}。各団体代表タッグは編成期間を経て、第12週に激突する。
 - `NEWS_HEADLINE_TEMPLATES.springTagAnnounce[2].body`: 第{season}回春のタッグリーグに{org1}・{org2}・{org3}・{org4}の4団体が名乗りを上げた。第12週、4団体総当たりのリーグ戦と優勝決定戦が1日で行われる。
+
+### draftPlayerResult[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.draftPlayerResult[1].headline`: {org}、新人{count}名を獲得
+- `NEWS_HEADLINE_TEMPLATES.draftPlayerResult[2].headline`: {org}が{count}名を指名、新体制へ
+
+### draftPlayerResult[].body
+
+- `NEWS_HEADLINE_TEMPLATES.draftPlayerResult[1].body`: {names}。新シーズンの陣容がひとつ厚くなった。
+- `NEWS_HEADLINE_TEMPLATES.draftPlayerResult[2].body`: {names}が加入。どこまで伸びるかは、これからの一年が決める。
+
+### draftAiResult[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.draftAiResult[1].headline`: {org}、新人{count}名を確保
+- `NEWS_HEADLINE_TEMPLATES.draftAiResult[2].headline`: {org}が{count}名を指名
+
+### draftAiResult[].body
+
+- `NEWS_HEADLINE_TEMPLATES.draftAiResult[1].body`: {names}。来季の顔ぶれが動く。
+- `NEWS_HEADLINE_TEMPLATES.draftAiResult[2].body`: {names}が新たに名を連ねた。
+
+### draftFlowThrough[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.draftFlowThrough[1].headline`: 指名漏れ{count}名、フリー市場へ
+- `NEWS_HEADLINE_TEMPLATES.draftFlowThrough[2].headline`: {count}名がどの団体からも指名されず
+
+### draftFlowThrough[].body
+
+- `NEWS_HEADLINE_TEMPLATES.draftFlowThrough[1].body`: {names}。どこにも呼ばれなかった選手たちが、市場に残った。
+- `NEWS_HEADLINE_TEMPLATES.draftFlowThrough[2].body`: {names}が指名を受けられなかった。拾う団体が出るかどうか。
+
+### draftEmpty[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.draftEmpty[1].headline`: 今年のドラフト、全指名が成立
+
+### draftEmpty[].body
+
+- `NEWS_HEADLINE_TEMPLATES.draftEmpty[1].body`: 指名漏れは出なかった。候補は残らず、それぞれの団体へ散った。
 
 ### springTagResult[].headline
 
@@ -279,13 +302,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### challengeRequestInverseDraw[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.challengeRequestInverseDraw[1].headline`: 直訴の3対3、{score} で痛み分け。{requesterName}と{ourOrg}は再び沈黙
+- `NEWS_HEADLINE_TEMPLATES.challengeRequestInverseDraw[1].headline`: 直訴の3対3、{score}で決着つかず。{requesterName}と{ourOrg}は再び沈黙
 - `NEWS_HEADLINE_TEMPLATES.challengeRequestInverseDraw[2].headline`: {ourOrg} {score} {opponentOrg}――{requesterName}の越境挑戦は決着持ち越し
 
 ### challengeRequestInverseDraw[].body
 
-- `NEWS_HEADLINE_TEMPLATES.challengeRequestInverseDraw[1].body`: {opponentOrg}の{requesterName}が{ourOrg}に挑んで組まれた団体戦は {score} のドロー。決着がつかないまま、両陣営はリングを降りた。
-- `NEWS_HEADLINE_TEMPLATES.challengeRequestInverseDraw[2].body`: 3対3団体戦は {score} で痛み分け。仕掛けた{requesterName}も、迎え撃った{ourOrg}も、リング上で言葉を交わすことなく分かれた。
+- `NEWS_HEADLINE_TEMPLATES.challengeRequestInverseDraw[1].body`: {opponentOrg}の{requesterName}が{ourOrg}に挑んで組まれた団体戦は {score}。決着がつかないまま、両陣営はリングを降りた。
+- `NEWS_HEADLINE_TEMPLATES.challengeRequestInverseDraw[2].body`: 3対3団体戦は {score}。仕掛けた{requesterName}も、迎え撃った{ourOrg}も、リング上で言葉を交わすことなく分かれた。
 
 ### firedReturn[].headline
 
@@ -309,13 +332,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### challengeRequestDraw[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.challengeRequestDraw[1].headline`: 直訴の3対3、{score} で痛み分け。{requesterName}と{opponentName}は再び沈黙
+- `NEWS_HEADLINE_TEMPLATES.challengeRequestDraw[1].headline`: 直訴の3対3、{score}で決着つかず。{requesterName}と{opponentName}は再び沈黙
 - `NEWS_HEADLINE_TEMPLATES.challengeRequestDraw[2].headline`: {ourOrg} {score} {opponentOrg}――{requesterName}の挑戦は決着持ち越し
 
 ### challengeRequestDraw[].body
 
-- `NEWS_HEADLINE_TEMPLATES.challengeRequestDraw[1].body`: {requesterName}が直訴して実現した{opponentOrg}との団体戦は {score} のドロー。決着がつかないまま、両陣営はリングを降りた。
-- `NEWS_HEADLINE_TEMPLATES.challengeRequestDraw[2].body`: 3対3団体戦は {score} で痛み分け。直訴した{requesterName}も、受けて立った{opponentName}も、リング上で言葉を交わすことなく分かれた。
+- `NEWS_HEADLINE_TEMPLATES.challengeRequestDraw[1].body`: {requesterName}が直訴して実現した{opponentOrg}との団体戦は {score}。決着がつかないまま、両陣営はリングを降りた。
+- `NEWS_HEADLINE_TEMPLATES.challengeRequestDraw[2].body`: 3対3団体戦は {score}。直訴した{requesterName}も、受けて立った{opponentName}も、リング上で言葉を交わすことなく分かれた。
 
 ### titleChange[].headline
 
@@ -343,14 +366,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### breakthrough[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.breakthrough[1].headline`: 新星爆誕！{name}が覚醒、一夜にして別人に
+- `NEWS_HEADLINE_TEMPLATES.breakthrough[1].headline`: 新星爆誕！{name}が覚醒、瞬く間に別人に
 - `NEWS_HEADLINE_TEMPLATES.breakthrough[2].headline`: {name}にブレークスルー。{org}の新たな武器に
 - `NEWS_HEADLINE_TEMPLATES.breakthrough[3].headline`: 覚醒の{name}！ {org}に嬉しい誤算
 
 ### breakthrough[].body
 
 - `NEWS_HEADLINE_TEMPLATES.breakthrough[1].body`: {org}の{name}が驚くべき成長を見せた。{detail}。業界関係者も「この選手は化ける」と太鼓判。今後の活躍から目が離せない。
-- `NEWS_HEADLINE_TEMPLATES.breakthrough[2].body`: 地道な努力がついに実を結んだ。{org}の{name}が{detail}。本人も驚くほどの変化だという。チームの戦力が一段上がった。
+- `NEWS_HEADLINE_TEMPLATES.breakthrough[2].body`: 地道な努力がついに実を結んだ。{org}の{name}が{detail}。本人も驚くほどの変化だという。団体の戦力が一段上がった。
 - `NEWS_HEADLINE_TEMPLATES.breakthrough[3].body`: 期待以上の急成長を遂げた{name}。{detail}。{org}のファンからは「ウチのエースはこの子だ」と歓喜の声が上がっている。
 
 ### slump[].headline
@@ -816,6 +839,16 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BIG_NEWS_LEAD_LINES.topChampionInjury[1]`: 号外――上位団体の王者が重傷、長期離脱へ
 - `BIG_NEWS_LEAD_LINES.topChampionInjury[2]`: {titleName}戦線に空白。{orgName}の看板が欠けた
 
+## `SEASON_OPENING_NEWS_LEAD_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: 2026-07-27: シーズン開幕号の週頭通知。 / オフシーズン中は新聞が発行されないため、引退・殿堂入り・他団体の動きなどは / 溜まったまま**翌シーズン第1週の号**にまとめて載る。その1枚があることを知らせる。 / 大ニュースと同じ号外フレーム（mdl-d bignews）を使うので、文言だけを分ける。
+- 本数: 3
+
+- `SEASON_OPENING_NEWS_LEAD_LINES[1]`: 新年号――オフの間に動いたことが、まとめて載っている
+- `SEASON_OPENING_NEWS_LEAD_LINES[2]`: 年が明けた。休んでいる間の出来事が紙面に並んでいる
+- `SEASON_OPENING_NEWS_LEAD_LINES[3]`: 新しい季節の一号目。留守にしていた間の記事が揃っている
+
 ## `SEASON_REVIEW_LINES`
 
 - 出典: `src/data.js`
@@ -959,7 +992,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `NOTIF_EVENT_TEXTS.N1[1].text`: 💪 {name}が自主トレで手応えを掴んだ
 - `NOTIF_EVENT_TEXTS.N1[2].text`: 🌟 {name}の努力が実を結びつつある
-- `NOTIF_EVENT_TEXTS.N1[3].text`: ✨ {name}が練習で目を引くプレーを見せた
+- `NOTIF_EVENT_TEXTS.N1[3].text`: ✨ {name}が練習で目を引く動きを見せた
 - `NOTIF_EVENT_TEXTS.N1[4].text`: 📈 {name}の動きが明らかに良くなっている
 - `NOTIF_EVENT_TEXTS.N1[5].text`: 🏋️ {name}がフィジカルトレーニングで成果を見せた
 - `NOTIF_EVENT_TEXTS.N1[6].text`: 🎯 {name}が技の精度を上げてきた
@@ -1115,189 +1148,312 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - 出典: `src/data.js`
 - コード内コメント: §3-4: 通知型イベント — personality×archetype セリフ（NOTIF_DIALOGUES） / N1/N2/N3/N4/N5_warning/N5_low 全タイプ対応
-- 本数: 181
+- 本数: 304
 
-- `NOTIF_DIALOGUES.N1.normal._default[1]`: 練習が楽しくなってきた気がします
-- `NOTIF_DIALOGUES.N1.normal._default[2]`: やっと体が動くようになってきた気がします
-- `NOTIF_DIALOGUES.N1.normal.ojousama[1]`: 稽古が楽しくなってまいりました
-- `NOTIF_DIALOGUES.N1.normal.ojousama[2]`: 少しずつ、体が応えてくれるようになってきたわね
-- `NOTIF_DIALOGUES.N1.normal.delinquent[1]`: なんか最近、体の動きキレてね？
-- `NOTIF_DIALOGUES.N1.normal.delinquent[2]`: やっと感覚掴めてきたっぽい
-- `NOTIF_DIALOGUES.N1.normal.seductive[1]`: 最近、体が素直に動いてくれるの。嬉しいわ
-- `NOTIF_DIALOGUES.N1.normal.seductive[2]`: 練習が楽しくなってきた気がする
-- `NOTIF_DIALOGUES.N1.normal.composed[1]`: …ま、少しずつ馴染んできたかな
-- `NOTIF_DIALOGUES.N1.normal.composed[2]`: 悪くない感触だね。この調子で行こう
-- `NOTIF_DIALOGUES.N1.bold._default[1]`: まだ足りない。もっとできるはず！
-- `NOTIF_DIALOGUES.N1.bold._default[2]`: この調子で上を目指す！
-- `NOTIF_DIALOGUES.N1.bold.ojousama[1]`: まだまだですわ。もっと上を目指しませんと…
-- `NOTIF_DIALOGUES.N1.bold.delinquent[1]`: まだ足りねえ。もっとやれるはずだ
-- `NOTIF_DIALOGUES.N1.bold.cool[1]`: …まだ上がある。止まる気はない
-- `NOTIF_DIALOGUES.N1.bold.seductive[1]`: まだ足りないわ。もっと強くなれる気がするの
-- `NOTIF_DIALOGUES.N1.bold.composed[1]`: …まだ先がある。焦らず行くよ
-- `NOTIF_DIALOGUES.N1.quiet._default[1]`: ……少し、手応えがある
-- `NOTIF_DIALOGUES.N1.quiet.cool[1]`: …悪くない。この調子で
-- `NOTIF_DIALOGUES.N1.quiet.polite[1]`: 少し…手応えを感じています
-- `NOTIF_DIALOGUES.N1.shy._default[1]`: あの…ちょっとだけ、練習が楽しくなってきました…
-- `NOTIF_DIALOGUES.N1.shy.polite[1]`: あ、あの…お知らせがあります…
-- `NOTIF_DIALOGUES.N1.easygoing._default[1]`: なんか今日、急にいろいろ掴めた気がする！
-- `NOTIF_DIALOGUES.N1.easygoing._default[2]`: よく分かんないけど、急に噛み合ってきた！
-- `NOTIF_DIALOGUES.N1.easygoing.delinquent[1]`: なんか急にキタわ！掴めた感じ！
-- `NOTIF_DIALOGUES.N1.easygoing.seductive[1]`: あら、急にいろいろ掴めちゃったかも
-- `NOTIF_DIALOGUES.N1.earnest._default[1]`: 積み重ねが大事だと思ってます。コツコツやっていきます
-- `NOTIF_DIALOGUES.N1.earnest._default[2]`: 練習って楽しい。もっとやりたいです
-- `NOTIF_DIALOGUES.N1.earnest.polite[1]`: 積み重ねが大切だと信じています。コツコツ参ります
-- `NOTIF_DIALOGUES.N1.earnest.ojousama[1]`: 積み重ねが大切ですわ。一歩一歩、参りますわね
-- `NOTIF_DIALOGUES.N1.earnest.seductive[1]`: 積み重ねって大事よね。もっとやりたくなっちゃう
-- `NOTIF_DIALOGUES.N1.earnest.composed[1]`: …地道にやるのが一番だよ。急がず行こう
-- `NOTIF_DIALOGUES.N1.emotional._default[1]`: うわあ…！練習が楽しい…！もっとやりたい！
-- `NOTIF_DIALOGUES.N1.emotional._default[2]`: 体が動くようになってきた…嬉しい…！
-- `NOTIF_DIALOGUES.N1.emotional.seductive[1]`: お知らせよ……っ……ふふ、聞いて……
-- `NOTIF_DIALOGUES.N1.emotional.seductive[2]`: ねえ、聞いて……っ……ふふ……
-- `NOTIF_DIALOGUES.N2.normal._default[1]`: いい仲間ができた気がします
-- `NOTIF_DIALOGUES.N2.normal._default[2]`: 一緒に頑張れる人がいると心強いですね
-- `NOTIF_DIALOGUES.N2.normal.ojousama[1]`: 良い仲間に恵まれたわね
-- `NOTIF_DIALOGUES.N2.normal.delinquent[1]`: あいつと一緒だと楽しいんだよな
-- `NOTIF_DIALOGUES.N2.normal.seductive[1]`: いい仲間に恵まれたわ。心強いの
-- `NOTIF_DIALOGUES.N2.normal.composed[1]`: …いい仲間だね。悪くない環境だよ
-- `NOTIF_DIALOGUES.N2.bold._default[1]`: 仲間がいるから頑張れる。チームって、いいよね
-- `NOTIF_DIALOGUES.N2.bold._default[2]`: 一緒だと燃えるんだよね
-- `NOTIF_DIALOGUES.N2.bold.ojousama[1]`: 皆様のご期待が、わたくしの力になっておりますわ
-- `NOTIF_DIALOGUES.N2.bold.delinquent[1]`: あいつがいるから燃えるんだよ！
-- `NOTIF_DIALOGUES.N2.bold.cool[1]`: …悪くないチームだ
-- `NOTIF_DIALOGUES.N2.bold.seductive[1]`: 仲間がいるって、いいものね
-- `NOTIF_DIALOGUES.N2.bold.composed[1]`: …悪くないチームだよ。居心地がいい
-- `NOTIF_DIALOGUES.N2.quiet._default[1]`: ……いい人たちだと、思います
-- `NOTIF_DIALOGUES.N2.quiet.cool[1]`: …悪くない仲間だ
-- `NOTIF_DIALOGUES.N2.quiet.polite[1]`: …良い方々だと思います
-- `NOTIF_DIALOGUES.N2.shy._default[1]`: あの…みんなと一緒にいられて…嬉しいです…
-- `NOTIF_DIALOGUES.N2.shy.polite[1]`: ちょ、ちょっとお伝えしたいことが…
-- `NOTIF_DIALOGUES.N2.easygoing._default[1]`: あの人と一緒だと超楽しい！最高のパートナーだよ！
-- `NOTIF_DIALOGUES.N2.easygoing.delinquent[1]`: あいつ最高！一緒だとテンション上がるわ！
-- `NOTIF_DIALOGUES.N2.easygoing.seductive[1]`: あの人と一緒にいると楽しいの。最高のパートナーね
-- `NOTIF_DIALOGUES.N2.earnest._default[1]`: あの人と練習してると自分も頑張ろうって思えるんです
-- `NOTIF_DIALOGUES.N2.earnest._default[2]`: この団体で一緒にやれる仲間がいて、幸せです
-- `NOTIF_DIALOGUES.N2.earnest.polite[1]`: 一緒にお稽古していると、自分も頑張ろうと思えます
-- `NOTIF_DIALOGUES.N2.earnest.ojousama[1]`: この団体でご一緒できる仲間がいて、幸せですわ
-- `NOTIF_DIALOGUES.N2.earnest.seductive[1]`: あの人と一緒だと、もっと頑張りたくなるの
-- `NOTIF_DIALOGUES.N2.earnest.composed[1]`: …あの人がいると、自然と力が出るね
-- `NOTIF_DIALOGUES.N2.emotional._default[1]`: みんなのこと大好き…！一緒にいられて幸せ…！
-- `NOTIF_DIALOGUES.N2.emotional.seductive[1]`: ちょっといいかしら……っ……ふふ……
-- `NOTIF_DIALOGUES.N3.normal._default[1]`: ちょっと疲れてるだけです。次の試合までには戻ります
-- `NOTIF_DIALOGUES.N3.normal._default[2]`: 少し休めば大丈夫です
-- `NOTIF_DIALOGUES.N3.normal.ojousama[1]`: 少々疲れが出たようで…次までには整えます
-- `NOTIF_DIALOGUES.N3.normal.delinquent[1]`: ちょっとダルいだけだって。すぐ戻る
-- `NOTIF_DIALOGUES.N3.normal.seductive[1]`: 少し疲れただけよ。心配しないで
-- `NOTIF_DIALOGUES.N3.normal.composed[1]`: …ちょっと疲れただけ。すぐ戻るよ
-- `NOTIF_DIALOGUES.N3.bold._default[1]`: 大丈夫。この程度。すぐ戻るよ
-- `NOTIF_DIALOGUES.N3.bold._default[2]`: こんなんじゃ終われない
-- `NOTIF_DIALOGUES.N3.bold.ojousama[1]`: この程度、問題ありませんわ
-- `NOTIF_DIALOGUES.N3.bold.delinquent[1]`: この程度で止まってられるかよ
-- `NOTIF_DIALOGUES.N3.bold.cool[1]`: …問題ない。戻れる
-- `NOTIF_DIALOGUES.N3.bold.seductive[1]`: この程度で止まるつもりはないわ
-- `NOTIF_DIALOGUES.N3.bold.composed[1]`: …この程度なら大丈夫。慌てないで
-- `NOTIF_DIALOGUES.N3.quiet._default[1]`: ……少し、休みます
-- `NOTIF_DIALOGUES.N3.quiet.cool[1]`: …大丈夫だ。すぐ戻れる
-- `NOTIF_DIALOGUES.N3.quiet.polite[1]`: …少し休ませていただければ…
-- `NOTIF_DIALOGUES.N3.shy._default[1]`: あの…無理はしてないつもりなんですけど……少し休んだ方がいいかも…
-- `NOTIF_DIALOGUES.N3.shy.polite[1]`: 報告です…あ、あの…
-- `NOTIF_DIALOGUES.N3.easygoing._default[1]`: あー、ちょっと疲れちゃったかも。少し休めば平気！
-- `NOTIF_DIALOGUES.N3.easygoing.delinquent[1]`: あー疲れた。ちょい休むわ
-- `NOTIF_DIALOGUES.N3.easygoing.seductive[1]`: ちょっと疲れちゃったかしら。少し休めば大丈夫よ
-- `NOTIF_DIALOGUES.N3.earnest._default[1]`: すみません…体が追いつかなくて。少し休めば大丈夫です
-- `NOTIF_DIALOGUES.N3.earnest._default[2]`: 立て直してみせます
-- `NOTIF_DIALOGUES.N3.earnest.polite[1]`: 申し訳ありません…少し休ませていただければ、必ず戻ります
-- `NOTIF_DIALOGUES.N3.earnest.ojousama[1]`: 少しお休みをいただければ、必ず立て直しますわ
-- `NOTIF_DIALOGUES.N3.earnest.seductive[1]`: ごめんなさい…少し休めば、すぐ戻れるわ
-- `NOTIF_DIALOGUES.N3.earnest.composed[1]`: …少し休めば大丈夫。焦ることはないよ
-- `NOTIF_DIALOGUES.N3.emotional._default[1]`: うう…体がしんどい…でも、でも頑張りたいのに…！
-- `NOTIF_DIALOGUES.N3.emotional.seductive[1]`: はぁ……体が、言うこときかないの……ごめんなさい……
-- `NOTIF_DIALOGUES.N3.emotional.seductive[2]`: ふぅ……ちょっと、休ませて……すぐ、戻るから……
-- `NOTIF_DIALOGUES.N4.normal._default[1]`: こんなにたくさんの応援をいただけるなんて、びっくりしています
-- `NOTIF_DIALOGUES.N4.normal._default[2]`: ファンの声が力になってます
-- `NOTIF_DIALOGUES.N4.normal.ojousama[1]`: 皆様からこれほどの声援をいただけるのは、光栄です
-- `NOTIF_DIALOGUES.N4.normal.delinquent[1]`: 応援してくれるやつがいるってのは…悪くねえな
-- `NOTIF_DIALOGUES.N4.normal.seductive[1]`: こんなに応援してもらえるなんて…嬉しいわ
-- `NOTIF_DIALOGUES.N4.normal.composed[1]`: …ありがたいね。ちゃんと届いてるよ
-- `NOTIF_DIALOGUES.N4.bold._default[1]`: この人気を足がかりに、私はもっと上に行く
-- `NOTIF_DIALOGUES.N4.bold._default[2]`: まだまだここで終わるつもりはない
-- `NOTIF_DIALOGUES.N4.bold.ojousama[1]`: この声援を力に、さらに上を目指しますわ
-- `NOTIF_DIALOGUES.N4.bold.delinquent[1]`: この勢いで突っ走るぜ！
-- `NOTIF_DIALOGUES.N4.bold.cool[1]`: …悪くない。もっと上を目指す
-- `NOTIF_DIALOGUES.N4.bold.seductive[1]`: この人気、活かさない手はないわね
-- `NOTIF_DIALOGUES.N4.bold.composed[1]`: …悪くないね。この期待に応えるだけだよ
-- `NOTIF_DIALOGUES.N4.quiet._default[1]`: ……応援、ありがとうございます
-- `NOTIF_DIALOGUES.N4.quiet.cool[1]`: …ファンの期待には応える
-- `NOTIF_DIALOGUES.N4.quiet.polite[1]`: …応援してくださって、ありがとうございます
-- `NOTIF_DIALOGUES.N4.shy._default[1]`: え、あの…私なんかを応援してくれる人がいるなんて…
-- `NOTIF_DIALOGUES.N4.shy.polite[1]`: お、大事なお知らせです…
-- `NOTIF_DIALOGUES.N4.easygoing._default[1]`: ファンの皆さんが喜んでくれるのが一番嬉しい！
-- `NOTIF_DIALOGUES.N4.easygoing._default[2]`: もっとみんなを楽しませたい！
-- `NOTIF_DIALOGUES.N4.easygoing.delinquent[1]`: ファンが盛り上がってんの最高じゃん！
-- `NOTIF_DIALOGUES.N4.easygoing.seductive[1]`: ファンの方が喜んでくれると、もっと見せたくなるわ
-- `NOTIF_DIALOGUES.N4.earnest._default[1]`: みんなに応援してもらえるって、本当に力になりますね
-- `NOTIF_DIALOGUES.N4.earnest._default[2]`: ファンの声が原動力です
-- `NOTIF_DIALOGUES.N4.earnest.polite[1]`: 皆様の応援が、何よりの原動力です
-- `NOTIF_DIALOGUES.N4.earnest.ojousama[1]`: ファンの皆様のお声が力になりますわ
-- `NOTIF_DIALOGUES.N4.earnest.seductive[1]`: 応援してくれる人がいるって、本当に力になるの
-- `NOTIF_DIALOGUES.N4.earnest.composed[1]`: …みんなの声、ちゃんと届いてるよ。ありがたいね
-- `NOTIF_DIALOGUES.N4.emotional._default[1]`: みんなが応援してくれてる…！嬉しくて泣きそう…！
-- `NOTIF_DIALOGUES.N4.emotional.seductive[1]`: 大事な話よ……っ……ふふ、しっかり聞いて……
-- `NOTIF_DIALOGUES.N5_warning.normal._default[1]`: （どこか上の空で、視線が泳いでいる）
-- `NOTIF_DIALOGUES.N5_warning.normal._default[2]`: ……すみません、ちょっと考え事を
-- `NOTIF_DIALOGUES.N5_warning.normal.ojousama[1]`: …少し、考え事がございまして
-- `NOTIF_DIALOGUES.N5_warning.normal.delinquent[1]`: …別に。何でもねーよ
-- `NOTIF_DIALOGUES.N5_warning.normal.seductive[1]`: …ごめんなさい、ちょっと考え事してて
-- `NOTIF_DIALOGUES.N5_warning.normal.composed[1]`: …ん、ちょっと考え事。気にしないで
-- `NOTIF_DIALOGUES.N5_warning.bold._default[1]`: ……このままで本当にいいのか、って考えちゃうことがある
-- `NOTIF_DIALOGUES.N5_warning.bold._default[2]`: 最近、何と戦ってるのか分からなくなる
-- `NOTIF_DIALOGUES.N5_warning.bold.ojousama[1]`: …このままで本当によろしいのか、と考えてしまいますの
-- `NOTIF_DIALOGUES.N5_warning.bold.delinquent[1]`: …最近、何のために戦ってんのか分かんねーんだ
-- `NOTIF_DIALOGUES.N5_warning.bold.cool[1]`: ……目的を、見失いかけている
-- `NOTIF_DIALOGUES.N5_warning.bold.seductive[1]`: …このままでいいのかなって、ふと思うの
-- `NOTIF_DIALOGUES.N5_warning.bold.composed[1]`: …ま、少し立ち止まってるだけだよ。…たぶん
-- `NOTIF_DIALOGUES.N5_warning.quiet.polite[1]`: …あの…何でもありません…
-- `NOTIF_DIALOGUES.N5_warning.shy._default[1]`: …あ、あの……なんでもない、です…
-- `NOTIF_DIALOGUES.N5_warning.shy.polite[1]`: き、緊急のお知らせです…!
-- `NOTIF_DIALOGUES.N5_warning.easygoing._default[1]`: あはは…いや、ちょっとね。大丈夫、大丈夫
-- `NOTIF_DIALOGUES.N5_warning.easygoing.delinquent[1]`: あー…いや、なんでもねー。平気平気
-- `NOTIF_DIALOGUES.N5_warning.easygoing.seductive[1]`: ふふ…なんでもないわ。気にしないで
-- `NOTIF_DIALOGUES.N5_warning.earnest._default[1]`: 練習しても練習しても、何かが足りない気がして…
-- `NOTIF_DIALOGUES.N5_warning.earnest._default[2]`: …ここにいたい気持ちは変わらないんですけど……
-- `NOTIF_DIALOGUES.N5_warning.earnest.polite[1]`: 練習を重ねても、何か足りない気がいたしまして…
-- `NOTIF_DIALOGUES.N5_warning.earnest.ojousama[1]`: 練習を重ねましても、何かが足りない気がしますの…
-- `NOTIF_DIALOGUES.N5_warning.earnest.seductive[1]`: いくら練習しても、何か足りない気がして…
-- `NOTIF_DIALOGUES.N5_warning.earnest.composed[1]`: …何かが噛み合わない。…まあ、そういう時期もあるか
-- `NOTIF_DIALOGUES.N5_warning.emotional._default[1]`: …なんか、最近ずっとモヤモヤして…うまく言えないけど…
-- `NOTIF_DIALOGUES.N5_warning.emotional.seductive[1]`: 緊急よ……っ……ふふ、よく聞いて……
-- `NOTIF_DIALOGUES.N5_low.normal._default[1]`: …別に、何でもないです
-- `NOTIF_DIALOGUES.N5_low.normal._default[2]`: もういいです。分かりました
-- `NOTIF_DIALOGUES.N5_low.normal.ojousama[1]`: …もう結構ですわ
-- `NOTIF_DIALOGUES.N5_low.normal.delinquent[1]`: …もういいわ。勝手にする
-- `NOTIF_DIALOGUES.N5_low.normal.seductive[1]`: …もういいわ。分かったから
-- `NOTIF_DIALOGUES.N5_low.normal.composed[1]`: …もういいよ。分かったから
-- `NOTIF_DIALOGUES.N5_low.bold._default[1]`: ……この団体で、自分の夢は叶えられるんだろうか
-- `NOTIF_DIALOGUES.N5_low.bold._default[2]`: 先が見えなくて、焦ってる
-- `NOTIF_DIALOGUES.N5_low.bold.ojousama[1]`: …この団体で、わたしの夢は叶えられますの…？
-- `NOTIF_DIALOGUES.N5_low.bold.delinquent[1]`: …ここにいても、先が見えねえ
-- `NOTIF_DIALOGUES.N5_low.bold.cool[1]`: ……もう、見切りをつけるべきなのか
-- `NOTIF_DIALOGUES.N5_low.bold.seductive[1]`: …ここにいて、私の夢は叶うのかしら
-- `NOTIF_DIALOGUES.N5_low.bold.composed[1]`: …ここにいる意味、少し考え直してもいいかな
-- `NOTIF_DIALOGUES.N5_low.quiet._default[1]`: ………（何も言わず、目を逸らす）
-- `NOTIF_DIALOGUES.N5_low.quiet.cool[1]`: ……（静かに出口を見ている）
-- `NOTIF_DIALOGUES.N5_low.quiet.polite[1]`: …失礼します（静かに立ち去ろうとする）
-- `NOTIF_DIALOGUES.N5_low.shy._default[1]`: …ごめんなさい…もう…わかりません…
-- `NOTIF_DIALOGUES.N5_low.shy.polite[1]`: あ、あの…ちょっと、心配なことが…
-- `NOTIF_DIALOGUES.N5_low.easygoing._default[1]`: あはは…もう、いいかなって。ちょっと考えさせて
-- `NOTIF_DIALOGUES.N5_low.easygoing.delinquent[1]`: もーいいわ。考えさせてくれ
-- `NOTIF_DIALOGUES.N5_low.easygoing.seductive[1]`: ふふ…もういいかなって、少し思っちゃった
-- `NOTIF_DIALOGUES.N5_low.earnest._default[1]`: 裏切りたいわけじゃない。ただ……
-- `NOTIF_DIALOGUES.N5_low.earnest._default[2]`: ここが好きだから、だから辛いんです
-- `NOTIF_DIALOGUES.N5_low.earnest.polite[1]`: 裏切るつもりはございません。ただ……
-- `NOTIF_DIALOGUES.N5_low.earnest.ojousama[1]`: 裏切りたいわけではありませんの。ただ……
-- `NOTIF_DIALOGUES.N5_low.earnest.seductive[1]`: 裏切りたいわけじゃないの。ただ……ね
-- `NOTIF_DIALOGUES.N5_low.earnest.composed[1]`: …嫌いになったわけじゃない。ただ……ね
-- `NOTIF_DIALOGUES.N5_low.emotional._default[1]`: もう…もう分かんない…！どうすればいいの…！
-- `NOTIF_DIALOGUES.N5_low.emotional.seductive[1]`: ちょっと心配なの……っ……ふふ……
+- `NOTIF_DIALOGUES.N1.standard.normal[1]`: 練習が楽しくなってきた気がします
+- `NOTIF_DIALOGUES.N1.standard.normal[2]`: やっと体が動くようになってきた気がします
+- `NOTIF_DIALOGUES.N1.standard.bold[1]`: まだ足りない。もっとできるはず！
+- `NOTIF_DIALOGUES.N1.standard.bold[2]`: この調子で上を目指す！
+- `NOTIF_DIALOGUES.N1.standard.quiet[1]`: ……少し、手応えがある
+- `NOTIF_DIALOGUES.N1.standard.shy[1]`: あの…ちょっとだけ、練習が楽しくなってきました…
+- `NOTIF_DIALOGUES.N1.standard.easygoing[1]`: なんか今日、急にいろいろ掴めた気がする！
+- `NOTIF_DIALOGUES.N1.standard.easygoing[2]`: よく分かんないけど、急に噛み合ってきた！
+- `NOTIF_DIALOGUES.N1.standard.earnest[1]`: 積み重ねが大事だと思ってます。コツコツやっていきます
+- `NOTIF_DIALOGUES.N1.standard.earnest[2]`: 練習って楽しい。もっとやりたいです
+- `NOTIF_DIALOGUES.N1.standard.emotional[1]`: うわあ…！練習が楽しい…！もっとやりたい！
+- `NOTIF_DIALOGUES.N1.standard.emotional[2]`: 体が動くようになってきた…嬉しい…！
+- `NOTIF_DIALOGUES.N1.ojousama.normal[1]`: 稽古が楽しくなってまいりました
+- `NOTIF_DIALOGUES.N1.ojousama.normal[2]`: 少しずつ、体が応えてくれるようになってきたわね
+- `NOTIF_DIALOGUES.N1.ojousama.bold[1]`: まだまだですわ。もっと上を目指しませんと…
+- `NOTIF_DIALOGUES.N1.ojousama.quiet[1]`: ……少し、手応えがありますわ
+- `NOTIF_DIALOGUES.N1.ojousama.shy[1]`: あの…ほんの少しだけ、お稽古が楽しくなってきましたの…
+- `NOTIF_DIALOGUES.N1.ojousama.earnest[1]`: 積み重ねが大切ですわ。一歩一歩、参りますわね
+- `NOTIF_DIALOGUES.N1.ojousama.emotional[1]`: ああ…っ、お稽古が楽しい…もっとやりたい…っ
+- `NOTIF_DIALOGUES.N1.ojousama.emotional[2]`: 体が動くようになってきて…嬉しい…っ
+- `NOTIF_DIALOGUES.N1.delinquent.normal[1]`: なんか最近、体の動きキレてね？
+- `NOTIF_DIALOGUES.N1.delinquent.normal[2]`: やっと感覚掴めてきたっぽい
+- `NOTIF_DIALOGUES.N1.delinquent.bold[1]`: まだ足りねえ。もっとやれるはずだ
+- `NOTIF_DIALOGUES.N1.delinquent.quiet[1]`: ……ちょっと、手応えあるかも
+- `NOTIF_DIALOGUES.N1.delinquent.shy[1]`: あの…ちょっとだけ、練習が楽しくなってきたっす…
+- `NOTIF_DIALOGUES.N1.delinquent.easygoing[1]`: なんか急にキタわ！掴めた感じ！
+- `NOTIF_DIALOGUES.N1.delinquent.earnest[1]`: 積み重ねが大事だろ。コツコツやってくわ
+- `NOTIF_DIALOGUES.N1.delinquent.earnest[2]`: 練習、楽しいんだよな。もっとやりてえ
+- `NOTIF_DIALOGUES.N1.delinquent.emotional[1]`: うおっ…練習が楽しい…っ、もっとやりてえ…！
+- `NOTIF_DIALOGUES.N1.delinquent.emotional[2]`: 体が動くようになってきた…嬉しいんだよ…っ
+- `NOTIF_DIALOGUES.N1.seductive.normal[1]`: 最近、体が素直に動いてくれるの。嬉しいわ
+- `NOTIF_DIALOGUES.N1.seductive.normal[2]`: 練習が楽しくなってきた気がする
+- `NOTIF_DIALOGUES.N1.seductive.bold[1]`: まだ足りないわ。もっと強くなれる気がするの
+- `NOTIF_DIALOGUES.N1.seductive.shy[1]`: あの…ちょっとだけ、練習が楽しくなってきたの…
+- `NOTIF_DIALOGUES.N1.seductive.easygoing[1]`: あら、急にいろいろ掴めちゃったかも
+- `NOTIF_DIALOGUES.N1.seductive.earnest[1]`: 積み重ねって大事よね。もっとやりたくなっちゃう
+- `NOTIF_DIALOGUES.N1.seductive.emotional[1]`: お知らせよ……っ……ふふ、聞いて……
+- `NOTIF_DIALOGUES.N1.seductive.emotional[2]`: ねえ、聞いて……っ……ふふ……
+- `NOTIF_DIALOGUES.N1.composed.normal[1]`: …ま、少しずつ馴染んできたかな
+- `NOTIF_DIALOGUES.N1.composed.normal[2]`: 悪くない感触だね。この調子で行こう
+- `NOTIF_DIALOGUES.N1.composed.bold[1]`: …まだ先がある。焦らず行くよ
+- `NOTIF_DIALOGUES.N1.composed.quiet[1]`: …少し、手応えがある。…この調子かな
+- `NOTIF_DIALOGUES.N1.composed.shy[1]`: …少しだけ、練習が楽しくなってきた。…そんな気がするよ
+- `NOTIF_DIALOGUES.N1.composed.easygoing[1]`: …なんか今日、急に掴めた気がするね
+- `NOTIF_DIALOGUES.N1.composed.easygoing[2]`: …よくわからないけど、噛み合ってきたよ
+- `NOTIF_DIALOGUES.N1.composed.earnest[1]`: …地道にやるのが一番だよ。急がず行こう
+- `NOTIF_DIALOGUES.N1.composed.emotional[1]`: …っ、練習が楽しい。…もっとやりたいな
+- `NOTIF_DIALOGUES.N1.composed.emotional[2]`: …体が動くようになってきた。…嬉しいよ
+- `NOTIF_DIALOGUES.N1.cool.bold[1]`: …まだ上がある。止まる気はない
+- `NOTIF_DIALOGUES.N1.cool.quiet[1]`: …悪くない。この調子で
+- `NOTIF_DIALOGUES.N1.cool.shy[1]`: …少しだけ、練習が楽しい
+- `NOTIF_DIALOGUES.N1.cool.easygoing[1]`: …今日、急に掴めた気がする
+- `NOTIF_DIALOGUES.N1.cool.easygoing[2]`: …理由はわからない。急に噛み合ってきた
+- `NOTIF_DIALOGUES.N1.cool.earnest[1]`: …積み重ねが全部だ。コツコツやる
+- `NOTIF_DIALOGUES.N1.cool.earnest[2]`: …練習は楽しい。もっとやりたい
+- `NOTIF_DIALOGUES.N1.cool.emotional[1]`: …っ、練習が楽しい。…もっとやりたい
+- `NOTIF_DIALOGUES.N1.cool.emotional[2]`: …体が動く。…嬉しい
+- `NOTIF_DIALOGUES.N1.polite.quiet[1]`: 少し…手応えを感じています
+- `NOTIF_DIALOGUES.N1.polite.shy[1]`: あ、あの…お知らせがあります…
+- `NOTIF_DIALOGUES.N1.polite.earnest[1]`: 積み重ねが大切だと信じています。コツコツ参ります
+- `NOTIF_DIALOGUES.N1.polite.emotional[1]`: ああ…っ、練習が楽しいんです…！もっとやりたい…！
+- `NOTIF_DIALOGUES.N1.polite.emotional[2]`: 体が動くようになってきて…嬉しいです…っ
+- `NOTIF_DIALOGUES.N2.standard.normal[1]`: いい仲間ができた気がします
+- `NOTIF_DIALOGUES.N2.standard.normal[2]`: 一緒に頑張れる人がいると心強いですね
+- `NOTIF_DIALOGUES.N2.standard.bold[1]`: 仲間がいるから頑張れる。チームって、いいよね
+- `NOTIF_DIALOGUES.N2.standard.bold[2]`: 一緒だと燃えるんだよね
+- `NOTIF_DIALOGUES.N2.standard.quiet[1]`: ……いい人たちだと、思います
+- `NOTIF_DIALOGUES.N2.standard.shy[1]`: あの…みんなと一緒にいられて…嬉しいです…
+- `NOTIF_DIALOGUES.N2.standard.easygoing[1]`: あの人と一緒だと超楽しい！最高のパートナーだよ！
+- `NOTIF_DIALOGUES.N2.standard.earnest[1]`: あの人と練習してると自分も頑張ろうって思えるんです
+- `NOTIF_DIALOGUES.N2.standard.earnest[2]`: この団体で一緒にやれる仲間がいて、幸せです
+- `NOTIF_DIALOGUES.N2.standard.emotional[1]`: みんなのこと大好き…！一緒にいられて幸せ…！
+- `NOTIF_DIALOGUES.N2.ojousama.normal[1]`: 良い仲間に恵まれたわね
+- `NOTIF_DIALOGUES.N2.ojousama.bold[1]`: 皆様のご期待が、わたくしの力になっておりますわ
+- `NOTIF_DIALOGUES.N2.ojousama.quiet[1]`: ……よい方々だと、思いますわ
+- `NOTIF_DIALOGUES.N2.ojousama.shy[1]`: あの…皆さんと一緒にいられて…嬉しいですの…
+- `NOTIF_DIALOGUES.N2.ojousama.earnest[1]`: この団体でご一緒できる仲間がいて、幸せですわ
+- `NOTIF_DIALOGUES.N2.ojousama.emotional[1]`: 皆さんのこと、大好き…っ、一緒にいられて幸せ…っ
+- `NOTIF_DIALOGUES.N2.delinquent.normal[1]`: あいつと一緒だと楽しいんだよな
+- `NOTIF_DIALOGUES.N2.delinquent.bold[1]`: あいつがいるから燃えるんだよ！
+- `NOTIF_DIALOGUES.N2.delinquent.quiet[1]`: ……いい奴らだと、思う
+- `NOTIF_DIALOGUES.N2.delinquent.shy[1]`: あの…みんなと一緒にいられて…嬉しいっす…
+- `NOTIF_DIALOGUES.N2.delinquent.easygoing[1]`: あいつ最高！一緒だとテンション上がるわ！
+- `NOTIF_DIALOGUES.N2.delinquent.earnest[1]`: あいつと練習してっと、自分も頑張ろうって思えるんだよ
+- `NOTIF_DIALOGUES.N2.delinquent.earnest[2]`: この団体で一緒にやれる仲間がいる。幸せだよな
+- `NOTIF_DIALOGUES.N2.delinquent.emotional[1]`: みんなのこと大好きだ…っ、一緒にいられて幸せだよ…っ
+- `NOTIF_DIALOGUES.N2.seductive.normal[1]`: いい仲間に恵まれたわ。心強いの
+- `NOTIF_DIALOGUES.N2.seductive.bold[1]`: 仲間がいるって、いいものね
+- `NOTIF_DIALOGUES.N2.seductive.shy[1]`: あの…みんなと一緒にいられて…嬉しいの…
+- `NOTIF_DIALOGUES.N2.seductive.easygoing[1]`: あの人と一緒にいると楽しいの。最高のパートナーね
+- `NOTIF_DIALOGUES.N2.seductive.earnest[1]`: あの人と一緒だと、もっと頑張りたくなるの
+- `NOTIF_DIALOGUES.N2.seductive.emotional[1]`: ちょっといいかしら……っ……ふふ……
+- `NOTIF_DIALOGUES.N2.composed.normal[1]`: …いい仲間だね。悪くない環境だよ
+- `NOTIF_DIALOGUES.N2.composed.bold[1]`: …悪くないチームだよ。居心地がいい
+- `NOTIF_DIALOGUES.N2.composed.quiet[1]`: …いい人たちだよ。…うん
+- `NOTIF_DIALOGUES.N2.composed.shy[1]`: …みんなといられるのは、嬉しいよ。…うん
+- `NOTIF_DIALOGUES.N2.composed.easygoing[1]`: …あの人といると楽しいね。最高の相棒だよ
+- `NOTIF_DIALOGUES.N2.composed.earnest[1]`: …あの人がいると、自然と力が出るね
+- `NOTIF_DIALOGUES.N2.composed.emotional[1]`: …みんなのこと、好きだよ。…一緒にいられて幸せだ
+- `NOTIF_DIALOGUES.N2.cool.bold[1]`: …悪くないチームだ
+- `NOTIF_DIALOGUES.N2.cool.quiet[1]`: …悪くない仲間だ
+- `NOTIF_DIALOGUES.N2.cool.shy[1]`: …みんなといられて、嬉しい
+- `NOTIF_DIALOGUES.N2.cool.easygoing[1]`: …あの人といると楽しい。最高の相棒だ
+- `NOTIF_DIALOGUES.N2.cool.earnest[1]`: …あの人と練習すると、自分も頑張れる
+- `NOTIF_DIALOGUES.N2.cool.earnest[2]`: …一緒にやれる仲間がいる。…幸せだ
+- `NOTIF_DIALOGUES.N2.cool.emotional[1]`: …みんなが好きだ。…一緒にいられて、幸せ
+- `NOTIF_DIALOGUES.N2.polite.quiet[1]`: …良い方々だと思います
+- `NOTIF_DIALOGUES.N2.polite.shy[1]`: ちょ、ちょっとお伝えしたいことが…
+- `NOTIF_DIALOGUES.N2.polite.earnest[1]`: 一緒にお稽古していると、自分も頑張ろうと思えます
+- `NOTIF_DIALOGUES.N2.polite.emotional[1]`: みんなのことが大好きです…っ、一緒にいられて幸せです…っ
+- `NOTIF_DIALOGUES.N3.standard.normal[1]`: ちょっと疲れてるだけです。次の試合までには戻ります
+- `NOTIF_DIALOGUES.N3.standard.normal[2]`: 少し休めば大丈夫です
+- `NOTIF_DIALOGUES.N3.standard.bold[1]`: 大丈夫。この程度。すぐ戻るよ
+- `NOTIF_DIALOGUES.N3.standard.bold[2]`: こんなんじゃ終われない
+- `NOTIF_DIALOGUES.N3.standard.quiet[1]`: ……少し、休みます
+- `NOTIF_DIALOGUES.N3.standard.shy[1]`: あの…無理はしてないつもりなんですけど……少し休んだ方がいいかも…
+- `NOTIF_DIALOGUES.N3.standard.easygoing[1]`: あー、ちょっと疲れちゃったかも。少し休めば平気！
+- `NOTIF_DIALOGUES.N3.standard.earnest[1]`: すみません…体が追いつかなくて。少し休めば大丈夫です
+- `NOTIF_DIALOGUES.N3.standard.earnest[2]`: 立て直してみせます
+- `NOTIF_DIALOGUES.N3.standard.emotional[1]`: うう…体がしんどい…でも、でも頑張りたいのに…！
+- `NOTIF_DIALOGUES.N3.ojousama.normal[1]`: 少々疲れが出たようで…次までには整えます
+- `NOTIF_DIALOGUES.N3.ojousama.bold[1]`: この程度、問題ありませんわ
+- `NOTIF_DIALOGUES.N3.ojousama.quiet[1]`: ……少し、休ませていただきますわ
+- `NOTIF_DIALOGUES.N3.ojousama.shy[1]`: あの…無理はしていないつもりですけれど……少し休んだ方が、よいのかもしれませんの…
+- `NOTIF_DIALOGUES.N3.ojousama.earnest[1]`: 少しお休みをいただければ、必ず立て直しますわ
+- `NOTIF_DIALOGUES.N3.ojousama.emotional[1]`: う…体がつらい…でも、まだ頑張りたいのに…っ
+- `NOTIF_DIALOGUES.N3.delinquent.normal[1]`: ちょっとダルいだけだって。すぐ戻る
+- `NOTIF_DIALOGUES.N3.delinquent.bold[1]`: この程度で止まってられるかよ
+- `NOTIF_DIALOGUES.N3.delinquent.quiet[1]`: ……ちょい、休むわ
+- `NOTIF_DIALOGUES.N3.delinquent.shy[1]`: あの…無理はしてねえつもりなんすけど……ちょい休んだ方がいいかも…
+- `NOTIF_DIALOGUES.N3.delinquent.easygoing[1]`: あー疲れた。ちょい休むわ
+- `NOTIF_DIALOGUES.N3.delinquent.earnest[1]`: 悪い…体が追いつかねえんだ。ちょっと休めば平気だよ
+- `NOTIF_DIALOGUES.N3.delinquent.earnest[2]`: ちゃんと立て直してみせるからさ
+- `NOTIF_DIALOGUES.N3.delinquent.emotional[1]`: うぐ…体がしんどい…でも、まだやりてえのに…っ
+- `NOTIF_DIALOGUES.N3.seductive.normal[1]`: 少し疲れただけよ。心配しないで
+- `NOTIF_DIALOGUES.N3.seductive.bold[1]`: この程度で止まるつもりはないわ
+- `NOTIF_DIALOGUES.N3.seductive.shy[1]`: あの…無理はしてないつもりなんだけど……少し休んだ方が、いいのかも…
+- `NOTIF_DIALOGUES.N3.seductive.easygoing[1]`: ちょっと疲れちゃったかしら。少し休めば大丈夫よ
+- `NOTIF_DIALOGUES.N3.seductive.earnest[1]`: ごめんなさい…少し休めば、すぐ戻れるわ
+- `NOTIF_DIALOGUES.N3.seductive.emotional[1]`: はぁ……体が、言うこときかないの……ごめんなさい……
+- `NOTIF_DIALOGUES.N3.seductive.emotional[2]`: ふぅ……ちょっと、休ませて……すぐ、戻るから……
+- `NOTIF_DIALOGUES.N3.composed.normal[1]`: …ちょっと疲れただけ。すぐ戻るよ
+- `NOTIF_DIALOGUES.N3.composed.bold[1]`: …この程度なら大丈夫。慌てないで
+- `NOTIF_DIALOGUES.N3.composed.quiet[1]`: …少し、休むよ
+- `NOTIF_DIALOGUES.N3.composed.shy[1]`: …無理はしてないつもりだけど。…少し休んだ方がいいかもね
+- `NOTIF_DIALOGUES.N3.composed.easygoing[1]`: …ちょっと疲れたかな。…少し休めば平気だよ
+- `NOTIF_DIALOGUES.N3.composed.earnest[1]`: …少し休めば大丈夫。焦ることはないよ
+- `NOTIF_DIALOGUES.N3.composed.emotional[1]`: …体がしんどいな。…でも、まだやりたいんだけど
+- `NOTIF_DIALOGUES.N3.cool.bold[1]`: …問題ない。戻れる
+- `NOTIF_DIALOGUES.N3.cool.quiet[1]`: …大丈夫だ。すぐ戻れる
+- `NOTIF_DIALOGUES.N3.cool.shy[1]`: …無理はしてない。…でも、少し休みたい
+- `NOTIF_DIALOGUES.N3.cool.easygoing[1]`: …少し疲れた。休めば平気だ
+- `NOTIF_DIALOGUES.N3.cool.earnest[1]`: …すまない。体が追いつかない。休めば戻る
+- `NOTIF_DIALOGUES.N3.cool.earnest[2]`: …必ず立て直す
+- `NOTIF_DIALOGUES.N3.cool.emotional[1]`: …体が、しんどい。…でも、やりたい
+- `NOTIF_DIALOGUES.N3.polite.quiet[1]`: …少し休ませていただければ…
+- `NOTIF_DIALOGUES.N3.polite.shy[1]`: 報告です…あ、あの…
+- `NOTIF_DIALOGUES.N3.polite.earnest[1]`: 申し訳ありません…少し休ませていただければ、必ず戻ります
+- `NOTIF_DIALOGUES.N3.polite.emotional[1]`: う…体がしんどいです…でも、でも頑張りたいのに…っ
+- `NOTIF_DIALOGUES.N4.standard.normal[1]`: こんなにたくさんの応援をいただけるなんて、びっくりしています
+- `NOTIF_DIALOGUES.N4.standard.normal[2]`: ファンの声が力になってます
+- `NOTIF_DIALOGUES.N4.standard.bold[1]`: この人気を足がかりに、私はもっと上に行く
+- `NOTIF_DIALOGUES.N4.standard.bold[2]`: まだまだここで終わるつもりはない
+- `NOTIF_DIALOGUES.N4.standard.quiet[1]`: ……応援、ありがとうございます
+- `NOTIF_DIALOGUES.N4.standard.shy[1]`: え、あの…私なんかを応援してくれる人がいるなんて…
+- `NOTIF_DIALOGUES.N4.standard.easygoing[1]`: ファンの皆さんが喜んでくれるのが一番嬉しい！
+- `NOTIF_DIALOGUES.N4.standard.easygoing[2]`: もっとみんなを楽しませたい！
+- `NOTIF_DIALOGUES.N4.standard.earnest[1]`: みんなに応援してもらえるって、本当に力になりますね
+- `NOTIF_DIALOGUES.N4.standard.earnest[2]`: ファンの声が原動力です
+- `NOTIF_DIALOGUES.N4.standard.emotional[1]`: みんなが応援してくれてる…！嬉しくて泣きそう…！
+- `NOTIF_DIALOGUES.N4.ojousama.normal[1]`: 皆様からこれほどの声援をいただけるのは、光栄です
+- `NOTIF_DIALOGUES.N4.ojousama.bold[1]`: この声援を力に、さらに上を目指しますわ
+- `NOTIF_DIALOGUES.N4.ojousama.quiet[1]`: ……応援、感謝いたしますわ
+- `NOTIF_DIALOGUES.N4.ojousama.shy[1]`: え、あの…わたくしなんかを応援してくださる方がいるなんて…
+- `NOTIF_DIALOGUES.N4.ojousama.earnest[1]`: ファンの皆様のお声が力になりますわ
+- `NOTIF_DIALOGUES.N4.ojousama.emotional[1]`: 皆さんが応援してくださって…っ、嬉しくて泣きそう…っ
+- `NOTIF_DIALOGUES.N4.delinquent.normal[1]`: 応援してくれるやつがいるってのは…悪くねえな
+- `NOTIF_DIALOGUES.N4.delinquent.bold[1]`: この勢いで突っ走るぜ！
+- `NOTIF_DIALOGUES.N4.delinquent.quiet[1]`: ……応援、ありがとな
+- `NOTIF_DIALOGUES.N4.delinquent.shy[1]`: え、あの…あたしなんかを応援してくれる人がいるなんて…
+- `NOTIF_DIALOGUES.N4.delinquent.easygoing[1]`: ファンが盛り上がってんの最高じゃん！
+- `NOTIF_DIALOGUES.N4.delinquent.earnest[1]`: 応援してもらえるってのは、マジで力になるな
+- `NOTIF_DIALOGUES.N4.delinquent.earnest[2]`: ファンの声が原動力なんだよ
+- `NOTIF_DIALOGUES.N4.delinquent.emotional[1]`: みんな応援してくれてる…っ、嬉しくて泣きそうだよ…っ
+- `NOTIF_DIALOGUES.N4.seductive.normal[1]`: こんなに応援してもらえるなんて…嬉しいわ
+- `NOTIF_DIALOGUES.N4.seductive.bold[1]`: この人気、活かさない手はないわね
+- `NOTIF_DIALOGUES.N4.seductive.shy[1]`: え、あの…わたしなんかを応援してくれる人がいるなんて…
+- `NOTIF_DIALOGUES.N4.seductive.easygoing[1]`: ファンの方が喜んでくれると、もっと見せたくなるわ
+- `NOTIF_DIALOGUES.N4.seductive.earnest[1]`: 応援してくれる人がいるって、本当に力になるの
+- `NOTIF_DIALOGUES.N4.seductive.emotional[1]`: 大事な話よ……っ……ふふ、しっかり聞いて……
+- `NOTIF_DIALOGUES.N4.composed.normal[1]`: …ありがたいね。ちゃんと届いてるよ
+- `NOTIF_DIALOGUES.N4.composed.bold[1]`: …悪くないね。この期待に応えるだけだよ
+- `NOTIF_DIALOGUES.N4.composed.quiet[1]`: …応援、ありがとう。…届いてるよ
+- `NOTIF_DIALOGUES.N4.composed.shy[1]`: …私を応援してくれる人がいるのか。…ちょっと驚いたよ
+- `NOTIF_DIALOGUES.N4.composed.easygoing[1]`: …ファンが喜んでくれるのが一番だね
+- `NOTIF_DIALOGUES.N4.composed.easygoing[2]`: …もっと楽しませたいな
+- `NOTIF_DIALOGUES.N4.composed.earnest[1]`: …みんなの声、ちゃんと届いてるよ。ありがたいね
+- `NOTIF_DIALOGUES.N4.composed.emotional[1]`: …みんな応援してくれてるんだね。…ちょっと、泣きそうだ
+- `NOTIF_DIALOGUES.N4.cool.bold[1]`: …悪くない。もっと上を目指す
+- `NOTIF_DIALOGUES.N4.cool.quiet[1]`: …ファンの期待には応える
+- `NOTIF_DIALOGUES.N4.cool.shy[1]`: …私を応援してくれる人がいる。…信じられない
+- `NOTIF_DIALOGUES.N4.cool.easygoing[1]`: …ファンが喜ぶ。それが一番だ
+- `NOTIF_DIALOGUES.N4.cool.easygoing[2]`: …もっと楽しませたい
+- `NOTIF_DIALOGUES.N4.cool.earnest[1]`: …応援は、力になる
+- `NOTIF_DIALOGUES.N4.cool.earnest[2]`: …ファンの声が原動力だ
+- `NOTIF_DIALOGUES.N4.cool.emotional[1]`: …みんなが応援してくれてる。…泣きそうだ
+- `NOTIF_DIALOGUES.N4.polite.quiet[1]`: …応援してくださって、ありがとうございます
+- `NOTIF_DIALOGUES.N4.polite.shy[1]`: お、大事なお知らせです…
+- `NOTIF_DIALOGUES.N4.polite.earnest[1]`: 皆様の応援が、何よりの原動力です
+- `NOTIF_DIALOGUES.N4.polite.emotional[1]`: みんなが応援してくださって…っ、嬉しくて泣きそうです…っ
+- `NOTIF_DIALOGUES.N5_warning.standard.normal[1]`: （どこか上の空で、視線が泳いでいる）
+- `NOTIF_DIALOGUES.N5_warning.standard.normal[2]`: ……すみません、ちょっと考え事を
+- `NOTIF_DIALOGUES.N5_warning.standard.bold[1]`: ……このままで本当にいいのか、って考えちゃうことがある
+- `NOTIF_DIALOGUES.N5_warning.standard.bold[2]`: 最近、何と戦ってるのか分からなくなる
+- `NOTIF_DIALOGUES.N5_warning.standard.shy[1]`: …あ、あの……なんでもない、です…
+- `NOTIF_DIALOGUES.N5_warning.standard.easygoing[1]`: あはは…いや、ちょっとね。大丈夫、大丈夫
+- `NOTIF_DIALOGUES.N5_warning.standard.earnest[1]`: 練習しても練習しても、何かが足りない気がして…
+- `NOTIF_DIALOGUES.N5_warning.standard.earnest[2]`: …ここにいたい気持ちは変わらないんですけど……
+- `NOTIF_DIALOGUES.N5_warning.standard.emotional[1]`: …なんか、最近ずっとモヤモヤして…うまく言えないけど…
+- `NOTIF_DIALOGUES.N5_warning.ojousama.normal[1]`: …少し、考え事がございまして
+- `NOTIF_DIALOGUES.N5_warning.ojousama.bold[1]`: …このままで本当によろしいのか、と考えてしまいますの
+- `NOTIF_DIALOGUES.N5_warning.ojousama.quiet[1]`: ………なんでも、ありませんわ
+- `NOTIF_DIALOGUES.N5_warning.ojousama.shy[1]`: …あ、あの……なんでも、ありませんの…
+- `NOTIF_DIALOGUES.N5_warning.ojousama.earnest[1]`: 練習を重ねましても、何かが足りない気がしますの…
+- `NOTIF_DIALOGUES.N5_warning.ojousama.emotional[1]`: …なんだか、最近ずっと胸がざわついて…うまく言えませんけれど…
+- `NOTIF_DIALOGUES.N5_warning.delinquent.normal[1]`: …別に。何でもねーよ
+- `NOTIF_DIALOGUES.N5_warning.delinquent.bold[1]`: …最近、何のために戦ってんのか分かんねーんだ
+- `NOTIF_DIALOGUES.N5_warning.delinquent.quiet[1]`: ………別に。なんでもねえ
+- `NOTIF_DIALOGUES.N5_warning.delinquent.shy[1]`: …あ、いや……なんでも、ねえっす…
+- `NOTIF_DIALOGUES.N5_warning.delinquent.easygoing[1]`: あー…いや、なんでもねー。平気平気
+- `NOTIF_DIALOGUES.N5_warning.delinquent.earnest[1]`: 練習しても練習しても、何かが足りねえ気がしてよ…
+- `NOTIF_DIALOGUES.N5_warning.delinquent.earnest[2]`: …ここにいてえ気持ちは変わらねえんだけどさ……
+- `NOTIF_DIALOGUES.N5_warning.delinquent.emotional[1]`: …なんか、最近ずっとモヤモヤしててよ…うまく言えねえけど…
+- `NOTIF_DIALOGUES.N5_warning.seductive.normal[1]`: …ごめんなさい、ちょっと考え事してて
+- `NOTIF_DIALOGUES.N5_warning.seductive.bold[1]`: …このままでいいのかなって、ふと思うの
+- `NOTIF_DIALOGUES.N5_warning.seductive.shy[1]`: …あ、あの……なんでも、ないの…
+- `NOTIF_DIALOGUES.N5_warning.seductive.easygoing[1]`: ふふ…なんでもないわ。気にしないで
+- `NOTIF_DIALOGUES.N5_warning.seductive.earnest[1]`: いくら練習しても、何か足りない気がして…
+- `NOTIF_DIALOGUES.N5_warning.seductive.emotional[1]`: 緊急よ……っ……ふふ、よく聞いて……
+- `NOTIF_DIALOGUES.N5_warning.composed.normal[1]`: …ん、ちょっと考え事。気にしないで
+- `NOTIF_DIALOGUES.N5_warning.composed.bold[1]`: …ま、少し立ち止まってるだけだよ。…たぶん
+- `NOTIF_DIALOGUES.N5_warning.composed.quiet[1]`: …………なんでもないよ
+- `NOTIF_DIALOGUES.N5_warning.composed.shy[1]`: …いや、なんでもないよ。…気にしないで
+- `NOTIF_DIALOGUES.N5_warning.composed.easygoing[1]`: …いや、ちょっとね。…大丈夫、大丈夫
+- `NOTIF_DIALOGUES.N5_warning.composed.earnest[1]`: …何かが噛み合わない。…まあ、そういう時期もあるか
+- `NOTIF_DIALOGUES.N5_warning.composed.emotional[1]`: …最近、ずっと晴れないんだよね。…うまく言えないけど
+- `NOTIF_DIALOGUES.N5_warning.cool.bold[1]`: ……目的を、見失いかけている
+- `NOTIF_DIALOGUES.N5_warning.cool.shy[1]`: …あ……なんでも、ない
+- `NOTIF_DIALOGUES.N5_warning.cool.easygoing[1]`: …いや、少しな。大丈夫だ
+- `NOTIF_DIALOGUES.N5_warning.cool.earnest[1]`: …練習しても、何かが足りない
+- `NOTIF_DIALOGUES.N5_warning.cool.earnest[2]`: …ここにいたい気持ちは、変わらない。…ただ
+- `NOTIF_DIALOGUES.N5_warning.cool.emotional[1]`: …最近、ずっとモヤモヤする。…うまく言えない
+- `NOTIF_DIALOGUES.N5_warning.polite.quiet[1]`: …あの…何でもありません…
+- `NOTIF_DIALOGUES.N5_warning.polite.shy[1]`: き、緊急のお知らせです…!
+- `NOTIF_DIALOGUES.N5_warning.polite.earnest[1]`: 練習を重ねても、何か足りない気がいたしまして…
+- `NOTIF_DIALOGUES.N5_warning.polite.emotional[1]`: …なんだか、最近ずっとモヤモヤして…うまく言えないんですけど…
+- `NOTIF_DIALOGUES.N5_low.standard.normal[1]`: …別に、何でもないです
+- `NOTIF_DIALOGUES.N5_low.standard.normal[2]`: もういいです。分かりました
+- `NOTIF_DIALOGUES.N5_low.standard.bold[1]`: ……この団体で、自分の夢は叶えられるんだろうか
+- `NOTIF_DIALOGUES.N5_low.standard.bold[2]`: 先が見えなくて、焦ってる
+- `NOTIF_DIALOGUES.N5_low.standard.quiet[1]`: ………（何も言わず、目を逸らす）
+- `NOTIF_DIALOGUES.N5_low.standard.shy[1]`: …ごめんなさい…もう…わかりません…
+- `NOTIF_DIALOGUES.N5_low.standard.easygoing[1]`: あはは…もう、いいかなって。ちょっと考えさせて
+- `NOTIF_DIALOGUES.N5_low.standard.earnest[1]`: 裏切りたいわけじゃない。ただ……
+- `NOTIF_DIALOGUES.N5_low.standard.earnest[2]`: ここが好きだから、だから辛いんです
+- `NOTIF_DIALOGUES.N5_low.standard.emotional[1]`: もう…もう分かんない…！どうすればいいの…！
+- `NOTIF_DIALOGUES.N5_low.ojousama.normal[1]`: …もう結構ですわ
+- `NOTIF_DIALOGUES.N5_low.ojousama.bold[1]`: …この団体で、わたしの夢は叶えられますの…？
+- `NOTIF_DIALOGUES.N5_low.ojousama.quiet[1]`: ………（静かに目を伏せ、何も言わない）
+- `NOTIF_DIALOGUES.N5_low.ojousama.shy[1]`: …ごめんなさい…もう…わかりませんの…
+- `NOTIF_DIALOGUES.N5_low.ojousama.earnest[1]`: 裏切りたいわけではありませんの。ただ……
+- `NOTIF_DIALOGUES.N5_low.ojousama.emotional[1]`: もう…もうわかりません…っ、どうすればよいの…っ
+- `NOTIF_DIALOGUES.N5_low.delinquent.normal[1]`: …もういいわ。勝手にする
+- `NOTIF_DIALOGUES.N5_low.delinquent.bold[1]`: …ここにいても、先が見えねえ
+- `NOTIF_DIALOGUES.N5_low.delinquent.quiet[1]`: ………（小さく舌打ちして、そっぽを向く）
+- `NOTIF_DIALOGUES.N5_low.delinquent.shy[1]`: …悪い…もう…わかんねえっす…
+- `NOTIF_DIALOGUES.N5_low.delinquent.easygoing[1]`: もーいいわ。考えさせてくれ
+- `NOTIF_DIALOGUES.N5_low.delinquent.earnest[1]`: 裏切りてえわけじゃねえんだ。ただ……
+- `NOTIF_DIALOGUES.N5_low.delinquent.earnest[2]`: ここが好きだからよ、だから辛えんだよ
+- `NOTIF_DIALOGUES.N5_low.delinquent.emotional[1]`: もう…もうわかんねえよ…っ、どうすりゃいいんだよ…っ
+- `NOTIF_DIALOGUES.N5_low.seductive.normal[1]`: …もういいわ。分かったから
+- `NOTIF_DIALOGUES.N5_low.seductive.bold[1]`: …ここにいて、私の夢は叶うのかしら
+- `NOTIF_DIALOGUES.N5_low.seductive.shy[1]`: …ごめんなさい…もう…わからないの…
+- `NOTIF_DIALOGUES.N5_low.seductive.easygoing[1]`: ふふ…もういいかなって、少し思っちゃった
+- `NOTIF_DIALOGUES.N5_low.seductive.earnest[1]`: 裏切りたいわけじゃないの。ただ……ね
+- `NOTIF_DIALOGUES.N5_low.seductive.emotional[1]`: ちょっと心配なの……っ……ふふ……
+- `NOTIF_DIALOGUES.N5_low.composed.normal[1]`: …もういいよ。分かったから
+- `NOTIF_DIALOGUES.N5_low.composed.bold[1]`: …ここにいる意味、少し考え直してもいいかな
+- `NOTIF_DIALOGUES.N5_low.composed.quiet[1]`: ………（何も言わず、窓の外を見ている）
+- `NOTIF_DIALOGUES.N5_low.composed.shy[1]`: …ごめん。…もう、わからないんだ
+- `NOTIF_DIALOGUES.N5_low.composed.easygoing[1]`: …もう、いいかなって。…少し考えさせて
+- `NOTIF_DIALOGUES.N5_low.composed.earnest[1]`: …嫌いになったわけじゃない。ただ……ね
+- `NOTIF_DIALOGUES.N5_low.composed.emotional[1]`: …もう、わからない。…どうすればいいんだろうね
+- `NOTIF_DIALOGUES.N5_low.cool.bold[1]`: ……もう、見切りをつけるべきなのか
+- `NOTIF_DIALOGUES.N5_low.cool.quiet[1]`: ……（静かに出口を見ている）
+- `NOTIF_DIALOGUES.N5_low.cool.shy[1]`: …ごめん。…もう、わからない
+- `NOTIF_DIALOGUES.N5_low.cool.easygoing[1]`: …もう、いいかもしれない。少し考えさせてくれ
+- `NOTIF_DIALOGUES.N5_low.cool.earnest[1]`: …裏切りたいわけじゃない。ただ……
+- `NOTIF_DIALOGUES.N5_low.cool.earnest[2]`: …ここが好きだ。…だから、辛い
+- `NOTIF_DIALOGUES.N5_low.cool.emotional[1]`: …もう、わからない。…どうすればいい
+- `NOTIF_DIALOGUES.N5_low.polite.quiet[1]`: …失礼します（静かに立ち去ろうとする）
+- `NOTIF_DIALOGUES.N5_low.polite.shy[1]`: あ、あの…ちょっと、心配なことが…
+- `NOTIF_DIALOGUES.N5_low.polite.earnest[1]`: 裏切るつもりはございません。ただ……
+- `NOTIF_DIALOGUES.N5_low.polite.emotional[1]`: もう…もうわかりません…っ、どうすればいいんですか…っ
 
 ## `SNAPSHOT_TEXTS`
 
@@ -1311,129 +1467,129 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SNAPSHOT_TEXTS.G1.scene[2]`: {name}が食堂で同僚たちの輪に入らず、黙って食事をしていた
 - `SNAPSHOT_TEXTS.G1.scene[3]`: {name}がロッカールームで、誰かの契約書をちらりと見ていた
 
-### G1.voice.normal._default[]
+### G1.voice.standard.normal[]
 
-- `SNAPSHOT_TEXTS.G1.voice.normal._default[1]`: …まあ、こんなもんか
-- `SNAPSHOT_TEXTS.G1.voice.normal._default[2]`: …頑張ってるのにな
+- `SNAPSHOT_TEXTS.G1.voice.standard.normal[1]`: …まあ、こんなもんか
+- `SNAPSHOT_TEXTS.G1.voice.standard.normal[2]`: …頑張ってるのにな
 
-### G1.voice.normal.ojousama[]
+### G1.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.G1.voice.normal.ojousama[1]`: …お金のことで文句を言うつもりはないけれど
+- `SNAPSHOT_TEXTS.G1.voice.standard.bold[1]`: …なんであの子と同じ扱いなわけ？
+- `SNAPSHOT_TEXTS.G1.voice.standard.bold[2]`: …納得いかない
 
-### G1.voice.normal.delinquent[]
+### G1.voice.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.G1.voice.normal.delinquent[1]`: …チッ
+- `SNAPSHOT_TEXTS.G1.voice.standard.earnest[1]`: …もっと結果を出せばいいだけの話、だよね
+- `SNAPSHOT_TEXTS.G1.voice.standard.earnest[2]`: …自分の力不足かな
 
-### G1.voice.normal.composed[]
+### G1.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.G1.voice.normal.composed[1]`: …まあ、こんなものか
+- `SNAPSHOT_TEXTS.G1.voice.standard.emotional[1]`: …なんで…なんでだろ
+- `SNAPSHOT_TEXTS.G1.voice.standard.emotional[2]`: …悔しいな
 
-### G1.voice.bold._default[]
+### G1.voice.ojousama.normal[]
 
-- `SNAPSHOT_TEXTS.G1.voice.bold._default[1]`: …なんであの子と同じ扱いなわけ？
-- `SNAPSHOT_TEXTS.G1.voice.bold._default[2]`: …納得いかない
+- `SNAPSHOT_TEXTS.G1.voice.ojousama.normal[1]`: …お金のことで文句を言うつもりはないけれど
 
-### G1.voice.bold.ojousama[]
+### G1.voice.ojousama.bold[]
 
-- `SNAPSHOT_TEXTS.G1.voice.bold.ojousama[1]`: …わたくしの価値、ちゃんと見てくださっているのかしら
+- `SNAPSHOT_TEXTS.G1.voice.ojousama.bold[1]`: …わたくしの価値、ちゃんと見てくださっているのかしら
 
-### G1.voice.bold.delinquent[]
+### G1.voice.ojousama.earnest[]
 
-- `SNAPSHOT_TEXTS.G1.voice.bold.delinquent[1]`: …ふざけんなよ
+- `SNAPSHOT_TEXTS.G1.voice.ojousama.earnest[1]`: …努力が足りないのかしら。でも…
 
-### G1.voice.bold.composed[]
+### G1.voice.delinquent.normal[]
 
-- `SNAPSHOT_TEXTS.G1.voice.bold.composed[1]`: …ふぅん。…まあ、いいけど
+- `SNAPSHOT_TEXTS.G1.voice.delinquent.normal[1]`: …チッ
 
-### G1.voice.earnest._default[]
+### G1.voice.delinquent.bold[]
 
-- `SNAPSHOT_TEXTS.G1.voice.earnest._default[1]`: …もっと結果を出せばいいだけの話、だよね
-- `SNAPSHOT_TEXTS.G1.voice.earnest._default[2]`: …自分の力不足かな
+- `SNAPSHOT_TEXTS.G1.voice.delinquent.bold[1]`: …ふざけんなよ
 
-### G1.voice.earnest.ojousama[]
+### G1.voice.delinquent.emotional[]
 
-- `SNAPSHOT_TEXTS.G1.voice.earnest.ojousama[1]`: …努力が足りないのかしら。でも…
+- `SNAPSHOT_TEXTS.G1.voice.delinquent.emotional[1]`: …やってられっかよ
 
-### G1.voice.earnest.composed[]
+### G1.voice.composed.normal[]
 
-- `SNAPSHOT_TEXTS.G1.voice.earnest.composed[1]`: …結果で示すしかないか
+- `SNAPSHOT_TEXTS.G1.voice.composed.normal[1]`: …まあ、こんなものか
 
-### G1.voice.emotional._default[]
+### G1.voice.composed.bold[]
 
-- `SNAPSHOT_TEXTS.G1.voice.emotional._default[1]`: …なんで…なんでだろ
-- `SNAPSHOT_TEXTS.G1.voice.emotional._default[2]`: …悔しいな
+- `SNAPSHOT_TEXTS.G1.voice.composed.bold[1]`: …ふぅん。…まあ、いいけど
 
-### G1.voice.emotional.delinquent[]
+### G1.voice.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.G1.voice.emotional.delinquent[1]`: …やってられっかよ
+- `SNAPSHOT_TEXTS.G1.voice.composed.earnest[1]`: …結果で示すしかないか
 
-### G1.voice.emotional.seductive[]
+### G1.voice.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.G1.voice.emotional.seductive[1]`: もう少し稼ぎたいわね……っ……
+- `SNAPSHOT_TEXTS.G1.voice.composed.emotional[1]`: …っ…まあ、いい
 
-### G1.voice.emotional.composed[]
+### G1.voice.seductive.emotional[]
 
-- `SNAPSHOT_TEXTS.G1.voice.emotional.composed[1]`: …っ…まあ、いい
+- `SNAPSHOT_TEXTS.G1.voice.seductive.emotional[1]`: もう少し稼ぎたいわね……っ……
 
-### G1.voice.shy.polite[]
+### G1.voice.polite.shy[]
 
-- `SNAPSHOT_TEXTS.G1.voice.shy.polite[1]`: …もう少し、お給料が、上がったらいいな…
+- `SNAPSHOT_TEXTS.G1.voice.polite.shy[1]`: …もう少し、お給料が、上がったらいいな…
 
 ### G2.scene[]
 
 - `SNAPSHOT_TEXTS.G2.scene[1]`: {name}が後輩の{name2}の試合を腕を組んで見ていた。複雑な表情だ
 - `SNAPSHOT_TEXTS.G2.scene[2]`: {name}が{name2}に技を教えている。だが、その目にどこか翳りがある
 
-### G2.voice.normal._default[]
+### G2.voice.standard.normal[]
 
-- `SNAPSHOT_TEXTS.G2.voice.normal._default[1]`: …あの子、伸びたな
-- `SNAPSHOT_TEXTS.G2.voice.normal._default[2]`: …先輩としてちゃんと見てるよ。…でもね
+- `SNAPSHOT_TEXTS.G2.voice.standard.normal[1]`: …あの子、伸びたな
+- `SNAPSHOT_TEXTS.G2.voice.standard.normal[2]`: …先輩としてちゃんと見てるよ。…でもね
 
-### G2.voice.normal.composed[]
+### G2.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.G2.voice.normal.composed[1]`: …伸びたね。…まあ、焦ることはない
+- `SNAPSHOT_TEXTS.G2.voice.standard.bold[1]`: …年功序列なんて古い。分かってる。分かってるけど
+- `SNAPSHOT_TEXTS.G2.voice.standard.bold[2]`: …あたしだって負けてない
 
-### G2.voice.bold._default[]
+### G2.voice.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.G2.voice.bold._default[1]`: …年功序列なんて古い。分かってる。分かってるけど
-- `SNAPSHOT_TEXTS.G2.voice.bold._default[2]`: …あたしだって負けてない
+- `SNAPSHOT_TEXTS.G2.voice.standard.earnest[1]`: …あの子が評価されるのは正しいと思う。思うんだけど
 
-### G2.voice.bold.delinquent[]
+### G2.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.G2.voice.bold.delinquent[1]`: …ガキが調子乗ってんじゃねーよ
+- `SNAPSHOT_TEXTS.G2.voice.standard.emotional[1]`: …先に始めたのはあたしなのに
+- `SNAPSHOT_TEXTS.G2.voice.standard.emotional[2]`: …置いていかれてる気がする
 
-### G2.voice.bold.composed[]
+### G2.voice.composed.normal[]
 
-- `SNAPSHOT_TEXTS.G2.voice.bold.composed[1]`: …やるね。…でも、まだ負けるつもりはない
+- `SNAPSHOT_TEXTS.G2.voice.composed.normal[1]`: …伸びたね。…まあ、焦ることはない
 
-### G2.voice.quiet.cool[]
+### G2.voice.composed.bold[]
 
-- `SNAPSHOT_TEXTS.G2.voice.quiet.cool[1]`: …そう。それだけのことだ
+- `SNAPSHOT_TEXTS.G2.voice.composed.bold[1]`: …やるね。…でも、まだ負けるつもりはない
 
-### G2.voice.earnest._default[]
+### G2.voice.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.G2.voice.earnest._default[1]`: …あの子が評価されるのは正しいと思う。思うんだけど
+- `SNAPSHOT_TEXTS.G2.voice.composed.earnest[1]`: …正当な評価だろうね。…でも、自分もまだ
 
-### G2.voice.earnest.composed[]
+### G2.voice.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.G2.voice.earnest.composed[1]`: …正当な評価だろうね。…でも、自分もまだ
+- `SNAPSHOT_TEXTS.G2.voice.composed.emotional[1]`: …っ…先にいたのは、こっちなのに
 
-### G2.voice.emotional._default[]
+### G2.voice.delinquent.bold[]
 
-- `SNAPSHOT_TEXTS.G2.voice.emotional._default[1]`: …先に始めたのはあたしなのに
-- `SNAPSHOT_TEXTS.G2.voice.emotional._default[2]`: …置いていかれてる気がする
+- `SNAPSHOT_TEXTS.G2.voice.delinquent.bold[1]`: …ガキが調子乗ってんじゃねーよ
 
-### G2.voice.emotional.seductive[]
+### G2.voice.cool.quiet[]
 
-- `SNAPSHOT_TEXTS.G2.voice.emotional.seductive[1]`: ひとりは、ちょっと寂しいの……っ……
+- `SNAPSHOT_TEXTS.G2.voice.cool.quiet[1]`: …そう。それだけのことだ
 
-### G2.voice.emotional.composed[]
+### G2.voice.seductive.emotional[]
 
-- `SNAPSHOT_TEXTS.G2.voice.emotional.composed[1]`: …っ…先にいたのは、こっちなのに
+- `SNAPSHOT_TEXTS.G2.voice.seductive.emotional[1]`: ひとりは、ちょっと寂しいの……っ……
 
-### G2.voice.shy.polite[]
+### G2.voice.polite.shy[]
 
-- `SNAPSHOT_TEXTS.G2.voice.shy.polite[1]`: …ひ、ひとりだと、寂しいです…
+- `SNAPSHOT_TEXTS.G2.voice.polite.shy[1]`: …ひ、ひとりだと、寂しいです…
 
 ### G3.scene[]
 
@@ -1441,60 +1597,60 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SNAPSHOT_TEXTS.G3.scene[2]`: {name}が練習中、いつもより打ち込みが荒い。何かを持て余している
 - `SNAPSHOT_TEXTS.G3.scene[3]`: タイトル戦の話題が出た時、{name}だけが黙っていた
 
-### G3.voice.normal._default[]
+### G3.voice.standard.normal[]
 
-- `SNAPSHOT_TEXTS.G3.voice.normal._default[1]`: …いつになったら
+- `SNAPSHOT_TEXTS.G3.voice.standard.normal[1]`: …いつになったら
 
-### G3.voice.normal.composed[]
+### G3.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.G3.voice.normal.composed[1]`: …まあ、待つさ
+- `SNAPSHOT_TEXTS.G3.voice.standard.bold[1]`: …いつになったらあたしの番が来るの？
+- `SNAPSHOT_TEXTS.G3.voice.standard.bold[2]`: …待つのは好きじゃないな
 
-### G3.voice.bold._default[]
+### G3.voice.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.G3.voice.bold._default[1]`: …いつになったらあたしの番が来るの？
-- `SNAPSHOT_TEXTS.G3.voice.bold._default[2]`: …待つのは好きじゃないな
+- `SNAPSHOT_TEXTS.G3.voice.standard.earnest[1]`: …実力が足りないから？ それとも…
+- `SNAPSHOT_TEXTS.G3.voice.standard.earnest[2]`: …もう少し、待てばいいのかな
 
-### G3.voice.bold.ojousama[]
+### G3.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.G3.voice.bold.ojousama[1]`: …わたくしにふさわしい舞台がまだ来ないなんて
+- `SNAPSHOT_TEXTS.G3.voice.standard.emotional[1]`: …悔しくないって言ったら嘘になる
+- `SNAPSHOT_TEXTS.G3.voice.standard.emotional[2]`: …あたしも、あそこに立ちたい
 
-### G3.voice.bold.delinquent[]
+### G3.voice.composed.normal[]
 
-- `SNAPSHOT_TEXTS.G3.voice.bold.delinquent[1]`: …いい加減使えよ。腐るぞ
+- `SNAPSHOT_TEXTS.G3.voice.composed.normal[1]`: …まあ、待つさ
 
-### G3.voice.bold.composed[]
+### G3.voice.composed.bold[]
 
-- `SNAPSHOT_TEXTS.G3.voice.bold.composed[1]`: …ふぅん。…まだ順番が来ないか
+- `SNAPSHOT_TEXTS.G3.voice.composed.bold[1]`: …ふぅん。…まだ順番が来ないか
 
-### G3.voice.quiet.cool[]
+### G3.voice.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.G3.voice.quiet.cool[1]`: …チャンスは自分で作るものだと思っている
+- `SNAPSHOT_TEXTS.G3.voice.composed.earnest[1]`: …焦ってはいない。…でも、待つのも限度がある
 
-### G3.voice.earnest._default[]
+### G3.voice.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.G3.voice.earnest._default[1]`: …実力が足りないから？ それとも…
-- `SNAPSHOT_TEXTS.G3.voice.earnest._default[2]`: …もう少し、待てばいいのかな
+- `SNAPSHOT_TEXTS.G3.voice.composed.emotional[1]`: …っ…黙ってるけど。…悔しくないわけじゃない
 
-### G3.voice.earnest.composed[]
+### G3.voice.ojousama.bold[]
 
-- `SNAPSHOT_TEXTS.G3.voice.earnest.composed[1]`: …焦ってはいない。…でも、待つのも限度がある
+- `SNAPSHOT_TEXTS.G3.voice.ojousama.bold[1]`: …わたくしにふさわしい舞台がまだ来ないなんて
 
-### G3.voice.emotional._default[]
+### G3.voice.delinquent.bold[]
 
-- `SNAPSHOT_TEXTS.G3.voice.emotional._default[1]`: …悔しくないって言ったら嘘になる
-- `SNAPSHOT_TEXTS.G3.voice.emotional._default[2]`: …あたしも、あそこに立ちたい
+- `SNAPSHOT_TEXTS.G3.voice.delinquent.bold[1]`: …いい加減使えよ。腐るぞ
 
-### G3.voice.emotional.seductive[]
+### G3.voice.cool.quiet[]
 
-- `SNAPSHOT_TEXTS.G3.voice.emotional.seductive[1]`: …もう少し目立たないとダメなのかしら
+- `SNAPSHOT_TEXTS.G3.voice.cool.quiet[1]`: …チャンスは自分で作るものだと思っている
 
-### G3.voice.emotional.composed[]
+### G3.voice.seductive.emotional[]
 
-- `SNAPSHOT_TEXTS.G3.voice.emotional.composed[1]`: …っ…黙ってるけど。…悔しくないわけじゃない
+- `SNAPSHOT_TEXTS.G3.voice.seductive.emotional[1]`: …もう少し目立たないとダメなのかしら
 
-### G3.voice.shy.polite[]
+### G3.voice.polite.shy[]
 
-- `SNAPSHOT_TEXTS.G3.voice.shy.polite[1]`: …も、もっと注目されないと、ダメですよね…
+- `SNAPSHOT_TEXTS.G3.voice.polite.shy[1]`: …も、もっと注目されないと、ダメですよね…
 
 ### G4.scene[]
 
@@ -1502,46 +1658,46 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SNAPSHOT_TEXTS.G4.scene[2]`: 控え室の隅で、{name}がストレッチをしている。出番を待つ背中に焦りが見える
 - `SNAPSHOT_TEXTS.G4.scene[3]`: {name}が自主練の後、一人でリングを見つめていた
 
-### G4.voice.normal._default[]
+### G4.voice.standard.normal[]
 
-- `SNAPSHOT_TEXTS.G4.voice.normal._default[1]`: …出番、来ないかな
+- `SNAPSHOT_TEXTS.G4.voice.standard.normal[1]`: …出番、来ないかな
 
-### G4.voice.normal.composed[]
+### G4.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.G4.voice.normal.composed[1]`: …まあ、待つよ
+- `SNAPSHOT_TEXTS.G4.voice.standard.bold[1]`: …使ってくれなきゃ意味ないじゃん
+- `SNAPSHOT_TEXTS.G4.voice.standard.bold[2]`: …あたしの居場所、あるのかな
 
-### G4.voice.bold._default[]
+### G4.voice.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.G4.voice.bold._default[1]`: …使ってくれなきゃ意味ないじゃん
-- `SNAPSHOT_TEXTS.G4.voice.bold._default[2]`: …あたしの居場所、あるのかな
+- `SNAPSHOT_TEXTS.G4.voice.standard.earnest[1]`: …準備はできてる。いつでも
 
-### G4.voice.bold.composed[]
+### G4.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.G4.voice.bold.composed[1]`: …使ってくれないと、困るんだけど
+- `SNAPSHOT_TEXTS.G4.voice.standard.emotional[1]`: …見てくれてるのかな、あたしのこと
 
-### G4.voice.earnest._default[]
+### G4.voice.composed.normal[]
 
-- `SNAPSHOT_TEXTS.G4.voice.earnest._default[1]`: …準備はできてる。いつでも
+- `SNAPSHOT_TEXTS.G4.voice.composed.normal[1]`: …まあ、待つよ
 
-### G4.voice.earnest.composed[]
+### G4.voice.composed.bold[]
 
-- `SNAPSHOT_TEXTS.G4.voice.earnest.composed[1]`: …準備はできてる。…いつでもね
+- `SNAPSHOT_TEXTS.G4.voice.composed.bold[1]`: …使ってくれないと、困るんだけど
 
-### G4.voice.emotional._default[]
+### G4.voice.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.G4.voice.emotional._default[1]`: …見てくれてるのかな、あたしのこと
+- `SNAPSHOT_TEXTS.G4.voice.composed.earnest[1]`: …準備はできてる。…いつでもね
 
-### G4.voice.emotional.seductive[]
+### G4.voice.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.G4.voice.emotional.seductive[1]`: もっと強くなりたいの……っ……
+- `SNAPSHOT_TEXTS.G4.voice.composed.emotional[1]`: …っ…出番、まだかな
 
-### G4.voice.emotional.composed[]
+### G4.voice.seductive.emotional[]
 
-- `SNAPSHOT_TEXTS.G4.voice.emotional.composed[1]`: …っ…出番、まだかな
+- `SNAPSHOT_TEXTS.G4.voice.seductive.emotional[1]`: もっと強くなりたいの……っ……
 
-### G4.voice.shy.polite[]
+### G4.voice.polite.shy[]
 
-- `SNAPSHOT_TEXTS.G4.voice.shy.polite[1]`: …つ、強くなりたい、です…
+- `SNAPSHOT_TEXTS.G4.voice.polite.shy[1]`: …つ、強くなりたい、です…
 
 ### R1.scene[]
 
@@ -1559,178 +1715,178 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SNAPSHOT_TEXTS.R2.scene[2]`: {name}が一人でリングの片付けをしている。手伝う者はいない
 - `SNAPSHOT_TEXTS.R2.scene[3]`: 練習後の更衣室。{name}のロッカーの周りだけ、少し空間が空いている
 
-### R2.voice.normal._default[]
+### R2.voice.standard.normal[]
 
-- `SNAPSHOT_TEXTS.R2.voice.normal._default[1]`: …まあ、一人のほうが気楽だし
+- `SNAPSHOT_TEXTS.R2.voice.standard.normal[1]`: …まあ、一人のほうが気楽だし
 
-### R2.voice.normal.composed[]
+### R2.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.R2.voice.normal.composed[1]`: …別に。一人でも困らない
+- `SNAPSHOT_TEXTS.R2.voice.standard.bold[1]`: …別にいいけど。わたしは一人でやれるし
 
-### R2.voice.bold._default[]
+### R2.voice.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.R2.voice.bold._default[1]`: …別にいいけど。わたしは一人でやれるし
+- `SNAPSHOT_TEXTS.R2.voice.standard.earnest[1]`: …もっとみんなと話した方がいいのかな
 
-### R2.voice.bold.delinquent[]
+### R2.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.R2.voice.bold.delinquent[1]`: …ハッ、群れるのは趣味じゃねーんだよ
+- `SNAPSHOT_TEXTS.R2.voice.standard.emotional[1]`: …みんな、あたしのこと嫌いなのかな
+- `SNAPSHOT_TEXTS.R2.voice.standard.emotional[2]`: …ここにいていいのかな
 
-### R2.voice.bold.composed[]
+### R2.voice.composed.normal[]
 
-- `SNAPSHOT_TEXTS.R2.voice.bold.composed[1]`: …まあ、いいんだけどね。一人でも
+- `SNAPSHOT_TEXTS.R2.voice.composed.normal[1]`: …別に。一人でも困らない
 
-### R2.voice.quiet.cool[]
+### R2.voice.composed.bold[]
 
-- `SNAPSHOT_TEXTS.R2.voice.quiet.cool[1]`: …孤独には慣れている
+- `SNAPSHOT_TEXTS.R2.voice.composed.bold[1]`: …まあ、いいんだけどね。一人でも
 
-### R2.voice.earnest._default[]
+### R2.voice.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.R2.voice.earnest._default[1]`: …もっとみんなと話した方がいいのかな
+- `SNAPSHOT_TEXTS.R2.voice.composed.earnest[1]`: …もう少し歩み寄った方がいいのかな
 
-### R2.voice.earnest.polite[]
+### R2.voice.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.R2.voice.earnest.polite[1]`: …何か気に障ることをしたのでしょうか
+- `SNAPSHOT_TEXTS.R2.voice.composed.emotional[1]`: …っ…まあ、いいさ
 
-### R2.voice.earnest.composed[]
+### R2.voice.delinquent.bold[]
 
-- `SNAPSHOT_TEXTS.R2.voice.earnest.composed[1]`: …もう少し歩み寄った方がいいのかな
+- `SNAPSHOT_TEXTS.R2.voice.delinquent.bold[1]`: …ハッ、群れるのは趣味じゃねーんだよ
 
-### R2.voice.emotional._default[]
+### R2.voice.cool.quiet[]
 
-- `SNAPSHOT_TEXTS.R2.voice.emotional._default[1]`: …みんな、あたしのこと嫌いなのかな
-- `SNAPSHOT_TEXTS.R2.voice.emotional._default[2]`: …ここにいていいのかな
+- `SNAPSHOT_TEXTS.R2.voice.cool.quiet[1]`: …孤独には慣れている
 
-### R2.voice.emotional.ojousama[]
+### R2.voice.polite.earnest[]
 
-- `SNAPSHOT_TEXTS.R2.voice.emotional.ojousama[1]`: …こういう寂しさは初めてですわ
+- `SNAPSHOT_TEXTS.R2.voice.polite.earnest[1]`: …何か気に障ることをしたのでしょうか
 
-### R2.voice.emotional.seductive[]
+### R2.voice.polite.shy[]
 
-- `SNAPSHOT_TEXTS.R2.voice.emotional.seductive[1]`: あの子と、もっと話したい……っ……
+- `SNAPSHOT_TEXTS.R2.voice.polite.shy[1]`: …あ、あの人と、また話せたらいいな…
 
-### R2.voice.emotional.composed[]
+### R2.voice.ojousama.emotional[]
 
-- `SNAPSHOT_TEXTS.R2.voice.emotional.composed[1]`: …っ…まあ、いいさ
+- `SNAPSHOT_TEXTS.R2.voice.ojousama.emotional[1]`: …こういう寂しさは初めてですわ
 
-### R2.voice.shy.polite[]
+### R2.voice.seductive.emotional[]
 
-- `SNAPSHOT_TEXTS.R2.voice.shy.polite[1]`: …あ、あの人と、また話せたらいいな…
+- `SNAPSHOT_TEXTS.R2.voice.seductive.emotional[1]`: あの子と、もっと話したい……っ……
 
 ### R3.scene[]
 
 - `SNAPSHOT_TEXTS.R3.scene[1]`: {name}は{name2}の退団を知り、しばらく言葉を失っていた
 - `SNAPSHOT_TEXTS.R3.scene[2]`: {name2}がいなくなったロッカーの前で、{name}が立ち止まっていた
 
-### R3.modal.normal._default[]
+### R3.modal.standard.normal[]
 
-- `SNAPSHOT_TEXTS.R3.modal.normal._default[1]`: …いなくなっちゃうんだ
-- `SNAPSHOT_TEXTS.R3.modal.normal._default[2]`: …{name2}がいない控え室なんて想像できない
+- `SNAPSHOT_TEXTS.R3.modal.standard.normal[1]`: …いなくなっちゃうんだ
+- `SNAPSHOT_TEXTS.R3.modal.standard.normal[2]`: …{name2}がいない控え室なんて想像できない
 
-### R3.modal.normal.composed[]
+### R3.modal.standard.bold[]
 
-- `SNAPSHOT_TEXTS.R3.modal.normal.composed[1]`: …そうか。…{name2}がいなくなるのか
+- `SNAPSHOT_TEXTS.R3.modal.standard.bold[1]`: …バカ。なんで何も言わずに行くのよ
+- `SNAPSHOT_TEXTS.R3.modal.standard.bold[2]`: …あいつがいないと、張り合いがないな
 
-### R3.modal.bold._default[]
+### R3.modal.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.R3.modal.bold._default[1]`: …バカ。なんで何も言わずに行くのよ
-- `SNAPSHOT_TEXTS.R3.modal.bold._default[2]`: …あいつがいないと、張り合いがないな
+- `SNAPSHOT_TEXTS.R3.modal.standard.earnest[1]`: {name2}のために、あたしはここで頑張るから
+- `SNAPSHOT_TEXTS.R3.modal.standard.earnest[2]`: …ありがとう。ずっと支えてくれて
 
-### R3.modal.bold.delinquent[]
+### R3.modal.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.R3.modal.bold.delinquent[1]`: …チッ。…寂しいなんて言わねーけど
+- `SNAPSHOT_TEXTS.R3.modal.standard.emotional[1]`: …やだ。嫌だよ。なんで…
+- `SNAPSHOT_TEXTS.R3.modal.standard.emotional[2]`: …{name2}がいないなんて、あたし…
 
-### R3.modal.bold.composed[]
+### R3.modal.composed.normal[]
 
-- `SNAPSHOT_TEXTS.R3.modal.bold.composed[1]`: …行くんだ。…まあ、{name2}が決めたことだからね
+- `SNAPSHOT_TEXTS.R3.modal.composed.normal[1]`: …そうか。…{name2}がいなくなるのか
 
-### R3.modal.quiet.cool[]
+### R3.modal.composed.bold[]
 
-- `SNAPSHOT_TEXTS.R3.modal.quiet.cool[1]`: …そうか。…分かった
+- `SNAPSHOT_TEXTS.R3.modal.composed.bold[1]`: …行くんだ。…まあ、{name2}が決めたことだからね
 
-### R3.modal.earnest._default[]
+### R3.modal.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.R3.modal.earnest._default[1]`: {name2}のために、あたしはここで頑張るから
-- `SNAPSHOT_TEXTS.R3.modal.earnest._default[2]`: …ありがとう。ずっと支えてくれて
+- `SNAPSHOT_TEXTS.R3.modal.composed.earnest[1]`: …{name2}。…ありがとう。…元気でね
 
-### R3.modal.earnest.polite[]
+### R3.modal.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.R3.modal.earnest.polite[1]`: {name2}さんとご一緒できて幸せでした。…お元気で
+- `SNAPSHOT_TEXTS.R3.modal.composed.emotional[1]`: …っ…{name2}。…元気で
 
-### R3.modal.earnest.composed[]
+### R3.modal.delinquent.bold[]
 
-- `SNAPSHOT_TEXTS.R3.modal.earnest.composed[1]`: …{name2}。…ありがとう。…元気でね
+- `SNAPSHOT_TEXTS.R3.modal.delinquent.bold[1]`: …チッ。…寂しいなんて言わねーけど
 
-### R3.modal.emotional._default[]
+### R3.modal.cool.quiet[]
 
-- `SNAPSHOT_TEXTS.R3.modal.emotional._default[1]`: …やだ。嫌だよ。なんで…
-- `SNAPSHOT_TEXTS.R3.modal.emotional._default[2]`: …{name2}がいないなんて、あたし…
+- `SNAPSHOT_TEXTS.R3.modal.cool.quiet[1]`: …そうか。…分かった
 
-### R3.modal.emotional.ojousama[]
+### R3.modal.polite.earnest[]
 
-- `SNAPSHOT_TEXTS.R3.modal.emotional.ojousama[1]`: …{name2}。……あなたがいなくなるなんて
+- `SNAPSHOT_TEXTS.R3.modal.polite.earnest[1]`: {name2}さんとご一緒できて幸せでした。…お元気で
 
-### R3.modal.emotional.composed[]
+### R3.modal.polite.shy[]
 
-- `SNAPSHOT_TEXTS.R3.modal.emotional.composed[1]`: …っ…{name2}。…元気で
+- `SNAPSHOT_TEXTS.R3.modal.polite.shy[1]`: あ、あの…少し、お話できますか…
 
-### R3.modal.shy.polite[]
+### R3.modal.ojousama.emotional[]
 
-- `SNAPSHOT_TEXTS.R3.modal.shy.polite[1]`: あ、あの…少し、お話できますか…
+- `SNAPSHOT_TEXTS.R3.modal.ojousama.emotional[1]`: …{name2}。……あなたがいなくなるなんて
 
 ### R4.scene[]
 
 - `SNAPSHOT_TEXTS.R4.scene[1]`: 試合後、{name}の目に静かな炎が燃えていた
 - `SNAPSHOT_TEXTS.R4.scene[2]`: {name}がリングを降りる時、一瞬だけ{name2}のほうを振り返った。満足げに
 
-### R4.voice.normal._default[]
+### R4.voice.standard.normal[]
 
-- `SNAPSHOT_TEXTS.R4.voice.normal._default[1]`: …やっと、追いついた
+- `SNAPSHOT_TEXTS.R4.voice.standard.normal[1]`: …やっと、追いついた
 
-### R4.voice.normal.composed[]
+### R4.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.R4.voice.normal.composed[1]`: …悪くない。…やっと追いついた
+- `SNAPSHOT_TEXTS.R4.voice.standard.bold[1]`: …ふん。まだまだこんなもんじゃないけどね
+- `SNAPSHOT_TEXTS.R4.voice.standard.bold[2]`: …勝った。でも、まだ終わってない
 
-### R4.voice.bold._default[]
+### R4.voice.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.R4.voice.bold._default[1]`: …ふん。まだまだこんなもんじゃないけどね
-- `SNAPSHOT_TEXTS.R4.voice.bold._default[2]`: …勝った。でも、まだ終わってない
+- `SNAPSHOT_TEXTS.R4.voice.standard.earnest[1]`: …努力は裏切らない。…{name2}、ありがとう
 
-### R4.voice.bold.delinquent[]
+### R4.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.R4.voice.bold.delinquent[1]`: …ザマァ見ろ
+- `SNAPSHOT_TEXTS.R4.voice.standard.emotional[1]`: …勝った…勝ったよ…！
+- `SNAPSHOT_TEXTS.R4.voice.standard.emotional[2]`: …泣くな、あたし。まだ先がある
 
-### R4.voice.bold.composed[]
+### R4.voice.composed.normal[]
 
-- `SNAPSHOT_TEXTS.R4.voice.bold.composed[1]`: …勝った。…でも、まだだね
+- `SNAPSHOT_TEXTS.R4.voice.composed.normal[1]`: …悪くない。…やっと追いついた
 
-### R4.voice.quiet.cool[]
+### R4.voice.composed.bold[]
 
-- `SNAPSHOT_TEXTS.R4.voice.quiet.cool[1]`: …次も同じ結果とは限らない。気を引き締めろ、自分
+- `SNAPSHOT_TEXTS.R4.voice.composed.bold[1]`: …勝った。…でも、まだだね
 
-### R4.voice.earnest._default[]
+### R4.voice.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.R4.voice.earnest._default[1]`: …努力は裏切らない。…{name2}、ありがとう
+- `SNAPSHOT_TEXTS.R4.voice.composed.earnest[1]`: …やるべきことをやった。…それだけ
 
-### R4.voice.earnest.composed[]
+### R4.voice.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.R4.voice.earnest.composed[1]`: …やるべきことをやった。…それだけ
+- `SNAPSHOT_TEXTS.R4.voice.composed.emotional[1]`: …っ…勝った。…うん、勝った
 
-### R4.voice.emotional._default[]
+### R4.voice.delinquent.bold[]
 
-- `SNAPSHOT_TEXTS.R4.voice.emotional._default[1]`: …勝った…勝ったよ…！
-- `SNAPSHOT_TEXTS.R4.voice.emotional._default[2]`: …泣くな、あたし。まだ先がある
+- `SNAPSHOT_TEXTS.R4.voice.delinquent.bold[1]`: …ザマァ見ろ
 
-### R4.voice.emotional.seductive[]
+### R4.voice.cool.quiet[]
 
-- `SNAPSHOT_TEXTS.R4.voice.emotional.seductive[1]`: あの子とは、ちょっと距離を置きたいの……っ……
+- `SNAPSHOT_TEXTS.R4.voice.cool.quiet[1]`: …次も同じ結果とは限らない。気を引き締めろ、自分
 
-### R4.voice.emotional.composed[]
+### R4.voice.seductive.emotional[]
 
-- `SNAPSHOT_TEXTS.R4.voice.emotional.composed[1]`: …っ…勝った。…うん、勝った
+- `SNAPSHOT_TEXTS.R4.voice.seductive.emotional[1]`: あの子とは、ちょっと距離を置きたいの……っ……
 
-### R4.voice.shy.polite[]
+### R4.voice.polite.shy[]
 
-- `SNAPSHOT_TEXTS.R4.voice.shy.polite[1]`: …あ、あの人とは、距離を置きたい、かも…
+- `SNAPSHOT_TEXTS.R4.voice.polite.shy[1]`: …あ、あの人とは、距離を置きたい、かも…
 
 ### R5.scene[]
 
@@ -1738,61 +1894,61 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SNAPSHOT_TEXTS.R5.scene[2]`: {name}が帰り際、振り返って{name2}のほうを一瞬だけ見た
 - `SNAPSHOT_TEXTS.R5.scene[3]`: 試合後の通路で、{name}が壁を叩く音がした
 
-### R5.voice.normal._default[]
+### R5.voice.standard.normal[]
 
-- `SNAPSHOT_TEXTS.R5.voice.normal._default[1]`: …まだ、足りないのか
-- `SNAPSHOT_TEXTS.R5.voice.normal._default[2]`: …くやしい
+- `SNAPSHOT_TEXTS.R5.voice.standard.normal[1]`: …まだ、足りないのか
+- `SNAPSHOT_TEXTS.R5.voice.standard.normal[2]`: …くやしい
 
-### R5.voice.normal.composed[]
+### R5.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.R5.voice.normal.composed[1]`: …足りなかった。…次、だね
+- `SNAPSHOT_TEXTS.R5.voice.standard.bold[1]`: …次は絶対に負けない
+- `SNAPSHOT_TEXTS.R5.voice.standard.bold[2]`: …この借りは必ず返す
 
-### R5.voice.bold._default[]
+### R5.voice.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.R5.voice.bold._default[1]`: …次は絶対に負けない
-- `SNAPSHOT_TEXTS.R5.voice.bold._default[2]`: …この借りは必ず返す
+- `SNAPSHOT_TEXTS.R5.voice.standard.earnest[1]`: …あの人にはまだ勝てない。でも、だからこそ
+- `SNAPSHOT_TEXTS.R5.voice.standard.earnest[2]`: …もっと練習する。絶対に
 
-### R5.voice.bold.delinquent[]
+### R5.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.R5.voice.bold.delinquent[1]`: …クソッ…！
+- `SNAPSHOT_TEXTS.R5.voice.standard.emotional[1]`: …悔しい…悔しい…！
+- `SNAPSHOT_TEXTS.R5.voice.standard.emotional[2]`: …なんであたしは勝てないの
 
-### R5.voice.bold.composed[]
+### R5.voice.composed.normal[]
 
-- `SNAPSHOT_TEXTS.R5.voice.bold.composed[1]`: …次は返す。…覚えておいて
+- `SNAPSHOT_TEXTS.R5.voice.composed.normal[1]`: …足りなかった。…次、だね
 
-### R5.voice.quiet.cool[]
+### R5.voice.composed.bold[]
 
-- `SNAPSHOT_TEXTS.R5.voice.quiet.cool[1]`: …敗因は分かっている。次までに修正する
+- `SNAPSHOT_TEXTS.R5.voice.composed.bold[1]`: …次は返す。…覚えておいて
 
-### R5.voice.earnest._default[]
+### R5.voice.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.R5.voice.earnest._default[1]`: …あの人にはまだ勝てない。でも、だからこそ
-- `SNAPSHOT_TEXTS.R5.voice.earnest._default[2]`: …もっと練習する。絶対に
+- `SNAPSHOT_TEXTS.R5.voice.composed.earnest[1]`: …まだ足りないか。…次までに詰めるよ
 
-### R5.voice.earnest.composed[]
+### R5.voice.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.R5.voice.earnest.composed[1]`: …まだ足りないか。…次までに詰めるよ
+- `SNAPSHOT_TEXTS.R5.voice.composed.emotional[1]`: …っ…次は、こうはいかない
 
-### R5.voice.emotional._default[]
+### R5.voice.delinquent.bold[]
 
-- `SNAPSHOT_TEXTS.R5.voice.emotional._default[1]`: …悔しい…悔しい…！
-- `SNAPSHOT_TEXTS.R5.voice.emotional._default[2]`: …なんであたしは勝てないの
+- `SNAPSHOT_TEXTS.R5.voice.delinquent.bold[1]`: …クソッ…！
 
-### R5.voice.emotional.ojousama[]
+### R5.voice.cool.quiet[]
 
-- `SNAPSHOT_TEXTS.R5.voice.emotional.ojousama[1]`: …こんなはずでは…こんなはずでは、ないのに
+- `SNAPSHOT_TEXTS.R5.voice.cool.quiet[1]`: …敗因は分かっている。次までに修正する
 
-### R5.voice.emotional.seductive[]
+### R5.voice.ojousama.emotional[]
 
-- `SNAPSHOT_TEXTS.R5.voice.emotional.seductive[1]`: 負けたくないの……っ……ふふ……
+- `SNAPSHOT_TEXTS.R5.voice.ojousama.emotional[1]`: …こんなはずでは…こんなはずでは、ないのに
 
-### R5.voice.emotional.composed[]
+### R5.voice.seductive.emotional[]
 
-- `SNAPSHOT_TEXTS.R5.voice.emotional.composed[1]`: …っ…次は、こうはいかない
+- `SNAPSHOT_TEXTS.R5.voice.seductive.emotional[1]`: 負けたくないの……っ……ふふ……
 
-### R5.voice.shy.polite[]
+### R5.voice.polite.shy[]
 
-- `SNAPSHOT_TEXTS.R5.voice.shy.polite[1]`: …ま、負けたく、ないです…
+- `SNAPSHOT_TEXTS.R5.voice.polite.shy[1]`: …ま、負けたく、ないです…
 
 ### friction.scene[]
 
@@ -1821,93 +1977,93 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SNAPSHOT_TEXTS.careerBestMQ.scene[1]`: {name}が試合後、自分の両手を見つめていた。何かを掴んだ表情だ
 - `SNAPSHOT_TEXTS.careerBestMQ.scene[2]`: {name}の試合が終わった後、先輩たちが小さく頷いていた
 
-### breakthrough.voice.normal._default[]
+### breakthrough.voice.standard.normal[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.normal._default[1]`: …ここで頑張ってきてよかった
+- `SNAPSHOT_TEXTS.breakthrough.voice.standard.normal[1]`: …ここで頑張ってきてよかった
 
-### breakthrough.voice.normal.composed[]
+### breakthrough.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.normal.composed[1]`: …悪くない環境だね。…感謝してる
+- `SNAPSHOT_TEXTS.breakthrough.voice.standard.bold[1]`: …まだまだ強くなれる！この団体でなら
 
-### breakthrough.voice.bold._default[]
+### breakthrough.voice.standard.quiet[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.bold._default[1]`: …まだまだ強くなれる！この団体でなら
+- `SNAPSHOT_TEXTS.breakthrough.voice.standard.quiet[1]`: …この場所に感謝している
 
-### breakthrough.voice.bold.composed[]
+### breakthrough.voice.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.bold.composed[1]`: …まだ先がある。…ここでなら
+- `SNAPSHOT_TEXTS.breakthrough.voice.standard.earnest[1]`: …みんなのおかげです。もっと恩返しがしたい
 
-### breakthrough.voice.quiet._default[]
+### breakthrough.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.quiet._default[1]`: …この場所に感謝している
+- `SNAPSHOT_TEXTS.breakthrough.voice.standard.emotional[1]`: …うれしい…ここにいてよかった
 
-### breakthrough.voice.quiet.cool[]
+### breakthrough.voice.composed.normal[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.quiet.cool[1]`: …環境に恵まれた。それは認める
+- `SNAPSHOT_TEXTS.breakthrough.voice.composed.normal[1]`: …悪くない環境だね。…感謝してる
 
-### breakthrough.voice.earnest._default[]
+### breakthrough.voice.composed.bold[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.earnest._default[1]`: …みんなのおかげです。もっと恩返しがしたい
+- `SNAPSHOT_TEXTS.breakthrough.voice.composed.bold[1]`: …まだ先がある。…ここでなら
 
-### breakthrough.voice.earnest.composed[]
+### breakthrough.voice.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.earnest.composed[1]`: …ここで積み重ねてきたものが、繋がった
+- `SNAPSHOT_TEXTS.breakthrough.voice.composed.earnest[1]`: …ここで積み重ねてきたものが、繋がった
 
-### breakthrough.voice.emotional._default[]
+### breakthrough.voice.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.emotional._default[1]`: …うれしい…ここにいてよかった
+- `SNAPSHOT_TEXTS.breakthrough.voice.composed.emotional[1]`: …っ…ここにいてよかった
 
-### breakthrough.voice.emotional.seductive[]
+### breakthrough.voice.cool.quiet[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.emotional.seductive[1]`: 何かが変わった……っ……ふふ……
+- `SNAPSHOT_TEXTS.breakthrough.voice.cool.quiet[1]`: …環境に恵まれた。それは認める
 
-### breakthrough.voice.emotional.composed[]
+### breakthrough.voice.seductive.emotional[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.emotional.composed[1]`: …っ…ここにいてよかった
+- `SNAPSHOT_TEXTS.breakthrough.voice.seductive.emotional[1]`: 何かが変わった……っ……ふふ……
 
-### breakthrough.voice.shy.polite[]
+### breakthrough.voice.polite.shy[]
 
-- `SNAPSHOT_TEXTS.breakthrough.voice.shy.polite[1]`: …な、何かが、変わった気がします…
+- `SNAPSHOT_TEXTS.breakthrough.voice.polite.shy[1]`: …な、何かが、変わった気がします…
 
 ### warVictory.scene[]
 
 - `SNAPSHOT_TEXTS.warVictory.scene[1]`: {name}はチームの勝利に拳を握りしめた。この団体の看板を背負う覚悟が見えた
 
-### warVictory.voice.bold._default[]
+### warVictory.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.bold._default[1]`: …わたしが勝つに決まってるでしょ。この団体を背負ってるんだから！
+- `SNAPSHOT_TEXTS.warVictory.voice.standard.bold[1]`: …わたしが勝つに決まってるでしょ。この団体を背負ってるんだから！
 
-### warVictory.voice.bold.composed[]
+### warVictory.voice.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.bold.composed[1]`: …勝った。…うちの看板、守れたかな
+- `SNAPSHOT_TEXTS.warVictory.voice.standard.earnest[1]`: …みんなの想いを背負って戦えて光栄です
 
-### warVictory.voice.earnest._default[]
+### warVictory.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.earnest._default[1]`: …みんなの想いを背負って戦えて光栄です
+- `SNAPSHOT_TEXTS.warVictory.voice.standard.emotional[1]`: …勝った…！ みんなのおかげだよ…！
 
-### warVictory.voice.earnest.composed[]
+### warVictory.voice.composed.bold[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.earnest.composed[1]`: …みんなの分も、背負えた。…よかった
+- `SNAPSHOT_TEXTS.warVictory.voice.composed.bold[1]`: …勝った。…うちの看板、守れたかな
 
-### warVictory.voice.emotional._default[]
+### warVictory.voice.composed.earnest[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.emotional._default[1]`: …勝った…！ みんなのおかげだよ…！
+- `SNAPSHOT_TEXTS.warVictory.voice.composed.earnest[1]`: …みんなの分も、背負えた。…よかった
 
-### warVictory.voice.emotional.seductive[]
+### warVictory.voice.composed.emotional[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.emotional.seductive[1]`: 勝てた……っ……ふふ、最高の気分……
+- `SNAPSHOT_TEXTS.warVictory.voice.composed.emotional[1]`: …っ…勝った。…みんなのおかげだ
 
-### warVictory.voice.emotional.composed[]
+### warVictory.voice.seductive.emotional[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.emotional.composed[1]`: …っ…勝った。…みんなのおかげだ
+- `SNAPSHOT_TEXTS.warVictory.voice.seductive.emotional[1]`: 勝てた……っ……ふふ、最高の気分……
 
-### warVictory.voice.quiet.cool[]
+### warVictory.voice.cool.quiet[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.quiet.cool[1]`: …当然の結果だ
+- `SNAPSHOT_TEXTS.warVictory.voice.cool.quiet[1]`: …当然の結果だ
 
-### warVictory.voice.shy.polite[]
+### warVictory.voice.polite.shy[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.shy.polite[1]`: …か、勝てて、よかったです…
+- `SNAPSHOT_TEXTS.warVictory.voice.polite.shy[1]`: …か、勝てて、よかったです…
 
 ## `Engine.flavor.MAGAZINE_HEADLINES`
 
@@ -1982,8 +2138,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### draw[]
 
 - `App._NEWSPAPER_HEADLINES.draw[1]`: ${d.left.name}と${d.right.name}、決着つかず
-- `App._NEWSPAPER_HEADLINES.draw[2]`: 譲らぬ二人——メインはドローに終わる
-- `App._NEWSPAPER_HEADLINES.draw[3]`: 痛み分け。${d.left.name}も${d.right.name}も一歩も退かず
+- `App._NEWSPAPER_HEADLINES.draw[2]`: 譲らぬ二人——メインは決着つかずに終わる
+- `App._NEWSPAPER_HEADLINES.draw[3]`: 決着つかず。${d.left.name}も${d.right.name}も一歩も退かず
 
 ### normal[]
 
@@ -2008,8 +2164,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `App._NEWSPAPER_ARTICLES.closeMQ[2]`: 最後の最後まで勝負の行方は分からなかった。${d.loser.name}も見せ場を作り続けたが、${d.winner.name}の${d.finishLabel}が決着を告げた。消耗戦を制した${d.winner.name}のタフネスが光った${d.turns}ターン。MQ ${d.mq}は今シーズン屈指の数字だ。
 - `App._NEWSPAPER_ARTICLES.upset[1]`: 戦前の予想を覆す結果となった。OVR格差${d.ovrGap}ポイントの壁を、${d.winner.name}は気迫で打ち破った。${d.finishLabel}が決まった瞬間、${d.venue.name}は驚きと興奮に包まれた。格上${d.loser.name}からの金星は、${d.winner.name}にとって大きな自信になるだろう。
 - `App._NEWSPAPER_ARTICLES.superMQ[1]`: MQ ${d.mq}——今シーズンのベストバウト候補が生まれた。${d.left.name}と${d.right.name}は${d.turns}ターンにわたって技術と闘志をぶつけ合い、${d.venue.name}の${d.attendance.toLocaleString()}人を熱狂の渦に巻き込んだ。${d.winner.name}が${d.finishLabel}で勝利を収めたが、勝敗を超えた価値がこの試合にはあった。
-- `App._NEWSPAPER_ARTICLES.draw[1]`: ${d.left.name}と${d.right.name}、${d.turns}ターンの攻防は決着を見なかった。互いにフォールを返し合い、極めを切り合い、最後まで膝を折らなかった二人。${d.venue.name}の${d.attendance.toLocaleString()}人は、引き分けという結果にもかかわらず惜しみない拍手を送った。再戦を望む声が、すでにあちこちから聞こえている。
-- `App._NEWSPAPER_ARTICLES.draw[2]`: 決着つかず。${d.left.name}も${d.right.name}も己の全てを出し尽くした結果がこのドローだ。MQ ${d.mq}が示す通り、試合内容に不満を持つ者はいないだろう。次はどちらが先に決着をつけるのか——${d.attendance.toLocaleString()}人のファンが次の邂逅を待っている。
+- `App._NEWSPAPER_ARTICLES.draw[1]`: ${d.left.name}と${d.right.name}、${d.turns}ターンの攻防は決着を見なかった。互いにフォールを返し合い、極めを切り合い、最後まで膝を折らなかった二人。${d.venue.name}の${d.attendance.toLocaleString()}人は、決着つかずの結果にもかかわらず惜しみない拍手を送った。再戦を望む声が、すでにあちこちから聞こえている。
+- `App._NEWSPAPER_ARTICLES.draw[2]`: 決着つかず。${d.left.name}も${d.right.name}も己の全てを出し尽くした結果がこれだ。MQ ${d.mq}が示す通り、試合内容に不満を持つ者はいないだろう。次はどちらが先に決着をつけるのか——${d.attendance.toLocaleString()}人のファンが次の邂逅を待っている。
 - `App._NEWSPAPER_ARTICLES.normal[1]`: ${d.venue.name}で行われた${d.showName}のメインイベントは、${d.winner.name}が${d.finishLabel}で${d.loser.name}を下して幕を閉じた。${d.turns}ターンの試合は${d.attendance.toLocaleString()}人の観客を沸かせ、MQ ${d.mq}を記録した。
 - `App._NEWSPAPER_ARTICLES.normal[2]`: ${d.winner.name}がメインの大舞台で堂々たる勝利を飾った。${d.loser.name}も要所で見せ場を作ったが、最終的には${d.winner.name}の${d.finishLabel}に沈んだ。${d.attendance.toLocaleString()}人の観客が見守った${d.turns}ターンの一戦。
 - `App._NEWSPAPER_ARTICLES.lowMQ[1]`: 正直に言えば、メインイベントは物足りなさが残った。${d.winner.name}が${d.finishLabel}で${d.loser.name}を下したものの、MQ ${d.mq}という数字が試合内容を物語っている。${d.attendance.toLocaleString()}人のファンは、次回の興行にこそ期待を寄せるだろう。
@@ -2023,21 +2179,21 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### devastating[]
 
 - `KURODA_HEADLINES.devastating[1]`: 比較記事として成立する最低限のラインがある。今回はそれを下回っている
-- `KURODA_HEADLINES.devastating[2]`: ${d.rivalName}に喧嘩を売れる戦力ではない。まず鏡を見るべきだ
-- `KURODA_HEADLINES.devastating[3]`: 全項目で負けている。唯一勝っているのは伸びしろの量くらいだろうか
+- `KURODA_HEADLINES.devastating[2]`: ${d.rivalName}に喧嘩を売れる戦力ではない。まずは足元を見るべきだ
+- `KURODA_HEADLINES.devastating[3]`: 全項目で負けている。唯一勝っているのは伸びしろくらいだろうか
 - `KURODA_HEADLINES.devastating[4]`: ${d.rivalName}から見れば練習相手にすらならないのではないか。失礼だが、事実だ
-- `KURODA_HEADLINES.devastating[5]`: この差を「まだ追いつける」と思っているなら、認識から改めるべきだろう
+- `KURODA_HEADLINES.devastating[5]`: この差を「まだ追いつける差」と思っているなら、認識から改めるべきだろう
 - `KURODA_HEADLINES.devastating[6]`: ${d.playerName}の関係者には申し訳ないが、今回の比較は茶番に近い
 - `KURODA_HEADLINES.devastating[7]`: 率直に言えば、${d.rivalName}の名前を出すのが相手に失礼なくらいの戦力差だ
 - `KURODA_HEADLINES.devastating[8]`: これで興行を打てるのだから、度胸だけは本物だ。褒めてはいないが
 - `KURODA_HEADLINES.devastating[9]`: 戦力比較というより、現状認識テストだ。現実を直視できるだろうか
 - `KURODA_HEADLINES.devastating[10]`: どこから手をつければいいのか、筆者が聞きたいくらいである
 - `KURODA_HEADLINES.devastating[11]`: ${d.rivalName}と同じ業界にいるのが不思議なくらいの差だが、まあ、いるのだ
-- `KURODA_HEADLINES.devastating[12]`: ファンには申し訳ないが、この団体に夢を見るのは時期尚早と言わざるを得ない
+- `KURODA_HEADLINES.devastating[12]`: ファンには申し訳ないが、この団体に夢を見るのは見当はずれであると言わざるを得ない
 - `KURODA_HEADLINES.devastating[13]`: ファンに問いたい。この団体のどこに可能性を感じているのか。本気で聞いている
 - `KURODA_HEADLINES.devastating[14]`: 比較対象を間違えていないか。${d.rivalName}ではなく、もう二段下の団体と比べたほうが建設的だろう
 - `KURODA_HEADLINES.devastating[15]`: 記者として色んな団体を見てきたが、ここまでの戦力差を記事にするのは久しぶりだ
-- `KURODA_HEADLINES.devastating[16]`: ${d.playerName}のGMは夜ちゃんと眠れているのか。筆者なら無理だが
+- `KURODA_HEADLINES.devastating[16]`: ${d.playerName}の社長は夜ちゃんと眠れているのか。筆者なら無理だが
 - `KURODA_HEADLINES.devastating[17]`: 本紙は40年見てきた中で、これほど「比較が成立しない比較」も珍しいと書いておく
 - `KURODA_HEADLINES.devastating[18]`: 数字は嘘をつかない。${d.rivalName}との差を、その嘘のつかない数字が突きつけている
 - `KURODA_HEADLINES.devastating[19]`: ${d.playerName}側の「いつかは」を、本紙は信じない。根拠がないからだ
@@ -2058,28 +2214,28 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `KURODA_HEADLINES.behind[10]`: 複数の項目で後れを取っている。巻き返しには相当な覚悟が要る
 - `KURODA_HEADLINES.behind[11]`: 期待していないと言えば嘘になるが、根拠がない。今のところは
 - `KURODA_HEADLINES.behind[12]`: 中途半端が一番よくない。強くもなく、弱くもなく、ただ足りない
-- `KURODA_HEADLINES.behind[13]`: ${d.rivalName}の背中は見えている。見えているだけで追いつけていないのが問題だが
-- `KURODA_HEADLINES.behind[14]`: がんばっているのは認める。がんばっているだけで勝てるなら、誰も苦労しないが
-- `KURODA_HEADLINES.behind[15]`: 本紙としては、${d.rivalName}との差は「埋まる差」だと書いておく。ただし、本気で動けば、の話だ
-- `KURODA_HEADLINES.behind[16]`: 数字は嘘をつかない。差はある。だが致命的ではない。これを希望と見るか絶望と見るかはGM次第だ
-- `KURODA_HEADLINES.behind[17]`: 40年見てきた中で、ここから巻き返した団体もあれば、沈んだ団体もある。今のところ、${d.playerName}は後者寄りだ
+- `KURODA_HEADLINES.behind[13]`: ${d.rivalName}の背中は見えていると言える。しかし追いついたとはさすがに言えない所だ。
+- `KURODA_HEADLINES.behind[14]`: がんばっているのは認める。しかし、勝利に届かなければそこに価値は生まれない。
+- `KURODA_HEADLINES.behind[15]`: 本紙としては、${d.rivalName}との差は「埋まる差」だと書いておく。今後に注目だ。
+- `KURODA_HEADLINES.behind[16]`: 数字は嘘をつかない。差はある。だが致命的ではない。これを希望と見るか絶望と見るかは団体の代表次第だろう
+- `KURODA_HEADLINES.behind[17]`: 40年見てきた中で、ここから巻き返した団体もあれば、沈んだ団体もある。${d.playerName}がどうなるかは予想がつかない。
 - `KURODA_HEADLINES.behind[18]`: ${d.chaseAxisLabel}の弱さに目をつぶってきたツケが、そろそろ回ってきている
 - `KURODA_HEADLINES.behind[19]`: ${d.rivalName}に学ぶべき点は多い。プライドを捨てて研究したほうが早道である
 
 ### even[]
 
-- `KURODA_HEADLINES.even[1]`: ようやく記事にする価値が出てきた。ここからが本当の勝負だが
+- `KURODA_HEADLINES.even[1]`: ようやく記事にする価値が出てきた。ここからが本当の勝負だ。
 - `KURODA_HEADLINES.even[2]`: 拮抗している。どちらが先にこの均衡を崩すか、少し楽しみだ
-- `KURODA_HEADLINES.even[3]`: ほぼ互角の数字だ。つまり、次の一手がそのまま差になる
+- `KURODA_HEADLINES.even[3]`: ほぼ互角の数字だ。差をつける一手を、どちらが先に打つのだろうか。
 - `KURODA_HEADLINES.even[4]`: 五分五分。だが試合は数字だけで決まらない
 - `KURODA_HEADLINES.even[5]`: 面白い構図になってきた。ここで差をつけられるかどうか
-- `KURODA_HEADLINES.even[6]`: 数字上は対等だ。ただ、対等で終わったら意味がない
-- `KURODA_HEADLINES.even[7]`: ${d.rivalName}とほぼ並んでいる。「並んでいる」を褒め言葉と取るかどうかはお任せするが
+- `KURODA_HEADLINES.even[6]`: 数字上は対等だ。対等で終わるのか抜きんでるのか。
+- `KURODA_HEADLINES.even[7]`: ${d.rivalName}とほぼ並んでいる。「並んでいる」を超えるかどうか、正念場である。
 - `KURODA_HEADLINES.even[8]`: いい勝負ができる戦力にはなった。あとは結果を出すだけだ
-- `KURODA_HEADLINES.even[9]`: 互角か。まあ、互角が限界とも言える
+- `KURODA_HEADLINES.even[9]`: 互角か。はたして、互角が限界となるか。
 - `KURODA_HEADLINES.even[10]`: 横一線。ここから頭一つ抜けるには、何か仕掛けが要る
 - `KURODA_HEADLINES.even[11]`: 差がないということは、次の一手でどちらにも転ぶということだ。怖い状況である
-- `KURODA_HEADLINES.even[12]`: 並んだ。ここまで来るのに随分かかった。……ここからが本番だが
+- `KURODA_HEADLINES.even[12]`: 並んだ。ここまで来るのに随分かかった。……ここからが本番だ。
 - `KURODA_HEADLINES.even[13]`: いい意味でも悪い意味でも、予想がつかない力関係だ。取材のしがいがある
 - `KURODA_HEADLINES.even[14]`: 本紙としては、ここからの一手で${d.playerName}の格が決まると書いておく
 - `KURODA_HEADLINES.even[15]`: 数字は嘘をつかない。互角だ。だが、互角は通過点でしかない。誰もそこに留まりたくはないだろう
@@ -2705,7 +2861,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### allied_rivalry.bodies[]
 
-- `KURODA_RELATION_NARRATIVE.allied_rivalry.bodies[1]`: ${d.matches}度の対戦は引き分け含み。両者がともに「次もやりたい」と表明している、業界では珍しい関係。記者として、こうした関係性が業界全体を底上げしていると見ている。
+- `KURODA_RELATION_NARRATIVE.allied_rivalry.bodies[1]`: ${d.matches}度の対戦を経てなお、両者がともに「次もやりたい」と表明している、業界では珍しい関係。記者として、こうした関係性が業界全体を底上げしていると見ている。
 - `KURODA_RELATION_NARRATIVE.allied_rivalry.bodies[2]`: ${d.years}年の付き合い。互いを認め合いながら、リングでは一歩も引かない。${d.bestMQ}点の最高評価は、その緊張感の産物だ。
 - `KURODA_RELATION_NARRATIVE.allied_rivalry.bodies[3]`: 「あいつがいるから、自分も成長できる」——どちらかが言ったとされる言葉。本紙はそう書いておく。数字は嘘をつかない、関係性の質も同様だ。
 - `KURODA_RELATION_NARRATIVE.allied_rivalry.bodies[4]`: ${d.matches}度のリングで、二人は確実に互いを引き上げ続けてきた。これを「ライバル」と呼ぶか「戦友」と呼ぶか——おそらく、両方が正しい。
@@ -3023,7 +3179,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### even.troll[]
 
 - `FAN_OPINIONS.even.troll[1]`: 互角って要するにどっちも決め手がないってことでしょ
-- `FAN_OPINIONS.even.troll[2]`: 引き分け上等の塩試合フラグ立ってない？
+- `FAN_OPINIONS.even.troll[2]`: 決着放棄上等の塩試合フラグ立ってない？
 - `FAN_OPINIONS.even.troll[3]`: ${d.rivalName}と同レベルで満足してる時点でなあ
 - `FAN_OPINIONS.even.troll[4]`: 互角で喜んでるの草。上を目指せよ
 - `FAN_OPINIONS.even.troll[5]`: 並んだだけで「追いついた！」って騒ぐファン見てると微笑ましいね
@@ -3186,10 +3342,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### draw[]
 
 - `NEWSPAPER_DIGEST_COMMENTS.draw[1]`: 最後まで決着つかず。再戦必至の展開
-- `NEWSPAPER_DIGEST_COMMENTS.draw[2]`: 譲らぬ両者。ドローだが、内容は十分
-- `NEWSPAPER_DIGEST_COMMENTS.draw[3]`: 時間切れ引き分け。消化不良は否めない
+- `NEWSPAPER_DIGEST_COMMENTS.draw[2]`: 譲らぬ両者。決着はつかなかったが、内容は十分
+- `NEWSPAPER_DIGEST_COMMENTS.draw[3]`: 時間切れで決着つかず。消化不良は否めない
 - `NEWSPAPER_DIGEST_COMMENTS.draw[4]`: 両者一歩も譲らず。内容は悪くなかったが、決着は見たかった
-- `NEWSPAPER_DIGEST_COMMENTS.draw[5]`: 引き分け。ファンの消化不良感は否めないが、次への伏線にはなった
+- `NEWSPAPER_DIGEST_COMMENTS.draw[5]`: 決着つかず。ファンの消化不良感は否めないが、次への伏線にはなった
 
 ### upset[]
 

@@ -8,847 +8,847 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: v1.4: 年末表彰式 セリフデータ（personality×archetype）
 - 本数: 232
 
-### rookie.normal._default[]
+### rookie.standard.normal[]
 
-- `AWARD_LINES.rookie.normal._default[1]`: 控室で泣きました。うれしくて。…来年はもっと上で泣きます
-- `AWARD_LINES.rookie.normal._default[2]`: この賞の重さ、まだわかりません。でもリングに上がるたび、きっとわかっていくと思います
+- `AWARD_LINES.rookie.standard.normal[1]`: 控室で泣きました。うれしくて。…来年はもっと上で泣きます
+- `AWARD_LINES.rookie.standard.normal[2]`: この賞の重さ、まだわかりません。でもリングに上がるたび、きっとわかっていくと思います
 
-### rookie.normal.ojousama[]
+### rookie.standard.bold[]
 
-- `AWARD_LINES.rookie.normal.ojousama[1]`: まさかわたくしがこのような栄誉に…。先輩方の背中、しかと見ておりました
+- `AWARD_LINES.rookie.standard.bold[1]`: 新人王？ 通過点でしょ。来年はMVPを狙うからね
+- `AWARD_LINES.rookie.standard.bold[2]`: 最初から頂点しか見てない。この賞はスタートラインだよ
 
-### rookie.normal.delinquent[]
+### rookie.standard.quiet[]
 
-- `AWARD_LINES.rookie.normal.delinquent[1]`: 正直ビビってる。こんなちゃんとした賞もらったの初めてだ…来年も取る
+- `AWARD_LINES.rookie.standard.quiet[1]`: ……まだ何も成し遂げていない。これから
 
-### rookie.normal.seductive[]
+### rookie.standard.shy[]
 
-- `AWARD_LINES.rookie.normal.seductive[1]`: 覚えておいて。この名前、来年はもっと大きなところで呼ばれるから
+- `AWARD_LINES.rookie.standard.shy[1]`: えっ…わたし、ですか…？ 間違いじゃ…あ、ありがとうございます…
 
-### rookie.normal.composed[]
+### rookie.standard.easygoing[]
 
-- `AWARD_LINES.rookie.normal.composed[1]`: …ま、悪くないスタートかな。ここからだよ
+- `AWARD_LINES.rookie.standard.easygoing[1]`: うそでしょ！ 今年一番びっくりしたの、この瞬間かも！
+- `AWARD_LINES.rookie.standard.easygoing[2]`: いやー楽しかった！ ここまで来れたの、運がよかっただけかも！
 
-### rookie.bold._default[]
+### rookie.standard.earnest[]
 
-- `AWARD_LINES.rookie.bold._default[1]`: 新人王？ 通過点でしょ。来年はMVPを狙うからね
-- `AWARD_LINES.rookie.bold._default[2]`: 最初から頂点しか見てない。この賞はスタートラインだよ
+- `AWARD_LINES.rookie.standard.earnest[1]`: 練習してきてよかった。…もっと強くなります
 
-### rookie.bold.ojousama[]
+### rookie.standard.emotional[]
 
-- `AWARD_LINES.rookie.bold.ojousama[1]`: 当然の結果ですわね。わたくしの実力を見れば、誰もが納得するでしょう？
+- `AWARD_LINES.rookie.standard.emotional[1]`: あ…だめだ、泣いちゃう…。嬉しいです…こんなに…嬉しいの初めてです…！
 
-### rookie.bold.delinquent[]
+### rookie.ojousama.normal[]
 
-- `AWARD_LINES.rookie.bold.delinquent[1]`: ハッ、新人なのは今年だけだ。来年は全部かっさらう
+- `AWARD_LINES.rookie.ojousama.normal[1]`: まさかわたくしがこのような栄誉に…。先輩方の背中、しかと見ておりました
 
-### rookie.bold.cool[]
+### rookie.ojousama.bold[]
 
-- `AWARD_LINES.rookie.bold.cool[1]`: …始まりに過ぎない
+- `AWARD_LINES.rookie.ojousama.bold[1]`: 当然の結果ですわね。わたくしの実力を見れば、誰もが納得するでしょう？
 
-### rookie.bold.seductive[]
+### rookie.ojousama.shy[]
 
-- `AWARD_LINES.rookie.bold.seductive[1]`: 嬉しい？ ええ、嬉しいわ。でもこの程度で満足する女じゃないの
+- `AWARD_LINES.rookie.ojousama.shy[1]`: わ、わたくしが…？ そんな…まだまだ未熟者ですのに…
 
-### rookie.bold.composed[]
+### rookie.ojousama.easygoing[]
 
-- `AWARD_LINES.rookie.bold.composed[1]`: …通過点だね。次を見てなよ
+- `AWARD_LINES.rookie.ojousama.easygoing[1]`: まあ…！ 新人王ですの…！ 光栄ですわ
 
-### rookie.quiet._default[]
+### rookie.ojousama.earnest[]
 
-- `AWARD_LINES.rookie.quiet._default[1]`: ……まだ何も成し遂げていない。これから
+- `AWARD_LINES.rookie.ojousama.earnest[1]`: 努力を重ねてまいりました。この賞を糧に、さらなる高みを目指しますわ
 
-### rookie.quiet.cool[]
+### rookie.ojousama.emotional[]
 
-- `AWARD_LINES.rookie.quiet.cool[1]`: …次
+- `AWARD_LINES.rookie.ojousama.emotional[1]`: あっ…涙が…こ、こんなところで取り乱すなんて…嬉しすぎますわ…！
 
-### rookie.quiet.polite[]
+### rookie.delinquent.normal[]
 
-- `AWARD_LINES.rookie.quiet.polite[1]`: …ありがとうございます。まだ、足りないものばかりです
+- `AWARD_LINES.rookie.delinquent.normal[1]`: 正直ビビってる。こんなちゃんとした賞もらったの初めてだ…来年も取る
 
-### rookie.quiet.composed[]
+### rookie.delinquent.bold[]
 
-- `AWARD_LINES.rookie.quiet.composed[1]`: …ありがとう。…まだ先があるから
+- `AWARD_LINES.rookie.delinquent.bold[1]`: ハッ、新人なのは今年だけだ。来年は全部かっさらう
 
-### rookie.shy._default[]
+### rookie.delinquent.shy[]
 
-- `AWARD_LINES.rookie.shy._default[1]`: えっ…わたし、ですか…？ 間違いじゃ…あ、ありがとうございます…
+- `AWARD_LINES.rookie.delinquent.shy[1]`: は？ マジで？ いや…あ、ありがとな…
 
-### rookie.shy.ojousama[]
+### rookie.delinquent.easygoing[]
 
-- `AWARD_LINES.rookie.shy.ojousama[1]`: わ、わたくしが…？ そんな…まだまだ未熟者ですのに…
+- `AWARD_LINES.rookie.delinquent.easygoing[1]`: うっそだろ！？ まあいいや、もらえるもんはもらっとく！
 
-### rookie.shy.delinquent[]
+### rookie.delinquent.emotional[]
 
-- `AWARD_LINES.rookie.shy.delinquent[1]`: は？ マジで？ いや…あ、ありがとな…
+- `AWARD_LINES.rookie.delinquent.emotional[1]`: くっ…泣くかよこんなとこで…。ちくしょう…嬉しいじゃねえか…！
 
-### rookie.shy.polite[]
+### rookie.seductive.normal[]
 
-- `AWARD_LINES.rookie.shy.polite[1]`: え…わたし、ですか…？ …ありがとうございます…
+- `AWARD_LINES.rookie.seductive.normal[1]`: 覚えておいて。この名前、来年はもっと大きなところで呼ばれるから
 
-### rookie.easygoing._default[]
+### rookie.seductive.bold[]
 
-- `AWARD_LINES.rookie.easygoing._default[1]`: うそでしょ！ 今年一番びっくりしたの、この瞬間かも！
-- `AWARD_LINES.rookie.easygoing._default[2]`: いやー楽しかった！ ここまで来れたの、運がよかっただけかも！
+- `AWARD_LINES.rookie.seductive.bold[1]`: 嬉しい？ ええ、嬉しいわ。でもこの程度で満足する女じゃないの
 
-### rookie.easygoing.delinquent[]
+### rookie.seductive.easygoing[]
 
-- `AWARD_LINES.rookie.easygoing.delinquent[1]`: うっそだろ！？ まあいいや、もらえるもんはもらっとく！
+- `AWARD_LINES.rookie.seductive.easygoing[1]`: あら、嬉しいサプライズ。来年はもっと驚かせてあげる
 
-### rookie.easygoing.seductive[]
+### rookie.seductive.earnest[]
 
-- `AWARD_LINES.rookie.easygoing.seductive[1]`: あら、嬉しいサプライズ。来年はもっと驚かせてあげる
+- `AWARD_LINES.rookie.seductive.earnest[1]`: 努力してきたもの。…でもまだ足りないわ。もっと磨くから、見ていて
 
-### rookie.easygoing.polite[]
+### rookie.seductive.emotional[]
 
-- `AWARD_LINES.rookie.easygoing.polite[1]`: うそです…！ 新人王ですか…！ ありがとうございます！
+- `AWARD_LINES.rookie.seductive.emotional[1]`: 新人王……っ……無我夢中だったの……認めてもらえて嬉しいわ……
 
-### rookie.easygoing.ojousama[]
+### rookie.composed.normal[]
 
-- `AWARD_LINES.rookie.easygoing.ojousama[1]`: まあ…！ 新人王ですの…！ 光栄ですわ
+- `AWARD_LINES.rookie.composed.normal[1]`: …ま、悪くないスタートかな。ここからだよ
 
-### rookie.easygoing.composed[]
+### rookie.composed.bold[]
 
-- `AWARD_LINES.rookie.easygoing.composed[1]`: へえ、新人王か。…悪くないね。来年も楽しみだ
+- `AWARD_LINES.rookie.composed.bold[1]`: …通過点だね。次を見てなよ
 
-### rookie.earnest._default[]
+### rookie.composed.quiet[]
 
-- `AWARD_LINES.rookie.earnest._default[1]`: 練習してきてよかった。…もっと強くなります
+- `AWARD_LINES.rookie.composed.quiet[1]`: …ありがとう。…まだ先があるから
 
-### rookie.earnest.polite[]
+### rookie.composed.easygoing[]
 
-- `AWARD_LINES.rookie.earnest.polite[1]`: 毎日の積み重ねが報われました。指導してくださった皆さん、ありがとうございます
+- `AWARD_LINES.rookie.composed.easygoing[1]`: へえ、新人王か。…悪くないね。来年も楽しみだ
 
-### rookie.earnest.ojousama[]
+### rookie.composed.earnest[]
 
-- `AWARD_LINES.rookie.earnest.ojousama[1]`: 努力を重ねてまいりました。この賞を糧に、さらなる高みを目指しますわ
+- `AWARD_LINES.rookie.composed.earnest[1]`: …やることはやってきた。この賞が証明してくれたかな
 
-### rookie.earnest.seductive[]
+### rookie.composed.emotional[]
 
-- `AWARD_LINES.rookie.earnest.seductive[1]`: 努力してきたもの。…でもまだ足りないわ。もっと磨くから、見ていて
+- `AWARD_LINES.rookie.composed.emotional[1]`: …っ…そうか。…ありがとう。…次、行くよ
 
-### rookie.earnest.composed[]
+### rookie.cool.bold[]
 
-- `AWARD_LINES.rookie.earnest.composed[1]`: …やることはやってきた。この賞が証明してくれたかな
+- `AWARD_LINES.rookie.cool.bold[1]`: …始まりに過ぎない
 
-### rookie.emotional._default[]
+### rookie.cool.quiet[]
 
-- `AWARD_LINES.rookie.emotional._default[1]`: あ…だめだ、泣いちゃう…。嬉しいです…こんなに…嬉しいの初めてです…！
+- `AWARD_LINES.rookie.cool.quiet[1]`: …次
 
-### rookie.emotional.ojousama[]
+### rookie.polite.quiet[]
 
-- `AWARD_LINES.rookie.emotional.ojousama[1]`: あっ…涙が…こ、こんなところで取り乱すなんて…嬉しすぎますわ…！
+- `AWARD_LINES.rookie.polite.quiet[1]`: …ありがとうございます。まだ、足りないものばかりです
 
-### rookie.emotional.delinquent[]
+### rookie.polite.shy[]
 
-- `AWARD_LINES.rookie.emotional.delinquent[1]`: くっ…泣くかよこんなとこで…。ちくしょう…嬉しいじゃねえか…！
+- `AWARD_LINES.rookie.polite.shy[1]`: え…わたし、ですか…？ …ありがとうございます…
 
-### rookie.emotional.seductive[]
+### rookie.polite.easygoing[]
 
-- `AWARD_LINES.rookie.emotional.seductive[1]`: 新人賞……っ……一年目、無我夢中だったの……認めてもらえて嬉しいわ……
+- `AWARD_LINES.rookie.polite.easygoing[1]`: うそです…！ 新人王ですか…！ ありがとうございます！
 
-### rookie.emotional.composed[]
+### rookie.polite.earnest[]
 
-- `AWARD_LINES.rookie.emotional.composed[1]`: …っ…そうか。…ありがとう。…次、行くよ
+- `AWARD_LINES.rookie.polite.earnest[1]`: 毎日の積み重ねが報われました。指導してくださった皆さん、ありがとうございます
 
-### bestMatch.normal._default[]
+### bestMatch.standard.normal[]
 
-- `AWARD_LINES.bestMatch.normal._default[1]`: あの試合の最後の5分間は特別でした。全力を出せた気がします
-- `AWARD_LINES.bestMatch.normal._default[2]`: 終わった瞬間、全部出し切ったのがわかる。そんな試合でした
+- `AWARD_LINES.bestMatch.standard.normal[1]`: あの試合の最後の5分間は特別でした。全力を出せた気がします
+- `AWARD_LINES.bestMatch.standard.normal[2]`: 終わった瞬間、全部出し切ったのがわかる。そんな試合でした
 
-### bestMatch.normal.ojousama[]
+### bestMatch.standard.bold[]
 
-- `AWARD_LINES.bestMatch.normal.ojousama[1]`: あのような激闘、生涯忘れませんわ。対戦してくれたお相手に、心より敬意を
+- `AWARD_LINES.bestMatch.standard.bold[1]`: 全力と全力でぶつかった。いい時間だったよ。
+- `AWARD_LINES.bestMatch.standard.bold[2]`: あの試合で出し惜しみなんてできなかった。全部出し切ったよ。
 
-### bestMatch.normal.delinquent[]
+### bestMatch.standard.quiet[]
 
-- `AWARD_LINES.bestMatch.normal.delinquent[1]`: あの試合はヤバかった。体が勝手に動いてた。あいつとじゃなきゃ無理だった
+- `AWARD_LINES.bestMatch.standard.quiet[1]`: ……あの試合のことは、ずっと体が覚えてる
 
-### bestMatch.normal.seductive[]
+### bestMatch.standard.shy[]
 
-- `AWARD_LINES.bestMatch.normal.seductive[1]`: 最高に痺れたわ。…また味わいたい、あの感覚
+- `AWARD_LINES.bestMatch.standard.shy[1]`: あんなすごい試合にわたしが…。相手が引き出してくれたんです
 
-### bestMatch.normal.polite[]
+### bestMatch.standard.easygoing[]
 
-- `AWARD_LINES.bestMatch.normal.polite[1]`: 最高の試合でした。…相手に感謝しています
+- `AWARD_LINES.bestMatch.standard.easygoing[1]`: すっごく楽しかった！ 終わった瞬間「もう1回！」って思ったもん
+- `AWARD_LINES.bestMatch.standard.easygoing[2]`: 試合中ずっとニヤニヤしてたかも。だって最高なんだもん！
 
-### bestMatch.normal.composed[]
+### bestMatch.standard.earnest[]
 
-- `AWARD_LINES.bestMatch.normal.composed[1]`: …悪くなかった。あの相手だから、出せたものがある
+- `AWARD_LINES.bestMatch.standard.earnest[1]`: あの試合のためにずっと準備してきた。報われました
+- `AWARD_LINES.bestMatch.standard.earnest[2]`: お互い全部出し切れた。これがプロレスだと思います
 
-### bestMatch.bold._default[]
+### bestMatch.standard.emotional[]
 
-- `AWARD_LINES.bestMatch.bold._default[1]`: 全力と全力でぶつかった。いい時間だったよ。
-- `AWARD_LINES.bestMatch.bold._default[2]`: あの試合で出し惜しみなんてできなかった。全部出し切ったよ。
+- `AWARD_LINES.bestMatch.standard.emotional[1]`: あの試合のこと思い出すだけで…っ。ごめんなさい、涙が…最高でした…！
 
-### bestMatch.bold.ojousama[]
+### bestMatch.ojousama.normal[]
 
-- `AWARD_LINES.bestMatch.bold.ojousama[1]`: あの方と全力で戦えたことは、大変名誉ですわ
+- `AWARD_LINES.bestMatch.ojousama.normal[1]`: あのような激闘、生涯忘れませんわ。対戦してくれたお相手に、心より敬意を
 
-### bestMatch.bold.delinquent[]
+### bestMatch.ojousama.bold[]
 
-- `AWARD_LINES.bestMatch.bold.delinquent[1]`: 殴って殴られて、最後に立ってた。それだけだ。…最高だったけどな
+- `AWARD_LINES.bestMatch.ojousama.bold[1]`: あの方と全力で戦えたことは、大変名誉ですわ
 
-### bestMatch.bold.cool[]
+### bestMatch.ojousama.shy[]
 
-- `AWARD_LINES.bestMatch.bold.cool[1]`: …言葉はいらない。あの試合がすべてだ
+- `AWARD_LINES.bestMatch.ojousama.shy[1]`: あ、あのような試合ができましたのは…お相手のおかげですわ…
 
-### bestMatch.bold.seductive[]
+### bestMatch.ojousama.easygoing[]
 
-- `AWARD_LINES.bestMatch.bold.seductive[1]`: 全力を引き出してくれた相手に感謝。…次はもっと激しくいくわよ？
+- `AWARD_LINES.bestMatch.ojousama.easygoing[1]`: 最高の試合でしたわ！ お相手にも感謝ですの
 
-### bestMatch.bold.polite[]
+### bestMatch.ojousama.earnest[]
 
-- `AWARD_LINES.bestMatch.bold.polite[1]`: 当然の結果です。…でも、まだ上があります
+- `AWARD_LINES.bestMatch.ojousama.earnest[1]`: あの試合に向けて積み重ねた日々が報われましたわ。最高のお相手に感謝いたします
 
-### bestMatch.bold.composed[]
+### bestMatch.ojousama.emotional[]
 
-- `AWARD_LINES.bestMatch.bold.composed[1]`: …いい試合だった。出し惜しみなんてできなかったよ
+- `AWARD_LINES.bestMatch.ojousama.emotional[1]`: 思い出すだけで…こんな…お相手に、心から…感謝を…っ
 
-### bestMatch.quiet._default[]
+### bestMatch.delinquent.normal[]
 
-- `AWARD_LINES.bestMatch.quiet._default[1]`: ……あの試合のことは、ずっと体が覚えてる
+- `AWARD_LINES.bestMatch.delinquent.normal[1]`: あの試合はヤバかった。体が勝手に動いてた。あいつとじゃなきゃ無理だった
 
-### bestMatch.quiet.cool[]
+### bestMatch.delinquent.bold[]
 
-- `AWARD_LINES.bestMatch.quiet.cool[1]`: …一生の試合だった
+- `AWARD_LINES.bestMatch.delinquent.bold[1]`: 殴って殴られて、最後に立ってた。それだけだ。…最高だったけどな
 
-### bestMatch.quiet.polite[]
+### bestMatch.delinquent.shy[]
 
-- `AWARD_LINES.bestMatch.quiet.polite[1]`: …あの方と戦えて、本当によかったです
+- `AWARD_LINES.bestMatch.delinquent.shy[1]`: いや…あたしなんかがあんな試合…相手がすげえんだよ…
 
-### bestMatch.quiet.seductive[]
+### bestMatch.delinquent.easygoing[]
 
-- `AWARD_LINES.bestMatch.quiet.seductive[1]`: ………最高の試合…だったわ
+- `AWARD_LINES.bestMatch.delinquent.easygoing[1]`: 終わった瞬間「もう1ラウンドくれ！」って叫びそうになった！
 
-### bestMatch.quiet.composed[]
+### bestMatch.delinquent.emotional[]
 
-- `AWARD_LINES.bestMatch.quiet.composed[1]`: ……あの試合のことは、忘れないだろうね
+- `AWARD_LINES.bestMatch.delinquent.emotional[1]`: ちくしょう…あの試合思い出したら…目から汗が…最高だったよ…！
 
-### bestMatch.shy._default[]
+### bestMatch.seductive.normal[]
 
-- `AWARD_LINES.bestMatch.shy._default[1]`: あんなすごい試合にわたしが…。相手が引き出してくれたんです
+- `AWARD_LINES.bestMatch.seductive.normal[1]`: 最高に痺れたわ。…また味わいたい、あの感覚
 
-### bestMatch.shy.ojousama[]
+### bestMatch.seductive.bold[]
 
-- `AWARD_LINES.bestMatch.shy.ojousama[1]`: あ、あのような試合ができましたのは…お相手のおかげですわ…
+- `AWARD_LINES.bestMatch.seductive.bold[1]`: 全力を引き出してくれた相手に感謝。…次はもっと激しくいくわよ？
 
-### bestMatch.shy.delinquent[]
+### bestMatch.seductive.quiet[]
 
-- `AWARD_LINES.bestMatch.shy.delinquent[1]`: いや…あたしなんかがあんな試合…相手がすげえんだよ…
+- `AWARD_LINES.bestMatch.seductive.quiet[1]`: ………最高の試合…だったわ
 
-### bestMatch.shy.polite[]
+### bestMatch.seductive.easygoing[]
 
-- `AWARD_LINES.bestMatch.shy.polite[1]`: あ、あの…ベストバウトに選んでいただけるなんて…相手の方のおかげです…
+- `AWARD_LINES.bestMatch.seductive.easygoing[1]`: 楽しかったわ。久しぶりに全部忘れて夢中になれた
 
-### bestMatch.easygoing._default[]
+### bestMatch.seductive.earnest[]
 
-- `AWARD_LINES.bestMatch.easygoing._default[1]`: すっごく楽しかった！ 終わった瞬間「もう1回！」って思ったもん
-- `AWARD_LINES.bestMatch.easygoing._default[2]`: 試合中ずっとニヤニヤしてたかも。だって最高なんだもん！
+- `AWARD_LINES.bestMatch.seductive.earnest[1]`: 準備してきたものを全部出せた。…最高の相手がいたから
 
-### bestMatch.easygoing.delinquent[]
+### bestMatch.seductive.emotional[]
 
-- `AWARD_LINES.bestMatch.easygoing.delinquent[1]`: 終わった瞬間「もう1ラウンドくれ！」って叫びそうになった！
+- `AWARD_LINES.bestMatch.seductive.emotional[1]`: 最高の試合だった…涙が止まらないわ
 
-### bestMatch.easygoing.seductive[]
+### bestMatch.polite.normal[]
 
-- `AWARD_LINES.bestMatch.easygoing.seductive[1]`: 楽しかったわ。久しぶりに全部忘れて夢中になれた
+- `AWARD_LINES.bestMatch.polite.normal[1]`: 最高の試合でした。…相手に感謝しています
 
-### bestMatch.easygoing.polite[]
+### bestMatch.polite.bold[]
 
-- `AWARD_LINES.bestMatch.easygoing.polite[1]`: 最高の試合でした！ 相手にも感謝です！
+- `AWARD_LINES.bestMatch.polite.bold[1]`: 当然の結果です。…でも、まだ上があります
 
-### bestMatch.easygoing.ojousama[]
+### bestMatch.polite.quiet[]
 
-- `AWARD_LINES.bestMatch.easygoing.ojousama[1]`: 最高の試合でしたわ！ お相手にも感謝ですの
+- `AWARD_LINES.bestMatch.polite.quiet[1]`: …あの方と戦えて、本当によかったです
 
-### bestMatch.easygoing.composed[]
+### bestMatch.polite.shy[]
 
-- `AWARD_LINES.bestMatch.easygoing.composed[1]`: あの試合は楽しかったな。…全部出し切れた
+- `AWARD_LINES.bestMatch.polite.shy[1]`: あ、あの…ベストバウトに選んでいただけるなんて…相手の方のおかげです…
 
-### bestMatch.earnest._default[]
+### bestMatch.polite.easygoing[]
 
-- `AWARD_LINES.bestMatch.earnest._default[1]`: あの試合のためにずっと準備してきた。報われました
-- `AWARD_LINES.bestMatch.earnest._default[2]`: お互い全部出し切れた。これがプロレスだと思います
+- `AWARD_LINES.bestMatch.polite.easygoing[1]`: 最高の試合でした！ 相手にも感謝です！
 
-### bestMatch.earnest.polite[]
+### bestMatch.polite.earnest[]
 
-- `AWARD_LINES.bestMatch.earnest.polite[1]`: あの試合は一生の宝物です。対戦相手の方に、心から感謝しています
+- `AWARD_LINES.bestMatch.polite.earnest[1]`: あの試合は一生の宝物です。対戦相手の方に、心から感謝しています
 
-### bestMatch.earnest.ojousama[]
+### bestMatch.composed.normal[]
 
-- `AWARD_LINES.bestMatch.earnest.ojousama[1]`: あの試合に向けて積み重ねた日々が報われましたわ。最高のお相手に感謝いたします
+- `AWARD_LINES.bestMatch.composed.normal[1]`: …悪くなかった。あの相手だから、出せたものがある
 
-### bestMatch.earnest.seductive[]
+### bestMatch.composed.bold[]
 
-- `AWARD_LINES.bestMatch.earnest.seductive[1]`: 準備してきたものを全部出せた。…最高の相手がいたから
+- `AWARD_LINES.bestMatch.composed.bold[1]`: …いい試合だった。出し惜しみなんてできなかったよ
 
-### bestMatch.earnest.composed[]
+### bestMatch.composed.quiet[]
 
-- `AWARD_LINES.bestMatch.earnest.composed[1]`: …積み重ねてきたものが、あの試合で全部出せた。それだけだよ
+- `AWARD_LINES.bestMatch.composed.quiet[1]`: ……あの試合のことは、忘れないだろうね
 
-### bestMatch.emotional._default[]
+### bestMatch.composed.easygoing[]
 
-- `AWARD_LINES.bestMatch.emotional._default[1]`: あの試合のこと思い出すだけで…っ。ごめんなさい、涙が…最高でした…！
+- `AWARD_LINES.bestMatch.composed.easygoing[1]`: あの試合は楽しかったな。…全部出し切れた
 
-### bestMatch.emotional.ojousama[]
+### bestMatch.composed.earnest[]
 
-- `AWARD_LINES.bestMatch.emotional.ojousama[1]`: 思い出すだけで…こんな…お相手に、心から…感謝を…っ
+- `AWARD_LINES.bestMatch.composed.earnest[1]`: …積み重ねてきたものが、あの試合で全部出せた。それだけだよ
 
-### bestMatch.emotional.delinquent[]
+### bestMatch.composed.emotional[]
 
-- `AWARD_LINES.bestMatch.emotional.delinquent[1]`: ちくしょう…あの試合思い出したら…目から汗が…最高だったよ…！
+- `AWARD_LINES.bestMatch.composed.emotional[1]`: …っ…あの試合は…ちょっと、特別だったね。…うん
 
-### bestMatch.emotional.seductive[]
+### bestMatch.cool.bold[]
 
-- `AWARD_LINES.bestMatch.emotional.seductive[1]`: 最高の試合だった…涙が止まらないわ
+- `AWARD_LINES.bestMatch.cool.bold[1]`: …言葉はいらない。あの試合がすべてだ
 
-### bestMatch.emotional.composed[]
+### bestMatch.cool.quiet[]
 
-- `AWARD_LINES.bestMatch.emotional.composed[1]`: …っ…あの試合は…ちょっと、特別だったね。…うん
+- `AWARD_LINES.bestMatch.cool.quiet[1]`: …一生の試合だった
 
-### mvp.normal._default[]
+### mvp.standard.normal[]
 
-- `AWARD_LINES.mvp.normal._default[1]`: 一年間、逃げなかった。それだけは胸を張れます
-- `AWARD_LINES.mvp.normal._default[2]`: 苦しい試合もあった。でも全部、今のわたしを作ってくれた
+- `AWARD_LINES.mvp.standard.normal[1]`: 一年間、逃げなかった。それだけは胸を張れます
+- `AWARD_LINES.mvp.standard.normal[2]`: 苦しい試合もあった。でも全部、今のわたしを作ってくれた
 
-### mvp.normal.ojousama[]
+### mvp.standard.bold[]
 
-- `AWARD_LINES.mvp.normal.ojousama[1]`: 一年を通して成長できましたこと、皆さまのおかげです
+- `AWARD_LINES.mvp.standard.bold[1]`: 誰よりも強かったでしょ？数字にも出てるし。
+- `AWARD_LINES.mvp.standard.bold[2]`: この一年は、負ける気がしなかったね。全試合見てたでしょ？どうだった？
 
-### mvp.normal.delinquent[]
+### mvp.standard.quiet[]
 
-- `AWARD_LINES.mvp.normal.delinquent[1]`: 一年間ずっと全力だった。手抜いた日なんか一日もねえよ
+- `AWARD_LINES.mvp.standard.quiet[1]`: ……一試合、一試合。それだけをやった
 
-### mvp.normal.seductive[]
+### mvp.standard.shy[]
 
-- `AWARD_LINES.mvp.normal.seductive[1]`: 一年間ずっと見ていてくれたでしょう？ …ちゃんと応えたわ
+- `AWARD_LINES.mvp.standard.shy[1]`: MVPなんて…周りの人が強くしてくれただけで…。でも、嬉しいです
 
-### mvp.normal.polite[]
+### mvp.standard.easygoing[]
 
-- `AWARD_LINES.mvp.normal.polite[1]`: MVPをいただけるとは…ありがとうございます。来年も頑張ります
+- `AWARD_LINES.mvp.standard.easygoing[1]`: MVP！ 人生で一番カッコいい三文字もらっちゃった！
+- `AWARD_LINES.mvp.standard.easygoing[2]`: いやーこの一年楽しかったなー。楽しんでたらMVPになってた！
 
-### mvp.normal.composed[]
+### mvp.standard.earnest[]
 
-- `AWARD_LINES.mvp.normal.composed[1]`: …一年間、やるべきことをやった。それだけだよ
+- `AWARD_LINES.mvp.standard.earnest[1]`: 毎日の練習が無駄じゃなかった。でもまだ先がある
+- `AWARD_LINES.mvp.standard.earnest[2]`: この賞は自分だけのものじゃない。一緒に戦ってくれたみんなのもの
 
-### mvp.bold._default[]
+### mvp.standard.emotional[]
 
-- `AWARD_LINES.mvp.bold._default[1]`: 誰よりも強かったでしょ？数字にも出てるし。
-- `AWARD_LINES.mvp.bold._default[2]`: この一年は、負ける気がしなかったね。全試合見てたでしょ？どうだった？
+- `AWARD_LINES.mvp.standard.emotional[1]`: 一年間…苦しくて…でも…全部やってきてよかった…っ！ ありがとう…！
 
-### mvp.bold.ojousama[]
+### mvp.ojousama.normal[]
 
-- `AWARD_LINES.mvp.bold.ojousama[1]`: わたくしが最も輝いた一年でしたわね。異論のある方はリングでお待ちしています
+- `AWARD_LINES.mvp.ojousama.normal[1]`: 一年を通して成長できましたこと、皆さまのおかげです
 
-### mvp.bold.delinquent[]
+### mvp.ojousama.bold[]
 
-- `AWARD_LINES.mvp.bold.delinquent[1]`: 一番強かったのはあたしだ。文句あるなら来いよ
+- `AWARD_LINES.mvp.ojousama.bold[1]`: わたくしが最も輝いた一年でしたわね。異論のある方はリングでお待ちしています
 
-### mvp.bold.cool[]
+### mvp.ojousama.shy[]
 
-- `AWARD_LINES.mvp.bold.cool[1]`: …結果が語っている
+- `AWARD_LINES.mvp.ojousama.shy[1]`: わ、わたくしがMVPですの…？ 周りの方々に支えられただけですわ…
 
-### mvp.bold.seductive[]
+### mvp.ojousama.easygoing[]
 
-- `AWARD_LINES.mvp.bold.seductive[1]`: 一番になるべくしてなった。当然でしょう？ …でも、まだ満足してないわ
+- `AWARD_LINES.mvp.ojousama.easygoing[1]`: MVPですの！ 光栄ですわ。来年も精進いたしますの
 
-### mvp.bold.polite[]
+### mvp.ojousama.earnest[]
 
-- `AWARD_LINES.mvp.bold.polite[1]`: 当然です。…でも、来年も狙います
+- `AWARD_LINES.mvp.ojousama.earnest[1]`: 弛まぬ努力の賜物ですわ。来年も精進を続けますの
 
-### mvp.bold.composed[]
+### mvp.ojousama.emotional[]
 
-- `AWARD_LINES.mvp.bold.composed[1]`: …まあ、結果は出したからね。…でもまだ先がある
+- `AWARD_LINES.mvp.ojousama.emotional[1]`: 一年間…辛いことも…嬉しいことも…全部…っ、報われましたわ…！
 
-### mvp.quiet._default[]
+### mvp.delinquent.normal[]
 
-- `AWARD_LINES.mvp.quiet._default[1]`: ……一試合、一試合。それだけをやった
+- `AWARD_LINES.mvp.delinquent.normal[1]`: 一年間ずっと全力だった。手抜いた日なんか一日もねえよ
 
-### mvp.quiet.cool[]
+### mvp.delinquent.bold[]
 
-- `AWARD_LINES.mvp.quiet.cool[1]`: …積み重ねの結果だ
+- `AWARD_LINES.mvp.delinquent.bold[1]`: 一番強かったのはあたしだ。文句あるなら来いよ
 
-### mvp.quiet.polite[]
+### mvp.delinquent.shy[]
 
-- `AWARD_LINES.mvp.quiet.polite[1]`: …目の前のことに集中しただけです
+- `AWARD_LINES.mvp.delinquent.shy[1]`: MVP？ あたしが？ いや…みんなが強くしてくれたんだよ…
 
-### mvp.quiet.seductive[]
+### mvp.delinquent.easygoing[]
 
-- `AWARD_LINES.mvp.quiet.seductive[1]`: ………ありがとう…ね
+- `AWARD_LINES.mvp.delinquent.easygoing[1]`: うおお！ MVP！ いい響きじゃん！
 
-### mvp.quiet.composed[]
+### mvp.delinquent.emotional[]
 
-- `AWARD_LINES.mvp.quiet.composed[1]`: …一つずつ、やっただけ
+- `AWARD_LINES.mvp.delinquent.emotional[1]`: くそっ…泣くな泣くな…。一年間…全部出し切った…それだけだ…！
 
-### mvp.shy._default[]
+### mvp.seductive.normal[]
 
-- `AWARD_LINES.mvp.shy._default[1]`: MVPなんて…周りの人が強くしてくれただけで…。でも、嬉しいです
+- `AWARD_LINES.mvp.seductive.normal[1]`: 一年間ずっと見ていてくれたでしょう？ …ちゃんと応えたわ
 
-### mvp.shy.ojousama[]
+### mvp.seductive.bold[]
 
-- `AWARD_LINES.mvp.shy.ojousama[1]`: わ、わたくしがMVPですの…？ 周りの方々に支えられただけですわ…
+- `AWARD_LINES.mvp.seductive.bold[1]`: 一番になるべくしてなった。当然でしょう？ …でも、まだ満足してないわ
 
-### mvp.shy.delinquent[]
+### mvp.seductive.quiet[]
 
-- `AWARD_LINES.mvp.shy.delinquent[1]`: MVP？ あたしが？ いや…みんなが強くしてくれたんだよ…
+- `AWARD_LINES.mvp.seductive.quiet[1]`: ………ありがとう…ね
 
-### mvp.shy.polite[]
+### mvp.seductive.easygoing[]
 
-- `AWARD_LINES.mvp.shy.polite[1]`: M、MVP…ですか…？ そ、そんな大それた賞、わたしには…
+- `AWARD_LINES.mvp.seductive.easygoing[1]`: 最優秀選手ですって。…似合うと思わない？
 
-### mvp.easygoing._default[]
+### mvp.seductive.earnest[]
 
-- `AWARD_LINES.mvp.easygoing._default[1]`: MVP！ 人生で一番カッコいい三文字もらっちゃった！
-- `AWARD_LINES.mvp.easygoing._default[2]`: いやーこの一年楽しかったなー。楽しんでたらMVPになってた！
+- `AWARD_LINES.mvp.seductive.earnest[1]`: 積み重ねてきたものが実った。…でも、ここで止まるつもりはないわ
 
-### mvp.easygoing.delinquent[]
+### mvp.seductive.emotional[]
 
-- `AWARD_LINES.mvp.easygoing.delinquent[1]`: うおお！ MVP！ いい響きじゃん！
+- `AWARD_LINES.mvp.seductive.emotional[1]`: MVP……っ……ふふ、わたしが一番輝いてたって、そう言ってもらえるのね……
 
-### mvp.easygoing.seductive[]
+### mvp.polite.normal[]
 
-- `AWARD_LINES.mvp.easygoing.seductive[1]`: 最優秀選手ですって。…似合うと思わない？
+- `AWARD_LINES.mvp.polite.normal[1]`: MVPをいただけるとは…ありがとうございます。来年も頑張ります
 
-### mvp.easygoing.polite[]
+### mvp.polite.bold[]
 
-- `AWARD_LINES.mvp.easygoing.polite[1]`: MVPですか！ ありがとうございます！ 来年も頑張ります！
+- `AWARD_LINES.mvp.polite.bold[1]`: 当然です。…でも、来年も狙います
 
-### mvp.easygoing.ojousama[]
+### mvp.polite.quiet[]
 
-- `AWARD_LINES.mvp.easygoing.ojousama[1]`: MVPですの！ 光栄ですわ。来年も精進いたしますの
+- `AWARD_LINES.mvp.polite.quiet[1]`: …目の前のことに集中しただけです
 
-### mvp.easygoing.composed[]
+### mvp.polite.shy[]
 
-- `AWARD_LINES.mvp.easygoing.composed[1]`: MVP？ …ふぅん。悪くないね
+- `AWARD_LINES.mvp.polite.shy[1]`: M、MVP…ですか…？ そ、そんな大それた賞、わたしには…
 
-### mvp.earnest._default[]
+### mvp.polite.easygoing[]
 
-- `AWARD_LINES.mvp.earnest._default[1]`: 毎日の練習が無駄じゃなかった。でもまだ先がある
-- `AWARD_LINES.mvp.earnest._default[2]`: この賞は自分だけのものじゃない。一緒に戦ってくれたみんなのもの
+- `AWARD_LINES.mvp.polite.easygoing[1]`: MVPですか！ ありがとうございます！ 来年も頑張ります！
 
-### mvp.earnest.polite[]
+### mvp.polite.earnest[]
 
-- `AWARD_LINES.mvp.earnest.polite[1]`: 日々の積み重ねが実を結びました。来年も変わらず精進します
+- `AWARD_LINES.mvp.polite.earnest[1]`: 日々の積み重ねが実を結びました。来年も変わらず精進します
 
-### mvp.earnest.ojousama[]
+### mvp.composed.normal[]
 
-- `AWARD_LINES.mvp.earnest.ojousama[1]`: 弛まぬ努力の賜物ですわ。来年も精進を続けますの
+- `AWARD_LINES.mvp.composed.normal[1]`: …一年間、やるべきことをやった。それだけだよ
 
-### mvp.earnest.seductive[]
+### mvp.composed.bold[]
 
-- `AWARD_LINES.mvp.earnest.seductive[1]`: 積み重ねてきたものが実った。…でも、ここで止まるつもりはないわ
+- `AWARD_LINES.mvp.composed.bold[1]`: …まあ、結果は出したからね。…でもまだ先がある
 
-### mvp.earnest.composed[]
+### mvp.composed.quiet[]
 
-- `AWARD_LINES.mvp.earnest.composed[1]`: …毎日の積み重ねが形になった。…ここで満足はしないけどね
+- `AWARD_LINES.mvp.composed.quiet[1]`: …一つずつ、やっただけ
 
-### mvp.emotional._default[]
+### mvp.composed.easygoing[]
 
-- `AWARD_LINES.mvp.emotional._default[1]`: 一年間…苦しくて…でも…全部やってきてよかった…っ！ ありがとう…！
+- `AWARD_LINES.mvp.composed.easygoing[1]`: MVP？ …ふぅん。悪くないね
 
-### mvp.emotional.ojousama[]
+### mvp.composed.earnest[]
 
-- `AWARD_LINES.mvp.emotional.ojousama[1]`: 一年間…辛いことも…嬉しいことも…全部…っ、報われましたわ…！
+- `AWARD_LINES.mvp.composed.earnest[1]`: …毎日の積み重ねが形になった。…ここで満足はしないけどね
 
-### mvp.emotional.delinquent[]
+### mvp.composed.emotional[]
 
-- `AWARD_LINES.mvp.emotional.delinquent[1]`: くそっ…泣くな泣くな…。一年間…全部出し切った…それだけだ…！
+- `AWARD_LINES.mvp.composed.emotional[1]`: …っ…一年間、苦しかったけど…ま、報われたかな。…うん
 
-### mvp.emotional.seductive[]
+### mvp.cool.bold[]
 
-- `AWARD_LINES.mvp.emotional.seductive[1]`: MVP……っ……ふふ、わたしが一番輝いてたって、そう言ってもらえるのね……
+- `AWARD_LINES.mvp.cool.bold[1]`: …結果が語っている
 
-### mvp.emotional.composed[]
+### mvp.cool.quiet[]
 
-- `AWARD_LINES.mvp.emotional.composed[1]`: …っ…一年間、苦しかったけど…ま、報われたかな。…うん
+- `AWARD_LINES.mvp.cool.quiet[1]`: …積み重ねの結果だ
 
-### mediaAward.normal._default[]
+### mediaAward.standard.normal[]
 
-- `AWARD_LINES.mediaAward.normal._default[1]`: こんな賞をいただけるなんて、びっくりです
-- `AWARD_LINES.mediaAward.normal._default[2]`: リング外でも頑張った甲斐がありました
+- `AWARD_LINES.mediaAward.standard.normal[1]`: こんな賞をいただけるなんて、びっくりです
+- `AWARD_LINES.mediaAward.standard.normal[2]`: リング外でも頑張った甲斐がありました
 
-### mediaAward.normal.ojousama[]
+### mediaAward.standard.bold[]
 
-- `AWARD_LINES.mediaAward.normal.ojousama[1]`: 光栄でございます。また精進いたします
+- `AWARD_LINES.mediaAward.standard.bold[1]`: リングの外でも全力でやってきた結果です！
+- `AWARD_LINES.mediaAward.standard.bold[2]`: こういう賞、めちゃくちゃ嬉しいんですよ！
 
-### mediaAward.normal.delinquent[]
+### mediaAward.standard.shy[]
 
-- `AWARD_LINES.mediaAward.normal.delinquent[1]`: えっ、マジで？ やっべ、嬉しい
+- `AWARD_LINES.mediaAward.standard.shy[1]`: あ、あの…ありがとうございます…嬉しいです…
+- `AWARD_LINES.mediaAward.standard.shy[2]`: こんな私でよかったんでしょうか…
 
-### mediaAward.normal.seductive[]
+### mediaAward.standard.easygoing[]
 
-- `AWARD_LINES.mediaAward.normal.seductive[1]`: ふふ、私の魅力が伝わったかしら
+- `AWARD_LINES.mediaAward.standard.easygoing[1]`: わーい！ いっぱい出てよかったー！
+- `AWARD_LINES.mediaAward.standard.easygoing[2]`: なんか気づいたらいっぱいお仕事してました！
 
-### mediaAward.normal.cool[]
+### mediaAward.standard.quiet[]
 
-- `AWARD_LINES.mediaAward.normal.cool[1]`: …ありがとう
+- `AWARD_LINES.mediaAward.standard.quiet[1]`: …ありがとうございます
 
-### mediaAward.normal.polite[]
+### mediaAward.ojousama.normal[]
 
-- `AWARD_LINES.mediaAward.normal.polite[1]`: 身に余る光栄です。ありがとうございます
+- `AWARD_LINES.mediaAward.ojousama.normal[1]`: 光栄でございます。また精進いたします
 
-### mediaAward.normal.composed[]
+### mediaAward.delinquent.normal[]
 
-- `AWARD_LINES.mediaAward.normal.composed[1]`: …ふぅん、こういう賞もあるんだね。…ありがとう
+- `AWARD_LINES.mediaAward.delinquent.normal[1]`: えっ、マジで？ やっべ、嬉しい
 
-### mediaAward.bold._default[]
+### mediaAward.delinquent.bold[]
 
-- `AWARD_LINES.mediaAward.bold._default[1]`: リングの外でも全力でやってきた結果です！
-- `AWARD_LINES.mediaAward.bold._default[2]`: こういう賞、めちゃくちゃ嬉しいんですよ！
+- `AWARD_LINES.mediaAward.delinquent.bold[1]`: よっしゃ！ 来年はもっとやったるぞ！
 
-### mediaAward.bold.delinquent[]
+### mediaAward.seductive.normal[]
 
-- `AWARD_LINES.mediaAward.bold.delinquent[1]`: よっしゃ！ 来年はもっとやったるぞ！
+- `AWARD_LINES.mediaAward.seductive.normal[1]`: ふふ、私の魅力が伝わったかしら
 
-### mediaAward.bold.cool[]
+### mediaAward.seductive.emotional[]
 
-- `AWARD_LINES.mediaAward.bold.cool[1]`: 結果で示せた。それだけだ
+- `AWARD_LINES.mediaAward.seductive.emotional[1]`: メディア功労賞……っ……みんなに見てもらえてた証ね、嬉しいわ……
 
-### mediaAward.bold.composed[]
+### mediaAward.cool.normal[]
 
-- `AWARD_LINES.mediaAward.bold.composed[1]`: …リングの外でも、やるべきことをやっただけだよ
+- `AWARD_LINES.mediaAward.cool.normal[1]`: …ありがとう
 
-### mediaAward.shy._default[]
+### mediaAward.cool.bold[]
 
-- `AWARD_LINES.mediaAward.shy._default[1]`: あ、あの…ありがとうございます…嬉しいです…
-- `AWARD_LINES.mediaAward.shy._default[2]`: こんな私でよかったんでしょうか…
+- `AWARD_LINES.mediaAward.cool.bold[1]`: 結果で示せた。それだけだ
 
-### mediaAward.shy.polite[]
+### mediaAward.cool.quiet[]
 
-- `AWARD_LINES.mediaAward.shy.polite[1]`: メディアの方々に…評価していただけて…あ、あの、本当に光栄です…
+- `AWARD_LINES.mediaAward.cool.quiet[1]`: …感謝します
 
-### mediaAward.easygoing._default[]
+### mediaAward.polite.normal[]
 
-- `AWARD_LINES.mediaAward.easygoing._default[1]`: わーい！ いっぱい出てよかったー！
-- `AWARD_LINES.mediaAward.easygoing._default[2]`: なんか気づいたらいっぱいお仕事してました！
+- `AWARD_LINES.mediaAward.polite.normal[1]`: 身に余る光栄です。ありがとうございます
 
-### mediaAward.quiet._default[]
+### mediaAward.polite.shy[]
 
-- `AWARD_LINES.mediaAward.quiet._default[1]`: …ありがとうございます
+- `AWARD_LINES.mediaAward.polite.shy[1]`: メディアの方々に…評価していただけて…あ、あの、本当に光栄です…
 
-### mediaAward.quiet.cool[]
+### mediaAward.composed.normal[]
 
-- `AWARD_LINES.mediaAward.quiet.cool[1]`: …感謝します
+- `AWARD_LINES.mediaAward.composed.normal[1]`: …ふぅん、こういう賞もあるんだね。…ありがとう
 
-### mediaAward.quiet.composed[]
+### mediaAward.composed.bold[]
 
-- `AWARD_LINES.mediaAward.quiet.composed[1]`: …ありがとう
+- `AWARD_LINES.mediaAward.composed.bold[1]`: …リングの外でも、やるべきことをやっただけだよ
 
-### mediaAward.emotional.seductive[]
+### mediaAward.composed.quiet[]
 
-- `AWARD_LINES.mediaAward.emotional.seductive[1]`: メディア功労賞……っ……みんなに見てもらえてた証ね、嬉しいわ……
+- `AWARD_LINES.mediaAward.composed.quiet[1]`: …ありがとう
 
-### champion.normal._default[]
+### champion.standard.normal[]
 
-- `AWARD_LINES.champion.normal._default[1]`: このベルトの重さを、毎日感じています。だから強くなれると思ってる
-- `AWARD_LINES.champion.normal._default[2]`: チャンピオンであることは誇りです。逃げずに守り抜くよ
+- `AWARD_LINES.champion.standard.normal[1]`: このベルトの重さを、毎日感じています。だから強くなれると思ってる
+- `AWARD_LINES.champion.standard.normal[2]`: チャンピオンであることは誇りです。逃げずに守り抜くよ
 
-### champion.normal.ojousama[]
+### champion.standard.bold[]
 
-- `AWARD_LINES.champion.normal.ojousama[1]`: この王座をお預かりしている限り、最高の試合をお約束いたします
+- `AWARD_LINES.champion.standard.bold[1]`: 最強。これが私。
+- `AWARD_LINES.champion.standard.bold[2]`: 挑戦したいヤツは何人でも来なよ。結果は変わらないけどね！
 
-### champion.normal.delinquent[]
+### champion.standard.quiet[]
 
-- `AWARD_LINES.champion.normal.delinquent[1]`: このベルト欲しいやつ、いくらでもかかってこい。全員叩き返す
+- `AWARD_LINES.champion.standard.quiet[1]`: ……この重さを、背負い続ける
 
-### champion.normal.seductive[]
+### champion.standard.shy[]
 
-- `AWARD_LINES.champion.normal.seductive[1]`: この輝き、よく似合うでしょう？ 欲しいなら…奪いに来なさい
+- `AWARD_LINES.champion.standard.shy[1]`: チャンピオンって…まだ慣れなくて。でもベルトが重い分、逃げちゃいけないって…
 
-### champion.normal.polite[]
+### champion.standard.easygoing[]
 
-- `AWARD_LINES.champion.normal.polite[1]`: 一年間、ベルトを守り続けることができました。支えてくださった皆さんに感謝します
+- `AWARD_LINES.champion.standard.easygoing[1]`: チャンピオンって肩書き、なんかくすぐったいけど最高だね！
 
-### champion.normal.composed[]
+### champion.standard.earnest[]
 
-- `AWARD_LINES.champion.normal.composed[1]`: …このベルトの重さ、悪くない。…来るなら来なよ
+- `AWARD_LINES.champion.standard.earnest[1]`: チャンピオンとして恥じない試合を、毎回見せる。それが自分との約束
+- `AWARD_LINES.champion.standard.earnest[2]`: ひとつひとつの防衛戦に全力を注ぐ。それだけ
 
-### champion.bold._default[]
+### champion.standard.emotional[]
 
-- `AWARD_LINES.champion.bold._default[1]`: 最強。これが私。
-- `AWARD_LINES.champion.bold._default[2]`: 挑戦したいヤツは何人でも来なよ。結果は変わらないけどね！
+- `AWARD_LINES.champion.standard.emotional[1]`: このベルトに…どれだけの想いが詰まってるか…っ。絶対、手放さない…！
 
-### champion.bold.ojousama[]
+### champion.ojousama.normal[]
 
-- `AWARD_LINES.champion.bold.ojousama[1]`: この王座はわたくしに最もふさわしい。それを証明し続けますわ
+- `AWARD_LINES.champion.ojousama.normal[1]`: この王座をお預かりしている限り、最高の試合をお約束いたします
 
-### champion.bold.delinquent[]
+### champion.ojousama.bold[]
 
-- `AWARD_LINES.champion.bold.delinquent[1]`: 最強はあたしだ。証拠がここにある。文句は拳で言いに来い
+- `AWARD_LINES.champion.ojousama.bold[1]`: この王座はわたくしに最もふさわしい。それを証明し続けますわ
 
-### champion.bold.cool[]
+### champion.ojousama.shy[]
 
-- `AWARD_LINES.champion.bold.cool[1]`: …この景色は渡さない
+- `AWARD_LINES.champion.ojousama.shy[1]`: チャンピオンだなんて…まだ信じられませんわ。でもこのベルトに恥じないように…
 
-### champion.bold.seductive[]
+### champion.ojousama.easygoing[]
 
-- `AWARD_LINES.champion.bold.seductive[1]`: 頂点からの景色は最高よ。…あなたには見せてあげないけど
+- `AWARD_LINES.champion.ojousama.easygoing[1]`: 一年間お守りいたしましたわ。来年もこの座を守りますの
 
-### champion.bold.polite[]
+### champion.ojousama.earnest[]
 
-- `AWARD_LINES.champion.bold.polite[1]`: ベルトを守り抜きました。…来年もこの座は譲りません
+- `AWARD_LINES.champion.ojousama.earnest[1]`: どの試合にも全身全霊を注ぎますわ。それがわたくしの矜持です
 
-### champion.bold.composed[]
+### champion.ojousama.emotional[]
 
-- `AWARD_LINES.champion.bold.composed[1]`: …ここが頂点。渡す気はないよ
+- `AWARD_LINES.champion.ojousama.emotional[1]`: このベルトが…こんなに重くて…こんなに温かいなんて…っ
 
-### champion.quiet._default[]
+### champion.delinquent.normal[]
 
-- `AWARD_LINES.champion.quiet._default[1]`: ……この重さを、背負い続ける
+- `AWARD_LINES.champion.delinquent.normal[1]`: このベルト欲しいやつ、いくらでもかかってこい。全員叩き返す
 
-### champion.quiet.cool[]
+### champion.delinquent.bold[]
 
-- `AWARD_LINES.champion.quiet.cool[1]`: …まだ降りない
+- `AWARD_LINES.champion.delinquent.bold[1]`: 最強はあたしだ。証拠がここにある。文句は拳で言いに来い
 
-### champion.quiet.polite[]
+### champion.delinquent.shy[]
 
-- `AWARD_LINES.champion.quiet.polite[1]`: …この責任、全うします
+- `AWARD_LINES.champion.delinquent.shy[1]`: あたしがチャンピオン…似合わねえかもだけど…でも渡さねえ…
 
-### champion.quiet.seductive[]
+### champion.delinquent.easygoing[]
 
-- `AWARD_LINES.champion.quiet.seductive[1]`: ………このベルト…渡さないわ
+- `AWARD_LINES.champion.delinquent.easygoing[1]`: チャンピオンの響き、たまんねえ！ もっと楽しむぜ！
 
-### champion.quiet.composed[]
+### champion.delinquent.emotional[]
 
-- `AWARD_LINES.champion.quiet.composed[1]`: ……この重さ、嫌いじゃない
+- `AWARD_LINES.champion.delinquent.emotional[1]`: このベルト…命懸けで獲ったんだ…！ 絶対…誰にも渡さねえ…！
 
-### champion.shy._default[]
+### champion.seductive.normal[]
 
-- `AWARD_LINES.champion.shy._default[1]`: チャンピオンって…まだ慣れなくて。でもベルトが重い分、逃げちゃいけないって…
+- `AWARD_LINES.champion.seductive.normal[1]`: この輝き、よく似合うでしょう？ 欲しいなら…奪いに来なさい
 
-### champion.shy.ojousama[]
+### champion.seductive.bold[]
 
-- `AWARD_LINES.champion.shy.ojousama[1]`: チャンピオンだなんて…まだ信じられませんわ。でもこのベルトに恥じないように…
+- `AWARD_LINES.champion.seductive.bold[1]`: 頂点からの景色は最高よ。…あなたには見せてあげないけど
 
-### champion.shy.delinquent[]
+### champion.seductive.quiet[]
 
-- `AWARD_LINES.champion.shy.delinquent[1]`: あたしがチャンピオン…似合わねえかもだけど…でも渡さねえ…
+- `AWARD_LINES.champion.seductive.quiet[1]`: ………このベルト…渡さないわ
 
-### champion.shy.polite[]
+### champion.seductive.easygoing[]
 
-- `AWARD_LINES.champion.shy.polite[1]`: わ、わたしが…チャンピオンに…？ こ、このベルトを汚さないように頑張ります…
+- `AWARD_LINES.champion.seductive.easygoing[1]`: チャンピオン。いい響きね。似合うでしょう？
 
-### champion.easygoing._default[]
+### champion.seductive.earnest[]
 
-- `AWARD_LINES.champion.easygoing._default[1]`: チャンピオンって肩書き、なんかくすぐったいけど最高だね！
+- `AWARD_LINES.champion.seductive.earnest[1]`: 王者としての誇り、毎試合で証明する。見ていてくれるかしら
 
-### champion.easygoing.delinquent[]
+### champion.seductive.emotional[]
 
-- `AWARD_LINES.champion.easygoing.delinquent[1]`: チャンピオンの響き、たまんねえ！ もっと楽しむぜ！
+- `AWARD_LINES.champion.seductive.emotional[1]`: チャンピオン……っ……ふふ、この重み……愛おしくてたまらないわ……
 
-### champion.easygoing.seductive[]
+### champion.polite.normal[]
 
-- `AWARD_LINES.champion.easygoing.seductive[1]`: チャンピオン。いい響きね。似合うでしょう？
+- `AWARD_LINES.champion.polite.normal[1]`: 一年間、ベルトを守り続けることができました。支えてくださった皆さんに感謝します
 
-### champion.easygoing.polite[]
+### champion.polite.bold[]
 
-- `AWARD_LINES.champion.easygoing.polite[1]`: 一年間守り抜きました！ 来年も頑張ります！
+- `AWARD_LINES.champion.polite.bold[1]`: ベルトを守り抜きました。…来年もこの座は譲りません
 
-### champion.easygoing.ojousama[]
+### champion.polite.quiet[]
 
-- `AWARD_LINES.champion.easygoing.ojousama[1]`: 一年間お守りいたしましたわ。来年もこの座を守りますの
+- `AWARD_LINES.champion.polite.quiet[1]`: …この責任、全うします
 
-### champion.easygoing.composed[]
+### champion.polite.shy[]
 
-- `AWARD_LINES.champion.easygoing.composed[1]`: チャンピオンか。…まあ、楽しんでいくよ
+- `AWARD_LINES.champion.polite.shy[1]`: わ、わたしが…チャンピオンに…？ こ、このベルトを汚さないように頑張ります…
 
-### champion.earnest._default[]
+### champion.polite.easygoing[]
 
-- `AWARD_LINES.champion.earnest._default[1]`: チャンピオンとして恥じない試合を、毎回見せる。それが自分との約束
-- `AWARD_LINES.champion.earnest._default[2]`: ひとつひとつの防衛戦に全力を注ぐ。それだけ
+- `AWARD_LINES.champion.polite.easygoing[1]`: 一年間守り抜きました！ 来年も頑張ります！
 
-### champion.earnest.polite[]
+### champion.polite.earnest[]
 
-- `AWARD_LINES.champion.earnest.polite[1]`: 王者としての責任を全うします。毎試合、最高の試合をお届けします
+- `AWARD_LINES.champion.polite.earnest[1]`: 王者としての責任を全うします。毎試合、最高の試合をお届けします
 
-### champion.earnest.ojousama[]
+### champion.composed.normal[]
 
-- `AWARD_LINES.champion.earnest.ojousama[1]`: どの試合にも全身全霊を注ぎますわ。それがわたくしの矜持です
+- `AWARD_LINES.champion.composed.normal[1]`: …このベルトの重さ、悪くない。…来るなら来なよ
 
-### champion.earnest.seductive[]
+### champion.composed.bold[]
 
-- `AWARD_LINES.champion.earnest.seductive[1]`: 王者としての誇り、毎試合で証明する。見ていてくれるかしら
+- `AWARD_LINES.champion.composed.bold[1]`: …ここが頂点。渡す気はないよ
 
-### champion.earnest.composed[]
+### champion.composed.quiet[]
 
-- `AWARD_LINES.champion.earnest.composed[1]`: …毎試合、ベストを出す。それが王者の仕事だろうね
+- `AWARD_LINES.champion.composed.quiet[1]`: ……この重さ、嫌いじゃない
 
-### champion.emotional._default[]
+### champion.composed.easygoing[]
 
-- `AWARD_LINES.champion.emotional._default[1]`: このベルトに…どれだけの想いが詰まってるか…っ。絶対、手放さない…！
+- `AWARD_LINES.champion.composed.easygoing[1]`: チャンピオンか。…まあ、楽しんでいくよ
 
-### champion.emotional.ojousama[]
+### champion.composed.earnest[]
 
-- `AWARD_LINES.champion.emotional.ojousama[1]`: このベルトが…こんなに重くて…こんなに温かいなんて…っ
+- `AWARD_LINES.champion.composed.earnest[1]`: …毎試合、ベストを出す。それが王者の仕事だろうね
 
-### champion.emotional.delinquent[]
+### champion.composed.emotional[]
 
-- `AWARD_LINES.champion.emotional.delinquent[1]`: このベルト…命懸けで獲ったんだ…！ 絶対…誰にも渡さねえ…！
+- `AWARD_LINES.champion.composed.emotional[1]`: …っ…このベルト…簡単には、渡さないよ
 
-### champion.emotional.seductive[]
+### champion.cool.bold[]
 
-- `AWARD_LINES.champion.emotional.seductive[1]`: チャンピオン……っ……ふふ、この重み……愛おしくてたまらないわ……
+- `AWARD_LINES.champion.cool.bold[1]`: …この景色は渡さない
 
-### champion.emotional.composed[]
+### champion.cool.quiet[]
 
-- `AWARD_LINES.champion.emotional.composed[1]`: …っ…このベルト…簡単には、渡さないよ
+- `AWARD_LINES.champion.cool.quiet[1]`: …まだ降りない
 
-### hallOfFame.normal._default[]
+### hallOfFame.standard.normal[]
 
-- `AWARD_LINES.hallOfFame.normal._default[1]`: 後悔はない。一試合も。…本当に良い現役生活でした
-- `AWARD_LINES.hallOfFame.normal._default[2]`: このリングで過ごした時間が、わたしの全て
+- `AWARD_LINES.hallOfFame.standard.normal[1]`: 後悔はない。一試合も。…本当に良い現役生活でした
+- `AWARD_LINES.hallOfFame.standard.normal[2]`: このリングで過ごした時間が、わたしの全て
 
-### hallOfFame.normal.ojousama[]
+### hallOfFame.standard.bold[]
 
-- `AWARD_LINES.hallOfFame.normal.ojousama[1]`: 華やかな舞台から降りる日が来たということ。…でも、後悔はございません
+- `AWARD_LINES.hallOfFame.standard.bold[1]`: 全盛期はいつだって？「いつだって」だよ！
+- `AWARD_LINES.hallOfFame.standard.bold[2]`: やり残したことなんて何もないよ。そういう私だからこの場に立てるんでしょ？
 
-### hallOfFame.normal.delinquent[]
+### hallOfFame.standard.quiet[]
 
-- `AWARD_LINES.hallOfFame.normal.delinquent[1]`: まさかこんな名誉あるもんもらえる日が来るとはな…。全部、リングがくれたもんだ
+- `AWARD_LINES.hallOfFame.standard.quiet[1]`: ……ありがとう。この場所が、わたしの全部だった
 
-### hallOfFame.normal.seductive[]
+### hallOfFame.standard.shy[]
 
-- `AWARD_LINES.hallOfFame.normal.seductive[1]`: 素敵な花道を用意してくれるのね。…ありがとう。最高の舞台だったわ
+- `AWARD_LINES.hallOfFame.standard.shy[1]`: こんなわたしが殿堂に…。でも…ここに立てて…嬉しい。本当に嬉しいです
 
-### hallOfFame.normal.polite[]
+### hallOfFame.standard.easygoing[]
 
-- `AWARD_LINES.hallOfFame.normal.polite[1]`: 殿堂入り…夢のようです。支えてくださった全ての方に感謝いたします
+- `AWARD_LINES.hallOfFame.standard.easygoing[1]`: いやー楽しかった！ 全部ひっくるめて、最高の人生！ ありがとね！
+- `AWARD_LINES.hallOfFame.standard.easygoing[2]`: プロレスに出会えてよかった！ 毎日が冒険みたいだったよ！
 
-### hallOfFame.normal.composed[]
+### hallOfFame.standard.earnest[]
 
-- `AWARD_LINES.hallOfFame.normal.composed[1]`: …いい時間だった。後悔？ …ないよ
+- `AWARD_LINES.hallOfFame.standard.earnest[1]`: 後輩たちへ。リングの上に答えがある。苦しくても立ち続けてほしい
+- `AWARD_LINES.hallOfFame.standard.earnest[2]`: この業界に全てを捧げた。…後輩たちがもっと高い場所に行ってくれたら、それが一番嬉しい
 
-### hallOfFame.bold._default[]
+### hallOfFame.standard.emotional[]
 
-- `AWARD_LINES.hallOfFame.bold._default[1]`: 全盛期はいつだって？「いつだって」だよ！
-- `AWARD_LINES.hallOfFame.bold._default[2]`: やり残したことなんて何もないよ。そういう私だからこの場に立てるんでしょ？
+- `AWARD_LINES.hallOfFame.standard.emotional[1]`: プロレスが…わたしの居場所だった…。ここで出会えた人たちが…全部…宝物で…っ！
 
-### hallOfFame.bold.ojousama[]
+### hallOfFame.ojousama.normal[]
 
-- `AWARD_LINES.hallOfFame.bold.ojousama[1]`: わたくしの名が歴史に刻まれる。…ふさわしいと、自分で思えますわ
+- `AWARD_LINES.hallOfFame.ojousama.normal[1]`: 華やかな舞台から降りる日が来たということ。…でも、後悔はございません
 
-### hallOfFame.bold.delinquent[]
+### hallOfFame.ojousama.bold[]
 
-- `AWARD_LINES.hallOfFame.bold.delinquent[1]`: やりたい放題やって、全部勝ち取った。最高の人生だ
+- `AWARD_LINES.hallOfFame.ojousama.bold[1]`: わたくしの名が歴史に刻まれる。…ふさわしいと、自分で思えますわ
 
-### hallOfFame.bold.cool[]
+### hallOfFame.ojousama.shy[]
 
-- `AWARD_LINES.hallOfFame.bold.cool[1]`: …全てやった。悔いはない
+- `AWARD_LINES.hallOfFame.ojousama.shy[1]`: 殿堂だなんて…わたくしなんかが…。でも…光栄ですわ…本当に
 
-### hallOfFame.bold.seductive[]
+### hallOfFame.ojousama.easygoing[]
 
-- `AWARD_LINES.hallOfFame.bold.seductive[1]`: 最高の舞台で、最高の人生だった。…最後まで美しかったでしょう？
+- `AWARD_LINES.hallOfFame.ojousama.easygoing[1]`: 殿堂入りですの…！ 夢のようですわ…
 
-### hallOfFame.bold.polite[]
+### hallOfFame.ojousama.earnest[]
 
-- `AWARD_LINES.hallOfFame.bold.polite[1]`: 殿堂入りです。…ここまで来ることができました
+- `AWARD_LINES.hallOfFame.ojousama.earnest[1]`: 後輩の皆さまへ。わたくしが歩んだ道を、どうか超えていってくださいまし
 
-### hallOfFame.bold.composed[]
+### hallOfFame.ojousama.emotional[]
 
-- `AWARD_LINES.hallOfFame.bold.composed[1]`: …全部やりきった。悔いはないよ
+- `AWARD_LINES.hallOfFame.ojousama.emotional[1]`: こんな日が来るなんて…わたくし…皆さまに支えられて…っ、幸せでしたわ…！
 
-### hallOfFame.quiet._default[]
+### hallOfFame.delinquent.normal[]
 
-- `AWARD_LINES.hallOfFame.quiet._default[1]`: ……ありがとう。この場所が、わたしの全部だった
+- `AWARD_LINES.hallOfFame.delinquent.normal[1]`: まさかこんな名誉あるもんもらえる日が来るとはな…。全部、リングがくれたもんだ
 
-### hallOfFame.quiet.cool[]
+### hallOfFame.delinquent.bold[]
 
-- `AWARD_LINES.hallOfFame.quiet.cool[1]`: …悔いはない。…ありがとう
+- `AWARD_LINES.hallOfFame.delinquent.bold[1]`: やりたい放題やって、全部勝ち取った。最高の人生だ
 
-### hallOfFame.quiet.polite[]
+### hallOfFame.delinquent.shy[]
 
-- `AWARD_LINES.hallOfFame.quiet.polite[1]`: …長い間、ありがとうございました。幸せでした
+- `AWARD_LINES.hallOfFame.delinquent.shy[1]`: 殿堂…？ あたしが…？ …似合わねえけど…嬉しいよ…ありがとな
 
-### hallOfFame.quiet.seductive[]
+### hallOfFame.delinquent.easygoing[]
 
-- `AWARD_LINES.hallOfFame.quiet.seductive[1]`: ………（涙を堪え）…ありがとう
+- `AWARD_LINES.hallOfFame.delinquent.easygoing[1]`: 最っ高に楽しい選手人生だったぜ！ みんなありがとな！ プロレス最高！
 
-### hallOfFame.quiet.composed[]
+### hallOfFame.delinquent.emotional[]
 
-- `AWARD_LINES.hallOfFame.quiet.composed[1]`: ……ありがとう。…いい場所だった
+- `AWARD_LINES.hallOfFame.delinquent.emotional[1]`: ちくしょう…泣くなっつってんだろ…。みんな…ありがとう…本当に…くそ…！
 
-### hallOfFame.shy._default[]
+### hallOfFame.seductive.normal[]
 
-- `AWARD_LINES.hallOfFame.shy._default[1]`: こんなわたしが殿堂に…。でも…ここに立てて…嬉しい。本当に嬉しいです
+- `AWARD_LINES.hallOfFame.seductive.normal[1]`: 素敵な花道を用意してくれるのね。…ありがとう。最高の舞台だったわ
 
-### hallOfFame.shy.ojousama[]
+### hallOfFame.seductive.bold[]
 
-- `AWARD_LINES.hallOfFame.shy.ojousama[1]`: 殿堂だなんて…わたくしなんかが…。でも…光栄ですわ…本当に
+- `AWARD_LINES.hallOfFame.seductive.bold[1]`: 最高の舞台で、最高の人生だった。…最後まで美しかったでしょう？
 
-### hallOfFame.shy.delinquent[]
+### hallOfFame.seductive.quiet[]
 
-- `AWARD_LINES.hallOfFame.shy.delinquent[1]`: 殿堂…？ あたしが…？ …似合わねえけど…嬉しいよ…ありがとな
+- `AWARD_LINES.hallOfFame.seductive.quiet[1]`: ………（涙を堪え）…ありがとう
 
-### hallOfFame.shy.polite[]
+### hallOfFame.seductive.easygoing[]
 
-- `AWARD_LINES.hallOfFame.shy.polite[1]`: で、殿堂入り…ですか…？ わたしなんかが…本当に、いいんでしょうか…
+- `AWARD_LINES.hallOfFame.seductive.easygoing[1]`: 楽しい日々だったわ。全部、宝物。…ありがとう
 
-### hallOfFame.easygoing._default[]
+### hallOfFame.seductive.earnest[]
 
-- `AWARD_LINES.hallOfFame.easygoing._default[1]`: いやー楽しかった！ 全部ひっくるめて、最高の人生！ ありがとね！
-- `AWARD_LINES.hallOfFame.easygoing._default[2]`: プロレスに出会えてよかった！ 毎日が冒険みたいだったよ！
+- `AWARD_LINES.hallOfFame.seductive.earnest[1]`: 後輩たちへ。この世界には、努力した人だけが見える景色があるわ。…信じて
 
-### hallOfFame.easygoing.delinquent[]
+### hallOfFame.seductive.emotional[]
 
-- `AWARD_LINES.hallOfFame.easygoing.delinquent[1]`: 最っ高に楽しい選手人生だったぜ！ みんなありがとな！ プロレス最高！
+- `AWARD_LINES.hallOfFame.seductive.emotional[1]`: 殿堂入り…もう言葉にならないわ…（涙を堪える）
 
-### hallOfFame.easygoing.seductive[]
+### hallOfFame.polite.normal[]
 
-- `AWARD_LINES.hallOfFame.easygoing.seductive[1]`: 楽しい日々だったわ。全部、宝物。…ありがとう
+- `AWARD_LINES.hallOfFame.polite.normal[1]`: 殿堂入り…夢のようです。支えてくださった全ての方に感謝いたします
 
-### hallOfFame.easygoing.polite[]
+### hallOfFame.polite.bold[]
 
-- `AWARD_LINES.hallOfFame.easygoing.polite[1]`: 殿堂入りですか…！ 信じられません…ありがとうございます！
+- `AWARD_LINES.hallOfFame.polite.bold[1]`: 殿堂入りです。…ここまで来ることができました
 
-### hallOfFame.easygoing.ojousama[]
+### hallOfFame.polite.quiet[]
 
-- `AWARD_LINES.hallOfFame.easygoing.ojousama[1]`: 殿堂入りですの…！ 夢のようですわ…
+- `AWARD_LINES.hallOfFame.polite.quiet[1]`: …長い間、ありがとうございました。幸せでした
 
-### hallOfFame.easygoing.composed[]
+### hallOfFame.polite.shy[]
 
-- `AWARD_LINES.hallOfFame.easygoing.composed[1]`: 楽しかったな。…全部ひっくるめて、いい時間だった
+- `AWARD_LINES.hallOfFame.polite.shy[1]`: で、殿堂入り…ですか…？ わたしなんかが…本当に、いいんでしょうか…
 
-### hallOfFame.earnest._default[]
+### hallOfFame.polite.easygoing[]
 
-- `AWARD_LINES.hallOfFame.earnest._default[1]`: 後輩たちへ。リングの上に答えがある。苦しくても立ち続けてほしい
-- `AWARD_LINES.hallOfFame.earnest._default[2]`: この業界に全てを捧げた。…後輩たちがもっと高い場所に行ってくれたら、それが一番嬉しい
+- `AWARD_LINES.hallOfFame.polite.easygoing[1]`: 殿堂入りですか…！ 信じられません…ありがとうございます！
 
-### hallOfFame.earnest.polite[]
+### hallOfFame.polite.earnest[]
 
-- `AWARD_LINES.hallOfFame.earnest.polite[1]`: 後輩の皆さん。リングに真実があります。どうか、立ち続けてください
+- `AWARD_LINES.hallOfFame.polite.earnest[1]`: 後輩の皆さん。リングに真実があります。どうか、立ち続けてください
 
-### hallOfFame.earnest.ojousama[]
+### hallOfFame.composed.normal[]
 
-- `AWARD_LINES.hallOfFame.earnest.ojousama[1]`: 後輩の皆さまへ。わたくしが歩んだ道を、どうか超えていってくださいまし
+- `AWARD_LINES.hallOfFame.composed.normal[1]`: …いい時間だった。後悔？ …ないよ
 
-### hallOfFame.earnest.seductive[]
+### hallOfFame.composed.bold[]
 
-- `AWARD_LINES.hallOfFame.earnest.seductive[1]`: 後輩たちへ。この世界には、努力した人だけが見える景色があるわ。…信じて
+- `AWARD_LINES.hallOfFame.composed.bold[1]`: …全部やりきった。悔いはないよ
 
-### hallOfFame.earnest.composed[]
+### hallOfFame.composed.quiet[]
 
-- `AWARD_LINES.hallOfFame.earnest.composed[1]`: 後輩たちへ。…焦らなくていい。やるべきことをやれば、ちゃんと届くから
+- `AWARD_LINES.hallOfFame.composed.quiet[1]`: ……ありがとう。…いい場所だった
 
-### hallOfFame.emotional._default[]
+### hallOfFame.composed.easygoing[]
 
-- `AWARD_LINES.hallOfFame.emotional._default[1]`: プロレスが…わたしの居場所だった…。ここで出会えた人たちが…全部…宝物で…っ！
+- `AWARD_LINES.hallOfFame.composed.easygoing[1]`: 楽しかったな。…全部ひっくるめて、いい時間だった
 
-### hallOfFame.emotional.ojousama[]
+### hallOfFame.composed.earnest[]
 
-- `AWARD_LINES.hallOfFame.emotional.ojousama[1]`: こんな日が来るなんて…わたくし…皆さまに支えられて…っ、幸せでしたわ…！
+- `AWARD_LINES.hallOfFame.composed.earnest[1]`: 後輩たちへ。…焦らなくていい。やるべきことをやれば、ちゃんと届くから
 
-### hallOfFame.emotional.delinquent[]
+### hallOfFame.composed.emotional[]
 
-- `AWARD_LINES.hallOfFame.emotional.delinquent[1]`: ちくしょう…泣くなっつってんだろ…。みんな…ありがとう…本当に…くそ…！
+- `AWARD_LINES.hallOfFame.composed.emotional[1]`: …っ…みんな、ありがとう。…いい場所だった。…本当に
 
-### hallOfFame.emotional.seductive[]
+### hallOfFame.cool.bold[]
 
-- `AWARD_LINES.hallOfFame.emotional.seductive[1]`: 殿堂入り…もう言葉にならないわ…（涙を堪える）
+- `AWARD_LINES.hallOfFame.cool.bold[1]`: …全てやった。悔いはない
 
-### hallOfFame.emotional.composed[]
+### hallOfFame.cool.quiet[]
 
-- `AWARD_LINES.hallOfFame.emotional.composed[1]`: …っ…みんな、ありがとう。…いい場所だった。…本当に
+- `AWARD_LINES.hallOfFame.cool.quiet[1]`: …悔いはない。…ありがとう
 
 ### hofCoach._default[]
 
@@ -948,596 +948,596 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: ============================================================================ / §3-2b: ドーム到達マイルストーンセリフ（D層 / dome-milestone-spec-v0.3 §5） / 構造: [personality][archetype] = [3 lines] / personality: 7種 (normal / bold / quiet / easygoing / earnest / emotional / shy) / archetype:   7種 (_default=normal / ojousama / delinquent / cool / seductive / polite / composed) / ============================================================================
 - 本数: 146
 
-### normal._default[]
+### standard.normal[]
 
-- `DOME_FIRSTSHOW_LINES.normal._default[1]`: ここまで来られたのは、社長のおかげです
-- `DOME_FIRSTSHOW_LINES.normal._default[2]`: やっと、この景色を見れますね
-- `DOME_FIRSTSHOW_LINES.normal._default[3]`: …震えてます、正直
+- `DOME_FIRSTSHOW_LINES.standard.normal[1]`: ここまで来られたのは、社長のおかげです
+- `DOME_FIRSTSHOW_LINES.standard.normal[2]`: やっと、この景色を見れますね
+- `DOME_FIRSTSHOW_LINES.standard.normal[3]`: …震えてます、正直
 
-### normal.ojousama[]
+### standard.bold[]
 
-- `DOME_FIRSTSHOW_LINES.normal.ojousama[1]`: ドームのリングに立てますこと、身に余る光栄ですわ
-- `DOME_FIRSTSHOW_LINES.normal.ojousama[2]`: このような大舞台、夢にまで見ましたのよ
-- `DOME_FIRSTSHOW_LINES.normal.ojousama[3]`: 今日という日を、生涯忘れませんわ
+- `DOME_FIRSTSHOW_LINES.standard.bold[1]`: 燃えてきたぜ、ドーム!! 全員ぶっ倒す!
+- `DOME_FIRSTSHOW_LINES.standard.bold[2]`: ここが一番いいとこだろ!? やってやんよ!
+- `DOME_FIRSTSHOW_LINES.standard.bold[3]`: 観客全員、俺の試合に釘付けにしてやる!
 
-### normal.delinquent[]
+### standard.quiet[]
 
-- `DOME_FIRSTSHOW_LINES.normal.delinquent[1]`: おい、ここがドームってやつか。デカいな
-- `DOME_FIRSTSHOW_LINES.normal.delinquent[2]`: …まぁ、悪くねえ気分だ
-- `DOME_FIRSTSHOW_LINES.normal.delinquent[3]`: ふん、やってやるよ。ドームだろうが同じだろ
+- `DOME_FIRSTSHOW_LINES.standard.quiet[1]`: …ドーム、ですか
+- `DOME_FIRSTSHOW_LINES.standard.quiet[2]`: …やります
+- `DOME_FIRSTSHOW_LINES.standard.quiet[3]`: ……(無言で頷く)
 
-### normal.cool[]
+### standard.easygoing[]
 
-- `DOME_FIRSTSHOW_LINES.normal.cool[1]`: ドーム…ね。来たか
-- `DOME_FIRSTSHOW_LINES.normal.cool[2]`: …やることは、変わらない
-- `DOME_FIRSTSHOW_LINES.normal.cool[3]`: …準備はできてる
+- `DOME_FIRSTSHOW_LINES.standard.easygoing[1]`: いやー、ドーム来ちゃいましたねぇ
+- `DOME_FIRSTSHOW_LINES.standard.easygoing[2]`: なんだかんだ、楽しみですよ
+- `DOME_FIRSTSHOW_LINES.standard.easygoing[3]`: まぁ、いつも通りやりますかー
 
-### normal.seductive[]
+### standard.earnest[]
 
-- `DOME_FIRSTSHOW_LINES.normal.seductive[1]`: ふふっ、いよいよドームね
-- `DOME_FIRSTSHOW_LINES.normal.seductive[2]`: この大舞台で…見せたいものがあるの
-- `DOME_FIRSTSHOW_LINES.normal.seductive[3]`: ドームのお客様を…虜にしてあげる
+- `DOME_FIRSTSHOW_LINES.standard.earnest[1]`: ドームで試合をさせていただけること、感謝いたします
+- `DOME_FIRSTSHOW_LINES.standard.earnest[2]`: 全身全霊で、臨ませていただきます
+- `DOME_FIRSTSHOW_LINES.standard.earnest[3]`: この機会、絶対に無駄にしません
 
-### normal.polite[]
+### standard.emotional[]
 
-- `DOME_FIRSTSHOW_LINES.normal.polite[1]`: ドームで試合ができるなんて、本当に感謝しています
-- `DOME_FIRSTSHOW_LINES.normal.polite[2]`: 今日という日を迎えられて、光栄です
-- `DOME_FIRSTSHOW_LINES.normal.polite[3]`: 全力を尽くさせていただきます
+- `DOME_FIRSTSHOW_LINES.standard.emotional[1]`: …ドームまで来たんですね、私たち
+- `DOME_FIRSTSHOW_LINES.standard.emotional[2]`: 胸がいっぱいで…うまく言葉が出ません
+- `DOME_FIRSTSHOW_LINES.standard.emotional[3]`: 絶対に、絶対に良い試合にします!
 
-### normal.composed[]
+### standard.shy[]
 
-- `DOME_FIRSTSHOW_LINES.normal.composed[1]`: ドーム。…ついに辿り着きましたね
-- `DOME_FIRSTSHOW_LINES.normal.composed[2]`: 感慨深いものがあります。しかし、今は試合に集中します
-- `DOME_FIRSTSHOW_LINES.normal.composed[3]`: この瞬間を、しっかり刻んでおきます
+- `DOME_FIRSTSHOW_LINES.standard.shy[1]`: …あ、あの…ドームに、来られて、嬉しいです…
+- `DOME_FIRSTSHOW_LINES.standard.shy[2]`: …緊張します…でも、頑張ります…
+- `DOME_FIRSTSHOW_LINES.standard.shy[3]`: …皆さんのおかげ、です
 
-### bold._default[]
+### ojousama.normal[]
 
-- `DOME_FIRSTSHOW_LINES.bold._default[1]`: 燃えてきたぜ、ドーム!! 全員ぶっ倒す!
-- `DOME_FIRSTSHOW_LINES.bold._default[2]`: ここが一番いいとこだろ!? やってやんよ!
-- `DOME_FIRSTSHOW_LINES.bold._default[3]`: 観客全員、俺の試合に釘付けにしてやる!
+- `DOME_FIRSTSHOW_LINES.ojousama.normal[1]`: ドームのリングに立てますこと、身に余る光栄ですわ
+- `DOME_FIRSTSHOW_LINES.ojousama.normal[2]`: このような大舞台、夢にまで見ましたのよ
+- `DOME_FIRSTSHOW_LINES.ojousama.normal[3]`: 今日という日を、生涯忘れませんわ
 
-### bold.ojousama[]
+### ojousama.bold[]
 
-- `DOME_FIRSTSHOW_LINES.bold.ojousama[1]`: ドームですわよ!! 思い切り暴れますわ!
-- `DOME_FIRSTSHOW_LINES.bold.ojousama[2]`: ほほほ、わたくしの本気、ご覧に入れましょう!
-- `DOME_FIRSTSHOW_LINES.bold.ojousama[3]`: このリング、わたくしの独壇場にしてみせますわ!
+- `DOME_FIRSTSHOW_LINES.ojousama.bold[1]`: ドームですわよ!! 思い切り暴れますわ!
+- `DOME_FIRSTSHOW_LINES.ojousama.bold[2]`: ほほほ、わたくしの本気、ご覧に入れましょう!
+- `DOME_FIRSTSHOW_LINES.ojousama.bold[3]`: このリング、わたくしの独壇場にしてみせますわ!
 
-### bold.delinquent[]
+### ojousama.quiet[]
 
-- `DOME_FIRSTSHOW_LINES.bold.delinquent[1]`: おうっ、ドームだろうが関係ねえ。ぶっ壊すだけだ
-- `DOME_FIRSTSHOW_LINES.bold.delinquent[2]`: ここが最後じゃねえ。まだ先、あるからな
-- `DOME_FIRSTSHOW_LINES.bold.delinquent[3]`: …全員ひっくり返してやる。見てろよ
+- `DOME_FIRSTSHOW_LINES.ojousama.quiet[1]`: …ドームですのね。…わかりましたわ
+- `DOME_FIRSTSHOW_LINES.ojousama.quiet[2]`: …精一杯、務めますわ
 
-### bold.cool[]
+### ojousama.easygoing[]
 
-- `DOME_FIRSTSHOW_LINES.bold.cool[1]`: ドーム…上等だ
-- `DOME_FIRSTSHOW_LINES.bold.cool[2]`: …やる気は、あるぞ
-- `DOME_FIRSTSHOW_LINES.bold.cool[3]`: 静かに、全力でいく
+- `DOME_FIRSTSHOW_LINES.ojousama.easygoing[1]`: あら、ドームですのね。なんだか楽しそうですわ
+- `DOME_FIRSTSHOW_LINES.ojousama.easygoing[2]`: まぁ気楽にいきますわよ、ほほほ
+- `DOME_FIRSTSHOW_LINES.ojousama.easygoing[3]`: こういう大きな会場、わたくし嫌いじゃありませんの
 
-### bold.seductive[]
+### ojousama.earnest[]
 
-- `DOME_FIRSTSHOW_LINES.bold.seductive[1]`: ドームで…本気の私、見せてあげる
-- `DOME_FIRSTSHOW_LINES.bold.seductive[2]`: この大舞台、たっぷり熱くしてあげるわよ
-- `DOME_FIRSTSHOW_LINES.bold.seductive[3]`: うふふ、今夜は容赦しないわよ
+- `DOME_FIRSTSHOW_LINES.ojousama.earnest[1]`: ドームのリングに立つ責任、重々承知しておりますわ
+- `DOME_FIRSTSHOW_LINES.ojousama.earnest[2]`: 団体の名に恥じぬ試合を、必ずいたしますわ
+- `DOME_FIRSTSHOW_LINES.ojousama.earnest[3]`: 精進の成果、すべてお見せいたしますわ
 
-### bold.polite[]
+### ojousama.emotional[]
 
-- `DOME_FIRSTSHOW_LINES.bold.polite[1]`: ドームで戦えること、心から感謝しております!
-- `DOME_FIRSTSHOW_LINES.bold.polite[2]`: 全力で、この舞台に恥じない試合をします!
-- `DOME_FIRSTSHOW_LINES.bold.polite[3]`: お客様の期待に、必ず応えてみせます!
+- `DOME_FIRSTSHOW_LINES.ojousama.emotional[1]`: …来てしまいましたのね、ドームまで…
+- `DOME_FIRSTSHOW_LINES.ojousama.emotional[2]`: 胸が…胸がいっぱいですわ、社長
+- `DOME_FIRSTSHOW_LINES.ojousama.emotional[3]`: 泣いてなど…おりません、決して
 
-### bold.composed[]
+### ojousama.shy[]
 
-- `DOME_FIRSTSHOW_LINES.bold.composed[1]`: ドーム。燃える。それだけだ
-- `DOME_FIRSTSHOW_LINES.bold.composed[2]`: …やるべきことは分かってる。全力でぶつかる
-- `DOME_FIRSTSHOW_LINES.bold.composed[3]`: この闘志、ドームで解き放つ
+- `DOME_FIRSTSHOW_LINES.ojousama.shy[1]`: …あの、ドームは…あまりに大きくて、わたくし…
+- `DOME_FIRSTSHOW_LINES.ojousama.shy[2]`: …頑張り…ますわ…
+- `DOME_FIRSTSHOW_LINES.ojousama.shy[3]`: …応援、していてくださいませ…
 
-### quiet._default[]
+### delinquent.normal[]
 
-- `DOME_FIRSTSHOW_LINES.quiet._default[1]`: …ドーム、ですか
-- `DOME_FIRSTSHOW_LINES.quiet._default[2]`: …やります
-- `DOME_FIRSTSHOW_LINES.quiet._default[3]`: ……(無言で頷く)
+- `DOME_FIRSTSHOW_LINES.delinquent.normal[1]`: おい、ここがドームってやつか。デカいな
+- `DOME_FIRSTSHOW_LINES.delinquent.normal[2]`: …まぁ、悪くねえ気分だ
+- `DOME_FIRSTSHOW_LINES.delinquent.normal[3]`: ふん、やってやるよ。ドームだろうが同じだろ
 
-### quiet.ojousama[]
+### delinquent.bold[]
 
-- `DOME_FIRSTSHOW_LINES.quiet.ojousama[1]`: …ドームですのね。…わかりましたわ
-- `DOME_FIRSTSHOW_LINES.quiet.ojousama[2]`: …精一杯、務めますわ
+- `DOME_FIRSTSHOW_LINES.delinquent.bold[1]`: おうっ、ドームだろうが関係ねえ。ぶっ壊すだけだ
+- `DOME_FIRSTSHOW_LINES.delinquent.bold[2]`: ここが最後じゃねえ。まだ先、あるからな
+- `DOME_FIRSTSHOW_LINES.delinquent.bold[3]`: …全員ひっくり返してやる。見てろよ
 
-### quiet.delinquent[]
+### delinquent.quiet[]
 
-- `DOME_FIRSTSHOW_LINES.quiet.delinquent[1]`: …ドームかよ
-- `DOME_FIRSTSHOW_LINES.quiet.delinquent[2]`: …やってやる
-- `DOME_FIRSTSHOW_LINES.quiet.delinquent[3]`: ……(リングを見つめる)
+- `DOME_FIRSTSHOW_LINES.delinquent.quiet[1]`: …ドームかよ
+- `DOME_FIRSTSHOW_LINES.delinquent.quiet[2]`: …やってやる
+- `DOME_FIRSTSHOW_LINES.delinquent.quiet[3]`: ……(リングを見つめる)
 
-### quiet.cool[]
+### delinquent.easygoing[]
 
-- `DOME_FIRSTSHOW_LINES.quiet.cool[1]`: …行きます
-- `DOME_FIRSTSHOW_LINES.quiet.cool[2]`: …ドームか。悪くない
-- `DOME_FIRSTSHOW_LINES.quiet.cool[3]`: ……(視線だけで応える)
+- `DOME_FIRSTSHOW_LINES.delinquent.easygoing[1]`: おーっ、ドームか。まぁやるだけよ
+- `DOME_FIRSTSHOW_LINES.delinquent.easygoing[2]`: なんつーか、あんま緊張しねーな。やるべ
+- `DOME_FIRSTSHOW_LINES.delinquent.easygoing[3]`: いつも通りだろ。気楽に行こうぜ
 
-### quiet.seductive[]
+### delinquent.earnest[]
 
-- `DOME_FIRSTSHOW_LINES.quiet.seductive[1]`: …いよいよね
-- `DOME_FIRSTSHOW_LINES.quiet.seductive[2]`: …見ていて
-- `DOME_FIRSTSHOW_LINES.quiet.seductive[3]`: ……(静かに微笑む)
+- `DOME_FIRSTSHOW_LINES.delinquent.earnest[1]`: おう、ドームだな。手は抜かねえぞ
+- `DOME_FIRSTSHOW_LINES.delinquent.earnest[2]`: 俺にとっちゃ、真剣勝負以外ありえねえ
+- `DOME_FIRSTSHOW_LINES.delinquent.earnest[3]`: …感謝してんだよ、ここまで連れてきてくれて
 
-### quiet.polite[]
+### delinquent.emotional[]
 
-- `DOME_FIRSTSHOW_LINES.quiet.polite[1]`: …よろしくお願いします
-- `DOME_FIRSTSHOW_LINES.quiet.polite[2]`: …精一杯、やらせていただきます
-- `DOME_FIRSTSHOW_LINES.quiet.polite[3]`: …ありがとうございます
+- `DOME_FIRSTSHOW_LINES.delinquent.emotional[1]`: くそ…ドームだよ、ドーム…! くっそ燃えるじゃねえか!
+- `DOME_FIRSTSHOW_LINES.delinquent.emotional[2]`: 泣いてねーし! 俺はただ…嬉しいだけだ!
+- `DOME_FIRSTSHOW_LINES.delinquent.emotional[3]`: 絶対ぶっ壊すぜ、この試合! 魂込めてな!
 
-### quiet.composed[]
+### delinquent.shy[]
 
-- `DOME_FIRSTSHOW_LINES.quiet.composed[1]`: …ドーム
-- `DOME_FIRSTSHOW_LINES.quiet.composed[2]`: …準備は、できています
-- `DOME_FIRSTSHOW_LINES.quiet.composed[3]`: ……(静かに立っている)
+- `DOME_FIRSTSHOW_LINES.delinquent.shy[1]`: …お、おい…ドーム、マジでデカいな…
+- `DOME_FIRSTSHOW_LINES.delinquent.shy[2]`: …怖くねえし、ほんと…(声が小さい)
+- `DOME_FIRSTSHOW_LINES.delinquent.shy[3]`: …やるって、やるから…
 
-### easygoing._default[]
+### cool.normal[]
 
-- `DOME_FIRSTSHOW_LINES.easygoing._default[1]`: いやー、ドーム来ちゃいましたねぇ
-- `DOME_FIRSTSHOW_LINES.easygoing._default[2]`: なんだかんだ、楽しみですよ
-- `DOME_FIRSTSHOW_LINES.easygoing._default[3]`: まぁ、いつも通りやりますかー
+- `DOME_FIRSTSHOW_LINES.cool.normal[1]`: ドーム…ね。来たか
+- `DOME_FIRSTSHOW_LINES.cool.normal[2]`: …やることは、変わらない
+- `DOME_FIRSTSHOW_LINES.cool.normal[3]`: …準備はできてる
 
-### easygoing.ojousama[]
+### cool.bold[]
 
-- `DOME_FIRSTSHOW_LINES.easygoing.ojousama[1]`: あら、ドームですのね。なんだか楽しそうですわ
-- `DOME_FIRSTSHOW_LINES.easygoing.ojousama[2]`: まぁ気楽にいきますわよ、ほほほ
-- `DOME_FIRSTSHOW_LINES.easygoing.ojousama[3]`: こういう大きな会場、わたくし嫌いじゃありませんの
+- `DOME_FIRSTSHOW_LINES.cool.bold[1]`: ドーム…上等だ
+- `DOME_FIRSTSHOW_LINES.cool.bold[2]`: …やる気は、あるぞ
+- `DOME_FIRSTSHOW_LINES.cool.bold[3]`: 静かに、全力でいく
 
-### easygoing.delinquent[]
+### cool.quiet[]
 
-- `DOME_FIRSTSHOW_LINES.easygoing.delinquent[1]`: おーっ、ドームか。まぁやるだけよ
-- `DOME_FIRSTSHOW_LINES.easygoing.delinquent[2]`: なんつーか、あんま緊張しねーな。やるべ
-- `DOME_FIRSTSHOW_LINES.easygoing.delinquent[3]`: いつも通りだろ。気楽に行こうぜ
+- `DOME_FIRSTSHOW_LINES.cool.quiet[1]`: …行きます
+- `DOME_FIRSTSHOW_LINES.cool.quiet[2]`: …ドームか。悪くない
+- `DOME_FIRSTSHOW_LINES.cool.quiet[3]`: ……(視線だけで応える)
 
-### easygoing.cool[]
+### cool.easygoing[]
 
-- `DOME_FIRSTSHOW_LINES.easygoing.cool[1]`: …ドーム。まぁいいか
-- `DOME_FIRSTSHOW_LINES.easygoing.cool[2]`: …普段通りにやるだけ
-- `DOME_FIRSTSHOW_LINES.easygoing.cool[3]`: 特別なこと、しない
+- `DOME_FIRSTSHOW_LINES.cool.easygoing[1]`: …ドーム。まぁいいか
+- `DOME_FIRSTSHOW_LINES.cool.easygoing[2]`: …普段通りにやるだけ
+- `DOME_FIRSTSHOW_LINES.cool.easygoing[3]`: 特別なこと、しない
 
-### easygoing.seductive[]
+### cool.earnest[]
 
-- `DOME_FIRSTSHOW_LINES.easygoing.seductive[1]`: ふふっ、ドームって素敵な響きね
-- `DOME_FIRSTSHOW_LINES.easygoing.seductive[2]`: のんびり楽しませてもらうわ
-- `DOME_FIRSTSHOW_LINES.easygoing.seductive[3]`: 気楽に、でもちゃんと色気は出すわよ
+- `DOME_FIRSTSHOW_LINES.cool.earnest[1]`: ドーム…ここで結果を出すのが務めです
+- `DOME_FIRSTSHOW_LINES.cool.earnest[2]`: …油断は、しません
+- `DOME_FIRSTSHOW_LINES.cool.earnest[3]`: 最善を尽くします。それだけ
 
-### easygoing.polite[]
+### cool.emotional[]
 
-- `DOME_FIRSTSHOW_LINES.easygoing.polite[1]`: ドーム、嬉しいですね。気負わずいきましょう
-- `DOME_FIRSTSHOW_LINES.easygoing.polite[2]`: お客様と一緒に楽しい時間を作れたら
-- `DOME_FIRSTSHOW_LINES.easygoing.polite[3]`: ゆったり構えて、精一杯やります
+- `DOME_FIRSTSHOW_LINES.cool.emotional[1]`: …ドーム、か
+- `DOME_FIRSTSHOW_LINES.cool.emotional[2]`: …感情が、抑えきれない
+- `DOME_FIRSTSHOW_LINES.cool.emotional[3]`: ……(目を伏せる)
 
-### easygoing.composed[]
+### cool.shy[]
 
-- `DOME_FIRSTSHOW_LINES.easygoing.composed[1]`: ドーム、いいじゃないですか。いきましょう
-- `DOME_FIRSTSHOW_LINES.easygoing.composed[2]`: あまり肩に力を入れずに、でも全力で
-- `DOME_FIRSTSHOW_LINES.easygoing.composed[3]`: こういう日こそ、いつも通りが大事ですね
+- `DOME_FIRSTSHOW_LINES.cool.shy[1]`: …ドーム…です
+- `DOME_FIRSTSHOW_LINES.cool.shy[2]`: …はい
+- `DOME_FIRSTSHOW_LINES.cool.shy[3]`: …頑張ります
 
-### earnest._default[]
+### seductive.normal[]
 
-- `DOME_FIRSTSHOW_LINES.earnest._default[1]`: ドームで試合をさせていただけること、感謝いたします
-- `DOME_FIRSTSHOW_LINES.earnest._default[2]`: 全身全霊で、臨ませていただきます
-- `DOME_FIRSTSHOW_LINES.earnest._default[3]`: この機会、絶対に無駄にしません
+- `DOME_FIRSTSHOW_LINES.seductive.normal[1]`: ふふっ、いよいよドームね
+- `DOME_FIRSTSHOW_LINES.seductive.normal[2]`: この大舞台で…見せたいものがあるの
+- `DOME_FIRSTSHOW_LINES.seductive.normal[3]`: ドームのお客様を…虜にしてあげる
 
-### earnest.ojousama[]
+### seductive.bold[]
 
-- `DOME_FIRSTSHOW_LINES.earnest.ojousama[1]`: ドームのリングに立つ責任、重々承知しておりますわ
-- `DOME_FIRSTSHOW_LINES.earnest.ojousama[2]`: 団体の名に恥じぬ試合を、必ずいたしますわ
-- `DOME_FIRSTSHOW_LINES.earnest.ojousama[3]`: 精進の成果、すべてお見せいたしますわ
+- `DOME_FIRSTSHOW_LINES.seductive.bold[1]`: ドームで…本気の私、見せてあげる
+- `DOME_FIRSTSHOW_LINES.seductive.bold[2]`: この大舞台、たっぷり熱くしてあげるわよ
+- `DOME_FIRSTSHOW_LINES.seductive.bold[3]`: うふふ、今夜は容赦しないわよ
 
-### earnest.delinquent[]
+### seductive.quiet[]
 
-- `DOME_FIRSTSHOW_LINES.earnest.delinquent[1]`: おう、ドームだな。手は抜かねえぞ
-- `DOME_FIRSTSHOW_LINES.earnest.delinquent[2]`: 俺にとっちゃ、真剣勝負以外ありえねえ
-- `DOME_FIRSTSHOW_LINES.earnest.delinquent[3]`: …感謝してんだよ、ここまで連れてきてくれて
+- `DOME_FIRSTSHOW_LINES.seductive.quiet[1]`: …いよいよね
+- `DOME_FIRSTSHOW_LINES.seductive.quiet[2]`: …見ていて
+- `DOME_FIRSTSHOW_LINES.seductive.quiet[3]`: ……(静かに微笑む)
 
-### earnest.cool[]
+### seductive.easygoing[]
 
-- `DOME_FIRSTSHOW_LINES.earnest.cool[1]`: ドーム…ここで結果を出すのが務めです
-- `DOME_FIRSTSHOW_LINES.earnest.cool[2]`: …油断は、しません
-- `DOME_FIRSTSHOW_LINES.earnest.cool[3]`: 最善を尽くします。それだけ
+- `DOME_FIRSTSHOW_LINES.seductive.easygoing[1]`: ふふっ、ドームって素敵な響きね
+- `DOME_FIRSTSHOW_LINES.seductive.easygoing[2]`: のんびり楽しませてもらうわ
+- `DOME_FIRSTSHOW_LINES.seductive.easygoing[3]`: 気楽に、でもちゃんと色気は出すわよ
 
-### earnest.seductive[]
+### seductive.earnest[]
 
-- `DOME_FIRSTSHOW_LINES.earnest.seductive[1]`: 真剣勝負よ、今夜は
-- `DOME_FIRSTSHOW_LINES.earnest.seductive[2]`: 満員のお客様の前で…燃えないわけがないでしょう
-- `DOME_FIRSTSHOW_LINES.earnest.seductive[3]`: …見ていてね、社長
+- `DOME_FIRSTSHOW_LINES.seductive.earnest[1]`: 真剣勝負よ、今夜は
+- `DOME_FIRSTSHOW_LINES.seductive.earnest[2]`: 満員のお客様の前で…燃えないわけがないでしょう
+- `DOME_FIRSTSHOW_LINES.seductive.earnest[3]`: …見ていてね、社長
 
-### earnest.polite[]
+### seductive.emotional[]
 
-- `DOME_FIRSTSHOW_LINES.earnest.polite[1]`: ドーム大会という大役、謹んでお受けいたします
-- `DOME_FIRSTSHOW_LINES.earnest.polite[2]`: 最後の最後まで、手を抜きません
-- `DOME_FIRSTSHOW_LINES.earnest.polite[3]`: この恩に、必ず応えてみせます
+- `DOME_FIRSTSHOW_LINES.seductive.emotional[1]`: …ドームで、あなた方の前で戦える幸せよ…
+- `DOME_FIRSTSHOW_LINES.seductive.emotional[2]`: 熱い試合を…必ず、約束する
+- `DOME_FIRSTSHOW_LINES.seductive.emotional[3]`: この胸の高鳴り…試合で発散させてね
 
-### earnest.composed[]
+### seductive.shy[]
 
-- `DOME_FIRSTSHOW_LINES.earnest.composed[1]`: ドームのリングで、積み重ねてきたすべてを出します
-- `DOME_FIRSTSHOW_LINES.earnest.composed[2]`: 準備は、万全です
-- `DOME_FIRSTSHOW_LINES.earnest.composed[3]`: この一戦、絶対に勝ちます
+- `DOME_FIRSTSHOW_LINES.seductive.shy[1]`: …あの…ドーム、素敵…
+- `DOME_FIRSTSHOW_LINES.seductive.shy[2]`: …皆様に、お見せできるのが、嬉しくて…
+- `DOME_FIRSTSHOW_LINES.seductive.shy[3]`: …全力を、尽くす…ね
 
-### emotional._default[]
+### polite.normal[]
 
-- `DOME_FIRSTSHOW_LINES.emotional._default[1]`: …ドームまで来たんですね、私たち
-- `DOME_FIRSTSHOW_LINES.emotional._default[2]`: 胸がいっぱいで…うまく言葉が出ません
-- `DOME_FIRSTSHOW_LINES.emotional._default[3]`: 絶対に、絶対に良い試合にします!
+- `DOME_FIRSTSHOW_LINES.polite.normal[1]`: ドームで試合ができるなんて、本当に感謝しています
+- `DOME_FIRSTSHOW_LINES.polite.normal[2]`: 今日という日を迎えられて、光栄です
+- `DOME_FIRSTSHOW_LINES.polite.normal[3]`: 全力を尽くさせていただきます
 
-### emotional.ojousama[]
+### polite.bold[]
 
-- `DOME_FIRSTSHOW_LINES.emotional.ojousama[1]`: …来てしまいましたのね、ドームまで…
-- `DOME_FIRSTSHOW_LINES.emotional.ojousama[2]`: 胸が…胸がいっぱいですわ、社長
-- `DOME_FIRSTSHOW_LINES.emotional.ojousama[3]`: 泣いてなど…おりません、決して
+- `DOME_FIRSTSHOW_LINES.polite.bold[1]`: ドームで戦えること、心から感謝しております!
+- `DOME_FIRSTSHOW_LINES.polite.bold[2]`: 全力で、この舞台に恥じない試合をします!
+- `DOME_FIRSTSHOW_LINES.polite.bold[3]`: お客様の期待に、必ず応えてみせます!
 
-### emotional.delinquent[]
+### polite.quiet[]
 
-- `DOME_FIRSTSHOW_LINES.emotional.delinquent[1]`: くそ…ドームだよ、ドーム…! くっそ燃えるじゃねえか!
-- `DOME_FIRSTSHOW_LINES.emotional.delinquent[2]`: 泣いてねーし! 俺はただ…嬉しいだけだ!
-- `DOME_FIRSTSHOW_LINES.emotional.delinquent[3]`: 絶対ぶっ壊すぜ、この試合! 魂込めてな!
+- `DOME_FIRSTSHOW_LINES.polite.quiet[1]`: …よろしくお願いします
+- `DOME_FIRSTSHOW_LINES.polite.quiet[2]`: …精一杯、やらせていただきます
+- `DOME_FIRSTSHOW_LINES.polite.quiet[3]`: …ありがとうございます
 
-### emotional.cool[]
+### polite.easygoing[]
 
-- `DOME_FIRSTSHOW_LINES.emotional.cool[1]`: …ドーム、か
-- `DOME_FIRSTSHOW_LINES.emotional.cool[2]`: …感情が、抑えきれない
-- `DOME_FIRSTSHOW_LINES.emotional.cool[3]`: ……(目を伏せる)
+- `DOME_FIRSTSHOW_LINES.polite.easygoing[1]`: ドーム、嬉しいですね。気負わずいきましょう
+- `DOME_FIRSTSHOW_LINES.polite.easygoing[2]`: お客様と一緒に楽しい時間を作れたら
+- `DOME_FIRSTSHOW_LINES.polite.easygoing[3]`: ゆったり構えて、精一杯やります
 
-### emotional.seductive[]
+### polite.earnest[]
 
-- `DOME_FIRSTSHOW_LINES.emotional.seductive[1]`: …ドームで、あなた方の前で戦える幸せよ…
-- `DOME_FIRSTSHOW_LINES.emotional.seductive[2]`: 熱い試合を…必ず、約束する
-- `DOME_FIRSTSHOW_LINES.emotional.seductive[3]`: この胸の高鳴り…試合で発散させてね
+- `DOME_FIRSTSHOW_LINES.polite.earnest[1]`: ドーム大会という大役、謹んでお受けいたします
+- `DOME_FIRSTSHOW_LINES.polite.earnest[2]`: 最後の最後まで、手を抜きません
+- `DOME_FIRSTSHOW_LINES.polite.earnest[3]`: この恩に、必ず応えてみせます
 
-### emotional.polite[]
+### polite.emotional[]
 
-- `DOME_FIRSTSHOW_LINES.emotional.polite[1]`: ドームで…ドームで試合ができるなんて…っ
-- `DOME_FIRSTSHOW_LINES.emotional.polite[2]`: 申し訳ありません、感極まってしまって…
-- `DOME_FIRSTSHOW_LINES.emotional.polite[3]`: 精一杯、この気持ちを試合に込めます!
+- `DOME_FIRSTSHOW_LINES.polite.emotional[1]`: ドームで…ドームで試合ができるなんて…っ
+- `DOME_FIRSTSHOW_LINES.polite.emotional[2]`: 申し訳ありません、感極まってしまって…
+- `DOME_FIRSTSHOW_LINES.polite.emotional[3]`: 精一杯、この気持ちを試合に込めます!
 
-### emotional.composed[]
+### polite.shy[]
 
-- `DOME_FIRSTSHOW_LINES.emotional.composed[1]`: ドーム。…言葉になりません
-- `DOME_FIRSTSHOW_LINES.emotional.composed[2]`: …この感情を、試合にぶつけます
-- `DOME_FIRSTSHOW_LINES.emotional.composed[3]`: いい試合にします。絶対に
+- `DOME_FIRSTSHOW_LINES.polite.shy[1]`: あの…ありがとうございます、ここまで連れてきてくださって
+- `DOME_FIRSTSHOW_LINES.polite.shy[2]`: …精一杯、やります
+- `DOME_FIRSTSHOW_LINES.polite.shy[3]`: …この恩は、一生、忘れません
 
-### shy._default[]
+### composed.normal[]
 
-- `DOME_FIRSTSHOW_LINES.shy._default[1]`: …あ、あの…ドームに、来られて、嬉しいです…
-- `DOME_FIRSTSHOW_LINES.shy._default[2]`: …緊張します…でも、頑張ります…
-- `DOME_FIRSTSHOW_LINES.shy._default[3]`: …皆さんのおかげ、です
+- `DOME_FIRSTSHOW_LINES.composed.normal[1]`: ドーム。…ついに辿り着きましたね
+- `DOME_FIRSTSHOW_LINES.composed.normal[2]`: 感慨深いものがあります。しかし、今は試合に集中します
+- `DOME_FIRSTSHOW_LINES.composed.normal[3]`: この瞬間を、しっかり刻んでおきます
 
-### shy.ojousama[]
+### composed.bold[]
 
-- `DOME_FIRSTSHOW_LINES.shy.ojousama[1]`: …あの、ドームは…あまりに大きくて、わたくし…
-- `DOME_FIRSTSHOW_LINES.shy.ojousama[2]`: …頑張り…ますわ…
-- `DOME_FIRSTSHOW_LINES.shy.ojousama[3]`: …応援、していてくださいませ…
+- `DOME_FIRSTSHOW_LINES.composed.bold[1]`: ドーム。燃える。それだけだ
+- `DOME_FIRSTSHOW_LINES.composed.bold[2]`: …やるべきことは分かってる。全力でぶつかる
+- `DOME_FIRSTSHOW_LINES.composed.bold[3]`: この闘志、ドームで解き放つ
 
-### shy.delinquent[]
+### composed.quiet[]
 
-- `DOME_FIRSTSHOW_LINES.shy.delinquent[1]`: …お、おい…ドーム、マジでデカいな…
-- `DOME_FIRSTSHOW_LINES.shy.delinquent[2]`: …怖くねえし、ほんと…(声が小さい)
-- `DOME_FIRSTSHOW_LINES.shy.delinquent[3]`: …やるって、やるから…
+- `DOME_FIRSTSHOW_LINES.composed.quiet[1]`: …ドーム
+- `DOME_FIRSTSHOW_LINES.composed.quiet[2]`: …準備は、できています
+- `DOME_FIRSTSHOW_LINES.composed.quiet[3]`: ……(静かに立っている)
 
-### shy.cool[]
+### composed.easygoing[]
 
-- `DOME_FIRSTSHOW_LINES.shy.cool[1]`: …ドーム…です
-- `DOME_FIRSTSHOW_LINES.shy.cool[2]`: …はい
-- `DOME_FIRSTSHOW_LINES.shy.cool[3]`: …頑張ります
+- `DOME_FIRSTSHOW_LINES.composed.easygoing[1]`: ドーム、いいじゃないですか。いきましょう
+- `DOME_FIRSTSHOW_LINES.composed.easygoing[2]`: あまり肩に力を入れずに、でも全力で
+- `DOME_FIRSTSHOW_LINES.composed.easygoing[3]`: こういう日こそ、いつも通りが大事ですね
 
-### shy.seductive[]
+### composed.earnest[]
 
-- `DOME_FIRSTSHOW_LINES.shy.seductive[1]`: …あの…ドーム、素敵…
-- `DOME_FIRSTSHOW_LINES.shy.seductive[2]`: …皆様に、お見せできるのが、嬉しくて…
-- `DOME_FIRSTSHOW_LINES.shy.seductive[3]`: …全力を、尽くす…ね
+- `DOME_FIRSTSHOW_LINES.composed.earnest[1]`: ドームのリングで、積み重ねてきたすべてを出します
+- `DOME_FIRSTSHOW_LINES.composed.earnest[2]`: 準備は、万全です
+- `DOME_FIRSTSHOW_LINES.composed.earnest[3]`: この一戦、絶対に勝ちます
 
-### shy.polite[]
+### composed.emotional[]
 
-- `DOME_FIRSTSHOW_LINES.shy.polite[1]`: あの…ありがとうございます、ここまで連れてきてくださって
-- `DOME_FIRSTSHOW_LINES.shy.polite[2]`: …精一杯、やります
-- `DOME_FIRSTSHOW_LINES.shy.polite[3]`: …この恩は、一生、忘れません
+- `DOME_FIRSTSHOW_LINES.composed.emotional[1]`: ドーム。…言葉になりません
+- `DOME_FIRSTSHOW_LINES.composed.emotional[2]`: …この感情を、試合にぶつけます
+- `DOME_FIRSTSHOW_LINES.composed.emotional[3]`: いい試合にします。絶対に
 
-### shy.composed[]
+### composed.shy[]
 
-- `DOME_FIRSTSHOW_LINES.shy.composed[1]`: …ドームに…立てるなんて…
-- `DOME_FIRSTSHOW_LINES.shy.composed[2]`: …頑張ります…静かに、でも全力で
-- `DOME_FIRSTSHOW_LINES.shy.composed[3]`: …ありがとうございます
+- `DOME_FIRSTSHOW_LINES.composed.shy[1]`: …ドームに…立てるなんて…
+- `DOME_FIRSTSHOW_LINES.composed.shy[2]`: …頑張ります…静かに、でも全力で
+- `DOME_FIRSTSHOW_LINES.composed.shy[3]`: …ありがとうございます
 
 ## `DOME_SELLOUT_LINES`
 
 - 出典: `src/data.js`
 - 本数: 146
 
-### normal._default[]
+### standard.normal[]
 
-- `DOME_SELLOUT_LINES.normal._default[1]`: 満員…ですか。…信じられません
-- `DOME_SELLOUT_LINES.normal._default[2]`: 社長…ありがとうございます。こんな景色、見せてもらって
-- `DOME_SELLOUT_LINES.normal._default[3]`: この光景、一生忘れません
+- `DOME_SELLOUT_LINES.standard.normal[1]`: 満員…ですか。…信じられません
+- `DOME_SELLOUT_LINES.standard.normal[2]`: 社長…ありがとうございます。こんな景色、見せてもらって
+- `DOME_SELLOUT_LINES.standard.normal[3]`: この光景、一生忘れません
 
-### normal.ojousama[]
+### standard.bold[]
 
-- `DOME_SELLOUT_LINES.normal.ojousama[1]`: 満員御礼、まさに奇跡のような景色ですわ…
-- `DOME_SELLOUT_LINES.normal.ojousama[2]`: お客様の熱気、今も胸に残っておりますの
-- `DOME_SELLOUT_LINES.normal.ojousama[3]`: この日のこと、生涯の誇りとしますわ
+- `DOME_SELLOUT_LINES.standard.bold[1]`: やったぜ!! ドーム満員だ!! うおおおお!
+- `DOME_SELLOUT_LINES.standard.bold[2]`: 全員立ち上がってくれてたぜ!! 最高だ!!
+- `DOME_SELLOUT_LINES.standard.bold[3]`: 次はもっと大きい舞台、作ろうぜ!!
 
-### normal.delinquent[]
+### standard.quiet[]
 
-- `DOME_SELLOUT_LINES.normal.delinquent[1]`: …マジかよ、満員だって?
-- `DOME_SELLOUT_LINES.normal.delinquent[2]`: くっそ、これがドーム満員ってやつか…
-- `DOME_SELLOUT_LINES.normal.delinquent[3]`: …悪くねえな。…全然悪くねえ
+- `DOME_SELLOUT_LINES.standard.quiet[1]`: …満員でした
+- `DOME_SELLOUT_LINES.standard.quiet[2]`: …ありがとう、ございます
+- `DOME_SELLOUT_LINES.standard.quiet[3]`: ……(深く頭を下げる)
 
-### normal.cool[]
+### standard.easygoing[]
 
-- `DOME_SELLOUT_LINES.normal.cool[1]`: …満員
-- `DOME_SELLOUT_LINES.normal.cool[2]`: …客の声が、まだ耳に残ってる
-- `DOME_SELLOUT_LINES.normal.cool[3]`: …忘れない。この景色は
+- `DOME_SELLOUT_LINES.standard.easygoing[1]`: うわー、満員だって! びっくりしちゃった
+- `DOME_SELLOUT_LINES.standard.easygoing[2]`: やりましたねー、本当に嬉しいです
+- `DOME_SELLOUT_LINES.standard.easygoing[3]`: なんか、胸がじーんとしてます
 
-### normal.seductive[]
+### standard.earnest[]
 
-- `DOME_SELLOUT_LINES.normal.seductive[1]`: 満員のお客様…今夜の私に、酔いしれてくれたのね
-- `DOME_SELLOUT_LINES.normal.seductive[2]`: うふふ…この達成感、格別ね
-- `DOME_SELLOUT_LINES.normal.seductive[3]`: 忘れられない夜になったわ
+- `DOME_SELLOUT_LINES.standard.earnest[1]`: 満員のお客様に応えられる試合ができたか、反省と感謝でいっぱいです
+- `DOME_SELLOUT_LINES.standard.earnest[2]`: 社長、本当にありがとうございました
+- `DOME_SELLOUT_LINES.standard.earnest[3]`: 次はもっと良い試合を、必ずお見せします
 
-### normal.polite[]
+### standard.emotional[]
 
-- `DOME_SELLOUT_LINES.normal.polite[1]`: 満員のお客様に感謝しかありません
-- `DOME_SELLOUT_LINES.normal.polite[2]`: 社長、本当にありがとうございます
-- `DOME_SELLOUT_LINES.normal.polite[3]`: この恩は、これからの試合で返します
+- `DOME_SELLOUT_LINES.standard.emotional[1]`: 満員って…満員って言いました? …涙が止まりません…!
+- `DOME_SELLOUT_LINES.standard.emotional[2]`: 社長…本当に…本当にありがとうございます…!
+- `DOME_SELLOUT_LINES.standard.emotional[3]`: この日のこと、絶対に、絶対に忘れません!
 
-### normal.composed[]
+### standard.shy[]
 
-- `DOME_SELLOUT_LINES.normal.composed[1]`: 満員。…団体として、一つの到達点ですね
-- `DOME_SELLOUT_LINES.normal.composed[2]`: お客様の拍手、今も胸に響いています
-- `DOME_SELLOUT_LINES.normal.composed[3]`: この記録、大切にしていきましょう
+- `DOME_SELLOUT_LINES.standard.shy[1]`: …ま、満員…ですか? …嘘みたい…
+- `DOME_SELLOUT_LINES.standard.shy[2]`: …皆さん、来てくださって、本当に嬉しいです…
+- `DOME_SELLOUT_LINES.standard.shy[3]`: …ありがとう、ございました…
 
-### bold._default[]
+### ojousama.normal[]
 
-- `DOME_SELLOUT_LINES.bold._default[1]`: やったぜ!! ドーム満員だ!! うおおおお!
-- `DOME_SELLOUT_LINES.bold._default[2]`: 全員立ち上がってくれてたぜ!! 最高だ!!
-- `DOME_SELLOUT_LINES.bold._default[3]`: 次はもっと大きい舞台、作ろうぜ!!
+- `DOME_SELLOUT_LINES.ojousama.normal[1]`: 満員御礼、まさに奇跡のような景色ですわ…
+- `DOME_SELLOUT_LINES.ojousama.normal[2]`: お客様の熱気、今も胸に残っておりますの
+- `DOME_SELLOUT_LINES.ojousama.normal[3]`: この日のこと、生涯の誇りとしますわ
 
-### bold.ojousama[]
+### ojousama.bold[]
 
-- `DOME_SELLOUT_LINES.bold.ojousama[1]`: 満員ですって!? 胸が熱くなりますわ!!
-- `DOME_SELLOUT_LINES.bold.ojousama[2]`: お客様方の歓声、まだ耳に焼き付いておりますの!
-- `DOME_SELLOUT_LINES.bold.ojousama[3]`: この勢い、止めてはなりませんわよ!!
+- `DOME_SELLOUT_LINES.ojousama.bold[1]`: 満員ですって!? 胸が熱くなりますわ!!
+- `DOME_SELLOUT_LINES.ojousama.bold[2]`: お客様方の歓声、まだ耳に焼き付いておりますの!
+- `DOME_SELLOUT_LINES.ojousama.bold[3]`: この勢い、止めてはなりませんわよ!!
 
-### bold.delinquent[]
+### ojousama.quiet[]
 
-- `DOME_SELLOUT_LINES.bold.delinquent[1]`: …全員、ひっくり返せた気がすんな。満員にしやがって
-- `DOME_SELLOUT_LINES.bold.delinquent[2]`: くっそおおお、やってやったぜドーム満員!!
-- `DOME_SELLOUT_LINES.bold.delinquent[3]`: …覚えとけよ、観客全員。またぶっ壊しに来るからな
+- `DOME_SELLOUT_LINES.ojousama.quiet[1]`: …満員…感無量ですわ
+- `DOME_SELLOUT_LINES.ojousama.quiet[2]`: …皆様に、感謝を
 
-### bold.cool[]
+### ojousama.easygoing[]
 
-- `DOME_SELLOUT_LINES.bold.cool[1]`: …満員。達成した
-- `DOME_SELLOUT_LINES.bold.cool[2]`: …次は、もっと大きい会場を
-- `DOME_SELLOUT_LINES.bold.cool[3]`: …悪くない気分だ
+- `DOME_SELLOUT_LINES.ojousama.easygoing[1]`: まぁ、満員ですのね! 嬉しゅうございますわ
+- `DOME_SELLOUT_LINES.ojousama.easygoing[2]`: こんなに楽しい日は、なかなかありませんの
+- `DOME_SELLOUT_LINES.ojousama.easygoing[3]`: ほほほ、またやりたくなりますわ
 
-### bold.seductive[]
+### ojousama.earnest[]
 
-- `DOME_SELLOUT_LINES.bold.seductive[1]`: 満員…最高の演出になったわね
-- `DOME_SELLOUT_LINES.bold.seductive[2]`: この熱量、また必ず味わいたい
-- `DOME_SELLOUT_LINES.bold.seductive[3]`: うふふ、皆様を虜にしてやったわ
+- `DOME_SELLOUT_LINES.ojousama.earnest[1]`: 満員のお客様、団体として誇らしい限りですわ
+- `DOME_SELLOUT_LINES.ojousama.earnest[2]`: この達成を糧に、さらに精進いたしますわ
+- `DOME_SELLOUT_LINES.ojousama.earnest[3]`: 気を緩めず、次に備えますの
 
-### bold.polite[]
+### ojousama.emotional[]
 
-- `DOME_SELLOUT_LINES.bold.polite[1]`: 満員のお客様に、心から感謝します!!
-- `DOME_SELLOUT_LINES.bold.polite[2]`: 全力で戦った甲斐がありました!!
-- `DOME_SELLOUT_LINES.bold.polite[3]`: この興奮、必ず次につなげます!!
+- `DOME_SELLOUT_LINES.ojousama.emotional[1]`: …満員…嘘のようですわ…本当に…
+- `DOME_SELLOUT_LINES.ojousama.emotional[2]`: 胸が、胸がはちきれそうですの…
+- `DOME_SELLOUT_LINES.ojousama.emotional[3]`: …泣いてなど…おりませんのよ…!
 
-### bold.composed[]
+### ojousama.shy[]
 
-- `DOME_SELLOUT_LINES.bold.composed[1]`: 満員。…達成感しかない
-- `DOME_SELLOUT_LINES.bold.composed[2]`: 全力でやった。それが報われた
-- `DOME_SELLOUT_LINES.bold.composed[3]`: 次はもっと上を目指す
+- `DOME_SELLOUT_LINES.ojousama.shy[1]`: …満員…信じられませんわ…
+- `DOME_SELLOUT_LINES.ojousama.shy[2]`: …皆様の応援、胸に、しみました…
+- `DOME_SELLOUT_LINES.ojousama.shy[3]`: …本当に、ありがとう、ございます…
 
-### quiet._default[]
+### delinquent.normal[]
 
-- `DOME_SELLOUT_LINES.quiet._default[1]`: …満員でした
-- `DOME_SELLOUT_LINES.quiet._default[2]`: …ありがとう、ございます
-- `DOME_SELLOUT_LINES.quiet._default[3]`: ……(深く頭を下げる)
+- `DOME_SELLOUT_LINES.delinquent.normal[1]`: …マジかよ、満員だって?
+- `DOME_SELLOUT_LINES.delinquent.normal[2]`: くっそ、これがドーム満員ってやつか…
+- `DOME_SELLOUT_LINES.delinquent.normal[3]`: …悪くねえな。…全然悪くねえ
 
-### quiet.ojousama[]
+### delinquent.bold[]
 
-- `DOME_SELLOUT_LINES.quiet.ojousama[1]`: …満員…感無量ですわ
-- `DOME_SELLOUT_LINES.quiet.ojousama[2]`: …皆様に、感謝を
+- `DOME_SELLOUT_LINES.delinquent.bold[1]`: …全員、ひっくり返せた気がすんな。満員にしやがって
+- `DOME_SELLOUT_LINES.delinquent.bold[2]`: くっそおおお、やってやったぜドーム満員!!
+- `DOME_SELLOUT_LINES.delinquent.bold[3]`: …覚えとけよ、観客全員。またぶっ壊しに来るからな
 
-### quiet.delinquent[]
+### delinquent.quiet[]
 
-- `DOME_SELLOUT_LINES.quiet.delinquent[1]`: …満員、かよ
-- `DOME_SELLOUT_LINES.quiet.delinquent[2]`: …悪くねえ
-- `DOME_SELLOUT_LINES.quiet.delinquent[3]`: ……(深く息を吐く)
+- `DOME_SELLOUT_LINES.delinquent.quiet[1]`: …満員、かよ
+- `DOME_SELLOUT_LINES.delinquent.quiet[2]`: …悪くねえ
+- `DOME_SELLOUT_LINES.delinquent.quiet[3]`: ……(深く息を吐く)
 
-### quiet.cool[]
+### delinquent.easygoing[]
 
-- `DOME_SELLOUT_LINES.quiet.cool[1]`: …満員
-- `DOME_SELLOUT_LINES.quiet.cool[2]`: …忘れない
-- `DOME_SELLOUT_LINES.quiet.cool[3]`: ……(遠くを見ている)
+- `DOME_SELLOUT_LINES.delinquent.easygoing[1]`: マジで満員かよ! やっべ、嬉しくて笑えてきたわ
+- `DOME_SELLOUT_LINES.delinquent.easygoing[2]`: 観客全員ぶち上がってたな! 気持ち良かったぜ
+- `DOME_SELLOUT_LINES.delinquent.easygoing[3]`: こういう日もあんだな、人生ってよ
 
-### quiet.seductive[]
+### delinquent.earnest[]
 
-- `DOME_SELLOUT_LINES.quiet.seductive[1]`: …満員ね
-- `DOME_SELLOUT_LINES.quiet.seductive[2]`: …この景色、胸に
-- `DOME_SELLOUT_LINES.quiet.seductive[3]`: ……(静かに微笑む)
+- `DOME_SELLOUT_LINES.delinquent.earnest[1]`: 満員か。…褒めてくれんのかよ、社長
+- `DOME_SELLOUT_LINES.delinquent.earnest[2]`: 次も必ず満員にする。約束だ
+- `DOME_SELLOUT_LINES.delinquent.earnest[3]`: …ありがとな。…マジで
 
-### quiet.polite[]
+### delinquent.emotional[]
 
-- `DOME_SELLOUT_LINES.quiet.polite[1]`: …満員、ありがとうございました
-- `DOME_SELLOUT_LINES.quiet.polite[2]`: …感謝しか、ありません
-- `DOME_SELLOUT_LINES.quiet.polite[3]`: …深く、御礼申し上げます
+- `DOME_SELLOUT_LINES.delinquent.emotional[1]`: くっそ、満員だ…満員だ! 泣いてねーし! 泣いてねーから!
+- `DOME_SELLOUT_LINES.delinquent.emotional[2]`: …ありがとうな、観客ども…マジでさ…
+- `DOME_SELLOUT_LINES.delinquent.emotional[3]`: 絶対次も満員にする! 絶対だ! 俺が誓う!
 
-### quiet.composed[]
+### delinquent.shy[]
 
-- `DOME_SELLOUT_LINES.quiet.composed[1]`: …満員
-- `DOME_SELLOUT_LINES.quiet.composed[2]`: …よかった。本当によかった
-- `DOME_SELLOUT_LINES.quiet.composed[3]`: ……(しばし言葉を失う)
+- `DOME_SELLOUT_LINES.delinquent.shy[1]`: …まじで、満員…? …うそ、だろ…
+- `DOME_SELLOUT_LINES.delinquent.shy[2]`: …なんか、泣きそう…言わないでくださいよ…
+- `DOME_SELLOUT_LINES.delinquent.shy[3]`: …ありがと、ございます…(小さな声で)
 
-### easygoing._default[]
+### cool.normal[]
 
-- `DOME_SELLOUT_LINES.easygoing._default[1]`: うわー、満員だって! びっくりしちゃった
-- `DOME_SELLOUT_LINES.easygoing._default[2]`: やりましたねー、本当に嬉しいです
-- `DOME_SELLOUT_LINES.easygoing._default[3]`: なんか、胸がじーんとしてます
+- `DOME_SELLOUT_LINES.cool.normal[1]`: …満員
+- `DOME_SELLOUT_LINES.cool.normal[2]`: …客の声が、まだ耳に残ってる
+- `DOME_SELLOUT_LINES.cool.normal[3]`: …忘れない。この景色は
 
-### easygoing.ojousama[]
+### cool.bold[]
 
-- `DOME_SELLOUT_LINES.easygoing.ojousama[1]`: まぁ、満員ですのね! 嬉しゅうございますわ
-- `DOME_SELLOUT_LINES.easygoing.ojousama[2]`: こんなに楽しい日は、なかなかありませんの
-- `DOME_SELLOUT_LINES.easygoing.ojousama[3]`: ほほほ、またやりたくなりますわ
+- `DOME_SELLOUT_LINES.cool.bold[1]`: …満員。達成した
+- `DOME_SELLOUT_LINES.cool.bold[2]`: …次は、もっと大きい会場を
+- `DOME_SELLOUT_LINES.cool.bold[3]`: …悪くない気分だ
 
-### easygoing.delinquent[]
+### cool.quiet[]
 
-- `DOME_SELLOUT_LINES.easygoing.delinquent[1]`: マジで満員かよ! やっべ、嬉しくて笑えてきたわ
-- `DOME_SELLOUT_LINES.easygoing.delinquent[2]`: 観客全員ぶち上がってたな! 気持ち良かったぜ
-- `DOME_SELLOUT_LINES.easygoing.delinquent[3]`: こういう日もあんだな、人生ってよ
+- `DOME_SELLOUT_LINES.cool.quiet[1]`: …満員
+- `DOME_SELLOUT_LINES.cool.quiet[2]`: …忘れない
+- `DOME_SELLOUT_LINES.cool.quiet[3]`: ……(遠くを見ている)
 
-### easygoing.cool[]
+### cool.easygoing[]
 
-- `DOME_SELLOUT_LINES.easygoing.cool[1]`: …満員。うん、よかった
-- `DOME_SELLOUT_LINES.easygoing.cool[2]`: …気分がいい
-- `DOME_SELLOUT_LINES.easygoing.cool[3]`: …また、こういう日を作りたい
+- `DOME_SELLOUT_LINES.cool.easygoing[1]`: …満員。うん、よかった
+- `DOME_SELLOUT_LINES.cool.easygoing[2]`: …気分がいい
+- `DOME_SELLOUT_LINES.cool.easygoing[3]`: …また、こういう日を作りたい
 
-### easygoing.seductive[]
+### cool.earnest[]
 
-- `DOME_SELLOUT_LINES.easygoing.seductive[1]`: ふふっ、満員って素敵な響きね
-- `DOME_SELLOUT_LINES.easygoing.seductive[2]`: 皆様、私たちを愛してくれたのね
-- `DOME_SELLOUT_LINES.easygoing.seductive[3]`: こんな幸せな夜、他にないわ
+- `DOME_SELLOUT_LINES.cool.earnest[1]`: 満員。目標の一つは達成した
+- `DOME_SELLOUT_LINES.cool.earnest[2]`: …次の目標に向けて、動きます
+- `DOME_SELLOUT_LINES.cool.earnest[3]`: 気を緩めません
 
-### easygoing.polite[]
+### cool.emotional[]
 
-- `DOME_SELLOUT_LINES.easygoing.polite[1]`: 満員、嬉しいですね。本当に感謝です
-- `DOME_SELLOUT_LINES.easygoing.polite[2]`: みなさんが来てくれたおかげですね
-- `DOME_SELLOUT_LINES.easygoing.polite[3]`: ゆったりと喜びを噛みしめます
+- `DOME_SELLOUT_LINES.cool.emotional[1]`: …満員
+- `DOME_SELLOUT_LINES.cool.emotional[2]`: …(言葉にならない)
+- `DOME_SELLOUT_LINES.cool.emotional[3]`: ……(静かに涙を拭う)
 
-### easygoing.composed[]
+### cool.shy[]
 
-- `DOME_SELLOUT_LINES.easygoing.composed[1]`: 満員。嬉しいですね、素直に
-- `DOME_SELLOUT_LINES.easygoing.composed[2]`: いい日になりましたね
-- `DOME_SELLOUT_LINES.easygoing.composed[3]`: お客様に、心から感謝です
+- `DOME_SELLOUT_LINES.cool.shy[1]`: …満員…
+- `DOME_SELLOUT_LINES.cool.shy[2]`: …はい…
+- `DOME_SELLOUT_LINES.cool.shy[3]`: …ありがとう…ございます…
 
-### earnest._default[]
+### seductive.normal[]
 
-- `DOME_SELLOUT_LINES.earnest._default[1]`: 満員のお客様に応えられる試合ができたか、反省と感謝でいっぱいです
-- `DOME_SELLOUT_LINES.earnest._default[2]`: 社長、本当にありがとうございました
-- `DOME_SELLOUT_LINES.earnest._default[3]`: 次はもっと良い試合を、必ずお見せします
+- `DOME_SELLOUT_LINES.seductive.normal[1]`: 満員のお客様…今夜の私に、酔いしれてくれたのね
+- `DOME_SELLOUT_LINES.seductive.normal[2]`: うふふ…この達成感、格別ね
+- `DOME_SELLOUT_LINES.seductive.normal[3]`: 忘れられない夜になったわ
 
-### earnest.ojousama[]
+### seductive.bold[]
 
-- `DOME_SELLOUT_LINES.earnest.ojousama[1]`: 満員のお客様、団体として誇らしい限りですわ
-- `DOME_SELLOUT_LINES.earnest.ojousama[2]`: この達成を糧に、さらに精進いたしますわ
-- `DOME_SELLOUT_LINES.earnest.ojousama[3]`: 気を緩めず、次に備えますの
+- `DOME_SELLOUT_LINES.seductive.bold[1]`: 満員…最高の演出になったわね
+- `DOME_SELLOUT_LINES.seductive.bold[2]`: この熱量、また必ず味わいたい
+- `DOME_SELLOUT_LINES.seductive.bold[3]`: うふふ、皆様を虜にしてやったわ
 
-### earnest.delinquent[]
+### seductive.quiet[]
 
-- `DOME_SELLOUT_LINES.earnest.delinquent[1]`: 満員か。…褒めてくれんのかよ、社長
-- `DOME_SELLOUT_LINES.earnest.delinquent[2]`: 次も必ず満員にする。約束だ
-- `DOME_SELLOUT_LINES.earnest.delinquent[3]`: …ありがとな。…マジで
+- `DOME_SELLOUT_LINES.seductive.quiet[1]`: …満員ね
+- `DOME_SELLOUT_LINES.seductive.quiet[2]`: …この景色、胸に
+- `DOME_SELLOUT_LINES.seductive.quiet[3]`: ……(静かに微笑む)
 
-### earnest.cool[]
+### seductive.easygoing[]
 
-- `DOME_SELLOUT_LINES.earnest.cool[1]`: 満員。目標の一つは達成した
-- `DOME_SELLOUT_LINES.earnest.cool[2]`: …次の目標に向けて、動きます
-- `DOME_SELLOUT_LINES.earnest.cool[3]`: 気を緩めません
+- `DOME_SELLOUT_LINES.seductive.easygoing[1]`: ふふっ、満員って素敵な響きね
+- `DOME_SELLOUT_LINES.seductive.easygoing[2]`: 皆様、私たちを愛してくれたのね
+- `DOME_SELLOUT_LINES.seductive.easygoing[3]`: こんな幸せな夜、他にないわ
 
-### earnest.seductive[]
+### seductive.earnest[]
 
-- `DOME_SELLOUT_LINES.earnest.seductive[1]`: お客様の熱気に、私も全力で応えたわ
-- `DOME_SELLOUT_LINES.earnest.seductive[2]`: この記録、団体の誇りにしたい
-- `DOME_SELLOUT_LINES.earnest.seductive[3]`: 次はもっと多くのお客様を、虜にしてみせる
+- `DOME_SELLOUT_LINES.seductive.earnest[1]`: お客様の熱気に、私も全力で応えたわ
+- `DOME_SELLOUT_LINES.seductive.earnest[2]`: この記録、団体の誇りにしたい
+- `DOME_SELLOUT_LINES.seductive.earnest[3]`: 次はもっと多くのお客様を、虜にしてみせる
 
-### earnest.polite[]
+### seductive.emotional[]
 
-- `DOME_SELLOUT_LINES.earnest.polite[1]`: 満員のお客様、心より感謝申し上げます
-- `DOME_SELLOUT_LINES.earnest.polite[2]`: 全力を尽くした甲斐がありました
-- `DOME_SELLOUT_LINES.earnest.polite[3]`: 次も、必ず期待に応えます
+- `DOME_SELLOUT_LINES.seductive.emotional[1]`: …満員、お客様の熱気…忘れられない
+- `DOME_SELLOUT_LINES.seductive.emotional[2]`: 胸が熱くて、震えが止まらないの
+- `DOME_SELLOUT_LINES.seductive.emotional[3]`: こんな素敵な夜、生涯忘れない
 
-### earnest.composed[]
+### seductive.shy[]
 
-- `DOME_SELLOUT_LINES.earnest.composed[1]`: 満員達成。事実を、しっかり受け止めます
-- `DOME_SELLOUT_LINES.earnest.composed[2]`: お客様の声援、次への糧とします
-- `DOME_SELLOUT_LINES.earnest.composed[3]`: 精進を続けます。これで終わりではない
+- `DOME_SELLOUT_LINES.seductive.shy[1]`: …満員…? …嘘みたい…
+- `DOME_SELLOUT_LINES.seductive.shy[2]`: …お客様の声が、まだ耳に…
+- `DOME_SELLOUT_LINES.seductive.shy[3]`: …本当に、嬉しい…
 
-### emotional._default[]
+### polite.normal[]
 
-- `DOME_SELLOUT_LINES.emotional._default[1]`: 満員って…満員って言いました? …涙が止まりません…!
-- `DOME_SELLOUT_LINES.emotional._default[2]`: 社長…本当に…本当にありがとうございます…!
-- `DOME_SELLOUT_LINES.emotional._default[3]`: この日のこと、絶対に、絶対に忘れません!
+- `DOME_SELLOUT_LINES.polite.normal[1]`: 満員のお客様に感謝しかありません
+- `DOME_SELLOUT_LINES.polite.normal[2]`: 社長、本当にありがとうございます
+- `DOME_SELLOUT_LINES.polite.normal[3]`: この恩は、これからの試合で返します
 
-### emotional.ojousama[]
+### polite.bold[]
 
-- `DOME_SELLOUT_LINES.emotional.ojousama[1]`: …満員…嘘のようですわ…本当に…
-- `DOME_SELLOUT_LINES.emotional.ojousama[2]`: 胸が、胸がはちきれそうですの…
-- `DOME_SELLOUT_LINES.emotional.ojousama[3]`: …泣いてなど…おりませんのよ…!
+- `DOME_SELLOUT_LINES.polite.bold[1]`: 満員のお客様に、心から感謝します!!
+- `DOME_SELLOUT_LINES.polite.bold[2]`: 全力で戦った甲斐がありました!!
+- `DOME_SELLOUT_LINES.polite.bold[3]`: この興奮、必ず次につなげます!!
 
-### emotional.delinquent[]
+### polite.quiet[]
 
-- `DOME_SELLOUT_LINES.emotional.delinquent[1]`: くっそ、満員だ…満員だ! 泣いてねーし! 泣いてねーから!
-- `DOME_SELLOUT_LINES.emotional.delinquent[2]`: …ありがとうな、観客ども…マジでさ…
-- `DOME_SELLOUT_LINES.emotional.delinquent[3]`: 絶対次も満員にする! 絶対だ! 俺が誓う!
+- `DOME_SELLOUT_LINES.polite.quiet[1]`: …満員、ありがとうございました
+- `DOME_SELLOUT_LINES.polite.quiet[2]`: …感謝しか、ありません
+- `DOME_SELLOUT_LINES.polite.quiet[3]`: …深く、御礼申し上げます
 
-### emotional.cool[]
+### polite.easygoing[]
 
-- `DOME_SELLOUT_LINES.emotional.cool[1]`: …満員
-- `DOME_SELLOUT_LINES.emotional.cool[2]`: …(言葉にならない)
-- `DOME_SELLOUT_LINES.emotional.cool[3]`: ……(静かに涙を拭う)
+- `DOME_SELLOUT_LINES.polite.easygoing[1]`: 満員、嬉しいですね。本当に感謝です
+- `DOME_SELLOUT_LINES.polite.easygoing[2]`: みなさんが来てくれたおかげですね
+- `DOME_SELLOUT_LINES.polite.easygoing[3]`: ゆったりと喜びを噛みしめます
 
-### emotional.seductive[]
+### polite.earnest[]
 
-- `DOME_SELLOUT_LINES.emotional.seductive[1]`: …満員、お客様の熱気…忘れられない
-- `DOME_SELLOUT_LINES.emotional.seductive[2]`: 胸が熱くて、震えが止まらないの
-- `DOME_SELLOUT_LINES.emotional.seductive[3]`: こんな素敵な夜、生涯忘れない
+- `DOME_SELLOUT_LINES.polite.earnest[1]`: 満員のお客様、心より感謝申し上げます
+- `DOME_SELLOUT_LINES.polite.earnest[2]`: 全力を尽くした甲斐がありました
+- `DOME_SELLOUT_LINES.polite.earnest[3]`: 次も、必ず期待に応えます
 
-### emotional.polite[]
+### polite.emotional[]
 
-- `DOME_SELLOUT_LINES.emotional.polite[1]`: …満員…っ、申し訳ありません、涙が…
-- `DOME_SELLOUT_LINES.emotional.polite[2]`: 社長…こんな日を迎えられて…本当に…!
-- `DOME_SELLOUT_LINES.emotional.polite[3]`: この感動、必ず次の試合に込めます!
+- `DOME_SELLOUT_LINES.polite.emotional[1]`: …満員…っ、申し訳ありません、涙が…
+- `DOME_SELLOUT_LINES.polite.emotional[2]`: 社長…こんな日を迎えられて…本当に…!
+- `DOME_SELLOUT_LINES.polite.emotional[3]`: この感動、必ず次の試合に込めます!
 
-### emotional.composed[]
+### polite.shy[]
 
-- `DOME_SELLOUT_LINES.emotional.composed[1]`: …満員。胸が、いっぱいです
-- `DOME_SELLOUT_LINES.emotional.composed[2]`: …落ち着かせてください、少しだけ
-- `DOME_SELLOUT_LINES.emotional.composed[3]`: …ありがとうございます、本当に
+- `DOME_SELLOUT_LINES.polite.shy[1]`: …満員、ありがとうございます…ありがとうございます…
+- `DOME_SELLOUT_LINES.polite.shy[2]`: …こんな私を、応援してくださって…
+- `DOME_SELLOUT_LINES.polite.shy[3]`: …この恩、一生忘れません…
 
-### shy._default[]
+### composed.normal[]
 
-- `DOME_SELLOUT_LINES.shy._default[1]`: …ま、満員…ですか? …嘘みたい…
-- `DOME_SELLOUT_LINES.shy._default[2]`: …皆さん、来てくださって、本当に嬉しいです…
-- `DOME_SELLOUT_LINES.shy._default[3]`: …ありがとう、ございました…
+- `DOME_SELLOUT_LINES.composed.normal[1]`: 満員。…団体として、一つの到達点ですね
+- `DOME_SELLOUT_LINES.composed.normal[2]`: お客様の拍手、今も胸に響いています
+- `DOME_SELLOUT_LINES.composed.normal[3]`: この記録、大切にしていきましょう
 
-### shy.ojousama[]
+### composed.bold[]
 
-- `DOME_SELLOUT_LINES.shy.ojousama[1]`: …満員…信じられませんわ…
-- `DOME_SELLOUT_LINES.shy.ojousama[2]`: …皆様の応援、胸に、しみました…
-- `DOME_SELLOUT_LINES.shy.ojousama[3]`: …本当に、ありがとう、ございます…
+- `DOME_SELLOUT_LINES.composed.bold[1]`: 満員。…達成感しかない
+- `DOME_SELLOUT_LINES.composed.bold[2]`: 全力でやった。それが報われた
+- `DOME_SELLOUT_LINES.composed.bold[3]`: 次はもっと上を目指す
 
-### shy.delinquent[]
+### composed.quiet[]
 
-- `DOME_SELLOUT_LINES.shy.delinquent[1]`: …まじで、満員…? …うそ、だろ…
-- `DOME_SELLOUT_LINES.shy.delinquent[2]`: …なんか、泣きそう…言わないでくださいよ…
-- `DOME_SELLOUT_LINES.shy.delinquent[3]`: …ありがと、ございます…(小さな声で)
+- `DOME_SELLOUT_LINES.composed.quiet[1]`: …満員
+- `DOME_SELLOUT_LINES.composed.quiet[2]`: …よかった。本当によかった
+- `DOME_SELLOUT_LINES.composed.quiet[3]`: ……(しばし言葉を失う)
 
-### shy.cool[]
+### composed.easygoing[]
 
-- `DOME_SELLOUT_LINES.shy.cool[1]`: …満員…
-- `DOME_SELLOUT_LINES.shy.cool[2]`: …はい…
-- `DOME_SELLOUT_LINES.shy.cool[3]`: …ありがとう…ございます…
+- `DOME_SELLOUT_LINES.composed.easygoing[1]`: 満員。嬉しいですね、素直に
+- `DOME_SELLOUT_LINES.composed.easygoing[2]`: いい日になりましたね
+- `DOME_SELLOUT_LINES.composed.easygoing[3]`: お客様に、心から感謝です
 
-### shy.seductive[]
+### composed.earnest[]
 
-- `DOME_SELLOUT_LINES.shy.seductive[1]`: …満員…? …嘘みたい…
-- `DOME_SELLOUT_LINES.shy.seductive[2]`: …お客様の声が、まだ耳に…
-- `DOME_SELLOUT_LINES.shy.seductive[3]`: …本当に、嬉しい…
+- `DOME_SELLOUT_LINES.composed.earnest[1]`: 満員達成。事実を、しっかり受け止めます
+- `DOME_SELLOUT_LINES.composed.earnest[2]`: お客様の声援、次への糧とします
+- `DOME_SELLOUT_LINES.composed.earnest[3]`: 精進を続けます。これで終わりではない
 
-### shy.polite[]
+### composed.emotional[]
 
-- `DOME_SELLOUT_LINES.shy.polite[1]`: …満員、ありがとうございます…ありがとうございます…
-- `DOME_SELLOUT_LINES.shy.polite[2]`: …こんな私を、応援してくださって…
-- `DOME_SELLOUT_LINES.shy.polite[3]`: …この恩、一生忘れません…
+- `DOME_SELLOUT_LINES.composed.emotional[1]`: …満員。胸が、いっぱいです
+- `DOME_SELLOUT_LINES.composed.emotional[2]`: …落ち着かせてください、少しだけ
+- `DOME_SELLOUT_LINES.composed.emotional[3]`: …ありがとうございます、本当に
 
-### shy.composed[]
+### composed.shy[]
 
-- `DOME_SELLOUT_LINES.shy.composed[1]`: …満員、ですか…
-- `DOME_SELLOUT_LINES.shy.composed[2]`: …(静かに涙を流す)
-- `DOME_SELLOUT_LINES.shy.composed[3]`: …ありがとう、ございます…
+- `DOME_SELLOUT_LINES.composed.shy[1]`: …満員、ですか…
+- `DOME_SELLOUT_LINES.composed.shy[2]`: …(静かに涙を流す)
+- `DOME_SELLOUT_LINES.composed.shy[3]`: …ありがとう、ございます…
 
 ## `Engine.awards._EPITHET_TEMPLATES`
 
@@ -1748,26 +1748,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ## `CREDITS`
 
 - 出典: `src/data.js`
-- コード内コメント: v2.1: クレジット情報 — ending-gameover-spec-v1.0.md §4.4
-- 本数: 12
+- コード内コメント: v2.1: クレジット情報 — ending-gameover-spec-v1.0.md §4.4 / 音響刷新 Phase 2 (2026-07-26): 自作音源への差し替えが完了したフリー素材は掲載を終了した。 / 掲載を残すのは「いまゲームが実際に鳴らしている」曲だけ。 / 2026-07-26: WM-H06(ゲームオーバー)の制作完了により、最後まで残っていた / iwa_gameover001.mp3 の使用を終了。**フリー素材の使用はゼロになった**ため music は空。
+- 本数: 0
 
-### music[].title
-
-- `CREDITS.music[1].title`: 8bit/RPG/オープニング「序・序曲」
-- `CREDITS.music[2].title`: RPG/感動のフィナーレ「エンディング・テーマ」
-
-### music[].artist
-
-- `CREDITS.music[1].artist`: MOMIZizm MUSiC（もみじば）
-- `CREDITS.music[2].artist`: MOMIZizm MUSiC（もみじば）
-- `CREDITS.music[5].artist`: 岩城こん。
-- `CREDITS.music[6].artist`: 岩城こん。
-
-### music[].license
-
-- `CREDITS.music[1].license`: フリー音楽素材
-- `CREDITS.music[2].license`: フリー音楽素材
-- `CREDITS.music[3].license`: フリー音楽素材
-- `CREDITS.music[4].license`: フリー音楽素材
-- `CREDITS.music[5].license`: フリー音楽素材
-- `CREDITS.music[6].license`: フリー音楽素材
+_(値が見つかりませんでした — 手動確認が必要)_

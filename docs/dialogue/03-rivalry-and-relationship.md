@@ -8,512 +8,512 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 因縁決着システム — 試合前の宣戦布告セリフ（ペア台詞）
 - 本数: 141
 
-### attacker.normal._default[]
+### attacker.standard.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal._default[1]`: 今日こそ、決着をつける
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal._default[2]`: この因縁、今夜終わりにしよう
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal._default[3]`: 超える。今日、ここで
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.normal[1]`: 今日こそ、決着をつける
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.normal[2]`: この因縁、今夜終わりにしよう
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.normal[3]`: 超える。今日、ここで
 
-### attacker.normal.ojousama[]
+### attacker.standard.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal.ojousama[1]`: 今日、決着をつけさせてもらうわね
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal.ojousama[2]`: あなたを超えるわ。今日、ここで。
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.bold[1]`: 逃がさないよ。今日ここで決着をつけから
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.bold[2]`: 何度やっても結果は同じだと思うけど。まぁ、かかってきなさい
 
-### attacker.normal.delinquent[]
+### attacker.standard.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal.delinquent[1]`: 今日で終わりだ。覚悟しろ
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal.delinquent[2]`: ぶっ倒してやるよ、今夜な
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.quiet[1]`: ………（静かに構える）
 
-### attacker.normal.cool[]
+### attacker.standard.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal.cool[1]`: ……決着をつける
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.shy[1]`: えっと…今日は…その…負けたくないんです…
 
-### attacker.normal.seductive[]
+### attacker.standard.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal.seductive[1]`: 今夜、終わりにしましょう？
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal.seductive[2]`: あなたを超えてみせるわ
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.easygoing[1]`: さーて、今日で決着つけようか！
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.easygoing[2]`: そろそろケリつけようよ！
 
-### attacker.normal.polite[]
+### attacker.standard.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal.polite[1]`: 今日こそ、決着をつけさせていただきます
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.earnest[1]`: 今日こそ決着をつけます
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.earnest[2]`: この因縁、終わりにします
 
-### attacker.normal.composed[]
+### attacker.standard.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.normal.composed[1]`: …そろそろ、決着をつけようか
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.emotional[1]`: 今日で……終わりにする……！ 絶対に……！
 
-### attacker.bold._default[]
+### attacker.ojousama.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.bold._default[1]`: 逃がさないよ。今日ここで決着をつけから
-- `RIVALRY_CONFRONTATION_LINES.attacker.bold._default[2]`: 何度やっても結果は同じだと思うけど。まぁ、かかってきなさい
+- `RIVALRY_CONFRONTATION_LINES.attacker.ojousama.normal[1]`: 今日、決着をつけさせてもらうわね
+- `RIVALRY_CONFRONTATION_LINES.attacker.ojousama.normal[2]`: あなたを超えるわ。今日、ここで。
 
-### attacker.bold.ojousama[]
+### attacker.ojousama.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.bold.ojousama[1]`: 逃がしませんわよ。今日ここで決着をつけましょう？
+- `RIVALRY_CONFRONTATION_LINES.attacker.ojousama.bold[1]`: 逃がしませんわよ。今日ここで決着をつけましょう？
 
-### attacker.bold.delinquent[]
+### attacker.ojousama.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.bold.delinquent[1]`: 逃がさねえぞ。今日で終わりだ
+- `RIVALRY_CONFRONTATION_LINES.attacker.ojousama.easygoing[1]`: さて、今日で決着ですわ！
 
-### attacker.bold.cool[]
+### attacker.ojousama.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.bold.cool[1]`: ……来い。終わらせる
+- `RIVALRY_CONFRONTATION_LINES.attacker.ojousama.earnest[1]`: 今日こそ決着ですわ
 
-### attacker.bold.seductive[]
+### attacker.delinquent.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.bold.seductive[1]`: 逃がさないわよ。今日で決着よ
+- `RIVALRY_CONFRONTATION_LINES.attacker.delinquent.normal[1]`: 今日で終わりだ。覚悟しろ
+- `RIVALRY_CONFRONTATION_LINES.attacker.delinquent.normal[2]`: ぶっ倒してやるよ、今夜な
 
-### attacker.bold.polite[]
+### attacker.delinquent.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.bold.polite[1]`: 逃がしません。今日ここで決着です
+- `RIVALRY_CONFRONTATION_LINES.attacker.delinquent.bold[1]`: 逃がさねえぞ。今日で終わりだ
 
-### attacker.bold.composed[]
+### attacker.delinquent.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.bold.composed[1]`: …逃がす気はないよ。今日で終わらせる
+- `RIVALRY_CONFRONTATION_LINES.attacker.delinquent.easygoing[1]`: よっしゃ、今日で終わりにしようぜ！
 
-### attacker.quiet._default[]
+### attacker.cool.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.quiet._default[1]`: ………（静かに構える）
+- `RIVALRY_CONFRONTATION_LINES.attacker.cool.normal[1]`: ……決着をつける
 
-### attacker.quiet.cool[]
+### attacker.cool.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.quiet.cool[1]`: ……今日、決める
+- `RIVALRY_CONFRONTATION_LINES.attacker.cool.bold[1]`: ……来い。終わらせる
 
-### attacker.quiet.polite[]
+### attacker.cool.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.quiet.polite[1]`: …今日で…決着をつけさせてください
+- `RIVALRY_CONFRONTATION_LINES.attacker.cool.quiet[1]`: ……今日、決める
 
-### attacker.quiet.seductive[]
+### attacker.seductive.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.quiet.seductive[1]`: ………（鋭い目で見据える）…覚悟してね
+- `RIVALRY_CONFRONTATION_LINES.attacker.seductive.normal[1]`: 今夜、終わりにしましょう？
+- `RIVALRY_CONFRONTATION_LINES.attacker.seductive.normal[2]`: あなたを超えてみせるわ
 
-### attacker.quiet.composed[]
+### attacker.seductive.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.quiet.composed[1]`: ……今日だ
+- `RIVALRY_CONFRONTATION_LINES.attacker.seductive.bold[1]`: 逃がさないわよ。今日で決着よ
 
-### attacker.shy._default[]
+### attacker.seductive.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.shy._default[1]`: えっと…今日は…その…負けたくないんです…
+- `RIVALRY_CONFRONTATION_LINES.attacker.seductive.quiet[1]`: ………（鋭い目で見据える）…覚悟してね
 
-### attacker.shy.polite[]
+### attacker.seductive.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.shy.polite[1]`: あ、あの…決着を、つけさせてください…
+- `RIVALRY_CONFRONTATION_LINES.attacker.seductive.easygoing[1]`: さーて、決着ね。全部出し切ってあげるわ
 
-### attacker.easygoing._default[]
+### attacker.seductive.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.easygoing._default[1]`: さーて、今日で決着つけようか！
-- `RIVALRY_CONFRONTATION_LINES.attacker.easygoing._default[2]`: そろそろケリつけようよ！
+- `RIVALRY_CONFRONTATION_LINES.attacker.seductive.earnest[1]`: この因縁、終わりにするわ
 
-### attacker.easygoing.delinquent[]
+### attacker.seductive.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.easygoing.delinquent[1]`: よっしゃ、今日で終わりにしようぜ！
+- `RIVALRY_CONFRONTATION_LINES.attacker.seductive.emotional[1]`: 決着をつけるわ……っ……ふふ、ずっと待ってたの……
+- `RIVALRY_CONFRONTATION_LINES.attacker.seductive.emotional[2]`: もう逃がさない……っ……ふふ、覚悟して……
 
-### attacker.easygoing.seductive[]
+### attacker.polite.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.easygoing.seductive[1]`: さーて、決着ね。全部出し切ってあげるわ
+- `RIVALRY_CONFRONTATION_LINES.attacker.polite.normal[1]`: 今日こそ、決着をつけさせていただきます
 
-### attacker.easygoing.polite[]
+### attacker.polite.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.easygoing.polite[1]`: さて、今日で決着をつけましょう！
+- `RIVALRY_CONFRONTATION_LINES.attacker.polite.bold[1]`: 逃がしません。今日ここで決着です
 
-### attacker.easygoing.ojousama[]
+### attacker.polite.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.easygoing.ojousama[1]`: さて、今日で決着ですわ！
+- `RIVALRY_CONFRONTATION_LINES.attacker.polite.quiet[1]`: …今日で…決着をつけさせてください
 
-### attacker.easygoing.composed[]
+### attacker.polite.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.easygoing.composed[1]`: さて、そろそろ片付けようか
+- `RIVALRY_CONFRONTATION_LINES.attacker.polite.shy[1]`: あ、あの…決着を、つけさせてください…
 
-### attacker.earnest._default[]
+### attacker.polite.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.earnest._default[1]`: 今日こそ決着をつけます
-- `RIVALRY_CONFRONTATION_LINES.attacker.earnest._default[2]`: この因縁、終わりにします
+- `RIVALRY_CONFRONTATION_LINES.attacker.polite.easygoing[1]`: さて、今日で決着をつけましょう！
 
-### attacker.earnest.polite[]
+### attacker.polite.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.earnest.polite[1]`: 本日、決着をつけさせていただきます
+- `RIVALRY_CONFRONTATION_LINES.attacker.polite.earnest[1]`: 本日、決着をつけさせていただきます
 
-### attacker.earnest.ojousama[]
+### attacker.composed.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.earnest.ojousama[1]`: 今日こそ決着ですわ
+- `RIVALRY_CONFRONTATION_LINES.attacker.composed.normal[1]`: …そろそろ、決着をつけようか
 
-### attacker.earnest.seductive[]
+### attacker.composed.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.earnest.seductive[1]`: この因縁、終わりにするわ
+- `RIVALRY_CONFRONTATION_LINES.attacker.composed.bold[1]`: …逃がす気はないよ。今日で終わらせる
 
-### attacker.earnest.composed[]
+### attacker.composed.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.earnest.composed[1]`: …決着をつけます。今日で
+- `RIVALRY_CONFRONTATION_LINES.attacker.composed.quiet[1]`: ……今日だ
 
-### attacker.emotional._default[]
+### attacker.composed.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.emotional._default[1]`: 今日で……終わりにする……！ 絶対に……！
+- `RIVALRY_CONFRONTATION_LINES.attacker.composed.easygoing[1]`: さて、そろそろ片付けようか
 
-### attacker.emotional.seductive[]
+### attacker.composed.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.emotional.seductive[1]`: 決着をつけるわ……っ……ふふ、ずっと待ってたの……
-- `RIVALRY_CONFRONTATION_LINES.attacker.emotional.seductive[2]`: もう逃がさない……っ……ふふ、覚悟して……
+- `RIVALRY_CONFRONTATION_LINES.attacker.composed.earnest[1]`: …決着をつけます。今日で
 
-### attacker.emotional.composed[]
+### attacker.composed.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.emotional.composed[1]`: …もういい。…リングで終わらせる
+- `RIVALRY_CONFRONTATION_LINES.attacker.composed.emotional[1]`: …もういい。…リングで終わらせる
 
-### defender.normal._default[]
+### defender.standard.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.normal._default[1]`: ……望むところよ
-- `RIVALRY_CONFRONTATION_LINES.defender.normal._default[2]`: それは終わってから言いなさい
-- `RIVALRY_CONFRONTATION_LINES.defender.normal._default[3]`: できるもんなら、やってみなさい
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.normal[1]`: ……望むところよ
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.normal[2]`: それは終わってから言いなさい
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.normal[3]`: できるもんなら、やってみなさい
 
-### defender.normal.ojousama[]
+### defender.standard.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.normal.ojousama[1]`: ……望むところよ
-- `RIVALRY_CONFRONTATION_LINES.defender.normal.ojousama[2]`: やれるものならやってごらんなさい
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.bold[1]`: いいわよ。来なさい。相手してあげる
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.bold[2]`: 何度来ても返り討ちにしてあげる
 
-### defender.normal.delinquent[]
+### defender.standard.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.normal.delinquent[1]`: 上等だ。来いよ
-- `RIVALRY_CONFRONTATION_LINES.defender.normal.delinquent[2]`: やれるもんならやってみな
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.quiet[1]`: ………（静かに頷く）
 
-### defender.normal.cool[]
+### defender.standard.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.normal.cool[1]`: ……来い
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.shy[1]`: …受けます。…頑張ります…
 
-### defender.normal.seductive[]
+### defender.standard.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.normal.seductive[1]`: いいわよ。来なさい
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.easygoing[1]`: いいよ、来なよ！ 相手してあげる！
 
-### defender.normal.polite[]
+### defender.standard.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.normal.polite[1]`: ……どうぞ。受けて立ちます
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.earnest[1]`: 受けて立ちます。全力で
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.earnest[2]`: 悔いのない試合にしましょう
 
-### defender.normal.composed[]
+### defender.standard.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.normal.composed[1]`: …いいよ。来なよ
+- `RIVALRY_CONFRONTATION_LINES.defender.standard.emotional[1]`: 来なさい……！ 全部受け止めてやる……！
 
-### defender.bold._default[]
+### defender.ojousama.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.bold._default[1]`: いいわよ。来なさい。相手してあげる
-- `RIVALRY_CONFRONTATION_LINES.defender.bold._default[2]`: 何度来ても返り討ちにしてあげる
+- `RIVALRY_CONFRONTATION_LINES.defender.ojousama.normal[1]`: ……望むところよ
+- `RIVALRY_CONFRONTATION_LINES.defender.ojousama.normal[2]`: やれるものならやってごらんなさい
 
-### defender.bold.ojousama[]
+### defender.ojousama.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.bold.ojousama[1]`: 飛んで火にいる夏の虫。…と言ったところね
+- `RIVALRY_CONFRONTATION_LINES.defender.ojousama.bold[1]`: 飛んで火にいる夏の虫。…と言ったところね
 
-### defender.bold.delinquent[]
+### defender.ojousama.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.bold.delinquent[1]`: 返り討ちにしてやるぜ
+- `RIVALRY_CONFRONTATION_LINES.defender.ojousama.easygoing[1]`: よろしくてよ！ お相手いたしますわ
 
-### defender.bold.cool[]
+### defender.delinquent.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.bold.cool[1]`: ……受けて立つ
+- `RIVALRY_CONFRONTATION_LINES.defender.delinquent.normal[1]`: 上等だ。来いよ
+- `RIVALRY_CONFRONTATION_LINES.defender.delinquent.normal[2]`: やれるもんならやってみな
 
-### defender.bold.polite[]
+### defender.delinquent.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.bold.polite[1]`: 受けて立ちます。返り討ちにいたしますよ
+- `RIVALRY_CONFRONTATION_LINES.defender.delinquent.bold[1]`: 返り討ちにしてやるぜ
 
-### defender.bold.composed[]
+### defender.delinquent.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.bold.composed[1]`: …受けて立つよ。好きにおいで
+- `RIVALRY_CONFRONTATION_LINES.defender.delinquent.easygoing[1]`: おう、来いよ！
 
-### defender.quiet._default[]
+### defender.cool.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.quiet._default[1]`: ………（静かに頷く）
+- `RIVALRY_CONFRONTATION_LINES.defender.cool.normal[1]`: ……来い
 
-### defender.quiet.cool[]
+### defender.cool.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.quiet.cool[1]`: ……いいだろう
+- `RIVALRY_CONFRONTATION_LINES.defender.cool.bold[1]`: ……受けて立つ
 
-### defender.quiet.polite[]
+### defender.cool.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.quiet.polite[1]`: …はい…受けて立ちます
+- `RIVALRY_CONFRONTATION_LINES.defender.cool.quiet[1]`: ……いいだろう
 
-### defender.quiet.seductive[]
+### defender.seductive.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.quiet.seductive[1]`: ………来なさい
+- `RIVALRY_CONFRONTATION_LINES.defender.seductive.normal[1]`: いいわよ。来なさい
 
-### defender.quiet.composed[]
+### defender.seductive.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.quiet.composed[1]`: ……（静かに頷く）…来なよ
+- `RIVALRY_CONFRONTATION_LINES.defender.seductive.quiet[1]`: ………来なさい
 
-### defender.shy._default[]
+### defender.seductive.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.shy._default[1]`: …受けます。…頑張ります…
+- `RIVALRY_CONFRONTATION_LINES.defender.seductive.easygoing[1]`: いいわよ、来なさい。相手してあげるわ
 
-### defender.shy.polite[]
+### defender.seductive.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.shy.polite[1]`: は、はい…受けて立ちます…
+- `RIVALRY_CONFRONTATION_LINES.defender.seductive.earnest[1]`: 受けて立つわ。全力で
 
-### defender.easygoing._default[]
+### defender.seductive.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.easygoing._default[1]`: いいよ、来なよ！ 相手してあげる！
+- `RIVALRY_CONFRONTATION_LINES.defender.seductive.emotional[1]`: 受けて立つわ……っ……ふふ、来なさい……
 
-### defender.easygoing.delinquent[]
+### defender.polite.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.easygoing.delinquent[1]`: おう、来いよ！
+- `RIVALRY_CONFRONTATION_LINES.defender.polite.normal[1]`: ……どうぞ。受けて立ちます
 
-### defender.easygoing.seductive[]
+### defender.polite.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.easygoing.seductive[1]`: いいわよ、来なさい。相手してあげるわ
+- `RIVALRY_CONFRONTATION_LINES.defender.polite.bold[1]`: 受けて立ちます。返り討ちにいたしますよ
 
-### defender.easygoing.polite[]
+### defender.polite.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.easygoing.polite[1]`: どうぞ、来てください！ お相手します！
+- `RIVALRY_CONFRONTATION_LINES.defender.polite.quiet[1]`: …はい…受けて立ちます
 
-### defender.easygoing.ojousama[]
+### defender.polite.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.easygoing.ojousama[1]`: よろしくてよ！ お相手いたしますわ
+- `RIVALRY_CONFRONTATION_LINES.defender.polite.shy[1]`: は、はい…受けて立ちます…
 
-### defender.easygoing.composed[]
+### defender.polite.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.easygoing.composed[1]`: いいよ、来なよ。相手してあげる
+- `RIVALRY_CONFRONTATION_LINES.defender.polite.easygoing[1]`: どうぞ、来てください！ お相手します！
 
-### defender.earnest._default[]
+### defender.polite.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.earnest._default[1]`: 受けて立ちます。全力で
-- `RIVALRY_CONFRONTATION_LINES.defender.earnest._default[2]`: 悔いのない試合にしましょう
+- `RIVALRY_CONFRONTATION_LINES.defender.polite.earnest[1]`: お受けいたします。全力で参ります
 
-### defender.earnest.polite[]
+### defender.composed.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.earnest.polite[1]`: お受けいたします。全力で参ります
+- `RIVALRY_CONFRONTATION_LINES.defender.composed.normal[1]`: …いいよ。来なよ
 
-### defender.earnest.seductive[]
+### defender.composed.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.earnest.seductive[1]`: 受けて立つわ。全力で
+- `RIVALRY_CONFRONTATION_LINES.defender.composed.bold[1]`: …受けて立つよ。好きにおいで
 
-### defender.earnest.composed[]
+### defender.composed.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.earnest.composed[1]`: …受けて立ちます。全力で
+- `RIVALRY_CONFRONTATION_LINES.defender.composed.quiet[1]`: ……（静かに頷く）…来なよ
 
-### defender.emotional._default[]
+### defender.composed.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.emotional._default[1]`: 来なさい……！ 全部受け止めてやる……！
+- `RIVALRY_CONFRONTATION_LINES.defender.composed.easygoing[1]`: いいよ、来なよ。相手してあげる
 
-### defender.emotional.seductive[]
+### defender.composed.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.emotional.seductive[1]`: 受けて立つわ……っ……ふふ、来なさい……
+- `RIVALRY_CONFRONTATION_LINES.defender.composed.earnest[1]`: …受けて立ちます。全力で
 
-### defender.emotional.composed[]
+### defender.composed.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.defender.emotional.composed[1]`: …いいよ。…来なよ
+- `RIVALRY_CONFRONTATION_LINES.defender.composed.emotional[1]`: …いいよ。…来なよ
 
-### fateAttacker.normal._default[]
+### fateAttacker.standard.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.normal._default[1]`: 長かった……今日で終わりにするよ
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.normal._default[2]`: あなたがいなければ、今の私はいなかったかもね。でも今日で終わりにするよ
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.standard.normal[1]`: 長かった……今日で終わりにするよ
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.standard.normal[2]`: あなたがいなければ、今の私はいなかったかもね。でも今日で終わりにするよ
 
-### fateAttacker.normal.ojousama[]
+### fateAttacker.standard.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.normal.ojousama[1]`: 長かったわね……でも今日で、終わりにする
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.standard.bold[1]`: 何度もやったけどさ。でも今日で最後よ
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.standard.bold[2]`: さて、この間の続きね…
 
-### fateAttacker.normal.delinquent[]
+### fateAttacker.standard.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.normal.delinquent[1]`: 長かったな……今日で終わりだ
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.standard.quiet[1]`: ………（深く息を吸い、前に出る）
 
-### fateAttacker.normal.cool[]
+### fateAttacker.standard.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.normal.cool[1]`: ……終わらせに来た
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.standard.shy[1]`: ずっと…この日のことを考えてました…行きます…
 
-### fateAttacker.normal.seductive[]
+### fateAttacker.standard.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.normal.seductive[1]`: 長かったわね……今夜で最後よ
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.standard.easygoing[1]`: 最後の一戦だ。全部出し切ろう！
 
-### fateAttacker.normal.polite[]
+### fateAttacker.standard.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.normal.polite[1]`: 長かったです……今日で終わりにさせてください
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.standard.earnest[1]`: この因縁、今日終わりにします。全力で
 
-### fateAttacker.normal.composed[]
+### fateAttacker.standard.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.normal.composed[1]`: …長かったね。…今日で終わりにしよう
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.standard.emotional[1]`: ずっと……ずっとこの日を……！
 
-### fateAttacker.bold._default[]
+### fateAttacker.ojousama.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.bold._default[1]`: 何度もやったけどさ。でも今日で最後よ
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.bold._default[2]`: さて、この間の続きね…
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.ojousama.normal[1]`: 長かったわね……でも今日で、終わりにする
 
-### fateAttacker.bold.cool[]
+### fateAttacker.ojousama.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.bold.cool[1]`: ……最後だ。全てを出す
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.ojousama.easygoing[1]`: 最後の一戦ですわ！ 全力で参りますの
 
-### fateAttacker.bold.polite[]
+### fateAttacker.delinquent.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.bold.polite[1]`: 最後です。全力で参ります
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.delinquent.normal[1]`: 長かったな……今日で終わりだ
 
-### fateAttacker.bold.composed[]
+### fateAttacker.cool.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.bold.composed[1]`: …最後だね。…全部出すよ
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.cool.normal[1]`: ……終わらせに来た
 
-### fateAttacker.quiet._default[]
+### fateAttacker.cool.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.quiet._default[1]`: ………（深く息を吸い、前に出る）
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.cool.bold[1]`: ……最後だ。全てを出す
 
-### fateAttacker.quiet.seductive[]
+### fateAttacker.seductive.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.quiet.seductive[1]`: ………（深い呼吸）…終わらせましょう
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.seductive.normal[1]`: 長かったわね……今夜で最後よ
 
-### fateAttacker.quiet.composed[]
+### fateAttacker.seductive.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.quiet.composed[1]`: ………（静かに息を吸い、前を見る）
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.seductive.quiet[1]`: ………（深い呼吸）…終わらせましょう
 
-### fateAttacker.shy._default[]
+### fateAttacker.seductive.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.shy._default[1]`: ずっと…この日のことを考えてました…行きます…
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.seductive.easygoing[1]`: 最後の一戦ね。…全部出し切るわ
 
-### fateAttacker.shy.polite[]
+### fateAttacker.seductive.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.shy.polite[1]`: あ、あなたは…わたしの、運命の相手です…さあ、行きましょう…
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.seductive.earnest[1]`: この因縁、今日終わりにするわ。全力で
 
-### fateAttacker.easygoing._default[]
+### fateAttacker.seductive.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.easygoing._default[1]`: 最後の一戦だ。全部出し切ろう！
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.seductive.emotional[1]`: あなたが運命の相手……っ……ふふ、燃えるわね……
 
-### fateAttacker.easygoing.seductive[]
+### fateAttacker.polite.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.easygoing.seductive[1]`: 最後の一戦ね。…全部出し切るわ
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.polite.normal[1]`: 長かったです……今日で終わりにさせてください
 
-### fateAttacker.easygoing.polite[]
+### fateAttacker.polite.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.easygoing.polite[1]`: 最後の一戦です。全部出し切ります！
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.polite.bold[1]`: 最後です。全力で参ります
 
-### fateAttacker.easygoing.ojousama[]
+### fateAttacker.polite.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.easygoing.ojousama[1]`: 最後の一戦ですわ！ 全力で参りますの
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.polite.shy[1]`: あ、あなたは…わたしの、運命の相手です…さあ、行きましょう…
 
-### fateAttacker.easygoing.composed[]
+### fateAttacker.polite.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.easygoing.composed[1]`: …最後か。全部出し切ろう
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.polite.easygoing[1]`: 最後の一戦です。全部出し切ります！
 
-### fateAttacker.earnest._default[]
+### fateAttacker.composed.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.earnest._default[1]`: この因縁、今日終わりにします。全力で
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.composed.normal[1]`: …長かったね。…今日で終わりにしよう
 
-### fateAttacker.earnest.seductive[]
+### fateAttacker.composed.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.earnest.seductive[1]`: この因縁、今日終わりにするわ。全力で
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.composed.bold[1]`: …最後だね。…全部出すよ
 
-### fateAttacker.earnest.composed[]
+### fateAttacker.composed.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.earnest.composed[1]`: …今日で終わりにします
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.composed.quiet[1]`: ………（静かに息を吸い、前を見る）
 
-### fateAttacker.emotional._default[]
+### fateAttacker.composed.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.emotional._default[1]`: ずっと……ずっとこの日を……！
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.composed.easygoing[1]`: …最後か。全部出し切ろう
 
-### fateAttacker.emotional.seductive[]
+### fateAttacker.composed.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.emotional.seductive[1]`: あなたが運命の相手……っ……ふふ、燃えるわね……
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.composed.earnest[1]`: …今日で終わりにします
 
-### fateAttacker.emotional.composed[]
+### fateAttacker.composed.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateAttacker.emotional.composed[1]`: …ずっと待ってた。…行くよ
+- `RIVALRY_CONFRONTATION_LINES.fateAttacker.composed.emotional[1]`: …ずっと待ってた。…行くよ
 
-### fateDefender.normal._default[]
+### fateDefender.standard.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.normal._default[1]`: うん……最高の終わりにするよ
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.normal._default[2]`: それはお互い様よ。……全力で行くよ！
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.normal[1]`: うん……最高の終わりにするよ
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.normal[2]`: それはお互い様よ。……全力で行くよ！
 
-### fateDefender.normal.ojousama[]
+### fateDefender.standard.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.normal.ojousama[1]`: 最高の結末を見せてあげる
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.bold[1]`: わかってる。全力で来なよ。
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.bold[2]`: 相手してあげる
 
-### fateDefender.normal.delinquent[]
+### fateDefender.standard.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.normal.delinquent[1]`: ああ。最高の終わりにしようぜ
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.quiet[1]`: ………（小さく微笑み、構える）
 
-### fateDefender.normal.cool[]
+### fateDefender.standard.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.normal.cool[1]`: ……わかっている
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.shy[1]`: …うん…わかってる…。行こう…
 
-### fateDefender.normal.seductive[]
+### fateDefender.standard.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.normal.seductive[1]`: 最高の終わりにしましょう
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.easygoing[1]`: おう！ 最高の締めにしようぜ！
 
-### fateDefender.normal.polite[]
+### fateDefender.standard.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.normal.polite[1]`: はい……最高の結末にしましょう
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.earnest[1]`: 全力でお受けします。悔いのない試合を
 
-### fateDefender.normal.composed[]
+### fateDefender.standard.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.normal.composed[1]`: …うん。…最高の結末にしよう
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.emotional[1]`: 来なさい……！ 全部……受け止める……！
 
-### fateDefender.bold._default[]
+### fateDefender.ojousama.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.bold._default[1]`: わかってる。全力で来なよ。
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.bold._default[2]`: 相手してあげる
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.ojousama.normal[1]`: 最高の結末を見せてあげる
 
-### fateDefender.bold.cool[]
+### fateDefender.ojousama.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.bold.cool[1]`: ……全力で来い
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.ojousama.easygoing[1]`: 最高の結末にいたしましょう！
 
-### fateDefender.bold.polite[]
+### fateDefender.delinquent.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.bold.polite[1]`: わかっています。全力で来てください
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.delinquent.normal[1]`: ああ。最高の終わりにしようぜ
 
-### fateDefender.bold.composed[]
+### fateDefender.cool.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.bold.composed[1]`: …わかってる。全力でおいで
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.cool.normal[1]`: ……わかっている
 
-### fateDefender.quiet._default[]
+### fateDefender.cool.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.quiet._default[1]`: ………（小さく微笑み、構える）
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.cool.bold[1]`: ……全力で来い
 
-### fateDefender.quiet.seductive[]
+### fateDefender.seductive.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.quiet.seductive[1]`: ………（微笑み、構える）…ええ
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.seductive.normal[1]`: 最高の終わりにしましょう
 
-### fateDefender.quiet.composed[]
+### fateDefender.seductive.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.quiet.composed[1]`: ………（静かに微笑み、構える）
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.seductive.quiet[1]`: ………（微笑み、構える）…ええ
 
-### fateDefender.shy._default[]
+### fateDefender.seductive.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.shy._default[1]`: …うん…わかってる…。行こう…
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.seductive.easygoing[1]`: 最高の締めにしましょう？ …全力でね
 
-### fateDefender.shy.polite[]
+### fateDefender.seductive.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.shy.polite[1]`: 運命なら…受けて立たないと、いけませんね…
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.seductive.earnest[1]`: 全力でお受けするわ。悔いのない試合にしましょう
 
-### fateDefender.easygoing._default[]
+### fateDefender.seductive.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.easygoing._default[1]`: おう！ 最高の締めにしようぜ！
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.seductive.emotional[1]`: 運命ね……っ……ふふ、その挑戦、受けるわ……
 
-### fateDefender.easygoing.seductive[]
+### fateDefender.polite.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.easygoing.seductive[1]`: 最高の締めにしましょう？ …全力でね
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.polite.normal[1]`: はい……最高の結末にしましょう
 
-### fateDefender.easygoing.polite[]
+### fateDefender.polite.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.easygoing.polite[1]`: 最高の締めにしましょう！ 全力です！
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.polite.bold[1]`: わかっています。全力で来てください
 
-### fateDefender.easygoing.ojousama[]
+### fateDefender.polite.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.easygoing.ojousama[1]`: 最高の結末にいたしましょう！
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.polite.shy[1]`: 運命なら…受けて立たないと、いけませんね…
 
-### fateDefender.easygoing.composed[]
+### fateDefender.polite.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.easygoing.composed[1]`: …うん。最高の締めにしよう
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.polite.easygoing[1]`: 最高の締めにしましょう！ 全力です！
 
-### fateDefender.earnest._default[]
+### fateDefender.composed.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.earnest._default[1]`: 全力でお受けします。悔いのない試合を
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.composed.normal[1]`: …うん。…最高の結末にしよう
 
-### fateDefender.earnest.seductive[]
+### fateDefender.composed.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.earnest.seductive[1]`: 全力でお受けするわ。悔いのない試合にしましょう
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.composed.bold[1]`: …わかってる。全力でおいで
 
-### fateDefender.earnest.composed[]
+### fateDefender.composed.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.earnest.composed[1]`: …全力で受けます
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.composed.quiet[1]`: ………（静かに微笑み、構える）
 
-### fateDefender.emotional._default[]
+### fateDefender.composed.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.emotional._default[1]`: 来なさい……！ 全部……受け止める……！
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.composed.easygoing[1]`: …うん。最高の締めにしよう
 
-### fateDefender.emotional.seductive[]
+### fateDefender.composed.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.emotional.seductive[1]`: 運命ね……っ……ふふ、その挑戦、受けるわ……
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.composed.earnest[1]`: …全力で受けます
 
-### fateDefender.emotional.composed[]
+### fateDefender.composed.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.emotional.composed[1]`: …来なよ。…全部受け止める
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.composed.emotional[1]`: …来なよ。…全部受け止める
 
 ## `RIVALRY_CONFRONTATION_LINES_70`
 
@@ -521,373 +521,373 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: カード編成時 宣戦布告テキスト（rivalry帯別）
 - 本数: 79
 
-### attacker.normal._default[]
+### attacker.standard.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal._default[1]`: 逃げ場はないよ。ここで終わらせるから
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal._default[2]`: あなたの存在が、邪魔だった。今夜それを終わらせる
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal._default[3]`: この関係もここで終わりだよ
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.normal[1]`: 逃げ場はないよ。ここで終わらせるから
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.normal[2]`: あなたの存在が、邪魔だった。今夜それを終わらせる
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.normal[3]`: この関係もここで終わりだよ
 
-### attacker.normal.ojousama[]
+### attacker.standard.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal.ojousama[1]`: もう逃がさなくてよ。ここで終わり。
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.bold[1]`: ずっと待ってた。今日、超えてみせる
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.bold[2]`: もう後はない。ここで決める
 
-### attacker.normal.delinquent[]
+### attacker.standard.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal.delinquent[1]`: 逃げ場はねえ。ここで終わりだ
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal.delinquent[2]`: てめえとの因縁、今夜ぶった斬る
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.quiet[1]`: ………（鋭い目で相手を見据える）
 
-### attacker.normal.cool[]
+### attacker.standard.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal.cool[1]`: ……逃がさない。終わらせる
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.shy[1]`: …怖いけど…ここで逃げたら自分を許せない…
 
-### attacker.normal.seductive[]
+### attacker.standard.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal.seductive[1]`: もう逃げられないわよ。終わりにしましょう
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.easygoing[1]`: いよいよだね。全部出し切るよ！
 
-### attacker.normal.polite[]
+### attacker.standard.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal.polite[1]`: 逃がしません。ここで…終わらせます
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.earnest[1]`: ここで終わらせます。覚悟してください
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.earnest[2]`: この因縁、終わりにします
 
-### attacker.normal.composed[]
+### attacker.standard.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.normal.composed[1]`: …逃がさないよ。ここで終わらせる
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.standard.emotional[1]`: もう……限界……今日で全部終わらせる……！
 
-### attacker.bold._default[]
+### attacker.ojousama.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.bold._default[1]`: ずっと待ってた。今日、超えてみせる
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.bold._default[2]`: もう後はない。ここで決める
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.ojousama.normal[1]`: もう逃がさなくてよ。ここで終わり。
 
-### attacker.bold.ojousama[]
+### attacker.ojousama.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.bold.ojousama[1]`: この日を待ちわびていたわ。何度も夢で見るくらいに。
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.ojousama.bold[1]`: この日を待ちわびていたわ。何度も夢で見るくらいに。
 
-### attacker.bold.delinquent[]
+### attacker.ojousama.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.bold.delinquent[1]`: ずっと待ってたんだ、この瞬間を
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.ojousama.easygoing[1]`: いよいよですわ！ 全力で参りますの
 
-### attacker.bold.cool[]
+### attacker.ojousama.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.bold.cool[1]`: ……待った。この日を
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.ojousama.earnest[1]`: 本日こそ、決着をつけさせていただきますわ
 
-### attacker.bold.seductive[]
+### attacker.delinquent.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.bold.seductive[1]`: ずっと待っていたのよ。今日…超えてみせるわ
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.delinquent.normal[1]`: 逃げ場はねえ。ここで終わりだ
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.delinquent.normal[2]`: てめえとの因縁、今夜ぶった斬る
 
-### attacker.bold.polite[]
+### attacker.delinquent.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.bold.polite[1]`: ずっと待っていました。今日、超えてみせます
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.delinquent.bold[1]`: ずっと待ってたんだ、この瞬間を
 
-### attacker.bold.composed[]
+### attacker.delinquent.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.bold.composed[1]`: …この日を待ってた。…終わらせるよ
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.delinquent.easygoing[1]`: いよいよだな。全力で行くぜ！
 
-### attacker.quiet._default[]
+### attacker.cool.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.quiet._default[1]`: ………（鋭い目で相手を見据える）
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.cool.normal[1]`: ……逃がさない。終わらせる
 
-### attacker.quiet.cool[]
+### attacker.cool.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.quiet.cool[1]`: ……ここで、終わる
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.cool.bold[1]`: ……待った。この日を
 
-### attacker.quiet.seductive[]
+### attacker.cool.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.quiet.seductive[1]`: ………逃がさない…わ
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.cool.quiet[1]`: ……ここで、終わる
 
-### attacker.quiet.polite[]
+### attacker.seductive.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.quiet.polite[1]`: ………ここで…終わらせます
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.seductive.normal[1]`: もう逃げられないわよ。終わりにしましょう
 
-### attacker.quiet.composed[]
+### attacker.seductive.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.quiet.composed[1]`: ………（静かに相手を見据える）
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.seductive.bold[1]`: ずっと待っていたのよ。今日…超えてみせるわ
 
-### attacker.shy._default[]
+### attacker.seductive.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.shy._default[1]`: …怖いけど…ここで逃げたら自分を許せない…
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.seductive.quiet[1]`: ………逃がさない…わ
 
-### attacker.shy.polite[]
+### attacker.seductive.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.shy.polite[1]`: あ、あの…そろそろ、決着を…
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.seductive.easygoing[1]`: いよいよね。…全部出し切るわ
 
-### attacker.easygoing._default[]
+### attacker.seductive.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.easygoing._default[1]`: いよいよだね。全部出し切るよ！
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.seductive.earnest[1]`: ここで終わらせるわ。覚悟して
 
-### attacker.easygoing.delinquent[]
+### attacker.seductive.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.easygoing.delinquent[1]`: いよいよだな。全力で行くぜ！
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.seductive.emotional[1]`: そろそろ決着ね……っ……ふふ……
 
-### attacker.easygoing.seductive[]
+### attacker.polite.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.easygoing.seductive[1]`: いよいよね。…全部出し切るわ
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.polite.normal[1]`: 逃がしません。ここで…終わらせます
 
-### attacker.easygoing.polite[]
+### attacker.polite.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.easygoing.polite[1]`: いよいよです！ 全部出し切ります！
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.polite.bold[1]`: ずっと待っていました。今日、超えてみせます
 
-### attacker.easygoing.ojousama[]
+### attacker.polite.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.easygoing.ojousama[1]`: いよいよですわ！ 全力で参りますの
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.polite.quiet[1]`: ………ここで…終わらせます
 
-### attacker.easygoing.composed[]
+### attacker.polite.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.easygoing.composed[1]`: いよいよだね。…全部出し切るよ
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.polite.shy[1]`: あ、あの…そろそろ、決着を…
 
-### attacker.earnest._default[]
+### attacker.polite.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.earnest._default[1]`: ここで終わらせます。覚悟してください
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.earnest._default[2]`: この因縁、終わりにします
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.polite.easygoing[1]`: いよいよです！ 全部出し切ります！
 
-### attacker.earnest.polite[]
+### attacker.polite.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.earnest.polite[1]`: 本日こそ、決着をつけさせていただきます
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.polite.earnest[1]`: 本日こそ、決着をつけさせていただきます
 
-### attacker.earnest.seductive[]
+### attacker.composed.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.earnest.seductive[1]`: ここで終わらせるわ。覚悟して
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.composed.normal[1]`: …逃がさないよ。ここで終わらせる
 
-### attacker.earnest.ojousama[]
+### attacker.composed.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.earnest.ojousama[1]`: 本日こそ、決着をつけさせていただきますわ
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.composed.bold[1]`: …この日を待ってた。…終わらせるよ
 
-### attacker.earnest.composed[]
+### attacker.composed.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.earnest.composed[1]`: …ここで終わらせます
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.composed.quiet[1]`: ………（静かに相手を見据える）
 
-### attacker.emotional._default[]
+### attacker.composed.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.emotional._default[1]`: もう……限界……今日で全部終わらせる……！
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.composed.easygoing[1]`: いよいよだね。…全部出し切るよ
 
-### attacker.emotional.seductive[]
+### attacker.composed.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.emotional.seductive[1]`: そろそろ決着ね……っ……ふふ……
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.composed.earnest[1]`: …ここで終わらせます
 
-### attacker.emotional.composed[]
+### attacker.composed.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.attacker.emotional.composed[1]`: …もういい。…今日で終わりだ
+- `RIVALRY_CONFRONTATION_LINES_70.attacker.composed.emotional[1]`: …もういい。…今日で終わりだ
 
-### defender.normal._default[]
+### defender.standard.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal._default[1]`: ……来なよ。相手してあげる
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal._default[2]`: 出来るものならやってみなよ！
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal._default[3]`: 終わりにできるか、やってみなよ！
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.normal[1]`: ……来なよ。相手してあげる
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.normal[2]`: 出来るものならやってみなよ！
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.normal[3]`: 終わりにできるか、やってみなよ！
 
-### defender.normal.ojousama[]
+### defender.standard.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal.ojousama[1]`: いらっしゃい。相手をしてあげてよ。
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.bold[1]`: ……同感。だから本気で行くよ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.bold[2]`: 夢のままで終わらせてあげる
 
-### defender.normal.delinquent[]
+### defender.standard.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal.delinquent[1]`: 来いよ。返り討ちにしてやる
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal.delinquent[2]`: 打てるもんなら打ってみろ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.quiet[1]`: ………（静かに構える）
 
-### defender.normal.cool[]
+### defender.standard.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal.cool[1]`: ……来い。迎え撃つ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.shy[1]`: …わかりました。…受け止めます…
 
-### defender.normal.seductive[]
+### defender.standard.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal.seductive[1]`: いいわよ。迎えてあげる
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.easygoing[1]`: おっけー。こっちも全力だよ！
 
-### defender.normal.polite[]
+### defender.standard.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal.polite[1]`: …どうぞ。お相手します
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.earnest[1]`: お受けします。全力で
 
-### defender.normal.composed[]
+### defender.standard.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.normal.composed[1]`: …いいよ。来なよ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.emotional[1]`: 来なさい……！ 全力で……！
 
-### defender.bold._default[]
+### defender.ojousama.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.bold._default[1]`: ……同感。だから本気で行くよ
-- `RIVALRY_CONFRONTATION_LINES_70.defender.bold._default[2]`: 夢のままで終わらせてあげる
+- `RIVALRY_CONFRONTATION_LINES_70.defender.ojousama.normal[1]`: いらっしゃい。相手をしてあげてよ。
 
-### defender.bold.ojousama[]
+### defender.ojousama.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.bold.ojousama[1]`: 同感ね。少しは本気にさせてちょうだい…
+- `RIVALRY_CONFRONTATION_LINES_70.defender.ojousama.bold[1]`: 同感ね。少しは本気にさせてちょうだい…
 
-### defender.bold.delinquent[]
+### defender.ojousama.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.bold.delinquent[1]`: ああ、本気で潰しに行く
+- `RIVALRY_CONFRONTATION_LINES_70.defender.ojousama.easygoing[1]`: よろしくてよ！ 全力でお相手いたしますわ
 
-### defender.bold.cool[]
+### defender.ojousama.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.bold.cool[1]`: ……同感だ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.ojousama.earnest[1]`: 全力でお相手させていただきますわ
 
-### defender.bold.seductive[]
+### defender.delinquent.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.bold.seductive[1]`: 同感よ。…本気で行くわ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.delinquent.normal[1]`: 来いよ。返り討ちにしてやる
+- `RIVALRY_CONFRONTATION_LINES_70.defender.delinquent.normal[2]`: 打てるもんなら打ってみろ
 
-### defender.bold.polite[]
+### defender.delinquent.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.bold.polite[1]`: 同感です。本気で参ります
+- `RIVALRY_CONFRONTATION_LINES_70.defender.delinquent.bold[1]`: ああ、本気で潰しに行く
 
-### defender.bold.composed[]
+### defender.delinquent.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.bold.composed[1]`: …同感だね。本気で行くよ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.delinquent.easygoing[1]`: おう、来いよ！ 全力だ！
 
-### defender.quiet._default[]
+### defender.cool.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.quiet._default[1]`: ………（静かに構える）
+- `RIVALRY_CONFRONTATION_LINES_70.defender.cool.normal[1]`: ……来い。迎え撃つ
 
-### defender.quiet.cool[]
+### defender.cool.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.quiet.cool[1]`: ……来い
+- `RIVALRY_CONFRONTATION_LINES_70.defender.cool.bold[1]`: ……同感だ
 
-### defender.quiet.seductive[]
+### defender.cool.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.quiet.seductive[1]`: ………来なさい
+- `RIVALRY_CONFRONTATION_LINES_70.defender.cool.quiet[1]`: ……来い
 
-### defender.quiet.polite[]
+### defender.seductive.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.quiet.polite[1]`: ………お相手…します
+- `RIVALRY_CONFRONTATION_LINES_70.defender.seductive.normal[1]`: いいわよ。迎えてあげる
 
-### defender.quiet.composed[]
+### defender.seductive.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.quiet.composed[1]`: ………（静かに構える）…来なよ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.seductive.bold[1]`: 同感よ。…本気で行くわ
 
-### defender.shy._default[]
+### defender.seductive.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.shy._default[1]`: …わかりました。…受け止めます…
+- `RIVALRY_CONFRONTATION_LINES_70.defender.seductive.quiet[1]`: ………来なさい
 
-### defender.shy.polite[]
+### defender.seductive.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.shy.polite[1]`: は、はい…お受けします…
+- `RIVALRY_CONFRONTATION_LINES_70.defender.seductive.easygoing[1]`: いいわよ。全力で受けて立つわ
 
-### defender.easygoing._default[]
+### defender.seductive.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.easygoing._default[1]`: おっけー。こっちも全力だよ！
+- `RIVALRY_CONFRONTATION_LINES_70.defender.seductive.earnest[1]`: 全力でお相手するわ。覚悟して
 
-### defender.easygoing.delinquent[]
+### defender.seductive.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.easygoing.delinquent[1]`: おう、来いよ！ 全力だ！
+- `RIVALRY_CONFRONTATION_LINES_70.defender.seductive.emotional[1]`: 受けるわ……っ……ふふ、いつでもどうぞ……
 
-### defender.easygoing.seductive[]
+### defender.polite.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.easygoing.seductive[1]`: いいわよ。全力で受けて立つわ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.polite.normal[1]`: …どうぞ。お相手します
 
-### defender.easygoing.polite[]
+### defender.polite.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.easygoing.polite[1]`: おっけーです！ 全力でお相手します！
+- `RIVALRY_CONFRONTATION_LINES_70.defender.polite.bold[1]`: 同感です。本気で参ります
 
-### defender.easygoing.ojousama[]
+### defender.polite.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.easygoing.ojousama[1]`: よろしくてよ！ 全力でお相手いたしますわ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.polite.quiet[1]`: ………お相手…します
 
-### defender.easygoing.composed[]
+### defender.polite.shy[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.easygoing.composed[1]`: おっけー。全力でいくよ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.polite.shy[1]`: は、はい…お受けします…
 
-### defender.earnest._default[]
+### defender.polite.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.earnest._default[1]`: お受けします。全力で
+- `RIVALRY_CONFRONTATION_LINES_70.defender.polite.easygoing[1]`: おっけーです！ 全力でお相手します！
 
-### defender.earnest.polite[]
+### defender.polite.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.earnest.polite[1]`: 全力でお相手させていただきます
+- `RIVALRY_CONFRONTATION_LINES_70.defender.polite.earnest[1]`: 全力でお相手させていただきます
 
-### defender.earnest.seductive[]
+### defender.composed.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.earnest.seductive[1]`: 全力でお相手するわ。覚悟して
+- `RIVALRY_CONFRONTATION_LINES_70.defender.composed.normal[1]`: …いいよ。来なよ
 
-### defender.earnest.ojousama[]
+### defender.composed.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.earnest.ojousama[1]`: 全力でお相手させていただきますわ
+- `RIVALRY_CONFRONTATION_LINES_70.defender.composed.bold[1]`: …同感だね。本気で行くよ
 
-### defender.earnest.composed[]
+### defender.composed.quiet[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.earnest.composed[1]`: …全力でお相手します
+- `RIVALRY_CONFRONTATION_LINES_70.defender.composed.quiet[1]`: ………（静かに構える）…来なよ
 
-### defender.emotional._default[]
+### defender.composed.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.emotional._default[1]`: 来なさい……！ 全力で……！
+- `RIVALRY_CONFRONTATION_LINES_70.defender.composed.easygoing[1]`: おっけー。全力でいくよ
 
-### defender.emotional.seductive[]
+### defender.composed.earnest[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.emotional.seductive[1]`: 受けるわ……っ……ふふ、いつでもどうぞ……
+- `RIVALRY_CONFRONTATION_LINES_70.defender.composed.earnest[1]`: …全力でお相手します
 
-### defender.emotional.composed[]
+### defender.composed.emotional[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.emotional.composed[1]`: …来なよ。…全力で
+- `RIVALRY_CONFRONTATION_LINES_70.defender.composed.emotional[1]`: …来なよ。…全力で
 
 ## `RIVALRY_CONFRONTATION_LINES_90`
 
 - 出典: `src/data.js`
 - 本数: 73
 
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.normal._default[1]`: ……この日を待ちに待った。
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.normal._default[2]`: あんたを超えなければ、終わらせられない
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.normal.ojousama[1]`: この日をどれほど待ちわびたことか…
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.normal.delinquent[1]`: ……ずっと待ってた。この日を
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.normal.cool[1]`: ……来た。この日が
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.normal.seductive[1]`: ……ようやく、この日が来たわね
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.normal.polite[1]`: ……この日を、ずっと待っておりました
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.normal.composed[1]`: …この日を待ってた
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.bold._default[1]`: 全部賭ける。残らず全部
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.bold._default[2]`: ……行くよ。最後の戦い
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.bold.cool[1]`: ……全てを賭ける
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.bold.delinquent[1]`: 全部賭ける。てめえを超えてやる
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.bold.ojousama[1]`: 今日は全力で……つぶしてあげる
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.bold.seductive[1]`: 全部賭けるわ。…行くわよ
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.bold.polite[1]`: 全てを賭けます。行かせていただきます
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.bold.composed[1]`: …全部出す。今日で
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.quiet._default[1]`: ………（言葉はない。ただ、真っ直ぐ見据えている）
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.quiet.seductive[1]`: ………（言葉はなく、ただ見つめている）
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.quiet.polite[1]`: ………行き…ます
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.quiet.composed[1]`: ………（静かに、真っ直ぐ見据えている）
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.shy._default[1]`: ………もう何も言わない。…行きます
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.shy.polite[1]`: ………ずっと、待っておりました…この日を…
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.easygoing._default[1]`: ……全部、出し切る。今日で
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.easygoing.polite[1]`: ……この日を待っていました。全部出し切ります
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.easygoing.ojousama[1]`: ……この日を、ずっと待っておりましたの
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.easygoing.seductive[1]`: ……ようやく、この日ね。全部、出し切るわ
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.easygoing.delinquent[1]`: ……この日を待ってたぜ。全部ぶつけてやる
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.easygoing.composed[1]`: …全部出し切る。今日で
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.earnest._default[1]`: 全てを賭けます。この一戦に
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.earnest.polite[1]`: ……この日を、ずっと待っておりました。全てを賭けます
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.earnest.ojousama[1]`: ……この日を、ずっと待っておりましたわ。全てを賭けますの
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.earnest.seductive[1]`: ……この日をずっと待っていたの。全てを賭けるわ
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.earnest.composed[1]`: …全てを賭けます
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.emotional._default[1]`: ……もう……言葉にならない……行くよ……！
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.emotional.seductive[1]`: ……この日を…ずっと待ってた……っ……行くわよ……!
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.emotional.composed[1]`: ………行くよ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.normal._default[1]`: ……私もよ。
-- `RIVALRY_CONFRONTATION_LINES_90.defender.normal._default[2]`: ……なら、超えてみせなさいよ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.normal.ojousama[1]`: ……ええ。もう言葉は不要ね
-- `RIVALRY_CONFRONTATION_LINES_90.defender.normal.delinquent[1]`: ……ああ。来いよ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.normal.cool[1]`: ……ああ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.normal.seductive[1]`: ……ええ。もう何も言わないわ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.normal.polite[1]`: ……はい。もう言葉は…いりません
-- `RIVALRY_CONFRONTATION_LINES_90.defender.normal.composed[1]`: …ええ。…もう言葉はいらない
-- `RIVALRY_CONFRONTATION_LINES_90.defender.bold._default[1]`: ……ええ。私も同じ気持ち
-- `RIVALRY_CONFRONTATION_LINES_90.defender.bold._default[2]`: ……受けて立つ。全部
-- `RIVALRY_CONFRONTATION_LINES_90.defender.bold.cool[1]`: ……受けて立つ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.bold.delinquent[1]`: ……おう。来い
-- `RIVALRY_CONFRONTATION_LINES_90.defender.bold.ojousama[1]`: ……ええ。相手をしてあげる
-- `RIVALRY_CONFRONTATION_LINES_90.defender.bold.seductive[1]`: ……ええ。全力で行くわ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.bold.polite[1]`: ……はい。受けて立ちます
-- `RIVALRY_CONFRONTATION_LINES_90.defender.bold.composed[1]`: …うん。受けて立つ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.quiet._default[1]`: ………（静かに頷く）
-- `RIVALRY_CONFRONTATION_LINES_90.defender.quiet.cool[1]`: ………（目を閉じ、開く）
-- `RIVALRY_CONFRONTATION_LINES_90.defender.quiet.seductive[1]`: ………（静かに目を閉じ、開く）
-- `RIVALRY_CONFRONTATION_LINES_90.defender.quiet.polite[1]`: ………（静かに頷く）…はい
-- `RIVALRY_CONFRONTATION_LINES_90.defender.quiet.composed[1]`: ………（静かに頷く）
-- `RIVALRY_CONFRONTATION_LINES_90.defender.shy._default[1]`: ………うん（静かに頷く）
-- `RIVALRY_CONFRONTATION_LINES_90.defender.shy.polite[1]`: ………はい…受けて、立ちます…
-- `RIVALRY_CONFRONTATION_LINES_90.defender.easygoing._default[1]`: ……うん。もう、何も言わなくていい
-- `RIVALRY_CONFRONTATION_LINES_90.defender.easygoing.polite[1]`: ……はい。もう、言葉はいりません
-- `RIVALRY_CONFRONTATION_LINES_90.defender.easygoing.ojousama[1]`: ……ええ、もう言葉は不要ですわ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.easygoing.seductive[1]`: ……ええ。言葉は、いらないわね
-- `RIVALRY_CONFRONTATION_LINES_90.defender.easygoing.delinquent[1]`: ……ああ。来いよ、全部受けてやる
-- `RIVALRY_CONFRONTATION_LINES_90.defender.easygoing.composed[1]`: …うん。言葉はいらない
-- `RIVALRY_CONFRONTATION_LINES_90.defender.earnest._default[1]`: ……はい。全力で参ります
-- `RIVALRY_CONFRONTATION_LINES_90.defender.earnest.polite[1]`: ……はい。全力で、お受けいたします
-- `RIVALRY_CONFRONTATION_LINES_90.defender.earnest.ojousama[1]`: ……ええ、全力でお受けしますわ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.earnest.seductive[1]`: ……ええ。全力で受けるわ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.earnest.composed[1]`: …はい。全力で
-- `RIVALRY_CONFRONTATION_LINES_90.defender.emotional._default[1]`: ……ええ……！ 行きましょう……！
-- `RIVALRY_CONFRONTATION_LINES_90.defender.emotional.seductive[1]`: ……ええ……!来なさい、全部受け止めるわ……!
-- `RIVALRY_CONFRONTATION_LINES_90.defender.emotional.composed[1]`: …ええ。…行こう
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.standard.normal[1]`: ……この日を待ちに待った。
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.standard.normal[2]`: あんたを超えなければ、終わらせられない
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.standard.bold[1]`: 全部賭ける。残らず全部
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.standard.bold[2]`: ……行くよ。最後の戦い
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.standard.quiet[1]`: ………（言葉はない。ただ、真っ直ぐ見据えている）
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.standard.shy[1]`: ………もう何も言わない。…行きます
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.standard.easygoing[1]`: ……全部、出し切る。今日で
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.standard.earnest[1]`: 全てを賭けます。この一戦に
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.standard.emotional[1]`: ……もう……言葉にならない……行くよ……！
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.ojousama.normal[1]`: この日をどれほど待ちわびたことか…
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.ojousama.bold[1]`: 今日は全力で……つぶしてあげる
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.ojousama.easygoing[1]`: ……この日を、ずっと待っておりましたの
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.ojousama.earnest[1]`: ……この日を、ずっと待っておりましたわ。全てを賭けますの
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.delinquent.normal[1]`: ……ずっと待ってた。この日を
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.delinquent.bold[1]`: 全部賭ける。てめえを超えてやる
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.delinquent.easygoing[1]`: ……この日を待ってたぜ。全部ぶつけてやる
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.cool.normal[1]`: ……来た。この日が
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.cool.bold[1]`: ……全てを賭ける
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.normal[1]`: ……ようやく、この日が来たわね
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.bold[1]`: 全部賭けるわ。…行くわよ
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.quiet[1]`: ………（言葉はなく、ただ見つめている）
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.easygoing[1]`: ……ようやく、この日ね。全部、出し切るわ
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.earnest[1]`: ……この日をずっと待っていたの。全てを賭けるわ
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.emotional[1]`: ……この日を…ずっと待ってた……っ……行くわよ……!
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.polite.normal[1]`: ……この日を、ずっと待っておりました
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.polite.bold[1]`: 全てを賭けます。行かせていただきます
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.polite.quiet[1]`: ………行き…ます
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.polite.shy[1]`: ………ずっと、待っておりました…この日を…
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.polite.easygoing[1]`: ……この日を待っていました。全部出し切ります
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.polite.earnest[1]`: ……この日を、ずっと待っておりました。全てを賭けます
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.composed.normal[1]`: …この日を待ってた
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.composed.bold[1]`: …全部出す。今日で
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.composed.quiet[1]`: ………（静かに、真っ直ぐ見据えている）
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.composed.easygoing[1]`: …全部出し切る。今日で
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.composed.earnest[1]`: …全てを賭けます
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.composed.emotional[1]`: ………行くよ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.standard.normal[1]`: ……私もよ。
+- `RIVALRY_CONFRONTATION_LINES_90.defender.standard.normal[2]`: ……なら、超えてみせなさいよ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.standard.bold[1]`: ……ええ。私も同じ気持ち
+- `RIVALRY_CONFRONTATION_LINES_90.defender.standard.bold[2]`: ……受けて立つ。全部
+- `RIVALRY_CONFRONTATION_LINES_90.defender.standard.quiet[1]`: ………（静かに頷く）
+- `RIVALRY_CONFRONTATION_LINES_90.defender.standard.shy[1]`: ………うん（静かに頷く）
+- `RIVALRY_CONFRONTATION_LINES_90.defender.standard.easygoing[1]`: ……うん。もう、何も言わなくていい
+- `RIVALRY_CONFRONTATION_LINES_90.defender.standard.earnest[1]`: ……はい。全力で参ります
+- `RIVALRY_CONFRONTATION_LINES_90.defender.standard.emotional[1]`: ……ええ……！ 行きましょう……！
+- `RIVALRY_CONFRONTATION_LINES_90.defender.ojousama.normal[1]`: ……ええ。もう言葉は不要ね
+- `RIVALRY_CONFRONTATION_LINES_90.defender.ojousama.bold[1]`: ……ええ。相手をしてあげる
+- `RIVALRY_CONFRONTATION_LINES_90.defender.ojousama.easygoing[1]`: ……ええ、もう言葉は不要ですわ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.ojousama.earnest[1]`: ……ええ、全力でお受けしますわ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.delinquent.normal[1]`: ……ああ。来いよ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.delinquent.bold[1]`: ……おう。来い
+- `RIVALRY_CONFRONTATION_LINES_90.defender.delinquent.easygoing[1]`: ……ああ。来いよ、全部受けてやる
+- `RIVALRY_CONFRONTATION_LINES_90.defender.cool.normal[1]`: ……ああ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.cool.bold[1]`: ……受けて立つ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.cool.quiet[1]`: ………（目を閉じ、開く）
+- `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.normal[1]`: ……ええ。もう何も言わないわ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.bold[1]`: ……ええ。全力で行くわ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.quiet[1]`: ………（静かに目を閉じ、開く）
+- `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.easygoing[1]`: ……ええ。言葉は、いらないわね
+- `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.earnest[1]`: ……ええ。全力で受けるわ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.emotional[1]`: ……ええ……!来なさい、全部受け止めるわ……!
+- `RIVALRY_CONFRONTATION_LINES_90.defender.polite.normal[1]`: ……はい。もう言葉は…いりません
+- `RIVALRY_CONFRONTATION_LINES_90.defender.polite.bold[1]`: ……はい。受けて立ちます
+- `RIVALRY_CONFRONTATION_LINES_90.defender.polite.quiet[1]`: ………（静かに頷く）…はい
+- `RIVALRY_CONFRONTATION_LINES_90.defender.polite.shy[1]`: ………はい…受けて、立ちます…
+- `RIVALRY_CONFRONTATION_LINES_90.defender.polite.easygoing[1]`: ……はい。もう、言葉はいりません
+- `RIVALRY_CONFRONTATION_LINES_90.defender.polite.earnest[1]`: ……はい。全力で、お受けいたします
+- `RIVALRY_CONFRONTATION_LINES_90.defender.composed.normal[1]`: …ええ。…もう言葉はいらない
+- `RIVALRY_CONFRONTATION_LINES_90.defender.composed.bold[1]`: …うん。受けて立つ
+- `RIVALRY_CONFRONTATION_LINES_90.defender.composed.quiet[1]`: ………（静かに頷く）
+- `RIVALRY_CONFRONTATION_LINES_90.defender.composed.easygoing[1]`: …うん。言葉はいらない
+- `RIVALRY_CONFRONTATION_LINES_90.defender.composed.earnest[1]`: …はい。全力で
+- `RIVALRY_CONFRONTATION_LINES_90.defender.composed.emotional[1]`: …ええ。…行こう
 
 ## `RIVALRY_RESOLUTION_LINES`
 
@@ -895,134 +895,134 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 因縁決着システム — 試合後の決着セリフ（personality×archetype）
 - 本数: 128
 
-- `RIVALRY_RESOLUTION_LINES.winner.normal._default[1]`: 一つ、決着がついた…でもまだ終わりじゃない気がする
-- `RIVALRY_RESOLUTION_LINES.winner.normal._default[2]`: 勝てた…けど、ここからだと思う
-- `RIVALRY_RESOLUTION_LINES.winner.normal.ojousama[1]`: 一つ決着がついたわね…でも、まだ終わった気がしない
-- `RIVALRY_RESOLUTION_LINES.winner.normal.delinquent[1]`: ひとまず決着だ…でも、なんだろ。まだモヤモヤすんな
-- `RIVALRY_RESOLUTION_LINES.winner.normal.seductive[1]`: ひとつ片がついたわ…でも、まだ気になるの
-- `RIVALRY_RESOLUTION_LINES.winner.normal.cool[1]`: ……一つ、片がついた。……だが、これで終わりではない
-- `RIVALRY_RESOLUTION_LINES.winner.normal.polite[1]`: 一つ決着がつきました…でも…まだ終わった気がしません
-- `RIVALRY_RESOLUTION_LINES.winner.normal.composed[1]`: …一つ片がついた。…でも、まだ終わった気はしないね
-- `RIVALRY_RESOLUTION_LINES.winner.bold._default[1]`: 勝った。でもこの程度じゃ終わらないでしょ？
-- `RIVALRY_RESOLUTION_LINES.winner.bold._default[2]`: 今日は私の勝ち。…次はどうなるかわからないけど
-- `RIVALRY_RESOLUTION_LINES.winner.bold.ojousama[1]`: 当然の勝利。…でも、これで折れては居ないのでしょうね
-- `RIVALRY_RESOLUTION_LINES.winner.bold.delinquent[1]`: 一個返したぞ。…でもまだ足りねえ気がすんだよ
-- `RIVALRY_RESOLUTION_LINES.winner.bold.cool[1]`: …一つ片がついた。…まだ先がある
-- `RIVALRY_RESOLUTION_LINES.winner.bold.seductive[1]`: 今日は私の勝ち。…でも、まだ飽きてないわよ？
-- `RIVALRY_RESOLUTION_LINES.winner.bold.polite[1]`: 今日は勝たせていただきました。…でもこの程度では終わりませんね
-- `RIVALRY_RESOLUTION_LINES.winner.bold.composed[1]`: …一つ勝った。…でもまだ先があるだろうね
-- `RIVALRY_RESOLUTION_LINES.winner.quiet._default[1]`: ………一つ、終わった（でもまだ、目が離せない）
-- `RIVALRY_RESOLUTION_LINES.winner.quiet.cool[1]`: …一区切り。…でも、終わった気はしない
-- `RIVALRY_RESOLUTION_LINES.winner.quiet.polite[1]`: …ひとまず…決着です…でも…
-- `RIVALRY_RESOLUTION_LINES.winner.quiet.seductive[1]`: ………（相手を見つめ）…まだよ
-- `RIVALRY_RESOLUTION_LINES.winner.quiet.composed[1]`: …一つ、終わったか
-- `RIVALRY_RESOLUTION_LINES.winner.shy._default[1]`: か、勝てた…けど…なんだろ…終わった気がしない…
-- `RIVALRY_RESOLUTION_LINES.winner.shy.polite[1]`: か、勝てました…これで、終わりにしましょう…
-- `RIVALRY_RESOLUTION_LINES.winner.easygoing._default[1]`: よっしゃ一個勝ち！ …でもさ、まだ続きがありそうだよね
-- `RIVALRY_RESOLUTION_LINES.winner.easygoing.delinquent[1]`: いよっしゃ！ …でもよ、なんかまだスッキリしねえんだよな
-- `RIVALRY_RESOLUTION_LINES.winner.easygoing.seductive[1]`: 勝っちゃった〜。…でもね、まだ終わってない気がするの
-- `RIVALRY_RESOLUTION_LINES.winner.easygoing.polite[1]`: 一つ勝たせていただきました！ …でもまだ続きがありそうですよね
-- `RIVALRY_RESOLUTION_LINES.winner.easygoing.ojousama[1]`: 一つ勝ちましたわ！ …でもまだ終わった気がしませんの
-- `RIVALRY_RESOLUTION_LINES.winner.easygoing.composed[1]`: 勝ったか。…でもまだ、終わった気はしないね
-- `RIVALRY_RESOLUTION_LINES.winner.earnest._default[1]`: 一つ決着がつきました。…でも、まだ続く気がします
-- `RIVALRY_RESOLUTION_LINES.winner.earnest._default[2]`: 勝ちました…けど、ここからが本番だと思っています
-- `RIVALRY_RESOLUTION_LINES.winner.earnest.polite[1]`: ひとまず決着です…でも、まだ先がある気がするんです
-- `RIVALRY_RESOLUTION_LINES.winner.earnest.ojousama[1]`: ひとつ結果を出しましたわ…でも、まだ終わりではありませんわね
-- `RIVALRY_RESOLUTION_LINES.winner.earnest.seductive[1]`: 一つ勝ったわ。…でも、これで終わりとは思えないの
-- `RIVALRY_RESOLUTION_LINES.winner.earnest.composed[1]`: …一つ決着がつきました。…でもまだ、先がある気がします
-- `RIVALRY_RESOLUTION_LINES.winner.emotional._default[1]`: 勝った…！でも…なんで涙が止まらないの…まだ終わってないのに…！
-- `RIVALRY_RESOLUTION_LINES.winner.emotional.seductive[1]`: 勝ったわ……っ……ふふ、これでお終いね……
-- `RIVALRY_RESOLUTION_LINES.winner.emotional.composed[1]`: …勝った。…でもなんだろう、この感じ。…まだ終わらないね
-- `RIVALRY_RESOLUTION_LINES.loser.normal._default[1]`: 負けた…悔しい。でも、これで終わりなんかじゃない
-- `RIVALRY_RESOLUTION_LINES.loser.normal._default[2]`: 悔しい。今日は負けた。…でも、次がある。絶対に
-- `RIVALRY_RESOLUTION_LINES.loser.normal.ojousama[1]`: 負けたわね…でも、これで終わりとは思っていないの
-- `RIVALRY_RESOLUTION_LINES.loser.normal.delinquent[1]`: くそっ…負けた。…でもこれで終わりだと思うなよ
-- `RIVALRY_RESOLUTION_LINES.loser.normal.seductive[1]`: 負けたわ…でも、まだ終わりじゃないの
-- `RIVALRY_RESOLUTION_LINES.loser.normal.cool[1]`: ……負けた。……だが、終わりではない
-- `RIVALRY_RESOLUTION_LINES.loser.normal.polite[1]`: 負けました…悔しいです。でも…次は必ず
-- `RIVALRY_RESOLUTION_LINES.loser.normal.composed[1]`: …負けたか。…でも、これで終わりじゃないよ
-- `RIVALRY_RESOLUTION_LINES.loser.bold._default[1]`: 今日は完敗。…でも、見てなさいよ！
-- `RIVALRY_RESOLUTION_LINES.loser.bold._default[2]`: この借りは必ず返す。…次こそは
-- `RIVALRY_RESOLUTION_LINES.loser.bold.ojousama[1]`: 負けた？…ですが、次がありましてよ！
-- `RIVALRY_RESOLUTION_LINES.loser.bold.delinquent[1]`: くっそ…完敗だ。…だがこの借りは絶対返すからな
-- `RIVALRY_RESOLUTION_LINES.loser.bold.cool[1]`: …認める。…だが、次がある
-- `RIVALRY_RESOLUTION_LINES.loser.bold.seductive[1]`: 完敗ね…でも、次は私の番よ。覚えておきなさい
-- `RIVALRY_RESOLUTION_LINES.loser.bold.polite[1]`: 今日は完敗です。…ですが、次がございます
-- `RIVALRY_RESOLUTION_LINES.loser.bold.composed[1]`: …完敗だね。…でも、次がある
-- `RIVALRY_RESOLUTION_LINES.loser.quiet._default[1]`: ………（拳を握りしめ、相手の背中を見ている）
-- `RIVALRY_RESOLUTION_LINES.loser.quiet.cool[1]`: …今日は負けた。…次だ
-- `RIVALRY_RESOLUTION_LINES.loser.quiet.polite[1]`: …負けました。…でも…次は、必ず…
-- `RIVALRY_RESOLUTION_LINES.loser.quiet.seductive[1]`: ………（拳を握る）…次は、ないわよ
-- `RIVALRY_RESOLUTION_LINES.loser.quiet.composed[1]`: …負けたか。…次だ
-- `RIVALRY_RESOLUTION_LINES.loser.shy._default[1]`: …負けちゃった…悔しい…でも…次こそは…絶対…
-- `RIVALRY_RESOLUTION_LINES.loser.shy.polite[1]`: ま、負けました…これで、終わりですね…
-- `RIVALRY_RESOLUTION_LINES.loser.easygoing._default[1]`: 負けた〜…くやし〜！ でもまだ続くよね？ 次は負けないから！
-- `RIVALRY_RESOLUTION_LINES.loser.easygoing.delinquent[1]`: ちくしょ〜…負けた！ でもよ、次は絶対やり返すからな！
-- `RIVALRY_RESOLUTION_LINES.loser.easygoing.seductive[1]`: 負けちゃったわ〜…でもね、次は覚悟してね？
-- `RIVALRY_RESOLUTION_LINES.loser.easygoing.polite[1]`: 負けちゃいました…！ でも次は負けません！
-- `RIVALRY_RESOLUTION_LINES.loser.easygoing.ojousama[1]`: 負けてしまいましたわ…でも次はお返ししますの
-- `RIVALRY_RESOLUTION_LINES.loser.easygoing.composed[1]`: 負けたか。…ま、次があるさ
-- `RIVALRY_RESOLUTION_LINES.loser.earnest._default[1]`: 負けました…でも諦めません。必ず借りを返します
-- `RIVALRY_RESOLUTION_LINES.loser.earnest._default[2]`: 悔しいです。…でも、この悔しさを次に活かします
-- `RIVALRY_RESOLUTION_LINES.loser.earnest.polite[1]`: 負けました…でも、次の機会に必ず結果を出してみせます
-- `RIVALRY_RESOLUTION_LINES.loser.earnest.ojousama[1]`: 負けましたわ…ですが、この借りは必ずお返ししますわ
-- `RIVALRY_RESOLUTION_LINES.loser.earnest.seductive[1]`: 負けたわ…でも、この悔しさがあるから次がある。そう思うの
-- `RIVALRY_RESOLUTION_LINES.loser.earnest.composed[1]`: …負けました。…でも、次は変えてみせます
-- `RIVALRY_RESOLUTION_LINES.loser.emotional._default[1]`: 悔しい…！悔しい…！ でも…絶対…次は…負けない…！
-- `RIVALRY_RESOLUTION_LINES.loser.emotional.seductive[1]`: 負けたわ……っ……ふふ、悔しいけど終わりね……
-- `RIVALRY_RESOLUTION_LINES.loser.emotional.composed[1]`: …っ…悔しいね。…でも、次こそは
-- `RIVALRY_RESOLUTION_LINES.fateWinner.normal._default[1]`: ずっと追いかけてきた答えが…一つ、出た。…でもまだ、終わらない
-- `RIVALRY_RESOLUTION_LINES.fateWinner.normal.ojousama[1]`: ようやく…一つ答えがたわね。…でも、終わりではないわよ
-- `RIVALRY_RESOLUTION_LINES.fateWinner.normal.delinquent[1]`: やっと…一つ決着がついた…でもよ、なんかまだ胸がざわつくんだ
-- `RIVALRY_RESOLUTION_LINES.fateWinner.normal.seductive[1]`: ようやく一つ答えが出たわ…でも、まだ終わりじゃないの
-- `RIVALRY_RESOLUTION_LINES.fateWinner.normal.cool[1]`: ……一つ、答えが出た。……だが、まだ終わらない
-- `RIVALRY_RESOLUTION_LINES.fateWinner.normal.polite[1]`: ようやく…一つ答えが出ました。…でもまだ終わりではありません
-- `RIVALRY_RESOLUTION_LINES.fateWinner.normal.composed[1]`: …ようやく一つ答えが出た。…でも、まだ終わらないだろうね
-- `RIVALRY_RESOLUTION_LINES.fateWinner.bold._default[1]`: 一つ勝った…でも、まだ先がある。そうでしょ？
-- `RIVALRY_RESOLUTION_LINES.fateWinner.bold._default[2]`: これで一区切りか。…でも全部終わりってわけじゃないよね？
-- `RIVALRY_RESOLUTION_LINES.fateWinner.bold.cool[1]`: …一つ決着がついた。…だが、まだ先がある
-- `RIVALRY_RESOLUTION_LINES.fateWinner.bold.polite[1]`: 一つ勝ちました。…でもまだ先がございます
-- `RIVALRY_RESOLUTION_LINES.fateWinner.bold.composed[1]`: …やっと一つ。…でも、まだ先がある
-- `RIVALRY_RESOLUTION_LINES.fateWinner.quiet._default[1]`: ………（深く息を吐く。目は、まだ相手を追っている）
-- `RIVALRY_RESOLUTION_LINES.fateWinner.quiet.seductive[1]`: ………（深い息）…でも、まだよ
-- `RIVALRY_RESOLUTION_LINES.fateWinner.quiet.composed[1]`: ………（静かに息を吐く）…一つ、か
-- `RIVALRY_RESOLUTION_LINES.fateWinner.shy._default[1]`: 勝った…のかな…でも…終わった気がしない…（涙が溢れている）
-- `RIVALRY_RESOLUTION_LINES.fateWinner.shy.polite[1]`: 運命の戦いに…か、勝ちました…
-- `RIVALRY_RESOLUTION_LINES.fateWinner.easygoing._default[1]`: やっと一つ勝てた…！ でもさ、まだ終わってないよね…？
-- `RIVALRY_RESOLUTION_LINES.fateWinner.easygoing.polite[1]`: やっと一つ勝てました…！ でもまだ終わってないですよね…？
-- `RIVALRY_RESOLUTION_LINES.fateWinner.easygoing.ojousama[1]`: やっと一つ勝ちましたわ…！ でもまだ終わっておりませんわね
-- `RIVALRY_RESOLUTION_LINES.fateWinner.easygoing.composed[1]`: やっと一つ勝てた。…でも、まだ終わってないね
-- `RIVALRY_RESOLUTION_LINES.fateWinner.earnest._default[1]`: 長い戦いでした…一つ答えは出た。でも、ここからだと思います
-- `RIVALRY_RESOLUTION_LINES.fateWinner.earnest.composed[1]`: …長かった。一つ答えが出た。…でも、まだ先がある
-- `RIVALRY_RESOLUTION_LINES.fateWinner.emotional._default[1]`: 勝った…！やっと…！ でも…まだ泣きたくない…まだ続くから…！（涙）
-- `RIVALRY_RESOLUTION_LINES.fateWinner.emotional.seductive[1]`: 運命の戦いに勝った……っ……ふふ、最高の瞬間だったわ……
-- `RIVALRY_RESOLUTION_LINES.fateWinner.emotional.composed[1]`: …っ…やっと。…でも、まだだよ。…まだ続くから
-- `RIVALRY_RESOLUTION_LINES.fateLoser.normal._default[1]`: 今日は…敵わなかった。でも、この悔しさを……次へ！
-- `RIVALRY_RESOLUTION_LINES.fateLoser.normal.ojousama[1]`: 今日は敵わなかったけれど、これで終わりではなくてよ
-- `RIVALRY_RESOLUTION_LINES.fateLoser.normal.delinquent[1]`: くそっ…敵わなかった。…でもよ、まだ終わってねえぞ
-- `RIVALRY_RESOLUTION_LINES.fateLoser.normal.seductive[1]`: 敵わなかったわ…でも、終わりだなんて思わないでね
-- `RIVALRY_RESOLUTION_LINES.fateLoser.normal.cool[1]`: ……敵わなかった。……だが、終わりではない
-- `RIVALRY_RESOLUTION_LINES.fateLoser.normal.polite[1]`: 今日は…敵いませんでした。でもこれで終わりではありません
-- `RIVALRY_RESOLUTION_LINES.fateLoser.normal.composed[1]`: …敵わなかった。…でも、これで終わりじゃない
-- `RIVALRY_RESOLUTION_LINES.fateLoser.bold._default[1]`: 負けっぱなしじゃ終われない。…必ず超えてみせる
-- `RIVALRY_RESOLUTION_LINES.fateLoser.bold._default[2]`: 全力で負けた。…次が欲しい。絶対に
-- `RIVALRY_RESOLUTION_LINES.fateLoser.bold.cool[1]`: …全力で届かなかった。…だからこそ、次だ
-- `RIVALRY_RESOLUTION_LINES.fateLoser.bold.polite[1]`: 負けました。…ですが、必ず超えてみせます
-- `RIVALRY_RESOLUTION_LINES.fateLoser.bold.composed[1]`: …届かなかった。…でも、次は変える
-- `RIVALRY_RESOLUTION_LINES.fateLoser.quiet._default[1]`: ………（唇を噛んで、静かに立ち上がる）
-- `RIVALRY_RESOLUTION_LINES.fateLoser.quiet.seductive[1]`: ………（唇を噛む）…まだよ
-- `RIVALRY_RESOLUTION_LINES.fateLoser.quiet.composed[1]`: ………（静かに立ち上がり、前を見る）
-- `RIVALRY_RESOLUTION_LINES.fateLoser.shy._default[1]`: …負けちゃった…でも…まだ…諦めたくない…です…（涙を拭いている）
-- `RIVALRY_RESOLUTION_LINES.fateLoser.shy.polite[1]`: 運命の戦いに…ま、負けました…でも、悔いは、ないです…
-- `RIVALRY_RESOLUTION_LINES.fateLoser.easygoing._default[1]`: 負けた〜…まいったな。…でもさ、次があるでしょ？ ね？
-- `RIVALRY_RESOLUTION_LINES.fateLoser.easygoing.polite[1]`: 負けちゃいました…でもまだ次がありますよね？
-- `RIVALRY_RESOLUTION_LINES.fateLoser.easygoing.ojousama[1]`: 負けてしまいましたわ…でも次がありますわよね？
-- `RIVALRY_RESOLUTION_LINES.fateLoser.easygoing.composed[1]`: 負けたか。…ま、次があるさ
-- `RIVALRY_RESOLUTION_LINES.fateLoser.earnest._default[1]`: 負けました。…でも、この悔しさを糧にまた挑みます
-- `RIVALRY_RESOLUTION_LINES.fateLoser.earnest.composed[1]`: …負けました。…でも、ここからです
-- `RIVALRY_RESOLUTION_LINES.fateLoser.emotional._default[1]`: 悔しい…！でも…ここで終わるもんか…！ 絶対また…！（涙）
-- `RIVALRY_RESOLUTION_LINES.fateLoser.emotional.seductive[1]`: 負けたわ……っ……でも、運命の試合だったの、悔いはないわ……
-- `RIVALRY_RESOLUTION_LINES.fateLoser.emotional.composed[1]`: …っ…悔しい。…でも、終わらない
+- `RIVALRY_RESOLUTION_LINES.winner.standard.normal[1]`: 一つ、決着がついた…でもまだ終わりじゃない気がする
+- `RIVALRY_RESOLUTION_LINES.winner.standard.normal[2]`: 勝てた…けど、ここからだと思う
+- `RIVALRY_RESOLUTION_LINES.winner.standard.bold[1]`: 勝った。でもこの程度じゃ終わらないでしょ？
+- `RIVALRY_RESOLUTION_LINES.winner.standard.bold[2]`: 今日は私の勝ち。…次はどうなるかわからないけど
+- `RIVALRY_RESOLUTION_LINES.winner.standard.quiet[1]`: ………一つ、終わった（でもまだ、目が離せない）
+- `RIVALRY_RESOLUTION_LINES.winner.standard.shy[1]`: か、勝てた…けど…なんだろ…終わった気がしない…
+- `RIVALRY_RESOLUTION_LINES.winner.standard.easygoing[1]`: よっしゃ一個勝ち！ …でもさ、まだ続きがありそうだよね
+- `RIVALRY_RESOLUTION_LINES.winner.standard.earnest[1]`: 一つ決着がつきました。…でも、まだ続く気がします
+- `RIVALRY_RESOLUTION_LINES.winner.standard.earnest[2]`: 勝ちました…けど、ここからが本番だと思っています
+- `RIVALRY_RESOLUTION_LINES.winner.standard.emotional[1]`: 勝った…！でも…なんで涙が止まらないの…まだ終わってないのに…！
+- `RIVALRY_RESOLUTION_LINES.winner.ojousama.normal[1]`: 一つ決着がついたわね…でも、まだ終わった気がしない
+- `RIVALRY_RESOLUTION_LINES.winner.ojousama.bold[1]`: 当然の勝利。…でも、これで折れては居ないのでしょうね
+- `RIVALRY_RESOLUTION_LINES.winner.ojousama.easygoing[1]`: 一つ勝ちましたわ！ …でもまだ終わった気がしませんの
+- `RIVALRY_RESOLUTION_LINES.winner.ojousama.earnest[1]`: ひとつ結果を出しましたわ…でも、まだ終わりではありませんわね
+- `RIVALRY_RESOLUTION_LINES.winner.delinquent.normal[1]`: ひとまず決着だ…でも、なんだろ。まだモヤモヤすんな
+- `RIVALRY_RESOLUTION_LINES.winner.delinquent.bold[1]`: 一個返したぞ。…でもまだ足りねえ気がすんだよ
+- `RIVALRY_RESOLUTION_LINES.winner.delinquent.easygoing[1]`: いよっしゃ！ …でもよ、なんかまだスッキリしねえんだよな
+- `RIVALRY_RESOLUTION_LINES.winner.seductive.normal[1]`: ひとつ片がついたわ…でも、まだ気になるの
+- `RIVALRY_RESOLUTION_LINES.winner.seductive.bold[1]`: 今日は私の勝ち。…でも、まだ飽きてないわよ？
+- `RIVALRY_RESOLUTION_LINES.winner.seductive.quiet[1]`: ………（相手を見つめ）…まだよ
+- `RIVALRY_RESOLUTION_LINES.winner.seductive.easygoing[1]`: 勝っちゃった〜。…でもね、まだ終わってない気がするの
+- `RIVALRY_RESOLUTION_LINES.winner.seductive.earnest[1]`: 一つ勝ったわ。…でも、これで終わりとは思えないの
+- `RIVALRY_RESOLUTION_LINES.winner.seductive.emotional[1]`: 勝ったわ……っ……ふふ、これでお終いね……
+- `RIVALRY_RESOLUTION_LINES.winner.cool.normal[1]`: ……一つ、片がついた。……だが、これで終わりではない
+- `RIVALRY_RESOLUTION_LINES.winner.cool.bold[1]`: …一つ片がついた。…まだ先がある
+- `RIVALRY_RESOLUTION_LINES.winner.cool.quiet[1]`: …一区切り。…でも、終わった気はしない
+- `RIVALRY_RESOLUTION_LINES.winner.polite.normal[1]`: 一つ決着がつきました…でも…まだ終わった気がしません
+- `RIVALRY_RESOLUTION_LINES.winner.polite.bold[1]`: 今日は勝たせていただきました。…でもこの程度では終わりませんね
+- `RIVALRY_RESOLUTION_LINES.winner.polite.quiet[1]`: …ひとまず…決着です…でも…
+- `RIVALRY_RESOLUTION_LINES.winner.polite.shy[1]`: か、勝てました…これで、終わりにしましょう…
+- `RIVALRY_RESOLUTION_LINES.winner.polite.easygoing[1]`: 一つ勝たせていただきました！ …でもまだ続きがありそうですよね
+- `RIVALRY_RESOLUTION_LINES.winner.polite.earnest[1]`: ひとまず決着です…でも、まだ先がある気がするんです
+- `RIVALRY_RESOLUTION_LINES.winner.composed.normal[1]`: …一つ片がついた。…でも、まだ終わった気はしないね
+- `RIVALRY_RESOLUTION_LINES.winner.composed.bold[1]`: …一つ勝った。…でもまだ先があるだろうね
+- `RIVALRY_RESOLUTION_LINES.winner.composed.quiet[1]`: …一つ、終わったか
+- `RIVALRY_RESOLUTION_LINES.winner.composed.easygoing[1]`: 勝ったか。…でもまだ、終わった気はしないね
+- `RIVALRY_RESOLUTION_LINES.winner.composed.earnest[1]`: …一つ決着がつきました。…でもまだ、先がある気がします
+- `RIVALRY_RESOLUTION_LINES.winner.composed.emotional[1]`: …勝った。…でもなんだろう、この感じ。…まだ終わらないね
+- `RIVALRY_RESOLUTION_LINES.loser.standard.normal[1]`: 負けた…悔しい。でも、これで終わりなんかじゃない
+- `RIVALRY_RESOLUTION_LINES.loser.standard.normal[2]`: 悔しい。今日は負けた。…でも、次がある。絶対に
+- `RIVALRY_RESOLUTION_LINES.loser.standard.bold[1]`: 今日は完敗。…でも、見てなさいよ！
+- `RIVALRY_RESOLUTION_LINES.loser.standard.bold[2]`: この借りは必ず返す。…次こそは
+- `RIVALRY_RESOLUTION_LINES.loser.standard.quiet[1]`: ………（拳を握りしめ、相手の背中を見ている）
+- `RIVALRY_RESOLUTION_LINES.loser.standard.shy[1]`: …負けちゃった…悔しい…でも…次こそは…絶対…
+- `RIVALRY_RESOLUTION_LINES.loser.standard.easygoing[1]`: 負けた〜…くやし〜！ でもまだ続くよね？ 次は負けないから！
+- `RIVALRY_RESOLUTION_LINES.loser.standard.earnest[1]`: 負けました…でも諦めません。必ず借りを返します
+- `RIVALRY_RESOLUTION_LINES.loser.standard.earnest[2]`: 悔しいです。…でも、この悔しさを次に活かします
+- `RIVALRY_RESOLUTION_LINES.loser.standard.emotional[1]`: 悔しい…！悔しい…！ でも…絶対…次は…負けない…！
+- `RIVALRY_RESOLUTION_LINES.loser.ojousama.normal[1]`: 負けたわね…でも、これで終わりとは思っていないの
+- `RIVALRY_RESOLUTION_LINES.loser.ojousama.bold[1]`: 負けた？…ですが、次がありましてよ！
+- `RIVALRY_RESOLUTION_LINES.loser.ojousama.easygoing[1]`: 負けてしまいましたわ…でも次はお返ししますの
+- `RIVALRY_RESOLUTION_LINES.loser.ojousama.earnest[1]`: 負けましたわ…ですが、この借りは必ずお返ししますわ
+- `RIVALRY_RESOLUTION_LINES.loser.delinquent.normal[1]`: くそっ…負けた。…でもこれで終わりだと思うなよ
+- `RIVALRY_RESOLUTION_LINES.loser.delinquent.bold[1]`: くっそ…完敗だ。…だがこの借りは絶対返すからな
+- `RIVALRY_RESOLUTION_LINES.loser.delinquent.easygoing[1]`: ちくしょ〜…負けた！ でもよ、次は絶対やり返すからな！
+- `RIVALRY_RESOLUTION_LINES.loser.seductive.normal[1]`: 負けたわ…でも、まだ終わりじゃないの
+- `RIVALRY_RESOLUTION_LINES.loser.seductive.bold[1]`: 完敗ね…でも、次は私の番よ。覚えておきなさい
+- `RIVALRY_RESOLUTION_LINES.loser.seductive.quiet[1]`: ………（拳を握る）…次は、ないわよ
+- `RIVALRY_RESOLUTION_LINES.loser.seductive.easygoing[1]`: 負けちゃったわ〜…でもね、次は覚悟してね？
+- `RIVALRY_RESOLUTION_LINES.loser.seductive.earnest[1]`: 負けたわ…でも、この悔しさがあるから次がある。そう思うの
+- `RIVALRY_RESOLUTION_LINES.loser.seductive.emotional[1]`: 負けたわ……っ……ふふ、悔しいけど終わりね……
+- `RIVALRY_RESOLUTION_LINES.loser.cool.normal[1]`: ……負けた。……だが、終わりではない
+- `RIVALRY_RESOLUTION_LINES.loser.cool.bold[1]`: …認める。…だが、次がある
+- `RIVALRY_RESOLUTION_LINES.loser.cool.quiet[1]`: …今日は負けた。…次だ
+- `RIVALRY_RESOLUTION_LINES.loser.polite.normal[1]`: 負けました…悔しいです。でも…次は必ず
+- `RIVALRY_RESOLUTION_LINES.loser.polite.bold[1]`: 今日は完敗です。…ですが、次がございます
+- `RIVALRY_RESOLUTION_LINES.loser.polite.quiet[1]`: …負けました。…でも…次は、必ず…
+- `RIVALRY_RESOLUTION_LINES.loser.polite.shy[1]`: ま、負けました…これで、終わりですね…
+- `RIVALRY_RESOLUTION_LINES.loser.polite.easygoing[1]`: 負けちゃいました…！ でも次は負けません！
+- `RIVALRY_RESOLUTION_LINES.loser.polite.earnest[1]`: 負けました…でも、次の機会に必ず結果を出してみせます
+- `RIVALRY_RESOLUTION_LINES.loser.composed.normal[1]`: …負けたか。…でも、これで終わりじゃないよ
+- `RIVALRY_RESOLUTION_LINES.loser.composed.bold[1]`: …完敗だね。…でも、次がある
+- `RIVALRY_RESOLUTION_LINES.loser.composed.quiet[1]`: …負けたか。…次だ
+- `RIVALRY_RESOLUTION_LINES.loser.composed.easygoing[1]`: 負けたか。…ま、次があるさ
+- `RIVALRY_RESOLUTION_LINES.loser.composed.earnest[1]`: …負けました。…でも、次は変えてみせます
+- `RIVALRY_RESOLUTION_LINES.loser.composed.emotional[1]`: …っ…悔しいね。…でも、次こそは
+- `RIVALRY_RESOLUTION_LINES.fateWinner.standard.normal[1]`: ずっと追いかけてきた答えが…一つ、出た。…でもまだ、終わらない
+- `RIVALRY_RESOLUTION_LINES.fateWinner.standard.bold[1]`: 一つ勝った…でも、まだ先がある。そうでしょ？
+- `RIVALRY_RESOLUTION_LINES.fateWinner.standard.bold[2]`: これで一区切りか。…でも全部終わりってわけじゃないよね？
+- `RIVALRY_RESOLUTION_LINES.fateWinner.standard.quiet[1]`: ………（深く息を吐く。目は、まだ相手を追っている）
+- `RIVALRY_RESOLUTION_LINES.fateWinner.standard.shy[1]`: 勝った…のかな…でも…終わった気がしない…（涙が溢れている）
+- `RIVALRY_RESOLUTION_LINES.fateWinner.standard.easygoing[1]`: やっと一つ勝てた…！ でもさ、まだ終わってないよね…？
+- `RIVALRY_RESOLUTION_LINES.fateWinner.standard.earnest[1]`: 長い戦いでした…一つ答えは出た。でも、ここからだと思います
+- `RIVALRY_RESOLUTION_LINES.fateWinner.standard.emotional[1]`: 勝った…！やっと…！ でも…まだ泣きたくない…まだ続くから…！（涙）
+- `RIVALRY_RESOLUTION_LINES.fateWinner.ojousama.normal[1]`: ようやく…一つ答えがたわね。…でも、終わりではないわよ
+- `RIVALRY_RESOLUTION_LINES.fateWinner.ojousama.easygoing[1]`: やっと一つ勝ちましたわ…！ でもまだ終わっておりませんわね
+- `RIVALRY_RESOLUTION_LINES.fateWinner.delinquent.normal[1]`: やっと…一つ決着がついた…でもよ、なんかまだ胸がざわつくんだ
+- `RIVALRY_RESOLUTION_LINES.fateWinner.seductive.normal[1]`: ようやく一つ答えが出たわ…でも、まだ終わりじゃないの
+- `RIVALRY_RESOLUTION_LINES.fateWinner.seductive.quiet[1]`: ………（深い息）…でも、まだよ
+- `RIVALRY_RESOLUTION_LINES.fateWinner.seductive.emotional[1]`: 運命の戦いに勝った……っ……ふふ、最高の瞬間だったわ……
+- `RIVALRY_RESOLUTION_LINES.fateWinner.cool.normal[1]`: ……一つ、答えが出た。……だが、まだ終わらない
+- `RIVALRY_RESOLUTION_LINES.fateWinner.cool.bold[1]`: …一つ決着がついた。…だが、まだ先がある
+- `RIVALRY_RESOLUTION_LINES.fateWinner.polite.normal[1]`: ようやく…一つ答えが出ました。…でもまだ終わりではありません
+- `RIVALRY_RESOLUTION_LINES.fateWinner.polite.bold[1]`: 一つ勝ちました。…でもまだ先がございます
+- `RIVALRY_RESOLUTION_LINES.fateWinner.polite.shy[1]`: 運命の戦いに…か、勝ちました…
+- `RIVALRY_RESOLUTION_LINES.fateWinner.polite.easygoing[1]`: やっと一つ勝てました…！ でもまだ終わってないですよね…？
+- `RIVALRY_RESOLUTION_LINES.fateWinner.composed.normal[1]`: …ようやく一つ答えが出た。…でも、まだ終わらないだろうね
+- `RIVALRY_RESOLUTION_LINES.fateWinner.composed.bold[1]`: …やっと一つ。…でも、まだ先がある
+- `RIVALRY_RESOLUTION_LINES.fateWinner.composed.quiet[1]`: ………（静かに息を吐く）…一つ、か
+- `RIVALRY_RESOLUTION_LINES.fateWinner.composed.easygoing[1]`: やっと一つ勝てた。…でも、まだ終わってないね
+- `RIVALRY_RESOLUTION_LINES.fateWinner.composed.earnest[1]`: …長かった。一つ答えが出た。…でも、まだ先がある
+- `RIVALRY_RESOLUTION_LINES.fateWinner.composed.emotional[1]`: …っ…やっと。…でも、まだだよ。…まだ続くから
+- `RIVALRY_RESOLUTION_LINES.fateLoser.standard.normal[1]`: 今日は…敵わなかった。でも、この悔しさを……次へ！
+- `RIVALRY_RESOLUTION_LINES.fateLoser.standard.bold[1]`: 負けっぱなしじゃ終われない。…必ず超えてみせる
+- `RIVALRY_RESOLUTION_LINES.fateLoser.standard.bold[2]`: 全力で負けた。…次が欲しい。絶対に
+- `RIVALRY_RESOLUTION_LINES.fateLoser.standard.quiet[1]`: ………（唇を噛んで、静かに立ち上がる）
+- `RIVALRY_RESOLUTION_LINES.fateLoser.standard.shy[1]`: …負けちゃった…でも…まだ…諦めたくない…です…（涙を拭いている）
+- `RIVALRY_RESOLUTION_LINES.fateLoser.standard.easygoing[1]`: 負けた〜…まいったな。…でもさ、次があるでしょ？ ね？
+- `RIVALRY_RESOLUTION_LINES.fateLoser.standard.earnest[1]`: 負けました。…でも、この悔しさを糧にまた挑みます
+- `RIVALRY_RESOLUTION_LINES.fateLoser.standard.emotional[1]`: 悔しい…！でも…ここで終わるもんか…！ 絶対また…！（涙）
+- `RIVALRY_RESOLUTION_LINES.fateLoser.ojousama.normal[1]`: 今日は敵わなかったけれど、これで終わりではなくてよ
+- `RIVALRY_RESOLUTION_LINES.fateLoser.ojousama.easygoing[1]`: 負けてしまいましたわ…でも次がありますわよね？
+- `RIVALRY_RESOLUTION_LINES.fateLoser.delinquent.normal[1]`: くそっ…敵わなかった。…でもよ、まだ終わってねえぞ
+- `RIVALRY_RESOLUTION_LINES.fateLoser.seductive.normal[1]`: 敵わなかったわ…でも、終わりだなんて思わないでね
+- `RIVALRY_RESOLUTION_LINES.fateLoser.seductive.quiet[1]`: ………（唇を噛む）…まだよ
+- `RIVALRY_RESOLUTION_LINES.fateLoser.seductive.emotional[1]`: 負けたわ……っ……でも、運命の試合だったの、悔いはないわ……
+- `RIVALRY_RESOLUTION_LINES.fateLoser.cool.normal[1]`: ……敵わなかった。……だが、終わりではない
+- `RIVALRY_RESOLUTION_LINES.fateLoser.cool.bold[1]`: …全力で届かなかった。…だからこそ、次だ
+- `RIVALRY_RESOLUTION_LINES.fateLoser.polite.normal[1]`: 今日は…敵いませんでした。でもこれで終わりではありません
+- `RIVALRY_RESOLUTION_LINES.fateLoser.polite.bold[1]`: 負けました。…ですが、必ず超えてみせます
+- `RIVALRY_RESOLUTION_LINES.fateLoser.polite.shy[1]`: 運命の戦いに…ま、負けました…でも、悔いは、ないです…
+- `RIVALRY_RESOLUTION_LINES.fateLoser.polite.easygoing[1]`: 負けちゃいました…でもまだ次がありますよね？
+- `RIVALRY_RESOLUTION_LINES.fateLoser.composed.normal[1]`: …敵わなかった。…でも、これで終わりじゃない
+- `RIVALRY_RESOLUTION_LINES.fateLoser.composed.bold[1]`: …届かなかった。…でも、次は変える
+- `RIVALRY_RESOLUTION_LINES.fateLoser.composed.quiet[1]`: ………（静かに立ち上がり、前を見る）
+- `RIVALRY_RESOLUTION_LINES.fateLoser.composed.easygoing[1]`: 負けたか。…ま、次があるさ
+- `RIVALRY_RESOLUTION_LINES.fateLoser.composed.earnest[1]`: …負けました。…でも、ここからです
+- `RIVALRY_RESOLUTION_LINES.fateLoser.composed.emotional[1]`: …っ…悔しい。…でも、終わらない
 
 ## `GOODRIVAL_RESOLUTION_LINES`
 
@@ -1030,78 +1030,78 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: E2: 演出テキスト — 因縁・関係イベント用 / 好敵手ルート決着セリフ（personality×archetype）
 - 本数: 72
 
-- `GOODRIVAL_RESOLUTION_LINES.winner.normal._default[1]`: アイツがいたから、ここまで来られた。……ありがとう
-- `GOODRIVAL_RESOLUTION_LINES.winner.normal._default[2]`: 最高のライバルだよ。これからも、よろしく
-- `GOODRIVAL_RESOLUTION_LINES.winner.normal.ojousama[1]`: あなたがいてくださったから、ここまで来られましたわ。……感謝いたします
-- `GOODRIVAL_RESOLUTION_LINES.winner.normal.delinquent[1]`: お前がいたから強くなれた。……サンキュな
-- `GOODRIVAL_RESOLUTION_LINES.winner.normal.cool[1]`: ……認めている。これからも、共に
-- `GOODRIVAL_RESOLUTION_LINES.winner.normal.seductive[1]`: あなたがいたから輝けたわ。……ありがとう
-- `GOODRIVAL_RESOLUTION_LINES.winner.normal.polite[1]`: あなたのおかげでここまで来れました。…ありがとうございます
-- `GOODRIVAL_RESOLUTION_LINES.winner.normal.composed[1]`: …あんたがいたから、ここまで来れた。……ありがとう
-- `GOODRIVAL_RESOLUTION_LINES.winner.bold._default[1]`: あなたとの戦いは私の誇り。これからも全力で来なさい
-- `GOODRIVAL_RESOLUTION_LINES.winner.bold._default[2]`: 最高のライバルよ。胸を張って
-- `GOODRIVAL_RESOLUTION_LINES.winner.bold.ojousama[1]`: 貴方は悪くない相手ですわね。また挑戦して来なさいな
-- `GOODRIVAL_RESOLUTION_LINES.winner.bold.delinquent[1]`: お前は俺の誇りだ。これからも来いよ
-- `GOODRIVAL_RESOLUTION_LINES.winner.bold.cool[1]`: ……好敵手だ。それ以上の言葉はいらない
-- `GOODRIVAL_RESOLUTION_LINES.winner.bold.seductive[1]`: あなたとの戦いは私の誇りよ。…これからもよろしくね
-- `GOODRIVAL_RESOLUTION_LINES.winner.bold.polite[1]`: あなたとの戦いは私の誇りです。これからもよろしくお願いします
-- `GOODRIVAL_RESOLUTION_LINES.winner.bold.composed[1]`: …最高の相手だった。…これからもよろしく
-- `GOODRIVAL_RESOLUTION_LINES.winner.quiet._default[1]`: ………（手を差し出す）
-- `GOODRIVAL_RESOLUTION_LINES.winner.quiet.cool[1]`: ……ありがとう。……これからも
-- `GOODRIVAL_RESOLUTION_LINES.winner.quiet.polite[1]`: …ありがとうございました。…これからも、お願いします
-- `GOODRIVAL_RESOLUTION_LINES.winner.quiet.seductive[1]`: ………（手を差し出す）…ありがとう…ね
-- `GOODRIVAL_RESOLUTION_LINES.winner.quiet.composed[1]`: ……ありがとう。…これからも
-- `GOODRIVAL_RESOLUTION_LINES.winner.shy._default[1]`: あの…あなたがいてくれたから…ここまで来れたんです…（手を差し出す）
-- `GOODRIVAL_RESOLUTION_LINES.winner.shy.polite[1]`: か、勝たせていただきました…でも、あの方も素晴らしかったです…
-- `GOODRIVAL_RESOLUTION_LINES.winner.easygoing._default[1]`: 最高の相手だったよ！ これからも一緒に上を目指そう！
-- `GOODRIVAL_RESOLUTION_LINES.winner.easygoing.delinquent[1]`: 最高だったぜ！ まだまだ一緒にやろうな！
-- `GOODRIVAL_RESOLUTION_LINES.winner.easygoing.seductive[1]`: 最高の相手だったわ。…これからもよろしくね
-- `GOODRIVAL_RESOLUTION_LINES.winner.easygoing.polite[1]`: 最高の相手でした！ これからもよろしくお願いします！
-- `GOODRIVAL_RESOLUTION_LINES.winner.easygoing.ojousama[1]`: 最高のお相手でしたわ！ これからもよろしくですの
-- `GOODRIVAL_RESOLUTION_LINES.winner.easygoing.composed[1]`: 最高の相手だったよ。…これからもよろしく
-- `GOODRIVAL_RESOLUTION_LINES.winner.earnest._default[1]`: あなたのおかげで成長できました。……これからも、よろしくお願いします
-- `GOODRIVAL_RESOLUTION_LINES.winner.earnest._default[2]`: ここまでの全試合に感謝します。これからもよろしくお願いします
-- `GOODRIVAL_RESOLUTION_LINES.winner.earnest.polite[1]`: あなたのおかげで成長できました。これからもよろしくお願いいたします
-- `GOODRIVAL_RESOLUTION_LINES.winner.earnest.seductive[1]`: あなたのおかげで成長できたわ。…これからもよろしくね
-- `GOODRIVAL_RESOLUTION_LINES.winner.earnest.ojousama[1]`: あなたのおかげで成長できましたわ。これからもよろしくお願いいたしますわ
-- `GOODRIVAL_RESOLUTION_LINES.winner.earnest.composed[1]`: …あなたのおかげでここまで来れた。…これからも、よろしく
-- `GOODRIVAL_RESOLUTION_LINES.winner.emotional._default[1]`: ありがとう……！ あなたがいなかったら……今の私はいない……！（涙）
-- `GOODRIVAL_RESOLUTION_LINES.winner.emotional.seductive[1]`: 勝ったわ……っ……ふふ、あの子だからこそ、最高の試合になったの……
-- `GOODRIVAL_RESOLUTION_LINES.winner.emotional.composed[1]`: …っ…ありがとう。…あんたがいたから、ここまで来れた
-- `GOODRIVAL_RESOLUTION_LINES.loser.normal._default[1]`: 負けた。でも……しょうがないか。悪くない…かな？
-- `GOODRIVAL_RESOLUTION_LINES.loser.normal._default[2]`: 悔しいなぁ！……でも、悪くない
-- `GOODRIVAL_RESOLUTION_LINES.loser.normal.ojousama[1]`: 負けましたわ。でも……あなたが好敵手で良かった
-- `GOODRIVAL_RESOLUTION_LINES.loser.normal.delinquent[1]`: 負けたけどよ……清々しいぜ。お前が相手で良かった
-- `GOODRIVAL_RESOLUTION_LINES.loser.normal.polite[1]`: 負けました。でも…あなたが好敵手で良かったです
-- `GOODRIVAL_RESOLUTION_LINES.loser.normal.composed[1]`: …負けたか。…でも、悪くない。あんたが相手でよかった
-- `GOODRIVAL_RESOLUTION_LINES.loser.bold._default[1]`: 完敗ね。でも悔いはない。最高の相手だった
-- `GOODRIVAL_RESOLUTION_LINES.loser.bold._default[2]`: 負けた。けど—悔いは無いよ
-- `GOODRIVAL_RESOLUTION_LINES.loser.bold.cool[1]`: ……負けた。だが……悪くない
-- `GOODRIVAL_RESOLUTION_LINES.loser.bold.seductive[1]`: 完敗ね。…でも悔いはないわ。最高の相手だった
-- `GOODRIVAL_RESOLUTION_LINES.loser.bold.polite[1]`: 完敗です。でも悔いはありません。最高の相手でした
-- `GOODRIVAL_RESOLUTION_LINES.loser.bold.composed[1]`: …完敗。…でも悔いはないよ
-- `GOODRIVAL_RESOLUTION_LINES.loser.quiet._default[1]`: ………（涙を拭い、静かに笑う）
-- `GOODRIVAL_RESOLUTION_LINES.loser.quiet.cool[1]`: ……負けた。……でも、悔いはない
-- `GOODRIVAL_RESOLUTION_LINES.loser.quiet.polite[1]`: …ありがとう、ございました…（深々とお辞儀）
-- `GOODRIVAL_RESOLUTION_LINES.loser.quiet.seductive[1]`: ………（涙を拭い、微笑む）…ありがとう
-- `GOODRIVAL_RESOLUTION_LINES.loser.quiet.composed[1]`: …負けたけど…悪くない
-- `GOODRIVAL_RESOLUTION_LINES.loser.shy._default[1]`: 負けちゃった…でも…また戦えるなら…それでいいかな…（涙）
-- `GOODRIVAL_RESOLUTION_LINES.loser.shy.polite[1]`: ま、負けました…でも、あの方となら、後悔はありません…
-- `GOODRIVAL_RESOLUTION_LINES.loser.easygoing._default[1]`: 負けたけど、なんか笑っちゃうよ。最高の相手だもん！
-- `GOODRIVAL_RESOLUTION_LINES.loser.easygoing.delinquent[1]`: 負けたけど……へへ、最高だったぜ
-- `GOODRIVAL_RESOLUTION_LINES.loser.easygoing.seductive[1]`: 負けちゃった。…でも笑えるわ。最高の相手だもの
-- `GOODRIVAL_RESOLUTION_LINES.loser.easygoing.polite[1]`: 負けちゃいました。でも笑えちゃいますね。最高の相手でした！
-- `GOODRIVAL_RESOLUTION_LINES.loser.easygoing.ojousama[1]`: 負けてしまいましたわ。でも笑みが零れますの。最高のお相手でしたわ
-- `GOODRIVAL_RESOLUTION_LINES.loser.easygoing.composed[1]`: 負けたけど…ま、笑えるよ。最高の相手だった
-- `GOODRIVAL_RESOLUTION_LINES.loser.earnest._default[1]`: 負けました。でもこの試合は一生忘れません
-- `GOODRIVAL_RESOLUTION_LINES.loser.earnest._default[2]`: 悔しい。でも……ありがとうございます。最高の相手です
-- `GOODRIVAL_RESOLUTION_LINES.loser.earnest.polite[1]`: 負けました。でもこの試合は一生の宝です
-- `GOODRIVAL_RESOLUTION_LINES.loser.earnest.seductive[1]`: 負けたわ。でもこの試合は一生忘れない
-- `GOODRIVAL_RESOLUTION_LINES.loser.earnest.ojousama[1]`: 負けましたわ。でもこの試合は一生の宝ですわ
-- `GOODRIVAL_RESOLUTION_LINES.loser.earnest.composed[1]`: …負けました。でもこの試合は忘れません。…ありがとう
-- `GOODRIVAL_RESOLUTION_LINES.loser.emotional._default[1]`: 負けた……！ でも嬉しい……！ 最高だった……！（号泣）
-- `GOODRIVAL_RESOLUTION_LINES.loser.emotional.seductive[1]`: 負けたわ……っ……でも、あの子相手なら悔いはないの……ふふ……
-- `GOODRIVAL_RESOLUTION_LINES.loser.emotional.composed[1]`: …っ…負けたけど…最高だった。…ありがとう
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.normal[1]`: アイツがいたから、ここまで来られた。……ありがとう
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.normal[2]`: 最高のライバルだよ。これからも、よろしく
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.bold[1]`: あなたとの戦いは私の誇り。これからも全力で来なさい
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.bold[2]`: 最高のライバルよ。胸を張って
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.quiet[1]`: ………（手を差し出す）
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.shy[1]`: あの…あなたがいてくれたから…ここまで来れたんです…（手を差し出す）
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.easygoing[1]`: 最高の相手だったよ！ これからも一緒に上を目指そう！
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.earnest[1]`: あなたのおかげで成長できました。……これからも、よろしくお願いします
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.earnest[2]`: ここまでの全試合に感謝します。これからもよろしくお願いします
+- `GOODRIVAL_RESOLUTION_LINES.winner.standard.emotional[1]`: ありがとう……！ あなたがいなかったら……今の私はいない……！（涙）
+- `GOODRIVAL_RESOLUTION_LINES.winner.ojousama.normal[1]`: あなたがいてくださったから、ここまで来られましたわ。……感謝いたします
+- `GOODRIVAL_RESOLUTION_LINES.winner.ojousama.bold[1]`: 貴方は悪くない相手ですわね。また挑戦して来なさいな
+- `GOODRIVAL_RESOLUTION_LINES.winner.ojousama.easygoing[1]`: 最高のお相手でしたわ！ これからもよろしくですの
+- `GOODRIVAL_RESOLUTION_LINES.winner.ojousama.earnest[1]`: あなたのおかげで成長できましたわ。これからもよろしくお願いいたしますわ
+- `GOODRIVAL_RESOLUTION_LINES.winner.delinquent.normal[1]`: お前がいたから強くなれた。……サンキュな
+- `GOODRIVAL_RESOLUTION_LINES.winner.delinquent.bold[1]`: お前は俺の誇りだ。これからも来いよ
+- `GOODRIVAL_RESOLUTION_LINES.winner.delinquent.easygoing[1]`: 最高だったぜ！ まだまだ一緒にやろうな！
+- `GOODRIVAL_RESOLUTION_LINES.winner.cool.normal[1]`: ……認めている。これからも、共に
+- `GOODRIVAL_RESOLUTION_LINES.winner.cool.bold[1]`: ……好敵手だ。それ以上の言葉はいらない
+- `GOODRIVAL_RESOLUTION_LINES.winner.cool.quiet[1]`: ……ありがとう。……これからも
+- `GOODRIVAL_RESOLUTION_LINES.winner.seductive.normal[1]`: あなたがいたから輝けたわ。……ありがとう
+- `GOODRIVAL_RESOLUTION_LINES.winner.seductive.bold[1]`: あなたとの戦いは私の誇りよ。…これからもよろしくね
+- `GOODRIVAL_RESOLUTION_LINES.winner.seductive.quiet[1]`: ………（手を差し出す）…ありがとう…ね
+- `GOODRIVAL_RESOLUTION_LINES.winner.seductive.easygoing[1]`: 最高の相手だったわ。…これからもよろしくね
+- `GOODRIVAL_RESOLUTION_LINES.winner.seductive.earnest[1]`: あなたのおかげで成長できたわ。…これからもよろしくね
+- `GOODRIVAL_RESOLUTION_LINES.winner.seductive.emotional[1]`: 勝ったわ……っ……ふふ、あの子だからこそ、最高の試合になったの……
+- `GOODRIVAL_RESOLUTION_LINES.winner.polite.normal[1]`: あなたのおかげでここまで来れました。…ありがとうございます
+- `GOODRIVAL_RESOLUTION_LINES.winner.polite.bold[1]`: あなたとの戦いは私の誇りです。これからもよろしくお願いします
+- `GOODRIVAL_RESOLUTION_LINES.winner.polite.quiet[1]`: …ありがとうございました。…これからも、お願いします
+- `GOODRIVAL_RESOLUTION_LINES.winner.polite.shy[1]`: か、勝たせていただきました…でも、あの方も素晴らしかったです…
+- `GOODRIVAL_RESOLUTION_LINES.winner.polite.easygoing[1]`: 最高の相手でした！ これからもよろしくお願いします！
+- `GOODRIVAL_RESOLUTION_LINES.winner.polite.earnest[1]`: あなたのおかげで成長できました。これからもよろしくお願いいたします
+- `GOODRIVAL_RESOLUTION_LINES.winner.composed.normal[1]`: …あんたがいたから、ここまで来れた。……ありがとう
+- `GOODRIVAL_RESOLUTION_LINES.winner.composed.bold[1]`: …最高の相手だった。…これからもよろしく
+- `GOODRIVAL_RESOLUTION_LINES.winner.composed.quiet[1]`: ……ありがとう。…これからも
+- `GOODRIVAL_RESOLUTION_LINES.winner.composed.easygoing[1]`: 最高の相手だったよ。…これからもよろしく
+- `GOODRIVAL_RESOLUTION_LINES.winner.composed.earnest[1]`: …あなたのおかげでここまで来れた。…これからも、よろしく
+- `GOODRIVAL_RESOLUTION_LINES.winner.composed.emotional[1]`: …っ…ありがとう。…あんたがいたから、ここまで来れた
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.normal[1]`: 負けた。でも……しょうがないか。悪くない…かな？
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.normal[2]`: 悔しいなぁ！……でも、悪くない
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.bold[1]`: 完敗ね。でも悔いはない。最高の相手だった
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.bold[2]`: 負けた。けど—悔いは無いよ
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.quiet[1]`: ………（涙を拭い、静かに笑う）
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.shy[1]`: 負けちゃった…でも…また戦えるなら…それでいいかな…（涙）
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.easygoing[1]`: 負けたけど、なんか笑っちゃうよ。最高の相手だもん！
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.earnest[1]`: 負けました。でもこの試合は一生忘れません
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.earnest[2]`: 悔しい。でも……ありがとうございます。最高の相手です
+- `GOODRIVAL_RESOLUTION_LINES.loser.standard.emotional[1]`: 負けた……！ でも嬉しい……！ 最高だった……！（号泣）
+- `GOODRIVAL_RESOLUTION_LINES.loser.ojousama.normal[1]`: 負けましたわ。でも……あなたが好敵手で良かった
+- `GOODRIVAL_RESOLUTION_LINES.loser.ojousama.easygoing[1]`: 負けてしまいましたわ。でも笑みが零れますの。最高のお相手でしたわ
+- `GOODRIVAL_RESOLUTION_LINES.loser.ojousama.earnest[1]`: 負けましたわ。でもこの試合は一生の宝ですわ
+- `GOODRIVAL_RESOLUTION_LINES.loser.delinquent.normal[1]`: 負けたけどよ……清々しいぜ。お前が相手で良かった
+- `GOODRIVAL_RESOLUTION_LINES.loser.delinquent.easygoing[1]`: 負けたけど……へへ、最高だったぜ
+- `GOODRIVAL_RESOLUTION_LINES.loser.polite.normal[1]`: 負けました。でも…あなたが好敵手で良かったです
+- `GOODRIVAL_RESOLUTION_LINES.loser.polite.bold[1]`: 完敗です。でも悔いはありません。最高の相手でした
+- `GOODRIVAL_RESOLUTION_LINES.loser.polite.quiet[1]`: …ありがとう、ございました…（深々とお辞儀）
+- `GOODRIVAL_RESOLUTION_LINES.loser.polite.shy[1]`: ま、負けました…でも、あの方となら、後悔はありません…
+- `GOODRIVAL_RESOLUTION_LINES.loser.polite.easygoing[1]`: 負けちゃいました。でも笑えちゃいますね。最高の相手でした！
+- `GOODRIVAL_RESOLUTION_LINES.loser.polite.earnest[1]`: 負けました。でもこの試合は一生の宝です
+- `GOODRIVAL_RESOLUTION_LINES.loser.composed.normal[1]`: …負けたか。…でも、悪くない。あんたが相手でよかった
+- `GOODRIVAL_RESOLUTION_LINES.loser.composed.bold[1]`: …完敗。…でも悔いはないよ
+- `GOODRIVAL_RESOLUTION_LINES.loser.composed.quiet[1]`: …負けたけど…悪くない
+- `GOODRIVAL_RESOLUTION_LINES.loser.composed.easygoing[1]`: 負けたけど…ま、笑えるよ。最高の相手だった
+- `GOODRIVAL_RESOLUTION_LINES.loser.composed.earnest[1]`: …負けました。でもこの試合は忘れません。…ありがとう
+- `GOODRIVAL_RESOLUTION_LINES.loser.composed.emotional[1]`: …っ…負けたけど…最高だった。…ありがとう
+- `GOODRIVAL_RESOLUTION_LINES.loser.cool.bold[1]`: ……負けた。だが……悪くない
+- `GOODRIVAL_RESOLUTION_LINES.loser.cool.quiet[1]`: ……負けた。……でも、悔いはない
+- `GOODRIVAL_RESOLUTION_LINES.loser.seductive.bold[1]`: 完敗ね。…でも悔いはないわ。最高の相手だった
+- `GOODRIVAL_RESOLUTION_LINES.loser.seductive.quiet[1]`: ………（涙を拭い、微笑む）…ありがとう
+- `GOODRIVAL_RESOLUTION_LINES.loser.seductive.easygoing[1]`: 負けちゃった。…でも笑えるわ。最高の相手だもの
+- `GOODRIVAL_RESOLUTION_LINES.loser.seductive.earnest[1]`: 負けたわ。でもこの試合は一生忘れない
+- `GOODRIVAL_RESOLUTION_LINES.loser.seductive.emotional[1]`: 負けたわ……っ……でも、あの子相手なら悔いはないの……ふふ……
 
 ## `BITTER_RESOLUTION_LINES`
 
@@ -1109,79 +1109,142 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 宿怨ルート決着セリフ（personality×archetype）
 - 本数: 73
 
-- `BITTER_RESOLUTION_LINES.winner.normal._default[1]`: ……終わった。もう二度と、あんたの顔は見たくない
-- `BITTER_RESOLUTION_LINES.winner.normal._default[2]`: 決着はついた。これで終わりよ
-- `BITTER_RESOLUTION_LINES.winner.normal.ojousama[1]`: これで決着ね。もう……関わりたくもない。
-- `BITTER_RESOLUTION_LINES.winner.normal.delinquent[1]`: 終わりだ。もう目の前に現れるな
-- `BITTER_RESOLUTION_LINES.winner.normal.cool[1]`: ……決着だ。消えろ
-- `BITTER_RESOLUTION_LINES.winner.normal.seductive[1]`: 終わったわ。もう……あなたの顔は見たくない
-- `BITTER_RESOLUTION_LINES.winner.normal.polite[1]`: ……終わりました。もう二度と…関わりたくありません
-- `BITTER_RESOLUTION_LINES.winner.normal.composed[1]`: …終わった。…もう、いいだろう
-- `BITTER_RESOLUTION_LINES.winner.bold._default[1]`: 終わったわ。
-- `BITTER_RESOLUTION_LINES.winner.bold._default[2]`: ようやく決着ね。もう振り返らない
-- `BITTER_RESOLUTION_LINES.winner.bold.ojousama[1]`: 虫けらを叩き潰すのは気分がいいわね
-- `BITTER_RESOLUTION_LINES.winner.bold.delinquent[1]`: ぶっ潰した。文句あるか
-- `BITTER_RESOLUTION_LINES.winner.bold.cool[1]`: ……終わりだ
-- `BITTER_RESOLUTION_LINES.winner.bold.seductive[1]`: もう終わりよ。二度と関わりたくないの
-- `BITTER_RESOLUTION_LINES.winner.bold.polite[1]`: 終わりです。もう振り返りません
-- `BITTER_RESOLUTION_LINES.winner.bold.composed[1]`: …終わった。もう振り返らない
-- `BITTER_RESOLUTION_LINES.winner.quiet._default[1]`: ………（無言で背を向ける）
-- `BITTER_RESOLUTION_LINES.winner.quiet.cool[1]`: ……もう終わった
-- `BITTER_RESOLUTION_LINES.winner.quiet.seductive[1]`: ………もう…終わりよ
-- `BITTER_RESOLUTION_LINES.winner.quiet.polite[1]`: ………もう…終わりです
-- `BITTER_RESOLUTION_LINES.winner.quiet.composed[1]`: ………（静かに背を向ける）
-- `BITTER_RESOLUTION_LINES.winner.shy._default[1]`: …もう関わりたくない…です…（震えが止まらない）
-- `BITTER_RESOLUTION_LINES.winner.shy.polite[1]`: 勝てました…でも、もう…これで終わりにしませんか…？
-- `BITTER_RESOLUTION_LINES.winner.easygoing._default[1]`: ……はぁ。やっと終わった。もう勘弁してくれ
-- `BITTER_RESOLUTION_LINES.winner.easygoing.delinquent[1]`: ……ふぅ。もう絡んでくんなよ
-- `BITTER_RESOLUTION_LINES.winner.easygoing.seductive[1]`: …ふぅ。やっと終わったわね。もう勘弁して
-- `BITTER_RESOLUTION_LINES.winner.easygoing.polite[1]`: ……やっと終わりました。もう勘弁してください
-- `BITTER_RESOLUTION_LINES.winner.easygoing.ojousama[1]`: ……やっと終わりましたわ。もうご勘弁くださいまし
-- `BITTER_RESOLUTION_LINES.winner.easygoing.composed[1]`: …ふぅ。やっと終わったか
-- `BITTER_RESOLUTION_LINES.winner.earnest._default[1]`: 決着がつきました。……もう、十分です
-- `BITTER_RESOLUTION_LINES.winner.earnest.polite[1]`: 決着がつきました。……もう、十分です
-- `BITTER_RESOLUTION_LINES.winner.earnest.seductive[1]`: 決着がついたわ。…もう、十分よ
-- `BITTER_RESOLUTION_LINES.winner.earnest.ojousama[1]`: 決着がつきましたわ。…もう、十分ですの
-- `BITTER_RESOLUTION_LINES.winner.earnest.composed[1]`: …決着がつきました。…もう十分です
-- `BITTER_RESOLUTION_LINES.winner.emotional._default[1]`: 終わった……！ やっと……終わったんだ……！
-- `BITTER_RESOLUTION_LINES.winner.emotional.seductive[1]`: 勝った……っ……これで全部、過去にできるわね……ふふ、ありがとう……
-- `BITTER_RESOLUTION_LINES.winner.emotional.composed[1]`: …終わった。…もういい
-- `BITTER_RESOLUTION_LINES.loser.normal._default[1]`: ……認めない。こんなの認めない
-- `BITTER_RESOLUTION_LINES.loser.normal._default[2]`: 負けた？ ……まだ終わりじゃない！
-- `BITTER_RESOLUTION_LINES.loser.normal.ojousama[1]`: 認めない……こんな結末、認められない……！
-- `BITTER_RESOLUTION_LINES.loser.normal.delinquent[1]`: ちくしょう……覚えてろ……！
-- `BITTER_RESOLUTION_LINES.loser.normal.cool[1]`: ……今日は負けた。だが……終わらない
-- `BITTER_RESOLUTION_LINES.loser.normal.seductive[1]`: ……覚えていなさい。これで終わりだと思わないで
-- `BITTER_RESOLUTION_LINES.loser.normal.polite[1]`: ……認めません。こんな結末は…認められません
-- `BITTER_RESOLUTION_LINES.loser.normal.composed[1]`: …認めない。…これで終わりだと思うなよ
-- `BITTER_RESOLUTION_LINES.loser.bold._default[1]`: 認めない。…この借りは必ず返す
-- `BITTER_RESOLUTION_LINES.loser.bold._default[2]`: ……もう一度。もう一度やらせて……！
-- `BITTER_RESOLUTION_LINES.loser.bold.ojousama[1]`: 認めない……！ この借りは……必ず返す……！
-- `BITTER_RESOLUTION_LINES.loser.bold.seductive[1]`: 認めないわ…この借りは必ず返すから
-- `BITTER_RESOLUTION_LINES.loser.bold.polite[1]`: 認めません…この借りは必ず返します
-- `BITTER_RESOLUTION_LINES.loser.bold.composed[1]`: …認めない。…必ず返す
-- `BITTER_RESOLUTION_LINES.loser.quiet._default[1]`: ………（拳を握りしめ、唇を噛む）
-- `BITTER_RESOLUTION_LINES.loser.quiet.cool[1]`: ………（静かに目を閉じる）
-- `BITTER_RESOLUTION_LINES.loser.quiet.seductive[1]`: ………認めない…わ
-- `BITTER_RESOLUTION_LINES.loser.quiet.polite[1]`: ………認め…ません
-- `BITTER_RESOLUTION_LINES.loser.quiet.composed[1]`: ………（静かに拳を握る）
-- `BITTER_RESOLUTION_LINES.loser.shy._default[1]`: …もう…何も考えたくない…………
-- `BITTER_RESOLUTION_LINES.loser.shy.polite[1]`: ま、負けました…悔しいです…でも、これ以上恨んだりはしません…
-- `BITTER_RESOLUTION_LINES.loser.easygoing._default[1]`: ……ははっ。参ったよ。でも忘れないからな
-- `BITTER_RESOLUTION_LINES.loser.easygoing.delinquent[1]`: くそっ……忘れねえぞ……
-- `BITTER_RESOLUTION_LINES.loser.easygoing.seductive[1]`: …参ったわね。でも…忘れないわよ
-- `BITTER_RESOLUTION_LINES.loser.easygoing.polite[1]`: ……参りました。でも…忘れませんから
-- `BITTER_RESOLUTION_LINES.loser.easygoing.ojousama[1]`: ……参りましたわ。でも…忘れませんことよ
-- `BITTER_RESOLUTION_LINES.loser.easygoing.composed[1]`: …参ったね。…でも忘れないよ
-- `BITTER_RESOLUTION_LINES.loser.earnest._default[1]`: 認めません……こんな結末は認めません……！
-- `BITTER_RESOLUTION_LINES.loser.earnest._default[2]`: 負けた……でもこれで終わりなんかじゃない……！
-- `BITTER_RESOLUTION_LINES.loser.earnest.polite[1]`: ……認めません。こんな結末は……認められません
-- `BITTER_RESOLUTION_LINES.loser.earnest.seductive[1]`: 認めないわ…こんな結末は…認められないの
-- `BITTER_RESOLUTION_LINES.loser.earnest.ojousama[1]`: 認めませんわ。こんな結末は…認められませんの
-- `BITTER_RESOLUTION_LINES.loser.earnest.composed[1]`: …認めません。…この結末は
-- `BITTER_RESOLUTION_LINES.loser.emotional._default[1]`: 嫌だ……！ こんなの嫌だ……！ 認めない……！（叫ぶ）
-- `BITTER_RESOLUTION_LINES.loser.emotional.seductive[1]`: 負けたわ……っ……でも、もう憎しみは終わり……ふふ、清々しいの……
-- `BITTER_RESOLUTION_LINES.loser.emotional.composed[1]`: …っ…認めない。…絶対に
+- `BITTER_RESOLUTION_LINES.winner.standard.normal[1]`: ……終わった。もう二度と、あんたの顔は見たくない
+- `BITTER_RESOLUTION_LINES.winner.standard.normal[2]`: 決着はついた。これで終わりよ
+- `BITTER_RESOLUTION_LINES.winner.standard.bold[1]`: 終わったわ。
+- `BITTER_RESOLUTION_LINES.winner.standard.bold[2]`: ようやく決着ね。もう振り返らない
+- `BITTER_RESOLUTION_LINES.winner.standard.quiet[1]`: ………（無言で背を向ける）
+- `BITTER_RESOLUTION_LINES.winner.standard.shy[1]`: …もう関わりたくない…です…（震えが止まらない）
+- `BITTER_RESOLUTION_LINES.winner.standard.easygoing[1]`: ……はぁ。やっと終わった。もう勘弁してくれ
+- `BITTER_RESOLUTION_LINES.winner.standard.earnest[1]`: 決着がつきました。……もう、十分です
+- `BITTER_RESOLUTION_LINES.winner.standard.emotional[1]`: 終わった……！ やっと……終わったんだ……！
+- `BITTER_RESOLUTION_LINES.winner.ojousama.normal[1]`: これで決着ね。もう……関わりたくもない。
+- `BITTER_RESOLUTION_LINES.winner.ojousama.bold[1]`: 虫けらを叩き潰すのは気分がいいわね
+- `BITTER_RESOLUTION_LINES.winner.ojousama.easygoing[1]`: ……やっと終わりましたわ。もうご勘弁くださいまし
+- `BITTER_RESOLUTION_LINES.winner.ojousama.earnest[1]`: 決着がつきましたわ。…もう、十分ですの
+- `BITTER_RESOLUTION_LINES.winner.delinquent.normal[1]`: 終わりだ。もう目の前に現れるな
+- `BITTER_RESOLUTION_LINES.winner.delinquent.bold[1]`: ぶっ潰した。文句あるか
+- `BITTER_RESOLUTION_LINES.winner.delinquent.easygoing[1]`: ……ふぅ。もう絡んでくんなよ
+- `BITTER_RESOLUTION_LINES.winner.cool.normal[1]`: ……決着だ。消えろ
+- `BITTER_RESOLUTION_LINES.winner.cool.bold[1]`: ……終わりだ
+- `BITTER_RESOLUTION_LINES.winner.cool.quiet[1]`: ……もう終わった
+- `BITTER_RESOLUTION_LINES.winner.seductive.normal[1]`: 終わったわ。もう……あなたの顔は見たくない
+- `BITTER_RESOLUTION_LINES.winner.seductive.bold[1]`: もう終わりよ。二度と関わりたくないの
+- `BITTER_RESOLUTION_LINES.winner.seductive.quiet[1]`: ………もう…終わりよ
+- `BITTER_RESOLUTION_LINES.winner.seductive.easygoing[1]`: …ふぅ。やっと終わったわね。もう勘弁して
+- `BITTER_RESOLUTION_LINES.winner.seductive.earnest[1]`: 決着がついたわ。…もう、十分よ
+- `BITTER_RESOLUTION_LINES.winner.seductive.emotional[1]`: 勝った……っ……これで全部、過去にできるわね……ふふ、ありがとう……
+- `BITTER_RESOLUTION_LINES.winner.polite.normal[1]`: ……終わりました。もう二度と…関わりたくありません
+- `BITTER_RESOLUTION_LINES.winner.polite.bold[1]`: 終わりです。もう振り返りません
+- `BITTER_RESOLUTION_LINES.winner.polite.quiet[1]`: ………もう…終わりです
+- `BITTER_RESOLUTION_LINES.winner.polite.shy[1]`: 勝てました…でも、もう…これで終わりにしませんか…？
+- `BITTER_RESOLUTION_LINES.winner.polite.easygoing[1]`: ……やっと終わりました。もう勘弁してください
+- `BITTER_RESOLUTION_LINES.winner.polite.earnest[1]`: 決着がつきました。……もう、十分です
+- `BITTER_RESOLUTION_LINES.winner.composed.normal[1]`: …終わった。…もう、いいだろう
+- `BITTER_RESOLUTION_LINES.winner.composed.bold[1]`: …終わった。もう振り返らない
+- `BITTER_RESOLUTION_LINES.winner.composed.quiet[1]`: ………（静かに背を向ける）
+- `BITTER_RESOLUTION_LINES.winner.composed.easygoing[1]`: …ふぅ。やっと終わったか
+- `BITTER_RESOLUTION_LINES.winner.composed.earnest[1]`: …決着がつきました。…もう十分です
+- `BITTER_RESOLUTION_LINES.winner.composed.emotional[1]`: …終わった。…もういい
+- `BITTER_RESOLUTION_LINES.loser.standard.normal[1]`: ……認めない。こんなの認めない
+- `BITTER_RESOLUTION_LINES.loser.standard.normal[2]`: 負けた？ ……まだ終わりじゃない！
+- `BITTER_RESOLUTION_LINES.loser.standard.bold[1]`: 認めない。…この借りは必ず返す
+- `BITTER_RESOLUTION_LINES.loser.standard.bold[2]`: ……もう一度。もう一度やらせて……！
+- `BITTER_RESOLUTION_LINES.loser.standard.quiet[1]`: ………（拳を握りしめ、唇を噛む）
+- `BITTER_RESOLUTION_LINES.loser.standard.shy[1]`: …もう…何も考えたくない…………
+- `BITTER_RESOLUTION_LINES.loser.standard.easygoing[1]`: ……ははっ。参ったよ。でも忘れないからな
+- `BITTER_RESOLUTION_LINES.loser.standard.earnest[1]`: 認めません……こんな結末は認めません……！
+- `BITTER_RESOLUTION_LINES.loser.standard.earnest[2]`: 負けた……でもこれで終わりなんかじゃない……！
+- `BITTER_RESOLUTION_LINES.loser.standard.emotional[1]`: 嫌だ……！ こんなの嫌だ……！ 認めない……！（叫ぶ）
+- `BITTER_RESOLUTION_LINES.loser.ojousama.normal[1]`: 認めない……こんな結末、認められない……！
+- `BITTER_RESOLUTION_LINES.loser.ojousama.bold[1]`: 認めない……！ この借りは……必ず返す……！
+- `BITTER_RESOLUTION_LINES.loser.ojousama.easygoing[1]`: ……参りましたわ。でも…忘れませんことよ
+- `BITTER_RESOLUTION_LINES.loser.ojousama.earnest[1]`: 認めませんわ。こんな結末は…認められませんの
+- `BITTER_RESOLUTION_LINES.loser.delinquent.normal[1]`: ちくしょう……覚えてろ……！
+- `BITTER_RESOLUTION_LINES.loser.delinquent.easygoing[1]`: くそっ……忘れねえぞ……
+- `BITTER_RESOLUTION_LINES.loser.cool.normal[1]`: ……今日は負けた。だが……終わらない
+- `BITTER_RESOLUTION_LINES.loser.cool.quiet[1]`: ………（静かに目を閉じる）
+- `BITTER_RESOLUTION_LINES.loser.seductive.normal[1]`: ……覚えていなさい。これで終わりだと思わないで
+- `BITTER_RESOLUTION_LINES.loser.seductive.bold[1]`: 認めないわ…この借りは必ず返すから
+- `BITTER_RESOLUTION_LINES.loser.seductive.quiet[1]`: ………認めない…わ
+- `BITTER_RESOLUTION_LINES.loser.seductive.easygoing[1]`: …参ったわね。でも…忘れないわよ
+- `BITTER_RESOLUTION_LINES.loser.seductive.earnest[1]`: 認めないわ…こんな結末は…認められないの
+- `BITTER_RESOLUTION_LINES.loser.seductive.emotional[1]`: 負けたわ……っ……でも、もう憎しみは終わり……ふふ、清々しいの……
+- `BITTER_RESOLUTION_LINES.loser.polite.normal[1]`: ……認めません。こんな結末は…認められません
+- `BITTER_RESOLUTION_LINES.loser.polite.bold[1]`: 認めません…この借りは必ず返します
+- `BITTER_RESOLUTION_LINES.loser.polite.quiet[1]`: ………認め…ません
+- `BITTER_RESOLUTION_LINES.loser.polite.shy[1]`: ま、負けました…悔しいです…でも、これ以上恨んだりはしません…
+- `BITTER_RESOLUTION_LINES.loser.polite.easygoing[1]`: ……参りました。でも…忘れませんから
+- `BITTER_RESOLUTION_LINES.loser.polite.earnest[1]`: ……認めません。こんな結末は……認められません
+- `BITTER_RESOLUTION_LINES.loser.composed.normal[1]`: …認めない。…これで終わりだと思うなよ
+- `BITTER_RESOLUTION_LINES.loser.composed.bold[1]`: …認めない。…必ず返す
+- `BITTER_RESOLUTION_LINES.loser.composed.quiet[1]`: ………（静かに拳を握る）
+- `BITTER_RESOLUTION_LINES.loser.composed.easygoing[1]`: …参ったね。…でも忘れないよ
+- `BITTER_RESOLUTION_LINES.loser.composed.earnest[1]`: …認めません。…この結末は
+- `BITTER_RESOLUTION_LINES.loser.composed.emotional[1]`: …っ…認めない。…絶対に
+
+## `BITTER_PREMATCH_LINES`
+
+- 出典: `src/data.js`
+- コード内コメント: 宿怨（BITTER）ペアの試合前セリフ / 決着を2度経てなお bond が届かなかった関係。宣戦布告ではなく、 / 「終わったはずのものが、また目の前にある」ことへの反応を書く。
+- 本数: 56
+
+- `BITTER_PREMATCH_LINES.ahead.standard.normal[1]`: 終わったはずなのに、まだ胃の底が重い
+- `BITTER_PREMATCH_LINES.ahead.standard.normal[2]`: もう一度勝てば消えるのかな。……多分、消えない
+- `BITTER_PREMATCH_LINES.ahead.standard.bold[1]`: 勝った側が、いつまで覚えてなきゃいけないの
+- `BITTER_PREMATCH_LINES.ahead.standard.bold[2]`: 終わらせたのは私。付き合ってやるのは、これで最後
+- `BITTER_PREMATCH_LINES.ahead.standard.quiet[1]`: ………（終わったはずの相手を、じっと見ている）
+- `BITTER_PREMATCH_LINES.ahead.standard.shy[1]`: …もう終わったのに…どうして、また気になるんだろう…
+- `BITTER_PREMATCH_LINES.ahead.standard.easygoing[1]`: はぁ……また？ もう終わった話でしょ、これ
+- `BITTER_PREMATCH_LINES.ahead.standard.easygoing[2]`: 勝っても軽くならないもんだね。……不思議
+- `BITTER_PREMATCH_LINES.ahead.standard.earnest[1]`: 決着はつきました。……私の中だけ、まだです
+- `BITTER_PREMATCH_LINES.ahead.standard.earnest[2]`: 勝った人間が引きずるのは、変な話ですね
+- `BITTER_PREMATCH_LINES.ahead.standard.emotional[1]`: 終わったって言っただろ……！ なんでまだ、いるんだ
+- `BITTER_PREMATCH_LINES.ahead.cool.normal[1]`: ……済んだ話だ。まだ気にする方がどうかしてる
+- `BITTER_PREMATCH_LINES.ahead.cool.quiet[1]`: ……終わった。それだけだ。……それだけのはずだ
+- `BITTER_PREMATCH_LINES.ahead.delinquent.normal[1]`: 片付いた話を蒸し返すな。……いい加減、疲れるんだよ
+- `BITTER_PREMATCH_LINES.ahead.delinquent.bold[1]`: もう決着はついてんだよ。何度潰されりゃ気が済む
+- `BITTER_PREMATCH_LINES.ahead.composed.normal[1]`: …決着はついてる。…なのに、まだ喉に引っかかってる
+- `BITTER_PREMATCH_LINES.ahead.composed.bold[1]`: …片付いた相手だよ。…なのに、まだ目で追ってる
+- `BITTER_PREMATCH_LINES.ahead.composed.quiet[1]`: ……もう済んだ。…なのに、目が探してしまう
+- `BITTER_PREMATCH_LINES.ahead.composed.easygoing[1]`: …また同じ顔か。…終わったって言ったんだけどな
+- `BITTER_PREMATCH_LINES.ahead.composed.earnest[1]`: …終わった件だよ。…片付けきれてないのは、私の方か
+- `BITTER_PREMATCH_LINES.ahead.composed.emotional[1]`: …勝ったのに、まだ腹が煮えてる。…笑えないな
+- `BITTER_PREMATCH_LINES.ahead.ojousama.bold[1]`: 倒した相手と同じ列に並ばされる屈辱、分かるかしらね？
+- `BITTER_PREMATCH_LINES.ahead.ojousama.earnest[1]`: 下ろしたはずの荷を、また持たされているみたいですわね
+- `BITTER_PREMATCH_LINES.ahead.polite.quiet[1]`: …もう済んだはず、なんです。…なのに、まだ
+- `BITTER_PREMATCH_LINES.ahead.polite.shy[1]`: 勝たせて…いただきました。…なのに、怖いままです…
+- `BITTER_PREMATCH_LINES.ahead.polite.earnest[1]`: 済んだことにしたいのです。……できないだけで
+- `BITTER_PREMATCH_LINES.ahead.seductive.easygoing[1]`: 片がついた相手なのにね。…目に入るとイラつくわ
+- `BITTER_PREMATCH_LINES.ahead.seductive.emotional[1]`: 済んだ話よ……っ……なのに、まだ手が震えるの
+- `BITTER_PREMATCH_LINES.behind.standard.normal[1]`: 終わったことにされた。私だけ、置いていかれたまま
+- `BITTER_PREMATCH_LINES.behind.standard.normal[2]`: 忘れられたら楽だったのに。……よく覚えてるんだ、これが
+- `BITTER_PREMATCH_LINES.behind.standard.bold[1]`: 終わりってことにされてる。でも私はまだ認めない
+- `BITTER_PREMATCH_LINES.behind.standard.bold[2]`: もう格付けは済んでいるのかも。それでも・・・
+- `BITTER_PREMATCH_LINES.behind.standard.quiet[1]`: ………（あの日の敗北の瞬間が、まだ耳から抜けない）
+- `BITTER_PREMATCH_LINES.behind.standard.shy[1]`: …あの日敗北した屈辱を…まだ、毎晩思い出すんです…
+- `BITTER_PREMATCH_LINES.behind.standard.easygoing[1]`: みんな綺麗に忘れてるね。……あたしは忘れないけど
+- `BITTER_PREMATCH_LINES.behind.standard.easygoing[2]`: いつまでやるんだろうね、これ。……やめられないけど
+- `BITTER_PREMATCH_LINES.behind.standard.earnest[1]`: あの負けを、まだ一度も納得できていません
+- `BITTER_PREMATCH_LINES.behind.standard.earnest[2]`: 終わったと言われるたび、足元が抜けるんです
+- `BITTER_PREMATCH_LINES.behind.standard.emotional[1]`: 終わってない……！ 勝手に終わらせるな……！
+- `BITTER_PREMATCH_LINES.behind.cool.normal[1]`: ……決着はついた。納得したとは、言ってない
+- `BITTER_PREMATCH_LINES.behind.cool.quiet[1]`: ……終わっていない。……私の中では
+- `BITTER_PREMATCH_LINES.behind.delinquent.normal[1]`: 終わった扱いされんのが、一番腹立つんだよ
+- `BITTER_PREMATCH_LINES.behind.delinquent.bold[1]`: あの日から一度も、まともに寝てねえんだよ
+- `BITTER_PREMATCH_LINES.behind.composed.normal[1]`: …片がついたらしいよ。…誰の中で、って話だけど
+- `BITTER_PREMATCH_LINES.behind.composed.bold[1]`: …終わった話らしいね。…じゃあ、この重さは何なんだろう
+- `BITTER_PREMATCH_LINES.behind.composed.quiet[1]`: ……もう昔の話だ。…そう言えたら、楽だったな
+- `BITTER_PREMATCH_LINES.behind.composed.easygoing[1]`: …忘れたふりが下手でさ。…まだ引きずってるよ
+- `BITTER_PREMATCH_LINES.behind.composed.earnest[1]`: …終わったって言われてる。…受け取れてないだけだよ
+- `BITTER_PREMATCH_LINES.behind.composed.emotional[1]`: …勝手に幕を下ろすな。…まだ、こっちに残ってる
+- `BITTER_PREMATCH_LINES.behind.ojousama.bold[1]`: 幕を引かれた側の気持ちは、誰も聞きませんのね
+- `BITTER_PREMATCH_LINES.behind.ojousama.earnest[1]`: 終わったことにされた分は、まだお返ししていませんの
+- `BITTER_PREMATCH_LINES.behind.polite.quiet[1]`: …終わったと、皆さんは仰います。…私は違います
+- `BITTER_PREMATCH_LINES.behind.polite.shy[1]`: …もう終わったって…言われました。…言われただけです…
+- `BITTER_PREMATCH_LINES.behind.polite.earnest[1]`: 決着は……ついておりません。私の中では、まだ
+- `BITTER_PREMATCH_LINES.behind.seductive.easygoing[1]`: 終わったって聞いたわ。…誰が決めたのかしらね
+- `BITTER_PREMATCH_LINES.behind.seductive.emotional[1]`: 終わったの……？ ……嘘よ。まだ、疼いてる
 
 ## `RIVALRY_MATCH_REACTION`
 
@@ -1189,73 +1252,73 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 試合後リアクション（高rivalryペア用、personality×archetype）
 - 本数: 67
 
-- `RIVALRY_MATCH_REACTION.winnerLines.normal._default[1]`: まだ終わってないんだろうけど。……でも次も私が勝つよ
-- `RIVALRY_MATCH_REACTION.winnerLines.normal._default[2]`: これで終わり……というわけには行かないよね
-- `RIVALRY_MATCH_REACTION.winnerLines.normal.ojousama[1]`: まだ終わって無いのでしょうね。あちらの目はまだ死んでいないようですし。
-- `RIVALRY_MATCH_REACTION.winnerLines.normal.delinquent[1]`: 次もぶっ倒す。覚えとけ
-- `RIVALRY_MATCH_REACTION.winnerLines.normal.cool[1]`: ……まだだ
-- `RIVALRY_MATCH_REACTION.winnerLines.normal.seductive[1]`: まだ終わってないわ。次も待ってなさい
-- `RIVALRY_MATCH_REACTION.winnerLines.normal.polite[1]`: まだ終わっていません。次も…必ず勝ちます
-- `RIVALRY_MATCH_REACTION.winnerLines.normal.composed[1]`: …まだ終わってない。次もあるよ
-- `RIVALRY_MATCH_REACTION.winnerLines.bold._default[1]`: 今日は私の勝ち。でも再戦はありそうね……
-- `RIVALRY_MATCH_REACTION.winnerLines.bold.ojousama[1]`: 当然の勝利ね。まだ諦めないのかしら？
-- `RIVALRY_MATCH_REACTION.winnerLines.bold.cool[1]`: ……一つ、借りを返した
-- `RIVALRY_MATCH_REACTION.winnerLines.bold.delinquent[1]`: 通過点だ。次もぶっ倒してやる
-- `RIVALRY_MATCH_REACTION.winnerLines.bold.seductive[1]`: まだ先があるのよ。…楽しみにしてなさい
-- `RIVALRY_MATCH_REACTION.winnerLines.bold.polite[1]`: この勝利は通過点です。まだ先がありますから
-- `RIVALRY_MATCH_REACTION.winnerLines.bold.composed[1]`: …通過点だね。まだ先がある
-- `RIVALRY_MATCH_REACTION.winnerLines.quiet._default[1]`: ………（相手の方を一瞬だけ振り返る）
-- `RIVALRY_MATCH_REACTION.winnerLines.quiet.cool[1]`: ……まだ終わらない
-- `RIVALRY_MATCH_REACTION.winnerLines.quiet.seductive[1]`: ………まだよ
-- `RIVALRY_MATCH_REACTION.winnerLines.quiet.polite[1]`: ………まだ…終わりではありません
-- `RIVALRY_MATCH_REACTION.winnerLines.quiet.composed[1]`: ………（一瞬振り返り、前を向く）
-- `RIVALRY_MATCH_REACTION.winnerLines.shy._default[1]`: 勝てた…よかった…でも、次も頑張らなきゃ…
-- `RIVALRY_MATCH_REACTION.winnerLines.easygoing._default[1]`: 一個勝ち！ でもまだまだこれからだよ！
-- `RIVALRY_MATCH_REACTION.winnerLines.easygoing.delinquent[1]`: 一勝！ でもまだまだだぜ！
-- `RIVALRY_MATCH_REACTION.winnerLines.easygoing.seductive[1]`: ひとつ勝ち。ふふ…でもまだこれからよ
-- `RIVALRY_MATCH_REACTION.winnerLines.easygoing.polite[1]`: 一つ勝たせていただきました！ でもまだまだこれからです
-- `RIVALRY_MATCH_REACTION.winnerLines.easygoing.ojousama[1]`: 一つ勝ちですわ！ でもまだまだこれからですの
-- `RIVALRY_MATCH_REACTION.winnerLines.easygoing.composed[1]`: 一つ勝ち。…でもまだまだだね
-- `RIVALRY_MATCH_REACTION.winnerLines.earnest._default[1]`: 無事勝ちました。でもこの因縁は、まだ続きそうね
-- `RIVALRY_MATCH_REACTION.winnerLines.earnest.polite[1]`: 勝たせていただきました。でもまだ……終わりではありません
-- `RIVALRY_MATCH_REACTION.winnerLines.earnest.seductive[1]`: 勝ったわ。でもこの因縁…まだ続くの
-- `RIVALRY_MATCH_REACTION.winnerLines.earnest.ojousama[1]`: 勝たせていただきましたわ。でもこの因縁はまだ続くのでしょうね
-- `RIVALRY_MATCH_REACTION.winnerLines.earnest.composed[1]`: …勝ちました。でもまだ続きます
-- `RIVALRY_MATCH_REACTION.winnerLines.emotional._default[1]`: 勝った……！ でもまだ……まだ終わらない……！
-- `RIVALRY_MATCH_REACTION.winnerLines.emotional.composed[1]`: …勝った。…でも、まだだ
-- `RIVALRY_MATCH_REACTION.loserLines.normal._default[1]`: 次は負けない。絶対に
-- `RIVALRY_MATCH_REACTION.loserLines.normal._default[2]`: ……覚えてて。この借りは必ず返すから
-- `RIVALRY_MATCH_REACTION.loserLines.normal.ojousama[1]`: 次は負けない。覚えていらっしゃい
-- `RIVALRY_MATCH_REACTION.loserLines.normal.delinquent[1]`: くそっ……次は絶対ぶっ倒す
-- `RIVALRY_MATCH_REACTION.loserLines.normal.cool[1]`: ……次は、ない。次こそ倒す
-- `RIVALRY_MATCH_REACTION.loserLines.normal.seductive[1]`: 次は……負けないわ
-- `RIVALRY_MATCH_REACTION.loserLines.normal.polite[1]`: 次は負けません。この借りは…必ず返します
-- `RIVALRY_MATCH_REACTION.loserLines.normal.composed[1]`: …次は負けない
-- `RIVALRY_MATCH_REACTION.loserLines.bold._default[1]`: この負けは認めない。必ず借りを返す
-- `RIVALRY_MATCH_REACTION.loserLines.bold.cool[1]`: ……忘れない。この敗北を
-- `RIVALRY_MATCH_REACTION.loserLines.bold.delinquent[1]`: この借り、絶対返すからな
-- `RIVALRY_MATCH_REACTION.loserLines.bold.seductive[1]`: この借り…必ず返すわ。覚悟しておきなさい
-- `RIVALRY_MATCH_REACTION.loserLines.bold.polite[1]`: この負けは認めません。必ず借りを返します
-- `RIVALRY_MATCH_REACTION.loserLines.bold.composed[1]`: …この借り、返すよ
-- `RIVALRY_MATCH_REACTION.loserLines.quiet._default[1]`: ………（静かに拳を握りしめる）
-- `RIVALRY_MATCH_REACTION.loserLines.quiet.cool[1]`: ……次だ
-- `RIVALRY_MATCH_REACTION.loserLines.quiet.seductive[1]`: ………次は、ないわよ
-- `RIVALRY_MATCH_REACTION.loserLines.quiet.polite[1]`: ………次は…負けません
-- `RIVALRY_MATCH_REACTION.loserLines.quiet.composed[1]`: ……次だ
-- `RIVALRY_MATCH_REACTION.loserLines.shy._default[1]`: …負けちゃった……悔しい…です……
-- `RIVALRY_MATCH_REACTION.loserLines.easygoing._default[1]`: あちゃー、負けた。でも次があるさ。絶対やり返す！
-- `RIVALRY_MATCH_REACTION.loserLines.easygoing.delinquent[1]`: くっそー！ 次は見てろよ！
-- `RIVALRY_MATCH_REACTION.loserLines.easygoing.seductive[1]`: あら、負けちゃった。…でも次は覚悟しておいてね
-- `RIVALRY_MATCH_REACTION.loserLines.easygoing.polite[1]`: 負けてしまいました。でも次は必ずやり返します！
-- `RIVALRY_MATCH_REACTION.loserLines.easygoing.ojousama[1]`: 負けてしまいましたわ。…でも次はやり返しますので！
-- `RIVALRY_MATCH_REACTION.loserLines.easygoing.composed[1]`: 負けたか。…ま、次があるさ
-- `RIVALRY_MATCH_REACTION.loserLines.earnest._default[1]`: 負けました。でも諦めません。必ず借りを返します
-- `RIVALRY_MATCH_REACTION.loserLines.earnest.polite[1]`: ……悔しいです。でも、次は必ず
-- `RIVALRY_MATCH_REACTION.loserLines.earnest.seductive[1]`: 負けたわ。でも…諦めないの。必ず返すから
-- `RIVALRY_MATCH_REACTION.loserLines.earnest.ojousama[1]`: 負けました。……でも諦めません。……必ず借りを返しますわ
-- `RIVALRY_MATCH_REACTION.loserLines.earnest.composed[1]`: …負けました。…でも、次は
-- `RIVALRY_MATCH_REACTION.loserLines.emotional._default[1]`: 悔しい……！ 絶対……絶対やり返す……！
-- `RIVALRY_MATCH_REACTION.loserLines.emotional.composed[1]`: …っ…次は、こうはいかない
+- `RIVALRY_MATCH_REACTION.winnerLines.standard.normal[1]`: まだ終わってないんだろうけど。……でも次も私が勝つよ
+- `RIVALRY_MATCH_REACTION.winnerLines.standard.normal[2]`: これで終わり……というわけには行かないよね
+- `RIVALRY_MATCH_REACTION.winnerLines.standard.bold[1]`: 今日は私の勝ち。でも再戦はありそうね……
+- `RIVALRY_MATCH_REACTION.winnerLines.standard.quiet[1]`: ………（相手の方を一瞬だけ振り返る）
+- `RIVALRY_MATCH_REACTION.winnerLines.standard.shy[1]`: 勝てた…よかった…でも、次も頑張らなきゃ…
+- `RIVALRY_MATCH_REACTION.winnerLines.standard.easygoing[1]`: 一個勝ち！ でもまだまだこれからだよ！
+- `RIVALRY_MATCH_REACTION.winnerLines.standard.earnest[1]`: 無事勝ちました。でもこの因縁は、まだ続きそうね
+- `RIVALRY_MATCH_REACTION.winnerLines.standard.emotional[1]`: 勝った……！ でもまだ……まだ終わらない……！
+- `RIVALRY_MATCH_REACTION.winnerLines.ojousama.normal[1]`: まだ終わって無いのでしょうね。あちらの目はまだ死んでいないようですし。
+- `RIVALRY_MATCH_REACTION.winnerLines.ojousama.bold[1]`: 当然の勝利ね。まだ諦めないのかしら？
+- `RIVALRY_MATCH_REACTION.winnerLines.ojousama.easygoing[1]`: 一つ勝ちですわ！ でもまだまだこれからですの
+- `RIVALRY_MATCH_REACTION.winnerLines.ojousama.earnest[1]`: 勝たせていただきましたわ。でもこの因縁はまだ続くのでしょうね
+- `RIVALRY_MATCH_REACTION.winnerLines.delinquent.normal[1]`: 次もぶっ倒す。覚えとけ
+- `RIVALRY_MATCH_REACTION.winnerLines.delinquent.bold[1]`: 通過点だ。次もぶっ倒してやる
+- `RIVALRY_MATCH_REACTION.winnerLines.delinquent.easygoing[1]`: 一勝！ でもまだまだだぜ！
+- `RIVALRY_MATCH_REACTION.winnerLines.cool.normal[1]`: ……まだだ
+- `RIVALRY_MATCH_REACTION.winnerLines.cool.bold[1]`: ……一つ、借りを返した
+- `RIVALRY_MATCH_REACTION.winnerLines.cool.quiet[1]`: ……まだ終わらない
+- `RIVALRY_MATCH_REACTION.winnerLines.seductive.normal[1]`: まだ終わってないわ。次も待ってなさい
+- `RIVALRY_MATCH_REACTION.winnerLines.seductive.bold[1]`: まだ先があるのよ。…楽しみにしてなさい
+- `RIVALRY_MATCH_REACTION.winnerLines.seductive.quiet[1]`: ………まだよ
+- `RIVALRY_MATCH_REACTION.winnerLines.seductive.easygoing[1]`: ひとつ勝ち。ふふ…でもまだこれからよ
+- `RIVALRY_MATCH_REACTION.winnerLines.seductive.earnest[1]`: 勝ったわ。でもこの因縁…まだ続くの
+- `RIVALRY_MATCH_REACTION.winnerLines.polite.normal[1]`: まだ終わっていません。次も…必ず勝ちます
+- `RIVALRY_MATCH_REACTION.winnerLines.polite.bold[1]`: この勝利は通過点です。まだ先がありますから
+- `RIVALRY_MATCH_REACTION.winnerLines.polite.quiet[1]`: ………まだ…終わりではありません
+- `RIVALRY_MATCH_REACTION.winnerLines.polite.easygoing[1]`: 一つ勝たせていただきました！ でもまだまだこれからです
+- `RIVALRY_MATCH_REACTION.winnerLines.polite.earnest[1]`: 勝たせていただきました。でもまだ……終わりではありません
+- `RIVALRY_MATCH_REACTION.winnerLines.composed.normal[1]`: …まだ終わってない。次もあるよ
+- `RIVALRY_MATCH_REACTION.winnerLines.composed.bold[1]`: …通過点だね。まだ先がある
+- `RIVALRY_MATCH_REACTION.winnerLines.composed.quiet[1]`: ………（一瞬振り返り、前を向く）
+- `RIVALRY_MATCH_REACTION.winnerLines.composed.easygoing[1]`: 一つ勝ち。…でもまだまだだね
+- `RIVALRY_MATCH_REACTION.winnerLines.composed.earnest[1]`: …勝ちました。でもまだ続きます
+- `RIVALRY_MATCH_REACTION.winnerLines.composed.emotional[1]`: …勝った。…でも、まだだ
+- `RIVALRY_MATCH_REACTION.loserLines.standard.normal[1]`: 次は負けない。絶対に
+- `RIVALRY_MATCH_REACTION.loserLines.standard.normal[2]`: ……覚えてて。この借りは必ず返すから
+- `RIVALRY_MATCH_REACTION.loserLines.standard.bold[1]`: この負けは認めない。必ず借りを返す
+- `RIVALRY_MATCH_REACTION.loserLines.standard.quiet[1]`: ………（静かに拳を握りしめる）
+- `RIVALRY_MATCH_REACTION.loserLines.standard.shy[1]`: …負けちゃった……悔しい…です……
+- `RIVALRY_MATCH_REACTION.loserLines.standard.easygoing[1]`: あちゃー、負けた。でも次があるさ。絶対やり返す！
+- `RIVALRY_MATCH_REACTION.loserLines.standard.earnest[1]`: 負けました。でも諦めません。必ず借りを返します
+- `RIVALRY_MATCH_REACTION.loserLines.standard.emotional[1]`: 悔しい……！ 絶対……絶対やり返す……！
+- `RIVALRY_MATCH_REACTION.loserLines.ojousama.normal[1]`: 次は負けない。覚えていらっしゃい
+- `RIVALRY_MATCH_REACTION.loserLines.ojousama.easygoing[1]`: 負けてしまいましたわ。…でも次はやり返しますので！
+- `RIVALRY_MATCH_REACTION.loserLines.ojousama.earnest[1]`: 負けました。……でも諦めません。……必ず借りを返しますわ
+- `RIVALRY_MATCH_REACTION.loserLines.delinquent.normal[1]`: くそっ……次は絶対ぶっ倒す
+- `RIVALRY_MATCH_REACTION.loserLines.delinquent.bold[1]`: この借り、絶対返すからな
+- `RIVALRY_MATCH_REACTION.loserLines.delinquent.easygoing[1]`: くっそー！ 次は見てろよ！
+- `RIVALRY_MATCH_REACTION.loserLines.cool.normal[1]`: ……次は、ない。次こそ倒す
+- `RIVALRY_MATCH_REACTION.loserLines.cool.bold[1]`: ……忘れない。この敗北を
+- `RIVALRY_MATCH_REACTION.loserLines.cool.quiet[1]`: ……次だ
+- `RIVALRY_MATCH_REACTION.loserLines.seductive.normal[1]`: 次は……負けないわ
+- `RIVALRY_MATCH_REACTION.loserLines.seductive.bold[1]`: この借り…必ず返すわ。覚悟しておきなさい
+- `RIVALRY_MATCH_REACTION.loserLines.seductive.quiet[1]`: ………次は、ないわよ
+- `RIVALRY_MATCH_REACTION.loserLines.seductive.easygoing[1]`: あら、負けちゃった。…でも次は覚悟しておいてね
+- `RIVALRY_MATCH_REACTION.loserLines.seductive.earnest[1]`: 負けたわ。でも…諦めないの。必ず返すから
+- `RIVALRY_MATCH_REACTION.loserLines.polite.normal[1]`: 次は負けません。この借りは…必ず返します
+- `RIVALRY_MATCH_REACTION.loserLines.polite.bold[1]`: この負けは認めません。必ず借りを返します
+- `RIVALRY_MATCH_REACTION.loserLines.polite.quiet[1]`: ………次は…負けません
+- `RIVALRY_MATCH_REACTION.loserLines.polite.easygoing[1]`: 負けてしまいました。でも次は必ずやり返します！
+- `RIVALRY_MATCH_REACTION.loserLines.polite.earnest[1]`: ……悔しいです。でも、次は必ず
+- `RIVALRY_MATCH_REACTION.loserLines.composed.normal[1]`: …次は負けない
+- `RIVALRY_MATCH_REACTION.loserLines.composed.bold[1]`: …この借り、返すよ
+- `RIVALRY_MATCH_REACTION.loserLines.composed.quiet[1]`: ……次だ
+- `RIVALRY_MATCH_REACTION.loserLines.composed.easygoing[1]`: 負けたか。…ま、次があるさ
+- `RIVALRY_MATCH_REACTION.loserLines.composed.earnest[1]`: …負けました。…でも、次は
+- `RIVALRY_MATCH_REACTION.loserLines.composed.emotional[1]`: …っ…次は、こうはいかない
 
 ## `UPSET_RIVALRY_LINES`
 
@@ -1263,77 +1326,77 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 番狂わせ × 高rivalry 専用テキスト
 - 本数: 71
 
-- `UPSET_RIVALRY_LINES.winnerLines.normal._default[1]`: 見たか！ 私が格下だなんて、もう言わせない……！
-- `UPSET_RIVALRY_LINES.winnerLines.normal.ojousama[1]`: ご覧になって？ 格上ですって……もう言えないわね
-- `UPSET_RIVALRY_LINES.winnerLines.normal.delinquent[1]`: どうだ……！ これが俺の答えだ！
-- `UPSET_RIVALRY_LINES.winnerLines.normal.cool[1]`: ……証明した
-- `UPSET_RIVALRY_LINES.winnerLines.normal.seductive[1]`: 見てた？ これが私の答えよ
-- `UPSET_RIVALRY_LINES.winnerLines.normal.polite[1]`: 見てください…！ 格下だなんて…もう言わせません…！
-- `UPSET_RIVALRY_LINES.winnerLines.normal.composed[1]`: …これが答えだよ。…もう格下なんて言わせない
-- `UPSET_RIVALRY_LINES.winnerLines.bold._default[1]`: ついに……勝った……！ ずっと待ってた……！
-- `UPSET_RIVALRY_LINES.winnerLines.bold.cool[1]`: ……やった。……ようやく
-- `UPSET_RIVALRY_LINES.winnerLines.bold.seductive[1]`: ようやく…勝ったわ。…ずっと待ってたの
-- `UPSET_RIVALRY_LINES.winnerLines.bold.polite[1]`: ついに…勝ちました…！ ずっと待っていたんです…！
-- `UPSET_RIVALRY_LINES.winnerLines.bold.composed[1]`: …ようやく。…超えたよ
-- `UPSET_RIVALRY_LINES.winnerLines.quiet._default[1]`: ………（膝をつき、震えている）……勝った…？
-- `UPSET_RIVALRY_LINES.winnerLines.quiet.cool[1]`: ……勝った。……信じられない
-- `UPSET_RIVALRY_LINES.winnerLines.quiet.seductive[1]`: ………勝った…の…？
-- `UPSET_RIVALRY_LINES.winnerLines.quiet.polite[1]`: ………勝ち…ました…？
-- `UPSET_RIVALRY_LINES.winnerLines.quiet.composed[1]`: ……勝った、か
-- `UPSET_RIVALRY_LINES.winnerLines.shy._default[1]`: え…うそ…私が…？ ほんとに…？（膝から崩れる）
-- `UPSET_RIVALRY_LINES.winnerLines.shy.polite[1]`: か、勝てるなんて…思っていませんでした…
-- `UPSET_RIVALRY_LINES.winnerLines.easygoing._default[1]`: うっそ……勝っちゃった……！ やばい、信じられない……！
-- `UPSET_RIVALRY_LINES.winnerLines.easygoing.delinquent[1]`: マジか……やったぞ……！
-- `UPSET_RIVALRY_LINES.winnerLines.easygoing.seductive[1]`: うそ…勝っちゃった…ふふ、信じられない
-- `UPSET_RIVALRY_LINES.winnerLines.easygoing.polite[1]`: うそです…勝っちゃいました…！ 信じられません…！
-- `UPSET_RIVALRY_LINES.winnerLines.easygoing.ojousama[1]`: まあ…勝ちましたわ…！ 信じられませんこと…！
-- `UPSET_RIVALRY_LINES.winnerLines.easygoing.composed[1]`: …勝っちゃった。…ふぅん
-- `UPSET_RIVALRY_LINES.winnerLines.earnest._default[1]`: やりました……！ ずっとこの人を目標にしてきて……ついに……！
-- `UPSET_RIVALRY_LINES.winnerLines.earnest.polite[1]`: 勝ちました……！ ずっと追いかけてきた背中に……ついに……！
-- `UPSET_RIVALRY_LINES.winnerLines.earnest.seductive[1]`: やったわ…ずっと追いかけてきて…ついに…
-- `UPSET_RIVALRY_LINES.winnerLines.earnest.ojousama[1]`: やりましたわ…！ ずっと追いかけてまいりまして…ついに…
-- `UPSET_RIVALRY_LINES.winnerLines.earnest.composed[1]`: …ずっと追いかけてきた。…ようやく、届いた
-- `UPSET_RIVALRY_LINES.winnerLines.emotional._default[1]`: 勝った……！ 勝ったよ……！ ずっと……ずっと追いかけてきたんだ……！（号泣）
-- `UPSET_RIVALRY_LINES.winnerLines.emotional.seductive[1]`: 勝っちゃった……っ……ふふ、自分でも信じられないの……
-- `UPSET_RIVALRY_LINES.winnerLines.emotional.composed[1]`: …っ…勝った。…ようやく
-- `UPSET_RIVALRY_LINES.loserLines.normal._default[1]`: 噓でしょ？……こんなはずじゃ……
-- `UPSET_RIVALRY_LINES.loserLines.normal._default[2]`: なんで……なんで負けたの……？
-- `UPSET_RIVALRY_LINES.loserLines.normal.ojousama[1]`: こんな……こんなことがありますの……？
-- `UPSET_RIVALRY_LINES.loserLines.normal.delinquent[1]`: くそっ……ありえねえ……！
-- `UPSET_RIVALRY_LINES.loserLines.normal.cool[1]`: ………（信じられないという表情で立ち尽くす）
-- `UPSET_RIVALRY_LINES.loserLines.normal.seductive[1]`: 嘘でしょう……こんなことが……
-- `UPSET_RIVALRY_LINES.loserLines.normal.polite[1]`: 嘘でしょう…こんなはずでは…ありません…
-- `UPSET_RIVALRY_LINES.loserLines.normal.composed[1]`: …こんなことが。…信じられない
-- `UPSET_RIVALRY_LINES.loserLines.bold._default[1]`: 認めない……！ こんな結果……認めない……！
-- `UPSET_RIVALRY_LINES.loserLines.bold._default[2]`: ありえない……嘘でしょ……！
-- `UPSET_RIVALRY_LINES.loserLines.bold.ojousama[1]`: 認めませんわ……！ こんな結果……！
-- `UPSET_RIVALRY_LINES.loserLines.bold.delinquent[1]`: ふざけんな……！ こんなの認めねえ……！
-- `UPSET_RIVALRY_LINES.loserLines.bold.cool[1]`: ……嘘だろう
-- `UPSET_RIVALRY_LINES.loserLines.bold.seductive[1]`: 認めないわ…こんな結果…
-- `UPSET_RIVALRY_LINES.loserLines.bold.polite[1]`: 認めません…こんな結果は…
-- `UPSET_RIVALRY_LINES.loserLines.bold.composed[1]`: …認めない。…こんな結果は
-- `UPSET_RIVALRY_LINES.loserLines.quiet._default[1]`: ………（呆然と天井を見上げている）
-- `UPSET_RIVALRY_LINES.loserLines.quiet.cool[1]`: ………（膝をつき、動かない）
-- `UPSET_RIVALRY_LINES.loserLines.quiet.seductive[1]`: ………嘘…でしょう…
-- `UPSET_RIVALRY_LINES.loserLines.quiet.polite[1]`: ………そんな…
-- `UPSET_RIVALRY_LINES.loserLines.quiet.composed[1]`: ………（静かに天を仰ぐ）
-- `UPSET_RIVALRY_LINES.loserLines.shy._default[1]`: …え……うそ…………（何が起きたかわかっていない）
-- `UPSET_RIVALRY_LINES.loserLines.shy.polite[1]`: ま、まさか負けるなんて…く、悔しいです…
-- `UPSET_RIVALRY_LINES.loserLines.easygoing._default[1]`: えっ……嘘でしょ……マジで……？
-- `UPSET_RIVALRY_LINES.loserLines.easygoing.delinquent[1]`: は……？ マジかよ……
-- `UPSET_RIVALRY_LINES.loserLines.easygoing.seductive[1]`: えっ…嘘でしょう…まさか…
-- `UPSET_RIVALRY_LINES.loserLines.easygoing.polite[1]`: えっ…嘘ですよね…まさか…
-- `UPSET_RIVALRY_LINES.loserLines.easygoing.ojousama[1]`: まあ…嘘ですわ…こんなことが…
-- `UPSET_RIVALRY_LINES.loserLines.easygoing.composed[1]`: …嘘だろう。…こんなことが
-- `UPSET_RIVALRY_LINES.loserLines.earnest._default[1]`: こんなはずでは……油断したつもりはなかったのに……
-- `UPSET_RIVALRY_LINES.loserLines.earnest._default[2]`: 信じられません……なぜ……
-- `UPSET_RIVALRY_LINES.loserLines.earnest.polite[1]`: こんな……全力を出したはずなのに……
-- `UPSET_RIVALRY_LINES.loserLines.earnest.seductive[1]`: こんなはずじゃ…全力を出したのに…
-- `UPSET_RIVALRY_LINES.loserLines.earnest.ojousama[1]`: こんなはずでは…全力を尽くしましたのに…
-- `UPSET_RIVALRY_LINES.loserLines.earnest.composed[1]`: …こんなはずでは。…なぜ
-- `UPSET_RIVALRY_LINES.loserLines.emotional._default[1]`: 嫌だ……！ こんなの嫌だ……！ なんで……！
-- `UPSET_RIVALRY_LINES.loserLines.emotional.seductive[1]`: まさか負けるなんて……っ……ふふ、悔しい……
-- `UPSET_RIVALRY_LINES.loserLines.emotional.composed[1]`: …っ…なんで。…こんなはずじゃ
+- `UPSET_RIVALRY_LINES.winnerLines.standard.normal[1]`: 見たか！ 私が格下だなんて、もう言わせない……！
+- `UPSET_RIVALRY_LINES.winnerLines.standard.bold[1]`: ついに……勝った……！ ずっと待ってた……！
+- `UPSET_RIVALRY_LINES.winnerLines.standard.quiet[1]`: ………（膝をつき、震えている）……勝った…？
+- `UPSET_RIVALRY_LINES.winnerLines.standard.shy[1]`: え…うそ…私が…？ ほんとに…？（膝から崩れる）
+- `UPSET_RIVALRY_LINES.winnerLines.standard.easygoing[1]`: うっそ……勝っちゃった……！ やばい、信じられない……！
+- `UPSET_RIVALRY_LINES.winnerLines.standard.earnest[1]`: やりました……！ ずっとこの人を目標にしてきて……ついに……！
+- `UPSET_RIVALRY_LINES.winnerLines.standard.emotional[1]`: 勝った……！ 勝ったよ……！ ずっと……ずっと追いかけてきたんだ……！（号泣）
+- `UPSET_RIVALRY_LINES.winnerLines.ojousama.normal[1]`: ご覧になって？ 格上ですって……もう言えないわね
+- `UPSET_RIVALRY_LINES.winnerLines.ojousama.easygoing[1]`: まあ…勝ちましたわ…！ 信じられませんこと…！
+- `UPSET_RIVALRY_LINES.winnerLines.ojousama.earnest[1]`: やりましたわ…！ ずっと追いかけてまいりまして…ついに…
+- `UPSET_RIVALRY_LINES.winnerLines.delinquent.normal[1]`: どうだ……！ これが俺の答えだ！
+- `UPSET_RIVALRY_LINES.winnerLines.delinquent.easygoing[1]`: マジか……やったぞ……！
+- `UPSET_RIVALRY_LINES.winnerLines.cool.normal[1]`: ……証明した
+- `UPSET_RIVALRY_LINES.winnerLines.cool.bold[1]`: ……やった。……ようやく
+- `UPSET_RIVALRY_LINES.winnerLines.cool.quiet[1]`: ……勝った。……信じられない
+- `UPSET_RIVALRY_LINES.winnerLines.seductive.normal[1]`: 見てた？ これが私の答えよ
+- `UPSET_RIVALRY_LINES.winnerLines.seductive.bold[1]`: ようやく…勝ったわ。…ずっと待ってたの
+- `UPSET_RIVALRY_LINES.winnerLines.seductive.quiet[1]`: ………勝った…の…？
+- `UPSET_RIVALRY_LINES.winnerLines.seductive.easygoing[1]`: うそ…勝っちゃった…ふふ、信じられない
+- `UPSET_RIVALRY_LINES.winnerLines.seductive.earnest[1]`: やったわ…ずっと追いかけてきて…ついに…
+- `UPSET_RIVALRY_LINES.winnerLines.seductive.emotional[1]`: 勝っちゃった……っ……ふふ、自分でも信じられないの……
+- `UPSET_RIVALRY_LINES.winnerLines.polite.normal[1]`: 見てください…！ 格下だなんて…もう言わせません…！
+- `UPSET_RIVALRY_LINES.winnerLines.polite.bold[1]`: ついに…勝ちました…！ ずっと待っていたんです…！
+- `UPSET_RIVALRY_LINES.winnerLines.polite.quiet[1]`: ………勝ち…ました…？
+- `UPSET_RIVALRY_LINES.winnerLines.polite.shy[1]`: か、勝てるなんて…思っていませんでした…
+- `UPSET_RIVALRY_LINES.winnerLines.polite.easygoing[1]`: うそです…勝っちゃいました…！ 信じられません…！
+- `UPSET_RIVALRY_LINES.winnerLines.polite.earnest[1]`: 勝ちました……！ ずっと追いかけてきた背中に……ついに……！
+- `UPSET_RIVALRY_LINES.winnerLines.composed.normal[1]`: …これが答えだよ。…もう格下なんて言わせない
+- `UPSET_RIVALRY_LINES.winnerLines.composed.bold[1]`: …ようやく。…超えたよ
+- `UPSET_RIVALRY_LINES.winnerLines.composed.quiet[1]`: ……勝った、か
+- `UPSET_RIVALRY_LINES.winnerLines.composed.easygoing[1]`: …勝っちゃった。…ふぅん
+- `UPSET_RIVALRY_LINES.winnerLines.composed.earnest[1]`: …ずっと追いかけてきた。…ようやく、届いた
+- `UPSET_RIVALRY_LINES.winnerLines.composed.emotional[1]`: …っ…勝った。…ようやく
+- `UPSET_RIVALRY_LINES.loserLines.standard.normal[1]`: 噓でしょ？……こんなはずじゃ……
+- `UPSET_RIVALRY_LINES.loserLines.standard.normal[2]`: なんで……なんで負けたの……？
+- `UPSET_RIVALRY_LINES.loserLines.standard.bold[1]`: 認めない……！ こんな結果……認めない……！
+- `UPSET_RIVALRY_LINES.loserLines.standard.bold[2]`: ありえない……嘘でしょ……！
+- `UPSET_RIVALRY_LINES.loserLines.standard.quiet[1]`: ………（呆然と天井を見上げている）
+- `UPSET_RIVALRY_LINES.loserLines.standard.shy[1]`: …え……うそ…………（何が起きたかわかっていない）
+- `UPSET_RIVALRY_LINES.loserLines.standard.easygoing[1]`: えっ……嘘でしょ……マジで……？
+- `UPSET_RIVALRY_LINES.loserLines.standard.earnest[1]`: こんなはずでは……油断したつもりはなかったのに……
+- `UPSET_RIVALRY_LINES.loserLines.standard.earnest[2]`: 信じられません……なぜ……
+- `UPSET_RIVALRY_LINES.loserLines.standard.emotional[1]`: 嫌だ……！ こんなの嫌だ……！ なんで……！
+- `UPSET_RIVALRY_LINES.loserLines.ojousama.normal[1]`: こんな……こんなことがありますの……？
+- `UPSET_RIVALRY_LINES.loserLines.ojousama.bold[1]`: 認めませんわ……！ こんな結果……！
+- `UPSET_RIVALRY_LINES.loserLines.ojousama.easygoing[1]`: まあ…嘘ですわ…こんなことが…
+- `UPSET_RIVALRY_LINES.loserLines.ojousama.earnest[1]`: こんなはずでは…全力を尽くしましたのに…
+- `UPSET_RIVALRY_LINES.loserLines.delinquent.normal[1]`: くそっ……ありえねえ……！
+- `UPSET_RIVALRY_LINES.loserLines.delinquent.bold[1]`: ふざけんな……！ こんなの認めねえ……！
+- `UPSET_RIVALRY_LINES.loserLines.delinquent.easygoing[1]`: は……？ マジかよ……
+- `UPSET_RIVALRY_LINES.loserLines.cool.normal[1]`: ………（信じられないという表情で立ち尽くす）
+- `UPSET_RIVALRY_LINES.loserLines.cool.bold[1]`: ……嘘だろう
+- `UPSET_RIVALRY_LINES.loserLines.cool.quiet[1]`: ………（膝をつき、動かない）
+- `UPSET_RIVALRY_LINES.loserLines.seductive.normal[1]`: 嘘でしょう……こんなことが……
+- `UPSET_RIVALRY_LINES.loserLines.seductive.bold[1]`: 認めないわ…こんな結果…
+- `UPSET_RIVALRY_LINES.loserLines.seductive.quiet[1]`: ………嘘…でしょう…
+- `UPSET_RIVALRY_LINES.loserLines.seductive.easygoing[1]`: えっ…嘘でしょう…まさか…
+- `UPSET_RIVALRY_LINES.loserLines.seductive.earnest[1]`: こんなはずじゃ…全力を出したのに…
+- `UPSET_RIVALRY_LINES.loserLines.seductive.emotional[1]`: まさか負けるなんて……っ……ふふ、悔しい……
+- `UPSET_RIVALRY_LINES.loserLines.polite.normal[1]`: 嘘でしょう…こんなはずでは…ありません…
+- `UPSET_RIVALRY_LINES.loserLines.polite.bold[1]`: 認めません…こんな結果は…
+- `UPSET_RIVALRY_LINES.loserLines.polite.quiet[1]`: ………そんな…
+- `UPSET_RIVALRY_LINES.loserLines.polite.shy[1]`: ま、まさか負けるなんて…く、悔しいです…
+- `UPSET_RIVALRY_LINES.loserLines.polite.easygoing[1]`: えっ…嘘ですよね…まさか…
+- `UPSET_RIVALRY_LINES.loserLines.polite.earnest[1]`: こんな……全力を出したはずなのに……
+- `UPSET_RIVALRY_LINES.loserLines.composed.normal[1]`: …こんなことが。…信じられない
+- `UPSET_RIVALRY_LINES.loserLines.composed.bold[1]`: …認めない。…こんな結果は
+- `UPSET_RIVALRY_LINES.loserLines.composed.quiet[1]`: ………（静かに天を仰ぐ）
+- `UPSET_RIVALRY_LINES.loserLines.composed.easygoing[1]`: …嘘だろう。…こんなことが
+- `UPSET_RIVALRY_LINES.loserLines.composed.earnest[1]`: …こんなはずでは。…なぜ
+- `UPSET_RIVALRY_LINES.loserLines.composed.emotional[1]`: …っ…なんで。…こんなはずじゃ
 
 ## `WEEKLY_STORY_TICKER`
 
@@ -1415,101 +1478,101 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `WEEKLY_STORY_TICKER.trustWarning[3]`: {name}がひとりでロッカールームに佇んでいた
 - `WEEKLY_STORY_TICKER.trustWarning[4]`: {name}の笑顔が減った——周囲もそれに気づいている
 
-### awakening.normal._default[]
+### awakening.standard.normal[]
 
-- `WEEKLY_STORY_TICKER.awakening.normal._default[1]`: {nameB}が{nameA}に向かって叫んだ。「もう我慢の限界よ！ あなたがそうなら、私も本気で行く！」
-- `WEEKLY_STORY_TICKER.awakening.normal._default[2]`: {nameB}の目の色が変わった。「……もういい。あなたがそう思うなら、私も覚悟を決める」
+- `WEEKLY_STORY_TICKER.awakening.standard.normal[1]`: {nameB}が{nameA}に向かって叫んだ。「もう我慢の限界よ！ あなたがそうなら、私も本気で行く！」
+- `WEEKLY_STORY_TICKER.awakening.standard.normal[2]`: {nameB}の目の色が変わった。「……もういい。あなたがそう思うなら、私も覚悟を決める」
 
-### awakening.normal.ojousama[]
+### awakening.standard.bold[]
 
-- `WEEKLY_STORY_TICKER.awakening.normal.ojousama[1]`: {nameB}が{nameA}に向き直った。「もう結構ですわ。あなたがその態度なら、こちらにも考えがありますの」
+- `WEEKLY_STORY_TICKER.awakening.standard.bold[1]`: {nameB}が{nameA}の前に立ちはだかった。「いい加減にして。そのつもりなら、全力で相手になるから」
+- `WEEKLY_STORY_TICKER.awakening.standard.bold[2]`: {nameB}が{nameA}をまっすぐ見据えた。「もう黙ってられない。受けて立つよ」
 
-### awakening.normal.delinquent[]
+### awakening.standard.quiet[]
 
-- `WEEKLY_STORY_TICKER.awakening.normal.delinquent[1]`: {nameB}が{nameA}を睨みつけた。「……てめえがそう来るなら、こっちも容赦しねえぞ」
+- `WEEKLY_STORY_TICKER.awakening.standard.quiet[1]`: {nameB}が静かに拳を握った。「ずっと信じてた。でももう……終わりにする」
 
-### awakening.normal.cool[]
+### awakening.standard.shy[]
 
-- `WEEKLY_STORY_TICKER.awakening.normal.cool[1]`: {nameB}の表情が変わった。「……もういい。覚悟は決めた」
+- `WEEKLY_STORY_TICKER.awakening.standard.shy[1]`: 「…ずっと我慢してた…けど…もう限界です…」——{nameB}の声は小さいけど、震えていなかった
+- `WEEKLY_STORY_TICKER.awakening.standard.shy[2]`: {nameB}が俯いたまま{nameA}に告げた。「…もう…我慢しない…です」
 
-### awakening.normal.seductive[]
+### awakening.standard.easygoing[]
 
-- `WEEKLY_STORY_TICKER.awakening.normal.seductive[1]`: {nameB}の瞳が冷たく光った。「……そう。あなたがそうなら、私も本気を出すわ」
+- `WEEKLY_STORY_TICKER.awakening.standard.easygoing[1]`: {nameB}の笑顔が消えた。「……さすがにさ。これはないよ。本気で怒ってるんだからね」
 
-### awakening.normal.composed[]
+### awakening.standard.earnest[]
 
-- `WEEKLY_STORY_TICKER.awakening.normal.composed[1]`: {nameB}の表情が静かに変わった。「…そう。…なら、こちらも覚悟を決めるよ」
+- `WEEKLY_STORY_TICKER.awakening.standard.earnest[1]`: {nameB}が真っ直ぐ{nameA}を見つめた。「ずっと信じていました。でも……もう限界です。本気で行きます」
 
-### awakening.bold._default[]
+### awakening.standard.emotional[]
 
-- `WEEKLY_STORY_TICKER.awakening.bold._default[1]`: {nameB}が{nameA}の前に立ちはだかった。「いい加減にして。そのつもりなら、全力で相手になるから」
-- `WEEKLY_STORY_TICKER.awakening.bold._default[2]`: {nameB}が{nameA}をまっすぐ見据えた。「もう黙ってられない。受けて立つよ」
+- `WEEKLY_STORY_TICKER.awakening.standard.emotional[1]`: {nameB}が涙を流しながら{nameA}に叫んだ。「なんで……！ なんでそんなことするの……！ もう……もう許さない……！」
 
-### awakening.bold.ojousama[]
+### awakening.ojousama.normal[]
 
-- `WEEKLY_STORY_TICKER.awakening.bold.ojousama[1]`: {nameB}が{nameA}に宣言した。「もう我慢いたしませんわ！ 全力でお相手して差し上げます！」
+- `WEEKLY_STORY_TICKER.awakening.ojousama.normal[1]`: {nameB}が{nameA}に向き直った。「もう結構ですわ。あなたがその態度なら、こちらにも考えがありますの」
 
-### awakening.bold.delinquent[]
+### awakening.ojousama.bold[]
 
-- `WEEKLY_STORY_TICKER.awakening.bold.delinquent[1]`: {nameB}が{nameA}に吠えた。「上等だ！ その喧嘩、買ってやるよ！」
+- `WEEKLY_STORY_TICKER.awakening.ojousama.bold[1]`: {nameB}が{nameA}に宣言した。「もう我慢いたしませんわ！ 全力でお相手して差し上げます！」
 
-### awakening.bold.cool[]
+### awakening.delinquent.normal[]
 
-- `WEEKLY_STORY_TICKER.awakening.bold.cool[1]`: {nameB}が静かに立ち上がった。「……もう十分だ。行くぞ」
+- `WEEKLY_STORY_TICKER.awakening.delinquent.normal[1]`: {nameB}が{nameA}を睨みつけた。「……てめえがそう来るなら、こっちも容赦しねえぞ」
 
-### awakening.bold.composed[]
+### awakening.delinquent.bold[]
 
-- `WEEKLY_STORY_TICKER.awakening.bold.composed[1]`: {nameB}が静かに{nameA}の前に立った。「…もういいだろう。受けて立つよ」
+- `WEEKLY_STORY_TICKER.awakening.delinquent.bold[1]`: {nameB}が{nameA}に吠えた。「上等だ！ その喧嘩、買ってやるよ！」
 
-### awakening.quiet._default[]
+### awakening.delinquent.easygoing[]
 
-- `WEEKLY_STORY_TICKER.awakening.quiet._default[1]`: {nameB}が静かに拳を握った。「ずっと信じてた。でももう……終わりにする」
+- `WEEKLY_STORY_TICKER.awakening.delinquent.easygoing[1]`: {nameB}の軽い口調が一変した。「……お前さぁ、いい加減にしろよ。マジで怒るぞ」
 
-### awakening.quiet.cool[]
+### awakening.cool.normal[]
 
-- `WEEKLY_STORY_TICKER.awakening.quiet.cool[1]`: {nameB}が無言で{nameA}の前に立ちはだかった。その目は——もう、以前の{nameB}ではなかった
+- `WEEKLY_STORY_TICKER.awakening.cool.normal[1]`: {nameB}の表情が変わった。「……もういい。覚悟は決めた」
 
-### awakening.quiet.polite[]
+### awakening.cool.bold[]
 
-- `WEEKLY_STORY_TICKER.awakening.quiet.polite[1]`: {nameB}が小さく、しかし確かな声で言った。「…もう…我慢しません」
+- `WEEKLY_STORY_TICKER.awakening.cool.bold[1]`: {nameB}が静かに立ち上がった。「……もう十分だ。行くぞ」
 
-### awakening.quiet.composed[]
+### awakening.cool.quiet[]
 
-- `WEEKLY_STORY_TICKER.awakening.quiet.composed[1]`: {nameB}が静かに{nameA}を見据えた。「…もういい。…覚悟は決めた」
+- `WEEKLY_STORY_TICKER.awakening.cool.quiet[1]`: {nameB}が無言で{nameA}の前に立ちはだかった。その目は——もう、以前の{nameB}ではなかった
 
-### awakening.shy._default[]
+### awakening.seductive.normal[]
 
-- `WEEKLY_STORY_TICKER.awakening.shy._default[1]`: 「…ずっと我慢してた…けど…もう限界です…」——{nameB}の声は小さいけど、震えていなかった
-- `WEEKLY_STORY_TICKER.awakening.shy._default[2]`: {nameB}が俯いたまま{nameA}に告げた。「…もう…我慢しない…です」
+- `WEEKLY_STORY_TICKER.awakening.seductive.normal[1]`: {nameB}の瞳が冷たく光った。「……そう。あなたがそうなら、私も本気を出すわ」
 
-### awakening.easygoing._default[]
+### awakening.composed.normal[]
 
-- `WEEKLY_STORY_TICKER.awakening.easygoing._default[1]`: {nameB}の笑顔が消えた。「……さすがにさ。これはないよ。本気で怒ってるんだからね」
+- `WEEKLY_STORY_TICKER.awakening.composed.normal[1]`: {nameB}の表情が静かに変わった。「…そう。…なら、こちらも覚悟を決めるよ」
 
-### awakening.easygoing.delinquent[]
+### awakening.composed.bold[]
 
-- `WEEKLY_STORY_TICKER.awakening.easygoing.delinquent[1]`: {nameB}の軽い口調が一変した。「……お前さぁ、いい加減にしろよ。マジで怒るぞ」
+- `WEEKLY_STORY_TICKER.awakening.composed.bold[1]`: {nameB}が静かに{nameA}の前に立った。「…もういいだろう。受けて立つよ」
 
-### awakening.easygoing.composed[]
+### awakening.composed.quiet[]
 
-- `WEEKLY_STORY_TICKER.awakening.easygoing.composed[1]`: {nameB}の笑顔が消えた。「…さすがにね。…こっちも本気で行くよ」
+- `WEEKLY_STORY_TICKER.awakening.composed.quiet[1]`: {nameB}が静かに{nameA}を見据えた。「…もういい。…覚悟は決めた」
 
-### awakening.earnest._default[]
+### awakening.composed.easygoing[]
 
-- `WEEKLY_STORY_TICKER.awakening.earnest._default[1]`: {nameB}が真っ直ぐ{nameA}を見つめた。「ずっと信じていました。でも……もう限界です。本気で行きます」
+- `WEEKLY_STORY_TICKER.awakening.composed.easygoing[1]`: {nameB}の笑顔が消えた。「…さすがにね。…こっちも本気で行くよ」
 
-### awakening.earnest.polite[]
+### awakening.composed.earnest[]
 
-- `WEEKLY_STORY_TICKER.awakening.earnest.polite[1]`: {nameB}が深く息を吸い、言い放った。「これ以上は……お許しいただけません。全力で参ります」
+- `WEEKLY_STORY_TICKER.awakening.composed.earnest[1]`: {nameB}が{nameA}を真っ直ぐ見た。「…もう十分待った。…本気で行きます」
 
-### awakening.earnest.composed[]
+### awakening.composed.emotional[]
 
-- `WEEKLY_STORY_TICKER.awakening.earnest.composed[1]`: {nameB}が{nameA}を真っ直ぐ見た。「…もう十分待った。…本気で行きます」
+- `WEEKLY_STORY_TICKER.awakening.composed.emotional[1]`: {nameB}が押し殺した声で{nameA}に告げた。「…もういい。…覚えてろ」
 
-### awakening.emotional._default[]
+### awakening.polite.quiet[]
 
-- `WEEKLY_STORY_TICKER.awakening.emotional._default[1]`: {nameB}が涙を流しながら{nameA}に叫んだ。「なんで……！ なんでそんなことするの……！ もう……もう許さない……！」
+- `WEEKLY_STORY_TICKER.awakening.polite.quiet[1]`: {nameB}が小さく、しかし確かな声で言った。「…もう…我慢しません」
 
-### awakening.emotional.composed[]
+### awakening.polite.earnest[]
 
-- `WEEKLY_STORY_TICKER.awakening.emotional.composed[1]`: {nameB}が押し殺した声で{nameA}に告げた。「…もういい。…覚えてろ」
+- `WEEKLY_STORY_TICKER.awakening.polite.earnest[1]`: {nameB}が深く息を吸い、言い放った。「これ以上は……お許しいただけません。全力で参ります」
