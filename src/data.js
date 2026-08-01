@@ -16798,6 +16798,33 @@ const NEWS_HEADLINE_TEMPLATES = {
     { headline: '「天頂戦」最高評価は{mq}点 — {winner} vs {loser}',
       body: '{round}の{winner}（{winnerOrg}）対{loser}（{loserOrg}）が、全15試合を通して最も高い評価を集めた。{closing}' },
   ],
+  // ── P3 §2-6: 週次で拾うニュース源 ──
+  // 記者の書く事実記述。格言・慰め・断定をしない(feedback_narration_factual_wording)。
+  // 数値は「全治N週」「N連勝」まで。MQ/condition のような内部語は出さない。
+  longInjury: [
+    { headline: '{orgName}の{name}、{injuryType}で全治{weeks}週',
+      body: '{orgName}の{name}が{injuryType}と診断された。全治{weeks}週の見込みで、この間はカードから外れる。復帰後にどこまで戻せるかが次の焦点になる。' },
+    { headline: '{name}が長期離脱へ——全治{weeks}週',
+      body: '{orgName}の{name}が{injuryType}を負い、全治{weeks}週と発表された。離脱期間は団体の編成に直接響く。穴をどう埋めるかは、そのまま今季の残りを左右する。' },
+    { headline: '{orgName}に痛手、{name}が{weeks}週の離脱',
+      body: '{name}（{orgName}）の{injuryType}は全治{weeks}週。復帰の目処が立つまで、上位カードの組み替えは避けられない。' },
+  ],
+  winStreakMilestone: [
+    { headline: '{orgName}の{name}、{count}連勝',
+      body: '{orgName}の{name}が{count}連勝に到達した。{recordLine}この勢いがどこまで続くかに注目が集まる。' },
+    { headline: '止まらない{name}——{count}連勝',
+      body: '{name}（{orgName}）が白星を{count}に伸ばした。{recordLine}この期間に当たった相手の顔ぶれが、連勝の重さをそのまま示している。' },
+    { headline: '{name}が{count}連勝、視線を集める',
+      body: '{orgName}の{name}が{count}連勝。{recordLine}カードを組む側からすれば、次に誰を当てるかが難しくなってきた。' },
+  ],
+  loseStreakMilestone: [
+    { headline: '{orgName}の{name}、{count}連敗',
+      body: '{orgName}の{name}が{count}連敗となった。直近{count}戦は白星なし。カードの組み方を変えるのか、調整を見直すのか、手を打つ段階に入っている。' },
+    { headline: '{name}が{count}連敗、出口が見えない',
+      body: '{name}（{orgName}）の連敗が{count}に達した。カードの組み方か、調整か。原因の切り分けが要る段階に入っている。' },
+    { headline: '{name}の連敗が{count}に',
+      body: '{orgName}の{name}が{count}連敗。連敗の間に組まれた相手の格を見れば、当たりが悪かったのか、それだけではないのかが分かる。' },
+  ],
   autumnWarAnnounce: [
     { headline: '4団体勝ち残り対抗戦、組み合わせ決定',
       body: '第{season}回4団体勝ち残り対抗戦は第36週に開催される。準決勝は第1シード{seed1}対第4シード{seed4}、第2シード{seed2}対第3シード{seed3}。各団体3名が先鋒・中堅・大将の順に立ち、最後の一人になるまでリングを譲らない。{preview}' },

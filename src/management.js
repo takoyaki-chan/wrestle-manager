@@ -12668,6 +12668,10 @@ const Engine = {
       }
     }
 
+    // P3 §2-6: 大怪我・連勝連敗の節目を拾って業界ニュースへ積む。
+    // 新聞生成より前に置く(この週の紙面に載せるため)
+    if (!s.offSeason) s = Engine.newspaper.scanRosterNews(s);
+
     // MQ再設計P5 §5.4: hotProspectDebut/fatedRivals(デビュー戦検出) + topChampionInjury(新規重傷検出)
     // 新聞生成が読み取る _industryNewsEvents キューへ、生成の直前に積む
     if (!s.offSeason) {
@@ -28293,6 +28297,10 @@ Engine.newspaper = {
     aiBreakthrough:       60,
     aiPracticeInjury:     55,
     aiMediaStart:         45,
+    // P3 §2-6: 週次で拾うニュース源。基礎点は仕様の目安どおり
+    longInjury:          140,   // 大怪我(長期離脱)。強度補正で 4×全治週数 が乗る
+    winStreakMilestone:  120,   // 連勝の節目。団体記録の更新/王手で +40/+20
+    loseStreakMilestone:  95,   // 連敗の節目。連勝より一段低い
     transfer:             50,
     // ドラフト結果（2026-07-27）。オフに新聞が出ないので新年号にまとめて載る。
     // 自団体の獲得は引退記事(aiAceRetirement 160)と並んで一面を争える高さに置く
@@ -28470,6 +28478,9 @@ Engine.newspaper = {
     // mqAllTimeRecord / mqTagRecord は基礎点(320/310)自体が「歴代記録の更新」を
     // 表しているので、重ねると二重計上になる。§2-3 の「肉薄 +30」に当たる
     // “記録に迫った試合”は、その記事種別自体がまだ無い(P3で足す)。
+    // 連勝: 団体記録との距離(§2-3)。更新は「その団体で誰も届かなかった数字」なので大きい
+    if (d.recordState === 'broken') n += 40;
+    else if (d.recordState === 'match') n += 20;
     // 王座: 初戴冠 / 長期政権の陥落
     if (story.type === 'playerTitleChange' || story.type === 'aiChampionChange') {
       const def = Number(d.prevDefenses) || 0;
@@ -28572,6 +28583,86 @@ Engine.newspaper = {
       }
     }
     return s;
+  },
+
+  // ── P3 §2-6: 週次で拾うニュース源(大怪我 / 連勝・連敗の節目) ──────────
+  //
+  //  **発生地点を追いかけない。** 怪我の付与も streak の加算も呼び出し元が散っており
+  //  (processSettlement / PPV / AI団体 / 各特別興行)、そこへ1つずつ push を足すと
+  //  必ずどれかを取りこぼす。**毎週スキャンして「前回から変わったもの」だけ拾う**。
+  //  一度出した分は G.newsSeen に覚えておき、同じネタを毎週出さない。
+  INJURY_NEWS_WEEKS: 4,          // これ以上の離脱を「大怪我」として扱う
+  STREAK_MILESTONES: [5, 10, 15, 20, 25, 30],
+
+  scanRosterNews(state) {
+    if (!state || state.offSeason) return state;
+    let s = state;
+    const seen = { injury: {}, streak: {}, ...(s.newsSeen || {}) };
+    const nextInjury = { ...seen.injury };
+    const nextStreak = { ...seen.streak };
+    const pushes = [];
+
+    const orgsOf = () => {
+      const list = [['player', s.roster, s.orgName || 'プレイヤー団体']];
+      const ai = s.aiOrgs || {};
+      for (const k in ai) {
+        list.push([k, ai[k] && ai[k].roster,
+          (s.rivalOrgNames && s.rivalOrgNames[k])
+          || (typeof RIVAL_ORGS !== 'undefined' && (RIVAL_ORGS.find(o => o.id === k) || {}).name) || '']);
+      }
+      return list;
+    };
+
+    orgsOf().forEach(([orgId, roster, orgName]) => {
+      (roster || []).forEach(f => {
+        if (!f || f.id == null) return;
+        const key = String(f.id);
+
+        // ── 大怪我(長期離脱) ──
+        const weeks = (f.injury && f.injury.weeksLeft) || 0;
+        if (weeks >= Engine.newspaper.INJURY_NEWS_WEEKS) {
+          // 同じ怪我で毎週出さない。**残り週数は減っていく**ので、
+          // 記録した値より増えていたら「別の(より重い)怪我」として扱う
+          const before = nextInjury[key] || 0;
+          if (weeks > before) {
+            nextInjury[key] = weeks;
+            pushes.push({
+              type: 'longInjury', characterId: f.id,
+              data: { name: f.name, orgName, weeks, injuryType: (f.injury && f.injury.type) || '負傷', weeksOut: weeks },
+            });
+          }
+        } else if (weeks === 0 && nextInjury[key]) {
+          delete nextInjury[key]; // 完治。次に負傷したらまた記事にする
+        }
+
+        // ── 連勝・連敗の節目 ──
+        const st = f.streak || 0;
+        const hit = [...Engine.newspaper.STREAK_MILESTONES].reverse().find(m => Math.abs(st) >= m);
+        if (!hit) { if (nextStreak[key]) delete nextStreak[key]; return; }
+        const signed = st > 0 ? hit : -hit;
+        if (nextStreak[key] === signed) return; // 同じ節目は一度だけ
+        nextStreak[key] = signed;
+        if (st > 0) {
+          const rec = Engine.streak.distanceTo(s, orgId, st);
+          pushes.push({
+            type: 'winStreakMilestone', characterId: f.id,
+            data: {
+              name: f.name, orgName, count: hit, recordState: rec || '',
+              recordLine: rec === 'broken' ? '団体記録を塗り替えた。'
+                : rec === 'match' ? '団体記録に王手をかけた。' : '',
+            },
+          });
+        } else {
+          pushes.push({
+            type: 'loseStreakMilestone', characterId: f.id,
+            data: { name: f.name, orgName, count: hit },
+          });
+        }
+      });
+    });
+
+    pushes.forEach(ev => { s = Engine.industryNews.push(s, ev); });
+    return { ...s, newsSeen: { ...(s.newsSeen || {}), injury: nextInjury, streak: nextStreak } };
   },
 
   /** 記事1本の最終点。generate() のソート直前に一括で当てる */
