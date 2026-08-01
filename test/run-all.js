@@ -50,6 +50,8 @@ const QUICK = new Set([
   'calendar-week-regression-test.js',
   'challenge-guest-save-sanitize-test.js',
   'challenge-request-away-launch-test.js',
+  'challenge-request-briefing-test.js',
+  'challenge-request-kind-copy-test.js',
   'challenge-request-card-reservation-test.js',
   'challenge-request-result-reaction-test.js',
   'challenge-request-show-flow-guard-test.js',

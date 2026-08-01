@@ -5451,6 +5451,16 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
    co-classとして残すが、位置指定(position:absolute)とサイズ指定は撤去し.u3bのflow配置に委ねる。
    fc1m-stats(5項目比較)は画面固有の追加コンテンツとして構造そのまま残し、色だけトークン化した。 */
 .fc1m-compare{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:start;padding:8px 4px 10px;max-width:660px;margin:0 auto}
+.crq-briefing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:660px;margin:14px auto 4px;padding:0 4px}
+.crq-briefing-item{min-height:58px;padding:9px 12px;border:1px solid var(--cream-border-hover);border-radius:6px;background:rgba(255,255,255,.36);box-sizing:border-box}
+.crq-briefing-item.is-away{border-color:rgba(45,118,129,.52);background:rgba(45,118,129,.08)}
+.crq-briefing-item.is-home{border-color:rgba(156,107,26,.52);background:rgba(156,107,26,.08)}
+.crq-briefing-item.is-series{border-color:rgba(117,80,145,.46);background:rgba(117,80,145,.07)}
+.crq-briefing-kicker{font-family:var(--font-label);font-size:9px;letter-spacing:1.4px;color:var(--cream-text-dim);font-weight:700}
+.crq-briefing-title{margin-top:2px;font-size:14px;line-height:1.25;font-weight:800;color:var(--cream-text-main)}
+.crq-briefing-detail{margin-top:3px;font-size:10px;line-height:1.35;color:var(--cream-text-sub)}
+.crq-series-order{max-width:660px;margin:0 auto;padding:2px 4px 1px;text-align:center;font-family:var(--font-label);font-size:11px;letter-spacing:.7px;font-weight:800;color:var(--cream-gold-dark)}
+.crq-series-order span{margin-left:8px;font-family:var(--font-ui);font-size:10px;font-weight:500;letter-spacing:0;color:var(--cream-text-sub)}
 .fc1m-bubble-wrap{pointer-events:none}
 .fc1m-portrait{transition:transform .15s,box-shadow .15s,border-color .15s}
 .fc1m-portrait:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.25);border-color:var(--gold)}
@@ -5462,6 +5472,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .fc1m-vs{display:flex;flex-direction:column;align-items:center;justify-content:center;height:194px;margin-top:60px;font-family:var(--font-label);font-size:30px;font-weight:700;color:var(--cream-text-dim);letter-spacing:2px}
 .fc1m-rivalry{text-align:center;font-size:12px;color:var(--cream-text-sub);padding:8px 0 4px;border-top:1px dashed var(--cream-border-hover);margin:6px auto 6px;max-width:660px}
 .fc1m-rivalry strong{color:var(--cream-gold-dark);font-family:var(--font-label);font-size:14px}
+@media(max-width:520px){.crq-briefing{grid-template-columns:1fr;gap:5px;margin-top:10px}.crq-briefing-item{min-height:0}.crq-series-order{font-size:10px}.crq-series-order span{display:block;margin:2px 0 0}}
 
 /* Common-1 派閥内対決 試合後結果モーダル */
 /* U1: 派閥内対決結果は「試合結果表示」系統として.emr-*(1試合結果ポップアップ)の配置バランス・部品を流用する。

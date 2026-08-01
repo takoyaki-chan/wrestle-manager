@@ -11727,13 +11727,14 @@ function showChallengeRequestModal(payload, state, onChoice) {
 
   // セリフ抽選（決定論的 rng）
   const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xC4A1, payload.selfId, payload.otherId));
-  const requesterLine = Engine.challengeRequest.pickRequesterLine(requester, lineRng, opponentOrgName) || 'あの相手と試合させてください。';
+  const requesterLine = Engine.challengeRequest.pickGroupRequesterLine(requester, lineRng, opponentOrgName)
+    || `${opponentOrgName}へ、私たち三人で挑戦させてください。`;
   const flavorLine = Engine.challengeRequest.pickFlavorLine(rivalry, bond, requester.name, opponent.name);
 
   // 取次コーチセリフ
   const coachLine = isInverse
-    ? `社長、${requesterOrgName}の${requester.name}選手から直訴です。古巣の${opponent.name}選手とリングで決着をつけたい、と。`
-    : `社長、${requester.name}選手から直訴です。${otherOrgName}の${opponent.name}選手と試合をさせてほしい、と。`;
+    ? `社長、${requesterOrgName}の${requester.name}選手から団体戦挑戦の直訴です。${opponentOrgName}へ、私たち三人で挑みたい、と。`
+    : `社長、${requester.name}選手から団体戦挑戦の直訴です。${otherOrgName}へ、私たち三人で挑みたい、と。`;
 
   const ovr = (f) => f ? Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5) : '—';
   const ovrA = ovr(requester), ovrB = ovr(opponent);
@@ -11765,8 +11766,16 @@ function showChallengeRequestModal(payload, state, onChoice) {
   // orgIdはpayloadの実IDをそのまま使う(名前からの逆引きより確実)
   const requesterOrgId = isInverse ? payload.requesterOrgId : 'player';
   const opponentOrgId = isInverse ? 'player' : payload.otherOrgId;
-  const requesterRole = isInverse ? '打診者（古巣に挑む）' : '直訴者';
-  const opponentRole = isInverse ? '名指しされた側' : '対戦相手';
+  const requesterRole = '団体戦の発起人';
+  const opponentRole = '第1試合の対戦相手';
+  const venueLabel = isInverse ? '自団体で迎撃' : '遠征興行';
+  const venueDetail = isInverse
+    ? '次の自団体興行で、相手団体を迎え撃ちます'
+    : `${opponentOrgName}の会場へ乗り込みます`;
+  const formatLabel = '3人制・シングル3連戦';
+  const formatDetail = isInverse
+    ? '上位3試合で、相手団体の3名と1対1ずつ戦います'
+    : 'あなたの団体から3名が出場し、1対1を全3試合行います';
 
   // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。5項目比較(fc1m-stats)は
   // 数値行の後ろに追加する画面固有コンテンツとして温存する(構成順は変えず末尾に付く)。
@@ -11774,10 +11783,22 @@ function showChallengeRequestModal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="challengeRequestOverlay">
       <div class="fevt-report-card">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">📜 挑戦試合の直訴</div>
+          <div class="fevt-report-title">👥 団体戦挑戦の直訴</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, escHtml(coachLine))}
+        <div class="crq-briefing" aria-label="挑戦試合の開催形式">
+          <div class="crq-briefing-item ${isInverse ? 'is-home' : 'is-away'}">
+            <div class="crq-briefing-kicker">開催地</div>
+            <div class="crq-briefing-title">${isInverse ? '🏠' : '✈'} ${escHtml(venueLabel)}</div>
+            <div class="crq-briefing-detail">${escHtml(venueDetail)}</div>
+          </div>
+          <div class="crq-briefing-item is-series">
+            <div class="crq-briefing-kicker">試合形式</div>
+            <div class="crq-briefing-title">👥 ${formatLabel}</div>
+            <div class="crq-briefing-detail">${escHtml(formatDetail)}</div>
+          </div>
+        </div>
         <div class="fc1m-compare u3b-theme-cream">
           ${_u3bSideHtml({
             name: requester.name, line: requesterLine, imgUrl: _factionUpperUrl(requester.id),
@@ -11795,8 +11816,9 @@ function showChallengeRequestModal(payload, state, onChoice) {
             extraHtml: `<div class="fc1m-stats">${renderStats('b')}</div>`,
           })}
         </div>
+        <div class="crq-series-order">第1試合・先鋒対決 <span>全3試合のシリーズ戦です</span></div>
         <div class="fc1m-rivalry">直近対戦 <strong>${h2hLabel}</strong> — ${escHtml(flavorLine)}</div>
-        <div class="fevt-decision-prompt">${isInverse ? 'この越境試合、社長として受けますか？' : 'この直訴、社長としてどう答えますか？'}</div>
+        <div class="fevt-decision-prompt">この団体戦挑戦、社長としてどう答えますか？</div>
         <div class="fevt-decision-tray two">
           <div class="fevt-decision-card" data-choice="YES">
             <div class="fevt-decision-letter">A</div>
@@ -13030,7 +13052,7 @@ function _buildB3Step1(event, state) {
 
   return `
     <div class="mdl-a-header danger">
-      <div class="mdl-a-header-title">⚔ ${orgName}からの挑戦状</div>
+      <div class="mdl-a-header-title">⚔ シングル挑戦の直訴</div>
       <div class="mdl-a-header-meta">CHALLENGE LETTER ・ ${_mdlASeasonLabel(state)}</div>
     </div>
     ${_mdlAReporterStrip(state, `興行会場に${orgName}の関係者が来ています`)}

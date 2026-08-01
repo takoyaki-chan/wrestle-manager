@@ -274,6 +274,9 @@ function defaultEngineStub() {
     },
     challengeRequest: {
       pickRequesterLine: (requester) => (requester ? `REQUESTER_LINE_${requester.id}` : null),
+      // 挑戦の直訴が 3人制の団体戦になった(2026-08-01)ので、モーダルは個人対決用の
+      // petition ではなく集団挑戦用の言葉を引く。スタブに無いと画面ごと落ちる
+      pickGroupRequesterLine: (requester) => (requester ? `GROUP_REQUESTER_LINE_${requester.id}` : null),
       pickFlavorLine: (rivalry, bond, rName, oName) => `FLAVOR_${rName}_${oName}`,
     },
     h2h: { getRecordFor: () => null },
