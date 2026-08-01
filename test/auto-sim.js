@@ -797,6 +797,9 @@ function autoHandleLargeEvent(G, simRng) {
 
 // 派閥イベントの発生内訳（WM_FACTION_FIXTURE=1 のとき末尾に出力する）
 const factionEventCensus = { byEvent: {}, byF07Incident: {} };
+// 殿堂入り計測 (WM_HOF_FIXTURE=1)。G はシミュレーションループのスコープ内にあるので、
+// ループ末でここへ引退者を移しておき、最後にトップレベルで集計する
+const hofCensus = [];
 
 // Phase 3a: 派閥イベント自動処理（F01/F02/F03 をランダムに応答）
 function autoHandleFactionEvent(G, simRng) {
@@ -1554,6 +1557,13 @@ function runSimulation(seed, seasons) {
 
   if (iter >= MAX_ITER) {
     errors.push({ season: G.season, week: G.week, seed: currentSeed, error: `MAX_ITER (${MAX_ITER}) に到達。無限ループの可能性` });
+  }
+
+  // 殿堂入り計測 (WM_HOF_FIXTURE=1): 引退者のキャリア記録をトップレベルへ渡す
+  if (process.env.WM_HOF_FIXTURE === '1') {
+    ((G && G.retiredFighters) || []).forEach(f => {
+      if (f && f.careerRecord) hofCensus.push(f.careerRecord);
+    });
   }
 
   // relationship-flags-spec-v1.0 §7-4: フラグ発火頻度集計
@@ -2315,6 +2325,64 @@ console.log('MQ P3d Baseline Compare Probe (mq-p3d-baseline-compare-v0.1) — �
   console.log(`  [mqRecord更新回数(既存計測の再掲・合算)] updates=${mqRecordProbe.updates.length} / ${targetSeasons} seasons (${(mqRecordProbe.updates.length / Math.max(1, targetSeasons) * 10).toFixed(2)}/10seasons)`);
   console.log(`  [mqRecord更新回数 シングル/タッグ内訳] singles=${mqRecordProbe.updatesSingle.length} tag=${mqRecordProbe.updatesTag.length}`);
 }
+// ── 殿堂入り計測モード (WM_HOF_FIXTURE=1) ──────────────────────────────
+// 2026-08-01: 加点要素の追加を検討するにあたり、
+//   ・いまの実績ポイントの分布と、★/★★/★★★ の到達人数
+//   ・**全盛期OVR が実績ポイントと別の軸になっているか**（相関）
+//   ・追加候補（挑戦状の勝利 / 歴代最高評価の試合 / 大会ベストバウト）が何点動かすか
+// を数える。「必要かどうか考える検証をしてみましょう」(Keisuke) への回答用。
+if (process.env.WM_HOF_FIXTURE === '1') {
+  console.log('--------------------------------------');
+  console.log('[殿堂入り計測] (WM_HOF_FIXTURE=1)');
+  const rows = [];
+  for (const rec of hofCensus) {
+    if (!rec) continue;
+    let cur = 0;
+    try { cur = Engine.awards.calcHofPoints(rec) || 0; } catch (e) { continue; }
+    const hist = rec.history || [];
+    const n = (pred) => hist.filter(pred).length;
+    const addB3 = n(e => e.type === 'b3Challenge' && e.won) * 2;
+    const addMq = n(e => e.type === 'mqAllTimeRecord' || e.type === 'mqTagRecord') * 4;
+    const addBest = n(e => e.type === 'tenchosenBestBout' || e.type === 'juniorTournamentBestBout') * 2;
+    rows.push({ cur, add: addB3 + addMq + addBest, addB3, addMq, addBest, peak: rec.peakOVR || 0 });
+  }
+  if (rows.length === 0) {
+    console.log('  引退者0人。シーズン数を増やして再実行してください');
+  } else {
+    const lv = p => (p >= 35 ? 3 : p >= 22 ? 2 : p >= 15 ? 1 : 0);
+    const count = (arr, f) => arr.filter(f).length;
+    const pct = (a, b) => `${(a / b * 100).toFixed(1)}%`;
+    const N = rows.length;
+    console.log(`  引退者 n=${N}`);
+    [['現行', r => r.cur], ['加点後', r => r.cur + r.add]].forEach(([label, get]) => {
+      const c = [0, 1, 2, 3].map(l => count(rows, r => lv(get(r)) === l));
+      console.log(`  ${label.padEnd(6)} 圏外 ${String(c[0]).padStart(4)}(${pct(c[0], N)})  `
+        + `★ ${String(c[1]).padStart(3)}(${pct(c[1], N)})  `
+        + `★★ ${String(c[2]).padStart(3)}(${pct(c[2], N)})  `
+        + `★★★ ${String(c[3]).padStart(3)}(${pct(c[3], N)})`);
+    });
+    const promoted = count(rows, r => lv(r.cur + r.add) > lv(r.cur));
+    console.log(`  加点で階級が上がる人数: ${promoted} (${pct(promoted, N)})  ← 閾値を据え置いた場合のインフレ量`);
+    console.log(`  加点の内訳(合計pt): 挑戦状=${rows.reduce((s, r) => s + r.addB3, 0)} `
+      + `歴代最高評価=${rows.reduce((s, r) => s + r.addMq, 0)} ベストバウト=${rows.reduce((s, r) => s + r.addBest, 0)}`);
+
+    // 全盛期OVR は別の軸か？(実績ポイントとの相関 / 高peak低ptの層)
+    const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+    const xs = rows.map(r => r.peak), ys = rows.map(r => r.cur);
+    const mx = mean(xs), my = mean(ys);
+    const cov = mean(rows.map((r, i) => (xs[i] - mx) * (ys[i] - my)));
+    const sd = a => Math.sqrt(mean(a.map(v => (v - mean(a)) ** 2)));
+    const corr = cov / (sd(xs) * sd(ys) || 1);
+    console.log(`  全盛期OVR と 実績pt の相関 r=${corr.toFixed(3)}  (peak平均=${mx.toFixed(1)})`);
+    const hiPeak = rows.filter(r => r.peak >= 80);
+    const hiPeakLowPt = count(hiPeak, r => r.cur < 15);
+    console.log(`  peak80以上 n=${hiPeak.length} のうち 現行で圏外(15pt未満): ${hiPeakLowPt} (${hiPeak.length ? pct(hiPeakLowPt, hiPeak.length) : '-'})`);
+    console.log('    ↑ 「強かったのに何も獲れなかった」層。多いほど全盛期OVR加点に意味がある');
+    const loPeakIn = count(rows, r => r.peak < 70 && r.cur >= 15);
+    console.log(`  peak70未満なのに ★以上: ${loPeakIn} (${pct(loPeakIn, N)})  ← 実績だけで入れてしまう層`);
+  }
+}
+
 if (process.env.WM_FACTION_FIXTURE === '1') {
   console.log('--------------------------------------');
   console.log('[派閥イベント発生内訳] (WM_FACTION_FIXTURE=1)');
