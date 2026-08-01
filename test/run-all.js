@@ -93,6 +93,7 @@ const QUICK = new Set([
   'mq-record-migration-test.js',
   'opening-scene-ui-test.js',
   'org-trust-visibility-guard-test.js',
+  'ppv-lines-test.js',
   'progression-repair-test.js',
   'regular-show-pregame-design-test.js',
   'relationship-balance-test.js',

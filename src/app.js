@@ -14867,8 +14867,18 @@ App.finalizePPV = function() {
       if (playerWon && winnerF && typeof PPV_SUMMIT_VICTORY_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
         try { winnerLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winnerF); } catch (e) {}
       }
+      // task-75: 頂上決戦の**敗者**は、これまで一言も喋らなかった。
+      // 年間最大の舞台で負けた側が無言なのは演出として穴なので埋める。
+      // 因縁の有無で色が変わる（pickPpvLine が両向きの rivalry を見て決める）。
+      let loserLine = null;
+      const summitLoserF = winnerSide === 'left' ? sr.right : sr.left;
+      const summitWinnerF = winnerSide === 'left' ? sr.left : sr.right;
+      if (summitLoserF && typeof pickPpvLine === 'function') {
+        try { loserLine = pickPpvLine('summitLose', summitLoserF, summitWinnerF, G) || null; } catch (e) {}
+      }
 
       s._newsSummitResult = {
+        loserLine,
         playerInvolved,
         playerName: playerF.name,
         playerId: playerF.id,
